@@ -282,6 +282,7 @@ bool FileAccessEncrypted::file_exists(const String &p_name) {
 }
 
 uint64_t FileAccessEncrypted::_get_modified_time(const String &p_file) {
+	print_line(vformat("get_modified_time (encrypted) %s", p_file));
 	return 0;
 }
 

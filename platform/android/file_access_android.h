@@ -84,7 +84,10 @@ public:
 
 	virtual bool file_exists(const String &p_path) override; // return true if a file exists
 
-	virtual uint64_t _get_modified_time(const String &p_file) override { return 0; }
+	virtual uint64_t _get_modified_time(const String &p_file) override {
+		print_line(vformat("get_modified_time (android) %s", p_file));
+		return 0;
+	}
 	virtual BitField<FileAccess::UnixPermissionFlags> _get_unix_permissions(const String &p_file) override { return 0; }
 	virtual Error _set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) override { return FAILED; }
 

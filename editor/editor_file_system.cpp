@@ -275,6 +275,7 @@ void EditorFileSystem::_scan_filesystem() {
 	// On the first scan, the first_scan_root_dir is created in _first_scan_filesystem.
 	ERR_FAIL_COND(!scanning || new_filesystem || (first_scan && !first_scan_root_dir));
 
+	print_line("_scan_filesystem");
 	//read .fscache
 	String cpath;
 
@@ -289,6 +290,7 @@ void EditorFileSystem::_scan_filesystem() {
 
 		bool first = true;
 		if (f.is_valid()) {
+			print_line("_scan_filesystem reading cache file...");
 			//read the disk cache
 			while (!f->eof_reached()) {
 				String l = f->get_line().strip_edges();
@@ -355,6 +357,7 @@ void EditorFileSystem::_scan_filesystem() {
 					file_cache[name] = fc;
 				}
 			}
+			print_line("_scan_filesystem reading cache file... done");
 		}
 	}
 
@@ -393,7 +396,9 @@ void EditorFileSystem::_scan_filesystem() {
 		nb_files_total = _scan_new_dir(sd, d);
 	}
 
+	print_line(vformat("_scan_filesystem - _process_file_system - cache size %s", file_cache.size()));
 	_process_file_system(sd, new_filesystem, sp);
+	print_line("_scan_filesystem - _process_file_system done");
 
 	dep_update_list.clear();
 	file_cache.clear(); //clear caches, no longer needed
@@ -406,12 +411,14 @@ void EditorFileSystem::_scan_filesystem() {
 		_save_filesystem_cache();
 	}
 
+	print_line("_scan_filesystem - done");
 	scanning = false;
 }
 
 void EditorFileSystem::_save_filesystem_cache() {
 	group_file_cache.clear();
 
+	print_line("_save_filesystem_cache");
 	String fscache = EditorPaths::get_singleton()->get_project_settings_dir().path_join(CACHE_FILE_NAME);
 
 	Ref<FileAccess> f = FileAccess::open(fscache, FileAccess::WRITE);
@@ -419,6 +426,7 @@ void EditorFileSystem::_save_filesystem_cache() {
 
 	f->store_line(filesystem_settings_version_for_import);
 	_save_filesystem_cache(filesystem, f);
+	print_line("_save_filesystem_cache done");
 }
 
 void EditorFileSystem::_thread_func(void *_userdata) {
@@ -724,14 +732,14 @@ bool EditorFileSystem::_update_scan_actions() {
 				bool need_reimport = _test_for_reimport(full_path, false);
 				// Workaround GH-94416 for the Android editor for now.
 				// `import_mt` seems to always be 0 and force a reimport on any fs scan.
-#ifndef ANDROID_ENABLED
+				//#ifndef ANDROID_ENABLED
 				if (!need_reimport && FileAccess::exists(full_path + ".import")) {
 					uint64_t import_mt = ia.dir->get_file_import_modified_time(idx);
 					if (import_mt != FileAccess::get_modified_time(full_path + ".import")) {
 						need_reimport = true;
 					}
 				}
-#endif
+				//#endif
 
 				if (need_reimport) {
 					//must reimport
@@ -975,6 +983,7 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 			}
 
 			if (fc && fc->modification_time == mt && fc->import_modification_time == import_mt && !_test_for_reimport(path, true)) {
+				print_line(vformat("_process_file_system - cache ok %s : %s %s", path, mt, import_mt));
 				fi->type = fc->type;
 				fi->resource_script_class = fc->resource_script_class;
 				fi->uid = fc->uid;
@@ -1010,6 +1019,10 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 				}
 
 			} else {
+				print_line(vformat("_process_file_system - needs reimport %s : %s %s", path, mt, import_mt));
+				if (fc) {
+					print_line(vformat("  fc: %s %s", fc->modification_time, fc->import_modification_time));
+				}
 				fi->type = ResourceFormatImporter::get_singleton()->get_resource_type(path);
 				fi->uid = ResourceFormatImporter::get_singleton()->get_resource_uid(path);
 				fi->import_group_file = ResourceFormatImporter::get_singleton()->get_import_group_file(path);
@@ -1091,6 +1104,7 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 }
 
 void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanProgress &p_progress) {
+	print_line("_scan_fs_changes");
 	uint64_t current_mtime = FileAccess::get_modified_time(p_dir->get_path());
 
 	bool updated_dir = false;
@@ -1179,6 +1193,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanPr
 
 				if (idx == -1) {
 					//never seen this file, add actition to add it
+					print_line("_scan_fs_changes - new file");
 					EditorFileSystemDirectory::FileInfo *fi = memnew(EditorFileSystemDirectory::FileInfo);
 					fi->file = f;
 
@@ -1534,6 +1549,8 @@ void EditorFileSystem::_save_filesystem_cache(EditorFileSystemDirectory *p_dir, 
 		cache_string.append(file_info->import_group_file);
 		cache_string.append(String("<>").join({ file_info->script_class_name, file_info->script_class_extends, file_info->script_class_icon_path }));
 		cache_string.append(String("<>").join(file_info->deps));
+
+		print_line(vformat("_save_filesystem_cache: %s %s %s %s %s", file_info->file, file_info->modified_time, file_info->import_modified_time, itos(file_info->modified_time), itos(file_info->import_modified_time)));
 
 		p_file->store_line(String("::").join(cache_string));
 	}
@@ -1964,17 +1981,20 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 	Vector<EditorFileSystemDirectory::FileInfo *> files_to_update_icon_path;
 	for (const String &file : p_script_paths) {
 		ERR_CONTINUE(file.is_empty());
+		print_line(vformat("update_files %s ...", file));
 		EditorFileSystemDirectory *fs = nullptr;
 		int cpos = -1;
 
 		if (!_find_file(file, &fs, cpos)) {
 			if (!fs) {
+				print_line(vformat("update_files %s ... continue", file));
 				continue;
 			}
 		}
 
 		if (!FileAccess::exists(file)) {
 			//was removed
+			print_line(vformat("update_files %s ... removed", file));
 			_delete_internal_files(file);
 			if (cpos != -1) { // Might've never been part of the editor file system (*.* files deleted in Open dialog).
 				if (fs->files[cpos]->uid != ResourceUID::INVALID_ID) {
@@ -2081,6 +2101,8 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 			}
 			updated = true;
 		}
+
+		print_line(vformat("update_files %s ... done", file));
 	}
 
 	if (updated) {
@@ -2330,6 +2352,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 
 Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<StringName, Variant> &p_custom_options, const String &p_custom_importer, Variant *p_generator_parameters) {
 	print_verbose(vformat("EditorFileSystem: Importing file: %s", p_file));
+	print_line(vformat("EditorFileSystem: Importing file: %s", p_file));
 	uint64_t start_time = OS::get_singleton()->get_ticks_msec();
 
 	EditorFileSystemDirectory *fs = nullptr;
@@ -2554,7 +2577,11 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 	}
 
 	// Update cpos, newly created files could've changed the index of the reimported p_file.
+	print_line(vformat("reimport_file - %s cpos: %s", p_file, cpos));
 	_find_file(p_file, &fs, cpos);
+	print_line(vformat("reimport_file - %s cpos (after find): %s", p_file, cpos));
+
+	print_line(vformat("reimport_file - %s before: %s %s", p_file, fs->files[cpos]->modified_time, fs->files[cpos]->import_modified_time));
 
 	// Update modified times, to avoid reimport.
 	fs->files[cpos]->modified_time = FileAccess::get_modified_time(p_file);
@@ -2563,6 +2590,8 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 	fs->files[cpos]->type = importer->get_resource_type();
 	fs->files[cpos]->uid = uid;
 	fs->files[cpos]->import_valid = fs->files[cpos]->type == "TextFile" ? true : ResourceLoader::is_import_valid(p_file);
+
+	print_line(vformat("reimport_file - %s after: %s %s", p_file, fs->files[cpos]->modified_time, fs->files[cpos]->import_modified_time));
 
 	if (ResourceUID::get_singleton()->has_id(uid)) {
 		ResourceUID::get_singleton()->set_id(uid, p_file);
@@ -2584,6 +2613,7 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 	EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
 
 	print_verbose(vformat("EditorFileSystem: \"%s\" import took %d ms.", p_file, OS::get_singleton()->get_ticks_msec() - start_time));
+	print_line(vformat("EditorFileSystem: \"%s\" import took %d ms.", p_file, OS::get_singleton()->get_ticks_msec() - start_time));
 
 	ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_UNRECOGNIZED, "Error importing '" + p_file + "'.");
 	return OK;

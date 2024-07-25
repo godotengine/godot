@@ -379,12 +379,19 @@ uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
 	String file = fix_path(p_file);
 	struct stat status = {};
 	int err = stat(file.utf8().get_data(), &status);
-
 	if (!err) {
 		return status.st_mtime;
 	} else {
-		print_verbose("Failed to get modified time for: " + p_file + "");
-		return 0;
+		print_line(vformat("Failed to get modified time for: %s => %s", p_file, err));
+		OS::get_singleton()->delay_usec(2000);
+		err = stat(file.utf8().get_data(), &status);
+		if (!err) {
+			print_line(vformat("get_modified_time (2) (Unix) %s = %s", p_file, status.st_mtime));
+			return status.st_mtime;
+		} else {
+			print_line(vformat("Failed 2 to get modified time for: %s => %s", p_file, err));
+			return 0;
+		}
 	}
 }
 

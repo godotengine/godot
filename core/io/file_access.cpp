@@ -578,6 +578,7 @@ void FileAccess::store_double(double p_dest) {
 
 uint64_t FileAccess::get_modified_time(const String &p_file) {
 	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+		print_line(vformat("get_modified_time %s = not", p_file));
 		return 0;
 	}
 
@@ -585,6 +586,7 @@ uint64_t FileAccess::get_modified_time(const String &p_file) {
 	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, "Cannot create FileAccess for path '" + p_file + "'.");
 
 	uint64_t mt = fa->_get_modified_time(p_file);
+	print_line(vformat("get_modified_time %s = %s", p_file, mt));
 	return mt;
 }
 

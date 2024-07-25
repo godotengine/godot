@@ -1120,6 +1120,7 @@ void EditorNode::_sources_changed(bool p_exist) {
 }
 
 void EditorNode::_scan_external_changes() {
+	return;
 	disk_changed_list->clear();
 	TreeItem *r = disk_changed_list->create_item();
 	disk_changed_list->set_hide_root(true);

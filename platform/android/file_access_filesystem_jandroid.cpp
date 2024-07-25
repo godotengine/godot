@@ -374,16 +374,22 @@ bool FileAccessFilesystemJAndroid::file_exists(const String &p_path) {
 }
 
 uint64_t FileAccessFilesystemJAndroid::_get_modified_time(const String &p_file) {
+	print_line(vformat("get_modified_time (jandroid) %s", p_file));
 	if (_file_last_modified) {
 		JNIEnv *env = get_jni_env();
+		if (!env) {
+			print_line(vformat("_get_modified_time %s = no env", p_file));
+		}
 		ERR_FAIL_NULL_V(env, false);
 
 		String path = fix_path(p_file).simplify_path();
 		jstring js = env->NewStringUTF(path.utf8().get_data());
 		uint64_t result = env->CallLongMethod(file_access_handler, _file_last_modified, js);
 		env->DeleteLocalRef(js);
+		print_line(vformat("_get_modified_time %s = %s", path, result));
 		return result;
 	} else {
+		print_line(vformat("_get_modified_time %s = not last modified", p_file));
 		return 0;
 	}
 }
