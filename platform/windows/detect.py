@@ -20,7 +20,7 @@ def get_name():
     return "Windows"
 
 
-def try_cmd(test, prefix, arch):
+def try_cmd(test, prefix, arch, check_clang=False):
     archs = ["x86_64", "x86_32", "arm64", "arm32"]
     if arch:
         archs = [arch]
@@ -33,8 +33,10 @@ def try_cmd(test, prefix, arch):
                 stderr=subprocess.PIPE,
                 stdout=subprocess.PIPE,
             )
-            out.communicate()
+            outs, errs = out.communicate()
             if out.returncode == 0:
+                if check_clang and not outs.startswith(b"clang"):
+                    return False
                 return True
         except Exception:
             pass
@@ -640,6 +642,10 @@ def configure_mingw(env: "SConsEnvironment"):
 
     if env["use_llvm"] and not try_cmd("clang --version", env["mingw_prefix"], env["arch"]):
         env["use_llvm"] = False
+
+    if not env["use_llvm"] and try_cmd("gcc --version", env["mingw_prefix"], env["arch"], True):
+        print("Detected GCC to be a wrapper for Clang.")
+        env["use_llvm"] = True
 
     # TODO: Re-evaluate the need for this / streamline with common config.
     if env["target"] == "template_release":
