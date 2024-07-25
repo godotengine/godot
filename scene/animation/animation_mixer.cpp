@@ -1081,24 +1081,23 @@ void AnimationMixer::_blend_calc_total_weight() {
 		Ref<Animation> a = ai.animation_data.animation;
 		real_t weight = ai.playback_info.weight;
 		Vector<real_t> track_weights = ai.playback_info.track_weights;
-		Vector<int> processed_indices;
+		Vector<Animation::TypeHash> processed_hashes;
 		for (int i = 0; i < a->get_track_count(); i++) {
 			if (!a->track_is_enabled(i)) {
 				continue;
 			}
 			Animation::TypeHash thash = a->track_get_type_hash(i);
-			if (!track_cache.has(thash)) {
-				continue; // No path, but avoid error spamming.
+			if (!track_cache.has(thash) || processed_hashes.has(thash)) {
+				// No path, but avoid error spamming.
+				// Or, there is the case different track type with same path; These can be distinguished by hash. So don't add the weight doubly.
+				continue;
 			}
 			TrackCache *track = track_cache[thash];
 			int blend_idx = track_map[track->path];
-			if (processed_indices.has(blend_idx)) {
-				continue; // There is the case different track type with same path... Is there more faster iterating way than has()?
-			}
 			ERR_CONTINUE(blend_idx < 0 || blend_idx >= track_count);
 			real_t blend = blend_idx < track_weights.size() ? track_weights[blend_idx] * weight : weight;
 			track->total_weight += blend;
-			processed_indices.push_back(blend_idx);
+			processed_hashes.push_back(thash);
 		}
 	}
 }
