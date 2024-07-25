@@ -312,15 +312,6 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 		p_source = p_class;
 	}
 
-	Ref<GDScriptParserRef> parser_ref = ensure_cached_parser_for_class(p_class, nullptr, vformat(R"(Trying to resolve class inheritance of "%s" from "%s")", p_class->fqcn, parser->script_path), p_source);
-	Finally finally([&]() {
-		GDScriptParser::ClassNode *look_class = p_class;
-		do {
-			ensure_cached_parser_for_class(look_class->base_type.class_type, look_class, vformat(R"(Trying to resolve class inheritance of "%s" from "%s")", p_class->fqcn, parser->script_path), p_source);
-			look_class = look_class->base_type.class_type;
-		} while (look_class != nullptr);
-	});
-
 	if (p_class->base_type.is_resolving()) {
 		push_error(vformat(R"(Could not resolve class "%s": Cyclic reference.)", type_from_metatype(p_class->get_datatype()).to_string()), p_source);
 		return ERR_PARSE_ERROR;
@@ -332,16 +323,20 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 	}
 
 	if (!parser->has_class(p_class)) {
+		String script_path = p_class->get_datatype().script_path;
+		Ref<GDScriptParserRef> parser_ref = parser->get_depended_parser_for(script_path);
 		if (parser_ref.is_null()) {
-			// Error already pushed.
+			push_error(vformat(R"(Could not find script "%s".)", script_path), p_source);
 			return ERR_PARSE_ERROR;
 		}
 
 		Error err = parser_ref->raise_status(GDScriptParserRef::PARSED);
 		if (err) {
-			push_error(vformat(R"(Could not parse script "%s": %s.)", p_class->get_datatype().script_path, error_names[err]), p_source);
+			push_error(vformat(R"(Could not parse script "%s": %s.)", script_path, error_names[err]), p_source);
 			return ERR_PARSE_ERROR;
 		}
+
+		ERR_FAIL_COND_V_MSG(!parser_ref->get_parser()->has_class(p_class), ERR_PARSE_ERROR, R"(Parser bug: Mismatched external parser.)");
 
 		GDScriptAnalyzer *other_analyzer = parser_ref->get_analyzer();
 		GDScriptParser *other_parser = parser_ref->get_parser();
@@ -888,11 +883,6 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 		p_source = member.get_source_node();
 	}
 
-	Ref<GDScriptParserRef> parser_ref = ensure_cached_parser_for_class(p_class, nullptr, vformat(R"(Trying to resolve class member "%s" of "%s" from "%s")", member.get_name(), p_class->fqcn, parser->script_path), p_source);
-	Finally finally([&]() {
-		ensure_cached_parser_for_class(member.get_datatype().class_type, p_class, vformat(R"(Trying to resolve class member "%s" of "%s" from "%s")", member.get_name(), p_class->fqcn, parser->script_path), p_source);
-	});
-
 	if (member.get_datatype().is_resolving()) {
 		push_error(vformat(R"(Could not resolve member "%s": Cyclic reference.)", member.get_name()), p_source);
 		return;
@@ -902,25 +892,21 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 		return;
 	}
 
-	// If it's already resolving, that's ok.
-	if (!p_class->base_type.is_resolving()) {
-		Error err = resolve_class_inheritance(p_class);
-		if (err) {
-			return;
-		}
-	}
-
 	if (!parser->has_class(p_class)) {
+		String script_path = p_class->get_datatype().script_path;
+		Ref<GDScriptParserRef> parser_ref = parser->get_depended_parser_for(script_path);
 		if (parser_ref.is_null()) {
-			// Error already pushed.
+			push_error(vformat(R"(Could not find script "%s" (While resolving "%s").)", script_path, member.get_name()), p_source);
 			return;
 		}
 
 		Error err = parser_ref->raise_status(GDScriptParserRef::PARSED);
 		if (err) {
-			push_error(vformat(R"(Could not parse script "%s": %s (While resolving member "%s").)", p_class->get_datatype().script_path, error_names[err], member.get_name()), p_source);
+			push_error(vformat(R"(Could not resolve script "%s": %s (While resolving "%s").)", script_path, error_names[err], member.get_name()), p_source);
 			return;
 		}
+
+		ERR_FAIL_COND_MSG(!parser_ref->get_parser()->has_class(p_class), R"(Parser bug: Mismatched external parser.)");
 
 		GDScriptAnalyzer *other_analyzer = parser_ref->get_analyzer();
 		GDScriptParser *other_parser = parser_ref->get_parser();
@@ -929,10 +915,17 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 		other_analyzer->resolve_class_member(p_class, p_index);
 		if (other_parser->errors.size() > error_count) {
 			push_error(vformat(R"(Could not resolve member "%s".)", member.get_name()), p_source);
-			return;
 		}
 
 		return;
+	}
+
+	// If it's already resolving, that's ok.
+	if (!p_class->base_type.is_resolving()) {
+		Error err = resolve_class_inheritance(p_class);
+		if (err) {
+			return;
+		}
 	}
 
 	GDScriptParser::ClassNode *previous_class = parser->current_class;
@@ -1177,24 +1170,26 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 		p_source = p_class;
 	}
 
-	Ref<GDScriptParserRef> parser_ref = ensure_cached_parser_for_class(p_class, nullptr, vformat(R"(Trying to resolve class interface of "%s" from "%s")", p_class->fqcn, parser->script_path), p_source);
-
 	if (!p_class->resolved_interface) {
 #ifdef DEBUG_ENABLED
 		bool has_static_data = p_class->has_static_data;
 #endif
 
 		if (!parser->has_class(p_class)) {
+			String script_path = p_class->get_datatype().script_path;
+			Ref<GDScriptParserRef> parser_ref = parser->get_depended_parser_for(script_path);
 			if (parser_ref.is_null()) {
-				// Error already pushed.
+				push_error(vformat(R"(Could not find script "%s".)", script_path), p_source);
 				return;
 			}
 
 			Error err = parser_ref->raise_status(GDScriptParserRef::PARSED);
 			if (err) {
-				push_error(vformat(R"(Could not parse script "%s": %s.)", p_class->get_datatype().script_path, error_names[err]), p_source);
+				push_error(vformat(R"(Could not resolve script "%s": %s.)", script_path, error_names[err]), p_source);
 				return;
 			}
+
+			ERR_FAIL_COND_MSG(!parser_ref->get_parser()->has_class(p_class), R"(Parser bug: Mismatched external parser.)");
 
 			GDScriptAnalyzer *other_analyzer = parser_ref->get_analyzer();
 			GDScriptParser *other_parser = parser_ref->get_parser();
@@ -1203,7 +1198,6 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 			other_analyzer->resolve_class_interface(p_class);
 			if (other_parser->errors.size() > error_count) {
 				push_error(vformat(R"(Could not resolve class "%s".)", p_class->fqcn), p_source);
-				return;
 			}
 
 			return;
@@ -1267,23 +1261,25 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 		p_source = p_class;
 	}
 
-	Ref<GDScriptParserRef> parser_ref = ensure_cached_parser_for_class(p_class, nullptr, vformat(R"(Trying to resolve class body of "%s" from "%s")", p_class->fqcn, parser->script_path), p_source);
-
 	if (p_class->resolved_body) {
 		return;
 	}
 
 	if (!parser->has_class(p_class)) {
+		String script_path = p_class->get_datatype().script_path;
+		Ref<GDScriptParserRef> parser_ref = parser->get_depended_parser_for(script_path);
 		if (parser_ref.is_null()) {
-			// Error already pushed.
+			push_error(vformat(R"(Could not find script "%s".)", script_path), p_source);
 			return;
 		}
 
 		Error err = parser_ref->raise_status(GDScriptParserRef::PARSED);
 		if (err) {
-			push_error(vformat(R"(Could not parse script "%s": %s.)", p_class->get_datatype().script_path, error_names[err]), p_source);
+			push_error(vformat(R"(Could not resolve script "%s": %s.)", script_path, error_names[err]), p_source);
 			return;
 		}
+
+		ERR_FAIL_COND_MSG(!parser_ref->get_parser()->has_class(p_class), R"(Parser bug: Mismatched external parser.)");
 
 		GDScriptAnalyzer *other_analyzer = parser_ref->get_analyzer();
 		GDScriptParser *other_parser = parser_ref->get_parser();
@@ -1292,7 +1288,6 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 		other_analyzer->resolve_class_body(p_class);
 		if (other_parser->errors.size() > error_count) {
 			push_error(vformat(R"(Could not resolve class "%s".)", p_class->fqcn), p_source);
-			return;
 		}
 
 		return;
@@ -3650,81 +3645,12 @@ GDScriptParser::DataType GDScriptAnalyzer::make_global_class_meta_type(const Str
 	}
 }
 
-Ref<GDScriptParserRef> GDScriptAnalyzer::ensure_cached_parser_for_class(const GDScriptParser::ClassNode *p_class, const GDScriptParser::ClassNode *p_from_class, const String &p_context, const GDScriptParser::Node *p_source) {
-	if (p_class == nullptr) {
-		return nullptr;
-	}
-
-	if (parser->has_class(p_class)) {
-		return nullptr;
-	}
-
-	{
-		HashMap<const GDScriptParser::ClassNode *, Ref<GDScriptParserRef>>::Iterator E = external_class_parser_cache.find(p_class);
-		if (E) {
-			return E->value;
-		}
-	}
-
-	Ref<GDScriptParserRef> parser_ref;
-	Ref<GDScriptParserRef> dependant_parser_ref;
-	GDScriptParser *dependant_parser = parser;
-	do {
-		if (HashMap<const GDScriptParser::ClassNode *, Ref<GDScriptParserRef>>::Iterator E = external_class_parser_cache.find(p_from_class)) {
-			dependant_parser_ref = E->value;
-			dependant_parser = E->value->get_parser();
-
-			// Silently ensure it's parsed.
-			dependant_parser_ref->raise_status(GDScriptParserRef::PARSED);
-		}
-
-		if (dependant_parser == nullptr) {
-			continue;
-		}
-
-		if (dependant_parser_ref.is_valid() && dependant_parser->has_class(p_class)) {
-			external_class_parser_cache.insert(p_class, dependant_parser_ref);
-			parser_ref = dependant_parser_ref;
-			break;
-		}
-
-		String script_path = p_class->get_datatype().script_path;
-		HashMap<String, Ref<GDScriptParserRef>>::Iterator E = dependant_parser->depended_parsers.find(script_path);
-		if (E) {
-			// Silently ensure it's parsed.
-			E->value->raise_status(GDScriptParserRef::PARSED);
-			if (E->value->get_parser()->has_class(p_class)) {
-				external_class_parser_cache.insert(p_class, E->value);
-				parser_ref = E->value;
-				break;
-			}
-		}
-
-		dependant_parser_ref = Ref<GDScriptParserRef>();
-		dependant_parser = nullptr;
-		p_from_class = p_from_class->base_type.class_type;
-	} while (p_from_class != nullptr);
-
-	if (parser_ref.is_null()) {
-		push_error(vformat(R"(Parser bug: Could not find external parser. (%s))", p_context), p_source);
-	}
-
-	return parser_ref;
-}
-
-Ref<GDScript> GDScriptAnalyzer::get_depended_shallow_script(const String &p_path, Error &r_error) {
-	// To keep a local cache of the parser for resolving external nodes later.
-	parser->get_depended_parser_for(p_path);
-	Ref<GDScript> scr = GDScriptCache::get_shallow_script(p_path, r_error, parser->script_path);
-	return scr;
-}
-
 void GDScriptAnalyzer::reduce_identifier_from_base_set_class(GDScriptParser::IdentifierNode *p_identifier, GDScriptParser::DataType p_identifier_datatype) {
 	ERR_FAIL_NULL(p_identifier);
 
 	p_identifier->set_datatype(p_identifier_datatype);
 	Error err = OK;
-	Ref<GDScript> scr = get_depended_shallow_script(p_identifier_datatype.script_path, err);
+	Ref<GDScript> scr = GDScriptCache::get_shallow_script(p_identifier_datatype.script_path, err, parser->script_path);
 	if (err) {
 		push_error(vformat(R"(Error while getting cache for script "%s".)", p_identifier_datatype.script_path), p_identifier);
 		return;
@@ -4414,7 +4340,7 @@ void GDScriptAnalyzer::reduce_preload(GDScriptParser::PreloadNode *p_preload) {
 			const String &res_type = ResourceLoader::get_resource_type(p_preload->resolved_path);
 			if (res_type == "GDScript") {
 				Error err = OK;
-				Ref<GDScript> res = get_depended_shallow_script(p_preload->resolved_path, err);
+				Ref<GDScript> res = GDScriptCache::get_shallow_script(p_preload->resolved_path, err, parser->script_path);
 				p_preload->resource = res;
 				if (err != OK) {
 					push_error(vformat(R"(Could not preload resource script "%s".)", p_preload->resolved_path), p_preload->path);
@@ -4990,7 +4916,7 @@ Array GDScriptAnalyzer::make_array_from_element_datatype(const GDScriptParser::D
 		Ref<Script> script_type = p_element_datatype.script_type;
 		if (p_element_datatype.kind == GDScriptParser::DataType::CLASS && script_type.is_null()) {
 			Error err = OK;
-			Ref<GDScript> scr = get_depended_shallow_script(p_element_datatype.script_path, err);
+			Ref<GDScript> scr = GDScriptCache::get_shallow_script(p_element_datatype.script_path, err, parser->script_path);
 			if (err) {
 				push_error(vformat(R"(Error while getting cache for script "%s".)", p_element_datatype.script_path), p_source_node);
 				return array;
