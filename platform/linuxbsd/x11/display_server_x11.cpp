@@ -1750,7 +1750,6 @@ DisplayServer::WindowID DisplayServerX11::create_sub_window(WindowMode p_mode, V
 	}
 #endif
 
-	window_set_exclusive(id, p_exclusive);
 	if (p_transient_parent != INVALID_WINDOW_ID) {
 		window_set_transient(id, p_transient_parent);
 	}
