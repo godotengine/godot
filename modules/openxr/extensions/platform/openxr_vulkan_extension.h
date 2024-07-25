@@ -36,23 +36,25 @@
 #include "../openxr_extension_wrapper.h"
 
 #include "core/templates/vector.h"
+#include "drivers/vulkan/vulkan_hooks.h"
 
 // Always include this as late as possible.
 #include "../../openxr_platform_inc.h"
 
 class OpenXRVulkanExtension : public OpenXRGraphicsExtensionWrapper, VulkanHooks {
 public:
-	OpenXRVulkanExtension();
-	virtual ~OpenXRVulkanExtension() override;
+	OpenXRVulkanExtension() = default;
+	virtual ~OpenXRVulkanExtension() override = default;
 
 	virtual HashMap<String, bool *> get_requested_extensions() override;
 
 	virtual void on_instance_created(const XrInstance p_instance) override;
 	virtual void *set_session_create_and_get_next_pointer(void *p_next_pointer) override;
 
-	virtual bool create_vulkan_instance(const VkInstanceCreateInfo *p_vulkan_create_info, VkInstance *r_instance) override;
-	virtual bool get_physical_device(VkPhysicalDevice *r_device) override;
-	virtual bool create_vulkan_device(const VkDeviceCreateInfo *p_device_create_info, VkDevice *r_device) override;
+	virtual bool create_vulkan_instance(const VkInstanceCreateInfo *p_vulkan_create_info, VkInstance *r_instance) override final;
+	virtual bool get_physical_device(VkPhysicalDevice *r_device) override final;
+	virtual bool create_vulkan_device(const VkDeviceCreateInfo *p_device_create_info, VkDevice *r_device) override final;
+	virtual void set_direct_queue_family_and_index(uint32_t p_queue_family_index, uint32_t p_queue_index) override final;
 
 	virtual void get_usable_swapchain_formats(Vector<int64_t> &p_usable_swap_chains) override;
 	virtual void get_usable_depth_formats(Vector<int64_t> &p_usable_swap_chains) override;
@@ -76,8 +78,8 @@ private:
 	VkInstance vulkan_instance = nullptr;
 	VkPhysicalDevice vulkan_physical_device = nullptr;
 	VkDevice vulkan_device = nullptr;
-	uint32_t vulkan_queue_family_index = 0;
-	uint32_t vulkan_queue_index = 0;
+	uint32_t vulkan_queue_family_index = UINT32_MAX;
+	uint32_t vulkan_queue_index = UINT32_MAX;
 
 	EXT_PROTO_XRRESULT_FUNC3(xrGetVulkanGraphicsRequirements2KHR, (XrInstance), p_instance, (XrSystemId), p_system_id, (XrGraphicsRequirementsVulkanKHR *), p_graphics_requirements)
 	EXT_PROTO_XRRESULT_FUNC4(xrCreateVulkanInstanceKHR, (XrInstance), p_instance, (const XrVulkanInstanceCreateInfoKHR *), p_create_info, (VkInstance *), r_vulkan_instance, (VkResult *), r_vulkan_result)

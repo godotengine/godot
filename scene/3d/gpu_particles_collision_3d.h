@@ -170,7 +170,7 @@ protected:
 #endif // DISABLE_DEPRECATED
 
 public:
-	virtual Array get_configuration_warnings() const override;
+	virtual PackedStringArray get_configuration_warnings() const override;
 
 	void set_thickness(float p_thickness);
 	float get_thickness() const;

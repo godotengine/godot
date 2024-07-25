@@ -20,32 +20,12 @@
  * SOFTWARE.
  */
 
-#include "tvgCommon.h"
 #include "tvgFrameModule.h"
-#include "tvgPaint.h"
-#include "tvgPicture.h"
+#include "tvgAnimation.h"
 
 /************************************************************************/
 /* Internal Class Implementation                                        */
 /************************************************************************/
-
-struct Animation::Impl
-{
-    Picture* picture = nullptr;
-
-    Impl()
-    {
-        picture = Picture::gen().release();
-        PP(picture)->ref();
-    }
-
-    ~Impl()
-    {
-        if (PP(picture)->unref() == 0) {
-            delete(picture);
-        }
-    }
-};
 
 /************************************************************************/
 /* External Class Implementation                                        */
@@ -110,6 +90,33 @@ float Animation::duration() const noexcept
     if (!loader->animatable()) return 0;
 
     return static_cast<FrameModule*>(loader)->duration();
+}
+
+
+Result Animation::segment(float begin, float end) noexcept
+{
+    if (begin < 0.0 || end > 1.0 || begin >= end) return Result::InvalidArguments;
+
+    auto loader = pImpl->picture->pImpl->loader;
+    if (!loader) return Result::InsufficientCondition;
+    if (!loader->animatable()) return Result::NonSupport;
+
+    static_cast<FrameModule*>(loader)->segment(begin, end);
+
+    return Result::Success;
+}
+
+
+Result Animation::segment(float *begin, float *end) noexcept
+{
+    auto loader = pImpl->picture->pImpl->loader;
+    if (!loader) return Result::InsufficientCondition;
+    if (!loader->animatable()) return Result::NonSupport;
+    if (!begin && !end) return Result::InvalidArguments;
+
+    static_cast<FrameModule*>(loader)->segment(begin, end);
+
+    return Result::Success;
 }
 
 

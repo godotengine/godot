@@ -99,12 +99,12 @@ bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) 
 		p_log->set_table_column_expand(1, true);
 		for (int m = 0; m < msg_count; m++) {
 			EditorExportPlatform::ExportMessage msg = get_message(m);
-			Color color = p_log->get_theme_color(SNAME("font_color"), SNAME("Label"));
+			Color color = p_log->get_theme_color(SceneStringName(font_color), SNAME("Label"));
 			Ref<Texture> icon;
 
 			switch (msg.msg_type) {
 				case EditorExportPlatform::EXPORT_MESSAGE_INFO: {
-					color = p_log->get_theme_color(SNAME("font_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.6);
+					color = p_log->get_theme_color(SceneStringName(font_color), EditorStringName(Editor)) * Color(1, 1, 1, 0.6);
 				} break;
 				case EditorExportPlatform::EXPORT_MESSAGE_WARNING: {
 					icon = p_log->get_editor_theme_icon(SNAME("Warning"));
@@ -329,7 +329,7 @@ Ref<ImageTexture> EditorExportPlatform::get_option_icon(int p_index) const {
 	}
 }
 
-String EditorExportPlatform::find_export_template(String template_file_name, String *err) const {
+String EditorExportPlatform::find_export_template(const String &template_file_name, String *err) const {
 	String current_version = VERSION_FULL_CONFIG;
 	String template_path = EditorPaths::get_singleton()->get_export_templates_dir().path_join(current_version).path_join(template_file_name);
 
@@ -344,7 +344,7 @@ String EditorExportPlatform::find_export_template(String template_file_name, Str
 	return String();
 }
 
-bool EditorExportPlatform::exists_export_template(String template_file_name, String *err) const {
+bool EditorExportPlatform::exists_export_template(const String &template_file_name, String *err) const {
 	return find_export_template(template_file_name, err) != "";
 }
 
@@ -509,6 +509,12 @@ HashSet<String> EditorExportPlatform::get_features(const Ref<EditorExportPreset>
 		result.insert("release");
 		result.insert("template_release");
 	}
+
+#ifdef REAL_T_IS_DOUBLE
+	result.insert("double");
+#else
+	result.insert("single");
+#endif // REAL_T_IS_DOUBLE
 
 	if (!p_preset->get_custom_features().is_empty()) {
 		Vector<String> tmp_custom_list = p_preset->get_custom_features().split(",");
@@ -815,6 +821,8 @@ String EditorExportPlatform::_export_customize(const String &p_path, LocalVector
 			Error err = ResourceSaver::save(s, save_path);
 			ERR_FAIL_COND_V_MSG(err != OK, p_path, "Unable to save export scene file to: " + save_path);
 		}
+
+		node->queue_free();
 	} else {
 		Ref<Resource> res = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_IGNORE);
 		ERR_FAIL_COND_V(res.is_null(), p_path);
@@ -1116,29 +1124,97 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	}
 
 	//store everything in the export medium
-	int idx = 0;
 	int total = paths.size();
+	// idx is incremented at the beginning of the paths loop to easily allow
+	// for continue statements without accidentally skipping an increment.
+	int idx = total > 0 ? -1 : 0;
 
 	for (const String &E : paths) {
+		idx++;
 		String path = E;
 		String type = ResourceLoader::get_resource_type(path);
 
-		if (FileAccess::exists(path + ".import")) {
-			// Before doing this, try to see if it can be customized.
+		bool has_import_file = FileAccess::exists(path + ".import");
+		Ref<ConfigFile> config;
+		if (has_import_file) {
+			config.instantiate();
+			err = config->load(path + ".import");
+			if (err != OK) {
+				ERR_PRINT("Could not parse: '" + path + "', not exported.");
+				continue;
+			}
 
+			String importer_type = config->get_value("remap", "importer");
+
+			if (importer_type == "skip") {
+				// Skip file.
+				continue;
+			}
+		}
+
+		bool do_export = true;
+		for (int i = 0; i < export_plugins.size(); i++) {
+			if (GDVIRTUAL_IS_OVERRIDDEN_PTR(export_plugins[i], _export_file)) {
+				export_plugins.write[i]->_export_file_script(path, type, features_psa);
+			} else {
+				export_plugins.write[i]->_export_file(path, type, features);
+			}
+			if (p_so_func) {
+				for (int j = 0; j < export_plugins[i]->shared_objects.size(); j++) {
+					err = p_so_func(p_udata, export_plugins[i]->shared_objects[j]);
+					if (err != OK) {
+						return err;
+					}
+				}
+			}
+
+			for (int j = 0; j < export_plugins[i]->extra_files.size(); j++) {
+				err = p_func(p_udata, export_plugins[i]->extra_files[j].path, export_plugins[i]->extra_files[j].data, idx, total, enc_in_filters, enc_ex_filters, key);
+				if (err != OK) {
+					return err;
+				}
+				if (export_plugins[i]->extra_files[j].remap) {
+					do_export = false; // If remap, do not.
+					path_remaps.push_back(path);
+					path_remaps.push_back(export_plugins[i]->extra_files[j].path);
+				}
+			}
+
+			if (export_plugins[i]->skipped) {
+				do_export = false;
+			}
+			export_plugins.write[i]->_clear();
+
+			if (!do_export) {
+				break;
+			}
+		}
+		if (!do_export) {
+			continue;
+		}
+
+		if (has_import_file) {
+			String importer_type = config->get_value("remap", "importer");
+
+			if (importer_type == "keep") {
+				// Just keep file as-is.
+				Vector<uint8_t> array = FileAccess::get_file_as_bytes(path);
+				err = p_func(p_udata, path, array, idx, total, enc_in_filters, enc_ex_filters, key);
+
+				if (err != OK) {
+					return err;
+				}
+
+				continue;
+			}
+
+			// Before doing this, try to see if it can be customized.
 			String export_path = _export_customize(path, customize_resources_plugins, customize_scenes_plugins, export_cache, export_base_path, false);
 
 			if (export_path != path) {
 				// It was actually customized.
 				// Since the original file is likely not recognized, just use the import system.
 
-				Ref<ConfigFile> config;
-				config.instantiate();
-				err = config->load(path + ".import");
-				if (err != OK) {
-					ERR_PRINT("Could not parse: '" + path + "', not exported.");
-					continue;
-				}
 				config->set_value("remap", "type", ResourceLoader::get_resource_type(export_path));
 
 				// Erase all Paths.
@@ -1153,8 +1229,12 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				config->set_value("remap", "path", export_path);
 
 				// Erase useless sections.
-				config->erase_section("deps");
-				config->erase_section("params");
+				if (config->has_section("deps")) {
+					config->erase_section("deps");
+				}
+				if (config->has_section("params")) {
+					config->erase_section("params");
+				}
 
 				String import_text = config->encode_to_text();
 				CharString cs = import_text.utf8();
@@ -1174,28 +1254,6 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				}
 			} else {
 				// File is imported and not customized, replace by what it imports.
-				Ref<ConfigFile> config;
-				config.instantiate();
-				err = config->load(path + ".import");
-				if (err != OK) {
-					ERR_PRINT("Could not parse: '" + path + "', not exported.");
-					continue;
-				}
-
-				String importer_type = config->get_value("remap", "importer");
-
-				if (importer_type == "keep") {
-					// Just keep file as-is.
-					Vector<uint8_t> array = FileAccess::get_file_as_bytes(path);
-					err = p_func(p_udata, path, array, idx, total, enc_in_filters, enc_ex_filters, key);
-
-					if (err != OK) {
-						return err;
-					}
-
-					continue;
-				}
-
 				List<String> remaps;
 				config->get_section_keys("remap", &remaps);
 
@@ -1240,8 +1298,12 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				}
 
 				// Erase useless sections.
-				config->erase_section("deps");
-				config->erase_section("params");
+				if (config->has_section("deps")) {
+					config->erase_section("deps");
+				}
+				if (config->has_section("params")) {
+					config->erase_section("params");
+				}
 
 				String import_text = config->encode_to_text();
 				CharString cs = import_text.utf8();
@@ -1257,66 +1319,24 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			}
 
 		} else {
-			// Customize.
+			// Just store it as it comes.
 
-			bool do_export = true;
-			for (int i = 0; i < export_plugins.size(); i++) {
-				if (GDVIRTUAL_IS_OVERRIDDEN_PTR(export_plugins[i], _export_file)) {
-					export_plugins.write[i]->_export_file_script(path, type, features_psa);
-				} else {
-					export_plugins.write[i]->_export_file(path, type, features);
-				}
-				if (p_so_func) {
-					for (int j = 0; j < export_plugins[i]->shared_objects.size(); j++) {
-						err = p_so_func(p_udata, export_plugins[i]->shared_objects[j]);
-						if (err != OK) {
-							return err;
-						}
-					}
-				}
+			// Customization only happens if plugins did not take care of it before.
+			bool force_binary = convert_text_to_binary && (path.get_extension().to_lower() == "tres" || path.get_extension().to_lower() == "tscn");
+			String export_path = _export_customize(path, customize_resources_plugins, customize_scenes_plugins, export_cache, export_base_path, force_binary);
 
-				for (int j = 0; j < export_plugins[i]->extra_files.size(); j++) {
-					err = p_func(p_udata, export_plugins[i]->extra_files[j].path, export_plugins[i]->extra_files[j].data, idx, total, enc_in_filters, enc_ex_filters, key);
-					if (err != OK) {
-						return err;
-					}
-					if (export_plugins[i]->extra_files[j].remap) {
-						do_export = false; //if remap, do not
-						path_remaps.push_back(path);
-						path_remaps.push_back(export_plugins[i]->extra_files[j].path);
-					}
-				}
-
-				if (export_plugins[i]->skipped) {
-					do_export = false;
-				}
-				export_plugins.write[i]->_clear();
-
-				if (!do_export) {
-					break; //apologies, not exporting
-				}
+			if (export_path != path) {
+				// Add a remap entry.
+				path_remaps.push_back(path);
+				path_remaps.push_back(export_path);
 			}
-			//just store it as it comes
-			if (do_export) {
-				// Customization only happens if plugins did not take care of it before
-				bool force_binary = convert_text_to_binary && (path.get_extension().to_lower() == "tres" || path.get_extension().to_lower() == "tscn");
-				String export_path = _export_customize(path, customize_resources_plugins, customize_scenes_plugins, export_cache, export_base_path, force_binary);
 
-				if (export_path != path) {
-					// Add a remap entry
-					path_remaps.push_back(path);
-					path_remaps.push_back(export_path);
-				}
-
-				Vector<uint8_t> array = FileAccess::get_file_as_bytes(export_path);
-				err = p_func(p_udata, export_path, array, idx, total, enc_in_filters, enc_ex_filters, key);
-				if (err != OK) {
-					return err;
-				}
+			Vector<uint8_t> array = FileAccess::get_file_as_bytes(export_path);
+			err = p_func(p_udata, export_path, array, idx, total, enc_in_filters, enc_ex_filters, key);
+			if (err != OK) {
+				return err;
 			}
 		}
-
-		idx++;
 	}
 
 	if (convert_text_to_binary || !customize_resources_plugins.is_empty() || !customize_scenes_plugins.is_empty()) {
@@ -1611,6 +1631,9 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 	if (enc_pck && enc_directory) {
 		pack_flags |= PACK_DIR_ENCRYPTED;
 	}
+	if (p_embed) {
+		pack_flags |= PACK_REL_FILEBASE;
+	}
 	f->store_32(pack_flags); // flags
 
 	uint64_t file_base_ofs = f->get_position();
@@ -1701,8 +1724,12 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 	}
 
 	uint64_t file_base = f->get_position();
+	uint64_t file_base_store = file_base;
+	if (pack_flags & PACK_REL_FILEBASE) {
+		file_base_store -= pck_start_pos;
+	}
 	f->seek(file_base_ofs);
-	f->store_64(file_base); // update files base
+	f->store_64(file_base_store); // update files base
 	f->seek(file_base);
 
 	// Save the rest of the data.
@@ -1743,6 +1770,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 			*r_embedded_size = f->get_position() - embed_pos;
 		}
 	}
+	f->close();
 
 	DirAccess::remove_file_or_error(tmppath);
 

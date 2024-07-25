@@ -36,7 +36,6 @@
 #include "os_android.h"
 #include "thread_jandroid.h"
 
-#include <jni.h>
 #include <openxr/openxr.h>
 #include <openxr/openxr_platform.h>
 
@@ -48,6 +47,12 @@ OpenXRAndroidExtension *OpenXRAndroidExtension::get_singleton() {
 
 OpenXRAndroidExtension::OpenXRAndroidExtension() {
 	singleton = this;
+
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_NULL(env);
+
+	env->GetJavaVM(&vm);
+	activity_object = env->NewGlobalRef(static_cast<OS_Android *>(OS::get_singleton())->get_godot_java()->get_activity());
 }
 
 HashMap<String, bool *> OpenXRAndroidExtension::get_requested_extensions() {
@@ -65,11 +70,6 @@ void OpenXRAndroidExtension::on_before_instance_created() {
 		return;
 	}
 	loader_init_extension_available = true;
-
-	JNIEnv *env = get_jni_env();
-	JavaVM *vm;
-	env->GetJavaVM(&vm);
-	jobject activity_object = env->NewGlobalRef(static_cast<OS_Android *>(OS::get_singleton())->get_godot_java()->get_activity());
 
 	XrLoaderInitInfoAndroidKHR loader_init_info_android = {
 		.type = XR_TYPE_LOADER_INIT_INFO_ANDROID_KHR,
@@ -93,11 +93,6 @@ void *OpenXRAndroidExtension::set_instance_create_info_and_get_next_pointer(void
 		return nullptr;
 	}
 
-	JNIEnv *env = get_jni_env();
-	JavaVM *vm;
-	env->GetJavaVM(&vm);
-	jobject activity_object = env->NewGlobalRef(static_cast<OS_Android *>(OS::get_singleton())->get_godot_java()->get_activity());
-
 	instance_create_info = {
 		.type = XR_TYPE_INSTANCE_CREATE_INFO_ANDROID_KHR,
 		.next = p_next_pointer,
@@ -109,4 +104,9 @@ void *OpenXRAndroidExtension::set_instance_create_info_and_get_next_pointer(void
 
 OpenXRAndroidExtension::~OpenXRAndroidExtension() {
 	singleton = nullptr;
+
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_NULL(env);
+
+	env->DeleteGlobalRef(activity_object);
 }

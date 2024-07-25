@@ -58,6 +58,8 @@ jobs:
             tests: true
             # Skip 2GiB artifact speeding up action.
             artifact: false
+            # Test our oldest supported SCons/Python versions on one arbitrary editor build.
+            legacy-scons: true
 
           - name: Editor with ThreadSanitizer (target=editor, tests=yes, dev_build=yes, use_tsan=yes, use_llvm=yes, linker=lld)
             cache-name: linux-editor-thread-sanitizer
@@ -72,20 +74,24 @@ jobs:
           - name: Template w/ Mono (target=template_release)
             cache-name: linux-template-mono
             target: template_release
-            sconsflags: module_mono_enabled=yes
+            sconsflags: module_mono_enabled=yes tests=yes
+            bin: "./bin/godot.linuxbsd.template_release.x86_64.mono"
             build-mono: false
-            tests: false
+            tests: true
             artifact: true
 
           - name: Minimal template (target=template_release, everything disabled)
             cache-name: linux-template-minimal
             target: template_release
-            sconsflags: modules_enabled_by_default=no disable_3d=yes disable_advanced_gui=yes deprecated=no minizip=no
-            tests: false
+            sconsflags: modules_enabled_by_default=no disable_3d=yes disable_advanced_gui=yes deprecated=no minizip=no tests=yes
+            bin: "./bin/godot.linuxbsd.template_release.x86_64"
+            tests: true
             artifact: true
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       # Need newer mesa for lavapipe to work properly.
       - name: Linux dependencies for tests
@@ -107,20 +113,23 @@ jobs:
           sudo rm -rf /usr/local/lib/android
           echo "Disk usage after:" && df -h
 
-      - name: Setup Godot build cache
-        uses: ./.github/actions/godot-cache
+      - name: Restore Godot build cache
+        uses: ./.github/actions/godot-cache-restore
         with:
           cache-name: ${{ matrix.cache-name }}
         continue-on-error: true
 
-      - name: Setup python and scons
+      - name: Setup Python and SCons
+        if: ${{ ! matrix.legacy-scons }}
         uses: ./.github/actions/godot-deps
 
-      - name: Set up .NET Sdk
-        uses: actions/setup-dotnet@v3
-        if: ${{ matrix.build-mono }}
+      - name: Setup Python and SCons (legacy versions)
+        if: ${{ matrix.legacy-scons }}
+        uses: ./.github/actions/godot-deps
         with:
-          dotnet-version: '6.0.x'
+          # Sync with Ensure*Version in SConstruct.
+          python-version: 3.6
+          scons-version: 3.1.2
 
       - name: Setup GCC problem matcher
         uses: ammaraskar/gcc-problem-matcher@master
@@ -132,6 +141,12 @@ jobs:
           platform: linuxbsd
           target: ${{ matrix.target }}
           tests: ${{ matrix.tests }}
+
+      - name: Save Godot build cache
+        uses: ./.github/actions/godot-cache-save
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
 
       - name: Generate C# glue
         if: ${{ matrix.build-mono }}
@@ -161,13 +176,17 @@ jobs:
         with:
           bin: ${{ matrix.bin }}
 
-      # Execute unit tests for the editor
       - name: Unit tests
         if: ${{ matrix.tests }}
         run: |
           ${{ matrix.bin }} --version
           ${{ matrix.bin }} --help
           ${{ matrix.bin }} --headless --test --force-colors
+
+      - name: .NET source generators tests
+        if: ${{ matrix.build-mono }}
+        run: |
+          dotnet test modules/mono/editor/Godot.NET.Sdk/Godot.SourceGenerators.Tests
 
       # Check class reference
       - name: Check for class reference updates

@@ -149,6 +149,7 @@ void TType::buildMangledName(TString& mangledName) const
             mangledName += '-';
             (*structure)[i].type->buildMangledName(mangledName);
         }
+        break;
     default:
         break;
     }

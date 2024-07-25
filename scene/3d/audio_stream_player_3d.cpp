@@ -32,9 +32,9 @@
 #include "audio_stream_player_3d.compat.inc"
 
 #include "core/config/project_settings.h"
-#include "scene/3d/area_3d.h"
 #include "scene/3d/audio_listener_3d.h"
 #include "scene/3d/camera_3d.h"
+#include "scene/3d/physics/area_3d.h"
 #include "scene/3d/velocity_tracker_3d.h"
 #include "scene/audio/audio_stream_player_internal.h"
 #include "scene/main/viewport.h"
@@ -123,20 +123,20 @@ void AudioStreamPlayer3D::_calc_output_vol(const Vector3 &source_dir, real_t tig
 
 	switch (AudioServer::get_singleton()->get_speaker_mode()) {
 		case AudioServer::SPEAKER_SURROUND_71:
-			output.write[3].l = volumes[5]; // side-left
-			output.write[3].r = volumes[6]; // side-right
+			output.write[3].left = volumes[5]; // side-left
+			output.write[3].right = volumes[6]; // side-right
 			[[fallthrough]];
 		case AudioServer::SPEAKER_SURROUND_51:
-			output.write[2].l = volumes[3]; // rear-left
-			output.write[2].r = volumes[4]; // rear-right
+			output.write[2].left = volumes[3]; // rear-left
+			output.write[2].right = volumes[4]; // rear-right
 			[[fallthrough]];
 		case AudioServer::SPEAKER_SURROUND_31:
-			output.write[1].r = 1.0; // LFE - always full power
-			output.write[1].l = volumes[2]; // center
+			output.write[1].right = 1.0; // LFE - always full power
+			output.write[1].left = volumes[2]; // center
 			[[fallthrough]];
 		case AudioServer::SPEAKER_MODE_STEREO:
-			output.write[0].r = volumes[1]; // front-right
-			output.write[0].l = volumes[0]; // front-left
+			output.write[0].right = volumes[1]; // front-right
+			output.write[0].left = volumes[0]; // front-left
 			break;
 	}
 }
@@ -168,25 +168,25 @@ void AudioStreamPlayer3D::_calc_reverb_vol(Area3D *area, Vector3 listener_area_p
 
 			// Stereo pair.
 			float c = rev_pos.x * 0.5 + 0.5;
-			reverb_vol.write[0].l = 1.0 - c;
-			reverb_vol.write[0].r = c;
+			reverb_vol.write[0].left = 1.0 - c;
+			reverb_vol.write[0].right = c;
 
 			if (channel_count >= 3) {
 				// Center pair + Side pair
 				float xl = Vector3(-1, 0, -1).normalized().dot(rev_pos) * 0.5 + 0.5;
 				float xr = Vector3(1, 0, -1).normalized().dot(rev_pos) * 0.5 + 0.5;
 
-				reverb_vol.write[1].l = xl;
-				reverb_vol.write[1].r = xr;
-				reverb_vol.write[2].l = 1.0 - xr;
-				reverb_vol.write[2].r = 1.0 - xl;
+				reverb_vol.write[1].left = xl;
+				reverb_vol.write[1].right = xr;
+				reverb_vol.write[2].left = 1.0 - xr;
+				reverb_vol.write[2].right = 1.0 - xl;
 			}
 
 			if (channel_count >= 4) {
 				// Rear pair
 				// FIXME: Not sure what math should be done here
-				reverb_vol.write[3].l = 1.0 - c;
-				reverb_vol.write[3].r = c;
+				reverb_vol.write[3].left = 1.0 - c;
+				reverb_vol.write[3].right = c;
 			}
 
 			for (int i = 0; i < channel_count; i++) {
@@ -482,6 +482,12 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 		}
 		for (Ref<AudioStreamPlayback> &playback : internal->stream_playbacks) {
 			AudioServer::get_singleton()->set_playback_pitch_scale(playback, actual_pitch_scale);
+			if (playback->get_is_sample()) {
+				Ref<AudioSamplePlayback> sample_playback = playback->get_sample_playback();
+				if (sample_playback.is_valid()) {
+					AudioServer::get_singleton()->update_sample_playback_pitch_scale(sample_playback, actual_pitch_scale);
+				}
+			}
 		}
 	}
 	return output_volume_vector;
@@ -496,6 +502,7 @@ Ref<AudioStream> AudioStreamPlayer3D::get_stream() const {
 }
 
 void AudioStreamPlayer3D::set_volume_db(float p_volume) {
+	ERR_FAIL_COND_MSG(Math::is_nan(p_volume), "Volume can't be set to NaN.");
 	internal->volume_db = p_volume;
 }
 
@@ -535,6 +542,15 @@ void AudioStreamPlayer3D::play(float p_from_pos) {
 	}
 	setplayback = stream_playback;
 	setplay.set(p_from_pos);
+
+	// Sample handling.
+	if (stream_playback->get_is_sample()) {
+		Ref<AudioSamplePlayback> sample_playback = stream_playback->get_sample_playback();
+		sample_playback->offset = p_from_pos;
+		sample_playback->bus = _get_actual_bus();
+
+		AudioServer::get_singleton()->start_sample_playback(sample_playback);
+	}
 }
 
 void AudioStreamPlayer3D::seek(float p_seconds) {
@@ -714,6 +730,14 @@ float AudioStreamPlayer3D::get_panning_strength() const {
 	return panning_strength;
 }
 
+AudioServer::PlaybackType AudioStreamPlayer3D::get_playback_type() const {
+	return internal->get_playback_type();
+}
+
+void AudioStreamPlayer3D::set_playback_type(AudioServer::PlaybackType p_playback_type) {
+	internal->set_playback_type(p_playback_type);
+}
+
 bool AudioStreamPlayer3D::_set(const StringName &p_name, const Variant &p_value) {
 	return internal->set(p_name, p_value);
 }
@@ -797,6 +821,9 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_stream_playback"), &AudioStreamPlayer3D::has_stream_playback);
 	ClassDB::bind_method(D_METHOD("get_stream_playback"), &AudioStreamPlayer3D::get_stream_playback);
 
+	ClassDB::bind_method(D_METHOD("set_playback_type", "playback_type"), &AudioStreamPlayer3D::set_playback_type);
+	ClassDB::bind_method(D_METHOD("get_playback_type"), &AudioStreamPlayer3D::get_playback_type);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "attenuation_model", PROPERTY_HINT_ENUM, "Inverse,Inverse Square,Logarithmic,Disabled"), "set_attenuation_model", "get_attenuation_model");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,80,suffix:dB"), "set_volume_db", "get_volume_db");
@@ -811,6 +838,7 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "panning_strength", PROPERTY_HINT_RANGE, "0,3,0.01,or_greater"), "set_panning_strength", "get_panning_strength");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "area_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_area_mask", "get_area_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_type", PROPERTY_HINT_ENUM, "Default,Stream,Sample"), "set_playback_type", "get_playback_type");
 	ADD_GROUP("Emission Angle", "emission_angle");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emission_angle_enabled"), "set_emission_angle_enabled", "is_emission_angle_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_angle_degrees", PROPERTY_HINT_RANGE, "0.1,90,0.1,degrees"), "set_emission_angle", "get_emission_angle");

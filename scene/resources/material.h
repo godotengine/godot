@@ -62,7 +62,8 @@ protected:
 
 	void _validate_property(PropertyInfo &p_property) const;
 
-	void _mark_initialized(const Callable &p_queue_shader_change_callable);
+	void _mark_ready();
+	void _mark_initialized(const Callable &p_add_to_dirty_list, const Callable &p_update_shader);
 	bool _is_initialized() { return init_state == INIT_STATE_READY; }
 
 	GDVIRTUAL0RC(RID, _get_shader_rid)
@@ -106,7 +107,9 @@ protected:
 
 	static void _bind_methods();
 
+#ifdef TOOLS_ENABLED
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
 
 	virtual bool _can_do_next_pass() const override;
 	virtual bool _can_use_render_priority() const override;
@@ -217,6 +220,7 @@ public:
 		BLEND_MODE_ADD,
 		BLEND_MODE_SUB,
 		BLEND_MODE_MUL,
+		BLEND_MODE_PREMULT_ALPHA,
 		BLEND_MODE_MAX
 	};
 
@@ -463,7 +467,6 @@ private:
 
 	void _update_shader();
 	_FORCE_INLINE_ void _queue_shader_change();
-	_FORCE_INLINE_ bool _is_shader_dirty() const;
 
 	bool orm;
 

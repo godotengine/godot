@@ -35,8 +35,6 @@
 #include "core/string/translation.h"
 #include "scene/theme/theme_db.h"
 
-PropertyListHelper ItemList::base_property_helper;
-
 void ItemList::_shape_text(int p_idx) {
 	Item &item = items.write[p_idx];
 
@@ -640,6 +638,16 @@ Size2 ItemList::Item::get_icon_size() const {
 	return size_result;
 }
 
+void ItemList::set_fixed_tag_icon_size(const Size2i &p_size) {
+	if (fixed_tag_icon_size == p_size) {
+		return;
+	}
+
+	fixed_tag_icon_size = p_size;
+	queue_redraw();
+	shape_changed = true;
+}
+
 void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
@@ -725,7 +733,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 					select(i, select_mode == SELECT_SINGLE || !mb->is_command_or_control_pressed());
 
 					if (select_mode == SELECT_SINGLE) {
-						emit_signal(SNAME("item_selected"), i);
+						emit_signal(SceneStringName(item_selected), i);
 					} else {
 						emit_signal(SNAME("multi_selected"), i, true);
 					}
@@ -767,7 +775,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 							set_current(i);
 							ensure_current_is_visible();
 							if (select_mode == SELECT_SINGLE) {
-								emit_signal(SNAME("item_selected"), current);
+								emit_signal(SceneStringName(item_selected), current);
 							}
 
 							break;
@@ -790,7 +798,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				set_current(next);
 				ensure_current_is_visible();
 				if (select_mode == SELECT_SINGLE) {
-					emit_signal(SNAME("item_selected"), current);
+					emit_signal(SceneStringName(item_selected), current);
 				}
 				accept_event();
 			}
@@ -805,7 +813,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 							set_current(i);
 							ensure_current_is_visible();
 							if (select_mode == SELECT_SINGLE) {
-								emit_signal(SNAME("item_selected"), current);
+								emit_signal(SceneStringName(item_selected), current);
 							}
 							break;
 						}
@@ -827,7 +835,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				set_current(next);
 				ensure_current_is_visible();
 				if (select_mode == SELECT_SINGLE) {
-					emit_signal(SNAME("item_selected"), current);
+					emit_signal(SceneStringName(item_selected), current);
 				}
 				accept_event();
 			}
@@ -840,7 +848,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 					set_current(index);
 					ensure_current_is_visible();
 					if (select_mode == SELECT_SINGLE) {
-						emit_signal(SNAME("item_selected"), current);
+						emit_signal(SceneStringName(item_selected), current);
 					}
 					accept_event();
 					break;
@@ -855,7 +863,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 					set_current(index);
 					ensure_current_is_visible();
 					if (select_mode == SELECT_SINGLE) {
-						emit_signal(SNAME("item_selected"), current);
+						emit_signal(SceneStringName(item_selected), current);
 					}
 					accept_event();
 
@@ -878,7 +886,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				set_current(next);
 				ensure_current_is_visible();
 				if (select_mode == SELECT_SINGLE) {
-					emit_signal(SNAME("item_selected"), current);
+					emit_signal(SceneStringName(item_selected), current);
 				}
 				accept_event();
 			}
@@ -898,7 +906,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				set_current(next);
 				ensure_current_is_visible();
 				if (select_mode == SELECT_SINGLE) {
-					emit_signal(SNAME("item_selected"), current);
+					emit_signal(SceneStringName(item_selected), current);
 				}
 				accept_event();
 			}
@@ -954,7 +962,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 						set_current(i);
 						ensure_current_is_visible();
 						if (select_mode == SELECT_SINGLE) {
-							emit_signal(SNAME("item_selected"), current);
+							emit_signal(SceneStringName(item_selected), current);
 						}
 						break;
 					}
@@ -1152,10 +1160,6 @@ void ItemList::_notification(int p_what) {
 				if (should_draw_selected_bg || should_draw_hovered_bg || should_draw_custom_bg) {
 					Rect2 r = rcache;
 					r.position += base_ofs;
-					r.position.y -= theme_cache.v_separation / 2;
-					r.size.y += theme_cache.v_separation;
-					r.position.x -= theme_cache.h_separation / 2;
-					r.size.x += theme_cache.h_separation;
 
 					if (rtl) {
 						r.position.x = size.width - r.position.x - r.size.x;
@@ -1186,6 +1190,12 @@ void ItemList::_notification(int p_what) {
 					Vector2 icon_ofs;
 
 					Point2 pos = items[i].rect_cache.position + icon_ofs + base_ofs;
+
+					if (icon_mode == ICON_MODE_TOP) {
+						pos.y += theme_cache.v_separation / 2;
+					} else {
+						pos.x += theme_cache.h_separation / 2;
+					}
 
 					if (icon_mode == ICON_MODE_TOP) {
 						pos.x += Math::floor((items[i].rect_cache.size.width - icon_size.width) / 2);
@@ -1225,11 +1235,21 @@ void ItemList::_notification(int p_what) {
 				}
 
 				if (items[i].tag_icon.is_valid()) {
-					Point2 draw_pos = items[i].rect_cache.position;
-					if (rtl) {
-						draw_pos.x = size.width - draw_pos.x - items[i].tag_icon->get_width();
+					Size2 tag_icon_size;
+					if (fixed_tag_icon_size.x > 0 && fixed_tag_icon_size.y > 0) {
+						tag_icon_size = fixed_tag_icon_size;
+					} else {
+						tag_icon_size = items[i].tag_icon->get_size();
 					}
-					draw_texture(items[i].tag_icon, draw_pos + base_ofs);
+
+					Point2 draw_pos = items[i].rect_cache.position;
+					draw_pos.x += theme_cache.h_separation / 2;
+					draw_pos.y += theme_cache.v_separation / 2;
+					if (rtl) {
+						draw_pos.x = size.width - draw_pos.x - tag_icon_size.x;
+					}
+
+					draw_texture_rect(items[i].tag_icon, Rect2(draw_pos + base_ofs, tag_icon_size));
 				}
 
 				if (!items[i].text.is_empty()) {
@@ -1263,11 +1283,17 @@ void ItemList::_notification(int p_what) {
 						text_ofs += base_ofs;
 						text_ofs += items[i].rect_cache.position;
 
+						text_ofs.x += theme_cache.h_separation / 2;
+						text_ofs.y += theme_cache.v_separation / 2;
+
 						if (rtl) {
 							text_ofs.x = size.width - text_ofs.x - max_len;
 						}
 
 						items.write[i].text_buf->set_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+
+						float text_w = items[i].rect_cache.size.width - theme_cache.h_separation;
+						items.write[i].text_buf->set_width(text_w);
 
 						if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
 							items[i].text_buf->draw_outline(get_canvas_item(), text_ofs, theme_cache.font_outline_size, theme_cache.font_outline_color);
@@ -1281,14 +1307,17 @@ void ItemList::_notification(int p_what) {
 
 						if (icon_mode == ICON_MODE_TOP) {
 							text_ofs.x += (items[i].rect_cache.size.width - size2.x) / 2;
+							text_ofs.x += theme_cache.h_separation / 2;
+							text_ofs.y += theme_cache.v_separation / 2;
 						} else {
 							text_ofs.y += (items[i].rect_cache.size.height - size2.y) / 2;
+							text_ofs.x += theme_cache.h_separation / 2;
 						}
 
 						text_ofs += base_ofs;
 						text_ofs += items[i].rect_cache.position;
 
-						float text_w = width - text_ofs.x;
+						float text_w = width - text_ofs.x - theme_cache.h_separation;
 						items.write[i].text_buf->set_width(text_w);
 
 						if (rtl) {
@@ -1311,10 +1340,6 @@ void ItemList::_notification(int p_what) {
 				if (select_mode == SELECT_MULTI && i == current) {
 					Rect2 r = rcache;
 					r.position += base_ofs;
-					r.position.y -= theme_cache.v_separation / 2;
-					r.size.y += theme_cache.v_separation;
-					r.position.x -= theme_cache.h_separation / 2;
-					r.size.x += theme_cache.h_separation;
 
 					if (rtl) {
 						r.position.x = size.width - r.position.x - r.size.x;
@@ -1384,9 +1409,10 @@ void ItemList::force_update_list_size() {
 		}
 		max_column_width = MAX(max_column_width, minsize.x);
 
-		// elements need to adapt to the selected size
+		// Elements need to adapt to the selected size.
 		minsize.y += theme_cache.v_separation;
 		minsize.x += theme_cache.h_separation;
+
 		items.write[i].rect_cache.size = minsize;
 		items.write[i].min_rect_cache.size = minsize;
 	}
@@ -1417,18 +1443,18 @@ void ItemList::force_update_list_size() {
 			}
 
 			if (same_column_width) {
-				items.write[i].rect_cache.size.x = max_column_width;
+				items.write[i].rect_cache.size.x = max_column_width + theme_cache.h_separation;
 			}
 			items.write[i].rect_cache.position = ofs;
 
 			max_h = MAX(max_h, items[i].rect_cache.size.y);
-			ofs.x += items[i].rect_cache.size.x + theme_cache.h_separation;
+			ofs.x += items[i].rect_cache.size.x;
 
 			items.write[i].column = col;
 			col++;
 			if (col == current_columns) {
 				if (i < items.size() - 1) {
-					separators.push_back(ofs.y + max_h + theme_cache.v_separation / 2);
+					separators.push_back(ofs.y + max_h);
 				}
 
 				for (int j = i; j >= 0 && col > 0; j--, col--) {
@@ -1436,7 +1462,7 @@ void ItemList::force_update_list_size() {
 				}
 
 				ofs.x = 0;
-				ofs.y += max_h + theme_cache.v_separation;
+				ofs.y += max_h;
 				col = 0;
 				max_h = 0;
 			}
@@ -1497,6 +1523,7 @@ int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
 
 	for (int i = 0; i < items.size(); i++) {
 		Rect2 rc = items[i].rect_cache;
+
 		if (i % current_columns == current_columns - 1) {
 			rc.size.width = get_size().width - rc.position.x; // Make sure you can still select the last item when clicking past the column.
 		}
@@ -1705,22 +1732,6 @@ bool ItemList::_set(const StringName &p_name, const Variant &p_value) {
 	return false;
 }
 
-bool ItemList::_get(const StringName &p_name, Variant &r_ret) const {
-	return property_helper.property_get_value(p_name, r_ret);
-}
-
-void ItemList::_get_property_list(List<PropertyInfo> *p_list) const {
-	property_helper.get_property_list(p_list, items.size());
-}
-
-bool ItemList::_property_can_revert(const StringName &p_name) const {
-	return property_helper.property_can_revert(p_name);
-}
-
-bool ItemList::_property_get_revert(const StringName &p_name, Variant &r_property) const {
-	return property_helper.property_get_revert(p_name, r_property);
-}
-
 void ItemList::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_item", "text", "icon", "selectable"), &ItemList::add_item, DEFVAL(Variant()), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("add_icon_item", "icon", "selectable"), &ItemList::add_icon_item, DEFVAL(true));
@@ -1889,18 +1900,20 @@ void ItemList::_bind_methods() {
 	Item defaults(true);
 
 	base_property_helper.set_prefix("item_");
-	base_property_helper.register_property(PropertyInfo(Variant::STRING, "text"), defaults.text, "set_item_text", "get_item_text");
-	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), defaults.icon, "set_item_icon", "get_item_icon");
-	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "selectable"), defaults.selectable, "set_item_selectable", "is_item_selectable");
-	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled, "set_item_disabled", "is_item_disabled");
+	base_property_helper.set_array_length_getter(&ItemList::get_item_count);
+	base_property_helper.register_property(PropertyInfo(Variant::STRING, "text"), defaults.text, &ItemList::set_item_text, &ItemList::get_item_text);
+	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), defaults.icon, &ItemList::set_item_icon, &ItemList::get_item_icon);
+	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "selectable"), defaults.selectable, &ItemList::set_item_selectable, &ItemList::is_item_selectable);
+	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled, &ItemList::set_item_disabled, &ItemList::is_item_disabled);
+	PropertyListHelper::register_base_helper(&base_property_helper);
 }
 
 ItemList::ItemList() {
 	scroll_bar = memnew(VScrollBar);
 	add_child(scroll_bar, false, INTERNAL_MODE_FRONT);
-	scroll_bar->connect("value_changed", callable_mp(this, &ItemList::_scroll_changed));
+	scroll_bar->connect(SceneStringName(value_changed), callable_mp(this, &ItemList::_scroll_changed));
 
-	connect("mouse_exited", callable_mp(this, &ItemList::_mouse_exited));
+	connect(SceneStringName(mouse_exited), callable_mp(this, &ItemList::_mouse_exited));
 
 	set_focus_mode(FOCUS_ALL);
 	set_clip_contents(true);

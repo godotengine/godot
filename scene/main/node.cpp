@@ -31,7 +31,6 @@
 #include "node.h"
 
 #include "core/config/project_settings.h"
-#include "core/core_string_names.h"
 #include "core/io/resource_loader.h"
 #include "core/object/message_queue.h"
 #include "core/object/script_language.h"
@@ -42,7 +41,6 @@
 #include "scene/main/multiplayer_api.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
-#include "scene/scene_string_names.h"
 #include "viewport.h"
 
 #include <stdint.h>
@@ -99,6 +97,32 @@ void Node::_notification(int p_notification) {
 				}
 			}
 
+			if (data.physics_interpolation_mode == PHYSICS_INTERPOLATION_MODE_INHERIT) {
+				bool interpolate = true; // Root node default is for interpolation to be on.
+				if (data.parent) {
+					interpolate = data.parent->is_physics_interpolated();
+				}
+				_propagate_physics_interpolated(interpolate);
+			}
+
+			// Update auto translate mode.
+			if (data.auto_translate_mode == AUTO_TRANSLATE_MODE_INHERIT && !data.parent) {
+				ERR_PRINT("The root node can't be set to Inherit auto translate mode, reverting to Always instead.");
+				data.auto_translate_mode = AUTO_TRANSLATE_MODE_ALWAYS;
+			}
+			data.is_auto_translate_dirty = true;
+
+#ifdef TOOLS_ENABLED
+			// Don't translate UI elements when they're being edited.
+			if (is_part_of_edited_scene()) {
+				set_message_translation(false);
+			}
+#endif
+
+			if (data.auto_translate_mode != AUTO_TRANSLATE_MODE_DISABLED) {
+				notification(NOTIFICATION_TRANSLATION_CHANGED);
+			}
+
 			if (data.input) {
 				add_to_group("_vp_input" + itos(get_viewport()->get_instance_id()));
 			}
@@ -136,11 +160,11 @@ void Node::_notification(int p_notification) {
 				remove_from_group("_vp_unhandled_key_input" + itos(get_viewport()->get_instance_id()));
 			}
 
-			// Remove from processing first
+			// Remove from processing first.
 			if (_is_any_processing()) {
 				_remove_from_process_thread_group();
 			}
-			// Remove the process group
+			// Remove the process group.
 			if (data.process_thread_group_owner == this) {
 				_remove_process_group();
 			}
@@ -150,6 +174,12 @@ void Node::_notification(int p_notification) {
 			if (data.path_cache) {
 				memdelete(data.path_cache);
 				data.path_cache = nullptr;
+			}
+		} break;
+
+		case NOTIFICATION_PAUSED: {
+			if (is_physics_interpolated_and_enabled() && is_inside_tree()) {
+				reset_physics_interpolation();
 			}
 		} break;
 
@@ -217,6 +247,12 @@ void Node::_notification(int p_notification) {
 				memdelete(child);
 			}
 		} break;
+
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (data.inside_tree) {
+				data.is_auto_translate_dirty = true;
+			}
+		} break;
 	}
 }
 
@@ -234,7 +270,7 @@ void Node::_propagate_ready() {
 	if (data.ready_first) {
 		data.ready_first = false;
 		notification(NOTIFICATION_READY);
-		emit_signal(SceneStringNames::get_singleton()->ready);
+		emit_signal(SceneStringName(ready));
 	}
 }
 
@@ -263,7 +299,7 @@ void Node::_propagate_enter_tree() {
 
 	GDVIRTUAL_CALL(_enter_tree);
 
-	emit_signal(SceneStringNames::get_singleton()->tree_entered);
+	emit_signal(SceneStringName(tree_entered));
 
 	data.tree->node_added(this);
 
@@ -318,7 +354,7 @@ void Node::_propagate_after_exit_tree() {
 
 	data.blocked--;
 
-	emit_signal(SceneStringNames::get_singleton()->tree_exited);
+	emit_signal(SceneStringName(tree_exited));
 }
 
 void Node::_propagate_exit_tree() {
@@ -340,7 +376,7 @@ void Node::_propagate_exit_tree() {
 
 	GDVIRTUAL_CALL(_exit_tree);
 
-	emit_signal(SceneStringNames::get_singleton()->tree_exiting);
+	emit_signal(SceneStringName(tree_exiting));
 
 	notification(NOTIFICATION_EXIT_TREE, true);
 	if (data.tree) {
@@ -369,6 +405,36 @@ void Node::_propagate_exit_tree() {
 	data.ready_notified = false;
 	data.tree = nullptr;
 	data.depth = -1;
+}
+
+void Node::_propagate_physics_interpolated(bool p_interpolated) {
+	switch (data.physics_interpolation_mode) {
+		case PHYSICS_INTERPOLATION_MODE_INHERIT:
+			// Keep the parent p_interpolated.
+			break;
+		case PHYSICS_INTERPOLATION_MODE_OFF: {
+			p_interpolated = false;
+		} break;
+		case PHYSICS_INTERPOLATION_MODE_ON: {
+			p_interpolated = true;
+		} break;
+	}
+
+	// No change? No need to propagate further.
+	if (data.physics_interpolated == p_interpolated) {
+		return;
+	}
+
+	data.physics_interpolated = p_interpolated;
+
+	// Allow a call to the RenderingServer etc. in derived classes.
+	_physics_interpolated_changed();
+
+	data.blocked++;
+	for (KeyValue<StringName, Node *> &K : data.children) {
+		K.value->_propagate_physics_interpolated(p_interpolated);
+	}
+	data.blocked--;
 }
 
 void Node::move_child(Node *p_child, int p_index) {
@@ -482,6 +548,8 @@ void Node::move_child_notify(Node *p_child) {
 
 void Node::owner_changed_notify() {
 }
+
+void Node::_physics_interpolated_changed() {}
 
 void Node::set_physics_process(bool p_process) {
 	ERR_THREAD_GUARD
@@ -795,6 +863,42 @@ bool Node::_can_process(bool p_paused) const {
 	} else {
 		return process_mode == PROCESS_MODE_PAUSABLE;
 	}
+}
+
+void Node::set_physics_interpolation_mode(PhysicsInterpolationMode p_mode) {
+	ERR_THREAD_GUARD
+	if (data.physics_interpolation_mode == p_mode) {
+		return;
+	}
+
+	data.physics_interpolation_mode = p_mode;
+
+	bool interpolate = true; // Default for root node.
+
+	switch (p_mode) {
+		case PHYSICS_INTERPOLATION_MODE_INHERIT: {
+			if (is_inside_tree() && data.parent) {
+				interpolate = data.parent->is_physics_interpolated();
+			}
+		} break;
+		case PHYSICS_INTERPOLATION_MODE_OFF: {
+			interpolate = false;
+		} break;
+		case PHYSICS_INTERPOLATION_MODE_ON: {
+			interpolate = true;
+		} break;
+	}
+
+	// If swapping from interpolated to non-interpolated, use this as an extra means to cause a reset.
+	if (is_physics_interpolated() && !interpolate) {
+		reset_physics_interpolation();
+	}
+
+	_propagate_physics_interpolated(interpolate);
+}
+
+void Node::reset_physics_interpolation() {
+	propagate_notification(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
 }
 
 bool Node::_is_enabled() const {
@@ -1147,6 +1251,49 @@ void Node::set_process_unhandled_key_input(bool p_enable) {
 
 bool Node::is_processing_unhandled_key_input() const {
 	return data.unhandled_key_input;
+}
+
+void Node::set_auto_translate_mode(AutoTranslateMode p_mode) {
+	ERR_THREAD_GUARD
+	if (data.auto_translate_mode == p_mode) {
+		return;
+	}
+
+	if (p_mode == AUTO_TRANSLATE_MODE_INHERIT && data.inside_tree && !data.parent) {
+		ERR_FAIL_MSG("The root node can't be set to Inherit auto translate mode.");
+	}
+
+	data.auto_translate_mode = p_mode;
+	data.is_auto_translating = p_mode != AUTO_TRANSLATE_MODE_DISABLED;
+	data.is_auto_translate_dirty = true;
+
+	propagate_notification(NOTIFICATION_TRANSLATION_CHANGED);
+}
+
+Node::AutoTranslateMode Node::get_auto_translate_mode() const {
+	return data.auto_translate_mode;
+}
+
+bool Node::can_auto_translate() const {
+	ERR_READ_THREAD_GUARD_V(false);
+	if (!data.is_auto_translate_dirty || data.auto_translate_mode != AUTO_TRANSLATE_MODE_INHERIT) {
+		return data.is_auto_translating;
+	}
+
+	data.is_auto_translate_dirty = false;
+
+	Node *parent = data.parent;
+	while (parent) {
+		if (parent->data.auto_translate_mode == AUTO_TRANSLATE_MODE_INHERIT) {
+			parent = parent->data.parent;
+			continue;
+		}
+
+		data.is_auto_translating = parent->data.auto_translate_mode == AUTO_TRANSLATE_MODE_ALWAYS;
+		break;
+	}
+
+	return data.is_auto_translating;
 }
 
 StringName Node::get_name() const {
@@ -1595,12 +1742,10 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 		StringName name = p_path.get_name(i);
 		Node *next = nullptr;
 
-		if (name == SceneStringNames::get_singleton()->dot) { // .
-
+		if (name == SNAME(".")) {
 			next = current;
 
-		} else if (name == SceneStringNames::get_singleton()->doubledot) { // ..
-
+		} else if (name == SNAME("..")) {
 			if (current == nullptr || !current->data.parent) {
 				return nullptr;
 			}
@@ -1612,23 +1757,14 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 			}
 
 		} else if (name.is_node_unique_name()) {
-			if (current->data.owned_unique_nodes.size()) {
-				// Has unique nodes in ownership
-				Node **unique = current->data.owned_unique_nodes.getptr(name);
-				if (!unique) {
-					return nullptr;
-				}
-				next = *unique;
-			} else if (current->data.owner) {
-				Node **unique = current->data.owner->data.owned_unique_nodes.getptr(name);
-				if (!unique) {
-					return nullptr;
-				}
-				next = *unique;
-			} else {
+			Node **unique = current->data.owned_unique_nodes.getptr(name);
+			if (!unique && current->data.owner) {
+				unique = current->data.owner->data.owned_unique_nodes.getptr(name);
+			}
+			if (!unique) {
 				return nullptr;
 			}
-
+			next = *unique;
 		} else {
 			next = nullptr;
 			const Node *const *node = current->data.children.getptr(name);
@@ -1756,7 +1892,7 @@ void Node::reparent(Node *p_parent, bool p_keep_global_transform) {
 			Node *check = to_visit[to_visit.size() - 1];
 			to_visit.resize(to_visit.size() - 1);
 
-			for (int i = 0; i < check->get_child_count(); i++) {
+			for (int i = 0; i < check->get_child_count(false); i++) {
 				Node *child = check->get_child(i, false);
 				to_visit.push_back(child);
 				if (child->data.owner == owner_temp) {
@@ -2437,7 +2573,7 @@ StringName Node::get_property_store_alias(const StringName &p_property) const {
 
 bool Node::is_part_of_edited_scene() const {
 	return Engine::get_singleton()->is_editor_hint() && is_inside_tree() && get_tree()->get_edited_scene_root() &&
-			(get_tree()->get_edited_scene_root() == this || get_tree()->get_edited_scene_root()->is_ancestor_of(this));
+			get_tree()->get_edited_scene_root()->get_parent()->is_ancestor_of(this);
 }
 #endif
 
@@ -2453,6 +2589,7 @@ void Node::get_storable_properties(HashSet<StringName> &r_storable_properties) c
 }
 
 String Node::to_string() {
+	// Keep this method in sync with `Object::to_string`.
 	ERR_THREAD_GUARD_V(String());
 	if (get_script_instance()) {
 		bool valid;
@@ -2461,7 +2598,12 @@ String Node::to_string() {
 			return ret;
 		}
 	}
-
+	if (_get_extension() && _get_extension()->to_string) {
+		String ret;
+		GDExtensionBool is_valid;
+		_get_extension()->to_string(_get_extension_instance(), &is_valid, &ret);
+		return ret;
+	}
 	return (get_name() ? String(get_name()) + ":" : "") + Object::to_string();
 }
 
@@ -2532,8 +2674,6 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		node->set_scene_file_path(get_scene_file_path());
 		node->data.editable_instance = data.editable_instance;
 	}
-
-	StringName script_property_name = CoreStringNames::get_singleton()->_script;
 
 	List<const Node *> hidden_roots;
 	List<const Node *> node_tree;
@@ -2636,69 +2776,14 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 			parent->move_child(dup, pos);
 		}
 	}
-
-	for (List<const Node *>::Element *N = node_tree.front(); N; N = N->next()) {
-		Node *current_node = node->get_node(get_path_to(N->get()));
-		ERR_CONTINUE(!current_node);
-
-		if (p_flags & DUPLICATE_SCRIPTS) {
-			bool is_valid = false;
-			Variant scr = N->get()->get(script_property_name, &is_valid);
-			if (is_valid) {
-				current_node->set(script_property_name, scr);
-			}
-		}
-
-		List<PropertyInfo> plist;
-		N->get()->get_property_list(&plist);
-
-		for (const PropertyInfo &E : plist) {
-			if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
-				continue;
-			}
-			String name = E.name;
-			if (name == script_property_name) {
-				continue;
-			}
-
-			Variant value = N->get()->get(name).duplicate(true);
-
-			if (E.usage & PROPERTY_USAGE_ALWAYS_DUPLICATE) {
-				Resource *res = Object::cast_to<Resource>(value);
-				if (res) { // Duplicate only if it's a resource
-					current_node->set(name, res->duplicate());
-				}
-
-			} else {
-				// If property points to a node which is owned by a node we are duplicating, update its path.
-				if (value.get_type() == Variant::OBJECT) {
-					Node *property_node = Object::cast_to<Node>(value);
-					if (property_node && is_ancestor_of(property_node)) {
-						value = current_node->get_node_or_null(get_path_to(property_node));
-					}
-				} else if (value.get_type() == Variant::ARRAY) {
-					Array arr = value;
-					if (arr.get_typed_builtin() == Variant::OBJECT) {
-						for (int i = 0; i < arr.size(); i++) {
-							Node *property_node = Object::cast_to<Node>(arr[i]);
-							if (property_node && is_ancestor_of(property_node)) {
-								arr[i] = current_node->get_node_or_null(get_path_to(property_node));
-							}
-						}
-						value = arr;
-					}
-				}
-				current_node->set(name, value);
-			}
-		}
-	}
-
 	return node;
 }
 
 Node *Node::duplicate(int p_flags) const {
 	ERR_THREAD_GUARD_V(nullptr);
 	Node *dupe = _duplicate(p_flags);
+
+	_duplicate_properties(this, this, dupe, p_flags);
 
 	if (dupe && (p_flags & DUPLICATE_SIGNALS)) {
 		_duplicate_signals(this, dupe);
@@ -2713,7 +2798,10 @@ Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap) con
 }
 
 Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap, const HashMap<Ref<Resource>, Ref<Resource>> &p_resource_remap) const {
-	Node *dupe = _duplicate(DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS | DUPLICATE_USE_INSTANTIATION | DUPLICATE_FROM_EDITOR, &r_duplimap);
+	int flags = DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS | DUPLICATE_USE_INSTANTIATION | DUPLICATE_FROM_EDITOR;
+	Node *dupe = _duplicate(flags, &r_duplimap);
+
+	_duplicate_properties(this, this, dupe, flags);
 
 	// This is used by SceneTreeDock's paste functionality. When pasting to foreign scene, resources are duplicated.
 	if (!p_resource_remap.is_empty()) {
@@ -2776,6 +2864,69 @@ void Node::remap_nested_resources(Ref<Resource> p_resource, const HashMap<Ref<Re
 	}
 }
 #endif
+
+// Duplicate node's properties.
+// This has to be called after nodes have been duplicated since there might be properties
+// of type Node that can be updated properly only if duplicated node tree is complete.
+void Node::_duplicate_properties(const Node *p_root, const Node *p_original, Node *p_copy, int p_flags) const {
+	List<PropertyInfo> props;
+	p_original->get_property_list(&props);
+	const StringName &script_property_name = CoreStringName(script);
+	if (p_flags & DUPLICATE_SCRIPTS) {
+		bool is_valid = false;
+		Variant scr = p_original->get(script_property_name, &is_valid);
+		if (is_valid) {
+			p_copy->set(script_property_name, scr);
+		}
+	}
+	for (const PropertyInfo &E : props) {
+		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
+			continue;
+		}
+		const StringName name = E.name;
+
+		if (name == script_property_name) {
+			continue;
+		}
+
+		Variant value = p_original->get(name).duplicate(true);
+
+		if (E.usage & PROPERTY_USAGE_ALWAYS_DUPLICATE) {
+			Resource *res = Object::cast_to<Resource>(value);
+			if (res) { // Duplicate only if it's a resource
+				p_copy->set(name, res->duplicate());
+			}
+		} else {
+			if (value.get_type() == Variant::OBJECT) {
+				Node *property_node = Object::cast_to<Node>(value);
+				Variant out_value = value;
+				if (property_node && (p_root == property_node || p_root->is_ancestor_of(property_node))) {
+					out_value = p_copy->get_node_or_null(p_original->get_path_to(property_node));
+				}
+				p_copy->set(name, out_value);
+			} else if (value.get_type() == Variant::ARRAY) {
+				Array arr = value;
+				if (arr.get_typed_builtin() == Variant::OBJECT) {
+					for (int i = 0; i < arr.size(); i++) {
+						Node *property_node = Object::cast_to<Node>(arr[i]);
+						if (property_node && (p_root == property_node || p_root->is_ancestor_of(property_node))) {
+							arr[i] = p_copy->get_node_or_null(p_original->get_path_to(property_node));
+						}
+					}
+				}
+				p_copy->set(name, arr);
+			} else {
+				p_copy->set(name, value);
+			}
+		}
+	}
+
+	for (int i = 0; i < p_original->get_child_count(); i++) {
+		Node *copy_child = p_copy->get_child(i);
+		ERR_FAIL_NULL_MSG(copy_child, "Child node disappeared while duplicating.");
+		_duplicate_properties(p_root, p_original->get_child(i), copy_child, p_flags);
+	}
+}
 
 // Duplication of signals must happen after all the node descendants have been copied,
 // because re-targeting of connections from some descendant to another is not possible
@@ -2891,17 +3042,24 @@ void Node::replace_by(Node *p_node, bool p_keep_groups) {
 		remove_child(child);
 		if (!child->is_owned_by_parent()) {
 			// add the custom children to the p_node
+			Node *child_owner = child->get_owner() == this ? p_node : child->get_owner();
+			child->set_owner(nullptr);
 			p_node->add_child(child);
+			child->set_owner(child_owner);
 		}
 	}
 
 	p_node->set_owner(owner);
-	for (int i = 0; i < owned.size(); i++) {
-		owned[i]->set_owner(p_node);
+	for (Node *E : owned) {
+		if (E->data.owner != p_node) {
+			E->set_owner(p_node);
+		}
 	}
 
-	for (int i = 0; i < owned_by_owner.size(); i++) {
-		owned_by_owner[i]->set_owner(owner);
+	for (Node *E : owned_by_owner) {
+		if (E->data.owner != owner) {
+			E->set_owner(owner);
+		}
 	}
 
 	p_node->set_scene_file_path(get_scene_file_path());
@@ -2958,9 +3116,9 @@ Array Node::_get_node_and_resource(const NodePath &p_path) {
 
 Node *Node::get_node_and_resource(const NodePath &p_path, Ref<Resource> &r_res, Vector<StringName> &r_leftover_subpath, bool p_last_is_property) const {
 	ERR_THREAD_GUARD_V(nullptr);
-	Node *node = get_node(p_path);
 	r_res = Ref<Resource>();
 	r_leftover_subpath = Vector<StringName>();
+	Node *node = get_node_or_null(p_path);
 	if (!node) {
 		return nullptr;
 	}
@@ -3066,7 +3224,7 @@ void Node::print_orphan_nodes() {
 	ObjectDB::debug_objects(_print_orphan_nodes_routine);
 
 	for (const KeyValue<ObjectID, List<String>> &E : _print_orphan_nodes_map) {
-		print_line(itos(E.key) + " - Stray Node: " + E.value[0] + " (Type: " + E.value[1] + ")");
+		print_line(itos(E.key) + " - Stray Node: " + E.value.get(0) + " (Type: " + E.value.get(1) + ")");
 	}
 
 	// Flush it after use.
@@ -3100,6 +3258,7 @@ NodePath Node::get_import_path() const {
 #endif
 }
 
+#ifdef TOOLS_ENABLED
 static void _add_nodes_to_options(const Node *p_base, const Node *p_node, List<String> *r_options) {
 	if (p_node != p_base && !p_node->get_owner()) {
 		return;
@@ -3116,7 +3275,7 @@ static void _add_nodes_to_options(const Node *p_base, const Node *p_node, List<S
 }
 
 void Node::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-	String pf = p_function;
+	const String pf = p_function;
 	if (p_idx == 0 && (pf == "has_node" || pf == "get_node" || pf == "get_node_or_null")) {
 		_add_nodes_to_options(this, this, r_options);
 	} else if (p_idx == 0 && (pf == "add_to_group" || pf == "remove_from_group" || pf == "is_in_group")) {
@@ -3127,6 +3286,7 @@ void Node::get_argument_options(const StringName &p_function, int p_idx, List<St
 	}
 	Object::get_argument_options(p_function, p_idx, r_options);
 }
+#endif
 
 void Node::clear_internal_tree_resource_paths() {
 	clear_internal_resource_paths();
@@ -3135,91 +3295,16 @@ void Node::clear_internal_tree_resource_paths() {
 	}
 }
 
-Array Node::get_configuration_warnings() const {
-	ERR_THREAD_GUARD_V(Array());
-	Array warnings;
-	GDVIRTUAL_CALL(_get_configuration_warnings, warnings);
-	return warnings;
-}
+PackedStringArray Node::get_configuration_warnings() const {
+	ERR_THREAD_GUARD_V(PackedStringArray());
+	PackedStringArray ret;
 
-Dictionary Node::configuration_warning_to_dict(const Variant &p_warning) const {
-	switch (p_warning.get_type()) {
-		case Variant::Type::DICTIONARY:
-			return p_warning;
-		case Variant::Type::STRING: {
-			// Convert string to dictionary.
-			Dictionary warning;
-			warning["message"] = p_warning;
-			return warning;
-		}
-		default: {
-			ERR_FAIL_V_MSG(Dictionary(), "Node::get_configuration_warnings returned a value which is neither a string nor a dictionary, but a " + Variant::get_type_name(p_warning.get_type()));
-		}
-	}
-}
-
-Vector<Dictionary> Node::get_configuration_warnings_as_dicts() const {
-	Vector<Dictionary> ret;
-	Array mixed = get_configuration_warnings();
-	for (int i = 0; i < mixed.size(); i++) {
-		ret.append(configuration_warning_to_dict(mixed[i]));
-	}
-	return ret;
-}
-
-Vector<Dictionary> Node::get_configuration_warnings_of_property(const String &p_property) const {
-	Vector<Dictionary> ret;
-	Vector<Dictionary> warnings = get_configuration_warnings_as_dicts();
-	if (p_property.is_empty()) {
+	Vector<String> warnings;
+	if (GDVIRTUAL_CALL(_get_configuration_warnings, warnings)) {
 		ret.append_array(warnings);
-	} else {
-		// Filter by property path.
-		for (int i = 0; i < warnings.size(); i++) {
-			Dictionary warning = warnings[i];
-			String warning_property = warning.get("property", String());
-			if (p_property == warning_property) {
-				ret.append(warning);
-			}
-		}
 	}
+
 	return ret;
-}
-
-PackedStringArray Node::get_configuration_warnings_as_strings(bool p_wrap_lines, const String &p_property) const {
-	Vector<Dictionary> warnings = get_configuration_warnings_of_property(p_property);
-
-	const String bullet_point = U"•  ";
-	PackedStringArray all_warnings;
-	for (const Dictionary &warning : warnings) {
-		if (!warning.has("message")) {
-			continue;
-		}
-
-		// Prefix with property name if we are showing all warnings.
-		String text;
-		if (warning.has("property") && p_property.is_empty()) {
-			text = bullet_point + vformat("[%s] %s", warning["property"], warning["message"]);
-		} else {
-			text = bullet_point + static_cast<String>(warning["message"]);
-		}
-
-		if (p_wrap_lines) {
-			// Limit the line width while keeping some padding.
-			// It is not efficient, but it does not have to be.
-			const PackedInt32Array boundaries = TS->string_get_word_breaks(text, "", 80);
-			PackedStringArray lines;
-			for (int i = 0; i < boundaries.size(); i += 2) {
-				const int start = boundaries[i];
-				const int end = boundaries[i + 1];
-				String line = text.substr(start, end - start);
-				lines.append(line);
-			}
-			text = String("\n").join(lines);
-		}
-		text = text.replace("\n", "\n    ");
-		all_warnings.append(text);
-	}
-	return all_warnings;
 }
 
 void Node::update_configuration_warnings() {
@@ -3229,7 +3314,7 @@ void Node::update_configuration_warnings() {
 		return;
 	}
 	if (get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root() == this || get_tree()->get_edited_scene_root()->is_ancestor_of(this))) {
-		get_tree()->emit_signal(SceneStringNames::get_singleton()->node_configuration_warning_changed, this);
+		get_tree()->emit_signal(SceneStringName(node_configuration_warning_changed), this);
 	}
 #endif
 }
@@ -3428,6 +3513,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_node_and_resource", "path"), &Node::_get_node_and_resource);
 
 	ClassDB::bind_method(D_METHOD("is_inside_tree"), &Node::is_inside_tree);
+	ClassDB::bind_method(D_METHOD("is_part_of_edited_scene"), &Node::is_part_of_edited_scene);
 	ClassDB::bind_method(D_METHOD("is_ancestor_of", "node"), &Node::is_ancestor_of);
 	ClassDB::bind_method(D_METHOD("is_greater_than", "node"), &Node::is_greater_than);
 	ClassDB::bind_method(D_METHOD("get_path"), &Node::get_path);
@@ -3488,6 +3574,15 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_physics_process_internal", "enable"), &Node::set_physics_process_internal);
 	ClassDB::bind_method(D_METHOD("is_physics_processing_internal"), &Node::is_physics_processing_internal);
 
+	ClassDB::bind_method(D_METHOD("set_physics_interpolation_mode", "mode"), &Node::set_physics_interpolation_mode);
+	ClassDB::bind_method(D_METHOD("get_physics_interpolation_mode"), &Node::get_physics_interpolation_mode);
+	ClassDB::bind_method(D_METHOD("is_physics_interpolated"), &Node::is_physics_interpolated);
+	ClassDB::bind_method(D_METHOD("is_physics_interpolated_and_enabled"), &Node::is_physics_interpolated_and_enabled);
+	ClassDB::bind_method(D_METHOD("reset_physics_interpolation"), &Node::reset_physics_interpolation);
+
+	ClassDB::bind_method(D_METHOD("set_auto_translate_mode", "mode"), &Node::set_auto_translate_mode);
+	ClassDB::bind_method(D_METHOD("get_auto_translate_mode"), &Node::get_auto_translate_mode);
+
 	ClassDB::bind_method(D_METHOD("get_window"), &Node::get_window);
 	ClassDB::bind_method(D_METHOD("get_last_exclusive_window"), &Node::get_last_exclusive_window);
 	ClassDB::bind_method(D_METHOD("get_tree"), &Node::get_tree);
@@ -3524,6 +3619,9 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_unique_name_in_owner", "enable"), &Node::set_unique_name_in_owner);
 	ClassDB::bind_method(D_METHOD("is_unique_name_in_owner"), &Node::is_unique_name_in_owner);
+
+	ClassDB::bind_method(D_METHOD("atr", "message", "context"), &Node::atr, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("atr_n", "message", "plural_message", "n", "context"), &Node::atr_n, DEFVAL(""));
 
 #ifdef TOOLS_ENABLED
 	ClassDB::bind_method(D_METHOD("_set_property_pinned", "property", "pinned"), &Node::set_property_pinned);
@@ -3587,6 +3685,7 @@ void Node::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_POST_ENTER_TREE);
 	BIND_CONSTANT(NOTIFICATION_DISABLED);
 	BIND_CONSTANT(NOTIFICATION_ENABLED);
+	BIND_CONSTANT(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
 
 	BIND_CONSTANT(NOTIFICATION_EDITOR_PRE_SAVE);
 	BIND_CONSTANT(NOTIFICATION_EDITOR_POST_SAVE);
@@ -3626,6 +3725,10 @@ void Node::_bind_methods() {
 	BIND_BITFIELD_FLAG(FLAG_PROCESS_THREAD_MESSAGES_PHYSICS);
 	BIND_BITFIELD_FLAG(FLAG_PROCESS_THREAD_MESSAGES_ALL);
 
+	BIND_ENUM_CONSTANT(PHYSICS_INTERPOLATION_MODE_INHERIT);
+	BIND_ENUM_CONSTANT(PHYSICS_INTERPOLATION_MODE_ON);
+	BIND_ENUM_CONSTANT(PHYSICS_INTERPOLATION_MODE_OFF);
+
 	BIND_ENUM_CONSTANT(DUPLICATE_SIGNALS);
 	BIND_ENUM_CONSTANT(DUPLICATE_GROUPS);
 	BIND_ENUM_CONSTANT(DUPLICATE_SCRIPTS);
@@ -3634,6 +3737,10 @@ void Node::_bind_methods() {
 	BIND_ENUM_CONSTANT(INTERNAL_MODE_DISABLED);
 	BIND_ENUM_CONSTANT(INTERNAL_MODE_FRONT);
 	BIND_ENUM_CONSTANT(INTERNAL_MODE_BACK);
+
+	BIND_ENUM_CONSTANT(AUTO_TRANSLATE_MODE_INHERIT);
+	BIND_ENUM_CONSTANT(AUTO_TRANSLATE_MODE_ALWAYS);
+	BIND_ENUM_CONSTANT(AUTO_TRANSLATE_MODE_DISABLED);
 
 	ADD_SIGNAL(MethodInfo("ready"));
 	ADD_SIGNAL(MethodInfo("renamed"));
@@ -3657,10 +3764,17 @@ void Node::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Inherit,Pausable,When Paused,Always,Disabled"), "set_process_mode", "get_process_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_priority"), "set_process_priority", "get_process_priority");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_physics_priority"), "set_physics_process_priority", "get_physics_process_priority");
+
 	ADD_SUBGROUP("Thread Group", "process_thread");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_thread_group", PROPERTY_HINT_ENUM, "Inherit,Main Thread,Sub Thread"), "set_process_thread_group", "get_process_thread_group");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_thread_group_order"), "set_process_thread_group_order", "get_process_thread_group_order");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_thread_messages", PROPERTY_HINT_FLAGS, "Process,Physics Process"), "set_process_thread_messages", "get_process_thread_messages");
+
+	ADD_GROUP("Physics Interpolation", "physics_interpolation_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "physics_interpolation_mode", PROPERTY_HINT_ENUM, "Inherit,On,Off"), "set_physics_interpolation_mode", "get_physics_interpolation_mode");
+
+	ADD_GROUP("Auto Translate", "auto_translate_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "auto_translate_mode", PROPERTY_HINT_ENUM, "Inherit,Always,Disabled"), "set_auto_translate_mode", "get_auto_translate_mode");
 
 	ADD_GROUP("Editor Description", "editor_");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_description", PROPERTY_HINT_MULTILINE_TEXT), "set_editor_description", "get_editor_description");
@@ -3691,18 +3805,37 @@ String Node::_get_name_num_separator() {
 	return " ";
 }
 
-StringName Node::get_configuration_warning_icon(int p_count) {
-	if (p_count == 1) {
-		return SNAME("NodeWarning");
-	} else if (p_count <= 3) {
-		return vformat("NodeWarnings%d", p_count);
-	} else {
-		return SNAME("NodeWarnings4Plus");
-	}
-}
-
 Node::Node() {
 	orphan_node_count++;
+
+	// Default member initializer for bitfield is a C++20 extension, so:
+
+	data.process_mode = PROCESS_MODE_INHERIT;
+	data.physics_interpolation_mode = PHYSICS_INTERPOLATION_MODE_INHERIT;
+
+	data.physics_process = false;
+	data.process = false;
+
+	data.physics_process_internal = false;
+	data.process_internal = false;
+
+	data.input = false;
+	data.shortcut_input = false;
+	data.unhandled_input = false;
+	data.unhandled_key_input = false;
+
+	data.physics_interpolated = true;
+
+	data.parent_owned = false;
+	data.in_constructor = true;
+	data.use_placeholder = false;
+
+	data.display_folded = false;
+	data.editable_instance = false;
+
+	data.inside_tree = false;
+	data.ready_notified = false; // This is a small hack, so if a node is added during _ready() to the tree, it correctly gets the _ready() notification.
+	data.ready_first = true;
 }
 
 Node::~Node() {

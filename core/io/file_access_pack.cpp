@@ -196,6 +196,8 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 		return false;
 	}
 
+	int64_t pck_start_pos = f->get_position() - 4;
+
 	uint32_t version = f->get_32();
 	uint32_t ver_major = f->get_32();
 	uint32_t ver_minor = f->get_32();
@@ -208,6 +210,7 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 	uint64_t file_base = f->get_64();
 
 	bool enc_directory = (pack_flags & PACK_DIR_ENCRYPTED);
+	bool rel_filebase = (pack_flags & PACK_REL_FILEBASE);
 
 	for (int i = 0; i < 16; i++) {
 		//reserved
@@ -215,6 +218,10 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 	}
 
 	int file_count = f->get_32();
+
+	if (rel_filebase) {
+		file_base += pck_start_pos;
+	}
 
 	if (enc_directory) {
 		Ref<FileAccessEncrypted> fae;
@@ -455,7 +462,7 @@ String DirAccessPack::get_drive(int p_drive) {
 	return "";
 }
 
-PackedData::PackedDir *DirAccessPack::_find_dir(String p_dir) {
+PackedData::PackedDir *DirAccessPack::_find_dir(const String &p_dir) {
 	String nd = p_dir.replace("\\", "/");
 
 	// Special handling since simplify_path() will forbid it

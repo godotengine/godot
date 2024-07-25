@@ -35,7 +35,6 @@
 #include "scene/resources/curve_texture.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/particle_process_material.h"
-#include "scene/scene_string_names.h"
 
 #ifdef TOOLS_ENABLED
 #include "core/config/engine.h"
@@ -327,8 +326,8 @@ float GPUParticles2D::get_interp_to_end() const {
 	return interp_to_end_factor;
 }
 
-Array GPUParticles2D::get_configuration_warnings() const {
-	Array warnings = Node2D::get_configuration_warnings();
+PackedStringArray GPUParticles2D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
 
 	if (process_material.is_null()) {
 		warnings.push_back(RTR("A material to process the particles is not assigned, so no behavior is imprinted."));
@@ -731,7 +730,7 @@ void GPUParticles2D::_notification(int p_what) {
 				}
 				if (time > active_time) {
 					if (active && !signal_canceled) {
-						emit_signal(SceneStringNames::get_singleton()->finished);
+						emit_signal(SceneStringName(finished));
 					}
 					active = false;
 					if (!emitting) {

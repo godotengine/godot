@@ -37,6 +37,7 @@
 #include "core/io/file_access.h"
 
 #include "drivers/gles3/rasterizer_gles3.h"
+#include "drivers/gles3/storage/config.h"
 
 static String _mkid(const String &p_id) {
 	String id = "m_" + p_id.replace("__", "_dus_");
@@ -540,7 +541,7 @@ bool ShaderGLES3::_load_from_cache(Version *p_version) {
 	return false;
 #else
 #if !defined(ANDROID_ENABLED) && !defined(IOS_ENABLED)
-	if (RasterizerGLES3::is_gles_over_gl() && (glProgramBinary == NULL)) { // ARB_get_program_binary extension not available.
+	if (RasterizerGLES3::is_gles_over_gl() && (glProgramBinary == nullptr)) { // ARB_get_program_binary extension not available.
 		return false;
 	}
 #endif
@@ -585,6 +586,19 @@ bool ShaderGLES3::_load_from_cache(Version *p_version) {
 			Version::Specialization specialization;
 
 			specialization.id = glCreateProgram();
+			if (feedback_count) {
+				Vector<const char *> feedback;
+				for (int feedback_index = 0; feedback_index < feedback_count; feedback_index++) {
+					if (feedbacks[feedback_index].specialization == 0 || (feedbacks[feedback_index].specialization & specialization_key)) {
+						// Specialization for this feedback is enabled.
+						feedback.push_back(feedbacks[feedback_index].name);
+					}
+				}
+
+				if (!feedback.is_empty()) {
+					glTransformFeedbackVaryings(specialization.id, feedback.size(), feedback.ptr(), GL_INTERLEAVED_ATTRIBS);
+				}
+			}
 			glProgramBinary(specialization.id, variant_format, variant_bytes.ptr(), variant_bytes.size());
 
 			GLint link_status = 0;
@@ -614,7 +628,7 @@ void ShaderGLES3::_save_to_cache(Version *p_version) {
 #else
 	ERR_FAIL_COND(!shader_cache_dir_valid);
 #if !defined(ANDROID_ENABLED) && !defined(IOS_ENABLED)
-	if (RasterizerGLES3::is_gles_over_gl() && (glGetProgramBinary == NULL)) { // ARB_get_program_binary extension not available.
+	if (RasterizerGLES3::is_gles_over_gl() && (glGetProgramBinary == nullptr)) { // ARB_get_program_binary extension not available.
 		return;
 	}
 #endif
@@ -788,7 +802,9 @@ void ShaderGLES3::initialize(const String &p_general_defines, int p_base_texture
 		print_verbose("Shader '" + name + "' SHA256: " + base_sha256);
 	}
 
-	glGetInteger64v(GL_MAX_TEXTURE_IMAGE_UNITS, &max_image_units);
+	GLES3::Config *config = GLES3::Config::get_singleton();
+	ERR_FAIL_NULL(config);
+	max_image_units = config->max_texture_image_units;
 }
 
 void ShaderGLES3::set_shader_cache_dir(const String &p_dir) {

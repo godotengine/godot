@@ -66,7 +66,7 @@ void DependencyEditor::_load_pressed(Object *p_item, int p_cell, int p_button, M
 	List<String> ext;
 	ResourceLoader::get_recognized_extensions_for_type(ti->get_metadata(0), &ext);
 	for (const String &E : ext) {
-		search->add_filter("*" + E);
+		search->add_filter("*." + E);
 	}
 	search->popup_file_dialog();
 }
@@ -246,6 +246,7 @@ DependencyEditor::DependencyEditor() {
 	add_child(vb);
 
 	tree = memnew(Tree);
+	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_columns(2);
 	tree->set_column_titles_visible(true);
 	tree->set_column_title(0, TTR("Resource"));
@@ -265,7 +266,7 @@ DependencyEditor::DependencyEditor() {
 	hbc->add_spacer();
 	fixdeps = memnew(Button(TTR("Fix Broken")));
 	hbc->add_child(fixdeps);
-	fixdeps->connect("pressed", callable_mp(this, &DependencyEditor::_fix_all));
+	fixdeps->connect(SceneStringName(pressed), callable_mp(this, &DependencyEditor::_fix_all));
 
 	vb->add_child(hbc);
 
@@ -326,7 +327,7 @@ void DependencyEditorOwners::_select_file(int p_idx) {
 		EditorNode::get_singleton()->load_resource(fpath);
 	}
 	hide();
-	emit_signal(SNAME("confirmed"));
+	emit_signal(SceneStringName(confirmed));
 }
 
 void DependencyEditorOwners::_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index) {
@@ -395,10 +396,10 @@ void DependencyEditorOwners::show(const String &p_path) {
 DependencyEditorOwners::DependencyEditorOwners() {
 	file_options = memnew(PopupMenu);
 	add_child(file_options);
-	file_options->connect("id_pressed", callable_mp(this, &DependencyEditorOwners::_file_option));
+	file_options->connect(SceneStringName(id_pressed), callable_mp(this, &DependencyEditorOwners::_file_option));
 
 	owners = memnew(ItemList);
-	owners->set_auto_translate(false);
+	owners->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	owners->set_select_mode(ItemList::SELECT_MULTI);
 	owners->connect("item_clicked", callable_mp(this, &DependencyEditorOwners::_list_rmb_clicked));
 	owners->connect("item_activated", callable_mp(this, &DependencyEditorOwners::_select_file));
@@ -641,11 +642,11 @@ void DependencyRemoveDialog::ok_pressed() {
 
 	for (int i = 0; i < previous_favorites.size(); ++i) {
 		if (previous_favorites[i].ends_with("/")) {
-			if (dirs_to_delete.find(previous_favorites[i]) < 0) {
+			if (!dirs_to_delete.has(previous_favorites[i])) {
 				new_favorites.push_back(previous_favorites[i]);
 			}
 		} else {
-			if (files_to_delete.find(previous_favorites[i]) < 0) {
+			if (!files_to_delete.has(previous_favorites[i])) {
 				new_favorites.push_back(previous_favorites[i]);
 			}
 		}
@@ -672,6 +673,7 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 	vb->add_child(text);
 
 	owners = memnew(Tree);
+	owners->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	owners->set_hide_root(true);
 	vb->add_child(owners);
 	owners->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -724,6 +726,7 @@ DependencyErrorDialog::DependencyErrorDialog() {
 	add_child(vb);
 
 	files = memnew(Tree);
+	files->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	files->set_hide_root(true);
 	vb->add_margin_child(TTR("Load failed due to missing dependencies:"), files, true);
 	files->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -872,13 +875,14 @@ OrphanResourcesDialog::OrphanResourcesDialog() {
 	add_child(delete_confirm);
 	dep_edit = memnew(DependencyEditor);
 	add_child(dep_edit);
-	delete_confirm->connect("confirmed", callable_mp(this, &OrphanResourcesDialog::_delete_confirm));
+	delete_confirm->connect(SceneStringName(confirmed), callable_mp(this, &OrphanResourcesDialog::_delete_confirm));
 	set_hide_on_ok(false);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
 
 	files = memnew(Tree);
+	files->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	files->set_columns(2);
 	files->set_column_titles_visible(true);
 	files->set_column_custom_minimum_width(1, 100 * EDSCALE);

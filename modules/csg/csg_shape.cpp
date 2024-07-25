@@ -141,7 +141,12 @@ bool CSGShape3D::is_root_shape() const {
 }
 
 void CSGShape3D::set_snap(float p_snap) {
+	if (snap == p_snap) {
+		return;
+	}
+
 	snap = p_snap;
+	_make_dirty();
 }
 
 float CSGShape3D::get_snap() const {
@@ -1824,13 +1829,15 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 		Path3D *current_path = Object::cast_to<Path3D>(get_node_or_null(path_node));
 		if (path != current_path) {
 			if (path) {
-				path->disconnect("tree_exited", callable_mp(this, &CSGPolygon3D::_path_exited));
+				path->disconnect(SceneStringName(tree_exited), callable_mp(this, &CSGPolygon3D::_path_exited));
 				path->disconnect("curve_changed", callable_mp(this, &CSGPolygon3D::_path_changed));
+				path->set_update_callback(Callable());
 			}
 			path = current_path;
 			if (path) {
-				path->connect("tree_exited", callable_mp(this, &CSGPolygon3D::_path_exited));
+				path->connect(SceneStringName(tree_exited), callable_mp(this, &CSGPolygon3D::_path_exited));
 				path->connect("curve_changed", callable_mp(this, &CSGPolygon3D::_path_changed));
+				path->set_update_callback(callable_mp(this, &CSGPolygon3D::_path_changed));
 			}
 		}
 
@@ -2138,7 +2145,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 void CSGPolygon3D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 		if (path) {
-			path->disconnect("tree_exited", callable_mp(this, &CSGPolygon3D::_path_exited));
+			path->disconnect(SceneStringName(tree_exited), callable_mp(this, &CSGPolygon3D::_path_exited));
 			path->disconnect("curve_changed", callable_mp(this, &CSGPolygon3D::_path_changed));
 			path = nullptr;
 		}

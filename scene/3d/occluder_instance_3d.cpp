@@ -36,7 +36,7 @@
 #include "core/math/triangulate.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/resources/importer_mesh.h"
+#include "scene/resources/3d/importer_mesh.h"
 #include "scene/resources/surface_tool.h"
 
 #ifdef TOOLS_ENABLED
@@ -192,7 +192,7 @@ void QuadOccluder3D::set_size(const Size2 &p_size) {
 		return;
 	}
 
-	size = p_size.max(Size2());
+	size = p_size.maxf(0);
 	_update();
 }
 
@@ -236,7 +236,7 @@ void BoxOccluder3D::set_size(const Vector3 &p_size) {
 		return;
 	}
 
-	size = Vector3(MAX(p_size.x, 0.0f), MAX(p_size.y, 0.0f), MAX(p_size.z, 0.0f));
+	size = p_size.maxf(0);
 	_update();
 }
 
@@ -693,8 +693,8 @@ OccluderInstance3D::BakeError OccluderInstance3D::bake_scene(Node *p_from_node, 
 	return BAKE_ERROR_OK;
 }
 
-Array OccluderInstance3D::get_configuration_warnings() const {
-	Array warnings = Node::get_configuration_warnings();
+PackedStringArray OccluderInstance3D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (!bool(GLOBAL_GET("rendering/occlusion_culling/use_occlusion_culling"))) {
 		warnings.push_back(RTR("Occlusion culling is disabled in the Project Settings, which means occlusion culling won't be performed in the root viewport.\nTo resolve this, open the Project Settings and enable Rendering > Occlusion Culling > Use Occlusion Culling."));

@@ -39,7 +39,10 @@ void OpenXRExtensionWrapperExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_set_session_create_and_get_next_pointer, "next_pointer");
 	GDVIRTUAL_BIND(_set_swapchain_create_info_and_get_next_pointer, "next_pointer");
 	GDVIRTUAL_BIND(_set_hand_joint_locations_and_get_next_pointer, "hand_index", "next_pointer");
-	GDVIRTUAL_BIND(_get_composition_layer);
+	GDVIRTUAL_BIND(_get_composition_layer_count);
+	GDVIRTUAL_BIND(_get_composition_layer, "index");
+	GDVIRTUAL_BIND(_get_composition_layer_order, "index");
+	GDVIRTUAL_BIND(_get_suggested_tracker_names);
 	GDVIRTUAL_BIND(_on_register_metadata);
 	GDVIRTUAL_BIND(_on_before_instance_created);
 	GDVIRTUAL_BIND(_on_instance_created, "instance");
@@ -47,6 +50,7 @@ void OpenXRExtensionWrapperExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_on_session_created, "session");
 	GDVIRTUAL_BIND(_on_process);
 	GDVIRTUAL_BIND(_on_pre_render);
+	GDVIRTUAL_BIND(_on_main_swapchains_created);
 	GDVIRTUAL_BIND(_on_session_destroyed);
 	GDVIRTUAL_BIND(_on_state_idle);
 	GDVIRTUAL_BIND(_on_state_ready);
@@ -57,6 +61,10 @@ void OpenXRExtensionWrapperExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_on_state_loss_pending);
 	GDVIRTUAL_BIND(_on_state_exiting);
 	GDVIRTUAL_BIND(_on_event_polled, "event");
+	GDVIRTUAL_BIND(_set_viewport_composition_layer_and_get_next_pointer, "layer", "property_values", "next_pointer");
+	GDVIRTUAL_BIND(_get_viewport_composition_layer_extension_properties);
+	GDVIRTUAL_BIND(_get_viewport_composition_layer_extension_property_defaults);
+	GDVIRTUAL_BIND(_on_viewport_composition_layer_destroyed, "layer");
 
 	ClassDB::bind_method(D_METHOD("get_openxr_api"), &OpenXRExtensionWrapperExtension::get_openxr_api);
 	ClassDB::bind_method(D_METHOD("register_extension_wrapper"), &OpenXRExtensionWrapperExtension::register_extension_wrapper);
@@ -129,14 +137,36 @@ void *OpenXRExtensionWrapperExtension::set_hand_joint_locations_and_get_next_poi
 	return nullptr;
 }
 
-XrCompositionLayerBaseHeader *OpenXRExtensionWrapperExtension::get_composition_layer() {
+PackedStringArray OpenXRExtensionWrapperExtension::get_suggested_tracker_names() {
+	PackedStringArray ret;
+
+	if (GDVIRTUAL_CALL(_get_suggested_tracker_names, ret)) {
+		return ret;
+	}
+
+	return PackedStringArray();
+}
+
+int OpenXRExtensionWrapperExtension::get_composition_layer_count() {
+	int count = 0;
+	GDVIRTUAL_CALL(_get_composition_layer_count, count);
+	return count;
+}
+
+XrCompositionLayerBaseHeader *OpenXRExtensionWrapperExtension::get_composition_layer(int p_index) {
 	uint64_t pointer;
 
-	if (GDVIRTUAL_CALL(_get_composition_layer, pointer)) {
+	if (GDVIRTUAL_CALL(_get_composition_layer, p_index, pointer)) {
 		return reinterpret_cast<XrCompositionLayerBaseHeader *>(pointer);
 	}
 
 	return nullptr;
+}
+
+int OpenXRExtensionWrapperExtension::get_composition_layer_order(int p_index) {
+	int order = 0;
+	GDVIRTUAL_CALL(_get_composition_layer_order, p_index, order);
+	return order;
 }
 
 void OpenXRExtensionWrapperExtension::on_register_metadata() {
@@ -167,6 +197,10 @@ void OpenXRExtensionWrapperExtension::on_process() {
 
 void OpenXRExtensionWrapperExtension::on_pre_render() {
 	GDVIRTUAL_CALL(_on_pre_render);
+}
+
+void OpenXRExtensionWrapperExtension::on_main_swapchains_created() {
+	GDVIRTUAL_CALL(_on_main_swapchains_created);
 }
 
 void OpenXRExtensionWrapperExtension::on_session_destroyed() {
@@ -215,6 +249,36 @@ bool OpenXRExtensionWrapperExtension::on_event_polled(const XrEventDataBuffer &p
 	return false;
 }
 
+void *OpenXRExtensionWrapperExtension::set_viewport_composition_layer_and_get_next_pointer(const XrCompositionLayerBaseHeader *p_layer, Dictionary p_property_values, void *p_next_pointer) {
+	uint64_t pointer = 0;
+
+	if (GDVIRTUAL_CALL(_set_viewport_composition_layer_and_get_next_pointer, GDExtensionConstPtr<void>(p_layer), p_property_values, GDExtensionPtr<void>(p_next_pointer), pointer)) {
+		return reinterpret_cast<void *>(pointer);
+	}
+
+	return p_next_pointer;
+}
+
+void OpenXRExtensionWrapperExtension::on_viewport_composition_layer_destroyed(const XrCompositionLayerBaseHeader *p_layer) {
+	GDVIRTUAL_CALL(_on_viewport_composition_layer_destroyed, GDExtensionConstPtr<void>(p_layer));
+}
+
+void OpenXRExtensionWrapperExtension::get_viewport_composition_layer_extension_properties(List<PropertyInfo> *p_property_list) {
+	TypedArray<Dictionary> properties;
+
+	if (GDVIRTUAL_CALL(_get_viewport_composition_layer_extension_properties, properties)) {
+		for (int i = 0; i < properties.size(); i++) {
+			p_property_list->push_back(PropertyInfo::from_dict(properties[i]));
+		}
+	}
+}
+
+Dictionary OpenXRExtensionWrapperExtension::get_viewport_composition_layer_extension_property_defaults() {
+	Dictionary property_defaults;
+	GDVIRTUAL_CALL(_get_viewport_composition_layer_extension_property_defaults, property_defaults);
+	return property_defaults;
+}
+
 Ref<OpenXRAPIExtension> OpenXRExtensionWrapperExtension::get_openxr_api() {
 	return openxr_api;
 }
@@ -226,4 +290,7 @@ void OpenXRExtensionWrapperExtension::register_extension_wrapper() {
 OpenXRExtensionWrapperExtension::OpenXRExtensionWrapperExtension() :
 		Object(), OpenXRExtensionWrapper() {
 	openxr_api.instantiate();
+}
+
+OpenXRExtensionWrapperExtension::~OpenXRExtensionWrapperExtension() {
 }

@@ -43,14 +43,16 @@ class Animation : public Resource {
 public:
 	typedef uint32_t TypeHash;
 
+	static inline String PARAMETERS_BASE_PATH = "parameters/";
+
 	enum TrackType {
-		TYPE_VALUE, ///< Set a value in a property, can be interpolated.
-		TYPE_POSITION_3D, ///< Position 3D track
-		TYPE_ROTATION_3D, ///< Rotation 3D track
-		TYPE_SCALE_3D, ///< Scale 3D track
-		TYPE_BLEND_SHAPE, ///< Blend Shape track
-		TYPE_METHOD, ///< Call any method on a specific node.
-		TYPE_BEZIER, ///< Bezier curve
+		TYPE_VALUE, // Set a value in a property, can be interpolated.
+		TYPE_POSITION_3D, // Position 3D track, can be compressed.
+		TYPE_ROTATION_3D, // Rotation 3D track, can be compressed.
+		TYPE_SCALE_3D, // Scale 3D track, can be compressed.
+		TYPE_BLEND_SHAPE, // Blend Shape track, can be compressed.
+		TYPE_METHOD, // Call any method on a specific node.
+		TYPE_BEZIER, // Bezier curve.
 		TYPE_AUDIO,
 		TYPE_ANIMATION,
 	};
@@ -75,6 +77,7 @@ public:
 		LOOP_PINGPONG,
 	};
 
+	// LoopedFlag is used in Animataion to "process the keys at both ends correct".
 	enum LoopedFlag {
 		LOOPED_FLAG_NONE,
 		LOOPED_FLAG_END,
@@ -116,11 +119,11 @@ private:
 
 	struct Key {
 		real_t transition = 1.0;
-		double time = 0.0; // time in secs
+		double time = 0.0; // Time in secs.
 	};
 
-	// transform key holds either Vector3 or Quaternion
-	template <class T>
+	// Transform key holds either Vector3 or Quaternion.
+	template <typename T>
 	struct TKey : public Key {
 		T value;
 	};
@@ -187,9 +190,10 @@ private:
 	};
 
 	/* BEZIER TRACK */
+
 	struct BezierKey {
-		Vector2 in_handle; //relative (x always <0)
-		Vector2 out_handle; //relative (x always >0)
+		Vector2 in_handle; // Relative (x always <0)
+		Vector2 out_handle; // Relative (x always >0)
 		real_t value = 0.0;
 #ifdef TOOLS_ENABLED
 		HandleMode handle_mode = HANDLE_MODE_FREE;
@@ -208,8 +212,8 @@ private:
 
 	struct AudioKey {
 		Ref<Resource> stream;
-		real_t start_offset = 0.0; //offset from start
-		real_t end_offset = 0.0; //offset from end, if 0 then full length or infinite
+		real_t start_offset = 0.0; // Offset from start.
+		real_t end_offset = 0.0; // Offset from end, if 0 then full length or infinite.
 		AudioKey() {
 		}
 	};
@@ -223,7 +227,7 @@ private:
 		}
 	};
 
-	/* AUDIO TRACK */
+	/* ANIMATION TRACK */
 
 	struct AnimationTrack : public Track {
 		Vector<TKey<StringName>> values;
@@ -235,19 +239,15 @@ private:
 
 	Vector<Track *> tracks;
 
-	/*
-	template<class T>
-	int _insert_pos(double p_time, T& p_keys);*/
-
-	template <class T>
+	template <typename T>
 	void _clear(T &p_keys);
 
-	template <class T, class V>
+	template <typename T, typename V>
 	int _insert(double p_time, T &p_keys, const V &p_value);
 
-	template <class K>
+	template <typename K>
 
-	inline int _find(const Vector<K> &p_keys, double p_time, bool p_backward = false) const;
+	inline int _find(const Vector<K> &p_keys, double p_time, bool p_backward = false, bool p_limit = false) const;
 
 	_FORCE_INLINE_ Vector3 _interpolate(const Vector3 &p_a, const Vector3 &p_b, real_t p_c) const;
 	_FORCE_INLINE_ Quaternion _interpolate(const Quaternion &p_a, const Quaternion &p_b, real_t p_c) const;
@@ -261,15 +261,17 @@ private:
 	_FORCE_INLINE_ real_t _cubic_interpolate_in_time(const real_t &p_pre_a, const real_t &p_a, const real_t &p_b, const real_t &p_post_b, real_t p_c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t) const;
 	_FORCE_INLINE_ Variant _cubic_interpolate_angle_in_time(const Variant &p_pre_a, const Variant &p_a, const Variant &p_b, const Variant &p_post_b, real_t p_c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t) const;
 
-	template <class T>
+	template <typename T>
 	_FORCE_INLINE_ T _interpolate(const Vector<TKey<T>> &p_keys, double p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok, bool p_backward = false) const;
 
-	template <class T>
+	template <typename T>
 	_FORCE_INLINE_ void _track_get_key_indices_in_range(const Vector<T> &p_array, double from_time, double to_time, List<int> *p_indices, bool p_is_backward) const;
 
 	double length = 1.0;
-	real_t step = 0.1;
+	real_t step = 1.0 / 30;
 	LoopMode loop_mode = LOOP_NONE;
+	bool capture_included = false;
+	void _check_capture_included();
 
 	void _track_update_hash(int p_track);
 
@@ -327,7 +329,7 @@ private:
 	struct Compression {
 		enum {
 			MAX_DATA_TRACK_SIZE = 16384,
-			BLEND_SHAPE_RANGE = 8, // - 8.0 to 8.0
+			BLEND_SHAPE_RANGE = 8, // -8.0 to 8.0.
 			FORMAT_VERSION = 1
 		};
 		struct Page {
@@ -337,7 +339,7 @@ private:
 
 		uint32_t fps = 120;
 		LocalVector<Page> pages;
-		LocalVector<AABB> bounds; //used by position and scale tracks (which contain index to track and index to bounds).
+		LocalVector<AABB> bounds; // Used by position and scale tracks (which contain index to track and index to bounds).
 		bool enabled = false;
 	} compression;
 
@@ -380,9 +382,22 @@ protected:
 
 	static bool inform_variant_array(int &r_min, int &r_max); // Returns true if max and min are swapped.
 
+#ifndef DISABLE_DEPRECATED
+	Vector3 _position_track_interpolate_bind_compat_86629(int p_track, double p_time) const;
+	Quaternion _rotation_track_interpolate_bind_compat_86629(int p_track, double p_time) const;
+	Vector3 _scale_track_interpolate_bind_compat_86629(int p_track, double p_time) const;
+	float _blend_shape_track_interpolate_bind_compat_86629(int p_track, double p_time) const;
+	Variant _value_track_interpolate_bind_compat_86629(int p_track, double p_time) const;
+	int _track_find_key_bind_compat_92861(int p_track, double p_time, FindMode p_find_mode = FIND_MODE_NEAREST) const;
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
+
 public:
 	int add_track(TrackType p_type, int p_at_pos = -1);
 	void remove_track(int p_track);
+
+	void set_capture_included(bool p_capture_included);
+	bool is_capture_included() const;
 
 	int get_track_count() const;
 	TrackType track_get_type(int p_track) const;
@@ -408,7 +423,7 @@ public:
 	void track_set_key_transition(int p_track, int p_key_idx, real_t p_transition);
 	void track_set_key_value(int p_track, int p_key_idx, const Variant &p_value);
 	void track_set_key_time(int p_track, int p_key_idx, double p_time);
-	int track_find_key(int p_track, double p_time, FindMode p_find_mode = FIND_MODE_NEAREST) const;
+	int track_find_key(int p_track, double p_time, FindMode p_find_mode = FIND_MODE_NEAREST, bool p_limit = false, bool p_backward = false) const;
 	void track_remove_key(int p_track, int p_idx);
 	void track_remove_key_at_time(int p_track, double p_time);
 	int track_get_key_count(int p_track) const;
@@ -419,27 +434,28 @@ public:
 
 	int position_track_insert_key(int p_track, double p_time, const Vector3 &p_position);
 	Error position_track_get_key(int p_track, int p_key, Vector3 *r_position) const;
-	Error try_position_track_interpolate(int p_track, double p_time, Vector3 *r_interpolation) const;
-	Vector3 position_track_interpolate(int p_track, double p_time) const;
+	Error try_position_track_interpolate(int p_track, double p_time, Vector3 *r_interpolation, bool p_backward = false) const;
+	Vector3 position_track_interpolate(int p_track, double p_time, bool p_backward = false) const;
 
 	int rotation_track_insert_key(int p_track, double p_time, const Quaternion &p_rotation);
 	Error rotation_track_get_key(int p_track, int p_key, Quaternion *r_rotation) const;
-	Error try_rotation_track_interpolate(int p_track, double p_time, Quaternion *r_interpolation) const;
-	Quaternion rotation_track_interpolate(int p_track, double p_time) const;
+	Error try_rotation_track_interpolate(int p_track, double p_time, Quaternion *r_interpolation, bool p_backward = false) const;
+	Quaternion rotation_track_interpolate(int p_track, double p_time, bool p_backward = false) const;
 
 	int scale_track_insert_key(int p_track, double p_time, const Vector3 &p_scale);
 	Error scale_track_get_key(int p_track, int p_key, Vector3 *r_scale) const;
-	Error try_scale_track_interpolate(int p_track, double p_time, Vector3 *r_interpolation) const;
-	Vector3 scale_track_interpolate(int p_track, double p_time) const;
+	Error try_scale_track_interpolate(int p_track, double p_time, Vector3 *r_interpolation, bool p_backward = false) const;
+	Vector3 scale_track_interpolate(int p_track, double p_time, bool p_backward = false) const;
 
 	int blend_shape_track_insert_key(int p_track, double p_time, float p_blend);
 	Error blend_shape_track_get_key(int p_track, int p_key, float *r_blend) const;
-	Error try_blend_shape_track_interpolate(int p_track, double p_time, float *r_blend) const;
-	float blend_shape_track_interpolate(int p_track, double p_time) const;
+	Error try_blend_shape_track_interpolate(int p_track, double p_time, float *r_blend, bool p_backward = false) const;
+	float blend_shape_track_interpolate(int p_track, double p_time, bool p_backward = false) const;
 
 	void track_set_interpolation_type(int p_track, InterpolationType p_interp);
 	InterpolationType track_get_interpolation_type(int p_track) const;
 
+	Array make_default_bezier_key(float p_value);
 	int bezier_track_insert_key(int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle);
 	void bezier_track_set_key_value(int p_track, int p_index, real_t p_value);
 	void bezier_track_set_key_in_handle(int p_track, int p_index, const Vector2 &p_handle, real_t p_balanced_value_time_ratio = 1.0);
@@ -471,7 +487,7 @@ public:
 	void track_set_interpolation_loop_wrap(int p_track, bool p_enable);
 	bool track_get_interpolation_loop_wrap(int p_track) const;
 
-	Variant value_track_interpolate(int p_track, double p_time) const;
+	Variant value_track_interpolate(int p_track, double p_time, bool p_backward = false) const;
 	void value_track_set_update_mode(int p_track, UpdateMode p_mode);
 	UpdateMode value_track_get_update_mode(int p_track) const;
 
@@ -494,7 +510,7 @@ public:
 	void clear();
 
 	void optimize(real_t p_allowed_velocity_err = 0.01, real_t p_allowed_angular_err = 0.01, int p_precision = 3);
-	void compress(uint32_t p_page_size = 8192, uint32_t p_fps = 120, float p_split_tolerance = 4.0); // 4.0 seems to be the split tolerance sweet spot from many tests
+	void compress(uint32_t p_page_size = 8192, uint32_t p_fps = 120, float p_split_tolerance = 4.0); // 4.0 seems to be the split tolerance sweet spot from many tests.
 
 	// Helper functions for Variant.
 	static bool is_variant_interpolatable(const Variant p_value);
@@ -510,6 +526,22 @@ public:
 	static Variant blend_variant(const Variant &a, const Variant &b, float c);
 	static Variant interpolate_variant(const Variant &a, const Variant &b, float c, bool p_snap_array_element = false);
 	static Variant cubic_interpolate_in_time_variant(const Variant &pre_a, const Variant &a, const Variant &b, const Variant &post_b, float c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t, bool p_snap_array_element = false);
+
+	static bool is_less_or_equal_approx(double a, double b) {
+		return a < b || Math::is_equal_approx(a, b);
+	}
+
+	static bool is_less_approx(double a, double b) {
+		return a < b && !Math::is_equal_approx(a, b);
+	}
+
+	static bool is_greater_or_equal_approx(double a, double b) {
+		return a > b || Math::is_equal_approx(a, b);
+	}
+
+	static bool is_greater_approx(double a, double b) {
+		return a > b && !Math::is_equal_approx(a, b);
+	}
 
 	static TrackType get_cache_type(TrackType p_type);
 

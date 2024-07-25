@@ -3,8 +3,8 @@
 Import("env")
 
 import glob
-import editor_theme_builders
 
+import editor_theme_builders
 
 # Fonts
 flist = glob.glob(env.Dir("#thirdparty").abspath + "/fonts/*.ttf")
@@ -16,7 +16,7 @@ env.Depends("#editor/themes/builtin_fonts.gen.h", flist)
 env.CommandNoCache(
     "#editor/themes/builtin_fonts.gen.h",
     flist,
-    env.Run(editor_theme_builders.make_fonts_header, "Generating builtin fonts header."),
+    env.Run(editor_theme_builders.make_fonts_header),
 )
 
 env.add_source_files(env.editor_sources, "*.cpp")

@@ -30,14 +30,12 @@
 
 #include "grid_map.h"
 
-#include "core/core_string_names.h"
 #include "core/io/marshalls.h"
 #include "scene/3d/light_3d.h"
-#include "scene/resources/mesh_library.h"
+#include "scene/resources/3d/mesh_library.h"
+#include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/physics_material.h"
-#include "scene/resources/primitive_meshes.h"
 #include "scene/resources/surface_tool.h"
-#include "scene/scene_string_names.h"
 #include "servers/navigation_server_3d.h"
 #include "servers/rendering_server.h"
 
@@ -195,7 +193,7 @@ real_t GridMap::get_collision_priority() const {
 
 void GridMap::set_physics_material(Ref<PhysicsMaterial> p_material) {
 	physics_material = p_material;
-	_recreate_octant_data();
+	_update_physics_bodies_characteristics();
 }
 
 Ref<PhysicsMaterial> GridMap::get_physics_material() const {
@@ -266,7 +264,7 @@ void GridMap::set_mesh_library(const Ref<MeshLibrary> &p_mesh_library) {
 	}
 
 	_recreate_octant_data();
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(CoreStringName(changed));
 }
 
 Ref<MeshLibrary> GridMap::get_mesh_library() const {
@@ -370,8 +368,8 @@ void GridMap::set_cell_item(const Vector3i &p_position, int p_item, int p_rot) {
 		PhysicsServer3D::get_singleton()->body_set_collision_mask(g->static_body, collision_mask);
 		PhysicsServer3D::get_singleton()->body_set_collision_priority(g->static_body, collision_priority);
 		if (physics_material.is_valid()) {
-			PhysicsServer3D::get_singleton()->body_set_param(g->static_body, PhysicsServer3D::BODY_PARAM_FRICTION, physics_material->get_friction());
-			PhysicsServer3D::get_singleton()->body_set_param(g->static_body, PhysicsServer3D::BODY_PARAM_BOUNCE, physics_material->get_bounce());
+			PhysicsServer3D::get_singleton()->body_set_param(g->static_body, PhysicsServer3D::BODY_PARAM_FRICTION, physics_material->computed_friction());
+			PhysicsServer3D::get_singleton()->body_set_param(g->static_body, PhysicsServer3D::BODY_PARAM_BOUNCE, physics_material->computed_bounce());
 		}
 		SceneTree *st = SceneTree::get_singleton();
 
@@ -745,6 +743,19 @@ void GridMap::_update_physics_bodies_collision_properties() {
 		PhysicsServer3D::get_singleton()->body_set_collision_layer(E.value->static_body, collision_layer);
 		PhysicsServer3D::get_singleton()->body_set_collision_mask(E.value->static_body, collision_mask);
 		PhysicsServer3D::get_singleton()->body_set_collision_priority(E.value->static_body, collision_priority);
+	}
+}
+
+void GridMap::_update_physics_bodies_characteristics() {
+	real_t friction = 1.0;
+	real_t bounce = 0.0;
+	if (physics_material.is_valid()) {
+		friction = physics_material->computed_friction();
+		bounce = physics_material->computed_bounce();
+	}
+	for (const KeyValue<OctantKey, Octant *> &E : octant_map) {
+		PhysicsServer3D::get_singleton()->body_set_param(E.value->static_body, PhysicsServer3D::BODY_PARAM_FRICTION, friction);
+		PhysicsServer3D::get_singleton()->body_set_param(E.value->static_body, PhysicsServer3D::BODY_PARAM_BOUNCE, bounce);
 	}
 }
 
@@ -1123,7 +1134,7 @@ void GridMap::_bind_methods() {
 	BIND_CONSTANT(INVALID_CELL_ITEM);
 
 	ADD_SIGNAL(MethodInfo("cell_size_changed", PropertyInfo(Variant::VECTOR3, "cell_size")));
-	ADD_SIGNAL(MethodInfo(CoreStringNames::get_singleton()->changed));
+	ADD_SIGNAL(MethodInfo(CoreStringName(changed)));
 }
 
 void GridMap::set_cell_scale(float p_scale) {

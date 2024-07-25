@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationMesh" inherits="Resource" is_experimental="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationMesh" inherits="Resource" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A navigation mesh that defines traversable areas and obstacles.
 	</brief_description>
@@ -8,7 +8,7 @@
 	</description>
 	<tutorials>
 		<link title="Using NavigationMeshes">$DOCS_URL/tutorials/navigation/navigation_using_navigationmeshes.html</link>
-		<link title="3D Navmesh Demo">https://godotengine.org/asset-library/asset/124</link>
+		<link title="3D Navigation Demo">https://godotengine.org/asset-library/asset/2743</link>
 	</tutorials>
 	<methods>
 		<method name="add_polygon">

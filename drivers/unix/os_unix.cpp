@@ -37,6 +37,7 @@
 #include "core/debugger/script_debugger.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
+#include "drivers/unix/file_access_unix_pipe.h"
 #include "drivers/unix/net_socket_posix.h"
 #include "drivers/unix/thread_posix.h"
 #include "servers/rendering_server.h"
@@ -160,17 +161,20 @@ void OS_Unix::initialize_core() {
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_FILESYSTEM);
+	FileAccess::make_default<FileAccessUnixPipe>(FileAccess::ACCESS_PIPE);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_RESOURCES);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_FILESYSTEM);
 
 	NetSocketPosix::make_default();
 	IPUnix::make_default();
+	process_map = memnew((HashMap<ProcessID, ProcessInfo>));
 
 	_setup_clock();
 }
 
 void OS_Unix::finalize_core() {
+	memdelete(process_map);
 	NetSocketPosix::cleanup();
 }
 
@@ -489,6 +493,111 @@ Dictionary OS_Unix::get_memory_info() const {
 	return meminfo;
 }
 
+Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &p_arguments) {
+#define CLEAN_PIPES           \
+	if (pipe_in[0] >= 0) {    \
+		::close(pipe_in[0]);  \
+	}                         \
+	if (pipe_in[1] >= 0) {    \
+		::close(pipe_in[1]);  \
+	}                         \
+	if (pipe_out[0] >= 0) {   \
+		::close(pipe_out[0]); \
+	}                         \
+	if (pipe_out[1] >= 0) {   \
+		::close(pipe_out[1]); \
+	}                         \
+	if (pipe_err[0] >= 0) {   \
+		::close(pipe_err[0]); \
+	}                         \
+	if (pipe_err[1] >= 0) {   \
+		::close(pipe_err[1]); \
+	}
+
+	Dictionary ret;
+#ifdef __EMSCRIPTEN__
+	// Don't compile this code at all to avoid undefined references.
+	// Actual virtual call goes to OS_Web.
+	ERR_FAIL_V(ret);
+#else
+	// Create pipes.
+	int pipe_in[2] = { -1, -1 };
+	int pipe_out[2] = { -1, -1 };
+	int pipe_err[2] = { -1, -1 };
+
+	ERR_FAIL_COND_V(pipe(pipe_in) != 0, ret);
+	if (pipe(pipe_out) != 0) {
+		CLEAN_PIPES
+		ERR_FAIL_V(ret);
+	}
+	if (pipe(pipe_err) != 0) {
+		CLEAN_PIPES
+		ERR_FAIL_V(ret);
+	}
+
+	// Create process.
+	pid_t pid = fork();
+	if (pid < 0) {
+		CLEAN_PIPES
+		ERR_FAIL_V(ret);
+	}
+
+	if (pid == 0) {
+		// The child process.
+		Vector<CharString> cs;
+		cs.push_back(p_path.utf8());
+		for (const String &arg : p_arguments) {
+			cs.push_back(arg.utf8());
+		}
+
+		Vector<char *> args;
+		for (int i = 0; i < cs.size(); i++) {
+			args.push_back((char *)cs[i].get_data());
+		}
+		args.push_back(0);
+
+		::close(STDIN_FILENO);
+		::dup2(pipe_in[0], STDIN_FILENO);
+
+		::close(STDOUT_FILENO);
+		::dup2(pipe_out[1], STDOUT_FILENO);
+
+		::close(STDERR_FILENO);
+		::dup2(pipe_err[1], STDERR_FILENO);
+
+		CLEAN_PIPES
+
+		execvp(p_path.utf8().get_data(), &args[0]);
+		// The execvp() function only returns if an error occurs.
+		ERR_PRINT("Could not create child process: " + p_path);
+		raise(SIGKILL);
+	}
+	::close(pipe_in[0]);
+	::close(pipe_out[1]);
+	::close(pipe_err[1]);
+
+	Ref<FileAccessUnixPipe> main_pipe;
+	main_pipe.instantiate();
+	main_pipe->open_existing(pipe_out[0], pipe_in[1]);
+
+	Ref<FileAccessUnixPipe> err_pipe;
+	err_pipe.instantiate();
+	err_pipe->open_existing(pipe_err[0], 0);
+
+	ProcessInfo pi;
+	process_map_mutex.lock();
+	process_map->insert(pid, pi);
+	process_map_mutex.unlock();
+
+	ret["stdio"] = main_pipe;
+	ret["stderr"] = err_pipe;
+	ret["pid"] = pid;
+
+#undef CLEAN_PIPES
+	return ret;
+#endif
+}
+
 Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
 #ifdef __EMSCRIPTEN__
 	// Don't compile this code at all to avoid undefined references.
@@ -497,8 +606,8 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, St
 #else
 	if (r_pipe) {
 		String command = "\"" + p_path + "\"";
-		for (int i = 0; i < p_arguments.size(); i++) {
-			command += String(" \"") + p_arguments[i] + "\"";
+		for (const String &arg : p_arguments) {
+			command += String(" \"") + arg + "\"";
 		}
 		if (read_stderr) {
 			command += " 2>&1"; // Include stderr
@@ -538,8 +647,8 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, St
 		// The child process
 		Vector<CharString> cs;
 		cs.push_back(p_path.utf8());
-		for (int i = 0; i < p_arguments.size(); i++) {
-			cs.push_back(p_arguments[i].utf8());
+		for (const String &arg : p_arguments) {
+			cs.push_back(arg.utf8());
 		}
 
 		Vector<char *> args;
@@ -580,8 +689,8 @@ Error OS_Unix::create_process(const String &p_path, const List<String> &p_argume
 
 		Vector<CharString> cs;
 		cs.push_back(p_path.utf8());
-		for (int i = 0; i < p_arguments.size(); i++) {
-			cs.push_back(p_arguments[i].utf8());
+		for (const String &arg : p_arguments) {
+			cs.push_back(arg.utf8());
 		}
 
 		Vector<char *> args;
@@ -595,6 +704,11 @@ Error OS_Unix::create_process(const String &p_path, const List<String> &p_argume
 		ERR_PRINT("Could not create child process: " + p_path);
 		raise(SIGKILL);
 	}
+
+	ProcessInfo pi;
+	process_map_mutex.lock();
+	process_map->insert(pid, pi);
+	process_map_mutex.unlock();
 
 	if (r_child_id) {
 		*r_child_id = pid;
@@ -618,12 +732,43 @@ int OS_Unix::get_process_id() const {
 }
 
 bool OS_Unix::is_process_running(const ProcessID &p_pid) const {
+	MutexLock lock(process_map_mutex);
+	const ProcessInfo *pi = process_map->getptr(p_pid);
+
+	if (pi && !pi->is_running) {
+		return false;
+	}
+
 	int status = 0;
 	if (waitpid(p_pid, &status, WNOHANG) != 0) {
+		if (pi) {
+			pi->is_running = false;
+			pi->exit_code = status;
+		}
 		return false;
 	}
 
 	return true;
+}
+
+int OS_Unix::get_process_exit_code(const ProcessID &p_pid) const {
+	MutexLock lock(process_map_mutex);
+	const ProcessInfo *pi = process_map->getptr(p_pid);
+
+	if (pi && !pi->is_running) {
+		return pi->exit_code;
+	}
+
+	int status = 0;
+	if (waitpid(p_pid, &status, WNOHANG) != 0) {
+		status = WIFEXITED(status) ? WEXITSTATUS(status) : status;
+		if (pi) {
+			pi->is_running = false;
+			pi->exit_code = status;
+		}
+		return status;
+	}
+	return -1;
 }
 
 String OS_Unix::get_locale() const {
@@ -639,7 +784,7 @@ String OS_Unix::get_locale() const {
 	return locale;
 }
 
-Error OS_Unix::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
+Error OS_Unix::open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data) {
 	String path = p_path;
 
 	if (FileAccess::exists(path) && path.is_relative_path()) {
@@ -663,8 +808,8 @@ Error OS_Unix::open_dynamic_library(const String p_path, void *&p_library_handle
 	p_library_handle = dlopen(path.utf8().get_data(), GODOT_DLOPEN_MODE);
 	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));
 
-	if (r_resolved_path != nullptr) {
-		*r_resolved_path = path;
+	if (p_data != nullptr && p_data->r_resolved_path != nullptr) {
+		*p_data->r_resolved_path = path;
 	}
 
 	return OK;
@@ -677,7 +822,7 @@ Error OS_Unix::close_dynamic_library(void *p_library_handle) {
 	return OK;
 }
 
-Error OS_Unix::get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional) {
+Error OS_Unix::get_dynamic_library_symbol_handle(void *p_library_handle, const String &p_name, void *&p_symbol_handle, bool p_optional) {
 	const char *error;
 	dlerror(); // Clear existing errors
 
@@ -705,10 +850,15 @@ bool OS_Unix::has_environment(const String &p_var) const {
 }
 
 String OS_Unix::get_environment(const String &p_var) const {
-	if (getenv(p_var.utf8().get_data())) {
-		return getenv(p_var.utf8().get_data());
+	const char *val = getenv(p_var.utf8().get_data());
+	if (val == nullptr) { // Not set; return empty string
+		return "";
 	}
-	return "";
+	String s;
+	if (s.parse_utf8(val) == OK) {
+		return s;
+	}
+	return String(val); // Not valid UTF-8, so return as-is
 }
 
 void OS_Unix::set_environment(const String &p_var, const String &p_value) const {

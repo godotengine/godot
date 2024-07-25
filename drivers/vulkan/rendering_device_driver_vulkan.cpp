@@ -33,7 +33,9 @@
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
 #include "thirdparty/misc/smolv.h"
-#include "vulkan_context.h"
+#include "vulkan_hooks.h"
+
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
 #define PRINT_NATIVE_COMMANDS 0
 
@@ -262,6 +264,63 @@ static const VkFormat RD_TO_VK_FORMAT[RDD::DATA_FORMAT_MAX] = {
 	VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM,
 };
 
+static VkImageLayout RD_TO_VK_LAYOUT[RDD::TEXTURE_LAYOUT_MAX] = {
+	VK_IMAGE_LAYOUT_UNDEFINED, // TEXTURE_LAYOUT_UNDEFINED
+	VK_IMAGE_LAYOUT_GENERAL, // TEXTURE_LAYOUT_STORAGE_OPTIMAL
+	VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, // TEXTURE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+	VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, // TEXTURE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+	VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, // TEXTURE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL
+	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, // TEXTURE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, // TEXTURE_LAYOUT_COPY_SRC_OPTIMAL
+	VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // TEXTURE_LAYOUT_COPY_DST_OPTIMAL
+	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, // TEXTURE_LAYOUT_RESOLVE_SRC_OPTIMAL
+	VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // TEXTURE_LAYOUT_RESOLVE_DST_OPTIMAL
+	VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR, // TEXTURE_LAYOUT_VRS_ATTACHMENT_OPTIMAL
+};
+
+static VkPipelineStageFlags _rd_to_vk_pipeline_stages(BitField<RDD::PipelineStageBits> p_stages) {
+	VkPipelineStageFlags vk_flags = 0;
+	if (p_stages.has_flag(RDD::PIPELINE_STAGE_COPY_BIT) || p_stages.has_flag(RDD::PIPELINE_STAGE_RESOLVE_BIT)) {
+		// Transfer has been split into copy and resolve bits. Clear them and merge them into one bit.
+		vk_flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
+		p_stages.clear_flag(RDD::PIPELINE_STAGE_COPY_BIT);
+		p_stages.clear_flag(RDD::PIPELINE_STAGE_RESOLVE_BIT);
+	}
+
+	if (p_stages.has_flag(RDD::PIPELINE_STAGE_CLEAR_STORAGE_BIT)) {
+		// Vulkan should never use this as API_TRAIT_CLEAR_RESOURCES_WITH_VIEWS is not specified.
+		// Therefore, storage is never cleared with an explicit command.
+		p_stages.clear_flag(RDD::PIPELINE_STAGE_CLEAR_STORAGE_BIT);
+	}
+
+	// The rest of the flags have compatible numeric values with Vulkan.
+	return VkPipelineStageFlags(p_stages) | vk_flags;
+}
+
+static VkAccessFlags _rd_to_vk_access_flags(BitField<RDD::BarrierAccessBits> p_access) {
+	VkAccessFlags vk_flags = 0;
+	if (p_access.has_flag(RDD::BARRIER_ACCESS_COPY_READ_BIT) || p_access.has_flag(RDD::BARRIER_ACCESS_RESOLVE_READ_BIT)) {
+		vk_flags |= VK_ACCESS_TRANSFER_READ_BIT;
+		p_access.clear_flag(RDD::BARRIER_ACCESS_COPY_READ_BIT);
+		p_access.clear_flag(RDD::BARRIER_ACCESS_RESOLVE_READ_BIT);
+	}
+
+	if (p_access.has_flag(RDD::BARRIER_ACCESS_COPY_WRITE_BIT) || p_access.has_flag(RDD::BARRIER_ACCESS_RESOLVE_WRITE_BIT)) {
+		vk_flags |= VK_ACCESS_TRANSFER_WRITE_BIT;
+		p_access.clear_flag(RDD::BARRIER_ACCESS_COPY_WRITE_BIT);
+		p_access.clear_flag(RDD::BARRIER_ACCESS_RESOLVE_WRITE_BIT);
+	}
+
+	if (p_access.has_flag(RDD::BARRIER_ACCESS_STORAGE_CLEAR_BIT)) {
+		// Vulkan should never use this as API_TRAIT_CLEAR_RESOURCES_WITH_VIEWS is not specified.
+		// Therefore, storage is never cleared with an explicit command.
+		p_access.clear_flag(RDD::BARRIER_ACCESS_STORAGE_CLEAR_BIT);
+	}
+
+	// The rest of the flags have compatible numeric values with Vulkan.
+	return VkAccessFlags(p_access) | vk_flags;
+}
+
 // RDD::CompareOperator == VkCompareOp.
 static_assert(ENUM_MEMBERS_EQUAL(RDD::COMPARE_OP_NEVER, VK_COMPARE_OP_NEVER));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::COMPARE_OP_LESS, VK_COMPARE_OP_LESS));
@@ -273,6 +332,888 @@ static_assert(ENUM_MEMBERS_EQUAL(RDD::COMPARE_OP_GREATER_OR_EQUAL, VK_COMPARE_OP
 static_assert(ENUM_MEMBERS_EQUAL(RDD::COMPARE_OP_ALWAYS, VK_COMPARE_OP_ALWAYS));
 
 static_assert(ARRAYS_COMPATIBLE_FIELDWISE(Rect2i, VkRect2D));
+
+uint32_t RenderingDeviceDriverVulkan::SubgroupCapabilities::supported_stages_flags_rd() const {
+	uint32_t flags = 0;
+
+	if (supported_stages & VK_SHADER_STAGE_VERTEX_BIT) {
+		flags += SHADER_STAGE_VERTEX_BIT;
+	}
+	if (supported_stages & VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT) {
+		flags += SHADER_STAGE_TESSELATION_CONTROL_BIT;
+	}
+	if (supported_stages & VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT) {
+		flags += SHADER_STAGE_TESSELATION_EVALUATION_BIT;
+	}
+	if (supported_stages & VK_SHADER_STAGE_GEOMETRY_BIT) {
+		// FIXME: Add shader stage geometry bit.
+	}
+	if (supported_stages & VK_SHADER_STAGE_FRAGMENT_BIT) {
+		flags += SHADER_STAGE_FRAGMENT_BIT;
+	}
+	if (supported_stages & VK_SHADER_STAGE_COMPUTE_BIT) {
+		flags += SHADER_STAGE_COMPUTE_BIT;
+	}
+
+	return flags;
+}
+
+String RenderingDeviceDriverVulkan::SubgroupCapabilities::supported_stages_desc() const {
+	String res;
+
+	if (supported_stages & VK_SHADER_STAGE_VERTEX_BIT) {
+		res += ", STAGE_VERTEX";
+	}
+	if (supported_stages & VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT) {
+		res += ", STAGE_TESSELLATION_CONTROL";
+	}
+	if (supported_stages & VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT) {
+		res += ", STAGE_TESSELLATION_EVALUATION";
+	}
+	if (supported_stages & VK_SHADER_STAGE_GEOMETRY_BIT) {
+		res += ", STAGE_GEOMETRY";
+	}
+	if (supported_stages & VK_SHADER_STAGE_FRAGMENT_BIT) {
+		res += ", STAGE_FRAGMENT";
+	}
+	if (supported_stages & VK_SHADER_STAGE_COMPUTE_BIT) {
+		res += ", STAGE_COMPUTE";
+	}
+
+	// These are not defined on Android GRMBL.
+	if (supported_stages & 0x00000100 /* VK_SHADER_STAGE_RAYGEN_BIT_KHR */) {
+		res += ", STAGE_RAYGEN_KHR";
+	}
+	if (supported_stages & 0x00000200 /* VK_SHADER_STAGE_ANY_HIT_BIT_KHR */) {
+		res += ", STAGE_ANY_HIT_KHR";
+	}
+	if (supported_stages & 0x00000400 /* VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR */) {
+		res += ", STAGE_CLOSEST_HIT_KHR";
+	}
+	if (supported_stages & 0x00000800 /* VK_SHADER_STAGE_MISS_BIT_KHR */) {
+		res += ", STAGE_MISS_KHR";
+	}
+	if (supported_stages & 0x00001000 /* VK_SHADER_STAGE_INTERSECTION_BIT_KHR */) {
+		res += ", STAGE_INTERSECTION_KHR";
+	}
+	if (supported_stages & 0x00002000 /* VK_SHADER_STAGE_CALLABLE_BIT_KHR */) {
+		res += ", STAGE_CALLABLE_KHR";
+	}
+	if (supported_stages & 0x00000040 /* VK_SHADER_STAGE_TASK_BIT_NV */) {
+		res += ", STAGE_TASK_NV";
+	}
+	if (supported_stages & 0x00000080 /* VK_SHADER_STAGE_MESH_BIT_NV */) {
+		res += ", STAGE_MESH_NV";
+	}
+
+	return res.substr(2); // Remove first ", ".
+}
+
+uint32_t RenderingDeviceDriverVulkan::SubgroupCapabilities::supported_operations_flags_rd() const {
+	uint32_t flags = 0;
+
+	if (supported_operations & VK_SUBGROUP_FEATURE_BASIC_BIT) {
+		flags += SUBGROUP_BASIC_BIT;
+	}
+	if (supported_operations & VK_SUBGROUP_FEATURE_VOTE_BIT) {
+		flags += SUBGROUP_VOTE_BIT;
+	}
+	if (supported_operations & VK_SUBGROUP_FEATURE_ARITHMETIC_BIT) {
+		flags += SUBGROUP_ARITHMETIC_BIT;
+	}
+	if (supported_operations & VK_SUBGROUP_FEATURE_BALLOT_BIT) {
+		flags += SUBGROUP_BALLOT_BIT;
+	}
+	if (supported_operations & VK_SUBGROUP_FEATURE_SHUFFLE_BIT) {
+		flags += SUBGROUP_SHUFFLE_BIT;
+	}
+	if (supported_operations & VK_SUBGROUP_FEATURE_SHUFFLE_RELATIVE_BIT) {
+		flags += SUBGROUP_SHUFFLE_RELATIVE_BIT;
+	}
+	if (supported_operations & VK_SUBGROUP_FEATURE_CLUSTERED_BIT) {
+		flags += SUBGROUP_CLUSTERED_BIT;
+	}
+	if (supported_operations & VK_SUBGROUP_FEATURE_QUAD_BIT) {
+		flags += SUBGROUP_QUAD_BIT;
+	}
+
+	return flags;
+}
+
+String RenderingDeviceDriverVulkan::SubgroupCapabilities::supported_operations_desc() const {
+	String res;
+
+	if (supported_operations & VK_SUBGROUP_FEATURE_BASIC_BIT) {
+		res += ", FEATURE_BASIC";
+	}
+	if (supported_operations & VK_SUBGROUP_FEATURE_VOTE_BIT) {
+		res += ", FEATURE_VOTE";
+	}
+	if (supported_operations & VK_SUBGROUP_FEATURE_ARITHMETIC_BIT) {
+		res += ", FEATURE_ARITHMETIC";
+	}
+	if (supported_operations & VK_SUBGROUP_FEATURE_BALLOT_BIT) {
+		res += ", FEATURE_BALLOT";
+	}
+	if (supported_operations & VK_SUBGROUP_FEATURE_SHUFFLE_BIT) {
+		res += ", FEATURE_SHUFFLE";
+	}
+	if (supported_operations & VK_SUBGROUP_FEATURE_SHUFFLE_RELATIVE_BIT) {
+		res += ", FEATURE_SHUFFLE_RELATIVE";
+	}
+	if (supported_operations & VK_SUBGROUP_FEATURE_CLUSTERED_BIT) {
+		res += ", FEATURE_CLUSTERED";
+	}
+	if (supported_operations & VK_SUBGROUP_FEATURE_QUAD_BIT) {
+		res += ", FEATURE_QUAD";
+	}
+	if (supported_operations & VK_SUBGROUP_FEATURE_PARTITIONED_BIT_NV) {
+		res += ", FEATURE_PARTITIONED_NV";
+	}
+
+	return res.substr(2); // Remove first ", ".
+}
+
+/*****************/
+/**** GENERIC ****/
+/*****************/
+
+void RenderingDeviceDriverVulkan::_register_requested_device_extension(const CharString &p_extension_name, bool p_required) {
+	ERR_FAIL_COND(requested_device_extensions.has(p_extension_name));
+	requested_device_extensions[p_extension_name] = p_required;
+}
+
+Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
+	enabled_device_extension_names.clear();
+
+	_register_requested_device_extension(VK_KHR_SWAPCHAIN_EXTENSION_NAME, true);
+	_register_requested_device_extension(VK_KHR_MULTIVIEW_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_STORAGE_BUFFER_STORAGE_CLASS_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_16BIT_STORAGE_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_MAINTENANCE_2_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_EXT_PIPELINE_CREATION_CACHE_CONTROL_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_EXT_SUBGROUP_SIZE_CONTROL_EXTENSION_NAME, false);
+
+	if (Engine::get_singleton()->is_generate_spirv_debug_info_enabled()) {
+		_register_requested_device_extension(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME, true);
+	}
+
+	uint32_t device_extension_count = 0;
+	VkResult err = vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &device_extension_count, nullptr);
+	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+	ERR_FAIL_COND_V_MSG(device_extension_count == 0, ERR_CANT_CREATE, "vkEnumerateDeviceExtensionProperties failed to find any extensions\n\nDo you have a compatible Vulkan installable client driver (ICD) installed?");
+
+	TightLocalVector<VkExtensionProperties> device_extensions;
+	device_extensions.resize(device_extension_count);
+	err = vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &device_extension_count, device_extensions.ptr());
+	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+
+#ifdef DEV_ENABLED
+	for (uint32_t i = 0; i < device_extension_count; i++) {
+		print_verbose(String("VULKAN: Found device extension ") + String::utf8(device_extensions[i].extensionName));
+	}
+#endif
+
+	// Enable all extensions that are supported and requested.
+	for (uint32_t i = 0; i < device_extension_count; i++) {
+		CharString extension_name(device_extensions[i].extensionName);
+		if (requested_device_extensions.has(extension_name)) {
+			enabled_device_extension_names.insert(extension_name);
+		}
+	}
+
+	// Now check our requested extensions.
+	for (KeyValue<CharString, bool> &requested_extension : requested_device_extensions) {
+		if (!enabled_device_extension_names.has(requested_extension.key)) {
+			if (requested_extension.value) {
+				ERR_FAIL_V_MSG(ERR_BUG, String("Required extension ") + String::utf8(requested_extension.key) + String(" not found."));
+			} else {
+				print_verbose(String("Optional extension ") + String::utf8(requested_extension.key) + String(" not found"));
+			}
+		}
+	}
+
+	return OK;
+}
+
+Error RenderingDeviceDriverVulkan::_check_device_features() {
+	vkGetPhysicalDeviceFeatures(physical_device, &physical_device_features);
+
+	// Check for required features.
+	if (!physical_device_features.imageCubeArray || !physical_device_features.independentBlend) {
+		String error_string = vformat("Your GPU (%s) does not support the following features which are required to use Vulkan-based renderers in Godot:\n\n", context_device.name);
+		if (!physical_device_features.imageCubeArray) {
+			error_string += "- No support for image cube arrays.\n";
+		}
+		if (!physical_device_features.independentBlend) {
+			error_string += "- No support for independentBlend.\n";
+		}
+		error_string += "\nThis is usually a hardware limitation, so updating graphics drivers won't help in most cases.";
+
+#if defined(ANDROID_ENABLED) || defined(IOS_ENABLED)
+		// Android/iOS platform ports currently don't exit themselves when this method returns `ERR_CANT_CREATE`.
+		OS::get_singleton()->alert(error_string + "\nClick OK to exit (black screen will be visible).");
+#else
+		OS::get_singleton()->alert(error_string + "\nClick OK to exit.");
+#endif
+
+		return ERR_CANT_CREATE;
+	}
+
+	// Opt-in to the features we actually need/use. These can be changed in the future.
+	// We do this for multiple reasons:
+	//
+	//	1. Certain features (like sparse* stuff) cause unnecessary internal driver allocations.
+	//	2. Others like shaderStorageImageMultisample are a huge red flag
+	//	   (MSAA + Storage is rarely needed).
+	//	3. Most features when turned off aren't actually off (we just promise the driver not to use them)
+	//	   and it is validation what will complain. This allows us to target a minimum baseline.
+	//
+	// TODO: Allow the user to override these settings (i.e. turn off more stuff) using profiles
+	// so they can target a broad range of HW. For example Mali HW does not have
+	// shaderClipDistance/shaderCullDistance; thus validation would complain if such feature is used;
+	// allowing them to fix the problem without even owning Mali HW to test on.
+	//
+	// The excluded features are:
+	// - robustBufferAccess (can hamper performance on some hardware)
+	// - occlusionQueryPrecise
+	// - pipelineStatisticsQuery
+	// - shaderStorageImageMultisample (unsupported by Intel Arc, prevents from using MSAA storage accidentally)
+	// - shaderResourceResidency
+	// - sparseBinding (we don't use sparse features and enabling them cause extra internal allocations inside the Vulkan driver we don't need)
+	// - sparseResidencyBuffer
+	// - sparseResidencyImage2D
+	// - sparseResidencyImage3D
+	// - sparseResidency2Samples
+	// - sparseResidency4Samples
+	// - sparseResidency8Samples
+	// - sparseResidency16Samples
+	// - sparseResidencyAliased
+	// - inheritedQueries
+
+#define VK_DEVICEFEATURE_ENABLE_IF(x)                             \
+	if (physical_device_features.x) {                             \
+		requested_device_features.x = physical_device_features.x; \
+	} else                                                        \
+		((void)0)
+
+	requested_device_features = {};
+	VK_DEVICEFEATURE_ENABLE_IF(fullDrawIndexUint32);
+	VK_DEVICEFEATURE_ENABLE_IF(imageCubeArray);
+	VK_DEVICEFEATURE_ENABLE_IF(independentBlend);
+	VK_DEVICEFEATURE_ENABLE_IF(geometryShader);
+	VK_DEVICEFEATURE_ENABLE_IF(tessellationShader);
+	VK_DEVICEFEATURE_ENABLE_IF(sampleRateShading);
+	VK_DEVICEFEATURE_ENABLE_IF(dualSrcBlend);
+	VK_DEVICEFEATURE_ENABLE_IF(logicOp);
+	VK_DEVICEFEATURE_ENABLE_IF(multiDrawIndirect);
+	VK_DEVICEFEATURE_ENABLE_IF(drawIndirectFirstInstance);
+	VK_DEVICEFEATURE_ENABLE_IF(depthClamp);
+	VK_DEVICEFEATURE_ENABLE_IF(depthBiasClamp);
+	VK_DEVICEFEATURE_ENABLE_IF(fillModeNonSolid);
+	VK_DEVICEFEATURE_ENABLE_IF(depthBounds);
+	VK_DEVICEFEATURE_ENABLE_IF(wideLines);
+	VK_DEVICEFEATURE_ENABLE_IF(largePoints);
+	VK_DEVICEFEATURE_ENABLE_IF(alphaToOne);
+	VK_DEVICEFEATURE_ENABLE_IF(multiViewport);
+	VK_DEVICEFEATURE_ENABLE_IF(samplerAnisotropy);
+	VK_DEVICEFEATURE_ENABLE_IF(textureCompressionETC2);
+	VK_DEVICEFEATURE_ENABLE_IF(textureCompressionASTC_LDR);
+	VK_DEVICEFEATURE_ENABLE_IF(textureCompressionBC);
+	VK_DEVICEFEATURE_ENABLE_IF(vertexPipelineStoresAndAtomics);
+	VK_DEVICEFEATURE_ENABLE_IF(fragmentStoresAndAtomics);
+	VK_DEVICEFEATURE_ENABLE_IF(shaderTessellationAndGeometryPointSize);
+	VK_DEVICEFEATURE_ENABLE_IF(shaderImageGatherExtended);
+	VK_DEVICEFEATURE_ENABLE_IF(shaderStorageImageExtendedFormats);
+	VK_DEVICEFEATURE_ENABLE_IF(shaderStorageImageReadWithoutFormat);
+	VK_DEVICEFEATURE_ENABLE_IF(shaderStorageImageWriteWithoutFormat);
+	VK_DEVICEFEATURE_ENABLE_IF(shaderUniformBufferArrayDynamicIndexing);
+	VK_DEVICEFEATURE_ENABLE_IF(shaderSampledImageArrayDynamicIndexing);
+	VK_DEVICEFEATURE_ENABLE_IF(shaderStorageBufferArrayDynamicIndexing);
+	VK_DEVICEFEATURE_ENABLE_IF(shaderStorageImageArrayDynamicIndexing);
+	VK_DEVICEFEATURE_ENABLE_IF(shaderClipDistance);
+	VK_DEVICEFEATURE_ENABLE_IF(shaderCullDistance);
+	VK_DEVICEFEATURE_ENABLE_IF(shaderFloat64);
+	VK_DEVICEFEATURE_ENABLE_IF(shaderInt64);
+	VK_DEVICEFEATURE_ENABLE_IF(shaderInt16);
+	VK_DEVICEFEATURE_ENABLE_IF(shaderResourceMinLod);
+	VK_DEVICEFEATURE_ENABLE_IF(variableMultisampleRate);
+
+	return OK;
+}
+
+Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
+	// Fill device family and version.
+	device_capabilities.device_family = DEVICE_VULKAN;
+	device_capabilities.version_major = VK_API_VERSION_MAJOR(physical_device_properties.apiVersion);
+	device_capabilities.version_minor = VK_API_VERSION_MINOR(physical_device_properties.apiVersion);
+
+	// References:
+	// https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VK_KHR_multiview.html
+	// https://www.khronos.org/blog/vulkan-subgroup-tutorial
+	const RenderingContextDriverVulkan::Functions &functions = context_driver->functions_get();
+	if (functions.GetPhysicalDeviceFeatures2 != nullptr) {
+		// We must check that the corresponding extension is present before assuming a feature as enabled.
+		// See also: https://github.com/godotengine/godot/issues/65409
+
+		void *next_features = nullptr;
+		VkPhysicalDeviceVulkan12Features device_features_vk_1_2 = {};
+		VkPhysicalDeviceShaderFloat16Int8FeaturesKHR shader_features = {};
+		VkPhysicalDeviceFragmentShadingRateFeaturesKHR vrs_features = {};
+		VkPhysicalDevice16BitStorageFeaturesKHR storage_feature = {};
+		VkPhysicalDeviceMultiviewFeatures multiview_features = {};
+		VkPhysicalDevicePipelineCreationCacheControlFeatures pipeline_cache_control_features = {};
+
+		const bool use_1_2_features = physical_device_properties.apiVersion >= VK_API_VERSION_1_2;
+		if (use_1_2_features) {
+			device_features_vk_1_2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+			device_features_vk_1_2.pNext = next_features;
+			next_features = &device_features_vk_1_2;
+		} else if (enabled_device_extension_names.has(VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME)) {
+			shader_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES_KHR;
+			shader_features.pNext = next_features;
+			next_features = &shader_features;
+		}
+
+		if (enabled_device_extension_names.has(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)) {
+			vrs_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR;
+			vrs_features.pNext = next_features;
+			next_features = &vrs_features;
+		}
+
+		if (enabled_device_extension_names.has(VK_KHR_16BIT_STORAGE_EXTENSION_NAME)) {
+			storage_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES_KHR;
+			storage_feature.pNext = next_features;
+			next_features = &storage_feature;
+		}
+
+		if (enabled_device_extension_names.has(VK_KHR_MULTIVIEW_EXTENSION_NAME)) {
+			multiview_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
+			multiview_features.pNext = next_features;
+			next_features = &multiview_features;
+		}
+
+		if (enabled_device_extension_names.has(VK_EXT_PIPELINE_CREATION_CACHE_CONTROL_EXTENSION_NAME)) {
+			pipeline_cache_control_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CREATION_CACHE_CONTROL_FEATURES;
+			pipeline_cache_control_features.pNext = next_features;
+			next_features = &pipeline_cache_control_features;
+		}
+
+		VkPhysicalDeviceFeatures2 device_features_2 = {};
+		device_features_2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+		device_features_2.pNext = next_features;
+		functions.GetPhysicalDeviceFeatures2(physical_device, &device_features_2);
+
+		if (use_1_2_features) {
+#ifdef MACOS_ENABLED
+			ERR_FAIL_COND_V_MSG(!device_features_vk_1_2.shaderSampledImageArrayNonUniformIndexing, ERR_CANT_CREATE, "Your GPU doesn't support shaderSampledImageArrayNonUniformIndexing which is required to use the Vulkan-based renderers in Godot.");
+#endif
+			if (enabled_device_extension_names.has(VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME)) {
+				shader_capabilities.shader_float16_is_supported = device_features_vk_1_2.shaderFloat16;
+				shader_capabilities.shader_int8_is_supported = device_features_vk_1_2.shaderInt8;
+			}
+		} else {
+			if (enabled_device_extension_names.has(VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME)) {
+				shader_capabilities.shader_float16_is_supported = shader_features.shaderFloat16;
+				shader_capabilities.shader_int8_is_supported = shader_features.shaderInt8;
+			}
+		}
+
+		if (enabled_device_extension_names.has(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)) {
+			vrs_capabilities.pipeline_vrs_supported = vrs_features.pipelineFragmentShadingRate;
+			vrs_capabilities.primitive_vrs_supported = vrs_features.primitiveFragmentShadingRate;
+			vrs_capabilities.attachment_vrs_supported = vrs_features.attachmentFragmentShadingRate;
+		}
+
+		if (enabled_device_extension_names.has(VK_KHR_MULTIVIEW_EXTENSION_NAME)) {
+			multiview_capabilities.is_supported = multiview_features.multiview;
+			multiview_capabilities.geometry_shader_is_supported = multiview_features.multiviewGeometryShader;
+			multiview_capabilities.tessellation_shader_is_supported = multiview_features.multiviewTessellationShader;
+		}
+
+		if (enabled_device_extension_names.has(VK_KHR_16BIT_STORAGE_EXTENSION_NAME)) {
+			storage_buffer_capabilities.storage_buffer_16_bit_access_is_supported = storage_feature.storageBuffer16BitAccess;
+			storage_buffer_capabilities.uniform_and_storage_buffer_16_bit_access_is_supported = storage_feature.uniformAndStorageBuffer16BitAccess;
+			storage_buffer_capabilities.storage_push_constant_16_is_supported = storage_feature.storagePushConstant16;
+			storage_buffer_capabilities.storage_input_output_16 = storage_feature.storageInputOutput16;
+		}
+
+		if (enabled_device_extension_names.has(VK_EXT_PIPELINE_CREATION_CACHE_CONTROL_EXTENSION_NAME)) {
+			pipeline_cache_control_support = pipeline_cache_control_features.pipelineCreationCacheControl;
+		}
+	}
+
+	if (functions.GetPhysicalDeviceProperties2 != nullptr) {
+		void *next_properties = nullptr;
+		VkPhysicalDeviceFragmentShadingRatePropertiesKHR vrs_properties = {};
+		VkPhysicalDeviceMultiviewProperties multiview_properties = {};
+		VkPhysicalDeviceSubgroupProperties subgroup_properties = {};
+		VkPhysicalDeviceSubgroupSizeControlProperties subgroup_size_control_properties = {};
+		VkPhysicalDeviceProperties2 physical_device_properties_2 = {};
+
+		const bool use_1_1_properties = physical_device_properties.apiVersion >= VK_API_VERSION_1_1;
+		if (use_1_1_properties) {
+			subgroup_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_PROPERTIES;
+			subgroup_properties.pNext = next_properties;
+			next_properties = &subgroup_properties;
+
+			subgroup_capabilities.size_control_is_supported = enabled_device_extension_names.has(VK_EXT_SUBGROUP_SIZE_CONTROL_EXTENSION_NAME);
+			if (subgroup_capabilities.size_control_is_supported) {
+				subgroup_size_control_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_PROPERTIES;
+				subgroup_size_control_properties.pNext = next_properties;
+				next_properties = &subgroup_size_control_properties;
+			}
+		}
+
+		if (multiview_capabilities.is_supported) {
+			multiview_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES;
+			multiview_properties.pNext = next_properties;
+			next_properties = &multiview_properties;
+		}
+
+		if (vrs_capabilities.attachment_vrs_supported) {
+			vrs_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR;
+			vrs_properties.pNext = next_properties;
+			next_properties = &vrs_properties;
+		}
+
+		physical_device_properties_2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+		physical_device_properties_2.pNext = next_properties;
+		functions.GetPhysicalDeviceProperties2(physical_device, &physical_device_properties_2);
+
+		subgroup_capabilities.size = subgroup_properties.subgroupSize;
+		subgroup_capabilities.min_size = subgroup_properties.subgroupSize;
+		subgroup_capabilities.max_size = subgroup_properties.subgroupSize;
+		subgroup_capabilities.supported_stages = subgroup_properties.supportedStages;
+		subgroup_capabilities.supported_operations = subgroup_properties.supportedOperations;
+
+		// Note: quadOperationsInAllStages will be true if:
+		// - supportedStages has VK_SHADER_STAGE_ALL_GRAPHICS + VK_SHADER_STAGE_COMPUTE_BIT.
+		// - supportedOperations has VK_SUBGROUP_FEATURE_QUAD_BIT.
+		subgroup_capabilities.quad_operations_in_all_stages = subgroup_properties.quadOperationsInAllStages;
+
+		if (subgroup_capabilities.size_control_is_supported && (subgroup_size_control_properties.requiredSubgroupSizeStages & VK_SHADER_STAGE_COMPUTE_BIT)) {
+			subgroup_capabilities.min_size = subgroup_size_control_properties.minSubgroupSize;
+			subgroup_capabilities.max_size = subgroup_size_control_properties.maxSubgroupSize;
+		}
+
+		if (vrs_capabilities.pipeline_vrs_supported || vrs_capabilities.primitive_vrs_supported || vrs_capabilities.attachment_vrs_supported) {
+			print_verbose("- Vulkan Variable Rate Shading supported:");
+			if (vrs_capabilities.pipeline_vrs_supported) {
+				print_verbose("  Pipeline fragment shading rate");
+			}
+			if (vrs_capabilities.primitive_vrs_supported) {
+				print_verbose("  Primitive fragment shading rate");
+			}
+			if (vrs_capabilities.attachment_vrs_supported) {
+				// TODO: Expose these somehow to the end user.
+				vrs_capabilities.min_texel_size.x = vrs_properties.minFragmentShadingRateAttachmentTexelSize.width;
+				vrs_capabilities.min_texel_size.y = vrs_properties.minFragmentShadingRateAttachmentTexelSize.height;
+				vrs_capabilities.max_texel_size.x = vrs_properties.maxFragmentShadingRateAttachmentTexelSize.width;
+				vrs_capabilities.max_texel_size.y = vrs_properties.maxFragmentShadingRateAttachmentTexelSize.height;
+				vrs_capabilities.max_fragment_size.x = vrs_properties.maxFragmentSize.width; // either 4 or 8
+				vrs_capabilities.max_fragment_size.y = vrs_properties.maxFragmentSize.height; // generally the same as width
+
+				// We'll attempt to default to a texel size of 16x16.
+				vrs_capabilities.texel_size = Vector2i(16, 16).clamp(vrs_capabilities.min_texel_size, vrs_capabilities.max_texel_size);
+
+				print_verbose(String("  Attachment fragment shading rate") + String(", min texel size: (") + itos(vrs_capabilities.min_texel_size.x) + String(", ") + itos(vrs_capabilities.min_texel_size.y) + String(")") + String(", max texel size: (") + itos(vrs_capabilities.max_texel_size.x) + String(", ") + itos(vrs_capabilities.max_texel_size.y) + String(")") + String(", max fragment size: (") + itos(vrs_capabilities.max_fragment_size.x) + String(", ") + itos(vrs_capabilities.max_fragment_size.y) + String(")"));
+			}
+
+		} else {
+			print_verbose("- Vulkan Variable Rate Shading not supported");
+		}
+
+		if (multiview_capabilities.is_supported) {
+			multiview_capabilities.max_view_count = multiview_properties.maxMultiviewViewCount;
+			multiview_capabilities.max_instance_count = multiview_properties.maxMultiviewInstanceIndex;
+
+			print_verbose("- Vulkan multiview supported:");
+			print_verbose("  max view count: " + itos(multiview_capabilities.max_view_count));
+			print_verbose("  max instances: " + itos(multiview_capabilities.max_instance_count));
+		} else {
+			print_verbose("- Vulkan multiview not supported");
+		}
+
+		print_verbose("- Vulkan subgroup:");
+		print_verbose("  size: " + itos(subgroup_capabilities.size));
+		print_verbose("  min size: " + itos(subgroup_capabilities.min_size));
+		print_verbose("  max size: " + itos(subgroup_capabilities.max_size));
+		print_verbose("  stages: " + subgroup_capabilities.supported_stages_desc());
+		print_verbose("  supported ops: " + subgroup_capabilities.supported_operations_desc());
+		if (subgroup_capabilities.quad_operations_in_all_stages) {
+			print_verbose("  quad operations in all stages");
+		}
+	}
+
+	return OK;
+}
+
+Error RenderingDeviceDriverVulkan::_add_queue_create_info(LocalVector<VkDeviceQueueCreateInfo> &r_queue_create_info) {
+	uint32_t queue_family_count = queue_family_properties.size();
+	queue_families.resize(queue_family_count);
+
+	VkQueueFlags queue_flags_mask = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
+	const uint32_t max_queue_count_per_family = 1;
+	static const float queue_priorities[max_queue_count_per_family] = {};
+	for (uint32_t i = 0; i < queue_family_count; i++) {
+		if ((queue_family_properties[i].queueFlags & queue_flags_mask) == 0) {
+			// We ignore creating queues in families that don't support any of the operations we require.
+			continue;
+		}
+
+		VkDeviceQueueCreateInfo create_info = {};
+		create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		create_info.queueFamilyIndex = i;
+		create_info.queueCount = MIN(queue_family_properties[i].queueCount, max_queue_count_per_family);
+		create_info.pQueuePriorities = queue_priorities;
+		r_queue_create_info.push_back(create_info);
+
+		// Prepare the vectors where the queues will be filled out.
+		queue_families[i].resize(create_info.queueCount);
+	}
+
+	return OK;
+}
+
+Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDeviceQueueCreateInfo> &p_queue_create_info) {
+	TightLocalVector<const char *> enabled_extension_names;
+	enabled_extension_names.reserve(enabled_device_extension_names.size());
+	for (const CharString &extension_name : enabled_device_extension_names) {
+		enabled_extension_names.push_back(extension_name.ptr());
+	}
+
+	void *create_info_next = nullptr;
+	VkPhysicalDeviceShaderFloat16Int8FeaturesKHR shader_features = {};
+	shader_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES_KHR;
+	shader_features.pNext = create_info_next;
+	shader_features.shaderFloat16 = shader_capabilities.shader_float16_is_supported;
+	shader_features.shaderInt8 = shader_capabilities.shader_int8_is_supported;
+	create_info_next = &shader_features;
+
+	VkPhysicalDeviceFragmentShadingRateFeaturesKHR vrs_features = {};
+	if (vrs_capabilities.pipeline_vrs_supported || vrs_capabilities.primitive_vrs_supported || vrs_capabilities.attachment_vrs_supported) {
+		vrs_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR;
+		vrs_features.pNext = create_info_next;
+		vrs_features.pipelineFragmentShadingRate = vrs_capabilities.pipeline_vrs_supported;
+		vrs_features.primitiveFragmentShadingRate = vrs_capabilities.primitive_vrs_supported;
+		vrs_features.attachmentFragmentShadingRate = vrs_capabilities.attachment_vrs_supported;
+		create_info_next = &vrs_features;
+	}
+
+	VkPhysicalDevicePipelineCreationCacheControlFeatures pipeline_cache_control_features = {};
+	if (pipeline_cache_control_support) {
+		pipeline_cache_control_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CREATION_CACHE_CONTROL_FEATURES;
+		pipeline_cache_control_features.pNext = create_info_next;
+		pipeline_cache_control_features.pipelineCreationCacheControl = pipeline_cache_control_support;
+		create_info_next = &pipeline_cache_control_features;
+	}
+
+	VkPhysicalDeviceVulkan11Features vulkan_1_1_features = {};
+	VkPhysicalDevice16BitStorageFeaturesKHR storage_features = {};
+	VkPhysicalDeviceMultiviewFeatures multiview_features = {};
+	const bool enable_1_2_features = physical_device_properties.apiVersion >= VK_API_VERSION_1_2;
+	if (enable_1_2_features) {
+		// In Vulkan 1.2 and newer we use a newer struct to enable various features.
+		vulkan_1_1_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
+		vulkan_1_1_features.pNext = create_info_next;
+		vulkan_1_1_features.storageBuffer16BitAccess = storage_buffer_capabilities.storage_buffer_16_bit_access_is_supported;
+		vulkan_1_1_features.uniformAndStorageBuffer16BitAccess = storage_buffer_capabilities.uniform_and_storage_buffer_16_bit_access_is_supported;
+		vulkan_1_1_features.storagePushConstant16 = storage_buffer_capabilities.storage_push_constant_16_is_supported;
+		vulkan_1_1_features.storageInputOutput16 = storage_buffer_capabilities.storage_input_output_16;
+		vulkan_1_1_features.multiview = multiview_capabilities.is_supported;
+		vulkan_1_1_features.multiviewGeometryShader = multiview_capabilities.geometry_shader_is_supported;
+		vulkan_1_1_features.multiviewTessellationShader = multiview_capabilities.tessellation_shader_is_supported;
+		vulkan_1_1_features.variablePointersStorageBuffer = 0;
+		vulkan_1_1_features.variablePointers = 0;
+		vulkan_1_1_features.protectedMemory = 0;
+		vulkan_1_1_features.samplerYcbcrConversion = 0;
+		vulkan_1_1_features.shaderDrawParameters = 0;
+		create_info_next = &vulkan_1_1_features;
+	} else {
+		// On Vulkan 1.0 and 1.1 we use our older structs to initialize these features.
+		storage_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES_KHR;
+		storage_features.pNext = create_info_next;
+		storage_features.storageBuffer16BitAccess = storage_buffer_capabilities.storage_buffer_16_bit_access_is_supported;
+		storage_features.uniformAndStorageBuffer16BitAccess = storage_buffer_capabilities.uniform_and_storage_buffer_16_bit_access_is_supported;
+		storage_features.storagePushConstant16 = storage_buffer_capabilities.storage_push_constant_16_is_supported;
+		storage_features.storageInputOutput16 = storage_buffer_capabilities.storage_input_output_16;
+		create_info_next = &storage_features;
+
+		const bool enable_1_1_features = physical_device_properties.apiVersion >= VK_API_VERSION_1_1;
+		if (enable_1_1_features) {
+			multiview_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
+			multiview_features.pNext = create_info_next;
+			multiview_features.multiview = multiview_capabilities.is_supported;
+			multiview_features.multiviewGeometryShader = multiview_capabilities.geometry_shader_is_supported;
+			multiview_features.multiviewTessellationShader = multiview_capabilities.tessellation_shader_is_supported;
+			create_info_next = &multiview_features;
+		}
+	}
+
+	VkDeviceCreateInfo create_info = {};
+	create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+	create_info.pNext = create_info_next;
+	create_info.queueCreateInfoCount = p_queue_create_info.size();
+	create_info.pQueueCreateInfos = p_queue_create_info.ptr();
+	create_info.enabledExtensionCount = enabled_extension_names.size();
+	create_info.ppEnabledExtensionNames = enabled_extension_names.ptr();
+	create_info.pEnabledFeatures = &requested_device_features;
+
+	if (VulkanHooks::get_singleton() != nullptr) {
+		bool device_created = VulkanHooks::get_singleton()->create_vulkan_device(&create_info, &vk_device);
+		ERR_FAIL_COND_V(!device_created, ERR_CANT_CREATE);
+	} else {
+		VkResult err = vkCreateDevice(physical_device, &create_info, nullptr, &vk_device);
+		ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+	}
+
+	for (uint32_t i = 0; i < queue_families.size(); i++) {
+		for (uint32_t j = 0; j < queue_families[i].size(); j++) {
+			vkGetDeviceQueue(vk_device, i, j, &queue_families[i][j].queue);
+		}
+	}
+
+	const RenderingContextDriverVulkan::Functions &functions = context_driver->functions_get();
+	if (functions.GetDeviceProcAddr != nullptr) {
+		device_functions.CreateSwapchainKHR = PFN_vkCreateSwapchainKHR(functions.GetDeviceProcAddr(vk_device, "vkCreateSwapchainKHR"));
+		device_functions.DestroySwapchainKHR = PFN_vkDestroySwapchainKHR(functions.GetDeviceProcAddr(vk_device, "vkDestroySwapchainKHR"));
+		device_functions.GetSwapchainImagesKHR = PFN_vkGetSwapchainImagesKHR(functions.GetDeviceProcAddr(vk_device, "vkGetSwapchainImagesKHR"));
+		device_functions.AcquireNextImageKHR = PFN_vkAcquireNextImageKHR(functions.GetDeviceProcAddr(vk_device, "vkAcquireNextImageKHR"));
+		device_functions.QueuePresentKHR = PFN_vkQueuePresentKHR(functions.GetDeviceProcAddr(vk_device, "vkQueuePresentKHR"));
+
+		if (enabled_device_extension_names.has(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME)) {
+			device_functions.CreateRenderPass2KHR = PFN_vkCreateRenderPass2KHR(functions.GetDeviceProcAddr(vk_device, "vkCreateRenderPass2KHR"));
+		}
+	}
+
+	return OK;
+}
+
+Error RenderingDeviceDriverVulkan::_initialize_allocator() {
+	VmaAllocatorCreateInfo allocator_info = {};
+	allocator_info.physicalDevice = physical_device;
+	allocator_info.device = vk_device;
+	allocator_info.instance = context_driver->instance_get();
+	const bool use_1_3_features = physical_device_properties.apiVersion >= VK_API_VERSION_1_3;
+	if (use_1_3_features) {
+		allocator_info.flags |= VMA_ALLOCATOR_CREATE_KHR_MAINTENANCE5_BIT;
+	}
+	VkResult err = vmaCreateAllocator(&allocator_info, &allocator);
+	ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "vmaCreateAllocator failed with error " + itos(err) + ".");
+
+	return OK;
+}
+
+Error RenderingDeviceDriverVulkan::_initialize_pipeline_cache() {
+	pipelines_cache.buffer.resize(sizeof(PipelineCacheHeader));
+	PipelineCacheHeader *header = (PipelineCacheHeader *)(pipelines_cache.buffer.ptrw());
+	*header = {};
+	header->magic = 868 + VK_PIPELINE_CACHE_HEADER_VERSION_ONE;
+	header->device_id = physical_device_properties.deviceID;
+	header->vendor_id = physical_device_properties.vendorID;
+	header->driver_version = physical_device_properties.driverVersion;
+	memcpy(header->uuid, physical_device_properties.pipelineCacheUUID, VK_UUID_SIZE);
+	header->driver_abi = sizeof(void *);
+
+	pipeline_cache_id = String::hex_encode_buffer(physical_device_properties.pipelineCacheUUID, VK_UUID_SIZE);
+	pipeline_cache_id += "-driver-" + itos(physical_device_properties.driverVersion);
+
+	return OK;
+}
+
+static void _convert_subpass_attachments(const VkAttachmentReference2 *p_attachment_references_2, uint32_t p_attachment_references_count, TightLocalVector<VkAttachmentReference> &r_attachment_references) {
+	r_attachment_references.resize(p_attachment_references_count);
+	for (uint32_t i = 0; i < p_attachment_references_count; i++) {
+		// Ignore sType, pNext and aspectMask (which is currently unused).
+		r_attachment_references[i].attachment = p_attachment_references_2[i].attachment;
+		r_attachment_references[i].layout = p_attachment_references_2[i].layout;
+	}
+}
+
+VkResult RenderingDeviceDriverVulkan::_create_render_pass(VkDevice p_device, const VkRenderPassCreateInfo2 *p_create_info, const VkAllocationCallbacks *p_allocator, VkRenderPass *p_render_pass) {
+	if (device_functions.CreateRenderPass2KHR != nullptr) {
+		return device_functions.CreateRenderPass2KHR(p_device, p_create_info, p_allocator, p_render_pass);
+	} else {
+		// Compatibility fallback with regular create render pass but by converting the inputs from the newer version to the older one.
+		TightLocalVector<VkAttachmentDescription> attachments;
+		attachments.resize(p_create_info->attachmentCount);
+		for (uint32_t i = 0; i < p_create_info->attachmentCount; i++) {
+			// Ignores sType and pNext from the attachment.
+			const VkAttachmentDescription2 &src = p_create_info->pAttachments[i];
+			VkAttachmentDescription &dst = attachments[i];
+			dst.flags = src.flags;
+			dst.format = src.format;
+			dst.samples = src.samples;
+			dst.loadOp = src.loadOp;
+			dst.storeOp = src.storeOp;
+			dst.stencilLoadOp = src.stencilLoadOp;
+			dst.stencilStoreOp = src.stencilStoreOp;
+			dst.initialLayout = src.initialLayout;
+			dst.finalLayout = src.finalLayout;
+		}
+
+		const uint32_t attachment_vectors_per_subpass = 4;
+		TightLocalVector<TightLocalVector<VkAttachmentReference>> subpasses_attachments;
+		TightLocalVector<VkSubpassDescription> subpasses;
+		subpasses_attachments.resize(p_create_info->subpassCount * attachment_vectors_per_subpass);
+		subpasses.resize(p_create_info->subpassCount);
+
+		for (uint32_t i = 0; i < p_create_info->subpassCount; i++) {
+			const uint32_t vector_base_index = i * attachment_vectors_per_subpass;
+			const uint32_t input_attachments_index = vector_base_index + 0;
+			const uint32_t color_attachments_index = vector_base_index + 1;
+			const uint32_t resolve_attachments_index = vector_base_index + 2;
+			const uint32_t depth_attachment_index = vector_base_index + 3;
+			_convert_subpass_attachments(p_create_info->pSubpasses[i].pInputAttachments, p_create_info->pSubpasses[i].inputAttachmentCount, subpasses_attachments[input_attachments_index]);
+			_convert_subpass_attachments(p_create_info->pSubpasses[i].pColorAttachments, p_create_info->pSubpasses[i].colorAttachmentCount, subpasses_attachments[color_attachments_index]);
+			_convert_subpass_attachments(p_create_info->pSubpasses[i].pResolveAttachments, (p_create_info->pSubpasses[i].pResolveAttachments != nullptr) ? p_create_info->pSubpasses[i].colorAttachmentCount : 0, subpasses_attachments[resolve_attachments_index]);
+			_convert_subpass_attachments(p_create_info->pSubpasses[i].pDepthStencilAttachment, (p_create_info->pSubpasses[i].pDepthStencilAttachment != nullptr) ? 1 : 0, subpasses_attachments[depth_attachment_index]);
+
+			// Ignores sType and pNext from the subpass.
+			const VkSubpassDescription2 &src_subpass = p_create_info->pSubpasses[i];
+			VkSubpassDescription &dst_subpass = subpasses[i];
+			dst_subpass.flags = src_subpass.flags;
+			dst_subpass.pipelineBindPoint = src_subpass.pipelineBindPoint;
+			dst_subpass.inputAttachmentCount = src_subpass.inputAttachmentCount;
+			dst_subpass.pInputAttachments = subpasses_attachments[input_attachments_index].ptr();
+			dst_subpass.colorAttachmentCount = src_subpass.colorAttachmentCount;
+			dst_subpass.pColorAttachments = subpasses_attachments[color_attachments_index].ptr();
+			dst_subpass.pResolveAttachments = subpasses_attachments[resolve_attachments_index].ptr();
+			dst_subpass.pDepthStencilAttachment = subpasses_attachments[depth_attachment_index].ptr();
+			dst_subpass.preserveAttachmentCount = src_subpass.preserveAttachmentCount;
+			dst_subpass.pPreserveAttachments = src_subpass.pPreserveAttachments;
+		}
+
+		TightLocalVector<VkSubpassDependency> dependencies;
+		dependencies.resize(p_create_info->dependencyCount);
+
+		for (uint32_t i = 0; i < p_create_info->dependencyCount; i++) {
+			// Ignores sType and pNext from the dependency, and viewMask which is currently unused.
+			const VkSubpassDependency2 &src_dependency = p_create_info->pDependencies[i];
+			VkSubpassDependency &dst_dependency = dependencies[i];
+			dst_dependency.srcSubpass = src_dependency.srcSubpass;
+			dst_dependency.dstSubpass = src_dependency.dstSubpass;
+			dst_dependency.srcStageMask = src_dependency.srcStageMask;
+			dst_dependency.dstStageMask = src_dependency.dstStageMask;
+			dst_dependency.srcAccessMask = src_dependency.srcAccessMask;
+			dst_dependency.dstAccessMask = src_dependency.dstAccessMask;
+			dst_dependency.dependencyFlags = src_dependency.dependencyFlags;
+		}
+
+		VkRenderPassCreateInfo create_info = {};
+		create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+		create_info.pNext = p_create_info->pNext;
+		create_info.flags = p_create_info->flags;
+		create_info.attachmentCount = attachments.size();
+		create_info.pAttachments = attachments.ptr();
+		create_info.subpassCount = subpasses.size();
+		create_info.pSubpasses = subpasses.ptr();
+		create_info.dependencyCount = dependencies.size();
+		create_info.pDependencies = dependencies.ptr();
+		return vkCreateRenderPass(vk_device, &create_info, p_allocator, p_render_pass);
+	}
+}
+
+bool RenderingDeviceDriverVulkan::_release_image_semaphore(CommandQueue *p_command_queue, uint32_t p_semaphore_index, bool p_release_on_swap_chain) {
+	SwapChain *swap_chain = p_command_queue->image_semaphores_swap_chains[p_semaphore_index];
+	if (swap_chain != nullptr) {
+		// Clear the swap chain from the command queue's vector.
+		p_command_queue->image_semaphores_swap_chains[p_semaphore_index] = nullptr;
+
+		if (p_release_on_swap_chain) {
+			// Remove the acquired semaphore from the swap chain's vectors.
+			for (uint32_t i = 0; i < swap_chain->command_queues_acquired.size(); i++) {
+				if (swap_chain->command_queues_acquired[i] == p_command_queue && swap_chain->command_queues_acquired_semaphores[i] == p_semaphore_index) {
+					swap_chain->command_queues_acquired.remove_at(i);
+					swap_chain->command_queues_acquired_semaphores.remove_at(i);
+					break;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	return false;
+}
+
+bool RenderingDeviceDriverVulkan::_recreate_image_semaphore(CommandQueue *p_command_queue, uint32_t p_semaphore_index, bool p_release_on_swap_chain) {
+	_release_image_semaphore(p_command_queue, p_semaphore_index, p_release_on_swap_chain);
+
+	VkSemaphore semaphore;
+	VkSemaphoreCreateInfo create_info = {};
+	create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+	VkResult err = vkCreateSemaphore(vk_device, &create_info, nullptr, &semaphore);
+	ERR_FAIL_COND_V(err != VK_SUCCESS, false);
+
+	// Indicate the semaphore is free again and destroy the previous one before storing the new one.
+	vkDestroySemaphore(vk_device, p_command_queue->image_semaphores[p_semaphore_index], nullptr);
+
+	p_command_queue->image_semaphores[p_semaphore_index] = semaphore;
+	p_command_queue->free_image_semaphores.push_back(p_semaphore_index);
+
+	return true;
+}
+
+void RenderingDeviceDriverVulkan::_set_object_name(VkObjectType p_object_type, uint64_t p_object_handle, String p_object_name) {
+	const RenderingContextDriverVulkan::Functions &functions = context_driver->functions_get();
+	if (functions.SetDebugUtilsObjectNameEXT != nullptr) {
+		CharString obj_data = p_object_name.utf8();
+		VkDebugUtilsObjectNameInfoEXT name_info;
+		name_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+		name_info.pNext = nullptr;
+		name_info.objectType = p_object_type;
+		name_info.objectHandle = p_object_handle;
+		name_info.pObjectName = obj_data.get_data();
+		functions.SetDebugUtilsObjectNameEXT(vk_device, &name_info);
+	}
+}
+
+Error RenderingDeviceDriverVulkan::initialize(uint32_t p_device_index, uint32_t p_frame_count) {
+	context_device = context_driver->device_get(p_device_index);
+	physical_device = context_driver->physical_device_get(p_device_index);
+	vkGetPhysicalDeviceProperties(physical_device, &physical_device_properties);
+
+	frame_count = p_frame_count;
+
+	// Copy the queue family properties the context already retrieved.
+	uint32_t queue_family_count = context_driver->queue_family_get_count(p_device_index);
+	queue_family_properties.resize(queue_family_count);
+	for (uint32_t i = 0; i < queue_family_count; i++) {
+		queue_family_properties[i] = context_driver->queue_family_get(p_device_index, i);
+	}
+
+	Error err = _initialize_device_extensions();
+	ERR_FAIL_COND_V(err != OK, err);
+
+	err = _check_device_features();
+	ERR_FAIL_COND_V(err != OK, err);
+
+	err = _check_device_capabilities();
+	ERR_FAIL_COND_V(err != OK, err);
+
+	LocalVector<VkDeviceQueueCreateInfo> queue_create_info;
+	err = _add_queue_create_info(queue_create_info);
+	ERR_FAIL_COND_V(err != OK, err);
+
+	err = _initialize_device(queue_create_info);
+	ERR_FAIL_COND_V(err != OK, err);
+
+	err = _initialize_allocator();
+	ERR_FAIL_COND_V(err != OK, err);
+
+	err = _initialize_pipeline_cache();
+	ERR_FAIL_COND_V(err != OK, err);
+
+	max_descriptor_sets_per_pool = GLOBAL_GET("rendering/rendering_device/vulkan/max_descriptors_per_pool");
+
+	return OK;
+}
 
 /****************/
 /**** MEMORY ****/
@@ -454,25 +1395,13 @@ static_assert(ENUM_MEMBERS_EQUAL(RDD::TEXTURE_SWIZZLE_G, VK_COMPONENT_SWIZZLE_G)
 static_assert(ENUM_MEMBERS_EQUAL(RDD::TEXTURE_SWIZZLE_B, VK_COMPONENT_SWIZZLE_B));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::TEXTURE_SWIZZLE_A, VK_COMPONENT_SWIZZLE_A));
 
-// RDD::TextureLayout == VkImageLayout.
-static_assert(ENUM_MEMBERS_EQUAL(RDD::TEXTURE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_UNDEFINED));
-static_assert(ENUM_MEMBERS_EQUAL(RDD::TEXTURE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_GENERAL));
-static_assert(ENUM_MEMBERS_EQUAL(RDD::TEXTURE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL));
-static_assert(ENUM_MEMBERS_EQUAL(RDD::TEXTURE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL));
-static_assert(ENUM_MEMBERS_EQUAL(RDD::TEXTURE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL));
-static_assert(ENUM_MEMBERS_EQUAL(RDD::TEXTURE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL));
-static_assert(ENUM_MEMBERS_EQUAL(RDD::TEXTURE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL));
-static_assert(ENUM_MEMBERS_EQUAL(RDD::TEXTURE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL));
-static_assert(ENUM_MEMBERS_EQUAL(RDD::TEXTURE_LAYOUT_PREINITIALIZED, VK_IMAGE_LAYOUT_PREINITIALIZED));
-static_assert(ENUM_MEMBERS_EQUAL(RDD::TEXTURE_LAYOUT_VRS_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR));
-
 // RDD::TextureAspectBits == VkImageAspectFlagBits.
 static_assert(ENUM_MEMBERS_EQUAL(RDD::TEXTURE_ASPECT_COLOR_BIT, VK_IMAGE_ASPECT_COLOR_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::TEXTURE_ASPECT_DEPTH_BIT, VK_IMAGE_ASPECT_DEPTH_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::TEXTURE_ASPECT_STENCIL_BIT, VK_IMAGE_ASPECT_STENCIL_BIT));
 
 VkSampleCountFlagBits RenderingDeviceDriverVulkan::_ensure_supported_sample_count(TextureSamples p_requested_sample_count) {
-	VkSampleCountFlags sample_count_flags = (context->get_device_limits().framebufferColorSampleCounts & limits.framebufferDepthSampleCounts);
+	VkSampleCountFlags sample_count_flags = (physical_device_properties.limits.framebufferColorSampleCounts & physical_device_properties.limits.framebufferDepthSampleCounts);
 
 	if ((sample_count_flags & RD_TO_VK_SAMPLE_COUNT[p_requested_sample_count])) {
 		// The requested sample count is supported.
@@ -497,7 +1426,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	if (p_format.shareable_formats.size()) {
 		create_info.flags |= VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
 
-		if (context->is_device_extension_enabled(VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME)) {
+		if (enabled_device_extension_names.has(VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME)) {
 			VkFormat *vk_allowed_formats = ALLOCA_ARRAY(VkFormat, p_format.shareable_formats.size());
 			for (int i = 0; i < p_format.shareable_formats.size(); i++) {
 				vk_allowed_formats[i] = RD_TO_VK_FORMAT[p_format.shareable_formats[i]];
@@ -678,7 +1607,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_shared(TextureID p_or
 	image_view_create_info.components.b = (VkComponentSwizzle)p_view.swizzle_b;
 	image_view_create_info.components.a = (VkComponentSwizzle)p_view.swizzle_a;
 
-	if (context->is_device_extension_enabled(VK_KHR_MAINTENANCE_2_EXTENSION_NAME)) {
+	if (enabled_device_extension_names.has(VK_KHR_MAINTENANCE_2_EXTENSION_NAME)) {
 		// May need to make VK_KHR_maintenance2 mandatory and thus has Vulkan 1.1 be our minimum supported version
 		// if we require setting this information. Vulkan 1.0 may simply not care.
 		if (image_view_create_info.format != owner_tex_info->vk_view_create_info.format) {
@@ -690,7 +1619,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_shared(TextureID p_or
 			// Certain features may not be available for the format of the view.
 			{
 				VkFormatProperties properties = {};
-				vkGetPhysicalDeviceFormatProperties(context->get_physical_device(), RD_TO_VK_FORMAT[p_view.format], &properties);
+				vkGetPhysicalDeviceFormatProperties(physical_device, RD_TO_VK_FORMAT[p_view.format], &properties);
 				const VkFormatFeatureFlags &supported_flags = owner_tex_info->vk_create_info.tiling == VK_IMAGE_TILING_LINEAR ? properties.linearTilingFeatures : properties.optimalTilingFeatures;
 				if ((usage_info->usage & VK_IMAGE_USAGE_STORAGE_BIT) && !(supported_flags & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT)) {
 					usage_info->usage &= ~VK_IMAGE_USAGE_STORAGE_BIT;
@@ -864,7 +1793,7 @@ void RenderingDeviceDriverVulkan::texture_unmap(TextureID p_texture) {
 
 BitField<RDD::TextureUsageBits> RenderingDeviceDriverVulkan::texture_get_usages_supported_by_format(DataFormat p_format, bool p_cpu_readable) {
 	VkFormatProperties properties = {};
-	vkGetPhysicalDeviceFormatProperties(context->get_physical_device(), RD_TO_VK_FORMAT[p_format], &properties);
+	vkGetPhysicalDeviceFormatProperties(physical_device, RD_TO_VK_FORMAT[p_format], &properties);
 
 	const VkFormatFeatureFlags &flags = p_cpu_readable ? properties.linearTilingFeatures : properties.optimalTilingFeatures;
 
@@ -892,6 +1821,11 @@ BitField<RDD::TextureUsageBits> RenderingDeviceDriverVulkan::texture_get_usages_
 	}
 
 	return supported;
+}
+
+bool RenderingDeviceDriverVulkan::texture_can_make_shared_with_format(TextureID p_texture, DataFormat p_format, bool &r_raw_reinterpretation) {
+	r_raw_reinterpretation = false;
+	return true;
 }
 
 /*****************/
@@ -925,7 +1859,7 @@ RDD::SamplerID RenderingDeviceDriverVulkan::sampler_create(const SamplerState &p
 	sampler_create_info.addressModeV = (VkSamplerAddressMode)p_state.repeat_v;
 	sampler_create_info.addressModeW = (VkSamplerAddressMode)p_state.repeat_w;
 	sampler_create_info.mipLodBias = p_state.lod_bias;
-	sampler_create_info.anisotropyEnable = p_state.use_anisotropy && context->get_physical_device_features().samplerAnisotropy;
+	sampler_create_info.anisotropyEnable = p_state.use_anisotropy && (physical_device_features.samplerAnisotropy == VK_TRUE);
 	sampler_create_info.maxAnisotropy = p_state.anisotropy_max;
 	sampler_create_info.compareEnable = p_state.enable_compare;
 	sampler_create_info.compareOp = (VkCompareOp)p_state.compare_op;
@@ -947,12 +1881,12 @@ void RenderingDeviceDriverVulkan::sampler_free(SamplerID p_sampler) {
 
 bool RenderingDeviceDriverVulkan::sampler_is_format_supported_for_filter(DataFormat p_format, SamplerFilter p_filter) {
 	switch (p_filter) {
-		case RD::SAMPLER_FILTER_NEAREST: {
+		case SAMPLER_FILTER_NEAREST: {
 			return true;
 		}
-		case RD::SAMPLER_FILTER_LINEAR: {
+		case SAMPLER_FILTER_LINEAR: {
 			VkFormatProperties properties = {};
-			vkGetPhysicalDeviceFormatProperties(context->get_physical_device(), RD_TO_VK_FORMAT[p_format], &properties);
+			vkGetPhysicalDeviceFormatProperties(physical_device, RD_TO_VK_FORMAT[p_format], &properties);
 			return (properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT);
 		}
 	}
@@ -1013,7 +1947,6 @@ static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, V
 static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT));
-static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_ALL_GRAPHICS_BIT, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT));
@@ -1030,8 +1963,6 @@ static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_COLOR_ATTACHMENT_READ_BIT, 
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT, VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT, VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT));
-static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_TRANSFER_READ_BIT));
-static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_TRANSFER_WRITE_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_HOST_READ_BIT, VK_ACCESS_HOST_READ_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_HOST_WRITE_BIT, VK_ACCESS_HOST_WRITE_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_MEMORY_READ_BIT, VK_ACCESS_MEMORY_READ_BIT));
@@ -1049,8 +1980,8 @@ void RenderingDeviceDriverVulkan::command_pipeline_barrier(
 	for (uint32_t i = 0; i < p_memory_barriers.size(); i++) {
 		vk_memory_barriers[i] = {};
 		vk_memory_barriers[i].sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-		vk_memory_barriers[i].srcAccessMask = (VkPipelineStageFlags)p_memory_barriers[i].src_access;
-		vk_memory_barriers[i].dstAccessMask = (VkAccessFlags)p_memory_barriers[i].dst_access;
+		vk_memory_barriers[i].srcAccessMask = _rd_to_vk_access_flags(p_memory_barriers[i].src_access);
+		vk_memory_barriers[i].dstAccessMask = _rd_to_vk_access_flags(p_memory_barriers[i].dst_access);
 	}
 
 	VkBufferMemoryBarrier *vk_buffer_barriers = ALLOCA_ARRAY(VkBufferMemoryBarrier, p_buffer_barriers.size());
@@ -1059,8 +1990,8 @@ void RenderingDeviceDriverVulkan::command_pipeline_barrier(
 		vk_buffer_barriers[i].sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
 		vk_buffer_barriers[i].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		vk_buffer_barriers[i].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		vk_buffer_barriers[i].srcAccessMask = (VkAccessFlags)p_buffer_barriers[i].src_access;
-		vk_buffer_barriers[i].dstAccessMask = (VkAccessFlags)p_buffer_barriers[i].dst_access;
+		vk_buffer_barriers[i].srcAccessMask = _rd_to_vk_access_flags(p_buffer_barriers[i].src_access);
+		vk_buffer_barriers[i].dstAccessMask = _rd_to_vk_access_flags(p_buffer_barriers[i].dst_access);
 		vk_buffer_barriers[i].buffer = ((const BufferInfo *)p_buffer_barriers[i].buffer.id)->vk_buffer;
 		vk_buffer_barriers[i].offset = p_buffer_barriers[i].offset;
 		vk_buffer_barriers[i].size = p_buffer_barriers[i].size;
@@ -1071,10 +2002,10 @@ void RenderingDeviceDriverVulkan::command_pipeline_barrier(
 		const TextureInfo *tex_info = (const TextureInfo *)p_texture_barriers[i].texture.id;
 		vk_image_barriers[i] = {};
 		vk_image_barriers[i].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-		vk_image_barriers[i].srcAccessMask = (VkAccessFlags)p_texture_barriers[i].src_access;
-		vk_image_barriers[i].dstAccessMask = (VkAccessFlags)p_texture_barriers[i].dst_access;
-		vk_image_barriers[i].oldLayout = (VkImageLayout)p_texture_barriers[i].prev_layout;
-		vk_image_barriers[i].newLayout = (VkImageLayout)p_texture_barriers[i].next_layout;
+		vk_image_barriers[i].srcAccessMask = _rd_to_vk_access_flags(p_texture_barriers[i].src_access);
+		vk_image_barriers[i].dstAccessMask = _rd_to_vk_access_flags(p_texture_barriers[i].dst_access);
+		vk_image_barriers[i].oldLayout = RD_TO_VK_LAYOUT[p_texture_barriers[i].prev_layout];
+		vk_image_barriers[i].newLayout = RD_TO_VK_LAYOUT[p_texture_barriers[i].next_layout];
 		vk_image_barriers[i].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		vk_image_barriers[i].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		vk_image_barriers[i].image = tex_info->vk_view_create_info.image;
@@ -1104,84 +2035,400 @@ void RenderingDeviceDriverVulkan::command_pipeline_barrier(
 
 	vkCmdPipelineBarrier(
 			(VkCommandBuffer)p_cmd_buffer.id,
-			(VkPipelineStageFlags)p_src_stages,
-			(VkPipelineStageFlags)p_dst_stages,
+			_rd_to_vk_pipeline_stages(p_src_stages),
+			_rd_to_vk_pipeline_stages(p_dst_stages),
 			0,
 			p_memory_barriers.size(), vk_memory_barriers,
 			p_buffer_barriers.size(), vk_buffer_barriers,
 			p_texture_barriers.size(), vk_image_barriers);
 }
 
-/*************************/
-/**** COMMAND BUFFERS ****/
-/*************************/
+/****************/
+/**** FENCES ****/
+/****************/
+
+RDD::FenceID RenderingDeviceDriverVulkan::fence_create() {
+	VkFence vk_fence = VK_NULL_HANDLE;
+	VkFenceCreateInfo create_info = {};
+	create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	VkResult err = vkCreateFence(vk_device, &create_info, nullptr, &vk_fence);
+	ERR_FAIL_COND_V(err != VK_SUCCESS, FenceID());
+
+	Fence *fence = memnew(Fence);
+	fence->vk_fence = vk_fence;
+	fence->queue_signaled_from = nullptr;
+	return FenceID(fence);
+}
+
+Error RenderingDeviceDriverVulkan::fence_wait(FenceID p_fence) {
+	Fence *fence = (Fence *)(p_fence.id);
+	VkResult err = vkWaitForFences(vk_device, 1, &fence->vk_fence, VK_TRUE, UINT64_MAX);
+	ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
+
+	err = vkResetFences(vk_device, 1, &fence->vk_fence);
+	ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
+
+	if (fence->queue_signaled_from != nullptr) {
+		// Release all semaphores that the command queue associated to the fence waited on the last time it was submitted.
+		LocalVector<Pair<Fence *, uint32_t>> &pairs = fence->queue_signaled_from->image_semaphores_for_fences;
+		uint32_t i = 0;
+		while (i < pairs.size()) {
+			if (pairs[i].first == fence) {
+				_release_image_semaphore(fence->queue_signaled_from, pairs[i].second, true);
+				fence->queue_signaled_from->free_image_semaphores.push_back(pairs[i].second);
+				pairs.remove_at(i);
+			} else {
+				i++;
+			}
+		}
+
+		fence->queue_signaled_from = nullptr;
+	}
+
+	return OK;
+}
+
+void RenderingDeviceDriverVulkan::fence_free(FenceID p_fence) {
+	Fence *fence = (Fence *)(p_fence.id);
+	vkDestroyFence(vk_device, fence->vk_fence, nullptr);
+	memdelete(fence);
+}
+
+/********************/
+/**** SEMAPHORES ****/
+/********************/
+
+RDD::SemaphoreID RenderingDeviceDriverVulkan::semaphore_create() {
+	VkSemaphore semaphore = VK_NULL_HANDLE;
+	VkSemaphoreCreateInfo create_info = {};
+	create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+	VkResult err = vkCreateSemaphore(vk_device, &create_info, nullptr, &semaphore);
+	ERR_FAIL_COND_V(err != VK_SUCCESS, SemaphoreID());
+
+	return SemaphoreID(semaphore);
+}
+
+void RenderingDeviceDriverVulkan::semaphore_free(SemaphoreID p_semaphore) {
+	vkDestroySemaphore(vk_device, VkSemaphore(p_semaphore.id), nullptr);
+}
+
+/******************/
+/**** COMMANDS ****/
+/******************/
+
+// ----- QUEUE FAMILY -----
+
+RDD::CommandQueueFamilyID RenderingDeviceDriverVulkan::command_queue_family_get(BitField<CommandQueueFamilyBits> p_cmd_queue_family_bits, RenderingContextDriver::SurfaceID p_surface) {
+	// Pick the queue with the least amount of bits that can fulfill the requirements.
+	VkQueueFlags picked_queue_flags = VK_QUEUE_FLAG_BITS_MAX_ENUM;
+	uint32_t picked_family_index = UINT_MAX;
+	for (uint32_t i = 0; i < queue_family_properties.size(); i++) {
+		if (queue_families[i].is_empty()) {
+			// Ignore empty queue families.
+			continue;
+		}
+
+		if (p_surface != 0 && !context_driver->queue_family_supports_present(physical_device, i, p_surface)) {
+			// Present is not an actual bit but something that must be queried manually.
+			continue;
+		}
+
+		// Preferring a queue with less bits will get us closer to getting a queue that performs better for our requirements.
+		// For example, dedicated compute and transfer queues are usually indicated as such.
+		const VkQueueFlags option_queue_flags = queue_family_properties[i].queueFlags;
+		const bool includes_all_bits = (option_queue_flags & p_cmd_queue_family_bits) == p_cmd_queue_family_bits;
+		const bool prefer_less_bits = option_queue_flags < picked_queue_flags;
+		if (includes_all_bits && prefer_less_bits) {
+			picked_family_index = i;
+			picked_queue_flags = option_queue_flags;
+		}
+	}
+
+	ERR_FAIL_COND_V_MSG(picked_family_index >= queue_family_properties.size(), CommandQueueFamilyID(), "A queue family with the requested bits could not be found.");
+
+	// Since 0 is a valid index and we use 0 as the error case, we make the index start from 1 instead.
+	return CommandQueueFamilyID(picked_family_index + 1);
+}
+
+// ----- QUEUE -----
+
+RDD::CommandQueueID RenderingDeviceDriverVulkan::command_queue_create(CommandQueueFamilyID p_cmd_queue_family, bool p_identify_as_main_queue) {
+	DEV_ASSERT(p_cmd_queue_family.id != 0);
+
+	// Make a virtual queue on top of a real queue. Use the queue from the family with the least amount of virtual queues created.
+	uint32_t family_index = p_cmd_queue_family.id - 1;
+	TightLocalVector<Queue> &queue_family = queue_families[family_index];
+	uint32_t picked_queue_index = UINT_MAX;
+	uint32_t picked_virtual_count = UINT_MAX;
+	for (uint32_t i = 0; i < queue_family.size(); i++) {
+		if (queue_family[i].virtual_count < picked_virtual_count) {
+			picked_queue_index = i;
+			picked_virtual_count = queue_family[i].virtual_count;
+		}
+	}
+
+	ERR_FAIL_COND_V_MSG(picked_queue_index >= queue_family.size(), CommandQueueID(), "A queue in the picked family could not be found.");
+
+	// Create the virtual queue.
+	CommandQueue *command_queue = memnew(CommandQueue);
+	command_queue->queue_family = family_index;
+	command_queue->queue_index = picked_queue_index;
+	queue_family[picked_queue_index].virtual_count++;
+
+	// If is was identified as the main queue and a hook is active, indicate it as such to the hook.
+	if (p_identify_as_main_queue && (VulkanHooks::get_singleton() != nullptr)) {
+		VulkanHooks::get_singleton()->set_direct_queue_family_and_index(family_index, picked_queue_index);
+	}
+
+	return CommandQueueID(command_queue);
+}
+
+Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueueID p_cmd_queue, VectorView<SemaphoreID> p_wait_semaphores, VectorView<CommandBufferID> p_cmd_buffers, VectorView<SemaphoreID> p_cmd_semaphores, FenceID p_cmd_fence, VectorView<SwapChainID> p_swap_chains) {
+	DEV_ASSERT(p_cmd_queue.id != 0);
+
+	VkResult err;
+	CommandQueue *command_queue = (CommandQueue *)(p_cmd_queue.id);
+	Queue &device_queue = queue_families[command_queue->queue_family][command_queue->queue_index];
+	Fence *fence = (Fence *)(p_cmd_fence.id);
+	VkFence vk_fence = (fence != nullptr) ? fence->vk_fence : VK_NULL_HANDLE;
+
+	thread_local LocalVector<VkSemaphore> wait_semaphores;
+	thread_local LocalVector<VkPipelineStageFlags> wait_semaphores_stages;
+	wait_semaphores.clear();
+	wait_semaphores_stages.clear();
+
+	if (!command_queue->pending_semaphores_for_execute.is_empty()) {
+		for (uint32_t i = 0; i < command_queue->pending_semaphores_for_execute.size(); i++) {
+			VkSemaphore wait_semaphore = command_queue->image_semaphores[command_queue->pending_semaphores_for_execute[i]];
+			wait_semaphores.push_back(wait_semaphore);
+			wait_semaphores_stages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+		}
+
+		command_queue->pending_semaphores_for_execute.clear();
+	}
+
+	for (uint32_t i = 0; i < p_wait_semaphores.size(); i++) {
+		// FIXME: Allow specifying the stage mask in more detail.
+		wait_semaphores.push_back(VkSemaphore(p_wait_semaphores[i].id));
+		wait_semaphores_stages.push_back(VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
+	}
+
+	if (p_cmd_buffers.size() > 0) {
+		thread_local LocalVector<VkCommandBuffer> command_buffers;
+		thread_local LocalVector<VkSemaphore> signal_semaphores;
+		command_buffers.clear();
+		signal_semaphores.clear();
+
+		for (uint32_t i = 0; i < p_cmd_buffers.size(); i++) {
+			command_buffers.push_back(VkCommandBuffer(p_cmd_buffers[i].id));
+		}
+
+		for (uint32_t i = 0; i < p_cmd_semaphores.size(); i++) {
+			signal_semaphores.push_back(VkSemaphore(p_cmd_semaphores[i].id));
+		}
+
+		VkSemaphore present_semaphore = VK_NULL_HANDLE;
+		if (p_swap_chains.size() > 0) {
+			if (command_queue->present_semaphores.is_empty()) {
+				// Create the semaphores used for presentation if they haven't been created yet.
+				VkSemaphore semaphore = VK_NULL_HANDLE;
+				VkSemaphoreCreateInfo create_info = {};
+				create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+				for (uint32_t i = 0; i < frame_count; i++) {
+					err = vkCreateSemaphore(vk_device, &create_info, nullptr, &semaphore);
+					ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
+					command_queue->present_semaphores.push_back(semaphore);
+				}
+			}
+
+			// If a presentation semaphore is required, cycle across the ones available on the queue. It is technically possible
+			// and valid to reuse the same semaphore for this particular operation, but we create multiple ones anyway in case
+			// some hardware expects multiple semaphores to be used.
+			present_semaphore = command_queue->present_semaphores[command_queue->present_semaphore_index];
+			signal_semaphores.push_back(present_semaphore);
+			command_queue->present_semaphore_index = (command_queue->present_semaphore_index + 1) % command_queue->present_semaphores.size();
+		}
+
+		VkSubmitInfo submit_info = {};
+		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submit_info.waitSemaphoreCount = wait_semaphores.size();
+		submit_info.pWaitSemaphores = wait_semaphores.ptr();
+		submit_info.pWaitDstStageMask = wait_semaphores_stages.ptr();
+		submit_info.commandBufferCount = command_buffers.size();
+		submit_info.pCommandBuffers = command_buffers.ptr();
+		submit_info.signalSemaphoreCount = signal_semaphores.size();
+		submit_info.pSignalSemaphores = signal_semaphores.ptr();
+
+		device_queue.submit_mutex.lock();
+		err = vkQueueSubmit(device_queue.queue, 1, &submit_info, vk_fence);
+		device_queue.submit_mutex.unlock();
+		ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
+
+		if (fence != nullptr && !command_queue->pending_semaphores_for_fence.is_empty()) {
+			fence->queue_signaled_from = command_queue;
+
+			// Indicate to the fence that it should release the semaphores that were waited on this submission the next time the fence is waited on.
+			for (uint32_t i = 0; i < command_queue->pending_semaphores_for_fence.size(); i++) {
+				command_queue->image_semaphores_for_fences.push_back({ fence, command_queue->pending_semaphores_for_fence[i] });
+			}
+
+			command_queue->pending_semaphores_for_fence.clear();
+		}
+
+		if (present_semaphore != VK_NULL_HANDLE) {
+			// If command buffers were executed, swap chains must wait on the present semaphore used by the command queue.
+			wait_semaphores.clear();
+			wait_semaphores.push_back(present_semaphore);
+		}
+	}
+
+	if (p_swap_chains.size() > 0) {
+		thread_local LocalVector<VkSwapchainKHR> swapchains;
+		thread_local LocalVector<uint32_t> image_indices;
+		thread_local LocalVector<VkResult> results;
+		swapchains.clear();
+		image_indices.clear();
+
+		for (uint32_t i = 0; i < p_swap_chains.size(); i++) {
+			SwapChain *swap_chain = (SwapChain *)(p_swap_chains[i].id);
+			swapchains.push_back(swap_chain->vk_swapchain);
+			DEV_ASSERT(swap_chain->image_index < swap_chain->images.size());
+			image_indices.push_back(swap_chain->image_index);
+		}
+
+		results.resize(swapchains.size());
+
+		VkPresentInfoKHR present_info = {};
+		present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		present_info.waitSemaphoreCount = wait_semaphores.size();
+		present_info.pWaitSemaphores = wait_semaphores.ptr();
+		present_info.swapchainCount = swapchains.size();
+		present_info.pSwapchains = swapchains.ptr();
+		present_info.pImageIndices = image_indices.ptr();
+		present_info.pResults = results.ptr();
+
+		device_queue.submit_mutex.lock();
+		err = device_functions.QueuePresentKHR(device_queue.queue, &present_info);
+		device_queue.submit_mutex.unlock();
+
+		// Set the index to an invalid value. If any of the swap chains returned out of date, indicate it should be resized the next time it's acquired.
+		bool any_result_is_out_of_date = false;
+		for (uint32_t i = 0; i < p_swap_chains.size(); i++) {
+			SwapChain *swap_chain = (SwapChain *)(p_swap_chains[i].id);
+			swap_chain->image_index = UINT_MAX;
+			if (results[i] == VK_ERROR_OUT_OF_DATE_KHR) {
+				context_driver->surface_set_needs_resize(swap_chain->surface, true);
+				any_result_is_out_of_date = true;
+			}
+		}
+
+		if (any_result_is_out_of_date || err == VK_ERROR_OUT_OF_DATE_KHR) {
+			// It is possible for presentation to fail with out of date while acquire might've succeeded previously. This case
+			// will be considered a silent failure as it can be triggered easily by resizing a window in the OS natively.
+			return FAILED;
+		}
+
+		// Handling VK_SUBOPTIMAL_KHR the same as VK_SUCCESS is completely intentional.
+		//
+		// Godot does not currently support native rotation in Android when creating the swap chain. It intentionally uses
+		// VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR instead of the current transform bits available in the surface capabilities.
+		// Choosing the transform that leads to optimal presentation leads to distortion that makes the application unusable,
+		// as the rotation of all the content is not handled at the moment.
+		//
+		// VK_SUBOPTIMAL_KHR is accepted as a successful case even if it's not the most efficient solution to work around this
+		// problem. This behavior should not be changed unless the swap chain recreation uses the current transform bits, as
+		// it'll lead to very low performance in Android by entering an endless loop where it'll always resize the swap chain
+		// every frame.
+
+		ERR_FAIL_COND_V(err != VK_SUCCESS && err != VK_SUBOPTIMAL_KHR, FAILED);
+	}
+
+	return OK;
+}
+
+void RenderingDeviceDriverVulkan::command_queue_free(CommandQueueID p_cmd_queue) {
+	DEV_ASSERT(p_cmd_queue);
+
+	CommandQueue *command_queue = (CommandQueue *)(p_cmd_queue.id);
+
+	// Erase all the semaphores used for presentation.
+	for (VkSemaphore semaphore : command_queue->present_semaphores) {
+		vkDestroySemaphore(vk_device, semaphore, nullptr);
+	}
+
+	// Erase all the semaphores used for image acquisition.
+	for (VkSemaphore semaphore : command_queue->image_semaphores) {
+		vkDestroySemaphore(vk_device, semaphore, nullptr);
+	}
+
+	// Retrieve the queue family corresponding to the virtual queue.
+	DEV_ASSERT(command_queue->queue_family < queue_families.size());
+	TightLocalVector<Queue> &queue_family = queue_families[command_queue->queue_family];
+
+	// Decrease the virtual queue count.
+	DEV_ASSERT(command_queue->queue_index < queue_family.size());
+	DEV_ASSERT(queue_family[command_queue->queue_index].virtual_count > 0);
+	queue_family[command_queue->queue_index].virtual_count--;
+
+	// Destroy the virtual queue structure.
+	memdelete(command_queue);
+}
 
 // ----- POOL -----
 
-RDD::CommandPoolID RenderingDeviceDriverVulkan::command_pool_create(CommandBufferType p_cmd_buffer_type) {
+RDD::CommandPoolID RenderingDeviceDriverVulkan::command_pool_create(CommandQueueFamilyID p_cmd_queue_family, CommandBufferType p_cmd_buffer_type) {
+	DEV_ASSERT(p_cmd_queue_family.id != 0);
+
+	uint32_t family_index = p_cmd_queue_family.id - 1;
 	VkCommandPoolCreateInfo cmd_pool_info = {};
 	cmd_pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-	cmd_pool_info.queueFamilyIndex = context->get_graphics_queue_family_index();
+	cmd_pool_info.queueFamilyIndex = family_index;
 	cmd_pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-	VkCommandPool vk_cmd_pool = VK_NULL_HANDLE;
-	VkResult res = vkCreateCommandPool(vk_device, &cmd_pool_info, nullptr, &vk_cmd_pool);
+	VkCommandPool vk_command_pool = VK_NULL_HANDLE;
+	VkResult res = vkCreateCommandPool(vk_device, &cmd_pool_info, nullptr, &vk_command_pool);
 	ERR_FAIL_COND_V_MSG(res, CommandPoolID(), "vkCreateCommandPool failed with error " + itos(res) + ".");
 
-#ifdef DEBUG_ENABLED
-	if (p_cmd_buffer_type == COMMAND_BUFFER_TYPE_SECONDARY) {
-		secondary_cmd_pools.insert(CommandPoolID(vk_cmd_pool));
-	}
-#endif
-
-	return CommandPoolID(vk_cmd_pool);
+	CommandPool *command_pool = memnew(CommandPool);
+	command_pool->vk_command_pool = vk_command_pool;
+	command_pool->buffer_type = p_cmd_buffer_type;
+	return CommandPoolID(command_pool);
 }
 
 void RenderingDeviceDriverVulkan::command_pool_free(CommandPoolID p_cmd_pool) {
-	vkDestroyCommandPool(vk_device, (VkCommandPool)p_cmd_pool.id, nullptr);
+	DEV_ASSERT(p_cmd_pool);
 
-#ifdef DEBUG_ENABLED
-	secondary_cmd_pools.erase(p_cmd_pool);
-#endif
+	CommandPool *command_pool = (CommandPool *)(p_cmd_pool.id);
+	vkDestroyCommandPool(vk_device, command_pool->vk_command_pool, nullptr);
+	memdelete(command_pool);
 }
 
 // ----- BUFFER -----
 
-RDD::CommandBufferID RenderingDeviceDriverVulkan::command_buffer_create(CommandBufferType p_cmd_buffer_type, CommandPoolID p_cmd_pool) {
-#ifdef DEBUG_ENABLED
-	if (p_cmd_buffer_type == COMMAND_BUFFER_TYPE_PRIMARY) {
-		ERR_FAIL_COND_V(secondary_cmd_pools.has(p_cmd_pool), CommandBufferID());
-	} else {
-		ERR_FAIL_COND_V(!secondary_cmd_pools.has(p_cmd_pool), CommandBufferID());
-	}
-#endif
+RDD::CommandBufferID RenderingDeviceDriverVulkan::command_buffer_create(CommandPoolID p_cmd_pool) {
+	DEV_ASSERT(p_cmd_pool);
 
+	const CommandPool *command_pool = (const CommandPool *)(p_cmd_pool.id);
 	VkCommandBufferAllocateInfo cmd_buf_info = {};
 	cmd_buf_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	cmd_buf_info.commandPool = (VkCommandPool)p_cmd_pool.id;
-	cmd_buf_info.level = p_cmd_buffer_type == COMMAND_BUFFER_TYPE_PRIMARY ? VK_COMMAND_BUFFER_LEVEL_PRIMARY : VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+	cmd_buf_info.commandPool = command_pool->vk_command_pool;
 	cmd_buf_info.commandBufferCount = 1;
+
+	if (command_pool->buffer_type == COMMAND_BUFFER_TYPE_SECONDARY) {
+		cmd_buf_info.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+	} else {
+		cmd_buf_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	}
 
 	VkCommandBuffer vk_cmd_buffer = VK_NULL_HANDLE;
 	VkResult err = vkAllocateCommandBuffers(vk_device, &cmd_buf_info, &vk_cmd_buffer);
 	ERR_FAIL_COND_V_MSG(err, CommandBufferID(), "vkAllocateCommandBuffers failed with error " + itos(err) + ".");
 
-	CommandBufferID cmd_buffer_id = CommandBufferID(vk_cmd_buffer);
-#ifdef DEBUG_ENABLED
-	// Erase first because Vulkan may reuse a handle.
-	secondary_cmd_buffers.erase(cmd_buffer_id);
-	if (p_cmd_buffer_type == COMMAND_BUFFER_TYPE_SECONDARY) {
-		secondary_cmd_buffers.insert(cmd_buffer_id);
-	}
-#endif
-	return cmd_buffer_id;
+	return CommandBufferID(vk_cmd_buffer);
 }
 
 bool RenderingDeviceDriverVulkan::command_buffer_begin(CommandBufferID p_cmd_buffer) {
-#ifdef DEBUG_ENABLED
-	ERR_FAIL_COND_V(secondary_cmd_buffers.has(p_cmd_buffer), false);
-#endif
-
 	// Reset is implicit (VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT).
 
 	VkCommandBufferBeginInfo cmd_buf_begin_info = {};
@@ -1195,10 +2442,6 @@ bool RenderingDeviceDriverVulkan::command_buffer_begin(CommandBufferID p_cmd_buf
 }
 
 bool RenderingDeviceDriverVulkan::command_buffer_begin_secondary(CommandBufferID p_cmd_buffer, RenderPassID p_render_pass, uint32_t p_subpass, FramebufferID p_framebuffer) {
-#ifdef DEBUG_ENABLED
-	ERR_FAIL_COND_V(!secondary_cmd_buffers.has(p_cmd_buffer), false);
-#endif
-
 	// Reset is implicit (VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT).
 
 	VkCommandBufferInheritanceInfo inheritance_info = {};
@@ -1223,14 +2466,408 @@ void RenderingDeviceDriverVulkan::command_buffer_end(CommandBufferID p_cmd_buffe
 }
 
 void RenderingDeviceDriverVulkan::command_buffer_execute_secondary(CommandBufferID p_cmd_buffer, VectorView<CommandBufferID> p_secondary_cmd_buffers) {
-#ifdef DEBUG_ENABLED
-	ERR_FAIL_COND(secondary_cmd_buffers.has(p_cmd_buffer));
-	for (uint32_t i = 0; i < p_secondary_cmd_buffers.size(); i++) {
-		ERR_FAIL_COND(!secondary_cmd_buffers.has(p_secondary_cmd_buffers[i]));
-	}
-#endif
-
 	vkCmdExecuteCommands((VkCommandBuffer)p_cmd_buffer.id, p_secondary_cmd_buffers.size(), (const VkCommandBuffer *)p_secondary_cmd_buffers.ptr());
+}
+
+/********************/
+/**** SWAP CHAIN ****/
+/********************/
+
+void RenderingDeviceDriverVulkan::_swap_chain_release(SwapChain *swap_chain) {
+	// Destroy views and framebuffers associated to the swapchain's images.
+	for (FramebufferID framebuffer : swap_chain->framebuffers) {
+		framebuffer_free(framebuffer);
+	}
+
+	for (VkImageView view : swap_chain->image_views) {
+		vkDestroyImageView(vk_device, view, nullptr);
+	}
+
+	swap_chain->image_index = UINT_MAX;
+	swap_chain->images.clear();
+	swap_chain->image_views.clear();
+	swap_chain->framebuffers.clear();
+
+	if (swap_chain->vk_swapchain != VK_NULL_HANDLE) {
+		device_functions.DestroySwapchainKHR(vk_device, swap_chain->vk_swapchain, nullptr);
+		swap_chain->vk_swapchain = VK_NULL_HANDLE;
+	}
+
+	for (uint32_t i = 0; i < swap_chain->command_queues_acquired.size(); i++) {
+		_recreate_image_semaphore(swap_chain->command_queues_acquired[i], swap_chain->command_queues_acquired_semaphores[i], false);
+	}
+
+	swap_chain->command_queues_acquired.clear();
+	swap_chain->command_queues_acquired_semaphores.clear();
+}
+
+RenderingDeviceDriver::SwapChainID RenderingDeviceDriverVulkan::swap_chain_create(RenderingContextDriver::SurfaceID p_surface) {
+	DEV_ASSERT(p_surface != 0);
+
+	RenderingContextDriverVulkan::Surface *surface = (RenderingContextDriverVulkan::Surface *)(p_surface);
+	const RenderingContextDriverVulkan::Functions &functions = context_driver->functions_get();
+
+	// Retrieve the formats supported by the surface.
+	uint32_t format_count = 0;
+	VkResult err = functions.GetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface->vk_surface, &format_count, nullptr);
+	ERR_FAIL_COND_V(err != VK_SUCCESS, SwapChainID());
+
+	TightLocalVector<VkSurfaceFormatKHR> formats;
+	formats.resize(format_count);
+	err = functions.GetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface->vk_surface, &format_count, formats.ptr());
+	ERR_FAIL_COND_V(err != VK_SUCCESS, SwapChainID());
+
+	VkFormat format = VK_FORMAT_UNDEFINED;
+	VkColorSpaceKHR color_space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+	if (format_count == 1 && formats[0].format == VK_FORMAT_UNDEFINED) {
+		// If the format list includes just one entry of VK_FORMAT_UNDEFINED, the surface has no preferred format.
+		format = VK_FORMAT_B8G8R8A8_UNORM;
+		color_space = formats[0].colorSpace;
+	} else if (format_count > 0) {
+		// Use one of the supported formats, prefer B8G8R8A8_UNORM.
+		const VkFormat preferred_format = VK_FORMAT_B8G8R8A8_UNORM;
+		const VkFormat second_format = VK_FORMAT_R8G8B8A8_UNORM;
+		for (uint32_t i = 0; i < format_count; i++) {
+			if (formats[i].format == preferred_format || formats[i].format == second_format) {
+				format = formats[i].format;
+				if (formats[i].format == preferred_format) {
+					// This is the preferred format, stop searching.
+					break;
+				}
+			}
+		}
+	}
+
+	// No formats are supported.
+	ERR_FAIL_COND_V_MSG(format == VK_FORMAT_UNDEFINED, SwapChainID(), "Surface did not return any valid formats.");
+
+	// Create the render pass for the chosen format.
+	VkAttachmentDescription2KHR attachment = {};
+	attachment.sType = VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2_KHR;
+	attachment.format = format;
+	attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+	attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+	VkAttachmentReference2KHR color_reference = {};
+	color_reference.sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2_KHR;
+	color_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	VkSubpassDescription2KHR subpass = {};
+	subpass.sType = VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2_KHR;
+	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpass.colorAttachmentCount = 1;
+	subpass.pColorAttachments = &color_reference;
+
+	VkRenderPassCreateInfo2KHR pass_info = {};
+	pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2_KHR;
+	pass_info.attachmentCount = 1;
+	pass_info.pAttachments = &attachment;
+	pass_info.subpassCount = 1;
+	pass_info.pSubpasses = &subpass;
+
+	VkRenderPass render_pass = VK_NULL_HANDLE;
+	err = _create_render_pass(vk_device, &pass_info, nullptr, &render_pass);
+	ERR_FAIL_COND_V(err != VK_SUCCESS, SwapChainID());
+
+	SwapChain *swap_chain = memnew(SwapChain);
+	swap_chain->surface = p_surface;
+	swap_chain->format = format;
+	swap_chain->color_space = color_space;
+	swap_chain->render_pass = RenderPassID(render_pass);
+	return SwapChainID(swap_chain);
+}
+
+Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue, SwapChainID p_swap_chain, uint32_t p_desired_framebuffer_count) {
+	DEV_ASSERT(p_cmd_queue.id != 0);
+	DEV_ASSERT(p_swap_chain.id != 0);
+
+	CommandQueue *command_queue = (CommandQueue *)(p_cmd_queue.id);
+	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
+
+	// Release all current contents of the swap chain.
+	_swap_chain_release(swap_chain);
+
+	// Validate if the command queue being used supports creating the swap chain for this surface.
+	const RenderingContextDriverVulkan::Functions &functions = context_driver->functions_get();
+	if (!context_driver->queue_family_supports_present(physical_device, command_queue->queue_family, swap_chain->surface)) {
+		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Surface is not supported by device. Did the GPU go offline? Was the window created on another monitor? Check"
+										"previous errors & try launching with --gpu-validation.");
+	}
+
+	// Retrieve the surface's capabilities.
+	RenderingContextDriverVulkan::Surface *surface = (RenderingContextDriverVulkan::Surface *)(swap_chain->surface);
+	VkSurfaceCapabilitiesKHR surface_capabilities = {};
+	VkResult err = functions.GetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface->vk_surface, &surface_capabilities);
+	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+
+	VkExtent2D extent;
+	if (surface_capabilities.currentExtent.width == 0xFFFFFFFF) {
+		// The current extent is currently undefined, so the current surface width and height will be clamped to the surface's capabilities.
+		extent.width = CLAMP(surface->width, surface_capabilities.minImageExtent.width, surface_capabilities.maxImageExtent.width);
+		extent.height = CLAMP(surface->height, surface_capabilities.minImageExtent.height, surface_capabilities.maxImageExtent.height);
+	} else {
+		// Grab the dimensions from the current extent.
+		extent = surface_capabilities.currentExtent;
+		surface->width = extent.width;
+		surface->height = extent.height;
+	}
+
+	if (surface->width == 0 || surface->height == 0) {
+		// The surface doesn't have valid dimensions, so we can't create a swap chain.
+		return ERR_SKIP;
+	}
+
+	// Find what present modes are supported.
+	TightLocalVector<VkPresentModeKHR> present_modes;
+	uint32_t present_modes_count = 0;
+	err = functions.GetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface->vk_surface, &present_modes_count, nullptr);
+	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+
+	present_modes.resize(present_modes_count);
+	err = functions.GetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface->vk_surface, &present_modes_count, present_modes.ptr());
+	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+
+	// Choose the present mode based on the display server setting.
+	VkPresentModeKHR present_mode = VkPresentModeKHR::VK_PRESENT_MODE_FIFO_KHR;
+	String present_mode_name = "Enabled";
+	switch (surface->vsync_mode) {
+		case DisplayServer::VSYNC_MAILBOX:
+			present_mode = VK_PRESENT_MODE_MAILBOX_KHR;
+			present_mode_name = "Mailbox";
+			break;
+		case DisplayServer::VSYNC_ADAPTIVE:
+			present_mode = VK_PRESENT_MODE_FIFO_RELAXED_KHR;
+			present_mode_name = "Adaptive";
+			break;
+		case DisplayServer::VSYNC_ENABLED:
+			present_mode = VK_PRESENT_MODE_FIFO_KHR;
+			present_mode_name = "Enabled";
+			break;
+		case DisplayServer::VSYNC_DISABLED:
+			present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+			present_mode_name = "Disabled";
+			break;
+	}
+
+	bool present_mode_available = present_modes.has(present_mode);
+	if (present_mode_available) {
+		print_verbose("Using present mode: " + present_mode_name);
+	} else {
+		// Present mode is not available, fall back to FIFO which is guaranteed to be supported.
+		WARN_PRINT(vformat("The requested V-Sync mode %s is not available. Falling back to V-Sync mode Enabled.", present_mode_name));
+		surface->vsync_mode = DisplayServer::VSYNC_ENABLED;
+		present_mode = VkPresentModeKHR::VK_PRESENT_MODE_FIFO_KHR;
+	}
+
+	// Clamp the desired image count to the surface's capabilities.
+	uint32_t desired_swapchain_images = MAX(p_desired_framebuffer_count, surface_capabilities.minImageCount);
+	if (surface_capabilities.maxImageCount > 0) {
+		// Only clamp to the max image count if it's defined. A max image count of 0 means there's no upper limit to the amount of images.
+		desired_swapchain_images = MIN(desired_swapchain_images, surface_capabilities.maxImageCount);
+	}
+
+	// Prefer identity transform if it's supported, use the current transform otherwise.
+	// This behavior is intended as Godot does not supported native rotation in platforms that use these bits.
+	// Refer to the comment in command_queue_present() for more details.
+	VkSurfaceTransformFlagBitsKHR surface_transform_bits;
+	if (surface_capabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR) {
+		surface_transform_bits = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+	} else {
+		surface_transform_bits = surface_capabilities.currentTransform;
+	}
+
+	VkCompositeAlphaFlagBitsKHR composite_alpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+	if (OS::get_singleton()->is_layered_allowed() || !(surface_capabilities.supportedCompositeAlpha & composite_alpha)) {
+		// Find a supported composite alpha mode - one of these is guaranteed to be set.
+		VkCompositeAlphaFlagBitsKHR composite_alpha_flags[4] = {
+			VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR,
+			VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR,
+			VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR,
+			VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR
+		};
+
+		for (uint32_t i = 0; i < ARRAY_SIZE(composite_alpha_flags); i++) {
+			if (surface_capabilities.supportedCompositeAlpha & composite_alpha_flags[i]) {
+				composite_alpha = composite_alpha_flags[i];
+				break;
+			}
+		}
+		has_comp_alpha[(uint64_t)p_cmd_queue.id] = (composite_alpha != VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR);
+	}
+
+	VkSwapchainCreateInfoKHR swap_create_info = {};
+	swap_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+	swap_create_info.surface = surface->vk_surface;
+	swap_create_info.minImageCount = desired_swapchain_images;
+	swap_create_info.imageFormat = swap_chain->format;
+	swap_create_info.imageColorSpace = swap_chain->color_space;
+	swap_create_info.imageExtent = extent;
+	swap_create_info.imageArrayLayers = 1;
+	swap_create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+	swap_create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	swap_create_info.preTransform = surface_transform_bits;
+	swap_create_info.compositeAlpha = composite_alpha;
+	swap_create_info.presentMode = present_mode;
+	swap_create_info.clipped = true;
+	err = device_functions.CreateSwapchainKHR(vk_device, &swap_create_info, nullptr, &swap_chain->vk_swapchain);
+	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+
+	uint32_t image_count = 0;
+	err = device_functions.GetSwapchainImagesKHR(vk_device, swap_chain->vk_swapchain, &image_count, nullptr);
+	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+
+	swap_chain->images.resize(image_count);
+	err = device_functions.GetSwapchainImagesKHR(vk_device, swap_chain->vk_swapchain, &image_count, swap_chain->images.ptr());
+	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+
+	VkImageViewCreateInfo view_create_info = {};
+	view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	view_create_info.format = swap_chain->format;
+	view_create_info.components.r = VK_COMPONENT_SWIZZLE_R;
+	view_create_info.components.g = VK_COMPONENT_SWIZZLE_G;
+	view_create_info.components.b = VK_COMPONENT_SWIZZLE_B;
+	view_create_info.components.a = VK_COMPONENT_SWIZZLE_A;
+	view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	view_create_info.subresourceRange.levelCount = 1;
+	view_create_info.subresourceRange.layerCount = 1;
+
+	swap_chain->image_views.reserve(image_count);
+
+	VkImageView image_view;
+	for (uint32_t i = 0; i < image_count; i++) {
+		view_create_info.image = swap_chain->images[i];
+		err = vkCreateImageView(vk_device, &view_create_info, nullptr, &image_view);
+		ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+
+		swap_chain->image_views.push_back(image_view);
+	}
+
+	swap_chain->framebuffers.reserve(image_count);
+
+	VkFramebufferCreateInfo fb_create_info = {};
+	fb_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+	fb_create_info.renderPass = VkRenderPass(swap_chain->render_pass.id);
+	fb_create_info.attachmentCount = 1;
+	fb_create_info.width = surface->width;
+	fb_create_info.height = surface->height;
+	fb_create_info.layers = 1;
+
+	VkFramebuffer framebuffer;
+	for (uint32_t i = 0; i < image_count; i++) {
+		fb_create_info.pAttachments = &swap_chain->image_views[i];
+		err = vkCreateFramebuffer(vk_device, &fb_create_info, nullptr, &framebuffer);
+		ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+
+		swap_chain->framebuffers.push_back(RDD::FramebufferID(framebuffer));
+	}
+
+	// Once everything's been created correctly, indicate the surface no longer needs to be resized.
+	context_driver->surface_set_needs_resize(swap_chain->surface, false);
+
+	return OK;
+}
+
+RDD::FramebufferID RenderingDeviceDriverVulkan::swap_chain_acquire_framebuffer(CommandQueueID p_cmd_queue, SwapChainID p_swap_chain, bool &r_resize_required) {
+	DEV_ASSERT(p_cmd_queue);
+	DEV_ASSERT(p_swap_chain);
+
+	CommandQueue *command_queue = (CommandQueue *)(p_cmd_queue.id);
+	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
+	if ((swap_chain->vk_swapchain == VK_NULL_HANDLE) || context_driver->surface_get_needs_resize(swap_chain->surface)) {
+		// The surface does not have a valid swap chain or it indicates it requires a resize.
+		r_resize_required = true;
+		return FramebufferID();
+	}
+
+	VkResult err;
+	VkSemaphore semaphore = VK_NULL_HANDLE;
+	uint32_t semaphore_index = 0;
+	if (command_queue->free_image_semaphores.is_empty()) {
+		// Add a new semaphore if none are free.
+		VkSemaphoreCreateInfo create_info = {};
+		create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+		err = vkCreateSemaphore(vk_device, &create_info, nullptr, &semaphore);
+		ERR_FAIL_COND_V(err != VK_SUCCESS, FramebufferID());
+
+		semaphore_index = command_queue->image_semaphores.size();
+		command_queue->image_semaphores.push_back(semaphore);
+		command_queue->image_semaphores_swap_chains.push_back(swap_chain);
+	} else {
+		// Pick a free semaphore.
+		uint32_t free_index = command_queue->free_image_semaphores.size() - 1;
+		semaphore_index = command_queue->free_image_semaphores[free_index];
+		command_queue->image_semaphores_swap_chains[semaphore_index] = swap_chain;
+		command_queue->free_image_semaphores.remove_at(free_index);
+		semaphore = command_queue->image_semaphores[semaphore_index];
+	}
+
+	// Store in the swap chain the acquired semaphore.
+	swap_chain->command_queues_acquired.push_back(command_queue);
+	swap_chain->command_queues_acquired_semaphores.push_back(semaphore_index);
+
+	err = device_functions.AcquireNextImageKHR(vk_device, swap_chain->vk_swapchain, UINT64_MAX, semaphore, VK_NULL_HANDLE, &swap_chain->image_index);
+	if (err == VK_ERROR_OUT_OF_DATE_KHR) {
+		// Out of date leaves the semaphore in a signaled state that will never finish, so it's necessary to recreate it.
+		bool semaphore_recreated = _recreate_image_semaphore(command_queue, semaphore_index, true);
+		ERR_FAIL_COND_V(!semaphore_recreated, FramebufferID());
+
+		// Swap chain is out of date and must be recreated.
+		r_resize_required = true;
+		return FramebufferID();
+	} else if (err != VK_SUCCESS && err != VK_SUBOPTIMAL_KHR) {
+		// Swap chain failed to present but the reason is unknown.
+		// Refer to the comment in command_queue_present() as to why VK_SUBOPTIMAL_KHR is handled the same as VK_SUCCESS.
+		return FramebufferID();
+	}
+
+	// Indicate the command queue should wait on these semaphores on the next submission and that it should
+	// indicate they're free again on the next fence.
+	command_queue->pending_semaphores_for_execute.push_back(semaphore_index);
+	command_queue->pending_semaphores_for_fence.push_back(semaphore_index);
+
+	// Return the corresponding framebuffer to the new current image.
+	return swap_chain->framebuffers[swap_chain->image_index];
+}
+
+RDD::RenderPassID RenderingDeviceDriverVulkan::swap_chain_get_render_pass(SwapChainID p_swap_chain) {
+	DEV_ASSERT(p_swap_chain.id != 0);
+
+	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
+	return swap_chain->render_pass;
+}
+
+RDD::DataFormat RenderingDeviceDriverVulkan::swap_chain_get_format(SwapChainID p_swap_chain) {
+	DEV_ASSERT(p_swap_chain.id != 0);
+
+	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
+	switch (swap_chain->format) {
+		case VK_FORMAT_B8G8R8A8_UNORM:
+			return DATA_FORMAT_B8G8R8A8_UNORM;
+		case VK_FORMAT_R8G8B8A8_UNORM:
+			return DATA_FORMAT_R8G8B8A8_UNORM;
+		default:
+			DEV_ASSERT(false && "Unknown swap chain format.");
+			return DATA_FORMAT_MAX;
+	}
+}
+
+void RenderingDeviceDriverVulkan::swap_chain_free(SwapChainID p_swap_chain) {
+	DEV_ASSERT(p_swap_chain.id != 0);
+
+	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
+	_swap_chain_release(swap_chain);
+
+	if (swap_chain->render_pass.id != 0) {
+		vkDestroyRenderPass(vk_device, VkRenderPass(swap_chain->render_pass.id), nullptr);
+	}
+
+	memdelete(swap_chain);
 }
 
 /*********************/
@@ -1293,8 +2930,8 @@ Vector<uint8_t> RenderingDeviceDriverVulkan::shader_compile_binary_from_spirv(Ve
 		return Vector<uint8_t>();
 	}
 
-	ERR_FAIL_COND_V_MSG((uint32_t)shader_refl.uniform_sets.size() > limits.maxBoundDescriptorSets, Vector<uint8_t>(),
-			"Number of uniform sets is larger than what is supported by the hardware (" + itos(limits.maxBoundDescriptorSets) + ").");
+	ERR_FAIL_COND_V_MSG((uint32_t)shader_refl.uniform_sets.size() > physical_device_properties.limits.maxBoundDescriptorSets, Vector<uint8_t>(),
+			"Number of uniform sets is larger than what is supported by the hardware (" + itos(physical_device_properties.limits.maxBoundDescriptorSets) + ").");
 
 	// Collect reflection data into binary data.
 	ShaderBinary::Data binary_data;
@@ -1373,10 +3010,7 @@ Vector<uint8_t> RenderingDeviceDriverVulkan::shader_compile_binary_from_spirv(Ve
 			}
 		}
 		uint32_t s = compressed_stages[i].size();
-		if (s % 4 != 0) {
-			s += 4 - (s % 4);
-		}
-		stages_binary_size += s;
+		stages_binary_size += STEPIFY(s, 4);
 	}
 
 	binary_data.specialization_constants_count = specialization_constants.size();
@@ -1390,11 +3024,7 @@ Vector<uint8_t> RenderingDeviceDriverVulkan::shader_compile_binary_from_spirv(Ve
 	uint32_t total_size = sizeof(uint32_t) * 3; // Header + version + main datasize;.
 	total_size += sizeof(ShaderBinary::Data);
 
-	total_size += binary_data.shader_name_len;
-
-	if ((binary_data.shader_name_len % 4) != 0) { // Alignment rules are really strange.
-		total_size += 4 - (binary_data.shader_name_len % 4);
-	}
+	total_size += STEPIFY(binary_data.shader_name_len, 4);
 
 	for (int i = 0; i < uniforms.size(); i++) {
 		total_size += sizeof(uint32_t);
@@ -1423,13 +3053,17 @@ Vector<uint8_t> RenderingDeviceDriverVulkan::shader_compile_binary_from_spirv(Ve
 		memcpy(binptr + offset, &binary_data, sizeof(ShaderBinary::Data));
 		offset += sizeof(ShaderBinary::Data);
 
+#define ADVANCE_OFFSET_WITH_ALIGNMENT(m_bytes)                         \
+	{                                                                  \
+		offset += m_bytes;                                             \
+		uint32_t padding = STEPIFY(m_bytes, 4) - m_bytes;              \
+		memset(binptr + offset, 0, padding); /* Avoid garbage data. */ \
+		offset += padding;                                             \
+	}
+
 		if (binary_data.shader_name_len > 0) {
 			memcpy(binptr + offset, shader_name_utf.ptr(), binary_data.shader_name_len);
-			offset += binary_data.shader_name_len;
-
-			if ((binary_data.shader_name_len % 4) != 0) { // Alignment rules are really strange.
-				offset += 4 - (binary_data.shader_name_len % 4);
-			}
+			ADVANCE_OFFSET_WITH_ALIGNMENT(binary_data.shader_name_len);
 		}
 
 		for (int i = 0; i < uniforms.size(); i++) {
@@ -1455,14 +3089,7 @@ Vector<uint8_t> RenderingDeviceDriverVulkan::shader_compile_binary_from_spirv(Ve
 			encode_uint32(zstd_size[i], binptr + offset);
 			offset += sizeof(uint32_t);
 			memcpy(binptr + offset, compressed_stages[i].ptr(), compressed_stages[i].size());
-
-			uint32_t s = compressed_stages[i].size();
-
-			if (s % 4 != 0) {
-				s += 4 - (s % 4);
-			}
-
-			offset += s;
+			ADVANCE_OFFSET_WITH_ALIGNMENT(compressed_stages[i].size());
 		}
 
 		DEV_ASSERT(offset == (uint32_t)ret.size());
@@ -1506,10 +3133,7 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vec
 
 	if (binary_data.shader_name_len) {
 		r_name.parse_utf8((const char *)(binptr + read_offset), binary_data.shader_name_len);
-		read_offset += binary_data.shader_name_len;
-		if ((binary_data.shader_name_len % 4) != 0) { // Alignment rules are really strange.
-			read_offset += 4 - (binary_data.shader_name_len % 4);
-		}
+		read_offset += STEPIFY(binary_data.shader_name_len, 4);
 	}
 
 	Vector<Vector<VkDescriptorSetLayoutBinding>> vk_set_bindings;
@@ -1608,6 +3232,7 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vec
 
 	for (uint32_t i = 0; i < binary_data.stage_count; i++) {
 		ERR_FAIL_COND_V(read_offset + sizeof(uint32_t) * 3 >= binsize, ShaderID());
+
 		uint32_t stage = decode_uint32(binptr + read_offset);
 		read_offset += sizeof(uint32_t);
 		uint32_t smolv_size = decode_uint32(binptr + read_offset);
@@ -1639,16 +3264,12 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vec
 
 		r_shader_desc.stages.set(i, ShaderStage(stage));
 
-		if (buf_size % 4 != 0) {
-			buf_size += 4 - (buf_size % 4);
-		}
-
-		DEV_ASSERT(read_offset + buf_size <= binsize);
-
+		buf_size = STEPIFY(buf_size, 4);
 		read_offset += buf_size;
+		ERR_FAIL_COND_V(read_offset > binsize, ShaderID());
 	}
 
-	DEV_ASSERT(read_offset == binsize);
+	ERR_FAIL_COND_V(read_offset != binsize, ShaderID());
 
 	// Modules.
 
@@ -2157,7 +3778,7 @@ void RenderingDeviceDriverVulkan::command_copy_texture(CommandBufferID p_cmd_buf
 
 	const TextureInfo *src_tex_info = (const TextureInfo *)p_src_texture.id;
 	const TextureInfo *dst_tex_info = (const TextureInfo *)p_dst_texture.id;
-	vkCmdCopyImage((VkCommandBuffer)p_cmd_buffer.id, src_tex_info->vk_view_create_info.image, (VkImageLayout)p_src_texture_layout, dst_tex_info->vk_view_create_info.image, (VkImageLayout)p_dst_texture_layout, p_regions.size(), vk_copy_regions);
+	vkCmdCopyImage((VkCommandBuffer)p_cmd_buffer.id, src_tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_src_texture_layout], dst_tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_dst_texture_layout], p_regions.size(), vk_copy_regions);
 }
 
 void RenderingDeviceDriverVulkan::command_resolve_texture(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, uint32_t p_src_layer, uint32_t p_src_mipmap, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, uint32_t p_dst_layer, uint32_t p_dst_mipmap) {
@@ -2177,7 +3798,7 @@ void RenderingDeviceDriverVulkan::command_resolve_texture(CommandBufferID p_cmd_
 	vk_resolve.extent.height = MAX(1u, src_tex_info->vk_create_info.extent.height >> p_src_mipmap);
 	vk_resolve.extent.depth = MAX(1u, src_tex_info->vk_create_info.extent.depth >> p_src_mipmap);
 
-	vkCmdResolveImage((VkCommandBuffer)p_cmd_buffer.id, src_tex_info->vk_view_create_info.image, (VkImageLayout)p_src_texture_layout, dst_tex_info->vk_view_create_info.image, (VkImageLayout)p_dst_texture_layout, 1, &vk_resolve);
+	vkCmdResolveImage((VkCommandBuffer)p_cmd_buffer.id, src_tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_src_texture_layout], dst_tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_dst_texture_layout], 1, &vk_resolve);
 }
 
 void RenderingDeviceDriverVulkan::command_clear_color_texture(CommandBufferID p_cmd_buffer, TextureID p_texture, TextureLayout p_texture_layout, const Color &p_color, const TextureSubresourceRange &p_subresources) {
@@ -2188,7 +3809,7 @@ void RenderingDeviceDriverVulkan::command_clear_color_texture(CommandBufferID p_
 	_texture_subresource_range_to_vk(p_subresources, &vk_subresources);
 
 	const TextureInfo *tex_info = (const TextureInfo *)p_texture.id;
-	vkCmdClearColorImage((VkCommandBuffer)p_cmd_buffer.id, tex_info->vk_view_create_info.image, (VkImageLayout)p_texture_layout, &vk_color, 1, &vk_subresources);
+	vkCmdClearColorImage((VkCommandBuffer)p_cmd_buffer.id, tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_texture_layout], &vk_color, 1, &vk_subresources);
 }
 
 void RenderingDeviceDriverVulkan::command_copy_buffer_to_texture(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<BufferTextureCopyRegion> p_regions) {
@@ -2199,7 +3820,7 @@ void RenderingDeviceDriverVulkan::command_copy_buffer_to_texture(CommandBufferID
 
 	const BufferInfo *buf_info = (const BufferInfo *)p_src_buffer.id;
 	const TextureInfo *tex_info = (const TextureInfo *)p_dst_texture.id;
-	vkCmdCopyBufferToImage((VkCommandBuffer)p_cmd_buffer.id, buf_info->vk_buffer, tex_info->vk_view_create_info.image, (VkImageLayout)p_dst_texture_layout, p_regions.size(), vk_copy_regions);
+	vkCmdCopyBufferToImage((VkCommandBuffer)p_cmd_buffer.id, buf_info->vk_buffer, tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_dst_texture_layout], p_regions.size(), vk_copy_regions);
 }
 
 void RenderingDeviceDriverVulkan::command_copy_texture_to_buffer(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, BufferID p_dst_buffer, VectorView<BufferTextureCopyRegion> p_regions) {
@@ -2210,7 +3831,7 @@ void RenderingDeviceDriverVulkan::command_copy_texture_to_buffer(CommandBufferID
 
 	const TextureInfo *tex_info = (const TextureInfo *)p_src_texture.id;
 	const BufferInfo *buf_info = (const BufferInfo *)p_dst_buffer.id;
-	vkCmdCopyImageToBuffer((VkCommandBuffer)p_cmd_buffer.id, tex_info->vk_view_create_info.image, (VkImageLayout)p_src_texture_layout, buf_info->vk_buffer, p_regions.size(), vk_copy_regions);
+	vkCmdCopyImageToBuffer((VkCommandBuffer)p_cmd_buffer.id, tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_src_texture_layout], buf_info->vk_buffer, p_regions.size(), vk_copy_regions);
 }
 
 /******************/
@@ -2244,12 +3865,14 @@ bool RenderingDeviceDriverVulkan::pipeline_cache_create(const Vector<uint8_t> &p
 
 	// Parse.
 	{
-		if (p_data.size() <= (int)sizeof(PipelineCacheHeader)) {
-			WARN_PRINT("Invalid/corrupt pipelines cache.");
+		if (p_data.is_empty()) {
+			// No pre-existing cache, just create it.
+		} else if (p_data.size() <= (int)sizeof(PipelineCacheHeader)) {
+			print_verbose("Invalid/corrupt Vulkan pipelines cache. Existing shader pipeline cache will be ignored, which may result in stuttering during gameplay.");
 		} else {
 			const PipelineCacheHeader *loaded_header = reinterpret_cast<const PipelineCacheHeader *>(p_data.ptr());
 			if (loaded_header->magic != 868 + VK_PIPELINE_CACHE_HEADER_VERSION_ONE) {
-				WARN_PRINT("Invalid pipelines cache magic number.");
+				print_verbose("Invalid Vulkan pipelines cache magic number. Existing shader pipeline cache will be ignored, which may result in stuttering during gameplay.");
 			} else {
 				const uint8_t *loaded_buffer_start = p_data.ptr() + sizeof(PipelineCacheHeader);
 				uint32_t loaded_buffer_size = p_data.size() - sizeof(PipelineCacheHeader);
@@ -2261,7 +3884,7 @@ bool RenderingDeviceDriverVulkan::pipeline_cache_create(const Vector<uint8_t> &p
 						loaded_header->driver_version != current_header->driver_version ||
 						memcmp(loaded_header->uuid, current_header->uuid, VK_UUID_SIZE) != 0 ||
 						loaded_header->driver_abi != current_header->driver_abi) {
-					WARN_PRINT("Invalid pipelines cache header.");
+					print_verbose("Invalid Vulkan pipelines cache header. This may be due to an engine change, GPU change or graphics driver version change. Existing shader pipeline cache will be ignored, which may result in stuttering during gameplay.");
 				} else {
 					pipelines_cache.current_size = loaded_buffer_size;
 					pipelines_cache.buffer = p_data;
@@ -2274,11 +3897,12 @@ bool RenderingDeviceDriverVulkan::pipeline_cache_create(const Vector<uint8_t> &p
 	{
 		VkPipelineCacheCreateInfo cache_info = {};
 		cache_info.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
-		if (context->get_pipeline_cache_control_support()) {
-			cache_info.flags = VK_PIPELINE_CACHE_CREATE_EXTERNALLY_SYNCHRONIZED_BIT;
-		}
 		cache_info.initialDataSize = pipelines_cache.buffer.size() - sizeof(PipelineCacheHeader);
 		cache_info.pInitialData = pipelines_cache.buffer.ptr() + sizeof(PipelineCacheHeader);
+
+		if (pipeline_cache_control_support) {
+			cache_info.flags = VK_PIPELINE_CACHE_CREATE_EXTERNALLY_SYNCHRONIZED_BIT;
+		}
 
 		VkResult err = vkCreatePipelineCache(vk_device, &cache_info, nullptr, &pipelines_cache.vk_cache);
 		if (err != VK_SUCCESS) {
@@ -2294,6 +3918,7 @@ void RenderingDeviceDriverVulkan::pipeline_cache_free() {
 	DEV_ASSERT(pipelines_cache.vk_cache);
 
 	vkDestroyPipelineCache(vk_device, pipelines_cache.vk_cache, nullptr);
+	pipelines_cache.vk_cache = VK_NULL_HANDLE;
 
 	DEV_ASSERT(caching_instance_count > 0);
 	caching_instance_count--;
@@ -2352,7 +3977,7 @@ static void _attachment_reference_to_vk(const RDD::AttachmentReference &p_attach
 	*r_vk_attachment_reference = {};
 	r_vk_attachment_reference->sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2_KHR;
 	r_vk_attachment_reference->attachment = p_attachment_reference.attachment;
-	r_vk_attachment_reference->layout = (VkImageLayout)p_attachment_reference.layout;
+	r_vk_attachment_reference->layout = RD_TO_VK_LAYOUT[p_attachment_reference.layout];
 	r_vk_attachment_reference->aspectMask = (VkImageAspectFlags)p_attachment_reference.aspect;
 }
 
@@ -2371,8 +3996,8 @@ RDD::RenderPassID RenderingDeviceDriverVulkan::render_pass_create(VectorView<Att
 		vk_attachments[i].storeOp = (VkAttachmentStoreOp)p_attachments[i].store_op;
 		vk_attachments[i].stencilLoadOp = (VkAttachmentLoadOp)p_attachments[i].stencil_load_op;
 		vk_attachments[i].stencilStoreOp = (VkAttachmentStoreOp)p_attachments[i].stencil_store_op;
-		vk_attachments[i].initialLayout = (VkImageLayout)p_attachments[i].initial_layout;
-		vk_attachments[i].finalLayout = (VkImageLayout)p_attachments[i].final_layout;
+		vk_attachments[i].initialLayout = RD_TO_VK_LAYOUT[p_attachments[i].initial_layout];
+		vk_attachments[i].finalLayout = RD_TO_VK_LAYOUT[p_attachments[i].final_layout];
 	}
 
 	VkSubpassDescription2KHR *vk_subpasses = ALLOCA_ARRAY(VkSubpassDescription2KHR, p_subpasses.size());
@@ -2412,7 +4037,7 @@ RDD::RenderPassID RenderingDeviceDriverVulkan::render_pass_create(VectorView<Att
 		vk_subpasses[i].pPreserveAttachments = p_subpasses[i].preserve_attachments.ptr();
 
 		// VRS.
-		if (context->get_vrs_capabilities().attachment_vrs_supported && p_subpasses[i].vrs_reference.attachment != AttachmentReference::UNUSED) {
+		if (vrs_capabilities.attachment_vrs_supported && p_subpasses[i].vrs_reference.attachment != AttachmentReference::UNUSED) {
 			VkAttachmentReference2KHR *vk_subpass_vrs_attachment = ALLOCA_SINGLE(VkAttachmentReference2KHR);
 			*vk_subpass_vrs_attachment = {};
 			vk_subpass_vrs_attachment->sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2_KHR;
@@ -2423,8 +4048,8 @@ RDD::RenderPassID RenderingDeviceDriverVulkan::render_pass_create(VectorView<Att
 			*vk_vrs_info = {};
 			vk_vrs_info->sType = VK_STRUCTURE_TYPE_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR;
 			vk_vrs_info->pFragmentShadingRateAttachment = vk_subpass_vrs_attachment;
-			vk_vrs_info->shadingRateAttachmentTexelSize.width = context->get_vrs_capabilities().texel_size.x;
-			vk_vrs_info->shadingRateAttachmentTexelSize.height = context->get_vrs_capabilities().texel_size.y;
+			vk_vrs_info->shadingRateAttachmentTexelSize.width = vrs_capabilities.texel_size.x;
+			vk_vrs_info->shadingRateAttachmentTexelSize.height = vrs_capabilities.texel_size.y;
 
 			vk_subpasses[i].pNext = vk_vrs_info;
 		}
@@ -2436,10 +4061,10 @@ RDD::RenderPassID RenderingDeviceDriverVulkan::render_pass_create(VectorView<Att
 		vk_subpass_dependencies[i].sType = VK_STRUCTURE_TYPE_SUBPASS_DEPENDENCY_2;
 		vk_subpass_dependencies[i].srcSubpass = p_subpass_dependencies[i].src_subpass;
 		vk_subpass_dependencies[i].dstSubpass = p_subpass_dependencies[i].dst_subpass;
-		vk_subpass_dependencies[i].srcStageMask = (VkPipelineStageFlags)p_subpass_dependencies[i].src_stages;
-		vk_subpass_dependencies[i].dstStageMask = (VkPipelineStageFlags)p_subpass_dependencies[i].dst_stages;
-		vk_subpass_dependencies[i].srcAccessMask = (VkAccessFlags)p_subpass_dependencies[i].src_access;
-		vk_subpass_dependencies[i].dstAccessMask = (VkAccessFlags)p_subpass_dependencies[i].dst_access;
+		vk_subpass_dependencies[i].srcStageMask = _rd_to_vk_pipeline_stages(p_subpass_dependencies[i].src_stages);
+		vk_subpass_dependencies[i].dstStageMask = _rd_to_vk_pipeline_stages(p_subpass_dependencies[i].dst_stages);
+		vk_subpass_dependencies[i].srcAccessMask = _rd_to_vk_access_flags(p_subpass_dependencies[i].src_access);
+		vk_subpass_dependencies[i].dstAccessMask = _rd_to_vk_access_flags(p_subpass_dependencies[i].dst_access);
 	}
 
 	VkRenderPassCreateInfo2KHR create_info = {};
@@ -2454,8 +4079,8 @@ RDD::RenderPassID RenderingDeviceDriverVulkan::render_pass_create(VectorView<Att
 	create_info.pCorrelatedViewMasks = p_view_count == 1 ? nullptr : &correlation_mask;
 
 	// Multiview.
-	if (p_view_count > 1 && !context->supports_renderpass2()) {
-		// This is only required when using vkCreateRenderPass.
+	if (p_view_count > 1 && device_functions.CreateRenderPass2KHR == nullptr) {
+		// This is only required when not using vkCreateRenderPass2.
 		// We add it if vkCreateRenderPass2KHR is not supported,
 		// resulting this in being passed to our vkCreateRenderPass fallback.
 
@@ -2476,7 +4101,7 @@ RDD::RenderPassID RenderingDeviceDriverVulkan::render_pass_create(VectorView<Att
 	}
 
 	VkRenderPass vk_render_pass = VK_NULL_HANDLE;
-	VkResult res = context->vkCreateRenderPass2KHR(vk_device, &create_info, nullptr, &vk_render_pass);
+	VkResult res = _create_render_pass(vk_device, &create_info, nullptr, &vk_render_pass);
 	ERR_FAIL_COND_V_MSG(res, RenderPassID(), "vkCreateRenderPass2KHR failed with error " + itos(res) + ".");
 
 	return RenderPassID(vk_render_pass);
@@ -2738,7 +4363,7 @@ RDD::PipelineID RenderingDeviceDriverVulkan::render_pipeline_create(
 	// Tessellation.
 	VkPipelineTessellationStateCreateInfo tessellation_create_info = {};
 	tessellation_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
-	ERR_FAIL_COND_V(limits.maxTessellationPatchSize > 0 && (p_rasterization_state.patch_control_points < 1 || p_rasterization_state.patch_control_points > limits.maxTessellationPatchSize), PipelineID());
+	ERR_FAIL_COND_V(physical_device_properties.limits.maxTessellationPatchSize > 0 && (p_rasterization_state.patch_control_points < 1 || p_rasterization_state.patch_control_points > physical_device_properties.limits.maxTessellationPatchSize), PipelineID());
 	tessellation_create_info.patchControlPoints = p_rasterization_state.patch_control_points;
 
 	// Viewport.
@@ -2900,7 +4525,7 @@ RDD::PipelineID RenderingDeviceDriverVulkan::render_pipeline_create(
 
 	void *graphics_pipeline_nextptr = nullptr;
 
-	if (context->get_vrs_capabilities().attachment_vrs_supported) {
+	if (vrs_capabilities.attachment_vrs_supported) {
 		// If VRS is used, this defines how the different VRS types are combined.
 		// combinerOps[0] decides how we use the output of pipeline and primitive (drawcall) VRS.
 		// combinerOps[1] decides how we use the output of combinerOps[0] and our attachment VRS.
@@ -3086,7 +4711,7 @@ uint64_t RenderingDeviceDriverVulkan::timestamp_query_result_to_time(uint64_t p_
 
 	uint64_t shift_bits = 16;
 	uint64_t h = 0, l = 0;
-	mult64to128(p_result, uint64_t(double(context->get_device_limits().timestampPeriod) * double(1 << shift_bits)), h, l);
+	mult64to128(p_result, uint64_t(double(physical_device_properties.limits.timestampPeriod) * double(1 << shift_bits)), h, l);
 	l >>= shift_bits;
 	l |= h << (64 - shift_bits);
 
@@ -3106,6 +4731,7 @@ void RenderingDeviceDriverVulkan::command_timestamp_write(CommandBufferID p_cmd_
 /****************/
 
 void RenderingDeviceDriverVulkan::command_begin_label(CommandBufferID p_cmd_buffer, const char *p_label_name, const Color &p_color) {
+	const RenderingContextDriverVulkan::Functions &functions = context_driver->functions_get();
 	VkDebugUtilsLabelEXT label;
 	label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
 	label.pNext = nullptr;
@@ -3114,38 +4740,24 @@ void RenderingDeviceDriverVulkan::command_begin_label(CommandBufferID p_cmd_buff
 	label.color[1] = p_color[1];
 	label.color[2] = p_color[2];
 	label.color[3] = p_color[3];
-	vkCmdBeginDebugUtilsLabelEXT((VkCommandBuffer)p_cmd_buffer.id, &label);
+	functions.CmdBeginDebugUtilsLabelEXT((VkCommandBuffer)p_cmd_buffer.id, &label);
 }
 
 void RenderingDeviceDriverVulkan::command_end_label(CommandBufferID p_cmd_buffer) {
-	vkCmdEndDebugUtilsLabelEXT((VkCommandBuffer)p_cmd_buffer.id);
-}
-
-/****************/
-/**** SCREEN ****/
-/****************/
-
-RDD::DataFormat RenderingDeviceDriverVulkan::screen_get_format() {
-	// Very hacky, but not used often per frame so I guess ok.
-	VkFormat vk_format = context->get_screen_format();
-	DataFormat format = DATA_FORMAT_MAX;
-	for (int i = 0; i < DATA_FORMAT_MAX; i++) {
-		if (vk_format == RD_TO_VK_FORMAT[i]) {
-			format = DataFormat(i);
-			break;
-		}
-	}
-	return format;
+	const RenderingContextDriverVulkan::Functions &functions = context_driver->functions_get();
+	functions.CmdEndDebugUtilsLabelEXT((VkCommandBuffer)p_cmd_buffer.id);
 }
 
 /********************/
 /**** SUBMISSION ****/
 /********************/
 
-void RenderingDeviceDriverVulkan::begin_segment(CommandBufferID p_cmd_buffer, uint32_t p_frame_index, uint32_t p_frames_drawn) {
+void RenderingDeviceDriverVulkan::begin_segment(uint32_t p_frame_index, uint32_t p_frames_drawn) {
+	// Per-frame segments are not required in Vulkan.
 }
 
 void RenderingDeviceDriverVulkan::end_segment() {
+	// Per-frame segments are not required in Vulkan.
 }
 
 /**************/
@@ -3157,33 +4769,33 @@ void RenderingDeviceDriverVulkan::set_object_name(ObjectType p_type, ID p_driver
 		case OBJECT_TYPE_TEXTURE: {
 			const TextureInfo *tex_info = (const TextureInfo *)p_driver_id.id;
 			if (tex_info->allocation.handle) {
-				context->set_object_name(VK_OBJECT_TYPE_IMAGE, (uint64_t)tex_info->vk_view_create_info.image, p_name);
+				_set_object_name(VK_OBJECT_TYPE_IMAGE, (uint64_t)tex_info->vk_view_create_info.image, p_name);
 			}
-			context->set_object_name(VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)tex_info->vk_view, p_name + " View");
+			_set_object_name(VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)tex_info->vk_view, p_name + " View");
 		} break;
 		case OBJECT_TYPE_SAMPLER: {
-			context->set_object_name(VK_OBJECT_TYPE_SAMPLER, p_driver_id.id, p_name);
+			_set_object_name(VK_OBJECT_TYPE_SAMPLER, p_driver_id.id, p_name);
 		} break;
 		case OBJECT_TYPE_BUFFER: {
 			const BufferInfo *buf_info = (const BufferInfo *)p_driver_id.id;
-			context->set_object_name(VK_OBJECT_TYPE_BUFFER, (uint64_t)buf_info->vk_buffer, p_name);
+			_set_object_name(VK_OBJECT_TYPE_BUFFER, (uint64_t)buf_info->vk_buffer, p_name);
 			if (buf_info->vk_view) {
-				context->set_object_name(VK_OBJECT_TYPE_BUFFER_VIEW, (uint64_t)buf_info->vk_view, p_name + " View");
+				_set_object_name(VK_OBJECT_TYPE_BUFFER_VIEW, (uint64_t)buf_info->vk_view, p_name + " View");
 			}
 		} break;
 		case OBJECT_TYPE_SHADER: {
 			const ShaderInfo *shader_info = (const ShaderInfo *)p_driver_id.id;
 			for (uint32_t i = 0; i < shader_info->vk_descriptor_set_layouts.size(); i++) {
-				context->set_object_name(VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT, (uint64_t)shader_info->vk_descriptor_set_layouts[i], p_name);
+				_set_object_name(VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT, (uint64_t)shader_info->vk_descriptor_set_layouts[i], p_name);
 			}
-			context->set_object_name(VK_OBJECT_TYPE_PIPELINE_LAYOUT, (uint64_t)shader_info->vk_pipeline_layout, p_name + " Pipeline Layout");
+			_set_object_name(VK_OBJECT_TYPE_PIPELINE_LAYOUT, (uint64_t)shader_info->vk_pipeline_layout, p_name + " Pipeline Layout");
 		} break;
 		case OBJECT_TYPE_UNIFORM_SET: {
 			const UniformSetInfo *usi = (const UniformSetInfo *)p_driver_id.id;
-			context->set_object_name(VK_OBJECT_TYPE_DESCRIPTOR_SET, (uint64_t)usi->vk_descriptor_set, p_name);
+			_set_object_name(VK_OBJECT_TYPE_DESCRIPTOR_SET, (uint64_t)usi->vk_descriptor_set, p_name);
 		} break;
 		case OBJECT_TYPE_PIPELINE: {
-			context->set_object_name(VK_OBJECT_TYPE_PIPELINE, (uint64_t)p_driver_id.id, p_name);
+			_set_object_name(VK_OBJECT_TYPE_PIPELINE, (uint64_t)p_driver_id.id, p_name);
 		} break;
 		default: {
 			DEV_ASSERT(false);
@@ -3197,16 +4809,17 @@ uint64_t RenderingDeviceDriverVulkan::get_resource_native_handle(DriverResource 
 			return (uint64_t)vk_device;
 		}
 		case DRIVER_RESOURCE_PHYSICAL_DEVICE: {
-			return (uint64_t)context->get_physical_device();
+			return (uint64_t)physical_device;
 		}
 		case DRIVER_RESOURCE_TOPMOST_OBJECT: {
-			return (uint64_t)context->get_instance();
+			return (uint64_t)context_driver->instance_get();
 		}
 		case DRIVER_RESOURCE_COMMAND_QUEUE: {
-			return (uint64_t)context->get_graphics_queue();
+			const CommandQueue *queue_info = (const CommandQueue *)p_driver_id.id;
+			return (uint64_t)queue_families[queue_info->queue_family][queue_info->queue_index].queue;
 		}
 		case DRIVER_RESOURCE_QUEUE_FAMILY: {
-			return context->get_graphics_queue_family_index();
+			return uint32_t(p_driver_id.id) - 1;
 		}
 		case DRIVER_RESOURCE_TEXTURE: {
 			const TextureInfo *tex_info = (const TextureInfo *)p_driver_id.id;
@@ -3240,6 +4853,7 @@ uint64_t RenderingDeviceDriverVulkan::get_total_memory_used() {
 }
 
 uint64_t RenderingDeviceDriverVulkan::limit_get(Limit p_limit) {
+	const VkPhysicalDeviceLimits &limits = physical_device_properties.limits;
 	switch (p_limit) {
 		case LIMIT_MAX_BOUND_UNIFORM_SETS:
 			return limits.maxBoundDescriptorSets;
@@ -3313,30 +4927,24 @@ uint64_t RenderingDeviceDriverVulkan::limit_get(Limit p_limit) {
 			return limits.maxViewportDimensions[0];
 		case LIMIT_MAX_VIEWPORT_DIMENSIONS_Y:
 			return limits.maxViewportDimensions[1];
-		case LIMIT_SUBGROUP_SIZE: {
-			VulkanContext::SubgroupCapabilities subgroup_capabilities = context->get_subgroup_capabilities();
+		case LIMIT_SUBGROUP_SIZE:
 			return subgroup_capabilities.size;
-		}
-		case LIMIT_SUBGROUP_MIN_SIZE: {
-			VulkanContext::SubgroupCapabilities subgroup_capabilities = context->get_subgroup_capabilities();
+		case LIMIT_SUBGROUP_MIN_SIZE:
 			return subgroup_capabilities.min_size;
-		}
-		case LIMIT_SUBGROUP_MAX_SIZE: {
-			VulkanContext::SubgroupCapabilities subgroup_capabilities = context->get_subgroup_capabilities();
+		case LIMIT_SUBGROUP_MAX_SIZE:
 			return subgroup_capabilities.max_size;
-		}
-		case LIMIT_SUBGROUP_IN_SHADERS: {
-			VulkanContext::SubgroupCapabilities subgroup_capabilities = context->get_subgroup_capabilities();
+		case LIMIT_SUBGROUP_IN_SHADERS:
 			return subgroup_capabilities.supported_stages_flags_rd();
-		}
-		case LIMIT_SUBGROUP_OPERATIONS: {
-			VulkanContext::SubgroupCapabilities subgroup_capabilities = context->get_subgroup_capabilities();
+		case LIMIT_SUBGROUP_OPERATIONS:
 			return subgroup_capabilities.supported_operations_flags_rd();
-		}
 		case LIMIT_VRS_TEXEL_WIDTH:
-			return context->get_vrs_capabilities().texel_size.x;
+			return vrs_capabilities.texel_size.x;
 		case LIMIT_VRS_TEXEL_HEIGHT:
-			return context->get_vrs_capabilities().texel_size.y;
+			return vrs_capabilities.texel_size.y;
+		case LIMIT_VRS_MAX_FRAGMENT_WIDTH:
+			return vrs_capabilities.max_fragment_size.x;
+		case LIMIT_VRS_MAX_FRAGMENT_HEIGHT:
+			return vrs_capabilities.max_fragment_size.y;
 		default:
 			ERR_FAIL_V(0);
 	}
@@ -3345,7 +4953,7 @@ uint64_t RenderingDeviceDriverVulkan::limit_get(Limit p_limit) {
 uint64_t RenderingDeviceDriverVulkan::api_trait_get(ApiTrait p_trait) {
 	switch (p_trait) {
 		case API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT:
-			return (uint64_t)MAX((uint64_t)16, limits.optimalBufferCopyOffsetAlignment);
+			return (uint64_t)MAX((uint64_t)16, physical_device_properties.limits.optimalBufferCopyOffsetAlignment);
 		case API_TRAIT_SHADER_CHANGE_INVALIDATION:
 			return (uint64_t)SHADER_CHANGE_INVALIDATION_INCOMPATIBLE_SETS_PLUS_CASCADE;
 		default:
@@ -3355,57 +4963,53 @@ uint64_t RenderingDeviceDriverVulkan::api_trait_get(ApiTrait p_trait) {
 
 bool RenderingDeviceDriverVulkan::has_feature(Features p_feature) {
 	switch (p_feature) {
-		case SUPPORTS_MULTIVIEW: {
-			MultiviewCapabilities multiview_capabilies = context->get_multiview_capabilities();
-			return multiview_capabilies.is_supported && multiview_capabilies.max_view_count > 1;
-		} break;
-		case SUPPORTS_FSR_HALF_FLOAT: {
-			return context->get_shader_capabilities().shader_float16_is_supported && context->get_physical_device_features().shaderInt16 && context->get_storage_buffer_capabilities().storage_buffer_16_bit_access_is_supported;
-		} break;
-		case SUPPORTS_ATTACHMENT_VRS: {
-			VulkanContext::VRSCapabilities vrs_capabilities = context->get_vrs_capabilities();
-			return vrs_capabilities.attachment_vrs_supported && context->get_physical_device_features().shaderStorageImageExtendedFormats;
-		} break;
-		case SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS: {
+		case SUPPORTS_MULTIVIEW:
+			return multiview_capabilities.is_supported && multiview_capabilities.max_view_count > 1;
+		case SUPPORTS_FSR_HALF_FLOAT:
+			return shader_capabilities.shader_float16_is_supported && physical_device_features.shaderInt16 && storage_buffer_capabilities.storage_buffer_16_bit_access_is_supported;
+		case SUPPORTS_ATTACHMENT_VRS:
+			return vrs_capabilities.attachment_vrs_supported && physical_device_features.shaderStorageImageExtendedFormats;
+		case SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS:
 			return true;
-		} break;
-		default: {
+		default:
 			return false;
-		}
 	}
 }
 
 const RDD::MultiviewCapabilities &RenderingDeviceDriverVulkan::get_multiview_capabilities() {
-	return context->get_multiview_capabilities();
+	return multiview_capabilities;
+}
+
+String RenderingDeviceDriverVulkan::get_api_name() const {
+	return "Vulkan";
+}
+
+String RenderingDeviceDriverVulkan::get_api_version() const {
+	uint32_t api_version = physical_device_properties.apiVersion;
+	return vformat("%d.%d.%d", VK_API_VERSION_MAJOR(api_version), VK_API_VERSION_MINOR(api_version), VK_API_VERSION_PATCH(api_version));
+}
+
+String RenderingDeviceDriverVulkan::get_pipeline_cache_uuid() const {
+	return pipeline_cache_id;
+}
+
+const RDD::Capabilities &RenderingDeviceDriverVulkan::get_capabilities() const {
+	return device_capabilities;
+}
+
+bool RenderingDeviceDriverVulkan::is_composite_alpha_supported(CommandQueueID p_queue) const {
+	if (has_comp_alpha.has((uint64_t)p_queue.id)) {
+		return has_comp_alpha[(uint64_t)p_queue.id];
+	}
+	return false;
 }
 
 /******************/
 
-RenderingDeviceDriverVulkan::RenderingDeviceDriverVulkan(VulkanContext *p_context, VkDevice p_vk_device) :
-		context(p_context),
-		vk_device(p_vk_device) {
-	VmaAllocatorCreateInfo allocator_info = {};
-	allocator_info.physicalDevice = context->get_physical_device();
-	allocator_info.device = vk_device;
-	allocator_info.instance = context->get_instance();
-	VkResult err = vmaCreateAllocator(&allocator_info, &allocator);
-	ERR_FAIL_COND_MSG(err, "vmaCreateAllocator failed with error " + itos(err) + ".");
+RenderingDeviceDriverVulkan::RenderingDeviceDriverVulkan(RenderingContextDriverVulkan *p_context_driver) {
+	DEV_ASSERT(p_context_driver != nullptr);
 
-	max_descriptor_sets_per_pool = GLOBAL_GET("rendering/rendering_device/vulkan/max_descriptors_per_pool");
-
-	VkPhysicalDeviceProperties props = {};
-	vkGetPhysicalDeviceProperties(context->get_physical_device(), &props);
-	pipelines_cache.buffer.resize(sizeof(PipelineCacheHeader));
-	PipelineCacheHeader *header = (PipelineCacheHeader *)pipelines_cache.buffer.ptrw();
-	*header = {};
-	header->magic = 868 + VK_PIPELINE_CACHE_HEADER_VERSION_ONE;
-	header->device_id = props.deviceID;
-	header->vendor_id = props.vendorID;
-	header->driver_version = props.driverVersion;
-	memcpy(header->uuid, props.pipelineCacheUUID, VK_UUID_SIZE);
-	header->driver_abi = sizeof(void *);
-
-	limits = context->get_device_limits();
+	context_driver = p_context_driver;
 }
 
 RenderingDeviceDriverVulkan::~RenderingDeviceDriverVulkan() {
@@ -3415,4 +5019,8 @@ RenderingDeviceDriverVulkan::~RenderingDeviceDriverVulkan() {
 		small_allocs_pools.remove(E);
 	}
 	vmaDestroyAllocator(allocator);
+
+	if (vk_device != VK_NULL_HANDLE) {
+		vkDestroyDevice(vk_device, nullptr);
+	}
 }

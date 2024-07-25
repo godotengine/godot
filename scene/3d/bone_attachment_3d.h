@@ -45,6 +45,7 @@ class BoneAttachment3D : public Node3D {
 
 	bool override_pose = false;
 	bool _override_dirty = false;
+	bool overriding = false;
 
 	bool use_external_skeleton = false;
 	NodePath external_skeleton_node;
@@ -53,6 +54,7 @@ class BoneAttachment3D : public Node3D {
 	void _check_bind();
 	void _check_unbind();
 
+	bool updating = false;
 	void _transform_changed();
 	void _update_external_skeleton_cache();
 	Skeleton3D *_get_skeleton3d();
@@ -65,14 +67,17 @@ protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	virtual void _on_bone_pose_update_bind_compat_90575(int p_bone_index);
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 #ifdef TOOLS_ENABLED
 	virtual void notify_skeleton_bones_renamed(Node *p_base_scene, Skeleton3D *p_skeleton, Dictionary p_rename_map);
 #endif // TOOLS_ENABLED
 
-public:
-	virtual Array get_configuration_warnings() const override;
+	virtual PackedStringArray get_configuration_warnings() const override;
 
 	void set_bone_name(const String &p_name);
 	String get_bone_name() const;
@@ -88,7 +93,7 @@ public:
 	void set_external_skeleton(NodePath p_skeleton);
 	NodePath get_external_skeleton() const;
 
-	virtual void on_bone_pose_update(int p_bone_index);
+	virtual void on_skeleton_update();
 
 #ifdef TOOLS_ENABLED
 	virtual void notify_rebind_required();

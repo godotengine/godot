@@ -31,6 +31,7 @@
 #ifndef ANIMATION_MIXER_H
 #define ANIMATION_MIXER_H
 
+#include "scene/animation/tween.h"
 #include "scene/main/node.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/animation_library.h"
@@ -58,6 +59,12 @@ public:
 	enum AnimationCallbackModeMethod {
 		ANIMATION_CALLBACK_MODE_METHOD_DEFERRED,
 		ANIMATION_CALLBACK_MODE_METHOD_IMMEDIATE,
+	};
+
+	enum AnimationCallbackModeDiscrete {
+		ANIMATION_CALLBACK_MODE_DISCRETE_DOMINANT,
+		ANIMATION_CALLBACK_MODE_DISCRETE_RECESSIVE,
+		ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS,
 	};
 
 	/* ---- Data ---- */
@@ -119,6 +126,7 @@ protected:
 	/* ---- General settings for animation ---- */
 	AnimationCallbackModeProcess callback_mode_process = ANIMATION_CALLBACK_MODE_PROCESS_IDLE;
 	AnimationCallbackModeMethod callback_mode_method = ANIMATION_CALLBACK_MODE_METHOD_DEFERRED;
+	AnimationCallbackModeDiscrete callback_mode_discrete = ANIMATION_CALLBACK_MODE_DISCRETE_RECESSIVE;
 	int audio_max_polyphony = 32;
 	NodePath root_node;
 
@@ -214,8 +222,14 @@ protected:
 		Variant init_value;
 		Variant value;
 		Vector<StringName> subpath;
-		bool is_continuous = false;
+
+		// TODO: There are many boolean, can be packed into one integer.
+		bool is_init = false;
+		bool use_continuous = false;
+		bool use_discrete = false;
 		bool is_using_angle = false;
+		bool is_variant_interpolatable = true;
+
 		Variant element_size;
 
 		TrackCacheValue(const TrackCacheValue &p_other) :
@@ -223,8 +237,11 @@ protected:
 				init_value(p_other.init_value),
 				value(p_other.value),
 				subpath(p_other.subpath),
-				is_continuous(p_other.is_continuous),
+				is_init(p_other.is_init),
+				use_continuous(p_other.use_continuous),
+				use_discrete(p_other.use_discrete),
 				is_using_angle(p_other.is_using_angle),
+				is_variant_interpolatable(p_other.is_variant_interpolatable),
 				element_size(p_other.element_size) {}
 
 		TrackCacheValue() { type = Animation::TYPE_VALUE; }
@@ -262,12 +279,15 @@ protected:
 		Ref<AudioStreamPolyphonic> audio_stream;
 		Ref<AudioStreamPlaybackPolyphonic> audio_stream_playback;
 		HashMap<ObjectID, PlayingAudioTrackInfo> playing_streams; // Key is Animation resource ObjectID.
+		AudioServer::PlaybackType playback_type;
+		StringName bus;
 
 		TrackCacheAudio(const TrackCacheAudio &p_other) :
 				TrackCache(p_other),
 				audio_stream(p_other.audio_stream),
 				audio_stream_playback(p_other.audio_stream_playback),
-				playing_streams(p_other.playing_streams) {}
+				playing_streams(p_other.playing_streams),
+				playback_type(p_other.playback_type) {}
 
 		TrackCacheAudio() {
 			type = Animation::TYPE_AUDIO;
@@ -296,6 +316,9 @@ protected:
 	void _init_root_motion_cache();
 	bool _update_caches();
 
+	/* ---- Audio ---- */
+	AudioServer::PlaybackType playback_type;
+
 	/* ---- Blending processor ---- */
 	LocalVector<AnimationInstance> animation_instances;
 	HashMap<NodePath, int> track_map;
@@ -316,7 +339,10 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _notification(int p_what);
 	virtual void _validate_property(PropertyInfo &p_property) const;
+
+#ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
 
 	static void _bind_methods();
 	void _node_removed(Node *p_node);
@@ -328,21 +354,44 @@ protected:
 
 	/* ---- Blending processor ---- */
 	virtual void _process_animation(double p_delta, bool p_update_only = false);
+
+	// For post process with retrieved key value during blending.
 	virtual Variant _post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, ObjectID p_object_id, int p_object_sub_idx = -1);
 	Variant post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, ObjectID p_object_id, int p_object_sub_idx = -1);
 	GDVIRTUAL5RC(Variant, _post_process_key_value, Ref<Animation>, int, Variant, ObjectID, int);
 
 	void _blend_init();
 	virtual bool _blend_pre_process(double p_delta, int p_track_count, const HashMap<NodePath, int> &p_track_map);
+	virtual void _blend_capture(double p_delta);
 	void _blend_calc_total_weight(); // For undeterministic blending.
 	void _blend_process(double p_delta, bool p_update_only = false);
 	void _blend_apply();
 	virtual void _blend_post_process();
 	void _call_object(ObjectID p_object_id, const StringName &p_method, const Vector<Variant> &p_params, bool p_deferred);
 
+	/* ---- Capture feature ---- */
+	struct CaptureCache {
+		Ref<Animation> animation;
+		double remain = 0.0;
+		double step = 0.0;
+		Tween::TransitionType trans_type = Tween::TRANS_LINEAR;
+		Tween::EaseType ease_type = Tween::EASE_IN;
+
+		void clear() {
+			animation.unref();
+			remain = 0.0;
+			step = 0.0;
+		}
+
+		CaptureCache() {}
+		~CaptureCache() {
+			clear();
+		}
+	} capture_cache;
+	void blend_capture(double p_delta); // To blend capture track with all other animations.
+
 #ifndef DISABLE_DEPRECATED
 	virtual Variant _post_process_key_value_bind_compat_86687(const Ref<Animation> &p_anim, int p_track, Variant p_value, Object *p_object, int p_object_idx = -1);
-
 	static void _bind_compatibility_methods();
 #endif // DISABLE_DEPRECATED
 
@@ -379,6 +428,10 @@ public:
 	void set_callback_mode_method(AnimationCallbackModeMethod p_mode);
 	AnimationCallbackModeMethod get_callback_mode_method() const;
 
+	void set_callback_mode_discrete(AnimationCallbackModeDiscrete p_mode);
+	AnimationCallbackModeDiscrete get_callback_mode_discrete() const;
+
+	/* ---- Audio ---- */
 	void set_audio_max_polyphony(int p_audio_max_polyphony);
 	int get_audio_max_polyphony() const;
 
@@ -398,11 +451,14 @@ public:
 	void make_animation_instance(const StringName &p_name, const PlaybackInfo p_playback_info);
 	void clear_animation_instances();
 	virtual void advance(double p_time);
-	virtual void clear_caches(); ///< must be called by hand if an animation was modified after added
+	virtual void clear_caches(); // Must be called by hand if an animation was modified after added.
 
+	/* ---- Capture feature ---- */
+	void capture(const StringName &p_name, double p_duration, Tween::TransitionType p_trans_type = Tween::TRANS_LINEAR, Tween::EaseType p_ease_type = Tween::EASE_IN);
+
+	/* ---- Reset on save ---- */
 	void set_reset_on_save_enabled(bool p_enabled);
 	bool is_reset_on_save_enabled() const;
-
 	bool can_apply_reset() const;
 	void _build_backup_track_cache();
 	Ref<AnimatedValuesBackup> make_backup();
@@ -440,5 +496,6 @@ public:
 
 VARIANT_ENUM_CAST(AnimationMixer::AnimationCallbackModeProcess);
 VARIANT_ENUM_CAST(AnimationMixer::AnimationCallbackModeMethod);
+VARIANT_ENUM_CAST(AnimationMixer::AnimationCallbackModeDiscrete);
 
 #endif // ANIMATION_MIXER_H

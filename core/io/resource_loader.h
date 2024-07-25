@@ -47,9 +47,11 @@ class ResourceFormatLoader : public RefCounted {
 
 public:
 	enum CacheMode {
-		CACHE_MODE_IGNORE, // Resource and subresources do not use path cache, no path is set into resource.
-		CACHE_MODE_REUSE, // Resource and subresources use patch cache, reuse existing loaded resources instead of loading from disk when available.
-		CACHE_MODE_REPLACE, // Resource and subresource use path cache, but replace existing loaded resources when available with information from disk.
+		CACHE_MODE_IGNORE,
+		CACHE_MODE_REUSE,
+		CACHE_MODE_REPLACE,
+		CACHE_MODE_IGNORE_DEEP,
+		CACHE_MODE_REPLACE_DEEP,
 	};
 
 protected:
@@ -158,7 +160,7 @@ private:
 
 	static ResourceLoadedCallback _loaded_callback;
 
-	static Ref<ResourceFormatLoader> _find_custom_resource_format_loader(String path);
+	static Ref<ResourceFormatLoader> _find_custom_resource_format_loader(const String &path);
 
 	struct ThreadLoadTask {
 		WorkerThreadPool::TaskID task_id = 0; // Used if run on a worker thread from the pool.
@@ -168,10 +170,10 @@ private:
 		LoadToken *load_token = nullptr;
 		String local_path;
 		String remapped_path;
-		String dependent_path;
 		String type_hint;
 		float progress = 0.0f;
 		float max_reported_progress = 0.0f;
+		uint64_t last_progress_check_main_thread_frame = UINT64_MAX;
 		ThreadLoadStatus status = THREAD_LOAD_IN_PROGRESS;
 		ResourceFormatLoader::CacheMode cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE;
 		Error error = OK;
@@ -185,6 +187,7 @@ private:
 
 	static thread_local int load_nesting;
 	static thread_local WorkerThreadPool::TaskID caller_task_id;
+	static thread_local HashMap<int, HashMap<String, Ref<Resource>>> res_ref_overrides; // Outermost key is nesting level.
 	static thread_local Vector<String> *load_paths_stack; // A pointer to avoid broken TLS implementations from double-running the destructor.
 	static SafeBinaryMutex<BINARY_MUTEX_TAG> thread_load_mutex;
 	static HashMap<String, ThreadLoadTask> thread_load_tasks;
@@ -193,6 +196,8 @@ private:
 	static HashMap<String, LoadToken *> user_load_tokens;
 
 	static float _dependency_get_progress(const String &p_path);
+
+	static bool _ensure_load_progress();
 
 public:
 	static Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, ResourceFormatLoader::CacheMode p_cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE);
@@ -224,7 +229,7 @@ public:
 	// Loaders can safely use this regardless which thread they are running on.
 	static void notify_load_error(const String &p_err) {
 		if (err_notify) {
-			callable_mp_static(err_notify).bind(p_err).call_deferred();
+			MessageQueue::get_main_singleton()->push_callable(callable_mp_static(err_notify).bind(p_err));
 		}
 	}
 	static void set_error_notify_func(ResourceLoadErrorNotify p_err_notify) {
@@ -237,7 +242,7 @@ public:
 			if (Thread::get_caller_id() == Thread::get_main_id()) {
 				dep_err_notify(p_path, p_dependency, p_type);
 			} else {
-				callable_mp_static(dep_err_notify).bind(p_path, p_dependency, p_type).call_deferred();
+				MessageQueue::get_main_singleton()->push_callable(callable_mp_static(dep_err_notify).bind(p_path, p_dependency, p_type));
 			}
 		}
 	}
@@ -263,12 +268,15 @@ public:
 	static void set_load_callback(ResourceLoadedCallback p_callback);
 	static ResourceLoaderImport import;
 
-	static bool add_custom_resource_format_loader(String script_path);
+	static bool add_custom_resource_format_loader(const String &script_path);
 	static void add_custom_loaders();
 	static void remove_custom_loaders();
 
 	static void set_create_missing_resources_if_class_unavailable(bool p_enable);
 	_FORCE_INLINE_ static bool is_creating_missing_resources_if_class_unavailable_enabled() { return create_missing_resources_if_class_unavailable; }
+
+	static Ref<Resource> ensure_resource_ref_override_for_outer_load(const String &p_path, const String &p_res_type);
+	static Ref<Resource> get_resource_ref_override(const String &p_path);
 
 	static bool is_cleaning_tasks();
 

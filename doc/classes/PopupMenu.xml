@@ -197,13 +197,24 @@
 				If [param allow_echo] is [code]true[/code], the shortcut can be activated with echo events.
 			</description>
 		</method>
-		<method name="add_submenu_item">
+		<method name="add_submenu_item" deprecated="Prefer using [method add_submenu_node_item] instead.">
 			<return type="void" />
 			<param index="0" name="label" type="String" />
 			<param index="1" name="submenu" type="String" />
 			<param index="2" name="id" type="int" default="-1" />
 			<description>
 				Adds an item that will act as a submenu of the parent [PopupMenu] node when clicked. The [param submenu] argument must be the name of an existing [PopupMenu] that has been added as a child to this node. This submenu will be shown when the item is clicked, hovered for long enough, or activated using the [code]ui_select[/code] or [code]ui_right[/code] input actions.
+				An [param id] can optionally be provided. If no [param id] is provided, one will be created from the index.
+			</description>
+		</method>
+		<method name="add_submenu_node_item">
+			<return type="void" />
+			<param index="0" name="label" type="String" />
+			<param index="1" name="submenu" type="PopupMenu" />
+			<param index="2" name="id" type="int" default="-1" />
+			<description>
+				Adds an item that will act as a submenu of the parent [PopupMenu] node when clicked. This submenu will be shown when the item is clicked, hovered for long enough, or activated using the [code]ui_select[/code] or [code]ui_right[/code] input actions.
+				[param submenu] must be either child of this [PopupMenu] or has no parent node (in which case it will be automatically added as a child). If the [param submenu] popup has another parent, this method will fail.
 				An [param id] can optionally be provided. If no [param id] is provided, one will be created from the index.
 			</description>
 		</method>
@@ -304,11 +315,18 @@
 				Returns the [Shortcut] associated with the item at the given [param index].
 			</description>
 		</method>
-		<method name="get_item_submenu" qualifiers="const">
+		<method name="get_item_submenu" qualifiers="const" deprecated="Prefer using [method get_item_submenu_node] instead.">
 			<return type="String" />
 			<param index="0" name="index" type="int" />
 			<description>
 				Returns the submenu name of the item at the given [param index]. See [method add_submenu_item] for more info on how to add a submenu.
+			</description>
+		</method>
+		<method name="get_item_submenu_node" qualifiers="const">
+			<return type="PopupMenu" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the submenu of the item at the given [param index], or [code]null[/code] if no submenu was added. See [method add_submenu_node_item] for more info on how to add a submenu.
 			</description>
 		</method>
 		<method name="get_item_text" qualifiers="const">
@@ -375,6 +393,12 @@
 			<param index="0" name="index" type="int" />
 			<description>
 				Returns [code]true[/code] if the specified item's shortcut is disabled.
+			</description>
+		</method>
+		<method name="is_native_menu" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the system native menu is supported and currently used by this [PopupMenu].
 			</description>
 		</method>
 		<method name="is_system_menu" qualifiers="const">
@@ -545,12 +569,20 @@
 				Disables the [Shortcut] of the item at the given [param index].
 			</description>
 		</method>
-		<method name="set_item_submenu">
+		<method name="set_item_submenu" deprecated="Prefer using [method set_item_submenu_node] instead.">
 			<return type="void" />
 			<param index="0" name="index" type="int" />
 			<param index="1" name="submenu" type="String" />
 			<description>
 				Sets the submenu of the item at the given [param index]. The submenu is the name of a child [PopupMenu] node that would be shown when the item is clicked.
+			</description>
+		</method>
+		<method name="set_item_submenu_node">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="submenu" type="PopupMenu" />
+			<description>
+				Sets the submenu of the item at the given [param index]. The submenu is a [PopupMenu] node that would be shown when the item is clicked. It must either be a child of this [PopupMenu] or has no parent (in which case it will be automatically added as a child). If the [param submenu] popup has another parent, this method will fail.
 			</description>
 		</method>
 		<method name="set_item_text">
@@ -608,11 +640,15 @@
 		<member name="item_count" type="int" setter="set_item_count" getter="get_item_count" default="0">
 			The number of items currently in the list.
 		</member>
+		<member name="prefer_native_menu" type="bool" setter="set_prefer_native_menu" getter="is_prefer_native_menu" default="false">
+			If [code]true[/code], [MenuBar] will use native menu when supported.
+			[b]Note:[/b] If [PopupMenu] is linked to [StatusIndicator], [MenuBar], or another [PopupMenu] item it can use native menu regardless of this property, use [method is_native_menu] to check it.
+		</member>
 		<member name="submenu_popup_delay" type="float" setter="set_submenu_popup_delay" getter="get_submenu_popup_delay" default="0.3">
 			Sets the delay time in seconds for the submenu item to popup on mouse hovering. If the popup menu is added as a child of another (acting as a submenu), it will inherit the delay time of the parent menu item.
 		</member>
-		<member name="system_menu_root" type="String" setter="set_system_menu_root" getter="get_system_menu_root" default="&quot;&quot;">
-			If set to one of the values returned by [method DisplayServer.global_menu_get_system_menu_roots], this [PopupMenu] is bound to the special system menu. Only one [PopupMenu] can be bound to each special menu at a time.
+		<member name="system_menu_id" type="int" setter="set_system_menu" getter="get_system_menu" enum="NativeMenu.SystemMenus" default="0">
+			If set to one of the values of [enum NativeMenu.SystemMenus], this [PopupMenu] is bound to the special system menu. Only one [PopupMenu] can be bound to each special menu at a time.
 		</member>
 	</members>
 	<signals>
@@ -654,13 +690,13 @@
 		<theme_item name="font_hover_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			[Color] used for the hovered text.
 		</theme_item>
-		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			The tint of text outline of the menu item.
 		</theme_item>
 		<theme_item name="font_separator_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			[Color] used for labeled separators' text. See [method add_separator].
 		</theme_item>
-		<theme_item name="font_separator_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+		<theme_item name="font_separator_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			The tint of text outline of the labeled separator.
 		</theme_item>
 		<theme_item name="h_separation" data_type="constant" type="int" default="4">
@@ -738,6 +774,9 @@
 		</theme_item>
 		<theme_item name="labeled_separator_right" data_type="style" type="StyleBox">
 			[StyleBox] for the right side of labeled separator. See [method add_separator].
+		</theme_item>
+		<theme_item name="panel" data_type="style" type="StyleBox">
+			[StyleBox] for the the background panel.
 		</theme_item>
 		<theme_item name="separator" data_type="style" type="StyleBox">
 			[StyleBox] used for the separators. See [method add_separator].

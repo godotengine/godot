@@ -197,23 +197,23 @@ Transform3D Transform3D::operator*(const Transform3D &p_transform) const {
 	return t;
 }
 
-void Transform3D::operator*=(const real_t p_val) {
+void Transform3D::operator*=(real_t p_val) {
 	origin *= p_val;
 	basis *= p_val;
 }
 
-Transform3D Transform3D::operator*(const real_t p_val) const {
+Transform3D Transform3D::operator*(real_t p_val) const {
 	Transform3D ret(*this);
 	ret *= p_val;
 	return ret;
 }
 
-void Transform3D::operator/=(const real_t p_val) {
+void Transform3D::operator/=(real_t p_val) {
 	basis /= p_val;
 	origin /= p_val;
 }
 
-Transform3D Transform3D::operator/(const real_t p_val) const {
+Transform3D Transform3D::operator/(real_t p_val) const {
 	Transform3D ret(*this);
 	ret /= p_val;
 	return ret;
@@ -238,7 +238,7 @@ Transform3D::Transform3D(const Vector3 &p_x, const Vector3 &p_y, const Vector3 &
 	basis.set_column(2, p_z);
 }
 
-Transform3D::Transform3D(real_t xx, real_t xy, real_t xz, real_t yx, real_t yy, real_t yz, real_t zx, real_t zy, real_t zz, real_t ox, real_t oy, real_t oz) {
-	basis = Basis(xx, xy, xz, yx, yy, yz, zx, zy, zz);
-	origin = Vector3(ox, oy, oz);
+Transform3D::Transform3D(real_t p_xx, real_t p_xy, real_t p_xz, real_t p_yx, real_t p_yy, real_t p_yz, real_t p_zx, real_t p_zy, real_t p_zz, real_t p_ox, real_t p_oy, real_t p_oz) {
+	basis = Basis(p_xx, p_xy, p_xz, p_yx, p_yy, p_yz, p_zx, p_zy, p_zz);
+	origin = Vector3(p_ox, p_oy, p_oz);
 }

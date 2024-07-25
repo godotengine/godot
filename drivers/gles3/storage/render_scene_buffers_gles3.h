@@ -33,6 +33,7 @@
 
 #ifdef GLES3_ENABLED
 
+#include "drivers/gles3/effects/glow.h"
 #include "servers/rendering/storage/render_scene_buffers.h"
 
 #include "platform_gl.h"
@@ -49,8 +50,15 @@ public:
 	//bool use_taa = false;
 	//bool use_debanding = false;
 	uint32_t view_count = 1;
+	bool apply_color_adjustments_in_post = false;
 
 	RID render_target;
+
+	// Color format details from our render target
+	GLuint color_internal_format = GL_RGBA8;
+	GLuint color_format = GL_RGBA;
+	GLuint color_type = GL_UNSIGNED_BYTE;
+	uint32_t color_format_size = 4;
 
 	struct FBDEF {
 		GLuint color = 0;
@@ -74,53 +82,71 @@ public:
 
 	FBDEF backbuffer3d; // our back buffer
 
-	// Built-in textures used for ping pong image processing and blurring.
-	struct Blur {
-		RID texture;
-
-		struct Mipmap {
-			RID texture;
-			int width;
-			int height;
-			GLuint fbo;
-		};
-
-		Vector<Mipmap> mipmaps;
-	};
-
-	Blur blur[2]; //the second one starts from the first mipmap
+	// Buffers for our glow implementation
+	struct GLOW {
+		GLES3::Glow::GLOWLEVEL levels[4];
+	} glow;
 
 private:
+	void _check_render_buffers();
 	void _clear_msaa3d_buffers();
 	void _clear_intermediate_buffers();
 	void _clear_back_buffers();
+	void _clear_glow_buffers();
 
 	void _rt_attach_textures(GLuint p_color, GLuint p_depth, GLsizei p_samples, uint32_t p_view_count);
 	GLuint _rt_get_cached_fbo(GLuint p_color, GLuint p_depth, GLsizei p_samples, uint32_t p_view_count);
 
 public:
+	RenderSceneBuffersGLES3();
 	virtual ~RenderSceneBuffersGLES3();
 	virtual void configure(const RenderSceneBuffersConfiguration *p_config) override;
+	void configure_for_probe(Size2i p_size);
 
 	virtual void set_fsr_sharpness(float p_fsr_sharpness) override{};
 	virtual void set_texture_mipmap_bias(float p_texture_mipmap_bias) override{};
 	virtual void set_use_debanding(bool p_use_debanding) override{};
+	void set_apply_color_adjustments_in_post(bool p_apply_in_post);
 
 	void free_render_buffer_data();
 
 	void check_backbuffer(bool p_need_color, bool p_need_depth); // Check if we need to initialize our backbuffer.
+	void check_glow_buffers(); // Check if we need to initialize our glow buffers.
 
 	GLuint get_render_fbo();
-	GLuint get_msaa3d_fbo() const { return msaa3d.fbo; }
-	GLuint get_msaa3d_color() const { return msaa3d.color; }
-	GLuint get_msaa3d_depth() const { return msaa3d.depth; }
-	bool get_msaa_needs_resolve() const { return msaa3d.needs_resolve; }
-	GLuint get_internal_fbo() const { return internal3d.fbo; }
-	GLuint get_internal_color() const { return internal3d.color; }
-	GLuint get_internal_depth() const { return internal3d.depth; }
+	GLuint get_msaa3d_fbo() {
+		_check_render_buffers();
+		return msaa3d.fbo;
+	}
+	GLuint get_msaa3d_color() {
+		_check_render_buffers();
+		return msaa3d.color;
+	}
+	GLuint get_msaa3d_depth() {
+		_check_render_buffers();
+		return msaa3d.depth;
+	}
+	bool get_msaa_needs_resolve() {
+		_check_render_buffers();
+		return msaa3d.needs_resolve;
+	}
+	GLuint get_internal_fbo() {
+		_check_render_buffers();
+		return internal3d.fbo;
+	}
+	GLuint get_internal_color() {
+		_check_render_buffers();
+		return internal3d.color;
+	}
+	GLuint get_internal_depth() {
+		_check_render_buffers();
+		return internal3d.depth;
+	}
 	GLuint get_backbuffer_fbo() const { return backbuffer3d.fbo; }
 	GLuint get_backbuffer() const { return backbuffer3d.color; }
 	GLuint get_backbuffer_depth() const { return backbuffer3d.depth; }
+
+	const GLES3::Glow::GLOWLEVEL *get_glow_buffers() const { return &glow.levels[0]; }
 
 	// Getters
 

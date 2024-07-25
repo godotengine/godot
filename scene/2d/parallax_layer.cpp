@@ -71,8 +71,9 @@ void ParallaxLayer::_update_mirroring() {
 	if (pb) {
 		RID c = pb->get_canvas();
 		RID ci = get_canvas_item();
-		Point2 mirrorScale = mirroring * get_scale();
-		RenderingServer::get_singleton()->canvas_set_item_mirroring(c, ci, mirrorScale);
+		Point2 mirror_scale = mirroring * orig_scale;
+		RenderingServer::get_singleton()->canvas_set_item_mirroring(c, ci, mirror_scale);
+		RenderingServer::get_singleton()->canvas_item_set_interpolated(ci, false);
 	}
 }
 
@@ -137,8 +138,8 @@ void ParallaxLayer::set_base_offset_and_scale(const Point2 &p_offset, real_t p_s
 	_update_mirroring();
 }
 
-Array ParallaxLayer::get_configuration_warnings() const {
-	Array warnings = Node::get_configuration_warnings();
+PackedStringArray ParallaxLayer::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<ParallaxBackground>(get_parent())) {
 		warnings.push_back(RTR("ParallaxLayer node only works when set as child of a ParallaxBackground node."));
@@ -162,4 +163,6 @@ void ParallaxLayer::_bind_methods() {
 }
 
 ParallaxLayer::ParallaxLayer() {
+	// ParallaxLayer is always updated every frame so there is no need to interpolate.
+	set_physics_interpolation_mode(Node::PHYSICS_INTERPOLATION_MODE_OFF);
 }

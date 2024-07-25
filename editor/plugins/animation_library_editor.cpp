@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "animation_library_editor.h"
+
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
@@ -75,7 +76,7 @@ void AnimationLibraryEditor::_add_library_validate(const String &p_name) {
 	}
 
 	if (error != "") {
-		add_library_validate->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+		add_library_validate->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 		add_library_validate->set_text(error);
 		add_library_dialog->get_ok_button()->set_disabled(true);
 	} else {
@@ -88,7 +89,7 @@ void AnimationLibraryEditor::_add_library_validate(const String &p_name) {
 				add_library_validate->set_text(TTR("Library name is valid."));
 			}
 		}
-		add_library_validate->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
+		add_library_validate->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
 		add_library_dialog->get_ok_button()->set_disabled(false);
 	}
 }
@@ -300,7 +301,7 @@ void AnimationLibraryEditor::_file_popup_selected(int p_id) {
 	}
 }
 
-void AnimationLibraryEditor::_load_file(String p_path) {
+void AnimationLibraryEditor::_load_file(const String &p_path) {
 	switch (file_dialog_action) {
 		case FILE_DIALOG_ACTION_SAVE_LIBRARY: {
 			Ref<AnimationLibrary> al = mixer->get_animation_library(file_dialog_library);
@@ -780,6 +781,27 @@ void AnimationLibraryEditor::_update_editor(Object *p_mixer) {
 	emit_signal("update_editor", p_mixer);
 }
 
+void AnimationLibraryEditor::shortcut_input(const Ref<InputEvent> &p_event) {
+	const Ref<InputEventKey> k = p_event;
+	if (k.is_valid() && k->is_pressed()) {
+		bool handled = false;
+
+		if (ED_IS_SHORTCUT("ui_undo", p_event)) {
+			EditorNode::get_singleton()->undo();
+			handled = true;
+		}
+
+		if (ED_IS_SHORTCUT("ui_redo", p_event)) {
+			EditorNode::get_singleton()->redo();
+			handled = true;
+		}
+
+		if (handled) {
+			set_input_as_handled();
+		}
+	}
+}
+
 void AnimationLibraryEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_editor", "mixer"), &AnimationLibraryEditor::_update_editor);
 	ADD_SIGNAL(MethodInfo("update_editor"));
@@ -787,6 +809,7 @@ void AnimationLibraryEditor::_bind_methods() {
 
 AnimationLibraryEditor::AnimationLibraryEditor() {
 	set_title(TTR("Edit Animation Libraries"));
+	set_process_shortcut_input(true);
 
 	file_dialog = memnew(EditorFileDialog);
 	add_child(file_dialog);
@@ -797,13 +820,13 @@ AnimationLibraryEditor::AnimationLibraryEditor() {
 	VBoxContainer *dialog_vb = memnew(VBoxContainer);
 	add_library_name = memnew(LineEdit);
 	dialog_vb->add_child(add_library_name);
-	add_library_name->connect("text_changed", callable_mp(this, &AnimationLibraryEditor::_add_library_validate));
+	add_library_name->connect(SceneStringName(text_changed), callable_mp(this, &AnimationLibraryEditor::_add_library_validate));
 	add_child(add_library_dialog);
 
 	add_library_validate = memnew(Label);
 	dialog_vb->add_child(add_library_validate);
 	add_library_dialog->add_child(dialog_vb);
-	add_library_dialog->connect("confirmed", callable_mp(this, &AnimationLibraryEditor::_add_library_confirm));
+	add_library_dialog->connect(SceneStringName(confirmed), callable_mp(this, &AnimationLibraryEditor::_add_library_confirm));
 	add_library_dialog->register_text_enter(add_library_name);
 
 	VBoxContainer *vb = memnew(VBoxContainer);
@@ -811,16 +834,17 @@ AnimationLibraryEditor::AnimationLibraryEditor() {
 	hb->add_spacer(true);
 	new_library_button = memnew(Button(TTR("New Library")));
 	new_library_button->set_tooltip_text(TTR("Create new empty animation library."));
-	new_library_button->connect("pressed", callable_mp(this, &AnimationLibraryEditor::_add_library));
+	new_library_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationLibraryEditor::_add_library));
 	hb->add_child(new_library_button);
 	load_library_button = memnew(Button(TTR("Load Library")));
 	load_library_button->set_tooltip_text(TTR("Load animation library from disk."));
-	load_library_button->connect("pressed", callable_mp(this, &AnimationLibraryEditor::_load_library));
+	load_library_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationLibraryEditor::_load_library));
 	hb->add_child(load_library_button);
 	vb->add_child(hb);
 	tree = memnew(Tree);
 	vb->add_child(tree);
 
+	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_columns(2);
 	tree->set_column_titles_visible(true);
 	tree->set_column_title(0, TTR("Resource"));
@@ -837,7 +861,7 @@ AnimationLibraryEditor::AnimationLibraryEditor() {
 
 	file_popup = memnew(PopupMenu);
 	add_child(file_popup);
-	file_popup->connect("id_pressed", callable_mp(this, &AnimationLibraryEditor::_file_popup_selected));
+	file_popup->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationLibraryEditor::_file_popup_selected));
 
 	add_child(vb);
 

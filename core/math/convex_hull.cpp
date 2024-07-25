@@ -77,15 +77,17 @@ subject to the following restrictions:
 
 #ifdef DEBUG_ENABLED
 #define CHULL_ASSERT(m_cond)                                     \
-	do {                                                         \
+	if constexpr (true) {                                        \
 		if (unlikely(!(m_cond))) {                               \
 			ERR_PRINT("Assertion \"" _STR(m_cond) "\" failed."); \
 		}                                                        \
-	} while (0)
+	} else                                                       \
+		((void)0)
 #else
 #define CHULL_ASSERT(m_cond) \
-	do {                     \
-	} while (0)
+	if constexpr (true) {    \
+	} else                   \
+		((void)0)
 #endif
 
 #if defined(DEBUG_CONVEX_HULL) || defined(SHOW_ITERATIONS)

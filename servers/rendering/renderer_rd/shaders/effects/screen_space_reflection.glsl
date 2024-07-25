@@ -90,7 +90,7 @@ void main() {
 	if (sc_multiview) {
 		view_dir = normalize(vertex + scene_data.eye_offset[params.view_index].xyz);
 	} else {
-		view_dir = normalize(vertex);
+		view_dir = params.orthogonal ? vec3(0.0, 0.0, -1.0) : normalize(vertex);
 	}
 	vec3 ray_dir = normalize(reflect(view_dir, normal));
 

@@ -47,6 +47,10 @@ class ThemeContext;
 class Control : public CanvasItem {
 	GDCLASS(Control, CanvasItem);
 
+#ifdef TOOLS_ENABLED
+	bool saving = false;
+#endif
+
 public:
 	enum Anchor {
 		ANCHOR_BEGIN = 0,
@@ -253,7 +257,6 @@ private:
 		bool is_rtl_dirty = true;
 		bool is_rtl = false;
 
-		bool auto_translate = true;
 		bool localize_numeral_system = true;
 
 		// Extra properties.
@@ -345,6 +348,10 @@ protected:
 	void _notification(int p_notification);
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	static void _bind_compatibility_methods();
+#endif
+
 	// Exposed virtual methods.
 
 	GDVIRTUAL1RC(bool, _has_point, Vector2)
@@ -407,8 +414,10 @@ public:
 
 	static void set_root_layout_direction(int p_root_dir);
 
+	PackedStringArray get_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
-	Array get_configuration_warnings() const override;
+#endif
 
 	virtual bool is_text_field() const;
 
@@ -624,11 +633,10 @@ public:
 	void set_localize_numeral_system(bool p_enable);
 	bool is_localizing_numeral_system() const;
 
+#ifndef DISABLE_DEPRECATED
 	void set_auto_translate(bool p_enable);
 	bool is_auto_translating() const;
-	_FORCE_INLINE_ String atr(const String p_string) const {
-		return is_auto_translating() ? tr(p_string) : p_string;
-	};
+#endif
 
 	// Extra properties.
 

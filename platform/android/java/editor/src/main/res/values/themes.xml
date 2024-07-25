@@ -2,4 +2,10 @@
 <resources>
 	<style name="GodotEditorTheme" parent="@android:style/Theme.Black.NoTitleBar.Fullscreen">
 	</style>
+
+	<style name="GodotEditorSplashScreenTheme" parent="Theme.SplashScreen.IconBackground">
+		<!-- Set the theme of the Activity that directly follows your splash
+		screen. This is required. -->
+		<item name="postSplashScreenTheme">@style/GodotEditorTheme</item>
+	</style>
 </resources>

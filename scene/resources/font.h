@@ -187,6 +187,7 @@ class FontFile : public Font {
 
 	TextServer::FontAntialiasing antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
 	bool mipmaps = false;
+	bool disable_embedded_bitmaps = true;
 	bool msdf = false;
 	int msdf_pixel_range = 16;
 	int msdf_size = 48;
@@ -226,6 +227,8 @@ protected:
 	virtual void reset_state() override;
 
 public:
+	Error _load_bitmap_font(const String &p_path, List<String> *r_image_files);
+
 	Error load_bitmap_font(const String &p_path);
 	Error load_dynamic_font(const String &p_path);
 
@@ -243,6 +246,9 @@ public:
 
 	virtual void set_antialiasing(TextServer::FontAntialiasing p_antialiasing);
 	virtual TextServer::FontAntialiasing get_antialiasing() const;
+
+	virtual void set_disable_embedded_bitmaps(bool p_disable_embedded_bitmaps);
+	virtual bool get_disable_embedded_bitmaps() const;
 
 	virtual void set_generate_mipmaps(bool p_generate_mipmaps);
 	virtual bool get_generate_mipmaps() const;
@@ -469,6 +475,7 @@ class SystemFont : public Font {
 
 	TextServer::FontAntialiasing antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
 	bool mipmaps = false;
+	bool disable_embedded_bitmaps = true;
 	bool force_autohinter = false;
 	bool allow_system_fallback = true;
 	TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
@@ -491,6 +498,9 @@ public:
 
 	virtual void set_antialiasing(TextServer::FontAntialiasing p_antialiasing);
 	virtual TextServer::FontAntialiasing get_antialiasing() const;
+
+	virtual void set_disable_embedded_bitmaps(bool p_disable_embedded_bitmaps);
+	virtual bool get_disable_embedded_bitmaps() const;
 
 	virtual void set_generate_mipmaps(bool p_generate_mipmaps);
 	virtual bool get_generate_mipmaps() const;

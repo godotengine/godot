@@ -161,7 +161,7 @@ public:
 };
 
 class OccluderInstance3D : public VisualInstance3D {
-	GDCLASS(OccluderInstance3D, Node3D);
+	GDCLASS(OccluderInstance3D, VisualInstance3D);
 
 private:
 	Ref<Occluder3D> occluder;
@@ -181,7 +181,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual Array get_configuration_warnings() const override;
+	virtual PackedStringArray get_configuration_warnings() const override;
 
 	enum BakeError {
 		BAKE_ERROR_OK,

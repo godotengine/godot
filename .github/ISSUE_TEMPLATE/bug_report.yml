@@ -45,7 +45,7 @@ body:
     label: Issue description
     description: |
       Describe your issue briefly. What doesn't work, and how do you expect it to work instead?
-      You can include images or videos with drag and drop, and format code blocks or logs with <code>```</code> tags, on separate lines before and after the text. (Use <code>```gdscript</code> to add GDScript syntax highlighting.)
+      You can include images or videos with drag and drop, and format code blocks or logs with <code>\`\`\`</code> tags, on separate lines before and after the text. (Use <code>\`\`\`gdscript</code> to add GDScript syntax highlighting.)
       Please do not add code examples or error messages as screenshots, but as text, this helps searching for issues and testing the code. If you are reporting a bug in the editor interface, like the script editor, please provide both a screenshot *and* the text of the code to help with testing.
   validations:
     required: true

@@ -34,8 +34,8 @@
 #include "core/object/class_db.h"
 #include "core/templates/rid.h"
 
+#include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_mesh.h"
-#include "scene/resources/navigation_mesh_source_geometry_data_3d.h"
 #include "servers/navigation/navigation_path_query_parameters_3d.h"
 #include "servers/navigation/navigation_path_query_result_3d.h"
 
@@ -84,6 +84,9 @@ public:
 	virtual void map_set_cell_height(RID p_map, real_t p_height) = 0;
 	virtual real_t map_get_cell_height(RID p_map) const = 0;
 
+	virtual void map_set_merge_rasterizer_cell_scale(RID p_map, float p_value) = 0;
+	virtual float map_get_merge_rasterizer_cell_scale(RID p_map) const = 0;
+
 	virtual void map_set_use_edge_connections(RID p_map, bool p_enabled) = 0;
 	virtual bool map_get_use_edge_connections(RID p_map) const = 0;
 
@@ -113,6 +116,7 @@ public:
 	virtual TypedArray<RID> map_get_obstacles(RID p_map) const = 0;
 
 	virtual void map_force_update(RID p_map) = 0;
+	virtual uint32_t map_get_iteration_id(RID p_map) const = 0;
 
 	virtual Vector3 map_get_random_point(RID p_map, uint32_t p_navigation_layers, bool p_uniformly) const = 0;
 
@@ -340,10 +344,17 @@ public:
 
 	virtual NavigationUtilities::PathQueryResult _query_path(const NavigationUtilities::PathQueryParameters &p_parameters) const = 0;
 
+#ifndef _3D_DISABLED
 	virtual void parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable()) = 0;
 	virtual void bake_from_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) = 0;
 	virtual void bake_from_source_geometry_data_async(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) = 0;
 	virtual bool is_baking_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) const = 0;
+#endif // _3D_DISABLED
+
+	virtual RID source_geometry_parser_create() = 0;
+	virtual void source_geometry_parser_set_callback(RID p_parser, const Callable &p_callback) = 0;
+
+	virtual Vector<Vector3> simplify_path(const Vector<Vector3> &p_path, real_t p_epsilon) = 0;
 
 	NavigationServer3D();
 	~NavigationServer3D() override;

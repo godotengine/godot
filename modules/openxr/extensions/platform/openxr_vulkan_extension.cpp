@@ -38,14 +38,6 @@
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering_server.h"
 
-OpenXRVulkanExtension::OpenXRVulkanExtension() {
-	VulkanContext::set_vulkan_hooks(this);
-}
-
-OpenXRVulkanExtension::~OpenXRVulkanExtension() {
-	VulkanContext::set_vulkan_hooks(nullptr);
-}
-
 HashMap<String, bool *> OpenXRVulkanExtension::get_requested_extensions() {
 	HashMap<String, bool *> request_extensions;
 
@@ -178,10 +170,6 @@ bool OpenXRVulkanExtension::get_physical_device(VkPhysicalDevice *r_device) {
 bool OpenXRVulkanExtension::create_vulkan_device(const VkDeviceCreateInfo *p_device_create_info, VkDevice *r_device) {
 	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), false);
 
-	// the first entry in our queue list should be the one we need to remember...
-	vulkan_queue_family_index = p_device_create_info->pQueueCreateInfos[0].queueFamilyIndex;
-	vulkan_queue_index = 0; // ??
-
 	XrVulkanDeviceCreateInfoKHR create_info = {
 		XR_TYPE_VULKAN_DEVICE_CREATE_INFO_KHR, // type
 		nullptr, // next
@@ -209,9 +197,17 @@ bool OpenXRVulkanExtension::create_vulkan_device(const VkDeviceCreateInfo *p_dev
 	return true;
 }
 
+void OpenXRVulkanExtension::set_direct_queue_family_and_index(uint32_t p_queue_family_index, uint32_t p_queue_index) {
+	vulkan_queue_family_index = p_queue_family_index;
+	vulkan_queue_index = p_queue_index;
+}
+
 XrGraphicsBindingVulkanKHR OpenXRVulkanExtension::graphics_binding_vulkan;
 
 void *OpenXRVulkanExtension::set_session_create_and_get_next_pointer(void *p_next_pointer) {
+	DEV_ASSERT(vulkan_queue_family_index < UINT32_MAX && "Direct queue family index was not specified yet.");
+	DEV_ASSERT(vulkan_queue_index < UINT32_MAX && "Direct queue index was not specified yet.");
+
 	graphics_binding_vulkan.type = XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR;
 	graphics_binding_vulkan.next = p_next_pointer;
 	graphics_binding_vulkan.instance = vulkan_instance;
@@ -233,6 +229,10 @@ void OpenXRVulkanExtension::get_usable_swapchain_formats(Vector<int64_t> &p_usab
 }
 
 void OpenXRVulkanExtension::get_usable_depth_formats(Vector<int64_t> &p_usable_swap_chains) {
+	// Note, it is very likely we do NOT support any of depth formats where we can combine our stencil support (e.g. _S8_UINT).
+	// Right now this isn't a problem but once stencil support becomes an issue, we need to check for this in the rendering engine
+	// and create a separate buffer for the stencil.
+
 	p_usable_swap_chains.push_back(VK_FORMAT_D24_UNORM_S8_UINT);
 	p_usable_swap_chains.push_back(VK_FORMAT_D32_SFLOAT_S8_UINT);
 	p_usable_swap_chains.push_back(VK_FORMAT_D32_SFLOAT);

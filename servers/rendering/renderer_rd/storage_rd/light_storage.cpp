@@ -668,7 +668,9 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 					light_data.blend_splits = (smode != RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL) && light->directional_blend_splits;
 					for (int j = 0; j < 4; j++) {
 						Rect2 atlas_rect = light_instance->shadow_transform[j].atlas_rect;
-						Projection matrix = light_instance->shadow_transform[j].camera;
+						Projection correction;
+						correction.set_depth_correction(false, true, false);
+						Projection matrix = correction * light_instance->shadow_transform[j].camera;
 						float split = light_instance->shadow_transform[MIN(limit, j)].split;
 
 						Projection bias;
@@ -967,7 +969,9 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 				Projection bias;
 				bias.set_light_bias();
 
-				Projection cm = light_instance->shadow_transform[0].camera;
+				Projection correction;
+				correction.set_depth_correction(false, true, false);
+				Projection cm = correction * light_instance->shadow_transform[0].camera;
 				Projection shadow_mtx = bias * cm * modelview;
 				RendererRD::MaterialStorage::store_camera(shadow_mtx, light_data.shadow_matrix);
 
@@ -1370,6 +1374,17 @@ void LightStorage::reflection_probe_instance_set_transform(RID p_instance, const
 	rpi->dirty = true;
 }
 
+bool LightStorage::reflection_probe_has_atlas_index(RID p_instance) {
+	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
+	ERR_FAIL_NULL_V(rpi, false);
+
+	if (rpi->atlas.is_null()) {
+		return false;
+	}
+
+	return rpi->atlas_index >= 0;
+}
+
 void LightStorage::reflection_probe_release_atlas_index(RID p_instance) {
 	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
 	ERR_FAIL_NULL(rpi);
@@ -1383,6 +1398,14 @@ void LightStorage::reflection_probe_release_atlas_index(RID p_instance) {
 	atlas->reflections.write[rpi->atlas_index].owner = RID();
 
 	// TODO investigate if this is enough? shouldn't we be freeing our textures and framebuffers?
+
+	if (rpi->rendering) {
+		// We were cancelled mid rendering, trigger refresh.
+		rpi->rendering = false;
+		rpi->dirty = true;
+		rpi->processing_layer = 1;
+		rpi->processing_side = 0;
+	}
 
 	rpi->atlas_index = -1;
 	rpi->atlas = RID();
@@ -1535,11 +1558,10 @@ bool LightStorage::reflection_probe_instance_postprocess_step(RID p_instance) {
 	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
 	ERR_FAIL_NULL_V(rpi, false);
 	ERR_FAIL_COND_V(!rpi->rendering, false);
-	ERR_FAIL_COND_V(rpi->atlas.is_null(), false);
 
 	ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(rpi->atlas);
 	if (!atlas || rpi->atlas_index == -1) {
-		//does not belong to an atlas anymore, cancel (was removed from atlas or atlas changed while rendering)
+		// Does not belong to an atlas anymore, cancel (was removed from atlas or atlas changed while rendering).
 		rpi->rendering = false;
 		return false;
 	}
@@ -2003,7 +2025,7 @@ void LightStorage::shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits
 	for (int i = 0; i < 4; i++) {
 		//clear subdivisions
 		shadow_atlas->quadrants[i].shadows.clear();
-		shadow_atlas->quadrants[i].shadows.resize(int64_t(1) << int64_t(shadow_atlas->quadrants[i].subdivision));
+		shadow_atlas->quadrants[i].shadows.resize(int64_t(shadow_atlas->quadrants[i].subdivision * shadow_atlas->quadrants[i].subdivision));
 	}
 
 	//erase shadow atlas reference from lights

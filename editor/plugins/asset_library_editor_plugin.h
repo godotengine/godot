@@ -32,8 +32,8 @@
 #define ASSET_LIBRARY_EDITOR_PLUGIN_H
 
 #include "editor/editor_asset_installer.h"
-#include "editor/editor_plugin.h"
-#include "editor/editor_plugin_settings.h"
+#include "editor/plugins/editor_plugin.h"
+#include "editor/plugins/editor_plugin_settings.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/grid_container.h"
@@ -60,9 +60,9 @@ class EditorAssetLibraryItem : public PanelContainer {
 	LinkButton *title = nullptr;
 	LinkButton *category = nullptr;
 	LinkButton *author = nullptr;
-	TextureRect *stars[5];
 	Label *price = nullptr;
 
+	String title_text;
 	int asset_id = 0;
 	int category_id = 0;
 	int author_id = 0;
@@ -82,7 +82,7 @@ public:
 
 	void clamp_width(int p_max_width);
 
-	EditorAssetLibraryItem();
+	EditorAssetLibraryItem(bool p_clickable = false);
 };
 
 class EditorAssetLibraryItemDescription : public ConfirmationDialog {
@@ -90,6 +90,7 @@ class EditorAssetLibraryItemDescription : public ConfirmationDialog {
 
 	EditorAssetLibraryItem *item = nullptr;
 	RichTextLabel *description = nullptr;
+	VBoxContainer *previews_vbox = nullptr;
 	ScrollContainer *previews = nullptr;
 	HBoxContainer *preview_hb = nullptr;
 	PanelContainer *previews_bg = nullptr;
@@ -224,7 +225,7 @@ class EditorAssetLibrary : public PanelContainer {
 	void _force_online_mode();
 
 	enum Support {
-		SUPPORT_OFFICIAL,
+		SUPPORT_FEATURED,
 		SUPPORT_COMMUNITY,
 		SUPPORT_TESTING,
 		SUPPORT_MAX
@@ -294,7 +295,7 @@ class EditorAssetLibrary : public PanelContainer {
 
 	void _install_asset();
 
-	void _select_author(int p_id);
+	void _select_author(const String &p_author);
 	void _select_category(int p_id);
 	void _select_asset(int p_id);
 

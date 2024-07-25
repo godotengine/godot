@@ -35,14 +35,14 @@
 #include "core/io/resource_importer.h"
 #include "core/variant/dictionary.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
+#include "scene/resources/3d/box_shape_3d.h"
+#include "scene/resources/3d/capsule_shape_3d.h"
+#include "scene/resources/3d/cylinder_shape_3d.h"
+#include "scene/resources/3d/importer_mesh.h"
+#include "scene/resources/3d/skin.h"
+#include "scene/resources/3d/sphere_shape_3d.h"
 #include "scene/resources/animation.h"
-#include "scene/resources/box_shape_3d.h"
-#include "scene/resources/capsule_shape_3d.h"
-#include "scene/resources/cylinder_shape_3d.h"
-#include "scene/resources/importer_mesh.h"
 #include "scene/resources/mesh.h"
-#include "scene/resources/shape_3d.h"
-#include "scene/resources/sphere_shape_3d.h"
 
 class Material;
 class AnimationPlayer;
@@ -54,8 +54,8 @@ class EditorSceneFormatImporter : public RefCounted {
 protected:
 	static void _bind_methods();
 
-	Node *import_scene_wrapper(const String &p_path, uint32_t p_flags, Dictionary p_options);
-	Ref<Animation> import_animation_wrapper(const String &p_path, uint32_t p_flags, Dictionary p_options);
+	Node *import_scene_wrapper(const String &p_path, uint32_t p_flags, const Dictionary &p_options);
+	Ref<Animation> import_animation_wrapper(const String &p_path, uint32_t p_flags, const Dictionary &p_options);
 
 	GDVIRTUAL0RC(uint32_t, _get_import_flags)
 	GDVIRTUAL0RC(Vector<String>, _get_extensions)
@@ -136,8 +136,8 @@ protected:
 
 public:
 	Variant get_option_value(const StringName &p_name) const;
-	void add_import_option(const String &p_name, Variant p_default_value);
-	void add_import_option_advanced(Variant::Type p_type, const String &p_name, Variant p_default_value, PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_string = String(), int p_usage_flags = PROPERTY_USAGE_DEFAULT);
+	void add_import_option(const String &p_name, const Variant &p_default_value);
+	void add_import_option_advanced(Variant::Type p_type, const String &p_name, const Variant &p_default_value, PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_string = String(), int p_usage_flags = PROPERTY_USAGE_DEFAULT);
 
 	virtual void get_internal_import_options(InternalImportCategory p_category, List<ResourceImporter::ImportOption> *r_options);
 	virtual Variant get_internal_option_visibility(InternalImportCategory p_category, bool p_for_animation, const String &p_option, const HashMap<StringName, Variant> &p_options) const;
@@ -212,12 +212,15 @@ class ResourceImporterScene : public ResourceImporter {
 		SHAPE_TYPE_SPHERE,
 		SHAPE_TYPE_CYLINDER,
 		SHAPE_TYPE_CAPSULE,
+		SHAPE_TYPE_AUTOMATIC,
 	};
 
+	static Error _check_resource_save_paths(const Dictionary &p_data);
 	Array _get_skinned_pose_transforms(ImporterMeshInstance3D *p_src_mesh_node);
 	void _replace_owner(Node *p_node, Node *p_scene, Node *p_new_owner);
 	Node *_generate_meshes(Node *p_node, const Dictionary &p_mesh_data, bool p_generate_lods, bool p_create_shadow_meshes, LightBakeMode p_light_bake_mode, float p_lightmap_texel_size, const Vector<uint8_t> &p_src_lightmap_cache, Vector<Vector<uint8_t>> &r_lightmap_caches);
 	void _add_shapes(Node *p_node, const Vector<Ref<Shape3D>> &p_shapes);
+	void _copy_meta(Object *p_src_object, Object *p_dst_object);
 
 	enum AnimationImportTracks {
 		ANIMATION_IMPORT_TRACKS_IF_PRESENT,
@@ -281,12 +284,13 @@ public:
 	// Import scenes *after* everything else (such as textures).
 	virtual int get_import_order() const override { return ResourceImporter::IMPORT_ORDER_SCENE; }
 
+	void _pre_fix_global(Node *p_scene, const HashMap<StringName, Variant> &p_options) const;
 	Node *_pre_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &r_collision_map, Pair<PackedVector3Array, PackedInt32Array> *r_occluder_arrays, List<Pair<NodePath, Node *>> &r_node_renames);
 	Node *_pre_fix_animations(Node *p_node, Node *p_root, const Dictionary &p_node_data, const Dictionary &p_animation_data, float p_animation_fps);
 	Node *_post_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Pair<PackedVector3Array, PackedInt32Array> &r_occluder_arrays, HashSet<Ref<ImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps, float p_applied_root_scale);
-	Node *_post_fix_animations(Node *p_node, Node *p_root, const Dictionary &p_node_data, const Dictionary &p_animation_data, float p_animation_fps);
+	Node *_post_fix_animations(Node *p_node, Node *p_root, const Dictionary &p_node_data, const Dictionary &p_animation_data, float p_animation_fps, bool p_remove_immutable_tracks);
 
-	Ref<Animation> _save_animation_to_file(Ref<Animation> anim, bool p_save_to_file, String p_save_to_path, bool p_keep_custom_tracks);
+	Ref<Animation> _save_animation_to_file(Ref<Animation> anim, bool p_save_to_file, const String &p_save_to_path, bool p_keep_custom_tracks);
 	void _create_slices(AnimationPlayer *ap, Ref<Animation> anim, const Array &p_clips, bool p_bake_all);
 	void _optimize_animations(AnimationPlayer *anim, float p_max_vel_error, float p_max_ang_error, int p_prc_error);
 	void _compress_animations(AnimationPlayer *anim, int p_page_size_kb);
@@ -302,10 +306,10 @@ public:
 	ResourceImporterScene(bool p_animation_import = false, bool p_singleton = false);
 	~ResourceImporterScene();
 
-	template <class M>
+	template <typename M>
 	static Vector<Ref<Shape3D>> get_collision_shapes(const Ref<ImporterMesh> &p_mesh, const M &p_options, float p_applied_root_scale);
 
-	template <class M>
+	template <typename M>
 	static Transform3D get_collision_shapes_transform(const M &p_options);
 };
 
@@ -318,12 +322,22 @@ public:
 	virtual Node *import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, Error *r_err = nullptr) override;
 };
 
-template <class M>
+template <typename M>
 Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<ImporterMesh> &p_mesh, const M &p_options, float p_applied_root_scale) {
 	ERR_FAIL_COND_V(p_mesh.is_null(), Vector<Ref<Shape3D>>());
-	ShapeType generate_shape_type = SHAPE_TYPE_DECOMPOSE_CONVEX;
+
+	ShapeType generate_shape_type = SHAPE_TYPE_AUTOMATIC;
 	if (p_options.has(SNAME("physics/shape_type"))) {
 		generate_shape_type = (ShapeType)p_options[SNAME("physics/shape_type")].operator int();
+	}
+
+	if (generate_shape_type == SHAPE_TYPE_AUTOMATIC) {
+		BodyType body_type = BODY_TYPE_STATIC;
+		if (p_options.has(SNAME("physics/body_type"))) {
+			body_type = (BodyType)p_options[SNAME("physics/body_type")].operator int();
+		}
+
+		generate_shape_type = body_type == BODY_TYPE_DYNAMIC ? SHAPE_TYPE_DECOMPOSE_CONVEX : SHAPE_TYPE_TRIMESH;
 	}
 
 	if (generate_shape_type == SHAPE_TYPE_DECOMPOSE_CONVEX) {
@@ -475,13 +489,22 @@ Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<Impor
 	return Vector<Ref<Shape3D>>();
 }
 
-template <class M>
+template <typename M>
 Transform3D ResourceImporterScene::get_collision_shapes_transform(const M &p_options) {
 	Transform3D transform;
 
-	ShapeType generate_shape_type = SHAPE_TYPE_DECOMPOSE_CONVEX;
+	ShapeType generate_shape_type = SHAPE_TYPE_AUTOMATIC;
 	if (p_options.has(SNAME("physics/shape_type"))) {
 		generate_shape_type = (ShapeType)p_options[SNAME("physics/shape_type")].operator int();
+	}
+
+	if (generate_shape_type == SHAPE_TYPE_AUTOMATIC) {
+		BodyType body_type = BODY_TYPE_STATIC;
+		if (p_options.has(SNAME("physics/body_type"))) {
+			body_type = (BodyType)p_options[SNAME("physics/body_type")].operator int();
+		}
+
+		generate_shape_type = body_type == BODY_TYPE_DYNAMIC ? SHAPE_TYPE_DECOMPOSE_CONVEX : SHAPE_TYPE_TRIMESH;
 	}
 
 	if (generate_shape_type == SHAPE_TYPE_BOX ||

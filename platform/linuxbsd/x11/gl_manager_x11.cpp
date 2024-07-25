@@ -311,20 +311,6 @@ void GLManager_X11::window_make_current(DisplayServer::WindowID p_window_id) {
 	_internal_set_current_window(&win);
 }
 
-void GLManager_X11::make_current() {
-	if (!_current_window) {
-		return;
-	}
-	if (!_current_window->in_use) {
-		WARN_PRINT("current window not in use!");
-		return;
-	}
-	const GLDisplay &disp = get_current_display();
-	if (!glXMakeCurrent(_x_windisp.x11_display, _x_windisp.x11_window, disp.context->glx_context)) {
-		ERR_PRINT("glXMakeCurrent failed");
-	}
-}
-
 void GLManager_X11::swap_buffers() {
 	if (!_current_window) {
 		return;
@@ -371,7 +357,7 @@ void GLManager_X11::set_use_vsync(bool p_use) {
 		GLXDrawable drawable = glXGetCurrentDrawable();
 		glXSwapIntervalEXT(disp.x11_display, drawable, val);
 	} else {
-		WARN_PRINT("Could not set V-Sync mode. V-Sync is not supported.");
+		WARN_PRINT_ONCE("Could not set V-Sync mode, as changing V-Sync mode is not supported by the graphics driver.");
 		return;
 	}
 	use_vsync = p_use;

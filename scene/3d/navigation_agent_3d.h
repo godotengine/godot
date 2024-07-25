@@ -66,6 +66,8 @@ class NavigationAgent3D : public Node {
 	real_t time_horizon_obstacles = 0.0;
 	real_t max_speed = 10.0;
 	real_t path_max_distance = 5.0;
+	bool simplify_path = false;
+	real_t simplify_epsilon = 0.0;
 
 	Vector3 target_position;
 
@@ -96,8 +98,6 @@ class NavigationAgent3D : public Node {
 	bool target_reached = false;
 	bool navigation_finished = true;
 	bool last_waypoint_reached = false;
-	// No initialized on purpose
-	uint32_t update_frame_id = 0;
 
 	// Debug properties for exposed bindings
 	bool debug_enabled = false;
@@ -200,6 +200,12 @@ public:
 	void set_target_position(Vector3 p_position);
 	Vector3 get_target_position() const;
 
+	void set_simplify_path(bool p_enabled);
+	bool get_simplify_path() const;
+
+	void set_simplify_epsilon(real_t p_epsilon);
+	real_t get_simplify_epsilon() const;
+
 	Vector3 get_next_path_position();
 
 	Ref<NavigationPathQueryResult3D> get_current_navigation_result() const { return navigation_result; }
@@ -221,7 +227,7 @@ public:
 
 	void _avoidance_done(Vector3 p_new_velocity);
 
-	Array get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	void set_avoidance_layers(uint32_t p_layers);
 	uint32_t get_avoidance_layers() const;

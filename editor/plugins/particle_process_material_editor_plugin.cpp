@@ -386,7 +386,7 @@ void ParticleProcessMaterialMinMaxPropertyEditor::setup(float p_min, float p_max
 }
 
 void ParticleProcessMaterialMinMaxPropertyEditor::update_property() {
-	const Vector2i value = get_edited_property_value();
+	const Vector2 value = get_edited_property_value();
 	min_range->set_value(value.x);
 	max_range->set_value(value.y);
 	_update_slider_values();
@@ -415,10 +415,10 @@ ParticleProcessMaterialMinMaxPropertyEditor::ParticleProcessMaterialMinMaxProper
 	range_edit_widget->set_h_size_flags(SIZE_EXPAND_FILL);
 	range_edit_widget->set_tooltip_text(TTR("Hold Shift to scale around midpoint instead of moving."));
 	hb->add_child(range_edit_widget);
-	range_edit_widget->connect(SNAME("draw"), callable_mp(this, &ParticleProcessMaterialMinMaxPropertyEditor::_range_edit_draw));
-	range_edit_widget->connect(SNAME("gui_input"), callable_mp(this, &ParticleProcessMaterialMinMaxPropertyEditor::_range_edit_gui_input));
-	range_edit_widget->connect(SNAME("mouse_entered"), callable_mp(this, &ParticleProcessMaterialMinMaxPropertyEditor::_set_mouse_inside).bind(true));
-	range_edit_widget->connect(SNAME("mouse_exited"), callable_mp(this, &ParticleProcessMaterialMinMaxPropertyEditor::_set_mouse_inside).bind(false));
+	range_edit_widget->connect(SceneStringName(draw), callable_mp(this, &ParticleProcessMaterialMinMaxPropertyEditor::_range_edit_draw));
+	range_edit_widget->connect(SceneStringName(gui_input), callable_mp(this, &ParticleProcessMaterialMinMaxPropertyEditor::_range_edit_gui_input));
+	range_edit_widget->connect(SceneStringName(mouse_entered), callable_mp(this, &ParticleProcessMaterialMinMaxPropertyEditor::_set_mouse_inside).bind(true));
+	range_edit_widget->connect(SceneStringName(mouse_exited), callable_mp(this, &ParticleProcessMaterialMinMaxPropertyEditor::_set_mouse_inside).bind(false));
 
 	// Range controls for actual editing. Their min/max may depend on editing mode.
 	hb = memnew(HBoxContainer);
@@ -427,12 +427,12 @@ ParticleProcessMaterialMinMaxPropertyEditor::ParticleProcessMaterialMinMaxProper
 	min_edit = memnew(EditorSpinSlider);
 	min_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	hb->add_child(min_edit);
-	min_edit->connect(SNAME("value_changed"), callable_mp(this, &ParticleProcessMaterialMinMaxPropertyEditor::_sync_sliders).bind(min_edit));
+	min_edit->connect(SceneStringName(value_changed), callable_mp(this, &ParticleProcessMaterialMinMaxPropertyEditor::_sync_sliders).bind(min_edit));
 
 	max_edit = memnew(EditorSpinSlider);
 	max_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	hb->add_child(max_edit);
-	max_edit->connect(SNAME("value_changed"), callable_mp(this, &ParticleProcessMaterialMinMaxPropertyEditor::_sync_sliders).bind(max_edit));
+	max_edit->connect(SceneStringName(value_changed), callable_mp(this, &ParticleProcessMaterialMinMaxPropertyEditor::_sync_sliders).bind(max_edit));
 
 	toggle_mode_button = memnew(Button);
 	toggle_mode_button->set_toggle_mode(true);

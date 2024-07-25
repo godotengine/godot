@@ -358,7 +358,7 @@ Dictionary DebugAdapterParser::req_setBreakpoints(const Dictionary &p_params) co
 	}
 
 	// If path contains \, it's a Windows path, so we need to convert it to /, and make the drive letter uppercase
-	if (source.path.find("\\") != -1) {
+	if (source.path.contains("\\")) {
 		source.path = source.path.replace("\\", "/");
 		source.path = source.path.substr(0, 1).to_upper() + source.path.substr(1);
 	}
@@ -407,9 +407,10 @@ Dictionary DebugAdapterParser::req_scopes(const Dictionary &p_params) const {
 	HashMap<DAP::StackFrame, List<int>, DAP::StackFrame>::Iterator E = DebugAdapterProtocol::get_singleton()->stackframe_list.find(frame);
 	if (E) {
 		ERR_FAIL_COND_V(E->value.size() != 3, prepare_error_response(p_params, DAP::ErrorType::UNKNOWN));
-		for (int i = 0; i < 3; i++) {
+		List<int>::ConstIterator itr = E->value.begin();
+		for (int i = 0; i < 3; ++itr, ++i) {
 			DAP::Scope scope;
-			scope.variablesReference = E->value[i];
+			scope.variablesReference = *itr;
 			switch (i) {
 				case 0:
 					scope.name = "Locals";
@@ -485,6 +486,7 @@ Dictionary DebugAdapterParser::req_evaluate(const Dictionary &p_params) const {
 
 	String value = EditorDebuggerNode::get_singleton()->get_var_value(args["expression"]);
 	body["result"] = value;
+	body["variablesReference"] = 0;
 
 	return response;
 }
@@ -600,12 +602,12 @@ Dictionary DebugAdapterParser::ev_continued() const {
 	return event;
 }
 
-Dictionary DebugAdapterParser::ev_output(const String &p_message) const {
+Dictionary DebugAdapterParser::ev_output(const String &p_message, RemoteDebugger::MessageType p_type) const {
 	Dictionary event = prepare_base_event(), body;
 	event["event"] = "output";
 	event["body"] = body;
 
-	body["category"] = "stdout";
+	body["category"] = (p_type == RemoteDebugger::MessageType::MESSAGE_TYPE_ERROR) ? "stderr" : "stdout";
 	body["output"] = p_message + "\r\n";
 
 	return event;

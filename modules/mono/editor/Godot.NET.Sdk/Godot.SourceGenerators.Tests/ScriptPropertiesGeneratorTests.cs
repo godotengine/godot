@@ -41,7 +41,7 @@ public class ScriptPropertiesGeneratorTests
     }
 
     [Fact]
-    public async void OneWayPropertiesMixedReadonlyWriteOnly()
+    public async void OneWayPropertiesMixedReadOnlyWriteOnly()
     {
         await CSharpSourceGeneratorVerifier<ScriptPropertiesGenerator>.Verify(
             "MixedReadOnlyWriteOnly.cs",
@@ -55,6 +55,15 @@ public class ScriptPropertiesGeneratorTests
         await CSharpSourceGeneratorVerifier<ScriptPropertiesGenerator>.Verify(
             "ScriptBoilerplate.cs",
             "ScriptBoilerplate_ScriptProperties.generated.cs", "OuterClass.NestedClass_ScriptProperties.generated.cs"
+        );
+    }
+
+    [Fact]
+    public async void AbstractGenericNode()
+    {
+        await CSharpSourceGeneratorVerifier<ScriptPropertiesGenerator>.Verify(
+            "AbstractGenericNode.cs",
+            "AbstractGenericNode(Of T)_ScriptProperties.generated.cs"
         );
     }
 }

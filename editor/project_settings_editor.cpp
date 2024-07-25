@@ -54,7 +54,7 @@ void ProjectSettingsEditor::popup_project_settings(bool p_clear_filter) {
 	if (saved_size != Rect2()) {
 		popup(saved_size);
 	} else {
-		popup_centered_clamped(Size2(900, 700) * EDSCALE, 0.8);
+		popup_centered_clamped(Size2(1200, 700) * EDSCALE, 0.8);
 	}
 
 	_add_feature_overrides();
@@ -89,6 +89,10 @@ void ProjectSettingsEditor::set_general_page(const String &p_category) {
 
 void ProjectSettingsEditor::update_plugins() {
 	plugin_settings->update_plugins();
+}
+
+void ProjectSettingsEditor::init_autoloads() {
+	autoload_settings->init_autoloads();
 }
 
 void ProjectSettingsEditor::_setting_edited(const String &p_name) {
@@ -231,33 +235,27 @@ void ProjectSettingsEditor::_select_type(Variant::Type p_type) {
 }
 
 void ProjectSettingsEditor::shortcut_input(const Ref<InputEvent> &p_event) {
-	ERR_FAIL_COND(p_event.is_null());
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-
 	const Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && k->is_pressed()) {
 		bool handled = false;
 
 		if (ED_IS_SHORTCUT("ui_undo", p_event)) {
-			String action = undo_redo->get_current_action_name();
-			if (!action.is_empty()) {
-				EditorNode::get_log()->add_message(vformat(TTR("Undo: %s"), action), EditorLog::MSG_TYPE_EDITOR);
-			}
-			undo_redo->undo();
+			EditorNode::get_singleton()->undo();
 			handled = true;
 		}
 
 		if (ED_IS_SHORTCUT("ui_redo", p_event)) {
-			undo_redo->redo();
-			String action = undo_redo->get_current_action_name();
-			if (!action.is_empty()) {
-				EditorNode::get_log()->add_message(vformat(TTR("Redo: %s"), action), EditorLog::MSG_TYPE_EDITOR);
-			}
+			EditorNode::get_singleton()->redo();
 			handled = true;
 		}
 
-		if (k->is_match(InputEventKey::create_reference(KeyModifierMask::CMD_OR_CTRL | Key::F))) {
+		if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
 			_focus_current_search_box();
+			handled = true;
+		}
+
+		if (ED_IS_SHORTCUT("file_dialog/focus_path", p_event)) {
+			_focus_current_path_box();
 			handled = true;
 		}
 
@@ -280,9 +278,10 @@ void ProjectSettingsEditor::_add_feature_overrides() {
 
 	presets.insert("bptc");
 	presets.insert("s3tc");
-	presets.insert("etc");
 	presets.insert("etc2");
 	presets.insert("editor");
+	presets.insert("editor_hint");
+	presets.insert("editor_runtime");
 	presets.insert("template_debug");
 	presets.insert("template_release");
 	presets.insert("debug");
@@ -345,6 +344,27 @@ void ProjectSettingsEditor::_focus_current_search_box() {
 	if (current_search_box) {
 		current_search_box->grab_focus();
 		current_search_box->select_all();
+	}
+}
+
+void ProjectSettingsEditor::_focus_current_path_box() {
+	Control *tab = tab_container->get_current_tab_control();
+	LineEdit *current_path_box = nullptr;
+	if (tab == general_editor) {
+		current_path_box = property_box;
+	} else if (tab == action_map_editor) {
+		current_path_box = action_map_editor->get_path_box();
+	} else if (tab == autoload_settings) {
+		current_path_box = autoload_settings->get_path_box();
+	} else if (tab == shaders_global_shader_uniforms_editor) {
+		current_path_box = shaders_global_shader_uniforms_editor->get_name_box();
+	} else if (tab == group_settings) {
+		current_path_box = group_settings->get_name_box();
+	}
+
+	if (current_path_box) {
+		current_path_box->grab_focus();
+		current_path_box->select_all();
 	}
 }
 
@@ -560,9 +580,9 @@ void ProjectSettingsEditor::_update_theme() {
 	del_button->set_icon(get_editor_theme_icon(SNAME("Remove")));
 	search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 	restart_close_button->set_icon(get_editor_theme_icon(SNAME("Close")));
-	restart_container->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
+	restart_container->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 	restart_icon->set_texture(get_editor_theme_icon(SNAME("StatusWarning")));
-	restart_label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+	restart_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 
 	type_box->clear();
 	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
@@ -573,14 +593,6 @@ void ProjectSettingsEditor::_update_theme() {
 		String type = Variant::get_type_name(Variant::Type(i));
 		type_box->add_icon_item(get_editor_theme_icon(type), type, i);
 	}
-}
-
-void ProjectSettingsEditor::_input_filter_focused() {
-	set_close_on_escape(false);
-}
-
-void ProjectSettingsEditor::_input_filter_unfocused() {
-	set_close_on_escape(true);
 }
 
 void ProjectSettingsEditor::_notification(int p_what) {
@@ -649,12 +661,12 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	property_box = memnew(LineEdit);
 	property_box->set_placeholder(TTR("Select a Setting or Type its Name"));
 	property_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	property_box->connect("text_changed", callable_mp(this, &ProjectSettingsEditor::_property_box_changed));
+	property_box->connect(SceneStringName(text_changed), callable_mp(this, &ProjectSettingsEditor::_property_box_changed));
 	custom_properties->add_child(property_box);
 
 	feature_box = memnew(OptionButton);
 	feature_box->set_custom_minimum_size(Size2(120, 0) * EDSCALE);
-	feature_box->connect("item_selected", callable_mp(this, &ProjectSettingsEditor::_feature_selected));
+	feature_box->connect(SceneStringName(item_selected), callable_mp(this, &ProjectSettingsEditor::_feature_selected));
 	custom_properties->add_child(feature_box);
 
 	type_box = memnew(OptionButton);
@@ -664,13 +676,13 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	add_button = memnew(Button);
 	add_button->set_text(TTR("Add"));
 	add_button->set_disabled(true);
-	add_button->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_add_setting));
+	add_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectSettingsEditor::_add_setting));
 	custom_properties->add_child(add_button);
 
 	del_button = memnew(Button);
 	del_button->set_text(TTR("Delete"));
 	del_button->set_disabled(true);
-	del_button->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_delete_setting));
+	del_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectSettingsEditor::_delete_setting));
 	custom_properties->add_child(del_button);
 
 	general_settings_inspector = memnew(SectionedInspector);
@@ -699,13 +711,13 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	restart_hb->add_spacer();
 
 	Button *restart_button = memnew(Button);
-	restart_button->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_editor_restart));
+	restart_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectSettingsEditor::_editor_restart));
 	restart_hb->add_child(restart_button);
 	restart_button->set_text(TTR("Save & Restart"));
 
 	restart_close_button = memnew(Button);
 	restart_close_button->set_flat(true);
-	restart_close_button->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_editor_restart_close));
+	restart_close_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectSettingsEditor::_editor_restart_close));
 	restart_hb->add_child(restart_close_button);
 
 	action_map_editor = memnew(ActionMapEditor);
@@ -715,8 +727,8 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	action_map_editor->connect("action_removed", callable_mp(this, &ProjectSettingsEditor::_action_removed));
 	action_map_editor->connect("action_renamed", callable_mp(this, &ProjectSettingsEditor::_action_renamed));
 	action_map_editor->connect("action_reordered", callable_mp(this, &ProjectSettingsEditor::_action_reordered));
-	action_map_editor->connect(SNAME("filter_focused"), callable_mp(this, &ProjectSettingsEditor::_input_filter_focused));
-	action_map_editor->connect(SNAME("filter_unfocused"), callable_mp(this, &ProjectSettingsEditor::_input_filter_unfocused));
+	action_map_editor->connect(SNAME("filter_focused"), callable_mp((AcceptDialog *)this, &AcceptDialog::set_close_on_escape).bind(false));
+	action_map_editor->connect(SNAME("filter_unfocused"), callable_mp((AcceptDialog *)this, &AcceptDialog::set_close_on_escape).bind(true));
 	tab_container->add_child(action_map_editor);
 
 	localization_editor = memnew(LocalizationEditor);
@@ -724,20 +736,24 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	localization_editor->connect("localization_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
 	tab_container->add_child(localization_editor);
 
+	TabContainer *globals_container = memnew(TabContainer);
+	globals_container->set_name(TTR("Globals"));
+	tab_container->add_child(globals_container);
+
 	autoload_settings = memnew(EditorAutoloadSettings);
 	autoload_settings->set_name(TTR("Autoload"));
 	autoload_settings->connect("autoload_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
-	tab_container->add_child(autoload_settings);
+	globals_container->add_child(autoload_settings);
 
 	shaders_global_shader_uniforms_editor = memnew(ShaderGlobalsEditor);
 	shaders_global_shader_uniforms_editor->set_name(TTR("Shader Globals"));
 	shaders_global_shader_uniforms_editor->connect("globals_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
-	tab_container->add_child(shaders_global_shader_uniforms_editor);
+	globals_container->add_child(shaders_global_shader_uniforms_editor);
 
 	group_settings = memnew(GroupSettingsEditor);
-	group_settings->set_name(TTR("Global Groups"));
+	group_settings->set_name(TTR("Groups"));
 	group_settings->connect("group_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
-	tab_container->add_child(group_settings);
+	globals_container->add_child(group_settings);
 
 	plugin_settings = memnew(EditorPluginSettings);
 	plugin_settings->set_name(TTR("Plugins"));

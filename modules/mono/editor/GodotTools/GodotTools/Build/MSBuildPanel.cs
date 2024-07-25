@@ -5,8 +5,6 @@ using GodotTools.Internals;
 using static GodotTools.Internals.Globals;
 using File = GodotTools.Utils.File;
 
-#nullable enable
-
 namespace GodotTools.Build
 {
     public partial class MSBuildPanel : MarginContainer, ISerializationListener
@@ -183,7 +181,7 @@ namespace GodotTools.Build
             }
         }
 
-        private void StdOutputReceived(string text)
+        private void StdOutputReceived(string? text)
         {
             lock (_pendingBuildLogTextLock)
             {
@@ -193,7 +191,7 @@ namespace GodotTools.Build
             }
         }
 
-        private void StdErrorReceived(string text)
+        private void StdErrorReceived(string? text)
         {
             lock (_pendingBuildLogTextLock)
             {

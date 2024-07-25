@@ -68,6 +68,7 @@ private:
 	jmethodID _get_input_fallback_mapping = nullptr;
 	jmethodID _on_godot_setup_completed = nullptr;
 	jmethodID _on_godot_main_loop_started = nullptr;
+	jmethodID _on_godot_terminating = nullptr;
 	jmethodID _create_new_godot_instance = nullptr;
 	jmethodID _get_render_view = nullptr;
 	jmethodID _begin_benchmark_measure = nullptr;
@@ -85,6 +86,7 @@ public:
 
 	void on_godot_setup_completed(JNIEnv *p_env = nullptr);
 	void on_godot_main_loop_started(JNIEnv *p_env = nullptr);
+	void on_godot_terminating(JNIEnv *p_env = nullptr);
 	void restart(JNIEnv *p_env = nullptr);
 	bool force_quit(JNIEnv *p_env = nullptr, int p_instance_id = 0);
 	void set_keep_screen_on(bool p_enabled);
@@ -102,7 +104,7 @@ public:
 	Vector<String> get_granted_permissions() const;
 	String get_ca_certificates() const;
 	void init_input_devices();
-	void vibrate(int p_duration_ms);
+	void vibrate(int p_duration_ms, float p_amplitude = -1.0);
 	String get_input_fallback_mapping();
 	int create_new_godot_instance(const List<String> &args);
 	void begin_benchmark_measure(const String &p_context, const String &p_label);

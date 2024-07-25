@@ -385,7 +385,7 @@ public:
 
 	virtual bool is_text_field() const override;
 
-	Array get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	void show_virtual_keyboard();
 

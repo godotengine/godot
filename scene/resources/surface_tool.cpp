@@ -97,6 +97,10 @@ bool SurfaceTool::Vertex::operator==(const Vertex &p_vertex) const {
 		return false;
 	}
 
+	if (tangent != p_vertex.tangent) {
+		return false;
+	}
+
 	if (color != p_vertex.color) {
 		return false;
 	}
@@ -798,7 +802,9 @@ void SurfaceTool::_create_list(const Ref<Mesh> &p_existing, int p_surface, Local
 const uint32_t SurfaceTool::custom_mask[RS::ARRAY_CUSTOM_COUNT] = { Mesh::ARRAY_FORMAT_CUSTOM0, Mesh::ARRAY_FORMAT_CUSTOM1, Mesh::ARRAY_FORMAT_CUSTOM2, Mesh::ARRAY_FORMAT_CUSTOM3 };
 const uint32_t SurfaceTool::custom_shift[RS::ARRAY_CUSTOM_COUNT] = { Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM1_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM2_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM3_SHIFT };
 
-void SurfaceTool::create_vertex_array_from_triangle_arrays(const Array &p_arrays, LocalVector<SurfaceTool::Vertex> &ret, uint64_t *r_format) {
+void SurfaceTool::create_vertex_array_from_arrays(const Array &p_arrays, LocalVector<SurfaceTool::Vertex> &ret, uint64_t *r_format) {
+	ERR_FAIL_INDEX(RS::ARRAY_WEIGHTS, p_arrays.size());
+
 	ret.clear();
 
 	Vector<Vector3> varr = p_arrays[RS::ARRAY_VERTEX];
@@ -880,9 +886,9 @@ void SurfaceTool::create_vertex_array_from_triangle_arrays(const Array &p_arrays
 			v.normal = narr[i];
 		}
 		if (lformat & RS::ARRAY_FORMAT_TANGENT) {
-			Plane p(tarr[i * 4 + 0], tarr[i * 4 + 1], tarr[i * 4 + 2], tarr[i * 4 + 3]);
-			v.tangent = p.normal;
-			v.binormal = p.normal.cross(v.tangent).normalized() * p.d;
+			v.tangent = Vector3(tarr[i * 4 + 0], tarr[i * 4 + 1], tarr[i * 4 + 2]);
+			float d = tarr[i * 4 + 3];
+			v.binormal = v.normal.cross(v.tangent).normalized() * d;
 		}
 		if (lformat & RS::ARRAY_FORMAT_COLOR) {
 			v.color = carr[i];
@@ -928,7 +934,7 @@ void SurfaceTool::create_vertex_array_from_triangle_arrays(const Array &p_arrays
 }
 
 void SurfaceTool::_create_list_from_arrays(Array arr, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint64_t &lformat) {
-	create_vertex_array_from_triangle_arrays(arr, *r_vertex, &lformat);
+	create_vertex_array_from_arrays(arr, *r_vertex, &lformat);
 	ERR_FAIL_COND(r_vertex->size() == 0);
 
 	//indices
@@ -945,9 +951,9 @@ void SurfaceTool::_create_list_from_arrays(Array arr, LocalVector<Vertex> *r_ver
 	}
 }
 
-void SurfaceTool::create_from_triangle_arrays(const Array &p_arrays) {
+void SurfaceTool::create_from_arrays(const Array &p_arrays, Mesh::PrimitiveType p_primitive_type) {
 	clear();
-	primitive = Mesh::PRIMITIVE_TRIANGLES;
+	primitive = p_primitive_type;
 	_create_list_from_arrays(p_arrays, &vertex_array, &index_array, format);
 
 	for (int j = 0; j < RS::ARRAY_CUSTOM_COUNT; j++) {
@@ -955,6 +961,10 @@ void SurfaceTool::create_from_triangle_arrays(const Array &p_arrays) {
 			last_custom_format[j] = (CustomFormat)((format >> custom_shift[j]) & RS::ARRAY_FORMAT_CUSTOM_MASK);
 		}
 	}
+}
+
+void SurfaceTool::create_from_triangle_arrays(const Array &p_arrays) {
+	create_from_arrays(p_arrays, Mesh::PRIMITIVE_TRIANGLES);
 }
 
 void SurfaceTool::create_from(const Ref<Mesh> &p_existing, int p_surface) {
@@ -1148,7 +1158,7 @@ void SurfaceTool::mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, cons
 }
 
 void SurfaceTool::generate_tangents() {
-	ERR_FAIL_COND(!(format & Mesh::ARRAY_FORMAT_TEX_UV));
+	ERR_FAIL_COND_MSG(!(format & Mesh::ARRAY_FORMAT_TEX_UV), "UVs are required to generate tangents.");
 	ERR_FAIL_COND(!(format & Mesh::ARRAY_FORMAT_NORMAL));
 
 	SMikkTSpaceInterface mkif;
@@ -1373,6 +1383,7 @@ void SurfaceTool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &SurfaceTool::clear);
 
 	ClassDB::bind_method(D_METHOD("create_from", "existing", "surface"), &SurfaceTool::create_from);
+	ClassDB::bind_method(D_METHOD("create_from_arrays", "arrays", "primitive_type"), &SurfaceTool::create_from_arrays, DEFVAL(Mesh::PRIMITIVE_TRIANGLES));
 	ClassDB::bind_method(D_METHOD("create_from_blend_shape", "existing", "surface", "blend_shape"), &SurfaceTool::create_from_blend_shape);
 	ClassDB::bind_method(D_METHOD("append_from", "existing", "surface", "transform"), &SurfaceTool::append_from);
 	ClassDB::bind_method(D_METHOD("commit", "existing", "flags"), &SurfaceTool::commit, DEFVAL(Variant()), DEFVAL(0));

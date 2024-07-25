@@ -86,7 +86,6 @@ public:
 		time += frame_step;
 	}
 
-	void prepare_for_blitting_render_targets() override {}
 	void blit_render_targets_to_screen(int p_screen, const BlitToScreen *p_render_targets, int p_amount) override {}
 
 	void end_viewport(bool p_swap_buffers) override {}
@@ -105,7 +104,7 @@ public:
 
 	static void make_current() {
 		_create_func = _create_current;
-		low_end = true;
+		low_end = false;
 	}
 
 	uint64_t get_frame_number() const override { return frame; }

@@ -38,7 +38,7 @@
 
 class String;
 
-struct _NO_DISCARD_ Transform2D {
+struct [[nodiscard]] Transform2D {
 	// Warning #1: basis of Transform2D is stored differently from Basis. In terms of columns array, the basis matrix looks like "on paper":
 	// M = (columns[0][0] columns[1][0])
 	//     (columns[0][1] columns[1][1])
@@ -52,8 +52,8 @@ struct _NO_DISCARD_ Transform2D {
 
 	Vector2 columns[3];
 
-	_FORCE_INLINE_ real_t tdotx(const Vector2 &v) const { return columns[0][0] * v.x + columns[1][0] * v.y; }
-	_FORCE_INLINE_ real_t tdoty(const Vector2 &v) const { return columns[0][1] * v.x + columns[1][1] * v.y; }
+	_FORCE_INLINE_ real_t tdotx(const Vector2 &p_v) const { return columns[0][0] * p_v.x + columns[1][0] * p_v.y; }
+	_FORCE_INLINE_ real_t tdoty(const Vector2 &p_v) const { return columns[0][1] * p_v.x + columns[1][1] * p_v.y; }
 
 	const Vector2 &operator[](int p_idx) const { return columns[p_idx]; }
 	Vector2 &operator[](int p_idx) { return columns[p_idx]; }
@@ -64,17 +64,17 @@ struct _NO_DISCARD_ Transform2D {
 	void affine_invert();
 	Transform2D affine_inverse() const;
 
-	void set_rotation(const real_t p_rot);
+	void set_rotation(real_t p_rot);
 	real_t get_rotation() const;
 	real_t get_skew() const;
-	void set_skew(const real_t p_angle);
-	_FORCE_INLINE_ void set_rotation_and_scale(const real_t p_rot, const Size2 &p_scale);
-	_FORCE_INLINE_ void set_rotation_scale_and_skew(const real_t p_rot, const Size2 &p_scale, const real_t p_skew);
-	void rotate(const real_t p_angle);
+	void set_skew(real_t p_angle);
+	_FORCE_INLINE_ void set_rotation_and_scale(real_t p_rot, const Size2 &p_scale);
+	_FORCE_INLINE_ void set_rotation_scale_and_skew(real_t p_rot, const Size2 &p_scale, real_t p_skew);
+	void rotate(real_t p_angle);
 
 	void scale(const Size2 &p_scale);
 	void scale_basis(const Size2 &p_scale);
-	void translate_local(const real_t p_tx, const real_t p_ty);
+	void translate_local(real_t p_tx, real_t p_ty);
 	void translate_local(const Vector2 &p_translation);
 
 	real_t determinant() const;
@@ -89,8 +89,8 @@ struct _NO_DISCARD_ Transform2D {
 	Transform2D scaled_local(const Size2 &p_scale) const;
 	Transform2D translated(const Vector2 &p_offset) const;
 	Transform2D translated_local(const Vector2 &p_offset) const;
-	Transform2D rotated(const real_t p_angle) const;
-	Transform2D rotated_local(const real_t p_angle) const;
+	Transform2D rotated(real_t p_angle) const;
+	Transform2D rotated_local(real_t p_angle) const;
 
 	Transform2D untranslated() const;
 
@@ -107,12 +107,12 @@ struct _NO_DISCARD_ Transform2D {
 
 	void operator*=(const Transform2D &p_transform);
 	Transform2D operator*(const Transform2D &p_transform) const;
-	void operator*=(const real_t p_val);
-	Transform2D operator*(const real_t p_val) const;
-	void operator/=(const real_t p_val);
-	Transform2D operator/(const real_t p_val) const;
+	void operator*=(real_t p_val);
+	Transform2D operator*(real_t p_val) const;
+	void operator/=(real_t p_val);
+	Transform2D operator/(real_t p_val) const;
 
-	Transform2D interpolate_with(const Transform2D &p_transform, const real_t p_c) const;
+	Transform2D interpolate_with(const Transform2D &p_transform, real_t p_c) const;
 
 	_FORCE_INLINE_ Vector2 basis_xform(const Vector2 &p_vec) const;
 	_FORCE_INLINE_ Vector2 basis_xform_inv(const Vector2 &p_vec) const;
@@ -125,13 +125,13 @@ struct _NO_DISCARD_ Transform2D {
 
 	operator String() const;
 
-	Transform2D(const real_t xx, const real_t xy, const real_t yx, const real_t yy, const real_t ox, const real_t oy) {
-		columns[0][0] = xx;
-		columns[0][1] = xy;
-		columns[1][0] = yx;
-		columns[1][1] = yy;
-		columns[2][0] = ox;
-		columns[2][1] = oy;
+	Transform2D(real_t p_xx, real_t p_xy, real_t p_yx, real_t p_yy, real_t p_ox, real_t p_oy) {
+		columns[0][0] = p_xx;
+		columns[0][1] = p_xy;
+		columns[1][0] = p_yx;
+		columns[1][1] = p_yy;
+		columns[2][0] = p_ox;
+		columns[2][1] = p_oy;
 	}
 
 	Transform2D(const Vector2 &p_x, const Vector2 &p_y, const Vector2 &p_origin) {
@@ -140,9 +140,9 @@ struct _NO_DISCARD_ Transform2D {
 		columns[2] = p_origin;
 	}
 
-	Transform2D(const real_t p_rot, const Vector2 &p_pos);
+	Transform2D(real_t p_rot, const Vector2 &p_pos);
 
-	Transform2D(const real_t p_rot, const Size2 &p_scale, const real_t p_skew, const Vector2 &p_pos);
+	Transform2D(real_t p_rot, const Size2 &p_scale, real_t p_skew, const Vector2 &p_pos);
 
 	Transform2D() {
 		columns[0][0] = 1.0;
@@ -190,14 +190,14 @@ Rect2 Transform2D::xform(const Rect2 &p_rect) const {
 	return new_rect;
 }
 
-void Transform2D::set_rotation_and_scale(const real_t p_rot, const Size2 &p_scale) {
+void Transform2D::set_rotation_and_scale(real_t p_rot, const Size2 &p_scale) {
 	columns[0][0] = Math::cos(p_rot) * p_scale.x;
 	columns[1][1] = Math::cos(p_rot) * p_scale.y;
 	columns[1][0] = -Math::sin(p_rot) * p_scale.y;
 	columns[0][1] = Math::sin(p_rot) * p_scale.x;
 }
 
-void Transform2D::set_rotation_scale_and_skew(const real_t p_rot, const Size2 &p_scale, const real_t p_skew) {
+void Transform2D::set_rotation_scale_and_skew(real_t p_rot, const Size2 &p_scale, real_t p_skew) {
 	columns[0][0] = Math::cos(p_rot) * p_scale.x;
 	columns[1][1] = Math::cos(p_rot + p_skew) * p_scale.y;
 	columns[1][0] = -Math::sin(p_rot + p_skew) * p_scale.y;

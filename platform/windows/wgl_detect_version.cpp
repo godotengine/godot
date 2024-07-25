@@ -140,7 +140,7 @@ Dictionary detect_wgl() {
 					PFNWGLCREATECONTEXTATTRIBSARBPROC gd_wglCreateContextAttribsARB = nullptr;
 					gd_wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)gd_wglGetProcAddress("wglCreateContextAttribsARB");
 					if (gd_wglCreateContextAttribsARB) {
-						HGLRC new_hRC = gd_wglCreateContextAttribsARB(hDC, 0, attribs);
+						HGLRC new_hRC = gd_wglCreateContextAttribsARB(hDC, nullptr, attribs);
 						if (new_hRC) {
 							if (gd_wglMakeCurrent(hDC, new_hRC)) {
 								PFNWGLGETSTRINGPROC gd_wglGetString = (PFNWGLGETSTRINGPROC)GetProcAddress(module, "glGetString");

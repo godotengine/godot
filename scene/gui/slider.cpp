@@ -67,8 +67,8 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 				grab.value_before_dragging = get_as_ratio();
 				emit_signal(SNAME("drag_started"));
 
-				double grab_width = (double)grabber->get_width();
-				double grab_height = (double)grabber->get_height();
+				double grab_width = theme_cache.center_grabber ? 0.0 : (double)grabber->get_width();
+				double grab_height = theme_cache.center_grabber ? 0.0 : (double)grabber->get_height();
 				double max = orientation == VERTICAL ? get_size().height - grab_height : get_size().width - grab_width;
 				set_block_signals(true);
 				if (orientation == VERTICAL) {
@@ -107,12 +107,14 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 	if (mm.is_valid()) {
 		if (grab.active) {
 			Size2i size = get_size();
-			Ref<Texture2D> grabber = theme_cache.grabber_icon;
+			Ref<Texture2D> grabber = theme_cache.grabber_hl_icon;
+			double grab_width = theme_cache.center_grabber ? 0.0 : (double)grabber->get_width();
+			double grab_height = theme_cache.center_grabber ? 0.0 : (double)grabber->get_height();
 			double motion = (orientation == VERTICAL ? mm->get_position().y : mm->get_position().x) - grab.pos;
 			if (orientation == VERTICAL) {
 				motion = -motion;
 			}
-			double areasize = orientation == VERTICAL ? size.height - grabber->get_height() : size.width - grabber->get_width();
+			double areasize = orientation == VERTICAL ? size.height - grab_height : size.width - grab_width;
 			if (areasize <= 0) {
 				return;
 			}

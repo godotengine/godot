@@ -33,7 +33,6 @@
 #include "core/io/marshalls.h"
 #include "scene/main/multiplayer_api.h"
 #include "scene/main/window.h"
-#include "scene/scene_string_names.h"
 
 #ifdef TOOLS_ENABLED
 /* This is editor only */
@@ -87,8 +86,8 @@ void MultiplayerSpawner::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 #endif
 
-Array MultiplayerSpawner::get_configuration_warnings() const {
-	Array warnings = Node::get_configuration_warnings();
+PackedStringArray MultiplayerSpawner::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (spawn_path.is_empty() || !has_node(spawn_path)) {
 		warnings.push_back(RTR("A valid NodePath must be set in the \"Spawn Path\" property in order for MultiplayerSpawner to be able to spawn Nodes."));
@@ -100,7 +99,7 @@ void MultiplayerSpawner::add_spawnable_scene(const String &p_path) {
 	SpawnableScene sc;
 	sc.path = p_path;
 	if (Engine::get_singleton()->is_editor_hint()) {
-		ERR_FAIL_COND(!FileAccess::exists(p_path));
+		ERR_FAIL_COND(!ResourceLoader::exists(p_path));
 	}
 	spawnable_scenes.push_back(sc);
 #ifdef TOOLS_ENABLED
@@ -216,7 +215,7 @@ void MultiplayerSpawner::_notification(int p_what) {
 			for (const KeyValue<ObjectID, SpawnInfo> &E : tracked_nodes) {
 				Node *node = Object::cast_to<Node>(ObjectDB::get_instance(E.key));
 				ERR_CONTINUE(!node);
-				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &MultiplayerSpawner::_node_exit));
+				node->disconnect(SceneStringName(tree_exiting), callable_mp(this, &MultiplayerSpawner::_node_exit));
 				get_multiplayer()->object_configuration_remove(node, this);
 			}
 			tracked_nodes.clear();
@@ -251,13 +250,14 @@ NodePath MultiplayerSpawner::get_spawn_path() const {
 void MultiplayerSpawner::set_spawn_path(const NodePath &p_path) {
 	spawn_path = p_path;
 	_update_spawn_node();
+	update_configuration_warnings();
 }
 
 void MultiplayerSpawner::_track(Node *p_node, const Variant &p_argument, int p_scene_id) {
 	ObjectID oid = p_node->get_instance_id();
 	if (!tracked_nodes.has(oid)) {
 		tracked_nodes[oid] = SpawnInfo(p_argument.duplicate(true), p_scene_id);
-		p_node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &MultiplayerSpawner::_node_exit).bind(p_node->get_instance_id()), CONNECT_ONE_SHOT);
+		p_node->connect(SceneStringName(tree_exiting), callable_mp(this, &MultiplayerSpawner::_node_exit).bind(p_node->get_instance_id()), CONNECT_ONE_SHOT);
 		_spawn_notify(p_node->get_instance_id());
 	}
 }

@@ -257,7 +257,6 @@ void ParticlesStorage::particles_set_emitting(RID p_particles, bool p_emitting) 
 }
 
 bool ParticlesStorage::particles_get_emitting(RID p_particles) {
-	ERR_FAIL_COND_V_MSG(RSG::threaded, false, "This function should never be used with threaded rendering, as it stalls the renderer.");
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL_V(particles, false);
 
@@ -608,10 +607,6 @@ void ParticlesStorage::particles_request_process(RID p_particles) {
 }
 
 AABB ParticlesStorage::particles_get_current_aabb(RID p_particles) {
-	if (RSG::threaded) {
-		WARN_PRINT_ONCE("Calling this function with threaded rendering enabled stalls the renderer, use with care.");
-	}
-
 	const Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL_V(particles, AABB());
 
@@ -620,8 +615,9 @@ AABB ParticlesStorage::particles_get_current_aabb(RID p_particles) {
 		total_amount *= particles->trail_bind_poses.size();
 	}
 
+	uint32_t particle_data_size = sizeof(ParticleData) + sizeof(float) * 4 * particles->userdata_count;
 	Vector<uint8_t> buffer = RD::get_singleton()->buffer_get_data(particles->particle_buffer);
-	ERR_FAIL_COND_V(buffer.size() != (int)(total_amount * sizeof(ParticleData)), AABB());
+	ERR_FAIL_COND_V(buffer.size() != (int)(total_amount * particle_data_size), AABB());
 
 	Transform3D inv = particles->emission_transform.affine_inverse();
 
@@ -630,7 +626,6 @@ AABB ParticlesStorage::particles_get_current_aabb(RID p_particles) {
 		bool first = true;
 
 		const uint8_t *data_ptr = (const uint8_t *)buffer.ptr();
-		uint32_t particle_data_size = sizeof(ParticleData) + sizeof(float) * particles->userdata_count;
 
 		for (int i = 0; i < total_amount; i++) {
 			const ParticleData &particle_data = *(const ParticleData *)&data_ptr[particle_data_size * i];
@@ -1311,7 +1306,7 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 		userdata_count = particle_shader_data->userdata_count;
 	}
 
-	bool uses_motion_vectors = RSG::viewport->get_num_viewports_with_motion_vectors() > 0;
+	bool uses_motion_vectors = RSG::viewport->get_num_viewports_with_motion_vectors() > 0 || (RendererCompositorStorage::get_singleton()->get_num_compositor_effects_with_motion_vectors() > 0);
 	bool index_draw_order = particles->draw_order == RS::ParticlesDrawOrder::PARTICLES_DRAW_ORDER_INDEX;
 	bool enable_motion_vectors = uses_motion_vectors && index_draw_order && !particles->instance_motion_vectors_enabled;
 	bool only_instances_changed = false;
@@ -1388,8 +1383,13 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 	}
 }
 void ParticlesStorage::update_particles() {
+	if (!particle_update_list.first()) {
+		return;
+	}
+
+	RENDER_TIMESTAMP("Update GPUParticles");
 	uint32_t frame = RSG::rasterizer->get_frame_number();
-	bool uses_motion_vectors = RSG::viewport->get_num_viewports_with_motion_vectors() > 0;
+	bool uses_motion_vectors = RSG::viewport->get_num_viewports_with_motion_vectors() > 0 || (RendererCompositorStorage::get_singleton()->get_num_compositor_effects_with_motion_vectors() > 0);
 	while (particle_update_list.first()) {
 		//use transform feedback to process particles
 
@@ -1452,6 +1452,11 @@ void ParticlesStorage::update_particles() {
 			if (uint32_t(history_size) != particles->frame_history.size()) {
 				particles->frame_history.resize(history_size);
 				memset(particles->frame_history.ptr(), 0, sizeof(ParticlesFrameParams) * history_size);
+				// Set the frame number so that we are able to distinguish an uninitialized
+				// frame from the true frame number zero. See issue #88712 for details.
+				for (int i = 0; i < history_size; i++) {
+					particles->frame_history[i].frame = UINT32_MAX;
+				}
 			}
 
 			if (uint32_t(trail_steps) != particles->trail_params.size() || particles->frame_params_buffer.is_null()) {
@@ -1632,7 +1637,6 @@ Dependency *ParticlesStorage::particles_get_dependency(RID p_particles) const {
 }
 
 bool ParticlesStorage::particles_is_inactive(RID p_particles) const {
-	ERR_FAIL_COND_V_MSG(RSG::threaded, false, "This function should never be used with threaded rendering, as it stalls the renderer.");
 	const Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL_V(particles, false);
 	return !particles->emitting && particles->inactive;

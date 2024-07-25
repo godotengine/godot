@@ -177,13 +177,13 @@ int AudioStreamPlaybackOggVorbis::_mix_frames_vorbis(AudioFrame *p_buffer, int p
 
 	if (info.channels > 1) {
 		for (int frame = 0; frame < frames; frame++) {
-			p_buffer[frame].l = pcm[0][frame];
-			p_buffer[frame].r = pcm[1][frame];
+			p_buffer[frame].left = pcm[0][frame];
+			p_buffer[frame].right = pcm[1][frame];
 		}
 	} else {
 		for (int frame = 0; frame < frames; frame++) {
-			p_buffer[frame].l = pcm[0][frame];
-			p_buffer[frame].r = pcm[0][frame];
+			p_buffer[frame].left = pcm[0][frame];
+			p_buffer[frame].right = pcm[0][frame];
 		}
 	}
 	vorbis_synthesis_read(&dsp_state, frames);
@@ -376,6 +376,22 @@ void AudioStreamPlaybackOggVorbis::seek(double p_time) {
 	}
 }
 
+void AudioStreamPlaybackOggVorbis::set_is_sample(bool p_is_sample) {
+	_is_sample = p_is_sample;
+}
+
+bool AudioStreamPlaybackOggVorbis::get_is_sample() const {
+	return _is_sample;
+}
+
+Ref<AudioSamplePlayback> AudioStreamPlaybackOggVorbis::get_sample_playback() const {
+	return sample_playback;
+}
+
+void AudioStreamPlaybackOggVorbis::set_sample_playback(const Ref<AudioSamplePlayback> &p_playback) {
+	sample_playback = p_playback;
+}
+
 AudioStreamPlaybackOggVorbis::~AudioStreamPlaybackOggVorbis() {
 	if (block_is_allocated) {
 		vorbis_block_clear(&block);
@@ -515,6 +531,18 @@ bool AudioStreamOggVorbis::is_monophonic() const {
 
 void AudioStreamOggVorbis::get_parameter_list(List<Parameter> *r_parameters) {
 	r_parameters->push_back(Parameter(PropertyInfo(Variant::BOOL, "looping", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CHECKABLE), Variant()));
+}
+
+Ref<AudioSample> AudioStreamOggVorbis::generate_sample() const {
+	Ref<AudioSample> sample;
+	sample.instantiate();
+	sample->stream = this;
+	sample->loop_mode = loop
+			? AudioSample::LoopMode::LOOP_FORWARD
+			: AudioSample::LoopMode::LOOP_DISABLED;
+	sample->loop_begin = loop_offset;
+	sample->loop_end = 0;
+	return sample;
 }
 
 void AudioStreamOggVorbis::_bind_methods() {

@@ -29,6 +29,8 @@
 /**************************************************************************/
 
 #include "render_scene_buffers_rd.h"
+#include "render_scene_buffers_rd.compat.inc"
+
 #include "core/config/project_settings.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
@@ -57,18 +59,25 @@ void RenderSceneBuffersRD::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_context", "context"), &RenderSceneBuffersRD::clear_context);
 
 	// Access to some core buffers so users don't need to know their names.
-	ClassDB::bind_method(D_METHOD("get_color_texture"), &RenderSceneBuffersRD::_get_color_texture);
-	ClassDB::bind_method(D_METHOD("get_color_layer", "layer"), &RenderSceneBuffersRD::_get_color_layer);
-	ClassDB::bind_method(D_METHOD("get_depth_texture"), &RenderSceneBuffersRD::_get_depth_texture);
-	ClassDB::bind_method(D_METHOD("get_depth_layer", "layer"), &RenderSceneBuffersRD::_get_depth_layer);
-	ClassDB::bind_method(D_METHOD("get_velocity_texture"), &RenderSceneBuffersRD::_get_velocity_texture);
-	ClassDB::bind_method(D_METHOD("get_velocity_layer", "layer"), &RenderSceneBuffersRD::_get_velocity_layer);
+	ClassDB::bind_method(D_METHOD("get_color_texture", "msaa"), &RenderSceneBuffersRD::_get_color_texture, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_color_layer", "layer", "msaa"), &RenderSceneBuffersRD::_get_color_layer, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_depth_texture", "msaa"), &RenderSceneBuffersRD::_get_depth_texture, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_depth_layer", "layer", "msaa"), &RenderSceneBuffersRD::_get_depth_layer, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_velocity_texture", "msaa"), &RenderSceneBuffersRD::_get_velocity_texture, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_velocity_layer", "layer", "msaa"), &RenderSceneBuffersRD::_get_velocity_layer, DEFVAL(false));
 
 	// Expose a few properties we're likely to use externally
 	ClassDB::bind_method(D_METHOD("get_render_target"), &RenderSceneBuffersRD::get_render_target);
 	ClassDB::bind_method(D_METHOD("get_view_count"), &RenderSceneBuffersRD::get_view_count);
 	ClassDB::bind_method(D_METHOD("get_internal_size"), &RenderSceneBuffersRD::get_internal_size);
+	ClassDB::bind_method(D_METHOD("get_target_size"), &RenderSceneBuffersRD::get_target_size);
+	ClassDB::bind_method(D_METHOD("get_scaling_3d_mode"), &RenderSceneBuffersRD::get_scaling_3d_mode);
+	ClassDB::bind_method(D_METHOD("get_fsr_sharpness"), &RenderSceneBuffersRD::get_fsr_sharpness);
+	ClassDB::bind_method(D_METHOD("get_msaa_3d"), &RenderSceneBuffersRD::get_msaa_3d);
+	ClassDB::bind_method(D_METHOD("get_texture_samples"), &RenderSceneBuffersRD::get_texture_samples);
+	ClassDB::bind_method(D_METHOD("get_screen_space_aa"), &RenderSceneBuffersRD::get_screen_space_aa);
 	ClassDB::bind_method(D_METHOD("get_use_taa"), &RenderSceneBuffersRD::get_use_taa);
+	ClassDB::bind_method(D_METHOD("get_use_debanding"), &RenderSceneBuffersRD::get_use_debanding);
 }
 
 void RenderSceneBuffersRD::update_sizes(NamedTexture &p_named_texture) {
@@ -80,8 +89,7 @@ void RenderSceneBuffersRD::update_sizes(NamedTexture &p_named_texture) {
 	for (uint32_t mipmap = 0; mipmap < p_named_texture.format.mipmaps; mipmap++) {
 		p_named_texture.sizes.ptrw()[mipmap] = mipmap_size;
 
-		mipmap_size.width = MAX(1, mipmap_size.width >> 1);
-		mipmap_size.height = MAX(1, mipmap_size.height >> 1);
+		mipmap_size = Size2i(mipmap_size.width >> 1, mipmap_size.height >> 1).maxi(1);
 	}
 }
 
@@ -125,6 +133,14 @@ void RenderSceneBuffersRD::cleanup() {
 		free_named_texture(E.value);
 	}
 	named_textures.clear();
+
+	// Clear weight_buffer / blur textures.
+	for (WeightBuffers &weight_buffer : weight_buffers) {
+		if (weight_buffer.weight.is_valid()) {
+			RD::get_singleton()->free(weight_buffer.weight);
+			weight_buffer.weight = RID();
+		}
+	}
 }
 
 void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_config) {

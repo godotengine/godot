@@ -34,6 +34,8 @@ import org.godotengine.godot.GodotLib;
 import org.godotengine.godot.plugin.GodotPlugin;
 import org.godotengine.godot.plugin.GodotPluginRegistry;
 
+import android.util.Log;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
@@ -41,6 +43,8 @@ import javax.microedition.khronos.opengles.GL10;
  * Godot's GL renderer implementation.
  */
 public class GodotRenderer implements GLSurfaceView.Renderer {
+	private final String TAG = GodotRenderer.class.getSimpleName();
+
 	private final GodotPluginRegistry pluginRegistry;
 	private boolean activityJustResumed = false;
 
@@ -60,6 +64,12 @@ public class GodotRenderer implements GLSurfaceView.Renderer {
 		}
 
 		return swapBuffers;
+	}
+
+	@Override
+	public void onRenderThreadExiting() {
+		Log.d(TAG, "Destroying Godot Engine");
+		GodotLib.ondestroy();
 	}
 
 	public void onSurfaceChanged(GL10 gl, int width, int height) {

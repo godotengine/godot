@@ -48,8 +48,11 @@ void OpenXRAPIExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_running"), &OpenXRAPIExtension::is_running);
 
 	ClassDB::bind_method(D_METHOD("get_play_space"), &OpenXRAPIExtension::get_play_space);
+	ClassDB::bind_method(D_METHOD("get_predicted_display_time"), &OpenXRAPIExtension::get_predicted_display_time);
 	ClassDB::bind_method(D_METHOD("get_next_frame_time"), &OpenXRAPIExtension::get_next_frame_time);
 	ClassDB::bind_method(D_METHOD("can_render"), &OpenXRAPIExtension::can_render);
+
+	ClassDB::bind_method(D_METHOD("get_hand_tracker", "hand_index"), &OpenXRAPIExtension::get_hand_tracker);
 
 	ClassDB::bind_method(D_METHOD("register_composition_layer_provider", "extension"), &OpenXRAPIExtension::register_composition_layer_provider);
 	ClassDB::bind_method(D_METHOD("unregister_composition_layer_provider", "extension"), &OpenXRAPIExtension::unregister_composition_layer_provider);
@@ -128,14 +131,28 @@ uint64_t OpenXRAPIExtension::get_play_space() {
 	return (uint64_t)OpenXRAPI::get_singleton()->get_play_space();
 }
 
+int64_t OpenXRAPIExtension::get_predicted_display_time() {
+	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), 0);
+	return (XrTime)OpenXRAPI::get_singleton()->get_predicted_display_time();
+}
+
 int64_t OpenXRAPIExtension::get_next_frame_time() {
 	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), 0);
+
+	// In the past we needed to look a frame ahead, may be calling this unintentionally so lets warn the dev.
+	WARN_PRINT_ONCE("OpenXR: Next frame timing called, verify this is intended.");
+
 	return (XrTime)OpenXRAPI::get_singleton()->get_next_frame_time();
 }
 
 bool OpenXRAPIExtension::can_render() {
 	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), false);
 	return OpenXRAPI::get_singleton()->can_render();
+}
+
+uint64_t OpenXRAPIExtension::get_hand_tracker(int p_hand_index) {
+	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), 0);
+	return (uint64_t)OpenXRAPI::get_singleton()->get_hand_tracker(p_hand_index);
 }
 
 void OpenXRAPIExtension::register_composition_layer_provider(OpenXRExtensionWrapperExtension *p_extension) {

@@ -810,6 +810,8 @@ public:
 		LIMIT_SUBGROUP_OPERATIONS,
 		LIMIT_VRS_TEXEL_WIDTH,
 		LIMIT_VRS_TEXEL_HEIGHT,
+		LIMIT_VRS_MAX_FRAGMENT_WIDTH,
+		LIMIT_VRS_MAX_FRAGMENT_HEIGHT,
 	};
 
 	enum Features {
@@ -818,6 +820,17 @@ public:
 		SUPPORTS_ATTACHMENT_VRS,
 		// If not supported, a fragment shader with only side effets (i.e., writes  to buffers, but doesn't output to attachments), may be optimized down to no-op by the GPU driver.
 		SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS,
+	};
+
+	enum SubgroupOperations {
+		SUBGROUP_BASIC_BIT = 1,
+		SUBGROUP_VOTE_BIT = 2,
+		SUBGROUP_ARITHMETIC_BIT = 4,
+		SUBGROUP_BALLOT_BIT = 8,
+		SUBGROUP_SHUFFLE_BIT = 16,
+		SUBGROUP_SHUFFLE_RELATIVE_BIT = 32,
+		SUBGROUP_CLUSTERED_BIT = 64,
+		SUBGROUP_QUAD_BIT = 128,
 	};
 
 	////////////////////////////////////////////
@@ -867,6 +880,7 @@ protected:
 
 	static const char *SHADER_STAGE_NAMES[SHADER_STAGE_MAX];
 
+public:
 	struct ShaderUniform {
 		UniformType type = UniformType::UNIFORM_TYPE_MAX;
 		bool writable = false;
@@ -900,6 +914,8 @@ protected:
 
 	struct ShaderSpecializationConstant : public PipelineSpecializationConstant {
 		BitField<ShaderStage> stages;
+
+		bool operator<(const ShaderSpecializationConstant &p_other) const { return constant_id < p_other.constant_id; }
 	};
 
 	struct ShaderDescription {
@@ -914,6 +930,7 @@ protected:
 		Vector<ShaderStage> stages;
 	};
 
+protected:
 	struct ShaderReflection : public ShaderDescription {
 		BitField<ShaderStage> stages;
 		BitField<ShaderStage> push_constant_stages;

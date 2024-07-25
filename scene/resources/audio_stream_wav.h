@@ -31,7 +31,11 @@
 #ifndef AUDIO_STREAM_WAV_H
 #define AUDIO_STREAM_WAV_H
 
+#define QOA_IMPLEMENTATION
+#define QOA_NO_STDIO
+
 #include "servers/audio/audio_stream.h"
+#include "thirdparty/misc/qoa.h"
 
 class AudioStreamWAV;
 
@@ -54,14 +58,28 @@ class AudioStreamPlaybackWAV : public AudioStreamPlayback {
 		int32_t window_ofs = 0;
 	} ima_adpcm[2];
 
+	struct QOA_State {
+		qoa_desc *desc = nullptr;
+		uint32_t data_ofs = 0;
+		uint32_t frame_len = 0;
+		int16_t *dec = nullptr;
+		uint32_t dec_len = 0;
+		int64_t cache_pos = -1;
+		int16_t cache[2] = { 0, 0 };
+		int16_t cache_r[2] = { 0, 0 };
+	} qoa;
+
 	int64_t offset = 0;
 	int sign = 1;
 	bool active = false;
 	friend class AudioStreamWAV;
 	Ref<AudioStreamWAV> base;
 
-	template <class Depth, bool is_stereo, bool is_ima_adpcm>
-	void do_resample(const Depth *p_src, AudioFrame *p_dst, int64_t &p_offset, int32_t &p_increment, uint32_t p_amount, IMA_ADPCM_State *p_ima_adpcm);
+	template <typename Depth, bool is_stereo, bool is_ima_adpcm, bool is_qoa>
+	void do_resample(const Depth *p_src, AudioFrame *p_dst, int64_t &p_offset, int32_t &p_increment, uint32_t p_amount, IMA_ADPCM_State *p_ima_adpcm, QOA_State *p_qoa);
+
+	bool _is_sample = false;
+	Ref<AudioSamplePlayback> sample_playback;
 
 public:
 	virtual void start(double p_from_pos = 0.0) override;
@@ -77,7 +95,13 @@ public:
 
 	virtual void tag_used_streams() override;
 
+	virtual void set_is_sample(bool p_is_sample) override;
+	virtual bool get_is_sample() const override;
+	virtual Ref<AudioSamplePlayback> get_sample_playback() const override;
+	virtual void set_sample_playback(const Ref<AudioSamplePlayback> &p_playback) override;
+
 	AudioStreamPlaybackWAV();
+	~AudioStreamPlaybackWAV();
 };
 
 class AudioStreamWAV : public AudioStream {
@@ -88,7 +112,8 @@ public:
 	enum Format {
 		FORMAT_8_BITS,
 		FORMAT_16_BITS,
-		FORMAT_IMA_ADPCM
+		FORMAT_IMA_ADPCM,
+		FORMAT_QOA,
 	};
 
 	// Keep the ResourceImporterWAV `edit/loop_mode` enum hint in sync with these options.
@@ -148,6 +173,11 @@ public:
 
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
 	virtual String get_stream_name() const override;
+
+	virtual bool can_be_sampled() const override {
+		return true;
+	}
+	virtual Ref<AudioSample> generate_sample() const override;
 
 	AudioStreamWAV();
 	~AudioStreamWAV();

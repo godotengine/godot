@@ -117,6 +117,7 @@ void GLManagerLegacy_MacOS::release_current() {
 	}
 
 	[NSOpenGLContext clearCurrentContext];
+	current_window = DisplayServer::INVALID_WINDOW_ID;
 }
 
 void GLManagerLegacy_MacOS::window_make_current(DisplayServer::WindowID p_window_id) {
@@ -131,18 +132,6 @@ void GLManagerLegacy_MacOS::window_make_current(DisplayServer::WindowID p_window
 	[win.context makeCurrentContext];
 
 	current_window = p_window_id;
-}
-
-void GLManagerLegacy_MacOS::make_current() {
-	if (current_window == DisplayServer::INVALID_WINDOW_ID) {
-		return;
-	}
-	if (!windows.has(current_window)) {
-		return;
-	}
-
-	GLWindow &win = windows[current_window];
-	[win.context makeCurrentContext];
 }
 
 void GLManagerLegacy_MacOS::swap_buffers() {

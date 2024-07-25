@@ -190,17 +190,6 @@ AABB ReflectionProbe::get_aabb() const {
 	return aabb;
 }
 
-Array ReflectionProbe::get_configuration_warnings() const {
-	Array warnings = Node::get_configuration_warnings();
-
-	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
-		warnings.push_back(RTR("ReflectionProbes are not supported when using the GL Compatibility backend yet. Support will be added in a future release."));
-		return warnings;
-	}
-
-	return warnings;
-}
-
 void ReflectionProbe::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "ambient_color" || p_property.name == "ambient_color_energy") {
 		if (ambient_mode != AMBIENT_COLOR) {

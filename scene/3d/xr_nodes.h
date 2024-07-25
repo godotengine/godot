@@ -55,7 +55,7 @@ protected:
 	void _pose_changed(const Ref<XRPose> &p_pose);
 
 public:
-	Array get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	virtual Vector3 project_local_ray_normal(const Point2 &p_pos) const override;
 	virtual Point2 unproject_position(const Vector3 &p_pos) const override;
@@ -79,6 +79,7 @@ private:
 	StringName tracker_name;
 	StringName pose_name = "default";
 	bool has_tracking_data = false;
+	bool show_when_tracked = false;
 
 protected:
 	Ref<XRPositionalTracker> tracker;
@@ -105,11 +106,14 @@ public:
 	bool get_is_active() const;
 	bool get_has_tracking_data() const;
 
+	void set_show_when_tracked(bool p_show);
+	bool get_show_when_tracked() const;
+
 	void trigger_haptic_pulse(const String &p_action_name, double p_frequency, double p_amplitude, double p_duration_sec, double p_delay_sec = 0);
 
 	Ref<XRPose> get_pose();
 
-	Array get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	XRNode3D();
 	~XRNode3D();
@@ -135,6 +139,7 @@ protected:
 	void _button_released(const String &p_name);
 	void _input_float_changed(const String &p_name, float p_value);
 	void _input_vector2_changed(const String &p_name, Vector2 p_value);
+	void _profile_changed(const String &p_role);
 
 public:
 	bool is_button_pressed(const StringName &p_name) const;
@@ -193,7 +198,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	Array get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	real_t get_world_scale() const;
 	void set_world_scale(real_t p_world_scale);

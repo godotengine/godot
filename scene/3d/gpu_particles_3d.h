@@ -32,7 +32,7 @@
 #define GPU_PARTICLES_3D_H
 
 #include "scene/3d/visual_instance_3d.h"
-#include "scene/resources/skin.h"
+#include "scene/resources/3d/skin.h"
 
 class GPUParticles3D : public GeometryInstance3D {
 private:
@@ -164,7 +164,7 @@ public:
 	void set_draw_pass_mesh(int p_pass, const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_draw_pass_mesh(int p_pass) const;
 
-	Array get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	void set_sub_emitter(const NodePath &p_path);
 	NodePath get_sub_emitter() const;

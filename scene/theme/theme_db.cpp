@@ -225,7 +225,7 @@ ThemeContext *ThemeDB::create_theme_context(Node *p_node, List<Ref<Theme>> &p_th
 	theme_contexts[p_node] = context;
 	_propagate_theme_context(p_node, context);
 
-	p_node->connect("tree_exited", callable_mp(this, &ThemeDB::destroy_theme_context).bind(p_node));
+	p_node->connect(SceneStringName(tree_exited), callable_mp(this, &ThemeDB::destroy_theme_context).bind(p_node));
 
 	return context;
 }
@@ -233,7 +233,7 @@ ThemeContext *ThemeDB::create_theme_context(Node *p_node, List<Ref<Theme>> &p_th
 void ThemeDB::destroy_theme_context(Node *p_node) {
 	ERR_FAIL_COND(!theme_contexts.has(p_node));
 
-	p_node->disconnect("tree_exited", callable_mp(this, &ThemeDB::destroy_theme_context));
+	p_node->disconnect(SceneStringName(tree_exited), callable_mp(this, &ThemeDB::destroy_theme_context));
 
 	ThemeContext *context = theme_contexts[p_node];
 
@@ -373,7 +373,7 @@ void ThemeDB::update_class_instance_items(Node *p_instance) {
 	}
 }
 
-void ThemeDB::get_class_items(const StringName &p_class_name, List<ThemeItemBind> *r_list, bool p_include_inherited) {
+void ThemeDB::get_class_items(const StringName &p_class_name, List<ThemeItemBind> *r_list, bool p_include_inherited, Theme::DataType p_filter_type) {
 	List<StringName> class_hierarchy;
 	StringName class_name = p_class_name;
 	while (class_name != StringName()) {
@@ -386,6 +386,9 @@ void ThemeDB::get_class_items(const StringName &p_class_name, List<ThemeItemBind
 		HashMap<StringName, List<ThemeItemBind>>::Iterator E = theme_item_binds_list.find(theme_type);
 		if (E) {
 			for (const ThemeItemBind &F : E->value) {
+				if (p_filter_type != Theme::DATA_TYPE_MAX && F.data_type != p_filter_type) {
+					continue;
+				}
 				if (inherited_props.has(F.item_name)) {
 					continue; // Skip inherited properties.
 				}
@@ -469,7 +472,7 @@ ThemeDB::~ThemeDB() {
 }
 
 void ThemeContext::_emit_changed() {
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 }
 
 void ThemeContext::set_themes(List<Ref<Theme>> &p_themes) {

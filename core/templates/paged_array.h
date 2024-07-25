@@ -41,7 +41,7 @@
 
 // PageArrayPool manages central page allocation in a thread safe matter
 
-template <class T>
+template <typename T>
 class PagedArrayPool {
 	T **page_pool = nullptr;
 	uint32_t pages_allocated = 0;
@@ -134,7 +134,7 @@ public:
 // It does so by allocating pages from a PagedArrayPool.
 // It is safe to use multiple PagedArrays from different threads, sharing a single PagedArrayPool
 
-template <class T>
+template <typename T>
 class PagedArray {
 	PagedArrayPool<T> *page_pool = nullptr;
 

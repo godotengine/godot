@@ -286,6 +286,23 @@ Error FileAccessUnix::get_error() const {
 	return last_error;
 }
 
+Error FileAccessUnix::resize(int64_t p_length) {
+	ERR_FAIL_NULL_V_MSG(f, FAILED, "File must be opened before use.");
+	int res = ::ftruncate(fileno(f), p_length);
+	switch (res) {
+		case 0:
+			return OK;
+		case EBADF:
+			return ERR_FILE_CANT_OPEN;
+		case EFBIG:
+			return ERR_OUT_OF_MEMORY;
+		case EINVAL:
+			return ERR_INVALID_PARAMETER;
+		default:
+			return FAILED;
+	}
+}
+
 void FileAccessUnix::flush() {
 	ERR_FAIL_NULL_MSG(f, "File must be opened before use.");
 	fflush(f);
@@ -395,7 +412,7 @@ Error FileAccessUnix::_set_unix_permissions(const String &p_file, BitField<FileA
 }
 
 bool FileAccessUnix::_get_hidden_attribute(const String &p_file) {
-#if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(__APPLE__)
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__APPLE__)
 	String file = fix_path(p_file);
 
 	struct stat st = {};
@@ -409,7 +426,7 @@ bool FileAccessUnix::_get_hidden_attribute(const String &p_file) {
 }
 
 Error FileAccessUnix::_set_hidden_attribute(const String &p_file, bool p_hidden) {
-#if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(__APPLE__)
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__APPLE__)
 	String file = fix_path(p_file);
 
 	struct stat st = {};

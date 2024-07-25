@@ -122,14 +122,11 @@ void _pathAppendArcTo(Array<PathCommand>* cmds, Array<Point>* pts, Point* cur, P
     sx = cur->x;
     sy = cur->y;
 
-    //If start and end points are identical, then no arc is drawn
-    if ((fabsf(x - sx) < (1.0f / 256.0f)) && (fabsf(y - sy) < (1.0f / 256.0f))) return;
-
     //Correction of out-of-range radii, see F6.6.1 (step 2)
     rx = fabsf(rx);
     ry = fabsf(ry);
 
-    angle = angle * M_PI / 180.0f;
+    angle = mathDeg2Rad(angle);
     cosPhi = cosf(angle);
     sinPhi = sinf(angle);
     dx2 = (sx - x) / 2.0f;
@@ -197,25 +194,25 @@ void _pathAppendArcTo(Array<PathCommand>* cmds, Array<Point>* pts, Point* cur, P
     //We dont' use arccos (as per w3c doc), see
     //http://www.euclideanspace.com/maths/algebra/vectors/angleBetween/index.htm
     //Note: atan2 (0.0, 1.0) == 0.0
-    at = atan2(((y1p - cyp) / ry), ((x1p - cxp) / rx));
-    theta1 = (at < 0.0f) ? 2.0f * M_PI + at : at;
+    at = mathAtan2(((y1p - cyp) / ry), ((x1p - cxp) / rx));
+    theta1 = (at < 0.0f) ? 2.0f * MATH_PI + at : at;
 
-    nat = atan2(((-y1p - cyp) / ry), ((-x1p - cxp) / rx));
-    deltaTheta = (nat < at) ? 2.0f * M_PI - at + nat : nat - at;
+    nat = mathAtan2(((-y1p - cyp) / ry), ((-x1p - cxp) / rx));
+    deltaTheta = (nat < at) ? 2.0f * MATH_PI - at + nat : nat - at;
 
     if (sweep) {
         //Ensure delta theta < 0 or else add 360 degrees
-        if (deltaTheta < 0.0f) deltaTheta += (float)(2.0f * M_PI);
+        if (deltaTheta < 0.0f) deltaTheta += 2.0f * MATH_PI;
     } else {
         //Ensure delta theta > 0 or else substract 360 degrees
-        if (deltaTheta > 0.0f) deltaTheta -= (float)(2.0f * M_PI);
+        if (deltaTheta > 0.0f) deltaTheta -= 2.0f * MATH_PI;
     }
 
     //Add several cubic bezier to approximate the arc
     //(smaller than 90 degrees)
     //We add one extra segment because we want something
     //Smaller than 90deg (i.e. not 90 itself)
-    segments = static_cast<int>(fabsf(deltaTheta / float(M_PI_2)) + 1.0f);
+    segments = static_cast<int>(fabsf(deltaTheta / MATH_PI2) + 1.0f);
     delta = deltaTheta / segments;
 
     //http://www.stillhq.com/ctpfaq/2001/comp.text.pdf-faq-2001-04.txt (section 2.13)
@@ -314,7 +311,7 @@ static int _numberCount(char cmd)
 }
 
 
-static bool _processCommand(Array<PathCommand>* cmds, Array<Point>* pts, char cmd, float* arr, int count, Point* cur, Point* curCtl, Point* startPoint, bool *isQuadratic)
+static bool _processCommand(Array<PathCommand>* cmds, Array<Point>* pts, char cmd, float* arr, int count, Point* cur, Point* curCtl, Point* startPoint, bool *isQuadratic, bool* closed)
 {
     switch (cmd) {
         case 'm':
@@ -467,6 +464,7 @@ static bool _processCommand(Array<PathCommand>* cmds, Array<Point>* pts, char cm
         case 'Z': {
             cmds->push(PathCommand::Close);
             *cur = *startPoint;
+            *closed = true;
             break;
         }
         case 'a':
@@ -491,7 +489,7 @@ static bool _processCommand(Array<PathCommand>* cmds, Array<Point>* pts, char cm
 }
 
 
-static char* _nextCommand(char* path, char* cmd, float* arr, int* count)
+static char* _nextCommand(char* path, char* cmd, float* arr, int* count, bool* closed)
 {
     int large, sweep;
 
@@ -503,6 +501,9 @@ static char* _nextCommand(char* path, char* cmd, float* arr, int* count)
     } else {
         if (*cmd == 'm') *cmd = 'l';
         else if (*cmd == 'M') *cmd = 'L';
+        else {
+          if (*closed) return nullptr;
+        }
     }
     if (*count == 7) {
         //Special case for arc command
@@ -551,6 +552,7 @@ bool svgPathToShape(const char* svgPath, Shape* shape)
     Point startPoint = { 0, 0 };
     char cmd = 0;
     bool isQuadratic = false;
+    bool closed = false;
     char* path = (char*)svgPath;
 
     auto& pts = P(shape)->rs.path.pts;
@@ -558,9 +560,10 @@ bool svgPathToShape(const char* svgPath, Shape* shape)
     auto lastCmds = cmds.count;
 
     while ((path[0] != '\0')) {
-        path = _nextCommand(path, &cmd, numberArray, &numberCount);
+        path = _nextCommand(path, &cmd, numberArray, &numberCount, &closed);
         if (!path) break;
-        if (!_processCommand(&cmds, &pts, cmd, numberArray, numberCount, &cur, &curCtl, &startPoint, &isQuadratic)) break;
+        closed = false;
+        if (!_processCommand(&cmds, &pts, cmd, numberArray, numberCount, &cur, &curCtl, &startPoint, &isQuadratic, &closed)) break;
     }
 
     if (cmds.count > lastCmds && cmds[lastCmds] != PathCommand::MoveTo) return false;

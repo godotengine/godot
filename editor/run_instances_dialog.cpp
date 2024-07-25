@@ -34,12 +34,13 @@
 #include "editor/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/separator.h"
 #include "scene/gui/spin_box.h"
+#include "scene/gui/tree.h"
 #include "scene/main/timer.h"
-
-RunInstancesDialog *RunInstancesDialog::singleton = nullptr;
 
 void RunInstancesDialog::_fetch_main_args() {
 	if (!main_args_edit->has_focus()) { // Only set the text if the user is not currently editing it.
@@ -56,68 +57,66 @@ void RunInstancesDialog::_start_instance_timer() {
 }
 
 void RunInstancesDialog::_refresh_argument_count() {
-	while (argument_container->get_child_count() > 0) {
-		memdelete(argument_container->get_child(0));
+	instance_tree->clear();
+	instance_tree->create_item(); // Root.
+
+	while (instance_count->get_value() > stored_data.size()) {
+		stored_data.append(Dictionary());
 	}
+	stored_data.resize(instance_count->get_value());
+	instances_data.resize(stored_data.size());
+	InstanceData *instances_write = instances_data.ptrw();
 
-	override_list.resize(instance_count->get_value());
-	argument_list.resize_zeroed(instance_count->get_value());
+	for (int i = 0; i < instances_data.size(); i++) {
+		InstanceData instance;
+		const Dictionary &instance_data = stored_data[i];
 
-	for (int i = 0; i < argument_list.size(); i++) {
-		VBoxContainer *instance_vb = memnew(VBoxContainer);
-		argument_container->add_child(instance_vb);
-
-		HBoxContainer *hbox = memnew(HBoxContainer);
-		instance_vb->add_child(hbox);
-
-		Label *l = memnew(Label);
-		hbox->add_child(l);
-		l->set_text(vformat(TTR("Instance %d"), i + 1));
-
-		CheckBox *cb = memnew(CheckBox);
-		hbox->add_child(cb);
-		cb->set_text(TTR("Override Main Run Args"));
-		cb->set_tooltip_text(TTR("If disabled, the instance arguments will be appended after the Main Run Args."));
-		cb->set_pressed(override_list[i]);
-		cb->set_h_size_flags(Control::SIZE_SHRINK_END | Control::SIZE_EXPAND);
-		cb->connect(SNAME("toggled"), callable_mp(this, &RunInstancesDialog::_start_instance_timer).unbind(1));
-		instance_vb->set_meta(SNAME("override"), cb);
-
-		LineEdit *le = memnew(LineEdit);
-		instance_vb->add_child(le);
-		le->set_text(argument_list[i]);
-		le->connect(SNAME("text_changed"), callable_mp(this, &RunInstancesDialog::_start_instance_timer).unbind(1));
-		instance_vb->set_meta(SNAME("args"), le);
+		_create_instance(instance, instance_data, i + 1);
+		instances_write[i] = instance;
 	}
+}
+
+void RunInstancesDialog::_create_instance(InstanceData &p_instance, const Dictionary &p_data, int p_idx) {
+	TreeItem *instance_item = instance_tree->create_item();
+	p_instance.item = instance_item;
+
+	instance_item->set_cell_mode(COLUMN_OVERRIDE_ARGS, TreeItem::CELL_MODE_CHECK);
+	instance_item->set_editable(COLUMN_OVERRIDE_ARGS, true);
+	instance_item->set_text(COLUMN_OVERRIDE_ARGS, TTR("Enabled"));
+	instance_item->set_checked(COLUMN_OVERRIDE_ARGS, p_data.get("override_args", false));
+
+	instance_item->set_editable(COLUMN_LAUNCH_ARGUMENTS, true);
+	instance_item->set_text(COLUMN_LAUNCH_ARGUMENTS, p_data.get("arguments", String()));
+
+	instance_item->set_cell_mode(COLUMN_OVERRIDE_FEATURES, TreeItem::CELL_MODE_CHECK);
+	instance_item->set_editable(COLUMN_OVERRIDE_FEATURES, true);
+	instance_item->set_text(COLUMN_OVERRIDE_FEATURES, TTR("Enabled"));
+	instance_item->set_checked(COLUMN_OVERRIDE_FEATURES, p_data.get("override_features", false));
+
+	instance_item->set_editable(COLUMN_FEATURE_TAGS, true);
+	instance_item->set_text(COLUMN_FEATURE_TAGS, p_data.get("features", String()));
 }
 
 void RunInstancesDialog::_save_main_args() {
 	ProjectSettings::get_singleton()->set_setting("editor/run/main_run_args", main_args_edit->get_text());
 	ProjectSettings::get_singleton()->save();
+	EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_main_feature_tags", main_features_edit->get_text());
+	EditorSettings::get_singleton()->set_project_metadata("debug_options", "multiple_instances_enabled", enable_multiple_instances_checkbox->is_pressed());
 }
 
 void RunInstancesDialog::_save_arguments() {
-	override_list.clear();
-	override_list.resize(argument_container->get_child_count());
-	argument_list.clear();
-	argument_list.resize(argument_container->get_child_count());
+	stored_data.resize(instances_data.size());
 
-	String *w = argument_list.ptrw();
-	for (int i = 0; i < argument_container->get_child_count(); i++) {
-		const Node *instance_vb = argument_container->get_child(i);
-
-		CheckBox *check_box = Object::cast_to<CheckBox>(instance_vb->get_meta(SNAME("override")));
-		ERR_FAIL_NULL(check_box);
-		override_list[i] = check_box->is_pressed();
-
-		LineEdit *edit = Object::cast_to<LineEdit>(instance_vb->get_meta(SNAME("args")));
-		ERR_FAIL_NULL(edit);
-		w[i] = edit->get_text();
+	for (int i = 0; i < instances_data.size(); i++) {
+		const InstanceData &instance = instances_data[i];
+		Dictionary dict;
+		dict["override_args"] = instance.overrides_run_args();
+		dict["arguments"] = instance.get_launch_arguments();
+		dict["override_features"] = instance.overrides_features();
+		dict["features"] = instance.get_feature_tags();
+		stored_data[i] = dict;
 	}
-
-	EditorSettings::get_singleton()->set_project_metadata("debug_options", "multiple_instances_enabled", enable_multiple_instances_checkbox->is_pressed());
-	EditorSettings::get_singleton()->set_project_metadata("debug_options", "multiple_instances_overrides", override_list);
-	EditorSettings::get_singleton()->set_project_metadata("debug_options", "multiple_instances_arguments", argument_list);
+	EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_instances_config", stored_data);
 }
 
 Vector<String> RunInstancesDialog::_split_cmdline_args(const String &p_arg_string) const {
@@ -156,6 +155,10 @@ Vector<String> RunInstancesDialog::_split_cmdline_args(const String &p_arg_strin
 	return split_args;
 }
 
+void RunInstancesDialog::popup_dialog() {
+	popup_centered(Vector2i(1200, 600) * EDSCALE);
+}
+
 int RunInstancesDialog::get_instance_count() const {
 	if (enable_multiple_instances_checkbox->is_pressed()) {
 		return instance_count->get_value();
@@ -165,12 +168,16 @@ int RunInstancesDialog::get_instance_count() const {
 }
 
 void RunInstancesDialog::get_argument_list_for_instance(int p_idx, List<String> &r_list) const {
-	bool override_args = override_list[p_idx];
+	bool override_args = instances_data[p_idx].overrides_run_args();
 	bool use_multiple_instances = enable_multiple_instances_checkbox->is_pressed();
 	String raw_custom_args;
 
-	if (use_multiple_instances && override_args) {
-		raw_custom_args = argument_list[p_idx];
+	if (use_multiple_instances) {
+		if (override_args) {
+			raw_custom_args = instances_data[p_idx].get_launch_arguments();
+		} else {
+			raw_custom_args = main_args_edit->get_text() + " " + instances_data[p_idx].get_launch_arguments();
+		}
 	} else {
 		raw_custom_args = main_args_edit->get_text();
 	}
@@ -218,15 +225,37 @@ void RunInstancesDialog::get_argument_list_for_instance(int p_idx, List<String> 
 			}
 		}
 	}
+}
 
-	if (use_multiple_instances && !override_args) {
-		r_list.push_back(argument_list[p_idx]);
+void RunInstancesDialog::apply_custom_features(int p_instance_idx) {
+	const InstanceData &instance = instances_data[p_instance_idx];
+
+	String raw_text;
+	if (enable_multiple_instances_checkbox->is_pressed()) {
+		if (instance.overrides_features()) {
+			raw_text = instance.get_feature_tags();
+		} else {
+			raw_text = main_features_edit->get_text() + "," + instance.get_feature_tags();
+		}
+	} else {
+		raw_text = main_features_edit->get_text();
 	}
+
+	const Vector<String> raw_list = raw_text.split(",");
+	Vector<String> stripped_features;
+
+	for (int i = 0; i < raw_list.size(); i++) {
+		String f = raw_list[i].strip_edges();
+		if (!f.is_empty()) {
+			stripped_features.push_back(f);
+		}
+	}
+	OS::get_singleton()->set_environment("GODOT_EDITOR_CUSTOM_FEATURES", String(",").join(stripped_features));
 }
 
 RunInstancesDialog::RunInstancesDialog() {
 	singleton = this;
-	set_min_size(Vector2i(0, 600 * EDSCALE));
+	set_title(TTR("Run Instances"));
 
 	main_apply_timer = memnew(Timer);
 	main_apply_timer->set_wait_time(0.5);
@@ -243,57 +272,94 @@ RunInstancesDialog::RunInstancesDialog() {
 	VBoxContainer *main_vb = memnew(VBoxContainer);
 	add_child(main_vb);
 
-	{
-		Label *l = memnew(Label);
-		main_vb->add_child(l);
-		l->set_text(TTR("Main Run Args:"));
-	}
-
-	main_args_edit = memnew(LineEdit);
-	main_vb->add_child(main_args_edit);
-	_fetch_main_args();
-	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &RunInstancesDialog::_fetch_main_args));
-	main_args_edit->connect("text_changed", callable_mp(this, &RunInstancesDialog::_start_main_timer).unbind(1));
+	GridContainer *args_gc = memnew(GridContainer);
+	args_gc->set_columns(3);
+	args_gc->add_theme_constant_override("h_separation", 12 * EDSCALE);
+	main_vb->add_child(args_gc);
 
 	enable_multiple_instances_checkbox = memnew(CheckBox);
 	enable_multiple_instances_checkbox->set_text(TTR("Enable Multiple Instances"));
 	enable_multiple_instances_checkbox->set_pressed(EditorSettings::get_singleton()->get_project_metadata("debug_options", "multiple_instances_enabled", false));
-	main_vb->add_child(enable_multiple_instances_checkbox);
-	enable_multiple_instances_checkbox->connect("pressed", callable_mp(this, &RunInstancesDialog::_start_instance_timer));
+	args_gc->add_child(enable_multiple_instances_checkbox);
+	enable_multiple_instances_checkbox->connect(SceneStringName(pressed), callable_mp(this, &RunInstancesDialog::_start_main_timer));
 
-	override_list = EditorSettings::get_singleton()->get_project_metadata("debug_options", "multiple_instances_overrides", varray(false, false, false, false));
-	argument_list = EditorSettings::get_singleton()->get_project_metadata("debug_options", "multiple_instances_arguments", PackedStringArray{ "", "", "", "" });
+	{
+		Label *l = memnew(Label);
+		l->set_text(TTR("Main Run Args:"));
+		args_gc->add_child(l);
+	}
+
+	{
+		Label *l = memnew(Label);
+		l->set_text(TTR("Main Feature Tags:"));
+		args_gc->add_child(l);
+	}
+
+	stored_data = TypedArray<Dictionary>(EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_instances_config", TypedArray<Dictionary>()));
 
 	instance_count = memnew(SpinBox);
 	instance_count->set_min(1);
 	instance_count->set_max(20);
-	instance_count->set_value(argument_list.size());
-	main_vb->add_child(instance_count);
-	instance_count->connect("value_changed", callable_mp(this, &RunInstancesDialog::_start_instance_timer).unbind(1));
-	instance_count->connect("value_changed", callable_mp(this, &RunInstancesDialog::_refresh_argument_count).unbind(1));
+	instance_count->set_value(stored_data.size());
+	args_gc->add_child(instance_count);
+	instance_count->connect(SceneStringName(value_changed), callable_mp(this, &RunInstancesDialog::_start_instance_timer).unbind(1));
+	instance_count->connect(SceneStringName(value_changed), callable_mp(this, &RunInstancesDialog::_refresh_argument_count).unbind(1));
 	enable_multiple_instances_checkbox->connect("toggled", callable_mp(instance_count, &SpinBox::set_editable));
+	instance_count->set_editable(enable_multiple_instances_checkbox->is_pressed());
+
+	main_args_edit = memnew(LineEdit);
+	main_args_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	main_args_edit->set_placeholder(TTR("Space-separated arguments, example: host player1 blue"));
+	args_gc->add_child(main_args_edit);
+	_fetch_main_args();
+	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &RunInstancesDialog::_fetch_main_args));
+	main_args_edit->connect(SceneStringName(text_changed), callable_mp(this, &RunInstancesDialog::_start_main_timer).unbind(1));
+
+	main_features_edit = memnew(LineEdit);
+	main_features_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	main_features_edit->set_placeholder(TTR("Comma-separated tags, example: demo, steam, event"));
+	main_features_edit->set_text(EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_main_feature_tags", ""));
+	args_gc->add_child(main_features_edit);
+	main_features_edit->connect(SceneStringName(text_changed), callable_mp(this, &RunInstancesDialog::_start_main_timer).unbind(1));
 
 	{
 		Label *l = memnew(Label);
-		l->set_text(TTR("Launch Arguments"));
+		l->set_text(TTR("Instance Configuration"));
 		l->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
+		l->set_theme_type_variation("HeaderSmall");
 		main_vb->add_child(l);
 	}
 
-	{
-		ScrollContainer *arguments_scroll = memnew(ScrollContainer);
-		arguments_scroll->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
-		arguments_scroll->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		arguments_scroll->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-		main_vb->add_child(arguments_scroll);
-
-		argument_container = memnew(VBoxContainer);
-		argument_container->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		arguments_scroll->add_child(argument_container);
-	}
+	instance_tree = memnew(Tree);
+	instance_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	instance_tree->set_h_scroll_enabled(false);
+	instance_tree->set_columns(4);
+	instance_tree->set_column_titles_visible(true);
+	instance_tree->set_column_title(COLUMN_OVERRIDE_ARGS, TTR("Override Main Run Args"));
+	instance_tree->set_column_expand(COLUMN_OVERRIDE_ARGS, false);
+	instance_tree->set_column_title(COLUMN_LAUNCH_ARGUMENTS, TTR("Launch Arguments"));
+	instance_tree->set_column_title(COLUMN_OVERRIDE_FEATURES, TTR("Override Main Tags"));
+	instance_tree->set_column_expand(COLUMN_OVERRIDE_FEATURES, false);
+	instance_tree->set_column_title(COLUMN_FEATURE_TAGS, TTR("Feature Tags"));
+	instance_tree->set_hide_root(true);
+	main_vb->add_child(instance_tree);
 
 	_refresh_argument_count();
+	instance_tree->connect("item_edited", callable_mp(this, &RunInstancesDialog::_start_instance_timer));
+}
 
-	set_title(TTR("Run Multiple Instances"));
-	set_min_size(Size2i(400 * EDSCALE, 0));
+bool RunInstancesDialog::InstanceData::overrides_run_args() const {
+	return item->is_checked(COLUMN_OVERRIDE_ARGS);
+}
+
+String RunInstancesDialog::InstanceData::get_launch_arguments() const {
+	return item->get_text(COLUMN_LAUNCH_ARGUMENTS);
+}
+
+bool RunInstancesDialog::InstanceData::overrides_features() const {
+	return item->is_checked(COLUMN_OVERRIDE_FEATURES);
+}
+
+String RunInstancesDialog::InstanceData::get_feature_tags() const {
+	return item->get_text(COLUMN_FEATURE_TAGS);
 }

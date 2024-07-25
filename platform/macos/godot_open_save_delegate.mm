@@ -103,7 +103,7 @@
 	}
 
 	NSMutableArray *new_allowed_types = [[NSMutableArray alloc] init];
-	bool allow_other = false;
+	bool has_type_popup = false;
 	{
 		NSTextField *label = [NSTextField labelWithString:[NSString stringWithUTF8String:RTR("Format").utf8().get_data()]];
 		if (@available(macOS 10.14, *)) {
@@ -113,13 +113,38 @@
 			label.font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
 		}
 
-		NSPopUpButton *popup = [[NSPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:NO];
-		if (p_filters.is_empty()) {
-			[popup addItemWithTitle:@"All Files"];
-		}
+		if (p_filters.size() > 1) {
+			NSPopUpButton *popup = [[NSPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:NO];
+			for (int i = 0; i < p_filters.size(); i++) {
+				Vector<String> tokens = p_filters[i].split(";");
+				if (tokens.size() >= 1) {
+					String flt = tokens[0].strip_edges();
+					int filter_slice_count = flt.get_slice_count(",");
 
-		for (int i = 0; i < p_filters.size(); i++) {
-			Vector<String> tokens = p_filters[i].split(";");
+					NSMutableArray *type_filters = [[NSMutableArray alloc] init];
+					for (int j = 0; j < filter_slice_count; j++) {
+						String str = (flt.get_slice(",", j).strip_edges());
+						if (!str.is_empty()) {
+							[type_filters addObject:[NSString stringWithUTF8String:str.replace("*.", "").strip_edges().utf8().get_data()]];
+						}
+					}
+
+					if ([type_filters count] > 0) {
+						NSString *name_str = [NSString stringWithUTF8String:((tokens.size() == 1) ? tokens[0] : vformat("%s (%s)", tokens[1].strip_edges(), tokens[0].strip_edges())).utf8().get_data()];
+						[new_allowed_types addObject:type_filters];
+						[popup addItemWithTitle:name_str];
+					}
+				}
+			}
+			if (popup.numberOfItems > 1) {
+				has_type_popup = true;
+				popup.target = self;
+				popup.action = @selector(popupFileAction:);
+
+				[view addRowWithViews:[NSArray arrayWithObjects:label, popup, nil]];
+			}
+		} else if (p_filters.size() == 1) {
+			Vector<String> tokens = p_filters[0].split(";");
 			if (tokens.size() >= 1) {
 				String flt = tokens[0].strip_edges();
 				int filter_slice_count = flt.get_slice_count(",");
@@ -127,25 +152,17 @@
 				NSMutableArray *type_filters = [[NSMutableArray alloc] init];
 				for (int j = 0; j < filter_slice_count; j++) {
 					String str = (flt.get_slice(",", j).strip_edges());
-					if (str.strip_edges() == "*.*" || str.strip_edges() == "*") {
-						allow_other = true;
-					} else if (!str.is_empty()) {
+					if (!str.is_empty()) {
 						[type_filters addObject:[NSString stringWithUTF8String:str.replace("*.", "").strip_edges().utf8().get_data()]];
 					}
 				}
 
 				if ([type_filters count] > 0) {
-					NSString *name_str = [NSString stringWithUTF8String:((tokens.size() == 1) ? tokens[0] : vformat("%s (%s)", tokens[1], tokens[0])).strip_edges().utf8().get_data()];
 					[new_allowed_types addObject:type_filters];
-					[popup addItemWithTitle:name_str];
 				}
 			}
 		}
 		[self setFileTypes:new_allowed_types];
-		popup.target = self;
-		popup.action = @selector(popupFileAction:);
-
-		[view addRowWithViews:[NSArray arrayWithObjects:label, popup, nil]];
 	}
 
 	[base_view addSubview:view];
@@ -154,12 +171,21 @@
 	[constraints addObject:[base_view.centerXAnchor constraintEqualToAnchor:view.centerXAnchor constant:10]];
 	[NSLayoutConstraint activateConstraints:constraints];
 
-	[p_panel setAllowsOtherFileTypes:allow_other];
-	if (option_count > 0 || [new_allowed_types count] > 0) {
+	if (option_count > 0 || has_type_popup) {
 		[p_panel setAccessoryView:base_view];
 	}
 	if ([new_allowed_types count] > 0) {
-		[p_panel setAllowedFileTypes:[new_allowed_types objectAtIndex:0]];
+		NSMutableArray *type_filters = [new_allowed_types objectAtIndex:0];
+		if (type_filters && [type_filters count] == 1 && [[type_filters objectAtIndex:0] isEqualToString:@"*"]) {
+			[p_panel setAllowedFileTypes:nil];
+			[p_panel setAllowsOtherFileTypes:true];
+		} else {
+			[p_panel setAllowsOtherFileTypes:false];
+			[p_panel setAllowedFileTypes:type_filters];
+		}
+	} else {
+		[p_panel setAllowedFileTypes:nil];
+		[p_panel setAllowsOtherFileTypes:true];
 	}
 }
 
@@ -220,10 +246,18 @@
 	if (btn) {
 		NSUInteger index = [btn indexOfSelectedItem];
 		if (allowed_types && index < [allowed_types count]) {
-			[dialog setAllowedFileTypes:[allowed_types objectAtIndex:index]];
+			NSMutableArray *type_filters = [allowed_types objectAtIndex:index];
+			if (type_filters && [type_filters count] == 1 && [[type_filters objectAtIndex:0] isEqualToString:@"*"]) {
+				[dialog setAllowedFileTypes:nil];
+				[dialog setAllowsOtherFileTypes:true];
+			} else {
+				[dialog setAllowsOtherFileTypes:false];
+				[dialog setAllowedFileTypes:type_filters];
+			}
 			cur_index = index;
 		} else {
-			[dialog setAllowedFileTypes:@[]];
+			[dialog setAllowedFileTypes:nil];
+			[dialog setAllowsOtherFileTypes:true];
 			cur_index = -1;
 		}
 	}

@@ -133,6 +133,18 @@ TEST_CASE("[RegEx] Substitution") {
 	RegEx re4("(a)(b){0}(c)");
 	REQUIRE(re4.is_valid());
 	CHECK(re4.sub(s4, "${1}.${3}.", true) == "a.c.a.c.a.c.");
+
+	const String s5 = "aaaa";
+
+	RegEx re5("a");
+	REQUIRE(re5.is_valid());
+	CHECK(re5.sub(s5, "b", true, 0, 2) == "bbaa");
+	CHECK(re5.sub(s5, "b", true, 1, 3) == "abba");
+	CHECK(re5.sub(s5, "b", true, 0, 0) == "aaaa");
+	CHECK(re5.sub(s5, "b", true, 1, 1) == "aaaa");
+	CHECK(re5.sub(s5, "cc", true, 0, 2) == "ccccaa");
+	CHECK(re5.sub(s5, "cc", true, 1, 3) == "acccca");
+	CHECK(re5.sub(s5, "", true, 0, 2) == "aa");
 }
 
 TEST_CASE("[RegEx] Substitution with empty input and/or replacement") {
@@ -170,6 +182,48 @@ TEST_CASE("[RegEx] Empty pattern") {
 	RegEx re;
 	CHECK(re.compile("") == OK);
 	CHECK(re.is_valid());
+}
+
+TEST_CASE("[RegEx] Complex Grouping") {
+	const String test = "https://docs.godotengine.org/en/latest/contributing/";
+
+	// Ignored protocol in grouping.
+	RegEx re("^(?:https?://)([a-zA-Z]{2,4})\\.([a-zA-Z][a-zA-Z0-9_\\-]{2,64})\\.([a-zA-Z]{2,4})");
+	REQUIRE(re.is_valid());
+	Ref<RegExMatch> expr = re.search(test);
+
+	CHECK(expr->get_group_count() == 3);
+
+	CHECK(expr->get_string(0) == "https://docs.godotengine.org");
+
+	CHECK(expr->get_string(1) == "docs");
+	CHECK(expr->get_string(2) == "godotengine");
+	CHECK(expr->get_string(3) == "org");
+}
+
+TEST_CASE("[RegEx] Number Expression") {
+	const String test = "(2.5e-3 + 35 + 46) / 2.8e0 = 28.9294642857";
+
+	// Not an exact regex for number but a good test.
+	RegEx re("([+-]?\\d+)(\\.\\d+([eE][+-]?\\d+)?)?");
+	REQUIRE(re.is_valid());
+	Array number_match = re.search_all(test);
+
+	CHECK(number_match.size() == 5);
+
+	Ref<RegExMatch> number = number_match[0];
+	CHECK(number->get_string(0) == "2.5e-3");
+	CHECK(number->get_string(1) == "2");
+	number = number_match[1];
+	CHECK(number->get_string(0) == "35");
+	number = number_match[2];
+	CHECK(number->get_string(0) == "46");
+	number = number_match[3];
+	CHECK(number->get_string(0) == "2.8e0");
+	number = number_match[4];
+	CHECK(number->get_string(0) == "28.9294642857");
+	CHECK(number->get_string(1) == "28");
+	CHECK(number->get_string(2) == ".9294642857");
 }
 
 TEST_CASE("[RegEx] Invalid end position") {

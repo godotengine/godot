@@ -218,7 +218,7 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 				sources_list->set_current(i);
 				sources_list->ensure_current_is_visible();
 				if (old_selected != to_select) {
-					sources_list->emit_signal(SNAME("item_selected"), sources_list->get_current());
+					sources_list->emit_signal(SceneStringName(item_selected), sources_list->get_current());
 				}
 				break;
 			}
@@ -229,7 +229,7 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 	if (sources_list->get_current() < 0 && sources_list->get_item_count() > 0) {
 		sources_list->set_current(0);
 		if (old_selected != int(sources_list->get_item_metadata(0))) {
-			sources_list->emit_signal(SNAME("item_selected"), sources_list->get_current());
+			sources_list->emit_signal(SceneStringName(item_selected), sources_list->get_current());
 		}
 	}
 
@@ -357,7 +357,10 @@ void TileSetEditor::_set_source_sort(int p_sort) {
 		}
 	}
 	_update_sources_list(old_selected);
-	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "tile_source_sort", p_sort);
+
+	if (!first_edit) {
+		EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "tile_source_sort", p_sort);
+	}
 }
 
 void TileSetEditor::_notification(int p_what) {
@@ -368,7 +371,7 @@ void TileSetEditor::_notification(int p_what) {
 			source_sort_button->set_icon(get_editor_theme_icon(SNAME("Sort")));
 			sources_advanced_menu_button->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 			missing_texture_texture = get_editor_theme_icon(SNAME("TileSet"));
-			expanded_area->add_theme_style_override("panel", get_theme_stylebox("panel", "Tree"));
+			expanded_area->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), "Tree"));
 			_update_sources_list();
 		} break;
 
@@ -458,7 +461,7 @@ void TileSetEditor::_tab_changed(int p_tab_changed) {
 	patterns_item_list->set_visible(p_tab_changed == 1);
 }
 
-void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_edited, String p_array_prefix, int p_from_index, int p_to_pos) {
+void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_edited, const String &p_array_prefix, int p_from_index, int p_to_pos) {
 	EditorUndoRedoManager *undo_redo_man = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
 	ERR_FAIL_NULL(undo_redo_man);
 
@@ -668,7 +671,7 @@ void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_
 	}
 }
 
-void TileSetEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, String p_property, Variant p_new_value) {
+void TileSetEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, const String &p_property, const Variant &p_new_value) {
 	EditorUndoRedoManager *undo_redo_man = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
 	ERR_FAIL_NULL(undo_redo_man);
 
@@ -738,8 +741,8 @@ void TileSetEditor::edit(Ref<TileSet> p_tile_set) {
 
 		tile_set->connect_changed(callable_mp(this, &TileSetEditor::_tile_set_changed));
 		if (first_edit) {
-			first_edit = false;
 			_set_source_sort(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "tile_source_sort", 0));
+			first_edit = false;
 		} else {
 			_update_sources_list();
 		}
@@ -846,7 +849,7 @@ TileSetEditor::TileSetEditor() {
 	source_sort_button->set_tooltip_text(TTR("Sort Sources"));
 
 	PopupMenu *p = source_sort_button->get_popup();
-	p->connect("id_pressed", callable_mp(this, &TileSetEditor::_set_source_sort));
+	p->connect(SceneStringName(id_pressed), callable_mp(this, &TileSetEditor::_set_source_sort));
 	p->add_radio_check_item(TTR("Sort by ID (Ascending)"), TilesEditorUtils::SOURCE_SORT_ID);
 	p->add_radio_check_item(TTR("Sort by ID (Descending)"), TilesEditorUtils::SOURCE_SORT_ID_REVERSE);
 	p->add_radio_check_item(TTR("Sort by Name (Ascending)"), TilesEditorUtils::SOURCE_SORT_NAME);
@@ -854,13 +857,13 @@ TileSetEditor::TileSetEditor() {
 	p->set_item_checked(TilesEditorUtils::SOURCE_SORT_ID, true);
 
 	sources_list = memnew(ItemList);
-	sources_list->set_auto_translate(false);
+	sources_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	sources_list->set_fixed_icon_size(Size2(60, 60) * EDSCALE);
 	sources_list->set_h_size_flags(SIZE_EXPAND_FILL);
 	sources_list->set_v_size_flags(SIZE_EXPAND_FILL);
-	sources_list->connect("item_selected", callable_mp(this, &TileSetEditor::_source_selected));
-	sources_list->connect("item_selected", callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::set_sources_lists_current));
-	sources_list->connect("visibility_changed", callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::synchronize_sources_list).bind(sources_list, source_sort_button));
+	sources_list->connect(SceneStringName(item_selected), callable_mp(this, &TileSetEditor::_source_selected));
+	sources_list->connect(SceneStringName(item_selected), callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::set_sources_lists_current));
+	sources_list->connect(SceneStringName(visibility_changed), callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::synchronize_sources_list).bind(sources_list, source_sort_button));
 	sources_list->add_user_signal(MethodInfo("sort_request"));
 	sources_list->connect("sort_request", callable_mp(this, &TileSetEditor::_update_sources_list).bind(-1));
 	sources_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
@@ -874,15 +877,17 @@ TileSetEditor::TileSetEditor() {
 	sources_delete_button = memnew(Button);
 	sources_delete_button->set_theme_type_variation("FlatButton");
 	sources_delete_button->set_disabled(true);
-	sources_delete_button->connect("pressed", callable_mp(this, &TileSetEditor::_source_delete_pressed));
+	sources_delete_button->connect(SceneStringName(pressed), callable_mp(this, &TileSetEditor::_source_delete_pressed));
 	sources_bottom_actions->add_child(sources_delete_button);
 
 	sources_add_button = memnew(MenuButton);
 	sources_add_button->set_flat(false);
 	sources_add_button->set_theme_type_variation("FlatButton");
 	sources_add_button->get_popup()->add_item(TTR("Atlas"));
+	sources_add_button->get_popup()->set_item_tooltip(-1, TTR("A palette of tiles made from a texture."));
 	sources_add_button->get_popup()->add_item(TTR("Scenes Collection"));
-	sources_add_button->get_popup()->connect("id_pressed", callable_mp(this, &TileSetEditor::_source_add_id_pressed));
+	sources_add_button->get_popup()->set_item_tooltip(-1, TTR("A collection of scenes that can be instantiated and placed as tiles."));
+	sources_add_button->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TileSetEditor::_source_add_id_pressed));
 	sources_bottom_actions->add_child(sources_add_button);
 
 	sources_advanced_menu_button = memnew(MenuButton);
@@ -890,7 +895,7 @@ TileSetEditor::TileSetEditor() {
 	sources_advanced_menu_button->set_theme_type_variation("FlatButton");
 	sources_advanced_menu_button->get_popup()->add_item(TTR("Open Atlas Merging Tool"));
 	sources_advanced_menu_button->get_popup()->add_item(TTR("Manage Tile Proxies"));
-	sources_advanced_menu_button->get_popup()->connect("id_pressed", callable_mp(this, &TileSetEditor::_sources_advanced_menu_id_pressed));
+	sources_advanced_menu_button->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TileSetEditor::_sources_advanced_menu_id_pressed));
 	sources_bottom_actions->add_child(sources_advanced_menu_button);
 	sources_bottom_actions->add_child(source_sort_button);
 
@@ -934,14 +939,14 @@ TileSetEditor::TileSetEditor() {
 	//// Patterns ////
 	int thumbnail_size = 64;
 	patterns_item_list = memnew(ItemList);
-	patterns_item_list->set_auto_translate(false);
+	patterns_item_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	patterns_item_list->set_max_columns(0);
 	patterns_item_list->set_icon_mode(ItemList::ICON_MODE_TOP);
 	patterns_item_list->set_fixed_column_width(thumbnail_size * 3 / 2);
 	patterns_item_list->set_max_text_lines(2);
 	patterns_item_list->set_fixed_icon_size(Size2(thumbnail_size, thumbnail_size));
 	patterns_item_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	patterns_item_list->connect("gui_input", callable_mp(this, &TileSetEditor::_patterns_item_list_gui_input));
+	patterns_item_list->connect(SceneStringName(gui_input), callable_mp(this, &TileSetEditor::_patterns_item_list_gui_input));
 	main_vb->add_child(patterns_item_list);
 	patterns_item_list->hide();
 
@@ -978,7 +983,7 @@ void TileSourceInspectorPlugin::_show_id_edit_dialog(Object *p_for_source) {
 		vbox->add_child(id_input);
 		id_input->set_max(INT_MAX);
 
-		id_edit_dialog->connect("confirmed", callable_mp(this, &TileSourceInspectorPlugin::_confirm_change_id));
+		id_edit_dialog->connect(SceneStringName(confirmed), callable_mp(this, &TileSourceInspectorPlugin::_confirm_change_id));
 	}
 	edited_source = p_for_source;
 	id_input->set_value(p_for_source->get("id"));
@@ -988,7 +993,7 @@ void TileSourceInspectorPlugin::_show_id_edit_dialog(Object *p_for_source) {
 
 void TileSourceInspectorPlugin::_confirm_change_id() {
 	edited_source->set("id", id_input->get_value());
-	id_label->set_text(vformat(TTR("ID: %d"), edited_source->get("id"))); // Use get(), because the provided ID might've been invalid.
+	id_label->set_text(itos(edited_source->get("id"))); // Use get(), because the provided ID might've been invalid.
 }
 
 bool TileSourceInspectorPlugin::can_handle(Object *p_object) {
@@ -1002,17 +1007,22 @@ bool TileSourceInspectorPlugin::parse_property(Object *p_object, const Variant::
 			return true;
 		}
 
+		EditorProperty *ep = memnew(EditorProperty);
+
 		HBoxContainer *hbox = memnew(HBoxContainer);
 		hbox->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 
-		id_label = memnew(Label(vformat(TTR("ID: %d"), value)));
+		id_label = memnew(Label(itos(value)));
+		id_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		hbox->add_child(id_label);
 
 		Button *button = memnew(Button(TTR("Edit")));
+		button->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		hbox->add_child(button);
-		button->connect("pressed", callable_mp(this, &TileSourceInspectorPlugin::_show_id_edit_dialog).bind(p_object));
+		button->connect(SceneStringName(pressed), callable_mp(this, &TileSourceInspectorPlugin::_show_id_edit_dialog).bind(p_object));
 
-		add_custom_control(hbox);
+		ep->add_child(hbox);
+		add_property_editor(p_path, ep);
 		return true;
 	}
 	return false;

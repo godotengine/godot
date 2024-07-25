@@ -51,6 +51,10 @@ class Translation : public Resource {
 protected:
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	static void _bind_compatibility_methods();
+#endif
+
 	GDVIRTUAL2RC(StringName, _get_message, StringName, StringName);
 	GDVIRTUAL4RC(StringName, _get_plural_message, StringName, StringName, int, StringName);
 
@@ -78,8 +82,9 @@ class TranslationServer : public Object {
 
 	HashSet<Ref<Translation>> translations;
 	Ref<Translation> tool_translation;
-	Ref<Translation> doc_translation;
 	Ref<Translation> property_translation;
+	Ref<Translation> doc_translation;
+	Ref<Translation> extractable_translation;
 
 	bool enabled = true;
 
@@ -89,7 +94,6 @@ class TranslationServer : public Object {
 	bool pseudolocalization_fake_bidi_enabled = false;
 	bool pseudolocalization_override_enabled = false;
 	bool pseudolocalization_skip_placeholders_enabled = false;
-	bool editor_pseudolocalization = false;
 	float expansion_ratio = 0.0;
 	String pseudolocalization_prefix;
 	String pseudolocalization_suffix;
@@ -110,6 +114,10 @@ class TranslationServer : public Object {
 	StringName _get_message_from_translations(const StringName &p_message, const StringName &p_context, const String &p_locale, bool plural, const String &p_message_plural = "", int p_n = 0) const;
 
 	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	static void _bind_compatibility_methods();
+#endif
 
 	struct LocaleScriptInfo {
 		String name;
@@ -161,7 +169,6 @@ public:
 
 	bool is_pseudolocalization_enabled() const;
 	void set_pseudolocalization_enabled(bool p_enabled);
-	void set_editor_pseudolocalization(bool p_enabled);
 	void reload_pseudolocalization();
 
 	String standardize_locale(const String &p_locale) const;
@@ -173,17 +180,24 @@ public:
 	Ref<Translation> get_tool_translation() const;
 	StringName tool_translate(const StringName &p_message, const StringName &p_context = "") const;
 	StringName tool_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
+	void set_property_translation(const Ref<Translation> &p_translation);
+	StringName property_translate(const StringName &p_message, const StringName &p_context = "") const;
 	void set_doc_translation(const Ref<Translation> &p_translation);
 	StringName doc_translate(const StringName &p_message, const StringName &p_context = "") const;
 	StringName doc_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
-	void set_property_translation(const Ref<Translation> &p_translation);
-	StringName property_translate(const StringName &p_message) const;
+	void set_extractable_translation(const Ref<Translation> &p_translation);
+	StringName extractable_translate(const StringName &p_message, const StringName &p_context = "") const;
+	StringName extractable_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
 
 	void setup();
 
 	void clear();
 
 	void load_translations();
+
+#ifdef TOOLS_ENABLED
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif // TOOLS_ENABLED
 
 	TranslationServer();
 };

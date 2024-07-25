@@ -31,10 +31,12 @@
 #ifndef NAVIGATION_MESH_H
 #define NAVIGATION_MESH_H
 
+#include "core/os/rw_lock.h"
 #include "scene/resources/mesh.h"
 
 class NavigationMesh : public Resource {
 	GDCLASS(NavigationMesh, Resource);
+	RWLock rwlock;
 
 	Vector<Vector3> vertices;
 	struct Polygon {
@@ -195,11 +197,15 @@ public:
 
 	void clear();
 
+	void set_data(const Vector<Vector3> &p_vertices, const Vector<Vector<int>> &p_polygons);
+	void get_data(Vector<Vector3> &r_vertices, Vector<Vector<int>> &r_polygons);
+
 #ifdef DEBUG_ENABLED
 	Ref<ArrayMesh> get_debug_mesh();
 #endif // DEBUG_ENABLED
 
-	NavigationMesh();
+	NavigationMesh() {}
+	~NavigationMesh() {}
 };
 
 VARIANT_ENUM_CAST(NavigationMesh::SamplePartitionType);

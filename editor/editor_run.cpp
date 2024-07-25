@@ -233,6 +233,7 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 	for (int i = 0; i < instance_count; i++) {
 		List<String> instance_args(args);
 		RunInstancesDialog::get_singleton()->get_argument_list_for_instance(i, instance_args);
+		RunInstancesDialog::get_singleton()->apply_custom_features(i);
 
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			print_line(vformat("Running: %s", exec));

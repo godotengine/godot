@@ -127,9 +127,12 @@ Ref<OpenXRInteractionProfile> OpenXRInteractionProfile::new_profile(const char *
 
 void OpenXRInteractionProfile::set_interaction_profile_path(const String p_input_profile_path) {
 	OpenXRInteractionProfileMetadata *pmd = OpenXRInteractionProfileMetadata::get_singleton();
-	ERR_FAIL_NULL(pmd);
-
-	interaction_profile_path = pmd->check_profile_name(p_input_profile_path);
+	if (pmd) {
+		interaction_profile_path = pmd->check_profile_name(p_input_profile_path);
+	} else {
+		// OpenXR module not enabled, ignore checks.
+		interaction_profile_path = p_input_profile_path;
+	}
 	emit_changed();
 }
 
@@ -172,7 +175,7 @@ Ref<OpenXRIPBinding> OpenXRInteractionProfile::get_binding_for_action(const Ref<
 void OpenXRInteractionProfile::add_binding(Ref<OpenXRIPBinding> p_binding) {
 	ERR_FAIL_COND(p_binding.is_null());
 
-	if (bindings.find(p_binding) == -1) {
+	if (!bindings.has(p_binding)) {
 		ERR_FAIL_COND_MSG(get_binding_for_action(p_binding->get_action()).is_valid(), "There is already a binding for this action in this interaction profile");
 
 		bindings.push_back(p_binding);

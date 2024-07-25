@@ -150,7 +150,7 @@ void _split_leaf_sort_groups(int &num_a, int &num_b, uint16_t *group_a, uint16_t
 
 	BVHABB_CLASS rest_aabb;
 
-	float best_size = FLT_MAX;
+	real_t best_size = FLT_MAX;
 	int best_candidate = -1;
 
 	// find most likely from a to move into b
@@ -171,7 +171,7 @@ void _split_leaf_sort_groups(int &num_a, int &num_b, uint16_t *group_a, uint16_t
 		groupb_aabb_new.merge(temp_bounds[group_a[check]]);
 
 		// now compare the sizes
-		float size = groupb_aabb_new.get_area() + rest_aabb.get_area();
+		real_t size = groupb_aabb_new.get_area() + rest_aabb.get_area();
 		if (size < best_size) {
 			best_size = size;
 			best_candidate = check;

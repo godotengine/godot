@@ -208,7 +208,7 @@ void ImmediateMesh::surface_end() {
 				if (uses_tangents) {
 					t = tangents[i].normal.octahedron_tangent_encode(tangents[i].d);
 				} else {
-					Vector3 tan = Vector3(0.0, 1.0, 0.0).cross(normals[i].normalized());
+					Vector3 tan = Vector3(normals[i].z, -normals[i].x, normals[i].y).cross(normals[i].normalized()).normalized();
 					t = tan.octahedron_tangent_encode(1.0);
 				}
 

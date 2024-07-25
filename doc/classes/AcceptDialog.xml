@@ -44,14 +44,14 @@
 		</method>
 		<method name="register_text_enter">
 			<return type="void" />
-			<param index="0" name="line_edit" type="Control" />
+			<param index="0" name="line_edit" type="LineEdit" />
 			<description>
 				Registers a [LineEdit] in the dialog. When the enter key is pressed, the dialog will be accepted.
 			</description>
 		</method>
 		<method name="remove_button">
 			<return type="void" />
-			<param index="0" name="button" type="Control" />
+			<param index="0" name="button" type="Button" />
 			<description>
 				Removes the [param button] from the dialog. Does NOT free the [param button]. The [param button] must be a [Button] added with [method add_button] or [method add_cancel_button] method. After removal, pressing the [param button] will no longer emit this dialog's [signal custom_action] or [signal canceled] signals.
 			</description>
@@ -100,6 +100,12 @@
 		</signal>
 	</signals>
 	<theme_items>
+		<theme_item name="buttons_min_height" data_type="constant" type="int" default="0">
+			The minimum height of each button in the bottom row (such as OK/Cancel) in pixels. This can be increased to make buttons with short texts easier to click/tap.
+		</theme_item>
+		<theme_item name="buttons_min_width" data_type="constant" type="int" default="0">
+			The minimum width of each button in the bottom row (such as OK/Cancel) in pixels. This can be increased to make buttons with short texts easier to click/tap.
+		</theme_item>
 		<theme_item name="buttons_separation" data_type="constant" type="int" default="10">
 			The size of the vertical space between the dialog's content and the button row.
 		</theme_item>

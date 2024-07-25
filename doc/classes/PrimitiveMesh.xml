@@ -33,6 +33,12 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="request_update">
+			<return type="void" />
+			<description>
+				Request an update of this primitive mesh based on its properties.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="add_uv2" type="bool" setter="set_add_uv2" getter="get_add_uv2" default="false">

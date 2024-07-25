@@ -229,6 +229,36 @@ String GDScriptDocGen::_docvalue_from_variant(const Variant &p_variant, int p_re
 	}
 }
 
+String GDScriptDocGen::_docvalue_from_expression(const GDP::ExpressionNode *p_expression) {
+	ERR_FAIL_NULL_V(p_expression, String());
+
+	if (p_expression->is_constant) {
+		return _docvalue_from_variant(p_expression->reduced_value);
+	}
+
+	switch (p_expression->type) {
+		case GDP::Node::ARRAY: {
+			const GDP::ArrayNode *array = static_cast<const GDP::ArrayNode *>(p_expression);
+			return array->elements.is_empty() ? "[]" : "[...]";
+		} break;
+		case GDP::Node::CALL: {
+			const GDP::CallNode *call = static_cast<const GDP::CallNode *>(p_expression);
+			return call->function_name.operator String() + (call->arguments.is_empty() ? "()" : "(...)");
+		} break;
+		case GDP::Node::DICTIONARY: {
+			const GDP::DictionaryNode *dict = static_cast<const GDP::DictionaryNode *>(p_expression);
+			return dict->elements.is_empty() ? "{}" : "{...}";
+		} break;
+		case GDP::Node::IDENTIFIER: {
+			const GDP::IdentifierNode *id = static_cast<const GDP::IdentifierNode *>(p_expression);
+			return id->name;
+		} break;
+		default: {
+			return "<unknown>";
+		} break;
+	}
+}
+
 void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_class) {
 	p_script->_clear_doc();
 
@@ -268,7 +298,9 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 		doc.tutorials.append(td);
 	}
 	doc.is_deprecated = p_class->doc_data.is_deprecated;
+	doc.deprecated_message = p_class->doc_data.deprecated_message;
 	doc.is_experimental = p_class->doc_data.is_experimental;
+	doc.experimental_message = p_class->doc_data.experimental_message;
 
 	for (const GDP::ClassNode::Member &member : p_class->members) {
 		switch (member.type) {
@@ -295,7 +327,9 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				const_doc.is_value_valid = true;
 				const_doc.description = m_const->doc_data.description;
 				const_doc.is_deprecated = m_const->doc_data.is_deprecated;
+				const_doc.deprecated_message = m_const->doc_data.deprecated_message;
 				const_doc.is_experimental = m_const->doc_data.is_experimental;
+				const_doc.experimental_message = m_const->doc_data.experimental_message;
 				doc.constants.push_back(const_doc);
 			} break;
 
@@ -309,7 +343,9 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				method_doc.name = func_name;
 				method_doc.description = m_func->doc_data.description;
 				method_doc.is_deprecated = m_func->doc_data.is_deprecated;
+				method_doc.deprecated_message = m_func->doc_data.deprecated_message;
 				method_doc.is_experimental = m_func->doc_data.is_experimental;
+				method_doc.experimental_message = m_func->doc_data.experimental_message;
 				method_doc.qualifiers = m_func->is_static ? "static" : "";
 
 				if (m_func->return_type) {
@@ -322,16 +358,12 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 					method_doc.return_type = "Variant";
 				}
 
-				for (const GDScriptParser::ParameterNode *p : m_func->parameters) {
+				for (const GDP::ParameterNode *p : m_func->parameters) {
 					DocData::ArgumentDoc arg_doc;
 					arg_doc.name = p->identifier->name;
 					_doctype_from_gdtype(p->get_datatype(), arg_doc.type, arg_doc.enumeration);
 					if (p->initializer != nullptr) {
-						if (p->initializer->is_constant) {
-							arg_doc.default_value = _docvalue_from_variant(p->initializer->reduced_value);
-						} else {
-							arg_doc.default_value = "<unknown>";
-						}
+						arg_doc.default_value = _docvalue_from_expression(p->initializer);
 					}
 					method_doc.arguments.push_back(arg_doc);
 				}
@@ -349,9 +381,11 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				signal_doc.name = signal_name;
 				signal_doc.description = m_signal->doc_data.description;
 				signal_doc.is_deprecated = m_signal->doc_data.is_deprecated;
+				signal_doc.deprecated_message = m_signal->doc_data.deprecated_message;
 				signal_doc.is_experimental = m_signal->doc_data.is_experimental;
+				signal_doc.experimental_message = m_signal->doc_data.experimental_message;
 
-				for (const GDScriptParser::ParameterNode *p : m_signal->parameters) {
+				for (const GDP::ParameterNode *p : m_signal->parameters) {
 					DocData::ArgumentDoc arg_doc;
 					arg_doc.name = p->identifier->name;
 					_doctype_from_gdtype(p->get_datatype(), arg_doc.type, arg_doc.enumeration);
@@ -371,7 +405,9 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				prop_doc.name = var_name;
 				prop_doc.description = m_var->doc_data.description;
 				prop_doc.is_deprecated = m_var->doc_data.is_deprecated;
+				prop_doc.deprecated_message = m_var->doc_data.deprecated_message;
 				prop_doc.is_experimental = m_var->doc_data.is_experimental;
+				prop_doc.experimental_message = m_var->doc_data.experimental_message;
 				_doctype_from_gdtype(m_var->get_datatype(), prop_doc.type, prop_doc.enumeration);
 
 				switch (m_var->property) {
@@ -395,12 +431,8 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 						break;
 				}
 
-				if (m_var->initializer) {
-					if (m_var->initializer->is_constant) {
-						prop_doc.default_value = _docvalue_from_variant(m_var->initializer->reduced_value);
-					} else {
-						prop_doc.default_value = "<unknown>";
-					}
+				if (m_var->initializer != nullptr) {
+					prop_doc.default_value = _docvalue_from_expression(m_var->initializer);
 				}
 
 				prop_doc.overridden = false;
@@ -417,7 +449,9 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				DocData::EnumDoc enum_doc;
 				enum_doc.description = m_enum->doc_data.description;
 				enum_doc.is_deprecated = m_enum->doc_data.is_deprecated;
+				enum_doc.deprecated_message = m_enum->doc_data.deprecated_message;
 				enum_doc.is_experimental = m_enum->doc_data.is_experimental;
+				enum_doc.experimental_message = m_enum->doc_data.experimental_message;
 				doc.enums[name] = enum_doc;
 
 				for (const GDP::EnumNode::Value &val : m_enum->values) {
@@ -428,7 +462,9 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 					const_doc.enumeration = name;
 					const_doc.description = val.doc_data.description;
 					const_doc.is_deprecated = val.doc_data.is_deprecated;
+					const_doc.deprecated_message = val.doc_data.deprecated_message;
 					const_doc.is_experimental = val.doc_data.is_experimental;
+					const_doc.experimental_message = val.doc_data.experimental_message;
 
 					doc.constants.push_back(const_doc);
 				}
@@ -448,7 +484,9 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				const_doc.enumeration = "@unnamed_enums";
 				const_doc.description = m_enum_val.doc_data.description;
 				const_doc.is_deprecated = m_enum_val.doc_data.is_deprecated;
+				const_doc.deprecated_message = m_enum_val.doc_data.deprecated_message;
 				const_doc.is_experimental = m_enum_val.doc_data.is_experimental;
+				const_doc.experimental_message = m_enum_val.doc_data.experimental_message;
 				doc.constants.push_back(const_doc);
 			} break;
 

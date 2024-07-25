@@ -71,7 +71,7 @@
 # أحمد النور <ahmed2699@gmail.com>, 2022.
 # Commander Gordon <gordoncommander@gmail.com>, 2022.
 # Abdulrahman <abdelrahman.ramadan686@gmail.com>, 2022.
-# بسام العوفي <co-able@hotmail.com>, 2023.
+# بسام العوفي <co-able@hotmail.com>, 2023, 2024.
 # Abdulkarim <abwkhaldalhwsawy@gmail.com>, 2023.
 # KhalilBenGaied <grozz1@yahoo.com>, 2023.
 # "Mr.k" <mineshtine28546271@gmail.com>, 2023.
@@ -79,13 +79,14 @@
 # Aya Ichrak <ayaichrack@gmail.com>, 2023.
 # Jugy <hellowo038@gmail.com>, 2023.
 # Emad Alhaddad <emad142240@gmail.com>, 2023.
+# cat lover <mongo@users.noreply.hosted.weblate.org>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-12-12 23:41+0000\n"
-"Last-Translator: Emad Alhaddad <emad142240@gmail.com>\n"
+"PO-Revision-Date: 2024-07-15 21:54+0000\n"
+"Last-Translator: cat lover <mongo@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/ar/>\n"
 "Language: ar\n"
@@ -94,7 +95,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && "
 "n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 5.3-dev\n"
+"X-Generator: Weblate 5.7-dev\n"
 
 msgid "Application"
 msgstr "التطبيق"
@@ -148,7 +149,7 @@ msgid "Quit on Go Back"
 msgstr "الرجوع للخلف"
 
 msgid "Display"
-msgstr "عرض"
+msgstr "الإظهار"
 
 msgid "Window"
 msgstr "نافذة"
@@ -203,6 +204,12 @@ msgstr "توفير الطاقة"
 
 msgid "Keep Screen On"
 msgstr "إبقاء الشاشة قيد التشغيل"
+
+msgid "Animation"
+msgstr "التحريك"
+
+msgid "Warnings"
+msgstr "تحذيرات"
 
 msgid "Audio"
 msgstr "الصوت"
@@ -262,7 +269,7 @@ msgid "3D"
 msgstr "الثلاثي"
 
 msgid "Stretch"
-msgstr "تمدد"
+msgstr "التمدد"
 
 msgid "Aspect"
 msgstr "الجانب"
@@ -303,15 +310,6 @@ msgstr "رسالة"
 msgid "Rendering"
 msgstr "معالَجة"
 
-msgid "Memory"
-msgstr "الذاكرة"
-
-msgid "Limits"
-msgstr "الحدود"
-
-msgid "Multithreaded Server"
-msgstr "خادوم متعدد المسارات"
-
 msgid "Internationalization"
 msgstr "التدويل (لغوي)"
 
@@ -342,6 +340,9 @@ msgstr "استخدام الإفراط في أخذ العينات"
 msgid "Rendering Device"
 msgstr "جهاز التكوين"
 
+msgid "V-Sync"
+msgstr "مزامنة (مزامنة كرت الشاشة)"
+
 msgid "Staging Buffer"
 msgstr "المخزن الؤقت التدريجي"
 
@@ -356,6 +357,9 @@ msgstr "حجم منطقة تحميل النسيج Px"
 
 msgid "Pipeline Cache"
 msgstr "ذاكرة التخزين المؤقت لخط الأنابيب"
+
+msgid "Enable"
+msgstr "تفعيل"
 
 msgid "Save Chunk Size (MB)"
 msgstr "حفظ جزء من القطعة (ميجابايت)"
@@ -407,6 +411,12 @@ msgstr "وضع الفأرة"
 
 msgid "Use Accumulated Input"
 msgstr "استخدم المدخلات المتراكمة"
+
+msgid "Emulate Mouse From Touch"
+msgstr "محاكاة الفأرة من لوحة المفاتيح"
+
+msgid "Emulate Touch From Mouse"
+msgstr "محاكاة لوحة المفاتيح من الفأرة"
 
 msgid "Input Devices"
 msgstr "أجهزة الإدخال"
@@ -597,6 +607,12 @@ msgstr "بذرة"
 msgid "State"
 msgstr "الحالة"
 
+msgid "Memory"
+msgstr "الذاكرة"
+
+msgid "Limits"
+msgstr "الحدود"
+
 msgid "Message Queue"
 msgstr "قائمة انتظار الرسائل"
 
@@ -660,17 +676,11 @@ msgstr "التدوير"
 msgid "Value"
 msgstr "قيمة"
 
-msgid "Args"
-msgstr "المعاملات (Args)"
-
 msgid "Type"
 msgstr "النوع"
 
 msgid "Stream"
 msgstr "المجرى (Stream)"
-
-msgid "Animation"
-msgstr "التحريك"
 
 msgid "FileSystem"
 msgstr "نظام الملفات"
@@ -708,20 +718,83 @@ msgstr "وضع خالي من الإلهاء"
 msgid "Movie Maker Enabled"
 msgstr "تم تمكين صانع الأفلام"
 
+msgid "Theme"
+msgstr "الموضوع"
+
+msgid "Line Spacing"
+msgstr "تباعد الأسطر"
+
+msgid "Base Type"
+msgstr "النوع الأساسي"
+
+msgid "Editable"
+msgstr "قابل للتعديل"
+
+msgid "Toggle Mode"
+msgstr "أظهر الوضع"
+
 msgid "Interface"
 msgstr "واجهة المستخدم"
 
-msgid "Update Continuously"
-msgstr "تحديث متواصل"
+msgid "Editor Language"
+msgstr "لغة المحرر"
 
 msgid "Localize Settings"
 msgstr "ترجمة الإعدادات"
 
-msgid "Restore Scenes on Load"
-msgstr "استعادة المشاهد عند التحميل"
+msgid "Display Scale"
+msgstr "مقياس العرض"
+
+msgid "Custom Display Scale"
+msgstr "مقياس العرض المخصص"
+
+msgid "Editor Screen"
+msgstr "شاشة المحرر"
+
+msgid "Project Manager Screen"
+msgstr "شاشة مدير المشروع"
+
+msgid "Use Embedded Menu"
+msgstr "استعمال القائمة المُضمّنة"
+
+msgid "Expand to Title"
+msgstr "التوسيع إلى العنوان"
+
+msgid "Main Font Size"
+msgstr "حجم الخط الرئيسي"
+
+msgid "Code Font Size"
+msgstr "حجم خط الشِفرة"
+
+msgid "Font Hinting"
+msgstr "تلميح الخط (Hinting)"
+
+msgid "Main Font"
+msgstr "الخط الأساسي"
+
+msgid "Main Font Bold"
+msgstr "الخط الرئيسي الغليظ"
+
+msgid "Code Font"
+msgstr "خط الكود"
+
+msgid "Automatically Open Screenshots"
+msgstr "فتح لقطات الشاشة تلقائيًا"
+
+msgid "Single Window Mode"
+msgstr "وضع النافذة الواحدة"
+
+msgid "Mouse Extra Buttons Navigate History"
+msgstr "تنقل في سجل أزرار الماوس الإضافية"
+
+msgid "Update Continuously"
+msgstr "تحديث متواصل"
 
 msgid "Inspector"
 msgstr "الفاحص"
+
+msgid "Float Drag Speed"
+msgstr "تعويم سرعة السحب"
 
 msgid "Default Property Name Style"
 msgstr "نمط اسم الخاصية الافتراضي"
@@ -752,72 +825,6 @@ msgstr "وضع منتقي الألوان الافتراضي"
 
 msgid "Default Color Picker Shape"
 msgstr "شكل منتقي الألوان الافتراضي"
-
-msgid "Base Type"
-msgstr "النوع الأساسي"
-
-msgid "Editable"
-msgstr "قابل للتعديل"
-
-msgid "Toggle Mode"
-msgstr "أظهر الوضع"
-
-msgid "Editor Language"
-msgstr "لغة المحرر"
-
-msgid "Display Scale"
-msgstr "مقياس العرض"
-
-msgid "Editor Screen"
-msgstr "شاشة المحرر"
-
-msgid "Project Manager Screen"
-msgstr "شاشة مدير المشروع"
-
-msgid "Enable Pseudolocalization"
-msgstr "تمكين التعريب الزائف"
-
-msgid "Use Embedded Menu"
-msgstr "استعمال القائمة المُضمّنة"
-
-msgid "Expand to Title"
-msgstr "التوسيع إلى العنوان"
-
-msgid "Custom Display Scale"
-msgstr "مقياس العرض المخصص"
-
-msgid "Main Font Size"
-msgstr "حجم الخط الرئيسي"
-
-msgid "Code Font Size"
-msgstr "حجم خط الشِفرة"
-
-msgid "Font Hinting"
-msgstr "تلميح الخط (Hinting)"
-
-msgid "Main Font"
-msgstr "الخط الأساسي"
-
-msgid "Main Font Bold"
-msgstr "الخط الرئيسي الغليظ"
-
-msgid "Code Font"
-msgstr "خط الكود"
-
-msgid "Automatically Open Screenshots"
-msgstr "فتح لقطات الشاشة تلقائيًا"
-
-msgid "Single Window Mode"
-msgstr "وضع النافذة الواحدة"
-
-msgid "Mouse Extra Buttons Navigate History"
-msgstr "تنقل في سجل أزرار الماوس الإضافية"
-
-msgid "Float Drag Speed"
-msgstr "تعويم سرعة السحب"
-
-msgid "Theme"
-msgstr "الموضوع"
 
 msgid "Preset"
 msgstr "المعد مسبقا"
@@ -861,11 +868,11 @@ msgstr "الحد الأقصى للعرض"
 msgid "Show Script Button"
 msgstr "اضهار زر السكربت"
 
+msgid "Restore Scenes on Load"
+msgstr "استعادة المشاهد عند التحميل"
+
 msgid "Multi Window"
 msgstr "نافذة متعددة"
-
-msgid "Enable"
-msgstr "تفعيل"
 
 msgid "Restore Windows on Load"
 msgstr "استعادة ويندوز عند التحميل"
@@ -912,9 +919,6 @@ msgstr "وضع العرض"
 msgid "Import"
 msgstr "استيراد"
 
-msgid "Blender 3 Path"
-msgstr "مسار بلندر 3"
-
 msgid "Tools"
 msgstr "أدوات"
 
@@ -947,6 +951,9 @@ msgstr "تمييز السطر الحالي"
 
 msgid "Highlight All Occurrences"
 msgstr "قم بتمييز جميع التكرارات"
+
+msgid "Guidelines"
+msgstr "إرشادات"
 
 msgid "Show Line Length Guidelines"
 msgstr "إظهار إرشادات طول السطر"
@@ -995,9 +1002,6 @@ msgstr "رسم فراغات زر التاب"
 
 msgid "Draw Spaces"
 msgstr "رسم فراغات زر السبايس"
-
-msgid "Line Spacing"
-msgstr "تباعد الأسطر"
 
 msgid "Behavior"
 msgstr "سلوك"
@@ -1118,9 +1122,6 @@ msgstr "تم إنشاء مثيل له"
 
 msgid "Joint"
 msgstr "مشترك"
-
-msgid "Shape"
-msgstr "شكل"
 
 msgid "Primary Grid Steps"
 msgstr "خطوات الشبكة الاساسية"
@@ -1245,6 +1246,15 @@ msgstr "المخرجات"
 msgid "Font Size"
 msgstr "حجم الخط"
 
+msgid "Linuxbsd"
+msgstr "Linuxbsd"
+
+msgid "HTTP Proxy"
+msgstr "وكيل (Proxy) HTTP"
+
+msgid "Host"
+msgstr "المضيف"
+
 msgid "Remote Host"
 msgstr "المضيف عن بعد"
 
@@ -1254,11 +1264,8 @@ msgstr "مُنقح الأخطاء"
 msgid "Profiler Frame History Size"
 msgstr "حجم تاريخ إطار المحلل"
 
-msgid "HTTP Proxy"
-msgstr "وكيل (Proxy) HTTP"
-
-msgid "Host"
-msgstr "المضيف"
+msgid "Input"
+msgstr "إدخال"
 
 msgid "Project Manager"
 msgstr "مدير المشروع"
@@ -1359,18 +1366,6 @@ msgstr "تنسيق ثنائي"
 msgid "Embed PCK"
 msgstr "تضمين PCK"
 
-msgid "BPTC"
-msgstr "BPTC"
-
-msgid "S3TC"
-msgstr "S3TC"
-
-msgid "ETC"
-msgstr "ETC"
-
-msgid "ETC2"
-msgstr "ETC2"
-
 msgid "Export"
 msgstr "تصدير"
 
@@ -1398,6 +1393,114 @@ msgstr "إخفاء المنزلق"
 msgid "Zoom"
 msgstr "تكبير"
 
+msgid "Rename Bones"
+msgstr "إعادة تسمية العظام"
+
+msgid "Unique Node"
+msgstr "العقدة الفريدة"
+
+msgid "Make Unique"
+msgstr "اجعلْه فريدًا"
+
+msgid "Skeleton Name"
+msgstr "اسم الهيكل العظمي"
+
+msgid "Overwrite Axis"
+msgstr "الكتابة فوق المحور"
+
+msgid "Filter"
+msgstr "التصفية"
+
+msgid "Threshold"
+msgstr "عتبة"
+
+msgid "Remove Tracks"
+msgstr "إزالة المسارات"
+
+msgid "Generate"
+msgstr "توليد"
+
+msgid "Layer"
+msgstr "طبقة"
+
+msgid "Mask"
+msgstr "قناع"
+
+msgid "Layers"
+msgstr "طبقات"
+
+msgid "Visibility Range Begin"
+msgstr "بداية نطاق الرؤية"
+
+msgid "Visibility Range Begin Margin"
+msgstr "بداية هامش نطاق الرؤية"
+
+msgid "Visibility Range End"
+msgstr "نهاية نطاق الرؤية"
+
+msgid "Visibility Range End Margin"
+msgstr "نهاية هامش نطاق الرؤية"
+
+msgid "Decomposition"
+msgstr "تقسيم"
+
+msgid "Advanced"
+msgstr "إعدادات متقدمة"
+
+msgid "Precision"
+msgstr "دقة"
+
+msgid "Symmetry Planes Clipping Bias"
+msgstr "انحياز قص مستويات التماثل"
+
+msgid "Revolution Axes Clipping Bias"
+msgstr "تحيز قص محاور التقدم"
+
+msgid "Resolution"
+msgstr "الدقة"
+
+msgid "Height"
+msgstr "الارتفاع"
+
+msgid "Radius"
+msgstr "نصف القطر"
+
+msgid "Simplification Distance"
+msgstr "مسافة التبسيط"
+
+msgid "Save to File"
+msgstr "حفظ في الملف"
+
+msgid "Enabled"
+msgstr "مفعل"
+
+msgid "Loop Mode"
+msgstr "وضعية التكرار"
+
+msgid "Keep Custom Tracks"
+msgstr "احتفظ بالمسارات المخصصة"
+
+msgid "Slices"
+msgstr "شرائح"
+
+msgid "Amount"
+msgstr "الكمية"
+
+msgid "Optimizer"
+msgstr "المحسن"
+
+msgid "Page Size"
+msgstr "حجم الصفحة"
+
+msgid "Nodes"
+msgstr "العُقد"
+
+msgid "Meshes"
+msgstr "المجسّمات"
+
+msgid "FPS"
+msgstr "ط/ث"
+
 msgid "Generate Mipmaps"
 msgstr "إنشاء خرائط ميماب"
 
@@ -1422,32 +1525,11 @@ msgstr "ضغط"
 msgid "Language"
 msgstr "اللغة"
 
+msgid "Embolden"
+msgstr "تغميق"
+
 msgid "Transform"
 msgstr "التَحَوّل"
-
-msgid "Rename Bones"
-msgstr "إعادة تسمية العظام"
-
-msgid "Unique Node"
-msgstr "العقدة الفريدة"
-
-msgid "Make Unique"
-msgstr "اجعلْه فريدًا"
-
-msgid "Skeleton Name"
-msgstr "اسم الهيكل العظمي"
-
-msgid "Overwrite Axis"
-msgstr "الكتابة فوق المحور"
-
-msgid "Filter"
-msgstr "التصفية"
-
-msgid "Threshold"
-msgstr "عتبة"
-
-msgid "Remove Tracks"
-msgstr "إزالة المسارات"
 
 msgid "Create From"
 msgstr "إنشاء من"
@@ -1479,14 +1561,8 @@ msgstr "جودة ضائعة (Lossy)"
 msgid "HDR Compression"
 msgstr "ضغط HDR"
 
-msgid "Generate"
-msgstr "توليد"
-
 msgid "Limit"
 msgstr "حد"
-
-msgid "Slices"
-msgstr "شرائح"
 
 msgid "Horizontal"
 msgstr "أفقي"
@@ -1500,66 +1576,6 @@ msgstr "ترتيب"
 msgid "Layout"
 msgstr "المخطط"
 
-msgid "Amount"
-msgstr "الكمية"
-
-msgid "Layer"
-msgstr "طبقة"
-
-msgid "Mask"
-msgstr "قناع"
-
-msgid "Layers"
-msgstr "طبقات"
-
-msgid "Decomposition"
-msgstr "تقسيم"
-
-msgid "Advanced"
-msgstr "إعدادات متقدمة"
-
-msgid "Precision"
-msgstr "دقة"
-
-msgid "Resolution"
-msgstr "الدقة"
-
-msgid "Height"
-msgstr "الارتفاع"
-
-msgid "Radius"
-msgstr "نصف القطر"
-
-msgid "Simplification Distance"
-msgstr "مسافة التبسيط"
-
-msgid "Save to File"
-msgstr "حفظ في الملف"
-
-msgid "Enabled"
-msgstr "مفعل"
-
-msgid "Loop Mode"
-msgstr "وضعية التكرار"
-
-msgid "Keep Custom Tracks"
-msgstr "احتفظ بالمسارات المخصصة"
-
-msgid "Optimizer"
-msgstr "المحسن"
-
-msgid "Page Size"
-msgstr "حجم الصفحة"
-
-msgid "Nodes"
-msgstr "العُقد"
-
-msgid "Meshes"
-msgstr "المجسّمات"
-
-msgid "FPS"
-msgstr "ط/ث"
-
 msgid "Normal Map"
 msgstr "خريطة عادية"
 
@@ -1571,6 +1587,9 @@ msgstr "المعالجة"
 
 msgid "Fix Alpha Border"
 msgstr "إصلاح حدود ألفا"
+
+msgid "HDR as sRGB"
+msgstr "HDR بهيئة RGB"
 
 msgid "Size Limit"
 msgstr "الحد الأقصى للحجم"
@@ -1605,11 +1624,11 @@ msgstr "غير محدد"
 msgid "Error"
 msgstr "خطأ"
 
-msgid "Decal"
-msgstr "طَبْعة"
-
 msgid "Particles"
 msgstr "جسيمات"
+
+msgid "Decal"
+msgstr "طَبْعة"
 
 msgid "Use External Editor"
 msgstr "استعمال محرر خارجي"
@@ -1677,20 +1696,11 @@ msgstr "مسارات"
 msgid "Thread Model"
 msgstr "نوع المسار"
 
-msgid "V-Sync"
-msgstr "مزامنة (مزامنة كرت الشاشة)"
-
 msgid "stdout"
 msgstr "إخراج"
 
 msgid "XR"
 msgstr "XR"
-
-msgid "In Editor"
-msgstr "داخل المحرر"
-
-msgid "Fullsize"
-msgstr "الحجم الكامل"
 
 msgid "Icon"
 msgstr "الأيقونة"
@@ -1701,8 +1711,17 @@ msgstr "يشير"
 msgid "Android"
 msgstr "أندرويد"
 
+msgid "Fullsize"
+msgstr "الحجم الكامل"
+
 msgid "Project"
 msgstr "المشروع"
+
+msgid "Time"
+msgstr "الوقت"
+
+msgid "Polygons"
+msgstr "المُضلعات"
 
 msgid "Operation"
 msgstr "عملية"
@@ -1763,9 +1782,6 @@ msgstr "لون تعريف الدالة"
 
 msgid "Node Path Color"
 msgstr "لون مسار العقدة"
-
-msgid "Warnings"
-msgstr "تحذيرات"
 
 msgid "Language Server"
 msgstr "لغة الخادك"
@@ -1971,9 +1987,6 @@ msgstr "متغير"
 msgid "Centered"
 msgstr "المتوسطة"
 
-msgid "Point"
-msgstr "نقطة"
-
 msgid "Left"
 msgstr "يساراً"
 
@@ -1983,17 +1996,11 @@ msgstr "فوق"
 msgid "Right"
 msgstr "يميناً"
 
-msgid "Input"
-msgstr "إدخال"
-
-msgid "Disabled"
-msgstr "معطّل"
-
-msgid "Time"
-msgstr "الوقت"
-
 msgid "One Shot"
 msgstr "محاولة واحدة"
+
+msgid "Shape"
+msgstr "شكل"
 
 msgid "Sphere Radius"
 msgstr "قطر الجسم الكروى"
@@ -2013,20 +2020,32 @@ msgstr "اللون الإفتراضي"
 msgid "Fill"
 msgstr "التعبئة"
 
+msgid "Repeat"
+msgstr "كرر"
+
+msgid "End"
+msgstr "النهاية"
+
+msgid "Point"
+msgstr "نقطة"
+
+msgid "Disabled"
+msgstr "معطّل"
+
 msgid "Linear"
 msgstr "خطي"
 
 msgid "UV"
 msgstr "ال UV"
 
-msgid "Polygons"
-msgstr "المُضلعات"
-
 msgid "Update"
 msgstr "تحديث"
 
 msgid "Editor Settings"
 msgstr "إعدادات المُحرر"
+
+msgid "Y Sort Origin"
+msgstr "فرز مركز ص"
 
 msgid "Bitmask"
 msgstr "قناع-البِت"
@@ -2039,15 +2058,6 @@ msgstr "نظام تعديل"
 
 msgid "Update Mode"
 msgstr "وضع التحديث"
-
-msgid "End"
-msgstr "النهاية"
-
-msgid "Upper Angle"
-msgstr "الزاوية العلوية"
-
-msgid "Lower Angle"
-msgstr "الزاوية السفلية"
 
 msgid "Pixel Size"
 msgstr "حجم البكسل"
@@ -2067,11 +2077,11 @@ msgstr "الضبابية"
 msgid "Quality"
 msgstr "جودة"
 
-msgid "Bones"
-msgstr "العظام"
+msgid "Upper Angle"
+msgstr "الزاوية العلوية"
 
-msgid "Target"
-msgstr "الهدف"
+msgid "Lower Angle"
+msgstr "الزاوية السفلية"
 
 msgid "Engine Force"
 msgstr "قوة المحرك"
@@ -2084,6 +2094,12 @@ msgstr "عجلة"
 
 msgid "Travel"
 msgstr "السفر"
+
+msgid "Bones"
+msgstr "العظام"
+
+msgid "Target"
+msgstr "الهدف"
 
 msgid "Pose"
 msgstr "وضعية"
@@ -2154,9 +2170,6 @@ msgstr "توسيع"
 msgid "Z Index"
 msgstr "مؤشر ز"
 
-msgid "Repeat"
-msgstr "كرر"
-
 msgid "NormalMap"
 msgstr "خريطة عادية"
 
@@ -2214,14 +2227,50 @@ msgstr "فيزياء 2D"
 msgid "3D Physics"
 msgstr "فيزياء 3D"
 
+msgid "B"
+msgstr "بايت (Byte)"
+
+msgid "Terrains"
+msgstr "التضاريس"
+
+msgid "Custom Data"
+msgstr "البيانات مخصصة"
+
+msgid "Scene"
+msgstr "المشهد"
+
+msgid "Transpose"
+msgstr "المصفوفة المنقولة Transpose"
+
+msgid "Texture Origin"
+msgstr "أصل الملمس"
+
+msgid "Miscellaneous"
+msgstr "متنوع"
+
+msgid "Probability"
+msgstr "الاحتمال"
+
+msgid "Item"
+msgstr "عنصر"
+
+msgid "Preview"
+msgstr "معاينة"
+
+msgid "Sky"
+msgstr "سَمَاء"
+
+msgid "Rayleigh"
+msgstr "التبعثر الضوئي"
+
+msgid "Ground Color"
+msgstr "اللون الأرض"
+
 msgid "Atlas"
 msgstr "أطلس"
 
 msgid "Format"
 msgstr "البنية (اللاحقة)"
-
-msgid "Sky"
-msgstr "سَمَاء"
 
 msgid "Source"
 msgstr "مصدر"
@@ -2259,23 +2308,8 @@ msgstr "التشتت تحت السطح"
 msgid "MSDF"
 msgstr "حقل مسافة متعدد (ح م ع)(MSDF)"
 
-msgid "Item"
-msgstr "عنصر"
-
-msgid "Preview"
-msgstr "معاينة"
-
 msgid "Image Size"
 msgstr "حجم الصورة"
-
-msgid "B"
-msgstr "بايت (Byte)"
-
-msgid "Rayleigh"
-msgstr "التبعثر الضوئي"
-
-msgid "Ground Color"
-msgstr "اللون الأرض"
 
 msgid "Blend"
 msgstr "دمج"
@@ -2291,30 +2325,6 @@ msgstr "في الأسفل يميناً"
 
 msgid "Bottom Left"
 msgstr "في الأسفل يساراً"
-
-msgid "Terrains"
-msgstr "التضاريس"
-
-msgid "Custom Data"
-msgstr "البيانات مخصصة"
-
-msgid "Scene"
-msgstr "المشهد"
-
-msgid "Transpose"
-msgstr "المصفوفة المنقولة Transpose"
-
-msgid "Texture Origin"
-msgstr "أصل الملمس"
-
-msgid "Y Sort Origin"
-msgstr "فرز مركز ص"
-
-msgid "Miscellaneous"
-msgstr "متنوع"
-
-msgid "Probability"
-msgstr "الاحتمال"
 
 msgid "File"
 msgstr "ملف"
@@ -2414,6 +2424,3 @@ msgstr "مركز العالم"
 
 msgid "Primary Interface"
 msgstr "الواجهة الأساسية"
-
-msgid "Property"
-msgstr "خاصية"

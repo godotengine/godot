@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 
+#include <algorithm>
 #include "tvgMath.h"
 #include "tvgSwCommon.h"
 #include "tvgTaskScheduler.h"
@@ -78,7 +79,6 @@ struct SwShapeTask : SwTask
 {
     SwShape shape;
     const RenderShape* rshape = nullptr;
-    bool cmpStroking = false;
     bool clipper = false;
 
     /* We assume that if the stroke width is greater than 2,
@@ -87,7 +87,7 @@ struct SwShapeTask : SwTask
        Additionally, the stroke style should not be dashed. */
     bool antialiasing(float strokeWidth)
     {
-        return strokeWidth < 2.0f || rshape->stroke->dashCnt > 0 || rshape->stroke->strokeFirst;
+        return strokeWidth < 2.0f || rshape->stroke->dashCnt > 0 || rshape->stroke->strokeFirst || rshape->strokeTrim() || rshape->stroke->color[3] < 255;;
     }
 
     float validStrokeWidth()
@@ -148,7 +148,7 @@ struct SwShapeTask : SwTask
             }
         }
         //Fill
-        if (flags & (RenderUpdateFlag::Gradient | RenderUpdateFlag::Transform | RenderUpdateFlag::Color)) {
+        if (flags & (RenderUpdateFlag::Path |RenderUpdateFlag::Gradient | RenderUpdateFlag::Transform | RenderUpdateFlag::Color)) {
             if (visibleFill || clipper) {
                 if (!shapeGenRle(&shape, rshape, antialiasing(strokeWidth))) goto err;
             }
@@ -161,7 +161,7 @@ struct SwShapeTask : SwTask
             }
         }
         //Stroke
-        if (flags & (RenderUpdateFlag::Stroke | RenderUpdateFlag::Transform)) {
+        if (flags & (RenderUpdateFlag::Path | RenderUpdateFlag::Stroke | RenderUpdateFlag::Transform)) {
             if (strokeWidth > 0.0f) {
                 shapeResetStroke(&shape, rshape, transform);
                 if (!shapeGenStrokeRle(&shape, rshape, transform, clipRegion, bbox, mpool, tid)) goto err;
@@ -182,7 +182,7 @@ struct SwShapeTask : SwTask
         shapeDelOutline(&shape, mpool, tid);
 
         //Clip Path
-        for (auto clip = clips.data; clip < clips.end(); ++clip) {
+        for (auto clip = clips.begin(); clip < clips.end(); ++clip) {
             auto clipper = static_cast<SwTask*>(*clip);
             //Clip shape rle
             if (shape.rle && !clipper->clip(shape.rle)) goto err;
@@ -242,7 +242,7 @@ struct SwSceneTask : SwTask
             rleMerge(sceneRle, clipper1->rle(), clipper2->rle());
 
             //Unify the remained clippers
-            for (auto rd = scene.data + 2; rd < scene.end(); ++rd) {
+            for (auto rd = scene.begin() + 2; rd < scene.end(); ++rd) {
                 auto clipper = static_cast<SwTask*>(*rd);
                 rleMerge(sceneRle, sceneRle, clipper->rle());
             }
@@ -301,7 +301,7 @@ struct SwImageTask : SwTask
                 if (image.rle) {
                     //Clear current task memorypool here if the clippers would use the same memory pool
                     imageDelOutline(&image, mpool, tid);
-                    for (auto clip = clips.data; clip < clips.end(); ++clip) {
+                    for (auto clip = clips.begin(); clip < clips.end(); ++clip) {
                         auto clipper = static_cast<SwTask*>(*clip);
                         if (!clipper->clip(image.rle)) goto err;
                     }
@@ -377,7 +377,7 @@ SwRenderer::~SwRenderer()
 
 bool SwRenderer::clear()
 {
-    for (auto task = tasks.data; task < tasks.end(); ++task) {
+    for (auto task = tasks.begin(); task < tasks.end(); ++task) {
         if ((*task)->disposed) {
             delete(*task);
         } else {
@@ -434,10 +434,6 @@ bool SwRenderer::target(pixel_t* data, uint32_t stride, uint32_t w, uint32_t h, 
     surface->channelSize = CHANNEL_SIZE(cs);
     surface->premultiplied = true;
 
-    vport.x = vport.y = 0;
-    vport.w = surface->w;
-    vport.h = surface->h;
-
     return rasterCompositor(surface);
 }
 
@@ -451,7 +447,7 @@ bool SwRenderer::preRender()
 void SwRenderer::clearCompositors()
 {
     //Free Composite Caches
-    for (auto comp = compositors.data; comp < compositors.end(); ++comp) {
+    for (auto comp = compositors.begin(); comp < compositors.end(); ++comp) {
         free((*comp)->compositor->image.data);
         delete((*comp)->compositor);
         delete(*comp);
@@ -467,7 +463,7 @@ bool SwRenderer::postRender()
         rasterUnpremultiply(surface);
     }
 
-    for (auto task = tasks.data; task < tasks.end(); ++task) {
+    for (auto task = tasks.begin(); task < tasks.end(); ++task) {
         if ((*task)->disposed) delete(*task);
         else (*task)->pushed = false;
     }
@@ -607,6 +603,12 @@ bool SwRenderer::mempool(bool shared)
 }
 
 
+const Surface* SwRenderer::mainSurface()
+{
+    return surface;
+}
+
+
 Compositor* SwRenderer::target(const RenderRegion& region, ColorSpace cs)
 {
     auto x = region.x;
@@ -624,7 +626,7 @@ Compositor* SwRenderer::target(const RenderRegion& region, ColorSpace cs)
     auto reqChannelSize = CHANNEL_SIZE(cs);
 
     //Use cached data
-    for (auto p = compositors.data; p < compositors.end(); ++p) {
+    for (auto p = compositors.begin(); p < compositors.end(); ++p) {
         if ((*p)->compositor->valid && (*p)->compositor->image.channelSize == reqChannelSize) {
             cmp = *p;
             break;
@@ -717,13 +719,10 @@ void* SwRenderer::prepareCommon(SwTask* task, const RenderTransform* transform, 
     if (!surface) return task;
     if (flags == RenderUpdateFlag::None) return task;
 
-    //Finish previous task if it has duplicated request.
-    task->done();
-
     //TODO: Failed threading them. It would be better if it's possible.
     //See: https://github.com/thorvg/thorvg/issues/1409
     //Guarantee composition targets get ready.
-    for (auto clip = clips.data; clip < clips.end(); ++clip) {
+    for (auto clip = clips.begin(); clip < clips.end(); ++clip) {
         static_cast<SwTask*>(*clip)->done();
     }
 
@@ -768,8 +767,11 @@ RenderData SwRenderer::prepare(Surface* surface, const RenderMesh* mesh, RenderD
     //prepare task
     auto task = static_cast<SwImageTask*>(data);
     if (!task) task = new SwImageTask;
+    else task->done();
+
     task->source = surface;
     task->mesh = mesh;
+
     return prepareCommon(task, transform, clips, opacity, flags);
 }
 
@@ -779,14 +781,17 @@ RenderData SwRenderer::prepare(const Array<RenderData>& scene, RenderData data, 
     //prepare task
     auto task = static_cast<SwSceneTask*>(data);
     if (!task) task = new SwSceneTask;
+    else task->done();
+
     task->scene = scene;
 
     //TODO: Failed threading them. It would be better if it's possible.
     //See: https://github.com/thorvg/thorvg/issues/1409
     //Guarantee composition targets get ready.
-    for (auto task = scene.data; task < scene.end(); ++task) {
+    for (auto task = scene.begin(); task < scene.end(); ++task) {
         static_cast<SwTask*>(*task)->done();
     }
+
     return prepareCommon(task, transform, clips, opacity, flags);
 }
 
@@ -795,10 +800,10 @@ RenderData SwRenderer::prepare(const RenderShape& rshape, RenderData data, const
 {
     //prepare task
     auto task = static_cast<SwShapeTask*>(data);
-    if (!task) {
-        task = new SwShapeTask;
-        task->rshape = &rshape;
-    }
+    if (!task) task = new SwShapeTask;
+    else task->done();
+
+    task->rshape = &rshape;
     task->clipper = clipper;
 
     return prepareCommon(task, transform, clips, opacity, flags);

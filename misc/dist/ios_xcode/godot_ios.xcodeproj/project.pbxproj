@@ -16,6 +16,7 @@
 		9039D3BE24C093AC0020482C /* MoltenVK.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9039D3BD24C093AC0020482C /* MoltenVK.xcframework */; };
 		D0BCFE4618AEBDA2004A7AAE /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = D0BCFE4418AEBDA2004A7AAE /* InfoPlist.strings */; };
 		D0BCFE7818AEBFEB004A7AAE /* $binary.pck in Resources */ = {isa = PBXBuildFile; fileRef = D0BCFE7718AEBFEB004A7AAE /* $binary.pck */; };
+		F965960D2BC2C3A800579C7E /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = F965960C2BC2C3A800579C7E /* PrivacyInfo.xcprivacy */; };
 		$pbx_launch_screen_build_reference
 /* End PBXBuildFile section */
 
@@ -47,6 +48,7 @@
 		D0BCFE4518AEBDA2004A7AAE /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		$pbx_locale_file_reference
 		D0BCFE7718AEBFEB004A7AAE /* $binary.pck */ = {isa = PBXFileReference; lastKnownFileType = file; path = "$binary.pck"; sourceTree = "<group>"; };
+		F965960C2BC2C3A800579C7E /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		$pbx_launch_screen_file_reference
 /* End PBXFileReference section */
 
@@ -75,6 +77,7 @@
 				D0BCFE4118AEBDA2004A7AAE /* $binary */,
 				D0BCFE3618AEBDA2004A7AAE /* Frameworks */,
 				D0BCFE3518AEBDA2004A7AAE /* Products */,
+				F965960C2BC2C3A800579C7E /* PrivacyInfo.xcprivacy */,
 				$additional_pbx_resources_refs
 			);
 			sourceTree = "<group>";
@@ -186,6 +189,7 @@
 				D0BCFE7818AEBFEB004A7AAE /* $binary.pck in Resources */,
 				$pbx_launch_screen_build_phase
 				D0BCFE4618AEBDA2004A7AAE /* InfoPlist.strings in Resources */,
+				F965960D2BC2C3A800579C7E /* PrivacyInfo.xcprivacy in Resources */,
 				$additional_pbx_resources_build
 			);
 			runOnlyForDeploymentPostprocessing = 0;

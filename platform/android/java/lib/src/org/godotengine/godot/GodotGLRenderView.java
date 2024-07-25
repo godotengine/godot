@@ -42,7 +42,6 @@ import org.godotengine.godot.xr.regular.RegularContextFactory;
 import org.godotengine.godot.xr.regular.RegularFallbackConfigChooser;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -77,7 +76,7 @@ import java.io.InputStream;
  *   that matches it exactly (with regards to red/green/blue/alpha channels
  *   bit depths). Failure to do so would result in an EGL_BAD_MATCH error.
  */
-public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
+class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
 	private final GodotHost host;
 	private final Godot godot;
 	private final GodotInputHandler inputHandler;
@@ -141,8 +140,13 @@ public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView 
 	}
 
 	@Override
+	public void onActivityDestroyed() {
+		requestRenderThreadExitAndWait();
+	}
+
+	@Override
 	public void onBackPressed() {
-		godot.onBackPressed(host);
+		godot.onBackPressed();
 	}
 
 	@Override

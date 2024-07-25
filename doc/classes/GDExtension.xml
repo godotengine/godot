@@ -12,40 +12,16 @@
 		<link title="GDExtension example in C++">$DOCS_URL/tutorials/scripting/gdextension/gdextension_cpp_example.html</link>
 	</tutorials>
 	<methods>
-		<method name="close_library">
-			<return type="void" />
-			<description>
-				Closes the current library.
-				[b]Note:[/b] You normally should not call this method directly. This is handled automatically by [method GDExtensionManager.unload_extension].
-			</description>
-		</method>
 		<method name="get_minimum_library_initialization_level" qualifiers="const">
 			<return type="int" enum="GDExtension.InitializationLevel" />
 			<description>
 				Returns the lowest level required for this extension to be properly initialized (see the [enum InitializationLevel] enum).
 			</description>
 		</method>
-		<method name="initialize_library">
-			<return type="void" />
-			<param index="0" name="level" type="int" enum="GDExtension.InitializationLevel" />
-			<description>
-				Initializes the library bound to this GDextension at the given initialization [param level].
-				[b]Note:[/b] You normally should not call this method directly. This is handled automatically by [method GDExtensionManager.load_extension].
-			</description>
-		</method>
 		<method name="is_library_open" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this extension's library has been opened.
-			</description>
-		</method>
-		<method name="open_library">
-			<return type="int" enum="Error" />
-			<param index="0" name="path" type="String" />
-			<param index="1" name="entry_symbol" type="String" />
-			<description>
-				Opens the library at the specified [param path].
-				[b]Note:[/b] You normally should not call this method directly. This is handled automatically by [method GDExtensionManager.load_extension].
 			</description>
 		</method>
 	</methods>

@@ -545,6 +545,95 @@ TEST_CASE("[Array] Recursive self comparison") {
 	a2.clear();
 }
 
+TEST_CASE("[Array] Iteration") {
+	Array a1 = build_array(1, 2, 3);
+	Array a2 = build_array(1, 2, 3);
+
+	int idx = 0;
+	for (Variant &E : a1) {
+		CHECK_EQ(int(a2[idx]), int(E));
+		idx++;
+	}
+
+	CHECK_EQ(idx, a1.size());
+
+	idx = 0;
+
+	for (const Variant &E : (const Array &)a1) {
+		CHECK_EQ(int(a2[idx]), int(E));
+		idx++;
+	}
+
+	CHECK_EQ(idx, a1.size());
+
+	a1.clear();
+}
+
+TEST_CASE("[Array] Iteration and modification") {
+	Array a1 = build_array(1, 2, 3);
+	Array a2 = build_array(2, 3, 4);
+	Array a3 = build_array(1, 2, 3);
+	Array a4 = build_array(1, 2, 3);
+	a3.make_read_only();
+
+	int idx = 0;
+	for (Variant &E : a1) {
+		E = a2[idx];
+		idx++;
+	}
+
+	CHECK_EQ(a1, a2);
+
+	// Ensure read-only is respected.
+	idx = 0;
+	for (Variant &E : a3) {
+		E = a2[idx];
+	}
+
+	CHECK_EQ(a3, a4);
+
+	a1.clear();
+	a2.clear();
+	a4.clear();
+}
+
+TEST_CASE("[Array] Typed copying") {
+	TypedArray<int> a1;
+	a1.push_back(1);
+
+	TypedArray<double> a2;
+	a2.push_back(1.0);
+
+	Array a3 = a1;
+	TypedArray<int> a4 = a3;
+
+	Array a5 = a2;
+	TypedArray<int> a6 = a5;
+
+	a3[0] = 2;
+	a4[0] = 3;
+
+	// Same typed TypedArray should be shared.
+	CHECK_EQ(a1[0], Variant(3));
+	CHECK_EQ(a3[0], Variant(3));
+	CHECK_EQ(a4[0], Variant(3));
+
+	a5[0] = 2.0;
+	a6[0] = 3.0;
+
+	// Different typed TypedArray should not be shared.
+	CHECK_EQ(a2[0], Variant(2.0));
+	CHECK_EQ(a5[0], Variant(2.0));
+	CHECK_EQ(a6[0], Variant(3.0));
+
+	a1.clear();
+	a2.clear();
+	a3.clear();
+	a4.clear();
+	a5.clear();
+	a6.clear();
+}
+
 } // namespace TestArray
 
 #endif // TEST_ARRAY_H

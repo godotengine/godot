@@ -17,7 +17,7 @@
 			<param index="1" name="features" type="PackedStringArray" />
 			<description>
 				Return [code]true[/code] if this plugin will customize resources based on the platform and features used.
-				When enabled, [method _get_customization_configuration_hash], [method _customize_resource] and [method _customize_scene] will be called and must be implemented.
+				When enabled, [method _get_customization_configuration_hash] and [method _customize_resource] will be called and must be implemented.
 			</description>
 		</method>
 		<method name="_begin_customize_scenes" qualifiers="virtual const">
@@ -25,7 +25,8 @@
 			<param index="0" name="platform" type="EditorExportPlatform" />
 			<param index="1" name="features" type="PackedStringArray" />
 			<description>
-				Return true if this plugin will customize scenes based on the platform and features used.
+				Return [code]true[/code] if this plugin will customize scenes based on the platform and features used.
+				When enabled, [method _get_customization_configuration_hash] and [method _customize_scene] will be called and must be implemented.
 			</description>
 		</method>
 		<method name="_customize_resource" qualifiers="virtual">
@@ -81,7 +82,7 @@
 			<param index="1" name="type" type="String" />
 			<param index="2" name="features" type="PackedStringArray" />
 			<description>
-				Virtual method to be overridden by the user. Called for each exported file, providing arguments that can be used to identify the file. [param path] is the path of the file, [param type] is the [Resource] represented by the file (e.g. [PackedScene]) and [param features] is the list of features for the export.
+				Virtual method to be overridden by the user. Called for each exported file before [method _customize_resource] and [method _customize_scene]. The arguments can be used to identify the file. [param path] is the path of the file, [param type] is the [Resource] represented by the file (e.g. [PackedScene]), and [param features] is the list of features for the export.
 				Calling [method skip] inside this callback will make the file not included in the export.
 			</description>
 		</method>
@@ -178,6 +179,30 @@
 				- [code]update_visibility[/code]: An optional boolean value. If set to [code]true[/code], the preset will emit [signal Object.property_list_changed] when the option is changed.
 			</description>
 		</method>
+		<method name="_get_export_options_overrides" qualifiers="virtual const">
+			<return type="Dictionary" />
+			<param index="0" name="platform" type="EditorExportPlatform" />
+			<description>
+				Return a [Dictionary] of override values for export options, that will be used instead of user-provided values. Overridden options will be hidden from the user interface.
+				[codeblock]
+				class MyExportPlugin extends EditorExportPlugin:
+				    func _get_name() -&gt; String:
+				        return "MyExportPlugin"
+
+				    func _supports_platform(platform) -&gt; bool:
+				        if platform is EditorExportPlatformPC:
+				            # Run on all desktop platforms including Windows, MacOS and Linux.
+				            return true
+				        return false
+
+				    func _get_export_options_overrides(platform) -&gt; Dictionary:
+				        # Override "Embed PCK" to always be enabled.
+				        return {
+				            "binary_format/embed_pck": true,
+				        }
+				[/codeblock]
+			</description>
+		</method>
 		<method name="_get_name" qualifiers="virtual const">
 			<return type="String" />
 			<description>
@@ -207,6 +232,7 @@
 			<description>
 				Adds a custom file to be exported. [param path] is the virtual path that can be used to load the file, [param file] is the binary data of the file.
 				When called inside [method _export_file] and [param remap] is [code]true[/code], the current file will not be exported, but instead remapped to this custom file. [param remap] is ignored when called in other places.
+				[param file] will not be imported, so consider using [method _customize_resource] to remap imported resources.
 			</description>
 		</method>
 		<method name="add_ios_bundle_file">

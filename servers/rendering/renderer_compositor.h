@@ -96,7 +96,6 @@ public:
 	virtual void initialize() = 0;
 	virtual void begin_frame(double frame_step) = 0;
 
-	virtual void prepare_for_blitting_render_targets() = 0;
 	virtual void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) = 0;
 
 	virtual void end_viewport(bool p_swap_buffers) = 0;
@@ -111,7 +110,7 @@ public:
 
 	static RendererCompositor *get_singleton() { return singleton; }
 	RendererCompositor();
-	virtual ~RendererCompositor() {}
+	virtual ~RendererCompositor();
 };
 
 #endif // RENDERER_COMPOSITOR_H

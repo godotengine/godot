@@ -60,6 +60,10 @@ void EditorExportPlugin::add_shared_object(const String &p_path, const Vector<St
 	shared_objects.push_back(SharedObject(p_path, p_tags, p_target));
 }
 
+void EditorExportPlugin::_add_shared_object(const SharedObject &p_shared_object) {
+	shared_objects.push_back(p_shared_object);
+}
+
 void EditorExportPlugin::add_ios_framework(const String &p_path) {
 	ios_frameworks.push_back(p_path);
 }
@@ -285,6 +289,12 @@ String EditorExportPlugin::_get_export_option_warning(const Ref<EditorExportPlat
 	return ret;
 }
 
+Dictionary EditorExportPlugin::_get_export_options_overrides(const Ref<EditorExportPlatform> &p_platform) const {
+	Dictionary ret;
+	GDVIRTUAL_CALL(_get_export_options_overrides, p_platform, ret);
+	return ret;
+}
+
 void EditorExportPlugin::_export_file(const String &p_path, const String &p_type, const HashSet<String> &p_features) {
 }
 
@@ -327,6 +337,7 @@ void EditorExportPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_end_customize_resources);
 
 	GDVIRTUAL_BIND(_get_export_options, "platform");
+	GDVIRTUAL_BIND(_get_export_options_overrides, "platform");
 	GDVIRTUAL_BIND(_should_update_export_options, "platform");
 	GDVIRTUAL_BIND(_get_export_option_warning, "platform", "option");
 

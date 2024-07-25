@@ -138,6 +138,7 @@ private:
 	real_t randomness_ratio = 0.0;
 	double lifetime_randomness = 0.0;
 	double speed_scale = 1.0;
+	AABB visibility_aabb;
 	bool local_coords = false;
 	int fixed_fps = 0;
 	bool fractional_delta = true;
@@ -210,6 +211,7 @@ public:
 	void set_pre_process_time(double p_time);
 	void set_explosiveness_ratio(real_t p_ratio);
 	void set_randomness_ratio(real_t p_ratio);
+	void set_visibility_aabb(const AABB &p_aabb);
 	void set_lifetime_randomness(double p_random);
 	void set_use_local_coordinates(bool p_enable);
 	void set_speed_scale(double p_scale);
@@ -221,6 +223,7 @@ public:
 	double get_pre_process_time() const;
 	real_t get_explosiveness_ratio() const;
 	real_t get_randomness_ratio() const;
+	AABB get_visibility_aabb() const;
 	double get_lifetime_randomness() const;
 	bool get_use_local_coordinates() const;
 	double get_speed_scale() const;
@@ -302,11 +305,13 @@ public:
 	void set_gravity(const Vector3 &p_gravity);
 	Vector3 get_gravity() const;
 
-	Array get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	void restart();
 
 	void convert_from_particles(Node *p_particles);
+
+	AABB capture_aabb() const;
 
 	CPUParticles3D();
 	~CPUParticles3D();

@@ -31,8 +31,8 @@
 #ifndef MESH_LIBRARY_EDITOR_PLUGIN_H
 #define MESH_LIBRARY_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
-#include "scene/resources/mesh_library.h"
+#include "editor/plugins/editor_plugin.h"
+#include "scene/resources/3d/mesh_library.h"
 
 class EditorFileDialog;
 class ConfirmationDialog;

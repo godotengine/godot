@@ -56,7 +56,7 @@
 #define RB_TEX_REFLECTION SNAME("reflection")
 
 // Forward declare RenderDataRD and RendererSceneRenderRD so we can pass it into some of our methods, these classes are pretty tightly bound
-struct RenderDataRD;
+class RenderDataRD;
 class RendererSceneRenderRD;
 
 namespace RendererRD {

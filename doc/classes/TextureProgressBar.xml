@@ -70,13 +70,13 @@
 		<member name="texture_under" type="Texture2D" setter="set_under_texture" getter="get_under_texture">
 			[Texture2D] that draws under the progress bar. The bar's background.
 		</member>
-		<member name="tint_over" type="Color" setter="set_tint_over" getter="get_tint_over" default="Color(1, 1, 1, 1)">
+		<member name="tint_over" type="Color" setter="set_tint_over" getter="get_tint_over" default="Color(1, 1, 1, 1)" keywords="color, colour">
 			Multiplies the color of the bar's [member texture_over] texture. The effect is similar to [member CanvasItem.modulate], except it only affects this specific texture instead of the entire node.
 		</member>
-		<member name="tint_progress" type="Color" setter="set_tint_progress" getter="get_tint_progress" default="Color(1, 1, 1, 1)">
+		<member name="tint_progress" type="Color" setter="set_tint_progress" getter="get_tint_progress" default="Color(1, 1, 1, 1)" keywords="color, colour">
 			Multiplies the color of the bar's [member texture_progress] texture.
 		</member>
-		<member name="tint_under" type="Color" setter="set_tint_under" getter="get_tint_under" default="Color(1, 1, 1, 1)">
+		<member name="tint_under" type="Color" setter="set_tint_under" getter="get_tint_under" default="Color(1, 1, 1, 1)" keywords="color, colour">
 			Multiplies the color of the bar's [member texture_under] texture.
 		</member>
 	</members>

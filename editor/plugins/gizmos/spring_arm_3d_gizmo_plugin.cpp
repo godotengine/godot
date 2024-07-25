@@ -32,8 +32,8 @@
 
 #include "editor/editor_settings.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
-#include "scene/3d/spring_arm_3d.h"
-#include "scene/resources/shape_3d.h"
+#include "scene/3d/physics/spring_arm_3d.h"
+#include "scene/resources/3d/shape_3d.h"
 
 void SpringArm3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	SpringArm3D *spring_arm = Object::cast_to<SpringArm3D>(p_gizmo->get_node_3d());
@@ -52,7 +52,7 @@ void SpringArm3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 }
 
 SpringArm3DGizmoPlugin::SpringArm3DGizmoPlugin() {
-	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/shape");
+	Color gizmo_color = SceneTree::get_singleton()->get_debug_collisions_color();
 	create_material("shape_material", gizmo_color);
 }
 

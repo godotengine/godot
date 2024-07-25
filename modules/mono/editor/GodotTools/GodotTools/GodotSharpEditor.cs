@@ -4,6 +4,7 @@ using GodotTools.Export;
 using GodotTools.Utils;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using GodotTools.Build;
@@ -34,6 +35,7 @@ namespace GodotTools
             public const string ProblemsLayout = "dotnet/build/problems_layout";
         }
 
+#nullable disable
         private EditorSettings _editorSettings;
 
         private PopupMenu _menuPopup;
@@ -51,6 +53,7 @@ namespace GodotTools
         public GodotIdeManager GodotIdeManager { get; private set; }
 
         public MSBuildPanel MSBuildPanel { get; private set; }
+#nullable enable
 
         public bool SkipBuildBeforePlaying { get; set; } = false;
 
@@ -67,29 +70,23 @@ namespace GodotTools
 
         private bool CreateProjectSolution()
         {
-            string errorMessage = null;
+            string? errorMessage = null;
             using (var pr = new EditorProgress("create_csharp_solution", "Generating solution...".TTR(), 2))
             {
                 pr.Step("Generating C# project...".TTR());
 
-                string csprojDir = Path.GetDirectoryName(GodotSharpDirs.ProjectCsProjPath);
-                string slnDir = Path.GetDirectoryName(GodotSharpDirs.ProjectSlnPath);
+                string csprojDir = Path.GetDirectoryName(GodotSharpDirs.ProjectCsProjPath)!;
+                string slnDir = Path.GetDirectoryName(GodotSharpDirs.ProjectSlnPath)!;
                 string name = GodotSharpDirs.ProjectAssemblyName;
                 string guid = CsProjOperations.GenerateGameProject(csprojDir, name);
 
                 if (guid.Length > 0)
                 {
-                    var solution = new DotNetSolution(name)
-                    {
-                        DirectoryPath = slnDir
-                    };
+                    var solution = new DotNetSolution(name, slnDir);
 
-                    var projectInfo = new DotNetSolution.ProjectInfo
-                    {
-                        Guid = guid,
-                        PathRelativeToSolution = Path.GetRelativePath(slnDir, GodotSharpDirs.ProjectCsProjPath),
-                        Configs = new List<string> { "Debug", "ExportDebug", "ExportRelease" }
-                    };
+                    var projectInfo = new DotNetSolution.ProjectInfo(guid,
+                        Path.GetRelativePath(slnDir, GodotSharpDirs.ProjectCsProjPath),
+                        new List<string> { "Debug", "ExportDebug", "ExportRelease" });
 
                     solution.AddNewProject(name, projectInfo);
 
@@ -170,8 +167,8 @@ namespace GodotTools
 
         public void ShowConfirmCreateSlnDialog()
         {
-            _confirmCreateSlnDialog.Title = "C# solution already exists. This will override the existing C# project file, any manual changes will be lost.".TTR();
-            _confirmCreateSlnDialog.DialogText = "Create C# solution".TTR();
+            _confirmCreateSlnDialog.Title = "Create C# solution".TTR();
+            _confirmCreateSlnDialog.DialogText = "C# solution already exists. This will override the existing C# project file, any manual changes will be lost.".TTR();
             EditorInterface.Singleton.PopupDialogCentered(_confirmCreateSlnDialog);
         }
 
@@ -206,10 +203,10 @@ namespace GodotTools
                     var insideQuotes = false;
                     var hasFileFlag = false;
 
-                    execArgs = execArgs.ReplaceN("{line}", line.ToString());
-                    execArgs = execArgs.ReplaceN("{col}", col.ToString());
+                    execArgs = execArgs.ReplaceN("{line}", line.ToString(CultureInfo.InvariantCulture));
+                    execArgs = execArgs.ReplaceN("{col}", col.ToString(CultureInfo.InvariantCulture));
                     execArgs = execArgs.StripEdges(true, true);
-                    execArgs = execArgs.Replace("\\\\", "\\");
+                    execArgs = execArgs.Replace("\\\\", "\\", StringComparison.Ordinal);
 
                     for (int i = 0; i < execArgs.Length; ++i)
                     {
@@ -229,7 +226,7 @@ namespace GodotTools
                             }
 
                             var arg = execArgs.Substr(from, numChars);
-                            if (arg.Contains("{file}"))
+                            if (arg.Contains("{file}", StringComparison.OrdinalIgnoreCase))
                             {
                                 hasFileFlag = true;
                             }
@@ -342,7 +339,7 @@ namespace GodotTools
                         }
                     }
 
-                    args.Add(Path.GetDirectoryName(GodotSharpDirs.ProjectSlnPath));
+                    args.Add(Path.GetDirectoryName(GodotSharpDirs.ProjectSlnPath)!);
 
                     string scriptPath = ProjectSettings.GlobalizePath(script.ResourcePath);
 
@@ -459,7 +456,7 @@ namespace GodotTools
 
             // First we try to find the .NET Sdk ourselves to make sure we get the
             // correct version first, otherwise pick the latest.
-            if (DotNetFinder.TryFindDotNetSdk(dotNetSdkSearchVersion, out var sdkVersion, out string sdkPath))
+            if (DotNetFinder.TryFindDotNetSdk(dotNetSdkSearchVersion, out var sdkVersion, out string? sdkPath))
             {
                 if (Godot.OS.IsStdOutVerbose())
                     Console.WriteLine($"Found .NET Sdk version '{sdkVersion}': {sdkPath}");
@@ -509,11 +506,12 @@ namespace GodotTools
 
             _toolBarBuildButton = new Button
             {
-                Flat = true,
+                Flat = false,
                 Icon = EditorInterface.Singleton.GetEditorTheme().GetIcon("BuildCSharp", "EditorIcons"),
                 FocusMode = Control.FocusModeEnum.None,
                 Shortcut = EditorDefShortcut("mono/build_solution", "Build Project".TTR(), (Key)KeyModifierMask.MaskAlt | Key.B),
                 ShortcutInTooltip = true,
+                ThemeTypeVariation = "RunBarButton",
             };
             EditorShortcutOverride("mono/build_solution", "macos", (Key)KeyModifierMask.MaskMeta | (Key)KeyModifierMask.MaskCtrl | Key.B);
 
@@ -694,8 +692,9 @@ namespace GodotTools
         }
 
         // Singleton
-
+#nullable disable
         public static GodotSharpEditor Instance { get; private set; }
+#nullable enable
 
         [UsedImplicitly]
         private static IntPtr InternalCreateInstance(IntPtr unmanagedCallbacks, int unmanagedCallbacksSize)

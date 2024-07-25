@@ -72,7 +72,7 @@
 
 using CameraOverride = EditorDebuggerNode::CameraOverride;
 
-void ScriptEditorDebugger::_put_msg(String p_message, Array p_data, uint64_t p_thread_id) {
+void ScriptEditorDebugger::_put_msg(const String &p_message, const Array &p_data, uint64_t p_thread_id) {
 	ERR_FAIL_COND(p_thread_id == Thread::UNASSIGNED_ID);
 	if (is_session_active()) {
 		Array msg;
@@ -154,7 +154,7 @@ void ScriptEditorDebugger::update_tabs() {
 }
 
 void ScriptEditorDebugger::clear_style() {
-	tabs->remove_theme_style_override("panel");
+	tabs->remove_theme_style_override(SceneStringName(panel));
 }
 
 void ScriptEditorDebugger::save_node(ObjectID p_id, const String &p_file) {
@@ -440,13 +440,14 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 
 		Array stack_dump_info;
 
-		for (int i = 0; i < stack.frames.size(); i++) {
+		int i = 0;
+		for (List<ScriptLanguage::StackInfo>::Iterator itr = stack.frames.begin(); itr != stack.frames.end(); ++itr, ++i) {
 			TreeItem *s = stack_dump->create_item(r);
 			Dictionary d;
 			d["frame"] = i;
-			d["file"] = stack.frames[i].file;
-			d["function"] = stack.frames[i].func;
-			d["line"] = stack.frames[i].line;
+			d["file"] = itr->file;
+			d["function"] = itr->func;
+			d["line"] = itr->line;
 			stack_dump_info.push_back(d);
 			s->set_metadata(0, d);
 
@@ -495,7 +496,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 				} break;
 			}
 			EditorNode::get_log()->add_message(output_strings[i], msg_type);
-			emit_signal(SNAME("output"), output_strings[i]);
+			emit_signal(SNAME("output"), output_strings[i], msg_type);
 		}
 	} else if (p_msg == "performance:profile_frame") {
 		Vector<float> frame_data;
@@ -725,20 +726,20 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 			metric.categories.push_back(frame_time);
 		}
 
-		for (int i = 0; i < frame.servers.size(); i++) {
-			const ServersDebugger::ServerInfo &srv = frame.servers[i];
+		for (const ServersDebugger::ServerInfo &srv : frame.servers) {
 			EditorProfiler::Metric::Category c;
 			const String name = srv.name;
 			c.name = EditorPropertyNameProcessor::get_singleton()->process_name(name, EditorPropertyNameProcessor::STYLE_CAPITALIZED);
 			c.items.resize(srv.functions.size());
 			c.total_time = 0;
 			c.signature = "categ::" + name;
-			for (int j = 0; j < srv.functions.size(); j++) {
+			int j = 0;
+			for (List<ServersDebugger::ServerFunctionInfo>::ConstIterator itr = srv.functions.begin(); itr != srv.functions.end(); ++itr, ++j) {
 				EditorProfiler::Metric::Category::Item item;
 				item.calls = 1;
 				item.line = 0;
-				item.name = srv.functions[j].name;
-				item.self = srv.functions[j].time;
+				item.name = itr->name;
+				item.self = itr->time;
 				item.total = item.self;
 				item.signature = "categ::" + name + "::" + item.name;
 				item.name = EditorPropertyNameProcessor::get_singleton()->process_name(item.name, EditorPropertyNameProcessor::STYLE_CAPITALIZED);
@@ -824,13 +825,13 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType p_type) {
 	switch (p_type) {
 		case MESSAGE_ERROR:
-			reason->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			reason->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			break;
 		case MESSAGE_WARNING:
-			reason->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+			reason->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 			break;
 		default:
-			reason->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
+			reason->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
 	}
 	reason->set_text(p_reason);
 
@@ -839,7 +840,7 @@ void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType 
 	for (int i = 0; i < boundaries.size(); i += 2) {
 		const int start = boundaries[i];
 		const int end = boundaries[i + 1];
-		lines.append(p_reason.substr(start, end - start + 1));
+		lines.append(p_reason.substr(start, end - start));
 	}
 
 	reason->set_tooltip_text(String("\n").join(lines));
@@ -848,15 +849,15 @@ void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType 
 void ScriptEditorDebugger::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			le_set->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_live_edit_set));
-			le_clear->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_live_edit_clear));
-			error_tree->connect("item_selected", callable_mp(this, &ScriptEditorDebugger::_error_selected));
+			le_set->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_live_edit_set));
+			le_clear->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_live_edit_clear));
+			error_tree->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditorDebugger::_error_selected));
 			error_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_error_activated));
 			breakpoints_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_breakpoint_tree_clicked));
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
-			tabs->add_theme_style_override("panel", get_theme_stylebox(SNAME("DebuggerPanel"), EditorStringName(EditorStyles)));
+			tabs->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("DebuggerPanel"), EditorStringName(EditorStyles)));
 
 			skip_breakpoints->set_icon(get_editor_theme_icon(skip_breakpoints_value ? SNAME("DebugSkipBreakpointsOn") : SNAME("DebugSkipBreakpointsOff")));
 			copy->set_icon(get_editor_theme_icon(SNAME("ActionCopy")));
@@ -868,7 +869,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			vmem_export->set_icon(get_editor_theme_icon(SNAME("Save")));
 			search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
-			reason->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			reason->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 
 			TreeItem *error_root = error_tree->get_root();
 			if (error_root) {
@@ -1008,7 +1009,6 @@ void ScriptEditorDebugger::start(Ref<RemoteDebuggerPeer> p_peer) {
 	set_process(true);
 	camera_override = CameraOverride::OVERRIDE_NONE;
 
-	tabs->set_current_tab(0);
 	_set_reason_text(TTR("Debug session started."), MESSAGE_SUCCESS);
 	_update_buttons_state();
 	emit_signal(SNAME("started"));
@@ -1757,7 +1757,7 @@ void ScriptEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("remote_object_updated", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("remote_object_property_updated", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::STRING, "property")));
 	ADD_SIGNAL(MethodInfo("remote_tree_updated"));
-	ADD_SIGNAL(MethodInfo("output"));
+	ADD_SIGNAL(MethodInfo("output", PropertyInfo(Variant::STRING, "msg"), PropertyInfo(Variant::INT, "level")));
 	ADD_SIGNAL(MethodInfo("stack_dump", PropertyInfo(Variant::ARRAY, "stack_dump")));
 	ADD_SIGNAL(MethodInfo("stack_frame_vars", PropertyInfo(Variant::INT, "num_vars")));
 	ADD_SIGNAL(MethodInfo("stack_frame_var", PropertyInfo(Variant::ARRAY, "data")));
@@ -1825,7 +1825,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		skip_breakpoints->set_theme_type_variation("FlatButton");
 		hbc->add_child(skip_breakpoints);
 		skip_breakpoints->set_tooltip_text(TTR("Skip Breakpoints"));
-		skip_breakpoints->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_skip_breakpoints));
+		skip_breakpoints->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_skip_breakpoints));
 
 		hbc->add_child(memnew(VSeparator));
 
@@ -1833,7 +1833,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		copy->set_theme_type_variation("FlatButton");
 		hbc->add_child(copy);
 		copy->set_tooltip_text(TTR("Copy Error"));
-		copy->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_copy));
+		copy->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_copy));
 
 		hbc->add_child(memnew(VSeparator));
 
@@ -1842,14 +1842,14 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		hbc->add_child(step);
 		step->set_tooltip_text(TTR("Step Into"));
 		step->set_shortcut(ED_GET_SHORTCUT("debugger/step_into"));
-		step->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_step));
+		step->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_step));
 
 		next = memnew(Button);
 		next->set_theme_type_variation("FlatButton");
 		hbc->add_child(next);
 		next->set_tooltip_text(TTR("Step Over"));
 		next->set_shortcut(ED_GET_SHORTCUT("debugger/step_over"));
-		next->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_next));
+		next->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_next));
 
 		hbc->add_child(memnew(VSeparator));
 
@@ -1858,14 +1858,14 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		hbc->add_child(dobreak);
 		dobreak->set_tooltip_text(TTR("Break"));
 		dobreak->set_shortcut(ED_GET_SHORTCUT("debugger/break"));
-		dobreak->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_break));
+		dobreak->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_break));
 
 		docontinue = memnew(Button);
 		docontinue->set_theme_type_variation("FlatButton");
 		hbc->add_child(docontinue);
 		docontinue->set_tooltip_text(TTR("Continue"));
 		docontinue->set_shortcut(ED_GET_SHORTCUT("debugger/continue"));
-		docontinue->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_continue));
+		docontinue->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_continue));
 
 		HSplitContainer *parent_sc = memnew(HSplitContainer);
 		vbc->add_child(parent_sc);
@@ -1886,7 +1886,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		threads = memnew(OptionButton);
 		thread_hb->add_child(threads);
 		threads->set_h_size_flags(SIZE_EXPAND_FILL);
-		threads->connect("item_selected", callable_mp(this, &ScriptEditorDebugger::_select_thread));
+		threads->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditorDebugger::_select_thread));
 
 		stack_dump = memnew(Tree);
 		stack_dump->set_allow_reselect(true);
@@ -1937,7 +1937,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		tabs->add_child(dbg);
 
 		breakpoints_menu = memnew(PopupMenu);
-		breakpoints_menu->connect("id_pressed", callable_mp(this, &ScriptEditorDebugger::_item_menu_id_pressed));
+		breakpoints_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptEditorDebugger::_item_menu_id_pressed));
 		breakpoints_tree->add_child(breakpoints_menu);
 	}
 
@@ -1951,13 +1951,13 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		expand_all_button = memnew(Button);
 		expand_all_button->set_text(TTR("Expand All"));
 		expand_all_button->set_disabled(true);
-		expand_all_button->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_expand_errors_list));
+		expand_all_button->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_expand_errors_list));
 		error_hbox->add_child(expand_all_button);
 
 		collapse_all_button = memnew(Button);
 		collapse_all_button->set_text(TTR("Collapse All"));
 		collapse_all_button->set_disabled(true);
-		collapse_all_button->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_collapse_errors_list));
+		collapse_all_button->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_collapse_errors_list));
 		error_hbox->add_child(collapse_all_button);
 
 		Control *space = memnew(Control);
@@ -1968,7 +1968,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		clear_button->set_text(TTR("Clear"));
 		clear_button->set_h_size_flags(0);
 		clear_button->set_disabled(true);
-		clear_button->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_clear_errors_list));
+		clear_button->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_clear_errors_list));
 		error_hbox->add_child(clear_button);
 
 		error_tree = memnew(Tree);
@@ -1990,7 +1990,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		errors_tab->add_child(error_tree);
 
 		item_menu = memnew(PopupMenu);
-		item_menu->connect("id_pressed", callable_mp(this, &ScriptEditorDebugger::_item_menu_id_pressed));
+		item_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptEditorDebugger::_item_menu_id_pressed));
 		error_tree->add_child(item_menu);
 
 		tabs->add_child(errors_tab);
@@ -2043,8 +2043,8 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		vmem_export->set_tooltip_text(TTR("Export list to a CSV file"));
 		vmem_hb->add_child(vmem_export);
 		vmem_vb->add_child(vmem_hb);
-		vmem_refresh->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_video_mem_request));
-		vmem_export->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_video_mem_export));
+		vmem_refresh->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_video_mem_request));
+		vmem_export->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_video_mem_export));
 
 		VBoxContainer *vmmc = memnew(VBoxContainer);
 		vmem_tree = memnew(Tree);
@@ -2113,7 +2113,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		HBoxContainer *buttons = memnew(HBoxContainer);
 
 		export_csv = memnew(Button(TTR("Export measures as CSV")));
-		export_csv->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_export_csv));
+		export_csv->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_export_csv));
 		buttons->add_child(export_csv);
 
 		misc->add_child(buttons);

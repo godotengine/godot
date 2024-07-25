@@ -106,7 +106,7 @@ public:
 
 	virtual void set_path(const String &p_path, bool p_take_over = false);
 	String get_path() const;
-	void set_path_cache(const String &p_path); // Set raw path without involving resource cache.
+	virtual void set_path_cache(const String &p_path); // Set raw path without involving resource cache.
 	_FORCE_INLINE_ bool is_built_in() const { return path_cache.is_empty() || path_cache.contains("::") || path_cache.begins_with("local://"); }
 
 	static String generate_scene_unique_id();
@@ -125,7 +125,7 @@ public:
 
 #ifdef TOOLS_ENABLED
 
-	uint32_t hash_edited_version() const;
+	virtual uint32_t hash_edited_version_for_preview() const;
 
 	virtual void set_last_modified_time(uint64_t p_time) { last_modified_time = p_time; }
 	uint64_t get_last_modified_time() const { return last_modified_time; }

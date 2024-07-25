@@ -14,12 +14,12 @@
 		<link title="Using compute shaders">$DOCS_URL/tutorials/shaders/compute_shaders.html</link>
 	</tutorials>
 	<methods>
-		<method name="barrier" is_deprecated="true">
+		<method name="barrier" deprecated="Barriers are automatically inserted by RenderingDevice.">
 			<return type="void" />
 			<param index="0" name="from" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="32767" />
 			<param index="1" name="to" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="32767" />
 			<description>
-				[i]Deprecated.[/i] Barriers are automatically inserted by RenderingDevice.
+				This method does nothing.
 			</description>
 		</method>
 		<method name="buffer_clear">
@@ -138,6 +138,15 @@
 				Submits the compute list for processing on the GPU. This is the compute equivalent to [method draw_list_draw].
 			</description>
 		</method>
+		<method name="compute_list_dispatch_indirect">
+			<return type="void" />
+			<param index="0" name="compute_list" type="int" />
+			<param index="1" name="buffer" type="RID" />
+			<param index="2" name="offset" type="int" />
+			<description>
+				Submits the compute list for processing on the GPU with the given group counts stored in the [param buffer] at [param offset]. Buffer must have been created with [constant STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT] flag.
+			</description>
+		</method>
 		<method name="compute_list_end">
 			<return type="void" />
 			<description>
@@ -190,12 +199,12 @@
 				Ends the command buffer debug label region started by a [method draw_command_begin_label] call.
 			</description>
 		</method>
-		<method name="draw_command_insert_label" is_deprecated="true">
+		<method name="draw_command_insert_label" deprecated="Inserting labels no longer applies due to command reordering.">
 			<return type="void" />
 			<param index="0" name="name" type="String" />
 			<param index="1" name="color" type="Color" />
 			<description>
-				[i]Deprecated.[/i] Inserting labels no longer applies due to command reordering.
+				This method does nothing.
 			</description>
 		</method>
 		<method name="draw_list_begin">
@@ -242,7 +251,7 @@
 				[b]Note:[/b] Cannot be used with local RenderingDevices, as these don't have a screen. If called on a local RenderingDevice, [method draw_list_begin_for_screen] returns [constant INVALID_ID].
 			</description>
 		</method>
-		<method name="draw_list_begin_split" is_deprecated="true">
+		<method name="draw_list_begin_split" deprecated="Split draw lists are used automatically by RenderingDevice.">
 			<return type="PackedInt64Array" />
 			<param index="0" name="framebuffer" type="RID" />
 			<param index="1" name="splits" type="int" />
@@ -256,7 +265,7 @@
 			<param index="9" name="region" type="Rect2" default="Rect2(0, 0, 0, 0)" />
 			<param index="10" name="storage_textures" type="RID[]" default="[]" />
 			<description>
-				[i]Deprecated.[/i] Split draw lists are used automatically by RenderingDevice.
+				This method does nothing and always returns an empty [PackedInt64Array].
 			</description>
 		</method>
 		<method name="draw_list_bind_index_array">
@@ -347,11 +356,11 @@
 				Switches to the next draw pass.
 			</description>
 		</method>
-		<method name="draw_list_switch_to_next_pass_split" is_deprecated="true">
+		<method name="draw_list_switch_to_next_pass_split" deprecated="Split draw lists are used automatically by RenderingDevice.">
 			<return type="PackedInt64Array" />
 			<param index="0" name="splits" type="int" />
 			<description>
-				[i]Deprecated.[/i] Split draw lists are used automatically by RenderingDevice.
+				This method does nothing and always returns an empty [PackedInt64Array].
 			</description>
 		</method>
 		<method name="framebuffer_create">
@@ -439,10 +448,10 @@
 				Tries to free an object in the RenderingDevice. To avoid memory leaks, this should be called after using an object as memory management does not occur automatically when using RenderingDevice directly.
 			</description>
 		</method>
-		<method name="full_barrier" is_deprecated="true">
+		<method name="full_barrier" deprecated="Barriers are automatically inserted by RenderingDevice.">
 			<return type="void" />
 			<description>
-				[i]Deprecated.[/i] Barriers are automatically inserted by RenderingDevice.
+				This method does nothing.
 			</description>
 		</method>
 		<method name="get_captured_timestamp_cpu_time" qualifiers="const">
@@ -590,8 +599,9 @@
 		</method>
 		<method name="screen_get_framebuffer_format" qualifiers="const">
 			<return type="int" />
+			<param index="0" name="screen" type="int" default="0" />
 			<description>
-				Returns the screen's framebuffer format.
+				Returns the framebuffer format of the given screen.
 				[b]Note:[/b] Only the main [RenderingDevice] returned by [method RenderingServer.get_rendering_device] has a format. If called on a local [RenderingDevice], this method prints an error and returns [constant INVALID_ID].
 			</description>
 		</method>
@@ -803,13 +813,12 @@
 				Returns the data format used to create this texture.
 			</description>
 		</method>
-		<method name="texture_get_native_handle" is_deprecated="true">
+		<method name="texture_get_native_handle" deprecated="Use [method get_driver_resource] with [constant DRIVER_RESOURCE_TEXTURE] instead.">
 			<return type="int" />
 			<param index="0" name="texture" type="RID" />
 			<description>
 				Returns the internal graphics handle for this texture object. For use when communicating with third-party APIs mostly with GDExtension.
 				[b]Note:[/b] This function returns a [code]uint64_t[/code] which internally maps to a [code]GLuint[/code] (OpenGL) or [code]VkImage[/code] (Vulkan).
-				[i]Deprecated.[/i] Use [method get_driver_resource] with [constant DRIVER_RESOURCE_TEXTURE] instead.
 			</description>
 		</method>
 		<method name="texture_is_format_supported_for_usage" qualifiers="const">
@@ -981,44 +990,31 @@
 		<constant name="DRIVER_RESOURCE_RENDER_PIPELINE" value="12" enum="DriverResource">
 			- Vulkan: [code]VkPipeline[/code].
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_DEVICE" value="0" enum="DriverResource" is_deprecated="true">
-			[i]Deprecated.[/i] Use [constant DRIVER_RESOURCE_LOGICAL_DEVICE].
+		<constant name="DRIVER_RESOURCE_VULKAN_DEVICE" value="0" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_LOGICAL_DEVICE] instead.">
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_PHYSICAL_DEVICE" value="1" enum="DriverResource" is_deprecated="true">
-			[i]Deprecated.[/i] Use [constant DRIVER_RESOURCE_PHYSICAL_DEVICE].
+		<constant name="DRIVER_RESOURCE_VULKAN_PHYSICAL_DEVICE" value="1" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_PHYSICAL_DEVICE] instead.">
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_INSTANCE" value="2" enum="DriverResource" is_deprecated="true">
-			[i]Deprecated.[/i] Use [constant DRIVER_RESOURCE_TOPMOST_OBJECT].
+		<constant name="DRIVER_RESOURCE_VULKAN_INSTANCE" value="2" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_TOPMOST_OBJECT] instead.">
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_QUEUE" value="3" enum="DriverResource" is_deprecated="true">
-			[i]Deprecated.[/i] Use [constant DRIVER_RESOURCE_COMMAND_QUEUE].
+		<constant name="DRIVER_RESOURCE_VULKAN_QUEUE" value="3" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_COMMAND_QUEUE] instead.">
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_QUEUE_FAMILY_INDEX" value="4" enum="DriverResource" is_deprecated="true">
-			[i]Deprecated.[/i] Use [constant DRIVER_RESOURCE_QUEUE_FAMILY].
+		<constant name="DRIVER_RESOURCE_VULKAN_QUEUE_FAMILY_INDEX" value="4" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_QUEUE_FAMILY] instead.">
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_IMAGE" value="5" enum="DriverResource" is_deprecated="true">
-			[i]Deprecated.[/i] Use [constant DRIVER_RESOURCE_TEXTURE].
+		<constant name="DRIVER_RESOURCE_VULKAN_IMAGE" value="5" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_TEXTURE] instead.">
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_IMAGE_VIEW" value="6" enum="DriverResource" is_deprecated="true">
-			[i]Deprecated.[/i] Use [constant DRIVER_RESOURCE_TEXTURE_VIEW].
+		<constant name="DRIVER_RESOURCE_VULKAN_IMAGE_VIEW" value="6" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_TEXTURE_VIEW] instead.">
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_IMAGE_NATIVE_TEXTURE_FORMAT" value="7" enum="DriverResource" is_deprecated="true">
-			[i]Deprecated.[/i] Use [constant DRIVER_RESOURCE_TEXTURE_DATA_FORMAT].
+		<constant name="DRIVER_RESOURCE_VULKAN_IMAGE_NATIVE_TEXTURE_FORMAT" value="7" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_TEXTURE_DATA_FORMAT] instead.">
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_SAMPLER" value="8" enum="DriverResource" is_deprecated="true">
-			[i]Deprecated.[/i] Use [constant DRIVER_RESOURCE_SAMPLER].
+		<constant name="DRIVER_RESOURCE_VULKAN_SAMPLER" value="8" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_SAMPLER] instead.">
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_DESCRIPTOR_SET" value="9" enum="DriverResource" is_deprecated="true">
-			[i]Deprecated.[/i] Use [constant DRIVER_RESOURCE_UNIFORM_SET].
+		<constant name="DRIVER_RESOURCE_VULKAN_DESCRIPTOR_SET" value="9" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_UNIFORM_SET] instead.">
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_BUFFER" value="10" enum="DriverResource" is_deprecated="true">
-			[i]Deprecated.[/i] Use [constant DRIVER_RESOURCE_BUFFER].
+		<constant name="DRIVER_RESOURCE_VULKAN_BUFFER" value="10" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_BUFFER] instead.">
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_COMPUTE_PIPELINE" value="11" enum="DriverResource" is_deprecated="true">
-			[i]Deprecated.[/i] Use [constant DRIVER_RESOURCE_COMPUTE_PIPELINE].
+		<constant name="DRIVER_RESOURCE_VULKAN_COMPUTE_PIPELINE" value="11" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_COMPUTE_PIPELINE] instead.">
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_RENDER_PIPELINE" value="12" enum="DriverResource" is_deprecated="true">
-			[i]Deprecated.[/i] Use [constant DRIVER_RESOURCE_RENDER_PIPELINE].
+		<constant name="DRIVER_RESOURCE_VULKAN_RENDER_PIPELINE" value="12" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_RENDER_PIPELINE] instead.">
 		</constant>
 		<constant name="DATA_FORMAT_R4G4_UNORM_PACK8" value="0" enum="DataFormat">
 			4-bit-per-channel red/green channel data format, packed into 8 bits. Values are in the [code][0.0, 1.0][/code] range.
@@ -1448,10 +1444,10 @@
 			VRAM-compressed signed red/green channel data format with normalized value. Values are in the [code][-1.0, 1.0][/code] range. The format's precision is 8 bits of red channel and 8 bits of green channel. Using BC5 texture compression (also known as S3TC RGTC).
 		</constant>
 		<constant name="DATA_FORMAT_BC6H_UFLOAT_BLOCK" value="142" enum="DataFormat">
-			VRAM-compressed unsigned red/green/blue channel data format with the floating-point value stored as-is. The format's precision is 8 bits of red channel and 8 bits of green channel. Using BC6H texture compression (also known as BPTC HDR).
+			VRAM-compressed unsigned red/green/blue channel data format with the floating-point value stored as-is. The format's precision is between 10 and 13 bits for the red/green/blue channels. Using BC6H texture compression (also known as BPTC HDR).
 		</constant>
 		<constant name="DATA_FORMAT_BC6H_SFLOAT_BLOCK" value="143" enum="DataFormat">
-			VRAM-compressed signed red/green/blue channel data format with the floating-point value stored as-is. The format's precision is between 4 and 7 bits for the red/green/blue channels and between 0 and 8 bits for the alpha channel. Using BC7 texture compression (also known as BPTC HDR).
+			VRAM-compressed signed red/green/blue channel data format with the floating-point value stored as-is. The format's precision is between 10 and 13 bits for the red/green/blue channels. Using BC6H texture compression (also known as BPTC HDR).
 		</constant>
 		<constant name="DATA_FORMAT_BC7_UNORM_BLOCK" value="144" enum="DataFormat">
 			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. The format's precision is between 4 and 7 bits for the red/green/blue channels and between 0 and 8 bits for the alpha channel. Also known as BPTC LDR.
@@ -1481,13 +1477,13 @@
 			11-bit VRAM-compressed unsigned red channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. Using ETC2 texture compression.
 		</constant>
 		<constant name="DATA_FORMAT_EAC_R11_SNORM_BLOCK" value="153" enum="DataFormat">
-			11-bit VRAM-compressed signed red channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. Using ETC2 texture compression.
+			11-bit VRAM-compressed signed red channel data format with normalized value. Values are in the [code][-1.0, 1.0][/code] range. Using ETC2 texture compression.
 		</constant>
 		<constant name="DATA_FORMAT_EAC_R11G11_UNORM_BLOCK" value="154" enum="DataFormat">
 			11-bit VRAM-compressed unsigned red/green channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. Using ETC2 texture compression.
 		</constant>
 		<constant name="DATA_FORMAT_EAC_R11G11_SNORM_BLOCK" value="155" enum="DataFormat">
-			11-bit VRAM-compressed signed red/green channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. Using ETC2 texture compression.
+			11-bit VRAM-compressed signed red/green channel data format with normalized value. Values are in the [code][-1.0, 1.0][/code] range. Using ETC2 texture compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_4x4_UNORM_BLOCK" value="156" enum="DataFormat">
 			VRAM-compressed unsigned floating-point data format with normalized value, packed in 4×4 blocks (highest quality). Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
@@ -2142,8 +2138,10 @@
 			Represents the size of the [enum BlendOperation] enum.
 		</constant>
 		<constant name="DYNAMIC_STATE_LINE_WIDTH" value="1" enum="PipelineDynamicStateFlags" is_bitfield="true">
+			Allows dynamically changing the width of rendering lines.
 		</constant>
 		<constant name="DYNAMIC_STATE_DEPTH_BIAS" value="2" enum="PipelineDynamicStateFlags" is_bitfield="true">
+			Allows dynamically changing the depth bias.
 		</constant>
 		<constant name="DYNAMIC_STATE_BLEND_CONSTANTS" value="4" enum="PipelineDynamicStateFlags" is_bitfield="true">
 		</constant>
@@ -2167,20 +2165,15 @@
 		<constant name="INITIAL_ACTION_MAX" value="3" enum="InitialAction">
 			Represents the size of the [enum InitialAction] enum.
 		</constant>
-		<constant name="INITIAL_ACTION_CLEAR_REGION" value="1" enum="InitialAction" is_deprecated="true">
-			[i]Deprecated.[/i] Use [constant INITIAL_ACTION_CLEAR] instead.
+		<constant name="INITIAL_ACTION_CLEAR_REGION" value="1" enum="InitialAction" deprecated="Use [constant INITIAL_ACTION_CLEAR] instead.">
 		</constant>
-		<constant name="INITIAL_ACTION_CLEAR_REGION_CONTINUE" value="1" enum="InitialAction" is_deprecated="true">
-			[i]Deprecated.[/i] Use [constant INITIAL_ACTION_LOAD] instead.
+		<constant name="INITIAL_ACTION_CLEAR_REGION_CONTINUE" value="1" enum="InitialAction" deprecated="Use [constant INITIAL_ACTION_LOAD] instead.">
 		</constant>
-		<constant name="INITIAL_ACTION_KEEP" value="0" enum="InitialAction" is_deprecated="true">
-			[i]Deprecated.[/i] Use [constant INITIAL_ACTION_LOAD] instead.
+		<constant name="INITIAL_ACTION_KEEP" value="0" enum="InitialAction" deprecated="Use [constant INITIAL_ACTION_LOAD] instead.">
 		</constant>
-		<constant name="INITIAL_ACTION_DROP" value="2" enum="InitialAction" is_deprecated="true">
-			[i]Deprecated.[/i] Use [constant INITIAL_ACTION_DISCARD] instead.
+		<constant name="INITIAL_ACTION_DROP" value="2" enum="InitialAction" deprecated="Use [constant INITIAL_ACTION_DISCARD] instead.">
 		</constant>
-		<constant name="INITIAL_ACTION_CONTINUE" value="0" enum="InitialAction" is_deprecated="true">
-			[i]Deprecated.[/i] Use [constant INITIAL_ACTION_LOAD] instead.
+		<constant name="INITIAL_ACTION_CONTINUE" value="0" enum="InitialAction" deprecated="Use [constant INITIAL_ACTION_LOAD] instead.">
 		</constant>
 		<constant name="FINAL_ACTION_STORE" value="0" enum="FinalAction">
 			Store the result of the draw list in the framebuffer. This is generally what you want to do.
@@ -2191,11 +2184,9 @@
 		<constant name="FINAL_ACTION_MAX" value="2" enum="FinalAction">
 			Represents the size of the [enum FinalAction] enum.
 		</constant>
-		<constant name="FINAL_ACTION_READ" value="0" enum="FinalAction" is_deprecated="true">
-			[i]Deprecated.[/i] Use [constant FINAL_ACTION_STORE] instead.
+		<constant name="FINAL_ACTION_READ" value="0" enum="FinalAction" deprecated="Use [constant FINAL_ACTION_STORE] instead.">
 		</constant>
-		<constant name="FINAL_ACTION_CONTINUE" value="0" enum="FinalAction" is_deprecated="true">
-			[i]Deprecated.[/i] Use [constant FINAL_ACTION_STORE] instead.
+		<constant name="FINAL_ACTION_CONTINUE" value="0" enum="FinalAction" deprecated="Use [constant FINAL_ACTION_STORE] instead.">
 		</constant>
 		<constant name="SHADER_STAGE_VERTEX" value="0" enum="ShaderStage">
 			Vertex shader stage. This can be used to manipulate vertices from a shader (but not create new vertices).

@@ -26,12 +26,14 @@
 #include "tvgPaint.h"
 
 
+enum Status : uint8_t {Synced = 0, Updating, Drawing, Damanged};
+
 struct Canvas::Impl
 {
     list<Paint*> paints;
     RenderMethod* renderer;
-    bool refresh = false;   //if all paints should be updated by force.
-    bool drawing = false;   //on drawing condition?
+    RenderRegion vport = {0, 0, INT32_MAX, INT32_MAX};
+    Status status = Status::Synced;
 
     Impl(RenderMethod* pRenderer) : renderer(pRenderer)
     {
@@ -41,14 +43,12 @@ struct Canvas::Impl
     ~Impl()
     {
         //make it sure any deffered jobs
-        if (renderer) {
-            renderer->sync();
-            renderer->clear();
-        }
+        renderer->sync();
+        renderer->clear();
 
         clearPaints();
 
-        if (renderer && (renderer->unref() == 0)) delete(renderer);
+        if (renderer->unref() == 0) delete(renderer);
     }
 
     void clearPaints()
@@ -62,7 +62,7 @@ struct Canvas::Impl
     Result push(unique_ptr<Paint> paint)
     {
         //You can not push paints during rendering.
-        if (drawing) return Result::InsufficientCondition;
+        if (status == Status::Drawing) return Result::InsufficientCondition;
 
         auto p = paint.release();
         if (!p) return Result::MemoryCorruption;
@@ -75,54 +75,39 @@ struct Canvas::Impl
     Result clear(bool free)
     {
         //Clear render target before drawing
-        if (!renderer || !renderer->clear()) return Result::InsufficientCondition;
+        if (!renderer->clear()) return Result::InsufficientCondition;
 
         //Free paints
         if (free) clearPaints();
 
-        drawing = false;
+        status = Status::Synced;
 
         return Result::Success;
     }
 
-    void needRefresh()
-    {
-        refresh = true;
-    }
-
     Result update(Paint* paint, bool force)
     {
-        if (paints.empty() || drawing || !renderer) return Result::InsufficientCondition;
+        if (paints.empty() || status == Status::Drawing) return Result::InsufficientCondition;
 
         Array<RenderData> clips;
         auto flag = RenderUpdateFlag::None;
-        if (refresh || force) flag = RenderUpdateFlag::All;
+        if (status == Status::Damanged || force) flag = RenderUpdateFlag::All;
 
-        //Update single paint node
         if (paint) {
-            //Optimize Me: Can we skip the searching?
-            for (auto paint2 : paints) {
-                if (paint2 == paint) {
-                    paint->pImpl->update(renderer, nullptr, clips, 255, flag);
-                    return Result::Success;
-                }
-            }
-            return Result::InvalidArguments;
-        //Update all retained paint nodes
+            paint->pImpl->update(renderer, nullptr, clips, 255, flag);
         } else {
             for (auto paint : paints) {
                 paint->pImpl->update(renderer, nullptr, clips, 255, flag);
             }
         }
-
-        refresh = false;
-
+        status = Status::Updating;
         return Result::Success;
     }
 
     Result draw()
     {
-        if (drawing || paints.empty() || !renderer || !renderer->preRender()) return Result::InsufficientCondition;
+        if (status == Status::Damanged) update(nullptr, false);
+        if (status == Status::Drawing || paints.empty() || !renderer->preRender()) return Result::InsufficientCondition;
 
         bool rendered = false;
         for (auto paint : paints) {
@@ -131,21 +116,37 @@ struct Canvas::Impl
 
         if (!rendered || !renderer->postRender()) return Result::InsufficientCondition;
 
-        drawing = true;
-
+        status = Status::Drawing;
         return Result::Success;
     }
 
     Result sync()
     {
-        if (!drawing) return Result::InsufficientCondition;
+        if (status == Status::Synced || status == Status::Damanged) return Result::InsufficientCondition;
 
         if (renderer->sync()) {
-            drawing = false;
+            status = Status::Synced;
             return Result::Success;
         }
 
-        return Result::InsufficientCondition;
+        return Result::Unknown;
+    }
+
+    Result viewport(int32_t x, int32_t y, int32_t w, int32_t h)
+    {
+        if (status != Status::Damanged && status != Status::Synced) return Result::InsufficientCondition;
+
+        RenderRegion val = {x, y, w, h};
+        //intersect if the target buffer is already set.
+        auto surface = renderer->mainSurface();
+        if (surface && surface->w > 0 && surface->h > 0) {
+            val.intersect({0, 0, (int32_t)surface->w, (int32_t)surface->h});
+        }
+        if (vport == val) return Result::Success;
+        renderer->viewport(val);
+        vport = val;
+        status = Status::Damanged;
+        return Result::Success;
     }
 };
 

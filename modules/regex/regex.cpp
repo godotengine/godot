@@ -334,7 +334,7 @@ String RegEx::sub(const String &p_subject, const String &p_replacement, bool p_a
 		return String();
 	}
 
-	return String(output.ptr(), olength);
+	return String(output.ptr(), olength) + p_subject.substr(length);
 }
 
 bool RegEx::is_valid() const {
@@ -370,7 +370,7 @@ PackedStringArray RegEx::get_names() const {
 
 	for (uint32_t i = 0; i < count; i++) {
 		String name = &table[i * entry_size + 1];
-		if (result.find(name) < 0) {
+		if (!result.has(name)) {
 			result.append(name);
 		}
 	}

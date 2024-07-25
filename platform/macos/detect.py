@@ -1,12 +1,12 @@
 import os
 import sys
-from methods import detect_darwin_sdk_path, get_compiler_version, is_vanilla_clang
-from platform_methods import detect_arch
-
 from typing import TYPE_CHECKING
 
+from methods import detect_darwin_sdk_path, get_compiler_version, is_vanilla_clang, print_error
+from platform_methods import detect_arch, detect_mvk
+
 if TYPE_CHECKING:
-    from SCons import Environment
+    from SCons.Script.SConscript import SConsEnvironment
 
 
 def get_name():
@@ -33,6 +33,12 @@ def get_opts():
         BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN)", False),
         BoolVariable("use_coverage", "Use instrumentation codes in the binary (e.g. for code coverage)", False),
         ("angle_libs", "Path to the ANGLE static libraries", ""),
+        (
+            "bundle_sign_identity",
+            "The 'Full Name', 'Common Name' or SHA-1 hash of the signing identity used to sign editor .app bundle.",
+            "-",
+        ),
+        BoolVariable("generate_bundle", "Generate an APP bundle after building iOS/macOS binaries", False),
     ]
 
 
@@ -47,62 +53,22 @@ def get_doc_path():
 
 
 def get_flags():
-    return [
-        ("arch", detect_arch()),
-        ("use_volk", False),
-    ]
+    return {
+        "arch": detect_arch(),
+        "use_volk": False,
+        "supported": ["mono"],
+    }
 
 
-def get_mvk_sdk_path():
-    def int_or_zero(i):
-        try:
-            return int(i)
-        except:
-            return 0
-
-    def ver_parse(a):
-        return [int_or_zero(i) for i in a.split(".")]
-
-    dirname = os.path.expanduser("~/VulkanSDK")
-    if not os.path.exists(dirname):
-        return ""
-
-    ver_min = ver_parse("1.3.231.0")
-    ver_num = ver_parse("0.0.0.0")
-    files = os.listdir(dirname)
-    lib_name_out = dirname
-    for file in files:
-        if os.path.isdir(os.path.join(dirname, file)):
-            ver_comp = ver_parse(file)
-            if ver_comp > ver_num and ver_comp >= ver_min:
-                # Try new SDK location.
-                lib_name = os.path.join(
-                    os.path.join(dirname, file), "macOS/lib/MoltenVK.xcframework/macos-arm64_x86_64/"
-                )
-                if os.path.isfile(os.path.join(lib_name, "libMoltenVK.a")):
-                    ver_num = ver_comp
-                    lib_name_out = lib_name
-                else:
-                    # Try old SDK location.
-                    lib_name = os.path.join(
-                        os.path.join(dirname, file), "MoltenVK/MoltenVK.xcframework/macos-arm64_x86_64/"
-                    )
-                    if os.path.isfile(os.path.join(lib_name, "libMoltenVK.a")):
-                        ver_num = ver_comp
-                        lib_name_out = lib_name
-
-    return lib_name_out
-
-
-def configure(env: "Environment"):
+def configure(env: "SConsEnvironment"):
     # Validate arch.
     supported_arches = ["x86_64", "arm64"]
     if env["arch"] not in supported_arches:
-        print(
+        print_error(
             'Unsupported CPU architecture "%s" for macOS. Supported architectures are: %s.'
             % (env["arch"], ", ".join(supported_arches))
         )
-        sys.exit()
+        sys.exit(255)
 
     ## Build type
 
@@ -130,6 +96,8 @@ def configure(env: "Environment"):
         env.Append(CCFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.13"])
         env.Append(LINKFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.13"])
 
+    env.Append(CCFLAGS=["-ffp-contract=off"])
+
     cc_version = get_compiler_version(env)
     cc_version_major = cc_version["apple_major"]
     cc_version_minor = cc_version["apple_minor"]
@@ -141,7 +109,7 @@ def configure(env: "Environment"):
 
     env.Append(CCFLAGS=["-fobjc-arc"])
 
-    if not "osxcross" in env:  # regular native build
+    if "osxcross" not in env:  # regular native build
         if env["macports_clang"] != "no":
             mpprefix = os.environ.get("MACPORTS_PREFIX", "/opt/local")
             mpclangver = env["macports_clang"]
@@ -242,7 +210,9 @@ def configure(env: "Environment"):
             "-framework",
             "IOKit",
             "-framework",
-            "ForceFeedback",
+            "GameController",
+            "-framework",
+            "CoreHaptics",
             "-framework",
             "CoreVideo",
             "-framework",
@@ -274,33 +244,19 @@ def configure(env: "Environment"):
         env.Append(LINKFLAGS=["-framework", "Metal", "-framework", "IOSurface"])
         if not env["use_volk"]:
             env.Append(LINKFLAGS=["-lMoltenVK"])
-            mvk_found = False
 
-            mvk_list = [get_mvk_sdk_path(), "/opt/homebrew/lib", "/usr/local/homebrew/lib", "/opt/local/lib"]
-            if env["vulkan_sdk_path"] != "":
-                mvk_list.insert(0, os.path.expanduser(env["vulkan_sdk_path"]))
-                mvk_list.insert(
-                    0,
-                    os.path.join(
-                        os.path.expanduser(env["vulkan_sdk_path"]), "macOS/lib/MoltenVK.xcframework/macos-arm64_x86_64/"
-                    ),
-                )
-                mvk_list.insert(
-                    0,
-                    os.path.join(
-                        os.path.expanduser(env["vulkan_sdk_path"]), "MoltenVK/MoltenVK.xcframework/macos-arm64_x86_64/"
-                    ),
-                )
-
-            for mvk_path in mvk_list:
-                if mvk_path and os.path.isfile(os.path.join(mvk_path, "libMoltenVK.a")):
-                    mvk_found = True
-                    print("MoltenVK found at: " + mvk_path)
-                    env.Append(LINKFLAGS=["-L" + mvk_path])
+            mvk_path = ""
+            arch_variants = ["macos-arm64_x86_64", "macos-" + env["arch"]]
+            for arch in arch_variants:
+                mvk_path = detect_mvk(env, arch)
+                if mvk_path != "":
+                    mvk_path = os.path.join(mvk_path, arch)
                     break
 
-            if not mvk_found:
-                print(
+            if mvk_path != "":
+                env.Append(LINKFLAGS=["-L" + mvk_path])
+            else:
+                print_error(
                     "MoltenVK SDK installation directory not found, use 'vulkan_sdk_path' SCons parameter to specify SDK path."
                 )
                 sys.exit(255)

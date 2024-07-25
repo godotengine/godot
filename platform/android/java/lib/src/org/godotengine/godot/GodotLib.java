@@ -220,6 +220,11 @@ public class GodotLib {
 	public static native void requestPermissionResult(String p_permission, boolean p_result);
 
 	/**
+	 * Invoked on the theme light/dark mode change.
+	 */
+	public static native void onNightModeChanged();
+
+	/**
 	 * Invoked on the GL thread to configure the height of the virtual keyboard.
 	 */
 	public static native void setVirtualKeyboardHeight(int p_height);
@@ -235,4 +240,10 @@ public class GodotLib {
 	 * @see GodotRenderer#onActivityPaused()
 	 */
 	public static native void onRendererPaused();
+
+	/**
+	 * @return true if input must be dispatched from the render thread. If false, input is
+	 * dispatched from the UI thread.
+	 */
+	public static native boolean shouldDispatchInputToRenderThread();
 }

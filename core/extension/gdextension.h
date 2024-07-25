@@ -37,6 +37,7 @@
 #include "core/io/config_file.h"
 #include "core/io/resource_loader.h"
 #include "core/object/ref_counted.h"
+#include "core/os/shared_object.h"
 
 class GDExtensionMethodBind;
 
@@ -47,9 +48,6 @@ class GDExtension : public Resource {
 
 	void *library = nullptr; // pointer if valid,
 	String library_path;
-#if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
-	String temp_lib_path;
-#endif
 	bool reloadable = false;
 
 	struct Extension {
@@ -59,7 +57,12 @@ class GDExtension : public Resource {
 		bool is_reloading = false;
 		HashMap<StringName, GDExtensionMethodBind *> methods;
 		HashSet<ObjectID> instances;
-		HashMap<ObjectID, List<Pair<String, Variant>>> instance_state;
+
+		struct InstanceState {
+			List<Pair<String, Variant>> properties;
+			bool is_placeholder = false;
+		};
+		HashMap<ObjectID, InstanceState> instance_state;
 #endif
 	};
 
@@ -68,15 +71,18 @@ class GDExtension : public Resource {
 	struct ClassCreationDeprecatedInfo {
 #ifndef DISABLE_DEPRECATED
 		GDExtensionClassNotification notification_func = nullptr;
+		GDExtensionClassFreePropertyList free_property_list_func = nullptr;
 #endif // DISABLE_DEPRECATED
 	};
 
 #ifndef DISABLE_DEPRECATED
 	static void _register_extension_class(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo *p_extension_funcs);
-#endif // DISABLE_DEPRECATED
 	static void _register_extension_class2(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo2 *p_extension_funcs);
-	static void _register_extension_class_internal(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo2 *p_extension_funcs, const ClassCreationDeprecatedInfo *p_deprecated_funcs = nullptr);
+#endif // DISABLE_DEPRECATED
+	static void _register_extension_class3(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo3 *p_extension_funcs);
+	static void _register_extension_class_internal(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo3 *p_extension_funcs, const ClassCreationDeprecatedInfo *p_deprecated_funcs = nullptr);
 	static void _register_extension_class_method(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, const GDExtensionClassMethodInfo *p_method_info);
+	static void _register_extension_class_virtual_method(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, const GDExtensionClassVirtualMethodInfo *p_method_info);
 	static void _register_extension_class_integer_constant(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_enum_name, GDExtensionConstStringNamePtr p_constant_name, GDExtensionInt p_constant_value, GDExtensionBool p_is_bitfield);
 	static void _register_extension_class_property(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, const GDExtensionPropertyInfo *p_info, GDExtensionConstStringNamePtr p_setter, GDExtensionConstStringNamePtr p_getter);
 	static void _register_extension_class_property_indexed(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, const GDExtensionPropertyInfo *p_info, GDExtensionConstStringNamePtr p_setter, GDExtensionConstStringNamePtr p_getter, GDExtensionInt p_index);
@@ -119,13 +125,10 @@ public:
 
 	static String get_extension_list_config_file();
 	static String find_extension_library(const String &p_path, Ref<ConfigFile> p_config, std::function<bool(String)> p_has_feature, PackedStringArray *r_tags = nullptr);
+	static Vector<SharedObject> find_extension_dependencies(const String &p_path, Ref<ConfigFile> p_config, std::function<bool(String)> p_has_feature);
 
-	Error open_library(const String &p_path, const String &p_entry_symbol);
+	Error open_library(const String &p_path, const String &p_entry_symbol, Vector<SharedObject> *p_dependencies = nullptr);
 	void close_library();
-
-#if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
-	String get_temp_library_path() const { return temp_lib_path; }
-#endif
 
 	enum InitializationLevel {
 		INITIALIZATION_LEVEL_CORE = GDEXTENSION_INITIALIZATION_CORE,
@@ -134,6 +137,15 @@ public:
 		INITIALIZATION_LEVEL_EDITOR = GDEXTENSION_INITIALIZATION_EDITOR
 	};
 
+protected:
+#ifndef DISABLE_DEPRECATED
+	Error _open_library_bind_compat_88418(const String &p_path, const String &p_entry_symbol);
+	void _close_library_bind_compat_88418();
+	void _initialize_library_bind_compat_88418(InitializationLevel p_level);
+	static void _bind_compatibility_methods();
+#endif
+
+public:
 	bool is_library_open() const;
 
 #ifdef TOOLS_ENABLED
@@ -169,10 +181,10 @@ class GDExtensionResourceLoader : public ResourceFormatLoader {
 public:
 	static Error load_gdextension_resource(const String &p_path, Ref<GDExtension> &p_extension);
 
-	virtual Ref<Resource> load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual bool handles_type(const String &p_type) const;
-	virtual String get_resource_type(const String &p_path) const;
+	virtual Ref<Resource> load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
+	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
+	virtual bool handles_type(const String &p_type) const override;
+	virtual String get_resource_type(const String &p_path) const override;
 };
 
 #ifdef TOOLS_ENABLED

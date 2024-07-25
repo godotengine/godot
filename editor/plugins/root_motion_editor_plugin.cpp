@@ -129,7 +129,7 @@ void EditorPropertyRootMotion::_node_assign() {
 		if (skeleton) {
 			HashMap<int, TreeItem *> items;
 			items.insert(-1, ti);
-			Ref<Texture> bone_icon = get_editor_theme_icon(SNAME("BoneAttachment3D"));
+			Ref<Texture> bone_icon = get_editor_theme_icon(SNAME("Bone"));
 			Vector<int> bones_to_process = skeleton->get_parentless_bones();
 			while (bones_to_process.size() > 0) {
 				int current_bone_idx = bones_to_process[0];
@@ -202,20 +202,21 @@ EditorPropertyRootMotion::EditorPropertyRootMotion() {
 	assign = memnew(Button);
 	assign->set_h_size_flags(SIZE_EXPAND_FILL);
 	assign->set_clip_text(true);
-	assign->connect("pressed", callable_mp(this, &EditorPropertyRootMotion::_node_assign));
+	assign->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyRootMotion::_node_assign));
 	hbc->add_child(assign);
 
 	clear = memnew(Button);
-	clear->connect("pressed", callable_mp(this, &EditorPropertyRootMotion::_node_clear));
+	clear->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyRootMotion::_node_clear));
 	hbc->add_child(clear);
 
 	filter_dialog = memnew(ConfirmationDialog);
 	add_child(filter_dialog);
 	filter_dialog->set_title(TTR("Edit Filtered Tracks:"));
-	filter_dialog->connect("confirmed", callable_mp(this, &EditorPropertyRootMotion::_confirmed));
+	filter_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorPropertyRootMotion::_confirmed));
 
 	filters = memnew(Tree);
 	filter_dialog->add_child(filters);
+	filters->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	filters->set_v_size_flags(SIZE_EXPAND_FILL);
 	filters->set_hide_root(true);
 	filters->connect("item_activated", callable_mp(this, &EditorPropertyRootMotion::_confirmed));

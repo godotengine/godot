@@ -32,8 +32,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
+#include "editor/editor_translation.h"
 #include "editor/editor_translation_parser.h"
-#include "plugins/packed_scene_translation_parser_plugin.h"
 
 POTGenerator *POTGenerator::singleton = nullptr;
 
@@ -88,6 +88,12 @@ void POTGenerator::generate_pot(const String &p_file) {
 		}
 	}
 
+	if (GLOBAL_GET("internationalization/locale/translation_add_builtin_strings_to_pot")) {
+		for (const Vector<String> &extractable_msgids : get_extractable_message_list()) {
+			_add_new_msgid(extractable_msgids[0], extractable_msgids[1], extractable_msgids[2], "");
+		}
+	}
+
 	_write_to_pot(p_file);
 }
 
@@ -136,7 +142,9 @@ void POTGenerator::_write_to_pot(const String &p_file) {
 
 			// Write file locations.
 			for (const String &E : locations) {
-				file->store_line("#: " + E.trim_prefix("res://").replace("\n", "\\n"));
+				if (!E.is_empty()) {
+					file->store_line("#: " + E.trim_prefix("res://").replace("\n", "\\n"));
+				}
 			}
 
 			// Write context.

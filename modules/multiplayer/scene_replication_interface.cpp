@@ -35,7 +35,6 @@
 #include "core/debugger/engine_debugger.h"
 #include "core/io/marshalls.h"
 #include "scene/main/node.h"
-#include "scene/scene_string_names.h"
 
 #define MAKE_ROOM(m_amount)             \
 	if (packet_cache.size() < m_amount) \
@@ -57,7 +56,7 @@ SceneReplicationInterface::TrackedNode &SceneReplicationInterface::_track(const 
 	if (!tracked_nodes.has(p_id)) {
 		tracked_nodes[p_id] = TrackedNode(p_id);
 		Node *node = get_id_as<Node>(p_id);
-		node->connect(SceneStringNames::get_singleton()->tree_exited, callable_mp(this, &SceneReplicationInterface::_untrack).bind(p_id), Node::CONNECT_ONE_SHOT);
+		node->connect(SceneStringName(tree_exited), callable_mp(this, &SceneReplicationInterface::_untrack).bind(p_id), Node::CONNECT_ONE_SHOT);
 	}
 	return tracked_nodes[p_id];
 }
@@ -135,8 +134,8 @@ void SceneReplicationInterface::on_network_process() {
 		for (const ObjectID &oid : spawn_queue) {
 			Node *node = get_id_as<Node>(oid);
 			ERR_CONTINUE(!node);
-			if (node->is_connected(SceneStringNames::get_singleton()->ready, callable_mp(this, &SceneReplicationInterface::_node_ready))) {
-				node->disconnect(SceneStringNames::get_singleton()->ready, callable_mp(this, &SceneReplicationInterface::_node_ready));
+			if (node->is_connected(SceneStringName(ready), callable_mp(this, &SceneReplicationInterface::_node_ready))) {
+				node->disconnect(SceneStringName(ready), callable_mp(this, &SceneReplicationInterface::_node_ready));
 			}
 		}
 		spawn_queue.clear();
@@ -168,7 +167,7 @@ Error SceneReplicationInterface::on_spawn(Object *p_obj, Variant p_config) {
 	ERR_FAIL_COND_V(tobj.spawner != ObjectID(), ERR_ALREADY_IN_USE);
 	tobj.spawner = spawner->get_instance_id();
 	spawn_queue.insert(oid);
-	node->connect(SceneStringNames::get_singleton()->ready, callable_mp(this, &SceneReplicationInterface::_node_ready).bind(oid), Node::CONNECT_ONE_SHOT);
+	node->connect(SceneStringName(ready), callable_mp(this, &SceneReplicationInterface::_node_ready).bind(oid), Node::CONNECT_ONE_SHOT);
 	return OK;
 }
 
@@ -236,14 +235,14 @@ Error SceneReplicationInterface::on_replication_start(Object *p_obj, Variant p_c
 	sync_nodes.insert(sid);
 
 	// Update visibility.
-	sync->connect("visibility_changed", callable_mp(this, &SceneReplicationInterface::_visibility_changed).bind(sync->get_instance_id()));
+	sync->connect(SceneStringName(visibility_changed), callable_mp(this, &SceneReplicationInterface::_visibility_changed).bind(sync->get_instance_id()));
 	_update_sync_visibility(0, sync);
 
 	if (pending_spawn == p_obj->get_instance_id() && sync->get_multiplayer_authority() == pending_spawn_remote) {
 		// Try to apply synchronizer Net ID
 		ERR_FAIL_COND_V_MSG(pending_sync_net_ids.is_empty(), ERR_INVALID_DATA, vformat("The MultiplayerSynchronizer at path \"%s\" is unable to process the pending spawn since it has no network ID. This might happen when changing the multiplayer authority during the \"_ready\" callback. Make sure to only change the authority of multiplayer synchronizers during \"_enter_tree\" or the \"_spawn_custom\" callback of their multiplayer spawner.", sync->get_path()));
 		ERR_FAIL_COND_V(!peers_info.has(pending_spawn_remote), ERR_INVALID_DATA);
-		uint32_t net_id = pending_sync_net_ids[0];
+		uint32_t net_id = pending_sync_net_ids.front()->get();
 		pending_sync_net_ids.pop_front();
 		peers_info[pending_spawn_remote].recv_sync_ids[net_id] = sync->get_instance_id();
 		sync->set_net_id(net_id);
@@ -273,7 +272,7 @@ Error SceneReplicationInterface::on_replication_stop(Object *p_obj, Variant p_co
 	ERR_FAIL_COND_V(!node || p_config.get_type() != Variant::OBJECT, ERR_INVALID_PARAMETER);
 	MultiplayerSynchronizer *sync = Object::cast_to<MultiplayerSynchronizer>(p_config.get_validated_object());
 	ERR_FAIL_NULL_V(sync, ERR_INVALID_PARAMETER);
-	sync->disconnect("visibility_changed", callable_mp(this, &SceneReplicationInterface::_visibility_changed));
+	sync->disconnect(SceneStringName(visibility_changed), callable_mp(this, &SceneReplicationInterface::_visibility_changed));
 	// Untrack synchronizer.
 	const ObjectID oid = node->get_instance_id();
 	const ObjectID sid = sync->get_instance_id();
@@ -421,7 +420,7 @@ Error SceneReplicationInterface::_update_spawn_visibility(int p_peer, const Obje
 		// Check visibility for each peers.
 		for (const KeyValue<int, PeerInfo> &E : peers_info) {
 			if (is_visible) {
-				// This is fast, since the the object is visible to everyone, we don't need to check each peer.
+				// This is fast, since the object is visible to everyone, we don't need to check each peer.
 				if (E.value.spawn_nodes.has(p_oid)) {
 					// Already spawned.
 					continue;

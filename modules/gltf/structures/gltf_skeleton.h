@@ -34,10 +34,14 @@
 #include "../gltf_defines.h"
 
 #include "core/io/resource.h"
+#include "scene/3d/bone_attachment_3d.h"
+#include "scene/3d/skeleton_3d.h"
 
 class GLTFSkeleton : public Resource {
 	GDCLASS(GLTFSkeleton, Resource);
 	friend class GLTFDocument;
+	friend class SkinTool;
+	friend class FBXDocument;
 
 private:
 	// The *synthesized* skeletons joints

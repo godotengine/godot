@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Godot.NativeInterop;
+using System.Diagnostics;
 
 #nullable enable
 
@@ -16,6 +17,8 @@ namespace Godot.Collections
     /// interfacing with the engine. Otherwise prefer .NET collections
     /// such as <see cref="System.Array"/> or <see cref="List{T}"/>.
     /// </summary>
+    [DebuggerTypeProxy(typeof(ArrayDebugView<Variant>))]
+    [DebuggerDisplay("Count = {Count}")]
 #pragma warning disable CA1710 // Identifiers should have correct suffix
     public sealed class Array :
 #pragma warning restore CA1710
@@ -151,7 +154,6 @@ namespace Godot.Collections
         // from derived types (e.g.: Node[]). Implicit conversion from Derived[] to Base[] are
         // fine as long as the array is not mutated. However, Span does this type checking at
         // instantiation, so it's not possible to use it even when not mutating anything.
-        // ReSharper disable once RedundantNameQualifier
         /// <summary>
         /// Constructs a new <see cref="Array"/> from the given ReadOnlySpan's elements.
         /// </summary>
@@ -1041,6 +1043,8 @@ namespace Godot.Collections
     /// such as arrays or <see cref="List{T}"/>.
     /// </summary>
     /// <typeparam name="T">The type of the array.</typeparam>
+    [DebuggerTypeProxy(typeof(ArrayDebugView<>))]
+    [DebuggerDisplay("Count = {Count}")]
     [SuppressMessage("ReSharper", "RedundantExtendsListEntry")]
     [SuppressMessage("Naming", "CA1710", MessageId = "Identifiers should have correct suffix")]
     public sealed class Array<[MustBeVariant] T> :

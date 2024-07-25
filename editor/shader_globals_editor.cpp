@@ -219,7 +219,7 @@ protected:
 				case RS::GLOBAL_VAR_TYPE_SAMPLER2DARRAY: {
 					pinfo.type = Variant::OBJECT;
 					pinfo.hint = PROPERTY_HINT_RESOURCE_TYPE;
-					pinfo.hint_string = "Texture2DArray";
+					pinfo.hint_string = "Texture2DArray,CompressedTexture2DArray";
 				} break;
 				case RS::GLOBAL_VAR_TYPE_SAMPLER3D: {
 					pinfo.type = Variant::OBJECT;
@@ -229,7 +229,7 @@ protected:
 				case RS::GLOBAL_VAR_TYPE_SAMPLERCUBE: {
 					pinfo.type = Variant::OBJECT;
 					pinfo.hint = PROPERTY_HINT_RESOURCE_TYPE;
-					pinfo.hint_string = "Cubemap";
+					pinfo.hint_string = "Cubemap,CompressedCubemap";
 				} break;
 				default: {
 				} break;
@@ -356,6 +356,10 @@ String ShaderGlobalsEditor::_check_new_variable_name(const String &p_variable_na
 	return "";
 }
 
+LineEdit *ShaderGlobalsEditor::get_name_box() const {
+	return variable_name;
+}
+
 void ShaderGlobalsEditor::_variable_name_text_changed(const String &p_variable_name) {
 	const String &warning = _check_new_variable_name(p_variable_name.strip_edges());
 	variable_add->set_tooltip_text(warning);
@@ -394,6 +398,8 @@ void ShaderGlobalsEditor::_variable_added() {
 	undo_redo->add_do_method(this, "_changed");
 	undo_redo->add_undo_method(this, "_changed");
 	undo_redo->commit_action();
+
+	variable_name->clear();
 }
 
 void ShaderGlobalsEditor::_variable_deleted(const String &p_variable) {
@@ -450,7 +456,8 @@ ShaderGlobalsEditor::ShaderGlobalsEditor() {
 	variable_name = memnew(LineEdit);
 	variable_name->set_h_size_flags(SIZE_EXPAND_FILL);
 	variable_name->set_clear_button_enabled(true);
-	variable_name->connect("text_changed", callable_mp(this, &ShaderGlobalsEditor::_variable_name_text_changed));
+	variable_name->connect(SceneStringName(text_changed), callable_mp(this, &ShaderGlobalsEditor::_variable_name_text_changed));
+	variable_name->connect("text_submitted", callable_mp(this, &ShaderGlobalsEditor::_variable_added).unbind(1));
 
 	add_menu_hb->add_child(variable_name);
 
@@ -466,7 +473,7 @@ ShaderGlobalsEditor::ShaderGlobalsEditor() {
 	variable_add = memnew(Button(TTR("Add")));
 	variable_add->set_disabled(true);
 	add_menu_hb->add_child(variable_add);
-	variable_add->connect("pressed", callable_mp(this, &ShaderGlobalsEditor::_variable_added));
+	variable_add->connect(SceneStringName(pressed), callable_mp(this, &ShaderGlobalsEditor::_variable_added));
 
 	inspector = memnew(EditorInspector);
 	inspector->set_v_size_flags(SIZE_EXPAND_FILL);

@@ -31,7 +31,7 @@
 #include "decal.h"
 
 void Decal::set_size(const Vector3 &p_size) {
-	size = Vector3(MAX(0.001, p_size.x), MAX(0.001, p_size.y), MAX(0.001, p_size.z));
+	size = p_size.maxf(0.001);
 	RS::get_singleton()->decal_set_size(decal, size);
 	update_gizmos();
 }
@@ -162,8 +162,8 @@ void Decal::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
-Array Decal::get_configuration_warnings() const {
-	Array warnings = Node::get_configuration_warnings();
+PackedStringArray Decal::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
 		warnings.push_back(RTR("Decals are only available when using the Forward+ or Mobile rendering backends."));
@@ -231,7 +231,7 @@ void Decal::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_emission", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_EMISSION);
 
 	ADD_GROUP("Parameters", "");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_energy", PROPERTY_HINT_RANGE, "0,128,0.01"), "set_emission_energy", "get_emission_energy");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_emission_energy", "get_emission_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "albedo_mix", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_albedo_mix", "get_albedo_mix");
 	// A Normal Fade of 1.0 causes the decal to be invisible even if fully perpendicular to a surface.

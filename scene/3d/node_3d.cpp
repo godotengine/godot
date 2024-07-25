@@ -33,7 +33,6 @@
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/main/viewport.h"
 #include "scene/property_utils.h"
-#include "scene/scene_string_names.h"
 
 /*
 
@@ -193,12 +192,12 @@ void Node3D::_notification(int p_what) {
 			ERR_FAIL_NULL(data.viewport);
 
 			if (get_script_instance()) {
-				get_script_instance()->call(SceneStringNames::get_singleton()->_enter_world);
+				get_script_instance()->call(SNAME("_enter_world"));
 			}
 
 #ifdef TOOLS_ENABLED
-			if (Engine::get_singleton()->is_editor_hint() && get_tree()->is_node_being_edited(this)) {
-				get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringNames::get_singleton()->_spatial_editor_group, SNAME("_request_gizmo_for_id"), get_instance_id());
+			if (is_part_of_edited_scene()) {
+				get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringName(_spatial_editor_group), SNAME("_request_gizmo_for_id"), get_instance_id());
 			}
 #endif
 		} break;
@@ -211,7 +210,7 @@ void Node3D::_notification(int p_what) {
 #endif
 
 			if (get_script_instance()) {
-				get_script_instance()->call(SceneStringNames::get_singleton()->_exit_world);
+				get_script_instance()->call(SNAME("_exit_world"));
 			}
 
 			data.viewport = nullptr;
@@ -293,7 +292,7 @@ Vector3 Node3D::get_global_rotation_degrees() const {
 void Node3D::set_global_rotation(const Vector3 &p_euler_rad) {
 	ERR_THREAD_GUARD;
 	Transform3D transform = get_global_transform();
-	transform.basis = Basis::from_euler(p_euler_rad);
+	transform.basis = Basis::from_euler(p_euler_rad) * Basis::from_scale(transform.basis.get_scale());
 	set_global_transform(transform);
 }
 
@@ -564,7 +563,7 @@ void Node3D::update_gizmos() {
 	}
 
 	if (data.gizmos.is_empty()) {
-		get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringNames::get_singleton()->_spatial_editor_group, SNAME("_request_gizmo_for_id"), get_instance_id());
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringName(_spatial_editor_group), SNAME("_request_gizmo_for_id"), get_instance_id());
 		return;
 	}
 	if (data.gizmos_dirty) {
@@ -582,8 +581,8 @@ void Node3D::set_subgizmo_selection(Ref<Node3DGizmo> p_gizmo, int p_id, Transfor
 		return;
 	}
 
-	if (Engine::get_singleton()->is_editor_hint() && get_tree()->is_node_being_edited(this)) {
-		get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringNames::get_singleton()->_spatial_editor_group, SceneStringNames::get_singleton()->_set_subgizmo_selection, this, p_gizmo, p_id, p_transform);
+	if (is_part_of_edited_scene()) {
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringName(_spatial_editor_group), SNAME("_set_subgizmo_selection"), this, p_gizmo, p_id, p_transform);
 	}
 #endif
 }
@@ -599,8 +598,8 @@ void Node3D::clear_subgizmo_selection() {
 		return;
 	}
 
-	if (Engine::get_singleton()->is_editor_hint() && get_tree()->is_node_being_edited(this)) {
-		get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringNames::get_singleton()->_spatial_editor_group, SceneStringNames::get_singleton()->_clear_subgizmo_selection, this);
+	if (is_part_of_edited_scene()) {
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringName(_spatial_editor_group), SNAME("_clear_subgizmo_selection"), this);
 	}
 #endif
 }
@@ -719,10 +718,12 @@ void Node3D::set_disable_gizmos(bool p_enabled) {
 
 void Node3D::reparent(Node *p_parent, bool p_keep_global_transform) {
 	ERR_THREAD_GUARD;
-	Transform3D temp = get_global_transform();
-	Node::reparent(p_parent);
 	if (p_keep_global_transform) {
+		Transform3D temp = get_global_transform();
+		Node::reparent(p_parent);
 		set_global_transform(temp);
+	} else {
+		Node::reparent(p_parent);
 	}
 }
 
@@ -751,6 +752,15 @@ void Node3D::set_as_top_level(bool p_enabled) {
 	data.top_level = p_enabled;
 }
 
+void Node3D::set_as_top_level_keep_local(bool p_enabled) {
+	ERR_THREAD_GUARD;
+	if (data.top_level == p_enabled) {
+		return;
+	}
+	data.top_level = p_enabled;
+	_propagate_transform_changed(this);
+}
+
 bool Node3D::is_set_as_top_level() const {
 	ERR_READ_THREAD_GUARD_V(false);
 	return data.top_level;
@@ -766,7 +776,7 @@ Ref<World3D> Node3D::get_world_3d() const {
 
 void Node3D::_propagate_visibility_changed() {
 	notification(NOTIFICATION_VISIBILITY_CHANGED);
-	emit_signal(SceneStringNames::get_singleton()->visibility_changed);
+	emit_signal(SceneStringName(visibility_changed));
 
 #ifdef TOOLS_ENABLED
 	if (!data.gizmos.is_empty()) {

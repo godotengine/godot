@@ -35,7 +35,7 @@
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/node_3d.h"
-#include "scene/resources/importer_mesh.h"
+#include "scene/resources/3d/importer_mesh.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/surface_tool.h"
 
@@ -217,7 +217,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 		0x14c, // IMAGE_FILE_MACHINE_I386
 		0x200, // IMAGE_FILE_MACHINE_IA64
 	};
-	ERR_FAIL_COND_V_MSG(coff_header_machines.find(first_bytes) != -1, ERR_FILE_CORRUPT, vformat("Couldn't read OBJ file '%s', it seems to be binary, corrupted, or empty.", p_path));
+	ERR_FAIL_COND_V_MSG(coff_header_machines.has(first_bytes), ERR_FILE_CORRUPT, vformat("Couldn't read OBJ file '%s', it seems to be binary, corrupted, or empty.", p_path));
 	f->seek(0);
 
 	Ref<ImporterMesh> mesh;
@@ -329,11 +329,11 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 						surf_tool->set_normal(normals[norm]);
 						if (generate_tangents && uvs.is_empty()) {
 							// We can't generate tangents without UVs, so create dummy tangents.
-							Vector3 tan = Vector3(0.0, 1.0, 0.0).cross(normals[norm]);
+							Vector3 tan = Vector3(normals[norm].z, -normals[norm].x, normals[norm].y).cross(normals[norm].normalized()).normalized();
 							surf_tool->set_tangent(Plane(tan.x, tan.y, tan.z, 1.0));
 						}
 					} else {
-						// No normals, use a dummy normal since normals will be generated.
+						// No normals, use a dummy tangent since normals and tangents will be generated.
 						if (generate_tangents && uvs.is_empty()) {
 							// We can't generate tangents without UVs, so create dummy tangents.
 							surf_tool->set_tangent(Plane(1.0, 0.0, 0.0, 1.0));
@@ -384,7 +384,22 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 
 			if (p_disable_compression) {
 				mesh_flags = 0;
+			} else {
+				bool is_mesh_2d = true;
+
+				// Disable compression if all z equals 0 (the mesh is 2D).
+				for (int i = 0; i < vertices.size(); i++) {
+					if (!Math::is_zero_approx(vertices[i].z)) {
+						is_mesh_2d = false;
+						break;
+					}
+				}
+
+				if (is_mesh_2d) {
+					mesh_flags = 0;
+				}
 			}
+
 			//groups are too annoying
 			if (surf_tool->get_vertex_array().size()) {
 				//another group going on, commit it
@@ -410,11 +425,29 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 				}
 
 				if (!current_material.is_empty()) {
-					mesh->set_surface_name(mesh->get_surface_count() - 1, current_material.get_basename());
+					if (mesh->get_surface_count() >= 1) {
+						mesh->set_surface_name(mesh->get_surface_count() - 1, current_material.get_basename());
+					}
 				} else if (!current_group.is_empty()) {
-					mesh->set_surface_name(mesh->get_surface_count() - 1, current_group);
+					if (mesh->get_surface_count() >= 1) {
+						mesh->set_surface_name(mesh->get_surface_count() - 1, current_group);
+					}
 				}
 				Array array = surf_tool->commit_to_arrays();
+
+				if (mesh_flags & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES && generate_tangents) {
+					// Compression is enabled, so let's validate that the normals and tangents are correct.
+					Vector<Vector3> norms = array[Mesh::ARRAY_NORMAL];
+					Vector<float> tangents = array[Mesh::ARRAY_TANGENT];
+					for (int vert = 0; vert < norms.size(); vert++) {
+						Vector3 tan = Vector3(tangents[vert * 4 + 0], tangents[vert * 4 + 1], tangents[vert * 4 + 2]);
+						if (abs(tan.dot(norms[vert])) > 0.0001) {
+							// Tangent is not perpendicular to the normal, so we can't use compression.
+							mesh_flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+						}
+					}
+				}
+
 				mesh->add_surface(Mesh::PRIMITIVE_TRIANGLES, array, TypedArray<Array>(), Dictionary(), material, name, mesh_flags);
 				print_verbose("OBJ: Added surface :" + mesh->get_surface_name(mesh->get_surface_count() - 1));
 
@@ -468,7 +501,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 		}
 	}
 
-	if (p_single_mesh) {
+	if (p_single_mesh && mesh->get_surface_count() > 0) {
 		r_meshes.push_back(mesh);
 	}
 

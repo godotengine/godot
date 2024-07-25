@@ -61,7 +61,7 @@
 		<method name="_get_play_area" qualifiers="virtual const">
 			<return type="PackedVector3Array" />
 			<description>
-				Returns an [PackedVector3Array] that denotes the play areas boundaries (if applicable).
+				Returns a [PackedVector3Array] that represents the play areas boundaries (if applicable).
 			</description>
 		</method>
 		<method name="_get_play_area_mode" qualifiers="virtual const">

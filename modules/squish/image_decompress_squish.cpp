@@ -40,7 +40,7 @@ void image_decompress_squish(Image *p_image) {
 	Image::Format target_format = Image::FORMAT_RGBA8;
 
 	Vector<uint8_t> data;
-	int target_size = Image::get_image_data_size(w, h, target_format, p_image->has_mipmaps());
+	int64_t target_size = Image::get_image_data_size(w, h, target_format, p_image->has_mipmaps());
 	int mm_count = p_image->get_mipmap_count();
 	data.resize(target_size);
 
@@ -77,10 +77,11 @@ void image_decompress_squish(Image *p_image) {
 	}
 
 	for (int i = 0; i <= mm_count; i++) {
-		int src_ofs = 0, mipmap_size = 0, mipmap_w = 0, mipmap_h = 0;
+		int64_t src_ofs = 0, mipmap_size = 0;
+		int mipmap_w = 0, mipmap_h = 0;
 		p_image->get_mipmap_offset_size_and_dimensions(i, src_ofs, mipmap_size, mipmap_w, mipmap_h);
 
-		int dst_ofs = Image::get_image_mipmap_offset(p_image->get_width(), p_image->get_height(), target_format, i);
+		int64_t dst_ofs = Image::get_image_mipmap_offset(p_image->get_width(), p_image->get_height(), target_format, i);
 		squish::DecompressImage(&wb[dst_ofs], w, h, &rb[src_ofs], squish_flags);
 
 		w >>= 1;

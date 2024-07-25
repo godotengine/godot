@@ -33,6 +33,7 @@
 #include "export_plugin.h"
 
 #include "core/os/os.h"
+#include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
 #include "editor/export/editor_export.h"
 
@@ -46,10 +47,10 @@ void register_android_exporter() {
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/java_sdk_path", PROPERTY_HINT_GLOBAL_DIR));
 	EDITOR_DEF("export/android/android_sdk_path", OS::get_singleton()->get_environment("ANDROID_HOME"));
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/android_sdk_path", PROPERTY_HINT_GLOBAL_DIR));
-	EDITOR_DEF("export/android/debug_keystore", "");
+	EDITOR_DEF("export/android/debug_keystore", EditorPaths::get_singleton()->get_debug_keystore_path());
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/debug_keystore", PROPERTY_HINT_GLOBAL_FILE, "*.keystore,*.jks"));
-	EDITOR_DEF("export/android/debug_keystore_user", "androiddebugkey");
-	EDITOR_DEF("export/android/debug_keystore_pass", "android");
+	EDITOR_DEF("export/android/debug_keystore_user", DEFAULT_ANDROID_KEYSTORE_DEBUG_USER);
+	EDITOR_DEF("export/android/debug_keystore_pass", DEFAULT_ANDROID_KEYSTORE_DEBUG_PASSWORD);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/debug_keystore_pass", PROPERTY_HINT_PASSWORD));
 	EDITOR_DEF("export/android/force_system_user", false);
 

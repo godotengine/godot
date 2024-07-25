@@ -34,6 +34,7 @@
 #include "../util.h"
 #include "core/math/quaternion.h"
 #include "openxr_extension_wrapper.h"
+#include "servers/xr/xr_hand_tracker.h"
 
 class OpenXRHandTrackingExtension : public OpenXRExtensionWrapper {
 public:
@@ -52,6 +53,7 @@ public:
 
 	struct HandTracker {
 		bool is_initialized = false;
+		Ref<XRHandTracker> godot_tracker;
 		XrHandJointsMotionRangeEXT motion_range = XR_HAND_JOINTS_MOTION_RANGE_UNOBSTRUCTED_EXT;
 		HandTrackedSource source = OPENXR_SOURCE_UNKNOWN;
 

@@ -111,7 +111,7 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	void _scroll_changed(const Vector2 &p_scroll);
 	void _node_selected(Object *p_node);
 	void _open_in_editor(const String &p_which);
-	void _anim_selected(int p_index, Array p_options, const String &p_node);
+	void _anim_selected(int p_index, const Array &p_options, const String &p_node);
 	void _delete_node_request(const String &p_which);
 	void _delete_nodes_request(const TypedArray<StringName> &p_nodes);
 

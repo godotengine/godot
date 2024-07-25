@@ -305,20 +305,25 @@ public:
 		return samplers;
 	}
 
+private:
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Our classDB doesn't support calling our normal exposed functions
 
-private:
 	RID _create_texture_from_format(const StringName &p_context, const StringName &p_texture_name, const Ref<RDTextureFormat> &p_texture_format, const Ref<RDTextureView> &p_view = Ref<RDTextureView>(), bool p_unique = true);
 	RID _create_texture_view(const StringName &p_context, const StringName &p_texture_name, const StringName &p_view_name, const Ref<RDTextureView> p_view = Ref<RDTextureView>());
 	Ref<RDTextureFormat> _get_texture_format(const StringName &p_context, const StringName &p_texture_name) const;
 	RID _get_texture_slice_view(const StringName &p_context, const StringName &p_texture_name, const uint32_t p_layer, const uint32_t p_mipmap, const uint32_t p_layers = 1, const uint32_t p_mipmaps = 1, const Ref<RDTextureView> p_view = Ref<RDTextureView>());
 
-	// For color and depth as exposed to extensions, we return the buffer that we're rendering into.
-	// Resolving happens after effects etc. are run.
-	RID _get_color_texture() {
-		if (msaa_3d != RS::VIEWPORT_MSAA_DISABLED && has_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA)) {
-			return get_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA);
+	// For color and depth as exposed to extensions:
+	// - we need separately named functions to access the layer,
+	// - we don't output an error for missing buffers but just return an empty RID.
+	RID _get_color_texture(bool p_msaa = false) {
+		if (p_msaa) {
+			if (has_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA)) {
+				return get_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA);
+			} else {
+				return RID();
+			}
 		} else if (has_internal_texture()) {
 			return get_internal_texture();
 		} else {
@@ -326,9 +331,13 @@ private:
 		}
 	}
 
-	RID _get_color_layer(const uint32_t p_layer) {
-		if (msaa_3d != RS::VIEWPORT_MSAA_DISABLED && has_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA)) {
-			return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA, p_layer, 0);
+	RID _get_color_layer(const uint32_t p_layer, bool p_msaa = false) {
+		if (p_msaa) {
+			if (has_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA)) {
+				return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA, p_layer, 0);
+			} else {
+				return RID();
+			}
 		} else if (has_internal_texture()) {
 			return get_internal_texture(p_layer);
 		} else {
@@ -336,9 +345,13 @@ private:
 		}
 	}
 
-	RID _get_depth_texture() {
-		if (msaa_3d != RS::VIEWPORT_MSAA_DISABLED && has_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_MSAA)) {
-			return get_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_MSAA);
+	RID _get_depth_texture(bool p_msaa = false) {
+		if (p_msaa) {
+			if (has_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_MSAA)) {
+				return get_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_MSAA);
+			} else {
+				return RID();
+			}
 		} else if (has_depth_texture()) {
 			return get_depth_texture();
 		} else {
@@ -346,9 +359,13 @@ private:
 		}
 	}
 
-	RID _get_depth_layer(const uint32_t p_layer) {
-		if (msaa_3d != RS::VIEWPORT_MSAA_DISABLED && has_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_MSAA)) {
-			return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_MSAA, p_layer, 0);
+	RID _get_depth_layer(const uint32_t p_layer, bool p_msaa = false) {
+		if (p_msaa) {
+			if (has_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_MSAA)) {
+				return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_MSAA, p_layer, 0);
+			} else {
+				return RID();
+			}
 		} else if (has_depth_texture()) {
 			return get_depth_texture(p_layer);
 		} else {
@@ -356,25 +373,34 @@ private:
 		}
 	}
 
-	RID _get_velocity_texture() {
-		if (msaa_3d != RS::VIEWPORT_MSAA_DISABLED && has_velocity_buffer(true)) {
-			return get_velocity_buffer(true);
-		} else if (has_velocity_buffer(false)) {
-			return get_velocity_buffer(false);
+	RID _get_velocity_texture(bool p_msaa = false) {
+		if (has_velocity_buffer(p_msaa)) {
+			return get_velocity_buffer(p_msaa);
 		} else {
 			return RID();
 		}
 	}
 
-	RID _get_velocity_layer(const uint32_t p_layer) {
-		if (msaa_3d != RS::VIEWPORT_MSAA_DISABLED && has_velocity_buffer(true)) {
-			return get_velocity_buffer(true, p_layer);
-		} else if (has_velocity_buffer(false)) {
-			return get_velocity_buffer(false, p_layer);
+	RID _get_velocity_layer(const uint32_t p_layer, bool p_msaa = false) {
+		if (has_velocity_buffer(p_msaa)) {
+			return get_velocity_buffer(p_msaa, p_layer);
 		} else {
 			return RID();
 		}
 	}
+
+#ifndef DISABLE_DEPRECATED
+
+	RID _get_color_texture_compat_80214();
+	RID _get_color_layer_compat_80214(const uint32_t p_layer);
+	RID _get_depth_texture_compat_80214();
+	RID _get_depth_layer_compat_80214(const uint32_t p_layer);
+	RID _get_velocity_texture_compat_80214();
+	RID _get_velocity_layer_compat_80214(const uint32_t p_layer);
+
+	static void _bind_compatibility_methods();
+
+#endif // DISABLE_DEPRECATED
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Everything after this needs to be re-evaluated, this is all old implementation

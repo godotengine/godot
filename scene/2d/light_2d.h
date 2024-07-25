@@ -74,6 +74,7 @@ private:
 	void _update_light_visibility();
 
 	virtual void owner_changed_notify() override;
+	virtual void _physics_interpolated_changed() override;
 
 protected:
 	_FORCE_INLINE_ RID _get_light() const { return canvas_light; }
@@ -174,7 +175,7 @@ public:
 	void set_texture_scale(real_t p_scale);
 	real_t get_texture_scale() const;
 
-	Array get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	PointLight2D();
 };

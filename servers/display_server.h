@@ -36,13 +36,24 @@
 #include "core/os/os.h"
 #include "core/variant/callable.h"
 
+#include "display/native_menu.h"
+
 class Texture2D;
+class Image;
 
 class DisplayServer : public Object {
 	GDCLASS(DisplayServer, Object)
 
 	static DisplayServer *singleton;
 	static bool hidpi_allowed;
+
+#ifndef DISABLE_DEPRECATED
+	mutable HashMap<String, RID> menu_names;
+
+	RID _get_rid_from_name(NativeMenu *p_nmenu, const String &p_menu_root) const;
+#endif
+
+	LocalVector<ObjectID> additional_outputs;
 
 public:
 	_FORCE_INLINE_ static DisplayServer *get_singleton() {
@@ -73,7 +84,13 @@ public:
 		OPENGL_CONTEXT,
 	};
 
-	typedef DisplayServer *(*CreateFunction)(const String &, WindowMode, VSyncMode, uint32_t, const Point2i *, const Size2i &, int p_screen, Error &r_error);
+	enum Context {
+		CONTEXT_EDITOR,
+		CONTEXT_PROJECTMAN,
+		CONTEXT_ENGINE,
+	};
+
+	typedef DisplayServer *(*CreateFunction)(const String &, WindowMode, VSyncMode, uint32_t, const Point2i *, const Size2i &, int p_screen, Context, Error &r_error);
 	typedef Vector<String> (*GetRenderingDriversFunction)();
 
 private:
@@ -85,6 +102,8 @@ private:
 
 protected:
 	static void _bind_methods();
+
+	static Ref<Image> _get_cursor_image_from_resource(const Ref<Resource> &p_cursor, const Vector2 &p_hotspot);
 
 	enum {
 		MAX_SERVERS = 64
@@ -103,7 +122,9 @@ protected:
 
 public:
 	enum Feature {
+#ifndef DISABLE_DEPRECATED
 		FEATURE_GLOBAL_MENU,
+#endif
 		FEATURE_SUBWINDOWS,
 		FEATURE_TOUCHSCREEN,
 		FEATURE_MOUSE,
@@ -125,11 +146,18 @@ public:
 		FEATURE_TEXT_TO_SPEECH,
 		FEATURE_EXTEND_TO_TITLE,
 		FEATURE_SCREEN_CAPTURE,
+		FEATURE_STATUS_INDICATOR,
+		FEATURE_NATIVE_HELP,
+		FEATURE_NATIVE_DIALOG_INPUT,
+		FEATURE_NATIVE_DIALOG_FILE,
 	};
 
 	virtual bool has_feature(Feature p_feature) const = 0;
 	virtual String get_name() const = 0;
 
+	virtual void help_set_search_callbacks(const Callable &p_search_callback = Callable(), const Callable &p_action_callback = Callable());
+
+#ifndef DISABLE_DEPRECATED
 	virtual void global_menu_set_popup_callbacks(const String &p_menu_root, const Callable &p_open_callback = Callable(), const Callable &p_close_callback = Callable());
 
 	virtual int global_menu_add_submenu_item(const String &p_menu_root, const String &p_label, const String &p_submenu, int p_index = -1);
@@ -186,6 +214,7 @@ public:
 	virtual void global_menu_clear(const String &p_menu_root);
 
 	virtual Dictionary global_menu_get_system_menu_roots() const;
+#endif
 
 	struct TTSUtterance {
 		String text;
@@ -221,9 +250,11 @@ public:
 	virtual void tts_set_utterance_callback(TTSUtteranceEvent p_event, const Callable &p_callable);
 	virtual void tts_post_utterance_event(TTSUtteranceEvent p_event, int p_id, int p_pos = 0);
 
-	virtual bool is_dark_mode_supported() const { return false; };
-	virtual bool is_dark_mode() const { return false; };
-	virtual Color get_accent_color() const { return Color(0, 0, 0, 0); };
+	virtual bool is_dark_mode_supported() const { return false; }
+	virtual bool is_dark_mode() const { return false; }
+	virtual Color get_accent_color() const { return Color(0, 0, 0, 0); }
+	virtual Color get_base_color() const { return Color(0, 0, 0, 0); }
+	virtual void set_system_theme_change_callback(const Callable &p_callable) {}
 
 private:
 	static bool window_early_clear_override_enabled;
@@ -309,8 +340,8 @@ public:
 		return scale;
 	}
 	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
-	virtual Color screen_get_pixel(const Point2i &p_position) const { return Color(); };
-	virtual Ref<Image> screen_get_image(int p_screen = SCREEN_OF_MAIN_WINDOW) const { return Ref<Image>(); };
+	virtual Color screen_get_pixel(const Point2i &p_position) const { return Color(); }
+	virtual Ref<Image> screen_get_image(int p_screen = SCREEN_OF_MAIN_WINDOW) const { return Ref<Image>(); }
 	virtual bool is_touchscreen_available() const;
 
 	// Keep the ScreenOrientation enum values in sync with the `display/window/handheld/orientation`
@@ -332,10 +363,12 @@ public:
 	virtual bool screen_is_kept_on() const;
 	enum {
 		MAIN_WINDOW_ID = 0,
-		INVALID_WINDOW_ID = -1
+		INVALID_WINDOW_ID = -1,
+		INVALID_INDICATOR_ID = -1
 	};
 
 	typedef int WindowID;
+	typedef int IndicatorID;
 
 	virtual Vector<DisplayServer::WindowID> get_window_list() const = 0;
 
@@ -367,9 +400,9 @@ public:
 	virtual void show_window(WindowID p_id);
 	virtual void delete_sub_window(WindowID p_id);
 
-	virtual WindowID window_get_active_popup() const { return INVALID_WINDOW_ID; };
-	virtual void window_set_popup_safe_rect(WindowID p_window, const Rect2i &p_rect){};
-	virtual Rect2i window_get_popup_safe_rect(WindowID p_window) const { return Rect2i(); };
+	virtual WindowID window_get_active_popup() const { return INVALID_WINDOW_ID; }
+	virtual void window_set_popup_safe_rect(WindowID p_window, const Rect2i &p_rect) {}
+	virtual Rect2i window_get_popup_safe_rect(WindowID p_window) const { return Rect2i(); }
 
 	virtual int64_t window_get_native_handle(HandleType p_handle_type, WindowID p_window = MAIN_WINDOW_ID) const;
 
@@ -524,35 +557,42 @@ public:
 	virtual Key keyboard_get_keycode_from_physical(Key p_keycode) const;
 	virtual Key keyboard_get_label_from_physical(Key p_keycode) const;
 
-	virtual int tablet_get_driver_count() const { return 1; };
-	virtual String tablet_get_driver_name(int p_driver) const { return "default"; };
-	virtual String tablet_get_current_driver() const { return "default"; };
-	virtual void tablet_set_current_driver(const String &p_driver){};
+	virtual int tablet_get_driver_count() const { return 1; }
+	virtual String tablet_get_driver_name(int p_driver) const { return "default"; }
+	virtual String tablet_get_current_driver() const { return "default"; }
+	virtual void tablet_set_current_driver(const String &p_driver) {}
 
 	virtual void process_events() = 0;
 
 	virtual void force_process_and_drop_events();
 
 	virtual void release_rendering_thread();
-	virtual void make_rendering_thread();
 	virtual void swap_buffers();
 
 	virtual void set_native_icon(const String &p_filename);
 	virtual void set_icon(const Ref<Image> &p_icon);
 
-	enum Context {
-		CONTEXT_EDITOR,
-		CONTEXT_PROJECTMAN,
-		CONTEXT_ENGINE,
-	};
+	virtual IndicatorID create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback);
+	virtual void status_indicator_set_icon(IndicatorID p_id, const Ref<Texture2D> &p_icon);
+	virtual void status_indicator_set_tooltip(IndicatorID p_id, const String &p_tooltip);
+	virtual void status_indicator_set_menu(IndicatorID p_id, const RID &p_menu_rid);
+	virtual void status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback);
+	virtual Rect2 status_indicator_get_rect(IndicatorID p_id) const;
+	virtual void delete_status_indicator(IndicatorID p_id);
 
 	virtual void set_context(Context p_context);
+
+	virtual bool is_window_transparency_available() const { return false; }
+
+	void register_additional_output(Object *p_output);
+	void unregister_additional_output(Object *p_output);
+	bool has_additional_outputs() const { return additional_outputs.size() > 0; }
 
 	static void register_create_function(const char *p_name, CreateFunction p_function, GetRenderingDriversFunction p_get_drivers);
 	static int get_create_function_count();
 	static const char *get_create_function_name(int p_index);
 	static Vector<String> get_create_function_rendering_drivers(int p_index);
-	static DisplayServer *create(int p_index, const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error);
+	static DisplayServer *create(int p_index, const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error);
 
 	DisplayServer();
 	~DisplayServer();

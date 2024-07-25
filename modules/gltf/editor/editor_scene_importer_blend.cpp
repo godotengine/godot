@@ -132,12 +132,10 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	}
 #endif
 
-	source_global = source_global.c_escape();
-
 	const String blend_basename = p_path.get_file().get_basename();
 	const String sink = ProjectSettings::get_singleton()->get_imported_files_path().path_join(
 			vformat("%s-%s.gltf", blend_basename, p_path.md5_text()));
-	const String sink_global = ProjectSettings::get_singleton()->globalize_path(sink).c_escape();
+	const String sink_global = ProjectSettings::get_singleton()->globalize_path(sink);
 
 	// Handle configuration options.
 
@@ -188,10 +186,18 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	} else {
 		parameters_map["export_lights"] = false;
 	}
-	if (p_options.has(SNAME("blender/meshes/colors")) && p_options[SNAME("blender/meshes/colors")]) {
-		parameters_map["export_colors"] = true;
+	if (blender_major_version > 4 || (blender_major_version == 4 && blender_minor_version >= 2)) {
+		if (p_options.has(SNAME("blender/meshes/colors")) && p_options[SNAME("blender/meshes/colors")]) {
+			parameters_map["export_vertex_color"] = "MATERIAL";
+		} else {
+			parameters_map["export_vertex_color"] = "NONE";
+		}
 	} else {
-		parameters_map["export_colors"] = false;
+		if (p_options.has(SNAME("blender/meshes/colors")) && p_options[SNAME("blender/meshes/colors")]) {
+			parameters_map["export_colors"] = true;
+		} else {
+			parameters_map["export_colors"] = false;
+		}
 	}
 	if (p_options.has(SNAME("blender/nodes/visible"))) {
 		int32_t visible = p_options["blender/nodes/visible"];
@@ -206,6 +212,9 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	} else {
 		parameters_map["use_renderable"] = false;
 		parameters_map["use_visible"] = false;
+	}
+	if (p_options.has(SNAME("blender/nodes/active_collection_only")) && p_options[SNAME("blender/nodes/active_collection_only")]) {
+		parameters_map["use_active_collection"] = true;
 	}
 
 	if (p_options.has(SNAME("blender/meshes/uvs")) && p_options[SNAME("blender/meshes/uvs")]) {
@@ -287,6 +296,9 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	if (p_options.has(SNAME("blender/materials/unpack_enabled")) && p_options[SNAME("blender/materials/unpack_enabled")]) {
 		base_dir = sink.get_base_dir();
 	}
+	if (p_options.has(SNAME("nodes/import_as_skeleton_bones")) ? (bool)p_options[SNAME("nodes/import_as_skeleton_bones")] : false) {
+		state->set_import_as_skeleton_bones(true);
+	}
 	state->set_scene_name(blend_basename);
 	err = gltf->append_from_file(sink.get_basename() + ".gltf", state, p_flags, base_dir);
 	if (err != OK) {
@@ -295,13 +307,13 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 		}
 		return nullptr;
 	}
+	ERR_FAIL_COND_V(!p_options.has("animation/fps"), nullptr);
 
 #ifndef DISABLE_DEPRECATED
 	bool trimming = p_options.has("animation/trimming") ? (bool)p_options["animation/trimming"] : false;
-	bool remove_immutable = p_options.has("animation/remove_immutable_tracks") ? (bool)p_options["animation/remove_immutable_tracks"] : true;
-	return gltf->generate_scene(state, (float)p_options["animation/fps"], trimming, remove_immutable);
+	return gltf->generate_scene(state, (float)p_options["animation/fps"], trimming, false);
 #else
-	return gltf->generate_scene(state, (float)p_options["animation/fps"], (bool)p_options["animation/trimming"], (bool)p_options["animation/remove_immutable_tracks"]);
+	return gltf->generate_scene(state, (float)p_options["animation/fps"], (bool)p_options["animation/trimming"], false);
 #endif
 }
 
@@ -320,7 +332,8 @@ Variant EditorSceneFormatImporterBlend::get_option_visibility(const String &p_pa
 }
 
 void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options) {
-	if (p_path.get_extension().to_lower() != "blend") {
+	// Returns all the options when path is empty because that means it's for the Project Settings.
+	if (!p_path.is_empty() && p_path.get_extension().to_lower() != "blend") {
 		return;
 	}
 #define ADD_OPTION_BOOL(PATH, VALUE) \
@@ -329,6 +342,7 @@ void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, Li
 	r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, SNAME(PATH), PROPERTY_HINT_ENUM, ENUM_HINT), VALUE));
 
 	ADD_OPTION_ENUM("blender/nodes/visible", "All,Visible Only,Renderable", BLEND_VISIBLE_ALL);
+	ADD_OPTION_BOOL("blender/nodes/active_collection_only", false);
 	ADD_OPTION_BOOL("blender/nodes/punctual_lights", true);
 	ADD_OPTION_BOOL("blender/nodes/cameras", true);
 	ADD_OPTION_BOOL("blender/nodes/custom_properties", true);
@@ -388,10 +402,10 @@ void EditorFileSystemImportFormatSupportQueryBlend::_validate_path(String p_path
 	path_status->set_text(error);
 
 	if (success) {
-		path_status->add_theme_color_override("font_color", path_status->get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
+		path_status->add_theme_color_override(SceneStringName(font_color), path_status->get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
 		configure_blender_dialog->get_ok_button()->set_disabled(false);
 	} else {
-		path_status->add_theme_color_override("font_color", path_status->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+		path_status->add_theme_color_override(SceneStringName(font_color), path_status->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 		configure_blender_dialog->get_ok_button()->set_disabled(true);
 	}
 }
@@ -468,6 +482,10 @@ void EditorFileSystemImportFormatSupportQueryBlend::_browse_install() {
 	browse_dialog->popup_centered_ratio();
 }
 
+void EditorFileSystemImportFormatSupportQueryBlend::_update_icons() {
+	blender_path_browse->set_icon(blender_path_browse->get_editor_theme_icon(SNAME("FolderBrowse")));
+}
+
 bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 	if (!configure_blender_dialog) {
 		configure_blender_dialog = memnew(ConfirmationDialog);
@@ -483,10 +501,12 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 		blender_path = memnew(LineEdit);
 		blender_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		hb->add_child(blender_path);
+
 		blender_path_browse = memnew(Button);
-		hb->add_child(blender_path_browse);
 		blender_path_browse->set_text(TTR("Browse"));
-		blender_path_browse->connect("pressed", callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_browse_install));
+		blender_path_browse->connect(SceneStringName(pressed), callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_browse_install));
+		hb->add_child(blender_path_browse);
+
 		hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		hb->set_custom_minimum_size(Size2(400 * EDSCALE, 0));
 
@@ -497,14 +517,14 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 
 		configure_blender_dialog->add_child(vb);
 
-		blender_path->connect("text_changed", callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_validate_path));
+		blender_path->connect(SceneStringName(text_changed), callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_validate_path));
 
 		EditorNode::get_singleton()->get_gui_base()->add_child(configure_blender_dialog);
 
 		configure_blender_dialog->set_ok_button_text(TTR("Confirm Path"));
 		configure_blender_dialog->set_cancel_button_text(TTR("Disable '.blend' Import"));
 		configure_blender_dialog->get_cancel_button()->set_tooltip_text(TTR("Disables Blender '.blend' files import for this project. Can be re-enabled in Project Settings."));
-		configure_blender_dialog->connect("confirmed", callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_path_confirmed));
+		configure_blender_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_path_confirmed));
 
 		browse_dialog = memnew(EditorFileDialog);
 		browse_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
@@ -512,6 +532,11 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 		browse_dialog->connect("dir_selected", callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_select_install));
 
 		EditorNode::get_singleton()->get_gui_base()->add_child(browse_dialog);
+
+		// Update icons.
+		// This is a hack because we can't rely on notifications here as we don't receive them.
+		// Usually, we only have to wait for `NOTIFICATION_THEME_CHANGED` to update the icons.
+		callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_update_icons).call_deferred();
 	}
 
 	String path = EDITOR_GET("filesystem/import/blender/blender_path");

@@ -711,12 +711,13 @@ uint32_t RenderingDeviceCommons::get_image_format_required_size(DataFormat p_for
 
 	uint32_t pixel_size = get_image_format_pixel_size(p_format);
 	uint32_t pixel_rshift = get_compressed_image_format_pixel_rshift(p_format);
-	uint32_t blockw, blockh;
+	uint32_t blockw = 0;
+	uint32_t blockh = 0;
 	get_compressed_image_format_block_dimensions(p_format, blockw, blockh);
 
 	for (uint32_t i = 0; i < p_mipmaps; i++) {
-		uint32_t bw = w % blockw != 0 ? w + (blockw - w % blockw) : w;
-		uint32_t bh = h % blockh != 0 ? h + (blockh - h % blockh) : h;
+		uint32_t bw = STEPIFY(w, blockw);
+		uint32_t bh = STEPIFY(h, blockh);
 
 		uint32_t s = bw * bh;
 

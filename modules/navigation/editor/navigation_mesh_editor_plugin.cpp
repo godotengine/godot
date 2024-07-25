@@ -42,7 +42,6 @@
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
-#include "scene/resources/navigation_mesh_source_geometry_data_3d.h"
 
 void NavigationMeshEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
@@ -99,7 +98,7 @@ void NavigationMeshEditor::_bake_pressed() {
 		}
 	}
 
-	node->bake_navigation_mesh(false);
+	node->bake_navigation_mesh(true);
 
 	node->update_gizmos();
 }
@@ -139,14 +138,14 @@ NavigationMeshEditor::NavigationMeshEditor() {
 	button_bake->set_toggle_mode(true);
 	button_bake->set_text(TTR("Bake NavigationMesh"));
 	button_bake->set_tooltip_text(TTR("Bakes the NavigationMesh by first parsing the scene for source geometry and then creating the navigation mesh vertices and polygons."));
-	button_bake->connect("pressed", callable_mp(this, &NavigationMeshEditor::_bake_pressed));
+	button_bake->connect(SceneStringName(pressed), callable_mp(this, &NavigationMeshEditor::_bake_pressed));
 
 	button_reset = memnew(Button);
 	button_reset->set_theme_type_variation("FlatButton");
 	bake_hbox->add_child(button_reset);
 	button_reset->set_text(TTR("Clear NavigationMesh"));
 	button_reset->set_tooltip_text(TTR("Clears the internal NavigationMesh vertices and polygons."));
-	button_reset->connect("pressed", callable_mp(this, &NavigationMeshEditor::_clear_pressed));
+	button_reset->connect(SceneStringName(pressed), callable_mp(this, &NavigationMeshEditor::_clear_pressed));
 
 	bake_info = memnew(Label);
 	bake_hbox->add_child(bake_info);

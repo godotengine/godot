@@ -279,7 +279,7 @@ const GodotDisplayScreen = {
 			return 0;
 		},
 		_updateGL: function () {
-			const gl_context_handle = _emscripten_webgl_get_current_context(); // eslint-disable-line no-undef
+			const gl_context_handle = _emscripten_webgl_get_current_context();
 			const gl = GL.getContext(gl_context_handle);
 			if (gl) {
 				GL.resizeOffscreenFramebuffer(gl);
@@ -392,19 +392,19 @@ const GodotDisplay = {
 		const func = GodotRuntime.get_func(p_callback);
 
 		function listener_end(evt) {
-			evt.currentTarget.cb(1 /*TTS_UTTERANCE_ENDED*/, evt.currentTarget.id, 0);
+			evt.currentTarget.cb(1 /* TTS_UTTERANCE_ENDED */, evt.currentTarget.id, 0);
 		}
 
 		function listener_start(evt) {
-			evt.currentTarget.cb(0 /*TTS_UTTERANCE_STARTED*/, evt.currentTarget.id, 0);
+			evt.currentTarget.cb(0 /* TTS_UTTERANCE_STARTED */, evt.currentTarget.id, 0);
 		}
 
 		function listener_error(evt) {
-			evt.currentTarget.cb(2 /*TTS_UTTERANCE_CANCELED*/, evt.currentTarget.id, 0);
+			evt.currentTarget.cb(2 /* TTS_UTTERANCE_CANCELED */, evt.currentTarget.id, 0);
 		}
 
 		function listener_bound(evt) {
-			evt.currentTarget.cb(3 /*TTS_UTTERANCE_BOUNDARY*/, evt.currentTarget.id, evt.charIndex);
+			evt.currentTarget.cb(3 /* TTS_UTTERANCE_BOUNDARY */, evt.currentTarget.id, evt.charIndex);
 		}
 
 		const utterance = new SpeechSynthesisUtterance(GodotRuntime.parseString(p_text));

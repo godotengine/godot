@@ -155,11 +155,13 @@ void CopyEffects::copy_to_and_from_rect(const Rect2 &p_rect) {
 	draw_screen_quad();
 }
 
-void CopyEffects::copy_screen() {
-	bool success = copy.shader.version_bind_shader(copy.shader_version, CopyShaderGLES3::MODE_DEFAULT);
+void CopyEffects::copy_screen(float p_multiply) {
+	bool success = copy.shader.version_bind_shader(copy.shader_version, CopyShaderGLES3::MODE_SCREEN);
 	if (!success) {
 		return;
 	}
+
+	copy.shader.version_set_uniform(CopyShaderGLES3::MULTIPLY, p_multiply, copy.shader_version, CopyShaderGLES3::MODE_SCREEN);
 
 	draw_screen_triangle();
 }
@@ -196,8 +198,7 @@ void CopyEffects::bilinear_blur(GLuint p_source_texture, int p_mipmap_count, con
 	for (int i = 1; i < p_mipmap_count; i++) {
 		dest_region.position.x >>= 1;
 		dest_region.position.y >>= 1;
-		dest_region.size.x = MAX(1, dest_region.size.x >> 1);
-		dest_region.size.y = MAX(1, dest_region.size.y >> 1);
+		dest_region.size = Size2i(dest_region.size.x >> 1, dest_region.size.y >> 1).maxi(1);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffers[i % 2]);
 		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, p_source_texture, i);
 		glBlitFramebuffer(source_region.position.x, source_region.position.y, source_region.position.x + source_region.size.x, source_region.position.y + source_region.size.y,
@@ -205,8 +206,8 @@ void CopyEffects::bilinear_blur(GLuint p_source_texture, int p_mipmap_count, con
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffers[i % 2]);
 		source_region = dest_region;
 	}
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	glDeleteFramebuffers(2, framebuffers);
 }
 
@@ -236,8 +237,7 @@ void CopyEffects::gaussian_blur(GLuint p_source_texture, int p_mipmap_count, con
 	for (int i = 1; i < p_mipmap_count; i++) {
 		dest_region.position.x >>= 1;
 		dest_region.position.y >>= 1;
-		dest_region.size.x = MAX(1, dest_region.size.x >> 1);
-		dest_region.size.y = MAX(1, dest_region.size.y >> 1);
+		dest_region.size = Size2i(dest_region.size.x >> 1, dest_region.size.y >> 1).maxi(1);
 		base_size.x >>= 1;
 		base_size.y >>= 1;
 
@@ -272,7 +272,7 @@ void CopyEffects::gaussian_blur(GLuint p_source_texture, int p_mipmap_count, con
 		source_region = dest_region;
 		normalized_source_region = normalized_dest_region;
 	}
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	glDeleteFramebuffers(1, &framebuffer);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

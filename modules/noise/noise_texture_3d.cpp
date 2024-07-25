@@ -142,6 +142,8 @@ TypedArray<Image> NoiseTexture3D::_generate_texture() {
 		return TypedArray<Image>();
 	}
 
+	ERR_FAIL_COND_V_MSG((int64_t)width * height * depth > Image::MAX_PIXELS, TypedArray<Image>(), "The NoiseTexture3D is too big, consider lowering its width, height, or depth.");
+
 	Vector<Ref<Image>> images;
 
 	if (seamless) {

@@ -43,9 +43,15 @@ class Popup : public Window {
 	LocalVector<Window *> visible_parents;
 	bool popped_up = false;
 
-	struct ThemeCache {
-		Ref<StyleBox> panel_style;
-	} theme_cache;
+public:
+	enum HideReason {
+		HIDE_REASON_NONE,
+		HIDE_REASON_CANCELED, // E.g., because of rupture of UI flow (app unfocused). Includes closed programmatically.
+		HIDE_REASON_UNFOCUSED, // E.g., user clicked outside.
+	};
+
+private:
+	HideReason hide_reason = HIDE_REASON_NONE;
 
 	void _initialize_visible_parents();
 	void _deinitialize_visible_parents();
@@ -64,6 +70,8 @@ protected:
 	virtual void _post_popup() override;
 
 public:
+	HideReason get_hide_reason() const { return hide_reason; }
+
 	Popup();
 	~Popup();
 };

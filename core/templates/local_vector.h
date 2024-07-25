@@ -41,7 +41,7 @@
 
 // If tight, it grows strictly as much as needed.
 // Otherwise, it grows exponentially (the default and what you want in most cases).
-template <class T, class U = uint32_t, bool force_trivial = false, bool tight = false>
+template <typename T, typename U = uint32_t, bool force_trivial = false, bool tight = false>
 class LocalVector {
 private:
 	U count = 0;
@@ -102,6 +102,22 @@ public:
 			return true;
 		}
 		return false;
+	}
+
+	U erase_multiple_unordered(const T &p_val) {
+		U from = 0;
+		U occurrences = 0;
+		while (true) {
+			int64_t idx = find(p_val, from);
+
+			if (idx == -1) {
+				break;
+			}
+			remove_at_unordered(idx);
+			from = idx;
+			occurrences++;
+		}
+		return occurrences;
 	}
 
 	void invert() {
@@ -248,7 +264,11 @@ public:
 		return -1;
 	}
 
-	template <class C>
+	bool has(const T &p_val) const {
+		return find(p_val) != -1;
+	}
+
+	template <typename C>
 	void sort_custom() {
 		U len = count;
 		if (len == 0) {
@@ -322,7 +342,7 @@ public:
 	}
 };
 
-template <class T, class U = uint32_t, bool force_trivial = false>
+template <typename T, typename U = uint32_t, bool force_trivial = false>
 using TightLocalVector = LocalVector<T, U, force_trivial, true>;
 
 #endif // LOCAL_VECTOR_H

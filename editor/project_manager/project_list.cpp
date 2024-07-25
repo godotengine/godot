@@ -32,6 +32,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/os/time.h"
+#include "core/version.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
@@ -55,12 +57,12 @@ void ProjectListItemControl::_notification(int p_what) {
 			}
 
 			project_title->begin_bulk_theme_override();
-			project_title->add_theme_font_override("font", get_theme_font(SNAME("title"), EditorStringName(EditorFonts)));
-			project_title->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("title_size"), EditorStringName(EditorFonts)));
-			project_title->add_theme_color_override("font_color", get_theme_color(SNAME("font_color"), SNAME("Tree")));
+			project_title->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("title"), EditorStringName(EditorFonts)));
+			project_title->add_theme_font_size_override(SceneStringName(font_size), get_theme_font_size(SNAME("title_size"), EditorStringName(EditorFonts)));
+			project_title->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), SNAME("Tree")));
 			project_title->end_bulk_theme_override();
 
-			project_path->add_theme_color_override("font_color", get_theme_color(SNAME("font_color"), SNAME("Tree")));
+			project_path->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), SNAME("Tree")));
 			project_unsupported_features->set_texture(get_editor_theme_icon(SNAME("NodeWarning")));
 
 			favorite_button->set_texture_normal(get_editor_theme_icon(SNAME("Favorites")));
@@ -130,12 +132,29 @@ void ProjectListItemControl::set_project_icon(const Ref<Texture2D> &p_icon) {
 	project_icon->set_texture(p_icon);
 }
 
+void ProjectListItemControl::set_last_edited_info(const String &p_info) {
+	last_edited_info->set_text(p_info);
+}
+
+void ProjectListItemControl::set_project_version(const String &p_info) {
+	project_version->set_text(p_info);
+}
+
 void ProjectListItemControl::set_unsupported_features(PackedStringArray p_features) {
 	if (p_features.size() > 0) {
 		String tooltip_text = "";
 		for (int i = 0; i < p_features.size(); i++) {
 			if (ProjectList::project_feature_looks_like_version(p_features[i])) {
-				tooltip_text += TTR("This project was last edited in a different Godot version: ") + p_features[i] + "\n";
+				PackedStringArray project_version_split = p_features[i].split(".");
+				int project_version_major = 0, project_version_minor = 0;
+				if (project_version_split.size() >= 2) {
+					project_version_major = project_version_split[0].to_int();
+					project_version_minor = project_version_split[1].to_int();
+				}
+				if (VERSION_MAJOR != project_version_major || VERSION_MINOR <= project_version_minor) {
+					// Don't show a warning if the project was last edited in a previous minor version.
+					tooltip_text += TTR("This project was last edited in a different Godot version: ") + p_features[i] + "\n";
+				}
 				p_features.remove_at(i);
 				i--;
 			}
@@ -144,6 +163,10 @@ void ProjectListItemControl::set_unsupported_features(PackedStringArray p_featur
 			String unsupported_features_str = String(", ").join(p_features);
 			tooltip_text += TTR("This project uses features unsupported by the current build:") + "\n" + unsupported_features_str;
 		}
+		if (tooltip_text.is_empty()) {
+			return;
+		}
+		project_version->set_tooltip_text(tooltip_text);
 		project_unsupported_features->set_tooltip_text(tooltip_text);
 		project_unsupported_features->show();
 	} else {
@@ -216,7 +239,7 @@ ProjectListItemControl::ProjectListItemControl() {
 	// This makes the project's "hover" style display correctly when hovering the favorite icon.
 	favorite_button->set_mouse_filter(MOUSE_FILTER_PASS);
 	favorite_box->add_child(favorite_button);
-	favorite_button->connect("pressed", callable_mp(this, &ProjectListItemControl::_favorite_button_pressed));
+	favorite_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectListItemControl::_favorite_button_pressed));
 
 	project_icon = memnew(TextureRect);
 	project_icon->set_name("ProjectIcon");
@@ -238,7 +261,7 @@ ProjectListItemControl::ProjectListItemControl() {
 		main_vbox->add_child(title_hb);
 
 		project_title = memnew(Label);
-		project_title->set_auto_translate(false);
+		project_title->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 		project_title->set_name("ProjectName");
 		project_title->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		project_title->set_clip_text(true);
@@ -262,7 +285,7 @@ ProjectListItemControl::ProjectListItemControl() {
 		explore_button->set_name("ExploreButton");
 		explore_button->set_flat(true);
 		path_hb->add_child(explore_button);
-		explore_button->connect("pressed", callable_mp(this, &ProjectListItemControl::_explore_button_pressed));
+		explore_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectListItemControl::_explore_button_pressed));
 
 		project_path = memnew(Label);
 		project_path->set_name("ProjectPath");
@@ -277,6 +300,18 @@ ProjectListItemControl::ProjectListItemControl() {
 		project_unsupported_features->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
 		path_hb->add_child(project_unsupported_features);
 		project_unsupported_features->hide();
+
+		project_version = memnew(Label);
+		project_version->set_name("ProjectVersion");
+		project_version->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+		path_hb->add_child(project_version);
+
+		last_edited_info = memnew(Label);
+		last_edited_info->set_name("LastEditedInfo");
+		last_edited_info->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+		last_edited_info->set_tooltip_text(TTR("Last edited timestamp"));
+		last_edited_info->set_modulate(Color(1, 1, 1, 0.5));
+		path_hb->add_child(last_edited_info);
 
 		Control *spacer = memnew(Control);
 		spacer->set_custom_minimum_size(Size2(10, 10));
@@ -409,6 +444,24 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 	PackedStringArray project_features = cf->get_value("application", "config/features", PackedStringArray());
 	PackedStringArray unsupported_features = ProjectSettings::get_unsupported_features(project_features);
 
+	String project_version = "?";
+	for (int i = 0; i < project_features.size(); i++) {
+		if (ProjectList::project_feature_looks_like_version(project_features[i])) {
+			project_version = project_features[i];
+			break;
+		}
+	}
+
+	if (config_version < ProjectSettings::CONFIG_VERSION) {
+		// Previous versions may not have unsupported features.
+		if (config_version == 4) {
+			unsupported_features.push_back("3.x");
+			project_version = "3.x";
+		} else {
+			unsupported_features.push_back("Unknown version");
+		}
+	}
+
 	uint64_t last_edited = 0;
 	if (cf_err == OK) {
 		// The modification date marks the date the project was last edited.
@@ -433,7 +486,7 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 		ProjectManager::get_singleton()->add_new_tag(tag);
 	}
 
-	return Item(project_name, description, tags, p_path, icon, main_scene, unsupported_features, last_edited, p_favorite, grayed, missing, config_version);
+	return Item(project_name, description, project_version, tags, p_path, icon, main_scene, unsupported_features, last_edited, p_favorite, grayed, missing, config_version);
 }
 
 void ProjectList::_update_icons_async() {
@@ -469,23 +522,19 @@ void ProjectList::update_project_list() {
 	// If you have 150 projects, it may read through 150 files on your disk at once + load 150 icons.
 	// FIXME: Does it really have to be a full, hard reload? Runtime updates should be made much cheaper.
 
-	// Clear whole list
-	for (int i = 0; i < _projects.size(); ++i) {
-		Item &project = _projects.write[i];
-		CRASH_COND(project.control == nullptr);
-		memdelete(project.control); // Why not queue_free()?
-	}
-	_projects.clear();
-	_last_clicked = "";
-	_selected_project_paths.clear();
+	if (ProjectManager::get_singleton()->is_initialized()) {
+		// Clear whole list
+		for (int i = 0; i < _projects.size(); ++i) {
+			Item &project = _projects.write[i];
+			CRASH_COND(project.control == nullptr);
+			memdelete(project.control); // Why not queue_free()?
+		}
 
-	List<String> sections;
-	_config.load(_config_path);
-	_config.get_sections(&sections);
+		_projects.clear();
+		_last_clicked = "";
+		_selected_project_paths.clear();
 
-	for (const String &path : sections) {
-		bool favorite = _config.get_value(path, "favorite", false);
-		_projects.push_back(load_project_data(path, favorite));
+		load_project_list();
 	}
 
 	// Create controls
@@ -549,7 +598,7 @@ void ProjectList::sort_projects() {
 			}
 
 			// When searching, display projects whose name or path contain the search term and whose tags match the searched tags.
-			item_visible = !missing_tags && (search_term.is_empty() || item.project_name.findn(search_term) != -1 || search_path.findn(search_term) != -1);
+			item_visible = !missing_tags && (search_term.is_empty() || item.project_name.containsn(search_term) || search_path.containsn(search_term));
 		}
 
 		item.control->set_visible(item_visible);
@@ -590,7 +639,21 @@ void ProjectList::find_projects_multiple(const PackedStringArray &p_paths) {
 	}
 
 	save_config();
-	update_project_list();
+
+	if (ProjectManager::get_singleton()->is_initialized()) {
+		update_project_list();
+	}
+}
+
+void ProjectList::load_project_list() {
+	List<String> sections;
+	_config.load(_config_path);
+	_config.get_sections(&sections);
+
+	for (const String &path : sections) {
+		bool favorite = _config.get_value(path, "favorite", false);
+		_projects.push_back(load_project_data(path, favorite));
+	}
 }
 
 void ProjectList::_scan_folder_recursive(const String &p_path, List<String> *r_projects) {
@@ -696,12 +759,14 @@ void ProjectList::_create_project_item_control(int p_index) {
 	hb->set_tooltip_text(item.description);
 	hb->set_tags(item.tags, this);
 	hb->set_unsupported_features(item.unsupported_features.duplicate());
+	hb->set_project_version(item.project_version);
+	hb->set_last_edited_info(Time::get_singleton()->get_datetime_string_from_unix_time(item.last_edited, true));
 
 	hb->set_is_favorite(item.favorite);
 	hb->set_is_missing(item.missing);
 	hb->set_is_grayed(item.grayed);
 
-	hb->connect("gui_input", callable_mp(this, &ProjectList::_list_item_input).bind(hb));
+	hb->connect(SceneStringName(gui_input), callable_mp(this, &ProjectList::_list_item_input).bind(hb));
 	hb->connect("favorite_pressed", callable_mp(this, &ProjectList::_on_favorite_pressed).bind(hb));
 
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
@@ -1012,10 +1077,11 @@ void ProjectList::set_order_option(int p_option) {
 // Global menu integration.
 
 void ProjectList::update_dock_menu() {
-	if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU)) {
+	if (!NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_GLOBAL_MENU)) {
 		return;
 	}
-	DisplayServer::get_singleton()->global_menu_clear("_dock");
+	RID dock_rid = NativeMenu::get_singleton()->get_system_menu(NativeMenu::DOCK_MENU_ID);
+	NativeMenu::get_singleton()->clear(dock_rid);
 
 	int favs_added = 0;
 	int total_added = 0;
@@ -1025,18 +1091,18 @@ void ProjectList::update_dock_menu() {
 				favs_added++;
 			} else {
 				if (favs_added != 0) {
-					DisplayServer::get_singleton()->global_menu_add_separator("_dock");
+					NativeMenu::get_singleton()->add_separator(dock_rid);
 				}
 				favs_added = 0;
 			}
-			DisplayServer::get_singleton()->global_menu_add_item("_dock", _projects[i].project_name + " ( " + _projects[i].path + " )", callable_mp(this, &ProjectList::_global_menu_open_project), Callable(), i);
+			NativeMenu::get_singleton()->add_item(dock_rid, _projects[i].project_name + " ( " + _projects[i].path + " )", callable_mp(this, &ProjectList::_global_menu_open_project), Callable(), i);
 			total_added++;
 		}
 	}
 	if (total_added != 0) {
-		DisplayServer::get_singleton()->global_menu_add_separator("_dock");
+		NativeMenu::get_singleton()->add_separator(dock_rid);
 	}
-	DisplayServer::get_singleton()->global_menu_add_item("_dock", TTR("New Window"), callable_mp(this, &ProjectList::_global_menu_new_window));
+	NativeMenu::get_singleton()->add_item(dock_rid, TTR("New Window"), callable_mp(this, &ProjectList::_global_menu_new_window));
 }
 
 void ProjectList::_global_menu_new_window(const Variant &p_tag) {

@@ -1457,6 +1457,23 @@ void TextureStorage::texture_set_detect_roughness_callback(RID p_texture, RS::Te
 }
 
 void TextureStorage::texture_debug_usage(List<RS::TextureInfo> *r_info) {
+	List<RID> textures;
+	texture_owner.get_owned_list(&textures);
+
+	for (List<RID>::Element *E = textures.front(); E; E = E->next()) {
+		Texture *t = texture_owner.get_or_null(E->get());
+		if (!t) {
+			continue;
+		}
+		RS::TextureInfo tinfo;
+		tinfo.path = t->path;
+		tinfo.format = t->format;
+		tinfo.width = t->width;
+		tinfo.height = t->height;
+		tinfo.depth = t->depth;
+		tinfo.bytes = Image::get_image_data_size(t->width, t->height, t->format, t->mipmaps);
+		r_info->push_back(tinfo);
+	}
 }
 
 void TextureStorage::texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) {
@@ -2681,8 +2698,7 @@ void TextureStorage::update_decal_atlas() {
 			mm.size = s;
 			decal_atlas.texture_mipmaps.push_back(mm);
 
-			s.width = MAX(1, s.width >> 1);
-			s.height = MAX(1, s.height >> 1);
+			s = Vector2i(s.width >> 1, s.height >> 1).maxi(1);
 		}
 		{
 			//create the SRGB variant
@@ -2965,7 +2981,7 @@ void TextureStorage::update_decal_buffer(const PagedArray<RID> &p_decals, const 
 			dd.emission_rect[3] = 0;
 		}
 
-		Color modulate = decal->modulate;
+		Color modulate = decal->modulate.srgb_to_linear();
 		dd.modulate[0] = modulate.r;
 		dd.modulate[1] = modulate.g;
 		dd.modulate[2] = modulate.b;
@@ -3043,6 +3059,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 		texture_2d_placeholder_initialize(rt->texture);
 		Texture *tex = get_texture(rt->texture);
 		tex->is_render_target = true;
+		tex->path = "Render Target (Internal)";
 	}
 
 	_clear_render_target(rt);
@@ -3637,8 +3654,7 @@ void TextureStorage::_render_target_allocate_sdf(RenderTarget *rt) {
 	}
 
 	rt->process_size = size * scale / 100;
-	rt->process_size.x = MAX(rt->process_size.x, 1);
-	rt->process_size.y = MAX(rt->process_size.y, 1);
+	rt->process_size = rt->process_size.maxi(1);
 
 	tformat.format = RD::DATA_FORMAT_R16G16_SINT;
 	tformat.width = rt->process_size.width;
@@ -3821,7 +3837,10 @@ void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, cons
 	if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
 		copy_effects->copy_to_rect(rt->color, rt->backbuffer_mipmap0, region, false, false, false, !rt->use_hdr, true);
 	} else {
-		copy_effects->copy_to_fb_rect(rt->color, rt->backbuffer_fb, region, false, false, false, false, RID(), false, true);
+		Rect2 src_rect = Rect2(region);
+		src_rect.position /= Size2(rt->size);
+		src_rect.size /= Size2(rt->size);
+		copy_effects->copy_to_fb_rect(rt->color, rt->backbuffer_fb, region, false, false, false, false, RID(), false, true, false, false, src_rect);
 	}
 
 	if (!p_gen_mipmaps) {
@@ -3836,10 +3855,8 @@ void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, cons
 	for (int i = 0; i < rt->backbuffer_mipmaps.size(); i++) {
 		region.position.x >>= 1;
 		region.position.y >>= 1;
-		region.size.x = MAX(1, region.size.x >> 1);
-		region.size.y = MAX(1, region.size.y >> 1);
-		texture_size.x = MAX(1, texture_size.x >> 1);
-		texture_size.y = MAX(1, texture_size.y >> 1);
+		region.size = Size2i(region.size.x >> 1, region.size.y >> 1).maxi(1);
+		texture_size = Size2i(texture_size.x >> 1, texture_size.y >> 1).maxi(1);
 
 		RID mipmap = rt->backbuffer_mipmaps[i];
 		if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
@@ -3909,10 +3926,8 @@ void TextureStorage::render_target_gen_back_buffer_mipmaps(RID p_render_target, 
 	for (int i = 0; i < rt->backbuffer_mipmaps.size(); i++) {
 		region.position.x >>= 1;
 		region.position.y >>= 1;
-		region.size.x = MAX(1, region.size.x >> 1);
-		region.size.y = MAX(1, region.size.y >> 1);
-		texture_size.x = MAX(1, texture_size.x >> 1);
-		texture_size.y = MAX(1, texture_size.y >> 1);
+		region.size = Size2i(region.size.x >> 1, region.size.y >> 1).maxi(1);
+		texture_size = Size2i(texture_size.x >> 1, texture_size.y >> 1).maxi(1);
 
 		RID mipmap = rt->backbuffer_mipmaps[i];
 
@@ -3961,6 +3976,20 @@ RS::ViewportVRSMode TextureStorage::render_target_get_vrs_mode(RID p_render_targ
 	ERR_FAIL_NULL_V(rt, RS::VIEWPORT_VRS_DISABLED);
 
 	return rt->vrs_mode;
+}
+
+void TextureStorage::render_target_set_vrs_update_mode(RID p_render_target, RS::ViewportVRSUpdateMode p_mode) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(rt);
+
+	rt->vrs_update_mode = p_mode;
+}
+
+RS::ViewportVRSUpdateMode TextureStorage::render_target_get_vrs_update_mode(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, RS::VIEWPORT_VRS_UPDATE_DISABLED);
+
+	return rt->vrs_update_mode;
 }
 
 void TextureStorage::render_target_set_vrs_texture(RID p_render_target, RID p_texture) {

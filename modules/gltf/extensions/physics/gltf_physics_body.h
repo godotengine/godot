@@ -31,7 +31,7 @@
 #ifndef GLTF_PHYSICS_BODY_H
 #define GLTF_PHYSICS_BODY_H
 
-#include "scene/3d/physics_body_3d.h"
+#include "scene/3d/physics/physics_body_3d.h"
 
 // GLTFPhysicsBody is an intermediary between Godot's physics body nodes
 // and the OMI_physics_body extension.

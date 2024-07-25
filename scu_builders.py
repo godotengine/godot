@@ -1,20 +1,22 @@
-"""Functions used to generate scu build source files during build time
-"""
-import glob, os
+"""Functions used to generate scu build source files during build time"""
+
+import glob
 import math
+import os
 from pathlib import Path
-from os.path import normpath, basename
+
+from methods import print_error
 
 base_folder_path = str(Path(__file__).parent) + "/"
 base_folder_only = os.path.basename(os.path.normpath(base_folder_path))
-_verbose = True  # Set manually for debug prints
+_verbose = False  # Set manually for debug prints
 _scu_folders = set()
 _max_includes_per_scu = 1024
 
 
-def clear_out_existing_files(output_folder, extension):
+def clear_out_stale_files(output_folder, extension, fresh_files):
     output_folder = os.path.abspath(output_folder)
-    # print("clear_out_existing_files from folder: " + output_folder)
+    # print("clear_out_stale_files from folder: " + output_folder)
 
     if not os.path.isdir(output_folder):
         # folder does not exist or has not been created yet,
@@ -22,8 +24,10 @@ def clear_out_existing_files(output_folder, extension):
         return
 
     for file in glob.glob(output_folder + "/*." + extension):
-        # print("removed pre-existing file: " + file)
-        os.remove(file)
+        file = Path(file)
+        if file not in fresh_files:
+            # print("removed stale file: " + str(file))
+            os.remove(file)
 
 
 def folder_not_found(folder):
@@ -35,7 +39,7 @@ def find_files_in_folder(folder, sub_folder, include_list, extension, sought_exc
     abs_folder = base_folder_path + folder + "/" + sub_folder
 
     if not os.path.isdir(abs_folder):
-        print("SCU: ERROR: %s not found." % abs_folder)
+        print_error(f'SCU: "{abs_folder}" not found.')
         return include_list, found_exceptions
 
     os.chdir(abs_folder)
@@ -52,7 +56,7 @@ def find_files_in_folder(folder, sub_folder, include_list, extension, sought_exc
 
         li = '#include "' + folder + "/" + sub_folder_slashed + file + '"'
 
-        if not simple_name in sought_exceptions:
+        if simple_name not in sought_exceptions:
             include_list.append(li)
         else:
             found_exceptions.append(li)
@@ -67,16 +71,16 @@ def write_output_file(file_count, include_list, start_line, end_line, output_fol
         # create
         os.mkdir(output_folder)
         if not os.path.isdir(output_folder):
-            print("SCU: ERROR: %s could not be created." % output_folder)
+            print_error(f'SCU: "{output_folder}" could not be created.')
             return
         if _verbose:
             print("SCU: Creating folder: %s" % output_folder)
 
     file_text = ""
 
-    for l in range(start_line, end_line):
-        if l < len(include_list):
-            line = include_list[l]
+    for i in range(start_line, end_line):
+        if i < len(include_list):
+            line = include_list[i]
             li = line + "\n"
             file_text += li
 
@@ -86,17 +90,22 @@ def write_output_file(file_count, include_list, start_line, end_line, output_fol
 
     short_filename = output_filename_prefix + num_string + ".gen." + extension
     output_filename = output_folder + "/" + short_filename
-    if _verbose:
-        print("SCU: Generating: %s" % short_filename)
-
     output_path = Path(output_filename)
-    output_path.write_text(file_text, encoding="utf8")
+
+    if not output_path.exists() or output_path.read_text() != file_text:
+        if _verbose:
+            print("SCU: Generating: %s" % short_filename)
+        output_path.write_text(file_text, encoding="utf8")
+    elif _verbose:
+        print("SCU: Generation not needed for: " + short_filename)
+
+    return output_path
 
 
 def write_exception_output_file(file_count, exception_string, output_folder, output_filename_prefix, extension):
     output_folder = os.path.abspath(output_folder)
     if not os.path.isdir(output_folder):
-        print("SCU: ERROR: %s does not exist." % output_folder)
+        print_error(f"SCU: {output_folder} does not exist.")
         return
 
     file_text = exception_string + "\n"
@@ -108,11 +117,16 @@ def write_exception_output_file(file_count, exception_string, output_folder, out
     short_filename = output_filename_prefix + "_exception" + num_string + ".gen." + extension
     output_filename = output_folder + "/" + short_filename
 
-    if _verbose:
-        print("SCU: Generating: " + short_filename)
-
     output_path = Path(output_filename)
-    output_path.write_text(file_text, encoding="utf8")
+
+    if not output_path.exists() or output_path.read_text() != file_text:
+        if _verbose:
+            print("SCU: Generating: " + short_filename)
+        output_path.write_text(file_text, encoding="utf8")
+    elif _verbose:
+        print("SCU: Generation not needed for: " + short_filename)
+
+    return output_path
 
 
 def find_section_name(sub_folder):
@@ -207,16 +221,12 @@ def process_folder(folders, sought_exceptions=[], includes_per_scu=0, extension=
     lines_per_file = max(lines_per_file, 1)
 
     start_line = 0
-    file_number = 0
 
     # These do not vary throughout the loop
     output_folder = abs_main_folder + "/scu/"
     output_filename_prefix = "scu_" + out_filename
 
-    # Clear out any existing files (usually we will be overwriting,
-    # but we want to remove any that are pre-existing that will not be
-    # overwritten, so as to not compile anything stale)
-    clear_out_existing_files(output_folder, extension)
+    fresh_files = set()
 
     for file_count in range(0, num_output_files):
         end_line = start_line + lines_per_file
@@ -225,18 +235,27 @@ def process_folder(folders, sought_exceptions=[], includes_per_scu=0, extension=
         if file_count == (num_output_files - 1):
             end_line = len(found_includes)
 
-        write_output_file(
+        fresh_file = write_output_file(
             file_count, found_includes, start_line, end_line, output_folder, output_filename_prefix, extension
         )
+
+        fresh_files.add(fresh_file)
 
         start_line = end_line
 
     # Write the exceptions each in their own scu gen file,
     # so they can effectively compile in "old style / normal build".
     for exception_count in range(len(found_exceptions)):
-        write_exception_output_file(
+        fresh_file = write_exception_output_file(
             exception_count, found_exceptions[exception_count], output_folder, output_filename_prefix, extension
         )
+
+        fresh_files.add(fresh_file)
+
+    # Clear out any stale file (usually we will be overwriting if necessary,
+    # but we want to remove any that are pre-existing that will not be
+    # overwritten, so as to not compile anything stale).
+    clear_out_stale_files(output_folder, extension, fresh_files)
 
 
 def generate_scu_files(max_includes_per_scu):
@@ -310,11 +329,17 @@ def generate_scu_files(max_includes_per_scu):
     process_folder(["modules/gdscript/language_server"])
 
     process_folder(["scene/2d"])
+    process_folder(["scene/2d/physics"])
+    process_folder(["scene/2d/physics/joints"])
     process_folder(["scene/3d"])
+    process_folder(["scene/3d/physics"])
+    process_folder(["scene/3d/physics/joints"])
     process_folder(["scene/animation"])
     process_folder(["scene/gui"])
     process_folder(["scene/main"])
     process_folder(["scene/resources"])
+    process_folder(["scene/resources/2d"])
+    process_folder(["scene/resources/3d"])
 
     process_folder(["servers"])
     process_folder(["servers/rendering"])

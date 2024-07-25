@@ -33,6 +33,9 @@
 #include "godot_audio.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/object.h"
+#include "scene/main/node.h"
+#include "servers/audio/audio_stream.h"
 
 #include <emscripten.h>
 
@@ -48,6 +51,21 @@ void AudioDriverWeb::_state_change_callback(int p_state) {
 
 void AudioDriverWeb::_latency_update_callback(float p_latency) {
 	AudioDriverWeb::audio_context.output_latency = p_latency;
+}
+
+void AudioDriverWeb::_sample_playback_finished_callback(const char *p_playback_object_id) {
+	const ObjectID playback_id = ObjectID(String::to_int(p_playback_object_id));
+
+	Object *playback_object = ObjectDB::get_instance(playback_id);
+	if (playback_object == nullptr) {
+		return;
+	}
+	Ref<AudioSamplePlayback> playback = Object::cast_to<AudioSamplePlayback>(playback_object);
+	if (playback.is_null()) {
+		return;
+	}
+
+	AudioServer::get_singleton()->stop_sample_playback(playback);
 }
 
 void AudioDriverWeb::_audio_driver_process(int p_from, int p_samples) {
@@ -131,6 +149,9 @@ Error AudioDriverWeb::init() {
 	if (!input_rb) {
 		return ERR_OUT_OF_MEMORY;
 	}
+
+	godot_audio_sample_set_finished_callback(&_sample_playback_finished_callback);
+
 	return OK;
 }
 
@@ -184,6 +205,181 @@ Error AudioDriverWeb::input_stop() {
 	input_buffer.clear();
 	unlock();
 	return OK;
+}
+
+bool AudioDriverWeb::is_stream_registered_as_sample(const Ref<AudioStream> &p_stream) const {
+	ERR_FAIL_COND_V_MSG(p_stream.is_null(), false, "Parameter p_stream is null.");
+	return godot_audio_sample_stream_is_registered(itos(p_stream->get_instance_id()).utf8().get_data()) != 0;
+}
+
+void AudioDriverWeb::register_sample(const Ref<AudioSample> &p_sample) {
+	ERR_FAIL_COND_MSG(p_sample.is_null(), "Parameter p_sample is null.");
+	ERR_FAIL_COND_MSG(p_sample->stream.is_null(), "Parameter p_sample->stream is null.");
+
+	String loop_mode;
+	switch (p_sample->loop_mode) {
+		case AudioSample::LoopMode::LOOP_DISABLED: {
+			loop_mode = "disabled";
+		} break;
+
+		case AudioSample::LoopMode::LOOP_FORWARD: {
+			loop_mode = "forward";
+		} break;
+
+		case AudioSample::LoopMode::LOOP_PINGPONG: {
+			loop_mode = "pingpong";
+		} break;
+
+		case AudioSample::LoopMode::LOOP_BACKWARD: {
+			loop_mode = "backward";
+		} break;
+	}
+
+	double length = p_sample->stream->get_length();
+
+	Vector<AudioFrame> frames;
+	int frames_total = mix_rate * length;
+	{
+		Ref<AudioStreamPlayback> stream_playback = p_sample->stream->instantiate_playback();
+		frames.resize(frames_total);
+		AudioFrame *frames_ptr = frames.ptrw();
+		stream_playback->start();
+		stream_playback->mix(frames_ptr, 1.0f, frames_total);
+	}
+
+	PackedFloat32Array data;
+	data.resize(frames_total * 2);
+	float *data_ptrw = data.ptrw();
+	for (int i = 0; i < frames_total; i++) {
+		data_ptrw[i] = frames[i].left;
+		data_ptrw[i + frames_total] = frames[i].right;
+	}
+
+	godot_audio_sample_register_stream(
+			itos(p_sample->stream->get_instance_id()).utf8().get_data(),
+			data_ptrw,
+			frames_total,
+			loop_mode.utf8().get_data(),
+			p_sample->loop_begin,
+			p_sample->loop_end);
+}
+
+void AudioDriverWeb::unregister_sample(const Ref<AudioSample> &p_sample) {
+	ERR_FAIL_COND_MSG(p_sample.is_null(), "Parameter p_sample is null.");
+	ERR_FAIL_COND_MSG(p_sample->stream.is_null(), "Parameter p_sample->stream is null.");
+
+	godot_audio_sample_unregister_stream(itos(p_sample->stream->get_instance_id()).utf8().get_data());
+}
+
+void AudioDriverWeb::start_sample_playback(const Ref<AudioSamplePlayback> &p_playback) {
+	ERR_FAIL_COND_MSG(p_playback.is_null(), "Parameter p_playback is null.");
+	ERR_FAIL_COND_MSG(p_playback->stream.is_null(), "Parameter p_playback->stream is null.");
+
+	constexpr int real_max_channels = AudioServer::MAX_CHANNELS_PER_BUS * 2;
+	PackedFloat32Array volume;
+	volume.resize(real_max_channels);
+	float *volume_ptrw = volume.ptrw();
+	for (int i = 0; i < real_max_channels; i += 2) {
+		if (p_playback->volume_vector.is_empty()) {
+			volume_ptrw[i] = 0;
+			volume_ptrw[i + 1] = 0;
+		} else {
+			const AudioFrame &frame = p_playback->volume_vector[i / 2];
+			volume_ptrw[i] = frame.left;
+			volume_ptrw[i + 1] = frame.right;
+		}
+	}
+	godot_audio_sample_start(
+			itos(p_playback->get_instance_id()).utf8().get_data(),
+			itos(p_playback->stream->get_instance_id()).utf8().get_data(),
+			AudioServer::get_singleton()->get_bus_index(p_playback->bus),
+			p_playback->offset,
+			volume_ptrw);
+}
+
+void AudioDriverWeb::stop_sample_playback(const Ref<AudioSamplePlayback> &p_playback) {
+	ERR_FAIL_COND_MSG(p_playback.is_null(), "Parameter p_playback is null.");
+	godot_audio_sample_stop(itos(p_playback->get_instance_id()).utf8().get_data());
+}
+
+void AudioDriverWeb::set_sample_playback_pause(const Ref<AudioSamplePlayback> &p_playback, bool p_paused) {
+	ERR_FAIL_COND_MSG(p_playback.is_null(), "Parameter p_playback is null.");
+	godot_audio_sample_set_pause(itos(p_playback->get_instance_id()).utf8().get_data(), p_paused);
+}
+
+bool AudioDriverWeb::is_sample_playback_active(const Ref<AudioSamplePlayback> &p_playback) {
+	ERR_FAIL_COND_V_MSG(p_playback.is_null(), false, "Parameter p_playback is null.");
+	return godot_audio_sample_is_active(itos(p_playback->get_instance_id()).utf8().get_data()) != 0;
+}
+
+void AudioDriverWeb::update_sample_playback_pitch_scale(const Ref<AudioSamplePlayback> &p_playback, float p_pitch_scale) {
+	ERR_FAIL_COND_MSG(p_playback.is_null(), "Parameter p_playback is null.");
+	godot_audio_sample_update_pitch_scale(
+			itos(p_playback->get_instance_id()).utf8().get_data(),
+			p_pitch_scale);
+}
+
+void AudioDriverWeb::set_sample_playback_bus_volumes_linear(const Ref<AudioSamplePlayback> &p_playback, const HashMap<StringName, Vector<AudioFrame>> &p_bus_volumes) {
+	ERR_FAIL_COND_MSG(p_playback.is_null(), "Parameter p_playback is null.");
+
+	constexpr int real_max_channels = AudioServer::MAX_CHANNELS_PER_BUS * 2;
+
+	PackedInt32Array buses;
+	buses.resize(p_bus_volumes.size());
+	int32_t *buses_ptrw = buses.ptrw();
+	PackedFloat32Array values;
+	values.resize(p_bus_volumes.size() * AudioServer::MAX_CHANNELS_PER_BUS * 2);
+	float *values_ptrw = values.ptrw();
+	int idx = 0;
+	for (KeyValue<StringName, Vector<AudioFrame>> pair : p_bus_volumes) {
+		int bus_index = AudioServer::get_singleton()->get_bus_index(pair.key);
+		buses_ptrw[idx] = bus_index;
+		ERR_FAIL_COND(pair.value.size() != AudioServer::MAX_CHANNELS_PER_BUS);
+		for (int i = 0; i < real_max_channels; i += 2) {
+			const AudioFrame &frame = pair.value[i / 2];
+			values_ptrw[(idx * real_max_channels) + i] = frame.left;
+			values_ptrw[(idx * real_max_channels) + i + 1] = frame.right;
+		}
+		idx++;
+	}
+	godot_audio_sample_set_volumes_linear(
+			itos(p_playback->get_instance_id()).utf8().get_data(),
+			buses_ptrw,
+			buses.size(),
+			values_ptrw,
+			values.size());
+}
+
+void AudioDriverWeb::set_sample_bus_count(int p_count) {
+	godot_audio_sample_bus_set_count(p_count);
+}
+
+void AudioDriverWeb::remove_sample_bus(int p_index) {
+	godot_audio_sample_bus_remove(p_index);
+}
+
+void AudioDriverWeb::add_sample_bus(int p_at_pos) {
+	godot_audio_sample_bus_add(p_at_pos);
+}
+
+void AudioDriverWeb::move_sample_bus(int p_bus, int p_to_pos) {
+	godot_audio_sample_bus_move(p_bus, p_to_pos);
+}
+
+void AudioDriverWeb::set_sample_bus_send(int p_bus, const StringName &p_send) {
+	godot_audio_sample_bus_set_send(p_bus, AudioServer::get_singleton()->get_bus_index(p_send));
+}
+
+void AudioDriverWeb::set_sample_bus_volume_db(int p_bus, float p_volume_db) {
+	godot_audio_sample_bus_set_volume_db(p_bus, p_volume_db);
+}
+
+void AudioDriverWeb::set_sample_bus_solo(int p_bus, bool p_enable) {
+	godot_audio_sample_bus_set_solo(p_bus, p_enable);
+}
+
+void AudioDriverWeb::set_sample_bus_mute(int p_bus, bool p_enable) {
+	godot_audio_sample_bus_set_mute(p_bus, p_enable);
 }
 
 #ifdef THREADS_ENABLED

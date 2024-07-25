@@ -33,6 +33,7 @@
 
 #include "core/templates/hash_map.h"
 #include "core/templates/paged_allocator.h"
+#include "drivers/vulkan/rendering_context_driver_vulkan.h"
 #include "servers/rendering/rendering_device_driver.h"
 
 #ifdef DEBUG_ENABLED
@@ -48,8 +49,6 @@
 #include <vulkan/vulkan.h>
 #endif
 
-class VulkanContext;
-
 // Design principles:
 // - Vulkan structs are zero-initialized and fields not requiring a non-zero value are omitted (except in cases where expresivity reasons apply).
 class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
@@ -57,9 +56,101 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 	/**** GENERIC ****/
 	/*****************/
 
-	VulkanContext *context = nullptr;
-	VkDevice vk_device = VK_NULL_HANDLE; // Owned by the context.
+	struct CommandQueue;
+	struct SwapChain;
 
+	struct Queue {
+		VkQueue queue = VK_NULL_HANDLE;
+		uint32_t virtual_count = 0;
+		BinaryMutex submit_mutex;
+	};
+
+	struct SubgroupCapabilities {
+		uint32_t size = 0;
+		uint32_t min_size = 0;
+		uint32_t max_size = 0;
+		VkShaderStageFlags supported_stages = 0;
+		VkSubgroupFeatureFlags supported_operations = 0;
+		VkBool32 quad_operations_in_all_stages = false;
+		bool size_control_is_supported = false;
+
+		uint32_t supported_stages_flags_rd() const;
+		String supported_stages_desc() const;
+		uint32_t supported_operations_flags_rd() const;
+		String supported_operations_desc() const;
+	};
+
+	struct VRSCapabilities {
+		bool pipeline_vrs_supported = false; // We can specify our fragment rate on a pipeline level.
+		bool primitive_vrs_supported = false; // We can specify our fragment rate on each drawcall.
+		bool attachment_vrs_supported = false; // We can provide a density map attachment on our framebuffer.
+
+		Size2i min_texel_size;
+		Size2i max_texel_size;
+		Size2i max_fragment_size;
+
+		Size2i texel_size; // The texel size we'll use
+	};
+
+	struct ShaderCapabilities {
+		bool shader_float16_is_supported = false;
+		bool shader_int8_is_supported = false;
+	};
+
+	struct StorageBufferCapabilities {
+		bool storage_buffer_16_bit_access_is_supported = false;
+		bool uniform_and_storage_buffer_16_bit_access_is_supported = false;
+		bool storage_push_constant_16_is_supported = false;
+		bool storage_input_output_16 = false;
+	};
+
+	struct DeviceFunctions {
+		PFN_vkCreateSwapchainKHR CreateSwapchainKHR = nullptr;
+		PFN_vkDestroySwapchainKHR DestroySwapchainKHR = nullptr;
+		PFN_vkGetSwapchainImagesKHR GetSwapchainImagesKHR = nullptr;
+		PFN_vkAcquireNextImageKHR AcquireNextImageKHR = nullptr;
+		PFN_vkQueuePresentKHR QueuePresentKHR = nullptr;
+		PFN_vkCreateRenderPass2KHR CreateRenderPass2KHR = nullptr;
+	};
+
+	VkDevice vk_device = VK_NULL_HANDLE;
+	RenderingContextDriverVulkan *context_driver = nullptr;
+	RenderingContextDriver::Device context_device = {};
+	uint32_t frame_count = 1;
+	VkPhysicalDevice physical_device = VK_NULL_HANDLE;
+	VkPhysicalDeviceProperties physical_device_properties = {};
+	VkPhysicalDeviceFeatures physical_device_features = {};
+	VkPhysicalDeviceFeatures requested_device_features = {};
+	HashMap<CharString, bool> requested_device_extensions;
+	HashSet<CharString> enabled_device_extension_names;
+	TightLocalVector<TightLocalVector<Queue>> queue_families;
+	TightLocalVector<VkQueueFamilyProperties> queue_family_properties;
+	RDD::Capabilities device_capabilities;
+	SubgroupCapabilities subgroup_capabilities;
+	MultiviewCapabilities multiview_capabilities;
+	VRSCapabilities vrs_capabilities;
+	ShaderCapabilities shader_capabilities;
+	StorageBufferCapabilities storage_buffer_capabilities;
+	bool pipeline_cache_control_support = false;
+	DeviceFunctions device_functions;
+
+	void _register_requested_device_extension(const CharString &p_extension_name, bool p_required);
+	Error _initialize_device_extensions();
+	Error _check_device_features();
+	Error _check_device_capabilities();
+	Error _add_queue_create_info(LocalVector<VkDeviceQueueCreateInfo> &r_queue_create_info);
+	Error _initialize_device(const LocalVector<VkDeviceQueueCreateInfo> &p_queue_create_info);
+	Error _initialize_allocator();
+	Error _initialize_pipeline_cache();
+	VkResult _create_render_pass(VkDevice p_device, const VkRenderPassCreateInfo2 *p_create_info, const VkAllocationCallbacks *p_allocator, VkRenderPass *p_render_pass);
+	bool _release_image_semaphore(CommandQueue *p_command_queue, uint32_t p_semaphore_index, bool p_release_on_swap_chain);
+	bool _recreate_image_semaphore(CommandQueue *p_command_queue, uint32_t p_semaphore_index, bool p_release_on_swap_chain);
+	void _set_object_name(VkObjectType p_object_type, uint64_t p_object_handle, String p_object_name);
+
+public:
+	Error initialize(uint32_t p_device_index, uint32_t p_frame_count) override final;
+
+private:
 	/****************/
 	/**** MEMORY ****/
 	/****************/
@@ -119,6 +210,7 @@ public:
 	virtual uint8_t *texture_map(TextureID p_texture, const TextureSubresource &p_subresource) override final;
 	virtual void texture_unmap(TextureID p_texture) override final;
 	virtual BitField<TextureUsageBits> texture_get_usages_supported_by_format(DataFormat p_format, bool p_cpu_readable) override final;
+	virtual bool texture_can_make_shared_with_format(TextureID p_texture, DataFormat p_format, bool &r_raw_reinterpretation) override final;
 
 	/*****************/
 	/**** SAMPLER ****/
@@ -154,31 +246,104 @@ public:
 			VectorView<BufferBarrier> p_buffer_barriers,
 			VectorView<TextureBarrier> p_texture_barriers) override final;
 
-	/*************************/
-	/**** COMMAND BUFFERS ****/
-	/*************************/
-private:
-#ifdef DEBUG_ENABLED
-	// Vulkan doesn't need to know if the command buffers created in a pool
-	// will be primary or secondary, but RDD works like that, so we will enforce.
+	/****************/
+	/**** FENCES ****/
+	/****************/
 
-	HashSet<CommandPoolID> secondary_cmd_pools;
-	HashSet<CommandBufferID> secondary_cmd_buffers;
-#endif
+private:
+	struct Fence {
+		VkFence vk_fence = VK_NULL_HANDLE;
+		CommandQueue *queue_signaled_from = nullptr;
+	};
 
 public:
+	virtual FenceID fence_create() override final;
+	virtual Error fence_wait(FenceID p_fence) override final;
+	virtual void fence_free(FenceID p_fence) override final;
+
+	/********************/
+	/**** SEMAPHORES ****/
+	/********************/
+
+	virtual SemaphoreID semaphore_create() override final;
+	virtual void semaphore_free(SemaphoreID p_semaphore) override final;
+
+	/******************/
+	/**** COMMANDS ****/
+	/******************/
+
+	// ----- QUEUE FAMILY -----
+
+	virtual CommandQueueFamilyID command_queue_family_get(BitField<CommandQueueFamilyBits> p_cmd_queue_family_bits, RenderingContextDriver::SurfaceID p_surface = 0) override final;
+
+	// ----- QUEUE -----
+private:
+	struct CommandQueue {
+		LocalVector<VkSemaphore> present_semaphores;
+		LocalVector<VkSemaphore> image_semaphores;
+		LocalVector<SwapChain *> image_semaphores_swap_chains;
+		LocalVector<uint32_t> pending_semaphores_for_execute;
+		LocalVector<uint32_t> pending_semaphores_for_fence;
+		LocalVector<uint32_t> free_image_semaphores;
+		LocalVector<Pair<Fence *, uint32_t>> image_semaphores_for_fences;
+		uint32_t queue_family = 0;
+		uint32_t queue_index = 0;
+		uint32_t present_semaphore_index = 0;
+	};
+
+public:
+	virtual CommandQueueID command_queue_create(CommandQueueFamilyID p_cmd_queue_family, bool p_identify_as_main_queue = false) override final;
+	virtual Error command_queue_execute_and_present(CommandQueueID p_cmd_queue, VectorView<SemaphoreID> p_wait_semaphores, VectorView<CommandBufferID> p_cmd_buffers, VectorView<SemaphoreID> p_cmd_semaphores, FenceID p_cmd_fence, VectorView<SwapChainID> p_swap_chains) override final;
+	virtual void command_queue_free(CommandQueueID p_cmd_queue) override final;
+
+private:
 	// ----- POOL -----
 
-	virtual CommandPoolID command_pool_create(CommandBufferType p_cmd_buffer_type) override final;
+	struct CommandPool {
+		VkCommandPool vk_command_pool = VK_NULL_HANDLE;
+		CommandBufferType buffer_type = COMMAND_BUFFER_TYPE_PRIMARY;
+	};
+
+public:
+	virtual CommandPoolID command_pool_create(CommandQueueFamilyID p_cmd_queue_family, CommandBufferType p_cmd_buffer_type) override final;
 	virtual void command_pool_free(CommandPoolID p_cmd_pool) override final;
 
 	// ----- BUFFER -----
 
-	virtual CommandBufferID command_buffer_create(CommandBufferType p_cmd_buffer_type, CommandPoolID p_cmd_pool) override final;
+	virtual CommandBufferID command_buffer_create(CommandPoolID p_cmd_pool) override final;
 	virtual bool command_buffer_begin(CommandBufferID p_cmd_buffer) override final;
 	virtual bool command_buffer_begin_secondary(CommandBufferID p_cmd_buffer, RenderPassID p_render_pass, uint32_t p_subpass, FramebufferID p_framebuffer) override final;
 	virtual void command_buffer_end(CommandBufferID p_cmd_buffer) override final;
 	virtual void command_buffer_execute_secondary(CommandBufferID p_cmd_buffer, VectorView<CommandBufferID> p_secondary_cmd_buffers) override final;
+
+	/********************/
+	/**** SWAP CHAIN ****/
+	/********************/
+
+private:
+	struct SwapChain {
+		VkSwapchainKHR vk_swapchain = VK_NULL_HANDLE;
+		RenderingContextDriver::SurfaceID surface = RenderingContextDriver::SurfaceID();
+		VkFormat format = VK_FORMAT_UNDEFINED;
+		VkColorSpaceKHR color_space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+		TightLocalVector<VkImage> images;
+		TightLocalVector<VkImageView> image_views;
+		TightLocalVector<FramebufferID> framebuffers;
+		LocalVector<CommandQueue *> command_queues_acquired;
+		LocalVector<uint32_t> command_queues_acquired_semaphores;
+		RenderPassID render_pass;
+		uint32_t image_index = 0;
+	};
+
+	void _swap_chain_release(SwapChain *p_swap_chain);
+
+public:
+	virtual SwapChainID swap_chain_create(RenderingContextDriver::SurfaceID p_surface) override final;
+	virtual Error swap_chain_resize(CommandQueueID p_cmd_queue, SwapChainID p_swap_chain, uint32_t p_desired_framebuffer_count) override final;
+	virtual FramebufferID swap_chain_acquire_framebuffer(CommandQueueID p_cmd_queue, SwapChainID p_swap_chain, bool &r_resize_required) override final;
+	virtual RenderPassID swap_chain_get_render_pass(SwapChainID p_swap_chain) override final;
+	virtual DataFormat swap_chain_get_format(SwapChainID p_swap_chain) override final;
+	virtual void swap_chain_free(SwapChainID p_swap_chain) override final;
 
 	/*********************/
 	/**** FRAMEBUFFER ****/
@@ -329,6 +494,8 @@ private:
 
 	static int caching_instance_count;
 	PipelineCache pipelines_cache;
+	String pipeline_cache_id;
+	HashMap<uint64_t, bool> has_comp_alpha;
 
 public:
 	virtual void pipeline_free(PipelineID p_pipeline) override final;
@@ -439,24 +606,16 @@ public:
 	virtual void command_begin_label(CommandBufferID p_cmd_buffer, const char *p_label_name, const Color &p_color) override final;
 	virtual void command_end_label(CommandBufferID p_cmd_buffer) override final;
 
-	/****************/
-	/**** SCREEN ****/
-	/****************/
-
-	virtual DataFormat screen_get_format() override final;
-
 	/********************/
 	/**** SUBMISSION ****/
 	/********************/
 
-	virtual void begin_segment(CommandBufferID p_cmd_buffer, uint32_t p_frame_index, uint32_t p_frames_drawn) override final;
+	virtual void begin_segment(uint32_t p_frame_index, uint32_t p_frames_drawn) override final;
 	virtual void end_segment() override final;
 
 	/**************/
 	/**** MISC ****/
 	/**************/
-
-	VkPhysicalDeviceLimits limits = {};
 
 	virtual void set_object_name(ObjectType p_type, ID p_driver_id, const String &p_name) override final;
 	virtual uint64_t get_resource_native_handle(DriverResource p_type, ID p_driver_id) override final;
@@ -465,6 +624,12 @@ public:
 	virtual uint64_t api_trait_get(ApiTrait p_trait) override final;
 	virtual bool has_feature(Features p_feature) override final;
 	virtual const MultiviewCapabilities &get_multiview_capabilities() override final;
+	virtual String get_api_name() const override final;
+	virtual String get_api_version() const override final;
+	virtual String get_pipeline_cache_uuid() const override final;
+	virtual const Capabilities &get_capabilities() const override final;
+
+	virtual bool is_composite_alpha_supported(CommandQueueID p_queue) const override final;
 
 private:
 	/*********************/
@@ -482,7 +647,7 @@ private:
 	/******************/
 
 public:
-	RenderingDeviceDriverVulkan(VulkanContext *p_context, VkDevice p_vk_device);
+	RenderingDeviceDriverVulkan(RenderingContextDriverVulkan *p_context_driver);
 	virtual ~RenderingDeviceDriverVulkan();
 };
 

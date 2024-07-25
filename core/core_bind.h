@@ -63,9 +63,11 @@ public:
 	};
 
 	enum CacheMode {
-		CACHE_MODE_IGNORE, // Resource and subresources do not use path cache, no path is set into resource.
-		CACHE_MODE_REUSE, // Resource and subresources use patch cache, reuse existing loaded resources instead of loading from disk when available.
-		CACHE_MODE_REPLACE, // Resource and subresource use path cache, but replace existing loaded resources when available with information from disk.
+		CACHE_MODE_IGNORE,
+		CACHE_MODE_REUSE,
+		CACHE_MODE_REPLACE,
+		CACHE_MODE_IGNORE_DEEP,
+		CACHE_MODE_REPLACE_DEEP,
 	};
 
 	static ResourceLoader *get_singleton() { return singleton; }
@@ -132,6 +134,9 @@ public:
 		RENDERING_DRIVER_D3D12,
 	};
 
+	PackedByteArray get_entropy(int p_bytes);
+	String get_system_ca_certificates();
+
 	virtual PackedStringArray get_connected_midi_inputs();
 	virtual void open_midi_inputs();
 	virtual void close_midi_inputs();
@@ -154,13 +159,15 @@ public:
 	String get_executable_path() const;
 	String read_string_from_stdin();
 	int execute(const String &p_path, const Vector<String> &p_arguments, Array r_output = Array(), bool p_read_stderr = false, bool p_open_console = false);
+	Dictionary execute_with_pipe(const String &p_path, const Vector<String> &p_arguments);
 	int create_process(const String &p_path, const Vector<String> &p_arguments, bool p_open_console = false);
 	int create_instance(const Vector<String> &p_arguments);
 	Error kill(int p_pid);
-	Error shell_open(String p_uri);
-	Error shell_show_in_file_manager(String p_path, bool p_open_folder = true);
+	Error shell_open(const String &p_uri);
+	Error shell_show_in_file_manager(const String &p_path, bool p_open_folder = true);
 
 	bool is_process_running(int p_pid) const;
+	int get_process_exit_code(int p_pid) const;
 	int get_process_id() const;
 
 	void set_restart_on_exit(bool p_restart, const Vector<String> &p_restart_arguments = Vector<String>());
@@ -443,7 +450,11 @@ public:
 	Variant class_get_property(Object *p_object, const StringName &p_property) const;
 	Error class_set_property(Object *p_object, const StringName &p_property, const Variant &p_value) const;
 
+	Variant class_get_property_default_value(const StringName &p_class, const StringName &p_property) const;
+
 	bool class_has_method(const StringName &p_class, const StringName &p_method, bool p_no_inheritance = false) const;
+
+	int class_get_method_argument_count(const StringName &p_class, const StringName &p_method, bool p_no_inheritance = false) const;
 
 	TypedArray<Dictionary> class_get_method_list(const StringName &p_class, bool p_no_inheritance = false) const;
 
@@ -456,7 +467,13 @@ public:
 	PackedStringArray class_get_enum_constants(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance = false) const;
 	StringName class_get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false) const;
 
+	bool is_class_enum_bitfield(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance = false) const;
+
 	bool is_class_enabled(const StringName &p_class) const;
+
+#ifdef TOOLS_ENABLED
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
 
 	ClassDB() {}
 	~ClassDB() {}
@@ -528,7 +545,9 @@ public:
 	void set_print_error_messages(bool p_enabled);
 	bool is_printing_error_messages() const;
 
+#ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
 
 	Engine() { singleton = this; }
 };
@@ -560,8 +579,24 @@ public:
 	bool has_capture(const StringName &p_name);
 
 	void send_message(const String &p_msg, const Array &p_data);
+	void debug(bool p_can_continue = true, bool p_is_error_breakpoint = false);
+	void script_debug(ScriptLanguage *p_lang, bool p_can_continue = true, bool p_is_error_breakpoint = false);
 
 	static Error call_capture(void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured);
+
+	void line_poll();
+
+	void set_lines_left(int p_lines);
+	int get_lines_left() const;
+
+	void set_depth(int p_depth);
+	int get_depth() const;
+
+	bool is_breakpoint(int p_line, const StringName &p_source) const;
+	bool is_skipping_breakpoints() const;
+	void insert_breakpoint(int p_line, const StringName &p_source);
+	void remove_breakpoint(int p_line, const StringName &p_source);
+	void clear_breakpoints();
 
 	EngineDebugger() { singleton = this; }
 	~EngineDebugger();

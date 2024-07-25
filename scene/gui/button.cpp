@@ -50,8 +50,82 @@ void Button::_set_internal_margin(Side p_side, float p_value) {
 void Button::_queue_update_size_cache() {
 }
 
-void Button::_set_h_separation_is_valid_when_no_text(bool p_h_separation_is_valid_when_no_text) {
-	h_separation_is_valid_when_no_text = p_h_separation_is_valid_when_no_text;
+void Button::_update_theme_item_cache() {
+	Control::_update_theme_item_cache();
+
+	const bool rtl = is_layout_rtl();
+	if (rtl && has_theme_stylebox(SNAME("normal_mirrored"))) {
+		theme_cache.max_style_size = theme_cache.normal_mirrored->get_minimum_size();
+		theme_cache.style_margin_left = theme_cache.normal_mirrored->get_margin(SIDE_LEFT);
+		theme_cache.style_margin_right = theme_cache.normal_mirrored->get_margin(SIDE_RIGHT);
+		theme_cache.style_margin_top = theme_cache.normal_mirrored->get_margin(SIDE_TOP);
+		theme_cache.style_margin_bottom = theme_cache.normal_mirrored->get_margin(SIDE_BOTTOM);
+	} else {
+		theme_cache.max_style_size = theme_cache.normal->get_minimum_size();
+		theme_cache.style_margin_left = theme_cache.normal->get_margin(SIDE_LEFT);
+		theme_cache.style_margin_right = theme_cache.normal->get_margin(SIDE_RIGHT);
+		theme_cache.style_margin_top = theme_cache.normal->get_margin(SIDE_TOP);
+		theme_cache.style_margin_bottom = theme_cache.normal->get_margin(SIDE_BOTTOM);
+	}
+	if (has_theme_stylebox("hover_pressed")) {
+		if (rtl && has_theme_stylebox(SNAME("hover_pressed_mirrored"))) {
+			theme_cache.max_style_size = theme_cache.max_style_size.max(theme_cache.hover_pressed_mirrored->get_minimum_size());
+			theme_cache.style_margin_left = MAX(theme_cache.style_margin_left, theme_cache.hover_pressed_mirrored->get_margin(SIDE_LEFT));
+			theme_cache.style_margin_right = MAX(theme_cache.style_margin_right, theme_cache.hover_pressed_mirrored->get_margin(SIDE_RIGHT));
+			theme_cache.style_margin_top = MAX(theme_cache.style_margin_top, theme_cache.hover_pressed_mirrored->get_margin(SIDE_TOP));
+			theme_cache.style_margin_bottom = MAX(theme_cache.style_margin_bottom, theme_cache.hover_pressed_mirrored->get_margin(SIDE_BOTTOM));
+		} else {
+			theme_cache.max_style_size = theme_cache.max_style_size.max(theme_cache.hover_pressed->get_minimum_size());
+			theme_cache.style_margin_left = MAX(theme_cache.style_margin_left, theme_cache.hover_pressed->get_margin(SIDE_LEFT));
+			theme_cache.style_margin_right = MAX(theme_cache.style_margin_right, theme_cache.hover_pressed->get_margin(SIDE_RIGHT));
+			theme_cache.style_margin_top = MAX(theme_cache.style_margin_top, theme_cache.hover_pressed->get_margin(SIDE_TOP));
+			theme_cache.style_margin_bottom = MAX(theme_cache.style_margin_bottom, theme_cache.hover_pressed->get_margin(SIDE_BOTTOM));
+		}
+	}
+	if (rtl && has_theme_stylebox(SNAME("pressed_mirrored"))) {
+		theme_cache.max_style_size = theme_cache.max_style_size.max(theme_cache.pressed_mirrored->get_minimum_size());
+		theme_cache.style_margin_left = MAX(theme_cache.style_margin_left, theme_cache.pressed_mirrored->get_margin(SIDE_LEFT));
+		theme_cache.style_margin_right = MAX(theme_cache.style_margin_right, theme_cache.pressed_mirrored->get_margin(SIDE_RIGHT));
+		theme_cache.style_margin_top = MAX(theme_cache.style_margin_top, theme_cache.pressed_mirrored->get_margin(SIDE_TOP));
+		theme_cache.style_margin_bottom = MAX(theme_cache.style_margin_bottom, theme_cache.pressed_mirrored->get_margin(SIDE_BOTTOM));
+	} else {
+		theme_cache.max_style_size = theme_cache.max_style_size.max(theme_cache.pressed->get_minimum_size());
+		theme_cache.style_margin_left = MAX(theme_cache.style_margin_left, theme_cache.pressed->get_margin(SIDE_LEFT));
+		theme_cache.style_margin_right = MAX(theme_cache.style_margin_right, theme_cache.pressed->get_margin(SIDE_RIGHT));
+		theme_cache.style_margin_top = MAX(theme_cache.style_margin_top, theme_cache.pressed->get_margin(SIDE_TOP));
+		theme_cache.style_margin_bottom = MAX(theme_cache.style_margin_bottom, theme_cache.pressed->get_margin(SIDE_BOTTOM));
+	}
+	if (rtl && has_theme_stylebox(SNAME("hover_mirrored"))) {
+		theme_cache.max_style_size = theme_cache.max_style_size.max(theme_cache.hover_mirrored->get_minimum_size());
+		theme_cache.style_margin_left = MAX(theme_cache.style_margin_left, theme_cache.hover_mirrored->get_margin(SIDE_LEFT));
+		theme_cache.style_margin_right = MAX(theme_cache.style_margin_right, theme_cache.hover_mirrored->get_margin(SIDE_RIGHT));
+		theme_cache.style_margin_top = MAX(theme_cache.style_margin_top, theme_cache.hover_mirrored->get_margin(SIDE_TOP));
+		theme_cache.style_margin_bottom = MAX(theme_cache.style_margin_bottom, theme_cache.hover_mirrored->get_margin(SIDE_BOTTOM));
+	} else {
+		theme_cache.max_style_size = theme_cache.max_style_size.max(theme_cache.hover->get_minimum_size());
+		theme_cache.style_margin_left = MAX(theme_cache.style_margin_left, theme_cache.hover->get_margin(SIDE_LEFT));
+		theme_cache.style_margin_right = MAX(theme_cache.style_margin_right, theme_cache.hover->get_margin(SIDE_RIGHT));
+		theme_cache.style_margin_top = MAX(theme_cache.style_margin_top, theme_cache.hover->get_margin(SIDE_TOP));
+		theme_cache.style_margin_bottom = MAX(theme_cache.style_margin_bottom, theme_cache.hover->get_margin(SIDE_BOTTOM));
+	}
+	if (rtl && has_theme_stylebox(SNAME("disabled_mirrored"))) {
+		theme_cache.max_style_size = theme_cache.max_style_size.max(theme_cache.disabled_mirrored->get_minimum_size());
+		theme_cache.style_margin_left = MAX(theme_cache.style_margin_left, theme_cache.disabled_mirrored->get_margin(SIDE_LEFT));
+		theme_cache.style_margin_right = MAX(theme_cache.style_margin_right, theme_cache.disabled_mirrored->get_margin(SIDE_RIGHT));
+		theme_cache.style_margin_top = MAX(theme_cache.style_margin_top, theme_cache.disabled_mirrored->get_margin(SIDE_TOP));
+		theme_cache.style_margin_bottom = MAX(theme_cache.style_margin_bottom, theme_cache.disabled_mirrored->get_margin(SIDE_BOTTOM));
+	} else {
+		theme_cache.max_style_size = theme_cache.max_style_size.max(theme_cache.disabled->get_minimum_size());
+		theme_cache.style_margin_left = MAX(theme_cache.style_margin_left, theme_cache.disabled->get_margin(SIDE_LEFT));
+		theme_cache.style_margin_right = MAX(theme_cache.style_margin_right, theme_cache.disabled->get_margin(SIDE_RIGHT));
+		theme_cache.style_margin_top = MAX(theme_cache.style_margin_top, theme_cache.disabled->get_margin(SIDE_TOP));
+		theme_cache.style_margin_bottom = MAX(theme_cache.style_margin_bottom, theme_cache.disabled->get_margin(SIDE_BOTTOM));
+	}
+	theme_cache.max_style_size = theme_cache.max_style_size.max(Vector2(theme_cache.style_margin_left + theme_cache.style_margin_right, theme_cache.style_margin_top + theme_cache.style_margin_bottom));
+}
+
+Size2 Button::_get_largest_stylebox_size() const {
+	return theme_cache.max_style_size;
 }
 
 Ref<StyleBox> Button::_get_current_stylebox() const {
@@ -128,20 +202,27 @@ void Button::_notification(int p_what) {
 			queue_redraw();
 		} break;
 
+		case NOTIFICATION_RESIZED: {
+			if (autowrap_mode != TextServer::AUTOWRAP_OFF) {
+				_shape();
+
+				update_minimum_size();
+				queue_redraw();
+			}
+		} break;
+
 		case NOTIFICATION_DRAW: {
 			const RID ci = get_canvas_item();
 			const Size2 size = get_size();
 
-			const Ref<StyleBox> style = _get_current_stylebox();
-			{ // Draws the stylebox in the current state.
-				if (!flat) {
-					style->draw(ci, Rect2(Point2(), size));
-				}
+			Ref<StyleBox> style = _get_current_stylebox();
+			// Draws the stylebox in the current state.
+			if (!flat) {
+				style->draw(ci, Rect2(Point2(), size));
+			}
 
-				if (has_focus()) {
-					Ref<StyleBox> style2 = theme_cache.focus;
-					style2->draw(ci, Rect2(Point2(), size));
-				}
+			if (has_focus()) {
+				theme_cache.focus->draw(ci, Rect2(Point2(), size));
 			}
 
 			Ref<Texture2D> _icon = icon;
@@ -153,10 +234,10 @@ void Button::_notification(int p_what) {
 				break;
 			}
 
-			const float style_margin_left = style->get_margin(SIDE_LEFT);
-			const float style_margin_right = style->get_margin(SIDE_RIGHT);
-			const float style_margin_top = style->get_margin(SIDE_TOP);
-			const float style_margin_bottom = style->get_margin(SIDE_BOTTOM);
+			const float style_margin_left = (theme_cache.align_to_largest_stylebox) ? theme_cache.style_margin_left : style->get_margin(SIDE_LEFT);
+			const float style_margin_right = (theme_cache.align_to_largest_stylebox) ? theme_cache.style_margin_right : style->get_margin(SIDE_RIGHT);
+			const float style_margin_top = (theme_cache.align_to_largest_stylebox) ? theme_cache.style_margin_top : style->get_margin(SIDE_TOP);
+			const float style_margin_bottom = (theme_cache.align_to_largest_stylebox) ? theme_cache.style_margin_bottom : style->get_margin(SIDE_BOTTOM);
 
 			Size2 drawable_size_remained = size;
 
@@ -169,16 +250,14 @@ void Button::_notification(int p_what) {
 
 			float left_internal_margin_with_h_separation = _internal_margin[SIDE_LEFT];
 			float right_internal_margin_with_h_separation = _internal_margin[SIDE_RIGHT];
-			{ // The width reserved for internal element in derived classes (and h_separation if need).
+			{ // The width reserved for internal element in derived classes (and h_separation if needed).
 
-				if (!xl_text.is_empty() || h_separation_is_valid_when_no_text) {
-					if (_internal_margin[SIDE_LEFT] > 0.0f) {
-						left_internal_margin_with_h_separation += h_separation;
-					}
+				if (_internal_margin[SIDE_LEFT] > 0.0f) {
+					left_internal_margin_with_h_separation += h_separation;
+				}
 
-					if (_internal_margin[SIDE_RIGHT] > 0.0f) {
-						right_internal_margin_with_h_separation += h_separation;
-					}
+				if (_internal_margin[SIDE_RIGHT] > 0.0f) {
+					right_internal_margin_with_h_separation += h_separation;
 				}
 
 				drawable_size_remained.width -= left_internal_margin_with_h_separation + right_internal_margin_with_h_separation; // The size after the internal element is stripped.
@@ -261,7 +340,7 @@ void Button::_notification(int p_what) {
 				} break;
 			}
 
-			const bool is_clipped = clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING;
+			const bool is_clipped = clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING || autowrap_mode != TextServer::AUTOWRAP_OFF;
 			const Size2 custom_element_size = drawable_size_remained;
 
 			// Draw the icon.
@@ -295,6 +374,7 @@ void Button::_notification(int p_what) {
 						icon_size = Size2(icon_width, icon_height);
 					}
 					icon_size = _fit_icon_size(icon_size);
+					icon_size = icon_size.round();
 				}
 
 				if (icon_size.width > 0.0f) {
@@ -333,6 +413,7 @@ void Button::_notification(int p_what) {
 							icon_ofs.y = size.y - style_margin_bottom - icon_size.height;
 						} break;
 					}
+					icon_ofs = icon_ofs.floor();
 
 					Rect2 icon_region = Rect2(icon_ofs, icon_size);
 					draw_texture_rect(_icon, icon_region, false, icon_modulate_color);
@@ -355,7 +436,7 @@ void Button::_notification(int p_what) {
 			if (!xl_text.is_empty()) {
 				text_buf->set_alignment(align_rtl_checked);
 
-				float text_buf_width = MAX(1.0f, drawable_size_remained.width); // The space's width filled by the text_buf.
+				float text_buf_width = Math::ceil(MAX(1.0f, drawable_size_remained.width)); // The space's width filled by the text_buf.
 				text_buf->set_width(text_buf_width);
 
 				Point2 text_ofs;
@@ -406,6 +487,8 @@ Size2 Button::_fit_icon_size(const Size2 &p_size) const {
 }
 
 Size2 Button::get_minimum_size_for_text_and_icon(const String &p_text, Ref<Texture2D> p_icon) const {
+	// Do not include `_internal_margin`, it's already added in the `get_minimum_size` overrides.
+
 	Ref<TextParagraph> paragraph;
 	if (p_text.is_empty()) {
 		paragraph = text_buf;
@@ -415,7 +498,7 @@ Size2 Button::get_minimum_size_for_text_and_icon(const String &p_text, Ref<Textu
 	}
 
 	Size2 minsize = paragraph->get_size();
-	if (clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
+	if (clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING || autowrap_mode != TextServer::AUTOWRAP_OFF) {
 		minsize.width = 0;
 	}
 
@@ -447,7 +530,7 @@ Size2 Button::get_minimum_size_for_text_and_icon(const String &p_text, Ref<Textu
 		}
 	}
 
-	return _get_current_stylebox()->get_minimum_size() + minsize;
+	return (theme_cache.align_to_largest_stylebox ? _get_largest_stylebox_size() : _get_current_stylebox()->get_minimum_size()) + minsize;
 }
 
 void Button::_shape(Ref<TextParagraph> p_paragraph, String p_text) {
@@ -467,6 +550,23 @@ void Button::_shape(Ref<TextParagraph> p_paragraph, String p_text) {
 		// Can't shape without a valid font and a non-zero size.
 		return;
 	}
+
+	BitField<TextServer::LineBreakFlag> autowrap_flags = TextServer::BREAK_MANDATORY;
+	switch (autowrap_mode) {
+		case TextServer::AUTOWRAP_WORD_SMART:
+			autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_ADAPTIVE | TextServer::BREAK_MANDATORY;
+			break;
+		case TextServer::AUTOWRAP_WORD:
+			autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_MANDATORY;
+			break;
+		case TextServer::AUTOWRAP_ARBITRARY:
+			autowrap_flags = TextServer::BREAK_GRAPHEME_BOUND | TextServer::BREAK_MANDATORY;
+			break;
+		case TextServer::AUTOWRAP_OFF:
+			break;
+	}
+	autowrap_flags = autowrap_flags | TextServer::BREAK_TRIM_EDGE_SPACES;
+	p_paragraph->set_break_flags(autowrap_flags);
 
 	if (text_direction == Control::TEXT_DIRECTION_INHERITED) {
 		p_paragraph->set_direction(is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
@@ -508,6 +608,19 @@ void Button::set_text(const String &p_text) {
 
 String Button::get_text() const {
 	return text;
+}
+
+void Button::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
+	if (autowrap_mode != p_mode) {
+		autowrap_mode = p_mode;
+		_shape();
+		queue_redraw();
+		update_minimum_size();
+	}
+}
+
+TextServer::AutowrapMode Button::get_autowrap_mode() const {
+	return autowrap_mode;
 }
 
 void Button::set_text_direction(Control::TextDirection p_text_direction) {
@@ -649,6 +762,8 @@ void Button::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_text"), &Button::get_text);
 	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "overrun_behavior"), &Button::set_text_overrun_behavior);
 	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior"), &Button::get_text_overrun_behavior);
+	ClassDB::bind_method(D_METHOD("set_autowrap_mode", "autowrap_mode"), &Button::set_autowrap_mode);
+	ClassDB::bind_method(D_METHOD("get_autowrap_mode"), &Button::get_autowrap_mode);
 	ClassDB::bind_method(D_METHOD("set_text_direction", "direction"), &Button::set_text_direction);
 	ClassDB::bind_method(D_METHOD("get_text_direction"), &Button::get_text_direction);
 	ClassDB::bind_method(D_METHOD("set_language", "language"), &Button::set_language);
@@ -675,6 +790,7 @@ void Button::_bind_methods() {
 	ADD_GROUP("Text Behavior", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_text_alignment", "get_text_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "get_clip_text");
 
 	ADD_GROUP("Icon Behavior", "");
@@ -721,6 +837,8 @@ void Button::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Button, h_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Button, icon_max_width);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Button, align_to_largest_stylebox);
 }
 
 Button::Button(const String &p_text) {

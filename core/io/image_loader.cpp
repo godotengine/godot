@@ -80,7 +80,7 @@ void ImageFormatLoaderExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_format_loader"), &ImageFormatLoaderExtension::remove_format_loader);
 }
 
-Error ImageLoader::load_image(String p_file, Ref<Image> p_image, Ref<FileAccess> p_custom, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale) {
+Error ImageLoader::load_image(const String &p_file, Ref<Image> p_image, Ref<FileAccess> p_custom, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale) {
 	ERR_FAIL_COND_V_MSG(p_image.is_null(), ERR_INVALID_PARAMETER, "Can't load an image: invalid Image object.");
 
 	Ref<FileAccess> f = p_custom;

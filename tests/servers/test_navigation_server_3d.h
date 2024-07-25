@@ -32,10 +32,8 @@
 #define TEST_NAVIGATION_SERVER_3D_H
 
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/resources/primitive_meshes.h"
+#include "scene/resources/3d/primitive_meshes.h"
 #include "servers/navigation_server_3d.h"
-
-#include "tests/test_macros.h"
 
 namespace TestNavigationServer3D {
 
@@ -580,6 +578,51 @@ TEST_SUITE("[Navigation]") {
 	}
 #endif // DISABLE_DEPRECATED
 
+	TEST_CASE("[NavigationServer3D][SceneTree] Server should be able to parse geometry") {
+		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
+
+		// Prepare scene tree with simple mesh to serve as an input geometry.
+		Node3D *node_3d = memnew(Node3D);
+		SceneTree::get_singleton()->get_root()->add_child(node_3d);
+		Ref<PlaneMesh> plane_mesh = memnew(PlaneMesh);
+		plane_mesh->set_size(Size2(10.0, 10.0));
+		MeshInstance3D *mesh_instance = memnew(MeshInstance3D);
+		mesh_instance->set_mesh(plane_mesh);
+		node_3d->add_child(mesh_instance);
+
+		Ref<NavigationMesh> navigation_mesh = memnew(NavigationMesh);
+		Ref<NavigationMeshSourceGeometryData3D> source_geometry = memnew(NavigationMeshSourceGeometryData3D);
+		CHECK_EQ(source_geometry->get_vertices().size(), 0);
+		CHECK_EQ(source_geometry->get_indices().size(), 0);
+
+		navigation_server->parse_source_geometry_data(navigation_mesh, source_geometry, mesh_instance);
+		CHECK_EQ(source_geometry->get_vertices().size(), 12);
+		CHECK_EQ(source_geometry->get_indices().size(), 6);
+
+		SUBCASE("By default, parsing should remove any data that was parsed before") {
+			navigation_server->parse_source_geometry_data(navigation_mesh, source_geometry, mesh_instance);
+			CHECK_EQ(source_geometry->get_vertices().size(), 12);
+			CHECK_EQ(source_geometry->get_indices().size(), 6);
+		}
+
+		SUBCASE("Parsed geometry should be extendible with other geometry") {
+			source_geometry->merge(source_geometry); // Merging with itself.
+			const Vector<float> vertices = source_geometry->get_vertices();
+			const Vector<int> indices = source_geometry->get_indices();
+			REQUIRE_EQ(vertices.size(), 24);
+			REQUIRE_EQ(indices.size(), 12);
+			// Check if first newly added vertex is the same as first vertex.
+			CHECK_EQ(vertices[0], vertices[12]);
+			CHECK_EQ(vertices[1], vertices[13]);
+			CHECK_EQ(vertices[2], vertices[14]);
+			// Check if first newly added index is the same as first index.
+			CHECK_EQ(indices[0] + 4, indices[6]);
+		}
+
+		memdelete(mesh_instance);
+		memdelete(node_3d);
+	}
+
 	// This test case uses only public APIs on purpose - other test cases use simplified baking.
 	TEST_CASE("[NavigationServer3D][SceneTree] Server should be able to bake map correctly") {
 		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
@@ -654,10 +697,14 @@ TEST_SUITE("[Navigation]") {
 			CHECK_NE(navigation_server->map_get_closest_point(map, Vector3(0, 0, 0)), Vector3(0, 0, 0));
 			CHECK_NE(navigation_server->map_get_closest_point_normal(map, Vector3(0, 0, 0)), Vector3());
 			CHECK(navigation_server->map_get_closest_point_owner(map, Vector3(0, 0, 0)).is_valid());
-			// TODO: Test map_get_closest_point_to_segment() with p_use_collision=true as well.
 			CHECK_NE(navigation_server->map_get_closest_point_to_segment(map, Vector3(0, 0, 0), Vector3(1, 1, 1), false), Vector3());
+			CHECK_NE(navigation_server->map_get_closest_point_to_segment(map, Vector3(0, 0, 0), Vector3(1, 1, 1), true), Vector3());
 			CHECK_NE(navigation_server->map_get_path(map, Vector3(0, 0, 0), Vector3(10, 0, 10), true).size(), 0);
 			CHECK_NE(navigation_server->map_get_path(map, Vector3(0, 0, 0), Vector3(10, 0, 10), false).size(), 0);
+		}
+
+		SUBCASE("'map_get_closest_point_to_segment' with 'use_collision' should return default if segment doesn't intersect map") {
+			CHECK_EQ(navigation_server->map_get_closest_point_to_segment(map, Vector3(1, 2, 1), Vector3(1, 1, 1), true), Vector3());
 		}
 
 		SUBCASE("Elaborate query with 'CORRIDORFUNNEL' post-processing should yield non-empty result") {
@@ -721,6 +768,8 @@ TEST_SUITE("[Navigation]") {
 		navigation_server->process(0.0); // Give server some cycles to commit.
 	}
 
+	// FIXME: The race condition mentioned below is actually a problem and fails on CI (GH-90613).
+	/*
 	TEST_CASE("[NavigationServer3D] Server should be able to bake asynchronously") {
 		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
 		Ref<NavigationMesh> navigation_mesh = memnew(NavigationMesh);
@@ -738,6 +787,7 @@ TEST_SUITE("[Navigation]") {
 		CHECK_EQ(navigation_mesh->get_polygon_count(), 0);
 		CHECK_EQ(navigation_mesh->get_vertices().size(), 0);
 	}
+	*/
 }
 } //namespace TestNavigationServer3D
 

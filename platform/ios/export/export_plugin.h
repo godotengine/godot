@@ -81,9 +81,11 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 #ifdef MACOS_ENABLED
 	Thread check_for_changes_thread;
 	SafeFlag quit_request;
+	SafeFlag has_runnable_preset;
 
 	static bool _check_xcode_install();
 	static void _check_for_changes_poll_thread(void *ud);
+	void _update_preset_status();
 #endif
 
 	typedef Error (*FileHandler)(String p_file, void *p_userdata);
@@ -133,6 +135,8 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	Vector<ExportArchitecture> _get_supported_architectures() const;
 	Vector<String> _get_preset_architectures(const Ref<EditorExportPreset> &p_preset) const;
 
+	bool _archive_has_arm64(const String &p_path, uint32_t *r_cputype = nullptr, uint32_t *r_cpusubtype = nullptr) const;
+	int _archive_convert_to_simulator(const String &p_path) const;
 	void _check_xcframework_content(const String &p_path, int &r_total_libs, int &r_static_libs, int &r_dylibs, int &r_frameworks) const;
 	Error _convert_to_framework(const String &p_source, const String &p_destination, const String &p_id) const;
 
@@ -151,6 +155,8 @@ protected:
 	virtual void get_export_options(List<ExportOption> *r_options) const override;
 	virtual bool get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const override;
 	virtual String get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const override;
+
+	void _notification(int p_what);
 
 public:
 	virtual String get_name() const override { return "iOS"; }

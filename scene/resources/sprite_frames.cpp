@@ -224,8 +224,9 @@ void SpriteFrames::_set_animations(const Array &p_animations) {
 	}
 }
 
+#ifdef TOOLS_ENABLED
 void SpriteFrames::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-	String pf = p_function;
+	const String pf = p_function;
 	if (p_idx == 0) {
 		if (pf == "has_animation" || pf == "remove_animation" || pf == "rename_animation" ||
 				pf == "set_animation_speed" || pf == "get_animation_speed" ||
@@ -240,6 +241,7 @@ void SpriteFrames::get_argument_options(const StringName &p_function, int p_idx,
 	}
 	Resource::get_argument_options(p_function, p_idx, r_options);
 }
+#endif
 
 void SpriteFrames::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_animation", "anim"), &SpriteFrames::add_animation);
@@ -275,5 +277,5 @@ void SpriteFrames::_bind_methods() {
 }
 
 SpriteFrames::SpriteFrames() {
-	add_animation(SceneStringNames::get_singleton()->_default);
+	add_animation(SceneStringName(default_));
 }

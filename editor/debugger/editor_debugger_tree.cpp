@@ -31,6 +31,7 @@
 #include "editor_debugger_tree.h"
 
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/scene_tree_dock.h"
 #include "scene/debugger/scene_debugger.h"
@@ -44,7 +45,7 @@ EditorDebuggerTree::EditorDebuggerTree() {
 
 	// Popup
 	item_menu = memnew(PopupMenu);
-	item_menu->connect("id_pressed", callable_mp(this, &EditorDebuggerTree::_item_menu_id_pressed));
+	item_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorDebuggerTree::_item_menu_id_pressed));
 	add_child(item_menu);
 
 	// File Dialog
@@ -56,9 +57,15 @@ EditorDebuggerTree::EditorDebuggerTree() {
 void EditorDebuggerTree::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
+			set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+
 			connect("cell_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_selected));
 			connect("item_collapsed", callable_mp(this, &EditorDebuggerTree::_scene_tree_folded));
 			connect("item_mouse_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_rmb_selected));
+		} break;
+
+		case NOTIFICATION_ENTER_TREE: {
+			update_icon_max_width();
 		} break;
 	}
 }
@@ -145,17 +152,16 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 
 	// Nodes are in a flatten list, depth first. Use a stack of parents, avoid recursion.
 	List<Pair<TreeItem *, int>> parents;
-	for (int i = 0; i < p_tree->nodes.size(); i++) {
+	for (const SceneDebuggerTree::RemoteNode &node : p_tree->nodes) {
 		TreeItem *parent = nullptr;
 		if (parents.size()) { // Find last parent.
-			Pair<TreeItem *, int> &p = parents[0];
+			Pair<TreeItem *, int> &p = parents.front()->get();
 			parent = p.first;
 			if (!(--p.second)) { // If no child left, remove it.
 				parents.pop_front();
 			}
 		}
 		// Add this node.
-		const SceneDebuggerTree::RemoteNode &node = p_tree->nodes[i];
 		TreeItem *item = create_item(parent);
 		item->set_text(0, node.name);
 		if (node.scene_file_path.is_empty()) {
@@ -242,8 +248,8 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 				item = parent;
 				parent = item->get_parent();
 				// Check if parent expects more children.
-				for (int j = 0; j < parents.size(); j++) {
-					if (parents[j].first == item) {
+				for (const Pair<TreeItem *, int> &pair : parents) {
+					if (pair.first == item) {
 						parent = nullptr;
 						break; // Might have more children.
 					}
@@ -292,6 +298,10 @@ Variant EditorDebuggerTree::get_drag_data(const Point2 &p_point) {
 	return vformat("\"%s\"", path);
 }
 
+void EditorDebuggerTree::update_icon_max_width() {
+	add_theme_constant_override("icon_max_width", get_theme_constant("class_icon_size", EditorStringName(Editor)));
+}
+
 String EditorDebuggerTree::get_selected_path() {
 	if (!get_selected()) {
 		return "";
@@ -324,8 +334,8 @@ void EditorDebuggerTree::_item_menu_id_pressed(int p_option) {
 			Ref<PackedScene> sd = memnew(PackedScene);
 			ResourceSaver::get_recognized_extensions(sd, &extensions);
 			file_dialog->clear_filters();
-			for (int i = 0; i < extensions.size(); i++) {
-				file_dialog->add_filter("*." + extensions[i], extensions[i].to_upper());
+			for (const String &extension : extensions) {
+				file_dialog->add_filter("*." + extension, extension.to_upper());
 			}
 
 			String filename = get_selected_path().get_file() + "." + extensions.front()->get().to_lower();

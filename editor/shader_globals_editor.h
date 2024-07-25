@@ -33,8 +33,8 @@
 
 #include "editor/editor_autoload_settings.h"
 #include "editor/editor_data.h"
-#include "editor/editor_plugin_settings.h"
 #include "editor/editor_sectioned_inspector.h"
+#include "editor/plugins/editor_plugin_settings.h"
 #include "scene/gui/tab_container.h"
 
 class ShaderGlobalsEditorInterface;
@@ -61,6 +61,8 @@ protected:
 	void _notification(int p_what);
 
 public:
+	LineEdit *get_name_box() const;
+
 	ShaderGlobalsEditor();
 	~ShaderGlobalsEditor();
 };

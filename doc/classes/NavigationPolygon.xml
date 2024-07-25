@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationPolygon" inherits="Resource" is_experimental="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationPolygon" inherits="Resource" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A 2D navigation mesh that describes a traversable surface for pathfinding.
 	</brief_description>
@@ -43,8 +43,8 @@
 		[/codeblocks]
 	</description>
 	<tutorials>
-		<link title="2D Navigation Demo">https://godotengine.org/asset-library/asset/117</link>
 		<link title="Using NavigationMeshes">$DOCS_URL/tutorials/navigation/navigation_using_navigationmeshes.html</link>
+		<link title="Navigation Polygon 2D Demo">https://godotengine.org/asset-library/asset/2722</link>
 	</tutorials>
 	<methods>
 		<method name="add_outline">
@@ -132,11 +132,10 @@
 				Returns a [PackedVector2Array] containing all the vertices being used to create the polygons.
 			</description>
 		</method>
-		<method name="make_polygons_from_outlines" is_deprecated="true">
+		<method name="make_polygons_from_outlines" deprecated="Use [method NavigationServer2D.parse_source_geometry_data] and [method NavigationServer2D.bake_from_source_geometry_data] instead.">
 			<return type="void" />
 			<description>
 				Creates polygons from the outlines added in the editor or by script.
-				[i]Deprecated.[/i] This function is deprecated, and might be removed in a future release. Use [method NavigationServer2D.parse_source_geometry_data] and [method NavigationServer2D.bake_from_source_geometry_data] instead.
 			</description>
 		</method>
 		<method name="remove_outline">

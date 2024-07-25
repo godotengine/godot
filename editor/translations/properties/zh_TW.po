@@ -47,13 +47,14 @@
 # Skyter Lin <linskyter@gmail.com>, 2023.
 # powder <hhurhxhdyruw@gmail.com>, 2023.
 # lemtea8 <polylemtea@gmail.com>, 2024.
+# Chang-Chia Tseng <pswo10680@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-01-16 01:10+0000\n"
-"Last-Translator: lemtea8 <polylemtea@gmail.com>\n"
+"PO-Revision-Date: 2024-02-12 23:45+0000\n"
+"Last-Translator: Chang-Chia Tseng <pswo10680@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-properties/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -171,6 +172,12 @@ msgstr "節能"
 msgid "Keep Screen On"
 msgstr "保持螢幕開啟"
 
+msgid "Animation"
+msgstr "動畫"
+
+msgid "Warnings"
+msgstr "警告"
+
 msgid "Audio"
 msgstr "音訊"
 
@@ -277,25 +284,13 @@ msgid "Message"
 msgstr "訊息"
 
 msgid "Rendering"
-msgstr "渲染"
+msgstr "算繪"
 
 msgid "Occlusion Culling"
 msgstr "檢視遮擋剔除"
 
 msgid "BVH Build Quality"
 msgstr "BVH建構品質"
-
-msgid "Memory"
-msgstr "記憶體"
-
-msgid "Limits"
-msgstr "限制"
-
-msgid "Multithreaded Server"
-msgstr "多執行序伺服器"
-
-msgid "RID Pool Prealloc"
-msgstr "RID 池預分配"
 
 msgid "Internationalization"
 msgstr "國際化"
@@ -315,6 +310,9 @@ msgstr "計時器"
 msgid "Incremental Search Max Interval Msec"
 msgstr "增量搜索最大間隔(毫秒)"
 
+msgid "Tooltip Delay (sec)"
+msgstr "工具提示延遲（毫秒）"
+
 msgid "Common"
 msgstr "常見"
 
@@ -331,7 +329,10 @@ msgid "Use Oversampling"
 msgstr "使用過取樣"
 
 msgid "Rendering Device"
-msgstr "渲染設備"
+msgstr "算繪設備"
+
+msgid "V-Sync"
+msgstr "垂直同步"
 
 msgid "Staging Buffer"
 msgstr "暫存緩衝區"
@@ -347,6 +348,9 @@ msgstr "紋理上傳區域大小 px"
 
 msgid "Pipeline Cache"
 msgstr "管道快取"
+
+msgid "Enable"
+msgstr "啟用"
 
 msgid "Save Chunk Size (MB)"
 msgstr "儲存區塊大小（MB）"
@@ -405,6 +409,12 @@ msgstr "滑鼠模式"
 msgid "Use Accumulated Input"
 msgstr "使用累積輸入"
 
+msgid "Emulate Mouse From Touch"
+msgstr "以觸控模擬滑鼠"
+
+msgid "Emulate Touch From Mouse"
+msgstr "以滑鼠模擬觸控"
+
 msgid "Input Devices"
 msgstr "輸入裝置"
 
@@ -449,6 +459,9 @@ msgstr "按鍵標籤"
 
 msgid "Unicode"
 msgstr "Unicode"
+
+msgid "Location"
+msgstr "位置"
 
 msgid "Echo"
 msgstr "回聲"
@@ -603,8 +616,17 @@ msgstr "種子"
 msgid "State"
 msgstr "狀態"
 
+msgid "Memory"
+msgstr "記憶體"
+
+msgid "Limits"
+msgstr "限制"
+
 msgid "Message Queue"
 msgstr "訊息佇列"
+
+msgid "Max Steps"
+msgstr "最大步數"
 
 msgid "Network"
 msgstr "網路"
@@ -635,9 +657,6 @@ msgstr "工作池"
 
 msgid "Max Threads"
 msgstr "最大執行緒"
-
-msgid "Use System Threads for Low Priority Tasks"
-msgstr "將系統執行緒用於低優先度任務"
 
 msgid "Low Priority Thread Ratio"
 msgstr "低優先度執行緒的比率"
@@ -690,9 +709,6 @@ msgstr "值"
 msgid "Arg Count"
 msgstr "參數數量"
 
-msgid "Args"
-msgstr "參數"
-
 msgid "Type"
 msgstr "型別"
 
@@ -713,9 +729,6 @@ msgstr "起點偏移"
 
 msgid "End Offset"
 msgstr "終點偏移"
-
-msgid "Animation"
-msgstr "動畫"
 
 msgid "Easing"
 msgstr "緩入緩出"
@@ -783,59 +796,11 @@ msgstr "專注模式"
 msgid "Movie Maker Enabled"
 msgstr "啟用 Movie Maker"
 
-msgid "Interface"
-msgstr "界面"
+msgid "Theme"
+msgstr "主題"
 
-msgid "Save on Focus Loss"
-msgstr "失去焦點時儲存"
-
-msgid "Show Update Spinner"
-msgstr "顯示更新旋轉圖"
-
-msgid "Update Continuously"
-msgstr "持續更新"
-
-msgid "Localize Settings"
-msgstr "在地化設定"
-
-msgid "Scene Tabs"
-msgstr "場景分頁"
-
-msgid "Restore Scenes on Load"
-msgstr "載入時恢復場景"
-
-msgid "Inspector"
-msgstr "屬性面板"
-
-msgid "Default Property Name Style"
-msgstr "預設屬性名稱樣式"
-
-msgid "Default Float Step"
-msgstr "預設浮點數間隔"
-
-msgid "Disable Folding"
-msgstr "停用折疊"
-
-msgid "Auto Unfold Foreign Scenes"
-msgstr "自動展開場景"
-
-msgid "Horizontal Vector2 Editing"
-msgstr "水平Vector2編輯"
-
-msgid "Horizontal Vector Types Editing"
-msgstr "水平Vector類別編輯"
-
-msgid "Open Resources in Current Inspector"
-msgstr "在目前的屬性面板打開資源"
-
-msgid "Resources to Open in New Inspector"
-msgstr "在新的屬性面板開啟資源"
-
-msgid "Default Color Picker Mode"
-msgstr "預設顏色挑選器模式"
-
-msgid "Default Color Picker Shape"
-msgstr "預設顏色挑選器形狀"
+msgid "Line Spacing"
+msgstr "行間距"
 
 msgid "Base Type"
 msgstr "基礎型別"
@@ -846,11 +811,20 @@ msgstr "可編輯"
 msgid "Toggle Mode"
 msgstr "切換模式"
 
+msgid "Interface"
+msgstr "界面"
+
 msgid "Editor Language"
 msgstr "編輯器語言"
 
+msgid "Localize Settings"
+msgstr "在地化設定"
+
 msgid "Display Scale"
 msgstr "顯示縮放"
+
+msgid "Custom Display Scale"
+msgstr "自訂顯示縮放"
 
 msgid "Editor Screen"
 msgstr "編輯器螢幕"
@@ -858,17 +832,11 @@ msgstr "編輯器螢幕"
 msgid "Project Manager Screen"
 msgstr "專案管理員"
 
-msgid "Enable Pseudolocalization"
-msgstr "啟用模擬翻譯模式"
-
 msgid "Use Embedded Menu"
 msgstr "使用嵌入式選單"
 
 msgid "Expand to Title"
 msgstr "展開到標題列"
-
-msgid "Custom Display Scale"
-msgstr "自訂顯示縮放"
 
 msgid "Main Font Size"
 msgstr "主要字體大小"
@@ -918,11 +886,26 @@ msgstr "使用專門滑鼠按鍵以查看歷史紀錄"
 msgid "Save Each Scene on Quit"
 msgstr "退出時儲存各場景"
 
+msgid "Save on Focus Loss"
+msgstr "失去焦點時儲存"
+
 msgid "Accept Dialog Cancel OK Buttons"
 msgstr "接受對話框的取消/確定按鈕"
 
 msgid "Show Internal Errors in Toast Notifications"
 msgstr "在 Toast 通知中顯示內部錯誤"
+
+msgid "Show Update Spinner"
+msgstr "顯示更新旋轉圖"
+
+msgid "V-Sync Mode"
+msgstr "垂直同步模式"
+
+msgid "Update Continuously"
+msgstr "持續更新"
+
+msgid "Inspector"
+msgstr "屬性面板"
 
 msgid "Max Array Dictionary Items per Page"
 msgstr "每頁最大陣列字典項目數"
@@ -933,8 +916,35 @@ msgstr "顯示低階 OpenType 特性"
 msgid "Float Drag Speed"
 msgstr "浮點數拖動速度"
 
-msgid "Theme"
-msgstr "主題"
+msgid "Default Property Name Style"
+msgstr "預設屬性名稱樣式"
+
+msgid "Default Float Step"
+msgstr "預設浮點數間隔"
+
+msgid "Disable Folding"
+msgstr "停用折疊"
+
+msgid "Auto Unfold Foreign Scenes"
+msgstr "自動展開場景"
+
+msgid "Horizontal Vector2 Editing"
+msgstr "水平Vector2編輯"
+
+msgid "Horizontal Vector Types Editing"
+msgstr "水平Vector類別編輯"
+
+msgid "Open Resources in Current Inspector"
+msgstr "在目前的屬性面板打開資源"
+
+msgid "Resources to Open in New Inspector"
+msgstr "在新的屬性面板開啟資源"
+
+msgid "Default Color Picker Mode"
+msgstr "預設顏色挑選器模式"
+
+msgid "Default Color Picker Shape"
+msgstr "預設顏色挑選器形狀"
 
 msgid "Preset"
 msgstr "預設"
@@ -987,6 +997,9 @@ msgstr "啟用平移及縮放手勢"
 msgid "Scale Gizmo Handles"
 msgstr "縮放小工具控制柄"
 
+msgid "Scene Tabs"
+msgstr "場景分頁"
+
 msgid "Display Close Button"
 msgstr "已停用的按鈕"
 
@@ -999,11 +1012,11 @@ msgstr "最大寬度"
 msgid "Show Script Button"
 msgstr "顯示腳本按鈕"
 
+msgid "Restore Scenes on Load"
+msgstr "載入時恢復場景"
+
 msgid "Multi Window"
 msgstr "多視窗"
-
-msgid "Enable"
-msgstr "啟用"
 
 msgid "Restore Windows on Load"
 msgstr "載入時恢復視窗"
@@ -1061,9 +1074,6 @@ msgstr "匯入"
 
 msgid "Blender"
 msgstr "Blender"
-
-msgid "Blender 3 Path"
-msgstr "Blender 3 路徑"
 
 msgid "RPC Port"
 msgstr "RPC 埠"
@@ -1181,9 +1191,6 @@ msgstr "繪製定位字元"
 
 msgid "Draw Spaces"
 msgstr "繪製空格"
-
-msgid "Line Spacing"
-msgstr "行間距"
 
 msgid "Behavior"
 msgstr "行為"
@@ -1317,8 +1324,8 @@ msgstr "已實體化"
 msgid "Joint"
 msgstr "交點"
 
-msgid "Shape"
-msgstr "形狀"
+msgid "AABB"
+msgstr "AABB"
 
 msgid "Primary Grid Steps"
 msgstr "主網格步長"
@@ -1554,17 +1561,17 @@ msgstr "字體大小"
 msgid "Always Clear Output on Play"
 msgstr "執行時永遠清除輸出"
 
-msgid "Always Open Output on Play"
-msgstr "執行時永遠開啟輸出"
+msgid "HTTP Proxy"
+msgstr "HTTP 代理"
 
-msgid "Always Close Output on Stop"
-msgstr "停止時永遠關閉輸出"
-
-msgid "Remote Host"
-msgstr "遠端主機"
+msgid "Host"
+msgstr "主機"
 
 msgid "Editor TLS Certificates"
 msgstr "編輯器 TLS 證書"
+
+msgid "Remote Host"
+msgstr "遠端主機"
 
 msgid "Debugger"
 msgstr "除錯工具"
@@ -1584,11 +1591,14 @@ msgstr "遠端場景樹重新整理間隔"
 msgid "Remote Inspect Refresh Interval"
 msgstr "遠端檢查重新整理間隔"
 
-msgid "HTTP Proxy"
-msgstr "HTTP 代理"
+msgid "Input"
+msgstr "輸入"
 
-msgid "Host"
-msgstr "主機"
+msgid "Buffering"
+msgstr "緩衝"
+
+msgid "Agile Event Flushing"
+msgstr "敏捷事件刷新"
 
 msgid "Project Manager"
 msgstr "專案管理員"
@@ -1597,7 +1607,7 @@ msgid "Sorting Order"
 msgstr "排序方式"
 
 msgid "Default Renderer"
-msgstr "預設渲染器"
+msgstr "預設算繪器"
 
 msgid "Highlighting"
 msgstr "高亮"
@@ -1731,18 +1741,6 @@ msgstr "內嵌PCK"
 msgid "Texture Format"
 msgstr "紋理貼圖格式"
 
-msgid "BPTC"
-msgstr "BPTC"
-
-msgid "S3TC"
-msgstr "S3TC"
-
-msgid "ETC"
-msgstr "ETC"
-
-msgid "ETC2"
-msgstr "ETC2"
-
 msgid "Export"
 msgstr "匯出"
 
@@ -1775,75 +1773,6 @@ msgstr "隱藏拖曳條"
 
 msgid "Zoom"
 msgstr "縮放"
-
-msgid "Antialiasing"
-msgstr "抗鋸齒"
-
-msgid "Generate Mipmaps"
-msgstr "生成 Mipmap"
-
-msgid "Multichannel Signed Distance Field"
-msgstr "多通道帶符號距離場"
-
-msgid "MSDF Pixel Range"
-msgstr "MSDF 像素範圍"
-
-msgid "MSDF Size"
-msgstr "MSDF 大小"
-
-msgid "Allow System Fallback"
-msgstr "允許系統回退"
-
-msgid "Force Autohinter"
-msgstr "強制自動微調"
-
-msgid "Hinting"
-msgstr "微調"
-
-msgid "Subpixel Positioning"
-msgstr "次像素定位"
-
-msgid "Oversampling"
-msgstr "過取向"
-
-msgid "Metadata Overrides"
-msgstr "中繼資料覆蓋"
-
-msgid "Language Support"
-msgstr "語言支援"
-
-msgid "Script Support"
-msgstr "腳本支持"
-
-msgid "OpenType Features"
-msgstr "OpenType 特性"
-
-msgid "Fallbacks"
-msgstr "退回"
-
-msgid "Compress"
-msgstr "壓縮"
-
-msgid "Language"
-msgstr "語言"
-
-msgid "Outline Size"
-msgstr "輪廓尺寸"
-
-msgid "Variation"
-msgstr "變化"
-
-msgid "OpenType"
-msgstr "OpenType"
-
-msgid "Embolden"
-msgstr "加粗"
-
-msgid "Face Index"
-msgstr "字面索引"
-
-msgid "Transform"
-msgstr "變換"
 
 msgid "Retarget"
 msgstr "重定向"
@@ -1899,66 +1828,6 @@ msgstr "非重要位置"
 msgid "Unmapped Bones"
 msgstr "未對映骨骼"
 
-msgid "Create From"
-msgstr "建立自"
-
-msgid "Delimiter"
-msgstr "分隔符號"
-
-msgid "Character Ranges"
-msgstr "字元"
-
-msgid "Columns"
-msgstr "列數"
-
-msgid "Rows"
-msgstr "行數"
-
-msgid "Image Margin"
-msgstr "圖片外邊距"
-
-msgid "Character Margin"
-msgstr "字元邊距"
-
-msgid "High Quality"
-msgstr "品質"
-
-msgid "Lossy Quality"
-msgstr "有損品質"
-
-msgid "HDR Compression"
-msgstr "HDR 壓縮"
-
-msgid "Channel Pack"
-msgstr "通道打包"
-
-msgid "Mipmaps"
-msgstr "Mipmap"
-
-msgid "Generate"
-msgstr "生成"
-
-msgid "Limit"
-msgstr "極限"
-
-msgid "Slices"
-msgstr "切片"
-
-msgid "Horizontal"
-msgstr "水平方向"
-
-msgid "Vertical"
-msgstr "垂直方向"
-
-msgid "Arrangement"
-msgstr "排列"
-
-msgid "Layout"
-msgstr "配置；畫面佈局"
-
-msgid "Amount"
-msgstr "數量"
-
 msgid "Generate Tangents"
 msgstr "產生切線"
 
@@ -1973,6 +1842,9 @@ msgstr "優化網格"
 
 msgid "Skip Import"
 msgstr "跳過導入"
+
+msgid "Generate"
+msgstr "生成"
 
 msgid "NavMesh"
 msgstr "導航網格"
@@ -2082,9 +1954,6 @@ msgstr "儲存為檔案"
 msgid "Enabled"
 msgstr "已啟用"
 
-msgid "Make Streamable"
-msgstr "使可串流"
-
 msgid "Shadow Meshes"
 msgstr "陰影網格"
 
@@ -2108,6 +1977,12 @@ msgstr "迴圈模式"
 
 msgid "Keep Custom Tracks"
 msgstr "保留自訂軌道"
+
+msgid "Slices"
+msgstr "切片"
+
+msgid "Amount"
+msgstr "數量"
 
 msgid "Optimizer"
 msgstr "最佳化器"
@@ -2181,6 +2056,126 @@ msgstr "移除不可修改的軌道"
 msgid "Import Script"
 msgstr "匯入腳本"
 
+msgid "Antialiasing"
+msgstr "抗鋸齒"
+
+msgid "Generate Mipmaps"
+msgstr "生成 Mipmap"
+
+msgid "Multichannel Signed Distance Field"
+msgstr "多通道帶符號距離場"
+
+msgid "MSDF Pixel Range"
+msgstr "MSDF 像素範圍"
+
+msgid "MSDF Size"
+msgstr "MSDF 大小"
+
+msgid "Allow System Fallback"
+msgstr "允許系統回退"
+
+msgid "Force Autohinter"
+msgstr "強制自動微調"
+
+msgid "Hinting"
+msgstr "微調"
+
+msgid "Subpixel Positioning"
+msgstr "次像素定位"
+
+msgid "Oversampling"
+msgstr "過取向"
+
+msgid "Metadata Overrides"
+msgstr "中繼資料覆蓋"
+
+msgid "Language Support"
+msgstr "語言支援"
+
+msgid "Script Support"
+msgstr "腳本支持"
+
+msgid "OpenType Features"
+msgstr "OpenType 特性"
+
+msgid "Fallbacks"
+msgstr "退回"
+
+msgid "Compress"
+msgstr "壓縮"
+
+msgid "Language"
+msgstr "語言"
+
+msgid "Outline Size"
+msgstr "輪廓尺寸"
+
+msgid "Variation"
+msgstr "變化"
+
+msgid "OpenType"
+msgstr "OpenType"
+
+msgid "Embolden"
+msgstr "加粗"
+
+msgid "Face Index"
+msgstr "字面索引"
+
+msgid "Transform"
+msgstr "變換"
+
+msgid "Create From"
+msgstr "建立自"
+
+msgid "Delimiter"
+msgstr "分隔符號"
+
+msgid "Character Ranges"
+msgstr "字元"
+
+msgid "Columns"
+msgstr "列數"
+
+msgid "Rows"
+msgstr "行數"
+
+msgid "Image Margin"
+msgstr "圖片外邊距"
+
+msgid "Character Margin"
+msgstr "字元邊距"
+
+msgid "High Quality"
+msgstr "品質"
+
+msgid "Lossy Quality"
+msgstr "有損品質"
+
+msgid "HDR Compression"
+msgstr "HDR 壓縮"
+
+msgid "Channel Pack"
+msgstr "通道打包"
+
+msgid "Mipmaps"
+msgstr "Mipmap"
+
+msgid "Limit"
+msgstr "極限"
+
+msgid "Horizontal"
+msgstr "水平方向"
+
+msgid "Vertical"
+msgstr "垂直方向"
+
+msgid "Arrangement"
+msgstr "排列"
+
+msgid "Layout"
+msgstr "配置；畫面佈局"
+
 msgid "Normal Map"
 msgstr "法線貼圖"
 
@@ -2237,9 +2232,6 @@ msgstr "裁剪至區域"
 
 msgid "Trim Alpha Border From Region"
 msgstr "從區域修剪 Alpha 邊框"
-
-msgid "Force"
-msgstr "強制"
 
 msgid "8 Bit"
 msgstr "8位元"
@@ -2307,14 +2299,14 @@ msgstr "StreamPlayer3D"
 msgid "Camera"
 msgstr "相機"
 
+msgid "Particles"
+msgstr "粒子"
+
 msgid "Decal"
 msgstr "裝飾"
 
 msgid "Fog Volume"
 msgstr "霧體積"
-
-msgid "Particles"
-msgstr "粒子"
 
 msgid "Particle Attractor"
 msgstr "粒子吸引器"
@@ -2533,10 +2525,10 @@ msgid "Nvidia Disable Threaded Optimization"
 msgstr "Nvidia 停用多執行緒優化"
 
 msgid "Renderer"
-msgstr "渲染器"
+msgstr "算繪器"
 
 msgid "Rendering Method"
-msgstr "渲染方法"
+msgstr "算繪方法"
 
 msgid "Include Text Server Data"
 msgstr "包括文字伺服器資料"
@@ -2564,12 +2556,6 @@ msgstr "掌上型"
 
 msgid "Orientation"
 msgstr "朝向"
-
-msgid "V-Sync"
-msgstr "垂直同步"
-
-msgid "V-Sync Mode"
-msgstr "垂直同步模式"
 
 msgid "Output Latency"
 msgstr "輸出延遲"
@@ -2637,9 +2623,6 @@ msgstr "提交深度緩衝區"
 msgid "Startup Alert"
 msgstr "啟動警報"
 
-msgid "In Editor"
-msgstr "在編輯器中"
-
 msgid "Boot Splash"
 msgstr "啟動畫面"
 
@@ -2658,18 +2641,6 @@ msgstr "預設"
 msgid "Default Clear Color"
 msgstr "預設清除顏色"
 
-msgid "Show Image"
-msgstr "顯示圖像"
-
-msgid "Image"
-msgstr "圖像"
-
-msgid "Fullsize"
-msgstr "全尺寸"
-
-msgid "Use Filter"
-msgstr "使用篩選器"
-
 msgid "Icon"
 msgstr "圖示"
 
@@ -2679,20 +2650,8 @@ msgstr "macOS 原生圖示"
 msgid "Windows Native Icon"
 msgstr "Windows 原生圖示"
 
-msgid "Buffering"
-msgstr "緩衝"
-
-msgid "Agile Event Flushing"
-msgstr "敏捷事件刷新"
-
 msgid "Pointing"
 msgstr "指點"
-
-msgid "Emulate Touch From Mouse"
-msgstr "以滑鼠模擬觸控"
-
-msgid "Emulate Mouse From Touch"
-msgstr "以觸控模擬滑鼠"
 
 msgid "Android"
 msgstr "Android"
@@ -2712,6 +2671,18 @@ msgstr "自定義圖像熱點"
 msgid "Tooltip Position Offset"
 msgstr "工具提示位置偏移"
 
+msgid "Show Image"
+msgstr "顯示圖像"
+
+msgid "Image"
+msgstr "圖像"
+
+msgid "Fullsize"
+msgstr "全尺寸"
+
+msgid "Use Filter"
+msgstr "使用篩選器"
+
 msgid "Minimum Display Time"
 msgstr "最短顯示時間"
 
@@ -2729,6 +2700,24 @@ msgstr "解決方案目錄"
 
 msgid "Assembly Reload Attempts"
 msgstr "嘗試重新載入程式集"
+
+msgid "Time"
+msgstr "時間"
+
+msgid "Video"
+msgstr "影片"
+
+msgid "Regions"
+msgstr "區域"
+
+msgid "Agents"
+msgstr "代理"
+
+msgid "Polygons"
+msgstr "多邊形"
+
+msgid "Edges"
+msgstr "邊界"
 
 msgid "Operation"
 msgstr "操作"
@@ -2829,6 +2818,9 @@ msgstr "路徑接合"
 msgid "CSG"
 msgstr "CSG"
 
+msgid "Embedded Image Handling"
+msgstr "嵌入影像處理"
+
 msgid "GDScript"
 msgstr "GDScript"
 
@@ -2874,9 +2866,6 @@ msgstr "注意列表"
 msgid "Max Call Stack"
 msgstr "最大呼叫堆疊"
 
-msgid "Warnings"
-msgstr "警告"
-
 msgid "Exclude Addons"
 msgstr "排除外掛程式"
 
@@ -2892,11 +2881,11 @@ msgstr "在編輯器中顯示原生符號"
 msgid "Use Thread"
 msgstr "使用執行緒"
 
+msgid "Copyright"
+msgstr "版權"
+
 msgid "glTF"
 msgstr "glTF"
-
-msgid "Embedded Image Handling"
-msgstr "嵌入影像處理"
 
 msgid "Color"
 msgstr "顏色"
@@ -2969,9 +2958,6 @@ msgstr "主版號"
 
 msgid "Minor Version"
 msgstr "次版號"
-
-msgid "Copyright"
-msgstr "版權"
 
 msgid "GLB Data"
 msgstr "GLB 資料"
@@ -3418,7 +3404,7 @@ msgid "Display Refresh Rate"
 msgstr "顯示更新率"
 
 msgid "Render Target Size Multiplier"
-msgstr "渲染目標大小倍數"
+msgstr "算繪目標大小倍數"
 
 msgid "Hand"
 msgstr "掌上"
@@ -3711,45 +3697,6 @@ msgstr "通知 40 X 40"
 msgid "Notification 60 X 60"
 msgstr "通知 60 X 60"
 
-msgid "Landscape Launch Screens"
-msgstr "橫屏啟動畫面"
-
-msgid "iPhone 2436 X 1125"
-msgstr "iPhone 2436×1125"
-
-msgid "iPhone 2208 X 1242"
-msgstr "iPhone 2208×1242"
-
-msgid "iPad 1024 X 768"
-msgstr "iPad 1024×768"
-
-msgid "iPad 2048 X 1536"
-msgstr "iPad 2048×1536"
-
-msgid "Portrait Launch Screens"
-msgstr "豎屏啟動畫面"
-
-msgid "iPhone 640 X 960"
-msgstr "iPhone 640×960"
-
-msgid "iPhone 640 X 1136"
-msgstr "iPhone 640×1136"
-
-msgid "iPhone 750 X 1334"
-msgstr "iPhone 750×1334"
-
-msgid "iPhone 1125 X 2436"
-msgstr "iPhone 1125×2436"
-
-msgid "iPad 768 X 1024"
-msgstr "iPad 768×1024"
-
-msgid "iPad 1536 X 2048"
-msgstr "iPad 1536×2048"
-
-msgid "iPhone 1242 X 2208"
-msgstr "iPhone 1242×2208"
-
 msgid "App Store Team ID"
 msgstr "App Store 團隊 ID"
 
@@ -3785,9 +3732,6 @@ msgstr "短版號"
 
 msgid "Icon Interpolation"
 msgstr "圖示插值"
-
-msgid "Launch Screens Interpolation"
-msgstr "啟動畫面插值"
 
 msgid "Export Project Only"
 msgstr "僅匯出專案"
@@ -3833,9 +3777,6 @@ msgstr "照片圖庫使用描述當地語系化"
 
 msgid "Storyboard"
 msgstr "Storyboard"
-
-msgid "Use Launch Screen Storyboard"
-msgstr "使用啟動畫面 Storyboard"
 
 msgid "Image Scale Mode"
 msgstr "圖像縮放模式"
@@ -3953,9 +3894,6 @@ msgstr "停用庫校驗"
 
 msgid "Audio Input"
 msgstr "音源輸入"
-
-msgid "Location"
-msgstr "位置"
 
 msgid "Address Book"
 msgstr "地址簿"
@@ -4218,39 +4156,6 @@ msgstr "水準翻轉"
 msgid "Flip V"
 msgstr "垂直翻轉"
 
-msgid "Monitoring"
-msgstr "監視"
-
-msgid "Monitorable"
-msgstr "可被監視"
-
-msgid "Gravity"
-msgstr "重力"
-
-msgid "Space Override"
-msgstr "空間覆蓋"
-
-msgid "Point"
-msgstr "點"
-
-msgid "Point Unit Distance"
-msgstr "點單位距離"
-
-msgid "Point Center"
-msgstr "點中心"
-
-msgid "Direction"
-msgstr "方向"
-
-msgid "Linear Damp"
-msgstr "線性阻尼"
-
-msgid "Angular Damp"
-msgstr "角度阻尼"
-
-msgid "Audio Bus"
-msgstr "音訊匯流排"
-
 msgid "Current"
 msgstr "目前"
 
@@ -4368,35 +4273,8 @@ msgstr "清除邊距"
 msgid "Use Mipmaps"
 msgstr "使用 Mipmap"
 
-msgid "Disable Mode"
-msgstr "停用模式"
-
-msgid "Input"
-msgstr "輸入"
-
-msgid "Pickable"
-msgstr "可拾取"
-
-msgid "Build Mode"
-msgstr "建構模式"
-
-msgid "Disabled"
-msgstr "已停用的專案"
-
-msgid "One Way Collision"
-msgstr "單向碰撞"
-
-msgid "One Way Collision Margin"
-msgstr "單向碰撞邊距"
-
-msgid "Debug Color"
-msgstr "除錯顏色"
-
 msgid "Emitting"
 msgstr "發射"
-
-msgid "Time"
-msgstr "時間"
 
 msgid "Lifetime"
 msgstr "生命期"
@@ -4434,6 +4312,9 @@ msgstr "繪製順序"
 msgid "Emission Shape"
 msgstr "發射形狀"
 
+msgid "Shape"
+msgstr "形狀"
+
 msgid "Sphere Radius"
 msgstr "球體半徑"
 
@@ -4455,8 +4336,14 @@ msgstr "粒子旗標"
 msgid "Align Y"
 msgstr "對齊 Y"
 
+msgid "Direction"
+msgstr "方向"
+
 msgid "Spread"
 msgstr "發散"
+
+msgid "Gravity"
+msgstr "重力"
 
 msgid "Initial Velocity"
 msgstr "初速度"
@@ -4589,48 +4476,6 @@ msgstr "節"
 
 msgid "Section Subdivisions"
 msgstr "節細分"
-
-msgid "Node A"
-msgstr "節點 A"
-
-msgid "Node B"
-msgstr "節點 B"
-
-msgid "Bias"
-msgstr "偏置"
-
-msgid "Disable Collision"
-msgstr "停用碰撞"
-
-msgid "Softness"
-msgstr "柔軟度"
-
-msgid "Angular Limit"
-msgstr "角度極限"
-
-msgid "Lower"
-msgstr "下端"
-
-msgid "Upper"
-msgstr "上端"
-
-msgid "Motor"
-msgstr "馬達"
-
-msgid "Target Velocity"
-msgstr "目標速度"
-
-msgid "Length"
-msgstr "長度"
-
-msgid "Initial Offset"
-msgstr "初始偏移"
-
-msgid "Rest Length"
-msgstr "放鬆長度"
-
-msgid "Stiffness"
-msgstr "硬度"
 
 msgid "Editor Only"
 msgstr "僅編輯器"
@@ -4812,11 +4657,23 @@ msgstr "導航多邊形"
 msgid "Use Edge Connections"
 msgstr "使用邊界連接"
 
-msgid "Constrain Avoidance"
-msgstr "約束避障"
-
 msgid "Skew"
 msgstr "偏斜"
+
+msgid "Scroll Offset"
+msgstr "滾動偏移"
+
+msgid "Repeat"
+msgstr "重覆"
+
+msgid "Begin"
+msgstr "起點"
+
+msgid "End"
+msgstr "頁尾"
+
+msgid "Follow Viewport"
+msgstr "跟隨檢視區"
 
 msgid "Scroll"
 msgstr "滾動"
@@ -4863,92 +4720,35 @@ msgstr "旋轉"
 msgid "Cubic Interp"
 msgstr "三次插值"
 
-msgid "Bone 2D Nodepath"
-msgstr "骨骼 2D 節點路徑"
-
-msgid "Bone 2D Index"
-msgstr "骨骼 2D 索引"
-
-msgid "Auto Configure Joint"
-msgstr "自動配置關節"
-
-msgid "Simulate Physics"
-msgstr "類比物理"
-
-msgid "Follow Bone When Simulating"
-msgstr "模擬時跟隨骨骼"
-
-msgid "Constant Linear Velocity"
-msgstr "常線速度"
-
-msgid "Constant Angular Velocity"
-msgstr "常角速度"
-
 msgid "Sync to Physics"
 msgstr "與物理同步"
 
-msgid "Gravity Scale"
-msgstr "重力縮放"
+msgid "Monitoring"
+msgstr "監視"
 
-msgid "Mass Distribution"
-msgstr "重量分佈"
+msgid "Monitorable"
+msgstr "可被監視"
 
-msgid "Center of Mass Mode"
-msgstr "質心模式"
+msgid "Space Override"
+msgstr "空間覆蓋"
 
-msgid "Inertia"
-msgstr "慣性"
+msgid "Point"
+msgstr "點"
 
-msgid "Deactivation"
-msgstr "使失效"
+msgid "Point Unit Distance"
+msgstr "點單位距離"
 
-msgid "Sleeping"
-msgstr "睡眠"
+msgid "Point Center"
+msgstr "點中心"
 
-msgid "Can Sleep"
-msgstr "可以睡眠"
+msgid "Linear Damp"
+msgstr "線性阻尼"
 
-msgid "Lock Rotation"
-msgstr "鎖定旋轉"
+msgid "Angular Damp"
+msgstr "角度阻尼"
 
-msgid "Freeze"
-msgstr "凍結"
-
-msgid "Freeze Mode"
-msgstr "凍結模式"
-
-msgid "Solver"
-msgstr "求解器"
-
-msgid "Custom Integrator"
-msgstr "自訂集成器"
-
-msgid "Continuous CD"
-msgstr "連續碰撞檢測"
-
-msgid "Max Contacts Reported"
-msgstr "報告的最大接觸"
-
-msgid "Contact Monitor"
-msgstr "接觸監視器"
-
-msgid "Linear"
-msgstr "線性"
-
-msgid "Damp Mode"
-msgstr "阻尼模式"
-
-msgid "Damp"
-msgstr "阻尼"
-
-msgid "Angular"
-msgstr "角"
-
-msgid "Constant Forces"
-msgstr "恆定的力"
-
-msgid "Torque"
-msgstr "力矩"
+msgid "Audio Bus"
+msgstr "音訊匯流排"
 
 msgid "Motion Mode"
 msgstr "運動模式"
@@ -4995,17 +4795,83 @@ msgstr "牆體圖層"
 msgid "Safe Margin"
 msgstr "安全邊距"
 
-msgid "UV"
-msgstr "UV"
+msgid "Disable Mode"
+msgstr "停用模式"
 
-msgid "Vertex Colors"
-msgstr "頂點顏色"
+msgid "Pickable"
+msgstr "可拾取"
 
-msgid "Polygons"
-msgstr "多邊形"
+msgid "Build Mode"
+msgstr "建構模式"
 
-msgid "Internal Vertex Count"
-msgstr "內部頂點數"
+msgid "Disabled"
+msgstr "已停用的專案"
+
+msgid "One Way Collision"
+msgstr "單向碰撞"
+
+msgid "One Way Collision Margin"
+msgstr "單向碰撞邊距"
+
+msgid "Debug Color"
+msgstr "除錯顏色"
+
+msgid "Length"
+msgstr "長度"
+
+msgid "Rest Length"
+msgstr "放鬆長度"
+
+msgid "Stiffness"
+msgstr "硬度"
+
+msgid "Initial Offset"
+msgstr "初始偏移"
+
+msgid "Node A"
+msgstr "節點 A"
+
+msgid "Node B"
+msgstr "節點 B"
+
+msgid "Bias"
+msgstr "偏置"
+
+msgid "Disable Collision"
+msgstr "停用碰撞"
+
+msgid "Softness"
+msgstr "柔軟度"
+
+msgid "Angular Limit"
+msgstr "角度極限"
+
+msgid "Lower"
+msgstr "下端"
+
+msgid "Upper"
+msgstr "上端"
+
+msgid "Motor"
+msgstr "馬達"
+
+msgid "Target Velocity"
+msgstr "目標速度"
+
+msgid "Bone 2D Nodepath"
+msgstr "骨骼 2D 節點路徑"
+
+msgid "Bone 2D Index"
+msgstr "骨骼 2D 索引"
+
+msgid "Auto Configure Joint"
+msgstr "自動配置關節"
+
+msgid "Simulate Physics"
+msgstr "類比物理"
+
+msgid "Follow Bone When Simulating"
+msgstr "模擬時跟隨骨骼"
 
 msgid "Exclude Parent"
 msgstr "排除父節點"
@@ -5025,6 +4891,90 @@ msgstr "區域"
 msgid "Bodies"
 msgstr "實體"
 
+msgid "Gravity Scale"
+msgstr "重力縮放"
+
+msgid "Mass Distribution"
+msgstr "重量分佈"
+
+msgid "Center of Mass Mode"
+msgstr "質心模式"
+
+msgid "Inertia"
+msgstr "慣性"
+
+msgid "Deactivation"
+msgstr "使失效"
+
+msgid "Sleeping"
+msgstr "睡眠"
+
+msgid "Can Sleep"
+msgstr "可以睡眠"
+
+msgid "Lock Rotation"
+msgstr "鎖定旋轉"
+
+msgid "Freeze"
+msgstr "凍結"
+
+msgid "Freeze Mode"
+msgstr "凍結模式"
+
+msgid "Solver"
+msgstr "求解器"
+
+msgid "Custom Integrator"
+msgstr "自訂集成器"
+
+msgid "Continuous CD"
+msgstr "連續碰撞檢測"
+
+msgid "Contact Monitor"
+msgstr "接觸監視器"
+
+msgid "Max Contacts Reported"
+msgstr "報告的最大接觸"
+
+msgid "Linear"
+msgstr "線性"
+
+msgid "Damp Mode"
+msgstr "阻尼模式"
+
+msgid "Damp"
+msgstr "阻尼"
+
+msgid "Angular"
+msgstr "角"
+
+msgid "Constant Forces"
+msgstr "恆定的力"
+
+msgid "Torque"
+msgstr "力矩"
+
+msgid "Margin"
+msgstr "邊距"
+
+msgid "Max Results"
+msgstr "最大結果"
+
+msgid "Constant Linear Velocity"
+msgstr "常線速度"
+
+msgid "Constant Angular Velocity"
+msgstr "常角速度"
+
+msgid "UV"
+msgstr "UV"
+
+msgid "Vertex Colors"
+msgstr "頂點顏色"
+
+msgid "Internal Vertex Count"
+msgstr "內部頂點數"
+
 msgid "Remote Path"
 msgstr "遠端路徑"
 
@@ -5033,12 +4983,6 @@ msgstr "使用全域座標"
 
 msgid "Update"
 msgstr "更新"
-
-msgid "Margin"
-msgstr "邊距"
-
-msgid "Max Results"
-msgstr "最大結果"
 
 msgid "Auto Calculate Length and Angle"
 msgstr "自動計算長度和角度"
@@ -5074,7 +5018,7 @@ msgid "Tile Set"
 msgstr "圖塊集"
 
 msgid "Rendering Quadrant Size"
-msgstr "渲染象限大小"
+msgstr "算繪象限大小"
 
 msgid "Collision Animatable"
 msgstr "碰撞可動畫化"
@@ -5084,6 +5028,9 @@ msgstr "碰撞可見性模式"
 
 msgid "Navigation Visibility Mode"
 msgstr "導航可見性模式"
+
+msgid "Y Sort Origin"
+msgstr "Y 排序原點"
 
 msgid "Texture Normal"
 msgstr "正常紋理"
@@ -5111,24 +5058,6 @@ msgstr "啟用"
 
 msgid "Node Path"
 msgstr "節點路徑"
-
-msgid "Wind"
-msgstr "風"
-
-msgid "Force Magnitude"
-msgstr "力量大小"
-
-msgid "Attenuation Factor"
-msgstr "衰減係數"
-
-msgid "Source Path"
-msgstr "資源路徑"
-
-msgid "Reverb Bus"
-msgstr "混響匯流排"
-
-msgid "Uniformity"
-msgstr "均勻性"
 
 msgid "Attenuation Model"
 msgstr "衰減模型"
@@ -5196,11 +5125,8 @@ msgstr "近平面"
 msgid "Far"
 msgstr "遠平面"
 
-msgid "Ray Pickable"
-msgstr "射線可拾取"
-
-msgid "Capture on Drag"
-msgstr "拖曳時捕獲"
+msgid "Visibility AABB"
+msgstr "切換 AABB 可見／隱藏"
 
 msgid "Box Extents"
 msgstr "盒子範圍"
@@ -5231,9 +5157,6 @@ msgstr "縮放曲線 Z"
 
 msgid "Albedo"
 msgstr "反照率"
-
-msgid "Normal"
-msgstr "正常"
 
 msgid "Orm"
 msgstr "Orm"
@@ -5267,12 +5190,6 @@ msgstr "下側淡出"
 
 msgid "Distance Fade"
 msgstr "距離淡出"
-
-msgid "Begin"
-msgstr "起點"
-
-msgid "Visibility AABB"
-msgstr "切換 AABB 可見／隱藏"
 
 msgid "Transform Align"
 msgstr "變換對齊"
@@ -5310,98 +5227,11 @@ msgstr "能見度範圍"
 msgid "Begin Margin"
 msgstr "起始邊距"
 
-msgid "End"
-msgstr "頁尾"
-
 msgid "End Margin"
 msgstr "結束邊距"
 
 msgid "Fade Mode"
 msgstr "淡入淡出模式"
-
-msgid "Solver Priority"
-msgstr "求解優先級"
-
-msgid "Exclude Nodes From Collision"
-msgstr "從碰撞中排除節點"
-
-msgid "Params"
-msgstr "參數"
-
-msgid "Impulse Clamp"
-msgstr "脈衝極限"
-
-msgid "Relaxation"
-msgstr "鬆弛"
-
-msgid "Max Impulse"
-msgstr "最大脈衝"
-
-msgid "Linear Limit"
-msgstr "線性極限"
-
-msgid "Upper Distance"
-msgstr "距離上限"
-
-msgid "Lower Distance"
-msgstr "距離下限"
-
-msgid "Restitution"
-msgstr "復原"
-
-msgid "Linear Motion"
-msgstr "線性運動"
-
-msgid "Linear Ortho"
-msgstr "線性正交"
-
-msgid "Upper Angle"
-msgstr "上端角"
-
-msgid "Lower Angle"
-msgstr "下端角"
-
-msgid "Angular Motion"
-msgstr "角度運動"
-
-msgid "Angular Ortho"
-msgstr "角度正交"
-
-msgid "Swing Span"
-msgstr "擺動範圍"
-
-msgid "Twist Span"
-msgstr "扭轉範圍"
-
-msgid "X"
-msgstr "X"
-
-msgid "Y"
-msgstr "Y"
-
-msgid "Z"
-msgstr "Z"
-
-msgid "Linear Motor"
-msgstr "線性馬達"
-
-msgid "Force Limit"
-msgstr "力量極限"
-
-msgid "Linear Spring"
-msgstr "線性彈簧"
-
-msgid "Equilibrium Point"
-msgstr "平衡點"
-
-msgid "ERP"
-msgstr "ERP"
-
-msgid "Angular Motor"
-msgstr "角度馬達"
-
-msgid "Angular Spring"
-msgstr "角度彈簧"
 
 msgid "Pixel Size"
 msgstr "像素大小"
@@ -5443,10 +5273,10 @@ msgid "Texture Filter"
 msgstr "紋理篩選"
 
 msgid "Render Priority"
-msgstr "渲染優先順序"
+msgstr "算繪優先順序"
 
 msgid "Outline Render Priority"
-msgstr "輪廓渲染優先順序"
+msgstr "輪廓算繪優先順序"
 
 msgid "Text"
 msgstr "純文字"
@@ -5655,26 +5485,113 @@ msgstr "使用模型正面"
 msgid "Tilt Enabled"
 msgstr "啟用傾斜"
 
-msgid "Axis Lock"
-msgstr "軸鎖定"
+msgid "Wind"
+msgstr "風"
 
-msgid "Linear X"
-msgstr "線性 X"
+msgid "Force Magnitude"
+msgstr "力量大小"
 
-msgid "Linear Y"
-msgstr "線性 Y"
+msgid "Attenuation Factor"
+msgstr "衰減係數"
 
-msgid "Linear Z"
-msgstr "線性 Z"
+msgid "Source Path"
+msgstr "資源路徑"
 
-msgid "Angular X"
-msgstr "角度 X"
+msgid "Reverb Bus"
+msgstr "混響匯流排"
 
-msgid "Angular Y"
-msgstr "角度 Y"
+msgid "Uniformity"
+msgstr "均勻性"
 
-msgid "Angular Z"
-msgstr "角度 Z"
+msgid "Ray Pickable"
+msgstr "射線可拾取"
+
+msgid "Capture on Drag"
+msgstr "拖曳時捕獲"
+
+msgid "Swing Span"
+msgstr "擺動範圍"
+
+msgid "Twist Span"
+msgstr "扭轉範圍"
+
+msgid "Relaxation"
+msgstr "鬆弛"
+
+msgid "Linear Limit"
+msgstr "線性極限"
+
+msgid "X"
+msgstr "X"
+
+msgid "Upper Distance"
+msgstr "距離上限"
+
+msgid "Lower Distance"
+msgstr "距離下限"
+
+msgid "Restitution"
+msgstr "復原"
+
+msgid "Y"
+msgstr "Y"
+
+msgid "Z"
+msgstr "Z"
+
+msgid "Linear Motor"
+msgstr "線性馬達"
+
+msgid "Force Limit"
+msgstr "力量極限"
+
+msgid "Linear Spring"
+msgstr "線性彈簧"
+
+msgid "Equilibrium Point"
+msgstr "平衡點"
+
+msgid "Upper Angle"
+msgstr "上端角"
+
+msgid "Lower Angle"
+msgstr "下端角"
+
+msgid "ERP"
+msgstr "ERP"
+
+msgid "Angular Motor"
+msgstr "角度馬達"
+
+msgid "Angular Spring"
+msgstr "角度彈簧"
+
+msgid "Params"
+msgstr "參數"
+
+msgid "Max Impulse"
+msgstr "最大脈衝"
+
+msgid "Solver Priority"
+msgstr "求解優先級"
+
+msgid "Exclude Nodes From Collision"
+msgstr "從碰撞中排除節點"
+
+msgid "Impulse Clamp"
+msgstr "脈衝極限"
+
+msgid "Linear Motion"
+msgstr "線性運動"
+
+msgid "Linear Ortho"
+msgstr "線性正交"
+
+msgid "Angular Motion"
+msgstr "角度運動"
+
+msgid "Angular Ortho"
+msgstr "角度正交"
 
 msgid "Joint Constraints"
 msgstr "關節約束"
@@ -5772,104 +5689,32 @@ msgstr "線性阻尼模式"
 msgid "Angular Damp Mode"
 msgstr "角度阻尼模式"
 
+msgid "Axis Lock"
+msgstr "軸鎖定"
+
+msgid "Linear X"
+msgstr "線性 X"
+
+msgid "Linear Y"
+msgstr "線性 Y"
+
+msgid "Linear Z"
+msgstr "線性 Z"
+
+msgid "Angular X"
+msgstr "角度 X"
+
+msgid "Angular Y"
+msgstr "角度 Y"
+
+msgid "Angular Z"
+msgstr "角度 Z"
+
 msgid "Hit Back Faces"
 msgstr "命中背面"
 
 msgid "Debug Shape"
 msgstr "除錯形狀"
-
-msgid "Origin Offset"
-msgstr "原點偏移"
-
-msgid "Box Projection"
-msgstr "盒投影"
-
-msgid "Enable Shadows"
-msgstr "啟用陰影"
-
-msgid "Mesh LOD Threshold"
-msgstr "網格 LOD 閾值"
-
-msgid "Ambient"
-msgstr "環境"
-
-msgid "Color Energy"
-msgstr "色彩能量"
-
-msgid "Bones"
-msgstr "骨骼"
-
-msgid "Motion Scale"
-msgstr "運動縮放"
-
-msgid "Show Rest Only"
-msgstr "僅顯示放鬆"
-
-msgid "Animate Physical Bones"
-msgstr "動畫物理骨骼"
-
-msgid "Root Bone"
-msgstr "根骨骼"
-
-msgid "Tip Bone"
-msgstr "尖端骨骼"
-
-msgid "Interpolation"
-msgstr "插值"
-
-msgid "Target"
-msgstr "目標"
-
-msgid "Override Tip Basis"
-msgstr "覆蓋尖端基"
-
-msgid "Use Magnet"
-msgstr "使用磁吸"
-
-msgid "Magnet"
-msgstr "磁吸"
-
-msgid "Target Node"
-msgstr "目標節點"
-
-msgid "Min Distance"
-msgstr "最小距離"
-
-msgid "Max Iterations"
-msgstr "最大反覆運算數"
-
-msgid "Pinned Points"
-msgstr "固定點"
-
-msgid "Attachments"
-msgstr "附件"
-
-msgid "Point Index"
-msgstr "點索引"
-
-msgid "Spatial Attachment Path"
-msgstr "空間附件路徑"
-
-msgid "Parent Collision Ignore"
-msgstr "忽略父節點碰撞"
-
-msgid "Simulation Precision"
-msgstr "模擬精度"
-
-msgid "Total Mass"
-msgstr "總質量"
-
-msgid "Linear Stiffness"
-msgstr "線性硬度"
-
-msgid "Pressure Coefficient"
-msgstr "壓力係數"
-
-msgid "Damping Coefficient"
-msgstr "阻尼係數"
-
-msgid "Drag Coefficient"
-msgstr "阻力係數"
 
 msgid "Spring Length"
 msgstr "彈簧長度"
@@ -5913,11 +5758,98 @@ msgstr "行程"
 msgid "Max Force"
 msgstr "最大力度"
 
+msgid "Origin Offset"
+msgstr "原點偏移"
+
+msgid "Box Projection"
+msgstr "盒投影"
+
+msgid "Enable Shadows"
+msgstr "啟用陰影"
+
+msgid "Mesh LOD Threshold"
+msgstr "網格 LOD 閾值"
+
+msgid "Ambient"
+msgstr "環境"
+
+msgid "Color Energy"
+msgstr "色彩能量"
+
+msgid "Bones"
+msgstr "骨骼"
+
+msgid "Motion Scale"
+msgstr "運動縮放"
+
+msgid "Show Rest Only"
+msgstr "僅顯示放鬆"
+
+msgid "Root Bone"
+msgstr "根骨骼"
+
+msgid "Tip Bone"
+msgstr "尖端骨骼"
+
+msgid "Target"
+msgstr "目標"
+
+msgid "Override Tip Basis"
+msgstr "覆蓋尖端基"
+
+msgid "Use Magnet"
+msgstr "使用磁吸"
+
+msgid "Magnet"
+msgstr "磁吸"
+
+msgid "Target Node"
+msgstr "目標節點"
+
+msgid "Min Distance"
+msgstr "最小距離"
+
+msgid "Max Iterations"
+msgstr "最大反覆運算數"
+
+msgid "Active"
+msgstr "啟動"
+
+msgid "Pinned Points"
+msgstr "固定點"
+
+msgid "Attachments"
+msgstr "附件"
+
+msgid "Point Index"
+msgstr "點索引"
+
+msgid "Spatial Attachment Path"
+msgstr "空間附件路徑"
+
+msgid "Parent Collision Ignore"
+msgstr "忽略父節點碰撞"
+
+msgid "Simulation Precision"
+msgstr "模擬精度"
+
+msgid "Total Mass"
+msgstr "總質量"
+
+msgid "Linear Stiffness"
+msgstr "線性硬度"
+
+msgid "Pressure Coefficient"
+msgstr "壓力係數"
+
+msgid "Damping Coefficient"
+msgstr "阻尼係數"
+
+msgid "Drag Coefficient"
+msgstr "阻力係數"
+
 msgid "Track Physics Step"
 msgstr "追蹤物理反覆運算"
-
-msgid "AABB"
-msgstr "AABB"
 
 msgid "Sorting"
 msgstr "排序"
@@ -6020,9 +5952,6 @@ msgstr "輸入數"
 
 msgid "Request"
 msgstr "請求"
-
-msgid "Active"
-msgstr "啟動"
 
 msgid "Internal Active"
 msgstr "內部啟動"
@@ -6324,9 +6253,6 @@ msgstr "拉伸比例"
 msgid "Localization"
 msgstr "當地語系化"
 
-msgid "Auto Translate"
-msgstr "自動翻譯"
-
 msgid "Localize Numeral System"
 msgstr "當地語系化記數系統"
 
@@ -6395,9 +6321,6 @@ msgstr "根部子資料夾"
 
 msgid "Use Native Dialog"
 msgstr "使用原生對話方塊"
-
-msgid "Scroll Offset"
-msgstr "滾動偏移"
 
 msgid "Show Grid"
 msgstr "顯示網格"
@@ -6642,6 +6565,9 @@ msgstr "填充模式"
 msgid "Show Percentage"
 msgstr "顯示百分比"
 
+msgid "Indeterminate"
+msgstr "不確定"
+
 msgid "Min Value"
 msgstr "最小值"
 
@@ -6783,9 +6709,6 @@ msgstr "拖動器可見性"
 msgid "Stretch Shrink"
 msgstr "拉伸收縮"
 
-msgid "Tabs"
-msgstr "分頁"
-
 msgid "Current Tab"
 msgstr "目前分頁"
 
@@ -6815,6 +6738,9 @@ msgstr "滾動到選定"
 
 msgid "Select With RMB"
 msgstr "右鍵選擇"
+
+msgid "Tabs"
+msgstr "分頁"
 
 msgid "Tabs Visible"
 msgstr "分頁可見"
@@ -6873,6 +6799,18 @@ msgstr "點擊遮罩"
 msgid "Ignore Texture Size"
 msgstr "忽略紋理大小"
 
+msgid "Radial Fill"
+msgstr "徑向填充"
+
+msgid "Initial Angle"
+msgstr "初始角"
+
+msgid "Fill Degrees"
+msgstr "填充角度"
+
+msgid "Center Offset"
+msgstr "中心偏移"
+
 msgid "Nine Patch Stretch"
 msgstr "九宮格拉伸"
 
@@ -6890,18 +6828,6 @@ msgstr "進度偏移"
 
 msgid "Tint"
 msgstr "染色"
-
-msgid "Radial Fill"
-msgstr "徑向填充"
-
-msgid "Initial Angle"
-msgstr "初始角"
-
-msgid "Fill Degrees"
-msgstr "填充角度"
-
-msgid "Center Offset"
-msgstr "中心偏移"
 
 msgid "Expand Mode"
 msgstr "擴展模式"
@@ -6969,9 +6895,6 @@ msgstr "Z 為相對量"
 msgid "Y Sort Enabled"
 msgstr "啟用 Y 排序"
 
-msgid "Repeat"
-msgstr "重覆"
-
 msgid "Use Parent Material"
 msgstr "使用父級材質"
 
@@ -6983,9 +6906,6 @@ msgstr "法線貼圖"
 
 msgid "Shininess"
 msgstr "光澤度"
-
-msgid "Follow Viewport"
-msgstr "跟隨檢視區"
 
 msgid "Download File"
 msgstr "下載檔案"
@@ -7031,6 +6951,9 @@ msgstr "分組順序"
 
 msgid "Messages"
 msgstr "訊息"
+
+msgid "Auto Translate"
+msgstr "自動翻譯"
 
 msgid "Editor Description"
 msgstr "編輯器描述"
@@ -7155,6 +7078,9 @@ msgstr "預設環境"
 msgid "Enable Object Picking"
 msgstr "啟用物件拾取"
 
+msgid "Menu"
+msgstr "選單"
+
 msgid "Wait Time"
 msgstr "等待時間"
 
@@ -7248,9 +7174,6 @@ msgstr "四方形 3"
 msgid "Canvas Cull Mask"
 msgstr "畫布剔除遮罩"
 
-msgid "Tooltip Delay (sec)"
-msgstr "工具提示延遲（毫秒）"
-
 msgid "Size 2D Override"
 msgstr "2D 大小覆蓋"
 
@@ -7258,7 +7181,7 @@ msgid "Size 2D Override Stretch"
 msgstr "2D 大小覆蓋拉伸"
 
 msgid "Render Target"
-msgstr "渲染目標"
+msgstr "算繪目標"
 
 msgid "Clear Mode"
 msgstr "清屏模式"
@@ -7306,10 +7229,10 @@ msgid "Layer Names"
 msgstr "圖層名稱"
 
 msgid "2D Render"
-msgstr "2D 渲染"
+msgstr "2D 算繪"
 
 msgid "3D Render"
-msgstr "3D 渲染"
+msgstr "3D 算繪"
 
 msgid "2D Physics"
 msgstr "2D 物理"
@@ -7322,6 +7245,369 @@ msgstr "3D 物理"
 
 msgid "3D Navigation"
 msgstr "3D 導航"
+
+msgid "Segments"
+msgstr "分段"
+
+msgid "Parsed Geometry Type"
+msgstr "解析幾何體型別"
+
+msgid "Parsed Collision Mask"
+msgstr "解析碰撞遮罩"
+
+msgid "Source Geometry Mode"
+msgstr "來源幾何體模式"
+
+msgid "Source Geometry Group Name"
+msgstr "來源幾何體分組名稱"
+
+msgid "Cells"
+msgstr "儲存格"
+
+msgid "A"
+msgstr "A"
+
+msgid "B"
+msgstr "B"
+
+msgid "Slide on Slope"
+msgstr "斜坡滑動"
+
+msgid "Custom Solver Bias"
+msgstr "自訂求解器偏置"
+
+msgid "Execution Mode"
+msgstr "執行模式"
+
+msgid "Target Nodepath"
+msgstr "目標節點路徑"
+
+msgid "Tip Nodepath"
+msgstr "尖端節點路徑"
+
+msgid "CCDIK Data Chain Length"
+msgstr "CCDIK 資料鏈長度"
+
+msgid "FABRIK Data Chain Length"
+msgstr "FABRIK 資料鏈長度"
+
+msgid "Jiggle Data Chain Length"
+msgstr "Jiggle 資料鏈長度"
+
+msgid "Default Joint Settings"
+msgstr "預設關節設定"
+
+msgid "Use Gravity"
+msgstr "使用重力"
+
+msgid "Bone Index"
+msgstr "骨骼索引"
+
+msgid "Bone 2D Node"
+msgstr "Bone2D 節點"
+
+msgid "Physical Bone Chain Length"
+msgstr "物理骨鏈長度"
+
+msgid "Target Minimum Distance"
+msgstr "目標最小距離"
+
+msgid "Target Maximum Distance"
+msgstr "目標最大距離"
+
+msgid "Flip Bend Direction"
+msgstr "翻轉彎曲方向"
+
+msgid "Modification Count"
+msgstr "修改數"
+
+msgid "Right Side"
+msgstr "右側邊緣"
+
+msgid "Right Corner"
+msgstr "右側角落"
+
+msgid "Bottom Right Side"
+msgstr "右下邊緣"
+
+msgid "Bottom Right Corner"
+msgstr "右下角落"
+
+msgid "Bottom Side"
+msgstr "下側邊緣"
+
+msgid "Bottom Corner"
+msgstr "下側角落"
+
+msgid "Bottom Left Side"
+msgstr "左下邊緣"
+
+msgid "Bottom Left Corner"
+msgstr "左下角落"
+
+msgid "Left Side"
+msgstr "左側邊緣"
+
+msgid "Left Corner"
+msgstr "左側角落"
+
+msgid "Top Left Side"
+msgstr "左上邊緣"
+
+msgid "Top Left Corner"
+msgstr "左上角落"
+
+msgid "Top Side"
+msgstr "上側邊緣"
+
+msgid "Top Corner"
+msgstr "上側角落"
+
+msgid "Top Right Side"
+msgstr "右上邊緣"
+
+msgid "Top Right Corner"
+msgstr "右上角落"
+
+msgid "Terrains"
+msgstr "地形"
+
+msgid "Custom Data"
+msgstr "自訂資料"
+
+msgid "Tile Proxies"
+msgstr "圖塊代理"
+
+msgid "Source Level"
+msgstr "原始碼等級"
+
+msgid "Coords Level"
+msgstr "座標級別"
+
+msgid "Alternative Level"
+msgstr "備選級別"
+
+msgid "Tile Shape"
+msgstr "圖塊形狀"
+
+msgid "Tile Layout"
+msgstr "圖塊佈局"
+
+msgid "Tile Offset Axis"
+msgstr "圖塊偏移軸"
+
+msgid "Tile Size"
+msgstr "圖塊大小"
+
+msgid "UV Clipping"
+msgstr "UV 裁剪"
+
+msgid "Occlusion Layers"
+msgstr "遮擋圖層"
+
+msgid "Physics Layers"
+msgstr "實體圖層"
+
+msgid "Terrain Sets"
+msgstr "地形集"
+
+msgid "Custom Data Layers"
+msgstr "自訂資料層"
+
+msgid "Scene"
+msgstr "場景"
+
+msgid "Display Placeholder"
+msgstr "顯示預留位置"
+
+msgid "Polygons Count"
+msgstr "多邊形數"
+
+msgid "One Way"
+msgstr "單向"
+
+msgid "One Way Margin"
+msgstr "單向邊距"
+
+msgid "Terrains Peering Bit"
+msgstr "地形臨接位"
+
+msgid "Transpose"
+msgstr "轉置"
+
+msgid "Texture Origin"
+msgstr "紋理原點"
+
+msgid "Terrain Set"
+msgstr "地形集"
+
+msgid "Terrain"
+msgstr "地形"
+
+msgid "Miscellaneous"
+msgstr "雜項"
+
+msgid "Probability"
+msgstr "概率"
+
+msgid "Distance"
+msgstr "距離"
+
+msgid "Backface Collision"
+msgstr "背面碰撞"
+
+msgid "Density"
+msgstr "密度"
+
+msgid "Height Falloff"
+msgstr "高度衰減"
+
+msgid "Edge Fade"
+msgstr "邊緣淡化"
+
+msgid "Density Texture"
+msgstr "密度紋理"
+
+msgid "Map Width"
+msgstr "貼圖寬度"
+
+msgid "Map Depth"
+msgstr "貼圖深度"
+
+msgid "Map Data"
+msgstr "地圖資料"
+
+msgid "Item"
+msgstr "項目"
+
+msgid "Mesh Transform"
+msgstr "網格變換"
+
+msgid "Navigation Mesh Transform"
+msgstr "導航網格變換"
+
+msgid "Preview"
+msgstr "預覽"
+
+msgid "Add UV2"
+msgstr "新增 UV2"
+
+msgid "UV2 Padding"
+msgstr "UV2 填充"
+
+msgid "Subdivide Width"
+msgstr "細分寬度"
+
+msgid "Subdivide Height"
+msgstr "細分高度"
+
+msgid "Subdivide Depth"
+msgstr "細分深度"
+
+msgid "Top Radius"
+msgstr "頂部半徑"
+
+msgid "Bottom Radius"
+msgstr "底部半徑"
+
+msgid "Cap Top"
+msgstr "頂蓋"
+
+msgid "Cap Bottom"
+msgstr "底蓋"
+
+msgid "Left to Right"
+msgstr "從左到右"
+
+msgid "Is Hemisphere"
+msgstr "是否半球"
+
+msgid "Ring Segments"
+msgstr "環段數"
+
+msgid "Radial Steps"
+msgstr "徑向步數"
+
+msgid "Section Length"
+msgstr "節長度"
+
+msgid "Section Rings"
+msgstr "節環數"
+
+msgid "Section Segments"
+msgstr "節段數"
+
+msgid "Curve Step"
+msgstr "曲線步長"
+
+msgid "Bind Count"
+msgstr "綁定數"
+
+msgid "Bind"
+msgstr "綁定"
+
+msgid "Bone"
+msgstr "骨骼"
+
+msgid "Sky"
+msgstr "天空"
+
+msgid "Top Color"
+msgstr "頂部顏色"
+
+msgid "Horizon Color"
+msgstr "地平線顏色"
+
+msgid "Energy Multiplier"
+msgstr "能量倍數"
+
+msgid "Cover"
+msgstr "天穹"
+
+msgid "Cover Modulate"
+msgstr "天穹調變"
+
+msgid "Ground"
+msgstr "地面"
+
+msgid "Bottom Color"
+msgstr "底部顏色"
+
+msgid "Sun"
+msgstr "太陽"
+
+msgid "Panorama"
+msgstr "全景"
+
+msgid "Rayleigh"
+msgstr "瑞利散射"
+
+msgid "Coefficient"
+msgstr "係數"
+
+msgid "Mie"
+msgstr "米氏散射"
+
+msgid "Eccentricity"
+msgstr "偏心率"
+
+msgid "Turbidity"
+msgstr "濁度"
+
+msgid "Sun Disk Scale"
+msgstr "太陽盤縮放"
+
+msgid "Ground Color"
+msgstr "地面顏色"
+
+msgid "Night Sky"
+msgstr "夜空"
+
+msgid "Fallback Environment"
+msgstr "退回環境"
+
+msgid "Plane"
+msgstr "平面"
 
 msgid "Frames"
 msgstr "影格"
@@ -7440,12 +7726,6 @@ msgstr "粒子動畫迴圈"
 msgid "Load Path"
 msgstr "載入路徑"
 
-msgid "Segments"
-msgstr "分段"
-
-msgid "Backface Collision"
-msgstr "背面碰撞"
-
 msgid "Bake Resolution"
 msgstr "烘焙解析度"
 
@@ -7467,14 +7747,8 @@ msgstr "曲線 Z"
 msgid "Background"
 msgstr "背景"
 
-msgid "Energy Multiplier"
-msgstr "能量倍數"
-
 msgid "Canvas Max Layer"
 msgstr "畫布最大圖層"
-
-msgid "Sky"
-msgstr "天空"
 
 msgid "Custom FOV"
 msgstr "自訂 FOV"
@@ -7499,9 +7773,6 @@ msgstr "白點"
 
 msgid "SSR"
 msgstr "SSR"
-
-msgid "Max Steps"
-msgstr "最大步數"
 
 msgid "Fade In"
 msgstr "淡入"
@@ -7626,9 +7897,6 @@ msgstr "光線能量"
 msgid "Sun Scatter"
 msgstr "太陽散射"
 
-msgid "Density"
-msgstr "密度"
-
 msgid "Aerial Perspective"
 msgstr "空氣透視"
 
@@ -7668,15 +7936,6 @@ msgstr "飽和度"
 msgid "Color Correction"
 msgstr "顏色校正"
 
-msgid "Height Falloff"
-msgstr "高度衰減"
-
-msgid "Edge Fade"
-msgstr "邊緣淡化"
-
-msgid "Density Texture"
-msgstr "密度紋理"
-
 msgid "Base Font"
 msgstr "基礎字體"
 
@@ -7704,6 +7963,9 @@ msgstr "字重"
 msgid "Font Stretch"
 msgstr "字體拉伸"
 
+msgid "Interpolation"
+msgstr "插值"
+
 msgid "Color Space"
 msgstr "色彩空間"
 
@@ -7721,15 +7983,6 @@ msgstr "起點"
 
 msgid "To"
 msgstr "終點"
-
-msgid "Map Width"
-msgstr "貼圖寬度"
-
-msgid "Map Depth"
-msgstr "貼圖深度"
-
-msgid "Map Data"
-msgstr "地圖資料"
 
 msgid "Next Pass"
 msgstr "下一階段"
@@ -7896,9 +8149,6 @@ msgstr "使用粒子尾跡"
 msgid "Proximity Fade"
 msgstr "鄰近淡出"
 
-msgid "Distance"
-msgstr "距離"
-
 msgid "MSDF"
 msgstr "MSDF"
 
@@ -7919,18 +8169,6 @@ msgstr "混合形狀模式"
 
 msgid "Shadow Mesh"
 msgstr "陰影網格"
-
-msgid "Item"
-msgstr "項目"
-
-msgid "Mesh Transform"
-msgstr "網格變換"
-
-msgid "Navigation Mesh Transform"
-msgstr "導航網格變換"
-
-msgid "Preview"
-msgstr "預覽"
 
 msgid "Base Texture"
 msgstr "基礎紋理"
@@ -7956,20 +8194,8 @@ msgstr "可見實例數"
 msgid "Partition Type"
 msgstr "分區型別"
 
-msgid "Parsed Geometry Type"
-msgstr "解析幾何體型別"
-
-msgid "Source Geometry Mode"
-msgstr "來源幾何體模式"
-
 msgid "Source Group Name"
 msgstr "來源分組名稱"
-
-msgid "Cells"
-msgstr "儲存格"
-
-msgid "Agents"
-msgstr "代理"
 
 msgid "Max Climb"
 msgstr "最大爬升"
@@ -7977,14 +8203,8 @@ msgstr "最大爬升"
 msgid "Max Slope"
 msgstr "最大斜坡"
 
-msgid "Regions"
-msgstr "區域"
-
 msgid "Merge Size"
 msgstr "合併大小"
-
-msgid "Edges"
-msgstr "邊界"
 
 msgid "Max Error"
 msgstr "最大誤差"
@@ -8016,23 +8236,11 @@ msgstr "烘焙 AABB"
 msgid "Baking AABB Offset"
 msgstr "烘焙 AABB 偏移"
 
-msgid "Parsed Collision Mask"
-msgstr "解析碰撞遮罩"
-
-msgid "Source Geometry Group Name"
-msgstr "來源幾何體分組名稱"
-
 msgid "Bundled"
 msgstr "捆綁"
 
 msgid "Attractor Interaction"
 msgstr "吸引器互動"
-
-msgid "Scale Min"
-msgstr "最小縮放"
-
-msgid "Scale Max"
-msgstr "最大縮放"
 
 msgid "Scale Curve"
 msgstr "縮放曲線"
@@ -8051,18 +8259,6 @@ msgstr "雜訊速度"
 
 msgid "Noise Speed Random"
 msgstr "雜訊速度隨機"
-
-msgid "Influence Min"
-msgstr "最小影響"
-
-msgid "Influence Max"
-msgstr "最大影響"
-
-msgid "Initial Displacement Min"
-msgstr "最小初始位移"
-
-msgid "Initial Displacement Max"
-msgstr "最大初始位移"
 
 msgid "Influence over Life"
 msgstr "隨生命週期的影響"
@@ -8091,114 +8287,6 @@ msgstr "尺寸覆蓋"
 msgid "Keep Compressed Buffer"
 msgstr "保持壓縮緩衝"
 
-msgid "Add UV2"
-msgstr "新增 UV2"
-
-msgid "UV2 Padding"
-msgstr "UV2 填充"
-
-msgid "Subdivide Width"
-msgstr "細分寬度"
-
-msgid "Subdivide Height"
-msgstr "細分高度"
-
-msgid "Subdivide Depth"
-msgstr "細分深度"
-
-msgid "Top Radius"
-msgstr "頂部半徑"
-
-msgid "Bottom Radius"
-msgstr "底部半徑"
-
-msgid "Cap Top"
-msgstr "頂蓋"
-
-msgid "Cap Bottom"
-msgstr "底蓋"
-
-msgid "Left to Right"
-msgstr "從左到右"
-
-msgid "Is Hemisphere"
-msgstr "是否半球"
-
-msgid "Ring Segments"
-msgstr "環段數"
-
-msgid "Radial Steps"
-msgstr "徑向步數"
-
-msgid "Section Length"
-msgstr "節長度"
-
-msgid "Section Rings"
-msgstr "節環數"
-
-msgid "Section Segments"
-msgstr "節段數"
-
-msgid "Curve Step"
-msgstr "曲線步長"
-
-msgid "A"
-msgstr "A"
-
-msgid "B"
-msgstr "B"
-
-msgid "Slide on Slope"
-msgstr "斜坡滑動"
-
-msgid "Custom Solver Bias"
-msgstr "自訂求解器偏置"
-
-msgid "Execution Mode"
-msgstr "執行模式"
-
-msgid "Target Nodepath"
-msgstr "目標節點路徑"
-
-msgid "Tip Nodepath"
-msgstr "尖端節點路徑"
-
-msgid "CCDIK Data Chain Length"
-msgstr "CCDIK 資料鏈長度"
-
-msgid "FABRIK Data Chain Length"
-msgstr "FABRIK 資料鏈長度"
-
-msgid "Jiggle Data Chain Length"
-msgstr "Jiggle 資料鏈長度"
-
-msgid "Default Joint Settings"
-msgstr "預設關節設定"
-
-msgid "Use Gravity"
-msgstr "使用重力"
-
-msgid "Bone Index"
-msgstr "骨骼索引"
-
-msgid "Bone 2D Node"
-msgstr "Bone2D 節點"
-
-msgid "Physical Bone Chain Length"
-msgstr "物理骨鏈長度"
-
-msgid "Target Minimum Distance"
-msgstr "目標最小距離"
-
-msgid "Target Maximum Distance"
-msgstr "目標最大距離"
-
-msgid "Flip Bend Direction"
-msgstr "翻轉彎曲方向"
-
-msgid "Modification Count"
-msgstr "修改數"
-
 msgid "Scale Base Bone"
 msgstr "縮放基礎骨骼"
 
@@ -8208,15 +8296,6 @@ msgstr "分組大小"
 msgid "Bone Size"
 msgstr "骨骼大小"
 
-msgid "Bind Count"
-msgstr "綁定數"
-
-msgid "Bind"
-msgstr "綁定"
-
-msgid "Bone"
-msgstr "骨骼"
-
 msgid "Sky Material"
 msgstr "天空材質"
 
@@ -8225,54 +8304,6 @@ msgstr "處理模式"
 
 msgid "Radiance Size"
 msgstr "輻射大小"
-
-msgid "Top Color"
-msgstr "頂部顏色"
-
-msgid "Horizon Color"
-msgstr "地平線顏色"
-
-msgid "Cover"
-msgstr "天穹"
-
-msgid "Cover Modulate"
-msgstr "天穹調變"
-
-msgid "Ground"
-msgstr "地面"
-
-msgid "Bottom Color"
-msgstr "底部顏色"
-
-msgid "Sun"
-msgstr "太陽"
-
-msgid "Panorama"
-msgstr "全景"
-
-msgid "Rayleigh"
-msgstr "瑞利散射"
-
-msgid "Coefficient"
-msgstr "係數"
-
-msgid "Mie"
-msgstr "米氏散射"
-
-msgid "Eccentricity"
-msgstr "偏心率"
-
-msgid "Turbidity"
-msgstr "濁度"
-
-msgid "Sun Disk Scale"
-msgstr "太陽盤縮放"
-
-msgid "Ground Color"
-msgstr "地面顏色"
-
-msgid "Night Sky"
-msgstr "夜空"
 
 msgid "Content Margins"
 msgstr "內容邊距"
@@ -8331,9 +8362,6 @@ msgstr "自訂標點"
 msgid "Break Flags"
 msgstr "斷行旗標"
 
-msgid "Texture Rd RID"
-msgstr "紋理 Rd RID"
-
 msgid "Default Base Scale"
 msgstr "預設基礎縮放"
 
@@ -8342,141 +8370,6 @@ msgstr "預設字體"
 
 msgid "Default Font Size"
 msgstr "預設字體大小"
-
-msgid "Right Side"
-msgstr "右側邊緣"
-
-msgid "Right Corner"
-msgstr "右側角落"
-
-msgid "Bottom Right Side"
-msgstr "右下邊緣"
-
-msgid "Bottom Right Corner"
-msgstr "右下角落"
-
-msgid "Bottom Side"
-msgstr "下側邊緣"
-
-msgid "Bottom Corner"
-msgstr "下側角落"
-
-msgid "Bottom Left Side"
-msgstr "左下邊緣"
-
-msgid "Bottom Left Corner"
-msgstr "左下角落"
-
-msgid "Left Side"
-msgstr "左側邊緣"
-
-msgid "Left Corner"
-msgstr "左側角落"
-
-msgid "Top Left Side"
-msgstr "左上邊緣"
-
-msgid "Top Left Corner"
-msgstr "左上角落"
-
-msgid "Top Side"
-msgstr "上側邊緣"
-
-msgid "Top Corner"
-msgstr "上側角落"
-
-msgid "Top Right Side"
-msgstr "右上邊緣"
-
-msgid "Top Right Corner"
-msgstr "右上角落"
-
-msgid "Terrains"
-msgstr "地形"
-
-msgid "Custom Data"
-msgstr "自訂資料"
-
-msgid "Tile Proxies"
-msgstr "圖塊代理"
-
-msgid "Source Level"
-msgstr "原始碼等級"
-
-msgid "Coords Level"
-msgstr "座標級別"
-
-msgid "Alternative Level"
-msgstr "備選級別"
-
-msgid "Tile Shape"
-msgstr "圖塊形狀"
-
-msgid "Tile Layout"
-msgstr "圖塊佈局"
-
-msgid "Tile Offset Axis"
-msgstr "圖塊偏移軸"
-
-msgid "Tile Size"
-msgstr "圖塊大小"
-
-msgid "UV Clipping"
-msgstr "UV 裁剪"
-
-msgid "Occlusion Layers"
-msgstr "遮擋圖層"
-
-msgid "Physics Layers"
-msgstr "實體圖層"
-
-msgid "Terrain Sets"
-msgstr "地形集"
-
-msgid "Custom Data Layers"
-msgstr "自訂資料層"
-
-msgid "Scenes"
-msgstr "場景"
-
-msgid "Scene"
-msgstr "場景"
-
-msgid "Display Placeholder"
-msgstr "顯示預留位置"
-
-msgid "Polygons Count"
-msgstr "多邊形數"
-
-msgid "One Way"
-msgstr "單向"
-
-msgid "One Way Margin"
-msgstr "單向邊距"
-
-msgid "Terrains Peering Bit"
-msgstr "地形臨接位"
-
-msgid "Transpose"
-msgstr "轉置"
-
-msgid "Texture Origin"
-msgstr "紋理原點"
-
-msgid "Y Sort Origin"
-msgstr "Y 排序原點"
-
-msgid "Terrain Set"
-msgstr "地形集"
-
-msgid "Terrain"
-msgstr "地形"
-
-msgid "Miscellaneous"
-msgstr "雜項"
-
-msgid "Probability"
-msgstr "概率"
 
 msgid "File"
 msgstr "檔案"
@@ -8555,18 +8448,6 @@ msgstr "表面索引"
 
 msgid "Degrees Mode"
 msgstr "度數模式"
-
-msgid "Fallback Environment"
-msgstr "退回環境"
-
-msgid "Plane"
-msgstr "平面"
-
-msgid "Panel"
-msgstr "面板"
-
-msgid "Font Color"
-msgstr "字體顏色"
 
 msgid "Font Pressed Color"
 msgstr "字體顏色按下"
@@ -8961,9 +8842,6 @@ msgstr "自訂按鈕按下"
 msgid "Custom Button Hover"
 msgstr "自訂按鈕懸停"
 
-msgid "Indeterminate"
-msgstr "不確定"
-
 msgid "Select Arrow"
 msgstr "選擇箭頭"
 
@@ -9063,9 +8941,6 @@ msgstr "捲軸垂直間距"
 msgid "Icon Margin"
 msgstr "圖示邊距"
 
-msgid "Line Separation"
-msgstr "行分隔"
-
 msgid "Font Hovered Color"
 msgstr "字體懸停顏色"
 
@@ -9093,9 +8968,6 @@ msgstr "分頁欄背景"
 msgid "Drop Mark"
 msgstr "放下標記"
 
-msgid "Menu"
-msgstr "選單"
-
 msgid "Menu Highlight"
 msgstr "選單高亮"
 
@@ -9113,9 +8985,6 @@ msgstr "圖示間距"
 
 msgid "Button Highlight"
 msgstr "按鈕高亮"
-
-msgid "Large"
-msgstr "大號"
 
 msgid "SV Width"
 msgstr "SV 寬度"
@@ -9458,9 +9327,6 @@ msgstr "聲道停用閾值 dB"
 
 msgid "Channel Disable Time"
 msgstr "聲道停用時間"
-
-msgid "Video"
-msgstr "影片"
 
 msgid "Video Delay Compensation (ms)"
 msgstr "影片延遲補償（毫秒）"
@@ -9838,7 +9704,7 @@ msgid "View Count"
 msgstr "視圖數量"
 
 msgid "Render Loop Enabled"
-msgstr "啟用渲染迴圈"
+msgstr "啟用算繪迴圈"
 
 msgid "VRAM Compression"
 msgstr "VRAM 壓縮"
@@ -10047,12 +9913,6 @@ msgstr "每影格更新反覆運算次數"
 msgid "Threaded Cull Minimum Instances"
 msgstr "多執行緒剔除最小實例數"
 
-msgid "Forward Renderer"
-msgstr "前向渲染器"
-
-msgid "Threaded Render Minimum Instances"
-msgstr "多執行緒渲染最小實例數"
-
 msgid "Cluster Builder"
 msgstr "集群建構器"
 
@@ -10063,10 +9923,10 @@ msgid "OpenGL"
 msgstr "OpenGL"
 
 msgid "Max Renderable Elements"
-msgstr "最大可渲染元素數"
+msgstr "最大可算繪元素數"
 
 msgid "Max Renderable Lights"
-msgstr "最大可渲染光源數"
+msgstr "最大可算繪光源數"
 
 msgid "Max Lights per Object"
 msgstr "單物件最大光源數"
@@ -10080,6 +9940,9 @@ msgstr "著色器語言"
 msgid "Treat Warnings as Errors"
 msgstr "將警告當作錯誤"
 
+msgid "Has Tracking Data"
+msgstr "有追蹤資料"
+
 msgid "Is Primary"
 msgstr "是否主要"
 
@@ -10092,9 +9955,6 @@ msgstr "AR"
 msgid "Is Anchor Detection Enabled"
 msgstr "錨點檢測是否啟用"
 
-msgid "Has Tracking Data"
-msgstr "有追蹤資料"
-
 msgid "Tracking Confidence"
 msgstr "追蹤置信度"
 
@@ -10103,6 +9963,3 @@ msgstr "世界原點"
 
 msgid "Primary Interface"
 msgstr "主介面"
-
-msgid "Property"
-msgstr "屬性"

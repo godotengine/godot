@@ -34,7 +34,6 @@
 #include "scene/resources/curve_texture.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/particle_process_material.h"
-#include "scene/scene_string_names.h"
 
 AABB GPUParticles3D::get_aabb() const {
 	return AABB();
@@ -296,8 +295,8 @@ bool GPUParticles3D::get_interpolate() const {
 	return interpolate;
 }
 
-Array GPUParticles3D::get_configuration_warnings() const {
-	Array warnings = GeometryInstance3D::get_configuration_warnings();
+PackedStringArray GPUParticles3D::get_configuration_warnings() const {
+	PackedStringArray warnings = GeometryInstance3D::get_configuration_warnings();
 
 	bool meshes_found = false;
 	bool anim_material_found = false;
@@ -478,7 +477,7 @@ void GPUParticles3D::_notification(int p_what) {
 				}
 				if (time > active_time) {
 					if (active && !signal_canceled) {
-						emit_signal(SceneStringNames::get_singleton()->finished);
+						emit_signal(SceneStringName(finished));
 					}
 					active = false;
 					if (!emitting) {

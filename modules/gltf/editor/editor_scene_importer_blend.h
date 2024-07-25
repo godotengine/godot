@@ -102,6 +102,8 @@ class EditorFileSystemImportFormatSupportQueryBlend : public EditorFileSystemImp
 	void _select_install(String p_path);
 	void _browse_install();
 
+	void _update_icons();
+
 public:
 	virtual bool is_active() const override;
 	virtual Vector<String> get_file_extensions() const override;

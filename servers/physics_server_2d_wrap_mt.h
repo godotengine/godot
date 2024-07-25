@@ -32,6 +32,7 @@
 #define PHYSICS_SERVER_2D_WRAP_MT_H
 
 #include "core/config/project_settings.h"
+#include "core/object/worker_thread_pool.h"
 #include "core/os/thread.h"
 #include "core/templates/command_queue_mt.h"
 #include "core/templates/safe_refcount.h"
@@ -43,29 +44,27 @@
 #define SYNC_DEBUG
 #endif
 
+#ifdef DEBUG_ENABLED
+#ifdef DEV_ENABLED
+#define MAIN_THREAD_SYNC_WARN WARN_PRINT("Call to " + String(__FUNCTION__) + " causing PhysicsServer2D synchronizations on every frame. This significantly affects performance.");
+#else
+#define MAIN_THREAD_SYNC_WARN
+#endif
+#endif
+
 class PhysicsServer2DWrapMT : public PhysicsServer2D {
-	mutable PhysicsServer2D *physics_server_2d;
+	mutable PhysicsServer2D *physics_server_2d = nullptr;
 
 	mutable CommandQueueMT command_queue;
 
-	static void _thread_callback(void *_instance);
-	void thread_loop();
-
-	Thread::ID server_thread;
-	Thread::ID main_thread;
-	SafeFlag exit;
-	Thread thread;
-	SafeFlag step_thread_up;
+	Thread::ID server_thread = Thread::UNASSIGNED_ID;
+	WorkerThreadPool::TaskID server_task_id = WorkerThreadPool::INVALID_TASK_ID;
+	bool exit = false;
 	bool create_thread = false;
 
-	Semaphore step_sem;
-	void thread_step(real_t p_delta);
-
-	void thread_exit();
-
-	bool first_frame = true;
-
-	Mutex alloc_mutex;
+	void _assign_mt_ids(WorkerThreadPool::TaskID p_pump_task_id);
+	void _thread_exit();
+	void _thread_loop();
 
 public:
 #define ServerName PhysicsServer2D
@@ -94,7 +93,7 @@ public:
 
 	//these work well, but should be used from the main thread only
 	bool shape_collide(RID p_shape_A, const Transform2D &p_xform_A, const Vector2 &p_motion_A, RID p_shape_B, const Transform2D &p_xform_B, const Vector2 &p_motion_B, Vector2 *r_results, int p_result_max, int &r_result_count) override {
-		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), false);
+		ERR_FAIL_COND_V(!Thread::is_main_thread(), false);
 		return physics_server_2d->shape_collide(p_shape_A, p_xform_A, p_motion_A, p_shape_B, p_xform_B, p_motion_B, r_results, p_result_max, r_result_count);
 	}
 
@@ -109,18 +108,18 @@ public:
 
 	// this function only works on physics process, errors and returns null otherwise
 	PhysicsDirectSpaceState2D *space_get_direct_state(RID p_space) override {
-		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), nullptr);
+		ERR_FAIL_COND_V(!Thread::is_main_thread(), nullptr);
 		return physics_server_2d->space_get_direct_state(p_space);
 	}
 
 	FUNC2(space_set_debug_contacts, RID, int);
 	virtual Vector<Vector2> space_get_contacts(RID p_space) const override {
-		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), Vector<Vector2>());
+		ERR_FAIL_COND_V(!Thread::is_main_thread(), Vector<Vector2>());
 		return physics_server_2d->space_get_contacts(p_space);
 	}
 
 	virtual int space_get_contact_count(RID p_space) const override {
-		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), 0);
+		ERR_FAIL_COND_V(!Thread::is_main_thread(), 0);
 		return physics_server_2d->space_get_contact_count(p_space);
 	}
 
@@ -261,13 +260,13 @@ public:
 	FUNC2(body_set_pickable, RID, bool);
 
 	bool body_test_motion(RID p_body, const MotionParameters &p_parameters, MotionResult *r_result = nullptr) override {
-		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), false);
+		ERR_FAIL_COND_V(!Thread::is_main_thread(), false);
 		return physics_server_2d->body_test_motion(p_body, p_parameters, r_result);
 	}
 
 	// this function only works on physics process, errors and returns null otherwise
 	PhysicsDirectBodyState2D *body_get_direct_state(RID p_body) override {
-		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), nullptr);
+		ERR_FAIL_COND_V(!Thread::is_main_thread(), nullptr);
 		return physics_server_2d->body_get_direct_state(p_body);
 	}
 
@@ -337,5 +336,9 @@ public:
 #undef DEBUG_SYNC
 #endif
 #undef SYNC_DEBUG
+
+#ifdef DEBUG_ENABLED
+#undef MAIN_THREAD_SYNC_WARN
+#endif
 
 #endif // PHYSICS_SERVER_2D_WRAP_MT_H

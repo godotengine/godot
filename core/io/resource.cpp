@@ -30,7 +30,6 @@
 
 #include "resource.h"
 
-#include "core/core_string_names.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_funcs.h"
@@ -41,7 +40,12 @@
 #include <stdio.h>
 
 void Resource::emit_changed() {
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	if (ResourceLoader::is_within_load() && MessageQueue::get_main_singleton() != MessageQueue::get_singleton() && !MessageQueue::get_singleton()->is_flushing()) {
+		// Let the connection happen on the call queue, later, since signals are not thread-safe.
+		call_deferred("emit_signal", CoreStringName(changed));
+	} else {
+		emit_signal(CoreStringName(changed));
+	}
 }
 
 void Resource::_resource_path_changed() {
@@ -125,6 +129,16 @@ String Resource::generate_scene_unique_id() {
 }
 
 void Resource::set_scene_unique_id(const String &p_id) {
+	bool is_valid = true;
+	for (int i = 0; i < p_id.length(); i++) {
+		if (!is_ascii_identifier_char(p_id[i])) {
+			is_valid = false;
+			scene_unique_id = Resource::generate_scene_unique_id();
+			break;
+		}
+	}
+
+	ERR_FAIL_COND_MSG(!is_valid, "The scene unique ID must contain only letters, numbers, and underscores.");
 	scene_unique_id = p_id;
 }
 
@@ -152,14 +166,24 @@ bool Resource::editor_can_reload_from_file() {
 }
 
 void Resource::connect_changed(const Callable &p_callable, uint32_t p_flags) {
-	if (!is_connected(CoreStringNames::get_singleton()->changed, p_callable) || p_flags & CONNECT_REFERENCE_COUNTED) {
-		connect(CoreStringNames::get_singleton()->changed, p_callable, p_flags);
+	if (ResourceLoader::is_within_load() && MessageQueue::get_main_singleton() != MessageQueue::get_singleton() && !MessageQueue::get_singleton()->is_flushing()) {
+		// Let the check and connection happen on the call queue, later, since signals are not thread-safe.
+		callable_mp(this, &Resource::connect_changed).call_deferred(p_callable, p_flags);
+		return;
+	}
+	if (!is_connected(CoreStringName(changed), p_callable) || p_flags & CONNECT_REFERENCE_COUNTED) {
+		connect(CoreStringName(changed), p_callable, p_flags);
 	}
 }
 
 void Resource::disconnect_changed(const Callable &p_callable) {
-	if (is_connected(CoreStringNames::get_singleton()->changed, p_callable)) {
-		disconnect(CoreStringNames::get_singleton()->changed, p_callable);
+	if (ResourceLoader::is_within_load() && MessageQueue::get_main_singleton() != MessageQueue::get_singleton() && !MessageQueue::get_singleton()->is_flushing()) {
+		// Let the check and disconnection happen on the call queue, later, since signals are not thread-safe.
+		callable_mp(this, &Resource::disconnect_changed).call_deferred(p_callable);
+		return;
+	}
+	if (is_connected(CoreStringName(changed), p_callable)) {
+		disconnect(CoreStringName(changed), p_callable);
 	}
 }
 
@@ -189,6 +213,7 @@ Error Resource::copy_from(const Ref<Resource> &p_resource) {
 	}
 	return OK;
 }
+
 void Resource::reload_from_file() {
 	String path = get_path();
 	if (!path.is_resource_file()) {
@@ -357,7 +382,8 @@ Ref<Resource> Resource::duplicate(bool p_subresources) const {
 			case Variant::Type::PACKED_FLOAT64_ARRAY:
 			case Variant::Type::PACKED_STRING_ARRAY:
 			case Variant::Type::PACKED_VECTOR2_ARRAY:
-			case Variant::Type::PACKED_VECTOR3_ARRAY: {
+			case Variant::Type::PACKED_VECTOR3_ARRAY:
+			case Variant::Type::PACKED_VECTOR4_ARRAY: {
 				r->set(E.name, p.duplicate(p_subresources));
 			} break;
 
@@ -398,8 +424,7 @@ RID Resource::get_rid() const {
 		}
 	}
 	if (_get_extension() && _get_extension()->get_rid) {
-		RID ret;
-		ret.from_uint64(_get_extension()->get_rid(_get_extension_instance()));
+		RID ret = RID::from_uint64(_get_extension()->get_rid(_get_extension_instance()));
 		if (ret.is_valid()) {
 			return ret;
 		}
@@ -410,7 +435,7 @@ RID Resource::get_rid() const {
 
 #ifdef TOOLS_ENABLED
 
-uint32_t Resource::hash_edited_version() const {
+uint32_t Resource::hash_edited_version_for_preview() const {
 	uint32_t hash = hash_murmur3_one_32(get_edited_version());
 
 	List<PropertyInfo> plist;
@@ -420,7 +445,7 @@ uint32_t Resource::hash_edited_version() const {
 		if (E.usage & PROPERTY_USAGE_STORAGE && E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 			Ref<Resource> res = get(E.name);
 			if (res.is_valid()) {
-				hash = hash_murmur3_one_32(res->hash_edited_version(), hash);
+				hash = hash_murmur3_one_32(res->hash_edited_version_for_preview(), hash);
 			}
 		}
 	}
@@ -517,6 +542,10 @@ void Resource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_local_scene"), &Resource::get_local_scene);
 	ClassDB::bind_method(D_METHOD("setup_local_to_scene"), &Resource::setup_local_to_scene);
 
+	ClassDB::bind_static_method("Resource", D_METHOD("generate_scene_unique_id"), &Resource::generate_scene_unique_id);
+	ClassDB::bind_method(D_METHOD("set_scene_unique_id", "id"), &Resource::set_scene_unique_id);
+	ClassDB::bind_method(D_METHOD("get_scene_unique_id"), &Resource::get_scene_unique_id);
+
 	ClassDB::bind_method(D_METHOD("emit_changed"), &Resource::emit_changed);
 
 	ClassDB::bind_method(D_METHOD("duplicate", "subresources"), &Resource::duplicate, DEFVAL(false));
@@ -527,6 +556,7 @@ void Resource::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "resource_local_to_scene"), "set_local_to_scene", "is_local_to_scene");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_path", "get_path");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_name"), "set_name", "get_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_scene_unique_id", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_scene_unique_id", "get_scene_unique_id");
 
 	MethodInfo get_rid_bind("_get_rid");
 	get_rid_bind.return_val.type = Variant::RID;
@@ -539,11 +569,18 @@ Resource::Resource() :
 		remapped_list(this) {}
 
 Resource::~Resource() {
-	if (!path_cache.is_empty()) {
-		ResourceCache::lock.lock();
-		ResourceCache::resources.erase(path_cache);
-		ResourceCache::lock.unlock();
+	if (unlikely(path_cache.is_empty())) {
+		return;
 	}
+
+	ResourceCache::lock.lock();
+	// Only unregister from the cache if this is the actual resource listed there.
+	// (Other resources can have the same value in `path_cache` if loaded with `CACHE_IGNORE`.)
+	HashMap<String, Resource *>::Iterator E = ResourceCache::resources.find(path_cache);
+	if (likely(E && E->value == this)) {
+		ResourceCache::resources.remove(E);
+	}
+	ResourceCache::lock.unlock();
 }
 
 HashMap<String, Resource *> ResourceCache::resources;
