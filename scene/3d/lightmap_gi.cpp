@@ -1202,7 +1202,7 @@ LightmapGI::BakeError LightmapGI::_bake(Node *p_from_node, String p_image_data_p
 				textures[i] = t;
 			} else {
 				String texture_path = texture_count > 1 ? base_path + "_" + itos(i) + ".res" : base_path + ".res";
-				
+
 				Ref<Texture2DArray> texs;
 				texs.instantiate();
 				texs->create_from_images(images);
