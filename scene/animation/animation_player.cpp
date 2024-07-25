@@ -164,35 +164,35 @@ void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, f
 	double delta = p_started ? 0 : p_delta * speed;
 	double next_pos = cd.pos + delta;
 
-	real_t len = cd.from->animation->get_length();
+	double len = cd.from->animation->get_length();
 	Animation::LoopedFlag looped_flag = Animation::LOOPED_FLAG_NONE;
 
 	switch (cd.from->animation->get_loop_mode()) {
 		case Animation::LOOP_NONE: {
-			if (next_pos < 0) {
+			if (Animation::is_less_approx(next_pos, 0)) {
 				next_pos = 0;
-			} else if (next_pos > len) {
+			} else if (Animation::is_greater_approx(next_pos, len)) {
 				next_pos = len;
 			}
 			delta = next_pos - cd.pos; // Fix delta (after determination of backwards because negative zero is lost here).
 		} break;
 
 		case Animation::LOOP_LINEAR: {
-			if (next_pos < 0 && cd.pos >= 0) {
+			if (Animation::is_less_approx(next_pos, 0) && Animation::is_greater_or_equal_approx(cd.pos, 0)) {
 				looped_flag = Animation::LOOPED_FLAG_START;
 			}
-			if (next_pos > len && cd.pos <= len) {
+			if (Animation::is_greater_approx(next_pos, len) && Animation::is_less_or_equal_approx(cd.pos, len)) {
 				looped_flag = Animation::LOOPED_FLAG_END;
 			}
 			next_pos = Math::fposmod(next_pos, (double)len);
 		} break;
 
 		case Animation::LOOP_PINGPONG: {
-			if (next_pos < 0 && cd.pos >= 0) {
+			if (Animation::is_less_approx(next_pos, 0) && Animation::is_greater_or_equal_approx(cd.pos, 0)) {
 				cd.speed_scale *= -1.0;
 				looped_flag = Animation::LOOPED_FLAG_START;
 			}
-			if (next_pos > len && cd.pos <= len) {
+			if (Animation::is_greater_approx(next_pos, len) && Animation::is_less_or_equal_approx(cd.pos, len)) {
 				cd.speed_scale *= -1.0;
 				looped_flag = Animation::LOOPED_FLAG_END;
 			}
@@ -209,16 +209,16 @@ void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, f
 	// End detection.
 	if (p_is_current) {
 		if (cd.from->animation->get_loop_mode() == Animation::LOOP_NONE) {
-			if (!backwards && prev_pos <= len && next_pos == len) {
+			if (!backwards && Animation::is_less_or_equal_approx(prev_pos, len) && Math::is_equal_approx(next_pos, len)) {
 				// Playback finished.
 				end_reached = true;
-				end_notify = prev_pos < len; // Notify only if not already at the end.
+				end_notify = Animation::is_less_approx(prev_pos, len); // Notify only if not already at the end.
 				p_blend = 1.0;
 			}
-			if (backwards && prev_pos >= 0 && next_pos == 0) {
+			if (backwards && Animation::is_greater_or_equal_approx(prev_pos, 0) && Math::is_equal_approx(next_pos, 0)) {
 				// Playback finished.
 				end_reached = true;
-				end_notify = prev_pos > 0; // Notify only if not already at the beginning.
+				end_notify = Animation::is_greater_approx(prev_pos, 0); // Notify only if not already at the beginning.
 				p_blend = 1.0;
 			}
 		}
@@ -277,7 +277,7 @@ void AnimationPlayer::_blend_playback_data(double p_delta, bool p_started) {
 	for (List<Blend>::Element *E = c.blend.front(); E; E = E->next()) {
 		Blend &b = E->get();
 		b.blend_left = MAX(0, b.blend_left - Math::absf(speed_scale * p_delta) / b.blend_time);
-		if (b.blend_left <= 0) {
+		if (Animation::is_less_or_equal_approx(b.blend_left, 0)) {
 			to_erase.push_back(E);
 			b.blend_left = CMP_EPSILON; // May want to play last frame.
 		}
@@ -401,7 +401,7 @@ void AnimationPlayer::_play(const StringName &p_name, double p_custom_blend, flo
 		bk.from = c.current.from->name;
 		bk.to = name;
 
-		if (p_custom_blend >= 0) {
+		if (Animation::is_greater_or_equal_approx(p_custom_blend, 0)) {
 			blend_time = p_custom_blend;
 		} else if (blend_times.has(bk)) {
 			blend_time = blend_times[bk];
@@ -419,10 +419,10 @@ void AnimationPlayer::_play(const StringName &p_name, double p_custom_blend, flo
 			}
 		}
 
-		if (p_custom_blend < 0 && blend_time == 0 && default_blend_time) {
+		if (Animation::is_less_approx(p_custom_blend, 0) && Math::is_zero_approx(blend_time) && default_blend_time) {
 			blend_time = default_blend_time;
 		}
-		if (blend_time > 0) {
+		if (Animation::is_greater_approx(blend_time, 0)) {
 			Blend b;
 			b.data = c.current;
 			b.blend_left = get_current_blend_amount();
@@ -449,10 +449,10 @@ void AnimationPlayer::_play(const StringName &p_name, double p_custom_blend, flo
 		c.assigned = name;
 		emit_signal(SNAME("current_animation_changed"), c.assigned);
 	} else {
-		if (p_from_end && c.current.pos == 0) {
+		if (p_from_end && Math::is_zero_approx(c.current.pos)) {
 			// Animation reset but played backwards, set position to the end.
 			seek_internal(c.current.from->animation->get_length(), true, true, true);
-		} else if (!p_from_end && c.current.pos == c.current.from->animation->get_length()) {
+		} else if (!p_from_end && Math::is_equal_approx(c.current.pos, (double)c.current.from->animation->get_length())) {
 			// Animation resumed but already ended, set position to the beginning.
 			seek_internal(0, true, true, true);
 		} else if (playing) {
@@ -585,7 +585,7 @@ void AnimationPlayer::seek_internal(double p_time, bool p_update, bool p_update_
 		return;
 	}
 
-	bool is_backward = p_time < playback.current.pos;
+	bool is_backward = Animation::is_less_approx(p_time, playback.current.pos);
 
 	_check_immediately_after_start();
 
@@ -708,7 +708,7 @@ void AnimationPlayer::set_blend_time(const StringName &p_animation1, const Strin
 	BlendKey bk;
 	bk.from = p_animation1;
 	bk.to = p_animation2;
-	if (p_time == 0) {
+	if (Math::is_zero_approx(p_time)) {
 		blend_times.erase(bk);
 	} else {
 		blend_times[bk] = p_time;

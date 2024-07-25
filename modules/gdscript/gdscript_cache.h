@@ -59,6 +59,7 @@ private:
 	String path;
 	uint32_t source_hash = 0;
 	bool clearing = false;
+	bool abandoned = false;
 
 	friend class GDScriptCache;
 	friend class GDScript;
@@ -79,6 +80,7 @@ public:
 class GDScriptCache {
 	// String key is full path.
 	HashMap<String, GDScriptParserRef *> parser_map;
+	HashMap<String, Vector<ObjectID>> abandoned_parser_map;
 	HashMap<String, Ref<GDScript>> shallow_gdscript_cache;
 	HashMap<String, Ref<GDScript>> full_gdscript_cache;
 	HashMap<String, Ref<GDScript>> static_gdscript_cache;

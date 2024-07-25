@@ -939,6 +939,22 @@ public:
 	static Variant interpolate_variant(const Variant &a, const Variant &b, float c, bool p_snap_array_element = false);
 	static Variant cubic_interpolate_in_time_variant(const Variant &pre_a, const Variant &a, const Variant &b, const Variant &post_b, float c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t, bool p_snap_array_element = false);
 
+	static bool is_less_or_equal_approx(double a, double b) {
+		return a < b || Math::is_equal_approx(a, b);
+	}
+
+	static bool is_less_approx(double a, double b) {
+		return a < b && !Math::is_equal_approx(a, b);
+	}
+
+	static bool is_greater_or_equal_approx(double a, double b) {
+		return a > b || Math::is_equal_approx(a, b);
+	}
+
+	static bool is_greater_approx(double a, double b) {
+		return a > b && !Math::is_equal_approx(a, b);
+	}
+
 	static TrackType get_cache_type(TrackType p_type);
 
 	Ref<Animation> mirror_animation(class Skeleton3D * p_ref_ske,Dictionary p_bone_map) const;

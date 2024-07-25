@@ -1451,10 +1451,15 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 		normal_transform.columns[2] = Vector2();
 		_update_transform_2d_to_mat4(normal_transform, state_buffer.canvas_normal_transform);
 
-		state_buffer.canvas_modulate[0] = p_modulate.r;
-		state_buffer.canvas_modulate[1] = p_modulate.g;
-		state_buffer.canvas_modulate[2] = p_modulate.b;
-		state_buffer.canvas_modulate[3] = p_modulate.a;
+		bool use_linear_colors = texture_storage->render_target_is_using_hdr(p_to_render_target);
+		Color modulate = p_modulate;
+		if (use_linear_colors) {
+			modulate = p_modulate.srgb_to_linear();
+		}
+		state_buffer.canvas_modulate[0] = modulate.r;
+		state_buffer.canvas_modulate[1] = modulate.g;
+		state_buffer.canvas_modulate[2] = modulate.b;
+		state_buffer.canvas_modulate[3] = modulate.a;
 
 		Size2 render_target_size = texture_storage->render_target_get_size(p_to_render_target);
 		state_buffer.screen_pixel_size[0] = 1.0 / render_target_size.x;

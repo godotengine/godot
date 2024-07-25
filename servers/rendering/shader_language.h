@@ -917,8 +917,21 @@ private:
 
 	// Additional function information (eg. call hierarchy). No need to expose it to compiler.
 	struct CallInfo {
+		struct Item {
+			enum ItemType {
+				ITEM_TYPE_BUILTIN,
+				ITEM_TYPE_VARYING,
+			} type;
+
+			TkPos pos;
+
+			Item() {}
+			Item(ItemType p_type, TkPos p_pos) :
+					type(p_type), pos(p_pos) {}
+		};
+
 		StringName name;
-		List<Pair<StringName, TkPos>> uses_restricted_functions;
+		List<Pair<StringName, Item>> uses_restricted_items;
 		List<CallInfo *> calls;
 	};
 

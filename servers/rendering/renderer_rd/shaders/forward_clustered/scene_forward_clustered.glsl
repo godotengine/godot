@@ -352,7 +352,7 @@ void vertex_shader(vec3 vertex_input,
 	}
 
 #ifdef OVERRIDE_POSITION
-	vec4 position;
+	vec4 position = vec4(1.0);
 #endif
 
 #ifdef USE_MULTIVIEW
