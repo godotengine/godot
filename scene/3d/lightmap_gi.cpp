@@ -41,7 +41,6 @@
 #include "scene/resources/image_texture.h"
 #include "scene/resources/sky.h"
 #include "scene/resources/texture.h"
-#include "editor/import/resource_importer_layered_texture.h"
 
 void LightmapGIData::add_user(const NodePath &p_path, const Rect2 &p_uv_scale, int p_slice_index, int32_t p_sub_instance) {
 	User user;
