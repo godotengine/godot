@@ -759,6 +759,9 @@ def configure_mingw(env: "SConsEnvironment"):
         env.Append(CCFLAGS=san_flags)
         env.Append(LINKFLAGS=san_flags)
 
+    if env["use_llvm"] and os.name == "nt" and methods._colorize:
+        env.Append(CCFLAGS=["$(-fansi-escape-codes$)", "$(-fcolor-diagnostics$)"])
+
     env.Append(CPPDEFINES=["WINDOWS_ENABLED", "WASAPI_ENABLED", "WINMIDI_ENABLED"])
     env.Append(
         CPPDEFINES=[
