@@ -321,6 +321,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_ITERATE_PACKED_COLOR_ARRAY,             \
 		&&OPCODE_ITERATE_PACKED_VECTOR4_ARRAY,           \
 		&&OPCODE_ITERATE_OBJECT,                         \
+		&&OPCODE_FOR_SECOND_VARIABLE_DICT_TYPE_TEST,     \
 		&&OPCODE_STORE_GLOBAL,                           \
 		&&OPCODE_STORE_NAMED_GLOBAL,                     \
 		&&OPCODE_TYPE_ADJUST_BOOL,                       \
@@ -3469,6 +3470,21 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 					ip += 5; // Loop again.
 				}
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_FOR_SECOND_VARIABLE_DICT_TYPE_TEST) {
+				CHECK_SPACE(2);
+
+				GET_VARIANT_PTR(container, 0);
+
+#ifdef DEBUG_ENABLED
+				if (container->get_type() != Variant::DICTIONARY) {
+					err_text = vformat(R"(Unable to iterate "%s" as a key-value pair.)", _get_var_type(container));
+					OPCODE_BREAK;
+				}
+#endif
+				ip += 2;
 			}
 			DISPATCH_OPCODE;
 
