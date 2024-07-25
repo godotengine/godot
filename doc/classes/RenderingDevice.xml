@@ -505,6 +505,12 @@
 				Returns the vendor of the video adapter (e.g. "NVIDIA Corporation"). Equivalent to [method RenderingServer.get_video_adapter_vendor]. See also [method get_device_name].
 			</description>
 		</method>
+		<method name="get_device_api_name" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the api name of the video adapter (e.g. "Vulkan").
+			</description>
+		</method>
 		<method name="get_driver_resource">
 			<return type="int" />
 			<param index="0" name="resource" type="int" enum="RenderingDevice.DriverResource" />

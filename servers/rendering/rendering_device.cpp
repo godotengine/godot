@@ -6022,6 +6022,7 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_device_vendor_name"), &RenderingDevice::get_device_vendor_name);
 	ClassDB::bind_method(D_METHOD("get_device_name"), &RenderingDevice::get_device_name);
 	ClassDB::bind_method(D_METHOD("get_device_pipeline_cache_uuid"), &RenderingDevice::get_device_pipeline_cache_uuid);
+	ClassDB::bind_method(D_METHOD("get_device_api_name"), &RenderingDevice::get_device_api_name);
 
 	ClassDB::bind_method(D_METHOD("get_memory_usage", "type"), &RenderingDevice::get_memory_usage);
 
