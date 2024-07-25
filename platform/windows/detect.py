@@ -21,10 +21,14 @@ def get_name():
 
 
 def try_cmd(test, prefix, arch):
+    archs = ["x86_64", "x86_32", "arm64", "arm32"]
     if arch:
+        archs = [arch]
+
+    for a in archs:
         try:
             out = subprocess.Popen(
-                get_mingw_bin_prefix(prefix, arch) + test,
+                get_mingw_bin_prefix(prefix, a) + test,
                 shell=True,
                 stderr=subprocess.PIPE,
                 stdout=subprocess.PIPE,
@@ -34,20 +38,6 @@ def try_cmd(test, prefix, arch):
                 return True
         except Exception:
             pass
-    else:
-        for a in ["x86_64", "x86_32", "arm64", "arm32"]:
-            try:
-                out = subprocess.Popen(
-                    get_mingw_bin_prefix(prefix, a) + test,
-                    shell=True,
-                    stderr=subprocess.PIPE,
-                    stdout=subprocess.PIPE,
-                )
-                out.communicate()
-                if out.returncode == 0:
-                    return True
-            except Exception:
-                pass
 
     return False
 
