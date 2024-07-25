@@ -978,7 +978,7 @@ LightmapperRD::BakeError LightmapperRD::_denoise(RenderingDevice *p_rd, Ref<RDSh
 
 LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_denoiser, float p_denoiser_strength, int p_bounces, float p_bounce_indirect_energy, float p_bias, int p_max_texture_size, bool p_bake_sh, bool p_texture_for_bounces, GenerateProbes p_generate_probes, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function, void *p_bake_userdata, float p_exposure_normalization) {
 	int denoiser = GLOBAL_GET("rendering/lightmapping/denoising/denoiser");
-	String oidn_path = EDITOR_GET("filesystem/tools/oidn/oidn_denoise_path");
+	String oidn_path = p_use_denoiser ? EDITOR_GET("filesystem/tools/oidn/oidn_denoise_path") : Variant();
 
 	if (p_use_denoiser && denoiser == 1) {
 		// OIDN (external).
