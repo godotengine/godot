@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/transform_interpolator.h"
+#include "core/math/vector2.h"
 #include "renderer_viewport.h"
 #include "rendering_server_default.h"
 #include "rendering_server_globals.h"
@@ -285,18 +286,22 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 	}
 
 	if (snapping_2d_transforms_to_pixel) {
-		// If the canvas is set on a subpixel, let's add the remainder to the new position.
-		// This fixes the odd sized canvas items.
-		Size2 rect_scale = final_xform.get_scale().snappedf(0.0001f).abs();
-		Point2 rect_position_scaled = rect.position * rect_scale;
-		Point2 remainder = Point2(
-				Math::fmod(rect_position_scaled.x, 1.0l),
-				Math::fmod(rect_position_scaled.y, 1.0l));
-		Point2 remainder_leftover = Point2(
-				Math::fmod(remainder.x / rect_scale.x, 1.0l),
-				Math::fmod(remainder.y / rect_scale.y, 1.0l));
-		final_xform.columns[2] = (final_xform.columns[2] + Point2(0.5, 0.5)).floor() - remainder_leftover;
-		parent_xform.columns[2] = (parent_xform.columns[2] + Point2(0.5, 0.5)).floor() - remainder_leftover;
+		Size2 scale = final_xform.get_scale().snappedf(0.0001);
+		Point2 abs_scaled_position = (rect.position * scale).abs();
+		Point2 odd_sized_correction = Point2(
+				Math::abs(Math::fmod(rect.position.x, 1.0l)),
+				Math::abs(Math::fmod(rect.position.y, 1.0l)));
+
+		// If the snapped canvas is smaller than a pixel, snap to the origin.
+		if (abs_scaled_position.x < 0.5) {
+			odd_sized_correction.x = abs_scaled_position.x;
+		}
+		if (abs_scaled_position.y < 0.5) {
+			odd_sized_correction.y = abs_scaled_position.y;
+		}
+
+		final_xform.columns[2] = (final_xform.columns[2] + Point2(0.5, 0.5)).floor() + odd_sized_correction;
+		parent_xform.columns[2] = (parent_xform.columns[2] + Point2(0.5, 0.5)).floor() + odd_sized_correction;
 	}
 
 	final_xform = parent_xform * final_xform;
