@@ -2765,6 +2765,14 @@
 		<member name="rendering/rendering_device/driver.windows" type="String" setter="" getter="">
 			Windows override for [member rendering/rendering_device/driver].
 		</member>
+		<member name="rendering/rendering_device/fallback_to_d3d12" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the forward renderer will fall back to Direct3D 12 if Vulkan is not supported.
+			[b]Note:[/b] This setting is implemented only on Windows.
+		</member>
+		<member name="rendering/rendering_device/fallback_to_vulkan" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the forward renderer will fall back to Vulkan if Direct3D 12 is not supported.
+			[b]Note:[/b] This setting is implemented only on Windows.
+		</member>
 		<member name="rendering/rendering_device/pipeline_cache/enable" type="bool" setter="" getter="" default="true">
 			Enable the pipeline cache that is saved to disk if the graphics API supports it.
 			[b]Note:[/b] This property is unable to control the pipeline caching the GPU driver itself does. Only turn this off along with deleting the contents of the driver's cache if you wish to simulate the experience a user will get when starting the game for the first time.
