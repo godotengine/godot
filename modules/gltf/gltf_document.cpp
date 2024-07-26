@@ -491,14 +491,8 @@ String GLTFDocument::_gen_unique_name(Ref<GLTFState> p_state, const String &p_na
 }
 
 String GLTFDocument::_sanitize_animation_name(const String &p_name) {
-	// Animations disallow the normal node invalid characters as well as  "," and "["
-	// (See animation/animation_player.cpp::add_animation)
-
-	// TODO: Consider adding invalid_characters or a validate_animation_name to animation_player to mirror Node.
 	String anim_name = p_name.validate_node_name();
-	anim_name = anim_name.replace(",", "");
-	anim_name = anim_name.replace("[", "");
-	return anim_name;
+	return AnimationLibrary::validate_library_name(anim_name);
 }
 
 String GLTFDocument::_gen_unique_animation_name(Ref<GLTFState> p_state, const String &p_name) {
