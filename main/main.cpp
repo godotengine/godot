@@ -2664,10 +2664,12 @@ Error Main::setup2(bool p_show_boot_logo) {
 						}
 					}
 
-					if (prefer_wayland) {
-						display_driver = "wayland";
-					} else {
-						display_driver = "default";
+					if (display_driver.is_empty()) {
+						if (prefer_wayland) {
+							display_driver = "wayland";
+						} else {
+							display_driver = "default";
+						}
 					}
 				}
 			}

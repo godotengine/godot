@@ -1575,7 +1575,7 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 			} else {
 				Node *node_owner = node->get_owner();
 				if (node == edited_scene || node_owner == edited_scene || (node_owner != nullptr && edited_scene->is_editable_instance(node_owner))) {
-					if (selection_results.has(node)) {
+					if (!selection_results.has(node)) {
 						selection_results.append(node);
 					}
 					break;

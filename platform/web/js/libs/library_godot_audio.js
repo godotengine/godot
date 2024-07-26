@@ -77,7 +77,7 @@ class Sample {
 	 * Creates a `Sample` based on the params. Will register it to the
 	 * `GodotAudio.samples` registry.
 	 * @param {SampleParams} params Base params
-	 * @param {SampleOptions} [options={}] Optional params
+	 * @param {SampleOptions} [options={{}}] Optional params
 	 * @returns {Sample}
 	 */
 	static create(params, options = {}) {
@@ -98,8 +98,7 @@ class Sample {
 	/**
 	 * `Sample` constructor.
 	 * @param {SampleParams} params Base params
-	 * @param {SampleOptions} [options={}] Optional params
-	 * @constructor
+	 * @param {SampleOptions} [options={{}}] Optional params
 	 */
 	constructor(params, options = {}) {
 		/** @type {string} */
@@ -154,7 +153,7 @@ class Sample {
 		if (this._audioBuffer == null) {
 			throw new Error('couldn\'t duplicate a null audioBuffer');
 		}
-		/** @type {Float32Array[]} */
+		/** @type {Array<Float32Array>} */
 		const channels = new Array(this._audioBuffer.numberOfChannels);
 		for (let i = 0; i < this._audioBuffer.numberOfChannels; i++) {
 			const channel = new Float32Array(this._audioBuffer.getChannelData(i));
@@ -189,7 +188,6 @@ class SampleNodeBus {
 	/**
 	 * `SampleNodeBus` constructor.
 	 * @param {Bus} bus The bus related to the new `SampleNodeBus`.
-	 * @constructor
 	 */
 	constructor(bus) {
 		const NUMBER_OF_WEB_CHANNELS = 6;
@@ -413,8 +411,7 @@ class SampleNode {
 
 	/**
 	 * @param {SampleNodeParams} params Base params
-	 * @param {SampleNodeOptions} [options={}] Optional params
-	 * @constructor
+	 * @param {SampleNodeOptions} [options={{}}] Optional params
 	 */
 	constructor(params, options = {}) {
 		/** @type {string} */
@@ -441,7 +438,7 @@ class SampleNode {
 		this._sampleNodeBuses = new Map();
 		/** @type {AudioBufferSourceNode | null} */
 		this._source = GodotAudio.ctx.createBufferSource();
-		/** @type {AudioBufferSourceNode["onended"]} */
+
 		this._onended = null;
 
 		this.setPlaybackRate(options.playbackRate ?? 44100);
@@ -558,7 +555,7 @@ class SampleNode {
 
 	/**
 	 * Sets the volumes of the `SampleNode` for each buses passed in parameters.
-	 * @param {Bus[]} buses
+	 * @param {Array<Bus>} buses
 	 * @param {Float32Array} volumes
 	 */
 	setVolumes(buses, volumes) {
@@ -818,7 +815,6 @@ class Bus {
 
 	/**
 	 * `Bus` constructor.
-	 * @constructor
 	 */
 	constructor() {
 		/** @type {Set<SampleNode>} */
@@ -985,7 +981,6 @@ class Bus {
 		GodotAudio.buses = GodotAudio.buses.filter((v) => v !== this);
 	}
 
-	/** @type {Bus["prototype"]["_syncSampleNodes"]} */
 	_syncSampleNodes() {
 		const sampleNodes = Array.from(this._sampleNodes);
 		for (let i = 0; i < sampleNodes.length; i++) {
@@ -1086,7 +1081,7 @@ const _GodotAudio = {
 		// `Bus` class
 		/**
 		 * Registry of `Bus`es.
-		 * @type {Bus[]}
+		 * @type {Array<Bus>}
 		 */
 		buses: null,
 		/**
@@ -1309,7 +1304,7 @@ const _GodotAudio = {
 		/**
 		 * Triggered when a sample node volumes need to be updated.
 		 * @param {string} playbackObjectId Id of the sample playback
-		 * @param {number[]} busIndexes Indexes of the buses that need to be updated
+		 * @param {Array<number>} busIndexes Indexes of the buses that need to be updated
 		 * @param {Float32Array} volumes Array of the volumes
 		 * @returns {void}
 		 */
