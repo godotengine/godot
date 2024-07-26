@@ -1202,18 +1202,16 @@ LightmapGI::BakeError LightmapGI::_bake(Node *p_from_node, String p_image_data_p
 				textures[i] = t;
 			} else {
 				String texture_path = texture_count > 1 ? base_path + "_" + itos(i) + ".res" : base_path + ".res";
-				Error err = ResourceSaver::save(texture_image, texture_path);
-				Ref<Image> tex_img = ResourceLoader::load(texture_path);
-				ERR_FAIL_COND_V(err, BAKE_ERROR_CANT_CREATE_IMAGE);
-				ERR_FAIL_COND_V(tex_img.is_null(), BAKE_ERROR_CANT_CREATE_IMAGE);
 
-				// Convert image to a texturelayered
-				Vector<Ref<Image>> images_to_add;
-				images_to_add.push_back(tex_img);
 				Ref<Texture2DArray> texs;
 				texs.instantiate();
-				texs->create_from_images(images_to_add);
-				textures[i] = texs;
+				texs->create_from_images(images);
+
+				Error err = ResourceSaver::save(texs, texture_path);
+				ERR_FAIL_COND_V(err, BAKE_ERROR_CANT_CREATE_IMAGE);
+				Ref<TextureLayered> t = ResourceLoader::load(texture_path);
+				ERR_FAIL_COND_V(t.is_null(), BAKE_ERROR_CANT_CREATE_IMAGE);
+				textures[i] = t;
 			}
 		}
 	}
