@@ -43,6 +43,7 @@
 #include "editor/inspector_dock.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/3d/mesh_instance_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/animation/tween.h"
 #include "scene/gui/check_box.h"
@@ -5120,16 +5121,7 @@ void AnimationTrackEditor::_new_track_property_selected(const String &p_name) {
 	Animation::InterpolationType interp_type = Animation::INTERPOLATION_LINEAR;
 	bool loop_wrap = true;
 	_fetch_value_track_options(full_path, &update_mode, &interp_type, &loop_wrap);
-	if (adding_track_type == Animation::TYPE_VALUE) {
-		undo_redo->create_action(TTR("Add Track"));
-		undo_redo->add_do_method(animation.ptr(), "add_track", adding_track_type);
-		undo_redo->add_do_method(animation.ptr(), "track_set_path", animation->get_track_count(), full_path);
-		undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_type", animation->get_track_count(), interp_type);
-		undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_loop_wrap", animation->get_track_count(), loop_wrap);
-		undo_redo->add_do_method(animation.ptr(), "value_track_set_update_mode", animation->get_track_count(), update_mode);
-		undo_redo->add_undo_method(animation.ptr(), "remove_track", animation->get_track_count());
-		undo_redo->commit_action();
-	} else {
+	if (adding_track_type == Animation::TYPE_BEZIER) {
 		Vector<String> subindices;
 		{
 			// Hack.
@@ -5156,6 +5148,24 @@ void AnimationTrackEditor::_new_track_property_selected(const String &p_name) {
 			undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_loop_wrap", track_idx, loop_wrap);
 			undo_redo->add_undo_method(animation.ptr(), "remove_track", base_track);
 		}
+		undo_redo->commit_action();
+	} else {
+		bool is_blend_shape = adding_track_type == Animation::TYPE_BLEND_SHAPE;
+		if (is_blend_shape) {
+			PackedStringArray split = p_name.split("/");
+			if (!split.is_empty()) {
+				full_path = String(adding_track_path) + ":" + split[split.size() - 1];
+			}
+		}
+		undo_redo->create_action(TTR("Add Track"));
+		undo_redo->add_do_method(animation.ptr(), "add_track", adding_track_type);
+		undo_redo->add_do_method(animation.ptr(), "track_set_path", animation->get_track_count(), full_path);
+		undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_type", animation->get_track_count(), interp_type);
+		undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_loop_wrap", animation->get_track_count(), loop_wrap);
+		if (!is_blend_shape) {
+			undo_redo->add_do_method(animation.ptr(), "value_track_set_update_mode", animation->get_track_count(), update_mode);
+		}
+		undo_redo->add_undo_method(animation.ptr(), "remove_track", animation->get_track_count());
 		undo_redo->commit_action();
 	}
 }
@@ -5249,7 +5259,16 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 
 			id.value = base->get_scale();
 		} break;
-		case Animation::TYPE_BLEND_SHAPE:
+		case Animation::TYPE_BLEND_SHAPE: {
+			MeshInstance3D *base = Object::cast_to<MeshInstance3D>(node);
+
+			if (!base) {
+				EditorNode::get_singleton()->show_warning(TTR("Track is not of type MeshInstance3D, can't insert key"));
+				return;
+			}
+
+			id.value = base->get_blend_shape_value(base->find_blend_shape_by_name(id.path.get_subname(0)));
+		} break;
 		case Animation::TYPE_VALUE: {
 			NodePath bp;
 			_find_hint_for_track(p_track, bp, &id.value);
