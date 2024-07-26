@@ -867,6 +867,13 @@ public:
 		CANVAS_ITEM_SNAP_TO_PIXEL_MAX,
 	};
 
+	enum CanvasItemSnapToPixelTrueCenter {
+		CANVAS_ITEM_SNAP_TO_PIXEL_TRUE_CENTER_DEFAULT,
+		CANVAS_ITEM_SNAP_TO_PIXEL_TRUE_CENTER_DISABLED,
+		CANVAS_ITEM_SNAP_TO_PIXEL_TRUE_CENTER_ENABLED,
+		CANVAS_ITEM_SNAP_TO_PIXEL_TRUE_CENTER_MAX,
+	};
+
 	virtual RID viewport_create() = 0;
 
 	enum ViewportScaling3DMode {
@@ -932,6 +939,7 @@ public:
 	virtual void viewport_set_transparent_background(RID p_viewport, bool p_enabled) = 0;
 	virtual void viewport_set_use_hdr_2d(RID p_viewport, bool p_use_hdr) = 0;
 	virtual void viewport_set_snap_2d_transforms_to_pixel(RID p_viewport, bool p_enabled) = 0;
+	virtual void viewport_set_snap_2d_transforms_to_pixel_true_center(RID p_viewport, bool p_enabled) = 0;
 	virtual void viewport_set_snap_2d_vertices_to_pixel(RID p_viewport, bool p_enabled) = 0;
 
 	virtual void viewport_set_default_canvas_item_texture_filter(RID p_viewport, CanvasItemTextureFilter p_filter) = 0;
@@ -1459,6 +1467,7 @@ public:
 	virtual void canvas_item_set_draw_behind_parent(RID p_item, bool p_enable) = 0;
 
 	virtual void canvas_item_set_snap_to_pixel(RID p_item, CanvasItemSnapToPixel p_snap) = 0;
+	virtual void canvas_item_set_snap_to_pixel_true_center(RID p_item, CanvasItemSnapToPixelTrueCenter p_snap_to_pixel_true_center) = 0;
 
 	enum NinePatchAxisMode {
 		NINE_PATCH_STRETCH,

@@ -2793,6 +2793,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("viewport_attach_canvas", "viewport", "canvas"), &RenderingServer::viewport_attach_canvas);
 	ClassDB::bind_method(D_METHOD("viewport_remove_canvas", "viewport", "canvas"), &RenderingServer::viewport_remove_canvas);
 	ClassDB::bind_method(D_METHOD("viewport_set_snap_2d_transforms_to_pixel", "viewport", "enabled"), &RenderingServer::viewport_set_snap_2d_transforms_to_pixel);
+	ClassDB::bind_method(D_METHOD("viewport_set_snap_2d_transforms_to_pixel_true_center", "viewport", "enabled"), &RenderingServer::viewport_set_snap_2d_transforms_to_pixel_true_center);
 	ClassDB::bind_method(D_METHOD("viewport_set_snap_2d_vertices_to_pixel", "viewport", "enabled"), &RenderingServer::viewport_set_snap_2d_vertices_to_pixel);
 
 	ClassDB::bind_method(D_METHOD("viewport_set_default_canvas_item_texture_filter", "viewport", "filter"), &RenderingServer::viewport_set_default_canvas_item_texture_filter);

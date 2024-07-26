@@ -80,6 +80,13 @@ public:
 		SNAP_TO_PIXEL_MAX,
 	};
 
+	enum SnapToPixelTrueCenter {
+		SNAP_TO_PIXEL_TRUE_CENTER_PARENT_NODE,
+		SNAP_TO_PIXEL_TRUE_CENTER_DISABLED,
+		SNAP_TO_PIXEL_TRUE_CENTER_ENABLED,
+		SNAP_TO_PIXEL_TRUE_CENTER_MAX,
+	};
+
 private:
 	mutable SelfList<Node>
 			xform_change;
@@ -120,9 +127,11 @@ private:
 	mutable RS::CanvasItemTextureFilter texture_filter_cache = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
 	mutable RS::CanvasItemTextureRepeat texture_repeat_cache = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
 	mutable RS::CanvasItemSnapToPixel snap_to_pixel_cache = RS::CANVAS_ITEM_SNAP_TO_PIXEL_DISABLED;
+	mutable RS::CanvasItemSnapToPixelTrueCenter snap_to_pixel_true_center_cache = RS::CANVAS_ITEM_SNAP_TO_PIXEL_TRUE_CENTER_DISABLED;
 	TextureFilter texture_filter = TEXTURE_FILTER_PARENT_NODE;
 	TextureRepeat texture_repeat = TEXTURE_REPEAT_PARENT_NODE;
 	SnapToPixel snap_to_pixel = SNAP_TO_PIXEL_PARENT_NODE;
+	SnapToPixelTrueCenter snap_to_pixel_true_center = SNAP_TO_PIXEL_TRUE_CENTER_PARENT_NODE;
 
 	Ref<Material> material;
 
@@ -159,6 +168,8 @@ private:
 	void _update_texture_filter_changed(bool p_propagate);
 	void _refresh_snap_to_pixel_cache() const;
 	void _update_snap_to_pixel_changed(bool p_propagate);
+	void _refresh_snap_to_pixel_true_center_cache() const;
+	void _update_snap_to_pixel_true_center_changed(bool p_propagate);
 
 	void _notify_transform_deferred();
 
@@ -166,6 +177,7 @@ protected:
 	virtual void _update_self_texture_repeat(RS::CanvasItemTextureRepeat p_texture_repeat);
 	virtual void _update_self_texture_filter(RS::CanvasItemTextureFilter p_texture_filter);
 	virtual void _update_self_snap_to_pixel(RS::CanvasItemSnapToPixel p_snap);
+	virtual void _update_self_snap_to_pixel_true_center(RS::CanvasItemSnapToPixelTrueCenter p_snap_true_center);
 
 	_FORCE_INLINE_ void _notify_transform() {
 		_notify_transform(this);
@@ -395,6 +407,9 @@ public:
 	virtual void set_snap_to_pixel(SnapToPixel p_snap_to_pixel);
 	SnapToPixel get_snap_to_pixel() const;
 
+	virtual void set_snap_to_pixel_true_center(SnapToPixelTrueCenter p_snap_to_pixel_true_center);
+	SnapToPixelTrueCenter get_snap_to_pixel_true_center() const;
+
 	CanvasItem();
 	~CanvasItem();
 };
@@ -403,6 +418,7 @@ VARIANT_ENUM_CAST(CanvasItem::TextureFilter)
 VARIANT_ENUM_CAST(CanvasItem::TextureRepeat)
 VARIANT_ENUM_CAST(CanvasItem::ClipChildrenMode)
 VARIANT_ENUM_CAST(CanvasItem::SnapToPixel)
+VARIANT_ENUM_CAST(CanvasItem::SnapToPixelTrueCenter)
 
 class CanvasTexture : public Texture2D {
 	GDCLASS(CanvasTexture, Texture2D);

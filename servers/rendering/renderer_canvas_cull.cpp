@@ -285,12 +285,34 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 		rect.position -= repeat_size / scale * (repeat_times / 2);
 	}
 
-	if ((p_canvas_item->snap_to_pixel == RS::CANVAS_ITEM_SNAP_TO_PIXEL_DEFAULT && snapping_2d_transforms_to_pixel) || (p_canvas_item->snap_to_pixel == RS::CANVAS_ITEM_SNAP_TO_PIXEL_ENABLED)) {
+	// Snapping to pixels.
+	const bool snap_to_pixel_default = p_canvas_item->snap_to_pixel == RS::CANVAS_ITEM_SNAP_TO_PIXEL_DEFAULT;
+	const bool snap_to_pixel_force = p_canvas_item->snap_to_pixel == RS::CANVAS_ITEM_SNAP_TO_PIXEL_ENABLED;
+	if ((snap_to_pixel_default && snapping_2d_transforms_to_pixel) || snap_to_pixel_force) {
 		Size2 scale = final_xform.get_scale().snappedf(0.0001);
 		Point2 abs_scaled_position = (rect.position * scale).abs();
-		Point2 odd_sized_correction = Point2(
-				Math::abs(Math::fmod(rect.position.x, 1.0l)),
-				Math::abs(Math::fmod(rect.position.y, 1.0l)));
+		Point2 odd_sized_correction;
+
+		const bool snap_to_pixel_true_center_default = p_canvas_item->snap_to_pixel_true_center == RS::CANVAS_ITEM_SNAP_TO_PIXEL_TRUE_CENTER_DEFAULT;
+		const bool snap_to_pixel_true_center_force = p_canvas_item->snap_to_pixel_true_center == RS::CANVAS_ITEM_SNAP_TO_PIXEL_TRUE_CENTER_ENABLED;
+		if ((snap_to_pixel_true_center_default && snapping_2d_transforms_to_pixel_true_center) || snap_to_pixel_true_center_force) {
+			odd_sized_correction = Point2(
+					Math::abs(Math::fmod(rect.position.x * scale.x, 1.0l)),
+					Math::abs(Math::fmod(rect.position.y * scale.y, 1.0l)));
+
+			if (scale.x >= 0.5) {
+				odd_sized_correction.x = (2 * odd_sized_correction.x) * (1 - odd_sized_correction.x);
+				odd_sized_correction.x = odd_sized_correction.x >= 0.25 ? 0.5 : 0.0;
+			}
+			if (scale.y >= 0.5) {
+				odd_sized_correction.y = (2 * odd_sized_correction.y) * (1 - odd_sized_correction.y);
+				odd_sized_correction.y = odd_sized_correction.y >= 0.25 ? 0.5 : 0.0;
+			}
+		} else {
+			odd_sized_correction = Point2(
+					Math::abs(Math::fmod(rect.position.x, 1.0l)),
+					Math::abs(Math::fmod(rect.position.y, 1.0l)));
+		}
 
 		// If the snapped canvas is smaller than a pixel, snap to the origin.
 		if (abs_scaled_position.x < 0.5) {
@@ -409,11 +431,12 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 	}
 }
 
-void RendererCanvasCull::render_canvas(RID p_render_target, Canvas *p_canvas, const Transform2D &p_transform, RendererCanvasRender::Light *p_lights, RendererCanvasRender::Light *p_directional_lights, const Rect2 &p_clip_rect, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_transforms_to_pixel, bool p_snap_2d_vertices_to_pixel, uint32_t canvas_cull_mask, RenderingMethod::RenderInfo *r_render_info) {
+void RendererCanvasCull::render_canvas(RID p_render_target, Canvas *p_canvas, const Transform2D &p_transform, RendererCanvasRender::Light *p_lights, RendererCanvasRender::Light *p_directional_lights, const Rect2 &p_clip_rect, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_transforms_to_pixel, bool p_snap_2d_transforms_to_pixel_true_center, bool p_snap_2d_vertices_to_pixel, uint32_t canvas_cull_mask, RenderingMethod::RenderInfo *r_render_info) {
 	RENDER_TIMESTAMP("> Render Canvas");
 
 	sdf_used = false;
 	snapping_2d_transforms_to_pixel = p_snap_2d_transforms_to_pixel;
+	snapping_2d_transforms_to_pixel_true_center = p_snap_2d_transforms_to_pixel_true_center;
 
 	if (p_canvas->children_order_dirty) {
 		p_canvas->child_items.sort();
@@ -2331,6 +2354,12 @@ void RendererCanvasCull::canvas_item_set_snap_to_pixel(RID p_item, RS::CanvasIte
 	Item *ci = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_NULL(ci);
 	ci->snap_to_pixel = p_snap;
+}
+
+void RendererCanvasCull::canvas_item_set_snap_to_pixel_true_center(RID p_item, RS::CanvasItemSnapToPixelTrueCenter p_snap_to_pixel_true_center) {
+	Item *ci = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_NULL(ci);
+	ci->snap_to_pixel_true_center = p_snap_to_pixel_true_center;
 }
 
 void RendererCanvasCull::update_visibility_notifiers() {

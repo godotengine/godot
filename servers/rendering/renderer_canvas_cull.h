@@ -176,6 +176,7 @@ public:
 	bool disable_scale;
 	bool sdf_used = false;
 	bool snapping_2d_transforms_to_pixel = false;
+	bool snapping_2d_transforms_to_pixel_true_center = false;
 
 	bool debug_redraw = false;
 	double debug_redraw_time = 0;
@@ -196,7 +197,7 @@ private:
 	RendererCanvasRender::Item **z_last_list;
 
 public:
-	void render_canvas(RID p_render_target, Canvas *p_canvas, const Transform2D &p_transform, RendererCanvasRender::Light *p_lights, RendererCanvasRender::Light *p_directional_lights, const Rect2 &p_clip_rect, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_transforms_to_pixel, bool p_snap_2d_vertices_to_pixel, uint32_t p_canvas_cull_mask, RenderingMethod::RenderInfo *r_render_info = nullptr);
+	void render_canvas(RID p_render_target, Canvas *p_canvas, const Transform2D &p_transform, RendererCanvasRender::Light *p_lights, RendererCanvasRender::Light *p_directional_lights, const Rect2 &p_clip_rect, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_transforms_to_pixel, bool p_snap_2d_transforms_to_pixel_true_center, bool p_snap_2d_vertices_to_pixel, uint32_t p_canvas_cull_mask, RenderingMethod::RenderInfo *r_render_info = nullptr);
 
 	bool was_sdf_used();
 
@@ -340,6 +341,7 @@ public:
 	void canvas_item_set_default_texture_filter(RID p_item, RS::CanvasItemTextureFilter p_filter);
 	void canvas_item_set_default_texture_repeat(RID p_item, RS::CanvasItemTextureRepeat p_repeat);
 	void canvas_item_set_snap_to_pixel(RID p_item, RS::CanvasItemSnapToPixel p_snap);
+	void canvas_item_set_snap_to_pixel_true_center(RID p_item, RS::CanvasItemSnapToPixelTrueCenter p_snap_true_center);
 
 	void update_visibility_notifiers();
 

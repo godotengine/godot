@@ -255,6 +255,7 @@ private:
 
 	bool snap_controls_to_pixels = true;
 	bool snap_2d_transforms_to_pixel = false;
+	bool snap_2d_transforms_to_pixel_true_center = false;
 	bool snap_2d_vertices_to_pixel = false;
 
 	bool physics_object_picking = false;
@@ -612,6 +613,9 @@ public:
 
 	void set_snap_2d_transforms_to_pixel(bool p_enable);
 	bool is_snap_2d_transforms_to_pixel_enabled() const;
+
+	void set_snap_2d_transforms_to_pixel_true_center(bool p_enable);
+	bool is_snap_2d_transforms_to_pixel_true_center_enabled() const;
 
 	void set_snap_2d_vertices_to_pixel(bool p_enable);
 	bool is_snap_2d_vertices_to_pixel_enabled() const;

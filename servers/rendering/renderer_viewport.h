@@ -94,6 +94,7 @@ public:
 		bool measure_render_time = false;
 
 		bool snap_2d_transforms_to_pixel = false;
+		bool snap_2d_transforms_to_pixel_true_center = false;
 		bool snap_2d_vertices_to_pixel = false;
 
 		uint64_t time_cpu_begin;
@@ -288,6 +289,7 @@ public:
 	float viewport_get_measured_render_time_gpu(RID p_viewport) const;
 
 	void viewport_set_snap_2d_transforms_to_pixel(RID p_viewport, bool p_enabled);
+	void viewport_set_snap_2d_transforms_to_pixel_true_center(RID p_viewport, bool p_enabled);
 	void viewport_set_snap_2d_vertices_to_pixel(RID p_viewport, bool p_enabled);
 
 	void viewport_set_default_canvas_item_texture_filter(RID p_viewport, RS::CanvasItemTextureFilter p_filter);

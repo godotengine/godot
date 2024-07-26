@@ -640,6 +640,7 @@ public:
 	FUNC2(viewport_set_transparent_background, RID, bool)
 	FUNC2(viewport_set_use_hdr_2d, RID, bool)
 	FUNC2(viewport_set_snap_2d_transforms_to_pixel, RID, bool)
+	FUNC2(viewport_set_snap_2d_transforms_to_pixel_true_center, RID, bool)
 	FUNC2(viewport_set_snap_2d_vertices_to_pixel, RID, bool)
 
 	FUNC2(viewport_set_default_canvas_item_texture_filter, RID, CanvasItemTextureFilter)
@@ -884,6 +885,7 @@ public:
 	FUNC2(canvas_item_set_draw_behind_parent, RID, bool)
 
 	FUNC2(canvas_item_set_snap_to_pixel, RID, CanvasItemSnapToPixel)
+	FUNC2(canvas_item_set_snap_to_pixel_true_center, RID, CanvasItemSnapToPixelTrueCenter)
 
 	FUNC6(canvas_item_add_line, RID, const Point2 &, const Point2 &, const Color &, float, bool)
 	FUNC5(canvas_item_add_polyline, RID, const Vector<Point2> &, const Vector<Color> &, float, bool)
