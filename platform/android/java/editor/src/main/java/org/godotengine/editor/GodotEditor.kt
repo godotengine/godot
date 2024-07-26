@@ -203,7 +203,14 @@ open class GodotEditor : GodotActivity() {
 		}
 		if (editorWindowInfo.windowClassName == javaClass.name) {
 			Log.d(TAG, "Restarting ${editorWindowInfo.windowClassName} with parameters ${args.contentToString()}")
-			ProcessPhoenix.triggerRebirth(this, newInstance)
+			val godot = godot
+			if (godot != null) {
+				godot.destroyAndKillProcess {
+					ProcessPhoenix.triggerRebirth(this, newInstance)
+				}
+			} else {
+				ProcessPhoenix.triggerRebirth(this, newInstance)
+			}
 		} else {
 			Log.d(TAG, "Starting ${editorWindowInfo.windowClassName} with parameters ${args.contentToString()}")
 			newInstance.putExtra(EXTRA_NEW_LAUNCH, true)

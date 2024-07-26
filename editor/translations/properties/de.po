@@ -92,7 +92,7 @@
 # Janosch Lion <janorico@posteo.de>, 2023.
 # "Dimitri A." <dimitripilot3@gmail.com>, 2023.
 # Roman Wanner <flugtauglicher@gmail.com>, 2023.
-# Ettore Atalan <atalanttore@googlemail.com>, 2023.
+# Ettore Atalan <atalanttore@googlemail.com>, 2023, 2024.
 # Lars Bollmann <lars.bollmann@tu-dortmund.de>, 2023.
 # Benedikt Wicklein <benedikt.wicklein@gmail.com>, 2023.
 # Wuzzy <Wuzzy@disroot.org>, 2023.
@@ -108,7 +108,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-05-07 21:05+0000\n"
+"PO-Revision-Date: 2024-06-26 19:07+0000\n"
 "Last-Translator: Cerno_b <cerno.b@gmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/de/>\n"
@@ -117,7 +117,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.5.4-rc\n"
+"X-Generator: Weblate 5.6-rc\n"
 
 msgid "Application"
 msgstr "Anwendung"
@@ -629,6 +629,9 @@ msgstr "Aktion"
 msgid "Strength"
 msgstr "Stärke"
 
+msgid "Event Index"
+msgstr "Ereignisindex"
+
 msgid "Delta"
 msgstr "Delta"
 
@@ -821,6 +824,9 @@ msgstr "Wert"
 msgid "Arg Count"
 msgstr "Anzahl der Argumente"
 
+msgid "Args"
+msgstr "Argumente"
+
 msgid "Type"
 msgstr "Art"
 
@@ -932,6 +938,9 @@ msgstr "Editorsprache"
 msgid "Localize Settings"
 msgstr "Einstellungen übersetzen"
 
+msgid "Dock Tab Style"
+msgstr "Dock-Tab-Stil"
+
 msgid "UI Layout Direction"
 msgstr "UI Layout-Richtung"
 
@@ -952,9 +961,6 @@ msgstr "Verbindung"
 
 msgid "Engine Version Update Mode"
 msgstr "Engine-Versions-Updatemodus"
-
-msgid "Enable Pseudolocalization"
-msgstr "Aktiviere Pseudo-Lokalisierung"
 
 msgid "Use Embedded Menu"
 msgstr "Eingebettetes Menü verwenden"
@@ -988,6 +994,9 @@ msgstr "Schriftart-Hints"
 
 msgid "Font Subpixel Positioning"
 msgstr "Schriftart Subpixel-Rendering"
+
+msgid "Font Disable Embedded Bitmaps"
+msgstr "Schriftart eingebettete Bitmaps deaktivieren"
 
 msgid "Main Font"
 msgstr "Hauptschriftart"
@@ -1409,6 +1418,9 @@ msgstr "Dateien"
 msgid "Trim Trailing Whitespace on Save"
 msgstr "Whitespace am Zeilenende beim Speichern entfernen"
 
+msgid "Trim Final Newlines on Save"
+msgstr "Letzte Zeilenumbrüche beim Speichern entfernen"
+
 msgid "Autosave Interval Secs"
 msgstr "Autospeicherinterval (s)"
 
@@ -1748,6 +1760,15 @@ msgstr "Autospeichern"
 msgid "Save Before Running"
 msgstr "Speichern vor Wiedergabe"
 
+msgid "Bottom Panel"
+msgstr "Unteres Bedienfeld"
+
+msgid "Action on Play"
+msgstr "Aktion beim Abspielen"
+
+msgid "Action on Stop"
+msgstr "Aktion beim Anhalten"
+
 msgid "Output"
 msgstr "Ausgabe"
 
@@ -1804,6 +1825,15 @@ msgstr "Remote-Inspektor-Aktualisierungsintervall"
 
 msgid "Profile Native Calls"
 msgstr "Native Aufrufe profilieren"
+
+msgid "Input"
+msgstr "Eingabe"
+
+msgid "Buffering"
+msgstr "Puffer"
+
+msgid "Agile Event Flushing"
+msgstr "Agiles Ereignis-Flushing"
 
 msgid "Project Manager"
 msgstr "Projektmanager"
@@ -2080,6 +2110,9 @@ msgstr "Alle Knochenposen nach dem Import zurücksetzen"
 
 msgid "Overwrite Axis"
 msgstr "Achse überschreiben"
+
+msgid "Keep Global Rest on Leftovers"
+msgstr "Globale Standardpose bei Resten beibehalten"
 
 msgid "Fix Silhouette"
 msgstr "Silhouette korrigieren"
@@ -3003,18 +3036,6 @@ msgstr "Default-Werte"
 msgid "Default Clear Color"
 msgstr "Default-Clear Color"
 
-msgid "Show Image"
-msgstr "Bild anzeigen"
-
-msgid "Image"
-msgstr "Bild"
-
-msgid "Fullsize"
-msgstr "Orginalgröße"
-
-msgid "Use Filter"
-msgstr "Filter verwenden"
-
 msgid "Icon"
 msgstr "Icon"
 
@@ -3023,12 +3044,6 @@ msgstr "Natives macOS-Icon"
 
 msgid "Windows Native Icon"
 msgstr "Natives Windows-Icon"
-
-msgid "Buffering"
-msgstr "Puffer"
-
-msgid "Agile Event Flushing"
-msgstr "Agiles Ereignis-Flushing"
 
 msgid "Pointing"
 msgstr "Berührung"
@@ -3054,6 +3069,18 @@ msgstr "Hotspot des eigenen Bilds"
 msgid "Tooltip Position Offset"
 msgstr "Versatz des Tooltips"
 
+msgid "Show Image"
+msgstr "Bild anzeigen"
+
+msgid "Image"
+msgstr "Bild"
+
+msgid "Fullsize"
+msgstr "Orginalgröße"
+
+msgid "Use Filter"
+msgstr "Filter verwenden"
+
 msgid "Minimum Display Time"
 msgstr "Minimale Anzeigedauer"
 
@@ -3075,8 +3102,74 @@ msgstr "Assembly-Neuladen-Versuche"
 msgid "Time"
 msgstr "Zeit"
 
+msgid "Physics Process"
+msgstr "Physik-Prozess"
+
+msgid "Navigation Process"
+msgstr "Navigations-Prozess"
+
+msgid "Static"
+msgstr "Statisch"
+
+msgid "Static Max"
+msgstr "Statisch Max"
+
+msgid "Msg Buf Max"
+msgstr "Nachr Puff Max"
+
+msgid "Object"
+msgstr "Objekt"
+
+msgid "Objects"
+msgstr "Objekte"
+
+msgid "Resources"
+msgstr "Ressourcen"
+
+msgid "Orphan Nodes"
+msgstr "Verwaiste Nodes"
+
+msgid "Raster"
+msgstr "Raster"
+
+msgid "Total Objects Drawn"
+msgstr "Gezeichnete Objekte gesamt"
+
+msgid "Total Primitives Drawn"
+msgstr "Gezeichnete Primitive gesamt"
+
+msgid "Total Draw Calls"
+msgstr "Zeichenaufrufe gesamt"
+
 msgid "Video"
 msgstr "Video"
+
+msgid "Video Mem"
+msgstr "Video-Speich"
+
+msgid "Texture Mem"
+msgstr "Textur-Speich"
+
+msgid "Buffer Mem"
+msgstr "Puffer-Speich"
+
+msgid "Physics 2D"
+msgstr "Physik-2D"
+
+msgid "Active Objects"
+msgstr "Aktive Objekte"
+
+msgid "Collision Pairs"
+msgstr "Kollisionspaare"
+
+msgid "Islands"
+msgstr "Inseln"
+
+msgid "Physics 3D"
+msgstr "Physik-3D"
+
+msgid "Active Maps"
+msgstr "Aktive Maps"
 
 msgid "Regions"
 msgstr "Regionen"
@@ -3084,11 +3177,23 @@ msgstr "Regionen"
 msgid "Agents"
 msgstr "Agenten"
 
+msgid "Links"
+msgstr "Links"
+
 msgid "Polygons"
 msgstr "Polygone"
 
 msgid "Edges"
 msgstr "Kanten"
+
+msgid "Edges Merged"
+msgstr "Verschmolzene Kanten"
+
+msgid "Edges Connected"
+msgstr "Verbundene Kanten"
+
+msgid "Edges Free"
+msgstr "Freie Kanten"
 
 msgid "Operation"
 msgstr "Betrieb"
@@ -3267,6 +3372,9 @@ msgstr "Poll-Limit (µsec)"
 msgid "Copyright"
 msgstr "Copyright"
 
+msgid "Bake FPS"
+msgstr "Back-FPS"
+
 msgid "glTF"
 msgstr "glTF"
 
@@ -3425,6 +3533,9 @@ msgstr "Normalisiert"
 
 msgid "Count"
 msgstr "Anzahl"
+
+msgid "Accessor Type"
+msgstr "Zugriffsfunktions-Typ"
 
 msgid "Min"
 msgstr "Min"
@@ -3845,6 +3956,9 @@ msgstr "Sortierreihenfolge"
 
 msgid "Alpha Blend"
 msgstr "Alpha-Blending"
+
+msgid "Enable Hole Punch"
+msgstr "Hole Punch aktivieren"
 
 msgid "Aspect Ratio"
 msgstr "Seitenverhältnis"
@@ -5352,9 +5466,6 @@ msgstr "Toleranzabstand"
 msgid "Disable Mode"
 msgstr "Inaktivmodus"
 
-msgid "Input"
-msgstr "Eingabe"
-
 msgid "Pickable"
 msgstr "Aufnehmbar"
 
@@ -5592,6 +5703,9 @@ msgstr "Navigationssichtbarkeitsmodus"
 
 msgid "Y Sort Origin"
 msgstr "Y-Sortierungsursprung"
+
+msgid "X Draw Order Reversed"
+msgstr "X-Zeichenreihenfolge umgekehrt"
 
 msgid "Collision Enabled"
 msgstr "Kollision aktiviert"
@@ -5995,6 +6109,9 @@ msgstr "Rauschunterdrückung verwenden"
 
 msgid "Denoiser Strength"
 msgstr "Rauschunterdrückungs-Stärke"
+
+msgid "Denoiser Range"
+msgstr "Rauschunterdrückungs-Bereich"
 
 msgid "Texel Scale"
 msgstr "Texel-Skalierung"
@@ -7051,6 +7168,9 @@ msgstr "Tönungsfarbe aktiviert"
 
 msgid "Tint Color"
 msgstr "Tönungsfarbe"
+
+msgid "Ignore Invalid Connection Type"
+msgstr "Ungültigen Verbindungstyp ignorieren"
 
 msgid "Select Mode"
 msgstr "Auswahlmodus"
@@ -8129,6 +8249,9 @@ msgstr "Terrain-Sets"
 
 msgid "Custom Data Layers"
 msgstr "Eigene Datenschichten"
+
+msgid "Scenes"
+msgstr "Szenen"
 
 msgid "Scene"
 msgstr "Szene"
@@ -9285,9 +9408,6 @@ msgstr "Oberflächenindex"
 msgid "Degrees Mode"
 msgstr "Gradmodus"
 
-msgid "Font Color"
-msgstr "Schriftfarbe"
-
 msgid "Font Pressed Color"
 msgstr "Schriftfarbe gedrückt"
 
@@ -9329,6 +9449,9 @@ msgstr "H-Trennung"
 
 msgid "Icon Max Width"
 msgstr "Max. Iconbreite"
+
+msgid "Align to Largest Stylebox"
+msgstr "An größter Stylebox ausrichten"
 
 msgid "Underline Spacing"
 msgstr "Unterstreichung-Zwischenraum"
@@ -10856,6 +10979,3 @@ msgstr "Weltursprung"
 
 msgid "Primary Interface"
 msgstr "Primäre Schnittstelle"
-
-msgid "Property"
-msgstr "Eigenschaft"

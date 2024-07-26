@@ -697,9 +697,6 @@ msgstr "Cesta Track-u je neplatná, takže sa nedá pridať kľúč."
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "Track nie je typu Node3D, nedá sa vložiť kľúč"
 
-msgid "Add Track Key"
-msgstr "Pridať Track Key"
-
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Cesta track-u je neplatná, takže sa nedá pridať do method key."
 
@@ -2593,13 +2590,6 @@ msgid "Quick Open Script..."
 msgstr "Rýchle Otvorenie Skriptu..."
 
 msgid ""
-"The current scene has no root node, but %d modified external resource(s) were "
-"saved anyway."
-msgstr ""
-"Aktuálna scéna nemá koreňový node, ale %d modifikovaných externých zdrojov "
-"bolo napriek tomu uložených."
-
-msgid ""
 "A root node is required to save the scene. You can add a root node using the "
 "Scene tree dock."
 msgstr ""
@@ -3075,9 +3065,6 @@ msgstr ""
 
 msgid "Write your logic in the _run() method."
 msgstr "Napíšte svoju logiku v metóde _run()."
-
-msgid "There is an edited scene already."
-msgstr "Už tu je editovaná scéna."
 
 msgid "Editor Settings"
 msgstr "Nastavenia editoru"

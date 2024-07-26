@@ -307,7 +307,7 @@ Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size) {
 		transcoder.get_image_level_info(src_ptr, src_size, basisu_level, 0, i);
 
 		uint32_t mip_block_or_pixel_count = Image::is_format_compressed(image_format) ? basisu_level.m_total_blocks : basisu_level.m_orig_width * basisu_level.m_orig_height;
-		int ofs = Image::get_image_mipmap_offset(basisu_info.m_width, basisu_info.m_height, image_format, i);
+		int64_t ofs = Image::get_image_mipmap_offset(basisu_info.m_width, basisu_info.m_height, image_format, i);
 
 		bool result = transcoder.transcode_image_level(src_ptr, src_size, 0, i, dst + ofs, mip_block_or_pixel_count, basisu_format);
 

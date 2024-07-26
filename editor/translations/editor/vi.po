@@ -30,7 +30,7 @@
 # Schuetzer <minhtuvn@gmail.com>, 2023.
 # Phạm Minh Tấn <phamtiens289@gmail.com>, 2023.
 # Long Phan <phangg255@gmail.com>, 2023.
-# duong cfa <duongcfa1@gmail.com>, 2023.
+# duong cfa <duongcfa1@gmail.com>, 2023, 2024.
 # plantcraft94 <plantcraft60@gmail.com>, 2023.
 # Anh Hoang Nguyen <iam@hoanganh.dev>, 2023.
 # Huu Le <huuptag@gmail.com>, 2023.
@@ -39,13 +39,15 @@
 # Ziyn <notziyn@gmail.com>, 2024.
 # NGUYEN THANH VAN <thanhvan.ng7899@gmail.com>, 2024.
 # Trần Đức Minh Nhật <mncc8327@gmail.com>, 2024.
+# doan thinh <thinhdoan2k5@gmail.com>, 2024.
+# Trọng Hiếu <contact.tronghieu83@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-02-14 08:02+0000\n"
-"Last-Translator: Trần Đức Minh Nhật <mncc8327@gmail.com>\n"
+"PO-Revision-Date: 2024-06-26 11:46+0000\n"
+"Last-Translator: Trọng Hiếu <contact.tronghieu83@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
 "Language: vi\n"
@@ -53,7 +55,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.4-dev\n"
+"X-Generator: Weblate 5.6-rc\n"
 
 msgid "Main Thread"
 msgstr "Chủ đề chính"
@@ -529,9 +531,6 @@ msgstr "Thêm Bezier Track"
 
 msgid "Track path is invalid, so can't add a key."
 msgstr "Đường dẫn không hợp lệ, nên không thể thêm khóa."
-
-msgid "Add Track Key"
-msgstr "Thêm khoá Track"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Đường dẫn Track không hợp lệ, không thể thêm khoá phương thức."
@@ -2234,9 +2233,6 @@ msgstr "Mở rộng tập lệnh..."
 msgid "Write your logic in the _run() method."
 msgstr "Ghi logic của bạn trong hàm _run()."
 
-msgid "There is an edited scene already."
-msgstr "Đã có một cảnh được chỉnh sửa."
-
 msgid "Edit Built-in Action: %s"
 msgstr "Chỉnh sửa hành động tính hợp sẵn: %s"
 
@@ -2263,6 +2259,9 @@ msgstr "Tất cả thiết bị"
 
 msgid "Device"
 msgstr "Thiết bị"
+
+msgid "Failed to create \"%s\" subfolder."
+msgstr "Thất bại khi tạo thư mục con \"%s\"."
 
 msgid "Storing File: %s"
 msgstr "Lưu trữ tệp tin: %s"
@@ -5821,11 +5820,11 @@ msgstr "Đường dẫn thuộc tính không hợp lệ: '%s'"
 msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr "Phải tạo hoặc đặt một NavigationMesh cho nút này thì nó mới hoạt động."
 
-msgid "Error saving file %s: %s"
-msgstr "Lỗi khi lưu tệp %s: %s"
-
 msgid "Error loading %s: %s."
 msgstr "Lỗi khi tải %s: %s."
+
+msgid "Error saving file %s: %s"
+msgstr "Lỗi khi lưu tệp %s: %s"
 
 msgid "Invalid public key for APK expansion."
 msgstr "Khóa công khai của bộ APK mở rộng không hợp lệ."
@@ -5909,9 +5908,6 @@ msgstr "Thất bại khi mở tệp thực thi \"%s\"."
 
 msgid "Uploading scripts..."
 msgstr "Đang tải lên tập lệnh..."
-
-msgid "Failed to create \"%s\" subfolder."
-msgstr "Thất bại khi tạo thư mục con \"%s\"."
 
 msgid "Could not find template app to export: \"%s\"."
 msgstr "Không thể tìm bản mẫu ứng dụng để xuất: \"%s\"."
@@ -6093,6 +6089,11 @@ msgstr "Không có kết nối đến input '%s' của node '%s'."
 msgid "Copy this constructor in a script."
 msgstr "Sao chép constructor này vào một script."
 
+msgid "Unrecognized missing node. Check scene dependency errors for details."
+msgstr ""
+"Nút bị thiếu không được nhận dạng. Kiểm tra lỗi phụ thuộc cảnh để biết chi "
+"tiết."
+
 msgid "Invalid source for preview."
 msgstr "Nguồn vô hiệu cho xem trước."
 
@@ -6153,11 +6154,32 @@ msgstr "Mong đợi một '%s'."
 msgid "Expected a '%s' after '%s'."
 msgstr "Mong đợi một '%s' sau '%s'."
 
+msgid "Redefinition of '%s'."
+msgstr "Định nghĩa lại '%s'"
+
+msgid "Unknown directive."
+msgstr "Chỉ thị không xác định."
+
+msgid "Macro redefinition."
+msgstr "Định nghĩa lại Macro."
+
 msgid "Invalid argument name."
 msgstr "Tham số không hợp lệ."
 
+msgid "Expected a comma in the macro argument list."
+msgstr "Cần có dấu phẩy trong danh sách tham số macro."
+
+msgid "Missing condition."
+msgstr "Thiếu điều kiện"
+
 msgid "Unmatched else."
 msgstr "Token else không khớp."
+
+msgid "Cyclic include found"
+msgstr "Đã tìm thấy vòng lặp bao gồm"
+
+msgid "Shader max include depth exceeded."
+msgstr "Đã vượt quá độ sâu bao gồm tối đa của đổ bóng."
 
 msgid "Invalid macro argument list."
 msgstr "Danh sách đối số macro không hợp lệ."

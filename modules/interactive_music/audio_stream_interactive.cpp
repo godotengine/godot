@@ -858,10 +858,7 @@ int AudioStreamPlaybackInteractive::mix(AudioFrame *p_buffer, float p_rate_scale
 	}
 
 	if (!active) {
-		for (int i = 0; i < p_frames; i++) {
-			p_buffer[i] = AudioFrame(0.0, 0.0);
-		}
-		return p_frames;
+		return 0;
 	}
 
 	int todo = p_frames;

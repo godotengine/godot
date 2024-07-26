@@ -673,9 +673,6 @@ msgstr "Beizer Sáv Hozzáadása"
 msgid "Track path is invalid, so can't add a key."
 msgstr "Sáv elérési útja helytelen, kulcs hozzáadása nem lehetséges."
 
-msgid "Add Track Key"
-msgstr "Sáv Kulcs Hozzáadása"
-
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Sáv elérési útja helytelen, kulcs hozzáadása nem lehetséges."
 
@@ -2144,9 +2141,6 @@ msgstr ""
 
 msgid "Write your logic in the _run() method."
 msgstr "Írja a logikát a _run() metódusba."
-
-msgid "There is an edited scene already."
-msgstr "Már létezik a szerkesztett Scene."
 
 msgid "Editor Settings"
 msgstr "Szerkesztő Beállítások"

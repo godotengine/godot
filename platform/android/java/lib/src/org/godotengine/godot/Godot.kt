@@ -73,6 +73,7 @@ import java.io.InputStream
 import java.lang.Exception
 import java.security.MessageDigest
 import java.util.*
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * Core component used to interface with the native layer of the engine.
@@ -126,6 +127,11 @@ class Godot(private val context: Context) : SensorEventListener {
 	val fileAccessHandler = FileAccessHandler(context)
 	val netUtils = GodotNetUtils(context)
 	private val commandLineFileParser = CommandLineFileParser()
+
+	/**
+	 * Task to run when the engine terminates.
+	 */
+	private val runOnTerminate = AtomicReference<Runnable>()
 
 	/**
 	 * Tracks whether [onCreate] was completed successfully.
@@ -577,10 +583,7 @@ class Godot(private val context: Context) : SensorEventListener {
 			plugin.onMainDestroy()
 		}
 
-		runOnRenderThread {
-			GodotLib.ondestroy()
-			forceQuit()
-		}
+		renderView?.onActivityDestroyed()
 	}
 
 	/**
@@ -661,6 +664,15 @@ class Godot(private val context: Context) : SensorEventListener {
 			plugin.onGodotMainLoopStarted()
 		}
 		primaryHost?.onGodotMainLoopStarted()
+	}
+
+	/**
+	 * Invoked on the render thread when the engine is about to terminate.
+	 */
+	@Keep
+	private fun onGodotTerminating() {
+		Log.v(TAG, "OnGodotTerminating")
+		runOnTerminate.get()?.run()
 	}
 
 	private fun restart() {
@@ -798,8 +810,28 @@ class Godot(private val context: Context) : SensorEventListener {
 		mClipboard.setPrimaryClip(clip)
 	}
 
-	fun forceQuit() {
-		forceQuit(0)
+	/**
+	 * Destroys the Godot Engine and kill the process it's running in.
+	 */
+	@JvmOverloads
+	fun destroyAndKillProcess(destroyRunnable: Runnable? = null) {
+		val host = primaryHost
+		val activity = host?.activity
+		if (host == null || activity == null) {
+			// Run the destroyRunnable right away as we are about to force quit.
+			destroyRunnable?.run()
+
+			// Fallback to force quit
+			forceQuit(0)
+			return
+		}
+
+		// Store the destroyRunnable so it can be run when the engine is terminating
+		runOnTerminate.set(destroyRunnable)
+
+		runOnUiThread {
+			onDestroy(host)
+		}
 	}
 
 	@Keep
@@ -814,11 +846,7 @@ class Godot(private val context: Context) : SensorEventListener {
 		} ?: return false
 	}
 
-	fun onBackPressed(host: GodotHost) {
-		if (host != primaryHost) {
-			return
-		}
-
+	fun onBackPressed() {
 		var shouldQuit = true
 		for (plugin in pluginRegistry.allPlugins) {
 			if (plugin.onMainBackPressed()) {
