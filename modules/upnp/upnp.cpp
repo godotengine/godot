@@ -229,14 +229,14 @@ Ref<UPNPDevice> UPNP::get_device(int index) const {
 }
 
 void UPNP::add_device(Ref<UPNPDevice> device) {
-	ERR_FAIL_NULL(device);
+	ERR_FAIL_COND(device.is_null());
 
 	devices.push_back(device);
 }
 
 void UPNP::set_device(int index, Ref<UPNPDevice> device) {
 	ERR_FAIL_INDEX(index, devices.size());
-	ERR_FAIL_NULL(device);
+	ERR_FAIL_COND(device.is_null());
 
 	devices.set(index, device);
 }
@@ -257,7 +257,7 @@ Ref<UPNPDevice> UPNP::get_gateway() const {
 	for (int i = 0; i < devices.size(); i++) {
 		Ref<UPNPDevice> dev = get_device(i);
 
-		if (dev != nullptr && dev->is_valid_gateway()) {
+		if (dev.is_valid() && dev->is_valid_gateway()) {
 			return dev;
 		}
 	}
@@ -292,7 +292,7 @@ bool UPNP::is_discover_ipv6() const {
 String UPNP::query_external_address() const {
 	Ref<UPNPDevice> dev = get_gateway();
 
-	if (dev == nullptr) {
+	if (dev.is_null()) {
 		return "";
 	}
 
@@ -302,7 +302,7 @@ String UPNP::query_external_address() const {
 int UPNP::add_port_mapping(int port, int port_internal, String desc, String proto, int duration) const {
 	Ref<UPNPDevice> dev = get_gateway();
 
-	if (dev == nullptr) {
+	if (dev.is_null()) {
 		return UPNP_RESULT_NO_GATEWAY;
 	}
 
@@ -312,7 +312,7 @@ int UPNP::add_port_mapping(int port, int port_internal, String desc, String prot
 int UPNP::delete_port_mapping(int port, String proto) const {
 	Ref<UPNPDevice> dev = get_gateway();
 
-	if (dev == nullptr) {
+	if (dev.is_null()) {
 		return UPNP_RESULT_NO_GATEWAY;
 	}
 

@@ -150,7 +150,7 @@ void GDScriptLambdaCallable::call(const Variant **p_arguments, int p_argcount, V
 
 GDScriptLambdaCallable::GDScriptLambdaCallable(Ref<GDScript> p_script, GDScriptFunction *p_function, const Vector<Variant> &p_captures) :
 		function(p_function) {
-	ERR_FAIL_NULL(p_script.ptr());
+	ERR_FAIL_COND(p_script.is_null());
 	ERR_FAIL_NULL(p_function);
 	script = p_script;
 	captures = p_captures;
@@ -282,7 +282,7 @@ void GDScriptLambdaSelfCallable::call(const Variant **p_arguments, int p_argcoun
 
 GDScriptLambdaSelfCallable::GDScriptLambdaSelfCallable(Ref<RefCounted> p_self, GDScriptFunction *p_function, const Vector<Variant> &p_captures) :
 		function(p_function) {
-	ERR_FAIL_NULL(p_self.ptr());
+	ERR_FAIL_COND(p_self.is_null());
 	ERR_FAIL_NULL(p_function);
 	reference = p_self;
 	object = p_self.ptr();
