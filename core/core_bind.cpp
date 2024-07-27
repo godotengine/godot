@@ -1440,6 +1440,14 @@ TypedArray<Dictionary> ClassDB::class_get_property_list(const StringName &p_clas
 	return ret;
 }
 
+StringName ClassDB::class_get_property_getter(const StringName &p_class, const StringName &p_property) {
+	return ::ClassDB::get_property_getter(p_class, p_property);
+}
+
+StringName ClassDB::class_get_property_setter(const StringName &p_class, const StringName &p_property) {
+	return ::ClassDB::get_property_setter(p_class, p_property);
+}
+
 Variant ClassDB::class_get_property(Object *p_object, const StringName &p_property) const {
 	Variant ret;
 	::ClassDB::get_property(p_object, p_property, ret);
@@ -1601,6 +1609,8 @@ void ClassDB::_bind_methods() {
 	::ClassDB::bind_method(D_METHOD("class_get_signal_list", "class", "no_inheritance"), &ClassDB::class_get_signal_list, DEFVAL(false));
 
 	::ClassDB::bind_method(D_METHOD("class_get_property_list", "class", "no_inheritance"), &ClassDB::class_get_property_list, DEFVAL(false));
+	::ClassDB::bind_method(D_METHOD("class_get_property_getter", "class", "property"), &ClassDB::class_get_property_getter);
+	::ClassDB::bind_method(D_METHOD("class_get_property_setter", "class", "property"), &ClassDB::class_get_property_setter);
 	::ClassDB::bind_method(D_METHOD("class_get_property", "object", "property"), &ClassDB::class_get_property);
 	::ClassDB::bind_method(D_METHOD("class_set_property", "object", "property", "value"), &ClassDB::class_set_property);
 
