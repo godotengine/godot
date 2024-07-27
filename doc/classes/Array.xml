@@ -694,7 +694,7 @@
 		<method name="sort">
 			<return type="void" />
 			<description>
-				Sorts the array in ascending order. The final order is dependent on the "less than" ([code]&gt;[/code]) comparison between elements.
+				Sorts the array in ascending order. The final order is dependent on the "less than" ([code]&lt;[/code]) comparison between elements.
 				[codeblocks]
 				[gdscript]
 				var numbers = [10, 5, 2.5, 8]
