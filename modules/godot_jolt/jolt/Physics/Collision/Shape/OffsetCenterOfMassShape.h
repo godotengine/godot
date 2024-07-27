@@ -120,9 +120,6 @@ public:
 	// See Shape::GetVolume
 	virtual float					GetVolume() const override								{ return mInnerShape->GetVolume(); }
 
-	// See Shape::IsValidScale
-	virtual bool					IsValidScale(Vec3Arg inScale) const override			{ return mInnerShape->IsValidScale(inScale); }
-
 	// Register shape functions with the registry
 	static void						sRegister();
 

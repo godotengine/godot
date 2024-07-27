@@ -170,7 +170,7 @@ public:
 	static inline ShapeFunctions &	sGet(EShapeSubType inSubType)										{ return sRegistry[int(inSubType)]; }
 
 private:
-	static ShapeFunctions 			sRegistry[NumSubShapeTypes];
+	static ShapeFunctions			sRegistry[NumSubShapeTypes];
 };
 
 /// Base class for all shapes (collision volume of a body). Defines a virtual interface for collision detection.
@@ -424,7 +424,14 @@ public:
 	/// * CylinderShape: Scale must be uniform in XZ plane, Y can scale independently (signs of scale are ignored).
 	/// * RotatedTranslatedShape: Scale must not cause shear in the child shape.
 	/// * CompoundShape: Scale must not cause shear in any of the child shapes.
-	virtual bool					IsValidScale(Vec3Arg inScale) const									{ return !inScale.IsNearZero(); }
+	virtual bool					IsValidScale(Vec3Arg inScale) const;
+
+	/// This function will make sure that if you wrap this shape in a ScaledShape that the scale is valid.
+	/// Note that this involves discarding components of the scale that are invalid, so the resulting scaled shape may be different than the requested scale.
+	/// Compare the return value of this function with the scale you passed in to detect major inconsistencies and possibly warn the user.
+	/// @param inScale Local space scale for this shape.
+	/// @return Scale that can be used to wrap this shape in a ScaledShape. IsValidScale will return true for this scale.
+	virtual Vec3					MakeScaleValid(Vec3Arg inScale) const;
 
 #ifdef JPH_DEBUG_RENDERER
 	/// Debug helper which draws the intersection between water and the shapes, the center of buoyancy and the submerged volume

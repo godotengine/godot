@@ -54,12 +54,12 @@ SpicyParticleSystemModuleInspectorPlugin::~SpicyParticleSystemModuleInspectorPlu
 {
 }
 
-bool SpicyParticleSystemModuleInspectorPlugin::_can_handle(Object* p_object) const
+bool SpicyParticleSystemModuleInspectorPlugin::can_handle(Object* p_object) const
 {
 	return Object::cast_to<SpicyParticleGenerator>(p_object) != nullptr || Object::cast_to<SpicyParticleUpdater>(p_object);
 }
 
-void SpicyParticleSystemModuleInspectorPlugin::_parse_end(Object* object)
+void SpicyParticleSystemModuleInspectorPlugin::parse_end(Object* object)
 {
 	Control control_ref = Control();
 	control_ref.set_name("CustomControl");
@@ -79,12 +79,12 @@ SpicyParticleSystemInspectorPlugin::~SpicyParticleSystemInspectorPlugin()
 {
 }
 
-bool SpicyParticleSystemInspectorPlugin::_can_handle(Object* p_object) const
+bool SpicyParticleSystemInspectorPlugin::can_handle(Object* p_object) const
 {
 	return Object::cast_to<SpicyParticleSystemNode>(p_object);
 }
 
-bool SpicyParticleSystemInspectorPlugin::_parse_property(Object* object, Variant::Type type, const String& name, PropertyHint hint_type, const String& hint_string, BitField<PropertyUsageFlags> usage_flags, bool wide)
+bool SpicyParticleSystemInspectorPlugin::parse_property(Object* object, Variant::Type type, const String& name, PropertyHint hint_type, const String& hint_string, BitField<PropertyUsageFlags> usage_flags, bool wide)
 {
 	if (name == "seed")
 	{

@@ -36,6 +36,12 @@ ScaledShape::ScaledShape(const ScaledShapeSettings &inSettings, ShapeResult &out
 	if (outResult.HasError())
 		return;
 
+	if (ScaleHelpers::IsZeroScale(inSettings.mScale))
+	{
+		outResult.SetError("Can't use zero scale!");
+		return;
+	}
+
 	outResult.Set(this);
 }
 

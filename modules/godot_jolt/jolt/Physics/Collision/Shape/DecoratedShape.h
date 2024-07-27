@@ -63,6 +63,12 @@ public:
 	// See Shape::GetStatsRecursive
 	virtual Stats					GetStatsRecursive(VisitedShapes &ioVisitedShapes) const override;
 
+		// See Shape::IsValidScale
+	virtual bool					IsValidScale(Vec3Arg inScale) const override			{ return mInnerShape->IsValidScale(inScale); }
+
+	// See Shape::MakeScaleValid
+	virtual Vec3					MakeScaleValid(Vec3Arg inScale) const override			{ return mInnerShape->MakeScaleValid(inScale); }
+
 protected:
 	RefConst<Shape>					mInnerShape;
 };

@@ -29,8 +29,8 @@ public:
 	SpicyParticleSystemModuleInspectorPlugin();
 	~SpicyParticleSystemModuleInspectorPlugin();
 
-	virtual bool _can_handle(Object* p_object) const;
-	virtual void _parse_end(Object* object);
+	virtual bool can_handle(Object* p_object) const;
+	virtual void parse_end(Object* object);
 
 	inline void set_base_ref(const Control* control) { base_ref = control; }
 };
@@ -46,8 +46,8 @@ public:
 	SpicyParticleSystemInspectorPlugin();
 	~SpicyParticleSystemInspectorPlugin();
 
-	virtual bool _can_handle(Object* p_object) const;
-	virtual bool _parse_property(Object* object, Variant::Type type, const String& name, PropertyHint hint_type, const String& hint_string, BitField<PropertyUsageFlags> usage_flags, bool wide);
+	virtual bool can_handle(Object* p_object) const;
+	virtual bool parse_property(Object* object, Variant::Type type, const String& name, PropertyHint hint_type, const String& hint_string, BitField<PropertyUsageFlags> usage_flags, bool wide);
 	//virtual void _parse_group(Object* object, const String& group);
 
 	inline void set_base_ref(const Control* control) { base_ref = control; }

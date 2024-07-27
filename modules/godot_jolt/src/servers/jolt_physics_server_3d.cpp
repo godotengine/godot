@@ -1143,6 +1143,7 @@ bool JoltPhysicsServer3D::body_test_motion(	RID p_body,const MotionParameters &p
 		p_parameters.recovery_as_collision,
 		p_result
 	);
+	return ret;
 }
 
 PhysicsDirectBodyState3D* JoltPhysicsServer3D::body_get_direct_state(RID p_body) {

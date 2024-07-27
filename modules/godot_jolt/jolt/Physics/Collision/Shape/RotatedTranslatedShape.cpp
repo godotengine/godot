@@ -282,7 +282,7 @@ void RotatedTranslatedShape::RestoreBinaryState(StreamIn &inStream)
 
 bool RotatedTranslatedShape::IsValidScale(Vec3Arg inScale) const
 {
-	if (!DecoratedShape::IsValidScale(inScale))
+	if (!Shape::IsValidScale(inScale))
 		return false;
 
 	if (mIsRotationIdentity || ScaleHelpers::IsUniformScale(inScale))

@@ -11,7 +11,10 @@ JPH_NAMESPACE_BEGIN
 /// Helper functions to get properties of a scaling vector
 namespace ScaleHelpers
 {
-	/// The tolerance used to check if components of the scale vector are the sa	me
+	/// Minimum valid scale value. This is used to prevent division by zero when scaling a shape with a zero scale.
+	static constexpr float	cMinScale = 0.0011f;
+
+	/// The tolerance used to check if components of the scale vector are the same
 	static constexpr float	cScaleToleranceSq = 0.001f;
 
 	/// Test if a scale is identity
@@ -25,6 +28,12 @@ namespace ScaleHelpers
 
 	/// Test if a scale flips an object inside out (which requires flipping all normals and polygon windings)
 	inline bool				IsInsideOut(Vec3Arg inScale)									{ return (CountBits(Vec3::sLess(inScale, Vec3::sZero()).GetTrues() & 0x7) & 1) != 0; }
+
+	/// Test if any of the components of the scale have a value below cMinScale
+	inline bool				IsZeroScale(Vec3Arg inScale)									{ return Vec3::sLess(inScale.Abs(), Vec3::sReplicate(cMinScale)).TestAnyXYZTrue(); }
+
+	/// Ensure that the scale for each component is at least cMinScale
+	inline Vec3				MakeNonZeroScale(Vec3Arg inScale)								{ return inScale.GetSign() * Vec3::sMax(inScale.Abs(), Vec3::sReplicate(cMinScale)); }
 
 	/// Get the average scale if inScale, used to make the scale uniform when a shape doesn't support non-uniform scale
 	inline Vec3				MakeUniformScale(Vec3Arg inScale)								{ return Vec3::sReplicate((inScale.GetX() + inScale.GetY() + inScale.GetZ()) / 3.0f); }

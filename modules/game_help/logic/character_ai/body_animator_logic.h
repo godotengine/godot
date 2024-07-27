@@ -3,9 +3,9 @@
 #include "modules/limboai/bt/bt_player.h"
 
 // 继承Resource目的主要是为了编辑时方便显示名称
-class AnimatorAIStateConditionBase : public Resource
+class AnimatorAIStateConditionBase : public RefCounted
 {
-    GDCLASS(AnimatorAIStateConditionBase, Resource)
+    GDCLASS(AnimatorAIStateConditionBase, RefCounted)
     static void _bind_methods();
 
 public:
@@ -26,6 +26,14 @@ public:
         NotEqual,
     };
     virtual bool is_enable(Blackboard* p_blackboard, bool p_is_include)
+    {
+        if(p_is_include)
+        {
+            return true;
+        }
+        return false;
+    }
+    virtual bool is_enable(const Ref<BlackboardPlan>& p_blackboard,bool p_is_include)
     {
         if(p_is_include)
         {
@@ -56,6 +64,16 @@ public:
     bool get_is_value_by_property()
     {
         return is_value_by_property;
+    }
+
+    void set_value_property_name(const StringName& p_name)
+    {
+        value_property_name = p_name;
+        update_name();
+    }
+    StringName get_value_property_name()
+    {
+        return value_property_name;
     }
     void set_property_name(const StringName& p_name) { propertyName = p_name; update_name();}
     StringName get_property_name() { return propertyName; }
@@ -99,7 +117,7 @@ class AnimatorAIStateFloatCondition : public AnimatorAIStateConditionBase
         ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "value"), "set_value", "get_value");
     }
 
-protected:
+public:
     void set_value(float p_value)
     {
         value = p_value;
@@ -109,6 +127,7 @@ protected:
     {
         return value;
     }
+protected:
     virtual Array _get_compare_value() override
     {
         Array ret;
@@ -120,16 +139,6 @@ protected:
     }
     virtual void update_name()
     {
-        #if TOOLS_ENABLED
-        String nm = String("[float]") + String(propertyName)  + " " + get_compare_type_name();
-        if(is_value_by_property)
-        {
-            nm += " " + String(value_property_name);
-        }else{
-            nm += " " + String::num(value);
-        }
-        set_name( nm );
-        #endif
     }
     virtual Array _get_blackbord_propertys() override
     {
@@ -173,6 +182,39 @@ protected:
         }
         return false;
     }
+    virtual bool is_enable(const Ref<BlackboardPlan>& p_blackboard, bool p_is_include)
+    {
+        if(!p_blackboard->has_var(propertyName))
+        {
+            if(p_is_include)
+            {
+                return true;
+            }
+            return false;
+        }
+        double curr = p_blackboard->get_var(propertyName).get_value();
+        double v = value;
+        if(is_value_by_property && p_blackboard->has_var(value_property_name))
+        {
+            v = p_blackboard->get_var(value_property_name).get_value();
+        }
+        switch (compareType)
+        {
+            case Greater:
+                return curr > v;
+            case AnimatorAICompareType::GreaterEqual:
+                return curr >= v;
+            case AnimatorAICompareType::Less:
+                return curr < v;
+            case AnimatorAICompareType::LessEqual:
+                return curr <= v;
+        }
+        if(p_is_include)
+        {
+            return true;
+        }
+        return false;
+    }
 protected:
     double value;
 
@@ -189,8 +231,7 @@ class AnimatorAIStateIntCondition : public AnimatorAIStateConditionBase
 
         ADD_PROPERTY(PropertyInfo(Variant::INT, "value"), "set_value", "get_value");
     }
-
-protected:
+public:
     void set_value(int32_t p_value)
     {
         value = p_value;
@@ -200,6 +241,7 @@ protected:
     {
         return value;
     }
+protected:
     void set_is_value_by_property(bool p_value)
     {
         is_value_by_property = p_value;
@@ -221,18 +263,6 @@ protected:
     }
     virtual void update_name()
     {
-        #if TOOLS_ENABLED
-        String nm = String("[int]") + String(propertyName)  + " "+ get_compare_type_name();
-        if(is_value_by_property)
-        {
-            nm += " " + String(value_property_name);
-        }
-        else
-        {
-            nm += " " + itos(value);
-        }
-        set_name( nm );
-        #endif
     }
 
     virtual Array _get_compare_value() override
@@ -292,6 +322,43 @@ protected:
         }
         return false;
     }
+    virtual bool is_enable(const Ref<BlackboardPlan>& p_blackboard, bool p_is_include)
+    {
+        if(!p_blackboard->has_var(propertyName))
+        {
+            if(p_is_include)
+            {
+                return true;
+            }
+            return false;
+        }
+        int64_t curr = p_blackboard->get_var(propertyName).get_value();
+        int64_t v = value;
+        if(is_value_by_property && p_blackboard->has_var(value_property_name))
+        {
+            v = p_blackboard->get_var(value_property_name).get_value();
+        }
+        switch (compareType)
+        {
+            case AnimatorAICompareType::Equal:
+                return curr == v;
+            case AnimatorAICompareType::Greater:
+                return curr > v;
+            case AnimatorAICompareType::GreaterEqual:
+                return curr >= v;
+            case AnimatorAICompareType::Less:
+                return curr < v;
+            case AnimatorAICompareType::LessEqual:
+                return curr <= v;
+            case AnimatorAICompareType::NotEqual:
+                return curr != v;
+        }
+        if(p_is_include)
+        {
+            return true;
+        }
+        return false;
+    }
     int64_t value;
 
 };
@@ -308,7 +375,7 @@ class AnimatorAIStateBoolCondition : public AnimatorAIStateConditionBase
         ADD_PROPERTY(PropertyInfo(Variant::BOOL, "value"), "set_value", "get_value");
     }
 
-protected:
+public:
     void set_value(bool p_value)
     {
         value = p_value;
@@ -319,22 +386,9 @@ protected:
         return value;
     }
 
+protected:
     virtual void update_name()
     {
-        #if TOOLS_ENABLED
-        String nm = String("[bool]") + String(propertyName)  + " " + get_compare_type_name();
-        
-        if(is_value_by_property)
-        {
-            nm += " " + String(value_property_name);
-        }
-        else
-        {
-            nm += " ";
-            nm += (value ? "true" : "false");
-        }
-        set_name( nm );
-        #endif
     }
     virtual Array _get_compare_value() override
     {
@@ -351,6 +405,30 @@ protected:
             blackboard_plan->get_property_names_by_type(Variant::BOOL,rs);
         }
         return rs;
+    }
+    virtual bool is_enable(const Ref<BlackboardPlan>&  p_blackboard,bool p_is_include)override
+    {
+        if(!p_blackboard->has_var(propertyName))
+        {
+            if(p_is_include)
+            {
+                return true;
+            }
+            return false;
+        }
+        bool curr = p_blackboard->get_var(propertyName).get_value();
+        switch (compareType)
+        {
+            case AnimatorAICompareType::Equal:
+                return curr == value;
+            case AnimatorAICompareType::NotEqual:
+                return curr != value;
+        }
+        if(p_is_include)
+        {
+            return true;
+        }
+        return false;
     }
     virtual bool is_enable(Blackboard* p_blackboard,bool p_is_include)override
     {
@@ -393,7 +471,7 @@ class AnimatorAIStateStringNameCondition : public AnimatorAIStateConditionBase
         ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "value"), "set_value", "get_value");
     }
 
-protected:
+public:
     void set_value(const StringName& p_value)
     {
         value = p_value;
@@ -403,21 +481,10 @@ protected:
     {
         return value;
     }
+protected:
 
     virtual void update_name()
     {
-        #if TOOLS_ENABLED
-        String nm = String("[StringName]") + String(propertyName)  + " " + get_compare_type_name();
-         if(is_value_by_property)
-        {
-            nm += " " + String(value_property_name);
-        }
-        else
-        {
-            nm += " " + value;
-        }
-        set_name( nm );
-        #endif
     }
     virtual Array _get_compare_value() override
     {
@@ -460,6 +527,30 @@ protected:
         }
         return false;
     }
+    virtual bool is_enable(const Ref<BlackboardPlan>& p_blackboard,bool p_is_include)override
+    {
+        if(!p_blackboard->has_var(propertyName))
+        {
+            if(p_is_include)
+            {
+                return true;
+            }
+            return false;
+        }
+        StringName curr = p_blackboard->get_var(propertyName).get_value();
+        switch (compareType)
+        {
+            case AnimatorAICompareType::Equal:
+                return curr == value;
+            case AnimatorAICompareType::NotEqual:
+                return curr != value;
+        }
+        if(p_is_include)
+        {
+            return true;
+        }
+        return false;
+    }
     StringName value;
 };
 // 角色动画的条件
@@ -487,6 +578,23 @@ public :
         }
          return rs; 
     }
+    void add_include_condition(const Ref<AnimatorAIStateConditionBase>& p_include_condition)
+    {
+        include_condition.push_back(p_include_condition);
+        update_blackboard_plan();
+    }
+    void remove_include_condition(const Ref<AnimatorAIStateConditionBase>& p_include_condition)
+    {
+        for(uint32_t i = 0; i < include_condition.size(); ++i)
+        {
+            if(include_condition[i] == p_include_condition)
+            {
+                include_condition.remove_at(i);
+                break;
+            }
+        }
+        update_blackboard_plan();
+    }
 
     void set_exclude_condition(const TypedArray<Ref<AnimatorAIStateConditionBase>>& p_exclude_condition)
     {
@@ -505,6 +613,23 @@ public :
             rs.push_back(exclude_condition[i]);
         }
          return rs; 
+    }
+    void add_exclude_condition(const Ref<AnimatorAIStateConditionBase>& p_exclude_condition)
+    {
+        exclude_condition.push_back(p_exclude_condition);
+        update_blackboard_plan();
+    }
+    void remove_exclude_condition(const Ref<AnimatorAIStateConditionBase>& p_exclude_condition)
+    {
+        for(uint32_t i = 0; i < exclude_condition.size(); ++i)
+        {
+            if(exclude_condition[i] == p_exclude_condition)
+            {
+                exclude_condition.remove_at(i);
+                break;
+            }
+        }
+        update_blackboard_plan();
     }
     void update_blackboard_plan()
     {
@@ -568,7 +693,6 @@ public:
     LocalVector<Ref<AnimatorAIStateConditionBase>> include_condition;
     LocalVector<Ref<AnimatorAIStateConditionBase>> exclude_condition;
     Ref<BlackboardPlan> blackboard_plan;
-    
 };
 class CharacterAnimatorLayer;
 // 动画逻辑执行的任务

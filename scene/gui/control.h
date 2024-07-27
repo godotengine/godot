@@ -644,6 +644,16 @@ public:
 	virtual String get_tooltip(const Point2 &p_pos) const;
 	virtual Control *make_custom_tooltip(const String &p_text) const;
 
+	
+	void set_layout_mode(LayoutMode p_mode)
+	{
+		_set_layout_mode(p_mode);
+	}
+	LayoutMode get_layout_mode() const
+	{
+		return _get_layout_mode();
+	}
+
 	Control();
 	~Control();
 };
