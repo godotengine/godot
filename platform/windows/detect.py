@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 
 # To match other platforms
 STACK_SIZE = 8388608
+STACK_SIZE_SANITIZERS = 30 * 1024 * 1024
 
 
 def get_name():
@@ -203,6 +204,7 @@ def get_opts():
         BoolVariable("use_llvm", "Use the LLVM compiler", False),
         BoolVariable("use_static_cpp", "Link MinGW/MSVC C++ runtime libraries statically", True),
         BoolVariable("use_asan", "Use address sanitizer (ASAN)", False),
+        BoolVariable("use_ubsan", "Use LLVM compiler undefined behavior sanitizer (UBSAN)", False),
         BoolVariable("debug_crt", "Compile with MSVC's debug CRT (/MDd)", False),
         BoolVariable("incremental_link", "Use MSVC incremental linking. May increase or decrease build times.", False),
         BoolVariable("silence_msvc", "Silence MSVC's cl/link stdout bloat, redirecting any errors to stderr.", True),
@@ -507,6 +509,7 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
     if env["use_asan"]:
         env.extra_suffix += ".san"
         prebuilt_lib_extra_suffix = ".san"
+        env.AppendUnique(CPPDEFINES=["SANITIZERS_ENABLED"])
         env.Append(CCFLAGS=["/fsanitize=address"])
         env.Append(LINKFLAGS=["/INFERASANLIBS"])
 
@@ -628,7 +631,11 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
     env["BUILDERS"]["Program"] = methods.precious_program
 
     env.Append(LINKFLAGS=["/NATVIS:platform\\windows\\godot.natvis"])
-    env.AppendUnique(LINKFLAGS=["/STACK:" + str(STACK_SIZE)])
+
+    if env["use_asan"]:
+        env.AppendUnique(LINKFLAGS=["/STACK:" + str(STACK_SIZE_SANITIZERS)])
+    else:
+        env.AppendUnique(LINKFLAGS=["/STACK:" + str(STACK_SIZE)])
 
 
 def configure_mingw(env: "SConsEnvironment"):
@@ -721,7 +728,10 @@ def configure_mingw(env: "SConsEnvironment"):
             env.Append(CCFLAGS=["-flto"])
             env.Append(LINKFLAGS=["-flto"])
 
-    env.Append(LINKFLAGS=["-Wl,--stack," + str(STACK_SIZE)])
+    if env["use_asan"]:
+        env.Append(LINKFLAGS=["-Wl,--stack," + str(STACK_SIZE_SANITIZERS)])
+    else:
+        env.Append(LINKFLAGS=["-Wl,--stack," + str(STACK_SIZE)])
 
     ## Compile flags
 
@@ -731,6 +741,24 @@ def configure_mingw(env: "SConsEnvironment"):
 
     if not env["use_llvm"]:
         env.Append(CCFLAGS=["-mwindows"])
+
+    if env["use_asan"] or env["use_ubsan"]:
+        if not env["use_llvm"]:
+            print("GCC does not support sanitizers on Windows.")
+            sys.exit(255)
+
+        env.extra_suffix += ".san"
+        env.AppendUnique(CPPDEFINES=["SANITIZERS_ENABLED"])
+        san_flags = []
+        if env["use_asan"]:
+            san_flags.append("-fsanitize=address")
+        if env["use_ubsan"]:
+            san_flags.append("-fsanitize=undefined")
+            # Disable the vptr check since it gets triggered on any COM interface calls.
+            san_flags.append("-fno-sanitize=vptr")
+        env.Append(CFLAGS=san_flags)
+        env.Append(CCFLAGS=san_flags)
+        env.Append(LINKFLAGS=san_flags)
 
     env.Append(CPPDEFINES=["WINDOWS_ENABLED", "WASAPI_ENABLED", "WINMIDI_ENABLED"])
     env.Append(
