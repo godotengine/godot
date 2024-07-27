@@ -359,7 +359,6 @@ GDScriptTokenizer::Token GDScriptTokenizerText::make_token(Token::Type p_type) {
 	token.end_line = line;
 	token.start_column = start_column;
 	token.end_column = column;
-	token.source = String::utf32(Span(_start, _current - _start));
 
 	if (p_type != Token::ERROR && cursor_line > -1) {
 		// Also count whitespace after token.
@@ -372,7 +371,6 @@ GDScriptTokenizer::Token GDScriptTokenizerText::make_token(Token::Type p_type) {
 		if (start_line == line) {
 			// Single line token.
 			if (cursor_line == start_line && cursor_column >= start_column && cursor_column <= last_column) {
-				token.cursor_position = cursor_column - start_column;
 				if (cursor_column == start_column) {
 					token.cursor_place = CURSOR_BEGINNING;
 				} else if (cursor_column < column) {
@@ -385,7 +383,6 @@ GDScriptTokenizer::Token GDScriptTokenizerText::make_token(Token::Type p_type) {
 			// Multi line token.
 			if (cursor_line == start_line && cursor_column >= start_column) {
 				// Is in first line.
-				token.cursor_position = cursor_column - start_column;
 				if (cursor_column == start_column) {
 					token.cursor_place = CURSOR_BEGINNING;
 				} else {
@@ -393,7 +390,6 @@ GDScriptTokenizer::Token GDScriptTokenizerText::make_token(Token::Type p_type) {
 				}
 			} else if (cursor_line == line && cursor_column <= last_column) {
 				// Is in last line.
-				token.cursor_position = cursor_column - start_column;
 				if (cursor_column < column) {
 					token.cursor_place = CURSOR_MIDDLE;
 				} else {
@@ -401,7 +397,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::make_token(Token::Type p_type) {
 				}
 			} else if (cursor_line > start_line && cursor_line < line) {
 				// Is in middle line.
-				token.cursor_position = CURSOR_MIDDLE;
+				token.cursor_place = CURSOR_MIDDLE;
 			}
 		}
 	}
@@ -482,7 +478,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::annotation() {
 		_advance();
 	}
 	Token annotation = make_token(Token::ANNOTATION);
-	annotation.literal = StringName(annotation.source);
+	annotation.literal = StringName(String(_start, _current - _start));
 	return annotation;
 }
 
