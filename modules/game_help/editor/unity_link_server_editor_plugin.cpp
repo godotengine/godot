@@ -14,6 +14,67 @@
 #include "unity_link_server_editor_plugin.h"
 #include "../logic/animator/body_animator.h"
 #include "../logic/character_ai/body_animator_logic.h"
+#if TOOLS_ENABLED
+#include "editor/editor_node.h"
+#endif
+
+class ConditionSection : public VBoxContainer {
+	GDCLASS(ConditionSection, VBoxContainer);
+
+private:
+	struct ThemeCache {
+		Ref<Texture2D> arrow_down_icon;
+		Ref<Texture2D> arrow_right_icon;
+	} theme_cache;
+
+	VBoxContainer *tasks_container;
+	Button *section_header;
+	CheckButton *state_button;
+
+	Ref<CharacterAnimatorCondition> object;
+	bool is_include_condition = false;
+
+	void _on_header_pressed();
+
+protected:
+	static void _bind_methods();
+
+	void _notification(int p_what);
+
+	virtual void _do_update_theme_item_cache();
+
+public:
+	void setup(Ref<CharacterAnimatorCondition> p_object, bool is_include)
+	{
+
+		object = p_object;
+		is_include_condition = is_include;
+		if(is_include_condition)
+		{
+#ifdef TOOLS_ENABLED
+			set_collapsed(!object->editor_is_section_unfolded("Include Conditions"));
+#endif
+		}else
+		{
+#ifdef TOOLS_ENABLED
+			set_collapsed(!object->editor_is_section_unfolded("Exclude Conditions"));
+#endif
+		}
+		update_state();
+	}
+	void set_filter(String p_filter);
+	void add_condition(Control* p_task_button);
+
+	void set_collapsed(bool p_collapsed);
+	bool is_collapsed() const;
+
+	String get_category_name() const { return section_header->get_text(); }
+	void set_category_name(const String &p_cat) { section_header->set_text(p_cat); }
+	void update_state();
+
+	ConditionSection();
+	~ConditionSection();
+};
 
 class Condition_ED  : public HBoxContainer
 {
@@ -36,8 +97,17 @@ public:
 			} break;
 		}
 	}
-	void setup(Ref<CharacterAnimatorCondition> p_object,Ref<AnimatorAIStateConditionBase> p_condition,bool is_include)
+	Ref<Texture2D> get_type_icon(const StringName& p_type)
 	{
+		#ifdef TOOLS_ENABLED
+		return EditorNode::get_singleton()->get_editor_theme()->get_icon(p_type, "EditorIcons");
+		#else
+		return get_theme()->get_icon(p_type, "EditorIcons");
+		#endif
+	}
+	void setup(ConditionSection* p_section ,Ref<CharacterAnimatorCondition> p_object,Ref<AnimatorAIStateConditionBase> p_condition,bool is_include)
+	{
+		parent_section = p_section;
 		object = p_object;
 		condition = p_condition;
 		is_include_condition = is_include;
@@ -60,13 +130,15 @@ public:
 		sep->set_custom_minimum_size(Size2(10, 10));
 		add_child(sep);
 
-		type_lable = memnew(Label);
+		type_lable = memnew(Button);
 		type_lable->set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
 		type_lable->set_custom_minimum_size(Size2(60, 10));
-		type_lable->set_v_size_flags(SIZE_FILL);
-		type_lable->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-		type_lable->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+		type_lable->set_v_size_flags(SIZE_FILL);		
+		type_lable->set_icon(get_type_icon(Variant::get_type_name(Variant::INT)));
+		type_lable->set_disabled(true);
+		type_lable->set_focus_mode(FOCUS_NONE);
 		type_lable->set_text("Int");
+		
 		add_child(type_lable);
 
 
@@ -229,18 +301,22 @@ public:
 			Ref<AnimatorAIStateStringNameCondition> string_condition = condition;
 			if(int_condition.is_valid())
 			{
+				type_lable->set_icon(get_type_icon(Variant::get_type_name(Variant::INT)));
 				type_lable->set_text("Int");
 			}
 			else if(float_condition.is_valid())
 			{
+				type_lable->set_icon(get_type_icon(Variant::get_type_name(Variant::FLOAT)));
 				type_lable->set_text("Float");
 			}
 			else if(bool_condition.is_valid())
 			{
+				type_lable->set_icon(get_type_icon(Variant::get_type_name(Variant::BOOL)));
 				type_lable->set_text("Bool");
 			}
 			else if(string_condition.is_valid())
 			{
+				type_lable->set_icon(get_type_icon(Variant::get_type_name(Variant::STRING)));
 				type_lable->set_text("String");
 			}
 
@@ -298,6 +374,7 @@ protected:
 	void _on_property_name_list_id_pressed(int p_id) {
 		property_name_bt->set_text(String(property_name_list->get_item_text(p_id)));
 		condition->set_property_name(property_name_list->get_item_text(p_id));
+		update_state();
 	}
 
 	void _on_comparison_pressed() {
@@ -307,6 +384,7 @@ protected:
 	void _on_comparison_list_id_pressed(int p_id) {
 		comparison_bt->set_text(String(comparison_list->get_item_text(p_id)));
 		condition->set_compare_type_name(comparison_list->get_item_text(p_id));
+		update_state();
 	}
 
 	void _on_value_property_pressed() {
@@ -316,6 +394,7 @@ protected:
 	void _on_value_property_list_id_pressed(int p_id) {
 		value_property_bt->set_text(String(value_property_list->get_item_text(p_id)));
 		condition->set_value_property_name(value_property_list->get_item_text(p_id));
+		update_state();
 	}
 
 	void _on_value_num_text_changed(const String& p_string) {
@@ -385,6 +464,10 @@ protected:
 			state_button->set_pressed(false);
 			state_button->set_modulate(Color(1, 0.255238, 0.196011, 1));
 		}
+		if(parent_section)
+		{
+			parent_section->update_state();
+		}
 	}
 protected:
 	void popup_on_target(PopupMenu *p_menu,Control* p_target) {
@@ -421,7 +504,7 @@ protected:
 	}
 
 	CheckButton* state_button = nullptr;
-	Label* type_lable = nullptr;
+	Button* type_lable = nullptr;
 
 
 	Button* property_name_bt = nullptr;
@@ -447,6 +530,7 @@ protected:
 
 	Ref<AnimatorAIStateConditionBase> condition ;
 	Ref<CharacterAnimatorCondition> object ;
+	ConditionSection* parent_section = nullptr;
 	bool is_include_condition = false;
 };
 
@@ -571,60 +655,6 @@ public:
 	bool is_include_condition = false;
 };
 
-class ConditionSection : public VBoxContainer {
-	GDCLASS(ConditionSection, VBoxContainer);
-
-private:
-	struct ThemeCache {
-		Ref<Texture2D> arrow_down_icon;
-		Ref<Texture2D> arrow_right_icon;
-	} theme_cache;
-
-	VBoxContainer *tasks_container;
-	Button *section_header;
-	Ref<CharacterAnimatorCondition> object;
-	bool is_include_condition = false;
-
-	void _on_header_pressed();
-
-protected:
-	static void _bind_methods();
-
-	void _notification(int p_what);
-
-	virtual void _do_update_theme_item_cache();
-
-public:
-	void setup(Ref<CharacterAnimatorCondition> p_object, bool is_include)
-	{
-
-		object = p_object;
-		is_include_condition = is_include;
-		if(is_include_condition)
-		{
-#ifdef TOOLS_ENABLED
-			set_collapsed(!object->editor_is_section_unfolded("Include Conditions"));
-#endif
-		}else
-		{
-#ifdef TOOLS_ENABLED
-			set_collapsed(!object->editor_is_section_unfolded("Exclude Conditions"));
-#endif
-		}
-	}
-	void set_filter(String p_filter);
-	void add_condition(Control* p_task_button);
-
-	void set_collapsed(bool p_collapsed);
-	bool is_collapsed() const;
-
-	String get_category_name() const { return section_header->get_text(); }
-	void set_category_name(const String &p_cat) { section_header->set_text(p_cat); }
-
-	ConditionSection();
-	~ConditionSection();
-};
-
 void ConditionSection::_on_header_pressed() {
 	set_collapsed(!is_collapsed());
 }
@@ -674,6 +704,53 @@ void ConditionSection::_notification(int p_what) {
 		} break;
 	}
 }
+void ConditionSection::update_state() {
+	bool rs = true;
+	if(is_include_condition)
+	{
+		TypedArray<Ref<AnimatorAIStateConditionBase>>  conditions = object->get_include_condition();
+		for(int32_t i = 0; i < conditions.size(); ++i)
+		{
+			Ref<AnimatorAIStateConditionBase> condition =conditions[i];
+			if(condition.is_valid())
+			{
+				
+                if (!condition->is_enable(object->blackboard_plan,is_include_condition))
+                {
+                    rs =  false;
+					break;
+                }
+			}
+		}
+
+	}
+	else
+	{
+		TypedArray<Ref<AnimatorAIStateConditionBase>>  conditions = object->get_exclude_condition();
+		for(int32_t i = 0; i < conditions.size(); ++i)
+		{
+			Ref<AnimatorAIStateConditionBase> condition =conditions[i];
+			if(condition.is_valid())
+			{
+				if (condition->is_enable(object->blackboard_plan,is_include_condition))
+				{
+					rs =  false;
+					break;
+				}
+			}
+		}
+
+	}
+	if(rs)
+	{
+		state_button->set_pressed(true);
+		state_button->set_modulate(Color(0, 0.92549, 0.164706, 1));
+	}else
+	{
+		state_button->set_pressed(false);
+		state_button->set_modulate(Color(1, 0.255238, 0.196011, 1));
+	}
+}
 
 void ConditionSection::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("task_button_pressed"));
@@ -681,8 +758,24 @@ void ConditionSection::_bind_methods() {
 }
 
 ConditionSection::ConditionSection() {
+
+	HBoxContainer *hb = memnew(HBoxContainer);
+	hb->set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
+	add_child(hb);
+
+
 	section_header = memnew(Button);
-	add_child(section_header);
+	section_header->set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
+	section_header->set_h_size_flags(SIZE_EXPAND_FILL);
+	section_header->set_v_size_flags(SIZE_EXPAND_FILL);
+	hb->add_child(section_header);
+	
+	state_button = memnew(CheckButton);
+	state_button->set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
+	state_button->set_disabled(true);
+	state_button->set_focus_mode(FOCUS_NONE);
+	hb->add_child(state_button);
+
 	section_header->set_focus_mode(FOCUS_NONE);
 
 	tasks_container = memnew(VBoxContainer);
@@ -725,7 +818,7 @@ public:
 				{
 					bt->set_modulate(Color(0.814023, 0.741614, 1, 1));
 				}
-				bt->setup(object,condition[i],true);
+				bt->setup(section,object,condition[i],true);
 				section->add_condition( bt);
 			}
 			ConditionListButton_ED* bt = memnew(ConditionListButton_ED);
@@ -748,7 +841,7 @@ public:
 				{
 					bt->set_modulate(Color(0.814023, 0.741614, 1, 1));
 				}
-				bt->setup(object,condition[i],false);
+				bt->setup(section,object,condition[i],false);
 				section->add_condition( bt);
 			}
 			ConditionListButton_ED* bt = memnew(ConditionListButton_ED);
