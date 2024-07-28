@@ -804,7 +804,7 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 		pi.weight = 0;
 		current_nti = p_state_machine->blend_node(p_state_machine->states[current].node, current, pi, AnimationNode::FILTER_IGNORE, true, true);
 		// Don't process first node if not necessary, insteads process next node.
-		_transition_to_next_recursive(tree, p_state_machine, p_test_only);
+		_transition_to_next_recursive(tree, p_state_machine, p_delta, p_test_only);
 	}
 
 	// Check current node existence.
@@ -881,7 +881,7 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 	}
 
 	// Find next and see when to transition.
-	bool will_end = _transition_to_next_recursive(tree, p_state_machine, p_test_only) || current == AnimationNodeStateMachine::END_NODE;
+	bool will_end = _transition_to_next_recursive(tree, p_state_machine, p_delta, p_test_only) || current == AnimationNodeStateMachine::END_NODE;
 
 	// Predict remaining time.
 	if (will_end || ((p_state_machine->get_state_machine_type() == AnimationNodeStateMachine::STATE_MACHINE_TYPE_NESTED) && !p_state_machine->has_transition_from(current))) {
@@ -899,10 +899,11 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 	return current_nti;
 }
 
-bool AnimationNodeStateMachinePlayback::_transition_to_next_recursive(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, bool p_test_only) {
+bool AnimationNodeStateMachinePlayback::_transition_to_next_recursive(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, double p_delta, bool p_test_only) {
 	_reset_request_for_fading_from = false;
 
 	AnimationMixer::PlaybackInfo pi;
+	pi.delta = p_delta;
 	NextInfo next;
 	Vector<StringName> transition_path;
 	transition_path.push_back(current);
