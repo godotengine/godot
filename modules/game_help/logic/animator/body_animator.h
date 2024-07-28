@@ -9,6 +9,7 @@
 #include "scene/3d/physics/character_body_3d.h"
 #include "animation_help.h"
 #include "../character_ai/body_animator_logic.h"
+#include "../character_ai/animator_condition.h"
 
 
 #include "modules/limboai/bt/bt_player.h"

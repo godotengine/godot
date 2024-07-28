@@ -40,6 +40,17 @@
 #include "modules/game_help/foliage_manager/register_types.h"
 #include "modules/game_help/game_gui/game_gui_compoent.h"
 #include "modules/game_help/logic/character_ai/character_ai.h"
+#include "modules/game_help/logic/character_ai/animator_condition.h"
+#include "modules/game_help/logic/character_ai/condition/animator_condition_bool.h"
+#include "modules/game_help/logic/character_ai/condition/animator_condition_float.h"
+#include "modules/game_help/logic/character_ai/condition/animator_condition_int.h"
+#include "modules/game_help/logic/character_ai/condition/animator_condition_string.h"
+
+
+#include "modules/game_help/logic/character_ai/blackboard_set_item/animator_blackboard_item_bool.h"
+#include "modules/game_help/logic/character_ai/blackboard_set_item/animator_blackboard_item_float.h"
+#include "modules/game_help/logic/character_ai/blackboard_set_item/animator_blackboard_item_int.h"
+#include "modules/game_help/logic/character_ai/blackboard_set_item/animator_blackboard_item_string.h"
 
 
 #include "modules/game_help/logic/animator/animation_help.h"
@@ -133,6 +144,14 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 		ClassDB::register_class<CharacterAnimatorCondition>();
 		ClassDB::register_class<CharacterAnimationLogicNode>();
 
+		
+		ClassDB::register_abstract_class<AnimatorBlackboardSetItemBase>();
+		ClassDB::register_class<AnimatorBlackboardSetItemBool>();
+		ClassDB::register_class<AnimatorBlackboardSetItemFloat>();
+		ClassDB::register_class<AnimatorBlackboardSetItemInt>();
+		ClassDB::register_class<AnimatorBlackboardSetItemString>();
+
+		ClassDB::register_class<AnimatorBlackbordSet>();
 		
 		ClassDB::register_class<CharacterAnimatorNodeBase>();
 		ClassDB::register_class<CharacterAnimatorMask>();

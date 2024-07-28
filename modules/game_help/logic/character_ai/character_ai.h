@@ -4,6 +4,7 @@
 #include "core/object/ref_counted.h"
 #include "modules/limboai/bt/bt_player.h"
 #include "scene/3d/physics/character_body_3d.h"
+#include "animator_condition.h"
 #include "../body_main.h"
 
 
@@ -20,15 +21,30 @@ class CharacterAI_CheckBase : public RefCounted
         ClassDB::bind_method(D_METHOD("set_name","name"),&CharacterAI_CheckBase::set_name);
         ClassDB::bind_method(D_METHOD("get_name"),&CharacterAI_CheckBase::get_name);
 
-        ADD_PROPERTY(PropertyInfo(Variant::INT,"priority"), "set_priority","get_priority");
 
+        ClassDB::bind_method(D_METHOD("set_enable_condition","enable_condition"),&CharacterAI_CheckBase::set_enable_condition);
+        ClassDB::bind_method(D_METHOD("get_enable_condition"),&CharacterAI_CheckBase::get_enable_condition);
+
+        ClassDB::bind_method(D_METHOD("set_blackboard_plan","blackboard_plan"),&CharacterAI_CheckBase::set_blackboard_plan);
+        ClassDB::bind_method(D_METHOD("get_blackboard_plan"),&CharacterAI_CheckBase::get_blackboard_plan);
+
+        ADD_PROPERTY(PropertyInfo(Variant::INT,"priority"), "set_priority","get_priority");
         ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME,"name"), "set_name","get_name");
+        ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"enable_condition",PROPERTY_HINT_RESOURCE_TYPE,"CharacterAnimatorCondition"), "set_enable_condition","get_enable_condition");
+        ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"blackboard_plan",PROPERTY_HINT_RESOURCE_TYPE,"BlackboardPlan"), "set_blackboard_plan","get_blackboard_plan");
     }
     public:
     // 返回true 代表立即执行决策,否则大脑根据其他条件决策
     virtual bool execute(CharacterBodyMain *node, Blackboard* blackboard)
     {
         bool rs = false;
+        if(enable_condition.is_valid())
+        {
+            if( !enable_condition->is_enable(blackboard) )
+            {
+                return rs;
+            }
+        }
         if(_execute_check(node,blackboard))
         {
             rs = true ;
@@ -67,9 +83,43 @@ class CharacterAI_CheckBase : public RefCounted
     {
         return name;
     }
+
+    void set_enable_condition(Ref<CharacterAnimatorCondition> p_enable_condition)
+    {
+        this->enable_condition = p_enable_condition;
+        update_blackboard_plan();
+    }
+
+    Ref<CharacterAnimatorCondition> get_enable_condition()
+    {
+        return enable_condition;
+    }
+
+    void set_blackboard_plan(Ref<BlackboardPlan> p_blackboard_plan)
+    {
+        this->blackboard_plan = p_blackboard_plan;
+        update_blackboard_plan();
+    }
+
+    Ref<BlackboardPlan> get_blackboard_plan()
+    {
+        return blackboard_plan;
+    }
+    void update_blackboard_plan()
+    {
+        if(blackboard_plan.is_valid() && enable_condition.is_valid())
+        {
+            enable_condition->set_blackboard_plan(blackboard_plan);
+        }
+    }
+    protected:
     // 优先级
     int priority = 0;
     StringName name;
+    // 检查器的激活条件
+    Ref<CharacterAnimatorCondition> enable_condition;
+    
+    Ref<BlackboardPlan> blackboard_plan;
 
 };
 
@@ -239,10 +289,10 @@ public:
             int lp = 0;
             int rp = 0;
             if(l.is_valid()){
-                lp = l->priority;
+                lp = l->get_priority();
             }
             if(r.is_valid()){
-                rp = r->priority;
+                rp = r->get_priority();
             }
 
             return lp > lp;
