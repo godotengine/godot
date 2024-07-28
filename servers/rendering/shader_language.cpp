@@ -4761,7 +4761,7 @@ bool ShaderLanguage::_validate_assign(Node *p_node, const FunctionInfo &p_functi
 	return false;
 }
 
-bool ShaderLanguage::_propagate_function_call_sampler_uniform_settings(const StringName &p_name, int p_argument, TextureFilter p_filter, TextureRepeat p_repeat) {
+bool ShaderLanguage::_propagate_function_call_sampler_uniform_settings(const StringName &p_name, int p_argument, TextureFilter p_filter, TextureRepeat p_repeat, ShaderNode::Uniform::Hint p_hint) {
 	for (int i = 0; i < shader->vfunctions.size(); i++) {
 		if (shader->vfunctions[i].name == p_name) {
 			ERR_FAIL_INDEX_V(p_argument, shader->vfunctions[i].function->arguments.size(), false);
@@ -4770,20 +4770,21 @@ bool ShaderLanguage::_propagate_function_call_sampler_uniform_settings(const Str
 				_set_error(vformat(RTR("Sampler argument %d of function '%s' called more than once using both built-ins and uniform textures, this is not supported (use either one or the other)."), p_argument, String(p_name)));
 				return false;
 			} else if (arg->tex_argument_check) {
-				//was checked, verify that filter and repeat are the same
-				if (arg->tex_argument_filter == p_filter && arg->tex_argument_repeat == p_repeat) {
+				// Was checked, verify that filter, repeat, and hint are the same.
+				if (arg->tex_argument_filter == p_filter && arg->tex_argument_repeat == p_repeat && arg->tex_hint == p_hint) {
 					return true;
 				} else {
-					_set_error(vformat(RTR("Sampler argument %d of function '%s' called more than once using textures that differ in either filter or repeat setting."), p_argument, String(p_name)));
+					_set_error(vformat(RTR("Sampler argument %d of function '%s' called more than once using textures that differ in either filter, repeat, or texture hint setting."), p_argument, String(p_name)));
 					return false;
 				}
 			} else {
 				arg->tex_argument_check = true;
 				arg->tex_argument_filter = p_filter;
 				arg->tex_argument_repeat = p_repeat;
+				arg->tex_hint = p_hint;
 				for (KeyValue<StringName, HashSet<int>> &E : arg->tex_argument_connect) {
 					for (const int &F : E.value) {
-						if (!_propagate_function_call_sampler_uniform_settings(E.key, F, p_filter, p_repeat)) {
+						if (!_propagate_function_call_sampler_uniform_settings(E.key, F, p_filter, p_repeat, p_hint)) {
 							return false;
 						}
 					}
@@ -5583,7 +5584,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 											}
 
 											//propagate
-											if (!_propagate_function_call_sampler_uniform_settings(name, i, u->filter, u->repeat)) {
+											if (!_propagate_function_call_sampler_uniform_settings(name, i, u->filter, u->repeat, u->hint)) {
 												return nullptr;
 											}
 										} else if (p_function_info.built_ins.has(varname)) {
