@@ -234,6 +234,7 @@ public:
 	/* VISIBILITY */
 
 	void set_visible(bool p_visible);
+	void toggle_visibility();
 	bool is_visible() const;
 	bool is_visible_in_tree() const;
 	void show();
