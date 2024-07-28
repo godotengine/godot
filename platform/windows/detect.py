@@ -746,6 +746,9 @@ def configure_mingw(env: "SConsEnvironment"):
         if not env["use_llvm"]:
             print("GCC does not support sanitizers on Windows.")
             sys.exit(255)
+        if env["arch"] not in ["x86_32", "x86_64"]:
+            print("Sanitizers are only supported for x86_32 and x86_64.")
+            sys.exit(255)
 
         env.extra_suffix += ".san"
         env.AppendUnique(CPPDEFINES=["SANITIZERS_ENABLED"])
