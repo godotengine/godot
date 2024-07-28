@@ -52,6 +52,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	AnimationPlayerEditorPlugin *plugin = nullptr;
 	AnimationMixer *original_node = nullptr; // For pinned mark in SceneTree.
 	AnimationPlayer *player = nullptr; // For AnimationPlayerEditor, could be dummy.
+	Node *cached_player_root_node = nullptr;
 	bool is_dummy = false;
 
 	enum {

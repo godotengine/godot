@@ -323,7 +323,10 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 			track_editor->set_animation(anim, animation_library_is_foreign);
 			Node *root = player->get_node_or_null(player->get_root_node());
 			if (root) {
+				cached_player_root_node = root; // caching as track_editor can lose track of player's root node
 				track_editor->set_root(root);
+			} else {
+				player->set_root_node(player->get_path_to(cached_player_root_node));
 			}
 		}
 		frame->set_max((double)anim->get_length());
