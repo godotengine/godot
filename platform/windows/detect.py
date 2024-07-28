@@ -589,7 +589,7 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
                 "libEGL.windows." + env["arch"] + prebuilt_lib_extra_suffix,
                 "libGLES.windows." + env["arch"] + prebuilt_lib_extra_suffix,
             ]
-            LIBS += ["dxgi", "d3d9", "d3d11", "synchronization"]
+            LIBS += ["dxgi", "d3d9", "d3d11"]
         env.Prepend(CPPPATH=["#thirdparty/angle/include"])
 
     if env["target"] in ["editor", "template_debug"]:
@@ -817,7 +817,7 @@ def configure_mingw(env: "SConsEnvironment"):
                     "ANGLE.windows." + env["arch"],
                 ]
             )
-            env.Append(LIBS=["dxgi", "d3d9", "d3d11", "synchronization"])
+            env.Append(LIBS=["dxgi", "d3d9", "d3d11"])
         env.Prepend(CPPPATH=["#thirdparty/angle/include"])
 
     env.Append(CPPDEFINES=["MINGW_ENABLED", ("MINGW_HAS_SECURE_API", 1)])
