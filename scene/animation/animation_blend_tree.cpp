@@ -138,15 +138,11 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(const AnimationMixe
 	bool p_seek = p_playback_info.seeked;
 	bool p_is_external_seeking = p_playback_info.is_external_seeking;
 
-	bool is_just_looped = false;
-
 	// 1. Progress for AnimationNode.
+	bool will_end = Animation::is_greater_or_equal_approx(cur_time + cur_delta, cur_len);
 	if (cur_loop_mode != Animation::LOOP_NONE) {
 		if (cur_loop_mode == Animation::LOOP_LINEAR) {
 			if (!Math::is_zero_approx(cur_len)) {
-				if (Animation::is_less_or_equal_approx(prev_time, cur_len) && Animation::is_greater_approx(cur_time, cur_len)) {
-					is_just_looped = true; // Don't break with negative timescale since remain will not be 0.
-				}
 				cur_time = Math::fposmod(cur_time, cur_len);
 			}
 			backward = false;
@@ -156,7 +152,6 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(const AnimationMixe
 					backward = !backward;
 				} else if (Animation::is_less_or_equal_approx(prev_time, cur_len) && Animation::is_greater_approx(cur_time, cur_len)) {
 					backward = !backward;
-					is_just_looped = true; // Don't break with negative timescale since remain will not be 0.
 				}
 				cur_time = Math::pingpong(cur_time, cur_len);
 			}
@@ -190,7 +185,7 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(const AnimationMixe
 	nti.position = cur_time;
 	nti.delta = cur_delta;
 	nti.loop_mode = cur_loop_mode;
-	nti.is_just_looped = is_just_looped;
+	nti.will_end = will_end;
 
 	// 3. Progress for Animation.
 	double prev_playback_time = prev_time + start_offset;

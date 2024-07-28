@@ -578,42 +578,6 @@ public:
 				Node(NODE_TYPE_STRUCT) {}
 	};
 
-	struct FunctionNode : public Node {
-		struct Argument {
-			ArgumentQualifier qualifier;
-			StringName name;
-			DataType type;
-			StringName struct_name;
-			DataPrecision precision;
-			//for passing textures as arguments
-			bool tex_argument_check;
-			TextureFilter tex_argument_filter;
-			TextureRepeat tex_argument_repeat;
-			bool tex_builtin_check;
-			StringName tex_builtin;
-			bool is_const;
-			int array_size;
-
-			HashMap<StringName, HashSet<int>> tex_argument_connect;
-		};
-
-		StringName name;
-		DataType return_type = TYPE_VOID;
-		StringName return_struct_name;
-		DataPrecision return_precision = PRECISION_DEFAULT;
-		int return_array_size = 0;
-		Vector<Argument> arguments;
-		BlockNode *body = nullptr;
-		bool can_discard = false;
-
-		virtual DataType get_datatype() const override { return return_type; }
-		virtual String get_datatype_name() const override { return String(return_struct_name); }
-		virtual int get_array_size() const override { return return_array_size; }
-
-		FunctionNode() :
-				Node(NODE_TYPE_FUNCTION) {}
-	};
-
 	struct ShaderNode : public Node {
 		struct Constant {
 			StringName name;
@@ -720,6 +684,43 @@ public:
 
 		ShaderNode() :
 				Node(NODE_TYPE_SHADER) {}
+	};
+
+	struct FunctionNode : public Node {
+		struct Argument {
+			ArgumentQualifier qualifier;
+			StringName name;
+			DataType type;
+			StringName struct_name;
+			DataPrecision precision;
+			//for passing textures as arguments
+			bool tex_argument_check;
+			TextureFilter tex_argument_filter;
+			TextureRepeat tex_argument_repeat;
+			bool tex_builtin_check;
+			StringName tex_builtin;
+			ShaderNode::Uniform::Hint tex_hint;
+			bool is_const;
+			int array_size;
+
+			HashMap<StringName, HashSet<int>> tex_argument_connect;
+		};
+
+		StringName name;
+		DataType return_type = TYPE_VOID;
+		StringName return_struct_name;
+		DataPrecision return_precision = PRECISION_DEFAULT;
+		int return_array_size = 0;
+		Vector<Argument> arguments;
+		BlockNode *body = nullptr;
+		bool can_discard = false;
+
+		virtual DataType get_datatype() const override { return return_type; }
+		virtual String get_datatype_name() const override { return String(return_struct_name); }
+		virtual int get_array_size() const override { return return_array_size; }
+
+		FunctionNode() :
+				Node(NODE_TYPE_FUNCTION) {}
 	};
 
 	struct UniformOrderComparator {
@@ -1122,7 +1123,7 @@ private:
 
 	bool _validate_function_call(BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_func, DataType *r_ret_type, StringName *r_ret_type_str, bool *r_is_custom_function = nullptr);
 	bool _parse_function_arguments(BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_func, int *r_complete_arg = nullptr);
-	bool _propagate_function_call_sampler_uniform_settings(const StringName &p_name, int p_argument, TextureFilter p_filter, TextureRepeat p_repeat);
+	bool _propagate_function_call_sampler_uniform_settings(const StringName &p_name, int p_argument, TextureFilter p_filter, TextureRepeat p_repeat, ShaderNode::Uniform::Hint p_hint);
 	bool _propagate_function_call_sampler_builtin_reference(const StringName &p_name, int p_argument, const StringName &p_builtin);
 	bool _validate_varying_assign(ShaderNode::Varying &p_varying, String *r_message);
 	bool _check_node_constness(const Node *p_node) const;
