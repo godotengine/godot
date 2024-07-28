@@ -135,3 +135,7 @@ constexpr bool is_punct(char32_t p_char) {
 constexpr bool is_underscore(char32_t p_char) {
 	return (p_char == '_');
 }
+
+constexpr bool is_hyphen(char32_t p_char) {
+	return (p_char == '-') || (p_char == 0x2010) || (p_char == 0x2011);
+}

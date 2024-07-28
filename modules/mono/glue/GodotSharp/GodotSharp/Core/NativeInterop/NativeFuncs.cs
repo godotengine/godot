@@ -503,6 +503,9 @@ namespace Godot.NativeInterop
         public static partial void godotsharp_string_simplify_path(scoped in godot_string p_self,
             out godot_string r_simplified_path);
 
+        public static partial void godotsharp_string_capitalize(scoped in godot_string p_self,
+            out godot_string r_capitalized);
+
         public static partial void godotsharp_string_to_camel_case(scoped in godot_string p_self,
             out godot_string r_camel_case);
 
@@ -511,6 +514,9 @@ namespace Godot.NativeInterop
 
         public static partial void godotsharp_string_to_snake_case(scoped in godot_string p_self,
             out godot_string r_snake_case);
+
+        public static partial void godotsharp_string_to_kebab_case(scoped in godot_string p_self,
+            out godot_string r_kebab_case);
 
         // NodePath
 

@@ -948,6 +948,25 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="to_kebab_case" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the string converted to [code]kebab-case[/code].
+				[b]Note:[/b] Numbers followed by a [i]single[/i] letter are not separated in the conversion to keep some words (such as "2D") together.
+				[codeblocks]
+				[gdscript]
+				"Node2D".to_kebab_case()               # Returns "node-2d"
+				"2nd place".to_kebab_case()            # Returns "2-nd-place"
+				"Texture3DAssetFolder".to_kebab_case() # Returns "texture-3d-asset-folder"
+				[/gdscript]
+				[csharp]
+				"Node2D".ToKebabCase();               // Returns "node-2d"
+				"2nd place".ToKebabCase();            // Returns "2-nd-place"
+				"Texture3DAssetFolder".ToKebabCase(); // Returns "texture-3d-asset-folder"
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="to_lower" qualifiers="const">
 			<return type="String" />
 			<description>

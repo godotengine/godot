@@ -1751,6 +1751,7 @@ static void _register_variant_builtin_methods_string() {
 	bind_string_method(to_camel_case, sarray(), varray());
 	bind_string_method(to_pascal_case, sarray(), varray());
 	bind_string_method(to_snake_case, sarray(), varray());
+	bind_string_method(to_kebab_case, sarray(), varray());
 	bind_string_methodv(split, static_cast<Vector<String> (String::*)(const String &, bool, int) const>(&String::split), sarray("delimiter", "allow_empty", "maxsplit"), varray("", true, 0));
 	bind_string_methodv(rsplit, static_cast<Vector<String> (String::*)(const String &, bool, int) const>(&String::rsplit), sarray("delimiter", "allow_empty", "maxsplit"), varray("", true, 0));
 	bind_string_method(split_floats, sarray("delimiter", "allow_empty"), varray(true));

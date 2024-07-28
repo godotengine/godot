@@ -1289,6 +1289,10 @@ void godotsharp_string_simplify_path(const String *p_self, String *r_simplified_
 	memnew_placement(r_simplified_path, String(p_self->simplify_path()));
 }
 
+void godotsharp_string_capitalize(const String *p_self, String *r_capitalized) {
+	memnew_placement(r_capitalized, String(p_self->capitalize()));
+}
+
 void godotsharp_string_to_camel_case(const String *p_self, String *r_camel_case) {
 	memnew_placement(r_camel_case, String(p_self->to_camel_case()));
 }
@@ -1299,6 +1303,10 @@ void godotsharp_string_to_pascal_case(const String *p_self, String *r_pascal_cas
 
 void godotsharp_string_to_snake_case(const String *p_self, String *r_snake_case) {
 	memnew_placement(r_snake_case, String(p_self->to_snake_case()));
+}
+
+void godotsharp_string_to_kebab_case(const String *p_self, String *r_kebab_case) {
+	memnew_placement(r_kebab_case, String(p_self->to_kebab_case()));
 }
 
 void godotsharp_node_path_get_as_property_path(const NodePath *p_ptr, NodePath *r_dest) {
@@ -1700,9 +1708,11 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_dictionary_get_typed_value_script,
 	(void *)godotsharp_dictionary_to_string,
 	(void *)godotsharp_string_simplify_path,
+	(void *)godotsharp_string_capitalize,
 	(void *)godotsharp_string_to_camel_case,
 	(void *)godotsharp_string_to_pascal_case,
 	(void *)godotsharp_string_to_snake_case,
+	(void *)godotsharp_string_to_kebab_case,
 	(void *)godotsharp_node_path_get_as_property_path,
 	(void *)godotsharp_node_path_get_concatenated_names,
 	(void *)godotsharp_node_path_get_concatenated_subnames,

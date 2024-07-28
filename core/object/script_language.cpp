@@ -633,6 +633,7 @@ void ScriptLanguage::_bind_methods() {
 	BIND_ENUM_CONSTANT(SCRIPT_NAME_CASING_PASCAL_CASE);
 	BIND_ENUM_CONSTANT(SCRIPT_NAME_CASING_SNAKE_CASE);
 	BIND_ENUM_CONSTANT(SCRIPT_NAME_CASING_KEBAB_CASE);
+	BIND_ENUM_CONSTANT(SCRIPT_NAME_CASING_CAMEL_CASE);
 }
 
 bool PlaceHolderScriptInstance::set(const StringName &p_name, const Variant &p_value) {
