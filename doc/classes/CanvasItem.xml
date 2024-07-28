@@ -586,7 +586,7 @@
 		<method name="toggle_visibility">
 			<return type="void" />
 			<description>
-			Show the [CanvasItem] if it's currently hidden or hide the [CanvasItem] if it's currently visible.
+				Show the [CanvasItem] if it's currently hidden or hide the [CanvasItem] if it's currently visible.
 			</description>
 		</method>
 	</methods>
