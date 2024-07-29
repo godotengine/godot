@@ -322,11 +322,17 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 
 			track_editor->set_animation(anim, animation_library_is_foreign);
 			Node *root = player->get_node_or_null(player->get_root_node());
-			if (root) {
-				cached_player_root_node = root; // caching as track_editor can lose track of player's root node
-				track_editor->set_root(root);
+
+			// Player shouldn't access parent if its scene root
+			if (!root || (player == get_tree()->get_edited_scene_root() && player->get_root_node() == SceneStringNames::get_singleton()->path_pp)) {
+				if (cached_player_root_node) {
+					player->set_root_node(player->get_path_to(cached_player_root_node));
+				} else {
+					player->set_root_node(SceneStringNames::get_singleton()->path_pp); // No other choice, preventing crash
+				}
 			} else {
-				player->set_root_node(player->get_path_to(cached_player_root_node));
+				cached_player_root_node = root; // Caching as track_editor can lose track of player's root node
+				track_editor->set_root(root);
 			}
 		}
 		frame->set_max((double)anim->get_length());
