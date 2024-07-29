@@ -1956,6 +1956,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.android", PROPERTY_HINT_ENUM, driver_hints), default_driver);
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.ios", PROPERTY_HINT_ENUM, driver_hints), default_driver);
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.macos", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+
+		GLOBAL_DEF_RST("rendering/rendering_device/fallback_to_vulkan", true);
+		GLOBAL_DEF_RST("rendering/rendering_device/fallback_to_d3d12", true);
 	}
 
 	{

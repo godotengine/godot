@@ -5947,10 +5947,37 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 	if (rendering_context) {
 		if (rendering_context->initialize() != OK) {
-			memdelete(rendering_context);
-			rendering_context = nullptr;
-			r_error = ERR_UNAVAILABLE;
-			return;
+			bool failed = true;
+#if defined(VULKAN_ENABLED)
+			bool fallback_to_vulkan = GLOBAL_GET("rendering/rendering_device/fallback_to_vulkan");
+			if (failed && fallback_to_vulkan && rendering_driver != "vulkan") {
+				memdelete(rendering_context);
+				rendering_context = memnew(RenderingContextDriverVulkanWindows);
+				if (rendering_context->initialize() == OK) {
+					WARN_PRINT("Your video card drivers seem not to support Direct3D 12, switching to Vulkan.");
+					rendering_driver = "vulkan";
+					failed = false;
+				}
+			}
+#endif
+#if defined(D3D12_ENABLED)
+			bool fallback_to_d3d12 = GLOBAL_GET("rendering/rendering_device/fallback_to_d3d12");
+			if (failed && fallback_to_d3d12 && rendering_driver != "d3d12") {
+				memdelete(rendering_context);
+				rendering_context = memnew(RenderingContextDriverD3D12);
+				if (rendering_context->initialize() == OK) {
+					WARN_PRINT("Your video card drivers seem not to support Vulkan, switching to Direct3D 12.");
+					rendering_driver = "d3d12";
+					failed = false;
+				}
+			}
+#endif
+			if (failed) {
+				memdelete(rendering_context);
+				rendering_context = nullptr;
+				r_error = ERR_UNAVAILABLE;
+				return;
+			}
 		}
 	}
 #endif
