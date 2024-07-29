@@ -10,6 +10,7 @@
 #include "animation_help.h"
 #include "../character_ai/body_animator_logic.h"
 #include "../character_ai/animator_condition.h"
+#include "../character_ai/animator_blackboard_set.h"
 
 
 #include "modules/limboai/bt/bt_player.h"
@@ -585,6 +586,15 @@ public:
 		if (stop_check_condtion.is_valid()) {
 			stop_check_condtion->set_blackboard_plan(blackboard_plan);
 		}
+        if(start_blackboard_set.is_valid())
+        {
+            start_blackboard_set->set_blackboard_plan(blackboard_plan);
+        }
+
+        if(stop_blackboard_set.is_valid())
+        {
+            stop_blackboard_set->set_blackboard_plan(blackboard_plan);
+        }
 
 	}
 
@@ -597,6 +607,12 @@ public:
 
 	void set_enter_condtion(const Ref<CharacterAnimatorCondition>& p_enter_condtion) { enter_condtion = p_enter_condtion; update_blackboard_plan(); }
     Ref<CharacterAnimatorCondition> get_enter_condtion() { return enter_condtion; }
+
+    void set_start_blackboard_set(const Ref<AnimatorBlackboardSet>& p_start_blackboard_set) { start_blackboard_set = p_start_blackboard_set; update_blackboard_plan(); }
+    Ref<AnimatorBlackboardSet> get_start_blackboard_set() { return start_blackboard_set; }
+
+    void set_stop_blackboard_set(const Ref<AnimatorBlackboardSet>& p_stop_blackboard_set) { stop_blackboard_set = p_stop_blackboard_set; update_blackboard_plan(); }
+    Ref<AnimatorBlackboardSet> get_stop_blackboard_set() { return stop_blackboard_set; }
 
     void set_check_stop_delay_time(float p_check_stop_delay_time) { check_stop_delay_time = p_check_stop_delay_time; }
     float get_check_stop_delay_time() { return check_stop_delay_time; }
@@ -645,6 +661,10 @@ public:
     StringName player_animation_name;
     // 进入条件
     Ref<CharacterAnimatorCondition> enter_condtion;
+    // 進入节点设置的黑板
+    Ref<AnimatorBlackboardSet> start_blackboard_set;
+    // 退出节点设置的黑板
+    Ref<AnimatorBlackboardSet> stop_blackboard_set;
     Ref<BlackboardPlan> blackboard_plan;
     // 检测结束等待时间
     float check_stop_delay_time = 0.0f;

@@ -151,7 +151,7 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 		ClassDB::register_class<AnimatorBlackboardSetItemInt>();
 		ClassDB::register_class<AnimatorBlackboardSetItemString>();
 
-		ClassDB::register_class<AnimatorBlackbordSet>();
+		ClassDB::register_class<AnimatorBlackboardSet>();
 		
 		ClassDB::register_class<CharacterAnimatorNodeBase>();
 		ClassDB::register_class<CharacterAnimatorMask>();

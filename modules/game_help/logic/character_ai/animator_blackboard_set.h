@@ -106,19 +106,18 @@ protected:
 };
 
 // 黑板设置
-class AnimatorBlackbordSet : public RefCounted
+class AnimatorBlackboardSet : public RefCounted
 {
-    GDCLASS(AnimatorBlackbordSet, RefCounted)
+    GDCLASS(AnimatorBlackboardSet, RefCounted)
     static void _bind_methods()
     {
-        ClassDB::bind_method(D_METHOD("set_change_list", "change_list"), &AnimatorBlackbordSet::set_change_list);
-        ClassDB::bind_method(D_METHOD("get_change_list"), &AnimatorBlackbordSet::get_change_list);
+        ClassDB::bind_method(D_METHOD("set_change_list", "change_list"), &AnimatorBlackboardSet::set_change_list);
+        ClassDB::bind_method(D_METHOD("get_change_list"), &AnimatorBlackboardSet::get_change_list);
 
-        ClassDB::bind_method(D_METHOD("set_blackboard_plan", "blackboard_plan"), &AnimatorBlackbordSet::set_blackboard_plan);
-        ClassDB::bind_method(D_METHOD("get_blackboard_plan"), &AnimatorBlackbordSet::get_blackboard_plan);
+        ClassDB::bind_method(D_METHOD("set_blackboard_plan", "blackboard_plan"), &AnimatorBlackboardSet::set_blackboard_plan);
+        ClassDB::bind_method(D_METHOD("get_blackboard_plan"), &AnimatorBlackboardSet::get_blackboard_plan);
 
         ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "change_list", PROPERTY_HINT_ARRAY_TYPE,RESOURCE_TYPE_HINT("AnimatorBlackboardSetItemBase")), "set_change_list", "get_change_list");
-        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan"), "set_blackboard_plan", "get_blackboard_plan");
     }
 public:
     void set_change_list(TypedArray<Ref<AnimatorBlackboardSetItemBase>> p_list) 

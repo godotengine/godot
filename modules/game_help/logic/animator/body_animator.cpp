@@ -1148,6 +1148,10 @@ void CharacterAnimator::_bind_methods()
 //////////////////////////////////////////////// CharacterAnimationLogicNode /////////////////////////////////////////
 void CharacterAnimationLogicNode::process_start(CharacterAnimatorLayer* animator,Blackboard* blackboard)
 {
+    if(start_blackboard_set.is_valid())
+    {
+        start_blackboard_set->execute(blackboard);
+    }
     // 播放动作
     animator->play_animation(player_animation_name);
     if (GDVIRTUAL_IS_OVERRIDDEN(_animation_process_start)) {
@@ -1167,6 +1171,10 @@ void CharacterAnimationLogicNode::process(CharacterAnimatorLayer* animator,Black
 
 void CharacterAnimationLogicNode::process_stop(CharacterAnimatorLayer* animator,Blackboard* blackboard)
 {
+    if(stop_blackboard_set.is_valid())
+    {
+        stop_blackboard_set->execute(blackboard);
+    }
     if (GDVIRTUAL_IS_OVERRIDDEN(_animation_process_stop)) {
         GDVIRTUAL_CALL(_animation_process_stop, animator,blackboard);
         return ;
@@ -1283,6 +1291,12 @@ void CharacterAnimationLogicNode::_bind_methods()
     ClassDB::bind_method(D_METHOD("set_enter_condtion", "enter_condtion"), &CharacterAnimationLogicNode::set_enter_condtion);
     ClassDB::bind_method(D_METHOD("get_enter_condtion"), &CharacterAnimationLogicNode::get_enter_condtion);
 
+    ClassDB::bind_method(D_METHOD("set_start_blackboard_set", "start_blackboard_set"), &CharacterAnimationLogicNode::set_start_blackboard_set);
+    ClassDB::bind_method(D_METHOD("get_start_blackboard_set"), &CharacterAnimationLogicNode::get_start_blackboard_set);
+
+    ClassDB::bind_method(D_METHOD("set_stop_blackboard_set", "stop_blackboard_set"), &CharacterAnimationLogicNode::set_stop_blackboard_set);
+    ClassDB::bind_method(D_METHOD("get_stop_blackboard_set"), &CharacterAnimationLogicNode::get_stop_blackboard_set);
+
     ClassDB::bind_method(D_METHOD("set_check_stop_delay_time", "check_stop_delay_time"), &CharacterAnimationLogicNode::set_check_stop_delay_time);
     ClassDB::bind_method(D_METHOD("get_check_stop_delay_time"), &CharacterAnimationLogicNode::get_check_stop_delay_time);
 
@@ -1303,6 +1317,8 @@ void CharacterAnimationLogicNode::_bind_methods()
     ADD_PROPERTY(PropertyInfo(Variant::INT, "priority"), "set_priority", "get_priority");
     ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "player_animation_name"), "set_player_animation_name", "get_player_animation_name");
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "enter_condtion", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimatorCondition"), "set_enter_condtion", "get_enter_condtion");
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "start_blackboard_set", PROPERTY_HINT_RESOURCE_TYPE, "AnimatorBlackboardSet"), "set_start_blackboard_set", "get_start_blackboard_set");
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stop_blackboard_set", PROPERTY_HINT_RESOURCE_TYPE, "AnimatorBlackboardSet"), "set_stop_blackboard_set", "get_stop_blackboard_set");
     ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "check_stop_delay_time"), "set_check_stop_delay_time", "get_check_stop_delay_time");
     ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "life_time"), "set_life_time", "get_life_time");
     ADD_PROPERTY(PropertyInfo(Variant::INT, "stop_check_type",PROPERTY_HINT_ENUM,"Life,PlayCount,Condition,Script"), "set_stop_check_type", "get_stop_check_type");

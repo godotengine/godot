@@ -799,6 +799,144 @@ ConditionSection::~ConditionSection() {
 }
 
 
+class BlackbordSetSection : public VBoxContainer {
+	GDCLASS(BlackbordSetSection, VBoxContainer);
+
+private:
+	struct ThemeCache {
+		Ref<Texture2D> arrow_down_icon;
+		Ref<Texture2D> arrow_right_icon;
+	} theme_cache;
+
+	VBoxContainer *tasks_container;
+	Button *section_header;
+
+	Ref<AnimatorBlackboardSet> object;
+
+	void _on_header_pressed();
+
+protected:
+	static void _bind_methods();
+
+	void _notification(int p_what);
+
+	virtual void _do_update_theme_item_cache();
+
+public:
+	void setup(Ref<AnimatorBlackboardSet> p_object)
+	{
+
+		object = p_object;
+#ifdef TOOLS_ENABLED
+			set_collapsed(!object->editor_is_section_unfolded("Change List"));
+#endif
+	}
+	void set_filter(String p_filter);
+	void add_condition(Control* p_task_button);
+
+	void set_collapsed(bool p_collapsed);
+	bool is_collapsed() const;
+
+	String get_category_name() const { return section_header->get_text(); }
+	void set_category_name(const String &p_cat) { section_header->set_text(p_cat); }
+
+	BlackbordSetSection();
+};
+
+class BlackbordSetButtonList_ED : public HBoxContainer
+{
+	GDCLASS(BlackbordSetButtonList_ED, HBoxContainer);
+	static void _bind_methods()
+	{
+
+	}
+public:
+	BlackbordSetButtonList_ED(){}
+	
+	void setup(Ref<AnimatorBlackboardSet> p_object)
+	{
+
+		object = p_object;
+		set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
+
+		HSeparator *sep = memnew(HSeparator);
+		sep->set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
+		sep->set_custom_minimum_size(Size2(20, 10));
+		add_child(sep);
+
+		add_int_bt = memnew(Button);
+		add_int_bt->set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
+		add_int_bt->set_h_size_flags(SIZE_EXPAND_FILL);
+		add_int_bt->set_text("Add Int");
+		add_int_bt->connect("pressed", callable_mp(this, &BlackbordSetButtonList_ED::_on_add_int_bt_pressed));
+		add_int_bt->set_modulate(Color(0.875804, 0.881502, 0.103496, 1));
+		add_child(add_int_bt);
+
+
+		add_float_bt = memnew(Button);
+		add_float_bt->set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
+		add_float_bt->set_h_size_flags(SIZE_EXPAND_FILL);
+		add_float_bt->set_text("Add Float");
+		add_float_bt->connect("pressed", callable_mp(this, &BlackbordSetButtonList_ED::_on_add_float_bt_pressed));
+		add_child(add_float_bt);
+
+
+		add_string_bt = memnew(Button);
+		add_string_bt->set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
+		add_string_bt->set_h_size_flags(SIZE_EXPAND_FILL);
+		add_string_bt->set_text("Add String");
+		add_string_bt->connect("pressed", callable_mp(this, &BlackbordSetButtonList_ED::_on_add_string_bt_pressed));
+		add_string_bt->set_modulate(Color(0.875804, 0.881502, 0.103496, 1));
+		add_child(add_string_bt);
+
+
+		add_bool_bt = memnew(Button);
+		add_bool_bt->set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
+		add_bool_bt->set_h_size_flags(SIZE_EXPAND_FILL);
+		add_bool_bt->set_text("Add Bool");
+		add_bool_bt->connect("pressed", callable_mp(this, &BlackbordSetButtonList_ED::_on_add_bool_bt_pressed));
+		add_child(add_bool_bt);
+
+		sep = memnew(HSeparator);
+		sep->set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
+		sep->set_custom_minimum_size(Size2(20, 10));
+		add_child(sep);
+	}
+
+	void _on_add_int_bt_pressed()
+	{
+		Ref<AnimatorBlackboardSetItemInt> condition = memnew(AnimatorBlackboardSetItemInt);
+		object->add_item(condition);
+		object->notify_property_list_changed();
+	}
+	void _on_add_float_bt_pressed()
+	{
+		Ref<AnimatorBlackboardSetItemFloat> condition = memnew(AnimatorBlackboardSetItemFloat);
+		object->add_item(condition);
+		object->notify_property_list_changed();
+	}
+
+	void _on_add_string_bt_pressed()
+	{
+		Ref<AnimatorBlackboardSetItemString> condition = memnew(AnimatorBlackboardSetItemString);
+		object->add_item(condition);
+		object->notify_property_list_changed();
+	}
+
+	void _on_add_bool_bt_pressed()
+	{
+		Ref<AnimatorBlackboardSetItemBool> condition = memnew(AnimatorBlackboardSetItemBool);
+		object->add_item(condition);
+		object->notify_property_list_changed();
+	}
+
+
+	Button* add_int_bt = nullptr;
+	Button* add_float_bt = nullptr;
+	Button* add_string_bt = nullptr;
+	Button* add_bool_bt = nullptr;
+	Ref<AnimatorBlackboardSet> object = nullptr;
+};
 
 
 class BlackbordSet_ED  : public HBoxContainer
@@ -830,7 +968,7 @@ public:
 		return get_theme()->get_icon(p_type, "EditorIcons");
 		#endif
 	}
-	void setup(Ref<AnimatorBlackbordSet> p_object,Ref<AnimatorBlackboardSetItemBase> p_blackboard_set_item)
+	void setup(Ref<AnimatorBlackboardSet> p_object,Ref<AnimatorBlackboardSetItemBase> p_blackboard_set_item)
 	{
 		object = p_object;
 		blackboard_set_item = p_blackboard_set_item;
@@ -1182,9 +1320,76 @@ protected:
 	Button* remove_bt = nullptr;
 
 	Ref<AnimatorBlackboardSetItemBase> blackboard_set_item ;
-	Ref<AnimatorBlackbordSet> object ;
+	Ref<AnimatorBlackboardSet> object ;
 };
 
+
+
+void BlackbordSetSection::_on_header_pressed() {
+	set_collapsed(!is_collapsed());
+}
+
+void BlackbordSetSection::set_filter(String p_filter_text) {
+
+}
+
+void BlackbordSetSection::add_condition(Control* p_task_button) {
+	tasks_container->add_child(p_task_button);
+}
+
+void BlackbordSetSection::set_collapsed(bool p_collapsed) {
+	tasks_container->set_visible(!p_collapsed);
+#ifdef TOOLS_ENABLED
+		object->editor_set_section_unfold("Change List", !p_collapsed);
+#endif
+	section_header->set_icon(p_collapsed ? theme_cache.arrow_right_icon : theme_cache.arrow_down_icon);
+}
+
+bool BlackbordSetSection::is_collapsed() const {
+	return !tasks_container->is_visible();
+}
+
+void BlackbordSetSection::_do_update_theme_item_cache() {
+	theme_cache.arrow_down_icon = get_theme_icon(SNAME("GuiTreeArrowDown"), SNAME("EditorIcons"));
+	theme_cache.arrow_right_icon = get_theme_icon(SNAME("GuiTreeArrowRight"), SNAME("EditorIcons"));
+}
+
+void BlackbordSetSection::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			section_header->connect(SNAME("pressed"), callable_mp(this, &BlackbordSetSection::_on_header_pressed));
+		} break;
+		case NOTIFICATION_THEME_CHANGED: {
+			_do_update_theme_item_cache();
+			section_header->set_icon(is_collapsed() ? theme_cache.arrow_right_icon : theme_cache.arrow_down_icon);
+			section_header->add_theme_font_override(SNAME("font"), get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
+		} break;
+	}
+}
+void BlackbordSetSection::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("task_button_pressed"));
+	ADD_SIGNAL(MethodInfo("task_button_rmb"));
+}
+
+BlackbordSetSection::BlackbordSetSection() {
+
+	HBoxContainer *hb = memnew(HBoxContainer);
+	hb->set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
+	add_child(hb);
+
+
+	section_header = memnew(Button);
+	section_header->set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
+	section_header->set_h_size_flags(SIZE_EXPAND_FILL);
+	section_header->set_v_size_flags(SIZE_EXPAND_FILL);
+	hb->add_child(section_header);
+	
+
+	section_header->set_focus_mode(FOCUS_NONE);
+
+	tasks_container = memnew(VBoxContainer);
+	add_child(tasks_container);
+}
 
 
 
@@ -1257,6 +1462,33 @@ public:
 		return false;
 	}
 
+		static bool _parse_blackboard_property(EditorInspectorPlugin *p_plugin,const Ref<AnimatorBlackboardSet>& object, Variant::Type type, const String& name, PropertyHint hint_type, const String& hint_string, BitField<PropertyUsageFlags> usage_flags, bool wide)
+	{
+		if(name == "change_list")
+		{
+			BlackbordSetSection* section = memnew(BlackbordSetSection);
+			section->setup(object);
+			section->set_category_name("Change List");
+			TypedArray<Ref<AnimatorBlackboardSetItemBase>>  condition = object->get_change_list();
+			for(int32_t i = 0; i < condition.size(); ++i)
+			{
+				BlackbordSet_ED* bt = memnew(BlackbordSet_ED);
+				if(i & 1)
+				{
+					bt->set_modulate(Color(0.814023, 0.741614, 1, 1));
+				}
+				bt->setup(object,condition[i]);
+				section->add_condition( bt);
+			}
+			BlackbordSetButtonList_ED* bt = memnew(BlackbordSetButtonList_ED);
+			bt->setup(object);
+			section->add_condition( bt);
+			p_plugin->add_custom_control( section);
+			return true;
+		}
+		return false;
+	}
+
 };
 // 一些自定义的Inspector插件
 class GameHelpInspectorPlugin : public EditorInspectorPlugin
@@ -1274,13 +1506,27 @@ class GameHelpInspectorPlugin : public EditorInspectorPlugin
 			EditorNode::get_log()->add_message(String("GameHelpInspectorPlugin.can_handle") + " :" + p_object->get_class());
 			return true;
 		}
+		if( Object::cast_to<AnimatorBlackboardSet>(p_object) != nullptr)
+		{
+			EditorNode::get_log()->add_message(String("GameHelpInspectorPlugin.can_handle") + " :" + p_object->get_class());
+			return true;
+		}
 
 		return false;
 	}
 	bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide)override {
 	
 		Ref<CharacterAnimatorCondition> object = p_object;
-		return ConditionList_ED::_parse_condition_property(this,object, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide);
+		if(object.is_valid())
+		{
+			return ConditionList_ED::_parse_condition_property(this,object, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide);
+		}
+		Ref<AnimatorBlackboardSet> set_object = p_object;
+		if (/* condition */set_object.is_valid())
+		{
+			return ConditionList_ED::_parse_blackboard_property(this,set_object, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide);
+		}
+		return false;
 	}
 
 };
