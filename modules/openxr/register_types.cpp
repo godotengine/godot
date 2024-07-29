@@ -51,6 +51,7 @@
 #include "extensions/openxr_debug_utils_extension.h"
 #include "extensions/openxr_eye_gaze_interaction.h"
 #include "extensions/openxr_fb_display_refresh_rate_extension.h"
+#include "extensions/openxr_fb_space_warp_extension_wrapper.h"
 #include "extensions/openxr_hand_interaction_extension.h"
 #include "extensions/openxr_hand_tracking_extension.h"
 #include "extensions/openxr_htc_controller_extension.h"
@@ -133,6 +134,9 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRMxInkExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRVisibilityMaskExtension));
 
+			// ClassDB::register_class<OpenXRFbSpaceWarpExtensionWrapper>();
+			OpenXRAPI::register_extension_wrapper(memnew(OpenXRFbSpaceWarpExtensionWrapper));
+
 			// register gated extensions
 			if (int(GLOBAL_GET("xr/openxr/extensions/debug_utils")) > 0) {
 				OpenXRAPI::register_extension_wrapper(memnew(OpenXRDebugUtilsExtension));
@@ -189,6 +193,8 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(OpenXRHand);
 
 		GDREGISTER_CLASS(OpenXRVisibilityMask);
+
+		// Engine::get_singleton()->add_singleton(Engine::Singleton("OpenXRFbSpaceWarpExtensionWrapper", OpenXRFbSpaceWarpExtensionWrapper::get_singleton()));
 
 		XRServer *xr_server = XRServer::get_singleton();
 		if (xr_server) {
