@@ -2780,6 +2780,7 @@
 		</member>
 		<member name="rendering/rendering_device/vsync/frame_queue_size" type="int" setter="" getter="" default="2">
 			The number of frames to track on the CPU side before stalling to wait for the GPU.
+			A lower value may improve input latency at the cost of reduced performance in complex scenes, as the driver has to communicate more frequently between the CPU and GPU.
 			Try the [url=https://darksylinc.github.io/vsync_simulator/]V-Sync Simulator[/url], an interactive interface that simulates presentation to better understand how it is affected by different variables under various conditions.
 			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this value at run-time.
 		</member>
