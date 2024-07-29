@@ -34,6 +34,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/version.h"
+#include "main/main.h"
 
 #include "thirdparty/nvapi/nvapi_minimal.h"
 
@@ -446,6 +447,7 @@ class GLManagerNative_Windows::DxgiSwapChain {
 
 #ifdef OPENGL_DXGI_USE_FLIP_MODEL
 	bool supports_tearing = false;
+	bool needs_wait = false;
 #endif
 
 	DxgiSwapChain() = default;
@@ -453,6 +455,8 @@ class GLManagerNative_Windows::DxgiSwapChain {
 
 	template <typename T>
 	friend void memdelete(T *);
+
+	friend class GLManagerNative_Windows;
 
 public:
 	static DxgiSwapChain *create(HWND p_hwnd, int p_width, int p_height, ID3D11Device *p_d3d11_device, ID3D11DeviceContext *p_d3d11_device_context);
@@ -520,7 +524,7 @@ static bool load_dxgi_swap_chain_functions(PFNWGLGETPROCADDRESS gd_wglGetProcAdd
 	fptr_CreateDXGIFactory1 = (PFNCREATEDXGIFACTORY1)GetProcAddress(module_dxgi, "CreateDXGIFactory1");
 	if (!fptr_CreateDXGIFactory1) {
 		print_verbose("GLManagerNative_Windows: Failed to load DXGI functions.")
-				FreeLibrary(module_d3d11);
+				FreeLibrary(module_dxgi);
 		return false;
 	}
 
@@ -1132,15 +1136,6 @@ GLManagerNative_Windows::DxgiSwapChain *GLManagerNative_Windows::DxgiSwapChain::
 		hr = swap_chain.As(&swap_chain_2);
 		if (SUCCEEDED(hr)) {
 			frame_latency_waitable_obj = swap_chain_2->GetFrameLatencyWaitableObject();
-			DWORD wait = WaitForSingleObject(frame_latency_waitable_obj, 1000);
-			if (wait != WAIT_OBJECT_0) {
-				if (wait == WAIT_FAILED) {
-					DWORD error = GetLastError();
-					ERR_PRINT(vformat("Wait for frame latency waitable failed with error: 0x%08X", (unsigned)error));
-				} else {
-					ERR_PRINT(vformat("Wait for frame latency waitable failed, WaitForSingleObject returned 0x%08X", (unsigned)wait));
-				}
-			}
 		} else {
 			ERR_PRINT(vformat("Failed to get IDXGISwapChain2, HRESULT: 0x%08X", (unsigned)hr));
 		}
@@ -1184,6 +1179,7 @@ GLManagerNative_Windows::DxgiSwapChain *GLManagerNative_Windows::DxgiSwapChain::
 	dxgi->swap_chain = std::move(swap_chain);
 #ifdef OPENGL_DXGI_USE_FLIP_MODEL
 	dxgi->frame_latency_waitable_obj = frame_latency_waitable_obj;
+	dxgi->needs_wait = (frame_latency_waitable_obj != nullptr);
 #endif
 	dxgi->gldx_device = gldx_device;
 	dxgi->gl_fbo = gl_fbo;
@@ -1232,7 +1228,7 @@ GLManagerNative_Windows::DxgiSwapChain *GLManagerNative_Windows::DxgiSwapChain::
 		ERR_PRINT(vformat("Failed to get IDXGISwapChain2, HRESULT: 0x%08X", (unsigned)hr));
 	} else {
 		// TODO: ???
-		swap_chain_2->SetMaximumFrameLatency(1);
+		swap_chain_2->SetMaximumFrameLatency(2);
 	}
 #else
 	ComPtr<IDXGIDevice1> device1;
@@ -1241,7 +1237,7 @@ GLManagerNative_Windows::DxgiSwapChain *GLManagerNative_Windows::DxgiSwapChain::
 		ERR_PRINT(vformat("Failed to get IDXGIDevice1, HRESULT: 0x%08X", (unsigned)hr));
 	} else {
 		// TODO: ???
-		device1->SetMaximumFrameLatency(1);
+		device1->SetMaximumFrameLatency(2);
 	}
 #endif
 
@@ -1609,27 +1605,46 @@ void GLManagerNative_Windows::DxgiSwapChain::present(bool p_use_vsync) {
 #endif
 
 #ifdef OPENGL_DXGI_USE_FLIP_MODEL
-	if (p_use_vsync) {
-		hr = swap_chain->Present(1, 0);
-	} else {
-		hr = swap_chain->Present(0, supports_tearing ? DXGI_PRESENT_ALLOW_TEARING : 0);
-	}
-	DWORD wait = WaitForSingleObject(frame_latency_waitable_obj, 1000);
-	if (wait != WAIT_OBJECT_0) {
-		if (wait == WAIT_FAILED) {
-			DWORD error = GetLastError();
-			ERR_PRINT(vformat("Wait for frame latency waitable failed with error: 0x%08X", (unsigned)error));
-		} else {
-			ERR_PRINT(vformat("Wait for frame latency waitable failed, WaitForSingleObject returned 0x%08X", (unsigned)wait));
+	bool skip_present = false;
+	if (needs_wait) {
+		DWORD wait = WaitForSingleObject(frame_latency_waitable_obj, 0);
+		if (wait != WAIT_OBJECT_0) {
+			skip_present = true;
+			if (wait == WAIT_TIMEOUT) {
+				// Force a redraw so that we can present the latest frame
+				// for this window on the next redraw.
+				Main::force_redraw();
+			} else if (wait == WAIT_FAILED) {
+				DWORD error = GetLastError();
+				ERR_PRINT(vformat("Wait for frame latency waitable failed with error: 0x%08X", (unsigned)error));
+			} else {
+				ERR_PRINT(vformat("Wait for frame latency waitable failed, WaitForSingleObject returned 0x%08X", (unsigned)wait));
+			}
 		}
+	}
+	if (!skip_present) {
+		if (p_use_vsync) {
+			if (!needs_wait) {
+				hr = swap_chain->Present(1, 0);
+			} else {
+				// Not the main window, or not in the main loop (e.g. resizing).
+				hr = swap_chain->Present(0, 0);
+			}
+		} else {
+			hr = swap_chain->Present(0, supports_tearing ? DXGI_PRESENT_ALLOW_TEARING : 0);
+		}
+		if (!SUCCEEDED(hr)) {
+			ERR_PRINT(vformat("Present failed, HRESULT: 0x%08X", (unsigned)hr));
+		}
+		needs_wait = (frame_latency_waitable_obj != nullptr);
 	}
 #else
 	// TODO: vsync???
-	HRESULT hr = swap_chain->Present(p_use_vsync ? 1 : 0, 0);
-#endif
+	hr = swap_chain->Present(p_use_vsync ? 1 : 0, 0);
 	if (!SUCCEEDED(hr)) {
 		ERR_PRINT(vformat("Present failed, HRESULT: 0x%08X", (unsigned)hr));
 	}
+#endif
 
 #ifndef OPENGL_DXGI_USE_INTERMEDIATE_BUFFER
 	setup_render_target();
@@ -1676,6 +1691,37 @@ void GLManagerNative_Windows::DxgiSwapChain::resize_swap_chain(int p_width, int 
 
 void GLManagerNative_Windows::DxgiSwapChain::set_use_vsync(bool p_use) {
 	// TODO: ???
+}
+
+void GLManagerNative_Windows::wait_for_present(DisplayServer::WindowID p_window_id) {
+#ifdef OPENGL_DXGI_USE_FLIP_MODEL
+	GLWindow *win = nullptr;
+	if (RBMap<DisplayServer::WindowID, GLWindow>::Element *item = _windows.find(p_window_id)) {
+		win = &item->value();
+	} else if ((item = _windows.find(DisplayServer::MAIN_WINDOW_ID))) {
+		p_window_id = DisplayServer::MAIN_WINDOW_ID;
+		win = &item->value();
+	} else {
+#ifdef DEBUG_ENABLED
+		WARN_PRINT("Cannot wait for present when there are no valid windows.");
+#endif
+		return;
+	}
+
+	if (win->dxgi && win->dxgi->needs_wait) {
+		DWORD wait = WaitForSingleObject(win->dxgi->frame_latency_waitable_obj, 1000);
+		if (wait != WAIT_OBJECT_0) {
+			if (wait == WAIT_FAILED) {
+				DWORD error = GetLastError();
+				ERR_PRINT(vformat("Wait for frame latency waitable failed with error: 0x%08X", (unsigned)error));
+			} else {
+				ERR_PRINT(vformat("Wait for frame latency waitable failed, WaitForSingleObject returned 0x%08X", (unsigned)wait));
+			}
+		} else {
+			win->dxgi->needs_wait = false;
+		}
+	}
+#endif
 }
 
 #endif // OPENGL_ON_DXGI_ENABLED

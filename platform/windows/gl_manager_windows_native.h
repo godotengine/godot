@@ -100,6 +100,7 @@ public:
 
 	void release_current();
 	void swap_buffers();
+	void wait_for_present(DisplayServer::WindowID p_window_id);
 
 	void window_make_current(DisplayServer::WindowID p_window_id);
 

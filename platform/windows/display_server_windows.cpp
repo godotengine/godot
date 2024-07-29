@@ -3003,6 +3003,12 @@ String DisplayServerWindows::keyboard_get_layout_name(int p_index) const {
 void DisplayServerWindows::process_events() {
 	ERR_FAIL_COND(!Thread::is_main_thread());
 
+#if defined(GLES3_ENABLED)
+	if (gl_manager_native) {
+		gl_manager_native->wait_for_present(get_focused_window());
+	}
+#endif
+
 	if (!drop_events) {
 		joypad->process_joypads();
 	}
