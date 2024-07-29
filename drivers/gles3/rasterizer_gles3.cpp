@@ -107,7 +107,7 @@ void RasterizerGLES3::end_frame(bool p_swap_buffers) {
 	utils->capture_timestamps_end();
 }
 
-void RasterizerGLES3::end_viewport(bool p_swap_buffers) {
+void RasterizerGLES3::gl_end_frame(bool p_swap_buffers) {
 	if (p_swap_buffers) {
 		DisplayServer::get_singleton()->swap_buffers();
 	} else {
@@ -491,7 +491,7 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	copy_effects->copy_to_rect(screenrect);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	end_viewport(true);
+	gl_end_frame(true);
 
 	texture_storage->texture_free(texture);
 }

@@ -297,6 +297,7 @@ private:
 	Vector<String> placeholder_wraped_rows;
 
 	void _update_placeholder();
+	bool _using_placeholder() const;
 
 	/* Initialize to opposite first, so we get past the early-out in set_editable. */
 	bool editable = false;
