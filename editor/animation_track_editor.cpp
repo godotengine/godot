@@ -4767,6 +4767,11 @@ void AnimationTrackEditor::_animation_changed() {
 		return; // All will be updated, don't bother with anything.
 	}
 
+	AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
+	if (player != nullptr) {
+		player->advance(0.0); // Force an update to refresh the view.
+	}
+
 	_check_bezier_exist();
 
 	if (key_edit) {
