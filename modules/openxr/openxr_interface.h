@@ -184,6 +184,10 @@ public:
 
 	virtual RID get_color_texture() override;
 	virtual RID get_depth_texture() override;
+	virtual RID get_velocity_texture() override;
+	virtual RID get_motion_vectors_texture() override;
+	virtual RID get_motion_vectors_depth_texture() override;
+	virtual Size2i get_motion_vectors_target_size() override;
 
 	virtual void process() override;
 	virtual void pre_render() override;

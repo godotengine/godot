@@ -60,6 +60,7 @@ public:
 	virtual void *set_session_create_and_get_next_pointer(void *p_next_pointer) override;
 	virtual void *set_swapchain_create_info_and_get_next_pointer(void *p_next_pointer) override;
 	virtual void *set_hand_joint_locations_and_get_next_pointer(int p_hand_index, void *p_next_pointer) override;
+	virtual void *set_projection_views_and_get_next_pointer(int p_view_index, void *p_next_pointer) override;
 
 	virtual int get_composition_layer_count() override;
 	virtual XrCompositionLayerBaseHeader *get_composition_layer(int p_index) override;
@@ -71,6 +72,7 @@ public:
 	GDVIRTUAL1R(uint64_t, _set_session_create_and_get_next_pointer, GDExtensionPtr<void>);
 	GDVIRTUAL1R(uint64_t, _set_swapchain_create_info_and_get_next_pointer, GDExtensionPtr<void>);
 	GDVIRTUAL2R(uint64_t, _set_hand_joint_locations_and_get_next_pointer, int, GDExtensionPtr<void>);
+	GDVIRTUAL2R(uint64_t, _set_projection_views_and_get_next_pointer, int, GDExtensionPtr<void>);
 	GDVIRTUAL0R(int, _get_composition_layer_count);
 	GDVIRTUAL1R(uint64_t, _get_composition_layer, int);
 	GDVIRTUAL1R(int, _get_composition_layer_order, int);
@@ -88,6 +90,7 @@ public:
 	virtual void on_pre_render() override;
 	virtual void on_main_swapchains_created() override;
 	virtual void on_session_destroyed() override;
+	virtual void on_post_draw_viewport(RID p_render_target) override;
 
 	GDVIRTUAL0(_on_register_metadata);
 	GDVIRTUAL0(_on_before_instance_created);
@@ -98,6 +101,7 @@ public:
 	GDVIRTUAL0(_on_pre_render);
 	GDVIRTUAL0(_on_main_swapchains_created);
 	GDVIRTUAL0(_on_session_destroyed);
+	GDVIRTUAL1(_on_post_draw_viewport, RID);
 
 	virtual void on_state_idle() override;
 	virtual void on_state_ready() override;

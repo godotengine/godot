@@ -349,6 +349,12 @@ struct RenderTarget {
 	GLuint backbuffer = 0;
 	GLuint backbuffer_depth = 0;
 
+	GLuint motion_vector_fbo = 0;
+	RID motion_vector_texture;
+	RID motion_vector_depth_texture;
+	Size2i motion_vector_target_size = Size2i(0, 0);
+	RBMap<uint32_t, GLuint> motion_vector_fbo_cache;
+
 	bool hdr = false; // For Compatibility this effects both 2D and 3D rendering!
 	GLuint color_internal_format = GL_RGBA8;
 	GLuint color_format = GL_RGBA;
@@ -465,6 +471,8 @@ private:
 		CanvasSdfShaderGLES3 shader;
 		RID shader_version;
 	} sdf_shader;
+
+	int num_render_targets_with_motion_vectors = 0;
 
 public:
 	static TextureStorage *get_singleton();
@@ -691,6 +699,12 @@ public:
 	virtual RID render_target_get_override_velocity(RID p_render_target) const override;
 
 	virtual RID render_target_get_texture(RID p_render_target) override;
+
+	virtual void render_target_set_motion_vectors_target(RID p_render_target, RID p_motion_vectors_texture, RID p_depth_texture, Size2i p_size, int p_view_count) override;
+	virtual RID render_target_get_motion_vectors_texture(RID p_render_target) const override;
+	virtual RID render_target_get_motion_vectors_depth_texture(RID p_render_target) const override;
+	virtual Size2i render_target_get_motion_vectors_target_size(RID p_render_target) const override;
+	int get_num_render_targets_with_motion_vectors() const;
 
 	void bind_framebuffer(GLuint framebuffer) {
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
