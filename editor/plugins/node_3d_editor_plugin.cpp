@@ -1065,6 +1065,12 @@ void Node3DEditorViewport::_select_region() {
 		found_nodes.insert(sp);
 
 		Node *node = Object::cast_to<Node>(sp);
+
+		// Prevent selection of nodes that exist outside the current edited scene.
+		if (!edited_scene->is_ancestor_of(node)) {
+			continue;
+		}
+
 		if (node != edited_scene) {
 			node = edited_scene->get_deepest_editable_node(node);
 		}
