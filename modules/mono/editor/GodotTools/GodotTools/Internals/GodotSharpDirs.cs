@@ -2,8 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Godot;
 using Godot.NativeInterop;
-using GodotTools.Core;
-using static GodotTools.Internals.Globals;
 
 namespace GodotTools.Internals
 {
@@ -89,6 +87,7 @@ namespace GodotTools.Internals
         private static string? _projectAssemblyName;
         private static string? _projectSlnPath;
         private static string? _projectCsProjPath;
+        private static string? _projectAdditionalDefines;
 
         public static string ProjectAssemblyName
         {
@@ -127,6 +126,14 @@ namespace GodotTools.Internals
                 if (_projectCsProjPath == null)
                     DetermineProjectLocation();
                 return Path.Combine(Path.GetDirectoryName(_projectCsProjPath)!, ".godot", "mono", "temp", "bin");
+            }
+        }
+
+        public static string ProjectAdditionalDefines
+        {
+            get
+            {
+                return (string?)ProjectSettings.GetSetting("dotnet/project/additional_defines") ?? string.Empty;
             }
         }
 

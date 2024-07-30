@@ -78,7 +78,7 @@ namespace GodotTools
                 string csprojDir = Path.GetDirectoryName(GodotSharpDirs.ProjectCsProjPath)!;
                 string slnDir = Path.GetDirectoryName(GodotSharpDirs.ProjectSlnPath)!;
                 string name = GodotSharpDirs.ProjectAssemblyName;
-                string guid = CsProjOperations.GenerateGameProject(csprojDir, name);
+                string guid = CsProjOperations.GenerateGameProject(csprojDir, name, GodotSharpDirs.ProjectAdditionalDefines);
 
                 if (guid.Length > 0)
                 {
