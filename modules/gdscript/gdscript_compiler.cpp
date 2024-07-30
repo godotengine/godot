@@ -3078,9 +3078,9 @@ void GDScriptCompiler::convert_to_initializer_type(Variant &p_variant, const GDS
 	if (member_t.is_hard_type() && init_t.is_hard_type() &&
 			member_t.kind == GDScriptParser::DataType::BUILTIN && init_t.kind == GDScriptParser::DataType::BUILTIN) {
 		if (Variant::can_convert_strict(init_t.builtin_type, member_t.builtin_type)) {
-			Variant *v = &p_node->initializer->reduced_value;
+			const Variant *v = &p_node->initializer->reduced_value;
 			Callable::CallError ce;
-			Variant::construct(member_t.builtin_type, p_variant, const_cast<const Variant **>(&v), 1, ce);
+			Variant::construct(member_t.builtin_type, p_variant, &v, 1, ce);
 		}
 	}
 }
