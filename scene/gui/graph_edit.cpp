@@ -695,6 +695,10 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 		graph_element->disconnect("raise_request", callable_mp(this, &GraphEdit::_ensure_node_order_from));
 		graph_element->disconnect("resize_request", callable_mp(this, &GraphEdit::_graph_element_resize_request));
 
+		if (connections_layer != nullptr && connections_layer->is_inside_tree()) {
+			graph_element->disconnect(SceneStringName(item_rect_changed), callable_mp((CanvasItem *)connections_layer, &CanvasItem::queue_redraw));
+		}
+
 		// In case of the whole GraphEdit being destroyed these references can already be freed.
 		if (minimap != nullptr && minimap->is_inside_tree()) {
 			graph_element->disconnect(SceneStringName(item_rect_changed), callable_mp((CanvasItem *)minimap, &GraphEditMinimap::queue_redraw));
