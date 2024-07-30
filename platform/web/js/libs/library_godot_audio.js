@@ -858,7 +858,10 @@ class Bus {
 	 * @returns {void}
 	 */
 	setVolumeDb(val) {
-		this._gainNode.gain.value = GodotAudio.db_to_linear(val);
+		const linear = GodotAudio.db_to_linear(val);
+		if (isFinite(linear)) {
+			this._gainNode.gain.value = linear;
+		}
 	}
 
 	/**
