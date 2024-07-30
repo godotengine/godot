@@ -2002,7 +2002,7 @@ void Tree::update_column(int p_col) {
 	columns.write[p_col].cached_minimum_width_dirty = true;
 }
 
-void Tree::update_item_cell(TreeItem *p_item, int p_col) {
+void Tree::update_item_cell(TreeItem *p_item, int p_col) const {
 	String valtext;
 
 	p_item->cells.write[p_col].text_buf->clear();
@@ -2090,7 +2090,7 @@ void Tree::update_item_cell(TreeItem *p_item, int p_col) {
 	p_item->cells.write[p_col].dirty = false;
 }
 
-void Tree::update_item_cache(TreeItem *p_item) {
+void Tree::update_item_cache(TreeItem *p_item) const {
 	for (int i = 0; i < p_item->cells.size(); i++) {
 		update_item_cell(p_item, i);
 	}
@@ -2342,7 +2342,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			Color icon_col = p_item->cells[i].icon_color;
 
 			if (p_item->cells[i].dirty) {
-				const_cast<Tree *>(this)->update_item_cell(p_item, i);
+				update_item_cell(p_item, i);
 			}
 
 			if (rtl) {

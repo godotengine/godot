@@ -2329,7 +2329,7 @@ void VisualShaderEditor::_update_options_menu() {
 			if ((add_options[i].func != current_func && add_options[i].func != -1) || !_is_available(add_options[i].mode)) {
 				continue;
 			}
-			const_cast<AddOption &>(add_options[i]).temp_idx = i; // save valid id
+			add_options[i].temp_idx = i; // save valid id
 			if (add_options[i].is_custom) {
 				custom_options.push_back(add_options[i]);
 			} else {

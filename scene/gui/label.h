@@ -54,7 +54,7 @@ private:
 	bool clip = false;
 	String el_char = U"…";
 	TextServer::OverrunBehavior overrun_behavior = TextServer::OVERRUN_NO_TRIMMING;
-	Size2 minsize;
+	mutable Size2 minsize;
 	bool uppercase = false;
 
 	struct Paragraph {
@@ -66,11 +66,11 @@ private:
 		RID text_rid;
 		Vector<RID> lines_rid;
 	};
-	bool dirty = true;
-	bool font_dirty = true;
-	bool text_dirty = true;
-	Vector<Paragraph> paragraphs;
-	int total_line_count = 0;
+	mutable bool dirty = true;
+	mutable bool font_dirty = true;
+	mutable bool text_dirty = true;
+	mutable Vector<Paragraph> paragraphs;
+	mutable int total_line_count = 0;
 	String paragraph_separator = "\\n";
 
 	String language;
@@ -104,8 +104,8 @@ private:
 
 	Rect2 _get_line_rect(int p_para, int p_line) const;
 	void _ensure_shaped() const;
-	void _update_visible();
-	void _shape();
+	void _update_visible() const;
+	void _shape() const;
 	void _invalidate();
 
 protected:

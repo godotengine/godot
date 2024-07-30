@@ -4846,10 +4846,10 @@ double TextServerAdvanced::_shaped_text_fit_to_width(const RID &p_shaped, double
 
 	MutexLock lock(sd->mutex);
 	if (!sd->valid.is_set()) {
-		const_cast<TextServerAdvanced *>(this)->_shaped_text_shape(p_shaped);
+		_shaped_text_shape(p_shaped);
 	}
 	if (!sd->justification_ops_valid) {
-		const_cast<TextServerAdvanced *>(this)->_shaped_text_update_justification_ops(p_shaped);
+		_shaped_text_update_justification_ops(p_shaped);
 	}
 
 	sd->fit_width_minimum_reached = false;
@@ -5003,10 +5003,10 @@ double TextServerAdvanced::_shaped_text_tab_align(const RID &p_shaped, const Pac
 
 	MutexLock lock(sd->mutex);
 	if (!sd->valid.is_set()) {
-		const_cast<TextServerAdvanced *>(this)->_shaped_text_shape(p_shaped);
+		_shaped_text_shape(p_shaped);
 	}
 	if (!sd->line_breaks_valid) {
-		const_cast<TextServerAdvanced *>(this)->_shaped_text_update_breaks(p_shaped);
+		_shaped_text_update_breaks(p_shaped);
 	}
 
 	for (int i = 0; i < p_tab_stops.size(); i++) {
@@ -6596,7 +6596,7 @@ const Glyph *TextServerAdvanced::_shaped_text_sort_logical(const RID &p_shaped) 
 
 	MutexLock lock(sd->mutex);
 	if (!sd->valid.is_set()) {
-		const_cast<TextServerAdvanced *>(this)->_shaped_text_shape(p_shaped);
+		_shaped_text_shape(p_shaped);
 	}
 
 	if (!sd->sort_valid) {
