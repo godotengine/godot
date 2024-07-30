@@ -37,8 +37,10 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/math/geometry_2d.h"
+#ifdef TOOLS_ENABLED
 #include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
+#endif
 #include "servers/rendering/rendering_device_binds.h"
 
 #if defined(VULKAN_ENABLED)
@@ -849,6 +851,7 @@ Ref<Image> LightmapperRD::_read_pfm(const String &p_name) {
 	return img;
 }
 
+#ifdef TOOLS_ENABLED
 LightmapperRD::BakeError LightmapperRD::_denoise_oidn(RenderingDevice *p_rd, RID p_source_light_tex, RID p_source_normal_tex, RID p_dest_light_tex, const Size2i &p_atlas_size, int p_atlas_slices, bool p_bake_sh, const String &p_exe) {
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 
@@ -914,6 +917,7 @@ LightmapperRD::BakeError LightmapperRD::_denoise_oidn(RenderingDevice *p_rd, RID
 	}
 	return BAKE_OK;
 }
+#endif
 
 LightmapperRD::BakeError LightmapperRD::_denoise(RenderingDevice *p_rd, Ref<RDShaderFile> &p_compute_shader, const RID &p_compute_base_uniform_set, PushConstant &p_push_constant, RID p_source_light_tex, RID p_source_normal_tex, RID p_dest_light_tex, float p_denoiser_strength, int p_denoiser_range, const Size2i &p_atlas_size, int p_atlas_slices, bool p_bake_sh, BakeStepFunc p_step_function) {
 	RID denoise_params_buffer = p_rd->uniform_buffer_create(sizeof(DenoiseParams));
@@ -987,22 +991,29 @@ LightmapperRD::BakeError LightmapperRD::_denoise(RenderingDevice *p_rd, Ref<RDSh
 }
 
 LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_denoiser, float p_denoiser_strength, int p_denoiser_range, int p_bounces, float p_bounce_indirect_energy, float p_bias, int p_max_texture_size, bool p_bake_sh, bool p_texture_for_bounces, GenerateProbes p_generate_probes, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function, void *p_bake_userdata, float p_exposure_normalization) {
+#ifdef TOOLS_ENABLED
 	int denoiser = GLOBAL_GET("rendering/lightmapping/denoising/denoiser");
-	String oidn_path = EDITOR_GET("filesystem/tools/oidn/oidn_denoise_path");
 
-	if (p_use_denoiser && denoiser == 1) {
-		// OIDN (external).
-		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	// TODO: Implement oidnDenoise for non-editor
+	String oidn_path;
+	if (Engine::get_singleton()->is_editor_hint()) {
+		oidn_path = p_use_denoiser ? EDITOR_GET("filesystem/tools/oidn/oidn_denoise_path") : Variant();
 
-		if (da->dir_exists(oidn_path)) {
-			if (OS::get_singleton()->get_name() == "Windows") {
-				oidn_path = oidn_path.path_join("oidnDenoise.exe");
-			} else {
-				oidn_path = oidn_path.path_join("oidnDenoise");
+		if (p_use_denoiser && denoiser == 1) {
+			// OIDN (external).
+			Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+
+			if (da->dir_exists(oidn_path)) {
+				if (OS::get_singleton()->get_name() == "Windows") {
+					oidn_path = oidn_path.path_join("oidnDenoise.exe");
+				} else {
+					oidn_path = oidn_path.path_join("oidnDenoise");
+				}
 			}
+			ERR_FAIL_COND_V_MSG(oidn_path.is_empty() || !da->file_exists(oidn_path), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES, "OIDN denoiser is selected in the project settings, but no or invalid OIDN executable path is configured in the editor settings.");
 		}
-		ERR_FAIL_COND_V_MSG(oidn_path.is_empty() || !da->file_exists(oidn_path), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES, "OIDN denoiser is selected in the project settings, but no or invalid OIDN executable path is configured in the editor settings.");
 	}
+#endif
 
 	if (p_step_function) {
 		p_step_function(0.0, RTR("Begin Bake"), p_bake_userdata, true);
@@ -1797,6 +1808,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 		{
 			BakeError error;
+#ifdef TOOLS_ENABLED
 			if (denoiser == 1) {
 				// OIDN (external).
 				error = _denoise_oidn(rd, light_accum_tex, normal_tex, light_accum_tex, atlas_size, atlas_slices, p_bake_sh, oidn_path);
@@ -1805,6 +1817,10 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				SWAP(light_accum_tex, light_accum_tex2);
 				error = _denoise(rd, compute_shader, compute_base_uniform_set, push_constant, light_accum_tex2, normal_tex, light_accum_tex, p_denoiser_strength, p_denoiser_range, atlas_size, atlas_slices, p_bake_sh, p_step_function);
 			}
+#else
+			SWAP(light_accum_tex, light_accum_tex2);
+			error = _denoise(rd, compute_shader, compute_base_uniform_set, push_constant, light_accum_tex2, normal_tex, light_accum_tex, p_denoiser_strength, p_denoiser_range, atlas_size, atlas_slices, p_bake_sh, p_step_function);
+#endif
 			if (unlikely(error != BAKE_OK)) {
 				return error;
 			}
