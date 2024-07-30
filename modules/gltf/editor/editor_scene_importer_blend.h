@@ -45,6 +45,7 @@ class EditorSceneFormatImporterBlend : public EditorSceneFormatImporter {
 
 	int blender_major_version = -1;
 	int blender_minor_version = -1;
+	String last_tested_blender_path;
 
 public:
 	enum {
