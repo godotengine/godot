@@ -107,7 +107,7 @@ int Label::get_line_height(int p_line) const {
 	}
 }
 
-void Label::_shape() {
+void Label::_shape() const {
 	Ref<StyleBox> style = theme_cache.normal_style;
 	int width = (get_size().width - style->get_minimum_size().width);
 
@@ -326,11 +326,11 @@ void Label::_shape() {
 	_update_visible();
 
 	if (autowrap_mode == TextServer::AUTOWRAP_OFF || !clip || overrun_behavior == TextServer::OVERRUN_NO_TRIMMING) {
-		update_minimum_size();
+		const_cast<Label *>(this)->update_minimum_size();
 	}
 }
 
-void Label::_update_visible() {
+void Label::_update_visible() const {
 	int line_spacing = settings.is_valid() ? settings->get_line_spacing() : theme_cache.line_spacing;
 	int paragraph_spacing = settings.is_valid() ? settings->get_paragraph_spacing() : theme_cache.paragraph_spacing;
 	Ref<StyleBox> style = theme_cache.normal_style;
@@ -395,14 +395,15 @@ inline void draw_glyph_outline(const Glyph &p_gl, const RID &p_canvas, const Col
 
 void Label::_ensure_shaped() const {
 	if (dirty || font_dirty || text_dirty) {
-		const_cast<Label *>(this)->_shape();
-	} else
+		_shape();
+	} else {
 		for (const Paragraph &para : paragraphs) {
 			if (para.lines_dirty || para.dirty) {
-				const_cast<Label *>(this)->_shape();
+				_shape();
 				return;
 			}
 		}
+	}
 }
 
 RID Label::get_line_rid(int p_line) const {
