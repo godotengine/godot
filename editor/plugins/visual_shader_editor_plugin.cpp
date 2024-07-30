@@ -7724,7 +7724,7 @@ void VisualShaderNodePortPreview::_shader_changed() {
 			List<PropertyInfo> params;
 			src_mat->get_shader()->get_shader_uniform_list(&params);
 			for (const PropertyInfo &E : params) {
-				mat->set(E.name, src_mat->get(E.name));
+				mat->set_shader_parameter(E.name, src_mat->get_shader_parameter(E.name));
 			}
 		}
 	}
