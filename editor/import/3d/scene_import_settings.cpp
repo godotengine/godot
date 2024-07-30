@@ -1781,7 +1781,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 
 	{
 		mesh_preview = memnew(MeshInstance3D);
-		mesh_preview->set_custom_aabb(AABB(Vector3(-10000, -10000, -10000), Vector3(20000, 20000, 20000)));
+		RenderingServer::get_singleton()->instance_set_ignore_culling(mesh_preview->get_instance(), true);
 		base_viewport->add_child(mesh_preview);
 		mesh_preview->hide();
 
