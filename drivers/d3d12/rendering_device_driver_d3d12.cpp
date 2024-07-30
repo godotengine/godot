@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
+#include "main/main.h"
 #include "servers/rendering/rendering_device.h"
 #include "thirdparty/zlib/zlib.h"
 
@@ -2294,11 +2295,32 @@ Error RenderingDeviceDriverD3D12::command_queue_execute_and_present(CommandQueue
 	bool any_present_failed = false;
 	for (uint32_t i = 0; i < p_swap_chains.size(); i++) {
 		SwapChain *swap_chain = (SwapChain *)(p_swap_chains[i].id);
+		bool skip_present = false;
+		if (swap_chain->needs_wait) {
+			DWORD wait = WaitForSingleObject(swap_chain->frame_latency_waitable_obj, 0);
+			if (wait != WAIT_OBJECT_0) {
+				skip_present = true;
+				if (wait == WAIT_TIMEOUT) {
+					// Force a redraw so that we can present the latest frame
+					// for this swap chain on the next redraw.
+					Main::force_redraw();
+				} else if (wait == WAIT_FAILED) {
+					DWORD error = GetLastError();
+					ERR_PRINT(vformat("Wait for frame latency waitable failed with error: 0x%08X", (unsigned)error));
+				} else {
+					ERR_PRINT(vformat("Wait for frame latency waitable failed, WaitForSingleObject returned 0x%08X", (unsigned)wait));
+				}
+			}
+		}
+		if (skip_present) {
+			continue;
+		}
 		res = swap_chain->d3d_swap_chain->Present(swap_chain->sync_interval, swap_chain->present_flags);
 		if (!SUCCEEDED(res)) {
 			print_verbose(vformat("D3D12: Presenting swapchain failed with error 0x%08ux.", (uint64_t)res));
 			any_present_failed = true;
 		}
+		swap_chain->needs_wait = true;
 	}
 
 	return any_present_failed ? FAILED : OK;
@@ -2412,6 +2434,10 @@ void RenderingDeviceDriverD3D12::command_buffer_execute_secondary(CommandBufferI
 void RenderingDeviceDriverD3D12::_swap_chain_release(SwapChain *p_swap_chain) {
 	_swap_chain_release_buffers(p_swap_chain);
 
+	CloseHandle(p_swap_chain->frame_latency_waitable_obj);
+	p_swap_chain->frame_latency_waitable_obj = nullptr;
+	p_swap_chain->needs_wait = false;
+
 	p_swap_chain->d3d_swap_chain.Reset();
 }
 
@@ -2493,6 +2519,8 @@ Error RenderingDeviceDriverD3D12::swap_chain_resize(CommandQueueID p_cmd_queue, 
 			break;
 	}
 
+	creation_flags |= DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT;
+
 	print_verbose("Using swap chain flags: " + itos(creation_flags) + ", sync interval: " + itos(sync_interval) + ", present flags: " + itos(present_flags));
 
 	if (swap_chain->d3d_swap_chain != nullptr && creation_flags != swap_chain->creation_flags) {
@@ -2535,6 +2563,9 @@ Error RenderingDeviceDriverD3D12::swap_chain_resize(CommandQueueID p_cmd_queue, 
 
 		res = context_driver->dxgi_factory_get()->MakeWindowAssociation(surface->hwnd, DXGI_MWA_NO_ALT_ENTER | DXGI_MWA_NO_WINDOW_CHANGES);
 		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
+
+		swap_chain->frame_latency_waitable_obj = swap_chain->d3d_swap_chain->GetFrameLatencyWaitableObject();
+		swap_chain->needs_wait = true;
 	}
 
 	res = swap_chain->d3d_swap_chain->GetDesc1(&swap_chain_desc);
@@ -2554,6 +2585,8 @@ Error RenderingDeviceDriverD3D12::swap_chain_resize(CommandQueueID p_cmd_queue, 
 	swap_chain->render_targets.reserve(swap_chain_desc.BufferCount);
 	swap_chain->render_targets_info.reserve(swap_chain_desc.BufferCount);
 	swap_chain->framebuffers.reserve(swap_chain_desc.BufferCount);
+
+	swap_chain->d3d_swap_chain->SetMaximumFrameLatency(swap_chain_desc.BufferCount - 1);
 
 	for (uint32_t i = 0; i < swap_chain_desc.BufferCount; i++) {
 		// Retrieve the resource corresponding to the swap chain's buffer.
@@ -2621,6 +2654,24 @@ void RenderingDeviceDriverD3D12::swap_chain_free(SwapChainID p_swap_chain) {
 	_swap_chain_release(swap_chain);
 	render_pass_free(swap_chain->render_pass);
 	memdelete(swap_chain);
+}
+
+void RenderingDeviceDriverD3D12::wait_for_present(SwapChainID p_swap_chain) {
+	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
+
+	if (swap_chain->needs_wait) {
+		DWORD wait = WaitForSingleObject(swap_chain->frame_latency_waitable_obj, 1000);
+		if (wait != WAIT_OBJECT_0) {
+			if (wait == WAIT_FAILED) {
+				DWORD error = GetLastError();
+				ERR_PRINT(vformat("Wait for frame latency waitable failed with error: 0x%08X", (unsigned)error));
+			} else {
+				ERR_PRINT(vformat("Wait for frame latency waitable failed, WaitForSingleObject returned 0x%08X", (unsigned)wait));
+			}
+		} else {
+			swap_chain->needs_wait = false;
+		}
+	}
 }
 
 /*********************/

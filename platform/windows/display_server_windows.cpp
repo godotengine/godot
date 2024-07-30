@@ -3003,6 +3003,12 @@ String DisplayServerWindows::keyboard_get_layout_name(int p_index) const {
 void DisplayServerWindows::process_events() {
 	ERR_FAIL_COND(!Thread::is_main_thread());
 
+#ifdef RD_ENABLED
+	if (rendering_device) {
+		rendering_device->screen_wait_for_present(get_focused_window() == INVALID_WINDOW_ID ? MAIN_WINDOW_ID : get_focused_window());
+	}
+#endif
+
 	if (!drop_events) {
 		joypad->process_joypads();
 	}

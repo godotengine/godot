@@ -1054,6 +1054,7 @@ public:
 	int screen_get_height(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID) const;
 	FramebufferFormatID screen_get_framebuffer_format(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID) const;
 	Error screen_free(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID);
+	void screen_wait_for_present(DisplayServer::WindowID p_screen);
 
 	/*************************/
 	/**** DRAW LISTS (II) ****/
