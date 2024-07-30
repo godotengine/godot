@@ -4761,6 +4761,15 @@ bool ShaderLanguage::_validate_assign(Node *p_node, const FunctionInfo &p_functi
 	return false;
 }
 
+ShaderLanguage::ShaderNode::Uniform::Hint ShaderLanguage::_sanitize_hint(ShaderNode::Uniform::Hint p_hint) {
+	if (p_hint == ShaderNode::Uniform::HINT_SCREEN_TEXTURE ||
+			p_hint == ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE ||
+			p_hint == ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
+		return p_hint;
+	}
+	return ShaderNode::Uniform::HINT_NONE;
+}
+
 bool ShaderLanguage::_propagate_function_call_sampler_uniform_settings(const StringName &p_name, int p_argument, TextureFilter p_filter, TextureRepeat p_repeat, ShaderNode::Uniform::Hint p_hint) {
 	for (int i = 0; i < shader->vfunctions.size(); i++) {
 		if (shader->vfunctions[i].name == p_name) {
@@ -4771,7 +4780,7 @@ bool ShaderLanguage::_propagate_function_call_sampler_uniform_settings(const Str
 				return false;
 			} else if (arg->tex_argument_check) {
 				// Was checked, verify that filter, repeat, and hint are the same.
-				if (arg->tex_argument_filter == p_filter && arg->tex_argument_repeat == p_repeat && arg->tex_hint == p_hint) {
+				if (arg->tex_argument_filter == p_filter && arg->tex_argument_repeat == p_repeat && arg->tex_hint == _sanitize_hint(p_hint)) {
 					return true;
 				} else {
 					_set_error(vformat(RTR("Sampler argument %d of function '%s' called more than once using textures that differ in either filter, repeat, or texture hint setting."), p_argument, String(p_name)));
@@ -4781,7 +4790,7 @@ bool ShaderLanguage::_propagate_function_call_sampler_uniform_settings(const Str
 				arg->tex_argument_check = true;
 				arg->tex_argument_filter = p_filter;
 				arg->tex_argument_repeat = p_repeat;
-				arg->tex_hint = p_hint;
+				arg->tex_hint = _sanitize_hint(p_hint);
 				for (KeyValue<StringName, HashSet<int>> &E : arg->tex_argument_connect) {
 					for (const int &F : E.value) {
 						if (!_propagate_function_call_sampler_uniform_settings(E.key, F, p_filter, p_repeat, p_hint)) {
