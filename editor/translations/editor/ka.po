@@ -2975,9 +2975,6 @@ msgstr "ყველა ძვლის პოზის დაბრუნებ
 msgid "Reset Selected Poses"
 msgstr "მონიშნული პოზების დაბრუნება"
 
-msgid "Insert key of all bone poses."
-msgstr "ყველა ძვლს პოზის გასაღების ჩასმა."
-
 msgid "Can't convert an empty sprite to mesh."
 msgstr "ცარიელი სპრაიტის ბადეში გადაყვანა შეუძლებელია."
 

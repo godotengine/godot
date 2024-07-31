@@ -53,13 +53,14 @@
 # Chang-Chia Tseng <pswo10680@gmail.com>, 2024.
 # hugoalh <hugoalh@users.noreply.hosted.weblate.org>, 2024.
 # gecko322 chen <cabyzzit@gmail.com>, 2024.
+# Ricky From Hong Kong <lamricky11@hotmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-21 13:00+0000\n"
-"Last-Translator: gecko322 chen <cabyzzit@gmail.com>\n"
+"PO-Revision-Date: 2024-07-25 01:09+0000\n"
+"Last-Translator: Ricky From Hong Kong <lamricky11@hotmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -2137,6 +2138,9 @@ msgstr "建立新匯流排配置。"
 msgid "Audio Bus Layout"
 msgstr "音訊匯流排佈局"
 
+msgid "Cannot begin with a digit."
+msgstr "不能以數字開頭。"
+
 msgid "Valid characters:"
 msgstr "有效字元："
 
@@ -3036,6 +3040,9 @@ msgstr "編輯器視窗重新繪製時旋轉。"
 msgid "OK"
 msgstr "好"
 
+msgid "Error saving resource!"
+msgstr "保存資料發生錯誤！"
+
 msgid ""
 "This resource can't be saved because it does not belong to the edited scene. "
 "Make it unique first."
@@ -3048,6 +3055,9 @@ msgstr "由於該資源已從別的檔案導入，無法儲存該資源。請先
 
 msgid "Save Resource As..."
 msgstr "另存資源為..."
+
+msgid "Error while parsing file '%s'."
+msgstr "無法解析檔案：%s。"
 
 msgid "Saving Scene"
 msgstr "正在保存場景"
@@ -3072,6 +3082,9 @@ msgstr "與現有的合併"
 
 msgid "Apply MeshInstance Transforms"
 msgstr "套用MeshInstance變換"
+
+msgid "Error saving MeshLibrary!"
+msgstr "儲存網格庫出錯！"
 
 msgid ""
 "An error occurred while trying to save the editor layout.\n"
@@ -9106,12 +9119,6 @@ msgstr ""
 "編輯模式\n"
 "在關節上顯示按鈕。"
 
-msgid "Insert key of bone poses already exist track."
-msgstr "插入骨骼姿勢的關鍵影格已經存在軌道。"
-
-msgid "Insert key of all bone poses."
-msgstr "插入所有骨骼姿勢的關鍵影格。"
-
 msgid "Insert Key (All Bones)"
 msgstr "插入關鍵影格（所有骨骼）"
 
@@ -12956,21 +12963,8 @@ msgstr "匯出設定："
 msgid "glTF 2.0 Scene..."
 msgstr "glTF 2.0 場景..."
 
-msgid "Path to Blender installation is valid (Autodetected)."
-msgstr "Blender 安裝路徑有效（已自動偵測）。"
-
-msgid "Path to Blender installation is valid."
-msgstr "至 Blender 安裝的路徑有效。"
-
 msgid "Configure Blender Importer"
 msgstr "設定 Blender 匯入工具"
-
-msgid ""
-"Blender 3.0+ is required to import '.blend' files.\n"
-"Please provide a valid path to a Blender installation:"
-msgstr ""
-"需要 Blender 3.0+ 來匯入 '.blend' 檔案。\n"
-"請提供一個有效的 Blender 安裝路徑："
 
 msgid "Disable '.blend' Import"
 msgstr "停用 '.blend' 匯入"
@@ -14996,11 +14990,6 @@ msgstr ""
 "法（請在其中選擇一種使用）。"
 
 msgid ""
-"Sampler argument %d of function '%s' called more than once using textures "
-"that differ in either filter or repeat setting."
-msgstr "採樣器參數%d：函數”%s“有多次被呼叫，所使用紋理的過濾或重複設定不同。"
-
-msgid ""
 "Sampler argument %d of function '%s' called more than once using different "
 "built-ins. Only calling with the same built-in is supported."
 msgstr ""
@@ -15048,10 +15037,6 @@ msgstr "預期為函數名稱。"
 
 msgid "No matching function found for: '%s'."
 msgstr "未找到符合的函式：「%s」。"
-
-msgid ""
-"Varying '%s' must be assigned in the 'vertex' or 'fragment' function first."
-msgstr "Varying”%s“必須先在”vertex“或”fragment“函數中賦值。"
 
 msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr "Varying變數'%s'不可在「%s」函式中作為參數傳遞。"

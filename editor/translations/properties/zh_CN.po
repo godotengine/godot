@@ -97,7 +97,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2024-06-15 12:09+0000\n"
+"PO-Revision-Date: 2024-07-23 03:39+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-properties/zh_Hans/>\n"
@@ -106,7 +106,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.6-dev\n"
+"X-Generator: Weblate 5.7-dev\n"
 
 msgid "Application"
 msgstr "应用"
@@ -246,6 +246,9 @@ msgstr "默认总线布局"
 msgid "General"
 msgstr "常规"
 
+msgid "Default Playback Type"
+msgstr "默认回放类型"
+
 msgid "Text to Speech"
 msgstr "文本转语音"
 
@@ -314,6 +317,9 @@ msgstr "分析器"
 
 msgid "Max Functions"
 msgstr "最大函数数"
+
+msgid "Max Timestamp Query Elements"
+msgstr "最大时间戳查询元素数"
 
 msgid "Compression"
 msgstr "压缩"
@@ -1392,6 +1398,15 @@ msgstr "选择节点时停留在脚本编辑器"
 msgid "Open Script When Connecting Signal to Existing Method"
 msgstr "连接信号至已有方法时打开脚本"
 
+msgid "Use Default Word Separators"
+msgstr "使用默认分词符"
+
+msgid "Use Custom Word Separators"
+msgstr "使用自定义分词符"
+
+msgid "Custom Word Separators"
+msgstr "自定义分词符"
+
 msgid "Indent"
 msgstr "缩进"
 
@@ -1691,6 +1706,9 @@ msgstr "自动烘焙延时"
 
 msgid "Autorename Animation Tracks"
 msgstr "自动重命名动画轨道"
+
+msgid "Confirm Insert Track"
+msgstr "插入轨道确认"
 
 msgid "Default Create Bezier Tracks"
 msgstr "默认创建贝塞尔轨道"
@@ -4330,6 +4348,9 @@ msgstr "仅导出项目"
 msgid "Delete Old Export Files Unconditionally"
 msgstr "无条件删除旧导出文件"
 
+msgid "Generate Simulator Library If Missing"
+msgstr "缺失时生成模拟器库"
+
 msgid "Capabilities"
 msgstr "能力"
 
@@ -4809,6 +4830,9 @@ msgstr "总线"
 
 msgid "Area Mask"
 msgstr "区域遮罩"
+
+msgid "Playback Type"
+msgstr "回放类型"
 
 msgid "Copy Mode"
 msgstr "复制模式"
@@ -6488,6 +6512,12 @@ msgstr "修改器"
 
 msgid "Callback Mode Process"
 msgstr "回调模式处理"
+
+msgid "Deprecated"
+msgstr "已弃用"
+
+msgid "Animate Physical Bones"
+msgstr "动画物理骨骼"
 
 msgid "Root Bone"
 msgstr "根骨骼"

@@ -115,7 +115,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-16 19:57+0000\n"
+"PO-Revision-Date: 2024-07-30 16:40+0000\n"
 "Last-Translator: Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
@@ -1614,7 +1614,7 @@ msgid "Copy Node Path"
 msgstr "Düğüm Yolunu Kopyala"
 
 msgid "Instance:"
-msgstr "Örnek:"
+msgstr "Örnekleme:"
 
 msgid ""
 "This node has been instantiated from a PackedScene file:\n"
@@ -3589,6 +3589,13 @@ msgid "%s no longer exists! Please specify a new save location."
 msgstr "%s artık mevcut değil! Lütfen yeni bir kaydetme konumu belirtin."
 
 msgid ""
+"The current scene has no root node, but %d modified external resource(s) and/"
+"or plugin data were saved anyway."
+msgstr ""
+"Geçerli sahnede hiç kök düğüm yok, ancak yine de %d değiştirilmiş harici "
+"kaynak(lar) ve/veya eklenti verileri kaydedildi."
+
+msgid ""
 "A root node is required to save the scene. You can add a root node using the "
 "Scene tree dock."
 msgstr ""
@@ -4428,6 +4435,9 @@ msgstr "Projeyi Çalıştır"
 
 msgid "Write your logic in the _run() method."
 msgstr "Mantığınızı _run() yöntemine yazın."
+
+msgid "The current scene already has a root node."
+msgstr "Geçerli sahnenin zaten bir kök düğümü var."
 
 msgid "Edit Built-in Action: %s"
 msgstr "Yerleşik Eylemi Düzenle: %s"
@@ -5798,11 +5808,11 @@ msgid ""
 msgstr ""
 "Movie Maker modu etkinleştirildi ancak hiçbir film dosyası yolu "
 "belirtilmedi.\n"
-"Editör > Film Yazarı kategorisi altındaki proje ayarlarında varsayılan bir "
-"film dosyası yolu belirtilebilir.\n"
-"Alternatif olarak, tek sahneleri çalıştırmak için kök düğüme bir "
-"\"movie_file\" dizesi meta verisi eklenebilir,\n"
-"o sahneyi kaydederken kullanılacak film dosyasının yolunu belirterek."
+"Varsayılan bir film dosyası yolu, proje ayarlarındaki Düzenleyici > Film "
+"Yazarı kategorisi altından belirtilebilir.\n"
+"Alternatif olarak kök düğüme, tek sahneleri çalıştırmak için, ilgili sahneyi "
+"kaydederken kullanılacak film dosyasının\n"
+"yolunu belirten bir \"movie_file\" meta veri dizesi eklenebilir."
 
 msgid "Could not start subprocess(es)!"
 msgstr "Alt-işlem(ler) başlatılamadı!"
@@ -6532,6 +6542,15 @@ msgstr "Varsayılan Olmayan'ı Genişlet"
 
 msgid "Property Name Style"
 msgstr "Özellik İsmi Tarzı"
+
+msgid "Raw (e.g. \"%s\")"
+msgstr "Ham (örn. \"%s\")"
+
+msgid "Capitalized (e.g. \"%s\")"
+msgstr "Büyük Harfe Çevrilmiş (örn. \"%s\")"
+
+msgid "Localized (e.g. \"Z Index\")"
+msgstr "Yerelleştirilmiş (örn. \"Z İndeksi\")"
 
 msgid "Localization not available for current language."
 msgstr "Geçerli dil için yerelleştirme mevcut değil."
@@ -7696,10 +7715,10 @@ msgid "Drag: Rotate selected node around pivot."
 msgstr "Sürükleme: Seçili düğümü eksen etrafında döndürür."
 
 msgid "Alt+Drag: Move selected node."
-msgstr "Alt+Sürükle: Seçili düğümü taşıyın."
+msgstr "Alt+Sürükle: Seçili düğümü taşı."
 
 msgid "Alt+Drag: Scale selected node."
-msgstr "Alt+Sürükle: Seçilen düğümü ölçeklendirir."
+msgstr "Alt+Sürükle: Seçilen düğümü ölçeklendir."
 
 msgid "V: Set selected node's pivot position."
 msgstr "V: Seçilen düğümün eksen konumunu ayarlar."
@@ -7728,10 +7747,10 @@ msgid "Show list of selectable nodes at position clicked."
 msgstr "Tıklanan konumdaki, seçilebilir düğümlerin listesini göster."
 
 msgid "Click to change object's rotation pivot."
-msgstr "Nesnenin dönüş pivotunu değiştirmek için tıklayın."
+msgstr "Nesnenin dönüş eksenini değiştirmek için tıklayın."
 
 msgid "Shift: Set temporary rotation pivot."
-msgstr "Shift: Geçici dönüş pivotunu ayarlayın."
+msgstr "Shift: Geçici dönüş eksenini ayarlayın."
 
 msgid ""
 "Click this button while holding Shift to put the rotation pivot in the center "
@@ -7992,6 +8011,13 @@ msgstr ""
 
 msgid "Change Default Type"
 msgstr "Varsayılan Türü Değiştir"
+
+msgid ""
+"All selected CanvasItems are either invisible or locked in some way and can't "
+"be transformed."
+msgstr ""
+"Seçilen tüm CanvasItems öğeleri ya görünmez ya da bir şekilde kilitlenmiş "
+"durumdadır ve dönüştürülemez."
 
 msgid "Set Target Position"
 msgstr "Hedef Konumu Ayarla"
@@ -8707,6 +8733,13 @@ msgstr ""
 "Işık haritası görüntüleri oluşturulamadı. Pişirme için seçilen tüm örgülerin "
 "`lightmap_size_hint` değerinin yeterince yüksek ayarlandığından, ve "
 "LightmapGI'nin `texel_scale` değerinin çok düşük olmadığından emin olun."
+
+msgid ""
+"Failed fitting a lightmap image into an atlas. This should never happen and "
+"should be reported."
+msgstr ""
+"Bir ışık haritası görüntüsünün atlasa sığdırılması başarısız oldu. Bunun asla "
+"olmaması gerekirdi ve rapor edilmelidir."
 
 msgid "Bake Lightmaps"
 msgstr "Işık-Haritalarını Pişir"
@@ -10670,12 +10703,6 @@ msgid ""
 msgstr ""
 "Düzenleme Kipi\n"
 "Eklemlerdeki düğmeleri göster."
-
-msgid "Insert key of bone poses already exist track."
-msgstr "İzde mevcut kemik duruşlarının anahtarını ekle."
-
-msgid "Insert key of all bone poses."
-msgstr "Tüm kemik duruşlarınn anahtarını ekle."
 
 msgid "Insert Key (All Bones)"
 msgstr "Anahtar Ekle (Tüm Kemikler)"
@@ -12984,6 +13011,13 @@ msgstr ""
 "vektörü döndürür."
 
 msgid ""
+"Returns an associated 4D vector if the provided boolean value is true or "
+"false."
+msgstr ""
+"Verilen mantıksal değerin doğru ya da yanlış olmasına göre, bağlantılı 4D "
+"vektörü döndürür."
+
+msgid ""
 "Returns an associated boolean if the provided boolean value is true or false."
 msgstr ""
 "Verilen mantıksal değerin doğru ya da yanlış olmasına göre, bağlantılı "
@@ -13553,6 +13587,13 @@ msgstr ""
 msgid "Remaps a given input from the input range to the output range."
 msgstr ""
 "Verilen bir girişi, giriş aralığından çıkış aralığına yeniden haritalar."
+
+msgid ""
+"Builds a rotation matrix from the given axis and angle, multiply the input "
+"vector by it and returns both this vector and a matrix."
+msgstr ""
+"Verilen eksen ve açıdan bir döndürme matrisi oluşturur, giriş vektörünü "
+"bununla çarpar ve hem bu vektörü hem de bir matris döndürür."
 
 msgid "Vector function."
 msgstr "Vektör fonksiyonu."
@@ -14406,6 +14447,9 @@ msgstr "Ekran Ölçeği"
 
 msgid "Network Mode"
 msgstr "Ağ Kipi"
+
+msgid "Directory Naming Convention"
+msgstr "Dizin Adlandırma Kuralı"
 
 msgid ""
 "Settings changed! The project manager must be restarted for changes to take "
@@ -15401,36 +15445,8 @@ msgstr "Dışa Aktarma Ayarları:"
 msgid "glTF 2.0 Scene..."
 msgstr "glTF 2.0 Sahnesi..."
 
-msgid "Path does not contain a Blender installation."
-msgstr "Yol, bir Blender kurulumu içermiyor."
-
-msgid "Can't execute Blender binary."
-msgstr "Blender ikili dosyası çalıştırılamıyor."
-
-msgid "Unexpected --version output from Blender binary at: %s."
-msgstr "Blender çalıştırılabilir dosyasından beklenmeyen --version çıktısı: %s."
-
-msgid "Path supplied lacks a Blender binary."
-msgstr "Verilen yol bir Blender ikili dosyası içermiyor."
-
-msgid "This Blender installation is too old for this importer (not 3.0+)."
-msgstr "Bu Blender kurulumu, bu içe aktarıcı için çok eski (3.0+ değil)."
-
-msgid "Path to Blender installation is valid (Autodetected)."
-msgstr "Blender kurulumunun yolu geçerlidir (Otomatik algılandı)."
-
-msgid "Path to Blender installation is valid."
-msgstr "Blender kurulumunun yolu geçerlidir."
-
 msgid "Configure Blender Importer"
 msgstr "Blender İçe Aktarıcıyı Yapılandır"
-
-msgid ""
-"Blender 3.0+ is required to import '.blend' files.\n"
-"Please provide a valid path to a Blender installation:"
-msgstr ""
-"'.blend' dosyalarını içe aktarmak için Blender 3.0+ gereklidir.\n"
-"Lütfen bir Blender kurulumu için geçerli bir yol verin:"
 
 msgid "Disable '.blend' Import"
 msgstr "'.blend' İçe Aktarmayı Devre Dışı Bırak"
@@ -16471,6 +16487,12 @@ msgstr ""
 "İstenilen şablon dosyası, \"%s\", bulunamadı. Şablon arşivinizde eksik "
 "olabilir."
 
+msgid "ARM64 simulator library, generating from device library."
+msgstr "ARM64 simülatör kütüphanesi, cihaz kütüphanesinden üretiliyor."
+
+msgid "Unable to generate ARM64 simulator library."
+msgstr "ARM64 simülatör kütüphanesi üretilemiyor."
+
 msgid "Could not copy a file at path \"%s\" to \"%s\"."
 msgstr "\"%s\" yolundaki bir dosya \"%s\" konumuna kopyalanamadı."
 
@@ -17098,6 +17120,13 @@ msgstr "Uzak Windows sisteminde çalıştır"
 
 msgid "Run exported project on remote Windows system"
 msgstr "Dışa aktarılan projeyi uzak Windows sisteminde çalıştır"
+
+msgid ""
+"A SpriteFrames resource must be created or set in the \"Sprite Frames\" "
+"property in order for AnimatedSprite2D to display frames."
+msgstr ""
+"AnimatedSprite2D'nin kareleri görüntüleyebilmesi için, bir SpriteFrames "
+"kaynağı oluşturulmalı veya \"Sprite Frames\" özelliğinde ayarlanmalıdır."
 
 msgid ""
 "Only one visible CanvasModulate is allowed per canvas.\n"
@@ -17799,6 +17828,13 @@ msgid "This body will be ignored until you set a mesh."
 msgstr "Bu cisim, siz bir örgü ayarlayana kadar yok sayılır."
 
 msgid ""
+"A SpriteFrames resource must be created or set in the \"Sprite Frames\" "
+"property in order for AnimatedSprite3D to display frames."
+msgstr ""
+"AnimatedSprite3D'nin kareleri görüntüleyebilmesi için bir SpriteFrames "
+"kaynağı oluşturulmalı veya \"Sprite Frames\" özelliğinde ayarlanmalıdır."
+
+msgid ""
 "The GeometryInstance3D visibility range's End distance is set to a non-zero "
 "value, but is lower than the Begin distance.\n"
 "This means the GeometryInstance3D will never be visible.\n"
@@ -18279,6 +18315,16 @@ msgstr ""
 "'Fragment' fonksiyonunda atanmış değişenler, 'vertex' veya 'light' "
 "fonksiyonunda yeniden atanamaz."
 
+msgid "'%s' cannot be used within the '%s' processor function."
+msgstr "'%s', '%s' işlemci fonksiyonu içerisinde kullanılamaz."
+
+msgid ""
+"'%s' cannot be used here, because '%s' is called by the '%s' processor "
+"function (which is not allowed)."
+msgstr ""
+"'%s' burada kullanılamaz, çünkü '%s', '%s' işlemci fonksiyonu tarafından "
+"çağrılıyor (buna izin verilmez)."
+
 msgid "Assignment to function."
 msgstr "Fonksiyona atama."
 
@@ -18298,14 +18344,6 @@ msgstr ""
 "%d örnekleyici girdi değişkeni ('%s' fonksiyonu içinde), hem yerleşik hem de "
 "düzenli dokular kullanılarak birden fazla kez çağrıldı, ama bu desteklenmiyor "
 "(ya birini veya diğerini kullanın)."
-
-msgid ""
-"Sampler argument %d of function '%s' called more than once using textures "
-"that differ in either filter or repeat setting."
-msgstr ""
-"%d örnekleyici girdi değişkeni ('%s' fonksiyonunda), ya filtre veya "
-"tekrarlama ayarında olandan farklı dokular kullanılarak birden fazla kez "
-"çağrıldı."
 
 msgid ""
 "Sampler argument %d of function '%s' called more than once using different "
@@ -18351,17 +18389,14 @@ msgstr "Tip isminden sonra '(' bekleniyordu."
 msgid "No matching constructor found for: '%s'."
 msgstr "Şununla eşleşen yapıcı yöntem bulunamadı: '%s'."
 
+msgid "Built-in function '%s' is not supported for the '%s' shader type."
+msgstr "Yerleşik '%s' fonksiyonu, '%s' gölgelendirici türü için desteklenmiyor."
+
 msgid "Expected a function name."
 msgstr "Bir fonksiyon ismi bekleniyordu."
 
 msgid "No matching function found for: '%s'."
 msgstr "Şununla eşleşen fonksiyon bulunamadı: '%s'."
-
-msgid ""
-"Varying '%s' must be assigned in the 'vertex' or 'fragment' function first."
-msgstr ""
-"'%s' Değişeni, ilk olarak köşe (vertex) veya parça (fragment) fonksiyonunda "
-"atanmalıdır."
 
 msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr "'%s' Değişeni, ilgili bağlamda '%s' alınan değişkenine geçirilemez."
