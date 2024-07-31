@@ -124,8 +124,8 @@ void WSLPeer::Resolver::try_next_candidate(Ref<StreamPeerTCP> &p_tcp) {
 /// Server functions
 ///
 Error WSLPeer::accept_stream(Ref<StreamPeer> p_stream) {
-	ERR_FAIL_COND_V(wsl_ctx || tcp.is_valid(), ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(p_stream.is_null(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(ready_state != STATE_CLOSED && ready_state != STATE_CLOSING, ERR_ALREADY_IN_USE);
 
 	_clear();
 
@@ -472,9 +472,9 @@ bool WSLPeer::_verify_server_response() {
 }
 
 Error WSLPeer::connect_to_url(const String &p_url, Ref<TLSOptions> p_options) {
-	ERR_FAIL_COND_V(wsl_ctx || tcp.is_valid(), ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(p_url.is_empty(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_options.is_valid() && p_options->is_server(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(ready_state != STATE_CLOSED && ready_state != STATE_CLOSING, ERR_ALREADY_IN_USE);
 
 	_clear();
 
