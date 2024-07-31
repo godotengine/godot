@@ -97,7 +97,6 @@ public:
 	static void get_global_class_list(List<StringName> *r_global_classes);
 	static void get_inheriters_list(const StringName &p_base_type, List<StringName> *r_classes);
 	static void save_global_classes();
-	static String get_global_class_cache_file_path();
 
 	static void init_languages();
 	static void finish_languages();
