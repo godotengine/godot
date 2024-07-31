@@ -32,7 +32,9 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
+#include "main/main.h"
 #include "thirdparty/misc/smolv.h"
+#include "vk_enum_string_helper.h"
 #include "vulkan_hooks.h"
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
@@ -497,6 +499,8 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	_register_requested_device_extension(VK_KHR_MAINTENANCE_2_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_EXT_PIPELINE_CREATION_CACHE_CONTROL_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_EXT_SUBGROUP_SIZE_CONTROL_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_PRESENT_ID_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_PRESENT_WAIT_EXTENSION_NAME, false);
 
 	if (Engine::get_singleton()->is_generate_spirv_debug_info_enabled()) {
 		_register_requested_device_extension(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME, true);
@@ -667,6 +671,8 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 		VkPhysicalDevice16BitStorageFeaturesKHR storage_feature = {};
 		VkPhysicalDeviceMultiviewFeatures multiview_features = {};
 		VkPhysicalDevicePipelineCreationCacheControlFeatures pipeline_cache_control_features = {};
+		VkPhysicalDevicePresentIdFeaturesKHR present_id_features = {};
+		VkPhysicalDevicePresentWaitFeaturesKHR present_wait_features = {};
 
 		const bool use_1_2_features = physical_device_properties.apiVersion >= VK_API_VERSION_1_2;
 		if (use_1_2_features) {
@@ -701,6 +707,16 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 			pipeline_cache_control_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CREATION_CACHE_CONTROL_FEATURES;
 			pipeline_cache_control_features.pNext = next_features;
 			next_features = &pipeline_cache_control_features;
+		}
+
+		if (enabled_device_extension_names.has(VK_KHR_PRESENT_WAIT_EXTENSION_NAME)) {
+			present_id_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_ID_FEATURES_KHR;
+			present_id_features.pNext = next_features;
+			next_features = &present_id_features;
+
+			present_wait_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_WAIT_FEATURES_KHR;
+			present_wait_features.pNext = next_features;
+			next_features = &present_wait_features;
 		}
 
 		VkPhysicalDeviceFeatures2 device_features_2 = {};
@@ -744,6 +760,10 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 
 		if (enabled_device_extension_names.has(VK_EXT_PIPELINE_CREATION_CACHE_CONTROL_EXTENSION_NAME)) {
 			pipeline_cache_control_support = pipeline_cache_control_features.pipelineCreationCacheControl;
+		}
+
+		if (enabled_device_extension_names.has(VK_KHR_PRESENT_WAIT_EXTENSION_NAME)) {
+			present_wait_support = present_wait_features.presentWait;
 		}
 	}
 
@@ -955,6 +975,20 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 		}
 	}
 
+	VkPhysicalDevicePresentIdFeaturesKHR present_id_features = {};
+	VkPhysicalDevicePresentWaitFeaturesKHR present_wait_features = {};
+	if (present_wait_support) {
+		present_id_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_ID_FEATURES_KHR;
+		present_id_features.presentId = true;
+		present_id_features.pNext = create_info_next;
+		create_info_next = &present_id_features;
+
+		present_wait_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_WAIT_FEATURES_KHR;
+		present_wait_features.presentWait = true;
+		present_wait_features.pNext = create_info_next;
+		create_info_next = &present_wait_features;
+	}
+
 	VkDeviceCreateInfo create_info = {};
 	create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 	create_info.pNext = create_info_next;
@@ -988,6 +1022,10 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 
 		if (enabled_device_extension_names.has(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME)) {
 			device_functions.CreateRenderPass2KHR = PFN_vkCreateRenderPass2KHR(functions.GetDeviceProcAddr(vk_device, "vkCreateRenderPass2KHR"));
+		}
+
+		if (present_wait_support) {
+			device_functions.WaitForPresentKHR = PFN_vkWaitForPresentKHR(functions.GetDeviceProcAddr(vk_device, "vkWaitForPresentKHR"));
 		}
 	}
 
@@ -1351,6 +1389,34 @@ uint8_t *RenderingDeviceDriverVulkan::buffer_map(BufferID p_buffer) {
 void RenderingDeviceDriverVulkan::buffer_unmap(BufferID p_buffer) {
 	const BufferInfo *buf_info = (const BufferInfo *)p_buffer.id;
 	vmaUnmapMemory(allocator, buf_info->allocation.handle);
+}
+
+void RenderingDeviceDriverVulkan::wait_for_present(SwapChainID p_swap_chain) {
+	if (!present_wait_support) {
+		return;
+	}
+
+	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
+	if (!swap_chain->vk_swapchain || !swap_chain->needs_wait) {
+		return;
+	}
+
+	int latency = swap_chain->images.size() - 1;
+	if (latency < 0 || swap_chain->present_id <= latency) {
+		return;
+	}
+
+	uint64_t wait_present_id = swap_chain->present_id - latency;
+	VkResult err = device_functions.WaitForPresentKHR(vk_device, swap_chain->vk_swapchain, wait_present_id, 1'000'000'000);
+	if (err == VK_SUCCESS) {
+		swap_chain->needs_wait = false;
+	} else {
+		if (err == VK_TIMEOUT) {
+			ERR_PRINT("Timed out waiting for present.");
+		} else {
+			ERR_PRINT(vformat("Failed to wait for present, error: %s", string_VkResult(err)));
+		}
+	}
 }
 
 /*****************/
@@ -2286,15 +2352,55 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 	if (p_swap_chains.size() > 0) {
 		thread_local LocalVector<VkSwapchainKHR> swapchains;
 		thread_local LocalVector<uint32_t> image_indices;
+		thread_local LocalVector<uint64_t> present_ids;
+		thread_local LocalVector<uint32_t> present_swapchain_index;
 		thread_local LocalVector<VkResult> results;
 		swapchains.clear();
 		image_indices.clear();
+		present_ids.clear();
+		present_swapchain_index.clear();
 
 		for (uint32_t i = 0; i < p_swap_chains.size(); i++) {
 			SwapChain *swap_chain = (SwapChain *)(p_swap_chains[i].id);
+
+			bool skip_present = false;
+			if (present_wait_support && swap_chain->needs_wait) {
+				int latency = swap_chain->images.size() - 1;
+				if (latency < 0 || swap_chain->present_id <= latency) {
+					// No-op.
+				} else {
+					uint64_t wait_present_id = swap_chain->present_id - latency;
+					VkResult err = device_functions.WaitForPresentKHR(vk_device, swap_chain->vk_swapchain, wait_present_id, 0);
+					if (err != VK_SUCCESS) {
+						if (err == VK_TIMEOUT) {
+							skip_present = true;
+							// Force a redraw so that we can present the latest frame
+							// for this swap chain on the next redraw.
+							Main::force_redraw();
+						} else {
+							// FIXME: Still present as if nothing has happened?
+							ERR_PRINT(vformat("Failed to wait for present, error: %s", string_VkResult(err)));
+						}
+					}
+				}
+			}
+			if (skip_present) {
+				continue;
+			}
+
 			swapchains.push_back(swap_chain->vk_swapchain);
 			DEV_ASSERT(swap_chain->image_index < swap_chain->images.size());
 			image_indices.push_back(swap_chain->image_index);
+			if (present_wait_support) {
+				swap_chain->present_id++;
+				present_ids.push_back(swap_chain->present_id);
+			}
+			present_swapchain_index.push_back(i);
+		}
+
+		if (swapchains.is_empty()) {
+			// Somehow we don't have any swap chains to present.
+			return OK;
 		}
 
 		results.resize(swapchains.size());
@@ -2308,15 +2414,27 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 		present_info.pImageIndices = image_indices.ptr();
 		present_info.pResults = results.ptr();
 
+		VkPresentIdKHR present_id = {};
+		if (present_wait_support) {
+			present_id.sType = VK_STRUCTURE_TYPE_PRESENT_ID_KHR;
+			present_id.swapchainCount = present_ids.size();
+			present_id.pPresentIds = present_ids.ptr();
+			present_info.pNext = &present_id;
+		}
+
 		device_queue.submit_mutex.lock();
 		err = device_functions.QueuePresentKHR(device_queue.queue, &present_info);
 		device_queue.submit_mutex.unlock();
 
 		// Set the index to an invalid value. If any of the swap chains returned out of date, indicate it should be resized the next time it's acquired.
 		bool any_result_is_out_of_date = false;
-		for (uint32_t i = 0; i < p_swap_chains.size(); i++) {
-			SwapChain *swap_chain = (SwapChain *)(p_swap_chains[i].id);
+		for (uint32_t i = 0; i < present_swapchain_index.size(); i++) {
+			uint32_t swapchain_index = present_swapchain_index[i];
+			SwapChain *swap_chain = (SwapChain *)(p_swap_chains[swapchain_index].id);
 			swap_chain->image_index = UINT_MAX;
+			if (results[i] == VK_SUCCESS) {
+				swap_chain->needs_wait = true;
+			}
 			if (results[i] == VK_ERROR_OUT_OF_DATE_KHR) {
 				context_driver->surface_set_needs_resize(swap_chain->surface, true);
 				any_result_is_out_of_date = true;
@@ -2716,6 +2834,9 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	swap_create_info.clipped = true;
 	err = device_functions.CreateSwapchainKHR(vk_device, &swap_create_info, nullptr, &swap_chain->vk_swapchain);
 	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+
+	// Restart the present id from 0.
+	swap_chain->present_id = 0;
 
 	uint32_t image_count = 0;
 	err = device_functions.GetSwapchainImagesKHR(vk_device, swap_chain->vk_swapchain, &image_count, nullptr);

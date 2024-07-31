@@ -111,6 +111,7 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 		PFN_vkAcquireNextImageKHR AcquireNextImageKHR = nullptr;
 		PFN_vkQueuePresentKHR QueuePresentKHR = nullptr;
 		PFN_vkCreateRenderPass2KHR CreateRenderPass2KHR = nullptr;
+		PFN_vkWaitForPresentKHR WaitForPresentKHR = nullptr;
 	};
 
 	VkDevice vk_device = VK_NULL_HANDLE;
@@ -132,6 +133,7 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 	ShaderCapabilities shader_capabilities;
 	StorageBufferCapabilities storage_buffer_capabilities;
 	bool pipeline_cache_control_support = false;
+	bool present_wait_support = false;
 	DeviceFunctions device_functions;
 
 	void _register_requested_device_extension(const CharString &p_extension_name, bool p_required);
@@ -181,6 +183,7 @@ public:
 	virtual uint64_t buffer_get_allocation_size(BufferID p_buffer) override final;
 	virtual uint8_t *buffer_map(BufferID p_buffer) override final;
 	virtual void buffer_unmap(BufferID p_buffer) override final;
+	virtual void wait_for_present(SwapChainID p_swap_chain) override;
 
 	/*****************/
 	/**** TEXTURE ****/
@@ -333,6 +336,8 @@ private:
 		LocalVector<uint32_t> command_queues_acquired_semaphores;
 		RenderPassID render_pass;
 		uint32_t image_index = 0;
+		uint64_t present_id = 0;
+		bool needs_wait = true;
 	};
 
 	void _swap_chain_release(SwapChain *p_swap_chain);
