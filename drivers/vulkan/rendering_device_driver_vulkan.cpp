@@ -1402,7 +1402,7 @@ void RenderingDeviceDriverVulkan::wait_for_present(SwapChainID p_swap_chain) {
 	}
 
 	int latency = swap_chain->images.size() - 1;
-	if (latency < 0 || swap_chain->present_id <= latency) {
+	if (latency < 0 || swap_chain->present_id <= static_cast<unsigned>(latency)) {
 		return;
 	}
 
@@ -2366,11 +2366,11 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 			bool skip_present = false;
 			if (present_wait_support && swap_chain->needs_wait) {
 				int latency = swap_chain->images.size() - 1;
-				if (latency < 0 || swap_chain->present_id <= latency) {
+				if (latency < 0 || swap_chain->present_id <= static_cast<unsigned>(latency)) {
 					// No-op.
 				} else {
 					uint64_t wait_present_id = swap_chain->present_id - latency;
-					VkResult err = device_functions.WaitForPresentKHR(vk_device, swap_chain->vk_swapchain, wait_present_id, 0);
+					err = device_functions.WaitForPresentKHR(vk_device, swap_chain->vk_swapchain, wait_present_id, 0);
 					if (err != VK_SUCCESS) {
 						if (err == VK_TIMEOUT) {
 							skip_present = true;
