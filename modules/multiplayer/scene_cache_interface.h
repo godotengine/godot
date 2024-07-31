@@ -49,8 +49,18 @@ private:
 		HashMap<int, bool> confirmed_peers; // peer id, confirmed
 	};
 
+	struct RecvNode {
+		ObjectID oid;
+		NodePath path;
+
+		RecvNode(const ObjectID &p_oid, const NodePath &p_path) {
+			oid = p_oid;
+			path = p_path;
+		}
+	};
+
 	struct PeerInfo {
-		HashMap<int, ObjectID> recv_nodes; // remote cache id, ObjectID
+		HashMap<int, RecvNode> recv_nodes; // remote cache id, (ObjectID, NodePath)
 		HashSet<ObjectID> sent_nodes;
 	};
 
