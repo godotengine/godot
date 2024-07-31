@@ -2936,6 +2936,20 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				mat = mat3d;
 			}
 			int32_t mat_idx = import_mesh->get_surface_count();
+
+			// Check for invalid indices.
+			if (array[Mesh::ARRAY_INDEX] && array[Mesh::ARRAY_INDEX] != Variant()) {
+				const Vector<int> &inds = array[Mesh::ARRAY_INDEX];
+
+				if (array[Mesh::ARRAY_VERTEX] && array[Mesh::ARRAY_VERTEX] != Variant()) {
+					const Vector<Vector3> &vertices = array[Mesh::ARRAY_VERTEX];
+					int num_verts = vertices.size();
+
+					// The mesh contains invalid indices, abort.
+					ERR_FAIL_COND_V(!Geometry::verify_indices(inds.ptr(), inds.size(), num_verts), ERR_FILE_CORRUPT);
+				}
+			}
+
 			import_mesh->add_surface_from_arrays(primitive, array, morphs, p_state->compress_flags);
 			import_mesh->surface_set_material(mat_idx, mat);
 		}

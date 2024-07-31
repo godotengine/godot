@@ -30,6 +30,7 @@
 
 #include "vertex_cache_optimizer.h"
 
+#include "core/math/geometry.h"
 #include "core/math/math_funcs.h"
 
 // Precalculate the tables.
@@ -287,6 +288,9 @@ bool VertexCacheOptimizer::reorder_indices_pool(PoolVector<int> &r_indices, uint
 }
 
 bool VertexCacheOptimizer::reorder_indices(LocalVector<int> &r_indices, uint32_t p_num_triangles, uint32_t p_num_verts) {
+	// If the mesh contains invalid indices, abort.
+	ERR_FAIL_COND_V(!Geometry::verify_indices(r_indices.ptr(), r_indices.size(), p_num_verts), false);
+
 	LocalVector<int> temp;
 	temp.resize(r_indices.size());
 	if (_reorder_indices((VERTEX_INDEX_TYPE *)temp.ptr(), (VERTEX_INDEX_TYPE *)r_indices.ptr(), p_num_triangles, p_num_verts)) {
