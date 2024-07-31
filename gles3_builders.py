@@ -3,7 +3,7 @@
 import os.path
 from typing import Optional
 
-from methods import print_error
+from methods import print_error, to_raw_cstring
 
 
 class GLES3HeaderStruct:
@@ -553,20 +553,12 @@ def build_gles3_header(
             fd.write("\t\tstatic const Feedback* _feedbacks=nullptr;\n")
 
         fd.write("\t\tstatic const char _vertex_code[]={\n")
-        for x in header_data.vertex_lines:
-            for c in x:
-                fd.write(str(ord(c)) + ",")
-
-            fd.write(str(ord("\n")) + ",")
-        fd.write("\t\t0};\n\n")
+        fd.write(to_raw_cstring(header_data.vertex_lines))
+        fd.write("\n\t\t};\n\n")
 
         fd.write("\t\tstatic const char _fragment_code[]={\n")
-        for x in header_data.fragment_lines:
-            for c in x:
-                fd.write(str(ord(c)) + ",")
-
-            fd.write(str(ord("\n")) + ",")
-        fd.write("\t\t0};\n\n")
+        fd.write(to_raw_cstring(header_data.fragment_lines))
+        fd.write("\n\t\t};\n\n")
 
         fd.write(
             '\t\t_setup(_vertex_code,_fragment_code,"'

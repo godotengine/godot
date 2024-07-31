@@ -3,6 +3,8 @@
 import os
 from io import StringIO
 
+from methods import to_raw_cstring
+
 
 # See also `scene/theme/icons/default_theme_icons_builders.py`.
 def make_editor_icons_action(target, source, env):
@@ -10,21 +12,9 @@ def make_editor_icons_action(target, source, env):
     svg_icons = source
 
     with StringIO() as icons_string, StringIO() as s:
-        for f in svg_icons:
-            fname = str(f)
-
-            icons_string.write('\t"')
-
-            with open(fname, "rb") as svgf:
-                b = svgf.read(1)
-                while len(b) == 1:
-                    icons_string.write("\\" + str(hex(ord(b)))[1:])
-                    b = svgf.read(1)
-
-            icons_string.write('"')
-            if fname != svg_icons[-1]:
-                icons_string.write(",")
-            icons_string.write("\n")
+        for svg in svg_icons:
+            with open(str(svg), "r") as svgf:
+                icons_string.write("\t%s,\n" % to_raw_cstring(svgf.read()))
 
         s.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
         s.write("#ifndef _EDITOR_ICONS_H\n")
