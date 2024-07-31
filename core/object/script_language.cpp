@@ -491,10 +491,6 @@ void ScriptServer::save_global_classes() {
 	ProjectSettings::get_singleton()->store_global_class_list(gcarr);
 }
 
-String ScriptServer::get_global_class_cache_file_path() {
-	return ProjectSettings::get_singleton()->get_global_class_list_path();
-}
-
 ////////////////////
 
 ScriptCodeCompletionCache *ScriptCodeCompletionCache::singleton = nullptr;

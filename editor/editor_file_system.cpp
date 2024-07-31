@@ -1353,11 +1353,16 @@ void EditorFileSystem::_thread_func_sources(void *_userdata) {
 
 void EditorFileSystem::_remove_invalid_global_class_names(const HashSet<String> &p_existing_class_names) {
 	List<StringName> global_classes;
+	bool must_save = false;
 	ScriptServer::get_global_class_list(&global_classes);
 	for (const StringName &class_name : global_classes) {
 		if (!p_existing_class_names.has(class_name)) {
 			ScriptServer::remove_global_class(class_name);
+			must_save = true;
 		}
+	}
+	if (must_save) {
+		ScriptServer::save_global_classes();
 	}
 }
 
@@ -1812,6 +1817,10 @@ void EditorFileSystem::_update_files_icon_path(EditorFileSystemDirectory *edp) {
 
 void EditorFileSystem::_update_script_classes() {
 	if (update_script_paths.is_empty()) {
+		// Ensure the global class file is always present; it's essential for exports to work.
+		if (!FileAccess::exists(ProjectSettings::get_singleton()->get_global_class_list_path())) {
+			ScriptServer::save_global_classes();
+		}
 		return;
 	}
 
