@@ -5543,7 +5543,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 			PROPVARIANT val;
 			String appname;
 			if (Engine::get_singleton()->is_editor_hint()) {
-				appname = "Godot.GodotEditor." + String(VERSION_BRANCH);
+				appname = "Godot.GodotEditor." + String(VERSION_FULL_CONFIG);
 			} else {
 				String name = GLOBAL_GET("application/config/name");
 				String version = GLOBAL_GET("application/config/version");
@@ -6071,7 +6071,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 	String appname;
 	if (Engine::get_singleton()->is_editor_hint()) {
-		appname = "Godot.GodotEditor." + String(VERSION_BRANCH);
+		appname = "Godot.GodotEditor." + String(VERSION_FULL_CONFIG);
 	} else {
 		String name = GLOBAL_GET("application/config/name");
 		String version = GLOBAL_GET("application/config/version");
@@ -6086,6 +6086,17 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		}
 		clean_app_name = clean_app_name.substr(0, 120 - version.length()).trim_suffix(".");
 		appname = "Godot." + clean_app_name + "." + version;
+
+#ifndef TOOLS_ENABLED
+		// Set for exported projects only.
+		HKEY key;
+		if (RegOpenKeyW(HKEY_CURRENT_USER_LOCAL_SETTINGS, L"Software\\Microsoft\\Windows\\Shell\\MuiCache", &key) == ERROR_SUCCESS) {
+			Char16String cs_name = name.utf16();
+			String value_name = OS::get_singleton()->get_executable_path().replace("/", "\\") + ".FriendlyAppName";
+			RegSetValueExW(key, (LPCWSTR)value_name.utf16().get_data(), 0, REG_SZ, (const BYTE *)cs_name.get_data(), cs_name.size() * sizeof(WCHAR));
+			RegCloseKey(key);
+		}
+#endif
 	}
 	SetCurrentProcessExplicitAppUserModelID((PCWSTR)appname.utf16().get_data());
 
