@@ -630,7 +630,9 @@ class SampleNode {
 	 * @returns {void}
 	 */
 	_restart() {
-		this._source.disconnect();
+		if (this._source != null) {
+			this._source.disconnect();
+		}
 		this._source = GodotAudio.ctx.createBufferSource();
 		this._source.buffer = this.getSample().getAudioBuffer();
 
