@@ -4852,16 +4852,16 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					rect_changed = true;
 				}
 #if defined(RD_ENABLED)
-				if (rendering_context && window.context_created) {
+				if (window.create_completed && rendering_context && window.context_created) {
 					// Note: Trigger resize event to update swapchains when window is minimized/restored, even if size is not changed.
 					rendering_context->window_set_size(window_id, window.width, window.height);
 				}
 #endif
 #if defined(GLES3_ENABLED)
-				if (gl_manager_native) {
+				if (window.create_completed && gl_manager_native) {
 					gl_manager_native->window_resize(window_id, window.width, window.height);
 				}
-				if (gl_manager_angle) {
+				if (window.create_completed && gl_manager_angle) {
 					gl_manager_angle->window_resize(window_id, window.width, window.height);
 				}
 #endif
@@ -5590,6 +5590,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 			SetWindowPos(wd.hWnd, HWND_TOP, srect.position.x, srect.position.y, srect.size.width, srect.size.height, SWP_NOZORDER | SWP_NOACTIVATE);
 		}
 
+		wd.create_completed = true;
 		window_id_counter++;
 	}
 
