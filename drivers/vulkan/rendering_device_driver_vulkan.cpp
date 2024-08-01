@@ -1401,7 +1401,7 @@ void RenderingDeviceDriverVulkan::wait_for_present(SwapChainID p_swap_chain) {
 		return;
 	}
 
-	int latency = swap_chain->images.size() - 1;
+	int latency = swap_chain->images.size() - 2;
 	if (latency < 0 || swap_chain->present_id <= static_cast<unsigned>(latency)) {
 		return;
 	}
@@ -2365,7 +2365,7 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 
 			bool skip_present = false;
 			if (present_wait_support && swap_chain->needs_wait) {
-				int latency = swap_chain->images.size() - 1;
+				int latency = swap_chain->images.size() - 2;
 				if (latency < 0 || swap_chain->present_id <= static_cast<unsigned>(latency)) {
 					// No-op.
 				} else {
@@ -2904,6 +2904,10 @@ RDD::FramebufferID RenderingDeviceDriverVulkan::swap_chain_acquire_framebuffer(C
 		// The surface does not have a valid swap chain or it indicates it requires a resize.
 		r_resize_required = true;
 		return FramebufferID();
+	}
+
+	if (swap_chain->image_index < swap_chain->images.size()) {
+		return swap_chain->framebuffers[swap_chain->image_index];
 	}
 
 	VkResult err;
