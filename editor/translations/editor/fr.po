@@ -172,13 +172,14 @@
 # Christophe Marois <christophemarois@proton.me>, 2024.
 # Stevan Coroller <stevan.coroller@gmail.com>, 2024.
 # Unreal Vision <unrealvisionyt@gmail.com>, 2024.
+# Jokod <jb.jokod@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-06-17 17:09+0000\n"
-"Last-Translator: Kentarosan <jacquin.yannis@gmail.com>\n"
+"PO-Revision-Date: 2024-07-23 21:48+0000\n"
+"Last-Translator: Jokod <jb.jokod@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot/"
 "fr/>\n"
 "Language: fr\n"
@@ -186,7 +187,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.6-dev\n"
+"X-Generator: Weblate 5.7-dev\n"
 
 msgid "Main Thread"
 msgstr "Thread principal"
@@ -4545,6 +4546,9 @@ msgstr "Exécution du projet"
 msgid "Write your logic in the _run() method."
 msgstr "Écrivez votre code dans la méthode _run()."
 
+msgid "The current scene already has a root node."
+msgstr "La scène actuelle a déjà un nœud racine."
+
 msgid "Edit Built-in Action: %s"
 msgstr "Éditer l'action intégrée : %s"
 
@@ -6664,6 +6668,15 @@ msgstr "Dévoiler non-défaut"
 msgid "Property Name Style"
 msgstr "Style des noms de propriétés"
 
+msgid "Raw (e.g. \"%s\")"
+msgstr "Brut (par exemple, \"%s\")"
+
+msgid "Capitalized (e.g. \"%s\")"
+msgstr "En majuscules (ex: \"%s\")"
+
+msgid "Localized (e.g. \"Z Index\")"
+msgstr "Localisé (par exemple, \"Z Index\")"
+
 msgid "Localization not available for current language."
 msgstr "La traduction n'est pas disponible pour la langue actuel."
 
@@ -8141,6 +8154,13 @@ msgstr ""
 msgid "Change Default Type"
 msgstr "Changer le type par défaut"
 
+msgid ""
+"All selected CanvasItems are either invisible or locked in some way and can't "
+"be transformed."
+msgstr ""
+"Tous les CanvasItems sélectionnés sont soit invisibles, soit verrouillés "
+"d'une manière ou d'une autre et ne peuvent pas être transformés."
+
 msgid "Set Target Position"
 msgstr "Définir la position de la cible"
 
@@ -8864,6 +8884,13 @@ msgstr ""
 "maillages sélectionnés pour l'initialisation ont une valeur "
 "`lightmap_size_hint` suffisamment élevée et que la valeur `texel_scale` de "
 "LightmapGI n'est pas trop basse."
+
+msgid ""
+"Failed fitting a lightmap image into an atlas. This should never happen and "
+"should be reported."
+msgstr ""
+"Échec de l'ajustement d'une image de lightmap dans un atlas. Cela ne devrait "
+"jamais se produire et devrait être signalé."
 
 msgid "Bake Lightmaps"
 msgstr "Précalculer les lightmaps"
@@ -10839,12 +10866,6 @@ msgid ""
 msgstr ""
 "Mode Édition\n"
 "Montre les boutons sur les jointures."
-
-msgid "Insert key of bone poses already exist track."
-msgstr "Insérer la clé d'une pose d'os qui existe déjà dans la piste."
-
-msgid "Insert key of all bone poses."
-msgstr "Insérer la clé de toutes les poses d'os."
 
 msgid "Insert Key (All Bones)"
 msgstr "Insérer une clé (Tous les os)"
@@ -13762,6 +13783,14 @@ msgstr ""
 msgid "Remaps a given input from the input range to the output range."
 msgstr "Remappe une entrée donnée de la plage d'entrée à la plage de sortie."
 
+msgid ""
+"Builds a rotation matrix from the given axis and angle, multiply the input "
+"vector by it and returns both this vector and a matrix."
+msgstr ""
+"Construit une matrice de rotation à partir de l'axe et de l'angle donnés, "
+"multiplie le vecteur d'entrée par cette matrice et retourne à la fois ce "
+"vecteur et la matrice."
+
 msgid "Vector function."
 msgstr "Fonction vecteur."
 
@@ -14631,6 +14660,9 @@ msgstr "Échelle d'affichage"
 
 msgid "Network Mode"
 msgstr "Mode réseau"
+
+msgid "Directory Naming Convention"
+msgstr "Convention de nommage des répertoires"
 
 msgid ""
 "Settings changed! The project manager must be restarted for changes to take "
@@ -15642,37 +15674,8 @@ msgstr "Paramètres d'export :"
 msgid "glTF 2.0 Scene..."
 msgstr "Scène au format glTF 2.0..."
 
-msgid "Path does not contain a Blender installation."
-msgstr "Le chemin d'accès ne contient pas d'installation de Blender."
-
-msgid "Can't execute Blender binary."
-msgstr "Impossible d'exécuter le fichier binaire Blender."
-
-msgid "Unexpected --version output from Blender binary at: %s."
-msgstr "Sortie --version inattendue du fichier binaire Blender à : %s."
-
-msgid "Path supplied lacks a Blender binary."
-msgstr "Le chemin fournit manque d'un fichier binaire Blender."
-
-msgid "This Blender installation is too old for this importer (not 3.0+)."
-msgstr ""
-"Cette installation de Blender est trop vieille pour cet importeur (pas 3.0+)."
-
-msgid "Path to Blender installation is valid (Autodetected)."
-msgstr "Le chemin vers l'installation de Blender est valide (Autodétecté)."
-
-msgid "Path to Blender installation is valid."
-msgstr "Le chemin d'accès vers l'installation de Blender est valide."
-
 msgid "Configure Blender Importer"
 msgstr "Configurer l'importateur de Blender"
-
-msgid ""
-"Blender 3.0+ is required to import '.blend' files.\n"
-"Please provide a valid path to a Blender installation:"
-msgstr ""
-"Blender 3.0+ est requis pour importer les fichiers '.blend'.\n"
-"Veuillez fournir un chemin valide vers une installation Blender :"
 
 msgid "Disable '.blend' Import"
 msgstr "Désactiver l'importation '.blend'"
@@ -16739,6 +16742,14 @@ msgid ""
 msgstr ""
 "La bibliothèque de modèle '%s' requise n'est pas trouvée. Elle peut être "
 "manquante de votre archive de modèle."
+
+msgid "ARM64 simulator library, generating from device library."
+msgstr ""
+"Bibliothèque de simulateur ARM64, générée à partir de la bibliothèque pour "
+"appareil."
+
+msgid "Unable to generate ARM64 simulator library."
+msgstr "Impossible de générer la bibliothèque de simulateur ARM64."
 
 msgid "Could not copy a file at path \"%s\" to \"%s\"."
 msgstr "Impossible de copier un fichier sur le chemin \"%s\" vers \"%s\"."
@@ -18570,6 +18581,13 @@ msgstr ""
 "Les variables affectées dans la fonction 'fragment' ne peuvent pas être "
 "réaffectées dans les fonctions 'vertex' ou 'light'."
 
+msgid ""
+"'%s' cannot be used here, because '%s' is called by the '%s' processor "
+"function (which is not allowed)."
+msgstr ""
+"'%s' ne peut pas être utilisé ici, car '%s' est appelé par la fonction du "
+"processeur '%s' (ce qui n'est pas autorisé)."
+
 msgid "Assignment to function."
 msgstr "Affectation à la fonction."
 
@@ -18589,14 +18607,6 @@ msgstr ""
 "L'argument d'échantillonneur %d de la fonction '%s' appelée plus d'une fois à "
 "l'aide de textures intégrées et uniformes, ceci n'est pas supporté (utilisez "
 "l'un ou l'autre)."
-
-msgid ""
-"Sampler argument %d of function '%s' called more than once using textures "
-"that differ in either filter or repeat setting."
-msgstr ""
-"L'argument de l'échantillonneur %d de la fonction '%s' est appelée plus d'une "
-"fois en utilisant des textures qui diffèrent dans les réglages de filtre ou "
-"de répétition."
 
 msgid ""
 "Sampler argument %d of function '%s' called more than once using different "
@@ -18647,12 +18657,6 @@ msgstr "Un nom de fonction était attendu."
 
 msgid "No matching function found for: '%s'."
 msgstr "Pas de fonction correspondante trouvée pour : '%s'."
-
-msgid ""
-"Varying '%s' must be assigned in the 'vertex' or 'fragment' function first."
-msgstr ""
-"La variable '%s' doit être assignée dans la fonction 'vertex' ou 'fragment' "
-"en premier."
 
 msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr ""

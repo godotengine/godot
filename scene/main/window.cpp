@@ -810,7 +810,7 @@ void Window::update_mouse_cursor_state() {
 	mm->set_position(pos);
 	mm->set_global_position(xform.xform(pos));
 	mm->set_device(InputEvent::DEVICE_ID_INTERNAL);
-	push_input(mm);
+	push_input(mm, true);
 }
 
 void Window::show() {

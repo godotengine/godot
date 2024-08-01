@@ -94,8 +94,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-06-29 15:09+0000\n"
-"Last-Translator: gre-gorn <gre-gorn@users.noreply.hosted.weblate.org>\n"
+"PO-Revision-Date: 2024-07-25 01:09+0000\n"
+"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot/"
 "pl/>\n"
 "Language: pl\n"
@@ -3557,6 +3557,13 @@ msgid "%s no longer exists! Please specify a new save location."
 msgstr "%s już nie istnieje! Podaj nowe położenie do zapisu."
 
 msgid ""
+"The current scene has no root node, but %d modified external resource(s) and/"
+"or plugin data were saved anyway."
+msgstr ""
+"Aktualna scena nie ma korzenia, ale %d zmodyfikowane zasoby i/lub dane "
+"wtyczek zostały zapisane i tak."
+
+msgid ""
 "A root node is required to save the scene. You can add a root node using the "
 "Scene tree dock."
 msgstr ""
@@ -4394,6 +4401,9 @@ msgstr "Uruchom projekt"
 
 msgid "Write your logic in the _run() method."
 msgstr "Wpisz swoją logikę w metodzie _run()."
+
+msgid "The current scene already has a root node."
+msgstr "Aktualna scena ma już węzeł główny."
 
 msgid "Edit Built-in Action: %s"
 msgstr "Edytuj wbudowaną akcję: %s"
@@ -6486,6 +6496,15 @@ msgstr "Rozwiń niedomyślne"
 msgid "Property Name Style"
 msgstr "Styl nazw właściwości"
 
+msgid "Raw (e.g. \"%s\")"
+msgstr "Surowe (np. \"%s\")"
+
+msgid "Capitalized (e.g. \"%s\")"
+msgstr "Z wielkiej litery (np. \"%s\")"
+
+msgid "Localized (e.g. \"Z Index\")"
+msgstr "Przetłumaczone (np. \"Indeks Z\")"
+
 msgid "Localization not available for current language."
 msgstr "Tłumaczenie niedostępne dla aktualnego języka."
 
@@ -7948,6 +7967,13 @@ msgstr ""
 msgid "Change Default Type"
 msgstr "Zmienić domyślny typ"
 
+msgid ""
+"All selected CanvasItems are either invisible or locked in some way and can't "
+"be transformed."
+msgstr ""
+"Wszystkie zaznaczone węzły CanvasItem są niewidzialne albo zablokowane w "
+"jakiś sposób i nie można ich edytować."
+
 msgid "Set Target Position"
 msgstr "Ustaw pozycję docelową"
 
@@ -8660,6 +8686,13 @@ msgstr ""
 "Nie udało się utworzyć obrazków mapy światła. Upewnij się, że wszystkie "
 "siatki wybrane do wypiekania mają wartość \"lightmap_size_hint\" ustawioną na "
 "wystarczająco wysoką i \"texel_scale\" węzła LightmapGI nie jest za niski."
+
+msgid ""
+"Failed fitting a lightmap image into an atlas. This should never happen and "
+"should be reported."
+msgstr ""
+"Nie udało się wpasować obrazka mapy światła w atlas. To nie powinno się nigdy "
+"zdarzyć i powinno zostać zgłoszone."
 
 msgid "Bake Lightmaps"
 msgstr "Stwórz Lightmaps"
@@ -10613,12 +10646,6 @@ msgid ""
 msgstr ""
 "Tryb edycji\n"
 "Pokaż przyciski na złączeniach."
-
-msgid "Insert key of bone poses already exist track."
-msgstr "Wstaw klucze dla póz kości, które mają już ścieżkę."
-
-msgid "Insert key of all bone poses."
-msgstr "Wstaw klucz wszystkich póz kości."
 
 msgid "Insert Key (All Bones)"
 msgstr "Wstaw klucz (wszystkie kości)"
@@ -12923,6 +12950,13 @@ msgstr ""
 "albo fałszywa."
 
 msgid ""
+"Returns an associated 4D vector if the provided boolean value is true or "
+"false."
+msgstr ""
+"Zwraca powiązany wektor 4D, jeśli podana wartość boolowska jest prawdziwa "
+"albo fałszywa."
+
+msgid ""
 "Returns an associated boolean if the provided boolean value is true or false."
 msgstr ""
 "Zwraca powiązaną wartość boolowską, jeśli podana wartość boolowska jest "
@@ -13490,6 +13524,13 @@ msgstr "Zwraca losową wartość między podanym minimum a maximum."
 
 msgid "Remaps a given input from the input range to the output range."
 msgstr "Przemapowuje podane wejście z wejściowego zakresu na wyjściowy zakres."
+
+msgid ""
+"Builds a rotation matrix from the given axis and angle, multiply the input "
+"vector by it and returns both this vector and a matrix."
+msgstr ""
+"Buduje macierz obrotu z podanej osi i kąta, mnoży przez nią wektor wejściowy "
+"i zwraca zarówno ten wektor, jak i macierz."
 
 msgid "Vector function."
 msgstr "Funkcja wektorowa."
@@ -14342,6 +14383,9 @@ msgstr "Skala wyświetlania"
 
 msgid "Network Mode"
 msgstr "Tryb sieci"
+
+msgid "Directory Naming Convention"
+msgstr "Konwencja nazywania folderów"
 
 msgid ""
 "Settings changed! The project manager must be restarted for changes to take "
@@ -15334,36 +15378,8 @@ msgstr "Ustawienia eksportu:"
 msgid "glTF 2.0 Scene..."
 msgstr "Scena glTF 2.0..."
 
-msgid "Path does not contain a Blender installation."
-msgstr "Ścieżka nie zawiera instalacji Blendera."
-
-msgid "Can't execute Blender binary."
-msgstr "Nie można uruchomić pliku wykonywalnego Blendera."
-
-msgid "Unexpected --version output from Blender binary at: %s."
-msgstr "Nieoczekiwany wynik --version z pliku wykonywalnego Blendera w: %s."
-
-msgid "Path supplied lacks a Blender binary."
-msgstr "Dostarczona ścieżka nie zawiera pliku wykonywalnego Blendera."
-
-msgid "This Blender installation is too old for this importer (not 3.0+)."
-msgstr "Ta instalacja Blendera jest za stara dla tego importera (nie 3.0+)."
-
-msgid "Path to Blender installation is valid (Autodetected)."
-msgstr "Ścieżka do instalacji Blendera jest prawidłowa (wykryta automatycznie)."
-
-msgid "Path to Blender installation is valid."
-msgstr "Ścieżka do instalacji Blendera jest poprawna."
-
 msgid "Configure Blender Importer"
 msgstr "Skonfiguruj importer Blendera"
-
-msgid ""
-"Blender 3.0+ is required to import '.blend' files.\n"
-"Please provide a valid path to a Blender installation:"
-msgstr ""
-"Do importowania plików '.blend' wymagany jest Blender 3.0+.\n"
-"Podaj prawidłową ścieżkę do instalacji Blendera:"
 
 msgid "Disable '.blend' Import"
 msgstr "Wyłącz importowanie plików \".blend\""
@@ -16398,6 +16414,12 @@ msgstr ""
 "Żądana biblioteka szablonu \"%s\" nie została znaleziona. Może jej brakować w "
 "twoim archiwum szablonu."
 
+msgid "ARM64 simulator library, generating from device library."
+msgstr "Biblioteka symulatora ARM64, generowana z biblioteki urządzenia."
+
+msgid "Unable to generate ARM64 simulator library."
+msgstr "Nie udało się wygenerować biblioteki symulatora ARM64."
+
 msgid "Could not copy a file at path \"%s\" to \"%s\"."
 msgstr "Nie udało się skopiować pliku ze ścieżki \"%s\" do \"%s\"."
 
@@ -17036,6 +17058,13 @@ msgstr "Uruchom na zdalnym systemie Windows"
 
 msgid "Run exported project on remote Windows system"
 msgstr "Uruchom wyeksportowany projekt na zdalnym systemie Windows"
+
+msgid ""
+"A SpriteFrames resource must be created or set in the \"Sprite Frames\" "
+"property in order for AnimatedSprite2D to display frames."
+msgstr ""
+"Zasób SpriteFrames musi zostać utworzony lub ustawiony we właściwości "
+"\"Sprite Frames\", aby AnimatedSprite2D mógł wyświetlać klatki."
 
 msgid ""
 "Only one visible CanvasModulate is allowed per canvas.\n"
@@ -17715,6 +17744,13 @@ msgid "This body will be ignored until you set a mesh."
 msgstr "To ciało będzie ignorowane, dopóki nie ustawisz siatki."
 
 msgid ""
+"A SpriteFrames resource must be created or set in the \"Sprite Frames\" "
+"property in order for AnimatedSprite3D to display frames."
+msgstr ""
+"Zasób SpriteFrames musi zostać utworzony lub ustawiony we właściwości "
+"\"Sprite Frames\", aby AnimatedSprite3D mógł wyświetlać klatki."
+
+msgid ""
 "The GeometryInstance3D visibility range's End distance is set to a non-zero "
 "value, but is lower than the Begin distance.\n"
 "This means the GeometryInstance3D will never be visible.\n"
@@ -18177,6 +18213,16 @@ msgstr ""
 "Zmienne varying przypisane w funkcji \"fragment\" nie mogą zostać ponownie "
 "przypisane we \"vertex\" lub \"light\"."
 
+msgid "'%s' cannot be used within the '%s' processor function."
+msgstr "\"%s\" nie może być użyte wewnątrz funkcji procesora \"%s\"."
+
+msgid ""
+"'%s' cannot be used here, because '%s' is called by the '%s' processor "
+"function (which is not allowed)."
+msgstr ""
+"\"%s\" nie może być tutaj użyte, ponieważ \"%s\" jest wołane przez funkcję "
+"procesora \"%s\" (co nie jest dozwolone)."
+
 msgid "Assignment to function."
 msgstr "Przypisanie do funkcji."
 
@@ -18196,13 +18242,6 @@ msgstr ""
 "Argument samplera %d funkcji \"%s\" wywołany więcej niż raz przy użyciu "
 "zarówno wbudowanych, jak i uniformowych tekstur, nie jest obsługiwany (użyj "
 "jednego lub drugiego)."
-
-msgid ""
-"Sampler argument %d of function '%s' called more than once using textures "
-"that differ in either filter or repeat setting."
-msgstr ""
-"Argument samplera %d funkcji \"%s\" został wywołany więcej niż raz przy "
-"użyciu tekstur, które różnią się ustawieniem filtra lub powtarzania."
 
 msgid ""
 "Sampler argument %d of function '%s' called more than once using different "
@@ -18248,17 +18287,14 @@ msgstr "Oczekiwano znaku \"(\" po nazwie typu."
 msgid "No matching constructor found for: '%s'."
 msgstr "Nie znaleziono pasującego konstruktora dla: \"%s\"."
 
+msgid "Built-in function '%s' is not supported for the '%s' shader type."
+msgstr "Wbudowana funkcja \"%s\" nie jest wspierana przez typ shadera \"%s\"."
+
 msgid "Expected a function name."
 msgstr "Oczekiwano nazwy funkcji."
 
 msgid "No matching function found for: '%s'."
 msgstr "Nie znaleziono pasującej funkcji dla: \"%s\"."
-
-msgid ""
-"Varying '%s' must be assigned in the 'vertex' or 'fragment' function first."
-msgstr ""
-"Zmienna varying \"%s\" musi najpierw zostać przypisana w funkcji \"vertex\" "
-"lub \"fragment\"."
 
 msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr ""

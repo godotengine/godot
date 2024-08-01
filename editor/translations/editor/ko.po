@@ -63,13 +63,14 @@
 # Minhyeok Lee <tracertw@gmail.com>, 2024.
 # Jun Hwi Ku <siguning@gmail.com>, 2024.
 # 신윤섭 <a97968765@gmail.com>, 2024.
+# Lee Dogeon <dev.moreal@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-05 17:09+0000\n"
-"Last-Translator: 신윤섭 <a97968765@gmail.com>\n"
+"PO-Revision-Date: 2024-07-28 08:33+0000\n"
+"Last-Translator: Lee Dogeon <dev.moreal@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ko/>\n"
 "Language: ko\n"
@@ -2224,6 +2225,18 @@ msgstr "새로운 버스 레이아웃을 만듭니다."
 msgid "Audio Bus Layout"
 msgstr "오디오 버스 레이아웃"
 
+msgid "Must not collide with an existing engine class name."
+msgstr "기존 엔진 클래스 이름과 충돌해서는 안 됩니다."
+
+msgid "Must not collide with an existing global script class name."
+msgstr "기존 전역 스크립트 클래스 이름과 충돌해서는 안 됩니다."
+
+msgid "Must not collide with an existing built-in type name."
+msgstr "기존 내장 타입 이름과 충돌해서는 안 됩니다."
+
+msgid "Must not collide with an existing global constant name."
+msgstr "기존 전역 상수 이름과 충돌해서는 안 됩니다."
+
 msgid "Autoload '%s' already exists!"
 msgstr "오토로드 '%s'이(가) 이미 있습니다!"
 
@@ -2259,6 +2272,9 @@ msgstr "오토로드 추가"
 
 msgid "Path:"
 msgstr "경로:"
+
+msgid "Set path or press \"%s\" to create a script."
+msgstr "경로를 설정하거나 “%s”를 눌러 스크립트를 생성합니다."
 
 msgid "Node Name:"
 msgstr "노드 이름:"
@@ -2384,6 +2400,9 @@ msgstr "텍스트 렌더링 및 글꼴 옵션:"
 msgid "File saving failed."
 msgstr "파일 저장 실패."
 
+msgid "This will scan all files in the current project to detect used classes."
+msgstr "현재 프로젝트의 모든 파일을 스캔하여 사용된 클래스를 감지합니다."
+
 msgid "Nodes and Classes:"
 msgstr "노드와 클래스:"
 
@@ -2465,6 +2484,9 @@ msgstr "이 독을 창으로 띄웁니다."
 
 msgid "Move to Bottom"
 msgstr "아래로 이동"
+
+msgid "Move this dock to the bottom panel."
+msgstr "이 독을 하단 패널로 옮깁니다."
 
 msgid "3D Editor"
 msgstr "3D 에디터"
@@ -2755,6 +2777,9 @@ msgstr ""
 "현재 이 클래스의 설명이 없습니다. [color=$color][url=$url]관련 정보를 기여하여"
 "[/url][/color] 개선할 수 있도록 도와주세요!"
 
+msgid "Note:"
+msgstr "참고:"
+
 msgid ""
 "There are notable differences when using this API with C#. See [url=%s]C# API "
 "differences to GDScript[/url] for more information."
@@ -2852,6 +2877,13 @@ msgstr "(값)"
 msgid "This property may be changed or removed in future versions."
 msgstr "이 속성은 향후 버전에서 변경되거나 삭제될 수도 있습니다."
 
+msgid ""
+"[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will "
+"not update the original property value. See [%s] for more details."
+msgstr ""
+"[b]참고:[/b] 반환된 배열은 [i]복사된 배열[/i] 이며, 배열을 변경해도 원래 속성 "
+"값은 업데이트되지 않습니다. 자세한 내용은 [%s]를 참조하세요."
+
 msgid "There is currently no description for this property."
 msgstr "현재 이 속성에 대한 설명이 없습니다."
 
@@ -2864,6 +2896,9 @@ msgstr ""
 
 msgid "Editor"
 msgstr "에디터"
+
+msgid "Click to copy."
+msgstr "클릭하여 복사합니다."
 
 msgid "No description available."
 msgstr "사용 가능한 설명이 없습니다."
@@ -9679,12 +9714,6 @@ msgstr ""
 "편집 모드\n"
 "관절 위에 버튼을 보입니다."
 
-msgid "Insert key of bone poses already exist track."
-msgstr "이미 존재하는 트랙의 본 포즈에 키를 삽입합니다."
-
-msgid "Insert key of all bone poses."
-msgstr "모든 본 포즈의 키를 삽입합니다."
-
 msgid "Insert Key (All Bones)"
 msgstr "키 삽입 (모든 본에)"
 
@@ -13716,21 +13745,8 @@ msgstr "내보내기 설정:"
 msgid "glTF 2.0 Scene..."
 msgstr "glTF 2.0 씬..."
 
-msgid "Path to Blender installation is valid (Autodetected)."
-msgstr "Blender 실행 파일의 경로가 올바릅니다 (자동 감지됨)."
-
-msgid "Path to Blender installation is valid."
-msgstr "Blender 실행 파일의 경로가 올바릅니다."
-
 msgid "Configure Blender Importer"
 msgstr "Blender 임포터 설정"
-
-msgid ""
-"Blender 3.0+ is required to import '.blend' files.\n"
-"Please provide a valid path to a Blender installation:"
-msgstr ""
-"'.blend' 파일을 가져오기 위해서는 3.0버전 이상의 Blender가 필요합니다.\n"
-"Blender 실행 파일이 있는 경로를 제공해 주세요:"
 
 msgid "Disable '.blend' Import"
 msgstr "'.blend' 가져오기 비활성화"
@@ -15583,12 +15599,6 @@ msgstr "함수 이름이 와야 합니다."
 
 msgid "No matching function found for: '%s'."
 msgstr "다음 함수를 찾을 수 없습니다: '%s'."
-
-msgid ""
-"Varying '%s' must be assigned in the 'vertex' or 'fragment' function first."
-msgstr ""
-"Varying '%s'는 반드시 먼저 'vertex' 또는 'fragment' 함수에서 할당되어야 합니"
-"다."
 
 msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr "Varying '%s'은 해당 문맥에서 '%s' 인자로 전달할 수 없습니다."
