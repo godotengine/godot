@@ -16,8 +16,19 @@
 		</constructor>
 		<constructor name="Set">
 			<return type="Set" />
+			<param index="0" name="base" type="Set" />
+			<param index="1" name="type" type="int" />
+			<param index="2" name="class_name" type="StringName" />
+			<param index="3" name="script" type="Variant" />
+			<description>
+				Creates a typed set.
+			</description>
+		</constructor>
+		<constructor name="Set">
+			<return type="Set" />
 			<param index="0" name="from" type="Set" />
 			<description>
+				Copies by reference another set.
 			</description>
 		</constructor>
 	</constructors>
@@ -65,6 +76,21 @@
 			<description>
 				Removes an element from this set.
 				See also: [method remove]
+			</description>
+		</method>
+		<method name="get_typed_builtin" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_typed_class_name" qualifiers="const">
+			<return type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="get_typed_script" qualifiers="const">
+			<return type="Variant" />
+			<description>
 			</description>
 		</method>
 		<method name="has" qualifiers="const">
@@ -146,6 +172,17 @@
 			<description>
 				Returns [code]true[/code] if the Set is read only.\
 				See also: [method make_read_only]
+			</description>
+		</method>
+		<method name="is_same_typed" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="set" type="Set" />
+			<description>
+			</description>
+		</method>
+		<method name="is_typed" qualifiers="const">
+			<return type="bool" />
+			<description>
 			</description>
 		</method>
 		<method name="make_read_only">

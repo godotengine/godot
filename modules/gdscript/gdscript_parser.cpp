@@ -3051,8 +3051,10 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_set(DictionaryNode *p_previous_operand, bool p_can_assign) {
 	DictionaryNode *dictionary = p_previous_operand;
 	ExpressionNode *first_elem = dictionary->elements[0].value;
+	DataType set_type = dictionary->datatype;
 	dictionary->elements.clear();
 	SetNode *set = replace_node<SetNode>();
+	set->datatype = set_type;
 	set->elements.push_back(first_elem);
 
 	if (current.type == GDScriptTokenizer::Token::COMMA) {
@@ -4372,12 +4374,15 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 	const Variant::Type original_export_type_builtin = export_type.builtin_type;
 
 	// Process array and packed array annotations on the element type.
-	bool is_array = false;
+	bool is_typed_collection = false;
 	if (export_type.builtin_type == Variant::ARRAY && export_type.has_container_element_type(0)) {
-		is_array = true;
+		is_typed_collection = true;
+		export_type = export_type.get_container_element_type(0);
+	} else if (export_type.builtin_type == Variant::SET && export_type.has_container_element_type(0)) {
+		is_typed_collection = true;
 		export_type = export_type.get_container_element_type(0);
 	} else if (export_type.is_typed_container_type()) {
-		is_array = true;
+		is_typed_collection = true;
 		export_type = export_type.get_typed_container_type();
 		export_type.type_source = variable->datatype.type_source;
 	}
@@ -4500,7 +4505,7 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 		}
 	}
 
-	if (is_array) {
+	if (is_typed_collection) {
 		String hint_prefix = itos(variable->export_info.type);
 		if (variable->export_info.hint) {
 			hint_prefix += "/" + itos(variable->export_info.hint);
@@ -4795,6 +4800,9 @@ String GDScriptParser::DataType::to_string() const {
 			if (builtin_type == Variant::ARRAY && has_container_element_type(0)) {
 				return vformat("Array[%s]", container_element_types[0].to_string());
 			}
+			if (builtin_type == Variant::SET && has_container_element_type(0)) {
+				return vformat("Set[%s]", container_element_types[0].to_string());
+			}
 			return Variant::get_type_name(builtin_type);
 		case NATIVE:
 			if (is_meta_type) {
@@ -4847,6 +4855,43 @@ PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) co
 		case BUILTIN:
 			result.type = builtin_type;
 			if (builtin_type == Variant::ARRAY && has_container_element_type(0)) {
+				const DataType elem_type = get_container_element_type(0);
+				switch (elem_type.kind) {
+					case BUILTIN:
+						result.hint = PROPERTY_HINT_ARRAY_TYPE;
+						result.hint_string = Variant::get_type_name(elem_type.builtin_type);
+						break;
+					case NATIVE:
+						result.hint = PROPERTY_HINT_ARRAY_TYPE;
+						result.hint_string = elem_type.native_type;
+						break;
+					case SCRIPT:
+						result.hint = PROPERTY_HINT_ARRAY_TYPE;
+						if (elem_type.script_type.is_valid() && elem_type.script_type->get_global_name() != StringName()) {
+							result.hint_string = elem_type.script_type->get_global_name();
+						} else {
+							result.hint_string = elem_type.native_type;
+						}
+						break;
+					case CLASS:
+						result.hint = PROPERTY_HINT_ARRAY_TYPE;
+						if (elem_type.class_type != nullptr && elem_type.class_type->get_global_name() != StringName()) {
+							result.hint_string = elem_type.class_type->get_global_name();
+						} else {
+							result.hint_string = elem_type.native_type;
+						}
+						break;
+					case ENUM:
+						result.hint = PROPERTY_HINT_ARRAY_TYPE;
+						result.hint_string = String(elem_type.native_type).replace("::", ".");
+						break;
+					case VARIANT:
+					case RESOLVING:
+					case UNRESOLVED:
+						break;
+				}
+			}
+			if (builtin_type == Variant::SET && has_container_element_type(0)) {
 				const DataType elem_type = get_container_element_type(0);
 				switch (elem_type.kind) {
 					case BUILTIN:
@@ -5334,6 +5379,17 @@ void GDScriptParser::TreePrinter::print_dictionary(DictionaryNode *p_dictionary)
 	push_text("}");
 }
 
+void GDScriptParser::TreePrinter::print_set(SetNode *p_set) {
+	push_line("{");
+	increase_indent();
+	for (int i = 0; i < p_set->elements.size(); i++) {
+		print_expression(p_set->elements[i]);
+		push_line(" ,");
+	}
+	decrease_indent();
+	push_text("}");
+}
+
 void GDScriptParser::TreePrinter::print_expression(ExpressionNode *p_expression) {
 	if (p_expression == nullptr) {
 		push_text("<invalid expression>");
@@ -5378,6 +5434,9 @@ void GDScriptParser::TreePrinter::print_expression(ExpressionNode *p_expression)
 			break;
 		case Node::SELF:
 			print_self(static_cast<SelfNode *>(p_expression));
+			break;
+		case Node::SET:
+			print_set(static_cast<SetNode *>(p_expression));
 			break;
 		case Node::SUBSCRIPT:
 			print_subscript(static_cast<SubscriptNode *>(p_expression));

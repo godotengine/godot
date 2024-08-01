@@ -2294,6 +2294,12 @@ static void _register_variant_builtin_methods_misc() {
 	bind_method(Set, symmetric_difference, sarray("set"), varray());
 	bind_method(Set, symmetric_differentiated, sarray("set"), varray());
 	bind_method(Set, includes, sarray("set"), varray());
+	bind_method(Set, is_typed, sarray(), varray());
+	bind_method(Set, is_same_typed, sarray("set"), varray());
+	bind_method(Set, get_typed_builtin, sarray(), varray());
+	bind_method(Set, get_typed_class_name, sarray(), varray());
+	bind_method(Set, get_typed_script, sarray(), varray());
+	bind_method(Set, assign, sarray("set"), varray());
 }
 
 static void _register_variant_builtin_methods_array() {

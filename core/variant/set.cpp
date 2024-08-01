@@ -30,13 +30,16 @@
 
 #include "set.h"
 
+#include "container_type_validate.h"
 #include "core/object/class_db.h"
+#include "core/variant/variant.h"
 #include "core/variant/variant_internal.h"
 
 struct SetPrivate {
 	SafeRefCount refcount;
 	Variant *read_only = nullptr; // If enabled, a pointer is used to a temporary value that is used to return read-only values.
 	HashSet<Variant, VariantHasher, StringLikeVariantComparator> variant_set;
+	ContainerTypeValidate typed;
 };
 
 Set::Iterator &Set::Iterator::operator++() {
@@ -365,4 +368,119 @@ Set::Set() {
 
 Set::~Set() {
 	_unref();
+}
+
+Set::Set(const Set &p_from, uint32_t p_type, const StringName &p_class_name, const Variant &p_script) {
+	_p = memnew(SetPrivate);
+	_p->refcount.init();
+	set_typed(p_type, p_class_name, p_script);
+	assign(p_from);
+}
+
+void Set::set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script) {
+	ERR_FAIL_COND_MSG(_p->read_only, "Set is in read-only state.");
+	ERR_FAIL_COND_MSG(_p->variant_set.size() > 0, "Type can only be set when set is empty.");
+	ERR_FAIL_COND_MSG(_p->refcount.get() > 1, "Type can only be set when set has no more than one user.");
+	ERR_FAIL_COND_MSG(_p->typed.type != Variant::NIL, "Type can only be set once.");
+	ERR_FAIL_COND_MSG(p_class_name != StringName() && p_type != Variant::OBJECT, "Class names can only be set for type OBJECT");
+	Ref<Script> script = p_script;
+	ERR_FAIL_COND_MSG(script.is_valid() && p_class_name == StringName(), "Script class can only be set together with base class name");
+
+	_p->typed.type = Variant::Type(p_type);
+	_p->typed.class_name = p_class_name;
+	_p->typed.script = script;
+	_p->typed.where = "TypedSet";
+}
+
+bool Set::is_typed() const {
+	return _p->typed.type != Variant::NIL;
+}
+
+bool Set::is_same_typed(const Set &p_other) const {
+	return _p->typed == p_other._p->typed;
+}
+
+uint32_t Set::get_typed_builtin() const {
+	return _p->typed.type;
+}
+
+StringName Set::get_typed_class_name() const {
+	return _p->typed.class_name;
+}
+
+Variant Set::get_typed_script() const {
+	return _p->typed.script;
+}
+
+void Set::assign(const Set &p_set) {
+	const ContainerTypeValidate &typed = _p->typed;
+	const ContainerTypeValidate &source_typed = p_set._p->typed;
+
+	if (typed == source_typed || typed.type == Variant::NIL || (source_typed.type == Variant::OBJECT && typed.can_reference(source_typed))) {
+		// from same to same or
+		// from anything to variants or
+		// from subclasses to base classes
+		_p->variant_set = p_set._p->variant_set;
+		return;
+	}
+
+	if ((source_typed.type == Variant::NIL && typed.type == Variant::OBJECT) || (source_typed.type == Variant::OBJECT && source_typed.can_reference(typed))) {
+		// from variants to objects or
+		// from base classes to subclasses
+		int i = 0;
+		for (const Variant &element : p_set) {
+			if (element.get_type() != Variant::NIL && (element.get_type() != Variant::OBJECT || !typed.validate_object(element, "assign"))) {
+				ERR_FAIL_MSG(vformat(R"(Unable to convert set index %i from "%s" to "%s".)", i, Variant::get_type_name(element.get_type()), Variant::get_type_name(typed.type)));
+			}
+			i++;
+		}
+		_p->variant_set = p_set._p->variant_set;
+		return;
+	}
+	if (typed.type == Variant::OBJECT || source_typed.type == Variant::OBJECT) {
+		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Set[%s]" to "Set[%s]".)", Variant::get_type_name(source_typed.type), Variant::get_type_name(typed.type)));
+	}
+
+	HashSet<Variant, VariantHasher, StringLikeVariantComparator> set;
+
+	if (source_typed.type == Variant::NIL && typed.type != Variant::OBJECT) {
+		// from variants to primitives
+		int i = -1;
+		for (const Variant &value : p_set) {
+			i++;
+			if (value.get_type() == typed.type) {
+				set.insert(value);
+				continue;
+			}
+			if (!Variant::can_convert_strict(value.get_type(), typed.type)) {
+				ERR_FAIL_MSG("Unable to convert set index " + itos(i) + " from '" + Variant::get_type_name(value.get_type()) + "' to '" + Variant::get_type_name(typed.type) + "'.");
+			}
+
+			Callable::CallError ce;
+			Variant v;
+			const Variant *value_ptr = &value;
+
+			Variant::construct(typed.type, v, &value_ptr, 1, ce);
+			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert set index %i from "%s" to "%s".)", i, Variant::get_type_name(value.get_type()), Variant::get_type_name(typed.type)));
+			set.insert(v);
+		}
+	} else if (Variant::can_convert_strict(source_typed.type, typed.type)) {
+		// from primitives to different convertible primitives
+		int i = 0;
+		for (const Variant &value : p_set) {
+			Callable::CallError ce;
+			Variant v;
+			const Variant *value_ptr = &value;
+
+			Variant::construct(typed.type, v, &value_ptr, 1, ce);
+			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert set index %i from "%s" to "%s".)", i, Variant::get_type_name(value.get_type()), Variant::get_type_name(typed.type)));
+			set.insert(v);
+
+			i++;
+		}
+	} else {
+		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Set[%s]" to "Set[%s]".)", Variant::get_type_name(source_typed.type), Variant::get_type_name(typed.type)));
+	}
+
+	_p->variant_set = set;
 }

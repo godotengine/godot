@@ -1669,6 +1669,7 @@ public:
 		void print_preload(PreloadNode *p_preload);
 		void print_return(ReturnNode *p_return);
 		void print_self(SelfNode *p_self);
+		void print_set(SetNode *p_set);
 		void print_signal(SignalNode *p_signal);
 		void print_statement(Node *p_statement);
 		void print_subscript(SubscriptNode *p_subscript);

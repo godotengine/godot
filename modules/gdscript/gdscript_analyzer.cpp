@@ -696,6 +696,12 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 					container_type.is_constant = false;
 					result.set_container_element_type(0, container_type);
 				}
+			} else if (result.builtin_type == Variant::SET) {
+				GDScriptParser::DataType container_type = type_from_metatype(resolve_datatype(p_type->get_container_type_or_null(0)));
+				if (container_type.kind != GDScriptParser::DataType::VARIANT) {
+					container_type.is_constant = false;
+					result.set_container_element_type(0, container_type);
+				}
 			}
 		} else if (class_exists(first)) {
 			// Native engine classes.
@@ -860,8 +866,13 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 				push_error("Arrays require exactly one collection element type.", p_type);
 				return bad_type;
 			}
+		} else if (result.builtin_type == Variant::SET) {
+			if (p_type->container_types.size() != 1) {
+				push_error("Sets require exactly one collection element type.", p_type);
+				return bad_type;
+			}
 		} else {
-			push_error("Only arrays can specify collection element types.", p_type);
+			push_error("Only arrays & sets can specify collection element types.", p_type);
 			return bad_type;
 		}
 	}
@@ -4839,6 +4850,8 @@ Variant GDScriptAnalyzer::make_expression_reduced_value(GDScriptParser::Expressi
 		value = make_array_reduced_value(static_cast<GDScriptParser::ArrayNode *>(p_expression), is_reduced);
 	} else if (p_expression->type == GDScriptParser::Node::DICTIONARY) {
 		value = make_dictionary_reduced_value(static_cast<GDScriptParser::DictionaryNode *>(p_expression), is_reduced);
+	} else if (p_expression->type == GDScriptParser::Node::SET) {
+		value = make_set_reduced_value(static_cast<GDScriptParser::SetNode *>(p_expression), is_reduced);
 	} else if (p_expression->type == GDScriptParser::Node::SUBSCRIPT) {
 		value = make_subscript_reduced_value(static_cast<GDScriptParser::SubscriptNode *>(p_expression), is_reduced);
 	}
@@ -4893,6 +4906,27 @@ Variant GDScriptAnalyzer::make_dictionary_reduced_value(GDScriptParser::Dictiona
 
 	is_reduced = true;
 	return dictionary;
+}
+
+Variant GDScriptAnalyzer::make_set_reduced_value(GDScriptParser::SetNode *p_set, bool &is_reduced) {
+	Set set = p_set->get_datatype().has_container_element_type(0) ? make_set_from_element_datatype(p_set->get_datatype().get_container_element_type(0)) : Set();
+
+	for (int i = 0; i < p_set->elements.size(); i++) {
+		GDScriptParser::ExpressionNode *element = p_set->elements[i];
+
+		bool is_element_value_reduced = false;
+		Variant element_value = make_expression_reduced_value(element, is_element_value_reduced);
+		if (!is_element_value_reduced) {
+			return Variant();
+		}
+
+		set.add(element_value);
+	}
+
+	set.make_read_only();
+
+	is_reduced = true;
+	return set;
 }
 
 Variant GDScriptAnalyzer::make_subscript_reduced_value(GDScriptParser::SubscriptNode *p_subscript, bool &is_reduced) {
@@ -4956,6 +4990,29 @@ Array GDScriptAnalyzer::make_array_from_element_datatype(const GDScriptParser::D
 	return array;
 }
 
+Set GDScriptAnalyzer::make_set_from_element_datatype(const GDScriptParser::DataType &p_element_datatype, const GDScriptParser::Node *p_source_node) {
+	Set set;
+
+	if (p_element_datatype.builtin_type == Variant::OBJECT) {
+		Ref<Script> script_type = p_element_datatype.script_type;
+		if (p_element_datatype.kind == GDScriptParser::DataType::CLASS && script_type.is_null()) {
+			Error err = OK;
+			Ref<GDScript> scr = GDScriptCache::get_shallow_script(p_element_datatype.script_path, err, parser->script_path);
+			if (err) {
+				push_error(vformat(R"(Error while getting cache for script "%s".)", p_element_datatype.script_path), p_source_node);
+				return set;
+			}
+			script_type.reference_ptr(scr->find_class(p_element_datatype.class_type->fqcn));
+		}
+
+		set.set_typed(p_element_datatype.builtin_type, p_element_datatype.native_type, script_type);
+	} else {
+		set.set_typed(p_element_datatype.builtin_type, StringName(), Variant());
+	}
+
+	return set;
+}
+
 Variant GDScriptAnalyzer::make_variable_default_value(GDScriptParser::VariableNode *p_variable) {
 	Variant result = Variant();
 
@@ -4971,6 +5028,8 @@ Variant GDScriptAnalyzer::make_variable_default_value(GDScriptParser::VariableNo
 			if (datatype.kind == GDScriptParser::DataType::BUILTIN && datatype.builtin_type != Variant::OBJECT) {
 				if (datatype.builtin_type == Variant::ARRAY && datatype.has_container_element_type(0)) {
 					result = make_array_from_element_datatype(datatype.get_container_element_type(0));
+				} else if (datatype.builtin_type == Variant::SET && datatype.has_container_element_type(0)) {
+					result = make_set_from_element_datatype(datatype.get_container_element_type(0));
 				} else {
 					VariantInternal::initialize(&result, datatype.builtin_type);
 				}
@@ -4998,6 +5057,15 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_variant(const Variant &p_va
 			result.set_container_element_type(0, type_from_metatype(make_native_meta_type(array.get_typed_class_name())));
 		} else if (array.get_typed_builtin() != Variant::NIL) {
 			result.set_container_element_type(0, type_from_metatype(make_builtin_meta_type((Variant::Type)array.get_typed_builtin())));
+		}
+	} else if (p_value.get_type() == Variant::SET) {
+		const Set &set = p_value;
+		if (set.get_typed_script()) {
+			result.set_container_element_type(0, type_from_metatype(make_script_meta_type(set.get_typed_script())));
+		} else if (set.get_typed_class_name()) {
+			result.set_container_element_type(0, type_from_metatype(make_native_meta_type(set.get_typed_class_name())));
+		} else if (set.get_typed_builtin() != Variant::NIL) {
+			result.set_container_element_type(0, type_from_metatype(make_builtin_meta_type((Variant::Type)set.get_typed_builtin())));
 		}
 	} else if (p_value.get_type() == Variant::OBJECT) {
 		// Object is treated as a native type, not a builtin type.
@@ -5105,6 +5173,33 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo
 		result.kind = GDScriptParser::DataType::BUILTIN;
 		result.builtin_type = p_property.type;
 		if (p_property.type == Variant::ARRAY && p_property.hint == PROPERTY_HINT_ARRAY_TYPE) {
+			// Check element type.
+			StringName elem_type_name = p_property.hint_string;
+			GDScriptParser::DataType elem_type;
+			elem_type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
+
+			Variant::Type elem_builtin_type = GDScriptParser::get_builtin_type(elem_type_name);
+			if (elem_builtin_type < Variant::VARIANT_MAX) {
+				// Builtin type.
+				elem_type.kind = GDScriptParser::DataType::BUILTIN;
+				elem_type.builtin_type = elem_builtin_type;
+			} else if (class_exists(elem_type_name)) {
+				elem_type.kind = GDScriptParser::DataType::NATIVE;
+				elem_type.builtin_type = Variant::OBJECT;
+				elem_type.native_type = elem_type_name;
+			} else if (ScriptServer::is_global_class(elem_type_name)) {
+				// Just load this as it shouldn't be a GDScript.
+				Ref<Script> script = ResourceLoader::load(ScriptServer::get_global_class_path(elem_type_name));
+				elem_type.kind = GDScriptParser::DataType::SCRIPT;
+				elem_type.builtin_type = Variant::OBJECT;
+				elem_type.native_type = script->get_instance_base_type();
+				elem_type.script_type = script;
+			} else {
+				ERR_FAIL_V_MSG(result, "Could not find element type from property hint of a typed array.");
+			}
+			elem_type.is_constant = false;
+			result.set_container_element_type(0, elem_type);
+		} else if (p_property.type == Variant::SET && p_property.hint == PROPERTY_HINT_ARRAY_TYPE) {
 			// Check element type.
 			StringName elem_type_name = p_property.hint_string;
 			GDScriptParser::DataType elem_type;
@@ -5490,6 +5585,14 @@ GDScriptParser::DataType GDScriptAnalyzer::get_operation_type(Variant::Operator 
 			return result;
 		}
 	}
+	if (p_operation == Variant::OP_ADD && a_type == Variant::SET && b_type == Variant::SET) {
+		if (p_a.has_container_element_type(0) && p_b.has_container_element_type(0) && p_a.get_container_element_type(0) == p_b.get_container_element_type(0)) {
+			r_valid = true;
+			result = p_a;
+			result.type_source = hard_operation ? GDScriptParser::DataType::ANNOTATED_INFERRED : GDScriptParser::DataType::INFERRED;
+			return result;
+		}
+	}
 
 	Variant::ValidatedOperatorEvaluator op_eval = Variant::get_validated_operator_evaluator(p_operation, a_type, b_type);
 	bool validated = op_eval != nullptr;
@@ -5546,6 +5649,12 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 			valid = true;
 		}
 		if (valid && p_target.builtin_type == Variant::ARRAY && p_source.builtin_type == Variant::ARRAY) {
+			// Check the element type.
+			if (p_target.has_container_element_type(0) && p_source.has_container_element_type(0)) {
+				valid = p_target.get_container_element_type(0) == p_source.get_container_element_type(0);
+			}
+		}
+		if (valid && p_target.builtin_type == Variant::SET && p_source.builtin_type == Variant::SET) {
 			// Check the element type.
 			if (p_target.has_container_element_type(0) && p_source.has_container_element_type(0)) {
 				valid = p_target.get_container_element_type(0) == p_source.get_container_element_type(0);

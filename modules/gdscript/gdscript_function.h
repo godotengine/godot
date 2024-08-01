@@ -93,6 +93,24 @@ public:
 					} else {
 						valid = false;
 					}
+				} else if (valid && builtin_type == Variant::SET && has_container_element_type(0)) {
+					Set set = p_variant;
+					if (set.is_typed()) {
+						const GDScriptDataType &elem_type = container_element_types[0];
+						Variant::Type set_builtin_type = (Variant::Type)set.get_typed_builtin();
+						StringName set_native_type = set.get_typed_class_name();
+						Ref<Script> set_script_type_ref = set.get_typed_script();
+
+						if (set_script_type_ref.is_valid()) {
+							valid = (elem_type.kind == SCRIPT || elem_type.kind == GDSCRIPT) && elem_type.script_type == set_script_type_ref.ptr();
+						} else if (set_native_type != StringName()) {
+							valid = elem_type.kind == NATIVE && elem_type.native_type == set_native_type;
+						} else {
+							valid = elem_type.kind == BUILTIN && elem_type.builtin_type == set_builtin_type;
+						}
+					} else {
+						valid = false;
+					}
 				} else if (!valid && p_allow_implicit_conversion) {
 					valid = Variant::can_convert_strict(var_type, builtin_type);
 				}
@@ -156,6 +174,11 @@ public:
 					}
 					return true;
 				case Variant::DICTIONARY:
+				case Variant::SET:
+					if (has_container_element_type(0)) {
+						return container_element_types[0].can_contain_object();
+					}
+					return true;
 				case Variant::NIL:
 				case Variant::OBJECT:
 					return true;
@@ -220,6 +243,7 @@ public:
 		OPCODE_OPERATOR_VALIDATED,
 		OPCODE_TYPE_TEST_BUILTIN,
 		OPCODE_TYPE_TEST_ARRAY,
+		OPCODE_TYPE_TEST_SET,
 		OPCODE_TYPE_TEST_NATIVE,
 		OPCODE_TYPE_TEST_SCRIPT,
 		OPCODE_SET_KEYED,
@@ -242,6 +266,7 @@ public:
 		OPCODE_ASSIGN_FALSE,
 		OPCODE_ASSIGN_TYPED_BUILTIN,
 		OPCODE_ASSIGN_TYPED_ARRAY,
+		OPCODE_ASSIGN_TYPED_SET,
 		OPCODE_ASSIGN_TYPED_NATIVE,
 		OPCODE_ASSIGN_TYPED_SCRIPT,
 		OPCODE_CAST_TO_BUILTIN,
@@ -253,6 +278,7 @@ public:
 		OPCODE_CONSTRUCT_TYPED_ARRAY,
 		OPCODE_CONSTRUCT_DICTIONARY,
 		OPCODE_CONSTRUCT_SET,
+		OPCODE_CONSTRUCT_TYPED_SET,
 		OPCODE_CALL,
 		OPCODE_CALL_RETURN,
 		OPCODE_CALL_ASYNC,
@@ -281,6 +307,7 @@ public:
 		OPCODE_RETURN,
 		OPCODE_RETURN_TYPED_BUILTIN,
 		OPCODE_RETURN_TYPED_ARRAY,
+		OPCODE_RETURN_TYPED_SET,
 		OPCODE_RETURN_TYPED_NATIVE,
 		OPCODE_RETURN_TYPED_SCRIPT,
 		OPCODE_ITERATE_BEGIN,

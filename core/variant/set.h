@@ -42,6 +42,7 @@ struct SetPrivate;
 class Set {
 	mutable SetPrivate *_p;
 
+protected:
 	void _ref(const Set &p_from) const;
 	void _unref() const;
 
@@ -76,6 +77,14 @@ public:
 
 	void merge(const Set &p_set);
 	Set merged(const Set &p_set) const;
+
+	void assign(const Set &p_set);
+	void set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
+	bool is_typed() const;
+	bool is_same_typed(const Set &p_other) const;
+	uint32_t get_typed_builtin() const;
+	StringName get_typed_class_name() const;
+	Variant get_typed_script() const;
 
 	void add(const Variant &p_value) { insert(p_value); }
 	void remove(const Variant &p_value) { erase(p_value); }
@@ -122,6 +131,7 @@ public:
 
 	const void *id() const;
 
+	Set(const Set &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	Set(const Set &p_from);
 	Set();
 	~Set();

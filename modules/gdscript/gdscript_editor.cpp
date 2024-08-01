@@ -695,6 +695,8 @@ static String _get_visual_datatype(const PropertyInfo &p_info, bool p_is_arg, co
 		return _trim_parent_class(class_name, p_base_class);
 	} else if (p_info.type == Variant::ARRAY && p_info.hint == PROPERTY_HINT_ARRAY_TYPE && !p_info.hint_string.is_empty()) {
 		return "Array[" + _trim_parent_class(p_info.hint_string, p_base_class) + "]";
+	} else if (p_info.type == Variant::SET && p_info.hint == PROPERTY_HINT_ARRAY_TYPE && !p_info.hint_string.is_empty()) {
+		return "Set[" + _trim_parent_class(p_info.hint_string, p_base_class) + "]";
 	} else if (p_info.type == Variant::NIL) {
 		if (p_is_arg || (p_info.usage & PROPERTY_USAGE_NIL_IS_VARIANT)) {
 			return "Variant";
@@ -1727,6 +1729,35 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 				r_type.type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 				r_type.type.kind = GDScriptParser::DataType::BUILTIN;
 				r_type.type.builtin_type = Variant::ARRAY;
+				found = true;
+			} break;
+			case GDScriptParser::Node::SET: {
+				// Try to recreate the set
+				const GDScriptParser::SetNode *sn = static_cast<const GDScriptParser::SetNode *>(p_expression);
+				Set s;
+				bool full = true;
+				for (int i = 0; i < sn->elements.size(); i++) {
+					GDScriptCompletionIdentifier value;
+					if (_guess_expression_type(p_context, sn->elements[i], value)) {
+						if (value.type.is_constant) {
+							s.add(value.value);
+						} else {
+							full = false;
+							break;
+						}
+					} else {
+						full = false;
+						break;
+					}
+				}
+				if (full) {
+					// If not fully constant, setting this value is detrimental to the inference.
+					r_type.value = s;
+					r_type.type.is_constant = true;
+				}
+				r_type.type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
+				r_type.type.kind = GDScriptParser::DataType::BUILTIN;
+				r_type.type.builtin_type = Variant::SET;
 				found = true;
 			} break;
 			case GDScriptParser::Node::CAST: {
