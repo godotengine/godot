@@ -6949,12 +6949,6 @@ msgstr ""
 "Redigeerimisrežiim\n"
 "Näita liigestel nuppe."
 
-msgid "Insert key of bone poses already exist track."
-msgstr "Sisestage luupooside võti juba olemas."
-
-msgid "Insert key of all bone poses."
-msgstr "Sisestage kõigi luupooside võti."
-
 msgid "Insert Key (All Bones)"
 msgstr "Sisesta võti (kõik luud)"
 

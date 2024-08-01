@@ -9029,12 +9029,6 @@ msgstr ""
 "Mode Edit\n"
 "Menampilkan tombol pada sambungan."
 
-msgid "Insert key of bone poses already exist track."
-msgstr "Sisipkan kunci pose tulang yang sudah ada di trek."
-
-msgid "Insert key of all bone poses."
-msgstr "Sisipkan kunci dari semua pose tulang."
-
 msgid "Insert Key (All Bones)"
 msgstr "Sisipkan Kunci (Semua Tulang)"
 

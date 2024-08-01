@@ -20,13 +20,14 @@
 # Mikuláš Suchanovský <mikulassuchanovsky@protonmail.com>, 2023.
 # Ellie Star <gender.thief.star@gmail.com>, 2023.
 # Lmpsk <adamgramblicka@hotmail.com>, 2024.
+# Gelissean <gelu586@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-05-24 06:16+0000\n"
-"Last-Translator: Lmpsk <adamgramblicka@hotmail.com>\n"
+"PO-Revision-Date: 2024-07-31 15:41+0000\n"
+"Last-Translator: Gelissean <gelu586@gmail.com>\n"
 "Language-Team: Slovak <https://hosted.weblate.org/projects/godot-engine/godot/"
 "sk/>\n"
 "Language: sk\n"
@@ -34,7 +35,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
-"X-Generator: Weblate 5.6-dev\n"
+"X-Generator: Weblate 5.7-dev\n"
 
 msgid "Main Thread"
 msgstr "Hlavné vlákno"
@@ -538,6 +539,18 @@ msgid "Can't change loop mode on animation instanced from imported scene."
 msgstr ""
 "Nie je možné zmeniť mód cyklenia v animácií, inštanciovanej v importovanej "
 "scéne."
+
+msgid "Property Track..."
+msgstr "Stopa vlastnosti..."
+
+msgid "3D Position Track..."
+msgstr "Stopa 3D pozície..."
+
+msgid "3D Rotation Track..."
+msgstr "Stopa 3D rotácie..."
+
+msgid "3D Scale Track..."
+msgstr "Stopa 3D škálovania..."
 
 msgid "Animation length (frames)"
 msgstr "Dĺžka animácie (v snímkoch)"
@@ -6979,8 +6992,14 @@ msgstr "Neplatný zdroj pre shader."
 msgid "Invalid comparison function for that type."
 msgstr "Neplatná funkcia porovnania pre tento typ."
 
+msgid "Surface Index"
+msgstr "Index povrchu"
+
 msgid "Invalid arguments for the built-in function: \"%s(%s)\"."
 msgstr "Neplatné argumenty pre vstavanú funkciu: \"%s(%s)\"."
+
+msgid "Recursion is not allowed."
+msgstr "Rekurzia nie je povolená."
 
 msgid "Invalid assignment of '%s' to '%s'."
 msgstr "Neplatné priradenie '%s' k '%s'."

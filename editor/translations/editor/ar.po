@@ -9465,12 +9465,6 @@ msgstr ""
 "نَمَط التحرير\n"
 "إظهار الأزرار على المفاصل."
 
-msgid "Insert key of bone poses already exist track."
-msgstr "أدخل مفتاح العظام في وضعيات المسار الموجودة بالفعل."
-
-msgid "Insert key of all bone poses."
-msgstr "أدخل المفتاح لجميع أوضاع العظام."
-
 msgid "Insert Key (All Bones)"
 msgstr "أدخل المفتاح (جميع العظام)"
 
@@ -13432,21 +13426,8 @@ msgstr "إعدادات التصدير:"
 msgid "glTF 2.0 Scene..."
 msgstr "مشهد glTF 2.0..."
 
-msgid "Path to Blender installation is valid (Autodetected)."
-msgstr "المسار إلى تثبيت Blender صالح (تم اكتشافه تلقائيًا)."
-
-msgid "Path to Blender installation is valid."
-msgstr "المسار إلى تثبيت Blender صالح."
-
 msgid "Configure Blender Importer"
 msgstr "تحرير إعدادات مستورد Blender"
-
-msgid ""
-"Blender 3.0+ is required to import '.blend' files.\n"
-"Please provide a valid path to a Blender installation:"
-msgstr ""
-"مطلوب Blender 3.0+ لاستيراد ملفات \".blend\".\n"
-"يرجى توفير مسار صالح لتثبيت Blender:"
 
 msgid "Disable '.blend' Import"
 msgstr "تعطيل استيراد '.blend'"
@@ -15432,13 +15413,6 @@ msgid ""
 msgstr ""
 "تم استدعاء وسيطة جهاز أخذ العينات %d للدالة '%s' أكثر من مرة باستخدام كل من "
 "الأنسجة المضمنة والموحدة، وهذا غير مدعوم (استخدم أحدهما أو الآخر)."
-
-msgid ""
-"Sampler argument %d of function '%s' called more than once using textures "
-"that differ in either filter or repeat setting."
-msgstr ""
-"تم استدعاء وسيطة جهاز أخذ العينات %d للدالة '%s' أكثر من مرة باستخدام مواد "
-"تختلف في إعداد التصفية أو التكرار."
 
 msgid ""
 "Sampler argument %d of function '%s' called more than once using different "

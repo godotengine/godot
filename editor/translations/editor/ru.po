@@ -197,13 +197,14 @@
 # Andrey Razin <AndreyRazinWork@yandex.ru>, 2024.
 # Tim Zh <tim3@mail.ru>, 2024.
 # Lev73 <asusgamens@gmail.com>, 2024.
+# LLIax <aultero@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-19 11:39+0000\n"
-"Last-Translator: Lev73 <asusgamens@gmail.com>\n"
+"PO-Revision-Date: 2024-07-29 14:26+0000\n"
+"Last-Translator: Ruslan <vovavalenkov15@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -3678,6 +3679,13 @@ msgid "%s no longer exists! Please specify a new save location."
 msgstr "%s больше не существует! Пожалуйста, укажите новое место сохранения."
 
 msgid ""
+"The current scene has no root node, but %d modified external resource(s) and/"
+"or plugin data were saved anyway."
+msgstr ""
+"Текущая сцена не имеет корневого узла, но изменённые внешние ресурсы и (или) "
+"данные плагина (%d) всё равно были сохранены."
+
+msgid ""
 "A root node is required to save the scene. You can add a root node using the "
 "Scene tree dock."
 msgstr ""
@@ -4515,6 +4523,9 @@ msgstr "Запуск проекта"
 
 msgid "Write your logic in the _run() method."
 msgstr "Пишите ваш код в методе _run()."
+
+msgid "The current scene already has a root node."
+msgstr "У текущей сцены уже есть корневой узел."
 
 msgid "Edit Built-in Action: %s"
 msgstr "Изменить встроенное действие: %s"
@@ -6612,6 +6623,15 @@ msgstr "Развернуть изменённые"
 
 msgid "Property Name Style"
 msgstr "Стиль имени свойства"
+
+msgid "Raw (e.g. \"%s\")"
+msgstr "Без обработки (например, \"%s\")"
+
+msgid "Capitalized (e.g. \"%s\")"
+msgstr "Прописные буквы (например, \"%s\")"
+
+msgid "Localized (e.g. \"Z Index\")"
+msgstr "Локализованные (например, \"Z-индекс\")"
 
 msgid "Localization not available for current language."
 msgstr "Локализация недоступна для данного языка."
@@ -10667,12 +10687,6 @@ msgstr ""
 "Режим редактирования\n"
 "Показывать кнопки на соединениях."
 
-msgid "Insert key of bone poses already exist track."
-msgstr "Вставить ключ поз костей для существующих дорожек."
-
-msgid "Insert key of all bone poses."
-msgstr "Вставить ключ всех поз костей."
-
 msgid "Insert Key (All Bones)"
 msgstr "Вставить ключ (все кости)"
 
@@ -14302,6 +14316,9 @@ msgstr "Масштаб отображения"
 msgid "Network Mode"
 msgstr "Режим сети"
 
+msgid "Directory Naming Convention"
+msgstr "Наименование директорий"
+
 msgid ""
 "Settings changed! The project manager must be restarted for changes to take "
 "effect."
@@ -15220,24 +15237,8 @@ msgstr "Параметры экспорта:"
 msgid "glTF 2.0 Scene..."
 msgstr "Сцена glTF 2.0…"
 
-msgid "Unexpected --version output from Blender binary at: %s."
-msgstr "Неожиданный вывод --version из двоичного файла Blender по адресу: %s."
-
-msgid "Path to Blender installation is valid (Autodetected)."
-msgstr "Путь к установке Blender является допустимым (определён автоматически)."
-
-msgid "Path to Blender installation is valid."
-msgstr "Путь к установке Blender является допустимым."
-
 msgid "Configure Blender Importer"
 msgstr "Настроить средство импорта Blender"
-
-msgid ""
-"Blender 3.0+ is required to import '.blend' files.\n"
-"Please provide a valid path to a Blender installation:"
-msgstr ""
-"Для импорта файлов «.blend» требуется Blender 3.0+.\n"
-"Укажите правильный путь к установке Blender:"
 
 msgid "Disable '.blend' Import"
 msgstr "Отключить импорт «.blend»"
@@ -17707,13 +17708,6 @@ msgstr ""
 "использовать что-то одно)."
 
 msgid ""
-"Sampler argument %d of function '%s' called more than once using textures "
-"that differ in either filter or repeat setting."
-msgstr ""
-"Аргумент сэмплера %d функции «%s» вызывается больше одного раза с помощью "
-"текстур, у которых отличается параметр фильтра или повтора."
-
-msgid ""
 "Sampler argument %d of function '%s' called more than once using different "
 "built-ins. Only calling with the same built-in is supported."
 msgstr ""
@@ -17762,11 +17756,6 @@ msgstr "Ожидалось имя функции."
 
 msgid "No matching function found for: '%s'."
 msgstr "Не найдена соответствующая функция для: «%s»."
-
-msgid ""
-"Varying '%s' must be assigned in the 'vertex' or 'fragment' function first."
-msgstr ""
-"Вариацию «%s» сначала необходимо задать в функции «vertex» или «fragment»."
 
 msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr "Вариация «%s» не может быть передана параметру «%s» в этом контексте."

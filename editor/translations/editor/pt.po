@@ -59,13 +59,14 @@
 # Druiditbeau <druiditbeau@gmail.com>, 2024.
 # Ruan Victor <ruanvictordossantoscorrea128@gmail.com>, 2024.
 # Christian <cristianvito22@gmail.com>, 2024.
+# Ricardo  Farinha <Ricardoarfarinha@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-21 02:07+0000\n"
-"Last-Translator: Gustavo Alves <gustavoaw2@gmail.com>\n"
+"PO-Revision-Date: 2024-07-31 15:41+0000\n"
+"Last-Translator: Ricardo  Farinha <Ricardoarfarinha@gmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pt/>\n"
 "Language: pt\n"
@@ -10267,6 +10268,9 @@ msgstr "Faça o editor de script flutuar."
 msgid "Discard"
 msgstr "Descartar"
 
+msgid "The following files are newer on disk."
+msgstr "Os seguintes ficheiros são mais recentes no disco."
+
 msgid "What action should be taken?:"
 msgstr "Qual ação deve ser tomada?:"
 
@@ -10569,12 +10573,6 @@ msgid ""
 msgstr ""
 "Modo Edição\n"
 "Mostrar botões nas junções."
-
-msgid "Insert key of bone poses already exist track."
-msgstr "Chave inserida na postura de ossos já existe na faixa."
-
-msgid "Insert key of all bone poses."
-msgstr "Inserir Chaves de Todas as Posturas de Ossos."
 
 msgid "Insert Key (All Bones)"
 msgstr "Inserir Chave (Todos os Ossos)"
@@ -14941,25 +14939,8 @@ msgstr "Exportar Cena para Ficheiro glTF 2.0"
 msgid "glTF 2.0 Scene..."
 msgstr "Cena glTF 2.0..."
 
-msgid "Can't execute Blender binary."
-msgstr "Não foi possível executar Blender Binary."
-
-msgid "Path to Blender installation is valid (Autodetected)."
-msgstr ""
-"O caminho para a instalação do Blender é válido (detectado automaticamente)."
-
-msgid "Path to Blender installation is valid."
-msgstr "O caminho à instalação do Blender é válido."
-
 msgid "Configure Blender Importer"
 msgstr "Configurar Importador do Blender"
-
-msgid ""
-"Blender 3.0+ is required to import '.blend' files.\n"
-"Please provide a valid path to a Blender installation:"
-msgstr ""
-"O Blender 3.0+ é necessário para importar ficheiros '.blend'.\n"
-"Forneça um caminho válido para uma instalação do Blender:"
 
 msgid "Disable '.blend' Import"
 msgstr "Desativar Importação '.blend'"
@@ -15382,6 +15363,9 @@ msgstr "Desconhecido"
 msgid "Select an action"
 msgstr "Selecione uma ação"
 
+msgid "Choose an XR runtime."
+msgstr "Escolha uma runtime XR."
+
 msgid ""
 "Cannot use the same SubViewport with multiple OpenXR composition layers. "
 "Clear it from its current layer first."
@@ -15395,6 +15379,9 @@ msgid ""
 msgstr ""
 "Camadas de Composição OpenXR devem ter transformações orto-normalizadas (sem "
 "escala ou cortes)."
+
+msgid "Error creating keystores directory:"
+msgstr "Erro ao criar diretório keystores:"
 
 msgid "Invalid public key for APK expansion."
 msgstr "Chave pública inválida para expansão APK."
@@ -15784,6 +15771,9 @@ msgstr "Não foi possível iniciar o executável ios-deploy."
 msgid "Installation/running failed, see editor log for details."
 msgstr ""
 "Falha na instalação/execução, consulte o log do editor para obter detalhes."
+
+msgid "Debug Script Export"
+msgstr "Exportação do Script Debug"
 
 msgid "Could not open file \"%s\"."
 msgstr "Não foi possível abrir o ficheiro \"%s\"."
@@ -17363,13 +17353,6 @@ msgstr ""
 "texturas integradas e uniformes, isso não é suportado (use um ou outro)."
 
 msgid ""
-"Sampler argument %d of function '%s' called more than once using textures "
-"that differ in either filter or repeat setting."
-msgstr ""
-"Argumento de amostra %d da função '%s' chamado mais que uma vez usando "
-"texturas que diferem na configuração de filtro ou repetição."
-
-msgid ""
 "Sampler argument %d of function '%s' called more than once using different "
 "built-ins. Only calling with the same built-in is supported."
 msgstr ""
@@ -17417,11 +17400,6 @@ msgstr "Esperava um nome de função."
 
 msgid "No matching function found for: '%s'."
 msgstr "Nenhuma função correspondente encontrada para: '%s'."
-
-msgid ""
-"Varying '%s' must be assigned in the 'vertex' or 'fragment' function first."
-msgstr ""
-"Varying '%s' deve ser atribuída na função 'vertex' ou 'fragment' primeiro."
 
 msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr "Varying '%s' não pode ser passada para o parâmetro '%s' nesse contexto."

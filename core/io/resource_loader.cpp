@@ -345,7 +345,14 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 
 	bool ignoring = load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_IGNORE || load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_IGNORE_DEEP;
 	bool replacing = load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE || load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE_DEEP;
+	bool unlock_pending = true;
 	if (load_task.resource.is_valid()) {
+		// From now on, no critical section needed as no one will write to the task anymore.
+		// Moreover, the mutex being unlocked is a requirement if some of the calls below
+		// that set the resource up invoke code that in turn requests resource loading.
+		thread_load_mutex.unlock();
+		unlock_pending = false;
+
 		if (!ignoring) {
 			if (replacing) {
 				Ref<Resource> old_res = ResourceCache::get_ref(load_task.local_path);
@@ -383,13 +390,18 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 			load_task.status = THREAD_LOAD_LOADED;
 			load_task.progress = 1.0;
 
+			thread_load_mutex.unlock();
+			unlock_pending = false;
+
 			if (_loaded_callback) {
 				_loaded_callback(load_task.resource, load_task.local_path);
 			}
 		}
 	}
 
-	thread_load_mutex.unlock();
+	if (unlock_pending) {
+		thread_load_mutex.unlock();
+	}
 
 	if (load_nesting == 0) {
 		if (own_mq_override) {

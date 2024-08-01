@@ -438,7 +438,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path + ".import", FileAccess::READ, &err);
 
-	if (f.is_null()) { //no import file, do reimport
+	if (f.is_null()) { // No import file, reimport.
 		return true;
 	}
 
@@ -472,10 +472,15 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 			break;
 		} else if (err != OK) {
 			ERR_PRINT("ResourceFormatImporter::load - '" + p_path + ".import:" + itos(lines) + "' error '" + error_text + "'.");
-			return false; //parse error, try reimport manually (Avoid reimport loop on broken file)
+			// Parse error, skip and let user attempt manual reimport to avoid reimport loop.
+			return false;
 		}
 
 		if (!assign.is_empty()) {
+			if (assign == "valid" && value.operator bool() == false) {
+				// Invalid import (failed previous import), skip and let user attempt manual reimport to avoid reimport loop.
+				return false;
+			}
 			if (assign.begins_with("path")) {
 				to_check.push_back(value);
 			} else if (assign == "files") {
@@ -500,6 +505,11 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 		} else if (next_tag.name != "remap" && next_tag.name != "deps") {
 			break;
 		}
+	}
+
+	if (!ResourceFormatImporter::get_singleton()->are_import_settings_valid(p_path)) {
+		// Reimport settings are out of sync with project settings, reimport.
+		return true;
 	}
 
 	if (importer_name == "keep" || importer_name == "skip") {
@@ -1343,11 +1353,16 @@ void EditorFileSystem::_thread_func_sources(void *_userdata) {
 
 void EditorFileSystem::_remove_invalid_global_class_names(const HashSet<String> &p_existing_class_names) {
 	List<StringName> global_classes;
+	bool must_save = false;
 	ScriptServer::get_global_class_list(&global_classes);
 	for (const StringName &class_name : global_classes) {
 		if (!p_existing_class_names.has(class_name)) {
 			ScriptServer::remove_global_class(class_name);
+			must_save = true;
 		}
+	}
+	if (must_save) {
+		ScriptServer::save_global_classes();
 	}
 }
 
@@ -1802,6 +1817,10 @@ void EditorFileSystem::_update_files_icon_path(EditorFileSystemDirectory *edp) {
 
 void EditorFileSystem::_update_script_classes() {
 	if (update_script_paths.is_empty()) {
+		// Ensure the global class file is always present; it's essential for exports to work.
+		if (!FileAccess::exists(ProjectSettings::get_singleton()->get_global_class_list_path())) {
+			ScriptServer::save_global_classes();
+		}
 		return;
 	}
 

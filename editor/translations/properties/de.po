@@ -76,7 +76,7 @@
 # Tim <tim14speckenwirth@gmail.com>, 2021.
 # Antonio Noack <corperateraider@gmail.com>, 2022.
 # ‎ <artism90@googlemail.com>, 2022, 2023.
-# Coxcopi70f00b67b61542fe <hn_vogel@gmx.net>, 2022.
+# Coxcopi70f00b67b61542fe <hn_vogel@gmx.net>, 2022, 2024.
 # Andreas <self@andreasbresser.de>, 2022.
 # ARez <dark.gaming@fantasymail.de>, 2022.
 # Christian Packenius <christian@packenius.com>, 2022.
@@ -103,13 +103,14 @@
 # Björn Reißig <bjoern.reissig@bytestorm.eu>, 2023.
 # Cerno_b <jan.biel@arcor.de>, 2023.
 # Cerno_b <cerno.b@gmail.com>, 2023, 2024.
+# tct123 <tct1234@protonmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-06-26 19:07+0000\n"
-"Last-Translator: Cerno_b <cerno.b@gmail.com>\n"
+"PO-Revision-Date: 2024-07-30 16:40+0000\n"
+"Last-Translator: tct123 <tct1234@protonmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/de/>\n"
 "Language: de\n"
@@ -117,7 +118,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.6-rc\n"
+"X-Generator: Weblate 5.7-dev\n"
 
 msgid "Application"
 msgstr "Anwendung"
@@ -257,6 +258,9 @@ msgstr "Default-Bus-Layout"
 msgid "General"
 msgstr "Allgemein"
 
+msgid "Default Playback Type"
+msgstr "Standardwiedergabetyp"
+
 msgid "Text to Speech"
 msgstr "Text-zu-Sprache"
 
@@ -325,6 +329,9 @@ msgstr "Profiler"
 
 msgid "Max Functions"
 msgstr "Maximale Funktionen"
+
+msgid "Max Timestamp Query Elements"
+msgstr "Maximal geclusterte Elemente"
 
 msgid "Compression"
 msgstr "Kompression"
@@ -1403,6 +1410,15 @@ msgstr "Bei Node-Auswahl im Skript-Editor bleiben"
 msgid "Open Script When Connecting Signal to Existing Method"
 msgstr "Skript öffnen wenn Signal mit vorhandener Methode verbunden wird"
 
+msgid "Use Default Word Separators"
+msgstr "Standard-Worttrennzeichen verwenden"
+
+msgid "Use Custom Word Separators"
+msgstr "Benutzerdefinierte Worttrennzeichen verwenden"
+
+msgid "Custom Word Separators"
+msgstr "Benutzerdefinierte Worttrennzeichen"
+
 msgid "Indent"
 msgstr "Einrücken"
 
@@ -1702,6 +1718,9 @@ msgstr "Auto-Back-Verzögerung"
 
 msgid "Autorename Animation Tracks"
 msgstr "Animations-Tracks automatisch umbenennen"
+
+msgid "Confirm Insert Track"
+msgstr "Einfügen des Titels bestätigen"
 
 msgid "Default Create Bezier Tracks"
 msgstr "Bézier-Tracks erstellen als Default"
@@ -4341,6 +4360,9 @@ msgstr "Nur Projekt exportieren"
 msgid "Delete Old Export Files Unconditionally"
 msgstr "Alte Exportdateien bedingungslos löschen"
 
+msgid "Generate Simulator Library If Missing"
+msgstr "Simulator-Bibliothek generieren falls nicht vorhanden"
+
 msgid "Capabilities"
 msgstr "Fähigkeiten"
 
@@ -4820,6 +4842,9 @@ msgstr "Bus"
 
 msgid "Area Mask"
 msgstr "Fläche maskieren"
+
+msgid "Playback Type"
+msgstr "Abspielmodus"
 
 msgid "Copy Mode"
 msgstr "Kopiermodus"
@@ -6499,6 +6524,12 @@ msgstr "Modifikator"
 
 msgid "Callback Mode Process"
 msgstr "Callback-Modus-Prozess"
+
+msgid "Deprecated"
+msgstr "Veraltet"
+
+msgid "Animate Physical Bones"
+msgstr "Physische Knochen animieren"
 
 msgid "Root Bone"
 msgstr "Wurzelknochen"

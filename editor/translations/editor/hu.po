@@ -36,13 +36,14 @@
 # Limpa <pe.simon17@gmail.com>, 2023.
 # bedo david <bedo.david7676@gmail.com>, 2024.
 # Attila Diós <xatixatix@gmail.com>, 2024.
+# TheFocusDev <thefocusdev@protonmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-05-12 15:44+0000\n"
-"Last-Translator: Attila Diós <xatixatix@gmail.com>\n"
+"PO-Revision-Date: 2024-07-30 16:40+0000\n"
+"Last-Translator: TheFocusDev <thefocusdev@protonmail.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hu/>\n"
 "Language: hu\n"
@@ -50,7 +51,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.5.4\n"
+"X-Generator: Weblate 5.7-dev\n"
 
 msgid "Main Thread"
 msgstr "Fő thread"
@@ -201,6 +202,9 @@ msgstr "Joypad Gomb %d"
 
 msgid "Pressure:"
 msgstr "Nyomás:"
+
+msgid "touched"
+msgstr "megérintve"
 
 msgid "released"
 msgstr "elengedve"
@@ -378,6 +382,9 @@ msgstr "Node-ok duplikálása"
 msgid "Delete Nodes"
 msgstr "Node-ok törlése"
 
+msgid "Go Up One Level"
+msgstr "Ugrás Egy Szinttel Feljebb"
+
 msgid "Refresh"
 msgstr "Frissítés"
 
@@ -474,6 +481,9 @@ msgstr "Beágyazott műveletek mutatása"
 
 msgid "Action"
 msgstr "Művelet"
+
+msgid "Deadzone"
+msgstr "Holtzóna"
 
 msgid "Time:"
 msgstr "Idő:"
@@ -622,6 +632,13 @@ msgstr "Animáció Interpolálás Módjának Változtatása"
 msgid "Change Animation Loop Mode"
 msgstr "Animáció Összefűzés Módjának Változtatása"
 
+msgid ""
+"Compressed tracks can't be edited or removed. Re-import the animation with "
+"compression disabled in order to edit."
+msgstr ""
+"Tömörített sávokat nem lehet szerkeszteni vagy törölni. Importálja újra az "
+"animációt tömörítás nélkül a szerkesztéshez."
+
 msgid "Remove Anim Track"
 msgstr "Animáció Sáv Eltávolítása"
 
@@ -699,6 +716,9 @@ msgstr "BlendShape"
 
 msgid "Methods"
 msgstr "Metódusok"
+
+msgid "Bezier"
+msgstr "Bézier"
 
 msgid "Audio"
 msgstr "Hang"
@@ -778,6 +798,18 @@ msgstr "Tisztítás"
 msgid "Scale Ratio:"
 msgstr "Méretezési arány:"
 
+msgctxt "Transition Type"
+msgid "Sine"
+msgstr "Szinusz"
+
+msgctxt "Ease Type"
+msgid "InOut"
+msgstr "BeKi"
+
+msgctxt "Ease Type"
+msgid "OutIn"
+msgstr "KiBe"
+
 msgid "Transition Type:"
 msgstr "Átmenet Típus:"
 
@@ -845,6 +877,9 @@ msgstr "Kicsinyítés"
 
 msgid "Reset Zoom"
 msgstr "Nagyítás visszaállítása"
+
+msgid "Errors"
+msgstr "Hibák"
 
 msgid "Warnings"
 msgstr "Figyelmeztetések"
@@ -962,6 +997,12 @@ msgstr "Új %s létrehozása"
 msgid "No results for \"%s\"."
 msgstr "Nincs találat a következőre: \"%s\"."
 
+msgid "This class is marked as deprecated."
+msgstr "Ez az osztály elavultnak van megjelölve."
+
+msgid "This class is marked as experimental."
+msgstr "Ez az osztály kísérletiként van megjelölve."
+
 msgid "Favorites:"
 msgstr "Kedvencek:"
 
@@ -1060,6 +1101,9 @@ msgstr "Összes kinyitása"
 
 msgid "Collapse All"
 msgstr "Összes becsukása"
+
+msgid "Type"
+msgstr "Típus"
 
 msgid "Search Replacement For:"
 msgstr "Csere keresése:"
