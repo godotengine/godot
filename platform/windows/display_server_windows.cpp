@@ -1333,13 +1333,15 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 		wd.is_popup = true;
 	}
 	if (p_flags & WINDOW_FLAG_TRANSPARENT_BIT) {
-		DWM_BLURBEHIND bb;
-		ZeroMemory(&bb, sizeof(bb));
-		HRGN hRgn = CreateRectRgn(0, 0, -1, -1);
-		bb.dwFlags = DWM_BB_ENABLE | DWM_BB_BLURREGION;
-		bb.hRgnBlur = hRgn;
-		bb.fEnable = TRUE;
-		DwmEnableBlurBehindWindow(wd.hWnd, &bb);
+		if (OS::get_singleton()->is_layered_allowed()) {
+			DWM_BLURBEHIND bb;
+			ZeroMemory(&bb, sizeof(bb));
+			HRGN hRgn = CreateRectRgn(0, 0, -1, -1);
+			bb.dwFlags = DWM_BB_ENABLE | DWM_BB_BLURREGION;
+			bb.hRgnBlur = hRgn;
+			bb.fEnable = TRUE;
+			DwmEnableBlurBehindWindow(wd.hWnd, &bb);
+		}
 
 		wd.layered_window = true;
 	}
@@ -2119,28 +2121,29 @@ void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, W
 		} break;
 		case WINDOW_FLAG_TRANSPARENT: {
 			if (p_enabled) {
-				//enable per-pixel alpha
-
-				DWM_BLURBEHIND bb;
-				ZeroMemory(&bb, sizeof(bb));
-				HRGN hRgn = CreateRectRgn(0, 0, -1, -1);
-				bb.dwFlags = DWM_BB_ENABLE | DWM_BB_BLURREGION;
-				bb.hRgnBlur = hRgn;
-				bb.fEnable = TRUE;
-				DwmEnableBlurBehindWindow(wd.hWnd, &bb);
-
+				// Enable per-pixel alpha.
+				if (OS::get_singleton()->is_layered_allowed()) {
+					DWM_BLURBEHIND bb;
+					ZeroMemory(&bb, sizeof(bb));
+					HRGN hRgn = CreateRectRgn(0, 0, -1, -1);
+					bb.dwFlags = DWM_BB_ENABLE | DWM_BB_BLURREGION;
+					bb.hRgnBlur = hRgn;
+					bb.fEnable = TRUE;
+					DwmEnableBlurBehindWindow(wd.hWnd, &bb);
+				}
 				wd.layered_window = true;
 			} else {
-				//disable per-pixel alpha
+				// Disable per-pixel alpha.
 				wd.layered_window = false;
-
-				DWM_BLURBEHIND bb;
-				ZeroMemory(&bb, sizeof(bb));
-				HRGN hRgn = CreateRectRgn(0, 0, -1, -1);
-				bb.dwFlags = DWM_BB_ENABLE | DWM_BB_BLURREGION;
-				bb.hRgnBlur = hRgn;
-				bb.fEnable = FALSE;
-				DwmEnableBlurBehindWindow(wd.hWnd, &bb);
+				if (OS::get_singleton()->is_layered_allowed()) {
+					DWM_BLURBEHIND bb;
+					ZeroMemory(&bb, sizeof(bb));
+					HRGN hRgn = CreateRectRgn(0, 0, -1, -1);
+					bb.dwFlags = DWM_BB_ENABLE | DWM_BB_BLURREGION;
+					bb.hRgnBlur = hRgn;
+					bb.fEnable = FALSE;
+					DwmEnableBlurBehindWindow(wd.hWnd, &bb);
+				}
 			}
 		} break;
 		case WINDOW_FLAG_NO_FOCUS: {
