@@ -237,6 +237,7 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(const AnimationMixe
 			}
 			// Finished.
 			if (Animation::is_less_approx(prev_playback_time, anim_size) && Animation::is_greater_or_equal_approx(cur_playback_time, anim_size)) {
+				cur_playback_time = anim_size;
 				process_state->tree->call_deferred(SNAME("emit_signal"), SceneStringName(animation_finished), animation);
 			}
 		}
