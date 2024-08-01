@@ -120,18 +120,19 @@ void MenuBar::_open_popup(int p_index, bool p_focus_item) {
 		return;
 	}
 
-	Rect2 item_rect = _get_menu_item_rect(p_index);
-	Point2 screen_pos = get_screen_position() + item_rect.position * get_viewport()->get_canvas_transform().get_scale();
-	Size2 screen_size = item_rect.size * get_viewport()->get_canvas_transform().get_scale();
-
 	active_menu = p_index;
 
-	pm->set_size(Size2(screen_size.x, 0));
-	screen_pos.y += screen_size.y;
+	Rect2 item_rect = _get_menu_item_rect(p_index);
+	Rect2 pm_rect = get_screen_rect();
+	pm_rect.size.width = item_rect.size.width;
+	pm_rect.position.y += item_rect.size.height;
+	pm_rect.size.height = 0;
+
+	pm->set_size(pm_rect.size);
 	if (is_layout_rtl()) {
-		screen_pos.x += screen_size.x - pm->get_size().width;
+		pm_rect.position.x += pm_rect.size.width - pm->get_size().width;
 	}
-	pm->set_position(screen_pos);
+	pm->set_position(pm_rect.position);
 	pm->popup();
 
 	if (p_focus_item) {
