@@ -614,13 +614,13 @@ void EditorSpinSlider::_value_focus_exited() {
 	// -> TAB was pressed
 	// -> modal_close was not called
 	// -> need to close/hide manually
-	if (value_input_closed_frame != Engine::get_singleton()->get_frames_drawn()) {
+	if (!is_visible_in_tree() || value_input_closed_frame != Engine::get_singleton()->get_frames_drawn()) {
+		// Hidden or something else took focus.
 		if (value_input_popup) {
 			value_input_popup->hide();
 		}
-		//tab was pressed
 	} else {
-		//enter, click, esc
+		// Enter or Esc was pressed.
 		grab_focus();
 	}
 
