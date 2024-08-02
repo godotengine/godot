@@ -358,14 +358,18 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 			log->push_color(theme_cache.error_color);
 			Ref<Texture2D> icon = theme_cache.error_icon;
 			log->add_image(icon);
-			log->add_text(" ");
+			log->push_bold();
+			log->add_text(" ERROR: ");
+			log->pop(); // bold
 			tool_button->set_button_icon(icon);
 		} break;
 		case MSG_TYPE_WARNING: {
 			log->push_color(theme_cache.warning_color);
 			Ref<Texture2D> icon = theme_cache.warning_icon;
 			log->add_image(icon);
-			log->add_text(" ");
+			log->push_bold();
+			log->add_text(" WARNING: ");
+			log->pop(); // bold
 			tool_button->set_button_icon(icon);
 		} break;
 		case MSG_TYPE_EDITOR: {
