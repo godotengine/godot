@@ -163,7 +163,7 @@ bool GDScriptLanguage::validate(const String &p_script, const String &p_path, Li
 				r_errors->push_back(e);
 			}
 
-			for (KeyValue<String, Ref<GDScriptParserRef>> E : parser.get_depended_parsers()) {
+			for (KeyValue<String, Ref<GDScriptParserRef>> E : analyzer.get_depended_parsers()) {
 				GDScriptParser *depended_parser = E.value->get_parser();
 				for (const GDScriptParser::ParserError &pe : depended_parser->get_errors()) {
 					ScriptLanguage::ScriptError e;
@@ -1521,8 +1521,9 @@ static GDScriptCompletionIdentifier _type_from_variant(const Variant &p_value, G
 			ci.type.kind = GDScriptParser::DataType::SCRIPT;
 
 			if (scr->get_path().ends_with(".gd")) {
-				Ref<GDScriptParserRef> parser = p_context.parser->get_depended_parser_for(scr->get_path());
-				if (parser.is_valid() && parser->raise_status(GDScriptParserRef::INTERFACE_SOLVED) == OK) {
+				Error err;
+				Ref<GDScriptParserRef> parser = GDScriptCache::get_parser(scr->get_path(), GDScriptParserRef::INTERFACE_SOLVED, err);
+				if (err == OK && parser.is_valid()) {
 					ci.type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 					ci.type.class_type = parser->get_parser()->get_tree();
 					ci.type.kind = GDScriptParser::DataType::CLASS;
@@ -1839,8 +1840,9 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 														}
 
 														if (FileAccess::exists(script)) {
-															Ref<GDScriptParserRef> parser = p_context.parser->get_depended_parser_for(script);
-															if (parser.is_valid() && parser->raise_status(GDScriptParserRef::INTERFACE_SOLVED) == OK) {
+															Error err;
+															Ref<GDScriptParserRef> parser = GDScriptCache::get_parser(script, GDScriptParserRef::INTERFACE_SOLVED, err);
+															if (err == OK && parser.is_valid()) {
 																r_type.type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 																r_type.type.script_path = script;
 																r_type.type.class_type = parser->get_parser()->get_tree();
@@ -2298,8 +2300,9 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 	if (ScriptServer::is_global_class(p_identifier->name)) {
 		String script = ScriptServer::get_global_class_path(p_identifier->name);
 		if (script.to_lower().ends_with(".gd")) {
-			Ref<GDScriptParserRef> parser = p_context.parser->get_depended_parser_for(script);
-			if (parser.is_valid() && parser->raise_status(GDScriptParserRef::INTERFACE_SOLVED) == OK) {
+			Error err;
+			Ref<GDScriptParserRef> parser = GDScriptCache::get_parser(script, GDScriptParserRef::INTERFACE_SOLVED, err);
+			if (err == OK && parser.is_valid()) {
 				r_type.type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 				r_type.type.script_path = script;
 				r_type.type.class_type = parser->get_parser()->get_tree();
