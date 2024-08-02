@@ -44,6 +44,7 @@ LIGHTMAP_BICUBIC_FILTER = false
 #define M_PI 3.14159265359
 
 #define SHADER_IS_SRGB true
+#define SHADER_SPACE_FAR -1.0
 
 #include "stdlib_inc.glsl"
 
@@ -583,6 +584,7 @@ void main() {
 /* clang-format on */
 
 #define SHADER_IS_SRGB true
+#define SHADER_SPACE_FAR -1.0
 
 #define FLAGS_NON_UNIFORM_SCALE (1 << 4)
 
