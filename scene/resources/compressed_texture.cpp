@@ -155,6 +155,8 @@ Error CompressedTexture2D::load(const String &p_path) {
 	path_to_file = p_path;
 	format = image->get_format();
 
+	RS::get_singleton()->texture_set_path(texture, get_path());
+
 	if (get_path().is_empty()) {
 		//temporarily set path if no path set for resource, helps find errors
 		RenderingServer::get_singleton()->texture_set_path(texture, p_path);
