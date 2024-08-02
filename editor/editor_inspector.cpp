@@ -1005,36 +1005,33 @@ void EditorProperty::_update_flags() {
 }
 
 Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
-	String custom_warning;
+	String symbol;
+	String prologue;
+
 	if (object->has_method("_get_property_warning")) {
-		custom_warning = object->call("_get_property_warning", property);
+		const String custom_warning = object->call("_get_property_warning", property);
+		if (!custom_warning.is_empty()) {
+			prologue = "[b][color=" + get_theme_color(SNAME("warning_color")).to_html(false) + "]" + custom_warning + "[/color][/b]";
+		}
 	}
 
-	if (has_doc_tooltip || !custom_warning.is_empty()) {
-		EditorHelpBit *help_bit = memnew(EditorHelpBit);
+	if (has_doc_tooltip) {
+		symbol = p_text;
 
-		if (has_doc_tooltip) {
-			help_bit->parse_symbol(p_text);
-
-			const EditorInspector *inspector = get_parent_inspector();
-			if (inspector) {
-				const String custom_description = inspector->get_custom_property_description(p_text);
-				if (!custom_description.is_empty()) {
-					help_bit->set_description(custom_description);
+		const EditorInspector *inspector = get_parent_inspector();
+		if (inspector) {
+			const String custom_description = inspector->get_custom_property_description(p_text);
+			if (!custom_description.is_empty()) {
+				if (!prologue.is_empty()) {
+					prologue += '\n';
 				}
+				prologue += custom_description;
 			}
 		}
+	}
 
-		if (!custom_warning.is_empty()) {
-			String description = "[b][color=" + get_theme_color(SNAME("warning_color")).to_html(false) + "]" + custom_warning + "[/color][/b]";
-			if (!help_bit->get_description().is_empty()) {
-				description += "\n" + help_bit->get_description();
-			}
-			help_bit->set_description(description);
-		}
-
-		EditorHelpBitTooltip::show_tooltip(help_bit, const_cast<EditorProperty *>(this));
-		return memnew(Control); // Make the standard tooltip invisible.
+	if (!symbol.is_empty() || !prologue.is_empty()) {
+		return EditorHelpBitTooltip::show_tooltip(const_cast<EditorProperty *>(this), symbol, prologue);
 	}
 
 	return nullptr;
@@ -1331,9 +1328,7 @@ Control *EditorInspectorCategory::make_custom_tooltip(const String &p_text) cons
 		return nullptr;
 	}
 
-	EditorHelpBit *help_bit = memnew(EditorHelpBit(p_text));
-	EditorHelpBitTooltip::show_tooltip(help_bit, const_cast<EditorInspectorCategory *>(this));
-	return memnew(Control); // Make the standard tooltip invisible.
+	return EditorHelpBitTooltip::show_tooltip(const_cast<EditorInspectorCategory *>(this), p_text);
 }
 
 void EditorInspectorCategory::set_as_favorite(EditorInspector *p_for_inspector) {
