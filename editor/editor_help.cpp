@@ -3690,7 +3690,7 @@ void EditorHelpBit::_notification(int p_what) {
 	}
 }
 
-void EditorHelpBit::parse_symbol(const String &p_symbol) {
+void EditorHelpBit::parse_symbol(const String &p_symbol, const String &p_prologue) {
 	const PackedStringArray slices = p_symbol.split("|", true, 2);
 	ERR_FAIL_COND_MSG(slices.size() < 3, "Invalid doc id. The expected format is 'item_type|class_name|item_name'.");
 
@@ -3737,6 +3737,14 @@ void EditorHelpBit::parse_symbol(const String &p_symbol) {
 	symbol_visible_type = visible_type;
 	symbol_name = name;
 
+	if (!p_prologue.is_empty()) {
+		if (help_data.description.is_empty()) {
+			help_data.description = p_prologue;
+		} else {
+			help_data.description = p_prologue + "\n" + help_data.description;
+		}
+	}
+
 	if (help_data.description.is_empty()) {
 		help_data.description = "[color=<EditorHelpBitCommentColor>][i]" + TTR("No description available.") + "[/i][/color]";
 	}
@@ -3754,14 +3762,6 @@ void EditorHelpBit::set_custom_text(const String &p_type, const String &p_name, 
 
 	help_data = HelpData();
 	help_data.description = p_description;
-
-	if (is_inside_tree()) {
-		_update_labels();
-	}
-}
-
-void EditorHelpBit::set_description(const String &p_text) {
-	help_data.description = p_text;
 
 	if (is_inside_tree()) {
 		_update_labels();
@@ -3787,15 +3787,15 @@ void EditorHelpBit::update_content_height() {
 	content->set_custom_minimum_size(Size2(content->get_custom_minimum_size().x, CLAMP(content_height, content_min_height, content_max_height)));
 }
 
-EditorHelpBit::EditorHelpBit(const String &p_symbol) {
+EditorHelpBit::EditorHelpBit(const String &p_symbol, const String &p_prologue, bool p_allow_selection) {
 	add_theme_constant_override("separation", 0);
 
 	title = memnew(RichTextLabel);
 	title->set_theme_type_variation("EditorHelpBitTitle");
 	title->set_custom_minimum_size(Size2(512 * EDSCALE, 0)); // GH-93031. Set the minimum width even if `fit_content` is true.
 	title->set_fit_content(true);
-	title->set_selection_enabled(true);
-	//title->set_context_menu_enabled(true); // TODO: Fix opening context menu hides tooltip.
+	title->set_selection_enabled(p_allow_selection);
+	title->set_context_menu_enabled(p_allow_selection);
 	title->connect("meta_clicked", callable_mp(this, &EditorHelpBit::_meta_clicked));
 	title->hide();
 	add_child(title);
@@ -3806,17 +3806,25 @@ EditorHelpBit::EditorHelpBit(const String &p_symbol) {
 	content = memnew(RichTextLabel);
 	content->set_theme_type_variation("EditorHelpBitContent");
 	content->set_custom_minimum_size(Size2(512 * EDSCALE, content_min_height));
-	content->set_selection_enabled(true);
-	//content->set_context_menu_enabled(true); // TODO: Fix opening context menu hides tooltip.
+	content->set_selection_enabled(p_allow_selection);
+	content->set_context_menu_enabled(p_allow_selection);
 	content->connect("meta_clicked", callable_mp(this, &EditorHelpBit::_meta_clicked));
 	add_child(content);
 
 	if (!p_symbol.is_empty()) {
-		parse_symbol(p_symbol);
+		parse_symbol(p_symbol, p_prologue);
 	}
 }
 
 /// EditorHelpBitTooltip ///
+
+bool EditorHelpBitTooltip::_is_tooltip_visible = false;
+
+Control *EditorHelpBitTooltip::_make_invisible_control() {
+	Control *control = memnew(Control);
+	control->set_visible(false);
+	return control;
+}
 
 void EditorHelpBitTooltip::_start_timer() {
 	if (timer->is_inside_tree() && timer->is_stopped()) {
@@ -3824,58 +3832,82 @@ void EditorHelpBitTooltip::_start_timer() {
 	}
 }
 
-void EditorHelpBitTooltip::_safe_queue_free() {
-	if (_pushing_input > 0) {
-		_need_free = true;
-	} else {
-		queue_free();
-	}
-}
-
 void EditorHelpBitTooltip::_target_gui_input(const Ref<InputEvent> &p_event) {
-	const Ref<InputEventMouse> mouse_event = p_event;
-	if (mouse_event.is_valid()) {
-		_start_timer();
+	// Only scrolling is not checked in `NOTIFICATION_INTERNAL_PROCESS`.
+	const Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid()) {
+		switch (mb->get_button_index()) {
+			case MouseButton::WHEEL_UP:
+			case MouseButton::WHEEL_DOWN:
+			case MouseButton::WHEEL_LEFT:
+			case MouseButton::WHEEL_RIGHT:
+				queue_free();
+				break;
+			default:
+				break;
+		}
 	}
 }
 
 void EditorHelpBitTooltip::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+			_is_tooltip_visible = true;
+			_enter_tree_time = OS::get_singleton()->get_ticks_msec();
+			break;
+		case NOTIFICATION_EXIT_TREE:
+			_is_tooltip_visible = false;
+			break;
 		case NOTIFICATION_WM_MOUSE_ENTER:
+			_is_mouse_inside_tooltip = true;
 			timer->stop();
 			break;
 		case NOTIFICATION_WM_MOUSE_EXIT:
+			_is_mouse_inside_tooltip = false;
 			_start_timer();
+			break;
+		case NOTIFICATION_INTERNAL_PROCESS:
+			// A workaround to hide the tooltip since the window does not receive keyboard events
+			// with `FLAG_POPUP` and `FLAG_NO_FOCUS` flags, so we can't use `_input_from_window()`.
+			if (is_inside_tree()) {
+				if (Input::get_singleton()->is_action_just_pressed(SNAME("ui_cancel"), true)) {
+					queue_free();
+					get_parent_viewport()->set_input_as_handled();
+				} else if (Input::get_singleton()->is_anything_pressed_except_mouse()) {
+					queue_free();
+				} else if (!Input::get_singleton()->get_mouse_button_mask().is_empty()) {
+					if (!_is_mouse_inside_tooltip) {
+						queue_free();
+					}
+				} else if (!Input::get_singleton()->get_last_mouse_velocity().is_zero_approx()) {
+					if (!_is_mouse_inside_tooltip && OS::get_singleton()->get_ticks_msec() - _enter_tree_time > 250) {
+						_start_timer();
+					}
+				}
+			}
 			break;
 	}
 }
 
-// Forwards non-mouse input to the parent viewport.
-void EditorHelpBitTooltip::_input_from_window(const Ref<InputEvent> &p_event) {
-	if (p_event->is_action_pressed(SNAME("ui_cancel"), false, true)) {
-		_safe_queue_free();
-	} else {
-		const Ref<InputEventMouse> mouse_event = p_event;
-		if (mouse_event.is_null()) {
-			// GH-91652. Prevents use-after-free since `ProgressDialog` calls `Main::iteration()`.
-			_pushing_input++;
-			get_parent_viewport()->push_input(p_event);
-			_pushing_input--;
-			if (_pushing_input <= 0 && _need_free) {
-				queue_free();
-			}
-		}
+Control *EditorHelpBitTooltip::show_tooltip(Control *p_target, const String &p_symbol, const String &p_prologue) {
+	// Show the custom tooltip only if it is not already visible.
+	// The viewport will retrigger `make_custom_tooltip()` every few seconds
+	// because the return control is not visible even if the custom tooltip is displayed.
+	if (_is_tooltip_visible || Input::get_singleton()->is_anything_pressed()) {
+		return _make_invisible_control();
 	}
-}
 
-void EditorHelpBitTooltip::show_tooltip(EditorHelpBit *p_help_bit, Control *p_target) {
-	ERR_FAIL_NULL(p_help_bit);
+	EditorHelpBit *help_bit = memnew(EditorHelpBit(p_symbol, p_prologue, false));
+
 	EditorHelpBitTooltip *tooltip = memnew(EditorHelpBitTooltip(p_target));
-	p_help_bit->connect("request_hide", callable_mp(tooltip, &EditorHelpBitTooltip::_safe_queue_free));
-	tooltip->add_child(p_help_bit);
+	help_bit->connect("request_hide", callable_mp(static_cast<Node *>(tooltip), &Node::queue_free));
+	tooltip->add_child(help_bit);
 	p_target->add_child(tooltip);
-	p_help_bit->update_content_height();
+
+	help_bit->update_content_height();
 	tooltip->popup_under_cursor();
+
+	return _make_invisible_control();
 }
 
 // Copy-paste from `Viewport::_gui_show_tooltip()`.
@@ -3915,6 +3947,9 @@ void EditorHelpBitTooltip::popup_under_cursor() {
 		r.position.y = vr.position.y;
 	}
 
+	// When `FLAG_POPUP` is false, it prevents the editor from losing focus when displaying the tooltip.
+	// This way, clicks and double-clicks are still available outside the tooltip.
+	set_flag(Window::FLAG_POPUP, false);
 	set_flag(Window::FLAG_NO_FOCUS, true);
 	popup(r);
 }
@@ -3923,13 +3958,15 @@ EditorHelpBitTooltip::EditorHelpBitTooltip(Control *p_target) {
 	set_theme_type_variation("TooltipPanel");
 
 	timer = memnew(Timer);
-	timer->set_wait_time(0.2);
-	timer->connect("timeout", callable_mp(this, &EditorHelpBitTooltip::_safe_queue_free));
+	timer->set_wait_time(0.25);
+	timer->connect("timeout", callable_mp(static_cast<Node *>(this), &Node::queue_free));
 	add_child(timer);
 
 	ERR_FAIL_NULL(p_target);
 	p_target->connect(SceneStringName(mouse_exited), callable_mp(this, &EditorHelpBitTooltip::_start_timer));
 	p_target->connect(SceneStringName(gui_input), callable_mp(this, &EditorHelpBitTooltip::_target_gui_input));
+
+	set_process_internal(true);
 }
 
 #if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
