@@ -370,6 +370,8 @@ void ProjectDialog::_browse_project_path() {
 	} else {
 		fdialog_project->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
 	}
+
+	hide();
 	fdialog_project->popup_file_dialog();
 }
 
@@ -389,7 +391,7 @@ void ProjectDialog::_browse_install_path() {
 }
 
 void ProjectDialog::_project_path_selected(const String &p_path) {
-	show_dialog();
+	show_dialog(false);
 
 	if (create_dir->is_pressed() && (mode == MODE_NEW || mode == MODE_INSTALL)) {
 		// Replace parent directory, but keep target dir name.
@@ -691,7 +693,7 @@ void ProjectDialog::ask_for_path_and_show() {
 	_browse_project_path();
 }
 
-void ProjectDialog::show_dialog() {
+void ProjectDialog::show_dialog(bool p_reset_name) {
 	if (mode == MODE_RENAME) {
 		// Name and path are set in `ProjectManager::_rename_project`.
 		project_path->set_editable(false);
@@ -711,8 +713,10 @@ void ProjectDialog::show_dialog() {
 		callable_mp((Control *)project_name, &Control::grab_focus).call_deferred();
 		callable_mp(project_name, &LineEdit::select_all).call_deferred();
 	} else {
-		String proj = TTR("New Game Project");
-		project_name->set_text(proj);
+		if (p_reset_name) {
+			String proj = TTR("New Game Project");
+			project_name->set_text(proj);
+		}
 		project_path->set_editable(true);
 
 		String fav_dir = EDITOR_GET("filesystem/directories/default_project_path");
@@ -793,6 +797,7 @@ void ProjectDialog::_notification(int p_what) {
 			fdialog_project->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 			fdialog_project->connect("dir_selected", callable_mp(this, &ProjectDialog::_project_path_selected));
 			fdialog_project->connect("file_selected", callable_mp(this, &ProjectDialog::_project_path_selected));
+			fdialog_project->connect("canceled", callable_mp(this, &ProjectDialog::show_dialog).bind(false), CONNECT_DEFERRED);
 			callable_mp((Node *)this, &Node::add_sibling).call_deferred(fdialog_project, false);
 		} break;
 	}
