@@ -843,6 +843,8 @@ public:
 			List<AdditiveNodeEntry> &p_addition_list);
 	bool is_additional_node_in_scene(Node *p_edited_scene, Node *p_reimported_root, Node *p_node);
 
+	void replace_history_reimported_nodes(Node *p_original_root_node, Node *p_new_root_node, Node *p_node);
+
 	bool is_scene_open(const String &p_path);
 	bool is_multi_window_enabled() const;
 
