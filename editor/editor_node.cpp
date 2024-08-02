@@ -734,6 +734,28 @@ void EditorNode::_notification(int p_what) {
 			CanvasItemEditor::ThemePreviewMode theme_preview_mode = (CanvasItemEditor::ThemePreviewMode)(int)EditorSettings::get_singleton()->get_project_metadata("2d_editor", "theme_preview", CanvasItemEditor::THEME_PREVIEW_PROJECT);
 			update_preview_themes(theme_preview_mode);
 
+			if (RenderingDevice::get_singleton() && RenderingDevice::get_singleton()->get_device_type() == RenderingDevice::DEVICE_TYPE_CPU) {
+				const String driver_name = OS::get_singleton()->get_current_rendering_driver_name();
+				String driver_friendly_name;
+				if (driver_name == "d3d12") {
+					driver_friendly_name = "Direct3D 12";
+				} else if (driver_name == "metal") {
+					driver_friendly_name = "Metal";
+				} else {
+					driver_friendly_name = "Vulkan";
+				}
+				log->add_message(
+						vformat(TTR("%s is currently running on software emulation, which is very slow. Check whether your GPU supports %s and make sure its drivers are up-to-date.\nIf your GPU is not compatible with %s, try switching to the Compatibility rendering method in the top-right corner of the editor."),
+								driver_friendly_name,
+								driver_friendly_name,
+								driver_friendly_name),
+						EditorLog::MSG_TYPE_WARNING);
+			} else if (RenderingServer::get_singleton()->get_video_adapter_type() == RenderingDevice::DEVICE_TYPE_CPU) {
+				log->add_message(
+						TTR("OpenGL is currently running on software emulation, which is very slow. Check whether your GPU supports OpenGL and make sure its drivers are up-to-date.\nIf your GPU is not compatible with OpenGL, try switching to the Forward+ or Mobile rendering methods in the top-right corner of the editor."),
+						EditorLog::MSG_TYPE_WARNING);
+			}
+
 			/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
 		} break;
 
