@@ -196,32 +196,19 @@ def configure(env: "SConsEnvironment"):
     env.Prepend(CPPPATH=["#platform/macos"])
     env.Append(CPPDEFINES=["MACOS_ENABLED", "UNIX_ENABLED", "COREAUDIO_ENABLED", "COREMIDI_ENABLED"])
     env.Append(
-        LINKFLAGS=[
-            "-framework",
+        FRAMEWORKS=[
             "Cocoa",
-            "-framework",
             "Carbon",
-            "-framework",
             "AudioUnit",
-            "-framework",
             "CoreAudio",
-            "-framework",
             "CoreMIDI",
-            "-framework",
             "IOKit",
-            "-framework",
             "GameController",
-            "-framework",
             "CoreHaptics",
-            "-framework",
             "CoreVideo",
-            "-framework",
             "AVFoundation",
-            "-framework",
             "CoreMedia",
-            "-framework",
             "QuartzCore",
-            "-framework",
             "Security",
         ]
     )
@@ -241,7 +228,7 @@ def configure(env: "SConsEnvironment"):
 
     if env["vulkan"]:
         env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
-        env.Append(LINKFLAGS=["-framework", "Metal", "-framework", "IOSurface"])
+        env.Append(FRAMEWORKS=["Metal", "IOSurface"])
         if not env["use_volk"]:
             env.Append(LINKFLAGS=["-lMoltenVK"])
 
