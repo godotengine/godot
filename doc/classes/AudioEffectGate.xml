@@ -16,10 +16,10 @@
 		<member name="hold_ms" type="float" setter="set_hold_ms" getter="get_hold_ms" default="100.0">
 			Amount of time it takes after audio goes below the threshold for the release envelope to start.
 		</member>
-		<member name="release_ms" type="float" setter="set_release_ms" getter="get_release_ms" default="50.0">
+		<member name="release_ms" type="float" setter="set_release_ms" getter="get_release_ms" default="500.0">
 			Amount of time it takes the gate to go from 100% to 0% volume after the gate is done holding.
 		</member>
-		<member name="threshold_db" type="float" setter="set_threshold_db" getter="get_threshold_db" default="-50.0">
+		<member name="threshold_db" type="float" setter="set_threshold_db" getter="get_threshold_db" default="-30.0">
 			Threshold below which the audio is silenced, in decibels. Value can range from -100 to 0.
 		</member>
 	</members>

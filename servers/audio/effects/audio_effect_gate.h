@@ -69,9 +69,9 @@ protected:
 
 	float attack_ms = 5.f;
 	float hold_ms = 100.f;
-	float release_ms = 50.f;
+	float release_ms = 500.f;
 
-	float threshold_db = -50.f;
+	float threshold_db = -30.f;
 
 public:
 	virtual Ref<AudioEffectInstance> instantiate() override;
