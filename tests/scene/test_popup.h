@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  test_viewport.h                                                       */
+/*  test_popup.h                                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -31,14 +31,12 @@
 #ifndef TEST_POPUP_H
 #define TEST_POPUP_H
 
-#include "scene/gui/popup.h"
 #include "scene/gui/control.h"
+#include "scene/gui/popup.h"
 #include "scene/main/window.h"
-#include "core/object/worker_thread_pool.h"
 
 #include "tests/test_macros.h"
 #include "tests/test_tools.h"
-
 
 namespace TestPopup {
 
@@ -67,7 +65,6 @@ TEST_CASE("[SceneTree][Popup]") {
 		CHECK_FALSE(ed.has_error);
 		ed.clear();
 	}
-
 }
 
 } // namespace TestPopup

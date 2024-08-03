@@ -71,14 +71,14 @@ void Popup::_deinitialize_visible_parents() {
 	if (is_embedded()) {
 		for (Window *parent_window : visible_parents) {
 			Callable focus_entered_callable = callable_mp(this, &Popup::_parent_focused);
-                        Callable tree_exited_callable = callable_mp(this, &Popup::_deinitialize_visible_parents);
+			Callable tree_exited_callable = callable_mp(this, &Popup::_deinitialize_visible_parents);
 
-                        if (parent_window->is_connected(SceneStringName(focus_entered), focus_entered_callable)) {
-                                parent_window->disconnect(SceneStringName(focus_entered), focus_entered_callable);
-                        }
-                        if (parent_window->is_connected(SceneStringName(tree_exited), tree_exited_callable)) {
-                                parent_window->disconnect(SceneStringName(tree_exited), tree_exited_callable);
-                        }
+			if (parent_window->is_connected(SceneStringName(focus_entered), focus_entered_callable)) {
+				parent_window->disconnect(SceneStringName(focus_entered), focus_entered_callable);
+			}
+			if (parent_window->is_connected(SceneStringName(tree_exited), tree_exited_callable)) {
+				parent_window->disconnect(SceneStringName(tree_exited), tree_exited_callable);
+			}
 		}
 
 		visible_parents.clear();
