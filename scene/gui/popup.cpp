@@ -45,16 +45,24 @@ void Popup::_input_from_window(const Ref<InputEvent> &p_event) {
 
 void Popup::_initialize_visible_parents() {
 	if (is_embedded()) {
-		visible_parents.clear();
+		// Ensure no connections are left dangling before we create new ones
+		this->_deinitialize_visible_parents();
 
-		Window *parent_window = this;
+		Window *parent_window = this->get_parent_visible_window();
 		while (parent_window) {
-			parent_window = parent_window->get_parent_visible_window();
-			if (parent_window) {
-				visible_parents.push_back(parent_window);
-				parent_window->connect(SceneStringName(focus_entered), callable_mp(this, &Popup::_parent_focused));
-				parent_window->connect(SceneStringName(tree_exited), callable_mp(this, &Popup::_deinitialize_visible_parents));
+			visible_parents.push_back(parent_window);
+
+			Callable focus_entered_callable = callable_mp(this, &Popup::_parent_focused);
+			Callable tree_exited_callable = callable_mp(this, &Popup::_deinitialize_visible_parents);
+
+			if (!parent_window->is_connected(SceneStringName(focus_entered), focus_entered_callable)) {
+				parent_window->connect(SceneStringName(focus_entered), focus_entered_callable);
 			}
+			if (!parent_window->is_connected(SceneStringName(tree_exited), tree_exited_callable)) {
+				parent_window->connect(SceneStringName(tree_exited), tree_exited_callable);
+			}
+
+			parent_window = parent_window->get_parent_visible_window();
 		}
 	}
 }
@@ -62,8 +70,15 @@ void Popup::_initialize_visible_parents() {
 void Popup::_deinitialize_visible_parents() {
 	if (is_embedded()) {
 		for (Window *parent_window : visible_parents) {
-			parent_window->disconnect(SceneStringName(focus_entered), callable_mp(this, &Popup::_parent_focused));
-			parent_window->disconnect(SceneStringName(tree_exited), callable_mp(this, &Popup::_deinitialize_visible_parents));
+			Callable focus_entered_callable = callable_mp(this, &Popup::_parent_focused);
+                        Callable tree_exited_callable = callable_mp(this, &Popup::_deinitialize_visible_parents);
+
+                        if (parent_window->is_connected(SceneStringName(focus_entered), focus_entered_callable)) {
+                                parent_window->disconnect(SceneStringName(focus_entered), focus_entered_callable);
+                        }
+                        if (parent_window->is_connected(SceneStringName(tree_exited), tree_exited_callable)) {
+                                parent_window->disconnect(SceneStringName(tree_exited), tree_exited_callable);
+                        }
 		}
 
 		visible_parents.clear();
