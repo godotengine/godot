@@ -3331,9 +3331,10 @@ void SceneTreeDock::_files_dropped(const Vector<String> &p_files, NodePath p_to,
 
 	const String &res_path = p_files[0];
 	const StringName res_type = EditorFileSystem::get_singleton()->get_file_type(res_path);
+	const bool is_dropping_scene = ClassDB::is_parent_class(res_type, "PackedScene");
 
-	// Dropping as property when possible.
-	if (p_type == 0 && p_files.size() == 1) {
+	// Dropping as property.
+	if (p_type == 0 && p_files.size() == 1 && !is_dropping_scene) {
 		List<String> valid_properties;
 
 		List<PropertyInfo> pinfo;
@@ -3378,7 +3379,7 @@ void SceneTreeDock::_files_dropped(const Vector<String> &p_files, NodePath p_to,
 	// Either instantiate scenes or create AudioStreamPlayers.
 	int to_pos = -1;
 	_normalize_drop(node, to_pos, p_type);
-	if (ClassDB::is_parent_class(res_type, "PackedScene")) {
+	if (is_dropping_scene) {
 		_perform_instantiate_scenes(p_files, node, to_pos);
 	} else if (ClassDB::is_parent_class(res_type, "AudioStream")) {
 		_perform_create_audio_stream_players(p_files, node, to_pos);
