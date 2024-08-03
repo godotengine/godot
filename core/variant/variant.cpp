@@ -390,6 +390,7 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 		case NODE_PATH: {
 			static const Type valid[] = {
 				STRING,
+				STRING_NAME,
 				NIL
 			};
 
@@ -733,6 +734,7 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 		case NODE_PATH: {
 			static const Type valid[] = {
 				STRING,
+				STRING_NAME,
 				NIL
 			};
 
@@ -1070,6 +1072,19 @@ bool Variant::is_null() const {
 	} else {
 		return true;
 	}
+}
+
+bool Variant::is_signaling_null() const {
+	if (type == NIL) {
+		return _data._int != 0;
+	}
+	return false;
+}
+
+Variant Variant::create_signaling_null() {
+	Variant v;
+	v._data._int = 1;
+	return v;
 }
 
 bool Variant::initialize_ref(Object *p_object) {
@@ -2102,7 +2117,9 @@ Variant::operator NodePath() const {
 	if (type == NODE_PATH) {
 		return *reinterpret_cast<const NodePath *>(_data._mem);
 	} else if (type == STRING) {
-		return NodePath(operator String());
+		return NodePath(operator String());	
+	} else if (type == STRING_NAME) {
+		return NodePath::from_string_name(operator StringName());
 	} else {
 		return NodePath();
 	}

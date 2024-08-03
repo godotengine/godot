@@ -9,6 +9,7 @@
 #include "scene/gui/slider.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/separator.h"
+#include "scene/resources/texture.h"
 #include "scene/gui/label.h"
 #include "scene/gui/flow_container.h"
 #include "unity_link_server_editor_plugin.h"
@@ -29,6 +30,17 @@
 
 #if TOOLS_ENABLED
 #include "editor/editor_node.h"
+#include "editor/editor_properties.h"
+#include "editor/editor_properties_array_dict.h"
+#include "editor/editor_log.h"
+#include "editor/editor_node.h"
+#include "editor/editor_settings.h"
+#include "editor/dependency_editor.h"
+#include "editor/editor_file_system.h"
+
+#include "editor/plugins/editor_plugin.h"
+#include "editor/editor_inspector.h"
+#include "../unity/unity_link_server.h"
 #endif
 
 class ConditionSection : public VBoxContainer {
@@ -366,6 +378,13 @@ public:
 			{
 				value_bool->set_visible(true);
 				value_bool->set_pressed(bool_condition->get_value());
+				if(bool_condition->get_value())
+				{
+					value_bool->set_modulate(Color(0, 0.92549, 0.164706, 1));
+				}else
+				{
+					value_bool->set_modulate(Color(1, 0.255238, 0.196011, 1));
+				}
 				return;
 			}
 			
@@ -435,6 +454,14 @@ protected:
 		{
 			bool_condition->set_value(p_pressed);
 			value_bool->set_pressed(bool_condition->get_value());
+			
+			if(p_pressed)
+			{
+				value_bool->set_modulate(Color(0, 0.92549, 0.164706, 1));
+			}else
+			{
+				value_bool->set_modulate(Color(1, 0.255238, 0.196011, 1));
+			}
 			update_state();
 			return;
 		}
@@ -1176,6 +1203,13 @@ public:
 			{
 				value_bool->set_visible(true);
 				value_bool->set_pressed(bool_blackboard_set_item->get_value());
+				if(bool_blackboard_set_item->get_value())
+				{
+					value_bool->set_modulate(Color(0, 0.92549, 0.164706, 1));
+				}else
+				{
+					value_bool->set_modulate(Color(1, 0.255238, 0.196011, 1));
+				}
 				return;
 			}
 			
@@ -1236,7 +1270,14 @@ protected:
 		if(bool_blackboard_set_item.is_valid())
 		{
 			bool_blackboard_set_item->set_value(p_pressed);
-			value_bool->set_pressed(bool_blackboard_set_item->get_value());
+			value_bool->set_pressed(bool_blackboard_set_item->get_value());	
+			if(p_pressed)
+			{
+				value_bool->set_modulate(Color(0, 0.92549, 0.164706, 1));
+			}else
+			{
+				value_bool->set_modulate(Color(1, 0.255238, 0.196011, 1));
+			}
 			update_state();
 			return;
 		}
@@ -1391,19 +1432,143 @@ BlackbordSetSection::BlackbordSetSection() {
 	add_child(tasks_container);
 }
 
-
-
 #ifdef TOOLS_ENABLED
-#include "editor/editor_log.h"
-#include "editor/editor_node.h"
-#include "editor/editor_settings.h"
-#include "editor/dependency_editor.h"
-#include "editor/editor_file_system.h"
+// 逻辑的根节点分段
+class AnimationLogicRootNodeProperty : public EditorPropertyArray
+{
+	GDCLASS(AnimationLogicRootNodeProperty, EditorPropertyArray);
+public:
+	void on_reorder_button_gui_input(const Ref<InputEvent> &p_event)
+	{
+		_reorder_button_gui_input(p_event);
+	}
+	void on_reorder_button_up()
+	{
+		_reorder_button_up();
+	}
+	void on_reorder_button_down(int p_idx)
+	{
+		_reorder_button_down(p_idx);
+	}
+	void on_change_type(Object *p_button, int p_slot_index)
+	{
+		_change_type(p_button,p_slot_index);
+	}
+	void on_remove_pressed(int p_idx)
+	{
+		_remove_pressed(p_idx);
+	}
+	void on_update_state()
+	{
+		for(int i=0;i<slots.size();i++)
+		{
+			EditorPropertyArray::Slot & slot = slots[i];
+			if(slot.state_button == nullptr)
+			{
+				continue;
+			}
+			Ref<CharacterAnimationLogicNode> node = node_object->get_node(slots[i].index);
+			if(node.is_null())
+			{
+				continue;
+			}
+			bool rs = node->get_editor_state();
+			if(rs)
+			{
+				slot.state_button->set_pressed(true);
+				slot.state_button->set_modulate(Color(0, 0.92549, 0.164706, 1));
+			}
+			else
+			{
+				slot.state_button->set_pressed(false);
+				slot.state_button->set_modulate(Color(1, 0.255238, 0.196011, 1));
+			}
+		}
+	}
+	virtual void _on_clear_slots()
+	{
+		for(int i=0;i<slots.size();i++)
+		{
+			EditorPropertyArray::Slot & slot = slots[i];
+			if(slot.state_button == nullptr)
+			{
+				continue;
+			}
+			Ref<CharacterAnimationLogicNode> node = node_object->get_node(slots[i].index);
+			if(node.is_null())
+			{
+				continue;
+			}
+			node->editor_state_change = Callable();
+		}
+	}
+	virtual void _create_new_property_slot() override
+	{
+		int idx = slots.size();
+		HBoxContainer *hbox = memnew(HBoxContainer);
 
-#include "scene/resources/texture.h"
-#include "editor/plugins/editor_plugin.h"
-#include "editor/editor_inspector.h"
-#include "../unity/unity_link_server.h"
+		Button *reorder_button = memnew(Button);
+		reorder_button->set_icon(get_editor_theme_icon(SNAME("TripleBar")));
+		reorder_button->set_default_cursor_shape(Control::CURSOR_MOVE);
+		reorder_button->set_disabled(is_read_only());
+		reorder_button->connect(SceneStringName(gui_input), callable_mp(this, &AnimationLogicRootNodeProperty::on_reorder_button_gui_input));
+		reorder_button->connect(SNAME("button_up"), callable_mp(this, &AnimationLogicRootNodeProperty::on_reorder_button_up));
+		reorder_button->connect(SNAME("button_down"), callable_mp(this, &AnimationLogicRootNodeProperty::on_reorder_button_down).bind(idx));
+
+		hbox->add_child(reorder_button);
+		EditorProperty *prop = memnew(EditorPropertyNil);
+		hbox->add_child(prop);
+
+		Ref<CharacterAnimationLogicNode> node = node_object->get_node(idx + page_index * page_length);
+		bool rs = node->get_editor_state();
+		// 增加状态按钮
+		CheckButton *state_button = memnew(CheckButton);
+		state_button->set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
+		state_button->set_disabled(true);
+		state_button->set_focus_mode(FOCUS_NONE);
+		if(rs)
+		{
+			state_button->set_pressed(true);
+			state_button->set_modulate(Color(0, 0.92549, 0.164706, 1));
+		}
+		else{
+			state_button->set_pressed(false);
+			state_button->set_modulate(Color(1, 0.255238, 0.196011, 1));
+		}
+		node->editor_state_change = callable_mp(this, &AnimationLogicRootNodeProperty::on_update_state);
+		hbox->add_child(state_button);
+
+		bool is_untyped_array = object->get_array().get_type() == Variant::ARRAY && subtype == Variant::NIL;
+
+		if (is_untyped_array) {
+			Button *edit_btn = memnew(Button);
+			edit_btn->set_icon(get_editor_theme_icon(SNAME("Edit")));
+			edit_btn->set_disabled(is_read_only());
+			edit_btn->connect(SceneStringName(pressed), callable_mp(this, &AnimationLogicRootNodeProperty::on_change_type).bind(edit_btn, idx));
+			hbox->add_child(edit_btn);
+		} else {
+			Button *remove_btn = memnew(Button);
+			remove_btn->set_icon(get_editor_theme_icon(SNAME("Remove")));
+			remove_btn->set_disabled(is_read_only());
+			remove_btn->connect(SceneStringName(pressed), callable_mp(this, &AnimationLogicRootNodeProperty::on_remove_pressed).bind(idx));
+			hbox->add_child(remove_btn);
+		}
+		property_vbox->add_child(hbox);
+
+		EditorPropertyArray::Slot slot;
+		slot.prop = prop;
+		slot.object = object;
+		slot.container = hbox;
+		slot.reorder_button = reorder_button;
+		slot.state_button = state_button;
+		slot.set_index(idx + page_index * page_length);
+		slots.push_back(slot);
+	}
+public:
+	Ref<CharacterAnimationLogicRoot> node_object;
+};
+
+
 
 
 
@@ -1462,7 +1627,7 @@ public:
 		return false;
 	}
 
-		static bool _parse_blackboard_property(EditorInspectorPlugin *p_plugin,const Ref<AnimatorBlackboardSet>& object, Variant::Type type, const String& name, PropertyHint hint_type, const String& hint_string, BitField<PropertyUsageFlags> usage_flags, bool wide)
+	static bool _parse_blackboard_property(EditorInspectorPlugin *p_plugin,const Ref<AnimatorBlackboardSet>& object, Variant::Type type, const String& name, PropertyHint hint_type, const String& hint_string, BitField<PropertyUsageFlags> usage_flags, bool wide)
 	{
 		if(name == "change_list")
 		{
@@ -1488,6 +1653,19 @@ public:
 		}
 		return false;
 	}
+	static bool _parse_node_root_property(EditorInspectorPlugin *p_plugin,const Ref<CharacterAnimationLogicRoot>& object, Variant::Type type, const String& name, PropertyHint hint_type, const String& hint_string, BitField<PropertyUsageFlags> usage_flags, bool wide)
+	{
+		if(name == "node_list")
+		{
+			AnimationLogicRootNodeProperty* section = memnew(AnimationLogicRootNodeProperty);
+			section->setup(Variant::OBJECT,hint_string);
+			section->node_object = object;
+			p_plugin->add_custom_control( section);
+			return true;
+
+		}
+
+	}
 
 };
 // 一些自定义的Inspector插件
@@ -1511,6 +1689,11 @@ class GameHelpInspectorPlugin : public EditorInspectorPlugin
 			EditorNode::get_log()->add_message(String("GameHelpInspectorPlugin.can_handle") + " :" + p_object->get_class());
 			return true;
 		}
+		if( Object::cast_to<CharacterAnimationLogicRoot>(p_object) != nullptr)
+		{
+			EditorNode::get_log()->add_message(String("GameHelpInspectorPlugin.can_handle") + " :" + p_object->get_class());
+			return true;
+		}
 
 		return false;
 	}
@@ -1525,6 +1708,11 @@ class GameHelpInspectorPlugin : public EditorInspectorPlugin
 		if (/* condition */set_object.is_valid())
 		{
 			return ConditionList_ED::_parse_blackboard_property(this,set_object, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide);
+		}
+		Ref<CharacterAnimationLogicRoot> root_object = p_object;
+		if (/* condition */root_object.is_valid())
+		{
+			return ConditionList_ED::_parse_node_root_property(this,root_object, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide);
 		}
 		return false;
 	}

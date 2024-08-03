@@ -210,6 +210,7 @@ public:
         }
         return true;
     }
+protected:
     virtual bool is_enable(const LocalVector<Ref<AnimatorAIStateConditionBase>> & conditions,Blackboard* p_blackboard,bool p_is_include)
     {
         if(p_is_include)
@@ -246,6 +247,21 @@ public:
     LocalVector<Ref<AnimatorAIStateConditionBase>> exclude_condition;
     Ref<BlackboardPlan> blackboard_plan;
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 VARIANT_ENUM_CAST(AnimatorAIStateConditionBase::AnimatorAICompareType)
 
 

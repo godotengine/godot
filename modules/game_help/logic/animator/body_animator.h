@@ -573,7 +573,19 @@ public:
 public:
     void set_blackboard_plan(const Ref<BlackboardPlan>& p_blackboard_plan) 
     {
+        if(p_blackboard_plan == blackboard_plan)
+        {
+            return;
+        }
+        if(blackboard_plan.is_valid())
+        {
+            blackboard_plan->disconnect(LW_NAME(changed), callable_mp(this, &CharacterAnimationLogicNode::_blackboard_changed));
+        }
          blackboard_plan = p_blackboard_plan; 
+         if(blackboard_plan.is_valid())
+         {
+             blackboard_plan->connect(LW_NAME(changed), callable_mp(this, &CharacterAnimationLogicNode::_blackboard_changed));
+         }
          init_blackboard(blackboard_plan);
 		 update_blackboard_plan();
     }
@@ -597,6 +609,10 @@ public:
         }
 
 	}
+    bool get_editor_state() 
+    {
+        return false; 
+    }
 
 
     void set_priority(int p_priority) { priority = p_priority; }
@@ -637,6 +653,11 @@ public:
 	virtual bool check_stop(CharacterAnimatorLayer* animator,Blackboard* blackboard);
     virtual void process_stop(CharacterAnimatorLayer* animator,Blackboard* blackboard);
 
+    void _blackboard_changed()
+    {
+        editor_state_change.call();
+    }
+    Callable editor_state_change;
 public:
     bool is_enter(Blackboard* blackboard)
     {
@@ -645,6 +666,13 @@ public:
             return enter_condtion->is_enable(blackboard);
         }
         return true;
+    }
+    ~CharacterAnimationLogicNode()
+    {
+        if(blackboard_plan.is_valid())
+        {
+            blackboard_plan->disconnect(LW_NAME(changed), callable_mp(this, &CharacterAnimationLogicNode::_blackboard_changed));
+        }
     }
 
 private:

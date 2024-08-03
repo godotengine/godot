@@ -168,6 +168,8 @@ struct VariantUtilityFunctions {
 	static uint64_t rid_allocate_id();
 	static RID rid_from_int64(uint64_t p_base);
 	static bool is_same(const Variant &p_a, const Variant &p_b);
+	static bool is_signaling_null(const Variant &p_variant);
+	static Variant create_signaling_null();
 };
 
 #endif // VARIANT_UTILITY_H

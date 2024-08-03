@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  node_path.h                                                           */
+/*  hash_map.cpp                                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,75 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NODE_PATH_H
-#define NODE_PATH_H
+#include "hash_map.h"
 
-#include "core/string/string_name.h"
-#include "core/string/ustring.h"
+#include "core/variant/variant.h"
 
-class NodePath {
-	struct Data {
-		SafeRefCount refcount;
-		Vector<StringName> path;
-		Vector<StringName> subpath;
-		StringName concatenated_path;
-		StringName concatenated_subpath;
-		bool absolute;
-		mutable bool hash_cache_valid;
-		mutable uint32_t hash_cache;
-	};
-
-	mutable Data *data = nullptr;
-	void unref();
-
-	void _update_hash_cache() const;
-
-public:
-	bool is_absolute() const;
-	int get_name_count() const;
-	StringName get_name(int p_idx) const;
-	int get_subname_count() const;
-	StringName get_subname(int p_idx) const;
-	int get_total_name_count() const;
-	Vector<StringName> get_names() const;
-	Vector<StringName> get_subnames() const;
-	StringName get_concatenated_names() const;
-	StringName get_concatenated_subnames() const;
-	NodePath slice(int p_begin, int p_end = INT_MAX) const;
-
-	NodePath rel_path_to(const NodePath &p_np) const;
-	NodePath get_as_property_path() const;
-
-	void prepend_period();
-
-	_FORCE_INLINE_ uint32_t hash() const {
-		if (!data) {
-			return 0;
-		}
-		if (!data->hash_cache_valid) {
-			_update_hash_cache();
-		}
-		return data->hash_cache;
+bool _hashmap_variant_less_than(const Variant &p_left, const Variant &p_right) {
+	bool valid = false;
+	Variant res;
+	Variant::evaluate(Variant::OP_LESS, p_left, p_right, res, valid);
+	if (!valid) {
+		res = false;
 	}
-
-	operator String() const;
-	bool is_empty() const;
-
-	bool operator==(const NodePath &p_path) const;
-	bool operator!=(const NodePath &p_path) const;
-	void operator=(const NodePath &p_path);
-
-	void simplify();
-	NodePath simplified() const;
-
-	static NodePath from_string_name(const StringName &p_string_name);
-
-	NodePath(const Vector<StringName> &p_path, bool p_absolute);
-	NodePath(const Vector<StringName> &p_path, const Vector<StringName> &p_subpath, bool p_absolute);
-	NodePath(const NodePath &p_path);
-	NodePath(const String &p_path);
-	NodePath() {}
-	~NodePath();
-};
-
-#endif // NODE_PATH_H
+	return res;
+}

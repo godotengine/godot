@@ -2082,6 +2082,7 @@ static void _register_variant_builtin_methods_misc() {
 	bind_method(NodePath, slice, sarray("begin", "end"), varray(INT_MAX));
 	bind_method(NodePath, get_as_property_path, sarray(), varray());
 	bind_method(NodePath, is_empty, sarray(), varray());
+	bind_static_method(NodePath, from_string_name, sarray("string_name"), varray());
 
 	/* Callable */
 
@@ -2251,6 +2252,7 @@ static void _register_variant_builtin_methods_misc() {
 	bind_method(Dictionary, size, sarray(), varray());
 	bind_method(Dictionary, is_empty, sarray(), varray());
 	bind_method(Dictionary, clear, sarray(), varray());
+	bind_method(Dictionary, sort, sarray(), varray());
 	bind_method(Dictionary, merge, sarray("dictionary", "overwrite"), varray(false));
 	bind_method(Dictionary, merged, sarray("dictionary", "overwrite"), varray(false));
 	bind_method(Dictionary, has, sarray("key"), varray());

@@ -56,6 +56,9 @@ public:
 	const T *ptr() const {
 		return data;
 	}
+	void fill(uint8_t p_value) {
+		memset(data, p_value, sizeof(T) * count);
+	}
 
 	_FORCE_INLINE_ void push_back(T p_elem) {
 		if (unlikely(count == capacity)) {

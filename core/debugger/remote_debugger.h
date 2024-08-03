@@ -74,6 +74,7 @@ private:
 	int warn_count = 0;
 	int last_reset = 0;
 	bool reload_all_scripts = false;
+	bool allow_tmusergdscript_runtime_error_emission = true;
 	Array script_paths_to_reload;
 
 	// Make handlers and send_message thread safe.
@@ -117,6 +118,7 @@ public:
 	void poll_events(bool p_is_idle);
 	void send_message(const String &p_message, const Array &p_args);
 	void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, bool p_editor_notify, ErrorHandlerType p_type);
+	DebuggerMarshalls::ScriptStackDump _get_script_lang_stack_dump(ScriptLanguage *script_lang);
 	void debug(bool p_can_continue = true, bool p_is_error_breakpoint = false);
 
 	explicit RemoteDebugger(Ref<RemoteDebuggerPeer> p_peer);

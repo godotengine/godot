@@ -1228,6 +1228,14 @@ bool VariantUtilityFunctions::is_same(const Variant &p_a, const Variant &p_b) {
 	return p_a.identity_compare(p_b);
 }
 
+bool VariantUtilityFunctions::is_signaling_null(const Variant &p_variant) {
+	return p_variant.is_signaling_null();
+}
+
+Variant VariantUtilityFunctions::create_signaling_null() {
+	return Variant::create_signaling_null();
+}
+
 #ifdef DEBUG_METHODS_ENABLED
 #define VCALLR *ret = p_func(VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...)
 #define VCALL p_func(VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...)
@@ -1827,6 +1835,9 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(rid_from_int64, sarray("base"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 
 	FUNCBINDR(is_same, sarray("a", "b"), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	
+	FUNCBINDR(is_signaling_null, sarray("variant"), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDR(create_signaling_null, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 }
 
 void Variant::_unregister_variant_utility_functions() {

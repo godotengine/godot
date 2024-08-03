@@ -58,13 +58,13 @@ class CharacterAnimationLogicRoot : public RefCounted
     GDCLASS(CharacterAnimationLogicRoot,RefCounted)
     static void _bind_methods();
 public:
-    void sort();
     void set_node_list(const Array& p_node_list)
     {
         for(int32_t i = 0; i < p_node_list.size(); ++i)
         {
             node_list.push_back(p_node_list[i]);
         }
+        is_need_sort = true;
     }
     Array get_node_list() 
     { 
@@ -75,12 +75,21 @@ public:
         }
         return ret; 
     }
+    Ref<CharacterAnimationLogicNode> get_node(int p_index)
+    {
+        if(p_index < 0 || p_index >= node_list.size())
+        {
+            return Ref<CharacterAnimationLogicNode>();
+        }
+        return node_list[p_index];
+    }
 
-    void set_bt_sort(int id){}
-    int get_bt_sort() { return 0; }
     Ref<CharacterAnimationLogicNode> process_logic(Blackboard* blackboard);
+
+    DECL_MEMBER_BUTTON(sort);
 public:
     bool is_need_sort = true;
+    StringName state_name;
     LocalVector<Ref<CharacterAnimationLogicNode>>  node_list;
 
 };
@@ -138,6 +147,7 @@ public:
 public:
     //  默认状态名称
     StringName default_state_name;
+    LocalVector<Ref<CharacterAnimationLogicRoot>>  node_list;
     HashMap<StringName, Ref<CharacterAnimationLogicRoot>> state_map;
 
 };

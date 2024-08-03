@@ -392,6 +392,18 @@ Array RemoteDebugger::_get_message() {
 	message_list.pop_front();
 	return msg;
 }
+DebuggerMarshalls::ScriptStackDump RemoteDebugger::_get_script_lang_stack_dump(ScriptLanguage *script_lang) {
+	DebuggerMarshalls::ScriptStackDump dump;
+	const int slc = script_lang->debug_get_stack_level_count();
+	for (int i = 0; i < slc; i++) {
+		ScriptLanguage::StackInfo frame;
+		frame.file = script_lang->debug_get_stack_level_source(i);
+		frame.line = script_lang->debug_get_stack_level_line(i);
+		frame.func = script_lang->debug_get_stack_level_function(i);
+		dump.frames.push_back(frame);
+	}
+	return dump;
+}
 
 void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 	//this function is called when there is a debugger break (bug on script)
@@ -413,6 +425,28 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 
 	ScriptLanguage *script_lang = script_debugger->get_break_language();
 	const String error_str = script_lang ? script_lang->debug_get_error() : "";
+	// The Mirror: Check if the stack dump has dynamically loaded user-provided GDScript.
+	DebuggerMarshalls::ScriptStackDump dump = _get_script_lang_stack_dump(script_lang);
+	int i = 0;
+	for (ScriptLanguage::StackInfo &frame : dump.frames) {
+		// If the file path starts with "tmusergdscript://", it's a dynamically loaded TMUserGDScript.
+		const String &file_path = frame.file;
+		if (file_path.begins_with("tmusergdscript://")) {
+			ScriptInstance *inst = script_lang->debug_get_stack_level_instance(i);
+			ERR_FAIL_NULL(inst);
+			Object *owner = inst->get_owner();
+			ERR_FAIL_NULL(owner);
+			// This check is required to prevent infinite loops.
+			if (allow_tmusergdscript_runtime_error_emission) {
+				allow_tmusergdscript_runtime_error_emission = false;
+				// signal tmusergdscript_runtime_error(error_str: String, frame_index: int, line_num: int, func_name: String)
+				owner->emit_signal(StringName("tmusergdscript_runtime_error"), error_str, i, frame.line, frame.func);
+			}
+			allow_tmusergdscript_runtime_error_emission = true;
+			return;
+		}
+		i++;
+	}
 	Array msg;
 	msg.push_back(p_can_continue);
 	msg.push_back(error_str);
@@ -471,15 +505,7 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				break;
 
 			} else if (command == "get_stack_dump") {
-				DebuggerMarshalls::ScriptStackDump dump;
-				int slc = script_lang->debug_get_stack_level_count();
-				for (int i = 0; i < slc; i++) {
-					ScriptLanguage::StackInfo frame;
-					frame.file = script_lang->debug_get_stack_level_source(i);
-					frame.line = script_lang->debug_get_stack_level_line(i);
-					frame.func = script_lang->debug_get_stack_level_function(i);
-					dump.frames.push_back(frame);
-				}
+				// The Mirror: Stack dump code was moved to a function and called earlier.
 				send_message("stack_dump", dump.serialize());
 
 			} else if (command == "get_stack_frame_vars") {

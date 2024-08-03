@@ -90,6 +90,20 @@ public:
 	virtual Mat44				GetConstraintToBody1Matrix() const override;
 	virtual Mat44				GetConstraintToBody2Matrix() const override;
 
+	/// Get the attachment point for body 1 relative to body 1 COM (transform by Body::GetCenterOfMassTransform to take to world space)
+	inline Vec3					GetLocalSpacePoint1() const								{ return mLocalSpacePosition1; }
+
+	/// Get the attachment point for body 2 relative to body 2 COM (transform by Body::GetCenterOfMassTransform to take to world space)
+	inline Vec3					GetLocalSpacePoint2() const								{ return mLocalSpacePosition2; }
+
+	// Local space hinge directions (transform direction by Body::GetCenterOfMassTransform to take to world space)
+	Vec3						GetLocalSpaceHingeAxis1() const							{ return mLocalSpaceHingeAxis1; }
+	Vec3						GetLocalSpaceHingeAxis2() const							{ return mLocalSpaceHingeAxis2; }
+
+	// Local space normal directions (transform direction by Body::GetCenterOfMassTransform to take to world space)
+	Vec3						GetLocalSpaceNormalAxis1() const						{ return mLocalSpaceNormalAxis1; }
+	Vec3						GetLocalSpaceNormalAxis2() const						{ return mLocalSpaceNormalAxis2; }
+
 	/// Get the current rotation angle from the rest position
 	float						GetCurrentAngle() const;
 

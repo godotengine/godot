@@ -339,6 +339,7 @@ void EditorPropertyArray::update_property() {
 		edit->set_text(vformat(TTR("(Nil) %s"), array_type_name));
 		edit->set_pressed(false);
 		if (container) {
+			_on_clear_slots();
 			set_bottom_editor(nullptr);
 			memdelete(container);
 			button_add_item = nullptr;
@@ -465,6 +466,7 @@ void EditorPropertyArray::update_property() {
 
 	} else {
 		if (container) {
+			_on_clear_slots();
 			set_bottom_editor(nullptr);
 			memdelete(container);
 			button_add_item = nullptr;
@@ -676,6 +678,9 @@ void EditorPropertyArray::_notification(int p_what) {
 				edit->queue_redraw();
 			}
 		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			_on_clear_slots();
+		}
 	}
 }
 

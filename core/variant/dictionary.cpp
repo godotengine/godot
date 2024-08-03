@@ -243,6 +243,11 @@ void Dictionary::_ref(const Dictionary &p_from) const {
 	_p = p_from._p;
 }
 
+void Dictionary::sort() {
+	ERR_FAIL_COND_MSG(_p->read_only, "Dictionary is in read-only state.");
+	_p->variant_map.sort();
+}
+
 void Dictionary::clear() {
 	ERR_FAIL_COND_MSG(_p->read_only, "Dictionary is in read-only state.");
 	_p->variant_map.clear();

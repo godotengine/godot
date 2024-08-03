@@ -416,6 +416,7 @@ private:                                                                        
                                                                                                                                                  \
 public:                                                                                                                                          \
 	typedef m_class self_type;                                                                                                                   \
+	typedef m_inherits base_class_type;                                                                                                                   \
 	static constexpr bool _class_is_enabled = !bool(GD_IS_DEFINED(ClassDB_Disable_##m_class)) && m_inherits::_class_is_enabled;                  \
 	virtual String get_class() const override {                                                                                                  \
 		if (_get_extension()) {                                                                                                                  \

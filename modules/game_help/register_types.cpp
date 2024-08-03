@@ -45,6 +45,9 @@
 #include "modules/game_help/logic/character_ai/condition/animator_condition_float.h"
 #include "modules/game_help/logic/character_ai/condition/animator_condition_int.h"
 #include "modules/game_help/logic/character_ai/condition/animator_condition_string.h"
+#include "modules/game_help/logic/beehave/beehave_node.h"
+#include "modules/game_help/logic/beehave/beehave_tree.h"
+
 
 
 #include "modules/game_help/logic/character_ai/blackboard_set_item/animator_blackboard_item_bool.h"
@@ -184,6 +187,13 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 		ClassDB::register_class<CharacterAILogicNode_Provoke>();
 		ClassDB::register_class<CharacterAILogicNode_Idle>();
 		ClassDB::register_class<CharacterAILogicNode_Dead>();
+
+
+		ClassDB::register_class<BeehaveNode>();
+		ClassDB::register_class<BeehaveComposite>();
+		ClassDB::register_class<BeehaveDecorator>();
+		ClassDB::register_class<BeehaveLeaf>();
+		ClassDB::register_class<BeehaveAction>();
 
 		ClassDB::register_class<CharacterAI_Inductor>();
 		ClassDB::register_class<CharacterAI_Brain>();

@@ -34,6 +34,7 @@
 #include "editor/editor_inspector.h"
 #include "editor/editor_locale_dialog.h"
 #include "editor/filesystem_dock.h"
+#include "scene/gui/check_button.h"
 
 class Button;
 class EditorSpinSlider;
@@ -96,6 +97,7 @@ public:
 class EditorPropertyArray : public EditorProperty {
 	GDCLASS(EditorPropertyArray, EditorProperty);
 
+protected:
 	struct Slot {
 		Ref<EditorPropertyArrayObject> object;
 		HBoxContainer *container = nullptr;
@@ -104,6 +106,7 @@ class EditorPropertyArray : public EditorProperty {
 		bool as_id = false;
 		EditorProperty *prop = nullptr;
 		Button *reorder_button = nullptr;
+		CheckButton *state_button = nullptr;
 
 		void set_index(int p_idx) {
 			String prop_name = "indices/" + itos(p_idx);
@@ -140,7 +143,11 @@ class EditorPropertyArray : public EditorProperty {
 	void _reorder_button_gui_input(const Ref<InputEvent> &p_event);
 	void _reorder_button_down(int p_index);
 	void _reorder_button_up();
-	void _create_new_property_slot();
+	virtual void _create_new_property_slot();
+	virtual void _on_clear_slots()
+	{
+
+	}
 
 	Node *get_base_node();
 
@@ -178,6 +185,7 @@ public:
 class EditorPropertyDictionary : public EditorProperty {
 	GDCLASS(EditorPropertyDictionary, EditorProperty);
 
+protected:
 	struct Slot {
 		Ref<EditorPropertyDictionaryObject> object;
 		HBoxContainer *container = nullptr;

@@ -48,6 +48,7 @@ bool BlackboardPlan::_set(const StringName &p_name, const Variant &p_value) {
 			var_map[var_name].set_type((Variant::Type)(int)p_value);
 		} else if (what == "value") {
 			var_map[var_name].set_value(p_value);
+			emit_changed();
 		} else if (what == "hint") {
 			var_map[var_name].set_hint((PropertyHint)(int)p_value);
 		} else if (what == "hint_string") {
