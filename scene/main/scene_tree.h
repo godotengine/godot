@@ -56,6 +56,7 @@ class SceneTreeTimer : public RefCounted {
 	bool process_always = true;
 	bool process_in_physics = false;
 	bool ignore_time_scale = false;
+	Node *owner;
 
 protected:
 	static void _bind_methods();
@@ -74,6 +75,9 @@ public:
 	bool is_ignore_time_scale();
 
 	void release_connections();
+
+ 	void set_owner(Object *p_owner);
+    Node *get_owner() const;
 
 	SceneTreeTimer();
 };
@@ -395,7 +399,7 @@ public:
 	Error reload_current_scene();
 	void unload_current_scene();
 
-	Ref<SceneTreeTimer> create_timer(double p_delay_sec, bool p_process_always = true, bool p_process_in_physics = false, bool p_ignore_time_scale = false);
+	Ref<SceneTreeTimer> create_timer(double p_delay_sec, Node *p_owner = nullptr, bool p_process_always = true, bool p_process_in_physics = false, bool p_ignore_time_scale = false);
 	Ref<Tween> create_tween();
 	TypedArray<Tween> get_processed_tweens();
 
