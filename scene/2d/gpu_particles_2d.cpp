@@ -879,7 +879,7 @@ GPUParticles2D::GPUParticles2D() {
 	set_randomness_ratio(0);
 	set_visibility_rect(Rect2(Vector2(-100, -100), Vector2(200, 200)));
 	set_use_local_coordinates(false);
-	set_draw_order(DRAW_ORDER_INDEX);
+	set_draw_order(DRAW_ORDER_LIFETIME);
 	set_speed_scale(1);
 	set_fixed_fps(30);
 	set_collision_base_size(collision_base_size);
