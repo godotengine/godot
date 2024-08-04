@@ -379,6 +379,8 @@ Error OS_Windows::open_dynamic_library(const String &p_path, void *&p_library_ha
 		//this code exists so gdextension can load .dll files from within the executable path
 		path = get_executable_path().get_base_dir().path_join(p_path.get_file());
 	}
+	// Path to load from may be different from original if we make copies.
+	String load_path = path;
 
 	ERR_FAIL_COND_V(!FileAccess::exists(path), ERR_FILE_NOT_FOUND);
 
@@ -387,25 +389,22 @@ Error OS_Windows::open_dynamic_library(const String &p_path, void *&p_library_ha
 	if (p_data != nullptr && p_data->generate_temp_files) {
 		// Copy the file to the same directory as the original with a prefix in the name.
 		// This is so relative path to dependencies are satisfied.
-		String copy_path = path.get_base_dir().path_join("~" + path.get_file());
+		load_path = path.get_base_dir().path_join("~" + path.get_file());
 
 		// If there's a left-over copy (possibly from a crash) then delete it first.
-		if (FileAccess::exists(copy_path)) {
-			DirAccess::remove_absolute(copy_path);
+		if (FileAccess::exists(load_path)) {
+			DirAccess::remove_absolute(load_path);
 		}
 
-		Error copy_err = DirAccess::copy_absolute(path, copy_path);
+		Error copy_err = DirAccess::copy_absolute(path, load_path);
 		if (copy_err) {
 			ERR_PRINT("Error copying library: " + path);
 			return ERR_CANT_CREATE;
 		}
 
-		FileAccess::set_hidden_attribute(copy_path, true);
+		FileAccess::set_hidden_attribute(load_path, true);
 
-		// Save the copied path so it can be deleted later.
-		path = copy_path;
-
-		Error pdb_err = WindowsUtils::copy_and_rename_pdb(path);
+		Error pdb_err = WindowsUtils::copy_and_rename_pdb(load_path);
 		if (pdb_err != OK && pdb_err != ERR_SKIP) {
 			WARN_PRINT(vformat("Failed to rename the PDB file. The original PDB file for '%s' will be loaded.", path));
 		}
@@ -421,21 +420,21 @@ Error OS_Windows::open_dynamic_library(const String &p_path, void *&p_library_ha
 	DLL_DIRECTORY_COOKIE cookie = nullptr;
 
 	if (p_data != nullptr && p_data->also_set_library_path && has_dll_directory_api) {
-		cookie = add_dll_directory((LPCWSTR)(path.get_base_dir().utf16().get_data()));
+		cookie = add_dll_directory((LPCWSTR)(load_path.get_base_dir().utf16().get_data()));
 	}
 
-	p_library_handle = (void *)LoadLibraryExW((LPCWSTR)(path.utf16().get_data()), nullptr, (p_data != nullptr && p_data->also_set_library_path && has_dll_directory_api) ? LOAD_LIBRARY_SEARCH_DEFAULT_DIRS : 0);
+	p_library_handle = (void *)LoadLibraryExW((LPCWSTR)(load_path.utf16().get_data()), nullptr, (p_data != nullptr && p_data->also_set_library_path && has_dll_directory_api) ? LOAD_LIBRARY_SEARCH_DEFAULT_DIRS : 0);
 	if (!p_library_handle) {
 		if (p_data != nullptr && p_data->generate_temp_files) {
-			DirAccess::remove_absolute(path);
+			DirAccess::remove_absolute(load_path);
 		}
 
 #ifdef DEBUG_ENABLED
 		DWORD err_code = GetLastError();
 
-		HashSet<String> checekd_libs;
+		HashSet<String> checked_libs;
 		HashSet<String> missing_libs;
-		debug_dynamic_library_check_dependencies(path, path, checekd_libs, missing_libs);
+		debug_dynamic_library_check_dependencies(load_path, load_path, checked_libs, missing_libs);
 		if (!missing_libs.is_empty()) {
 			String missing;
 			for (const String &E : missing_libs) {
@@ -464,7 +463,8 @@ Error OS_Windows::open_dynamic_library(const String &p_path, void *&p_library_ha
 	}
 
 	if (p_data != nullptr && p_data->generate_temp_files) {
-		temp_libraries[p_library_handle] = path;
+		// Save the copied path so it can be deleted later.
+		temp_libraries[p_library_handle] = load_path;
 	}
 
 	return OK;
