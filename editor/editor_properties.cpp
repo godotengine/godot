@@ -3353,7 +3353,8 @@ void EditorPropertyResource::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			const EditorInspector *ei = get_parent_inspector();
-			if (ei && !ei->is_main_editor_inspector()) {
+			const EditorInspector *main_ei = InspectorDock::get_inspector_singleton();
+			if (ei && main_ei && ei != main_ei && !main_ei->is_ancestor_of(ei)) {
 				fold_resource();
 			}
 		} break;
