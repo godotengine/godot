@@ -81,9 +81,6 @@ void SceneTreeTimer::_bind_methods() {
 
 void SceneTreeTimer::set_owner(Object *p_owner) {
     owner = Object::cast_to<Node>(p_owner);
-    if (!owner) {
-        owner = nullptr;
-    }
 }
 
 Node *SceneTreeTimer::get_owner() const {
