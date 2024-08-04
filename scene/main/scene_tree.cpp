@@ -612,7 +612,7 @@ void SceneTree::process_timers(double p_delta, bool p_physics_frame) {
 
 		if (time_left <= 0) {
             if (E->get()->get_owner() && E->get()->get_owner()->is_inside_tree() ) {
-                E->get()->emit_signal("timeout");
+                E->get()->emit_signal(SNAME("timeout"));
             }
 			timers.erase(E);
 		}
