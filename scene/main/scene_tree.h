@@ -56,7 +56,7 @@ class SceneTreeTimer : public RefCounted {
 	bool process_always = true;
 	bool process_in_physics = false;
 	bool ignore_time_scale = false;
-	Node *owner;
+	Node *owner = nullptr;
 
 protected:
 	static void _bind_methods();
