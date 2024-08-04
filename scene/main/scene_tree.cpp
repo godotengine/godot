@@ -81,9 +81,6 @@ void SceneTreeTimer::_bind_methods() {
 
 void SceneTreeTimer::set_owner(Object *p_owner) {
     owner = Object::cast_to<Node>(p_owner);
-    if (!owner) {
-        owner = nullptr;
-    }
 }
 
 Node *SceneTreeTimer::get_owner() const {
@@ -612,7 +609,7 @@ void SceneTree::process_timers(double p_delta, bool p_physics_frame) {
 
 		if (time_left <= 0) {
             if (E->get()->get_owner() && E->get()->get_owner()->is_inside_tree() ) {
-                E->get()->emit_signal("timeout");
+                E->get()->emit_signal(SNAME("timeout"));
             }
 			timers.erase(E);
 		}
@@ -1488,7 +1485,8 @@ void SceneTree::add_current_scene(Node *p_current) {
 	current_scene = p_current;
 	root->add_child(p_current);
 }
-Ref<SceneTreeTimer> SceneTree::create_timer(double p_delay_sec, Node *p_owner, bool p_process_always, bool p_process_in_physics, bool p_ignore_time_scale) {
+
+Ref<SceneTreeTimer> SceneTree::create_timer(double p_delay_sec, bool p_process_always, bool p_process_in_physics, bool p_ignore_time_scale, Node *p_owner) {
 	_THREAD_SAFE_METHOD_
 	Ref<SceneTreeTimer> stt;
 	stt.instantiate();
@@ -1622,7 +1620,8 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pause", "enable"), &SceneTree::set_pause);
 	ClassDB::bind_method(D_METHOD("is_paused"), &SceneTree::is_paused);
 
-	ClassDB::bind_method(D_METHOD("create_timer", "time_sec", "owner", "process_always", "process_in_physics", "ignore_time_scale"), &SceneTree::create_timer, DEFVAL(true), DEFVAL(false), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("create_timer", "time_sec", "process_always", "process_in_physics", "ignore_time_scale", "owner"), &SceneTree::create_timer, DEFVAL(true), DEFVAL(false), DEFVAL(false));
+
 	ClassDB::bind_method(D_METHOD("create_tween"), &SceneTree::create_tween);
 	ClassDB::bind_method(D_METHOD("get_processed_tweens"), &SceneTree::get_processed_tweens);
 
