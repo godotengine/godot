@@ -212,7 +212,7 @@ static DisplayServer::WindowMode window_mode = DisplayServer::WINDOW_MODE_WINDOW
 static DisplayServer::ScreenOrientation window_orientation = DisplayServer::SCREEN_LANDSCAPE;
 static DisplayServer::VSyncMode window_vsync_mode = DisplayServer::VSYNC_ENABLED;
 static uint32_t window_flags = 0;
-static Size2i window_size = Size2i(1152, 648);
+static Size2i window_size = Size2i(1024, 600);
 
 static int init_screen = DisplayServer::SCREEN_PRIMARY;
 static bool init_fullscreen = false;
