@@ -42,8 +42,7 @@
 #include "editor/filesystem_dock.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/center_container.h"
-#include "scene/gui/check_box.h"
-#include "scene/gui/grid_container.h"
+#include "scene/gui/check_button.h"
 #include "scene/gui/label.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/option_button.h"
@@ -194,6 +193,8 @@ void EditorFileDialog::_update_theme_item_cache() {
 	theme_cache.folder_big_thumbnail = get_editor_theme_icon(SNAME("FolderBigThumb"));
 	theme_cache.file_big_thumbnail = get_editor_theme_icon(SNAME("FileBigThumb"));
 
+	theme_cache.check_box_normal = get_theme_stylebox(CoreStringName(normal), "CheckButton");
+
 	theme_cache.progress[0] = get_editor_theme_icon("Progress1");
 	theme_cache.progress[1] = get_editor_theme_icon("Progress2");
 	theme_cache.progress[2] = get_editor_theme_icon("Progress3");
@@ -210,6 +211,18 @@ void EditorFileDialog::_notification(int p_what) {
 		case Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			_update_icons();
+			for (int i = 0; i < vbox_options->get_child_count(); i++) {
+				MarginContainer *mb_option = Object::cast_to<MarginContainer>(vbox_options->get_child(i));
+				if (mb_option) {
+					if (theme_cache.check_box_normal.is_valid()) {
+						mb_option->add_theme_constant_override("margin_left", theme_cache.check_box_normal->get_margin(SIDE_LEFT));
+						mb_option->add_theme_constant_override("margin_right", theme_cache.check_box_normal->get_margin(SIDE_RIGHT));
+					} else {
+						mb_option->remove_theme_font_override("margin_left");
+						mb_option->remove_theme_font_override("margin_right");
+					}
+				}
+			}
 			invalidate();
 		} break;
 
@@ -1764,30 +1777,50 @@ void EditorFileDialog::_update_option_controls() {
 	}
 	options_dirty = false;
 
-	while (grid_options->get_child_count() > 0) {
-		Node *child = grid_options->get_child(0);
-		grid_options->remove_child(child);
+	while (vbox_options->get_child_count() > 0) {
+		Node *child = vbox_options->get_child(0);
+		vbox_options->remove_child(child);
 		child->queue_free();
 	}
 	selected_options.clear();
 
 	for (const EditorFileDialog::Option &opt : options) {
-		Label *lbl = memnew(Label);
-		lbl->set_text(opt.name);
-		grid_options->add_child(lbl);
 		if (opt.values.is_empty()) {
-			CheckBox *cb = memnew(CheckBox);
+			CheckButton *cb = memnew(CheckButton);
+			cb->set_text(opt.name);
 			cb->set_pressed(opt.default_idx);
-			grid_options->add_child(cb);
+			vbox_options->add_child(cb);
+
 			cb->connect("toggled", callable_mp(this, &EditorFileDialog::_option_changed_checkbox_toggled).bind(opt.name));
 			selected_options[opt.name] = (bool)opt.default_idx;
 		} else {
+			MarginContainer *mb_option = memnew(MarginContainer);
+			if (theme_cache.check_box_normal.is_valid()) {
+				mb_option->add_theme_constant_override("margin_left", theme_cache.check_box_normal->get_margin(SIDE_LEFT));
+				mb_option->add_theme_constant_override("margin_right", theme_cache.check_box_normal->get_margin(SIDE_RIGHT));
+			}
+			vbox_options->add_child(mb_option);
+
+			HBoxContainer *hb_option = memnew(HBoxContainer);
+			hb_option->set_alignment(BoxContainer::ALIGNMENT_CENTER);
+			mb_option->add_child(hb_option);
+
+			Label *lbl = memnew(Label);
+			lbl->set_text(opt.name);
+			lbl->add_theme_style_override(CoreStringName(normal), memnew(StyleBoxEmpty));
+			hb_option->add_child(lbl);
+
+			Control *spacer = memnew(Control);
+			spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+			hb_option->add_child(spacer);
+
 			OptionButton *ob = memnew(OptionButton);
 			for (const String &val : opt.values) {
 				ob->add_item(val);
 			}
 			ob->select(opt.default_idx);
-			grid_options->add_child(ob);
+			hb_option->add_child(ob);
+
 			ob->connect(SceneStringName(item_selected), callable_mp(this, &EditorFileDialog::_option_changed_item_selected).bind(opt.name));
 			selected_options[opt.name] = opt.default_idx;
 		}
@@ -2057,11 +2090,11 @@ void EditorFileDialog::add_side_menu(Control *p_menu, const String &p_title) {
 void EditorFileDialog::_update_side_menu_visibility(bool p_native_dlg) {
 	if (p_native_dlg) {
 		pathhb->set_visible(false);
-		grid_options->set_visible(false);
+		vbox_options->set_visible(false);
 		list_hb->set_visible(false);
 	} else {
 		pathhb->set_visible(true);
-		grid_options->set_visible(true);
+		vbox_options->set_visible(true);
 		list_hb->set_visible(true);
 	}
 }
@@ -2191,10 +2224,10 @@ EditorFileDialog::EditorFileDialog() {
 	body_hsplit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vbc->add_child(body_hsplit);
 
-	grid_options = memnew(GridContainer);
-	grid_options->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
-	grid_options->set_columns(2);
-	vbc->add_child(grid_options);
+	vbox_options = memnew(VBoxContainer);
+	vbox_options->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
+	vbox_options->set_alignment(BoxContainer::ALIGNMENT_CENTER);
+	vbc->add_child(vbox_options);
 
 	list_hb = memnew(HSplitContainer);
 	list_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
