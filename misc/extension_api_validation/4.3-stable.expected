@@ -26,3 +26,18 @@ Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/draw_list
 draw_list_begin added a new optional debug argument called breadcrumb.
 There used to be an Array argument as arg #9 initially, then changed to typedarray::RID in 4.1, and finally removed in 4.3.
 Since we're adding a new one at the same location, we need to silence those warnings for 4.1 and 4.3.
+
+
+GH-95126
+--------
+Validate extension JSON: Error: Field 'classes/Shader/methods/get_default_texture_parameter/return_value': type changed value in new API, from "Texture2D" to "Texture".
+Validate extension JSON: Error: Field 'classes/Shader/methods/set_default_texture_parameter/arguments/1': type changed value in new API, from "Texture2D" to "Texture".
+Validate extension JSON: Error: Field 'classes/VisualShaderNodeCubemap/methods/get_cube_map/return_value': type changed value in new API, from "Cubemap" to "TextureLayered".
+Validate extension JSON: Error: Field 'classes/VisualShaderNodeCubemap/methods/set_cube_map/arguments/0': type changed value in new API, from "Cubemap" to "TextureLayered".
+Validate extension JSON: Error: Field 'classes/VisualShaderNodeCubemap/properties/cube_map': type changed value in new API, from "Cubemap" to "Cubemap,CompressedCubemap,PlaceholderCubemap,TextureCubemapRD".
+Validate extension JSON: Error: Field 'classes/VisualShaderNodeTexture2DArray/methods/get_texture_array/return_value': type changed value in new API, from "Texture2DArray" to "TextureLayered".
+Validate extension JSON: Error: Field 'classes/VisualShaderNodeTexture2DArray/methods/set_texture_array/arguments/0': type changed value in new API, from "Texture2DArray" to "TextureLayered".
+Validate extension JSON: Error: Field 'classes/VisualShaderNodeTexture2DArray/properties/texture_array': type changed value in new API, from "Texture2DArray" to "Texture2DArray,CompressedTexture2DArray,PlaceholderTexture2DArray,Texture2DArrayRD".
+
+Allow setting a cubemap as default parameter to shader.
+Compatibility methods registered.
