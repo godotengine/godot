@@ -913,7 +913,9 @@
 			[b]Note:[/b] When using integer scaling with a stretch mode, resizing the window to be smaller than the base viewport size will clip the contents. Consider preventing that by setting [member Window.min_size] to the same value as the base viewport size defined in [member display/window/size/viewport_width] and [member display/window/size/viewport_height].
 		</member>
 		<member name="display/window/subwindows/embed_subwindows" type="bool" setter="" getter="" default="true">
-			If [code]true[/code] subwindows are embedded in the main window.
+			If [code]true[/code], subwindows are embedded in the main window (this is also called single-window mode). Single-window mode can be faster as it does not need to create a separate window for every popup and tooltip, which can be a slow operation depending on the operating system and rendering method in use.
+			If [code]false[/code], subwindows are created as separate windows (this is also called multi-window mode). This allows them to be moved outside the main window and use native operating system window decorations.
+			This is equivalent to [member EditorSettings.interface/editor/single_window_mode] in the editor, except the setting's value is inverted.
 		</member>
 		<member name="display/window/vsync/vsync_mode" type="int" setter="" getter="" default="1">
 			Sets the V-Sync mode for the main game window. The editor's own V-Sync mode can be set using [member EditorSettings.interface/editor/vsync_mode].
