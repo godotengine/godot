@@ -282,7 +282,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _remote_tree_selected();
 	void _local_tree_selected();
 
-	void _update_create_root_dialog();
+	void _update_create_root_dialog(bool p_initializing = false);
 	void _favorite_root_selected(const String &p_class);
 
 	void _feature_profile_changed();
