@@ -8,19 +8,19 @@ public:
     {
         return String(L"## 序列节点将尝试执行其所有子节点，并报告, \n如果所有子节点都报告 `SUCCESS` 状态代码，则报告 `SUCCESS`。\n如果至少一个子节点报告 `FAILURE` 状态代码，则此节点也将返回 `FAILURE` 下次继续从这个位置开始。 \n如果子节点返回 `RUNNING`，则此节点将再次运行。");
     }
-    virtual String get_tooltip()
+    virtual String get_lable_name()
     {
         return String(L"序列组合节点");
     }
     virtual void interrupt(Node * actor, Blackboard* blackboard)override
     {
-        __supper::interrupt(actor,blackboard);
+        base_class_type::interrupt(actor,blackboard);
         successful_index = 0;
     }
 
     virtual TypedArray<StringName> get_class_name()override
     {
-        TypedArray<StringName> rs = __supper::get_class_name();
+        TypedArray<StringName> rs = base_class_type::get_class_name();
         rs.push_back(StringName("BeehaveCompositeSequence"));
         return rs;  
     }

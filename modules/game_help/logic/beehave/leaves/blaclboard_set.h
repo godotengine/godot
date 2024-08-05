@@ -1,4 +1,5 @@
-#pragma omce
+#pragma once
+
 #include "../beehave_node.h"
 #include "../../character_ai/animator_blackboard_set.h"
 
@@ -11,23 +12,20 @@ public:
     {
         return String(L"设置黑板的值。");
     }
-    virtual int tick(Node * actor, Blackboard* blackboard) override
+    virtual String get_lable_name()
+    {
+        return String(L"设置黑板的叶节点");
+    }
+    virtual void after_run(Node * actor, Blackboard* blackboard) override
     {
         if(blackboard_condition.is_valid())
         {
-            if(blackboard_condition->is_enable(blackboard))
-            {
-                return SUCCESS;
-            }
-            else
-            {
-                return FAILURE;
-            }
+            blackboard_condition->execute(blackboard);
         }
-        return FAILURE;
+        return ;
     }
 
 
 public:
-    Ref<BeehaveLeafBlackboardSet> blackboard_condition;
+    Ref<AnimatorBlackboardSet> blackboard_condition;
 };

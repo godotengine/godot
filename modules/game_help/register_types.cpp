@@ -47,6 +47,19 @@
 #include "modules/game_help/logic/character_ai/condition/animator_condition_string.h"
 #include "modules/game_help/logic/beehave/beehave_node.h"
 #include "modules/game_help/logic/beehave/beehave_tree.h"
+#include "modules/game_help/logic/beehave/decorators/cooldown.h"
+#include "modules/game_help/logic/beehave/decorators/delayer.h"
+#include "modules/game_help/logic/beehave/decorators/limeter_timer.h"
+#include "modules/game_help/logic/beehave/decorators/limiter_count.h"
+#include "modules/game_help/logic/beehave/decorators/repeater.h"
+
+#include "modules/game_help/logic/beehave/composites/parallel.h"
+#include "modules/game_help/logic/beehave/composites/selector.h"
+#include "modules/game_help/logic/beehave/composites/sequence_restart.h"
+#include "modules/game_help/logic/beehave/composites/sequence.h"
+
+#include "modules/game_help/logic/beehave/leaves/blaclboard_set.h"
+#include "modules/game_help/logic/beehave/leaves/blackboard_condition.h"
 
 
 
@@ -194,6 +207,22 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 		ClassDB::register_class<BeehaveDecorator>();
 		ClassDB::register_class<BeehaveLeaf>();
 		ClassDB::register_class<BeehaveAction>();
+
+		ClassDB::register_class<BeehaveCompositeParallel>();
+		ClassDB::register_class<BeehaveCompositeSelector>();
+		ClassDB::register_class<BeehaveCompositeSequenceRestart>();
+		ClassDB::register_class<BeehaveCompositeSequence>();
+
+		
+		ClassDB::register_class<BeehaveDecoratorCooldown>();
+		ClassDB::register_class<BeehaveDecoratorDelayer>();
+		ClassDB::register_class<BeehaveDecoratorLimiterTimer>();
+		ClassDB::register_class<BeehaveDecoratorLimiterCount>();
+		ClassDB::register_class<BeehaveDecoratorRepeater>();
+
+
+		ClassDB::register_class<BeehaveLeafBlackboardCondition>();
+		ClassDB::register_class<BeehaveLeafBlackboardSet>();
 
 		ClassDB::register_class<CharacterAI_Inductor>();
 		ClassDB::register_class<CharacterAI_Brain>();

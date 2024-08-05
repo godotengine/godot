@@ -21,16 +21,16 @@ class BeehaveDecoratorDelayer : public BeehaveDecorator
         if (total_time < wait_time)
         {
 
-            total_time += blackboard->get_var(SNAME("delta_time"), 0.0, str(actor.get_instance_id()));
+            total_time += (float)blackboard->get_var(SNAME("delta_time"), 0.0);
             return RUNNING;
 
         }
         if(child_state[0] == 0)
         {
-            children[0]->before_run(actor,delta);
+            children[0]->before_run(actor,blackboard);
             child_state[0] = 1;
         }
-        return children[0]->tick(actor,delta);
+        return children[0]->tick(actor,blackboard);
     }
     float wait_time = 0.0;
     float total_time = 0.0;

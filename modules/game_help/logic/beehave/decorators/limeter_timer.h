@@ -16,12 +16,12 @@ public:
     } 
     virtual void interrupt(Node * actor, Blackboard* blackboard)override
     {
-        __supper::interrupt(actor,blackboard);
+        base_class_type::interrupt(actor,blackboard);
     }
 
     virtual void before_run(Node * actor, Blackboard* blackboard)override
     {
-        __supper::before_run(actor,blackboard);
+        base_class_type::before_run(actor,blackboard);
         current_time = 0;
     }
     virtual int tick(Node * actor, Blackboard* blackboard)override
@@ -32,7 +32,7 @@ public:
         }
         if(current_time < max_time)
         {
-            current_time += blackboard->get_var("delta_time");
+            current_time += (float)blackboard->get_var("delta_time");
             if(child_state[0] == 0)
             {
                 children[0]->before_run(actor,blackboard);

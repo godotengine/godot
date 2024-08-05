@@ -16,12 +16,12 @@ public:
     }
     virtual void interrupt(Node * actor, Blackboard* blackboard)override
     {
-        __supper::interrupt(actor,blackboard);
+        base_class_type::interrupt(actor,blackboard);
     }
 
     virtual TypedArray<StringName> get_class_name()override
     {
-        TypedArray<StringName> rs = __supper::get_class_name();
+        TypedArray<StringName> rs = base_class_type::get_class_name();
         rs.push_back(StringName("BeehaveCompositeParallel"));
         return rs;  
     }

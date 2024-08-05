@@ -4,7 +4,10 @@ class BeehaveDecoratorLimiterCount : public BeehaveDecorator
 {
     GDCLASS(BeehaveDecoratorLimiterCount, BeehaveDecorator);
 protected:
-    static void _bind_methods();
+    static void _bind_methods()
+    {
+        
+    }
 public:
     virtual String get_tooltip()override
     {
@@ -17,12 +20,12 @@ public:
     }
     virtual void interrupt(Node * actor, Blackboard* blackboard)override
     {
-        __supper::interrupt(actor,blackboard);
+        base_class_type::interrupt(actor,blackboard);
     }
 
     virtual void before_run(Node * actor, Blackboard* blackboard)override
     {
-        __supper::before_run(actor,blackboard);
+        base_class_type::before_run(actor,blackboard);
         current_count = 0;
     }
     virtual int tick(Node * actor, Blackboard* blackboard)override

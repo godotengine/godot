@@ -14,22 +14,22 @@ public:
     }
     virtual TypedArray<StringName> get_class_name()override
     {
-        TypedArray<StringName> rs = __supper::get_class_name();
+        TypedArray<StringName> rs = base_class_type::get_class_name();
         rs.push_back("BeehaveSequence");
         return rs;
     }
     virtual void interrupt(Node * actor, Blackboard* blackboard)override
     {
-        __supper::interrupt(actor,blackboard);
+        base_class_type::interrupt(actor,blackboard);
         is_init = true;
         remaining_time = wait_time;
     }
-    void tick(Node * actor, Blackboard* blackboard)override
+    int tick(Node * actor, Blackboard* blackboard)override
     {
         Ref<BeehaveNode> child = get_child(0);
         if(child.is_null())
         {
-            return;
+            return FAILURE;
         }
         int response ;
         if(!is_init)
@@ -39,7 +39,7 @@ public:
         if(remaining_time > 0)
         {
             response = FAILURE;
-            remaining_time -= blackboard->get_var(SNAME("delta_time"), 0.0, str(actor.get_instance_id()));
+            remaining_time -= (double)blackboard->get_var(SNAME("delta_time"), 0.0);
         }
         else
         {

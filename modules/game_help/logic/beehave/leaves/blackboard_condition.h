@@ -11,20 +11,24 @@ public:
     {
         return String(L"判断黑板条件是否成功。");
     }
-    virtual int tick(Node * actor, Blackboard* blackboard) override
+    virtual String get_lable_name()
+    {
+        return L"黑板条件叶节点";
+    }
+    virtual void after_run(Node * actor, Blackboard* blackboard) override
     {
         if(blackboard_condition.is_valid())
         {
             if(blackboard_condition->is_enable(blackboard))
             {
-                return SUCCESS;
+                return ;
             }
             else
             {
-                return FAILURE;
+                return ;
             }
         }
-        return FAILURE;
+        return ;
     }
 
 

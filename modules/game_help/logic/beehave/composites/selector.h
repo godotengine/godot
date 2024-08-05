@@ -4,13 +4,9 @@ class BeehaveCompositeSelector : public BeehaveComposite
 {
     GDCLASS(BeehaveCompositeSelector, BeehaveComposite);
 public:
-    virtual void interrupt(Node * actor, Blackboard* blackboard)override
-    {
-        __supper::interrupt(actor,blackboard);
-    }
     virtual TypedArray<StringName> get_class_name()override
     {
-        TypedArray<StringName> rs = __supper::get_class_name();
+        TypedArray<StringName> rs = base_class_type::get_class_name();
         rs.push_back("BeehaveCompositeSelector");
         return rs;
     }
@@ -61,12 +57,12 @@ public:
     }
     virtual void interrupt(Node * actor, Blackboard* blackboard)override
     {
-        __supper::interrupt(actor,blackboard);
+        base_class_type::interrupt(actor,blackboard);
         last_execution_index = 0;
     }
     virtual void after_run(Node * actor, Blackboard* blackboard)override
     {
-        __supper::after_run(actor,blackboard);
+        base_class_type::after_run(actor,blackboard);
         last_execution_index = 0;
     }
 
