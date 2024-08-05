@@ -143,7 +143,7 @@ void GPUParticles2DEditorPlugin::_generate_visibility_rect() {
 	Rect2 rect;
 	while (running < time) {
 		uint64_t ticks = OS::get_singleton()->get_ticks_usec();
-		ep.step("Generating...", int(running), true);
+		ep.step(TTR("Generating..."), int(running), true);
 		OS::get_singleton()->delay_usec(1000);
 
 		Rect2 capture = particles->capture_rect();
@@ -352,7 +352,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 void GPUParticles2DEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			menu->get_popup()->connect("id_pressed", callable_mp(this, &GPUParticles2DEditorPlugin::_menu_callback));
+			menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &GPUParticles2DEditorPlugin::_menu_callback));
 			menu->set_icon(menu->get_editor_theme_icon(SNAME("GPUParticles2D")));
 			file->connect("file_selected", callable_mp(this, &GPUParticles2DEditorPlugin::_file_selected));
 			EditorNode::get_singleton()->get_editor_selection()->connect("selection_changed", callable_mp(this, &GPUParticles2DEditorPlugin::_selection_changed));
@@ -401,7 +401,7 @@ GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin() {
 
 	toolbar->add_child(generate_visibility_rect);
 
-	generate_visibility_rect->connect("confirmed", callable_mp(this, &GPUParticles2DEditorPlugin::_generate_visibility_rect));
+	generate_visibility_rect->connect(SceneStringName(confirmed), callable_mp(this, &GPUParticles2DEditorPlugin::_generate_visibility_rect));
 
 	emission_mask = memnew(ConfirmationDialog);
 	emission_mask->set_title(TTR("Load Emission Mask"));
@@ -423,7 +423,7 @@ GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin() {
 
 	toolbar->add_child(emission_mask);
 
-	emission_mask->connect("confirmed", callable_mp(this, &GPUParticles2DEditorPlugin::_generate_emission_mask));
+	emission_mask->connect(SceneStringName(confirmed), callable_mp(this, &GPUParticles2DEditorPlugin::_generate_emission_mask));
 }
 
 GPUParticles2DEditorPlugin::~GPUParticles2DEditorPlugin() {

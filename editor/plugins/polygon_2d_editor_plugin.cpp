@@ -52,6 +52,31 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/view_panner.h"
 
+class UVEditDialog : public AcceptDialog {
+	GDCLASS(UVEditDialog, AcceptDialog);
+
+	void shortcut_input(const Ref<InputEvent> &p_event) override {
+		const Ref<InputEventKey> k = p_event;
+		if (k.is_valid() && k->is_pressed()) {
+			bool handled = false;
+
+			if (ED_IS_SHORTCUT("ui_undo", p_event)) {
+				EditorNode::get_singleton()->undo();
+				handled = true;
+			}
+
+			if (ED_IS_SHORTCUT("ui_redo", p_event)) {
+				EditorNode::get_singleton()->redo();
+				handled = true;
+			}
+
+			if (handled) {
+				set_input_as_handled();
+			}
+		}
+	}
+};
+
 Node2D *Polygon2DEditor::_get_node() const {
 	return node;
 }
@@ -113,8 +138,8 @@ void Polygon2DEditor::_notification(int p_what) {
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
-			uv_edit_draw->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
-			bone_scroll->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
+			uv_edit_draw->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
+			bone_scroll->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -1305,10 +1330,11 @@ Polygon2DEditor::Polygon2DEditor() {
 	button_uv->connect(SceneStringName(pressed), callable_mp(this, &Polygon2DEditor::_menu_option).bind(MODE_EDIT_UV));
 
 	uv_mode = UV_MODE_EDIT_POINT;
-	uv_edit = memnew(AcceptDialog);
-	add_child(uv_edit);
+	uv_edit = memnew(UVEditDialog);
 	uv_edit->set_title(TTR("Polygon 2D UV Editor"));
-	uv_edit->connect("confirmed", callable_mp(this, &Polygon2DEditor::_uv_edit_popup_hide));
+	uv_edit->set_process_shortcut_input(true);
+	add_child(uv_edit);
+	uv_edit->connect(SceneStringName(confirmed), callable_mp(this, &Polygon2DEditor::_uv_edit_popup_hide));
 	uv_edit->connect("canceled", callable_mp(this, &Polygon2DEditor::_uv_edit_popup_hide));
 
 	VBoxContainer *uv_main_vb = memnew(VBoxContainer);
@@ -1434,7 +1460,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	uv_menu->get_popup()->add_item(TTR("Clear UV"), UVEDIT_UV_CLEAR);
 	uv_menu->get_popup()->add_separator();
 	uv_menu->get_popup()->add_item(TTR("Grid Settings"), UVEDIT_GRID_SETTINGS);
-	uv_menu->get_popup()->connect("id_pressed", callable_mp(this, &Polygon2DEditor::_menu_option));
+	uv_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &Polygon2DEditor::_menu_option));
 
 	uv_mode_hb->add_child(memnew(VSeparator));
 
@@ -1470,7 +1496,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	sb_off_x->set_step(1);
 	sb_off_x->set_value(snap_offset.x);
 	sb_off_x->set_suffix("px");
-	sb_off_x->connect("value_changed", callable_mp(this, &Polygon2DEditor::_set_snap_off_x));
+	sb_off_x->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_set_snap_off_x));
 	grid_settings_vb->add_margin_child(TTR("Grid Offset X:"), sb_off_x);
 
 	SpinBox *sb_off_y = memnew(SpinBox);
@@ -1479,7 +1505,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	sb_off_y->set_step(1);
 	sb_off_y->set_value(snap_offset.y);
 	sb_off_y->set_suffix("px");
-	sb_off_y->connect("value_changed", callable_mp(this, &Polygon2DEditor::_set_snap_off_y));
+	sb_off_y->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_set_snap_off_y));
 	grid_settings_vb->add_margin_child(TTR("Grid Offset Y:"), sb_off_y);
 
 	SpinBox *sb_step_x = memnew(SpinBox);
@@ -1488,7 +1514,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	sb_step_x->set_step(1);
 	sb_step_x->set_value(snap_step.x);
 	sb_step_x->set_suffix("px");
-	sb_step_x->connect("value_changed", callable_mp(this, &Polygon2DEditor::_set_snap_step_x));
+	sb_step_x->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_set_snap_step_x));
 	grid_settings_vb->add_margin_child(TTR("Grid Step X:"), sb_step_x);
 
 	SpinBox *sb_step_y = memnew(SpinBox);
@@ -1497,7 +1523,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	sb_step_y->set_step(1);
 	sb_step_y->set_value(snap_step.y);
 	sb_step_y->set_suffix("px");
-	sb_step_y->connect("value_changed", callable_mp(this, &Polygon2DEditor::_set_snap_step_y));
+	sb_step_y->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_set_snap_step_y));
 	grid_settings_vb->add_margin_child(TTR("Grid Step Y:"), sb_step_y);
 
 	zoom_widget = memnew(EditorZoomWidget);
@@ -1509,11 +1535,11 @@ Polygon2DEditor::Polygon2DEditor() {
 	uv_vscroll = memnew(VScrollBar);
 	uv_vscroll->set_step(0.001);
 	uv_edit_draw->add_child(uv_vscroll);
-	uv_vscroll->connect("value_changed", callable_mp(this, &Polygon2DEditor::_update_zoom_and_pan).unbind(1).bind(false));
+	uv_vscroll->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_update_zoom_and_pan).unbind(1).bind(false));
 	uv_hscroll = memnew(HScrollBar);
 	uv_hscroll->set_step(0.001);
 	uv_edit_draw->add_child(uv_hscroll);
-	uv_hscroll->connect("value_changed", callable_mp(this, &Polygon2DEditor::_update_zoom_and_pan).unbind(1).bind(false));
+	uv_hscroll->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_update_zoom_and_pan).unbind(1).bind(false));
 
 	bone_scroll_main_vb = memnew(VBoxContainer);
 	bone_scroll_main_vb->hide();

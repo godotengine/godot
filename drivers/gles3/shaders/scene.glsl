@@ -869,13 +869,15 @@ uniform lowp uint directional_shadow_index;
 
 #if !defined(ADDITIVE_OMNI)
 float sample_shadow(highp sampler2DShadow shadow, float shadow_pixel_size, vec4 pos) {
-	float avg = textureProj(shadow, pos);
+	// Use textureProjLod with LOD set to 0.0 over textureProj, as textureProj not working correctly on ANGLE with Metal backend.
+	// https://github.com/godotengine/godot/issues/93537
+	float avg = textureProjLod(shadow, pos, 0.0);
 #ifdef SHADOW_MODE_PCF_13
 	pos /= pos.w;
-	avg += textureProj(shadow, vec4(pos.xy + vec2(shadow_pixel_size * 2.0, 0.0), pos.zw));
-	avg += textureProj(shadow, vec4(pos.xy + vec2(-shadow_pixel_size * 2.0, 0.0), pos.zw));
-	avg += textureProj(shadow, vec4(pos.xy + vec2(0.0, shadow_pixel_size * 2.0), pos.zw));
-	avg += textureProj(shadow, vec4(pos.xy + vec2(0.0, -shadow_pixel_size * 2.0), pos.zw));
+	avg += textureProjLod(shadow, vec4(pos.xy + vec2(shadow_pixel_size * 2.0, 0.0), pos.zw), 0.0);
+	avg += textureProjLod(shadow, vec4(pos.xy + vec2(-shadow_pixel_size * 2.0, 0.0), pos.zw), 0.0);
+	avg += textureProjLod(shadow, vec4(pos.xy + vec2(0.0, shadow_pixel_size * 2.0), pos.zw), 0.0);
+	avg += textureProjLod(shadow, vec4(pos.xy + vec2(0.0, -shadow_pixel_size * 2.0), pos.zw), 0.0);
 
 	// Early bail if distant samples are fully shaded (or none are shaded) to improve performance.
 	if (avg <= 0.000001) {
@@ -886,23 +888,23 @@ float sample_shadow(highp sampler2DShadow shadow, float shadow_pixel_size, vec4 
 		return 1.0;
 	}
 
-	avg += textureProj(shadow, vec4(pos.xy + vec2(shadow_pixel_size, 0.0), pos.zw));
-	avg += textureProj(shadow, vec4(pos.xy + vec2(-shadow_pixel_size, 0.0), pos.zw));
-	avg += textureProj(shadow, vec4(pos.xy + vec2(0.0, shadow_pixel_size), pos.zw));
-	avg += textureProj(shadow, vec4(pos.xy + vec2(0.0, -shadow_pixel_size), pos.zw));
-	avg += textureProj(shadow, vec4(pos.xy + vec2(shadow_pixel_size, shadow_pixel_size), pos.zw));
-	avg += textureProj(shadow, vec4(pos.xy + vec2(-shadow_pixel_size, shadow_pixel_size), pos.zw));
-	avg += textureProj(shadow, vec4(pos.xy + vec2(shadow_pixel_size, -shadow_pixel_size), pos.zw));
-	avg += textureProj(shadow, vec4(pos.xy + vec2(-shadow_pixel_size, -shadow_pixel_size), pos.zw));
+	avg += textureProjLod(shadow, vec4(pos.xy + vec2(shadow_pixel_size, 0.0), pos.zw), 0.0);
+	avg += textureProjLod(shadow, vec4(pos.xy + vec2(-shadow_pixel_size, 0.0), pos.zw), 0.0);
+	avg += textureProjLod(shadow, vec4(pos.xy + vec2(0.0, shadow_pixel_size), pos.zw), 0.0);
+	avg += textureProjLod(shadow, vec4(pos.xy + vec2(0.0, -shadow_pixel_size), pos.zw), 0.0);
+	avg += textureProjLod(shadow, vec4(pos.xy + vec2(shadow_pixel_size, shadow_pixel_size), pos.zw), 0.0);
+	avg += textureProjLod(shadow, vec4(pos.xy + vec2(-shadow_pixel_size, shadow_pixel_size), pos.zw), 0.0);
+	avg += textureProjLod(shadow, vec4(pos.xy + vec2(shadow_pixel_size, -shadow_pixel_size), pos.zw), 0.0);
+	avg += textureProjLod(shadow, vec4(pos.xy + vec2(-shadow_pixel_size, -shadow_pixel_size), pos.zw), 0.0);
 	return avg * (1.0 / 13.0);
 #endif
 
 #ifdef SHADOW_MODE_PCF_5
 	pos /= pos.w;
-	avg += textureProj(shadow, vec4(pos.xy + vec2(shadow_pixel_size, 0.0), pos.zw));
-	avg += textureProj(shadow, vec4(pos.xy + vec2(-shadow_pixel_size, 0.0), pos.zw));
-	avg += textureProj(shadow, vec4(pos.xy + vec2(0.0, shadow_pixel_size), pos.zw));
-	avg += textureProj(shadow, vec4(pos.xy + vec2(0.0, -shadow_pixel_size), pos.zw));
+	avg += textureProjLod(shadow, vec4(pos.xy + vec2(shadow_pixel_size, 0.0), pos.zw), 0.0);
+	avg += textureProjLod(shadow, vec4(pos.xy + vec2(-shadow_pixel_size, 0.0), pos.zw), 0.0);
+	avg += textureProjLod(shadow, vec4(pos.xy + vec2(0.0, shadow_pixel_size), pos.zw), 0.0);
+	avg += textureProjLod(shadow, vec4(pos.xy + vec2(0.0, -shadow_pixel_size), pos.zw), 0.0);
 	return avg * (1.0 / 5.0);
 
 #endif
@@ -1523,6 +1525,9 @@ void main() {
 #CODE : FRAGMENT
 	}
 
+	// Keep albedo values in positive number range as negative values "wraparound" into positive numbers resulting in wrong colors
+	albedo = max(albedo, vec3(0.0));
+
 #ifdef LIGHT_VERTEX_USED
 	vertex = light_vertex;
 #ifdef USE_MULTIVIEW
@@ -1917,11 +1922,7 @@ void main() {
 	fog.xy = unpackHalf2x16(fog_rg);
 	fog.zw = unpackHalf2x16(fog_ba);
 
-#ifndef DISABLE_FOG
-	if (scene_data.fog_enabled) {
-		frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
-	}
-#endif // !DISABLE_FOG
+	frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
 #endif // !FOG_DISABLED
 
 	// Tonemap before writing as we are writing to an sRGB framebuffer
@@ -2128,11 +2129,7 @@ void main() {
 	fog.xy = unpackHalf2x16(fog_rg);
 	fog.zw = unpackHalf2x16(fog_ba);
 
-#ifndef DISABLE_FOG
-	if (scene_data.fog_enabled) {
-		additive_light_color *= (1.0 - fog.a);
-	}
-#endif // !DISABLE_FOG
+	additive_light_color *= (1.0 - fog.a);
 #endif // !FOG_DISABLED
 
 	// Tonemap before writing as we are writing to an sRGB framebuffer

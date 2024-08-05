@@ -42,6 +42,8 @@ class PropertyListHelper {
 		MethodBind *getter = nullptr;
 	};
 
+	static Vector<PropertyListHelper *> base_helpers;
+
 	String prefix;
 	MethodBind *array_length_getter = nullptr;
 	HashMap<String, Property> property_list;
@@ -53,6 +55,9 @@ class PropertyListHelper {
 	int _call_array_length_getter() const;
 
 public:
+	static void clear_base_helpers();
+	static void register_base_helper(PropertyListHelper *p_helper);
+
 	void set_prefix(const String &p_prefix);
 	template <typename G>
 	void set_array_length_getter(G p_array_length_getter) {
@@ -77,13 +82,13 @@ public:
 	void setup_for_instance(const PropertyListHelper &p_base, Object *p_object);
 	bool is_property_valid(const String &p_property, int *r_index = nullptr) const;
 
-	void get_property_list(List<PropertyInfo> *p_list, int p_count) const;
+	void get_property_list(List<PropertyInfo> *p_list) const;
 	bool property_get_value(const String &p_property, Variant &r_ret) const;
 	bool property_set_value(const String &p_property, const Variant &p_value) const;
 	bool property_can_revert(const String &p_property) const;
 	bool property_get_revert(const String &p_property, Variant &r_value) const;
 
-	~PropertyListHelper();
+	void clear();
 };
 
 #endif // PROPERTY_LIST_HELPER_H

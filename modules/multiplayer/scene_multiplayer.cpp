@@ -425,11 +425,11 @@ void SceneMultiplayer::_del_peer(int p_id) {
 
 void SceneMultiplayer::disconnect_peer(int p_id) {
 	ERR_FAIL_COND(multiplayer_peer.is_null() || multiplayer_peer->get_connection_status() != MultiplayerPeer::CONNECTION_CONNECTED);
-	if (pending_peers.has(p_id)) {
-		pending_peers.erase(p_id);
-	} else if (connected_peers.has(p_id)) {
-		connected_peers.erase(p_id);
-	}
+	// Block signals to avoid emitting peer_disconnected.
+	bool blocking = is_blocking_signals();
+	set_block_signals(true);
+	_del_peer(p_id);
+	set_block_signals(blocking);
 	multiplayer_peer->disconnect_peer(p_id);
 }
 

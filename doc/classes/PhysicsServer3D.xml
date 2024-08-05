@@ -678,6 +678,17 @@
 				Sets a body state (see [enum BodyState] constants).
 			</description>
 		</method>
+		<method name="body_set_state_sync_callback">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="callable" type="Callable" />
+			<description>
+				Sets the body's state synchronization callback function to [param callable]. Use an empty [Callable] ([code skip-lint]Callable()[/code]) to clear the callback.
+				The function [param callable] will be called every physics frame, assuming that the body was active during the previous physics tick, and can be used to fetch the latest state from the physics server.
+				The function [param callable] must take the following parameters:
+				1. [code]state[/code]: a [PhysicsDirectBodyState3D], used to retrieve the body's state.
+			</description>
+		</method>
 		<method name="body_test_motion">
 			<return type="bool" />
 			<param index="0" name="body" type="RID" />
@@ -990,6 +1001,14 @@
 				Returns the shape data.
 			</description>
 		</method>
+		<method name="shape_get_margin" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="shape" type="RID" />
+			<description>
+				Returns the collision margin for the shape.
+				[b]Note:[/b] This is not used in Godot Physics, so will always return [code]0[/code].
+			</description>
+		</method>
 		<method name="shape_get_type" qualifiers="const">
 			<return type="int" enum="PhysicsServer3D.ShapeType" />
 			<param index="0" name="shape" type="RID" />
@@ -1003,6 +1022,15 @@
 			<param index="1" name="data" type="Variant" />
 			<description>
 				Sets the shape data that defines its shape and size. The data to be passed depends on the kind of shape created [method shape_get_type].
+			</description>
+		</method>
+		<method name="shape_set_margin">
+			<return type="void" />
+			<param index="0" name="shape" type="RID" />
+			<param index="1" name="margin" type="float" />
+			<description>
+				Sets the collision margin for the shape.
+				[b]Note:[/b] This is not used in Godot Physics.
 			</description>
 		</method>
 		<method name="slider_joint_get_param" qualifiers="const">

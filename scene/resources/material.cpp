@@ -82,7 +82,7 @@ void Material::_validate_property(PropertyInfo &p_property) const {
 }
 
 void Material::_mark_ready() {
-	init_state = INIT_STATE_INITIALIZING;
+	init_state = INIT_STATE_READY;
 }
 
 void Material::_mark_initialized(const Callable &p_add_to_dirty_list, const Callable &p_update_shader) {
@@ -323,6 +323,21 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 				} else {
 					is_uniform_type_compatible = E->get().type == cached.get_type();
 				}
+
+#ifndef DISABLE_DEPRECATED
+				// PackedFloat32Array -> PackedVector4Array conversion.
+				if (!is_uniform_type_compatible && E->get().type == Variant::PACKED_VECTOR4_ARRAY && cached.get_type() == Variant::PACKED_FLOAT32_ARRAY) {
+					PackedVector4Array varray;
+					PackedFloat32Array array = (PackedFloat32Array)cached;
+
+					for (int i = 0; i + 3 < array.size(); i += 4) {
+						varray.push_back(Vector4(array[i], array[i + 1], array[i + 2], array[i + 3]));
+					}
+
+					param_cache.insert(E->get().name, varray);
+					is_uniform_type_compatible = true;
+				}
+#endif
 
 				if (is_uniform_type_compatible && E->get().type == Variant::OBJECT && cached.get_type() == Variant::OBJECT) {
 					// Check if the Object class (hint string) changed, for example Texture2D sampler to Texture3D.
@@ -822,7 +837,18 @@ uniform float distance_fade_max : hint_range(0.0, 4096.0, 0.01);
 )";
 	}
 
-	if (flags[FLAG_ALBEDO_TEXTURE_MSDF]) {
+	if (flags[FLAG_ALBEDO_TEXTURE_MSDF] && flags[FLAG_UV1_USE_TRIPLANAR]) {
+		String msg = "MSDF is not supported on triplanar materials. Ignoring MSDF in favor of triplanar mapping.";
+		if (textures[TEXTURE_ALBEDO].is_valid()) {
+			WARN_PRINT(vformat("%s (albedo %s): " + msg, get_path(), textures[TEXTURE_ALBEDO]->get_path()));
+		} else if (!get_path().is_empty()) {
+			WARN_PRINT(vformat("%s: " + msg, get_path()));
+		} else {
+			WARN_PRINT(msg);
+		}
+	}
+
+	if (flags[FLAG_ALBEDO_TEXTURE_MSDF] && !flags[FLAG_UV1_USE_TRIPLANAR]) {
 		code += R"(
 uniform float msdf_pixel_range : hint_range(1.0, 100.0, 1.0);
 uniform float msdf_outline_size : hint_range(0.0, 250.0, 1.0);
@@ -1271,7 +1297,7 @@ void vertex() {)";
 
 	code += "}\n";
 
-	if (flags[FLAG_ALBEDO_TEXTURE_MSDF]) {
+	if (flags[FLAG_ALBEDO_TEXTURE_MSDF] && !flags[FLAG_UV1_USE_TRIPLANAR]) {
 		code += R"(
 float msdf_median(float r, float g, float b, float a) {
 	return min(max(min(r, g), min(max(r, g), b)), a);
@@ -1326,7 +1352,7 @@ void fragment() {)";
 	}
 
 	// Heightmapping isn't supported at the same time as triplanar mapping.
-	if (!RenderingServer::get_singleton()->is_low_end() && features[FEATURE_HEIGHT_MAPPING] && !flags[FLAG_UV1_USE_TRIPLANAR]) {
+	if (features[FEATURE_HEIGHT_MAPPING] && !flags[FLAG_UV1_USE_TRIPLANAR]) {
 		// Binormal is negative due to mikktspace. Flipping it "unflips" it.
 		code += R"(
 	{
@@ -1414,7 +1440,7 @@ void fragment() {)";
 		}
 	}
 
-	if (flags[FLAG_ALBEDO_TEXTURE_MSDF]) {
+	if (flags[FLAG_ALBEDO_TEXTURE_MSDF] && !flags[FLAG_UV1_USE_TRIPLANAR]) {
 		code += R"(
 	{
 		// Albedo Texture MSDF: Enabled
@@ -1427,11 +1453,7 @@ void fragment() {)";
 		if (flags[FLAG_USE_POINT_SIZE]) {
 			code += "		vec2 dest_size = vec2(1.0) / fwidth(POINT_COORD);\n";
 		} else {
-			if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-				code += "		vec2 dest_size = vec2(1.0) / fwidth(uv1_triplanar_pos);\n";
-			} else {
-				code += "		vec2 dest_size = vec2(1.0) / fwidth(base_uv);\n";
-			}
+			code += "		vec2 dest_size = vec2(1.0) / fwidth(base_uv);\n";
 		}
 		code += R"(
 		float px_size = max(0.5 * dot(msdf_size, dest_size), 1.0);
@@ -1630,21 +1652,20 @@ void fragment() {)";
 		// Use the slightly more expensive circular fade (distance to the object) instead of linear
 		// (Z distance), so that the fade is always the same regardless of the camera angle.
 		if ((distance_fade == DISTANCE_FADE_OBJECT_DITHER || distance_fade == DISTANCE_FADE_PIXEL_DITHER)) {
-			if (!RenderingServer::get_singleton()->is_low_end()) {
-				code += "\n	{";
+			code += "\n	{";
 
-				if (distance_fade == DISTANCE_FADE_OBJECT_DITHER) {
-					code += R"(
+			if (distance_fade == DISTANCE_FADE_OBJECT_DITHER) {
+				code += R"(
 		// Distance Fade: Object Dither
 		float fade_distance = length((VIEW_MATRIX * MODEL_MATRIX[3]));
 )";
-				} else {
-					code += R"(
+			} else {
+				code += R"(
 		// Distance Fade: Pixel Dither
 		float fade_distance = length(VERTEX);
 )";
-				}
-				code += R"(
+			}
+			code += R"(
 		// Use interleaved gradient noise, which is fast but still looks good.
 		const vec3 magic = vec3(0.06711056, 0.00583715, 52.9829189);
 		float fade = clamp(smoothstep(distance_fade_min, distance_fade_max, fade_distance), 0.0, 1.0);
@@ -1654,7 +1675,6 @@ void fragment() {)";
 		}
 	}
 )";
-			}
 		} else {
 			code += R"(
 	// Distance Fade: Pixel Alpha

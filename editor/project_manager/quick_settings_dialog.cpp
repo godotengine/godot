@@ -47,6 +47,7 @@ void QuickSettingsDialog::_fetch_setting_values() {
 	editor_themes.clear();
 	editor_scales.clear();
 	editor_network_modes.clear();
+	editor_directory_naming_conventions.clear();
 
 	{
 		List<PropertyInfo> editor_settings_properties;
@@ -61,6 +62,8 @@ void QuickSettingsDialog::_fetch_setting_values() {
 				editor_scales = pi.hint_string.split(",");
 			} else if (pi.name == "network/connection/network_mode") {
 				editor_network_modes = pi.hint_string.split(",");
+			} else if (pi.name == "project_manager/directory_naming_convention") {
+				editor_directory_naming_conventions = pi.hint_string.split(",");
 			}
 		}
 	}
@@ -120,6 +123,19 @@ void QuickSettingsDialog::_update_current_values() {
 			}
 		}
 	}
+
+	// Project directory naming options.
+	{
+		const int current_directory_naming = EDITOR_GET("project_manager/directory_naming_convention");
+
+		for (int i = 0; i < editor_directory_naming_conventions.size(); i++) {
+			const String &directory_naming_value = editor_directory_naming_conventions[i];
+			if (current_directory_naming == i) {
+				directory_naming_convention_button->set_text(directory_naming_value);
+				directory_naming_convention_button->select(i);
+			}
+		}
+	}
 }
 
 void QuickSettingsDialog::_add_setting_control(const String &p_text, Control *p_control) {
@@ -155,6 +171,10 @@ void QuickSettingsDialog::_network_mode_selected(int p_id) {
 	_set_setting_value("network/connection/network_mode", p_id);
 }
 
+void QuickSettingsDialog::_directory_naming_convention_selected(int p_id) {
+	_set_setting_value("project_manager/directory_naming_convention", p_id);
+}
+
 void QuickSettingsDialog::_set_setting_value(const String &p_setting, const Variant &p_value, bool p_restart_required) {
 	EditorSettings::get_singleton()->set(p_setting, p_value);
 	EditorSettings::get_singleton()->notify_changes();
@@ -181,10 +201,10 @@ void QuickSettingsDialog::update_size_limits(const Size2 &p_max_popup_size) {
 void QuickSettingsDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			settings_list_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("Background"), EditorStringName(EditorStyles)));
+			settings_list_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("Background"), EditorStringName(EditorStyles)));
 
-			restart_required_label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
-			custom_theme_label->add_theme_color_override("font_color", get_theme_color(SNAME("font_placeholder_color"), EditorStringName(Editor)));
+			restart_required_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+			custom_theme_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("font_placeholder_color"), EditorStringName(Editor)));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -221,7 +241,7 @@ QuickSettingsDialog::QuickSettingsDialog() {
 		{
 			language_option_button = memnew(OptionButton);
 			language_option_button->set_fit_to_longest_item(false);
-			language_option_button->connect("item_selected", callable_mp(this, &QuickSettingsDialog::_language_selected));
+			language_option_button->connect(SceneStringName(item_selected), callable_mp(this, &QuickSettingsDialog::_language_selected));
 
 			for (int i = 0; i < editor_languages.size(); i++) {
 				const String &lang_value = editor_languages[i];
@@ -237,7 +257,7 @@ QuickSettingsDialog::QuickSettingsDialog() {
 		{
 			theme_option_button = memnew(OptionButton);
 			theme_option_button->set_fit_to_longest_item(false);
-			theme_option_button->connect("item_selected", callable_mp(this, &QuickSettingsDialog::_theme_selected));
+			theme_option_button->connect(SceneStringName(item_selected), callable_mp(this, &QuickSettingsDialog::_theme_selected));
 
 			for (int i = 0; i < editor_themes.size(); i++) {
 				const String &theme_value = editor_themes[i];
@@ -260,7 +280,7 @@ QuickSettingsDialog::QuickSettingsDialog() {
 		{
 			scale_option_button = memnew(OptionButton);
 			scale_option_button->set_fit_to_longest_item(false);
-			scale_option_button->connect("item_selected", callable_mp(this, &QuickSettingsDialog::_scale_selected));
+			scale_option_button->connect(SceneStringName(item_selected), callable_mp(this, &QuickSettingsDialog::_scale_selected));
 
 			for (int i = 0; i < editor_scales.size(); i++) {
 				const String &scale_value = editor_scales[i];
@@ -274,7 +294,7 @@ QuickSettingsDialog::QuickSettingsDialog() {
 		{
 			network_mode_option_button = memnew(OptionButton);
 			network_mode_option_button->set_fit_to_longest_item(false);
-			network_mode_option_button->connect("item_selected", callable_mp(this, &QuickSettingsDialog::_network_mode_selected));
+			network_mode_option_button->connect(SceneStringName(item_selected), callable_mp(this, &QuickSettingsDialog::_network_mode_selected));
 
 			for (int i = 0; i < editor_network_modes.size(); i++) {
 				const String &network_mode_value = editor_network_modes[i];
@@ -282,6 +302,20 @@ QuickSettingsDialog::QuickSettingsDialog() {
 			}
 
 			_add_setting_control(TTR("Network Mode"), network_mode_option_button);
+		}
+
+		// Project directory naming options.
+		{
+			directory_naming_convention_button = memnew(OptionButton);
+			directory_naming_convention_button->set_fit_to_longest_item(false);
+			directory_naming_convention_button->connect(SceneStringName(item_selected), callable_mp(this, &QuickSettingsDialog::_directory_naming_convention_selected));
+
+			for (int i = 0; i < editor_directory_naming_conventions.size(); i++) {
+				const String &directory_naming_convention = editor_directory_naming_conventions[i];
+				directory_naming_convention_button->add_item(directory_naming_convention, i);
+			}
+
+			_add_setting_control(TTR("Directory Naming Convention"), directory_naming_convention_button);
 		}
 
 		_update_current_values();

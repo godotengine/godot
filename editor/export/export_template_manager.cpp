@@ -366,9 +366,9 @@ void ExportTemplateManager::_set_current_progress_status(const String &p_status,
 
 	if (p_error) {
 		download_progress_bar->hide();
-		download_progress_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+		download_progress_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 	} else {
-		download_progress_label->add_theme_color_override("font_color", get_theme_color(SNAME("font_color"), SNAME("Label")));
+		download_progress_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), SNAME("Label")));
 	}
 }
 
@@ -639,7 +639,7 @@ void ExportTemplateManager::_open_template_folder(const String &p_version) {
 
 void ExportTemplateManager::popup_manager() {
 	_update_template_status();
-	if (downloads_available) {
+	if (downloads_available && !is_downloading_templates) {
 		_refresh_mirrors();
 	}
 	popup_centered(Size2(720, 280) * EDSCALE);
@@ -810,9 +810,9 @@ void ExportTemplateManager::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			current_value->add_theme_font_override("font", get_theme_font(SNAME("main"), EditorStringName(EditorFonts)));
-			current_missing_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-			current_installed_label->add_theme_color_override("font_color", get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
+			current_value->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("main"), EditorStringName(EditorFonts)));
+			current_missing_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			current_installed_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 
 			mirror_options_button->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 		} break;
@@ -973,7 +973,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	mirror_options_button->get_popup()->add_item(TTR("Copy Mirror URL"), COPY_MIRROR_URL);
 	mirror_options_button->set_disabled(!downloads_available);
 	download_install_hb->add_child(mirror_options_button);
-	mirror_options_button->get_popup()->connect("id_pressed", callable_mp(this, &ExportTemplateManager::_mirror_options_button_cbk));
+	mirror_options_button->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ExportTemplateManager::_mirror_options_button_cbk));
 
 	download_install_hb->add_spacer();
 
@@ -1051,7 +1051,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	uninstall_confirm = memnew(ConfirmationDialog);
 	uninstall_confirm->set_title(TTR("Uninstall Template"));
 	add_child(uninstall_confirm);
-	uninstall_confirm->connect("confirmed", callable_mp(this, &ExportTemplateManager::_uninstall_template_confirmed));
+	uninstall_confirm->connect(SceneStringName(confirmed), callable_mp(this, &ExportTemplateManager::_uninstall_template_confirmed));
 
 	install_file_dialog = memnew(FileDialog);
 	install_file_dialog->set_title(TTR("Select Template File"));
@@ -1065,5 +1065,5 @@ ExportTemplateManager::ExportTemplateManager() {
 	hide_dialog_accept = memnew(AcceptDialog);
 	hide_dialog_accept->set_text(TTR("The templates will continue to download.\nYou may experience a short editor freeze when they finish."));
 	add_child(hide_dialog_accept);
-	hide_dialog_accept->connect("confirmed", callable_mp(this, &ExportTemplateManager::_hide_dialog));
+	hide_dialog_accept->connect(SceneStringName(confirmed), callable_mp(this, &ExportTemplateManager::_hide_dialog));
 }

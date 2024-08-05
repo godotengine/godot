@@ -57,7 +57,7 @@
 static bool _get_blender_version(const String &p_path, int &r_major, int &r_minor, String *r_err = nullptr) {
 	if (!FileAccess::exists(p_path)) {
 		if (r_err) {
-			*r_err = TTR("Path does not contain a Blender installation.");
+			*r_err = TTR("Path does not point to a valid executable.");
 		}
 		return false;
 	}
@@ -67,14 +67,14 @@ static bool _get_blender_version(const String &p_path, int &r_major, int &r_mino
 	Error err = OS::get_singleton()->execute(p_path, args, &pipe);
 	if (err != OK) {
 		if (r_err) {
-			*r_err = TTR("Can't execute Blender binary.");
+			*r_err = TTR("Couldn't run Blender executable.");
 		}
 		return false;
 	}
 	int bl = pipe.find("Blender ");
 	if (bl == -1) {
 		if (r_err) {
-			*r_err = vformat(TTR("Unexpected --version output from Blender binary at: %s."), p_path);
+			*r_err = vformat(TTR("Unexpected --version output from Blender executable at: %s."), p_path);
 		}
 		return false;
 	}
@@ -83,7 +83,7 @@ static bool _get_blender_version(const String &p_path, int &r_major, int &r_mino
 	int pp = pipe.find(".");
 	if (pp == -1) {
 		if (r_err) {
-			*r_err = TTR("Path supplied lacks a Blender binary.");
+			*r_err = vformat(TTR("Couldn't extract version information from Blender executable at: %s."), p_path);
 		}
 		return false;
 	}
@@ -91,7 +91,7 @@ static bool _get_blender_version(const String &p_path, int &r_major, int &r_mino
 	r_major = v.to_int();
 	if (r_major < 3) {
 		if (r_err) {
-			*r_err = TTR("This Blender installation is too old for this importer (not 3.0+).");
+			*r_err = vformat(TTR("Found Blender version %d.x, which is too old for this importer (3.0+ is required)."), r_major);
 		}
 		return false;
 	}
@@ -132,12 +132,10 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	}
 #endif
 
-	source_global = source_global.c_escape();
-
 	const String blend_basename = p_path.get_file().get_basename();
 	const String sink = ProjectSettings::get_singleton()->get_imported_files_path().path_join(
 			vformat("%s-%s.gltf", blend_basename, p_path.md5_text()));
-	const String sink_global = ProjectSettings::get_singleton()->globalize_path(sink).c_escape();
+	const String sink_global = ProjectSettings::get_singleton()->globalize_path(sink);
 
 	// Handle configuration options.
 
@@ -188,10 +186,18 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	} else {
 		parameters_map["export_lights"] = false;
 	}
-	if (p_options.has(SNAME("blender/meshes/colors")) && p_options[SNAME("blender/meshes/colors")]) {
-		parameters_map["export_colors"] = true;
+	if (blender_major_version > 4 || (blender_major_version == 4 && blender_minor_version >= 2)) {
+		if (p_options.has(SNAME("blender/meshes/colors")) && p_options[SNAME("blender/meshes/colors")]) {
+			parameters_map["export_vertex_color"] = "MATERIAL";
+		} else {
+			parameters_map["export_vertex_color"] = "NONE";
+		}
 	} else {
-		parameters_map["export_colors"] = false;
+		if (p_options.has(SNAME("blender/meshes/colors")) && p_options[SNAME("blender/meshes/colors")]) {
+			parameters_map["export_colors"] = true;
+		} else {
+			parameters_map["export_colors"] = false;
+		}
 	}
 	if (p_options.has(SNAME("blender/nodes/visible"))) {
 		int32_t visible = p_options["blender/nodes/visible"];
@@ -206,6 +212,9 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	} else {
 		parameters_map["use_renderable"] = false;
 		parameters_map["use_visible"] = false;
+	}
+	if (p_options.has(SNAME("blender/nodes/active_collection_only")) && p_options[SNAME("blender/nodes/active_collection_only")]) {
+		parameters_map["use_active_collection"] = true;
 	}
 
 	if (p_options.has(SNAME("blender/meshes/uvs")) && p_options[SNAME("blender/meshes/uvs")]) {
@@ -323,7 +332,8 @@ Variant EditorSceneFormatImporterBlend::get_option_visibility(const String &p_pa
 }
 
 void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options) {
-	if (p_path.get_extension().to_lower() != "blend") {
+	// Returns all the options when path is empty because that means it's for the Project Settings.
+	if (!p_path.is_empty() && p_path.get_extension().to_lower() != "blend") {
 		return;
 	}
 #define ADD_OPTION_BOOL(PATH, VALUE) \
@@ -332,6 +342,7 @@ void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, Li
 	r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, SNAME(PATH), PROPERTY_HINT_ENUM, ENUM_HINT), VALUE));
 
 	ADD_OPTION_ENUM("blender/nodes/visible", "All,Visible Only,Renderable", BLEND_VISIBLE_ALL);
+	ADD_OPTION_BOOL("blender/nodes/active_collection_only", false);
 	ADD_OPTION_BOOL("blender/nodes/punctual_lights", true);
 	ADD_OPTION_BOOL("blender/nodes/cameras", true);
 	ADD_OPTION_BOOL("blender/nodes/custom_properties", true);
@@ -381,9 +392,9 @@ void EditorFileSystemImportFormatSupportQueryBlend::_validate_path(String p_path
 		if (_test_blender_path(p_path, &error)) {
 			success = true;
 			if (auto_detected_path == p_path) {
-				error = TTR("Path to Blender installation is valid (Autodetected).");
+				error = TTR("Path to Blender executable is valid (Autodetected).");
 			} else {
-				error = TTR("Path to Blender installation is valid.");
+				error = TTR("Path to Blender executable is valid.");
 			}
 		}
 	}
@@ -391,10 +402,10 @@ void EditorFileSystemImportFormatSupportQueryBlend::_validate_path(String p_path
 	path_status->set_text(error);
 
 	if (success) {
-		path_status->add_theme_color_override("font_color", path_status->get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
+		path_status->add_theme_color_override(SceneStringName(font_color), path_status->get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
 		configure_blender_dialog->get_ok_button()->set_disabled(false);
 	} else {
-		path_status->add_theme_color_override("font_color", path_status->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+		path_status->add_theme_color_override(SceneStringName(font_color), path_status->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 		configure_blender_dialog->get_ok_button()->set_disabled(true);
 	}
 }
@@ -479,11 +490,15 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 	if (!configure_blender_dialog) {
 		configure_blender_dialog = memnew(ConfirmationDialog);
 		configure_blender_dialog->set_title(TTR("Configure Blender Importer"));
-		configure_blender_dialog->set_flag(Window::FLAG_BORDERLESS, true); // Avoid closing accidentally .
+		configure_blender_dialog->set_flag(Window::FLAG_BORDERLESS, true); // Avoid closing accidentally.
 		configure_blender_dialog->set_close_on_escape(false);
 
+		String select_exec_label = TTR("Blender 3.0+ is required to import '.blend' files.\nPlease provide a valid path to a Blender executable.");
+#ifdef MACOS_ENABLED
+		select_exec_label += "\n" + TTR("On macOS, this should be the `Contents/MacOS/blender` file within the Blender `.app` folder.");
+#endif
 		VBoxContainer *vb = memnew(VBoxContainer);
-		vb->add_child(memnew(Label(TTR("Blender 3.0+ is required to import '.blend' files.\nPlease provide a valid path to a Blender installation:"))));
+		vb->add_child(memnew(Label(select_exec_label)));
 
 		HBoxContainer *hb = memnew(HBoxContainer);
 
@@ -506,19 +521,19 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 
 		configure_blender_dialog->add_child(vb);
 
-		blender_path->connect("text_changed", callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_validate_path));
+		blender_path->connect(SceneStringName(text_changed), callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_validate_path));
 
 		EditorNode::get_singleton()->get_gui_base()->add_child(configure_blender_dialog);
 
 		configure_blender_dialog->set_ok_button_text(TTR("Confirm Path"));
 		configure_blender_dialog->set_cancel_button_text(TTR("Disable '.blend' Import"));
 		configure_blender_dialog->get_cancel_button()->set_tooltip_text(TTR("Disables Blender '.blend' files import for this project. Can be re-enabled in Project Settings."));
-		configure_blender_dialog->connect("confirmed", callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_path_confirmed));
+		configure_blender_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_path_confirmed));
 
 		browse_dialog = memnew(EditorFileDialog);
 		browse_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-		browse_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
-		browse_dialog->connect("dir_selected", callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_select_install));
+		browse_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
+		browse_dialog->connect("file_selected", callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_select_install));
 
 		EditorNode::get_singleton()->get_gui_base()->add_child(browse_dialog);
 

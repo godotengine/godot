@@ -327,7 +327,7 @@ void DependencyEditorOwners::_select_file(int p_idx) {
 		EditorNode::get_singleton()->load_resource(fpath);
 	}
 	hide();
-	emit_signal(SNAME("confirmed"));
+	emit_signal(SceneStringName(confirmed));
 }
 
 void DependencyEditorOwners::_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index) {
@@ -396,7 +396,7 @@ void DependencyEditorOwners::show(const String &p_path) {
 DependencyEditorOwners::DependencyEditorOwners() {
 	file_options = memnew(PopupMenu);
 	add_child(file_options);
-	file_options->connect("id_pressed", callable_mp(this, &DependencyEditorOwners::_file_option));
+	file_options->connect(SceneStringName(id_pressed), callable_mp(this, &DependencyEditorOwners::_file_option));
 
 	owners = memnew(ItemList);
 	owners->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
@@ -875,7 +875,7 @@ OrphanResourcesDialog::OrphanResourcesDialog() {
 	add_child(delete_confirm);
 	dep_edit = memnew(DependencyEditor);
 	add_child(dep_edit);
-	delete_confirm->connect("confirmed", callable_mp(this, &OrphanResourcesDialog::_delete_confirm));
+	delete_confirm->connect(SceneStringName(confirmed), callable_mp(this, &OrphanResourcesDialog::_delete_confirm));
 	set_hide_on_ok(false);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);

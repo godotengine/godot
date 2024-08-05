@@ -31,7 +31,6 @@
 #include "display_server.h"
 
 #include "core/input/input.h"
-#include "scene/resources/atlas_texture.h"
 #include "scene/resources/texture.h"
 #include "servers/display_server_headless.h"
 
@@ -571,7 +570,7 @@ int DisplayServer::get_screen_from_rect(const Rect2 &p_rect) const {
 	return pos_screen;
 }
 
-DisplayServer::WindowID DisplayServer::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
+DisplayServer::WindowID DisplayServer::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, WindowID p_transient_parent) {
 	ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Sub-windows not supported by this display server.");
 }
 
@@ -758,6 +757,17 @@ DisplayServer::WindowID DisplayServer::get_focused_window() const {
 }
 
 void DisplayServer::set_context(Context p_context) {
+}
+
+void DisplayServer::register_additional_output(Object *p_object) {
+	ObjectID id = p_object->get_instance_id();
+	if (!additional_outputs.has(id)) {
+		additional_outputs.push_back(id);
+	}
+}
+
+void DisplayServer::unregister_additional_output(Object *p_object) {
+	additional_outputs.erase(p_object->get_instance_id());
 }
 
 void DisplayServer::_bind_methods() {
@@ -998,6 +1008,10 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_window_transparency_available"), &DisplayServer::is_window_transparency_available);
 
+	ClassDB::bind_method(D_METHOD("register_additional_output", "object"), &DisplayServer::register_additional_output);
+	ClassDB::bind_method(D_METHOD("unregister_additional_output", "object"), &DisplayServer::unregister_additional_output);
+	ClassDB::bind_method(D_METHOD("has_additional_outputs"), &DisplayServer::has_additional_outputs);
+
 #ifndef DISABLE_DEPRECATED
 	BIND_ENUM_CONSTANT(FEATURE_GLOBAL_MENU);
 #endif
@@ -1124,35 +1138,22 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(TTS_UTTERANCE_BOUNDARY);
 }
 
-Ref<Image> DisplayServer::_get_cursor_image_from_resource(const Ref<Resource> &p_cursor, const Vector2 &p_hotspot, Rect2 &r_atlas_rect) {
+Ref<Image> DisplayServer::_get_cursor_image_from_resource(const Ref<Resource> &p_cursor, const Vector2 &p_hotspot) {
 	Ref<Image> image;
 	ERR_FAIL_COND_V_MSG(p_hotspot.x < 0 || p_hotspot.y < 0, image, "Hotspot outside cursor image.");
 
-	Size2 texture_size;
-
 	Ref<Texture2D> texture = p_cursor;
 	if (texture.is_valid()) {
-		Ref<AtlasTexture> atlas_texture = p_cursor;
-
-		if (atlas_texture.is_valid()) {
-			texture = atlas_texture->get_atlas();
-			r_atlas_rect.size = texture->get_size();
-			r_atlas_rect.position = atlas_texture->get_region().position;
-			texture_size = atlas_texture->get_region().size;
-		} else {
-			texture_size = texture->get_size();
-		}
 		image = texture->get_image();
 	} else {
 		image = p_cursor;
-		ERR_FAIL_COND_V(image.is_null(), image);
-		texture_size = image->get_size();
 	}
-
-	ERR_FAIL_COND_V_MSG(p_hotspot.x > texture_size.width || p_hotspot.y > texture_size.height, image, "Hotspot outside cursor image.");
-	ERR_FAIL_COND_V_MSG(texture_size.width > 256 || texture_size.height > 256, image, "Cursor image too big. Max supported size is 256x256.");
-
 	ERR_FAIL_COND_V(image.is_null(), image);
+
+	Size2 image_size = image->get_size();
+	ERR_FAIL_COND_V_MSG(p_hotspot.x > image_size.width || p_hotspot.y > image_size.height, image, "Hotspot outside cursor image.");
+	ERR_FAIL_COND_V_MSG(image_size.width > 256 || image_size.height > 256, image, "Cursor image too big. Max supported size is 256x256.");
+
 	if (image->is_compressed()) {
 		image = image->duplicate(true);
 		Error err = image->decompress();

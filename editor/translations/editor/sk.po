@@ -19,21 +19,23 @@
 # Milan Šalka <salka.milan@googlemail.com>, 2023.
 # Mikuláš Suchanovský <mikulassuchanovsky@protonmail.com>, 2023.
 # Ellie Star <gender.thief.star@gmail.com>, 2023.
+# Lmpsk <adamgramblicka@hotmail.com>, 2024.
+# Gelissean <gelu586@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-12-02 19:36+0000\n"
-"Last-Translator: Ellie Star <gender.thief.star@gmail.com>\n"
+"PO-Revision-Date: 2024-07-31 15:41+0000\n"
+"Last-Translator: Gelissean <gelu586@gmail.com>\n"
 "Language-Team: Slovak <https://hosted.weblate.org/projects/godot-engine/godot/"
 "sk/>\n"
 "Language: sk\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 5.3-dev\n"
+"Plural-Forms: nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
+"X-Generator: Weblate 5.7-dev\n"
 
 msgid "Main Thread"
 msgstr "Hlavné vlákno"
@@ -355,6 +357,9 @@ msgstr "Označiť slovo pod kurzorom"
 msgid "Add Selection for Next Occurrence"
 msgstr "Pridať ďalší výskyt do označenia"
 
+msgid "Skip Selection for Next Occurrence"
+msgstr "Preskočiť ďalší výskyt"
+
 msgid "Clear Carets and Selection"
 msgstr "Vyčistiť vsuvky a výber"
 
@@ -455,6 +460,9 @@ msgstr "Upraviť Udalosť"
 msgid "Remove Event"
 msgstr "Odstrániť Udalosť"
 
+msgid "Filter by Name"
+msgstr "Filtrovať podľa názvu"
+
 msgid "Clear All"
 msgstr "Vyčistiť všetko"
 
@@ -487,6 +495,15 @@ msgstr "Tu vložte kľúč"
 
 msgid "Duplicate Selected Key(s)"
 msgstr "Duplikovať kľúč(e)"
+
+msgid "Cut Selected Key(s)"
+msgstr "Vystrihnúť označené kľúč(e)"
+
+msgid "Copy Selected Key(s)"
+msgstr "Kopírovať označené kľúč(e)"
+
+msgid "Paste Key(s)"
+msgstr "Prilepiť Kľúč(e)"
 
 msgid "Delete Selected Key(s)"
 msgstr "Zmazať označené kľúč(e)"
@@ -522,6 +539,18 @@ msgid "Can't change loop mode on animation instanced from imported scene."
 msgstr ""
 "Nie je možné zmeniť mód cyklenia v animácií, inštanciovanej v importovanej "
 "scéne."
+
+msgid "Property Track..."
+msgstr "Stopa vlastnosti..."
+
+msgid "3D Position Track..."
+msgstr "Stopa 3D pozície..."
+
+msgid "3D Rotation Track..."
+msgstr "Stopa 3D rotácie..."
+
+msgid "3D Scale Track..."
+msgstr "Stopa 3D škálovania..."
 
 msgid "Animation length (frames)"
 msgstr "Dĺžka animácie (v snímkoch)"
@@ -680,9 +709,6 @@ msgstr "Cesta Track-u je neplatná, takže sa nedá pridať kľúč."
 
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "Track nie je typu Node3D, nedá sa vložiť kľúč"
-
-msgid "Add Track Key"
-msgstr "Pridať Track Key"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Cesta track-u je neplatná, takže sa nedá pridať do method key."
@@ -2012,6 +2038,12 @@ msgstr "Importovať Profil(y)"
 msgid "Manage Editor Feature Profiles"
 msgstr "Spravovať Feature Profily Editora"
 
+msgid "Restart"
+msgstr "Reštartovať"
+
+msgid "Save & Restart"
+msgstr "Uložiť & Reštartovať"
+
 msgid "ScanSources"
 msgstr "SkenZdrojov"
 
@@ -2571,13 +2603,6 @@ msgid "Quick Open Script..."
 msgstr "Rýchle Otvorenie Skriptu..."
 
 msgid ""
-"The current scene has no root node, but %d modified external resource(s) were "
-"saved anyway."
-msgstr ""
-"Aktuálna scéna nemá koreňový node, ale %d modifikovaných externých zdrojov "
-"bolo napriek tomu uložených."
-
-msgid ""
 "A root node is required to save the scene. You can add a root node using the "
 "Scene tree dock."
 msgstr ""
@@ -2725,6 +2750,18 @@ msgstr "Mobil"
 msgid "Compatibility"
 msgstr "Kompatibilita"
 
+msgid "Lock Selected Node(s)"
+msgstr "Zamknúť Vybrané Nody"
+
+msgid "Unlock Selected Node(s)"
+msgstr "Odomknúť Vybrané Nody"
+
+msgid "Group Selected Node(s)"
+msgstr "Zoskupiť Vybrané Nody"
+
+msgid "Ungroup Selected Node(s)"
+msgstr "Odskupiť Vybrané Nody"
+
 msgid "Pan View"
 msgstr "Zobrazenie Pan"
 
@@ -2803,9 +2840,6 @@ msgstr "Layout Editora"
 msgid "Take Screenshot"
 msgstr "Spraviť Snímku Obrazovky"
 
-msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr "Snímky obrázky sú uložené v Editor Data/Settings Folder."
-
 msgid "Toggle Fullscreen"
 msgstr "Prepnúť na Celú Obrazovku"
 
@@ -2841,9 +2875,6 @@ msgstr "Poslať spätnú väzbu Dokumentácie"
 
 msgid "Support Godot Development"
 msgstr "Podporte vývoj Godot"
-
-msgid "Save & Restart"
-msgstr "Uložiť & Reštartovať"
 
 msgid "Update Continuously"
 msgstr "Aktualizovať priebežne"
@@ -2890,12 +2921,6 @@ msgid ""
 msgstr ""
 "Nasledujúce súbory majú novšiu verziu na disku.\n"
 "Aká akcia sa má vykonať?"
-
-msgid "Reload"
-msgstr "Znovu načítať"
-
-msgid "Resave"
-msgstr "Znovu uložiť"
 
 msgid "New Inherited"
 msgstr "Novo Zdedené"
@@ -3053,9 +3078,6 @@ msgstr ""
 
 msgid "Write your logic in the _run() method."
 msgstr "Napíšte svoju logiku v metóde _run()."
-
-msgid "There is an edited scene already."
-msgstr "Už tu je editovaná scéna."
 
 msgid "Editor Settings"
 msgstr "Nastavenia editoru"
@@ -3235,6 +3257,12 @@ msgid ""
 msgstr ""
 "Nenašli sa žiadne download linky pre túto verziu. Priame stiahnutie je "
 "dostupný iba pre \"official releases\"."
+
+msgid "Connecting..."
+msgstr "Pripájanie..."
+
+msgid "Requesting..."
+msgstr "Requestuje sa..."
 
 msgid "Extracting Export Templates"
 msgstr "Extrahovanie exportných šablón"
@@ -3536,6 +3564,9 @@ msgstr "Odstrániť z Obľúbených"
 msgid "Reimport"
 msgstr "Reimportovať"
 
+msgid "Open in File Manager"
+msgstr "Otvoriť v File Manažérovy"
+
 msgid "New Folder..."
 msgstr "Nový Priečinok..."
 
@@ -3574,9 +3605,6 @@ msgstr "Duplikovať..."
 
 msgid "Rename..."
 msgstr "Premenovať..."
-
-msgid "Open in File Manager"
-msgstr "Otvoriť v File Manažérovy"
 
 msgid "Re-Scan Filesystem"
 msgstr "Preskenovať Filesystem"
@@ -4444,12 +4472,6 @@ msgstr "Sťahovanie..."
 msgid "Resolving..."
 msgstr "Rieši sa..."
 
-msgid "Connecting..."
-msgstr "Pripájanie..."
-
-msgid "Requesting..."
-msgstr "Requestuje sa..."
-
 msgid "Error making request"
 msgstr "Pri vytváraní žiadosťi nastala chyba"
 
@@ -4597,6 +4619,11 @@ msgstr "Zrušiť Transformáciu"
 msgid "Select Mode"
 msgstr "Vybrať Režim"
 
+msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
+msgstr ""
+"Alt+RMB: Zobrazí zoznam všetkých nodov na kliknutej pozícii, vrátane "
+"zamknutých nodov."
+
 msgid "RMB: Add node at position clicked."
 msgstr "RMB: Pridať node na pozícii kliknutia."
 
@@ -4672,20 +4699,8 @@ msgstr "Konfigurovať Prichytávanie..."
 msgid "Lock selected node, preventing selection and movement."
 msgstr "Zamknúť vybrané nody, zabraní vyberaniu a presúvaniu."
 
-msgid "Lock Selected Node(s)"
-msgstr "Zamknúť Vybrané Nody"
-
 msgid "Unlock selected node, allowing selection and movement."
 msgstr "Odomknúť vybraný node, povolí vyberanie a presúvanie."
-
-msgid "Unlock Selected Node(s)"
-msgstr "Odomknúť Vybrané Nody"
-
-msgid "Group Selected Node(s)"
-msgstr "Zoskupiť Vybrané Nody"
-
-msgid "Ungroup Selected Node(s)"
-msgstr "Odskupiť Vybrané Nody"
 
 msgid "Skeleton Options"
 msgstr "Nastavenia Kostry"
@@ -4789,12 +4804,6 @@ msgstr "vydeliť krok mriežky dvomi"
 msgid "Adding %s..."
 msgstr "Pridávanie %s..."
 
-msgid "Hold Shift when dropping to add as sibling of selected node."
-msgstr "Podržte Shift pri púšťani pre pridanie súrodenca vybraného nodu."
-
-msgid "Cannot instantiate multiple nodes without root."
-msgstr "Nie je možné inštanciovať viacero nodov bez koreňa."
-
 msgid "Create Node"
 msgstr "Vytvoriť Node"
 
@@ -4890,9 +4899,6 @@ msgstr "Horizontálne zarovnanie"
 
 msgid "Vertical alignment"
 msgstr "Vertikálne zarovnanie"
-
-msgid "Restart"
-msgstr "Reštartovať"
 
 msgid "Load Emission Mask"
 msgstr "Načíť Emisnú Masku"
@@ -5109,9 +5115,6 @@ msgstr "Zmeniť Polomer Tvaru Valca"
 
 msgid "Change Cylinder Shape Height"
 msgstr "Zmeniť Výšku Tvaru Valca"
-
-msgid "Change Particles AABB"
-msgstr "Zmeniť Častice AABB"
 
 msgid "Change Radius"
 msgstr "Zmeniť Polomer"
@@ -5574,11 +5577,6 @@ msgstr ""
 "WorldEnvironment.\n"
 "Náhľad vypnutý."
 
-msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
-msgstr ""
-"Alt+RMB: Zobrazí zoznam všetkých nodov na kliknutej pozícii, vrátane "
-"zamknutých nodov."
-
 msgid "Use Local Space"
 msgstr "Použiť Lokálny Priestor"
 
@@ -5782,14 +5780,14 @@ msgstr "Vymazať Out-Control z Krivky"
 msgid "Remove In-Control from Curve"
 msgstr "Vymazať In-Control z Krivky"
 
-msgid "Add Point to Curve"
-msgstr "Pridať Bod do Krivky"
-
 msgid "Split Curve"
 msgstr "Rozdeliť Krivku"
 
 msgid "Move Point in Curve"
 msgstr "Presunúť Bod v Krivke"
+
+msgid "Add Point to Curve"
+msgstr "Pridať Bod do Krivky"
 
 msgid "Move In-Control in Curve"
 msgstr "Presunúť In-Control v Krivke"
@@ -5958,6 +5956,12 @@ msgstr "Nový textový súbor..."
 msgid "Save File As..."
 msgstr "Uložiť súbor ako..."
 
+msgid "Online Docs"
+msgstr "Online Dokumentácie"
+
+msgid "Open Godot online documentation."
+msgstr "Otvoriť online dokumentáciu Godotu."
+
 msgid "Open..."
 msgstr "Otvoriť..."
 
@@ -5966,12 +5970,6 @@ msgstr "Spustiť"
 
 msgid "Search"
 msgstr "Vyhľadať"
-
-msgid "Online Docs"
-msgstr "Online Dokumentácie"
-
-msgid "Open Godot online documentation."
-msgstr "Otvoriť online dokumentáciu Godotu."
 
 msgid "Standard"
 msgstr "Štandard"
@@ -6028,6 +6026,12 @@ msgstr "Resetovať Priblíženie"
 
 msgid "Size"
 msgstr "Veľkosť"
+
+msgid "Reload"
+msgstr "Znovu načítať"
+
+msgid "Resave"
+msgstr "Znovu uložiť"
 
 msgid "Snap Mode:"
 msgstr "Režim Prichytenia:"
@@ -6988,8 +6992,14 @@ msgstr "Neplatný zdroj pre shader."
 msgid "Invalid comparison function for that type."
 msgstr "Neplatná funkcia porovnania pre tento typ."
 
+msgid "Surface Index"
+msgstr "Index povrchu"
+
 msgid "Invalid arguments for the built-in function: \"%s(%s)\"."
 msgstr "Neplatné argumenty pre vstavanú funkciu: \"%s(%s)\"."
+
+msgid "Recursion is not allowed."
+msgstr "Rekurzia nie je povolená."
 
 msgid "Invalid assignment of '%s' to '%s'."
 msgstr "Neplatné priradenie '%s' k '%s'."
@@ -7084,3 +7094,15 @@ msgid ""
 msgstr ""
 "Celková veľkosť %s tohto shader-a na tomto zariadení bola prekročená (%d/%d). "
 "Shader nemusí pracovať správne."
+
+msgid ""
+"You are attempting to assign the VERTEX position in model space to the vertex "
+"POSITION in clip space. The definition of clip space changed in version 4.3, "
+"so if this code was written prior to 4.3, it will not continue to work. "
+"Consider specifying the clip space z-component directly i.e. use `vec4(VERTEX."
+"xy, 1.0, 1.0)`."
+msgstr ""
+"Pokúšate sa priradiť VERTEX pozíciu v model priestore VERTEX pozícií v clip "
+"priestore. Definícia clip priestoru sa zmenila vo verzii 4.3, takže ak bol "
+"tento kód napísaný pred verziou 4.3, nebude naďalej fungovať. Skúste priamo "
+"zadať z-komponent clip priestoru, t. j. použite `vec4(VERTEX.xy, 1.0, 1.0)`."

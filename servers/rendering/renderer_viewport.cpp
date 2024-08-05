@@ -786,6 +786,7 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 					if (OS::get_singleton()->get_current_rendering_driver_name().begins_with("opengl3")) {
 						if (blits.size() > 0) {
 							RSG::rasterizer->blit_render_targets_to_screen(vp->viewport_to_screen, blits.ptr(), blits.size());
+							RSG::rasterizer->gl_end_frame(p_swap_buffers);
 						}
 					} else if (blits.size() > 0) {
 						if (!blit_to_screen_list.has(vp->viewport_to_screen)) {
@@ -796,7 +797,6 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 							blit_to_screen_list[vp->viewport_to_screen].push_back(blits[b]);
 						}
 					}
-					RSG::rasterizer->end_viewport(p_swap_buffers && blits.size() > 0);
 				}
 			}
 		} else
@@ -826,10 +826,10 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 					Vector<BlitToScreen> blit_to_screen_vec;
 					blit_to_screen_vec.push_back(blit);
 					RSG::rasterizer->blit_render_targets_to_screen(vp->viewport_to_screen, blit_to_screen_vec.ptr(), 1);
+					RSG::rasterizer->gl_end_frame(p_swap_buffers);
 				} else {
 					blit_to_screen_list[vp->viewport_to_screen].push_back(blit);
 				}
-				RSG::rasterizer->end_viewport(p_swap_buffers);
 			}
 		}
 
@@ -899,6 +899,7 @@ void RendererViewport::viewport_set_use_xr(RID p_viewport, bool p_use_xr) {
 void RendererViewport::viewport_set_scaling_3d_mode(RID p_viewport, RS::ViewportScaling3DMode p_mode) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL(viewport);
+	ERR_FAIL_COND_EDMSG(p_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR && OS::get_singleton()->get_current_rendering_method() != "forward_plus", "FSR1 is only available when using the Forward+ renderer.");
 	ERR_FAIL_COND_EDMSG(p_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR2 && OS::get_singleton()->get_current_rendering_method() != "forward_plus", "FSR2 is only available when using the Forward+ renderer.");
 
 	if (viewport->scaling_3d_mode == p_mode) {
@@ -971,7 +972,7 @@ void RendererViewport::_viewport_set_size(Viewport *p_viewport, int p_width, int
 }
 
 bool RendererViewport::_viewport_requires_motion_vectors(Viewport *p_viewport) {
-	return p_viewport->use_taa || p_viewport->scaling_3d_mode == RenderingServer::VIEWPORT_SCALING_3D_MODE_FSR2;
+	return p_viewport->use_taa || p_viewport->scaling_3d_mode == RenderingServer::VIEWPORT_SCALING_3D_MODE_FSR2 || p_viewport->debug_draw == RenderingServer::VIEWPORT_DEBUG_DRAW_MOTION_VECTORS;
 }
 
 void RendererViewport::viewport_set_active(RID p_viewport, bool p_active) {
@@ -1370,7 +1371,13 @@ void RendererViewport::viewport_set_debug_draw(RID p_viewport, RS::ViewportDebug
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL(viewport);
 
+	bool motion_vectors_before = _viewport_requires_motion_vectors(viewport);
 	viewport->debug_draw = p_draw;
+
+	bool motion_vectors_after = _viewport_requires_motion_vectors(viewport);
+	if (motion_vectors_before != motion_vectors_after) {
+		num_viewports_with_motion_vectors += motion_vectors_after ? 1 : -1;
+	}
 }
 
 void RendererViewport::viewport_set_measure_render_time(RID p_viewport, bool p_enable) {

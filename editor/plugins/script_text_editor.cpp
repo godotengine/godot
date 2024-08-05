@@ -317,7 +317,16 @@ void ScriptTextEditor::_error_clicked(const Variant &p_line) {
 			if (!scr.is_valid()) {
 				EditorNode::get_singleton()->show_warning(TTR("Could not load file at:") + "\n\n" + path, TTR("Error!"));
 			} else {
-				ScriptEditor::get_singleton()->edit(scr, line, column);
+				int corrected_column = column;
+
+				const String line_text = code_editor->get_text_editor()->get_line(line);
+				const int indent_size = code_editor->get_text_editor()->get_indent_size();
+				if (indent_size > 1) {
+					const int tab_count = line_text.length() - line_text.lstrip("\t").length();
+					corrected_column -= tab_count * (indent_size - 1);
+				}
+
+				ScriptEditor::get_singleton()->edit(scr, line, corrected_column);
 			}
 		}
 	}
@@ -429,6 +438,10 @@ void ScriptTextEditor::_convert_case(CodeTextEditor::CaseStyle p_case) {
 
 void ScriptTextEditor::trim_trailing_whitespace() {
 	code_editor->trim_trailing_whitespace();
+}
+
+void ScriptTextEditor::trim_final_newlines() {
+	code_editor->trim_final_newlines();
 }
 
 void ScriptTextEditor::insert_final_newline() {
@@ -1427,6 +1440,9 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		case EDIT_TRIM_TRAILING_WHITESAPCE: {
 			trim_trailing_whitespace();
 		} break;
+		case EDIT_TRIM_FINAL_NEWLINES: {
+			trim_final_newlines();
+		} break;
 		case EDIT_CONVERT_INDENT_TO_SPACES: {
 			code_editor->set_indent_using_spaces(true);
 			convert_indent();
@@ -1812,15 +1828,25 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 	CodeEdit *te = code_editor->get_text_editor();
 	Point2i pos = te->get_line_column_at_pos(p_point);
-	int row = pos.y;
-	int col = pos.x;
+	int drop_at_line = pos.y;
+	int drop_at_column = pos.x;
+	int selection_index = te->get_selection_at_line_column(drop_at_line, drop_at_column);
+
+	bool line_will_be_empty = false;
+	if (selection_index >= 0) {
+		// Dropped on a selection, it will be replaced.
+		drop_at_line = te->get_selection_from_line(selection_index);
+		drop_at_column = te->get_selection_from_column(selection_index);
+		line_will_be_empty = drop_at_column <= te->get_first_non_whitespace_column(drop_at_line) && te->get_selection_to_column(selection_index) == te->get_line(te->get_selection_to_line(selection_index)).length();
+	}
+
+	String text_to_drop;
 
 	const bool drop_modifier_pressed = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
-	const String &line = te->get_line(row);
-	const bool is_empty_line = line.is_empty() || te->get_first_non_whitespace_column(row) == line.length();
+	const String &line = te->get_line(drop_at_line);
+	const bool is_empty_line = line_will_be_empty || line.is_empty() || te->get_first_non_whitespace_column(drop_at_line) == line.length();
 
 	if (d.has("type") && String(d["type"]) == "resource") {
-		te->remove_secondary_carets();
 		Ref<Resource> resource = d["resource"];
 		if (resource.is_null()) {
 			return;
@@ -1833,7 +1859,6 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 			return;
 		}
 
-		String text_to_drop;
 		if (drop_modifier_pressed) {
 			if (resource->is_built_in()) {
 				String warning = TTR("Preloading internal resources is not supported.");
@@ -1844,24 +1869,20 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		} else {
 			text_to_drop = _quote_drop_data(path);
 		}
-
-		te->set_caret_line(row);
-		te->set_caret_column(col);
-		te->insert_text_at_caret(text_to_drop);
-		te->grab_focus();
 	}
 
 	if (d.has("type") && (String(d["type"]) == "files" || String(d["type"]) == "files_and_dirs")) {
-		te->remove_secondary_carets();
-
 		Array files = d["files"];
-		String text_to_drop;
-
 		for (int i = 0; i < files.size(); i++) {
 			const String &path = String(files[i]);
 
 			if (drop_modifier_pressed && ResourceLoader::exists(path)) {
 				Ref<Resource> resource = ResourceLoader::load(path);
+				if (resource.is_null()) {
+					// Resource exists, but failed to load. We need only path and name, so we can use a dummy Resource instead.
+					resource.instantiate();
+					resource->set_path_cache(path);
+				}
 				text_to_drop += _get_dropped_resource_line(resource, is_empty_line);
 			} else {
 				text_to_drop += _quote_drop_data(path);
@@ -1871,15 +1892,9 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 				text_to_drop += is_empty_line ? "\n" : ", ";
 			}
 		}
-
-		te->set_caret_line(row);
-		te->set_caret_column(col);
-		te->insert_text_at_caret(text_to_drop);
-		te->grab_focus();
 	}
 
 	if (d.has("type") && String(d["type"]) == "nodes") {
-		te->remove_secondary_carets();
 		Node *scene_root = get_tree()->get_edited_scene_root();
 		if (!scene_root) {
 			EditorNode::get_singleton()->show_warning(TTR("Can't drop nodes without an open scene."));
@@ -1897,7 +1912,6 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		}
 
 		Array nodes = d["nodes"];
-		String text_to_drop;
 
 		if (drop_modifier_pressed) {
 			const bool use_type = EDITOR_GET("text_editor/completion/add_type_hints");
@@ -1969,27 +1983,33 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 				text_to_drop += (is_unique ? "%" : "$") + path;
 			}
 		}
-
-		te->set_caret_line(row);
-		te->set_caret_column(col);
-		te->insert_text_at_caret(text_to_drop);
-		te->grab_focus();
 	}
 
 	if (d.has("type") && String(d["type"]) == "obj_property") {
-		te->remove_secondary_carets();
-
 		bool add_literal = EDITOR_GET("text_editor/completion/add_node_path_literals");
-		String text_to_drop = add_literal ? "^" : "";
+		text_to_drop = add_literal ? "^" : "";
 		// It is unclear whether properties may contain single or double quotes.
 		// Assume here that double-quotes may not exist. We are escaping single-quotes if necessary.
 		text_to_drop += _quote_drop_data(String(d["property"]));
-
-		te->set_caret_line(row);
-		te->set_caret_column(col);
-		te->insert_text_at_caret(text_to_drop);
-		te->grab_focus();
 	}
+
+	if (text_to_drop.is_empty()) {
+		return;
+	}
+
+	// Remove drag caret before any actions so it is not included in undo.
+	te->remove_drag_caret();
+	te->begin_complex_operation();
+	if (selection_index >= 0) {
+		te->delete_selection(selection_index);
+	}
+	te->remove_secondary_carets();
+	te->deselect();
+	te->set_caret_line(drop_at_line);
+	te->set_caret_column(drop_at_column);
+	te->insert_text_at_caret(text_to_drop);
+	te->end_complex_operation();
+	te->grab_focus();
 }
 
 void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
@@ -2242,7 +2262,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	errors_panel->connect("meta_clicked", callable_mp(this, &ScriptTextEditor::_error_clicked));
 
 	add_child(context_menu);
-	context_menu->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
+	context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
 
 	add_child(color_panel);
 
@@ -2285,7 +2305,7 @@ void ScriptTextEditor::_enable_code_editor() {
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unindent"), EDIT_UNINDENT);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/delete_line"), EDIT_DELETE_LINE);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
-		sub_menu->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
+		sub_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
 		edit_menu->get_popup()->add_submenu_node_item(TTR("Line"), sub_menu);
 	}
 	{
@@ -2294,32 +2314,33 @@ void ScriptTextEditor::_enable_code_editor() {
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/fold_all_lines"), EDIT_FOLD_ALL_LINES);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unfold_all_lines"), EDIT_UNFOLD_ALL_LINES);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/create_code_region"), EDIT_CREATE_CODE_REGION);
-		sub_menu->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
+		sub_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
 		edit_menu->get_popup()->add_submenu_node_item(TTR("Folding"), sub_menu);
 	}
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_text_completion_query"), EDIT_COMPLETE);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/trim_trailing_whitespace"), EDIT_TRIM_TRAILING_WHITESAPCE);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/trim_final_newlines"), EDIT_TRIM_FINAL_NEWLINES);
 	{
 		PopupMenu *sub_menu = memnew(PopupMenu);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_indent_to_spaces"), EDIT_CONVERT_INDENT_TO_SPACES);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_indent_to_tabs"), EDIT_CONVERT_INDENT_TO_TABS);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/auto_indent"), EDIT_AUTO_INDENT);
-		sub_menu->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
+		sub_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
 		edit_menu->get_popup()->add_submenu_node_item(TTR("Indentation"), sub_menu);
 	}
-	edit_menu->get_popup()->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
+	edit_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
 	edit_menu->get_popup()->add_separator();
 	{
 		PopupMenu *sub_menu = memnew(PopupMenu);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_to_uppercase"), EDIT_TO_UPPERCASE);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_to_lowercase"), EDIT_TO_LOWERCASE);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/capitalize"), EDIT_CAPITALIZE);
-		sub_menu->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
+		sub_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
 		edit_menu->get_popup()->add_submenu_node_item(TTR("Convert Case"), sub_menu);
 	}
 	edit_menu->get_popup()->add_submenu_node_item(TTR("Syntax Highlighter"), highlighter_menu);
-	highlighter_menu->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_change_syntax_highlighter));
+	highlighter_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_change_syntax_highlighter));
 
 	edit_hb->add_child(search_menu);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find"), SEARCH_FIND);
@@ -2331,7 +2352,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace_in_files"), REPLACE_IN_FILES);
 	search_menu->get_popup()->add_separator();
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/contextual_help"), HELP_CONTEXTUAL);
-	search_menu->get_popup()->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
+	search_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
 
 	_load_theme_settings();
 
@@ -2350,7 +2371,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	breakpoints_menu->connect("about_to_popup", callable_mp(this, &ScriptTextEditor::_update_breakpoint_list));
 	breakpoints_menu->connect("index_pressed", callable_mp(this, &ScriptTextEditor::_breakpoint_item_pressed));
 
-	goto_menu->get_popup()->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
+	goto_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
 }
 
 ScriptTextEditor::ScriptTextEditor() {
@@ -2485,6 +2506,7 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/evaluate_selection", TTR("Evaluate Selection"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::E);
 	ED_SHORTCUT("script_text_editor/toggle_word_wrap", TTR("Toggle Word Wrap"), KeyModifierMask::ALT | Key::Z);
 	ED_SHORTCUT("script_text_editor/trim_trailing_whitespace", TTR("Trim Trailing Whitespace"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::T);
+	ED_SHORTCUT("script_text_editor/trim_final_newlines", TTR("Trim Final Newlines"), Key::NONE);
 	ED_SHORTCUT("script_text_editor/convert_indent_to_spaces", TTR("Convert Indent to Spaces"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::Y);
 	ED_SHORTCUT("script_text_editor/convert_indent_to_tabs", TTR("Convert Indent to Tabs"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::I);
 	ED_SHORTCUT("script_text_editor/auto_indent", TTR("Auto Indent"), KeyModifierMask::CMD_OR_CTRL | Key::I);

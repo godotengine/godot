@@ -268,7 +268,7 @@ def get_version_info(module_version_string="", silent=False):
     if os.path.exists(".git"):
         try:
             version_info["git_timestamp"] = subprocess.check_output(
-                ["git", "log", "-1", "--pretty=format:%ct", githash]
+                ["git", "log", "-1", "--pretty=format:%ct", "--no-show-signature", githash]
             ).decode("utf-8")
         except (subprocess.CalledProcessError, OSError):
             # `git` not found in PATH.
@@ -347,7 +347,7 @@ def detect_modules(search_path, recursive=False):
         # Godot sources when using `custom_modules` build option.
         version_path = os.path.join(path, "version.py")
         if os.path.exists(version_path):
-            with open(version_path) as f:
+            with open(version_path, "r", encoding="utf-8") as f:
                 if 'short_name = "godot"' in f.read():
                     return True
         return False
@@ -531,6 +531,7 @@ def no_verbose(env):
     link_shared_library_message = "{}Linking Shared Library {}$TARGET{} ...{}".format(*colors)
     java_library_message = "{}Creating Java Archive {}$TARGET{} ...{}".format(*colors)
     compiled_resource_message = "{}Creating Compiled Resource {}$TARGET{} ...{}".format(*colors)
+    zip_archive_message = "{}Archiving {}$TARGET{} ...{}".format(*colors)
     generated_file_message = "{}Generating {}$TARGET{} ...{}".format(*colors)
 
     env["CXXCOMSTR"] = compile_source_message
@@ -544,6 +545,7 @@ def no_verbose(env):
     env["JARCOMSTR"] = java_library_message
     env["JAVACCOMSTR"] = java_compile_source_message
     env["RCCOMSTR"] = compiled_resource_message
+    env["ZIPCOMSTR"] = zip_archive_message
     env["GENCOMSTR"] = generated_file_message
 
 
@@ -646,6 +648,7 @@ def detect_visual_c_compiler_version(tools_env):
 
 
 def find_visual_c_batch_file(env):
+    # TODO: We should investigate if we can avoid relying on SCons internals here.
     from SCons.Tool.MSCommon.vc import find_batch_file, find_vc_pdir, get_default_version, get_host_target
 
     msvc_version = get_default_version(env)
@@ -659,10 +662,11 @@ def find_visual_c_batch_file(env):
     if env.scons_version < (4, 6, 0):
         return find_batch_file(env, msvc_version, host_platform, target_platform)[0]
 
-    # Scons 4.6.0+ removed passing env, so we need to get the product_dir ourselves first,
+    # SCons 4.6.0+ removed passing env, so we need to get the product_dir ourselves first,
     # then pass that as the last param instead of env as the first param as before.
-    # We should investigate if we can avoid relying on SCons internals here.
-    product_dir = find_vc_pdir(env, msvc_version)
+    # Param names need to be explicit, as they were shuffled around in SCons 4.8.0.
+    product_dir = find_vc_pdir(msvc_version=msvc_version, env=env)
+
     return find_batch_file(msvc_version, host_platform, target_platform, product_dir)[0]
 
 
@@ -674,6 +678,17 @@ def generate_cpp_hint_file(filename):
         try:
             with open(filename, "w", encoding="utf-8", newline="\n") as fd:
                 fd.write("#define GDCLASS(m_class, m_inherits)\n")
+                for name in ["GDVIRTUAL", "EXBIND", "MODBIND"]:
+                    for count in range(13):
+                        for suffix in ["", "R", "C", "RC"]:
+                            fd.write(f"#define {name}{count}{suffix}(")
+                            if "R" in suffix:
+                                fd.write("m_ret, ")
+                            fd.write("m_name")
+                            for idx in range(1, count + 1):
+                                fd.write(f", type{idx}")
+                            fd.write(")\n")
+
         except OSError:
             print_warning("Could not write cpp.hint file.")
 
@@ -987,7 +1002,7 @@ def show_progress(env):
             pass
 
     try:
-        with open(node_count_fname) as f:
+        with open(node_count_fname, "r", encoding="utf-8") as f:
             node_count_max = int(f.readline())
     except Exception:
         pass
@@ -1032,7 +1047,7 @@ def dump(env):
 # skip the build process. This lets project files be quickly generated even if there are build errors.
 #
 # To generate AND build from the command line:
-#   scons vsproj=yes vsproj_gen_only=yes
+#   scons vsproj=yes vsproj_gen_only=no
 def generate_vs_project(env, original_args, project_name="godot"):
     # Augmented glob_recursive that also fills the dirs argument with traversed directories that have content.
     def glob_recursive_2(pattern, dirs, node="."):
@@ -1500,7 +1515,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
         proj_template = proj_template.replace("%%DEFAULT_ITEMS%%", "\n    ".join(all_items))
         proj_template = proj_template.replace("%%PROPERTIES%%", "\n  ".join(properties))
 
-        with open(f"{project_name}.vcxproj", "w", encoding="utf-8", newline="\n") as f:
+        with open(f"{project_name}.vcxproj", "w", encoding="utf-8", newline="\r\n") as f:
             f.write(proj_template)
 
     if not get_bool(original_args, "vsproj_props_only", False):

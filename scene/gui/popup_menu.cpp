@@ -1026,7 +1026,7 @@ void PopupMenu::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			scroll_container->add_theme_style_override("panel", theme_cache.panel_style);
+			scroll_container->add_theme_style_override(SceneStringName(panel), theme_cache.panel_style);
 
 			[[fallthrough]];
 		}
@@ -2314,6 +2314,16 @@ bool PopupMenu::is_prefer_native_menu() const {
 	return prefer_native;
 }
 
+bool PopupMenu::is_native_menu() const {
+#ifdef TOOLS_ENABLED
+	if (is_part_of_edited_scene()) {
+		return false;
+	}
+#endif
+
+	return global_menu.is_valid();
+}
+
 bool PopupMenu::activate_item_by_event(const Ref<InputEvent> &p_event, bool p_for_global_only) {
 	ERR_FAIL_COND_V(p_event.is_null(), false);
 	Key code = Key::NONE;
@@ -2422,7 +2432,7 @@ void PopupMenu::activate_item(int p_idx) {
 		hide();
 	}
 
-	emit_signal(SNAME("id_pressed"), id);
+	emit_signal(SceneStringName(id_pressed), id);
 	emit_signal(SNAME("index_pressed"), p_idx);
 }
 
@@ -2643,6 +2653,7 @@ void PopupMenu::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_prefer_native_menu", "enabled"), &PopupMenu::set_prefer_native_menu);
 	ClassDB::bind_method(D_METHOD("is_prefer_native_menu"), &PopupMenu::is_prefer_native_menu);
+	ClassDB::bind_method(D_METHOD("is_native_menu"), &PopupMenu::is_native_menu);
 
 	ClassDB::bind_method(D_METHOD("add_item", "label", "id", "accel"), &PopupMenu::add_item, DEFVAL(-1), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("add_icon_item", "texture", "label", "id", "accel"), &PopupMenu::add_icon_item, DEFVAL(-1), DEFVAL(0));
@@ -2813,6 +2824,7 @@ void PopupMenu::_bind_methods() {
 	base_property_helper.register_property(PropertyInfo(Variant::INT, "id", PROPERTY_HINT_RANGE, "0,10,1,or_greater"), defaults.id, &PopupMenu::set_item_id, &PopupMenu::get_item_id);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled, &PopupMenu::set_item_disabled, &PopupMenu::is_item_disabled);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "separator"), defaults.separator, &PopupMenu::set_item_as_separator, &PopupMenu::is_item_separator);
+	PropertyListHelper::register_base_helper(&base_property_helper);
 }
 
 void PopupMenu::popup(const Rect2i &p_bounds) {

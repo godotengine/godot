@@ -842,8 +842,8 @@ void TextureRegionEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			texture_preview->add_theme_style_override("panel", get_theme_stylebox(SNAME("TextureRegionPreviewBG"), EditorStringName(EditorStyles)));
-			texture_overlay->add_theme_style_override("panel", get_theme_stylebox(SNAME("TextureRegionPreviewFG"), EditorStringName(EditorStyles)));
+			texture_preview->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("TextureRegionPreviewBG"), EditorStringName(EditorStyles)));
+			texture_overlay->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("TextureRegionPreviewFG"), EditorStringName(EditorStyles)));
 
 			zoom_out->set_icon(get_editor_theme_icon(SNAME("ZoomLess")));
 			zoom_reset->set_icon(get_editor_theme_icon(SNAME("ZoomReset")));
@@ -1138,7 +1138,7 @@ TextureRegionEditor::TextureRegionEditor() {
 	snap_mode_button->add_item(TTR("Grid Snap"), 2);
 	snap_mode_button->add_item(TTR("Auto Slice"), 3);
 	snap_mode_button->select(snap_mode);
-	snap_mode_button->connect("item_selected", callable_mp(this, &TextureRegionEditor::_set_snap_mode));
+	snap_mode_button->connect(SceneStringName(item_selected), callable_mp(this, &TextureRegionEditor::_set_snap_mode));
 
 	hb_grid = memnew(HBoxContainer);
 	hb_tools->add_child(hb_grid);
@@ -1149,13 +1149,13 @@ TextureRegionEditor::TextureRegionEditor() {
 	sb_off_x = memnew(SpinBox);
 	sb_off_x->set_step(1);
 	sb_off_x->set_suffix("px");
-	sb_off_x->connect("value_changed", callable_mp(this, &TextureRegionEditor::_set_snap_off_x));
+	sb_off_x->connect(SceneStringName(value_changed), callable_mp(this, &TextureRegionEditor::_set_snap_off_x));
 	hb_grid->add_child(sb_off_x);
 
 	sb_off_y = memnew(SpinBox);
 	sb_off_y->set_step(1);
 	sb_off_y->set_suffix("px");
-	sb_off_y->connect("value_changed", callable_mp(this, &TextureRegionEditor::_set_snap_off_y));
+	sb_off_y->connect(SceneStringName(value_changed), callable_mp(this, &TextureRegionEditor::_set_snap_off_y));
 	hb_grid->add_child(sb_off_y);
 
 	hb_grid->add_child(memnew(VSeparator));
@@ -1165,14 +1165,14 @@ TextureRegionEditor::TextureRegionEditor() {
 	sb_step_x->set_min(0);
 	sb_step_x->set_step(1);
 	sb_step_x->set_suffix("px");
-	sb_step_x->connect("value_changed", callable_mp(this, &TextureRegionEditor::_set_snap_step_x));
+	sb_step_x->connect(SceneStringName(value_changed), callable_mp(this, &TextureRegionEditor::_set_snap_step_x));
 	hb_grid->add_child(sb_step_x);
 
 	sb_step_y = memnew(SpinBox);
 	sb_step_y->set_min(0);
 	sb_step_y->set_step(1);
 	sb_step_y->set_suffix("px");
-	sb_step_y->connect("value_changed", callable_mp(this, &TextureRegionEditor::_set_snap_step_y));
+	sb_step_y->connect(SceneStringName(value_changed), callable_mp(this, &TextureRegionEditor::_set_snap_step_y));
 	hb_grid->add_child(sb_step_y);
 
 	hb_grid->add_child(memnew(VSeparator));
@@ -1182,14 +1182,14 @@ TextureRegionEditor::TextureRegionEditor() {
 	sb_sep_x->set_min(0);
 	sb_sep_x->set_step(1);
 	sb_sep_x->set_suffix("px");
-	sb_sep_x->connect("value_changed", callable_mp(this, &TextureRegionEditor::_set_snap_sep_x));
+	sb_sep_x->connect(SceneStringName(value_changed), callable_mp(this, &TextureRegionEditor::_set_snap_sep_x));
 	hb_grid->add_child(sb_sep_x);
 
 	sb_sep_y = memnew(SpinBox);
 	sb_sep_y->set_min(0);
 	sb_sep_y->set_step(1);
 	sb_sep_y->set_suffix("px");
-	sb_sep_y->connect("value_changed", callable_mp(this, &TextureRegionEditor::_set_snap_sep_y));
+	sb_sep_y->connect(SceneStringName(value_changed), callable_mp(this, &TextureRegionEditor::_set_snap_sep_y));
 	hb_grid->add_child(sb_sep_y);
 
 	hb_grid->hide();
@@ -1246,13 +1246,13 @@ TextureRegionEditor::TextureRegionEditor() {
 	vscroll = memnew(VScrollBar);
 	vscroll->set_anchors_and_offsets_preset(Control::PRESET_RIGHT_WIDE);
 	vscroll->set_step(0.001);
-	vscroll->connect("value_changed", callable_mp(this, &TextureRegionEditor::_scroll_changed));
+	vscroll->connect(SceneStringName(value_changed), callable_mp(this, &TextureRegionEditor::_scroll_changed));
 	texture_overlay->add_child(vscroll);
 
 	hscroll = memnew(HScrollBar);
 	hscroll->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_WIDE);
 	hscroll->set_step(0.001);
-	hscroll->connect("value_changed", callable_mp(this, &TextureRegionEditor::_scroll_changed));
+	hscroll->connect(SceneStringName(value_changed), callable_mp(this, &TextureRegionEditor::_scroll_changed));
 	texture_overlay->add_child(hscroll);
 }
 

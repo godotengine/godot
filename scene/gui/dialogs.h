@@ -51,6 +51,7 @@ class AcceptDialog : public Window {
 	HBoxContainer *buttons_hbox = nullptr;
 	Button *ok_button = nullptr;
 
+	bool popped_up = false;
 	bool hide_on_ok = true;
 	bool close_on_escape = true;
 
@@ -72,6 +73,7 @@ class AcceptDialog : public Window {
 protected:
 	virtual Size2 _get_contents_minimum_size() const override;
 	virtual void _input_from_window(const Ref<InputEvent> &p_event) override;
+	virtual void _post_popup() override;
 
 	void _notification(int p_what);
 	static void _bind_methods();

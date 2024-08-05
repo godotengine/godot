@@ -100,42 +100,19 @@ struct RenderRegion
 {
     int32_t x, y, w, h;
 
-    void intersect(const RenderRegion& rhs)
+    void intersect(const RenderRegion& rhs);
+    void add(const RenderRegion& rhs);
+
+    bool operator==(const RenderRegion& rhs) const
     {
-        auto x1 = x + w;
-        auto y1 = y + h;
-        auto x2 = rhs.x + rhs.w;
-        auto y2 = rhs.y + rhs.h;
-
-        x = (x > rhs.x) ? x : rhs.x;
-        y = (y > rhs.y) ? y : rhs.y;
-        w = ((x1 < x2) ? x1 : x2) - x;
-        h = ((y1 < y2) ? y1 : y2) - y;
-
-        if (w < 0) w = 0;
-        if (h < 0) h = 0;
-    }
-
-    void add(const RenderRegion& rhs)
-    {
-        if (rhs.x < x) {
-            w += (x - rhs.x);
-            x = rhs.x;
-        }
-        if (rhs.y < y) {
-            h += (y - rhs.y);
-            y = rhs.y;
-        }
-        if (rhs.x + rhs.w > x + w) w = (rhs.x + rhs.w) - x;
-        if (rhs.y + rhs.h > y + h) h = (rhs.y + rhs.h) - y;
+        if (x == rhs.x && y == rhs.y && w == rhs.w && h == rhs.h) return true;
+        return false;
     }
 };
 
 struct RenderTransform
 {
-    Matrix m;             //3x3 Matrix Elements
-    float x = 0.0f;
-    float y = 0.0f;
+    Matrix m;
     float degree = 0.0f;  //rotation degree
     float scale = 1.0f;   //scale factor
     bool overriding = false;  //user transform?
@@ -143,7 +120,11 @@ struct RenderTransform
     void update();
     void override(const Matrix& m);
 
-    RenderTransform() {}
+    RenderTransform()
+    {
+        m.e13 = m.e23 = 0.0f;
+    }
+
     RenderTransform(const RenderTransform* lhs, const RenderTransform* rhs);
 };
 
@@ -163,7 +144,7 @@ struct RenderStroke
     struct {
         float begin = 0.0f;
         float end = 1.0f;
-        bool individual = false;
+        bool simultaneous = true;
     } trim;
 
     ~RenderStroke()
@@ -267,17 +248,8 @@ private:
     Key key;
 
 public:
-    uint32_t ref()
-    {
-        ScopedLock lock(key);
-        return (++refCnt);
-    }
-
-    uint32_t unref()
-    {
-        ScopedLock lock(key);
-        return (--refCnt);
-    }
+    uint32_t ref();
+    uint32_t unref();
 
     virtual ~RenderMethod() {}
     virtual RenderData prepare(const RenderShape& rshape, RenderData data, const RenderTransform* transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags, bool clipper) = 0;
@@ -293,6 +265,7 @@ public:
     virtual bool viewport(const RenderRegion& vp) = 0;
     virtual bool blend(BlendMethod method) = 0;
     virtual ColorSpace colorSpace() = 0;
+    virtual const Surface* mainSurface() = 0;
 
     virtual bool clear() = 0;
     virtual bool sync() = 0;

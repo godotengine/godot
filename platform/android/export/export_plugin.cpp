@@ -212,11 +212,6 @@ static const char *android_perms[] = {
 
 static const char *MISMATCHED_VERSIONS_MESSAGE = "Android build version mismatch:\n| Template installed: %s\n| Requested version: %s\nPlease reinstall Android build template from 'Project' menu.";
 
-static const char *SPLASH_IMAGE_EXPORT_PATH = "res/drawable-nodpi/splash.png";
-static const char *LEGACY_BUILD_SPLASH_IMAGE_EXPORT_PATH = "res/drawable-nodpi-v4/splash.png";
-static const char *SPLASH_BG_COLOR_PATH = "res/drawable-nodpi/splash_bg_color.png";
-static const char *LEGACY_BUILD_SPLASH_BG_COLOR_PATH = "res/drawable-nodpi-v4/splash_bg_color.png";
-static const char *SPLASH_CONFIG_PATH = "res/drawable/splash_drawable.xml";
 static const char *GDEXTENSION_LIBS_PATH = "libs/gdextensionlibs.json";
 
 static const int icon_densities_count = 6;
@@ -446,6 +441,7 @@ void EditorExportPlatformAndroid::_update_preset_status() {
 	} else {
 		has_runnable_preset.clear();
 	}
+	devices_changed.set();
 }
 #endif
 
@@ -1642,67 +1638,6 @@ void EditorExportPlatformAndroid::_process_launcher_icons(const String &p_file_n
 	}
 }
 
-String EditorExportPlatformAndroid::load_splash_refs(Ref<Image> &splash_image, Ref<Image> &splash_bg_color_image) {
-	bool scale_splash = GLOBAL_GET("application/boot_splash/fullsize");
-	bool apply_filter = GLOBAL_GET("application/boot_splash/use_filter");
-	bool show_splash_image = GLOBAL_GET("application/boot_splash/show_image");
-	String project_splash_path = GLOBAL_GET("application/boot_splash/image");
-
-	// Setup the splash bg color.
-	bool bg_color_valid = false;
-	Color bg_color = ProjectSettings::get_singleton()->get("application/boot_splash/bg_color", &bg_color_valid);
-	if (!bg_color_valid) {
-		bg_color = boot_splash_bg_color;
-	}
-
-	if (show_splash_image) {
-		if (!project_splash_path.is_empty()) {
-			splash_image.instantiate();
-			print_verbose("Loading splash image: " + project_splash_path);
-			const Error err = ImageLoader::load_image(project_splash_path, splash_image);
-			if (err) {
-				if (OS::get_singleton()->is_stdout_verbose()) {
-					print_error("- unable to load splash image from " + project_splash_path + " (" + itos(err) + ")");
-				}
-				splash_image.unref();
-			}
-		}
-	} else {
-		splash_image.instantiate();
-		splash_image->initialize_data(1, 1, false, Image::FORMAT_RGBA8);
-		splash_image->set_pixel(0, 0, bg_color);
-	}
-
-	if (splash_image.is_null()) {
-		// Use the default
-		print_verbose("Using default splash image.");
-		splash_image = Ref<Image>(memnew(Image(boot_splash_png)));
-	}
-
-	if (scale_splash) {
-		Size2 screen_size = Size2(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height"));
-		int width, height;
-		if (screen_size.width > screen_size.height) {
-			// scale horizontally
-			height = screen_size.height;
-			width = splash_image->get_width() * screen_size.height / splash_image->get_height();
-		} else {
-			// scale vertically
-			width = screen_size.width;
-			height = splash_image->get_height() * screen_size.width / splash_image->get_width();
-		}
-		splash_image->resize(width, height);
-	}
-
-	print_verbose("Creating splash background color image.");
-	splash_bg_color_image.instantiate();
-	splash_bg_color_image->initialize_data(splash_image->get_width(), splash_image->get_height(), false, splash_image->get_format());
-	splash_bg_color_image->fill(bg_color);
-
-	String processed_splash_config_xml = vformat(SPLASH_CONFIG_XML_CONTENT, bool_to_string(apply_filter));
-	return processed_splash_config_xml;
-}
-
 void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &p_preset, Ref<Image> &icon, Ref<Image> &foreground, Ref<Image> &background) {
 	String project_icon_path = GLOBAL_GET("application/config/icon");
 
@@ -1739,61 +1674,34 @@ void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &
 }
 
 void EditorExportPlatformAndroid::_copy_icons_to_gradle_project(const Ref<EditorExportPreset> &p_preset,
-		const String &processed_splash_config_xml,
-		const Ref<Image> &splash_image,
-		const Ref<Image> &splash_bg_color_image,
-		const Ref<Image> &main_image,
-		const Ref<Image> &foreground,
-		const Ref<Image> &background) {
+		const Ref<Image> &p_main_image,
+		const Ref<Image> &p_foreground,
+		const Ref<Image> &p_background) {
 	String gradle_build_dir = ExportTemplateManager::get_android_build_directory(p_preset);
-
-	// Store the splash configuration
-	if (!processed_splash_config_xml.is_empty()) {
-		print_verbose("Storing processed splash configuration: " + String("\n") + processed_splash_config_xml);
-		store_string_at_path(gradle_build_dir.path_join(SPLASH_CONFIG_PATH), processed_splash_config_xml);
-	}
-
-	// Store the splash image
-	if (splash_image.is_valid() && !splash_image->is_empty()) {
-		String splash_export_path = gradle_build_dir.path_join(SPLASH_IMAGE_EXPORT_PATH);
-		print_verbose("Storing splash image in " + splash_export_path);
-		Vector<uint8_t> data;
-		_load_image_data(splash_image, data);
-		store_file_at_path(splash_export_path, data);
-	}
-
-	// Store the splash bg color image
-	if (splash_bg_color_image.is_valid() && !splash_bg_color_image->is_empty()) {
-		String splash_bg_color_path = gradle_build_dir.path_join(SPLASH_BG_COLOR_PATH);
-		print_verbose("Storing splash background image in " + splash_bg_color_path);
-		Vector<uint8_t> data;
-		_load_image_data(splash_bg_color_image, data);
-		store_file_at_path(splash_bg_color_path, data);
-	}
 
 	// Prepare images to be resized for the icons. If some image ends up being uninitialized,
 	// the default image from the export template will be used.
 
 	for (int i = 0; i < icon_densities_count; ++i) {
-		if (main_image.is_valid() && !main_image->is_empty()) {
+		if (p_main_image.is_valid() && !p_main_image->is_empty()) {
 			print_verbose("Processing launcher icon for dimension " + itos(launcher_icons[i].dimensions) + " into " + launcher_icons[i].export_path);
 			Vector<uint8_t> data;
-			_process_launcher_icons(launcher_icons[i].export_path, main_image, launcher_icons[i].dimensions, data);
+			_process_launcher_icons(launcher_icons[i].export_path, p_main_image, launcher_icons[i].dimensions, data);
 			store_file_at_path(gradle_build_dir.path_join(launcher_icons[i].export_path), data);
 		}
 
-		if (foreground.is_valid() && !foreground->is_empty()) {
-			print_verbose("Processing launcher adaptive icon foreground for dimension " + itos(launcher_adaptive_icon_foregrounds[i].dimensions) + " into " + launcher_adaptive_icon_foregrounds[i].export_path);
+		if (p_foreground.is_valid() && !p_foreground->is_empty()) {
+			print_verbose("Processing launcher adaptive icon p_foreground for dimension " + itos(launcher_adaptive_icon_foregrounds[i].dimensions) + " into " + launcher_adaptive_icon_foregrounds[i].export_path);
 			Vector<uint8_t> data;
-			_process_launcher_icons(launcher_adaptive_icon_foregrounds[i].export_path, foreground,
+			_process_launcher_icons(launcher_adaptive_icon_foregrounds[i].export_path, p_foreground,
 					launcher_adaptive_icon_foregrounds[i].dimensions, data);
 			store_file_at_path(gradle_build_dir.path_join(launcher_adaptive_icon_foregrounds[i].export_path), data);
 		}
 
-		if (background.is_valid() && !background->is_empty()) {
-			print_verbose("Processing launcher adaptive icon background for dimension " + itos(launcher_adaptive_icon_backgrounds[i].dimensions) + " into " + launcher_adaptive_icon_backgrounds[i].export_path);
+		if (p_background.is_valid() && !p_background->is_empty()) {
+			print_verbose("Processing launcher adaptive icon p_background for dimension " + itos(launcher_adaptive_icon_backgrounds[i].dimensions) + " into " + launcher_adaptive_icon_backgrounds[i].export_path);
 			Vector<uint8_t> data;
-			_process_launcher_icons(launcher_adaptive_icon_backgrounds[i].export_path, background,
+			_process_launcher_icons(launcher_adaptive_icon_backgrounds[i].export_path, p_background,
 					launcher_adaptive_icon_backgrounds[i].dimensions, data);
 			store_file_at_path(gradle_build_dir.path_join(launcher_adaptive_icon_backgrounds[i].export_path), data);
 		}
@@ -2013,7 +1921,7 @@ bool EditorExportPlatformAndroid::get_export_option_visibility(const EditorExpor
 	}
 	if (p_option == "custom_template/debug" || p_option == "custom_template/release") {
 		// The APK templates are ignored if Gradle build is enabled.
-		return advanced_options_enabled && !bool(p_preset->get("gradle_build/use_gradle_build"));
+		return !bool(p_preset->get("gradle_build/use_gradle_build"));
 	}
 
 	// Hide .NET embedding option (always enabled).
@@ -2415,7 +2323,8 @@ static bool has_valid_keystore_credentials(String &r_error_str, const String &p_
 	args.push_back(p_password);
 	args.push_back("-alias");
 	args.push_back(p_username);
-	Error error = OS::get_singleton()->execute("keytool", args, &output, nullptr, true);
+	String keytool_path = EditorExportPlatformAndroid::get_keytool_path();
+	Error error = OS::get_singleton()->execute(keytool_path, args, &output, nullptr, true);
 	String keytool_error = "keytool error:";
 	bool valid = output.substr(0, keytool_error.length()) != keytool_error;
 
@@ -3093,10 +3002,6 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	print_verbose("- include filter: " + p_preset->get_include_filter());
 	print_verbose("- exclude filter: " + p_preset->get_exclude_filter());
 
-	Ref<Image> splash_image;
-	Ref<Image> splash_bg_color_image;
-	String processed_splash_config_xml = load_splash_refs(splash_image, splash_bg_color_image);
-
 	Ref<Image> main_image;
 	Ref<Image> foreground;
 	Ref<Image> background;
@@ -3172,7 +3077,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Unable to overwrite res/*.xml files with project name."));
 		}
 		// Copies the project icon files into the appropriate Gradle project directory.
-		_copy_icons_to_gradle_project(p_preset, processed_splash_config_xml, splash_image, splash_bg_color_image, main_image, foreground, background);
+		_copy_icons_to_gradle_project(p_preset, main_image, foreground, background);
 		// Write an AndroidManifest.xml file into the Gradle project directory.
 		_write_tmp_manifest(p_preset, p_give_internet, p_debug);
 
@@ -3484,16 +3389,6 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		}
 		if (file == "resources.arsc") {
 			_fix_resources(p_preset, data);
-		}
-
-		// Process the splash image
-		if ((file == SPLASH_IMAGE_EXPORT_PATH || file == LEGACY_BUILD_SPLASH_IMAGE_EXPORT_PATH) && splash_image.is_valid() && !splash_image->is_empty()) {
-			_load_image_data(splash_image, data);
-		}
-
-		// Process the splash bg color image
-		if ((file == SPLASH_BG_COLOR_PATH || file == LEGACY_BUILD_SPLASH_BG_COLOR_PATH) && splash_bg_color_image.is_valid() && !splash_bg_color_image->is_empty()) {
-			_load_image_data(splash_bg_color_image, data);
 		}
 
 		if (file.ends_with(".png") && file.contains("mipmap")) {

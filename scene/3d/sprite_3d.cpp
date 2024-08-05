@@ -984,7 +984,7 @@ void Sprite3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_hframes", "get_hframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_vframes", "get_vframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "frame_coords", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_frame_coords", "get_frame_coords");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "frame_coords", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_frame_coords", "get_frame_coords");
 	ADD_GROUP("Region", "region_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "region_enabled"), "set_region_enabled", "is_region_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region_rect", PROPERTY_HINT_NONE, "suffix:px"), "set_region_rect", "get_region_rect");
@@ -1334,9 +1334,10 @@ void AnimatedSprite3D::play(const StringName &p_name, float p_custom_scale, bool
 	playing = true;
 	custom_speed_scale = p_custom_scale;
 
-	int end_frame = MAX(0, frames->get_frame_count(animation) - 1);
 	if (name != animation) {
 		animation = name;
+		int end_frame = MAX(0, frames->get_frame_count(animation) - 1);
+
 		if (p_from_end) {
 			set_frame_and_progress(end_frame, 1.0);
 		} else {
@@ -1344,7 +1345,9 @@ void AnimatedSprite3D::play(const StringName &p_name, float p_custom_scale, bool
 		}
 		emit_signal(SceneStringName(animation_changed));
 	} else {
+		int end_frame = MAX(0, frames->get_frame_count(animation) - 1);
 		bool is_backward = signbit(speed_scale * custom_speed_scale);
+
 		if (p_from_end && is_backward && frame == 0 && frame_progress <= 0.0) {
 			set_frame_and_progress(end_frame, 1.0);
 		} else if (!p_from_end && !is_backward && frame == end_frame && frame_progress >= 1.0) {
@@ -1432,7 +1435,7 @@ StringName AnimatedSprite3D::get_animation() const {
 PackedStringArray AnimatedSprite3D::get_configuration_warnings() const {
 	PackedStringArray warnings = SpriteBase3D::get_configuration_warnings();
 	if (frames.is_null()) {
-		warnings.push_back(RTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite3D to display frames."));
+		warnings.push_back(RTR("A SpriteFrames resource must be created or set in the \"Sprite Frames\" property in order for AnimatedSprite3D to display frames."));
 	}
 	return warnings;
 }

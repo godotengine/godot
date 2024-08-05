@@ -30,6 +30,7 @@
 
 #include "flow_container.h"
 
+#include "scene/gui/texture_rect.h"
 #include "scene/theme/theme_db.h"
 
 struct _LineData {
@@ -57,7 +58,7 @@ void FlowContainer::_resort() {
 	int line_height = 0;
 	int line_length = 0;
 	float line_stretch_ratio_total = 0;
-	int current_container_size = vertical ? get_rect().size.y : get_rect().size.x;
+	int current_container_size = vertical ? get_size().y : get_size().x;
 	int children_in_current_line = 0;
 	Control *last_child = nullptr;
 
@@ -203,7 +204,23 @@ void FlowContainer::_resort() {
 			}
 		}
 
-		if (vertical) { /* VERTICAL */
+		bool is_unsupported_texture_rect = false;
+		if (lines_data.size() > 1) {
+			TextureRect *trect = Object::cast_to<TextureRect>(child);
+			if (trect) {
+				TextureRect::ExpandMode mode = trect->get_expand_mode();
+				if (mode == TextureRect::EXPAND_FIT_WIDTH || mode == TextureRect::EXPAND_FIT_WIDTH_PROPORTIONAL ||
+						mode == TextureRect::EXPAND_FIT_HEIGHT || mode == TextureRect::EXPAND_FIT_HEIGHT_PROPORTIONAL) {
+					is_unsupported_texture_rect = true;
+				}
+			}
+		}
+
+		if (is_unsupported_texture_rect) {
+			// Temporary fix for editor crash. Changing size of TextureRect with EXPAND_FIT_* ExpandModes can lead to infinite loop if child items are moved between lines.
+			WARN_PRINT_ONCE("TextureRects with Fit Expand Modes are currently not supported inside FlowContainers with multiple lines");
+			child_size = child->get_size();
+		} else if (vertical) { /* VERTICAL */
 			if (child->get_h_size_flags().has_flag(SIZE_FILL) || child->get_h_size_flags().has_flag(SIZE_SHRINK_CENTER) || child->get_h_size_flags().has_flag(SIZE_SHRINK_END)) {
 				child_size.width = line_data.min_line_height;
 			}
@@ -250,7 +267,7 @@ Size2 FlowContainer::get_minimum_size() const {
 	Size2i minimum;
 
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = as_sortable_control(get_child(i));
+		Control *c = as_sortable_control(get_child(i), SortableVisbilityMode::VISIBLE);
 		if (!c) {
 			continue;
 		}

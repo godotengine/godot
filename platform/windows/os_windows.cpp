@@ -1634,26 +1634,6 @@ String OS_Windows::get_locale() const {
 	return "en";
 }
 
-// We need this because GetSystemInfo() is unreliable on WOW64
-// see https://msdn.microsoft.com/en-us/library/windows/desktop/ms724381(v=vs.85).aspx
-// Taken from MSDN
-typedef BOOL(WINAPI *LPFN_ISWOW64PROCESS)(HANDLE, PBOOL);
-LPFN_ISWOW64PROCESS fnIsWow64Process;
-
-BOOL is_wow64() {
-	BOOL wow64 = FALSE;
-
-	fnIsWow64Process = (LPFN_ISWOW64PROCESS)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "IsWow64Process");
-
-	if (fnIsWow64Process) {
-		if (!fnIsWow64Process(GetCurrentProcess(), &wow64)) {
-			wow64 = FALSE;
-		}
-	}
-
-	return wow64;
-}
-
 String OS_Windows::get_processor_name() const {
 	const String id = "Hardware\\Description\\System\\CentralProcessor\\0";
 

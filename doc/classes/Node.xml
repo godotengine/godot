@@ -1017,7 +1017,7 @@
 			Change the process thread group order. Groups with a lesser order will process before groups with a greater order. This is useful when a large amount of nodes process in sub thread and, afterwards, another group wants to collect their result in the main thread, as an example.
 		</member>
 		<member name="process_thread_messages" type="int" setter="set_process_thread_messages" getter="get_process_thread_messages" enum="Node.ProcessThreadMessages" is_bitfield="true">
-			Set whether the current thread group will process messages (calls to [method call_deferred_thread_group] on threads, and whether it wants to receive them during regular process or physics process callbacks.
+			Set whether the current thread group will process messages (calls to [method call_deferred_thread_group] on threads), and whether it wants to receive them during regular process or physics process callbacks.
 		</member>
 		<member name="scene_file_path" type="String" setter="set_scene_file_path" getter="get_scene_file_path">
 			The original scene's file path, if the node has been instantiated from a [PackedScene] file. Only scene root nodes contains this.
@@ -1187,7 +1187,7 @@
 		</constant>
 		<constant name="NOTIFICATION_WM_GO_BACK_REQUEST" value="1007">
 			Notification received from the OS when a go back request is sent (e.g. pressing the "Back" button on Android).
-			Implemented only on iOS.
+			Implemented only on Android.
 		</constant>
 		<constant name="NOTIFICATION_WM_SIZE_CHANGED" value="1008">
 			Notification received when the window is resized.

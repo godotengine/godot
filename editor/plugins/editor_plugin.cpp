@@ -414,13 +414,21 @@ void EditorPlugin::remove_translation_parser_plugin(const Ref<EditorTranslationP
 void EditorPlugin::add_import_plugin(const Ref<EditorImportPlugin> &p_importer, bool p_first_priority) {
 	ERR_FAIL_COND(!p_importer.is_valid());
 	ResourceFormatImporter::get_singleton()->add_importer(p_importer, p_first_priority);
-	callable_mp(EditorFileSystem::get_singleton(), &EditorFileSystem::scan).call_deferred();
+	// Plugins are now loaded during the first scan. It's important not to start another scan,
+	// even a deferred one, as it would cause a scan during a scan at the next main thread iteration.
+	if (!EditorFileSystem::get_singleton()->doing_first_scan()) {
+		callable_mp(EditorFileSystem::get_singleton(), &EditorFileSystem::scan).call_deferred();
+	}
 }
 
 void EditorPlugin::remove_import_plugin(const Ref<EditorImportPlugin> &p_importer) {
 	ERR_FAIL_COND(!p_importer.is_valid());
 	ResourceFormatImporter::get_singleton()->remove_importer(p_importer);
-	callable_mp(EditorFileSystem::get_singleton(), &EditorFileSystem::scan).call_deferred();
+	// Plugins are now loaded during the first scan. It's important not to start another scan,
+	// even a deferred one, as it would cause a scan during a scan at the next main thread iteration.
+	if (!EditorNode::get_singleton()->is_exiting() && !EditorFileSystem::get_singleton()->doing_first_scan()) {
+		callable_mp(EditorFileSystem::get_singleton(), &EditorFileSystem::scan).call_deferred();
+	}
 }
 
 void EditorPlugin::add_export_plugin(const Ref<EditorExportPlugin> &p_exporter) {

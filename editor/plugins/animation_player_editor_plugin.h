@@ -206,6 +206,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _current_animation_changed(const String &p_name);
 	void _update_animation();
 	void _update_player();
+	void _set_controls_disabled(bool p_disabled);
 	void _update_animation_list_icons();
 	void _update_name_dialog_library_dropdown();
 	void _blend_edited();
@@ -213,7 +214,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _animation_player_changed(Object *p_pl);
 	void _animation_libraries_updated();
 
-	void _animation_key_editor_seek(float p_pos, bool p_timeline_only = false);
+	void _animation_key_editor_seek(float p_pos, bool p_timeline_only = false, bool p_update_position_only = false);
 	void _animation_key_editor_anim_len_changed(float p_len);
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_ev) override;

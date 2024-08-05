@@ -46,9 +46,9 @@ void AnimationNode::get_parameter_list(List<PropertyInfo> *r_list) const {
 		}
 	}
 
-	r_list->push_back(PropertyInfo(Variant::FLOAT, current_length, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_READ_ONLY));
-	r_list->push_back(PropertyInfo(Variant::FLOAT, current_position, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_READ_ONLY));
-	r_list->push_back(PropertyInfo(Variant::FLOAT, current_delta, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_READ_ONLY));
+	r_list->push_back(PropertyInfo(Variant::FLOAT, current_length, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY));
+	r_list->push_back(PropertyInfo(Variant::FLOAT, current_position, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY));
+	r_list->push_back(PropertyInfo(Variant::FLOAT, current_delta, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY));
 }
 
 Variant AnimationNode::get_parameter_default_value(const StringName &p_parameter) const {
@@ -626,7 +626,7 @@ bool AnimationTree::_blend_pre_process(double p_delta, int p_track_count, const 
 		for (int i = 0; i < p_track_count; i++) {
 			src_blendsw[i] = 1.0; // By default all go to 1 for the root input.
 		}
-		root_animation_node->node_state.base_path = SceneStringName(parameters_base_path);
+		root_animation_node->node_state.base_path = SNAME(Animation::PARAMETERS_BASE_PATH.ascii().get_data());
 		root_animation_node->node_state.parent = nullptr;
 	}
 
@@ -787,7 +787,7 @@ void AnimationTree::_update_properties() {
 	input_activity_map_get.clear();
 
 	if (root_animation_node.is_valid()) {
-		_update_properties_for_node(SceneStringName(parameters_base_path), root_animation_node);
+		_update_properties_for_node(Animation::PARAMETERS_BASE_PATH, root_animation_node);
 	}
 
 	properties_dirty = false;

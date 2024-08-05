@@ -48,7 +48,6 @@ public:
 		PARSED,
 		INHERITANCE_SOLVED,
 		INTERFACE_SOLVED,
-		BODY_SOLVED,
 		FULLY_SOLVED,
 	};
 
@@ -60,12 +59,14 @@ private:
 	String path;
 	uint32_t source_hash = 0;
 	bool clearing = false;
+	bool abandoned = false;
 
 	friend class GDScriptCache;
 	friend class GDScript;
 
 public:
 	Status get_status() const;
+	String get_path() const;
 	uint32_t get_source_hash() const;
 	GDScriptParser *get_parser();
 	GDScriptAnalyzer *get_analyzer();
@@ -79,10 +80,12 @@ public:
 class GDScriptCache {
 	// String key is full path.
 	HashMap<String, GDScriptParserRef *> parser_map;
+	HashMap<String, Vector<ObjectID>> abandoned_parser_map;
 	HashMap<String, Ref<GDScript>> shallow_gdscript_cache;
 	HashMap<String, Ref<GDScript>> full_gdscript_cache;
 	HashMap<String, Ref<GDScript>> static_gdscript_cache;
 	HashMap<String, HashSet<String>> dependencies;
+	HashMap<String, HashSet<String>> parser_inverse_dependencies;
 
 	friend class GDScript;
 	friend class GDScriptParserRef;

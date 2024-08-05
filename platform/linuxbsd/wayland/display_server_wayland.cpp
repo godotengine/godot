@@ -208,6 +208,7 @@ bool DisplayServerWayland::has_feature(Feature p_feature) const {
 		case FEATURE_HIDPI:
 		case FEATURE_SWAP_BUFFERS:
 		case FEATURE_KEEP_SCREEN_ON:
+		case FEATURE_IME:
 		case FEATURE_CLIPBOARD_PRIMARY: {
 			return true;
 		} break;
@@ -903,13 +904,23 @@ bool DisplayServerWayland::can_any_window_draw() const {
 }
 
 void DisplayServerWayland::window_set_ime_active(const bool p_active, DisplayServer::WindowID p_window_id) {
-	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_ime_active active %s", p_active ? "true" : "false"));
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	wayland_thread.window_set_ime_active(p_active, MAIN_WINDOW_ID);
 }
 
 void DisplayServerWayland::window_set_ime_position(const Point2i &p_pos, DisplayServer::WindowID p_window_id) {
-	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_ime_position pos %s window %d", p_pos, p_window_id));
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	wayland_thread.window_set_ime_position(p_pos, MAIN_WINDOW_ID);
+}
+
+Point2i DisplayServerWayland::ime_get_selection() const {
+	return ime_selection;
+}
+
+String DisplayServerWayland::ime_get_text() const {
+	return ime_text;
 }
 
 // NOTE: While Wayland is supposed to be tear-free, wayland-protocols version
@@ -1018,8 +1029,7 @@ void DisplayServerWayland::cursor_set_custom_image(const Ref<Resource> &p_cursor
 			wayland_thread.cursor_shape_clear_custom_image(p_shape);
 		}
 
-		Rect2 atlas_rect;
-		Ref<Image> image = _get_cursor_image_from_resource(p_cursor, p_hotspot, atlas_rect);
+		Ref<Image> image = _get_cursor_image_from_resource(p_cursor, p_hotspot);
 		ERR_FAIL_COND(image.is_null());
 
 		CustomCursor &cursor = custom_cursors[p_shape];
@@ -1101,6 +1111,28 @@ Key DisplayServerWayland::keyboard_get_keycode_from_physical(Key p_keycode) cons
 	return key;
 }
 
+void DisplayServerWayland::try_suspend() {
+	// Due to various reasons, we manually handle display synchronization by
+	// waiting for a frame event (request to draw) or, if available, the actual
+	// window's suspend status. When a window is suspended, we can avoid drawing
+	// altogether, either because the compositor told us that we don't need to or
+	// because the pace of the frame events became unreliable.
+	if (emulate_vsync) {
+		bool frame = wayland_thread.wait_frame_suspend_ms(1000);
+		if (!frame) {
+			suspended = true;
+		}
+	} else {
+		if (wayland_thread.is_suspended()) {
+			suspended = true;
+		}
+	}
+
+	if (suspended) {
+		DEBUG_LOG_WAYLAND("Window suspended.");
+	}
+}
+
 void DisplayServerWayland::process_events() {
 	wayland_thread.mutex.lock();
 
@@ -1137,38 +1169,78 @@ void DisplayServerWayland::process_events() {
 			WindowData wd = main_window;
 
 			if (wd.drop_files_callback.is_valid()) {
-				wd.drop_files_callback.call(dropfiles_msg->files);
+				Variant v_files = dropfiles_msg->files;
+				const Variant *v_args[1] = { &v_files };
+				Variant ret;
+				Callable::CallError ce;
+				wd.drop_files_callback.callp((const Variant **)&v_args, 1, ret, ce);
+				if (ce.error != Callable::CallError::CALL_OK) {
+					ERR_PRINT(vformat("Failed to execute drop files callback: %s.", Variant::get_callable_error_text(wd.drop_files_callback, v_args, 1, ce)));
+				}
 			}
+		}
+
+		Ref<WaylandThread::IMECommitEventMessage> ime_commit_msg = msg;
+		if (ime_commit_msg.is_valid()) {
+			for (int i = 0; i < ime_commit_msg->text.length(); i++) {
+				const char32_t codepoint = ime_commit_msg->text[i];
+
+				Ref<InputEventKey> ke;
+				ke.instantiate();
+				ke->set_window_id(MAIN_WINDOW_ID);
+				ke->set_pressed(true);
+				ke->set_echo(false);
+				ke->set_keycode(Key::NONE);
+				ke->set_physical_keycode(Key::NONE);
+				ke->set_key_label(Key::NONE);
+				ke->set_unicode(codepoint);
+
+				Input::get_singleton()->parse_input_event(ke);
+			}
+			ime_text = String();
+			ime_selection = Vector2i();
+
+			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
+		}
+
+		Ref<WaylandThread::IMEUpdateEventMessage> ime_update_msg = msg;
+		if (ime_update_msg.is_valid()) {
+			ime_text = ime_update_msg->text;
+			ime_selection = ime_update_msg->selection;
+
+			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
 		}
 	}
 
 	wayland_thread.keyboard_echo_keys();
 
 	if (!suspended) {
-		if (emulate_vsync) {
-			// Due to various reasons, we manually handle display synchronization by
-			// waiting for a frame event (request to draw) or, if available, the actual
-			// window's suspend status. When a window is suspended, we can avoid drawing
-			// altogether, either because the compositor told us that we don't need to or
-			// because the pace of the frame events became unreliable.
-			bool frame = wayland_thread.wait_frame_suspend_ms(1000);
-			if (!frame) {
-				suspended = true;
+		// Due to the way legacy suspension works, we have to treat low processor
+		// usage mode very differently than the regular one.
+		if (OS::get_singleton()->is_in_low_processor_usage_mode()) {
+			// NOTE: We must avoid committing a surface if we expect a new frame, as we
+			// might otherwise commit some inconsistent data (e.g. buffer scale). Note
+			// that if a new frame is expected it's going to be committed by the renderer
+			// soon anyways.
+			if (!RenderingServer::get_singleton()->has_changed()) {
+				// We _can't_ commit in a different thread (such as in the frame callback
+				// itself) because we would risk to step on the renderer's feet, which would
+				// cause subtle but severe issues, such as crashes on setups with explicit
+				// sync. This isn't normally a problem, as the renderer commits at every
+				// frame (which is what we need for atomic surface updates anyways), but in
+				// low processor usage mode that expectation is broken. When it's on, our
+				// frame rate stops being constant. This also reflects in the frame
+				// information we use for legacy suspension. In order to avoid issues, let's
+				// manually commit all surfaces, so that we can get fresh frame data.
+				wayland_thread.commit_surfaces();
+				try_suspend();
 			}
 		} else {
-			if (wayland_thread.is_suspended()) {
-				suspended = true;
-			}
+			try_suspend();
 		}
-
-		if (suspended) {
-			DEBUG_LOG_WAYLAND("Window suspended.");
-		}
-	} else {
-		if (wayland_thread.get_reset_frame()) {
-			// At last, a sign of life! We're no longer suspended.
-			suspended = false;
-		}
+	} else if (!wayland_thread.is_suspended() || wayland_thread.get_reset_frame()) {
+		// At last, a sign of life! We're no longer suspended.
+		suspended = false;
 	}
 
 #ifdef DBUS_ENABLED
@@ -1207,6 +1279,15 @@ void DisplayServerWayland::set_context(Context p_context) {
 
 	String app_id = _get_app_id_from_context(p_context);
 	wayland_thread.window_set_app_id(MAIN_WINDOW_ID, app_id);
+}
+
+bool DisplayServerWayland::is_window_transparency_available() const {
+#if defined(RD_ENABLED)
+	if (rendering_device && !rendering_device->is_composite_alpha_supported()) {
+		return false;
+	}
+#endif
+	return OS::get_singleton()->is_layered_allowed();
 }
 
 Vector<String> DisplayServerWayland::get_rendering_drivers_func() {
@@ -1327,7 +1408,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 			if (prime_idx == -1) {
 				print_verbose("Detecting GPUs, set DRI_PRIME in the environment to override GPU detection logic.");
-				prime_idx = DetectPrimeEGL::detect_prime();
+				prime_idx = DetectPrimeEGL::detect_prime(EGL_PLATFORM_WAYLAND_KHR);
 			}
 
 			if (prime_idx) {
@@ -1340,7 +1421,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 		if (rendering_driver == "opengl3") {
 			egl_manager = memnew(EGLManagerWayland);
 
-			if (egl_manager->initialize() != OK || egl_manager->open_display(wayland_thread.get_wl_display()) != OK) {
+			if (egl_manager->initialize(wayland_thread.get_wl_display()) != OK || egl_manager->open_display(wayland_thread.get_wl_display()) != OK) {
 				memdelete(egl_manager);
 				egl_manager = nullptr;
 
@@ -1360,7 +1441,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 		if (rendering_driver == "opengl3_es") {
 			egl_manager = memnew(EGLManagerWaylandGLES);
 
-			if (egl_manager->initialize() != OK) {
+			if (egl_manager->initialize(wayland_thread.get_wl_display()) != OK) {
 				memdelete(egl_manager);
 				egl_manager = nullptr;
 				r_error = ERR_CANT_CREATE;
@@ -1388,7 +1469,14 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 #ifdef RD_ENABLED
 	if (rendering_context) {
 		rendering_device = memnew(RenderingDevice);
-		rendering_device->initialize(rendering_context, MAIN_WINDOW_ID);
+		if (rendering_device->initialize(rendering_context, MAIN_WINDOW_ID) != OK) {
+			memdelete(rendering_device);
+			rendering_device = nullptr;
+			memdelete(rendering_context);
+			rendering_context = nullptr;
+			r_error = ERR_UNAVAILABLE;
+			return;
+		}
 		rendering_device->screen_create(MAIN_WINDOW_ID);
 
 		RendererCompositorRD::make_current();

@@ -218,7 +218,7 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 				sources_list->set_current(i);
 				sources_list->ensure_current_is_visible();
 				if (old_selected != to_select) {
-					sources_list->emit_signal(SNAME("item_selected"), sources_list->get_current());
+					sources_list->emit_signal(SceneStringName(item_selected), sources_list->get_current());
 				}
 				break;
 			}
@@ -229,7 +229,7 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 	if (sources_list->get_current() < 0 && sources_list->get_item_count() > 0) {
 		sources_list->set_current(0);
 		if (old_selected != int(sources_list->get_item_metadata(0))) {
-			sources_list->emit_signal(SNAME("item_selected"), sources_list->get_current());
+			sources_list->emit_signal(SceneStringName(item_selected), sources_list->get_current());
 		}
 	}
 
@@ -371,7 +371,7 @@ void TileSetEditor::_notification(int p_what) {
 			source_sort_button->set_icon(get_editor_theme_icon(SNAME("Sort")));
 			sources_advanced_menu_button->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 			missing_texture_texture = get_editor_theme_icon(SNAME("TileSet"));
-			expanded_area->add_theme_style_override("panel", get_theme_stylebox("panel", "Tree"));
+			expanded_area->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), "Tree"));
 			_update_sources_list();
 		} break;
 
@@ -849,7 +849,7 @@ TileSetEditor::TileSetEditor() {
 	source_sort_button->set_tooltip_text(TTR("Sort Sources"));
 
 	PopupMenu *p = source_sort_button->get_popup();
-	p->connect("id_pressed", callable_mp(this, &TileSetEditor::_set_source_sort));
+	p->connect(SceneStringName(id_pressed), callable_mp(this, &TileSetEditor::_set_source_sort));
 	p->add_radio_check_item(TTR("Sort by ID (Ascending)"), TilesEditorUtils::SOURCE_SORT_ID);
 	p->add_radio_check_item(TTR("Sort by ID (Descending)"), TilesEditorUtils::SOURCE_SORT_ID_REVERSE);
 	p->add_radio_check_item(TTR("Sort by Name (Ascending)"), TilesEditorUtils::SOURCE_SORT_NAME);
@@ -861,8 +861,8 @@ TileSetEditor::TileSetEditor() {
 	sources_list->set_fixed_icon_size(Size2(60, 60) * EDSCALE);
 	sources_list->set_h_size_flags(SIZE_EXPAND_FILL);
 	sources_list->set_v_size_flags(SIZE_EXPAND_FILL);
-	sources_list->connect("item_selected", callable_mp(this, &TileSetEditor::_source_selected));
-	sources_list->connect("item_selected", callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::set_sources_lists_current));
+	sources_list->connect(SceneStringName(item_selected), callable_mp(this, &TileSetEditor::_source_selected));
+	sources_list->connect(SceneStringName(item_selected), callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::set_sources_lists_current));
 	sources_list->connect(SceneStringName(visibility_changed), callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::synchronize_sources_list).bind(sources_list, source_sort_button));
 	sources_list->add_user_signal(MethodInfo("sort_request"));
 	sources_list->connect("sort_request", callable_mp(this, &TileSetEditor::_update_sources_list).bind(-1));
@@ -887,7 +887,7 @@ TileSetEditor::TileSetEditor() {
 	sources_add_button->get_popup()->set_item_tooltip(-1, TTR("A palette of tiles made from a texture."));
 	sources_add_button->get_popup()->add_item(TTR("Scenes Collection"));
 	sources_add_button->get_popup()->set_item_tooltip(-1, TTR("A collection of scenes that can be instantiated and placed as tiles."));
-	sources_add_button->get_popup()->connect("id_pressed", callable_mp(this, &TileSetEditor::_source_add_id_pressed));
+	sources_add_button->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TileSetEditor::_source_add_id_pressed));
 	sources_bottom_actions->add_child(sources_add_button);
 
 	sources_advanced_menu_button = memnew(MenuButton);
@@ -895,7 +895,7 @@ TileSetEditor::TileSetEditor() {
 	sources_advanced_menu_button->set_theme_type_variation("FlatButton");
 	sources_advanced_menu_button->get_popup()->add_item(TTR("Open Atlas Merging Tool"));
 	sources_advanced_menu_button->get_popup()->add_item(TTR("Manage Tile Proxies"));
-	sources_advanced_menu_button->get_popup()->connect("id_pressed", callable_mp(this, &TileSetEditor::_sources_advanced_menu_id_pressed));
+	sources_advanced_menu_button->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TileSetEditor::_sources_advanced_menu_id_pressed));
 	sources_bottom_actions->add_child(sources_advanced_menu_button);
 	sources_bottom_actions->add_child(source_sort_button);
 
@@ -983,7 +983,7 @@ void TileSourceInspectorPlugin::_show_id_edit_dialog(Object *p_for_source) {
 		vbox->add_child(id_input);
 		id_input->set_max(INT_MAX);
 
-		id_edit_dialog->connect("confirmed", callable_mp(this, &TileSourceInspectorPlugin::_confirm_change_id));
+		id_edit_dialog->connect(SceneStringName(confirmed), callable_mp(this, &TileSourceInspectorPlugin::_confirm_change_id));
 	}
 	edited_source = p_for_source;
 	id_input->set_value(p_for_source->get("id"));

@@ -144,6 +144,8 @@ private:
 	struct Line {
 		Item *from = nullptr;
 
+		Ref<TextLine> text_prefix;
+		float prefix_width = 0;
 		Ref<TextParagraph> text_buf;
 		Color dc_color;
 		int dc_ol_size = 0;
@@ -322,6 +324,7 @@ private:
 		bool capitalize = false;
 		int level = 0;
 		String bullet = U"•";
+		float max_width = 0;
 		ItemList() { type = ITEM_LIST; }
 	};
 
@@ -554,6 +557,8 @@ private:
 	float _shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, float p_h, int *r_char_offset);
 	float _resize_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, float p_h);
 
+	void _set_table_size(ItemTable *p_table, int p_available_width);
+
 	void _update_line_font(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size);
 	int _draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_shadow_color, int p_shadow_outline_size, const Point2 &p_shadow_ofs, int &r_processed_glyphs);
 	float _find_click_in_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool p_table = false, bool p_meta = false);
@@ -569,7 +574,7 @@ private:
 	int _find_outline_size(Item *p_item, int p_default);
 	ItemList *_find_list_item(Item *p_item);
 	ItemDropcap *_find_dc_item(Item *p_item);
-	int _find_list(Item *p_item, Vector<int> &r_index, Vector<ItemList *> &r_list);
+	int _find_list(Item *p_item, Vector<int> &r_index, Vector<int> &r_count, Vector<ItemList *> &r_list);
 	int _find_margin(Item *p_item, const Ref<Font> &p_base_font, int p_base_font_size);
 	PackedFloat32Array _find_tab_stops(Item *p_item);
 	HorizontalAlignment _find_alignment(Item *p_item);
@@ -605,6 +610,8 @@ private:
 	virtual Dictionary parse_expressions_for_values(Vector<String> p_expressions);
 
 	Size2 _get_image_size(const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Rect2 &p_region = Rect2());
+
+	String _get_prefix(Item *p_item, const Vector<int> &p_list_index, const Vector<ItemList *> &p_list_items);
 
 #ifndef DISABLE_DEPRECATED
 	// Kept for compatibility from 3.x to 4.0.

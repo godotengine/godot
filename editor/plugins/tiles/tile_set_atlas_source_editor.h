@@ -269,6 +269,7 @@ private:
 	void _update_manage_tile_properties_button();
 	void _update_atlas_view();
 	void _update_toolbar();
+	void _update_buttons();
 
 	// -- Misc --
 	void _auto_create_tiles();

@@ -59,10 +59,18 @@ void GridMapEditor::_menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_OPTION_PREV_LEVEL: {
 			floor->set_value(floor->get_value() - 1);
+			if (selection.active && input_action == INPUT_SELECT) {
+				selection.current[edit_axis]--;
+				_validate_selection();
+			}
 		} break;
 
 		case MENU_OPTION_NEXT_LEVEL: {
 			floor->set_value(floor->get_value() + 1);
+			if (selection.active && input_action == INPUT_SELECT) {
+				selection.current[edit_axis]++;
+				_validate_selection();
+			}
 		} break;
 
 		case MENU_OPTION_X_AXIS:
@@ -754,19 +762,6 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 					}
 				}
 			}
-
-			if (k->is_shift_pressed() && selection.active && input_action != INPUT_PASTE) {
-				if (k->get_keycode() == (Key)options->get_popup()->get_item_accelerator(options->get_popup()->get_item_index(MENU_OPTION_PREV_LEVEL))) {
-					selection.click[edit_axis]--;
-					_validate_selection();
-					return EditorPlugin::AFTER_GUI_INPUT_STOP;
-				}
-				if (k->get_keycode() == (Key)options->get_popup()->get_item_accelerator(options->get_popup()->get_item_index(MENU_OPTION_NEXT_LEVEL))) {
-					selection.click[edit_axis]++;
-					_validate_selection();
-					return EditorPlugin::AFTER_GUI_INPUT_STOP;
-				}
-			}
 		}
 	}
 
@@ -1069,7 +1064,7 @@ void GridMapEditor::_update_theme() {
 void GridMapEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			mesh_library_palette->connect("item_selected", callable_mp(this, &GridMapEditor::_item_selected_cbk));
+			mesh_library_palette->connect(SceneStringName(item_selected), callable_mp(this, &GridMapEditor::_item_selected_cbk));
 			for (int i = 0; i < 3; i++) {
 				grid[i] = RS::get_singleton()->mesh_create();
 				grid_instance[i] = RS::get_singleton()->instance_create2(grid[i], get_tree()->get_root()->get_world_3d()->get_scenario());
@@ -1223,7 +1218,7 @@ GridMapEditor::GridMapEditor() {
 	floor->get_line_edit()->add_theme_constant_override("minimum_character_width", 16);
 
 	spatial_editor_hb->add_child(floor);
-	floor->connect("value_changed", callable_mp(this, &GridMapEditor::_floor_changed));
+	floor->connect(SceneStringName(value_changed), callable_mp(this, &GridMapEditor::_floor_changed));
 	floor->connect(SceneStringName(mouse_exited), callable_mp(this, &GridMapEditor::_floor_mouse_exited));
 	floor->get_line_edit()->connect(SceneStringName(mouse_exited), callable_mp(this, &GridMapEditor::_floor_mouse_exited));
 
@@ -1275,7 +1270,7 @@ GridMapEditor::GridMapEditor() {
 	settings_pick_distance->set_value(EDITOR_GET("editors/grid_map/pick_distance"));
 	settings_vbc->add_margin_child(TTR("Pick Distance:"), settings_pick_distance);
 
-	options->get_popup()->connect("id_pressed", callable_mp(this, &GridMapEditor::_menu_option));
+	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &GridMapEditor::_menu_option));
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_child(hb);
@@ -1286,7 +1281,7 @@ GridMapEditor::GridMapEditor() {
 	search_box->set_placeholder(TTR("Filter Meshes"));
 	search_box->set_clear_button_enabled(true);
 	hb->add_child(search_box);
-	search_box->connect("text_changed", callable_mp(this, &GridMapEditor::_text_changed));
+	search_box->connect(SceneStringName(text_changed), callable_mp(this, &GridMapEditor::_text_changed));
 	search_box->connect(SceneStringName(gui_input), callable_mp(this, &GridMapEditor::_sbox_input));
 
 	mode_thumbnail = memnew(Button);
@@ -1309,7 +1304,7 @@ GridMapEditor::GridMapEditor() {
 	size_slider->set_max(4.0f);
 	size_slider->set_step(0.1f);
 	size_slider->set_value(1.0f);
-	size_slider->connect("value_changed", callable_mp(this, &GridMapEditor::_icon_size_changed));
+	size_slider->connect(SceneStringName(value_changed), callable_mp(this, &GridMapEditor::_icon_size_changed));
 	add_child(size_slider);
 
 	EDITOR_DEF("editors/grid_map/preview_size", 64);

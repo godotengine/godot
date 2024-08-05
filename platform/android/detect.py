@@ -68,7 +68,7 @@ def get_min_target_api():
 
 def get_flags():
     return {
-        "arch": "arm64",  # Default for convenience.
+        "arch": "arm64",
         "target": "template_debug",
         "supported": ["mono"],
     }
@@ -189,6 +189,8 @@ def configure(env: "SConsEnvironment"):
     elif env["arch"] == "arm64":
         env.Append(CCFLAGS=["-mfix-cortex-a53-835769"])
         env.Append(CPPDEFINES=["__ARM_ARCH_8A__"])
+
+    env.Append(CCFLAGS=["-ffp-contract=off"])
 
     # Link flags
 

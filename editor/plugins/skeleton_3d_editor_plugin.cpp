@@ -735,7 +735,7 @@ void Skeleton3DEditor::create_editors() {
 	p->add_item(TTR("Create Physical Skeleton"), SKELETON_OPTION_CREATE_PHYSICAL_SKELETON);
 	p->add_item(TTR("Export Skeleton Profile"), SKELETON_OPTION_EXPORT_SKELETON_PROFILE);
 
-	p->connect("id_pressed", callable_mp(this, &Skeleton3DEditor::_on_click_skeleton_option));
+	p->connect(SceneStringName(id_pressed), callable_mp(this, &Skeleton3DEditor::_on_click_skeleton_option));
 	set_bone_options_enabled(false);
 
 	Vector<Variant> button_binds;
@@ -790,7 +790,7 @@ void Skeleton3DEditor::create_editors() {
 	key_insert_button->set_theme_type_variation("FlatButton");
 	key_insert_button->set_focus_mode(FOCUS_NONE);
 	key_insert_button->connect(SceneStringName(pressed), callable_mp(this, &Skeleton3DEditor::insert_keys).bind(false));
-	key_insert_button->set_tooltip_text(TTR("Insert key of bone poses already exist track."));
+	key_insert_button->set_tooltip_text(TTR("Insert key (based on mask) for bones with an existing track."));
 	key_insert_button->set_shortcut(ED_SHORTCUT("skeleton_3d_editor/insert_key_to_existing_tracks", TTR("Insert Key (Existing Tracks)"), Key::INSERT));
 	animation_hb->add_child(key_insert_button);
 
@@ -798,7 +798,7 @@ void Skeleton3DEditor::create_editors() {
 	key_insert_all_button->set_theme_type_variation("FlatButton");
 	key_insert_all_button->set_focus_mode(FOCUS_NONE);
 	key_insert_all_button->connect(SceneStringName(pressed), callable_mp(this, &Skeleton3DEditor::insert_keys).bind(true));
-	key_insert_all_button->set_tooltip_text(TTR("Insert key of all bone poses."));
+	key_insert_all_button->set_tooltip_text(TTR("Insert key (based on mask) for all bones."));
 	key_insert_all_button->set_shortcut(ED_SHORTCUT("skeleton_3d_editor/insert_key_of_all_bones", TTR("Insert Key (All Bones)"), KeyModifierMask::CMD_OR_CTRL + Key::INSERT));
 	animation_hb->add_child(key_insert_all_button);
 
@@ -838,7 +838,7 @@ void Skeleton3DEditor::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			update_joint_tree();
 
-			joint_tree->connect("item_selected", callable_mp(this, &Skeleton3DEditor::_joint_tree_selection_changed));
+			joint_tree->connect(SceneStringName(item_selected), callable_mp(this, &Skeleton3DEditor::_joint_tree_selection_changed));
 			joint_tree->connect("item_mouse_selected", callable_mp(this, &Skeleton3DEditor::_joint_tree_rmb_select));
 #ifdef TOOLS_ENABLED
 			skeleton->connect(SceneStringName(pose_updated), callable_mp(this, &Skeleton3DEditor::_draw_gizmo));
@@ -922,7 +922,7 @@ void vertex() {
 
 	VERTEX = VERTEX;
 	POSITION = PROJECTION_MATRIX * VIEW_MATRIX * MODEL_MATRIX * vec4(VERTEX.xyz, 1.0);
-	POSITION.z = mix(POSITION.z, 0.0, 0.999);
+	POSITION.z = mix(POSITION.z, POSITION.w, 0.999);
 	POINT_SIZE = point_size;
 }
 
@@ -1201,7 +1201,7 @@ void vertex() {
 	}
 	VERTEX = VERTEX;
 	POSITION = PROJECTION_MATRIX * VIEW_MATRIX * MODEL_MATRIX * vec4(VERTEX.xyz, 1.0);
-	POSITION.z = mix(POSITION.z, 0, 0.998);
+	POSITION.z = mix(POSITION.z, POSITION.w, 0.998);
 }
 void fragment() {
 	ALBEDO = COLOR.rgb;

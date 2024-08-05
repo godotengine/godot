@@ -60,6 +60,7 @@
 #include "platform/register_platform_apis.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
+#include "scene/property_list_helper.h"
 #include "scene/register_scene_types.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/theme/theme_db.h"
@@ -90,6 +91,7 @@
 #endif
 
 #ifdef TOOLS_ENABLED
+#include "editor/debugger/debug_adapter/debug_adapter_server.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/doc_data_class_path.gen.h"
 #include "editor/doc_tools.h"
@@ -111,6 +113,10 @@
 #include "editor/project_converter_3_to_4.h"
 #endif // DISABLE_DEPRECATED
 #endif // TOOLS_ENABLED
+
+#if defined(STEAMAPI_ENABLED)
+#include "main/steam_tracker.h"
+#endif
 
 #include "modules/modules_enabled.gen.h" // For mono.
 
@@ -141,6 +147,10 @@ static PackedData *packed_data = nullptr;
 static ZipArchive *zip_packed_data = nullptr;
 #endif
 static MessageQueue *message_queue = nullptr;
+
+#if defined(STEAMAPI_ENABLED)
+static SteamTracker *steam_tracker = nullptr;
+#endif
 
 // Initialized in setup2()
 static AudioServer *audio_server = nullptr;
@@ -518,8 +528,9 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("-e, --editor", "Start the editor instead of running the scene.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("-p, --project-manager", "Start the project manager, even if a project is auto-detected.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--debug-server <uri>", "Start the editor debug server (<protocol>://<host/IP>[:port], e.g. tcp://127.0.0.1:6007)\n", CLI_OPTION_AVAILABILITY_EDITOR);
+	print_help_option("--dap-port <port>", "Use the specified port for the GDScript Debugger Adaptor protocol. Recommended port range [1024, 49151].\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #if defined(MODULE_GDSCRIPT_ENABLED) && !defined(GDSCRIPT_NO_LSP)
-	print_help_option("--lsp-port <port>", "Use the specified port for the GDScript language server protocol. The port should be between 1025 and 49150.\n", CLI_OPTION_AVAILABILITY_EDITOR);
+	print_help_option("--lsp-port <port>", "Use the specified port for the GDScript language server protocol. Recommended port range [1024, 49151].\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #endif // MODULE_GDSCRIPT_ENABLED && !GDSCRIPT_NO_LSP
 #endif
 	print_help_option("--quit", "Quit after the first iteration.\n");
@@ -783,6 +794,7 @@ void Main::test_cleanup() {
 
 	ResourceLoader::remove_custom_loaders();
 	ResourceSaver::remove_custom_savers();
+	PropertyListHelper::clear_base_helpers();
 
 #ifdef TOOLS_ENABLED
 	GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_EDITOR);
@@ -828,13 +840,15 @@ void Main::test_cleanup() {
 	if (globals) {
 		memdelete(globals);
 	}
-	if (engine) {
-		memdelete(engine);
-	}
 
 	unregister_core_driver_types();
 	unregister_core_extensions();
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
+
+	if (engine) {
+		memdelete(engine);
+	}
+
 	unregister_core_types();
 
 	OS::get_singleton()->finalize_core();
@@ -897,13 +911,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	// Benchmark tracking must be done after `OS::get_singleton()->initialize()` as on some
 	// platforms, it's used to set up the time utilities.
-	OS::get_singleton()->benchmark_begin_measure("Startup", "Total");
-	OS::get_singleton()->benchmark_begin_measure("Startup", "Setup");
+	OS::get_singleton()->benchmark_begin_measure("Startup", "Main::Setup");
 
 	engine = memnew(Engine);
 
 	MAIN_PRINT("Main: Initialize CORE");
-	OS::get_singleton()->benchmark_begin_measure("Startup", "Core");
 
 	register_core_types();
 	register_core_driver_types();
@@ -1714,6 +1726,21 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				goto error;
 			}
 #endif // TOOLS_ENABLED && MODULE_GDSCRIPT_ENABLED && !GDSCRIPT_NO_LSP
+#if defined(TOOLS_ENABLED)
+		} else if (arg == "--dap-port") {
+			if (N) {
+				int port_override = N->get().to_int();
+				if (port_override < 0 || port_override > 65535) {
+					OS::get_singleton()->print("<port> argument for --dap-port <port> must be between 0 and 65535.\n");
+					goto error;
+				}
+				DebugAdapterServer::port_override = port_override;
+				N = N->next();
+			} else {
+				OS::get_singleton()->print("Missing <port> argument for --dap-port <port>.\n");
+				goto error;
+			}
+#endif // TOOLS_ENABLED
 		} else if (arg == "--" || arg == "++") {
 			adding_user_args = true;
 		} else {
@@ -1929,6 +1956,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.android", PROPERTY_HINT_ENUM, driver_hints), default_driver);
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.ios", PROPERTY_HINT_ENUM, driver_hints), default_driver);
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.macos", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+
+		GLOBAL_DEF_RST("rendering/rendering_device/fallback_to_vulkan", true);
+		GLOBAL_DEF_RST("rendering/rendering_device/fallback_to_d3d12", true);
 	}
 
 	{
@@ -2299,12 +2329,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// Make sure that headless is the last one, which it is assumed to be by design.
 	DEV_ASSERT(NULL_DISPLAY_DRIVER == DisplayServer::get_create_function_name(DisplayServer::get_create_function_count() - 1));
 
-	GLOBAL_DEF_RST_NOVAL("display/display_server/driver", "default");
-	GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.windows", PROPERTY_HINT_ENUM_SUGGESTION, "default,windows,headless"), "default");
-	GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.linuxbsd", PROPERTY_HINT_ENUM_SUGGESTION, "default,x11,wayland,headless"), "default");
-	GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.android", PROPERTY_HINT_ENUM_SUGGESTION, "default,android,headless"), "default");
-	GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.ios", PROPERTY_HINT_ENUM_SUGGESTION, "default,iOS,headless"), "default");
-	GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.macos", PROPERTY_HINT_ENUM_SUGGESTION, "default,macos,headless"), "default");
+	GLOBAL_DEF_NOVAL("display/display_server/driver", "default");
+	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.windows", PROPERTY_HINT_ENUM_SUGGESTION, "default,windows,headless"), "default");
+	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.linuxbsd", PROPERTY_HINT_ENUM_SUGGESTION, "default,x11,wayland,headless"), "default");
+	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.android", PROPERTY_HINT_ENUM_SUGGESTION, "default,android,headless"), "default");
+	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.ios", PROPERTY_HINT_ENUM_SUGGESTION, "default,iOS,headless"), "default");
+	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.macos", PROPERTY_HINT_ENUM_SUGGESTION, "default,macos,headless"), "default");
 
 	GLOBAL_DEF_RST_NOVAL("audio/driver/driver", AudioDriverManager::get_driver(0)->get_name());
 	if (audio_driver.is_empty()) { // Specified in project.godot.
@@ -2426,13 +2456,18 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	Thread::release_main_thread(); // If setup2() is called from another thread, that one will become main thread, so preventively release this one.
 	set_current_thread_safe_for_nodes(false);
 
-	OS::get_singleton()->benchmark_end_measure("Startup", "Core");
+#if defined(STEAMAPI_ENABLED)
+	if (editor || project_manager) {
+		steam_tracker = memnew(SteamTracker);
+	}
+#endif
+
+	OS::get_singleton()->benchmark_end_measure("Startup", "Main::Setup");
 
 	if (p_second_phase) {
 		return setup2();
 	}
 
-	OS::get_singleton()->benchmark_end_measure("Startup", "Setup");
 	return OK;
 
 error:
@@ -2465,15 +2500,17 @@ error:
 	if (globals) {
 		memdelete(globals);
 	}
-	if (engine) {
-		memdelete(engine);
-	}
 	if (packed_data) {
 		memdelete(packed_data);
 	}
 
 	unregister_core_driver_types();
 	unregister_core_extensions();
+
+	if (engine) {
+		memdelete(engine);
+	}
+
 	unregister_core_types();
 
 	OS::get_singleton()->_cmdline.clear();
@@ -2483,8 +2520,13 @@ error:
 		memdelete(message_queue);
 	}
 
-	OS::get_singleton()->benchmark_end_measure("Startup", "Core");
-	OS::get_singleton()->benchmark_end_measure("Startup", "Setup");
+	OS::get_singleton()->benchmark_end_measure("Startup", "Main::Setup");
+
+#if defined(STEAMAPI_ENABLED)
+	if (steam_tracker) {
+		memdelete(steam_tracker);
+	}
+#endif
 
 	OS::get_singleton()->finalize_core();
 	locale = String();
@@ -2511,7 +2553,9 @@ Error _parse_resource_dummy(void *p_data, VariantParser::Stream *p_stream, Ref<R
 	return OK;
 }
 
-Error Main::setup2() {
+Error Main::setup2(bool p_show_boot_logo) {
+	OS::get_singleton()->benchmark_begin_measure("Startup", "Main::Setup2");
+
 	Thread::make_main_thread(); // Make whatever thread call this the main thread.
 	set_current_thread_safe_for_nodes(true);
 
@@ -2551,6 +2595,7 @@ Error Main::setup2() {
 					String screen_property;
 
 					bool prefer_wayland_found = false;
+					bool prefer_wayland = false;
 
 					if (editor) {
 						screen_property = "interface/editor/editor_screen";
@@ -2583,14 +2628,17 @@ Error Main::setup2() {
 							}
 
 							if (!prefer_wayland_found && assign == "run/platforms/linuxbsd/prefer_wayland") {
-								if (value) {
-									display_driver = "wayland";
-								} else {
-									display_driver = "default";
-								}
-
+								prefer_wayland = value;
 								prefer_wayland_found = true;
 							}
+						}
+					}
+
+					if (display_driver.is_empty()) {
+						if (prefer_wayland) {
+							display_driver = "wayland";
+						} else {
+							display_driver = "default";
 						}
 					}
 				}
@@ -2841,8 +2889,10 @@ Error Main::setup2() {
 
 	OS::get_singleton()->benchmark_end_measure("Startup", "Servers");
 
+#ifndef WEB_ENABLED
 	// Add a blank line for readability.
 	Engine::get_singleton()->print_header("");
+#endif // WEB_ENABLED
 
 	register_core_singletons();
 
@@ -2852,12 +2902,6 @@ Error Main::setup2() {
 		OS::get_singleton()->benchmark_begin_measure("Startup", "Setup Window and Boot");
 
 		MAIN_PRINT("Main: Setup Logo");
-
-#if !defined(TOOLS_ENABLED) && (defined(WEB_ENABLED) || defined(ANDROID_ENABLED))
-		bool show_logo = false;
-#else
-		bool show_logo = true;
-#endif
 
 		if (init_windowed) {
 			//do none..
@@ -2870,74 +2914,16 @@ Error Main::setup2() {
 			DisplayServer::get_singleton()->window_set_flag(DisplayServer::WINDOW_FLAG_ALWAYS_ON_TOP, true);
 		}
 
-		MAIN_PRINT("Main: Load Boot Image");
-
 		Color clear = GLOBAL_DEF_BASIC("rendering/environment/defaults/default_clear_color", Color(0.3, 0.3, 0.3));
 		RenderingServer::get_singleton()->set_default_clear_color(clear);
 
-		if (show_logo) { //boot logo!
-			const bool boot_logo_image = GLOBAL_DEF_BASIC("application/boot_splash/show_image", true);
-			const String boot_logo_path = String(GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/boot_splash/image", PROPERTY_HINT_FILE, "*.png"), String())).strip_edges();
-			const bool boot_logo_scale = GLOBAL_DEF_BASIC("application/boot_splash/fullsize", true);
-			const bool boot_logo_filter = GLOBAL_DEF_BASIC("application/boot_splash/use_filter", true);
-
-			Ref<Image> boot_logo;
-
-			if (boot_logo_image) {
-				if (!boot_logo_path.is_empty()) {
-					boot_logo.instantiate();
-					Error load_err = ImageLoader::load_image(boot_logo_path, boot_logo);
-					if (load_err) {
-						ERR_PRINT("Non-existing or invalid boot splash at '" + boot_logo_path + "'. Loading default splash.");
-					}
-				}
-			} else {
-				// Create a 1×1 transparent image. This will effectively hide the splash image.
-				boot_logo.instantiate();
-				boot_logo->initialize_data(1, 1, false, Image::FORMAT_RGBA8);
-				boot_logo->set_pixel(0, 0, Color(0, 0, 0, 0));
-			}
-
-			Color boot_bg_color = GLOBAL_GET("application/boot_splash/bg_color");
-
-#if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
-			boot_bg_color =
-					GLOBAL_DEF_BASIC("application/boot_splash/bg_color",
-							(editor || project_manager) ? boot_splash_editor_bg_color : boot_splash_bg_color);
-#endif
-			if (boot_logo.is_valid()) {
-				RenderingServer::get_singleton()->set_boot_image(boot_logo, boot_bg_color, boot_logo_scale,
-						boot_logo_filter);
-
-			} else {
-#ifndef NO_DEFAULT_BOOT_LOGO
-				MAIN_PRINT("Main: Create bootsplash");
-#if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
-				Ref<Image> splash = (editor || project_manager) ? memnew(Image(boot_splash_editor_png)) : memnew(Image(boot_splash_png));
-#else
-				Ref<Image> splash = memnew(Image(boot_splash_png));
-#endif
-
-				MAIN_PRINT("Main: ClearColor");
-				RenderingServer::get_singleton()->set_default_clear_color(boot_bg_color);
-				MAIN_PRINT("Main: Image");
-				RenderingServer::get_singleton()->set_boot_image(splash, boot_bg_color, false);
-#endif
-			}
-
-#if defined(TOOLS_ENABLED) && defined(MACOS_ENABLED)
-			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_ICON) && OS::get_singleton()->get_bundle_icon_path().is_empty()) {
-				Ref<Image> icon = memnew(Image(app_icon_png));
-				DisplayServer::get_singleton()->set_icon(icon);
-			}
-#endif
+		if (p_show_boot_logo) {
+			setup_boot_logo();
 		}
 
 		MAIN_PRINT("Main: Clear Color");
 
 		DisplayServer::set_early_window_clear_color_override(false);
-		RenderingServer::get_singleton()->set_default_clear_color(
-				GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
 
 		GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/config/icon", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), String());
 		GLOBAL_DEF(PropertyInfo(Variant::STRING, "application/config/macos_native_icon", PROPERTY_HINT_FILE, "*.icns"), String());
@@ -2947,7 +2933,8 @@ Error Main::setup2() {
 
 		Input *id = Input::get_singleton();
 		if (id) {
-			agile_input_event_flushing = GLOBAL_DEF("input_devices/buffering/agile_event_flushing", false);
+			bool agile_input_event_flushing = GLOBAL_DEF("input_devices/buffering/agile_event_flushing", false);
+			id->set_agile_input_event_flushing(agile_input_event_flushing);
 
 			if (bool(GLOBAL_DEF_BASIC("input_devices/pointing/emulate_touch_from_mouse", false)) &&
 					!(editor || project_manager)) {
@@ -3168,9 +3155,76 @@ Error Main::setup2() {
 	print_verbose("EDITOR API HASH: " + uitos(ClassDB::get_api_hash(ClassDB::API_EDITOR)));
 	MAIN_PRINT("Main: Done");
 
-	OS::get_singleton()->benchmark_end_measure("Startup", "Setup");
+	OS::get_singleton()->benchmark_end_measure("Startup", "Main::Setup2");
 
 	return OK;
+}
+
+void Main::setup_boot_logo() {
+	MAIN_PRINT("Main: Load Boot Image");
+
+#if !defined(TOOLS_ENABLED) && defined(WEB_ENABLED)
+	bool show_logo = false;
+#else
+	bool show_logo = true;
+#endif
+
+	if (show_logo) { //boot logo!
+		const bool boot_logo_image = GLOBAL_DEF_BASIC("application/boot_splash/show_image", true);
+		const String boot_logo_path = String(GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/boot_splash/image", PROPERTY_HINT_FILE, "*.png"), String())).strip_edges();
+		const bool boot_logo_scale = GLOBAL_DEF_BASIC("application/boot_splash/fullsize", true);
+		const bool boot_logo_filter = GLOBAL_DEF_BASIC("application/boot_splash/use_filter", true);
+
+		Ref<Image> boot_logo;
+
+		if (boot_logo_image) {
+			if (!boot_logo_path.is_empty()) {
+				boot_logo.instantiate();
+				Error load_err = ImageLoader::load_image(boot_logo_path, boot_logo);
+				if (load_err) {
+					ERR_PRINT("Non-existing or invalid boot splash at '" + boot_logo_path + "'. Loading default splash.");
+				}
+			}
+		} else {
+			// Create a 1×1 transparent image. This will effectively hide the splash image.
+			boot_logo.instantiate();
+			boot_logo->initialize_data(1, 1, false, Image::FORMAT_RGBA8);
+			boot_logo->set_pixel(0, 0, Color(0, 0, 0, 0));
+		}
+
+		Color boot_bg_color = GLOBAL_GET("application/boot_splash/bg_color");
+
+#if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
+		boot_bg_color = GLOBAL_DEF_BASIC("application/boot_splash/bg_color", (editor || project_manager) ? boot_splash_editor_bg_color : boot_splash_bg_color);
+#endif
+		if (boot_logo.is_valid()) {
+			RenderingServer::get_singleton()->set_boot_image(boot_logo, boot_bg_color, boot_logo_scale, boot_logo_filter);
+
+		} else {
+#ifndef NO_DEFAULT_BOOT_LOGO
+			MAIN_PRINT("Main: Create bootsplash");
+#if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
+			Ref<Image> splash = (editor || project_manager) ? memnew(Image(boot_splash_editor_png)) : memnew(Image(boot_splash_png));
+#else
+			Ref<Image> splash = memnew(Image(boot_splash_png));
+#endif
+
+			MAIN_PRINT("Main: ClearColor");
+			RenderingServer::get_singleton()->set_default_clear_color(boot_bg_color);
+			MAIN_PRINT("Main: Image");
+			RenderingServer::get_singleton()->set_boot_image(splash, boot_bg_color, false);
+#endif
+		}
+
+#if defined(TOOLS_ENABLED) && defined(MACOS_ENABLED)
+		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_ICON) && OS::get_singleton()->get_bundle_icon_path().is_empty()) {
+			Ref<Image> icon = memnew(Image(app_icon_png));
+			DisplayServer::get_singleton()->set_icon(icon);
+		}
+#endif
+	}
+	RenderingServer::get_singleton()->set_default_clear_color(
+			GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
 }
 
 String Main::get_rendering_driver_name() {
@@ -3184,6 +3238,8 @@ static MainTimerSync main_timer_sync;
 // and should move on to `OS::run`, and EXIT_FAILURE otherwise for
 // an early exit with that error code.
 int Main::start() {
+	OS::get_singleton()->benchmark_begin_measure("Startup", "Main::Start");
+
 	ERR_FAIL_COND_V(!_start_success, false);
 
 	bool has_icon = false;
@@ -3907,7 +3963,7 @@ int Main::start() {
 		}
 	}
 
-	OS::get_singleton()->benchmark_end_measure("Startup", "Total");
+	OS::get_singleton()->benchmark_end_measure("Startup", "Main::Start");
 	OS::get_singleton()->benchmark_dump();
 
 	return EXIT_SUCCESS;
@@ -3929,7 +3985,6 @@ uint32_t Main::hide_print_fps_attempts = 3;
 uint32_t Main::frame = 0;
 bool Main::force_redraw_requested = false;
 int Main::iterating = 0;
-bool Main::agile_input_event_flushing = false;
 
 bool Main::is_iterating() {
 	return iterating > 0;
@@ -3990,11 +4045,12 @@ bool Main::iteration() {
 	NavigationServer3D::get_singleton()->sync();
 
 	for (int iters = 0; iters < advance.physics_steps; ++iters) {
-		if (Input::get_singleton()->is_using_input_buffering() && agile_input_event_flushing) {
+		if (Input::get_singleton()->is_agile_input_event_flushing()) {
 			Input::get_singleton()->flush_buffered_events();
 		}
 
 		Engine::get_singleton()->_in_physics = true;
+		Engine::get_singleton()->_physics_frames++;
 
 		uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
 
@@ -4042,12 +4098,11 @@ bool Main::iteration() {
 
 		physics_process_ticks = MAX(physics_process_ticks, OS::get_singleton()->get_ticks_usec() - physics_begin); // keep the largest one for reference
 		physics_process_max = MAX(OS::get_singleton()->get_ticks_usec() - physics_begin, physics_process_max);
-		Engine::get_singleton()->_physics_frames++;
 
 		Engine::get_singleton()->_in_physics = false;
 	}
 
-	if (Input::get_singleton()->is_using_input_buffering() && agile_input_event_flushing) {
+	if (Input::get_singleton()->is_agile_input_event_flushing()) {
 		Input::get_singleton()->flush_buffered_events();
 	}
 
@@ -4060,7 +4115,7 @@ bool Main::iteration() {
 
 	RenderingServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
-	if (DisplayServer::get_singleton()->can_any_window_draw() &&
+	if ((DisplayServer::get_singleton()->can_any_window_draw() || DisplayServer::get_singleton()->has_additional_outputs()) &&
 			RenderingServer::get_singleton()->is_render_loop_enabled()) {
 		if ((!force_redraw_requested) && OS::get_singleton()->is_in_low_processor_usage_mode()) {
 			if (RenderingServer::get_singleton()->has_changed()) {
@@ -4119,16 +4174,17 @@ bool Main::iteration() {
 
 	iterating--;
 
-	// Needed for OSs using input buffering regardless accumulation (like Android)
-	if (Input::get_singleton()->is_using_input_buffering() && !agile_input_event_flushing) {
-		Input::get_singleton()->flush_buffered_events();
-	}
-
 	if (movie_writer) {
 		movie_writer->add_frame();
 	}
 
+#ifdef TOOLS_ENABLED
+	bool quit_after_timeout = false;
+#endif
 	if ((quit_after > 0) && (Engine::get_singleton()->_process_frames >= quit_after)) {
+#ifdef TOOLS_ENABLED
+		quit_after_timeout = true;
+#endif
 		exit = true;
 	}
 
@@ -4161,6 +4217,12 @@ bool Main::iteration() {
 	}
 #endif
 
+#ifdef TOOLS_ENABLED
+	if (exit && quit_after_timeout && EditorNode::get_singleton()) {
+		EditorNode::get_singleton()->unload_editor_addons();
+	}
+#endif
+
 	return exit;
 }
 
@@ -4175,10 +4237,16 @@ void Main::force_redraw() {
  * The order matters as some of those steps are linked with each other.
  */
 void Main::cleanup(bool p_force) {
-	OS::get_singleton()->benchmark_begin_measure("Shutdown", "Total");
+	OS::get_singleton()->benchmark_begin_measure("Shutdown", "Main::Cleanup");
 	if (!p_force) {
 		ERR_FAIL_COND(!_start_success);
 	}
+
+#ifdef DEBUG_ENABLED
+	if (input) {
+		input->flush_frame_parsed_events();
+	}
+#endif
 
 	for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
 		TextServerManager::get_singleton()->get_interface(i)->cleanup();
@@ -4192,6 +4260,7 @@ void Main::cleanup(bool p_force) {
 
 	ResourceLoader::remove_custom_loaders();
 	ResourceSaver::remove_custom_savers();
+	PropertyListHelper::clear_base_helpers();
 
 	// Flush before uninitializing the scene, but delete the MessageQueue as late as possible.
 	message_queue->flush();
@@ -4311,16 +4380,23 @@ void Main::cleanup(bool p_force) {
 	message_queue->flush();
 	memdelete(message_queue);
 
+#if defined(STEAMAPI_ENABLED)
+	if (steam_tracker) {
+		memdelete(steam_tracker);
+	}
+#endif
+
 	unregister_core_driver_types();
 	unregister_core_extensions();
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
-	unregister_core_types();
 
 	if (engine) {
 		memdelete(engine);
 	}
 
-	OS::get_singleton()->benchmark_end_measure("Shutdown", "Total");
+	unregister_core_types();
+
+	OS::get_singleton()->benchmark_end_measure("Shutdown", "Main::Cleanup");
 	OS::get_singleton()->benchmark_dump();
 
 	OS::get_singleton()->finalize_core();

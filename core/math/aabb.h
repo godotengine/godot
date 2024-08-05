@@ -41,7 +41,7 @@
 
 class Variant;
 
-struct _NO_DISCARD_ AABB {
+struct [[nodiscard]] AABB {
 	Vector3 position;
 	Vector3 size;
 

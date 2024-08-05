@@ -651,6 +651,10 @@ bool OpenXRInterface::initialize() {
 	// make this our primary interface
 	xr_server->set_primary_interface(this);
 
+	// Register an additional output with the display server, so rendering won't
+	// be skipped if no windows are visible.
+	DisplayServer::get_singleton()->register_additional_output(this);
+
 	initialized = true;
 
 	return initialized;
@@ -673,6 +677,8 @@ void OpenXRInterface::uninitialize() {
 			head.unref();
 		}
 	}
+
+	DisplayServer::get_singleton()->unregister_additional_output(this);
 
 	initialized = false;
 }

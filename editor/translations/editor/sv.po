@@ -35,13 +35,15 @@
 # Erik Högberg <erik.hogberg.93@gmail.com>, 2023.
 # TheeStickmahn <ljhbengtsson@icloud.com>, 2024.
 # Evelyn <gfo.957@gmail.com>, 2024.
+# Joakim Hulthe <joakim@hulthe.net>, 2024.
+# Lexag <lexa.grebnets@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-04-29 17:07+0000\n"
-"Last-Translator: Evelyn <gfo.957@gmail.com>\n"
+"PO-Revision-Date: 2024-07-28 08:33+0000\n"
+"Last-Translator: Lexag <lexa.grebnets@gmail.com>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
 "Language: sv\n"
@@ -49,7 +51,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.5.2\n"
+"X-Generator: Weblate 5.7-dev\n"
 
 msgid "Main Thread"
 msgstr "Huvudtråd"
@@ -477,6 +479,9 @@ msgstr "Filtrera efter namn"
 msgid "Clear All"
 msgstr "Rensa Alla"
 
+msgid "Clear all search filters."
+msgstr "Ta bort filter."
+
 msgid "Add New Action"
 msgstr "Lägg till ny Handling"
 
@@ -809,14 +814,14 @@ msgstr ""
 msgid "Remove Anim Track"
 msgstr "Ta bort Anim spår"
 
-msgid "Hold Shift when clicking the key icon to skip this dialog."
-msgstr "Håll shift vid klick på nyckel ikonen för att hoppa över denna dialog."
-
 msgid "Create new track for %s and insert key?"
 msgstr "Skapa ett nytt spår för %s och infoga nyckel?"
 
 msgid "Create %d new tracks and insert keys?"
 msgstr "Skapa %d nya spår och infoga nycklar?"
+
+msgid "Hold Shift when clicking the key icon to skip this dialog."
+msgstr "Håll shift vid klick på nyckel ikonen för att hoppa över denna dialog."
 
 msgid "Create"
 msgstr "Skapa"
@@ -874,18 +879,6 @@ msgstr "Kurva är felaktig så det går inte att skapa en nyckel."
 
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "Spåret är inte av typen Node3D, kan inte infoga nyckel"
-
-msgid "Add Position Key"
-msgstr "Lägg till positionsnyckel"
-
-msgid "Add Rotation Key"
-msgstr "Lägg till Rotation Key"
-
-msgid "Add Scale Key"
-msgstr "Lägg till skalningsnyckel"
-
-msgid "Add Track Key"
-msgstr "Lägg till spårnyckel"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Spårväg ogiltig, kan således inte lägga till en metod nyckel."
@@ -1237,6 +1230,9 @@ msgid_plural "%d of %d matches"
 msgstr[0] "%d av %d matcha"
 msgstr[1] "%d av %d matchar"
 
+msgid "Find"
+msgstr "Hitta"
+
 msgid "Match Case"
 msgstr "Matcha gemener/versaler"
 
@@ -1475,6 +1471,9 @@ msgstr "Spara gren som scen"
 
 msgid "Copy Node Path"
 msgstr "Kopiera Nod-Sökväg"
+
+msgid "Instance:"
+msgstr "Instans:"
 
 msgid ""
 "This node has been instantiated from a PackedScene file:\n"
@@ -1872,7 +1871,7 @@ msgid "Create Folder"
 msgstr "Skapa Mapp"
 
 msgid "Folder name is valid."
-msgstr "Mapp-namnet är ogiltigt."
+msgstr "Mapp-namnet är giltigt."
 
 msgid "Double-click to open in browser."
 msgstr "Dubbelklicka för att öppna i webbläsare."
@@ -1882,6 +1881,13 @@ msgstr "Tack från Godot-gemenskapen!"
 
 msgid "(unknown)"
 msgstr "(okänd)"
+
+msgid ""
+"Git commit date: %s\n"
+"Click to copy the version number."
+msgstr ""
+"Git commit datum: %s\n"
+"Klicka för att kopiera versionsnummer."
 
 msgid "Godot Engine contributors"
 msgstr "Godot Engine bidragare"
@@ -1901,6 +1907,9 @@ msgstr "Utvecklare"
 
 msgid "Authors"
 msgstr "Författare"
+
+msgid "Patrons"
+msgstr "Sponsorer"
 
 msgid "Platinum Sponsors"
 msgstr "Platinumsponsorer"
@@ -2511,6 +2520,12 @@ msgstr "Importera profil(er)"
 msgid "Manage Editor Feature Profiles"
 msgstr "Hantera Redigerarens Funktions Profiler"
 
+msgid "Restart"
+msgstr "Starta om"
+
+msgid "Save & Restart"
+msgstr "Spara & Starta om"
+
 msgid "ScanSources"
 msgstr "ScanKällor"
 
@@ -3056,13 +3071,6 @@ msgid "Quick Open Script..."
 msgstr "Snabböppna Skript..."
 
 msgid ""
-"The current scene has no root node, but %d modified external resource(s) were "
-"saved anyway."
-msgstr ""
-"Den aktuella scenen har ingen rotnod, men %d modifierade externa resurser "
-"sparades ändå."
-
-msgid ""
 "A root node is required to save the scene. You can add a root node using the "
 "Scene tree dock."
 msgstr ""
@@ -3258,6 +3266,15 @@ msgstr "Mobil"
 msgid "Compatibility"
 msgstr "Kompabilitet"
 
+msgid "Unlock Selected Node(s)"
+msgstr "Lås upp valda nod(er)"
+
+msgid "Group Selected Node(s)"
+msgstr "Gruppera valda noder"
+
+msgid "Ungroup Selected Node(s)"
+msgstr "Avgruppera valda noder"
+
 msgid "Distraction Free Mode"
 msgstr "Distraktionsfritt Läge"
 
@@ -3348,9 +3365,6 @@ msgstr "Kommando palett..."
 msgid "Take Screenshot"
 msgstr "Ta Skärmdump"
 
-msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr "Skärmdumpar är sparade i editorns Data/Settings katalog."
-
 msgid "Toggle Fullscreen"
 msgstr "Växla Fullskärm"
 
@@ -3395,9 +3409,6 @@ msgstr "Skicka Dokumentations Feedback"
 
 msgid "Support Godot Development"
 msgstr "Supporta utvecklingen av Godot"
-
-msgid "Save & Restart"
-msgstr "Spara & Starta om"
 
 msgid "Update Continuously"
 msgstr "Uppdatera kontinuerligt"
@@ -3444,12 +3455,6 @@ msgid ""
 msgstr ""
 "Följande filer är nyare på disken.\n"
 "Vilka åtgärder ska vidtas?"
-
-msgid "Reload"
-msgstr "Ladda om"
-
-msgid "Resave"
-msgstr "Spara om"
 
 msgid "Version Control Settings..."
 msgstr "Versionshanteringsinställningar..."
@@ -3569,9 +3574,6 @@ msgstr "Kör Projekt"
 msgid "Write your logic in the _run() method."
 msgstr "Skriv din logik i _run() metoden."
 
-msgid "There is an edited scene already."
-msgstr "Det finns en redigerad scen redan."
-
 msgid "Edit Shortcut: %s"
 msgstr "Editera genväg: %s"
 
@@ -3652,6 +3654,18 @@ msgstr "Alla Enheter"
 
 msgid "Device"
 msgstr "Enhet"
+
+msgid "Can't get filesystem access."
+msgstr "Kan inte få filsystemsbehörighet."
+
+msgid "Already signed!"
+msgstr "Redan signerad!"
+
+msgid "Failed to create _CodeSignature subfolder."
+msgstr "Misslyckades med att skapa underkatalogen _CodeSignature ."
+
+msgid "Unknown object type."
+msgstr "Okänd objekttyp."
 
 msgid "Project export for platform:"
 msgstr "Projektexport för plattformen:"
@@ -3766,6 +3780,9 @@ msgid ""
 msgstr ""
 "Ingen nedladdningslänk hittades för denna version. Direkt nedladdning finns "
 "endast tillgängligt för officiella utgåvor."
+
+msgid "Requesting..."
+msgstr "Begär..."
 
 msgid "Invalid version.txt format inside the export templates file: %s."
 msgstr "Ogilitigt version.txt format i export mall filen: %s."
@@ -4040,6 +4057,9 @@ msgstr "Lägg till i Favoriter"
 msgid "Reimport"
 msgstr "Importera om"
 
+msgid "Open in File Manager"
+msgstr "Öppna i filhanteraren"
+
 msgid "New Folder..."
 msgstr "Ny Mapp..."
 
@@ -4069,9 +4089,6 @@ msgstr "Duplicera..."
 
 msgid "Rename..."
 msgstr "Byt namn..."
-
-msgid "Open in File Manager"
-msgstr "Öppna i filhanteraren"
 
 msgid "Open in External Program"
 msgstr "Öppna i externt program"
@@ -4388,9 +4405,6 @@ msgstr ""
 "Nod är låst.\n"
 "Klicka för att låsa upp."
 
-msgid "Instance:"
-msgstr "Instans:"
-
 msgid "\"%s\" is not a known filter."
 msgstr "\"%s\" är inte ett känt filter."
 
@@ -4558,9 +4572,6 @@ msgstr "Misslyckades att ladda resurs."
 
 msgid "Property Name Style"
 msgstr "Egenskapsnamnstil"
-
-msgid "Localized"
-msgstr "Lokaliserad"
 
 msgid "Copy Properties"
 msgstr "Kopiera egenskaper"
@@ -4927,9 +4938,6 @@ msgstr "Laddar ner..."
 msgid "Resolving..."
 msgstr "Namnuppslag..."
 
-msgid "Requesting..."
-msgstr "Begär..."
-
 msgid "Error making request"
 msgstr "Förfrågan misslyckades"
 
@@ -5150,6 +5158,11 @@ msgstr "Zooma till 1600%"
 msgid "Center View"
 msgstr "Centrera vy"
 
+msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
+msgstr ""
+"Alt+RMB: Visa en lista av alla noder vid den klickade positionen, inklusive "
+"låsta."
+
 msgid "RMB: Add node at position clicked."
 msgstr "RMB: Lägg till nod vid den klickade positionen."
 
@@ -5161,15 +5174,6 @@ msgstr "Roteringsläge"
 
 msgid "Scale Mode"
 msgstr "Skalningsläge"
-
-msgid "Unlock Selected Node(s)"
-msgstr "Lås upp valda nod(er)"
-
-msgid "Group Selected Node(s)"
-msgstr "Gruppera valda noder"
-
-msgid "Ungroup Selected Node(s)"
-msgstr "Avgruppera valda noder"
 
 msgid "Show Bones"
 msgstr "Visa ben"
@@ -5203,9 +5207,6 @@ msgstr "Lägger till %s..."
 
 msgid "Create Node"
 msgstr "Skapa Node"
-
-msgid "Restart"
-msgstr "Starta om"
 
 msgid "Hold Shift to edit tangents individually"
 msgstr "Håll Skift för att redigera tangenter individuellt"
@@ -5429,11 +5430,6 @@ msgstr "Inte tillgänglig när OpenGL renderaren används."
 msgid "Preview disabled."
 msgstr "Förhandsgranskning avstängd."
 
-msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
-msgstr ""
-"Alt+RMB: Visa en lista av alla noder vid den klickade positionen, inklusive "
-"låsta."
-
 msgid "Bottom View"
 msgstr "Vy underifrån"
 
@@ -5542,6 +5538,12 @@ msgstr "Importera Tema"
 msgid "Error saving"
 msgstr "Fel vid sparande"
 
+msgid "Online Docs"
+msgstr "Dokumentation Online"
+
+msgid "Open Godot online documentation."
+msgstr "Öppna Godot online dokumentation."
+
 msgid "Find Next"
 msgstr "Hitta Nästa"
 
@@ -5578,14 +5580,14 @@ msgstr "Kör"
 msgid "Search"
 msgstr "Sök"
 
-msgid "Online Docs"
-msgstr "Dokumentation Online"
-
-msgid "Open Godot online documentation."
-msgstr "Öppna Godot online dokumentation."
-
 msgid "Discard"
 msgstr "Kasta"
+
+msgid "Uppercase"
+msgstr "Versaler"
+
+msgid "Lowercase"
+msgstr "Gemener"
 
 msgid "Standard"
 msgstr "Standard"
@@ -5606,12 +5608,6 @@ msgstr "Välj Färg"
 
 msgid "Line"
 msgstr "Rad"
-
-msgid "Uppercase"
-msgstr "Versaler"
-
-msgid "Lowercase"
-msgstr "Gemener"
 
 msgid "Convert Case"
 msgstr "Konvertera gemener/versaler"
@@ -5732,6 +5728,12 @@ msgstr "Storlek"
 
 msgid "Separation"
 msgstr "Separation"
+
+msgid "Reload"
+msgstr "Ladda om"
+
+msgid "Resave"
+msgstr "Spara om"
 
 msgid "Memory: %s"
 msgstr "Minne: %s"
@@ -6627,9 +6629,6 @@ msgstr ""
 "Kan inte instansiera scenen '%s' för den aktuella scenen existerar redan "
 "bland dess noder."
 
-msgid "Instantiate Scene(s)"
-msgstr "Instansiera scen(er)"
-
 msgid "Instantiate Child Scene"
 msgstr "Instansiera barn-Scen"
 
@@ -6848,7 +6847,7 @@ msgid "Empty"
 msgstr "Tom"
 
 msgid "Script path/name is valid."
-msgstr "Skript väg/namn är ogiltigt."
+msgstr "Skript väg/namn är giltigt."
 
 msgid "Will create a new script file."
 msgstr "Kommer att skapa ny skript-fil."
@@ -6957,11 +6956,11 @@ msgstr ""
 msgid "Delete Property?"
 msgstr "Radera egenskap?"
 
-msgid "Error saving file %s: %s"
-msgstr "Fel vid sparande av fil %s: %s"
-
 msgid "Error loading %s: %s."
 msgstr "Fel vid laddning %s: %s."
+
+msgid "Error saving file %s: %s"
+msgstr "Fel vid sparande av fil %s: %s"
 
 msgid "Pose"
 msgstr "Ställning"
@@ -7073,11 +7072,11 @@ msgstr "Kunde inte exportera projektfiler."
 msgid "Invalid Identifier:"
 msgstr "Ogiltig identifierare:"
 
-msgid "Export template not found."
-msgstr "Exportmall ej funnen."
-
 msgid "Prepare Templates"
 msgstr "Förbered mallar"
+
+msgid "Export template not found."
+msgstr "Exportmall ej funnen."
 
 msgid "Could not open file \"%s\"."
 msgstr "Kunde inte öppna fil \"%s\"."
@@ -7096,18 +7095,6 @@ msgstr "Exporterar projekt..."
 
 msgid "Starting project..."
 msgstr "Startar projekt..."
-
-msgid "Can't get filesystem access."
-msgstr "Kan inte få filsystemsbehörighet."
-
-msgid "Already signed!"
-msgstr "Redan signerad!"
-
-msgid "Failed to create _CodeSignature subfolder."
-msgstr "Misslyckades med att skapa underkatalogen _CodeSignature ."
-
-msgid "Unknown object type."
-msgstr "Okänd objekttyp."
 
 msgid "App Store distribution with ad-hoc code signing is not supported."
 msgstr "App Store distribution med ad-hoc signerad kod är inte supportat."

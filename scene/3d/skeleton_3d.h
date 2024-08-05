@@ -67,6 +67,7 @@ class Skeleton3D : public Node3D {
 	GDCLASS(Skeleton3D, Node3D);
 
 #ifndef DISABLE_DEPRECATED
+	bool animate_physical_bones = true;
 	Node *simulator = nullptr;
 	void setup_simulator();
 #endif // _DISABLE_DEPRECATED
@@ -80,8 +81,14 @@ public:
 private:
 	friend class SkinReference;
 
-	void _update_deferred();
-	bool is_update_needed = false; // Is updating reserved?
+	enum UpdateFlag {
+		UPDATE_FLAG_NONE = 1,
+		UPDATE_FLAG_MODIFIER = 2,
+		UPDATE_FLAG_POSE = 4,
+	};
+
+	void _update_deferred(UpdateFlag p_update_flag = UPDATE_FLAG_POSE);
+	uint8_t update_flags = UPDATE_FLAG_NONE;
 	bool updating = false; // Is updating now?
 
 	struct Bone {
@@ -150,6 +157,9 @@ private:
 	Vector<int> parentless_bones;
 	HashMap<String, int> name_to_bone_index;
 
+	mutable StringName concatenated_bone_names = StringName();
+	void _update_bone_names() const;
+
 	void _make_dirty();
 	bool dirty = false;
 	bool rest_dirty = false;
@@ -200,6 +210,7 @@ public:
 	int find_bone(const String &p_name) const;
 	String get_bone_name(int p_bone) const;
 	void set_bone_name(int p_bone, const String &p_name);
+	StringName get_concatenated_bone_names() const;
 
 	bool is_bone_parent_of(int p_bone_id, int p_parent_bone_id) const;
 

@@ -44,16 +44,8 @@ void BoneAttachment3D::_validate_property(PropertyInfo &p_property) const {
 		}
 
 		if (parent) {
-			String names;
-			for (int i = 0; i < parent->get_bone_count(); i++) {
-				if (i > 0) {
-					names += ",";
-				}
-				names += parent->get_bone_name(i);
-			}
-
 			p_property.hint = PROPERTY_HINT_ENUM;
-			p_property.hint_string = names;
+			p_property.hint_string = parent->get_concatenated_bone_names();
 		} else {
 			p_property.hint = PROPERTY_HINT_NONE;
 			p_property.hint_string = "";
@@ -247,9 +239,20 @@ int BoneAttachment3D::get_bone_idx() const {
 }
 
 void BoneAttachment3D::set_override_pose(bool p_override) {
+	if (override_pose == p_override) {
+		return;
+	}
+
 	override_pose = p_override;
 	set_notify_transform(override_pose);
 	set_process_internal(override_pose);
+	if (!override_pose && bone_idx >= 0) {
+		Skeleton3D *sk = _get_skeleton3d();
+		if (sk) {
+			sk->reset_bone_pose(bone_idx);
+		}
+	}
+
 	notify_property_list_changed();
 }
 

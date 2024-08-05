@@ -746,9 +746,6 @@ msgstr "เพิ่มแทร็กเบซิเยร์"
 msgid "Track path is invalid, so can't add a key."
 msgstr "ที่อยู่แทร็กผิดพลาด ไม่สามารถเพิ่มคีย์ได้"
 
-msgid "Add Track Key"
-msgstr "เพิ่มแทร็กคีย์"
-
 msgid "Track path is invalid, so can't add a method key."
 msgstr "ที่อยู่แทร็กผิดพลาด ไม่สามารถเพิ่มคีย์เมธอดได้"
 
@@ -1036,6 +1033,9 @@ msgstr "บันทึกกิ่งเป็นฉาก"
 
 msgid "Copy Node Path"
 msgstr "คัดลอกตำแหน่งโหนด"
+
+msgid "Instance:"
+msgstr "อินสแตนซ์:"
 
 msgid "Toggle Visibility"
 msgstr "ซ่อน/แสดง"
@@ -1616,6 +1616,12 @@ msgstr "นำเข้าโปรไฟล์"
 msgid "Manage Editor Feature Profiles"
 msgstr "จัดการรายละเอียดคุณสมบัติตัวแก้ไข"
 
+msgid "Restart"
+msgstr "เริ่มใหม่"
+
+msgid "Save & Restart"
+msgstr "บันทึกและเริ่มใหม่"
+
 msgid "ScanSources"
 msgstr "สแกนต้นฉบับ"
 
@@ -2060,9 +2066,6 @@ msgstr "เค้าโครงตัวแก้ไข"
 msgid "Take Screenshot"
 msgstr "ถ่ายภาพหน้าจอ"
 
-msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr "ภาพหน้าจอจะถูกเก็บไว้ในโฟลเดอร์ข้อมูล/การตั้งค่าของตัวแก้ไข"
-
 msgid "Toggle Fullscreen"
 msgstr "เปิด/ปิด โหมดเต็มหน้าจอ"
 
@@ -2092,9 +2095,6 @@ msgstr "รายงานบั๊ก"
 
 msgid "Send Docs Feedback"
 msgstr "ส่งความคิดเห็นเกี่ยวกับคู่มือ"
-
-msgid "Save & Restart"
-msgstr "บันทึกและเริ่มใหม่"
 
 msgid "Update Continuously"
 msgstr "อัพเดทอย่างต่อเนื่อง"
@@ -2138,12 +2138,6 @@ msgid ""
 msgstr ""
 "ไฟล์เหล่านี้มีความใหม่กว่าบนดิสก์\n"
 "ต้องจะทำอย่างไรต่อไป?"
-
-msgid "Reload"
-msgstr "โหลดใหม่"
-
-msgid "Resave"
-msgstr "บันทึกอีกครั้ง"
 
 msgid "New Inherited"
 msgstr "สืบทอด"
@@ -2270,9 +2264,6 @@ msgstr ""
 msgid "Write your logic in the _run() method."
 msgstr "เขียนโปรแกรมในเมท็อด _run()"
 
-msgid "There is an edited scene already."
-msgstr "มีฉากที่แก้ไขอยู่แล้ว"
-
 msgid "Common"
 msgstr "ทั่วไป"
 
@@ -2338,6 +2329,12 @@ msgid ""
 "No download links found for this version. Direct download is only available "
 "for official releases."
 msgstr "ไม่พบลิงก์ดาวน์โหลดสำหรับรุ่นนี้ มีเฉพาะสำหรับโปรแกรมรุ่นหลัก"
+
+msgid "Connecting..."
+msgstr "กำลังเชื่อมต่อ..."
+
+msgid "Requesting..."
+msgstr "กำลังร้องขอ..."
 
 msgid "Extracting Export Templates"
 msgstr "กำลังคลายเทมเพลตส่งออก"
@@ -2523,6 +2520,9 @@ msgstr "ลบจากที่่ชื่นชอบ"
 msgid "Reimport"
 msgstr "นำเข้าใหม่"
 
+msgid "Open in File Manager"
+msgstr "เปิดโฟลเดอร์"
+
 msgid "New Folder..."
 msgstr "สร้างโฟลเดอร์..."
 
@@ -2540,9 +2540,6 @@ msgstr "ทำซ้ำ..."
 
 msgid "Rename..."
 msgstr "เปลี่ยนชื่อ..."
-
-msgid "Open in File Manager"
-msgstr "เปิดโฟลเดอร์"
 
 msgid "Re-Scan Filesystem"
 msgstr "สแกนไฟล์ใหม่"
@@ -2755,9 +2752,6 @@ msgstr ""
 msgid "Open in Editor"
 msgstr "เปิดในโปรแกรมแก้ไข"
 
-msgid "Instance:"
-msgstr "อินสแตนซ์:"
-
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "ชื่อโหนดไม่ถูกต้อง ใช้ตัวอักษรต่อไปนี้ไม่ได้:"
 
@@ -2826,9 +2820,6 @@ msgstr "อุปกรณ์:"
 
 msgid "Failed to load resource."
 msgstr "โหลดทรัพยากรไม่ได้"
-
-msgid "Raw"
-msgstr "Raw"
 
 msgid "Make Sub-Resources Unique"
 msgstr "ไม่ให้ใช้รีซอร์สร่วมกับวัตถุอื่น"
@@ -3313,12 +3304,6 @@ msgstr "กำลังดาวน์โหลด..."
 msgid "Resolving..."
 msgstr "กำลังแก้ไข..."
 
-msgid "Connecting..."
-msgstr "กำลังเชื่อมต่อ..."
-
-msgid "Requesting..."
-msgstr "กำลังร้องขอ..."
-
 msgid "Error making request"
 msgstr "การร้องขอผิดพลาด"
 
@@ -3481,6 +3466,9 @@ msgstr "ล้างเส้นไกด์"
 msgid "Select Mode"
 msgstr "โหมดเลือก"
 
+msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
+msgstr "Alt+RMB: แสดงรายการโหนดทั้งหมดที่ตำแหน่งคลิก รวมถึงโหนดที่ถูกล็อก"
+
 msgid "Move Mode"
 msgstr "โหมดเคลื่อนย้าย"
 
@@ -3635,9 +3623,6 @@ msgstr "ลดความถี่กริดลงครึ่งหนึ่
 msgid "Adding %s..."
 msgstr "กำลังเพิ่ม %s..."
 
-msgid "Cannot instantiate multiple nodes without root."
-msgstr "อินสแตนซ์หลาย ๆ โหนดโดยที่ไม่มีโหนดแม่ไม่ได้"
-
 msgid "Create Node"
 msgstr "สร้างโหนด"
 
@@ -3694,9 +3679,6 @@ msgstr "ความกว้างขวา"
 
 msgid "Full Rect"
 msgstr "สี่เหลี่ยมผืนผ้าเต็ม"
-
-msgid "Restart"
-msgstr "เริ่มใหม่"
 
 msgid "Load Emission Mask"
 msgstr "โหลด Mask การปะทุ"
@@ -3848,9 +3830,6 @@ msgstr "ปรับรัศมีทรงแคปซูล"
 
 msgid "Change Cylinder Shape Height"
 msgstr "ปรับความสูงทรงแคปซูล"
-
-msgid "Change Particles AABB"
-msgstr "แก้ไข Particles AABB"
 
 msgid "Change Light Radius"
 msgstr "ปรับรัศมีแสง"
@@ -4230,9 +4209,6 @@ msgstr ""
 msgid "Couldn't find a solid floor to snap the selection to."
 msgstr "ไม่สามารถหาชั้นแข็งที่จะสแนปกับที่เลือก"
 
-msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
-msgstr "Alt+RMB: แสดงรายการโหนดทั้งหมดที่ตำแหน่งคลิก รวมถึงโหนดที่ถูกล็อก"
-
 msgid "Use Local Space"
 msgstr "ใช้พื้นที่ภายใน"
 
@@ -4356,14 +4332,14 @@ msgstr "ลบจุดควบคุมขาออกของเส้นโ
 msgid "Remove In-Control from Curve"
 msgstr "ลบจุดควบคุมขาเข้าของเส้นโค้ง"
 
-msgid "Add Point to Curve"
-msgstr "เพิ่มจุดในเส้นโค้ง"
-
 msgid "Split Curve"
 msgstr "แยกเส้นโค้ง"
 
 msgid "Move Point in Curve"
 msgstr "ย้ายจุดในเส้นโค้ง"
+
+msgid "Add Point to Curve"
+msgstr "เพิ่มจุดในเส้นโค้ง"
 
 msgid "Move In-Control in Curve"
 msgstr "ย้ายจุดควบคุมขาเข้าของเส้นโค้ง"
@@ -4594,9 +4570,6 @@ msgstr "วางรีซอร์ส"
 msgid "Load Resource"
 msgstr "โหลดรีซอร์ส"
 
-msgid "Clear Recent Files"
-msgstr "ล้างรายการไฟล์ล่าสุด"
-
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr "ไม่สามารถเปิด '%s' เนื่องจากไฟล์ถูกย้ายหรือถูกลบ"
 
@@ -4627,6 +4600,12 @@ msgstr "ผิดพลาดขณะบันทึก"
 msgid "Save Theme As..."
 msgstr "บันทึกธีมเป็น"
 
+msgid "Online Docs"
+msgstr "คู่มือ"
+
+msgid "Open Godot online documentation."
+msgstr "เปิดคู่มือออนไลน์"
+
 msgid "%s Class Reference"
 msgstr "%s อ้างอิงคลาส"
 
@@ -4647,9 +4626,6 @@ msgstr "ไฟล์"
 
 msgid "Open..."
 msgstr "เปิด..."
-
-msgid "Reopen Closed Script"
-msgstr "เปิดสคริปต์ที่พึ่งปิด"
 
 msgid "Save All"
 msgstr "บันทึกทั้งหมด"
@@ -4687,12 +4663,6 @@ msgstr "เริ่ม"
 msgid "Search"
 msgstr "ค้นหา"
 
-msgid "Online Docs"
-msgstr "คู่มือ"
-
-msgid "Open Godot online documentation."
-msgstr "เปิดคู่มือออนไลน์"
-
 msgid "Search the reference documentation."
 msgstr "ค้นหาคู่มืออ้างอิง"
 
@@ -4705,15 +4675,20 @@ msgstr "ไปเอกสารถัดไป"
 msgid "Discard"
 msgstr "ละทิ้ง"
 
-msgid ""
-"The following files are newer on disk.\n"
-"What action should be taken?:"
-msgstr ""
-"ไฟล์ต่อไปนี้ในดิสก์ใหม่กว่า\n"
-"จะทำอย่างไรต่อไป?:"
+msgid "Reopen Closed Script"
+msgstr "เปิดสคริปต์ที่พึ่งปิด"
 
 msgid "Clear Recent Scripts"
 msgstr "ล้างสคริปต์ล่าสุด"
+
+msgid "Uppercase"
+msgstr "ตัวพิมพ์ใหญ่"
+
+msgid "Lowercase"
+msgstr "ตัวพิมพ์เล็ก"
+
+msgid "Capitalize"
+msgstr "อักษรแรกพิมพ์ใหญ่"
 
 msgid "Standard"
 msgstr "มาตรฐาน"
@@ -4745,15 +4720,6 @@ msgstr "เลือกสี"
 
 msgid "Line"
 msgstr "บรรทัด"
-
-msgid "Uppercase"
-msgstr "ตัวพิมพ์ใหญ่"
-
-msgid "Lowercase"
-msgstr "ตัวพิมพ์เล็ก"
-
-msgid "Capitalize"
-msgstr "อักษรแรกพิมพ์ใหญ่"
 
 msgid "Convert Case"
 msgstr "แปลงตัวพิมพ์ใหญ่-เล็ก"
@@ -4958,6 +4924,12 @@ msgstr "ขนาด"
 
 msgid "Create Frames from Sprite Sheet"
 msgstr "สร้างเฟรมจากสไปรต์ชีต"
+
+msgid "Reload"
+msgstr "โหลดใหม่"
+
+msgid "Resave"
+msgstr "บันทึกอีกครั้ง"
 
 msgid "Set Region Rect"
 msgstr "กำหนดขอบเขต Texture"
@@ -6394,13 +6366,6 @@ msgstr "สร้างพื้นที่โพรบ"
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "วัตถุนี้จะถูกละเว้นจนกว่าจะตั้ง mesh"
-
-msgid ""
-"A SpriteFrames resource must be created or set in the \"Frames\" property in "
-"order for AnimatedSprite3D to display frames."
-msgstr ""
-"ทรัพยากร SpriteFrames ต้องสร้างหรือตั้งค่าในคุณสมบัติ \"Frames\" เพื่อให้ AnimatedSprite3D "
-"แสดงเฟรม"
 
 msgid "Plotting Meshes"
 msgstr "วางแนว meshes"

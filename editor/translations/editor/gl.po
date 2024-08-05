@@ -10,19 +10,21 @@
 # David Salcas <davisalcas@gmail.com>, 2023.
 # David Fernández Pérez <davidfernandezperez.thezombrex@gmail.com>, 2023.
 # Carlos Cortes Garcia <carlos.cortes.games@gmail.com>, 2023.
+# C H O P O <ograncthulhu@gmail.com>, 2024.
+# ninjum <ninhum@gmx.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2023-12-11 21:00+0000\n"
-"Last-Translator: Carlos Cortes Garcia <carlos.cortes.games@gmail.com>\n"
+"PO-Revision-Date: 2024-06-20 12:09+0000\n"
+"Last-Translator: ninjum <ninhum@gmx.com>\n"
 "Language-Team: Galician <https://hosted.weblate.org/projects/godot-engine/"
 "godot/gl/>\n"
 "Language: gl\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.3-dev\n"
+"X-Generator: Weblate 5.6-rc\n"
 
 msgid "Main Thread"
 msgstr "Fío principal"
@@ -345,6 +347,9 @@ msgstr "Seleccionar Palabra Debaixo do Cursor"
 msgid "Add Selection for Next Occurrence"
 msgstr "Engadir selección para a próxima aparición"
 
+msgid "Skip Selection for Next Occurrence"
+msgstr "Omitir selección para a próxima aparición"
+
 msgid "Clear Carets and Selection"
 msgstr "Borrar Cursores e Selección"
 
@@ -445,6 +450,9 @@ msgstr "Editar Evento"
 msgid "Remove Event"
 msgstr "Eliminar Evento"
 
+msgid "Filter by Name"
+msgstr "Filtrar por nome"
+
 msgid "Clear All"
 msgstr "Limpar Todo"
 
@@ -478,6 +486,15 @@ msgstr "Introducir Clave Aquí"
 msgid "Duplicate Selected Key(s)"
 msgstr "Duplicar Clave(s) Seleccionadas(s)"
 
+msgid "Cut Selected Key(s)"
+msgstr "Cortar Clave(s) Seleccionada(s)"
+
+msgid "Copy Selected Key(s)"
+msgstr "Copiar Clave(s) Seleccionada(s)"
+
+msgid "Paste Key(s)"
+msgstr "Pegar Clave(s)"
+
 msgid "Delete Selected Key(s)"
 msgstr "Eliminar Clave(s) Seleccionada(s)"
 
@@ -490,6 +507,9 @@ msgstr "Facer os Manipuladores Lineais"
 msgid "Make Handles Balanced"
 msgstr "Facer os Manipuladores equilibrados"
 
+msgid "Make Handles Mirrored"
+msgstr "Facer os manipuladores simétricos"
+
 msgid "Add Bezier Point"
 msgstr "Engadir Punto Bezier"
 
@@ -499,8 +519,17 @@ msgstr "Mover Punto Bezier"
 msgid "Animation Duplicate Keys"
 msgstr "Duplicar Claves de Animación"
 
+msgid "Animation Cut Keys"
+msgstr "Cortar Claves de Animación"
+
+msgid "Animation Paste Keys"
+msgstr "Pegar Claves de Animación"
+
 msgid "Animation Delete Keys"
 msgstr "Eliminar Claves de Animación"
+
+msgid "Focus"
+msgstr "Foco"
 
 msgid "Select All Keys"
 msgstr "Seleccionar Todas as Claves"
@@ -546,6 +575,10 @@ msgstr "Cambiar Lonxitude da Animación"
 
 msgid "Change Animation Loop"
 msgstr "Cambiar Ciclo da Animación"
+
+msgid "Can't change loop mode on animation embedded in another scene."
+msgstr ""
+"Non se pode cambiar o modo de bucle na animación incorporada noutra escena."
 
 msgid "Animation length (frames)"
 msgstr "Lonxitude da Animacion (en fotogramas)"
@@ -612,6 +645,9 @@ msgstr "(Inválido, tipo esperado: %s)"
 
 msgid "Easing:"
 msgstr "Relaxación:"
+
+msgid "In-Handle:"
+msgstr "No manexo:"
 
 msgid "Stream:"
 msgstr "Fluxo:"
@@ -742,18 +778,6 @@ msgstr "A ruta á pista é inválida, polo que non se poden engadir chaves."
 
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "A pista non e do tipo Node3D, non se pode insertar a clave"
-
-msgid "Add Position Key"
-msgstr "Añadir Clave de Posición"
-
-msgid "Add Rotation Key"
-msgstr "Añadir Clave de Rotación"
-
-msgid "Add Scale Key"
-msgstr "Añadir Clave de Escala"
-
-msgid "Add Track Key"
-msgstr "Engadir Chave de Pista"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr ""
@@ -1205,6 +1229,9 @@ msgstr "Depuración"
 
 msgid "Copy Node Path"
 msgstr "Copiar Ruta do Nodo"
+
+msgid "Instance:"
+msgstr "Instancia:"
 
 msgid "Decompressing remote file system"
 msgstr "Descomprimindo sistema de ficheiros remoto"
@@ -1941,6 +1968,12 @@ msgstr "Importar Perf(il/ís)"
 msgid "Manage Editor Feature Profiles"
 msgstr "Administrar Perfils de Características de Godot"
 
+msgid "Restart"
+msgstr "Reiniciar"
+
+msgid "Save & Restart"
+msgstr "Gardar e Reinicar"
+
 msgid "ScanSources"
 msgstr "Escanear Fontes"
 
@@ -2404,10 +2437,6 @@ msgstr "Disposición das Ventás do Editor"
 msgid "Take Screenshot"
 msgstr "Captura de Pantalla"
 
-msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr ""
-"As capturas de pantalla gárdanse no cartafol de Datos/Configuración do Editor."
-
 msgid "Toggle Fullscreen"
 msgstr "Act./Desact. Pantalla Completa"
 
@@ -2438,9 +2467,6 @@ msgstr "Reportar un Erro"
 msgid "Send Docs Feedback"
 msgstr "Reportar Problema ca Documentación"
 
-msgid "Save & Restart"
-msgstr "Gardar e Reinicar"
-
 msgid "Update Continuously"
 msgstr "Actualizar de Maneira Continua"
 
@@ -2464,12 +2490,6 @@ msgstr "Biblioteca de Exportación"
 
 msgid "Open & Run a Script"
 msgstr "Abrir e Executar un Script"
-
-msgid "Reload"
-msgstr "Recargar"
-
-msgid "Resave"
-msgstr "Volver a Gardar"
 
 msgid "New Inherited"
 msgstr "Nova Escena Herdada"
@@ -2584,9 +2604,6 @@ msgstr ""
 msgid "Write your logic in the _run() method."
 msgstr "Escribe a túa lóxica no método '_run()'."
 
-msgid "There is an edited scene already."
-msgstr "Xa hai unha escena editada."
-
 msgid "General"
 msgstr "Xeral"
 
@@ -2625,6 +2642,12 @@ msgstr "A petición fallou."
 
 msgid "Cannot remove temporary file:"
 msgstr "Non se pode eliminar o arquivo temporal:"
+
+msgid "Connecting..."
+msgstr "Conectando..."
+
+msgid "Requesting..."
+msgstr "Solicitando..."
 
 msgid "Importing:"
 msgstr "Importando:"
@@ -2746,6 +2769,9 @@ msgstr "Eliminar de Favoritos"
 msgid "Reimport"
 msgstr "Reimportar"
 
+msgid "Open in File Manager"
+msgstr "Abrir no Explorador de Arquivos"
+
 msgid "New Folder..."
 msgstr "Novo Cartafol..."
 
@@ -2763,9 +2789,6 @@ msgstr "Duplicar..."
 
 msgid "Rename..."
 msgstr "Renomear..."
-
-msgid "Open in File Manager"
-msgstr "Abrir no Explorador de Arquivos"
 
 msgid "Re-Scan Filesystem"
 msgstr "Reexaminar Sistema de Arquivos"
@@ -2966,9 +2989,6 @@ msgid_plural "Node is in the following groups:"
 msgstr[0] "O nodo está neste grupo:"
 msgstr[1] "O nodo está nestes grupos:"
 
-msgid "Instance:"
-msgstr "Instancia:"
-
 msgid "Select a Node"
 msgstr "Seleccione un Nodo"
 
@@ -3004,9 +3024,6 @@ msgstr "Dispositivo:"
 
 msgid "Failed to load resource."
 msgstr "Fallou a carga do Recurso."
-
-msgid "Raw"
-msgstr "Sen Procesar (Raw)"
 
 msgid "Copy Resource"
 msgstr "Copiar Recurso"
@@ -3277,12 +3294,6 @@ msgstr "Descargando..."
 msgid "Resolving..."
 msgstr "Resolvendo..."
 
-msgid "Connecting..."
-msgstr "Conectando..."
-
-msgid "Requesting..."
-msgstr "Solicitando..."
-
 msgid "Idle"
 msgstr "Ocioso"
 
@@ -3378,6 +3389,11 @@ msgstr "Limpar Guías"
 
 msgid "Select Mode"
 msgstr "Elixir Modo"
+
+msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
+msgstr ""
+"Alt+Clic Dereito: Amosa unha lista de nodos na posición na que se fixo clic, "
+"incluindo bloqueados."
 
 msgid "Move Mode"
 msgstr "Mover Modo"
@@ -3505,9 +3521,6 @@ msgstr "Dividir Dimensión da Cuadrícula por 2"
 msgid "Adding %s..."
 msgstr "Engadindo %s..."
 
-msgid "Cannot instantiate multiple nodes without root."
-msgstr "Non se pode instanciar varios nodos sen un nodo raíz."
-
 msgid "Create Node"
 msgstr "Crear Nodo"
 
@@ -3561,9 +3574,6 @@ msgstr "Dereito Alto"
 
 msgid "Full Rect"
 msgstr "Recta Completa"
-
-msgid "Restart"
-msgstr "Reiniciar"
 
 msgid "Deploy with Remote Debug"
 msgstr "Exportar con Depuración Remota"
@@ -3819,11 +3829,6 @@ msgstr ""
 msgid "Couldn't find a solid floor to snap the selection to."
 msgstr "Non se puido encontrar chan sólido no que poder axustar a selección."
 
-msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
-msgstr ""
-"Alt+Clic Dereito: Amosa unha lista de nodos na posición na que se fixo clic, "
-"incluindo bloqueados."
-
 msgid "Use Local Space"
 msgstr "Usar Espazo Local"
 
@@ -4067,6 +4072,12 @@ msgstr "Importar Tema"
 msgid "Error saving"
 msgstr "Erro ao gardar"
 
+msgid "Online Docs"
+msgstr "Documentación En Liña"
+
+msgid "Open Godot online documentation."
+msgstr "Abrir a documentación en liña de Godot."
+
 msgid "Find Next"
 msgstr "Atopar Seguinte"
 
@@ -4115,12 +4126,6 @@ msgstr "Executar"
 msgid "Search"
 msgstr "Buscar"
 
-msgid "Online Docs"
-msgstr "Documentación En Liña"
-
-msgid "Open Godot online documentation."
-msgstr "Abrir a documentación en liña de Godot."
-
 msgid "Search the reference documentation."
 msgstr "Buscar na documentación de referencia."
 
@@ -4132,6 +4137,15 @@ msgstr "Ir ao seguinte documento editado."
 
 msgid "Discard"
 msgstr "Descartar"
+
+msgid "Uppercase"
+msgstr "Maiúscula"
+
+msgid "Lowercase"
+msgstr "Minúscula"
+
+msgid "Capitalize"
+msgstr "Capitalizar"
 
 msgid "Standard"
 msgstr "Estándar"
@@ -4153,15 +4167,6 @@ msgstr "Elexir Cor"
 
 msgid "Line"
 msgstr "Liña"
-
-msgid "Uppercase"
-msgstr "Maiúscula"
-
-msgid "Lowercase"
-msgstr "Minúscula"
-
-msgid "Capitalize"
-msgstr "Capitalizar"
 
 msgid "Convert Case"
 msgstr "Convertir Mayúsculas/Minúsculas"
@@ -4285,6 +4290,12 @@ msgstr "Eliminar Animación"
 
 msgid "Zoom Reset"
 msgstr "Restablecer Zoom"
+
+msgid "Reload"
+msgstr "Recargar"
+
+msgid "Resave"
+msgstr "Volver a Gardar"
 
 msgid "Snap Mode:"
 msgstr "Modo de Axuste:"

@@ -81,9 +81,9 @@ void EditorBottomPanel::_switch_to_item(bool p_visible, int p_idx) {
 		}
 		if (EditorDebuggerNode::get_singleton() == items[p_idx].control) {
 			// This is the debug panel which uses tabs, so the top section should be smaller.
-			add_theme_style_override("panel", get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles)));
+			add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles)));
 		} else {
-			add_theme_style_override("panel", get_theme_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
+			add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
 		}
 		center_split->set_dragger_visibility(SplitContainer::DRAGGER_VISIBLE);
 		center_split->set_collapsed(false);
@@ -92,7 +92,7 @@ void EditorBottomPanel::_switch_to_item(bool p_visible, int p_idx) {
 		}
 		expand_button->show();
 	} else {
-		add_theme_style_override("panel", get_theme_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
+		add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
 		items[p_idx].button->set_pressed_no_signal(false);
 		items[p_idx].control->set_visible(false);
 		center_split->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN);
@@ -178,16 +178,21 @@ Button *EditorBottomPanel::add_item(String p_text, Control *p_item, const Ref<Sh
 	bpi.button = tb;
 	bpi.control = p_item;
 	bpi.name = p_text;
-	items.push_back(bpi);
+	if (p_at_front) {
+		items.insert(0, bpi);
+	} else {
+		items.push_back(bpi);
+	}
 
 	return tb;
 }
 
 void EditorBottomPanel::remove_item(Control *p_item) {
+	bool was_visible = false;
 	for (int i = 0; i < items.size(); i++) {
 		if (items[i].control == p_item) {
 			if (p_item->is_visible_in_tree()) {
-				_switch_to_item(false, i);
+				was_visible = true;
 			}
 			item_vbox->remove_child(items[i].control);
 			button_hbox->remove_child(items[i].button);
@@ -195,6 +200,16 @@ void EditorBottomPanel::remove_item(Control *p_item) {
 			items.remove_at(i);
 			break;
 		}
+	}
+
+	if (was_visible) {
+		// Open the first panel to ensure that if the removed dock was visible, the bottom
+		// panel will not collapse.
+		_switch_to_item(true, 0);
+	} else if (last_opened_control == p_item) {
+		// When a dock is removed by plugins, it might not have been visible, and it
+		// might have been the last_opened_control. We need to make sure to reset the last opened control.
+		last_opened_control = items[0].control;
 	}
 }
 

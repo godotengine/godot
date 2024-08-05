@@ -617,7 +617,7 @@ Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector
 			const Face3 f(p.points[0].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
 			Vector3 inters;
 			if (f.intersects_segment(p_from, p_to, &inters)) {
-				const real_t d = closest_point_d = p_from.distance_to(inters);
+				const real_t d = p_from.distance_to(inters);
 				if (use_collision == false) {
 					closest_point = inters;
 					use_collision = true;
@@ -627,9 +627,25 @@ Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector
 					closest_point_d = d;
 				}
 			}
-		}
+			// If segment does not itersect face, check the distance from segment's endpoints.
+			else if (!use_collision) {
+				const Vector3 p_from_closest = f.get_closest_point_to(p_from);
+				const real_t d_p_from = p_from.distance_to(p_from_closest);
+				if (closest_point_d > d_p_from) {
+					closest_point = p_from_closest;
+					closest_point_d = d_p_from;
+				}
 
-		if (use_collision == false) {
+				const Vector3 p_to_closest = f.get_closest_point_to(p_to);
+				const real_t d_p_to = p_to.distance_to(p_to_closest);
+				if (closest_point_d > d_p_to) {
+					closest_point = p_to_closest;
+					closest_point_d = d_p_to;
+				}
+			}
+		}
+		// Finally, check for a case when shortest distance is between some point located on a face's edge and some point located on a line segment.
+		if (!use_collision) {
 			for (size_t point_id = 0; point_id < p.points.size(); point_id += 1) {
 				Vector3 a, b;
 
@@ -1130,13 +1146,6 @@ void NavMap::sync() {
 				new_polygon.points.push_back({ closest_start_point, get_point_key(closest_start_point) });
 				new_polygon.points.push_back({ closest_end_point, get_point_key(closest_end_point) });
 				new_polygon.points.push_back({ closest_end_point, get_point_key(closest_end_point) });
-
-				Vector3 center;
-				for (int p = 0; p < 4; ++p) {
-					center += new_polygon.points[p].pos;
-				}
-				new_polygon.center = center / real_t(new_polygon.points.size());
-				new_polygon.clockwise = true;
 
 				// Setup connections to go forward in the link.
 				{

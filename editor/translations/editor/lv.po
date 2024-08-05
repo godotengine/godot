@@ -618,9 +618,6 @@ msgstr "Pievienot Bezjē Celiņu"
 msgid "Track path is invalid, so can't add a key."
 msgstr "Ceļš uz Celiņu nav derīgs, tāpēc nevar pievienot atslēgu."
 
-msgid "Add Track Key"
-msgstr "Pievienot Celiņa Atslēgu"
-
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Ceļš uz Celiņu nav derīgs, tāpēc nevar pievienot metodes atslēgu."
 
@@ -1532,6 +1529,9 @@ msgstr "Importēt profilu(s)"
 msgid "Manage Editor Feature Profiles"
 msgstr "Pārvaldīt redaktora iespēju profilus"
 
+msgid "Save & Restart"
+msgstr "Saglabāt & pārstartēt"
+
 msgid "ScanSources"
 msgstr "ScanSources / Skenēšanas Avoti"
 
@@ -1813,13 +1813,6 @@ msgid "Quick Open Script..."
 msgstr "ātri atvērt skriptu..."
 
 msgid ""
-"The current scene has no root node, but %d modified external resource(s) were "
-"saved anyway."
-msgstr ""
-"Pašreizējai ainav nav saknes mezgla, bet %d pārveidoti ārējie resursi tika "
-"saglbāti tāpat."
-
-msgid ""
 "A root node is required to save the scene. You can add a root node using the "
 "Scene tree dock."
 msgstr ""
@@ -1949,6 +1942,12 @@ msgstr "%d vēl faili"
 msgid "Forward+"
 msgstr "UzPriekšu+"
 
+msgid "Lock Selected Node(s)"
+msgstr "Aizslēgt izvēlēto mezglu(s)"
+
+msgid "Unlock Selected Node(s)"
+msgstr "Atslēgt izvēlēto muzglu(s)"
+
 msgid "Distraction Free Mode"
 msgstr "Traucējumu brīvs režīms"
 
@@ -2024,9 +2023,6 @@ msgstr "Redaktora izkārtojums"
 msgid "Take Screenshot"
 msgstr "Uzņemt Ekrānšāviņu"
 
-msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr "Ekrānšāviņi tiek saglabāti redaktora datu / iestatījumu mapē."
-
 msgid "Toggle Fullscreen"
 msgstr "Pārslēgt Pilnekrānu"
 
@@ -2065,9 +2061,6 @@ msgstr "Sūtīt dokumentu atsauksmi"
 
 msgid "Support Godot Development"
 msgstr "Atbalstīt Godot izstrādi"
-
-msgid "Save & Restart"
-msgstr "Saglabāt & pārstartēt"
 
 msgid "Update Continuously"
 msgstr "Nepārtraukti Atjaunot"
@@ -2108,12 +2101,6 @@ msgid ""
 msgstr ""
 "Sekojošie faili ir jaunāki uz diska.\n"
 "Kādu darbību veikt ?"
-
-msgid "Reload"
-msgstr "Pārlādēt"
-
-msgid "Resave"
-msgstr "Pārglabāt"
 
 msgid "Load Errors"
 msgstr "Ielādes kļūdas"
@@ -2187,9 +2174,6 @@ msgstr "Jauns Skripts..."
 msgid "Write your logic in the _run() method."
 msgstr "Raksti savu loģiku _run() metodē."
 
-msgid "There is an edited scene already."
-msgstr "Jau ir rediģēta aina."
-
 msgid "General"
 msgstr "Vispārēji"
 
@@ -2237,6 +2221,12 @@ msgstr "Nevar pievienoties spogulim."
 
 msgid "Cannot remove temporary file:"
 msgstr "Nevar noņemt pagaidu failu:"
+
+msgid "Connecting..."
+msgstr "Savienojas..."
+
+msgid "Requesting..."
+msgstr "Pieprasa..."
 
 msgid "Importing:"
 msgstr "Importē:"
@@ -2329,6 +2319,9 @@ msgstr "Noņemt no Favorītiem"
 msgid "Reimport"
 msgstr "Reimportēt"
 
+msgid "Open in File Manager"
+msgstr "Atvērt Failu Pārlūkā"
+
 msgid "New Folder..."
 msgstr "Jauna mape..."
 
@@ -2346,9 +2339,6 @@ msgstr "Dublicēt..."
 
 msgid "Rename..."
 msgstr "Pārsaukt..."
-
-msgid "Open in File Manager"
-msgstr "Atvērt Failu Pārlūkā"
 
 msgid "Find in Files"
 msgstr "Atrast Failos"
@@ -2524,9 +2514,6 @@ msgstr "Notīrtīt noklusējumu priekš '%s'"
 msgid "Preset"
 msgstr "Sagatave"
 
-msgid "Raw"
-msgstr "Jēls"
-
 msgid "Copy Properties"
 msgstr "Kopēt iestatījumus"
 
@@ -2674,12 +2661,6 @@ msgstr "Saņemts:"
 msgid "Resolving..."
 msgstr "Atrisina.."
 
-msgid "Connecting..."
-msgstr "Savienojas..."
-
-msgid "Requesting..."
-msgstr "Pieprasa..."
-
 msgid "Idle"
 msgstr "Dīkstāve"
 
@@ -2766,12 +2747,6 @@ msgstr "Mēroga Režīms"
 
 msgid "Ruler Mode"
 msgstr "Lineāla Režīms"
-
-msgid "Lock Selected Node(s)"
-msgstr "Aizslēgt izvēlēto mezglu(s)"
-
-msgid "Unlock Selected Node(s)"
-msgstr "Atslēgt izvēlēto muzglu(s)"
 
 msgid "View"
 msgstr "Skatīt"
@@ -2940,6 +2915,12 @@ msgstr "Saglabāt Failu Kā..."
 msgid "Save Theme As..."
 msgstr "Saglabāt motīvu kā..."
 
+msgid "Online Docs"
+msgstr "Tiešsaistes Dokumenti"
+
+msgid "Open Godot online documentation."
+msgstr "Atvērt Godot tiešsaistes dokumentāciju."
+
 msgid "Find Next"
 msgstr "Atrast Nākamo"
 
@@ -2958,9 +2939,6 @@ msgstr "Fails"
 msgid "Open..."
 msgstr "Atvērt..."
 
-msgid "Reopen Closed Script"
-msgstr "Atvērt aizvērto skriptu"
-
 msgid "Save All"
 msgstr "Saglabāt visu"
 
@@ -2976,14 +2954,11 @@ msgstr "Palaist"
 msgid "Search"
 msgstr "Meklēt"
 
-msgid "Online Docs"
-msgstr "Tiešsaistes Dokumenti"
-
-msgid "Open Godot online documentation."
-msgstr "Atvērt Godot tiešsaistes dokumentāciju."
-
 msgid "Discard"
 msgstr "Atmest"
+
+msgid "Reopen Closed Script"
+msgstr "Atvērt aizvērto skriptu"
 
 msgid "Clear Recent Scripts"
 msgstr "Notīrīt nesenos skriptus"
@@ -3079,6 +3054,12 @@ msgstr "Atiestatīt Tuvinājumu"
 
 msgid "Size"
 msgstr "Izmērs"
+
+msgid "Reload"
+msgstr "Pārlādēt"
+
+msgid "Resave"
+msgstr "Pārglabāt"
 
 msgid "Separation:"
 msgstr "Atdalījums:"

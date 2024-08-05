@@ -607,6 +607,7 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 			ERR_PRINT(vformat("Failed to initialize %s context", rendering_driver));
 			memdelete(rendering_context);
 			rendering_context = nullptr;
+			r_error = ERR_UNAVAILABLE;
 			return;
 		}
 
@@ -627,6 +628,7 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 			ERR_PRINT(vformat("Failed to create %s window.", rendering_driver));
 			memdelete(rendering_context);
 			rendering_context = nullptr;
+			r_error = ERR_UNAVAILABLE;
 			return;
 		}
 
@@ -635,7 +637,13 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 		rendering_context->window_set_vsync_mode(MAIN_WINDOW_ID, p_vsync_mode);
 
 		rendering_device = memnew(RenderingDevice);
-		rendering_device->initialize(rendering_context, MAIN_WINDOW_ID);
+		if (rendering_device->initialize(rendering_context, MAIN_WINDOW_ID) != OK) {
+			rendering_device = nullptr;
+			memdelete(rendering_context);
+			rendering_context = nullptr;
+			r_error = ERR_UNAVAILABLE;
+			return;
+		}
 		rendering_device->screen_create(MAIN_WINDOW_ID);
 
 		RendererCompositorRD::make_current();
@@ -643,7 +651,6 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 #endif
 
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
-	Input::get_singleton()->set_use_input_buffering(true); // Needed because events will come directly from the UI thread
 
 	r_error = OK;
 }

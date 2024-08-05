@@ -722,7 +722,7 @@ bool TileMap::_get(const StringName &p_name, Variant &r_ret) const {
 
 void TileMap::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::INT, "format", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
-	property_helper.get_property_list(p_list, layers.size());
+	property_helper.get_property_list(p_list);
 }
 
 Vector2 TileMap::map_to_local(const Vector2i &p_pos) const {
@@ -996,6 +996,7 @@ TileMap::TileMap() {
 		base_property_helper.register_property(PropertyInfo(Variant::INT, "z_index"), defaults->get_z_index(), &TileMap::set_layer_z_index, &TileMap::get_layer_z_index);
 		base_property_helper.register_property(PropertyInfo(Variant::BOOL, "navigation_enabled"), defaults->is_navigation_enabled(), &TileMap::set_layer_navigation_enabled, &TileMap::is_layer_navigation_enabled);
 		base_property_helper.register_property(PropertyInfo(Variant::PACKED_INT32_ARRAY, "tile_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), Vector<int>(), &TileMap::_set_layer_tile_data, &TileMap::_get_tile_map_data_using_compatibility_format);
+		PropertyListHelper::register_base_helper(&base_property_helper);
 
 		memdelete(defaults);
 	}

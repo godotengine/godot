@@ -91,6 +91,7 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 			ERR_PRINT(vformat("Failed to initialize %s context", rendering_driver));
 			memdelete(rendering_context);
 			rendering_context = nullptr;
+			r_error = ERR_UNAVAILABLE;
 			return;
 		}
 
@@ -107,7 +108,13 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 		rendering_context->window_set_vsync_mode(MAIN_WINDOW_ID, p_vsync_mode);
 
 		rendering_device = memnew(RenderingDevice);
-		rendering_device->initialize(rendering_context, MAIN_WINDOW_ID);
+		if (rendering_device->initialize(rendering_context, MAIN_WINDOW_ID) != OK) {
+			rendering_device = nullptr;
+			memdelete(rendering_context);
+			rendering_context = nullptr;
+			r_error = ERR_UNAVAILABLE;
+			return;
+		}
 		rendering_device->screen_create(MAIN_WINDOW_ID);
 
 		RendererCompositorRD::make_current();
@@ -399,7 +406,12 @@ void DisplayServerIOS::set_system_theme_change_callback(const Callable &p_callab
 
 void DisplayServerIOS::emit_system_theme_changed() {
 	if (system_theme_changed.is_valid()) {
-		system_theme_changed.call();
+		Variant ret;
+		Callable::CallError ce;
+		system_theme_changed.callp(nullptr, 0, ret, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_PRINT(vformat("Failed to execute system theme changed callback: %s.", Variant::get_callable_error_text(system_theme_changed, nullptr, 0, ce)));
+		}
 	}
 }
 

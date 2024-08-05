@@ -88,6 +88,13 @@
 				The way undo operation are ordered in actions is dictated by [param backward_undo_ops]. When [param backward_undo_ops] is [code]false[/code] undo option are ordered in the same order they were added. Which means the first operation to be added will be the first to be undone.
 			</description>
 		</method>
+		<method name="force_fixed_history">
+			<return type="void" />
+			<description>
+				Forces the next operation (e.g. [method add_do_method]) to use the action's history rather than guessing it from the object. This is sometimes needed when a history can't be correctly determined, like for a nested resource that doesn't have a path yet.
+				This method should only be used when absolutely necessary, otherwise it might cause invalid history state. For most of complex cases, the [code]custom_context[/code] parameter of [method create_action] is sufficient.
+			</description>
+		</method>
 		<method name="get_history_undo_redo" qualifiers="const">
 			<return type="UndoRedo" />
 			<param index="0" name="id" type="int" />

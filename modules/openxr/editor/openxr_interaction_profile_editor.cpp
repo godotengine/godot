@@ -285,7 +285,7 @@ void OpenXRInteractionProfileEditor::_update_interaction_profile() {
 		PanelContainer *panel = memnew(PanelContainer);
 		panel->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		main_hb->add_child(panel);
-		panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TabContainer")));
+		panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("TabContainer")));
 
 		VBoxContainer *container = memnew(VBoxContainer);
 		panel->add_child(container);
@@ -310,7 +310,7 @@ void OpenXRInteractionProfileEditor::_theme_changed() {
 	for (int i = 0; i < main_hb->get_child_count(); i++) {
 		Control *panel = Object::cast_to<Control>(main_hb->get_child(i));
 		if (panel) {
-			panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TabContainer")));
+			panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("TabContainer")));
 		}
 	}
 }

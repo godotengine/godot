@@ -33,7 +33,6 @@
 #include "core/config/engine.h"
 #include "servers/rendering/rendering_device.h"
 
-#include <glslang/Include/Types.h>
 #include <glslang/Public/ResourceLimits.h>
 #include <glslang/Public/ShaderLang.h>
 #include <glslang/SPIRV/GlslangToSpv.h>

@@ -738,15 +738,7 @@ bool PhysicalBone3D::_get(const StringName &p_name, Variant &r_ret) const {
 void PhysicalBone3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	Skeleton3D *skeleton = get_skeleton();
 	if (skeleton) {
-		String names;
-		for (int i = 0; i < skeleton->get_bone_count(); i++) {
-			if (i > 0) {
-				names += ",";
-			}
-			names += skeleton->get_bone_name(i);
-		}
-
-		p_list->push_back(PropertyInfo(Variant::STRING_NAME, PNAME("bone_name"), PROPERTY_HINT_ENUM, names));
+		p_list->push_back(PropertyInfo(Variant::STRING_NAME, PNAME("bone_name"), PROPERTY_HINT_ENUM, skeleton->get_concatenated_bone_names()));
 	} else {
 		p_list->push_back(PropertyInfo(Variant::STRING_NAME, PNAME("bone_name")));
 	}
@@ -772,7 +764,7 @@ void PhysicalBone3D::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			PhysicalBoneSimulator3D *simulator = get_simulator();
 			if (simulator) {
-				if (-1 != bone_id) {
+				if (bone_id != -1) {
 					simulator->unbind_physical_bone_from_bone(bone_id);
 					bone_id = -1;
 				}
@@ -824,7 +816,7 @@ void PhysicalBone3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 	PhysicalBoneSimulator3D *simulator = get_simulator();
 	Skeleton3D *skeleton = get_skeleton();
 	if (simulator && skeleton) {
-		if (-1 != bone_id) {
+		if (bone_id != -1) {
 			simulator->set_bone_global_pose(bone_id, skeleton->get_global_transform().affine_inverse() * (global_transform * body_offset_inverse));
 		}
 	}
@@ -1301,7 +1293,7 @@ void PhysicalBone3D::update_bone_id() {
 	const int new_bone_id = simulator->find_bone(bone_name);
 
 	if (new_bone_id != bone_id) {
-		if (-1 != bone_id) {
+		if (bone_id != -1) {
 			// Assert the unbind from old node
 			simulator->unbind_physical_bone_from_bone(bone_id);
 		}
@@ -1321,7 +1313,7 @@ void PhysicalBone3D::update_offset() {
 	Skeleton3D *skeleton = get_skeleton();
 	if (simulator && skeleton) {
 		Transform3D bone_transform(skeleton->get_global_transform());
-		if (-1 != bone_id) {
+		if (bone_id != -1) {
 			bone_transform *= simulator->get_bone_global_pose(bone_id);
 		}
 
@@ -1336,7 +1328,7 @@ void PhysicalBone3D::update_offset() {
 }
 
 void PhysicalBone3D::_start_physics_simulation() {
-	if (_internal_simulate_physics || !simulator_id.is_valid()) {
+	if (_internal_simulate_physics || !simulator_id.is_valid() || bone_id == -1) {
 		return;
 	}
 	reset_to_rest_position();
@@ -1352,7 +1344,7 @@ void PhysicalBone3D::_start_physics_simulation() {
 void PhysicalBone3D::_stop_physics_simulation() {
 	PhysicalBoneSimulator3D *simulator = get_simulator();
 	if (simulator) {
-		if (simulator->is_simulating_physics()) {
+		if (simulator->is_active() && bone_id != -1) {
 			set_body_mode(PhysicsServer3D::BODY_MODE_KINEMATIC);
 			PhysicsServer3D::get_singleton()->body_set_collision_layer(get_rid(), get_collision_layer());
 			PhysicsServer3D::get_singleton()->body_set_collision_mask(get_rid(), get_collision_mask());

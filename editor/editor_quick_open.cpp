@@ -32,6 +32,7 @@
 
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
 
 Rect2i EditorQuickOpen::prev_rect = Rect2i();
@@ -119,10 +120,12 @@ void EditorQuickOpen::_update_search() {
 			sorter.sort(entries.ptrw(), entries.size());
 		}
 
+		const int class_icon_size = search_options->get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 		const int entry_limit = MIN(entries.size(), 300);
 		for (int i = 0; i < entry_limit; i++) {
 			TreeItem *ti = search_options->create_item(root);
 			ti->set_text(0, entries[i].path);
+			ti->set_icon_max_width(0, class_icon_size);
 			ti->set_icon(0, *icons.lookup_ptr(entries[i].path.get_extension()));
 		}
 
@@ -261,7 +264,7 @@ String EditorQuickOpen::get_base_type() const {
 void EditorQuickOpen::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			connect("confirmed", callable_mp(this, &EditorQuickOpen::_confirmed));
+			connect(SceneStringName(confirmed), callable_mp(this, &EditorQuickOpen::_confirmed));
 
 			search_box->set_clear_button_enabled(true);
 		} break;
@@ -278,7 +281,7 @@ void EditorQuickOpen::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			disconnect("confirmed", callable_mp(this, &EditorQuickOpen::_confirmed));
+			disconnect(SceneStringName(confirmed), callable_mp(this, &EditorQuickOpen::_confirmed));
 		} break;
 	}
 }
@@ -292,7 +295,7 @@ EditorQuickOpen::EditorQuickOpen() {
 	add_child(vbc);
 
 	search_box = memnew(LineEdit);
-	search_box->connect("text_changed", callable_mp(this, &EditorQuickOpen::_text_changed));
+	search_box->connect(SceneStringName(text_changed), callable_mp(this, &EditorQuickOpen::_text_changed));
 	search_box->connect(SceneStringName(gui_input), callable_mp(this, &EditorQuickOpen::_sbox_input));
 	vbc->add_margin_child(TTR("Search:"), search_box);
 	register_text_enter(search_box);

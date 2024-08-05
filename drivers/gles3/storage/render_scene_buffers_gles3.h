@@ -50,6 +50,7 @@ public:
 	//bool use_taa = false;
 	//bool use_debanding = false;
 	uint32_t view_count = 1;
+	bool apply_color_adjustments_in_post = false;
 
 	RID render_target;
 
@@ -83,7 +84,6 @@ public:
 
 	// Buffers for our glow implementation
 	struct GLOW {
-		bool glow_enabled = false;
 		GLES3::Glow::GLOWLEVEL levels[4];
 	} glow;
 
@@ -106,6 +106,7 @@ public:
 	virtual void set_fsr_sharpness(float p_fsr_sharpness) override{};
 	virtual void set_texture_mipmap_bias(float p_texture_mipmap_bias) override{};
 	virtual void set_use_debanding(bool p_use_debanding) override{};
+	void set_apply_color_adjustments_in_post(bool p_apply_in_post);
 
 	void free_render_buffer_data();
 
@@ -145,8 +146,6 @@ public:
 	GLuint get_backbuffer() const { return backbuffer3d.color; }
 	GLuint get_backbuffer_depth() const { return backbuffer3d.depth; }
 
-	bool get_glow_enabled() const { return glow.glow_enabled; }
-	void set_glow_enabled(bool p_glow_enabled);
 	const GLES3::Glow::GLOWLEVEL *get_glow_buffers() const { return &glow.levels[0]; }
 
 	// Getters

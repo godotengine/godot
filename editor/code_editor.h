@@ -64,6 +64,12 @@ class CodeTextEditor;
 class FindReplaceBar : public HBoxContainer {
 	GDCLASS(FindReplaceBar, HBoxContainer);
 
+	enum SearchMode {
+		SEARCH_CURRENT,
+		SEARCH_NEXT,
+		SEARCH_PREV,
+	};
+
 	LineEdit *search_text = nullptr;
 	Label *matches_label = nullptr;
 	Button *find_prev = nullptr;
@@ -94,7 +100,7 @@ class FindReplaceBar : public HBoxContainer {
 	bool replace_all_mode = false;
 	bool preserve_cursor = false;
 
-	void _get_search_from(int &r_line, int &r_col, bool p_is_searching_next = false);
+	void _get_search_from(int &r_line, int &r_col, SearchMode p_search_mode);
 	void _update_results_count();
 	void _update_matches_display();
 
@@ -224,6 +230,7 @@ protected:
 
 public:
 	void trim_trailing_whitespace();
+	void trim_final_newlines();
 	void insert_final_newline();
 
 	enum CaseStyle {

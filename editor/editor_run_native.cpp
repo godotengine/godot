@@ -58,12 +58,12 @@ void EditorRunNative::_notification(int p_what) {
 					for (int j = 0; j < EditorExport::get_singleton()->get_export_platform_count(); j++) {
 						if (eep->get_name() == EditorExport::get_singleton()->get_export_platform(j)->get_name()) {
 							platform_idx = j;
+							break;
 						}
 					}
 					int dc = MIN(eep->get_options_count(), 9000);
-					bool needs_templates;
 					String error;
-					if (dc > 0 && preset->is_runnable() && eep->can_export(preset, error, needs_templates)) {
+					if (dc > 0 && preset->is_runnable()) {
 						popup->add_icon_item(eep->get_run_icon(), eep->get_name(), -1);
 						popup->set_item_disabled(-1, true);
 						for (int j = 0; j < dc; j++) {
@@ -188,7 +188,7 @@ EditorRunNative::EditorRunNative() {
 	remote_debug = memnew(MenuButton);
 	remote_debug->set_flat(false);
 	remote_debug->set_theme_type_variation("RunBarButton");
-	remote_debug->get_popup()->connect("id_pressed", callable_mp(this, &EditorRunNative::start_run_native));
+	remote_debug->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &EditorRunNative::start_run_native));
 	remote_debug->set_tooltip_text(TTR("Remote Debug"));
 	remote_debug->set_disabled(true);
 
@@ -205,7 +205,7 @@ EditorRunNative::EditorRunNative() {
 
 	run_native_confirm = memnew(ConfirmationDialog);
 	add_child(run_native_confirm);
-	run_native_confirm->connect("confirmed", callable_mp(this, &EditorRunNative::_confirm_run_native));
+	run_native_confirm->connect(SceneStringName(confirmed), callable_mp(this, &EditorRunNative::_confirm_run_native));
 
 	set_process(true);
 }

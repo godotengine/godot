@@ -80,6 +80,7 @@ private:
 		PlaybackData current;
 		StringName assigned;
 		bool seeked = false;
+		bool internal_seeked = false;
 		bool started = false;
 		List<Blend> blend;
 	} playback;
@@ -95,9 +96,9 @@ private:
 		}
 		bool operator<(const BlendKey &bk) const {
 			if (from == bk.from) {
-				return to < bk.to;
+				return StringName::AlphCompare()(to, bk.to);
 			} else {
-				return from < bk.from;
+				return StringName::AlphCompare()(from, bk.from);
 			}
 		}
 	};
@@ -116,7 +117,7 @@ private:
 
 	void _play(const StringName &p_name, double p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false);
 	void _capture(const StringName &p_name, bool p_from_end = false, double p_duration = -1.0, Tween::TransitionType p_trans_type = Tween::TRANS_LINEAR, Tween::EaseType p_ease_type = Tween::EASE_IN);
-	void _process_playback_data(PlaybackData &cd, double p_delta, float p_blend, bool p_seeked, bool p_started, bool p_is_current = false);
+	void _process_playback_data(PlaybackData &cd, double p_delta, float p_blend, bool p_seeked, bool p_internal_seeked, bool p_started, bool p_is_current = false);
 	void _blend_playback_data(double p_delta, bool p_started);
 	void _stop_internal(bool p_reset, bool p_keep_state);
 	void _check_immediately_after_start();
@@ -200,6 +201,7 @@ public:
 	void set_movie_quit_on_finish_enabled(bool p_enabled);
 	bool is_movie_quit_on_finish_enabled() const;
 
+	void seek_internal(double p_time, bool p_update = false, bool p_update_only = false, bool p_is_internal_seek = false);
 	void seek(double p_time, bool p_update = false, bool p_update_only = false);
 
 	double get_current_animation_position() const;

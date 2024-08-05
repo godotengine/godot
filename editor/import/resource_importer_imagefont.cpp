@@ -38,7 +38,7 @@ String ResourceImporterImageFont::get_importer_name() const {
 }
 
 String ResourceImporterImageFont::get_visible_name() const {
-	return "Font Data (Monospace Image Font)";
+	return "Font Data (Image Font)";
 }
 
 void ResourceImporterImageFont::get_recognized_extensions(List<String> *p_extensions) const {
@@ -229,6 +229,7 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 							} else {
 								end = token.hex_to_int();
 								step = STEP_ADVANCE_BEGIN;
+								c--;
 							}
 						}
 					} break;
@@ -244,6 +245,7 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 							} else {
 								end = token.to_int();
 								step = STEP_ADVANCE_BEGIN;
+								c--;
 							}
 						}
 					} break;
@@ -289,10 +291,29 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 			WARN_PRINT(vformat("Invalid kerning pairs string: \"%s\"", kp));
 			continue;
 		}
+		String from_tokens;
+		for (int i = 0; i < kp_tokens[0].length(); i++) {
+			if (i <= kp_tokens[0].length() - 6 && kp_tokens[0][i] == '\\' && kp_tokens[0][i + 1] == 'u') {
+				char32_t charcode = kp_tokens[0].substr(i + 2, 4).hex_to_int();
+				from_tokens += charcode;
+			} else {
+				from_tokens += kp_tokens[0][i];
+			}
+		}
+		String to_tokens;
+		for (int i = 0; i < kp_tokens[1].length(); i++) {
+			if (i <= kp_tokens[1].length() - 6 && kp_tokens[1][i] == '\\' && kp_tokens[1][i + 1] == 'u') {
+				char32_t charcode = kp_tokens[1].substr(i + 2, 4).hex_to_int();
+				to_tokens += charcode;
+			} else {
+				to_tokens += kp_tokens[1][i];
+			}
+		}
 		int offset = kp_tokens[2].to_int();
-		for (int a = 0; a < kp_tokens[0].length(); a++) {
-			for (int b = 0; b < kp_tokens[1].length(); b++) {
-				font->set_kerning(0, chr_height, Vector2i(kp_tokens[0].unicode_at(a), kp_tokens[1].unicode_at(b)), Vector2(offset, 0));
+
+		for (int a = 0; a < from_tokens.length(); a++) {
+			for (int b = 0; b < to_tokens.length(); b++) {
+				font->set_kerning(0, chr_height, Vector2i(from_tokens.unicode_at(a), to_tokens.unicode_at(b)), Vector2(offset, 0));
 			}
 		}
 	}

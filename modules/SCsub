@@ -14,6 +14,18 @@ env_modules.Append(CPPDEFINES=["GODOT_MODULE"])
 Export("env_modules")
 
 
+# Header with MODULE_*_ENABLED defines.
+def modules_enabled_builder(target, source, env):
+    with methods.generated_wrapper(target) as file:
+        for module in source[0].read():
+            file.write(f"#define MODULE_{module.upper()}_ENABLED\n")
+
+
+modules_enabled = env.CommandNoCache(
+    "modules_enabled.gen.h", env.Value(env.module_list), env.Run(modules_enabled_builder)
+)
+
+
 def register_module_types_builder(target, source, env):
     modules = source[0].read()
     mod_inc = "\n".join([f'#include "{p}/register_types.h"' for p in modules.values()])
@@ -44,18 +56,10 @@ void uninitialize_modules(ModuleInitializationLevel p_level) {{
 
 
 register_module_types = env.CommandNoCache(
-    "register_module_types.gen.cpp", env.Value(env.modules_detected), env.Run(register_module_types_builder)
+    "register_module_types.gen.cpp",
+    [env.Value(env.modules_detected), modules_enabled],
+    env.Run(register_module_types_builder),
 )
-
-
-# Header with MODULE_*_ENABLED defines.
-def modules_enabled_builder(target, source, env):
-    with methods.generated_wrapper(target) as file:
-        for module in source[0].read():
-            file.write(f"#define MODULE_{module.upper()}_ENABLED\n")
-
-
-env.CommandNoCache("modules_enabled.gen.h", env.Value(env.module_list), env.Run(modules_enabled_builder))
 
 
 vs_sources = []

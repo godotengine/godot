@@ -251,6 +251,27 @@ void CodeEdit::_notification(int p_what) {
 }
 
 void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
+	Ref<InputEventPanGesture> pan_gesture = p_gui_input;
+	if (pan_gesture.is_valid() && code_completion_active && code_completion_rect.has_point(pan_gesture->get_position())) {
+		const real_t delta = pan_gesture->get_delta().y;
+		code_completion_pan_offset += delta;
+		if (code_completion_pan_offset <= -1.0) {
+			if (code_completion_current_selected > 0) {
+				code_completion_current_selected--;
+				code_completion_force_item_center = -1;
+				queue_redraw();
+			}
+			code_completion_pan_offset += 1.0f;
+		} else if (code_completion_pan_offset >= +1.0) {
+			if (code_completion_current_selected < code_completion_options.size() - 1) {
+				code_completion_current_selected++;
+				code_completion_force_item_center = -1;
+				queue_redraw();
+			}
+			code_completion_pan_offset -= 1.0f;
+		}
+	}
+
 	Ref<InputEventMouseButton> mb = p_gui_input;
 	if (mb.is_valid()) {
 		// Ignore mouse clicks in IME input mode, let TextEdit handle it.
@@ -285,6 +306,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 					if (code_completion_current_selected > 0) {
 						code_completion_current_selected--;
 						code_completion_force_item_center = -1;
+						code_completion_pan_offset = 0.0f;
 						queue_redraw();
 					}
 				} break;
@@ -292,6 +314,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 					if (code_completion_current_selected < code_completion_options.size() - 1) {
 						code_completion_current_selected++;
 						code_completion_force_item_center = -1;
+						code_completion_pan_offset = 0.0f;
 						queue_redraw();
 					}
 				} break;
@@ -301,6 +324,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 					}
 
 					code_completion_current_selected = CLAMP(code_completion_line_ofs + (mb->get_position().y - code_completion_rect.position.y) / get_line_height(), 0, code_completion_options.size() - 1);
+					code_completion_pan_offset = 0.0f;
 					if (mb->is_double_click()) {
 						confirm_code_completion();
 					}
@@ -472,6 +496,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				code_completion_current_selected = code_completion_options.size() - 1;
 			}
 			code_completion_force_item_center = -1;
+			code_completion_pan_offset = 0.0f;
 			queue_redraw();
 			accept_event();
 			return;
@@ -483,6 +508,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				code_completion_current_selected = 0;
 			}
 			code_completion_force_item_center = -1;
+			code_completion_pan_offset = 0.0f;
 			queue_redraw();
 			accept_event();
 			return;
@@ -490,6 +516,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		if (k->is_action("ui_page_up", true)) {
 			code_completion_current_selected = MAX(0, code_completion_current_selected - theme_cache.code_completion_max_lines);
 			code_completion_force_item_center = -1;
+			code_completion_pan_offset = 0.0f;
 			queue_redraw();
 			accept_event();
 			return;
@@ -497,6 +524,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		if (k->is_action("ui_page_down", true)) {
 			code_completion_current_selected = MIN(code_completion_options.size() - 1, code_completion_current_selected + theme_cache.code_completion_max_lines);
 			code_completion_force_item_center = -1;
+			code_completion_pan_offset = 0.0f;
 			queue_redraw();
 			accept_event();
 			return;
@@ -2119,6 +2147,7 @@ void CodeEdit::set_code_completion_selected_index(int p_index) {
 	ERR_FAIL_INDEX(p_index, code_completion_options.size());
 	code_completion_current_selected = p_index;
 	code_completion_force_item_center = -1;
+	code_completion_pan_offset = 0.0f;
 	queue_redraw();
 }
 
@@ -2331,18 +2360,19 @@ void CodeEdit::move_lines_up() {
 			unfold_line(line);
 			swap_lines(line - 1, line);
 		}
-	}
-
-	// Fix selection if it ended at column 0, since it wasn't moved.
-	for (int i = 0; i < get_caret_count(); i++) {
-		if (has_selection(i) && get_selection_to_column(i) == 0 && get_selection_to_line(i) != 0) {
-			if (is_caret_after_selection_origin(i)) {
-				set_caret_line(get_caret_line(i) - 1, false, true, -1, i);
-			} else {
-				set_selection_origin_line(get_selection_origin_line(i) - 1, true, -1, i);
+		// Fix selection if the last one ends at column 0, since it wasn't moved.
+		for (int i = 0; i < get_caret_count(); i++) {
+			if (has_selection(i) && get_selection_to_column(i) == 0 && get_selection_to_line(i) == line_range.y + 1) {
+				if (is_caret_after_selection_origin(i)) {
+					set_caret_line(get_caret_line(i) - 1, false, true, -1, i);
+				} else {
+					set_selection_origin_line(get_selection_origin_line(i) - 1, true, -1, i);
+				}
+				break;
 			}
 		}
 	}
+	adjust_viewport_to_caret();
 
 	end_multicaret_edit();
 	end_complex_operation();
@@ -2352,30 +2382,41 @@ void CodeEdit::move_lines_down() {
 	begin_complex_operation();
 	begin_multicaret_edit();
 
-	Vector<Point2i> line_ranges = get_line_ranges_from_carets();
-
-	// Fix selection if it ended at column 0, since it won't be moved.
-	for (int i = 0; i < get_caret_count(); i++) {
-		if (has_selection(i) && get_selection_to_column(i) == 0 && get_selection_to_line(i) != get_line_count() - 1) {
-			if (is_caret_after_selection_origin(i)) {
-				set_caret_line(get_caret_line(i) + 1, false, true, -1, i);
-			} else {
-				set_selection_origin_line(get_selection_origin_line(i) + 1, true, -1, i);
-			}
-		}
-	}
-
 	// Move lines down by swapping each line with the one below it.
+	Vector<Point2i> line_ranges = get_line_ranges_from_carets();
+	// Reverse in case line ranges are adjacent, if the first ends at column 0.
+	line_ranges.reverse();
 	for (Point2i line_range : line_ranges) {
 		if (line_range.y == get_line_count() - 1) {
 			continue;
 		}
+		// Fix selection if the last one ends at column 0, since it won't be moved.
+		bool selection_to_line_at_end = false;
+		for (int i = 0; i < get_caret_count(); i++) {
+			if (has_selection(i) && get_selection_to_column(i) == 0 && get_selection_to_line(i) == line_range.y + 1) {
+				selection_to_line_at_end = get_selection_to_line(i) == get_line_count() - 1;
+				if (selection_to_line_at_end) {
+					break;
+				}
+				if (is_caret_after_selection_origin(i)) {
+					set_caret_line(get_caret_line(i) + 1, false, true, -1, i);
+				} else {
+					set_selection_origin_line(get_selection_origin_line(i) + 1, true, -1, i);
+				}
+				break;
+			}
+		}
+		if (selection_to_line_at_end) {
+			continue;
+		}
+
 		unfold_line(line_range.y + 1);
 		for (int line = line_range.y; line >= line_range.x; line--) {
 			unfold_line(line);
 			swap_lines(line + 1, line);
 		}
 	}
+	adjust_viewport_to_caret();
 
 	end_multicaret_edit();
 	end_complex_operation();
@@ -3050,7 +3091,7 @@ void CodeEdit::_update_delimiter_cache(int p_from_line, int p_to_line) {
 }
 
 int CodeEdit::_is_in_delimiter(int p_line, int p_column, DelimiterType p_type) const {
-	if (delimiters.size() == 0) {
+	if (delimiters.size() == 0 || p_line >= delimiter_cache.size()) {
 		return -1;
 	}
 	ERR_FAIL_INDEX_V(p_line, get_line_count(), 0);
@@ -3232,6 +3273,7 @@ void CodeEdit::_update_scroll_selected_line(float p_mouse_y) {
 
 	code_completion_current_selected = (int)(percent * (code_completion_options.size() - 1));
 	code_completion_force_item_center = -1;
+	code_completion_pan_offset = 0.0f;
 }
 
 void CodeEdit::_filter_code_completion_candidates_impl() {
@@ -3293,6 +3335,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 
 		if (_should_reset_selected_option_for_new_options(code_completion_options_new)) {
 			code_completion_current_selected = 0;
+			code_completion_pan_offset = 0.0f;
 		}
 		code_completion_options = code_completion_options_new;
 
@@ -3508,6 +3551,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 	code_completion_options_new.sort_custom<CodeCompletionOptionCompare>();
 	if (_should_reset_selected_option_for_new_options(code_completion_options_new)) {
 		code_completion_current_selected = 0;
+		code_completion_pan_offset = 0.0f;
 	}
 	code_completion_options = code_completion_options_new;
 
@@ -3645,7 +3689,7 @@ CodeEdit::CodeEdit() {
 
 	connect("lines_edited_from", callable_mp(this, &CodeEdit::_lines_edited_from));
 	connect("text_set", callable_mp(this, &CodeEdit::_text_set));
-	connect("text_changed", callable_mp(this, &CodeEdit::_text_changed));
+	connect(SceneStringName(text_changed), callable_mp(this, &CodeEdit::_text_changed));
 
 	connect("gutter_clicked", callable_mp(this, &CodeEdit::_gutter_clicked));
 	connect("gutter_added", callable_mp(this, &CodeEdit::_update_gutter_indexes));

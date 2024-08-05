@@ -36,6 +36,10 @@
 #include "editor/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 
+bool EditorSpinSlider::is_text_field() const {
+	return true;
+}
+
 String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 	if (!read_only && grabber->is_visible()) {
 		Key key = (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) ? Key::META : Key::CTRL;
@@ -300,7 +304,7 @@ void EditorSpinSlider::_update_value_input_stylebox() {
 		stylebox->set_content_margin(SIDE_LEFT, (!get_label().is_empty() ? 23 : 16) * EDSCALE);
 	}
 
-	value_input->add_theme_style_override("normal", stylebox);
+	value_input->add_theme_style_override(CoreStringName(normal), stylebox);
 }
 
 void EditorSpinSlider::_draw_spin_slider() {
@@ -314,8 +318,8 @@ void EditorSpinSlider::_draw_spin_slider() {
 	if (!flat) {
 		draw_style_box(sb, Rect2(Vector2(), size));
 	}
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("LineEdit"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("LineEdit"));
+	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("LineEdit"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("LineEdit"));
 	int sep_base = 4 * EDSCALE;
 	int sep = sep_base + sb->get_offset().x; //make it have the same margin on both sides, looks better
 
@@ -328,7 +332,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 
 	int vofs = (size.height - font->get_height(font_size)) / 2 + font->get_ascent(font_size);
 
-	Color fc = get_theme_color(is_read_only() ? SNAME("font_uneditable_color") : SNAME("font_color"), SNAME("LineEdit"));
+	Color fc = get_theme_color(is_read_only() ? SNAME("font_uneditable_color") : SceneStringName(font_color), SNAME("LineEdit"));
 	Color lc = get_theme_color(is_read_only() ? SNAME("read_only_label_color") : SNAME("label_color"));
 
 	if (flat && !label.is_empty()) {
@@ -514,8 +518,8 @@ LineEdit *EditorSpinSlider::get_line_edit() {
 
 Size2 EditorSpinSlider::get_minimum_size() const {
 	Ref<StyleBox> sb = get_theme_stylebox(CoreStringName(normal), SNAME("LineEdit"));
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("LineEdit"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("LineEdit"));
+	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("LineEdit"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("LineEdit"));
 
 	Size2 ms = sb->get_minimum_size();
 	ms.height += font->get_height(font_size);

@@ -71,7 +71,11 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 		bool auto_translating = true;
 		bool auto_translate_mode_found = false;
 		for (int j = 0; j < state->get_node_property_count(i); j++) {
-			if (state->get_node_property_name(i, j) != "auto_translate_mode") {
+			String property = state->get_node_property_name(i, j);
+			// If an old scene wasn't saved in the new version, the `auto_translate` property won't be converted into `auto_translate_mode`,
+			// so the deprecated property still needs to be checked as well.
+			// TODO: Remove the check for "auto_translate" once the property if fully removed.
+			if (property != "auto_translate_mode" && property != "auto_translate") {
 				continue;
 			}
 
@@ -84,9 +88,14 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 				idx_last -= 1;
 			}
 
-			int auto_translate_mode = (int)state->get_node_property_value(i, j);
-			if (auto_translate_mode == Node::AUTO_TRANSLATE_MODE_DISABLED) {
-				auto_translating = false;
+			if (property == "auto_translate_mode") {
+				int auto_translate_mode = (int)state->get_node_property_value(i, j);
+				if (auto_translate_mode == Node::AUTO_TRANSLATE_MODE_DISABLED) {
+					auto_translating = false;
+				}
+			} else {
+				// TODO: Remove this once `auto_translate` is fully removed.
+				auto_translating = (bool)state->get_node_property_value(i, j);
 			}
 
 			atr_owners.push_back(Pair(state->get_node_path(i), auto_translating));
@@ -200,6 +209,7 @@ PackedSceneEditorTranslationParserPlugin::PackedSceneEditorTranslationParserPlug
 	lookup_properties.insert("title");
 	lookup_properties.insert("filters");
 	lookup_properties.insert("script");
+	lookup_properties.insert("item_*/text");
 
 	// Exception list (to prevent false positives).
 	exception_list.insert("LineEdit", { "text" });

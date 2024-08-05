@@ -40,6 +40,8 @@
 #include <godot_cpp/classes/translation_server.hpp>
 #include <godot_cpp/core/error_macros.hpp>
 
+#define OT_TAG(m_c1, m_c2, m_c3, m_c4) ((int32_t)((((uint32_t)(m_c1) & 0xff) << 24) | (((uint32_t)(m_c2) & 0xff) << 16) | (((uint32_t)(m_c3) & 0xff) << 8) | ((uint32_t)(m_c4) & 0xff)))
+
 using namespace godot;
 
 #define GLOBAL_GET(m_var) ProjectSettings::get_singleton()->get_setting_with_override(m_var)
@@ -287,7 +289,7 @@ _FORCE_INLINE_ TextServerFallback::FontTexturePosition TextServerFallback::find_
 		{
 			// Zero texture.
 			uint8_t *w = tex.image->ptrw();
-			ERR_FAIL_COND_V(texsize * texsize * p_color_size > tex.image->data_size(), ret);
+			ERR_FAIL_COND_V(texsize * texsize * p_color_size > tex.image->get_data_size(), ret);
 			// Initialize the texture to all-white pixels to prevent artifacts when the
 			// font is displayed at a non-default scale with filtering enabled.
 			if (p_color_size == 2) {
@@ -475,7 +477,7 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_msdf(
 			for (int i = 0; i < h; i++) {
 				for (int j = 0; j < w; j++) {
 					int ofs = ((i + tex_pos.y + p_rect_margin * 2) * tex.texture_w + j + tex_pos.x + p_rect_margin * 2) * 4;
-					ERR_FAIL_COND_V(ofs >= tex.image->data_size(), FontGlyph());
+					ERR_FAIL_COND_V(ofs >= tex.image->get_data_size(), FontGlyph());
 					wr[ofs + 0] = (uint8_t)(CLAMP(image(j, i)[0] * 256.f, 0.f, 255.f));
 					wr[ofs + 1] = (uint8_t)(CLAMP(image(j, i)[1] * 256.f, 0.f, 255.f));
 					wr[ofs + 2] = (uint8_t)(CLAMP(image(j, i)[2] * 256.f, 0.f, 255.f));
@@ -552,7 +554,7 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_bitma
 		for (int i = 0; i < h; i++) {
 			for (int j = 0; j < w; j++) {
 				int ofs = ((i + tex_pos.y + p_rect_margin * 2) * tex.texture_w + j + tex_pos.x + p_rect_margin * 2) * color_size;
-				ERR_FAIL_COND_V(ofs >= tex.image->data_size(), FontGlyph());
+				ERR_FAIL_COND_V(ofs >= tex.image->get_data_size(), FontGlyph());
 				switch (p_bitmap.pixel_mode) {
 					case FT_PIXEL_MODE_MONO: {
 						int byte = i * p_bitmap.pitch + (j >> 3);
@@ -1474,7 +1476,7 @@ int64_t TextServerFallback::_font_get_spacing(const RID &p_font_rid, SpacingType
 	}
 }
 
-void TextServerFallback::_font_set_baseline_offset(const RID &p_font_rid, float p_baseline_offset) {
+void TextServerFallback::_font_set_baseline_offset(const RID &p_font_rid, double p_baseline_offset) {
 	FontFallbackLinkedVariation *fdv = font_var_owner.get_or_null(p_font_rid);
 	if (fdv) {
 		if (fdv->baseline_offset != p_baseline_offset) {
@@ -1492,7 +1494,7 @@ void TextServerFallback::_font_set_baseline_offset(const RID &p_font_rid, float 
 	}
 }
 
-float TextServerFallback::_font_get_baseline_offset(const RID &p_font_rid) const {
+double TextServerFallback::_font_get_baseline_offset(const RID &p_font_rid) const {
 	FontFallbackLinkedVariation *fdv = font_var_owner.get_or_null(p_font_rid);
 	if (fdv) {
 		return fdv->baseline_offset;
@@ -4059,7 +4061,7 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 
 	if ((trim_pos >= 0 && sd->width > p_width) || enforce_ellipsis) {
 		if (add_ellipsis && (ellipsis_pos > 0 || enforce_ellipsis)) {
-			// Insert an additional space when cutting word bound for esthetics.
+			// Insert an additional space when cutting word bound for aesthetics.
 			if (cut_per_word && (ellipsis_pos > 0)) {
 				Glyph gl;
 				gl.count = 1;
@@ -4465,7 +4467,11 @@ PackedInt32Array TextServerFallback::_shaped_text_get_character_breaks(const RID
 	if (size > 0) {
 		ret.resize(size);
 		for (int i = 0; i < size; i++) {
+#ifdef GDEXTENSION
+			ret[i] = i + 1 + sd->start;
+#else
 			ret.write[i] = i + 1 + sd->start;
+#endif
 		}
 	}
 	return ret;
@@ -4486,65 +4492,105 @@ String TextServerFallback::_string_to_title(const String &p_string, const String
 PackedInt32Array TextServerFallback::_string_get_word_breaks(const String &p_string, const String &p_language, int64_t p_chars_per_line) const {
 	PackedInt32Array ret;
 
-	int line_start = 0;
-	int line_end = 0; // End of last word on current line.
-	int word_start = 0; // -1 if no word encountered. Leading spaces are part of a word.
-	int word_length = 0;
+	if (p_chars_per_line > 0) {
+		int line_start = 0;
+		int last_break = -1;
+		int line_length = 0;
 
-	for (int i = 0; i < p_string.length(); i++) {
-		const char32_t c = p_string[i];
+		for (int i = 0; i < p_string.length(); i++) {
+			const char32_t c = p_string[i];
 
-		if (is_linebreak(c)) {
-			// Force newline.
-			ret.push_back(line_start);
-			ret.push_back(i);
-			line_start = i + 1;
-			line_end = line_start;
-			word_start = line_start;
-			word_length = 0;
-		} else if (c == 0xfffc) {
-			continue;
-		} else if ((is_punct(c) && c != 0x005F) || is_underscore(c) || c == '\t' || is_whitespace(c)) {
-			// A whitespace ends current word.
-			if (word_length > 0) {
-				line_end = i - 1;
-				word_start = -1;
-				word_length = 0;
-			}
-		} else {
-			if (word_start == -1) {
-				word_start = i;
-				if (p_chars_per_line <= 0) {
+			bool is_lb = is_linebreak(c);
+			bool is_ws = is_whitespace(c);
+			bool is_p = (is_punct(c) && c != 0x005F) || is_underscore(c) || c == '\t' || c == 0xfffc;
+
+			if (is_lb) {
+				if (line_length > 0) {
 					ret.push_back(line_start);
-					ret.push_back(line_end + 1);
-					line_start = word_start;
-					line_end = line_start;
+					ret.push_back(i);
 				}
+				line_start = i;
+				line_length = 0;
+				last_break = -1;
+				continue;
+			} else if (is_ws || is_p) {
+				last_break = i;
 			}
-			word_length += 1;
 
-			if (p_chars_per_line > 0) {
-				if (word_length > p_chars_per_line) {
-					// Word too long: wrap before current character.
+			if (line_length == p_chars_per_line) {
+				if (last_break != -1) {
+					int last_break_w_spaces = last_break;
+					while (last_break > line_start && is_whitespace(p_string[last_break - 1])) {
+						last_break--;
+					}
+					if (line_start != last_break) {
+						ret.push_back(line_start);
+						ret.push_back(last_break);
+					}
+					while (last_break_w_spaces < p_string.length() && is_whitespace(p_string[last_break_w_spaces])) {
+						last_break_w_spaces++;
+					}
+					line_start = last_break_w_spaces;
+					if (last_break_w_spaces < i) {
+						line_length = i - last_break_w_spaces;
+					} else {
+						i = last_break_w_spaces;
+						line_length = 0;
+					}
+				} else {
 					ret.push_back(line_start);
 					ret.push_back(i);
 					line_start = i;
-					line_end = i;
-					word_start = i;
-					word_length = 1;
-				} else if (i - line_start + 1 > p_chars_per_line) {
-					// Line too long: wrap after the last word.
-					ret.push_back(line_start);
-					ret.push_back(line_end + 1);
-					line_start = word_start;
-					line_end = line_start;
+					line_length = 0;
 				}
+				last_break = -1;
 			}
+			line_length++;
 		}
-	}
-	if (line_start < p_string.length()) {
-		ret.push_back(line_start);
-		ret.push_back(p_string.length());
+		if (line_length > 0) {
+			ret.push_back(line_start);
+			ret.push_back(p_string.length());
+		}
+	} else {
+		int word_start = 0; // -1 if no word encountered. Leading spaces are part of a word.
+		int word_length = 0;
+
+		for (int i = 0; i < p_string.length(); i++) {
+			const char32_t c = p_string[i];
+
+			bool is_lb = is_linebreak(c);
+			bool is_ws = is_whitespace(c);
+			bool is_p = (is_punct(c) && c != 0x005F) || is_underscore(c) || c == '\t' || c == 0xfffc;
+
+			if (word_start == -1) {
+				if (!is_lb && !is_ws && !is_p) {
+					word_start = i;
+				}
+				continue;
+			}
+
+			if (is_lb) {
+				if (word_start != -1 && word_length > 0) {
+					ret.push_back(word_start);
+					ret.push_back(i);
+				}
+				word_start = -1;
+				word_length = 0;
+			} else if (is_ws || is_p) {
+				if (word_start != -1 && word_length > 0) {
+					ret.push_back(word_start);
+					ret.push_back(i);
+				}
+				word_start = -1;
+				word_length = 0;
+			}
+
+			word_length++;
+		}
+		if (word_start != -1 && word_length > 0) {
+			ret.push_back(word_start);
+			ret.push_back(p_string.length());
+		}
 	}
 	return ret;
 }

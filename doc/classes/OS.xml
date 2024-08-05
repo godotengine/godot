@@ -262,6 +262,14 @@
 				[b]Note:[/b] This method is not supported on the Web platform. It returns an empty string.
 			</description>
 		</method>
+		<method name="get_entropy">
+			<return type="PackedByteArray" />
+			<param index="0" name="size" type="int" />
+			<description>
+				Generates a [PackedByteArray] of cryptographically secure random bytes with given [param size].
+				[b]Note:[/b] Generating large quantities of bytes using this method can result in locking and entropy of lower quality on most platforms. Using [method Crypto.generate_random_bytes] is preferred in most cases.
+			</description>
+		</method>
 		<method name="get_environment" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="variable" type="String" />
@@ -275,7 +283,7 @@
 			<return type="String" />
 			<description>
 				Returns the file path to the current engine executable.
-				[b]Note:[/b] On macOS, always use [method create_instance] instead of relying on executable path.
+				[b]Note:[/b] On macOS, if you want to launch another instance of Godot, always use [method create_instance] instead of relying on the executable path.
 			</description>
 		</method>
 		<method name="get_granted_permissions" qualifiers="const">
@@ -414,6 +422,7 @@
 			<description>
 				Returns the exit code of a spawned process once it has finished running (see [method is_process_running]).
 				Returns [code]-1[/code] if the [param pid] is not a PID of a spawned child process, the process is still running, or the method is not implemented for the current platform.
+				[b]Note:[/b] Returns [code]-1[/code] if the [param pid] is a macOS bundled app process.
 				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows.
 			</description>
 		</method>
@@ -453,6 +462,12 @@
 			<return type="int" />
 			<description>
 				Returns the amount of static memory being used by the program in bytes. Only works in debug builds.
+			</description>
+		</method>
+		<method name="get_system_ca_certificates">
+			<return type="String" />
+			<description>
+				Returns the list of certification authorities trusted by the operating system as a string of concatenated certificates in PEM format.
 			</description>
 		</method>
 		<method name="get_system_dir" qualifiers="const">

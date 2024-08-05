@@ -423,9 +423,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "network/connection/engine_version_update_mode", int(default_update_mode), "Disable Update Checks,Check Newest Preview,Check Newest Stable,Check Newest Patch"); // Uses EngineUpdateLabel::UpdateMode.
 	}
 
-	_initial_set("interface/editor/debug/enable_pseudolocalization", false);
-	set_restart_if_changed("interface/editor/debug/enable_pseudolocalization", true);
-	// Use pseudolocalization in editor.
 	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/use_embedded_menu", false, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/use_native_file_dialogs", false, "", PROPERTY_USAGE_DEFAULT)
 	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/expand_to_title", true, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
@@ -483,7 +480,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/inspector/float_drag_speed", 5.0, "0.1,100,0.01")
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/nested_color_mode", 0, "Containers & Resources,Resources,External Resources")
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/inspector/delimitate_all_container_and_resources", true, "")
-	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/default_property_name_style", EditorPropertyNameProcessor::STYLE_CAPITALIZED, "Raw,Capitalized,Localized", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/default_property_name_style", EditorPropertyNameProcessor::STYLE_CAPITALIZED, "Raw (e.g. \"z_index\"),Capitalized (e.g. \"Z Index\"),Localized (e.g. \"Z Index\")", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	// The lowest value is equal to the minimum float step for 32-bit floats.
 	// The step must be set manually, as changing this setting should not change the step here.
 	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/inspector/default_float_step", 0.001, "0.0000001,1,0.0000001", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
@@ -524,11 +521,13 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Touchscreen
 	bool has_touchscreen_ui = DisplayServer::get_singleton()->is_touchscreen_available();
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/touchscreen/increase_scrollbar_touch_area", has_touchscreen_ui, "")
+	set_restart_if_changed("interface/touchscreen/increase_scrollbar_touch_area", true);
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/touchscreen/enable_long_press_as_right_click", has_touchscreen_ui, "")
 	set_restart_if_changed("interface/touchscreen/enable_long_press_as_right_click", true);
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/touchscreen/enable_pan_and_scale_gestures", has_touchscreen_ui, "")
 	set_restart_if_changed("interface/touchscreen/enable_pan_and_scale_gestures", true);
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/touchscreen/scale_gizmo_handles", has_touchscreen_ui ? 3 : 1, "1,5,1")
+	set_restart_if_changed("interface/touchscreen/scale_gizmo_handles", true);
 
 	// Scene tabs
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/scene_tabs/display_close_button", 1, "Never,If Tab Active,Always"); // TabBar::CloseButtonDisplayPolicy
@@ -571,7 +570,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "filesystem/import/blender/blender_path", "", "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_RANGE, "filesystem/import/blender/rpc_port", 6011, "0,65535,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_RANGE, "filesystem/import/blender/rpc_server_uptime", 5, "0,300,1,or_greater,suffix:s", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
-	EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "filesystem/import/fbx2gltf/fbx2gltf_path", "", "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "filesystem/import/fbx/fbx2gltf_path", "", "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 
 	// Tools (denoise)
 	EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_GLOBAL_DIR, "filesystem/tools/oidn/oidn_denoise_path", "", "", PROPERTY_USAGE_DEFAULT)
@@ -642,6 +641,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/behavior/navigation/drag_and_drop_selection", true);
 	_initial_set("text_editor/behavior/navigation/stay_in_script_editor_on_node_selected", true);
 	_initial_set("text_editor/behavior/navigation/open_script_when_connecting_signal_to_existing_method", true);
+	_initial_set("text_editor/behavior/navigation/use_default_word_separators", true); // Includes ´`~$^=+|<> General punctuation and CJK punctuation.
+	_initial_set("text_editor/behavior/navigation/use_custom_word_separators", false);
+	_initial_set("text_editor/behavior/navigation/custom_word_separators", ""); // Custom word separators.
 
 	// Behavior: Indent
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/behavior/indent/type", 0, "Tabs,Spaces")
@@ -651,6 +653,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Behavior: Files
 	_initial_set("text_editor/behavior/files/trim_trailing_whitespace_on_save", false);
+	_initial_set("text_editor/behavior/files/trim_final_newlines_on_save", true);
 	_initial_set("text_editor/behavior/files/autosave_interval_secs", 0);
 	_initial_set("text_editor/behavior/files/restore_scripts_on_load", true);
 	_initial_set("text_editor/behavior/files/convert_indent_on_save", true);
@@ -661,7 +664,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/script_list/sort_members_outline_alphabetically", false);
 
 	// Completion
-	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "text_editor/completion/idle_parse_delay", 2.0, "0.1,10,0.01")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "text_editor/completion/idle_parse_delay", 1.5, "0.1,10,0.01")
 	_initial_set("text_editor/completion/auto_brace_complete", true);
 	_initial_set("text_editor/completion/code_complete_enabled", true);
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "text_editor/completion/code_complete_delay", 0.3, "0.01,5,0.01,or_greater")
@@ -780,6 +783,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Animation
 	_initial_set("editors/animation/autorename_animation_tracks", true);
+	_initial_set("editors/animation/confirm_insert_track", true);
 	_initial_set("editors/animation/default_create_bezier_tracks", false);
 	_initial_set("editors/animation/default_create_reset_tracks", true);
 	_initial_set("editors/animation/onion_layers_past_color", Color(1, 0, 0));
@@ -818,11 +822,13 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Auto save
 	_initial_set("run/auto_save/save_before_running", true);
 
+	// Bottom panel
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "run/bottom_panel/action_on_play", EditorNode::ACTION_ON_PLAY_OPEN_OUTPUT, "Do Nothing,Open Output,Open Debugger")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "run/bottom_panel/action_on_stop", EditorNode::ACTION_ON_STOP_DO_NOTHING, "Do Nothing,Close Bottom Panel")
+
 	// Output
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "run/output/font_size", 13, "8,48,1")
 	_initial_set("run/output/always_clear_output_on_play", true);
-	_initial_set("run/output/always_open_output_on_play", true);
-	_initial_set("run/output/always_close_output_on_stop", false);
 
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "run/output/max_lines", 10000, "100,100000,1")
 
@@ -856,6 +862,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "debugger/profile_native_calls", false, "")
 
 	/* Extra config */
+
+	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "input/buffering/agile_event_flushing", false, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "input/buffering/use_accumulated_input", true, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 
 	// TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "project_manager/sorting_order", 0, "Last Edited,Name,Path")
@@ -989,6 +998,13 @@ const String EditorSettings::_get_project_metadata_path() const {
 	return EditorPaths::get_singleton()->get_project_settings_dir().path_join("project_metadata.cfg");
 }
 
+#ifndef DISABLE_DEPRECATED
+void EditorSettings::_remove_deprecated_settings() {
+	erase("run/output/always_open_output_on_play");
+	erase("run/output/always_close_output_on_stop");
+}
+#endif
+
 // PUBLIC METHODS
 
 EditorSettings *EditorSettings::get_singleton() {
@@ -1054,13 +1070,13 @@ void EditorSettings::create() {
 		}
 
 		singleton = ResourceLoader::load(config_file_path, "EditorSettings");
-		singleton->set_path(get_newest_settings_path()); // Settings can be loaded from older version file, so make sure it's newest.
-
 		if (singleton.is_null()) {
 			ERR_PRINT("Could not load editor settings from path: " + config_file_path);
+			config_file_path = get_newest_settings_path();
 			goto fail;
 		}
 
+		singleton->set_path(get_newest_settings_path()); // Settings can be loaded from older version file, so make sure it's newest.
 		singleton->save_changed_setting = true;
 
 		print_verbose("EditorSettings: Load OK!");
@@ -1069,6 +1085,9 @@ void EditorSettings::create() {
 		singleton->setup_network();
 		singleton->load_favorites_and_recent_dirs();
 		singleton->list_text_editor_themes();
+#ifndef DISABLE_DEPRECATED
+		singleton->_remove_deprecated_settings();
+#endif
 
 		return;
 	}
@@ -1095,7 +1114,6 @@ fail:
 }
 
 void EditorSettings::setup_language() {
-	TranslationServer::get_singleton()->set_editor_pseudolocalization(get("interface/editor/debug/enable_pseudolocalization"));
 	String lang = get("interface/editor/editor_language");
 	if (lang == "en") {
 		return; // Default, nothing to do.

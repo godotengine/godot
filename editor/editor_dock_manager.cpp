@@ -277,7 +277,7 @@ void EditorDockManager::_restore_dock_to_saved_window(Control *p_dock, const Dic
 			p_window_dump.get("window_screen_rect", Rect2i()));
 }
 
-void EditorDockManager::_dock_move_to_bottom(Control *p_dock) {
+void EditorDockManager::_dock_move_to_bottom(Control *p_dock, bool p_visible) {
 	_move_dock(p_dock, nullptr);
 
 	all_docks[p_dock].at_bottom = true;
@@ -288,7 +288,7 @@ void EditorDockManager::_dock_move_to_bottom(Control *p_dock) {
 	// Force docks moved to the bottom to appear first in the list, and give them their associated shortcut to toggle their bottom panel.
 	Button *bottom_button = EditorNode::get_bottom_panel()->add_item(all_docks[p_dock].title, p_dock, all_docks[p_dock].shortcut, true);
 	bottom_button->connect(SceneStringName(gui_input), callable_mp(this, &EditorDockManager::_bottom_dock_button_gui_input).bind(bottom_button).bind(p_dock));
-	EditorNode::get_bottom_panel()->make_item_visible(p_dock);
+	EditorNode::get_bottom_panel()->make_item_visible(p_dock, p_visible);
 }
 
 void EditorDockManager::_dock_remove_from_bottom(Control *p_dock) {
@@ -548,11 +548,13 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 				// Don't open disabled docks.
 				continue;
 			}
+			bool at_bottom = false;
 			if (restore_window_on_load && floating_docks_dump.has(name)) {
 				all_docks[dock].previous_at_bottom = dock_bottom.has(name);
 				_restore_dock_to_saved_window(dock, floating_docks_dump[name]);
 			} else if (dock_bottom.has(name)) {
-				_dock_move_to_bottom(dock);
+				_dock_move_to_bottom(dock, false);
+				at_bottom = true;
 			} else if (i >= 0) {
 				_move_dock(dock, dock_slot[i], 0);
 			}
@@ -564,7 +566,11 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 			} else {
 				// Make sure it is open.
 				all_docks[dock].open = true;
-				dock->show();
+				// It's important to not update the visibility of bottom panels.
+				// Visibility of bottom panels are managed in EditorBottomPanel.
+				if (!at_bottom) {
+					dock->show();
+				}
 			}
 
 			all_docks[dock].dock_slot_index = i;
@@ -668,7 +674,7 @@ void EditorDockManager::open_dock(Control *p_dock, bool p_set_current) {
 
 	// Open dock to its previous location.
 	if (all_docks[p_dock].previous_at_bottom) {
-		_dock_move_to_bottom(p_dock);
+		_dock_move_to_bottom(p_dock, true);
 	} else if (all_docks[p_dock].dock_slot_index != DOCK_SLOT_NONE) {
 		TabContainer *slot = dock_slot[all_docks[p_dock].dock_slot_index];
 		int tab_index = all_docks[p_dock].previous_tab_index;
@@ -838,7 +844,7 @@ EditorDockManager::EditorDockManager() {
 
 	docks_menu = memnew(PopupMenu);
 	docks_menu->set_hide_on_item_selection(false);
-	docks_menu->connect("id_pressed", callable_mp(this, &EditorDockManager::_docks_menu_option));
+	docks_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorDockManager::_docks_menu_option));
 	EditorNode::get_singleton()->get_gui_base()->connect(SceneStringName(theme_changed), callable_mp(this, &EditorDockManager::_update_docks_menu));
 }
 
@@ -899,7 +905,7 @@ void DockContextPopup::_float_dock() {
 
 void DockContextPopup::_move_dock_to_bottom() {
 	hide();
-	dock_manager->_dock_move_to_bottom(context_dock);
+	dock_manager->_dock_move_to_bottom(context_dock, true);
 	dock_manager->_update_layout();
 }
 

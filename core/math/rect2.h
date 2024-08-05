@@ -38,7 +38,7 @@ class String;
 struct Rect2i;
 struct Transform2D;
 
-struct _NO_DISCARD_ Rect2 {
+struct [[nodiscard]] Rect2 {
 	Point2 position;
 	Size2 size;
 

@@ -30,6 +30,19 @@
 
 #include "property_list_helper.h"
 
+Vector<PropertyListHelper *> PropertyListHelper::base_helpers; // static
+
+void PropertyListHelper::clear_base_helpers() { // static
+	for (PropertyListHelper *helper : base_helpers) {
+		helper->clear();
+	}
+	base_helpers.clear();
+}
+
+void PropertyListHelper::register_base_helper(PropertyListHelper *p_helper) { // static
+	base_helpers.push_back(p_helper);
+}
+
 const PropertyListHelper::Property *PropertyListHelper::_get_property(const String &p_property, int *r_index) const {
 	const Vector<String> components = p_property.rsplit("/", true, 1);
 	if (components.size() < 2 || !components[0].begins_with(prefix)) {
@@ -122,8 +135,9 @@ bool PropertyListHelper::is_property_valid(const String &p_property, int *r_inde
 	return property_list.has(components[1]);
 }
 
-void PropertyListHelper::get_property_list(List<PropertyInfo> *p_list, int p_count) const {
-	for (int i = 0; i < p_count; i++) {
+void PropertyListHelper::get_property_list(List<PropertyInfo> *p_list) const {
+	const int property_count = _call_array_length_getter();
+	for (int i = 0; i < property_count; i++) {
 		for (const KeyValue<String, Property> &E : property_list) {
 			const Property &property = E.value;
 
@@ -175,14 +189,16 @@ bool PropertyListHelper::property_get_revert(const String &p_property, Variant &
 	return false;
 }
 
-PropertyListHelper::~PropertyListHelper() {
-	// No object = it's the main helper. Do a cleanup.
-	if (!object) {
+void PropertyListHelper::clear() {
+	if (is_initialized()) {
+		memdelete(array_length_getter);
+
 		for (const KeyValue<String, Property> &E : property_list) {
 			if (E.value.setter) {
 				memdelete(E.value.setter);
 				memdelete(E.value.getter);
 			}
 		}
+		property_list.clear();
 	}
 }

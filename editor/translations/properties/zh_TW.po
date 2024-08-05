@@ -832,9 +832,6 @@ msgstr "編輯器螢幕"
 msgid "Project Manager Screen"
 msgstr "專案管理員"
 
-msgid "Enable Pseudolocalization"
-msgstr "啟用模擬翻譯模式"
-
 msgid "Use Embedded Menu"
 msgstr "使用嵌入式選單"
 
@@ -1084,6 +1081,9 @@ msgstr "RPC 埠"
 msgid "RPC Server Uptime"
 msgstr "RPC 伺服器上線時間"
 
+msgid "FBX"
+msgstr "FBX"
+
 msgid "FBX2glTF Path"
 msgstr "FBX2glTF 路徑"
 
@@ -1324,9 +1324,6 @@ msgstr "已實體化"
 msgid "Joint"
 msgstr "交點"
 
-msgid "Shape"
-msgstr "形狀"
-
 msgid "AABB"
 msgstr "AABB"
 
@@ -1564,12 +1561,6 @@ msgstr "字體大小"
 msgid "Always Clear Output on Play"
 msgstr "執行時永遠清除輸出"
 
-msgid "Always Open Output on Play"
-msgstr "執行時永遠開啟輸出"
-
-msgid "Always Close Output on Stop"
-msgstr "停止時永遠關閉輸出"
-
 msgid "HTTP Proxy"
 msgstr "HTTP 代理"
 
@@ -1599,6 +1590,15 @@ msgstr "遠端場景樹重新整理間隔"
 
 msgid "Remote Inspect Refresh Interval"
 msgstr "遠端檢查重新整理間隔"
+
+msgid "Input"
+msgstr "輸入"
+
+msgid "Buffering"
+msgstr "緩衝"
+
+msgid "Agile Event Flushing"
+msgstr "敏捷事件刷新"
 
 msgid "Project Manager"
 msgstr "專案管理員"
@@ -2641,18 +2641,6 @@ msgstr "預設"
 msgid "Default Clear Color"
 msgstr "預設清除顏色"
 
-msgid "Show Image"
-msgstr "顯示圖像"
-
-msgid "Image"
-msgstr "圖像"
-
-msgid "Fullsize"
-msgstr "全尺寸"
-
-msgid "Use Filter"
-msgstr "使用篩選器"
-
 msgid "Icon"
 msgstr "圖示"
 
@@ -2661,12 +2649,6 @@ msgstr "macOS 原生圖示"
 
 msgid "Windows Native Icon"
 msgstr "Windows 原生圖示"
-
-msgid "Buffering"
-msgstr "緩衝"
-
-msgid "Agile Event Flushing"
-msgstr "敏捷事件刷新"
 
 msgid "Pointing"
 msgstr "指點"
@@ -2689,6 +2671,18 @@ msgstr "自定義圖像熱點"
 msgid "Tooltip Position Offset"
 msgstr "工具提示位置偏移"
 
+msgid "Show Image"
+msgstr "顯示圖像"
+
+msgid "Image"
+msgstr "圖像"
+
+msgid "Fullsize"
+msgstr "全尺寸"
+
+msgid "Use Filter"
+msgstr "使用篩選器"
+
 msgid "Minimum Display Time"
 msgstr "最短顯示時間"
 
@@ -2706,6 +2700,24 @@ msgstr "解決方案目錄"
 
 msgid "Assembly Reload Attempts"
 msgstr "嘗試重新載入程式集"
+
+msgid "Time"
+msgstr "時間"
+
+msgid "Video"
+msgstr "影片"
+
+msgid "Regions"
+msgstr "區域"
+
+msgid "Agents"
+msgstr "代理"
+
+msgid "Polygons"
+msgstr "多邊形"
+
+msgid "Edges"
+msgstr "邊界"
 
 msgid "Operation"
 msgstr "操作"
@@ -2805,9 +2817,6 @@ msgstr "路徑接合"
 
 msgid "CSG"
 msgstr "CSG"
-
-msgid "FBX"
-msgstr "FBX"
 
 msgid "Embedded Image Handling"
 msgstr "嵌入影像處理"
@@ -4267,9 +4276,6 @@ msgstr "使用 Mipmap"
 msgid "Emitting"
 msgstr "發射"
 
-msgid "Time"
-msgstr "時間"
-
 msgid "Lifetime"
 msgstr "生命期"
 
@@ -4305,6 +4311,9 @@ msgstr "繪製順序"
 
 msgid "Emission Shape"
 msgstr "發射形狀"
+
+msgid "Shape"
+msgstr "形狀"
 
 msgid "Sphere Radius"
 msgstr "球體半徑"
@@ -4789,9 +4798,6 @@ msgstr "安全邊距"
 msgid "Disable Mode"
 msgstr "停用模式"
 
-msgid "Input"
-msgstr "輸入"
-
 msgid "Pickable"
 msgstr "可拾取"
 
@@ -4965,9 +4971,6 @@ msgstr "UV"
 
 msgid "Vertex Colors"
 msgstr "頂點顏色"
-
-msgid "Polygons"
-msgstr "多邊形"
 
 msgid "Internal Vertex Count"
 msgstr "內部頂點數"
@@ -7261,9 +7264,6 @@ msgstr "來源幾何體分組名稱"
 msgid "Cells"
 msgstr "儲存格"
 
-msgid "Agents"
-msgstr "代理"
-
 msgid "A"
 msgstr "A"
 
@@ -8203,14 +8203,8 @@ msgstr "最大爬升"
 msgid "Max Slope"
 msgstr "最大斜坡"
 
-msgid "Regions"
-msgstr "區域"
-
 msgid "Merge Size"
 msgstr "合併大小"
-
-msgid "Edges"
-msgstr "邊界"
 
 msgid "Max Error"
 msgstr "最大誤差"
@@ -8454,12 +8448,6 @@ msgstr "表面索引"
 
 msgid "Degrees Mode"
 msgstr "度數模式"
-
-msgid "Panel"
-msgstr "面板"
-
-msgid "Font Color"
-msgstr "字體顏色"
 
 msgid "Font Pressed Color"
 msgstr "字體顏色按下"
@@ -8953,9 +8941,6 @@ msgstr "捲軸垂直間距"
 msgid "Icon Margin"
 msgstr "圖示邊距"
 
-msgid "Line Separation"
-msgstr "行分隔"
-
 msgid "Font Hovered Color"
 msgstr "字體懸停顏色"
 
@@ -9342,9 +9327,6 @@ msgstr "聲道停用閾值 dB"
 
 msgid "Channel Disable Time"
 msgstr "聲道停用時間"
-
-msgid "Video"
-msgstr "影片"
 
 msgid "Video Delay Compensation (ms)"
 msgstr "影片延遲補償（毫秒）"
@@ -9981,6 +9963,3 @@ msgstr "世界原點"
 
 msgid "Primary Interface"
 msgstr "主介面"
-
-msgid "Property"
-msgstr "屬性"

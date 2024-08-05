@@ -123,7 +123,6 @@ def create_template_zip(env, js, wasm, worker, side):
         zip_files,
         ZIPROOT=zip_dir,
         ZIPSUFFIX="${PROGSUFFIX}${ZIPSUFFIX}",
-        ZIPCOMSTR="Archiving $SOURCES as $TARGET",
     )
 
 

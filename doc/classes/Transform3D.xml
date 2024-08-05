@@ -6,7 +6,7 @@
 	<description>
 		The [Transform3D] built-in [Variant] type is a 3×4 matrix representing a transformation in 3D space. It contains a [Basis], which on its own can represent rotation, scale, and shear. Additionally, combined with its own [member origin], the transform can also represent a translation.
 		For a general introduction, see the [url=$DOCS_URL/tutorials/math/matrices_and_transforms.html]Matrices and transforms[/url] tutorial.
-		[b]Note:[/b] Godot uses a [url=https://en.wikipedia.org/wiki/Right-hand_rule]right-handed coordinate system[/url], which is a common standard. For directions, the convention for built-in types like [Camera3D] is for -Z to point forward (+X is right, +Y is up, and +Z is back). Other objects may use different direction conventions. For more information, see the [url=$DOCS_URL/tutorials/assets_pipeline/importing_scenes.html#d-asset-direction-conventions]Importing 3D Scenes[/url] tutorial.
+		[b]Note:[/b] Godot uses a [url=https://en.wikipedia.org/wiki/Right-hand_rule]right-handed coordinate system[/url], which is a common standard. For directions, the convention for built-in types like [Camera3D] is for -Z to point forward (+X is right, +Y is up, and +Z is back). Other objects may use different direction conventions. For more information, see the [url=$DOCS_URL/tutorials/assets_pipeline/importing_3d_scenes/model_export_considerations.html#d-asset-direction-conventions]3D asset direction conventions[/url] tutorial.
 	</description>
 	<tutorials>
 		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>

@@ -168,28 +168,17 @@ void EditorSettingsDialog::_notification(int p_what) {
 }
 
 void EditorSettingsDialog::shortcut_input(const Ref<InputEvent> &p_event) {
-	ERR_FAIL_COND(p_event.is_null());
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-
 	const Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && k->is_pressed()) {
 		bool handled = false;
 
 		if (ED_IS_SHORTCUT("ui_undo", p_event)) {
-			String action = undo_redo->get_current_action_name();
-			if (!action.is_empty()) {
-				EditorNode::get_log()->add_message(vformat(TTR("Undo: %s"), action), EditorLog::MSG_TYPE_EDITOR);
-			}
-			undo_redo->undo();
+			EditorNode::get_singleton()->undo();
 			handled = true;
 		}
 
 		if (ED_IS_SHORTCUT("ui_redo", p_event)) {
-			undo_redo->redo();
-			String action = undo_redo->get_current_action_name();
-			if (!action.is_empty()) {
-				EditorNode::get_log()->add_message(vformat(TTR("Redo: %s"), action), EditorLog::MSG_TYPE_EDITOR);
-			}
+			EditorNode::get_singleton()->redo();
 			handled = true;
 		}
 
@@ -211,9 +200,9 @@ void EditorSettingsDialog::_update_icons() {
 	shortcut_search_box->set_clear_button_enabled(true);
 
 	restart_close_button->set_icon(shortcuts->get_editor_theme_icon(SNAME("Close")));
-	restart_container->add_theme_style_override("panel", shortcuts->get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
+	restart_container->add_theme_style_override(SceneStringName(panel), shortcuts->get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 	restart_icon->set_texture(shortcuts->get_editor_theme_icon(SNAME("StatusWarning")));
-	restart_label->add_theme_color_override("font_color", shortcuts->get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+	restart_label->add_theme_color_override(SceneStringName(font_color), shortcuts->get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 }
 
 void EditorSettingsDialog::_event_config_confirmed() {
@@ -307,7 +296,7 @@ void EditorSettingsDialog::_create_shortcut_treeitem(TreeItem *p_parent, const S
 	shortcut_item->set_text(1, sc_text);
 	if (sc_text == "None") {
 		// Fade out unassigned shortcut labels for easier visual grepping.
-		shortcut_item->set_custom_color(1, shortcuts->get_theme_color(SNAME("font_color"), SNAME("Label")) * Color(1, 1, 1, 0.5));
+		shortcut_item->set_custom_color(1, shortcuts->get_theme_color(SceneStringName(font_color), SNAME("Label")) * Color(1, 1, 1, 0.5));
 	}
 
 	if (p_allow_revert) {
@@ -775,7 +764,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	shortcut_search_box->set_placeholder(TTR("Filter by Name"));
 	shortcut_search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	top_hbox->add_child(shortcut_search_box);
-	shortcut_search_box->connect("text_changed", callable_mp(this, &EditorSettingsDialog::_filter_shortcuts));
+	shortcut_search_box->connect(SceneStringName(text_changed), callable_mp(this, &EditorSettingsDialog::_filter_shortcuts));
 
 	shortcut_search_by_event = memnew(EventListenerLineEdit);
 	shortcut_search_by_event->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -809,7 +798,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 
 	// Adding event dialog
 	shortcut_editor = memnew(InputEventConfigurationDialog);
-	shortcut_editor->connect("confirmed", callable_mp(this, &EditorSettingsDialog::_event_config_confirmed));
+	shortcut_editor->connect(SceneStringName(confirmed), callable_mp(this, &EditorSettingsDialog::_event_config_confirmed));
 	shortcut_editor->set_allowed_input_types(INPUT_KEY);
 	add_child(shortcut_editor);
 

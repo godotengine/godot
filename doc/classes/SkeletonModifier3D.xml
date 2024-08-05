@@ -18,6 +18,12 @@
 				[method _process_modification] must not apply [member influence] to bone poses because the [Skeleton3D] automatically applies influence to all bone poses set by the modifier.
 			</description>
 		</method>
+		<method name="get_skeleton" qualifiers="const">
+			<return type="Skeleton3D" />
+			<description>
+				Get parent [Skeleton3D] node if found.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="active" type="bool" setter="set_active" getter="is_active" default="true">

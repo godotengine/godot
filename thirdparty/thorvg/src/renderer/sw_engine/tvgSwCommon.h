@@ -23,20 +23,9 @@
 #ifndef _TVG_SW_COMMON_H_
 #define _TVG_SW_COMMON_H_
 
+#include <algorithm>
 #include "tvgCommon.h"
 #include "tvgRender.h"
-
-#include <algorithm>
-
-#if 0
-#include <sys/time.h>
-static double timeStamp()
-{
-   struct timeval tv;
-   gettimeofday(&tv, NULL);
-   return (tv.tv_sec + tv.tv_usec / 1000000.0);
-}
-#endif
 
 #define SW_CURVE_TYPE_POINT 0
 #define SW_CURVE_TYPE_CUBIC 1

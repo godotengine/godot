@@ -22,13 +22,14 @@
 # Ander Romero <anderromeroaldana@gmail.com>, 2023.
 # Francesc Arpi Roca <francesc.arpi@gmail.com>, 2024.
 # bene toff <benetoffix@gmail.com>, 2024.
+# pc <polct50@users.noreply.hosted.weblate.org>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-01-16 18:10+0000\n"
-"Last-Translator: bene toff <benetoffix@gmail.com>\n"
+"PO-Revision-Date: 2024-07-16 19:57+0000\n"
+"Last-Translator: pc <polct50@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
 "Language: ca\n"
@@ -36,7 +37,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.4-dev\n"
+"X-Generator: Weblate 5.7-dev\n"
 
 msgid "Main Thread"
 msgstr "Fil principal"
@@ -137,6 +138,9 @@ msgstr "Enrere, Sony Select, Xbox Back, Nintendo -"
 msgid "Guide, Sony PS, Xbox Home"
 msgstr "Guia, Sony PS, Xbox Home"
 
+msgid "Start, Xbox Menu, Nintendo +"
+msgstr "Començar, Menú Xbox, Nintendo +"
+
 msgid "Left Stick, Sony L3, Xbox L/LS"
 msgstr "Stick Esquerre, Sony L3, Xbox L/LS"
 
@@ -184,6 +188,9 @@ msgstr "Botó del Joypad %d"
 
 msgid "Pressure:"
 msgstr "Pressió:"
+
+msgid "touched"
+msgstr "Tocat"
 
 msgid "released"
 msgstr "deixat anar"
@@ -441,11 +448,17 @@ msgstr ""
 msgid "An action with the name '%s' already exists."
 msgstr "Ja existeix una acció amb el nom '%s'."
 
+msgid "Cannot Revert - Action is same as initial"
+msgstr "No es pot revertir - L'acció és idèntica a l'inicial"
+
 msgid "Revert Action"
 msgstr "Reverteix l'acció"
 
 msgid "Add Event"
 msgstr "Afegeix un Esdeveniment"
+
+msgid "Remove Action"
+msgstr "Elimina l'acció"
 
 msgid "Cannot Remove Action"
 msgstr "No es pot eliminar l'acció"
@@ -458,6 +471,9 @@ msgstr "Elimina Esdeveniment"
 
 msgid "Clear All"
 msgstr "Neteja-ho tot"
+
+msgid "Clear all search filters."
+msgstr "Buidar els filtres de cerca."
 
 msgid "Add New Action"
 msgstr "Afegeix una nova Acció"
@@ -489,6 +505,9 @@ msgstr "Insereix una Clau aquí"
 msgid "Duplicate Selected Key(s)"
 msgstr "Duplica les Claus seleccionades"
 
+msgid "Paste Key(s)"
+msgstr "Enganxar les Claus"
+
 msgid "Delete Selected Key(s)"
 msgstr "Elimina les Claus seleccionades"
 
@@ -519,6 +538,12 @@ msgstr "Mou els Punts de Bézier"
 msgid "Animation Duplicate Keys"
 msgstr "Duplica les Claus de l'animació"
 
+msgid "Animation Cut Keys"
+msgstr "Tecles de tall d'animació"
+
+msgid "Animation Paste Keys"
+msgstr "Animació enganxar claus"
+
 msgid "Animation Delete Keys"
 msgstr "Esborra les Claus de l'animació"
 
@@ -533,6 +558,12 @@ msgstr "Desselecciona totes les claus"
 
 msgid "Animation Change Transition"
 msgstr "Modifica la Transició de l'Animació"
+
+msgid "Animation Change Position3D"
+msgstr "Animació canviar posició3D"
+
+msgid "Animation Change Rotation3D"
+msgstr "Canviar l'animació de Rotació3D"
 
 msgid "Animation Change Keyframe Value"
 msgstr "Modifica el valor del fotograma clau de l'animació"
@@ -561,6 +592,27 @@ msgid "Can't change loop mode on animation embedded in another scene."
 msgstr ""
 "No es pot canviar el mode de repetició d'animacions incrustades en una altra "
 "escena."
+
+msgid "Property Track..."
+msgstr "Pista de Propietats..."
+
+msgid "3D Position Track..."
+msgstr "Pista de posició 3D..."
+
+msgid "3D Rotation Track..."
+msgstr "Pista de rotació 3D..."
+
+msgid "3D Scale Track..."
+msgstr "Pista de l'escala 3D..."
+
+msgid "Blend Shape Track..."
+msgstr "Pista de barreja de formes..."
+
+msgid "Call Method Track..."
+msgstr "Pista de Crida de Mètodes..."
+
+msgid "Bezier Curve Track..."
+msgstr "Pista de Corbes de Bézier..."
 
 msgid "Animation length (frames)"
 msgstr "Longitud de l'animació (fotogrames)"
@@ -694,8 +746,17 @@ msgstr "Limita la Interpolació del bucle"
 msgid "Wrap Loop Interp"
 msgstr "Embolcalla la interpolació"
 
+msgid "Insert Key..."
+msgstr "Insereix una clau…"
+
 msgid "Duplicate Key(s)"
 msgstr "Duplica les Claus"
+
+msgid "Cut Key(s)"
+msgstr "Talla les claus"
+
+msgid "Copy Key(s)"
+msgstr "Copiar clau(s)"
 
 msgid "Add RESET Value(s)"
 msgstr "Afegeix valor(s) de RESET"
@@ -730,6 +791,10 @@ msgstr "Voleu crear una nova pista per a %s i inserir-hi una clau?"
 
 msgid "Create %d new tracks and insert keys?"
 msgstr "Voleu crear %d noves pistes i inserir-hi claus?"
+
+msgid "Hold Shift when clicking the key icon to skip this dialog."
+msgstr ""
+"Premeu shift quan feu clic la icona de la clau per ometre aquest diàleg."
 
 msgid "Create"
 msgstr "Crea"
@@ -794,18 +859,6 @@ msgstr "El camí de la Pista no és vàlid i per tant no s'hi poden afegir claus
 
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "La pista no és de tipus Node3D, no s'hi pot inserir la clau"
-
-msgid "Add Position Key"
-msgstr "Afegeix una clau de Posició"
-
-msgid "Add Rotation Key"
-msgstr "Afegeix una Clau de Rotació"
-
-msgid "Add Scale Key"
-msgstr "Afegeix una Clau d'Escala"
-
-msgid "Add Track Key"
-msgstr "Afegeix una Clau de Pista"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr "No s'hi pot afegit cap clau de mètode. El camí de la pista no és vàlid."
@@ -889,6 +942,18 @@ msgstr "Escena Importada"
 msgid "Warning: Editing imported animation"
 msgstr "Advertiment: Edició d'animació importada"
 
+msgid "Dummy Player"
+msgstr "Jugador de prova"
+
+msgid "Warning: Editing dummy AnimationPlayer"
+msgstr "Atenció: Editant AnimationPlayer de prova"
+
+msgid "Inactive Player"
+msgstr "Jugador inactiu"
+
+msgid "Warning: AnimationPlayer is inactive"
+msgstr "Atenció: AnimationPlayer està inactiu"
+
 msgid "Toggle between the bezier curve editor and track editor."
 msgstr "Alterna entre l'editor de corbes de Bézier i el de pistes."
 
@@ -910,11 +975,32 @@ msgstr "Segons"
 msgid "FPS"
 msgstr "FPS"
 
+msgid "Fit to panel"
+msgstr "Ajustar al panell"
+
 msgid "Edit"
 msgstr "Edita"
 
 msgid "Animation properties."
 msgstr "Propietats de l'Animació."
+
+msgid "Copy Tracks..."
+msgstr "Copiar les pistes..."
+
+msgid "Scale Selection..."
+msgstr "Escala la Selecció..."
+
+msgid "Scale From Cursor..."
+msgstr "Escala a partir del Cursor..."
+
+msgid "Cut Selected Keys"
+msgstr "Retallar les Claus seleccionades"
+
+msgid "Copy Selected Keys"
+msgstr "Copiar les Claus seleccionades"
+
+msgid "Paste Keys"
+msgstr "Enganxar les claus"
 
 msgid "Delete Selection"
 msgstr "Suprimeix la Selecció"
@@ -927,6 +1013,15 @@ msgstr "Ves al Pas Anterior"
 
 msgid "Apply Reset"
 msgstr "Aplica reinicialització"
+
+msgid "Bake Animation..."
+msgstr "Precalcula l'Animació..."
+
+msgid "Optimize Animation (no undo)..."
+msgstr "Optimitza l'Animació (no es pot desfer)..."
+
+msgid "Clean-Up Animation (no undo)..."
+msgstr "Poleix l'Animació (No es pot desfer)..."
 
 msgid "Pick a node to animate:"
 msgstr "Tria un node a animar:"
@@ -952,6 +1047,12 @@ msgstr "Error Màx Precisió.:"
 msgid "Optimize"
 msgstr "Optimitza"
 
+msgid "Trim keys placed in negative time"
+msgstr "Ajustar les claus col·locades en temps negatiu"
+
+msgid "Trim keys placed exceed the animation length"
+msgstr "Ajustar les claus que superen la durada de l'animació"
+
 msgid "Remove invalid keys"
 msgstr "Treu claus no vàlides"
 
@@ -972,6 +1073,50 @@ msgstr "Relació d'Escala:"
 
 msgid "Select Transition and Easing"
 msgstr "Selecciona la transició i el suavitzat"
+
+msgctxt "Transition Type"
+msgid "Sine"
+msgstr "Sinus"
+
+msgctxt "Transition Type"
+msgid "Elastic"
+msgstr "Elàstic"
+
+msgctxt "Transition Type"
+msgid "Cubic"
+msgstr "Cúbic"
+
+msgctxt "Transition Type"
+msgid "Circ"
+msgstr "Circular"
+
+msgctxt "Transition Type"
+msgid "Bounce"
+msgstr "Rebot"
+
+msgctxt "Ease Type"
+msgid "Out"
+msgstr "Sortida"
+
+msgctxt "Ease Type"
+msgid "InOut"
+msgstr "EntrantSortint"
+
+msgctxt "Ease Type"
+msgid "OutIn"
+msgstr "SortintEntrant"
+
+msgid "Transition Type:"
+msgstr "Tipus de Transició:"
+
+msgid "Ease Type:"
+msgstr "Tipus d'acceleració:"
+
+msgid "Animation Baker"
+msgstr "Precalcular l'animació"
+
+msgid "3D Pos/Rot/Scl Track:"
+msgstr "Pista Pos/Rot/Esc 3D"
 
 msgid "Select Tracks to Copy"
 msgstr "Seleccioneu les Pistes a Copiar"
@@ -1172,6 +1317,9 @@ msgstr "Desa la Branca com un Escena"
 
 msgid "Copy Node Path"
 msgstr "Copia el Camí del Node"
+
+msgid "Instance:"
+msgstr "Instància:"
 
 msgid "Toggle Visibility"
 msgstr "Visibilitat"
@@ -1811,6 +1959,9 @@ msgstr "Importar Perfil(s)"
 msgid "Manage Editor Feature Profiles"
 msgstr "Administra els Perfils de Característiques de l'Editor"
 
+msgid "Save & Restart"
+msgstr "Desa i Reinicia"
+
 msgid "ScanSources"
 msgstr "Escaneja Fonts"
 
@@ -2080,13 +2231,6 @@ msgid "Quick Open Script..."
 msgstr "Obertura Ràpida d'Scripts..."
 
 msgid ""
-"The current scene has no root node, but %d modified external resource(s) were "
-"saved anyway."
-msgstr ""
-"L'escena actual no té cap node arrel, però %d recurs(os) modificat(s) "
-"externament s'ha(n) desat igualment."
-
-msgid ""
 "A root node is required to save the scene. You can add a root node using the "
 "Scene tree dock."
 msgstr ""
@@ -2293,11 +2437,6 @@ msgstr "Disseny de l'Editor"
 msgid "Take Screenshot"
 msgstr "Fer captura de pantalla"
 
-msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr ""
-"Les captures de pantalla s'emmagatzemen a la carpeta dades/configuració de "
-"l'editor."
-
 msgid "Toggle Fullscreen"
 msgstr "Mode Pantalla Completa"
 
@@ -2336,9 +2475,6 @@ msgstr "Enviar suggeriments sobre la Documentació"
 
 msgid "Support Godot Development"
 msgstr "Contribueix al Desenvolupament de Godot"
-
-msgid "Save & Restart"
-msgstr "Desa i Reinicia"
 
 msgid "Update Continuously"
 msgstr "Actualitzar contínuament"
@@ -2387,12 +2523,6 @@ msgid ""
 msgstr ""
 "El disc conté versions més recents dels fitxer següents.\n"
 "Quina acció voleu seguir?"
-
-msgid "Reload"
-msgstr "Torna a Carregar"
-
-msgid "Resave"
-msgstr "Torna a Desar"
 
 msgid "New Inherited"
 msgstr "Nou Heretat"
@@ -2515,9 +2645,6 @@ msgstr "Script Nou..."
 msgid "Write your logic in the _run() method."
 msgstr "Escriu la lògica en el mètode _run()."
 
-msgid "There is an edited scene already."
-msgstr "Ja hi ha un escena editada."
-
 msgid "Editor Settings"
 msgstr "Configuració de l'Editor"
 
@@ -2625,6 +2752,12 @@ msgid ""
 msgstr ""
 "No s'ha trobat cap enllaç de baixada per a aquesta versió. Les baixades "
 "directes només són disponibles per a versions oficials."
+
+msgid "Connecting..."
+msgstr "Connexió en marxa..."
+
+msgid "Requesting..."
+msgstr "Sol·licitud en marxa..."
 
 msgid "Extracting Export Templates"
 msgstr "Extraient Plantilles d'Exportació"
@@ -2835,6 +2968,9 @@ msgstr "Eliminar de Preferits"
 msgid "Reimport"
 msgstr "ReImportar"
 
+msgid "Open in File Manager"
+msgstr "Obrir en el Gestor de Fitxers"
+
 msgid "New Folder..."
 msgstr "Nou Directori..."
 
@@ -2870,9 +3006,6 @@ msgstr "Duplica..."
 
 msgid "Rename..."
 msgstr "Reanomena..."
-
-msgid "Open in File Manager"
-msgstr "Obrir en el Gestor de Fitxers"
 
 msgid "Re-Scan Filesystem"
 msgstr "ReAnalitza Sistema de Fitxers"
@@ -3068,9 +3201,6 @@ msgstr ""
 
 msgid "Open in Editor"
 msgstr "Obre en l'Editor"
-
-msgid "Instance:"
-msgstr "Instància:"
 
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "El Nom del node no és vàlid. No es permeten els caràcters següents:"
@@ -3619,12 +3749,6 @@ msgstr "Descarregant..."
 msgid "Resolving..."
 msgstr "s'està resolent..."
 
-msgid "Connecting..."
-msgstr "Connexió en marxa..."
-
-msgid "Requesting..."
-msgstr "Sol·licitud en marxa..."
-
 msgid "Error making request"
 msgstr "Error en la sol·licitud"
 
@@ -3759,6 +3883,11 @@ msgstr "Zoom a 1600%"
 
 msgid "Select Mode"
 msgstr "Mode de selecció"
+
+msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
+msgstr ""
+"Alt + RMB: Mostra la llista de tots els nodes a la posició en què es fa clic, "
+"inclòs el bloquejat."
 
 msgid "Move Mode"
 msgstr "Mode de moviment"
@@ -3903,9 +4032,6 @@ msgstr "Divideix l'increment de la quadrícula per 2"
 
 msgid "Adding %s..."
 msgstr "Afegint %s..."
-
-msgid "Cannot instantiate multiple nodes without root."
-msgstr "No es poden instanciar múltiples nodes sense cap arrel."
 
 msgid "Create Node"
 msgstr "Crea un Node"
@@ -4058,9 +4184,6 @@ msgstr "Modifica el radi d'una Forma Càpsula"
 
 msgid "Change Capsule Shape Height"
 msgstr "Modifica l'alçada de la Forma Caixa"
-
-msgid "Change Particles AABB"
-msgstr "Modifica les Partícules AABB"
 
 msgid "Change Light Radius"
 msgstr "Modifica el Radi de Llum"
@@ -4377,11 +4500,6 @@ msgstr "Diàleg XForm"
 msgid "Couldn't find a solid floor to snap the selection to."
 msgstr "No s'ha pogut trobar un sòl sòlid on ajustar la selecció."
 
-msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
-msgstr ""
-"Alt + RMB: Mostra la llista de tots els nodes a la posició en què es fa clic, "
-"inclòs el bloquejat."
-
 msgid "Use Local Space"
 msgstr "Utilitzar Espai Local"
 
@@ -4505,14 +4623,14 @@ msgstr "Elimina Out-Control de la Corba"
 msgid "Remove In-Control from Curve"
 msgstr "Elimina In-Control de la Corba"
 
-msgid "Add Point to Curve"
-msgstr "Afegeix un Punt a la Corba"
-
 msgid "Split Curve"
 msgstr "Partir Corba"
 
 msgid "Move Point in Curve"
 msgstr "Mou un Punt de la Corba"
+
+msgid "Add Point to Curve"
+msgstr "Afegeix un Punt a la Corba"
 
 msgid "Move In-Control in Curve"
 msgstr "Mou In-Control de la Corba"
@@ -4741,9 +4859,6 @@ msgstr "Enganxa el Recurs"
 msgid "Load Resource"
 msgstr "Carrega un Recurs"
 
-msgid "Clear Recent Files"
-msgstr "Buida la llista de Fitxers recents"
-
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr "No es pot obrir '%s'. Comproveu si el fitxer s'ha mogut o eliminat."
 
@@ -4774,6 +4889,12 @@ msgstr "Error en desar"
 msgid "Save Theme As..."
 msgstr "Desa el Tema com a..."
 
+msgid "Online Docs"
+msgstr "Documentació en línia"
+
+msgid "Open Godot online documentation."
+msgstr "Obrir la documentació en línia de Godot."
+
 msgid "%s Class Reference"
 msgstr "Referència de Classe %s"
 
@@ -4794,9 +4915,6 @@ msgstr "Fitxer"
 
 msgid "Open..."
 msgstr "Obrir..."
-
-msgid "Reopen Closed Script"
-msgstr "Reobrir Script Tancat"
 
 msgid "Save All"
 msgstr "Desa-ho Tot"
@@ -4834,12 +4952,6 @@ msgstr "Executar"
 msgid "Search"
 msgstr "Cerca"
 
-msgid "Online Docs"
-msgstr "Documentació en línia"
-
-msgid "Open Godot online documentation."
-msgstr "Obrir la documentació en línia de Godot."
-
 msgid "Search the reference documentation."
 msgstr "Cerca dins la documentació de referència."
 
@@ -4852,12 +4964,17 @@ msgstr "Vés al següent document editat."
 msgid "Discard"
 msgstr "Descarta'l"
 
-msgid ""
-"The following files are newer on disk.\n"
-"What action should be taken?:"
-msgstr ""
-"El disc conté versions més recents dels fitxer següents. \n"
-"Quina acció voleu seguir?:"
+msgid "Reopen Closed Script"
+msgstr "Reobrir Script Tancat"
+
+msgid "Uppercase"
+msgstr "Majúscules"
+
+msgid "Lowercase"
+msgstr "Minúscula"
+
+msgid "Capitalize"
+msgstr "Converteix a Majúscules"
 
 msgid "Standard"
 msgstr "Estàndard"
@@ -4888,15 +5005,6 @@ msgstr "Tria un Color"
 
 msgid "Line"
 msgstr "Línia"
-
-msgid "Uppercase"
-msgstr "Majúscules"
-
-msgid "Lowercase"
-msgstr "Minúscula"
-
-msgid "Capitalize"
-msgstr "Converteix a Majúscules"
 
 msgid "Convert Case"
 msgstr "Converteix Majúscules"
@@ -5071,6 +5179,12 @@ msgstr "Seleccionar Fotogrames"
 
 msgid "Size"
 msgstr "Mida"
+
+msgid "Reload"
+msgstr "Torna a Carregar"
+
+msgid "Resave"
+msgstr "Torna a Desar"
 
 msgid "Set Region Rect"
 msgstr "Defineix la Regió Rectangular"

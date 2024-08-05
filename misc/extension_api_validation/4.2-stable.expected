@@ -126,13 +126,6 @@ Validate extension JSON: Error: Field 'classes/Animation/methods/value_track_int
 Added optional argument to track_interpolate to treat playing backward correctly. Compatibility method registered.
 
 
-GH-86661
---------
-Validate extension JSON: Error: Field 'classes/Animation/methods/track_find_key/arguments': size changed value in new API, from 3 to 4.
-
-Added optional argument to track_find_key to avoid finding keys out of the animation range. Compatibility method registered.
-
-
 GH-84792
 --------
 Validate extension JSON: Error: Field 'classes/RenderingServer/methods/environment_set_fog/arguments': size changed value in new API, from 10 to 11.
@@ -261,13 +254,6 @@ Validate extension JSON: API was removed: classes/VisualShaderNodeComment/method
 Validate extension JSON: API was removed: classes/VisualShaderNodeComment/properties/title
 
 
-GH-87888
---------
-Validate extension JSON: API was removed: classes/Skeleton3D/properties/animate_physical_bones
-
-These base class is changed to SkeletonModifier3D which is processed by Skeleton3D with the assumption that it is Skeleton3D's child.
-
-
 GH-90575
 --------
 Validate extension JSON: API was removed: classes/BoneAttachment3D/methods/on_bone_pose_update
@@ -357,3 +343,40 @@ Validate extension JSON: Error: Field 'classes/RenderingServer/methods/canvas_it
 Validate extension JSON: Error: Field 'classes/RenderingServer/methods/canvas_item_add_rect/arguments': size changed value in new API, from 3 to 4.
 
 Optional arguments added. Compatibility methods registered.
+
+
+GH-92322
+--------
+Validate extension JSON: Error: Field 'classes/EditorInspectorPlugin/methods/add_property_editor/arguments': size changed value in new API, from 3 to 4.
+
+Optional arguments added. Compatibility methods registered.
+
+
+GH-92861
+--------
+Validate extension JSON: Error: Field 'classes/Animation/methods/track_find_key/arguments': size changed value in new API, from 3 to 5.
+
+Added optional arguments to avoid finding keys out of the animation range (GH-86661), and to handle backward seeking.
+Compatibility method registered.
+
+
+GH-91382
+--------
+Validate extension JSON: Error: Field 'classes/AudioStreamPlaybackPolyphonic/methods/play_stream/arguments': size changed value in new API, from 4 to 6.
+
+Optional arguments added. Compatibility methods registered.
+
+
+GH-93982
+--------
+Validate extension JSON: Error: Field 'classes/Sprite3D/properties/frame_coords': type changed value in new API, from "Vector2" to "Vector2i".
+
+The type was wrong to begin with and has been corrected. Vector2 and Vector2i are convertible, so it should be compatible.
+
+
+GH-94243
+--------
+Validate extension JSON: Error: Field 'classes/Image/methods/get_mipmap_offset/return_value': meta changed value in new API, from "int32" to "int64".
+
+Type changed to int64_t to support baking large lightmaps.
+No compatibility method needed, both GDExtension and C# generate it as int64_t anyway.

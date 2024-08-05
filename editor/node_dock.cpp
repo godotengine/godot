@@ -67,23 +67,11 @@ void NodeDock::update_lists() {
 	connections->update_tree();
 }
 
-void NodeDock::_on_node_tree_exited() {
-	set_node(nullptr);
-}
-
 void NodeDock::set_node(Node *p_node) {
-	if (last_valid_node) {
-		last_valid_node->disconnect(SceneStringName(tree_exited), callable_mp(this, &NodeDock::_on_node_tree_exited));
-		last_valid_node = nullptr;
-	}
-
 	connections->set_node(p_node);
 	groups->set_current(p_node);
 
 	if (p_node) {
-		last_valid_node = p_node;
-		last_valid_node->connect(SceneStringName(tree_exited), callable_mp(this, &NodeDock::_on_node_tree_exited));
-
 		if (connections_button->is_pressed()) {
 			connections->show();
 		} else {
@@ -98,10 +86,6 @@ void NodeDock::set_node(Node *p_node) {
 		mode_hb->hide();
 		select_a_node->show();
 	}
-}
-
-void NodeDock::restore_last_valid_node() {
-	set_node(last_valid_node);
 }
 
 NodeDock::NodeDock() {

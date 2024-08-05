@@ -40,8 +40,8 @@
 #include <stdio.h>
 
 void Resource::emit_changed() {
-	if (ResourceLoader::is_within_load() && !Thread::is_main_thread()) {
-		// Let the connection happen on the main thread, later, since signals are not thread-safe.
+	if (ResourceLoader::is_within_load() && MessageQueue::get_main_singleton() != MessageQueue::get_singleton() && !MessageQueue::get_singleton()->is_flushing()) {
+		// Let the connection happen on the call queue, later, since signals are not thread-safe.
 		call_deferred("emit_signal", CoreStringName(changed));
 	} else {
 		emit_signal(CoreStringName(changed));
@@ -166,8 +166,8 @@ bool Resource::editor_can_reload_from_file() {
 }
 
 void Resource::connect_changed(const Callable &p_callable, uint32_t p_flags) {
-	if (ResourceLoader::is_within_load() && !Thread::is_main_thread()) {
-		// Let the check and connection happen on the main thread, later, since signals are not thread-safe.
+	if (ResourceLoader::is_within_load() && MessageQueue::get_main_singleton() != MessageQueue::get_singleton() && !MessageQueue::get_singleton()->is_flushing()) {
+		// Let the check and connection happen on the call queue, later, since signals are not thread-safe.
 		callable_mp(this, &Resource::connect_changed).call_deferred(p_callable, p_flags);
 		return;
 	}
@@ -177,8 +177,8 @@ void Resource::connect_changed(const Callable &p_callable, uint32_t p_flags) {
 }
 
 void Resource::disconnect_changed(const Callable &p_callable) {
-	if (ResourceLoader::is_within_load() && !Thread::is_main_thread()) {
-		// Let the check and disconnection happen on the main thread, later, since signals are not thread-safe.
+	if (ResourceLoader::is_within_load() && MessageQueue::get_main_singleton() != MessageQueue::get_singleton() && !MessageQueue::get_singleton()->is_flushing()) {
+		// Let the check and disconnection happen on the call queue, later, since signals are not thread-safe.
 		callable_mp(this, &Resource::disconnect_changed).call_deferred(p_callable);
 		return;
 	}

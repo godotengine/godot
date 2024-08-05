@@ -53,6 +53,8 @@ class DisplayServer : public Object {
 	RID _get_rid_from_name(NativeMenu *p_nmenu, const String &p_menu_root) const;
 #endif
 
+	LocalVector<ObjectID> additional_outputs;
+
 public:
 	_FORCE_INLINE_ static DisplayServer *get_singleton() {
 		return singleton;
@@ -101,7 +103,7 @@ private:
 protected:
 	static void _bind_methods();
 
-	static Ref<Image> _get_cursor_image_from_resource(const Ref<Resource> &p_cursor, const Vector2 &p_hotspot, Rect2 &r_atlas_rect);
+	static Ref<Image> _get_cursor_image_from_resource(const Ref<Resource> &p_cursor, const Vector2 &p_hotspot);
 
 	enum {
 		MAX_SERVERS = 64
@@ -248,8 +250,8 @@ public:
 	virtual void tts_set_utterance_callback(TTSUtteranceEvent p_event, const Callable &p_callable);
 	virtual void tts_post_utterance_event(TTSUtteranceEvent p_event, int p_id, int p_pos = 0);
 
-	virtual bool is_dark_mode_supported() const { return false; };
-	virtual bool is_dark_mode() const { return false; };
+	virtual bool is_dark_mode_supported() const { return false; }
+	virtual bool is_dark_mode() const { return false; }
 	virtual Color get_accent_color() const { return Color(0, 0, 0, 0); }
 	virtual Color get_base_color() const { return Color(0, 0, 0, 0); }
 	virtual void set_system_theme_change_callback(const Callable &p_callable) {}
@@ -338,8 +340,8 @@ public:
 		return scale;
 	}
 	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
-	virtual Color screen_get_pixel(const Point2i &p_position) const { return Color(); };
-	virtual Ref<Image> screen_get_image(int p_screen = SCREEN_OF_MAIN_WINDOW) const { return Ref<Image>(); };
+	virtual Color screen_get_pixel(const Point2i &p_position) const { return Color(); }
+	virtual Ref<Image> screen_get_image(int p_screen = SCREEN_OF_MAIN_WINDOW) const { return Ref<Image>(); }
 	virtual bool is_touchscreen_available() const;
 
 	// Keep the ScreenOrientation enum values in sync with the `display/window/handheld/orientation`
@@ -394,13 +396,13 @@ public:
 		WINDOW_FLAG_MOUSE_PASSTHROUGH_BIT = (1 << WINDOW_FLAG_MOUSE_PASSTHROUGH),
 	};
 
-	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i());
+	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i(), bool p_exclusive = false, WindowID p_transient_parent = INVALID_WINDOW_ID);
 	virtual void show_window(WindowID p_id);
 	virtual void delete_sub_window(WindowID p_id);
 
-	virtual WindowID window_get_active_popup() const { return INVALID_WINDOW_ID; };
-	virtual void window_set_popup_safe_rect(WindowID p_window, const Rect2i &p_rect){};
-	virtual Rect2i window_get_popup_safe_rect(WindowID p_window) const { return Rect2i(); };
+	virtual WindowID window_get_active_popup() const { return INVALID_WINDOW_ID; }
+	virtual void window_set_popup_safe_rect(WindowID p_window, const Rect2i &p_rect) {}
+	virtual Rect2i window_get_popup_safe_rect(WindowID p_window) const { return Rect2i(); }
 
 	virtual int64_t window_get_native_handle(HandleType p_handle_type, WindowID p_window = MAIN_WINDOW_ID) const;
 
@@ -555,10 +557,10 @@ public:
 	virtual Key keyboard_get_keycode_from_physical(Key p_keycode) const;
 	virtual Key keyboard_get_label_from_physical(Key p_keycode) const;
 
-	virtual int tablet_get_driver_count() const { return 1; };
-	virtual String tablet_get_driver_name(int p_driver) const { return "default"; };
-	virtual String tablet_get_current_driver() const { return "default"; };
-	virtual void tablet_set_current_driver(const String &p_driver){};
+	virtual int tablet_get_driver_count() const { return 1; }
+	virtual String tablet_get_driver_name(int p_driver) const { return "default"; }
+	virtual String tablet_get_current_driver() const { return "default"; }
+	virtual void tablet_set_current_driver(const String &p_driver) {}
 
 	virtual void process_events() = 0;
 
@@ -581,6 +583,10 @@ public:
 	virtual void set_context(Context p_context);
 
 	virtual bool is_window_transparency_available() const { return false; }
+
+	void register_additional_output(Object *p_output);
+	void unregister_additional_output(Object *p_output);
+	bool has_additional_outputs() const { return additional_outputs.size() > 0; }
 
 	static void register_create_function(const char *p_name, CreateFunction p_function, GetRenderingDriversFunction p_get_drivers);
 	static int get_create_function_count();

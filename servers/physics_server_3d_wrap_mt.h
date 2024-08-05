@@ -44,7 +44,11 @@
 #endif
 
 #ifdef DEBUG_ENABLED
+#ifdef DEV_ENABLED
 #define MAIN_THREAD_SYNC_WARN WARN_PRINT("Call to " + String(__FUNCTION__) + " causing PhysicsServer3D synchronizations on every frame. This significantly affects performance.");
+#else
+#define MAIN_THREAD_SYNC_WARN
+#endif
 #endif
 
 class PhysicsServer3DWrapMT : public PhysicsServer3D {

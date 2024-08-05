@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
 #include "core/debugger/engine_debugger.h"
+#include "core/debugger/script_debugger.h"
 #include "core/io/file_access_compressed.h"
 #include "core/io/file_access_encrypted.h"
 #include "core/io/marshalls.h"
@@ -192,6 +193,18 @@ void ResourceSaver::_bind_methods() {
 }
 
 ////// OS //////
+
+PackedByteArray OS::get_entropy(int p_bytes) {
+	PackedByteArray pba;
+	pba.resize(p_bytes);
+	Error err = ::OS::get_singleton()->get_entropy(pba.ptrw(), p_bytes);
+	ERR_FAIL_COND_V(err != OK, PackedByteArray());
+	return pba;
+}
+
+String OS::get_system_ca_certificates() {
+	return ::OS::get_singleton()->get_system_ca_certificates();
+}
 
 PackedStringArray OS::get_connected_midi_inputs() {
 	return ::OS::get_singleton()->get_connected_midi_inputs();
@@ -572,6 +585,8 @@ String OS::get_unique_id() const {
 OS *OS::singleton = nullptr;
 
 void OS::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_entropy", "size"), &OS::get_entropy);
+	ClassDB::bind_method(D_METHOD("get_system_ca_certificates"), &OS::get_system_ca_certificates);
 	ClassDB::bind_method(D_METHOD("get_connected_midi_inputs"), &OS::get_connected_midi_inputs);
 	ClassDB::bind_method(D_METHOD("open_midi_inputs"), &OS::open_midi_inputs);
 	ClassDB::bind_method(D_METHOD("close_midi_inputs"), &OS::close_midi_inputs);
@@ -1919,6 +1934,16 @@ void EngineDebugger::send_message(const String &p_msg, const Array &p_data) {
 	::EngineDebugger::get_singleton()->send_message(p_msg, p_data);
 }
 
+void EngineDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
+	ERR_FAIL_COND_MSG(!::EngineDebugger::is_active(), "Can't send debug. No active debugger");
+	::EngineDebugger::get_singleton()->debug(p_can_continue, p_is_error_breakpoint);
+}
+
+void EngineDebugger::script_debug(ScriptLanguage *p_lang, bool p_can_continue, bool p_is_error_breakpoint) {
+	ERR_FAIL_COND_MSG(!::EngineDebugger::get_script_debugger(), "Can't send debug. No active debugger");
+	::EngineDebugger::get_script_debugger()->debug(p_lang, p_can_continue, p_is_error_breakpoint);
+}
+
 Error EngineDebugger::call_capture(void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured) {
 	Callable &capture = *(Callable *)p_user;
 	if (!capture.is_valid()) {
@@ -1933,6 +1958,56 @@ Error EngineDebugger::call_capture(void *p_user, const String &p_cmd, const Arra
 	ERR_FAIL_COND_V_MSG(retval.get_type() != Variant::BOOL, FAILED, "Error calling 'capture' to callable: " + String(capture) + ". Return type is not bool.");
 	r_captured = retval;
 	return OK;
+}
+
+void EngineDebugger::line_poll() {
+	ERR_FAIL_COND_MSG(!::EngineDebugger::is_active(), "Can't poll. No active debugger");
+	::EngineDebugger::get_singleton()->line_poll();
+}
+
+void EngineDebugger::set_lines_left(int p_lines) {
+	ERR_FAIL_COND_MSG(!::EngineDebugger::get_script_debugger(), "Can't set lines left. No active debugger");
+	::EngineDebugger::get_script_debugger()->set_lines_left(p_lines);
+}
+
+int EngineDebugger::get_lines_left() const {
+	ERR_FAIL_COND_V_MSG(!::EngineDebugger::get_script_debugger(), 0, "Can't get lines left. No active debugger");
+	return ::EngineDebugger::get_script_debugger()->get_lines_left();
+}
+
+void EngineDebugger::set_depth(int p_depth) {
+	ERR_FAIL_COND_MSG(!::EngineDebugger::get_script_debugger(), "Can't set depth. No active debugger");
+	::EngineDebugger::get_script_debugger()->set_depth(p_depth);
+}
+
+int EngineDebugger::get_depth() const {
+	ERR_FAIL_COND_V_MSG(!::EngineDebugger::get_script_debugger(), 0, "Can't get depth. No active debugger");
+	return ::EngineDebugger::get_script_debugger()->get_depth();
+}
+
+bool EngineDebugger::is_breakpoint(int p_line, const StringName &p_source) const {
+	ERR_FAIL_COND_V_MSG(!::EngineDebugger::get_script_debugger(), false, "Can't check breakpoint. No active debugger");
+	return ::EngineDebugger::get_script_debugger()->is_breakpoint(p_line, p_source);
+}
+
+bool EngineDebugger::is_skipping_breakpoints() const {
+	ERR_FAIL_COND_V_MSG(!::EngineDebugger::get_script_debugger(), false, "Can't check skipping breakpoint. No active debugger");
+	return ::EngineDebugger::get_script_debugger()->is_skipping_breakpoints();
+}
+
+void EngineDebugger::insert_breakpoint(int p_line, const StringName &p_source) {
+	ERR_FAIL_COND_MSG(!::EngineDebugger::get_script_debugger(), "Can't insert breakpoint. No active debugger");
+	::EngineDebugger::get_script_debugger()->insert_breakpoint(p_line, p_source);
+}
+
+void EngineDebugger::remove_breakpoint(int p_line, const StringName &p_source) {
+	ERR_FAIL_COND_MSG(!::EngineDebugger::get_script_debugger(), "Can't remove breakpoint. No active debugger");
+	::EngineDebugger::get_script_debugger()->remove_breakpoint(p_line, p_source);
+}
+
+void EngineDebugger::clear_breakpoints() {
+	ERR_FAIL_COND_MSG(!::EngineDebugger::get_script_debugger(), "Can't clear breakpoints. No active debugger");
+	::EngineDebugger::get_script_debugger()->clear_breakpoints();
 }
 
 EngineDebugger::~EngineDebugger() {
@@ -1960,7 +2035,23 @@ void EngineDebugger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("unregister_message_capture", "name"), &EngineDebugger::unregister_message_capture);
 	ClassDB::bind_method(D_METHOD("has_capture", "name"), &EngineDebugger::has_capture);
 
+	ClassDB::bind_method(D_METHOD("line_poll"), &EngineDebugger::line_poll);
+
 	ClassDB::bind_method(D_METHOD("send_message", "message", "data"), &EngineDebugger::send_message);
+	ClassDB::bind_method(D_METHOD("debug", "can_continue", "is_error_breakpoint"), &EngineDebugger::debug, DEFVAL(true), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("script_debug", "language", "can_continue", "is_error_breakpoint"), &EngineDebugger::script_debug, DEFVAL(true), DEFVAL(false));
+
+	ClassDB::bind_method(D_METHOD("set_lines_left", "lines"), &EngineDebugger::set_lines_left);
+	ClassDB::bind_method(D_METHOD("get_lines_left"), &EngineDebugger::get_lines_left);
+
+	ClassDB::bind_method(D_METHOD("set_depth", "depth"), &EngineDebugger::set_depth);
+	ClassDB::bind_method(D_METHOD("get_depth"), &EngineDebugger::get_depth);
+
+	ClassDB::bind_method(D_METHOD("is_breakpoint", "line", "source"), &EngineDebugger::is_breakpoint);
+	ClassDB::bind_method(D_METHOD("is_skipping_breakpoints"), &EngineDebugger::is_skipping_breakpoints);
+	ClassDB::bind_method(D_METHOD("insert_breakpoint", "line", "source"), &EngineDebugger::insert_breakpoint);
+	ClassDB::bind_method(D_METHOD("remove_breakpoint", "line", "source"), &EngineDebugger::remove_breakpoint);
+	ClassDB::bind_method(D_METHOD("clear_breakpoints"), &EngineDebugger::clear_breakpoints);
 }
 
 } // namespace core_bind

@@ -60,7 +60,6 @@ private:
 
 	enum class UpdateStatus {
 		NONE,
-		DEV,
 		OFFLINE,
 		BUSY,
 		ERROR,
@@ -79,7 +78,7 @@ private:
 
 	UpdateStatus status = UpdateStatus::NONE;
 	bool checked_update = false;
-	String found_version;
+	String available_newer_version;
 
 	bool _can_check_updates() const;
 	void _check_update();

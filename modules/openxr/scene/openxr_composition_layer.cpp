@@ -151,6 +151,16 @@ void OpenXRCompositionLayer::update_fallback_mesh() {
 	should_update_fallback_mesh = true;
 }
 
+XrPosef OpenXRCompositionLayer::get_openxr_pose() {
+	Transform3D reference_frame = XRServer::get_singleton()->get_reference_frame();
+	Transform3D transform = reference_frame.inverse() * get_transform();
+	Quaternion quat(transform.basis.orthonormalized());
+	return {
+		{ (float)quat.x, (float)quat.y, (float)quat.z, (float)quat.w },
+		{ (float)transform.origin.x, (float)transform.origin.y, (float)transform.origin.z }
+	};
+}
+
 bool OpenXRCompositionLayer::is_viewport_in_use(SubViewport *p_viewport) {
 	for (const OpenXRCompositionLayer *other_composition_layer : composition_layer_nodes) {
 		if (other_composition_layer != this && other_composition_layer->is_inside_tree() && other_composition_layer->get_layer_viewport() == p_viewport) {

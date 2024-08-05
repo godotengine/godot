@@ -175,7 +175,7 @@ ReplicationEditor::ReplicationEditor() {
 
 	delete_dialog = memnew(ConfirmationDialog);
 	delete_dialog->connect("canceled", callable_mp(this, &ReplicationEditor::_dialog_closed).bind(false));
-	delete_dialog->connect("confirmed", callable_mp(this, &ReplicationEditor::_dialog_closed).bind(true));
+	delete_dialog->connect(SceneStringName(confirmed), callable_mp(this, &ReplicationEditor::_dialog_closed).bind(true));
 	add_child(delete_dialog);
 
 	VBoxContainer *vb = memnew(VBoxContainer);
@@ -187,7 +187,7 @@ ReplicationEditor::ReplicationEditor() {
 	pick_node->register_text_enter(pick_node->get_filter_line_edit());
 	pick_node->set_title(TTR("Pick a node to synchronize:"));
 	pick_node->connect("selected", callable_mp(this, &ReplicationEditor::_pick_node_selected));
-	pick_node->get_filter_line_edit()->connect("text_changed", callable_mp(this, &ReplicationEditor::_pick_node_filter_text_changed));
+	pick_node->get_filter_line_edit()->connect(SceneStringName(text_changed), callable_mp(this, &ReplicationEditor::_pick_node_filter_text_changed));
 	pick_node->get_filter_line_edit()->connect("gui_input", callable_mp(this, &ReplicationEditor::_pick_node_filter_input));
 
 	prop_selector = memnew(PropertySelector);
@@ -372,7 +372,7 @@ void ReplicationEditor::_notification(int p_what) {
 			[[fallthrough]];
 		}
 		case NOTIFICATION_ENTER_TREE: {
-			add_theme_style_override("panel", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("panel"), SNAME("Panel")));
+			add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SceneStringName(panel), SNAME("Panel")));
 			add_pick_button->set_icon(get_theme_icon(SNAME("Add"), EditorStringName(EditorIcons)));
 			pin->set_icon(get_theme_icon(SNAME("Pin"), EditorStringName(EditorIcons)));
 		} break;

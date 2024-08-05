@@ -68,7 +68,7 @@ void ProjectExportTextureFormatError::_bind_methods() {
 void ProjectExportTextureFormatError::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			texture_format_error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			texture_format_error_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 		} break;
 	}
 }
@@ -107,7 +107,7 @@ void ProjectExportDialog::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			duplicate_preset->set_icon(presets->get_editor_theme_icon(SNAME("Duplicate")));
 			delete_preset->set_icon(presets->get_editor_theme_icon(SNAME("Remove")));
-			connect("confirmed", callable_mp(this, &ProjectExportDialog::_export_pck_zip));
+			connect(SceneStringName(confirmed), callable_mp(this, &ProjectExportDialog::_export_pck_zip));
 			_update_export_all();
 		} break;
 	}
@@ -1246,7 +1246,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	presets->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	SET_DRAG_FORWARDING_GCD(presets, ProjectExportDialog);
 	mc->add_child(presets);
-	presets->connect("item_selected", callable_mp(this, &ProjectExportDialog::_edit_preset));
+	presets->connect(SceneStringName(item_selected), callable_mp(this, &ProjectExportDialog::_edit_preset));
 	duplicate_preset = memnew(Button);
 	duplicate_preset->set_tooltip_text(TTR("Duplicate"));
 	duplicate_preset->set_flat(true);
@@ -1266,7 +1266,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	name = memnew(LineEdit);
 	settings_vb->add_margin_child(TTR("Name:"), name);
-	name->connect("text_changed", callable_mp(this, &ProjectExportDialog::_name_changed));
+	name->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_name_changed));
 
 	runnable = memnew(CheckButton);
 	runnable->set_text(TTR("Runnable"));
@@ -1328,7 +1328,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_filter->add_item(TTR("Export all resources in the project except resources checked below"));
 	export_filter->add_item(TTR("Export as dedicated server"));
 	resources_vb->add_margin_child(TTR("Export Mode:"), export_filter);
-	export_filter->connect("item_selected", callable_mp(this, &ProjectExportDialog::_export_type_changed));
+	export_filter->connect(SceneStringName(item_selected), callable_mp(this, &ProjectExportDialog::_export_type_changed));
 
 	include_label = memnew(Label);
 	include_label->set_text(TTR("Resources to export:"));
@@ -1373,19 +1373,19 @@ ProjectExportDialog::ProjectExportDialog() {
 	file_mode_popup->add_item(TTR("Strip Visuals"), EditorExportPreset::MODE_FILE_STRIP);
 	file_mode_popup->add_item(TTR("Keep"), EditorExportPreset::MODE_FILE_KEEP);
 	file_mode_popup->add_item(TTR("Remove"), EditorExportPreset::MODE_FILE_REMOVE);
-	file_mode_popup->connect("id_pressed", callable_mp(this, &ProjectExportDialog::_set_file_export_mode));
+	file_mode_popup->connect(SceneStringName(id_pressed), callable_mp(this, &ProjectExportDialog::_set_file_export_mode));
 
 	include_filters = memnew(LineEdit);
 	resources_vb->add_margin_child(
 			TTR("Filters to export non-resource files/folders\n(comma-separated, e.g: *.json, *.txt, docs/*)"),
 			include_filters);
-	include_filters->connect("text_changed", callable_mp(this, &ProjectExportDialog::_filter_changed));
+	include_filters->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_filter_changed));
 
 	exclude_filters = memnew(LineEdit);
 	resources_vb->add_margin_child(
 			TTR("Filters to exclude files/folders from project\n(comma-separated, e.g: *.json, *.txt, docs/*)"),
 			exclude_filters);
-	exclude_filters->connect("text_changed", callable_mp(this, &ProjectExportDialog::_filter_changed));
+	exclude_filters->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_filter_changed));
 
 	// Feature tags.
 
@@ -1393,7 +1393,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	feature_vb->set_name(TTR("Features"));
 	feature_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	custom_features = memnew(LineEdit);
-	custom_features->connect("text_changed", callable_mp(this, &ProjectExportDialog::_custom_features_changed));
+	custom_features->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_custom_features_changed));
 	feature_vb->add_margin_child(TTR("Custom (comma-separated):"), custom_features);
 	custom_feature_display = memnew(RichTextLabel);
 	custom_feature_display->set_custom_minimum_size(Size2(1, 75 * EDSCALE));
@@ -1422,22 +1422,22 @@ ProjectExportDialog::ProjectExportDialog() {
 	sec_vb->add_child(enc_directory);
 
 	enc_in_filters = memnew(LineEdit);
-	enc_in_filters->connect("text_changed", callable_mp(this, &ProjectExportDialog::_enc_filters_changed));
+	enc_in_filters->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_enc_filters_changed));
 	sec_vb->add_margin_child(
 			TTR("Filters to include files/folders\n(comma-separated, e.g: *.tscn, *.tres, scenes/*)"),
 			enc_in_filters);
 
 	enc_ex_filters = memnew(LineEdit);
-	enc_ex_filters->connect("text_changed", callable_mp(this, &ProjectExportDialog::_enc_filters_changed));
+	enc_ex_filters->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_enc_filters_changed));
 	sec_vb->add_margin_child(
 			TTR("Filters to exclude files/folders\n(comma-separated, e.g: *.ctex, *.import, music/*)"),
 			enc_ex_filters);
 
 	script_key = memnew(LineEdit);
-	script_key->connect("text_changed", callable_mp(this, &ProjectExportDialog::_script_encryption_key_changed));
+	script_key->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_script_encryption_key_changed));
 	script_key_error = memnew(Label);
 	script_key_error->set_text(String::utf8("•  ") + TTR("Invalid Encryption Key (must be 64 hexadecimal characters long)"));
-	script_key_error->add_theme_color_override("font_color", EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("error_color"), EditorStringName(Editor)));
+	script_key_error->add_theme_color_override(SceneStringName(font_color), EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("error_color"), EditorStringName(Editor)));
 	sec_vb->add_margin_child(TTR("Encryption Key (256-bits as hexadecimal):"), script_key);
 	sec_vb->add_child(script_key_error);
 	sections->add_child(sec_scroll_container);
@@ -1461,7 +1461,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	script_mode->add_item(TTR("Text (easier debugging)"), (int)EditorExportPreset::MODE_SCRIPT_TEXT);
 	script_mode->add_item(TTR("Binary tokens (faster loading)"), (int)EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS);
 	script_mode->add_item(TTR("Compressed binary tokens (smaller files)"), (int)EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS_COMPRESSED);
-	script_mode->connect("item_selected", callable_mp(this, &ProjectExportDialog::_script_export_mode_changed));
+	script_mode->connect(SceneStringName(item_selected), callable_mp(this, &ProjectExportDialog::_script_export_mode_changed));
 
 	sections->add_child(script_vb);
 
@@ -1483,7 +1483,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	delete_confirm = memnew(ConfirmationDialog);
 	add_child(delete_confirm);
 	delete_confirm->set_ok_button_text(TTR("Delete"));
-	delete_confirm->connect("confirmed", callable_mp(this, &ProjectExportDialog::_delete_preset_confirm));
+	delete_confirm->connect(SceneStringName(confirmed), callable_mp(this, &ProjectExportDialog::_delete_preset_confirm));
 
 	// Export buttons, dialogs and errors.
 
@@ -1539,12 +1539,12 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_error = memnew(Label);
 	main_vb->add_child(export_error);
 	export_error->hide();
-	export_error->add_theme_color_override("font_color", EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("error_color"), EditorStringName(Editor)));
+	export_error->add_theme_color_override(SceneStringName(font_color), EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("error_color"), EditorStringName(Editor)));
 
 	export_warning = memnew(Label);
 	main_vb->add_child(export_warning);
 	export_warning->hide();
-	export_warning->add_theme_color_override("font_color", EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("warning_color"), EditorStringName(Editor)));
+	export_warning->add_theme_color_override(SceneStringName(font_color), EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("warning_color"), EditorStringName(Editor)));
 
 	export_templates_error = memnew(HBoxContainer);
 	main_vb->add_child(export_templates_error);
@@ -1552,7 +1552,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	Label *export_error2 = memnew(Label);
 	export_templates_error->add_child(export_error2);
-	export_error2->add_theme_color_override("font_color", EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("error_color"), EditorStringName(Editor)));
+	export_error2->add_theme_color_override(SceneStringName(font_color), EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("error_color"), EditorStringName(Editor)));
 	export_error2->set_text(String::utf8("•  ") + TTR("Export templates for this platform are missing:") + " ");
 
 	result_dialog = memnew(AcceptDialog);
@@ -1576,7 +1576,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_project->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	add_child(export_project);
 	export_project->connect("file_selected", callable_mp(this, &ProjectExportDialog::_export_project_to_path));
-	export_project->get_line_edit()->connect("text_changed", callable_mp(this, &ProjectExportDialog::_validate_export_path));
+	export_project->get_line_edit()->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_validate_export_path));
 
 	export_project->add_option(TTR("Export With Debug"), Vector<String>(), true);
 	export_pck_zip->add_option(TTR("Export With Debug"), Vector<String>(), true);

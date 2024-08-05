@@ -135,6 +135,11 @@
 				Emitted when an interface is removed.
 			</description>
 		</signal>
+		<signal name="reference_frame_changed">
+			<description>
+				Emitted when the reference frame transform changes.
+			</description>
+		</signal>
 		<signal name="tracker_added">
 			<param index="0" name="tracker_name" type="StringName" />
 			<param index="1" name="type" type="int" />

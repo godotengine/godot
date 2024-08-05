@@ -1,3 +1,6 @@
+default_language_version:
+  python: python3
+
 exclude: |
   (?x)^(
     .*thirdparty/.*|
@@ -9,13 +12,29 @@ repos:
     rev: v17.0.6
     hooks:
       - id: clang-format
-        files: \.(c|h|cpp|hpp|cc|cxx|m|mm|inc|java|glsl)$
+        files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc|java|glsl)$
         types_or: [text]
         exclude: |
           (?x)^(
             tests/python_build/.*|
             platform/android/java/lib/src/com/.*
           )
+
+  - repo: https://github.com/pocc/pre-commit-hooks
+    rev: v1.3.5
+    hooks:
+      - id: clang-tidy
+        files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc|java|glsl)$
+        args: [--fix, --quiet, --use-color]
+        types_or: [text]
+        exclude: |
+          (?x)^(
+            tests/python_build/.*|
+            platform/android/java/lib/src/com/.*
+          )
+        additional_dependencies: [clang-tidy==18.1.1]
+        require_serial: true
+        stages: [manual] # Not automatically triggered, invoked via `pre-commit run --hook-stage manual clang-tidy`
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.4.4
@@ -32,37 +51,10 @@ repos:
         types_or: [text]
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.6
+    rev: v2.3.0
     hooks:
       - id: codespell
-        types_or: [text]
-        exclude: |
-          (?x)^(
-            .*\.desktop$|
-            .*\.gitignore$|
-            .*\.po$|
-            .*\.pot$|
-            .*\.rc$|
-            \.mailmap$|
-            AUTHORS.md$|
-            COPYRIGHT.txt$|
-            DONORS.md$|
-            core/input/gamecontrollerdb.txt$|
-            core/string/locales.h$|
-            editor/project_converter_3_to_4.cpp$|
-            platform/android/java/lib/src/com/.*|
-            platform/web/package-lock.json$
-          )
-        args:
-          - --enable-colors
-          - --write-changes
-          - --check-hidden
-          - --quiet-level
-          - '3'
-          - --ignore-words-list
-          - aesthetic,aesthetics,breaked,cancelled,colour,curvelinear,doubleclick,expct,findn,gird,hel,inout,lod,mis,nd,numer,ot,requestor,te,thirdparty,vai
-          - --builtin
-          - clear,rare,en-GB_to_en-US
+        additional_dependencies: [tomli]
 
   ### Requires Docker; look into alternative implementation.
   # - repo: https://github.com/comkieffer/pre-commit-xmllint.git
@@ -79,14 +71,17 @@ repos:
       - id: make-rst
         name: make-rst
         language: python
-        entry: python3 doc/tools/make_rst.py doc/classes modules platform --dry-run --color
+        entry: python doc/tools/make_rst.py
+        args: [doc/classes, modules, platform, --dry-run, --color]
         pass_filenames: false
         files: ^(doc/classes|.*/doc_classes)/.*\.xml$
 
       - id: doc-status
         name: doc-status
         language: python
-        entry: python3 doc/tools/doc_status.py
+        entry: python doc/tools/doc_status.py
+        args: [doc/classes, modules/*/doc_classes, platform/*/doc_classes]
+        pass_filenames: false
         files: ^(doc/classes|.*/doc_classes)/.*\.xml$
 
       - id: eslint
@@ -123,11 +118,19 @@ repos:
         pass_filenames: false
         additional_dependencies: ['jsdoc@^4.0.3']
 
+      - id: svgo
+        name: svgo
+        language: node
+        entry: svgo
+        files: \.svg$
+        args: [--quiet, --config, misc/utility/svgo.config.mjs]
+        additional_dependencies: ["svgo@3.3.2"]
+
       - id: copyright-headers
         name: copyright-headers
         language: python
-        entry: python3 misc/scripts/copyright_headers.py
-        files: \.(c|h|cpp|hpp|cc|cxx|m|mm|inc|java)$
+        entry: python misc/scripts/copyright_headers.py
+        files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc|java)$
         exclude: |
           (?x)^(
             core/math/bvh_.*\.inc$|
@@ -141,19 +144,14 @@ repos:
       - id: header-guards
         name: header-guards
         language: python
-        entry: python3 misc/scripts/header_guards.py
-        files: \.(h|hpp)$
-        exclude: |
-          (?x)^(
-            .*/thread\.h$|
-            .*/platform_config\.h$|
-            .*/platform_gl\.$h
-          )
+        entry: python misc/scripts/header_guards.py
+        files: \.(h|hpp|hh|hxx)$
+        exclude: ^.*/(thread|platform_config|platform_gl)\.h$
 
       - id: file-format
         name: file-format
         language: python
-        entry: python3 misc/scripts/file_format.py
+        entry: python misc/scripts/file_format.py
         types_or: [text]
         exclude: |
           (?x)^(
@@ -170,7 +168,7 @@ repos:
       - id: dotnet-format
         name: dotnet-format
         language: python
-        entry: python3 misc/scripts/dotnet_format.py
+        entry: python misc/scripts/dotnet_format.py
         types_or: [c#]
 
 # End of upstream Godot pre-commit hooks.

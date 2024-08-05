@@ -568,23 +568,7 @@ void DisplayServerMacOS::menu_callback(id p_sender) {
 	}
 
 	GodotMenuItem *value = [p_sender representedObject];
-
 	if (value) {
-		if (value->max_states > 0) {
-			value->state++;
-			if (value->state >= value->max_states) {
-				value->state = 0;
-			}
-		}
-
-		if (value->checkable_type == CHECKABLE_TYPE_CHECK_BOX) {
-			if ([p_sender state] == NSControlStateValueOff) {
-				[p_sender setState:NSControlStateValueOn];
-			} else {
-				[p_sender setState:NSControlStateValueOff];
-			}
-		}
-
 		if (value->callback.is_valid()) {
 			MenuCall mc;
 			mc.tag = value->meta;
@@ -907,7 +891,12 @@ void DisplayServerMacOS::set_system_theme_change_callback(const Callable &p_call
 
 void DisplayServerMacOS::emit_system_theme_changed() {
 	if (system_theme_changed.is_valid()) {
-		system_theme_changed.call();
+		Variant ret;
+		Callable::CallError ce;
+		system_theme_changed.callp(nullptr, 0, ret, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_PRINT(vformat("Failed to execute system theme changed callback: %s.", Variant::get_callable_error_text(system_theme_changed, nullptr, 0, ce)));
+		}
 	}
 }
 
@@ -1416,11 +1405,25 @@ Point2i DisplayServerMacOS::mouse_get_position() const {
 	return Vector2i();
 }
 
-void DisplayServerMacOS::mouse_set_button_state(BitField<MouseButtonMask> p_state) {
-	last_button_state = p_state;
-}
-
 BitField<MouseButtonMask> DisplayServerMacOS::mouse_get_button_state() const {
+	BitField<MouseButtonMask> last_button_state = 0;
+
+	NSUInteger buttons = [NSEvent pressedMouseButtons];
+	if (buttons & (1 << 0)) {
+		last_button_state.set_flag(MouseButtonMask::LEFT);
+	}
+	if (buttons & (1 << 1)) {
+		last_button_state.set_flag(MouseButtonMask::RIGHT);
+	}
+	if (buttons & (1 << 2)) {
+		last_button_state.set_flag(MouseButtonMask::MIDDLE);
+	}
+	if (buttons & (1 << 3)) {
+		last_button_state.set_flag(MouseButtonMask::MB_XBUTTON1);
+	}
+	if (buttons & (1 << 4)) {
+		last_button_state.set_flag(MouseButtonMask::MB_XBUTTON2);
+	}
 	return last_button_state;
 }
 
@@ -1711,7 +1714,7 @@ Vector<DisplayServer::WindowID> DisplayServerMacOS::get_window_list() const {
 	return ret;
 }
 
-DisplayServer::WindowID DisplayServerMacOS::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
+DisplayServer::WindowID DisplayServerMacOS::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, WindowID p_transient_parent) {
 	_THREAD_SAFE_METHOD_
 
 	WindowID id = _create_window(p_mode, p_vsync_mode, p_rect);
@@ -1725,6 +1728,12 @@ DisplayServer::WindowID DisplayServerMacOS::create_sub_window(WindowMode p_mode,
 		rendering_device->screen_create(id);
 	}
 #endif
+
+	window_set_exclusive(id, p_exclusive);
+	if (p_transient_parent != INVALID_WINDOW_ID) {
+		window_set_transient(id, p_transient_parent);
+	}
+
 	return id;
 }
 
@@ -2826,8 +2835,7 @@ void DisplayServerMacOS::cursor_set_custom_image(const Ref<Resource> &p_cursor, 
 			cursors_cache.erase(p_shape);
 		}
 
-		Rect2 atlas_rect;
-		Ref<Image> image = _get_cursor_image_from_resource(p_cursor, p_hotspot, atlas_rect);
+		Ref<Image> image = _get_cursor_image_from_resource(p_cursor, p_hotspot);
 		ERR_FAIL_COND(image.is_null());
 		Vector2i texture_size = image->get_size();
 
@@ -2849,13 +2857,8 @@ void DisplayServerMacOS::cursor_set_custom_image(const Ref<Resource> &p_cursor, 
 		int len = int(texture_size.width * texture_size.height);
 
 		for (int i = 0; i < len; i++) {
-			int row_index = floor(i / texture_size.width) + atlas_rect.position.y;
-			int column_index = (i % int(texture_size.width)) + atlas_rect.position.x;
-
-			if (atlas_rect.has_area()) {
-				column_index = MIN(column_index, atlas_rect.size.width - 1);
-				row_index = MIN(row_index, atlas_rect.size.height - 1);
-			}
+			int row_index = floor(i / texture_size.width);
+			int column_index = i % int(texture_size.width);
 
 			uint32_t color = image->get_pixel(column_index, row_index).to_argb32();
 
@@ -3153,42 +3156,13 @@ void DisplayServerMacOS::set_icon(const Ref<Image> &p_icon) {
 
 DisplayServer::IndicatorID DisplayServerMacOS::create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback) {
 	NSImage *nsimg = nullptr;
-	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0) {
+	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0 && p_icon->get_image().is_valid()) {
 		Ref<Image> img = p_icon->get_image();
 		img = img->duplicate();
-		img->convert(Image::FORMAT_RGBA8);
-
-		NSBitmapImageRep *imgrep = [[NSBitmapImageRep alloc]
-				initWithBitmapDataPlanes:nullptr
-							  pixelsWide:img->get_width()
-							  pixelsHigh:img->get_height()
-						   bitsPerSample:8
-						 samplesPerPixel:4
-								hasAlpha:YES
-								isPlanar:NO
-						  colorSpaceName:NSDeviceRGBColorSpace
-							 bytesPerRow:img->get_width() * 4
-							bitsPerPixel:32];
-		if (imgrep) {
-			uint8_t *pixels = [imgrep bitmapData];
-
-			int len = img->get_width() * img->get_height();
-			const uint8_t *r = img->get_data().ptr();
-
-			/* Premultiply the alpha channel */
-			for (int i = 0; i < len; i++) {
-				uint8_t alpha = r[i * 4 + 3];
-				pixels[i * 4 + 0] = (uint8_t)(((uint16_t)r[i * 4 + 0] * alpha) / 255);
-				pixels[i * 4 + 1] = (uint8_t)(((uint16_t)r[i * 4 + 1] * alpha) / 255);
-				pixels[i * 4 + 2] = (uint8_t)(((uint16_t)r[i * 4 + 2] * alpha) / 255);
-				pixels[i * 4 + 3] = alpha;
-			}
-
-			nsimg = [[NSImage alloc] initWithSize:NSMakeSize(img->get_width(), img->get_height())];
-			if (nsimg) {
-				[nsimg addRepresentation:imgrep];
-			}
+		if (img->is_compressed()) {
+			img->decompress();
 		}
+		nsimg = _convert_to_nsimg(img);
 	}
 
 	IndicatorData idat;
@@ -3216,42 +3190,13 @@ void DisplayServerMacOS::status_indicator_set_icon(IndicatorID p_id, const Ref<T
 	ERR_FAIL_COND(!indicators.has(p_id));
 
 	NSImage *nsimg = nullptr;
-	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0) {
+	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0 && p_icon->get_image().is_valid()) {
 		Ref<Image> img = p_icon->get_image();
 		img = img->duplicate();
-		img->convert(Image::FORMAT_RGBA8);
-
-		NSBitmapImageRep *imgrep = [[NSBitmapImageRep alloc]
-				initWithBitmapDataPlanes:nullptr
-							  pixelsWide:img->get_width()
-							  pixelsHigh:img->get_height()
-						   bitsPerSample:8
-						 samplesPerPixel:4
-								hasAlpha:YES
-								isPlanar:NO
-						  colorSpaceName:NSDeviceRGBColorSpace
-							 bytesPerRow:img->get_width() * 4
-							bitsPerPixel:32];
-		if (imgrep) {
-			uint8_t *pixels = [imgrep bitmapData];
-
-			int len = img->get_width() * img->get_height();
-			const uint8_t *r = img->get_data().ptr();
-
-			/* Premultiply the alpha channel */
-			for (int i = 0; i < len; i++) {
-				uint8_t alpha = r[i * 4 + 3];
-				pixels[i * 4 + 0] = (uint8_t)(((uint16_t)r[i * 4 + 0] * alpha) / 255);
-				pixels[i * 4 + 1] = (uint8_t)(((uint16_t)r[i * 4 + 1] * alpha) / 255);
-				pixels[i * 4 + 2] = (uint8_t)(((uint16_t)r[i * 4 + 2] * alpha) / 255);
-				pixels[i * 4 + 3] = alpha;
-			}
-
-			nsimg = [[NSImage alloc] initWithSize:NSMakeSize(img->get_width(), img->get_height())];
-			if (nsimg) {
-				[nsimg addRepresentation:imgrep];
-			}
+		if (img->is_compressed()) {
+			img->decompress();
 		}
+		nsimg = _convert_to_nsimg(img);
 	}
 
 	NSStatusItem *item = indicators[p_id].item;
@@ -3315,9 +3260,11 @@ void DisplayServerMacOS::delete_status_indicator(IndicatorID p_id) {
 }
 
 bool DisplayServerMacOS::is_window_transparency_available() const {
+#if defined(RD_ENABLED)
 	if (rendering_device && !rendering_device->is_composite_alpha_supported()) {
 		return false;
 	}
+#endif
 	return OS::get_singleton()->is_layered_allowed();
 }
 
@@ -3409,8 +3356,11 @@ void DisplayServerMacOS::popup_open(WindowID p_window) {
 		}
 	}
 
+	// Detect tooltips and other similar popups that shouldn't block input to their parent.
+	bool ignores_input = window_get_flag(WINDOW_FLAG_NO_FOCUS, p_window) && window_get_flag(WINDOW_FLAG_MOUSE_PASSTHROUGH, p_window);
+
 	WindowData &wd = windows[p_window];
-	if (wd.is_popup || has_popup_ancestor) {
+	if (wd.is_popup || (has_popup_ancestor && !ignores_input)) {
 		bool was_empty = popup_list.is_empty();
 		// Find current popup parent, or root popup if new window is not transient.
 		List<WindowID>::Element *C = nullptr;
@@ -3446,7 +3396,10 @@ void DisplayServerMacOS::popup_close(WindowID p_window) {
 		WindowID win_id = E->get();
 		popup_list.erase(E);
 
-		send_window_event(windows[win_id], DisplayServerMacOS::WINDOW_EVENT_CLOSE_REQUEST);
+		if (win_id != p_window) {
+			// Only request close on related windows, not this window.  We are already processing it.
+			send_window_event(windows[win_id], DisplayServerMacOS::WINDOW_EVENT_CLOSE_REQUEST);
+		}
 		E = F;
 	}
 	if (!was_empty && popup_list.is_empty()) {

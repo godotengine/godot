@@ -38,6 +38,10 @@
 			<description>
 				Triggers a haptic pulse on a device associated with this interface.
 				[param action_name] is the name of the action for this pulse.
+				[param frequency] is the frequency of the pulse, set to [code]0.0[/code] to have the system use a default frequency.
+				[param amplitude] is the amplitude of the pulse between [code]0.0[/code] and [code]1.0[/code].
+				[param duration_sec] is the duration of the pulse in seconds.
+				[param delay_sec] is a delay in seconds before the pulse is given.
 			</description>
 		</method>
 	</methods>

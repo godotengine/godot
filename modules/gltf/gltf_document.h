@@ -111,8 +111,7 @@ private:
 	int _get_component_type_size(const int p_component_type);
 	Error _parse_scenes(Ref<GLTFState> p_state);
 	Error _parse_nodes(Ref<GLTFState> p_state);
-	String _get_type_name(const GLTFType p_component);
-	String _get_accessor_type_name(const GLTFType p_type);
+	String _get_accessor_type_name(const GLTFAccessor::GLTFAccessorType p_accessor_type);
 	String _sanitize_animation_name(const String &p_name);
 	String _gen_unique_animation_name(Ref<GLTFState> p_state, const String &p_name);
 	String _sanitize_bone_name(const String &p_name);
@@ -132,13 +131,13 @@ private:
 	void _compute_node_heights(Ref<GLTFState> p_state);
 	Error _parse_buffers(Ref<GLTFState> p_state, const String &p_base_path);
 	Error _parse_buffer_views(Ref<GLTFState> p_state);
-	GLTFType _get_type_from_str(const String &p_string);
+	GLTFAccessor::GLTFAccessorType _get_accessor_type_from_str(const String &p_string);
 	Error _parse_accessors(Ref<GLTFState> p_state);
 	Error _decode_buffer_view(Ref<GLTFState> p_state, double *p_dst,
 			const GLTFBufferViewIndex p_buffer_view,
 			const int p_skip_every, const int p_skip_bytes,
 			const int p_element_size, const int p_count,
-			const GLTFType p_type, const int p_component_count,
+			const GLTFAccessor::GLTFAccessorType p_accessor_type, const int p_component_count,
 			const int p_component_type, const int p_component_size,
 			const bool p_normalized, const int p_byte_offset,
 			const bool p_for_vertex);
@@ -267,7 +266,7 @@ private:
 			const Vector<Transform3D> p_attribs,
 			const bool p_for_vertex);
 	Error _encode_buffer_view(Ref<GLTFState> p_state, const double *p_src,
-			const int p_count, const GLTFType p_type,
+			const int p_count, const GLTFAccessor::GLTFAccessorType p_accessor_type,
 			const int p_component_type, const bool p_normalized,
 			const int p_byte_offset, const bool p_for_vertex,
 			GLTFBufferViewIndex &r_accessor, const bool p_for_indices = false);

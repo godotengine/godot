@@ -293,7 +293,12 @@ void OpenXRHandTrackingExtension::on_process() {
 						}
 
 						godot_tracker->set_hand_tracking_source(source);
-						godot_tracker->set_pose("default", transform, linear_velocity, angular_velocity);
+						if (location.locationFlags & XR_SPACE_LOCATION_POSITION_TRACKED_BIT) {
+							godot_tracker->set_pose("default", transform, linear_velocity, angular_velocity);
+						} else {
+							godot_tracker->set_has_tracking_data(false);
+							godot_tracker->invalidate_pose("default");
+						}
 					}
 				}
 			} else {

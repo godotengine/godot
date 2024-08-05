@@ -3331,6 +3331,45 @@ TEST_CASE("[SceneTree][CodeEdit] folding") {
 		CHECK_FALSE(code_edit->is_line_folded(1));
 	}
 
+	SUBCASE("[CodeEdit] actions unfold") {
+		// add_selection_for_next_occurrence unfolds.
+		code_edit->set_text("test\n\tline1 test\n\t\tline 2\ntest2");
+		code_edit->select(0, 0, 0, 4);
+		code_edit->fold_line(0);
+		CHECK(code_edit->is_line_folded(0));
+		code_edit->add_selection_for_next_occurrence();
+
+		CHECK(code_edit->get_caret_count() == 2);
+		CHECK(code_edit->has_selection(0));
+		CHECK(code_edit->get_caret_line() == 0);
+		CHECK(code_edit->get_selection_origin_line() == 0);
+		CHECK(code_edit->get_caret_column() == 4);
+		CHECK(code_edit->get_selection_origin_column() == 0);
+		CHECK(code_edit->has_selection(1));
+		CHECK(code_edit->get_caret_line(1) == 1);
+		CHECK(code_edit->get_selection_origin_line(1) == 1);
+		CHECK(code_edit->get_caret_column(1) == 11);
+		CHECK(code_edit->get_selection_origin_column(1) == 7);
+		CHECK_FALSE(code_edit->is_line_folded(0));
+		code_edit->remove_secondary_carets();
+
+		// skip_selection_for_next_occurrence unfolds.
+		code_edit->select(0, 0, 0, 4);
+		code_edit->fold_line(0);
+		CHECK(code_edit->is_line_folded(0));
+		code_edit->skip_selection_for_next_occurrence();
+
+		CHECK(code_edit->get_caret_count() == 1);
+		CHECK(code_edit->has_selection(0));
+		CHECK(code_edit->get_caret_line() == 1);
+		CHECK(code_edit->get_selection_origin_line() == 1);
+		CHECK(code_edit->get_caret_column() == 11);
+		CHECK(code_edit->get_selection_origin_column() == 7);
+		CHECK_FALSE(code_edit->is_line_folded(0));
+		code_edit->remove_secondary_carets();
+		code_edit->deselect();
+	}
+
 	SUBCASE("[CodeEdit] toggle folding carets") {
 		code_edit->set_text("test\n\tline1\ntest2\n\tline2");
 
@@ -4850,6 +4889,17 @@ TEST_CASE("[SceneTree][CodeEdit] text manipulation") {
 		CHECK(code_edit->get_caret_line() == 0);
 		CHECK(code_edit->get_caret_column() == 1);
 
+		// Does nothing at the first line when selection ends at column 0.
+		code_edit->set_text("test\nlines\nto\n\nmove\naround");
+		code_edit->select(0, 0, 1, 0);
+		code_edit->move_lines_up();
+		CHECK(code_edit->get_text() == "test\nlines\nto\n\nmove\naround");
+		CHECK(code_edit->has_selection());
+		CHECK(code_edit->get_selection_origin_line() == 0);
+		CHECK(code_edit->get_selection_origin_column() == 0);
+		CHECK(code_edit->get_caret_line() == 1);
+		CHECK(code_edit->get_caret_column() == 0);
+
 		// Works on empty line.
 		code_edit->set_text("test\nlines\nto\n\nmove\naround");
 		code_edit->set_caret_line(3);
@@ -4911,9 +4961,9 @@ TEST_CASE("[SceneTree][CodeEdit] text manipulation") {
 		CHECK_FALSE(code_edit->has_selection(2));
 		CHECK(code_edit->get_caret_line(2) == 3);
 		CHECK(code_edit->get_caret_column(2) == 4);
+		code_edit->remove_secondary_carets();
 
 		// Move multiple separate lines with multiple selections.
-		code_edit->remove_secondary_carets();
 		code_edit->set_text("test\nlines\nto\n\nmove\naround");
 		code_edit->select(2, 2, 1, 4);
 		code_edit->add_caret(5, 0);
@@ -4931,6 +4981,44 @@ TEST_CASE("[SceneTree][CodeEdit] text manipulation") {
 		CHECK(code_edit->get_selection_origin_column(1) == 0);
 		CHECK(code_edit->get_caret_line(1) == 4);
 		CHECK(code_edit->get_caret_column(1) == 1);
+		code_edit->remove_secondary_carets();
+
+		// Move lines with adjacent selections that end at column 0.
+		code_edit->set_text("test\nlines\nto\n\nmove\naround");
+		code_edit->select(1, 2, 2, 0);
+		code_edit->add_caret(2, 2);
+		code_edit->select(2, 2, 3, 0, 1);
+		code_edit->move_lines_up();
+		CHECK(code_edit->get_text() == "lines\nto\ntest\n\nmove\naround");
+		CHECK(code_edit->get_caret_count() == 2);
+		CHECK(code_edit->has_selection(0));
+		CHECK(code_edit->get_selection_origin_line(0) == 0);
+		CHECK(code_edit->get_selection_origin_column(0) == 2);
+		CHECK(code_edit->get_caret_line(0) == 1);
+		CHECK(code_edit->get_caret_column(0) == 0);
+		CHECK(code_edit->has_selection(1));
+		CHECK(code_edit->get_selection_origin_line(1) == 1);
+		CHECK(code_edit->get_selection_origin_column(1) == 2);
+		CHECK(code_edit->get_caret_line(1) == 2);
+		CHECK(code_edit->get_caret_column(1) == 0);
+		code_edit->remove_secondary_carets();
+		code_edit->deselect();
+
+		code_edit->set_line_folding_enabled(true);
+
+		// Move line up into a folded region unfolds it.
+		code_edit->set_text("test\n\tline1 test\n\t\tline 2\ntest2");
+		code_edit->set_caret_line(3);
+		code_edit->set_caret_column(0);
+		code_edit->fold_line(0);
+		CHECK(code_edit->is_line_folded(0));
+		code_edit->move_lines_up();
+		CHECK(code_edit->get_caret_count() == 1);
+		CHECK_FALSE(code_edit->has_selection(0));
+		CHECK(code_edit->get_caret_line() == 2);
+		CHECK(code_edit->get_caret_column() == 0);
+		CHECK(code_edit->get_text() == "test\n\tline1 test\ntest2\n\t\tline 2");
+		CHECK_FALSE(code_edit->is_line_folded(0));
 	}
 
 	SUBCASE("[SceneTree][CodeEdit] move lines down") {
@@ -4964,6 +5052,17 @@ TEST_CASE("[SceneTree][CodeEdit] text manipulation") {
 		CHECK(code_edit->get_text() == "test\nlines\nto\n\nmove\naround");
 		CHECK(code_edit->get_caret_line() == 5);
 		CHECK(code_edit->get_caret_column() == 1);
+
+		// Does nothing at the last line when selection ends at column 0.
+		code_edit->set_text("test\nlines\nto\n\nmove\naround");
+		code_edit->select(4, 0, 5, 0);
+		code_edit->move_lines_down();
+		CHECK(code_edit->get_text() == "test\nlines\nto\n\nmove\naround");
+		CHECK(code_edit->has_selection());
+		CHECK(code_edit->get_selection_origin_line() == 4);
+		CHECK(code_edit->get_selection_origin_column() == 0);
+		CHECK(code_edit->get_caret_line() == 5);
+		CHECK(code_edit->get_caret_column() == 0);
 
 		// Works on empty line.
 		code_edit->set_text("test\nlines\nto\n\nmove\naround");
@@ -5046,6 +5145,64 @@ TEST_CASE("[SceneTree][CodeEdit] text manipulation") {
 		CHECK(code_edit->get_selection_origin_column(1) == 0);
 		CHECK(code_edit->get_caret_line(1) == 5);
 		CHECK(code_edit->get_caret_column(1) == 2);
+
+		// Move lines with adjacent selections that end at column 0.
+		code_edit->set_text("test\nlines\nto\n\nmove\naround");
+		code_edit->select(1, 2, 2, 0);
+		code_edit->add_caret(2, 2);
+		code_edit->select(2, 2, 3, 0, 1);
+		code_edit->move_lines_down();
+		CHECK(code_edit->get_text() == "test\n\nlines\nto\nmove\naround");
+		CHECK(code_edit->get_caret_count() == 2);
+		CHECK(code_edit->has_selection(0));
+		CHECK(code_edit->get_selection_origin_line(0) == 2);
+		CHECK(code_edit->get_selection_origin_column(0) == 2);
+		CHECK(code_edit->get_caret_line(0) == 3);
+		CHECK(code_edit->get_caret_column(0) == 0);
+		CHECK(code_edit->has_selection(1));
+		CHECK(code_edit->get_selection_origin_line(1) == 3);
+		CHECK(code_edit->get_selection_origin_column(1) == 2);
+		CHECK(code_edit->get_caret_line(1) == 4);
+		CHECK(code_edit->get_caret_column(1) == 0);
+		code_edit->remove_secondary_carets();
+
+		// Move lines with disconnected adjacent selections that end at column 0.
+		code_edit->set_text("test\nlines\nto\n\nmove\naround");
+		code_edit->select(0, 2, 1, 0);
+		code_edit->add_caret(2, 2);
+		code_edit->select(2, 0, 3, 0, 1);
+		code_edit->move_lines_down();
+		CHECK(code_edit->get_text() == "lines\ntest\n\nto\nmove\naround");
+		CHECK(code_edit->get_caret_count() == 2);
+		CHECK(code_edit->has_selection(0));
+		CHECK(code_edit->get_selection_origin_line(0) == 1);
+		CHECK(code_edit->get_selection_origin_column(0) == 2);
+		CHECK(code_edit->get_caret_line(0) == 2);
+		CHECK(code_edit->get_caret_column(0) == 0);
+		CHECK(code_edit->has_selection(1));
+		CHECK(code_edit->get_selection_origin_line(1) == 3);
+		CHECK(code_edit->get_selection_origin_column(1) == 0);
+		CHECK(code_edit->get_caret_line(1) == 4);
+		CHECK(code_edit->get_caret_column(1) == 0);
+		code_edit->remove_secondary_carets();
+		code_edit->deselect();
+
+		code_edit->set_line_folding_enabled(true);
+
+		// Move line down into a folded region unfolds it.
+		code_edit->set_text("test\ntest2\n\tline1 test\n\t\tline 2\ntest2");
+		code_edit->set_caret_line(0);
+		code_edit->set_caret_column(0);
+		code_edit->fold_line(1);
+		CHECK(code_edit->is_line_folded(1));
+		code_edit->move_lines_down();
+		CHECK(code_edit->get_caret_count() == 1);
+		CHECK_FALSE(code_edit->has_selection(0));
+		CHECK(code_edit->get_caret_line() == 1);
+		CHECK(code_edit->get_caret_column() == 0);
+		CHECK(code_edit->get_text() == "test2\ntest\n\tline1 test\n\t\tline 2\ntest2");
+		CHECK_FALSE(code_edit->is_line_folded(0));
+		CHECK_FALSE(code_edit->is_line_folded(1));
 	}
 
 	SUBCASE("[SceneTree][CodeEdit] delete lines") {

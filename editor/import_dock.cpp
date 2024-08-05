@@ -189,13 +189,15 @@ void ImportDock::_update_options(const String &p_path, const Ref<ConfigFile> &p_
 	params->base_options_path = p_path;
 
 	HashMap<StringName, Variant> import_options;
-	List<String> section_keys;
-	p_config->get_section_keys("params", &section_keys);
-	for (const String &section_key : section_keys) {
-		import_options[section_key] = p_config->get_value("params", section_key);
-	}
-	if (params->importer.is_valid()) {
-		params->importer->handle_compatibility_options(import_options);
+	if (p_config.is_valid() && p_config->has_section("params")) {
+		List<String> section_keys;
+		p_config->get_section_keys("params", &section_keys);
+		for (const String &section_key : section_keys) {
+			import_options[section_key] = p_config->get_value("params", section_key);
+		}
+		if (params->importer.is_valid()) {
+			params->importer->handle_compatibility_options(import_options);
+		}
 	}
 
 	for (const ResourceImporter::ImportOption &E : options) {
@@ -429,31 +431,39 @@ void ImportDock::_importer_selected(int i_idx) {
 
 void ImportDock::_preset_selected(int p_idx) {
 	int item_id = preset->get_popup()->get_item_id(p_idx);
+	String setting_name = "importer_defaults/" + params->importer->get_importer_name();
 
 	switch (item_id) {
 		case ITEM_SET_AS_DEFAULT: {
-			Dictionary d;
-
-			for (const PropertyInfo &E : params->properties) {
-				d[E.name] = params->values[E.name];
+			Dictionary import_settings;
+			// When import settings already exist, we will update these settings
+			// to ensure that the dictionary retains settings that are not displayed in the
+			// editor. For Scene, the dictionary is the same for FBX, GLTF, and Blender, but each
+			// file type has some different settings.
+			if (ProjectSettings::get_singleton()->has_setting(setting_name)) {
+				import_settings = GLOBAL_GET(setting_name);
 			}
 
-			ProjectSettings::get_singleton()->set("importer_defaults/" + params->importer->get_importer_name(), d);
+			for (const PropertyInfo &E : params->properties) {
+				import_settings[E.name] = params->values[E.name];
+			}
+
+			ProjectSettings::get_singleton()->set(setting_name, import_settings);
 			ProjectSettings::get_singleton()->save();
 			_update_preset_menu();
 		} break;
 		case ITEM_LOAD_DEFAULT: {
-			ERR_FAIL_COND(!ProjectSettings::get_singleton()->has_setting("importer_defaults/" + params->importer->get_importer_name()));
+			ERR_FAIL_COND(!ProjectSettings::get_singleton()->has_setting(setting_name));
 
-			Dictionary d = GLOBAL_GET("importer_defaults/" + params->importer->get_importer_name());
-			List<Variant> v;
-			d.get_key_list(&v);
+			Dictionary import_settings = GLOBAL_GET(setting_name);
+			List<Variant> keys;
+			import_settings.get_key_list(&keys);
 
 			if (params->checking) {
 				params->checked.clear();
 			}
-			for (const Variant &E : v) {
-				params->values[E] = d[E];
+			for (const Variant &E : keys) {
+				params->values[E] = import_settings[E];
 				if (params->checking) {
 					params->checked.insert(E);
 				}
@@ -461,7 +471,7 @@ void ImportDock::_preset_selected(int p_idx) {
 			params->update();
 		} break;
 		case ITEM_CLEAR_DEFAULT: {
-			ProjectSettings::get_singleton()->set("importer_defaults/" + params->importer->get_importer_name(), Variant());
+			ProjectSettings::get_singleton()->set(setting_name, Variant());
 			ProjectSettings::get_singleton()->save();
 			_update_preset_menu();
 		} break;
@@ -718,13 +728,13 @@ void ImportDock::_notification(int p_what) {
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorThemeManager::is_generated_theme_outdated()) {
-				imported->add_theme_style_override("normal", get_theme_stylebox(CoreStringName(normal), SNAME("LineEdit")));
+				imported->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), SNAME("LineEdit")));
 			}
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
 			import_opts->edit(params);
-			label_warning->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+			label_warning->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 		} break;
 	}
 }
@@ -737,12 +747,12 @@ void ImportDock::_set_dirty(bool p_dirty) {
 	if (p_dirty) {
 		// Add a dirty marker to notify the user that they should reimport the selected resource to see changes.
 		import->set_text(TTR("Reimport") + " (*)");
-		import->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+		import->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 		import->set_tooltip_text(TTR("You have pending changes that haven't been applied yet. Click Reimport to apply changes made to the import options.\nSelecting another resource in the FileSystem dock without clicking Reimport first will discard changes made in the Import dock."));
 	} else {
 		// Remove the dirty marker on the Reimport button.
 		import->set_text(TTR("Reimport"));
-		import->remove_theme_color_override("font_color");
+		import->remove_theme_color_override(SceneStringName(font_color));
 		import->set_tooltip_text("");
 	}
 }
@@ -775,7 +785,7 @@ ImportDock::ImportDock() {
 	content->hide();
 
 	imported = memnew(Label);
-	imported->add_theme_style_override("normal", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(CoreStringName(normal), SNAME("LineEdit")));
+	imported->add_theme_style_override(CoreStringName(normal), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(CoreStringName(normal), SNAME("LineEdit")));
 	imported->set_clip_text(true);
 	content->add_child(imported);
 	HBoxContainer *hb = memnew(HBoxContainer);
@@ -785,7 +795,7 @@ ImportDock::ImportDock() {
 	import_as->set_fit_to_longest_item(false);
 	import_as->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	import_as->set_h_size_flags(SIZE_EXPAND_FILL);
-	import_as->connect("item_selected", callable_mp(this, &ImportDock::_importer_selected));
+	import_as->connect(SceneStringName(item_selected), callable_mp(this, &ImportDock::_importer_selected));
 	hb->add_child(import_as);
 	import_as->set_h_size_flags(SIZE_EXPAND_FILL);
 	preset = memnew(MenuButton);
@@ -832,7 +842,7 @@ ImportDock::ImportDock() {
 
 	reimport_confirm = memnew(ConfirmationDialog);
 	content->add_child(reimport_confirm);
-	reimport_confirm->connect("confirmed", callable_mp(this, &ImportDock::_reimport_and_cleanup));
+	reimport_confirm->connect(SceneStringName(confirmed), callable_mp(this, &ImportDock::_reimport_and_cleanup));
 
 	VBoxContainer *vbc_confirm = memnew(VBoxContainer());
 	cleanup_warning = memnew(Label(TTR("The imported resource is currently loaded. All instances will be replaced and undo history will be cleared.")));

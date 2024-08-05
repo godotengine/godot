@@ -43,6 +43,8 @@ class Animation : public Resource {
 public:
 	typedef uint32_t TypeHash;
 
+	static inline String PARAMETERS_BASE_PATH = "parameters/";
+
 	enum TrackType {
 		TYPE_VALUE, // Set a value in a property, can be interpolated.
 		TYPE_POSITION_3D, // Position 3D track, can be compressed.
@@ -386,7 +388,7 @@ protected:
 	Vector3 _scale_track_interpolate_bind_compat_86629(int p_track, double p_time) const;
 	float _blend_shape_track_interpolate_bind_compat_86629(int p_track, double p_time) const;
 	Variant _value_track_interpolate_bind_compat_86629(int p_track, double p_time) const;
-	int _track_find_key_bind_compat_86661(int p_track, double p_time, FindMode p_find_mode = FIND_MODE_NEAREST) const;
+	int _track_find_key_bind_compat_92861(int p_track, double p_time, FindMode p_find_mode = FIND_MODE_NEAREST) const;
 	static void _bind_compatibility_methods();
 #endif // DISABLE_DEPRECATED
 
@@ -421,7 +423,7 @@ public:
 	void track_set_key_transition(int p_track, int p_key_idx, real_t p_transition);
 	void track_set_key_value(int p_track, int p_key_idx, const Variant &p_value);
 	void track_set_key_time(int p_track, int p_key_idx, double p_time);
-	int track_find_key(int p_track, double p_time, FindMode p_find_mode = FIND_MODE_NEAREST, bool p_limit = false) const;
+	int track_find_key(int p_track, double p_time, FindMode p_find_mode = FIND_MODE_NEAREST, bool p_limit = false, bool p_backward = false) const;
 	void track_remove_key(int p_track, int p_idx);
 	void track_remove_key_at_time(int p_track, double p_time);
 	int track_get_key_count(int p_track) const;
@@ -453,6 +455,7 @@ public:
 	void track_set_interpolation_type(int p_track, InterpolationType p_interp);
 	InterpolationType track_get_interpolation_type(int p_track) const;
 
+	Array make_default_bezier_key(float p_value);
 	int bezier_track_insert_key(int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle);
 	void bezier_track_set_key_value(int p_track, int p_index, real_t p_value);
 	void bezier_track_set_key_in_handle(int p_track, int p_index, const Vector2 &p_handle, real_t p_balanced_value_time_ratio = 1.0);
@@ -523,6 +526,22 @@ public:
 	static Variant blend_variant(const Variant &a, const Variant &b, float c);
 	static Variant interpolate_variant(const Variant &a, const Variant &b, float c, bool p_snap_array_element = false);
 	static Variant cubic_interpolate_in_time_variant(const Variant &pre_a, const Variant &a, const Variant &b, const Variant &post_b, float c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t, bool p_snap_array_element = false);
+
+	static bool is_less_or_equal_approx(double a, double b) {
+		return a < b || Math::is_equal_approx(a, b);
+	}
+
+	static bool is_less_approx(double a, double b) {
+		return a < b && !Math::is_equal_approx(a, b);
+	}
+
+	static bool is_greater_or_equal_approx(double a, double b) {
+		return a > b || Math::is_equal_approx(a, b);
+	}
+
+	static bool is_greater_approx(double a, double b) {
+		return a > b && !Math::is_equal_approx(a, b);
+	}
 
 	static TrackType get_cache_type(TrackType p_type);
 

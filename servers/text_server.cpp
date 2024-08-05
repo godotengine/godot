@@ -2183,7 +2183,7 @@ bool TextServer::is_valid_identifier(const String &p_string) const {
 	return true;
 }
 
-bool TextServer::is_valid_letter(char32_t p_unicode) const {
+bool TextServer::is_valid_letter(uint64_t p_unicode) const {
 	return is_unicode_letter(p_unicode);
 }
 

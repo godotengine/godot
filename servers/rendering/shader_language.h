@@ -578,49 +578,13 @@ public:
 				Node(NODE_TYPE_STRUCT) {}
 	};
 
-	struct FunctionNode : public Node {
-		struct Argument {
-			ArgumentQualifier qualifier;
-			StringName name;
-			DataType type;
-			StringName type_str;
-			DataPrecision precision;
-			//for passing textures as arguments
-			bool tex_argument_check;
-			TextureFilter tex_argument_filter;
-			TextureRepeat tex_argument_repeat;
-			bool tex_builtin_check;
-			StringName tex_builtin;
-			bool is_const;
-			int array_size;
-
-			HashMap<StringName, HashSet<int>> tex_argument_connect;
-		};
-
-		StringName name;
-		DataType return_type = TYPE_VOID;
-		StringName return_struct_name;
-		DataPrecision return_precision = PRECISION_DEFAULT;
-		int return_array_size = 0;
-		Vector<Argument> arguments;
-		BlockNode *body = nullptr;
-		bool can_discard = false;
-
-		virtual DataType get_datatype() const override { return return_type; }
-		virtual String get_datatype_name() const override { return String(return_struct_name); }
-		virtual int get_array_size() const override { return return_array_size; }
-
-		FunctionNode() :
-				Node(NODE_TYPE_FUNCTION) {}
-	};
-
 	struct ShaderNode : public Node {
 		struct Constant {
 			StringName name;
 			DataType type;
-			StringName type_str;
+			StringName struct_name;
 			DataPrecision precision;
-			ConstantNode *initializer = nullptr;
+			Node *initializer = nullptr;
 			int array_size;
 		};
 
@@ -722,6 +686,43 @@ public:
 				Node(NODE_TYPE_SHADER) {}
 	};
 
+	struct FunctionNode : public Node {
+		struct Argument {
+			ArgumentQualifier qualifier;
+			StringName name;
+			DataType type;
+			StringName struct_name;
+			DataPrecision precision;
+			//for passing textures as arguments
+			bool tex_argument_check;
+			TextureFilter tex_argument_filter;
+			TextureRepeat tex_argument_repeat;
+			bool tex_builtin_check;
+			StringName tex_builtin;
+			ShaderNode::Uniform::Hint tex_hint;
+			bool is_const;
+			int array_size;
+
+			HashMap<StringName, HashSet<int>> tex_argument_connect;
+		};
+
+		StringName name;
+		DataType return_type = TYPE_VOID;
+		StringName return_struct_name;
+		DataPrecision return_precision = PRECISION_DEFAULT;
+		int return_array_size = 0;
+		Vector<Argument> arguments;
+		BlockNode *body = nullptr;
+		bool can_discard = false;
+
+		virtual DataType get_datatype() const override { return return_type; }
+		virtual String get_datatype_name() const override { return String(return_struct_name); }
+		virtual int get_array_size() const override { return return_array_size; }
+
+		FunctionNode() :
+				Node(NODE_TYPE_FUNCTION) {}
+	};
+
 	struct UniformOrderComparator {
 		_FORCE_INLINE_ bool operator()(const Pair<StringName, int> &A, const Pair<StringName, int> &B) const {
 			return A.second < B.second;
@@ -799,6 +800,8 @@ public:
 	static void get_keyword_list(List<String> *r_keywords);
 	static bool is_control_flow_keyword(String p_keyword);
 	static void get_builtin_funcs(List<String> *r_keywords);
+
+	static int instance_counter;
 
 	struct BuiltInInfo {
 		DataType type = TYPE_VOID;
@@ -884,7 +887,7 @@ public:
 		bool can_discard = false;
 		bool main_function = false;
 	};
-	static bool has_builtin(const HashMap<StringName, ShaderLanguage::FunctionInfo> &p_functions, const StringName &p_name);
+	static bool has_builtin(const HashMap<StringName, ShaderLanguage::FunctionInfo> &p_functions, const StringName &p_name, bool p_check_global_funcs = false);
 
 	typedef DataType (*GlobalShaderUniformGetTypeFunc)(const StringName &p_name);
 
@@ -912,6 +915,28 @@ private:
 
 	Vector<FilePosition> include_positions;
 	HashSet<String> include_markers_handled;
+
+	// Additional function information (eg. call hierarchy). No need to expose it to compiler.
+	struct CallInfo {
+		struct Item {
+			enum ItemType {
+				ITEM_TYPE_BUILTIN,
+				ITEM_TYPE_VARYING,
+			} type;
+
+			TkPos pos;
+
+			Item() {}
+			Item(ItemType p_type, TkPos p_pos) :
+					type(p_type), pos(p_pos) {}
+		};
+
+		StringName name;
+		List<Pair<StringName, Item>> uses_restricted_items;
+		List<CallInfo *> calls;
+	};
+
+	RBMap<StringName, CallInfo> calls_info;
 
 #ifdef DEBUG_ENABLED
 	struct Usage {
@@ -1036,6 +1061,10 @@ private:
 	bool _validate_assign(Node *p_node, const FunctionInfo &p_function_info, String *r_message = nullptr);
 	bool _validate_operator(OperatorNode *p_op, DataType *r_ret_type = nullptr, int *r_ret_size = nullptr);
 
+	struct BuiltinEntry {
+		const char *name;
+	};
+
 	struct BuiltinFuncDef {
 		enum { MAX_ARGS = 5 };
 		const char *name;
@@ -1078,11 +1107,13 @@ private:
 #endif // DEBUG_ENABLED
 
 	const HashMap<StringName, FunctionInfo> *stages = nullptr;
+	bool is_supported_frag_only_funcs = false;
 
 	bool _get_completable_identifier(BlockNode *p_block, CompletionType p_type, StringName &identifier);
 	static const BuiltinFuncDef builtin_func_defs[];
 	static const BuiltinFuncOutArgs builtin_func_out_args[];
 	static const BuiltinFuncConstArgs builtin_func_const_args[];
+	static const BuiltinEntry frag_only_func_defs[];
 
 	static bool is_const_suffix_lut_initialized;
 
@@ -1092,10 +1123,14 @@ private:
 
 	bool _validate_function_call(BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_func, DataType *r_ret_type, StringName *r_ret_type_str, bool *r_is_custom_function = nullptr);
 	bool _parse_function_arguments(BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_func, int *r_complete_arg = nullptr);
-	bool _propagate_function_call_sampler_uniform_settings(const StringName &p_name, int p_argument, TextureFilter p_filter, TextureRepeat p_repeat);
+	ShaderNode::Uniform::Hint _sanitize_hint(ShaderNode::Uniform::Hint p_hint);
+	bool _propagate_function_call_sampler_uniform_settings(const StringName &p_name, int p_argument, TextureFilter p_filter, TextureRepeat p_repeat, ShaderNode::Uniform::Hint p_hint);
 	bool _propagate_function_call_sampler_builtin_reference(const StringName &p_name, int p_argument, const StringName &p_builtin);
 	bool _validate_varying_assign(ShaderNode::Varying &p_varying, String *r_message);
 	bool _check_node_constness(const Node *p_node) const;
+
+	bool _check_restricted_func(const StringName &p_name, const StringName &p_current_function) const;
+	bool _validate_restricted_func(const StringName &p_call_name, const CallInfo *p_func_info, bool p_is_builtin_hint = false);
 
 	Node *_parse_expression(BlockNode *p_block, const FunctionInfo &p_function_info);
 	Error _parse_array_size(BlockNode *p_block, const FunctionInfo &p_function_info, bool p_forbid_unknown_size, Node **r_size_expression, int *r_array_size, bool *r_unknown_size);

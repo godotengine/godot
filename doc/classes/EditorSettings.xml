@@ -396,6 +396,10 @@
 		<member name="editors/animation/autorename_animation_tracks" type="bool" setter="" getter="">
 			If [code]true[/code], automatically updates animation tracks' target paths when renaming or reparenting nodes in the Scene tree dock.
 		</member>
+		<member name="editors/animation/confirm_insert_track" type="bool" setter="" getter="">
+			If [code]true[/code], display a confirmation dialog when adding a new track to an animation by pressing the "key" icon next to a property. Holding Shift will bypass the dialog.
+			If [code]false[/code], the behavior is reversed, i.e. the dialog only appears when Shift is held.
+		</member>
 		<member name="editors/animation/default_create_bezier_tracks" type="bool" setter="" getter="">
 			If [code]true[/code], create a Bezier track instead of a standard track when pressing the "key" icon next to a property. Bezier tracks provide more control over animation curves, but are more difficult to adjust quickly.
 		</member>
@@ -577,7 +581,7 @@
 			The maximum idle uptime (in seconds) of the Blender process.
 			This prevents Godot from having to create a new process for each import within the given seconds.
 		</member>
-		<member name="filesystem/import/fbx2gltf/fbx2gltf_path" type="String" setter="" getter="">
+		<member name="filesystem/import/fbx/fbx2gltf_path" type="String" setter="" getter="">
 			The path to the FBX2glTF executable used for converting Autodesk FBX 3D scene files [code].fbx[/code] to glTF 2.0 format during import.
 			To enable this feature for your specific project, use [member ProjectSettings.filesystem/import/fbx2gltf/enabled].
 		</member>
@@ -591,6 +595,16 @@
 		<member name="filesystem/tools/oidn/oidn_denoise_path" type="String" setter="" getter="">
 			The path to the directory containing the Open Image Denoise (OIDN) executable, used optionally for denoising lightmaps. It can be downloaded from [url=https://www.openimagedenoise.org/downloads.html]openimagedenoise.org[/url].
 			To enable this feature for your specific project, use [member ProjectSettings.rendering/lightmapping/denoising/denoiser].
+		</member>
+		<member name="input/buffering/agile_event_flushing" type="bool" setter="" getter="">
+			If [code]true[/code], input events will be flushed just before every idle and physics frame.
+			If [code]false[/code], these events will be flushed only once per process frame, between iterations of the engine.
+			Enabling this setting can greatly improve input responsiveness, especially in devices that struggle to run at the project's intended frame rate.
+		</member>
+		<member name="input/buffering/use_accumulated_input" type="bool" setter="" getter="">
+			If [code]true[/code], similar input events sent by the operating system are accumulated. When input accumulation is enabled, all input events generated during a frame will be merged and emitted when the frame is done rendering. Therefore, this limits the number of input method calls per second to the rendering FPS.
+			Input accumulation can be disabled to get slightly more precise/reactive input at the cost of increased CPU usage.
+			[b]Note:[/b] Input accumulation is [i]enabled[/i] by default.
 		</member>
 		<member name="interface/editor/accept_dialog_cancel_ok_buttons" type="int" setter="" getter="">
 			How to position the Cancel and OK buttons in the editor's [AcceptDialog]s. Different platforms have different standard behaviors for this, which can be overridden using this setting. This is useful if you use Godot both on Windows and macOS/Linux and your Godot muscle memory is stronger than your OS specific one.
@@ -622,10 +636,6 @@
 		<member name="interface/editor/custom_display_scale" type="float" setter="" getter="">
 			The custom editor scale factor to use. This can be used for displays with very high DPI where a scale factor of 200% is not sufficient.
 			[b]Note:[/b] Only effective if [member interface/editor/display_scale] is set to [b]Custom[/b].
-		</member>
-		<member name="interface/editor/debug/enable_pseudolocalization" type="bool" setter="" getter="">
-			If [code]true[/code], lengthens the editor's localizable strings and replaces their characters with accented variants. This allows spotting non-localizable strings easily, while also ensuring the UI layout doesn't break when strings are made longer (as many languages require strings to be longer).
-			This is a debugging feature and should only be enabled when working on the editor itself.
 		</member>
 		<member name="interface/editor/display_scale" type="int" setter="" getter="">
 			The display scale factor to use for the editor interface. Higher values are more suited to hiDPI/Retina displays.
@@ -706,6 +716,7 @@
 			Consider enabling this if you are developing editor plugins to ensure they only make the editor redraw when required.
 			The default [b]Auto[/b] value will only enable this if the editor was compiled with the [code]dev_build=yes[/code] SCons option (the default is [code]dev_build=no[/code]).
 			[b]Note:[/b] If [member interface/editor/update_continuously] is [code]true[/code], the spinner icon displays in red.
+			[b]Note:[/b] If the editor was started with the [code]--debug-canvas-item-redraw[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url], the update spinner will [i]never[/i] display regardless of this setting's value. This is to avoid confusion with what would cause redrawing in real world scenarios.
 		</member>
 		<member name="interface/editor/single_window_mode" type="bool" setter="" getter="">
 			If [code]true[/code], embed modal windows such as docks inside the main editor window. When single-window mode is enabled, tooltips will also be embedded inside the main editor window, which means they can't be displayed outside of the editor window.
@@ -925,14 +936,14 @@
 		<member name="run/auto_save/save_before_running" type="bool" setter="" getter="">
 			If [code]true[/code], saves all scenes and scripts automatically before running the project. Setting this to [code]false[/code] prevents the editor from saving if there are no changes which can speed up the project startup slightly, but it makes it possible to run a project that has unsaved changes. (Unsaved changes will not be visible in the running project.)
 		</member>
+		<member name="run/bottom_panel/action_on_play" type="int" setter="" getter="">
+			The action to execute on the bottom panel when running the project.
+		</member>
+		<member name="run/bottom_panel/action_on_stop" type="int" setter="" getter="">
+			The action to execute on the bottom panel when stopping the project.
+		</member>
 		<member name="run/output/always_clear_output_on_play" type="bool" setter="" getter="">
 			If [code]true[/code], the editor will clear the Output panel when running the project.
-		</member>
-		<member name="run/output/always_close_output_on_stop" type="bool" setter="" getter="">
-			If [code]true[/code], the editor will collapse the Output panel when stopping the project.
-		</member>
-		<member name="run/output/always_open_output_on_play" type="bool" setter="" getter="">
-			If [code]true[/code], the editor will expand the Output panel when running the project.
 		</member>
 		<member name="run/output/font_size" type="int" setter="" getter="">
 			The size of the font in the [b]Output[/b] panel at the bottom of the editor. This setting does not impact the font size of the script editor (see [member interface/editor/code_font_size]).
@@ -1028,6 +1039,9 @@
 		<member name="text_editor/behavior/files/restore_scripts_on_load" type="bool" setter="" getter="">
 			If [code]true[/code], reopens scripts that were opened in the last session when the editor is reopened on a given project.
 		</member>
+		<member name="text_editor/behavior/files/trim_final_newlines_on_save" type="bool" setter="" getter="">
+			If [code]true[/code], trims all empty newlines after the final newline when saving a script. Final newlines refer to the empty newlines found at the end of files. Since these serve no practical purpose, they can and should be removed to make version control diffs less noisy.
+		</member>
 		<member name="text_editor/behavior/files/trim_trailing_whitespace_on_save" type="bool" setter="" getter="">
 			If [code]true[/code], trims trailing whitespace when saving a script. Trailing whitespace refers to tab and space characters placed at the end of lines. Since these serve no practical purpose, they can and should be removed to make version control diffs less noisy.
 		</member>
@@ -1044,6 +1058,9 @@
 			The indentation style to use (tabs or spaces).
 			[b]Note:[/b] The [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_styleguide.html]GDScript style guide[/url] recommends using tabs for indentation. It is advised to change this setting only if you need to work on a project that currently uses spaces for indentation.
 		</member>
+		<member name="text_editor/behavior/navigation/custom_word_separators" type="String" setter="" getter="">
+			The characters to consider as word delimiters if [member text_editor/behavior/navigation/use_custom_word_separators] is [code]true[/code]. This is in addition to default characters if [member text_editor/behavior/navigation/use_default_word_separators] is [code]true[/code]. The characters should be defined without separation, for example [code]_♥=[/code].
+		</member>
 		<member name="text_editor/behavior/navigation/drag_and_drop_selection" type="bool" setter="" getter="">
 			If [code]true[/code], allows drag-and-dropping text in the script editor to move text. Disable this if you find yourself accidentally drag-and-dropping text in the script editor.
 		</member>
@@ -1057,14 +1074,20 @@
 			If [code]true[/code], allows scrolling past the end of the file.
 		</member>
 		<member name="text_editor/behavior/navigation/smooth_scrolling" type="bool" setter="" getter="">
-			If [code]true[/code], allows scrolling in sub-line intervals and enables a smooth scrolling animation when using the mouse wheel to scroll.
+			If [code]true[/code], enables a smooth scrolling animation when using the mouse wheel to scroll. See [member text_editor/behavior/navigation/v_scroll_speed] for the speed of this animation.
 			[b]Note:[/b] [member text_editor/behavior/navigation/smooth_scrolling] currently behaves poorly in projects where [member ProjectSettings.physics/common/physics_ticks_per_second] has been increased significantly from its default value ([code]60[/code]). In this case, it is recommended to disable this setting.
 		</member>
 		<member name="text_editor/behavior/navigation/stay_in_script_editor_on_node_selected" type="bool" setter="" getter="">
 			If [code]true[/code], prevents automatically switching between the Script and 2D/3D screens when selecting a node in the Scene tree dock.
 		</member>
+		<member name="text_editor/behavior/navigation/use_custom_word_separators" type="bool" setter="" getter="">
+			If [code]true[/code], uses the characters in [member text_editor/behavior/navigation/custom_word_separators] as word separators for word navigation and operations. This is in addition to the default characters if [member text_editor/behavior/navigation/use_default_word_separators] is also enabled. Word navigation and operations include double-clicking on a word or holding [kbd]Ctrl[/kbd] ([kbd]Cmd[/kbd] on macOS) while pressing [kbd]left[/kbd], [kbd]right[/kbd], [kbd]backspace[/kbd], or [kbd]delete[/kbd].
+		</member>
+		<member name="text_editor/behavior/navigation/use_default_word_separators" type="bool" setter="" getter="">
+			If [code]true[/code], uses the characters in [code]`!"#$%&amp;'()*+,-./:;&lt;=&gt;?@[\]^`{|}~[/code], the Unicode General Punctuation table, and the Unicode CJK Punctuation table as word separators for word navigation and operations. If [code]false[/code], a subset of these characters are used and does not include the characters [code]&lt;&gt;$~^=+|[/code]. This is in addition to custom characters if [member text_editor/behavior/navigation/use_custom_word_separators] is also enabled. These characters are used to determine where a word stops. Word navigation and operations include double-clicking on a word or holding [kbd]Ctrl[/kbd] ([kbd]Cmd[/kbd] on macOS) while pressing [kbd]left[/kbd], [kbd]right[/kbd], [kbd]backspace[/kbd], or [kbd]delete[/kbd].
+		</member>
 		<member name="text_editor/behavior/navigation/v_scroll_speed" type="int" setter="" getter="">
-			The number of pixels to scroll with every mouse wheel increment. Higher values make the script scroll by faster when using the mouse wheel.
+			The speed of scrolling in lines per second when [member text_editor/behavior/navigation/smooth_scrolling] is [code]true[/code]. Higher values make the script scroll by faster when using the mouse wheel.
 			[b]Note:[/b] You can hold down [kbd]Alt[/kbd] while using the mouse wheel to temporarily scroll 5 times faster.
 		</member>
 		<member name="text_editor/completion/add_node_path_literals" type="bool" setter="" getter="">
@@ -1083,7 +1106,7 @@
 			The delay in seconds after which autocompletion suggestions should be displayed when the user stops typing.
 		</member>
 		<member name="text_editor/completion/code_complete_enabled" type="bool" setter="" getter="">
-			If [code]true[/code], code completion will be triggered automatically after [member text_editor/completion/code_complete_delay]. If [code]false[/code], you can still trigger completion manually by pressing [kbd]Ctrl + Space[/kbd] ([kbd]Cmd + Space[/kbd] on macOS).
+			If [code]true[/code], code completion will be triggered automatically after [member text_editor/completion/code_complete_delay]. Even if [code]false[/code], code completion can be triggered manually with the [code]ui_text_completion_query[/code] action (by default [kbd]Ctrl + Space[/kbd] or [kbd]Cmd + Space[/kbd] on macOS).
 		</member>
 		<member name="text_editor/completion/colorize_suggestions" type="bool" setter="" getter="">
 			If [code]true[/code] enables the coloring for some items in the autocompletion suggestions, like vector components.

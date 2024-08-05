@@ -211,17 +211,17 @@ void Control::get_argument_options(const StringName &p_function, int p_idx, List
 		const String pf = p_function;
 		Theme::DataType type = Theme::DATA_TYPE_MAX;
 
-		if (pf == "add_theme_color_override" || pf == "has_theme_color" || pf == "has_theme_color_override" || pf == "get_theme_color") {
+		if (pf == "add_theme_color_override" || pf == "has_theme_color" || pf == "has_theme_color_override" || pf == "get_theme_color" || pf == "remove_theme_color_override") {
 			type = Theme::DATA_TYPE_COLOR;
-		} else if (pf == "add_theme_constant_override" || pf == "has_theme_constant" || pf == "has_theme_constant_override" || pf == "get_theme_constant") {
+		} else if (pf == "add_theme_constant_override" || pf == "has_theme_constant" || pf == "has_theme_constant_override" || pf == "get_theme_constant" || pf == "remove_theme_constant_override") {
 			type = Theme::DATA_TYPE_CONSTANT;
-		} else if (pf == "add_theme_font_override" || pf == "has_theme_font" || pf == "has_theme_font_override" || pf == "get_theme_font") {
+		} else if (pf == "add_theme_font_override" || pf == "has_theme_font" || pf == "has_theme_font_override" || pf == "get_theme_font" || pf == "remove_theme_font_override") {
 			type = Theme::DATA_TYPE_FONT;
-		} else if (pf == "add_theme_font_size_override" || pf == "has_theme_font_size" || pf == "has_theme_font_size_override" || pf == "get_theme_font_size") {
+		} else if (pf == "add_theme_font_size_override" || pf == "has_theme_font_size" || pf == "has_theme_font_size_override" || pf == "get_theme_font_size" || pf == "remove_theme_font_size_override") {
 			type = Theme::DATA_TYPE_FONT_SIZE;
-		} else if (pf == "add_theme_icon_override" || pf == "has_theme_icon" || pf == "has_theme_icon_override" || pf == "get_theme_icon") {
+		} else if (pf == "add_theme_icon_override" || pf == "has_theme_icon" || pf == "has_theme_icon_override" || pf == "get_theme_icon" || pf == "remove_theme_icon_override") {
 			type = Theme::DATA_TYPE_ICON;
-		} else if (pf == "add_theme_style_override" || pf == "has_theme_style" || pf == "has_theme_style_override" || pf == "get_theme_style") {
+		} else if (pf == "add_theme_stylebox_override" || pf == "has_theme_stylebox" || pf == "has_theme_stylebox_override" || pf == "get_theme_stylebox" || pf == "remove_theme_stylebox_override") {
 			type = Theme::DATA_TYPE_STYLEBOX;
 		}
 
@@ -696,7 +696,7 @@ void Control::_update_canvas_item_transform() {
 
 	// We use a little workaround to avoid flickering when moving the pivot with _edit_set_pivot()
 	if (is_inside_tree() && Math::abs(Math::sin(data.rotation * 4.0f)) < 0.00001f && get_viewport()->is_snap_controls_to_pixels_enabled()) {
-		xform[2] = xform[2].round();
+		xform[2] = (xform[2] + Vector2(0.5, 0.5)).floor();
 	}
 
 	RenderingServer::get_singleton()->canvas_item_set_transform(get_canvas_item(), xform);
@@ -1732,28 +1732,33 @@ void Control::_size_changed() {
 		new_size_cache.height = minimum_size.height;
 	}
 
-	bool pos_changed = new_pos_cache != data.pos_cache;
-	bool size_changed = new_size_cache != data.size_cache;
+	bool pos_changed = !new_pos_cache.is_equal_approx(data.pos_cache);
+	bool size_changed = !new_size_cache.is_equal_approx(data.size_cache);
 
-	data.pos_cache = new_pos_cache;
-	data.size_cache = new_size_cache;
+	if (pos_changed) {
+		data.pos_cache = new_pos_cache;
+	}
+	if (size_changed) {
+		data.size_cache = new_size_cache;
+	}
 
 	if (is_inside_tree()) {
-		if (size_changed) {
-			notification(NOTIFICATION_RESIZED);
-		}
 		if (pos_changed || size_changed) {
-			item_rect_changed(size_changed);
+			// Ensure global transform is marked as dirty before `NOTIFICATION_RESIZED` / `item_rect_changed` signal
+			// so an up to date global transform could be obtained when handling these.
 			_notify_transform();
+
+			if (size_changed) {
+				notification(NOTIFICATION_RESIZED);
+			}
+			item_rect_changed(size_changed);
 		}
 
 		if (pos_changed && !size_changed) {
-			_update_canvas_item_transform(); //move because it won't be updated
+			_update_canvas_item_transform();
 		}
-	} else {
-		if (pos_changed) {
-			_notify_transform();
-		}
+	} else if (pos_changed) {
+		_notify_transform();
 	}
 }
 

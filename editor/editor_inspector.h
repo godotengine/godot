@@ -192,6 +192,7 @@ public:
 	void set_deletable(bool p_enable);
 	bool is_deletable() const;
 	void add_focusable(Control *p_control);
+	void grab_focus(int p_focusable = -1);
 	void select(int p_focusable = -1);
 	void deselect();
 	bool is_selected() const;
@@ -252,9 +253,13 @@ protected:
 	GDVIRTUAL7R(bool, _parse_property, Object *, Variant::Type, String, PropertyHint, String, BitField<PropertyUsageFlags>, bool)
 	GDVIRTUAL1(_parse_end, Object *)
 
+#ifndef DISABLE_DEPRECATED
+	void _add_property_editor_bind_compat_92322(const String &p_for_property, Control *p_prop, bool p_add_to_end);
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
 public:
 	void add_custom_control(Control *control);
-	void add_property_editor(const String &p_for_property, Control *p_prop, bool p_add_to_end = false);
+	void add_property_editor(const String &p_for_property, Control *p_prop, bool p_add_to_end = false, const String &p_label = String());
 	void add_property_editor_for_multiple_properties(const String &p_label, const Vector<String> &p_properties, Control *p_prop);
 
 	virtual bool can_handle(Object *p_object);
@@ -302,6 +307,7 @@ class EditorInspectorSection : public Container {
 	Color bg_color;
 	bool foldable = false;
 	int indent_depth = 0;
+	int level = 1;
 
 	Timer *dropping_unfold_timer = nullptr;
 	bool dropping = false;
@@ -324,7 +330,7 @@ protected:
 public:
 	virtual Size2 get_minimum_size() const override;
 
-	void setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth = 0);
+	void setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth = 0, int p_level = 1);
 	VBoxContainer *get_vbox();
 	void unfold();
 	void fold();

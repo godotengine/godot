@@ -451,10 +451,10 @@ void InspectorDock::_notification(int p_what) {
 			search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			if (info_is_warning) {
 				info->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
-				info->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+				info->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 			} else {
 				info->set_icon(get_editor_theme_icon(SNAME("NodeInfo")));
-				info->add_theme_color_override("font_color", get_theme_color(SNAME("font_color"), EditorStringName(Editor)));
+				info->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), EditorStringName(Editor)));
 			}
 		} break;
 	}
@@ -481,10 +481,10 @@ void InspectorDock::set_info(const String &p_button_text, const String &p_messag
 
 	if (info_is_warning) {
 		info->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
-		info->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+		info->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 	} else {
 		info->set_icon(get_editor_theme_icon(SNAME("NodeInfo")));
-		info->add_theme_color_override("font_color", get_theme_color(SNAME("font_color"), EditorStringName(Editor)));
+		info->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), EditorStringName(Editor)));
 	}
 
 	if (!p_button_text.is_empty() && !p_message.is_empty()) {
@@ -541,9 +541,10 @@ void InspectorDock::update(Object *p_object) {
 	p->add_shortcut(ED_SHORTCUT("property_editor/expand_revertable", TTR("Expand Non-Default")), EXPAND_REVERTABLE);
 
 	p->add_separator(TTR("Property Name Style"));
-	p->add_radio_check_item(TTR("Raw"), PROPERTY_NAME_STYLE_RAW);
-	p->add_radio_check_item(TTR("Capitalized"), PROPERTY_NAME_STYLE_CAPITALIZED);
-	p->add_radio_check_item(TTR("Localized"), PROPERTY_NAME_STYLE_LOCALIZED);
+	p->add_radio_check_item(vformat(TTR("Raw (e.g. \"%s\")"), "z_index"), PROPERTY_NAME_STYLE_RAW);
+	p->add_radio_check_item(vformat(TTR("Capitalized (e.g. \"%s\")"), "Z Index"), PROPERTY_NAME_STYLE_CAPITALIZED);
+	// TRANSLATORS: "Z Index" should match the existing translated CanvasItem property name in the current language you're working on.
+	p->add_radio_check_item(TTR("Localized (e.g. \"Z Index\")"), PROPERTY_NAME_STYLE_LOCALIZED);
 
 	if (!EditorPropertyNameProcessor::is_localization_available()) {
 		const int index = p->get_item_index(PROPERTY_NAME_STYLE_LOCALIZED);
@@ -666,7 +667,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	general_options_hb->add_child(resource_save_button);
 	resource_save_button->get_popup()->add_item(TTR("Save"), RESOURCE_SAVE);
 	resource_save_button->get_popup()->add_item(TTR("Save As..."), RESOURCE_SAVE_AS);
-	resource_save_button->get_popup()->connect("id_pressed", callable_mp(this, &InspectorDock::_menu_option));
+	resource_save_button->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &InspectorDock::_menu_option));
 	resource_save_button->set_focus_mode(Control::FOCUS_NONE);
 	resource_save_button->set_disabled(true);
 
@@ -683,7 +684,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	resource_extra_button->get_popup()->add_shortcut(ED_SHORTCUT("property_editor/show_in_filesystem", TTR("Show in FileSystem")), RESOURCE_SHOW_IN_FILESYSTEM);
 	resource_extra_button->get_popup()->add_shortcut(ED_SHORTCUT("property_editor/unref_resource", TTR("Make Resource Built-In")), RESOURCE_MAKE_BUILT_IN);
 	resource_extra_button->get_popup()->set_item_disabled(3, true);
-	resource_extra_button->get_popup()->connect("id_pressed", callable_mp(this, &InspectorDock::_menu_option));
+	resource_extra_button->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &InspectorDock::_menu_option));
 
 	general_options_hb->add_spacer();
 
@@ -708,7 +709,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	history_menu->set_tooltip_text(TTR("History of recently edited objects."));
 	general_options_hb->add_child(history_menu);
 	history_menu->connect("about_to_popup", callable_mp(this, &InspectorDock::_prepare_history));
-	history_menu->get_popup()->connect("id_pressed", callable_mp(this, &InspectorDock::_select_history));
+	history_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &InspectorDock::_select_history));
 
 	HBoxContainer *subresource_hb = memnew(HBoxContainer);
 	add_child(subresource_hb);
@@ -745,7 +746,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	property_tools_hb->add_child(object_menu);
 	object_menu->set_tooltip_text(TTR("Manage object properties."));
 	object_menu->get_popup()->connect("about_to_popup", callable_mp(this, &InspectorDock::_prepare_menu));
-	object_menu->get_popup()->connect("id_pressed", callable_mp(this, &InspectorDock::_menu_option));
+	object_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &InspectorDock::_menu_option));
 
 	info = memnew(Button);
 	add_child(info);
@@ -774,7 +775,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	bottom_label->set_text(TTR("This cannot be undone. Are you sure?"));
 	container->add_child(bottom_label);
 
-	unique_resources_confirmation->connect("confirmed", callable_mp(this, &InspectorDock::_menu_confirm_current));
+	unique_resources_confirmation->connect(SceneStringName(confirmed), callable_mp(this, &InspectorDock::_menu_confirm_current));
 
 	info_dialog = memnew(AcceptDialog);
 	EditorNode::get_singleton()->get_gui_base()->add_child(info_dialog);

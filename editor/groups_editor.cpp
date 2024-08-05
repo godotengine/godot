@@ -275,6 +275,11 @@ void GroupsEditor::_queue_update_groups_and_tree() {
 
 void GroupsEditor::_update_groups_and_tree() {
 	update_groups_and_tree_queued = false;
+	// The scene_root_node could be unset before we actually run this code because this is queued with call_deferred().
+	// In that case NOTIFICATION_VISIBILITY_CHANGED will call this function again soon.
+	if (!scene_root_node) {
+		return;
+	}
 	_update_groups();
 	_update_tree();
 }
@@ -369,6 +374,7 @@ void GroupsEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			filter->set_right_icon(get_editor_theme_icon("Search"));
 			add->set_icon(get_editor_theme_icon("Add"));
+			_update_tree();
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (groups_dirty && is_visible_in_tree()) {
@@ -607,7 +613,7 @@ void GroupsEditor::_show_add_group_dialog() {
 	if (!add_group_dialog) {
 		add_group_dialog = memnew(ConfirmationDialog);
 		add_group_dialog->set_title(TTR("Create New Group"));
-		add_group_dialog->connect("confirmed", callable_mp(this, &GroupsEditor::_confirm_add));
+		add_group_dialog->connect(SceneStringName(confirmed), callable_mp(this, &GroupsEditor::_confirm_add));
 
 		VBoxContainer *vbc = memnew(VBoxContainer);
 		add_group_dialog->add_child(vbc);
@@ -652,7 +658,7 @@ void GroupsEditor::_show_add_group_dialog() {
 		add_validation_panel->set_update_callback(callable_mp(this, &GroupsEditor::_check_add));
 		add_validation_panel->set_accept_button(add_group_dialog->get_ok_button());
 
-		add_group_name->connect("text_changed", callable_mp(add_validation_panel, &EditorValidationPanel::update).unbind(1));
+		add_group_name->connect(SceneStringName(text_changed), callable_mp(add_validation_panel, &EditorValidationPanel::update).unbind(1));
 
 		vbc->add_child(add_validation_panel);
 
@@ -673,7 +679,7 @@ void GroupsEditor::_show_rename_group_dialog() {
 	if (!rename_group_dialog) {
 		rename_group_dialog = memnew(ConfirmationDialog);
 		rename_group_dialog->set_title(TTR("Rename Group"));
-		rename_group_dialog->connect("confirmed", callable_mp(this, &GroupsEditor::_confirm_rename));
+		rename_group_dialog->connect(SceneStringName(confirmed), callable_mp(this, &GroupsEditor::_confirm_rename));
 
 		VBoxContainer *vbc = memnew(VBoxContainer);
 		rename_group_dialog->add_child(vbc);
@@ -693,7 +699,7 @@ void GroupsEditor::_show_rename_group_dialog() {
 		rename_validation_panel->set_update_callback(callable_mp(this, &GroupsEditor::_check_rename));
 		rename_validation_panel->set_accept_button(rename_group_dialog->get_ok_button());
 
-		rename_group->connect("text_changed", callable_mp(rename_validation_panel, &EditorValidationPanel::update).unbind(1));
+		rename_group->connect(SceneStringName(text_changed), callable_mp(rename_validation_panel, &EditorValidationPanel::update).unbind(1));
 
 		vbc->add_child(rename_validation_panel);
 
@@ -729,7 +735,7 @@ void GroupsEditor::_show_rename_group_dialog() {
 void GroupsEditor::_show_remove_group_dialog() {
 	if (!remove_group_dialog) {
 		remove_group_dialog = memnew(ConfirmationDialog);
-		remove_group_dialog->connect("confirmed", callable_mp(this, &GroupsEditor::_confirm_delete));
+		remove_group_dialog->connect(SceneStringName(confirmed), callable_mp(this, &GroupsEditor::_confirm_delete));
 
 		VBoxContainer *vbox = memnew(VBoxContainer);
 		remove_label = memnew(Label);
@@ -843,7 +849,7 @@ GroupsEditor::GroupsEditor() {
 	filter->set_clear_button_enabled(true);
 	filter->set_placeholder(TTR("Filter Groups"));
 	filter->set_h_size_flags(SIZE_EXPAND_FILL);
-	filter->connect("text_changed", callable_mp(this, &GroupsEditor::_update_tree).unbind(1));
+	filter->connect(SceneStringName(text_changed), callable_mp(this, &GroupsEditor::_update_tree).unbind(1));
 	hbc->add_child(filter);
 
 	tree = memnew(Tree);
@@ -858,7 +864,7 @@ GroupsEditor::GroupsEditor() {
 	add_child(tree);
 
 	menu = memnew(PopupMenu);
-	menu->connect("id_pressed", callable_mp(this, &GroupsEditor::_menu_id_pressed));
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &GroupsEditor::_menu_id_pressed));
 	tree->add_child(menu);
 
 	ProjectSettingsEditor::get_singleton()->get_group_settings()->connect("group_changed", callable_mp(this, &GroupsEditor::_update_groups_and_tree));

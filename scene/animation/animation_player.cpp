@@ -158,41 +158,41 @@ void AnimationPlayer::_notification(int p_what) {
 	}
 }
 
-void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, float p_blend, bool p_seeked, bool p_started, bool p_is_current) {
+void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, float p_blend, bool p_seeked, bool p_internal_seeked, bool p_started, bool p_is_current) {
 	double speed = speed_scale * cd.speed_scale;
 	bool backwards = signbit(speed); // Negative zero means playing backwards too.
 	double delta = p_started ? 0 : p_delta * speed;
 	double next_pos = cd.pos + delta;
 
-	real_t len = cd.from->animation->get_length();
+	double len = cd.from->animation->get_length();
 	Animation::LoopedFlag looped_flag = Animation::LOOPED_FLAG_NONE;
 
 	switch (cd.from->animation->get_loop_mode()) {
 		case Animation::LOOP_NONE: {
-			if (next_pos < 0) {
+			if (Animation::is_less_approx(next_pos, 0)) {
 				next_pos = 0;
-			} else if (next_pos > len) {
+			} else if (Animation::is_greater_approx(next_pos, len)) {
 				next_pos = len;
 			}
 			delta = next_pos - cd.pos; // Fix delta (after determination of backwards because negative zero is lost here).
 		} break;
 
 		case Animation::LOOP_LINEAR: {
-			if (next_pos < 0 && cd.pos >= 0) {
+			if (Animation::is_less_approx(next_pos, 0) && Animation::is_greater_or_equal_approx(cd.pos, 0)) {
 				looped_flag = Animation::LOOPED_FLAG_START;
 			}
-			if (next_pos > len && cd.pos <= len) {
+			if (Animation::is_greater_approx(next_pos, len) && Animation::is_less_or_equal_approx(cd.pos, len)) {
 				looped_flag = Animation::LOOPED_FLAG_END;
 			}
 			next_pos = Math::fposmod(next_pos, (double)len);
 		} break;
 
 		case Animation::LOOP_PINGPONG: {
-			if (next_pos < 0 && cd.pos >= 0) {
+			if (Animation::is_less_approx(next_pos, 0) && Animation::is_greater_or_equal_approx(cd.pos, 0)) {
 				cd.speed_scale *= -1.0;
 				looped_flag = Animation::LOOPED_FLAG_START;
 			}
-			if (next_pos > len && cd.pos <= len) {
+			if (Animation::is_greater_approx(next_pos, len) && Animation::is_less_or_equal_approx(cd.pos, len)) {
 				cd.speed_scale *= -1.0;
 				looped_flag = Animation::LOOPED_FLAG_END;
 			}
@@ -209,16 +209,16 @@ void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, f
 	// End detection.
 	if (p_is_current) {
 		if (cd.from->animation->get_loop_mode() == Animation::LOOP_NONE) {
-			if (!backwards && prev_pos <= len && next_pos == len) {
+			if (!backwards && Animation::is_less_or_equal_approx(prev_pos, len) && Math::is_equal_approx(next_pos, len)) {
 				// Playback finished.
 				end_reached = true;
-				end_notify = prev_pos < len; // Notify only if not already at the end.
+				end_notify = Animation::is_less_approx(prev_pos, len); // Notify only if not already at the end.
 				p_blend = 1.0;
 			}
-			if (backwards && prev_pos >= 0 && next_pos == 0) {
+			if (backwards && Animation::is_greater_or_equal_approx(prev_pos, 0) && Math::is_equal_approx(next_pos, 0)) {
 				// Playback finished.
 				end_reached = true;
-				end_notify = prev_pos > 0; // Notify only if not already at the beginning.
+				end_notify = Animation::is_greater_approx(prev_pos, 0); // Notify only if not already at the beginning.
 				p_blend = 1.0;
 			}
 		}
@@ -234,9 +234,11 @@ void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, f
 		pi.delta = delta;
 		pi.seeked = p_seeked;
 	}
-	// AnimationPlayer doesn't have internal seeking.
-	// However, immediately after playback, discrete keys should be retrieved with EXACT mode since behind keys must be ignored at that time.
-	pi.is_external_seeking = !p_started;
+	if (Math::is_zero_approx(pi.delta) && backwards) {
+		pi.delta = -0.0; // Sign is needed to handle converted Continuous track from Discrete track correctly.
+	}
+	// Immediately after playback, discrete keys should be retrieved with EXACT mode since behind keys must be ignored at that time.
+	pi.is_external_seeking = !p_internal_seeked && !p_started;
 	pi.looped_flag = looped_flag;
 	pi.weight = p_blend;
 	make_animation_instance(cd.from->name, pi);
@@ -256,13 +258,15 @@ void AnimationPlayer::_blend_playback_data(double p_delta, bool p_started) {
 	Playback &c = playback;
 
 	bool seeked = c.seeked; // The animation may be changed during process, so it is safer that the state is changed before process.
+	bool internal_seeked = c.internal_seeked;
 
-	if (p_delta != 0) {
+	if (!Math::is_zero_approx(p_delta)) {
 		c.seeked = false;
+		c.internal_seeked = false;
 	}
 
 	// Second, process current animation to check if the animation end reached.
-	_process_playback_data(c.current, p_delta, get_current_blend_amount(), seeked, p_started, true);
+	_process_playback_data(c.current, p_delta, get_current_blend_amount(), seeked, internal_seeked, p_started, true);
 
 	// Finally, if not end the animation, do blending.
 	if (end_reached) {
@@ -273,13 +277,13 @@ void AnimationPlayer::_blend_playback_data(double p_delta, bool p_started) {
 	for (List<Blend>::Element *E = c.blend.front(); E; E = E->next()) {
 		Blend &b = E->get();
 		b.blend_left = MAX(0, b.blend_left - Math::absf(speed_scale * p_delta) / b.blend_time);
-		if (b.blend_left <= 0) {
+		if (Animation::is_less_or_equal_approx(b.blend_left, 0)) {
 			to_erase.push_back(E);
 			b.blend_left = CMP_EPSILON; // May want to play last frame.
 		}
 		// Note: There may be issues if an animation event triggers an animation change while this blend is active,
 		// so it is best to use "deferred" calls instead of "immediate" for animation events that can trigger new animations.
-		_process_playback_data(b.data, p_delta, b.blend_left, false, false);
+		_process_playback_data(b.data, p_delta, b.blend_left, false, false, false);
 	}
 	for (List<Blend>::Element *&E : to_erase) {
 		c.blend.erase(E);
@@ -397,7 +401,7 @@ void AnimationPlayer::_play(const StringName &p_name, double p_custom_blend, flo
 		bk.from = c.current.from->name;
 		bk.to = name;
 
-		if (p_custom_blend >= 0) {
+		if (Animation::is_greater_or_equal_approx(p_custom_blend, 0)) {
 			blend_time = p_custom_blend;
 		} else if (blend_times.has(bk)) {
 			blend_time = blend_times[bk];
@@ -415,10 +419,10 @@ void AnimationPlayer::_play(const StringName &p_name, double p_custom_blend, flo
 			}
 		}
 
-		if (p_custom_blend < 0 && blend_time == 0 && default_blend_time) {
+		if (Animation::is_less_approx(p_custom_blend, 0) && Math::is_zero_approx(blend_time) && default_blend_time) {
 			blend_time = default_blend_time;
 		}
-		if (blend_time > 0) {
+		if (Animation::is_greater_approx(blend_time, 0)) {
 			Blend b;
 			b.data = c.current;
 			b.blend_left = get_current_blend_amount();
@@ -445,12 +449,12 @@ void AnimationPlayer::_play(const StringName &p_name, double p_custom_blend, flo
 		c.assigned = name;
 		emit_signal(SNAME("current_animation_changed"), c.assigned);
 	} else {
-		if (p_from_end && c.current.pos == 0) {
+		if (p_from_end && Math::is_zero_approx(c.current.pos)) {
 			// Animation reset but played backwards, set position to the end.
-			c.current.pos = c.current.from->animation->get_length();
-		} else if (!p_from_end && c.current.pos == c.current.from->animation->get_length()) {
+			seek_internal(c.current.from->animation->get_length(), true, true, true);
+		} else if (!p_from_end && Math::is_equal_approx(c.current.pos, (double)c.current.from->animation->get_length())) {
 			// Animation resumed but already ended, set position to the beginning.
-			c.current.pos = 0;
+			seek_internal(0, true, true, true);
 		} else if (playing) {
 			return;
 		}
@@ -576,10 +580,12 @@ float AnimationPlayer::get_playing_speed() const {
 	return speed_scale * playback.current.speed_scale;
 }
 
-void AnimationPlayer::seek(double p_time, bool p_update, bool p_update_only) {
+void AnimationPlayer::seek_internal(double p_time, bool p_update, bool p_update_only, bool p_is_internal_seek) {
 	if (!active) {
 		return;
 	}
+
+	bool is_backward = Animation::is_less_approx(p_time, playback.current.pos);
 
 	_check_immediately_after_start();
 
@@ -595,10 +601,16 @@ void AnimationPlayer::seek(double p_time, bool p_update, bool p_update_only) {
 	}
 
 	playback.seeked = true;
+	playback.internal_seeked = p_is_internal_seek;
+
 	if (p_update) {
-		_process_animation(0, p_update_only);
+		_process_animation(is_backward ? -0.0 : 0.0, p_update_only);
 		playback.seeked = false; // If animation was proceeded here, no more seek in internal process.
 	}
+}
+
+void AnimationPlayer::seek(double p_time, bool p_update, bool p_update_only) {
+	seek_internal(p_time, p_update, p_update_only);
 }
 
 void AnimationPlayer::advance(double p_time) {
@@ -656,7 +668,7 @@ void AnimationPlayer::_stop_internal(bool p_reset, bool p_keep_state) {
 			c.current.pos = 0;
 		} else {
 			is_stopping = true;
-			seek(0, true, true);
+			seek_internal(0, true, true, true);
 			is_stopping = false;
 		}
 		c.current.from = nullptr;
@@ -696,7 +708,7 @@ void AnimationPlayer::set_blend_time(const StringName &p_animation1, const Strin
 	BlendKey bk;
 	bk.from = p_animation1;
 	bk.to = p_animation2;
-	if (p_time == 0) {
+	if (Math::is_zero_approx(p_time)) {
 		blend_times.erase(bk);
 	} else {
 		blend_times[bk] = p_time;

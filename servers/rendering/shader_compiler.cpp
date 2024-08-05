@@ -362,7 +362,7 @@ void ShaderCompiler::_dump_function_deps(const SL::ShaderNode *p_node, const Str
 			}
 			header += _constr(fnode->arguments[i].is_const);
 			if (fnode->arguments[i].type == SL::TYPE_STRUCT) {
-				header += _qualstr(fnode->arguments[i].qualifier) + _mkid(fnode->arguments[i].type_str) + " " + _mkid(fnode->arguments[i].name);
+				header += _qualstr(fnode->arguments[i].qualifier) + _mkid(fnode->arguments[i].struct_name) + " " + _mkid(fnode->arguments[i].name);
 			} else {
 				header += _qualstr(fnode->arguments[i].qualifier) + _prestr(fnode->arguments[i].precision) + _typestr(fnode->arguments[i].type) + " " + _mkid(fnode->arguments[i].name);
 			}
@@ -743,7 +743,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				gcode += _constr(true);
 				gcode += _prestr(cnode.precision, ShaderLanguage::is_float_type(cnode.type));
 				if (cnode.type == SL::TYPE_STRUCT) {
-					gcode += _mkid(cnode.type_str);
+					gcode += _mkid(cnode.struct_name);
 				} else {
 					gcode += _typestr(cnode.type);
 				}
@@ -1286,6 +1286,13 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 													break;
 												}
 												if (function->arguments[j].tex_argument_check) {
+													if (function->arguments[j].tex_hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE) {
+														is_screen_texture = true;
+													} else if (function->arguments[j].tex_hint == ShaderLanguage::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
+														is_depth_texture = true;
+													} else if (function->arguments[j].tex_hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE) {
+														is_normal_roughness_texture = true;
+													}
 													sampler_name = _get_sampler_name(function->arguments[j].tex_argument_filter, function->arguments[j].tex_argument_repeat);
 													found = true;
 													break;

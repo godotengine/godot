@@ -65,7 +65,7 @@ class ViewportRotationControl : public Control {
 	GDCLASS(ViewportRotationControl, Control);
 
 	struct Axis2D {
-		Vector2i screen_point;
+		Vector2 screen_point;
 		float z_axis = -99.0;
 		int axis = -1;
 	};
@@ -241,6 +241,7 @@ private:
 	real_t freelook_speed;
 	Vector2 previous_mouse_position;
 
+	PanelContainer *info_panel = nullptr;
 	Label *info_label = nullptr;
 	Label *cinema_label = nullptr;
 	Label *locked_label = nullptr;
@@ -298,8 +299,8 @@ private:
 
 	ObjectID clicked;
 	ObjectID material_target;
-	Vector<_RayResult> selection_results;
-	Vector<_RayResult> selection_results_menu;
+	Vector<Node3D *> selection_results;
+	Vector<Node3D *> selection_results_menu;
 	bool clicked_wants_append = false;
 	bool selection_in_progress = false;
 

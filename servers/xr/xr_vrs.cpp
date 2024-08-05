@@ -94,7 +94,14 @@ RID XRVRS::make_vrs_texture(const Size2 &p_target_size, const PackedVector2Array
 	int32_t texel_width = RD::get_singleton()->limit_get(RD::LIMIT_VRS_TEXEL_WIDTH);
 	int32_t texel_height = RD::get_singleton()->limit_get(RD::LIMIT_VRS_TEXEL_HEIGHT);
 
+	// Should return sensible data or graphics API does not support VRS.
+	ERR_FAIL_COND_V(texel_width < 1 || texel_height < 1, RID());
+
 	Size2 vrs_size = Size2(0.5 + p_target_size.x / texel_width, 0.5 + p_target_size.y / texel_height).round();
+
+	// Make sure we have at least one pixel.
+	vrs_size = vrs_size.maxf(1.0);
+
 	float max_radius = 0.5 * MIN(vrs_size.x, vrs_size.y); // Maximum radius that fits inside of our image
 	float min_radius = vrs_min_radius * max_radius / 100.0; // Minimum radius as a percentage of our size
 	real_t outer_radius = MAX(1.0, (max_radius - min_radius) / vrs_strength);

@@ -40,6 +40,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/main/window.h"
 #include "scene/resources/image_texture.h"
 #include "servers/rendering/rendering_server_default.h"
 
@@ -96,14 +97,25 @@ EditorResourcePreviewGenerator::EditorResourcePreviewGenerator() {
 }
 
 void EditorResourcePreviewGenerator::DrawRequester::request_and_wait(RID p_viewport) const {
+	Callable request_vp_update_once = callable_mp(RS::get_singleton(), &RS::viewport_set_update_mode).bind(p_viewport, RS::VIEWPORT_UPDATE_ONCE);
+
 	if (EditorResourcePreview::get_singleton()->is_threaded()) {
-		Callable request_vp_update_once = callable_mp(RS::get_singleton(), &RS::viewport_set_update_mode).bind(p_viewport, RS::VIEWPORT_UPDATE_ONCE);
 		RS::get_singleton()->connect(SNAME("frame_pre_draw"), request_vp_update_once, Object::CONNECT_ONE_SHOT);
 		RS::get_singleton()->request_frame_drawn_callback(callable_mp(const_cast<EditorResourcePreviewGenerator::DrawRequester *>(this), &EditorResourcePreviewGenerator::DrawRequester::_post_semaphore));
 
 		semaphore.wait();
 	} else {
+		// Avoid the main viewport and children being redrawn.
+		SceneTree *st = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
+		ERR_FAIL_NULL_MSG(st, "Editor's MainLoop is not a SceneTree. This is a bug.");
+		RID root_vp = st->get_root()->get_viewport_rid();
+		RenderingServer::get_singleton()->viewport_set_active(root_vp, false);
+
+		request_vp_update_once.call();
 		RS::get_singleton()->draw(false);
+
+		// Let main viewport and children be drawn again.
+		RenderingServer::get_singleton()->viewport_set_active(root_vp, true);
 	}
 }
 
@@ -138,7 +150,6 @@ void EditorResourcePreview::_preview_ready(const String &p_path, int p_hash, con
 		}
 
 		Item item;
-		item.order = order++;
 		item.preview = p_texture;
 		item.small_preview = p_small_texture;
 		item.last_hash = p_hash;
@@ -412,7 +423,6 @@ void EditorResourcePreview::queue_edited_resource_preview(const Ref<Resource> &p
 		String path_id = "ID:" + itos(p_res->get_instance_id());
 
 		if (cache.has(path_id) && cache[path_id].last_hash == p_res->hash_edited_version_for_preview()) {
-			cache[path_id].order = order++;
 			p_receiver->call(p_receiver_func, path_id, cache[path_id].preview, cache[path_id].small_preview, p_userdata);
 			return;
 		}
@@ -439,7 +449,6 @@ void EditorResourcePreview::queue_resource_preview(const String &p_path, Object 
 		MutexLock lock(preview_mutex);
 
 		if (cache.has(p_path)) {
-			cache[p_path].order = order++;
 			p_receiver->call(p_receiver_func, p_path, cache[p_path].preview, cache[p_path].small_preview, p_userdata);
 			return;
 		}
@@ -533,7 +542,6 @@ void EditorResourcePreview::stop() {
 
 EditorResourcePreview::EditorResourcePreview() {
 	singleton = this;
-	order = 0;
 }
 
 EditorResourcePreview::~EditorResourcePreview() {

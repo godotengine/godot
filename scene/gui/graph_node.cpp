@@ -130,8 +130,8 @@ bool GraphNode::_get(const StringName &p_name, Variant &r_ret) const {
 void GraphNode::_get_property_list(List<PropertyInfo> *p_list) const {
 	int idx = 0;
 	for (int i = 0; i < get_child_count(false); i++) {
-		Control *child = Object::cast_to<Control>(get_child(i, false));
-		if (!child || child->is_set_as_top_level()) {
+		Control *child = as_sortable_control(get_child(i, false), SortableVisbilityMode::IGNORE);
+		if (!child) {
 			continue;
 		}
 
@@ -658,8 +658,8 @@ void GraphNode::_port_pos_update() {
 	int slot_index = 0;
 
 	for (int i = 0; i < get_child_count(false); i++) {
-		Control *child = Object::cast_to<Control>(get_child(i, false));
-		if (!child || child->is_set_as_top_level()) {
+		Control *child = as_sortable_control(get_child(i, false), SortableVisbilityMode::IGNORE);
+		if (!child) {
 			continue;
 		}
 

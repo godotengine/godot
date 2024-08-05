@@ -115,6 +115,9 @@ class DisplayServerWayland : public DisplayServer {
 
 	Context context;
 
+	String ime_text;
+	Vector2i ime_selection;
+
 	bool suspended = false;
 	bool emulate_vsync = false;
 
@@ -150,6 +153,8 @@ class DisplayServerWayland : public DisplayServer {
 	void _resize_window(const Size2i &p_size);
 
 	virtual void _show_window();
+
+	void try_suspend();
 
 public:
 	virtual bool has_feature(Feature p_feature) const override;
@@ -259,6 +264,9 @@ public:
 	virtual void window_set_ime_active(const bool p_active, WindowID p_window_id = MAIN_WINDOW_ID) override;
 	virtual void window_set_ime_position(const Point2i &p_pos, WindowID p_window_id = MAIN_WINDOW_ID) override;
 
+	virtual Point2i ime_get_selection() const override;
+	virtual String ime_get_text() const override;
+
 	virtual void window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window_id = MAIN_WINDOW_ID) override;
 	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_window_id) const override;
 
@@ -279,6 +287,8 @@ public:
 	virtual void swap_buffers() override;
 
 	virtual void set_context(Context p_context) override;
+
+	virtual bool is_window_transparency_available() const override;
 
 	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, int p_screen, Context p_context, Error &r_error);
 	static Vector<String> get_rendering_drivers_func();

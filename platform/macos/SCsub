@@ -37,7 +37,7 @@ def generate_bundle(target, source, env):
             shutil.copy(target_bin, app_dir + "/Contents/MacOS/Godot")
         version = get_build_version(False)
         short_version = get_build_version(True)
-        with open(Dir("#misc/dist/macos").abspath + "/editor_info_plist.template", "rt") as fin:
+        with open(Dir("#misc/dist/macos").abspath + "/editor_info_plist.template", "rt", encoding="utf-8") as fin:
             with open(app_dir + "/Contents/Info.plist", "wt", encoding="utf-8", newline="\n") as fout:
                 for line in fin:
                     line = line.replace("$version", version)
