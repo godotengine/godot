@@ -1071,7 +1071,11 @@ Vector2 Curve2D::get_closest_point(const Vector2 &p_to_point) const {
 	real_t nearest_dist = -1.0f;
 
 	for (int i = 0; i < pc - 1; i++) {
-		const real_t interval = baked_dist_cache[i + 1] - baked_dist_cache[i];
+		real_t interval = baked_dist_cache[i + 1] - baked_dist_cache[i];
+		if (Math::is_equal_approx(interval, (real_t)0.0)) {
+			interval = 1.0;
+		}
+		
 		Vector2 origin = r[i];
 		Vector2 direction = (r[i + 1] - origin) / interval;
 
@@ -1113,7 +1117,11 @@ real_t Curve2D::get_closest_offset(const Vector2 &p_to_point) const {
 	for (int i = 0; i < pc - 1; i++) {
 		offset = baked_dist_cache[i];
 
-		const real_t interval = baked_dist_cache[i + 1] - baked_dist_cache[i];
+		real_t interval = baked_dist_cache[i + 1] - baked_dist_cache[i];
+		if (Math::is_equal_approx(interval, (real_t)0.0)) {
+			interval = 1.0;
+		}
+
 		Vector2 origin = r[i];
 		Vector2 direction = (r[i + 1] - origin) / interval;
 
@@ -2011,7 +2019,11 @@ Vector3 Curve3D::get_closest_point(const Vector3 &p_to_point) const {
 	real_t nearest_dist = -1.0f;
 
 	for (int i = 0; i < pc - 1; i++) {
-		const real_t interval = baked_dist_cache[i + 1] - baked_dist_cache[i];
+		real_t interval = baked_dist_cache[i + 1] - baked_dist_cache[i];
+		if (Math::is_equal_approx(interval, (real_t)0.0)) {
+			interval = 1.0;
+		}
+
 		Vector3 origin = r[i];
 		Vector3 direction = (r[i + 1] - origin) / interval;
 
@@ -2057,7 +2069,11 @@ real_t Curve3D::get_closest_offset(const Vector3 &p_to_point) const {
 	for (int i = 0; i < pc - 1; i++) {
 		offset = baked_dist_cache[i];
 
-		const real_t interval = baked_dist_cache[i + 1] - baked_dist_cache[i];
+		real_t interval = baked_dist_cache[i + 1] - baked_dist_cache[i];
+		if (Math::is_equal_approx(interval, (real_t)0.0)) {
+			interval = 1.0;
+		}
+
 		Vector3 origin = r[i];
 		Vector3 direction = (r[i + 1] - origin) / interval;
 
