@@ -58,9 +58,14 @@ OpenXRHandTrackingExtension::~OpenXRHandTrackingExtension() {
 HashMap<String, bool *> OpenXRHandTrackingExtension::get_requested_extensions() {
 	HashMap<String, bool *> request_extensions;
 
+	unobstructed_data_source = GLOBAL_GET("xr/openxr/extensions/hand_tracking_unobstructed_data_source");
+	controller_data_source = GLOBAL_GET("xr/openxr/extensions/hand_tracking_controller_data_source");
+
 	request_extensions[XR_EXT_HAND_TRACKING_EXTENSION_NAME] = &hand_tracking_ext;
 	request_extensions[XR_EXT_HAND_JOINTS_MOTION_RANGE_EXTENSION_NAME] = &hand_motion_range_ext;
-	request_extensions[XR_EXT_HAND_TRACKING_DATA_SOURCE_EXTENSION_NAME] = &hand_tracking_source_ext;
+	if (unobstructed_data_source || controller_data_source) {
+		request_extensions[XR_EXT_HAND_TRACKING_DATA_SOURCE_EXTENSION_NAME] = &hand_tracking_source_ext;
+	}
 
 	return request_extensions;
 }
@@ -141,10 +146,18 @@ void OpenXRHandTrackingExtension::on_process() {
 			void *next_pointer = nullptr;
 
 			// Originally not all XR runtimes supported hand tracking data sourced both from controllers and normal hand tracking.
-			// With this extension we can indicate we accept input from both sources so hand tracking data is consistently provided
-			// on runtimes that support this.
-			XrHandTrackingDataSourceEXT data_sources[2] = { XR_HAND_TRACKING_DATA_SOURCE_UNOBSTRUCTED_EXT, XR_HAND_TRACKING_DATA_SOURCE_CONTROLLER_EXT };
-			XrHandTrackingDataSourceInfoEXT data_source_info = { XR_TYPE_HAND_TRACKING_DATA_SOURCE_INFO_EXT, next_pointer, 2, data_sources };
+			// With this extension we can indicate we wish to accept input from either or both sources.
+			// This functionality is subject to the abilities of the XR runtime and requires the data source extension.
+			// Note: If the data source extension is not available, no guarantees can be made on what the XR runtime supports.
+			uint32_t data_source_count = 0;
+			XrHandTrackingDataSourceEXT data_sources[2];
+			if (unobstructed_data_source) {
+				data_sources[data_source_count++] = XR_HAND_TRACKING_DATA_SOURCE_UNOBSTRUCTED_EXT;
+			}
+			if (controller_data_source) {
+				data_sources[data_source_count++] = XR_HAND_TRACKING_DATA_SOURCE_CONTROLLER_EXT;
+			}
+			XrHandTrackingDataSourceInfoEXT data_source_info = { XR_TYPE_HAND_TRACKING_DATA_SOURCE_INFO_EXT, next_pointer, data_source_count, data_sources };
 			if (hand_tracking_source_ext) {
 				// If supported include this info
 				next_pointer = &data_source_info;
@@ -224,7 +237,9 @@ void OpenXRHandTrackingExtension::on_process() {
 			if (XR_FAILED(result)) {
 				// not successful? then we do nothing.
 				print_line("OpenXR: Failed to get tracking for hand", i, "[", OpenXRAPI::get_singleton()->get_error_string(result), "]");
+				godot_tracker->set_hand_tracking_source(XRHandTracker::HAND_TRACKING_SOURCE_UNKNOWN);
 				godot_tracker->set_has_tracking_data(false);
+				godot_tracker->invalidate_pose("default");
 				continue;
 			}
 
@@ -235,8 +250,6 @@ void OpenXRHandTrackingExtension::on_process() {
 			}
 
 			if (hand_trackers[i].locations.isActive) {
-				godot_tracker->set_has_tracking_data(true);
-
 				// SKELETON_RIG_HUMANOID bone adjustment. This rotation performs:
 				// OpenXR Z+ -> Godot Humanoid Y-  (Back along the bone)
 				// OpenXR Y+ -> Godot Humanoid Z- (Out the back of the hand)
@@ -245,7 +258,6 @@ void OpenXRHandTrackingExtension::on_process() {
 				for (int joint = 0; joint < XR_HAND_JOINT_COUNT_EXT; joint++) {
 					const XrHandJointLocationEXT &location = hand_trackers[i].joint_locations[joint];
 					const XrHandJointVelocityEXT &velocity = hand_trackers[i].joint_velocities[joint];
-					const XrHandTrackingDataSourceStateEXT &data_source = hand_trackers[i].data_source;
 					const XrPosef &pose = location.pose;
 
 					Transform3D transform;
@@ -285,23 +297,35 @@ void OpenXRHandTrackingExtension::on_process() {
 					godot_tracker->set_hand_joint_radius((XRHandTracker::HandJoint)joint, location.radius);
 
 					if (joint == XR_HAND_JOINT_PALM_EXT) {
-						XRHandTracker::HandTrackingSource source = XRHandTracker::HAND_TRACKING_SOURCE_UNKNOWN;
-						if (data_source.dataSource == XR_HAND_TRACKING_DATA_SOURCE_UNOBSTRUCTED_EXT) {
-							source = XRHandTracker::HAND_TRACKING_SOURCE_UNOBSTRUCTED;
-						} else if (data_source.dataSource == XR_HAND_TRACKING_DATA_SOURCE_CONTROLLER_EXT) {
-							source = XRHandTracker::HAND_TRACKING_SOURCE_CONTROLLER;
-						}
-
-						godot_tracker->set_hand_tracking_source(source);
 						if (location.locationFlags & XR_SPACE_LOCATION_POSITION_TRACKED_BIT) {
+							XrHandTrackingDataSourceStateEXT &data_source = hand_trackers[i].data_source;
+
+							XRHandTracker::HandTrackingSource source = XRHandTracker::HAND_TRACKING_SOURCE_UNKNOWN;
+							if (hand_tracking_source_ext) {
+								if (!data_source.isActive) {
+									source = XRHandTracker::HAND_TRACKING_SOURCE_NOT_TRACKED;
+								} else if (data_source.dataSource == XR_HAND_TRACKING_DATA_SOURCE_UNOBSTRUCTED_EXT) {
+									source = XRHandTracker::HAND_TRACKING_SOURCE_UNOBSTRUCTED;
+								} else if (data_source.dataSource == XR_HAND_TRACKING_DATA_SOURCE_CONTROLLER_EXT) {
+									source = XRHandTracker::HAND_TRACKING_SOURCE_CONTROLLER;
+								} else {
+									// Data source shouldn't be active, if new data sources are added to OpenXR we need to enable them.
+									WARN_PRINT_ONCE("Unknown active data source found!");
+									source = XRHandTracker::HAND_TRACKING_SOURCE_UNKNOWN;
+								}
+							}
+							godot_tracker->set_hand_tracking_source(source);
+							godot_tracker->set_has_tracking_data(true);
 							godot_tracker->set_pose("default", transform, linear_velocity, angular_velocity);
 						} else {
+							godot_tracker->set_hand_tracking_source(hand_tracking_source_ext ? XRHandTracker::HAND_TRACKING_SOURCE_NOT_TRACKED : XRHandTracker::HAND_TRACKING_SOURCE_UNKNOWN);
 							godot_tracker->set_has_tracking_data(false);
 							godot_tracker->invalidate_pose("default");
 						}
 					}
 				}
 			} else {
+				godot_tracker->set_hand_tracking_source(hand_tracking_source_ext ? XRHandTracker::HAND_TRACKING_SOURCE_NOT_TRACKED : XRHandTracker::HAND_TRACKING_SOURCE_UNKNOWN);
 				godot_tracker->set_has_tracking_data(false);
 				godot_tracker->invalidate_pose("default");
 			}
@@ -349,16 +373,17 @@ XrHandJointsMotionRangeEXT OpenXRHandTrackingExtension::get_motion_range(HandTra
 OpenXRHandTrackingExtension::HandTrackedSource OpenXRHandTrackingExtension::get_hand_tracking_source(HandTrackedHands p_hand) const {
 	ERR_FAIL_UNSIGNED_INDEX_V(p_hand, OPENXR_MAX_TRACKED_HANDS, OPENXR_SOURCE_UNKNOWN);
 
-	if (hand_tracking_source_ext && hand_trackers[p_hand].data_source.isActive) {
-		switch (hand_trackers[p_hand].data_source.dataSource) {
-			case XR_HAND_TRACKING_DATA_SOURCE_UNOBSTRUCTED_EXT:
-				return OPENXR_SOURCE_UNOBSTRUCTED;
-
-			case XR_HAND_TRACKING_DATA_SOURCE_CONTROLLER_EXT:
-				return OPENXR_SOURCE_CONTROLLER;
-
-			default:
-				return OPENXR_SOURCE_UNKNOWN;
+	if (hand_tracking_source_ext) {
+		if (!hand_trackers[p_hand].data_source.isActive) {
+			return OPENXR_SOURCE_NOT_TRACKED;
+		} else if (hand_trackers[p_hand].data_source.dataSource == XR_HAND_TRACKING_DATA_SOURCE_UNOBSTRUCTED_EXT) {
+			return OPENXR_SOURCE_UNOBSTRUCTED;
+		} else if (hand_trackers[p_hand].data_source.dataSource == XR_HAND_TRACKING_DATA_SOURCE_CONTROLLER_EXT) {
+			return OPENXR_SOURCE_CONTROLLER;
+		} else {
+			// Data source shouldn't be active, if new data sources are added to OpenXR we need to enable them.
+			WARN_PRINT_ONCE("Unknown active data source found!");
+			return OPENXR_SOURCE_UNKNOWN;
 		}
 	}
 
