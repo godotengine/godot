@@ -58,7 +58,7 @@ HashMap<String, bool *> OpenXRCompositionLayerExtension::get_requested_extension
 	return request_extensions;
 }
 
-void OpenXRCompositionLayerExtension::on_session_created(const XrSession p_instance) {
+void OpenXRCompositionLayerExtension::on_session_created(const XrSession p_session) {
 	OpenXRAPI::get_singleton()->register_composition_layer_provider(this);
 }
 
