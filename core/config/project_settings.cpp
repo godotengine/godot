@@ -1167,22 +1167,16 @@ bool ProjectSettings::is_project_loaded() const {
 }
 
 bool ProjectSettings::_property_can_revert(const StringName &p_name) const {
-	if (!props.has(p_name)) {
-		return false;
-	}
-
-	return props[p_name].initial != props[p_name].variant;
+	return props.has(p_name);
 }
 
 bool ProjectSettings::_property_get_revert(const StringName &p_name, Variant &r_property) const {
-	if (!props.has(p_name)) {
-		return false;
+	const RBMap<StringName, ProjectSettings::VariantContainer>::Element *value = props.find(p_name);
+	if (value) {
+		r_property = value->value().initial.duplicate();
+		return true;
 	}
-
-	// Duplicate so that if value is array or dictionary, changing the setting will not change the stored initial value.
-	r_property = props[p_name].initial.duplicate();
-
-	return true;
+	return false;
 }
 
 void ProjectSettings::set_setting(const String &p_setting, const Variant &p_value) {
