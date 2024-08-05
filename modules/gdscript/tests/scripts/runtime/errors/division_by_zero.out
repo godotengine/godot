@@ -1,0 +1,6 @@
+GDTEST_RUNTIME_ERROR
+>> SCRIPT ERROR
+>> on function: test()
+>> runtime/errors/division_by_zero.gd
+>> 3
+>> Division by zero error in operator '/'.
