@@ -39,6 +39,7 @@ class Label : public Control {
 
 private:
 	enum LabelDrawStep {
+		DRAW_STEP_SHADOW_OUTLINE,
 		DRAW_STEP_SHADOW,
 		DRAW_STEP_OUTLINE,
 		DRAW_STEP_TEXT,
@@ -87,8 +88,10 @@ private:
 		Color font_shadow_color;
 		Point2 font_shadow_offset;
 		Color font_outline_color;
+		Color font_shadow_outline_color;
 		int font_outline_size;
 		int font_shadow_outline_size;
+		int draw_shadow_before_outline;
 	} theme_cache;
 
 	void _update_visible();

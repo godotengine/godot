@@ -316,21 +316,26 @@ inline void draw_glyph(const Glyph &p_gl, const RID &p_canvas, const Color &p_fo
 	}
 }
 
-inline void draw_glyph_shadow(const Glyph &p_gl, const RID &p_canvas, const Color &p_font_shadow_color, int p_shadow_outline_size, const Vector2 &p_ofs, const Vector2 &shadow_ofs) {
+inline void draw_glyph_shadow(const Glyph &p_gl, const RID &p_canvas, const Color &p_font_shadow_color, const Vector2 &p_ofs, const Vector2 &p_shadow_ofs) {
 	if (p_gl.font_rid != RID()) {
 		if (p_font_shadow_color.a > 0) {
-			TS->font_draw_glyph(p_gl.font_rid, p_canvas, p_gl.font_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off) + shadow_ofs, p_gl.index, p_font_shadow_color);
-		}
-		if (p_font_shadow_color.a > 0 && p_shadow_outline_size > 0) {
-			TS->font_draw_glyph_outline(p_gl.font_rid, p_canvas, p_gl.font_size, p_shadow_outline_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off) + shadow_ofs, p_gl.index, p_font_shadow_color);
+			TS->font_draw_glyph(p_gl.font_rid, p_canvas, p_gl.font_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off) + p_shadow_ofs, p_gl.index, p_font_shadow_color);
 		}
 	}
 }
 
 inline void draw_glyph_outline(const Glyph &p_gl, const RID &p_canvas, const Color &p_font_outline_color, int p_outline_size, const Vector2 &p_ofs) {
 	if (p_gl.font_rid != RID()) {
-		if (p_font_outline_color.a != 0.0 && p_outline_size > 0) {
+		if (p_font_outline_color.a > 0 && p_outline_size > 0) {
 			TS->font_draw_glyph_outline(p_gl.font_rid, p_canvas, p_gl.font_size, p_outline_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off), p_gl.index, p_font_outline_color);
+		}
+	}
+}
+
+inline void draw_glyph_shadow_outline(const Glyph &p_gl, const RID &p_canvas, const Color &p_font_shadow_outline_color, int p_shadow_outline_size, const Vector2 &p_ofs, const Vector2 &p_shadow_ofs) {
+	if (p_gl.font_rid != RID()) {
+		if (p_font_shadow_outline_color.a > 0 && p_shadow_outline_size > 0) {
+			TS->font_draw_glyph_outline(p_gl.font_rid, p_canvas, p_gl.font_size, p_shadow_outline_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off) + p_shadow_ofs, p_gl.index, p_font_shadow_outline_color);
 		}
 	}
 }
@@ -433,8 +438,10 @@ void Label::_notification(int p_what) {
 			Point2 shadow_ofs = has_settings ? settings->get_shadow_offset() : theme_cache.font_shadow_offset;
 			int line_spacing = has_settings ? settings->get_line_spacing() : theme_cache.line_spacing;
 			Color font_outline_color = has_settings ? settings->get_outline_color() : theme_cache.font_outline_color;
+			Color font_shadow_outline_color = has_settings ? settings->get_shadow_outline_color() : theme_cache.font_shadow_outline_color;
 			int outline_size = has_settings ? settings->get_outline_size() : theme_cache.font_outline_size;
-			int shadow_outline_size = has_settings ? settings->get_shadow_size() : theme_cache.font_shadow_outline_size;
+			int shadow_outline_size = has_settings ? settings->get_shadow_outline_size() : theme_cache.font_shadow_outline_size;
+			bool shadow_before_outline = has_settings ? settings->get_draw_shadow_before_outline() : theme_cache.draw_shadow_before_outline;
 			bool rtl = (TS->shaped_text_get_inferred_direction(text_rid) == TextServer::DIRECTION_RTL);
 			bool rtl_layout = is_layout_rtl();
 
@@ -542,8 +549,26 @@ void Label::_notification(int p_what) {
 				const Glyph *ellipsis_glyphs = TS->shaped_text_get_ellipsis_glyphs(lines_rid[i]);
 				int ellipsis_gl_size = TS->shaped_text_get_ellipsis_glyph_count(lines_rid[i]);
 
-				// Draw shadow, outline and text. Note: Do not merge this into the single loop iteration, to prevent overlaps.
-				for (int step = DRAW_STEP_SHADOW; step < DRAW_STEP_MAX; step++) {
+
+				LabelDrawStep draw_steps[DRAW_STEP_MAX];
+
+				if (shadow_before_outline) {
+					draw_steps[0] = DRAW_STEP_OUTLINE;
+					draw_steps[1] = DRAW_STEP_SHADOW_OUTLINE;
+					draw_steps[2] = DRAW_STEP_SHADOW;
+					draw_steps[3] = DRAW_STEP_TEXT;
+				} else {
+					draw_steps[0] = DRAW_STEP_SHADOW_OUTLINE;
+					draw_steps[1] = DRAW_STEP_SHADOW;
+					draw_steps[2] = DRAW_STEP_OUTLINE;
+					draw_steps[3] = DRAW_STEP_TEXT;
+				}
+
+				// Draw shadow outline, shadow, outline and text. Note: Do not merge this into the single loop iteration, to prevent overlaps.
+				for (int step : draw_steps) {
+					if (step == DRAW_STEP_SHADOW_OUTLINE && (shadow_outline_size <= 0 || font_shadow_outline_color.a == 0)) {
+						continue;
+					}
 					if (step == DRAW_STEP_SHADOW && (font_shadow_color.a == 0)) {
 						continue;
 					}
@@ -559,8 +584,10 @@ void Label::_notification(int p_what) {
 							for (int j = 0; j < ellipsis_glyphs[gl_idx].repeat; j++) {
 								bool skip = (trim_chars && ellipsis_glyphs[gl_idx].end > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_step >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_step < total_glyphs - visible_glyphs));
 								if (!skip) {
-									if (step == DRAW_STEP_SHADOW) {
-										draw_glyph_shadow(ellipsis_glyphs[gl_idx], ci, font_shadow_color, shadow_outline_size, offset_step, shadow_ofs);
+									if (step == DRAW_STEP_SHADOW_OUTLINE) {
+										draw_glyph_shadow_outline(ellipsis_glyphs[gl_idx], ci, font_shadow_outline_color, shadow_outline_size, offset_step, shadow_ofs);
+									} else if (step == DRAW_STEP_SHADOW) {
+										draw_glyph_shadow(ellipsis_glyphs[gl_idx], ci, font_shadow_color, offset_step, shadow_ofs);
 									} else if (step == DRAW_STEP_OUTLINE) {
 										draw_glyph_outline(ellipsis_glyphs[gl_idx], ci, font_outline_color, outline_size, offset_step);
 									} else if (step == DRAW_STEP_TEXT) {
@@ -589,8 +616,10 @@ void Label::_notification(int p_what) {
 						for (int k = 0; k < glyphs[j].repeat; k++) {
 							bool skip = (trim_chars && glyphs[j].end > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_step >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_step < total_glyphs - visible_glyphs));
 							if (!skip) {
-								if (step == DRAW_STEP_SHADOW) {
-									draw_glyph_shadow(glyphs[j], ci, font_shadow_color, shadow_outline_size, offset_step, shadow_ofs);
+								if (step == DRAW_STEP_SHADOW_OUTLINE) {
+									draw_glyph_shadow_outline(glyphs[j], ci, font_shadow_outline_color, shadow_outline_size, offset_step, shadow_ofs);
+								} else if (step == DRAW_STEP_SHADOW) {
+									draw_glyph_shadow(glyphs[j], ci, font_shadow_color, offset_step, shadow_ofs);
 								} else if (step == DRAW_STEP_OUTLINE) {
 									draw_glyph_outline(glyphs[j], ci, font_outline_color, outline_size, offset_step);
 								} else if (step == DRAW_STEP_TEXT) {
@@ -607,8 +636,10 @@ void Label::_notification(int p_what) {
 							for (int j = 0; j < ellipsis_glyphs[gl_idx].repeat; j++) {
 								bool skip = (trim_chars && ellipsis_glyphs[gl_idx].end > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_step >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_step < total_glyphs - visible_glyphs));
 								if (!skip) {
-									if (step == DRAW_STEP_SHADOW) {
-										draw_glyph_shadow(ellipsis_glyphs[gl_idx], ci, font_shadow_color, shadow_outline_size, offset_step, shadow_ofs);
+									if (step == DRAW_STEP_SHADOW_OUTLINE) {
+										draw_glyph_shadow_outline(ellipsis_glyphs[gl_idx], ci, font_shadow_outline_color, shadow_outline_size, offset_step, shadow_ofs);
+									} else if (step == DRAW_STEP_SHADOW) {
+										draw_glyph_shadow(ellipsis_glyphs[gl_idx], ci, font_shadow_color, offset_step, shadow_ofs);
 									} else if (step == DRAW_STEP_OUTLINE) {
 										draw_glyph_outline(ellipsis_glyphs[gl_idx], ci, font_outline_color, outline_size, offset_step);
 									} else if (step == DRAW_STEP_TEXT) {
@@ -1187,17 +1218,23 @@ void Label::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "structured_text_bidi_override_options"), "set_structured_text_bidi_override_options", "get_structured_text_bidi_override_options");
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Label, normal_style, "normal");
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Label, line_spacing);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, Label, font);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, Label, font_size);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Label, font_color);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Label, font_shadow_color);
-	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, Label, font_shadow_offset.x, "shadow_offset_x");
-	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, Label, font_shadow_offset.y, "shadow_offset_y");
-	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Label, font_outline_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Label, line_spacing);
+
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, Label, font_outline_size, "outline_size");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, Label, font_shadow_outline_size, "shadow_outline_size");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, Label, font_shadow_offset.x, "shadow_offset_x");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, Label, font_shadow_offset.y, "shadow_offset_y");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, Label, draw_shadow_before_outline, "draw_shadow_before_outline");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Label, font_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Label, font_outline_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Label, font_shadow_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Label, font_shadow_outline_color);
+
 }
 
 Label::Label(const String &p_text) {

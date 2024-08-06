@@ -43,14 +43,16 @@ class LabelSettings : public Resource {
 
 	Ref<Font> font;
 	int font_size = Font::DEFAULT_FONT_SIZE;
-	Color font_color = Color(1, 1, 1);
+	Color font_color = Color(1, 1, 1, 1);
 
 	int outline_size = 0;
-	Color outline_color = Color(1, 1, 1);
+	Color outline_color = Color(0, 0, 0, 1);
 
-	int shadow_size = 1;
+	int shadow_outline_size = 0;
 	Color shadow_color = Color(0, 0, 0, 0);
+	Color shadow_outline_color = Color(0, 0, 0, 0);
 	Vector2 shadow_offset = Vector2(1, 1);
+	int draw_shadow_before_outline = 0;
 
 	void _font_changed();
 
@@ -76,14 +78,21 @@ public:
 	void set_outline_color(const Color &p_color);
 	Color get_outline_color() const;
 
-	void set_shadow_size(int p_size);
-	int get_shadow_size() const;
+	void set_shadow_outline_size(int p_size);
+	int get_shadow_outline_size() const;
 
 	void set_shadow_color(const Color &p_color);
 	Color get_shadow_color() const;
+	
+	void set_shadow_outline_color(const Color &p_color);
+	Color get_shadow_outline_color() const;
 
 	void set_shadow_offset(const Vector2 &p_offset);
 	Vector2 get_shadow_offset() const;
+
+	void set_draw_shadow_before_outline(int p_state);
+	int get_draw_shadow_before_outline() const;
+
 };
 
 #endif // LABEL_SETTINGS_H
