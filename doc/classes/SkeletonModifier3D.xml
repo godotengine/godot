@@ -6,7 +6,7 @@
 	<description>
 		[SkeletonModifier3D] retrieves a target [Skeleton3D] by having a [Skeleton3D] parent.
 		If there is [AnimationMixer], modification always performs after playback process of the [AnimationMixer].
-		This node should be used to implement custom IK solvers, constraints, or skeleton physics
+		This node should be used to implement custom IK solvers, constraints, or skeleton physics.
 	</description>
 	<tutorials>
 	</tutorials>
