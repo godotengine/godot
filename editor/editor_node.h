@@ -797,6 +797,7 @@ public:
 	Error load_resource(const String &p_resource, bool p_ignore_broken_deps = false);
 
 	HashMap<StringName, Variant> get_modified_properties_for_node(Node *p_node, bool p_node_references_only);
+	HashMap<StringName, Variant> get_modified_properties_reference_to_nodes(Node *p_node, List<Node *> &p_nodes_referenced_by);
 
 	struct AdditiveNodeEntry {
 		Node *node = nullptr;
@@ -820,27 +821,34 @@ public:
 		List<Node::GroupInfo> groups;
 	};
 
-	HashMap<int, HashMap<NodePath, HashMap<NodePath, ModificationNodeEntry>>> scenes_modification_table;
+	struct InstanceModificationsEntry {
+		Node *original_node;
+		List<Node *> instance_list;
+		HashMap<NodePath, ModificationNodeEntry> modifications;
+		List<AdditiveNodeEntry> addition_list;
+	};
+
+	struct SceneModificationsEntry {
+		List<InstanceModificationsEntry> instance_list;
+		HashMap<NodePath, ModificationNodeEntry> other_instances_modifications;
+	};
+
+	HashMap<int, SceneModificationsEntry> scenes_modification_table;
 
 	void update_node_from_node_modification_entry(Node *p_node, ModificationNodeEntry &p_node_modification);
-
-	void update_node_reference_modification_table_for_node(
-			Node *p_root,
-			Node *p_node,
-			List<Node *> p_excluded_nodes,
-			HashMap<NodePath, ModificationNodeEntry> &p_modification_table);
 
 	void get_preload_scene_modification_table(
 			Node *p_edited_scene,
 			Node *p_reimported_root,
-			Node *p_node, HashMap<NodePath, ModificationNodeEntry> &p_modification_table);
+			Node *p_node, InstanceModificationsEntry &p_instance_modifications);
 
-	void update_reimported_diff_data_for_additional_nodes(
-			Node *p_edited_scene,
-			Node *p_reimported_root,
+	void get_preload_modifications_reference_to_nodes(
+			Node *p_root,
 			Node *p_node,
-			HashMap<NodePath, ModificationNodeEntry> &p_modification_table,
-			List<AdditiveNodeEntry> &p_addition_list);
+			List<Node *> &p_excluded_nodes,
+			List<Node *> &p_instance_list_with_children,
+			HashMap<NodePath, ModificationNodeEntry> &p_modification_table);
+	void get_children_nodes(Node *p_node, List<Node *> &p_nodes);
 	bool is_additional_node_in_scene(Node *p_edited_scene, Node *p_reimported_root, Node *p_node);
 
 	void replace_history_reimported_nodes(Node *p_original_root_node, Node *p_new_root_node, Node *p_node);
@@ -898,7 +906,6 @@ public:
 
 	void reload_scene(const String &p_path);
 
-	void get_edited_scene_map(const String &p_instance_path, HashMap<int, List<Node *>> &p_edited_scene_map);
 	void find_all_instances_inheriting_path_in_node(Node *p_root, Node *p_node, const String &p_instance_path, List<Node *> &p_instance_list);
 	void preload_reimporting_with_path_in_edited_scenes(const String &p_path);
 	void reload_instances_with_path_in_edited_scenes(const String &p_path);
