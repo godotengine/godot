@@ -680,8 +680,11 @@ Error OS_MacOS::kill(const ProcessID &p_pid) {
 	if (!app) {
 		return OS_Unix::kill(p_pid);
 	}
-
-	return [app forceTerminate] ? OK : ERR_INVALID_PARAMETER;
+	bool terminated = [app terminate];
+	if (!terminated) {
+		terminated = [app forceTerminate];
+	}
+	return terminated ? OK : ERR_INVALID_PARAMETER;
 }
 
 String OS_MacOS::get_unique_id() const {
