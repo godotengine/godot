@@ -204,25 +204,28 @@ void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, f
 	}
 
 	double prev_pos = cd.pos; // The animation may be changed during process, so it is safer that the state is changed before process.
-	cd.pos = next_pos;
 
 	// End detection.
 	if (p_is_current) {
 		if (cd.from->animation->get_loop_mode() == Animation::LOOP_NONE) {
 			if (!backwards && Animation::is_less_or_equal_approx(prev_pos, len) && Math::is_equal_approx(next_pos, len)) {
 				// Playback finished.
+				next_pos = len; // Snap to the edge.
 				end_reached = true;
 				end_notify = Animation::is_less_approx(prev_pos, len); // Notify only if not already at the end.
 				p_blend = 1.0;
 			}
 			if (backwards && Animation::is_greater_or_equal_approx(prev_pos, 0) && Math::is_equal_approx(next_pos, 0)) {
 				// Playback finished.
+				next_pos = 0; // Snap to the edge.
 				end_reached = true;
 				end_notify = Animation::is_greater_approx(prev_pos, 0); // Notify only if not already at the beginning.
 				p_blend = 1.0;
 			}
 		}
 	}
+
+	cd.pos = next_pos;
 
 	PlaybackInfo pi;
 	if (p_started) {
