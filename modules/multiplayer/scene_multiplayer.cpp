@@ -307,8 +307,10 @@ void SceneMultiplayer::_process_sys(int p_from, const uint8_t *p_packet, int p_p
 			int len = p_packet_len - SYS_CMD_SIZE;
 			bool should_process = false;
 			if (get_unique_id() == 1) { // I am the server.
-				// Direct messages to server should not go through relay.
-				ERR_FAIL_COND(peer > 0 && !connected_peers.has(peer));
+				// The requested target might have disconnected while the packet was in transit.
+				if (unlikely(peer > 0 && !connected_peers.has(peer))) {
+					return;
+				}
 				// Send relay packet.
 				relay_buffer->seek(0);
 				relay_buffer->put_u8(NETWORK_COMMAND_SYS);
