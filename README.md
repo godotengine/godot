@@ -6,7 +6,7 @@
   </a>
 </p>
 
-## 2D and 3D cross-platform game engine
+## 2D and 3D Cross-Platform Game Engine
 
 **[Godot Engine](https://godotengine.org) is a feature-packed, cross-platform
 game engine to create 2D and 3D games from a unified interface.** It provides a
@@ -16,7 +16,7 @@ be exported with one click to a number of platforms, including the major desktop
 platforms (Linux, macOS, Windows), mobile platforms (Android, iOS), as well as
 Web-based platforms and [consoles](https://docs.godotengine.org/en/latest/tutorials/platform/consoles.html).
 
-## Free, open source and community-driven
+## Free, Open Source, and Community-Driven
 
 Godot is completely free and open source under the very permissive [MIT license](https://godotengine.org/license).
 No strings attached, no royalties, nothing. The users' games are theirs, down
@@ -33,19 +33,19 @@ titles.
 
 ![Screenshot of a 3D scene in the Godot Engine editor](https://raw.githubusercontent.com/godotengine/godot-design/master/screenshots/editor_tps_demo_1920x1080.jpg)
 
-## Getting the engine
+## Getting the Engine
 
-### Binary downloads
+### Binary Downloads
 
 Official binaries for the Godot editor and the export templates can be found
 [on the Godot website](https://godotengine.org/download).
 
-### Compiling from source
+### Compiling from Source
 
 [See the official docs](https://docs.godotengine.org/en/latest/contributing/development/compiling)
 for compilation instructions for every supported platform.
 
-## Community and contributing
+## Community and Contributing
 
 Godot is not only an engine but an ever-growing community of users and engine
 developers. The main community channels are listed [on the homepage](https://godotengine.org/community).
@@ -56,7 +56,7 @@ The best way to get in touch with the core engine developers is to join the
 To get started contributing to the project, see the [contributing guide](CONTRIBUTING.md).
 This document also includes guidelines for reporting bugs.
 
-## Documentation and demos
+## Documentation and Demos
 
 The official documentation is hosted on [Read the Docs](https://docs.godotengine.org).
 It is maintained by the Godot community in its own [GitHub repository](https://github.com/godotengine/godot-docs).
