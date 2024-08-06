@@ -4970,6 +4970,23 @@ void DisplayServerX11::process_events() {
 					pos = Point2i(windows[focused_window_id].size.width / 2, windows[focused_window_id].size.height / 2);
 				}
 
+				BitField<MouseButtonMask> last_button_state = 0;
+				if (event.xmotion.state & Button1Mask) {
+					last_button_state.set_flag(MouseButtonMask::LEFT);
+				}
+				if (event.xmotion.state & Button2Mask) {
+					last_button_state.set_flag(MouseButtonMask::MIDDLE);
+				}
+				if (event.xmotion.state & Button3Mask) {
+					last_button_state.set_flag(MouseButtonMask::RIGHT);
+				}
+				if (event.xmotion.state & Button4Mask) {
+					last_button_state.set_flag(MouseButtonMask::MB_XBUTTON1);
+				}
+				if (event.xmotion.state & Button5Mask) {
+					last_button_state.set_flag(MouseButtonMask::MB_XBUTTON2);
+				}
+
 				Ref<InputEventMouseMotion> mm;
 				mm.instantiate();
 
@@ -4977,13 +4994,13 @@ void DisplayServerX11::process_events() {
 				if (xi.pressure_supported) {
 					mm->set_pressure(xi.pressure);
 				} else {
-					mm->set_pressure(bool(mouse_get_button_state().has_flag(MouseButtonMask::LEFT)) ? 1.0f : 0.0f);
+					mm->set_pressure(bool(last_button_state.has_flag(MouseButtonMask::LEFT)) ? 1.0f : 0.0f);
 				}
 				mm->set_tilt(xi.tilt);
 				mm->set_pen_inverted(xi.pen_inverted);
 
 				_get_key_modifier_state(event.xmotion.state, mm);
-				mm->set_button_mask(mouse_get_button_state());
+				mm->set_button_mask(last_button_state);
 				mm->set_position(pos);
 				mm->set_global_position(pos);
 				mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
