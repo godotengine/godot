@@ -408,7 +408,10 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 			MessageQueue::set_thread_singleton_override(nullptr);
 			memdelete(own_mq_override);
 		}
-		memdelete(load_paths_stack);
+		if (load_paths_stack) {
+			memdelete(load_paths_stack);
+			load_paths_stack = nullptr;
+		}
 	}
 }
 
@@ -1304,7 +1307,7 @@ bool ResourceLoader::timestamp_on_load = false;
 
 thread_local int ResourceLoader::load_nesting = 0;
 thread_local WorkerThreadPool::TaskID ResourceLoader::caller_task_id = 0;
-thread_local Vector<String> *ResourceLoader::load_paths_stack;
+thread_local Vector<String> *ResourceLoader::load_paths_stack = nullptr;
 thread_local HashMap<int, HashMap<String, Ref<Resource>>> ResourceLoader::res_ref_overrides;
 
 template <>
