@@ -351,15 +351,19 @@ void ProjectDialog::_install_path_changed() {
 }
 
 void ProjectDialog::_browse_project_path() {
+	String path = project_path->get_text();
+	if (path.is_empty()) {
+		path = EDITOR_GET("filesystem/directories/default_project_path");
+	}
 	if (mode == MODE_IMPORT && install_path->is_visible_in_tree()) {
 		// Select last ZIP file.
-		fdialog_project->set_current_path(project_path->get_text());
+		fdialog_project->set_current_path(path);
 	} else if ((mode == MODE_NEW || mode == MODE_INSTALL) && create_dir->is_pressed()) {
 		// Select parent directory of project path.
-		fdialog_project->set_current_dir(project_path->get_text().get_base_dir());
+		fdialog_project->set_current_dir(path.get_base_dir());
 	} else {
 		// Select project path.
-		fdialog_project->set_current_dir(project_path->get_text());
+		fdialog_project->set_current_dir(path);
 	}
 
 	if (mode == MODE_IMPORT) {
