@@ -300,7 +300,7 @@ void Skeleton3D::setup_simulator() {
 	simulator = sim;
 	sim->is_compat = true;
 	sim->set_active(false); // Don't run unneeded process.
-	add_child(simulator);
+	add_child(simulator, false, INTERNAL_MODE_BACK);
 	set_animate_physical_bones(animate_physical_bones);
 }
 #endif // _DISABLE_DEPRECATED

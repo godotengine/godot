@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TileMap" inherits="Node2D" deprecated="Use multiple [TileMapLayer] nodes instead." keywords="gridmap" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="TileMap" inherits="Node2D" deprecated="Use multiple [TileMapLayer] nodes instead. To convert a TileMap to a set of TileMapLayer nodes, open the TileMap bottom panel with the node selected, click the toolbox icon in the top-right corner and choose &apos;Extract TileMap layers as individual TileMapLayer nodes&apos;." keywords="gridmap" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Node for 2D tile-based maps.
 	</brief_description>

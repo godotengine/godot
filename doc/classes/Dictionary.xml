@@ -355,7 +355,6 @@
 				# Prints { "fruit": "apple", "vegetable": "potato", "dressing": "vinegar" }
 				print(extra.merged(base, true))
 				[/codeblock]
-				See also [method merge].
 			</description>
 		</method>
 		<method name="recursive_equal" qualifiers="const">

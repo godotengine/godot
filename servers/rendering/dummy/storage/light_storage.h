@@ -36,7 +36,29 @@
 namespace RendererDummy {
 
 class LightStorage : public RendererLightStorage {
+private:
+	static LightStorage *singleton;
+	/* LIGHTMAP */
+	struct Lightmap {
+		// dummy lightmap, no data
+	};
+
+	mutable RID_Owner<Lightmap, true> lightmap_owner;
+	/* LIGHTMAP INSTANCE */
+
+	struct LightmapInstance {
+		RID lightmap;
+	};
+
+	mutable RID_Owner<LightmapInstance> lightmap_instance_owner;
+
 public:
+	static LightStorage *get_singleton();
+
+	LightStorage();
+	virtual ~LightStorage();
+
+	bool free(RID p_rid);
 	/* Light API */
 
 	virtual RID directional_light_allocate() override { return RID(); }
@@ -146,9 +168,11 @@ public:
 
 	/* LIGHTMAP CAPTURE */
 
-	virtual RID lightmap_allocate() override { return RID(); }
-	virtual void lightmap_initialize(RID p_rid) override {}
-	virtual void lightmap_free(RID p_rid) override {}
+	bool owns_lightmap(RID p_rid) { return lightmap_owner.owns(p_rid); }
+
+	virtual RID lightmap_allocate() override;
+	virtual void lightmap_initialize(RID p_rid) override;
+	virtual void lightmap_free(RID p_rid) override;
 
 	virtual void lightmap_set_textures(RID p_lightmap, RID p_light, bool p_uses_spherical_haromics) override {}
 	virtual void lightmap_set_probe_bounds(RID p_lightmap, const AABB &p_bounds) override {}
@@ -167,8 +191,10 @@ public:
 
 	/* LIGHTMAP INSTANCE */
 
-	RID lightmap_instance_create(RID p_lightmap) override { return RID(); }
-	void lightmap_instance_free(RID p_lightmap) override {}
+	bool owns_lightmap_instance(RID p_rid) { return lightmap_instance_owner.owns(p_rid); }
+
+	RID lightmap_instance_create(RID p_lightmap) override;
+	void lightmap_instance_free(RID p_lightmap) override;
 	void lightmap_instance_set_transform(RID p_lightmap, const Transform3D &p_transform) override {}
 
 	/* SHADOW ATLAS API */

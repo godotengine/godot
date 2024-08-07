@@ -99,6 +99,8 @@ void WSLPeer::Resolver::try_next_candidate(Ref<StreamPeerTCP> &p_tcp) {
 		p_tcp->poll();
 		StreamPeerTCP::Status status = p_tcp->get_status();
 		if (status == StreamPeerTCP::STATUS_CONNECTED) {
+			// On Windows, setting TCP_NODELAY may fail if the socket is still connecting.
+			p_tcp->set_no_delay(true);
 			ip_candidates.clear();
 			return;
 		} else if (status == StreamPeerTCP::STATUS_CONNECTING) {
@@ -112,7 +114,6 @@ void WSLPeer::Resolver::try_next_candidate(Ref<StreamPeerTCP> &p_tcp) {
 	while (ip_candidates.size()) {
 		Error err = p_tcp->connect_to_host(ip_candidates.pop_front(), port);
 		if (err == OK) {
-			p_tcp->set_no_delay(true);
 			return;
 		} else {
 			p_tcp->disconnect_from_host();
@@ -311,7 +312,7 @@ void WSLPeer::_do_client_handshake() {
 	ERR_FAIL_COND(tcp.is_null());
 
 	// Try to connect to candidates.
-	if (resolver.has_more_candidates()) {
+	if (resolver.has_more_candidates() || tcp->get_status() == StreamPeerTCP::STATUS_CONNECTING) {
 		resolver.try_next_candidate(tcp);
 		if (resolver.has_more_candidates()) {
 			return; // Still pending.

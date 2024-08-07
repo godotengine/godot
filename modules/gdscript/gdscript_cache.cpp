@@ -135,8 +135,10 @@ void GDScriptParserRef::clear() {
 
 GDScriptParserRef::~GDScriptParserRef() {
 	clear();
+
 	if (!abandoned) {
-		GDScriptCache::remove_parser(path);
+		MutexLock lock(GDScriptCache::singleton->mutex);
+		GDScriptCache::singleton->parser_map.erase(path);
 	}
 }
 

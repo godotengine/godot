@@ -17,6 +17,7 @@
 		</member>
 		<member name="loop_mode" type="int" setter="set_loop_mode" getter="get_loop_mode" enum="Animation.LoopMode">
 			If [member use_custom_timeline] is [code]true[/code], override the loop settings of the original [Animation] resource with the value.
+			[b]Note:[/b] If the [member Animation.loop_mode] isn't set to looping, the [method Animation.track_set_interpolation_loop_wrap] option will not be respected. If you cannot get the expected behavior, consider duplicating the [Animation] resource and changing the loop settings.
 		</member>
 		<member name="play_mode" type="int" setter="set_play_mode" getter="get_play_mode" enum="AnimationNodeAnimation.PlayMode" default="0">
 			Determines the playback direction of the animation.
