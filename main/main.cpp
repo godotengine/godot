@@ -83,6 +83,7 @@
 
 #ifndef _3D_DISABLED
 #include "servers/physics_server_3d.h"
+#include "servers/physics_server_3d_dummy.h"
 #include "servers/xr_server.h"
 #endif // _3D_DISABLED
 
@@ -320,7 +321,15 @@ void initialize_physics() {
 		// Physics server not found, Use the default physics
 		physics_server_3d = PhysicsServer3DManager::get_singleton()->new_default_server();
 	}
-	ERR_FAIL_NULL(physics_server_3d);
+
+	// Fall back to dummy if no default server has been registered.
+	if (!physics_server_3d) {
+		WARN_PRINT(vformat("Falling back to dummy PhysicsServer3D; 3D physics functionality will be disabled. If this is intended, set the %s project setting to Dummy.", PhysicsServer3DManager::setting_property_name));
+		physics_server_3d = memnew(PhysicsServer3DDummy);
+	}
+
+	// Should be impossible, but make sure it's not null.
+	ERR_FAIL_NULL_MSG(physics_server_3d, "Failed to initialize PhysicsServer3D.");
 	physics_server_3d->init();
 #endif // _3D_DISABLED
 
