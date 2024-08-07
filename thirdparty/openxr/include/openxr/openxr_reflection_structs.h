@@ -92,6 +92,9 @@ This file contains expansion macros (X Macros) for OpenXR structures.
     _avail(XrEventDataReferenceSpaceChangePending, XR_TYPE_EVENT_DATA_REFERENCE_SPACE_CHANGE_PENDING) \
     _avail(XrEventDataInteractionProfileChanged, XR_TYPE_EVENT_DATA_INTERACTION_PROFILE_CHANGED) \
     _avail(XrHapticVibration, XR_TYPE_HAPTIC_VIBRATION) \
+    _avail(XrSpacesLocateInfo, XR_TYPE_SPACES_LOCATE_INFO) \
+    _avail(XrSpaceLocations, XR_TYPE_SPACE_LOCATIONS) \
+    _avail(XrSpaceVelocities, XR_TYPE_SPACE_VELOCITIES) \
     _avail(XrCompositionLayerCubeKHR, XR_TYPE_COMPOSITION_LAYER_CUBE_KHR) \
     _avail(XrCompositionLayerDepthInfoKHR, XR_TYPE_COMPOSITION_LAYER_DEPTH_INFO_KHR) \
     _avail(XrCompositionLayerCylinderKHR, XR_TYPE_COMPOSITION_LAYER_CYLINDER_KHR) \
@@ -321,6 +324,14 @@ This file contains expansion macros (X Macros) for OpenXR structures.
     _avail(XrFaceTrackerCreateInfo2FB, XR_TYPE_FACE_TRACKER_CREATE_INFO2_FB) \
     _avail(XrFaceExpressionInfo2FB, XR_TYPE_FACE_EXPRESSION_INFO2_FB) \
     _avail(XrFaceExpressionWeights2FB, XR_TYPE_FACE_EXPRESSION_WEIGHTS2_FB) \
+    _avail(XrEnvironmentDepthProviderCreateInfoMETA, XR_TYPE_ENVIRONMENT_DEPTH_PROVIDER_CREATE_INFO_META) \
+    _avail(XrEnvironmentDepthSwapchainCreateInfoMETA, XR_TYPE_ENVIRONMENT_DEPTH_SWAPCHAIN_CREATE_INFO_META) \
+    _avail(XrEnvironmentDepthSwapchainStateMETA, XR_TYPE_ENVIRONMENT_DEPTH_SWAPCHAIN_STATE_META) \
+    _avail(XrEnvironmentDepthImageAcquireInfoMETA, XR_TYPE_ENVIRONMENT_DEPTH_IMAGE_ACQUIRE_INFO_META) \
+    _avail(XrEnvironmentDepthImageViewMETA, XR_TYPE_ENVIRONMENT_DEPTH_IMAGE_VIEW_META) \
+    _avail(XrEnvironmentDepthImageMETA, XR_TYPE_ENVIRONMENT_DEPTH_IMAGE_META) \
+    _avail(XrEnvironmentDepthHandRemovalSetInfoMETA, XR_TYPE_ENVIRONMENT_DEPTH_HAND_REMOVAL_SET_INFO_META) \
+    _avail(XrSystemEnvironmentDepthPropertiesMETA, XR_TYPE_SYSTEM_ENVIRONMENT_DEPTH_PROPERTIES_META) \
     _avail(XrPassthroughCreateInfoHTC, XR_TYPE_PASSTHROUGH_CREATE_INFO_HTC) \
     _avail(XrPassthroughColorHTC, XR_TYPE_PASSTHROUGH_COLOR_HTC) \
     _avail(XrPassthroughMeshTransformInfoHTC, XR_TYPE_PASSTHROUGH_MESH_TRANSFORM_INFO_HTC) \
@@ -342,6 +353,10 @@ This file contains expansion macros (X Macros) for OpenXR structures.
     _avail(XrPlaneDetectorLocationEXT, XR_TYPE_PLANE_DETECTOR_LOCATION_EXT) \
     _avail(XrPlaneDetectorLocationsEXT, XR_TYPE_PLANE_DETECTOR_LOCATIONS_EXT) \
     _avail(XrPlaneDetectorPolygonBufferEXT, XR_TYPE_PLANE_DETECTOR_POLYGON_BUFFER_EXT) \
+    _avail(XrFutureCancelInfoEXT, XR_TYPE_FUTURE_CANCEL_INFO_EXT) \
+    _avail(XrFuturePollInfoEXT, XR_TYPE_FUTURE_POLL_INFO_EXT) \
+    _avail(XrFutureCompletionEXT, XR_TYPE_FUTURE_COMPLETION_EXT) \
+    _avail(XrFuturePollResultEXT, XR_TYPE_FUTURE_POLL_RESULT_EXT) \
     _avail(XrEventDataUserPresenceChangedEXT, XR_TYPE_EVENT_DATA_USER_PRESENCE_CHANGED_EXT) \
     _avail(XrSystemUserPresencePropertiesEXT, XR_TYPE_SYSTEM_USER_PRESENCE_PROPERTIES_EXT) \
     _avail(XrEventDataHeadsetFitChangedML, XR_TYPE_EVENT_DATA_HEADSET_FIT_CHANGED_ML) \
