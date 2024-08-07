@@ -63,6 +63,39 @@ Copyright: 2011, Ole Kniemeyer, MAXON, www.maxon.net
  2007-2014, Juan Linietsky, Ariel Manzur
 License: Expat and Zlib
 
+Files: ./modules/godot_physics_3d/gjk_epa.cpp
+ ./modules/godot_physics_3d/joints/godot_generic_6dof_joint_3d.cpp
+ ./modules/godot_physics_3d/joints/godot_generic_6dof_joint_3d.h
+ ./modules/godot_physics_3d/joints/godot_hinge_joint_3d.cpp
+ ./modules/godot_physics_3d/joints/godot_hinge_joint_3d_sw.h
+ ./modules/godot_physics_3d/joints/godot_jacobian_entry_3d_sw.h
+ ./modules/godot_physics_3d/joints/godot_pin_joint_3d.cpp
+ ./modules/godot_physics_3d/joints/godot_pin_joint_3d.h
+ ./modules/godot_physics_3d/joints/godot_slider_joint_3d.cpp
+ ./modules/godot_physics_3d/joints/godot_slider_joint_3d.h
+ ./modules/godot_physics_3d/godot_soft_body_3d.cpp
+ ./modules/godot_physics_3d/godot_soft_body_3d.h
+ ./modules/godot_physics_3d/godot_shape_3d.cpp
+ ./modules/godot_physics_3d/godot_shape_3d.h
+Comment: Bullet Continuous Collision Detection and Physics Library
+Copyright: 2003-2008, Erwin Coumans
+ 2014-present, Godot Engine contributors
+ 2007-2014, Juan Linietsky, Ariel Manzur
+License: Expat and Zlib
+
+Files: ./modules/godot_physics_3d/godot_collision_solver_3d_sat.cpp
+Comment: Open Dynamics Engine
+Copyright: 2001-2003, Russell L. Smith, Alen Ladavac, Nguyen Binh
+License: BSD-3-clause
+
+Files: ./modules/godot_physics_3d/joints/godot_cone_twist_joint_3d.cpp
+ ./modules/godot_physics_3d/joints/godot_cone_twist_joint_3d.h
+Comment: Bullet Continuous Collision Detection and Physics Library
+Copyright: 2007, Starbreeze Studios
+ 2014-present, Godot Engine contributors
+ 2007-2014, Juan Linietsky, Ariel Manzur
+License: Expat and Zlib
+
 Files: ./modules/lightmapper_rd/lm_compute.glsl
 Comment: Joint Non-Local Means (JNLM) denoiser
 Copyright: 2020, Manuel Prandini
@@ -97,39 +130,6 @@ Files: ./servers/physics_2d/godot_joints_2d.cpp
 Comment: Chipmunk2D Joint Constraints
 Copyright: 2007, Scott Lembcke
 License: Expat
-
-Files: ./servers/physics_3d/collision_solver_3d_sat.cpp
-Comment: Open Dynamics Engine
-Copyright: 2001-2003, Russell L. Smith, Alen Ladavac, Nguyen Binh
-License: BSD-3-clause
-
-Files: ./servers/physics_3d/gjk_epa.cpp
- ./servers/physics_3d/joints/generic_6dof_joint_3d_sw.cpp
- ./servers/physics_3d/joints/generic_6dof_joint_3d_sw.h
- ./servers/physics_3d/joints/hinge_joint_3d_sw.cpp
- ./servers/physics_3d/joints/hinge_joint_3d_sw.h
- ./servers/physics_3d/joints/jacobian_entry_3d_sw.h
- ./servers/physics_3d/joints/pin_joint_3d_sw.cpp
- ./servers/physics_3d/joints/pin_joint_3d_sw.h
- ./servers/physics_3d/joints/slider_joint_3d_sw.cpp
- ./servers/physics_3d/joints/slider_joint_3d_sw.h
- ./servers/physics_3d/soft_body_3d_sw.cpp
- ./servers/physics_3d/soft_body_3d_sw.h
- ./servers/physics_3d/shape_3d_sw.cpp
- ./servers/physics_3d/shape_3d_sw.h
-Comment: Bullet Continuous Collision Detection and Physics Library
-Copyright: 2003-2008, Erwin Coumans
- 2014-present, Godot Engine contributors
- 2007-2014, Juan Linietsky, Ariel Manzur
-License: Expat and Zlib
-
-Files: ./servers/physics_3d/joints/cone_twist_joint_3d_sw.cpp
- ./servers/physics_3d/joints/cone_twist_joint_3d_sw.h
-Comment: Bullet Continuous Collision Detection and Physics Library
-Copyright: 2007, Starbreeze Studios
- 2014-present, Godot Engine contributors
- 2007-2014, Juan Linietsky, Ariel Manzur
-License: Expat and Zlib
 
 Files: ./servers/rendering/renderer_rd/shaders/ss_effects_downsample.glsl
  ./servers/rendering/renderer_rd/shaders/ssao_blur.glsl
