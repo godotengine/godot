@@ -124,6 +124,12 @@
 		<theme_item name="font_shadow_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
 			[Color] of the shadow outline.
 		</theme_item>
+		<theme_item name="draw_shadow_before_outline" data_type="constant" type="int" default="0">
+			Changes the order in which the font [b]shadow[/b] and [b]shadow outline[/b] is drawn. If the value is [code]1[/code], the [b]shadow[/b] and the [b]shadow outline[/b] will be [b]between[/b] the [b]text_outline[/b] and the main [b]text[/b], otherwise the shadow will be in the background by default.
+			[b]Note:[/b] If the value is [code]0[/code], the drawing order is: 0 - shadow outline, 1 - shadow, 2 - text outline, 3 - text.
+			If the value is [code]1[/code], the drawing order is: 0 - text outline, 1 - shadow outline, 2 - shadow, 3 - text.
+			[b]Note:[/b] Using any value that does [b]not[/b] equal [code]0[/code] will result in the [b]same[/b] effect as using [code]1[/code].
+		</theme_item>
 		<theme_item name="line_spacing" data_type="constant" type="int" default="3">
 			Vertical space between lines in multiline [Label].
 		</theme_item>
@@ -132,20 +138,14 @@
 			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
 			[b]Note:[/b] Using a value that is larger than half the font size is not recommended, as the font outline may fail to be fully closed in this case.
 		</theme_item>
-		<theme_item name="shadow_outline_size" data_type="constant" type="int" default="0">
-			The size of the shadow outline.
-		</theme_item>
 		<theme_item name="shadow_offset_x" data_type="constant" type="int" default="1">
 			The horizontal offset of the text's shadow.
 		</theme_item>
 		<theme_item name="shadow_offset_y" data_type="constant" type="int" default="1">
 			The vertical offset of the text's shadow.
 		</theme_item>
-		<theme_item name="draw_shadow_before_outline" data_type="constant" type="int" default="0">
-			Changes the order in which the font [b]shadow[/b] and [b]shadow outline[/b] is drawn. If the value is [code]1[/code], the [b]shadow[/b] and the [b]shadow outline[/b] will be [b]between[/b] the [b]text_outline[/b] and the main [b]text[/b], otherwise the shadow will be in the background by default.
-			[b]Note:[/b] If the value is [code]0[/code], the drawing order is: 0 - shadow outline, 1 - shadow, 2 - text outline, 3 - text.
-			If the value is [code]1[/code], the drawing order is: 0 - text outline, 1 - shadow outline, 2 - shadow, 3 - text.
-			[b]Note:[/b] Using any value that does [b]not[/b] equal [code]0[/code] will result in the [b]same[/b] effect as using [code]1[/code].
+		<theme_item name="shadow_outline_size" data_type="constant" type="int" default="0">
+			The size of the shadow outline.
 		</theme_item>
 		<theme_item name="font" data_type="font" type="Font">
 			[Font] used for the [Label]'s text.
