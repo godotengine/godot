@@ -1096,14 +1096,14 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 			default_value = vsnode->get_input_port_default_value(j);
 		}
 
-		Button *button = memnew(Button);
-		hb->add_child(button);
-		register_default_input_button(p_id, j, button);
-		button->connect(SceneStringName(pressed), callable_mp(editor, &VisualShaderEditor::_edit_port_default_input).bind(button, p_id, j));
+		Button *default_input_btn = memnew(Button);
+		hb->add_child(default_input_btn);
+		register_default_input_button(p_id, j, default_input_btn);
+		default_input_btn->connect(SceneStringName(pressed), callable_mp(editor, &VisualShaderEditor::_edit_port_default_input).bind(default_input_btn, p_id, j));
 		if (default_value.get_type() != Variant::NIL) { // only a label
 			set_input_port_default_value(p_type, p_id, j, default_value);
 		} else {
-			button->hide();
+			default_input_btn->hide();
 		}
 
 		if (j == 0 && custom_editor) {
@@ -1144,7 +1144,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 					Label *label = memnew(Label);
 					label->set_auto_translate_mode(Node::AUTO_TRANSLATE_MODE_DISABLED); // TODO: Implement proper translation switch.
 					label->set_text(name_left);
-					label->add_theme_style_override(CoreStringName(normal), editor->get_theme_stylebox(SNAME("label_style"), SNAME("VShaderEditor"))); //more compact
+					label->add_theme_style_override(CoreStringName(normal), editor->get_theme_stylebox(SNAME("label_style"), SNAME("VShaderEditor")));
 					hb->add_child(label);
 
 					if (vsnode->is_input_port_default(j, mode) && !port_left_used) {
