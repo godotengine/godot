@@ -39,7 +39,7 @@
 		<member name="shadow_offset" type="Vector2" setter="set_shadow_offset" getter="get_shadow_offset" default="Vector2(1, 1)">
 			Offset of the shadow effect, in pixels.
 		</member>
-		<member name="shadow_outline_color" type="int" setter="set_shadow_outline_color" getter="get_shadow_outline_color" default="Color(0, 0, 0, 0)">
+		<member name="shadow_outline_color" type="Color" setter="set_shadow_outline_color" getter="get_shadow_outline_color" default="Color(0, 0, 0, 0)">
 			The color of the shadow outline. If alpha is [code]0[/code], no shadow outline will be drawn.
 		</member>
 		<member name="shadow_outline_size" type="int" setter="set_shadow_outline_size" getter="get_shadow_outline_size" default="0">
