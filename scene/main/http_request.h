@@ -163,7 +163,7 @@ public:
 
 	void set_tls_options(const Ref<TLSOptions> &p_options);
 
-	HTTPRequest();
+	HTTPRequest(const Ref<HTTPClient> &p_client = Ref<HTTPClient>());
 };
 
 VARIANT_ENUM_CAST(HTTPRequest::Result);
