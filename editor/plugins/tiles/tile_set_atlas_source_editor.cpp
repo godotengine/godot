@@ -2612,7 +2612,6 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	atlas_source_inspector->set_v_size_flags(SIZE_EXPAND_FILL);
 	atlas_source_inspector->set_show_categories(false, true);
 	atlas_source_inspector->set_use_doc_hints(true);
-	atlas_source_inspector->add_inspector_plugin(memnew(TileSourceInspectorPlugin));
 	middle_vbox_container->add_child(atlas_source_inspector);
 
 	// -- Right side --
@@ -2740,9 +2739,8 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	add_child(confirm_auto_create_tiles);
 
 	// Inspector plugin.
-	Ref<EditorInspectorPluginTileData> tile_data_inspector_plugin;
-	tile_data_inspector_plugin.instantiate();
-	EditorInspector::add_inspector_plugin(tile_data_inspector_plugin);
+	EditorInspector::add_inspector_plugin(memnew(EditorInspectorPluginTileData));
+	EditorInspector::add_inspector_plugin(memnew(TileSourceInspectorPlugin));
 }
 
 TileSetAtlasSourceEditor::~TileSetAtlasSourceEditor() {

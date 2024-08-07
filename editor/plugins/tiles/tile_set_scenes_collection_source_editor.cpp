@@ -534,7 +534,6 @@ TileSetScenesCollectionSourceEditor::TileSetScenesCollectionSourceEditor() {
 	scenes_collection_source_inspector = memnew(EditorInspector);
 	scenes_collection_source_inspector->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	scenes_collection_source_inspector->set_use_doc_hints(true);
-	scenes_collection_source_inspector->add_inspector_plugin(memnew(TileSourceInspectorPlugin));
 	middle_vbox_container->add_child(scenes_collection_source_inspector);
 
 	// Tile inspector.
@@ -581,6 +580,8 @@ TileSetScenesCollectionSourceEditor::TileSetScenesCollectionSourceEditor() {
 	scene_tile_delete_button->set_disabled(true);
 	scene_tile_delete_button->connect(SceneStringName(pressed), callable_mp(this, &TileSetScenesCollectionSourceEditor::_source_delete_pressed));
 	scenes_bottom_actions->add_child(scene_tile_delete_button);
+
+	EditorInspector::add_inspector_plugin(memnew(TileSourceInspectorPlugin));
 }
 
 TileSetScenesCollectionSourceEditor::~TileSetScenesCollectionSourceEditor() {
