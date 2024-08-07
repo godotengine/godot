@@ -549,7 +549,6 @@ void Label::_notification(int p_what) {
 				const Glyph *ellipsis_glyphs = TS->shaped_text_get_ellipsis_glyphs(lines_rid[i]);
 				int ellipsis_gl_size = TS->shaped_text_get_ellipsis_glyph_count(lines_rid[i]);
 
-
 				LabelDrawStep draw_steps[DRAW_STEP_MAX];
 
 				if (shadow_before_outline) {
@@ -1234,7 +1233,6 @@ void Label::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Label, font_outline_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Label, font_shadow_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Label, font_shadow_outline_color);
-
 }
 
 Label::Label(const String &p_text) {

@@ -58,7 +58,7 @@ void LabelSettings::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_shadow_color", "color"), &LabelSettings::set_shadow_color);
 	ClassDB::bind_method(D_METHOD("get_shadow_color"), &LabelSettings::get_shadow_color);
-	
+
 	ClassDB::bind_method(D_METHOD("set_shadow_outline_color", "color"), &LabelSettings::set_shadow_outline_color);
 	ClassDB::bind_method(D_METHOD("get_shadow_outline_color"), &LabelSettings::get_shadow_outline_color);
 
@@ -67,8 +67,6 @@ void LabelSettings::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_draw_shadow_before_outline", "state"), &LabelSettings::set_draw_shadow_before_outline);
 	ClassDB::bind_method(D_METHOD("get_draw_shadow_before_outline"), &LabelSettings::get_draw_shadow_before_outline);
-
-
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "line_spacing", PROPERTY_HINT_NONE, "suffix:px"), "set_line_spacing", "get_line_spacing");
 
@@ -193,7 +191,6 @@ void LabelSettings::set_shadow_outline_color(const Color &p_color) {
 Color LabelSettings::get_shadow_outline_color() const {
 	return shadow_outline_color;
 }
-
 
 void LabelSettings::set_shadow_offset(const Vector2 &p_offset) {
 	if (shadow_offset != p_offset) {

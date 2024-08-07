@@ -83,7 +83,7 @@ public:
 
 	void set_shadow_color(const Color &p_color);
 	Color get_shadow_color() const;
-	
+
 	void set_shadow_outline_color(const Color &p_color);
 	Color get_shadow_outline_color() const;
 
@@ -92,7 +92,6 @@ public:
 
 	void set_draw_shadow_before_outline(int p_state);
 	int get_draw_shadow_before_outline() const;
-
 };
 
 #endif // LABEL_SETTINGS_H

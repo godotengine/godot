@@ -142,7 +142,7 @@
 			The vertical offset of the text's shadow.
 		</theme_item>
 		<theme_item name="draw_shadow_before_outline" data_type="constant" type="int" default="0">
-			Changes the order in which the font [code]shadow[/code] and [code]shadow_outline[/code] is drawn. If the value is [code]1[/code], the [code]shadow[/code] and the [code]shadow_outline[/code] will be [b]between[/b] the [code]text_outline[/code] and the main [code]text[/code], otherwise the shadow will be in the background by default.
+			Changes the order in which the font [b]shadow[/b] and [b]shadow outline[/b] is drawn. If the value is [code]1[/code], the [b]shadow[/b] and the [b]shadow outline[/b] will be [b]between[/b] the [b]text_outline[/b] and the main [b]text[/b], otherwise the shadow will be in the background by default.
 			[b]Note:[/b] If the value is [code]0[/code], the drawing order is: 0 - shadow outline, 1 - shadow, 2 - text outline, 3 - text.
 			If the value is [code]1[/code], the drawing order is: 0 - text outline, 1 - shadow outline, 2 - shadow, 3 - text.
 			[b]Note:[/b] Using any value that does [b]not[/b] equal [code]0[/code] will result in the [b]same[/b] effect as using [code]1[/code].
