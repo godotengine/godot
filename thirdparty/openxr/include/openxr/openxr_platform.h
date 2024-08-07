@@ -21,6 +21,7 @@ extern "C" {
 
 #ifdef XR_USE_PLATFORM_ANDROID
 
+// XR_KHR_android_thread_settings is a preprocessor guard. Do not pass it to API calls.
 #define XR_KHR_android_thread_settings 1
 #define XR_KHR_android_thread_settings_SPEC_VERSION 6
 #define XR_KHR_ANDROID_THREAD_SETTINGS_EXTENSION_NAME "XR_KHR_android_thread_settings"
@@ -46,6 +47,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrSetAndroidApplicationThreadKHR(
 
 #ifdef XR_USE_PLATFORM_ANDROID
 
+// XR_KHR_android_surface_swapchain is a preprocessor guard. Do not pass it to API calls.
 #define XR_KHR_android_surface_swapchain 1
 #define XR_KHR_android_surface_swapchain_SPEC_VERSION 4
 #define XR_KHR_ANDROID_SURFACE_SWAPCHAIN_EXTENSION_NAME "XR_KHR_android_surface_swapchain"
@@ -64,6 +66,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrCreateSwapchainAndroidSurfaceKHR(
 
 #ifdef XR_USE_PLATFORM_ANDROID
 
+// XR_KHR_android_create_instance is a preprocessor guard. Do not pass it to API calls.
 #define XR_KHR_android_create_instance 1
 #define XR_KHR_android_create_instance_SPEC_VERSION 3
 #define XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME "XR_KHR_android_create_instance"
@@ -79,6 +82,7 @@ typedef struct XrInstanceCreateInfoAndroidKHR {
 
 #ifdef XR_USE_GRAPHICS_API_VULKAN
 
+// XR_KHR_vulkan_swapchain_format_list is a preprocessor guard. Do not pass it to API calls.
 #define XR_KHR_vulkan_swapchain_format_list 1
 #define XR_KHR_vulkan_swapchain_format_list_SPEC_VERSION 4
 #define XR_KHR_VULKAN_SWAPCHAIN_FORMAT_LIST_EXTENSION_NAME "XR_KHR_vulkan_swapchain_format_list"
@@ -93,6 +97,7 @@ typedef struct XrVulkanSwapchainFormatListCreateInfoKHR {
 
 #ifdef XR_USE_GRAPHICS_API_OPENGL
 
+// XR_KHR_opengl_enable is a preprocessor guard. Do not pass it to API calls.
 #define XR_KHR_opengl_enable 1
 #define XR_KHR_opengl_enable_SPEC_VERSION 10
 #define XR_KHR_OPENGL_ENABLE_EXTENSION_NAME "XR_KHR_opengl_enable"
@@ -169,6 +174,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetOpenGLGraphicsRequirementsKHR(
 
 #ifdef XR_USE_GRAPHICS_API_OPENGL_ES
 
+// XR_KHR_opengl_es_enable is a preprocessor guard. Do not pass it to API calls.
 #define XR_KHR_opengl_es_enable 1
 #define XR_KHR_opengl_es_enable_SPEC_VERSION 8
 #define XR_KHR_OPENGL_ES_ENABLE_EXTENSION_NAME "XR_KHR_opengl_es_enable"
@@ -210,6 +216,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetOpenGLESGraphicsRequirementsKHR(
 
 #ifdef XR_USE_GRAPHICS_API_VULKAN
 
+// XR_KHR_vulkan_enable is a preprocessor guard. Do not pass it to API calls.
 #define XR_KHR_vulkan_enable 1
 #define XR_KHR_vulkan_enable_SPEC_VERSION 8
 #define XR_KHR_VULKAN_ENABLE_EXTENSION_NAME "XR_KHR_vulkan_enable"
@@ -274,6 +281,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetVulkanGraphicsRequirementsKHR(
 
 #ifdef XR_USE_GRAPHICS_API_D3D11
 
+// XR_KHR_D3D11_enable is a preprocessor guard. Do not pass it to API calls.
 #define XR_KHR_D3D11_enable 1
 #define XR_KHR_D3D11_enable_SPEC_VERSION  9
 #define XR_KHR_D3D11_ENABLE_EXTENSION_NAME "XR_KHR_D3D11_enable"
@@ -311,6 +319,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetD3D11GraphicsRequirementsKHR(
 
 #ifdef XR_USE_GRAPHICS_API_D3D12
 
+// XR_KHR_D3D12_enable is a preprocessor guard. Do not pass it to API calls.
 #define XR_KHR_D3D12_enable 1
 #define XR_KHR_D3D12_enable_SPEC_VERSION  9
 #define XR_KHR_D3D12_ENABLE_EXTENSION_NAME "XR_KHR_D3D12_enable"
@@ -349,6 +358,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetD3D12GraphicsRequirementsKHR(
 
 #ifdef XR_USE_PLATFORM_WIN32
 
+// XR_KHR_win32_convert_performance_counter_time is a preprocessor guard. Do not pass it to API calls.
 #define XR_KHR_win32_convert_performance_counter_time 1
 #define XR_KHR_win32_convert_performance_counter_time_SPEC_VERSION 1
 #define XR_KHR_WIN32_CONVERT_PERFORMANCE_COUNTER_TIME_EXTENSION_NAME "XR_KHR_win32_convert_performance_counter_time"
@@ -372,6 +382,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrConvertTimeToWin32PerformanceCounterKHR(
 
 #ifdef XR_USE_TIMESPEC
 
+// XR_KHR_convert_timespec_time is a preprocessor guard. Do not pass it to API calls.
 #define XR_KHR_convert_timespec_time 1
 #define XR_KHR_convert_timespec_time_SPEC_VERSION 1
 #define XR_KHR_CONVERT_TIMESPEC_TIME_EXTENSION_NAME "XR_KHR_convert_timespec_time"
@@ -395,6 +406,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrConvertTimeToTimespecTimeKHR(
 
 #ifdef XR_USE_PLATFORM_ANDROID
 
+// XR_KHR_loader_init_android is a preprocessor guard. Do not pass it to API calls.
 #define XR_KHR_loader_init_android 1
 #define XR_KHR_loader_init_android_SPEC_VERSION 1
 #define XR_KHR_LOADER_INIT_ANDROID_EXTENSION_NAME "XR_KHR_loader_init_android"
@@ -409,6 +421,7 @@ typedef struct XrLoaderInitInfoAndroidKHR {
 
 #ifdef XR_USE_GRAPHICS_API_VULKAN
 
+// XR_KHR_vulkan_enable2 is a preprocessor guard. Do not pass it to API calls.
 #define XR_KHR_vulkan_enable2 1
 #define XR_KHR_vulkan_enable2_SPEC_VERSION 2
 #define XR_KHR_VULKAN_ENABLE2_EXTENSION_NAME "XR_KHR_vulkan_enable2"
@@ -488,6 +501,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetVulkanGraphicsRequirements2KHR(
 
 #ifdef XR_USE_PLATFORM_EGL
 
+// XR_MNDX_egl_enable is a preprocessor guard. Do not pass it to API calls.
 #define XR_MNDX_egl_enable 1
 #define XR_MNDX_egl_enable_SPEC_VERSION   2
 #define XR_MNDX_EGL_ENABLE_EXTENSION_NAME "XR_MNDX_egl_enable"
@@ -506,6 +520,7 @@ typedef struct XrGraphicsBindingEGLMNDX {
 
 #ifdef XR_USE_PLATFORM_WIN32
 
+// XR_MSFT_perception_anchor_interop is a preprocessor guard. Do not pass it to API calls.
 #define XR_MSFT_perception_anchor_interop 1
 #define XR_MSFT_perception_anchor_interop_SPEC_VERSION 1
 #define XR_MSFT_PERCEPTION_ANCHOR_INTEROP_EXTENSION_NAME "XR_MSFT_perception_anchor_interop"
@@ -529,6 +544,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrTryGetPerceptionAnchorFromSpatialAnchorMSFT(
 
 #ifdef XR_USE_PLATFORM_WIN32
 
+// XR_MSFT_holographic_window_attachment is a preprocessor guard. Do not pass it to API calls.
 #define XR_MSFT_holographic_window_attachment 1
 #define XR_MSFT_holographic_window_attachment_SPEC_VERSION 1
 #define XR_MSFT_HOLOGRAPHIC_WINDOW_ATTACHMENT_EXTENSION_NAME "XR_MSFT_holographic_window_attachment"
@@ -546,6 +562,7 @@ typedef struct XrHolographicWindowAttachmentMSFT {
 
 #ifdef XR_USE_PLATFORM_ANDROID
 
+// XR_FB_android_surface_swapchain_create is a preprocessor guard. Do not pass it to API calls.
 #define XR_FB_android_surface_swapchain_create 1
 #define XR_FB_android_surface_swapchain_create_SPEC_VERSION 1
 #define XR_FB_ANDROID_SURFACE_SWAPCHAIN_CREATE_EXTENSION_NAME "XR_FB_android_surface_swapchain_create"
@@ -568,6 +585,7 @@ typedef struct XrAndroidSurfaceSwapchainCreateInfoFB {
 
 #ifdef XR_USE_PLATFORM_ML
 
+// XR_ML_compat is a preprocessor guard. Do not pass it to API calls.
 #define XR_ML_compat 1
 #define XR_ML_compat_SPEC_VERSION         1
 #define XR_ML_COMPAT_EXTENSION_NAME       "XR_ML_compat"
@@ -592,6 +610,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrCreateSpaceFromCoordinateFrameUIDML(
 
 #ifdef XR_USE_PLATFORM_WIN32
 
+// XR_OCULUS_audio_device_guid is a preprocessor guard. Do not pass it to API calls.
 #define XR_OCULUS_audio_device_guid 1
 #define XR_OCULUS_audio_device_guid_SPEC_VERSION 1
 #define XR_OCULUS_AUDIO_DEVICE_GUID_EXTENSION_NAME "XR_OCULUS_audio_device_guid"
@@ -614,6 +633,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetAudioInputDeviceGuidOculus(
 
 #ifdef XR_USE_GRAPHICS_API_VULKAN
 
+// XR_FB_foveation_vulkan is a preprocessor guard. Do not pass it to API calls.
 #define XR_FB_foveation_vulkan 1
 #define XR_FB_foveation_vulkan_SPEC_VERSION 1
 #define XR_FB_FOVEATION_VULKAN_EXTENSION_NAME "XR_FB_foveation_vulkan"
@@ -630,6 +650,7 @@ typedef struct XrSwapchainImageFoveationVulkanFB {
 
 #ifdef XR_USE_PLATFORM_ANDROID
 
+// XR_FB_swapchain_update_state_android_surface is a preprocessor guard. Do not pass it to API calls.
 #define XR_FB_swapchain_update_state_android_surface 1
 #define XR_FB_swapchain_update_state_android_surface_SPEC_VERSION 1
 #define XR_FB_SWAPCHAIN_UPDATE_STATE_ANDROID_SURFACE_EXTENSION_NAME "XR_FB_swapchain_update_state_android_surface"
@@ -646,6 +667,7 @@ typedef struct XrSwapchainStateAndroidSurfaceDimensionsFB {
 
 #ifdef XR_USE_GRAPHICS_API_OPENGL_ES
 
+// XR_FB_swapchain_update_state_opengl_es is a preprocessor guard. Do not pass it to API calls.
 #define XR_FB_swapchain_update_state_opengl_es 1
 #define XR_FB_swapchain_update_state_opengl_es_SPEC_VERSION 1
 #define XR_FB_SWAPCHAIN_UPDATE_STATE_OPENGL_ES_EXTENSION_NAME "XR_FB_swapchain_update_state_opengl_es"
@@ -670,6 +692,7 @@ typedef struct XrSwapchainStateSamplerOpenGLESFB {
 
 #ifdef XR_USE_GRAPHICS_API_VULKAN
 
+// XR_FB_swapchain_update_state_vulkan is a preprocessor guard. Do not pass it to API calls.
 #define XR_FB_swapchain_update_state_vulkan 1
 #define XR_FB_swapchain_update_state_vulkan_SPEC_VERSION 1
 #define XR_FB_SWAPCHAIN_UPDATE_STATE_VULKAN_EXTENSION_NAME "XR_FB_swapchain_update_state_vulkan"
@@ -695,6 +718,7 @@ typedef struct XrSwapchainStateSamplerVulkanFB {
 
 #ifdef XR_USE_GRAPHICS_API_VULKAN
 
+// XR_META_vulkan_swapchain_create_info is a preprocessor guard. Do not pass it to API calls.
 #define XR_META_vulkan_swapchain_create_info 1
 #define XR_META_vulkan_swapchain_create_info_SPEC_VERSION 1
 #define XR_META_VULKAN_SWAPCHAIN_CREATE_INFO_EXTENSION_NAME "XR_META_vulkan_swapchain_create_info"
