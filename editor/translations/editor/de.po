@@ -116,8 +116,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-06-26 18:09+0000\n"
-"Last-Translator: Dirk Graf <bb3234@web.de>\n"
+"PO-Revision-Date: 2024-07-25 23:49+0000\n"
+"Last-Translator: Wuzzy <Wuzzy@disroot.org>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot/"
 "de/>\n"
 "Language: de\n"
@@ -125,7 +125,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.6-rc\n"
+"X-Generator: Weblate 5.7-dev\n"
 
 msgid "Main Thread"
 msgstr "Hauptthread"
@@ -3627,6 +3627,13 @@ msgid "%s no longer exists! Please specify a new save location."
 msgstr "%s existiert nicht mehr! Bitte geben Sie einen neuen Speicherort an."
 
 msgid ""
+"The current scene has no root node, but %d modified external resource(s) and/"
+"or plugin data were saved anyway."
+msgstr ""
+"Die aktuelle Szene hat keinen Root-Node, dennoch wurden %d bearbeitete "
+"externe Ressource(n) gespeichert und/oder Daten wurden trotzdem gespeichert."
+
+msgid ""
 "A root node is required to save the scene. You can add a root node using the "
 "Scene tree dock."
 msgstr ""
@@ -4477,6 +4484,9 @@ msgstr "Projektdurchlauf"
 
 msgid "Write your logic in the _run() method."
 msgstr "Spiellogik sollte mit der _run()-Methode beginnen."
+
+msgid "The current scene already has a root node."
+msgstr "Die aktuelle Szene hat bereits einen Root-Node."
 
 msgid "Edit Built-in Action: %s"
 msgstr "Built-in-Aktion bearbeiten: %s"
@@ -6592,6 +6602,15 @@ msgstr "Nicht-Default expandieren"
 msgid "Property Name Style"
 msgstr "Eigenschaftennamensstil"
 
+msgid "Raw (e.g. \"%s\")"
+msgstr "Roh (z.B. „%s“)"
+
+msgid "Capitalized (e.g. \"%s\")"
+msgstr "Große Anfangsbuchstaben (z.B. „%s“)"
+
+msgid "Localized (e.g. \"Z Index\")"
+msgstr "Lokalisiert (z.B. „Z-Index“)"
+
 msgid "Localization not available for current language."
 msgstr "Keine Übersetzung für die aktuelle Sprache vorhanden."
 
@@ -8063,6 +8082,13 @@ msgstr ""
 msgid "Change Default Type"
 msgstr "Default-Typ ändern"
 
+msgid ""
+"All selected CanvasItems are either invisible or locked in some way and can't "
+"be transformed."
+msgstr ""
+"Alle ausgewählte CanvasItems sind entweder unsichtbar oder auf eine bestimmte "
+"Weise gesperrt und können nicht transformiert werden."
+
 msgid "Set Target Position"
 msgstr "Zielposition festlegen"
 
@@ -8782,6 +8808,13 @@ msgstr ""
 "Erstellung von Lightmap-Bildern fehlgeschlagen. Vergewissern Sie sich, dass "
 "der Wert `lightmap_size_hint` für alle zum Backen ausgewählten Meshes hoch "
 "genug ist und der Wert `texel_scale` für LightmapGI nicht zu niedrig ist."
+
+msgid ""
+"Failed fitting a lightmap image into an atlas. This should never happen and "
+"should be reported."
+msgstr ""
+"Die Einpassung eines Lichtkartenbildes in einen Atlas ist fehlgeschlagen. "
+"Dies sollte nie passieren und gemeldet werden."
 
 msgid "Bake Lightmaps"
 msgstr "Lightmaps backen"
@@ -10762,12 +10795,6 @@ msgid ""
 msgstr ""
 "Bearbeitungsmodus\n"
 "Buttons an Gelenken anzeigen."
-
-msgid "Insert key of bone poses already exist track."
-msgstr "Key der Knochenposen einfügen, die bereits im Track vorhanden sind."
-
-msgid "Insert key of all bone poses."
-msgstr "Key einfügen für alle Knochenposen."
 
 msgid "Insert Key (All Bones)"
 msgstr "Key einfügen (alle Knochen)"
@@ -13097,6 +13124,13 @@ msgstr ""
 "oder falsch ist."
 
 msgid ""
+"Returns an associated 4D vector if the provided boolean value is true or "
+"false."
+msgstr ""
+"Gibt den jeweiligen 4D-Vektor zurück, wenn der angegebene boolsche Wert wahr "
+"oder falsch ist."
+
+msgid ""
 "Returns an associated boolean if the provided boolean value is true or false."
 msgstr ""
 "Gibt den jeweiligen Boolean zurück je nach dem ob der übergebene Wert wahr "
@@ -13672,6 +13706,14 @@ msgid "Remaps a given input from the input range to the output range."
 msgstr ""
 "Bildet einen Eingabewert aus dem Eingangsintervall auf einen Wert im "
 "Ausgangsintervall ab."
+
+msgid ""
+"Builds a rotation matrix from the given axis and angle, multiply the input "
+"vector by it and returns both this vector and a matrix."
+msgstr ""
+"Erzeugt eine Rotationsmatrix aus der angegebenen Achse und dem Winkel, "
+"multipliziert den Eingabevektor damit und gibt sowohl diesen Vektor als auch "
+"eine Matrix zurück."
 
 msgid "Vector function."
 msgstr "Vektorfunktion."
@@ -14541,6 +14583,9 @@ msgstr "Anzeige-Skalierung"
 
 msgid "Network Mode"
 msgstr "Netzwerk-Modus"
+
+msgid "Directory Naming Convention"
+msgstr "Verzeichnis-Namenskonvention"
 
 msgid ""
 "Settings changed! The project manager must be restarted for changes to take "
@@ -15547,36 +15592,8 @@ msgstr "Export-Einstellungen:"
 msgid "glTF 2.0 Scene..."
 msgstr "glTF-2.0-Szene …"
 
-msgid "Path does not contain a Blender installation."
-msgstr "Pfad enthält keine Blender-Installation."
-
-msgid "Can't execute Blender binary."
-msgstr "Blender-Binärdatei kann nicht ausgeführt werden."
-
-msgid "Unexpected --version output from Blender binary at: %s."
-msgstr "Unerwartete Ausgabe von --version von der Blender-Binärdatei bei: %s."
-
-msgid "Path supplied lacks a Blender binary."
-msgstr "Im angegebenen Pfad fehlt eine Blender-Binärdatei."
-
-msgid "This Blender installation is too old for this importer (not 3.0+)."
-msgstr "Diese Blender-Installation ist zu alt für diesen Importer (nicht 3.0+)."
-
-msgid "Path to Blender installation is valid (Autodetected)."
-msgstr "Pfad zur Blender-Installation ist gültig (automatisch ermittelt)."
-
-msgid "Path to Blender installation is valid."
-msgstr "Pfad zu Blender ist gültig."
-
 msgid "Configure Blender Importer"
 msgstr "Blender-Importer konfigurieren"
-
-msgid ""
-"Blender 3.0+ is required to import '.blend' files.\n"
-"Please provide a valid path to a Blender installation:"
-msgstr ""
-"Blender 3.0 oder neuer wird benötigt, um ‚.blend‘-Dateien zu importieren.\n"
-"Bitte gültigen Pfad zu einer Blender-Installation angeben:"
 
 msgid "Disable '.blend' Import"
 msgstr "‚.blend‘-Importe deaktivieren"
@@ -16633,6 +16650,12 @@ msgstr ""
 "Benötigte Vorlagen-Bibliothek „%s“ nicht gefunden. Es könnte im Vorlagen-"
 "Archiv fehlen."
 
+msgid "ARM64 simulator library, generating from device library."
+msgstr "ARM64-Simulatorbibliothek, aus Gerätebibliothek generieren."
+
+msgid "Unable to generate ARM64 simulator library."
+msgstr "ARM64-Simulator-Bibliothek kann nicht generiert werden."
+
 msgid "Could not copy a file at path \"%s\" to \"%s\"."
 msgstr "Datei im Pfad „%s“ konnte nicht nach \"%s\" kopiert werden."
 
@@ -17265,6 +17288,13 @@ msgstr "Auf Remote-Windows-System ausführen"
 
 msgid "Run exported project on remote Windows system"
 msgstr "Exportiertes Projekt auf Remote-Windows-System ausführen"
+
+msgid ""
+"A SpriteFrames resource must be created or set in the \"Sprite Frames\" "
+"property in order for AnimatedSprite2D to display frames."
+msgstr ""
+"Eine SpriteFrames-Ressource muss erstellt oder in der „Sprite Frames“-"
+"Eigenschaft gesetzt werden, damit AnimatedSprite2D Frames anzeigen kann."
 
 msgid ""
 "Only one visible CanvasModulate is allowed per canvas.\n"
@@ -17961,6 +17991,13 @@ msgid "This body will be ignored until you set a mesh."
 msgstr "Dieser Körper wird ignoriert bis Sie ein Mesh zuweisen."
 
 msgid ""
+"A SpriteFrames resource must be created or set in the \"Sprite Frames\" "
+"property in order for AnimatedSprite3D to display frames."
+msgstr ""
+"Eine SpriteFrames-Ressource muss erstellt oder in der „Sprite Frames“-"
+"Eigenschaft gesetzt werden, damit AnimatedSprite3D Frames anzeigen kann."
+
+msgid ""
 "The GeometryInstance3D visibility range's End distance is set to a non-zero "
 "value, but is lower than the Begin distance.\n"
 "This means the GeometryInstance3D will never be visible.\n"
@@ -18433,6 +18470,16 @@ msgstr ""
 "Varyings, die in der Funktion ‚fragment‘ zugewiesen wurden, dürfen nicht in "
 "‚vertex‘ oder ‚light‘ neu zugewiesen werden."
 
+msgid "'%s' cannot be used within the '%s' processor function."
+msgstr "‚%s‘ kann innerhalb der Prozessorfunktion ‚%s‘ nicht verwendet werden."
+
+msgid ""
+"'%s' cannot be used here, because '%s' is called by the '%s' processor "
+"function (which is not allowed)."
+msgstr ""
+"‚%s‘ kann hier nicht verwendet werden, weil ‚%s‘ von der Prozessorfunktion "
+"‚%s‘ aufgerufen wird (was nicht zulässig ist)."
+
 msgid "Assignment to function."
 msgstr "Zuweisung zur Funktion."
 
@@ -18452,14 +18499,6 @@ msgstr ""
 "Sampler-Argument %d von Funktion ‚%s‘ wurde mehr als einmal aufgerufen von "
 "sowohl Built-ins als auch Uniform-Texturen. Dies wird nicht unterstützt, "
 "bitte nur eines von beiden verwenden."
-
-msgid ""
-"Sampler argument %d of function '%s' called more than once using textures "
-"that differ in either filter or repeat setting."
-msgstr ""
-"Sampler-Argument %d von Funktion ‚%s‘ wurde mehr als einmal aufgerufen mit "
-"Texturen die sich entweder in Filter- oder Wiederholungs-Einstellungen "
-"unterscheiden."
 
 msgid ""
 "Sampler argument %d of function '%s' called more than once using different "
@@ -18505,17 +18544,15 @@ msgstr "‚(‘ nach Typnamen erwartet."
 msgid "No matching constructor found for: '%s'."
 msgstr "Kein passender Konstruktor gefunden für ‚%s‘."
 
+msgid "Built-in function '%s' is not supported for the '%s' shader type."
+msgstr ""
+"Die eingebaute Funktion ‚%s‘ wird für den Shadertyp ‚%s‘ nicht unterstützt."
+
 msgid "Expected a function name."
 msgstr "Funktionsname erwartet."
 
 msgid "No matching function found for: '%s'."
 msgstr "Keine passende Funktion gefunden für: ‚%s‘."
-
-msgid ""
-"Varying '%s' must be assigned in the 'vertex' or 'fragment' function first."
-msgstr ""
-"Varying ‚%s‘ muss zuerst in der ‚vertex‘ oder ‚fragment‘-Funktion zugewiesen "
-"werden."
 
 msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr ""

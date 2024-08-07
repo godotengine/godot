@@ -764,7 +764,7 @@ void TextEdit::_notification(int p_what) {
 				}
 			}
 
-			bool draw_placeholder = text.size() == 1 && text[0].is_empty() && ime_text.is_empty();
+			bool draw_placeholder = _using_placeholder();
 
 			// Get the highlighted words.
 			String highlighted_text = get_selected_text(0);
@@ -2847,6 +2847,10 @@ void TextEdit::_update_placeholder() {
 		Vector2i line_range = placeholder_data_buf->get_line_range(i);
 		placeholder_wraped_rows.push_back(placeholder_translated.substr(line_range.x, line_range.y - line_range.x));
 	}
+}
+
+bool TextEdit::_using_placeholder() const {
+	return text.size() == 1 && text[0].is_empty() && ime_text.is_empty();
 }
 
 void TextEdit::_update_theme_item_cache() {
@@ -6863,9 +6867,9 @@ void TextEdit::_bind_methods() {
 
 	ADD_GROUP("Scroll", "scroll_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_smooth"), "set_smooth_scroll_enabled", "is_smooth_scroll_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_v_scroll_speed", PROPERTY_HINT_NONE, "suffix:px/s"), "set_v_scroll_speed", "get_v_scroll_speed");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_v_scroll_speed", PROPERTY_HINT_NONE, "suffix:lines/s"), "set_v_scroll_speed", "get_v_scroll_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_past_end_of_file"), "set_scroll_past_end_of_file_enabled", "is_scroll_past_end_of_file_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_vertical", PROPERTY_HINT_NONE, "suffix:px"), "set_v_scroll", "get_v_scroll");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_vertical", PROPERTY_HINT_NONE, "suffix:lines"), "set_v_scroll", "get_v_scroll");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_horizontal", PROPERTY_HINT_NONE, "suffix:px"), "set_h_scroll", "get_h_scroll");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_fit_content_height"), "set_fit_content_height_enabled", "is_fit_content_height_enabled");
 
@@ -7840,10 +7844,10 @@ void TextEdit::_update_scrollbars() {
 	h_scroll->set_begin(Point2(0, size.height - hmin.height));
 	h_scroll->set_end(Point2(size.width - vmin.width, size.height));
 
-	bool draw_placeholder = text.size() == 1 && text[0].length() == 0;
+	bool draw_placeholder = _using_placeholder();
 
 	int visible_rows = get_visible_line_count();
-	int total_rows = draw_placeholder ? placeholder_wraped_rows.size() - 1 : get_total_visible_line_count();
+	int total_rows = draw_placeholder ? placeholder_wraped_rows.size() : get_total_visible_line_count();
 	if (scroll_past_end_of_file_enabled && !fit_content_height) {
 		total_rows += visible_rows - 1;
 	}
@@ -7921,7 +7925,7 @@ void TextEdit::_scroll_moved(double p_to_val) {
 	}
 	if (v_scroll->is_visible_in_tree()) {
 		// Set line ofs and wrap ofs.
-		bool draw_placeholder = text.size() == 1 && text[0].length() == 0;
+		bool draw_placeholder = _using_placeholder();
 
 		int v_scroll_i = floor(get_v_scroll());
 		int sc = 0;

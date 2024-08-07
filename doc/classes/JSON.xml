@@ -4,7 +4,7 @@
 		Helper class for creating and parsing JSON data.
 	</brief_description>
 	<description>
-		The [JSON] enables all data types to be converted to and from a JSON string. This useful for serializing data to save to a file or send over the network.
+		The [JSON] class enables all data types to be converted to and from a JSON string. This is useful for serializing data, e.g. to save to a file or send over the network.
 		[method stringify] is used to convert any data type into a JSON string.
 		[method parse] is used to convert any existing JSON data into a [Variant] that can be used within Godot. If successfully parsed, use [member data] to retrieve the [Variant], and use [code]typeof[/code] to check if the Variant's type is what you expect. JSON Objects are converted into a [Dictionary], but JSON data can be used to store [Array]s, numbers, [String]s and even just a boolean.
 		[b]Example[/b]
@@ -25,7 +25,7 @@
 		else:
 		    print("JSON Parse Error: ", json.get_error_message(), " in ", json_string, " at line ", json.get_error_line())
 		[/codeblock]
-		Alternatively, you can parse string using the static [method parse_string] method, but it doesn't allow to handle errors.
+		Alternatively, you can parse strings using the static [method parse_string] method, but it doesn't handle errors.
 		[codeblock]
 		var data = JSON.parse_string(json_string) # Returns null if parsing failed.
 		[/codeblock]
@@ -53,7 +53,7 @@
 		<method name="get_parsed_text" qualifiers="const">
 			<return type="String" />
 			<description>
-				Return the text parsed by [method parse] as long as the function is instructed to keep it.
+				Return the text parsed by [method parse] (requires passing [code]keep_text[/code] to [method parse]).
 			</description>
 		</method>
 		<method name="parse">
@@ -62,7 +62,7 @@
 			<param index="1" name="keep_text" type="bool" default="false" />
 			<description>
 				Attempts to parse the [param json_text] provided.
-				Returns an [enum Error]. If the parse was successful, it returns [constant OK] and the result can be retrieved using [member data]. If unsuccessful, use [method get_error_line] and [method get_error_message] for identifying the source of the failure.
+				Returns an [enum Error]. If the parse was successful, it returns [constant OK] and the result can be retrieved using [member data]. If unsuccessful, use [method get_error_line] and [method get_error_message] to identify the source of the failure.
 				Non-static variant of [method parse_string], if you want custom error handling.
 				The optional [param keep_text] argument instructs the parser to keep a copy of the original text. This text can be obtained later by using the [method get_parsed_text] function and is used when saving the resource (instead of generating new text from [member data]).
 			</description>
@@ -84,7 +84,7 @@
 				Converts a [Variant] var to JSON text and returns the result. Useful for serializing data to store or send over the network.
 				[b]Note:[/b] The JSON specification does not define integer or float types, but only a [i]number[/i] type. Therefore, converting a Variant to JSON text will convert all numerical values to [float] types.
 				[b]Note:[/b] If [param full_precision] is [code]true[/code], when stringifying floats, the unreliable digits are stringified in addition to the reliable digits to guarantee exact decoding.
-				The [param indent] parameter controls if and how something is indented, the string used for this parameter will be used where there should be an indent in the output, even spaces like [code]"   "[/code] will work. [code]\t[/code] and [code]\n[/code] can also be used for a tab indent, or to make a newline for each indent respectively.
+				The [param indent] parameter controls if and how something is indented; its contents will be used where there should be an indent in the output. Even spaces like [code]"   "[/code] will work. [code]\t[/code] and [code]\n[/code] can also be used for a tab indent, or to make a newline for each indent respectively.
 				[b]Example output:[/b]
 				[codeblock]
 				## JSON.stringify(my_dictionary)

@@ -1051,6 +1051,9 @@ void Node3DEditorViewport::_select_region() {
 	Vector<Node *> selected;
 
 	Node *edited_scene = get_tree()->get_edited_scene_root();
+	if (edited_scene == nullptr) {
+		return;
+	}
 
 	for (int i = 0; i < instances.size(); i++) {
 		Node3D *sp = Object::cast_to<Node3D>(ObjectDB::get_instance(instances[i]));
@@ -1575,7 +1578,7 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 			} else {
 				Node *node_owner = node->get_owner();
 				if (node == edited_scene || node_owner == edited_scene || (node_owner != nullptr && edited_scene->is_editable_instance(node_owner))) {
-					if (selection_results.has(node)) {
+					if (!selection_results.has(node)) {
 						selection_results.append(node);
 					}
 					break;

@@ -2856,7 +2856,7 @@ void EditorHelp::_compute_doc_version_hash() {
 }
 
 String EditorHelp::get_cache_full_path() {
-	return EditorPaths::get_singleton()->get_cache_dir().path_join("editor_doc_cache.res");
+	return EditorPaths::get_singleton()->get_cache_dir().path_join(vformat("editor_doc_cache-%d.%d.res", VERSION_MAJOR, VERSION_MINOR));
 }
 
 void EditorHelp::load_xml_buffer(const uint8_t *p_buffer, int p_size) {

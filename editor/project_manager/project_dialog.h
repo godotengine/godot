@@ -139,7 +139,7 @@ public:
 	void set_zip_title(const String &p_title);
 
 	void ask_for_path_and_show();
-	void show_dialog();
+	void show_dialog(bool p_reset_name = true);
 
 	ProjectDialog();
 };

@@ -3407,8 +3407,7 @@ void EditorNode::_discard_changes(const String &p_str) {
 			}
 			args.push_back("--project-manager");
 
-			Error err = OS::get_singleton()->create_instance(args);
-			ERR_FAIL_COND(err);
+			OS::get_singleton()->set_restart_on_exit(true, args);
 		} break;
 		case RELOAD_CURRENT_PROJECT: {
 			restart_editor();
@@ -4444,6 +4443,21 @@ void EditorNode::update_reimported_diff_data_for_additional_nodes(
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *child = p_node->get_child(i);
 		update_reimported_diff_data_for_additional_nodes(p_edited_scene, p_reimported_root, child, p_modification_table, p_addition_list);
+	}
+}
+
+void EditorNode::replace_history_reimported_nodes(Node *p_original_root_node, Node *p_new_root_node, Node *p_node) {
+	NodePath scene_path_to_node = p_original_root_node->get_path_to(p_node);
+	Node *new_node = p_new_root_node->get_node_or_null(scene_path_to_node);
+	if (new_node) {
+		editor_history.replace_object(p_node->get_instance_id(), new_node->get_instance_id());
+	} else {
+		editor_history.replace_object(p_node->get_instance_id(), ObjectID());
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		Node *child = p_node->get_child(i);
+		replace_history_reimported_nodes(p_original_root_node, p_new_root_node, child);
 	}
 }
 
@@ -6094,6 +6108,13 @@ void EditorNode::reload_instances_with_path_in_edited_scenes(const String &p_ins
 				for (Node *owned_node : nodes_owned_by_original_node) {
 					owned_node->set_owner(nullptr);
 				}
+
+				// Replace the old nodes in the history with the new ones.
+				// Otherwise, the history will contain old nodes, and some could still be
+				// instantiated if used elsewhere, causing the "current edited item" to be
+				// linked to a node that will be destroyed later. This caused the editor to
+				// crash when reimporting scenes with animations when "Editable children" was enabled.
+				replace_history_reimported_nodes(original_node, instantiated_node, original_node);
 
 				// Delete all the remaining node children.
 				while (original_node->get_child_count()) {

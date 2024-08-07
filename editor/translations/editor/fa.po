@@ -45,13 +45,14 @@
 # Amirhossein Basirat <amir.basirat.2004@gmail.com>, 2023.
 # Mehdi Fardadi <mahdi777jan@gmail.com>, 2024.
 # saeed dashti <saeed777724@gmail.com>, 2024.
+# Armin <Armin-KF@users.noreply.hosted.weblate.org>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-04-21 15:07+0000\n"
-"Last-Translator: saeed dashti <saeed777724@gmail.com>\n"
+"PO-Revision-Date: 2024-07-23 23:03+0000\n"
+"Last-Translator: Armin <Armin-KF@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
 "Language: fa\n"
@@ -59,7 +60,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.5-dev\n"
+"X-Generator: Weblate 5.7-dev\n"
 
 msgid "Main Thread"
 msgstr "موضوع اصلی"
@@ -210,6 +211,12 @@ msgstr "دکمه جوی‌پد %d"
 
 msgid "Pressure:"
 msgstr "فشار:"
+
+msgid "canceled"
+msgstr "لغو شده"
+
+msgid "touched"
+msgstr "لمس شده"
 
 msgid "released"
 msgstr "منتشر شد"
@@ -380,6 +387,9 @@ msgstr "انتخاب کلمه پایین نشانه"
 msgid "Add Selection for Next Occurrence"
 msgstr "افزودن گزینش برای رخداد بعدی"
 
+msgid "Skip Selection for Next Occurrence"
+msgstr "رد کردن انتخاب برای رخداد بعدی"
+
 msgid "Clear Carets and Selection"
 msgstr "پاکسازی نشانه‌ها و انتخاب"
 
@@ -471,6 +481,9 @@ msgstr "بازگردانی کنش"
 msgid "Add Event"
 msgstr "افزودن رویداد"
 
+msgid "Remove Action"
+msgstr "حذف عمل"
+
 msgid "Cannot Remove Action"
 msgstr "نمی‌توان کنش را حذف کرد"
 
@@ -485,6 +498,9 @@ msgstr "فیلتر بر اساس نام..."
 
 msgid "Clear All"
 msgstr "پاک کردن همه"
+
+msgid "Clear all search filters."
+msgstr "پاک کردن تمام فیلتر های جستجو."
 
 msgid "Add New Action"
 msgstr "افزودن کنش تازه"
@@ -614,6 +630,15 @@ msgstr "نمی‌‏توان حالت حلقه را روی انیمیشن نمو
 
 msgid "Can't change loop mode on animation embedded in another scene."
 msgstr "نمی‌توان حالت حلقه را در انیمیشن تعبیه شده در صحنه دیگر تغییر داد."
+
+msgid "3D Position Track..."
+msgstr "موقعیت مسیر سه بعدی..."
+
+msgid "3D Rotation Track..."
+msgstr "مسیر چرخش سه بعدی..."
+
+msgid "3D Scale Track..."
+msgstr "مسیر اندازه سه‌بعدی..."
 
 msgid "Animation length (frames)"
 msgstr "طول انیمیشن (فریم)"
@@ -2600,6 +2625,12 @@ msgstr "ویرایشگر"
 msgid "Property:"
 msgstr "ویژگی:"
 
+msgid "Internal Property:"
+msgstr "ویژگی داخلی :"
+
+msgid "This property can only be set in the Inspector."
+msgstr "این ویژگی فقط در اینسپکتور ( inspector ) قابل تنظیم است ."
+
 msgid "Signal:"
 msgstr "سیگنال:"
 
@@ -2636,8 +2667,14 @@ msgstr "نشان دادن همه"
 msgid "Classes Only"
 msgstr "تنها کلاس‌ها"
 
+msgid "Constructors Only"
+msgstr "فقط سازندگان"
+
 msgid "Methods Only"
 msgstr "تنها روش‌ها"
+
+msgid "Operators Only"
+msgstr "فقط عملگرها"
 
 msgid "Signals Only"
 msgstr "تنها سیگنال‌ها"
@@ -2654,6 +2691,9 @@ msgstr "تنها ویژگی‌های زمینه"
 msgid "Member Type"
 msgstr "نوع عضو"
 
+msgid "Keywords"
+msgstr "کلید واژه ها"
+
 msgid "Class"
 msgstr "کلاس"
 
@@ -2667,6 +2707,11 @@ msgid "Pinning a value forces it to be saved even if it's equal to the default."
 msgstr ""
 "پین کردن یک مقدار آن را مجبور می کند حتی اگر برابر با مقدار پیش فرض باشد "
 "ذخیره شود."
+
+msgid "(%d change)"
+msgid_plural "(%d changes)"
+msgstr[0] "%dتغییر"
+msgstr[1] "%dتغییرات"
 
 msgid "Move Up"
 msgstr "حرکت به بالا"

@@ -869,7 +869,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Multiplies each component of the <see cref="Vector2"/>
+        /// Divides each component of the <see cref="Vector2"/>
         /// by the given <see cref="real_t"/>.
         /// </summary>
         /// <param name="vec">The dividend vector.</param>
