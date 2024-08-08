@@ -660,8 +660,8 @@ void HTTPRequest::_bind_methods() {
 	BIND_ENUM_CONSTANT(RESULT_TIMEOUT);
 }
 
-HTTPRequest::HTTPRequest(const Ref<HTTPClient> &p_client) {
-	client = (p_client == nullptr) ? Ref<HTTPClient>(HTTPClient::create()) : p_client;
+HTTPRequest::HTTPRequest() {
+	client = Ref<HTTPClient>(HTTPClient::create());
 	tls_options = TLSOptions::client();
 	timer = memnew(Timer);
 	timer->set_one_shot(true);

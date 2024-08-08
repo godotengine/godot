@@ -9991,7 +9991,7 @@ namespace fakeit {
 
     template<class T>
     class SilenceUnusedVariableWarnings {
-
+    public:
         void use(void *) {
         }
 

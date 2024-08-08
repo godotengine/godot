@@ -39,20 +39,49 @@
 
 namespace TestHTTPRequest {
 
-TEST_CASE("[Network][HTTPRequest] Set download chunk size") {
-	HTTPClientMock *http_client = memnew(HTTPClientMock);
-	HTTPRequest *http_request = memnew(HTTPRequest(Ref<HTTPClient>(http_client)));
+static HTTPClientMock *http_client = nullptr;
+HTTPClient *_create_func() {
+	http_client = memnew(HTTPClientMock);
+	return http_client;
+}
+}; //namespace TestHTTPRequest
 
-	fakeit::Mock<HTTPClient> *spy = new fakeit::Mock<HTTPClient>(*http_client);
-	fakeit::When(Method(*spy, get_status)).AlwaysReturn(HTTPClient::STATUS_DISCONNECTED);
-	fakeit::Spy(Method(*spy, set_read_chunk_size));
+HTTPClient *(*HTTPClient::_create)() = TestHTTPRequest::_create_func;
+
+namespace TestHTTPRequest {
+
+TEST_CASE("[Network][HTTPRequest] Download chunk size") {
+	HTTPRequest *http_request = memnew(HTTPRequest);
+
+	auto mock = new fakeit::Mock<HTTPClient>(*http_client);
 
 	int expected_value = 42;
-	http_request->set_download_chunk_size(expected_value);
 
-	fakeit::Verify(Method(*spy, set_read_chunk_size).Using(expected_value));
+	SUBCASE("is set when HTTP client is disconnected") {
+		mock->Reset();
 
-	delete spy;
+		fakeit::When(Method(*mock, get_status)).AlwaysReturn(HTTPClient::STATUS_DISCONNECTED);
+		fakeit::Spy(Method(*mock, set_read_chunk_size));
+
+		http_request->set_download_chunk_size(expected_value);
+
+		fakeit::Verify(Method(*mock, set_read_chunk_size).Using(expected_value));
+	}
+
+	SUBCASE("is not set when HTTP client is not disconnected") {
+		mock->Reset();
+
+		fakeit::When(Method(*mock, get_status)).AlwaysReturn(HTTPClient::STATUS_CONNECTED);
+		fakeit::Spy(Method(*mock, set_read_chunk_size));
+
+		ERR_PRINT_OFF;
+		http_request->set_download_chunk_size(expected_value);
+		ERR_PRINT_ON;
+
+		fakeit::Verify(Method(*mock, set_read_chunk_size).Using(expected_value)).Never();
+	}
+
+	delete mock;
 	memdelete(http_request);
 }
 
