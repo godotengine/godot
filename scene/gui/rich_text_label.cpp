@@ -4723,6 +4723,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				int height = 0;
 				bool pad = false;
 				String tooltip;
+				Variant key;
 				bool size_in_percent = false;
 				if (!bbcode_value.is_empty()) {
 					int sep = bbcode_value.find("x");
@@ -4758,9 +4759,14 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 					if (pad_option) {
 						pad = (pad_option->value == "true");
 					}
+
+					OptionMap::Iterator key_option = bbcode_options.find("key");
+					if (key_option) {
+						key = key_option->value;
+					}
 				}
 
-				add_image(texture, width, height, color, (InlineAlignment)alignment, region, Variant(), pad, tooltip, size_in_percent);
+				add_image(texture, width, height, color, (InlineAlignment)alignment, region, key, pad, tooltip, size_in_percent);
 			}
 
 			pos = end;
