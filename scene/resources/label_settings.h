@@ -48,7 +48,7 @@ class LabelSettings : public Resource {
 	int outline_size = 0;
 	Color outline_color = Color(0, 0, 0, 1);
 
-	int shadow_outline_size = 0;
+	int shadow_size = 0;
 	Color shadow_color = Color(0, 0, 0, 0);
 	Color shadow_outline_color = Color(0, 0, 0, 0);
 	Vector2 shadow_offset = Vector2(1, 1);
@@ -78,8 +78,8 @@ public:
 	void set_outline_color(const Color &p_color);
 	Color get_outline_color() const;
 
-	void set_shadow_outline_size(int p_size);
-	int get_shadow_outline_size() const;
+	void set_shadow_size(int p_size);
+	int get_shadow_size() const;
 
 	void set_shadow_color(const Color &p_color);
 	Color get_shadow_color() const;

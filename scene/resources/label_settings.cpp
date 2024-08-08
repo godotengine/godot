@@ -53,8 +53,8 @@ void LabelSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_outline_color", "color"), &LabelSettings::set_outline_color);
 	ClassDB::bind_method(D_METHOD("get_outline_color"), &LabelSettings::get_outline_color);
 
-	ClassDB::bind_method(D_METHOD("set_shadow_outline_size", "size"), &LabelSettings::set_shadow_outline_size);
-	ClassDB::bind_method(D_METHOD("get_shadow_outline_size"), &LabelSettings::get_shadow_outline_size);
+	ClassDB::bind_method(D_METHOD("set_shadow_size", "size"), &LabelSettings::set_shadow_size);
+	ClassDB::bind_method(D_METHOD("get_shadow_size"), &LabelSettings::get_shadow_size);
 
 	ClassDB::bind_method(D_METHOD("set_shadow_color", "color"), &LabelSettings::set_shadow_color);
 	ClassDB::bind_method(D_METHOD("get_shadow_color"), &LabelSettings::get_shadow_color);
@@ -80,7 +80,7 @@ void LabelSettings::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "outline_color"), "set_outline_color", "get_outline_color");
 
 	ADD_GROUP("Shadow", "shadow_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_outline_size", PROPERTY_HINT_RANGE, "0,127,1,or_greater,suffix:px"), "set_shadow_outline_size", "get_shadow_outline_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_size", PROPERTY_HINT_RANGE, "0,127,1,or_greater,suffix:px"), "set_shadow_size", "get_shadow_size");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "shadow_color"), "set_shadow_color", "get_shadow_color");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "shadow_outline_color"), "set_shadow_outline_color", "get_shadow_outline_color");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "shadow_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_shadow_offset", "get_shadow_offset");
@@ -159,15 +159,15 @@ Color LabelSettings::get_outline_color() const {
 	return outline_color;
 }
 
-void LabelSettings::set_shadow_outline_size(int p_size) {
-	if (shadow_outline_size != p_size) {
-		shadow_outline_size = p_size;
+void LabelSettings::set_shadow_size(int p_size) {
+	if (shadow_size != p_size) {
+		shadow_size = p_size;
 		emit_changed();
 	}
 }
 
-int LabelSettings::get_shadow_outline_size() const {
-	return shadow_outline_size;
+int LabelSettings::get_shadow_size() const {
+	return shadow_size;
 }
 
 void LabelSettings::set_shadow_color(const Color &p_color) {

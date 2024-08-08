@@ -440,7 +440,7 @@ void Label::_notification(int p_what) {
 			Color font_outline_color = has_settings ? settings->get_outline_color() : theme_cache.font_outline_color;
 			Color font_shadow_outline_color = has_settings ? settings->get_shadow_outline_color() : theme_cache.font_shadow_outline_color;
 			int outline_size = has_settings ? settings->get_outline_size() : theme_cache.font_outline_size;
-			int shadow_outline_size = has_settings ? settings->get_shadow_outline_size() : theme_cache.font_shadow_outline_size;
+			int shadow_outline_size = has_settings ? settings->get_shadow_size() : theme_cache.font_shadow_outline_size;
 			bool shadow_before_outline = has_settings ? settings->get_draw_shadow_before_outline() : theme_cache.draw_shadow_before_outline;
 			bool rtl = (TS->shaped_text_get_inferred_direction(text_rid) == TextServer::DIRECTION_RTL);
 			bool rtl_layout = is_layout_rtl();
