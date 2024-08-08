@@ -2175,6 +2175,7 @@ void RasterizerCanvasGLES3::canvas_begin(RID p_to_render_target, bool p_to_backb
 	GLES3::Config *config = GLES3::Config::get_singleton();
 
 	GLES3::RenderTarget *render_target = texture_storage->get_render_target(p_to_render_target);
+	ERR_FAIL_NULL(render_target);
 
 	if (p_to_backbuffer) {
 		glBindFramebuffer(GL_FRAMEBUFFER, render_target->backbuffer_fbo);

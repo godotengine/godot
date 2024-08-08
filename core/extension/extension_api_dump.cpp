@@ -1239,7 +1239,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 				}
 			}
 
-			if (p_include_docs && class_doc != nullptr) {
+			if (p_include_docs) {
 				d["brief_description"] = fix_doc_description(class_doc->brief_description);
 				d["description"] = fix_doc_description(class_doc->description);
 			}

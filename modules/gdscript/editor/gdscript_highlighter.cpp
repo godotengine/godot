@@ -376,7 +376,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			while (str[non_op] == '-' || str[non_op] == '+' || str[non_op] == '~') {
 				non_op++;
 			}
-			if (is_digit(str[non_op]) || (str[non_op] == '.' && non_op < line_length && is_digit(str[non_op + 1]))) {
+			if (is_digit(str[non_op]) || (str[non_op] == '.' && non_op + 1 < line_length && is_digit(str[non_op + 1]))) {
 				in_number = true;
 			}
 		}

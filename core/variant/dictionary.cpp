@@ -227,6 +227,9 @@ bool Dictionary::recursive_equal(const Dictionary &p_dictionary, int recursion_c
 }
 
 void Dictionary::_ref(const Dictionary &p_from) const {
+	if (!p_from._p) {
+		return;
+	}
 	//make a copy first (thread safe)
 	if (!p_from._p->refcount.ref()) {
 		return; // couldn't copy

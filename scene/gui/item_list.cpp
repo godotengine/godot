@@ -652,7 +652,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 #define CAN_SELECT(i) (items[i].selectable && !items[i].disabled)
-#define IS_SAME_ROW(i, row) (i / current_columns == row)
+#define IS_SAME_ROW(i, row) ((i) / current_columns == (row))
 
 	double prev_scroll = scroll_bar->get_value();
 

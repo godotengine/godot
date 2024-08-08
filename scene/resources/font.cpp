@@ -2020,7 +2020,7 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 					if (kpk.y >= 0x80 && kpk.y <= 0xFF) {
 						kpk.y = _oem_to_unicode[encoding][kpk.y - 0x80];
 					} else if (kpk.y > 0xFF) {
-						WARN_PRINT(vformat("Invalid BMFont OEM character %x (should be 0x00-0xFF).", kpk.x));
+						WARN_PRINT(vformat("Invalid BMFont OEM character %x (should be 0x00-0xFF).", kpk.y));
 						kpk.y = 0x00;
 					}
 				}

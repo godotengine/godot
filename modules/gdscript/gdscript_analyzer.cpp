@@ -988,7 +988,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 				if (member.variable->initializer) {
 					// Check if it is call to get_node() on self (using shorthand $ or not), so we can check if @onready is needed.
 					// This could be improved by traversing the expression fully and checking the presence of get_node at any level.
-					if (!member.variable->is_static && !member.variable->onready && member.variable->initializer && (member.variable->initializer->type == GDScriptParser::Node::GET_NODE || member.variable->initializer->type == GDScriptParser::Node::CALL || member.variable->initializer->type == GDScriptParser::Node::CAST)) {
+					if (!member.variable->is_static && !member.variable->onready && (member.variable->initializer->type == GDScriptParser::Node::GET_NODE || member.variable->initializer->type == GDScriptParser::Node::CALL || member.variable->initializer->type == GDScriptParser::Node::CAST)) {
 						GDScriptParser::Node *expr = member.variable->initializer;
 						if (expr->type == GDScriptParser::Node::CAST) {
 							expr = static_cast<GDScriptParser::CastNode *>(expr)->operand;
@@ -4804,7 +4804,7 @@ void GDScriptAnalyzer::reduce_ternary_op(GDScriptParser::TernaryOpNode *p_ternar
 
 	GDScriptParser::DataType result;
 
-	if (p_ternary_op->condition && p_ternary_op->condition->is_constant && p_ternary_op->true_expr->is_constant && p_ternary_op->false_expr && p_ternary_op->false_expr->is_constant) {
+	if (p_ternary_op->condition && p_ternary_op->condition->is_constant && p_ternary_op->true_expr && p_ternary_op->true_expr->is_constant && p_ternary_op->false_expr && p_ternary_op->false_expr->is_constant) {
 		p_ternary_op->is_constant = true;
 		if (p_ternary_op->condition->reduced_value.booleanize()) {
 			p_ternary_op->reduced_value = p_ternary_op->true_expr->reduced_value;
