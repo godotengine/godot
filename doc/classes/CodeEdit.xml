@@ -721,6 +721,9 @@
 		<theme_item name="can_fold_code_region" data_type="icon" type="Texture2D">
 			Sets a custom [Texture2D] to draw in the line folding gutter when a code region can be folded.
 		</theme_item>
+		<theme_item name="completion_color_bg" data_type="icon" type="Texture2D">
+			Background panel for the color preview box in autocompletion (visible when the color is translucent).
+		</theme_item>
 		<theme_item name="executing_line" data_type="icon" type="Texture2D">
 			Icon to draw in the executing gutter for executing lines.
 		</theme_item>
