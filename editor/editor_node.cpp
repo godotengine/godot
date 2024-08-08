@@ -1042,10 +1042,16 @@ void EditorNode::_resources_reimporting(const Vector<String> &p_resources) {
 	// because if a mesh is present in an inherited scene, the resource will be modified in
 	// the inherited scene. Then, get_modified_properties_for_node will return the mesh property,
 	// which will trigger a recopy of the previous mesh, preventing the reload.
+	scenes_modification_table.clear();
+	List<String> scenes;
 	for (const String &res_path : p_resources) {
 		if (ResourceLoader::get_resource_type(res_path) == "PackedScene") {
-			preload_reimporting_with_path_in_edited_scenes(res_path);
+			scenes.push_back(res_path);
 		}
+	}
+
+	if (scenes.size() > 0) {
+		preload_reimporting_with_path_in_edited_scenes(scenes);
 	}
 }
 
@@ -1080,8 +1086,9 @@ void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
 
 	for (const String &E : scenes) {
 		reload_scene(E);
-		reload_instances_with_path_in_edited_scenes(E);
 	}
+
+	reload_instances_with_path_in_edited_scenes();
 
 	_set_current_scene_nocheck(current_tab);
 }
@@ -5870,9 +5877,7 @@ void EditorNode::find_all_instances_inheriting_path_in_node(Node *p_root, Node *
 	}
 }
 
-void EditorNode::preload_reimporting_with_path_in_edited_scenes(const String &p_instance_path) {
-	scenes_modification_table.clear();
-
+void EditorNode::preload_reimporting_with_path_in_edited_scenes(const List<String> &p_scenes) {
 	EditorProgress progress("preload_reimporting_scene", TTR("Preparing scenes for reload"), editor_data.get_edited_scene_count());
 
 	int original_edited_scene_idx = editor_data.get_edited_scene();
@@ -5882,35 +5887,42 @@ void EditorNode::preload_reimporting_with_path_in_edited_scenes(const String &p_
 	for (int current_scene_idx = 0; current_scene_idx < editor_data.get_edited_scene_count(); current_scene_idx++) {
 		progress.step(vformat(TTR("Analyzing scene %s"), editor_data.get_scene_title(current_scene_idx)), current_scene_idx);
 
-		if (editor_data.get_scene_path(current_scene_idx) == p_instance_path) {
-			continue;
-		}
 		Node *edited_scene_root = editor_data.get_edited_scene_root(current_scene_idx);
 
 		if (edited_scene_root) {
-			List<Node *> instance_list;
-			find_all_instances_inheriting_path_in_node(edited_scene_root, edited_scene_root, p_instance_path, instance_list);
-			if (instance_list.size() > 0) {
-				SceneModificationsEntry scene_motifications;
-				editor_data.set_edited_scene(current_scene_idx);
+			SceneModificationsEntry scene_motifications;
 
-				List<Node *> instance_list_with_children;
-				for (Node *original_node : instance_list) {
-					InstanceModificationsEntry instance_modifications;
-
-					// Fetching all the modified properties of the nodes reimported scene.
-					get_preload_scene_modification_table(edited_scene_root, original_node, original_node, instance_modifications);
-
-					instance_modifications.original_node = original_node;
-					scene_motifications.instance_list.push_back(instance_modifications);
-
-					instance_list_with_children.push_back(original_node);
-					get_children_nodes(original_node, instance_list_with_children);
+			for (const String &instance_path : p_scenes) {
+				if (editor_data.get_scene_path(current_scene_idx) == instance_path) {
+					continue;
 				}
 
-				// Search the scene to find nodes that references the nodes will be recreated.
-				get_preload_modifications_reference_to_nodes(edited_scene_root, edited_scene_root, instance_list, instance_list_with_children, scene_motifications.other_instances_modifications);
+				List<Node *> instance_list;
+				find_all_instances_inheriting_path_in_node(edited_scene_root, edited_scene_root, instance_path, instance_list);
+				if (instance_list.size() > 0) {
+					editor_data.set_edited_scene(current_scene_idx);
 
+					List<Node *> instance_list_with_children;
+					for (Node *original_node : instance_list) {
+						InstanceModificationsEntry instance_modifications;
+
+						// Fetching all the modified properties of the nodes reimported scene.
+						get_preload_scene_modification_table(edited_scene_root, original_node, original_node, instance_modifications);
+
+						instance_modifications.original_node = original_node;
+						instance_modifications.instance_path = instance_path;
+						scene_motifications.instance_list.push_back(instance_modifications);
+
+						instance_list_with_children.push_back(original_node);
+						get_children_nodes(original_node, instance_list_with_children);
+					}
+
+					// Search the scene to find nodes that references the nodes will be recreated.
+					get_preload_modifications_reference_to_nodes(edited_scene_root, edited_scene_root, instance_list, instance_list_with_children, scene_motifications.other_instances_modifications);
+				}
+			}
+
+			if (scene_motifications.instance_list.size() > 0) {
 				scenes_modification_table[current_scene_idx] = scene_motifications;
 			}
 		}
@@ -5921,24 +5933,30 @@ void EditorNode::preload_reimporting_with_path_in_edited_scenes(const String &p_
 	progress.step(TTR("Preparation done."), editor_data.get_edited_scene_count());
 }
 
-void EditorNode::reload_instances_with_path_in_edited_scenes(const String &p_instance_path) {
+void EditorNode::reload_instances_with_path_in_edited_scenes() {
 	if (scenes_modification_table.size() == 0) {
 		return;
 	}
-	Array replaced_nodes;
-
 	EditorProgress progress("reloading_scene", TTR("Scenes reloading"), editor_data.get_edited_scene_count());
 	progress.step(TTR("Reloading..."), 0, true);
 
-	// Reload the new instance.
 	Error err;
-	Ref<PackedScene> instance_scene_packed_scene = ResourceLoader::load(p_instance_path, "", ResourceFormatLoader::CACHE_MODE_REPLACE, &err);
-
-	ERR_FAIL_COND(err != OK);
-	ERR_FAIL_COND(instance_scene_packed_scene.is_null());
-
+	Array replaced_nodes;
 	HashMap<String, Ref<PackedScene>> local_scene_cache;
-	local_scene_cache[p_instance_path] = instance_scene_packed_scene;
+
+	// Reload the new instances.
+	for (KeyValue<int, SceneModificationsEntry> &scene_modifications_elem : scenes_modification_table) {
+		for (InstanceModificationsEntry instance_modifications : scene_modifications_elem.value.instance_list) {
+			if (!local_scene_cache.has(instance_modifications.instance_path)) {
+				Ref<PackedScene> instance_scene_packed_scene = ResourceLoader::load(instance_modifications.instance_path, "", ResourceFormatLoader::CACHE_MODE_REPLACE, &err);
+
+				ERR_FAIL_COND(err != OK);
+				ERR_FAIL_COND(instance_scene_packed_scene.is_null());
+
+				local_scene_cache[instance_modifications.instance_path] = instance_scene_packed_scene;
+			}
+		}
+	}
 
 	// Save the current scene state/selection in case of lost.
 	Dictionary editor_state = _get_main_scene_state();
@@ -5980,11 +5998,12 @@ void EditorNode::reload_instances_with_path_in_edited_scenes(const String &p_ins
 		for (InstanceModificationsEntry instance_modifications : scene_modifications->instance_list) {
 			Node *original_node = instance_modifications.original_node;
 			String original_node_file_path = original_node->get_scene_file_path();
+			Ref<PackedScene> instance_scene_packed_scene = local_scene_cache[instance_modifications.instance_path];
 
 			// Load a replacement scene for the node.
 			Ref<PackedScene> current_packed_scene;
 			Ref<PackedScene> base_packed_scene;
-			if (original_node_file_path == p_instance_path) {
+			if (original_node_file_path == instance_modifications.instance_path) {
 				// If the node file name directly matches the scene we're replacing,
 				// just load it since we already cached it.
 				current_packed_scene = instance_scene_packed_scene;
@@ -6033,7 +6052,7 @@ void EditorNode::reload_instances_with_path_in_edited_scenes(const String &p_ins
 			// it's a muli-level inheritance scene. We should use
 			NodePath scene_path_to_node = current_edited_scene->get_path_to(original_node);
 			Ref<SceneState> scene_state = current_edited_scene->get_scene_inherited_state();
-			if (scene_path_to_node != "." && scene_state.is_valid() && scene_state->get_path() != p_instance_path && scene_state->find_node_by_path(scene_path_to_node) >= 0) {
+			if (scene_path_to_node != "." && scene_state.is_valid() && scene_state->get_path() != instance_modifications.instance_path && scene_state->find_node_by_path(scene_path_to_node) >= 0) {
 				Node *root_node = scene_state->instantiate(SceneState::GenEditState::GEN_EDIT_STATE_INSTANCE);
 				instantiated_node = root_node->get_node(scene_path_to_node);
 
@@ -6167,7 +6186,7 @@ void EditorNode::reload_instances_with_path_in_edited_scenes(const String &p_ins
 			if (owner) {
 				Ref<SceneState> ss_inst = owner->get_scene_instance_state();
 				if (ss_inst.is_valid()) {
-					ss_inst->update_instance_resource(p_instance_path, current_packed_scene);
+					ss_inst->update_instance_resource(instance_modifications.instance_path, current_packed_scene);
 				}
 
 				owner->set_editable_instance(instantiated_node, is_editable);
