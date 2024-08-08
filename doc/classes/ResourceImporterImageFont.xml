@@ -40,7 +40,7 @@
 		</member>
 		<member name="kerning_pairs" type="PackedStringArray" setter="" getter="" default="PackedStringArray()">
 			Kerning pairs for the font. Kerning pair adjust the spacing between two characters.
-			Each string consist of three space separated values: "from" string, "to" string and integer offset. Each combination form the two string for a kerning pair, e.g, [code]ab cd -3[/code] will create kerning pairs [code]ac[/code], [code]ad[/code], [code]bc[/code], and [code]bd[/code] with offset [code]-3[/code].
+			Each string consist of three space separated values: "from" string, "to" string and integer offset. Each combination form the two string for a kerning pair, e.g, [code]ab cd -3[/code] will create kerning pairs [code]ac[/code], [code]ad[/code], [code]bc[/code], and [code]bd[/code] with offset [code]-3[/code]. [code]\uXXXX[/code] escape sequences can be used to add Unicode characters.
 		</member>
 		<member name="rows" type="int" setter="" getter="" default="1">
 			Number of rows in the font image. See also [member columns].
