@@ -823,6 +823,7 @@ public:
 
 	struct InstanceModificationsEntry {
 		Node *original_node;
+		String instance_path;
 		List<Node *> instance_list;
 		HashMap<NodePath, ModificationNodeEntry> modifications;
 		List<AdditiveNodeEntry> addition_list;
@@ -907,8 +908,8 @@ public:
 	void reload_scene(const String &p_path);
 
 	void find_all_instances_inheriting_path_in_node(Node *p_root, Node *p_node, const String &p_instance_path, List<Node *> &p_instance_list);
-	void preload_reimporting_with_path_in_edited_scenes(const String &p_path);
-	void reload_instances_with_path_in_edited_scenes(const String &p_path);
+	void preload_reimporting_with_path_in_edited_scenes(const List<String> &p_scenes);
+	void reload_instances_with_path_in_edited_scenes();
 
 	bool is_exiting() const { return exiting; }
 
