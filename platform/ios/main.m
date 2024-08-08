@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
 	gargv = argv;
 
 	@autoreleasepool {
-		NSString *className = NSStringFromClass([GodotApplicalitionDelegate class]);
+		NSString *className = NSStringFromClass([GodotApplicationDelegate class]);
 		UIApplicationMain(argc, argv, nil, className);
 	}
 	return 0;

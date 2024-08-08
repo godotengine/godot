@@ -32,7 +32,7 @@
 
 typedef NSObject<UIApplicationDelegate> ApplicationDelegateService;
 
-@interface GodotApplicalitionDelegate : NSObject <UIApplicationDelegate>
+@interface GodotApplicationDelegate : NSObject <UIApplicationDelegate>
 
 @property(class, readonly, strong) NSArray<ApplicationDelegateService *> *services;
 
