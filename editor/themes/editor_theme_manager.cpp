@@ -1003,16 +1003,11 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			p_theme->set_stylebox("selected_focus", "Tree", style_tree_focus);
 			p_theme->set_stylebox("selected", "Tree", style_tree_selected);
 
-			Ref<StyleBoxFlat> style_tree_cursor = p_config.base_style->duplicate();
-			style_tree_cursor->set_draw_center(false);
-			style_tree_cursor->set_border_width_all(MAX(1, p_config.border_width));
-			style_tree_cursor->set_border_color(p_config.contrast_color_1);
-
 			Ref<StyleBoxFlat> style_tree_title = p_config.base_style->duplicate();
 			style_tree_title->set_bg_color(p_config.dark_color_3);
 			style_tree_title->set_border_width_all(0);
-			p_theme->set_stylebox("cursor", "Tree", style_tree_cursor);
-			p_theme->set_stylebox("cursor_unfocused", "Tree", style_tree_cursor);
+			p_theme->set_stylebox("cursor", "Tree", make_empty_stylebox());
+			p_theme->set_stylebox("cursor_unfocused", "Tree", make_empty_stylebox());
 			p_theme->set_stylebox("title_button_normal", "Tree", style_tree_title);
 			p_theme->set_stylebox("title_button_hover", "Tree", style_tree_title);
 			p_theme->set_stylebox("title_button_pressed", "Tree", style_tree_title);
