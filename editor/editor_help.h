@@ -71,6 +71,7 @@ class FindBar : public HBoxContainer {
 protected:
 	void _notification(int p_what);
 	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
+	void _focus_lost();
 
 	bool _search(bool p_search_previous = false);
 
