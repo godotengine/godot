@@ -2011,7 +2011,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 
 			//store as generic object
 
-			p_store_string_func(p_store_string_ud, "Object(" + obj->get_class() + ",");
+			p_store_string_func(p_store_string_ud, "Object(\n" + obj->get_class() + ",\n");
 
 			List<PropertyInfo> props;
 			obj->get_property_list(&props);
@@ -2023,15 +2023,15 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					if (first) {
 						first = false;
 					} else {
-						p_store_string_func(p_store_string_ud, ",");
+						p_store_string_func(p_store_string_ud, ",\n");
 					}
 
-					p_store_string_func(p_store_string_ud, "\"" + E.name + "\":");
+					p_store_string_func(p_store_string_ud, "\"" + E.name + "\": ");
 					write(obj->get(E.name), p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
 				}
 			}
 
-			p_store_string_func(p_store_string_ud, ")\n");
+			p_store_string_func(p_store_string_ud, "\n)");
 		} break;
 
 		case Variant::DICTIONARY: {
