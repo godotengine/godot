@@ -811,6 +811,10 @@ void Mesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("surface_set_material", "surf_idx", "material"), &Mesh::surface_set_material);
 	ClassDB::bind_method(D_METHOD("surface_get_material", "surf_idx"), &Mesh::surface_get_material);
 	ClassDB::bind_method(D_METHOD("create_placeholder"), &Mesh::create_placeholder);
+#ifndef _3D_DISABLED
+	ClassDB::bind_method(D_METHOD("create_convex_shapes", "settings"), &Mesh::create_convex_shapes, DEFVAL(Ref<MeshConvexDecompositionSettings>()));
+	ClassDB::set_method_flags("Mesh", "create_convex_shapes", METHOD_FLAGS_DEFAULT);
+#endif // _3D_DISABLED
 
 	BIND_ENUM_CONSTANT(PRIMITIVE_POINTS);
 	BIND_ENUM_CONSTANT(PRIMITIVE_LINES);
@@ -901,6 +905,28 @@ void Mesh::clear_cache() const {
 }
 
 #ifndef _3D_DISABLED
+Array Mesh::create_convex_shapes(const Ref<MeshConvexDecompositionSettings> &p_settings) const {
+	Ref<MeshConvexDecompositionSettings> settings;
+	if (p_settings.is_valid()) {
+		settings = p_settings;
+	} else {
+		settings.instantiate();
+		settings->set_max_convex_hulls(32);
+		settings->set_max_concavity(0.001);
+	}
+
+	Vector<Ref<Shape3D>> decomposed_shapes = convex_decompose(settings);
+
+	Array ret;
+	ret.resize(decomposed_shapes.size());
+
+	for (int i = 0; i < decomposed_shapes.size(); i++) {
+		ret[i] = static_cast<Ref<ConvexPolygonShape3D>>(decomposed_shapes[i]);
+	}
+
+	return ret;
+}
+
 Vector<Ref<Shape3D>> Mesh::convex_decompose(const Ref<MeshConvexDecompositionSettings> &p_settings) const {
 	ERR_FAIL_NULL_V(convex_decomposition_function, Vector<Ref<Shape3D>>());
 
