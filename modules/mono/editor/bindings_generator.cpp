@@ -87,6 +87,7 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 #define CS_METHOD_INVOKE_GODOT_CLASS_METHOD "InvokeGodotClassMethod"
 #define CS_METHOD_HAS_GODOT_CLASS_METHOD "HasGodotClassMethod"
 #define CS_METHOD_HAS_GODOT_CLASS_SIGNAL "HasGodotClassSignal"
+#define CS_METHOD_INIT_GODOT_GET_NODE_MEMBERS "_InitGodotGetNodeMembers"
 
 #define CS_STATIC_FIELD_NATIVE_CTOR "NativeCtor"
 #define CS_STATIC_FIELD_METHOD_BIND_PREFIX "MethodBind"
@@ -2431,6 +2432,21 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		}
 
 		output << INDENT1 "}\n";
+
+		if (itype.proxy_name == "Node") {
+			// Generate _InitGodotGetNodeMembers only for Node has the base method.
+			// If the [GetNode] attribute is used, the ScriptMethodsGenerator will generate an override for this method
+			// and put the assignations for GetNode property and fields into it.
+			output << MEMBER_BEGIN "/// <summary>\n"
+				   << INDENT1 "/// Initialize the properties and fields based on [GetNode] attribute.\n"
+				   << INDENT1 "/// This method is used internally by Godot.\n"
+				   << INDENT1 "/// Do not call or override this method.\n"
+				   << INDENT1 "/// </summary>\n";
+
+			output << INDENT1 "protected internal virtual void " CS_METHOD_INIT_GODOT_GET_NODE_MEMBERS "()\n"
+				   << INDENT1 "{\n";
+			output << INDENT1 "}\n";
+		}
 	}
 
 	//Generate StringName for all class members

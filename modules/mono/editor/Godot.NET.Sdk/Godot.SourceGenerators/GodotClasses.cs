@@ -14,5 +14,6 @@ namespace Godot.SourceGenerators
         public const string GodotClassNameAttr = "Godot.GodotClassNameAttribute";
         public const string GlobalClassAttr = "Godot.GlobalClassAttribute";
         public const string SystemFlagsAttr = "System.FlagsAttribute";
+        public const string GetNodeAttr = "Godot.GetNodeAttribute";
     }
 }
