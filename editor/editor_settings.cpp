@@ -636,7 +636,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Behavior: Navigation
 	_initial_set("text_editor/behavior/navigation/move_caret_on_right_click", true);
 	_initial_set("text_editor/behavior/navigation/scroll_past_end_of_file", false);
-	_initial_set("text_editor/behavior/navigation/smooth_scrolling", true);
+	// Disable smooth scrolling by default due to known bugs like GH-28385.
+	_initial_set("text_editor/behavior/navigation/smooth_scrolling", false);
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/behavior/navigation/v_scroll_speed", 80, "1,10000,1")
 	_initial_set("text_editor/behavior/navigation/drag_and_drop_selection", true);
 	_initial_set("text_editor/behavior/navigation/stay_in_script_editor_on_node_selected", true);
