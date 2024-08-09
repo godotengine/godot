@@ -51,6 +51,7 @@ void RendererCanvasCull::_render_canvas_item_tree(RID p_to_render_target, Canvas
 	memset(z_last_list, 0, z_range * sizeof(RendererCanvasRender::Item *));
 
 	for (int i = 0; i < p_child_item_count; i++) {
+		p_child_items[i].item->canvas_group_level = 0;
 		_cull_canvas_item(p_child_items[i].item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, nullptr, nullptr, true, p_canvas_cull_mask, p_child_items[i].mirror, 1);
 	}
 
@@ -184,10 +185,6 @@ void RendererCanvasCull::_attach_canvas_item_for_draw(RendererCanvasCull::Item *
 
 				p_global_rect.position += p_clip_rect.position;
 			}
-
-			// Very important that this is cleared after used in RendererCanvasRender to avoid
-			// potential crashes.
-			r_canvas_group_from->canvas_group_owner = ci;
 		}
 	}
 
@@ -357,6 +354,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 			sorter.sort(child_items, child_item_count);
 
 			for (i = 0; i < child_item_count; i++) {
+				child_items[i]->canvas_group_level = ci->canvas_group_level;
 				_cull_canvas_item(child_items[i], final_xform * child_items[i]->ysort_xform, p_clip_rect, modulate * child_items[i]->ysort_modulate, child_items[i]->ysort_parent_abs_z_index, r_z_list, r_z_last_list, (Item *)ci->final_clip_owner, (Item *)child_items[i]->material_owner, false, p_canvas_cull_mask, child_items[i]->repeat_size, child_items[i]->repeat_times);
 			}
 		} else {
@@ -377,10 +375,12 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 			canvas_group_from = r_z_last_list[zidx];
 		}
 
+		uint32_t canvas_group_child_level = use_canvas_group ? ci->canvas_group_level + 1 : ci->canvas_group_level;
 		for (int i = 0; i < child_item_count; i++) {
 			if (!child_items[i]->behind && !use_canvas_group) {
 				continue;
 			}
+			child_items[i]->canvas_group_level = canvas_group_child_level;
 			_cull_canvas_item(child_items[i], final_xform, p_clip_rect, modulate, p_z, r_z_list, r_z_last_list, (Item *)ci->final_clip_owner, p_material_owner, true, p_canvas_cull_mask, repeat_size, repeat_times);
 		}
 		_attach_canvas_item_for_draw(ci, p_canvas_clip, r_z_list, r_z_last_list, final_xform, p_clip_rect, global_rect, modulate, p_z, p_material_owner, use_canvas_group, canvas_group_from);
@@ -388,6 +388,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 			if (child_items[i]->behind || use_canvas_group) {
 				continue;
 			}
+			child_items[i]->canvas_group_level = ci->canvas_group_level;
 			_cull_canvas_item(child_items[i], final_xform, p_clip_rect, modulate, p_z, r_z_list, r_z_last_list, (Item *)ci->final_clip_owner, p_material_owner, true, p_canvas_cull_mask, repeat_size, repeat_times);
 		}
 	}

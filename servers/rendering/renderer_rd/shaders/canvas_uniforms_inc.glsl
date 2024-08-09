@@ -19,6 +19,7 @@
 #define FLAGS_NINEPATCH_V_MODE_SHIFT 18
 
 #define FLAGS_LIGHT_COUNT_SHIFT 20
+#define FLAGS_MASK_MODE_SHIFT 24
 
 #define FLAGS_DEFAULT_NORMAL_MAP_USED (1 << 26)
 #define FLAGS_DEFAULT_SPECULAR_MAP_USED (1 << 27)
@@ -124,7 +125,8 @@ layout(set = 0, binding = 4) uniform texture2D shadow_atlas_texture;
 layout(set = 0, binding = 5) uniform sampler shadow_sampler;
 
 layout(set = 0, binding = 6) uniform texture2D color_buffer;
-layout(set = 0, binding = 7) uniform texture2D sdf_texture;
+layout(set = 0, binding = 7) uniform texture2D mask_buffer;
+layout(set = 0, binding = 8) uniform texture2D sdf_texture;
 
 #include "samplers_inc.glsl"
 
