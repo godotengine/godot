@@ -188,6 +188,8 @@ static func get_property_hint_name(hint: PropertyHint) -> String:
 			return "PROPERTY_HINT_HIDE_QUATERNION_EDIT"
 		PROPERTY_HINT_PASSWORD:
 			return "PROPERTY_HINT_PASSWORD"
+		PROPERTY_HINT_INPUT_NAME:
+			return "PROPERTY_HINT_INPUT_NAME"
 	push_error("Argument `hint` is invalid. Use `PROPERTY_HINT_*` constants.")
 	return "<invalid hint>"
 
