@@ -3341,6 +3341,10 @@ void Node::request_ready() {
 	data.ready_first = true;
 }
 
+void Node::_set_use_identity_transform(bool p_enabled) {
+	data.use_identity_transform = p_enabled;
+}
+
 void Node::_call_input(const Ref<InputEvent> &p_event) {
 	if (p_event->get_device() != InputEvent::DEVICE_ID_INTERNAL) {
 		GDVIRTUAL_CALL(_input, p_event);

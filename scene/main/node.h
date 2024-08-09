@@ -225,6 +225,10 @@ private:
 		// is switched on.
 		bool physics_interpolated : 1;
 
+		// For certain nodes (e.g. CPUParticles2D in global mode) it can be useful to not send the
+		// canvas item transform to the RenderingServer, and handle the particles in world space.
+		bool use_identity_transform : 1;
+
 		bool parent_owned : 1;
 		bool in_constructor : 1;
 		bool use_placeholder : 1;
@@ -333,6 +337,9 @@ protected:
 	void _add_child_nocheck(Node *p_child, const StringName &p_name, InternalMode p_internal_mode = INTERNAL_MODE_DISABLED);
 	void _set_owner_nocheck(Node *p_owner);
 	void _set_name_nocheck(const StringName &p_name);
+
+	void _set_use_identity_transform(bool p_enabled);
+	_FORCE_INLINE_ bool _is_using_identity_transform() const { return data.use_identity_transform; }
 
 	//call from SceneTree
 	void _call_input(const Ref<InputEvent> &p_event);

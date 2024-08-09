@@ -52,6 +52,7 @@ void CPUParticles2D::set_amount(int p_amount) {
 	ERR_FAIL_COND_MSG(p_amount < 1, "Amount of particles must be greater than 0.");
 
 	particles.resize(p_amount);
+	particles_prev.resize(p_amount);
 	{
 		Particle *w = particles.ptrw();
 
@@ -61,6 +62,7 @@ void CPUParticles2D::set_amount(int p_amount) {
 	}
 
 	particle_data.resize((8 + 4 + 4) * p_amount);
+	particle_data_prev.resize(particle_data.size());
 	RS::get_singleton()->multimesh_allocate_data(multimesh, p_amount, RS::MULTIMESH_TRANSFORM_2D, true, true);
 
 	particle_order.resize(p_amount);
@@ -93,7 +95,10 @@ void CPUParticles2D::set_lifetime_randomness(double p_random) {
 
 void CPUParticles2D::set_use_local_coordinates(bool p_enable) {
 	local_coords = p_enable;
+	// Prevent sending item transforms when using global coordinates,
+	// and inform RenderingServer to use identity mode.
 	set_notify_transform(!p_enable);
+	set_use_identity_transform(!p_enable);
 }
 
 void CPUParticles2D::set_speed_scale(double p_scale) {
@@ -223,6 +228,31 @@ void CPUParticles2D::_texture_changed() {
 		queue_redraw();
 		_update_mesh_texture();
 	}
+}
+
+void CPUParticles2D::_refresh_interpolation_state() {
+	if (!is_inside_tree()) {
+		return;
+	}
+	bool interpolated = is_physics_interpolated_and_enabled();
+
+	if (_interpolated == interpolated) {
+		return;
+	}
+
+	bool curr_redraw = do_redraw;
+
+	// Remove all connections.
+	// This isn't very efficient, but should only happen rarely.
+	_set_do_redraw(false);
+
+	_interpolated = interpolated;
+
+	set_process_internal(!_interpolated);
+	set_physics_process_internal(!_interpolated);
+
+	// Re-establish all connections.
+	_set_do_redraw(curr_redraw);
 }
 
 Ref<Texture2D> CPUParticles2D::get_texture() const {
@@ -556,13 +586,23 @@ static real_t rand_from_seed(uint32_t &seed) {
 	return (seed % uint32_t(65536)) / 65535.0;
 }
 
-void CPUParticles2D::_update_internal() {
+void CPUParticles2D::_update_internal(bool p_on_physics_tick) {
 	if (particles.size() == 0 || !is_visible_in_tree()) {
 		_set_do_redraw(false);
 		return;
 	}
 
-	double delta = get_process_delta_time();
+	// Change update mode?
+	_refresh_interpolation_state();
+
+	// Is this update occurring on a physics tick (i.e. interpolated), or on a frame tick?
+	double delta = 0.0;
+	if (p_on_physics_tick) {
+		delta = get_physics_process_delta_time();
+	} else {
+		delta = get_process_delta_time();
+	}
+
 	if (!active && !emitting) {
 		set_process_internal(false);
 		_set_do_redraw(false);
@@ -615,6 +655,12 @@ void CPUParticles2D::_update_internal() {
 	}
 
 	_update_particle_data_buffer();
+
+	// If we are interpolating, we send the data to the RenderingServer
+	// right away on a physics tick instead of waiting until a render frame.
+	if (p_on_physics_tick && do_redraw) {
+		_update_render_thread();
+	}
 }
 
 void CPUParticles2D::_particles_process(double p_delta) {
@@ -622,6 +668,7 @@ void CPUParticles2D::_particles_process(double p_delta) {
 
 	int pcount = particles.size();
 	Particle *w = particles.ptrw();
+	Particle *w_prev = particles_prev.ptrw();
 
 	Particle *parray = w;
 
@@ -652,6 +699,12 @@ void CPUParticles2D::_particles_process(double p_delta) {
 
 		if (!emitting && !p.active) {
 			continue;
+		}
+
+		// For interpolation we need to keep a record of previous particles.
+		if (_interpolated) {
+			DEV_ASSERT(particles.size() == particles_prev.size());
+			p.copy_to(w_prev[i]);
 		}
 
 		double local_delta = p_delta;
@@ -814,106 +867,10 @@ void CPUParticles2D::_particles_process(double p_delta) {
 			p.active = false;
 			tv = 1.0;
 		} else {
-			uint32_t alt_seed = p.seed;
-
-			p.time += local_delta;
-			p.custom[1] = p.time / lifetime;
-			tv = p.time / p.lifetime;
-
-			real_t tex_linear_velocity = 1.0;
-			if (curve_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid()) {
-				tex_linear_velocity = curve_parameters[PARAM_INITIAL_LINEAR_VELOCITY]->sample(tv);
-			}
-
-			real_t tex_orbit_velocity = 1.0;
-			if (curve_parameters[PARAM_ORBIT_VELOCITY].is_valid()) {
-				tex_orbit_velocity = curve_parameters[PARAM_ORBIT_VELOCITY]->sample(tv);
-			}
-
-			real_t tex_angular_velocity = 1.0;
-			if (curve_parameters[PARAM_ANGULAR_VELOCITY].is_valid()) {
-				tex_angular_velocity = curve_parameters[PARAM_ANGULAR_VELOCITY]->sample(tv);
-			}
-
-			real_t tex_linear_accel = 1.0;
-			if (curve_parameters[PARAM_LINEAR_ACCEL].is_valid()) {
-				tex_linear_accel = curve_parameters[PARAM_LINEAR_ACCEL]->sample(tv);
-			}
-
-			real_t tex_tangential_accel = 1.0;
-			if (curve_parameters[PARAM_TANGENTIAL_ACCEL].is_valid()) {
-				tex_tangential_accel = curve_parameters[PARAM_TANGENTIAL_ACCEL]->sample(tv);
-			}
-
-			real_t tex_radial_accel = 1.0;
-			if (curve_parameters[PARAM_RADIAL_ACCEL].is_valid()) {
-				tex_radial_accel = curve_parameters[PARAM_RADIAL_ACCEL]->sample(tv);
-			}
-
-			real_t tex_damping = 1.0;
-			if (curve_parameters[PARAM_DAMPING].is_valid()) {
-				tex_damping = curve_parameters[PARAM_DAMPING]->sample(tv);
-			}
-
-			real_t tex_angle = 1.0;
-			if (curve_parameters[PARAM_ANGLE].is_valid()) {
-				tex_angle = curve_parameters[PARAM_ANGLE]->sample(tv);
-			}
-			real_t tex_anim_speed = 1.0;
-			if (curve_parameters[PARAM_ANIM_SPEED].is_valid()) {
-				tex_anim_speed = curve_parameters[PARAM_ANIM_SPEED]->sample(tv);
-			}
-
-			real_t tex_anim_offset = 1.0;
-			if (curve_parameters[PARAM_ANIM_OFFSET].is_valid()) {
-				tex_anim_offset = curve_parameters[PARAM_ANIM_OFFSET]->sample(tv);
-			}
-
-			Vector2 force = gravity;
-			Vector2 pos = p.transform[2];
-
-			//apply linear acceleration
-			force += p.velocity.length() > 0.0 ? p.velocity.normalized() * tex_linear_accel * Math::lerp(parameters_min[PARAM_LINEAR_ACCEL], parameters_max[PARAM_LINEAR_ACCEL], rand_from_seed(alt_seed)) : Vector2();
-			//apply radial acceleration
-			Vector2 org = emission_xform[2];
-			Vector2 diff = pos - org;
-			force += diff.length() > 0.0 ? diff.normalized() * (tex_radial_accel)*Math::lerp(parameters_min[PARAM_RADIAL_ACCEL], parameters_max[PARAM_RADIAL_ACCEL], rand_from_seed(alt_seed)) : Vector2();
-			//apply tangential acceleration;
-			Vector2 yx = Vector2(diff.y, diff.x);
-			force += yx.length() > 0.0 ? (yx * Vector2(-1.0, 1.0)).normalized() * (tex_tangential_accel * Math::lerp(parameters_min[PARAM_TANGENTIAL_ACCEL], parameters_max[PARAM_TANGENTIAL_ACCEL], rand_from_seed(alt_seed))) : Vector2();
-			//apply attractor forces
-			p.velocity += force * local_delta;
-			//orbit velocity
-			real_t orbit_amount = tex_orbit_velocity * Math::lerp(parameters_min[PARAM_ORBIT_VELOCITY], parameters_max[PARAM_ORBIT_VELOCITY], rand_from_seed(alt_seed));
-			if (orbit_amount != 0.0) {
-				real_t ang = orbit_amount * local_delta * Math_TAU;
-				// Not sure why the ParticleProcessMaterial code uses a clockwise rotation matrix,
-				// but we use -ang here to reproduce its behavior.
-				Transform2D rot = Transform2D(-ang, Vector2());
-				p.transform[2] -= diff;
-				p.transform[2] += rot.basis_xform(diff);
-			}
-			if (curve_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid()) {
-				p.velocity = p.velocity.normalized() * tex_linear_velocity;
-			}
-
-			if (parameters_max[PARAM_DAMPING] + tex_damping > 0.0) {
-				real_t v = p.velocity.length();
-				real_t damp = tex_damping * Math::lerp(parameters_min[PARAM_DAMPING], parameters_max[PARAM_DAMPING], rand_from_seed(alt_seed));
-				v -= damp * local_delta;
-				if (v < 0.0) {
-					p.velocity = Vector2();
-				} else {
-					p.velocity = p.velocity.normalized() * v;
-				}
-			}
-			real_t base_angle = (tex_angle)*Math::lerp(parameters_min[PARAM_ANGLE], parameters_max[PARAM_ANGLE], p.angle_rand);
-			base_angle += p.custom[1] * lifetime * tex_angular_velocity * Math::lerp(parameters_min[PARAM_ANGULAR_VELOCITY], parameters_max[PARAM_ANGULAR_VELOCITY], rand_from_seed(alt_seed));
-			p.rotation = Math::deg_to_rad(base_angle); //angle
-			p.custom[2] = tex_anim_offset * Math::lerp(parameters_min[PARAM_ANIM_OFFSET], parameters_max[PARAM_ANIM_OFFSET], p.anim_offset_rand) + tv * tex_anim_speed * Math::lerp(parameters_min[PARAM_ANIM_SPEED], parameters_max[PARAM_ANIM_SPEED], rand_from_seed(alt_seed));
+			_particle_process(p, emission_xform, local_delta, tv);
 		}
-		//apply color
-		//apply hue rotation
+		// Apply color.
+		// Apply hue rotation.
 
 		Vector2 tex_scale = Vector2(1.0, 1.0);
 		if (split_scale) {
@@ -979,7 +936,7 @@ void CPUParticles2D::_particles_process(double p_delta) {
 			p.transform.columns[1] = Vector2(Math::sin(p.rotation), Math::cos(p.rotation));
 		}
 
-		//scale by scale
+		// Scale by scale.
 		Vector2 base_scale = tex_scale * Math::lerp(parameters_min[PARAM_SCALE], parameters_max[PARAM_SCALE], p.scale_rand);
 		if (base_scale.x < 0.00001) {
 			base_scale.x = 0.00001;
@@ -992,12 +949,117 @@ void CPUParticles2D::_particles_process(double p_delta) {
 
 		p.transform[2] += p.velocity * local_delta;
 
+		// Teleport if starting a new particle, so we don't get a streak from the old position to this new start.
+		if (restart && _interpolated) {
+			p.copy_to(w_prev[i]);
+		}
+
 		should_be_active = true;
 	}
 	if (!Math::is_equal_approx(time, 0.0) && active && !should_be_active) {
 		active = false;
 		emit_signal(SceneStringName(finished));
 	}
+}
+
+void CPUParticles2D::_particle_process(Particle &r_p, const Transform2D &p_emission_xform, double p_local_delta, float &r_tv) {
+	uint32_t alt_seed = r_p.seed;
+
+	r_p.time += p_local_delta;
+	r_p.custom[1] = r_p.time / lifetime;
+	r_tv = r_p.time / r_p.lifetime;
+
+	real_t tex_linear_velocity = 1.0;
+	if (curve_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid()) {
+		tex_linear_velocity = curve_parameters[PARAM_INITIAL_LINEAR_VELOCITY]->sample(r_tv);
+	}
+
+	real_t tex_orbit_velocity = 1.0;
+	if (curve_parameters[PARAM_ORBIT_VELOCITY].is_valid()) {
+		tex_orbit_velocity = curve_parameters[PARAM_ORBIT_VELOCITY]->sample(r_tv);
+	}
+
+	real_t tex_angular_velocity = 1.0;
+	if (curve_parameters[PARAM_ANGULAR_VELOCITY].is_valid()) {
+		tex_angular_velocity = curve_parameters[PARAM_ANGULAR_VELOCITY]->sample(r_tv);
+	}
+
+	real_t tex_linear_accel = 1.0;
+	if (curve_parameters[PARAM_LINEAR_ACCEL].is_valid()) {
+		tex_linear_accel = curve_parameters[PARAM_LINEAR_ACCEL]->sample(r_tv);
+	}
+
+	real_t tex_tangential_accel = 1.0;
+	if (curve_parameters[PARAM_TANGENTIAL_ACCEL].is_valid()) {
+		tex_tangential_accel = curve_parameters[PARAM_TANGENTIAL_ACCEL]->sample(r_tv);
+	}
+
+	real_t tex_radial_accel = 1.0;
+	if (curve_parameters[PARAM_RADIAL_ACCEL].is_valid()) {
+		tex_radial_accel = curve_parameters[PARAM_RADIAL_ACCEL]->sample(r_tv);
+	}
+
+	real_t tex_damping = 1.0;
+	if (curve_parameters[PARAM_DAMPING].is_valid()) {
+		tex_damping = curve_parameters[PARAM_DAMPING]->sample(r_tv);
+	}
+
+	real_t tex_angle = 1.0;
+	if (curve_parameters[PARAM_ANGLE].is_valid()) {
+		tex_angle = curve_parameters[PARAM_ANGLE]->sample(r_tv);
+	}
+	real_t tex_anim_speed = 1.0;
+	if (curve_parameters[PARAM_ANIM_SPEED].is_valid()) {
+		tex_anim_speed = curve_parameters[PARAM_ANIM_SPEED]->sample(r_tv);
+	}
+
+	real_t tex_anim_offset = 1.0;
+	if (curve_parameters[PARAM_ANIM_OFFSET].is_valid()) {
+		tex_anim_offset = curve_parameters[PARAM_ANIM_OFFSET]->sample(r_tv);
+	}
+
+	Vector2 force = gravity;
+	Vector2 pos = r_p.transform[2];
+
+	// Apply linear acceleration.
+	force += r_p.velocity.length() > 0.0 ? r_p.velocity.normalized() * tex_linear_accel * Math::lerp(parameters_min[PARAM_LINEAR_ACCEL], parameters_max[PARAM_LINEAR_ACCEL], rand_from_seed(alt_seed)) : Vector2();
+	// Apply radial acceleration.
+	Vector2 org = p_emission_xform[2];
+	Vector2 diff = pos - org;
+	force += diff.length() > 0.0 ? diff.normalized() * (tex_radial_accel)*Math::lerp(parameters_min[PARAM_RADIAL_ACCEL], parameters_max[PARAM_RADIAL_ACCEL], rand_from_seed(alt_seed)) : Vector2();
+	// Apply tangential acceleration.
+	Vector2 yx = Vector2(diff.y, diff.x);
+	force += yx.length() > 0.0 ? (yx * Vector2(-1.0, 1.0)).normalized() * (tex_tangential_accel * Math::lerp(parameters_min[PARAM_TANGENTIAL_ACCEL], parameters_max[PARAM_TANGENTIAL_ACCEL], rand_from_seed(alt_seed))) : Vector2();
+	// Apply attractor forces.
+	r_p.velocity += force * p_local_delta;
+	// Orbit velocity.
+	real_t orbit_amount = tex_orbit_velocity * Math::lerp(parameters_min[PARAM_ORBIT_VELOCITY], parameters_max[PARAM_ORBIT_VELOCITY], rand_from_seed(alt_seed));
+	if (orbit_amount != 0.0) {
+		real_t ang = orbit_amount * p_local_delta * Math_TAU;
+		// Not sure why the ParticleProcessMaterial code uses a clockwise rotation matrix,
+		// but we use -ang here to reproduce its behavior.
+		Transform2D rot = Transform2D(-ang, Vector2());
+		r_p.transform[2] -= diff;
+		r_p.transform[2] += rot.basis_xform(diff);
+	}
+	if (curve_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid()) {
+		r_p.velocity = r_p.velocity.normalized() * tex_linear_velocity;
+	}
+
+	if (parameters_max[PARAM_DAMPING] + tex_damping > 0.0) {
+		real_t v = r_p.velocity.length();
+		real_t damp = tex_damping * Math::lerp(parameters_min[PARAM_DAMPING], parameters_max[PARAM_DAMPING], rand_from_seed(alt_seed));
+		v -= damp * p_local_delta;
+		if (v < 0.0) {
+			r_p.velocity = Vector2();
+		} else {
+			r_p.velocity = r_p.velocity.normalized() * v;
+		}
+	}
+	real_t base_angle = (tex_angle)*Math::lerp(parameters_min[PARAM_ANGLE], parameters_max[PARAM_ANGLE], r_p.angle_rand);
+	base_angle += r_p.custom[1] * lifetime * tex_angular_velocity * Math::lerp(parameters_min[PARAM_ANGULAR_VELOCITY], parameters_max[PARAM_ANGULAR_VELOCITY], rand_from_seed(alt_seed));
+	r_p.rotation = Math::deg_to_rad(base_angle); //angle
+	r_p.custom[2] = tex_anim_offset * Math::lerp(parameters_min[PARAM_ANIM_OFFSET], parameters_max[PARAM_ANIM_OFFSET], r_p.anim_offset_rand) + r_tv * tex_anim_speed * Math::lerp(parameters_min[PARAM_ANIM_SPEED], parameters_max[PARAM_ANIM_SPEED], rand_from_seed(alt_seed));
 }
 
 void CPUParticles2D::_update_particle_data_buffer() {
@@ -1011,6 +1073,13 @@ void CPUParticles2D::_update_particle_data_buffer() {
 	float *w = particle_data.ptrw();
 	const Particle *r = particles.ptr();
 	float *ptr = w;
+
+	float *w_prev = nullptr;
+
+	if (_interpolated) {
+		DEV_ASSERT(particle_data.size() == particle_data_prev.size());
+		w_prev = particle_data_prev.ptrw();
+	}
 
 	if (draw_order != DRAW_ORDER_INDEX) {
 		ow = particle_order.ptrw();
@@ -1026,42 +1095,20 @@ void CPUParticles2D::_update_particle_data_buffer() {
 		}
 	}
 
-	for (int i = 0; i < pc; i++) {
-		int idx = order ? order[i] : i;
-
-		Transform2D t = r[idx].transform;
-
-		if (!local_coords) {
-			t = inv_emission_transform * t;
+	if (_interpolated) {
+		for (int i = 0; i < pc; i++) {
+			int idx = order ? order[i] : i;
+			_fill_particle_data(r[idx], ptr, r[idx].active);
+			ptr += 16;
+			_fill_particle_data(particles_prev[idx], w_prev, r[idx].active);
+			w_prev += 16;
 		}
-
-		if (r[idx].active) {
-			ptr[0] = t.columns[0][0];
-			ptr[1] = t.columns[1][0];
-			ptr[2] = 0;
-			ptr[3] = t.columns[2][0];
-			ptr[4] = t.columns[0][1];
-			ptr[5] = t.columns[1][1];
-			ptr[6] = 0;
-			ptr[7] = t.columns[2][1];
-
-		} else {
-			memset(ptr, 0, sizeof(float) * 8);
+	} else {
+		for (int i = 0; i < pc; i++) {
+			int idx = order ? order[i] : i;
+			_fill_particle_data(r[idx], ptr, r[idx].active);
+			ptr += 16;
 		}
-
-		Color c = r[idx].color;
-
-		ptr[8] = c.r;
-		ptr[9] = c.g;
-		ptr[10] = c.b;
-		ptr[11] = c.a;
-
-		ptr[12] = r[idx].custom[0];
-		ptr[13] = r[idx].custom[1];
-		ptr[14] = r[idx].custom[2];
-		ptr[15] = r[idx].custom[3];
-
-		ptr += 16;
 	}
 }
 
@@ -1074,34 +1121,56 @@ void CPUParticles2D::_set_do_redraw(bool p_do_redraw) {
 	{
 		MutexLock lock(update_mutex);
 
+		if (!_interpolated) {
+			if (do_redraw) {
+				RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &CPUParticles2D::_update_render_thread));
+			} else {
+				if (RS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &CPUParticles2D::_update_render_thread))) {
+					RS::get_singleton()->disconnect("frame_pre_draw", callable_mp(this, &CPUParticles2D::_update_render_thread));
+				}
+			}
+		}
+
 		if (do_redraw) {
-			RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &CPUParticles2D::_update_render_thread));
 			RS::get_singleton()->canvas_item_set_update_when_visible(get_canvas_item(), true);
 
 			RS::get_singleton()->multimesh_set_visible_instances(multimesh, -1);
 		} else {
-			if (RS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &CPUParticles2D::_update_render_thread))) {
-				RS::get_singleton()->disconnect("frame_pre_draw", callable_mp(this, &CPUParticles2D::_update_render_thread));
-			}
 			RS::get_singleton()->canvas_item_set_update_when_visible(get_canvas_item(), false);
 
 			RS::get_singleton()->multimesh_set_visible_instances(multimesh, 0);
 		}
 	}
 
-	queue_redraw(); // redraw to update render list
+	queue_redraw(); // Redraw to update render list.
 }
 
 void CPUParticles2D::_update_render_thread() {
 	MutexLock lock(update_mutex);
 
-	RS::get_singleton()->multimesh_set_buffer(multimesh, particle_data);
+	if (_interpolated) {
+		// TODO: Implement the actual MultiMesh interpolation.
+		//RS::get_singleton()->multimesh_set_buffer_interpolated(multimesh, particle_data, particle_data_prev);
+	} else {
+		RS::get_singleton()->multimesh_set_buffer(multimesh, particle_data);
+	}
 }
 
 void CPUParticles2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			set_process_internal(emitting);
+
+			// For interpolated version to update the particles right away,
+			// we need a sequence of events.
+			// First ensure we are in _interpolated mode if the Node is set to interpolated.
+			_refresh_interpolation_state();
+
+			// Now, if we are interpolating, we want to force a single tick update.
+			// If we don't do this, it may be an entire tick before the first update happens.
+			if (_interpolated) {
+				_update_internal(true);
+			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -1109,13 +1178,13 @@ void CPUParticles2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			// first update before rendering to avoid one frame delay after emitting starts
-			if (emitting && (time == 0)) {
-				_update_internal();
+			// First update before rendering to avoid one frame delay after emitting starts.
+			if (emitting && (time == 0) && !_interpolated) {
+				_update_internal(false);
 			}
 
 			if (!do_redraw) {
-				return; // don't add to render list
+				return; // Don't add to render list.
 			}
 
 			RID texrid;
@@ -1127,7 +1196,7 @@ void CPUParticles2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			_update_internal();
+			_update_internal(false);
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
