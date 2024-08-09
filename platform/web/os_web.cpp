@@ -266,6 +266,11 @@ OS_Web *OS_Web::get_singleton() {
 void OS_Web::initialize_joypads() {
 }
 
+void OS_Web::initialize_platform_text() {
+	platform_text_implementation = memnew(PlatformTextWeb);
+	PlatformText::get_singleton()->set_implementation(platform_text_implementation);
+}
+
 OS_Web::OS_Web() {
 	char locale_ptr[16];
 	godot_js_config_locale_get(locale_ptr, 16);

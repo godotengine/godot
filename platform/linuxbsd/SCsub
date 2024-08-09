@@ -7,6 +7,7 @@ import platform_linuxbsd_builders
 common_linuxbsd = [
     "crash_handler_linuxbsd.cpp",
     "os_linuxbsd.cpp",
+    "platform_text_linuxbsd.cpp",
     "joypad_linux.cpp",
     "freedesktop_portal_desktop.cpp",
     "freedesktop_screensaver.cpp",

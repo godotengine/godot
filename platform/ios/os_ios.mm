@@ -130,6 +130,11 @@ void OS_IOS::initialize() {
 	initialize_core();
 }
 
+void OS_IOS::initialize_platform_text() {
+	platform_text_implementation = memnew(PlatformTextIOS);
+	PlatformText::get_singleton()->set_implementation(platform_text_implementation);
+}
+
 void OS_IOS::initialize_modules() {
 	ios = memnew(iOS);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("iOS", ios));

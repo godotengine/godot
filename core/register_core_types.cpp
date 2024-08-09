@@ -76,6 +76,7 @@
 #include "core/object/undo_redo.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/main_loop.h"
+#include "core/os/platform_text.h"
 #include "core/os/time.h"
 #include "core/string/optimized_translation.h"
 #include "core/string/translation.h"
@@ -102,6 +103,7 @@ static core_bind::EngineDebugger *_engine_debugger = nullptr;
 
 static IP *ip = nullptr;
 static Time *_time = nullptr;
+static PlatformText *_platform_text = nullptr;
 
 static core_bind::Geometry2D *_geometry_2d = nullptr;
 static core_bind::Geometry3D *_geometry_3d = nullptr;
@@ -129,6 +131,7 @@ void register_core_types() {
 
 	StringName::setup();
 	_time = memnew(Time);
+	_platform_text = memnew(PlatformText);
 	ResourceLoader::initialize();
 
 	register_global_constants();
@@ -330,6 +333,7 @@ void register_core_singletons() {
 	GDREGISTER_CLASS(Expression);
 	GDREGISTER_CLASS(core_bind::EngineDebugger);
 	GDREGISTER_CLASS(Time);
+	GDREGISTER_CLASS(PlatformText);
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ProjectSettings", ProjectSettings::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("IP", IP::get_singleton(), "IP"));
@@ -349,6 +353,7 @@ void register_core_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("GDExtensionManager", GDExtensionManager::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceUID", ResourceUID::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("WorkerThreadPool", worker_thread_pool));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("PlatformText", PlatformText::get_singleton()));
 
 	OS::get_singleton()->benchmark_end_measure("Core", "Register Singletons");
 }

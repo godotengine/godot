@@ -32,6 +32,7 @@
 #define OS_ANDROID_H
 
 #include "audio_driver_opensl.h"
+#include "platform_text_android.h"
 
 #include "core/os/main_loop.h"
 #include "drivers/unix/os_unix.h"
@@ -63,6 +64,7 @@ private:
 	AudioDriverOpenSL audio_driver_android;
 
 	MainLoop *main_loop = nullptr;
+	PlatformTextAndroid *platform_text_implementation = nullptr;
 
 	struct FontInfo {
 		String font_name;
@@ -95,6 +97,7 @@ public:
 	virtual void initialize() override;
 
 	virtual void initialize_joypads() override;
+	virtual void initialize_platform_text() override;
 
 	virtual void set_main_loop(MainLoop *p_main_loop) override;
 	virtual void delete_main_loop() override;

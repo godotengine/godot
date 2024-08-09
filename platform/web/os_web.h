@@ -34,6 +34,7 @@
 #include "audio_driver_web.h"
 
 #include "godot_js.h"
+#include "platform_text_web.h"
 
 #include "core/input/input.h"
 #include "drivers/unix/os_unix.h"
@@ -43,6 +44,7 @@
 
 class OS_Web : public OS_Unix {
 	MainLoop *main_loop = nullptr;
+	PlatformTextWeb *platform_text_implementation = nullptr;
 	List<AudioDriverWeb *> audio_drivers;
 
 	bool idb_is_syncing = false;
@@ -75,6 +77,7 @@ public:
 	void force_fs_sync();
 
 	void initialize_joypads() override;
+	void initialize_platform_text() override;
 
 	MainLoop *get_main_loop() const override;
 	bool main_loop_iterate();

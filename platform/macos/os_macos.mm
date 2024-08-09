@@ -30,6 +30,8 @@
 
 #include "os_macos.h"
 
+#include "core/object/class_db.h"
+#include "core/os/platform_text.h"
 #include "dir_access_macos.h"
 #include "display_server_macos.h"
 #include "godot_application.h"
@@ -39,6 +41,7 @@
 #include "core/crypto/crypto_core.h"
 #include "core/version_generated.gen.h"
 #include "main/main.h"
+#include "platform_text_macos.h"
 
 #include <dlfcn.h>
 #include <libproc.h>
@@ -140,6 +143,11 @@ void OS_MacOS::finalize() {
 
 void OS_MacOS::initialize_joypads() {
 	joypad_macos = memnew(JoypadMacOS());
+}
+
+void OS_MacOS::initialize_platform_text() {
+	platform_text_implementation = memnew(PlatformTextMacOS);
+	PlatformText::get_singleton()->set_implementation(platform_text_implementation);
 }
 
 void OS_MacOS::set_main_loop(MainLoop *p_main_loop) {
