@@ -403,7 +403,6 @@ bool GodotBodyPair2D::pre_solve(real_t p_step) {
 
 	bool do_process = false;
 
-	const Vector2 &offset_A = A->get_transform().get_origin();
 	const Transform2D &transform_A = A->get_transform();
 	const Transform2D &transform_B = B->get_transform();
 
@@ -428,6 +427,7 @@ bool GodotBodyPair2D::pre_solve(real_t p_step) {
 		}
 
 #ifdef DEBUG_ENABLED
+		const Vector2 &offset_A = A->get_transform().get_origin();
 		if (space->is_debugging_contacts()) {
 			space->add_debug_contact(global_A + offset_A);
 			space->add_debug_contact(global_B + offset_A);
@@ -458,16 +458,8 @@ bool GodotBodyPair2D::pre_solve(real_t p_step) {
 
 		c.acc_impulse -= P;
 
-		if (A->can_report_contacts() || B->can_report_contacts()) {
-			Vector2 crB = Vector2(-B->get_angular_velocity() * c.rB.y, B->get_angular_velocity() * c.rB.x) + B->get_linear_velocity();
-			Vector2 crA = Vector2(-A->get_angular_velocity() * c.rA.y, A->get_angular_velocity() * c.rA.x) + A->get_linear_velocity();
-			if (A->can_report_contacts()) {
-				A->add_contact(global_A + offset_A, -c.normal, depth, shape_A, crA, global_B + offset_A, shape_B, B->get_instance_id(), B->get_self(), crB, c.acc_impulse);
-			}
-			if (B->can_report_contacts()) {
-				B->add_contact(global_B + offset_A, c.normal, depth, shape_B, crB, global_A + offset_A, shape_A, A->get_instance_id(), A->get_self(), crA, c.acc_impulse);
-			}
-		}
+		c.initial_rB = Vector2(-B->get_angular_velocity() * c.rB.y, B->get_angular_velocity() * c.rB.x) + B->get_linear_velocity();
+		c.initial_rA = Vector2(-A->get_angular_velocity() * c.rA.y, A->get_angular_velocity() * c.rA.x) + A->get_linear_velocity();
 
 		if (report_contacts_only) {
 			collided = false;
@@ -588,6 +580,37 @@ void GodotBodyPair2D::solve(real_t p_step) {
 			B->apply_impulse(j, c.rB + B->get_center_of_mass());
 		}
 		c.acc_impulse -= j;
+	}
+}
+
+void GodotBodyPair2D::post_solve(real_t p_step) {
+	for (int i = 0; i < contact_count; ++i) {
+		Contact &c = contacts[i];
+
+		if (!c.active) {
+			continue;
+		}
+
+		if (A->can_report_contacts() || B->can_report_contacts()) {
+			const Vector2 &offset_A = A->get_transform().get_origin();
+
+			const Transform2D &transform_A = A->get_transform();
+			const Transform2D &transform_B = B->get_transform();
+
+			Vector2 global_A = transform_A.basis_xform(c.local_A);
+			Vector2 global_B = transform_B.basis_xform(c.local_B) + offset_B;
+
+			Vector2 axis = global_A - global_B;
+			real_t depth = axis.dot(c.normal);
+
+			if (A->can_report_contacts()) {
+				A->add_contact(global_A + offset_A, -c.normal, depth, shape_A, c.initial_rA, global_B + offset_A, shape_B,
+						B->get_instance_id(), B->get_self(), c.initial_rB, c.acc_impulse);
+			}
+			if (B->can_report_contacts()) {
+				B->add_contact(global_B + offset_A, c.normal, depth, shape_B, c.initial_rB, global_A + offset_A, shape_A,
+						A->get_instance_id(), A->get_self(), c.initial_rA, c.acc_impulse);			}
+		}
 	}
 }
 
