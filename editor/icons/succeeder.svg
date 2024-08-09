@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   height="17.666"
+   width="17.666"
+   version="1.1"
+   id="svg7608"
+   sodipodi:docname="succedeer.svg"
+   inkscape:version="1.2 (dc2aedaf03, 2022-05-15)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs7612" />
+  <sodipodi:namedview
+     id="namedview7610"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="10.8"
+     inkscape:cx="-0.092592592"
+     inkscape:cy="15.509259"
+     inkscape:window-width="1920"
+     inkscape:window-height="1051"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg7608" />
+  <path
+     d="M 7.666,9.479 6.479,8.271 Q 6.104,7.916 5.604,7.916 q -0.5,0 -0.875,0.375 -0.375,0.375 -0.375,0.865 0,0.489 0.375,0.865 l 2,2.02 q 0.416,0.396 0.927,0.396 0.51,0 0.906,-0.396 L 12.833,7.75 Q 13.166,7.416 13.052,6.958 12.937,6.5 12.833,6.041 12.458,5.666 11.968,5.666 q -0.489,0 -0.864,0.375 z m 1.167,8.187 q -1.854,0 -3.458,-0.687 Q 3.771,16.291 2.573,15.093 1.375,13.895 0.687,12.291 0,10.687 0,8.833 0,6.958 0.687,5.364 1.375,3.771 2.573,2.573 3.771,1.375 5.375,0.687 6.979,0 8.833,0 q 1.875,0 3.469,0.687 1.593,0.688 2.791,1.886 1.198,1.198 1.886,2.791 0.687,1.594 0.687,3.469 0,1.854 -0.687,3.458 -0.688,1.604 -1.886,2.802 -1.198,1.198 -2.791,1.886 -1.594,0.687 -3.469,0.687 z"
+     id="path7606"
+     style="fill:#46c0e1;fill-opacity:1" />
+</svg>

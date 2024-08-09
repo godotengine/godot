@@ -65,6 +65,16 @@ public:
         return status;
     }
 
+    void set_root_node(const Ref<BeehaveNode> &p_root_node)
+    {
+        root_node = p_root_node;
+    }
+
+    Ref<BeehaveNode> get_root_node()
+    {
+        return root_node;
+    }
+
 public:
 
     Ref<BeehaveNode> root_node;

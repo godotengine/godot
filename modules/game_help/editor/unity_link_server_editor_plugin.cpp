@@ -41,6 +41,7 @@
 #include "editor/plugins/editor_plugin.h"
 #include "editor/editor_inspector.h"
 #include "../unity/unity_link_server.h"
+#include "beehave_graph_editor.h"
 #endif
 
 class ConditionSection : public VBoxContainer {
@@ -1460,7 +1461,7 @@ public:
 	}
 	void on_update_state()
 	{
-		for(int i=0;i<slots.size();i++)
+		for(uint32_t i=0;i<slots.size();i++)
 		{
 			EditorPropertyArray::Slot & slot = slots[i];
 			if(slot.state_button == nullptr)
@@ -1487,7 +1488,7 @@ public:
 	}
 	virtual void _on_clear_slots()
 	{
-		for(int i=0;i<slots.size();i++)
+		for(uint32_t i=0;i<slots.size();i++)
 		{
 			EditorPropertyArray::Slot & slot = slots[i];
 			if(slot.state_button == nullptr)
@@ -1668,6 +1669,8 @@ public:
 	}
 
 };
+
+
 // 一些自定义的Inspector插件
 class GameHelpInspectorPlugin : public EditorInspectorPlugin
 {

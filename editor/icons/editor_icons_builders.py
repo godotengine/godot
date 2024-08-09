@@ -76,6 +76,6 @@ def make_editor_icons_action(target, source, env):
             s.write("};\n")
 
         s.write("#endif\n")
-
+        print("icons header generated: " + dst)
         with open(dst, "w", encoding="utf-8", newline="\n") as f:
             f.write(s.getvalue())

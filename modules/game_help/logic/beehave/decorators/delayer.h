@@ -12,6 +12,10 @@ class BeehaveDecoratorDelayer : public BeehaveDecorator
     {
         return String(L"延迟装饰器");
     }
+    virtual StringName get_icon()
+    {
+        return SNAME("delayer");
+    }
     virtual int tick(Node * actor, Blackboard* blackboard) override
     {
         if(get_child_count() == 0)

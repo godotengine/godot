@@ -15,6 +15,10 @@ public:
     {
         return L"黑板条件叶节点";
     }
+    virtual StringName get_icon()
+    {
+        return SNAME("condition");
+    }
     virtual void after_run(Node * actor, Blackboard* blackboard) override
     {
         if(blackboard_condition.is_valid())

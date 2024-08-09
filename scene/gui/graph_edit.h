@@ -265,6 +265,7 @@ private:
 	HashSet<int> valid_left_disconnect_types;
 	HashSet<int> valid_right_disconnect_types;
 
+protected:
 	struct ThemeCache {
 		float base_scale = 1.0;
 

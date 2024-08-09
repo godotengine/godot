@@ -23,6 +23,10 @@ public:
     {
         return String(L"## 选择器节点将尝试执行其每个子节点,直到其中一个返回“SUCCESS”。\n如果所有子节点都返回“FAILURE”,则此节点也将 返回“FAILURE”。\n如果子节点返回“RUNNING”,它将再次运行。");
     }
+    virtual StringName get_icon()
+    {
+        return SNAME("selector");
+    }
 
     virtual int tick(Node * actor, Blackboard* blackboard)override
     {

@@ -18,6 +18,10 @@ public:
         rs.push_back("BeehaveSequence");
         return rs;
     }
+    virtual StringName get_icon()override
+    {
+        return SNAME("cooldown");
+    }
     virtual void interrupt(Node * actor, Blackboard* blackboard)override
     {
         base_class_type::interrupt(actor,blackboard);

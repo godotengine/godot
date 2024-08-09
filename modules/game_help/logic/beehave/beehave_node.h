@@ -12,7 +12,7 @@ public:
     };
     int get_child_count() const { return children.size(); }
 
-    Ref<BeehaveNode> get_child(int p_index) const
+    Ref<BeehaveNode> get_child(uint32_t p_index) const
     {
         if(p_index < children.size())
         {
@@ -32,7 +32,7 @@ public:
     {
         child_state.resize(children.size());
         child_state.fill(0);
-        for(int i = 0; i < children.size(); ++i)
+        for(uint32_t i = 0; i < children.size(); ++i)
         {
             children[i]->interrupt(actor,blackboard);
         }
@@ -44,7 +44,7 @@ public:
     }
     // Called after the last time it ticks and returns
     // [code]SUCCESS[/code] or [code]FAILURE[/code].
-    virtual void   after_run(Node * actor, Blackboard* blackboard)  
+    virtual void after_run(Node * actor, Blackboard* blackboard)  
     {
         
     }
@@ -64,15 +64,24 @@ public:
     {
         return String(L"");
     }
+    virtual StringName get_icon()
+    {
+        return SNAME("BezierHandlesFree");
+    }
     // 獲取支持放几个子节点,-1 是任意多子节点
     virtual int get_supper_child_count()
     {
         return 0;
     }
+	StringName get_id()
+	{
+		return StringName(String::num_int64((uint64_t)get_instance_id()));
+	}
 
 
     LocalVector<Ref<BeehaveNode>> children;
     LocalVector<uint8_t> child_state;
+    int id = 0;
 };
 
 
@@ -175,6 +184,10 @@ class BeehaveAction : public BeehaveLeaf
 	    GDVIRTUAL_BIND(_tick, "owenr_node", "blackboard");
     }
 public:
+    virtual StringName get_icon()
+    {
+        return SNAME("action");
+    }
     virtual void interrupt(Node * actor, Blackboard* blackboard)  override
     {
         base_class_type::interrupt(actor,blackboard);	

@@ -14,6 +14,10 @@ public:
     {
         return String(L"并行组合节点");
     }
+    virtual StringName get_icon()
+    {
+        return SNAME("BTParallel");
+    }
     virtual void interrupt(Node * actor, Blackboard* blackboard)override
     {
         base_class_type::interrupt(actor,blackboard);

@@ -12,6 +12,10 @@ public:
     {
         return String(L"循环序列组合节点");
     }
+    virtual StringName get_icon()
+    {
+        return SNAME("sequence_reactive");
+    }
     virtual void interrupt(Node * actor, Blackboard* blackboard)override
     {
         base_class_type::interrupt(actor,blackboard);
