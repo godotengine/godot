@@ -6551,11 +6551,17 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("EmissionTransform", "Input/All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "emission_transform", "EMISSION_TRANSFORM"), { "emission_transform" }, VisualShaderNode::PORT_TYPE_TRANSFORM, -1, Shader::MODE_PARTICLES));
 	add_options.push_back(AddOption("Index", "Input/All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "index", "INDEX"), { "index" }, VisualShaderNode::PORT_TYPE_SCALAR_UINT, -1, Shader::MODE_PARTICLES));
 	add_options.push_back(AddOption("LifeTime", "Input/All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "lifetime", "LIFETIME"), { "lifetime" }, VisualShaderNode::PORT_TYPE_SCALAR, -1, Shader::MODE_PARTICLES));
+	add_options.push_back(AddOption("Age", "Input/All", "VisualShaderNodeInput", TTR("Absolute time, in seconds, since particle was spawned."), { "age" }, VisualShaderNode::PORT_TYPE_SCALAR, -1, Shader::MODE_PARTICLES));
+	add_options.push_back(AddOption("Progress", "Input/All", "VisualShaderNodeInput", TTR("Relative progress (between 0.0 and 1.0) across the total lifetime of the particle."), { "progress" }, VisualShaderNode::PORT_TYPE_SCALAR, -1, Shader::MODE_PARTICLES));
 	add_options.push_back(AddOption("Number", "Input/All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "number", "NUMBER"), { "number" }, VisualShaderNode::PORT_TYPE_SCALAR_UINT, -1, Shader::MODE_PARTICLES));
 	add_options.push_back(AddOption("RandomSeed", "Input/All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "random_seed", "RANDOM_SEED"), { "random_seed" }, VisualShaderNode::PORT_TYPE_SCALAR_UINT, -1, Shader::MODE_PARTICLES));
 	add_options.push_back(AddOption("Restart", "Input/All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "restart", "RESTART"), { "restart" }, VisualShaderNode::PORT_TYPE_BOOLEAN, -1, Shader::MODE_PARTICLES));
 	add_options.push_back(AddOption("Time", "Input/All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "time", "TIME"), { "time" }, VisualShaderNode::PORT_TYPE_SCALAR, -1, Shader::MODE_PARTICLES));
 	add_options.push_back(AddOption("Transform", "Input/All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "transform", "TRANSFORM"), { "transform" }, VisualShaderNode::PORT_TYPE_TRANSFORM, -1, Shader::MODE_PARTICLES));
+	add_options.push_back(AddOption("Position", "Input/All", "VisualShaderNodeInput", TTR("Current position of the particle."), { "position" }, VisualShaderNode::PORT_TYPE_VECTOR_3D, -1, Shader::MODE_PARTICLES));
+	add_options.push_back(AddOption("Scale", "Input/All", "VisualShaderNodeInput", TTR("Current scale of the particle."), { "scale" }, VisualShaderNode::PORT_TYPE_VECTOR_3D, -1, Shader::MODE_PARTICLES));
+	add_options.push_back(AddOption("RotationAxis", "Input/All", "VisualShaderNodeInput", TTR("Current rotation axis of the particle."), { "rotation_axis" }, VisualShaderNode::PORT_TYPE_VECTOR_3D, -1, Shader::MODE_PARTICLES));
+	add_options.push_back(AddOption("RotationAngle", "Input/All", "VisualShaderNodeInput", TTR("Current rotation angle (in radians) of the particle."), { "rotation_angle" }, VisualShaderNode::PORT_TYPE_SCALAR, -1, Shader::MODE_PARTICLES));
 	add_options.push_back(AddOption("Velocity", "Input/All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "velocity", "VELOCITY"), { "velocity" }, VisualShaderNode::PORT_TYPE_VECTOR_3D, -1, Shader::MODE_PARTICLES));
 
 	/////////////////
