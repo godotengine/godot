@@ -151,7 +151,7 @@ bool LightmapGIData::is_using_spherical_harmonics() const {
 	return uses_spherical_harmonics;
 }
 
-void LightmapGIData::set_capture_data(const AABB &p_bounds, bool p_interior, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree, float p_baked_exposure) {
+void LightmapGIData::set_capture_data(const AABB &p_bounds, bool p_interior, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree, float p_baked_exposure, uint32_t p_lightprobe_hash) {
 	if (p_points.size()) {
 		int pc = p_points.size();
 		ERR_FAIL_COND(pc * 9 != p_point_sh.size());
@@ -167,6 +167,7 @@ void LightmapGIData::set_capture_data(const AABB &p_bounds, bool p_interior, con
 	}
 	RS::get_singleton()->lightmap_set_baked_exposure_normalization(lightmap, p_baked_exposure);
 	baked_exposure = p_baked_exposure;
+	lightprobe_hash = p_lightprobe_hash;
 	interior = p_interior;
 	bounds = p_bounds;
 }
@@ -185,6 +186,10 @@ PackedInt32Array LightmapGIData::get_capture_tetrahedra() const {
 
 PackedInt32Array LightmapGIData::get_capture_bsp_tree() const {
 	return RS::get_singleton()->lightmap_get_probe_capture_bsp_tree(lightmap);
+}
+
+uint32_t LightmapGIData::get_lightprobe_hash() const {
+	return lightprobe_hash;
 }
 
 AABB LightmapGIData::get_capture_bounds() const {
@@ -207,7 +212,11 @@ void LightmapGIData::_set_probe_data(const Dictionary &p_data) {
 	ERR_FAIL_COND(!p_data.has("sh"));
 	ERR_FAIL_COND(!p_data.has("interior"));
 	ERR_FAIL_COND(!p_data.has("baked_exposure"));
-	set_capture_data(p_data["bounds"], p_data["interior"], p_data["points"], p_data["sh"], p_data["tetrahedra"], p_data["bsp"], p_data["baked_exposure"]);
+	uint32_t phash = 0;
+	if (p_data.has("lightprobe_hash")) { // Older versions will not have it.
+		phash = p_data["lightprobe_hash"];
+	}
+	set_capture_data(p_data["bounds"], p_data["interior"], p_data["points"], p_data["sh"], p_data["tetrahedra"], p_data["bsp"], p_data["baked_exposure"], phash);
 }
 
 Dictionary LightmapGIData::_get_probe_data() const {
@@ -219,6 +228,7 @@ Dictionary LightmapGIData::_get_probe_data() const {
 	d["sh"] = get_capture_sh();
 	d["interior"] = is_interior();
 	d["baked_exposure"] = get_baked_exposure();
+	d["lightprobe_hash"] = lightprobe_hash;
 	return d;
 }
 
@@ -1201,7 +1211,15 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		gi_data->add_user(np, uv_scale, slice_index, subindex);
 	}
 
-	{
+	uint32_t bake_probe_hash = HASH_MURMUR3_SEED;
+	for (int i = 0; i < lightmapper->get_bake_probe_count(); i++) {
+		Vector3 point = lightmapper->get_bake_probe_point(i);
+		bake_probe_hash = hash_murmur3_one_double(point.x, bake_probe_hash);
+		bake_probe_hash = hash_murmur3_one_double(point.y, bake_probe_hash);
+		bake_probe_hash = hash_murmur3_one_double(point.z, bake_probe_hash);
+	}
+
+	if (bake_probe_hash != gi_data->get_lightprobe_hash()) {
 		// create tetrahedrons
 		Vector<Vector3> points;
 		Vector<Color> sh;
@@ -1331,7 +1349,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 		/* Obtain the colors from the images, they will be re-created as cubemaps on the server, depending on the driver */
 
-		gi_data->set_capture_data(bounds, interior, points, sh, tetrahedrons, bsp_array, exposure_normalization);
+		gi_data->set_capture_data(bounds, interior, points, sh, tetrahedrons, bsp_array, exposure_normalization, bake_probe_hash);
 		/* Compute a BSP tree of the simplices, so it's easy to find the exact one */
 	}
 
