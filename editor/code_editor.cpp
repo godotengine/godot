@@ -43,33 +43,37 @@
 #include "scene/gui/separator.h"
 #include "scene/resources/font.h"
 
-void GotoLineDialog::popup_find_line(CodeEdit *p_edit) {
-	text_editor = p_edit;
+void GotoLinePopup::popup_find_line(CodeTextEditor *p_text_editor) {
+	text_editor = p_text_editor;
 
 	// Add 1 because text_editor->get_caret_line() starts from 0, but the editor user interface starts from 1.
-	line->set_text(itos(text_editor->get_caret_line() + 1));
-	line->select_all();
-	popup_centered(Size2(180, 80) * EDSCALE);
-	line->grab_focus();
+	TextEdit *text_edit = text_editor->get_text_editor();
+	int original_line = text_edit->get_caret_line() + 1;
+	line_input->set_max(text_edit->get_line_count());
+	line_input->set_value_no_signal(original_line);
+
+	Rect2i parent_rect = text_editor->get_global_rect();
+	Point2i centered_pos(parent_rect.get_center().x - get_contents_minimum_size().x / 2.0, parent_rect.position.y);
+	popup_on_parent(Rect2i(centered_pos, Size2()));
+	reset_size();
+	line_input->setup_and_show();
 }
 
-int GotoLineDialog::get_line() const {
-	return line->get_text().to_int();
-}
-
-void GotoLineDialog::ok_pressed() {
+void GotoLinePopup::_goto_line() {
 	// Subtract 1 because the editor user interface starts from 1, but text_editor->set_caret_line(n) starts from 0.
-	const int line_number = get_line() - 1;
-	if (line_number < 0 || line_number >= text_editor->get_line_count()) {
+	const int line_number = line_input->get_value() - 1;
+	if (line_number < 0 || line_number >= text_editor->get_text_editor()->get_line_count()) {
 		return;
 	}
-	text_editor->remove_secondary_carets();
-	text_editor->unfold_line(line_number);
-	text_editor->set_caret_line(line_number);
+	text_editor->goto_line_centered(line_number);
+}
+
+void GotoLinePopup::_submit() {
+	_goto_line();
 	hide();
 }
 
-GotoLineDialog::GotoLineDialog() {
+GotoLinePopup::GotoLinePopup() {
 	set_title(TTR("Go to Line"));
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
@@ -83,14 +87,15 @@ GotoLineDialog::GotoLineDialog() {
 	l->set_text(TTR("Line Number:"));
 	vbc->add_child(l);
 
-	line = memnew(LineEdit);
-	vbc->add_child(line);
-	register_text_enter(line);
+	line_input = memnew(EditorSpinSlider);
+	line_input->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
+	line_input->set_step(1);
+	line_input->set_min(1);
+	line_input->connect("value_changed", callable_mp(this, &GotoLinePopup::_goto_line).unbind(1));
+	line_input->get_line_edit()->connect("text_submitted", callable_mp(this, &GotoLinePopup::_submit).unbind(1));
+	vbc->add_child(line_input);
+
 	text_editor = nullptr;
-
-	line_label = nullptr;
-
-	set_hide_on_ok(false);
 }
 
 void FindReplaceBar::_notification(int p_what) {
@@ -1300,15 +1305,18 @@ void CodeTextEditor::goto_line(int p_line) {
 	text_editor->remove_secondary_carets();
 	text_editor->deselect();
 	text_editor->unfold_line(p_line);
-	callable_mp((TextEdit *)text_editor, &TextEdit::set_caret_line).call_deferred(p_line, true, true, 0, 0);
+	text_editor->set_caret_column(0, false);
+	// Defer in case the CodeEdit was just created and needs to be resized.
+	callable_mp((TextEdit *)text_editor, &TextEdit::set_caret_line).call_deferred(p_line, true, true, -1, 0);
+	callable_mp((TextEdit *)text_editor, &TextEdit::set_line_as_first_visible).call_deferred(p_line, 0);
 }
 
 void CodeTextEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
 	text_editor->remove_secondary_carets();
 	text_editor->unfold_line(p_line);
-	callable_mp((TextEdit *)text_editor, &TextEdit::set_caret_line).call_deferred(p_line, true, true, 0, 0);
-	callable_mp((TextEdit *)text_editor, &TextEdit::set_caret_column).call_deferred(p_begin, true, 0);
-	text_editor->select(p_line, p_begin, p_line, p_end);
+	text_editor->select(p_line, p_end, p_line, p_begin);
+	callable_mp((TextEdit *)text_editor, &TextEdit::set_line_as_first_visible).call_deferred(p_line, 0);
+	callable_mp((TextEdit *)text_editor, &TextEdit::adjust_viewport_to_caret).call_deferred(p_line);
 }
 
 void CodeTextEditor::goto_line_centered(int p_line) {
