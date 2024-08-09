@@ -2159,17 +2159,32 @@ void RenderingDeviceDriverD3D12::command_pipeline_barrier(CommandBufferID p_cmd_
 	}
 
 	// Define the barrier groups and execute.
+
 	D3D12_BARRIER_GROUP barrier_groups[3] = {};
-	barrier_groups[0].Type = D3D12_BARRIER_TYPE_GLOBAL;
-	barrier_groups[1].Type = D3D12_BARRIER_TYPE_BUFFER;
-	barrier_groups[2].Type = D3D12_BARRIER_TYPE_TEXTURE;
-	barrier_groups[0].NumBarriers = global_barriers.size();
-	barrier_groups[1].NumBarriers = buffer_barriers.size();
-	barrier_groups[2].NumBarriers = texture_barriers.size();
-	barrier_groups[0].pGlobalBarriers = global_barriers.ptr();
-	barrier_groups[1].pBufferBarriers = buffer_barriers.ptr();
-	barrier_groups[2].pTextureBarriers = texture_barriers.ptr();
-	cmd_list_7->Barrier(ARRAY_SIZE(barrier_groups), barrier_groups);
+	uint32_t barrier_groups_count = 0;
+
+	if (!global_barriers.is_empty()) {
+		D3D12_BARRIER_GROUP &barrier_group = barrier_groups[barrier_groups_count++];
+		barrier_group.Type = D3D12_BARRIER_TYPE_GLOBAL;
+		barrier_group.NumBarriers = global_barriers.size();
+		barrier_group.pGlobalBarriers = global_barriers.ptr();
+	}
+
+	if (!buffer_barriers.is_empty()) {
+		D3D12_BARRIER_GROUP &barrier_group = barrier_groups[barrier_groups_count++];
+		barrier_group.Type = D3D12_BARRIER_TYPE_BUFFER;
+		barrier_group.NumBarriers = buffer_barriers.size();
+		barrier_group.pBufferBarriers = buffer_barriers.ptr();
+	}
+
+	if (!texture_barriers.is_empty()) {
+		D3D12_BARRIER_GROUP &barrier_group = barrier_groups[barrier_groups_count++];
+		barrier_group.Type = D3D12_BARRIER_TYPE_TEXTURE;
+		barrier_group.NumBarriers = texture_barriers.size();
+		barrier_group.pTextureBarriers = texture_barriers.ptr();
+	}
+
+	cmd_list_7->Barrier(barrier_groups_count, barrier_groups);
 }
 
 /****************/
