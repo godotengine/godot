@@ -1369,6 +1369,19 @@ MaterialStorage::MaterialStorage() {
 		actions.render_mode_defines["unshaded"] = "#define MODE_UNSHADED\n";
 		actions.render_mode_defines["fog_disabled"] = "#define FOG_DISABLED\n";
 
+		int specular_occlusion_mode = GLOBAL_GET("rendering/lightmapping/specular_occlusion/mode");
+
+		switch (specular_occlusion_mode) {
+			case 0:
+				break; // disabled, skip
+			case 1:
+				actions.render_mode_defines["specular_occlusion"] = "#define SPECULAR_OCCLUSION\n";
+				break;
+			case 2:
+				actions.render_mode_defines["specular_occlusion"] = "#define SPECULAR_OCCLUSION_CONSERVATIVE\n";
+				break;
+		}
+
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
 		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;
 
