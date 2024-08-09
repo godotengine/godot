@@ -504,6 +504,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("can_fold_code_region", "CodeEdit", icons["region_unfolded"]);
 	theme->set_icon("folded_code_region", "CodeEdit", icons["region_folded"]);
 	theme->set_icon("folded_eol_icon", "CodeEdit", icons["text_edit_ellipsis"]);
+	theme->set_icon("completion_color_bg", "CodeEdit", icons["mini_checkerboard"]);
 
 	theme->set_font(SceneStringName(font), "CodeEdit", Ref<Font>());
 	theme->set_font_size(SceneStringName(font_size), "CodeEdit", -1);
