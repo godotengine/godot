@@ -53,11 +53,13 @@ layout(std140) uniform CanvasData { //ubo:0
 };
 
 #ifndef DISABLE_LIGHTING
-#define LIGHT_FLAGS_BLEND_MASK uint(3 << 16)
+#define LIGHT_FLAGS_BLEND_MASK uint(7 << 16)
 #define LIGHT_FLAGS_BLEND_MODE_ADD uint(0 << 16)
 #define LIGHT_FLAGS_BLEND_MODE_SUB uint(1 << 16)
 #define LIGHT_FLAGS_BLEND_MODE_MIX uint(2 << 16)
-#define LIGHT_FLAGS_BLEND_MODE_MASK uint(3 << 16)
+#define LIGHT_FLAGS_BLEND_MODE_ADD_MAX uint(3 << 16)
+#define LIGHT_FLAGS_BLEND_MODE_SUB_MAX uint(4 << 16)
+#define LIGHT_FLAGS_BLEND_MODE_MASK uint(7 << 16)
 #define LIGHT_FLAGS_HAS_SHADOW uint(1 << 20)
 #define LIGHT_FLAGS_FILTER_SHIFT 22
 #define LIGHT_FLAGS_FILTER_MASK uint(3 << 22)

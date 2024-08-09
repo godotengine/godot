@@ -84,11 +84,13 @@ layout(set = 0, binding = 1, std140) uniform CanvasData {
 }
 canvas_data;
 
-#define LIGHT_FLAGS_BLEND_MASK (3 << 16)
+#define LIGHT_FLAGS_BLEND_MASK (7 << 16)
 #define LIGHT_FLAGS_BLEND_MODE_ADD (0 << 16)
 #define LIGHT_FLAGS_BLEND_MODE_SUB (1 << 16)
 #define LIGHT_FLAGS_BLEND_MODE_MIX (2 << 16)
-#define LIGHT_FLAGS_BLEND_MODE_MASK (3 << 16)
+#define LIGHT_FLAGS_BLEND_MODE_ADD_MAX (3 << 16)
+#define LIGHT_FLAGS_BLEND_MODE_SUB_MAX (4 << 16)
+#define LIGHT_FLAGS_BLEND_MODE_MASK (7 << 16)
 #define LIGHT_FLAGS_HAS_SHADOW (1 << 20)
 #define LIGHT_FLAGS_FILTER_SHIFT 22
 #define LIGHT_FLAGS_FILTER_MASK (3 << 22)

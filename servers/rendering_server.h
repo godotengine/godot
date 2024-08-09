@@ -1540,6 +1540,8 @@ public:
 		CANVAS_LIGHT_BLEND_MODE_ADD,
 		CANVAS_LIGHT_BLEND_MODE_SUB,
 		CANVAS_LIGHT_BLEND_MODE_MIX,
+		CANVAS_LIGHT_BLEND_MODE_ADD_MAX,
+		CANVAS_LIGHT_BLEND_MODE_SUB_MAX,
 	};
 
 	virtual void canvas_light_set_blend_mode(RID p_light, CanvasLightBlendMode p_mode) = 0;
