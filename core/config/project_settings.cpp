@@ -1341,6 +1341,73 @@ const HashMap<StringName, HashSet<StringName>> &ProjectSettings::get_scene_group
 	return scene_groups_cache;
 }
 
+int ProjectSettings::find_layer(LayerType p_type, const String &p_name) const {
+	String basename;
+	switch (p_type) {
+		case LAYER_RENDER_2D: {
+			basename = "layer_names/2d_render";
+		} break;
+
+		case LAYER_PHYSICS_2D: {
+			basename = "layer_names/2d_physics";
+		} break;
+
+		case LAYER_NAVIGATION_2D: {
+			basename = "layer_names/2d_navigation";
+		} break;
+
+		case LAYER_RENDER_3D: {
+			basename = "layer_names/3d_render";
+		} break;
+
+		case LAYER_PHYSICS_3D: {
+			basename = "layer_names/3d_physics";
+		} break;
+
+		case LAYER_NAVIGATION_3D: {
+			basename = "layer_names/3d_navigation";
+		} break;
+
+		case LAYER_AVOIDANCE: {
+			basename = "layer_names/avoidance";
+		} break;
+
+		default: {
+			ERR_FAIL_V_MSG(0, "Unknown layer type: " + itos(p_type));
+		} break;
+	}
+	const int layer_count = get_layer_count(p_type);
+	for (int i = 0; i < layer_count; i++) {
+		const String name = basename + vformat("/layer_%d", i + 1);
+		if (has_setting(name)) {
+			if (get_setting(name) == p_name) {
+				return i + 1;
+			}
+		} else if (p_name.is_empty()) {
+			return i + 1;
+		}
+	}
+	return 0;
+}
+
+int ProjectSettings::get_layer_count(LayerType p_type) const {
+	switch (p_type) {
+		case LAYER_RENDER_2D:
+		case LAYER_RENDER_3D: {
+			return 20;
+		} break;
+
+		case LAYER_PHYSICS_2D:
+		case LAYER_PHYSICS_3D:
+		case LAYER_NAVIGATION_2D:
+		case LAYER_NAVIGATION_3D:
+		case LAYER_AVOIDANCE: {
+			return 32;
+		} break;
+	}
+	ERR_FAIL_V_MSG(0, "Unknown layer type: " + itos(p_type));
+}
+
 #ifdef TOOLS_ENABLED
 void ProjectSettings::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	const String pf = p_function;
@@ -1379,10 +1446,19 @@ void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("globalize_path", "path"), &ProjectSettings::globalize_path);
 	ClassDB::bind_method(D_METHOD("save"), &ProjectSettings::save);
 	ClassDB::bind_method(D_METHOD("load_resource_pack", "pack", "replace_files", "offset"), &ProjectSettings::_load_resource_pack, DEFVAL(true), DEFVAL(0));
-
 	ClassDB::bind_method(D_METHOD("save_custom", "file"), &ProjectSettings::_save_custom_bnd);
+	ClassDB::bind_method(D_METHOD("find_layer", "type", "name"), &ProjectSettings::find_layer);
+	ClassDB::bind_method(D_METHOD("get_layer_count", "type"), &ProjectSettings::get_layer_count);
 
 	ADD_SIGNAL(MethodInfo("settings_changed"));
+
+	BIND_ENUM_CONSTANT(LAYER_PHYSICS_2D);
+	BIND_ENUM_CONSTANT(LAYER_RENDER_2D);
+	BIND_ENUM_CONSTANT(LAYER_NAVIGATION_2D);
+	BIND_ENUM_CONSTANT(LAYER_PHYSICS_3D);
+	BIND_ENUM_CONSTANT(LAYER_RENDER_3D);
+	BIND_ENUM_CONSTANT(LAYER_NAVIGATION_3D);
+	BIND_ENUM_CONSTANT(LAYER_AVOIDANCE);
 }
 
 void ProjectSettings::_add_builtin_input_map() {
