@@ -459,6 +459,13 @@
 				Returns a string containing all the characters available in the font.
 			</description>
 		</method>
+		<method name="font_get_supported_glyphs" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns an array containing all glyph indices in the font.
+			</description>
+		</method>
 		<method name="font_get_texture_count" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="font_rid" type="RID" />

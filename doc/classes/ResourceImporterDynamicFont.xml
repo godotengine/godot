@@ -69,12 +69,13 @@
 		<member name="script_support" type="Dictionary" setter="" getter="" default="{}">
 			Override the list of language scripts supported by this font. If left empty, this is supplied by the font metadata. There is usually no need to change this. See also [member language_support].
 		</member>
-		<member name="subpixel_positioning" type="int" setter="" getter="" default="1">
+		<member name="subpixel_positioning" type="int" setter="" getter="" default="4">
 			Subpixel positioning improves font rendering appearance, especially at smaller font sizes. The downside is that it takes more time to initially render the font, which can cause stuttering during gameplay, especially if used with large font sizes. This should be set to [b]Disabled[/b] for fonts with a pixel art appearance.
 			[b]Disabled:[/b] No subpixel positioning. Lowest quality, fastest rendering.
 			[b]Auto:[/b] Use subpixel positioning at small font sizes (the chosen quality varies depending on font size). Large fonts will not use subpixel positioning. This is a good tradeoff between performance and quality.
 			[b]One Half of a Pixel:[/b] Always perform intermediate subpixel positioning regardless of font size. High quality, slow rendering.
 			[b]One Quarter of a Pixel:[/b] Always perform precise subpixel positioning regardless of font size. Highest quality, slowest rendering.
+			[b]Auto (Except Pixel Fonts):[/b] [b]Disabled[/b] for the pixel style fonts (each glyph contours contain only straight horizontal and vertical lines), [b]Auto[/b] for the other fonts.
 		</member>
 	</members>
 </class>

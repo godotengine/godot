@@ -88,6 +88,7 @@ public:
 	virtual int64_t font_get_char_from_glyph_index(const RID &p_font_rid, int64_t p_size, int64_t p_glyph_index) const override { return 0; }
 	virtual bool font_has_char(const RID &p_font_rid, int64_t p_char) const override { return false; }
 	virtual String font_get_supported_chars(const RID &p_font_rid) const override { return String(); }
+	virtual PackedInt32Array font_get_supported_glyphs(const RID &p_font_rid) const override { return PackedInt32Array(); };
 	virtual void font_draw_glyph(const RID &p_font_rid, const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color) const override {}
 	virtual void font_draw_glyph_outline(const RID &p_font_rid, const RID &p_canvas, int64_t p_size, int64_t p_outline_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color) const override {}
 
