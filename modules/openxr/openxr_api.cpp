@@ -525,7 +525,7 @@ bool OpenXRAPI::create_instance() {
 		1, // applicationVersion, we don't currently have this
 		"Godot Game Engine", // engineName
 		VERSION_MAJOR * 10000 + VERSION_MINOR * 100 + VERSION_PATCH, // engineVersion 4.0 -> 40000, 4.0.1 -> 40001, 4.1 -> 40100, etc.
-		XR_CURRENT_API_VERSION // apiVersion
+		XR_API_VERSION_1_0 // apiVersion
 	};
 
 	void *next_pointer = nullptr;
