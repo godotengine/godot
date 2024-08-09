@@ -2571,8 +2571,18 @@ void GDScriptLanguage::reload_scripts(const Array &p_scripts, bool p_soft_reload
 	for (KeyValue<Ref<GDScript>, HashMap<ObjectID, List<Pair<StringName, Variant>>>> &E : to_reload) {
 		Ref<GDScript> scr = E.key;
 		print_verbose("GDScript: Reloading: " + scr->get_path());
+		bool old_is_tool = scr->is_tool();
 		scr->load_source_code(scr->get_path());
 		scr->reload(p_soft_reload);
+
+#ifdef TOOLS_ENABLED
+		// If the @tool changed in the script, we will force a hard reload to replace the PlaceHolders with GDScriptInstance
+		// and vice versa. A script that is not a tool is loaded has a PlaceHolder only and the GDScript is not running in the editor.
+		if (p_soft_reload && old_is_tool != scr->is_tool()) {
+			reload_scripts(p_scripts, false);
+			return;
+		}
+#endif
 
 		//restore state if saved
 		for (KeyValue<ObjectID, List<Pair<StringName, Variant>>> &F : E.value) {
