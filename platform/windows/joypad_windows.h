@@ -104,8 +104,19 @@ private:
 		uint64_t ff_end_timestamp = 0;
 	};
 
+	struct xinput_capabilities_ex {
+		XINPUT_CAPABILITIES Capabilities;
+		WORD vendorId;
+		WORD productId;
+		WORD revisionId;
+		DWORD a4; // unknown
+	};
+
 	typedef DWORD(WINAPI *XInputGetState_t)(DWORD dwUserIndex, XINPUT_STATE *pState);
 	typedef DWORD(WINAPI *XInputSetState_t)(DWORD dwUserIndex, XINPUT_VIBRATION *pVibration);
+	typedef DWORD(_stdcall *_XInputGetCapabilitiesEx)(DWORD a1, DWORD dwUserIndex, DWORD dwFlags, xinput_capabilities_ex *pCapabilities);
+
+	_XInputGetCapabilitiesEx XInputGetCapabilitiesEx = nullptr;
 
 	HWND *hWnd = nullptr;
 	HANDLE xinput_dll;
