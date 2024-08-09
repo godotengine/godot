@@ -34,6 +34,8 @@
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/input/shortcut.h"
+#include "core/io/dir_access.h"
+#include "core/os/time.h"
 #include "core/string/translation.h"
 #include "core/variant/variant_parser.h"
 #include "scene/gui/control.h"
@@ -1674,6 +1676,32 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 
 	if (p_ev->get_device() != InputEvent::DEVICE_ID_INTERNAL && is_inside_tree()) {
 		emit_signal(SceneStringName(window_input), p_ev);
+	}
+
+	if (!Engine::get_singleton()->is_editor_hint() && p_ev->is_action_pressed("ui_take_screenshot")) {
+		// The editor already has its own screenshot taking functionality.
+		const Ref<ViewportTexture> texture = get_texture();
+		ERR_FAIL_COND_MSG(texture.is_null(), "Cannot get a viewport texture from the window for taking a screenshot.");
+		const Ref<Image> img = texture->get_image();
+		ERR_FAIL_COND_MSG(img.is_null(), "Cannot get an image from a viewport texture of the window for taking a screenshot.");
+
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		String project_name = GLOBAL_GET("application/config/name");
+		if (project_name.is_empty()) {
+			project_name = "[unnamed project]";
+		}
+		// Use a subfolder with the project name in the user's Pictures folder for easier discovery of the screenshots taken.
+		const String path = OS::get_singleton()->get_system_dir(OS::SYSTEM_DIR_PICTURES).path_join(project_name).path_join("screenshot_" + Time::get_singleton()->get_datetime_string_from_system().replace(":", "") + ".png");
+		da->make_dir_recursive(path.get_base_dir());
+		const Error error = img->save_png(path);
+
+		ERR_FAIL_COND_MSG(error != OK, vformat("Cannot save screenshot to: %s", path));
+		// Using formatting around the printed path allows using Ctrl + Click in VS Code's integrated terminal to open the screenshot:
+		// <https://github.com/microsoft/vscode/issues/97941>
+		print_line_rich(vformat("Screenshot saved to: [u]%s[/u]", path));
+
+		// Prevent embedded subwindows from also taking a screenshot.
+		return;
 	}
 
 	if (is_inside_tree()) {
