@@ -184,7 +184,6 @@ private:
 	VScrollBar *v_scrollbar = nullptr;
 
 	Ref<ViewPanner> panner;
-	bool warped_panning = true;
 
 	bool show_menu = true;
 	bool show_zoom_label = false;

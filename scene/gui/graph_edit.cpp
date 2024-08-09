@@ -1681,7 +1681,7 @@ void GraphEdit::set_selected(Node *p_child) {
 
 void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 	ERR_FAIL_COND(p_ev.is_null());
-	if (panner->gui_input(p_ev, warped_panning ? get_global_rect() : Rect2())) {
+	if (panner->gui_input(p_ev, get_global_rect())) {
 		return;
 	}
 
@@ -2574,7 +2574,7 @@ Ref<ViewPanner> GraphEdit::get_panner() {
 }
 
 void GraphEdit::set_warped_panning(bool p_warped) {
-	warped_panning = p_warped;
+	panner->set_warped_panning_allowed(p_warped);
 }
 
 void GraphEdit::arrange_nodes() {

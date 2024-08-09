@@ -1278,7 +1278,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 
 bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bool p_already_accepted) {
 	panner->set_force_drag(tool == TOOL_PAN);
-	bool panner_active = panner->gui_input(p_event, warped_panning ? viewport->get_global_rect() : Rect2());
+	bool panner_active = panner->gui_input(p_event, viewport->get_global_rect());
 	if (panner->is_panning() != pan_pressed) {
 		pan_pressed = panner->is_panning();
 		_update_cursor();
@@ -3989,7 +3989,7 @@ void CanvasItemEditor::_update_editor_settings() {
 
 	panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/2d_editor_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 	panner->set_scroll_speed(EDITOR_GET("editors/panning/2d_editor_pan_speed"));
-	warped_panning = bool(EDITOR_GET("editors/panning/warped_mouse_panning"));
+	panner->set_warped_panning_allowed(EDITOR_GET("editors/panning/warped_mouse_panning"));
 }
 
 void CanvasItemEditor::_project_settings_changed() {

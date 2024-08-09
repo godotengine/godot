@@ -296,7 +296,7 @@ void TextureRegionEditor::_set_grid_parameters_clamping(bool p_enabled) {
 }
 
 void TextureRegionEditor::_texture_overlay_input(const Ref<InputEvent> &p_input) {
-	if (panner->gui_input(p_input)) {
+	if (panner->gui_input(p_input, texture_overlay->get_global_rect())) {
 		return;
 	}
 
@@ -826,6 +826,7 @@ void TextureRegionEditor::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
+			panner->set_warped_panning_allowed(EDITOR_GET("editors/panning/warped_mouse_panning"));
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
