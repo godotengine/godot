@@ -365,19 +365,37 @@ Vector<Vector<Vector2>> BitMap::_march_square(const Rect2i &p_rect, const Point2
 	return ret;
 }
 
+/**
+ * Check if a point(b) is between two line segment's(a and c) perpendicular range. Does not include endpoints.
+ * Uses dot product to get the directions for both endpoints and if their signs are different then the point is out of range
+ */
+static bool is_in_line_range(const Vector2 &b, const Vector2 &a, const Vector2 &c) {
+	Vector2 ba = a - b;
+	Vector2 bc = c - b;
+	Vector2 ac = c - a;
+
+	float dot1 = ba.dot(ac);
+	float dot2 = bc.dot(ac);
+	return (dot1 * dot2 < 0);
+}
+
 static float perpendicular_distance(const Vector2 &i, const Vector2 &start, const Vector2 &end) {
 	float res;
 	float slope;
 	float intercept;
 
-	if (start.x == end.x) {
-		res = Math::absf(i.x - end.x);
-	} else if (start.y == end.y) {
-		res = Math::absf(i.y - end.y);
+	if (is_in_line_range(i, start, end)) {
+		if (start.x == end.x) {
+			res = Math::absf(i.x - end.x);
+		} else if (start.y == end.y) {
+			res = Math::absf(i.y - end.y);
+		} else {
+			slope = (end.y - start.y) / (end.x - start.x);
+			intercept = start.y - (slope * start.x);
+			res = Math::absf(slope * i.x - i.y + intercept) / Math::sqrt(Math::pow(slope, 2.0f) + 1.0);
+		}
 	} else {
-		slope = (end.y - start.y) / (end.x - start.x);
-		intercept = start.y - (slope * start.x);
-		res = Math::absf(slope * i.x - i.y + intercept) / Math::sqrt(Math::pow(slope, 2.0f) + 1.0);
+		res = MIN(i.distance_to(start), i.distance_to(end));
 	}
 	return res;
 }
@@ -391,7 +409,7 @@ static Vector<Vector2> rdp(const Vector<Vector2> &v, float optimization) {
 	float dist = 0.0;
 	// Not looping first and last point.
 	for (size_t i = 1, size = v.size(); i < size - 1; ++i) {
-		float cdist = perpendicular_distance(v[i], v[0], v[v.size() - 1]);
+		float cdist = perpendicular_distance(v[i], v[0], v[size - 1]);
 		if (cdist > dist) {
 			dist = cdist;
 			index = static_cast<int>(i);
@@ -399,8 +417,8 @@ static Vector<Vector2> rdp(const Vector<Vector2> &v, float optimization) {
 	}
 	if (dist > optimization) {
 		Vector<Vector2> left, right;
-		left.resize(index);
-		for (int i = 0; i < index; i++) {
+		left.resize(index + 1);
+		for (int i = 0; i < index + 1; i++) {
 			left.write[i] = v[i];
 		}
 		right.resize(v.size() - index);
@@ -410,8 +428,8 @@ static Vector<Vector2> rdp(const Vector<Vector2> &v, float optimization) {
 		Vector<Vector2> r1 = rdp(left, optimization);
 		Vector<Vector2> r2 = rdp(right, optimization);
 
-		int middle = r1.size();
-		r1.resize(r1.size() + r2.size());
+		int middle = r1.size() - 1;
+		r1.resize(r1.size() + r2.size() - 1);
 		for (int i = 0; i < r2.size(); i++) {
 			r1.write[middle + i] = r2[i];
 		}
@@ -422,6 +440,16 @@ static Vector<Vector2> rdp(const Vector<Vector2> &v, float optimization) {
 		ret.push_back(v[v.size() - 1]);
 		return ret;
 	}
+}
+
+// Check if ABC is counterclockwise
+static float ccw(Vector2 A, Vector2 B, Vector2 C) {
+	return (C[1] - A[1]) * (B[0] - A[0]) >= (B[1] - A[1]) * (C[0] - A[0]);
+}
+
+// Line segments AB and CD intersect check
+static bool intersect(Vector2 A, Vector2 B, Vector2 C, Vector2 D) {
+	return ccw(A, C, D) != ccw(B, C, D) && ccw(A, B, C) != ccw(A, B, D);
 }
 
 static Vector<Vector2> reduce(const Vector<Vector2> &points, const Rect2i &rect, float epsilon) {
@@ -436,6 +464,13 @@ static Vector<Vector2> reduce(const Vector<Vector2> &points, const Rect2i &rect,
 	float maxEp = MIN(rect.size.width, rect.size.height);
 	float ep = CLAMP(epsilon, 0.0, maxEp / 2);
 	Vector<Vector2> result = rdp(points, ep);
+
+	// Any possible self intersection always involves the ending edges
+	if (intersect(result[result.size() - 2], result[result.size() - 1], result[0], result[1])) {
+		Vector2 tmp = result[0];
+		result.write[0] = result[result.size() - 1];
+		result.write[result.size() - 1] = tmp;
+	}
 
 	Vector2 last = result[result.size() - 1];
 
