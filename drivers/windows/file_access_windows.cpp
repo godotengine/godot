@@ -544,6 +544,7 @@ bool FileAccessWindows::file_exists(const String &p_name) {
 }
 
 uint64_t FileAccessWindows::_get_modified_time(const String &p_file) {
+	print_line(vformat("get_modified_time (windows) %s", p_file));
 	if (is_path_invalid(p_file)) {
 		return 0;
 	}

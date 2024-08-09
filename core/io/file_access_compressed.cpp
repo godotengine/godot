@@ -358,6 +358,7 @@ bool FileAccessCompressed::file_exists(const String &p_name) {
 }
 
 uint64_t FileAccessCompressed::_get_modified_time(const String &p_file) {
+	print_line(vformat("get_modified_time (compressed) %s", p_file));
 	if (f.is_valid()) {
 		return f->get_modified_time(p_file);
 	} else {
