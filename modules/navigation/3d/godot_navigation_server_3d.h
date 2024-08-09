@@ -95,6 +95,7 @@ class GodotNavigationServer3D : public NavigationServer3D {
 	int pm_edge_merge_count = 0;
 	int pm_edge_connection_count = 0;
 	int pm_edge_free_count = 0;
+	int pm_obstacle_count = 0;
 
 public:
 	GodotNavigationServer3D();

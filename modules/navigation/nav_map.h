@@ -123,6 +123,7 @@ class NavMap : public NavRid {
 	int pm_edge_merge_count = 0;
 	int pm_edge_connection_count = 0;
 	int pm_edge_free_count = 0;
+	int pm_obstacle_count = 0;
 
 public:
 	NavMap();
@@ -216,6 +217,7 @@ public:
 	int get_pm_edge_merge_count() const { return pm_edge_merge_count; }
 	int get_pm_edge_connection_count() const { return pm_edge_connection_count; }
 	int get_pm_edge_free_count() const { return pm_edge_free_count; }
+	int get_pm_obstacle_count() const { return pm_obstacle_count; }
 
 private:
 	void compute_single_step(uint32_t index, NavAgent **agent);
