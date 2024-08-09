@@ -197,7 +197,7 @@ def configure(env: "SConsEnvironment"):
 
     # Get version info for checks below.
     cc_version = get_compiler_version(env)
-    cc_semver = (cc_version["major"], cc_version["minor"], cc_version["patch"])
+    cc_semver = cc_version.major, cc_version.minor, cc_version.patch
 
     env.Prepend(CPPPATH=["#platform/web"])
     env.Append(CPPDEFINES=["WEB_ENABLED", "UNIX_ENABLED"])

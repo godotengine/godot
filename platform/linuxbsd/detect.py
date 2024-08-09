@@ -119,7 +119,7 @@ def configure(env: "SConsEnvironment"):
         print("Using linker program: " + env["linker"])
         if env["linker"] == "mold" and using_gcc(env):  # GCC < 12.1 doesn't support -fuse-ld=mold.
             cc_version = get_compiler_version(env)
-            cc_semver = (cc_version["major"], cc_version["minor"])
+            cc_semver = cc_version.major, cc_version.minor
             if cc_semver < (12, 1):
                 found_wrapper = False
                 for path in ["/usr/libexec", "/usr/local/libexec", "/usr/lib", "/usr/local/lib"]:

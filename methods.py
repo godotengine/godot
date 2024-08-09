@@ -8,7 +8,7 @@ from collections import OrderedDict
 from enum import Enum
 from io import StringIO, TextIOWrapper
 from pathlib import Path
-from typing import Generator, Optional
+from typing import Any, Generator, Optional
 
 # Get the "Godot" folder name ahead of time
 base_folder_path = str(os.path.abspath(Path(__file__).parent)) + "/"
@@ -793,7 +793,30 @@ def is_vanilla_clang(env):
     return not version.startswith("Apple")
 
 
-def get_compiler_version(env):
+class CompilerVersion:
+    major: int = -1
+    minor: int = -1
+    patch: int = -1
+    metadata1: str = ""
+    metadata2: str = ""
+    date: str = ""
+    apple_major: int = -1
+    apple_minor: int = -1
+    apple_patch1: int = -1
+    apple_patch2: int = -1
+    apple_patch3: int = -1
+
+    def __setattr__(self, name: str, value: Any) -> None:
+        if value is None:
+            return
+        if name in ["metadata1", "metadata2", "date"]:
+            value = str(value)
+        else:
+            value = int(value)
+        super().__setattr__(name, value)
+
+
+def get_compiler_version(env) -> CompilerVersion:
     """
     Returns a dictionary with various version information:
 
@@ -801,35 +824,35 @@ def get_compiler_version(env):
     - metadata1, metadata2: Extra information
     - date: Date of the build
     """
-    ret = {
-        "major": -1,
-        "minor": -1,
-        "patch": -1,
-        "metadata1": None,
-        "metadata2": None,
-        "date": None,
-        "apple_major": -1,
-        "apple_minor": -1,
-        "apple_patch1": -1,
-        "apple_patch2": -1,
-        "apple_patch3": -1,
-    }
+    ret = CompilerVersion()
 
-    if not env.msvc:
-        # Not using -dumpversion as some GCC distros only return major, and
-        # Clang used to return hardcoded 4.2.1: # https://reviews.llvm.org/D56803
+    if env.msvc:
         try:
-            version = (
-                subprocess.check_output([env.subst(env["CXX"]), "--version"], shell=(os.name == "nt"))
-                .strip()
-                .decode("utf-8")
-            )
+            args = [env["VSWHERE"], "-latest", "-products", "*", "-requires", "Microsoft.Component.MSBuild"]
+            version = subprocess.check_output(args, universal_newlines=True).strip()
+            for line in version.splitlines():
+                split = line.split(":", 1)
+                if split[0] == "catalog_productDisplayVersion":
+                    sem_ver = split[1].split(".")
+                    ret.major = int(sem_ver[0])
+                    ret.minor = int(sem_ver[1])
+                    ret.patch = int(sem_ver[2])
+                if split[0] == "catalog_buildVersion":
+                    ret.metadata1 = split[1]
         except (subprocess.CalledProcessError, OSError):
-            print_warning("Couldn't parse CXX environment variable to infer compiler version.")
-            return ret
-    else:
-        # TODO: Implement for MSVC
+            print_warning("Couldn't find vswhere to determine compiler version.")
         return ret
+
+    # Not using -dumpversion as some GCC distros only return major, and
+    # Clang used to return hardcoded 4.2.1: # https://reviews.llvm.org/D56803
+    try:
+        version = subprocess.check_output(
+            [env.subst(env["CXX"]), "--version"], shell=(os.name == "nt"), universal_newlines=True
+        ).strip()
+    except (subprocess.CalledProcessError, OSError):
+        print_warning("Couldn't parse CXX environment variable to infer compiler version.")
+        return ret
+
     match = re.search(
         r"(?:(?<=version )|(?<=\) )|(?<=^))"
         r"(?P<major>\d+)"
@@ -842,8 +865,8 @@ def get_compiler_version(env):
     )
     if match is not None:
         for key, value in match.groupdict().items():
-            if value is not None:
-                ret[key] = value
+            if hasattr(ret, key):
+                setattr(ret, key, value)
 
     match_apple = re.search(
         r"(?:(?<=clang-)|(?<=\) )|(?<=^))"
@@ -856,21 +879,9 @@ def get_compiler_version(env):
     )
     if match_apple is not None:
         for key, value in match_apple.groupdict().items():
-            if value is not None:
-                ret[key] = value
+            if hasattr(ret, key):
+                setattr(ret, key, value)
 
-    # Transform semantic versioning to integers
-    for key in [
-        "major",
-        "minor",
-        "patch",
-        "apple_major",
-        "apple_minor",
-        "apple_patch1",
-        "apple_patch2",
-        "apple_patch3",
-    ]:
-        ret[key] = int(ret[key] or -1)
     return ret
 
 
