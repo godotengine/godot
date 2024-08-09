@@ -290,6 +290,8 @@ namespace GodotTools.Build
             if (Internal.GodotIsRealTDouble())
                 buildInfo.CustomProperties.Add("GodotFloat64=true");
 
+            AddCustomBuildArguments(buildInfo, publish: false);
+
             return buildInfo;
         }
 
@@ -314,6 +316,8 @@ namespace GodotTools.Build
 
             if (Internal.GodotIsRealTDouble())
                 buildInfo.CustomProperties.Add("GodotFloat64=true");
+
+            AddCustomBuildArguments(buildInfo, publish: true);
 
             return buildInfo;
         }
@@ -353,6 +357,24 @@ namespace GodotTools.Build
             }
 
             return true;
+        }
+
+        private static void AddCustomBuildArguments(BuildInfo buildInfo, bool publish)
+        {
+            string[] arguments = (string[])ProjectSettings.GetSetting("dotnet/build/custom_compiler_arguments");
+            if (publish)
+            {
+                arguments = (string[])ProjectSettings.GetSetting("dotnet/build/custom_publish_arguments");
+            }
+            if (arguments == null)
+            {
+                return;
+            }
+
+            foreach (string arg in arguments)
+            {
+                buildInfo.CustomArguments.Add(arg);
+            }
         }
 
         private static bool GenerateXCFramework(List<string> outputPaths, string xcFrameworkPath)
