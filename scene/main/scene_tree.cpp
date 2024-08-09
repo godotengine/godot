@@ -1797,6 +1797,9 @@ SceneTree::SceneTree() {
 	bool snap_2d_transforms = GLOBAL_DEF_BASIC("rendering/2d/snap/snap_2d_transforms_to_pixel", false);
 	root->set_snap_2d_transforms_to_pixel(snap_2d_transforms);
 
+	bool snap_2d_transforms_true_center = GLOBAL_DEF_BASIC("rendering/2d/snap/snap_2d_transforms_to_pixel_true_center", false);
+	root->set_snap_2d_transforms_to_pixel_true_center(snap_2d_transforms_true_center);
+
 	bool snap_2d_vertices = GLOBAL_DEF("rendering/2d/snap/snap_2d_vertices_to_pixel", false);
 	root->set_snap_2d_vertices_to_pixel(snap_2d_vertices);
 

@@ -613,7 +613,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 				ptr = ptr->filter_next_ptr;
 			}
 
-			RSG::canvas->render_canvas(p_viewport->render_target, canvas, xform, canvas_lights, canvas_directional_lights, clip_rect, p_viewport->texture_filter, p_viewport->texture_repeat, p_viewport->snap_2d_transforms_to_pixel, p_viewport->snap_2d_vertices_to_pixel, p_viewport->canvas_cull_mask, &p_viewport->render_info);
+			RSG::canvas->render_canvas(p_viewport->render_target, canvas, xform, canvas_lights, canvas_directional_lights, clip_rect, p_viewport->texture_filter, p_viewport->texture_repeat, p_viewport->snap_2d_transforms_to_pixel, p_viewport->snap_2d_transforms_to_pixel_true_center, p_viewport->snap_2d_vertices_to_pixel, p_viewport->canvas_cull_mask, &p_viewport->render_info);
 			if (RSG::canvas->was_sdf_used()) {
 				p_viewport->sdf_active = true;
 			}
@@ -1405,6 +1405,12 @@ void RendererViewport::viewport_set_snap_2d_transforms_to_pixel(RID p_viewport, 
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL(viewport);
 	viewport->snap_2d_transforms_to_pixel = p_enabled;
+}
+
+void RendererViewport::viewport_set_snap_2d_transforms_to_pixel_true_center(RID p_viewport, bool p_enabled) {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_NULL(viewport);
+	viewport->snap_2d_transforms_to_pixel_true_center = p_enabled;
 }
 
 void RendererViewport::viewport_set_snap_2d_vertices_to_pixel(RID p_viewport, bool p_enabled) {

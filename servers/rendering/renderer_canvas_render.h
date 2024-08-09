@@ -458,6 +458,8 @@ public:
 
 		RS::CanvasItemTextureFilter texture_filter;
 		RS::CanvasItemTextureRepeat texture_repeat;
+		RS::CanvasItemSnapToPixel snap_to_pixel;
+		RS::CanvasItemSnapToPixelTrueCenter snap_to_pixel_true_center;
 
 		Item() {
 			commands = nullptr;

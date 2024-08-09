@@ -659,6 +659,7 @@ void EditorNode::_notification(int p_what) {
 			get_tree()->get_root()->set_as_audio_listener_3d(false);
 			get_tree()->get_root()->set_as_audio_listener_2d(false);
 			get_tree()->get_root()->set_snap_2d_transforms_to_pixel(false);
+			get_tree()->get_root()->set_snap_2d_transforms_to_pixel_true_center(false);
 			get_tree()->get_root()->set_snap_2d_vertices_to_pixel(false);
 			get_tree()->set_auto_accept_quit(false);
 #ifdef ANDROID_ENABLED
