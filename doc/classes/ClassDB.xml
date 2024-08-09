@@ -99,12 +99,28 @@
 				Returns the default value of [param property] of [param class] or its ancestor classes.
 			</description>
 		</method>
+		<method name="class_get_property_getter">
+			<return type="StringName" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="property" type="StringName" />
+			<description>
+				Returns the getter method name of [param property] of [param class].
+			</description>
+		</method>
 		<method name="class_get_property_list" qualifiers="const">
 			<return type="Dictionary[]" />
 			<param index="0" name="class" type="StringName" />
 			<param index="1" name="no_inheritance" type="bool" default="false" />
 			<description>
 				Returns an array with all the properties of [param class] or its ancestry if [param no_inheritance] is [code]false[/code].
+			</description>
+		</method>
+		<method name="class_get_property_setter">
+			<return type="StringName" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="property" type="StringName" />
+			<description>
+				Returns the setter method name of [param property] of [param class].
 			</description>
 		</method>
 		<method name="class_get_signal" qualifiers="const">
