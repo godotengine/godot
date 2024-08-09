@@ -57,6 +57,7 @@
 #include "extensions/openxr_local_floor_extension.h"
 #include "extensions/openxr_meta_controller_extension.h"
 #include "extensions/openxr_ml2_controller_extension.h"
+#include "extensions/openxr_mxink_extension.h"
 #include "extensions/openxr_palm_pose_extension.h"
 #include "extensions/openxr_pico_controller_extension.h"
 #include "extensions/openxr_wmr_controller_extension.h"
@@ -126,6 +127,7 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRMetaControllerExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXREyeGazeInteractionExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRHandInteractionExtension));
+			OpenXRAPI::register_extension_wrapper(memnew(OpenXRMxInkExtension));
 
 			// register gated extensions
 			if (GLOBAL_GET("xr/openxr/extensions/hand_tracking")) {
