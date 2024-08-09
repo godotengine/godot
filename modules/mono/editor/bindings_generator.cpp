@@ -66,6 +66,7 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 
 #define OPEN_BLOCK "{\n"
 #define CLOSE_BLOCK "}\n"
+#define EMPTY_BLOCK " { }\n"
 
 #define OPEN_BLOCK_L1 INDENT1 OPEN_BLOCK
 #define OPEN_BLOCK_L2 INDENT2 OPEN_BLOCK
@@ -1140,6 +1141,7 @@ void BindingsGenerator::_append_xml_method(StringBuilder &p_xml_output, const Ty
 					if (iarg.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
 						p_xml_output.append("}");
 					}
+					// Documentation accounts for nullable refs automatically, no need to append "?"
 				}
 				p_xml_output.append(")\"/>");
 			} else {
@@ -1504,6 +1506,7 @@ Error BindingsGenerator::_populate_method_icalls_table(const TypeInterface &p_it
 void BindingsGenerator::_generate_array_extensions(StringBuilder &p_output) {
 	p_output.append("namespace " BINDINGS_NAMESPACE ";\n\n");
 	p_output.append("using System;\n\n");
+	p_output.append("#nullable enable\n\n");
 	// The class where we put the extensions doesn't matter, so just use "GD".
 	p_output.append("public static partial class " BINDINGS_GLOBAL_SCOPE_CLASS "\n{");
 
@@ -1516,7 +1519,7 @@ void BindingsGenerator::_generate_array_extensions(StringBuilder &p_output) {
 	p_output.append(INDENT1 "public static bool IsEmpty(this " #m_type "[] instance)\n");               \
 	p_output.append(OPEN_BLOCK_L1);                                                                     \
 	p_output.append(INDENT2 "return instance == null || instance.Length == 0;\n");                      \
-	p_output.append(INDENT1 CLOSE_BLOCK);
+	p_output.append(CLOSE_BLOCK_L1);
 
 #define ARRAY_JOIN(m_type)                                                                                          \
 	p_output.append("\n" INDENT1 "/// <summary>\n");                                                                \
@@ -1527,8 +1530,8 @@ void BindingsGenerator::_generate_array_extensions(StringBuilder &p_output) {
 	p_output.append(INDENT1 "/// <returns>A single string with all items.</returns>\n");                            \
 	p_output.append(INDENT1 "public static string Join(this " #m_type "[] instance, string delimiter = \", \")\n"); \
 	p_output.append(OPEN_BLOCK_L1);                                                                                 \
-	p_output.append(INDENT2 "return String.Join(delimiter, instance);\n");                                          \
-	p_output.append(INDENT1 CLOSE_BLOCK);
+	p_output.append(INDENT2 "return String.Join(delimiter, instance ?? Array.Empty<" #m_type ">());\n");            \
+	p_output.append(CLOSE_BLOCK_L1);
 
 #define ARRAY_STRINGIFY(m_type)                                                                          \
 	p_output.append("\n" INDENT1 "/// <summary>\n");                                                     \
@@ -1539,7 +1542,7 @@ void BindingsGenerator::_generate_array_extensions(StringBuilder &p_output) {
 	p_output.append(INDENT1 "public static string Stringify(this " #m_type "[] instance)\n");            \
 	p_output.append(OPEN_BLOCK_L1);                                                                      \
 	p_output.append(INDENT2 "return \"[\" + instance.Join() + \"]\";\n");                                \
-	p_output.append(INDENT1 CLOSE_BLOCK);
+	p_output.append(CLOSE_BLOCK_L1);
 
 #define ARRAY_ALL(m_type)  \
 	ARRAY_IS_EMPTY(m_type) \
@@ -1572,7 +1575,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 	// Constants (in partial GD class)
 
 	p_output.append("namespace " BINDINGS_NAMESPACE ";\n\n");
-
+	p_output.append("#nullable enable\n\n");
 	p_output.append("public static partial class " BINDINGS_GLOBAL_SCOPE_CLASS "\n" OPEN_BLOCK);
 
 	for (const ConstantInterface &iconstant : global_constants) {
@@ -1745,8 +1748,8 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 	cs_icalls_content.append("using System;\n"
 							 "using System.Diagnostics.CodeAnalysis;\n"
 							 "using System.Runtime.InteropServices;\n"
-							 "using Godot.NativeInterop;\n"
-							 "\n");
+							 "using Godot.NativeInterop;\n\n"
+							 "#nullable enable\n\n");
 	cs_icalls_content.append("[SuppressMessage(\"ReSharper\", \"InconsistentNaming\")]\n");
 	cs_icalls_content.append("[SuppressMessage(\"ReSharper\", \"RedundantUnsafeContext\")]\n");
 	cs_icalls_content.append("[SuppressMessage(\"ReSharper\", \"RedundantNameQualifier\")]\n");
@@ -1852,8 +1855,8 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 	cs_icalls_content.append("using System;\n"
 							 "using System.Diagnostics.CodeAnalysis;\n"
 							 "using System.Runtime.InteropServices;\n"
-							 "using Godot.NativeInterop;\n"
-							 "\n");
+							 "using Godot.NativeInterop;\n\n"
+							 "#nullable enable\n\n");
 	cs_icalls_content.append("[SuppressMessage(\"ReSharper\", \"InconsistentNaming\")]\n");
 	cs_icalls_content.append("[SuppressMessage(\"ReSharper\", \"RedundantUnsafeContext\")]\n");
 	cs_icalls_content.append("[SuppressMessage(\"ReSharper\", \"RedundantNameQualifier\")]\n");
@@ -1982,9 +1985,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	output.append("using System;\n"); // IntPtr
 	output.append("using System.ComponentModel;\n"); // EditorBrowsable
 	output.append("using System.Diagnostics;\n"); // DebuggerBrowsable
-	output.append("using Godot.NativeInterop;\n");
+	output.append("using Godot.NativeInterop;\n\n");
 
-	output.append("\n#nullable disable\n");
+	output.append("#nullable enable\n\n");
 
 	const DocData::ClassDoc *class_doc = itype.class_doc;
 
@@ -2166,7 +2169,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			instance_type_name = itype.proxy_name;
 		}
 
-		output.append(MEMBER_BEGIN "private static " + instance_type_name + " singleton;\n");
+		output.append(MEMBER_BEGIN "private static " + instance_type_name + "? singleton;\n");
 
 		output << MEMBER_BEGIN "public static " + instance_type_name + " " CS_PROPERTY_SINGLETON " =>\n"
 			   << INDENT2 "singleton \?\?= (" + instance_type_name + ")"
@@ -2191,29 +2194,19 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		if (is_derived_type) {
 			// Add default constructor
-			if (itype.is_instantiable) {
-				output << MEMBER_BEGIN "public " << itype.proxy_name << "() : this("
-					   << (itype.memory_own ? "true" : "false") << ")\n" OPEN_BLOCK_L1
-					   << INDENT2 "unsafe\n" INDENT2 OPEN_BLOCK
-					   << INDENT3 "ConstructAndInitialize(" CS_STATIC_FIELD_NATIVE_CTOR ", "
-					   << BINDINGS_NATIVE_NAME_FIELD ", CachedType, refCounted: "
-					   << (itype.is_ref_counted ? "true" : "false") << ");\n"
-					   << CLOSE_BLOCK_L2 CLOSE_BLOCK_L1;
-			} else {
-				// Hide the constructor
-				output << MEMBER_BEGIN "internal " << itype.proxy_name << "() : this("
-					   << (itype.memory_own ? "true" : "false") << ")\n" OPEN_BLOCK_L1
-					   << INDENT2 "unsafe\n" INDENT2 OPEN_BLOCK
-					   << INDENT3 "ConstructAndInitialize(null, "
-					   << BINDINGS_NATIVE_NAME_FIELD ", CachedType, refCounted: "
-					   << (itype.is_ref_counted ? "true" : "false") << ");\n"
-					   << CLOSE_BLOCK_L2 CLOSE_BLOCK_L1;
-			}
+			output << MEMBER_BEGIN << (itype.is_instantiable ? "public" : "internal") << " "
+				   << itype.proxy_name << "() : this(" << (itype.memory_own ? "true" : "false")
+				   << ")\n" OPEN_BLOCK_L1 INDENT2 "unsafe\n"
+				   << INDENT2 OPEN_BLOCK INDENT3 "ConstructAndInitialize("
+				   << (itype.is_instantiable ? CS_STATIC_FIELD_NATIVE_CTOR : "null")
+				   << ", " << BINDINGS_NATIVE_NAME_FIELD ", CachedType, refCounted: "
+				   << (itype.is_ref_counted ? "true" : "false") << ");\n"
+				   << CLOSE_BLOCK_L2 CLOSE_BLOCK_L1;
 
 			// Add.. em.. trick constructor. Sort of.
 			output.append(MEMBER_BEGIN "internal ");
 			output.append(itype.proxy_name);
-			output.append("(bool " CS_PARAM_MEMORYOWN ") : base(" CS_PARAM_MEMORYOWN ") { }\n");
+			output.append("(bool " CS_PARAM_MEMORYOWN ") : base(" CS_PARAM_MEMORYOWN ")" EMPTY_BLOCK);
 		}
 	}
 
@@ -2336,7 +2329,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				ERR_FAIL_NULL_V(return_type, ERR_BUG); // Return type not found
 
 				output << INDENT3 "ret = "
-					   << sformat(return_type->cs_managed_to_variant, "callRet", return_type->cs_type, return_type->name)
+					   << sformat(return_type->cs_managed_to_variant, "callRet", return_type->cs_type + (return_type->is_object_type ? "?" : ""), return_type->name)
 					   << ";\n"
 					   << INDENT3 "return true;\n";
 			} else {
@@ -2603,14 +2596,13 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 	String prop_cs_type = prop_itype->cs_type + _get_generic_type_parameters(*prop_itype, proptype_name.generic_type_parameters);
 
 	p_output.append(prop_cs_type);
-	p_output.append(" ");
+	p_output.append(prop_itype->is_object_type ? "? " : " ");
 	p_output.append(p_iprop.proxy_name);
 	p_output.append("\n" OPEN_BLOCK_L1);
 
 	if (getter) {
-		p_output.append(INDENT2 "get\n" OPEN_BLOCK_L2 INDENT3);
+		p_output.append(INDENT2 "get => ");
 
-		p_output.append("return ");
 		p_output.append(getter->proxy_name + "(");
 		if (p_iprop.index != -1) {
 			const ArgumentInterface &idx_arg = getter->arguments.front()->get();
@@ -2623,11 +2615,11 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 				p_output.append(itos(p_iprop.index));
 			}
 		}
-		p_output.append(");\n" CLOSE_BLOCK_L2);
+		p_output.append(");\n");
 	}
 
 	if (setter) {
-		p_output.append(INDENT2 "set\n" OPEN_BLOCK_L2 INDENT3);
+		p_output.append(INDENT2 "set => ");
 
 		p_output.append(setter->proxy_name + "(");
 		if (p_iprop.index != -1) {
@@ -2641,7 +2633,7 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 				p_output.append(itos(p_iprop.index) + ", ");
 			}
 		}
-		p_output.append("value);\n" CLOSE_BLOCK_L2);
+		p_output.append("value);\n");
 	}
 
 	p_output.append(CLOSE_BLOCK_L1);
@@ -2723,6 +2715,8 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 			if (iarg.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
 				arguments_sig += "> ";
+			} else if (iarg.def_param_mode == ArgumentInterface::NULLABLE_REF || arg_type->is_object_type) {
+				arguments_sig += "? ";
 			} else {
 				arguments_sig += " ";
 			}
@@ -2740,27 +2734,13 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 		icall_params += ", ";
 
-		if (iarg.default_argument.size() && iarg.def_param_mode != ArgumentInterface::CONSTANT) {
+		if (iarg.default_argument.size() && iarg.def_param_mode != ArgumentInterface::CONSTANT && iarg.default_argument != "null") {
 			// The default value of an argument must be constant. Otherwise we make it Nullable and do the following:
-			// Type arg_in = arg.HasValue ? arg.Value : <non-const default value>;
+			// Type arg_in = arg ?? <non-const default value>;
 			String arg_or_defval_local = iarg.name;
 			arg_or_defval_local += "OrDefVal";
 
-			cs_in_statements << INDENT2 << arg_cs_type << " " << arg_or_defval_local << " = " << iarg.name;
-
-			if (iarg.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
-				cs_in_statements << ".HasValue ? ";
-			} else {
-				cs_in_statements << " != null ? ";
-			}
-
-			cs_in_statements << iarg.name;
-
-			if (iarg.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
-				cs_in_statements << ".Value : ";
-			} else {
-				cs_in_statements << " : ";
-			}
+			cs_in_statements << INDENT2 << arg_cs_type << " " << arg_or_defval_local << " = " << iarg.name << " ?? ";
 
 			String cs_type = arg_cs_type;
 			if (cs_type.ends_with("[]")) {
@@ -2787,7 +2767,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 			// Escape < and > in the attribute default value
 			String param_def_arg = def_arg.replacen("<", "&lt;").replacen(">", "&gt;");
 
-			default_args_doc.append(MEMBER_BEGIN "/// <param name=\"" + param_tag_name + "\">If the parameter is null, then the default value is <c>" + param_def_arg + "</c>.</param>");
+			default_args_doc.append(MEMBER_BEGIN "/// <param name=\"" + param_tag_name + "\">If the parameter is <see langword=\"null\"/>, then the default value is <c>" + param_def_arg + "</c>.</param>");
 		} else {
 			if (arg_type->cs_in.size()) {
 				cs_in_statements << sformat(arg_type->cs_in, arg_type->c_type, iarg.name,
@@ -2867,22 +2847,29 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		}
 
 		String return_cs_type = return_type->cs_type + _get_generic_type_parameters(*return_type, p_imethod.return_type.generic_type_parameters);
+		if (return_type->is_object_type) {
+			return_cs_type += "?";
+		}
 
 		p_output.append(return_cs_type + " ");
 		p_output.append(p_imethod.proxy_name + "(");
-		p_output.append(arguments_sig + ")\n" OPEN_BLOCK_L1);
+		p_output.append(arguments_sig + ")");
 
 		if (p_imethod.is_virtual) {
 			// Godot virtual method must be overridden, therefore we return a default value by default.
 
 			if (return_type->cname == name_cache.type_void) {
-				p_output.append(CLOSE_BLOCK_L1);
+				p_output << EMPTY_BLOCK;
 			} else {
-				p_output.append(INDENT2 "return default;\n" CLOSE_BLOCK_L1);
+				p_output << "\n" OPEN_BLOCK_L1
+						 << INDENT2 "return " << return_type->cs_default << ";\n"
+						 << CLOSE_BLOCK_L1;
 			}
 
 			return OK; // Won't increment method bind count
 		}
+
+		p_output << "\n" OPEN_BLOCK_L1;
 
 		if (p_imethod.requires_object_call) {
 			// Fallback to Godot's object.Call(string, params)
@@ -2963,7 +2950,7 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 		}
 
 		arguments_sig += arg_type->cs_type;
-		arguments_sig += " ";
+		arguments_sig += arg_type->is_object_type ? "? " : " ";
 		arguments_sig += iarg.name;
 
 		delegate_type_params += arg_type->cs_type;
@@ -3401,6 +3388,9 @@ const String BindingsGenerator::_get_generic_type_parameters(const TypeInterface
 		}
 
 		params += param_itype->cs_type;
+		if (param_itype->is_object_type) {
+			params += "?";
+		}
 		if (i < p_generic_type_parameters.size() - 1) {
 			params += ", ";
 		}
@@ -3640,7 +3630,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		itype.c_arg_in = "&%s";
 		itype.c_type = "IntPtr";
 		itype.c_type_in = itype.c_type;
-		itype.c_type_out = "GodotObject";
+		itype.c_type_out = "GodotObject?";
 
 		// Populate properties
 
@@ -4170,11 +4160,11 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			if (r_iarg.type.cname == name_cache.type_StringName || r_iarg.type.cname == name_cache.type_NodePath) {
 				if (r_iarg.default_argument.length() > 0) {
 					r_iarg.default_argument = "(%s)\"" + r_iarg.default_argument + "\"";
-					r_iarg.def_param_mode = ArgumentInterface::NULLABLE_REF;
 				} else {
 					// No need for a special `in` statement to change `null` to `""`. Marshaling takes care of this already.
 					r_iarg.default_argument = "null";
 				}
+				r_iarg.def_param_mode = ArgumentInterface::NULLABLE_REF;
 			} else {
 				CRASH_COND(r_iarg.type.cname != name_cache.type_String);
 				r_iarg.default_argument = "\"" + r_iarg.default_argument + "\"";
@@ -4205,9 +4195,6 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 		case Variant::VECTOR2I:
 		case Variant::VECTOR3:
 		case Variant::VECTOR3I:
-			r_iarg.default_argument = "new %s" + r_iarg.default_argument;
-			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
-			break;
 		case Variant::VECTOR4:
 		case Variant::VECTOR4I:
 			r_iarg.default_argument = "new %s" + r_iarg.default_argument;
@@ -4218,13 +4205,14 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 					"Parameter of type '" + String(r_iarg.type.cname) + "' can only have null/zero as the default value.");
 
 			r_iarg.default_argument = "null";
+			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_REF;
 			break;
 		case Variant::DICTIONARY:
 			ERR_FAIL_COND_V_MSG(!p_val.operator Dictionary().is_empty(), false,
 					"Default value of type 'Dictionary' must be an empty dictionary.");
 			// The [cs_in] expression already interprets null values as empty dictionaries.
 			r_iarg.default_argument = "null";
-			r_iarg.def_param_mode = ArgumentInterface::CONSTANT;
+			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_REF;
 			break;
 		case Variant::RID:
 			ERR_FAIL_COND_V_MSG(r_iarg.type.cname != name_cache.type_RID, false,
@@ -4240,7 +4228,7 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 					"Default value of type 'Array' must be an empty array.");
 			// The [cs_in] expression already interprets null values as empty arrays.
 			r_iarg.default_argument = "null";
-			r_iarg.def_param_mode = ArgumentInterface::CONSTANT;
+			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_REF;
 			break;
 		case Variant::PACKED_BYTE_ARRAY:
 		case Variant::PACKED_INT32_ARRAY:
@@ -4445,6 +4433,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.cname = itype.name;
 	itype.proxy_name = "string";
 	itype.cs_type = itype.proxy_name;
+	itype.cs_default = "string.Empty";
 	itype.c_in = "%5using %0 %1_in = " C_METHOD_MONOSTR_TO_GODOT "(%1);\n";
 	itype.c_out = "%5return " C_METHOD_MONOSTR_FROM_GODOT "(%1);\n";
 	itype.c_arg_in = "&%s_in";
@@ -4461,6 +4450,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.cname = itype.name;
 	itype.proxy_name = "StringName";
 	itype.cs_type = itype.proxy_name;
+	itype.cs_default = "new()";
 	itype.cs_in_expr = "(%1)(%0?.NativeValue ?? default)";
 	// Cannot pass null StringName to ptrcall
 	itype.c_out = "%5return %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
@@ -4479,6 +4469,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.cname = itype.name;
 	itype.proxy_name = "NodePath";
 	itype.cs_type = itype.proxy_name;
+	itype.cs_default = "new()";
 	itype.cs_in_expr = "(%1)(%0?.NativeValue ?? default)";
 	// Cannot pass null NodePath to ptrcall
 	itype.c_out = "%5return %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
@@ -4566,6 +4557,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 		itype.cname = itype.name;                                                   \
 		itype.proxy_name = #m_proxy_t "[]";                                         \
 		itype.cs_type = itype.proxy_name;                                           \
+		itype.cs_default = "Array.Empty<" #m_proxy_t ">()";                         \
 		itype.c_in = "%5using %0 %1_in = " C_METHOD_MONOARRAY_TO(m_type) "(%1);\n"; \
 		itype.c_out = "%5return " C_METHOD_MONOARRAY_FROM(m_type) "(%1);\n";        \
 		itype.c_arg_in = "&%s_in";                                                  \
@@ -4601,6 +4593,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.proxy_name = itype.name;
 	itype.type_parameter_count = 1;
 	itype.cs_type = BINDINGS_NAMESPACE_COLLECTIONS "." + itype.proxy_name;
+	itype.cs_default = "new()";
 	itype.cs_in_expr = "(%1)(%0 ?? new()).NativeValue";
 	itype.c_out = "%5return %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
 	itype.c_arg_in = "&%s";
@@ -4628,6 +4621,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.proxy_name = itype.name;
 	itype.type_parameter_count = 2;
 	itype.cs_type = BINDINGS_NAMESPACE_COLLECTIONS "." + itype.proxy_name;
+	itype.cs_default = "new()";
 	itype.cs_in_expr = "(%1)(%0 ?? new()).NativeValue";
 	itype.c_out = "%5return %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
 	itype.c_arg_in = "&%s";
