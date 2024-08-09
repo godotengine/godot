@@ -1175,6 +1175,37 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_stylebox(SceneStringName(panel), "PanelContainer", make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
 
+	Ref<StyleBoxFlat> foldable_container_title = make_flat_stylebox(style_pressed_color);
+	foldable_container_title->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
+	foldable_container_title->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
+	theme->set_stylebox("title_panel", "FoldableContainer", foldable_container_title);
+	Ref<StyleBoxFlat> foldable_container_hover = make_flat_stylebox(style_hover_color);
+	foldable_container_hover->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
+	foldable_container_hover->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
+	theme->set_stylebox("title_hover_panel", "FoldableContainer", foldable_container_hover);
+	theme->set_stylebox("title_collapsed_panel", "FoldableContainer", make_flat_stylebox(style_pressed_color));
+	theme->set_stylebox("title_collapsed_hover_panel", "FoldableContainer", make_flat_stylebox(style_hover_color));
+	Ref<StyleBoxFlat> foldable_container_panel = make_flat_stylebox(style_normal_color, 18);
+	foldable_container_panel->set_corner_radius(CORNER_TOP_LEFT, 0);
+	foldable_container_panel->set_corner_radius(CORNER_TOP_RIGHT, 0);
+	theme->set_stylebox("panel", "FoldableContainer", foldable_container_panel);
+	theme->set_stylebox("focus", "FoldableContainer", focus);
+
+	theme->set_font("font", "FoldableContainer", Ref<Font>());
+	theme->set_font_size("font_size", "FoldableContainer", default_font_size);
+
+	theme->set_color("font_color", "FoldableContainer", control_font_color);
+	theme->set_color("hover_font_color", "FoldableContainer", control_font_hover_color);
+	theme->set_color("collapsed_font_color", "FoldableContainer", control_font_pressed_color);
+	theme->set_color("font_outline_color", "FoldableContainer", Color(1, 1, 1));
+
+	theme->set_icon("arrow", "FoldableContainer", icons["arrow_down"]);
+	theme->set_icon("arrow_collapsed", "FoldableContainer", icons["arrow_right"]);
+	theme->set_icon("arrow_collapsed_mirrored", "FoldableContainer", icons["arrow_left"]);
+
+	theme->set_constant("outline_size", "FoldableContainer", 0);
+	theme->set_constant("h_separation", "FoldableContainer", Math::round(2 * scale));
+
 	theme->set_icon("zoom_out", "GraphEdit", icons["zoom_less"]);
 	theme->set_icon("zoom_in", "GraphEdit", icons["zoom_more"]);
 	theme->set_icon("zoom_reset", "GraphEdit", icons["zoom_reset"]);
