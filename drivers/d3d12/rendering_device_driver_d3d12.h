@@ -523,6 +523,7 @@ public:
 	virtual FramebufferID swap_chain_acquire_framebuffer(CommandQueueID p_cmd_queue, SwapChainID p_swap_chain, bool &r_resize_required) override;
 	virtual RenderPassID swap_chain_get_render_pass(SwapChainID p_swap_chain) override;
 	virtual DataFormat swap_chain_get_format(SwapChainID p_swap_chain) override;
+	virtual ColorSpace swap_chain_get_color_space(SwapChainID p_swap_chain) override;
 	virtual void swap_chain_free(SwapChainID p_swap_chain) override;
 
 	/*********************/

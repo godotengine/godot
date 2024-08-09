@@ -43,6 +43,9 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin_for_screen(p_screen);
 	ERR_FAIL_COND(draw_list == RD::INVALID_ID);
 
+	const RD::ColorSpace color_space = RD::get_singleton()->screen_get_color_space(p_screen);
+	const float max_luminance = RD::get_singleton()->get_context_driver()->window_get_hdr_output_max_luminance(p_screen);
+
 	for (int i = 0; i < p_amount; i++) {
 		RID rd_texture = texture_storage->render_target_get_rd_texture(p_render_targets[i].render_target);
 		ERR_CONTINUE(rd_texture.is_null());
@@ -62,6 +65,7 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 
 		Size2 screen_size(RD::get_singleton()->screen_get_width(p_screen), RD::get_singleton()->screen_get_height(p_screen));
 		BlitMode mode = p_render_targets[i].lens_distortion.apply ? BLIT_MODE_LENS : (p_render_targets[i].multi_view.use_layer ? BLIT_MODE_USE_LAYER : BLIT_MODE_NORMAL);
+
 		RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blit.pipelines[mode]);
 		RD::get_singleton()->draw_list_bind_index_array(draw_list, blit.array);
 		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, render_target_descriptors[rd_texture], 0);
@@ -81,7 +85,11 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 		blit.push_constant.k2 = p_render_targets[i].lens_distortion.k2;
 		blit.push_constant.upscale = p_render_targets[i].lens_distortion.upscale;
 		blit.push_constant.aspect_ratio = p_render_targets[i].lens_distortion.aspect_ratio;
-		blit.push_constant.convert_to_srgb = texture_storage->render_target_is_using_hdr(p_render_targets[i].render_target);
+		blit.push_constant.source_is_srgb = !texture_storage->render_target_is_using_hdr(p_render_targets[i].render_target);
+		blit.push_constant.target_color_space = color_space;
+		blit.push_constant.max_display_luminance = max_luminance;
+		blit.push_constant.pad[0] = 0.0;
+		blit.push_constant.pad[1] = 0.0;
 
 		RD::get_singleton()->draw_list_set_push_constant(draw_list, &blit.push_constant, sizeof(BlitPushConstant));
 		RD::get_singleton()->draw_list_draw(draw_list, true);
@@ -222,6 +230,9 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 	screenrect.position /= window_size;
 	screenrect.size /= window_size;
 
+	const RD::ColorSpace color_space = RD::get_singleton()->screen_get_color_space(DisplayServer::MAIN_WINDOW_ID);
+	const float max_luminance = RD::get_singleton()->get_context_driver()->window_get_hdr_output_max_luminance(DisplayServer::MAIN_WINDOW_ID);
+
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin_for_screen(DisplayServer::MAIN_WINDOW_ID, p_color);
 
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blit.pipelines[BLIT_MODE_NORMAL_ALPHA]);
@@ -243,7 +254,11 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 	blit.push_constant.k2 = 0;
 	blit.push_constant.upscale = 1.0;
 	blit.push_constant.aspect_ratio = 1.0;
-	blit.push_constant.convert_to_srgb = false;
+	blit.push_constant.source_is_srgb = true;
+	blit.push_constant.target_color_space = color_space;
+	blit.push_constant.max_display_luminance = max_luminance;
+	blit.push_constant.pad[0] = 0.0;
+	blit.push_constant.pad[1] = 0.0;
 
 	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blit.push_constant, sizeof(BlitPushConstant));
 	RD::get_singleton()->draw_list_draw(draw_list, true);

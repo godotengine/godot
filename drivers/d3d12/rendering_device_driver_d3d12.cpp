@@ -2616,6 +2616,10 @@ RDD::DataFormat RenderingDeviceDriverD3D12::swap_chain_get_format(SwapChainID p_
 	return swap_chain->data_format;
 }
 
+RDD::ColorSpace RenderingDeviceDriverD3D12::swap_chain_get_color_space(SwapChainID p_swap_chain) {
+	return RDD::COLOR_SPACE_SRGB_NONLINEAR;
+}
+
 void RenderingDeviceDriverD3D12::swap_chain_free(SwapChainID p_swap_chain) {
 	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
 	_swap_chain_release(swap_chain);

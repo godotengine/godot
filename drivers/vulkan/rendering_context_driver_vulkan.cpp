@@ -657,6 +657,27 @@ DisplayServer::VSyncMode RenderingContextDriverVulkan::surface_get_vsync_mode(Su
 	return surface->vsync_mode;
 }
 
+void RenderingContextDriverVulkan::surface_set_hdr_output_enabled(SurfaceID p_surface, bool p_enabled) {
+	Surface *surface = (Surface *)(p_surface);
+	surface->hdr_output = p_enabled;
+	surface->needs_resize = true;
+}
+
+bool RenderingContextDriverVulkan::surface_get_hdr_output_enabled(SurfaceID p_surface) const {
+	Surface *surface = (Surface *)(p_surface);
+	return surface->hdr_output;
+}
+
+void RenderingContextDriverVulkan::surface_set_hdr_output_max_luminance(SurfaceID p_surface, float p_max_luminance) {
+	Surface *surface = (Surface *)(p_surface);
+	surface->hdr_max_luminance = p_max_luminance;
+}
+
+float RenderingContextDriverVulkan::surface_get_hdr_output_max_luminance(SurfaceID p_surface) const {
+	Surface *surface = (Surface *)(p_surface);
+	return surface->hdr_max_luminance;
+}
+
 uint32_t RenderingContextDriverVulkan::surface_get_width(SurfaceID p_surface) const {
 	Surface *surface = (Surface *)(p_surface);
 	return surface->width;

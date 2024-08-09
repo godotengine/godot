@@ -122,6 +122,7 @@ bool DisplayServerWindows::has_feature(Feature p_feature) const {
 		case FEATURE_TEXT_TO_SPEECH:
 		case FEATURE_SCREEN_CAPTURE:
 		case FEATURE_STATUS_INDICATOR:
+		case FEATURE_HDR:
 			return true;
 		default:
 			return false;
@@ -3444,6 +3445,46 @@ DisplayServer::VSyncMode DisplayServerWindows::window_get_vsync_mode(WindowID p_
 	}
 #endif
 	return DisplayServer::VSYNC_ENABLED;
+}
+
+void DisplayServerWindows::window_set_hdr_output_enabled(const bool p_enabled, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		rendering_context->window_set_hdr_output_enabled(p_window, p_enabled);
+	}
+#endif
+}
+
+bool DisplayServerWindows::window_get_hdr_output_enabled(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_enabled(p_window);
+	}
+#endif
+
+	return false;
+}
+
+void DisplayServerWindows::window_set_hdr_output_max_luminance(const float p_max_luminance, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		rendering_context->window_set_hdr_output_max_luminance(p_window, p_max_luminance);
+	}
+#endif
+}
+
+float DisplayServerWindows::window_get_hdr_output_max_luminance(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_max_luminance(p_window);
+	}
+#endif
+
+	return 0.0f;
 }
 
 void DisplayServerWindows::set_context(Context p_context) {

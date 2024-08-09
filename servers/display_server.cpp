@@ -752,6 +752,24 @@ DisplayServer::VSyncMode DisplayServer::window_get_vsync_mode(WindowID p_window)
 	return VSyncMode::VSYNC_ENABLED;
 }
 
+void DisplayServer::window_set_hdr_output_enabled(const bool p_enabled, WindowID p_window) {
+	WARN_PRINT("Changing the HDR mode is not supported by this display server.");
+}
+
+bool DisplayServer::window_get_hdr_output_enabled(WindowID p_window) const {
+	WARN_PRINT("Changing the HDR mode is not supported by this display server.");
+	return false;
+}
+
+void DisplayServer::window_set_hdr_output_max_luminance(const float p_max_luminance, WindowID p_window) {
+	WARN_PRINT("Changing the HDR mode is not supported by this display server.");
+}
+
+float DisplayServer::window_get_hdr_output_max_luminance(WindowID p_window) const {
+	WARN_PRINT("Changing the HDR mode is not supported by this display server.");
+	return 0.0f;
+}
+
 DisplayServer::WindowID DisplayServer::get_focused_window() const {
 	return MAIN_WINDOW_ID; // Proper value for single windows.
 }
@@ -953,6 +971,11 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("window_set_vsync_mode", "vsync_mode", "window_id"), &DisplayServer::window_set_vsync_mode, DEFVAL(MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_get_vsync_mode", "window_id"), &DisplayServer::window_get_vsync_mode, DEFVAL(MAIN_WINDOW_ID));
 
+	ClassDB::bind_method(D_METHOD("window_set_hdr_output_enabled", "enabled", "window_id"), &DisplayServer::window_set_hdr_output_enabled, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_get_hdr_output_enabled", "window_id"), &DisplayServer::window_get_hdr_output_enabled, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_set_hdr_output_max_luminance", "max_luminance", "window_id"), &DisplayServer::window_set_hdr_output_max_luminance, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_get_hdr_output_max_luminance", "window_id"), &DisplayServer::window_get_hdr_output_max_luminance, DEFVAL(MAIN_WINDOW_ID));
+
 	ClassDB::bind_method(D_METHOD("window_is_maximize_allowed", "window_id"), &DisplayServer::window_is_maximize_allowed, DEFVAL(MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_maximize_on_title_dbl_click"), &DisplayServer::window_maximize_on_title_dbl_click);
 	ClassDB::bind_method(D_METHOD("window_minimize_on_title_dbl_click"), &DisplayServer::window_minimize_on_title_dbl_click);
@@ -1039,6 +1062,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_NATIVE_HELP);
 	BIND_ENUM_CONSTANT(FEATURE_NATIVE_DIALOG_INPUT);
 	BIND_ENUM_CONSTANT(FEATURE_NATIVE_DIALOG_FILE);
+	BIND_ENUM_CONSTANT(FEATURE_HDR);
 
 	BIND_ENUM_CONSTANT(MOUSE_MODE_VISIBLE);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_HIDDEN);

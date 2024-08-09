@@ -2255,6 +2255,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		if (bool(GLOBAL_GET("display/window/size/no_focus"))) {
 			window_flags |= DisplayServer::WINDOW_FLAG_NO_FOCUS_BIT;
 		}
+
 		window_mode = (DisplayServer::WindowMode)(GLOBAL_GET("display/window/size/mode").operator int());
 		int initial_position_type = GLOBAL_GET("display/window/size/initial_position_type").operator int();
 		if (initial_position_type == 0) { // Absolute.
@@ -2912,6 +2913,12 @@ Error Main::setup2(bool p_show_boot_logo) {
 		}
 		if (init_always_on_top) {
 			DisplayServer::get_singleton()->window_set_flag(DisplayServer::WINDOW_FLAG_ALWAYS_ON_TOP, true);
+		}
+
+		// Enable HDR if requested and available.
+		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_HDR)) {
+			DisplayServer::get_singleton()->window_set_hdr_output_enabled(GLOBAL_GET("display/window/hdr/enabled"));
+			DisplayServer::get_singleton()->window_set_hdr_output_max_luminance(GLOBAL_GET("display/window/hdr/max_luminance"));
 		}
 
 		Color clear = GLOBAL_DEF_BASIC("rendering/environment/defaults/default_clear_color", Color(0.3, 0.3, 0.3));

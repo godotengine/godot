@@ -271,6 +271,12 @@ public:
 		DATA_FORMAT_MAX,
 	};
 
+	enum ColorSpace {
+		COLOR_SPACE_SRGB_NONLINEAR,
+		COLOR_SPACE_HDR10_ST2084,
+		COLOR_SPACE_MAX,
+	};
+
 	enum CompareOperator {
 		COMPARE_OP_NEVER,
 		COMPARE_OP_LESS,

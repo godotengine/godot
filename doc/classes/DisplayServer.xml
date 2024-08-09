@@ -1448,6 +1448,20 @@
 				Returns the current value of the given window's [param flag].
 			</description>
 		</method>
+		<method name="window_get_hdr_output_enabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns whether HDR output is requested for the given window.
+			</description>
+		</method>
+		<method name="window_get_hdr_output_max_luminance" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns the maximum luminance in nits (cd/m²) set for HDR output for the given window.
+			</description>
+		</method>
 		<method name="window_get_max_size" qualifiers="const">
 			<return type="Vector2i" />
 			<param index="0" name="window_id" type="int" default="0" />
@@ -1613,6 +1627,24 @@
 			<param index="2" name="window_id" type="int" default="0" />
 			<description>
 				Enables or disables the given window's given [param flag]. See [enum WindowFlags] for possible values and their behavior.
+			</description>
+		</method>
+		<method name="window_set_hdr_output_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Sets whether HDR output should be enabled for the window specified by [param window_id].
+				Only available on platforms that support HDR output, have HDR enabled in the system settings, and have a compatible display connected.
+			</description>
+		</method>
+		<method name="window_set_hdr_output_max_luminance">
+			<return type="void" />
+			<param index="0" name="max_luminance" type="float" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Sets the maximum luminance of the display in nits (cd/m²) when HDR is enabled.
+				This is used to scale the HDR effect to avoid clipping.
 			</description>
 		</method>
 		<method name="window_set_ime_active">
@@ -1882,6 +1914,9 @@
 		</constant>
 		<constant name="FEATURE_NATIVE_DIALOG_FILE" value="25" enum="Feature">
 			Display server supports spawning dialogs for selecting files or directories using the operating system's native look-and-feel. See [method file_dialog_show] and [method file_dialog_with_options_show]. [b]Windows, macOS, Linux (X11/Wayland)[/b]
+		</constant>
+		<constant name="FEATURE_HDR" value="26" enum="Feature">
+			Display server supports HDR output. [b]Windows[/b]
 		</constant>
 		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
 			Makes the mouse cursor visible if it is hidden.

@@ -2473,6 +2473,80 @@ void RenderingDeviceDriverVulkan::command_buffer_execute_secondary(CommandBuffer
 /**** SWAP CHAIN ****/
 /********************/
 
+bool RenderingDeviceDriverVulkan::_determine_swap_chain_format(RenderingContextDriver::SurfaceID p_surface, VkFormat &r_format, VkColorSpaceKHR &r_color_space) {
+	DEV_ASSERT(p_surface != 0);
+
+	RenderingContextDriverVulkan::Surface *surface = (RenderingContextDriverVulkan::Surface *)(p_surface);
+	const RenderingContextDriverVulkan::Functions &functions = context_driver->functions_get();
+
+	// Retrieve the formats supported by the surface.
+	uint32_t format_count = 0;
+	VkResult err = functions.GetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface->vk_surface, &format_count, nullptr);
+	ERR_FAIL_COND_V(err != VK_SUCCESS, false);
+
+	TightLocalVector<VkSurfaceFormatKHR> formats;
+	formats.resize(format_count);
+	err = functions.GetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface->vk_surface, &format_count, formats.ptr());
+	ERR_FAIL_COND_V(err != VK_SUCCESS, false);
+
+	// If the format list includes just one entry of VK_FORMAT_UNDEFINED, the surface has no preferred format.
+	if (format_count == 1 && formats[0].format == VK_FORMAT_UNDEFINED) {
+		r_format = VK_FORMAT_B8G8R8A8_UNORM;
+		r_color_space = formats[0].colorSpace;
+		return VK_SUCCESS;
+	}
+
+	// If the surface requests HDR output, try to get an HDR format.
+	if (context_driver->surface_get_hdr_output_enabled(p_surface)) {
+		// Use one of the supported formats, prefer A2B10G10R10_UNORM_PACK32.
+		const VkFormat preferred_format = VK_FORMAT_A2B10G10R10_UNORM_PACK32;
+		const VkFormat second_format = VK_FORMAT_A2R10G10B10_UNORM_PACK32;
+
+		// Only HDR10 is supported for now.
+		const VkColorSpaceKHR preferred_color_space = VK_COLOR_SPACE_HDR10_ST2084_EXT;
+
+		// Search for a valid format.
+		for (uint32_t i = 0; i < format_count; i++) {
+			if (formats[i].colorSpace == preferred_color_space && (formats[i].format == preferred_format || formats[i].format == second_format)) {
+				r_format = formats[i].format;
+				r_color_space = formats[i].colorSpace;
+
+				// This is the preferred format, stop searching.
+				if (formats[i].format == preferred_format) {
+					return true;
+				}
+			}
+		}
+
+		WARN_PRINT("HDR output requested but no HDR compatible format was found, falling back to SDR.");
+	}
+
+	// If HDR output was not requested or we failed to find an HDR compatible format above, try to get an SDR format.
+	{
+		// Use one of the supported formats, prefer B8G8R8A8_UNORM.
+		const VkFormat preferred_format = VK_FORMAT_B8G8R8A8_UNORM;
+		const VkFormat second_format = VK_FORMAT_R8G8B8A8_UNORM;
+
+		// Only SRGB is supported and should be available everywhere.
+		const VkColorSpaceKHR preferred_color_space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+
+		for (uint32_t i = 0; i < format_count; i++) {
+			if (formats[i].colorSpace == preferred_color_space && (formats[i].format == preferred_format || formats[i].format == second_format)) {
+				r_format = formats[i].format;
+				r_color_space = formats[i].colorSpace;
+
+				// This is the preferred format, stop searching.
+				if (formats[i].format == preferred_format) {
+					return true;
+				}
+			}
+		}
+	}
+
+	// No formats are supported.
+	return false;
+}
+
 void RenderingDeviceDriverVulkan::_swap_chain_release(SwapChain *swap_chain) {
 	// Destroy views and framebuffers associated to the swapchain's images.
 	for (FramebufferID framebuffer : swap_chain->framebuffers) {
@@ -2504,42 +2578,12 @@ void RenderingDeviceDriverVulkan::_swap_chain_release(SwapChain *swap_chain) {
 RenderingDeviceDriver::SwapChainID RenderingDeviceDriverVulkan::swap_chain_create(RenderingContextDriver::SurfaceID p_surface) {
 	DEV_ASSERT(p_surface != 0);
 
-	RenderingContextDriverVulkan::Surface *surface = (RenderingContextDriverVulkan::Surface *)(p_surface);
-	const RenderingContextDriverVulkan::Functions &functions = context_driver->functions_get();
-
-	// Retrieve the formats supported by the surface.
-	uint32_t format_count = 0;
-	VkResult err = functions.GetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface->vk_surface, &format_count, nullptr);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, SwapChainID());
-
-	TightLocalVector<VkSurfaceFormatKHR> formats;
-	formats.resize(format_count);
-	err = functions.GetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface->vk_surface, &format_count, formats.ptr());
-	ERR_FAIL_COND_V(err != VK_SUCCESS, SwapChainID());
-
+	// Determine the format and color space for the swap chain.
 	VkFormat format = VK_FORMAT_UNDEFINED;
 	VkColorSpaceKHR color_space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-	if (format_count == 1 && formats[0].format == VK_FORMAT_UNDEFINED) {
-		// If the format list includes just one entry of VK_FORMAT_UNDEFINED, the surface has no preferred format.
-		format = VK_FORMAT_B8G8R8A8_UNORM;
-		color_space = formats[0].colorSpace;
-	} else if (format_count > 0) {
-		// Use one of the supported formats, prefer B8G8R8A8_UNORM.
-		const VkFormat preferred_format = VK_FORMAT_B8G8R8A8_UNORM;
-		const VkFormat second_format = VK_FORMAT_R8G8B8A8_UNORM;
-		for (uint32_t i = 0; i < format_count; i++) {
-			if (formats[i].format == preferred_format || formats[i].format == second_format) {
-				format = formats[i].format;
-				if (formats[i].format == preferred_format) {
-					// This is the preferred format, stop searching.
-					break;
-				}
-			}
-		}
+	if (!_determine_swap_chain_format(p_surface, format, color_space)) {
+		ERR_FAIL_V_MSG(SwapChainID(), "Surface did not return any valid formats.");
 	}
-
-	// No formats are supported.
-	ERR_FAIL_COND_V_MSG(format == VK_FORMAT_UNDEFINED, SwapChainID(), "Surface did not return any valid formats.");
 
 	// Create the render pass for the chosen format.
 	VkAttachmentDescription2KHR attachment = {};
@@ -2571,7 +2615,7 @@ RenderingDeviceDriver::SwapChainID RenderingDeviceDriverVulkan::swap_chain_creat
 	pass_info.pSubpasses = &subpass;
 
 	VkRenderPass render_pass = VK_NULL_HANDLE;
-	err = _create_render_pass(vk_device, &pass_info, nullptr, &render_pass);
+	VkResult err = _create_render_pass(vk_device, &pass_info, nullptr, &render_pass);
 	ERR_FAIL_COND_V(err != VK_SUCCESS, SwapChainID());
 
 	SwapChain *swap_chain = memnew(SwapChain);
@@ -2698,6 +2742,16 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 			}
 		}
 		has_comp_alpha[(uint64_t)p_cmd_queue.id] = (composite_alpha != VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR);
+	}
+
+	// Determine the format and color space for the swap chain.
+	VkFormat format = VK_FORMAT_UNDEFINED;
+	VkColorSpaceKHR color_space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+	if (!_determine_swap_chain_format(swap_chain->surface, format, color_space)) {
+		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Surface did not return any valid formats.");
+	} else {
+		swap_chain->format = format;
+		swap_chain->color_space = color_space;
 	}
 
 	VkSwapchainCreateInfoKHR swap_create_info = {};
@@ -2851,9 +2905,28 @@ RDD::DataFormat RenderingDeviceDriverVulkan::swap_chain_get_format(SwapChainID p
 			return DATA_FORMAT_B8G8R8A8_UNORM;
 		case VK_FORMAT_R8G8B8A8_UNORM:
 			return DATA_FORMAT_R8G8B8A8_UNORM;
+		case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
+			return DATA_FORMAT_A2B10G10R10_UNORM_PACK32;
+		case VK_FORMAT_A2R10G10B10_UNORM_PACK32:
+			return DATA_FORMAT_A2R10G10B10_UNORM_PACK32;
 		default:
 			DEV_ASSERT(false && "Unknown swap chain format.");
 			return DATA_FORMAT_MAX;
+	}
+}
+
+RDD::ColorSpace RenderingDeviceDriverVulkan::swap_chain_get_color_space(SwapChainID p_swap_chain) {
+	DEV_ASSERT(p_swap_chain.id != 0);
+
+	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
+	switch (swap_chain->color_space) {
+		case VK_COLOR_SPACE_SRGB_NONLINEAR_KHR:
+			return COLOR_SPACE_SRGB_NONLINEAR;
+		case VK_COLOR_SPACE_HDR10_ST2084_EXT:
+			return COLOR_SPACE_HDR10_ST2084;
+		default:
+			DEV_ASSERT(false && "Unknown swap chain color space.");
+			return COLOR_SPACE_MAX;
 	}
 }
 

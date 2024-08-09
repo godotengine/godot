@@ -3526,6 +3526,17 @@ RenderingDevice::FramebufferFormatID RenderingDevice::screen_get_framebuffer_for
 	return const_cast<RenderingDevice *>(this)->framebuffer_format_create(screen_attachment);
 }
 
+RenderingDevice::ColorSpace RenderingDevice::screen_get_color_space(DisplayServer::WindowID p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	HashMap<DisplayServer::WindowID, RDD::SwapChainID>::ConstIterator it = screen_swap_chains.find(p_screen);
+	ERR_FAIL_COND_V_MSG(it == screen_swap_chains.end(), COLOR_SPACE_SRGB_NONLINEAR, "Screen was never prepared, defaulting to sRGB.");
+
+	ColorSpace color_space = driver->swap_chain_get_color_space(it->value);
+	ERR_FAIL_COND_V_MSG(color_space == COLOR_SPACE_MAX, COLOR_SPACE_SRGB_NONLINEAR, "Unknown color space, defaulting to sRGB.");
+	return color_space;
+}
+
 Error RenderingDevice::screen_free(DisplayServer::WindowID p_screen) {
 	_THREAD_SAFE_METHOD_
 
