@@ -497,12 +497,11 @@ public:
 		}
 	};
 
-	virtual void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used, RenderingMethod::RenderInfo *r_render_info = nullptr) = 0;
-
 	struct LightOccluderInstance {
 		bool enabled : 1;
 		bool on_interpolate_transform_list : 1;
 		bool interpolated : 1;
+		bool culled : 1; // avoid culling multiple times
 		RID canvas;
 		RID polygon;
 		RID occluder;
@@ -511,6 +510,7 @@ public:
 		Transform2D xform_prev;
 		Transform2D xform_cache;
 		int light_mask;
+		int z_index;
 		bool sdf_collision;
 		RS::CanvasOccluderPolygonCullMode cull_cache;
 
@@ -520,18 +520,23 @@ public:
 			enabled = true;
 			on_interpolate_transform_list = false;
 			interpolated = false;
+			culled = false;
 			sdf_collision = false;
 			next = nullptr;
 			light_mask = 1;
+			z_index = 0;
 			cull_cache = RS::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED;
 		}
 	};
 
+	virtual void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_list, LightOccluderInstance *p_occluders, const Transform2D &p_canvas_transform, const Rect2 &p_clip_rect, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used, RenderingMethod::RenderInfo *r_render_info = nullptr) = 0;
+
 	virtual RID light_create() = 0;
 	virtual void light_set_texture(RID p_rid, RID p_texture) = 0;
 	virtual void light_set_use_shadow(RID p_rid, bool p_enable) = 0;
-	virtual void light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders) = 0;
-	virtual void light_update_directional_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_cull_distance, const Rect2 &p_clip_rect, LightOccluderInstance *p_occluders) = 0;
+	virtual void light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, int p_z_end, LightOccluderInstance *p_occluders) = 0;
+	virtual void update_shadow_map(Light *p_lights, Light *p_directional_lights, LightOccluderInstance *p_occluders, const Rect2 &p_clip_rect, int p_z_end) = 0;
+	virtual void light_update_directional_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_cull_distance, const Rect2 &p_clip_rect, int p_z_end, LightOccluderInstance *p_occluders) = 0;
 
 	virtual void render_sdf(RID p_render_target, LightOccluderInstance *p_occluders) = 0;
 

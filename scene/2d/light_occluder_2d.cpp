@@ -168,10 +168,16 @@ void LightOccluder2D::_notification(int p_what) {
 			RS::get_singleton()->canvas_light_occluder_attach_to_canvas(occluder, get_canvas());
 			RS::get_singleton()->canvas_light_occluder_set_transform(occluder, get_global_transform());
 			RS::get_singleton()->canvas_light_occluder_set_enabled(occluder, is_visible_in_tree());
+			RS::get_singleton()->canvas_light_occluder_set_z_index(occluder, get_effective_z_index());
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			RS::get_singleton()->canvas_light_occluder_set_transform(occluder, get_global_transform());
+		} break;
+
+		case NOTIFICATION_Z_INDEX_CHANGED: {
+			int effective_z_index = get_effective_z_index();
+			RS::get_singleton()->canvas_light_occluder_set_z_index(occluder, effective_z_index);
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {

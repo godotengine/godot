@@ -964,6 +964,7 @@ public:
 	FUNC2(canvas_light_occluder_set_as_sdf_collision, RID, bool)
 	FUNC2(canvas_light_occluder_set_transform, RID, const Transform2D &)
 	FUNC2(canvas_light_occluder_set_light_mask, RID, int)
+	FUNC2(canvas_light_occluder_set_z_index, RID, int)
 
 	FUNC2(canvas_light_occluder_set_interpolated, RID, bool)
 	FUNC1(canvas_light_occluder_reset_physics_interpolation, RID)
