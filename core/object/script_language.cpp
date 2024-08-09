@@ -174,6 +174,8 @@ void Script::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_abstract"), &Script::is_abstract);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "source_code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_source_code", "get_source_code");
+
+	ADD_SIGNAL(MethodInfo("reloaded"));
 }
 
 void Script::reload_from_file() {
@@ -192,6 +194,15 @@ void Script::reload_from_file() {
 #else
 	Resource::reload_from_file();
 #endif
+}
+
+void Script::emit_reloaded() {
+	if (!Thread::is_main_thread()) {
+		// Let the connection happen on the main thread, later, since signals are not thread-safe.
+		call_deferred("emit_signal", CoreStringName(reloaded));
+	} else {
+		emit_signal(CoreStringName(reloaded));
+	}
 }
 
 void ScriptServer::set_scripting_enabled(bool p_enabled) {
