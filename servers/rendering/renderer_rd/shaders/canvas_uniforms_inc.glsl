@@ -7,13 +7,16 @@
 
 //1 means enabled, 2+ means trails in use
 #define FLAGS_INSTANCING_MASK 0x7F
-#define FLAGS_INSTANCING_HAS_COLORS (1 << 7)
-#define FLAGS_INSTANCING_HAS_CUSTOM_DATA (1 << 8)
+#define FLAGS_INSTANCING_HAS_COLORS_SHIFT 7
+#define FLAGS_INSTANCING_HAS_COLORS (1 << FLAGS_INSTANCING_HAS_COLORS_SHIFT)
+#define FLAGS_INSTANCING_HAS_CUSTOM_DATA_SHIFT 8
+#define FLAGS_INSTANCING_HAS_CUSTOM_DATA (1 << FLAGS_INSTANCING_HAS_CUSTOM_DATA_SHIFT)
 
 #define FLAGS_CLIP_RECT_UV (1 << 9)
 #define FLAGS_TRANSPOSE_RECT (1 << 10)
 #define FLAGS_CONVERT_ATTRIBUTES_TO_LINEAR (1 << 11)
-#define FLAGS_NINEPACH_DRAW_CENTER (1 << 12)
+#define FLAGS_NINEPACH_DRAW_CENTER_SHIFT 12
+#define FLAGS_NINEPACH_DRAW_CENTER (1 << FLAGS_NINEPACH_DRAW_CENTER_SHIFT)
 
 #define FLAGS_NINEPATCH_H_MODE_SHIFT 16
 #define FLAGS_NINEPATCH_V_MODE_SHIFT 18
@@ -28,6 +31,45 @@
 
 #define FLAGS_FLIP_H (1 << 30)
 #define FLAGS_FLIP_V (1 << 31)
+
+#ifdef USE_BATCHING
+
+struct InstanceData {
+	vec2 world_x;
+	vec2 world_y;
+	vec2 world_ofs;
+	uint flags;
+	uint specular_shininess;
+#ifdef USE_PRIMITIVE
+	vec2 points[3];
+	vec2 uvs[3];
+	uint colors[6];
+#else
+	vec4 modulation;
+	vec4 ninepatch_margins;
+	vec4 dst_rect; //for built-in rect and UV
+	vec4 src_rect;
+	vec2 pad;
+
+#endif
+	vec2 color_texture_pixel_size;
+	uint lights[4];
+};
+
+layout(set = 4, binding = 0, std430) restrict readonly buffer DrawData {
+	InstanceData data[];
+}
+instances;
+
+layout(push_constant, std430) uniform Params {
+	uint base_instance_index; // base index to instance data
+	uint pad1;
+	uint pad2;
+	uint pad3;
+}
+params;
+
+#else
 
 // Push Constant
 
@@ -53,6 +95,8 @@ layout(push_constant, std430) uniform DrawData {
 	uint lights[4];
 }
 draw_data;
+
+#endif // USE_BATCHING
 
 // In vulkan, sets should always be ordered using the following logic:
 // Lower Sets: Sets that change format and layout less often
