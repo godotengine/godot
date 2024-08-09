@@ -767,7 +767,7 @@ void main() {
 	float ao = 1.0;
 	float ao_light_affect = 0.0;
 
-	float alpha = 1.0;
+	float alpha = float((instances.data[draw_call.instance_index].flags >> INSTANCE_FLAGS_FADE_SHIFT) & INSTANCE_FLAGS_FADE_MASK) / float(255.0);
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
 	vec3 binormal = normalize(binormal_interp);

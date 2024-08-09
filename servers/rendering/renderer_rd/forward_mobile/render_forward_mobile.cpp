@@ -1077,7 +1077,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				// this may be needed if we re-introduced steps that change info, not sure which do so in the previous implementation
 				//_setup_environment(p_render_data, is_reflection_probe, screen_size, p_default_bg_color, false);
 
-				RenderListParameters render_list_params(render_list[RENDER_LIST_ALPHA].elements.ptr(), render_list[RENDER_LIST_ALPHA].element_info.ptr(), render_list[RENDER_LIST_ALPHA].elements.size(), reverse_cull, PASS_MODE_COLOR, rp_uniform_set, spec_constant_base_flags, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count);
+				RenderListParameters render_list_params(render_list[RENDER_LIST_ALPHA].elements.ptr(), render_list[RENDER_LIST_ALPHA].element_info.ptr(), render_list[RENDER_LIST_ALPHA].elements.size(), reverse_cull, PASS_MODE_COLOR_TRANSPARENT, rp_uniform_set, spec_constant_base_flags, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count);
 				render_list_params.framebuffer_format = fb_format;
 				render_list_params.subpass = RD::get_singleton()->draw_list_get_current_pass(); // Should now always be 0.
 
@@ -1830,6 +1830,20 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 
 		bool uses_lightmap = false;
 		// bool uses_gi = false;
+		float fade_alpha = 1.0;
+
+		if (inst->fade_near || inst->fade_far) {
+			float fade_dist = inst->transform.origin.distance_to(p_render_data->scene_data->cam_transform.origin);
+			// Use `smoothstep()` to make opacity changes more gradual and less noticeable to the player.
+			if (inst->fade_far && fade_dist > inst->fade_far_begin) {
+				fade_alpha = Math::smoothstep(0.0f, 1.0f, 1.0f - (fade_dist - inst->fade_far_begin) / (inst->fade_far_end - inst->fade_far_begin));
+			} else if (inst->fade_near && fade_dist < inst->fade_near_end) {
+				fade_alpha = Math::smoothstep(0.0f, 1.0f, (fade_dist - inst->fade_near_begin) / (inst->fade_near_end - inst->fade_near_begin));
+			}
+		}
+
+		fade_alpha *= inst->force_alpha * inst->parent_fade_alpha;
+		flags |= (uint32_t(fade_alpha * 255.0) << INSTANCE_DATA_FLAGS_FADE_SHIFT) & INSTANCE_DATA_FLAGS_FADE_MASK;
 
 		if (p_render_list == RENDER_LIST_OPAQUE) {
 			if (inst->lightmap_instance.is_valid()) {
@@ -1935,6 +1949,11 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 #else
 				bool force_alpha = false;
 #endif
+
+				if (fade_alpha < 0.999) {
+					force_alpha = true;
+				}
+
 				if (!force_alpha && (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_PASS_OPAQUE)) {
 					rl->add_element(surf);
 				}
@@ -2150,6 +2169,7 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 		RID xforms_uniform_set = surf->owner->transforms_uniform_set;
 
 		SceneShaderForwardMobile::ShaderVersion shader_version = SceneShaderForwardMobile::SHADER_VERSION_MAX; // Assigned to silence wrong -Wmaybe-initialized.
+		SceneShaderForwardMobile::PipelinePasses color_pass = SceneShaderForwardMobile::PIPELINE_PASS_NOT_COLOR_OR_OPAQUE;
 
 		switch (p_params->pass_mode) {
 			case PASS_MODE_COLOR:
@@ -2158,6 +2178,9 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 					shader_version = p_params->view_count > 1 ? SceneShaderForwardMobile::SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW : SceneShaderForwardMobile::SHADER_VERSION_LIGHTMAP_COLOR_PASS;
 				} else {
 					shader_version = p_params->view_count > 1 ? SceneShaderForwardMobile::SHADER_VERSION_COLOR_PASS_MULTIVIEW : SceneShaderForwardMobile::SHADER_VERSION_COLOR_PASS;
+				}
+				if (p_params->pass_mode == PASS_MODE_COLOR_TRANSPARENT) {
+					color_pass = SceneShaderForwardMobile::PIPELINE_PASS_COLOR_TRANSPARENT;
 				}
 			} break;
 			case PASS_MODE_SHADOW: {
@@ -2175,7 +2198,7 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 
 		PipelineCacheRD *pipeline = nullptr;
 
-		pipeline = &shader->pipelines[cull_variant][primitive][shader_version];
+		pipeline = &shader->pipelines[cull_variant][primitive][shader_version][color_pass];
 
 		RD::VertexFormatID vertex_format = -1;
 		RID vertex_array_rd;
