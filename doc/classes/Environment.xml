@@ -414,7 +414,7 @@
 			Linear tonemapper operator. Reads the linear data and passes it on unmodified. This can cause bright lighting to look blown out, with noticeable clipping in the output colors.
 		</constant>
 		<constant name="TONE_MAPPER_REINHARDT" value="1" enum="ToneMapper">
-			Reinhardt tonemapper operator. Performs a variation on rendered pixels' colors by this formula: [code]color = color / (1 + color)[/code]. This avoids clipping bright highlights, but the resulting image can look a bit dull.
+			Reinhard tonemapper operator. Performs a variation on rendered pixels' colors by this formula: [code]color = color * (1 + color / (white * white)) / (1 + color)[/code]. This avoids clipping bright highlights, but the resulting image can look a bit dull. When [member tonemap_white] is left at the default value of [code]1.0[/code] this is identical to [constant TONE_MAPPER_LINEAR] while also being slightly less performant.
 		</constant>
 		<constant name="TONE_MAPPER_FILMIC" value="2" enum="ToneMapper">
 			Filmic tonemapper operator. This avoids clipping bright highlights, with a resulting image that usually looks more vivid than [constant TONE_MAPPER_REINHARDT].

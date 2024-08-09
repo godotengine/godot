@@ -76,8 +76,12 @@ vec3 tonemap_aces(vec3 color, float p_white) {
 	return color_tonemapped / p_white_tonemapped;
 }
 
+// Based on Reinhard's extended formula, see equation 4 in https://doi.org/cjbgrt
 vec3 tonemap_reinhard(vec3 color, float p_white) {
-	return (p_white * color + color) / (color * p_white + p_white);
+	float white_squared = p_white * p_white;
+	vec3 white_squared_color = white_squared * color;
+	// Equivalent to color * (1 + color / white_squared) / (1 + color)
+	return (white_squared_color + color * color) / (white_squared_color + white_squared);
 }
 
 #define TONEMAPPER_LINEAR 0
@@ -85,7 +89,7 @@ vec3 tonemap_reinhard(vec3 color, float p_white) {
 #define TONEMAPPER_FILMIC 2
 #define TONEMAPPER_ACES 3
 
-vec3 apply_tonemapping(vec3 color, float p_white) { // inputs are LINEAR, always outputs clamped [0;1] color
+vec3 apply_tonemapping(vec3 color, float p_white) { // inputs are LINEAR
 	// Ensure color values passed to tonemappers are positive.
 	// They can be negative in the case of negative lights, which leads to undesired behavior.
 	if (tonemapper == TONEMAPPER_LINEAR) {
