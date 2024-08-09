@@ -10,6 +10,14 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="clipboard_add_type_handler" qualifiers="const">
+			<return type="int" enum="Error" />
+			<param index="0" name="type" type="String" />
+			<param index="1" name="handler" type="Callable" />
+			<description>
+				Adds a handler to parse raw data from the clipboard into a Godot type for data with the MIME type [param type]. Type handlers must be registered for a MIME type before that type can be loaded using [method clipboard_get_type].
+			</description>
+		</method>
 		<method name="clipboard_get" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -30,6 +38,13 @@
 				[b]Note:[/b] This method is only implemented on Linux (X11/Wayland).
 			</description>
 		</method>
+		<method name="clipboard_get_type" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="type" type="String" />
+			<description>
+				Returns the user's clipboard data parsed as the MIME type [param type]. Requires a type handler to have been registered to handle that type with [method clipboard_add_type_handler].
+			</description>
+		</method>
 		<method name="clipboard_has" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -40,6 +55,27 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if there is an image content on the user's clipboard.
+			</description>
+		</method>
+		<method name="clipboard_has_type" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="type" type="String" />
+			<description>
+				Returns [code]true[/code] if the user's clipboard data can be parsed as the MIME type [param type]. Requires a type handler to have been registered to handle that type with [method clipboard_add_type_handler].
+			</description>
+		</method>
+		<method name="clipboard_has_type_handler" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="type" type="String" />
+			<description>
+				Returns [code]true[/code] if there is a type handler registered to load data from the clipboard with the MIME type [param type].
+			</description>
+		</method>
+		<method name="clipboard_remove_type_handler" qualifiers="const">
+			<return type="int" enum="Error" />
+			<param index="0" name="type" type="String" />
+			<description>
+				Removes a type handler from the clipboard. That MIME type will no longer be loadable from the clipboard unless a new handler is added with [method clipboard_add_type_handler].
 			</description>
 		</method>
 		<method name="clipboard_set">
