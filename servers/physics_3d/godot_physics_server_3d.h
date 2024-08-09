@@ -171,16 +171,24 @@ public:
 	virtual BodyMode body_get_mode(RID p_body) const override;
 
 	virtual void body_add_shape(RID p_body, RID p_shape, const Transform3D &p_transform = Transform3D(), bool p_disabled = false) override;
+	void body_add_negative_shape(RID p_body, RID p_shape, const Transform3D &p_transform = Transform3D(), bool p_disabled = false);
 	virtual void body_set_shape(RID p_body, int p_shape_idx, RID p_shape) override;
+	void body_set_negative_shape(RID p_body, int p_shape_idx, RID p_shape);
 	virtual void body_set_shape_transform(RID p_body, int p_shape_idx, const Transform3D &p_transform) override;
+	void body_set_negative_shape_transform(RID p_body, int p_shape_idx, const Transform3D &p_transform);
 
 	virtual int body_get_shape_count(RID p_body) const override;
+ 	int body_get_negative_shape_count(RID p_body) const;
 	virtual RID body_get_shape(RID p_body, int p_shape_idx) const override;
+	RID body_get_negative_shape(RID p_body, int p_shape_idx) const;
 	virtual Transform3D body_get_shape_transform(RID p_body, int p_shape_idx) const override;
+	Transform3D body_get_negative_shape_transform(RID p_body, int p_shape_idx) const;
 
 	virtual void body_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled) override;
+	void body_set_negative_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled);
 
 	virtual void body_remove_shape(RID p_body, int p_shape_idx) override;
+	void body_remove_negative_shape(RID p_body, int p_shape_idx);
 	virtual void body_clear_shapes(RID p_body) override;
 
 	virtual void body_attach_object_instance_id(RID p_body, ObjectID p_id) override;
