@@ -411,10 +411,7 @@ public:                                                                         
 		return String(#m_class);                                                                                                                 \
 	}                                                                                                                                            \
 	virtual const StringName *_get_class_namev() const override {                                                                                \
-		static StringName _class_name_static;                                                                                                    \
-		if (unlikely(!_class_name_static)) {                                                                                                     \
-			StringName::assign_static_unique_class_name(&_class_name_static, #m_class);                                                          \
-		}                                                                                                                                        \
+		static StringName _class_name_static = StringName(#m_class, true);                                                                       \
 		return &_class_name_static;                                                                                                              \
 	}                                                                                                                                            \
 	static _FORCE_INLINE_ void *get_class_ptr_static() {                                                                                         \
@@ -753,10 +750,7 @@ protected:
 	Variant _call_deferred_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	virtual const StringName *_get_class_namev() const {
-		static StringName _class_name_static;
-		if (unlikely(!_class_name_static)) {
-			StringName::assign_static_unique_class_name(&_class_name_static, "Object");
-		}
+		static StringName _class_name_static = StringName("Object", true);
 		return &_class_name_static;
 	}
 
