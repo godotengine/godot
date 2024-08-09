@@ -30,6 +30,8 @@
 
 #include "texture_3d_editor_plugin.h"
 
+#include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/label.h"
 
 void Texture3DEditor::_texture_rect_draw() {
@@ -48,6 +50,13 @@ void Texture3DEditor::_notification(int p_what) {
 
 			draw_texture_rect(checkerboard, Rect2(Point2(), size), true);
 		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
+			if (info) {
+				Ref<Font> metadata_label_font = get_theme_font(SNAME("expression"), EditorStringName(EditorFonts));
+				info->add_theme_font_override(SceneStringName(font), metadata_label_font);
+			}
+		} break;
 	}
 }
 
@@ -55,19 +64,21 @@ void Texture3DEditor::_texture_changed() {
 	if (!is_visible()) {
 		return;
 	}
+
+	setting = true;
+	_update_gui();
+	setting = false;
+
+	_update_material(true);
 	queue_redraw();
 }
 
-void Texture3DEditor::_update_material() {
+void Texture3DEditor::_update_material(bool p_texture_changed) {
 	material->set_shader_parameter("layer", (layer->get_value() + 0.5) / texture->get_depth());
-	material->set_shader_parameter("tex", texture->get_rid());
 
-	String format = Image::get_format_name(texture->get_format());
-
-	String text;
-	text = itos(texture->get_width()) + "x" + itos(texture->get_height()) + "x" + itos(texture->get_depth()) + " " + format;
-
-	info->set_text(text);
+	if (p_texture_changed) {
+		material->set_shader_parameter("tex", texture->get_rid());
+	}
 }
 
 void Texture3DEditor::_make_shaders() {
@@ -113,6 +124,41 @@ void Texture3DEditor::_texture_rect_update_area() {
 	texture_rect->set_size(Vector2(tex_width, tex_height));
 }
 
+void Texture3DEditor::_update_gui() {
+	if (texture.is_null()) {
+		return;
+	}
+
+	_texture_rect_update_area();
+
+	layer->set_max(texture->get_depth() - 1);
+
+	const String format = Image::get_format_name(texture->get_format());
+
+	if (texture->has_mipmaps()) {
+		const int mip_count = Image::get_image_required_mipmaps(texture->get_width(), texture->get_height(), texture->get_format());
+		const int memory = Image::get_image_data_size(texture->get_width(), texture->get_height(), texture->get_format(), true) * texture->get_depth();
+
+		info->set_text(vformat(String::utf8("%d×%d×%d %s\n") + TTR("%s Mipmaps") + "\n" + TTR("Memory: %s"),
+				texture->get_width(),
+				texture->get_height(),
+				texture->get_depth(),
+				format,
+				mip_count,
+				String::humanize_size(memory)));
+
+	} else {
+		const int memory = Image::get_image_data_size(texture->get_width(), texture->get_height(), texture->get_format(), false) * texture->get_depth();
+
+		info->set_text(vformat(String::utf8("%d×%d×%d %s\n") + TTR("No Mipmaps") + "\n" + TTR("Memory: %s"),
+				texture->get_width(),
+				texture->get_height(),
+				texture->get_depth(),
+				format,
+				String::humanize_size(memory)));
+	}
+}
+
 void Texture3DEditor::edit(Ref<Texture3D> p_texture) {
 	if (!texture.is_null()) {
 		texture->disconnect_changed(callable_mp(this, &Texture3DEditor::_texture_changed));
@@ -126,15 +172,15 @@ void Texture3DEditor::edit(Ref<Texture3D> p_texture) {
 		}
 
 		texture->connect_changed(callable_mp(this, &Texture3DEditor::_texture_changed));
-		queue_redraw();
 		texture_rect->set_material(material);
 		setting = true;
-		layer->set_max(texture->get_depth() - 1);
 		layer->set_value(0);
 		layer->show();
-		_update_material();
+		_update_gui();
 		setting = false;
-		_texture_rect_update_area();
+		_update_material(true);
+		queue_redraw();
+
 	} else {
 		hide();
 	}
@@ -142,7 +188,7 @@ void Texture3DEditor::edit(Ref<Texture3D> p_texture) {
 
 Texture3DEditor::Texture3DEditor() {
 	set_texture_repeat(TextureRepeat::TEXTURE_REPEAT_ENABLED);
-	set_custom_minimum_size(Size2(1, 150));
+	set_custom_minimum_size(Size2(1, 256.0) * EDSCALE);
 
 	texture_rect = memnew(Control);
 	texture_rect->set_mouse_filter(MOUSE_FILTER_IGNORE);
@@ -160,14 +206,22 @@ Texture3DEditor::Texture3DEditor() {
 	layer->connect(SceneStringName(value_changed), callable_mp(this, &Texture3DEditor::_layer_changed));
 
 	info = memnew(Label);
+
+	info->add_theme_color_override(SceneStringName(font_color), Color(1, 1, 1));
+	info->add_theme_color_override("font_shadow_color", Color(0, 0, 0));
+
+	info->add_theme_font_size_override(SceneStringName(font_size), 14 * EDSCALE);
+	info->add_theme_color_override("font_outline_color", Color(0, 0, 0));
+	info->add_theme_constant_override("outline_size", 8 * EDSCALE);
+
 	info->set_h_grow_direction(GROW_DIRECTION_BEGIN);
 	info->set_v_grow_direction(GROW_DIRECTION_BEGIN);
-	info->add_theme_color_override(SceneStringName(font_color), Color(1, 1, 1, 1));
-	info->add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.5));
-	info->add_theme_constant_override("shadow_outline_size", 1);
-	info->add_theme_constant_override("shadow_offset_x", 2);
-	info->add_theme_constant_override("shadow_offset_y", 2);
+
+	info->set_h_size_flags(Control::SIZE_SHRINK_END);
+	info->set_v_size_flags(Control::SIZE_SHRINK_END);
+
 	add_child(info);
+
 	info->set_anchor(SIDE_RIGHT, 1);
 	info->set_anchor(SIDE_LEFT, 1);
 	info->set_anchor(SIDE_BOTTOM, 1);
