@@ -158,8 +158,8 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 	const gd::Polygon *end_poly = nullptr;
 	Vector3 begin_point;
 	Vector3 end_point;
-	real_t begin_d = FLT_MAX;
-	real_t end_d = FLT_MAX;
+	real_t min_begin_sqr_dist = FLT_MAX;
+	real_t min_end_sqr_dist = FLT_MAX;
 	// Find the initial poly and the end poly on this map.
 	for (const gd::Polygon &p : polygons) {
 		// Only consider the polygon if it in a region with compatible layers.
@@ -172,17 +172,17 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 			const Face3 face(p.points[0].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
 
 			Vector3 point = face.get_closest_point_to(p_origin);
-			real_t distance_to_point = point.distance_to(p_origin);
-			if (distance_to_point < begin_d) {
-				begin_d = distance_to_point;
+			real_t sqr_dist = point.distance_squared_to(p_origin);
+			if (sqr_dist < min_begin_sqr_dist) {
+				min_begin_sqr_dist = sqr_dist;
 				begin_poly = &p;
 				begin_point = point;
 			}
 
 			point = face.get_closest_point_to(p_destination);
-			distance_to_point = point.distance_to(p_destination);
-			if (distance_to_point < end_d) {
-				end_d = distance_to_point;
+			sqr_dist = point.distance_squared_to(p_destination);
+			if (sqr_dist < min_end_sqr_dist) {
+				min_end_sqr_dist = sqr_dist;
 				end_poly = &p;
 				end_point = point;
 			}
@@ -315,14 +315,14 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 
 			// Set as end point the furthest reachable point.
 			end_poly = reachable_end;
-			end_d = FLT_MAX;
+			real_t min_sqr_dist = FLT_MAX;
 			for (size_t point_id = 2; point_id < end_poly->points.size(); point_id++) {
 				Face3 f(end_poly->points[0].pos, end_poly->points[point_id - 1].pos, end_poly->points[point_id].pos);
 				Vector3 spoint = f.get_closest_point_to(p_destination);
-				real_t dpoint = spoint.distance_to(p_destination);
-				if (dpoint < end_d) {
+				real_t sqr_dist = spoint.distance_squared_to(p_destination);
+				if (sqr_dist < min_sqr_dist) {
 					end_point = spoint;
-					end_d = dpoint;
+					min_sqr_dist = sqr_dist;
 				}
 			}
 
@@ -331,10 +331,10 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 			for (size_t point_id = 2; point_id < begin_poly->points.size(); point_id++) {
 				Face3 f(begin_poly->points[0].pos, begin_poly->points[point_id - 1].pos, begin_poly->points[point_id].pos);
 				Vector3 spoint = f.get_closest_point_to(p_destination);
-				real_t dpoint = spoint.distance_to(p_destination);
-				if (dpoint < end_d) {
+				real_t sqr_dist = spoint.distance_squared_to(p_destination);
+				if (sqr_dist < min_sqr_dist) {
 					end_point = spoint;
-					end_d = dpoint;
+					min_sqr_dist = sqr_dist;
 					closest_point_on_start_poly = true;
 				}
 			}
@@ -414,15 +414,15 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 	// We did not find a route but we have both a start polygon and an end polygon at this point.
 	// Usually this happens because there was not a single external or internal connected edge, e.g. our start polygon is an isolated, single convex polygon.
 	if (!found_route) {
-		end_d = FLT_MAX;
+		min_end_sqr_dist = FLT_MAX;
 		// Search all faces of the start polygon for the closest point to our target position.
 		for (size_t point_id = 2; point_id < begin_poly->points.size(); point_id++) {
 			Face3 f(begin_poly->points[0].pos, begin_poly->points[point_id - 1].pos, begin_poly->points[point_id].pos);
 			Vector3 spoint = f.get_closest_point_to(p_destination);
-			real_t dpoint = spoint.distance_to(p_destination);
-			if (dpoint < end_d) {
+			real_t sqr_dist = spoint.distance_squared_to(p_destination);
+			if (sqr_dist < min_end_sqr_dist) {
 				end_point = spoint;
-				end_d = dpoint;
+				min_end_sqr_dist = sqr_dist;
 			}
 		}
 
@@ -609,7 +609,7 @@ Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector
 
 	bool use_collision = p_use_collision;
 	Vector3 closest_point;
-	real_t closest_point_d = FLT_MAX;
+	real_t min_sqr_dist = FLT_MAX;
 
 	for (const gd::Polygon &p : polygons) {
 		// For each face check the distance to the segment
@@ -617,30 +617,30 @@ Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector
 			const Face3 f(p.points[0].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
 			Vector3 inters;
 			if (f.intersects_segment(p_from, p_to, &inters)) {
-				const real_t d = p_from.distance_to(inters);
+				const real_t sqr_dist = p_from.distance_squared_to(inters);
 				if (use_collision == false) {
 					closest_point = inters;
 					use_collision = true;
-					closest_point_d = d;
-				} else if (closest_point_d > d) {
+					min_sqr_dist = sqr_dist;
+				} else if (min_sqr_dist > sqr_dist) {
 					closest_point = inters;
-					closest_point_d = d;
+					min_sqr_dist = sqr_dist;
 				}
 			}
 			// If segment does not itersect face, check the distance from segment's endpoints.
 			else if (!use_collision) {
 				const Vector3 p_from_closest = f.get_closest_point_to(p_from);
-				const real_t d_p_from = p_from.distance_to(p_from_closest);
-				if (closest_point_d > d_p_from) {
+				const real_t sqr_dist_from = p_from.distance_squared_to(p_from_closest);
+				if (min_sqr_dist > sqr_dist_from) {
 					closest_point = p_from_closest;
-					closest_point_d = d_p_from;
+					min_sqr_dist = sqr_dist_from;
 				}
 
 				const Vector3 p_to_closest = f.get_closest_point_to(p_to);
-				const real_t d_p_to = p_to.distance_to(p_to_closest);
-				if (closest_point_d > d_p_to) {
+				const real_t sqr_dist_to = p_to.distance_squared_to(p_to_closest);
+				if (min_sqr_dist > sqr_dist_to) {
 					closest_point = p_to_closest;
-					closest_point_d = d_p_to;
+					min_sqr_dist = sqr_dist_to;
 				}
 			}
 		}
@@ -657,9 +657,9 @@ Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector
 						a,
 						b);
 
-				const real_t d = a.distance_to(b);
-				if (d < closest_point_d) {
-					closest_point_d = d;
+				const real_t sqr_dist = a.distance_squared_to(b);
+				if (sqr_dist < min_sqr_dist) {
+					min_sqr_dist = sqr_dist;
 					closest_point = b;
 				}
 			}
@@ -1019,6 +1019,8 @@ void NavMap::sync() {
 		// connection, integration and path finding.
 		_new_pm_edge_free_count = free_edges.size();
 
+		real_t sqr_edge_connection_margin = edge_connection_margin * edge_connection_margin;
+
 		for (int i = 0; i < free_edges.size(); i++) {
 			const gd::Edge::Connection &free_edge = free_edges[i];
 			Vector3 edge_p1 = free_edge.polygon->points[free_edge.edge].pos;
@@ -1049,7 +1051,7 @@ void NavMap::sync() {
 				} else {
 					other1 = other_edge_p1.lerp(other_edge_p2, (1.0 - projected_p1_ratio) / (projected_p2_ratio - projected_p1_ratio));
 				}
-				if (other1.distance_to(self1) > edge_connection_margin) {
+				if (other1.distance_squared_to(self1) > sqr_edge_connection_margin) {
 					continue;
 				}
 
@@ -1060,7 +1062,7 @@ void NavMap::sync() {
 				} else {
 					other2 = other_edge_p1.lerp(other_edge_p2, (0.0 - projected_p1_ratio) / (projected_p2_ratio - projected_p1_ratio));
 				}
-				if (other2.distance_to(self2) > edge_connection_margin) {
+				if (other2.distance_squared_to(self2) > sqr_edge_connection_margin) {
 					continue;
 				}
 
@@ -1088,11 +1090,11 @@ void NavMap::sync() {
 			const Vector3 end = link->get_end_position();
 
 			gd::Polygon *closest_start_polygon = nullptr;
-			real_t closest_start_distance = link_connection_radius;
+			real_t closest_start_sqr_dist = link_connection_radius * link_connection_radius;
 			Vector3 closest_start_point;
 
 			gd::Polygon *closest_end_polygon = nullptr;
-			real_t closest_end_distance = link_connection_radius;
+			real_t closest_end_sqr_dist = link_connection_radius * link_connection_radius;
 			Vector3 closest_end_point;
 
 			// Create link to any polygons within the search radius of the start point.
@@ -1103,11 +1105,11 @@ void NavMap::sync() {
 				for (uint32_t start_point_id = 2; start_point_id < start_poly.points.size(); start_point_id += 1) {
 					const Face3 start_face(start_poly.points[0].pos, start_poly.points[start_point_id - 1].pos, start_poly.points[start_point_id].pos);
 					const Vector3 start_point = start_face.get_closest_point_to(start);
-					const real_t start_distance = start_point.distance_to(start);
+					const real_t sqr_dist = start_point.distance_squared_to(start);
 
 					// Pick the polygon that is within our radius and is closer than anything we've seen yet.
-					if (start_distance <= link_connection_radius && start_distance < closest_start_distance) {
-						closest_start_distance = start_distance;
+					if (sqr_dist < closest_start_sqr_dist) {
+						closest_start_sqr_dist = sqr_dist;
 						closest_start_point = start_point;
 						closest_start_polygon = &start_poly;
 					}
@@ -1120,11 +1122,11 @@ void NavMap::sync() {
 				for (uint32_t end_point_id = 2; end_point_id < end_poly.points.size(); end_point_id += 1) {
 					const Face3 end_face(end_poly.points[0].pos, end_poly.points[end_point_id - 1].pos, end_poly.points[end_point_id].pos);
 					const Vector3 end_point = end_face.get_closest_point_to(end);
-					const real_t end_distance = end_point.distance_to(end);
+					const real_t sqr_dist = end_point.distance_squared_to(end);
 
 					// Pick the polygon that is within our radius and is closer than anything we've seen yet.
-					if (end_distance <= link_connection_radius && end_distance < closest_end_distance) {
-						closest_end_distance = end_distance;
+					if (sqr_dist < closest_end_sqr_dist) {
+						closest_end_sqr_dist = sqr_dist;
 						closest_end_point = end_point;
 						closest_end_polygon = &end_poly;
 					}
