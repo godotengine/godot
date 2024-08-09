@@ -206,6 +206,7 @@ void register_core_types() {
 	GDREGISTER_ABSTRACT_CLASS(WorkerThreadPool);
 
 	ClassDB::register_custom_instance_class<HTTPClient>();
+	GDREGISTER_CLASS(HTTPClientExtension);
 
 	// Crypto
 	GDREGISTER_CLASS(HashingContext);

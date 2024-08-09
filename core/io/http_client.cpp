@@ -42,7 +42,18 @@ const char *HTTPClient::_methods[METHOD_MAX] = {
 	"PATCH"
 };
 
+StringName HTTPClient::default_extension;
+
+void HTTPClient::set_default_extension(const StringName &p_extension) {
+	ERR_FAIL_COND_MSG(p_extension != StringName() && !ClassDB::is_parent_class(p_extension, HTTPClientExtension::get_class_static()), vformat("Can't make %s the default HTTPClient extension since it does not extend HTTPClientExtension.", p_extension));
+	default_extension = StringName(p_extension, true);
+}
+
 HTTPClient *HTTPClient::create() {
+	if (default_extension != StringName()) {
+		Object *obj = ClassDB::instantiate(default_extension);
+		return Object::cast_to<HTTPClientExtension>(obj);
+	}
 	if (_create) {
 		return _create();
 	}
@@ -62,7 +73,7 @@ Error HTTPClient::_request_raw(Method p_method, const String &p_url, const Vecto
 	return request(p_method, p_url, p_headers, size > 0 ? p_body.ptr() : nullptr, size);
 }
 
-Error HTTPClient::_request(Method p_method, const String &p_url, const Vector<String> &p_headers, const String &p_body) {
+Error HTTPClient::_request_string(Method p_method, const String &p_url, const Vector<String> &p_headers, const String &p_body) {
 	CharString body_utf8 = p_body.utf8();
 	int size = body_utf8.length();
 	return request(p_method, p_url, p_headers, size > 0 ? (const uint8_t *)body_utf8.get_data() : nullptr, size);
@@ -109,8 +120,7 @@ Error HTTPClient::verify_headers(const Vector<String> &p_headers) {
 }
 
 Dictionary HTTPClient::_get_response_headers_as_dictionary() {
-	List<String> rh;
-	get_response_headers(&rh);
+	PackedStringArray rh = get_response_headers();
 	Dictionary ret;
 	for (const String &s : rh) {
 		int sp = s.find(":");
@@ -125,31 +135,20 @@ Dictionary HTTPClient::_get_response_headers_as_dictionary() {
 	return ret;
 }
 
-PackedStringArray HTTPClient::_get_response_headers() {
-	List<String> rh;
-	get_response_headers(&rh);
-	PackedStringArray ret;
-	ret.resize(rh.size());
-	int idx = 0;
-	for (const String &E : rh) {
-		ret.set(idx++, E);
-	}
-
-	return ret;
-}
-
 void HTTPClient::_bind_methods() {
+	ClassDB::bind_static_method(get_class_static(), D_METHOD("set_default_extension", "extension_class"), &HTTPClientExtension::set_default_extension);
+
 	ClassDB::bind_method(D_METHOD("connect_to_host", "host", "port", "tls_options"), &HTTPClient::connect_to_host, DEFVAL(-1), DEFVAL(Ref<TLSOptions>()));
 	ClassDB::bind_method(D_METHOD("set_connection", "connection"), &HTTPClient::set_connection);
 	ClassDB::bind_method(D_METHOD("get_connection"), &HTTPClient::get_connection);
 	ClassDB::bind_method(D_METHOD("request_raw", "method", "url", "headers", "body"), &HTTPClient::_request_raw);
-	ClassDB::bind_method(D_METHOD("request", "method", "url", "headers", "body"), &HTTPClient::_request, DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("request", "method", "url", "headers", "body"), &HTTPClient::_request_string, DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("close"), &HTTPClient::close);
 
 	ClassDB::bind_method(D_METHOD("has_response"), &HTTPClient::has_response);
 	ClassDB::bind_method(D_METHOD("is_response_chunked"), &HTTPClient::is_response_chunked);
 	ClassDB::bind_method(D_METHOD("get_response_code"), &HTTPClient::get_response_code);
-	ClassDB::bind_method(D_METHOD("get_response_headers"), &HTTPClient::_get_response_headers);
+	ClassDB::bind_method(D_METHOD("get_response_headers"), &HTTPClient::get_response_headers);
 	ClassDB::bind_method(D_METHOD("get_response_headers_as_dictionary"), &HTTPClient::_get_response_headers_as_dictionary);
 	ClassDB::bind_method(D_METHOD("get_response_body_length"), &HTTPClient::get_response_body_length);
 	ClassDB::bind_method(D_METHOD("read_response_body_chunk"), &HTTPClient::read_response_body_chunk);
@@ -262,4 +261,30 @@ void HTTPClient::_bind_methods() {
 	BIND_ENUM_CONSTANT(RESPONSE_LOOP_DETECTED);
 	BIND_ENUM_CONSTANT(RESPONSE_NOT_EXTENDED);
 	BIND_ENUM_CONSTANT(RESPONSE_NETWORK_AUTH_REQUIRED);
+}
+
+/// HTTPClientExtension
+void HTTPClientExtension::_bind_methods() {
+	ADD_PROPERTY_DEFAULT("read_chunk_size", 65536);
+	ADD_PROPERTY_DEFAULT("blocking_mode_enabled", false);
+
+	GDVIRTUAL_BIND(_request, "method", "url", "headers", "body", "body_size");
+	GDVIRTUAL_BIND(_connect_to_host, "host", "port", "tls_options");
+	GDVIRTUAL_BIND(_set_connection, "connection");
+	GDVIRTUAL_BIND(_get_connection);
+	GDVIRTUAL_BIND(_close);
+	GDVIRTUAL_BIND(_get_status);
+	GDVIRTUAL_BIND(_has_response);
+	GDVIRTUAL_BIND(_is_response_chunked);
+	GDVIRTUAL_BIND(_get_response_code);
+	GDVIRTUAL_BIND(_get_response_headers);
+	GDVIRTUAL_BIND(_get_response_body_length);
+	GDVIRTUAL_BIND(_read_response_body_chunk);
+	GDVIRTUAL_BIND(_set_blocking_mode, "enabled");
+	GDVIRTUAL_BIND(_is_blocking_mode_enabled);
+	GDVIRTUAL_BIND(_set_read_chunk_size, "chunk_size");
+	GDVIRTUAL_BIND(_get_read_chunk_size);
+	GDVIRTUAL_BIND(_poll);
+	GDVIRTUAL_BIND(_set_http_proxy, "host", "port");
+	GDVIRTUAL_BIND(_set_https_proxy, "host", "port");
 }
