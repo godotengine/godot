@@ -532,6 +532,18 @@ TileData *TileMap::get_cell_tile_data(int p_layer, const Vector2i &p_coords, boo
 	}
 }
 
+bool TileMap::is_cell_flipped_h(int p_layer, const Vector2i &p_coords, bool p_use_proxies) const {
+	return get_cell_alternative_tile(p_layer, p_coords, p_use_proxies) & TileSetAtlasSource::TRANSFORM_FLIP_H;
+}
+
+bool TileMap::is_cell_flipped_v(int p_layer, const Vector2i &p_coords, bool p_use_proxies) const {
+	return get_cell_alternative_tile(p_layer, p_coords, p_use_proxies) & TileSetAtlasSource::TRANSFORM_FLIP_V;
+}
+
+bool TileMap::is_cell_transposed(int p_layer, const Vector2i &p_coords, bool p_use_proxies) const {
+	return get_cell_alternative_tile(p_layer, p_coords, p_use_proxies) & TileSetAtlasSource::TRANSFORM_TRANSPOSE;
+}
+
 Ref<TileMapPattern> TileMap::get_pattern(int p_layer, TypedArray<Vector2i> p_coords_array) {
 	TILEMAP_CALL_FOR_LAYER_V(p_layer, Ref<TileMapPattern>(), get_pattern, p_coords_array);
 }
@@ -925,6 +937,10 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_cell_atlas_coords", "layer", "coords", "use_proxies"), &TileMap::get_cell_atlas_coords, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_cell_alternative_tile", "layer", "coords", "use_proxies"), &TileMap::get_cell_alternative_tile, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_cell_tile_data", "layer", "coords", "use_proxies"), &TileMap::get_cell_tile_data, DEFVAL(false));
+
+	ClassDB::bind_method(D_METHOD("is_cell_flipped_h", "layer", "coords", "use_proxies"), &TileMap::is_cell_flipped_h, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("is_cell_flipped_v", "layer", "coords", "use_proxies"), &TileMap::is_cell_flipped_v, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("is_cell_transposed", "layer", "coords", "use_proxies"), &TileMap::is_cell_transposed, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("get_coords_for_body_rid", "body"), &TileMap::get_coords_for_body_rid);
 	ClassDB::bind_method(D_METHOD("get_layer_for_body_rid", "body"), &TileMap::get_layer_for_body_rid);

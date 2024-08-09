@@ -256,6 +256,33 @@
 				Returns a rectangle enclosing the used (non-empty) tiles of the map, including all layers.
 			</description>
 		</method>
+		<method name="is_cell_flipped_h" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer" type="int" />
+			<param index="1" name="coords" type="Vector2i" />
+			<param index="2" name="use_proxies" type="bool" default="false" />
+			<description>
+				Returns [code]true[/code] if the cell on layer [param layer] at coordinates [param coords] is flipped horizontally. The result is valid only for atlas sources.
+			</description>
+		</method>
+		<method name="is_cell_flipped_v" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer" type="int" />
+			<param index="1" name="coords" type="Vector2i" />
+			<param index="2" name="use_proxies" type="bool" default="false" />
+			<description>
+				Returns [code]true[/code] if the cell on layer [param layer] at coordinates [param coords] is flipped vertically. The result is valid only for atlas sources.
+			</description>
+		</method>
+		<method name="is_cell_transposed" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer" type="int" />
+			<param index="1" name="coords" type="Vector2i" />
+			<param index="2" name="use_proxies" type="bool" default="false" />
+			<description>
+				Returns [code]true[/code] if the cell on layer [param layer] at coordinates [param coords] is transposed. The result is valid only for atlas sources.
+			</description>
+		</method>
 		<method name="is_layer_enabled" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="layer" type="int" />
