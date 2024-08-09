@@ -339,6 +339,7 @@ public:
 
 	void canvas_item_set_default_texture_filter(RID p_item, RS::CanvasItemTextureFilter p_filter);
 	void canvas_item_set_default_texture_repeat(RID p_item, RS::CanvasItemTextureRepeat p_repeat);
+	void canvas_item_set_snap_to_pixel(RID p_item, RS::CanvasItemSnapToPixel p_snap);
 
 	void update_visibility_notifiers();
 

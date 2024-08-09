@@ -458,6 +458,7 @@ public:
 
 		RS::CanvasItemTextureFilter texture_filter;
 		RS::CanvasItemTextureRepeat texture_repeat;
+		RS::CanvasItemSnapToPixel snap_to_pixel;
 
 		Item() {
 			commands = nullptr;
