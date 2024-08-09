@@ -47,6 +47,8 @@
 #include "modules/regex/regex.h"
 #endif
 
+HashMap<String, String> RichTextLabel::special_chars;
+
 RichTextLabel::ItemCustomFX::ItemCustomFX() {
 	type = ITEM_CUSTOMFX;
 	char_fx_transform.instantiate();
@@ -1161,8 +1163,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					//Apply fx.
 					if (fade) {
 						float faded_visibility = 1.0f;
-						if (glyphs[i].start >= fade->starting_index) {
-							faded_visibility -= (float)(glyphs[i].start - fade->starting_index) / (float)fade->length;
+						if (glyphs[i].start >= fade->starting_index + fade->char_ofs) {
+							faded_visibility -= (float)(glyphs[i].start - (fade->starting_index + fade->char_ofs)) / (float)fade->length;
 							faded_visibility = faded_visibility < 0.0f ? 0.0f : faded_visibility;
 						}
 						font_color.a = faded_visibility;
@@ -3914,6 +3916,7 @@ void RichTextLabel::push_cell() {
 	ERR_FAIL_COND(current->type != ITEM_TABLE);
 
 	ItemFrame *item = memnew(ItemFrame);
+	item->col = get_current_table_column();
 	item->owner = get_instance_id();
 	item->rid = items.make_rid(item);
 	item->parent_frame = current_frame;
@@ -4341,6 +4344,13 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 					if (subtag_a[0] == "border") {
 						Color color = Color::from_string(subtag_a[1], fallback_color);
 						set_cell_border_color(color);
+					} else if (subtag_a[0] == "size_override") {
+						Vector<String> subtag_b = subtag_a[1].split(",");
+						_normalize_subtags(subtag_b);
+
+						if (subtag_b.size() == 4) {
+							set_cell_size_override(Size2(subtag_b[0].to_float(), subtag_b[1].to_float()), Size2(subtag_b[2].to_float(), subtag_b[3].to_float()));
+						}
 					} else if (subtag_a[0] == "bg") {
 						Vector<String> subtag_b = subtag_a[1].split(",");
 						_normalize_subtags(subtag_b);
@@ -4381,59 +4391,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			int32_t char_code = tag.substr(5, tag.length()).hex_to_int();
 			add_text(String::chr(char_code));
 			pos = brk_end + 1;
-		} else if (tag == "lb") {
-			add_text("[");
-			pos = brk_end + 1;
-		} else if (tag == "rb") {
-			add_text("]");
-			pos = brk_end + 1;
-		} else if (tag == "lrm") {
-			add_text(String::chr(0x200E));
-			pos = brk_end + 1;
-		} else if (tag == "rlm") {
-			add_text(String::chr(0x200F));
-			pos = brk_end + 1;
-		} else if (tag == "lre") {
-			add_text(String::chr(0x202A));
-			pos = brk_end + 1;
-		} else if (tag == "rle") {
-			add_text(String::chr(0x202B));
-			pos = brk_end + 1;
-		} else if (tag == "lro") {
-			add_text(String::chr(0x202D));
-			pos = brk_end + 1;
-		} else if (tag == "rlo") {
-			add_text(String::chr(0x202E));
-			pos = brk_end + 1;
-		} else if (tag == "pdf") {
-			add_text(String::chr(0x202C));
-			pos = brk_end + 1;
-		} else if (tag == "alm") {
-			add_text(String::chr(0x061c));
-			pos = brk_end + 1;
-		} else if (tag == "lri") {
-			add_text(String::chr(0x2066));
-			pos = brk_end + 1;
-		} else if (tag == "rli") {
-			add_text(String::chr(0x2027));
-			pos = brk_end + 1;
-		} else if (tag == "fsi") {
-			add_text(String::chr(0x2068));
-			pos = brk_end + 1;
-		} else if (tag == "pdi") {
-			add_text(String::chr(0x2069));
-			pos = brk_end + 1;
-		} else if (tag == "zwj") {
-			add_text(String::chr(0x200D));
-			pos = brk_end + 1;
-		} else if (tag == "zwnj") {
-			add_text(String::chr(0x200C));
-			pos = brk_end + 1;
-		} else if (tag == "wj") {
-			add_text(String::chr(0x2060));
-			pos = brk_end + 1;
-		} else if (tag == "shy") {
-			add_text(String::chr(0x00AD));
+		} else if (special_chars.has(tag)) {
+			add_text(special_chars[tag]);
 			pos = brk_end + 1;
 		} else if (tag == "center") {
 			push_paragraph(HORIZONTAL_ALIGNMENT_CENTER);
@@ -4894,6 +4853,11 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 					} else if (subtag_a[0] == "slant" || subtag_a[0] == "sln") {
 						float slant = subtag_a[1].to_float();
 						fc->set_variation_transform(Transform2D(1.0, slant, 0.0, 1.0, 0.0, 0.0));
+					} else if (subtag_a[0] == "transform" || subtag_a[0] == "tr") {
+						Vector<String> tr_tags = subtag_a[1].split(",");
+						if (tr_tags.size() == 6) {
+							fc->set_variation_transform(Transform2D(tr_tags[0].to_float(), tr_tags[1].to_float(), tr_tags[2].to_float(), tr_tags[3].to_float(), tr_tags[4].to_float(), tr_tags[5].to_float()));
+						}
 					} else if (subtag_a[0] == "opentype_variation" || subtag_a[0] == "otv") {
 						Dictionary variations;
 						if (!subtag_a[1].is_empty()) {
@@ -4947,7 +4911,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			tag_stack.push_front("outline_size");
 
 		} else if (bbcode_name == "fade") {
-			int start_index = brk_pos;
+			int start_index = 0;
 			OptionMap::Iterator start_option = bbcode_options.find("start");
 			if (start_option) {
 				start_index += start_option->value.to_int();
@@ -5698,8 +5662,612 @@ bool RichTextLabel::is_using_bbcode() const {
 	return use_bbcode;
 }
 
+String RichTextLabel::get_bbcode() const {
+	String bb_code;
+
+	List<String> tag_stack;
+	bool in_bold = false;
+	bool in_italics = false;
+
+	Item *it = main;
+	while (it) {
+		switch (it->type) {
+			case ITEM_FRAME: {
+				if (it->parent) {
+					ItemFrame *fr = static_cast<ItemFrame *>(it);
+					ItemTable *parent_table = static_cast<ItemTable *>(fr->parent);
+					if (fr->odd_row_bg == Color() && fr->even_row_bg == Color() && fr->border == Color() && fr->min_size_over == Size2(-1, -1) && fr->max_size_over == Size2(-1, -1) && fr->padding == Rect2()) {
+						if (parent_table && parent_table->columns[fr->col].expand) {
+							bb_code += vformat("[cell=%d]", parent_table->columns[fr->col].expand_ratio);
+						} else {
+							bb_code += "[cell]";
+						}
+					} else {
+						bb_code += "[cell";
+						if (parent_table && parent_table->columns[fr->col].expand) {
+							bb_code += vformat(" expand=%d", parent_table->columns[fr->col].expand_ratio);
+						}
+						if (fr->odd_row_bg != Color()) {
+							String t = " bg=#" + fr->odd_row_bg.to_html(fr->odd_row_bg.a > 0.0);
+							if (fr->even_row_bg != Color() && fr->even_row_bg != fr->odd_row_bg) {
+								t += ",#" + fr->even_row_bg.to_html(fr->even_row_bg.a > 0.0);
+							}
+							bb_code += t;
+						}
+						if (fr->border != Color()) {
+							bb_code += " border=#" + fr->border.to_html(fr->border.a > 0.0);
+						}
+						if (fr->min_size_over != Size2(-1, -1) || fr->max_size_over != Size2(-1, -1)) {
+							bb_code += vformat(" size_override=%f,%f,%f,%f", fr->min_size_over.x, fr->min_size_over.y, fr->max_size_over.x, fr->max_size_over.y);
+						}
+						if (fr->padding != Rect2()) {
+							bb_code += vformat(" padding=%f,%f,%f,%f", fr->padding.position.x, fr->padding.position.y, fr->padding.size.x, fr->padding.size.y);
+						}
+						bb_code += "]";
+					}
+					tag_stack.push_back("cell");
+				}
+			} break;
+			case ITEM_TEXT: {
+				ItemText *t = static_cast<ItemText *>(it);
+				for (int i = 0; i < t->text.size(); i++) {
+					String substr = t->text.substr(i, 1);
+					for (const KeyValue<String, String> &E : special_chars) {
+						if (substr == E.value) {
+							substr = "[" + E.key + "]";
+							break;
+						}
+					}
+					bb_code += substr;
+				}
+			} break;
+			case ITEM_IMAGE: {
+				ItemImage *img = static_cast<ItemImage *>(it);
+				bb_code += "[img=";
+				if (img->inline_align != INLINE_ALIGNMENT_TOP) {
+					if (img->inline_align == INLINE_ALIGNMENT_TOP) {
+						bb_code += "top";
+					} else if (img->inline_align == INLINE_ALIGNMENT_CENTER) {
+						bb_code += "center";
+					} else if (img->inline_align == INLINE_ALIGNMENT_BOTTOM) {
+						bb_code += "bottom";
+					} else {
+						if ((img->inline_align & INLINE_ALIGNMENT_IMAGE_MASK) == INLINE_ALIGNMENT_TOP_TO) {
+							bb_code += "t";
+						} else if ((img->inline_align & INLINE_ALIGNMENT_IMAGE_MASK) == INLINE_ALIGNMENT_CENTER_TO) {
+							bb_code += "c";
+						} else if ((img->inline_align & INLINE_ALIGNMENT_IMAGE_MASK) == INLINE_ALIGNMENT_BASELINE_TO) {
+							bb_code += "l";
+						} else if ((img->inline_align & INLINE_ALIGNMENT_IMAGE_MASK) == INLINE_ALIGNMENT_BOTTOM_TO) {
+							bb_code += "b";
+						}
+						if ((img->inline_align & INLINE_ALIGNMENT_TEXT_MASK) == INLINE_ALIGNMENT_TO_TOP) {
+							bb_code += ",t";
+						} else if ((img->inline_align & INLINE_ALIGNMENT_TEXT_MASK) == INLINE_ALIGNMENT_TO_CENTER) {
+							bb_code += ",c";
+						} else if ((img->inline_align & INLINE_ALIGNMENT_TEXT_MASK) == INLINE_ALIGNMENT_TO_BASELINE) {
+							bb_code += ",l";
+						} else if ((img->inline_align & INLINE_ALIGNMENT_TEXT_MASK) == INLINE_ALIGNMENT_TO_BOTTOM) {
+							bb_code += ",b";
+						}
+					}
+				}
+				if (img->region != Rect2()) {
+					bb_code += vformat(" region=%f,%f,%f,%f", img->region.position.x, img->region.position.y, img->region.size.x, img->region.size.y);
+				}
+				if (img->color != Color(1, 1, 1)) {
+					bb_code += " color=#" + img->color.to_html(img->color.a > 0.0);
+				}
+				if (img->rq_size.x > 0) {
+					bb_code += vformat(" width=%d", img->rq_size.x);
+					if (img->size_in_percent) {
+						bb_code += "%";
+					}
+				}
+				if (img->rq_size.y > 0) {
+					bb_code += vformat(" height=%d", img->rq_size.y);
+					if (img->size_in_percent) {
+						bb_code += "%";
+					}
+				}
+				if (!img->tooltip.is_empty()) {
+					bb_code += " tooltip=" + img->tooltip;
+				}
+				if (img->pad) {
+					bb_code += " pad=true";
+				}
+				bb_code += "]" + img->image->get_path() + "[/img]";
+			} break;
+			case ITEM_NEWLINE: {
+				bb_code += "\n";
+			} break;
+			case ITEM_FONT: {
+				ItemFont *f = static_cast<ItemFont *>(it);
+				if (f->variation || f->def_font == CUSTOM_FONT) {
+					bool is_font_tag = false;
+					Ref<FontVariation> fc = f->font;
+					Ref<Font> parent_font;
+					ItemFont *font_it = const_cast<RichTextLabel *>(this)->_find_font(it->parent);
+					if (font_it) {
+						if (font_it->font.is_valid()) {
+							parent_font = font_it->font;
+						}
+					}
+					if (f->def_font == CUSTOM_FONT && fc.is_valid() && fc->get_base_font() == parent_font) {
+						tag_stack.push_back("font");
+						bb_code += "[font ";
+						is_font_tag = true;
+					} else {
+						tag_stack.push_back("opentype_features");
+						bb_code += "[opentype_features=";
+					}
+					if (fc.is_valid()) {
+						Dictionary ftrs = fc->get_opentype_features();
+						if (!ftrs.is_empty()) {
+							if (is_font_tag) {
+								bb_code += " opentype_features=";
+							}
+							Vector<String> subtags;
+							for (int i = 0; i < ftrs.size(); i++) {
+								int name_tag = ftrs.get_key_at_index(i);
+								float value = ftrs.get_value_at_index(i);
+								subtags.push_back(TS->tag_to_name(name_tag) + "=" + rtos(value));
+							}
+							bb_code += String(",").join(subtags);
+						}
+					}
+					if (f->def_font == CUSTOM_FONT) {
+						bb_code += " name=" + f->font->get_path();
+						if (f->font_size > 0 && !f->def_size) {
+							bb_code += vformat(" size=%d", f->font_size);
+						}
+						if (fc.is_valid() && fc->get_spacing(TextServer::SPACING_GLYPH) > 0) {
+							bb_code += vformat(" glyph_spacing=%d", fc->get_spacing(TextServer::SPACING_GLYPH));
+						}
+						if (fc.is_valid() && fc->get_spacing(TextServer::SPACING_SPACE) > 0) {
+							bb_code += vformat(" space_spacing=%d", fc->get_spacing(TextServer::SPACING_SPACE));
+						}
+						if (fc.is_valid() && fc->get_spacing(TextServer::SPACING_TOP) > 0) {
+							bb_code += vformat(" top_spacing=%d", fc->get_spacing(TextServer::SPACING_TOP));
+						}
+						if (fc.is_valid() && fc->get_spacing(TextServer::SPACING_BOTTOM) > 0) {
+							bb_code += vformat(" bottom_spacing=%d", fc->get_spacing(TextServer::SPACING_BOTTOM));
+						}
+						if (fc.is_valid() && fc->get_variation_face_index() > 0) {
+							bb_code += vformat(" face_index=%d", fc->get_variation_face_index());
+						}
+						if (fc.is_valid() && fc->get_variation_embolden() != 0.0) {
+							bb_code += vformat(" embolden=%f", fc->get_variation_embolden());
+						}
+						if (fc.is_valid() && fc->get_variation_transform() != Transform2D()) {
+							Transform2D tr = fc->get_variation_transform();
+							if (tr.columns[0][0] == 1.0 && tr.columns[1][0] == 0.0 && tr.columns[1][1] == 1.0 && tr.columns[2][0] == 0.0 && tr.columns[2][1] == 0.0) {
+								bb_code += vformat(" slant=%f", tr.columns[0][1]);
+							} else {
+								bb_code += vformat(" transform=%f,%f,%f,%f,%f,%f", tr.columns[0][0], tr.columns[0][1], tr.columns[1][0], tr.columns[1][1], tr.columns[2][0], tr.columns[2][1]);
+							}
+						}
+						if (fc.is_valid()) {
+							Dictionary vars = fc->get_variation_opentype();
+							if (!vars.is_empty()) {
+								bb_code += " opentype_variation=";
+								Vector<String> subtags;
+								for (int i = 0; i < vars.size(); i++) {
+									int name_tag = vars.get_key_at_index(i);
+									float value = vars.get_value_at_index(i);
+									subtags.push_back(TS->tag_to_name(name_tag) + "=" + rtos(value));
+								}
+								bb_code += String(",").join(subtags);
+							}
+						}
+					}
+					bb_code += "]";
+				} else {
+					if (f->def_font == BOLD_FONT) {
+						tag_stack.push_back("b");
+						bb_code += "[b]";
+						in_bold = true;
+					} else if (f->def_font == ITALICS_FONT) {
+						tag_stack.push_back("i");
+						bb_code += "[i]";
+						in_italics = true;
+					} else if (f->def_font == MONO_FONT) {
+						tag_stack.push_back("code");
+						bb_code += "[code]";
+					} else if (f->def_font == BOLD_ITALICS_FONT) {
+						if (in_bold) {
+							tag_stack.push_back("i");
+							bb_code += "[i]";
+							in_italics = true;
+						} else if (in_italics) {
+							tag_stack.push_back("b");
+							bb_code += "[b]";
+							in_bold = true;
+						}
+					}
+				}
+			} break;
+			case ITEM_FONT_SIZE: {
+				ItemFontSize *fs = static_cast<ItemFontSize *>(it);
+				tag_stack.push_back("font_size");
+				bb_code += vformat("[font_size=%d]", fs->font_size);
+			} break;
+			case ITEM_COLOR: {
+				ItemColor *c = static_cast<ItemColor *>(it);
+				tag_stack.push_back("color");
+				bb_code += vformat("[color=#%s]", c->color.to_html(c->color.a > 0.0));
+			} break;
+			case ITEM_OUTLINE_SIZE: {
+				ItemOutlineSize *os = static_cast<ItemOutlineSize *>(it);
+				tag_stack.push_back("outline_size");
+				bb_code += vformat("[outline_size=%d]", os->outline_size);
+			} break;
+			case ITEM_OUTLINE_COLOR: {
+				ItemOutlineColor *c = static_cast<ItemOutlineColor *>(it);
+				tag_stack.push_back("outline_color");
+				bb_code += vformat("[outline_color=#%s]", c->color.to_html(c->color.a > 0.0));
+			} break;
+			case ITEM_UNDERLINE: {
+				tag_stack.push_back("u");
+				bb_code += "[u]";
+			} break;
+			case ITEM_STRIKETHROUGH: {
+				tag_stack.push_back("s");
+				bb_code += "[s]";
+			} break;
+			case ITEM_PARAGRAPH: {
+				ItemParagraph *p = static_cast<ItemParagraph *>(it);
+				if (p->language.is_empty() && p->direction == Control::TEXT_DIRECTION_INHERITED && p->st_parser == TextServer::STRUCTURED_TEXT_DEFAULT && p->jst_flags == (TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE) && p->tab_stops.is_empty()) {
+					if (p->alignment == HORIZONTAL_ALIGNMENT_LEFT) {
+						tag_stack.push_back("left");
+						bb_code += "[left]";
+					} else if (p->alignment == HORIZONTAL_ALIGNMENT_CENTER) {
+						tag_stack.push_back("center");
+						bb_code += "[center]";
+					} else if (p->alignment == HORIZONTAL_ALIGNMENT_RIGHT) {
+						tag_stack.push_back("right");
+						bb_code += "[right]";
+					} else if (p->alignment == HORIZONTAL_ALIGNMENT_FILL) {
+						tag_stack.push_back("fill");
+						bb_code += "[fill]";
+					}
+				} else {
+					tag_stack.push_back("p");
+					bb_code += "[p";
+					if (!p->language.is_empty()) {
+						bb_code += " lang=" + p->language;
+					}
+					if (p->direction == Control::TEXT_DIRECTION_AUTO) {
+						bb_code += " dir=auto";
+					} else if (p->direction == Control::TEXT_DIRECTION_LTR) {
+						bb_code += " dir=ltr";
+					} else if (p->direction == Control::TEXT_DIRECTION_RTL) {
+						bb_code += " dir=rtl";
+					}
+					if (p->st_parser == TextServer::STRUCTURED_TEXT_URI) {
+						bb_code += " st=uri";
+					} else if (p->st_parser == TextServer::STRUCTURED_TEXT_FILE) {
+						bb_code += " st=file";
+					} else if (p->st_parser == TextServer::STRUCTURED_TEXT_EMAIL) {
+						bb_code += " st=email";
+					} else if (p->st_parser == TextServer::STRUCTURED_TEXT_LIST) {
+						bb_code += " st=list";
+					} else if (p->st_parser == TextServer::STRUCTURED_TEXT_GDSCRIPT) {
+						bb_code += " st=gdscript";
+					} else if (p->st_parser == TextServer::STRUCTURED_TEXT_CUSTOM) {
+						bb_code += " st=custom";
+					}
+					if (p->alignment == HORIZONTAL_ALIGNMENT_LEFT) {
+						bb_code += " align=left";
+					} else if (p->alignment == HORIZONTAL_ALIGNMENT_CENTER) {
+						bb_code += " align=center";
+					} else if (p->alignment == HORIZONTAL_ALIGNMENT_RIGHT) {
+						bb_code += " align=right";
+					} else if (p->alignment == HORIZONTAL_ALIGNMENT_FILL) {
+						bb_code += " align=fill";
+					}
+					if (p->jst_flags != (TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE)) {
+						bb_code += " jst=";
+						Vector<String> subtags;
+						if (p->jst_flags.has_flag(TextServer::JUSTIFICATION_KASHIDA)) {
+							subtags.push_back("kashida");
+						}
+						if (p->jst_flags.has_flag(TextServer::JUSTIFICATION_WORD_BOUND)) {
+							subtags.push_back("word");
+						}
+						if (p->jst_flags.has_flag(TextServer::JUSTIFICATION_TRIM_EDGE_SPACES)) {
+							subtags.push_back("trim");
+						}
+						if (p->jst_flags.has_flag(TextServer::JUSTIFICATION_AFTER_LAST_TAB)) {
+							subtags.push_back("after_last_tab");
+						}
+						if (p->jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE)) {
+							subtags.push_back("skip_last");
+						}
+						if (p->jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE_WITH_VISIBLE_CHARS)) {
+							subtags.push_back("skip_last_with_chars");
+						}
+						if (p->jst_flags.has_flag(TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE)) {
+							subtags.push_back("do_not_skip_single");
+						}
+						if (subtags.is_empty()) {
+							subtags.push_back("none");
+						}
+						bb_code += String(",").join(subtags);
+					}
+					if (!p->tab_stops.is_empty()) {
+						bb_code += " tab_stops=";
+						Vector<String> subtags;
+						for (const float &tab : p->tab_stops) {
+							subtags.push_back(rtos(tab));
+						}
+						bb_code += String(",").join(subtags);
+					}
+					bb_code += "]";
+				}
+			} break;
+			case ITEM_INDENT: {
+				tag_stack.push_back("indent");
+				bb_code += "[indent]";
+			} break;
+			case ITEM_LIST: {
+				ItemList *list = static_cast<ItemList *>(it);
+				if (list->list_type == LIST_DOTS) {
+					tag_stack.push_back("ul");
+					if (list->bullet != U"•") {
+						bb_code += vformat("[ul bullet=%s]", list->bullet);
+					} else {
+						bb_code += "[ul]";
+					}
+				} else if (list->list_type == LIST_NUMBERS) {
+					tag_stack.push_back("ol");
+					bb_code += "[ol type=1]";
+				} else if (list->list_type == LIST_LETTERS && list->capitalize) {
+					tag_stack.push_back("ol");
+					bb_code += "[ol type=A]";
+				} else if (list->list_type == LIST_LETTERS && !list->capitalize) {
+					tag_stack.push_back("ol");
+					bb_code += "[ol type=a]";
+				} else if (list->list_type == LIST_ROMAN && list->capitalize) {
+					tag_stack.push_back("ol");
+					bb_code += "[ol type=I]";
+				} else if (list->list_type == LIST_ROMAN && !list->capitalize) {
+					tag_stack.push_back("ol");
+					bb_code += "[ol type=i]";
+				}
+			} break;
+			case ITEM_TABLE: {
+				ItemTable *tbl = static_cast<ItemTable *>(it);
+				tag_stack.push_back("table");
+				bb_code += vformat("[table=%d", tbl->columns.size());
+				if (tbl->inline_align != INLINE_ALIGNMENT_TOP || tbl->align_to_row != -1) {
+					if (tbl->inline_align == INLINE_ALIGNMENT_TOP) {
+						bb_code += ",top";
+					} else if (tbl->inline_align == INLINE_ALIGNMENT_CENTER) {
+						bb_code += ",center";
+					} else if (tbl->inline_align == INLINE_ALIGNMENT_BOTTOM) {
+						bb_code += ",bottom";
+					} else {
+						if ((tbl->inline_align & INLINE_ALIGNMENT_IMAGE_MASK) == INLINE_ALIGNMENT_TOP_TO) {
+							bb_code += ",t";
+						} else if ((tbl->inline_align & INLINE_ALIGNMENT_IMAGE_MASK) == INLINE_ALIGNMENT_CENTER_TO) {
+							bb_code += ",c";
+						} else if ((tbl->inline_align & INLINE_ALIGNMENT_IMAGE_MASK) == INLINE_ALIGNMENT_BASELINE_TO) {
+							bb_code += ",l";
+						} else if ((tbl->inline_align & INLINE_ALIGNMENT_IMAGE_MASK) == INLINE_ALIGNMENT_BOTTOM_TO) {
+							bb_code += ",b";
+						}
+						if ((tbl->inline_align & INLINE_ALIGNMENT_TEXT_MASK) == INLINE_ALIGNMENT_TO_TOP) {
+							bb_code += ",t";
+						} else if ((tbl->inline_align & INLINE_ALIGNMENT_TEXT_MASK) == INLINE_ALIGNMENT_TO_CENTER) {
+							bb_code += ",c";
+						} else if ((tbl->inline_align & INLINE_ALIGNMENT_TEXT_MASK) == INLINE_ALIGNMENT_TO_BASELINE) {
+							bb_code += ",l";
+						} else if ((tbl->inline_align & INLINE_ALIGNMENT_TEXT_MASK) == INLINE_ALIGNMENT_TO_BOTTOM) {
+							bb_code += ",b";
+						}
+					}
+					bb_code += "," + itos(tbl->align_to_row);
+				}
+				bb_code += "]";
+			} break;
+			case ITEM_FADE: {
+				ItemFade *fx = static_cast<ItemFade *>(it);
+				tag_stack.push_back("fade");
+				bb_code += "[fade";
+				if (fx->starting_index != 0) {
+					bb_code += vformat(" start=%d", fx->starting_index);
+				}
+				if (fx->length != 10) {
+					bb_code += vformat(" length=%d", fx->length);
+				}
+				bb_code += "]";
+			} break;
+			case ITEM_SHAKE: {
+				ItemShake *fx = static_cast<ItemShake *>(it);
+				tag_stack.push_back("shake");
+				bb_code += "[shake";
+				if (fx->strength != 5) {
+					bb_code += vformat(" level=%d", fx->strength);
+				}
+				if (fx->rate != 20.f) {
+					bb_code += vformat(" rate=%f", fx->rate);
+				}
+				if (!fx->connected) {
+					bb_code += " connected=false";
+				}
+				bb_code += "]";
+			} break;
+			case ITEM_WAVE: {
+				ItemWave *fx = static_cast<ItemWave *>(it);
+				tag_stack.push_back("wave");
+				bb_code += "[wave";
+				if (fx->frequency != 5.f) {
+					bb_code += vformat(" freq=%f", fx->frequency);
+				}
+				if (fx->amplitude != 20.f) {
+					bb_code += vformat(" amp=%f", fx->amplitude);
+				}
+				if (!fx->connected) {
+					bb_code += " connected=false";
+				}
+				bb_code += "]";
+			} break;
+			case ITEM_TORNADO: {
+				ItemTornado *fx = static_cast<ItemTornado *>(it);
+				tag_stack.push_back("tornado");
+				bb_code += "[tornado";
+				if (fx->radius != 10.f) {
+					bb_code += vformat(" radius=%f", fx->radius);
+				}
+				if (fx->frequency != 1.f) {
+					bb_code += vformat(" freq=%f", fx->frequency);
+				}
+				if (!fx->connected) {
+					bb_code += " connected=false";
+				}
+				bb_code += "]";
+			} break;
+			case ITEM_RAINBOW: {
+				ItemRainbow *fx = static_cast<ItemRainbow *>(it);
+				tag_stack.push_back("rainbow");
+				bb_code += "[rainbow";
+				if (fx->saturation != 0.8f) {
+					bb_code += vformat(" sat=%f", fx->saturation);
+				}
+				if (fx->value != 0.8f) {
+					bb_code += vformat(" val=%f", fx->value);
+				}
+				if (fx->frequency != 1.f) {
+					bb_code += vformat(" freq=%f", fx->frequency);
+				}
+				if (!fx->connected) {
+					bb_code += " connected=false";
+				}
+				bb_code += "]";
+			} break;
+			case ITEM_PULSE: {
+				ItemPulse *fx = static_cast<ItemPulse *>(it);
+				tag_stack.push_back("pulse");
+				bb_code += "[pulse";
+				if (fx->color != Color(1, 1, 1, 0.25)) {
+					bb_code += vformat(" color=#%s", fx->color.to_html(fx->color.a > 0.0));
+				}
+				if (fx->ease != -2.8f) {
+					bb_code += vformat(" ease=%f", fx->ease);
+				}
+				if (fx->frequency != 1.f) {
+					bb_code += vformat(" freq=%f", fx->frequency);
+				}
+				if (!fx->connected) {
+					bb_code += " connected=false";
+				}
+				bb_code += "]";
+			} break;
+			case ITEM_BGCOLOR: {
+				ItemBGColor *c = static_cast<ItemBGColor *>(it);
+				tag_stack.push_back("bgcolor");
+				bb_code += vformat("[bgcolor=#%s]", c->color.to_html(c->color.a > 0.0));
+			} break;
+			case ITEM_FGCOLOR: {
+				ItemFGColor *c = static_cast<ItemFGColor *>(it);
+				tag_stack.push_back("fgcolor");
+				bb_code += vformat("[fgcolor=#%s]", c->color.to_html(c->color.a > 0.0));
+			} break;
+			case ITEM_META: {
+				ItemMeta *meta = static_cast<ItemMeta *>(it);
+				tag_stack.push_back("url");
+				bb_code += vformat("[url=%s]", meta->meta.operator String());
+			} break;
+			case ITEM_HINT: {
+				ItemHint *hint = static_cast<ItemHint *>(it);
+				tag_stack.push_back("hint");
+				bb_code += vformat("[hint=%s]", hint->description);
+			} break;
+			case ITEM_DROPCAP: {
+				ItemDropcap *dc = static_cast<ItemDropcap *>(it);
+				bb_code += "[dropcap";
+				if (dc->font != theme_cache.normal_font) {
+					bb_code += " font=" + dc->font->get_path();
+				}
+				if (dc->font_size != theme_cache.normal_font_size * 3) {
+					bb_code += vformat(" font_size=%d", dc->font_size);
+				}
+				if (dc->color != theme_cache.default_color) {
+					bb_code += vformat(" color=#%s", dc->color.to_html(dc->color.a > 0.0));
+				}
+				if (dc->ol_size != theme_cache.outline_size) {
+					bb_code += vformat(" outline_size=%d", dc->ol_size);
+				}
+				if (dc->ol_color != theme_cache.font_outline_color) {
+					bb_code += vformat(" outline_color=#%s", dc->ol_color.to_html(dc->color.a > 0.0));
+				}
+				if (dc->dropcap_margins != Rect2()) {
+					bb_code += vformat(" margins=%f,%f,%f,%f", dc->dropcap_margins.position.x, dc->dropcap_margins.position.y, dc->dropcap_margins.size.x, dc->dropcap_margins.size.y);
+				}
+				bb_code += "]" + dc->text + "[/dropcap]";
+			} break;
+			case ITEM_CUSTOMFX: {
+				ItemCustomFX *fx = static_cast<ItemCustomFX *>(it);
+				if (fx->custom_effect.is_valid()) {
+					tag_stack.push_back(fx->custom_effect->get_bbcode().operator String());
+					bb_code += "[" + fx->custom_effect->get_bbcode().operator String();
+					if (fx->char_fx_transform.is_valid()) {
+						Dictionary env = fx->char_fx_transform->get_environment();
+						if (!env.is_empty()) {
+							bb_code += " ";
+							Vector<String> subtags;
+							for (int i = 0; i < env.size(); i++) {
+								String name = env.get_key_at_index(i);
+								Variant value = env.get_value_at_index(i);
+								subtags.push_back(name + "=" + value.operator String());
+							}
+							bb_code += String(" ").join(subtags);
+						}
+					}
+					bb_code += "]";
+				} else {
+					tag_stack.push_back("custom_fx");
+					bb_code += "[custom_fx]";
+				}
+			} break;
+			case ITEM_LANGUAGE: {
+				ItemLanguage *lang = static_cast<ItemLanguage *>(it);
+				tag_stack.push_back("lang");
+				bb_code += vformat("[lang=%s]", lang->language);
+			} break;
+			default:
+				break;
+		}
+
+		Item *prev = it;
+		it = _get_next_item(it, true);
+
+		// Pop tags until on the same level.
+		if (it && prev->parent != it->parent && prev != it->parent) {
+			Item *parent = prev->parent;
+			while (tag_stack.size() && parent != it->parent) {
+				if (tag_stack.back()->get() == "b") {
+					in_bold = false;
+				}
+				if (tag_stack.back()->get() == "i") {
+					in_italics = false;
+				}
+				bb_code += "[/" + tag_stack.back()->get() + "]";
+				tag_stack.pop_back();
+				parent = parent->parent;
+			}
+		}
+	}
+	while (tag_stack.size()) {
+		bb_code += "[/" + tag_stack.back()->get() + "]";
+		tag_stack.pop_back();
+	}
+	return bb_code;
+}
+
 String RichTextLabel::get_parsed_text() const {
-	String txt = "";
+	String txt;
 	Item *it = main;
 	while (it) {
 		if (it->type == ITEM_DROPCAP) {
@@ -5888,6 +6456,7 @@ bool RichTextLabel::_set(const StringName &p_name, const Variant &p_value) {
 
 void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_parsed_text"), &RichTextLabel::get_parsed_text);
+	ClassDB::bind_method(D_METHOD("get_bbcode"), &RichTextLabel::get_bbcode);
 	ClassDB::bind_method(D_METHOD("add_text", "text"), &RichTextLabel::add_text);
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &RichTextLabel::set_text);
 	ClassDB::bind_method(D_METHOD("add_image", "image", "width", "height", "color", "inline_align", "region", "key", "pad", "tooltip", "size_in_percent"), &RichTextLabel::add_image, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(Rect2()), DEFVAL(Variant()), DEFVAL(false), DEFVAL(String()), DEFVAL(false));
@@ -6424,6 +6993,27 @@ Dictionary RichTextLabel::parse_expressions_for_values(Vector<String> p_expressi
 }
 
 RichTextLabel::RichTextLabel(const String &p_text) {
+	if (special_chars.is_empty()) {
+		special_chars["lb"] = "[";
+		special_chars["rb"] = "]";
+		special_chars["lrm"] = String::chr(0x200E);
+		special_chars["rlm"] = String::chr(0x200F);
+		special_chars["lre"] = String::chr(0x202A);
+		special_chars["rle"] = String::chr(0x202B);
+		special_chars["lro"] = String::chr(0x202D);
+		special_chars["rlo"] = String::chr(0x202E);
+		special_chars["pdf"] = String::chr(0x202C);
+		special_chars["alm"] = String::chr(0x061c);
+		special_chars["lri"] = String::chr(0x2066);
+		special_chars["rli"] = String::chr(0x2027);
+		special_chars["fsi"] = String::chr(0x2068);
+		special_chars["pdi"] = String::chr(0x2069);
+		special_chars["zwj"] = String::chr(0x200D);
+		special_chars["zwnj"] = String::chr(0x200C);
+		special_chars["wj"] = String::chr(0x2060);
+		special_chars["shy"] = String::chr(0x00AD);
+	}
+
 	main = memnew(ItemFrame);
 	main->owner = get_instance_id();
 	main->rid = items.make_rid(main);
