@@ -46,6 +46,7 @@ class OptionButton;
 class PanelContainer;
 class PopupMenu;
 class SpinBox;
+class StyleBox;
 class StyleBoxFlat;
 class TextureRect;
 
@@ -480,11 +481,72 @@ public:
 class EditorInspector : public ScrollContainer {
 	GDCLASS(EditorInspector, ScrollContainer);
 
+public:
+	struct ThemeCache {
+		// EditorInspector
+		Color prop_subsection;
+		Ref<StyleBox> panel;
+		int inspector_vertical_separation = 0;
+
+		// EditorProperty
+		Ref<Font> font;
+		int font_size = 0;
+		int horizontal_separation = 0;
+		int property_vertical_separation = 0;
+		Ref<StyleBox> property_bg;
+		Ref<StyleBox> property_bg_selected;
+		Ref<StyleBox> property_child_bg;
+		Color property_color;
+		Color readonly_property_color;
+		Color warning_color;
+		Color readonly_warning_color;
+		int font_offset = 0;
+		Vector<Ref<StyleBox>> dictionary_add_item;
+		Vector<Ref<StyleBox>> sub_inspector_property_bg;
+		Vector<Color> sub_inspector_property_color;
+		Vector<Ref<StyleBox>> sub_inspector_bg;
+		Ref<StyleBox> sub_inspector_bg_no_border;
+		Vector<Color> vector_property_color;
+
+		// EditorInspectorCategory
+		int category_vertical_separation = 0;
+		Ref<StyleBox> category_bg;
+		Ref<Font> bold_font;
+		int bold_font_size = 0;
+		Color font_color;
+
+		// EditorInspectorSection
+		Ref<Texture2D> arrow;
+		Ref<Texture2D> arrow_collapsed;
+		Ref<Texture2D> arrow_collapsed_mirrored;
+		int inspector_margin = 0;
+		int section_horizontal_separation = 0;
+		int indent_size = 0;
+		Ref<StyleBox> indent_box;
+		Ref<Font> main_font;
+		int main_font_size = 0;
+		Color font_disabled_color;
+		Color accent_color;
+
+		// EditorInspectorArray
+		Ref<StyleBox> focus;
+		Color dark_color;
+
+		// EditorIcons
+		int class_icon_size = 0;
+		Ref<Texture2D> gui_checked;
+		Ref<Texture2D> gui_unchecked;
+	};
+
+private:
 	enum {
 		MAX_PLUGINS = 1024
 	};
 	static Ref<EditorInspectorPlugin> inspector_plugins[MAX_PLUGINS];
 	static int inspector_plugin_count;
+
+	ThemeCache theme_cache;
+	inline static EditorInspector *theme_singleton = nullptr;
 
 	VBoxContainer *main_vbox = nullptr;
 
@@ -588,6 +650,7 @@ class EditorInspector : public ScrollContainer {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+	virtual void _update_theme_item_cache() override;
 
 public:
 	static void add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
@@ -596,6 +659,7 @@ public:
 	static Button *create_inspector_action_button(const String &p_text);
 
 	static EditorProperty *instantiate_property_editor(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide = false);
+	static ThemeCache &get_singleton_theme_cache();
 
 	bool is_main_editor_inspector() const;
 	String get_selected_path() const;
