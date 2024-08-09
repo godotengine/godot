@@ -83,12 +83,12 @@ class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
 	private final GodotRenderer godotRenderer;
 	private final SparseArray<PointerIcon> customPointerIcons = new SparseArray<>();
 
-	public GodotGLRenderView(GodotHost host, Godot godot, XRMode xrMode, boolean useDebugOpengl) {
+	public GodotGLRenderView(GodotHost host, Godot godot, GodotInputHandler inputHandler, XRMode xrMode, boolean useDebugOpengl) {
 		super(host.getActivity());
 
 		this.host = host;
 		this.godot = godot;
-		this.inputHandler = new GodotInputHandler(this);
+		this.inputHandler = inputHandler;
 		this.godotRenderer = new GodotRenderer();
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
 			setPointerIcon(PointerIcon.getSystemIcon(getContext(), PointerIcon.TYPE_DEFAULT));
@@ -99,11 +99,6 @@ class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
 	@Override
 	public SurfaceView getView() {
 		return this;
-	}
-
-	@Override
-	public void initInputDevices() {
-		this.inputHandler.initInputDevices();
 	}
 
 	@Override
@@ -142,11 +137,6 @@ class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
 	@Override
 	public void onActivityDestroyed() {
 		requestRenderThreadExitAndWait();
-	}
-
-	@Override
-	public void onBackPressed() {
-		godot.onBackPressed();
 	}
 
 	@Override
