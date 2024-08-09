@@ -3544,6 +3544,15 @@ Error RenderingDevice::screen_free(DisplayServer::WindowID p_screen) {
 	return OK;
 }
 
+void RenderingDevice::screen_wait_for_present(DisplayServer::WindowID p_screen) {
+	_THREAD_SAFE_METHOD_
+
+	HashMap<DisplayServer::WindowID, RDD::SwapChainID>::ConstIterator it = screen_swap_chains.find(p_screen);
+	ERR_FAIL_COND_MSG(it == screen_swap_chains.end(), "A swap chain was not created for the screen.");
+
+	driver->wait_for_present(it->value);
+}
+
 /*******************/
 /**** DRAW LIST ****/
 /*******************/

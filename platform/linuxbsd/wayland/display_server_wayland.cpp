@@ -1134,6 +1134,12 @@ void DisplayServerWayland::try_suspend() {
 }
 
 void DisplayServerWayland::process_events() {
+#ifdef RD_ENABLED
+	if (rendering_device) {
+		rendering_device->screen_wait_for_present(get_focused_window() == INVALID_WINDOW_ID ? MAIN_WINDOW_ID : get_focused_window());
+	}
+#endif
+
 	wayland_thread.mutex.lock();
 
 	while (wayland_thread.has_message()) {
