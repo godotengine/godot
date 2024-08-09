@@ -1136,16 +1136,17 @@ void FileDialog::_update_option_controls() {
 	selected_options.clear();
 
 	for (const FileDialog::Option &opt : options) {
-		Label *lbl = memnew(Label);
-		lbl->set_text(opt.name);
-		grid_options->add_child(lbl);
 		if (opt.values.is_empty()) {
 			CheckBox *cb = memnew(CheckBox);
+			cb->set_text(opt.name);
 			cb->set_pressed(opt.default_idx);
 			grid_options->add_child(cb);
 			cb->connect("toggled", callable_mp(this, &FileDialog::_option_changed_checkbox_toggled).bind(opt.name));
 			selected_options[opt.name] = (bool)opt.default_idx;
 		} else {
+			Label *lbl = memnew(Label);
+			lbl->set_text(opt.name);
+			grid_options->add_child(lbl);
 			OptionButton *ob = memnew(OptionButton);
 			for (const String &val : opt.values) {
 				ob->add_item(val);
