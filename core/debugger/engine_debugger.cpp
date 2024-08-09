@@ -34,7 +34,10 @@
 #include "core/debugger/remote_debugger.h"
 #include "core/debugger/remote_debugger_peer.h"
 #include "core/debugger/script_debugger.h"
+#include "core/input/input_event.h"
+#include "core/input/shortcut.h"
 #include "core/os/os.h"
+#include "core/variant/variant_parser.h"
 
 EngineDebugger *EngineDebugger::singleton = nullptr;
 ScriptDebugger *EngineDebugger::script_debugger = nullptr;
@@ -109,6 +112,36 @@ Error EngineDebugger::capture_parse(const StringName &p_name, const String &p_ms
 	ERR_FAIL_COND_V_MSG(!captures.has(p_name), ERR_UNCONFIGURED, "Capture not registered: " + p_name);
 	const Capture &cap = captures[p_name];
 	return cap.capture(cap.data, p_msg, p_args, r_captured);
+}
+
+void EngineDebugger::check_stop_shortcut(const Ref<InputEvent> &p_ev) {
+	// Quit from game window using the stop shortcut (F8 by default).
+	// The custom shortcut is provided via environment variable when running from the editor.
+	if (stop_shortcut.is_null()) {
+		const String shortcut_str = OS::get_singleton()->get_environment("__GODOT_EDITOR_STOP_SHORTCUT__");
+		if (!shortcut_str.is_empty()) {
+			Variant shortcut_var;
+
+			VariantParser::StreamString ss;
+			ss.s = shortcut_str;
+
+			String errs;
+			int line;
+			VariantParser::parse(&ss, shortcut_var, errs, line);
+			stop_shortcut = shortcut_var;
+		}
+
+		if (stop_shortcut.is_null()) {
+			// Define a default shortcut if it wasn't provided or is invalid.
+			stop_shortcut.instantiate();
+			stop_shortcut->set_events({ (Variant)InputEventKey::create_reference(Key::F8) });
+		}
+	}
+
+	Ref<InputEventKey> k = p_ev;
+	if (k.is_valid() && k->is_pressed() && !k->is_echo() && stop_shortcut->matches_event(k)) {
+		send_message("request_quit", Array());
+	}
 }
 
 void EngineDebugger::iteration(uint64_t p_frame_ticks, uint64_t p_process_ticks, uint64_t p_physics_ticks, double p_physics_frame_time) {
