@@ -61,6 +61,20 @@ Error EditorExportPlatformLinuxBSD::_export_debug_script(const Ref<EditorExportP
 }
 
 Error EditorExportPlatformLinuxBSD::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+	String custom_debug = p_preset->get("custom_template/debug");
+	String custom_release = p_preset->get("custom_template/release");
+	String arch = p_preset->get("binary_format/architecture");
+
+	String template_path = p_debug ? custom_debug : custom_release;
+	template_path = template_path.strip_edges();
+	if (!template_path.is_empty()) {
+		String exe_arch = _get_exe_arch(template_path);
+		if (arch != exe_arch) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Mismatching custom export template executable architecture, found \"%s\", expected \"%s\"."), exe_arch, arch));
+			return ERR_CANT_CREATE;
+		}
+	}
+
 	bool export_as_zip = p_path.ends_with("zip");
 
 	String pkg_name;
@@ -203,6 +217,74 @@ bool EditorExportPlatformLinuxBSD::is_shebang(const String &p_path) const {
 
 bool EditorExportPlatformLinuxBSD::is_executable(const String &p_path) const {
 	return is_elf(p_path) || is_shebang(p_path);
+}
+
+bool EditorExportPlatformLinuxBSD::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
+	String err = "";
+	bool valid = EditorExportPlatformPC::has_valid_export_configuration(p_preset, err, r_missing_templates, p_debug);
+
+	String custom_debug = p_preset->get("custom_template/debug").operator String().strip_edges();
+	String custom_release = p_preset->get("custom_template/release").operator String().strip_edges();
+	String arch = p_preset->get("binary_format/architecture");
+
+	if (!custom_debug.is_empty() && FileAccess::exists(custom_debug)) {
+		String exe_arch = _get_exe_arch(custom_debug);
+		if (arch != exe_arch) {
+			err += vformat(TTR("Mismatching custom debug export template executable architecture: found \"%s\", expected \"%s\"."), exe_arch, arch) + "\n";
+		}
+	}
+	if (!custom_release.is_empty() && FileAccess::exists(custom_release)) {
+		String exe_arch = _get_exe_arch(custom_release);
+		if (arch != exe_arch) {
+			err += vformat(TTR("Mismatching custom release export template executable architecture: found \"%s\", expected \"%s\"."), exe_arch, arch) + "\n";
+		}
+	}
+
+	if (!err.is_empty()) {
+		r_error = err;
+	}
+
+	return valid;
+}
+
+String EditorExportPlatformLinuxBSD::_get_exe_arch(const String &p_path) const {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	if (f.is_null()) {
+		return "invalid";
+	}
+
+	// Read and check ELF magic number
+	{
+		uint32_t magic = f->get_32();
+		if (magic != 0x464c457f) { // 0x7F + "ELF"
+			return "invalid";
+		}
+	}
+
+	// Process header
+	int64_t header_pos = f->get_position();
+	f->seek(header_pos + 14);
+	uint16_t machine = f->get_16();
+	f->close();
+
+	switch (machine) {
+		case 0x0003:
+			return "x86_32";
+		case 0x003e:
+			return "x86_64";
+		case 0x0014:
+			return "ppc32";
+		case 0x0015:
+			return "ppc64";
+		case 0x0028:
+			return "arm32";
+		case 0x00b7:
+			return "arm64";
+		case 0x00f3:
+			return "rv64";
+		default:
+			return "unknown";
+	};
 }
 
 Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) {
