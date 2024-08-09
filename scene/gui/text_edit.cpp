@@ -4059,7 +4059,7 @@ void TextEdit::redo() {
 	}
 	_push_current_op();
 
-	if (undo_stack_pos == nullptr) {
+	if (!has_redo()) {
 		return; // Nothing to do.
 	}
 
