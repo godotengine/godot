@@ -143,6 +143,10 @@ int AudioStreamPlaybackPolyphonic::mix(AudioFrame *p_buffer, float p_rate_scale,
 		}
 
 		if (s.stream_playback->get_is_sample()) {
+			if (s.finish_request.is_set()) {
+				s.active.clear();
+				AudioServer::get_singleton()->stop_sample_playback(s.stream_playback->get_sample_playback());
+			}
 			continue;
 		}
 
