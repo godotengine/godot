@@ -742,11 +742,11 @@ static String _make_arguments_hint(const MethodInfo &p_info, int p_arg_idx, bool
 		if (p_info.arguments.size() > 0) {
 			arghint += ", ";
 		}
-		if (p_arg_idx >= p_info.arguments.size()) {
+		if (p_arg_idx >= (int)p_info.arguments.size()) {
 			arghint += String::chr(0xFFFF);
 		}
 		arghint += "...";
-		if (p_arg_idx >= p_info.arguments.size()) {
+		if (p_arg_idx >= (int)p_info.arguments.size()) {
 			arghint += String::chr(0xFFFF);
 		}
 	}
@@ -2789,9 +2789,9 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 								// Handle user preference.
 								if (opt.is_quoted()) {
 									opt = opt.unquote().quote(quote_style);
-									if (use_string_names && info.arguments.get(p_argidx).type == Variant::STRING_NAME) {
+									if (use_string_names && info.arguments[p_argidx].type == Variant::STRING_NAME) {
 										opt = "&" + opt;
-									} else if (use_node_paths && info.arguments.get(p_argidx).type == Variant::NODE_PATH) {
+									} else if (use_node_paths && info.arguments[p_argidx].type == Variant::NODE_PATH) {
 										opt = "^" + opt;
 									}
 								}
@@ -2802,7 +2802,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 					}
 
 					if (p_argidx < method_args) {
-						const PropertyInfo &arg_info = info.arguments.get(p_argidx);
+						const PropertyInfo &arg_info = info.arguments[p_argidx];
 						if (arg_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 							_find_enumeration_candidates(p_context, arg_info.class_name, r_result);
 						}
@@ -3073,7 +3073,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 				v.get_method_list(&methods);
 
 				for (MethodInfo &E : methods) {
-					if (p_argidx >= E.arguments.size()) {
+					if (p_argidx >= (int)E.arguments.size()) {
 						continue;
 					}
 					if (E.name == call->function_name) {
@@ -3114,7 +3114,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 
 		int i = 0;
 		for (const MethodInfo &E : constructors) {
-			if (p_argidx >= E.arguments.size()) {
+			if (p_argidx >= (int)E.arguments.size()) {
 				continue;
 			}
 			if (i > 0) {
@@ -3407,17 +3407,17 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 				}
 				method_hint += "(";
 
-				for (List<PropertyInfo>::ConstIterator arg_itr = mi.arguments.begin(); arg_itr != mi.arguments.end(); ++arg_itr) {
-					if (arg_itr != mi.arguments.begin()) {
+				for (uint32_t i = 0; i < mi.arguments.size(); ++i) {
+					if (i > 0) {
 						method_hint += ", ";
 					}
-					String arg = arg_itr->name;
+					String arg = mi.arguments[i].name;
 					if (arg.contains(":")) {
 						arg = arg.substr(0, arg.find(":"));
 					}
 					method_hint += arg;
 					if (use_type_hint) {
-						method_hint += ": " + _get_visual_datatype(*arg_itr, true, class_name);
+						method_hint += ": " + _get_visual_datatype(mi.arguments[i], true, class_name);
 					}
 				}
 				method_hint += ")";
