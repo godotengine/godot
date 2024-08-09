@@ -1108,6 +1108,19 @@ void TextureStorage::texture_proxy_initialize(RID p_texture, RID p_base) {
 	tex->proxies.push_back(p_texture);
 }
 
+RID TextureStorage::texture_set_external(RID p_texture, int p_width, int p_height) {
+	Texture *texture = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_COND(!texture);
+
+	texture->width = p_width;
+	texture->height = p_height;
+
+	texture->depth = 1;
+	texture->format = Image::FORMAT_RGBA8;
+	
+	return texture_owner.make_rid(*texture);
+}
+
 void TextureStorage::_texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer, bool p_immediate) {
 	ERR_FAIL_COND(p_image.is_null() || p_image->is_empty());
 

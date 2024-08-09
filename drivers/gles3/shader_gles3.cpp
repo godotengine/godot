@@ -206,6 +206,9 @@ void ShaderGLES3::_build_variant_code(StringBuilder &builder, uint32_t p_variant
 	builder.append("#define ViewIndex uint(0)\n");
 	builder.append("#define MAX_VIEWS 1\n");
 	builder.append("#endif\n");
+	builder.append("#ifdef USE_EXTERNAL_SAMPLER\n");
+	builder.append("#extension GL_OES_EGL_image_external_essl3 : require\n");
+	builder.append("#endif\n");
 
 	// Default to highp precision unless specified otherwise.
 	builder.append("precision highp float;\n");

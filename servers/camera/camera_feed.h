@@ -36,6 +36,8 @@
 #include "servers/camera_server.h"
 #include "servers/rendering_server.h"
 
+#include <vector>
+
 /**
 	The camera server is a singleton object that gives access to the various
 	camera feeds that can be used as the background for our environment.
@@ -49,7 +51,8 @@ public:
 		FEED_NOIMAGE, // we don't have an image yet
 		FEED_RGB, // our texture will contain a normal RGB texture that can be used directly
 		FEED_YCBCR, // our texture will contain a YCbCr texture that needs to be converted to RGB before output
-		FEED_YCBCR_SEP // our camera is split into two textures, first plane contains Y data, second plane contains CbCr data
+		FEED_YCBCR_SEP, // our camera is split into two textures, first plane contains Y data, second plane contains CbCr data
+		FEED_EXTERNAL // specific for android atm, camera feed is managed externally, assumed RGB for now
 	};
 
 	enum FeedPosition {
@@ -63,6 +66,9 @@ private:
 	int base_width;
 	int base_height;
 
+	int depthmap_base_width;
+	int depthmap_base_height;
+
 protected:
 	String name; // name of our camera feed
 	FeedDataType datatype; // type of texture data stored
@@ -71,6 +77,13 @@ protected:
 
 	bool active; // only when active do we actually update the camera texture each frame
 	RID texture[CameraServer::FEED_IMAGES]; // texture images needed for this
+
+	FeedDataType depth_map_datatype; // type of texture representing the depthmap
+	bool depthmap_is_available;
+	bool display_depthmap;
+	float maxDepthMeters;
+
+	unsigned int depthmap_handle;
 
 	static void _bind_methods();
 
@@ -85,6 +98,9 @@ public:
 	int get_base_width() const;
 	int get_base_height() const;
 
+	int get_depthmap_base_width() const;
+	int get_depthmap_base_height() const;
+
 	FeedPosition get_position() const;
 	void set_position(FeedPosition p_position);
 
@@ -92,6 +108,7 @@ public:
 	void set_transform(const Transform2D &p_transform);
 
 	RID get_texture(CameraServer::FeedImage p_which);
+	uint64_t get_texture_tex_id(CameraServer::FeedImage p_which);
 
 	CameraFeed();
 	CameraFeed(String p_name, FeedPosition p_position = CameraFeed::FEED_UNSPECIFIED);
@@ -101,6 +118,17 @@ public:
 	void set_RGB_img(const Ref<Image> &p_rgb_img);
 	void set_YCbCr_img(const Ref<Image> &p_ycbcr_img);
 	void set_YCbCr_imgs(const Ref<Image> &p_y_img, const Ref<Image> &p_cbcr_img);
+	void set_external(int p_width, int p_height);
+	void set_external_depthmap(const PackedByteArray& p_depthbuffer, int p_width, int p_height);
+
+	unsigned int get_external_depthmap();
+	float get_maxDepthMeters();
+
+
+	bool is_depthmap_available();
+	void set_should_display_depthmap(bool p_enabled);
+	bool should_display_depthmap();
+	void set_max_depth_meters(float p_maxDepthMeters);
 
 	virtual bool activate_feed();
 	virtual void deactivate_feed();

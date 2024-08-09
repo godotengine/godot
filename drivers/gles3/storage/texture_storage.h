@@ -108,8 +108,6 @@ namespace GLES3 {
 #define _EXT_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR 0x93DC
 #define _EXT_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR 0x93DD
 
-#define _GL_TEXTURE_EXTERNAL_OES 0x8D65
-
 #define _EXT_TEXTURE_CUBE_MAP_SEAMLESS 0x884F
 
 enum DefaultGLTexture {
@@ -514,7 +512,9 @@ public:
 	virtual void texture_3d_initialize(RID p_texture, Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) override;
 	virtual void texture_proxy_initialize(RID p_texture, RID p_base) override; //all slices, then all the mipmaps, must be coherent
 
-	RID texture_create_external(Texture::Type p_type, Image::Format p_format, unsigned int p_image, int p_width, int p_height, int p_depth, int p_layers, RS::TextureLayeredType p_layered_type = RS::TEXTURE_LAYERED_2D_ARRAY);
+	virtual RID texture_create_external(Texture::Type p_type, Image::Format p_format, unsigned int p_image, int p_width, int p_height, int p_depth, int p_layers, RS::TextureLayeredType p_layered_type = RS::TEXTURE_LAYERED_2D_ARRAY);
+
+	virtual RID texture_set_external(RID p_texture, int p_width, int p_height) override;
 
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) override;
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) override;
