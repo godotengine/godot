@@ -872,9 +872,9 @@ void TileSetAtlasSourceEditor::_update_current_tile_data_editor() {
 	// Find the property to use.
 	String property;
 	if (tools_button_group->get_pressed_button() == tool_select_button && tile_inspector->is_visible() && !tile_inspector->get_selected_path().is_empty()) {
-		Vector<String> components = tile_inspector->get_selected_path().split("/");
-		if (components.size() >= 1) {
-			property = components[0];
+		const String &selected = tile_inspector->get_selected_path();
+		if (selected.get_slice_count("/") >= 1) {
+			property = selected.get_slice("/", 0);
 
 			// Workaround for terrains as they don't have a common first component.
 			if (property.begins_with("terrains_")) {

@@ -2864,10 +2864,9 @@ void EditorInspector::update_tree() {
 			// Setup a property sub-group.
 			subgroup = p.name;
 
-			Vector<String> hint_parts = p.hint_string.split(",");
-			subgroup_base = hint_parts[0];
-			if (hint_parts.size() > 1) {
-				section_depth = hint_parts[1].to_int();
+			subgroup_base = p.hint_string.get_slice(",", 0);
+			if (p.hint_string.get_slice_count(",") > 1) {
+				section_depth = p.hint_string.get_slice(",", 1).to_int();
 			} else {
 				section_depth = 0;
 			}
@@ -2878,10 +2877,9 @@ void EditorInspector::update_tree() {
 			// Setup a property group.
 			group = p.name;
 
-			Vector<String> hint_parts = p.hint_string.split(",");
-			group_base = hint_parts[0];
-			if (hint_parts.size() > 1) {
-				section_depth = hint_parts[1].to_int();
+			group_base = p.hint_string.get_slice(",", 0);
+			if (p.hint_string.get_slice_count(",") > 1) {
+				section_depth = p.hint_string.get_slice(",", 1).to_int();
 			} else {
 				section_depth = 0;
 			}

@@ -711,11 +711,11 @@ void EditorPropertyEnum::setup(const Vector<String> &p_options) {
 	options->clear();
 	int64_t current_val = 0;
 	for (int i = 0; i < p_options.size(); i++) {
-		Vector<String> text_split = p_options[i].split(":");
-		if (text_split.size() != 1) {
-			current_val = text_split[1].to_int();
+		const String &text = p_options[i];
+		if (text.get_slice_count(":") != 1) {
+			current_val = text.get_slice(":", 1).to_int();
 		}
-		options->add_item(text_split[0]);
+		options->add_item(text.get_slice(":", 0));
 		options->set_item_metadata(i, current_val);
 		current_val += 1;
 	}

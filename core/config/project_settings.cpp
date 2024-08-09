@@ -279,7 +279,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 	if (p_value.get_type() == Variant::NIL) {
 		props.erase(p_name);
 		if (p_name.operator String().begins_with("autoload/")) {
-			String node_name = p_name.operator String().split("/")[1];
+			String node_name = p_name.operator String().get_slice("/", 1);
 			if (autoloads.has(node_name)) {
 				remove_autoload(node_name);
 			}
@@ -323,7 +323,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 			props[p_name] = VariantContainer(p_value, last_order++);
 		}
 		if (p_name.operator String().begins_with("autoload/")) {
-			String node_name = p_name.operator String().split("/")[1];
+			String node_name = p_name.operator String().get_slice("/", 1);
 			AutoloadInfo autoload;
 			autoload.name = node_name;
 			String path = p_value;

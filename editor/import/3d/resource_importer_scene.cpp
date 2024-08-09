@@ -2976,7 +2976,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 
 	String root_type = p_options["nodes/root_type"];
 	if (!root_type.is_empty()) {
-		root_type = root_type.split(" ")[0]; // Full root_type is "ClassName (filename.gd)" for a script global class.
+		root_type = root_type.get_slice(" ", 0); // Full root_type is "ClassName (filename.gd)" for a script global class.
 		Ref<Script> root_script = nullptr;
 		if (ScriptServer::is_global_class(root_type)) {
 			root_script = ResourceLoader::load(ScriptServer::get_global_class_path(root_type));
