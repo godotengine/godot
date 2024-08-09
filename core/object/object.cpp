@@ -1519,6 +1519,7 @@ String Object::tr(const StringName &p_message, const StringName &p_context) cons
 		return p_message;
 	}
 
+#ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) {
 		String tr_msg = TranslationServer::get_singleton()->extractable_translate(p_message, p_context);
 		if (!tr_msg.is_empty() && tr_msg != p_message) {
@@ -1527,6 +1528,7 @@ String Object::tr(const StringName &p_message, const StringName &p_context) cons
 
 		return TranslationServer::get_singleton()->tool_translate(p_message, p_context);
 	}
+#endif
 
 	return TranslationServer::get_singleton()->translate(p_message, p_context);
 }
@@ -1540,6 +1542,7 @@ String Object::tr_n(const StringName &p_message, const StringName &p_message_plu
 		return p_message_plural;
 	}
 
+#ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) {
 		String tr_msg = TranslationServer::get_singleton()->extractable_translate_plural(p_message, p_message_plural, p_n, p_context);
 		if (!tr_msg.is_empty() && tr_msg != p_message && tr_msg != p_message_plural) {
@@ -1548,6 +1551,7 @@ String Object::tr_n(const StringName &p_message, const StringName &p_message_plu
 
 		return TranslationServer::get_singleton()->tool_translate_plural(p_message, p_message_plural, p_n, p_context);
 	}
+#endif
 
 	return TranslationServer::get_singleton()->translate_plural(p_message, p_message_plural, p_n, p_context);
 }

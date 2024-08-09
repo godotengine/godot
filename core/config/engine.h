@@ -155,12 +155,6 @@ public:
 #else
 	_FORCE_INLINE_ void set_editor_hint(bool p_enabled) {}
 	_FORCE_INLINE_ bool is_editor_hint() const { return false; }
-
-	_FORCE_INLINE_ void set_project_manager_hint(bool p_enabled) {}
-	_FORCE_INLINE_ bool is_project_manager_hint() const { return false; }
-
-	_FORCE_INLINE_ void set_extension_reloading_enabled(bool p_enabled) {}
-	_FORCE_INLINE_ bool is_extension_reloading_enabled() const { return false; }
 #endif
 
 	Dictionary get_version_info() const;
