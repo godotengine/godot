@@ -177,7 +177,7 @@ void EditorUndoRedoManager::_add_do_method(const Variant **p_args, int p_argcoun
 		return;
 	}
 
-	if (p_args[1]->get_type() != Variant::STRING_NAME && p_args[1]->get_type() != Variant::STRING) {
+	if (!p_args[1]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 1;
 		r_error.expected = Variant::STRING_NAME;
@@ -206,7 +206,7 @@ void EditorUndoRedoManager::_add_undo_method(const Variant **p_args, int p_argco
 		return;
 	}
 
-	if (p_args[1]->get_type() != Variant::STRING_NAME && p_args[1]->get_type() != Variant::STRING) {
+	if (!p_args[1]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 1;
 		r_error.expected = Variant::STRING_NAME;

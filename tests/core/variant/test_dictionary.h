@@ -66,8 +66,7 @@ TEST_CASE("[Dictionary] Assignment using bracket notation ([])") {
 
 	map[StringName("HelloName")] = 6;
 	CHECK(int(map[StringName("HelloName")]) == 6);
-	// Check that StringName key is converted to String.
-	CHECK(int(map.find_key(6).get_type()) == Variant::STRING);
+	CHECK(int(map.find_key(6).get_type()) == Variant::STRING_NAME);
 	map[StringName("HelloName")] = 7;
 	CHECK(int(map[StringName("HelloName")]) == 7);
 

@@ -309,7 +309,7 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 		params.load(p_params["data"]);
 		symbol = GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_symbol(params, item.label, item.kind == lsp::CompletionItemKind::Method || item.kind == lsp::CompletionItemKind::Function);
 
-	} else if (data.get_type() == Variant::STRING) {
+	} else if (data.is_string()) {
 		String query = data;
 
 		Vector<String> param_symbols = query.split(SYMBOL_SEPERATOR, false);
