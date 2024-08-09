@@ -508,7 +508,7 @@ public:
 	virtual RID multimesh_get_mesh(RID p_multimesh) const override;
 	virtual void multimesh_set_custom_aabb(RID p_multimesh, const AABB &p_aabb) override;
 	virtual AABB multimesh_get_custom_aabb(RID p_multimesh) const override;
-	virtual AABB multimesh_get_aabb(RID p_multimesh) const override;
+	virtual AABB multimesh_get_aabb(RID p_multimesh) override;
 
 	virtual Transform3D multimesh_instance_get_transform(RID p_multimesh, int p_index) const override;
 	virtual Transform2D multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const override;

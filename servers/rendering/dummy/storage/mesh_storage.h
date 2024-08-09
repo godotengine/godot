@@ -163,7 +163,7 @@ public:
 	virtual AABB multimesh_get_custom_aabb(RID p_multimesh) const override { return AABB(); }
 
 	virtual RID multimesh_get_mesh(RID p_multimesh) const override { return RID(); }
-	virtual AABB multimesh_get_aabb(RID p_multimesh) const override { return AABB(); }
+	virtual AABB multimesh_get_aabb(RID p_multimesh) override { return AABB(); }
 
 	virtual Transform3D multimesh_instance_get_transform(RID p_multimesh, int p_index) const override { return Transform3D(); }
 	virtual Transform2D multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const override { return Transform2D(); }

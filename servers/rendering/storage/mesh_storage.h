@@ -120,7 +120,7 @@ public:
 	virtual void multimesh_set_visible_instances(RID p_multimesh, int p_visible) = 0;
 	virtual int multimesh_get_visible_instances(RID p_multimesh) const = 0;
 
-	virtual AABB multimesh_get_aabb(RID p_multimesh) const = 0;
+	virtual AABB multimesh_get_aabb(RID p_multimesh) = 0;
 
 	/* SKELETON API */
 

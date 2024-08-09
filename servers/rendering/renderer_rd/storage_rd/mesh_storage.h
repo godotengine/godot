@@ -650,7 +650,7 @@ public:
 	virtual void multimesh_set_custom_aabb(RID p_multimesh, const AABB &p_aabb) override;
 	virtual AABB multimesh_get_custom_aabb(RID p_multimesh) const override;
 
-	virtual AABB multimesh_get_aabb(RID p_multimesh) const override;
+	virtual AABB multimesh_get_aabb(RID p_multimesh) override;
 
 	void _update_dirty_multimeshes();
 	void _multimesh_get_motion_vectors_offsets(RID p_multimesh, uint32_t &r_current_offset, uint32_t &r_prev_offset);
