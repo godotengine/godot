@@ -698,6 +698,9 @@
 		<member name="interface/editor/project_manager_screen" type="int" setter="" getter="">
 			The preferred monitor to display the project manager.
 		</member>
+		<member name="interface/editor/remember_window_size_and_position" type="bool" setter="" getter="">
+			If [code]true[/code], the editor window will remember its size, position, and which screen it was displayed on across restarts.
+		</member>
 		<member name="interface/editor/save_each_scene_on_quit" type="bool" setter="" getter="">
 			If [code]false[/code], the editor will save all scenes when confirming the [b]Save[/b] action when quitting the editor or quitting to the project list. If [code]true[/code], the editor will ask to save each scene individually.
 		</member>
