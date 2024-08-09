@@ -1072,6 +1072,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 					if (env.is_valid()) {
 						environment_image = RS::get_singleton()->environment_bake_panorama(env->get_rid(), true, Size2i(128, 64));
+						environment_transform = Basis::from_euler(env->get_sky_rotation()).inverse();
 					}
 				}
 			} break;
