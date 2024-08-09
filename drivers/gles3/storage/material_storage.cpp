@@ -1347,7 +1347,9 @@ MaterialStorage::MaterialStorage() {
 		actions.render_mode_defines["cull_front"] = "#define DO_SIDE_CHECK\n";
 		actions.render_mode_defines["cull_disabled"] = "#define DO_SIDE_CHECK\n";
 		actions.render_mode_defines["particle_trails"] = "#define USE_PARTICLE_TRAILS\n";
+
 		actions.render_mode_defines["depth_prepass_alpha"] = "#define USE_OPAQUE_PREPASS\n";
+		actions.render_mode_defines["motion_draw_disabled"] = "#define MOTION_DRAW_DISABLED\n";
 
 		bool force_lambert = GLOBAL_GET("rendering/shading/overrides/force_lambert_over_burley");
 
@@ -2895,6 +2897,7 @@ void SceneShaderData::set_code(const String &p_code) {
 	// Actual enums set further down after compilation.
 	int blend_modei = BLEND_MODE_MIX;
 	int depth_testi = DEPTH_TEST_ENABLED;
+	int motion_drawi = MOTION_DRAW_ENABLED;
 	int alpha_antialiasing_modei = ALPHA_ANTIALIASING_OFF;
 	int cull_modei = CULL_BACK;
 	int depth_drawi = DEPTH_DRAW_OPAQUE;
@@ -2918,6 +2921,8 @@ void SceneShaderData::set_code(const String &p_code) {
 	actions.render_mode_values["depth_draw_always"] = Pair<int *, int>(&depth_drawi, DEPTH_DRAW_ALWAYS);
 
 	actions.render_mode_values["depth_test_disabled"] = Pair<int *, int>(&depth_testi, DEPTH_TEST_DISABLED);
+
+	actions.render_mode_values["motion_draw_disabled"] = Pair<int *, int>(&motion_drawi, MOTION_DRAW_DISABLED);
 
 	actions.render_mode_values["cull_disabled"] = Pair<int *, int>(&cull_modei, CULL_DISABLED);
 	actions.render_mode_values["cull_front"] = Pair<int *, int>(&cull_modei, CULL_FRONT);
@@ -2979,6 +2984,7 @@ void SceneShaderData::set_code(const String &p_code) {
 	alpha_antialiasing_mode = AlphaAntiAliasing(alpha_antialiasing_modei);
 	depth_draw = DepthDraw(depth_drawi);
 	depth_test = DepthTest(depth_testi);
+	motion_draw = MotionDraw(motion_drawi);
 	cull_mode = Cull(cull_modei);
 
 	vertex_input_mask = RS::ARRAY_FORMAT_VERTEX | RS::ARRAY_FORMAT_NORMAL; // We can always read vertices and normals.
