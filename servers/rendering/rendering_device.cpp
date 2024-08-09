@@ -2227,7 +2227,7 @@ RenderingDevice::FramebufferFormatID RenderingDevice::framebuffer_format_create_
 }
 
 RenderingDevice::TextureSamples RenderingDevice::framebuffer_format_get_texture_samples(FramebufferFormatID p_format, uint32_t p_pass) {
-	HashMap<FramebufferFormatID, FramebufferFormat>::Iterator E = framebuffer_formats.find(p_format);
+	AHashMap<FramebufferFormatID, FramebufferFormat>::Iterator E = framebuffer_formats.find(p_format);
 	ERR_FAIL_COND_V(!E, TEXTURE_SAMPLES_1);
 	ERR_FAIL_COND_V(p_pass >= uint32_t(E->value.pass_samples.size()), TEXTURE_SAMPLES_1);
 

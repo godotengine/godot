@@ -41,8 +41,8 @@ class SceneState : public RefCounted {
 	Vector<Variant> variants;
 	Vector<NodePath> node_paths;
 	Vector<NodePath> editable_instances;
-	mutable HashMap<NodePath, int> node_path_cache;
-	mutable HashMap<int, int> base_scene_node_remap;
+	mutable AHashMap<NodePath, int> node_path_cache;
+	mutable AHashMap<int, int> base_scene_node_remap;
 
 	int base_scene_idx = -1;
 

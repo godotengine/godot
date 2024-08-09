@@ -32,6 +32,7 @@
 #define GODOT_SHAPE_3D_H
 
 #include "core/math/geometry_3d.h"
+#include "core/templates/a_hash_map.h"
 #include "core/templates/local_vector.h"
 #include "servers/physics_server_3d.h"
 
@@ -51,7 +52,7 @@ class GodotShape3D {
 	bool configured = false;
 	real_t custom_bias = 0.0;
 
-	HashMap<GodotShapeOwner3D *, int> owners;
+	AHashMap<GodotShapeOwner3D *, int> owners;
 
 protected:
 	void configure(const AABB &p_aabb);
@@ -93,7 +94,7 @@ public:
 	void add_owner(GodotShapeOwner3D *p_owner);
 	void remove_owner(GodotShapeOwner3D *p_owner);
 	bool is_owner(GodotShapeOwner3D *p_owner) const;
-	const HashMap<GodotShapeOwner3D *, int> &get_owners() const;
+	const AHashMap<GodotShapeOwner3D *, int> &get_owners() const;
 
 	GodotShape3D() {}
 	virtual ~GodotShape3D();

@@ -34,6 +34,7 @@
 #include "core/object/class_db.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/thread_safe.h"
+#include "core/templates/a_hash_map.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/oa_hash_map.h"
 #include "core/templates/rid_owner.h"
@@ -513,7 +514,7 @@ private:
 		uint32_t view_count = 1; // Number of views.
 	};
 
-	HashMap<FramebufferFormatID, FramebufferFormat> framebuffer_formats;
+	AHashMap<FramebufferFormatID, FramebufferFormat> framebuffer_formats;
 
 	struct Framebuffer {
 		FramebufferFormatID format_id;
@@ -666,7 +667,7 @@ private:
 
 	// This is a cache and it's never freed, it ensures that
 	// ID used for a specific format always remain the same.
-	HashMap<VertexDescriptionKey, VertexFormatID, VertexDescriptionHash> vertex_format_cache;
+	AHashMap<VertexDescriptionKey, VertexFormatID, VertexDescriptionHash> vertex_format_cache;
 
 	struct VertexDescriptionCache {
 		Vector<VertexAttribute> vertex_formats;

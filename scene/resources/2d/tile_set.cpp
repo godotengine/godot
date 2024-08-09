@@ -3652,7 +3652,7 @@ void TileSet::_compatibility_conversion() {
 	for (const KeyValue<int, CompatibilityTileData *> &E : compatibility_data) {
 		memdelete(E.value);
 	}
-	compatibility_data = HashMap<int, CompatibilityTileData *>();
+	compatibility_data = AHashMap<int, CompatibilityTileData *>();
 }
 
 Array TileSet::compatibility_tilemap_map(int p_tile_id, Vector2i p_coords, bool p_flip_h, bool p_flip_v, bool p_transpose) {
@@ -3703,7 +3703,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 
 		// Get or create the compatibility object
 		CompatibilityTileData *ctd;
-		HashMap<int, CompatibilityTileData *>::Iterator E = compatibility_data.find(id);
+		AHashMap<int, CompatibilityTileData *>::Iterator E = compatibility_data.find(id);
 		if (!E) {
 			ctd = memnew(CompatibilityTileData);
 			compatibility_data.insert(id, ctd);

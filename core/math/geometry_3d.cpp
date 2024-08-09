@@ -30,6 +30,8 @@
 
 #include "geometry_3d.h"
 
+#include "core/templates/a_hash_map.h"
+
 #include "thirdparty/misc/polypartition.h"
 
 void Geometry3D::get_closest_points_between_segments(const Vector3 &p_p0, const Vector3 &p_p1, const Vector3 &p_q0, const Vector3 &p_q1, Vector3 &r_ps, Vector3 &r_qt) {
@@ -138,7 +140,7 @@ real_t Geometry3D::get_closest_distance_between_segments(const Vector3 &p_p0, co
 }
 
 void Geometry3D::MeshData::optimize_vertices() {
-	HashMap<int, int> vtx_remap;
+	AHashMap<int, int> vtx_remap;
 
 	for (MeshData::Face &face : faces) {
 		for (int &index : face.indices) {

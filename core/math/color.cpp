@@ -33,7 +33,7 @@
 #include "color_names.inc"
 #include "core/math/math_funcs.h"
 #include "core/string/ustring.h"
-#include "core/templates/hash_map.h"
+#include "core/templates/a_hash_map.h"
 
 #include "thirdparty/misc/ok_color.h"
 
@@ -422,7 +422,7 @@ int Color::find_named_color(const String &p_name) {
 	name = name.replace(".", "");
 	name = name.to_upper();
 
-	static HashMap<String, int> named_colors_hashmap;
+	static AHashMap<String, int> named_colors_hashmap;
 	if (unlikely(named_colors_hashmap.is_empty())) {
 		const int named_color_count = get_named_color_count();
 		for (int i = 0; i < named_color_count; i++) {
@@ -430,7 +430,7 @@ int Color::find_named_color(const String &p_name) {
 		}
 	}
 
-	const HashMap<String, int>::ConstIterator E = named_colors_hashmap.find(name);
+	const AHashMap<String, int>::ConstIterator E = named_colors_hashmap.find(name);
 	if (E) {
 		return E->value;
 	}

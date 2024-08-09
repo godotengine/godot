@@ -31,12 +31,13 @@
 #ifndef RESOURCE_PRELOADER_H
 #define RESOURCE_PRELOADER_H
 
+#include "core/templates/a_hash_map.h"
 #include "scene/main/node.h"
 
 class ResourcePreloader : public Node {
 	GDCLASS(ResourcePreloader, Node);
 
-	HashMap<StringName, Ref<Resource>> resources;
+	AHashMap<StringName, Ref<Resource>> resources;
 
 	void _set_resources(const Array &p_data);
 	Array _get_resources() const;

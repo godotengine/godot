@@ -31,6 +31,7 @@
 #ifndef GODOT_SHAPE_2D_H
 #define GODOT_SHAPE_2D_H
 
+#include "core/templates/a_hash_map.h"
 #include "servers/physics_server_2d.h"
 
 class GodotShape2D;
@@ -49,7 +50,7 @@ class GodotShape2D {
 	bool configured = false;
 	real_t custom_bias = 0.0;
 
-	HashMap<GodotShapeOwner2D *, int> owners;
+	AHashMap<GodotShapeOwner2D *, int> owners;
 
 protected:
 	const double segment_is_valid_support_threshold = 0.99998;
@@ -89,7 +90,7 @@ public:
 	void add_owner(GodotShapeOwner2D *p_owner);
 	void remove_owner(GodotShapeOwner2D *p_owner);
 	bool is_owner(GodotShapeOwner2D *p_owner) const;
-	const HashMap<GodotShapeOwner2D *, int> &get_owners() const;
+	const AHashMap<GodotShapeOwner2D *, int> &get_owners() const;
 
 	_FORCE_INLINE_ void get_supports_transformed_cast(const Vector2 &p_cast, const Vector2 &p_normal, const Transform2D &p_xform, Vector2 *r_supports, int &r_amount) const {
 		get_supports(p_xform.basis_xform_inv(p_normal).normalized(), r_supports, r_amount);

@@ -60,7 +60,7 @@ public:
 
 	bool closable = false;
 	Vector<Input> inputs;
-	HashMap<NodePath, bool> filter;
+	AHashMap<NodePath, bool> filter;
 	bool filter_enabled = false;
 
 	// To propagate information from upstream for use in estimation of playback progress.
@@ -106,7 +106,7 @@ public:
 	// Temporary state for blending process which needs to be started in the AnimationTree, pass through the AnimationNodes, and then return to the AnimationTree.
 	struct ProcessState {
 		AnimationTree *tree = nullptr;
-		HashMap<NodePath, int> track_map; // TODO: Is there a better way to manage filter/tracks?
+		AHashMap<NodePath, int> track_map; // TODO: Is there a better way to manage filter/tracks?
 		bool is_testing = false;
 		bool valid = false;
 		String invalid_reasons;
@@ -250,9 +250,9 @@ private:
 	friend class AnimationNode;
 
 	List<PropertyInfo> properties;
-	HashMap<StringName, HashMap<StringName, StringName>> property_parent_map;
-	HashMap<ObjectID, StringName> property_reference_map;
-	HashMap<StringName, Pair<Variant, bool>> property_map; // Property value and read-only flag.
+	HashMap<StringName, AHashMap<StringName, StringName>> property_parent_map;
+	AHashMap<ObjectID, StringName> property_reference_map;
+	AHashMap<StringName, Pair<Variant, bool>> property_map; // Property value and read-only flag.
 
 	bool properties_dirty = true;
 
@@ -286,7 +286,7 @@ private:
 	virtual void _set_active(bool p_active) override;
 
 	// Make animation instances.
-	virtual bool _blend_pre_process(double p_delta, int p_track_count, const HashMap<NodePath, int> &p_track_map) override;
+	virtual bool _blend_pre_process(double p_delta, int p_track_count, const AHashMap<NodePath, int> &p_track_map) override;
 
 #ifndef DISABLE_DEPRECATED
 	void _set_process_callback_bind_compat_80813(AnimationProcessCallback p_mode);

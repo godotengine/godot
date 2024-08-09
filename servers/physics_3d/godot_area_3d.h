@@ -33,6 +33,7 @@
 
 #include "godot_collision_object_3d.h"
 
+#include "core/templates/a_hash_map.h"
 #include "core/templates/self_list.h"
 #include "servers/physics_server_3d.h"
 
@@ -94,9 +95,9 @@ class GodotArea3D : public GodotCollisionObject3D {
 		_FORCE_INLINE_ void dec() { state--; }
 	};
 
-	HashMap<BodyKey, BodyState, BodyKey> monitored_soft_bodies;
-	HashMap<BodyKey, BodyState, BodyKey> monitored_bodies;
-	HashMap<BodyKey, BodyState, BodyKey> monitored_areas;
+	AHashMap<BodyKey, BodyState, BodyKey> monitored_soft_bodies;
+	AHashMap<BodyKey, BodyState, BodyKey> monitored_bodies;
+	AHashMap<BodyKey, BodyState, BodyKey> monitored_areas;
 
 	HashSet<GodotConstraint3D *> constraints;
 

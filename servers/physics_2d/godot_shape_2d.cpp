@@ -50,7 +50,7 @@ Vector2 GodotShape2D::get_support(const Vector2 &p_normal) const {
 }
 
 void GodotShape2D::add_owner(GodotShapeOwner2D *p_owner) {
-	HashMap<GodotShapeOwner2D *, int>::Iterator E = owners.find(p_owner);
+	AHashMap<GodotShapeOwner2D *, int>::Iterator E = owners.find(p_owner);
 	if (E) {
 		E->value++;
 	} else {
@@ -59,7 +59,7 @@ void GodotShape2D::add_owner(GodotShapeOwner2D *p_owner) {
 }
 
 void GodotShape2D::remove_owner(GodotShapeOwner2D *p_owner) {
-	HashMap<GodotShapeOwner2D *, int>::Iterator E = owners.find(p_owner);
+	AHashMap<GodotShapeOwner2D *, int>::Iterator E = owners.find(p_owner);
 	ERR_FAIL_COND(!E);
 	E->value--;
 	if (E->value == 0) {
@@ -71,7 +71,7 @@ bool GodotShape2D::is_owner(GodotShapeOwner2D *p_owner) const {
 	return owners.has(p_owner);
 }
 
-const HashMap<GodotShapeOwner2D *, int> &GodotShape2D::get_owners() const {
+const AHashMap<GodotShapeOwner2D *, int> &GodotShape2D::get_owners() const {
 	return owners;
 }
 
@@ -837,7 +837,7 @@ void GodotConcavePolygonShape2D::set_data(const Variant &p_data) {
 
 		const Vector2 *arr = p2arr.ptr();
 
-		HashMap<Point2, int> pointmap;
+		AHashMap<Point2, int> pointmap;
 		for (int i = 0; i < len; i += 2) {
 			Point2 p1 = arr[i];
 			Point2 p2 = arr[i + 1];

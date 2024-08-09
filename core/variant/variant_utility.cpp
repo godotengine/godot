@@ -1643,7 +1643,7 @@ struct VariantUtilityFunctionInfo {
 	Variant::UtilityFunctionType type;
 };
 
-static OAHashMap<StringName, VariantUtilityFunctionInfo> utility_function_table;
+static AHashMap<StringName, VariantUtilityFunctionInfo> utility_function_table;
 static List<StringName> utility_function_name_table;
 
 template <typename T>
@@ -1835,7 +1835,7 @@ void Variant::_unregister_variant_utility_functions() {
 }
 
 void Variant::call_utility_function(const StringName &p_name, Variant *r_ret, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
-	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
+	const VariantUtilityFunctionInfo *bfi = utility_function_table.getptr(p_name);
 	if (!bfi) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 		r_error.argument = 0;
@@ -1863,7 +1863,7 @@ bool Variant::has_utility_function(const StringName &p_name) {
 }
 
 Variant::ValidatedUtilityFunction Variant::get_validated_utility_function(const StringName &p_name) {
-	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
+	const VariantUtilityFunctionInfo *bfi = utility_function_table.getptr(p_name);
 	if (!bfi) {
 		return nullptr;
 	}
@@ -1872,7 +1872,7 @@ Variant::ValidatedUtilityFunction Variant::get_validated_utility_function(const 
 }
 
 Variant::PTRUtilityFunction Variant::get_ptr_utility_function(const StringName &p_name) {
-	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
+	const VariantUtilityFunctionInfo *bfi = utility_function_table.getptr(p_name);
 	if (!bfi) {
 		return nullptr;
 	}
@@ -1881,7 +1881,7 @@ Variant::PTRUtilityFunction Variant::get_ptr_utility_function(const StringName &
 }
 
 Variant::UtilityFunctionType Variant::get_utility_function_type(const StringName &p_name) {
-	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
+	const VariantUtilityFunctionInfo *bfi = utility_function_table.getptr(p_name);
 	if (!bfi) {
 		return Variant::UTILITY_FUNC_TYPE_MATH;
 	}
@@ -1891,7 +1891,7 @@ Variant::UtilityFunctionType Variant::get_utility_function_type(const StringName
 
 MethodInfo Variant::get_utility_function_info(const StringName &p_name) {
 	MethodInfo info;
-	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
+	const VariantUtilityFunctionInfo *bfi = utility_function_table.getptr(p_name);
 	if (bfi) {
 		info.name = p_name;
 		if (bfi->returns_value && bfi->return_type == Variant::NIL) {
@@ -1912,7 +1912,7 @@ MethodInfo Variant::get_utility_function_info(const StringName &p_name) {
 }
 
 int Variant::get_utility_function_argument_count(const StringName &p_name) {
-	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
+	const VariantUtilityFunctionInfo *bfi = utility_function_table.getptr(p_name);
 	if (!bfi) {
 		return 0;
 	}
@@ -1921,7 +1921,7 @@ int Variant::get_utility_function_argument_count(const StringName &p_name) {
 }
 
 Variant::Type Variant::get_utility_function_argument_type(const StringName &p_name, int p_arg) {
-	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
+	const VariantUtilityFunctionInfo *bfi = utility_function_table.getptr(p_name);
 	if (!bfi) {
 		return Variant::NIL;
 	}
@@ -1930,7 +1930,7 @@ Variant::Type Variant::get_utility_function_argument_type(const StringName &p_na
 }
 
 String Variant::get_utility_function_argument_name(const StringName &p_name, int p_arg) {
-	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
+	const VariantUtilityFunctionInfo *bfi = utility_function_table.getptr(p_name);
 	if (!bfi) {
 		return String();
 	}
@@ -1940,7 +1940,7 @@ String Variant::get_utility_function_argument_name(const StringName &p_name, int
 }
 
 bool Variant::has_utility_function_return_value(const StringName &p_name) {
-	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
+	const VariantUtilityFunctionInfo *bfi = utility_function_table.getptr(p_name);
 	if (!bfi) {
 		return false;
 	}
@@ -1948,7 +1948,7 @@ bool Variant::has_utility_function_return_value(const StringName &p_name) {
 }
 
 Variant::Type Variant::get_utility_function_return_type(const StringName &p_name) {
-	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
+	const VariantUtilityFunctionInfo *bfi = utility_function_table.getptr(p_name);
 	if (!bfi) {
 		return Variant::NIL;
 	}
@@ -1957,7 +1957,7 @@ Variant::Type Variant::get_utility_function_return_type(const StringName &p_name
 }
 
 bool Variant::is_utility_function_vararg(const StringName &p_name) {
-	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
+	const VariantUtilityFunctionInfo *bfi = utility_function_table.getptr(p_name);
 	if (!bfi) {
 		return false;
 	}
@@ -1966,7 +1966,7 @@ bool Variant::is_utility_function_vararg(const StringName &p_name) {
 }
 
 uint32_t Variant::get_utility_function_hash(const StringName &p_name) {
-	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
+	const VariantUtilityFunctionInfo *bfi = utility_function_table.getptr(p_name);
 	ERR_FAIL_NULL_V(bfi, 0);
 
 	uint32_t hash = hash_murmur3_one_32(bfi->is_vararg);

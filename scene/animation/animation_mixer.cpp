@@ -1031,7 +1031,7 @@ void AnimationMixer::_blend_init() {
 	}
 }
 
-bool AnimationMixer::_blend_pre_process(double p_delta, int p_track_count, const HashMap<NodePath, int> &p_track_map) {
+bool AnimationMixer::_blend_pre_process(double p_delta, int p_track_count, const AHashMap<NodePath, int> &p_track_map) {
 	return true;
 }
 
@@ -1566,7 +1566,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					track_info.loop = a->get_loop_mode() != Animation::LOOP_NONE;
 					track_info.backward = backward;
 					track_info.use_blend = a->audio_track_is_use_blend(i);
-					HashMap<int, PlayingAudioStreamInfo> &map = track_info.stream_info;
+					AHashMap<int, PlayingAudioStreamInfo> &map = track_info.stream_info;
 
 					// Main process to fire key is started from here.
 					if (p_update_only) {
@@ -1830,7 +1830,7 @@ void AnimationMixer::_blend_apply() {
 					PlayingAudioTrackInfo &track_info = L.value;
 					float db = Math::linear_to_db(track_info.use_blend ? track_info.volume : 1.0);
 					LocalVector<int> erase_streams;
-					HashMap<int, PlayingAudioStreamInfo> &map = track_info.stream_info;
+					AHashMap<int, PlayingAudioStreamInfo> &map = track_info.stream_info;
 					for (const KeyValue<int, PlayingAudioStreamInfo> &M : map) {
 						PlayingAudioStreamInfo pasi = M.value;
 
@@ -2112,7 +2112,7 @@ void AnimationMixer::restore(const Ref<AnimatedValuesBackup> &p_backup) {
 	ERR_FAIL_COND(p_backup.is_null());
 	track_cache = p_backup->get_data();
 	_blend_apply();
-	track_cache = HashMap<Animation::TypeHash, AnimationMixer::TrackCache *>();
+	track_cache = AHashMap<Animation::TypeHash, AnimationMixer::TrackCache *>();
 	cache_valid = false;
 }
 
@@ -2348,7 +2348,7 @@ AnimationMixer::AnimationMixer() {
 AnimationMixer::~AnimationMixer() {
 }
 
-void AnimatedValuesBackup::set_data(const HashMap<Animation::TypeHash, AnimationMixer::TrackCache *> p_data) {
+void AnimatedValuesBackup::set_data(const AHashMap<Animation::TypeHash, AnimationMixer::TrackCache *> p_data) {
 	clear_data();
 
 	for (const KeyValue<Animation::TypeHash, AnimationMixer::TrackCache *> &E : p_data) {
@@ -2361,7 +2361,7 @@ void AnimatedValuesBackup::set_data(const HashMap<Animation::TypeHash, Animation
 	}
 }
 
-HashMap<Animation::TypeHash, AnimationMixer::TrackCache *> AnimatedValuesBackup::get_data() const {
+AHashMap<Animation::TypeHash, AnimationMixer::TrackCache *> AnimatedValuesBackup::get_data() const {
 	HashMap<Animation::TypeHash, AnimationMixer::TrackCache *> ret;
 	for (const KeyValue<Animation::TypeHash, AnimationMixer::TrackCache *> &E : data) {
 		AnimationMixer::TrackCache *track = get_cache_copy(E.value);

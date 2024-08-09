@@ -33,6 +33,7 @@
 #include "godot_space_3d.h"
 
 #include "core/math/geometry_3d.h"
+#include "core/templates/a_hash_map.h"
 #include "core/templates/rb_map.h"
 #include "servers/rendering_server.h"
 
@@ -487,7 +488,7 @@ bool GodotSoftBody3D::create_from_trimesh(const Vector<int> &p_indices, const Ve
 		// Process vertices.
 		{
 			uint32_t vertex_count = 0;
-			HashMap<Vector3, uint32_t> unique_vertices;
+			AHashMap<Vector3, uint32_t> unique_vertices(visual_vertex_count / 2);
 
 			vertices.resize(visual_vertex_count);
 			map_visual_to_physics.resize(visual_vertex_count);
@@ -495,7 +496,7 @@ bool GodotSoftBody3D::create_from_trimesh(const Vector<int> &p_indices, const Ve
 			for (int visual_vertex_index = 0; visual_vertex_index < visual_vertex_count; ++visual_vertex_index) {
 				const Vector3 &vertex = p_vertices[visual_vertex_index];
 
-				HashMap<Vector3, uint32_t>::Iterator e = unique_vertices.find(vertex);
+				AHashMap<Vector3, uint32_t>::Iterator e = unique_vertices.find(vertex);
 				uint32_t vertex_id;
 				if (e) {
 					// Already existing.
