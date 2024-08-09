@@ -10211,28 +10211,6 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 	shader = alloc_node<ShaderNode>();
 	_parse_shader(p_info.functions, p_info.render_modes, p_info.shader_types);
 
-#ifdef DEBUG_ENABLED
-	// Adds context keywords.
-	if (keyword_completion_context != CF_UNSPECIFIED) {
-		int sz = sizeof(keyword_list) / sizeof(KeyWord);
-		for (int i = 0; i < sz; i++) {
-			if (keyword_list[i].flags == CF_UNSPECIFIED) {
-				break; // Ignore hint keywords (parsed below).
-			}
-			if (keyword_list[i].flags & keyword_completion_context) {
-				if (keyword_list[i].excluded_shader_types.has(shader_type_identifier)) {
-					continue;
-				}
-				if (!keyword_list[i].functions.is_empty() && !keyword_list[i].functions.has(current_function)) {
-					continue;
-				}
-				ScriptLanguage::CodeCompletionOption option(keyword_list[i].text, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
-				r_options->push_back(option);
-			}
-		}
-	}
-#endif // DEBUG_ENABLED
-
 	switch (completion_type) {
 		case COMPLETION_NONE: {
 			//do nothing
