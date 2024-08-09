@@ -219,6 +219,14 @@ bool VehicleWheel3D::is_in_contact() const {
 	return m_raycastInfo.m_isInContact;
 }
 
+Vector3 VehicleWheel3D::get_contact_point() const {
+	return m_raycastInfo.m_contactPointWS;
+}
+
+Vector3 VehicleWheel3D::get_contact_normal() const {
+	return m_raycastInfo.m_contactNormalWS;
+}
+
 Node3D *VehicleWheel3D::get_contact_body() const {
 	return m_raycastInfo.m_groundObject;
 }
@@ -256,6 +264,8 @@ void VehicleWheel3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_in_contact"), &VehicleWheel3D::is_in_contact);
 	ClassDB::bind_method(D_METHOD("get_contact_body"), &VehicleWheel3D::get_contact_body);
+	ClassDB::bind_method(D_METHOD("get_contact_point"), &VehicleWheel3D::get_contact_point);
+	ClassDB::bind_method(D_METHOD("get_contact_normal"), &VehicleWheel3D::get_contact_normal);
 
 	ClassDB::bind_method(D_METHOD("set_roll_influence", "roll_influence"), &VehicleWheel3D::set_roll_influence);
 	ClassDB::bind_method(D_METHOD("get_roll_influence"), &VehicleWheel3D::get_roll_influence);
