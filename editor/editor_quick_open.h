@@ -45,6 +45,7 @@ class EditorQuickOpen : public ConfirmationDialog {
 	LineEdit *search_box = nullptr;
 	Tree *search_options = nullptr;
 	String base_type;
+	String interface_hint_string;
 	bool allow_multi_select = false;
 
 	Vector<String> files;
@@ -82,7 +83,7 @@ public:
 	String get_selected() const;
 	Vector<String> get_selected_files() const;
 
-	void popup_dialog(const String &p_base, bool p_enable_multi = false, bool p_dontclear = false);
+	void popup_dialog(const String &p_base, bool p_enable_multi = false, bool p_dontclear = false, const String &p_interface_hint = String());
 	EditorQuickOpen();
 };
 

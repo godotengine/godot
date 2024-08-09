@@ -242,6 +242,8 @@ public:
 	bool script_class_is_parent(const String &p_class, const String &p_inherits);
 	StringName script_class_get_base(const String &p_class) const;
 	Variant script_class_instance(const String &p_class);
+	bool script_class_implements_interface(const String &p_class, const String &p_interface);
+	bool script_object_implements_interface(const Ref<Script> &p_script, const String &p_interface); // For non global classes
 
 	Ref<Script> script_class_load_script(const String &p_class) const;
 

@@ -2767,6 +2767,12 @@ void CSharpScript::get_members(HashSet<StringName> *p_members) {
 #endif
 }
 
+void CSharpScript::get_interfaces(HashSet<StringName> *p_interfaces) {
+	for (int i = 0; i < type_info.interfaces.size(); i++) {
+		p_interfaces->insert(type_info.interfaces[i]);
+	}
+}
+
 /*************** RESOURCE ***************/
 
 Ref<Resource> ResourceFormatLoaderCSharpScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {

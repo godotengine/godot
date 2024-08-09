@@ -64,6 +64,7 @@
     <Compile Include="Core\Attributes\MustBeVariantAttribute.cs" />
     <Compile Include="Core\Attributes\RpcAttribute.cs" />
     <Compile Include="Core\Attributes\ScriptPathAttribute.cs" />
+    <Compile Include="Core\Attributes\ScriptInterfaceAttribute.cs" />
     <Compile Include="Core\Attributes\SignalAttribute.cs" />
     <Compile Include="Core\Attributes\ToolAttribute.cs" />
     <Compile Include="Core\Basis.cs" />

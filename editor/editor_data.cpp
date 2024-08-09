@@ -984,6 +984,36 @@ bool EditorData::script_class_is_parent(const String &p_class, const String &p_i
 	return true;
 }
 
+bool EditorData::script_class_implements_interface(const String &p_class, const String &p_interface_hint_string) {
+	Ref<Script> script = script_class_load_script(p_class);
+	return script_object_implements_interface(script, p_interface_hint_string);
+}
+
+bool EditorData::script_object_implements_interface(const Ref<Script> &p_script, const String &p_interface_hint_string) {
+	if (p_script.is_null()) {
+		return false;
+	}
+
+	Vector<String> hint_tokens = p_interface_hint_string.split(",");
+	ERR_FAIL_COND_V_MSG(hint_tokens.size() <= 1, false, "Invalid hint string for PROPERTY_HINT_INTERFACE; should contain the language name and at least one interface name.");
+
+	String language_name = hint_tokens[0];
+	Vector<String> interface_names = hint_tokens.slice(1);
+
+	if (language_name != p_script->get_language()->get_name()) {
+		return false;
+	}
+
+	HashSet<StringName> script_interfaces;
+	p_script->get_interfaces(&script_interfaces);
+	for (const String &E : interface_names) {
+		if (!script_interfaces.has(E)) {
+			return false;
+		}
+	}
+	return true;
+}
+
 StringName EditorData::script_class_get_base(const String &p_class) const {
 	Ref<Script> script = script_class_load_script(p_class);
 	if (script.is_null()) {
