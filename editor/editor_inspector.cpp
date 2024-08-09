@@ -991,30 +991,30 @@ Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
 	}
 
 	if (has_doc_tooltip || !custom_warning.is_empty()) {
-		EditorHelpBit *help_bit = memnew(EditorHelpBit);
-
+		String symbol;
+		String description;
 		if (has_doc_tooltip) {
-			help_bit->parse_symbol(p_text);
+			symbol = p_text;
 
 			const EditorInspector *inspector = get_parent_inspector();
 			if (inspector) {
 				const String custom_description = inspector->get_custom_property_description(p_text);
 				if (!custom_description.is_empty()) {
-					help_bit->set_description(custom_description);
+					description = custom_description;
 				}
 			}
 		}
 
 		if (!custom_warning.is_empty()) {
-			String description = "[b][color=" + get_theme_color(SNAME("warning_color")).to_html(false) + "]" + custom_warning + "[/color][/b]";
-			if (!help_bit->get_description().is_empty()) {
-				description += "\n" + help_bit->get_description();
+			const String custom_warning_description = "[b][color=" + get_theme_color(SNAME("warning_color")).to_html(false) + "]" + custom_warning + "[/color][/b]";
+			if (description.is_empty()) {
+				description = custom_warning_description;
+			} else {
+				description = custom_warning_description + "\n" + description;
 			}
-			help_bit->set_description(description);
 		}
 
-		EditorHelpBitTooltip::show_tooltip(help_bit, const_cast<EditorProperty *>(this));
-		return memnew(Control); // Make the standard tooltip invisible.
+		return EditorHelpBitTooltip::show_tooltip(symbol, const_cast<EditorProperty *>(this), description);
 	}
 
 	return nullptr;
@@ -1270,9 +1270,7 @@ Control *EditorInspectorCategory::make_custom_tooltip(const String &p_text) cons
 		return nullptr;
 	}
 
-	EditorHelpBit *help_bit = memnew(EditorHelpBit(p_text));
-	EditorHelpBitTooltip::show_tooltip(help_bit, const_cast<EditorInspectorCategory *>(this));
-	return memnew(Control); // Make the standard tooltip invisible.
+	return EditorHelpBitTooltip::show_tooltip(p_text, const_cast<EditorInspectorCategory *>(this));
 }
 
 Size2 EditorInspectorCategory::get_minimum_size() const {
