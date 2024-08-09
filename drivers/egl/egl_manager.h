@@ -58,6 +58,8 @@ private:
 	// EGL specific window data.
 	struct GLWindow {
 		bool initialized = false;
+		// On EGL the default swap interval is 1 and thus vsync is on by default.
+		bool use_vsync = true;
 
 		// An handle to the GLDisplay associated with this window.
 		int gldisplay_id = -1;
@@ -69,9 +71,6 @@ private:
 	LocalVector<GLWindow> windows;
 
 	GLWindow *current_window = nullptr;
-
-	// On EGL the default swap interval is 1 and thus vsync is on by default.
-	bool use_vsync = true;
 
 	virtual const char *_get_platform_extension_name() const = 0;
 	virtual EGLenum _get_platform_extension_enum() const = 0;
@@ -102,8 +101,8 @@ public:
 
 	void window_make_current(DisplayServer::WindowID p_window_id);
 
-	void set_use_vsync(bool p_use);
-	bool is_using_vsync() const;
+	void set_use_vsync(DisplayServer::WindowID p_window_id, bool p_use);
+	bool is_using_vsync(DisplayServer::WindowID p_window_id) const;
 
 	EGLContext get_context(DisplayServer::WindowID p_window_id);
 

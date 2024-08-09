@@ -318,13 +318,20 @@ void EGLManager::window_make_current(DisplayServer::WindowID p_window_id) {
 	eglMakeCurrent(current_display.egl_display, current_window->egl_surface, current_window->egl_surface, current_display.egl_context);
 }
 
-void EGLManager::set_use_vsync(bool p_use) {
-	// We need an active window to get a display to set the vsync.
-	if (!current_window) {
+void EGLManager::set_use_vsync(DisplayServer::WindowID p_window_id, bool p_use) {
+	ERR_FAIL_INDEX(p_window_id, (int)windows.size());
+
+	GLWindow &glwindow = windows[p_window_id];
+
+	if (!glwindow.initialized) {
 		return;
 	}
 
-	GLDisplay &disp = displays[current_window->gldisplay_id];
+	if (&glwindow != current_window) {
+		window_make_current(p_window_id);
+	}
+
+	GLDisplay &disp = displays[glwindow.gldisplay_id];
 
 	int swap_interval = p_use ? 1 : 0;
 
@@ -332,11 +339,13 @@ void EGLManager::set_use_vsync(bool p_use) {
 		WARN_PRINT("Could not set V-Sync mode.");
 	}
 
-	use_vsync = p_use;
+	glwindow.use_vsync = p_use;
 }
 
-bool EGLManager::is_using_vsync() const {
-	return use_vsync;
+bool EGLManager::is_using_vsync(DisplayServer::WindowID p_window_id) const {
+	ERR_FAIL_INDEX_V(p_window_id, (int)windows.size(), false);
+
+	return windows[p_window_id].use_vsync;
 }
 
 EGLContext EGLManager::get_context(DisplayServer::WindowID p_window_id) {
