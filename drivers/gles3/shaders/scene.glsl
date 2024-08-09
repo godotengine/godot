@@ -1009,7 +1009,10 @@ float SchlickFresnel(float u) {
 	return m2 * m2 * m; // pow(m,5)
 }
 
-void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_directional, float attenuation, vec3 f0, float roughness, float metallic, float specular_amount, vec3 albedo, inout float alpha,
+void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_directional, float attenuation, vec3 f0, float roughness, float metallic, float specular_amount, vec3 albedo,
+#ifdef USE_SHADOW_TO_OPACITY
+		inout float shadow_to_opacity,
+#endif
 #ifdef LIGHT_BACKLIGHT_USED
 		vec3 backlight,
 #endif
@@ -1157,7 +1160,7 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 	}
 
 #ifdef USE_SHADOW_TO_OPACITY
-	alpha = min(alpha, clamp(1.0 - attenuation, 0.0, 1.0));
+	shadow_to_opacity = max(shadow_to_opacity, clamp(1.0 - attenuation, 0.0, 1.0));
 #endif
 
 #endif // LIGHT_CODE_USED
@@ -1173,7 +1176,10 @@ float get_omni_spot_attenuation(float distance, float inv_range, float decay) {
 }
 
 #if !defined(DISABLE_LIGHT_OMNI) || defined(ADDITIVE_OMNI)
-void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f0, float roughness, float metallic, float shadow, vec3 albedo, inout float alpha,
+void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f0, float roughness, float metallic, float shadow, vec3 albedo,
+#ifdef USE_SHADOW_TO_OPACITY
+		inout float shadow_to_opacity,
+#endif
 #ifdef LIGHT_BACKLIGHT_USED
 		vec3 backlight,
 #endif
@@ -1200,7 +1206,10 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 
 	omni_attenuation *= shadow;
 
-	light_compute(normal, normalize(light_rel_vec), eye_vec, size_A, color, false, omni_attenuation, f0, roughness, metallic, omni_lights[idx].specular_amount, albedo, alpha,
+	light_compute(normal, normalize(light_rel_vec), eye_vec, size_A, color, false, omni_attenuation, f0, roughness, metallic, omni_lights[idx].specular_amount, albedo,
+#ifdef USE_SHADOW_TO_OPACITY
+			shadow_to_opacity,
+#endif
 #ifdef LIGHT_BACKLIGHT_USED
 			backlight,
 #endif
@@ -1219,7 +1228,10 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 #endif // !DISABLE_LIGHT_OMNI
 
 #if !defined(DISABLE_LIGHT_SPOT) || defined(ADDITIVE_SPOT)
-void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f0, float roughness, float metallic, float shadow, vec3 albedo, inout float alpha,
+void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f0, float roughness, float metallic, float shadow, vec3 albedo,
+#ifdef USE_SHADOW_TO_OPACITY
+		inout float shadow_to_opacity,
+#endif
 #ifdef LIGHT_BACKLIGHT_USED
 		vec3 backlight,
 #endif
@@ -1256,7 +1268,10 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 
 	spot_attenuation *= shadow;
 
-	light_compute(normal, normalize(light_rel_vec), eye_vec, size_A, color, false, spot_attenuation, f0, roughness, metallic, spot_lights[idx].specular_amount, albedo, alpha,
+	light_compute(normal, normalize(light_rel_vec), eye_vec, size_A, color, false, spot_attenuation, f0, roughness, metallic, spot_lights[idx].specular_amount, albedo,
+#ifdef USE_SHADOW_TO_OPACITY
+			shadow_to_opacity,
+#endif
 #ifdef LIGHT_BACKLIGHT_USED
 			backlight,
 #endif
@@ -1537,7 +1552,9 @@ void main() {
 #endif //USE_MULTIVIEW
 #endif //LIGHT_VERTEX_USED
 
-#ifndef USE_SHADOW_TO_OPACITY
+#ifdef USE_SHADOW_TO_OPACITY
+	float shadow_to_opacity = 0.0;
+#endif
 
 #if defined(ALPHA_SCISSOR_USED)
 	if (alpha < alpha_scissor_threshold) {
@@ -1554,8 +1571,6 @@ void main() {
 #endif // USE_OPAQUE_PREPASS
 #endif // MODE_RENDER_DEPTH
 #endif // !ALPHA_SCISSOR_USED
-
-#endif // !USE_SHADOW_TO_OPACITY
 
 #ifdef NORMAL_MAP_USED
 
@@ -1786,7 +1801,10 @@ void main() {
 			continue;
 		}
 #endif
-		light_compute(normal, normalize(directional_lights[i].direction), normalize(view), directional_lights[i].size, directional_lights[i].color * directional_lights[i].energy, true, 1.0, f0, roughness, metallic, 1.0, albedo, alpha,
+		light_compute(normal, normalize(directional_lights[i].direction), normalize(view), directional_lights[i].size, directional_lights[i].color * directional_lights[i].energy, true, 1.0, f0, roughness, metallic, 1.0, albedo,
+#ifdef USE_SHADOW_TO_OPACITY
+				shadow_to_opacity,
+#endif
 #ifdef LIGHT_BACKLIGHT_USED
 				backlight,
 #endif
@@ -1815,7 +1833,10 @@ void main() {
 			continue;
 		}
 #endif
-		light_process_omni(omni_light_indices[i], vertex, view, normal, f0, roughness, metallic, 1.0, albedo, alpha,
+		light_process_omni(omni_light_indices[i], vertex, view, normal, f0, roughness, metallic, 1.0, albedo,
+#ifdef USE_SHADOW_TO_OPACITY
+				shadow_to_opacity,
+#endif
 #ifdef LIGHT_BACKLIGHT_USED
 				backlight,
 #endif
@@ -1843,7 +1864,10 @@ void main() {
 			continue;
 		}
 #endif
-		light_process_spot(spot_light_indices[i], vertex, view, normal, f0, roughness, metallic, 1.0, albedo, alpha,
+		light_process_spot(spot_light_indices[i], vertex, view, normal, f0, roughness, metallic, 1.0, albedo,
+#ifdef USE_SHADOW_TO_OPACITY
+				shadow_to_opacity,
+#endif
 #ifdef LIGHT_BACKLIGHT_USED
 				backlight,
 #endif
@@ -1865,19 +1889,6 @@ void main() {
 #endif // !MODE_UNSHADED
 
 #endif // !MODE_RENDER_DEPTH
-
-#if defined(USE_SHADOW_TO_OPACITY)
-#ifndef MODE_RENDER_DEPTH
-	alpha = min(alpha, clamp(length(ambient_light), 0.0, 1.0));
-
-#if defined(ALPHA_SCISSOR_USED)
-	if (alpha < alpha_scissor) {
-		discard;
-	}
-#endif // !ALPHA_SCISSOR_USED
-
-#endif // !MODE_RENDER_DEPTH
-#endif // USE_SHADOW_TO_OPACITY
 
 #ifdef MODE_RENDER_DEPTH
 #ifdef RENDER_SHADOWS_LINEAR
@@ -2054,7 +2065,10 @@ void main() {
 #else
 	float directional_shadow = 1.0f;
 #endif // SHADOWS_DISABLED
-	light_compute(normal, normalize(directional_lights[directional_shadow_index].direction), normalize(view), directional_lights[directional_shadow_index].size, directional_lights[directional_shadow_index].color * directional_lights[directional_shadow_index].energy, true, directional_shadow, f0, roughness, metallic, 1.0, albedo, alpha,
+	light_compute(normal, normalize(directional_lights[directional_shadow_index].direction), normalize(view), directional_lights[directional_shadow_index].size, directional_lights[directional_shadow_index].color * directional_lights[directional_shadow_index].energy, true, directional_shadow, f0, roughness, metallic, 1.0, albedo,
+#ifdef USE_SHADOW_TO_OPACITY
+			shadow_to_opacity,
+#endif
 #ifdef LIGHT_BACKLIGHT_USED
 			backlight,
 #endif
@@ -2079,7 +2093,10 @@ void main() {
 	omni_shadow = texture(omni_shadow_texture, vec4(light_ray, 1.0 - length(light_ray) * omni_lights[omni_light_index].inv_radius));
 	omni_shadow = mix(1.0, omni_shadow, omni_lights[omni_light_index].shadow_opacity);
 #endif // SHADOWS_DISABLED
-	light_process_omni(omni_light_index, vertex, view, normal, f0, roughness, metallic, omni_shadow, albedo, alpha,
+	light_process_omni(omni_light_index, vertex, view, normal, f0, roughness, metallic, omni_shadow, albedo,
+#ifdef USE_SHADOW_TO_OPACITY
+			shadow_to_opacity,
+#endif
 #ifdef LIGHT_BACKLIGHT_USED
 			backlight,
 #endif
@@ -2102,7 +2119,10 @@ void main() {
 	spot_shadow = sample_shadow(spot_shadow_texture, positional_shadows[positional_shadow_index].shadow_atlas_pixel_size, shadow_coord);
 	spot_shadow = mix(1.0, spot_shadow, spot_lights[spot_light_index].shadow_opacity);
 #endif // SHADOWS_DISABLED
-	light_process_spot(spot_light_index, vertex, view, normal, f0, roughness, metallic, spot_shadow, albedo, alpha,
+	light_process_spot(spot_light_index, vertex, view, normal, f0, roughness, metallic, spot_shadow, albedo,
+#ifdef USE_SHADOW_TO_OPACITY
+			shadow_to_opacity,
+#endif
 #ifdef LIGHT_BACKLIGHT_USED
 			backlight,
 #endif
@@ -2141,6 +2161,13 @@ void main() {
 
 	frag_color.rgb += additive_light_color;
 #endif // USE_ADDITIVE_LIGHTING
+
+#ifdef USE_SHADOW_TO_OPACITY
+#ifndef MODE_RENDER_DEPTH
+	frag_color.a = shadow_to_opacity;
+#endif // !MODE_RENDER_DEPTH
+#endif // USE_SHADOW_TO_OPACITY
+
 	frag_color.rgb *= scene_data.luminance_multiplier;
 
 #endif // !RENDER_MATERIAL
