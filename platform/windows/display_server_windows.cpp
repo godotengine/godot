@@ -478,7 +478,7 @@ Error DisplayServerWindows::_file_dialog_with_options_show(const String &p_title
 		if (dir == ".") {
 			dir = OS::get_singleton()->get_executable_path().get_base_dir();
 		}
-		dir = dir.replace("/", "\\");
+		dir = dir.replace_char('/', '\\');
 
 		IShellItem *shellitem = nullptr;
 		hr = SHCreateItemFromParsingName((LPCWSTR)dir.utf16().ptr(), nullptr, IID_IShellItem, (void **)&shellitem);

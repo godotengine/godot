@@ -74,7 +74,7 @@ bool FileAccessWindows::is_path_invalid(const String &p_path) {
 String FileAccessWindows::fix_path(const String &p_path) const {
 	String r_path = FileAccess::fix_path(p_path);
 	if (r_path.is_absolute_path() && !r_path.is_network_share_path() && r_path.length() > MAX_PATH) {
-		r_path = "\\\\?\\" + r_path.replace("/", "\\");
+		r_path = "\\\\?\\" + r_path.replace_char('/', '\\');
 	}
 	return r_path;
 }

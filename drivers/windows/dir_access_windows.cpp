@@ -71,7 +71,7 @@ struct DirAccessWindowsPrivate {
 String DirAccessWindows::fix_path(const String &p_path) const {
 	String r_path = DirAccess::fix_path(p_path);
 	if (r_path.is_absolute_path() && !r_path.is_network_share_path() && r_path.length() > MAX_PATH) {
-		r_path = "\\\\?\\" + r_path.replace("/", "\\");
+		r_path = "\\\\?\\" + r_path.replace_char('/', '\\');
 	}
 	return r_path;
 }
@@ -152,7 +152,7 @@ Error DirAccessWindows::change_dir(String p_dir) {
 	String base = _get_root_path();
 	if (!base.is_empty()) {
 		GetCurrentDirectoryW(2048, real_current_dir_name);
-		String new_dir = String::utf16((const char16_t *)real_current_dir_name).replace("\\", "/");
+		String new_dir = String::utf16((const char16_t *)real_current_dir_name).replace_char('\\', '/');
 		if (!new_dir.begins_with(base)) {
 			worked = false;
 		}
@@ -161,7 +161,7 @@ Error DirAccessWindows::change_dir(String p_dir) {
 	if (worked) {
 		GetCurrentDirectoryW(2048, real_current_dir_name);
 		current_dir = String::utf16((const char16_t *)real_current_dir_name);
-		current_dir = current_dir.replace("\\", "/");
+		current_dir = current_dir.replace_char('\\', '/');
 	}
 
 	SetCurrentDirectoryW((LPCWSTR)(prev_dir.utf16().get_data()));
@@ -185,7 +185,7 @@ Error DirAccessWindows::make_dir(String p_dir) {
 		return ERR_INVALID_PARAMETER;
 	}
 
-	p_dir = p_dir.simplify_path().replace("/", "\\");
+	p_dir = p_dir.simplify_path().replace_char('/', '\\');
 
 	bool success;
 	int err;
@@ -207,7 +207,7 @@ Error DirAccessWindows::make_dir(String p_dir) {
 String DirAccessWindows::get_current_dir(bool p_include_drive) const {
 	String base = _get_root_path();
 	if (!base.is_empty()) {
-		String bd = current_dir.replace("\\", "/").replace_first(base, "");
+		String bd = current_dir.replace_char('\\', '/').replace_first(base, "");
 		if (bd.begins_with("/")) {
 			return _get_root_string() + bd.substr(1, bd.length());
 		} else {

@@ -587,7 +587,7 @@ bool JavaClassWrapper::_get_type_sig(JNIEnv *env, jobject obj, uint32_t &sig, St
 		strsig += "Ljava/lang/Double;";
 	} else {
 		//a class likely
-		strsig += "L" + str_type.replace(".", "/") + ";";
+		strsig += "L" + str_type.replace_char('.', '/') + ";";
 		t |= JavaClass::ARG_TYPE_CLASS;
 	}
 

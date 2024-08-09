@@ -373,7 +373,7 @@ void debug_dynamic_library_check_dependencies(const String &p_root_path, const S
 #endif
 
 Error OS_Windows::open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data) {
-	String path = p_path.replace("/", "\\");
+	String path = p_path.replace_char('/', '\\');
 
 	if (!FileAccess::exists(path)) {
 		//this code exists so gdextension can load .dll files from within the executable path
@@ -822,7 +822,7 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 
 	Dictionary ret;
 
-	String path = p_path.replace("/", "\\");
+	String path = p_path.replace_char('/', '\\');
 	String command = _quote_command_line_argument(path);
 	for (const String &E : p_arguments) {
 		command += " " + _quote_command_line_argument(E);
@@ -901,7 +901,7 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 }
 
 Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
-	String path = p_path.replace("/", "\\");
+	String path = p_path.replace_char('/', '\\');
 	String command = _quote_command_line_argument(path);
 	for (const String &E : p_arguments) {
 		command += " " + _quote_command_line_argument(E);
@@ -1003,7 +1003,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 }
 
 Error OS_Windows::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
-	String path = p_path.replace("/", "\\");
+	String path = p_path.replace_char('/', '\\');
 	String command = _quote_command_line_argument(path);
 	for (const String &E : p_arguments) {
 		command += " " + _quote_command_line_argument(E);
@@ -1395,7 +1395,7 @@ Vector<String> OS_Windows::get_system_font_path_for_text(const String &p_font_na
 		if (FAILED(hr)) {
 			continue;
 		}
-		String fpath = String::utf16((const char16_t *)&file_path[0]).replace("\\", "/");
+		String fpath = String::utf16((const char16_t *)&file_path[0]).replace_char('\\', '/');
 
 		WIN32_FIND_DATAW d;
 		HANDLE fnd = FindFirstFileW((LPCWSTR)&file_path[0], &d);
@@ -1474,7 +1474,7 @@ String OS_Windows::get_system_font_path(const String &p_font_name, int p_weight,
 		if (FAILED(hr)) {
 			continue;
 		}
-		String fpath = String::utf16((const char16_t *)&file_path[0]).replace("\\", "/");
+		String fpath = String::utf16((const char16_t *)&file_path[0]).replace_char('\\', '/');
 
 		WIN32_FIND_DATAW d;
 		HANDLE fnd = FindFirstFileW((LPCWSTR)&file_path[0], &d);
@@ -1494,7 +1494,7 @@ String OS_Windows::get_system_font_path(const String &p_font_name, int p_weight,
 String OS_Windows::get_executable_path() const {
 	WCHAR bufname[4096];
 	GetModuleFileNameW(nullptr, bufname, 4096);
-	String s = String::utf16((const char16_t *)bufname).replace("\\", "/");
+	String s = String::utf16((const char16_t *)bufname).replace_char('\\', '/');
 	return s;
 }
 
@@ -1576,7 +1576,7 @@ Error OS_Windows::shell_show_in_file_manager(String p_path, bool p_open_folder) 
 	if (!p_path.is_quoted()) {
 		p_path = p_path.quote();
 	}
-	p_path = p_path.replace("/", "\\");
+	p_path = p_path.replace_char('/', '\\');
 
 	INT_PTR ret = OK;
 	if (open_folder) {
@@ -1621,14 +1621,14 @@ String OS_Windows::get_locale() const {
 		}
 
 		if (lang == wl->main_lang && sublang == wl->sublang) {
-			return String(wl->locale).replace("-", "_");
+			return String(wl->locale).replace_char('-', '_');
 		}
 
 		wl++;
 	}
 
 	if (!neutral.is_empty()) {
-		return String(neutral).replace("-", "_");
+		return String(neutral).replace_char('-', '_');
 	}
 
 	return "en";
@@ -1729,7 +1729,7 @@ uint64_t OS_Windows::get_embedded_pck_offset() const {
 
 String OS_Windows::get_config_path() const {
 	if (has_environment("APPDATA")) {
-		return get_environment("APPDATA").replace("\\", "/");
+		return get_environment("APPDATA").replace_char('\\', '/');
 	}
 	return ".";
 }
@@ -1742,10 +1742,10 @@ String OS_Windows::get_cache_path() const {
 	static String cache_path_cache;
 	if (cache_path_cache.is_empty()) {
 		if (has_environment("LOCALAPPDATA")) {
-			cache_path_cache = get_environment("LOCALAPPDATA").replace("\\", "/");
+			cache_path_cache = get_environment("LOCALAPPDATA").replace_char('\\', '/');
 		}
 		if (cache_path_cache.is_empty() && has_environment("TEMP")) {
-			cache_path_cache = get_environment("TEMP").replace("\\", "/");
+			cache_path_cache = get_environment("TEMP").replace_char('\\', '/');
 		}
 		if (cache_path_cache.is_empty()) {
 			cache_path_cache = get_config_path();
@@ -1792,7 +1792,7 @@ String OS_Windows::get_system_dir(SystemDir p_dir, bool p_shared_storage) const 
 	PWSTR szPath;
 	HRESULT res = SHGetKnownFolderPath(id, 0, nullptr, &szPath);
 	ERR_FAIL_COND_V(res != S_OK, String());
-	String path = String::utf16((const char16_t *)szPath).replace("\\", "/");
+	String path = String::utf16((const char16_t *)szPath).replace_char('\\', '/');
 	CoTaskMemFree(szPath);
 	return path;
 }
@@ -1806,9 +1806,9 @@ String OS_Windows::get_user_data_dir() const {
 			if (custom_dir.is_empty()) {
 				custom_dir = appname;
 			}
-			return get_data_path().path_join(custom_dir).replace("\\", "/");
+			return get_data_path().path_join(custom_dir).replace_char('\\', '/');
 		} else {
-			return get_data_path().path_join(get_godot_dir_name()).path_join("app_userdata").path_join(appname).replace("\\", "/");
+			return get_data_path().path_join(get_godot_dir_name()).path_join("app_userdata").path_join(appname).replace_char('\\', '/');
 		}
 	}
 
