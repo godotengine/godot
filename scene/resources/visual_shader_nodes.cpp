@@ -3833,7 +3833,7 @@ String VisualShaderNodeDerivativeFunc::get_warning(Shader::Mode p_mode, VisualSh
 }
 
 void VisualShaderNodeDerivativeFunc::set_op_type(OpType p_op_type) {
-	ERR_FAIL_INDEX((int)p_op_type, int(OP_TYPE_MAX));
+	ERR_FAIL_INDEX(p_op_type, OP_TYPE_MAX);
 	if (op_type == p_op_type) {
 		return;
 	}
@@ -4000,7 +4000,7 @@ String VisualShaderNodeClamp::generate_code(Shader::Mode p_mode, VisualShader::T
 }
 
 void VisualShaderNodeClamp::set_op_type(OpType p_op_type) {
-	ERR_FAIL_INDEX((int)p_op_type, int(OP_TYPE_MAX));
+	ERR_FAIL_INDEX(p_op_type, OP_TYPE_MAX);
 	if (op_type == p_op_type) {
 		return;
 	}
@@ -7644,7 +7644,7 @@ String VisualShaderNodeMultiplyAdd::generate_code(Shader::Mode p_mode, VisualSha
 }
 
 void VisualShaderNodeMultiplyAdd::set_op_type(OpType p_op_type) {
-	ERR_FAIL_INDEX((int)p_op_type, int(OP_TYPE_MAX));
+	ERR_FAIL_INDEX(p_op_type, OP_TYPE_MAX);
 	if (op_type == p_op_type) {
 		return;
 	}

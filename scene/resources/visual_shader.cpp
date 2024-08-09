@@ -834,8 +834,8 @@ VisualShader::Type VisualShader::get_shader_type() const {
 
 void VisualShader::add_varying(const String &p_name, VaryingMode p_mode, VaryingType p_type) {
 	ERR_FAIL_COND(!p_name.is_valid_identifier());
-	ERR_FAIL_INDEX((int)p_mode, (int)VARYING_MODE_MAX);
-	ERR_FAIL_INDEX((int)p_type, (int)VARYING_TYPE_MAX);
+	ERR_FAIL_INDEX(p_mode, VARYING_MODE_MAX);
+	ERR_FAIL_INDEX(p_type, VARYING_TYPE_MAX);
 	ERR_FAIL_COND(varyings.has(p_name));
 	Varying var = Varying(p_name, p_mode, p_type);
 	varyings[p_name] = var;
@@ -869,7 +869,7 @@ const VisualShader::Varying *VisualShader::get_varying_by_index(int p_idx) const
 }
 
 void VisualShader::set_varying_mode(const String &p_name, VaryingMode p_mode) {
-	ERR_FAIL_INDEX((int)p_mode, (int)VARYING_MODE_MAX);
+	ERR_FAIL_INDEX(p_mode, VARYING_MODE_MAX);
 	ERR_FAIL_COND(!varyings.has(p_name));
 	if (varyings[p_name].mode == p_mode) {
 		return;
@@ -884,7 +884,7 @@ VisualShader::VaryingMode VisualShader::get_varying_mode(const String &p_name) {
 }
 
 void VisualShader::set_varying_type(const String &p_name, VaryingType p_type) {
-	ERR_FAIL_INDEX((int)p_type, (int)VARYING_TYPE_MAX);
+	ERR_FAIL_INDEX(p_type, VARYING_TYPE_MAX);
 	ERR_FAIL_COND(!varyings.has(p_name));
 	if (varyings[p_name].type == p_type) {
 		return;
