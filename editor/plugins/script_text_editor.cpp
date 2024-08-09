@@ -302,16 +302,14 @@ void ScriptTextEditor::_warning_clicked(const Variant &p_line) {
 
 void ScriptTextEditor::_error_clicked(const Variant &p_line) {
 	if (p_line.get_type() == Variant::INT) {
-		code_editor->get_text_editor()->remove_secondary_carets();
-		code_editor->get_text_editor()->set_caret_line(p_line.operator int64_t());
+		goto_line_centered(p_line.operator int64_t());
 	} else if (p_line.get_type() == Variant::DICTIONARY) {
 		Dictionary meta = p_line.operator Dictionary();
 		const String path = meta["path"].operator String();
 		const int line = meta["line"].operator int64_t();
 		const int column = meta["column"].operator int64_t();
 		if (path.is_empty()) {
-			code_editor->get_text_editor()->remove_secondary_carets();
-			code_editor->get_text_editor()->set_caret_line(line);
+			goto_line_centered(line, column);
 		} else {
 			Ref<Resource> scr = ResourceLoader::load(path);
 			if (!scr.is_valid()) {
@@ -456,16 +454,16 @@ void ScriptTextEditor::tag_saved_version() {
 	code_editor->get_text_editor()->tag_saved_version();
 }
 
-void ScriptTextEditor::goto_line(int p_line, bool p_with_error) {
-	code_editor->goto_line(p_line);
+void ScriptTextEditor::goto_line(int p_line, int p_column) {
+	code_editor->goto_line(p_line, p_column);
 }
 
 void ScriptTextEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
 	code_editor->goto_line_selection(p_line, p_begin, p_end);
 }
 
-void ScriptTextEditor::goto_line_centered(int p_line) {
-	code_editor->goto_line_centered(p_line);
+void ScriptTextEditor::goto_line_centered(int p_line, int p_column) {
+	code_editor->goto_line_centered(p_line, p_column);
 }
 
 void ScriptTextEditor::set_executing_line(int p_line) {
@@ -919,8 +917,7 @@ void ScriptTextEditor::_breakpoint_item_pressed(int p_idx) {
 	if (p_idx < 4) { // Any item before the separator.
 		_edit_option(breakpoints_menu->get_item_id(p_idx));
 	} else {
-		code_editor->goto_line(breakpoints_menu->get_item_metadata(p_idx));
-		callable_mp((TextEdit *)code_editor->get_text_editor(), &TextEdit::center_viewport_to_caret).call_deferred(0); // Needs to be deferred, because goto uses call_deferred().
+		code_editor->goto_line_centered(breakpoints_menu->get_item_metadata(p_idx));
 	}
 }
 
