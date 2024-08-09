@@ -14,6 +14,17 @@
 	<tutorials>
 		<link title="Using Lightmap global illumination">$DOCS_URL/tutorials/3d/global_illumination/using_lightmap_gi.html</link>
 	</tutorials>
+	<methods>
+		<method name="bake">
+			<return type="int" enum="LightmapGI.BakeError" />
+			<param index="0" name="from_node" type="Node" />
+			<param index="1" name="image_data_path" type="String" default="&quot;&quot;" />
+			<description>
+				Bakes lightmaps (requires meshes to have UV2 unwrapped) for [param from_node] and its children to [param image_data_path]. [param image_data_path] must end with an [code].exr[/code] or [code].lmbake[/code] file extension. If [param from_node] is [code]null[/code], lightmaps are baked from the [LightmapGI] node's parent. Baking lightmaps can take from a few seconds to several dozen minutes depending on the GPU speed and quality settings chosen.
+				[b]Note:[/b] [method bake] only works within the editor, and when running a project from the editor. [method bake] will do nothing when called in a project exported in either debug or release mode. This limitation is in place to reduce the binary size of exported projects. You can [url=$DOCS_URL/contributing/development/compiling/index.html]compile custom export templates[/url] with the [code]module_lightmapper_rd_enabled=yes module_xatlas_unwrap_enabled=yes[/code] SCons options to remove this limitation.
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="bias" type="float" setter="set_bias" getter="get_bias" default="0.0005">
 			The bias to use when computing shadows. Increasing [member bias] can fix shadow acne on the resulting baked lightmap, but can introduce peter-panning (shadows not connecting to their casters). Real-time [Light3D] shadows are not affected by this [member bias] property.

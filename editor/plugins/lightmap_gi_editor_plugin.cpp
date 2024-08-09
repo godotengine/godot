@@ -66,9 +66,9 @@ void LightmapGIEditorPlugin::_bake_select_file(const String &p_file) {
 
 			if (err == LightmapGI::BAKE_ERROR_OK) {
 				if (get_tree()->get_edited_scene_root() == lightmap) {
-					err = lightmap->bake(lightmap, p_file, bake_func_step);
+					err = lightmap->_bake(lightmap, p_file, bake_func_step);
 				} else {
-					err = lightmap->bake(lightmap->get_parent(), p_file, bake_func_step);
+					err = lightmap->_bake(lightmap->get_parent(), p_file, bake_func_step);
 				}
 			}
 		} else {
