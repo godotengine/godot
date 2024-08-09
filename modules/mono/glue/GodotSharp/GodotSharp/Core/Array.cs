@@ -1415,7 +1415,7 @@ namespace Godot.Collections
             get
             {
                 _underlyingArray.GetVariantBorrowElementAt(index, out godot_variant borrowElem);
-                return VariantUtils.ConvertTo<T>(borrowElem);
+                return VariantUtils.ConvertTo<T>(borrowElem, false);
             }
             set
             {
