@@ -312,6 +312,11 @@ bool AudioDriverWeb::is_sample_playback_active(const Ref<AudioSamplePlayback> &p
 	return godot_audio_sample_is_active(itos(p_playback->get_instance_id()).utf8().get_data()) != 0;
 }
 
+double AudioDriverWeb::get_sample_playback_position(const Ref<AudioSamplePlayback> &p_playback) {
+	ERR_FAIL_COND_V_MSG(p_playback.is_null(), false, "Parameter p_playback is null.");
+	return godot_audio_get_sample_playback_position(itos(p_playback->get_instance_id()).utf8().get_data());
+}
+
 void AudioDriverWeb::update_sample_playback_pitch_scale(const Ref<AudioSamplePlayback> &p_playback, float p_pitch_scale) {
 	ERR_FAIL_COND_MSG(p_playback.is_null(), "Parameter p_playback is null.");
 	godot_audio_sample_update_pitch_scale(
