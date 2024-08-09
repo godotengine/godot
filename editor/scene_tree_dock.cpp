@@ -429,6 +429,12 @@ void SceneTreeDock::_replace_with_branch_scene(const String &p_file, Node *base)
 
 	instantiated_scene->set_unique_name_in_owner(base->is_unique_name_in_owner());
 
+	if (Node2D *copy_2d = Object::cast_to<Node2D>(instantiated_scene), *base_2d = Object::cast_to<Node2D>(base); copy_2d && base_2d) {
+		copy_2d->set_position(base_2d->get_position());
+	} else if (Node3D *copy_3d = Object::cast_to<Node3D>(instantiated_scene), *base_3d = Object::cast_to<Node3D>(base); copy_3d && base_3d) {
+		copy_3d->set_position(base_3d->get_position());
+	}
+
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Replace with Branch Scene"));
 
@@ -3208,6 +3214,13 @@ void SceneTreeDock::_new_scene_from(const String &p_file) {
 		}
 		// Root node cannot ever be unique name in its own Scene!
 		copy->set_unique_name_in_owner(false);
+
+		// The root node should be positioned at zero in its own scene.
+		if (Node2D *copy_2d = Object::cast_to<Node2D>(copy)) {
+			copy_2d->set_position(Vector2(0, 0));
+		} else if (Node3D *copy_3d = Object::cast_to<Node3D>(copy)) {
+			copy_3d->set_position(Vector3(0, 0, 0));
+		}
 
 		Ref<PackedScene> sdata = memnew(PackedScene);
 		Error err = sdata->pack(copy);
