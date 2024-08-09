@@ -120,6 +120,9 @@
 			The file system access scope. See [enum Access] constants.
 			[b]Warning:[/b] In Web builds, FileDialog cannot access the host file system. In sandboxed Linux and macOS environments, [member use_native_dialog] is automatically used to allow limited access to host file system.
 		</member>
+		<member name="case_sensitive_filter" type="int" setter="set_case_sensitive_filter" getter="get_case_sensitive_filter" enum="FileDialog.CaseSensitivity" default="2">
+			Whether the file type filters are case sensitive. See [enum CaseSensitivity].
+		</member>
 		<member name="current_dir" type="String" setter="set_current_dir" getter="get_current_dir">
 			The current working directory of the file dialog.
 			[b]Note:[/b] For native file dialogs, this property is only treated as a hint and may not be respected by specific OS implementations.
@@ -203,6 +206,15 @@
 		</constant>
 		<constant name="ACCESS_FILESYSTEM" value="2" enum="Access">
 			The dialog allows accessing files on the whole file system.
+		</constant>
+		<constant name="CASE_SENSITIVITY_SENSITIVE" value="0" enum="CaseSensitivity">
+			The dialog will use a case sensitive check against the filters when saving.
+		</constant>
+		<constant name="CASE_SENSITIVITY_INSENSITIVE" value="1" enum="CaseSensitivity">
+			The dialog will use a case insensitive check against the filters when saving.
+		</constant>
+		<constant name="CASE_SENSITIVITY_OS_DEFAULT" value="2" enum="CaseSensitivity">
+			The dialog will use the current file system to determine whether to use a case sensitive check against the filters when saving.
 		</constant>
 	</constants>
 	<theme_items>
