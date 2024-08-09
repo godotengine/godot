@@ -237,7 +237,6 @@ static int max_fps = -1;
 static int frame_delay = 0;
 static int audio_output_latency = 0;
 static bool disable_render_loop = false;
-static int fixed_fps = -1;
 static MovieWriter *movie_writer = nullptr;
 static bool disable_vsync = false;
 static bool print_fps = false;
@@ -1651,7 +1650,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			disable_render_loop = true;
 		} else if (arg == "--fixed-fps") {
 			if (N) {
-				fixed_fps = N->get().to_int();
+				Engine::get_singleton()->set_fixed_fps(N->get().to_int());
 				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing fixed-fps argument, aborting.\n");
@@ -1661,8 +1660,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			if (N) {
 				Engine::get_singleton()->set_write_movie_path(N->get());
 				N = N->next();
-				if (fixed_fps == -1) {
-					fixed_fps = 60;
+				if (Engine::get_singleton()->get_fixed_fps() < 1) {
+					Engine::get_singleton()->set_fixed_fps(60);
 				}
 				OS::get_singleton()->_writing_movie = true;
 			} else {
@@ -2375,6 +2374,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	Engine::get_singleton()->set_max_physics_steps_per_frame(GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "physics/common/max_physics_steps_per_frame", PROPERTY_HINT_RANGE, "1,100,1"), 8));
 	Engine::get_singleton()->set_physics_jitter_fix(GLOBAL_DEF("physics/common/physics_jitter_fix", 0.5));
 	Engine::get_singleton()->set_max_fps(GLOBAL_DEF(PropertyInfo(Variant::INT, "application/run/max_fps", PROPERTY_HINT_RANGE, "0,1000,1"), 0));
+	if (!Engine::get_singleton()->is_editor_hint() && Engine::get_singleton()->get_fixed_fps() < 1) { // Not manually overridden, and do not apply the project setting to the editor.
+		Engine::get_singleton()->set_fixed_fps(GLOBAL_DEF(PropertyInfo(Variant::INT, "application/run/fixed_fps", PROPERTY_HINT_RANGE, "0,1000,1"), 0));
+	}
 
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "audio/driver/output_latency", PROPERTY_HINT_RANGE, "1,100,1"), 15);
 	// Use a safer default output_latency for web to avoid audio cracking on low-end devices, especially mobile.
@@ -3952,7 +3954,7 @@ int Main::start() {
 	}
 
 	if (movie_writer) {
-		movie_writer->begin(DisplayServer::get_singleton()->window_get_size(), fixed_fps, Engine::get_singleton()->get_write_movie_path());
+		movie_writer->begin(DisplayServer::get_singleton()->window_get_size(), Engine::get_singleton()->get_fixed_fps(), Engine::get_singleton()->get_write_movie_path());
 	}
 
 	if (minimum_time_msec) {
@@ -4004,7 +4006,7 @@ bool Main::iteration() {
 	const uint64_t ticks = OS::get_singleton()->get_ticks_usec();
 	Engine::get_singleton()->_frame_ticks = ticks;
 	main_timer_sync.set_cpu_ticks_usec(ticks);
-	main_timer_sync.set_fixed_fps(fixed_fps);
+	main_timer_sync.set_fixed_fps(Engine::get_singleton()->get_fixed_fps());
 
 	const uint64_t ticks_elapsed = ticks - last_ticks;
 
@@ -4029,7 +4031,7 @@ bool Main::iteration() {
 	last_ticks = ticks;
 
 	const int max_physics_steps = Engine::get_singleton()->get_max_physics_steps_per_frame();
-	if (fixed_fps == -1 && advance.physics_steps > max_physics_steps) {
+	if (Engine::get_singleton()->get_fixed_fps() < 1 && advance.physics_steps > max_physics_steps) {
 		process_step -= (advance.physics_steps - max_physics_steps) * physics_step;
 		advance.physics_steps = max_physics_steps;
 	}
@@ -4194,7 +4196,7 @@ bool Main::iteration() {
 	}
 #endif
 
-	if (fixed_fps != -1) {
+	if (Engine::get_singleton()->get_fixed_fps() >= 1) {
 		return exit;
 	}
 
