@@ -5360,7 +5360,7 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 
 	uint32_t frame_count = 1;
 	if (main_surface != 0) {
-		frame_count = MAX(2U, uint32_t(GLOBAL_GET("rendering/rendering_device/vsync/frame_queue_size")));
+		frame_count = MAX(1U, uint32_t(GLOBAL_GET("rendering/rendering_device/vsync/frame_queue_size")));
 	}
 
 	frame = 0;
