@@ -396,6 +396,14 @@
 				[b]Note:[/b] For performance reasons, the search is affected by [param what]'s [enum Variant.Type]. For example, [code]7[/code] ([int]) and [code]7.0[/code] ([float]) are not considered equal for this method.
 			</description>
 		</method>
+		<method name="find_if" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="func" type="Callable" />
+			<param index="1" name="from" type="int" default="0" />
+			<description>
+				Searches the array for the first element for which given function returns [code]true[/code] and returns its index or [code]-1[/code] if not found. Optionally, the initial search index can be passed.
+			</description>
+		</method>
 		<method name="front" qualifiers="const">
 			<return type="Variant" />
 			<description>
@@ -653,6 +661,14 @@
 			<param index="1" name="from" type="int" default="-1" />
 			<description>
 				Returns the index of the [b]last[/b] occurrence of [param what] in this array, or [code]-1[/code] if there are none. The search's start can be specified with [param from], continuing to the beginning of the array. This method is the reverse of [method find].
+			</description>
+		</method>
+		<method name="rfind_if" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="func" type="Callable" />
+			<param index="1" name="from" type="int" default="-1" />
+			<description>
+				Searches the array in reverse order for the first element for which given function returns [code]true[/code] and returns its index or [code]-1[/code] if not found. Optionally, a start search index can be passed. If negative, the start index is considered relative to the end of the array.
 			</description>
 		</method>
 		<method name="shuffle">
