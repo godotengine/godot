@@ -235,8 +235,9 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 
 	struct LightmapData {
 		float normal_xform[12];
-		float pad[3];
+		float pad[2];
 		float exposure_normalization;
+		uint32_t flags;
 	};
 
 	struct LightmapCaptureData {

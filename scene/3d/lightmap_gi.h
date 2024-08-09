@@ -43,8 +43,19 @@ class LightmapGIData : public Resource {
 	GDCLASS(LightmapGIData, Resource);
 	RES_BASE_EXTENSION("lmbake")
 
+public:
+	enum ShadowmaskMode {
+		SHADOWMASK_MODE_NONE,
+		SHADOWMASK_MODE_REPLACE,
+		SHADOWMASK_MODE_OVERLAY,
+		SHADOWMASK_MODE_ONLY,
+	};
+
+private:
 	Ref<TextureLayered> light_texture;
 	TypedArray<TextureLayered> light_textures;
+	Ref<TextureLayered> shadowmask_texture;
+	TypedArray<TextureLayered> shadowmask_textures;
 
 	bool uses_spherical_harmonics = false;
 	bool interior = false;
@@ -68,6 +79,7 @@ class LightmapGIData : public Resource {
 	Dictionary _get_probe_data() const;
 
 	void _reset_lightmap_textures();
+	void _reset_shadowmask_textures();
 
 protected:
 	static void _bind_methods();
@@ -92,6 +104,9 @@ public:
 	void set_uses_spherical_harmonics(bool p_enable);
 	bool is_using_spherical_harmonics() const;
 
+	void update_shadowmask_mode(ShadowmaskMode p_mode);
+	ShadowmaskMode get_shadowmask_mode() const;
+
 	bool is_interior() const;
 	float get_baked_exposure() const;
 
@@ -106,6 +121,10 @@ public:
 
 	void set_lightmap_textures(const TypedArray<TextureLayered> &p_data);
 	TypedArray<TextureLayered> get_lightmap_textures() const;
+
+	void set_shadowmask_textures(const TypedArray<TextureLayered> &p_data);
+	TypedArray<TextureLayered> get_shadowmask_textures() const;
+	void clear_shadowmask_textures();
 
 	virtual RID get_rid() const override;
 	LightmapGIData();
@@ -170,6 +189,7 @@ private:
 	float environment_custom_energy = 1.0;
 	bool directional = false;
 	bool use_texture_for_bounces = true;
+	LightmapGIData::ShadowmaskMode shadowmask_mode = LightmapGIData::SHADOWMASK_MODE_NONE;
 	GenerateProbes gen_probes = GENERATE_PROBES_SUBDIV_8;
 	Ref<CameraAttributes> camera_attributes;
 
@@ -240,6 +260,8 @@ private:
 	void _plot_triangle_into_octree(GenProbesOctree *p_cell, float p_cell_size, const Vector3 *p_triangle);
 	void _gen_new_positions_from_octree(const GenProbesOctree *p_cell, float p_cell_size, const Vector<Vector3> &probe_positions, LocalVector<Vector3> &new_probe_positions, HashMap<Vector3i, bool> &positions_used, const AABB &p_bounds);
 
+	BakeError _save_and_reimport_atlas_textures(const Ref<Lightmapper> p_lightmapper, const String &p_base_name, TypedArray<TextureLayered> &r_textures, bool p_is_shadowmask = false, bool p_compress = false) const;
+
 protected:
 	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
@@ -263,6 +285,9 @@ public:
 
 	void set_directional(bool p_enable);
 	bool is_directional() const;
+
+	void set_shadowmask_mode(LightmapGIData::ShadowmaskMode p_mode);
+	LightmapGIData::ShadowmaskMode get_shadowmask_mode() const;
 
 	void set_use_texture_for_bounces(bool p_enable);
 	bool is_using_texture_for_bounces() const;
@@ -312,6 +337,7 @@ public:
 	LightmapGI();
 };
 
+VARIANT_ENUM_CAST(LightmapGIData::ShadowmaskMode);
 VARIANT_ENUM_CAST(LightmapGI::BakeQuality);
 VARIANT_ENUM_CAST(LightmapGI::GenerateProbes);
 VARIANT_ENUM_CAST(LightmapGI::BakeError);

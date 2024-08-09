@@ -59,7 +59,9 @@ layout(rgba16f, set = 1, binding = 4) uniform restrict image2DArray accum_light;
 
 #endif
 
-#ifdef MODE_BOUNCE_LIGHT
+#if defined(MODE_DIRECT_LIGHT) && defined(USE_SHADOWMASK)
+layout(rgba8, set = 1, binding = 5) uniform restrict writeonly image2DArray shadowmask;
+#elif defined(MODE_BOUNCE_LIGHT)
 layout(set = 1, binding = 5) uniform texture2D environment;
 #endif
 
@@ -359,8 +361,9 @@ float get_omni_attenuation(float distance, float inv_range, float decay) {
 	return nd * pow(max(distance, 0.0001), -decay);
 }
 
-void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool p_soft_shadowing, out vec3 r_light, out vec3 r_light_dir, inout uint r_noise) {
+void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool p_soft_shadowing, out vec3 r_light, out vec3 r_light_dir, out float r_shadow, inout uint r_noise) {
 	r_light = vec3(0.0f);
+	r_shadow = 0.0f;
 
 	vec3 light_pos;
 	float dist;
@@ -453,6 +456,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 		}
 	}
 
+	r_shadow = penumbra;
 	r_light = light_data.color * light_data.energy * attenuation * penumbra;
 }
 
@@ -502,7 +506,8 @@ vec3 trace_indirect_light(vec3 p_position, vec3 p_ray_dir, inout uint r_noise) {
 			for (uint i = 0; i < bake_params.light_count; i++) {
 				vec3 light;
 				vec3 light_dir;
-				trace_direct_light(position, normal, i, false, light, light_dir, r_noise);
+				float shadow;
+				trace_direct_light(position, normal, i, false, light, light_dir, shadow, r_noise);
 				direct_light += light * lights.data[i].indirect_energy;
 			}
 
@@ -560,7 +565,6 @@ void main() {
 #endif
 
 #ifdef MODE_DIRECT_LIGHT
-
 	vec3 normal = texelFetch(sampler2DArray(source_normal, linear_sampler), ivec3(atlas_pos, params.atlas_slice), 0).xyz;
 	if (length(normal) < 0.5) {
 		return; //empty texel, no process
@@ -568,6 +572,10 @@ void main() {
 	vec3 position = texelFetch(sampler2DArray(source_position, linear_sampler), ivec3(atlas_pos, params.atlas_slice), 0).xyz;
 	vec3 light_for_texture = vec3(0.0);
 	vec3 light_for_bounces = vec3(0.0);
+
+#ifdef USE_SHADOWMASK
+	float shadowmask_value = 0.0f;
+#endif
 
 #ifdef USE_SH_LIGHTMAPS
 	vec4 sh_accum[4] = vec4[](
@@ -582,7 +590,8 @@ void main() {
 	for (uint i = 0; i < bake_params.light_count; i++) {
 		vec3 light;
 		vec3 light_dir;
-		trace_direct_light(position, normal, i, true, light, light_dir, noise);
+		float shadow;
+		trace_direct_light(position, normal, i, true, light, light_dir, shadow, noise);
 
 		if (lights.data[i].static_bake) {
 			light_for_texture += light;
@@ -602,6 +611,12 @@ void main() {
 		}
 
 		light_for_bounces += light * lights.data[i].indirect_energy;
+
+#ifdef USE_SHADOWMASK
+		if (lights.data[i].type == LIGHT_TYPE_DIRECTIONAL) {
+			shadowmask_value = max(shadowmask_value, shadow);
+		}
+#endif
 	}
 
 	light_for_bounces *= bake_params.exposure_normalization;
@@ -616,6 +631,10 @@ void main() {
 #else
 	light_for_texture *= bake_params.exposure_normalization;
 	imageStore(accum_light, ivec3(atlas_pos, params.atlas_slice), vec4(light_for_texture, 1.0));
+#endif
+
+#ifdef USE_SHADOWMASK
+	imageStore(shadowmask, ivec3(atlas_pos, params.atlas_slice), vec4(shadowmask_value, shadowmask_value, shadowmask_value, 1.0));
 #endif
 
 #endif
@@ -775,7 +794,7 @@ void main() {
 
 #endif
 
-#ifdef MODE_DILATE
+#if defined(MODE_DILATE)
 
 	vec4 c = texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos, params.atlas_slice), 0);
 	//sides first, as they are closer
