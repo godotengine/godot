@@ -47,6 +47,7 @@ class EditorExport : public Node {
 	Timer *save_timer = nullptr;
 	bool block_save = false;
 	bool should_update_presets = false;
+	bool should_reload_presets = false;
 
 	static EditorExport *singleton;
 
@@ -66,6 +67,7 @@ public:
 	void add_export_platform(const Ref<EditorExportPlatform> &p_platform);
 	int get_export_platform_count();
 	Ref<EditorExportPlatform> get_export_platform(int p_idx);
+	void remove_export_platform(const Ref<EditorExportPlatform> &p_platform);
 
 	void add_export_preset(const Ref<EditorExportPreset> &p_preset, int p_at_pos = -1);
 	int get_export_preset_count() const;

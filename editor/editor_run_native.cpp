@@ -141,7 +141,7 @@ Error EditorRunNative::start_run_native(int p_id) {
 
 	emit_signal(SNAME("native_run"), preset);
 
-	int flags = 0;
+	BitField<EditorExportPlatform::DebugFlags> flags = 0;
 
 	bool deploy_debug_remote = is_deploy_debug_remote_enabled();
 	bool deploy_dumb = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_file_server", false);
@@ -149,16 +149,16 @@ Error EditorRunNative::start_run_native(int p_id) {
 	bool debug_navigation = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_navigation", false);
 
 	if (deploy_debug_remote) {
-		flags |= EditorExportPlatform::DEBUG_FLAG_REMOTE_DEBUG;
+		flags.set_flag(EditorExportPlatform::DEBUG_FLAG_REMOTE_DEBUG);
 	}
 	if (deploy_dumb) {
-		flags |= EditorExportPlatform::DEBUG_FLAG_DUMB_CLIENT;
+		flags.set_flag(EditorExportPlatform::DEBUG_FLAG_DUMB_CLIENT);
 	}
 	if (debug_collisions) {
-		flags |= EditorExportPlatform::DEBUG_FLAG_VIEW_COLLISIONS;
+		flags.set_flag(EditorExportPlatform::DEBUG_FLAG_VIEW_COLLISIONS);
 	}
 	if (debug_navigation) {
-		flags |= EditorExportPlatform::DEBUG_FLAG_VIEW_NAVIGATION;
+		flags.set_flag(EditorExportPlatform::DEBUG_FLAG_VIEW_NAVIGATION);
 	}
 
 	eep->clear_messages();

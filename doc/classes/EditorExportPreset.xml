@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorExportPreset" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Export preset configuration.
+	</brief_description>
+	<description>
+		Export preset configuration. Instances of [EditorExportPreset] by editor UI and intended to be used a read-only configuration passed to the [EditorExportPlatform] methods when exporting the project.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="are_advanced_options_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code], is "Advanced" toggle is enabled in the export dialog.
+			</description>
+		</method>
+		<method name="get_custom_features" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns string with a comma separated list of custom features.
+			</description>
+		</method>
+		<method name="get_customized_files" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns [Dictionary] of files selected in the "Resources" tab of the export dialog. Dictionary keys are file names and values are export mode - [code]"strip[/code], [code]"keep"[/code], or [code]"remove"[/code]. See also [method get_file_export_mode].
+			</description>
+		</method>
+		<method name="get_customized_files_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns number of files selected in the "Resources" tab of the export dialog.
+			</description>
+		</method>
+		<method name="get_encrypt_directory" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code], PCK directory encryption is enabled in the export dialog.
+			</description>
+		</method>
+		<method name="get_encrypt_pck" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code], PCK encryption is enabled in the export dialog.
+			</description>
+		</method>
+		<method name="get_encryption_ex_filter" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns file filters to exclude during PCK encryption.
+			</description>
+		</method>
+		<method name="get_encryption_in_filter" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns file filters to include during PCK encryption.
+			</description>
+		</method>
+		<method name="get_encryption_key" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns PCK encryption key.
+			</description>
+		</method>
+		<method name="get_exclude_filter" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns file filters to exclude during export.
+			</description>
+		</method>
+		<method name="get_export_filter" qualifiers="const">
+			<return type="int" enum="EditorExportPreset.ExportFilter" />
+			<description>
+				Returns export file filter mode selected in the "Resources" tab of the export dialog.
+			</description>
+		</method>
+		<method name="get_export_path" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns export target path.
+			</description>
+		</method>
+		<method name="get_file_export_mode" qualifiers="const">
+			<return type="int" enum="EditorExportPreset.FileExportMode" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="default" type="int" enum="EditorExportPreset.FileExportMode" default="0" />
+			<description>
+				Returns file export mode for the specified file.
+			</description>
+		</method>
+		<method name="get_files_to_export" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns array of files to export.
+			</description>
+		</method>
+		<method name="get_include_filter" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns file filters to include during export.
+			</description>
+		</method>
+		<method name="get_or_env" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="env_var" type="String" />
+			<description>
+				Returns export option value or value of environment variable if it is set.
+			</description>
+		</method>
+		<method name="get_preset_name" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns export preset name.
+			</description>
+		</method>
+		<method name="get_script_export_mode" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns script export mode.
+			</description>
+		</method>
+		<method name="get_version" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="windows_version" type="bool" />
+			<description>
+				Returns the preset's version number, or fall back to the [member ProjectSettings.application/config/version] project setting if set to an empty string.
+				If [param windows_version] is [code]true[/code], formats the returned version number to be compatible with Windows executable metadata.
+			</description>
+		</method>
+		<method name="has" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="property" type="StringName" />
+			<description>
+				Returns [code]true[/code] if preset has specified property.
+			</description>
+		</method>
+		<method name="has_export_file">
+			<return type="bool" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns [code]true[/code] if specified file is exported.
+			</description>
+		</method>
+		<method name="is_dedicated_server" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if dedicated server export mode is selected in the export dialog.
+			</description>
+		</method>
+		<method name="is_runnable" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if "Runnable" toggle is enabled in the export dialog.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="EXPORT_ALL_RESOURCES" value="0" enum="ExportFilter">
+		</constant>
+		<constant name="EXPORT_SELECTED_SCENES" value="1" enum="ExportFilter">
+		</constant>
+		<constant name="EXPORT_SELECTED_RESOURCES" value="2" enum="ExportFilter">
+		</constant>
+		<constant name="EXCLUDE_SELECTED_RESOURCES" value="3" enum="ExportFilter">
+		</constant>
+		<constant name="EXPORT_CUSTOMIZED" value="4" enum="ExportFilter">
+		</constant>
+		<constant name="MODE_FILE_NOT_CUSTOMIZED" value="0" enum="FileExportMode">
+		</constant>
+		<constant name="MODE_FILE_STRIP" value="1" enum="FileExportMode">
+		</constant>
+		<constant name="MODE_FILE_KEEP" value="2" enum="FileExportMode">
+		</constant>
+		<constant name="MODE_FILE_REMOVE" value="3" enum="FileExportMode">
+		</constant>
+		<constant name="MODE_SCRIPT_TEXT" value="0" enum="ScriptExportMode">
+		</constant>
+		<constant name="MODE_SCRIPT_BINARY_TOKENS" value="1" enum="ScriptExportMode">
+		</constant>
+		<constant name="MODE_SCRIPT_BINARY_TOKENS_COMPRESSED" value="2" enum="ScriptExportMode">
+		</constant>
+	</constants>
+</class>
