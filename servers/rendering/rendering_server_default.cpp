@@ -382,10 +382,16 @@ void RenderingServerDefault::_thread_loop() {
 /* INTERPOLATION */
 
 void RenderingServerDefault::tick() {
+	RSG::scene->tick();
 	RSG::canvas->tick();
 }
 
+void RenderingServerDefault::pre_draw(bool p_will_draw) {
+	RSG::scene->pre_draw(p_will_draw);
+}
+
 void RenderingServerDefault::set_physics_interpolation_enabled(bool p_enabled) {
+	RSG::scene->set_physics_interpolation_enabled(p_enabled);
 	RSG::canvas->set_physics_interpolation_enabled(p_enabled);
 }
 

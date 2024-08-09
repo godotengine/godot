@@ -350,6 +350,13 @@ public:
 
 	virtual bool free(RID p_rid) = 0;
 
+	/* Interpolation */
+
+	virtual void tick() = 0;
+	virtual void pre_draw(bool p_will_draw) = 0;
+	virtual void update_interpolation_tick(bool p_process = true) = 0;
+	virtual void set_physics_interpolation_enabled(bool p_enabled) = 0;
+
 	RenderingMethod();
 	virtual ~RenderingMethod();
 };

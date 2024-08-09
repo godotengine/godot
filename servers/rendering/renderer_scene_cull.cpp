@@ -4240,6 +4240,28 @@ void RendererSceneCull::set_scene_render(RendererSceneRender *p_scene_render) {
 	geometry_instance_pair_mask = scene_render->geometry_instance_get_pair_mask();
 }
 
+void RendererSceneCull::tick() {
+	if (_interpolation_data.interpolation_enabled) {
+		update_interpolation_tick(true);
+	}
+}
+
+void RendererSceneCull::pre_draw(bool p_will_draw) {
+	if (_interpolation_data.interpolation_enabled) {
+		update_interpolation_frame(p_will_draw);
+	}
+}
+
+void RendererSceneCull::update_interpolation_tick(bool p_process) {
+	// Update interpolation in storage.
+	RSG::mesh_storage->update_interpolation_tick(p_process);
+}
+
+void RendererSceneCull::update_interpolation_frame(bool p_process) {
+	// Update interpolation in storage.
+	RSG::mesh_storage->update_interpolation_frame(p_process);
+}
+
 RendererSceneCull::RendererSceneCull() {
 	render_pass = 1;
 	singleton = this;

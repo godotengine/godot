@@ -1393,6 +1393,18 @@ public:
 
 	virtual void update_visibility_notifiers();
 
+	/* Fixed timestep interpolation. */
+
+	void tick();
+	void pre_draw(bool p_will_draw);
+	void update_interpolation_tick(bool p_process = true);
+	void update_interpolation_frame(bool p_process = true);
+	void set_physics_interpolation_enabled(bool p_enabled) { _interpolation_data.interpolation_enabled = p_enabled; }
+
+	struct InterpolationData {
+		bool interpolation_enabled = false;
+	} _interpolation_data;
+
 	RendererSceneCull();
 	virtual ~RendererSceneCull();
 };

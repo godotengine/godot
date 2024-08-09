@@ -472,6 +472,14 @@ void SceneTree::iteration_prepare() {
 	}
 }
 
+void SceneTree::iteration_end() {
+	// When physics interpolation is active, we want all pending transforms
+	// to be flushed to the RenderingServer before finishing a physics tick.
+	if (_physics_interpolation_enabled) {
+		flush_transform_notifications();
+	}
+}
+
 bool SceneTree::physics_process(double p_time) {
 	current_frame++;
 
@@ -569,6 +577,10 @@ bool SceneTree::process(double p_time) {
 	}
 #endif // _3D_DISABLED
 #endif // TOOLS_ENABLED
+
+	if (_physics_interpolation_enabled) {
+		RenderingServer::get_singleton()->pre_draw(true);
+	}
 
 	return _quit;
 }
