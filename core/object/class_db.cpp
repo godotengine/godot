@@ -303,6 +303,23 @@ StringName ClassDB::get_parent_class_nocheck(const StringName &p_class) {
 	return ti->inherits;
 }
 
+bool ClassDB::get_inheritance_chain_nocheck(const StringName &p_class, LocalVector<StringName> &r_result) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *ti = classes.getptr(p_class);
+	if (!ti) {
+		return false;
+	}
+
+	r_result.reserve(8);
+	while (ti) {
+		r_result.push_back(ti->name);
+		ti = ti->inherits_ptr;
+	}
+
+	return true;
+}
+
 StringName ClassDB::get_compatibility_remapped_class(const StringName &p_class) {
 	if (classes.has(p_class)) {
 		return p_class;
