@@ -98,6 +98,9 @@ private:
 		double lifetime = 0.0;
 		Color base_color;
 
+		// Whether the expired signal was emitted for this particle already.
+		bool expired = false;
+
 		uint32_t seed = 0;
 	};
 
