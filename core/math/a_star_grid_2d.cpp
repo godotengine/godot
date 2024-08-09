@@ -562,6 +562,33 @@ Vector2 AStarGrid2D::get_point_position(const Vector2i &p_id) const {
 	return _get_point_unchecked(p_id)->pos;
 }
 
+TypedArray<Dictionary> AStarGrid2D::get_point_data_in_region(const Rect2i &p_region) const {
+	ERR_FAIL_COND_V_MSG(dirty, TypedArray<Dictionary>(), "Grid is not initialized. Call the update method.");
+	const Rect2i inter_region = region.intersection(p_region);
+
+	const int32_t start_x = inter_region.position.x - region.position.x;
+	const int32_t start_y = inter_region.position.y - region.position.y;
+	const int32_t end_x = inter_region.get_end().x - region.position.x;
+	const int32_t end_y = inter_region.get_end().y - region.position.y;
+
+	TypedArray<Dictionary> data;
+
+	for (int32_t y = start_y; y < end_y; y++) {
+		for (int32_t x = start_x; x < end_x; x++) {
+			const Point &p = points[y][x];
+
+			Dictionary dict;
+			dict["id"] = p.id;
+			dict["position"] = p.pos;
+			dict["solid"] = p.solid;
+			dict["weight_scale"] = p.weight_scale;
+			data.push_back(dict);
+		}
+	}
+
+	return data;
+}
+
 Vector<Vector2> AStarGrid2D::get_point_path(const Vector2i &p_from_id, const Vector2i &p_to_id, bool p_allow_partial_path) {
 	ERR_FAIL_COND_V_MSG(dirty, Vector<Vector2>(), "Grid is not initialized. Call the update method.");
 	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_from_id), Vector<Vector2>(), vformat("Can't get id path. Point %s out of bounds %s.", p_from_id, region));
@@ -698,6 +725,7 @@ void AStarGrid2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &AStarGrid2D::clear);
 
 	ClassDB::bind_method(D_METHOD("get_point_position", "id"), &AStarGrid2D::get_point_position);
+	ClassDB::bind_method(D_METHOD("get_point_data_in_region", "region"), &AStarGrid2D::get_point_data_in_region);
 	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id", "allow_partial_path"), &AStarGrid2D::get_point_path, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id", "allow_partial_path"), &AStarGrid2D::get_id_path, DEFVAL(false));
 

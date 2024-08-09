@@ -81,6 +81,13 @@
 				If there is no valid path to the target, and [param allow_partial_path] is [code]true[/code], returns a path to the point closest to the target that can be reached.
 			</description>
 		</method>
+		<method name="get_point_data_in_region" qualifiers="const">
+			<return type="Dictionary[]" />
+			<param index="0" name="region" type="Rect2i" />
+			<description>
+				Returns an array of dictionaries with point data ([code]id[/code]: [Vector2i], [code]position[/code]: [Vector2], [code]solid[/code]: [bool], [code]weight_scale[/code]: [float]) within a [param region].
+			</description>
+		</method>
 		<method name="get_point_path">
 			<return type="PackedVector2Array" />
 			<param index="0" name="from_id" type="Vector2i" />
