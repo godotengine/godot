@@ -2934,11 +2934,6 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterface &p_itype, const BindingsGenerator::SignalInterface &p_isignal, StringBuilder &p_output) {
 	String arguments_sig;
-	String delegate_type_params;
-
-	if (!p_isignal.arguments.is_empty()) {
-		delegate_type_params += "<";
-	}
 
 	// Retrieve information from the arguments
 	const ArgumentInterface &first = p_isignal.arguments.front()->get();
@@ -2959,18 +2954,13 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 
 		if (&iarg != &first) {
 			arguments_sig += ", ";
-			delegate_type_params += ", ";
 		}
 
-		arguments_sig += arg_type->cs_type;
+		String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
+
+		arguments_sig += arg_cs_type;
 		arguments_sig += " ";
 		arguments_sig += iarg.name;
-
-		delegate_type_params += arg_type->cs_type;
-	}
-
-	if (!p_isignal.arguments.is_empty()) {
-		delegate_type_params += ">";
 	}
 
 	// Generate signal
@@ -3019,8 +3009,14 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 					p_output << ", ";
 				}
 
-				p_output << sformat(arg_type->cs_variant_to_managed,
-						"args[" + itos(idx) + "]", arg_type->cs_type, arg_type->name);
+				if (arg_type->cname == name_cache.type_Array_generic || arg_type->cname == name_cache.type_Dictionary_generic) {
+					String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
+
+					p_output << "new " << arg_cs_type << "(" << sformat(arg_type->cs_variant_to_managed, "args[" + itos(idx) + "]", arg_type->cs_type, arg_type->name) << ")";
+				} else {
+					p_output << sformat(arg_type->cs_variant_to_managed,
+							"args[" + itos(idx) + "]", arg_type->cs_type, arg_type->name);
+				}
 
 				idx++;
 			}
