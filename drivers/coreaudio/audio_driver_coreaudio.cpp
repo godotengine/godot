@@ -234,6 +234,7 @@ OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 				ad->input_buffer_write(sample);
 			}
 		}
+		ad->input_buffer_end_write();
 	} else {
 		ERR_PRINT("AudioUnitRender failed, code: " + itos(result));
 	}
@@ -633,8 +634,8 @@ void AudioDriverCoreAudio::_set_device(const String &output_device, bool input) 
 
 		if (input) {
 			// Reset audio input to keep synchronization.
-			input_position = 0;
-			input_size = 0;
+			input_read = SizePosition(0, 0);
+			input_write = SizePosition(0, 0);
 		}
 	}
 }

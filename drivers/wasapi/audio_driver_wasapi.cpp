@@ -483,8 +483,8 @@ Error AudioDriverWASAPI::init_output_device(bool p_reinit) {
 	// Sample rate is independent of channels (ref: https://stackoverflow.com/questions/11048825/audio-sample-frequency-rely-on-channels)
 	samples_in.resize(buffer_frames * channels);
 
-	input_position = 0;
-	input_size = 0;
+	input_read = SizePosition(0, 0);
+	input_write = SizePosition(0, 0);
 
 	print_verbose("WASAPI: detected " + itos(audio_output.channels) + " channels");
 	print_verbose("WASAPI: audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
@@ -868,6 +868,7 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 					hr = ad->audio_input.capture_client->GetNextPacketSize(&packet_length);
 					ERR_BREAK(hr != S_OK);
 				}
+				ad->input_buffer_end_write();
 			}
 
 			// If we're using the Default output device and it changed finish it so we'll re-init the output device

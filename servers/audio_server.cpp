@@ -98,22 +98,26 @@ double AudioDriver::get_time_to_next_mix() {
 void AudioDriver::input_buffer_init(int driver_buffer_frames) {
 	const int input_buffer_channels = 2;
 	input_buffer.resize(driver_buffer_frames * input_buffer_channels * 4);
-	input_position = 0;
-	input_size = 0;
+	input_read = SizePosition(0, 0);
+	input_write = SizePosition(0, 0);
 }
 
 void AudioDriver::input_buffer_write(int32_t sample) {
-	if ((int)input_position < input_buffer.size()) {
-		input_buffer.write[input_position++] = sample;
-		if ((int)input_position >= input_buffer.size()) {
-			input_position = 0;
+	if (input_write.position < input_buffer.size()) {
+		input_buffer[input_write.position++] = sample;
+		if (input_write.position >= input_buffer.size()) {
+			input_write.position = 0;
 		}
-		if ((int)input_size < input_buffer.size()) {
-			input_size++;
+		if (input_write.size < input_buffer.size()) {
+			input_write.size++;
 		}
 	} else {
-		WARN_PRINT("input_buffer_write: Invalid input_position=" + itos(input_position) + " input_buffer.size()=" + itos(input_buffer.size()));
+		WARN_PRINT("input_buffer_write: Invalid input_write.position=" + itos(input_write.position) + " input_buffer.size()=" + itos(input_buffer.size()));
 	}
+}
+
+void AudioDriver::input_buffer_end_write() {
+	input_read = input_write;
 }
 
 int AudioDriver::_get_configured_mix_rate() {
