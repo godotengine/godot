@@ -47,6 +47,7 @@ class CreateDialog : public ConfirmationDialog {
 		OTHER_TYPE
 	};
 
+	Timer *search_debounce = nullptr;
 	LineEdit *search_box = nullptr;
 	Tree *search_options = nullptr;
 

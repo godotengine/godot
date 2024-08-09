@@ -633,6 +633,11 @@
 		<member name="interface/editor/code_font_size" type="int" setter="" getter="">
 			The size of the font in the script editor. This setting does not impact the font size of the Output panel (see [member run/output/font_size]).
 		</member>
+		<member name="interface/editor/create_dialog/search_delay_msec" type="int" setter="" getter="">
+			The delay before the create dialog (i.e. "Create New Node" or "Create New Resource") actually searches what was typed.
+			Currently, the editor locks up while trying to show the elements searched, this is to prevent lock ups during typing.
+			[b]Note:[/b] Higher values are useful for substantial projects.
+		</member>
 		<member name="interface/editor/custom_display_scale" type="float" setter="" getter="">
 			The custom editor scale factor to use. This can be used for displays with very high DPI where a scale factor of 200% is not sufficient.
 			[b]Note:[/b] Only effective if [member interface/editor/display_scale] is set to [b]Custom[/b].
