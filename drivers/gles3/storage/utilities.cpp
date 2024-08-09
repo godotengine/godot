@@ -454,6 +454,13 @@ String Utilities::get_video_adapter_vendor() const {
 }
 
 RenderingDevice::DeviceType Utilities::get_video_adapter_type() const {
+	// Detect common OpenGL software rasterizers according to the reported GPU model name.
+	// See <https://github.com/pal1000/mesa-dist-win>.
+	const String adapter_name = get_video_adapter_name().to_lower();
+	if (adapter_name.contains("llvmpipe") || adapter_name.contains("softpipe") || adapter_name.contains("swr")) {
+		return RenderingDevice::DeviceType::DEVICE_TYPE_CPU;
+	}
+
 	return RenderingDevice::DeviceType::DEVICE_TYPE_OTHER;
 }
 
