@@ -38,13 +38,13 @@ class GradientTexture1D : public Texture2D {
 
 private:
 	Ref<Gradient> gradient;
-	bool update_pending = false;
+	mutable bool update_pending = false;
 	mutable RID texture;
 	int width = 256;
 	bool use_hdr = false;
 
 	void _queue_update();
-	void _update();
+	void _update() const;
 
 protected:
 	static void _bind_methods();
@@ -64,7 +64,7 @@ public:
 	virtual bool has_alpha() const override { return true; }
 
 	virtual Ref<Image> get_image() const override;
-	void update_now();
+	void update_now() const;
 
 	GradientTexture1D();
 	virtual ~GradientTexture1D();
@@ -102,9 +102,9 @@ private:
 
 	float _get_gradient_offset_at(int x, int y) const;
 
-	bool update_pending = false;
+	mutable bool update_pending = false;
 	void _queue_update();
-	void _update();
+	void _update() const;
 
 protected:
 	static void _bind_methods();
@@ -134,7 +134,7 @@ public:
 	virtual RID get_rid() const override;
 	virtual bool has_alpha() const override { return true; }
 	virtual Ref<Image> get_image() const override;
-	void update_now();
+	void update_now() const;
 
 	GradientTexture2D();
 	virtual ~GradientTexture2D();
