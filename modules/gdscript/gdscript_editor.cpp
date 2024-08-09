@@ -2113,6 +2113,7 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 	int last_assign_line = -1;
 	const GDScriptParser::ExpressionNode *last_assigned_expression = nullptr;
 	GDScriptParser::DataType id_type;
+	Variant id_value;
 	GDScriptParser::SuiteNode *suite = p_context.current_suite;
 	bool is_function_parameter = false;
 
@@ -2173,6 +2174,7 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 
 			if (_guess_identifier_type_from_base(p_context, base, p_identifier->name, base_identifier)) {
 				id_type = base_identifier.type;
+				id_value = base_identifier.value;
 			}
 		}
 	}
@@ -2291,6 +2293,7 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 
 	if (id_type.is_set() && !id_type.is_variant()) {
 		r_type.type = id_type;
+		r_type.value = id_value;
 		return true;
 	}
 
@@ -2400,6 +2403,7 @@ static bool _guess_identifier_type_from_base(GDScriptParser::CompletionContext &
 						case GDScriptParser::ClassNode::Member::ENUM:
 							r_type.type = member.m_enum->get_datatype();
 							r_type.enumeration = member.m_enum->identifier->name;
+							r_type.value = member.m_enum->dictionary;
 							return true;
 						case GDScriptParser::ClassNode::Member::ENUM_VALUE:
 							r_type = _type_from_variant(member.enum_value.value, p_context);
