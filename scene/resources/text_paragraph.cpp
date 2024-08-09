@@ -89,6 +89,10 @@ void TextParagraph::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
 
+	ClassDB::bind_method(D_METHOD("set_ellipsis_char", "char"), &TextParagraph::set_ellipsis_char);
+	ClassDB::bind_method(D_METHOD("get_ellipsis_char"), &TextParagraph::get_ellipsis_char);
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "ellipsis_char"), "set_ellipsis_char", "get_ellipsis_char");
+
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &TextParagraph::set_width);
 	ClassDB::bind_method(D_METHOD("get_width"), &TextParagraph::get_width);
 
@@ -252,10 +256,12 @@ void TextParagraph::_shape_lines() {
 					if (i < jst_to_line) {
 						TS->shaped_text_fit_to_width(lines_rid[i], line_w, jst_flags);
 					} else if (i == (visible_lines - 1)) {
+						TS->shaped_text_set_custom_ellipsis(lines_rid[visible_lines - 1], (el_char.length() > 0) ? el_char[0] : 0x2026);
 						TS->shaped_text_overrun_trim_to_width(lines_rid[visible_lines - 1], line_w, overrun_flags);
 					}
 				}
 			} else if (lines_hidden) {
+				TS->shaped_text_set_custom_ellipsis(lines_rid[visible_lines - 1], (el_char.length() > 0) ? el_char[0] : 0x2026);
 				TS->shaped_text_overrun_trim_to_width(lines_rid[visible_lines - 1], (visible_lines - 1 <= dropcap_lines) ? (width - h_offset) : width, overrun_flags);
 			}
 		} else {
@@ -281,9 +287,11 @@ void TextParagraph::_shape_lines() {
 				if (i < jst_to_line && alignment == HORIZONTAL_ALIGNMENT_FILL) {
 					TS->shaped_text_fit_to_width(lines_rid[i], line_w, jst_flags);
 					overrun_flags.set_flag(TextServer::OVERRUN_JUSTIFICATION_AWARE);
+					TS->shaped_text_set_custom_ellipsis(lines_rid[i], (el_char.length() > 0) ? el_char[0] : 0x2026);
 					TS->shaped_text_overrun_trim_to_width(lines_rid[i], line_w, overrun_flags);
 					TS->shaped_text_fit_to_width(lines_rid[i], line_w, jst_flags | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
 				} else {
+					TS->shaped_text_set_custom_ellipsis(lines_rid[i], (el_char.length() > 0) ? el_char[0] : 0x2026);
 					TS->shaped_text_overrun_trim_to_width(lines_rid[i], line_w, overrun_flags);
 				}
 			}
@@ -499,6 +507,23 @@ void TextParagraph::set_text_overrun_behavior(TextServer::OverrunBehavior p_beha
 
 TextServer::OverrunBehavior TextParagraph::get_text_overrun_behavior() const {
 	return overrun_behavior;
+}
+
+void TextParagraph::set_ellipsis_char(const String &p_char) {
+	String c = p_char;
+	if (c.length() > 1) {
+		WARN_PRINT("Ellipsis must be exactly one character long (" + itos(c.length()) + " characters given).");
+		c = c.left(1);
+	}
+	if (el_char == c) {
+		return;
+	}
+	el_char = c;
+	lines_dirty = true;
+}
+
+String TextParagraph::get_ellipsis_char() const {
+	return el_char;
 }
 
 void TextParagraph::set_width(float p_width) {

@@ -46,6 +46,10 @@ class InstancePlaceholder : public Node {
 
 	List<PropSet> stored_values;
 
+private:
+	void set_value_on_instance(InstancePlaceholder *p_placeholder, Node *p_instance, const PropSet &p_set);
+	Node *try_get_node(InstancePlaceholder *p_placeholder, Node *p_instance, const NodePath &p_path);
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;

@@ -115,7 +115,7 @@ struct str_encoder_t
       encode_byte (OpCode_BCD);
 
       // Based on:
-      // https://github.com/fonttools/fonttools/blob/97ed3a61cde03e17b8be36f866192fbd56f1d1a7/Lib/fontTools/misc/psCharStrings.py#L265-L294
+      // https://github.com/fonttools/fonttools/blob/0738c41dfbcbc213ab9263f486ef0cccc6eb5ce5/Lib/fontTools/misc/psCharStrings.py#L267-L316
 
       char buf[16];
       /* FontTools has the following comment:
@@ -133,12 +133,55 @@ struct str_encoder_t
       (void) hb_uselocale (((void) freelocale (clocale), oldlocale));
 
       char *s = buf;
+      size_t len;
+      char *comma = strchr (s, ',');
+      if (comma) // Comma for some European locales in case no uselocale available.
+	*comma = '.';
       if (s[0] == '0' && s[1] == '.')
 	s++;
       else if (s[0] == '-' && s[1] == '0' && s[2] == '.')
       {
 	s[1] = '-';
 	s++;
+      }
+      else if ((len = strlen (s)) > 3 && !strcmp (s + len - 3, "000"))
+      {
+	unsigned exponent = len - 3;
+	char *s2 = s + exponent - 1;
+	while (*s2 == '0' && exponent > 1)
+	{
+	  s2--;
+	  exponent++;
+	}
+	snprintf (s2 + 1, sizeof (buf) - (s2 + 1 - buf), "E%u", exponent);
+      }
+      else
+      {
+	char *dot = strchr (s, '.');
+	char *e = strchr (s, 'E');
+	if (dot && e)
+	{
+	  memmove (dot, dot + 1, e - (dot + 1));
+	  int exponent = atoi (e + 1);
+	  int new_exponent = exponent - (e - (dot + 1));
+	  if (new_exponent == 1)
+	  {
+	    e[-1] = '0';
+	    e[0] = '\0';
+	  }
+	  else
+	    snprintf (e - 1, sizeof (buf) - (e - 1 - buf), "E%d", new_exponent);
+	}
+      }
+      if ((s[0] == '.' && s[1] == '0') || (s[0] == '-' && s[1] == '.' && s[2] == '0'))
+      {
+	int sign = s[0] == '-';
+	char *s2 = s + sign + 1;
+	while (*s2 == '0')
+	  s2++;
+	len = strlen (s2);
+	memmove (s + sign, s2, len);
+	snprintf (s + sign + len, sizeof (buf) - (s + sign + len - buf), "E-%u", (unsigned) (strlen (s + sign) - 1));
       }
       hb_vector_t<char> nibbles;
       while (*s)
@@ -155,20 +198,22 @@ struct str_encoder_t
 	    {
 	      s++;
 	      nibbles.push (0x0C); // E-
-	      continue;
+	    } else {
+	      if (c2 == '+')
+		s++;
+	      nibbles.push (0x0B); // E
 	    }
-	    if (c2 == '+')
+	    if (*s == '0')
 	      s++;
-	    nibbles.push (0x0B); // E
 	    continue;
 	  }
 
-	  case '.': case ',': // Comma for some European locales in case no uselocale available.
+	  case '.':
 	    nibbles.push (0x0A); // .
 	    continue;
 
 	  case '-':
-	    nibbles.push (0x0E); // .
+	    nibbles.push (0x0E); // -
 	    continue;
 	}
 

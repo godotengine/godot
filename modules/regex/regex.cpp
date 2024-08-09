@@ -270,16 +270,18 @@ Ref<RegExMatch> RegEx::search(const String &p_subject, int p_offset, int p_end) 
 TypedArray<RegExMatch> RegEx::search_all(const String &p_subject, int p_offset, int p_end) const {
 	ERR_FAIL_COND_V_MSG(p_offset < 0, Array(), "RegEx search offset must be >= 0");
 
-	int last_end = -1;
+	int last_end = 0;
 	TypedArray<RegExMatch> result;
 	Ref<RegExMatch> match = search(p_subject, p_offset, p_end);
+
 	while (match.is_valid()) {
-		if (last_end == match->get_end(0)) {
-			break;
-		}
-		result.push_back(match);
 		last_end = match->get_end(0);
-		match = search(p_subject, match->get_end(0), p_end);
+		if (match->get_start(0) == last_end) {
+			last_end++;
+		}
+
+		result.push_back(match);
+		match = search(p_subject, last_end, p_end);
 	}
 	return result;
 }
@@ -332,7 +334,7 @@ String RegEx::sub(const String &p_subject, const String &p_replacement, bool p_a
 		return String();
 	}
 
-	return String(output.ptr(), olength);
+	return String(output.ptr(), olength) + p_subject.substr(length);
 }
 
 bool RegEx::is_valid() const {
@@ -368,7 +370,7 @@ PackedStringArray RegEx::get_names() const {
 
 	for (uint32_t i = 0; i < count; i++) {
 		String name = &table[i * entry_size + 1];
-		if (result.find(name) < 0) {
+		if (!result.has(name)) {
 			result.append(name);
 		}
 	}

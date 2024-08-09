@@ -9,7 +9,7 @@
 		[b]Performance:[/b] [LightmapGI] provides the best possible run-time performance for global illumination. It is suitable for low-end hardware including integrated graphics and mobile devices.
 		[b]Note:[/b] Due to how lightmaps work, most properties only have a visible effect once lightmaps are baked again.
 		[b]Note:[/b] Lightmap baking on [CSGShape3D]s and [PrimitiveMesh]es is not supported, as these cannot store UV2 data required for baking.
-		[b]Note:[/b] If no custom lightmappers are installed, [LightmapGI] can only be baked when using the Vulkan backend (Forward+ or Mobile), not OpenGL.
+		[b]Note:[/b] If no custom lightmappers are installed, [LightmapGI] can only be baked from devices that support the Forward+ or Mobile rendering backends.
 	</description>
 	<tutorials>
 		<link title="Using Lightmap global illumination">$DOCS_URL/tutorials/3d/global_illumination/using_lightmap_gi.html</link>
@@ -27,6 +27,9 @@
 		</member>
 		<member name="camera_attributes" type="CameraAttributes" setter="set_camera_attributes" getter="get_camera_attributes">
 			The [CameraAttributes] resource that specifies exposure levels to bake at. Auto-exposure and non exposure properties will be ignored. Exposure settings should be used to reduce the dynamic range present when baking. If exposure is too high, the [LightmapGI] will have banding artifacts or may have over-exposure artifacts.
+		</member>
+		<member name="denoiser_range" type="int" setter="set_denoiser_range" getter="get_denoiser_range" default="10">
+			The distance in pixels from which the denoiser samples. Lower values preserve more details, but may give blotchy results if the lightmap quality is not high enough. Only effective if [member use_denoiser] is [code]true[/code] and [member ProjectSettings.rendering/lightmapping/denoising/denoiser] is set to JNLM.
 		</member>
 		<member name="denoiser_strength" type="float" setter="set_denoiser_strength" getter="get_denoiser_strength" default="0.1">
 			The strength of denoising step applied to the generated lightmaps. Only effective if [member use_denoiser] is [code]true[/code] and [member ProjectSettings.rendering/lightmapping/denoising/denoiser] is set to JNLM.
@@ -64,6 +67,9 @@
 		<member name="quality" type="int" setter="set_bake_quality" getter="get_bake_quality" enum="LightmapGI.BakeQuality" default="1">
 			The quality preset to use when baking lightmaps. This affects bake times, but output file sizes remain mostly identical across quality levels.
 			To further speed up bake times, decrease [member bounces], disable [member use_denoiser] and increase the lightmap texel size on 3D scenes in the Import doc.
+		</member>
+		<member name="texel_scale" type="float" setter="set_texel_scale" getter="get_texel_scale" default="1.0">
+			Scales the lightmap texel density of all meshes for the current bake. This is a multiplier that builds upon the existing lightmap texel size defined in each imported 3D scene, along with the per-mesh density multiplier (which is designed to be used when the same mesh is used at different scales). Lower values will result in faster bake times.
 		</member>
 		<member name="use_denoiser" type="bool" setter="set_use_denoiser" getter="is_using_denoiser" default="true">
 			If [code]true[/code], uses a GPU-based denoising algorithm on the generated lightmap. This eliminates most noise within the generated lightmap at the cost of longer bake times. File sizes are generally not impacted significantly by the use of a denoiser, although lossless compression may do a better job at compressing a denoised image.
@@ -130,6 +136,12 @@
 		</constant>
 		<constant name="BAKE_ERROR_TEXTURE_SIZE_TOO_SMALL" value="9" enum="BakeError">
 			Lightmap baking failed as the maximum texture size is too small to fit some of the meshes marked for baking.
+		</constant>
+		<constant name="BAKE_ERROR_LIGHTMAP_TOO_SMALL" value="10" enum="BakeError">
+			Lightmap baking failed as the lightmap is too small.
+		</constant>
+		<constant name="BAKE_ERROR_ATLAS_TOO_SMALL" value="11" enum="BakeError">
+			Lightmap baking failed as the lightmap was unable to fit into an atlas.
 		</constant>
 		<constant name="ENVIRONMENT_MODE_DISABLED" value="0" enum="EnvironmentMode">
 			Ignore environment lighting when baking lightmaps.

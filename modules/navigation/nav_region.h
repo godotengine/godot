@@ -34,12 +34,12 @@
 #include "nav_base.h"
 #include "nav_utils.h"
 
+#include "core/os/rw_lock.h"
 #include "scene/resources/navigation_mesh.h"
 
 class NavRegion : public NavBase {
 	NavMap *map = nullptr;
 	Transform3D transform;
-	Ref<NavigationMesh> mesh;
 	Vector<gd::Edge::Connection> connections;
 	bool enabled = true;
 
@@ -49,6 +49,12 @@ class NavRegion : public NavBase {
 
 	/// Cache
 	LocalVector<gd::Polygon> polygons;
+
+	real_t surface_area = 0.0;
+
+	RWLock navmesh_rwlock;
+	Vector<Vector3> pending_navmesh_vertices;
+	Vector<Vector<int>> pending_navmesh_polygons;
 
 public:
 	NavRegion() {
@@ -77,10 +83,7 @@ public:
 		return transform;
 	}
 
-	void set_mesh(Ref<NavigationMesh> p_mesh);
-	const Ref<NavigationMesh> get_mesh() const {
-		return mesh;
-	}
+	void set_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh);
 
 	Vector<gd::Edge::Connection> &get_connections() {
 		return connections;
@@ -92,6 +95,10 @@ public:
 	LocalVector<gd::Polygon> const &get_polygons() const {
 		return polygons;
 	}
+
+	Vector3 get_random_point(uint32_t p_navigation_layers, bool p_uniformly) const;
+
+	real_t get_surface_area() const { return surface_area; };
 
 	bool sync();
 

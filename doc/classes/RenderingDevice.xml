@@ -14,12 +14,12 @@
 		<link title="Using compute shaders">$DOCS_URL/tutorials/shaders/compute_shaders.html</link>
 	</tutorials>
 	<methods>
-		<method name="barrier">
+		<method name="barrier" deprecated="Barriers are automatically inserted by RenderingDevice.">
 			<return type="void" />
 			<param index="0" name="from" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="32767" />
 			<param index="1" name="to" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="32767" />
 			<description>
-				Puts a memory barrier in place. This is used for synchronization to avoid data races. See also [method full_barrier], which may be useful for debugging.
+				This method does nothing.
 			</description>
 		</method>
 		<method name="buffer_clear">
@@ -27,12 +27,26 @@
 			<param index="0" name="buffer" type="RID" />
 			<param index="1" name="offset" type="int" />
 			<param index="2" name="size_bytes" type="int" />
-			<param index="3" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="32767" />
 			<description>
-				Clears the contents of the [param buffer], clearing [param size_bytes] bytes, starting at [param offset]. Always raises a memory barrier.
+				Clears the contents of the [param buffer], clearing [param size_bytes] bytes, starting at [param offset].
 				Prints an error if:
 				- the size isn't a multiple of four
 				- the region specified by [param offset] + [param size_bytes] exceeds the buffer
+				- a draw list is currently active (created by [method draw_list_begin])
+				- a compute list is currently active (created by [method compute_list_begin])
+			</description>
+		</method>
+		<method name="buffer_copy">
+			<return type="int" enum="Error" />
+			<param index="0" name="src_buffer" type="RID" />
+			<param index="1" name="dst_buffer" type="RID" />
+			<param index="2" name="src_offset" type="int" />
+			<param index="3" name="dst_offset" type="int" />
+			<param index="4" name="size" type="int" />
+			<description>
+				Copies [param size] bytes from the [param src_buffer] at [param src_offset] into [param dst_buffer] at [param dst_offset].
+				Prints an error if:
+				- [param size] exceeds the size of either [param src_buffer] or [param dst_buffer] at their corresponding offsets
 				- a draw list is currently active (created by [method draw_list_begin])
 				- a compute list is currently active (created by [method compute_list_begin])
 			</description>
@@ -52,9 +66,8 @@
 			<param index="1" name="offset" type="int" />
 			<param index="2" name="size_bytes" type="int" />
 			<param index="3" name="data" type="PackedByteArray" />
-			<param index="4" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="32767" />
 			<description>
-				Updates a region of [param size_bytes] bytes, starting at [param offset], in the buffer, with the specified [param data]. Raises a memory barrier except when [param post_barrier] is set to [constant BARRIER_MASK_NO_BARRIER].
+				Updates a region of [param size_bytes] bytes, starting at [param offset], in the buffer, with the specified [param data].
 				Prints an error if:
 				- the region specified by [param offset] + [param size_bytes] exceeds the buffer
 				- a draw list is currently active (created by [method draw_list_begin])
@@ -77,10 +90,9 @@
 		</method>
 		<method name="compute_list_begin">
 			<return type="int" />
-			<param index="0" name="allow_draw_overlap" type="bool" default="false" />
 			<description>
 				Starts a list of compute commands created with the [code]compute_*[/code] methods. The returned value should be passed to other [code]compute_list_*[/code] functions.
-				If [param allow_draw_overlap] is [code]true[/code], you may have one draw list running at the same time as one compute list. Multiple compute lists cannot be created at the same time; you must finish the previous compute list first using [method compute_list_end].
+				Multiple compute lists cannot be created at the same time; you must finish the previous compute list first using [method compute_list_end].
 				A simple compute operation might look like this (code is not a complete example):
 				[codeblock]
 				var rd = RenderingDevice.new()
@@ -126,9 +138,17 @@
 				Submits the compute list for processing on the GPU. This is the compute equivalent to [method draw_list_draw].
 			</description>
 		</method>
+		<method name="compute_list_dispatch_indirect">
+			<return type="void" />
+			<param index="0" name="compute_list" type="int" />
+			<param index="1" name="buffer" type="RID" />
+			<param index="2" name="offset" type="int" />
+			<description>
+				Submits the compute list for processing on the GPU with the given group counts stored in the [param buffer] at [param offset]. Buffer must have been created with [constant STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT] flag.
+			</description>
+		</method>
 		<method name="compute_list_end">
 			<return type="void" />
-			<param index="0" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="32767" />
 			<description>
 				Finishes a list of compute commands created with the [code]compute_*[/code] methods.
 			</description>
@@ -170,7 +190,7 @@
 			<param index="1" name="color" type="Color" />
 			<description>
 				Create a command buffer debug label region that can be displayed in third-party tools such as [url=https://renderdoc.org/]RenderDoc[/url]. All regions must be ended with a [method draw_command_end_label] call. When viewed from the linear series of submissions to a single queue, calls to [method draw_command_begin_label] and [method draw_command_end_label] must be matched and balanced.
-				The [code]VK_EXT_DEBUG_UTILS_EXTENSION_NAME[/code] Vulkan extension must be available and enabled for command buffer debug label region to work. See also [method draw_command_insert_label] and [method draw_command_end_label].
+				The [code]VK_EXT_DEBUG_UTILS_EXTENSION_NAME[/code] Vulkan extension must be available and enabled for command buffer debug label region to work. See also [method draw_command_end_label].
 			</description>
 		</method>
 		<method name="draw_command_end_label">
@@ -179,12 +199,12 @@
 				Ends the command buffer debug label region started by a [method draw_command_begin_label] call.
 			</description>
 		</method>
-		<method name="draw_command_insert_label">
+		<method name="draw_command_insert_label" deprecated="Inserting labels no longer applies due to command reordering.">
 			<return type="void" />
 			<param index="0" name="name" type="String" />
 			<param index="1" name="color" type="Color" />
 			<description>
-				Inserts a command buffer debug label region in the current command buffer. Unlike [method draw_command_begin_label], this region should not be ended with a [method draw_command_end_label] call.
+				This method does nothing.
 			</description>
 		</method>
 		<method name="draw_list_begin">
@@ -198,14 +218,13 @@
 			<param index="6" name="clear_depth" type="float" default="1.0" />
 			<param index="7" name="clear_stencil" type="int" default="0" />
 			<param index="8" name="region" type="Rect2" default="Rect2(0, 0, 0, 0)" />
-			<param index="9" name="storage_textures" type="RID[]" default="[]" />
 			<description>
 				Starts a list of raster drawing commands created with the [code]draw_*[/code] methods. The returned value should be passed to other [code]draw_list_*[/code] functions.
 				Multiple draw lists cannot be created at the same time; you must finish the previous draw list first using [method draw_list_end].
 				A simple drawing operation might look like this (code is not a complete example):
 				[codeblock]
 				var rd = RenderingDevice.new()
-				var clear_colors = PackedColorArray([Color(0, 0, 0, 0), Color(0, 0, 0, 0), Color(0, 0, 0, 0)]
+				var clear_colors = PackedColorArray([Color(0, 0, 0, 0), Color(0, 0, 0, 0), Color(0, 0, 0, 0)])
 				var draw_list = rd.draw_list_begin(framebuffers[i], RenderingDevice.INITIAL_ACTION_CLEAR, RenderingDevice.FINAL_ACTION_READ, RenderingDevice.INITIAL_ACTION_CLEAR, RenderingDevice.FINAL_ACTION_DISCARD, clear_colors)
 
 				# Draw opaque.
@@ -232,7 +251,7 @@
 				[b]Note:[/b] Cannot be used with local RenderingDevices, as these don't have a screen. If called on a local RenderingDevice, [method draw_list_begin_for_screen] returns [constant INVALID_ID].
 			</description>
 		</method>
-		<method name="draw_list_begin_split">
+		<method name="draw_list_begin_split" deprecated="Split draw lists are used automatically by RenderingDevice.">
 			<return type="PackedInt64Array" />
 			<param index="0" name="framebuffer" type="RID" />
 			<param index="1" name="splits" type="int" />
@@ -246,7 +265,7 @@
 			<param index="9" name="region" type="Rect2" default="Rect2(0, 0, 0, 0)" />
 			<param index="10" name="storage_textures" type="RID[]" default="[]" />
 			<description>
-				Variant of [method draw_list_begin] with support for multiple splits. The [param splits] parameter determines how many splits are created.
+				This method does nothing and always returns an empty [PackedInt64Array].
 			</description>
 		</method>
 		<method name="draw_list_bind_index_array">
@@ -310,7 +329,6 @@
 		</method>
 		<method name="draw_list_end">
 			<return type="void" />
-			<param index="0" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="32767" />
 			<description>
 				Finishes a list of raster drawing commands created with the [code]draw_*[/code] methods.
 			</description>
@@ -335,14 +353,14 @@
 		<method name="draw_list_switch_to_next_pass">
 			<return type="int" />
 			<description>
-				Switches to the next draw pass and returns the split's ID. Equivalent to [method draw_list_switch_to_next_pass_split] with [code]splits[/code] set to [code]1[/code].
+				Switches to the next draw pass.
 			</description>
 		</method>
-		<method name="draw_list_switch_to_next_pass_split">
+		<method name="draw_list_switch_to_next_pass_split" deprecated="Split draw lists are used automatically by RenderingDevice.">
 			<return type="PackedInt64Array" />
 			<param index="0" name="splits" type="int" />
 			<description>
-				Switches to the next draw pass, with the number of splits allocated specified in [param splits]. The return value is an array containing the ID of each split. For single-split usage, see [method draw_list_switch_to_next_pass].
+				This method does nothing and always returns an empty [PackedInt64Array].
 			</description>
 		</method>
 		<method name="framebuffer_create">
@@ -430,10 +448,10 @@
 				Tries to free an object in the RenderingDevice. To avoid memory leaks, this should be called after using an object as memory management does not occur automatically when using RenderingDevice directly.
 			</description>
 		</method>
-		<method name="full_barrier">
+		<method name="full_barrier" deprecated="Barriers are automatically inserted by RenderingDevice.">
 			<return type="void" />
 			<description>
-				Puts a [i]full[/i] memory barrier in place. This is a memory [method barrier] with all flags enabled. [method full_barrier] it should only be used for debugging as it can severely impact performance.
+				This method does nothing.
 			</description>
 		</method>
 		<method name="get_captured_timestamp_cpu_time" qualifiers="const">
@@ -581,8 +599,9 @@
 		</method>
 		<method name="screen_get_framebuffer_format" qualifiers="const">
 			<return type="int" />
+			<param index="0" name="screen" type="int" default="0" />
 			<description>
-				Returns the screen's framebuffer format.
+				Returns the framebuffer format of the given screen.
 				[b]Note:[/b] Only the main [RenderingDevice] returned by [method RenderingServer.get_rendering_device] has a format. If called on a local [RenderingDevice], this method prints an error and returns [constant INVALID_ID].
 			</description>
 		</method>
@@ -704,7 +723,6 @@
 			<param index="3" name="mipmap_count" type="int" />
 			<param index="4" name="base_layer" type="int" />
 			<param index="5" name="layer_count" type="int" />
-			<param index="6" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="32767" />
 			<description>
 				Clears the specified [param texture] by replacing all of its pixels with the specified [param color]. [param base_mipmap] and [param mipmap_count] determine which mipmaps of the texture are affected by this clear operation, while [param base_layer] and [param layer_count] determine which layers of a 3D texture (or texture array) are affected by this clear operation. For 2D textures (which only have one layer by design), [param base_layer] must be [code]0[/code] and [param layer_count] must be [code]1[/code].
 				[b]Note:[/b] [param texture] can't be cleared while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to [constant FINAL_ACTION_CONTINUE]) to clear this texture.
@@ -721,7 +739,6 @@
 			<param index="6" name="dst_mipmap" type="int" />
 			<param index="7" name="src_layer" type="int" />
 			<param index="8" name="dst_layer" type="int" />
-			<param index="9" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="32767" />
 			<description>
 				Copies the [param from_texture] to [param to_texture] with the specified [param from_pos], [param to_pos] and [param size] coordinates. The Z axis of the [param from_pos], [param to_pos] and [param size] must be [code]0[/code] for 2-dimensional textures. Source and destination mipmaps/layers must also be specified, with these parameters being [code]0[/code] for textures without mipmaps or single-layer textures. Returns [constant @GlobalScope.OK] if the texture copy was successful or [constant @GlobalScope.ERR_INVALID_PARAMETER] otherwise.
 				[b]Note:[/b] [param from_texture] texture can't be copied while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to [constant FINAL_ACTION_CONTINUE]) to copy this texture.
@@ -796,7 +813,7 @@
 				Returns the data format used to create this texture.
 			</description>
 		</method>
-		<method name="texture_get_native_handle">
+		<method name="texture_get_native_handle" deprecated="Use [method get_driver_resource] with [constant DRIVER_RESOURCE_TEXTURE] instead.">
 			<return type="int" />
 			<param index="0" name="texture" type="RID" />
 			<description>
@@ -830,7 +847,6 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="from_texture" type="RID" />
 			<param index="1" name="to_texture" type="RID" />
-			<param index="2" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="32767" />
 			<description>
 				Resolves the [param from_texture] texture onto [param to_texture] with multisample antialiasing enabled. This must be used when rendering a framebuffer for MSAA to work. Returns [constant @GlobalScope.OK] if successful, [constant @GlobalScope.ERR_INVALID_PARAMETER] otherwise.
 				[b]Note:[/b] [param from_texture] and [param to_texture] textures must have the same dimension, format and type (color or depth).
@@ -847,7 +863,6 @@
 			<param index="0" name="texture" type="RID" />
 			<param index="1" name="layer" type="int" />
 			<param index="2" name="data" type="PackedByteArray" />
-			<param index="3" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="32767" />
 			<description>
 				Updates texture data with new data, replacing the previous data in place. The updated texture data must have the same dimensions and format. For 2D textures (which only have one layer), [param layer] must be [code]0[/code]. Returns [constant @GlobalScope.OK] if the update was successful, [constant @GlobalScope.ERR_INVALID_PARAMETER] otherwise.
 				[b]Note:[/b] Updating textures is forbidden during creation of a draw or compute list.
@@ -928,44 +943,78 @@
 		<constant name="DEVICE_TYPE_MAX" value="5" enum="DeviceType">
 			Represents the size of the [enum DeviceType] enum.
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_DEVICE" value="0" enum="DriverResource">
-			Vulkan device driver resource. This is a "global" resource and ignores the RID passed in
+		<constant name="DRIVER_RESOURCE_LOGICAL_DEVICE" value="0" enum="DriverResource">
+			Specific device object based on a physical device.
+			- Vulkan: Vulkan device driver resource ([code]VkDevice[/code]). ([code]rid[/code] argument doesn't apply.)
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_PHYSICAL_DEVICE" value="1" enum="DriverResource">
-			Physical device (graphics card) driver resource.
+		<constant name="DRIVER_RESOURCE_PHYSICAL_DEVICE" value="1" enum="DriverResource">
+			Physical device the specific logical device is based on.
+			- Vulkan: [code]VkDevice[/code]. ([code]rid[/code] argument doesn't apply.)
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_INSTANCE" value="2" enum="DriverResource">
-			Vulkan instance driver resource.
+		<constant name="DRIVER_RESOURCE_TOPMOST_OBJECT" value="2" enum="DriverResource">
+			Top-most graphics API entry object.
+			- Vulkan: [code]VkInstance[/code]. ([code]rid[/code] argument doesn't apply.)
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_QUEUE" value="3" enum="DriverResource">
-			Vulkan queue driver resource.
+		<constant name="DRIVER_RESOURCE_COMMAND_QUEUE" value="3" enum="DriverResource">
+			The main graphics-compute command queue.
+			- Vulkan: [code]VkQueue[/code]. ([code]rid[/code] argument doesn't apply.)
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_QUEUE_FAMILY_INDEX" value="4" enum="DriverResource">
-			Vulkan queue family index driver resource.
+		<constant name="DRIVER_RESOURCE_QUEUE_FAMILY" value="4" enum="DriverResource">
+			The specific family the main queue belongs to.
+			- Vulkan: the queue family index, an [code]uint32_t[/code]. ([code]rid[/code] argument doesn't apply.)
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_IMAGE" value="5" enum="DriverResource">
-			Vulkan image driver resource.
+		<constant name="DRIVER_RESOURCE_TEXTURE" value="5" enum="DriverResource">
+			- Vulkan: [code]VkImage[/code].
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_IMAGE_VIEW" value="6" enum="DriverResource">
-			Vulkan image view driver resource.
+		<constant name="DRIVER_RESOURCE_TEXTURE_VIEW" value="6" enum="DriverResource">
+			The view of an owned or shared texture.
+			- Vulkan: [code]VkImageView[/code].
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_IMAGE_NATIVE_TEXTURE_FORMAT" value="7" enum="DriverResource">
-			Vulkan image native texture format driver resource.
+		<constant name="DRIVER_RESOURCE_TEXTURE_DATA_FORMAT" value="7" enum="DriverResource">
+			The native id of the data format of the texture.
+			- Vulkan: [code]VkFormat[/code].
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_SAMPLER" value="8" enum="DriverResource">
-			Vulkan sampler driver resource.
+		<constant name="DRIVER_RESOURCE_SAMPLER" value="8" enum="DriverResource">
+			- Vulkan: [code]VkSampler[/code].
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_DESCRIPTOR_SET" value="9" enum="DriverResource">
-			Vulkan [url=https://vkguide.dev/docs/chapter-4/descriptors/]descriptor set[/url] driver resource.
+		<constant name="DRIVER_RESOURCE_UNIFORM_SET" value="9" enum="DriverResource">
+			- Vulkan: [code]VkDescriptorSet[/code].
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_BUFFER" value="10" enum="DriverResource">
-			Vulkan buffer driver resource.
+		<constant name="DRIVER_RESOURCE_BUFFER" value="10" enum="DriverResource">
+			Buffer of any kind of (storage, vertex, etc.).
+			- Vulkan: [code]VkBuffer[/code].
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_COMPUTE_PIPELINE" value="11" enum="DriverResource">
-			Vulkan compute pipeline driver resource.
+		<constant name="DRIVER_RESOURCE_COMPUTE_PIPELINE" value="11" enum="DriverResource">
+			- Vulkan: [code]VkPipeline[/code].
 		</constant>
-		<constant name="DRIVER_RESOURCE_VULKAN_RENDER_PIPELINE" value="12" enum="DriverResource">
-			Vulkan render pipeline driver resource.
+		<constant name="DRIVER_RESOURCE_RENDER_PIPELINE" value="12" enum="DriverResource">
+			- Vulkan: [code]VkPipeline[/code].
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_DEVICE" value="0" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_LOGICAL_DEVICE] instead.">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_PHYSICAL_DEVICE" value="1" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_PHYSICAL_DEVICE] instead.">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_INSTANCE" value="2" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_TOPMOST_OBJECT] instead.">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_QUEUE" value="3" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_COMMAND_QUEUE] instead.">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_QUEUE_FAMILY_INDEX" value="4" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_QUEUE_FAMILY] instead.">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_IMAGE" value="5" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_TEXTURE] instead.">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_IMAGE_VIEW" value="6" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_TEXTURE_VIEW] instead.">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_IMAGE_NATIVE_TEXTURE_FORMAT" value="7" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_TEXTURE_DATA_FORMAT] instead.">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_SAMPLER" value="8" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_SAMPLER] instead.">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_DESCRIPTOR_SET" value="9" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_UNIFORM_SET] instead.">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_BUFFER" value="10" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_BUFFER] instead.">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_COMPUTE_PIPELINE" value="11" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_COMPUTE_PIPELINE] instead.">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_RENDER_PIPELINE" value="12" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_RENDER_PIPELINE] instead.">
 		</constant>
 		<constant name="DATA_FORMAT_R4G4_UNORM_PACK8" value="0" enum="DataFormat">
 			4-bit-per-channel red/green channel data format, packed into 8 bits. Values are in the [code][0.0, 1.0][/code] range.
@@ -1395,10 +1444,10 @@
 			VRAM-compressed signed red/green channel data format with normalized value. Values are in the [code][-1.0, 1.0][/code] range. The format's precision is 8 bits of red channel and 8 bits of green channel. Using BC5 texture compression (also known as S3TC RGTC).
 		</constant>
 		<constant name="DATA_FORMAT_BC6H_UFLOAT_BLOCK" value="142" enum="DataFormat">
-			VRAM-compressed unsigned red/green/blue channel data format with the floating-point value stored as-is. The format's precision is 8 bits of red channel and 8 bits of green channel. Using BC6H texture compression (also known as BPTC HDR).
+			VRAM-compressed unsigned red/green/blue channel data format with the floating-point value stored as-is. The format's precision is between 10 and 13 bits for the red/green/blue channels. Using BC6H texture compression (also known as BPTC HDR).
 		</constant>
 		<constant name="DATA_FORMAT_BC6H_SFLOAT_BLOCK" value="143" enum="DataFormat">
-			VRAM-compressed signed red/green/blue channel data format with the floating-point value stored as-is. The format's precision is between 4 and 7 bits for the red/green/blue channels and between 0 and 8 bits for the alpha channel. Using BC7 texture compression (also known as BPTC HDR).
+			VRAM-compressed signed red/green/blue channel data format with the floating-point value stored as-is. The format's precision is between 10 and 13 bits for the red/green/blue channels. Using BC6H texture compression (also known as BPTC HDR).
 		</constant>
 		<constant name="DATA_FORMAT_BC7_UNORM_BLOCK" value="144" enum="DataFormat">
 			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. The format's precision is between 4 and 7 bits for the red/green/blue channels and between 0 and 8 bits for the alpha channel. Also known as BPTC LDR.
@@ -1428,13 +1477,13 @@
 			11-bit VRAM-compressed unsigned red channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. Using ETC2 texture compression.
 		</constant>
 		<constant name="DATA_FORMAT_EAC_R11_SNORM_BLOCK" value="153" enum="DataFormat">
-			11-bit VRAM-compressed signed red channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. Using ETC2 texture compression.
+			11-bit VRAM-compressed signed red channel data format with normalized value. Values are in the [code][-1.0, 1.0][/code] range. Using ETC2 texture compression.
 		</constant>
 		<constant name="DATA_FORMAT_EAC_R11G11_UNORM_BLOCK" value="154" enum="DataFormat">
 			11-bit VRAM-compressed unsigned red/green channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. Using ETC2 texture compression.
 		</constant>
 		<constant name="DATA_FORMAT_EAC_R11G11_SNORM_BLOCK" value="155" enum="DataFormat">
-			11-bit VRAM-compressed signed red/green channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. Using ETC2 texture compression.
+			11-bit VRAM-compressed signed red/green channel data format with normalized value. Values are in the [code][-1.0, 1.0][/code] range. Using ETC2 texture compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_4x4_UNORM_BLOCK" value="156" enum="DataFormat">
 			VRAM-compressed unsigned floating-point data format with normalized value, packed in 4×4 blocks (highest quality). Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
@@ -2089,8 +2138,10 @@
 			Represents the size of the [enum BlendOperation] enum.
 		</constant>
 		<constant name="DYNAMIC_STATE_LINE_WIDTH" value="1" enum="PipelineDynamicStateFlags" is_bitfield="true">
+			Allows dynamically changing the width of rendering lines.
 		</constant>
 		<constant name="DYNAMIC_STATE_DEPTH_BIAS" value="2" enum="PipelineDynamicStateFlags" is_bitfield="true">
+			Allows dynamically changing the depth bias.
 		</constant>
 		<constant name="DYNAMIC_STATE_BLEND_CONSTANTS" value="4" enum="PipelineDynamicStateFlags" is_bitfield="true">
 		</constant>
@@ -2102,38 +2153,40 @@
 		</constant>
 		<constant name="DYNAMIC_STATE_STENCIL_REFERENCE" value="64" enum="PipelineDynamicStateFlags" is_bitfield="true">
 		</constant>
-		<constant name="INITIAL_ACTION_CLEAR" value="0" enum="InitialAction">
-			Start rendering and clear the whole framebuffer.
+		<constant name="INITIAL_ACTION_LOAD" value="0" enum="InitialAction">
+			Load the previous contents of the framebuffer.
 		</constant>
-		<constant name="INITIAL_ACTION_CLEAR_REGION" value="1" enum="InitialAction">
-			Start rendering and clear the framebuffer in the specified region.
+		<constant name="INITIAL_ACTION_CLEAR" value="1" enum="InitialAction">
+			Clear the whole framebuffer or its specified region.
 		</constant>
-		<constant name="INITIAL_ACTION_CLEAR_REGION_CONTINUE" value="2" enum="InitialAction">
-			Continue rendering and clear the framebuffer in the specified region. Framebuffer must have been left in [constant FINAL_ACTION_CONTINUE] state as the final action previously.
+		<constant name="INITIAL_ACTION_DISCARD" value="2" enum="InitialAction">
+			Ignore the previous contents of the framebuffer. This is the fastest option if you'll overwrite all of the pixels and don't need to read any of them.
 		</constant>
-		<constant name="INITIAL_ACTION_KEEP" value="3" enum="InitialAction">
-			Start rendering, but keep attached color texture contents. If the framebuffer was previously used to read in a shader, this will automatically insert a layout transition.
-		</constant>
-		<constant name="INITIAL_ACTION_DROP" value="4" enum="InitialAction">
-			Start rendering, ignore what is there; write above it. In general, this is the fastest option when you will be writing every single pixel and you don't need a clear color.
-		</constant>
-		<constant name="INITIAL_ACTION_CONTINUE" value="5" enum="InitialAction">
-			Continue rendering. Framebuffer must have been left in [constant FINAL_ACTION_CONTINUE] state as the final action previously.
-		</constant>
-		<constant name="INITIAL_ACTION_MAX" value="6" enum="InitialAction">
+		<constant name="INITIAL_ACTION_MAX" value="3" enum="InitialAction">
 			Represents the size of the [enum InitialAction] enum.
 		</constant>
-		<constant name="FINAL_ACTION_READ" value="0" enum="FinalAction">
-			Store the texture for reading and make it read-only if it has the [constant TEXTURE_USAGE_SAMPLING_BIT] bit (only applies to color, depth and stencil attachments).
+		<constant name="INITIAL_ACTION_CLEAR_REGION" value="1" enum="InitialAction" deprecated="Use [constant INITIAL_ACTION_CLEAR] instead.">
+		</constant>
+		<constant name="INITIAL_ACTION_CLEAR_REGION_CONTINUE" value="1" enum="InitialAction" deprecated="Use [constant INITIAL_ACTION_LOAD] instead.">
+		</constant>
+		<constant name="INITIAL_ACTION_KEEP" value="0" enum="InitialAction" deprecated="Use [constant INITIAL_ACTION_LOAD] instead.">
+		</constant>
+		<constant name="INITIAL_ACTION_DROP" value="2" enum="InitialAction" deprecated="Use [constant INITIAL_ACTION_DISCARD] instead.">
+		</constant>
+		<constant name="INITIAL_ACTION_CONTINUE" value="0" enum="InitialAction" deprecated="Use [constant INITIAL_ACTION_LOAD] instead.">
+		</constant>
+		<constant name="FINAL_ACTION_STORE" value="0" enum="FinalAction">
+			Store the result of the draw list in the framebuffer. This is generally what you want to do.
 		</constant>
 		<constant name="FINAL_ACTION_DISCARD" value="1" enum="FinalAction">
-			Discard the texture data and make it read-only if it has the [constant TEXTURE_USAGE_SAMPLING_BIT] bit (only applies to color, depth and stencil attachments).
+			Discard the contents of the framebuffer. This is the fastest option if you don't need to use the results of the draw list.
 		</constant>
-		<constant name="FINAL_ACTION_CONTINUE" value="2" enum="FinalAction">
-			Store the texture and continue for further processing. Similar to [constant FINAL_ACTION_READ], but does not make the texture read-only if it has the [constant TEXTURE_USAGE_SAMPLING_BIT] bit.
-		</constant>
-		<constant name="FINAL_ACTION_MAX" value="3" enum="FinalAction">
+		<constant name="FINAL_ACTION_MAX" value="2" enum="FinalAction">
 			Represents the size of the [enum FinalAction] enum.
+		</constant>
+		<constant name="FINAL_ACTION_READ" value="0" enum="FinalAction" deprecated="Use [constant FINAL_ACTION_STORE] instead.">
+		</constant>
+		<constant name="FINAL_ACTION_CONTINUE" value="0" enum="FinalAction" deprecated="Use [constant FINAL_ACTION_STORE] instead.">
 		</constant>
 		<constant name="SHADER_STAGE_VERTEX" value="0" enum="ShaderStage">
 			Vertex shader stage. This can be used to manipulate vertices from a shader (but not create new vertices).

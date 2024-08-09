@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,30 +23,24 @@
 #ifndef _TVG_SW_COMMON_H_
 #define _TVG_SW_COMMON_H_
 
+#include <algorithm>
 #include "tvgCommon.h"
 #include "tvgRender.h"
-
-#include <algorithm>
-
-#if 0
-#include <sys/time.h>
-static double timeStamp()
-{
-   struct timeval tv;
-   gettimeofday(&tv, NULL);
-   return (tv.tv_sec + tv.tv_usec / 1000000.0);
-}
-#endif
 
 #define SW_CURVE_TYPE_POINT 0
 #define SW_CURVE_TYPE_CUBIC 1
 #define SW_ANGLE_PI (180L << 16)
 #define SW_ANGLE_2PI (SW_ANGLE_PI << 1)
 #define SW_ANGLE_PI2 (SW_ANGLE_PI >> 1)
-#define SW_ANGLE_PI4 (SW_ANGLE_PI >> 2)
 
 using SwCoord = signed long;
 using SwFixed = signed long long;
+
+
+static inline float TO_FLOAT(SwCoord val)
+{
+    return static_cast<float>(val) / 64.0f;
+}
 
 struct SwPoint
 {
@@ -92,6 +86,10 @@ struct SwPoint
         else return false;
     }
 
+    Point toPoint() const
+    {
+        return {TO_FLOAT(x),  TO_FLOAT(y)};
+    }
 };
 
 struct SwSize
@@ -252,13 +250,26 @@ struct SwSurface : Surface
     SwAlpha alphas[4];                    //Alpha:2, InvAlpha:3, Luma:4, InvLuma:5
     SwBlender blender = nullptr;          //blender (optional)
     SwCompositor* compositor = nullptr;   //compositor (optional)
-    BlendMethod          blendMethod;     //blending method (uint8_t)
+    BlendMethod blendMethod;              //blending method (uint8_t)
 
     SwAlpha alpha(CompositeMethod method)
     {
         auto idx = (int)(method) - 2;       //0: None, 1: ClipPath
         return alphas[idx > 3 ? 0 : idx];   //CompositeMethod has only four Matting methods.
     }
+
+    SwSurface()
+    {
+    }
+
+    SwSurface(const SwSurface* rhs) : Surface(rhs)
+    {
+        join = rhs->join;
+        memcpy(alphas, rhs->alphas, sizeof(alphas));
+        blender = rhs->blender;
+        compositor = rhs->compositor;
+        blendMethod = rhs->blendMethod;
+     }
 };
 
 struct SwCompositor : Compositor

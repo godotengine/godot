@@ -36,7 +36,7 @@
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
 // Specialized DisplayServer for unittests based on DisplayServerHeadless, that
-// additionally supports rudimentary InputEvent handling and mouse position.
+// additionally supports things like mouse enter/exit events and clipboard.
 class DisplayServerMock : public DisplayServerHeadless {
 private:
 	friend class DisplayServer;
@@ -45,7 +45,9 @@ private:
 	CursorShape cursor_shape = CursorShape::CURSOR_ARROW;
 	bool window_over = false;
 	Callable event_callback;
-	Callable input_event_callback;
+
+	String clipboard_text;
+	String primary_clipboard_text;
 
 	static Vector<String> get_rendering_drivers_func() {
 		Vector<String> drivers;
@@ -53,20 +55,10 @@ private:
 		return drivers;
 	}
 
-	static DisplayServer *create_func(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
+	static DisplayServer *create_func(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
 		r_error = OK;
 		RasterizerDummy::make_current();
 		return memnew(DisplayServerMock());
-	}
-
-	static void _dispatch_input_events(const Ref<InputEvent> &p_event) {
-		static_cast<DisplayServerMock *>(get_singleton())->_dispatch_input_event(p_event);
-	}
-
-	void _dispatch_input_event(const Ref<InputEvent> &p_event) {
-		if (input_event_callback.is_valid()) {
-			input_event_callback.call(p_event);
-		}
 	}
 
 	void _set_mouse_position(const Point2i &p_position) {
@@ -86,7 +78,7 @@ private:
 	}
 
 	void _send_window_event(WindowEvent p_event) {
-		if (!event_callback.is_null()) {
+		if (event_callback.is_valid()) {
 			Variant event = int(p_event);
 			event_callback.call(event);
 		}
@@ -97,6 +89,8 @@ public:
 		switch (p_feature) {
 			case FEATURE_MOUSE:
 			case FEATURE_CURSOR_SHAPE:
+			case FEATURE_CLIPBOARD:
+			case FEATURE_CLIPBOARD_PRIMARY:
 				return true;
 			default: {
 			}
@@ -131,6 +125,11 @@ public:
 
 	virtual Point2i mouse_get_position() const override { return mouse_position; }
 
+	virtual void clipboard_set(const String &p_text) override { clipboard_text = p_text; }
+	virtual String clipboard_get() const override { return clipboard_text; }
+	virtual void clipboard_set_primary(const String &p_text) override { primary_clipboard_text = p_text; }
+	virtual String clipboard_get_primary() const override { return primary_clipboard_text; }
+
 	virtual Size2i window_get_size(WindowID p_window = MAIN_WINDOW_ID) const override {
 		return Size2i(1920, 1080);
 	}
@@ -143,18 +142,9 @@ public:
 		event_callback = p_callable;
 	}
 
-	virtual void window_set_input_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override {
-		input_event_callback = p_callable;
-	}
-
 	static void register_mock_driver() {
 		register_create_function("mock", create_func, get_rendering_drivers_func);
 	}
-
-	DisplayServerMock() {
-		Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
-	}
-	~DisplayServerMock() {}
 };
 
 #endif // DISPLAY_SERVER_MOCK_H

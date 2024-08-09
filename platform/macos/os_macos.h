@@ -32,7 +32,7 @@
 #define OS_MACOS_H
 
 #include "crash_handler_macos.h"
-#include "joypad_macos.h"
+#import "joypad_macos.h"
 
 #include "core/input/input.h"
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
@@ -85,7 +85,7 @@ public:
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 
-	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr) override;
+	virtual Error open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data = nullptr) override;
 
 	virtual MainLoop *get_main_loop() const override;
 
@@ -98,7 +98,7 @@ public:
 
 	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const override;
 
-	virtual Error shell_open(String p_uri) override;
+	virtual Error shell_open(const String &p_uri) override;
 	virtual Error shell_show_in_file_manager(String p_path, bool p_open_folder) override;
 
 	virtual String get_locale() const override;
@@ -109,6 +109,8 @@ public:
 	virtual String get_executable_path() const override;
 	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) override;
 	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) override;
+	virtual Error kill(const ProcessID &p_pid) override;
+	virtual bool is_process_running(const ProcessID &p_pid) const override;
 
 	virtual String get_unique_id() const override;
 	virtual String get_processor_name() const override;

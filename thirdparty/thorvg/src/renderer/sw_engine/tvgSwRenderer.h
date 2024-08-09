@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,12 +43,13 @@ public:
     bool renderShape(RenderData data) override;
     bool renderImage(RenderData data) override;
     bool postRender() override;
-    bool dispose(RenderData data) override;
+    void dispose(RenderData data) override;
     RenderRegion region(RenderData data) override;
     RenderRegion viewport() override;
     bool viewport(const RenderRegion& vp) override;
     bool blend(BlendMethod method) override;
     ColorSpace colorSpace() override;
+    const Surface* mainSurface() override;
 
     bool clear() override;
     bool sync() override;

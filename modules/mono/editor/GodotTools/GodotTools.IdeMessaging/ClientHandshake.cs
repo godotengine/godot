@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
 namespace GodotTools.IdeMessaging
@@ -9,7 +10,7 @@ namespace GodotTools.IdeMessaging
 
         public string GetHandshakeLine(string identity) => $"{ClientHandshakeBase},{identity}";
 
-        public bool IsValidPeerHandshake(string handshake, out string identity, ILogger logger)
+        public bool IsValidPeerHandshake(string handshake, [NotNullWhen(true)] out string? identity, ILogger logger)
         {
             identity = null;
 

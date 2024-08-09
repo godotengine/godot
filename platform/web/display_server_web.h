@@ -82,8 +82,29 @@ private:
 	uint64_t last_click_ms = 0;
 	MouseButton last_click_button_index = MouseButton::NONE;
 
+	bool ime_active = false;
+	bool ime_started = false;
+	String ime_text;
+	Vector2i ime_selection;
+
+	struct KeyEvent {
+		bool pressed = false;
+		bool echo = false;
+		bool raw = false;
+		Key keycode = Key::NONE;
+		Key physical_keycode = Key::NONE;
+		Key key_label = Key::NONE;
+		uint32_t unicode = 0;
+		KeyLocation location = KeyLocation::UNSPECIFIED;
+		int mod = 0;
+	};
+
+	Vector<KeyEvent> key_event_buffer;
+	int key_event_pos = 0;
+
 	bool swap_cancel_ok = false;
 	bool tts = false;
+	NativeMenu *native_menu = nullptr;
 
 	// utilities
 	static void dom2godot_mod(Ref<InputEventWithModifiers> ev, int p_mod, Key p_keycode);
@@ -108,6 +129,8 @@ private:
 	static void _gamepad_callback(int p_index, int p_connected, const String &p_id, const String &p_guid);
 	WASM_EXPORT static void js_utterance_callback(int p_event, int p_id, int p_pos);
 	static void _js_utterance_callback(int p_event, int p_id, int p_pos);
+	WASM_EXPORT static void ime_callback(int p_type, const char *p_text);
+	static void _ime_callback(int p_type, const String &p_text);
 	WASM_EXPORT static void request_quit_callback();
 	static void _request_quit_callback();
 	WASM_EXPORT static void window_blur_callback();
@@ -122,9 +145,10 @@ private:
 	static void _drop_files_js_callback(const Vector<String> &p_files);
 
 	void process_joypads();
+	void process_keys();
 
 	static Vector<String> get_rendering_drivers_func();
-	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error);
+	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error);
 
 	static void _dispatch_input_event(const Ref<InputEvent> &p_event);
 
@@ -161,6 +185,13 @@ public:
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
 	virtual Point2i mouse_get_position() const override;
+
+	// ime
+	virtual void window_set_ime_active(const bool p_active, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_set_ime_position(const Point2i &p_pos, WindowID p_window = MAIN_WINDOW_ID) override;
+
+	virtual Point2i ime_get_selection() const override;
+	virtual String ime_get_text() const override;
 
 	// touch
 	virtual bool is_touchscreen_available() const override;
@@ -247,7 +278,7 @@ public:
 	virtual void swap_buffers() override;
 
 	static void register_web_driver();
-	DisplayServerWeb(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, int p_screen, Error &r_error);
+	DisplayServerWeb(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, int p_screen, Context p_context, Error &r_error);
 	~DisplayServerWeb();
 };
 

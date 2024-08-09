@@ -31,6 +31,7 @@
 #if defined(WINDOWS_ENABLED)
 
 #include "dir_access_windows.h"
+#include "file_access_windows.h"
 
 #include "core/config/project_settings.h"
 #include "core/os/memory.h"
@@ -67,7 +68,7 @@ struct DirAccessWindowsPrivate {
 	WIN32_FIND_DATAW fu; // Unicode version.
 };
 
-String DirAccessWindows::fix_path(String p_path) const {
+String DirAccessWindows::fix_path(const String &p_path) const {
 	String r_path = DirAccess::fix_path(p_path);
 	if (r_path.is_absolute_path() && !r_path.is_network_share_path() && r_path.length() > MAX_PATH) {
 		r_path = "\\\\?\\" + r_path.replace("/", "\\");
@@ -175,6 +176,13 @@ Error DirAccessWindows::make_dir(String p_dir) {
 	if (p_dir.is_relative_path()) {
 		p_dir = current_dir.path_join(p_dir);
 		p_dir = fix_path(p_dir);
+	}
+
+	if (FileAccessWindows::is_path_invalid(p_dir)) {
+#ifdef DEBUG_ENABLED
+		WARN_PRINT("The path :" + p_dir + " is a reserved Windows system pipe, so it can't be used for creating directories.");
+#endif
+		return ERR_INVALID_PARAMETER;
 	}
 
 	p_dir = p_dir.simplify_path().replace("/", "\\");
@@ -385,6 +393,66 @@ bool DirAccessWindows::is_case_sensitive(const String &p_path) const {
 		return file_info.Flags & NT_FILE_CS_FLAG_CASE_SENSITIVE_DIR;
 	} else {
 		return false;
+	}
+}
+
+bool DirAccessWindows::is_link(String p_file) {
+	String f = p_file;
+
+	if (!f.is_absolute_path()) {
+		f = get_current_dir().path_join(f);
+	}
+	f = fix_path(f);
+
+	DWORD attr = GetFileAttributesW((LPCWSTR)(f.utf16().get_data()));
+	if (attr == INVALID_FILE_ATTRIBUTES) {
+		return false;
+	}
+
+	return (attr & FILE_ATTRIBUTE_REPARSE_POINT);
+}
+
+String DirAccessWindows::read_link(String p_file) {
+	String f = p_file;
+
+	if (!f.is_absolute_path()) {
+		f = get_current_dir().path_join(f);
+	}
+	f = fix_path(f);
+
+	HANDLE hfile = CreateFileW((LPCWSTR)(f.utf16().get_data()), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+	if (hfile == INVALID_HANDLE_VALUE) {
+		return f;
+	}
+
+	DWORD ret = GetFinalPathNameByHandleW(hfile, nullptr, 0, VOLUME_NAME_DOS | FILE_NAME_NORMALIZED);
+	if (ret == 0) {
+		return f;
+	}
+	Char16String cs;
+	cs.resize(ret + 1);
+	GetFinalPathNameByHandleW(hfile, (LPWSTR)cs.ptrw(), ret, VOLUME_NAME_DOS | FILE_NAME_NORMALIZED);
+	CloseHandle(hfile);
+
+	return String::utf16((const char16_t *)cs.ptr(), ret).trim_prefix(R"(\\?\)");
+}
+
+Error DirAccessWindows::create_link(String p_source, String p_target) {
+	if (p_target.is_relative_path()) {
+		p_target = get_current_dir().path_join(p_target);
+	}
+
+	p_source = fix_path(p_source);
+	p_target = fix_path(p_target);
+
+	DWORD file_attr = GetFileAttributesW((LPCWSTR)(p_source.utf16().get_data()));
+	bool is_dir = (file_attr & FILE_ATTRIBUTE_DIRECTORY);
+
+	DWORD flags = ((is_dir) ? SYMBOLIC_LINK_FLAG_DIRECTORY : 0) | SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE;
+	if (CreateSymbolicLinkW((LPCWSTR)p_target.utf16().get_data(), (LPCWSTR)p_source.utf16().get_data(), flags) != 0) {
+		return OK;
+	} else {
+		return FAILED;
 	}
 }
 

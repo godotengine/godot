@@ -40,7 +40,7 @@
 #include "scene/resources/mesh.h"
 #include "servers/rendering/renderer_scene_occlusion_cull.h"
 
-#include <embree3/rtcore.h>
+#include <embree4/rtcore.h>
 
 class RaycastOcclusionCull : public RendererSceneOcclusionCull {
 	typedef RTCRayHit16 CameraRayTile;
@@ -163,8 +163,10 @@ private:
 	HashMap<RID, Scenario> scenarios;
 	HashMap<RID, RaycastHZBuffer> buffers;
 	RS::ViewportOcclusionCullingBuildQuality build_quality;
+	bool _jitter_enabled = false;
 
 	void _init_embree();
+	Projection _jitter_projection(const Projection &p_cam_projection, const Size2i &p_viewport_size);
 
 public:
 	virtual bool is_occluder(RID p_rid) override;

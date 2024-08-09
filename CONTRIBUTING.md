@@ -3,7 +3,7 @@
 This document summarizes the most important points for people interested in
 contributing to Godot, especially via bug reports or pull requests.
 
-The Godot documentation has a dedicated [Contributing section](https://docs.godotengine.org/en/latest/contributing/ways_to_contribute.html)
+The Godot documentation has a dedicated [Contributing section](https://docs.godotengine.org/en/latest/contributing/how_to_contribute.html)
 which details these points and more, and is a recommended read.
 
 ## Table of contents
@@ -63,7 +63,7 @@ In addition to the following tips, also take a look at the
 [Engine development guide](https://docs.godotengine.org/en/latest/contributing/development/index.html)
 for an introduction to developing on Godot.
 
-The [Contributing docs](https://docs.godotengine.org/en/latest/contributing/ways_to_contribute.html)
+The [Contributing docs](https://docs.godotengine.org/en/latest/contributing/how_to_contribute.html)
 also have important information on the [PR workflow](https://docs.godotengine.org/en/latest/contributing/workflow/pr_workflow.html)
 (with a helpful guide for Git usage), and our [Code style guidelines](https://docs.godotengine.org/en/latest/contributing/development/code_style_guidelines.html)
 which all contributions need to follow.
@@ -113,10 +113,11 @@ specify the engine area affected by the commit. Some examples:
 - Core: Fix `Object::has_method()` for script static methods
 
 If your commit fixes a reported issue, please include it in the _description_
-of the commit (not in the title) using one of the
+of the PR (not in the title, or the commit message) using one of the
 [GitHub closing keywords](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)
 such as "Fixes #1234". This will cause the issue to be closed automatically if
-the PR is merged.
+the PR is merged. Adding it to the commit message is easier, but adds a lot of
+unnecessary updates in the issue distracting from the thread.
 
 Here's an example of a well-formatted commit message (note how the extended
 description is also manually wrapped at 80 chars for readability):
@@ -131,8 +132,6 @@ unwanted side effects in the physics engine.
 By fixing the regulation system via an added binding to the internal feature,
 this commit now ensures that Godot will not go past the ebullition temperature
 of cooking oil under normal atmospheric conditions.
-
-Fixes #1340.
 ```
 
 **Note:** When using the GitHub online editor or its drag-and-drop

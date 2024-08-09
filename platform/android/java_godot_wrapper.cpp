@@ -72,14 +72,15 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_get_granted_permissions = p_env->GetMethodID(godot_class, "getGrantedPermissions", "()[Ljava/lang/String;");
 	_get_ca_certificates = p_env->GetMethodID(godot_class, "getCACertificates", "()Ljava/lang/String;");
 	_init_input_devices = p_env->GetMethodID(godot_class, "initInputDevices", "()V");
-	_vibrate = p_env->GetMethodID(godot_class, "vibrate", "(I)V");
+	_vibrate = p_env->GetMethodID(godot_class, "vibrate", "(II)V");
 	_get_input_fallback_mapping = p_env->GetMethodID(godot_class, "getInputFallbackMapping", "()Ljava/lang/String;");
 	_on_godot_setup_completed = p_env->GetMethodID(godot_class, "onGodotSetupCompleted", "()V");
 	_on_godot_main_loop_started = p_env->GetMethodID(godot_class, "onGodotMainLoopStarted", "()V");
+	_on_godot_terminating = p_env->GetMethodID(godot_class, "onGodotTerminating", "()V");
 	_create_new_godot_instance = p_env->GetMethodID(godot_class, "createNewGodotInstance", "([Ljava/lang/String;)I");
 	_get_render_view = p_env->GetMethodID(godot_class, "getRenderView", "()Lorg/godotengine/godot/GodotRenderView;");
-	_begin_benchmark_measure = p_env->GetMethodID(godot_class, "nativeBeginBenchmarkMeasure", "(Ljava/lang/String;)V");
-	_end_benchmark_measure = p_env->GetMethodID(godot_class, "nativeEndBenchmarkMeasure", "(Ljava/lang/String;)V");
+	_begin_benchmark_measure = p_env->GetMethodID(godot_class, "nativeBeginBenchmarkMeasure", "(Ljava/lang/String;Ljava/lang/String;)V");
+	_end_benchmark_measure = p_env->GetMethodID(godot_class, "nativeEndBenchmarkMeasure", "(Ljava/lang/String;Ljava/lang/String;)V");
 	_dump_benchmark = p_env->GetMethodID(godot_class, "nativeDumpBenchmark", "(Ljava/lang/String;)V");
 	_get_gdextension_list_config_file = p_env->GetMethodID(godot_class, "getGDExtensionConfigFiles", "()[Ljava/lang/String;");
 	_has_feature = p_env->GetMethodID(godot_class, "hasFeature", "(Ljava/lang/String;)Z");
@@ -136,6 +137,16 @@ void GodotJavaWrapper::on_godot_main_loop_started(JNIEnv *p_env) {
 	}
 }
 
+void GodotJavaWrapper::on_godot_terminating(JNIEnv *p_env) {
+	if (_on_godot_terminating) {
+		if (p_env == nullptr) {
+			p_env = get_jni_env();
+		}
+		ERR_FAIL_NULL(p_env);
+		p_env->CallVoidMethod(godot_instance, _on_godot_terminating);
+	}
+}
+
 void GodotJavaWrapper::restart(JNIEnv *p_env) {
 	if (_restart) {
 		if (p_env == nullptr) {
@@ -172,6 +183,8 @@ void GodotJavaWrapper::alert(const String &p_message, const String &p_title) {
 		jstring jStrMessage = env->NewStringUTF(p_message.utf8().get_data());
 		jstring jStrTitle = env->NewStringUTF(p_title.utf8().get_data());
 		env->CallVoidMethod(godot_instance, _alert, jStrMessage, jStrTitle);
+		env->DeleteLocalRef(jStrMessage);
+		env->DeleteLocalRef(jStrTitle);
 	}
 }
 
@@ -231,6 +244,7 @@ void GodotJavaWrapper::set_clipboard(const String &p_text) {
 		ERR_FAIL_NULL(env);
 		jstring jStr = env->NewStringUTF(p_text.utf8().get_data());
 		env->CallVoidMethod(godot_instance, _set_clipboard, jStr);
+		env->DeleteLocalRef(jStr);
 	}
 }
 
@@ -253,7 +267,9 @@ bool GodotJavaWrapper::request_permission(const String &p_name) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL_V(env, false);
 		jstring jStrName = env->NewStringUTF(p_name.utf8().get_data());
-		return env->CallBooleanMethod(godot_instance, _request_permission, jStrName);
+		bool result = env->CallBooleanMethod(godot_instance, _request_permission, jStrName);
+		env->DeleteLocalRef(jStrName);
+		return result;
 	} else {
 		return false;
 	}
@@ -326,21 +342,31 @@ void GodotJavaWrapper::init_input_devices() {
 	}
 }
 
-void GodotJavaWrapper::vibrate(int p_duration_ms) {
+void GodotJavaWrapper::vibrate(int p_duration_ms, float p_amplitude) {
 	if (_vibrate) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL(env);
-		env->CallVoidMethod(godot_instance, _vibrate, p_duration_ms);
+
+		int j_amplitude = -1.0;
+
+		if (p_amplitude != -1.0) {
+			j_amplitude = CLAMP(int(p_amplitude * 255), 1, 255);
+		}
+
+		env->CallVoidMethod(godot_instance, _vibrate, p_duration_ms, j_amplitude);
 	}
 }
 
-int GodotJavaWrapper::create_new_godot_instance(List<String> args) {
+int GodotJavaWrapper::create_new_godot_instance(const List<String> &args) {
 	if (_create_new_godot_instance) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL_V(env, 0);
 		jobjectArray jargs = env->NewObjectArray(args.size(), env->FindClass("java/lang/String"), env->NewStringUTF(""));
-		for (int i = 0; i < args.size(); i++) {
-			env->SetObjectArrayElement(jargs, i, env->NewStringUTF(args[i].utf8().get_data()));
+		int i = 0;
+		for (List<String>::ConstIterator itr = args.begin(); itr != args.end(); ++itr, ++i) {
+			jstring j_arg = env->NewStringUTF(itr->utf8().get_data());
+			env->SetObjectArrayElement(jargs, i, j_arg);
+			env->DeleteLocalRef(j_arg);
 		}
 		return env->CallIntMethod(godot_instance, _create_new_godot_instance, jargs);
 	} else {
@@ -348,21 +374,27 @@ int GodotJavaWrapper::create_new_godot_instance(List<String> args) {
 	}
 }
 
-void GodotJavaWrapper::begin_benchmark_measure(const String &p_label) {
+void GodotJavaWrapper::begin_benchmark_measure(const String &p_context, const String &p_label) {
 	if (_begin_benchmark_measure) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL(env);
+		jstring j_context = env->NewStringUTF(p_context.utf8().get_data());
 		jstring j_label = env->NewStringUTF(p_label.utf8().get_data());
-		env->CallVoidMethod(godot_instance, _begin_benchmark_measure, j_label);
+		env->CallVoidMethod(godot_instance, _begin_benchmark_measure, j_context, j_label);
+		env->DeleteLocalRef(j_context);
+		env->DeleteLocalRef(j_label);
 	}
 }
 
-void GodotJavaWrapper::end_benchmark_measure(const String &p_label) {
+void GodotJavaWrapper::end_benchmark_measure(const String &p_context, const String &p_label) {
 	if (_end_benchmark_measure) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL(env);
+		jstring j_context = env->NewStringUTF(p_context.utf8().get_data());
 		jstring j_label = env->NewStringUTF(p_label.utf8().get_data());
-		env->CallVoidMethod(godot_instance, _end_benchmark_measure, j_label);
+		env->CallVoidMethod(godot_instance, _end_benchmark_measure, j_context, j_label);
+		env->DeleteLocalRef(j_context);
+		env->DeleteLocalRef(j_label);
 	}
 }
 
@@ -372,6 +404,7 @@ void GodotJavaWrapper::dump_benchmark(const String &benchmark_file) {
 		ERR_FAIL_NULL(env);
 		jstring j_benchmark_file = env->NewStringUTF(benchmark_file.utf8().get_data());
 		env->CallVoidMethod(godot_instance, _dump_benchmark, j_benchmark_file);
+		env->DeleteLocalRef(j_benchmark_file);
 	}
 }
 
@@ -381,7 +414,9 @@ bool GodotJavaWrapper::has_feature(const String &p_feature) const {
 		ERR_FAIL_NULL_V(env, false);
 
 		jstring j_feature = env->NewStringUTF(p_feature.utf8().get_data());
-		return env->CallBooleanMethod(godot_instance, _has_feature, j_feature);
+		bool result = env->CallBooleanMethod(godot_instance, _has_feature, j_feature);
+		env->DeleteLocalRef(j_feature);
+		return result;
 	} else {
 		return false;
 	}

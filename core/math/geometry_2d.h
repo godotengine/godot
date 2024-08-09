@@ -119,6 +119,10 @@ public:
 		}
 	}
 
+	static real_t get_distance_to_segment(const Vector2 &p_point, const Vector2 *p_segment) {
+		return p_point.distance_to(get_closest_point_to_segment(p_point, p_segment));
+	}
+
 	static bool is_point_in_triangle(const Vector2 &s, const Vector2 &a, const Vector2 &b, const Vector2 &c) {
 		Vector2 an = a - s;
 		Vector2 bn = b - s;
@@ -249,6 +253,28 @@ public:
 		return -1;
 	}
 
+	static bool segment_intersects_rect(const Vector2 &p_from, const Vector2 &p_to, const Rect2 &p_rect) {
+		if (p_rect.has_point(p_from) || p_rect.has_point(p_to)) {
+			return true;
+		}
+
+		const Vector2 rect_points[4] = {
+			p_rect.position,
+			p_rect.position + Vector2(p_rect.size.x, 0),
+			p_rect.position + p_rect.size,
+			p_rect.position + Vector2(0, p_rect.size.y)
+		};
+
+		// Check if any of the rect's edges intersect the segment.
+		for (int i = 0; i < 4; i++) {
+			if (segment_intersects_segment(p_from, p_to, rect_points[i], rect_points[(i + 1) % 4], nullptr)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	enum PolyBooleanOperation {
 		OPERATION_UNION,
 		OPERATION_DIFFERENCE,
@@ -324,6 +350,8 @@ public:
 		return triangles;
 	}
 
+	// Assumes cartesian coordinate system with +x to the right, +y up.
+	// If using screen coordinates (+x to the right, +y down) the result will need to be flipped.
 	static bool is_polygon_clockwise(const Vector<Vector2> &p_polygon) {
 		int c = p_polygon.size();
 		if (c < 3) {
@@ -351,10 +379,8 @@ public:
 		Vector2 further_away_opposite(1e20, 1e20);
 
 		for (int i = 0; i < c; i++) {
-			further_away.x = MAX(p[i].x, further_away.x);
-			further_away.y = MAX(p[i].y, further_away.y);
-			further_away_opposite.x = MIN(p[i].x, further_away_opposite.x);
-			further_away_opposite.y = MIN(p[i].y, further_away_opposite.y);
+			further_away = further_away.max(p[i]);
+			further_away_opposite = further_away_opposite.min(p[i]);
 		}
 
 		// Make point outside that won't intersect with points in segment from p_point.
@@ -463,7 +489,7 @@ public:
 		return points;
 	}
 
-	static Vector<Vector<Vector2>> decompose_polygon_in_convex(Vector<Point2> polygon);
+	static Vector<Vector<Vector2>> decompose_polygon_in_convex(const Vector<Point2> &polygon);
 
 	static void make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, Size2i &r_size);
 	static Vector<Vector3i> partial_pack_rects(const Vector<Vector2i> &p_sizes, const Size2i &p_atlas_size);

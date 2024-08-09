@@ -43,27 +43,37 @@ private:
 	SceneMultiplayer *multiplayer = nullptr;
 
 	//path sent caches
-	struct PathSentCache {
-		HashMap<int, bool> confirmed_peers;
-		int id;
+	struct NodeCache {
+		int cache_id = 0;
+		HashMap<int, int> recv_ids; // peer id, remote cache id
+		HashMap<int, bool> confirmed_peers; // peer id, confirmed
 	};
 
-	//path get caches
-	struct PathGetCache {
-		struct NodeInfo {
-			NodePath path;
-			ObjectID instance;
-		};
+	struct RecvNode {
+		ObjectID oid;
+		NodePath path;
 
-		HashMap<int, NodeInfo> nodes;
+		RecvNode(const ObjectID &p_oid, const NodePath &p_path) {
+			oid = p_oid;
+			path = p_path;
+		}
 	};
 
-	HashMap<ObjectID, PathSentCache> path_send_cache;
-	HashMap<int, PathGetCache> path_get_cache;
+	struct PeerInfo {
+		HashMap<int, RecvNode> recv_nodes; // remote cache id, (ObjectID, NodePath)
+		HashSet<ObjectID> sent_nodes;
+	};
+
+	HashMap<ObjectID, NodeCache> nodes_cache;
+	HashMap<int, ObjectID> assigned_ids;
+	HashMap<int, PeerInfo> peers_info;
 	int last_send_cache_id = 1;
 
+	void _remove_node_cache(ObjectID p_oid);
+	NodeCache &_track(Node *p_node);
+
 protected:
-	Error _send_confirm_path(Node *p_node, PathSentCache *psc, const List<int> &p_peers);
+	Error _send_confirm_path(Node *p_node, NodeCache &p_cache, const List<int> &p_peers);
 
 public:
 	void clear();

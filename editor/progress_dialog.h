@@ -56,8 +56,6 @@ protected:
 	void _task_step(const String &p_task, int p_step = -1);
 	void _end_task(const String &p_task);
 
-	static void _bind_methods();
-
 public:
 	void add_task(const String &p_task, const String &p_label, int p_steps);
 	void task_step(const String &p_task, int p_step = -1);
@@ -87,10 +85,9 @@ class ProgressDialog : public PopupPanel {
 	void _popup();
 
 	void _cancel_pressed();
-	bool canceled = false;
 
-protected:
-	static void _bind_methods();
+	void _update_ui();
+	bool canceled = false;
 
 public:
 	static ProgressDialog *get_singleton() { return singleton; }

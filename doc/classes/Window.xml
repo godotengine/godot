@@ -97,7 +97,7 @@
 		<method name="get_contents_minimum_size" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the combined minimum size from the child [Control] nodes of the window. Use [method child_controls_changed] to update it when children nodes have changed.
+				Returns the combined minimum size from the child [Control] nodes of the window. Use [method child_controls_changed] to update it when child nodes have changed.
 				The value returned by this method can be overridden with [method _get_contents_minimum_size].
 			</description>
 		</method>
@@ -118,18 +118,20 @@
 			<return type="Vector2i" />
 			<description>
 				Returns the window's position including its border.
+				[b]Note:[/b] If [member visible] is [code]false[/code], this method returns the same value as [member position].
 			</description>
 		</method>
 		<method name="get_size_with_decorations" qualifiers="const">
 			<return type="Vector2i" />
 			<description>
 				Returns the window's size including its border.
+				[b]Note:[/b] If [member visible] is [code]false[/code], this method returns the same value as [member size].
 			</description>
 		</method>
 		<method name="get_theme_color" qualifiers="const">
 			<return type="Color" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns a [Color] from the first matching [Theme] in the tree if that [Theme] has a color item with the specified [param name] and [param theme_type].
 				See [method Control.get_theme_color] for more details.
@@ -138,7 +140,7 @@
 		<method name="get_theme_constant" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns a constant from the first matching [Theme] in the tree if that [Theme] has a constant item with the specified [param name] and [param theme_type].
 				See [method Control.get_theme_color] for more details.
@@ -168,7 +170,7 @@
 		<method name="get_theme_font" qualifiers="const">
 			<return type="Font" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns a [Font] from the first matching [Theme] in the tree if that [Theme] has a font item with the specified [param name] and [param theme_type].
 				See [method Control.get_theme_color] for details.
@@ -177,7 +179,7 @@
 		<method name="get_theme_font_size" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns a font size from the first matching [Theme] in the tree if that [Theme] has a font size item with the specified [param name] and [param theme_type].
 				See [method Control.get_theme_color] for details.
@@ -186,7 +188,7 @@
 		<method name="get_theme_icon" qualifiers="const">
 			<return type="Texture2D" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns an icon from the first matching [Theme] in the tree if that [Theme] has an icon item with the specified [param name] and [param theme_type].
 				See [method Control.get_theme_color] for details.
@@ -195,7 +197,7 @@
 		<method name="get_theme_stylebox" qualifiers="const">
 			<return type="StyleBox" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns a [StyleBox] from the first matching [Theme] in the tree if that [Theme] has a stylebox item with the specified [param name] and [param theme_type].
 				See [method Control.get_theme_color] for details.
@@ -222,7 +224,7 @@
 		<method name="has_theme_color" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a color item with the specified [param name] and [param theme_type].
 				See [method Control.get_theme_color] for details.
@@ -239,7 +241,7 @@
 		<method name="has_theme_constant" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a constant item with the specified [param name] and [param theme_type].
 				See [method Control.get_theme_color] for details.
@@ -256,7 +258,7 @@
 		<method name="has_theme_font" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a font item with the specified [param name] and [param theme_type].
 				See [method Control.get_theme_color] for details.
@@ -273,7 +275,7 @@
 		<method name="has_theme_font_size" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a font size item with the specified [param name] and [param theme_type].
 				See [method Control.get_theme_color] for details.
@@ -290,7 +292,7 @@
 		<method name="has_theme_icon" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has an icon item with the specified [param name] and [param theme_type].
 				See [method Control.get_theme_color] for details.
@@ -307,7 +309,7 @@
 		<method name="has_theme_stylebox" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a stylebox item with the specified [param name] and [param theme_type].
 				See [method Control.get_theme_color] for details.
@@ -357,10 +359,10 @@
 				Centers a native window on the current screen and an embedded window on its embedder [Viewport].
 			</description>
 		</method>
-		<method name="move_to_foreground">
+		<method name="move_to_foreground" deprecated="Use [method Window.grab_focus] instead.">
 			<return type="void" />
 			<description>
-				Moves the [Window] on top of other windows and focuses it.
+				Causes the window to grab focus, allowing it to receive user input.
 			</description>
 		</method>
 		<method name="popup">
@@ -368,6 +370,9 @@
 			<param index="0" name="rect" type="Rect2i" default="Rect2i(0, 0, 0, 0)" />
 			<description>
 				Shows the [Window] and makes it transient (see [member transient]). If [param rect] is provided, it will be set as the [Window]'s size. Fails if called on the main window.
+				If [member ProjectSettings.display/window/subwindows/embed_subwindows] is [code]true[/code] (single-window mode), [param rect]'s coordinates are global and relative to the main window's top-left corner (excluding window decorations). If [param rect]'s position coordinates are negative, the window will be located outside the main window and may not be visible as a result.
+				If [member ProjectSettings.display/window/subwindows/embed_subwindows] is [code]false[/code] (multi-window mode), [param rect]'s coordinates are global and relative to the top-left corner of the leftmost screen. If [param rect]'s position coordinates are negative, the window will be placed at the top-left corner of the screen.
+				[b]Note:[/b] [param rect] must be in global coordinates if specified.
 			</description>
 		</method>
 		<method name="popup_centered">
@@ -378,7 +383,7 @@
 				[b]Note:[/b] Calling it with the default value of [param minsize] is equivalent to calling it with [member size].
 			</description>
 		</method>
-		<method name="popup_centered_clamped">
+		<method name="popup_centered_clamped" keywords="minsize">
 			<return type="void" />
 			<param index="0" name="minsize" type="Vector2i" default="Vector2i(0, 0)" />
 			<param index="1" name="fallback_ratio" type="float" default="0.75" />
@@ -413,7 +418,7 @@
 				See also [method set_unparent_when_invisible] and [method Node.get_last_exclusive_window].
 			</description>
 		</method>
-		<method name="popup_exclusive_centered_clamped">
+		<method name="popup_exclusive_centered_clamped" keywords="minsize">
 			<return type="void" />
 			<param index="0" name="from_node" type="Node" />
 			<param index="1" name="minsize" type="Vector2i" default="Vector2i(0, 0)" />
@@ -557,7 +562,7 @@
 		<member name="always_on_top" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the window will be on top of all other windows. Does not work if [member transient] is enabled.
 		</member>
-		<member name="auto_translate" type="bool" setter="set_auto_translate" getter="is_auto_translating" default="true">
+		<member name="auto_translate" type="bool" setter="set_auto_translate" getter="is_auto_translating" default="true" deprecated="Use [member Node.auto_translate_mode] instead.">
 			Toggles if any text should automatically change to its translated version depending on the current locale.
 		</member>
 		<member name="borderless" type="bool" setter="set_flag" getter="get_flag" default="false">
@@ -589,6 +594,9 @@
 			If [code]true[/code], the [Window] contents is expanded to the full size of the window, window title bar is transparent.
 			[b]Note:[/b] This property is implemented only on macOS.
 			[b]Note:[/b] This property only works with native windows.
+		</member>
+		<member name="force_native" type="bool" setter="set_force_native" getter="get_force_native" default="false">
+			If [code]true[/code], native window will be used regardless of parent viewport and project settings.
 		</member>
 		<member name="initial_position" type="int" setter="set_initial_position" getter="get_initial_position" enum="Window.WindowInitialPosition" default="0">
 			Specifies the initial type of position for the [Window]. See [enum WindowInitialPosition] constants.
@@ -668,10 +676,13 @@
 			If [code]true[/code], the [Window] is transient, i.e. it's considered a child of another [Window]. The transient window will be destroyed with its transient parent and will return focus to their parent when closed. The transient window is displayed on top of a non-exclusive full-screen parent window. Transient windows can't enter full-screen mode.
 			Note that behavior might be different depending on the platform.
 		</member>
+		<member name="transient_to_focused" type="bool" setter="set_transient_to_focused" getter="is_transient_to_focused" default="false">
+			If [code]true[/code], and the [Window] is [member transient], this window will (at the time of becoming visible) become transient to the currently focused window instead of the immediate parent window in the hierarchy. Note that the transient parent is assigned at the time this window becomes visible, so changing it afterwards has no effect until re-shown.
+		</member>
 		<member name="transparent" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window]'s background can be transparent. This is best used with embedded windows.
 			[b]Note:[/b] Transparency support is implemented on Linux, macOS and Windows, but availability might vary depending on GPU driver, display manager, and compositor capabilities.
-			[b]Note:[/b] This property has no effect if either [member ProjectSettings.display/window/per_pixel_transparency/allowed], or the window's [member Viewport.transparent_bg] is set to [code]false[/code].
+			[b]Note:[/b] This property has no effect if [member ProjectSettings.display/window/per_pixel_transparency/allowed] is set to [code]false[/code].
 		</member>
 		<member name="unfocusable" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window] can't be focused nor interacted with. It can still be visible.
@@ -899,7 +910,7 @@
 		<theme_item name="title_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			The color of the title's text.
 		</theme_item>
-		<theme_item name="title_outline_modulate" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+		<theme_item name="title_outline_modulate" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			The color of the title's text outline.
 		</theme_item>
 		<theme_item name="close_h_offset" data_type="constant" type="int" default="18">

@@ -1,6 +1,6 @@
 /*******************************************************************************
 * Author    :  Angus Johnson                                                   *
-* Date      :  14 February 2023                                                *
+* Date      :  8 September 2023                                                *
 * Website   :  http://www.angusj.com                                           *
 * Copyright :  Angus Johnson 2010-2023                                         *
 * Purpose   :  FAST rectangular clipping                                       *
@@ -24,11 +24,11 @@ namespace Clipper2Lib {
     for (const Point64& pt : path2)
     {
       PointInPolygonResult pip = PointInPolygon(pt, path1);
-      switch (pip) 
+      switch (pip)
       {
       case PointInPolygonResult::IsOutside: ++io_count; break;
-        case PointInPolygonResult::IsInside: --io_count; break;
-        default: continue;
+      case PointInPolygonResult::IsInside: --io_count; break;
+      default: continue;
       }
       if (std::abs(io_count) > 1) break;
     }
@@ -66,6 +66,56 @@ namespace Clipper2Lib {
     return true;
   }
 
+  inline bool IsHorizontal(const Point64& pt1, const Point64& pt2)
+  {
+    return pt1.y == pt2.y;
+  }
+
+  inline bool GetSegmentIntersection(const Point64& p1,
+    const Point64& p2, const Point64& p3, const Point64& p4, Point64& ip)
+  {
+    double res1 = CrossProduct(p1, p3, p4);
+    double res2 = CrossProduct(p2, p3, p4);
+    if (res1 == 0)
+    {
+      ip = p1;
+      if (res2 == 0) return false; // segments are collinear
+      else if (p1 == p3 || p1 == p4) return true;
+      //else if (p2 == p3 || p2 == p4) { ip = p2; return true; }
+      else if (IsHorizontal(p3, p4)) return ((p1.x > p3.x) == (p1.x < p4.x));
+      else return ((p1.y > p3.y) == (p1.y < p4.y));
+    }
+    else if (res2 == 0)
+    {
+      ip = p2;
+      if (p2 == p3 || p2 == p4) return true;
+      else if (IsHorizontal(p3, p4)) return ((p2.x > p3.x) == (p2.x < p4.x));
+      else return ((p2.y > p3.y) == (p2.y < p4.y));
+    }
+    if ((res1 > 0) == (res2 > 0)) return false;
+
+    double res3 = CrossProduct(p3, p1, p2);
+    double res4 = CrossProduct(p4, p1, p2);
+    if (res3 == 0)
+    {
+      ip = p3;
+      if (p3 == p1 || p3 == p2) return true;
+      else if (IsHorizontal(p1, p2)) return ((p3.x > p1.x) == (p3.x < p2.x));
+      else return ((p3.y > p1.y) == (p3.y < p2.y));
+    }
+    else if (res4 == 0)
+    {
+      ip = p4;
+      if (p4 == p1 || p4 == p2) return true;
+      else if (IsHorizontal(p1, p2)) return ((p4.x > p1.x) == (p4.x < p2.x));
+      else return ((p4.y > p1.y) == (p4.y < p2.y));
+    }
+    if ((res3 > 0) == (res4 > 0)) return false;
+
+    // segments must intersect to get here
+    return GetIntersectPoint(p1, p2, p3, p4, ip);
+  }
+
   inline bool GetIntersection(const Path64& rectPath,
     const Point64& p, const Point64& p2, Location& loc, Point64& ip)
   {
@@ -74,100 +124,84 @@ namespace Clipper2Lib {
     switch (loc)
     {
     case Location::Left:
-      if (SegmentsIntersect(p, p2, rectPath[0], rectPath[3], true))
-        GetIntersectPoint(p, p2, rectPath[0], rectPath[3], ip);
-      else if (p.y < rectPath[0].y &&
-        SegmentsIntersect(p, p2, rectPath[0], rectPath[1], true))
+      if (GetSegmentIntersection(p, p2, rectPath[0], rectPath[3], ip)) return true;
+      else if ((p.y < rectPath[0].y) && GetSegmentIntersection(p, p2, rectPath[0], rectPath[1], ip))        
       {
-        GetIntersectPoint(p, p2, rectPath[0], rectPath[1], ip);
         loc = Location::Top;
+        return true;
       }
-      else if (SegmentsIntersect(p, p2, rectPath[2], rectPath[3], true))
+      else if (GetSegmentIntersection(p, p2, rectPath[2], rectPath[3], ip))
       {
-        GetIntersectPoint(p, p2, rectPath[2], rectPath[3], ip);
         loc = Location::Bottom;
+        return true;
       }
       else return false;
-      break;
 
     case Location::Top:
-      if (SegmentsIntersect(p, p2, rectPath[0], rectPath[1], true))
-        GetIntersectPoint(p, p2, rectPath[0], rectPath[1], ip);
-      else if (p.x < rectPath[0].x &&
-        SegmentsIntersect(p, p2, rectPath[0], rectPath[3], true))
+      if (GetSegmentIntersection(p, p2, rectPath[0], rectPath[1], ip)) return true;
+      else if ((p.x < rectPath[0].x) && GetSegmentIntersection(p, p2, rectPath[0], rectPath[3], ip))
       {
-        GetIntersectPoint(p, p2, rectPath[0], rectPath[3], ip);
         loc = Location::Left;
+        return true;
       }
-      else if (p.x > rectPath[1].x &&
-        SegmentsIntersect(p, p2, rectPath[1], rectPath[2], true))
+      else if (GetSegmentIntersection(p, p2, rectPath[1], rectPath[2], ip))
       {
-        GetIntersectPoint(p, p2, rectPath[1], rectPath[2], ip);
         loc = Location::Right;
+        return true;
       }
       else return false;
-      break;
 
     case Location::Right:
-      if (SegmentsIntersect(p, p2, rectPath[1], rectPath[2], true))
-        GetIntersectPoint(p, p2, rectPath[1], rectPath[2], ip);
-      else if (p.y < rectPath[0].y &&
-        SegmentsIntersect(p, p2, rectPath[0], rectPath[1], true))
+      if (GetSegmentIntersection(p, p2, rectPath[1], rectPath[2], ip)) return true;
+      else if ((p.y < rectPath[1].y) && GetSegmentIntersection(p, p2, rectPath[0], rectPath[1], ip))
       {
-        GetIntersectPoint(p, p2, rectPath[0], rectPath[1], ip);
         loc = Location::Top;
+        return true;
       }
-      else if (SegmentsIntersect(p, p2, rectPath[2], rectPath[3], true))
+      else if (GetSegmentIntersection(p, p2, rectPath[2], rectPath[3], ip))
       {
-        GetIntersectPoint(p, p2, rectPath[2], rectPath[3], ip);
         loc = Location::Bottom;
+        return true;
       }
       else return false;
-      break;
 
     case Location::Bottom:
-      if (SegmentsIntersect(p, p2, rectPath[2], rectPath[3], true))
-        GetIntersectPoint(p, p2, rectPath[2], rectPath[3], ip);
-      else if (p.x < rectPath[3].x &&
-        SegmentsIntersect(p, p2, rectPath[0], rectPath[3], true))
+      if (GetSegmentIntersection(p, p2, rectPath[2], rectPath[3], ip)) return true;
+      else if ((p.x < rectPath[3].x) && GetSegmentIntersection(p, p2, rectPath[0], rectPath[3], ip))
       {
-        GetIntersectPoint(p, p2, rectPath[0], rectPath[3], ip);
         loc = Location::Left;
+        return true;
       }
-      else if (p.x > rectPath[2].x &&
-        SegmentsIntersect(p, p2, rectPath[1], rectPath[2], true))
+      else if (GetSegmentIntersection(p, p2, rectPath[1], rectPath[2], ip))
       {
-        GetIntersectPoint(p, p2, rectPath[1], rectPath[2], ip);
         loc = Location::Right;
+        return true;
       }
       else return false;
-      break;
 
     default: // loc == rInside
-      if (SegmentsIntersect(p, p2, rectPath[0], rectPath[3], true))
+      if (GetSegmentIntersection(p, p2, rectPath[0], rectPath[3], ip)) 
       {
-        GetIntersectPoint(p, p2, rectPath[0], rectPath[3], ip);
         loc = Location::Left;
+        return true;
       }
-      else if (SegmentsIntersect(p, p2, rectPath[0], rectPath[1], true))
+      else if (GetSegmentIntersection(p, p2, rectPath[0], rectPath[1], ip))
       {
-        GetIntersectPoint(p, p2, rectPath[0], rectPath[1], ip);
         loc = Location::Top;
+        return true;
       }
-      else if (SegmentsIntersect(p, p2, rectPath[1], rectPath[2], true))
+      else if (GetSegmentIntersection(p, p2, rectPath[1], rectPath[2], ip))
       {
-        GetIntersectPoint(p, p2, rectPath[1], rectPath[2], ip);
         loc = Location::Right;
+        return true;
       }
-      else if (SegmentsIntersect(p, p2, rectPath[2], rectPath[3], true))
+      else if (GetSegmentIntersection(p, p2, rectPath[2], rectPath[3], ip))
       {
-        GetIntersectPoint(p, p2, rectPath[2], rectPath[3], ip);
         loc = Location::Bottom;
+        return true;
       }
       else return false;
-      break;
     }
-    return true;
   }
 
   inline Location GetAdjacentLocation(Location loc, bool isClockwise)
@@ -281,7 +315,7 @@ namespace Clipper2Lib {
   // RectClip64
   //----------------------------------------------------------------------------
 
-  OutPt2* RectClip::Add(Point64 pt, bool start_new)
+  OutPt2* RectClip64::Add(Point64 pt, bool start_new)
   {
     // this method is only called by InternalExecute.
     // Later splitting & rejoining won't create additional op's,
@@ -312,7 +346,7 @@ namespace Clipper2Lib {
     return result;
   }
 
-  void RectClip::AddCorner(Location prev, Location curr)
+  void RectClip64::AddCorner(Location prev, Location curr)
   {
     if (HeadingClockwise(prev, curr))
       Add(rect_as_path_[static_cast<int>(prev)]);
@@ -320,7 +354,7 @@ namespace Clipper2Lib {
       Add(rect_as_path_[static_cast<int>(curr)]);
   }
 
-  void RectClip::AddCorner(Location& loc, bool isClockwise)
+  void RectClip64::AddCorner(Location& loc, bool isClockwise)
   {
     if (isClockwise)
     {
@@ -334,7 +368,7 @@ namespace Clipper2Lib {
     }
   }
 
-  void RectClip::GetNextLocation(const Path64& path,
+  void RectClip64::GetNextLocation(const Path64& path,
     Location& loc, int& i, int highI)
   {
     switch (loc)
@@ -389,7 +423,7 @@ namespace Clipper2Lib {
     } //switch          
   }
 
-  void RectClip::ExecuteInternal(const Path64& path)
+  void RectClip64::ExecuteInternal(const Path64& path)
   {
     int i = 0, highI = static_cast<int>(path.size()) - 1;
     Location prev = Location::Inside, loc;
@@ -474,7 +508,7 @@ namespace Clipper2Lib {
         // intersect pt but we'll also need the first intersect pt (ip2)
         loc = prev;
         GetIntersection(rect_as_path_, prev_pt, path[i], loc, ip2);
-        if (crossing_prev != Location::Inside)
+        if (crossing_prev != Location::Inside && crossing_prev != loc) //579
           AddCorner(crossing_prev, loc);
 
         if (first_cross_ == Location::Inside)
@@ -546,7 +580,7 @@ namespace Clipper2Lib {
     }
   }
 
-  void RectClip::CheckEdges()
+  void RectClip64::CheckEdges()
   {
     for (size_t i = 0; i < results_.size(); ++i)
     {
@@ -606,7 +640,7 @@ namespace Clipper2Lib {
     }
   }
 
-  void RectClip::TidyEdges(int idx, OutPt2List& cw, OutPt2List& ccw)
+  void RectClip64::TidyEdges(int idx, OutPt2List& cw, OutPt2List& ccw)
   {
     if (ccw.empty()) return;
     bool isHorz = ((idx == 1) || (idx == 3));
@@ -619,7 +653,7 @@ namespace Clipper2Lib {
       p1 = cw[i];
       if (!p1 || p1->next == p1->prev)
       {
-        cw[i++]->edge = nullptr;
+        cw[i++] = nullptr;
         j = 0;
         continue;
       }
@@ -784,7 +818,7 @@ namespace Clipper2Lib {
     }
   }
 
-  Path64 RectClip::GetPath(OutPt2*& op)
+  Path64 RectClip64::GetPath(OutPt2*& op)
   {
     if (!op || op->next == op->prev) return Path64();
 
@@ -814,13 +848,13 @@ namespace Clipper2Lib {
     return result;
   }
 
-  Paths64 RectClip::Execute(const Paths64& paths, bool convex_only)
+  Paths64 RectClip64::Execute(const Paths64& paths)
   {
     Paths64 result;
     if (rect_.IsEmpty()) return result;
 
-    for (const auto& path : paths)
-    {
+    for (const Path64& path : paths)
+    {      
       if (path.size() < 3) continue;
       path_bounds_ = GetBounds(path);
       if (!rect_.Intersects(path_bounds_))
@@ -833,13 +867,10 @@ namespace Clipper2Lib {
       }
 
       ExecuteInternal(path);
-      if (!convex_only)
-      {
-        CheckEdges();
-        for (int i = 0; i < 4; ++i)
-          TidyEdges(i, edges_[i * 2], edges_[i * 2 + 1]);
-      }
-
+      CheckEdges();
+      for (int i = 0; i < 4; ++i)
+        TidyEdges(i, edges_[i * 2], edges_[i * 2 + 1]);
+  
       for (OutPt2*& op :  results_)
       {
         Path64 tmp = GetPath(op);
@@ -850,26 +881,24 @@ namespace Clipper2Lib {
       //clean up after every loop
       op_container_ = std::deque<OutPt2>();
       results_.clear();
-      for (OutPt2List edge : edges_) edge.clear();
+      for (OutPt2List &edge : edges_) edge.clear();
       start_locs_.clear();
     }
     return result;
   }
 
   //------------------------------------------------------------------------------
-  // RectClipLines
+  // RectClipLines64
   //------------------------------------------------------------------------------
 
-  Paths64 RectClipLines::Execute(const Paths64& paths)
+  Paths64 RectClipLines64::Execute(const Paths64& paths)
   {
     Paths64 result;
     if (rect_.IsEmpty()) return result;
 
     for (const auto& path : paths)
     {
-      if (path.size() < 2) continue;
       Rect64 pathrec = GetBounds(path);
-
       if (!rect_.Intersects(pathrec)) continue;
 
       ExecuteInternal(path);
@@ -888,7 +917,7 @@ namespace Clipper2Lib {
     return result;
   }
 
-  void RectClipLines::ExecuteInternal(const Path64& path)
+  void RectClipLines64::ExecuteInternal(const Path64& path)
   {
     if (rect_.IsEmpty() || path.size() < 2) return;
 
@@ -958,7 +987,7 @@ namespace Clipper2Lib {
     ///////////////////////////////////////////////////
   }
 
-  Path64 RectClipLines::GetPath(OutPt2*& op)
+  Path64 RectClipLines64::GetPath(OutPt2*& op)
   {
     Path64 result;
     if (!op || op == op->next) return result;

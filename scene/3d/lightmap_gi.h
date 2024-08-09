@@ -142,6 +142,8 @@ public:
 		BAKE_ERROR_CANT_CREATE_IMAGE,
 		BAKE_ERROR_USER_ABORTED,
 		BAKE_ERROR_TEXTURE_SIZE_TOO_SMALL,
+		BAKE_ERROR_LIGHTMAP_TOO_SMALL,
+		BAKE_ERROR_ATLAS_TOO_SMALL,
 	};
 
 	enum EnvironmentMode {
@@ -155,9 +157,11 @@ private:
 	BakeQuality bake_quality = BAKE_QUALITY_MEDIUM;
 	bool use_denoiser = true;
 	float denoiser_strength = 0.1f;
+	int denoiser_range = 10;
 	int bounces = 3;
 	float bounce_indirect_energy = 1.0;
 	float bias = 0.0005;
+	float texel_scale = 1.0;
 	int max_texture_size = 16384;
 	bool interior = false;
 	EnvironmentMode environment_mode = ENVIRONMENT_MODE_SCENE;
@@ -254,6 +258,9 @@ public:
 	void set_denoiser_strength(float p_denoiser_strength);
 	float get_denoiser_strength() const;
 
+	void set_denoiser_range(int p_denoiser_range);
+	int get_denoiser_range() const;
+
 	void set_directional(bool p_enable);
 	bool is_directional() const;
 
@@ -283,6 +290,9 @@ public:
 
 	void set_bias(float p_bias);
 	float get_bias() const;
+
+	void set_texel_scale(float p_multiplier);
+	float get_texel_scale() const;
 
 	void set_max_texture_size(int p_size);
 	int get_max_texture_size() const;

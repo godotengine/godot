@@ -50,7 +50,7 @@ import androidx.annotation.Keep;
 
 import java.io.InputStream;
 
-public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderView {
+class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderView {
 	private final GodotHost host;
 	private final Godot godot;
 	private final GodotInputHandler mInputHandler;
@@ -92,17 +92,40 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 
 	@Override
 	public void onActivityPaused() {
-		onPause();
+		queueOnVkThread(() -> {
+			GodotLib.focusout();
+			// Pause the renderer
+			mRenderer.onVkPause();
+		});
+	}
+
+	@Override
+	public void onActivityStopped() {
+		pauseRenderThread();
+	}
+
+	@Override
+	public void onActivityStarted() {
+		resumeRenderThread();
 	}
 
 	@Override
 	public void onActivityResumed() {
-		onResume();
+		queueOnVkThread(() -> {
+			// Resume the renderer
+			mRenderer.onVkResume();
+			GodotLib.focusin();
+		});
+	}
+
+	@Override
+	public void onActivityDestroyed() {
+		requestRenderThreadExitAndWait();
 	}
 
 	@Override
 	public void onBackPressed() {
-		godot.onBackPressed(host);
+		godot.onBackPressed();
 	}
 
 	@Override
@@ -210,27 +233,5 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 			return getPointerIcon();
 		}
 		return super.onResolvePointerIcon(me, pointerIndex);
-	}
-
-	@Override
-	public void onResume() {
-		super.onResume();
-
-		queueOnVkThread(() -> {
-			// Resume the renderer
-			mRenderer.onVkResume();
-			GodotLib.focusin();
-		});
-	}
-
-	@Override
-	public void onPause() {
-		super.onPause();
-
-		queueOnVkThread(() -> {
-			GodotLib.focusout();
-			// Pause the renderer
-			mRenderer.onVkPause();
-		});
 	}
 }

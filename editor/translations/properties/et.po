@@ -124,6 +124,12 @@ msgstr "Energia Säästmine"
 msgid "Keep Screen On"
 msgstr "Hoia ekraan sees"
 
+msgid "Animation"
+msgstr "Animatsioon"
+
+msgid "Warnings"
+msgstr "Hoiatused"
+
 msgid "Audio"
 msgstr "Heli"
 
@@ -214,15 +220,6 @@ msgstr "Sõnum"
 msgid "Rendering"
 msgstr "Renderdamine"
 
-msgid "Memory"
-msgstr "Mälu"
-
-msgid "Limits"
-msgstr "Limiidid"
-
-msgid "Multithreaded Server"
-msgstr "Mitmelõimeline Server"
-
 msgid "GUI"
 msgstr "GUI"
 
@@ -241,11 +238,17 @@ msgstr "Dünaamilised Kirjatüübid"
 msgid "Rendering Device"
 msgstr "Renderdamisseade"
 
+msgid "V-Sync"
+msgstr "V-Sync"
+
 msgid "Block Size (KB)"
 msgstr "Bloki Suurus (KB)"
 
 msgid "Max Size (MB)"
 msgstr "Maksimaalne suurus (MB)"
+
+msgid "Enable"
+msgstr "Luba"
 
 msgid "Save Chunk Size (MB)"
 msgstr "Salvest Tüki Suurus (MB)"
@@ -292,6 +295,12 @@ msgstr "Hiire režiim"
 msgid "Use Accumulated Input"
 msgstr "Kasuta akumuleeritud sisendit"
 
+msgid "Emulate Mouse From Touch"
+msgstr "Emuleerige Hiirt Puudutusest"
+
+msgid "Emulate Touch From Mouse"
+msgstr "Emuleerige Puudutust Hiirest"
+
 msgid "Input Devices"
 msgstr "Sisendseadmed"
 
@@ -333,6 +342,9 @@ msgstr "Võtme Silt"
 
 msgid "Unicode"
 msgstr "Unicode"
+
+msgid "Location"
+msgstr "Asukoht"
 
 msgid "Echo"
 msgstr "Kaja"
@@ -487,6 +499,12 @@ msgstr "Seeme"
 msgid "State"
 msgstr "Olek"
 
+msgid "Memory"
+msgstr "Mälu"
+
+msgid "Limits"
+msgstr "Limiidid"
+
 msgid "Message Queue"
 msgstr "Sõnumite järjekord"
 
@@ -519,9 +537,6 @@ msgstr "Tööliste Hulk"
 
 msgid "Max Threads"
 msgstr "Max Lõimed"
-
-msgid "Use System Threads for Low Priority Tasks"
-msgstr "Kasuta Süsteemi Lõime Madala Prioriteediga Ülesannete Jaoks"
 
 msgid "Low Priority Thread Ratio"
 msgstr "Madala Prioriteediga Lõime Suhe"
@@ -574,9 +589,6 @@ msgstr "Väärtus"
 msgid "Arg Count"
 msgstr "Arg kogus"
 
-msgid "Args"
-msgstr "Argumendid"
-
 msgid "Type"
 msgstr "Tüüp"
 
@@ -591,9 +603,6 @@ msgstr "Algnihe"
 
 msgid "End Offset"
 msgstr "Lõpunihe"
-
-msgid "Animation"
-msgstr "Animatsioon"
 
 msgid "Easing"
 msgstr "Lõdvendamine"
@@ -661,29 +670,95 @@ msgstr "Häirimatu režiim"
 msgid "Movie Maker Enabled"
 msgstr "Movie Maker Sees"
 
+msgid "Theme"
+msgstr "Teema"
+
+msgid "Line Spacing"
+msgstr "Reavahe"
+
+msgid "Base Type"
+msgstr "Baastüüp"
+
+msgid "Editable"
+msgstr "Redigeeritav"
+
+msgid "Toggle Mode"
+msgstr "Lülitusrežiim"
+
 msgid "Interface"
 msgstr "Liides"
 
-msgid "Save on Focus Loss"
-msgstr "Salvesta Fookuse Kaotamisel"
-
-msgid "Show Update Spinner"
-msgstr "Kuva Värskenduse Spinner"
-
-msgid "Update Continuously"
-msgstr "Värskenda Pidevalt"
+msgid "Editor Language"
+msgstr "Redaktori Keel"
 
 msgid "Localize Settings"
 msgstr "Lokaliseerimis Seaded"
 
-msgid "Scene Tabs"
-msgstr "Stseeni Aknad"
+msgid "Display Scale"
+msgstr "Ekraani Skaala"
 
-msgid "Restore Scenes on Load"
-msgstr "Taasta Stseenid Laadimisel"
+msgid "Custom Display Scale"
+msgstr "Kohandatud Ekraani Skaala"
+
+msgid "Editor Screen"
+msgstr "Redaktori Ekraan"
+
+msgid "Project Manager Screen"
+msgstr "Projekti Halduri Ekraan"
+
+msgid "Use Embedded Menu"
+msgstr "Kasuta Sisseehitatud Menüüd"
+
+msgid "Main Font Size"
+msgstr "Põhifondi suurus"
+
+msgid "Code Font Size"
+msgstr "Koodi Fondi Suurus"
+
+msgid "Main Font"
+msgstr "Põhifont"
+
+msgid "Main Font Bold"
+msgstr "Paks Põhifont"
+
+msgid "Code Font"
+msgstr "Koodi Font"
+
+msgid "Single Window Mode"
+msgstr "Ühe akna režiim"
+
+msgid "Mouse Extra Buttons Navigate History"
+msgstr "Hiire Lisanupud Ajaloos Navigeerimiseks"
+
+msgid "Save Each Scene on Quit"
+msgstr "Salvestage Iga Stseen Väljumisel"
+
+msgid "Save on Focus Loss"
+msgstr "Salvesta Fookuse Kaotamisel"
+
+msgid "Accept Dialog Cancel OK Buttons"
+msgstr "Nõustu Dialoog Tühista OK Nupud"
+
+msgid "Show Internal Errors in Toast Notifications"
+msgstr "Näita Sisemisi Vigu Hüpikteate Märguannetes"
+
+msgid "Show Update Spinner"
+msgstr "Kuva Värskenduse Spinner"
+
+msgid "V-Sync Mode"
+msgstr "V-Sync Režiim"
+
+msgid "Update Continuously"
+msgstr "Värskenda Pidevalt"
 
 msgid "Inspector"
 msgstr "Inspektor"
+
+msgid "Max Array Dictionary Items per Page"
+msgstr "Maksimaalne Massiivi Sõnastiku Üksuste Arv Lehel"
+
+msgid "Float Drag Speed"
+msgstr "Ujuvkomaarvu Lohistamise Kiirus"
 
 msgid "Default Property Name Style"
 msgstr "Atribuudi Vaikimisi Nimestiil"
@@ -714,72 +789,6 @@ msgstr "Vaikimisi Värvivalija Režiim"
 
 msgid "Default Color Picker Shape"
 msgstr "Vaikimisi Värvivalija Kuju"
-
-msgid "Base Type"
-msgstr "Baastüüp"
-
-msgid "Editable"
-msgstr "Redigeeritav"
-
-msgid "Toggle Mode"
-msgstr "Lülitusrežiim"
-
-msgid "Editor Language"
-msgstr "Redaktori Keel"
-
-msgid "Display Scale"
-msgstr "Ekraani Skaala"
-
-msgid "Editor Screen"
-msgstr "Redaktori Ekraan"
-
-msgid "Project Manager Screen"
-msgstr "Projekti Halduri Ekraan"
-
-msgid "Use Embedded Menu"
-msgstr "Kasuta Sisseehitatud Menüüd"
-
-msgid "Custom Display Scale"
-msgstr "Kohandatud Ekraani Skaala"
-
-msgid "Main Font Size"
-msgstr "Põhifondi suurus"
-
-msgid "Code Font Size"
-msgstr "Koodi Fondi Suurus"
-
-msgid "Main Font"
-msgstr "Põhifont"
-
-msgid "Main Font Bold"
-msgstr "Paks Põhifont"
-
-msgid "Code Font"
-msgstr "Koodi Font"
-
-msgid "Single Window Mode"
-msgstr "Ühe akna režiim"
-
-msgid "Mouse Extra Buttons Navigate History"
-msgstr "Hiire Lisanupud Ajaloos Navigeerimiseks"
-
-msgid "Save Each Scene on Quit"
-msgstr "Salvestage Iga Stseen Väljumisel"
-
-msgid "Accept Dialog Cancel OK Buttons"
-msgstr "Nõustu Dialoog Tühista OK Nupud"
-
-msgid "Show Internal Errors in Toast Notifications"
-msgstr "Näita Sisemisi Vigu Hüpikteate Märguannetes"
-
-msgid "Max Array Dictionary Items per Page"
-msgstr "Maksimaalne Massiivi Sõnastiku Üksuste Arv Lehel"
-
-msgid "Float Drag Speed"
-msgstr "Ujuvkomaarvu Lohistamise Kiirus"
-
-msgid "Theme"
-msgstr "Teema"
 
 msgid "Preset"
 msgstr "Eelseadistus"
@@ -823,6 +832,9 @@ msgstr "Luba Pikk Vajutus Paremklõpsuna"
 msgid "Enable Pan and Scale Gestures"
 msgstr "Luba Nihke Ja Skaala Liigutused"
 
+msgid "Scene Tabs"
+msgstr "Stseeni Aknad"
+
 msgid "Display Close Button"
 msgstr "Kuva Sulgemis Nupp"
 
@@ -835,11 +847,11 @@ msgstr "Maksimaalne Laius"
 msgid "Show Script Button"
 msgstr "Näita Skripti Nuppu"
 
+msgid "Restore Scenes on Load"
+msgstr "Taasta Stseenid Laadimisel"
+
 msgid "Multi Window"
 msgstr "Mitu Akent"
-
-msgid "Enable"
-msgstr "Luba"
 
 msgid "Restore Windows on Load"
 msgstr "Taastage Aknad Laadimisel"
@@ -894,9 +906,6 @@ msgstr "Pisipildi Suurus"
 
 msgid "Import"
 msgstr "Import"
-
-msgid "Blender 3 Path"
-msgstr "Blender 3 Asukoht"
 
 msgid "RPC Port"
 msgstr "RPC Port"
@@ -999,9 +1008,6 @@ msgstr "Joonista Vahelehed"
 
 msgid "Draw Spaces"
 msgstr "Joonista Tühimikud"
-
-msgid "Line Spacing"
-msgstr "Reavahe"
 
 msgid "Navigation"
 msgstr "Navigatsioon"
@@ -1110,9 +1116,6 @@ msgstr "Loodud"
 
 msgid "Joint"
 msgstr "Liigend"
-
-msgid "Shape"
-msgstr "Kuju"
 
 msgid "Primary Grid Steps"
 msgstr "Põhiruudustiku Sammud"
@@ -1297,17 +1300,17 @@ msgstr "Fondi Suurus"
 msgid "Always Clear Output on Play"
 msgstr "Puhasta Alati Väljund Käivitamisel"
 
-msgid "Always Open Output on Play"
-msgstr "Ava Alati Väljund Käivitamisel"
+msgid "HTTP Proxy"
+msgstr "HTTP puhverserver"
 
-msgid "Always Close Output on Stop"
-msgstr "Sulge Alati Väljund Peatamisel"
-
-msgid "Remote Host"
-msgstr "Kaugserver"
+msgid "Host"
+msgstr "Host"
 
 msgid "Editor TLS Certificates"
 msgstr "Redaktori TLS-Sertifikaadid"
+
+msgid "Remote Host"
+msgstr "Kaugserver"
 
 msgid "Debugger"
 msgstr "Siluja"
@@ -1324,11 +1327,11 @@ msgstr "Kaugjuhitava Stseenipuu Värskendamise Intervall"
 msgid "Remote Inspect Refresh Interval"
 msgstr "Kauginspekteerimise Värskendamise Intervall"
 
-msgid "HTTP Proxy"
-msgstr "HTTP puhverserver"
+msgid "Input"
+msgstr "Sisend"
 
-msgid "Host"
-msgstr "Host"
+msgid "Buffering"
+msgstr "Puhverdamine"
 
 msgid "Project Manager"
 msgstr "Projektide Haldur"
@@ -1447,18 +1450,6 @@ msgstr "Manusta PCK"
 msgid "Texture Format"
 msgstr "Tekstuuriformaat"
 
-msgid "BPTC"
-msgstr "BPTC"
-
-msgid "S3TC"
-msgstr "S3TC"
-
-msgid "ETC"
-msgstr "ETC"
-
-msgid "ETC2"
-msgstr "ETC2"
-
 msgid "Export"
 msgstr "Ekspordi"
 
@@ -1491,54 +1482,6 @@ msgstr "Peida Liugur"
 
 msgid "Zoom"
 msgstr "Suum"
-
-msgid "Antialiasing"
-msgstr "Anti-aliassing"
-
-msgid "Generate Mipmaps"
-msgstr "Mipmapide Genereerimine"
-
-msgid "MSDF Pixel Range"
-msgstr "MSDF Piksli Ulatus"
-
-msgid "MSDF Size"
-msgstr "MSDF Suurus"
-
-msgid "Allow System Fallback"
-msgstr "Luba Süsteemi Tagasipöördumine"
-
-msgid "Hinting"
-msgstr "Vihjamine"
-
-msgid "Subpixel Positioning"
-msgstr "Alapiksliline Positsioneerimine"
-
-msgid "Metadata Overrides"
-msgstr "Metaandmete Ülekirjutused"
-
-msgid "Language Support"
-msgstr "Keele Tugi"
-
-msgid "Script Support"
-msgstr "Skriptimis Tugi"
-
-msgid "OpenType Features"
-msgstr "OpenType Funktsioonid"
-
-msgid "Compress"
-msgstr "Suru Kokku"
-
-msgid "Language"
-msgstr "Keel"
-
-msgid "Outline Size"
-msgstr "Kontuurjoone Suurus"
-
-msgid "Variation"
-msgstr "Variatsioon"
-
-msgid "OpenType"
-msgstr "OpenType"
 
 msgid "Retarget"
 msgstr "Määra Ümber"
@@ -1591,62 +1534,11 @@ msgstr "Ebaolulised Positsioonid"
 msgid "Unmapped Bones"
 msgstr "Kaardistamata Luud"
 
-msgid "Delimiter"
-msgstr "Eraldaja"
-
-msgid "Character Ranges"
-msgstr "Tähemärkide Vahemikud"
-
-msgid "Columns"
-msgstr "Veerud"
-
-msgid "Rows"
-msgstr "Read"
-
-msgid "Image Margin"
-msgstr "Pildi Serv"
-
-msgid "High Quality"
-msgstr "Kõrge Kvaliteediga"
-
-msgid "Lossy Quality"
-msgstr "Madal Kvaliteediga"
-
-msgid "HDR Compression"
-msgstr "HDR Kompressioon"
-
-msgid "Channel Pack"
-msgstr "Kanali Pakk"
-
-msgid "Mipmaps"
-msgstr "Mipmapid"
+msgid "Generate Tangents"
+msgstr "Genereeri Puutujad"
 
 msgid "Generate"
 msgstr "Genereeri"
-
-msgid "Limit"
-msgstr "Limiit"
-
-msgid "Slices"
-msgstr "Viilud"
-
-msgid "Horizontal"
-msgstr "Horisontaalne"
-
-msgid "Vertical"
-msgstr "Vertikaalne"
-
-msgid "Arrangement"
-msgstr "Asetus"
-
-msgid "Layout"
-msgstr "Paigutus"
-
-msgid "Amount"
-msgstr "Kogus"
-
-msgid "Generate Tangents"
-msgstr "Genereeri Puutujad"
 
 msgid "NavMesh"
 msgstr "NavMesh"
@@ -1696,14 +1588,17 @@ msgstr "Salvesta Faili"
 msgid "Enabled"
 msgstr "Sisselülitatud"
 
-msgid "Make Streamable"
-msgstr "Muuda Voogedastavaks"
-
 msgid "Use External"
 msgstr "Kasuta Väliseid"
 
 msgid "Loop Mode"
 msgstr "Tsüklirežiim"
+
+msgid "Slices"
+msgstr "Viilud"
+
+msgid "Amount"
+msgstr "Kogus"
 
 msgid "Optimizer"
 msgstr "Optimiseerija"
@@ -1767,6 +1662,99 @@ msgstr "Eemalda Muutumatud Rajad"
 
 msgid "Import Script"
 msgstr "Impordi skript"
+
+msgid "Antialiasing"
+msgstr "Anti-aliassing"
+
+msgid "Generate Mipmaps"
+msgstr "Mipmapide Genereerimine"
+
+msgid "MSDF Pixel Range"
+msgstr "MSDF Piksli Ulatus"
+
+msgid "MSDF Size"
+msgstr "MSDF Suurus"
+
+msgid "Allow System Fallback"
+msgstr "Luba Süsteemi Tagasipöördumine"
+
+msgid "Hinting"
+msgstr "Vihjamine"
+
+msgid "Subpixel Positioning"
+msgstr "Alapiksliline Positsioneerimine"
+
+msgid "Metadata Overrides"
+msgstr "Metaandmete Ülekirjutused"
+
+msgid "Language Support"
+msgstr "Keele Tugi"
+
+msgid "Script Support"
+msgstr "Skriptimis Tugi"
+
+msgid "OpenType Features"
+msgstr "OpenType Funktsioonid"
+
+msgid "Compress"
+msgstr "Suru Kokku"
+
+msgid "Language"
+msgstr "Keel"
+
+msgid "Outline Size"
+msgstr "Kontuurjoone Suurus"
+
+msgid "Variation"
+msgstr "Variatsioon"
+
+msgid "OpenType"
+msgstr "OpenType"
+
+msgid "Delimiter"
+msgstr "Eraldaja"
+
+msgid "Character Ranges"
+msgstr "Tähemärkide Vahemikud"
+
+msgid "Columns"
+msgstr "Veerud"
+
+msgid "Rows"
+msgstr "Read"
+
+msgid "Image Margin"
+msgstr "Pildi Serv"
+
+msgid "High Quality"
+msgstr "Kõrge Kvaliteediga"
+
+msgid "Lossy Quality"
+msgstr "Madal Kvaliteediga"
+
+msgid "HDR Compression"
+msgstr "HDR Kompressioon"
+
+msgid "Channel Pack"
+msgstr "Kanali Pakk"
+
+msgid "Mipmaps"
+msgstr "Mipmapid"
+
+msgid "Limit"
+msgstr "Limiit"
+
+msgid "Horizontal"
+msgstr "Horisontaalne"
+
+msgid "Vertical"
+msgstr "Vertikaalne"
+
+msgid "Arrangement"
+msgstr "Asetus"
+
+msgid "Layout"
+msgstr "Paigutus"
 
 msgid "Roughness"
 msgstr "Karedus"
@@ -1852,14 +1840,14 @@ msgstr "Error"
 msgid "Camera"
 msgstr "Kaamera"
 
+msgid "Particles"
+msgstr "Osakesed"
+
 msgid "Decal"
 msgstr "Kleebis"
 
 msgid "Fog Volume"
 msgstr "Udu Maht"
-
-msgid "Particles"
-msgstr "Osakesed"
 
 msgid "Particle Attractor"
 msgstr "Osakeste Tõmbur"
@@ -2056,12 +2044,6 @@ msgstr "Lõime Mudel"
 msgid "Orientation"
 msgstr "Orientatsioon"
 
-msgid "V-Sync"
-msgstr "V-Sync"
-
-msgid "V-Sync Mode"
-msgstr "V-Sync Režiim"
-
 msgid "Output Latency"
 msgstr "Väljund Viivitus"
 
@@ -2113,6 +2095,21 @@ msgstr "Keskkond"
 msgid "Defaults"
 msgstr "Vaikeväärtused"
 
+msgid "Icon"
+msgstr "Ikoon"
+
+msgid "Windows Native Icon"
+msgstr "Windowsi Süsteemiikoon"
+
+msgid "Pointing"
+msgstr "Osutades"
+
+msgid "Android"
+msgstr "Android"
+
+msgid "Mouse Cursor"
+msgstr "Hiire Kursor"
+
 msgid "Show Image"
 msgstr "Näita Pilti"
 
@@ -2125,30 +2122,6 @@ msgstr "Täissuurus"
 msgid "Use Filter"
 msgstr "Kasuta Filtrit"
 
-msgid "Icon"
-msgstr "Ikoon"
-
-msgid "Windows Native Icon"
-msgstr "Windowsi Süsteemiikoon"
-
-msgid "Buffering"
-msgstr "Puhverdamine"
-
-msgid "Pointing"
-msgstr "Osutades"
-
-msgid "Emulate Touch From Mouse"
-msgstr "Emuleerige Puudutust Hiirest"
-
-msgid "Emulate Mouse From Touch"
-msgstr "Emuleerige Hiirt Puudutusest"
-
-msgid "Android"
-msgstr "Android"
-
-msgid "Mouse Cursor"
-msgstr "Hiire Kursor"
-
 msgid "Minimum Display Time"
 msgstr "Minimaalne Näitamise Aeg"
 
@@ -2157,6 +2130,12 @@ msgstr "Dotnet"
 
 msgid "Project"
 msgstr "Projekt"
+
+msgid "Time"
+msgstr "Aeg"
+
+msgid "Polygons"
+msgstr "Hulknurgad"
 
 msgid "Operation"
 msgstr "Operatsioon"
@@ -2236,9 +2215,6 @@ msgstr "Sõne Nime Värv"
 msgid "Max Call Stack"
 msgstr "Maksimaalne Kutsepinu"
 
-msgid "Warnings"
-msgstr "Hoiatused"
-
 msgid "Exclude Addons"
 msgstr "Välista Lisad"
 
@@ -2247,6 +2223,9 @@ msgstr "Keeleserver"
 
 msgid "Use Thread"
 msgstr "Kasuta Lõimu"
+
+msgid "Copyright"
+msgstr "Autoriõigus"
 
 msgid "glTF"
 msgstr "glTF"
@@ -2295,9 +2274,6 @@ msgstr "Peamine Versioon"
 
 msgid "Minor Version"
 msgstr "Alamversioon"
-
-msgid "Copyright"
-msgstr "Autoriõigus"
 
 msgid "Buffers"
 msgstr "Puhvrid"
@@ -2758,9 +2734,6 @@ msgstr "Lühiversioon"
 msgid "Icon Interpolation"
 msgstr "Ikooni Interpolatsioon"
 
-msgid "Launch Screens Interpolation"
-msgstr "Käivitamise Ekraanide Interpolatsioon"
-
 msgid "Capabilities"
 msgstr "Võimalused"
 
@@ -2877,9 +2850,6 @@ msgstr "Luba Allkirjastamata Käivitatav Mälu"
 
 msgid "Audio Input"
 msgstr "Helisisend"
-
-msgid "Location"
-msgstr "Asukoht"
 
 msgid "Address Book"
 msgstr "Aadressiraamat"
@@ -3043,20 +3013,14 @@ msgstr "signtool"
 msgid "Frame"
 msgstr "Kaader"
 
-msgid "Point"
-msgstr "Punkt"
-
 msgid "Top"
 msgstr "Ülaosa"
-
-msgid "Input"
-msgstr "Sisend"
 
 msgid "Emitting"
 msgstr "Kiirgab"
 
-msgid "Time"
-msgstr "Aeg"
+msgid "Shape"
+msgstr "Kuju"
 
 msgid "Points"
 msgstr "Punktid"
@@ -3070,14 +3034,17 @@ msgstr "Alam Kiirgur"
 msgid "Fill"
 msgstr "Täida"
 
+msgid "End"
+msgstr "End"
+
+msgid "Point"
+msgstr "Punkt"
+
 msgid "Linear"
 msgstr "Sirgjooneline"
 
 msgid "UV"
 msgstr "UV"
-
-msgid "Polygons"
-msgstr "Hulknurgad"
 
 msgid "Update"
 msgstr "Uuenda"
@@ -3085,14 +3052,14 @@ msgstr "Uuenda"
 msgid "Editor Settings"
 msgstr "Redaktori sätted"
 
+msgid "Y Sort Origin"
+msgstr "Y-Sordi Päritolu"
+
 msgid "Cull Mask"
 msgstr "Väljalõikamis mask"
 
 msgid "Modulate"
 msgstr "Moduleeri"
-
-msgid "End"
-msgstr "End"
 
 msgid "Text"
 msgstr "Tekst"
@@ -3166,6 +3133,36 @@ msgstr "2D Füüsika"
 msgid "3D Physics"
 msgstr "3D Füüsika"
 
+msgid "B"
+msgstr "B"
+
+msgid "Terrains"
+msgstr "Maastikud"
+
+msgid "Custom Data"
+msgstr "Kohandatud Andmed"
+
+msgid "Scene"
+msgstr "Stseen"
+
+msgid "Texture Origin"
+msgstr "Tekstuuri Alguspunkt"
+
+msgid "Probability"
+msgstr "Võimalus"
+
+msgid "Item"
+msgstr "Üksus"
+
+msgid "Preview"
+msgstr "Eelvaade"
+
+msgid "Sky"
+msgstr "Taevas"
+
+msgid "Ground Color"
+msgstr "Maa Värv"
+
 msgid "Pause"
 msgstr "Paus"
 
@@ -3177,9 +3174,6 @@ msgstr "Formaat"
 
 msgid "Camera Is Active"
 msgstr "Kaamera On Aktiivne"
-
-msgid "Sky"
-msgstr "Taevas"
 
 msgid "Source"
 msgstr "Allikas"
@@ -3205,18 +3199,6 @@ msgstr "Funktsionaalsused"
 msgid "Subsurface Scattering"
 msgstr "Pinnaalune hajumine"
 
-msgid "Item"
-msgstr "Üksus"
-
-msgid "Preview"
-msgstr "Eelvaade"
-
-msgid "B"
-msgstr "B"
-
-msgid "Ground Color"
-msgstr "Maa Värv"
-
 msgid "Top Left"
 msgstr "Ülemine Vasak"
 
@@ -3228,27 +3210,6 @@ msgstr "All Parem"
 
 msgid "Bottom Left"
 msgstr "All Vasak"
-
-msgid "Terrains"
-msgstr "Maastikud"
-
-msgid "Custom Data"
-msgstr "Kohandatud Andmed"
-
-msgid "Scenes"
-msgstr "Stseenid"
-
-msgid "Scene"
-msgstr "Stseen"
-
-msgid "Texture Origin"
-msgstr "Tekstuuri Alguspunkt"
-
-msgid "Y Sort Origin"
-msgstr "Y-Sordi Päritolu"
-
-msgid "Probability"
-msgstr "Võimalus"
 
 msgid "File"
 msgstr "Fail"
@@ -3330,6 +3291,3 @@ msgstr "Maailma Alguspunkt"
 
 msgid "Primary Interface"
 msgstr "Peamine Kasutajaliides"
-
-msgid "Property"
-msgstr "Atribuut"

@@ -32,10 +32,8 @@
 #define TEST_NAVIGATION_SERVER_3D_H
 
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/resources/primitive_meshes.h"
+#include "scene/resources/3d/primitive_meshes.h"
 #include "servers/navigation_server_3d.h"
-
-#include "tests/test_macros.h"
 
 namespace TestNavigationServer3D {
 
@@ -429,6 +427,105 @@ TEST_SUITE("[Navigation]") {
 		navigation_server->free(map);
 	}
 
+	TEST_CASE("[NavigationServer3D] Server should make agents avoid dynamic obstacles when avoidance enabled") {
+		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
+
+		RID map = navigation_server->map_create();
+		RID agent_1 = navigation_server->agent_create();
+		RID obstacle_1 = navigation_server->obstacle_create();
+
+		navigation_server->map_set_active(map, true);
+
+		navigation_server->agent_set_map(agent_1, map);
+		navigation_server->agent_set_avoidance_enabled(agent_1, true);
+		navigation_server->agent_set_position(agent_1, Vector3(0, 0, 0));
+		navigation_server->agent_set_radius(agent_1, 1);
+		navigation_server->agent_set_velocity(agent_1, Vector3(1, 0, 0));
+		CallableMock agent_1_avoidance_callback_mock;
+		navigation_server->agent_set_avoidance_callback(agent_1, callable_mp(&agent_1_avoidance_callback_mock, &CallableMock::function1));
+
+		navigation_server->obstacle_set_map(obstacle_1, map);
+		navigation_server->obstacle_set_avoidance_enabled(obstacle_1, true);
+		navigation_server->obstacle_set_position(obstacle_1, Vector3(2.5, 0, 0.5));
+		navigation_server->obstacle_set_radius(obstacle_1, 1);
+
+		CHECK_EQ(agent_1_avoidance_callback_mock.function1_calls, 0);
+		navigation_server->process(0.0); // Give server some cycles to commit.
+		CHECK_EQ(agent_1_avoidance_callback_mock.function1_calls, 1);
+		Vector3 agent_1_safe_velocity = agent_1_avoidance_callback_mock.function1_latest_arg0;
+		CHECK_MESSAGE(agent_1_safe_velocity.x > 0, "Agent 1 should move a bit along desired velocity (+X).");
+		CHECK_MESSAGE(agent_1_safe_velocity.z < 0, "Agent 1 should move a bit to the side so that it avoids obstacle.");
+
+		navigation_server->free(obstacle_1);
+		navigation_server->free(agent_1);
+		navigation_server->free(map);
+		navigation_server->process(0.0); // Give server some cycles to commit.
+	}
+
+	TEST_CASE("[NavigationServer3D] Server should make agents avoid static obstacles when avoidance enabled") {
+		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
+
+		RID map = navigation_server->map_create();
+		RID agent_1 = navigation_server->agent_create();
+		RID agent_2 = navigation_server->agent_create();
+		RID obstacle_1 = navigation_server->obstacle_create();
+
+		navigation_server->map_set_active(map, true);
+
+		navigation_server->agent_set_map(agent_1, map);
+		navigation_server->agent_set_avoidance_enabled(agent_1, true);
+		navigation_server->agent_set_radius(agent_1, 1.6); // Have hit the obstacle already.
+		navigation_server->agent_set_velocity(agent_1, Vector3(1, 0, 0));
+		CallableMock agent_1_avoidance_callback_mock;
+		navigation_server->agent_set_avoidance_callback(agent_1, callable_mp(&agent_1_avoidance_callback_mock, &CallableMock::function1));
+
+		navigation_server->agent_set_map(agent_2, map);
+		navigation_server->agent_set_avoidance_enabled(agent_2, true);
+		navigation_server->agent_set_radius(agent_2, 1.4); // Haven't hit the obstacle yet.
+		navigation_server->agent_set_velocity(agent_2, Vector3(1, 0, 0));
+		CallableMock agent_2_avoidance_callback_mock;
+		navigation_server->agent_set_avoidance_callback(agent_2, callable_mp(&agent_2_avoidance_callback_mock, &CallableMock::function1));
+
+		navigation_server->obstacle_set_map(obstacle_1, map);
+		navigation_server->obstacle_set_avoidance_enabled(obstacle_1, true);
+		PackedVector3Array obstacle_1_vertices;
+
+		SUBCASE("Static obstacles should work on ground level") {
+			navigation_server->agent_set_position(agent_1, Vector3(0, 0, 0));
+			navigation_server->agent_set_position(agent_2, Vector3(0, 0, 5));
+			obstacle_1_vertices.push_back(Vector3(1.5, 0, 0.5));
+			obstacle_1_vertices.push_back(Vector3(1.5, 0, 4.5));
+		}
+
+		SUBCASE("Static obstacles should work when elevated") {
+			navigation_server->agent_set_position(agent_1, Vector3(0, 5, 0));
+			navigation_server->agent_set_position(agent_2, Vector3(0, 5, 5));
+			obstacle_1_vertices.push_back(Vector3(1.5, 0, 0.5));
+			obstacle_1_vertices.push_back(Vector3(1.5, 0, 4.5));
+			navigation_server->obstacle_set_position(obstacle_1, Vector3(0, 5, 0));
+		}
+
+		navigation_server->obstacle_set_vertices(obstacle_1, obstacle_1_vertices);
+
+		CHECK_EQ(agent_1_avoidance_callback_mock.function1_calls, 0);
+		CHECK_EQ(agent_2_avoidance_callback_mock.function1_calls, 0);
+		navigation_server->process(0.0); // Give server some cycles to commit.
+		CHECK_EQ(agent_1_avoidance_callback_mock.function1_calls, 1);
+		CHECK_EQ(agent_2_avoidance_callback_mock.function1_calls, 1);
+		Vector3 agent_1_safe_velocity = agent_1_avoidance_callback_mock.function1_latest_arg0;
+		Vector3 agent_2_safe_velocity = agent_2_avoidance_callback_mock.function1_latest_arg0;
+		CHECK_MESSAGE(agent_1_safe_velocity.x > 0, "Agent 1 should move a bit along desired velocity (+X).");
+		CHECK_MESSAGE(agent_1_safe_velocity.z < 0, "Agent 1 should move a bit to the side so that it avoids obstacle.");
+		CHECK_MESSAGE(agent_2_safe_velocity.x > 0, "Agent 2 should move a bit along desired velocity (+X).");
+		CHECK_MESSAGE(agent_2_safe_velocity.z == 0, "Agent 2 should not move to the side.");
+
+		navigation_server->free(obstacle_1);
+		navigation_server->free(agent_2);
+		navigation_server->free(agent_1);
+		navigation_server->free(map);
+		navigation_server->process(0.0); // Give server some cycles to commit.
+	}
+
 #ifndef DISABLE_DEPRECATED
 	// This test case uses only public APIs on purpose - other test cases use simplified baking.
 	// FIXME: Remove once deprecated `region_bake_navigation_mesh()` is removed.
@@ -480,6 +577,51 @@ TEST_SUITE("[Navigation]") {
 		memdelete(node_3d);
 	}
 #endif // DISABLE_DEPRECATED
+
+	TEST_CASE("[NavigationServer3D][SceneTree] Server should be able to parse geometry") {
+		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
+
+		// Prepare scene tree with simple mesh to serve as an input geometry.
+		Node3D *node_3d = memnew(Node3D);
+		SceneTree::get_singleton()->get_root()->add_child(node_3d);
+		Ref<PlaneMesh> plane_mesh = memnew(PlaneMesh);
+		plane_mesh->set_size(Size2(10.0, 10.0));
+		MeshInstance3D *mesh_instance = memnew(MeshInstance3D);
+		mesh_instance->set_mesh(plane_mesh);
+		node_3d->add_child(mesh_instance);
+
+		Ref<NavigationMesh> navigation_mesh = memnew(NavigationMesh);
+		Ref<NavigationMeshSourceGeometryData3D> source_geometry = memnew(NavigationMeshSourceGeometryData3D);
+		CHECK_EQ(source_geometry->get_vertices().size(), 0);
+		CHECK_EQ(source_geometry->get_indices().size(), 0);
+
+		navigation_server->parse_source_geometry_data(navigation_mesh, source_geometry, mesh_instance);
+		CHECK_EQ(source_geometry->get_vertices().size(), 12);
+		CHECK_EQ(source_geometry->get_indices().size(), 6);
+
+		SUBCASE("By default, parsing should remove any data that was parsed before") {
+			navigation_server->parse_source_geometry_data(navigation_mesh, source_geometry, mesh_instance);
+			CHECK_EQ(source_geometry->get_vertices().size(), 12);
+			CHECK_EQ(source_geometry->get_indices().size(), 6);
+		}
+
+		SUBCASE("Parsed geometry should be extendible with other geometry") {
+			source_geometry->merge(source_geometry); // Merging with itself.
+			const Vector<float> vertices = source_geometry->get_vertices();
+			const Vector<int> indices = source_geometry->get_indices();
+			REQUIRE_EQ(vertices.size(), 24);
+			REQUIRE_EQ(indices.size(), 12);
+			// Check if first newly added vertex is the same as first vertex.
+			CHECK_EQ(vertices[0], vertices[12]);
+			CHECK_EQ(vertices[1], vertices[13]);
+			CHECK_EQ(vertices[2], vertices[14]);
+			// Check if first newly added index is the same as first index.
+			CHECK_EQ(indices[0] + 4, indices[6]);
+		}
+
+		memdelete(mesh_instance);
+		memdelete(node_3d);
+	}
 
 	// This test case uses only public APIs on purpose - other test cases use simplified baking.
 	TEST_CASE("[NavigationServer3D][SceneTree] Server should be able to bake map correctly") {
@@ -555,10 +697,14 @@ TEST_SUITE("[Navigation]") {
 			CHECK_NE(navigation_server->map_get_closest_point(map, Vector3(0, 0, 0)), Vector3(0, 0, 0));
 			CHECK_NE(navigation_server->map_get_closest_point_normal(map, Vector3(0, 0, 0)), Vector3());
 			CHECK(navigation_server->map_get_closest_point_owner(map, Vector3(0, 0, 0)).is_valid());
-			// TODO: Test map_get_closest_point_to_segment() with p_use_collision=true as well.
 			CHECK_NE(navigation_server->map_get_closest_point_to_segment(map, Vector3(0, 0, 0), Vector3(1, 1, 1), false), Vector3());
+			CHECK_NE(navigation_server->map_get_closest_point_to_segment(map, Vector3(0, 0, 0), Vector3(1, 1, 1), true), Vector3());
 			CHECK_NE(navigation_server->map_get_path(map, Vector3(0, 0, 0), Vector3(10, 0, 10), true).size(), 0);
 			CHECK_NE(navigation_server->map_get_path(map, Vector3(0, 0, 0), Vector3(10, 0, 10), false).size(), 0);
+		}
+
+		SUBCASE("'map_get_closest_point_to_segment' with 'use_collision' should return default if segment doesn't intersect map") {
+			CHECK_EQ(navigation_server->map_get_closest_point_to_segment(map, Vector3(1, 2, 1), Vector3(1, 1, 1), true), Vector3());
 		}
 
 		SUBCASE("Elaborate query with 'CORRIDORFUNNEL' post-processing should yield non-empty result") {
@@ -621,6 +767,27 @@ TEST_SUITE("[Navigation]") {
 		navigation_server->free(map);
 		navigation_server->process(0.0); // Give server some cycles to commit.
 	}
+
+	// FIXME: The race condition mentioned below is actually a problem and fails on CI (GH-90613).
+	/*
+	TEST_CASE("[NavigationServer3D] Server should be able to bake asynchronously") {
+		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
+		Ref<NavigationMesh> navigation_mesh = memnew(NavigationMesh);
+		Ref<NavigationMeshSourceGeometryData3D> source_geometry = memnew(NavigationMeshSourceGeometryData3D);
+
+		Array arr;
+		arr.resize(RS::ARRAY_MAX);
+		BoxMesh::create_mesh_array(arr, Vector3(10.0, 0.001, 10.0));
+		source_geometry->add_mesh_array(arr, Transform3D());
+
+		// Race condition is present below, but baking should take many orders of magnitude
+		// longer than basic checks on the main thread, so it's fine.
+		navigation_server->bake_from_source_geometry_data_async(navigation_mesh, source_geometry, Callable());
+		CHECK(navigation_server->is_baking_navigation_mesh(navigation_mesh));
+		CHECK_EQ(navigation_mesh->get_polygon_count(), 0);
+		CHECK_EQ(navigation_mesh->get_vertices().size(), 0);
+	}
+	*/
 }
 } //namespace TestNavigationServer3D
 

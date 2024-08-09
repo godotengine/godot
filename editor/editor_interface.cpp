@@ -35,13 +35,16 @@
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_resource_preview.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_run_bar.h"
+#include "editor/gui/editor_scene_tabs.h"
+#include "editor/gui/scene_tree_editor.h"
 #include "editor/inspector_dock.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/property_selector.h"
+#include "editor/themes/editor_scale.h"
 #include "main/main.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
@@ -127,7 +130,7 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 	Vector<Ref<Texture2D>> textures;
 
 	for (int i = 0; i < p_meshes.size(); i++) {
-		Ref<Mesh> mesh = p_meshes[i];
+		const Ref<Mesh> &mesh = p_meshes[i];
 		if (!mesh.is_valid()) {
 			textures.push_back(Ref<Texture2D>());
 			continue;
@@ -235,6 +238,10 @@ bool EditorInterface::is_distraction_free_mode_enabled() const {
 	return EditorNode::get_singleton()->is_distraction_free_mode_enabled();
 }
 
+bool EditorInterface::is_multi_window_enabled() const {
+	return EditorNode::get_singleton()->is_multi_window_enabled();
+}
+
 float EditorInterface::get_editor_scale() const {
 	return EDSCALE;
 }
@@ -261,6 +268,93 @@ String EditorInterface::get_current_feature_profile() const {
 
 void EditorInterface::set_current_feature_profile(const String &p_profile_name) {
 	EditorFeatureProfileManager::get_singleton()->set_current_profile(p_profile_name, true);
+}
+
+// Editor dialogs.
+
+void EditorInterface::popup_node_selector(const Callable &p_callback, const TypedArray<StringName> &p_valid_types) {
+	// TODO: Should reuse dialog instance instead of creating a fresh one, but need to rework set_valid_types first.
+	if (node_selector) {
+		node_selector->disconnect(SNAME("selected"), callable_mp(this, &EditorInterface::_node_selected).bind(p_callback));
+		node_selector->disconnect(SNAME("canceled"), callable_mp(this, &EditorInterface::_node_selection_canceled).bind(p_callback));
+		get_base_control()->remove_child(node_selector);
+		node_selector->queue_free();
+	}
+	node_selector = memnew(SceneTreeDialog);
+
+	Vector<StringName> valid_types;
+	int length = p_valid_types.size();
+	valid_types.resize(length);
+	for (int i = 0; i < length; i++) {
+		valid_types.write[i] = p_valid_types[i];
+	}
+	node_selector->set_valid_types(valid_types);
+
+	get_base_control()->add_child(node_selector);
+
+	node_selector->popup_scenetree_dialog();
+
+	const Callable selected_callback = callable_mp(this, &EditorInterface::_node_selected).bind(p_callback);
+	node_selector->connect(SNAME("selected"), selected_callback, CONNECT_DEFERRED);
+
+	const Callable canceled_callback = callable_mp(this, &EditorInterface::_node_selection_canceled).bind(p_callback);
+	node_selector->connect(SNAME("canceled"), canceled_callback, CONNECT_DEFERRED);
+}
+
+void EditorInterface::popup_property_selector(Object *p_object, const Callable &p_callback, const PackedInt32Array &p_type_filter) {
+	// TODO: Should reuse dialog instance instead of creating a fresh one, but need to rework set_type_filter first.
+	if (property_selector) {
+		property_selector->disconnect(SNAME("selected"), callable_mp(this, &EditorInterface::_property_selected).bind(p_callback));
+		property_selector->disconnect(SNAME("canceled"), callable_mp(this, &EditorInterface::_property_selection_canceled).bind(p_callback));
+		get_base_control()->remove_child(property_selector);
+		property_selector->queue_free();
+	}
+	property_selector = memnew(PropertySelector);
+
+	Vector<Variant::Type> type_filter;
+	int length = p_type_filter.size();
+	type_filter.resize(length);
+	for (int i = 0; i < length; i++) {
+		type_filter.write[i] = (Variant::Type)p_type_filter[i];
+	}
+	property_selector->set_type_filter(type_filter);
+
+	get_base_control()->add_child(property_selector);
+
+	property_selector->select_property_from_instance(p_object);
+
+	const Callable selected_callback = callable_mp(this, &EditorInterface::_property_selected).bind(p_callback);
+	property_selector->connect(SNAME("selected"), selected_callback, CONNECT_DEFERRED);
+
+	const Callable canceled_callback = callable_mp(this, &EditorInterface::_property_selection_canceled).bind(p_callback);
+	property_selector->connect(SNAME("canceled"), canceled_callback, CONNECT_DEFERRED);
+}
+
+void EditorInterface::_node_selected(const NodePath &p_node_path, const Callable &p_callback) {
+	const NodePath path = get_edited_scene_root()->get_path().rel_path_to(p_node_path);
+	_call_dialog_callback(p_callback, path, "node selected");
+}
+
+void EditorInterface::_node_selection_canceled(const Callable &p_callback) {
+	_call_dialog_callback(p_callback, NodePath(), "node selection canceled");
+}
+
+void EditorInterface::_property_selected(const String &p_property_name, const Callable &p_callback) {
+	_call_dialog_callback(p_callback, NodePath(p_property_name).get_as_property_path(), "property selected");
+}
+
+void EditorInterface::_property_selection_canceled(const Callable &p_callback) {
+	_call_dialog_callback(p_callback, NodePath(), "property selection canceled");
+}
+
+void EditorInterface::_call_dialog_callback(const Callable &p_callback, const Variant &p_selected, const String &p_context) {
+	Callable::CallError ce;
+	Variant ret;
+	const Variant *args[1] = { &p_selected };
+	p_callback.callp(args, 1, ret, ce);
+	if (ce.error != Callable::CallError::CALL_OK) {
+		ERR_PRINT(vformat("Error calling %s callback: %s", p_context, Variant::get_callable_error_text(p_callback, args, 1, ce)));
+	}
 }
 
 // Editor docks.
@@ -359,6 +453,7 @@ void EditorInterface::save_scene_as(const String &p_scene, bool p_with_preview) 
 
 void EditorInterface::mark_scene_as_unsaved() {
 	EditorUndoRedoManager::get_singleton()->set_history_as_unsaved(EditorNode::get_editor_data().get_current_edited_scene_history_id());
+	EditorSceneTabs::get_singleton()->update_scene_tabs();
 }
 
 void EditorInterface::save_all_scenes() {
@@ -399,6 +494,24 @@ bool EditorInterface::is_movie_maker_enabled() const {
 	return EditorRunBar::get_singleton()->is_movie_maker_enabled();
 }
 
+#ifdef TOOLS_ENABLED
+void EditorInterface::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	const String pf = p_function;
+	if (p_idx == 0) {
+		if (pf == "set_main_screen_editor") {
+			for (String E : { "\"2D\"", "\"3D\"", "\"Script\"", "\"AssetLib\"" }) {
+				r_options->push_back(E);
+			}
+		} else if (pf == "get_editor_viewport_3d") {
+			for (uint32_t i = 0; i < Node3DEditor::VIEWPORTS_COUNT; i++) {
+				r_options->push_back(String::num_int64(i));
+			}
+		}
+	}
+	Object::get_argument_options(p_function, p_idx, r_options);
+}
+#endif
+
 // Base.
 
 void EditorInterface::_bind_methods() {
@@ -430,6 +543,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_main_screen_editor", "name"), &EditorInterface::set_main_screen_editor);
 	ClassDB::bind_method(D_METHOD("set_distraction_free_mode", "enter"), &EditorInterface::set_distraction_free_mode);
 	ClassDB::bind_method(D_METHOD("is_distraction_free_mode_enabled"), &EditorInterface::is_distraction_free_mode_enabled);
+	ClassDB::bind_method(D_METHOD("is_multi_window_enabled"), &EditorInterface::is_multi_window_enabled);
 
 	ClassDB::bind_method(D_METHOD("get_editor_scale"), &EditorInterface::get_editor_scale);
 
@@ -442,6 +556,11 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_current_feature_profile", "profile_name"), &EditorInterface::set_current_feature_profile);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "distraction_free_mode"), "set_distraction_free_mode", "is_distraction_free_mode_enabled");
+
+	// Editor dialogs.
+
+	ClassDB::bind_method(D_METHOD("popup_node_selector", "callback", "valid_types"), &EditorInterface::popup_node_selector, DEFVAL(TypedArray<StringName>()));
+	ClassDB::bind_method(D_METHOD("popup_property_selector", "object", "callback", "type_filter"), &EditorInterface::popup_property_selector, DEFVAL(PackedInt32Array()));
 
 	// Editor docks.
 

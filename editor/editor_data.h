@@ -74,6 +74,7 @@ public:
 	// Adds an object to the selection history. A property name can be passed if the target is a subresource of the given object.
 	// If the object should not change the main screen plugin, it can be set as inspector only.
 	void add_object(ObjectID p_object, const String &p_property = String(), bool p_inspector_only = false);
+	void replace_object(ObjectID p_old_object, ObjectID p_new_object);
 
 	int get_history_len();
 	int get_history_pos();
@@ -152,7 +153,7 @@ private:
 public:
 	EditorPlugin *get_handling_main_editor(Object *p_object);
 	Vector<EditorPlugin *> get_handling_sub_editors(Object *p_object);
-	EditorPlugin *get_editor_by_name(String p_name);
+	EditorPlugin *get_editor_by_name(const String &p_name);
 
 	void copy_object_params(Object *p_object);
 	void paste_object_params(Object *p_object);
@@ -236,6 +237,7 @@ public:
 	Dictionary restore_edited_scene_state(EditorSelection *p_selection, EditorSelectionHistory *p_history);
 	void notify_edited_scene_changed();
 	void notify_resource_saved(const Ref<Resource> &p_resource);
+	void notify_scene_saved(const String &p_path);
 
 	bool script_class_is_parent(const String &p_class, const String &p_inherits);
 	StringName script_class_get_base(const String &p_class) const;
@@ -299,7 +301,7 @@ public:
 	void remove_node(Node *p_node);
 	bool is_selected(Node *p_node) const;
 
-	template <class T>
+	template <typename T>
 	T *get_node_editor_data(Node *p_node) {
 		if (!selection.has(p_node)) {
 			return nullptr;

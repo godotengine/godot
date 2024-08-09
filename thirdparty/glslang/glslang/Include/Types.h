@@ -573,7 +573,8 @@ public:
     }
 
     const char*         semanticName;
-    TStorageQualifier   storage   : 6;
+    TStorageQualifier   storage   : 7;
+    static_assert(EvqLast < 64, "need to increase size of TStorageQualifier bitfields!");
     TBuiltInVariable    builtIn   : 9;
     TBuiltInVariable    declaredBuiltIn : 9;
     static_assert(EbvLast < 256, "need to increase size of TBuiltInVariable bitfields!");
@@ -852,6 +853,8 @@ public:
         // -2048 as the default value indicating layoutSecondaryViewportRelative is not set
         layoutSecondaryViewportRelativeOffset = -2048;
         layoutShaderRecord = false;
+        layoutFullQuads = false;
+        layoutQuadDeriv = false;
         layoutHitObjectShaderRecordNV = false;
         layoutBindlessSampler = false;
         layoutBindlessImage = false;
@@ -948,6 +951,8 @@ public:
     bool layoutViewportRelative;
     int layoutSecondaryViewportRelativeOffset;
     bool layoutShaderRecord;
+    bool layoutFullQuads;
+    bool layoutQuadDeriv;
     bool layoutHitObjectShaderRecordNV;
 
     // GL_EXT_spirv_intrinsics
@@ -1055,6 +1060,8 @@ public:
     TLayoutFormat getFormat() const { return layoutFormat; }
     bool isPushConstant() const { return layoutPushConstant; }
     bool isShaderRecord() const { return layoutShaderRecord; }
+    bool isFullQuads() const { return layoutFullQuads; }
+    bool isQuadDeriv() const { return layoutQuadDeriv; }
     bool hasHitObjectShaderRecordNV() const { return layoutHitObjectShaderRecordNV; }
     bool hasBufferReference() const { return layoutBufferReference; }
     bool hasBufferReferenceAlign() const
@@ -1075,7 +1082,7 @@ public:
     }
 
     // GL_EXT_spirv_intrinsics
-    bool hasSprivDecorate() const { return spirvDecorate != nullptr; }
+    bool hasSpirvDecorate() const { return spirvDecorate != nullptr; }
     void setSpirvDecorate(int decoration, const TIntermAggregate* args = nullptr);
     void setSpirvDecorateId(int decoration, const TIntermAggregate* args);
     void setSpirvDecorateString(int decoration, const TIntermAggregate* args);
@@ -1428,13 +1435,25 @@ class TTypeParameters {
 public:
     POOL_ALLOCATOR_NEW_DELETE(GetThreadPoolAllocator())
 
-    TTypeParameters() : basicType(EbtVoid), arraySizes(nullptr) {}
+    TTypeParameters() : basicType(EbtVoid), arraySizes(nullptr), spirvType(nullptr) {}
 
     TBasicType basicType;
     TArraySizes *arraySizes;
+    TSpirvType *spirvType;
 
-    bool operator==(const TTypeParameters& rhs) const { return basicType == rhs.basicType && *arraySizes == *rhs.arraySizes; }
-    bool operator!=(const TTypeParameters& rhs) const { return basicType != rhs.basicType || *arraySizes != *rhs.arraySizes; }
+    bool operator==(const TTypeParameters& rhs) const
+    {
+        bool same = basicType == rhs.basicType && *arraySizes == *rhs.arraySizes;
+        if (same && basicType == EbtSpirvType) {
+            assert(spirvType && rhs.spirvType);
+            return *spirvType == *rhs.spirvType;
+        }
+        return same;
+    }
+    bool operator!=(const TTypeParameters& rhs) const
+    {
+        return !(*this == rhs);
+    }
 };
 
 //
@@ -1451,9 +1470,9 @@ public:
     TSampler sampler;
     TQualifier qualifier;
     TShaderQualifiers shaderQualifiers;
-    int vectorSize  : 4;
-    int matrixCols  : 4;
-    int matrixRows  : 4;
+    uint32_t vectorSize  : 4;
+    uint32_t matrixCols  : 4;
+    uint32_t matrixRows  : 4;
     bool coopmatNV  : 1;
     bool coopmatKHR : 1;
     TArraySizes* arraySizes;
@@ -1470,7 +1489,7 @@ public:
     void initType(const TSourceLoc& l)
     {
         basicType = EbtVoid;
-        vectorSize = 1;
+        vectorSize = 1u;
         matrixRows = 0;
         matrixCols = 0;
         arraySizes = nullptr;
@@ -1501,19 +1520,22 @@ public:
     {
         matrixRows = 0;
         matrixCols = 0;
-        vectorSize = s;
+        assert(s >= 0);
+        vectorSize = static_cast<uint32_t>(s) & 0b1111;
     }
 
     void setMatrix(int c, int r)
     {
-        matrixRows = r;
-        matrixCols = c;
+        assert(r >= 0);
+        matrixRows = static_cast<uint32_t>(r) & 0b1111;
+        assert(c >= 0);
+        matrixCols = static_cast<uint32_t>(c) & 0b1111;
         vectorSize = 0;
     }
 
     bool isScalar() const
     {
-        return matrixCols == 0 && vectorSize == 1 && arraySizes == nullptr && userDef == nullptr;
+        return matrixCols == 0u && vectorSize == 1u && arraySizes == nullptr && userDef == nullptr;
     }
 
     // GL_EXT_spirv_intrinsics
@@ -1535,10 +1557,14 @@ public:
     // for "empty" type (no args) or simple scalar/vector/matrix
     explicit TType(TBasicType t = EbtVoid, TStorageQualifier q = EvqTemporary, int vs = 1, int mc = 0, int mr = 0,
                    bool isVector = false) :
-                            basicType(t), vectorSize(vs), matrixCols(mc), matrixRows(mr), vector1(isVector && vs == 1), coopmatNV(false), coopmatKHR(false), coopmatKHRuse(-1),
+                            basicType(t), vectorSize(static_cast<uint32_t>(vs) & 0b1111), matrixCols(static_cast<uint32_t>(mc) & 0b1111), matrixRows(static_cast<uint32_t>(mr) & 0b1111), vector1(isVector && vs == 1), coopmatNV(false), coopmatKHR(false), coopmatKHRuse(0), coopmatKHRUseValid(false),
                             arraySizes(nullptr), structure(nullptr), fieldName(nullptr), typeName(nullptr), typeParameters(nullptr),
                             spirvType(nullptr)
                             {
+                                assert(vs >= 0);
+                                assert(mc >= 0);
+                                assert(mr >= 0);
+
                                 sampler.clear();
                                 qualifier.clear();
                                 qualifier.storage = q;
@@ -1547,10 +1573,14 @@ public:
     // for explicit precision qualifier
     TType(TBasicType t, TStorageQualifier q, TPrecisionQualifier p, int vs = 1, int mc = 0, int mr = 0,
           bool isVector = false) :
-                            basicType(t), vectorSize(vs), matrixCols(mc), matrixRows(mr), vector1(isVector && vs == 1), coopmatNV(false), coopmatKHR(false), coopmatKHRuse(-1),
+                            basicType(t), vectorSize(static_cast<uint32_t>(vs) & 0b1111), matrixCols(static_cast<uint32_t>(mc) & 0b1111), matrixRows(static_cast<uint32_t>(mr) & 0b1111), vector1(isVector && vs == 1), coopmatNV(false), coopmatKHR(false), coopmatKHRuse(0), coopmatKHRUseValid(false),
                             arraySizes(nullptr), structure(nullptr), fieldName(nullptr), typeName(nullptr), typeParameters(nullptr),
                             spirvType(nullptr)
                             {
+                                assert(vs >= 0);
+                                assert(mc >= 0);
+                                assert(mr >= 0);
+
                                 sampler.clear();
                                 qualifier.clear();
                                 qualifier.storage = q;
@@ -1561,7 +1591,7 @@ public:
     // for turning a TPublicType into a TType, using a shallow copy
     explicit TType(const TPublicType& p) :
                             basicType(p.basicType),
-                            vectorSize(p.vectorSize), matrixCols(p.matrixCols), matrixRows(p.matrixRows), vector1(false), coopmatNV(p.coopmatNV), coopmatKHR(p.coopmatKHR), coopmatKHRuse(-1),
+                            vectorSize(p.vectorSize), matrixCols(p.matrixCols), matrixRows(p.matrixRows), vector1(false), coopmatNV(p.coopmatNV), coopmatKHR(p.coopmatKHR), coopmatKHRuse(0), coopmatKHRUseValid(false),
                             arraySizes(p.arraySizes), structure(nullptr), fieldName(nullptr), typeName(nullptr), typeParameters(p.typeParameters),
                             spirvType(p.spirvType)
                             {
@@ -1600,16 +1630,23 @@ public:
                                 }
                                 if (p.isCoopmatKHR() && p.typeParameters && p.typeParameters->arraySizes->getNumDims() > 0) {
                                     basicType = p.typeParameters->basicType;
+                                    if (isSpirvType()) {
+                                        assert(p.typeParameters->spirvType);
+                                        spirvType = p.typeParameters->spirvType;
+                                    }
 
                                     if (p.typeParameters->arraySizes->getNumDims() == 4) {
-                                        coopmatKHRuse = p.typeParameters->arraySizes->getDimSize(3);
+                                        const int dimSize = p.typeParameters->arraySizes->getDimSize(3);
+                                        assert(dimSize >= 0);
+                                        coopmatKHRuse = static_cast<uint32_t>(dimSize) & 0b111;
+                                        coopmatKHRUseValid = true;
                                         p.typeParameters->arraySizes->removeLastSize();
                                     }
                                 }
                             }
     // for construction of sampler types
     TType(const TSampler& sampler, TStorageQualifier q = EvqUniform, TArraySizes* as = nullptr) :
-        basicType(EbtSampler), vectorSize(1), matrixCols(0), matrixRows(0), vector1(false), coopmatNV(false), coopmatKHR(false), coopmatKHRuse(-1),
+        basicType(EbtSampler), vectorSize(1u), matrixCols(0u), matrixRows(0u), vector1(false), coopmatNV(false), coopmatKHR(false), coopmatKHRuse(0), coopmatKHRUseValid(false),
         arraySizes(as), structure(nullptr), fieldName(nullptr), typeName(nullptr),
         sampler(sampler), typeParameters(nullptr), spirvType(nullptr)
     {
@@ -1655,14 +1692,15 @@ public:
                                     } else if (isCoopMat()) {
                                         coopmatNV = false;
                                         coopmatKHR = false;
-                                        coopmatKHRuse = -1;
+                                        coopmatKHRuse = 0;
+                                        coopmatKHRUseValid = false;
                                         typeParameters = nullptr;
                                     }
                                 }
                             }
     // for making structures, ...
     TType(TTypeList* userDef, const TString& n) :
-                            basicType(EbtStruct), vectorSize(1), matrixCols(0), matrixRows(0), vector1(false), coopmatNV(false), coopmatKHR(false), coopmatKHRuse(-1),
+                            basicType(EbtStruct), vectorSize(1), matrixCols(0), matrixRows(0), vector1(false), coopmatNV(false), coopmatKHR(false), coopmatKHRuse(0), coopmatKHRUseValid(false),
                             arraySizes(nullptr), structure(userDef), fieldName(nullptr), typeParameters(nullptr),
                             spirvType(nullptr)
                             {
@@ -1672,7 +1710,7 @@ public:
                             }
     // For interface blocks
     TType(TTypeList* userDef, const TString& n, const TQualifier& q) :
-                            basicType(EbtBlock), vectorSize(1), matrixCols(0), matrixRows(0), vector1(false), coopmatNV(false), coopmatKHR(false), coopmatKHRuse(-1),
+                            basicType(EbtBlock), vectorSize(1), matrixCols(0), matrixRows(0), vector1(false), coopmatNV(false), coopmatKHR(false), coopmatKHRuse(0), coopmatKHRUseValid(false),
                             qualifier(q), arraySizes(nullptr), structure(userDef), fieldName(nullptr), typeParameters(nullptr),
                             spirvType(nullptr)
                             {
@@ -1681,7 +1719,7 @@ public:
                             }
     // for block reference (first parameter must be EbtReference)
     explicit TType(TBasicType t, const TType &p, const TString& n) :
-                            basicType(t), vectorSize(1), matrixCols(0), matrixRows(0), vector1(false), coopmatNV(false), coopmatKHR(false), coopmatKHRuse(-1),
+                            basicType(t), vectorSize(1), matrixCols(0), matrixRows(0), vector1(false), coopmatNV(false), coopmatKHR(false), coopmatKHRuse(0), coopmatKHRUseValid(false),
                             arraySizes(nullptr), structure(nullptr), fieldName(nullptr), typeName(nullptr), typeParameters(nullptr),
                             spirvType(nullptr)
                             {
@@ -1719,6 +1757,7 @@ public:
         coopmatNV = copyOf.isCoopMatNV();
         coopmatKHR = copyOf.isCoopMatKHR();
         coopmatKHRuse = copyOf.coopmatKHRuse;
+        coopmatKHRUseValid = copyOf.coopmatKHRUseValid;
     }
 
     // Make complete copy of the whole type graph rooted at 'copyOf'.
@@ -1748,7 +1787,7 @@ public:
 
     void makeVector() { vector1 = true; }
 
-    virtual void hideMember() { basicType = EbtVoid; vectorSize = 1; }
+    virtual void hideMember() { basicType = EbtVoid; vectorSize = 1u; }
     virtual bool hiddenMember() const { return basicType == EbtVoid; }
 
     virtual void setFieldName(const TString& n) { fieldName = NewPoolTString(n.c_str()); }
@@ -1788,9 +1827,9 @@ public:
     virtual       TQualifier& getQualifier()       { return qualifier; }
     virtual const TQualifier& getQualifier() const { return qualifier; }
 
-    virtual int getVectorSize() const { return vectorSize; }  // returns 1 for either scalar or vector of size 1, valid for both
-    virtual int getMatrixCols() const { return matrixCols; }
-    virtual int getMatrixRows() const { return matrixRows; }
+    virtual int getVectorSize() const { return static_cast<int>(vectorSize); }  // returns 1 for either scalar or vector of size 1, valid for both
+    virtual int getMatrixCols() const { return static_cast<int>(matrixCols); }
+    virtual int getMatrixRows() const { return static_cast<int>(matrixRows); }
     virtual int getOuterArraySize()  const { return arraySizes->getOuterSize(); }
     virtual TIntermTyped*  getOuterArrayNode() const { return arraySizes->getOuterNode(); }
     virtual int getCumulativeArraySize()  const { return arraySizes->getCumulativeSize(); }
@@ -1805,7 +1844,7 @@ public:
     virtual bool isScalar() const { return ! isVector() && ! isMatrix() && ! isStruct() && ! isArray(); }
     virtual bool isScalarOrVec1() const { return isScalar() || vector1; }
     virtual bool isScalarOrVector() const { return !isMatrix() && !isStruct() && !isArray(); }
-    virtual bool isVector() const { return vectorSize > 1 || vector1; }
+    virtual bool isVector() const { return vectorSize > 1u || vector1; }
     virtual bool isMatrix() const { return matrixCols ? true : false; }
     virtual bool isArray()  const { return arraySizes != nullptr; }
     virtual bool isSizedArray() const { return isArray() && arraySizes->isSized(); }
@@ -1855,7 +1894,7 @@ public:
     bool isCoopMatKHR() const { return coopmatKHR; }
     bool isReference() const { return getBasicType() == EbtReference; }
     bool isSpirvType() const { return getBasicType() == EbtSpirvType; }
-    int getCoopMatKHRuse() const { return coopmatKHRuse; }
+    int getCoopMatKHRuse() const { return static_cast<int>(coopmatKHRuse); }
 
     // return true if this type contains any subtype which satisfies the given predicate.
     template <typename P>
@@ -2096,7 +2135,7 @@ public:
         const auto appendInt  = [&](int i)          { typeString.append(std::to_string(i).c_str()); };
 
         if (getQualifiers) {
-          if (qualifier.hasSprivDecorate())
+          if (qualifier.hasSpirvDecorate())
             appendStr(qualifier.getSpirvDecorateQualifierString().c_str());
 
           if (qualifier.hasLayout()) {
@@ -2190,6 +2229,10 @@ public:
               
               if (qualifier.layoutShaderRecord)
                 appendStr(" shaderRecordNV");
+              if (qualifier.layoutFullQuads)
+                appendStr(" full_quads");
+              if (qualifier.layoutQuadDeriv)
+                appendStr(" quad_derivatives");
               if (qualifier.layoutHitObjectShaderRecordNV)
                 appendStr(" hitobjectshaderrecordnv");
 
@@ -2395,7 +2438,7 @@ public:
                 if (i != (int)typeParameters->arraySizes->getNumDims() - 1)
                   appendStr(", ");
               }
-              if (coopmatKHRuse != -1) {
+              if (coopmatKHRUseValid) {
                   appendStr(", ");
                   appendInt(coopmatKHRuse);
               }
@@ -2464,11 +2507,14 @@ public:
     void setStruct(TTypeList* s) { assert(isStruct()); structure = s; }
     TTypeList* getWritableStruct() const { assert(isStruct()); return structure; }  // This should only be used when known to not be sharing with other threads
     void setBasicType(const TBasicType& t) { basicType = t; }
-    void setVectorSize(int s) { vectorSize = s; }
+    void setVectorSize(int s) {
+        assert(s >= 0);
+        vectorSize = static_cast<uint32_t>(s) & 0b1111;
+    }
 
     int computeNumComponents() const
     {
-        int components = 0;
+        uint32_t components = 0;
 
         if (getBasicType() == EbtStruct || getBasicType() == EbtBlock) {
             for (TTypeList::const_iterator tl = getStruct()->begin(); tl != getStruct()->end(); tl++)
@@ -2482,7 +2528,7 @@ public:
             components *= arraySizes->getCumulativeSize();
         }
 
-        return components;
+        return static_cast<int>(components);
     }
 
     // append this type's mangled name to the passed in 'name'
@@ -2689,7 +2735,8 @@ public:
         if (isCoopMatKHR() && right.isCoopMatKHR()) {
             return ((getBasicType() == right.getBasicType()) || (getBasicType() == EbtCoopmat) ||
                     (right.getBasicType() == EbtCoopmat)) &&
-                   typeParameters == nullptr && right.typeParameters != nullptr;
+                   ((typeParameters == nullptr && right.typeParameters != nullptr) ||
+                    (typeParameters != nullptr && right.typeParameters == nullptr));
         }
         return false;
     }
@@ -2795,6 +2842,7 @@ protected:
             typeParameters = new TTypeParameters;
             typeParameters->arraySizes = new TArraySizes;
             *typeParameters->arraySizes = *copyOf.typeParameters->arraySizes;
+            *typeParameters->spirvType = *copyOf.typeParameters->spirvType;
             typeParameters->basicType = copyOf.basicType;
         }
 
@@ -2825,9 +2873,9 @@ protected:
     void buildMangledName(TString&) const;
 
     TBasicType basicType : 8;
-    int vectorSize       : 4;  // 1 means either scalar or 1-component vector; see vector1 to disambiguate.
-    int matrixCols       : 4;
-    int matrixRows       : 4;
+    uint32_t vectorSize       : 4;  // 1 means either scalar or 1-component vector; see vector1 to disambiguate.
+    uint32_t matrixCols       : 4;
+    uint32_t matrixRows       : 4;
     bool vector1         : 1;  // Backward-compatible tracking of a 1-component vector distinguished from a scalar.
                                // GLSL 4.5 never has a 1-component vector; so this will always be false until such
                                // functionality is added.
@@ -2835,7 +2883,8 @@ protected:
                                // from a scalar.
     bool coopmatNV       : 1;
     bool coopmatKHR      : 1;
-    int coopmatKHRuse    : 4;  // Accepts one of three values: 0, 1, 2 (gl_MatrixUseA, gl_MatrixUseB, gl_MatrixUseAccumulator)
+    uint32_t coopmatKHRuse    : 3;  // Accepts one of three values: 0, 1, 2 (gl_MatrixUseA, gl_MatrixUseB, gl_MatrixUseAccumulator)
+    bool coopmatKHRUseValid   : 1;  // True if coopmatKHRuse has been set
     TQualifier qualifier;
 
     TArraySizes* arraySizes;    // nullptr unless an array; can be shared across types

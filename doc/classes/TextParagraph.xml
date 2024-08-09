@@ -175,7 +175,7 @@
 			<return type="Vector2" />
 			<param index="0" name="line" type="int" />
 			<description>
-				Returns size of the bounding box of the line of text.
+				Returns size of the bounding box of the line of text. Returned size is rounded up.
 			</description>
 		</method>
 		<method name="get_line_underline_position" qualifiers="const">
@@ -273,6 +273,9 @@
 		</member>
 		<member name="direction" type="int" setter="set_direction" getter="get_direction" enum="TextServer.Direction" default="0">
 			Text writing direction.
+		</member>
+		<member name="ellipsis_char" type="String" setter="set_ellipsis_char" getter="get_ellipsis_char" default="&quot;…&quot;">
+			Ellipsis character used for text clipping.
 		</member>
 		<member name="justification_flags" type="int" setter="set_justification_flags" getter="get_justification_flags" enum="TextServer.JustificationFlag" is_bitfield="true" default="163">
 			Line fill alignment rules. For more info see [enum TextServer.JustificationFlag].

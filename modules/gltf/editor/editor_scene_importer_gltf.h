@@ -33,7 +33,7 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "editor/import/resource_importer_scene.h"
+#include "editor/import/3d/resource_importer_scene.h"
 
 class Animation;
 class Node;
@@ -50,6 +50,8 @@ public:
 	virtual void get_import_options(const String &p_path,
 			List<ResourceImporter::ImportOption> *r_options) override;
 	virtual void handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const override;
+	virtual Variant get_option_visibility(const String &p_path, bool p_for_animation,
+			const String &p_option, const HashMap<StringName, Variant> &p_options) override;
 };
 
 #endif // TOOLS_ENABLED

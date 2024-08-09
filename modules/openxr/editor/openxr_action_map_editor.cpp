@@ -32,9 +32,10 @@
 
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/themes/editor_scale.h"
 
 // TODO implement redo/undo system
 
@@ -43,7 +44,6 @@ void OpenXRActionMapEditor::_bind_methods() {
 	ClassDB::bind_method("_add_interaction_profile_editor", &OpenXRActionMapEditor::_add_interaction_profile_editor);
 
 	ClassDB::bind_method(D_METHOD("_add_action_set", "name"), &OpenXRActionMapEditor::_add_action_set);
-	ClassDB::bind_method(D_METHOD("_set_focus_on_action_set", "action_set"), &OpenXRActionMapEditor::_set_focus_on_action_set);
 	ClassDB::bind_method(D_METHOD("_remove_action_set", "name"), &OpenXRActionMapEditor::_remove_action_set);
 
 	ClassDB::bind_method(D_METHOD("_do_add_action_set_editor", "action_set_editor"), &OpenXRActionMapEditor::_do_add_action_set_editor);
@@ -59,7 +59,7 @@ void OpenXRActionMapEditor::_notification(int p_what) {
 			for (int i = 0; i < tabs->get_child_count(); i++) {
 				Control *tab = Object::cast_to<Control>(tabs->get_child(i));
 				if (tab) {
-					tab->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
+					tab->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 				}
 			}
 		} break;
@@ -110,7 +110,7 @@ OpenXRInteractionProfileEditorBase *OpenXRActionMapEditor::_add_interaction_prof
 	// now add it in..
 	ERR_FAIL_NULL_V(new_profile_editor, nullptr);
 	tabs->add_child(new_profile_editor);
-	new_profile_editor->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
+	new_profile_editor->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 	tabs->set_tab_button_icon(tabs->get_tab_count() - 1, get_theme_icon(SNAME("close"), SNAME("TabBar")));
 
 	return new_profile_editor;
@@ -175,7 +175,7 @@ void OpenXRActionMapEditor::_on_add_action_set() {
 	// Make sure our action set is the current tab
 	tabs->set_current_tab(0);
 
-	call_deferred("_set_focus_on_action_set", new_action_set_editor);
+	callable_mp(this, &OpenXRActionMapEditor::_set_focus_on_action_set).call_deferred(new_action_set_editor);
 }
 
 void OpenXRActionMapEditor::_set_focus_on_action_set(OpenXRActionSetEditor *p_action_set_editor) {
@@ -248,25 +248,26 @@ void OpenXRActionMapEditor::_on_interaction_profile_selected(const String p_path
 
 void OpenXRActionMapEditor::_load_action_map(const String p_path, bool p_create_new_if_missing) {
 	Error err = OK;
-	action_map = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_IGNORE, &err);
-	if (err != OK) {
-		if ((err == ERR_FILE_NOT_FOUND || err == ERR_CANT_OPEN) && p_create_new_if_missing) {
-			action_map.instantiate();
-			action_map->create_default_action_sets();
-
-			// Save it immediately
-			err = ResourceSaver::save(action_map, p_path);
-			if (err != OK) {
-				// show warning but continue
-				EditorNode::get_singleton()->show_warning(vformat(TTR("Error saving file %s: %s"), edited_path, error_names[err]));
-			}
-
-		} else {
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	if (da->file_exists(p_path)) {
+		action_map = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
+		if (err != OK) {
 			EditorNode::get_singleton()->show_warning(vformat(TTR("Error loading %s: %s."), edited_path, error_names[err]));
 
 			edited_path = "";
 			header_label->set_text("");
 			return;
+		}
+	} else if (p_create_new_if_missing) {
+		action_map.instantiate();
+		action_map->create_default_action_sets();
+		action_map->set_path(p_path);
+
+		// Save it immediately
+		err = ResourceSaver::save(action_map, p_path);
+		if (err != OK) {
+			// Show warning but continue.
+			EditorNode::get_singleton()->show_warning(vformat(TTR("Error saving file %s: %s"), edited_path, error_names[err]));
 		}
 	}
 
@@ -357,7 +358,7 @@ void OpenXRActionMapEditor::_do_remove_interaction_profile_editor(OpenXRInteract
 }
 
 void OpenXRActionMapEditor::open_action_map(String p_path) {
-	EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
+	EditorNode::get_bottom_panel()->make_item_visible(this);
 
 	// out with the old...
 	_clear_action_map();
@@ -402,13 +403,13 @@ OpenXRActionMapEditor::OpenXRActionMapEditor() {
 	add_action_set = memnew(Button);
 	add_action_set->set_text(TTR("Add Action Set"));
 	add_action_set->set_tooltip_text(TTR("Add an action set."));
-	add_action_set->connect("pressed", callable_mp(this, &OpenXRActionMapEditor::_on_add_action_set));
+	add_action_set->connect(SceneStringName(pressed), callable_mp(this, &OpenXRActionMapEditor::_on_add_action_set));
 	top_hb->add_child(add_action_set);
 
 	add_interaction_profile = memnew(Button);
 	add_interaction_profile->set_text(TTR("Add profile"));
 	add_interaction_profile->set_tooltip_text(TTR("Add an interaction profile."));
-	add_interaction_profile->connect("pressed", callable_mp(this, &OpenXRActionMapEditor::_on_add_interaction_profile));
+	add_interaction_profile->connect(SceneStringName(pressed), callable_mp(this, &OpenXRActionMapEditor::_on_add_interaction_profile));
 	top_hb->add_child(add_interaction_profile);
 
 	VSeparator *vseparator = memnew(VSeparator);
@@ -417,13 +418,13 @@ OpenXRActionMapEditor::OpenXRActionMapEditor() {
 	save_as = memnew(Button);
 	save_as->set_text(TTR("Save"));
 	save_as->set_tooltip_text(TTR("Save this OpenXR action map."));
-	save_as->connect("pressed", callable_mp(this, &OpenXRActionMapEditor::_on_save_action_map));
+	save_as->connect(SceneStringName(pressed), callable_mp(this, &OpenXRActionMapEditor::_on_save_action_map));
 	top_hb->add_child(save_as);
 
 	_default = memnew(Button);
 	_default->set_text(TTR("Reset to Default"));
 	_default->set_tooltip_text(TTR("Reset to default OpenXR action map."));
-	_default->connect("pressed", callable_mp(this, &OpenXRActionMapEditor::_on_reset_to_default_layout));
+	_default->connect(SceneStringName(pressed), callable_mp(this, &OpenXRActionMapEditor::_on_reset_to_default_layout));
 	top_hb->add_child(_default);
 
 	tabs = memnew(TabContainer);

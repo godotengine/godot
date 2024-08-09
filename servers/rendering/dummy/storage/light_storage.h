@@ -36,7 +36,29 @@
 namespace RendererDummy {
 
 class LightStorage : public RendererLightStorage {
+private:
+	static LightStorage *singleton;
+	/* LIGHTMAP */
+	struct Lightmap {
+		// dummy lightmap, no data
+	};
+
+	mutable RID_Owner<Lightmap, true> lightmap_owner;
+	/* LIGHTMAP INSTANCE */
+
+	struct LightmapInstance {
+		RID lightmap;
+	};
+
+	mutable RID_Owner<LightmapInstance> lightmap_instance_owner;
+
 public:
+	static LightStorage *get_singleton();
+
+	LightStorage();
+	virtual ~LightStorage();
+
+	bool free(RID p_rid);
 	/* Light API */
 
 	virtual RID directional_light_allocate() override { return RID(); }
@@ -91,6 +113,7 @@ public:
 	void light_instance_set_aabb(RID p_light_instance, const AABB &p_aabb) override {}
 	void light_instance_set_shadow_transform(RID p_light_instance, const Projection &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2()) override {}
 	void light_instance_mark_visible(RID p_light_instance) override {}
+	virtual bool light_instance_is_shadow_visible_at_position(RID p_light_instance, const Vector3 &p_position) const override { return false; }
 
 	/* PROBE API */
 	virtual RID reflection_probe_allocate() override { return RID(); }
@@ -109,6 +132,7 @@ public:
 	virtual void reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable) override {}
 	virtual void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable) override {}
 	virtual void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) override {}
+	virtual void reflection_probe_set_reflection_mask(RID p_probe, uint32_t p_layers) override {}
 	virtual void reflection_probe_set_resolution(RID p_probe, int p_resolution) override {}
 	virtual void reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_ratio) override {}
 	virtual float reflection_probe_get_mesh_lod_threshold(RID p_probe) const override { return 0.0; }
@@ -116,6 +140,7 @@ public:
 	virtual AABB reflection_probe_get_aabb(RID p_probe) const override { return AABB(); }
 	virtual RS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const override { return RenderingServer::REFLECTION_PROBE_UPDATE_ONCE; }
 	virtual uint32_t reflection_probe_get_cull_mask(RID p_probe) const override { return 0; }
+	virtual uint32_t reflection_probe_get_reflection_mask(RID p_probe) const override { return 0; }
 	virtual Vector3 reflection_probe_get_size(RID p_probe) const override { return Vector3(); }
 	virtual Vector3 reflection_probe_get_origin_offset(RID p_probe) const override { return Vector3(); }
 	virtual float reflection_probe_get_origin_max_distance(RID p_probe) const override { return 0.0; }
@@ -133,6 +158,7 @@ public:
 	virtual RID reflection_probe_instance_create(RID p_probe) override { return RID(); }
 	virtual void reflection_probe_instance_free(RID p_instance) override {}
 	virtual void reflection_probe_instance_set_transform(RID p_instance, const Transform3D &p_transform) override {}
+	virtual bool reflection_probe_has_atlas_index(RID p_instance) override { return false; }
 	virtual void reflection_probe_release_atlas_index(RID p_instance) override {}
 	virtual bool reflection_probe_instance_needs_redraw(RID p_instance) override { return false; }
 	virtual bool reflection_probe_instance_has_reflection(RID p_instance) override { return false; }
@@ -142,9 +168,11 @@ public:
 
 	/* LIGHTMAP CAPTURE */
 
-	virtual RID lightmap_allocate() override { return RID(); }
-	virtual void lightmap_initialize(RID p_rid) override {}
-	virtual void lightmap_free(RID p_rid) override {}
+	bool owns_lightmap(RID p_rid) { return lightmap_owner.owns(p_rid); }
+
+	virtual RID lightmap_allocate() override;
+	virtual void lightmap_initialize(RID p_rid) override;
+	virtual void lightmap_free(RID p_rid) override;
 
 	virtual void lightmap_set_textures(RID p_lightmap, RID p_light, bool p_uses_spherical_haromics) override {}
 	virtual void lightmap_set_probe_bounds(RID p_lightmap, const AABB &p_bounds) override {}
@@ -163,8 +191,10 @@ public:
 
 	/* LIGHTMAP INSTANCE */
 
-	RID lightmap_instance_create(RID p_lightmap) override { return RID(); }
-	void lightmap_instance_free(RID p_lightmap) override {}
+	bool owns_lightmap_instance(RID p_rid) { return lightmap_instance_owner.owns(p_rid); }
+
+	RID lightmap_instance_create(RID p_lightmap) override;
+	void lightmap_instance_free(RID p_lightmap) override;
 	void lightmap_instance_set_transform(RID p_lightmap, const Transform3D &p_transform) override {}
 
 	/* SHADOW ATLAS API */

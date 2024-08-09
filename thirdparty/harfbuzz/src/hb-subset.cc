@@ -48,6 +48,7 @@
 #include "hb-ot-cff2-table.hh"
 #include "hb-ot-vorg-table.hh"
 #include "hb-ot-name-table.hh"
+#include "hb-ot-layout-base-table.hh"
 #include "hb-ot-layout-gsub-table.hh"
 #include "hb-ot-layout-gpos-table.hh"
 #include "hb-ot-var-avar-table.hh"
@@ -460,9 +461,10 @@ _dependencies_satisfied (hb_subset_plan_t *plan, hb_tag_t tag,
   case HB_OT_TAG_hmtx:
   case HB_OT_TAG_vmtx:
   case HB_OT_TAG_maxp:
+  case HB_OT_TAG_OS2:
     return !plan->normalized_coords || !pending_subset_tags.has (HB_OT_TAG_glyf);
   case HB_OT_TAG_GPOS:
-    return !plan->normalized_coords || plan->all_axes_pinned || !pending_subset_tags.has (HB_OT_TAG_GDEF);
+    return plan->all_axes_pinned || !pending_subset_tags.has (HB_OT_TAG_GDEF);
   default:
     return true;
   }
@@ -502,6 +504,7 @@ _subset_table (hb_subset_plan_t *plan,
   case HB_OT_TAG_CBLC: return _subset<const OT::CBLC> (plan, buf);
   case HB_OT_TAG_CBDT: return true; /* skip CBDT, handled by CBLC */
   case HB_OT_TAG_MATH: return _subset<const OT::MATH> (plan, buf);
+  case HB_OT_TAG_BASE: return _subset<const OT::BASE> (plan, buf);
 
 #ifndef HB_NO_SUBSET_CFF
   case HB_OT_TAG_CFF1: return _subset<const OT::cff1> (plan, buf);
@@ -547,6 +550,7 @@ _subset_table (hb_subset_plan_t *plan,
     }
 #endif
     return _passthrough (plan, tag);
+
   default:
     if (plan->flags & HB_SUBSET_FLAGS_PASSTHROUGH_UNRECOGNIZED)
       return _passthrough (plan, tag);

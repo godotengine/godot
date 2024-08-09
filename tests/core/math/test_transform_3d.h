@@ -107,6 +107,35 @@ TEST_CASE("[Transform3D] Finite number checks") {
 			"Transform3D with two components infinite should not be finite.");
 }
 
+TEST_CASE("[Transform3D] Rotate around global origin") {
+	// Start with the default orientation, but not centered on the origin.
+	// Rotating should rotate both our basis and the origin.
+	Transform3D transform = Transform3D();
+	transform.origin = Vector3(0, 0, 1);
+
+	Transform3D expected = Transform3D();
+	expected.origin = Vector3(0, 0, -1);
+	expected.basis[0] = Vector3(-1, 0, 0);
+	expected.basis[2] = Vector3(0, 0, -1);
+
+	const Transform3D rotated_transform = transform.rotated(Vector3(0, 1, 0), Math_PI);
+	CHECK_MESSAGE(rotated_transform.is_equal_approx(expected), "The rotated transform should have a new orientation and basis.");
+}
+
+TEST_CASE("[Transform3D] Rotate in-place (local rotation)") {
+	// Start with the default orientation.
+	// Local rotation should not change the origin, only the basis.
+	Transform3D transform = Transform3D();
+	transform.origin = Vector3(1, 2, 3);
+
+	Transform3D expected = Transform3D();
+	expected.origin = Vector3(1, 2, 3);
+	expected.basis[0] = Vector3(-1, 0, 0);
+	expected.basis[2] = Vector3(0, 0, -1);
+
+	const Transform3D rotated_transform = Transform3D(transform.rotated_local(Vector3(0, 1, 0), Math_PI));
+	CHECK_MESSAGE(rotated_transform.is_equal_approx(expected), "The rotated transform should have a new orientation but still be based on the same origin.");
+}
 } // namespace TestTransform3D
 
 #endif // TEST_TRANSFORM_3D_H

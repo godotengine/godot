@@ -64,6 +64,7 @@ private:
 	bool fractional_delta = false;
 	bool interpolate = true;
 	float interp_to_end_factor = 0;
+	Vector3 previous_velocity;
 	Vector2 previous_position;
 #ifdef TOOLS_ENABLED
 	bool show_visibility_rect = false;

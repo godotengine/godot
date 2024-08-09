@@ -54,6 +54,15 @@
 		r_path_owners->push_back(poly->owner->get_owner_id()); \
 	}
 
+#ifdef DEBUG_ENABLED
+#define NAVMAP_ITERATION_ZERO_ERROR_MSG() \
+	ERR_PRINT_ONCE("NavigationServer navigation map query failed because it was made before first map synchronization.\n\
+	NavigationServer 'map_changed' signal can be used to receive update notifications.\n\
+	NavigationServer 'map_get_iteration_id()' can be used to check if a map has finished its newest iteration.");
+#else
+#define NAVMAP_ITERATION_ZERO_ERROR_MSG()
+#endif // DEBUG_ENABLED
+
 void NavMap::set_up(Vector3 p_up) {
 	if (up == p_up) {
 		return;
@@ -67,6 +76,7 @@ void NavMap::set_cell_size(real_t p_cell_size) {
 		return;
 	}
 	cell_size = p_cell_size;
+	_update_merge_rasterizer_cell_dimensions();
 	regenerate_polygons = true;
 }
 
@@ -75,6 +85,16 @@ void NavMap::set_cell_height(real_t p_cell_height) {
 		return;
 	}
 	cell_height = p_cell_height;
+	_update_merge_rasterizer_cell_dimensions();
+	regenerate_polygons = true;
+}
+
+void NavMap::set_merge_rasterizer_cell_scale(float p_value) {
+	if (merge_rasterizer_cell_scale == p_value) {
+		return;
+	}
+	merge_rasterizer_cell_scale = p_value;
+	_update_merge_rasterizer_cell_dimensions();
 	regenerate_polygons = true;
 }
 
@@ -103,9 +123,9 @@ void NavMap::set_link_connection_radius(real_t p_link_connection_radius) {
 }
 
 gd::PointKey NavMap::get_point_key(const Vector3 &p_pos) const {
-	const int x = static_cast<int>(Math::floor(p_pos.x / cell_size));
-	const int y = static_cast<int>(Math::floor(p_pos.y / cell_height));
-	const int z = static_cast<int>(Math::floor(p_pos.z / cell_size));
+	const int x = static_cast<int>(Math::floor(p_pos.x / merge_rasterizer_cell_size));
+	const int y = static_cast<int>(Math::floor(p_pos.y / merge_rasterizer_cell_height));
+	const int z = static_cast<int>(Math::floor(p_pos.z / merge_rasterizer_cell_size));
 
 	gd::PointKey p;
 	p.key = 0;
@@ -116,7 +136,12 @@ gd::PointKey NavMap::get_point_key(const Vector3 &p_pos) const {
 }
 
 Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers, Vector<int32_t> *r_path_types, TypedArray<RID> *r_path_rids, Vector<int64_t> *r_path_owners) const {
-	ERR_FAIL_COND_V_MSG(map_update_id == 0, Vector<Vector3>(), "NavigationServer map query failed because it was made before first map synchronization.");
+	RWLockRead read_lock(map_rwlock);
+	if (iteration_id == 0) {
+		NAVMAP_ITERATION_ZERO_ERROR_MSG();
+		return Vector<Vector3>();
+	}
+
 	// Clear metadata outputs.
 	if (r_path_types) {
 		r_path_types->clear();
@@ -372,7 +397,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 
 		// Stores the further reachable end polygon, in case our goal is not reachable.
 		if (is_reachable) {
-			real_t d = navigation_polys[least_cost_id].entry.distance_to(p_destination) * navigation_polys[least_cost_id].poly->owner->get_travel_cost();
+			real_t d = navigation_polys[least_cost_id].entry.distance_to(p_destination);
 			if (reachable_d > d) {
 				reachable_d = d;
 				reachable_end = navigation_polys[least_cost_id].poly;
@@ -576,7 +601,12 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 }
 
 Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) const {
-	ERR_FAIL_COND_V_MSG(map_update_id == 0, Vector3(), "NavigationServer map query failed because it was made before first map synchronization.");
+	RWLockRead read_lock(map_rwlock);
+	if (iteration_id == 0) {
+		NAVMAP_ITERATION_ZERO_ERROR_MSG();
+		return Vector3();
+	}
+
 	bool use_collision = p_use_collision;
 	Vector3 closest_point;
 	real_t closest_point_d = FLT_MAX;
@@ -587,7 +617,7 @@ Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector
 			const Face3 f(p.points[0].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
 			Vector3 inters;
 			if (f.intersects_segment(p_from, p_to, &inters)) {
-				const real_t d = closest_point_d = p_from.distance_to(inters);
+				const real_t d = p_from.distance_to(inters);
 				if (use_collision == false) {
 					closest_point = inters;
 					use_collision = true;
@@ -597,9 +627,25 @@ Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector
 					closest_point_d = d;
 				}
 			}
-		}
+			// If segment does not itersect face, check the distance from segment's endpoints.
+			else if (!use_collision) {
+				const Vector3 p_from_closest = f.get_closest_point_to(p_from);
+				const real_t d_p_from = p_from.distance_to(p_from_closest);
+				if (closest_point_d > d_p_from) {
+					closest_point = p_from_closest;
+					closest_point_d = d_p_from;
+				}
 
-		if (use_collision == false) {
+				const Vector3 p_to_closest = f.get_closest_point_to(p_to);
+				const real_t d_p_to = p_to.distance_to(p_to_closest);
+				if (closest_point_d > d_p_to) {
+					closest_point = p_to_closest;
+					closest_point_d = d_p_to;
+				}
+			}
+		}
+		// Finally, check for a case when shortest distance is between some point located on a face's edge and some point located on a line segment.
+		if (!use_collision) {
 			for (size_t point_id = 0; point_id < p.points.size(); point_id += 1) {
 				Vector3 a, b;
 
@@ -624,24 +670,38 @@ Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector
 }
 
 Vector3 NavMap::get_closest_point(const Vector3 &p_point) const {
-	ERR_FAIL_COND_V_MSG(map_update_id == 0, Vector3(), "NavigationServer map query failed because it was made before first map synchronization.");
+	RWLockRead read_lock(map_rwlock);
+	if (iteration_id == 0) {
+		NAVMAP_ITERATION_ZERO_ERROR_MSG();
+		return Vector3();
+	}
 	gd::ClosestPointQueryResult cp = get_closest_point_info(p_point);
 	return cp.point;
 }
 
 Vector3 NavMap::get_closest_point_normal(const Vector3 &p_point) const {
-	ERR_FAIL_COND_V_MSG(map_update_id == 0, Vector3(), "NavigationServer map query failed because it was made before first map synchronization.");
+	RWLockRead read_lock(map_rwlock);
+	if (iteration_id == 0) {
+		NAVMAP_ITERATION_ZERO_ERROR_MSG();
+		return Vector3();
+	}
 	gd::ClosestPointQueryResult cp = get_closest_point_info(p_point);
 	return cp.normal;
 }
 
 RID NavMap::get_closest_point_owner(const Vector3 &p_point) const {
-	ERR_FAIL_COND_V_MSG(map_update_id == 0, RID(), "NavigationServer map query failed because it was made before first map synchronization.");
+	RWLockRead read_lock(map_rwlock);
+	if (iteration_id == 0) {
+		NAVMAP_ITERATION_ZERO_ERROR_MSG();
+		return RID();
+	}
 	gd::ClosestPointQueryResult cp = get_closest_point_info(p_point);
 	return cp.owner;
 }
 
 gd::ClosestPointQueryResult NavMap::get_closest_point_info(const Vector3 &p_point) const {
+	RWLockRead read_lock(map_rwlock);
+
 	gd::ClosestPointQueryResult result;
 	real_t closest_point_ds = FLT_MAX;
 
@@ -690,7 +750,7 @@ void NavMap::remove_link(NavLink *p_link) {
 }
 
 bool NavMap::has_agent(NavAgent *agent) const {
-	return (agents.find(agent) >= 0);
+	return agents.has(agent);
 }
 
 void NavMap::add_agent(NavAgent *agent) {
@@ -710,7 +770,7 @@ void NavMap::remove_agent(NavAgent *agent) {
 }
 
 bool NavMap::has_obstacle(NavObstacle *obstacle) const {
-	return (obstacles.find(obstacle) >= 0);
+	return obstacles.has(obstacle);
 }
 
 void NavMap::add_obstacle(NavObstacle *obstacle) {
@@ -769,7 +829,75 @@ void NavMap::remove_agent_as_controlled(NavAgent *agent) {
 	}
 }
 
+Vector3 NavMap::get_random_point(uint32_t p_navigation_layers, bool p_uniformly) const {
+	RWLockRead read_lock(map_rwlock);
+
+	const LocalVector<NavRegion *> map_regions = get_regions();
+
+	if (map_regions.is_empty()) {
+		return Vector3();
+	}
+
+	LocalVector<const NavRegion *> accessible_regions;
+
+	for (const NavRegion *region : map_regions) {
+		if (!region->get_enabled() || (p_navigation_layers & region->get_navigation_layers()) == 0) {
+			continue;
+		}
+		accessible_regions.push_back(region);
+	}
+
+	if (accessible_regions.is_empty()) {
+		// All existing region polygons are disabled.
+		return Vector3();
+	}
+
+	if (p_uniformly) {
+		real_t accumulated_region_surface_area = 0;
+		RBMap<real_t, uint32_t> accessible_regions_area_map;
+
+		for (uint32_t accessible_region_index = 0; accessible_region_index < accessible_regions.size(); accessible_region_index++) {
+			const NavRegion *region = accessible_regions[accessible_region_index];
+
+			real_t region_surface_area = region->get_surface_area();
+
+			if (region_surface_area == 0.0f) {
+				continue;
+			}
+
+			accessible_regions_area_map[accumulated_region_surface_area] = accessible_region_index;
+			accumulated_region_surface_area += region_surface_area;
+		}
+		if (accessible_regions_area_map.is_empty() || accumulated_region_surface_area == 0) {
+			// All faces have no real surface / no area.
+			return Vector3();
+		}
+
+		real_t random_accessible_regions_area_map = Math::random(real_t(0), accumulated_region_surface_area);
+
+		RBMap<real_t, uint32_t>::Iterator E = accessible_regions_area_map.find_closest(random_accessible_regions_area_map);
+		ERR_FAIL_COND_V(!E, Vector3());
+		uint32_t random_region_index = E->value;
+		ERR_FAIL_UNSIGNED_INDEX_V(random_region_index, accessible_regions.size(), Vector3());
+
+		const NavRegion *random_region = accessible_regions[random_region_index];
+		ERR_FAIL_NULL_V(random_region, Vector3());
+
+		return random_region->get_random_point(p_navigation_layers, p_uniformly);
+
+	} else {
+		uint32_t random_region_index = Math::random(int(0), accessible_regions.size() - 1);
+
+		const NavRegion *random_region = accessible_regions[random_region_index];
+		ERR_FAIL_NULL_V(random_region, Vector3());
+
+		return random_region->get_random_point(p_navigation_layers, p_uniformly);
+	}
+}
+
 void NavMap::sync() {
+	RWLockWrite write_lock(map_rwlock);
+
 	// Performance Monitor
 	int _new_pm_region_count = regions.size();
 	int _new_pm_agent_count = agents.size();
@@ -859,7 +987,7 @@ void NavMap::sync() {
 					connections[ek].push_back(new_connection);
 				} else {
 					// The edge is already connected with another edge, skip.
-					ERR_PRINT_ONCE("Navigation map synchronization error. Attempted to merge a navigation mesh polygon edge with another already-merged edge. This is usually caused by crossing edges, overlapping polygons, or a mismatch of the NavigationMesh / NavigationPolygon baked 'cell_size' and navigation map 'cell_size'.");
+					ERR_PRINT_ONCE("Navigation map synchronization error. Attempted to merge a navigation mesh polygon edge with another already-merged edge. This is usually caused by crossing edges, overlapping polygons, or a mismatch of the NavigationMesh / NavigationPolygon baked 'cell_size' and navigation map 'cell_size'. If you're certain none of above is the case, change 'navigation/3d/merge_rasterizer_cell_scale' to 0.001.");
 				}
 			}
 		}
@@ -1019,13 +1147,6 @@ void NavMap::sync() {
 				new_polygon.points.push_back({ closest_end_point, get_point_key(closest_end_point) });
 				new_polygon.points.push_back({ closest_end_point, get_point_key(closest_end_point) });
 
-				Vector3 center;
-				for (int p = 0; p < 4; ++p) {
-					center += new_polygon.points[p].pos;
-				}
-				new_polygon.center = center / real_t(new_polygon.points.size());
-				new_polygon.clockwise = true;
-
 				// Setup connections to go forward in the link.
 				{
 					gd::Edge::Connection entry_connection;
@@ -1062,9 +1183,8 @@ void NavMap::sync() {
 			}
 		}
 
-		// Update the update ID.
-		// Some code treats 0 as a failure case, so we avoid returning 0.
-		map_update_id = map_update_id % 9999999 + 1;
+		// Some code treats 0 as a failure case, so we avoid returning 0 and modulo wrap UINT32_MAX manually.
+		iteration_id = iteration_id % UINT32_MAX + 1;
 	}
 
 	// Do we have modified obstacle positions?
@@ -1107,8 +1227,14 @@ void NavMap::_update_rvo_obstacles_tree_2d() {
 		obstacle_vertex_count += obstacle->get_vertices().size();
 	}
 
+	// Cleaning old obstacles.
+	for (size_t i = 0; i < rvo_simulation_2d.obstacles_.size(); ++i) {
+		delete rvo_simulation_2d.obstacles_[i];
+	}
+	rvo_simulation_2d.obstacles_.clear();
+
 	// Cannot use LocalVector here as RVO library expects std::vector to build KdTree
-	std::vector<RVO2D::Obstacle2D *> raw_obstacles;
+	std::vector<RVO2D::Obstacle2D *> &raw_obstacles = rvo_simulation_2d.obstacles_;
 	raw_obstacles.reserve(obstacle_vertex_count);
 
 	// The following block is modified copy from RVO2D::AddObstacle()
@@ -1128,6 +1254,11 @@ void NavMap::_update_rvo_obstacles_tree_2d() {
 		real_t _obstacle_height = obstacle->get_height();
 
 		for (const Vector3 &_obstacle_vertex : _obstacle_vertices) {
+#ifdef TOOLS_ENABLED
+			if (_obstacle_vertex.y != 0) {
+				WARN_PRINT_ONCE("Y coordinates of static obstacle vertices are ignored. Please use obstacle position Y to change elevation of obstacle.");
+			}
+#endif
 			rvo_2d_vertices.push_back(RVO2D::Vector2(_obstacle_vertex.x + _obstacle_position.x, _obstacle_vertex.z + _obstacle_position.z));
 		}
 
@@ -1288,6 +1419,11 @@ void NavMap::clip_path(const LocalVector<gd::NavigationPoly> &p_navigation_polys
 			}
 		}
 	}
+}
+
+void NavMap::_update_merge_rasterizer_cell_dimensions() {
+	merge_rasterizer_cell_size = cell_size * merge_rasterizer_cell_scale;
+	merge_rasterizer_cell_height = cell_height * merge_rasterizer_cell_scale;
 }
 
 NavMap::NavMap() {

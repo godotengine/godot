@@ -34,6 +34,9 @@
 #ifdef GLES3_ENABLED
 
 #include "effects/copy_effects.h"
+#include "effects/cubemap_filter.h"
+#include "effects/glow.h"
+#include "effects/post_effects.h"
 #include "environment/fog.h"
 #include "environment/gi.h"
 #include "rasterizer_canvas_gles3.h"
@@ -53,6 +56,7 @@ private:
 	float delta = 0;
 
 	double time_total = 0.0;
+	bool flip_xy_workaround = false;
 
 	static bool gles_over_gl;
 
@@ -67,6 +71,9 @@ protected:
 	GLES3::GI *gi = nullptr;
 	GLES3::Fog *fog = nullptr;
 	GLES3::CopyEffects *copy_effects = nullptr;
+	GLES3::CubemapFilter *cubemap_filter = nullptr;
+	GLES3::Glow *glow = nullptr;
+	GLES3::PostEffects *post_effects = nullptr;
 	RasterizerCanvasGLES3 *canvas = nullptr;
 	RasterizerSceneGLES3 *scene = nullptr;
 	static RasterizerGLES3 *singleton;
@@ -90,9 +97,9 @@ public:
 	void initialize();
 	void begin_frame(double frame_step);
 
-	void prepare_for_blitting_render_targets();
 	void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount);
 
+	void gl_end_frame(bool p_swap_buffers);
 	void end_frame(bool p_swap_buffers);
 
 	void finalize();

@@ -299,7 +299,12 @@ public:
 
 	Error sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IPAddress p_ip, uint16_t p_port) {
 		String key = String(p_ip) + ":" + itos(p_port);
-		ERR_FAIL_COND_V(!peers.has(key), ERR_UNAVAILABLE);
+		if (unlikely(!peers.has(key))) {
+			// The peer might have been disconnected due to a DTLS error.
+			// We need to wait for it to time out, just mark the packet as sent.
+			r_sent = p_len;
+			return OK;
+		}
 		Ref<PacketPeerDTLS> peer = peers[key];
 		Error err = peer->put_packet(p_buffer, p_len);
 		if (err == OK) {
@@ -307,7 +312,10 @@ public:
 		} else if (err == ERR_BUSY) {
 			r_sent = 0;
 		} else {
-			r_sent = -1;
+			// The peer might have been disconnected due to a DTLS error.
+			// We need to wait for it to time out, just mark the packet as sent.
+			r_sent = p_len;
+			return OK;
 		}
 		return err;
 	}
@@ -331,7 +339,7 @@ public:
 		Error err = ERR_BUSY;
 		// TODO this needs to be fair!
 
-		for (KeyValue<String, Ref<PacketPeerDTLS>> & E : peers) {
+		for (KeyValue<String, Ref<PacketPeerDTLS>> &E : peers) {
 			Ref<PacketPeerDTLS> peer = E.value;
 			peer->poll();
 
@@ -349,7 +357,8 @@ public:
 				if (err != OK || p_len < r_read) {
 					// Something wrong with this peer, removing it.
 					remove.push_back(E.key);
-					err = FAILED;
+					err = ERR_BUSY;
+					r_read = 0;
 					continue;
 				}
 
@@ -549,7 +558,7 @@ int enet_socket_receive(ENetSocket socket, ENetAddress *address, ENetBuffer *buf
 	return read;
 }
 
-int enet_socket_get_address (ENetSocket socket, ENetAddress * address) {
+int enet_socket_get_address(ENetSocket socket, ENetAddress *address) {
 	IPAddress ip;
 	uint16_t port;
 	ENetGodotSocket *sock = (ENetGodotSocket *)socket;

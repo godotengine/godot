@@ -30,6 +30,8 @@
 
 #include "animation_library.h"
 
+#include "scene/scene_string_names.h"
+
 bool AnimationLibrary::is_valid_animation_name(const String &p_name) {
 	return !(p_name.is_empty() || p_name.contains("/") || p_name.contains(":") || p_name.contains(",") || p_name.contains("["));
 }
@@ -106,7 +108,7 @@ TypedArray<StringName> AnimationLibrary::_get_animation_list() const {
 }
 
 void AnimationLibrary::_animation_changed(const StringName &p_name) {
-	emit_signal(SNAME("animation_changed"), p_name);
+	emit_signal(SceneStringName(animation_changed), p_name);
 }
 
 void AnimationLibrary::get_animation_list(List<StringName> *p_animations) const {
@@ -142,6 +144,20 @@ Dictionary AnimationLibrary::_get_data() const {
 	}
 	return ret;
 }
+
+#ifdef TOOLS_ENABLED
+void AnimationLibrary::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	const String pf = p_function;
+	if (p_idx == 0 && (pf == "get_animation" || pf == "has_animation" || pf == "rename_animation" || pf == "remove_animation")) {
+		List<StringName> names;
+		get_animation_list(&names);
+		for (const StringName &E : names) {
+			r_options->push_back(E.operator String().quote());
+		}
+	}
+	Resource::get_argument_options(p_function, p_idx, r_options);
+}
+#endif
 
 void AnimationLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_animation", "name", "animation"), &AnimationLibrary::add_animation);

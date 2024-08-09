@@ -31,7 +31,6 @@
 #include "texture_progress_bar.h"
 
 #include "core/config/engine.h"
-#include "scene/resources/atlas_texture.h"
 
 void TextureProgressBar::set_under_texture(const Ref<Texture2D> &p_texture) {
 	_set_texture(&under, p_texture);
@@ -74,6 +73,7 @@ void TextureProgressBar::set_nine_patch_stretch(bool p_stretch) {
 	nine_patch_stretch = p_stretch;
 	queue_redraw();
 	update_minimum_size();
+	notify_property_list_changed();
 }
 
 bool TextureProgressBar::get_nine_patch_stretch() const {
@@ -248,8 +248,7 @@ Point2 TextureProgressBar::get_relative_center() {
 	p += rad_center_off;
 	p.x /= progress->get_width();
 	p.y /= progress->get_height();
-	p.x = CLAMP(p.x, 0, 1);
-	p.y = CLAMP(p.y, 0, 1);
+	p = p.clampf(0, 1);
 	return p;
 }
 
@@ -494,7 +493,7 @@ void TextureProgressBar::_notification(int p_what) {
 								Rect2 source = Rect2(Point2(), progress->get_size());
 								draw_texture_rect_region(progress, region, source, tint_progress);
 							} else if (val != 0) {
-								Array pts;
+								LocalVector<float> pts;
 								float direction = mode == FILL_COUNTER_CLOCKWISE ? -1 : 1;
 								float start;
 
@@ -507,47 +506,33 @@ void TextureProgressBar::_notification(int p_what) {
 								float end = start + direction * val;
 								float from = MIN(start, end);
 								float to = MAX(start, end);
-								pts.append(from);
+								pts.push_back(from);
 								for (float corner = Math::floor(from * 4 + 0.5) * 0.25 + 0.125; corner < to; corner += 0.25) {
-									pts.append(corner);
+									pts.push_back(corner);
 								}
-								pts.append(to);
-
-								Ref<AtlasTexture> atlas_progress = progress;
-								bool valid_atlas_progress = atlas_progress.is_valid() && atlas_progress->get_atlas().is_valid();
-								Rect2 region_rect;
-								Size2 atlas_size;
-								if (valid_atlas_progress) {
-									region_rect = atlas_progress->get_region();
-									atlas_size = atlas_progress->get_atlas()->get_size();
-								}
+								pts.push_back(to);
 
 								Vector<Point2> uvs;
 								Vector<Point2> points;
-								for (int i = 0; i < pts.size(); i++) {
-									Point2 uv = unit_val_to_uv(pts[i]);
-									if (uvs.find(uv) >= 0) {
+								for (const float &f : pts) {
+									Point2 uv = unit_val_to_uv(f);
+									if (uvs.has(uv)) {
 										continue;
 									}
 									points.push_back(progress_offset + Point2(uv.x * s.x, uv.y * s.y));
-									if (valid_atlas_progress) {
-										uv.x = Math::remap(uv.x, 0, 1, region_rect.position.x / atlas_size.x, (region_rect.position.x + region_rect.size.x) / atlas_size.x);
-										uv.y = Math::remap(uv.y, 0, 1, region_rect.position.y / atlas_size.y, (region_rect.position.y + region_rect.size.y) / atlas_size.y);
-									}
 									uvs.push_back(uv);
 								}
 
-								Point2 center_point = get_relative_center();
-								points.push_back(progress_offset + s * center_point);
-								if (valid_atlas_progress) {
-									center_point.x = Math::remap(center_point.x, 0, 1, region_rect.position.x / atlas_size.x, (region_rect.position.x + region_rect.size.x) / atlas_size.x);
-									center_point.y = Math::remap(center_point.y, 0, 1, region_rect.position.y / atlas_size.y, (region_rect.position.y + region_rect.size.y) / atlas_size.y);
-								}
-								uvs.push_back(center_point);
+								// Filter out an edge case where almost equal `from`, `to` were mapped to the same UV.
+								if (points.size() >= 2) {
+									Point2 center_point = get_relative_center();
+									points.push_back(progress_offset + s * center_point);
+									uvs.push_back(center_point);
 
-								Vector<Color> colors;
-								colors.push_back(tint_progress);
-								draw_polygon(points, colors, uvs, progress);
+									Vector<Color> colors;
+									colors.push_back(tint_progress);
+									draw_polygon(points, colors, uvs, progress);
+								}
 							}
 
 							// Draw a reference cross.
@@ -615,6 +600,7 @@ void TextureProgressBar::set_fill_mode(int p_fill) {
 
 	mode = (FillMode)p_fill;
 	queue_redraw();
+	notify_property_list_changed();
 }
 
 int TextureProgressBar::get_fill_mode() {
@@ -669,6 +655,16 @@ Point2 TextureProgressBar::get_radial_center_offset() {
 	return rad_center_off;
 }
 
+void TextureProgressBar::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name.begins_with("stretch_margin_") && !nine_patch_stretch) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
+	if (p_property.name.begins_with("radial_") && (mode != FillMode::FILL_CLOCKWISE && mode != FillMode::FILL_COUNTER_CLOCKWISE && mode != FillMode::FILL_CLOCKWISE_AND_COUNTER_CLOCKWISE)) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+}
+
 void TextureProgressBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_under_texture", "tex"), &TextureProgressBar::set_under_texture);
 	ClassDB::bind_method(D_METHOD("get_under_texture"), &TextureProgressBar::get_under_texture);
@@ -710,8 +706,13 @@ void TextureProgressBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_nine_patch_stretch"), &TextureProgressBar::get_nine_patch_stretch);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fill_mode", PROPERTY_HINT_ENUM, "Left to Right,Right to Left,Top to Bottom,Bottom to Top,Clockwise,Counter Clockwise,Bilinear (Left and Right),Bilinear (Top and Bottom),Clockwise and Counter Clockwise"), "set_fill_mode", "get_fill_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "nine_patch_stretch"), "set_nine_patch_stretch", "get_nine_patch_stretch");
+	ADD_GROUP("Radial Fill", "radial_");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radial_initial_angle", PROPERTY_HINT_RANGE, "0.0,360.0,0.1,degrees"), "set_radial_initial_angle", "get_radial_initial_angle");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radial_fill_degrees", PROPERTY_HINT_RANGE, "0.0,360.0,0.1,degrees"), "set_fill_degrees", "get_fill_degrees");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "radial_center_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_radial_center_offset", "get_radial_center_offset");
 
+	ADD_GROUP("", "");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "nine_patch_stretch"), "set_nine_patch_stretch", "get_nine_patch_stretch");
 	ADD_GROUP("Stretch Margin", "stretch_margin_");
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "stretch_margin_left", PROPERTY_HINT_RANGE, "0,16384,1,suffix:px"), "set_stretch_margin", "get_stretch_margin", SIDE_LEFT);
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "stretch_margin_top", PROPERTY_HINT_RANGE, "0,16384,1,suffix:px"), "set_stretch_margin", "get_stretch_margin", SIDE_TOP);
@@ -728,11 +729,6 @@ void TextureProgressBar::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_under"), "set_tint_under", "get_tint_under");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_over"), "set_tint_over", "get_tint_over");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_progress"), "set_tint_progress", "get_tint_progress");
-
-	ADD_GROUP("Radial Fill", "radial_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radial_initial_angle", PROPERTY_HINT_RANGE, "0.0,360.0,0.1,slider,degrees"), "set_radial_initial_angle", "get_radial_initial_angle");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radial_fill_degrees", PROPERTY_HINT_RANGE, "0.0,360.0,0.1,slider,degrees"), "set_fill_degrees", "get_fill_degrees");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "radial_center_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_radial_center_offset", "get_radial_center_offset");
 
 	BIND_ENUM_CONSTANT(FILL_LEFT_TO_RIGHT);
 	BIND_ENUM_CONSTANT(FILL_RIGHT_TO_LEFT);

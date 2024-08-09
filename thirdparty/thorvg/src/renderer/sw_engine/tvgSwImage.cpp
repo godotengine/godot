@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -114,8 +114,8 @@ bool imagePrepare(SwImage* image, const RenderMesh* mesh, const Matrix* transfor
 
     //Fast track: Non-transformed image but just shifted.
     if (image->direct) {
-        image->ox = -static_cast<int32_t>(round(transform->e13));
-        image->oy = -static_cast<int32_t>(round(transform->e23));
+        image->ox = -static_cast<int32_t>(nearbyint(transform->e13));
+        image->oy = -static_cast<int32_t>(nearbyint(transform->e23));
     //Figure out the scale factor by transform matrix
     } else {
         auto scaleX = sqrtf((transform->e11 * transform->e11) + (transform->e21 * transform->e21));

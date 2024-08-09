@@ -34,6 +34,7 @@
 #include "core/math/geometry_2d.h"
 #include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
+#include "core/math/transform_interpolator.h"
 #include "renderer_compositor_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/particles_storage.h"
@@ -305,6 +306,7 @@ RendererCanvasRender::PolygonID RendererCanvasRenderRD::request_polygon(const Ve
 	}
 
 	pb.vertex_array = RD::get_singleton()->vertex_array_create(p_points.size(), vertex_id, buffers);
+	pb.primitive_count = vertex_count;
 
 	if (p_indices.size()) {
 		//create indices, as indices were requested
@@ -316,6 +318,7 @@ RendererCanvasRender::PolygonID RendererCanvasRenderRD::request_polygon(const Ve
 		}
 		pb.index_buffer = RD::get_singleton()->index_buffer_create(p_indices.size(), RD::INDEX_BUFFER_FORMAT_UINT32, index_buffer);
 		pb.indices = RD::get_singleton()->index_array_create(pb.index_buffer, 0, p_indices.size());
+		pb.primitive_count = p_indices.size();
 	}
 
 	pb.vertex_format_id = vertex_id;
@@ -398,7 +401,13 @@ void RendererCanvasRenderRD::_bind_canvas_texture(RD::DrawListID p_draw_list, RI
 	r_last_texture = p_texture;
 }
 
-void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_render_target, const Item *p_item, RD::FramebufferFormatID p_framebuffer_format, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights, PipelineVariants *p_pipeline_variants, bool &r_sdf_used) {
+_FORCE_INLINE_ static uint32_t _indices_to_primitives(RS::PrimitiveType p_primitive, uint32_t p_indices) {
+	static const uint32_t divisor[RS::PRIMITIVE_MAX] = { 1, 2, 1, 3, 1 };
+	static const uint32_t subtractor[RS::PRIMITIVE_MAX] = { 0, 0, 1, 0, 1 };
+	return (p_indices - subtractor[p_primitive]) / divisor[p_primitive];
+}
+
+void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_render_target, const Item *p_item, RD::FramebufferFormatID p_framebuffer_format, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights, PipelineVariants *p_pipeline_variants, bool &r_sdf_used, const Point2 &p_offset, RenderingMethod::RenderInfo *r_render_info) {
 	//create an empty push constant
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MeshStorage *mesh_storage = RendererRD::MeshStorage::get_singleton();
@@ -417,6 +426,11 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 
 	PushConstant push_constant;
 	Transform2D base_transform = p_canvas_transform_inverse * p_item->final_transform;
+
+	if (p_offset.x || p_offset.y) {
+		base_transform *= Transform2D(0, p_offset / p_item->xform_curr.get_scale()); // TODO: Interpolate or explain why not needed.
+	}
+
 	Transform2D draw_transform;
 	_update_transform_2d_to_mat2x3(base_transform, push_constant.world);
 
@@ -495,11 +509,16 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 					current_repeat = RenderingServer::CanvasItemTextureRepeat::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED;
 				}
 
+				Color modulated = rect->modulate * base_color;
+				if (use_linear_colors) {
+					modulated = modulated.srgb_to_linear();
+				}
+
 				//bind pipeline
 				if (rect->flags & CANVAS_RECT_LCD) {
 					RID pipeline = pipeline_variants->variants[light_mode][PIPELINE_VARIANT_QUAD_LCD_BLEND].get_render_pipeline(RD::INVALID_ID, p_framebuffer_format);
 					RD::get_singleton()->draw_list_bind_render_pipeline(p_draw_list, pipeline);
-					RD::get_singleton()->draw_list_set_blend_constants(p_draw_list, rect->modulate);
+					RD::get_singleton()->draw_list_set_blend_constants(p_draw_list, modulated);
 				} else {
 					RID pipeline = pipeline_variants->variants[light_mode][PIPELINE_VARIANT_QUAD].get_render_pipeline(RD::INVALID_ID, p_framebuffer_format);
 					RD::get_singleton()->draw_list_bind_render_pipeline(p_draw_list, pipeline);
@@ -568,11 +587,6 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 					push_constant.flags |= FLAGS_USE_LCD;
 				}
 
-				Color modulated = rect->modulate * base_color;
-				if (use_linear_colors) {
-					modulated = modulated.srgb_to_linear();
-				}
-
 				push_constant.modulation[0] = modulated.r;
 				push_constant.modulation[1] = modulated.g;
 				push_constant.modulation[2] = modulated.b;
@@ -591,6 +605,12 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 				RD::get_singleton()->draw_list_set_push_constant(p_draw_list, &push_constant, sizeof(PushConstant));
 				RD::get_singleton()->draw_list_bind_index_array(p_draw_list, shader.quad_index_array);
 				RD::get_singleton()->draw_list_draw(p_draw_list, true);
+
+				if (r_render_info) {
+					r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME]++;
+					r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME] += 2;
+					r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME]++;
+				}
 
 			} break;
 
@@ -661,6 +681,12 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 				RD::get_singleton()->draw_list_bind_index_array(p_draw_list, shader.quad_index_array);
 				RD::get_singleton()->draw_list_draw(p_draw_list, true);
 
+				if (r_render_info) {
+					r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME]++;
+					r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME] += 2;
+					r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME]++;
+				}
+
 				// Restore if overridden.
 				push_constant.color_texture_pixel_size[0] = texpixel_size.x;
 				push_constant.color_texture_pixel_size[1] = texpixel_size.y;
@@ -711,6 +737,12 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 				}
 				RD::get_singleton()->draw_list_draw(p_draw_list, pb->indices.is_valid());
 
+				if (r_render_info) {
+					r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME]++;
+					r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME] += _indices_to_primitives(polygon->primitive, pb->primitive_count);
+					r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME]++;
+				}
+
 			} break;
 			case Item::Command::TYPE_PRIMITIVE: {
 				const Item::CommandPrimitive *primitive = static_cast<const Item::CommandPrimitive *>(c);
@@ -744,6 +776,12 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 				RD::get_singleton()->draw_list_set_push_constant(p_draw_list, &push_constant, sizeof(PushConstant));
 				RD::get_singleton()->draw_list_draw(p_draw_list, true);
 
+				if (r_render_info) {
+					r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME]++;
+					r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME]++;
+					r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME]++;
+				}
+
 				if (primitive->point_count == 4) {
 					for (uint32_t j = 1; j < 3; j++) {
 						//second half of triangle
@@ -761,6 +799,12 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 
 					RD::get_singleton()->draw_list_set_push_constant(p_draw_list, &push_constant, sizeof(PushConstant));
 					RD::get_singleton()->draw_list_draw(p_draw_list, true);
+
+					if (r_render_info) {
+						r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME]++;
+						r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME]++;
+						r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME]++;
+					}
 				}
 
 			} break;
@@ -918,6 +962,12 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 					RD::get_singleton()->draw_list_set_push_constant(p_draw_list, &push_constant, sizeof(PushConstant));
 
 					RD::get_singleton()->draw_list_draw(p_draw_list, index_array.is_valid(), instance_count);
+
+					if (r_render_info) {
+						r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME]++;
+						r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME] += _indices_to_primitives(primitive, mesh_storage->mesh_surface_get_vertices_drawn_count(surface)) * instance_count;
+						r_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME]++;
+					}
 				}
 
 				for (int j = 0; j < 6; j++) {
@@ -1098,7 +1148,7 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 	return uniform_set;
 }
 
-void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool &r_sdf_used, bool p_to_backbuffer) {
+void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool &r_sdf_used, bool p_to_backbuffer, RenderingMethod::RenderInfo *r_render_info) {
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
@@ -1133,7 +1183,7 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 
 	RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(framebuffer);
 
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, clear ? RD::INITIAL_ACTION_CLEAR : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD, clear_colors);
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, clear ? RD::INITIAL_ACTION_CLEAR : RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_DISCARD, clear_colors);
 
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, fb_uniform_set, BASE_UNIFORM_SET);
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, state.default_transforms_uniform_set, TRANSFORMS_UNIFORM_SET);
@@ -1196,7 +1246,23 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 			}
 		}
 
-		_render_item(draw_list, p_to_render_target, ci, fb_format, canvas_transform_inverse, current_clip, p_lights, pipeline_variants, r_sdf_used);
+		if (!ci->repeat_size.x && !ci->repeat_size.y) {
+			_render_item(draw_list, p_to_render_target, ci, fb_format, canvas_transform_inverse, current_clip, p_lights, pipeline_variants, r_sdf_used, Point2(), r_render_info);
+		} else {
+			Point2 start_pos = ci->repeat_size * -(ci->repeat_times / 2);
+			Point2 end_pos = ci->repeat_size * ci->repeat_times + ci->repeat_size + start_pos;
+			Point2 pos = start_pos;
+
+			do {
+				do {
+					_render_item(draw_list, p_to_render_target, ci, fb_format, canvas_transform_inverse, current_clip, p_lights, pipeline_variants, r_sdf_used, pos, r_render_info);
+					pos.y += ci->repeat_size.y;
+				} while (pos.y < end_pos.y);
+
+				pos.x += ci->repeat_size.x;
+				pos.y = start_pos.y;
+			} while (pos.x < end_pos.x);
+		}
 
 		prev_material = material;
 	}
@@ -1204,7 +1270,7 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 	RD::get_singleton()->draw_list_end();
 }
 
-void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_light_list, const Transform2D &p_canvas_transform, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used) {
+void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_light_list, const Transform2D &p_canvas_transform, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used, RenderingMethod::RenderInfo *r_render_info) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 	RendererRD::MeshStorage *mesh_storage = RendererRD::MeshStorage::get_singleton();
@@ -1301,7 +1367,15 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 				ERR_CONTINUE(!clight);
 			}
 
-			Vector2 canvas_light_pos = p_canvas_transform.xform(l->xform.get_origin()); //convert light position to canvas coordinates, as all computation is done in canvas coords to avoid precision loss
+			Transform2D final_xform;
+			if (!RSG::canvas->_interpolation_data.interpolation_enabled || !l->interpolated) {
+				final_xform = l->xform_curr;
+			} else {
+				real_t f = Engine::get_singleton()->get_physics_interpolation_fraction();
+				TransformInterpolator::interpolate_transform_2d(l->xform_prev, l->xform_curr, final_xform, f);
+			}
+			// Convert light position to canvas coordinates, as all computation is done in canvas coordinates to avoid precision loss.
+			Vector2 canvas_light_pos = p_canvas_transform.xform(final_xform.get_origin());
 			state.light_uniforms[index].position[0] = canvas_light_pos.x;
 			state.light_uniforms[index].position[1] = canvas_light_pos.y;
 
@@ -1377,10 +1451,15 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 		normal_transform.columns[2] = Vector2();
 		_update_transform_2d_to_mat4(normal_transform, state_buffer.canvas_normal_transform);
 
-		state_buffer.canvas_modulate[0] = p_modulate.r;
-		state_buffer.canvas_modulate[1] = p_modulate.g;
-		state_buffer.canvas_modulate[2] = p_modulate.b;
-		state_buffer.canvas_modulate[3] = p_modulate.a;
+		bool use_linear_colors = texture_storage->render_target_is_using_hdr(p_to_render_target);
+		Color modulate = p_modulate;
+		if (use_linear_colors) {
+			modulate = p_modulate.srgb_to_linear();
+		}
+		state_buffer.canvas_modulate[0] = modulate.r;
+		state_buffer.canvas_modulate[1] = modulate.g;
+		state_buffer.canvas_modulate[2] = modulate.b;
+		state_buffer.canvas_modulate[3] = modulate.a;
 
 		Size2 render_target_size = texture_storage->render_target_get_size(p_to_render_target);
 		state_buffer.screen_pixel_size[0] = 1.0 / render_target_size.x;
@@ -1495,7 +1574,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 					update_skeletons = false;
 				}
 
-				_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used);
+				_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, false, r_render_info);
 				item_count = 0;
 
 				if (ci->canvas_group_owner->canvas_group->mode != RS::CANVAS_GROUP_MODE_TRANSPARENT) {
@@ -1527,7 +1606,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 				update_skeletons = false;
 			}
 
-			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, true);
+			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, true, r_render_info);
 			item_count = 0;
 
 			if (ci->canvas_group->blur_mipmaps) {
@@ -1551,7 +1630,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 				update_skeletons = false;
 			}
 
-			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used);
+			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, false, r_render_info);
 			item_count = 0;
 
 			texture_storage->render_target_copy_to_back_buffer(p_to_render_target, back_buffer_rect, backbuffer_gen_mipmaps);
@@ -1581,7 +1660,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 				update_skeletons = false;
 			}
 
-			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, canvas_group_owner != nullptr);
+			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, canvas_group_owner != nullptr, r_render_info);
 			//then reset
 			item_count = 0;
 		}
@@ -1677,8 +1756,7 @@ void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, 
 		//light.basis.scale(Vector3(to_light.elements[0].length(),to_light.elements[1].length(),1));
 
 		Rect2i rect((state.shadow_texture_size / 4) * i, p_shadow_index * 2, (state.shadow_texture_size / 4), 2);
-		RD::InitialAction initial_action = i == 0 ? RD::INITIAL_ACTION_CLEAR_REGION : RD::INITIAL_ACTION_CLEAR_REGION_CONTINUE;
-		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(state.shadow_fb, initial_action, i != 3 ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, initial_action, RD::FINAL_ACTION_DISCARD, cc, 1.0, 0, rect);
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(state.shadow_fb, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, cc, 1.0, 0, rect);
 
 		Projection projection;
 		{
@@ -1767,7 +1845,7 @@ void RendererCanvasRenderRD::light_update_directional_shadow(RID p_rid, int p_sh
 	cc.push_back(Color(1, 1, 1, 1));
 
 	Rect2i rect(0, p_shadow_index * 2, state.shadow_texture_size, 2);
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(state.shadow_fb, RD::INITIAL_ACTION_CLEAR_REGION, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR_REGION, RD::FINAL_ACTION_DISCARD, cc, 1.0, 0, rect);
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(state.shadow_fb, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, cc, 1.0, 0, rect);
 
 	Projection projection;
 	projection.set_orthogonal(-half_size, half_size, -0.5, 0.5, 0.0, distance);
@@ -1837,7 +1915,7 @@ void RendererCanvasRenderRD::render_sdf(RID p_render_target, LightOccluderInstan
 	Vector<Color> cc;
 	cc.push_back(Color(0, 0, 0, 0));
 
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(fb, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, cc);
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(fb, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, cc);
 
 	Projection projection;
 
@@ -1858,7 +1936,7 @@ void RendererCanvasRenderRD::render_sdf(RID p_render_target, LightOccluderInstan
 	while (instance) {
 		OccluderPolygon *co = occluder_polygon_owner.get_or_null(instance->occluder);
 
-		if (!co || co->sdf_index_array.is_null()) {
+		if (!co || co->sdf_index_array.is_null() || !instance->sdf_collision) {
 			instance = instance->next;
 			continue;
 		}
@@ -1981,8 +2059,7 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 		if (oc->vertex_array.is_null()) {
 			//create from scratch
 			//vertices
-			// TODO: geometry is always of length lc * 6 * sizeof(float), so in doubles builds this will receive half the data it needs
-			oc->vertex_buffer = RD::get_singleton()->vertex_buffer_create(lc * 6 * sizeof(real_t), geometry);
+			oc->vertex_buffer = RD::get_singleton()->vertex_buffer_create(lc * 6 * sizeof(float), geometry);
 
 			Vector<RID> buffer;
 			buffer.push_back(oc->vertex_buffer);
@@ -2043,7 +2120,18 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 		if (oc->sdf_vertex_array.is_null()) {
 			//create from scratch
 			//vertices
-			oc->sdf_vertex_buffer = RD::get_singleton()->vertex_buffer_create(p_points.size() * 2 * sizeof(real_t), p_points.to_byte_array());
+#ifdef REAL_T_IS_DOUBLE
+			PackedFloat32Array float_points;
+			float_points.resize(p_points.size() * 2);
+			float *float_points_ptr = (float *)float_points.ptrw();
+			for (int i = 0; i < p_points.size(); i++) {
+				float_points_ptr[i * 2] = p_points[i].x;
+				float_points_ptr[i * 2 + 1] = p_points[i].y;
+			}
+			oc->sdf_vertex_buffer = RD::get_singleton()->vertex_buffer_create(p_points.size() * 2 * sizeof(float), float_points.to_byte_array());
+#else
+			oc->sdf_vertex_buffer = RD::get_singleton()->vertex_buffer_create(p_points.size() * 2 * sizeof(float), p_points.to_byte_array());
+#endif
 			oc->sdf_index_buffer = RD::get_singleton()->index_buffer_create(sdf_indices.size(), RD::INDEX_BUFFER_FORMAT_UINT32, sdf_indices.to_byte_array());
 			oc->sdf_index_array = RD::get_singleton()->index_array_create(oc->sdf_index_buffer, 0, sdf_indices.size());
 
@@ -2054,7 +2142,18 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 
 		} else {
 			//update existing
-			RD::get_singleton()->buffer_update(oc->sdf_vertex_buffer, 0, sizeof(real_t) * 2 * p_points.size(), p_points.ptr());
+#ifdef REAL_T_IS_DOUBLE
+			PackedFloat32Array float_points;
+			float_points.resize(p_points.size() * 2);
+			float *float_points_ptr = (float *)float_points.ptrw();
+			for (int i = 0; i < p_points.size(); i++) {
+				float_points_ptr[i * 2] = p_points[i].x;
+				float_points_ptr[i * 2 + 1] = p_points[i].y;
+			}
+			RD::get_singleton()->buffer_update(oc->sdf_vertex_buffer, 0, sizeof(float) * 2 * p_points.size(), float_points.ptr());
+#else
+			RD::get_singleton()->buffer_update(oc->sdf_vertex_buffer, 0, sizeof(float) * 2 * p_points.size(), p_points.ptr());
+#endif
 			RD::get_singleton()->buffer_update(oc->sdf_index_buffer, 0, sdf_indices.size() * sizeof(int32_t), sdf_indices.ptr());
 		}
 	}
@@ -2306,8 +2405,8 @@ RendererRD::MaterialStorage::ShaderData *RendererCanvasRenderRD::_create_shader_
 
 bool RendererCanvasRenderRD::CanvasMaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
 	RendererCanvasRenderRD *canvas_singleton = static_cast<RendererCanvasRenderRD *>(RendererCanvasRender::singleton);
-	bool uniform_set_changed = update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, canvas_singleton->shader.canvas_shader.version_get_shader(shader_data->version, 0), MATERIAL_UNIFORM_SET, true, false, RD::BARRIER_MASK_ALL_BARRIERS);
-	bool uniform_set_srgb_changed = update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set_srgb, canvas_singleton->shader.canvas_shader.version_get_shader(shader_data->version, 0), MATERIAL_UNIFORM_SET, false, false, RD::BARRIER_MASK_ALL_BARRIERS);
+	bool uniform_set_changed = update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, canvas_singleton->shader.canvas_shader.version_get_shader(shader_data->version, 0), MATERIAL_UNIFORM_SET, true, false);
+	bool uniform_set_srgb_changed = update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set_srgb, canvas_singleton->shader.canvas_shader.version_get_shader(shader_data->version, 0), MATERIAL_UNIFORM_SET, false, false);
 	return uniform_set_changed || uniform_set_srgb_changed;
 }
 
@@ -2497,6 +2596,9 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.renames["INSTANCE_ID"] = "gl_InstanceIndex";
 		actions.renames["VERTEX_ID"] = "gl_VertexIndex";
 
+		actions.renames["CUSTOM0"] = "custom0";
+		actions.renames["CUSTOM1"] = "custom1";
+
 		actions.renames["LIGHT_POSITION"] = "light_position";
 		actions.renames["LIGHT_DIRECTION"] = "light_direction";
 		actions.renames["LIGHT_IS_DIRECTIONAL"] = "is_directional";
@@ -2515,9 +2617,10 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.usage_defines["SCREEN_PIXEL_SIZE"] = "@SCREEN_UV";
 		actions.usage_defines["NORMAL"] = "#define NORMAL_USED\n";
 		actions.usage_defines["NORMAL_MAP"] = "#define NORMAL_MAP_USED\n";
-		actions.usage_defines["LIGHT"] = "#define LIGHT_SHADER_CODE_USED\n";
 		actions.usage_defines["SPECULAR_SHININESS"] = "#define SPECULAR_SHININESS_USED\n";
 		actions.usage_defines["POINT_SIZE"] = "#define USE_POINT_SIZE\n";
+		actions.usage_defines["CUSTOM0"] = "#define CUSTOM0_USED\n";
+		actions.usage_defines["CUSTOM1"] = "#define CUSTOM1_USED\n";
 
 		actions.render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
 		actions.render_mode_defines["unshaded"] = "#define MODE_UNSHADED\n";
@@ -2578,15 +2681,15 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		//pipelines
 		Vector<RD::VertexAttribute> vf;
 		RD::VertexAttribute vd;
-		vd.format = sizeof(real_t) == sizeof(float) ? RD::DATA_FORMAT_R32G32B32_SFLOAT : RD::DATA_FORMAT_R64G64B64_SFLOAT;
+		vd.format = RD::DATA_FORMAT_R32G32B32_SFLOAT;
+		vd.stride = sizeof(float) * 3;
 		vd.location = 0;
 		vd.offset = 0;
-		vd.stride = sizeof(real_t) * 3;
 		vf.push_back(vd);
 		shadow_render.vertex_format = RD::get_singleton()->vertex_format_create(vf);
 
-		vd.format = sizeof(real_t) == sizeof(float) ? RD::DATA_FORMAT_R32G32_SFLOAT : RD::DATA_FORMAT_R64G64_SFLOAT;
-		vd.stride = sizeof(real_t) * 2;
+		vd.format = RD::DATA_FORMAT_R32G32_SFLOAT;
+		vd.stride = sizeof(float) * 2;
 
 		vf.write[0] = vd;
 		shadow_render.sdf_vertex_format = RD::get_singleton()->vertex_format_create(vf);

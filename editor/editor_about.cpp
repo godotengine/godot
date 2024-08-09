@@ -33,35 +33,44 @@
 #include "core/authors.gen.h"
 #include "core/donors.gen.h"
 #include "core/license.gen.h"
+#include "core/os/time.h"
 #include "core/version.h"
 #include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
+#include "scene/gui/item_list.h"
+#include "scene/resources/style_box.h"
 
 // The metadata key used to store and retrieve the version text to copy to the clipboard.
 const String EditorAbout::META_TEXT_TO_COPY = "text_to_copy";
 
-void EditorAbout::_theme_changed() {
-	const Ref<Font> font = get_theme_font(SNAME("source"), EditorStringName(EditorFonts));
-	const int font_size = get_theme_font_size(SNAME("source_size"), EditorStringName(EditorFonts));
-
-	_tpl_text->begin_bulk_theme_override();
-	_tpl_text->add_theme_font_override("normal_font", font);
-	_tpl_text->add_theme_font_size_override("normal_font_size", font_size);
-	_tpl_text->add_theme_constant_override("line_separation", 4 * EDSCALE);
-	_tpl_text->end_bulk_theme_override();
-
-	_license_text->begin_bulk_theme_override();
-	_license_text->add_theme_font_override("normal_font", font);
-	_license_text->add_theme_font_size_override("normal_font_size", font_size);
-	_license_text->add_theme_constant_override("line_separation", 4 * EDSCALE);
-	_license_text->end_bulk_theme_override();
-
-	_logo->set_texture(get_editor_theme_icon(SNAME("Logo")));
-}
-
 void EditorAbout::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			_theme_changed();
+		case NOTIFICATION_THEME_CHANGED: {
+			const Ref<Font> font = get_theme_font(SNAME("source"), EditorStringName(EditorFonts));
+			const int font_size = get_theme_font_size(SNAME("source_size"), EditorStringName(EditorFonts));
+
+			_tpl_text->begin_bulk_theme_override();
+			_tpl_text->add_theme_font_override("normal_font", font);
+			_tpl_text->add_theme_font_size_override("normal_font_size", font_size);
+			_tpl_text->add_theme_constant_override(SceneStringName(line_separation), 4 * EDSCALE);
+			_tpl_text->end_bulk_theme_override();
+
+			license_text_label->begin_bulk_theme_override();
+			license_text_label->add_theme_font_override("normal_font", font);
+			license_text_label->add_theme_font_size_override("normal_font_size", font_size);
+			license_text_label->add_theme_constant_override(SceneStringName(line_separation), 4 * EDSCALE);
+			license_text_label->end_bulk_theme_override();
+
+			_logo->set_texture(get_editor_theme_icon(SNAME("Logo")));
+
+			for (ItemList *il : name_lists) {
+				for (int i = 0; i < il->get_item_count(); i++) {
+					if (il->get_item_metadata(i)) {
+						il->set_item_icon(i, get_theme_icon(SNAME("ExternalLink"), EditorStringName(EditorIcons)));
+						il->set_item_icon_modulate(i, get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
+					}
+				}
+			}
 		} break;
 	}
 }
@@ -76,15 +85,18 @@ void EditorAbout::_version_button_pressed() {
 	DisplayServer::get_singleton()->clipboard_set(version_btn->get_meta(META_TEXT_TO_COPY));
 }
 
-void EditorAbout::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_version_button_pressed"), &EditorAbout::_version_button_pressed);
+void EditorAbout::_item_with_website_selected(int p_id, ItemList *p_il) {
+	const String website = p_il->get_item_metadata(p_id);
+	if (!website.is_empty()) {
+		OS::get_singleton()->shell_open(website);
+	}
 }
 
-TextureRect *EditorAbout::get_logo() const {
-	return _logo;
+void EditorAbout::_item_list_resized(ItemList *p_il) {
+	p_il->set_fixed_column_width(p_il->get_size().x / 3.0 - 16 * EDSCALE * 2.5); // Weird. Should be 3.0 and that's it?.
 }
 
-ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<String> &p_sections, const char *const *const p_src[], const int p_flag_single_column) {
+ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<String> &p_sections, const char *const *const p_src[], const int p_single_column_flags, const bool p_allow_website) {
 	ScrollContainer *sc = memnew(ScrollContainer);
 	sc->set_name(p_name);
 	sc->set_v_size_flags(Control::SIZE_EXPAND);
@@ -93,25 +105,65 @@ ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<St
 	vbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	sc->add_child(vbc);
 
-	for (int i = 0; i < p_sections.size(); i++) {
-		bool single_column = p_flag_single_column & 1 << i;
+	Ref<StyleBoxEmpty> empty_stylebox = memnew(StyleBoxEmpty);
+
+	int i = 0;
+	for (List<String>::ConstIterator itr = p_sections.begin(); itr != p_sections.end(); ++itr, ++i) {
+		bool single_column = p_single_column_flags & (1 << i);
 		const char *const *names_ptr = p_src[i];
 		if (*names_ptr) {
 			Label *lbl = memnew(Label);
 			lbl->set_theme_type_variation("HeaderSmall");
-			lbl->set_text(p_sections[i]);
+			lbl->set_text(*itr);
 			vbc->add_child(lbl);
 
 			ItemList *il = memnew(ItemList);
+			il->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 			il->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			il->set_same_column_width(true);
 			il->set_auto_height(true);
 			il->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+			il->set_focus_mode(Control::FOCUS_NONE);
 			il->add_theme_constant_override("h_separation", 16 * EDSCALE);
-			while (*names_ptr) {
-				il->add_item(String::utf8(*names_ptr++), nullptr, false);
+			if (p_allow_website) {
+				il->set_focus_mode(Control::FOCUS_CLICK);
+				il->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+
+				il->connect("item_activated", callable_mp(this, &EditorAbout::_item_with_website_selected).bind(il));
+				il->connect(SceneStringName(resized), callable_mp(this, &EditorAbout::_item_list_resized).bind(il));
+				il->connect(SceneStringName(focus_exited), callable_mp(il, &ItemList::deselect_all));
+
+				il->add_theme_style_override("focus", empty_stylebox);
+				il->add_theme_style_override("selected", empty_stylebox);
+
+				while (*names_ptr) {
+					const String name = String::utf8(*names_ptr++);
+					const String identifier = name.get_slice("<", 0);
+					const String website = name.get_slice_count("<") == 1 ? "" : name.get_slice("<", 1).trim_suffix(">");
+
+					const int name_item_id = il->add_item(identifier, nullptr, false);
+					il->set_item_tooltip_enabled(name_item_id, false);
+
+					if (!website.is_empty()) {
+						il->set_item_selectable(name_item_id, true);
+						il->set_item_metadata(name_item_id, website);
+						il->set_item_tooltip(name_item_id, website + "\n\n" + TTR("Double-click to open in browser."));
+						il->set_item_tooltip_enabled(name_item_id, true);
+					}
+
+					if (!*names_ptr && name.contains(" anonymous ")) {
+						il->set_item_disabled(name_item_id, true);
+					}
+				}
+			} else {
+				while (*names_ptr) {
+					il->add_item(String::utf8(*names_ptr++), nullptr, false);
+				}
 			}
-			il->set_max_columns(il->get_item_count() < 4 || single_column ? 1 : 16);
+			il->set_max_columns(single_column ? 1 : 16);
+
+			name_lists.append(il);
+
 			vbc->add_child(il);
 
 			HSeparator *hs = memnew(HSeparator);
@@ -128,12 +180,12 @@ EditorAbout::EditorAbout() {
 	set_hide_on_ok(true);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
-	vbc->connect("theme_changed", callable_mp(this, &EditorAbout::_theme_changed));
+	add_child(vbc);
+
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hbc->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	hbc->add_theme_constant_override("separation", 30 * EDSCALE);
-	add_child(vbc);
 	vbc->add_child(hbc);
 
 	_logo = memnew(TextureRect);
@@ -155,8 +207,15 @@ EditorAbout::EditorAbout() {
 	// Set the text to copy in metadata as it slightly differs from the button's text.
 	version_btn->set_meta(META_TEXT_TO_COPY, "v" VERSION_FULL_BUILD + hash);
 	version_btn->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
-	version_btn->set_tooltip_text(TTR("Click to copy."));
-	version_btn->connect("pressed", callable_mp(this, &EditorAbout::_version_button_pressed));
+	String build_date;
+	if (VERSION_TIMESTAMP > 0) {
+		build_date = Time::get_singleton()->get_datetime_string_from_unix_time(VERSION_TIMESTAMP, true) + " UTC";
+	} else {
+		build_date = TTR("(unknown)");
+	}
+	version_btn->set_tooltip_text(vformat(TTR("Git commit date: %s\nClick to copy the version number."), build_date));
+
+	version_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorAbout::_version_button_pressed));
 	version_info_vbc->add_child(version_btn);
 
 	Label *about_text = memnew(Label);
@@ -175,7 +234,7 @@ EditorAbout::EditorAbout() {
 	tc->set_theme_type_variation("TabContainerOdd");
 	vbc->add_child(tc);
 
-	// Authors
+	// Authors.
 
 	List<String> dev_sections;
 	dev_sections.push_back(TTR("Project Founders"));
@@ -189,9 +248,9 @@ EditorAbout::EditorAbout() {
 		AUTHORS_PROJECT_MANAGERS,
 		AUTHORS_DEVELOPERS,
 	};
-	tc->add_child(_populate_list(TTR("Authors"), dev_sections, dev_src, 1));
+	tc->add_child(_populate_list(TTR("Authors"), dev_sections, dev_src, 0b1)); // First section (Project Founders) is always one column.
 
-	// Donors
+	// Donors.
 
 	List<String> donor_sections;
 	donor_sections.push_back(TTR("Patrons"));
@@ -212,19 +271,19 @@ EditorAbout::EditorAbout() {
 		DONORS_MEMBERS_PLATINUM,
 		DONORS_MEMBERS_GOLD,
 	};
-	tc->add_child(_populate_list(TTR("Donors"), donor_sections, donor_src, 3));
+	tc->add_child(_populate_list(TTR("Donors"), donor_sections, donor_src, 0b1, true)); // First section (Patron) is one column.
 
-	// License
+	// License.
 
-	_license_text = memnew(RichTextLabel);
-	_license_text->set_threaded(true);
-	_license_text->set_name(TTR("License"));
-	_license_text->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	_license_text->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	_license_text->set_text(String::utf8(GODOT_LICENSE_TEXT));
-	tc->add_child(_license_text);
+	license_text_label = memnew(RichTextLabel);
+	license_text_label->set_threaded(true);
+	license_text_label->set_name(TTR("License"));
+	license_text_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	license_text_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	license_text_label->set_text(String::utf8(GODOT_LICENSE_TEXT));
+	tc->add_child(license_text_label);
 
-	// Thirdparty License
+	// Thirdparty License.
 
 	VBoxContainer *license_thirdparty = memnew(VBoxContainer);
 	license_thirdparty->set_name(TTR("Third-party Licenses"));
@@ -245,6 +304,7 @@ EditorAbout::EditorAbout() {
 	license_thirdparty->add_child(tpl_hbc);
 
 	_tpl_tree = memnew(Tree);
+	_tpl_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	_tpl_tree->set_hide_root(true);
 	TreeItem *root = _tpl_tree->create_item();
 	TreeItem *tpl_ti_all = _tpl_tree->create_item(root);
@@ -299,7 +359,7 @@ EditorAbout::EditorAbout() {
 	_tpl_text->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tpl_hbc->add_child(_tpl_text);
 
-	_tpl_tree->connect("item_selected", callable_mp(this, &EditorAbout::_license_tree_selected));
+	_tpl_tree->connect(SceneStringName(item_selected), callable_mp(this, &EditorAbout::_license_tree_selected));
 	tpl_ti_all->select(0);
 	_tpl_text->set_text(tpl_ti_all->get_metadata(0));
 }

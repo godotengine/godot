@@ -43,7 +43,7 @@
 		public override void _Ready()
 		{
 		    // Create an HTTP request node and connect its completion signal.
-		    var httpRequest = new HTTPRequest();
+		    var httpRequest = new HttpRequest();
 		    AddChild(httpRequest);
 		    httpRequest.RequestCompleted += HttpRequestCompleted;
 
@@ -61,7 +61,7 @@
 		    {
 		        { "name", "Godette" }
 		    });
-		    error = httpRequest.Request("https://httpbin.org/post", null, HTTPClient.Method.Post, body);
+		    error = httpRequest.Request("https://httpbin.org/post", null, HttpClient.Method.Post, body);
 		    if (error != Error.Ok)
 		    {
 		        GD.PushError("An error occurred in the HTTP request.");
@@ -115,7 +115,7 @@
 		public override void _Ready()
 		{
 		    // Create an HTTP request node and connect its completion signal.
-		    var httpRequest = new HTTPRequest();
+		    var httpRequest = new HttpRequest();
 		    AddChild(httpRequest);
 		    httpRequest.RequestCompleted += HttpRequestCompleted;
 
@@ -130,7 +130,7 @@
 		// Called when the HTTP request is completed.
 		private void HttpRequestCompleted(long result, long responseCode, string[] headers, byte[] body)
 		{
-		    if (result != (long)HTTPRequest.Result.Success)
+		    if (result != (long)HttpRequest.Result.Success)
 		    {
 		        GD.PushError("Image couldn't be downloaded. Try a different image.");
 		    }

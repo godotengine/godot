@@ -62,6 +62,7 @@ class GLManagerLegacy_MacOS {
 
 	Error create_context(GLWindow &win);
 
+	bool framework_loaded = false;
 	bool use_vsync = false;
 	CGLEnablePtr CGLEnable = nullptr;
 	CGLSetParameterPtr CGLSetParameter = nullptr;
@@ -73,7 +74,6 @@ public:
 	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
 
 	void release_current();
-	void make_current();
 	void swap_buffers();
 
 	void window_make_current(DisplayServer::WindowID p_window_id);

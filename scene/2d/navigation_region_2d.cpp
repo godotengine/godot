@@ -31,9 +31,12 @@
 #include "navigation_region_2d.h"
 
 #include "core/math/geometry_2d.h"
-#include "scene/2d/navigation_obstacle_2d.h"
 #include "scene/resources/world_2d.h"
 #include "servers/navigation_server_2d.h"
+
+RID NavigationRegion2D::get_rid() const {
+	return region;
+}
 
 void NavigationRegion2D::set_enabled(bool p_enabled) {
 	if (enabled == p_enabled) {
@@ -136,7 +139,7 @@ real_t NavigationRegion2D::get_travel_cost() const {
 }
 
 RID NavigationRegion2D::get_region_rid() const {
-	return region;
+	return get_rid();
 }
 
 #ifdef TOOLS_ENABLED
@@ -159,12 +162,24 @@ void NavigationRegion2D::_notification(int p_what) {
 			set_physics_process_internal(true);
 		} break;
 
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+#ifdef DEBUG_ENABLED
+			if (debug_instance_rid.is_valid()) {
+				RS::get_singleton()->canvas_item_set_visible(debug_instance_rid, is_visible_in_tree());
+			}
+#endif // DEBUG_ENABLED
+		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			_region_exit_navigation_map();
+#ifdef DEBUG_ENABLED
+			_free_debug();
+#endif // DEBUG_ENABLED
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			set_physics_process_internal(false);
+			_region_update_transform();
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -172,6 +187,7 @@ void NavigationRegion2D::_notification(int p_what) {
 			if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || NavigationServer2D::get_singleton()->get_debug_enabled()) && navigation_polygon.is_valid()) {
 				_update_debug_mesh();
 				_update_debug_edge_connections_mesh();
+				_update_debug_baking_rect();
 			}
 #endif // DEBUG_ENABLED
 		} break;
@@ -184,6 +200,9 @@ void NavigationRegion2D::set_navigation_polygon(const Ref<NavigationPolygon> &p_
 	}
 
 	navigation_polygon = p_navigation_polygon;
+#ifdef DEBUG_ENABLED
+	debug_mesh_dirty = true;
+#endif // DEBUG_ENABLED
 	NavigationServer2D::get_singleton()->region_set_navigation_polygon(region, p_navigation_polygon);
 
 	if (navigation_polygon.is_valid()) {
@@ -206,11 +225,6 @@ void NavigationRegion2D::set_navigation_map(RID p_navigation_map) {
 	map_override = p_navigation_map;
 
 	NavigationServer2D::get_singleton()->region_set_map(region, map_override);
-	for (uint32_t i = 0; i < constrain_avoidance_obstacles.size(); i++) {
-		if (constrain_avoidance_obstacles[i].is_valid()) {
-			NavigationServer2D::get_singleton()->obstacle_set_map(constrain_avoidance_obstacles[i], map_override);
-		}
-	}
 }
 
 RID NavigationRegion2D::get_navigation_map() const {
@@ -240,12 +254,16 @@ void NavigationRegion2D::bake_navigation_polygon(bool p_on_thread) {
 
 void NavigationRegion2D::_bake_finished(Ref<NavigationPolygon> p_navigation_polygon) {
 	if (!Thread::is_main_thread()) {
-		call_deferred(SNAME("_bake_finished"), p_navigation_polygon);
+		callable_mp(this, &NavigationRegion2D::_bake_finished).call_deferred(p_navigation_polygon);
 		return;
 	}
 
 	set_navigation_polygon(p_navigation_polygon);
 	emit_signal(SNAME("bake_finished"));
+}
+
+bool NavigationRegion2D::is_baking() const {
+	return NavigationServer2D::get_singleton()->is_baking_navigation_polygon(navigation_polygon);
 }
 
 void NavigationRegion2D::_navigation_polygon_changed() {
@@ -255,12 +273,19 @@ void NavigationRegion2D::_navigation_polygon_changed() {
 	if (navigation_polygon.is_valid()) {
 		NavigationServer2D::get_singleton()->region_set_navigation_polygon(region, navigation_polygon);
 	}
-	_update_avoidance_constrain();
 }
 
 #ifdef DEBUG_ENABLED
 void NavigationRegion2D::_navigation_map_changed(RID p_map) {
 	if (is_inside_tree() && get_world_2d()->get_navigation_map() == p_map) {
+		queue_redraw();
+	}
+}
+#endif // DEBUG_ENABLED
+
+#ifdef DEBUG_ENABLED
+void NavigationRegion2D::_navigation_debug_changed() {
+	if (is_inside_tree()) {
 		queue_redraw();
 	}
 }
@@ -279,6 +304,8 @@ PackedStringArray NavigationRegion2D::get_configuration_warnings() const {
 }
 
 void NavigationRegion2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationRegion2D::get_rid);
+
 	ClassDB::bind_method(D_METHOD("set_navigation_polygon", "navigation_polygon"), &NavigationRegion2D::set_navigation_polygon);
 	ClassDB::bind_method(D_METHOD("get_navigation_polygon"), &NavigationRegion2D::get_navigation_polygon);
 
@@ -297,13 +324,6 @@ void NavigationRegion2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_navigation_layer_value", "layer_number", "value"), &NavigationRegion2D::set_navigation_layer_value);
 	ClassDB::bind_method(D_METHOD("get_navigation_layer_value", "layer_number"), &NavigationRegion2D::get_navigation_layer_value);
 
-	ClassDB::bind_method(D_METHOD("set_constrain_avoidance", "enabled"), &NavigationRegion2D::set_constrain_avoidance);
-	ClassDB::bind_method(D_METHOD("get_constrain_avoidance"), &NavigationRegion2D::get_constrain_avoidance);
-	ClassDB::bind_method(D_METHOD("set_avoidance_layers", "layers"), &NavigationRegion2D::set_avoidance_layers);
-	ClassDB::bind_method(D_METHOD("get_avoidance_layers"), &NavigationRegion2D::get_avoidance_layers);
-	ClassDB::bind_method(D_METHOD("set_avoidance_layer_value", "layer_number", "value"), &NavigationRegion2D::set_avoidance_layer_value);
-	ClassDB::bind_method(D_METHOD("get_avoidance_layer_value", "layer_number"), &NavigationRegion2D::get_avoidance_layer_value);
-
 	ClassDB::bind_method(D_METHOD("get_region_rid"), &NavigationRegion2D::get_region_rid);
 
 	ClassDB::bind_method(D_METHOD("set_enter_cost", "enter_cost"), &NavigationRegion2D::set_enter_cost);
@@ -313,6 +333,7 @@ void NavigationRegion2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_travel_cost"), &NavigationRegion2D::get_travel_cost);
 
 	ClassDB::bind_method(D_METHOD("bake_navigation_polygon", "on_thread"), &NavigationRegion2D::bake_navigation_polygon, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("is_baking"), &NavigationRegion2D::is_baking);
 
 	ClassDB::bind_method(D_METHOD("_navigation_polygon_changed"), &NavigationRegion2D::_navigation_polygon_changed);
 
@@ -322,8 +343,6 @@ void NavigationRegion2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_2D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "enter_cost"), "set_enter_cost", "get_enter_cost");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "travel_cost"), "set_travel_cost", "get_travel_cost");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "constrain_avoidance"), "set_constrain_avoidance", "get_constrain_avoidance");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "avoidance_layers", PROPERTY_HINT_LAYERS_AVOIDANCE), "set_avoidance_layers", "get_avoidance_layers");
 
 	ADD_SIGNAL(MethodInfo("navigation_polygon_changed"));
 	ADD_SIGNAL(MethodInfo("bake_finished"));
@@ -356,10 +375,13 @@ NavigationRegion2D::NavigationRegion2D() {
 	NavigationServer2D::get_singleton()->region_set_owner_id(region, get_instance_id());
 	NavigationServer2D::get_singleton()->region_set_enter_cost(region, get_enter_cost());
 	NavigationServer2D::get_singleton()->region_set_travel_cost(region, get_travel_cost());
+	NavigationServer2D::get_singleton()->region_set_navigation_layers(region, navigation_layers);
+	NavigationServer2D::get_singleton()->region_set_use_edge_connections(region, use_edge_connections);
+	NavigationServer2D::get_singleton()->region_set_enabled(region, enabled);
 
 #ifdef DEBUG_ENABLED
 	NavigationServer2D::get_singleton()->connect(SNAME("map_changed"), callable_mp(this, &NavigationRegion2D::_navigation_map_changed));
-	NavigationServer2D::get_singleton()->connect(SNAME("navigation_debug_changed"), callable_mp(this, &NavigationRegion2D::_navigation_map_changed));
+	NavigationServer2D::get_singleton()->connect(SNAME("navigation_debug_changed"), callable_mp(this, &NavigationRegion2D::_navigation_debug_changed));
 #endif // DEBUG_ENABLED
 }
 
@@ -367,129 +389,10 @@ NavigationRegion2D::~NavigationRegion2D() {
 	ERR_FAIL_NULL(NavigationServer2D::get_singleton());
 	NavigationServer2D::get_singleton()->free(region);
 
-	for (uint32_t i = 0; i < constrain_avoidance_obstacles.size(); i++) {
-		if (constrain_avoidance_obstacles[i].is_valid()) {
-			NavigationServer2D::get_singleton()->free(constrain_avoidance_obstacles[i]);
-		}
-	}
-	constrain_avoidance_obstacles.clear();
-
 #ifdef DEBUG_ENABLED
 	NavigationServer2D::get_singleton()->disconnect(SNAME("map_changed"), callable_mp(this, &NavigationRegion2D::_navigation_map_changed));
-	NavigationServer2D::get_singleton()->disconnect(SNAME("navigation_debug_changed"), callable_mp(this, &NavigationRegion2D::_navigation_map_changed));
+	NavigationServer2D::get_singleton()->disconnect(SNAME("navigation_debug_changed"), callable_mp(this, &NavigationRegion2D::_navigation_debug_changed));
 #endif // DEBUG_ENABLED
-}
-
-void NavigationRegion2D::_update_avoidance_constrain() {
-	for (uint32_t i = 0; i < constrain_avoidance_obstacles.size(); i++) {
-		if (constrain_avoidance_obstacles[i].is_valid()) {
-			NavigationServer2D::get_singleton()->free(constrain_avoidance_obstacles[i]);
-			constrain_avoidance_obstacles[i] = RID();
-		}
-	}
-	constrain_avoidance_obstacles.clear();
-
-	if (!constrain_avoidance) {
-		return;
-	}
-
-	if (get_navigation_polygon() == nullptr) {
-		return;
-	}
-
-	Ref<NavigationPolygon> _navpoly = get_navigation_polygon();
-	int _outline_count = _navpoly->get_outline_count();
-	if (_outline_count == 0) {
-		return;
-	}
-
-	for (int outline_index(0); outline_index < _outline_count; outline_index++) {
-		const Vector<Vector2> &_outline = _navpoly->get_outline(outline_index);
-
-		const int outline_size = _outline.size();
-		if (outline_size < 3) {
-			ERR_FAIL_COND_MSG(_outline.size() < 3, "NavigationPolygon outline needs to have at least 3 vertex to create avoidance obstacles to constrain avoidance agent's");
-			continue;
-		}
-
-		RID obstacle_rid = NavigationServer2D::get_singleton()->obstacle_create();
-		constrain_avoidance_obstacles.push_back(obstacle_rid);
-
-		Vector<Vector2> new_obstacle_outline;
-
-		if (outline_index == 0) {
-			for (int i(0); i < outline_size; i++) {
-				new_obstacle_outline.push_back(_outline[outline_size - i - 1]);
-			}
-			ERR_FAIL_COND_MSG(Geometry2D::is_polygon_clockwise(_outline), "Outer most outline needs to be clockwise to push avoidance agent inside");
-		} else {
-			for (int i(0); i < outline_size; i++) {
-				new_obstacle_outline.push_back(_outline[i]);
-			}
-		}
-		new_obstacle_outline.resize(outline_size);
-
-		NavigationServer2D::get_singleton()->obstacle_set_vertices(obstacle_rid, new_obstacle_outline);
-		NavigationServer2D::get_singleton()->obstacle_set_avoidance_layers(obstacle_rid, avoidance_layers);
-		if (is_inside_tree()) {
-			if (map_override.is_valid()) {
-				NavigationServer2D::get_singleton()->obstacle_set_map(obstacle_rid, map_override);
-			} else {
-				NavigationServer2D::get_singleton()->obstacle_set_map(obstacle_rid, get_world_2d()->get_navigation_map());
-			}
-			NavigationServer2D::get_singleton()->obstacle_set_position(obstacle_rid, get_global_position());
-		}
-	}
-	constrain_avoidance_obstacles.resize(_outline_count);
-}
-
-void NavigationRegion2D::set_constrain_avoidance(bool p_enabled) {
-	constrain_avoidance = p_enabled;
-	_update_avoidance_constrain();
-	notify_property_list_changed();
-}
-
-bool NavigationRegion2D::get_constrain_avoidance() const {
-	return constrain_avoidance;
-}
-
-void NavigationRegion2D::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "avoidance_layers") {
-		if (!constrain_avoidance) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-		}
-	}
-}
-
-void NavigationRegion2D::set_avoidance_layers(uint32_t p_layers) {
-	avoidance_layers = p_layers;
-	if (constrain_avoidance_obstacles.size() > 0) {
-		for (uint32_t i = 0; i < constrain_avoidance_obstacles.size(); i++) {
-			NavigationServer2D::get_singleton()->obstacle_set_avoidance_layers(constrain_avoidance_obstacles[i], avoidance_layers);
-		}
-	}
-}
-
-uint32_t NavigationRegion2D::get_avoidance_layers() const {
-	return avoidance_layers;
-}
-
-void NavigationRegion2D::set_avoidance_layer_value(int p_layer_number, bool p_value) {
-	ERR_FAIL_COND_MSG(p_layer_number < 1, "Avoidance layer number must be between 1 and 32 inclusive.");
-	ERR_FAIL_COND_MSG(p_layer_number > 32, "Avoidance layer number must be between 1 and 32 inclusive.");
-	uint32_t avoidance_layers_new = get_avoidance_layers();
-	if (p_value) {
-		avoidance_layers_new |= 1 << (p_layer_number - 1);
-	} else {
-		avoidance_layers_new &= ~(1 << (p_layer_number - 1));
-	}
-	set_avoidance_layers(avoidance_layers_new);
-}
-
-bool NavigationRegion2D::get_avoidance_layer_value(int p_layer_number) const {
-	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Avoidance layer number must be between 1 and 32 inclusive.");
-	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Avoidance layer number must be between 1 and 32 inclusive.");
-	return get_avoidance_layers() & (1 << (p_layer_number - 1));
 }
 
 void NavigationRegion2D::_region_enter_navigation_map() {
@@ -499,27 +402,12 @@ void NavigationRegion2D::_region_enter_navigation_map() {
 
 	if (map_override.is_valid()) {
 		NavigationServer2D::get_singleton()->region_set_map(region, map_override);
-		for (uint32_t i = 0; i < constrain_avoidance_obstacles.size(); i++) {
-			if (constrain_avoidance_obstacles[i].is_valid()) {
-				NavigationServer2D::get_singleton()->obstacle_set_map(constrain_avoidance_obstacles[i], map_override);
-			}
-		}
 	} else {
 		NavigationServer2D::get_singleton()->region_set_map(region, get_world_2d()->get_navigation_map());
-		for (uint32_t i = 0; i < constrain_avoidance_obstacles.size(); i++) {
-			if (constrain_avoidance_obstacles[i].is_valid()) {
-				NavigationServer2D::get_singleton()->obstacle_set_map(constrain_avoidance_obstacles[i], get_world_2d()->get_navigation_map());
-			}
-		}
 	}
 
 	current_global_transform = get_global_transform();
 	NavigationServer2D::get_singleton()->region_set_transform(region, current_global_transform);
-	for (uint32_t i = 0; i < constrain_avoidance_obstacles.size(); i++) {
-		if (constrain_avoidance_obstacles[i].is_valid()) {
-			NavigationServer2D::get_singleton()->obstacle_set_position(constrain_avoidance_obstacles[i], get_global_position());
-		}
-	}
 
 	NavigationServer2D::get_singleton()->region_set_enabled(region, enabled);
 
@@ -528,11 +416,6 @@ void NavigationRegion2D::_region_enter_navigation_map() {
 
 void NavigationRegion2D::_region_exit_navigation_map() {
 	NavigationServer2D::get_singleton()->region_set_map(region, RID());
-	for (uint32_t i = 0; i < constrain_avoidance_obstacles.size(); i++) {
-		if (constrain_avoidance_obstacles[i].is_valid()) {
-			NavigationServer2D::get_singleton()->obstacle_set_map(constrain_avoidance_obstacles[i], RID());
-		}
-	}
 }
 
 void NavigationRegion2D::_region_update_transform() {
@@ -544,11 +427,6 @@ void NavigationRegion2D::_region_update_transform() {
 	if (current_global_transform != new_global_transform) {
 		current_global_transform = new_global_transform;
 		NavigationServer2D::get_singleton()->region_set_transform(region, current_global_transform);
-		for (uint32_t i = 0; i < constrain_avoidance_obstacles.size(); i++) {
-			if (constrain_avoidance_obstacles[i].is_valid()) {
-				NavigationServer2D::get_singleton()->obstacle_set_position(constrain_avoidance_obstacles[i], get_global_position());
-			}
-		}
 	}
 
 	queue_redraw();
@@ -556,12 +434,43 @@ void NavigationRegion2D::_region_update_transform() {
 
 #ifdef DEBUG_ENABLED
 void NavigationRegion2D::_update_debug_mesh() {
-	Vector<Vector2> navigation_polygon_vertices = navigation_polygon->get_vertices();
-	if (navigation_polygon_vertices.size() < 3) {
+	if (!is_inside_tree()) {
+		_free_debug();
 		return;
 	}
 
 	const NavigationServer2D *ns2d = NavigationServer2D::get_singleton();
+	RenderingServer *rs = RenderingServer::get_singleton();
+
+	if (!debug_instance_rid.is_valid()) {
+		debug_instance_rid = rs->canvas_item_create();
+	}
+	if (!debug_mesh_rid.is_valid()) {
+		debug_mesh_rid = rs->mesh_create();
+	}
+
+	const Transform2D region_gt = get_global_transform();
+
+	rs->canvas_item_set_parent(debug_instance_rid, get_world_2d()->get_canvas());
+	rs->canvas_item_set_transform(debug_instance_rid, region_gt);
+
+	if (!debug_mesh_dirty) {
+		return;
+	}
+
+	rs->canvas_item_clear(debug_instance_rid);
+	rs->mesh_clear(debug_mesh_rid);
+	debug_mesh_dirty = false;
+
+	const Vector<Vector2> &vertices = navigation_polygon->get_vertices();
+	if (vertices.size() < 3) {
+		return;
+	}
+
+	int polygon_count = navigation_polygon->get_polygon_count();
+	if (polygon_count == 0) {
+		return;
+	}
 
 	bool enabled_geometry_face_random_color = ns2d->get_debug_navigation_enable_geometry_face_random_color();
 	bool enabled_edge_lines = ns2d->get_debug_navigation_enable_edge_lines();
@@ -574,39 +483,109 @@ void NavigationRegion2D::_update_debug_mesh() {
 		debug_edge_color = ns2d->get_debug_navigation_geometry_edge_disabled_color();
 	}
 
+	int vertex_count = 0;
+	int line_count = 0;
+
+	for (int i = 0; i < polygon_count; i++) {
+		const Vector<int> &polygon = navigation_polygon->get_polygon(i);
+		int polygon_size = polygon.size();
+		if (polygon_size < 3) {
+			continue;
+		}
+		line_count += polygon_size * 2;
+		vertex_count += (polygon_size - 2) * 3;
+	}
+
+	Vector<Vector2> face_vertex_array;
+	face_vertex_array.resize(vertex_count);
+
+	Vector<Color> face_color_array;
+	if (enabled_geometry_face_random_color) {
+		face_color_array.resize(vertex_count);
+	}
+
+	Vector<Vector2> line_vertex_array;
+	if (enabled_edge_lines) {
+		line_vertex_array.resize(line_count);
+	}
+
 	RandomPCG rand;
+	Color polygon_color = debug_face_color;
 
-	for (int i = 0; i < navigation_polygon->get_polygon_count(); i++) {
-		// An array of vertices for this polygon.
-		Vector<int> polygon = navigation_polygon->get_polygon(i);
-		Vector<Vector2> debug_polygon_vertices;
-		debug_polygon_vertices.resize(polygon.size());
-		for (int j = 0; j < polygon.size(); j++) {
-			ERR_FAIL_INDEX(polygon[j], navigation_polygon_vertices.size());
-			debug_polygon_vertices.write[j] = navigation_polygon_vertices[polygon[j]];
+	int face_vertex_index = 0;
+	int line_vertex_index = 0;
+
+	Vector2 *face_vertex_array_ptrw = face_vertex_array.ptrw();
+	Color *face_color_array_ptrw = face_color_array.ptrw();
+	Vector2 *line_vertex_array_ptrw = line_vertex_array.ptrw();
+
+	for (int polygon_index = 0; polygon_index < polygon_count; polygon_index++) {
+		const Vector<int> &polygon_indices = navigation_polygon->get_polygon(polygon_index);
+		int polygon_indices_size = polygon_indices.size();
+		if (polygon_indices_size < 3) {
+			continue;
 		}
 
-		// Generate the polygon color, slightly randomly modified from the settings one.
-		Color random_variation_color = debug_face_color;
 		if (enabled_geometry_face_random_color) {
-			random_variation_color.set_hsv(
-					debug_face_color.get_h() + rand.random(-1.0, 1.0) * 0.1,
-					debug_face_color.get_s(),
-					debug_face_color.get_v() + rand.random(-1.0, 1.0) * 0.2);
+			// Generate the polygon color, slightly randomly modified from the settings one.
+			polygon_color.set_hsv(debug_face_color.get_h() + rand.random(-1.0, 1.0) * 0.1, debug_face_color.get_s(), debug_face_color.get_v() + rand.random(-1.0, 1.0) * 0.2);
+			polygon_color.a = debug_face_color.a;
 		}
-		random_variation_color.a = debug_face_color.a;
 
-		Vector<Color> debug_face_colors;
-		debug_face_colors.push_back(random_variation_color);
-		RS::get_singleton()->canvas_item_add_polygon(get_canvas_item(), debug_polygon_vertices, debug_face_colors);
+		for (int polygon_indices_index = 0; polygon_indices_index < polygon_indices_size - 2; polygon_indices_index++) {
+			face_vertex_array_ptrw[face_vertex_index] = vertices[polygon_indices[0]];
+			face_vertex_array_ptrw[face_vertex_index + 1] = vertices[polygon_indices[polygon_indices_index + 1]];
+			face_vertex_array_ptrw[face_vertex_index + 2] = vertices[polygon_indices[polygon_indices_index + 2]];
+			if (enabled_geometry_face_random_color) {
+				face_color_array_ptrw[face_vertex_index] = polygon_color;
+				face_color_array_ptrw[face_vertex_index + 1] = polygon_color;
+				face_color_array_ptrw[face_vertex_index + 2] = polygon_color;
+			}
+			face_vertex_index += 3;
+		}
 
 		if (enabled_edge_lines) {
-			Vector<Color> debug_edge_colors;
-			debug_edge_colors.push_back(debug_edge_color);
-			debug_polygon_vertices.push_back(debug_polygon_vertices[0]); // Add first again for closing polyline.
-			RS::get_singleton()->canvas_item_add_polyline(get_canvas_item(), debug_polygon_vertices, debug_edge_colors);
+			for (int polygon_indices_index = 0; polygon_indices_index < polygon_indices_size; polygon_indices_index++) {
+				line_vertex_array_ptrw[line_vertex_index] = vertices[polygon_indices[polygon_indices_index]];
+				line_vertex_index += 1;
+				if (polygon_indices_index + 1 == polygon_indices_size) {
+					line_vertex_array_ptrw[line_vertex_index] = vertices[polygon_indices[0]];
+					line_vertex_index += 1;
+				} else {
+					line_vertex_array_ptrw[line_vertex_index] = vertices[polygon_indices[polygon_indices_index + 1]];
+					line_vertex_index += 1;
+				}
+			}
 		}
 	}
+
+	if (!enabled_geometry_face_random_color) {
+		face_color_array.resize(face_vertex_array.size());
+		face_color_array.fill(debug_face_color);
+	}
+
+	Array face_mesh_array;
+	face_mesh_array.resize(Mesh::ARRAY_MAX);
+	face_mesh_array[Mesh::ARRAY_VERTEX] = face_vertex_array;
+	face_mesh_array[Mesh::ARRAY_COLOR] = face_color_array;
+
+	rs->mesh_add_surface_from_arrays(debug_mesh_rid, RS::PRIMITIVE_TRIANGLES, face_mesh_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+
+	if (enabled_edge_lines) {
+		Vector<Color> line_color_array;
+		line_color_array.resize(line_vertex_array.size());
+		line_color_array.fill(debug_edge_color);
+
+		Array line_mesh_array;
+		line_mesh_array.resize(Mesh::ARRAY_MAX);
+		line_mesh_array[Mesh::ARRAY_VERTEX] = line_vertex_array;
+		line_mesh_array[Mesh::ARRAY_COLOR] = line_color_array;
+
+		rs->mesh_add_surface_from_arrays(debug_mesh_rid, RS::PRIMITIVE_LINES, line_mesh_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+	}
+
+	rs->canvas_item_add_mesh(debug_instance_rid, debug_mesh_rid, Transform2D());
+	rs->canvas_item_set_visible(debug_instance_rid, is_visible_in_tree());
 }
 #endif // DEBUG_ENABLED
 
@@ -633,6 +612,34 @@ void NavigationRegion2D::_update_debug_edge_connections_mesh() {
 			draw_arc(a, radius, angle + Math_PI / 2.0, angle - Math_PI / 2.0 + Math_TAU, 10, debug_edge_connection_color);
 			draw_arc(b, radius, angle - Math_PI / 2.0, angle + Math_PI / 2.0, 10, debug_edge_connection_color);
 		}
+	}
+}
+#endif // DEBUG_ENABLED
+
+#ifdef DEBUG_ENABLED
+void NavigationRegion2D::_update_debug_baking_rect() {
+	Rect2 baking_rect = get_navigation_polygon()->get_baking_rect();
+	if (baking_rect.has_area()) {
+		Vector2 baking_rect_offset = get_navigation_polygon()->get_baking_rect_offset();
+		Rect2 debug_baking_rect = Rect2(baking_rect.position.x + baking_rect_offset.x, baking_rect.position.y + baking_rect_offset.y, baking_rect.size.x, baking_rect.size.y);
+		Color debug_baking_rect_color = Color(0.8, 0.5, 0.7, 0.1);
+		draw_rect(debug_baking_rect, debug_baking_rect_color);
+	}
+}
+#endif // DEBUG_ENABLED
+
+#ifdef DEBUG_ENABLED
+void NavigationRegion2D::_free_debug() {
+	RenderingServer *rs = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rs);
+	if (debug_instance_rid.is_valid()) {
+		rs->canvas_item_clear(debug_instance_rid);
+		rs->free(debug_instance_rid);
+		debug_instance_rid = RID();
+	}
+	if (debug_mesh_rid.is_valid()) {
+		rs->free(debug_mesh_rid);
+		debug_mesh_rid = RID();
 	}
 }
 #endif // DEBUG_ENABLED

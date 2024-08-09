@@ -34,7 +34,7 @@
 #include "core/templates/rb_map.h"
 #include "editor/code_editor.h"
 #include "editor/editor_help.h"
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/tree.h"
 
@@ -67,12 +67,31 @@ class EditorHelpSearch : public ConfirmationDialog {
 	class Runner;
 	Ref<Runner> search;
 
+	struct TreeCache {
+		HashMap<String, TreeItem *> item_cache;
+
+		void clear();
+
+		~TreeCache() {
+			clear();
+		}
+	} tree_cache;
+
 	void _update_results();
 
 	void _search_box_gui_input(const Ref<InputEvent> &p_event);
 	void _search_box_text_changed(const String &p_text);
 	void _filter_combo_item_selected(int p_option);
 	void _confirmed();
+
+	bool _all_terms_in_name(const Vector<String> &p_terms, const String &p_name) const;
+	void _match_method_name_and_push_back(const String &p_term, const Vector<String> &p_terms, Vector<DocData::MethodDoc> &p_methods, const String &p_type, const String &p_metatype, const String &p_class_name, Dictionary &r_result) const;
+	void _match_const_name_and_push_back(const String &p_term, const Vector<String> &p_terms, Vector<DocData::ConstantDoc> &p_constants, const String &p_type, const String &p_metatype, const String &p_class_name, Dictionary &r_result) const;
+	void _match_property_name_and_push_back(const String &p_term, const Vector<String> &p_terms, Vector<DocData::PropertyDoc> &p_properties, const String &p_type, const String &p_metatype, const String &p_class_name, Dictionary &r_result) const;
+	void _match_theme_property_name_and_push_back(const String &p_term, const Vector<String> &p_terms, Vector<DocData::ThemeItemDoc> &p_properties, const String &p_type, const String &p_metatype, const String &p_class_name, Dictionary &r_result) const;
+
+	Dictionary _native_search_cb(const String &p_search_string, int p_result_limit);
+	void _native_action_cb(const String &p_item_string);
 
 protected:
 	void _notification(int p_what);
@@ -98,25 +117,34 @@ class EditorHelpSearch::Runner : public RefCounted {
 	};
 	int phase = 0;
 
+	template <typename T>
+	struct MemberMatch {
+		T *doc = nullptr;
+		bool name = false;
+		String keyword;
+	};
+
 	struct ClassMatch {
 		DocData::ClassDoc *doc = nullptr;
 		bool name = false;
-		Vector<DocData::MethodDoc *> constructors;
-		Vector<DocData::MethodDoc *> methods;
-		Vector<DocData::MethodDoc *> operators;
-		Vector<DocData::MethodDoc *> signals;
-		Vector<DocData::ConstantDoc *> constants;
-		Vector<DocData::PropertyDoc *> properties;
-		Vector<DocData::ThemeItemDoc *> theme_properties;
-		Vector<DocData::MethodDoc *> annotations;
+		String keyword;
+		Vector<MemberMatch<DocData::MethodDoc>> constructors;
+		Vector<MemberMatch<DocData::MethodDoc>> methods;
+		Vector<MemberMatch<DocData::MethodDoc>> operators;
+		Vector<MemberMatch<DocData::MethodDoc>> signals;
+		Vector<MemberMatch<DocData::ConstantDoc>> constants;
+		Vector<MemberMatch<DocData::PropertyDoc>> properties;
+		Vector<MemberMatch<DocData::ThemeItemDoc>> theme_properties;
+		Vector<MemberMatch<DocData::MethodDoc>> annotations;
 
 		bool required() {
-			return name || methods.size() || signals.size() || constants.size() || properties.size() || theme_properties.size() || annotations.size();
+			return name || !keyword.is_empty() || methods.size() || signals.size() || constants.size() || properties.size() || theme_properties.size() || annotations.size();
 		}
 	};
 
 	Control *ui_service = nullptr;
 	Tree *results_tree = nullptr;
+	TreeCache *tree_cache = nullptr;
 	String term;
 	Vector<String> terms;
 	int search_flags;
@@ -124,6 +152,7 @@ class EditorHelpSearch::Runner : public RefCounted {
 	Color disabled_color;
 
 	HashMap<String, DocData::ClassDoc>::Iterator iterator_doc;
+	LocalVector<RBSet<String, NaturalNoCaseComparator>::Element *> iterator_stack;
 	HashMap<String, ClassMatch> matches;
 	HashMap<String, ClassMatch>::Iterator iterator_match;
 	TreeItem *root_item = nullptr;
@@ -132,6 +161,9 @@ class EditorHelpSearch::Runner : public RefCounted {
 	float match_highest_score = 0;
 
 	bool _is_class_disabled_by_feature_profile(const StringName &p_class);
+
+	void _populate_cache();
+	bool _find_or_create_item(TreeItem *p_parent, const String &p_item_meta, TreeItem *&r_item);
 
 	bool _slice();
 	bool _phase_match_classes_init();
@@ -143,25 +175,28 @@ class EditorHelpSearch::Runner : public RefCounted {
 	bool _phase_select_match();
 
 	String _build_method_tooltip(const DocData::ClassDoc *p_class_doc, const DocData::MethodDoc *p_doc) const;
+	String _build_keywords_tooltip(const String &p_keywords) const;
 
-	void _match_method_name_and_push_back(Vector<DocData::MethodDoc> &p_methods, Vector<DocData::MethodDoc *> *r_match_methods);
-	bool _all_terms_in_name(String name);
+	void _match_method_name_and_push_back(Vector<DocData::MethodDoc> &p_methods, Vector<MemberMatch<DocData::MethodDoc>> *r_match_methods);
+	bool _all_terms_in_name(const String &p_name) const;
+	String _match_keywords_in_all_terms(const String &p_keywords) const;
 	bool _match_string(const String &p_term, const String &p_string) const;
-	void _match_item(TreeItem *p_item, const String &p_text);
+	String _match_keywords(const String &p_term, const String &p_keywords) const;
+	void _match_item(TreeItem *p_item, const String &p_text, bool p_is_keywords = false);
 	TreeItem *_create_class_hierarchy(const ClassMatch &p_match);
-	TreeItem *_create_class_item(TreeItem *p_parent, const DocData::ClassDoc *p_doc, bool p_gray);
-	TreeItem *_create_method_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const String &p_text, const DocData::MethodDoc *p_doc);
-	TreeItem *_create_signal_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::MethodDoc *p_doc);
-	TreeItem *_create_annotation_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const String &p_text, const DocData::MethodDoc *p_doc);
-	TreeItem *_create_constant_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::ConstantDoc *p_doc);
-	TreeItem *_create_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::PropertyDoc *p_doc);
-	TreeItem *_create_theme_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::ThemeItemDoc *p_doc);
-	TreeItem *_create_member_item(TreeItem *p_parent, const String &p_class_name, const String &p_icon, const String &p_name, const String &p_text, const String &p_type, const String &p_metatype, const String &p_tooltip, bool is_deprecated, bool is_experimental);
+	TreeItem *_create_class_item(TreeItem *p_parent, const DocData::ClassDoc *p_doc, bool p_gray, const String &p_matching_keyword);
+	TreeItem *_create_method_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const String &p_text, const MemberMatch<DocData::MethodDoc> &p_match);
+	TreeItem *_create_signal_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const MemberMatch<DocData::MethodDoc> &p_match);
+	TreeItem *_create_annotation_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const MemberMatch<DocData::MethodDoc> &p_match);
+	TreeItem *_create_constant_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const MemberMatch<DocData::ConstantDoc> &p_match);
+	TreeItem *_create_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const MemberMatch<DocData::PropertyDoc> &p_match);
+	TreeItem *_create_theme_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const MemberMatch<DocData::ThemeItemDoc> &p_match);
+	TreeItem *_create_member_item(TreeItem *p_parent, const String &p_class_name, const String &p_icon, const String &p_name, const String &p_text, const String &p_type, const String &p_metatype, const String &p_tooltip, const String &p_keywords, bool p_is_deprecated, bool p_is_experimental, const String &p_matching_keyword);
 
 public:
 	bool work(uint64_t slot = 100000);
 
-	Runner(Control *p_icon_service, Tree *p_results_tree, const String &p_term, int p_search_flags);
+	Runner(Control *p_icon_service, Tree *p_results_tree, TreeCache *p_tree_cache, const String &p_term, int p_search_flags);
 };
 
 #endif // EDITOR_HELP_SEARCH_H

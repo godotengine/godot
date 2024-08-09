@@ -330,7 +330,7 @@ void GPUParticlesCollisionSDF3D::_find_closest_distance(const Vector3 &p_pos, co
 			Vector3 center = p_bvh[p_bvh_cell].bounds.position + he;
 
 			Vector3 rel = (p_pos - center).abs();
-			Vector3 closest(MIN(rel.x, he.x), MIN(rel.y, he.y), MIN(rel.z, he.z));
+			Vector3 closest = rel.min(he);
 			float d = rel.distance_to(closest);
 
 			if (d >= r_closest_distance) {
@@ -382,9 +382,7 @@ Vector3i GPUParticlesCollisionSDF3D::get_estimated_cell_size() const {
 	float cell_size = aabb.get_longest_axis_size() / float(subdiv);
 
 	Vector3i sdf_size = Vector3i(aabb.size / cell_size);
-	sdf_size.x = MAX(1, sdf_size.x);
-	sdf_size.y = MAX(1, sdf_size.y);
-	sdf_size.z = MAX(1, sdf_size.z);
+	sdf_size = sdf_size.maxi(1);
 	return sdf_size;
 }
 
@@ -397,9 +395,7 @@ Ref<Image> GPUParticlesCollisionSDF3D::bake() {
 	float cell_size = aabb.get_longest_axis_size() / float(subdiv);
 
 	Vector3i sdf_size = Vector3i(aabb.size / cell_size);
-	sdf_size.x = MAX(1, sdf_size.x);
-	sdf_size.y = MAX(1, sdf_size.y);
-	sdf_size.z = MAX(1, sdf_size.z);
+	sdf_size = sdf_size.maxi(1);
 
 	if (bake_begin_function) {
 		bake_begin_function(100);
