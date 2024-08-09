@@ -100,7 +100,7 @@ protected:
 private:
 	int id = 0;
 
-	int dir_open(String p_path);
+	int dir_open(const String &p_path);
 	void dir_close(int p_id);
 	String get_absolute_path(String p_path);
 };

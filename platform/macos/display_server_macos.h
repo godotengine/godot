@@ -289,8 +289,8 @@ public:
 	virtual Color get_base_color() const override;
 	virtual void set_system_theme_change_callback(const Callable &p_callable) override;
 
-	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) override;
-	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) override;
+	virtual Error dialog_show(const String &p_title, const String &p_description, const Vector<String> &p_buttons, const Callable &p_callback) override;
+	virtual Error dialog_input_text(const String &p_title, const String &p_description, const String &p_partial, const Callable &p_callback) override;
 
 	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) override;
 	virtual Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) override;

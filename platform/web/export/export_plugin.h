@@ -98,10 +98,10 @@ class EditorExportPlatformWeb : public EditorExportPlatform {
 
 	Error _extract_template(const String &p_template, const String &p_dir, const String &p_name, bool pwa);
 	void _replace_strings(const HashMap<String, String> &p_replaces, Vector<uint8_t> &r_template);
-	void _fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, int p_flags, const Vector<SharedObject> p_shared_objects, const Dictionary &p_file_sizes);
+	void _fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, int p_flags, const Vector<SharedObject> &p_shared_objects, const Dictionary &p_file_sizes);
 	Error _add_manifest_icon(const String &p_path, const String &p_icon, int p_size, Array &r_arr);
-	Error _build_pwa(const Ref<EditorExportPreset> &p_preset, const String p_path, const Vector<SharedObject> &p_shared_objects);
-	Error _write_or_error(const uint8_t *p_content, int p_len, String p_path);
+	Error _build_pwa(const Ref<EditorExportPreset> &p_preset, const String &p_path, const Vector<SharedObject> &p_shared_objects);
+	Error _write_or_error(const uint8_t *p_content, int p_len, const String &p_path);
 
 	Error _export_project(const Ref<EditorExportPreset> &p_preset, int p_debug_flags);
 	Error _launch_browser(const String &p_bind_host, uint16_t p_bind_port, bool p_use_tls);

@@ -1081,7 +1081,7 @@ struct CodesignData {
 	}
 };
 
-Error EditorExportPlatformIOS::_codesign(String p_file, void *p_userdata) {
+Error EditorExportPlatformIOS::_codesign(const String &p_file, void *p_userdata) {
 	if (p_file.ends_with(".dylib")) {
 		CodesignData *data = static_cast<CodesignData *>(p_userdata);
 		print_line(String("Signing ") + p_file);

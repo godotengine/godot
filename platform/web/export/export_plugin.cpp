@@ -102,7 +102,7 @@ Error EditorExportPlatformWeb::_extract_template(const String &p_template, const
 	return OK;
 }
 
-Error EditorExportPlatformWeb::_write_or_error(const uint8_t *p_content, int p_size, String p_path) {
+Error EditorExportPlatformWeb::_write_or_error(const uint8_t *p_content, int p_size, const String &p_path) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE);
 	if (f.is_null()) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not write file: \"%s\"."), p_path));
@@ -130,7 +130,7 @@ void EditorExportPlatformWeb::_replace_strings(const HashMap<String, String> &p_
 	}
 }
 
-void EditorExportPlatformWeb::_fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, int p_flags, const Vector<SharedObject> p_shared_objects, const Dictionary &p_file_sizes) {
+void EditorExportPlatformWeb::_fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, int p_flags, const Vector<SharedObject> &p_shared_objects, const Dictionary &p_file_sizes) {
 	// Engine.js config
 	Dictionary config;
 	Array libs;
@@ -214,7 +214,7 @@ Error EditorExportPlatformWeb::_add_manifest_icon(const String &p_path, const St
 	return err;
 }
 
-Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_preset, const String p_path, const Vector<SharedObject> &p_shared_objects) {
+Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_preset, const String &p_path, const Vector<SharedObject> &p_shared_objects) {
 	String proj_name = GLOBAL_GET("application/config/name");
 	if (proj_name.is_empty()) {
 		proj_name = "Godot Game";

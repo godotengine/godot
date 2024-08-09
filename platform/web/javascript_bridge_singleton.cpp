@@ -73,7 +73,7 @@ private:
 	WASM_EXPORT static Variant _js2variant(int p_type, godot_js_wrapper_ex *p_val);
 	WASM_EXPORT static void *_alloc_variants(int p_size);
 	WASM_EXPORT static void callback(void *p_ref, int p_arg_id, int p_argc);
-	static void _callback(const JavaScriptObjectImpl *obj, Variant arg);
+	static void _callback(const JavaScriptObjectImpl *obj, const Variant &arg);
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value) override;
@@ -270,7 +270,7 @@ void JavaScriptObjectImpl::callback(void *p_ref, int p_args_id, int p_argc) {
 	_callback(obj, arg);
 }
 
-void JavaScriptObjectImpl::_callback(const JavaScriptObjectImpl *obj, Variant arg) {
+void JavaScriptObjectImpl::_callback(const JavaScriptObjectImpl *obj, const Variant &arg) {
 	obj->_callable.call(arg);
 
 	// Set return value
@@ -368,7 +368,7 @@ Variant JavaScriptBridge::eval(const String &p_code, bool p_use_global_exec_cont
 
 #endif // JAVASCRIPT_EVAL_ENABLED
 
-void JavaScriptBridge::download_buffer(Vector<uint8_t> p_arr, const String &p_name, const String &p_mime) {
+void JavaScriptBridge::download_buffer(const Vector<uint8_t> &p_arr, const String &p_name, const String &p_mime) {
 	godot_js_os_download_buffer(p_arr.ptr(), p_arr.size(), p_name.utf8().get_data(), p_mime.utf8().get_data());
 }
 

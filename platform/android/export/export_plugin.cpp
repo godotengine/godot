@@ -2237,7 +2237,7 @@ String EditorExportPlatformAndroid::get_apksigner_path(int p_target_sdk, bool p_
 	bool found_target_sdk = false;
 	// We only allow for versions <= 27 if specifically set
 	int min_version = p_target_sdk <= 27 ? p_target_sdk : 28;
-	for (String sub_dir : dir_list) {
+	for (const String &sub_dir : dir_list) {
 		if (!sub_dir.begins_with(".")) {
 			Vector<String> ver_numbers = sub_dir.split(".");
 			// Dir not a version number, will use as last resort
