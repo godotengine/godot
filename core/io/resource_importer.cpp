@@ -212,6 +212,27 @@ bool ResourceFormatImporter::recognize_path(const String &p_path, const String &
 	return FileAccess::exists(p_path + ".import");
 }
 
+bool ResourceFormatImporter::get_import_can_have_dependencies(const String &p_path) const {
+	Ref<ResourceImporter> importer;
+
+	if (FileAccess::exists(p_path + ".import")) {
+		PathAndType pat;
+		Error err = _get_path_and_type(p_path, pat);
+
+		if (err == OK) {
+			importer = get_importer_by_name(pat.importer);
+		}
+	} else {
+		importer = get_importer_by_extension(p_path.get_extension().to_lower());
+	}
+
+	if (importer.is_valid()) {
+		return importer->can_have_dependencies();
+	} else {
+		return false;
+	}
+}
+
 Error ResourceFormatImporter::get_import_order_threads_and_importer(const String &p_path, int &r_order, bool &r_can_threads, String &r_importer) const {
 	r_order = 0;
 	r_importer = "";

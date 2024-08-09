@@ -36,6 +36,7 @@
 #include "core/os/thread_safe.h"
 #include "core/templates/hash_set.h"
 #include "core/templates/safe_refcount.h"
+#include "core/variant/variant_parser.h"
 #include "scene/main/node.h"
 
 class FileAccess;
@@ -169,6 +170,12 @@ class EditorFileSystem : public Node {
 		~ScannedDirectory();
 	};
 
+	struct ResDependencies {
+		Vector<String> res_paths;
+	};
+
+	static Error _parse_resource_deps(void *p_data, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);
+
 	bool use_threads = false;
 	Thread thread;
 	static void _thread_func(void *_userdata);
@@ -252,7 +259,8 @@ class EditorFileSystem : public Node {
 
 	void _update_extensions();
 
-	Error _reimport_file(const String &p_file, const HashMap<StringName, Variant> &p_custom_options = HashMap<StringName, Variant>(), const String &p_custom_importer = String(), Variant *generator_parameters = nullptr);
+	Vector<String> _reimport_file_get_dependencies(const String &p_file, const HashSet<String> &p_owners = HashSet<String>());
+	Error _reimport_file(const String &p_file, const HashMap<StringName, Variant> &p_custom_options = HashMap<StringName, Variant>(), const String &p_custom_importer = String(), Variant *p_generator_parameters = nullptr);
 	Error _reimport_group(const String &p_group_file, const Vector<String> &p_files);
 
 	bool _test_for_reimport(const String &p_path, bool p_only_imported_files);
@@ -265,9 +273,17 @@ class EditorFileSystem : public Node {
 		String path;
 		String importer;
 		bool threaded = false;
+		bool no_sort = false;
 		int order = 0;
+		int index = 0;
 		bool operator<(const ImportFile &p_if) const {
-			return order == p_if.order ? (importer < p_if.importer) : (order < p_if.order);
+			if (no_sort) {
+				return index < p_if.index;
+			} else if (order == p_if.order) {
+				return importer < p_if.importer;
+			} else {
+				return order < p_if.order;
+			}
 		}
 	};
 

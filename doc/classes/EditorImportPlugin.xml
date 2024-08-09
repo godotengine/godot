@@ -120,6 +120,12 @@
 		<link title="Import plugins">$DOCS_URL/tutorials/plugins/editor/import_plugins.html</link>
 	</tutorials>
 	<methods>
+		<method name="_can_have_dependencies" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code], if importer config can depend on other imported resources.
+			</description>
+		</method>
 		<method name="_can_import_threaded" qualifiers="virtual const">
 			<return type="bool" />
 			<description>

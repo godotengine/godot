@@ -76,6 +76,7 @@ public:
 
 	virtual int get_import_order(const String &p_path) const override;
 
+	bool get_import_can_have_dependencies(const String &p_path) const;
 	Error get_import_order_threads_and_importer(const String &p_path, int &r_order, bool &r_can_threads, String &r_importer) const;
 
 	String get_internal_resource_path(const String &p_path) const;
@@ -110,6 +111,7 @@ public:
 	virtual String get_resource_type() const = 0;
 	virtual float get_priority() const { return 1.0; }
 	virtual int get_import_order() const { return IMPORT_ORDER_DEFAULT; }
+	virtual bool can_have_dependencies() const { return false; }
 	virtual int get_format_version() const { return 0; }
 
 	struct ImportOption {

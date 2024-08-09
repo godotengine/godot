@@ -221,6 +221,17 @@ Error ConfigFile::_internal_save(Ref<FileAccess> file) {
 	return OK;
 }
 
+Error ConfigFile::load_with_parser(const String &p_path, VariantParser::ResourceParser *p_res_parser) {
+	Error err;
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
+
+	if (f.is_null()) {
+		return err;
+	}
+
+	return _internal_load(p_path, f, p_res_parser);
+}
+
 Error ConfigFile::load(const String &p_path) {
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
@@ -267,11 +278,11 @@ Error ConfigFile::load_encrypted_pass(const String &p_path, const String &p_pass
 	return _internal_load(p_path, fae);
 }
 
-Error ConfigFile::_internal_load(const String &p_path, Ref<FileAccess> f) {
+Error ConfigFile::_internal_load(const String &p_path, Ref<FileAccess> f, VariantParser::ResourceParser *p_res_parser) {
 	VariantParser::StreamFile stream;
 	stream.f = f;
 
-	Error err = _parse(p_path, &stream);
+	Error err = _parse(p_path, &stream, p_res_parser);
 
 	return err;
 }
@@ -282,7 +293,7 @@ Error ConfigFile::parse(const String &p_data) {
 	return _parse("<string>", &stream);
 }
 
-Error ConfigFile::_parse(const String &p_path, VariantParser::Stream *p_stream) {
+Error ConfigFile::_parse(const String &p_path, VariantParser::Stream *p_stream, VariantParser::ResourceParser *p_res_parser) {
 	String assign;
 	Variant value;
 	VariantParser::Tag next_tag;
@@ -297,7 +308,7 @@ Error ConfigFile::_parse(const String &p_path, VariantParser::Stream *p_stream) 
 		next_tag.fields.clear();
 		next_tag.name = String();
 
-		Error err = VariantParser::parse_tag_assign_eof(p_stream, lines, error_text, next_tag, assign, value, nullptr, true);
+		Error err = VariantParser::parse_tag_assign_eof(p_stream, lines, error_text, next_tag, assign, value, p_res_parser, true);
 		if (err == ERR_FILE_EOF) {
 			return OK;
 		} else if (err != OK) {
