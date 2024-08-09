@@ -66,20 +66,30 @@
 		</method>
 		<method name="get_script_method_list">
 			<return type="Dictionary[]" />
+			<param index="0" name="no_inheritance" type="bool" default="false" />
 			<description>
-				Returns the list of methods in this [Script].
+				Returns an array with all the methods of this [Script] or its ancestry scripts if [param no_inheritance] is [code]false[/code].
+				See also [method Object.get_method_list] and [method ClassDB.class_get_method_list].
+				[b]Note:[/b] This method does [b]not[/b] return info about native methods.
+				[b]Note:[/b] In exported release builds the info may be incomplete.
 			</description>
 		</method>
 		<method name="get_script_property_list">
 			<return type="Dictionary[]" />
+			<param index="0" name="no_inheritance" type="bool" default="false" />
 			<description>
-				Returns the list of properties in this [Script].
+				Returns an array with all the properties of this [Script] or its ancestry scripts if [param no_inheritance] is [code]false[/code].
+				See also [method Object.get_property_list] and [method ClassDB.class_get_property_list].
+				[b]Note:[/b] This method does [b]not[/b] return info about native properties.
 			</description>
 		</method>
 		<method name="get_script_signal_list">
 			<return type="Dictionary[]" />
+			<param index="0" name="no_inheritance" type="bool" default="false" />
 			<description>
-				Returns the list of user signals defined in this [Script].
+				Returns an array with all the signals of this [Script] or its ancestry scripts if [param no_inheritance] is [code]false[/code].
+				See also [method Object.get_signal_list] and [method ClassDB.class_get_signal_list].
+				[b]Note:[/b] This method does [b]not[/b] return info about native signals.
 			</description>
 		</method>
 		<method name="has_script_signal" qualifiers="const">

@@ -730,6 +730,7 @@
 				- [code]flags[/code] is a combination of [enum MethodFlags];
 				- [code]id[/code] is the method's internal identifier [int];
 				- [code]return[/code] is the returned value, as a [Dictionary];
+				See also [method ClassDB.class_get_method_list] and [method Script.get_script_method_list].
 				[b]Note:[/b] The dictionaries of [code]args[/code] and [code]return[/code] are formatted identically to the results of [method get_property_list], although not all entries are used.
 			</description>
 		</method>
@@ -743,6 +744,7 @@
 				- [code]hint[/code] is [i]how[/i] the property is meant to be edited (see [enum PropertyHint]);
 				- [code]hint_string[/code] depends on the hint (see [enum PropertyHint]);
 				- [code]usage[/code] is a combination of [enum PropertyUsageFlags].
+				See also [method ClassDB.class_get_property_list] and [method Script.get_script_property_list].
 				[b]Note:[/b] In GDScript, all class members are treated as properties. In C# and GDExtension, it may be necessary to explicitly mark class members as Godot properties using decorators or attributes.
 			</description>
 		</method>
@@ -766,6 +768,7 @@
 			<return type="Dictionary[]" />
 			<description>
 				Returns the list of existing signals as an [Array] of dictionaries.
+				See also [method ClassDB.class_get_signal_list] and [method Script.get_script_signal_list].
 				[b]Note:[/b] Due of the implementation, each [Dictionary] is formatted very similarly to the returned values of [method get_method_list].
 			</description>
 		</method>

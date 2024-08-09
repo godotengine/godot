@@ -98,7 +98,6 @@ Added optional arguments. Compatibility method registered.
 
 GH-80852
 --------
-
 Validate extension JSON: API was removed: classes/GDScriptEditorTranslationParserPlugin
 Validate extension JSON: API was removed: classes/GDScriptNativeClass
 Validate extension JSON: API was removed: classes/GodotPhysicsServer2D
@@ -117,7 +116,6 @@ Excluded unexposed classes from extension_api.json.
 
 GH-79311
 --------
-
 Validate extension JSON: API was removed: classes/GraphNode/methods/get_connection_input_color
 Validate extension JSON: API was removed: classes/GraphNode/methods/get_connection_input_count
 Validate extension JSON: API was removed: classes/GraphNode/methods/get_connection_input_height
@@ -268,7 +266,6 @@ Also changed some methods name/argument/signature. Compatibility methods registe
 
 GH-81582
 --------
-
 Validate extension JSON: API was removed: classes/GraphEdit/methods/is_arrange_nodes_button_hidden
 Validate extension JSON: API was removed: classes/GraphEdit/methods/set_arrange_nodes_button_hidden
 Validate extension JSON: API was removed: classes/GraphEdit/properties/arrange_nodes_button_hidden
@@ -278,7 +275,6 @@ Make GraphEdit toolbar more customizable
 
 GH-81138
 --------
-
 Validate extension JSON: Error: Field 'classes/ImporterMesh/methods/add_surface/arguments/6': meta changed value in new API, from "uint32" to "uint64".
 Validate extension JSON: Error: Field 'classes/ImporterMesh/methods/get_surface_format/return_value': meta changed value in new API, from "uint32" to "uint64".
 Validate extension JSON: Error: Field 'classes/MeshDataTool/methods/commit_to_surface/arguments': size changed value in new API, from 1 to 2.
