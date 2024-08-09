@@ -686,6 +686,8 @@ void NavigationRegion3D::_update_debug_edge_connections_mesh() {
 
 	Vector<Vector3> vertex_array;
 	vertex_array.resize(connections_count * 6);
+	Vector3 *vertex_array_ptrw = vertex_array.ptrw();
+	int vertex_array_index = 0;
 
 	for (int i = 0; i < connections_count; i++) {
 		Vector3 connection_pathway_start = NavigationServer3D::get_singleton()->region_get_connection_pathway_start(region, i);
@@ -705,13 +707,12 @@ void NavigationRegion3D::_update_debug_edge_connections_mesh() {
 		Vector3 left_end_pos = connection_pathway_end + (end_right_dir * half_edge_connection_margin);
 		Vector3 right_end_pos = connection_pathway_end + (end_left_dir * half_edge_connection_margin);
 
-		vertex_array.push_back(right_end_pos);
-		vertex_array.push_back(left_start_pos);
-		vertex_array.push_back(right_start_pos);
-
-		vertex_array.push_back(left_end_pos);
-		vertex_array.push_back(right_end_pos);
-		vertex_array.push_back(right_start_pos);
+		vertex_array_ptrw[vertex_array_index++] = connection_pathway_start;
+		vertex_array_ptrw[vertex_array_index++] = connection_pathway_end;
+		vertex_array_ptrw[vertex_array_index++] = left_start_pos;
+		vertex_array_ptrw[vertex_array_index++] = right_start_pos;
+		vertex_array_ptrw[vertex_array_index++] = left_end_pos;
+		vertex_array_ptrw[vertex_array_index++] = right_end_pos;
 	}
 
 	if (vertex_array.size() == 0) {
@@ -724,7 +725,7 @@ void NavigationRegion3D::_update_debug_edge_connections_mesh() {
 	mesh_array.resize(Mesh::ARRAY_MAX);
 	mesh_array[Mesh::ARRAY_VERTEX] = vertex_array;
 
-	debug_edge_connections_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, mesh_array);
+	debug_edge_connections_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, mesh_array);
 	debug_edge_connections_mesh->surface_set_material(0, edge_connections_material);
 
 	RS::get_singleton()->instance_set_base(debug_edge_connections_instance, debug_edge_connections_mesh->get_rid());
