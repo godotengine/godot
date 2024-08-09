@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "native_file_dialog.h"
 #include "os_windows.h"
 
 #include "main/main.h"
@@ -57,90 +58,6 @@ static const char dummy[8] __attribute__((section("pck"), used)) = { 0 };
 #endif
 #endif
 
-PCHAR *
-CommandLineToArgvA(
-		PCHAR CmdLine,
-		int *_argc) {
-	PCHAR *argv;
-	PCHAR _argv;
-	ULONG len;
-	ULONG argc;
-	CHAR a;
-	ULONG i, j;
-
-	BOOLEAN in_QM;
-	BOOLEAN in_TEXT;
-	BOOLEAN in_SPACE;
-
-	len = strlen(CmdLine);
-	i = ((len + 2) / 2) * sizeof(PVOID) + sizeof(PVOID);
-
-	argv = (PCHAR *)GlobalAlloc(GMEM_FIXED,
-			i + (len + 2) * sizeof(CHAR));
-
-	_argv = (PCHAR)(((PUCHAR)argv) + i);
-
-	argc = 0;
-	argv[argc] = _argv;
-	in_QM = FALSE;
-	in_TEXT = FALSE;
-	in_SPACE = TRUE;
-	i = 0;
-	j = 0;
-
-	a = CmdLine[i];
-	while (a) {
-		if (in_QM) {
-			if (a == '\"') {
-				in_QM = FALSE;
-			} else {
-				_argv[j] = a;
-				j++;
-			}
-		} else {
-			switch (a) {
-				case '\"':
-					in_QM = TRUE;
-					in_TEXT = TRUE;
-					if (in_SPACE) {
-						argv[argc] = _argv + j;
-						argc++;
-					}
-					in_SPACE = FALSE;
-					break;
-				case ' ':
-				case '\t':
-				case '\n':
-				case '\r':
-					if (in_TEXT) {
-						_argv[j] = '\0';
-						j++;
-					}
-					in_TEXT = FALSE;
-					in_SPACE = TRUE;
-					break;
-				default:
-					in_TEXT = TRUE;
-					if (in_SPACE) {
-						argv[argc] = _argv + j;
-						argc++;
-					}
-					_argv[j] = a;
-					j++;
-					in_SPACE = FALSE;
-					break;
-			}
-		}
-		i++;
-		a = CmdLine[i];
-	}
-	_argv[j] = '\0';
-	argv[argc] = nullptr;
-
-	(*_argc) = argc;
-	return argv;
-}
-
 char *wc_to_utf8(const wchar_t *wc) {
 	int ulen = WideCharToMultiByte(CP_UTF8, 0, wc, -1, nullptr, 0, nullptr, nullptr);
 	char *ubuf = new char[ulen + 1];
@@ -150,6 +67,14 @@ char *wc_to_utf8(const wchar_t *wc) {
 }
 
 int widechar_main(int argc, wchar_t **argv) {
+	const wchar_t *fd_arg = L"-OpenFileDialogHelper";
+	for (int i = 0; i < argc - 1; i++) {
+		if (wcscmp(fd_arg, argv[i]) == 0) {
+			show_native_file_dialog(String::utf16((char16_t *)argv[i + 1]));
+			return 0;
+		}
+	}
+
 	OS_Windows os(nullptr);
 
 	setlocale(LC_CTYPE, "");

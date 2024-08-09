@@ -18,6 +18,7 @@ common_win = [
     "tts_windows.cpp",
     "windows_terminal_logger.cpp",
     "windows_utils.cpp",
+    "native_file_dialog.cpp",
     "native_menu_windows.cpp",
     "gl_manager_windows_native.cpp",
     "gl_manager_windows_angle.cpp",
