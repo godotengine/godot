@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  camera_linux.h                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,36 +28,33 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#ifndef CAMERA_LINUX_H
+#define CAMERA_LINUX_H
 
-#if defined(LINUXBSD_ENABLED)
-#include "camera_linux.h"
-#endif
-#if defined(WINDOWS_ENABLED)
-#include "camera_win.h"
-#endif
-#if defined(MACOS_ENABLED)
-#include "camera_macos.h"
-#endif
+#include "core/os/mutex.h"
+#include "core/os/thread.h"
+#include "servers/camera_server.h"
 
-void initialize_camera_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
+class CameraLinux : public CameraServer {
+private:
+	SafeFlag exit_flag;
+	Thread camera_thread;
+	Mutex camera_mutex;
 
-#if defined(LINUXBSD_ENABLED)
-	CameraServer::make_default<CameraLinux>();
-#endif
-#if defined(WINDOWS_ENABLED)
-	CameraServer::make_default<CameraWindows>();
-#endif
-#if defined(MACOS_ENABLED)
-	CameraServer::make_default<CameraMacOS>();
-#endif
-}
+	static void camera_thread_func(void *p_camera_linux);
 
-void uninitialize_camera_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-}
+	void _update_devices();
+	bool _has_device(const String &p_device_name);
+	void _add_device(const String &p_device_name);
+	void _remove_device(const String &p_device_name);
+	int _open_device(const String &p_device_name);
+	bool _is_active(const String &p_device_name);
+	bool _is_video_capture_device(int p_file_descriptor);
+	bool _can_query_format(int p_file_descriptor, int p_type);
+
+public:
+	CameraLinux();
+	~CameraLinux();
+};
+
+#endif // CAMERA_LINUX_H
