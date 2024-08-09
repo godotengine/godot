@@ -53,6 +53,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 
 	int blend_mode = BLEND_MODE_MIX;
 	int depth_testi = DEPTH_TEST_ENABLED;
+	int depth_functioni = DEPTH_FUNCTION_GREATER_OR_EQUAL;
 	int alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
 	int cull_modei = CULL_BACK;
 
@@ -100,6 +101,15 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	actions.render_mode_values["depth_draw_always"] = Pair<int *, int>(&depth_drawi, DEPTH_DRAW_ALWAYS);
 
 	actions.render_mode_values["depth_test_disabled"] = Pair<int *, int>(&depth_testi, DEPTH_TEST_DISABLED);
+
+	actions.render_mode_values["depth_function_less_or_equal"] = Pair<int *, int>(&depth_functioni, DEPTH_FUNCTION_LESS_OR_EQUAL);
+	actions.render_mode_values["depth_function_less"] = Pair<int *, int>(&depth_functioni, DEPTH_FUNCTION_LESS);
+	actions.render_mode_values["depth_function_equal"] = Pair<int *, int>(&depth_functioni, DEPTH_FUNCTION_EQUAL);
+	actions.render_mode_values["depth_function_greater"] = Pair<int *, int>(&depth_functioni, DEPTH_FUNCTION_GREATER);
+	actions.render_mode_values["depth_function_not_equal"] = Pair<int *, int>(&depth_functioni, DEPTH_FUNCTION_NOT_EQUAL);
+	actions.render_mode_values["depth_function_greater_or_equal"] = Pair<int *, int>(&depth_functioni, DEPTH_FUNCTION_GREATER_OR_EQUAL);
+	actions.render_mode_values["depth_function_always"] = Pair<int *, int>(&depth_functioni, DEPTH_FUNCTION_ALWAYS);
+	actions.render_mode_values["depth_function_never"] = Pair<int *, int>(&depth_functioni, DEPTH_FUNCTION_NEVER);
 
 	actions.render_mode_values["cull_disabled"] = Pair<int *, int>(&cull_modei, CULL_DISABLED);
 	actions.render_mode_values["cull_front"] = Pair<int *, int>(&cull_modei, CULL_FRONT);
@@ -151,6 +161,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 
 	depth_draw = DepthDraw(depth_drawi);
 	depth_test = DepthTest(depth_testi);
+	depth_function = DepthFunction(depth_functioni);
 	cull_mode = Cull(cull_modei);
 	uses_screen_texture_mipmaps = gen_code.uses_screen_texture_mipmaps;
 	uses_screen_texture = gen_code.uses_screen_texture;
@@ -271,9 +282,22 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 
 	if (depth_test != DEPTH_TEST_DISABLED) {
 		depth_stencil_state.enable_depth_test = true;
-		depth_stencil_state.depth_compare_operator = RD::COMPARE_OP_GREATER_OR_EQUAL;
 		depth_stencil_state.enable_depth_write = depth_draw != DEPTH_DRAW_DISABLED ? true : false;
+
+		RD::CompareOperator depth_function_rd_table[DEPTH_FUNCTION_MAX] = {
+			RD::COMPARE_OP_LESS_OR_EQUAL,
+			RD::COMPARE_OP_LESS,
+			RD::COMPARE_OP_EQUAL,
+			RD::COMPARE_OP_GREATER,
+			RD::COMPARE_OP_NOT_EQUAL,
+			RD::COMPARE_OP_GREATER_OR_EQUAL,
+			RD::COMPARE_OP_ALWAYS,
+			RD::COMPARE_OP_NEVER,
+		};
+
+		depth_stencil_state.depth_compare_operator = depth_function_rd_table[depth_function];
 	}
+
 	bool depth_pre_pass_enabled = bool(GLOBAL_GET("rendering/driver/depth_prepass/enable"));
 
 	for (int i = 0; i < CULL_VARIANT_MAX; i++) {

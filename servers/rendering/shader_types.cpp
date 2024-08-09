@@ -211,6 +211,7 @@ ShaderTypes::ShaderTypes() {
 	{
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("blend"), "mix", "add", "sub", "mul", "premul_alpha" });
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("depth_draw"), "opaque", "always", "never" });
+		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("depth_function"), { "less_or_equal", "less", "equal", "greater", "not_equal", "greater_or_equal", "always", "never" } });
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("depth_prepass_alpha") });
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("depth_test_disabled") });
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("sss_mode_skin") });
