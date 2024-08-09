@@ -1949,16 +1949,47 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscre
 	r_style_ex |= WS_EX_ACCEPTFILES;
 }
 
-void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repaint) {
+void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repaint, bool p_keep_client_rect) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
+	WINDOWPLACEMENT wndpl{};
+	if (p_keep_client_rect) {
+		wndpl.length = sizeof(WINDOWPLACEMENT);
+		GetWindowPlacement(wd.hWnd, &wndpl);
+	}
+
+	const DWORD old_style = GetWindowLongPtr(wd.hWnd, GWL_STYLE);
+	const DWORD old_style_ex = GetWindowLongPtr(wd.hWnd, GWL_EXSTYLE);
+
 	DWORD style = 0;
 	DWORD style_ex = 0;
 
 	_get_window_style(p_window == MAIN_WINDOW_ID, wd.fullscreen, wd.multiwindow_fs, wd.borderless, wd.resizable, wd.maximized, wd.maximized_fs, wd.no_focus || wd.is_popup, style, style_ex);
+
+	RECT rc{};
+	if (p_keep_client_rect) {
+		if (IsIconic(wd.hWnd) || IsZoomed(wd.hWnd)) {
+			// Subtract the window frame to get the client rect.
+			// https://devblogs.microsoft.com/oldnewthing/20131017-00/?p=2903
+			RECT old_rc{};
+			AdjustWindowRectEx(&old_rc, old_style, false, old_style_ex);
+			rc.left = wndpl.rcNormalPosition.left - old_rc.left;
+			rc.top = wndpl.rcNormalPosition.top - old_rc.top;
+			rc.right = wndpl.rcNormalPosition.right - old_rc.right;
+			rc.bottom = wndpl.rcNormalPosition.bottom - old_rc.bottom;
+		} else {
+			POINT topleft{ 0, 0 };
+			ClientToScreen(wd.hWnd, &topleft);
+			rc.left = topleft.x;
+			rc.top = topleft.y;
+			rc.right = topleft.x + wd.width;
+			rc.bottom = topleft.y + wd.height;
+		}
+		AdjustWindowRectEx(&rc, style, false, style_ex);
+	}
 
 	SetWindowLongPtr(wd.hWnd, GWL_STYLE, style);
 	SetWindowLongPtr(wd.hWnd, GWL_EXSTYLE, style_ex);
@@ -1967,7 +1998,29 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 		set_icon(icon);
 	}
 
-	SetWindowPos(wd.hWnd, wd.always_on_top ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | ((wd.no_focus || wd.is_popup) ? SWP_NOACTIVATE : 0));
+	UINT extra_flags = SWP_NOMOVE | SWP_NOSIZE;
+	int x = 0;
+	int y = 0;
+	int w = 0;
+	int h = 0;
+	if (p_keep_client_rect) {
+		if (!wd.minimized && !wd.maximized) {
+			// Resize the window directly.
+			extra_flags = 0;
+			x = rc.left;
+			y = rc.top;
+			w = rc.right - rc.left;
+			h = rc.bottom - rc.top;
+		} else if (wd.minimized || (wd.maximized && wd.resizable)) {
+			// Modify the rect to restore to.
+			// Important: Unresizable windows don't get WS_MAXIMIZE, so they
+			// can't actually be maximized and must be excluded.
+			wndpl.rcNormalPosition = rc;
+			SetWindowPlacement(wd.hWnd, &wndpl);
+		}
+	}
+
+	SetWindowPos(wd.hWnd, wd.always_on_top ? HWND_TOPMOST : HWND_NOTOPMOST, x, y, w, h, extra_flags | SWP_FRAMECHANGED | ((wd.no_focus || wd.is_popup) ? SWP_NOACTIVATE : 0));
 
 	if (p_repaint) {
 		RECT rect;
@@ -2106,11 +2159,11 @@ void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, W
 	switch (p_flag) {
 		case WINDOW_FLAG_RESIZE_DISABLED: {
 			wd.resizable = !p_enabled;
-			_update_window_style(p_window);
+			_update_window_style(p_window, true, !wd.fullscreen);
 		} break;
 		case WINDOW_FLAG_BORDERLESS: {
 			wd.borderless = p_enabled;
-			_update_window_style(p_window);
+			_update_window_style(p_window, true, !wd.fullscreen);
 			_update_window_mouse_passthrough(p_window);
 			ShowWindow(wd.hWnd, (wd.no_focus || wd.is_popup) ? SW_SHOWNOACTIVATE : SW_SHOW); // Show the window.
 		} break;
