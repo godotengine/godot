@@ -198,6 +198,8 @@ bool AnimationTrackKeyEdit::_set(const StringName &p_name, const Variant &p_valu
 
 			if (name == "name") {
 				d_new["method"] = p_value;
+			} else if (name == "call_in_editor") {
+				d_new["call_in_editor"] = p_value;
 			} else if (name == "arg_count") {
 				Vector<Variant> args = d_old["args"];
 				args.resize(p_value);
@@ -432,6 +434,12 @@ bool AnimationTrackKeyEdit::_get(const StringName &p_name, Variant &r_ret) const
 				return true;
 			}
 
+			ERR_FAIL_COND_V(!d.has("call_in_editor"), false);
+			if (name == "call_in_editor") {
+				r_ret = d["call_in_editor"];
+				return true;
+			}
+
 			ERR_FAIL_COND_V(!d.has("args"), false);
 
 			Vector<Variant> args = d["args"];
@@ -559,6 +567,7 @@ void AnimationTrackKeyEdit::_get_property_list(List<PropertyInfo> *p_list) const
 		} break;
 		case Animation::TYPE_METHOD: {
 			p_list->push_back(PropertyInfo(Variant::STRING_NAME, PNAME("name")));
+			p_list->push_back(PropertyInfo(Variant::BOOL, PNAME("call_in_editor")));
 			p_list->push_back(PropertyInfo(Variant::INT, PNAME("arg_count"), PROPERTY_HINT_RANGE, "0,32,1,or_greater"));
 
 			Dictionary d = animation->track_get_key_value(track, key);
@@ -1009,6 +1018,12 @@ bool AnimationMultiTrackKeyEdit::_get(const StringName &p_name, Variant &r_ret) 
 						return true;
 					}
 
+					ERR_FAIL_COND_V(!d.has("call_in_editor"), false);
+					if (name == "call_in_editor") {
+						r_ret = d["call_in_editor"];
+						return true;
+					}
+
 					ERR_FAIL_COND_V(!d.has("args"), false);
 
 					Vector<Variant> args = d["args"];
@@ -1171,7 +1186,7 @@ void AnimationMultiTrackKeyEdit::_get_property_list(List<PropertyInfo> *p_list) 
 			} break;
 			case Animation::TYPE_METHOD: {
 				p_list->push_back(PropertyInfo(Variant::STRING_NAME, "name"));
-
+				p_list->push_back(PropertyInfo(Variant::BOOL, "call_in_editor"));
 				p_list->push_back(PropertyInfo(Variant::INT, "arg_count", PROPERTY_HINT_RANGE, "0,32,1,or_greater"));
 
 				Dictionary d = animation->track_get_key_value(first_track, first_key);
@@ -5324,6 +5339,7 @@ void AnimationTrackEditor::_add_method_key(const String &p_method) {
 		if (E.name == p_method) {
 			Dictionary d;
 			d["method"] = p_method;
+			d["call_in_editor"] = false;
 			Array params;
 			int first_defarg = E.arguments.size() - E.default_arguments.size();
 
