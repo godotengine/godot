@@ -306,7 +306,7 @@ public:
 		if (!lpw_path) {
 			return S_FALSE;
 		}
-		String path = String::utf16((const char16_t *)lpw_path).simplify_path();
+		String path = String::utf16((const char16_t *)lpw_path).replace("\\", "/").trim_prefix(R"(\\?\)").simplify_path();
 		if (!path.begins_with(root.simplify_path())) {
 			return S_FALSE;
 		}
@@ -478,7 +478,22 @@ Error DisplayServerWindows::_file_dialog_with_options_show(const String &p_title
 		if (dir == ".") {
 			dir = OS::get_singleton()->get_executable_path().get_base_dir();
 		}
+		if (dir.is_relative_path() || dir == ".") {
+			Char16String current_dir_name;
+			size_t str_len = GetCurrentDirectoryW(0, nullptr);
+			current_dir_name.resize(str_len + 1);
+			GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
+			if (dir == ".") {
+				dir = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace("\\", "/");
+			} else {
+				dir = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace("\\", "/").path_join(dir);
+			}
+		}
+		dir = dir.simplify_path();
 		dir = dir.replace("/", "\\");
+		if (!dir.is_network_share_path() && !dir.begins_with(R"(\\?\)")) {
+			dir = R"(\\?\)" + dir;
+		}
 
 		IShellItem *shellitem = nullptr;
 		hr = SHCreateItemFromParsingName((LPCWSTR)dir.utf16().ptr(), nullptr, IID_IShellItem, (void **)&shellitem);
@@ -526,7 +541,7 @@ Error DisplayServerWindows::_file_dialog_with_options_show(const String &p_title
 						PWSTR file_path = nullptr;
 						hr = result->GetDisplayName(SIGDN_FILESYSPATH, &file_path);
 						if (SUCCEEDED(hr)) {
-							file_names.push_back(String::utf16((const char16_t *)file_path));
+							file_names.push_back(String::utf16((const char16_t *)file_path).replace("\\", "/").trim_prefix(R"(\\?\)"));
 							CoTaskMemFree(file_path);
 						}
 						result->Release();
@@ -540,7 +555,7 @@ Error DisplayServerWindows::_file_dialog_with_options_show(const String &p_title
 					PWSTR file_path = nullptr;
 					hr = result->GetDisplayName(SIGDN_FILESYSPATH, &file_path);
 					if (SUCCEEDED(hr)) {
-						file_names.push_back(String::utf16((const char16_t *)file_path));
+						file_names.push_back(String::utf16((const char16_t *)file_path).replace("\\", "/").trim_prefix(R"(\\?\)"));
 						CoTaskMemFree(file_path);
 					}
 					result->Release();

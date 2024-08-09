@@ -90,6 +90,23 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 #define GetProcAddress (void *)GetProcAddress
 #endif
 
+static String fix_path(const String &p_path) {
+	String path = p_path;
+	if (p_path.is_relative_path()) {
+		Char16String current_dir_name;
+		size_t str_len = GetCurrentDirectoryW(0, nullptr);
+		current_dir_name.resize(str_len + 1);
+		GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
+		path = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace("\\", "/").path_join(path);
+	}
+	path = path.simplify_path();
+	path = path.replace("/", "\\");
+	if (!path.is_network_share_path() && !path.begins_with(R"(\\?\)")) {
+		path = R"(\\?\)" + path;
+	}
+	return path;
+}
+
 static String format_error_message(DWORD id) {
 	LPWSTR messageBuffer = nullptr;
 	size_t size = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -306,7 +323,7 @@ Error OS_Windows::get_entropy(uint8_t *r_buffer, int p_bytes) {
 }
 
 #ifdef DEBUG_ENABLED
-void debug_dynamic_library_check_dependencies(const String &p_root_path, const String &p_path, HashSet<String> &r_checked, HashSet<String> &r_missing) {
+void debug_dynamic_library_check_dependencies(const String &p_path, HashSet<String> &r_checked, HashSet<String> &r_missing) {
 	if (r_checked.has(p_path)) {
 		return;
 	}
@@ -348,15 +365,15 @@ void debug_dynamic_library_check_dependencies(const String &p_root_path, const S
 					const IMAGE_IMPORT_DESCRIPTOR *import_desc = (const IMAGE_IMPORT_DESCRIPTOR *)ImageDirectoryEntryToData((HMODULE)loaded_image.MappedAddress, false, IMAGE_DIRECTORY_ENTRY_IMPORT, &size);
 					if (import_desc) {
 						for (; import_desc->Name && import_desc->FirstThunk; import_desc++) {
-							char16_t full_name_wc[MAX_PATH];
+							char16_t full_name_wc[32767];
 							const char *name_cs = (const char *)ImageRvaToVa(loaded_image.FileHeader, loaded_image.MappedAddress, import_desc->Name, nullptr);
 							String name = String(name_cs);
 							if (name.begins_with("api-ms-win-")) {
 								r_checked.insert(name);
-							} else if (SearchPathW(nullptr, (LPCWSTR)name.utf16().get_data(), nullptr, MAX_PATH, (LPWSTR)full_name_wc, nullptr)) {
-								debug_dynamic_library_check_dependencies(p_root_path, String::utf16(full_name_wc), r_checked, r_missing);
-							} else if (SearchPathW((LPCWSTR)(p_path.get_base_dir().utf16().get_data()), (LPCWSTR)name.utf16().get_data(), nullptr, MAX_PATH, (LPWSTR)full_name_wc, nullptr)) {
-								debug_dynamic_library_check_dependencies(p_root_path, String::utf16(full_name_wc), r_checked, r_missing);
+							} else if (SearchPathW(nullptr, (LPCWSTR)name.utf16().get_data(), nullptr, 32767, (LPWSTR)full_name_wc, nullptr)) {
+								debug_dynamic_library_check_dependencies(String::utf16(full_name_wc), r_checked, r_missing);
+							} else if (SearchPathW((LPCWSTR)(p_path.get_base_dir().utf16().get_data()), (LPCWSTR)name.utf16().get_data(), nullptr, 32767, (LPWSTR)full_name_wc, nullptr)) {
+								debug_dynamic_library_check_dependencies(String::utf16(full_name_wc), r_checked, r_missing);
 							} else {
 								r_missing.insert(name);
 							}
@@ -373,7 +390,7 @@ void debug_dynamic_library_check_dependencies(const String &p_root_path, const S
 #endif
 
 Error OS_Windows::open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data) {
-	String path = p_path.replace("/", "\\");
+	String path = p_path;
 
 	if (!FileAccess::exists(path)) {
 		//this code exists so gdextension can load .dll files from within the executable path
@@ -420,11 +437,12 @@ Error OS_Windows::open_dynamic_library(const String &p_path, void *&p_library_ha
 	bool has_dll_directory_api = ((add_dll_directory != nullptr) && (remove_dll_directory != nullptr));
 	DLL_DIRECTORY_COOKIE cookie = nullptr;
 
+	String wpath = fix_path(path);
 	if (p_data != nullptr && p_data->also_set_library_path && has_dll_directory_api) {
-		cookie = add_dll_directory((LPCWSTR)(path.get_base_dir().utf16().get_data()));
+		cookie = add_dll_directory((LPCWSTR)(wpath.get_base_dir().utf16().get_data()));
 	}
 
-	p_library_handle = (void *)LoadLibraryExW((LPCWSTR)(path.utf16().get_data()), nullptr, (p_data != nullptr && p_data->also_set_library_path && has_dll_directory_api) ? LOAD_LIBRARY_SEARCH_DEFAULT_DIRS : 0);
+	p_library_handle = (void *)LoadLibraryExW((LPCWSTR)(wpath.utf16().get_data()), nullptr, (p_data != nullptr && p_data->also_set_library_path && has_dll_directory_api) ? LOAD_LIBRARY_SEARCH_DEFAULT_DIRS : 0);
 	if (!p_library_handle) {
 		if (p_data != nullptr && p_data->generate_temp_files) {
 			DirAccess::remove_absolute(path);
@@ -435,7 +453,7 @@ Error OS_Windows::open_dynamic_library(const String &p_path, void *&p_library_ha
 
 		HashSet<String> checekd_libs;
 		HashSet<String> missing_libs;
-		debug_dynamic_library_check_dependencies(path, path, checekd_libs, missing_libs);
+		debug_dynamic_library_check_dependencies(wpath, checekd_libs, missing_libs);
 		if (!missing_libs.is_empty()) {
 			String missing;
 			for (const String &E : missing_libs) {
@@ -822,7 +840,7 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 
 	Dictionary ret;
 
-	String path = p_path.replace("/", "\\");
+	String path = p_path.is_absolute_path() ? fix_path(p_path) : p_path;
 	String command = _quote_command_line_argument(path);
 	for (const String &E : p_arguments) {
 		command += " " + _quote_command_line_argument(E);
@@ -871,7 +889,19 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 
 	DWORD creation_flags = NORMAL_PRIORITY_CLASS | CREATE_NO_WINDOW;
 
-	if (!CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, true, creation_flags, nullptr, nullptr, si_w, &pi.pi)) {
+	Char16String current_dir_name;
+	size_t str_len = GetCurrentDirectoryW(0, nullptr);
+	current_dir_name.resize(str_len + 1);
+	GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
+	if (current_dir_name.size() >= MAX_PATH) {
+		Char16String current_short_dir_name;
+		str_len = GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), nullptr, 0);
+		current_short_dir_name.resize(str_len);
+		GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), (LPWSTR)current_short_dir_name.ptrw(), current_short_dir_name.size());
+		current_dir_name = current_short_dir_name;
+	}
+
+	if (!CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, true, creation_flags, nullptr, (LPWSTR)current_dir_name.ptr(), si_w, &pi.pi)) {
 		CLEAN_PIPES
 		ERR_FAIL_V_MSG(ret, "Could not create child process: " + command);
 	}
@@ -901,7 +931,7 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 }
 
 Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
-	String path = p_path.replace("/", "\\");
+	String path = p_path.is_absolute_path() ? fix_path(p_path) : p_path;
 	String command = _quote_command_line_argument(path);
 	for (const String &E : p_arguments) {
 		command += " " + _quote_command_line_argument(E);
@@ -939,7 +969,19 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 		creation_flags |= CREATE_NO_WINDOW;
 	}
 
-	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, inherit_handles, creation_flags, nullptr, nullptr, si_w, &pi.pi);
+	Char16String current_dir_name;
+	size_t str_len = GetCurrentDirectoryW(0, nullptr);
+	current_dir_name.resize(str_len + 1);
+	GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
+	if (current_dir_name.size() >= MAX_PATH) {
+		Char16String current_short_dir_name;
+		str_len = GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), nullptr, 0);
+		current_short_dir_name.resize(str_len);
+		GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), (LPWSTR)current_short_dir_name.ptrw(), current_short_dir_name.size());
+		current_dir_name = current_short_dir_name;
+	}
+
+	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, inherit_handles, creation_flags, nullptr, (LPWSTR)current_dir_name.ptr(), si_w, &pi.pi);
 	if (!ret && r_pipe) {
 		CloseHandle(pipe[0]); // Cleanup pipe handles.
 		CloseHandle(pipe[1]);
@@ -1003,7 +1045,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 }
 
 Error OS_Windows::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
-	String path = p_path.replace("/", "\\");
+	String path = p_path.is_absolute_path() ? fix_path(p_path) : p_path;
 	String command = _quote_command_line_argument(path);
 	for (const String &E : p_arguments) {
 		command += " " + _quote_command_line_argument(E);
@@ -1022,7 +1064,19 @@ Error OS_Windows::create_process(const String &p_path, const List<String> &p_arg
 		creation_flags |= CREATE_NO_WINDOW;
 	}
 
-	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, false, creation_flags, nullptr, nullptr, si_w, &pi.pi);
+	Char16String current_dir_name;
+	size_t str_len = GetCurrentDirectoryW(0, nullptr);
+	current_dir_name.resize(str_len + 1);
+	GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
+	if (current_dir_name.size() >= MAX_PATH) {
+		Char16String current_short_dir_name;
+		str_len = GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), nullptr, 0);
+		current_short_dir_name.resize(str_len);
+		GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), (LPWSTR)current_short_dir_name.ptrw(), current_short_dir_name.size());
+		current_dir_name = current_short_dir_name;
+	}
+
+	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, false, creation_flags, nullptr, (LPWSTR)current_dir_name.ptr(), si_w, &pi.pi);
 	ERR_FAIL_COND_V_MSG(ret == 0, ERR_CANT_FORK, "Could not create child process: " + command);
 
 	ProcessID pid = pi.pi.dwProcessId;
@@ -1390,8 +1444,8 @@ Vector<String> OS_Windows::get_system_font_path_for_text(const String &p_font_na
 			continue;
 		}
 
-		WCHAR file_path[MAX_PATH];
-		hr = loader->GetFilePathFromKey(reference_key, reference_key_size, &file_path[0], MAX_PATH);
+		WCHAR file_path[32767];
+		hr = loader->GetFilePathFromKey(reference_key, reference_key_size, &file_path[0], 32767);
 		if (FAILED(hr)) {
 			continue;
 		}
@@ -1469,8 +1523,8 @@ String OS_Windows::get_system_font_path(const String &p_font_name, int p_weight,
 			continue;
 		}
 
-		WCHAR file_path[MAX_PATH];
-		hr = loader->GetFilePathFromKey(reference_key, reference_key_size, &file_path[0], MAX_PATH);
+		WCHAR file_path[32767];
+		hr = loader->GetFilePathFromKey(reference_key, reference_key_size, &file_path[0], 32767);
 		if (FAILED(hr)) {
 			continue;
 		}
@@ -1576,7 +1630,7 @@ Error OS_Windows::shell_show_in_file_manager(String p_path, bool p_open_folder) 
 	if (!p_path.is_quoted()) {
 		p_path = p_path.quote();
 	}
-	p_path = p_path.replace("/", "\\");
+	p_path = fix_path(p_path);
 
 	INT_PTR ret = OK;
 	if (open_folder) {
@@ -1900,6 +1954,19 @@ String OS_Windows::get_system_ca_certificates() {
 
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	hInstance = _hInstance;
+
+	// Reset CWD to ensure long path is used.
+	Char16String current_dir_name;
+	size_t str_len = GetCurrentDirectoryW(0, nullptr);
+	current_dir_name.resize(str_len + 1);
+	GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
+
+	Char16String new_current_dir_name;
+	str_len = GetLongPathNameW((LPCWSTR)current_dir_name.get_data(), nullptr, 0);
+	new_current_dir_name.resize(str_len + 1);
+	GetLongPathNameW((LPCWSTR)current_dir_name.get_data(), (LPWSTR)new_current_dir_name.ptrw(), new_current_dir_name.size());
+
+	SetCurrentDirectoryW((LPCWSTR)new_current_dir_name.get_data());
 
 #ifndef WINDOWS_SUBSYSTEM_CONSOLE
 	RedirectIOToConsole();

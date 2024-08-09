@@ -1,6 +1,11 @@
 #include "core/version.h"
 
+#ifndef RT_MANIFEST
+#define RT_MANIFEST 24
+#endif
+
 GODOT_ICON ICON platform/windows/godot_console.ico
+1 RT_MANIFEST "godot.manifest"
 
 1 VERSIONINFO
 FILEVERSION     VERSION_MAJOR,VERSION_MINOR,VERSION_PATCH,0
