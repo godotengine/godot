@@ -37,13 +37,13 @@
 #include "core/variant/typed_array.h"
 
 void PhysicsServer3DRenderingServerHandler::set_vertex(int p_vertex_id, const Vector3 &p_vertex) {
-	GDVIRTUAL_REQUIRED_CALL(_set_vertex, p_vertex_id, p_vertex);
+	GDVIRTUAL_CALL(_set_vertex, p_vertex_id, p_vertex);
 }
 void PhysicsServer3DRenderingServerHandler::set_normal(int p_vertex_id, const Vector3 &p_normal) {
-	GDVIRTUAL_REQUIRED_CALL(_set_normal, p_vertex_id, p_normal);
+	GDVIRTUAL_CALL(_set_normal, p_vertex_id, p_normal);
 }
 void PhysicsServer3DRenderingServerHandler::set_aabb(const AABB &p_aabb) {
-	GDVIRTUAL_REQUIRED_CALL(_set_aabb, p_aabb);
+	GDVIRTUAL_CALL(_set_aabb, p_aabb);
 }
 
 void PhysicsServer3DRenderingServerHandler::_bind_methods() {

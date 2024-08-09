@@ -56,7 +56,7 @@ protected:
 	GDVIRTUAL1(_seek, double);
 	GDVIRTUAL1(_set_audio_track, int);
 	GDVIRTUAL0RC(Ref<Texture2D>, _get_texture);
-	GDVIRTUAL1(_update, double);
+	GDVIRTUAL1_REQUIRED(_update, double);
 	GDVIRTUAL0RC(int, _get_channels);
 	GDVIRTUAL0RC(int, _get_mix_rate);
 
