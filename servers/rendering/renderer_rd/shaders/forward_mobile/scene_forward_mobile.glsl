@@ -958,8 +958,8 @@ void main() {
 	vec3 vertex_ddx = dFdx(vertex);
 	vec3 vertex_ddy = dFdy(vertex);
 
+#ifndef DECALS_DISABLED
 	if (!sc_disable_decals) { //Decals
-		// must implement
 
 		uint decal_indices = instances.data[draw_call.instance_index].decals.x;
 		for (uint i = 0; i < 8; i++) {
@@ -1042,7 +1042,9 @@ void main() {
 				}
 			}
 		}
-	} //Decals
+	}
+#endif // !DECALS_DISABLED
+
 #endif //!MODE_RENDER_DEPTH
 
 	/////////////////////// LIGHTING //////////////////////////////
