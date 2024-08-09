@@ -87,6 +87,8 @@ protected:
 	virtual void reset_local_to_scene();
 	GDVIRTUAL0(_setup_local_to_scene);
 
+	GDVIRTUAL0RC(RID, _get_rid);
+
 public:
 	static Node *(*_get_local_scene_func)(); //used by editor
 	static void (*_update_configuration_warning)(); //used by editor
