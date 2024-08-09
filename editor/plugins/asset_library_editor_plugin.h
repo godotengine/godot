@@ -339,6 +339,11 @@ class AssetLibraryEditorPlugin : public EditorPlugin {
 
 	EditorAssetLibrary *addon_library = nullptr;
 
+private:
+	void _editor_tab_selected(EditorTab *p_tab);
+	void _editor_tab_closing(EditorTab *p_tab);
+	EditorTab *_create_editor_tab();
+
 public:
 	static bool is_available();
 
@@ -347,9 +352,8 @@ public:
 	virtual void edit(Object *p_object) override {}
 	virtual bool handles(Object *p_object) const override { return false; }
 	virtual void make_visible(bool p_visible) override;
-	//virtual bool get_remove_list(List<Node*> *p_list) { return canvas_item_editor->get_remove_list(p_list); }
-	//virtual Dictionary get_state() const;
-	//virtual void set_state(const Dictionary& p_state);
+	virtual void set_window_layout(Ref<ConfigFile> p_layout) override;
+	virtual void get_window_layout(Ref<ConfigFile> p_layout) override;
 
 	AssetLibraryEditorPlugin();
 	~AssetLibraryEditorPlugin();

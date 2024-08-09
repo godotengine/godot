@@ -1832,13 +1832,13 @@ void FileSystemDock::_rename_operation_confirm() {
 	HashMap<String, String> folder_renames;
 	_try_move_item(to_rename, new_path, file_renames, folder_renames);
 
-	int current_tab = EditorSceneTabs::get_singleton()->get_current_tab();
+	EditorTab *current_tab = EditorSceneTabs::get_singleton()->get_current_tab();
 	_update_resource_paths_after_move(file_renames, uids);
 	_update_dependencies_after_move(file_renames, file_owners);
 	_update_project_settings_after_move(file_renames, folder_renames);
 	_update_favorites_list_after_move(file_renames, folder_renames);
 
-	EditorSceneTabs::get_singleton()->set_current_tab(current_tab);
+	EditorSceneTabs::get_singleton()->select_tab(current_tab);
 
 	if (ti) {
 		current_path = new_path;
@@ -1968,13 +1968,13 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 		}
 
 		if (is_moved) {
-			int current_tab = EditorSceneTabs::get_singleton()->get_current_tab();
+			EditorTab *current_tab = EditorSceneTabs::get_singleton()->get_current_tab();
 			_update_resource_paths_after_move(file_renames, uids);
 			_update_dependencies_after_move(file_renames, file_owners);
 			_update_project_settings_after_move(file_renames, folder_renames);
 			_update_favorites_list_after_move(file_renames, folder_renames);
 
-			EditorSceneTabs::get_singleton()->set_current_tab(current_tab);
+			EditorSceneTabs::get_singleton()->select_tab(current_tab);
 
 			print_verbose("FileSystem: calling rescan.");
 			_rescan();
