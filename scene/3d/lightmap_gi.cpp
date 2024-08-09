@@ -151,6 +151,22 @@ bool LightmapGIData::is_using_spherical_harmonics() const {
 	return uses_spherical_harmonics;
 }
 
+void LightmapGIData::set_use_hdr(bool p_enable) {
+	use_hdr = p_enable;
+}
+
+bool LightmapGIData::is_using_hdr() const {
+	return use_hdr;
+}
+
+void LightmapGIData::set_use_color(bool p_enable) {
+	use_color = p_enable;
+}
+
+bool LightmapGIData::is_using_color() const {
+	return use_color;
+}
+
 void LightmapGIData::set_capture_data(const AABB &p_bounds, bool p_interior, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree, float p_baked_exposure) {
 	if (p_points.size()) {
 		int pc = p_points.size();
@@ -255,6 +271,12 @@ void LightmapGIData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_uses_spherical_harmonics", "uses_spherical_harmonics"), &LightmapGIData::set_uses_spherical_harmonics);
 	ClassDB::bind_method(D_METHOD("is_using_spherical_harmonics"), &LightmapGIData::is_using_spherical_harmonics);
 
+	ClassDB::bind_method(D_METHOD("set_use_hdr", "use_hdr"), &LightmapGIData::set_use_hdr);
+	ClassDB::bind_method(D_METHOD("is_using_hdr"), &LightmapGIData::is_using_hdr);
+
+	ClassDB::bind_method(D_METHOD("set_use_color", "use_color"), &LightmapGIData::set_use_color);
+	ClassDB::bind_method(D_METHOD("is_using_color"), &LightmapGIData::is_using_color);
+
 	ClassDB::bind_method(D_METHOD("add_user", "path", "uv_scale", "slice_index", "sub_instance"), &LightmapGIData::add_user);
 	ClassDB::bind_method(D_METHOD("get_user_count"), &LightmapGIData::get_user_count);
 	ClassDB::bind_method(D_METHOD("get_user_path", "user_idx"), &LightmapGIData::get_user_path);
@@ -265,6 +287,8 @@ void LightmapGIData::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "lightmap_textures", PROPERTY_HINT_ARRAY_TYPE, "TextureLayered", PROPERTY_USAGE_NO_EDITOR), "set_lightmap_textures", "get_lightmap_textures");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uses_spherical_harmonics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_uses_spherical_harmonics", "is_using_spherical_harmonics");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hdr", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_use_hdr", "is_using_hdr");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_use_color", "is_using_color");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "user_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_user_data", "_get_user_data");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "probe_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_probe_data", "_get_probe_data");
 
@@ -1122,18 +1146,18 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			images.set(i, lightmapper->get_bake_texture(i));
 		}
 
-		int slice_count = images.size();
-		int slice_width = images[0]->get_width();
-		int slice_height = images[0]->get_height();
+		const int slice_count = images.size();
+		const int slice_width = images[0]->get_width();
+		const int slice_height = images[0]->get_height();
 
-		int slices_per_texture = Image::MAX_HEIGHT / slice_height;
-		int texture_count = Math::ceil(slice_count / (float)slices_per_texture);
+		const int slices_per_texture = Image::MAX_HEIGHT / slice_height;
+		const int texture_count = Math::ceil(slice_count / (float)slices_per_texture);
 
 		textures.resize(texture_count);
 
-		String base_path = p_image_data_path.get_basename();
+		const String base_path = p_image_data_path.get_basename();
 
-		int last_count = slice_count % slices_per_texture;
+		const int last_count = slice_count % slices_per_texture;
 		for (int i = 0; i < texture_count; i++) {
 			int texture_slice_count = (i == texture_count - 1 && last_count != 0) ? last_count : slices_per_texture;
 
@@ -1143,7 +1167,10 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 				texture_image->blit_rect(images[i * slices_per_texture + j], Rect2i(0, 0, slice_width, slice_height), Point2i(0, slice_height * j));
 			}
 
-			String texture_path = texture_count > 1 ? base_path + "_" + itos(i) + ".exr" : base_path + ".exr";
+			// Use OpenEXR for HDR lightmaps (required, as PNG does not support the required format).
+			// Use (lossless) WebP for LDR lightmaps.
+			const String extension = use_hdr ? ".exr" : ".webp";
+			const String texture_path = texture_count > 1 ? base_path + "_" + itos(i) + extension : base_path + extension;
 
 			Ref<ConfigFile> config;
 			config.instantiate();
@@ -1156,7 +1183,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			config->set_value("remap", "type", "CompressedTexture2DArray");
 			if (!config->has_section_key("params", "compress/mode")) {
 				// User may want another compression, so leave it be, but default to VRAM uncompressed.
-				config->set_value("params", "compress/mode", 3);
+				config->set_value("params", "compress/mode", 3); // COMPRESS_VRAM_COMPRESSED
 			}
 			config->set_value("params", "compress/channel_pack", 1);
 			config->set_value("params", "mipmaps/generate", false);
@@ -1165,7 +1192,23 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 			config->save(texture_path + ".import");
 
-			Error err = texture_image->save_exr(texture_path, false);
+			if (!use_color) {
+				// Convert to grayscale to reduce file size.
+				if (use_hdr) {
+					texture_image->convert(Image::FORMAT_RH);
+				} else {
+					// Convert to low dynamic range to further reduce file size.
+					texture_image->convert(Image::FORMAT_L8);
+				}
+			}
+
+			Error err;
+			if (use_hdr) {
+				err = texture_image->save_exr(texture_path, !use_color);
+			} else {
+				err = texture_image->save_webp(texture_path);
+			}
+
 			ERR_FAIL_COND_V(err, BAKE_ERROR_CANT_CREATE_IMAGE);
 			ResourceLoader::import(texture_path);
 			Ref<TextureLayered> t = ResourceLoader::load(texture_path); // If already loaded, it will be updated on refocus?
@@ -1187,6 +1230,8 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 	gi_data->set_lightmap_textures(textures);
 	gi_data->set_uses_spherical_harmonics(directional);
+	gi_data->set_use_hdr(use_hdr);
+	gi_data->set_use_color(use_color);
 
 	for (int i = 0; i < lightmapper->get_bake_mesh_count(); i++) {
 		Dictionary d = lightmapper->get_bake_mesh_userdata(i);
@@ -1460,6 +1505,22 @@ int LightmapGI::get_denoiser_range() const {
 	return denoiser_range;
 }
 
+void LightmapGI::set_use_hdr(bool p_enable) {
+	use_hdr = p_enable;
+}
+
+bool LightmapGI::is_using_hdr() const {
+	return use_hdr;
+}
+
+void LightmapGI::set_use_color(bool p_enable) {
+	use_color = p_enable;
+}
+
+bool LightmapGI::is_using_color() const {
+	return use_color;
+}
+
 void LightmapGI::set_directional(bool p_enable) {
 	directional = p_enable;
 }
@@ -1654,6 +1715,12 @@ void LightmapGI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_denoiser_range", "denoiser_range"), &LightmapGI::set_denoiser_range);
 	ClassDB::bind_method(D_METHOD("get_denoiser_range"), &LightmapGI::get_denoiser_range);
 
+	ClassDB::bind_method(D_METHOD("set_use_hdr", "use_denoiser"), &LightmapGI::set_use_hdr);
+	ClassDB::bind_method(D_METHOD("is_using_hdr"), &LightmapGI::is_using_hdr);
+
+	ClassDB::bind_method(D_METHOD("set_use_color", "use_denoiser"), &LightmapGI::set_use_color);
+	ClassDB::bind_method(D_METHOD("is_using_color"), &LightmapGI::is_using_color);
+
 	ClassDB::bind_method(D_METHOD("set_interior", "enable"), &LightmapGI::set_interior);
 	ClassDB::bind_method(D_METHOD("is_interior"), &LightmapGI::is_interior);
 
@@ -1678,6 +1745,8 @@ void LightmapGI::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_denoiser"), "set_use_denoiser", "is_using_denoiser");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "denoiser_strength", PROPERTY_HINT_RANGE, "0.001,0.2,0.001,or_greater"), "set_denoiser_strength", "get_denoiser_strength");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "denoiser_range", PROPERTY_HINT_RANGE, "1,20"), "set_denoiser_range", "get_denoiser_range");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hdr"), "set_use_hdr", "is_using_hdr");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_color"), "set_use_color", "is_using_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bias", PROPERTY_HINT_RANGE, "0.00001,0.1,0.00001,or_greater"), "set_bias", "get_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "texel_scale", PROPERTY_HINT_RANGE, "0.01,100.0,0.01"), "set_texel_scale", "get_texel_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_texture_size", PROPERTY_HINT_RANGE, "2048,16384,1"), "set_max_texture_size", "get_max_texture_size");
