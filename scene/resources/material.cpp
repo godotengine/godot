@@ -782,7 +782,7 @@ void BaseMaterial3D::_update_shader() {
 	if (flags[FLAG_PARTICLE_TRAILS_MODE]) {
 		code += ", particle_trails";
 	}
-	if (shading_mode == SHADING_MODE_PER_VERTEX) {
+	if (shading_mode == SHADING_MODE_PER_VERTEX || force_vertex_shading) {
 		code += ", vertex_lighting";
 	}
 	if (flags[FLAG_DONT_RECEIVE_SHADOWS]) {
@@ -3426,6 +3426,8 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 	current_key.invalid_key = 1;
 
 	_mark_initialized(callable_mp(this, &BaseMaterial3D::_queue_shader_change), callable_mp(this, &BaseMaterial3D::_update_shader));
+
+	force_vertex_shading = GLOBAL_GET("rendering/shading/overrides/force_vertex_shading");
 }
 
 BaseMaterial3D::~BaseMaterial3D() {

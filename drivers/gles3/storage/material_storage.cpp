@@ -1367,6 +1367,7 @@ MaterialStorage::MaterialStorage() {
 		actions.render_mode_defines["ambient_light_disabled"] = "#define AMBIENT_LIGHT_DISABLED\n";
 		actions.render_mode_defines["shadow_to_opacity"] = "#define USE_SHADOW_TO_OPACITY\n";
 		actions.render_mode_defines["unshaded"] = "#define MODE_UNSHADED\n";
+		actions.render_mode_defines["vertex_lighting"] = "#define USE_VERTEX_LIGHTING\n";
 		actions.render_mode_defines["fog_disabled"] = "#define FOG_DISABLED\n";
 
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
@@ -2862,6 +2863,7 @@ void SceneShaderData::set_code(const String &p_code) {
 	wireframe = false;
 
 	unshaded = false;
+	vertex_lighting = false;
 	uses_vertex = false;
 	uses_position = false;
 	uses_sss = false;
@@ -2924,6 +2926,11 @@ void SceneShaderData::set_code(const String &p_code) {
 	actions.render_mode_values["cull_back"] = Pair<int *, int>(&cull_modei, CULL_BACK);
 
 	actions.render_mode_flags["unshaded"] = &unshaded;
+	actions.render_mode_flags["vertex_lighting"] = &vertex_lighting;
+	bool force_vertex_lighting = GLOBAL_GET("rendering/shading/overrides/force_vertex_shading");
+	if (force_vertex_lighting) {
+		actions.render_mode_flags["vertex_lighting"] = &force_vertex_lighting;
+	}
 	actions.render_mode_flags["wireframe"] = &wireframe;
 	actions.render_mode_flags["particle_trails"] = &uses_particle_trails;
 	actions.render_mode_flags["world_vertex_coords"] = &uses_world_coordinates;

@@ -632,6 +632,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.render_mode_defines["ambient_light_disabled"] = "#define AMBIENT_LIGHT_DISABLED\n";
 		actions.render_mode_defines["shadow_to_opacity"] = "#define USE_SHADOW_TO_OPACITY\n";
 		actions.render_mode_defines["unshaded"] = "#define MODE_UNSHADED\n";
+		actions.render_mode_defines["vertex_lighting"] = "#define USE_VERTEX_LIGHTING\n";
 		actions.render_mode_defines["debug_shadow_splits"] = "#define DEBUG_DRAW_PSSM_SPLITS\n";
 		actions.render_mode_defines["fog_disabled"] = "#define FOG_DISABLED\n";
 
