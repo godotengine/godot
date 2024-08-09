@@ -41,6 +41,11 @@
 #include "core/variant/variant.h"
 #include "core/version_generated.gen.h"
 
+#ifdef TOOLS_ENABLED
+#include "core/config/engine.h"
+#include "editor/editor_paths.h"
+#endif // TOOLS_ENABLED
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <cstdint>
@@ -4962,12 +4967,18 @@ String String::path_to(const String &p_path) const {
 	}
 
 	if (src.begins_with("res://") && dst.begins_with("res://")) {
-		src = src.replace("res://", "/");
-		dst = dst.replace("res://", "/");
+		src = src.replace_first("res://", "/");
+		dst = dst.replace_first("res://", "/");
 
 	} else if (src.begins_with("user://") && dst.begins_with("user://")) {
-		src = src.replace("user://", "/");
-		dst = dst.replace("user://", "/");
+		src = src.replace_first("user://", "/");
+		dst = dst.replace_first("user://", "/");
+
+#ifdef TOOLS_ENABLED
+	} else if (likely(Engine::get_singleton()->is_editor_hint()) && src.begins_with("editor://") && dst.begins_with("editor://")) {
+		src = src.replace_first("editor://", "/");
+		dst = dst.replace_first("editor://", "/");
+#endif // TOOLS_ENABLED
 
 	} else if (src.begins_with("/") && dst.begins_with("/")) {
 		//nothing

@@ -38,6 +38,10 @@
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/editor_paths.h"
+#endif // TOOLS_ENABLED
+
 FileAccess::CreateFunc FileAccess::create_func[ACCESS_MAX] = {};
 
 FileAccess::FileCloseFailNotify FileAccess::close_fail_notify = nullptr;
@@ -78,6 +82,10 @@ Ref<FileAccess> FileAccess::create_for_path(const String &p_path) {
 		ret = create(ACCESS_USERDATA);
 	} else if (p_path.begins_with("pipe://")) {
 		ret = create(ACCESS_PIPE);
+#ifdef TOOLS_ENABLED
+	} else if (likely(Engine::get_singleton()->is_editor_hint()) && p_path.begins_with("editor://")) {
+		ret = create(ACCESS_EDITOR);
+#endif // TOOLS_ENABLED
 	} else {
 		ret = create(ACCESS_FILESYSTEM);
 	}
@@ -199,7 +207,6 @@ String FileAccess::fix_path(const String &p_path) const {
 					return r_path.replace("res://", "");
 				}
 			}
-
 		} break;
 		case ACCESS_USERDATA: {
 			if (r_path.begins_with("user://")) {
@@ -209,10 +216,20 @@ String FileAccess::fix_path(const String &p_path) const {
 				}
 				return r_path.replace("user://", "");
 			}
-
 		} break;
 		case ACCESS_PIPE: {
 			return r_path;
+		} break;
+		case ACCESS_EDITOR: {
+#ifdef TOOLS_ENABLED
+			if (r_path.begins_with("editor://")) {
+				String editor_dir = EditorPaths::get_singleton()->get_data_dir();
+				if (!editor_dir.is_empty()) {
+					return r_path.replace("editor:/", editor_dir);
+				}
+				return r_path.replace("editor://", "");
+			}
+#endif // TOOLS_ENABLED
 		} break;
 		case ACCESS_FILESYSTEM: {
 			return r_path;
