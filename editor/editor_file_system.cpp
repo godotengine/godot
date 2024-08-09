@@ -648,6 +648,12 @@ bool EditorFileSystem::_update_scan_actions() {
 	Vector<String> reimports;
 	Vector<String> reloads;
 
+	EditorProgress *ep = nullptr;
+	if (scan_actions.size() > 1) {
+		ep = memnew(EditorProgress("_update_scan_actions", TTR("Scanning actions..."), scan_actions.size()));
+	}
+
+	int step_count = 0;
 	for (const ItemAction &ia : scan_actions) {
 		switch (ia.action) {
 			case ItemAction::ACTION_NONE: {
@@ -779,7 +785,13 @@ bool EditorFileSystem::_update_scan_actions() {
 
 			} break;
 		}
+
+		if (ep) {
+			ep->step(ia.file, step_count++, false);
+		}
 	}
+
+	memdelete_notnull(ep);
 
 	if (_scan_extensions()) {
 		//needs editor restart
@@ -870,8 +882,6 @@ void EditorFileSystem::scan() {
 		scan_total = 0;
 		s.priority = Thread::PRIORITY_LOW;
 		thread.start(_thread_func, this, s);
-		//tree->hide();
-		//progress->show();
 	}
 }
 
@@ -1020,9 +1030,8 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 				}
 
 			} else {
-				fi->type = ResourceFormatImporter::get_singleton()->get_resource_type(path);
-				fi->uid = ResourceFormatImporter::get_singleton()->get_resource_uid(path);
-				fi->import_group_file = ResourceFormatImporter::get_singleton()->get_import_group_file(path);
+				// Using get_resource_import_info() to prevent calling 3 times ResourceFormatImporter::_get_path_and_type.
+				ResourceFormatImporter::get_singleton()->get_resource_import_info(path, fi->type, fi->uid, fi->import_group_file);
 				fi->script_class_name = _get_global_script_class(fi->type, path, &fi->script_class_extends, &fi->script_class_icon_path);
 				fi->modified_time = 0;
 				fi->import_modified_time = 0;
@@ -1826,9 +1835,20 @@ void EditorFileSystem::_update_script_classes() {
 
 	update_script_mutex.lock();
 
+	EditorProgress *ep = nullptr;
+	if (update_script_paths.size() > 1) {
+		ep = memnew(EditorProgress("update_scripts_classes", TTR("Registering global classes..."), update_script_paths.size()));
+	}
+
+	int step_count = 0;
 	for (const KeyValue<String, ScriptInfo> &E : update_script_paths) {
 		_register_global_class_script(E.key, E.key, E.value.type, E.value.script_class_name, E.value.script_class_extends, E.value.script_class_icon_path);
+		if (ep) {
+			ep->step(E.value.script_class_name, step_count++, false);
+		}
 	}
+
+	memdelete_notnull(ep);
 
 	update_script_paths.clear();
 	update_script_mutex.unlock();
@@ -1854,6 +1874,12 @@ void EditorFileSystem::_update_script_documentation() {
 
 	update_script_mutex.lock();
 
+	EditorProgress *ep = nullptr;
+	if (update_script_paths_documentation.size() > 1) {
+		ep = memnew(EditorProgress("update_script_paths_documentation", TTR("Updating scripts documentation"), update_script_paths_documentation.size()));
+	}
+
+	int step_count = 0;
 	for (const String &path : update_script_paths_documentation) {
 		int index = -1;
 		EditorFileSystemDirectory *efd = find_file(path, &index);
@@ -1876,7 +1902,13 @@ void EditorFileSystem::_update_script_documentation() {
 				}
 			}
 		}
+
+		if (ep) {
+			ep->step(efd->files[index]->file, step_count++, false);
+		}
 	}
+
+	memdelete_notnull(ep);
 
 	update_script_paths_documentation.clear();
 	update_script_mutex.unlock();
@@ -1912,7 +1944,7 @@ void EditorFileSystem::_update_scene_groups() {
 
 	EditorProgress *ep = nullptr;
 	if (update_scene_paths.size() > 20) {
-		ep = memnew(EditorProgress("update_scene_groups", TTR("Update Scene Groups"), update_scene_paths.size()));
+		ep = memnew(EditorProgress("update_scene_groups", TTR("Updating Scene Groups"), update_scene_paths.size()));
 	}
 	int step_count = 0;
 
@@ -1934,7 +1966,7 @@ void EditorFileSystem::_update_scene_groups() {
 		}
 
 		if (ep) {
-			ep->step(TTR("Updating Scene Groups..."), step_count++);
+			ep->step(efd->files[index]->file, step_count++);
 		}
 	}
 
@@ -2112,7 +2144,7 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 		}
 		if (!is_scanning()) {
 			_process_update_pending();
-			call_deferred(SNAME("emit_signal"), "filesystem_changed"); //update later
+			call_deferred(SNAME("emit_signal"), "filesystem_changed"); // Update later.
 		}
 	}
 }
@@ -2650,13 +2682,15 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 
 	Vector<String> reloads;
 
-	EditorProgress pr("reimport", TTR("(Re)Importing Assets"), p_files.size());
+	EditorProgress *ep = memnew(EditorProgress("reimport", TTR("(Re)Importing Assets"), p_files.size()));
 
 	Vector<ImportFile> reimport_files;
 
 	HashSet<String> groups_to_reimport;
 
 	for (int i = 0; i < p_files.size(); i++) {
+		ep->step(TTR("Preparing files to reimport..."), i, false);
+
 		String file = p_files[i];
 
 		ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(file);
@@ -2716,7 +2750,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 			if (i + 1 == reimport_files.size() || reimport_files[i + 1].importer != reimport_files[from].importer || groups_to_reimport.has(reimport_files[i + 1].path)) {
 				if (from - i == 0) {
 					// Single file, do not use threads.
-					pr.step(reimport_files[i].path.get_file(), i);
+					ep->step(reimport_files[i].path.get_file(), i, false);
 					_reimport_file(reimport_files[i].path);
 				} else {
 					Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(reimport_files[from].importer);
@@ -2738,7 +2772,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 					do {
 						if (current_index < tdata.max_index.get()) {
 							current_index = tdata.max_index.get();
-							pr.step(reimport_files[current_index].path.get_file(), current_index);
+							ep->step(reimport_files[current_index].path.get_file(), current_index, false);
 						}
 						OS::get_singleton()->delay_usec(1);
 					} while (!WorkerThreadPool::get_singleton()->is_group_task_completed(group_task));
@@ -2752,7 +2786,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 			}
 
 		} else {
-			pr.step(reimport_files[i].path.get_file(), i);
+			ep->step(reimport_files[i].path.get_file(), i, false);
 			_reimport_file(reimport_files[i].path);
 
 			// We need to increment the counter, maybe the next file is multithreaded
@@ -2769,7 +2803,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 		HashMap<String, Vector<String>> group_files;
 		_find_group_files(filesystem, group_files, groups_to_reimport);
 		for (const KeyValue<String, Vector<String>> &E : group_files) {
-			pr.step(E.key.get_file(), from++);
+			ep->step(E.key.get_file(), from++, false);
 			Error err = _reimport_group(E.key, E.value);
 			reloads.push_back(E.key);
 			reloads.append_array(E.value);
@@ -2780,8 +2814,10 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	}
 
 	ResourceUID::get_singleton()->update_cache(); // After reimporting, update the cache.
-
 	_save_filesystem_cache();
+
+	memdelete_notnull(ep);
+
 	_process_update_pending();
 	importing = false;
 	if (!is_scanning()) {

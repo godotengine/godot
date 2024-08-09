@@ -5198,6 +5198,8 @@ void EditorNode::save_editor_layout_delayed() {
 }
 
 void EditorNode::_load_editor_layout() {
+	EditorProgress ep("loading_editor_layout", TTR("Loading editor"), 5);
+	ep.step(TTR("Loading editor layout..."), 0, true);
 	Ref<ConfigFile> config;
 	config.instantiate();
 	Error err = config->load(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
@@ -5219,11 +5221,19 @@ void EditorNode::_load_editor_layout() {
 		return;
 	}
 
+	ep.step(TTR("Loading docks..."), 1, true);
 	editor_dock_manager->load_docks_from_config(config, "docks");
+
+	ep.step(TTR("Reopening scenes..."), 2, true);
 	_load_open_scenes_from_config(config);
+
+	ep.step(TTR("Loading central editor layout..."), 3, true);
 	_load_central_editor_layout_from_config(config);
 
+	ep.step(TTR("Loading plugin window layout..."), 4, true);
 	editor_data.set_plugin_window_layout(config);
+
+	ep.step(TTR("Editor layout ready."), 5, true);
 }
 
 void EditorNode::_save_central_editor_layout_to_config(Ref<ConfigFile> p_config_file) {
