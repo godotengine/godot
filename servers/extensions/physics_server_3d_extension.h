@@ -534,6 +534,7 @@ public:
 	EXBIND0(end_sync)
 	EXBIND0(finish)
 
+	EXBIND0RC(bool, is_active)
 	EXBIND0RC(bool, is_flushing_queries)
 	EXBIND1R(int, get_process_info, ProcessInfo)
 
