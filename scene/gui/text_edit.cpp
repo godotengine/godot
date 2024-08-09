@@ -4328,24 +4328,11 @@ Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos, bool p_allow_out_
 		return Point2i(text[row].length(), row);
 	}
 
-	int col = 0;
 	int colx = p_pos.x - (theme_cache.style_normal->get_margin(SIDE_LEFT) + gutters_width + gutter_padding);
 	colx += first_visible_col;
 	if (!editable) {
 		colx -= theme_cache.style_readonly->get_offset().x / 2;
 		colx += theme_cache.style_normal->get_offset().x / 2;
-	}
-	col = _get_char_pos_for_line(colx, row, wrap_index);
-	if (get_line_wrapping_mode() != LineWrappingMode::LINE_WRAPPING_NONE && wrap_index < get_line_wrap_count(row)) {
-		// Move back one if we are at the end of the row.
-		Vector<String> rows2 = get_line_wrapped_text(row);
-		int row_end_col = 0;
-		for (int i = 0; i < wrap_index + 1; i++) {
-			row_end_col += rows2[i].length();
-		}
-		if (col >= row_end_col) {
-			col -= 1;
-		}
 	}
 
 	RID text_rid = text.get_line_data(row)->get_line_rid(wrap_index);
@@ -4355,7 +4342,7 @@ Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos, bool p_allow_out_
 	} else {
 		colx -= wrap_indent;
 	}
-	col = TS->shaped_text_hit_test_position(text_rid, colx);
+	int col = TS->shaped_text_hit_test_position(text_rid, colx);
 	if (!caret_mid_grapheme_enabled) {
 		col = TS->shaped_text_closest_character_pos(text_rid, col);
 	}
@@ -7531,7 +7518,7 @@ int TextEdit::_get_column_x_offset_for_line(int p_char, int p_line, int p_column
 	int row = 0;
 	Vector<Vector2i> rows2 = text.get_line_wrap_ranges(p_line);
 	for (int i = 0; i < rows2.size(); i++) {
-		if ((p_char >= rows2[i].x) && (p_char <= rows2[i].y)) {
+		if ((p_char >= rows2[i].x) && (p_char < rows2[i].y || (i == rows2.size() - 1 && p_char == rows2[i].y))) {
 			row = i;
 			break;
 		}
