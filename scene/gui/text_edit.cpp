@@ -4356,7 +4356,7 @@ Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos, bool p_allow_out_
 		colx -= wrap_indent;
 	}
 	col = TS->shaped_text_hit_test_position(text_rid, colx);
-	if (!caret_mid_grapheme_enabled) {
+	if (!caret_mid_grapheme_enabled && get_line_wrapping_mode() == LineWrappingMode::LINE_WRAPPING_NONE) {
 		col = TS->shaped_text_closest_character_pos(text_rid, col);
 	}
 
