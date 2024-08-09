@@ -482,6 +482,7 @@ private:
 
 	HorizontalAlignment default_alignment = HORIZONTAL_ALIGNMENT_LEFT;
 	BitField<TextServer::JustificationFlag> default_jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE;
+	PackedFloat32Array default_tab_stops;
 
 	ItemMeta *meta_hovering = nullptr;
 	Variant current_meta;
@@ -807,6 +808,15 @@ public:
 
 	void set_text(const String &p_bbcode);
 	String get_text() const;
+
+	void set_horizontal_alignment(HorizontalAlignment p_alignment);
+	HorizontalAlignment get_horizontal_alignment() const;
+
+	void set_justification_flags(BitField<TextServer::JustificationFlag> p_flags);
+	BitField<TextServer::JustificationFlag> get_justification_flags() const;
+
+	void set_tab_stops(const PackedFloat32Array &p_tab_stops);
+	PackedFloat32Array get_tab_stops() const;
 
 	void set_text_direction(TextDirection p_text_direction);
 	TextDirection get_text_direction() const;
