@@ -1001,7 +1001,7 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 						}
 						tex->detect_normal_callback(tex->detect_normal_callback_ud);
 					}
-					if (tex->detect_roughness_callback && (p_texture_uniforms[i].hint >= ShaderLanguage::ShaderNode::Uniform::HINT_ROUGHNESS_R || p_texture_uniforms[i].hint <= ShaderLanguage::ShaderNode::Uniform::HINT_ROUGHNESS_GRAY)) {
+					if (tex->detect_roughness_callback && p_texture_uniforms[i].hint >= ShaderLanguage::ShaderNode::Uniform::HINT_ROUGHNESS_R && p_texture_uniforms[i].hint <= ShaderLanguage::ShaderNode::Uniform::HINT_ROUGHNESS_GRAY) {
 						//find the normal texture
 						roughness_detect_texture = tex;
 						roughness_channel = RS::TextureDetectRoughnessChannel(p_texture_uniforms[i].hint - ShaderLanguage::ShaderNode::Uniform::HINT_ROUGHNESS_R);

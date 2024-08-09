@@ -1215,9 +1215,7 @@ void EditorNode::_titlebar_resized() {
 		int w = (gui_base->is_layout_rtl()) ? margin.x : margin.y;
 		right_menu_spacer->set_custom_minimum_size(Size2(w, 0));
 	}
-	if (title_bar) {
-		title_bar->set_custom_minimum_size(Size2(0, margin.z - title_bar->get_global_position().y));
-	}
+	title_bar->set_custom_minimum_size(Size2(0, margin.z - title_bar->get_global_position().y));
 }
 
 void EditorNode::_update_undo_redo_allowed() {

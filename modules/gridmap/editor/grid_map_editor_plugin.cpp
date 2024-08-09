@@ -255,7 +255,7 @@ void GridMapEditor::_update_cursor_transform() {
 	cursor_transform = node->get_global_transform() * cursor_transform;
 
 	if (selected_palette >= 0) {
-		if (node && !node->get_mesh_library().is_null()) {
+		if (!node->get_mesh_library().is_null()) {
 			cursor_transform *= node->get_mesh_library()->get_item_mesh_transform(selected_palette);
 		}
 	}
@@ -829,11 +829,11 @@ void GridMapEditor::_mesh_library_palette_input(const Ref<InputEvent> &p_ie) {
 
 	// Zoom in/out using Ctrl + mouse wheel
 	if (mb.is_valid() && mb->is_pressed() && mb->is_command_or_control_pressed()) {
-		if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP) {
+		if (mb->get_button_index() == MouseButton::WHEEL_UP) {
 			size_slider->set_value(size_slider->get_value() + 0.2);
 		}
 
-		if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
+		if (mb->get_button_index() == MouseButton::WHEEL_DOWN) {
 			size_slider->set_value(size_slider->get_value() - 0.2);
 		}
 	}
@@ -1142,7 +1142,7 @@ void GridMapEditor::_update_cursor_instance() {
 	cursor_instance = RID();
 
 	if (selected_palette >= 0) {
-		if (node && !node->get_mesh_library().is_null()) {
+		if (!node->get_mesh_library().is_null()) {
 			Ref<Mesh> mesh = node->get_mesh_library()->get_item_mesh(selected_palette);
 			if (!mesh.is_null() && mesh->get_rid().is_valid()) {
 				cursor_instance = RenderingServer::get_singleton()->instance_create2(mesh->get_rid(), get_tree()->get_root()->get_world_3d()->get_scenario());
