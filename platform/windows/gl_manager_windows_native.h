@@ -43,8 +43,13 @@
 typedef bool(APIENTRY *PFNWGLSWAPINTERVALEXTPROC)(int interval);
 typedef int(APIENTRY *PFNWGLGETSWAPINTERVALEXTPROC)(void);
 
+struct ID3D11Device;
+struct ID3D11DeviceContext;
+
 class GLManagerNative_Windows {
 private:
+	class DxgiSwapChain;
+
 	// any data specific to the window
 	struct GLWindow {
 		bool use_vsync = false;
@@ -54,6 +59,8 @@ private:
 		HWND hwnd;
 
 		int gldisplay_id = 0;
+
+		DxgiSwapChain *dxgi = nullptr;
 	};
 
 	struct GLDisplay {
@@ -68,6 +75,9 @@ private:
 
 	PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT = nullptr;
 
+	ID3D11Device *d3d11_device = nullptr;
+	ID3D11DeviceContext *d3d11_device_context = nullptr;
+
 	GLWindow &get_window(unsigned int id) { return _windows[id]; }
 	const GLWindow &get_window(unsigned int id) const { return _windows[id]; }
 
@@ -75,6 +85,7 @@ private:
 	const GLDisplay &get_display(unsigned int id) { return _displays[id]; }
 
 	bool direct_render;
+	bool prefer_dxgi = false;
 	int glx_minor, glx_major;
 
 private:
@@ -85,10 +96,11 @@ private:
 public:
 	Error window_create(DisplayServer::WindowID p_window_id, HWND p_hwnd, HINSTANCE p_hinstance, int p_width, int p_height);
 	void window_destroy(DisplayServer::WindowID p_window_id);
-	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height) {}
+	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
 
 	void release_current();
 	void swap_buffers();
+	void wait_for_present(DisplayServer::WindowID p_window_id);
 
 	void window_make_current(DisplayServer::WindowID p_window_id);
 
@@ -99,6 +111,10 @@ public:
 
 	HDC get_hdc(DisplayServer::WindowID p_window_id);
 	HGLRC get_hglrc(DisplayServer::WindowID p_window_id);
+
+	void set_prefer_dxgi_swap_chain(bool p_prefer);
+	// Only valid after creating the first window.
+	bool is_using_dxgi_swap_chain();
 
 	GLManagerNative_Windows();
 	~GLManagerNative_Windows();
