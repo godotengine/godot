@@ -227,6 +227,18 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	} else {
 		parameters_map["export_normals"] = false;
 	}
+
+	if (blender_major_version > 4 || (blender_major_version == 4 && blender_minor_version >= 1)) {
+		if (p_options.has(SNAME("blender/meshes/export_geometry_nodes_instances")) && p_options[SNAME("blender/meshes/export_geometry_nodes_instances")]) {
+			parameters_map["export_gn_mesh"] = true;
+			if (blender_major_version == 4 && blender_minor_version == 1) {
+				// There is a bug in Blender 4.1 where it can't export lights and geometry nodes at the same time, one must be disabled.
+				parameters_map["export_lights"] = false;
+			}
+		} else {
+			parameters_map["export_gn_mesh"] = false;
+		}
+	}
 	if (p_options.has(SNAME("blender/meshes/tangents")) && p_options[SNAME("blender/meshes/tangents")]) {
 		parameters_map["export_tangents"] = true;
 	} else {
@@ -350,6 +362,7 @@ void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, Li
 	ADD_OPTION_BOOL("blender/meshes/colors", false);
 	ADD_OPTION_BOOL("blender/meshes/uvs", true);
 	ADD_OPTION_BOOL("blender/meshes/normals", true);
+	ADD_OPTION_BOOL("blender/meshes/export_geometry_nodes_instances", false);
 	ADD_OPTION_BOOL("blender/meshes/tangents", true);
 	ADD_OPTION_ENUM("blender/meshes/skins", "None,4 Influences (Compatible),All Influences", BLEND_BONE_INFLUENCES_ALL);
 	ADD_OPTION_BOOL("blender/meshes/export_bones_deforming_mesh_only", false);
