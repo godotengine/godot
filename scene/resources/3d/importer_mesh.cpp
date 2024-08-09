@@ -256,6 +256,33 @@ void ImporterMesh::set_surface_material(int p_surface, const Ref<Material> &p_ma
 	mesh.unref();
 }
 
+void ImporterMesh::optimize_indices_for_cache() {
+	if (!SurfaceTool::optimize_vertex_cache_func) {
+		return;
+	}
+
+	for (int i = 0; i < surfaces.size(); i++) {
+		if (surfaces[i].primitive != Mesh::PRIMITIVE_TRIANGLES) {
+			continue;
+		}
+
+		Vector<Vector3> vertices = surfaces[i].arrays[RS::ARRAY_VERTEX];
+		PackedInt32Array indices = surfaces[i].arrays[RS::ARRAY_INDEX];
+
+		unsigned int index_count = indices.size();
+		unsigned int vertex_count = vertices.size();
+
+		if (index_count == 0) {
+			continue;
+		}
+
+		int *indices_ptr = indices.ptrw();
+		SurfaceTool::optimize_vertex_cache_func((unsigned int *)indices_ptr, (const unsigned int *)indices_ptr, index_count, vertex_count);
+
+		surfaces.write[i].arrays[RS::ARRAY_INDEX] = indices;
+	}
+}
+
 #define VERTEX_SKIN_FUNC(bone_count, vert_idx, read_array, write_array, transform_array, bone_array, weight_array) \
 	Vector3 transformed_vert;                                                                                      \
 	for (unsigned int weight_idx = 0; weight_idx < bone_count; weight_idx++) {                                     \
@@ -811,6 +838,10 @@ void ImporterMesh::create_shadow_mesh() {
 				index_wptr[j] = vertex_remap[index];
 			}
 
+			if (SurfaceTool::optimize_vertex_cache_func) {
+				SurfaceTool::optimize_vertex_cache_func((unsigned int *)index_wptr, (const unsigned int *)index_wptr, index_count, new_vertices.size());
+			}
+
 			new_surface[RS::ARRAY_INDEX] = new_indices;
 
 			// Make sure the same LODs as the full version are used.
@@ -827,6 +858,10 @@ void ImporterMesh::create_shadow_mesh() {
 					int index = index_rptr[k];
 					ERR_FAIL_INDEX(index, vertex_count);
 					index_wptr[k] = vertex_remap[index];
+				}
+
+				if (SurfaceTool::optimize_vertex_cache_func) {
+					SurfaceTool::optimize_vertex_cache_func((unsigned int *)index_wptr, (const unsigned int *)index_wptr, index_count, new_vertices.size());
 				}
 
 				lods[surfaces[i].lods[j].distance] = new_indices;
