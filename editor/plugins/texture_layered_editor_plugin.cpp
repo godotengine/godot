@@ -71,29 +71,38 @@ void TextureLayeredEditor::_texture_changed() {
 
 void TextureLayeredEditor::_update_material() {
 	materials[0]->set_shader_parameter("layer", layer->get_value());
-	materials[2]->set_shader_parameter("layer", layer->get_value());
-	materials[texture->get_layered_type()]->set_shader_parameter("tex", texture->get_rid());
+	TextureLayered::LayeredType layered_type = texture->get_layered_type();
 
-	Vector3 v(1, 1, 1);
-	v.normalize();
+	if (RenderingServer::get_singleton()->is_low_end()) {
+		if (layered_type == TextureLayered::LayeredType::LAYERED_TYPE_2D_ARRAY) {
+			materials[layered_type]->set_shader_parameter("tex", texture->get_rid());
+		}
+	} else {
+		materials[layered_type]->set_shader_parameter("tex", texture->get_rid());
+		materials[2]->set_shader_parameter("layer", layer->get_value());
+		materials[texture->get_layered_type()]->set_shader_parameter("tex", texture->get_rid());
 
-	Basis b;
-	b.rotate(Vector3(1, 0, 0), x_rot);
-	b.rotate(Vector3(0, 1, 0), y_rot);
+		Vector3 v(1, 1, 1);
+		v.normalize();
 
-	materials[1]->set_shader_parameter("normal", v);
-	materials[1]->set_shader_parameter("rot", b);
-	materials[2]->set_shader_parameter("normal", v);
-	materials[2]->set_shader_parameter("rot", b);
+		Basis b;
+		b.rotate(Vector3(1, 0, 0), x_rot);
+		b.rotate(Vector3(0, 1, 0), y_rot);
+
+		materials[1]->set_shader_parameter("normal", v);
+		materials[1]->set_shader_parameter("rot", b);
+		materials[2]->set_shader_parameter("normal", v);
+		materials[2]->set_shader_parameter("rot", b);
+	}
 
 	String format = Image::get_format_name(texture->get_format());
 
 	String text;
-	if (texture->get_layered_type() == TextureLayered::LAYERED_TYPE_2D_ARRAY) {
+	if (layered_type == TextureLayered::LAYERED_TYPE_2D_ARRAY) {
 		text = itos(texture->get_width()) + "x" + itos(texture->get_height()) + " (x " + itos(texture->get_layers()) + ")" + format;
-	} else if (texture->get_layered_type() == TextureLayered::LAYERED_TYPE_CUBEMAP) {
+	} else if (layered_type == TextureLayered::LAYERED_TYPE_CUBEMAP) {
 		text = itos(texture->get_width()) + "x" + itos(texture->get_height()) + " " + format;
-	} else if (texture->get_layered_type() == TextureLayered::LAYERED_TYPE_CUBEMAP_ARRAY) {
+	} else if (layered_type == TextureLayered::LAYERED_TYPE_CUBEMAP_ARRAY) {
 		text = itos(texture->get_width()) + "x" + itos(texture->get_height()) + " (x " + itos(texture->get_layers() / 6) + ")" + format;
 	}
 
@@ -114,6 +123,12 @@ void fragment() {
 	COLOR = textureLod(tex, vec3(UV, layer), 0.0);
 }
 )");
+
+	if (RenderingServer::get_singleton()->is_low_end()) {
+		materials[0].instantiate();
+		materials[0]->set_shader(shaders[0]);
+		return;
+	}
 
 	shaders[1].instantiate();
 	shaders[1]->set_code(R"(
