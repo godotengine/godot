@@ -126,7 +126,8 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@export_category", PropertyInfo(Variant::STRING, "name")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_CATEGORY>);
 		register_annotation(MethodInfo("@export_group", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::STRING, "prefix")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_GROUP>, varray(""));
 		register_annotation(MethodInfo("@export_subgroup", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::STRING, "prefix")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_SUBGROUP>, varray(""));
-		// Warning annotations.
+		// Error and warning annotations.
+		register_annotation(MethodInfo("@static_assert", PropertyInfo(Variant::BOOL, "condition"), PropertyInfo(Variant::STRING, "message")), AnnotationInfo::STANDALONE, &GDScriptParser::static_assert_annotation, varray(""));
 		register_annotation(MethodInfo("@warning_ignore", PropertyInfo(Variant::STRING, "warning")), AnnotationInfo::CLASS_LEVEL | AnnotationInfo::STATEMENT, &GDScriptParser::warning_annotations, varray(), true);
 		// Networking.
 		register_annotation(MethodInfo("@rpc", PropertyInfo(Variant::STRING, "mode"), PropertyInfo(Variant::STRING, "sync"), PropertyInfo(Variant::STRING, "transfer_mode"), PropertyInfo(Variant::INT, "transfer_channel")), AnnotationInfo::FUNCTION, &GDScriptParser::rpc_annotation, varray("authority", "call_remote", "unreliable", 0));
@@ -616,8 +617,11 @@ void GDScriptParser::parse_program() {
 						// so we stop looking for script-level stuff.
 						can_have_class_or_extends = false;
 						break;
+					} else if (annotation->name == SNAME("@static_assert")) {
+						// We don't care about the target, but `@static_assert`s must be resolved and applied in the analyzer.
+						// Since the class context changes, it makes sense to assign `@static_assert`s to `ClassNode`s.
+						head->annotations.push_back(annotation);
 					} else {
-						// For potential non-group standalone annotations.
 						push_error(R"(Unexpected standalone annotation.)");
 					}
 				} else {
@@ -1006,8 +1010,11 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 						}
 						if (annotation->name == SNAME("@export_category") || annotation->name == SNAME("@export_group") || annotation->name == SNAME("@export_subgroup")) {
 							current_class->add_member_group(annotation);
+						} else if (annotation->name == SNAME("@static_assert")) {
+							// We don't care about the target, but `@static_assert`s must be resolved and applied in the analyzer.
+							// Since the class context changes, it makes sense to assign `@static_assert`s to `ClassNode`s.
+							current_class->annotations.push_back(annotation);
 						} else {
-							// For potential non-group standalone annotations.
 							push_error(R"(Unexpected standalone annotation.)");
 						}
 					} else { // `AnnotationInfo::CLASS_LEVEL`.
@@ -1864,9 +1871,22 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 			break;
 		case GDScriptTokenizer::Token::ANNOTATION: {
 			advance();
-			AnnotationNode *annotation = parse_annotation(AnnotationInfo::STATEMENT);
+			AnnotationNode *annotation = parse_annotation(AnnotationInfo::STATEMENT | AnnotationInfo::STANDALONE);
 			if (annotation != nullptr) {
-				annotation_stack.push_back(annotation);
+				if (annotation->applies_to(AnnotationInfo::STANDALONE)) {
+					if (previous.type != GDScriptTokenizer::Token::NEWLINE) {
+						push_error(R"(Expected newline after a standalone annotation.)");
+					}
+					if (annotation->name == SNAME("@static_assert")) {
+						// We don't care about the target, but `@static_assert`s must be resolved and applied in the analyzer.
+						// Since the class context changes, it makes sense to assign `@static_assert`s to `ClassNode`s.
+						current_class->annotations.push_back(annotation);
+					} else {
+						push_error(R"(Unexpected standalone annotation.)");
+					}
+				} else {
+					annotation_stack.push_back(annotation);
+				}
 			}
 			break;
 		}
@@ -2133,15 +2153,25 @@ GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 		}
 
 		if (match(GDScriptTokenizer::Token::ANNOTATION)) {
-			AnnotationNode *annotation = parse_annotation(AnnotationInfo::STATEMENT);
-			if (annotation == nullptr) {
-				continue;
+			AnnotationNode *annotation = parse_annotation(AnnotationInfo::STATEMENT | AnnotationInfo::STANDALONE);
+			if (annotation != nullptr) {
+				if (annotation->applies_to(AnnotationInfo::STANDALONE)) {
+					if (previous.type != GDScriptTokenizer::Token::NEWLINE) {
+						push_error(R"(Expected newline after a standalone annotation.)");
+					}
+					if (annotation->name == SNAME("@static_assert")) {
+						// We don't care about the target, but `@static_assert`s must be resolved and applied in the analyzer.
+						// Since the class context changes, it makes sense to assign `@static_assert`s to `ClassNode`s.
+						current_class->annotations.push_back(annotation);
+					} else {
+						push_error(R"(Unexpected standalone annotation.)");
+					}
+				} else if (annotation->name == SNAME("@warning_ignore")) {
+					match_branch_annotation_stack.push_back(annotation);
+				} else {
+					push_error(vformat(R"(Annotation "%s" is not allowed in this level.)", annotation->name), annotation);
+				}
 			}
-			if (annotation->name != SNAME("@warning_ignore")) {
-				push_error(vformat(R"(Annotation "%s" is not allowed in this level.)", annotation->name), annotation);
-				continue;
-			}
-			match_branch_annotation_stack.push_back(annotation);
 			continue;
 		}
 
@@ -4031,12 +4061,12 @@ bool GDScriptParser::validate_annotation_arguments(AnnotationNode *p_annotation)
 	const MethodInfo &info = valid_annotations[p_annotation->name].info;
 
 	if (((info.flags & METHOD_FLAG_VARARG) == 0) && p_annotation->arguments.size() > info.arguments.size()) {
-		push_error(vformat(R"(Annotation "%s" requires at most %d arguments, but %d were given.)", p_annotation->name, info.arguments.size(), p_annotation->arguments.size()));
+		push_error(vformat(R"(Annotation "%s" requires at most %d arguments, but %d were given.)", p_annotation->name, info.arguments.size(), p_annotation->arguments.size()), p_annotation);
 		return false;
 	}
 
 	if (p_annotation->arguments.size() < info.arguments.size() - info.default_arguments.size()) {
-		push_error(vformat(R"(Annotation "%s" requires at least %d arguments, but %d were given.)", p_annotation->name, info.arguments.size() - info.default_arguments.size(), p_annotation->arguments.size()));
+		push_error(vformat(R"(Annotation "%s" requires at least %d arguments, but %d were given.)", p_annotation->name, info.arguments.size() - info.default_arguments.size(), p_annotation->arguments.size()), p_annotation);
 		return false;
 	}
 
@@ -4556,6 +4586,22 @@ bool GDScriptParser::export_group_annotations(const AnnotationNode *p_annotation
 				annotation->export_info.hint_string = annotation->resolved_arguments[1];
 			}
 		} break;
+	}
+
+	return true;
+}
+
+bool GDScriptParser::static_assert_annotation(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	if (p_annotation->resolved_arguments.is_empty()) {
+		return false;
+	}
+
+	if (!p_annotation->resolved_arguments[0].booleanize()) {
+		if (p_annotation->resolved_arguments.size() >= 2) {
+			push_error("Static assertion failed: " + p_annotation->resolved_arguments[1].operator String(), p_annotation);
+		} else {
+			push_error("Static assertion failed.", p_annotation);
+		}
 	}
 
 	return true;
