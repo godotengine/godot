@@ -334,6 +334,7 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	{ TK_STRUCT, "struct", CF_GLOBAL_SPACE, {}, {} },
 	{ TK_SHADER_TYPE, "shader_type", CF_SHADER_TYPE, {}, {} },
 	{ TK_RENDER_MODE, "render_mode", CF_GLOBAL_SPACE, {}, {} },
+	{ TK_STENCIL_MODE, "stencil_mode", CF_GLOBAL_SPACE, {}, {} },
 
 	// uniform qualifiers
 
@@ -3697,7 +3698,7 @@ bool ShaderLanguage::is_token_operator_assign(TokenType p_type) {
 }
 
 bool ShaderLanguage::is_token_hint(TokenType p_type) {
-	return int(p_type) > int(TK_RENDER_MODE) && int(p_type) < int(TK_SHADER_TYPE);
+	return int(p_type) > int(TK_STENCIL_MODE) && int(p_type) < int(TK_SHADER_TYPE);
 }
 
 bool ShaderLanguage::convert_constant(ConstantNode *p_constant, DataType p_to_type, ConstantNode::Value *p_value) {
@@ -8164,7 +8165,7 @@ Error ShaderLanguage::_validate_precision(DataType p_type, DataPrecision p_preci
 	return OK;
 }
 
-Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const HashSet<String> &p_shader_types) {
+Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const Vector<ModeInfo> &p_stencil_modes, const HashSet<String> &p_shader_types) {
 	Token tk;
 	TkPos prev_pos;
 	Token next;
@@ -8233,7 +8234,8 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 
 	const FunctionInfo &constants = p_functions.has("constants") ? p_functions["constants"] : FunctionInfo();
 
-	HashMap<String, String> defined_modes;
+	HashMap<String, String> defined_render_modes;
+	HashMap<String, String> defined_stencil_modes;
 
 	while (tk.type != TK_EOF) {
 		switch (tk.type) {
@@ -8242,83 +8244,64 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 				keyword_completion_context = CF_UNSPECIFIED;
 #endif // DEBUG_ENABLED
 				while (true) {
-					StringName mode;
-					_get_completable_identifier(nullptr, COMPLETION_RENDER_MODE, mode);
-
-					if (mode == StringName()) {
-						_set_error(RTR("Expected an identifier for render mode."));
-						return ERR_PARSE_ERROR;
+					Error error = _parse_shader_mode(false, p_render_modes, defined_render_modes);
+					if (error != OK) {
+						return error;
 					}
-
-					const String smode = String(mode);
-
-					if (shader->render_modes.has(mode)) {
-						_set_error(vformat(RTR("Duplicated render mode: '%s'."), smode));
-						return ERR_PARSE_ERROR;
-					}
-
-					bool found = false;
-
-					if (is_shader_inc) {
-						for (int i = 0; i < RenderingServer::SHADER_MAX; i++) {
-							const Vector<ModeInfo> modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(i));
-
-							for (int j = 0; j < modes.size(); j++) {
-								const ModeInfo &info = modes[j];
-								const String name = String(info.name);
-
-								if (smode.begins_with(name)) {
-									if (!info.options.is_empty()) {
-										if (info.options.has(smode.substr(name.length() + 1))) {
-											found = true;
-
-											if (defined_modes.has(name)) {
-												_set_error(vformat(RTR("Redefinition of render mode: '%s'. The '%s' mode has already been set to '%s'."), smode, name, defined_modes[name]));
-												return ERR_PARSE_ERROR;
-											}
-											defined_modes.insert(name, smode);
-											break;
-										}
-									} else {
-										found = true;
-										break;
-									}
-								}
-							}
-						}
-					} else {
-						for (int i = 0; i < p_render_modes.size(); i++) {
-							const ModeInfo &info = p_render_modes[i];
-							const String name = String(info.name);
-
-							if (smode.begins_with(name)) {
-								if (!info.options.is_empty()) {
-									if (info.options.has(smode.substr(name.length() + 1))) {
-										found = true;
-
-										if (defined_modes.has(name)) {
-											_set_error(vformat(RTR("Redefinition of render mode: '%s'. The '%s' mode has already been set to '%s'."), smode, name, defined_modes[name]));
-											return ERR_PARSE_ERROR;
-										}
-										defined_modes.insert(name, smode);
-										break;
-									}
-								} else {
-									found = true;
-									break;
-								}
-							}
-						}
-					}
-
-					if (!found) {
-						_set_error(vformat(RTR("Invalid render mode: '%s'."), smode));
-						return ERR_PARSE_ERROR;
-					}
-
-					shader->render_modes.push_back(mode);
 
 					tk = _get_token();
+
+					if (tk.type == TK_COMMA) {
+						// All good, do nothing.
+					} else if (tk.type == TK_SEMICOLON) {
+						break; // Done.
+					} else {
+						_set_error(vformat(RTR("Unexpected token: '%s'."), get_token_text(tk)));
+						return ERR_PARSE_ERROR;
+					}
+				}
+#ifdef DEBUG_ENABLED
+				keyword_completion_context = CF_GLOBAL_SPACE;
+#endif // DEBUG_ENABLED
+			} break;
+			case TK_STENCIL_MODE: {
+#ifdef DEBUG_ENABLED
+				keyword_completion_context = CF_UNSPECIFIED;
+#endif // DEBUG_ENABLED
+				while (true) {
+					TkPos pos = _get_tkpos();
+					tk = _get_token();
+
+					if (tk.is_integer_constant()) {
+						const int reference_value = tk.constant;
+
+						if (shader->stencil_reference != -1) {
+							_set_error(vformat(RTR("Duplicated stencil mode reference value: '%s'."), reference_value));
+							return ERR_PARSE_ERROR;
+						}
+
+						if (reference_value < 0) {
+							_set_error(vformat(RTR("Stencil mode reference value cannot be negative: '%s'."), reference_value));
+							return ERR_PARSE_ERROR;
+						}
+
+						if (reference_value > 255) {
+							_set_error(vformat(RTR("Stencil mode reference value cannot be greater than 255: '%s'."), reference_value));
+							return ERR_PARSE_ERROR;
+						}
+
+						shader->stencil_reference = reference_value;
+					} else {
+						_set_tkpos(pos);
+
+						Error error = _parse_shader_mode(true, p_stencil_modes, defined_stencil_modes);
+						if (error != OK) {
+							return error;
+						}
+					}
+
+					tk = _get_token();
+
 					if (tk.type == TK_COMMA) {
 						//all good, do nothing
 					} else if (tk.type == TK_SEMICOLON) {
@@ -10035,6 +10018,112 @@ Error ShaderLanguage::_find_last_flow_op_in_block(BlockNode *p_block, FlowOperat
 	return FAILED;
 }
 
+Error ShaderLanguage::_parse_shader_mode(bool p_is_stencil, const Vector<ModeInfo> &p_modes, HashMap<String, String> &r_defined_modes) {
+	StringName mode;
+	_get_completable_identifier(nullptr, p_is_stencil ? COMPLETION_STENCIL_MODE : COMPLETION_RENDER_MODE, mode);
+
+	if (mode == StringName()) {
+		if (p_is_stencil) {
+			_set_error(RTR("Expected an identifier for stencil mode."));
+		} else {
+			_set_error(RTR("Expected an identifier for render mode."));
+		}
+		return ERR_PARSE_ERROR;
+	}
+
+	const String smode = String(mode);
+
+	Vector<StringName> &current_modes = p_is_stencil ? shader->stencil_modes : shader->render_modes;
+
+	if (current_modes.has(mode)) {
+		if (p_is_stencil) {
+			_set_error(vformat(RTR("Duplicated stencil mode: '%s'."), smode));
+		} else {
+			_set_error(vformat(RTR("Duplicated render mode: '%s'."), smode));
+		}
+		return ERR_PARSE_ERROR;
+	}
+
+	bool found = false;
+
+	if (is_shader_inc) {
+		for (int i = 0; i < RenderingServer::SHADER_MAX; i++) {
+			const Vector<ModeInfo> modes = p_is_stencil ? ShaderTypes::get_singleton()->get_stencil_modes(RenderingServer::ShaderMode(i)) : ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(i));
+
+			for (int j = 0; j < modes.size(); j++) {
+				const ModeInfo &info = modes[j];
+				const String name = String(info.name);
+
+				if (smode.begins_with(name)) {
+					if (!info.options.is_empty()) {
+						if (info.options.has(smode.substr(name.length() + 1))) {
+							found = true;
+
+							if (r_defined_modes.has(name)) {
+								if (p_is_stencil) {
+									_set_error(vformat(RTR("Redefinition of stencil mode: '%s'. The '%s' mode has already been set to '%s'."), smode, name, r_defined_modes[name]));
+								} else {
+									_set_error(vformat(RTR("Redefinition of render mode: '%s'. The '%s' mode has already been set to '%s'."), smode, name, r_defined_modes[name]));
+								}
+								return ERR_PARSE_ERROR;
+							}
+							r_defined_modes.insert(name, smode);
+							break;
+						}
+					} else {
+						found = true;
+						break;
+					}
+				}
+			}
+		}
+	} else {
+		for (int i = 0; i < p_modes.size(); i++) {
+			const ModeInfo &info = p_modes[i];
+			const String name = String(info.name);
+
+			if (smode.begins_with(name)) {
+				if (!info.options.is_empty()) {
+					if (info.options.has(smode.substr(name.length() + 1))) {
+						found = true;
+
+						if (r_defined_modes.has(name)) {
+							if (p_is_stencil) {
+								_set_error(vformat(RTR("Redefinition of stencil mode: '%s'. The '%s' mode has already been set to '%s'."), smode, name, r_defined_modes[name]));
+							} else {
+								_set_error(vformat(RTR("Redefinition of render mode: '%s'. The '%s' mode has already been set to '%s'."), smode, name, r_defined_modes[name]));
+							}
+							return ERR_PARSE_ERROR;
+						}
+						r_defined_modes.insert(name, smode);
+						break;
+					}
+				} else {
+					found = true;
+					break;
+				}
+			}
+		}
+	}
+
+	if (!found) {
+		if (p_is_stencil) {
+			_set_error(vformat(RTR("Invalid stencil mode: '%s'."), smode));
+		} else {
+			_set_error(vformat(RTR("Invalid render mode: '%s'."), smode));
+		}
+		return ERR_PARSE_ERROR;
+	}
+
+	if (p_is_stencil) {
+		shader->stencil_modes.push_back(mode);
+	} else {
+		shader->render_modes.push_back(mode);
+	}
+
+	return OK;
+}
+
 // skips over whitespace and /* */ and // comments
 static int _get_first_ident_pos(const String &p_code) {
 	int idx = 0;
@@ -10184,7 +10273,7 @@ Error ShaderLanguage::compile(const String &p_code, const ShaderCompileInfo &p_i
 	nodes = nullptr;
 
 	shader = alloc_node<ShaderNode>();
-	Error err = _parse_shader(p_info.functions, p_info.render_modes, p_info.shader_types);
+	Error err = _parse_shader(p_info.functions, p_info.render_modes, p_info.stencil_modes, p_info.shader_types);
 
 #ifdef DEBUG_ENABLED
 	if (check_warnings) {
@@ -10209,7 +10298,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 	global_shader_uniform_get_type_func = p_info.global_shader_uniform_type_func;
 
 	shader = alloc_node<ShaderNode>();
-	_parse_shader(p_info.functions, p_info.render_modes, p_info.shader_types);
+	_parse_shader(p_info.functions, p_info.render_modes, p_info.stencil_modes, p_info.shader_types);
 
 #ifdef DEBUG_ENABLED
 	// Adds context keywords.
@@ -10301,6 +10390,71 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 						const String name = String(info.name);
 
 						if (!shader->render_modes.has(name)) {
+							ScriptLanguage::CodeCompletionOption option(name, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+							r_options->push_back(option);
+						}
+					}
+				}
+			}
+
+			return OK;
+		} break;
+		case COMPLETION_STENCIL_MODE: {
+			if (is_shader_inc) {
+				for (int i = 0; i < RenderingServer::SHADER_MAX; i++) {
+					const Vector<ModeInfo> modes = ShaderTypes::get_singleton()->get_stencil_modes(RenderingServer::ShaderMode(i));
+
+					for (int j = 0; j < modes.size(); j++) {
+						const ModeInfo &info = modes[j];
+
+						if (!info.options.is_empty()) {
+							bool found = false;
+
+							for (int k = 0; k < info.options.size(); k++) {
+								if (shader->stencil_modes.has(String(info.name) + "_" + String(info.options[k]))) {
+									found = true;
+								}
+							}
+
+							if (!found) {
+								for (int k = 0; k < info.options.size(); k++) {
+									ScriptLanguage::CodeCompletionOption option(String(info.name) + "_" + String(info.options[k]), ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+									r_options->push_back(option);
+								}
+							}
+						} else {
+							const String name = String(info.name);
+
+							if (!shader->stencil_modes.has(name)) {
+								ScriptLanguage::CodeCompletionOption option(name, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+								r_options->push_back(option);
+							}
+						}
+					}
+				}
+			} else {
+				for (int i = 0; i < p_info.stencil_modes.size(); i++) {
+					const ModeInfo &info = p_info.stencil_modes[i];
+
+					if (!info.options.is_empty()) {
+						bool found = false;
+
+						for (int j = 0; j < info.options.size(); j++) {
+							if (shader->stencil_modes.has(String(info.name) + "_" + String(info.options[j]))) {
+								found = true;
+							}
+						}
+
+						if (!found) {
+							for (int j = 0; j < info.options.size(); j++) {
+								ScriptLanguage::CodeCompletionOption option(String(info.name) + "_" + String(info.options[j]), ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+								r_options->push_back(option);
+							}
+						}
+					} else {
+						const String name = String(info.name);
+
+						if (!shader->stencil_modes.has(name)) {
 							ScriptLanguage::CodeCompletionOption option(name, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
 							r_options->push_back(option);
 						}
