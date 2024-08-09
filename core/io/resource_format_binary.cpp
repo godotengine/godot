@@ -2353,6 +2353,8 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 
 	f->store_buffer((const uint8_t *)"RSRC", 4); //magic at end
 
+	f->close();
+
 	if (f->get_error() != OK && f->get_error() != ERR_FILE_EOF) {
 		return ERR_CANT_CREATE;
 	}
