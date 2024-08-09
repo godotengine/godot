@@ -134,10 +134,7 @@ struct NavigationPoly {
 	bool operator==(const NavigationPoly &other) const {
 		return poly == other.poly;
 	}
-
-	bool operator!=(const NavigationPoly &other) const {
-		return !operator==(other);
-	}
+	INEQUALITY_OPERATOR(const NavigationPoly &)
 };
 
 struct ClosestPointQueryResult {

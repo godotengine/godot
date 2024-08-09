@@ -96,8 +96,8 @@ public:
 
 	bool operator==(const String &p_name) const;
 	bool operator==(const char *p_name) const;
-	bool operator!=(const String &p_name) const;
-	bool operator!=(const char *p_name) const;
+	INEQUALITY_OPERATOR(const String &)
+	INEQUALITY_OPERATOR(const char *)
 
 	_FORCE_INLINE_ bool is_node_unique_name() const {
 		if (!_data) {
@@ -136,7 +136,7 @@ public:
 	_FORCE_INLINE_ const void *data_unique_pointer() const {
 		return (void *)_data;
 	}
-	bool operator!=(const StringName &p_name) const;
+	INEQUALITY_OPERATOR(const StringName &)
 
 	_FORCE_INLINE_ operator String() const {
 		if (_data) {
@@ -194,10 +194,12 @@ public:
 #endif
 };
 
+#ifndef CPP20_ENABLED
 bool operator==(const String &p_name, const StringName &p_string_name);
-bool operator!=(const String &p_name, const StringName &p_string_name);
 bool operator==(const char *p_name, const StringName &p_string_name);
-bool operator!=(const char *p_name, const StringName &p_string_name);
+INEQUALITY_OPERATOR_GLOBAL(const String &, const StringName &)
+INEQUALITY_OPERATOR_GLOBAL(const char *, const StringName &)
+#endif
 
 StringName _scs_create(const char *p_chr, bool p_static = false);
 
