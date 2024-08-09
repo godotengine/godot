@@ -459,6 +459,9 @@ public:
 	// Wait until all rendering associated to the swap chain is finished before deleting it.
 	virtual void swap_chain_free(SwapChainID p_swap_chain) = 0;
 
+	// Wait for the swap chain to be presented on the screen.
+	virtual void wait_for_present(SwapChainID p_swap_chain){};
+
 	/*********************/
 	/**** FRAMEBUFFER ****/
 	/*********************/

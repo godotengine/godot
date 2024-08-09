@@ -512,6 +512,8 @@ private:
 		TightLocalVector<TextureInfo> render_targets_info;
 		TightLocalVector<FramebufferID> framebuffers;
 		RDD::DataFormat data_format = DATA_FORMAT_MAX;
+		HANDLE frame_latency_waitable_obj = nullptr;
+		bool needs_wait = false;
 	};
 
 	void _swap_chain_release(SwapChain *p_swap_chain);
@@ -524,6 +526,7 @@ public:
 	virtual RenderPassID swap_chain_get_render_pass(SwapChainID p_swap_chain) override;
 	virtual DataFormat swap_chain_get_format(SwapChainID p_swap_chain) override;
 	virtual void swap_chain_free(SwapChainID p_swap_chain) override;
+	virtual void wait_for_present(SwapChainID p_swap_chain) override;
 
 	/*********************/
 	/**** FRAMEBUFFER ****/
