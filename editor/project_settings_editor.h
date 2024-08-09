@@ -80,6 +80,11 @@ class ProjectSettingsEditor : public AcceptDialog {
 	ImportDefaultsEditor *import_defaults_editor = nullptr;
 	EditorData *data = nullptr;
 
+	bool pending_override_notify = false;
+	void _save_settings();
+	void _on_category_changed(const String &p_new_category);
+	void _on_editor_override_deleted(const String &p_setting);
+
 	void _advanced_toggled(bool p_button_pressed);
 	void _update_advanced(bool p_is_advanced);
 	void _property_box_changed(const String &p_text);
