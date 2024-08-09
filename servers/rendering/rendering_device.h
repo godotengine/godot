@@ -159,6 +159,7 @@ private:
 	uint32_t staging_buffer_block_size = 0;
 	uint64_t staging_buffer_max_size = 0;
 	bool staging_buffer_used = false;
+	bool render_graph_reorder = true; // will be overwritten in 'RenderingDevice::initialize', see description for '#define RENDER_GRAPH_REORDER'
 
 	enum StagingRequiredAction {
 		STAGING_REQUIRED_ACTION_NONE,
@@ -830,6 +831,7 @@ private:
 public:
 	RenderingContextDriver *get_context_driver() const { return context; }
 
+	const RenderingContextDriver::Workarounds &get_device_workarounds() const { return device.workarounds; };
 	const RDD::Capabilities &get_device_capabilities() const { return driver->get_capabilities(); }
 
 	bool has_feature(const Features p_feature) const;
