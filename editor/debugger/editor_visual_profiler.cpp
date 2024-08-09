@@ -103,6 +103,8 @@ void EditorVisualProfiler::clear() {
 	variables->clear();
 	//activate->set_pressed(false);
 
+	graph_limit = 1000.0f / CLAMP(int(EDITOR_GET("debugger/profiler_target_fps")), 1, 1000);
+
 	updating_frame = true;
 	cursor_metric_edit->set_min(0);
 	cursor_metric_edit->set_max(0);
@@ -811,6 +813,8 @@ EditorVisualProfiler::EditorVisualProfiler() {
 
 	int metric_size = CLAMP(int(EDITOR_GET("debugger/profiler_frame_history_size")), 60, 10000);
 	frame_metrics.resize(metric_size);
+
+	graph_limit = 1000.0f / CLAMP(int(EDITOR_GET("debugger/profiler_target_fps")), 1, 1000);
 
 	frame_delay = memnew(Timer);
 	frame_delay->set_wait_time(0.1);
