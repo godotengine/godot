@@ -9664,6 +9664,11 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 					}
 				}
 
+				if (is_constant) {
+					_set_error(RTR("Const functions are not supported."));
+					return ERR_PARSE_ERROR;
+				}
+
 				ShaderNode::Function function;
 
 				function.callable = !p_functions.has(name);
