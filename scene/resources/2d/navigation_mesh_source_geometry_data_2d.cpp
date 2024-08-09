@@ -37,6 +37,7 @@ void NavigationMeshSourceGeometryData2D::clear() {
 	traversable_outlines.clear();
 	obstruction_outlines.clear();
 	_projected_obstructions.clear();
+	bounds_dirty = true;
 }
 
 bool NavigationMeshSourceGeometryData2D::has_data() {
@@ -47,16 +48,19 @@ bool NavigationMeshSourceGeometryData2D::has_data() {
 void NavigationMeshSourceGeometryData2D::clear_projected_obstructions() {
 	RWLockWrite write_lock(geometry_rwlock);
 	_projected_obstructions.clear();
+	bounds_dirty = true;
 }
 
 void NavigationMeshSourceGeometryData2D::_set_traversable_outlines(const Vector<Vector<Vector2>> &p_traversable_outlines) {
 	RWLockWrite write_lock(geometry_rwlock);
 	traversable_outlines = p_traversable_outlines;
+	bounds_dirty = true;
 }
 
 void NavigationMeshSourceGeometryData2D::_set_obstruction_outlines(const Vector<Vector<Vector2>> &p_obstruction_outlines) {
 	RWLockWrite write_lock(geometry_rwlock);
 	obstruction_outlines = p_obstruction_outlines;
+	bounds_dirty = true;
 }
 
 const Vector<Vector<Vector2>> &NavigationMeshSourceGeometryData2D::_get_traversable_outlines() const {
@@ -73,6 +77,7 @@ void NavigationMeshSourceGeometryData2D::_add_traversable_outline(const Vector<V
 	if (p_shape_outline.size() > 1) {
 		RWLockWrite write_lock(geometry_rwlock);
 		traversable_outlines.push_back(p_shape_outline);
+		bounds_dirty = true;
 	}
 }
 
@@ -80,6 +85,7 @@ void NavigationMeshSourceGeometryData2D::_add_obstruction_outline(const Vector<V
 	if (p_shape_outline.size() > 1) {
 		RWLockWrite write_lock(geometry_rwlock);
 		obstruction_outlines.push_back(p_shape_outline);
+		bounds_dirty = true;
 	}
 }
 
@@ -89,6 +95,7 @@ void NavigationMeshSourceGeometryData2D::set_traversable_outlines(const TypedArr
 	for (int i = 0; i < p_traversable_outlines.size(); i++) {
 		traversable_outlines.write[i] = p_traversable_outlines[i];
 	}
+	bounds_dirty = true;
 }
 
 TypedArray<Vector<Vector2>> NavigationMeshSourceGeometryData2D::get_traversable_outlines() const {
@@ -108,6 +115,7 @@ void NavigationMeshSourceGeometryData2D::set_obstruction_outlines(const TypedArr
 	for (int i = 0; i < p_obstruction_outlines.size(); i++) {
 		obstruction_outlines.write[i] = p_obstruction_outlines[i];
 	}
+	bounds_dirty = true;
 }
 
 TypedArray<Vector<Vector2>> NavigationMeshSourceGeometryData2D::get_obstruction_outlines() const {
@@ -128,6 +136,7 @@ void NavigationMeshSourceGeometryData2D::append_traversable_outlines(const Typed
 	for (int i = traversable_outlines_size; i < p_traversable_outlines.size(); i++) {
 		traversable_outlines.write[i] = p_traversable_outlines[i];
 	}
+	bounds_dirty = true;
 }
 
 void NavigationMeshSourceGeometryData2D::append_obstruction_outlines(const TypedArray<Vector<Vector2>> &p_obstruction_outlines) {
@@ -137,6 +146,7 @@ void NavigationMeshSourceGeometryData2D::append_obstruction_outlines(const Typed
 	for (int i = obstruction_outlines_size; i < p_obstruction_outlines.size(); i++) {
 		obstruction_outlines.write[i] = p_obstruction_outlines[i];
 	}
+	bounds_dirty = true;
 }
 
 void NavigationMeshSourceGeometryData2D::add_traversable_outline(const PackedVector2Array &p_shape_outline) {
@@ -148,6 +158,7 @@ void NavigationMeshSourceGeometryData2D::add_traversable_outline(const PackedVec
 			traversable_outline.write[i] = p_shape_outline[i];
 		}
 		traversable_outlines.push_back(traversable_outline);
+		bounds_dirty = true;
 	}
 }
 
@@ -160,6 +171,7 @@ void NavigationMeshSourceGeometryData2D::add_obstruction_outline(const PackedVec
 			obstruction_outline.write[i] = p_shape_outline[i];
 		}
 		obstruction_outlines.push_back(obstruction_outline);
+		bounds_dirty = true;
 	}
 }
 
@@ -176,6 +188,7 @@ void NavigationMeshSourceGeometryData2D::merge(const Ref<NavigationMeshSourceGeo
 	traversable_outlines.append_array(other_traversable_outlines);
 	obstruction_outlines.append_array(other_obstruction_outlines);
 	_projected_obstructions.append_array(other_projected_obstructions);
+	bounds_dirty = true;
 }
 
 void NavigationMeshSourceGeometryData2D::add_projected_obstruction(const Vector<Vector2> &p_vertices, bool p_carve) {
@@ -195,6 +208,7 @@ void NavigationMeshSourceGeometryData2D::add_projected_obstruction(const Vector<
 
 	RWLockWrite write_lock(geometry_rwlock);
 	_projected_obstructions.push_back(projected_obstruction);
+	bounds_dirty = true;
 }
 
 void NavigationMeshSourceGeometryData2D::set_projected_obstructions(const Array &p_array) {
@@ -217,6 +231,7 @@ void NavigationMeshSourceGeometryData2D::set_projected_obstructions(const Array 
 
 		RWLockWrite write_lock(geometry_rwlock);
 		_projected_obstructions.push_back(projected_obstruction);
+		bounds_dirty = true;
 	}
 }
 
@@ -266,6 +281,7 @@ void NavigationMeshSourceGeometryData2D::set_data(const Vector<Vector<Vector2>> 
 	traversable_outlines = p_traversable_outlines;
 	obstruction_outlines = p_obstruction_outlines;
 	_projected_obstructions = p_projected_obstructions;
+	bounds_dirty = true;
 }
 
 void NavigationMeshSourceGeometryData2D::get_data(Vector<Vector<Vector2>> &r_traversable_outlines, Vector<Vector<Vector2>> &r_obstruction_outlines, Vector<ProjectedObstruction> &r_projected_obstructions) {
@@ -273,6 +289,58 @@ void NavigationMeshSourceGeometryData2D::get_data(Vector<Vector<Vector2>> &r_tra
 	r_traversable_outlines = traversable_outlines;
 	r_obstruction_outlines = obstruction_outlines;
 	r_projected_obstructions = _projected_obstructions;
+}
+
+Rect2 NavigationMeshSourceGeometryData2D::get_bounds() {
+	geometry_rwlock.read_lock();
+
+	if (bounds_dirty) {
+		geometry_rwlock.read_unlock();
+		RWLockWrite write_lock(geometry_rwlock);
+
+		bounds_dirty = false;
+		bounds = Rect2();
+		bool first_vertex = true;
+
+		for (const Vector<Vector2> &traversable_outline : traversable_outlines) {
+			for (const Vector2 &traversable_point : traversable_outline) {
+				if (first_vertex) {
+					first_vertex = false;
+					bounds.position = traversable_point;
+				} else {
+					bounds.expand_to(traversable_point);
+				}
+			}
+		}
+
+		for (const Vector<Vector2> &obstruction_outline : obstruction_outlines) {
+			for (const Vector2 &obstruction_point : obstruction_outline) {
+				if (first_vertex) {
+					first_vertex = false;
+					bounds.position = obstruction_point;
+				} else {
+					bounds.expand_to(obstruction_point);
+				}
+			}
+		}
+
+		for (const ProjectedObstruction &projected_obstruction : _projected_obstructions) {
+			for (int i = 0; i < projected_obstruction.vertices.size() / 2; i++) {
+				const Vector2 vertex = Vector2(projected_obstruction.vertices[i * 2], projected_obstruction.vertices[i * 2 + 1]);
+				if (first_vertex) {
+					first_vertex = false;
+					bounds.position = vertex;
+				} else {
+					bounds.expand_to(vertex);
+				}
+			}
+		}
+	} else {
+		geometry_rwlock.read_unlock();
+	}
+
+	RWLockRead read_lock(geometry_rwlock);
+	return bounds;
 }
 
 void NavigationMeshSourceGeometryData2D::_bind_methods() {
@@ -297,6 +365,8 @@ void NavigationMeshSourceGeometryData2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_projected_obstructions"), &NavigationMeshSourceGeometryData2D::clear_projected_obstructions);
 	ClassDB::bind_method(D_METHOD("set_projected_obstructions", "projected_obstructions"), &NavigationMeshSourceGeometryData2D::set_projected_obstructions);
 	ClassDB::bind_method(D_METHOD("get_projected_obstructions"), &NavigationMeshSourceGeometryData2D::get_projected_obstructions);
+
+	ClassDB::bind_method(D_METHOD("get_bounds"), &NavigationMeshSourceGeometryData2D::get_bounds);
 
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "traversable_outlines", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_traversable_outlines", "get_traversable_outlines");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "obstruction_outlines", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_obstruction_outlines", "get_obstruction_outlines");

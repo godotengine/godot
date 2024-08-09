@@ -31,6 +31,7 @@
 #ifndef NAVIGATION_MESH_SOURCE_GEOMETRY_DATA_3D_H
 #define NAVIGATION_MESH_SOURCE_GEOMETRY_DATA_3D_H
 
+#include "core/math/aabb.h"
 #include "core/os/rw_lock.h"
 #include "scene/resources/mesh.h"
 
@@ -40,6 +41,9 @@ class NavigationMeshSourceGeometryData3D : public Resource {
 
 	Vector<float> vertices;
 	Vector<int> indices;
+
+	AABB bounds;
+	bool bounds_dirty = true;
 
 public:
 	struct ProjectedObstruction;
@@ -100,6 +104,8 @@ public:
 
 	void set_data(const Vector<float> &p_vertices, const Vector<int> &p_indices, Vector<ProjectedObstruction> &p_projected_obstructions);
 	void get_data(Vector<float> &r_vertices, Vector<int> &r_indices, Vector<ProjectedObstruction> &r_projected_obstructions);
+
+	AABB get_bounds();
 
 	NavigationMeshSourceGeometryData3D() {}
 	~NavigationMeshSourceGeometryData3D() { clear(); }
