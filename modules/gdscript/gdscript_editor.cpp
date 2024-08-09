@@ -2230,7 +2230,7 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 		c.current_line = last_assign_line;
 		GDScriptCompletionIdentifier assigned_type;
 		if (_guess_expression_type(c, last_assigned_expression, assigned_type)) {
-			if (id_type.is_set() && assigned_type.type.is_set() && !GDScriptAnalyzer::check_type_compatibility(id_type, assigned_type.type)) {
+			if (id_type.is_set() && (assigned_type.type.kind == GDScriptParser::DataType::VARIANT || (assigned_type.type.is_set() && !GDScriptAnalyzer::check_type_compatibility(id_type, assigned_type.type)))) {
 				// The assigned type is incompatible. The annotated type takes priority.
 				r_type.assigned_expression = last_assigned_expression;
 				r_type.type = id_type;
