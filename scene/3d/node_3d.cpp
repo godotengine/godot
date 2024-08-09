@@ -1042,7 +1042,7 @@ NodePath Node3D::get_visibility_parent() const {
 }
 
 void Node3D::_validate_property(PropertyInfo &p_property) const {
-	if (data.rotation_edit_mode != ROTATION_EDIT_MODE_BASIS && p_property.name == "basis") {
+	if (data.rotation_edit_mode != ROTATION_EDIT_MODE_BASIS && (p_property.name == "basis" || p_property.name == "global_basis")) {
 		p_property.usage = 0;
 	}
 	if (data.rotation_edit_mode == ROTATION_EDIT_MODE_BASIS && p_property.name == "scale") {
@@ -1051,7 +1051,7 @@ void Node3D::_validate_property(PropertyInfo &p_property) const {
 	if (data.rotation_edit_mode != ROTATION_EDIT_MODE_QUATERNION && p_property.name == "quaternion") {
 		p_property.usage = 0;
 	}
-	if (data.rotation_edit_mode != ROTATION_EDIT_MODE_EULER && p_property.name == "rotation") {
+	if (data.rotation_edit_mode != ROTATION_EDIT_MODE_EULER && (p_property.name == "rotation" || p_property.name == "global_rotation")) {
 		p_property.usage = 0;
 	}
 	if (data.rotation_edit_mode != ROTATION_EDIT_MODE_EULER && p_property.name == "rotation_order") {
@@ -1060,15 +1060,15 @@ void Node3D::_validate_property(PropertyInfo &p_property) const {
 }
 
 bool Node3D::_property_can_revert(const StringName &p_name) const {
-	if (p_name == "basis") {
+	if (p_name == "basis" || p_name == "global_basis") {
 		return true;
 	} else if (p_name == "scale") {
 		return true;
 	} else if (p_name == "quaternion") {
 		return true;
-	} else if (p_name == "rotation") {
+	} else if (p_name == "rotation" || p_name == "global_rotation") {
 		return true;
-	} else if (p_name == "position") {
+	} else if (p_name == "position" || p_name == "global_position") {
 		return true;
 	}
 	return false;
@@ -1079,6 +1079,13 @@ bool Node3D::_property_get_revert(const StringName &p_name, Variant &r_property)
 
 	if (p_name == "basis") {
 		Variant variant = PropertyUtils::get_property_default_value(this, "transform", &valid);
+		if (valid && variant.get_type() == Variant::Type::TRANSFORM3D) {
+			r_property = Transform3D(variant).get_basis();
+		} else {
+			r_property = Basis();
+		}
+	} else if (p_name == "global_basis") {
+		Variant variant = PropertyUtils::get_property_default_value(this, "global_transform", &valid);
 		if (valid && variant.get_type() == Variant::Type::TRANSFORM3D) {
 			r_property = Transform3D(variant).get_basis();
 		} else {
@@ -1105,8 +1112,22 @@ bool Node3D::_property_get_revert(const StringName &p_name, Variant &r_property)
 		} else {
 			r_property = Vector3();
 		}
+	} else if (p_name == "global_rotation") {
+		Variant variant = PropertyUtils::get_property_default_value(this, "global_transform", &valid);
+		if (valid && variant.get_type() == Variant::Type::TRANSFORM3D) {
+			r_property = Transform3D(variant).get_basis().get_euler_normalized(data.euler_rotation_order);
+		} else {
+			r_property = Vector3();
+		}
 	} else if (p_name == "position") {
 		Variant variant = PropertyUtils::get_property_default_value(this, "transform", &valid);
+		if (valid) {
+			r_property = Transform3D(variant).get_origin();
+		} else {
+			r_property = Vector3();
+		}
+	} else if (p_name == "global_position") {
+		Variant variant = PropertyUtils::get_property_default_value(this, "global_transform", &valid);
 		if (valid) {
 			r_property = Transform3D(variant).get_origin();
 		} else {
@@ -1213,7 +1234,8 @@ void Node3D::_bind_methods() {
 
 	ADD_GROUP("Transform", "");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "transform", PROPERTY_HINT_NONE, "suffix:m", PROPERTY_USAGE_NO_EDITOR), "set_transform", "get_transform");
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "global_transform", PROPERTY_HINT_NONE, "suffix:m", PROPERTY_USAGE_NONE), "set_global_transform", "get_global_transform");
+
+	// Global position/rotation/basis is shown in the editor for convenience, but isn't stored as it can always be recalculated on-the-fly.
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "position", PROPERTY_HINT_RANGE, "-99999,99999,0.001,or_greater,or_less,hide_slider,suffix:m", PROPERTY_USAGE_EDITOR), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_less,or_greater,radians_as_degrees", PROPERTY_USAGE_EDITOR), "set_rotation", "get_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation_degrees", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_rotation_degrees", "get_rotation_degrees");
@@ -1224,10 +1246,13 @@ void Node3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rotation_order", PROPERTY_HINT_ENUM, "XYZ,XZY,YXZ,YZX,ZXY,ZYX"), "set_rotation_order", "get_rotation_order");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "top_level"), "set_as_top_level", "is_set_as_top_level");
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "global_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_global_position", "get_global_position");
-	ADD_PROPERTY(PropertyInfo(Variant::BASIS, "global_basis", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_global_basis", "get_global_basis");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "global_rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_global_rotation", "get_global_rotation");
+	ADD_SUBGROUP("Global Transform", "global_");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "global_position", PROPERTY_HINT_RANGE, "-99999,99999,0.001,or_greater,or_less,hide_slider,suffix:m", PROPERTY_USAGE_EDITOR), "set_global_position", "get_global_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "global_rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_less,or_greater,radians_as_degrees", PROPERTY_USAGE_EDITOR), "set_global_rotation", "get_global_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "global_rotation_degrees", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_global_rotation_degrees", "get_global_rotation_degrees");
+	ADD_PROPERTY(PropertyInfo(Variant::BASIS, "global_basis", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_global_basis", "get_global_basis");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "global_transform", PROPERTY_HINT_NONE, "suffix:m", PROPERTY_USAGE_NONE), "set_global_transform", "get_global_transform");
+
 	ADD_GROUP("Visibility", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "visibility_parent", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "GeometryInstance3D"), "set_visibility_parent", "get_visibility_parent");

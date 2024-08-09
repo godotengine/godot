@@ -37,7 +37,7 @@
 			<return type="void" />
 			<param index="0" name="offset" type="Vector2" />
 			<description>
-				Adds the [param offset] vector to the node's global position.
+				Adds the [param offset] vector to the node's global position. See also [member global_position].
 			</description>
 		</method>
 		<method name="look_at">
@@ -94,23 +94,23 @@
 		</method>
 	</methods>
 	<members>
-		<member name="global_position" type="Vector2" setter="set_global_position" getter="get_global_position">
-			Global position.
+		<member name="global_position" type="Vector2" setter="set_global_position" getter="get_global_position" default="Vector2(0, 0)">
+			Global position, relative to the [World2D] (usually to the [CanvasLayer]).
 		</member>
-		<member name="global_rotation" type="float" setter="set_global_rotation" getter="get_global_rotation">
-			Global rotation in radians.
+		<member name="global_rotation" type="float" setter="set_global_rotation" getter="get_global_rotation" default="0.0">
+			Global rotation in radians, relative to the [World2D].
 		</member>
 		<member name="global_rotation_degrees" type="float" setter="set_global_rotation_degrees" getter="get_global_rotation_degrees">
 			Helper property to access [member global_rotation] in degrees instead of radians.
 		</member>
-		<member name="global_scale" type="Vector2" setter="set_global_scale" getter="get_global_scale">
-			Global scale.
+		<member name="global_scale" type="Vector2" setter="set_global_scale" getter="get_global_scale" default="Vector2(1, 1)">
+			Global scale, relative to the [World2D].
 		</member>
-		<member name="global_skew" type="float" setter="set_global_skew" getter="get_global_skew">
-			Global skew in radians.
+		<member name="global_skew" type="float" setter="set_global_skew" getter="get_global_skew" default="0.0">
+			Global skew in radians, relative to the [World2D].
 		</member>
 		<member name="global_transform" type="Transform2D" setter="set_global_transform" getter="get_global_transform">
-			Global [Transform2D].
+			Global [Transform2D], relative to the [World2D].
 		</member>
 		<member name="position" type="Vector2" setter="set_position" getter="get_position" default="Vector2(0, 0)">
 			Position, relative to the node's parent.
