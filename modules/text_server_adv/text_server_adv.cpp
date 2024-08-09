@@ -6786,8 +6786,8 @@ String TextServerAdvanced::_format_number(const String &p_string, const String &
 			if (num_systems[i].digits.is_empty()) {
 				return p_string;
 			}
-			res.replace("e", num_systems[i].exp);
-			res.replace("E", num_systems[i].exp);
+			res = res.replace("e", num_systems[i].exp);
+			res = res.replace("E", num_systems[i].exp);
 			char32_t *data = res.ptrw();
 			for (int j = 0; j < res.length(); j++) {
 				if (data[j] >= 0x30 && data[j] <= 0x39) {
@@ -6811,7 +6811,7 @@ String TextServerAdvanced::_parse_number(const String &p_string, const String &p
 			if (num_systems[i].digits.is_empty()) {
 				return p_string;
 			}
-			res.replace(num_systems[i].exp, "e");
+			res = res.replace(num_systems[i].exp, "e");
 			char32_t *data = res.ptrw();
 			for (int j = 0; j < res.length(); j++) {
 				if (data[j] == num_systems[i].digits[10]) {

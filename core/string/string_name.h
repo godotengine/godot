@@ -39,12 +39,12 @@
 
 class Main;
 
-struct StaticCString {
+struct [[nodiscard]] StaticCString {
 	const char *ptr;
 	static StaticCString create(const char *p_ptr);
 };
 
-class StringName {
+class [[nodiscard]] StringName {
 	enum {
 		STRING_TABLE_BITS = 16,
 		STRING_TABLE_LEN = 1 << STRING_TABLE_BITS,
