@@ -691,6 +691,77 @@ void EditorPropertyEnum::_option_selected(int p_which) {
 	emit_changed(get_edited_property(), val);
 }
 
+void EditorPropertyEnum::_find_enum_constant_descriptions(const Object *p_object, const StringName p_property_name, Vector<String> *descriptions) {
+	if (!p_object || !p_property_name) {
+		return;
+	}
+	// Get the class name.
+	StringName class_name = p_object->get_class_name();
+
+	String enumeration;
+
+	// Find associated Enum from Documentation.
+	DocTools *doc_data = EditorHelp::get_doc_data();
+	HashMap<String, DocData::ClassDoc>::Iterator F = doc_data->class_list.find(class_name);
+	while (F && enumeration.is_empty()) {
+		for (int i = 0; i < F->value.properties.size(); i++) {
+			if (F->value.properties[i].name == p_property_name) {
+				enumeration = F->value.properties[i].enumeration;
+				break;
+			}
+		}
+
+		F = doc_data->class_list.find(F->value.inherits);
+	}
+
+	if (!enumeration.is_empty()) {
+		// Enum found.
+		String enum_class = enumeration.get_slice(".", 0);
+		String enum_name = enumeration.get_slice(".", 1);
+
+		F = doc_data->class_list.find(enum_class);
+
+		// Get its constants.
+		for (int i = 0; i < F->value.constants.size(); i++) {
+			DocData::ConstantDoc constant = F->value.constants[i];
+			if (constant.enumeration == enum_name) {
+				// Extra touches to make the final tooltip nicer.
+				String description = constant.description.strip_edges();
+				description = description.replacen(". ", ".\n");
+
+				// Prettify other mentioned constants.
+				int const_idx = description.find("[constant ", 0);
+				if (const_idx != -1) {
+					int ending_parentesis_idx = description.find("]", const_idx);
+					String mentioned_constant_formatted = description.substr(const_idx, ending_parentesis_idx - const_idx + 1);
+					String mentioned_constant = mentioned_constant_formatted.trim_prefix("[constant ").trim_suffix("]");
+					// Find readable name of this mentioned constant from the hint_string.
+					PropertyInfo property_info;
+					ClassDB::get_property_info(class_name, p_property_name, &property_info);
+					String hint_string = property_info.hint_string;
+
+					bool is_part_of_same_enum = false;
+					for (int j = 0; j < F->value.constants.size(); j++) {
+						DocData::ConstantDoc mentioned_constant_doc = F->value.constants[j];
+						if (mentioned_constant == mentioned_constant_doc.name && mentioned_constant_doc.enumeration == enum_name) {
+							int64_t constant_value = mentioned_constant_doc.value.to_int();
+							description = description.replacen(mentioned_constant_formatted, "\"" + hint_string.get_slice(",", constant_value) + "\"");
+							is_part_of_same_enum = true;
+							break;
+						}
+					}
+					if (!is_part_of_same_enum) {
+						description.replacen(mentioned_constant_formatted, mentioned_constant);
+					}
+				}
+
+				description = description.word_wrap(80);
+				descriptions->append(description);
+			}
+		}
+	}
+}
+
 void EditorPropertyEnum::update_property() {
 	Variant current = get_edited_property_value();
 	if (current.get_type() == Variant::NIL) {
@@ -707,18 +778,26 @@ void EditorPropertyEnum::update_property() {
 	}
 }
 
-void EditorPropertyEnum::setup(const Vector<String> &p_options) {
+void EditorPropertyEnum::setup(const Vector<String> &p_options, const Object *p_object, const StringName p_path) {
 	options->clear();
+	
 	int64_t current_val = 0;
 	for (int i = 0; i < p_options.size(); i++) {
 		Vector<String> text_split = p_options[i].split(":");
-		if (text_split.size() != 1) {
+		if (text_split.size() > 1) {
 			current_val = text_split[1].to_int();
 		}
 		options->add_item(text_split[0]);
 		options->set_item_metadata(i, current_val);
 		current_val += 1;
 	}
+
+	Vector<String> constant_descriptions;
+	_find_enum_constant_descriptions(p_object, p_path, &constant_descriptions);
+	for (int i = 0; i < constant_descriptions.size(); i++) {
+		options->set_item_tooltip(i, constant_descriptions[i]);
+	}
+
 }
 
 void EditorPropertyEnum::set_option_button_clip(bool p_enable) {
@@ -3533,7 +3612,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 			if (p_hint == PROPERTY_HINT_ENUM) {
 				EditorPropertyEnum *editor = memnew(EditorPropertyEnum);
 				Vector<String> options = p_hint_text.split(",");
-				editor->setup(options);
+				editor->setup(options, p_object, p_path);
 				return editor;
 
 			} else if (p_hint == PROPERTY_HINT_FLAGS) {
