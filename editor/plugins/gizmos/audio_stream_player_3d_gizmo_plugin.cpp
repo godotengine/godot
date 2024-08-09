@@ -38,7 +38,7 @@
 #include "scene/3d/audio_stream_player_3d.h"
 
 AudioStreamPlayer3DGizmoPlugin::AudioStreamPlayer3DGizmoPlugin() {
-	Color gizmo_color = EDITOR_DEF_RST("editors/3d_gizmos/gizmo_colors/stream_player_3d", Color(0.4, 0.8, 1));
+	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/stream_player_3d");
 
 	create_icon_material("stream_player_3d_icon", EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Gizmo3DSamplePlayer"), EditorStringName(EditorIcons)));
 	create_material("stream_player_3d_material_primary", gizmo_color);

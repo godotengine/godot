@@ -280,8 +280,8 @@ void JointGizmosDrawer::draw_cone(const Transform3D &p_offset, const Basis &p_ba
 
 Joint3DGizmoPlugin::Joint3DGizmoPlugin() {
 	create_material("joint_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/joint"));
-	create_material("joint_body_a_material", EDITOR_DEF_RST("editors/3d_gizmos/gizmo_colors/joint_body_a", Color(0.6, 0.8, 1)));
-	create_material("joint_body_b_material", EDITOR_DEF_RST("editors/3d_gizmos/gizmo_colors/joint_body_b", Color(0.6, 0.9, 1)));
+	create_material("joint_body_a_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/joint_body_a"));
+	create_material("joint_body_b_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/joint_body_b"));
 
 	update_timer = memnew(Timer);
 	update_timer->set_name("JointGizmoUpdateTimer");

@@ -40,7 +40,7 @@
 
 DecalGizmoPlugin::DecalGizmoPlugin() {
 	helper.instantiate();
-	Color gizmo_color = EDITOR_DEF_RST("editors/3d_gizmos/gizmo_colors/decal", Color(0.6, 0.5, 1.0));
+	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/decal");
 
 	create_icon_material("decal_icon", EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("GizmoDecal"), EditorStringName(EditorIcons)));
 

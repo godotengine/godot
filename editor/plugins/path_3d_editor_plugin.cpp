@@ -820,7 +820,7 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	mirror_handle_angle = true;
 	mirror_handle_length = true;
 
-	disk_size = EDITOR_DEF_RST("editors/3d_gizmos/gizmo_settings/path3d_tilt_disk_size", 0.8);
+	disk_size = EDITOR_GET("editors/3d_gizmos/gizmo_settings/path3d_tilt_disk_size");
 
 	Ref<Path3DGizmoPlugin> gizmo_plugin = memnew(Path3DGizmoPlugin(disk_size));
 	Node3DEditor::get_singleton()->add_gizmo_plugin(gizmo_plugin);
@@ -1051,7 +1051,7 @@ int Path3DGizmoPlugin::get_priority() const {
 
 Path3DGizmoPlugin::Path3DGizmoPlugin(float p_disk_size) {
 	Color path_color = SceneTree::get_singleton()->get_debug_paths_color();
-	Color path_tilt_color = EDITOR_DEF_RST("editors/3d_gizmos/gizmo_colors/path_tilt", Color(1.0, 1.0, 0.4, 0.9));
+	Color path_tilt_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/path_tilt");
 	disk_size = p_disk_size;
 
 	create_material("path_material", path_color);

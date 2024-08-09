@@ -39,6 +39,7 @@ void register_windows_exporter_types() {
 }
 
 void register_windows_exporter() {
+	// TODO: Move to editor_settings.cpp
 #ifndef ANDROID_ENABLED
 	EDITOR_DEF("export/windows/rcedit", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/windows/rcedit", PROPERTY_HINT_GLOBAL_FILE, "*.exe"));

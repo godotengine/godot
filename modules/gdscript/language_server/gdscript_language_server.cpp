@@ -39,6 +39,7 @@
 int GDScriptLanguageServer::port_override = -1;
 
 GDScriptLanguageServer::GDScriptLanguageServer() {
+	// TODO: Move to editor_settings.cpp
 	_EDITOR_DEF("network/language_server/remote_host", host);
 	_EDITOR_DEF("network/language_server/remote_port", port);
 	_EDITOR_DEF("network/language_server/enable_smart_resolve", true);

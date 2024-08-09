@@ -40,6 +40,7 @@ void register_web_exporter_types() {
 }
 
 void register_web_exporter() {
+	// TODO: Move to editor_settings.cpp
 #ifndef ANDROID_ENABLED
 	EDITOR_DEF("export/web/http_host", "localhost");
 	EDITOR_DEF("export/web/http_port", 8060);
