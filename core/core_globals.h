@@ -39,6 +39,10 @@ public:
 	static bool leak_reporting_enabled;
 	static bool print_line_enabled;
 	static bool print_error_enabled;
+
+#ifdef SANITIZERS_ENABLED
+	static bool allocators_use_asan_malloc();
+#endif
 };
 
 #endif // CORE_GLOBALS_H

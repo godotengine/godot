@@ -40,6 +40,17 @@
 #include <type_traits>
 #include <typeinfo>
 
+#ifdef SANITIZERS_ENABLED
+#include <sanitizer/asan_interface.h>
+#ifdef __has_feature
+#if __has_feature(address_sanitizer)
+#define ASAN_ENABLED
+#endif
+#elif defined(__SANITIZE_ADDRESS__)
+#define ASAN_ENABLED
+#endif
+#endif
+
 template <typename T, bool thread_safe = false, uint32_t DEFAULT_PAGE_SIZE = 4096>
 class PagedAllocator {
 	T **page_pool = nullptr;
@@ -55,6 +66,11 @@ class PagedAllocator {
 public:
 	template <typename... Args>
 	T *alloc(Args &&...p_args) {
+#ifdef ASAN_ENABLED
+		if (CoreGlobals::allocators_use_asan_malloc()) {
+			return memnew(T(p_args...));
+		}
+#endif
 		if (thread_safe) {
 			spin_lock.lock();
 		}
@@ -72,10 +88,16 @@ public:
 				available_pool[0][i] = &page_pool[pages_used][i];
 			}
 			allocs_available += page_size;
+#ifdef ASAN_ENABLED
+			__asan_poison_memory_region(page_pool[pages_used], sizeof(T) * page_size);
+#endif
 		}
 
 		allocs_available--;
 		T *alloc = available_pool[allocs_available >> page_shift][allocs_available & page_mask];
+#ifdef ASAN_ENABLED
+		__asan_unpoison_memory_region(alloc, sizeof(T));
+#endif
 		if (thread_safe) {
 			spin_lock.unlock();
 		}
@@ -84,11 +106,19 @@ public:
 	}
 
 	void free(T *p_mem) {
+#ifdef ASAN_ENABLED
+		if (CoreGlobals::allocators_use_asan_malloc()) {
+			return memdelete(p_mem);
+		}
+#endif
 		if (thread_safe) {
 			spin_lock.lock();
 		}
 		p_mem->~T();
 		available_pool[allocs_available >> page_shift][allocs_available & page_mask] = p_mem;
+#ifdef ASAN_ENABLED
+		__asan_poison_memory_region(p_mem, sizeof(T));
+#endif
 		allocs_available++;
 		if (thread_safe) {
 			spin_lock.unlock();
