@@ -785,7 +785,7 @@ elif env.msvc:
     env.Append(CXXFLAGS=["/EHsc"])
 
 # Configure compiler warnings
-if env.msvc:  # MSVC
+if env.msvc and not methods.using_clang(env):  # MSVC
     if env["warnings"] == "no":
         env.Append(CCFLAGS=["/w"])
     else:
@@ -835,8 +835,11 @@ else:  # GCC, Clang
         # for putting them in `Set` or `Map`. We don't mind about unreliable ordering.
         common_warnings += ["-Wno-ordered-compare-function-pointers"]
 
+    # clang-cl will interpret `-Wall` as `-Weverything`, workaround with compatibility cast
+    W_ALL = "-Wall" if not env.msvc else "/W3"
+
     if env["warnings"] == "extra":
-        env.Append(CCFLAGS=["-Wall", "-Wextra", "-Wwrite-strings", "-Wno-unused-parameter"] + common_warnings)
+        env.Append(CCFLAGS=[W_ALL, "-Wextra", "-Wwrite-strings", "-Wno-unused-parameter"] + common_warnings)
         env.Append(CXXFLAGS=["-Wctor-dtor-privacy", "-Wnon-virtual-dtor"])
         if methods.using_gcc(env):
             env.Append(
@@ -858,9 +861,9 @@ else:  # GCC, Clang
         elif methods.using_clang(env) or methods.using_emcc(env):
             env.Append(CCFLAGS=["-Wimplicit-fallthrough"])
     elif env["warnings"] == "all":
-        env.Append(CCFLAGS=["-Wall"] + common_warnings)
+        env.Append(CCFLAGS=[W_ALL] + common_warnings)
     elif env["warnings"] == "moderate":
-        env.Append(CCFLAGS=["-Wall", "-Wno-unused"] + common_warnings)
+        env.Append(CCFLAGS=[W_ALL, "-Wno-unused"] + common_warnings)
     else:  # 'no'
         env.Append(CCFLAGS=["-w"])
 

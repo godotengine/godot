@@ -142,6 +142,20 @@ if env["builtin_libwebp"]:
 
     env_thirdparty = env_webp.Clone()
     env_thirdparty.disable_warnings()
+
+    # libwebp assumes that any MSVC compatible compiler has SSE4.1 intrinsics always enabled.
+    # This causes problems while building with Clang, we need to add a compiler flag for few source files.
+    if env["arch"] in ("x86_64", "x86_32") and env.msvc and env["use_llvm"]:
+        sse41_sources = []
+        for file in thirdparty_sources[:]:
+            if file.endswith("_sse41.c"):
+                sse41_sources.append(file)
+                thirdparty_sources.remove(file)
+
+        env_sse41 = env_thirdparty.Clone()
+        env_sse41.Append(CCFLAGS=["-msse4.1"])
+        env_sse41.add_source_files(thirdparty_obj, sse41_sources)
+
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
     env.modules_sources += thirdparty_obj
 

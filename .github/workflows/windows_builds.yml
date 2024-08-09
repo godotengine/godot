@@ -30,6 +30,14 @@ jobs:
             # Skip debug symbols, they're way too big with MSVC.
             sconsflags: debug_symbols=no vsproj=yes vsproj_gen_only=no windows_subsystem=console
             bin: "./bin/godot.windows.editor.x86_64.exe"
+            artifact: true
+
+          - name: Editor w/ clang-cl (target=editor, tests=yes, use_llvm=yes)
+            cache-name: windows-editor-clang
+            target: editor
+            tests: true
+            sconsflags: debug_symbols=no windows_subsystem=console use_llvm=yes
+            bin: ./bin/godot.windows.editor.x86_64.llvm.exe
 
           - name: Template (target=template_release)
             cache-name: windows-template
@@ -37,6 +45,7 @@ jobs:
             tests: true
             sconsflags: debug_symbols=no tests=yes
             bin: "./bin/godot.windows.template_release.x86_64.console.exe"
+            artifact: true
 
     steps:
       - uses: actions/checkout@v4
@@ -84,10 +93,12 @@ jobs:
         continue-on-error: true
 
       - name: Prepare artifact
+        if: ${{ matrix.artifact }}
         run: |
           Remove-Item bin/* -Include *.exp,*.lib,*.pdb -Force
 
       - name: Upload artifact
+        if: ${{ matrix.artifact }}
         uses: ./.github/actions/upload-artifact
         with:
           name: ${{ matrix.cache-name }}

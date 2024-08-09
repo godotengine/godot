@@ -36,7 +36,7 @@
 class PackedDataContainer : public Resource {
 	GDCLASS(PackedDataContainer, Resource);
 
-	enum {
+	enum : uint32_t {
 		TYPE_DICT = 0xFFFFFFFF,
 		TYPE_ARRAY = 0xFFFFFFFE,
 	};
