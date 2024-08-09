@@ -2165,7 +2165,7 @@ void AnimationPlayerEditorPlugin::_property_keyed(const String &p_keyed, const V
 		return;
 	}
 	te->_clear_selection();
-	te->insert_value_key(p_keyed, p_value, p_advance);
+	te->insert_value_key(p_keyed, p_advance);
 }
 
 void AnimationPlayerEditorPlugin::_transform_key_request(Object *sp, const String &p_sub, const Transform3D &p_key) {
