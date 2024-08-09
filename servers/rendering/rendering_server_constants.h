@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  main_loop.h                                                           */
+/*  rendering_server_constants.h                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,48 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MAIN_LOOP_H
-#define MAIN_LOOP_H
+#ifndef RENDERING_SERVER_CONSTANTS_H
+#define RENDERING_SERVER_CONSTANTS_H
 
-#include "core/input/input_event.h"
-#include "core/object/gdvirtual.gen.inc"
-#include "core/object/ref_counted.h"
+// Use for constants etc. that need not be included as often as rendering_server.h
+// to reduce dependencies and prevent slow compilation.
 
-class MainLoop : public Object {
-	GDCLASS(MainLoop, Object);
+// This is a "cheap" include, and can be used from scene side code as well as servers.
 
-protected:
-	static void _bind_methods();
+// N.B. ONLY allow these defined in DEV_ENABLED builds, they will slow
+// performance, and are only necessary to use for debugging.
+#ifdef DEV_ENABLED
 
-	GDVIRTUAL0(_initialize)
-	GDVIRTUAL1R(bool, _physics_process, double)
-	GDVIRTUAL1R(bool, _process, double)
-	GDVIRTUAL0(_finalize)
+// Uncomment this define to produce debugging output for physics interpolation.
+//#define RENDERING_SERVER_DEBUG_PHYSICS_INTERPOLATION
 
-public:
-	enum {
-		//make sure these are replicated in Node
-		NOTIFICATION_OS_MEMORY_WARNING = 2009,
-		NOTIFICATION_TRANSLATION_CHANGED = 2010,
-		NOTIFICATION_WM_ABOUT = 2011,
-		NOTIFICATION_CRASH = 2012,
-		NOTIFICATION_OS_IME_UPDATE = 2013,
-		NOTIFICATION_APPLICATION_RESUMED = 2014,
-		NOTIFICATION_APPLICATION_PAUSED = 2015,
-		NOTIFICATION_APPLICATION_FOCUS_IN = 2016,
-		NOTIFICATION_APPLICATION_FOCUS_OUT = 2017,
-		NOTIFICATION_TEXT_SERVER_CHANGED = 2018,
-	};
+#endif // DEV_ENABLED
 
-	virtual void initialize();
-	virtual void iteration_prepare() {}
-	virtual bool physics_process(double p_time);
-	virtual void iteration_end() {}
-	virtual bool process(double p_time);
-	virtual void finalize();
-
-	MainLoop() {}
-	virtual ~MainLoop() {}
-};
-
-#endif // MAIN_LOOP_H
+#endif // RENDERING_SERVER_CONSTANTS_H
