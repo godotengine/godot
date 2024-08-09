@@ -1,7 +1,3 @@
-class Foo: pass
-class Bar extends Foo: pass
-class Baz extends Foo: pass
-
 func test():
-	var typed: Array[Bar] = [Baz.new() as Foo]
+	var typed: Array[GlobalClass1] = [GlobalClass2.new() as GlobalBase]
 	print('not ok')
