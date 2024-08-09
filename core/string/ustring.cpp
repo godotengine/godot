@@ -1146,7 +1146,7 @@ String String::to_camel_case() const {
 }
 
 String String::to_pascal_case() const {
-	return capitalize().replace(" ", "");
+	return capitalize().remove_char(' ');
 }
 
 String String::to_snake_case() const {
@@ -3174,6 +3174,71 @@ String String::erase(int p_pos, int p_chars) const {
 	ERR_FAIL_COND_V_MSG(p_pos < 0, "", vformat("Invalid starting position for `String.erase()`: %d. Starting position must be positive or zero.", p_pos));
 	ERR_FAIL_COND_V_MSG(p_chars < 0, "", vformat("Invalid character count for `String.erase()`: %d. Character count must be positive or zero.", p_chars));
 	return left(p_pos) + substr(p_pos + p_chars);
+}
+
+String String::remove_char(char32_t p_char) const {
+	if (p_char == 0 || is_empty()) {
+		return *this;
+	}
+
+	String new_string;
+
+	new_string.resize(size());
+
+	char32_t *new_ptrw = new_string.ptrw();
+	const char32_t *old_ptr = ptr();
+
+	int new_size = 0;
+
+	while (*old_ptr) {
+		if (*old_ptr != p_char) {
+			new_ptrw[new_size] = *old_ptr;
+			++new_size;
+		}
+		old_ptr++;
+	}
+
+	new_ptrw[new_size] = 0;
+
+	new_string.resize(new_size + 1);
+
+	return new_string;
+}
+
+String String::remove_chars(const Vector<char32_t> &p_chars) const {
+	if (p_chars.is_empty() || is_empty()) {
+		return *this;
+	}
+
+	String new_string;
+
+	new_string.resize(size());
+
+	char32_t *new_ptrw = new_string.ptrw();
+	const char32_t *old_ptr = ptr();
+
+	int new_size = 0;
+
+	while (*old_ptr) {
+		bool found = false;
+		for (const char32_t &chr : p_chars) {
+			if (*old_ptr == chr) {
+				found = true;
+				break;
+			}
+		}
+		if (!found) {
+			new_ptrw[new_size] = *old_ptr;
+			++new_size;
+		}
+		old_ptr++;
+	}
+
+	new_ptrw[new_size] = 0;
+
+	new_string.resize(new_size + 1);
+
+	return new_string;
 }
 
 String String::substr(int p_from, int p_chars) const {

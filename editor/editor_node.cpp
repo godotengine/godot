@@ -3215,7 +3215,7 @@ void EditorNode::_request_screenshot() {
 }
 
 void EditorNode::_screenshot(bool p_use_utc) {
-	String name = "editor_screenshot_" + Time::get_singleton()->get_datetime_string_from_system(p_use_utc).replace(":", "") + ".png";
+	String name = "editor_screenshot_" + Time::get_singleton()->get_datetime_string_from_system(p_use_utc).remove_char(':') + ".png";
 	NodePath path = String("user://") + name;
 	_save_screenshot(path);
 	if (EDITOR_GET("interface/editor/automatically_open_screenshots")) {
@@ -4951,7 +4951,7 @@ String EditorNode::_get_system_info() const {
 	}
 
 #ifdef LINUXBSD_ENABLED
-	const String display_server = OS::get_singleton()->get_environment("XDG_SESSION_TYPE").capitalize().replace(" ", ""); // `replace` is necessary, because `capitalize` introduces a whitespace between "x" and "11".
+	const String display_server = OS::get_singleton()->get_environment("XDG_SESSION_TYPE").capitalize().remove_char(' '); // `remove_char` is necessary, because `capitalize` introduces a whitespace between "x" and "11".
 #endif // LINUXBSD_ENABLED
 	String driver_name = GLOBAL_GET("rendering/rendering_device/driver");
 	String rendering_method = GLOBAL_GET("rendering/renderer/rendering_method");
