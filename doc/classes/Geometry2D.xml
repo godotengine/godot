@@ -126,8 +126,34 @@
 			<param index="2" name="from_b" type="Vector2" />
 			<param index="3" name="dir_b" type="Vector2" />
 			<description>
-				Checks if the two lines ([param from_a], [param dir_a]) and ([param from_b], [param dir_b]) intersect. If yes, return the point of intersection as [Vector2]. If no intersection takes place, returns [code]null[/code].
-				[b]Note:[/b] The lines are specified using direction vectors, not end points.
+				Returns the point of intersection between the two lines ([param from_a], [param dir_a]) and ([param from_b], [param dir_b]). Returns a [Vector2], or [code]null[/code] if the lines are parallel.
+				[code]from[/code] and [code]dir[/code] are [i]not[/i] endpoints of a line segment or ray but the slope ([code]dir[/code]) and a known point ([code]from[/code]) on that line.
+				[codeblocks]
+				[gdscript]
+				var from_a = Vector2.ZERO
+				var dir_a = Vector2.RIGHT
+				var from_b = Vector2.DOWN
+
+				# Returns Vector2(1, 0)
+				Geometry2D.line_intersects_line(from_a, dir_a, from_b, Vector2(1, -1))
+				# Returns Vector2(-1, 0)
+				Geometry2D.line_intersects_line(from_a, dir_a, from_b, Vector2(-1, -1))
+				# Returns null
+				Geometry2D.line_intersects_line(from_a, dir_a, from_b, Vector2.RIGHT)
+				[/gdscript]
+				[csharp]
+				var fromA = Vector2.Zero;
+				var dirA = Vector2.Right;
+				var fromB = Vector2.Down;
+
+				// Returns new Vector2(1, 0)
+				Geometry2D.LineIntersectsLine(fromA, dirA, fromB, new Vector2(1, -1));
+				// Returns new Vector2(-1, 0)
+				Geometry2D.LineIntersectsLine(fromA, dirA, fromB, new Vector2(-1, -1));
+				// Returns null
+				Geometry2D.LineIntersectsLine(fromA, dirA, fromB, Vector2.Right);
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="make_atlas">
