@@ -1467,6 +1467,7 @@ void Viewport::_gui_show_tooltip() {
 	// Controls can implement `make_custom_tooltip` to provide their own tooltip.
 	// This should be a Control node which will be added as child to a TooltipPanel.
 	Control *base_tooltip = tooltip_owner->make_custom_tooltip(gui.tooltip_text);
+	bool prev_base = !base_tooltip;
 
 	// If no custom tooltip is given, use a default implementation.
 	if (!base_tooltip) {
@@ -1539,7 +1540,7 @@ void Viewport::_gui_show_tooltip() {
 	gui.tooltip_popup->set_size(r.size);
 
 	DisplayServer::WindowID active_popup = DisplayServer::get_singleton()->window_get_active_popup();
-	if (active_popup == DisplayServer::INVALID_WINDOW_ID || active_popup == window->get_window_id()) {
+	if (prev_base && (active_popup == DisplayServer::INVALID_WINDOW_ID || active_popup == window->get_window_id())) {
 		gui.tooltip_popup->show();
 	}
 	gui.tooltip_popup->child_controls_changed();
