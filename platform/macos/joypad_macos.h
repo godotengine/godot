@@ -31,59 +31,41 @@
 #include "core/input/input.h"
 
 #define Key _QKey
-#import <CoreHaptics/CoreHaptics.h>
 #import <GameController/GameController.h>
 #undef Key
 
-@interface JoypadMacOSObserver : NSObject
+@class GCController;
+class RumbleContext;
 
-- (void)startObserving;
-- (void)startProcessing;
-- (void)finishObserving;
+struct GameController {
+	int joy_id;
+	GCController *controller;
+	RumbleContext *rumble_context API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) = nil;
+	NSInteger ff_effect_timestamp = 0;
+	bool force_feedback = false;
 
-@end
-
-API_AVAILABLE(macosx(11))
-@interface RumbleMotor : NSObject
-@property(strong, nonatomic) CHHapticEngine *engine;
-@property(strong, nonatomic) id<CHHapticPatternPlayer> player;
-@end
-
-API_AVAILABLE(macosx(11))
-@interface RumbleContext : NSObject
-// High frequency motor, it's usually the right engine.
-@property(strong, nonatomic) RumbleMotor *weak_motor;
-// Low frequency motor, it's usually the left engine.
-@property(strong, nonatomic) RumbleMotor *strong_motor;
-@end
-
-// Controller support for macOS begins with macOS 10.9+,
-// however haptics (vibrations) are only supported in macOS 11+.
-@interface Joypad : NSObject
-
-@property(assign, nonatomic) BOOL force_feedback;
-@property(assign, nonatomic) NSInteger ff_effect_timestamp;
-@property(strong, nonatomic) GCController *controller;
-@property(strong, nonatomic) RumbleContext *rumble_context API_AVAILABLE(macosx(11));
-
-- (instancetype)init;
-- (instancetype)init:(GCController *)controller;
-
-@end
+	GameController(int p_joy_id, GCController *p_controller);
+	~GameController();
+};
 
 class JoypadMacOS {
 private:
-	JoypadMacOSObserver *observer;
+	id<NSObject> connect_observer = nil;
+	id<NSObject> disconnect_observer = nil;
+	HashMap<int, GameController *> joypads;
+	HashMap<GCController *, int> controller_to_joy_id;
+
+	GCControllerPlayerIndex get_free_player_index();
+
+	void add_joypad(GCController *controller);
+	void remove_joypad(GCController *controller);
 
 public:
 	JoypadMacOS();
 	~JoypadMacOS();
 
-	API_AVAILABLE(macosx(11))
-	void joypad_vibration_start(Joypad *p_joypad, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp);
-	API_AVAILABLE(macosx(11))
-	void joypad_vibration_stop(Joypad *p_joypad, uint64_t p_timestamp);
+	void joypad_vibration_start(GameController &p_joypad, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp) API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0));
+	void joypad_vibration_stop(GameController &p_joypad, uint64_t p_timestamp) API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0));
 
-	void start_processing();
 	void process_joypads();
 };
