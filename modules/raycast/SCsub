@@ -59,24 +59,29 @@ if env["builtin_embree"]:
         "kernels/bvh/bvh_intersector_hybrid4_bvh4.cpp",
     ]
 
+    embree_avx_src = [
+        "kernels/geometry/primitive8.cpp",
+        "kernels/bvh/bvh_intersector1_bvh8.cpp",
+        "kernels/bvh/bvh_intersector_hybrid4_bvh8.cpp",
+        "kernels/bvh/bvh_intersector_hybrid8_bvh4.cpp",
+        "kernels/bvh/bvh_intersector_hybrid8_bvh8.cpp",
+    ]
+
+    embree_avx512_src = [
+        "kernels/bvh/bvh_intersector_hybrid16_bvh4.cpp",
+        "kernels/bvh/bvh_intersector_hybrid16_bvh8.cpp",
+    ]
+
+    if env["builtin_embree_isa"] not in ["sse2", "sse42"]:
+        embree_src += embree_avx_src
+
+    if env["builtin_embree_isa"] == "avx512":
+        embree_src += embree_avx512_src
+
     thirdparty_sources = [thirdparty_dir + file for file in embree_src]
 
     env_raycast.Prepend(CPPPATH=[thirdparty_dir, thirdparty_dir + "include"])
-    env_raycast.Append(CPPDEFINES=["EMBREE_TARGET_SSE2", "EMBREE_LOWEST_ISA", "TASKING_INTERNAL"])
     env_raycast.AppendUnique(CPPDEFINES=["NDEBUG"])  # No assert() even in debug builds.
-
-    if not env.msvc:
-        if env["arch"] in ["x86_64", "x86_32"]:
-            env_raycast.Append(CCFLAGS=["-msse2", "-mxsave"])
-
-        if env["platform"] == "windows":
-            env_raycast.Append(CCFLAGS=["-mstackrealign"])
-
-    if env["platform"] == "windows":
-        if env.msvc:
-            env.Append(LINKFLAGS=["psapi.lib"])
-        else:
-            env.Append(LIBS=["psapi"])
 
     if env.msvc:  # Disable bogus warning about intentional struct padding.
         env_raycast.Append(CCFLAGS=["/wd4324"])
@@ -85,10 +90,89 @@ if env["builtin_embree"]:
     env_thirdparty.force_optimization_on_debug()
     env_thirdparty.disable_warnings()
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+    env_thirdparty.Append(CPPDEFINES=["EMBREE_LOWEST_ISA", "TASKING_INTERNAL"])
 
-    if env["arch"] != "x86_64" or env.msvc:
-        # Embree needs those, it will automatically use SSE2NEON in ARM
-        env_thirdparty.Append(CPPDEFINES=["__SSE2__", "__SSE__"])
+    # These defines are used for MSVC (to signal SSE support) and for ARM (to enable use of NEON in Embree code)
+    sse2_defines = ["__SSE__", "__SSE2__"]
+    sse42_defines = ["__SSE4_1__", "__SSE4_2__"]
+    if env.msvc:
+        sse42_defines = sse2_defines + ["__SSE3__", "__SSSE3__"] + sse42_defines
+    avx_defines = ["__AVX__", "__BMI__", "__BMI2__", "__LZCNT__"] + sse42_defines
+    avx2_defines = ["__AVX2__"] + avx_defines
+
+    if env.msvc:
+        sse2_flags = ["/arch:SSE2"]
+        sse42_flags = ["/arch:SSE2"]  # There's no flag to enable SSE4.2, and Embree can still use SSE4.2 instructions without it.
+        avx_flags = ["/arch:AVX"]
+        avx2_flags = ["/arch:AVX2"]
+        avx512_flags = ["/arch:AVX512"]
+    else:
+        sse2_flags = ["-msse", "-msse2"]
+        sse42_flags = ["-msse4.2"]
+        avx_flags = ["-mavx"]
+        avx2_flags = ["-mf16c", "-mavx2", "-mfma", "-mlzcnt", "-mbmi", "-mbmi2"]
+        avx512_flags = ["-mavx512f", "-mavx512dq", "-mavx512cd", "-mavx512bw", "-mavx512vl", *avx2_flags, "-mprefer-vector-width=256"]
+
+        # Prevent -march from affecting the used instruction set
+        no_avx512_flags = ["-mno-avx512f", "-mno-avx512dq", "-mno-avx512cd", "-mno-avx512bw", "-mno-avx512vl"]
+        no_avx2_flags = ["-mno-f16c", "-mno-avx2", "-mno-fma", "-mno-lzcnt", "-mno-bmi", "-mno-bmi2"]
+        no_avx_flags = ["-mno-avx"]
+        no_sse42_flags = ["-mno-sse4.2"]
+
+        sse2_flags += no_sse42_flags + no_avx_flags + no_avx2_flags + no_avx512_flags
+        sse42_flags += no_avx_flags + no_avx2_flags + no_avx512_flags
+        avx_flags += no_avx2_flags + no_avx512_flags
+        avx2_flags += no_avx512_flags
+
+    arm = env["arch"] in ["arm32", "arm64"]
+
+    if env["builtin_embree_isa"] == "sse2":
+        env_thirdparty.Append(CPPDEFINES=["EMBREE_TARGET_SSE2"])
+
+        if not arm:
+            env_thirdparty.Append(CCFLAGS=sse2_flags)
+
+        if env.msvc or arm:
+            env_thirdparty.Append(CPPDEFINES=sse2_defines)
+
+        if env["platform"] == "windows" and not env.msvc and env["arch"] == "x86_32":
+            env_thirdparty.Append(CCFLAGS=["-mstackrealign"])
+    elif env["builtin_embree_isa"] == "sse42":
+        env_thirdparty.Append(CPPDEFINES=["EMBREE_TARGET_SSE42"])
+
+        if not arm:
+            env_thirdparty.Append(CCFLAGS=sse42_flags)
+
+        if env.msvc or arm:
+            env_thirdparty.Append(CPPDEFINES=sse42_defines)
+
+        if env["platform"] == "windows" and not env.msvc and env["arch"] == "x86_32":
+            env_thirdparty.Append(CCFLAGS=["-mstackrealign"])
+    elif env["builtin_embree_isa"] == "avx":
+        env_thirdparty.Append(CPPDEFINES=["EMBREE_TARGET_AVX"])
+
+        if not arm:
+            env_thirdparty.Append(CCFLAGS=avx_flags)
+        else:
+            env_thirdparty.Append(CPPDEFINES=avx_defines)
+    elif env["builtin_embree_isa"] == "avx2":
+        env_thirdparty.Append(CPPDEFINES=["EMBREE_TARGET_AVX2"])
+
+        if not arm:
+            env_thirdparty.Append(CCFLAGS=avx2_flags)
+        else:
+            env_thirdparty.Append(CPPDEFINES=avx2_defines)
+    elif env["builtin_embree_isa"] == "avx512":
+        env_thirdparty.Append(CPPDEFINES=["EMBREE_TARGET_AVX512"])
+
+        if not arm:
+            env_thirdparty.Append(CCFLAGS=avx512_flags)
+
+    if env["platform"] == "windows":
+        if env.msvc:
+            env.Append(LINKFLAGS=["psapi.lib"])
+        else:
+            env.Append(LIBS=["psapi"])
 
     if env["platform"] == "web":
         env_thirdparty.Append(CXXFLAGS=["-msimd128"])
