@@ -326,6 +326,28 @@ float GPUParticles2D::get_interp_to_end() const {
 	return interp_to_end_factor;
 }
 
+void GPUParticles2D::set_seed_mode(ParticlesSeedMode p_seed_mode) {
+	seed_mode = p_seed_mode;
+	notify_property_list_changed();
+}
+
+GPUParticles2D::ParticlesSeedMode GPUParticles2D::get_seed_mode() const {
+	return seed_mode;
+}
+
+void GPUParticles2D::set_seed(uint32_t p_seed) {
+	seed = p_seed;
+	RS::get_singleton()->particles_set_seed(particles, p_seed);
+}
+
+uint32_t GPUParticles2D::get_seed() const {
+	return seed;
+}
+
+void GPUParticles2D::request_particles_process(real_t p_requested_process_time) {
+	RS::get_singleton()->particles_request_process_time(particles, p_requested_process_time);
+}
+
 PackedStringArray GPUParticles2D::get_configuration_warnings() const {
 	PackedStringArray warnings = Node2D::get_configuration_warnings();
 
@@ -384,6 +406,10 @@ Ref<Texture2D> GPUParticles2D::get_texture() const {
 }
 
 void GPUParticles2D::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "seed" && seed_mode == PARTICLES_SEED_MODE_RANDOM) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		return;
+	}
 }
 
 void GPUParticles2D::emit_particle(const Transform2D &p_transform2d, const Vector2 &p_velocity2d, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {
@@ -760,6 +786,8 @@ void GPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_base_size", "size"), &GPUParticles2D::set_collision_base_size);
 	ClassDB::bind_method(D_METHOD("set_interp_to_end", "interp"), &GPUParticles2D::set_interp_to_end);
 
+	ClassDB::bind_method(D_METHOD("request_particles_process", "process_time"), &GPUParticles2D::request_particles_process);
+
 	ClassDB::bind_method(D_METHOD("is_emitting"), &GPUParticles2D::is_emitting);
 	ClassDB::bind_method(D_METHOD("get_amount"), &GPUParticles2D::get_amount);
 	ClassDB::bind_method(D_METHOD("get_lifetime"), &GPUParticles2D::get_lifetime);
@@ -809,6 +837,12 @@ void GPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_amount_ratio", "ratio"), &GPUParticles2D::set_amount_ratio);
 	ClassDB::bind_method(D_METHOD("get_amount_ratio"), &GPUParticles2D::get_amount_ratio);
 
+	ClassDB::bind_method(D_METHOD("set_seed_mode", "mode"), &GPUParticles2D::set_seed_mode);
+	ClassDB::bind_method(D_METHOD("get_seed_mode"), &GPUParticles2D::get_seed_mode);
+
+	ClassDB::bind_method(D_METHOD("set_seed", "seed"), &GPUParticles2D::set_seed);
+	ClassDB::bind_method(D_METHOD("get_seed"), &GPUParticles2D::get_seed);
+
 	ADD_SIGNAL(MethodInfo("finished"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
@@ -818,6 +852,8 @@ void GPUParticles2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "sub_emitter", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "GPUParticles2D"), "set_sub_emitter", "get_sub_emitter");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "process_material", PROPERTY_HINT_RESOURCE_TYPE, "ParticleProcessMaterial,ShaderMaterial"), "set_process_material", "get_process_material");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "seed_mode", PROPERTY_HINT_ENUM, "Random,Custom"), "set_seed_mode", "get_seed_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "seed", PROPERTY_HINT_RANGE, "1,1000000,1"), "set_seed", "get_seed");
 	ADD_GROUP("Time", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime", PROPERTY_HINT_RANGE, "0.01,600.0,0.01,or_greater,suffix:s"), "set_lifetime", "get_lifetime");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_shot"), "set_one_shot", "get_one_shot");
@@ -850,6 +886,9 @@ void GPUParticles2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(EMIT_FLAG_VELOCITY);
 	BIND_ENUM_CONSTANT(EMIT_FLAG_COLOR);
 	BIND_ENUM_CONSTANT(EMIT_FLAG_CUSTOM);
+
+	BIND_ENUM_CONSTANT(PARTICLES_SEED_MODE_RANDOM)
+	BIND_ENUM_CONSTANT(PARTICLES_SEED_MODE_CUSTOM)
 }
 
 GPUParticles2D::GPUParticles2D() {

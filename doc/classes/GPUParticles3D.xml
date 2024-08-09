@@ -45,6 +45,13 @@
 				Returns the [Mesh] that is drawn at index [param pass].
 			</description>
 		</method>
+		<method name="request_particles_process">
+			<return type="void" />
+			<param index="0" name="process_time" type="float" />
+			<description>
+				Requests the particles to process for extra process time during a single frame. Used for seeking in particles playback.
+			</description>
+		</method>
 		<method name="restart">
 			<return type="void" />
 			<description>
@@ -134,6 +141,12 @@
 		<member name="randomness" type="float" setter="set_randomness_ratio" getter="get_randomness_ratio" default="0.0">
 			Emission randomness ratio.
 		</member>
+		<member name="seed" type="int" setter="set_seed" getter="get_seed" default="0">
+			Sets the random seed used by the particle system. Only works with [member seed_mode] set to [constant PARTICLES_SEED_MODE_CUSTOM].
+		</member>
+		<member name="seed_mode" type="int" setter="set_seed_mode" getter="get_seed_mode" enum="GPUParticles3D.ParticlesSeedMode" default="0">
+			Sets the random seed mode for the particle system. Options are [constant PARTICLES_SEED_MODE_RANDOM] and [constant PARTICLES_SEED_MODE_CUSTOM].
+		</member>
 		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale" default="1.0">
 			Speed scaling ratio. A value of [code]0[/code] can be used to pause the particles.
 		</member>
@@ -196,6 +209,12 @@
 		</constant>
 		<constant name="MAX_DRAW_PASSES" value="4">
 			Maximum number of draw passes supported.
+		</constant>
+		<constant name="PARTICLES_SEED_MODE_RANDOM" value="0" enum="ParticlesSeedMode">
+			Particles random seed will be generated at random at every restart.
+		</constant>
+		<constant name="PARTICLES_SEED_MODE_CUSTOM" value="1" enum="ParticlesSeedMode">
+			Particles will use random seed specified by [member seed].
 		</constant>
 		<constant name="TRANSFORM_ALIGN_DISABLED" value="0" enum="TransformAlign">
 		</constant>
