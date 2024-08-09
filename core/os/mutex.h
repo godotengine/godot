@@ -74,11 +74,21 @@ template <typename MutexT>
 class MutexLock {
 	friend class ConditionVariable;
 
-	THREADING_NAMESPACE::unique_lock<typename MutexT::StdMutexType> lock;
+	mutable THREADING_NAMESPACE::unique_lock<typename MutexT::StdMutexType> lock;
 
 public:
-	explicit MutexLock(const MutexT &p_mutex) :
+	_ALWAYS_INLINE_ explicit MutexLock(const MutexT &p_mutex) :
 			lock(p_mutex.mutex) {}
+
+	_ALWAYS_INLINE_ void temp_relock() const {
+		lock.lock();
+	}
+
+	_ALWAYS_INLINE_ void temp_unlock() const {
+		lock.unlock();
+	}
+
+	// TODO: Implement a `try_temp_relock` if needed (will also need a dummy method below).
 };
 
 using Mutex = MutexImpl<THREADING_NAMESPACE::recursive_mutex>; // Recursive, for general use
@@ -104,6 +114,9 @@ template <typename MutexT>
 class MutexLock {
 public:
 	MutexLock(const MutexT &p_mutex) {}
+
+	void temp_relock() const {}
+	void temp_unlock() const {}
 };
 
 using Mutex = MutexImpl;
