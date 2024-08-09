@@ -3446,11 +3446,26 @@ void Viewport::set_msaa_2d(MSAA p_msaa) {
 	}
 	msaa_2d = p_msaa;
 	RS::get_singleton()->viewport_set_msaa_2d(viewport, RS::ViewportMSAA(p_msaa));
+	notify_property_list_changed();
 }
 
 Viewport::MSAA Viewport::get_msaa_2d() const {
 	ERR_READ_THREAD_GUARD_V(MSAA_DISABLED);
 	return msaa_2d;
+}
+
+void Viewport::set_msaa_2d_per_sample_shading_ratio(float p_ratio) {
+	ERR_MAIN_THREAD_GUARD;
+	if (msaa_2d_per_sample_shading_ratio == p_ratio) {
+		return;
+	}
+	msaa_2d_per_sample_shading_ratio = p_ratio;
+	RS::get_singleton()->viewport_set_msaa_2d_per_sample_shading_ratio(viewport, p_ratio);
+}
+
+float Viewport::get_msaa_2d_per_sample_shading_ratio() const {
+	ERR_READ_THREAD_GUARD_V(0.0f);
+	return msaa_2d_per_sample_shading_ratio;
 }
 
 void Viewport::set_msaa_3d(MSAA p_msaa) {
@@ -3461,11 +3476,26 @@ void Viewport::set_msaa_3d(MSAA p_msaa) {
 	}
 	msaa_3d = p_msaa;
 	RS::get_singleton()->viewport_set_msaa_3d(viewport, RS::ViewportMSAA(p_msaa));
+	notify_property_list_changed();
 }
 
 Viewport::MSAA Viewport::get_msaa_3d() const {
 	ERR_READ_THREAD_GUARD_V(MSAA_DISABLED);
 	return msaa_3d;
+}
+
+void Viewport::set_msaa_3d_per_sample_shading_ratio(float p_ratio) {
+	ERR_MAIN_THREAD_GUARD;
+	if (msaa_3d_per_sample_shading_ratio == p_ratio) {
+		return;
+	}
+	msaa_3d_per_sample_shading_ratio = p_ratio;
+	RS::get_singleton()->viewport_set_msaa_3d_per_sample_shading_ratio(viewport, p_ratio);
+}
+
+float Viewport::get_msaa_3d_per_sample_shading_ratio() const {
+	ERR_READ_THREAD_GUARD_V(0.0f);
+	return msaa_3d_per_sample_shading_ratio;
 }
 
 void Viewport::set_screen_space_aa(ScreenSpaceAA p_screen_space_aa) {
@@ -4664,8 +4694,14 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_msaa_2d", "msaa"), &Viewport::set_msaa_2d);
 	ClassDB::bind_method(D_METHOD("get_msaa_2d"), &Viewport::get_msaa_2d);
 
+	ClassDB::bind_method(D_METHOD("set_msaa_2d_per_sample_shading_ratio", "ratio"), &Viewport::set_msaa_2d_per_sample_shading_ratio);
+	ClassDB::bind_method(D_METHOD("get_msaa_2d_per_sample_shading_ratio"), &Viewport::get_msaa_2d_per_sample_shading_ratio);
+
 	ClassDB::bind_method(D_METHOD("set_msaa_3d", "msaa"), &Viewport::set_msaa_3d);
 	ClassDB::bind_method(D_METHOD("get_msaa_3d"), &Viewport::get_msaa_3d);
+
+	ClassDB::bind_method(D_METHOD("set_msaa_3d_per_sample_shading_ratio", "ratio"), &Viewport::set_msaa_3d_per_sample_shading_ratio);
+	ClassDB::bind_method(D_METHOD("get_msaa_3d_per_sample_shading_ratio"), &Viewport::get_msaa_3d_per_sample_shading_ratio);
 
 	ClassDB::bind_method(D_METHOD("set_screen_space_aa", "screen_space_aa"), &Viewport::set_screen_space_aa);
 	ClassDB::bind_method(D_METHOD("get_screen_space_aa"), &Viewport::get_screen_space_aa);
@@ -4823,7 +4859,9 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "snap_2d_vertices_to_pixel"), "set_snap_2d_vertices_to_pixel", "is_snap_2d_vertices_to_pixel_enabled");
 	ADD_GROUP("Rendering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msaa_2d", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Average),4× (Slow),8× (Slowest)")), "set_msaa_2d", "get_msaa_2d");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "msaa_2d_per_sample_shading_ratio", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_msaa_2d_per_sample_shading_ratio", "get_msaa_2d_per_sample_shading_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msaa_3d", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Average),4× (Slow),8× (Slowest)")), "set_msaa_3d", "get_msaa_3d");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "msaa_3d_per_sample_shading_ratio", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_msaa_3d_per_sample_shading_ratio", "get_msaa_3d_per_sample_shading_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "screen_space_aa", PROPERTY_HINT_ENUM, "Disabled (Fastest),FXAA (Fast)"), "set_screen_space_aa", "get_screen_space_aa");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_taa"), "set_use_taa", "is_using_taa");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_debanding"), "set_use_debanding", "is_using_debanding");
@@ -4977,6 +5015,14 @@ void Viewport::_validate_property(PropertyInfo &p_property) const {
 	}
 
 	if (vrs_mode == VRS_DISABLED && (p_property.name == "vrs_update_mode")) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
+	if (msaa_2d == MSAA_DISABLED && (p_property.name == "msaa_2d_per_sample_shading_ratio")) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
+	if (msaa_3d == MSAA_DISABLED && (p_property.name == "msaa_2d_per_sample_shading_ratio")) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }

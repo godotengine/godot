@@ -73,7 +73,9 @@ public:
 		Ref<RenderSceneBuffers> render_buffers;
 
 		RS::ViewportMSAA msaa_2d = RenderingServer::VIEWPORT_MSAA_DISABLED;
+		float msaa_2d_per_sample_shading_ratio = 0.0f;
 		RS::ViewportMSAA msaa_3d = RenderingServer::VIEWPORT_MSAA_DISABLED;
+		float msaa_3d_per_sample_shading_ratio = 0.0f;
 		RS::ViewportScreenSpaceAA screen_space_aa = RenderingServer::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
 		bool use_taa = false;
 		bool use_debanding = false;
@@ -271,7 +273,9 @@ public:
 	void viewport_set_positional_shadow_atlas_quadrant_subdivision(RID p_viewport, int p_quadrant, int p_subdiv);
 
 	void viewport_set_msaa_2d(RID p_viewport, RS::ViewportMSAA p_msaa);
+	void viewport_set_msaa_2d_per_sample_shading_ratio(RID p_viewport, float p_ratio);
 	void viewport_set_msaa_3d(RID p_viewport, RS::ViewportMSAA p_msaa);
+	void viewport_set_msaa_3d_per_sample_shading_ratio(RID p_viewport, float p_ratio);
 	void viewport_set_screen_space_aa(RID p_viewport, RS::ViewportScreenSpaceAA p_mode);
 	void viewport_set_use_taa(RID p_viewport, bool p_use_taa);
 	void viewport_set_use_debanding(RID p_viewport, bool p_use_debanding);

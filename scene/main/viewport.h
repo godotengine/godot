@@ -294,7 +294,9 @@ private:
 	PositionalShadowAtlasQuadrantSubdiv positional_shadow_atlas_quadrant_subdiv[4];
 
 	MSAA msaa_2d = MSAA_DISABLED;
+	float msaa_2d_per_sample_shading_ratio = 0.0f;
 	MSAA msaa_3d = MSAA_DISABLED;
+	float msaa_3d_per_sample_shading_ratio = 0.0f;
 	ScreenSpaceAA screen_space_aa = SCREEN_SPACE_AA_DISABLED;
 	bool use_taa = false;
 
@@ -538,8 +540,14 @@ public:
 	void set_msaa_2d(MSAA p_msaa);
 	MSAA get_msaa_2d() const;
 
+	void set_msaa_2d_per_sample_shading_ratio(float p_ratio);
+	float get_msaa_2d_per_sample_shading_ratio() const;
+
 	void set_msaa_3d(MSAA p_msaa);
 	MSAA get_msaa_3d() const;
+
+	void set_msaa_3d_per_sample_shading_ratio(float p_ratio);
+	float get_msaa_3d_per_sample_shading_ratio() const;
 
 	void set_screen_space_aa(ScreenSpaceAA p_screen_space_aa);
 	ScreenSpaceAA get_screen_space_aa() const;
