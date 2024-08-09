@@ -1125,7 +1125,7 @@ PhysicsServer3D::PhysicsServer3D() {
 	singleton = this;
 
 	// World3D physics space
-	GLOBAL_DEF_BASIC("physics/3d/default_gravity", 9.8);
+	GLOBAL_DEF_BASIC("physics/3d/default_gravity", 9.81);
 	GLOBAL_DEF_BASIC("physics/3d/default_gravity_vector", Vector3(0, -1, 0));
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/default_linear_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), 0.1);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/default_angular_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), 0.1);
