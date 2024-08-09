@@ -501,6 +501,9 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 					if (node->data.unique_name_in_owner) {
 						node->_acquire_unique_name_in_owner();
 					}
+					if (node->data.exposed_in_owner) {
+						node->_acquire_exposed_in_owner();
+					}
 				}
 			}
 
@@ -604,6 +607,16 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 		}
 	}
 
+	// Apply Overrides.
+	for (int i = 0; i < overrides.size(); i++) {
+		Node *ei = ret_nodes[0]->get_node_or_null(get_override_path(i));
+		if (ei != nullptr) {
+			const Vector<NodeData::Property> &override_properties = overrides[i].properties;
+			for (const NodeData::Property &prop : override_properties) {
+				ei->set(names[prop.name], variants[prop.value]);
+			}
+		}
+	}
 	return ret_nodes[0];
 }
 
@@ -678,21 +691,17 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 	// document it. if you fail to understand something, please ask!
 
 	//discard nodes that do not belong to be processed
-	if (p_node != p_owner && p_node->get_owner() != p_owner && !p_owner->is_editable_instance(p_node->get_owner())) {
+	if (p_node != p_owner && p_node->get_owner() != p_owner && !p_owner->is_editable_instance(p_node->get_owner()) && !p_node->is_exposed_in_owner()) {
 		return OK;
 	}
 
-	bool is_editable_instance = false;
+	bool root_editable_instance = p_node != p_owner && !p_node->get_scene_file_path().is_empty() && p_owner->is_editable_instance(p_node);
+	bool is_editable_instance = root_editable_instance || (p_node->get_owner() && p_owner->is_ancestor_of(p_node->get_owner()) && p_owner->is_editable_instance(p_node->get_owner()));
 
 	// save the child instantiated scenes that are chosen as editable, so they can be restored
 	// upon load back
-	if (p_node != p_owner && !p_node->get_scene_file_path().is_empty() && p_owner->is_editable_instance(p_node)) {
+	if (root_editable_instance) {
 		editable_instances.push_back(p_owner->get_path_to(p_node));
-		// Node is the root of an editable instance.
-		is_editable_instance = true;
-	} else if (p_node->get_owner() && p_owner->is_ancestor_of(p_node->get_owner()) && p_owner->is_editable_instance(p_node->get_owner())) {
-		// Node is part of an editable instance.
-		is_editable_instance = true;
 	}
 
 	NodeData nd;
@@ -898,6 +907,8 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 		nd.type = TYPE_INSTANTIATED;
 	}
 
+	bool is_override = p_node->is_exposed_in_owner() && p_owner != p_node->get_owner() && !is_editable_instance && nd.properties.size() > 0;
+
 	// determine whether to save this node or not
 	// if this node is part of an instantiated sub-scene, we can skip storing it if basically
 	// no properties changed and no groups were added to it.
@@ -906,7 +917,8 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 
 	bool save_node = nd.properties.size() || nd.groups.size(); // some local properties or groups exist
 	save_node = save_node || p_node == p_owner; // owner is always saved
-	save_node = save_node || (p_node->get_owner() == p_owner && instantiated_by_owner); //part of scene and not instanced
+	save_node = save_node || (p_node->get_owner() == p_owner && instantiated_by_owner); // part of scene and not instanced
+	save_node = save_node && !is_override;
 
 	int idx = nodes.size();
 	int parent_node = NO_PARENT_SAVED;
@@ -935,11 +947,34 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 		nodes.push_back(nd);
 	}
 
+	// Save the exposed node's overridden properties (if any).
+	if (is_override) {
+		int pidx = add_override_path(p_owner->get_path_to(p_node, true));
+		SceneState::OverrideData od;
+		od.path = pidx;
+		od.properties = nd.properties;
+		od.groups = nd.groups;
+		overrides.push_back(od);
+	}
+
+	// Parse all child nodes that belong to p_owner or are not exposed.
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *c = p_node->get_child(i);
-		Error err = _parse_node(p_owner, c, parent_node, name_map, variant_map, node_map, nodepath_map);
-		if (err) {
-			return err;
+		if (!c->is_exposed_in_owner() || is_editable_instance || c->get_owner() == p_owner) {
+			Error err = _parse_node(p_owner, c, parent_node, name_map, variant_map, node_map, nodepath_map);
+			if (err) {
+				return err;
+			}
+		}
+	}
+
+	// Parse any owned exposed nodes if this node is an instantiated scene and "Editable Children" is not enabled.
+	if (nd.type == TYPE_INSTANTIATED && !root_editable_instance) {
+		for (Variant node : p_node->get_owned_exposed_nodes(false)) {
+			Error err = _parse_node(p_owner, Object::cast_to<Node>(node), parent_node, name_map, variant_map, node_map, nodepath_map);
+			if (err) {
+				return err;
+			}
 		}
 	}
 
@@ -1193,7 +1228,7 @@ Error SceneState::pack(Node *p_scene) {
 
 	node_paths.resize(nodepath_map.size());
 	for (const KeyValue<Node *, int> &E : nodepath_map) {
-		node_paths.write[E.value] = scene->get_path_to(E.key);
+		node_paths.write[E.value] = scene->get_path_to(E.key, true);
 	}
 
 	if (Engine::get_singleton()->is_editor_hint()) {
@@ -1534,6 +1569,38 @@ void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 		editable_instances.write[i] = ei[i];
 	}
 
+	Array op;
+	if (p_dictionary.has("override_paths")) {
+		op = p_dictionary["override_paths"];
+	}
+	override_paths.resize(op.size());
+	for (int i = 0; i < op.size(); i++) {
+		override_paths.write[i] = op[i];
+	}
+
+	const int override_count = override_paths.size();
+	const Vector<int> onodes = p_dictionary["overrides"];
+	ERR_FAIL_COND(onodes.size() < override_count);
+
+	overrides.resize(override_count);
+	if (override_count) {
+		const int *r = onodes.ptr();
+		int idx = 0;
+		for (int i = 0; i < override_count; i++) {
+			OverrideData &od = overrides.write[i];
+			od.path = r[idx++];
+			od.properties.resize(r[idx++]);
+			for (int j = 0; j < od.properties.size(); j++) {
+				od.properties.write[j].name = r[idx++];
+				od.properties.write[j].value = r[idx++];
+			}
+			od.groups.resize(r[idx++]);
+			for (int j = 0; j < od.groups.size(); j++) {
+				od.groups.write[j] = r[idx++];
+			}
+		}
+	}
+
 	//path=p_dictionary["path"];
 }
 
@@ -1615,6 +1682,29 @@ Dictionary SceneState::get_bundled_scene() const {
 	if (base_scene_idx >= 0) {
 		d["base_scene"] = base_scene_idx;
 	}
+
+	Array onode_paths;
+	onode_paths.resize(override_paths.size());
+	for (int i = 0; i < override_paths.size(); i++) {
+		onode_paths[i] = override_paths[i];
+	}
+	d["override_paths"] = onode_paths;
+	Vector<int> onodes;
+	for (int i = 0; i < overrides.size(); i++) {
+		const OverrideData &od = overrides[i];
+		onodes.push_back(od.path);
+		onodes.push_back(od.properties.size());
+		for (int j = 0; j < od.properties.size(); j++) {
+			onodes.push_back(od.properties[j].name);
+			onodes.push_back(od.properties[j].value);
+		}
+		onodes.push_back(od.groups.size());
+		for (int j = 0; j < od.groups.size(); j++) {
+			onodes.push_back(od.groups[j]);
+		}
+	}
+
+	d["overrides"] = onodes;
 
 	d["version"] = PACKED_SCENE_VERSION;
 
@@ -1880,6 +1970,61 @@ Vector<NodePath> SceneState::get_editable_instances() const {
 	return editable_instances;
 }
 
+Vector<SceneState::OverrideData> SceneState::get_overrides() const {
+	return overrides;
+}
+
+int SceneState::get_override_count() const {
+	return overrides.size();
+}
+
+Vector<StringName> SceneState::get_override_groups(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, overrides.size(), Vector<StringName>());
+	Vector<StringName> groups;
+	for (int i = 0; i < overrides[p_idx].groups.size(); i++) {
+		groups.push_back(names[overrides[p_idx].groups[i]]);
+	}
+	return groups;
+}
+
+NodePath SceneState::get_override_path(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, overrides.size(), NodePath());
+	return override_paths[overrides[p_idx].path];
+}
+
+int SceneState::get_override_node_property_count(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, overrides.size(), -1);
+	return overrides[p_idx].properties.size();
+}
+
+Variant SceneState::get_override_property_value(int p_idx, int p_prop) const {
+	ERR_FAIL_INDEX_V(p_idx, overrides.size(), Variant());
+	ERR_FAIL_INDEX_V(p_prop, overrides[p_idx].properties.size(), Variant());
+
+	return variants[overrides[p_idx].properties[p_prop].value];
+}
+
+StringName SceneState::get_override_property_name(int p_idx, int p_prop) const {
+	ERR_FAIL_INDEX_V(p_idx, overrides.size(), StringName());
+	ERR_FAIL_INDEX_V(p_prop, overrides[p_idx].properties.size(), StringName());
+	return names[overrides[p_idx].properties[p_prop].name & FLAG_PROP_NAME_MASK];
+}
+
+void SceneState::apply_overrides(Node *p_scene) const {
+	for (int i = 0; i < overrides.size(); i++) {
+		SceneState::OverrideData o_data = overrides[i];
+		NodePath np = get_override_path(i);
+		Node *ei = p_scene->get_node_or_null(np);
+		if (ei == nullptr) {
+			WARN_PRINT("Exposed node not found in the scene: " + np);
+			continue;
+		}
+		for (int j = 0; j < o_data.properties.size(); ++j) {
+			ei->set(names[o_data.properties[j].name], variants[o_data.properties[j].value]);
+		}
+	}
+}
+
 //add
 
 int SceneState::add_name(const StringName &p_name) {
@@ -1895,6 +2040,11 @@ int SceneState::add_value(const Variant &p_value) {
 int SceneState::add_node_path(const NodePath &p_path) {
 	node_paths.push_back(p_path);
 	return (node_paths.size() - 1) | FLAG_ID_IS_PATH;
+}
+
+int SceneState::add_override_path(const NodePath &p_path) {
+	override_paths.push_back(p_path);
+	return (override_paths.size() - 1);
 }
 
 int SceneState::add_node(int p_parent, int p_owner, int p_type, int p_name, int p_instance, int p_index) {
@@ -1956,6 +2106,33 @@ void SceneState::add_connection(int p_from, int p_to, int p_signal, int p_method
 
 void SceneState::add_editable_instance(const NodePath &p_path) {
 	editable_instances.push_back(p_path);
+}
+
+int SceneState::add_override(int p_path) {
+	OverrideData nd;
+	nd.path = p_path;
+	overrides.push_back(nd);
+	return overrides.size() - 1;
+}
+
+void SceneState::add_override_property(int p_node, int p_name, int p_value, bool p_deferred_node_path) {
+	ERR_FAIL_INDEX(p_node, overrides.size());
+	ERR_FAIL_INDEX(p_name, names.size());
+	ERR_FAIL_INDEX(p_value, variants.size());
+
+	NodeData::Property prop;
+	prop.name = p_name;
+	if (p_deferred_node_path) {
+		prop.name |= FLAG_PATH_PROPERTY_IS_NODE;
+	}
+	prop.value = p_value;
+	overrides.write[p_node].properties.push_back(prop);
+}
+
+void SceneState::add_override_group(int p_node, int p_group) {
+	ERR_FAIL_INDEX(p_node, overrides.size());
+	ERR_FAIL_INDEX(p_group, names.size());
+	overrides.write[p_node].groups.push_back(p_group);
 }
 
 bool SceneState::remove_group_references(const StringName &p_name) {

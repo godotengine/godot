@@ -397,6 +397,45 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 					return packed_scene;
 				}
 			}
+		} else if (next_tag.name == "override") {
+			NodePath path = next_tag.fields["path"];
+			HashSet<StringName> path_properties;
+			int o_path = packed_scene->get_state()->add_override_path(path);
+			int override_id = packed_scene->get_state()->add_override(o_path);
+
+			if (next_tag.fields.has("groups")) {
+				Array groups = next_tag.fields["groups"];
+				for (const Variant &group : groups) {
+					packed_scene->get_state()->add_node_group(override_id, packed_scene->get_state()->add_name(group));
+				}
+			}
+
+			while (true) {
+				String assign;
+				Variant value;
+
+				error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &parser);
+
+				if (error) {
+					if (error == ERR_FILE_MISSING_DEPENDENCIES) {
+						// Resource loading error, just skip it.
+					} else if (error != ERR_FILE_EOF) {
+						ERR_FAIL_V_MSG(Ref<PackedScene>(), vformat("Parse Error: %s. [Resource file %s:%d]", error_names[error], res_path, lines));
+					} else {
+						error = OK;
+						return packed_scene;
+					}
+				}
+
+				if (!assign.is_empty()) {
+					StringName assign_name = assign;
+					int nameidx = packed_scene->get_state()->add_name(assign_name);
+					int valueidx = packed_scene->get_state()->add_value(value);
+					packed_scene->get_state()->add_override_property(override_id, nameidx, valueidx, path_properties.has(assign_name));
+				} else if (!next_tag.name.is_empty()) {
+					break;
+				}
+			}
 		} else {
 			error = ERR_FILE_CORRUPT;
 			_printerr();
@@ -2046,6 +2085,48 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 				f->store_line("");
 			}
 			f->store_line("[editable path=\"" + editable_instances[i].operator String().c_escape() + "\"]");
+		}
+
+		// Store Overrides.
+		for (int i = 0; i < state->get_override_count(); i++) {
+			if (i == 0) {
+				f->store_line("");
+			}
+			String header = "[override";
+			NodePath path = state->get_override_path(i);
+			Vector<StringName> groups = state->get_override_groups(i);
+			if (path != NodePath()) {
+				header += " path=\"" + String(path.simplified()).c_escape() + "\"";
+			}
+			if (!groups.is_empty()) {
+				// Write all groups on the same line as they're part of a section header.
+				// This improves readability while not impacting VCS friendliness too much,
+				// since it's rare to have more than 5 groups assigned to a single node.
+				groups.sort_custom<StringName::AlphCompare>();
+				String sgroups = " groups=[";
+				for (int j = 0; j < groups.size(); j++) {
+					sgroups += "\"" + String(groups[j]).c_escape() + "\"";
+					if (j < groups.size() - 1) {
+						sgroups += ", ";
+					}
+				}
+				sgroups += "]";
+				header += sgroups;
+			}
+
+			f->store_string(header);
+			f->store_line("]");
+
+			for (int j = 0; j < state->get_override_node_property_count(i); j++) {
+				String vars;
+				VariantWriter::write_to_string(state->get_override_property_value(i, j), vars, _write_resources, this, use_compat);
+
+				f->store_string(String(state->get_override_property_name(i, j)).property_name_encode() + " = " + vars + "\n");
+			}
+
+			if (i < state->get_override_count() - 1) {
+				f->store_line(String());
+			}
 		}
 	}
 

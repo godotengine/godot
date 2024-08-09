@@ -40,6 +40,7 @@ class SceneState : public RefCounted {
 	Vector<StringName> names;
 	Vector<Variant> variants;
 	Vector<NodePath> node_paths;
+	Vector<NodePath> override_paths;
 	Vector<NodePath> editable_instances;
 	mutable HashMap<NodePath, int> node_path_cache;
 	mutable HashMap<int, int> base_scene_node_remap;
@@ -69,6 +70,12 @@ class SceneState : public RefCounted {
 		Vector<int> groups;
 	};
 
+	struct OverrideData {
+		int path = 0;
+		Vector<NodeData::Property> properties;
+		Vector<int> groups;
+	};
+
 	struct DeferredNodePathProperties {
 		Node *base = nullptr;
 		StringName property;
@@ -76,6 +83,7 @@ class SceneState : public RefCounted {
 	};
 
 	Vector<NodeData> nodes;
+	Vector<OverrideData> overrides;
 
 	struct ConnectionData {
 		int from = 0;
@@ -196,17 +204,30 @@ public:
 
 	Vector<NodePath> get_editable_instances() const;
 
+	Vector<SceneState::OverrideData> get_overrides() const;
+	int get_override_count() const;
+	Vector<StringName> get_override_groups(int p_idx) const;
+	NodePath get_override_path(int p_idx) const;
+	void apply_overrides(Node *p_scene) const;
+	StringName get_override_property_name(int p_idx, int p_prop) const;
+	int get_override_node_property_count(int p_idx) const;
+	Variant get_override_property_value(int p_idx, int p_prop) const;
+
 	//build API
 
 	int add_name(const StringName &p_name);
 	int add_value(const Variant &p_value);
 	int add_node_path(const NodePath &p_path);
+	int add_override_path(const NodePath &p_path);
 	int add_node(int p_parent, int p_owner, int p_type, int p_name, int p_instance, int p_index);
 	void add_node_property(int p_node, int p_name, int p_value, bool p_deferred_node_path = false);
 	void add_node_group(int p_node, int p_group);
 	void set_base_scene(int p_idx);
 	void add_connection(int p_from, int p_to, int p_signal, int p_method, int p_flags, int p_unbinds, const Vector<int> &p_binds);
 	void add_editable_instance(const NodePath &p_path);
+	int add_override(int p_path);
+	void add_override_property(int p_node, int p_name, int p_value, bool p_deferred_node_path);
+	void add_override_group(int p_node, int p_group);
 
 	bool remove_group_references(const StringName &p_name);
 	bool rename_group_references(const StringName &p_old_name, const StringName &p_new_name);
