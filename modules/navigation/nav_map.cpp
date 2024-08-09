@@ -63,6 +63,19 @@
 #define NAVMAP_ITERATION_ZERO_ERROR_MSG()
 #endif // DEBUG_ENABLED
 
+#ifdef DEBUG_ENABLED
+#define NAVMESH_FREE_EDGES_COUNT_WARN_MSG()                                                                                                                                                 \
+	if (!Engine::get_singleton()->is_editor_hint()) {                                                                                                                                       \
+		WARN_PRINT_ONCE("Navigation map synchronization has a high amount of unmerged navigation mesh edges left for the edge connection margin pass.\n\
+				The edge connection margin pass attempts to connect still unmerged edges through a costly connection calculations.\n\
+				If the amount of unmerged navigation mesh edges is too high it can cause significant performance issues at runtime on any navigation map change.\n\
+				Better alignment of navigation mesh edges so they can be merged efficiently upfront can reduce the amount of edges left for this costly calculation.\n\
+				The edge connection margin is an optional convenience feature and can be disabled for a specific navigation region or for the entire navigation map to save performance."); \
+	};
+#else
+#define NAVMESH_FREE_EDGES_COUNT_WARN_MSG()
+#endif
+
 void NavMap::set_up(Vector3 p_up) {
 	if (up == p_up) {
 		return;
@@ -1018,6 +1031,10 @@ void NavMap::sync() {
 		// not really useful and would result in wasteful computation during
 		// connection, integration and path finding.
 		_new_pm_edge_free_count = free_edges.size();
+
+		if (use_edge_connections && free_edges.size() > 500) {
+			NAVMESH_FREE_EDGES_COUNT_WARN_MSG();
+		}
 
 		for (int i = 0; i < free_edges.size(); i++) {
 			const gd::Edge::Connection &free_edge = free_edges[i];
