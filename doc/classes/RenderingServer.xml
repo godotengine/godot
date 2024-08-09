@@ -2012,6 +2012,13 @@
 				If [code]true[/code], this light will not be used for anything except sky shaders. Use this for lights that impact your sky shader that you may want to hide from affecting the rest of the scene. For example, you may want to enable this when the sun in your sky shader falls below the horizon.
 			</description>
 		</method>
+		<method name="light_get_shadow_caster_mask" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="light" type="RID" />
+			<description>
+				Gets the shadow caster mask for this 3D light. Shadows will only be cast using objects in the selected layers. Equivalent to [member Light3D.shadow_caster_mask].
+			</description>
+		</method>
 		<method name="light_omni_set_shadow_mode">
 			<return type="void" />
 			<param index="0" name="light" type="RID" />
@@ -2109,6 +2116,14 @@
 			<param index="1" name="enabled" type="bool" />
 			<description>
 				If [code]true[/code], light will cast shadows. Equivalent to [member Light3D.shadow_enabled].
+			</description>
+		</method>
+		<method name="light_set_shadow_caster_mask">
+			<return type="void" />
+			<param index="0" name="light" type="RID" />
+			<param index="1" name="mask" type="int" />
+			<description>
+				Sets the shadow caster mask for this 3D light. Shadows will only be cast using objects in the selected layers. Equivalent to [member Light3D.shadow_caster_mask].
 			</description>
 		</method>
 		<method name="lightmap_create">
