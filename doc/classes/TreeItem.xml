@@ -441,6 +441,13 @@
 				Returns [code]true[/code] if the given [param column] is selected.
 			</description>
 		</method>
+		<method name="is_tooltip_visible" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns [code]true[/code] if the tooltip for the given [param column] is visible.
+			</description>
+		</method>
 		<method name="is_visible_in_tree" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -785,6 +792,14 @@
 			<param index="1" name="tooltip" type="String" />
 			<description>
 				Sets the given column's tooltip text.
+			</description>
+		</method>
+		<method name="set_tooltip_visible">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				Sets the given column's tooltip visibility.
 			</description>
 		</method>
 		<method name="uncollapse_tree">
