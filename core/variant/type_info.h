@@ -31,9 +31,8 @@
 #ifndef TYPE_INFO_H
 #define TYPE_INFO_H
 
+#include "core/templates/simple_type.h"
 #include "core/typedefs.h"
-
-#include <type_traits>
 
 namespace GodotTypeInfo {
 enum Metadata {
@@ -335,5 +334,86 @@ ZERO_INITIALIZER_NUMBER(char16_t)
 ZERO_INITIALIZER_NUMBER(char32_t)
 ZERO_INITIALIZER_NUMBER(float)
 ZERO_INITIALIZER_NUMBER(double)
+
+template <typename T>
+inline constexpr Variant::Type get_variant_type_v = std::is_base_of_v<Object, GetSimpleTypeT<T>> ? Variant::OBJECT : Variant::VARIANT_MAX;
+
+template <typename T>
+inline constexpr bool is_variant_type_v = get_variant_type_v<T> != Variant::VARIANT_MAX;
+
+template <typename T>
+struct GetObjectClassName {
+	constexpr GetObjectClassName() { static_assert(is_variant_type_v<T>); }
+
+	static const String self() {
+		if constexpr (get_variant_type_v<T> == Variant::OBJECT) {
+			return T::get_class_static();
+		} else {
+			return String();
+		}
+	}
+	static const String parent() {
+		if constexpr (get_variant_type_v<T> == Variant::OBJECT) {
+			return T::get_parent_class_static();
+		} else {
+			return String();
+		}
+	}
+};
+
+#define MAKE_VARIANT_TYPE_CONSTANTS(m_type, m_variant_type) \
+	template <>                                             \
+	inline constexpr Variant::Type get_variant_type_v<m_type> = m_variant_type;
+
+MAKE_VARIANT_TYPE_CONSTANTS(Variant, Variant::NIL)
+MAKE_VARIANT_TYPE_CONSTANTS(bool, Variant::BOOL)
+MAKE_VARIANT_TYPE_CONSTANTS(uint8_t, Variant::INT)
+MAKE_VARIANT_TYPE_CONSTANTS(int8_t, Variant::INT)
+MAKE_VARIANT_TYPE_CONSTANTS(uint16_t, Variant::INT)
+MAKE_VARIANT_TYPE_CONSTANTS(int16_t, Variant::INT)
+MAKE_VARIANT_TYPE_CONSTANTS(uint32_t, Variant::INT)
+MAKE_VARIANT_TYPE_CONSTANTS(int32_t, Variant::INT)
+MAKE_VARIANT_TYPE_CONSTANTS(uint64_t, Variant::INT)
+MAKE_VARIANT_TYPE_CONSTANTS(int64_t, Variant::INT)
+MAKE_VARIANT_TYPE_CONSTANTS(float, Variant::FLOAT)
+MAKE_VARIANT_TYPE_CONSTANTS(double, Variant::FLOAT)
+MAKE_VARIANT_TYPE_CONSTANTS(String, Variant::STRING)
+MAKE_VARIANT_TYPE_CONSTANTS(Vector2, Variant::VECTOR2)
+MAKE_VARIANT_TYPE_CONSTANTS(Vector2i, Variant::VECTOR2I)
+MAKE_VARIANT_TYPE_CONSTANTS(Rect2, Variant::RECT2)
+MAKE_VARIANT_TYPE_CONSTANTS(Rect2i, Variant::RECT2I)
+MAKE_VARIANT_TYPE_CONSTANTS(Vector3, Variant::VECTOR3)
+MAKE_VARIANT_TYPE_CONSTANTS(Vector3i, Variant::VECTOR3I)
+MAKE_VARIANT_TYPE_CONSTANTS(Transform2D, Variant::TRANSFORM2D)
+MAKE_VARIANT_TYPE_CONSTANTS(Vector4, Variant::VECTOR4)
+MAKE_VARIANT_TYPE_CONSTANTS(Vector4i, Variant::VECTOR4I)
+MAKE_VARIANT_TYPE_CONSTANTS(Plane, Variant::PLANE)
+MAKE_VARIANT_TYPE_CONSTANTS(Quaternion, Variant::QUATERNION)
+MAKE_VARIANT_TYPE_CONSTANTS(AABB, Variant::AABB)
+MAKE_VARIANT_TYPE_CONSTANTS(Basis, Variant::BASIS)
+MAKE_VARIANT_TYPE_CONSTANTS(Transform3D, Variant::TRANSFORM3D)
+MAKE_VARIANT_TYPE_CONSTANTS(Projection, Variant::PROJECTION)
+MAKE_VARIANT_TYPE_CONSTANTS(Color, Variant::COLOR)
+MAKE_VARIANT_TYPE_CONSTANTS(StringName, Variant::STRING_NAME)
+MAKE_VARIANT_TYPE_CONSTANTS(NodePath, Variant::NODE_PATH)
+MAKE_VARIANT_TYPE_CONSTANTS(RID, Variant::RID)
+MAKE_VARIANT_TYPE_CONSTANTS(Object, Variant::OBJECT)
+MAKE_VARIANT_TYPE_CONSTANTS(Callable, Variant::CALLABLE)
+MAKE_VARIANT_TYPE_CONSTANTS(Signal, Variant::SIGNAL)
+MAKE_VARIANT_TYPE_CONSTANTS(Dictionary, Variant::DICTIONARY)
+MAKE_VARIANT_TYPE_CONSTANTS(Array, Variant::ARRAY)
+MAKE_VARIANT_TYPE_CONSTANTS(PackedByteArray, Variant::PACKED_BYTE_ARRAY)
+MAKE_VARIANT_TYPE_CONSTANTS(PackedInt32Array, Variant::PACKED_INT32_ARRAY)
+MAKE_VARIANT_TYPE_CONSTANTS(PackedInt64Array, Variant::PACKED_INT64_ARRAY)
+MAKE_VARIANT_TYPE_CONSTANTS(PackedFloat32Array, Variant::PACKED_FLOAT32_ARRAY)
+MAKE_VARIANT_TYPE_CONSTANTS(PackedFloat64Array, Variant::PACKED_FLOAT64_ARRAY)
+MAKE_VARIANT_TYPE_CONSTANTS(PackedStringArray, Variant::PACKED_STRING_ARRAY)
+MAKE_VARIANT_TYPE_CONSTANTS(PackedVector2Array, Variant::PACKED_VECTOR2_ARRAY)
+MAKE_VARIANT_TYPE_CONSTANTS(PackedVector3Array, Variant::PACKED_VECTOR3_ARRAY)
+MAKE_VARIANT_TYPE_CONSTANTS(PackedColorArray, Variant::PACKED_COLOR_ARRAY)
+MAKE_VARIANT_TYPE_CONSTANTS(PackedVector4Array, Variant::PACKED_VECTOR4_ARRAY)
+MAKE_VARIANT_TYPE_CONSTANTS(IPAddress, Variant::STRING)
+
+#undef MAKE_VARIANT_TYPE_CONSTANTS
 
 #endif // TYPE_INFO_H
