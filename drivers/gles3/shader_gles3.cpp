@@ -35,6 +35,7 @@
 #include "core/io/compression.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/version.h"
 
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/gles3/storage/config.h"
@@ -130,12 +131,13 @@ void ShaderGLES3::_setup(const char *p_vertex_code, const char *p_fragment_code,
 	feedback_count = p_feedback_count;
 
 	StringBuilder tohash;
-	/*
-	tohash.append("[SpirvCacheKey]");
-	tohash.append(RenderingDevice::get_singleton()->shader_get_spirv_cache_key());
-	tohash.append("[BinaryCacheKey]");
-	tohash.append(RenderingDevice::get_singleton()->shader_get_binary_cache_key());
-	*/
+	tohash.append("[GodotVersionNumber]");
+	tohash.append(VERSION_NUMBER);
+	tohash.append("[GodotVersionHash]");
+	tohash.append(VERSION_HASH);
+	tohash.append("[GodotArchitecture]");
+	tohash.append(Engine::get_singleton()->get_architecture_name());
+
 	tohash.append("[Vertex]");
 	tohash.append(p_vertex_code ? p_vertex_code : "");
 	tohash.append("[Fragment]");
