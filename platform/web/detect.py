@@ -253,6 +253,7 @@ def configure(env: "SConsEnvironment"):
             print_error("GDExtension support requires emscripten >= 3.1.14, detected: %s.%s.%s" % cc_semver)
             sys.exit(255)
 
+        env.Append(CPPDEFINES=["WEB_DLINK_ENABLED"])
         env.Append(CCFLAGS=["-sSIDE_MODULE=2"])
         env.Append(LINKFLAGS=["-sSIDE_MODULE=2"])
         env.Append(CCFLAGS=["-fvisibility=hidden"])
