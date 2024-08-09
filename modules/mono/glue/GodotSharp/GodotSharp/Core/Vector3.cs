@@ -692,10 +692,18 @@ namespace Godot
                 // Zero length vectors have no angle, so the best we can do is either lerp or throw an error.
                 return Lerp(to, weight);
             }
+            Vector3 axis = Cross(to);
+            real_t axisLengthSquared = axis.LengthSquared();
+            if (axisLengthSquared == 0.0)
+            {
+                // Colinear vectors have no rotation axis or angle between them, so the best we can do is lerp.
+                return Lerp(to, weight);
+            }
+            axis /= Mathf.Sqrt(axisLengthSquared);
             real_t startLength = Mathf.Sqrt(startLengthSquared);
             real_t resultLength = Mathf.Lerp(startLength, Mathf.Sqrt(endLengthSquared), weight);
             real_t angle = AngleTo(to);
-            return Rotated(Cross(to).Normalized(), angle * weight) * (resultLength / startLength);
+            return Rotated(axis, angle * weight) * (resultLength / startLength);
         }
 
         /// <summary>
