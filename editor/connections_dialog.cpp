@@ -895,7 +895,7 @@ ConnectDialog::~ConnectDialog() {
 
 Control *ConnectionsDockTree::make_custom_tooltip(const String &p_text) const {
 	// If it's not a doc tooltip, fallback to the default one.
-	if (p_text.contains("::")) {
+	if (p_text.contains(" :: ")) {
 		return nullptr;
 	}
 
