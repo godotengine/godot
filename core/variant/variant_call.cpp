@@ -1689,6 +1689,7 @@ static void _register_variant_builtin_methods_string() {
 
 	bind_string_method(strip_edges, sarray("left", "right"), varray(true, true));
 	bind_string_method(strip_escapes, sarray(), varray());
+	bind_string_method(strip_bbcode, sarray(), varray());
 	bind_string_method(lstrip, sarray("chars"), varray());
 	bind_string_method(rstrip, sarray("chars"), varray());
 	bind_string_method(get_extension, sarray(), varray());
@@ -1720,6 +1721,7 @@ static void _register_variant_builtin_methods_string() {
 	bind_string_method(c_escape, sarray(), varray());
 	bind_string_method(c_unescape, sarray(), varray());
 	bind_string_method(json_escape, sarray(), varray());
+	bind_string_method(bbcode_escape, sarray(), varray());
 
 	bind_string_method(validate_node_name, sarray(), varray());
 	bind_string_method(validate_filename, sarray(), varray());
