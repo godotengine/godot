@@ -42,6 +42,34 @@ void GLTFAnimation::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "get_loop"); // bool
 }
 
+GLTFAnimation::Interpolation GLTFAnimation::godot_to_gltf_interpolation(const Ref<Animation> &p_godot_animation, int32_t p_godot_anim_track_index) {
+	Animation::InterpolationType interpolation = p_godot_animation->track_get_interpolation_type(p_godot_anim_track_index);
+	switch (interpolation) {
+		case Animation::InterpolationType::INTERPOLATION_LINEAR:
+		case Animation::InterpolationType::INTERPOLATION_LINEAR_ANGLE:
+			return GLTFAnimation::INTERP_LINEAR;
+		case Animation::InterpolationType::INTERPOLATION_NEAREST:
+			return GLTFAnimation::INTERP_STEP;
+		case Animation::InterpolationType::INTERPOLATION_CUBIC:
+		case Animation::InterpolationType::INTERPOLATION_CUBIC_ANGLE:
+			return GLTFAnimation::INTERP_CUBIC_SPLINE;
+	}
+	return GLTFAnimation::INTERP_LINEAR;
+}
+
+Animation::InterpolationType GLTFAnimation::gltf_to_godot_interpolation(Interpolation p_gltf_interpolation) {
+	switch (p_gltf_interpolation) {
+		case GLTFAnimation::INTERP_LINEAR:
+			return Animation::InterpolationType::INTERPOLATION_LINEAR;
+		case GLTFAnimation::INTERP_STEP:
+			return Animation::InterpolationType::INTERPOLATION_NEAREST;
+		case GLTFAnimation::INTERP_CATMULLROMSPLINE:
+		case GLTFAnimation::INTERP_CUBIC_SPLINE:
+			return Animation::InterpolationType::INTERPOLATION_CUBIC;
+	}
+	return Animation::InterpolationType::INTERPOLATION_LINEAR;
+}
+
 String GLTFAnimation::get_original_name() {
 	return original_name;
 }
@@ -58,8 +86,16 @@ void GLTFAnimation::set_loop(bool p_val) {
 	loop = p_val;
 }
 
-HashMap<int, GLTFAnimation::Track> &GLTFAnimation::get_tracks() {
-	return tracks;
+HashMap<int, GLTFAnimation::NodeTrack> &GLTFAnimation::get_node_tracks() {
+	return node_tracks;
+}
+
+HashMap<String, GLTFAnimation::Channel<Variant>> &GLTFAnimation::get_pointer_tracks() {
+	return pointer_tracks;
+}
+
+bool GLTFAnimation::is_empty_of_tracks() const {
+	return node_tracks.is_empty() && pointer_tracks.is_empty();
 }
 
 GLTFAnimation::GLTFAnimation() {
