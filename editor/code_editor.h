@@ -166,7 +166,7 @@ class CodeTextEditor : public VBoxContainer {
 
 	MenuButton *zoom_button = nullptr;
 	Label *line_and_col_txt = nullptr;
-	Label *indentation_txt = nullptr;
+	Button *indentation_button = nullptr;
 
 	Label *info = nullptr;
 	Timer *idle = nullptr;
@@ -210,6 +210,7 @@ class CodeTextEditor : public VBoxContainer {
 	void _error_pressed(const Ref<InputEvent> &p_event);
 
 	void _zoom_popup_id_pressed(int p_idx);
+	void _indentation_button_pressed();
 
 	void _toggle_scripts_pressed();
 
