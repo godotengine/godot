@@ -1500,12 +1500,6 @@ void EditorInspectorSection::_notification(int p_what) {
 				draw_string(font, text_offset, label, text_align, available, font_size, font_color, TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
 			}
 
-			// Draw dropping highlight.
-			if (dropping && !vbox->is_visible_in_tree()) {
-				Color accent_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
-				draw_rect(Rect2(Point2(), get_size()), accent_color, false);
-			}
-
 			// Draw section indentation.
 			if (section_indent_style.is_valid() && section_indent > 0) {
 				Rect2 indent_rect = Rect2(Vector2(), Vector2(indent_depth * section_indent_size, get_size().height));
@@ -1527,14 +1521,14 @@ void EditorInspectorSection::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_MOUSE_ENTER: {
-			if (dropping || dropping_for_unfold) {
+			if (dropping_for_unfold) {
 				dropping_unfold_timer->start();
 			}
 			queue_redraw();
 		} break;
 
 		case NOTIFICATION_MOUSE_EXIT: {
-			if (dropping || dropping_for_unfold) {
+			if (dropping_for_unfold) {
 				dropping_unfold_timer->stop();
 			}
 			queue_redraw();
