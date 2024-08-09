@@ -165,6 +165,7 @@ protected:
 public:
 	static HTTPClient *create();
 
+	static String query_string_from(const Dictionary &p_dict);
 	String query_string_from_dict(const Dictionary &p_dict);
 	Error verify_headers(const Vector<String> &p_headers);
 
