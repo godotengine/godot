@@ -42,6 +42,8 @@ using namespace RendererSceneRenderImplementation;
 void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	//compile
 
+	float wireframe_width = float(GLOBAL_GET("rendering/driver/line_drawing/width"));
+
 	code = p_code;
 	valid = false;
 	ubo_size = 0;
@@ -313,6 +315,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 				RD::PipelineRasterizationState raster_state;
 				raster_state.cull_mode = cull_mode_rd;
 				raster_state.wireframe = wireframe;
+				raster_state.line_width = wireframe_width;
 
 				RD::PipelineColorBlendState blend_state;
 				RD::PipelineDepthStencilState depth_stencil = depth_stencil_state;
