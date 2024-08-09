@@ -450,11 +450,11 @@ void AStarGrid2D::_get_nbors(Point *p_point, LocalVector<Point *> &r_nbors) {
 	}
 }
 
-bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point) {
+bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point, bool p_allow_partial_path) {
 	last_closest_point = nullptr;
 	pass++;
 
-	if (p_end_point->solid) {
+	if (p_end_point->solid && !p_allow_partial_path) {
 		return false;
 	}
 
@@ -579,7 +579,7 @@ Vector<Vector2> AStarGrid2D::get_point_path(const Vector2i &p_from_id, const Vec
 	Point *begin_point = a;
 	Point *end_point = b;
 
-	bool found_route = _solve(begin_point, end_point);
+	bool found_route = _solve(begin_point, end_point, p_allow_partial_path);
 	if (!found_route) {
 		if (!p_allow_partial_path || last_closest_point == nullptr) {
 			return Vector<Vector2>();
@@ -632,7 +632,7 @@ TypedArray<Vector2i> AStarGrid2D::get_id_path(const Vector2i &p_from_id, const V
 	Point *begin_point = a;
 	Point *end_point = b;
 
-	bool found_route = _solve(begin_point, end_point);
+	bool found_route = _solve(begin_point, end_point, p_allow_partial_path);
 	if (!found_route) {
 		if (!p_allow_partial_path || last_closest_point == nullptr) {
 			return TypedArray<Vector2i>();

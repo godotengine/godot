@@ -115,7 +115,7 @@ class AStar3D : public RefCounted {
 	HashSet<Segment, Segment> segments;
 	Point *last_closest_point = nullptr;
 
-	bool _solve(Point *begin_point, Point *end_point);
+	bool _solve(Point *begin_point, Point *end_point, bool p_allow_partial_path);
 
 protected:
 	static void _bind_methods();
@@ -171,7 +171,7 @@ class AStar2D : public RefCounted {
 	GDCLASS(AStar2D, RefCounted);
 	AStar3D astar;
 
-	bool _solve(AStar3D::Point *begin_point, AStar3D::Point *end_point);
+	bool _solve(AStar3D::Point *begin_point, AStar3D::Point *end_point, bool p_allow_partial_path);
 
 protected:
 	static void _bind_methods();
