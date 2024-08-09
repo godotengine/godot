@@ -551,8 +551,13 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _cancel_bezier_edit();
 	void _bezier_edit(int p_for_track);
 	void _bezier_track_set_key_handle_mode(Animation *p_anim, int p_track, int p_index, Animation::HandleMode p_mode, Animation::HandleSetMode p_set_mode = Animation::HANDLE_SET_MODE_NONE);
+	int _convert_track_to_bezier(Animation *p_anim, int p_index, Animation::HandleMode p_mode, int p_insert_at = -1);
 
 	////////////// edit menu stuff
+
+	ConfirmationDialog *convert_to_bezier_dialog = nullptr;
+	Tree *track_convert_select = nullptr;
+	OptionButton *track_convert_handles_mode = nullptr;
 
 	ConfirmationDialog *bake_dialog = nullptr;
 	CheckBox *bake_trs = nullptr;
@@ -693,7 +698,15 @@ public:
 		EDIT_OPTIMIZE_ANIMATION,
 		EDIT_OPTIMIZE_ANIMATION_CONFIRM,
 		EDIT_CLEAN_UP_ANIMATION,
-		EDIT_CLEAN_UP_ANIMATION_CONFIRM
+		EDIT_CLEAN_UP_ANIMATION_CONFIRM,
+		EDIT_CONVERT_TO_BEZIER,
+		EDIT_CONVERT_TO_BEZIER_CONFIRM
+	};
+
+	enum ConvertToBezierMode {
+		CONVERT_MODE_LINEAR,
+		CONVERT_MODE_BALANCED,
+		CONVERT_MODE_MIRRORED,
 	};
 
 	void add_track_edit_plugin(const Ref<AnimationTrackEditPlugin> &p_plugin);
