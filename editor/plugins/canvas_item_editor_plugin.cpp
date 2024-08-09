@@ -5440,7 +5440,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	p->add_submenu_node_item(TTR("Smart Snapping"), smartsnap_config_popup);
 
 	p->add_separator();
-	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/configure_snap", TTR("Configure Snap...")), SNAP_CONFIGURE);
+	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/configure_snap", TTR("Configure Snap")), SNAP_CONFIGURE);
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 

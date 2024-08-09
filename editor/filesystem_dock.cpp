@@ -3142,8 +3142,8 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		}
 
 		if (filenames.size() == 1) {
-			p_popup->add_item(TTR("Edit Dependencies..."), FILE_DEPENDENCIES);
-			p_popup->add_item(TTR("View Owners..."), FILE_OWNERS);
+			p_popup->add_item(TTR("Edit Dependencies"), FILE_DEPENDENCIES);
+			p_popup->add_item(TTR("View Owners"), FILE_OWNERS);
 			p_popup->add_separator();
 		}
 	}
@@ -3177,7 +3177,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 			PopupMenu *folder_colors_menu = memnew(PopupMenu);
 			folder_colors_menu->connect(SceneStringName(id_pressed), callable_mp(this, &FileSystemDock::_folder_color_index_pressed).bind(folder_colors_menu));
 
-			p_popup->add_submenu_node_item(TTR("Set Folder Color..."), folder_colors_menu);
+			p_popup->add_submenu_node_item(TTR("Set Folder Color"), folder_colors_menu);
 			p_popup->set_item_icon(-1, get_editor_theme_icon(SNAME("Paint")));
 
 			folder_colors_menu->add_icon_item(get_editor_theme_icon(SNAME("Folder")), TTR("Default (Reset)"));

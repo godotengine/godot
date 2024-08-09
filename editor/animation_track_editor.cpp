@@ -2932,7 +2932,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				bool selected = _try_select_at_ui_pos(pos, mb->is_command_or_control_pressed() || mb->is_shift_pressed(), false);
 
 				menu->clear();
-				menu->add_icon_item(get_editor_theme_icon(SNAME("Key")), TTR("Insert Key..."), MENU_KEY_INSERT);
+				menu->add_icon_item(get_editor_theme_icon(SNAME("Key")), TTR("Insert Key"), MENU_KEY_INSERT);
 				if (selected || editor->is_selection_active()) {
 					menu->add_separator();
 					menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Duplicate Key(s)"), MENU_KEY_DUPLICATE);
