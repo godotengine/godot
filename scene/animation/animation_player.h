@@ -32,7 +32,9 @@
 #define ANIMATION_PLAYER_H
 
 #include "animation_mixer.h"
+#ifndef _2D_DISABLED
 #include "scene/2d/node_2d.h"
+#endif // _2D_DISABLED
 #include "scene/resources/animation.h"
 
 class AnimationPlayer : public AnimationMixer {

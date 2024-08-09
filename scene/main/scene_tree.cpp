@@ -57,14 +57,16 @@
 #include "scene/resources/world_2d.h"
 #include "servers/display_server.h"
 #include "servers/navigation_server_3d.h"
+#include "window.h"
+
+#ifndef _2D_DISABLED
 #include "servers/physics_server_2d.h"
+#endif // _2D_DISABLED
+
 #ifndef _3D_DISABLED
 #include "scene/resources/3d/world_3d.h"
 #include "servers/physics_server_3d.h"
 #endif // _3D_DISABLED
-#include "window.h"
-#include <stdio.h>
-#include <stdlib.h>
 
 void SceneTreeTimer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_time_left", "time"), &SceneTreeTimer::set_time_left);
@@ -896,7 +898,9 @@ void SceneTree::set_pause(bool p_enabled) {
 #ifndef _3D_DISABLED
 	PhysicsServer3D::get_singleton()->set_active(!p_enabled);
 #endif // _3D_DISABLED
+#ifndef _2D_DISABLED
 	PhysicsServer2D::get_singleton()->set_active(!p_enabled);
+#endif // _2D_DISABLED
 	if (get_root()) {
 		get_root()->_propagate_pause_notification(p_enabled);
 	}
@@ -1764,7 +1768,9 @@ SceneTree::SceneTree() {
 	// Initialize network state.
 	set_multiplayer(MultiplayerAPI::create_default_interface());
 
+#ifndef _2D_DISABLED
 	root->set_as_audio_listener_2d(true);
+#endif // _2D_DISABLED
 	current_scene = nullptr;
 
 	const int msaa_mode_2d = GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/msaa_2d", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Average),4× (Slow),8× (Slowest)")), 0);

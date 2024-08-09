@@ -31,6 +31,8 @@
 #ifndef PHYSICS_SERVER_2D_WRAP_MT_H
 #define PHYSICS_SERVER_2D_WRAP_MT_H
 
+#ifndef _2D_DISABLED
+
 #include "core/config/project_settings.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/thread.h"
@@ -340,5 +342,7 @@ public:
 #ifdef DEBUG_ENABLED
 #undef MAIN_THREAD_SYNC_WARN
 #endif
+
+#endif // _2D_DISABLED
 
 #endif // PHYSICS_SERVER_2D_WRAP_MT_H
