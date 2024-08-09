@@ -1920,7 +1920,8 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 				}
 
 				String vars;
-				VariantWriter::write_to_string(value, vars, _write_resources, this, use_compat);
+				err = VariantWriter::write_to_string(value, vars, _write_resources, this, use_compat);
+				ERR_CONTINUE_MSG(err != OK, vformat("Error serializing property \"%s\": %s", PE->get().name, err));
 				f->store_string(name.property_name_encode() + " = " + vars + "\n");
 			}
 		}
@@ -1984,22 +1985,31 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			if (!instance_placeholder.is_empty()) {
 				String vars;
 				f->store_string(" instance_placeholder=");
-				VariantWriter::write_to_string(instance_placeholder, vars, _write_resources, this, use_compat);
-				f->store_string(vars);
+				err = VariantWriter::write_to_string(instance_placeholder, vars, _write_resources, this, use_compat);
+				if (err == OK) {
+					f->store_string(vars);
+				} else {
+					ERR_PRINT(vformat("Error serializing instance placeholder \"%s\": %s", instance_placeholder, err));
+				}
 			}
 
 			if (instance.is_valid()) {
 				String vars;
 				f->store_string(" instance=");
-				VariantWriter::write_to_string(instance, vars, _write_resources, this, use_compat);
-				f->store_string(vars);
+				err = VariantWriter::write_to_string(instance, vars, _write_resources, this, use_compat);
+				if (err == OK) {
+					f->store_string(vars);
+				} else {
+					ERR_PRINT(vformat("Error serializing instance: %s", err));
+				}
 			}
 
 			f->store_line("]");
 
 			for (int j = 0; j < state->get_node_property_count(i); j++) {
 				String vars;
-				VariantWriter::write_to_string(state->get_node_property_value(i, j), vars, _write_resources, this, use_compat);
+				err = VariantWriter::write_to_string(state->get_node_property_value(i, j), vars, _write_resources, this, use_compat);
+				ERR_CONTINUE_MSG(err != OK, vformat("Error serializing node property \"%s\": %s", state->get_node_property_name(i, j), err));
 
 				f->store_string(String(state->get_node_property_name(i, j)).property_name_encode() + " = " + vars + "\n");
 			}
@@ -2033,8 +2043,12 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			f->store_string(connstr);
 			if (binds.size()) {
 				String vars;
-				VariantWriter::write_to_string(binds, vars, _write_resources, this, use_compat);
-				f->store_string(" binds= " + vars);
+				err = VariantWriter::write_to_string(binds, vars, _write_resources, this, use_compat);
+				if (err == OK) {
+					f->store_string(" binds= " + vars);
+				} else {
+					ERR_PRINT(vformat("Error serializing connection bind: %s", err));
+				}
 			}
 
 			f->store_line("]");
