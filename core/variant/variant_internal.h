@@ -125,10 +125,6 @@ public:
 		}
 	}
 
-	_FORCE_INLINE_ static bool initialize_ref(Object *object) {
-		return Variant::initialize_ref(object);
-	}
-
 	// Atomic types.
 	_FORCE_INLINE_ static bool *get_bool(Variant *v) { return &v->_data._bool; }
 	_FORCE_INLINE_ static const bool *get_bool(const Variant *v) { return &v->_data._bool; }
