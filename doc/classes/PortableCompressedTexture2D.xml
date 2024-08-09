@@ -52,8 +52,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="_data" type="PackedByteArray" setter="_set_data" getter="_get_data" default="PackedByteArray()">
-		</member>
 		<member name="keep_compressed_buffer" type="bool" setter="set_keep_compressed_buffer" getter="is_keeping_compressed_buffer" default="false">
 			When running on the editor, this class will keep the source compressed data in memory. Otherwise, the source compressed data is lost after loading and the resource can't be re saved.
 			This flag allows to keep the compressed data in memory if you intend it to persist after loading.
