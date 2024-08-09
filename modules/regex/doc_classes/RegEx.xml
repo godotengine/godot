@@ -58,15 +58,17 @@
 		<method name="compile">
 			<return type="int" enum="Error" />
 			<param index="0" name="pattern" type="String" />
+			<param index="1" name="show_error" type="bool" default="true" />
 			<description>
-				Compiles and assign the search pattern to use. Returns [constant OK] if the compilation is successful. If an error is encountered, details are printed to standard output and an error is returned.
+				Compiles and assign the search pattern to use. Returns [constant OK] if the compilation is successful. If compilation fails, returns [constant FAILED] and when [param show_error] is [code]true[/code], details are printed to standard output.
 			</description>
 		</method>
 		<method name="create_from_string" qualifiers="static">
 			<return type="RegEx" />
 			<param index="0" name="pattern" type="String" />
+			<param index="1" name="show_error" type="bool" default="true" />
 			<description>
-				Creates and compiles a new [RegEx] object.
+				Creates and compiles a new [RegEx] object. See also [method compile].
 			</description>
 		</method>
 		<method name="get_group_count" qualifiers="const">
