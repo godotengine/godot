@@ -455,6 +455,7 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 Error AudioDriverWASAPI::init_output_device(bool p_reinit) {
 	Error err = audio_device_init(&audio_output, false, p_reinit);
 	if (err != OK) {
+		finish_output_device();
 		return err;
 	}
 
@@ -495,6 +496,7 @@ Error AudioDriverWASAPI::init_output_device(bool p_reinit) {
 Error AudioDriverWASAPI::init_input_device(bool p_reinit) {
 	Error err = audio_device_init(&audio_input, true, p_reinit);
 	if (err != OK) {
+		finish_input_device();
 		return err;
 	}
 
