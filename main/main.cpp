@@ -2219,6 +2219,15 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// always convert to lower case for consistency in the code
 	rendering_driver = rendering_driver.to_lower();
 
+#ifdef TOOLS_ENABLED
+	if (!force_res && project_manager) {
+		// Ensure splash screen size matches the project manager window size
+		// (see `editor/project_manager.cpp` for defaults).
+		window_size.width = ProjectManager::DEFAULT_WINDOW_WIDTH;
+		window_size.height = ProjectManager::DEFAULT_WINDOW_HEIGHT;
+	}
+#endif
+
 	if (use_custom_res) {
 		if (!force_res) {
 			window_size.width = GLOBAL_GET("display/window/size/viewport_width");
