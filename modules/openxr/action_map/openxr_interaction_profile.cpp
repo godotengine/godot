@@ -33,7 +33,7 @@
 void OpenXRIPBinding::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_action", "action"), &OpenXRIPBinding::set_action);
 	ClassDB::bind_method(D_METHOD("get_action"), &OpenXRIPBinding::get_action);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "action", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRAction"), "set_action", "get_action");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "action", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRAction", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_action", "get_action");
 
 	ClassDB::bind_method(D_METHOD("get_path_count"), &OpenXRIPBinding::get_path_count);
 	ClassDB::bind_method(D_METHOD("set_paths", "paths"), &OpenXRIPBinding::set_paths);
