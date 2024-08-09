@@ -115,8 +115,15 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 		List<String> *r_missing_deps, Error *r_err) {
 	String blender_path = EDITOR_GET("filesystem/import/blender/blender_path");
 
-	if (blender_major_version == -1 || blender_minor_version == -1) {
-		_get_blender_version(blender_path, blender_major_version, blender_minor_version, nullptr);
+	ERR_FAIL_COND_V_MSG(blender_path.is_empty(), nullptr, "Blender path is empty, check your Editor Settings.");
+	ERR_FAIL_COND_V_MSG(!FileAccess::exists(blender_path), nullptr, vformat("Invalid Blender path: %s, check your Editor Settings.", blender_path));
+
+	if (blender_major_version == -1 || blender_minor_version == -1 || last_tested_blender_path != blender_path) {
+		String error;
+		if (!_get_blender_version(blender_path, blender_major_version, blender_minor_version, &error)) {
+			ERR_FAIL_V_MSG(nullptr, error);
+		}
+		last_tested_blender_path = blender_path;
 	}
 
 	// Get global paths for source and sink.
