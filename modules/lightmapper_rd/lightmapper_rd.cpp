@@ -790,127 +790,137 @@ LightmapperRD::BakeError LightmapperRD::_dilate(RenderingDevice *rd, Ref<RDShade
 	return BAKE_OK;
 }
 
-Error LightmapperRD::_store_pfm(RenderingDevice *p_rd, RID p_atlas_tex, int p_index, const Size2i &p_atlas_size, const String &p_name) {
-	Vector<uint8_t> data = p_rd->texture_get_data(p_atlas_tex, p_index);
-	Ref<Image> img = Image::create_from_data(p_atlas_size.width, p_atlas_size.height, false, Image::FORMAT_RGBAH, data);
-	img->convert(Image::FORMAT_RGBF);
-	Vector<uint8_t> data_float = img->get_data();
-
-	Error err = OK;
-	Ref<FileAccess> file = FileAccess::open(p_name, FileAccess::WRITE, &err);
-	ERR_FAIL_COND_V_MSG(err, err, vformat("Can't save PFN at path: '%s'.", p_name));
-	file->store_line("PF");
-	file->store_line(vformat("%d %d", img->get_width(), img->get_height()));
-#ifdef BIG_ENDIAN_ENABLED
-	file->store_line("1.0");
-#else
-	file->store_line("-1.0");
-#endif
-	file->store_buffer(data_float);
-	file->close();
-
-	return OK;
-}
-
-Ref<Image> LightmapperRD::_read_pfm(const String &p_name) {
-	Error err = OK;
-	Ref<FileAccess> file = FileAccess::open(p_name, FileAccess::READ, &err);
-	ERR_FAIL_COND_V_MSG(err, Ref<Image>(), vformat("Can't load PFM at path: '%s'.", p_name));
-	ERR_FAIL_COND_V(file->get_line() != "PF", Ref<Image>());
-
-	Vector<String> new_size = file->get_line().split(" ");
-	ERR_FAIL_COND_V(new_size.size() != 2, Ref<Image>());
-	int new_width = new_size[0].to_int();
-	int new_height = new_size[1].to_int();
-
-	float endian = file->get_line().to_float();
-	Vector<uint8_t> new_data = file->get_buffer(file->get_length() - file->get_position());
-	file->close();
-
-#ifdef BIG_ENDIAN_ENABLED
-	if (unlikely(endian < 0.0)) {
-		uint32_t count = new_data.size() / 4;
-		uint16_t *dst = (uint16_t *)new_data.ptrw();
-		for (uint32_t j = 0; j < count; j++) {
-			dst[j * 4] = BSWAP32(dst[j * 4]);
-		}
+bool LightmapperRD::_load_oidn(const String &p_library_path) {
+	if (oidn_lib_path == p_library_path) {
+		return oidn_lib_handle != nullptr;
 	}
-#else
-	if (unlikely(endian > 0.0)) {
-		uint32_t count = new_data.size() / 4;
-		uint16_t *dst = (uint16_t *)new_data.ptrw();
-		for (uint32_t j = 0; j < count; j++) {
-			dst[j * 4] = BSWAP32(dst[j * 4]);
-		}
-	}
-#endif
-	Ref<Image> img = Image::create_from_data(new_width, new_height, false, Image::FORMAT_RGBF, new_data);
-	img->convert(Image::FORMAT_RGBAH);
-	return img;
-}
+	oidn_lib_path = p_library_path;
 
-LightmapperRD::BakeError LightmapperRD::_denoise_oidn(RenderingDevice *p_rd, RID p_source_light_tex, RID p_source_normal_tex, RID p_dest_light_tex, const Size2i &p_atlas_size, int p_atlas_slices, bool p_bake_sh, const String &p_exe) {
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	String lib_name;
+	if (OS::get_singleton()->get_name() == "macOS") {
+		lib_name = "libOpenImageDenoise.dylib";
+	} else if (OS::get_singleton()->get_name() == "Windows") {
+		lib_name = "OpenImageDenoise.dll";
+	} else {
+		lib_name = "libOpenImageDenoise.so";
+	}
+	String lib_path = oidn_lib_path.path_join(lib_name);
+	if (!da->file_exists(lib_path)) {
+		lib_path = oidn_lib_path.path_join("lib").path_join(lib_name);
+	}
+	if (!da->file_exists(lib_path)) {
+		lib_path = oidn_lib_path.path_join("..").path_join("lib").path_join(lib_name);
+	}
 
+	_unload_oidn();
+
+	if (OS::get_singleton()->open_dynamic_library(lib_path, oidn_lib_handle, true) != OK) {
+		oidn_lib_handle = nullptr;
+		ERR_PRINT(vformat("Failed to load %s.", lib_path));
+		return false;
+	}
+	bool symbols_ok = true;
+	symbols_ok = symbols_ok && (OS::get_singleton()->get_dynamic_library_symbol_handle(oidn_lib_handle, "oidnNewDevice", (void *&)oidnNewDevice) == OK);
+	symbols_ok = symbols_ok && (OS::get_singleton()->get_dynamic_library_symbol_handle(oidn_lib_handle, "oidnCommitDevice", (void *&)oidnCommitDevice) == OK);
+	symbols_ok = symbols_ok && (OS::get_singleton()->get_dynamic_library_symbol_handle(oidn_lib_handle, "oidnNewFilter", (void *&)oidnNewFilter) == OK);
+	symbols_ok = symbols_ok && (OS::get_singleton()->get_dynamic_library_symbol_handle(oidn_lib_handle, "oidnSetSharedFilterImage", (void *&)oidnSetSharedFilterImage) == OK);
+	symbols_ok = symbols_ok && (OS::get_singleton()->get_dynamic_library_symbol_handle(oidn_lib_handle, "oidnSetFilterBool", (void *&)oidnSetFilterBool) == OK);
+	symbols_ok = symbols_ok && (OS::get_singleton()->get_dynamic_library_symbol_handle(oidn_lib_handle, "oidnCommitFilter", (void *&)oidnCommitFilter) == OK);
+	symbols_ok = symbols_ok && (OS::get_singleton()->get_dynamic_library_symbol_handle(oidn_lib_handle, "oidnExecuteFilter", (void *&)oidnExecuteFilter) == OK);
+	symbols_ok = symbols_ok && (OS::get_singleton()->get_dynamic_library_symbol_handle(oidn_lib_handle, "oidnGetDeviceError", (void *&)oidnGetDeviceError) == OK);
+	symbols_ok = symbols_ok && (OS::get_singleton()->get_dynamic_library_symbol_handle(oidn_lib_handle, "oidnReleaseFilter", (void *&)oidnReleaseFilter) == OK);
+	symbols_ok = symbols_ok && (OS::get_singleton()->get_dynamic_library_symbol_handle(oidn_lib_handle, "oidnReleaseDevice", (void *&)oidnReleaseDevice) == OK);
+	symbols_ok = symbols_ok && (OS::get_singleton()->get_dynamic_library_symbol_handle(oidn_lib_handle, "oidnNewBuffer", (void *&)oidnNewBuffer) == OK);
+	symbols_ok = symbols_ok && (OS::get_singleton()->get_dynamic_library_symbol_handle(oidn_lib_handle, "oidnGetBufferData", (void *&)oidnGetBufferData) == OK);
+	symbols_ok = symbols_ok && (OS::get_singleton()->get_dynamic_library_symbol_handle(oidn_lib_handle, "oidnReadBuffer", (void *&)oidnReadBuffer) == OK);
+	symbols_ok = symbols_ok && (OS::get_singleton()->get_dynamic_library_symbol_handle(oidn_lib_handle, "oidnWriteBuffer", (void *&)oidnWriteBuffer) == OK);
+	symbols_ok = symbols_ok && (OS::get_singleton()->get_dynamic_library_symbol_handle(oidn_lib_handle, "oidnReleaseBuffer", (void *&)oidnReleaseBuffer) == OK);
+	if (!symbols_ok) {
+		ERR_PRINT("Failed to load OIDN symbols.");
+		_unload_oidn();
+		return false;
+	}
+
+	oidn_device = oidnNewDevice(OIDN_DEVICE_TYPE_DEFAULT);
+	oidnCommitDevice(oidn_device);
+	const char *msg = nullptr;
+	if (oidnGetDeviceError(oidn_device, &msg) != OIDN_ERROR_NONE) {
+		ERR_PRINT(vformat("Failed to load OIDN device: %s", msg));
+		_unload_oidn();
+		return false;
+	}
+
+	return true;
+}
+
+void LightmapperRD::_unload_oidn() {
+	if (oidn_lib_handle) {
+		if (oidn_device) {
+			oidnReleaseDevice(oidn_device);
+			oidn_device = nullptr;
+		}
+
+		OS::get_singleton()->close_dynamic_library(oidn_lib_handle);
+		oidn_lib_handle = nullptr;
+	}
+}
+
+LightmapperRD::BakeError LightmapperRD::_denoise_oidn(RenderingDevice *p_rd, RID p_source_light_tex, RID p_source_normal_tex, RID p_dest_light_tex, const Size2i &p_atlas_size, int p_atlas_slices, bool p_bake_sh) {
 	for (int i = 0; i < p_atlas_slices; i++) {
-		String fname_norm_in = EditorPaths::get_singleton()->get_cache_dir().path_join(vformat("temp_norm_%d.pfm", i));
-		_store_pfm(p_rd, p_source_normal_tex, i, p_atlas_size, fname_norm_in);
+		Vector<uint8_t> sn = p_rd->texture_get_data(p_source_normal_tex, i);
+
+		Ref<Image> imgn = Image::create_from_data(p_atlas_size.width, p_atlas_size.height, false, Image::FORMAT_RGBAH, sn);
+		imgn->convert(Image::FORMAT_RGBF);
+		Vector<uint8_t> datan = imgn->get_data();
+		void *bufn = oidnNewBuffer(oidn_device, datan.size());
+		oidnWriteBuffer(bufn, 0, datan.size(), (void *)datan.ptrw());
 
 		for (int j = 0; j < (p_bake_sh ? 4 : 1); j++) {
 			int index = i * (p_bake_sh ? 4 : 1) + j;
-			String fname_light_in = EditorPaths::get_singleton()->get_cache_dir().path_join(vformat("temp_light_%d.pfm", index));
-			String fname_out = EditorPaths::get_singleton()->get_cache_dir().path_join(vformat("temp_denoised_%d.pfm", index));
 
-			_store_pfm(p_rd, p_source_light_tex, index, p_atlas_size, fname_light_in);
+			Vector<uint8_t> sl = p_rd->texture_get_data(p_source_light_tex, index);
 
-			List<String> args;
-			args.push_back("--device");
-			args.push_back("default");
+			Ref<Image> imgl = Image::create_from_data(p_atlas_size.width, p_atlas_size.height, false, Image::FORMAT_RGBAH, sl);
+			imgl->convert(Image::FORMAT_RGBF);
+			Vector<uint8_t> datal = imgl->get_data();
 
-			args.push_back("--filter");
-			args.push_back("RTLightmap");
+			void *bufl = oidnNewBuffer(oidn_device, datal.size());
+			oidnWriteBuffer(bufl, 0, datal.size(), (void *)datal.ptrw());
 
-			args.push_back("--hdr");
-			args.push_back(fname_light_in);
+			void *filter = oidnNewFilter(oidn_device, "RTLightmap");
+			oidnSetSharedFilterImage(filter, "color", oidnGetBufferData(bufl), OIDN_FORMAT_FLOAT3, imgl->get_width(), imgl->get_height(), 0, 0, 0);
+			oidnSetSharedFilterImage(filter, "normal", oidnGetBufferData(bufn), OIDN_FORMAT_FLOAT3, imgn->get_width(), imgn->get_height(), 0, 0, 0);
+			oidnSetSharedFilterImage(filter, "output", oidnGetBufferData(bufl), OIDN_FORMAT_FLOAT3, imgl->get_width(), imgl->get_height(), 0, 0, 0);
+			oidnSetFilterBool(filter, "hdr", true);
+			oidnCommitFilter(filter);
+			oidnExecuteFilter(filter);
 
-			args.push_back("--nrm");
-			args.push_back(fname_norm_in);
-
-			args.push_back("--output");
-			args.push_back(fname_out);
-
-			String str;
-			int exitcode = 0;
-
-			Error err = OS::get_singleton()->execute(p_exe, args, &str, &exitcode, true);
-
-			da->remove(fname_light_in);
-
-			if (err != OK || exitcode != 0) {
-				da->remove(fname_out);
-				print_verbose(str);
-				ERR_FAIL_V_MSG(BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES, vformat("OIDN denoiser failed, return code: %d", exitcode));
+			const char *msg = nullptr;
+			if (oidnGetDeviceError(oidn_device, &msg) != OIDN_ERROR_NONE) {
+				oidnReleaseFilter(filter);
+				ERR_FAIL_V_MSG(BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES, String(msg));
 			}
+			oidnReleaseFilter(filter);
 
-			Ref<Image> img = _read_pfm(fname_out);
-			da->remove(fname_out);
+			oidnReadBuffer(bufl, 0, datal.size(), (void *)datal.ptrw());
+			oidnReleaseBuffer(bufl);
 
-			ERR_FAIL_COND_V(img.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
-
-			Vector<uint8_t> old_data = p_rd->texture_get_data(p_source_light_tex, index);
-			Vector<uint8_t> new_data = img->get_data();
-			img.unref(); // Avoid copy on write.
-
-			uint32_t count = old_data.size() / 2;
-			const uint16_t *src = (const uint16_t *)old_data.ptr();
-			uint16_t *dst = (uint16_t *)new_data.ptrw();
-			for (uint32_t k = 0; k < count; k += 4) {
-				dst[k + 3] = src[k + 3];
+			imgl->set_data(imgl->get_width(), imgl->get_height(), false, imgl->get_format(), datal);
+			imgl->convert(Image::FORMAT_RGBAH);
+			Vector<uint8_t> ds = imgl->get_data();
+			imgl.unref(); // Avoid copy on write.
+			{ // Restore alpha.
+				uint32_t count = sl.size() / 2;
+				const uint16_t *src = (const uint16_t *)sl.ptr();
+				uint16_t *dst = (uint16_t *)ds.ptrw();
+				for (uint32_t k = 0; k < count; k += 4) {
+					dst[k + 3] = src[k + 3];
+				}
 			}
-
-			p_rd->texture_update(p_dest_light_tex, index, new_data);
+			p_rd->texture_update(p_dest_light_tex, index, ds);
 		}
-		da->remove(fname_norm_in);
+		oidnReleaseBuffer(bufn);
 	}
 	return BAKE_OK;
 }
@@ -993,15 +1003,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	if (p_use_denoiser && denoiser == 1) {
 		// OIDN (external).
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-
-		if (da->dir_exists(oidn_path)) {
-			if (OS::get_singleton()->get_name() == "Windows") {
-				oidn_path = oidn_path.path_join("oidnDenoise.exe");
-			} else {
-				oidn_path = oidn_path.path_join("oidnDenoise");
-			}
-		}
-		ERR_FAIL_COND_V_MSG(oidn_path.is_empty() || !da->file_exists(oidn_path), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES, "OIDN denoiser is selected in the project settings, but no or invalid OIDN executable path is configured in the editor settings.");
+		ERR_FAIL_COND_V_MSG(oidn_path.is_empty() || !_load_oidn(oidn_path), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES, "OIDN denoiser is selected in the project settings, but no or invalid OIDN library path is configured in the editor settings.");
 	}
 
 	if (p_step_function) {
@@ -1799,7 +1801,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			BakeError error;
 			if (denoiser == 1) {
 				// OIDN (external).
-				error = _denoise_oidn(rd, light_accum_tex, normal_tex, light_accum_tex, atlas_size, atlas_slices, p_bake_sh, oidn_path);
+				error = _denoise_oidn(rd, light_accum_tex, normal_tex, light_accum_tex, atlas_size, atlas_slices, p_bake_sh);
 			} else {
 				// JNLM (built-in).
 				SWAP(light_accum_tex, light_accum_tex2);
@@ -2076,4 +2078,8 @@ Vector<Color> LightmapperRD::get_bake_probe_sh(int p_probe) const {
 }
 
 LightmapperRD::LightmapperRD() {
+}
+
+LightmapperRD::~LightmapperRD() {
+	_unload_oidn();
 }
