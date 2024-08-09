@@ -551,7 +551,7 @@
 		<member name="debug/gdscript/warnings/redundant_static_unload" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when the [code]@static_unload[/code] annotation is used in a script without any static variables.
 		</member>
-		<member name="debug/gdscript/warnings/renamed_in_godot_4_hint" type="bool" setter="" getter="" default="1">
+		<member name="debug/gdscript/warnings/renamed_in_godot_4_hint" type="bool" setter="" getter="" default="true">
 			When enabled, using a property, enum, or function that was renamed since Godot 3 will produce a hint if an error occurs.
 		</member>
 		<member name="debug/gdscript/warnings/return_value_discarded" type="int" setter="" getter="" default="0">
