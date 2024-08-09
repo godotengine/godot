@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/camera_3d.h"
@@ -41,6 +42,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/color_rect.h"
+#include "scene/gui/label.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/3d/fog_material.h"
@@ -80,11 +82,15 @@ void MaterialEditor::_notification(int p_what) {
 
 			sphere_switch->set_icon(theme_cache.sphere_icon);
 			box_switch->set_icon(theme_cache.box_icon);
+
+			error_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			Size2 size = get_size();
-			draw_texture_rect(theme_cache.checkerboard, Rect2(Point2(), size), true);
+			if (!is_unsupported_shader_mode) {
+				Size2 size = get_size();
+				draw_texture_rect(theme_cache.checkerboard, Rect2(Point2(), size), true);
+			}
 		} break;
 	}
 }
@@ -99,16 +105,20 @@ void MaterialEditor::_update_rotation() {
 void MaterialEditor::edit(Ref<Material> p_material, const Ref<Environment> &p_env) {
 	material = p_material;
 	camera->set_environment(p_env);
+
+	is_unsupported_shader_mode = false;
 	if (!material.is_null()) {
 		Shader::Mode mode = p_material->get_shader_mode();
 		switch (mode) {
 			case Shader::MODE_CANVAS_ITEM:
+				layout_error->hide();
 				layout_3d->hide();
 				layout_2d->show();
 				vc->hide();
 				rect_instance->set_material(material);
 				break;
 			case Shader::MODE_SPATIAL:
+				layout_error->hide();
 				layout_2d->hide();
 				layout_3d->show();
 				vc->show();
@@ -116,6 +126,11 @@ void MaterialEditor::edit(Ref<Material> p_material, const Ref<Environment> &p_en
 				box_instance->set_material_override(material);
 				break;
 			default:
+				layout_error->show();
+				layout_2d->hide();
+				layout_3d->hide();
+				vc->hide();
+				is_unsupported_shader_mode = true;
 				break;
 		}
 	} else {
@@ -174,6 +189,20 @@ MaterialEditor::MaterialEditor() {
 	rect_instance->set_custom_minimum_size(Size2(150, 150) * EDSCALE);
 
 	layout_2d->set_visible(false);
+
+	layout_error = memnew(VBoxContainer);
+	layout_error->set_alignment(BoxContainer::ALIGNMENT_CENTER);
+	layout_error->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+
+	error_label = memnew(Label);
+	error_label->set_text(TTR("Preview is not available for this shader mode."));
+	error_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	error_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+	error_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+
+	layout_error->add_child(error_label);
+	layout_error->hide();
+	add_child(layout_error);
 
 	// Spatial
 
