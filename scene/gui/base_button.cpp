@@ -144,7 +144,9 @@ void BaseButton::_toggled(bool p_pressed) {
 }
 
 void BaseButton::on_action_event(Ref<InputEvent> p_event) {
-	if (p_event->is_pressed()) {
+	Ref<InputEventMouseButton> mouse_button = p_event;
+
+	if (p_event->is_pressed() && (mouse_button.is_null() || status.hovering)) {
 		status.press_attempt = true;
 		status.pressing_inside = true;
 		emit_signal(SNAME("button_down"));
@@ -174,7 +176,6 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 	}
 
 	if (!p_event->is_pressed()) {
-		Ref<InputEventMouseButton> mouse_button = p_event;
 		if (mouse_button.is_valid()) {
 			if (!has_point(mouse_button->get_position())) {
 				status.hovering = false;

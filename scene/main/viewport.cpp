@@ -1777,7 +1777,12 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					Control *control = Object::cast_to<Control>(ci);
 					if (control) {
 						if (control->get_focus_mode() != Control::FOCUS_NONE) {
-							if (control != gui.key_focus) {
+							// Grabbing unhovered focus can cause issues when mouse is dragged
+							// with another button held down.
+							Control *under_mouse = gui_find_control(mpos);
+							bool pass_mouse = under_mouse != nullptr && under_mouse->data.mouse_filter == Control::MOUSE_FILTER_PASS;
+
+							if (control != gui.key_focus && (control == under_mouse || pass_mouse)) {
 								control->grab_focus();
 							}
 							break;
@@ -3263,6 +3268,12 @@ void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 
 	if (!is_input_handled()) {
 		_push_unhandled_input_internal(ev);
+	}
+
+	// Update mouse over again in case button event triggered changes to controls.
+	Ref<InputEventMouseButton> mb = ev;
+	if (mb.is_valid() && is_input_handled()) {
+		_update_mouse_over();
 	}
 
 	event_count++;
