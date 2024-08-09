@@ -148,7 +148,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 		/* chunk size */
 		uint32_t chunksize = file->get_32();
-		uint32_t file_pos = file->get_position(); //save file pos, so we can skip to next chunk safely
+		uint64_t file_pos = file->get_position(); //save file pos, so we can skip to next chunk safely
 
 		if (file->eof_reached()) {
 			//ERR_PRINT("EOF REACH");
@@ -196,6 +196,8 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 				ERR_PRINT("'data' chunk before 'format' chunk found.");
 				break;
 			}
+
+			ERR_FAIL_COND_V_MSG(chunksize > INT_MAX, ERR_INVALID_DATA, "WAV file '" + p_source_file + "' is too large (> 2 GiB of data). Try using a compressed format such as Ogg Vorbis or MP3 instead.");
 
 			frames = chunksize;
 
