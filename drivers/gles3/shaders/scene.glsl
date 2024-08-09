@@ -1971,7 +1971,7 @@ void main() {
 
 #ifdef LIGHT_USE_PSSM_BLEND
 			directional_shadow2 = shadow2;
-			pssm_blend = smoothstep(0.0, light_split_offsets.x, depth_z);
+			pssm_blend = smoothstep(light_split_offsets.x - light_split_offsets.x * 0.1, light_split_offsets.x, depth_z);
 #endif
 		} else {
 			directional_shadow = shadow2;
@@ -2012,7 +2012,7 @@ void main() {
 #ifdef LIGHT_USE_PSSM_BLEND
 				directional_shadow2 = shadow2;
 
-				pssm_blend = smoothstep(0.0, light_split_offsets.x, depth_z);
+				pssm_blend = smoothstep(light_split_offsets.x - light_split_offsets.x * 0.1, light_split_offsets.x, depth_z);
 #endif
 			} else {
 				directional_shadow = shadow2;
@@ -2020,7 +2020,7 @@ void main() {
 #ifdef LIGHT_USE_PSSM_BLEND
 				directional_shadow2 = shadow3;
 
-				pssm_blend = smoothstep(light_split_offsets.x, light_split_offsets.y, depth_z);
+				pssm_blend = smoothstep(light_split_offsets.y - light_split_offsets.y * 0.1, light_split_offsets.y, depth_z);
 #endif
 			}
 		} else {
@@ -2029,7 +2029,7 @@ void main() {
 
 #if defined(LIGHT_USE_PSSM_BLEND)
 				directional_shadow2 = shadow4;
-				pssm_blend = smoothstep(light_split_offsets.y, light_split_offsets.z, depth_z);
+				pssm_blend = smoothstep(light_split_offsets.z - light_split_offsets.z * 0.1, light_split_offsets.z, depth_z);
 #endif
 
 			} else {
