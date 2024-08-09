@@ -1691,8 +1691,18 @@ int Engine::get_frames_drawn() {
 	return ::Engine::get_singleton()->get_frames_drawn();
 }
 
+String Engine::get_current_rendering_driver_name() const {
+	// Needs to remain in OS, since it's actually OS that interacts with it, but it's better exposed here.
+	return ::OS::get_singleton()->get_current_rendering_driver_name();
+}
+
+String Engine::get_current_rendering_method() const {
+	// Needs to remain in OS, since it's actually OS that interacts with it, but it's better exposed here.
+	return ::OS::get_singleton()->get_current_rendering_method();
+}
+
 MainLoop *Engine::get_main_loop() const {
-	// Needs to remain in OS, since it's actually OS that interacts with it, but it's better exposed here
+	// Needs to remain in OS, since it's actually OS that interacts with it, but it's better exposed here.
 	return ::OS::get_singleton()->get_main_loop();
 }
 
@@ -1829,6 +1839,9 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_frames_per_second"), &Engine::get_frames_per_second);
 	ClassDB::bind_method(D_METHOD("get_physics_frames"), &Engine::get_physics_frames);
 	ClassDB::bind_method(D_METHOD("get_process_frames"), &Engine::get_process_frames);
+
+	ClassDB::bind_method(D_METHOD("get_current_rendering_driver_name"), &Engine::get_current_rendering_driver_name);
+	ClassDB::bind_method(D_METHOD("get_current_rendering_method"), &Engine::get_current_rendering_method);
 
 	ClassDB::bind_method(D_METHOD("get_main_loop"), &Engine::get_main_loop);
 

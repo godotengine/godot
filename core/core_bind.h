@@ -509,6 +509,9 @@ public:
 
 	int get_frames_drawn();
 
+	String get_current_rendering_driver_name() const;
+	String get_current_rendering_method() const;
+
 	void set_time_scale(double p_scale);
 	double get_time_scale();
 
