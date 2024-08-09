@@ -4990,7 +4990,7 @@ void DisplayServerX11::process_events() {
 				Ref<InputEventMouseMotion> mm;
 				mm.instantiate();
 
-				mm->set_window_id(window_id);
+				mm->set_window_id(focused_window_id);
 				if (xi.pressure_supported) {
 					mm->set_pressure(xi.pressure);
 				} else {
@@ -5011,37 +5011,18 @@ void DisplayServerX11::process_events() {
 
 				last_mouse_pos = pos;
 
-				// printf("rel: %d,%d\n", rel.x, rel.y );
-				// Don't propagate the motion event unless we have focus
-				// this is so that the relative motion doesn't get messed up
-				// after we regain focus.
-				if (focused) {
-					Input::get_singleton()->parse_input_event(mm);
+				if (windows[focused_window_id].mpass || wd.is_popup) {
+					mm->set_window_id(window_id);
 				} else {
-					// Propagate the event to the focused window,
-					// because it's received only on the topmost window.
-					// Note: This is needed for drag & drop to work between windows,
-					// because the engine expects events to keep being processed
-					// on the same window dragging started.
-					for (const KeyValue<WindowID, WindowData> &E : windows) {
-						const WindowData &wd_other = E.value;
-						if (wd_other.focused) {
-							int x, y;
-							Window child;
-							XTranslateCoordinates(x11_display, wd.x11_window, wd_other.x11_window, event.xmotion.x, event.xmotion.y, &x, &y, &child);
+					int x, y;
+					Window child;
+					XTranslateCoordinates(x11_display, wd.x11_window, windows[focused_window_id].x11_window, event.xmotion.x, event.xmotion.y, &x, &y, &child);
 
-							Point2i pos_focused(x, y);
-
-							mm->set_window_id(E.key);
-							mm->set_position(pos_focused);
-							mm->set_global_position(pos_focused);
-							mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
-							Input::get_singleton()->parse_input_event(mm);
-
-							break;
-						}
-					}
+					Point2i pos_focused(x, y);
+					mm->set_position(pos_focused);
+					mm->set_global_position(pos_focused);
 				}
+				Input::get_singleton()->parse_input_event(mm);
 
 			} break;
 			case KeyPress:
