@@ -107,7 +107,10 @@
 		<constant name="HAND_TRACKING_SOURCE_CONTROLLER" value="2" enum="HandTrackingSource">
 			The source of hand tracking data is a controller, meaning that joint positions are inferred from controller inputs.
 		</constant>
-		<constant name="HAND_TRACKING_SOURCE_MAX" value="3" enum="HandTrackingSource">
+		<constant name="HAND_TRACKING_SOURCE_NOT_TRACKED" value="3" enum="HandTrackingSource">
+			No hand tracking data is tracked, this either means the hand is obscured, the controller is turned off, or tracking is not supported for the current input type.
+		</constant>
+		<constant name="HAND_TRACKING_SOURCE_MAX" value="4" enum="HandTrackingSource">
 			Represents the size of the [enum HandTrackingSource] enum.
 		</constant>
 		<constant name="HAND_JOINT_PALM" value="0" enum="HandJoint">
