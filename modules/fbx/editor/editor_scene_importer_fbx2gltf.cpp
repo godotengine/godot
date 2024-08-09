@@ -124,7 +124,7 @@ Node *EditorSceneFormatImporterFBX2GLTF::import_scene(const String &p_path, uint
 #endif
 }
 
-Variant EditorSceneFormatImporterFBX2GLTF::get_option_visibility(const String &p_path, bool p_for_animation,
+Variant EditorSceneFormatImporterFBX2GLTF::get_option_visibility(const String &p_path, const String &p_scene_import_type,
 		const String &p_option, const HashMap<StringName, Variant> &p_options) {
 	// Remove all the FBX options except for 'fbx/importer' if the importer is fbx2gltf.
 	// These options are available only for ufbx.
