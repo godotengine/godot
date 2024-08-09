@@ -83,6 +83,9 @@ private:
 		SPEC_CONSTANT_USE_DEPTH_FOG = 16,
 		SPEC_CONSTANT_IS_MULTIMESH = 17,
 
+		// 15 is used by sc_luminance_multiplier
+		SPEC_CONSTANT_SINGLE_DIRECTIONAL_LIGHT = 16,
+
 	};
 
 	enum {

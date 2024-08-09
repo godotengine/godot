@@ -521,6 +521,7 @@ layout(constant_id = 9) const bool sc_disable_omni_lights = false;
 layout(constant_id = 10) const bool sc_disable_spot_lights = false;
 layout(constant_id = 11) const bool sc_disable_reflection_probes = false;
 layout(constant_id = 12) const bool sc_disable_directional_lights = false;
+layout(constant_id = 16) const bool sc_single_directional_light = false;
 
 #endif //!MODE_UNSHADED
 
@@ -1321,13 +1322,14 @@ void main() {
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
 	if (!sc_disable_directional_lights) { //directional light
+		const uint max_directional_lights = sc_single_directional_light ? 1u : 8u;
 #ifndef SHADOWS_DISABLED
 		// Do shadow and lighting in two passes to reduce register pressure
 		uint shadow0 = 0;
 		uint shadow1 = 0;
 
-		for (uint i = 0; i < 8; i++) {
-			if (i >= scene_data.directional_light_count) {
+		for (uint i = 0; i < max_directional_lights; i++) {
+			if (!sc_single_directional_light && i >= scene_data.directional_light_count) {
 				break;
 			}
 
@@ -1598,8 +1600,8 @@ void main() {
 
 #endif // SHADOWS_DISABLED
 
-		for (uint i = 0; i < 8; i++) {
-			if (i >= scene_data.directional_light_count) {
+		for (uint i = 0; i < max_directional_lights; i++) {
+			if (!sc_single_directional_light && i >= scene_data.directional_light_count) {
 				break;
 			}
 
