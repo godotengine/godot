@@ -73,6 +73,9 @@ public:
 		CLIP_CHILDREN_MAX,
 	};
 
+	static bool is_default_inherit_visibility_layer();
+	static void set_default_inherit_visibility_layer(bool p_enable);
+
 private:
 	mutable SelfList<Node>
 			xform_change;
@@ -90,6 +93,8 @@ private:
 
 	int light_mask = 1;
 	uint32_t visibility_layer = 1;
+	static bool default_inherit_visibility_layer;
+	bool inherit_visibility_layer = is_default_inherit_visibility_layer();
 
 	int z_index = 0;
 	bool z_relative = true;
@@ -257,6 +262,8 @@ public:
 
 	void set_visibility_layer(uint32_t p_visibility_layer);
 	uint32_t get_visibility_layer() const;
+	void set_inherit_visibility_layer(bool p_enable);
+	bool is_inherit_visibility_layer() const;
 
 	void set_visibility_layer_bit(uint32_t p_visibility_layer, bool p_enable);
 	bool get_visibility_layer_bit(uint32_t p_visibility_layer) const;

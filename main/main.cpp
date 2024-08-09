@@ -3818,6 +3818,7 @@ int Main::start() {
 					Viewport::DefaultCanvasItemTextureFilter(texture_filter));
 			sml->get_root()->set_default_canvas_item_texture_repeat(
 					Viewport::DefaultCanvasItemTextureRepeat(texture_repeat));
+			CanvasItem::set_default_inherit_visibility_layer(GLOBAL_GET("rendering/2d/visibility/inherit_visibility_layer"));
 		}
 
 #ifdef TOOLS_ENABLED

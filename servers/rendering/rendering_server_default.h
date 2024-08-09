@@ -871,6 +871,7 @@ public:
 	FUNC2(canvas_item_set_light_mask, RID, int)
 
 	FUNC2(canvas_item_set_visibility_layer, RID, uint32_t)
+	FUNC2(canvas_item_set_inherit_visibility_layer, RID, bool)
 
 	FUNC2(canvas_item_set_update_when_visible, RID, bool)
 
