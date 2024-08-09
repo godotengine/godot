@@ -4368,7 +4368,7 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 			return false;
 		}
 
-		if (export_type.is_variant() || export_type.has_no_type()) {
+		if (export_type.has_no_type()) {
 			push_error(R"(Cannot use simple "@export" annotation because the type of the initialized value can't be inferred.)", p_annotation);
 			return false;
 		}
@@ -4419,6 +4419,12 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 					variable->export_info.hint_string = enum_hint_string;
 					variable->export_info.usage |= PROPERTY_USAGE_CLASS_IS_ENUM;
 					variable->export_info.class_name = String(export_type.native_type).replace("::", ".");
+				}
+			} break;
+			case GDScriptParser::DataType::VARIANT: {
+				if (export_type.is_variant()) {
+					variable->export_info.type = Variant::NIL;
+					variable->export_info.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 				}
 			} break;
 			default:
