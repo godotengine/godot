@@ -230,6 +230,18 @@ Files extracted from upstream source:
   ```
 - `AUTHORS.txt` and `LICENSE.txt`
 
+## fakeit
+
+- Upstream: https://github.com/eranpeer/FakeIt
+- Version: 2.4.0 (cb39d8a053876f74dfeed66dd335d3041f142095, 2023)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `fakeit.hpp`
+- `LICENSE`
+
+
 ## fonts
 
 - `DroidSans*.woff2`:
