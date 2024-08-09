@@ -66,6 +66,45 @@ void Shape3D::set_margin(real_t p_margin) {
 	PhysicsServer3D::get_singleton()->shape_set_margin(shape, margin);
 }
 
+#ifdef DEBUG_ENABLED
+void Shape3D::set_debug_color(const Color &p_color) {
+	if (p_color == Color(0.0, 0.0, 0.0, 0.0)) {
+		debug_color = SceneTree::get_singleton()->get_debug_collisions_color();
+	} else {
+		debug_color = p_color;
+	}
+	_update_shape();
+}
+
+Color Shape3D::get_debug_color() const {
+	return debug_color;
+}
+
+void Shape3D::set_enable_debug_fill(bool p_enable) {
+	debug_fill = p_enable;
+	_update_shape();
+}
+
+bool Shape3D::get_enable_debug_fill() const {
+	return debug_fill;
+}
+
+bool Shape3D::_property_can_revert(const StringName &p_name) const {
+	if (p_name == "debug_color") {
+		return true;
+	}
+	return false;
+}
+
+bool Shape3D::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	if (p_name == "debug_color") {
+		r_property = SceneTree::get_singleton()->get_debug_collisions_color();
+		return true;
+	}
+	return false;
+}
+#endif // DEBUG_ENABLED
+
 Ref<ArrayMesh> Shape3D::get_debug_mesh() {
 	if (debug_mesh_cache.is_valid()) {
 		return debug_mesh_cache;
@@ -75,31 +114,61 @@ Ref<ArrayMesh> Shape3D::get_debug_mesh() {
 
 	debug_mesh_cache = Ref<ArrayMesh>(memnew(ArrayMesh));
 
+	const Color lines_color = debug_color;
+
 	if (!lines.is_empty()) {
 		//make mesh
 		Vector<Vector3> array;
 		array.resize(lines.size());
-		{
-			Vector3 *w = array.ptrw();
-			for (int i = 0; i < lines.size(); i++) {
-				w[i] = lines[i];
-			}
+		Vector3 *v = array.ptrw();
+
+		Vector<Color> arraycol;
+		arraycol.resize(lines.size());
+		Color *c = arraycol.ptrw();
+
+		for (int i = 0; i < lines.size(); i++) {
+			v[i] = lines[i];
+			c[i] = lines_color;
 		}
 
-		Array arr;
-		arr.resize(Mesh::ARRAY_MAX);
-		arr[Mesh::ARRAY_VERTEX] = array;
+		Array lines_array;
+		lines_array.resize(Mesh::ARRAY_MAX);
+		lines_array[Mesh::ARRAY_VERTEX] = array;
+		lines_array[Mesh::ARRAY_COLOR] = arraycol;
 
-		SceneTree *st = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
+		Ref<StandardMaterial3D> material = get_debug_collision_material();
 
-		debug_mesh_cache->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, arr);
+		debug_mesh_cache->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, lines_array);
+		debug_mesh_cache->surface_set_material(0, material);
 
-		if (st) {
-			debug_mesh_cache->surface_set_material(0, st->get_debug_collision_material());
+		if (debug_fill) {
+			Array solid_array = get_debug_arraymesh_faces(debug_color * Color(1.0, 1.0, 1.0, 0.0625))->surface_get_arrays(0);
+			debug_mesh_cache->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, solid_array);
+			debug_mesh_cache->surface_set_material(1, material);
 		}
 	}
 
 	return debug_mesh_cache;
+}
+
+Ref<Material> Shape3D::get_debug_collision_material() {
+	if (collision_material.is_valid()) {
+		return collision_material;
+	}
+
+	Ref<StandardMaterial3D> material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+	material->set_albedo(Color(1.0, 1.0, 1.0));
+	material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+	material->set_render_priority(StandardMaterial3D::RENDER_PRIORITY_MIN + 1);
+	material->set_cull_mode(StandardMaterial3D::CULL_BACK);
+	material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
+	material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+
+	collision_material = material;
+
+	return collision_material;
 }
 
 void Shape3D::_update_shape() {
@@ -118,6 +187,20 @@ void Shape3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "custom_solver_bias", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_custom_solver_bias", "get_custom_solver_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin", PROPERTY_HINT_RANGE, "0,10,0.001,or_greater,suffix:m"), "set_margin", "get_margin");
+
+#ifdef DEBUG_ENABLED
+	ClassDB::bind_method(D_METHOD("set_debug_color", "color"), &Shape3D::set_debug_color);
+	ClassDB::bind_method(D_METHOD("get_debug_color"), &Shape3D::get_debug_color);
+
+	ClassDB::bind_method(D_METHOD("set_enable_debug_fill", "enable"), &Shape3D::set_enable_debug_fill);
+	ClassDB::bind_method(D_METHOD("get_enable_debug_fill"), &Shape3D::get_enable_debug_fill);
+
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "debug_color"), "set_debug_color", "get_debug_color");
+	// Default value depends on a project setting, override for doc generation purposes.
+	ADD_PROPERTY_DEFAULT("debug_color", Color(0.0, 0.0, 0.0, 0.0));
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_fill"), "set_enable_debug_fill", "get_enable_debug_fill");
+#endif // DEBUG_ENABLED
 }
 
 Shape3D::Shape3D() {
@@ -125,7 +208,9 @@ Shape3D::Shape3D() {
 }
 
 Shape3D::Shape3D(RID p_shape) :
-		shape(p_shape) {}
+		shape(p_shape) {
+	debug_color = SceneTree::get_singleton()->get_debug_collisions_color();
+}
 
 Shape3D::~Shape3D() {
 	ERR_FAIL_NULL(PhysicsServer3D::get_singleton());
