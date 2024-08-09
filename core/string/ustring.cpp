@@ -1639,13 +1639,43 @@ Vector<int> String::split_ints_mk(const Vector<String> &p_splitters, bool p_allo
 }
 
 String String::join(const Vector<String> &parts) const {
-	String ret;
-	for (int i = 0; i < parts.size(); ++i) {
-		if (i > 0) {
-			ret += *this;
-		}
-		ret += parts[i];
+	if (parts.is_empty()) {
+		return String();
+	} else if (parts.size() == 1) {
+		return parts[0];
 	}
+
+	const int this_length = length();
+
+	int new_size = (parts.size() - 1) * this_length;
+	for (const String &part : parts) {
+		new_size += part.length();
+	}
+	new_size += 1;
+
+	String ret;
+	ret.resize(new_size);
+	char32_t *ret_ptrw = ret.ptrw();
+	const char32_t *this_ptr = ptr();
+
+	bool first = true;
+	for (const String &part : parts) {
+		if (first) {
+			first = false;
+		} else if (this_length) {
+			memcpy(ret_ptrw, this_ptr, this_length * sizeof(char32_t));
+			ret_ptrw += this_length;
+		}
+
+		const int part_length = part.length();
+		if (part_length) {
+			memcpy(ret_ptrw, part.ptr(), part_length * sizeof(char32_t));
+			ret_ptrw += part_length;
+		}
+	}
+
+	*ret_ptrw = 0;
+
 	return ret;
 }
 
