@@ -32,7 +32,7 @@
 #define KINEMATIC_COLLISION_3D_H
 
 #include "core/object/ref_counted.h"
-#include "servers/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 
 class CharacterBody3D;
 class PhysicsBody3D;

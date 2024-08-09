@@ -31,7 +31,7 @@
 #ifndef GODOT_BODY_DIRECT_STATE_2D_H
 #define GODOT_BODY_DIRECT_STATE_2D_H
 
-#include "servers/physics_server_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 
 class GodotBody2D;
 

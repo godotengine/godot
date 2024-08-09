@@ -30,7 +30,7 @@
 
 #include "camera_feed.h"
 
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 void CameraFeed::_bind_methods() {
 	// The setters prefixed with _ are only exposed so we can have feeds through GDExtension!

@@ -36,7 +36,7 @@
 #include "core/templates/self_list.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_method.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 #include "storage/render_scene_buffers.h"
 
 #ifndef _3D_DISABLED

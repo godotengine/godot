@@ -161,12 +161,12 @@
 
 #include "scene/theme/theme_db.h"
 #ifndef _3D_DISABLED
-#include "servers/navigation_server_2d.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation/navigation_server_2d.h"
+#include "servers/navigation/navigation_server_3d.h"
 #endif // _3D_DISABLED
-#include "servers/physics_server_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 #ifndef _3D_DISABLED
-#include "servers/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 #endif // _3D_DISABLED
 #include "servers/rendering/rendering_server_default.h"
 

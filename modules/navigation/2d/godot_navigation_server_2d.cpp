@@ -34,7 +34,7 @@
 #include "nav_mesh_generator_2d.h"
 #endif // CLIPPER2_ENABLED
 
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation/navigation_server_3d.h"
 
 #define FORWARD_0(FUNC_NAME)                                     \
 	GodotNavigationServer2D::FUNC_NAME() {                       \

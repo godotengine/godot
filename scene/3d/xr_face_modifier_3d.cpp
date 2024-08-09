@@ -31,7 +31,7 @@
 #include "xr_face_modifier_3d.h"
 
 #include "servers/xr/xr_face_tracker.h"
-#include "servers/xr_server.h"
+#include "servers/xr/xr_server.h"
 
 // This method takes the name of a mesh blend shape and returns the
 // corresponding XRFaceTracker blend shape. If no match is

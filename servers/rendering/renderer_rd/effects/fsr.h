@@ -35,7 +35,7 @@
 #include "../storage_rd/render_scene_buffers_rd.h"
 #include "servers/rendering/renderer_rd/shaders/effects/fsr_upscale.glsl.gen.h"
 #include "servers/rendering/renderer_scene_render.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 namespace RendererRD {
 

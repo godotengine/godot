@@ -30,7 +30,7 @@
 
 #include "texture_rect.h"
 
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 void TextureRect::_notification(int p_what) {
 	switch (p_what) {

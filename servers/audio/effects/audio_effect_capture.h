@@ -37,7 +37,7 @@
 #include "core/templates/ring_buffer.h"
 #include "core/templates/vector.h"
 #include "servers/audio/audio_effect.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 class AudioEffectCapture;
 

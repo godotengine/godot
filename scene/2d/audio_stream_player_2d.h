@@ -32,7 +32,7 @@
 #define AUDIO_STREAM_PLAYER_2D_H
 
 #include "scene/2d/node_2d.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 struct AudioFrame;
 class AudioStream;

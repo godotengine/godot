@@ -36,7 +36,7 @@
 #include "core/variant/native_ptr.h"
 #include "core/variant/type_info.h"
 #include "core/variant/typed_array.h"
-#include "servers/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 
 class PhysicsDirectBodyState3DExtension : public PhysicsDirectBodyState3D {
 	GDCLASS(PhysicsDirectBodyState3DExtension, PhysicsDirectBodyState3D);

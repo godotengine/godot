@@ -30,7 +30,7 @@
 
 #include "navigation_server_2d.h"
 
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation/navigation_server_3d.h"
 
 NavigationServer2D *NavigationServer2D::singleton = nullptr;
 

@@ -31,7 +31,7 @@
 #ifndef DISPLAY_SERVER_HEADLESS_H
 #define DISPLAY_SERVER_HEADLESS_H
 
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 

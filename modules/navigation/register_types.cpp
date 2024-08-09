@@ -44,8 +44,8 @@
 #endif
 
 #include "core/config/engine.h"
-#include "servers/navigation_server_2d.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation/navigation_server_2d.h"
+#include "servers/navigation/navigation_server_3d.h"
 
 #ifndef DISABLE_DEPRECATED
 #ifndef _3D_DISABLED

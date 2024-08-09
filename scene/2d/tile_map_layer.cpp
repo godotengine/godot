@@ -34,10 +34,10 @@
 #include "scene/2d/tile_map.h"
 #include "scene/gui/control.h"
 #include "scene/resources/world_2d.h"
-#include "servers/navigation_server_2d.h"
+#include "servers/navigation/navigation_server_2d.h"
 
 #ifdef DEBUG_ENABLED
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation/navigation_server_3d.h"
 #endif // DEBUG_ENABLED
 
 #ifdef DEBUG_ENABLED

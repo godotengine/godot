@@ -49,7 +49,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/spin_box.h"
 
-#include "servers/navigation_server_2d.h"
+#include "servers/navigation/navigation_server_2d.h"
 
 void TileDataEditor::_tile_set_changed_plan_update() {
 	_tile_set_changed_update_needed = true;

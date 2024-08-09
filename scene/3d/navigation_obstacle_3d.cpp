@@ -31,7 +31,7 @@
 #include "navigation_obstacle_3d.h"
 
 #include "core/math/geometry_2d.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation/navigation_server_3d.h"
 
 void NavigationObstacle3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationObstacle3D::get_rid);

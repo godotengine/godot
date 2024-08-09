@@ -33,8 +33,8 @@
 
 #include "core/io/image.h"
 #include "core/math/transform_2d.h"
-#include "servers/camera_server.h"
-#include "servers/rendering_server.h"
+#include "servers/camera/camera_server.h"
+#include "servers/rendering/rendering_server.h"
 
 /**
 	The camera server is a singleton object that gives access to the various

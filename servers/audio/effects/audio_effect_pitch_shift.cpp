@@ -31,7 +31,7 @@
 #include "audio_effect_pitch_shift.h"
 
 #include "core/math/math_funcs.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 /* Thirdparty code, so disable clang-format with Godot style */
 /* clang-format off */

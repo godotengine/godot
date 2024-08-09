@@ -31,7 +31,7 @@
 #ifndef TEST_NAVIGATION_SERVER_2D_H
 #define TEST_NAVIGATION_SERVER_2D_H
 
-#include "servers/navigation_server_2d.h"
+#include "servers/navigation/navigation_server_2d.h"
 
 #include "tests/test_macros.h"
 

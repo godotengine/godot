@@ -38,7 +38,7 @@
 #include "scene/resources/3d/shape_3d.h"
 #endif // _3D_DISABLED
 #include "scene/resources/material.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 class ConcavePolygonShape3D;
 class ConvexPolygonShape3D;
