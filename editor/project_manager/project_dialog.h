@@ -122,6 +122,7 @@ private:
 	void _project_path_selected(const String &p_path);
 	void _install_path_selected(const String &p_path);
 
+	void _reset_name();
 	void _renderer_selected();
 	void _nonempty_confirmation_ok_pressed();
 
