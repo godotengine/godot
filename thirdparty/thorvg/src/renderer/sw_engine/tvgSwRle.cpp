@@ -358,7 +358,7 @@ static void _horizLine(RleWorker& rw, SwCoord x, SwCoord y, SwCoord area, SwCoor
             rle->spans = static_cast<SwSpan*>(realloc(rle->spans, rle->alloc * sizeof(SwSpan)));
         }
     }
-
+        
     //Clip x range
     SwCoord xOver = 0;
     if (x + acount >= rw.cellMax.x) xOver -= (x + acount - rw.cellMax.x);

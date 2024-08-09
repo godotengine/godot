@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="LottieTexture2D" inherits="Texture2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="create_from_json" qualifiers="static">
+			<return type="LottieTexture2D" />
+			<param index="0" name="p_json" type="JSON" />
+			<description>
+			</description>
+		</method>
+		<method name="get_lottie_duration">
+			<return type="float" />
+			<description>
+				Returns the Lottie animation duration.
+			</description>
+		</method>
+		<method name="get_lottie_frame_count">
+			<return type="float" />
+			<description>
+				Returns the Lottie animation total frame.
+			</description>
+		</method>
+		<method name="get_lottie_image_size">
+			<return type="Vector2" />
+			<description>
+				Returns the Lottie image size of each frame.
+			</description>
+		</method>
+		<method name="update">
+			<return type="void" />
+			<param index="0" name="p_json" type="JSON" />
+			<param index="1" name="p_frame_begin" type="float" />
+			<param index="2" name="p_frame_end" type="float" />
+			<param index="3" name="p_frame_count" type="int" />
+			<param index="4" name="p_scale" type="float" />
+			<param index="5" name="p_columns" type="int" />
+			<description>
+				Sets all properties at once, which is more efficient than setting properties one by one.
+			</description>
+		</method>
+		<method name="validate_json" qualifiers="static">
+			<return type="bool" />
+			<param index="0" name="p_json" type="JSON" />
+			<description>
+				Validates if [param p_json] is a Lottie file.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="columns" type="int" setter="set_columns" getter="get_columns" default="0">
+			The columns of the sprite sheet, automatically arranged if not more than 0.
+		</member>
+		<member name="frame_begin" type="float" setter="set_frame_begin" getter="get_frame_begin" default="0.0">
+			The begin frame of the sprite sheet. Range of 0 to [method get_lottie_frame_count]
+		</member>
+		<member name="frame_count" type="int" setter="set_frame_count" getter="get_frame_count" default="1">
+			The frame count of the sprite sheet.
+		</member>
+		<member name="frame_end" type="float" setter="set_frame_end" getter="get_frame_end" default="0.0">
+			The end frame of the sprite sheet. Range of [member frame_begin] to [method get_lottie_frame_count]
+		</member>
+		<member name="json" type="JSON" setter="set_json" getter="get_json">
+			The Lottie JSON file.
+		</member>
+		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="false" />
+		<member name="scale" type="float" setter="set_scale" getter="get_scale" default="1.0">
+			The scaling factor of the Lottie. Set it to change the texture size.
+		</member>
+	</members>
+</class>
