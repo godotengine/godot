@@ -448,8 +448,11 @@ void EditorDebuggerNode::_debugger_stopped(int p_id) {
 		}
 	});
 	if (!found) {
-		EditorRunBar::get_singleton()->get_pause_button()->set_pressed(false);
-		EditorRunBar::get_singleton()->get_pause_button()->set_disabled(true);
+		Button *pause_btn = EditorRunBar::get_singleton()->get_pause_button();
+		pause_btn->set_pressed(false);
+		pause_btn->set_icon(get_editor_theme_icon(SNAME("Pause")));
+		pause_btn->set_tooltip_text(TTR("Pause the running project's execution for debugging."));
+		pause_btn->set_disabled(true);
 		SceneTreeDock::get_singleton()->hide_remote_tree();
 		SceneTreeDock::get_singleton()->hide_tab_buttons();
 		EditorNode::get_singleton()->notify_all_debug_sessions_exited();
@@ -570,7 +573,10 @@ void EditorDebuggerNode::_breaked(bool p_breaked, bool p_can_debug, const String
 		tabs->set_current_tab(p_debugger);
 	}
 	_break_state_changed();
-	EditorRunBar::get_singleton()->get_pause_button()->set_pressed(p_breaked);
+	Button *pause_btn = EditorRunBar::get_singleton()->get_pause_button();
+	pause_btn->set_pressed(p_breaked);
+	pause_btn->set_icon(p_breaked ? get_editor_theme_icon(SNAME("PlayStart")) : get_editor_theme_icon(SNAME("Pause")));
+	pause_btn->set_tooltip_text(p_breaked ? TTR("Resume the running project's execution.") : TTR("Pause the running project's execution for debugging."));
 	emit_signal(SNAME("breaked"), p_breaked, p_can_debug);
 }
 
