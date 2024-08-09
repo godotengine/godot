@@ -8,7 +8,7 @@ from collections import OrderedDict
 from enum import Enum
 from io import StringIO, TextIOWrapper
 from pathlib import Path
-from typing import Generator, Optional
+from typing import Generator, List, Optional, Union
 
 # Get the "Godot" folder name ahead of time
 base_folder_path = str(os.path.abspath(Path(__file__).parent)) + "/"
@@ -1641,3 +1641,43 @@ def generated_wrapper(
             file.write(f"\n\n#endif // {header_guard}")
 
         file.write("\n")
+
+
+def to_raw_cstring(value: Union[str, List[str]]) -> str:
+    MAX_LITERAL = 16 * 1024
+
+    if isinstance(value, list):
+        value = "\n".join(value) + "\n"
+
+    split: List[bytes] = []
+    offset = 0
+    encoded = value.encode()
+
+    while offset <= len(encoded):
+        segment = encoded[offset : offset + MAX_LITERAL]
+        offset += MAX_LITERAL
+        if len(segment) == MAX_LITERAL:
+            # Try to segment raw strings at double newlines to keep readable.
+            pretty_break = segment.rfind(b"\n\n")
+            if pretty_break != -1:
+                segment = segment[: pretty_break + 1]
+                offset -= MAX_LITERAL - pretty_break - 1
+            # If none found, ensure we end with valid utf8.
+            # https://github.com/halloleo/unicut/blob/master/truncate.py
+            elif segment[-1] & 0b10000000:
+                last_11xxxxxx_index = [i for i in range(-1, -5, -1) if segment[i] & 0b11000000 == 0b11000000][0]
+                last_11xxxxxx = segment[last_11xxxxxx_index]
+                if not last_11xxxxxx & 0b00100000:
+                    last_char_length = 2
+                elif not last_11xxxxxx & 0b0010000:
+                    last_char_length = 3
+                elif not last_11xxxxxx & 0b0001000:
+                    last_char_length = 4
+
+                if last_char_length > -last_11xxxxxx_index:
+                    segment = segment[:last_11xxxxxx_index]
+                    offset += last_11xxxxxx_index
+
+        split += [segment]
+
+    return " ".join(f'R"<!>({x.decode()})<!>"' for x in split)
