@@ -37,7 +37,7 @@
 
 class DTLSServerMbedTLS : public DTLSServer {
 private:
-	static DTLSServer *_create_func();
+	static DTLSServer *_create_func(bool p_notify_postinitialize);
 	Ref<TLSOptions> tls_options;
 	Ref<CookieContextMbedTLS> cookies;
 

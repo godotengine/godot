@@ -58,7 +58,7 @@ extern "C" {
 // For ArrayPrivate and DictionaryPrivate
 static_assert(sizeof(SafeRefCount) == sizeof(uint32_t));
 
-typedef Object *(*godotsharp_class_creation_func)();
+typedef Object *(*godotsharp_class_creation_func)(bool);
 
 bool godotsharp_dotnet_module_is_initialized() {
 	return GDMono::get_singleton()->is_initialized();

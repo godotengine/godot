@@ -295,8 +295,8 @@ Ref<StreamPeer> StreamPeerMbedTLS::get_stream() const {
 	return base;
 }
 
-StreamPeerTLS *StreamPeerMbedTLS::_create_func() {
-	return memnew(StreamPeerMbedTLS);
+StreamPeerTLS *StreamPeerMbedTLS::_create_func(bool p_notify_postinitialize) {
+	return static_cast<StreamPeerTLS *>(ClassDB::creator<StreamPeerMbedTLS>(p_notify_postinitialize));
 }
 
 void StreamPeerMbedTLS::initialize_tls() {

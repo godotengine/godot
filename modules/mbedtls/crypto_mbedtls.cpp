@@ -49,8 +49,8 @@
 #define PEM_END_CRT "-----END CERTIFICATE-----\n"
 #define PEM_MIN_SIZE 54
 
-CryptoKey *CryptoKeyMbedTLS::create() {
-	return memnew(CryptoKeyMbedTLS);
+CryptoKey *CryptoKeyMbedTLS::create(bool p_notify_postinitialize) {
+	return static_cast<CryptoKey *>(ClassDB::creator<CryptoKeyMbedTLS>(p_notify_postinitialize));
 }
 
 Error CryptoKeyMbedTLS::load(const String &p_path, bool p_public_only) {
@@ -153,8 +153,8 @@ int CryptoKeyMbedTLS::_parse_key(const uint8_t *p_buf, int p_size) {
 #endif
 }
 
-X509Certificate *X509CertificateMbedTLS::create() {
-	return memnew(X509CertificateMbedTLS);
+X509Certificate *X509CertificateMbedTLS::create(bool p_notify_postinitialize) {
+	return static_cast<X509Certificate *>(ClassDB::creator<X509CertificateMbedTLS>(p_notify_postinitialize));
 }
 
 Error X509CertificateMbedTLS::load(const String &p_path) {
@@ -250,8 +250,8 @@ bool HMACContextMbedTLS::is_md_type_allowed(mbedtls_md_type_t p_md_type) {
 	}
 }
 
-HMACContext *HMACContextMbedTLS::create() {
-	return memnew(HMACContextMbedTLS);
+HMACContext *HMACContextMbedTLS::create(bool p_notify_postinitialize) {
+	return static_cast<HMACContext *>(ClassDB::creator<HMACContextMbedTLS>(p_notify_postinitialize));
 }
 
 Error HMACContextMbedTLS::start(HashingContext::HashType p_hash_type, const PackedByteArray &p_key) {
@@ -309,8 +309,8 @@ HMACContextMbedTLS::~HMACContextMbedTLS() {
 	}
 }
 
-Crypto *CryptoMbedTLS::create() {
-	return memnew(CryptoMbedTLS);
+Crypto *CryptoMbedTLS::create(bool p_notify_postinitialize) {
+	return static_cast<Crypto *>(ClassDB::creator<CryptoMbedTLS>(p_notify_postinitialize));
 }
 
 void CryptoMbedTLS::initialize_crypto() {

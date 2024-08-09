@@ -49,7 +49,7 @@ private:
 	int _parse_key(const uint8_t *p_buf, int p_size);
 
 public:
-	static CryptoKey *create();
+	static CryptoKey *create(bool p_notify_postinitialize = true);
 	static void make_default() { CryptoKey::_create = create; }
 	static void finalize() { CryptoKey::_create = nullptr; }
 
@@ -80,7 +80,7 @@ private:
 	int locks;
 
 public:
-	static X509Certificate *create();
+	static X509Certificate *create(bool p_notify_postinitialize = true);
 	static void make_default() { X509Certificate::_create = create; }
 	static void finalize() { X509Certificate::_create = nullptr; }
 
@@ -112,7 +112,7 @@ private:
 	void *ctx = nullptr;
 
 public:
-	static HMACContext *create();
+	static HMACContext *create(bool p_notify_postinitialize = true);
 	static void make_default() { HMACContext::_create = create; }
 	static void finalize() { HMACContext::_create = nullptr; }
 
@@ -133,7 +133,7 @@ private:
 	static X509CertificateMbedTLS *default_certs;
 
 public:
-	static Crypto *create();
+	static Crypto *create(bool p_notify_postinitialize = true);
 	static void initialize_crypto();
 	static void finalize_crypto();
 	static X509CertificateMbedTLS *get_default_certificates();

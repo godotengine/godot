@@ -68,7 +68,7 @@ private:
 	String selected_protocol;
 	String requested_url;
 
-	static WebSocketPeer *_create() { return memnew(EMWSPeer); }
+	static WebSocketPeer *_create(bool p_notify_postinitialize) { return static_cast<WebSocketPeer *>(ClassDB::creator<EMWSPeer>(p_notify_postinitialize)); }
 	static void _esws_on_connect(void *obj, char *proto);
 	static void _esws_on_message(void *obj, const uint8_t *p_data, int p_data_size, int p_is_string);
 	static void _esws_on_error(void *obj);

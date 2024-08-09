@@ -43,15 +43,20 @@ void WebRTCPeerConnection::set_default_extension(const StringName &p_extension) 
 	default_extension = StringName(p_extension, true);
 }
 
-WebRTCPeerConnection *WebRTCPeerConnection::create() {
+WebRTCPeerConnection *WebRTCPeerConnection::create(bool p_notify_postinitialize) {
 #ifdef WEB_ENABLED
-	return memnew(WebRTCPeerConnectionJS);
+	return static_cast<WebRTCPeerConnection *>(ClassDB::creator<WebRTCPeerConnectionJS>(p_notify_postinitialize));
 #else
 	if (default_extension == StringName()) {
 		WARN_PRINT_ONCE("No default WebRTC extension configured.");
-		return memnew(WebRTCPeerConnectionExtension);
+		return static_cast<WebRTCPeerConnection *>(ClassDB::creator<WebRTCPeerConnectionExtension>(p_notify_postinitialize));
 	}
-	Object *obj = ClassDB::instantiate(default_extension);
+	Object *obj = nullptr;
+	if (p_notify_postinitialize) {
+		obj = ClassDB::instantiate(default_extension);
+	} else {
+		obj = ClassDB::instantiate_without_postinitialization(default_extension);
+	}
 	return Object::cast_to<WebRTCPeerConnectionExtension>(obj);
 #endif
 }

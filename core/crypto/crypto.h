@@ -42,10 +42,10 @@ class CryptoKey : public Resource {
 
 protected:
 	static void _bind_methods();
-	static CryptoKey *(*_create)();
+	static CryptoKey *(*_create)(bool p_notify_postinitialize);
 
 public:
-	static CryptoKey *create();
+	static CryptoKey *create(bool p_notify_postinitialize = true);
 	virtual Error load(const String &p_path, bool p_public_only = false) = 0;
 	virtual Error save(const String &p_path, bool p_public_only = false) = 0;
 	virtual String save_to_string(bool p_public_only = false) = 0;
@@ -58,10 +58,10 @@ class X509Certificate : public Resource {
 
 protected:
 	static void _bind_methods();
-	static X509Certificate *(*_create)();
+	static X509Certificate *(*_create)(bool p_notify_postinitialize);
 
 public:
-	static X509Certificate *create();
+	static X509Certificate *create(bool p_notify_postinitialize = true);
 	virtual Error load(const String &p_path) = 0;
 	virtual Error load_from_memory(const uint8_t *p_buffer, int p_len) = 0;
 	virtual Error save(const String &p_path) = 0;
@@ -106,10 +106,10 @@ class HMACContext : public RefCounted {
 
 protected:
 	static void _bind_methods();
-	static HMACContext *(*_create)();
+	static HMACContext *(*_create)(bool p_notify_postinitialize);
 
 public:
-	static HMACContext *create();
+	static HMACContext *create(bool p_notify_postinitialize = true);
 
 	virtual Error start(HashingContext::HashType p_hash_type, const PackedByteArray &p_key) = 0;
 	virtual Error update(const PackedByteArray &p_data) = 0;
@@ -124,11 +124,11 @@ class Crypto : public RefCounted {
 
 protected:
 	static void _bind_methods();
-	static Crypto *(*_create)();
+	static Crypto *(*_create)(bool p_notify_postinitialize);
 	static void (*_load_default_certificates)(const String &p_path);
 
 public:
-	static Crypto *create();
+	static Crypto *create(bool p_notify_postinitialize = true);
 	static void load_default_certificates(const String &p_path);
 
 	virtual PackedByteArray generate_random_bytes(int p_bytes) = 0;
