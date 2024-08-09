@@ -1880,6 +1880,16 @@ Vector<NodePath> SceneState::get_editable_instances() const {
 	return editable_instances;
 }
 
+Ref<Resource> SceneState::get_sub_resource(const String &p_path) {
+	for (const Variant &v : variants) {
+		const Ref<Resource> &res = v;
+		if (res.is_valid() && res->get_path() == p_path) {
+			return res;
+		}
+	}
+	return Ref<Resource>();
+}
+
 //add
 
 int SceneState::add_name(const StringName &p_name) {
