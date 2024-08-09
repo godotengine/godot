@@ -1687,9 +1687,24 @@ bool TextEdit::alt_input(const Ref<InputEvent> &p_gui_input) {
 		if (!k->is_pressed()) {
 			if (alt_start && k->get_keycode() == Key::ALT) {
 				alt_start = false;
-				if ((alt_code > 0x31 && alt_code < 0xd800) || (alt_code > 0xdfff && alt_code <= 0x10ffff)) {
-					handle_unicode_input(alt_code);
+				if (alt_mode == ALT_INPUT_UNICODE) {
+					if ((alt_code > 0x31 && alt_code < 0xd800) || (alt_code > 0xdfff && alt_code <= 0x10ffff)) {
+						handle_unicode_input(alt_code);
+					}
+				} else if (alt_mode == ALT_INPUT_OEM) {
+					if (alt_code > 0x00 && alt_code <= 0xff) {
+						handle_unicode_input(alt_code_oem437[alt_code]);
+					} else if ((alt_code > 0xff && alt_code < 0xd800) || (alt_code > 0xdfff && alt_code <= 0x10ffff)) {
+						handle_unicode_input(alt_code);
+					}
+				} else if (alt_mode == ALT_INPUT_WIN) {
+					if (alt_code > 0x00 && alt_code <= 0xff) {
+						handle_unicode_input(alt_code_cp1252[alt_code]);
+					} else if ((alt_code > 0xff && alt_code < 0xd800) || (alt_code > 0xdfff && alt_code <= 0x10ffff)) {
+						handle_unicode_input(alt_code);
+					}
 				}
+				alt_mode = ALT_INPUT_NONE;
 				return true;
 			}
 			return false;
@@ -1699,19 +1714,34 @@ bool TextEdit::alt_input(const Ref<InputEvent> &p_gui_input) {
 			if (!alt_start) {
 				if (k->get_keycode() == Key::KP_ADD) {
 					alt_start = true;
+					alt_mode = ALT_INPUT_UNICODE;
+					alt_code = 0;
+					return true;
+				} else if (k->get_keycode() >= Key::KP_1 && k->get_keycode() <= Key::KP_9) {
+					alt_start = true;
+					alt_mode = ALT_INPUT_OEM;
+					alt_code = (uint32_t)(k->get_keycode() - Key::KP_0);
+					return true;
+				} else if (k->get_keycode() == Key::KP_0) {
+					alt_start = true;
+					alt_mode = ALT_INPUT_WIN;
 					alt_code = 0;
 					return true;
 				}
 			} else {
-				if (k->get_keycode() >= Key::KEY_0 && k->get_keycode() <= Key::KEY_9) {
+				if (k->get_keycode() >= Key::KP_0 && k->get_keycode() <= Key::KP_9) {
+					if (alt_mode == ALT_INPUT_UNICODE) {
+						alt_code = alt_code << 4;
+					} else {
+						alt_code = alt_code * 10;
+					}
+					alt_code += (uint32_t)(k->get_keycode() - Key::KP_0);
+				}
+				if (alt_mode == ALT_INPUT_UNICODE && k->get_keycode() >= Key::KEY_0 && k->get_keycode() <= Key::KEY_9) {
 					alt_code = alt_code << 4;
 					alt_code += (uint32_t)(k->get_keycode() - Key::KEY_0);
 				}
-				if (k->get_keycode() >= Key::KP_0 && k->get_keycode() <= Key::KP_9) {
-					alt_code = alt_code << 4;
-					alt_code += (uint32_t)(k->get_keycode() - Key::KP_0);
-				}
-				if (k->get_keycode() >= Key::A && k->get_keycode() <= Key::F) {
+				if (alt_mode == ALT_INPUT_UNICODE && k->get_keycode() >= Key::A && k->get_keycode() <= Key::F) {
 					alt_code = alt_code << 4;
 					alt_code += (uint32_t)(k->get_keycode() - Key::A) + 10;
 				}
