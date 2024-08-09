@@ -550,6 +550,13 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 					prop.default_value = DocData::get_default_value_string(default_value);
 				}
 
+				if (E.usage & PROPERTY_USAGE_STATIC) {
+					if (!prop.qualifiers.is_empty()) {
+						prop.qualifiers += " ";
+					}
+					prop.qualifiers += "static";
+				}
+
 				StringName setter = ClassDB::get_property_setter(name, E.name);
 				StringName getter = ClassDB::get_property_getter(name, E.name);
 
@@ -1359,6 +1366,9 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 								prop2.name = parser->get_named_attribute_value("name");
 								ERR_FAIL_COND_V(!parser->has_attribute("type"), ERR_FILE_CORRUPT);
 								prop2.type = parser->get_named_attribute_value("type");
+								if (parser->has_attribute("qualifiers")) {
+									prop2.qualifiers = parser->get_named_attribute_value("qualifiers");
+								}
 								if (parser->has_attribute("setter")) {
 									prop2.setter = parser->get_named_attribute_value("setter");
 								}
@@ -1651,30 +1661,31 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 		if (!c.properties.is_empty()) {
 			_write_string(f, 1, "<members>");
 
-			for (int i = 0; i < c.properties.size(); i++) {
+			for (const DocData::PropertyDoc &p : c.properties) {
 				String additional_attributes;
-				if (!c.properties[i].enumeration.is_empty()) {
-					additional_attributes += " enum=\"" + c.properties[i].enumeration.xml_escape(true) + "\"";
-					if (c.properties[i].is_bitfield) {
+				if (!p.qualifiers.is_empty()) {
+					additional_attributes += " qualifiers=\"" + p.qualifiers + "\"";
+				}
+				if (!p.enumeration.is_empty()) {
+					additional_attributes += " enum=\"" + p.enumeration.xml_escape(true) + "\"";
+					if (p.is_bitfield) {
 						additional_attributes += " is_bitfield=\"true\"";
 					}
 				}
-				if (!c.properties[i].default_value.is_empty()) {
-					additional_attributes += " default=\"" + c.properties[i].default_value.xml_escape(true) + "\"";
+				if (!p.default_value.is_empty()) {
+					additional_attributes += " default=\"" + p.default_value.xml_escape(true) + "\"";
 				}
-				if (c.properties[i].is_deprecated) {
-					additional_attributes += " deprecated=\"" + c.properties[i].deprecated_message.xml_escape(true) + "\"";
+				if (p.is_deprecated) {
+					additional_attributes += " deprecated=\"" + p.deprecated_message.xml_escape(true) + "\"";
 				}
-				if (c.properties[i].is_experimental) {
-					additional_attributes += " experimental=\"" + c.properties[i].experimental_message.xml_escape(true) + "\"";
+				if (p.is_experimental) {
+					additional_attributes += " experimental=\"" + p.experimental_message.xml_escape(true) + "\"";
 				}
-				if (!c.properties[i].keywords.is_empty()) {
-					additional_attributes += String(" keywords=\"") + c.properties[i].keywords.xml_escape(true) + "\"";
+				if (!p.keywords.is_empty()) {
+					additional_attributes += String(" keywords=\"") + p.keywords.xml_escape(true) + "\"";
 				}
 
-				const DocData::PropertyDoc &p = c.properties[i];
-
-				if (c.properties[i].overridden) {
+				if (p.overridden) {
 					_write_string(f, 2, "<member name=\"" + p.name.xml_escape(true) + "\" type=\"" + p.type.xml_escape(true) + "\" setter=\"" + p.setter.xml_escape(true) + "\" getter=\"" + p.getter.xml_escape(true) + "\" overrides=\"" + p.overrides.xml_escape(true) + "\"" + additional_attributes + " />");
 				} else {
 					_write_string(f, 2, "<member name=\"" + p.name.xml_escape(true) + "\" type=\"" + p.type.xml_escape(true) + "\" setter=\"" + p.setter.xml_escape(true) + "\" getter=\"" + p.getter.xml_escape(true) + "\"" + additional_attributes + ">");

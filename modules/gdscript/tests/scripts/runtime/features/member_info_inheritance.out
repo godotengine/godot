@@ -1,11 +1,15 @@
 GDTEST_OK
-static var test_static_var_a1: Variant
-static var test_static_var_a2: Variant
+var test_static_var_a1: Variant
+var test_static_var_a2: Variant
+var test_static_var_b1: Variant
+var test_static_var_b2: Variant
+---
 static var test_static_var_b1: Variant
 static var test_static_var_b2: Variant
----
 var test_var_b1: Variant
 var test_var_b2: Variant
+static var test_static_var_a1: Variant
+static var test_static_var_a2: Variant
 var test_var_a1: Variant
 var test_var_a2: Variant
 ---

@@ -2938,6 +2938,9 @@
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is not stored, and does not display in the editor. This is the default for non-exported properties.
 		</constant>
+		<constant name="PROPERTY_USAGE_STATIC" value="1" enum="PropertyUsageFlags" is_bitfield="true">
+			The property belongs to the class, not to the instance.
+		</constant>
 		<constant name="PROPERTY_USAGE_STORAGE" value="2" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is serialized and saved in the scene file (default for exported properties).
 		</constant>

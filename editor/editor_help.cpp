@@ -1234,19 +1234,40 @@ void EditorHelp::_update_doc() {
 
 			// Property name.
 			class_desc->push_cell();
-			class_desc->push_color(theme_cache.headline_color);
 
+			class_desc->push_color(theme_cache.headline_color);
 			if (describe) {
 				class_desc->push_meta("@member " + prop.name, RichTextLabel::META_UNDERLINE_ON_HOVER);
-			}
-
-			class_desc->add_text(prop.name);
-
-			if (describe) {
+				class_desc->add_text(prop.name);
 				class_desc->pop(); // meta
+			} else {
+				class_desc->add_text(prop.name);
+			}
+			class_desc->pop(); // color
+
+			if (!prop.qualifiers.is_empty()) {
+				class_desc->push_color(theme_cache.qualifier_color);
+
+				const PackedStringArray qualifiers = prop.qualifiers.split_spaces();
+				for (const String &qualifier : qualifiers) {
+					String hint;
+					if (qualifier == "static") {
+						hint = TTR("This property belongs to the class, not to the instance.");
+					}
+
+					class_desc->add_text(" ");
+					if (hint.is_empty()) {
+						class_desc->add_text(qualifier);
+					} else {
+						class_desc->push_hint(hint);
+						class_desc->add_text(qualifier);
+						class_desc->pop(); // hint
+					}
+				}
+
+				class_desc->pop(); // color
 			}
 
-			class_desc->pop(); // color
 			class_desc->pop(); // cell
 
 			// Property value.
@@ -2081,6 +2102,29 @@ void EditorHelp::_update_doc() {
 			class_desc->push_color(theme_cache.headline_color);
 			class_desc->add_text(prop.name);
 			class_desc->pop(); // color
+
+			if (!prop.qualifiers.is_empty()) {
+				class_desc->push_color(theme_cache.qualifier_color);
+
+				const PackedStringArray qualifiers = prop.qualifiers.split_spaces();
+				for (const String &qualifier : qualifiers) {
+					String hint;
+					if (qualifier == "static") {
+						hint = TTR("This property belongs to the class, not to the instance.");
+					}
+
+					class_desc->add_text(" ");
+					if (hint.is_empty()) {
+						class_desc->add_text(qualifier);
+					} else {
+						class_desc->push_hint(hint);
+						class_desc->add_text(qualifier);
+						class_desc->pop(); // hint
+					}
+				}
+
+				class_desc->pop(); // color
+			}
 
 			if (!prop.default_value.is_empty()) {
 				class_desc->push_color(theme_cache.symbol_color);

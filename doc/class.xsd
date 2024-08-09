@@ -123,6 +123,7 @@
 											<xs:attribute type="xs:string" name="setter" />
 											<xs:attribute type="xs:string" name="getter" />
 											<xs:attribute type="xs:string" name="overrides" use="optional" />
+											<xs:attribute type="xs:string" name="qualifiers" use="optional" />
 											<xs:attribute type="xs:string" name="enum" use="optional" />
 											<xs:attribute type="xs:boolean" name="is_bitfield" use="optional" />
 											<xs:attribute type="xs:string" name="default" use="optional" />
