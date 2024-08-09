@@ -48,6 +48,7 @@ private:
 
 public:
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
+	int dragger_index = -1;
 };
 
 class SplitContainer : public Container {
@@ -62,13 +63,15 @@ public:
 	};
 
 private:
-	int split_offset = 0;
-	int middle_sep = 0;
+	Vector<int> split_offsets;
+	LocalVector<int> default_dragger_positions;
+	LocalVector<int> dragger_positions;
 	bool vertical = false;
 	bool collapsed = false;
 	DraggerVisibility dragger_visibility = DRAGGER_VISIBLE;
 
-	SplitContainerDragger *dragging_area_control = nullptr;
+	LocalVector<SplitContainerDragger *> dragging_area_controls;
+	int dragging_index = -1;
 
 	struct ThemeCache {
 		int separation = 0;
@@ -80,20 +83,29 @@ private:
 	} theme_cache;
 
 	Ref<Texture2D> _get_grabber_icon() const;
-	void _compute_middle_sep(bool p_clamp);
+
+	Point2i _get_valid_range(int p_dragger_index);
+	void _update_default_dragger_positions();
+	void _update_dragger_positions(bool p_clamp);
 	void _resort();
-	Control *_get_sortable_child(int p_idx, SortableVisbilityMode p_visibility_mode = SortableVisbilityMode::VISIBLE_IN_TREE) const;
+	void _update_draggers();
+	Control *_get_sortable_child(int p_idx) const;
 
 protected:
 	bool is_fixed = false;
 
 	void _notification(int p_what);
+	virtual void add_child_notify(Node *p_child) override;
 	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
 public:
 	void set_split_offset(int p_offset);
 	int get_split_offset() const;
+
+	void set_split_offsets(const Vector<int> &p_offsets);
+	Vector<int> get_split_offsets() const;
+
 	void clamp_split_offset();
 
 	void set_collapsed(bool p_collapsed);
