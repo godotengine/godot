@@ -32,6 +32,7 @@
 #define TEXT_SHADER_EDITOR_H
 
 #include "editor/code_editor.h"
+#include "editor/plugins/shader/shader_editor.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/rich_text_label.h"
@@ -104,8 +105,8 @@ public:
 	ShaderTextEditor();
 };
 
-class TextShaderEditor : public MarginContainer {
-	GDCLASS(TextShaderEditor, MarginContainer);
+class TextShaderEditor : public ShaderEditor {
+	GDCLASS(TextShaderEditor, ShaderEditor);
 
 	enum {
 		EDIT_UNDO,
@@ -188,19 +189,21 @@ protected:
 	void _bookmark_item_pressed(int p_idx);
 
 public:
+	virtual void edit_shader(const Ref<Shader> &p_shader) override;
+	virtual void edit_shader_include(const Ref<ShaderInclude> &p_shader_inc) override;
+
+	virtual void apply_shaders() override;
+	virtual bool is_unsaved() const override;
+	virtual void save_external_data(const String &p_str = "") override;
+	virtual void validate_script() override;
+
 	bool was_compilation_successful() const { return compilation_success; }
 	bool get_trim_trailing_whitespace_on_save() const { return trim_trailing_whitespace_on_save; }
 	bool get_trim_final_newlines_on_save() const { return trim_final_newlines_on_save; }
-	void apply_shaders();
 	void ensure_select_current();
-	void edit(const Ref<Shader> &p_shader);
-	void edit(const Ref<ShaderInclude> &p_shader_inc);
 	void goto_line_selection(int p_line, int p_begin, int p_end);
-	void save_external_data(const String &p_str = "");
 	void trim_trailing_whitespace();
 	void trim_final_newlines();
-	void validate_script();
-	bool is_unsaved() const;
 	void tag_saved_version();
 	ShaderTextEditor *get_code_editor() { return code_editor; }
 

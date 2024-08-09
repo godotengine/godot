@@ -895,7 +895,7 @@ void TextShaderEditor::_reload() {
 	}
 }
 
-void TextShaderEditor::edit(const Ref<Shader> &p_shader) {
+void TextShaderEditor::edit_shader(const Ref<Shader> &p_shader) {
 	if (p_shader.is_null() || !p_shader->is_text_shader()) {
 		return;
 	}
@@ -910,7 +910,7 @@ void TextShaderEditor::edit(const Ref<Shader> &p_shader) {
 	code_editor->set_edited_shader(shader);
 }
 
-void TextShaderEditor::edit(const Ref<ShaderInclude> &p_shader_inc) {
+void TextShaderEditor::edit_shader_include(const Ref<ShaderInclude> &p_shader_inc) {
 	if (p_shader_inc.is_null()) {
 		return;
 	}
@@ -1141,6 +1141,7 @@ TextShaderEditor::TextShaderEditor() {
 	context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &TextShaderEditor::_menu_option));
 
 	VBoxContainer *main_container = memnew(VBoxContainer);
+	main_container->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	HBoxContainer *hbc = memnew(HBoxContainer);
 
 	edit_menu = memnew(MenuButton);
