@@ -380,3 +380,10 @@ Validate extension JSON: Error: Field 'classes/Image/methods/get_mipmap_offset/r
 
 Type changed to int64_t to support baking large lightmaps.
 No compatibility method needed, both GDExtension and C# generate it as int64_t anyway.
+
+
+GH-76560
+--------
+Validate extension JSON: Error: Field 'classes/Node/methods/set_name/arguments/0': type changed value in new API, from "String" to "StringName".
+
+Change Node `set_name` to use StringName to improve performance.
