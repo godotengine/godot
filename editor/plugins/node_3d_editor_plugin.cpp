@@ -7289,9 +7289,15 @@ void Node3DEditor::_init_grid() {
 
 	bool orthogonal = camera->get_projection() == Camera3D::PROJECTION_ORTHOGONAL;
 
-	Vector<Color> grid_colors[3];
-	Vector<Vector3> grid_points[3];
-	Vector<Vector3> grid_normals[3];
+	static LocalVector<Color> grid_colors[3];
+	static LocalVector<Vector3> grid_points[3];
+	static LocalVector<Vector3> grid_normals[3];
+
+	for (uint32_t n = 0; n < 3; n++) {
+		grid_colors[n].clear();
+		grid_points[n].clear();
+		grid_normals[n].clear();
+	}
 
 	Color primary_grid_color = EDITOR_GET("editors/3d/primary_grid_color");
 	Color secondary_grid_color = EDITOR_GET("editors/3d/secondary_grid_color");
@@ -7367,10 +7373,9 @@ void Node3DEditor::_init_grid() {
 		grid_mat[c]->set_shader_parameter("grid_size", grid_fade_size);
 		grid_mat[c]->set_shader_parameter("orthogonal", orthogonal);
 
-		// Cache these so we don't have to re-access memory.
-		Vector<Vector3> &ref_grid = grid_points[c];
-		Vector<Vector3> &ref_grid_normals = grid_normals[c];
-		Vector<Color> &ref_grid_colors = grid_colors[c];
+		LocalVector<Vector3> &ref_grid = grid_points[c];
+		LocalVector<Vector3> &ref_grid_normals = grid_normals[c];
+		LocalVector<Color> &ref_grid_colors = grid_colors[c];
 
 		// Count our elements same as code below it.
 		int expected_size = 0;
@@ -7415,12 +7420,12 @@ void Node3DEditor::_init_grid() {
 				line_end[a] = position_a;
 				line_bgn[b] = bgn_b;
 				line_end[b] = end_b;
-				ref_grid.set(idx, line_bgn);
-				ref_grid.set(idx + 1, line_end);
-				ref_grid_colors.set(idx, line_color);
-				ref_grid_colors.set(idx + 1, line_color);
-				ref_grid_normals.set(idx, normal);
-				ref_grid_normals.set(idx + 1, normal);
+				ref_grid[idx] = line_bgn;
+				ref_grid[idx + 1] = line_end;
+				ref_grid_colors[idx] = line_color;
+				ref_grid_colors[idx + 1] = line_color;
+				ref_grid_normals[idx] = normal;
+				ref_grid_normals[idx + 1] = normal;
 				idx += 2;
 			}
 
@@ -7431,12 +7436,12 @@ void Node3DEditor::_init_grid() {
 				line_end[b] = position_b;
 				line_bgn[a] = bgn_a;
 				line_end[a] = end_a;
-				ref_grid.set(idx, line_bgn);
-				ref_grid.set(idx + 1, line_end);
-				ref_grid_colors.set(idx, line_color);
-				ref_grid_colors.set(idx + 1, line_color);
-				ref_grid_normals.set(idx, normal);
-				ref_grid_normals.set(idx + 1, normal);
+				ref_grid[idx] = line_bgn;
+				ref_grid[idx + 1] = line_end;
+				ref_grid_colors[idx] = line_color;
+				ref_grid_colors[idx + 1] = line_color;
+				ref_grid_normals[idx] = normal;
+				ref_grid_normals[idx + 1] = normal;
 				idx += 2;
 			}
 		}
@@ -7445,9 +7450,9 @@ void Node3DEditor::_init_grid() {
 		grid[c] = RenderingServer::get_singleton()->mesh_create();
 		Array d;
 		d.resize(RS::ARRAY_MAX);
-		d[RenderingServer::ARRAY_VERTEX] = grid_points[c];
-		d[RenderingServer::ARRAY_COLOR] = grid_colors[c];
-		d[RenderingServer::ARRAY_NORMAL] = grid_normals[c];
+		d[RenderingServer::ARRAY_VERTEX] = (Vector<Vector3>)grid_points[c];
+		d[RenderingServer::ARRAY_COLOR] = (Vector<Color>)grid_colors[c];
+		d[RenderingServer::ARRAY_NORMAL] = (Vector<Vector3>)grid_normals[c];
 		RenderingServer::get_singleton()->mesh_add_surface_from_arrays(grid[c], RenderingServer::PRIMITIVE_LINES, d);
 		RenderingServer::get_singleton()->mesh_surface_set_material(grid[c], 0, grid_mat[c]->get_rid());
 		grid_instance[c] = RenderingServer::get_singleton()->instance_create2(grid[c], get_tree()->get_root()->get_world_3d()->get_scenario());
