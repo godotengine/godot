@@ -489,7 +489,7 @@ void CSGShape3D::_update_collision_faces() {
 }
 
 bool CSGShape3D::_is_debug_collision_shape_visible() {
-	return is_inside_tree() && (get_tree()->is_debugging_collisions_hint() || Engine::get_singleton()->is_editor_hint());
+	return is_inside_tree() && get_tree()->is_debugging_collisions_hint();
 }
 
 void CSGShape3D::_update_debug_collision_shape() {
