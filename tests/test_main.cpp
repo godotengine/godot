@@ -147,6 +147,7 @@
 #include "tests/servers/test_navigation_server_3d.h"
 #endif // MODULE_NAVIGATION_ENABLED
 
+#include "tests/core/io/test_json_native.h"
 #include "tests/scene/test_arraymesh.h"
 #include "tests/scene/test_camera_3d.h"
 #include "tests/scene/test_path_3d.h"
