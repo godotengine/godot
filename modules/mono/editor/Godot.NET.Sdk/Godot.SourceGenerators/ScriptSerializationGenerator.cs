@@ -130,14 +130,14 @@ namespace Godot.SourceGenerators
                 .WhereIsGodotCompatibleType(typeCache)
                 .ToArray();
 
+            List<GodotSignalData> godotSignals = new();
+
             var signalDelegateSymbols = members
                 .Where(s => s.Kind == SymbolKind.NamedType)
                 .Cast<INamedTypeSymbol>()
                 .Where(namedTypeSymbol => namedTypeSymbol.TypeKind == TypeKind.Delegate)
                 .Where(s => s.GetAttributes()
                     .Any(a => a.AttributeClass?.IsGodotSignalAttribute() ?? false));
-
-            List<GodotSignalDelegateData> godotSignalDelegates = new();
 
             foreach (var signalDelegateSymbol in signalDelegateSymbols)
             {
@@ -151,10 +151,29 @@ namespace Godot.SourceGenerators
                 var invokeMethodData = signalDelegateSymbol
                     .DelegateInvokeMethod?.HasGodotCompatibleSignature(typeCache);
 
-                if (invokeMethodData == null)
-                    continue;
+                if (invokeMethodData is not null)
+                {
+                    godotSignals.Add(new GodotSignalData(signalName, true, signalDelegateSymbol, invokeMethodData.Value));
+                }
+            }
 
-                godotSignalDelegates.Add(new(signalName, signalDelegateSymbol, invokeMethodData.Value));
+            var signalEventSymbols = members
+                .Where(s => s.Kind == SymbolKind.Event)
+                .Cast<IEventSymbol>()
+                .Where(s => s.GetAttributes()
+                    .Any(a => a.AttributeClass?.IsGodotSignalAttribute() ?? false));
+
+            foreach (var signalEventSymbol in signalEventSymbols)
+            {
+                var signalDelegateSymbol = (INamedTypeSymbol)signalEventSymbol.Type;
+
+                var invokeMethodData = signalDelegateSymbol
+                    .DelegateInvokeMethod?.HasGodotCompatibleSignature(typeCache);
+
+                if (invokeMethodData is not null)
+                {
+                    godotSignals.Add(new GodotSignalData(signalEventSymbol.Name, false, signalDelegateSymbol, invokeMethodData.Value));
+                }
             }
 
             source.Append("    /// <inheritdoc/>\n");
@@ -193,14 +212,20 @@ namespace Godot.SourceGenerators
 
             // Save signal events
 
-            foreach (var signalDelegate in godotSignalDelegates)
+            foreach (var signal in godotSignals)
             {
-                string signalName = signalDelegate.Name;
+                string signalName = signal.Name;
 
                 source.Append("        info.AddSignalEventDelegate(SignalName.@")
                     .Append(signalName)
-                    .Append(", this.backing_")
-                    .Append(signalName)
+                    .Append(", this.");
+
+                if (signal.IsDelegate)
+                {
+                    source.Append("backing_");
+                }
+
+                source.Append(signalName)
                     .Append(");\n");
             }
 
@@ -252,10 +277,10 @@ namespace Godot.SourceGenerators
 
             // Restore signal events
 
-            foreach (var signalDelegate in godotSignalDelegates)
+            foreach (var signal in godotSignals)
             {
-                string signalName = signalDelegate.Name;
-                string signalDelegateQualifiedName = signalDelegate.DelegateSymbol.FullQualifiedNameIncludeGlobal();
+                string signalName = signal.Name;
+                string signalDelegateQualifiedName = signal.DelegateSymbol.FullQualifiedNameIncludeGlobal();
 
                 source.Append("        if (info.TryGetSignalEventDelegate<")
                     .Append(signalDelegateQualifiedName)
@@ -264,8 +289,14 @@ namespace Godot.SourceGenerators
                     .Append(", out var _value_")
                     .Append(signalName)
                     .Append("))\n")
-                    .Append("            this.backing_")
-                    .Append(signalName)
+                    .Append("            this.");
+
+                if (signal.IsDelegate)
+                {
+                    source.Append("backing_");
+                }
+
+                source.Append(signalName)
                     .Append(" = _value_")
                     .Append(signalName)
                     .Append(";\n");
