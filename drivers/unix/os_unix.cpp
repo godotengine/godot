@@ -68,6 +68,11 @@
 #include <uvm/uvm_extern.h>
 #endif
 
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
+#include <execinfo.h>
+#endif
+
+#include <cxxabi.h>
 #include <dlfcn.h>
 #include <errno.h>
 #include <poll.h>
@@ -1005,6 +1010,49 @@ void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, i
 			break;
 	}
 }
+
+OS::StackInfo OS_Unix::describe_function(const char *dli_fname, const void *dli_fbase, const char *dli_sname, const void *dli_saddr, const void *address) const {
+	StackInfo result;
+
+	// Demangle C++ symbols
+	int status;
+	char *demangled = abi::__cxa_demangle(dli_sname, nullptr, nullptr, &status);
+
+	if (status == 0) {
+		result.function = demangled;
+	} else {
+		result.function = dli_sname;
+	}
+	free(demangled);
+
+	// Get file info
+	result.file = dli_fname;
+	result.offset = static_cast<const char *>(address) - static_cast<const char *>(dli_fbase);
+	result.load_address = dli_fbase;
+	result.symbol_address = address;
+
+	return result;
+}
+
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
+Vector<OS::StackInfo> OS_Unix::get_cpp_stack_info() const {
+	constexpr int kMaxBacktraceDepth = 25;
+	void *backtrace_addrs[kMaxBacktraceDepth];
+	int trace_size = backtrace(backtrace_addrs, kMaxBacktraceDepth);
+
+	Vector<StackInfo> result;
+	result.resize(trace_size - 1);
+
+	// Skip the current stack frame and return the stack frame of the calling function
+	for (int i = 1; i < trace_size; ++i) {
+		Dl_info info;
+		dladdr(backtrace_addrs[i], &info);
+		result.write[i - 1] = describe_function(info.dli_fname, info.dli_fbase, info.dli_sname, info.dli_saddr, backtrace_addrs[i]);
+	}
+
+	return result;
+}
+#endif
 
 UnixTerminalLogger::~UnixTerminalLogger() {}
 
