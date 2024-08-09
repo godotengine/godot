@@ -2569,8 +2569,11 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_literal(ExpressionNode *p_
 	}
 
 	LiteralNode *literal = alloc_node<LiteralNode>();
-	complete_extents(literal);
 	literal->value = previous.literal;
+	reset_extents(literal, p_previous_operand);
+	update_extents(literal);
+	make_completion_context(COMPLETION_NONE, literal, -1, true);
+	complete_extents(literal);
 	return literal;
 }
 
