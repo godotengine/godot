@@ -516,6 +516,7 @@ public:
 	FUNC6(particles_emit, RID, const Transform3D &, const Vector3 &, const Color &, const Color &, uint32_t)
 	FUNC2(particles_set_subemitter, RID, RID)
 	FUNC2(particles_set_collision_base_size, RID, float)
+	FUNC2(particles_set_collision_mask, RID, uint32_t)
 
 	FUNC2(particles_set_transform_align, RID, RS::ParticlesTransformAlign)
 
@@ -534,7 +535,7 @@ public:
 	FUNCRIDSPLIT(particles_collision)
 
 	FUNC2(particles_collision_set_collision_type, RID, ParticlesCollisionType)
-	FUNC2(particles_collision_set_cull_mask, RID, uint32_t)
+	FUNC2(particles_collision_set_collision_layer, RID, uint32_t)
 	FUNC2(particles_collision_set_sphere_radius, RID, real_t)
 	FUNC2(particles_collision_set_box_extents, RID, const Vector3 &)
 	FUNC2(particles_collision_set_attractor_strength, RID, real_t)
@@ -543,6 +544,7 @@ public:
 	FUNC2(particles_collision_set_field_texture, RID, RID)
 	FUNC1(particles_collision_height_field_update, RID)
 	FUNC2(particles_collision_set_height_field_resolution, RID, ParticlesCollisionHeightfieldResolution)
+	FUNC2(particles_collision_set_bake_mask, RID, uint32_t)
 
 	/* FOG VOLUME */
 
