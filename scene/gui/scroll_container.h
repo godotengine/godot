@@ -52,6 +52,8 @@ private:
 
 	mutable Size2 largest_child_min_size; // The largest one among the min sizes of all available child controls.
 
+	Size2 max_size;
+
 	void update_scrollbars();
 
 	Vector2 drag_speed;
@@ -90,6 +92,9 @@ protected:
 
 public:
 	virtual void gui_input(const Ref<InputEvent> &p_gui_input) override;
+
+	void set_max_size(Size2 p_max_size);
+	Size2 get_max_size() const;
 
 	void set_h_scroll(int p_pos);
 	int get_h_scroll() const;

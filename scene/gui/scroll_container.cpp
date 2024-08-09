@@ -57,9 +57,13 @@ Size2 ScrollContainer::get_minimum_size() const {
 
 	if (horizontal_scroll_mode == SCROLL_MODE_DISABLED) {
 		min_size.x = MAX(min_size.x, largest_child_min_size.x);
+	} else if (max_size.x > 0.0) {
+		min_size.x = MIN(max_size.x, MAX(min_size.x, largest_child_min_size.x));
 	}
 	if (vertical_scroll_mode == SCROLL_MODE_DISABLED) {
 		min_size.y = MAX(min_size.y, largest_child_min_size.y);
+	} else if (max_size.y > 0.0) {
+		min_size.y = MIN(max_size.y, MAX(min_size.y, largest_child_min_size.y));
 	}
 
 	bool h_scroll_show = horizontal_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || (horizontal_scroll_mode == SCROLL_MODE_AUTO && largest_child_min_size.x > min_size.x);
@@ -242,6 +246,16 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 		return;
 	}
+}
+
+void ScrollContainer::set_max_size(Size2 p_max_size) {
+	max_size = p_max_size.max(Vector2());
+	update_minimum_size();
+	queue_sort();
+}
+
+Size2 ScrollContainer::get_max_size() const {
+	return max_size;
 }
 
 void ScrollContainer::_update_scrollbar_position() {
@@ -565,6 +579,9 @@ VScrollBar *ScrollContainer::get_v_scroll_bar() {
 }
 
 void ScrollContainer::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_max_size", "value"), &ScrollContainer::set_max_size);
+	ClassDB::bind_method(D_METHOD("get_max_size"), &ScrollContainer::get_max_size);
+
 	ClassDB::bind_method(D_METHOD("set_h_scroll", "value"), &ScrollContainer::set_h_scroll);
 	ClassDB::bind_method(D_METHOD("get_h_scroll"), &ScrollContainer::get_h_scroll);
 
@@ -596,6 +613,7 @@ void ScrollContainer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("scroll_started"));
 	ADD_SIGNAL(MethodInfo("scroll_ended"));
 
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "max_size"), "set_max_size", "get_max_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_focus"), "set_follow_focus", "is_following_focus");
 
 	ADD_GROUP("Scroll", "scroll_");

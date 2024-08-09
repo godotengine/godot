@@ -46,6 +46,9 @@
 		<member name="horizontal_scroll_mode" type="int" setter="set_horizontal_scroll_mode" getter="get_horizontal_scroll_mode" enum="ScrollContainer.ScrollMode" default="1">
 			Controls whether horizontal scrollbar can be used and when it should be visible. See [enum ScrollMode] for options.
 		</member>
+		<member name="max_size" type="Vector2" setter="set_max_size" getter="get_max_size" default="Vector2(0, 0)">
+			Controls max size for scroll container. Set 0 to disable.
+		</member>
 		<member name="scroll_deadzone" type="int" setter="set_deadzone" getter="get_deadzone" default="0">
 			Deadzone for touch scrolling. Lower deadzone makes the scrolling more sensitive.
 		</member>
