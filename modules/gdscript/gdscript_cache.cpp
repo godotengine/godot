@@ -156,7 +156,14 @@ void GDScriptCache::move_script(const String &p_from, const String &p_to) {
 	}
 
 	if (singleton->parser_map.has(p_from) && !p_from.is_empty()) {
-		singleton->parser_map[p_to] = singleton->parser_map[p_from];
+		GDScriptParserRef *parser = singleton->parser_map[p_from];
+		singleton->parser_map[p_to] = parser;
+		parser->path = p_to;
+		if (parser->get_parser()->get_tree()) {
+			GDScriptParser::DataType data_type = parser->get_parser()->get_tree()->get_datatype();
+			data_type.script_path = p_to;
+			parser->get_parser()->get_tree()->set_datatype(data_type);
+		}
 	}
 	singleton->parser_map.erase(p_from);
 
