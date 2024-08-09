@@ -376,6 +376,8 @@ public:
 		struct wl_surface *pointed_surface = nullptr;
 		struct wl_surface *last_pointed_surface = nullptr;
 
+		Point2 pointer_hint;
+
 		struct zwp_relative_pointer_v1 *wp_relative_pointer = nullptr;
 		struct zwp_locked_pointer_v1 *wp_locked_pointer = nullptr;
 		struct zwp_confined_pointer_v1 *wp_confined_pointer = nullptr;
@@ -912,7 +914,7 @@ public:
 
 	void seat_state_unlock_pointer(SeatState *p_ss);
 	void seat_state_lock_pointer(SeatState *p_ss);
-	void seat_state_set_hint(SeatState *p_ss, int p_x, int p_y);
+	void seat_state_set_hint(SeatState *p_ss, double p_x, double p_y);
 	void seat_state_confine_pointer(SeatState *p_ss);
 
 	static void seat_state_update_cursor(SeatState *p_ss);
@@ -957,7 +959,7 @@ public:
 	int get_screen_count() const;
 
 	void pointer_set_constraint(PointerConstraint p_constraint);
-	void pointer_set_hint(const Point2i &p_hint);
+	void pointer_set_hint(const Point2 &p_hint);
 	PointerConstraint pointer_get_constraint() const;
 	DisplayServer::WindowID pointer_get_pointed_window_id() const;
 	BitField<MouseButtonMask> pointer_get_button_mask() const;

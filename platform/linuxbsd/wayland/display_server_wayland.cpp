@@ -355,6 +355,12 @@ void DisplayServerWayland::mouse_set_mode(MouseMode p_mode) {
 
 	wayland_thread.pointer_set_constraint(constraint);
 
+	// The docs say that the pointer must be centered in captured mode.
+	if (p_mode == DisplayServer::MOUSE_MODE_CAPTURED) {
+		// TODO: use window IDs once multiwindowing is implemented.
+		wayland_thread.pointer_set_hint(main_window.rect.size / 2);
+	}
+
 	mouse_mode = p_mode;
 }
 
