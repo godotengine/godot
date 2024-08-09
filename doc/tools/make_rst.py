@@ -2467,6 +2467,24 @@ def escape_rst(text: str, until_pos: int = -1) -> str:
         text = f"{text[:pos]}\\*{text[pos + 1 :]}"
         pos += 2
 
+    # Escape + character in key enumerations to avoid interpreting it as a bullet list
+    pos = 0
+    while True:
+        pos = text.find("+ key", pos, until_pos)
+        if pos == -1:
+            break
+        text = f"{text[:pos]}\+ key{text[pos + 5 :]}"
+        pos += 6
+
+    # Escape - character in key enumerations to avoid interpreting it as a bullet list
+    pos = 0
+    while True:
+        pos = text.find("- key", pos, until_pos)
+        if pos == -1:
+            break
+        text = f"{text[:pos]}\- key{text[pos + 5 :]}"
+        pos += 6
+
     # Escape _ character at the end of a word to avoid interpreting it as an inline hyperlink
     pos = 0
     while True:
