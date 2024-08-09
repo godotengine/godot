@@ -125,7 +125,7 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 
 			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_FILE_SERVER), !ischecked);
 			if (!initializing) {
-				EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_file_server", !ischecked);
+				SET_PROJECT_META("debug_options", "run_file_server", !ischecked);
 			}
 
 		} break;
@@ -135,7 +135,7 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_LIVE_DEBUG), !ischecked);
 			EditorDebuggerNode::get_singleton()->set_live_debugging(!ischecked);
 			if (!initializing) {
-				EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_live_debug", !ischecked);
+				SET_PROJECT_META("debug_options", "run_live_debug", !ischecked);
 			}
 
 		} break;
@@ -143,7 +143,7 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 			bool ischecked = debug_menu->is_item_checked(debug_menu->get_item_index(RUN_DEPLOY_REMOTE_DEBUG));
 			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_DEPLOY_REMOTE_DEBUG), !ischecked);
 			if (!initializing) {
-				EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_deploy_remote_debug", !ischecked);
+				SET_PROJECT_META("debug_options", "run_deploy_remote_debug", !ischecked);
 			}
 
 		} break;
@@ -151,7 +151,7 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 			bool ischecked = debug_menu->is_item_checked(debug_menu->get_item_index(RUN_DEBUG_COLLISIONS));
 			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_DEBUG_COLLISIONS), !ischecked);
 			if (!initializing) {
-				EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_collisions", !ischecked);
+				SET_PROJECT_META("debug_options", "run_debug_collisions", !ischecked);
 			}
 
 		} break;
@@ -159,7 +159,7 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 			bool ischecked = debug_menu->is_item_checked(debug_menu->get_item_index(RUN_DEBUG_PATHS));
 			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_DEBUG_PATHS), !ischecked);
 			if (!initializing) {
-				EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_paths", !ischecked);
+				SET_PROJECT_META("debug_options", "run_debug_paths", !ischecked);
 			}
 
 		} break;
@@ -167,7 +167,7 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 			bool ischecked = debug_menu->is_item_checked(debug_menu->get_item_index(RUN_DEBUG_NAVIGATION));
 			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_DEBUG_NAVIGATION), !ischecked);
 			if (!initializing) {
-				EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_navigation", !ischecked);
+				SET_PROJECT_META("debug_options", "run_debug_navigation", !ischecked);
 			}
 
 		} break;
@@ -175,7 +175,7 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 			bool ischecked = debug_menu->is_item_checked(debug_menu->get_item_index(RUN_DEBUG_AVOIDANCE));
 			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_DEBUG_AVOIDANCE), !ischecked);
 			if (!initializing) {
-				EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_avoidance", !ischecked);
+				SET_PROJECT_META("debug_options", "run_debug_avoidance", !ischecked);
 			}
 
 		} break;
@@ -183,7 +183,7 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 			bool ischecked = debug_menu->is_item_checked(debug_menu->get_item_index(RUN_DEBUG_CANVAS_REDRAW));
 			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_DEBUG_CANVAS_REDRAW), !ischecked);
 			if (!initializing) {
-				EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_canvas_redraw", !ischecked);
+				SET_PROJECT_META("debug_options", "run_debug_canvas_redraw", !ischecked);
 			}
 
 		} break;
@@ -193,7 +193,7 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 
 			ScriptEditor::get_singleton()->set_live_auto_reload_running_scripts(!ischecked);
 			if (!initializing) {
-				EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_reload_scripts", !ischecked);
+				SET_PROJECT_META("debug_options", "run_reload_scripts", !ischecked);
 			}
 
 		} break;
@@ -203,7 +203,7 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 
 			EditorDebuggerNode::get_singleton()->set_keep_open(!ischecked);
 			if (!initializing) {
-				EditorSettings::get_singleton()->set_project_metadata("debug_options", "server_keep_open", !ischecked);
+				SET_PROJECT_META("debug_options", "server_keep_open", !ischecked);
 			}
 
 		} break;
@@ -228,16 +228,16 @@ void DebuggerEditorPlugin::_notification(int p_what) {
 }
 
 void DebuggerEditorPlugin::_update_debug_options() {
-	bool check_deploy_remote = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_deploy_remote_debug", false);
-	bool check_file_server = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_file_server", false);
-	bool check_debug_collisions = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_collisions", false);
-	bool check_debug_paths = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_paths", false);
-	bool check_debug_navigation = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_navigation", false);
-	bool check_debug_avoidance = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_avoidance", false);
-	bool check_debug_canvas_redraw = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_canvas_redraw", false);
-	bool check_live_debug = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_live_debug", true);
-	bool check_reload_scripts = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_reload_scripts", true);
-	bool check_server_keep_open = EditorSettings::get_singleton()->get_project_metadata("debug_options", "server_keep_open", false);
+	bool check_deploy_remote = GET_PROJECT_META("debug_options", "run_deploy_remote_debug", false);
+	bool check_file_server = GET_PROJECT_META("debug_options", "run_file_server", false);
+	bool check_debug_collisions = GET_PROJECT_META("debug_options", "run_debug_collisions", false);
+	bool check_debug_paths = GET_PROJECT_META("debug_options", "run_debug_paths", false);
+	bool check_debug_navigation = GET_PROJECT_META("debug_options", "run_debug_navigation", false);
+	bool check_debug_avoidance = GET_PROJECT_META("debug_options", "run_debug_avoidance", false);
+	bool check_debug_canvas_redraw = GET_PROJECT_META("debug_options", "run_debug_canvas_redraw", false);
+	bool check_live_debug = GET_PROJECT_META("debug_options", "run_live_debug", true);
+	bool check_reload_scripts = GET_PROJECT_META("debug_options", "run_reload_scripts", true);
+	bool check_server_keep_open = GET_PROJECT_META("debug_options", "server_keep_open", false);
 
 	if (check_deploy_remote) {
 		_menu_option(RUN_DEPLOY_REMOTE_DEBUG);

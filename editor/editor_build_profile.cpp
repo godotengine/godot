@@ -365,7 +365,7 @@ EditorBuildProfile::EditorBuildProfile() {
 void EditorBuildProfileManager::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			String last_file = EditorSettings::get_singleton()->get_project_metadata("build_profile", "last_file_path", "");
+			String last_file = GET_PROJECT_META("build_profile", "last_file_path", "");
 			if (!last_file.is_empty()) {
 				_import_profile(last_file);
 			}
@@ -777,7 +777,7 @@ void EditorBuildProfileManager::_import_profile(const String &p_path) {
 	}
 
 	profile_path->set_text(p_path);
-	EditorSettings::get_singleton()->set_project_metadata("build_profile", "last_file_path", p_path);
+	SET_PROJECT_META("build_profile", "last_file_path", p_path);
 
 	edited = profile;
 	_update_edited_profile();
@@ -790,7 +790,7 @@ void EditorBuildProfileManager::_export_profile(const String &p_path) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR("Error saving profile to path: '%s'."), p_path));
 	} else {
 		profile_path->set_text(p_path);
-		EditorSettings::get_singleton()->set_project_metadata("build_profile", "last_file_path", p_path);
+		SET_PROJECT_META("build_profile", "last_file_path", p_path);
 	}
 }
 

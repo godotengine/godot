@@ -48,7 +48,7 @@ enum ShaderType {
 void ShaderCreateDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			String last_lang = EditorSettings::get_singleton()->get_project_metadata("shader_setup", "last_selected_language", "");
+			String last_lang = GET_PROJECT_META("shader_setup", "last_selected_language", "");
 			if (!last_lang.is_empty()) {
 				for (int i = 0; i < type_menu->get_item_count(); i++) {
 					if (type_menu->get_item_text(i) == last_lang) {
@@ -61,7 +61,7 @@ void ShaderCreateDialog::_notification(int p_what) {
 				type_menu->select(default_type);
 			}
 
-			current_mode = EditorSettings::get_singleton()->get_project_metadata("shader_setup", "last_selected_mode", 0);
+			current_mode = GET_PROJECT_META("shader_setup", "last_selected_mode", 0);
 			mode_menu->select(current_mode);
 		} break;
 
@@ -118,12 +118,12 @@ void ShaderCreateDialog::_path_hbox_sorted() {
 
 void ShaderCreateDialog::_mode_changed(int p_mode) {
 	current_mode = p_mode;
-	EditorSettings::get_singleton()->set_project_metadata("shader_setup", "last_selected_mode", p_mode);
+	SET_PROJECT_META("shader_setup", "last_selected_mode", p_mode);
 }
 
 void ShaderCreateDialog::_template_changed(int p_template) {
 	current_template = p_template;
-	EditorSettings::get_singleton()->set_project_metadata("shader_setup", "last_selected_template", p_template);
+	SET_PROJECT_META("shader_setup", "last_selected_template", p_template);
 }
 
 void ShaderCreateDialog::ok_pressed() {
@@ -309,7 +309,7 @@ void ShaderCreateDialog::_type_changed(int p_language) {
 	template_menu->clear();
 
 	if (shader_type_data.use_templates) {
-		int last_template = EditorSettings::get_singleton()->get_project_metadata("shader_setup", "last_selected_template", 0);
+		int last_template = GET_PROJECT_META("shader_setup", "last_selected_template", 0);
 
 		template_menu->add_item(TTR("Default"));
 		template_menu->add_item(TTR("Empty"));
@@ -320,7 +320,7 @@ void ShaderCreateDialog::_type_changed(int p_language) {
 		template_menu->add_item(TTR("N/A"));
 	}
 
-	EditorSettings::get_singleton()->set_project_metadata("shader_setup", "last_selected_language", type_menu->get_item_text(type_menu->get_selected()));
+	SET_PROJECT_META("shader_setup", "last_selected_language", type_menu->get_item_text(type_menu->get_selected()));
 	validation_panel->update();
 }
 
