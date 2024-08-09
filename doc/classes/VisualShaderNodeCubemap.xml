@@ -9,7 +9,7 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="cube_map" type="Cubemap" setter="set_cube_map" getter="get_cube_map">
+		<member name="cube_map" type="TextureLayered" setter="set_cube_map" getter="get_cube_map">
 			The [Cubemap] texture to sample when using [constant SOURCE_TEXTURE] as [member source].
 		</member>
 		<member name="source" type="int" setter="set_source" getter="get_source" enum="VisualShaderNodeCubemap.Source" default="0">
