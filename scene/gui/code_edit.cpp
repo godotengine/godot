@@ -765,7 +765,7 @@ void CodeEdit::_backspace_internal(int p_caret) {
 			continue;
 		}
 
-		if (to_line > 0 && _is_line_hidden(to_line - 1)) {
+		if (to_line > 0 && to_column == 0 && _is_line_hidden(to_line - 1)) {
 			unfold_line(to_line - 1);
 		}
 
