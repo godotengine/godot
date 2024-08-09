@@ -1135,6 +1135,9 @@ void ProjectExportDialog::_export_project_to_path(const String &p_path) {
 	Dictionary fd_option = export_project->get_selected_options();
 	bool export_debug = fd_option.get(TTR("Export With Debug"), true);
 
+	// Save all scenes before initiating project export, so that unsaved changes are included in the exported project.
+	EditorNode::get_singleton()->save_all_scenes(false);
+
 	Error err = platform->export_project(current, export_debug, current->get_export_path(), 0);
 	result_dialog_log->clear();
 	if (err != ERR_SKIP) {
