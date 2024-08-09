@@ -1422,8 +1422,14 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_rea
 	}
 
 	if (shader->uniforms.has(p_identifier)) {
+		if (r_is_const) {
+			*r_is_const = true;
+		}
 		if (r_data_type) {
 			*r_data_type = shader->uniforms[p_identifier].type;
+		}
+		if (r_struct_name) {
+			*r_struct_name = shader->uniforms[p_identifier].struct_name;
 		}
 		if (r_array_size) {
 			*r_array_size = shader->uniforms[p_identifier].array_size;
@@ -4080,10 +4086,296 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				break;
 			case ShaderLanguage::TYPE_MAX:
 				break;
+			default: {
+			} break;
 		}
 		return value;
 	}
 	return Variant();
+}
+
+Variant ShaderLanguage::get_default_datatype_value(DataType p_type, int p_array_size, ShaderLanguage::ShaderNode::Uniform::Hint p_hint) {
+	int array_size = p_array_size;
+
+	Variant value;
+	switch (p_type) {
+		case ShaderLanguage::TYPE_BOOL:
+			if (array_size > 0) {
+				PackedInt32Array array;
+				for (int i = 0; i < array_size; i++) {
+					array.push_back(false);
+				}
+				value = Variant(array);
+			} else {
+				value = Variant(false);
+			}
+			break;
+		case ShaderLanguage::TYPE_BVEC2:
+			array_size *= 2;
+
+			if (array_size > 0) {
+				PackedInt32Array array;
+				for (int i = 0; i < array_size; i++) {
+					array.push_back(false);
+				}
+				value = Variant(array);
+			} else {
+				value = Variant(false);
+			}
+			break;
+		case ShaderLanguage::TYPE_BVEC3:
+			array_size *= 3;
+
+			if (array_size > 0) {
+				PackedInt32Array array;
+				for (int i = 0; i < array_size; i++) {
+					array.push_back(false);
+				}
+				value = Variant(array);
+			} else {
+				value = Variant(false);
+			}
+			break;
+		case ShaderLanguage::TYPE_BVEC4:
+			array_size *= 4;
+
+			if (array_size > 0) {
+				PackedInt32Array array;
+				for (int i = 0; i < array_size; i++) {
+					array.push_back(false);
+				}
+				value = Variant(array);
+			} else {
+				value = Variant(false);
+			}
+			break;
+		case ShaderLanguage::TYPE_INT:
+			if (array_size > 0) {
+				PackedInt32Array array;
+				for (int i = 0; i < array_size; i++) {
+					array.push_back(0);
+				}
+				value = Variant(array);
+			} else {
+				value = Variant(0);
+			}
+			break;
+		case ShaderLanguage::TYPE_IVEC2:
+			if (array_size > 0) {
+				array_size *= 2;
+
+				PackedInt32Array array;
+				for (int i = 0; i < array_size; i++) {
+					array.push_back(0);
+				}
+				value = Variant(array);
+			} else {
+				value = Variant(Vector2i(0, 0));
+			}
+			break;
+		case ShaderLanguage::TYPE_IVEC3:
+			if (array_size > 0) {
+				array_size *= 3;
+
+				PackedInt32Array array;
+				for (int i = 0; i < array_size; i++) {
+					array.push_back(0);
+				}
+				value = Variant(array);
+			} else {
+				value = Variant(Vector3i(0, 0, 0));
+			}
+			break;
+		case ShaderLanguage::TYPE_IVEC4:
+			if (array_size > 0) {
+				array_size *= 4;
+
+				PackedInt32Array array;
+				for (int i = 0; i < array_size; i++) {
+					array.push_back(0);
+				}
+				value = Variant(array);
+			} else {
+				value = Variant(Vector4i(0, 0, 0, 0));
+			}
+			break;
+		case ShaderLanguage::TYPE_UINT:
+			if (array_size > 0) {
+				PackedInt32Array array;
+				for (int i = 0; i < array_size; i++) {
+					array.push_back(0U);
+				}
+				value = Variant(array);
+			} else {
+				value = Variant(0U);
+			}
+			break;
+		case ShaderLanguage::TYPE_UVEC2:
+			if (array_size > 0) {
+				array_size *= 2;
+
+				PackedInt32Array array;
+				for (int i = 0; i < array_size; i++) {
+					array.push_back(0U);
+				}
+				value = Variant(array);
+			} else {
+				value = Variant(Vector2i(0U, 0U));
+			}
+			break;
+		case ShaderLanguage::TYPE_UVEC3:
+			if (array_size > 0) {
+				array_size *= 3;
+
+				PackedInt32Array array;
+				for (int i = 0; i < array_size; i++) {
+					array.push_back(0U);
+				}
+				value = Variant(array);
+			} else {
+				value = Variant(Vector3i(0U, 0U, 0U));
+			}
+			break;
+		case ShaderLanguage::TYPE_UVEC4:
+			if (array_size > 0) {
+				array_size *= 4;
+
+				PackedInt32Array array;
+				for (int i = 0; i < array_size; i++) {
+					array.push_back(0U);
+				}
+				value = Variant(array);
+			} else {
+				value = Variant(Vector4i(0U, 0U, 0U, 0U));
+			}
+			break;
+		case ShaderLanguage::TYPE_FLOAT:
+			if (array_size > 0) {
+				PackedFloat32Array array;
+				for (int i = 0; i < array_size; i++) {
+					array.push_back(0.0f);
+				}
+				value = Variant(array);
+			} else {
+				value = Variant(0.0f);
+			}
+			break;
+		case ShaderLanguage::TYPE_VEC2:
+			if (array_size > 0) {
+				PackedVector2Array array;
+				for (int i = 0; i < array_size; i++) {
+					array.push_back(Vector2(0.0f, 0.0f));
+				}
+				value = Variant(array);
+			} else {
+				value = Variant(Vector2(0.0f, 0.0f));
+			}
+			break;
+		case ShaderLanguage::TYPE_VEC3:
+			if (array_size > 0) {
+				if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
+					PackedColorArray array;
+					for (int i = 0; i < array_size; i++) {
+						array.push_back(Color(0.0f, 0.0f, 0.0f));
+					}
+					value = Variant(array);
+				} else {
+					PackedVector3Array array;
+					for (int i = 0; i < array_size; i++) {
+						array.push_back(Vector3(0.0f, 0.0f, 0.0f));
+					}
+					value = Variant(array);
+				}
+			} else {
+				if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
+					value = Variant(Color(0.0f, 0.0f, 0.0f));
+				} else {
+					value = Variant(Vector3(0.0f, 0.0f, 0.0f));
+				}
+			}
+			break;
+		case ShaderLanguage::TYPE_VEC4:
+			if (array_size > 0) {
+				if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
+					PackedColorArray array;
+					for (int i = 0; i < array_size; i++) {
+						array.push_back(Color(0.0f, 0.0f, 0.0f, 0.0f));
+					}
+					value = Variant(array);
+				} else {
+					PackedVector4Array array;
+					for (int i = 0; i < array_size; i++) {
+						array.push_back(Vector4(0.0f, 0.0f, 0.0f, 0.0f));
+					}
+					value = Variant(array);
+				}
+			} else {
+				if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
+					value = Variant(Color(0.0f, 0.0f, 0.0f, 0.0f));
+				} else {
+					value = Variant(Vector4(0.0f, 0.0f, 0.0f, 0.0f));
+				}
+			}
+			break;
+		case ShaderLanguage::TYPE_MAT2:
+			if (array_size > 0) {
+				PackedFloat32Array array;
+				for (int i = 0; i < array_size; i++) {
+					for (int j = 0; j < 4; j++) {
+						array.push_back(0.0f);
+					}
+				}
+				value = Variant(array);
+			} else {
+				value = Variant(Transform2D(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f));
+			}
+			break;
+		case ShaderLanguage::TYPE_MAT3: {
+			if (array_size > 0) {
+				PackedFloat32Array array;
+				for (int i = 0; i < array_size; i++) {
+					for (int j = 0; j < 9; j++) {
+						array.push_back(0.0f);
+					}
+				}
+				value = Variant(array);
+			} else {
+				Basis p;
+				p[0][0] = 0.0f;
+				p[0][1] = 0.0f;
+				p[0][2] = 0.0f;
+				p[1][0] = 0.0f;
+				p[1][1] = 0.0f;
+				p[1][2] = 0.0f;
+				p[2][0] = 0.0f;
+				p[2][1] = 0.0f;
+				p[2][2] = 0.0f;
+				value = Variant(p);
+			}
+			break;
+		}
+		case ShaderLanguage::TYPE_MAT4: {
+			if (array_size > 0) {
+				PackedFloat32Array array;
+				for (int i = 0; i < array_size; i++) {
+					for (int j = 0; j < 16; j++) {
+						array.push_back(0.0f);
+					}
+				}
+				value = Variant(array);
+			} else {
+				Projection p = Projection(Vector4(0.0f, 0.0f, 0.0f, 0.0f),
+						Vector4(0.0f, 0.0f, 0.0f, 0.0f),
+						Vector4(0.0f, 0.0f, 0.0f, 0.0f),
+						Vector4(0.0f, 0.0f, 0.0f, 0.0f));
+				value = Variant(p);
+			}
+			break;
+		}
+		default: {
+		} break;
+	}
+	return value;
 }
 
 PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform &p_uniform) {
@@ -4291,7 +4583,13 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 			}
 		} break;
 		case ShaderLanguage::TYPE_STRUCT: {
-			// FIXME: Implement this.
+			if (p_uniform.array_size > 0) {
+				pi.type = Variant::ARRAY;
+				pi.hint = PROPERTY_HINT_ARRAY_TYPE;
+				pi.hint_string = "Dictionary";
+			} else {
+				pi.type = Variant::DICTIONARY;
+			}
 		} break;
 		case ShaderLanguage::TYPE_MAX:
 			break;
@@ -8164,6 +8462,61 @@ Error ShaderLanguage::_validate_precision(DataType p_type, DataPrecision p_preci
 	return OK;
 }
 
+Error ShaderLanguage::_validate_uniform_struct(StructNode *p_struct) {
+	for (const MemberNode *mn : p_struct->members) {
+		if (mn->datatype == TYPE_STRUCT) {
+			if (_validate_uniform_struct(shader->structs[mn->struct_name].shader_struct) != OK) {
+				return FAILED;
+			}
+		}
+	}
+
+	if (!p_struct->validated) {
+		p_struct->members.sort_custom<StructNode::MemberNodeSizeComparator>();
+		p_struct->validated = true;
+	}
+
+	return OK;
+}
+
+void ShaderLanguage::_parse_uniform_member(ShaderNode::Uniform::Member &p_member, const StringName &p_struct_name) {
+	for (const MemberNode *mn : shader->structs[p_struct_name].shader_struct->members) {
+		ShaderNode::Uniform::Member member = ShaderNode::Uniform::Member(mn->name, mn->datatype, mn->struct_name, mn->array_size);
+
+		if (mn->datatype == TYPE_STRUCT) {
+			_parse_uniform_member(member, mn->struct_name);
+		} else {
+			member.comp_count += (get_datatype_size(mn->datatype) / 4) * MAX(1, mn->array_size);
+		}
+
+		p_member.comp_count += member.comp_count;
+		p_member.members.push_back(member);
+	}
+}
+
+Error ShaderLanguage::_parse_uniform_struct_initializer(Node *p_current, const ShaderNode::Uniform::Member &p_member, ConstantNode::Value *p_data, uint32_t &r_offset) {
+	if (p_current->type == Node::NODE_TYPE_OPERATOR) { // sub-struct initializer
+		OperatorNode *op = static_cast<OperatorNode *>(p_current);
+
+		for (int i = 1; i < op->arguments.size(); i++) {
+			if (_parse_uniform_struct_initializer(op->arguments[i], p_member.members.get(i - 1), p_data, r_offset) != OK) {
+				return ERR_PARSE_ERROR;
+			}
+		}
+	} else if (p_current->type == Node::NODE_TYPE_CONSTANT) { // a constant initializer
+		ConstantNode *cn = static_cast<ConstantNode *>(p_current);
+
+		if (!convert_constant(cn, p_member.type, &p_data[r_offset])) {
+			_set_error(vformat(RTR("Can't convert constant to '%s'."), get_datatype_name(p_member.type)));
+			return ERR_PARSE_ERROR;
+		}
+
+		r_offset += (get_datatype_size(p_member.type) / sizeof(ConstantNode::Value)) * MAX(1, p_member.array_size);
+	}
+
+	return OK;
+}
+
 Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const HashSet<String> &p_shader_types) {
 	Token tk;
 	TkPos prev_pos;
@@ -8357,6 +8710,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 
 				StructNode *st_node = alloc_node<StructNode>();
 				st.shader_struct = st_node;
+				st_node->pos = _get_tkpos();
 
 				int member_count = 0;
 				HashSet<String> member_names;
@@ -8467,6 +8821,13 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 								tk = _get_token();
 							}
 
+							if (type == TYPE_STRUCT) {
+								member->size = shader->structs[struct_name].shader_struct->size * MAX(1, member->array_size);
+							} else {
+								member->size = get_datatype_size(type) * MAX(1, member->array_size);
+							}
+							st_node->size += member->size;
+
 							if (!fixed_array_size) {
 								array_size = 0;
 							}
@@ -8481,6 +8842,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 						} while (tk.type == TK_COMMA); // another member
 					}
 				}
+
 				if (member_count == 0) {
 					_set_error(RTR("Empty structs are not allowed."));
 					return ERR_PARSE_ERROR;
@@ -8648,22 +9010,39 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 #endif // DEBUG_ENABLED
 				}
 
+				StructNode *shader_struct = nullptr;
+				StringName struct_name;
+
 				if (shader->structs.has(tk.text)) {
 					if (is_uniform) {
-						_set_error(vformat(RTR("The '%s' data type is not supported for uniforms."), "struct"));
-						return ERR_PARSE_ERROR;
+						if (uniform_scope == ShaderNode::Uniform::SCOPE_GLOBAL) {
+							_set_error(vformat(RTR("The '%s' qualifier is not supported for uniform structs."), "SCOPE_GLOBAL"));
+							return ERR_PARSE_ERROR;
+						}
+						if (uniform_scope == ShaderNode::Uniform::SCOPE_INSTANCE) {
+							_set_error(vformat(RTR("The '%s' qualifier is not supported for uniform structs."), "SCOPE_INSTANCE"));
+							return ERR_PARSE_ERROR;
+						}
+
+						shader_struct = shader->structs[tk.text].shader_struct;
+						if (_validate_uniform_struct(shader_struct) != OK) {
+							return ERR_PARSE_ERROR;
+						}
+
+						struct_name = tk.text;
+						type = TYPE_STRUCT;
 					} else {
 						_set_error(vformat(RTR("The '%s' data type is not allowed here."), "struct"));
 						return ERR_PARSE_ERROR;
 					}
-				}
+				} else {
+					if (!is_token_datatype(tk.type)) {
+						_set_error(RTR("Expected data type."));
+						return ERR_PARSE_ERROR;
+					}
 
-				if (!is_token_datatype(tk.type)) {
-					_set_error(RTR("Expected data type."));
-					return ERR_PARSE_ERROR;
+					type = get_token_datatype(tk.type);
 				}
-
-				type = get_token_datatype(tk.type);
 
 				if (precision != PRECISION_DEFAULT && _validate_precision(type, precision) != OK) {
 					return ERR_PARSE_ERROR;
@@ -8742,6 +9121,23 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 					uniform.array_size = array_size;
 					uniform.group = current_uniform_group_name;
 					uniform.subgroup = current_uniform_subgroup_name;
+
+					if (shader_struct != nullptr) {
+						uniform.struct_name = struct_name;
+
+						for (const MemberNode *mn : shader_struct->members) {
+							ShaderNode::Uniform::Member member = ShaderNode::Uniform::Member(mn->name, mn->datatype, mn->struct_name, mn->array_size);
+
+							if (mn->datatype == TYPE_STRUCT) {
+								_parse_uniform_member(member, mn->struct_name);
+							} else {
+								member.comp_count += (get_datatype_size(mn->datatype) / 4) * MAX(1, mn->array_size);
+							}
+
+							uniform.comp_count += member.comp_count;
+							uniform.members.push_back(member);
+						}
+					}
 
 					tk = _get_token();
 					if (tk.type == TK_BRACKET_OPEN) {
@@ -9129,6 +9525,12 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 					//reset scope for next uniform
 
 					if (tk.type == TK_OP_ASSIGN) {
+						// TODO: Remove when it's ready and all bugs fixed.
+						if (uniform.type == TYPE_STRUCT) {
+							_set_error(RTR("Setting default values to uniform struct is not supported."));
+							return ERR_PARSE_ERROR;
+						}
+
 						if (uniform.array_size > 0) {
 							_set_error(RTR("Setting default values to uniform arrays is not supported."));
 							return ERR_PARSE_ERROR;
@@ -9138,18 +9540,38 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 						if (!expr) {
 							return ERR_PARSE_ERROR;
 						}
-						if (expr->type != Node::NODE_TYPE_CONSTANT) {
-							_set_error(RTR("Expected constant expression after '='."));
-							return ERR_PARSE_ERROR;
-						}
 
-						ConstantNode *cn = static_cast<ConstantNode *>(expr);
+						if (uniform.type == TYPE_STRUCT) {
+							if (expr->type == Node::NODE_TYPE_OPERATOR && expr->get_datatype_name() == uniform.struct_name) {
+								uniform.default_value.resize(uniform.comp_count);
 
-						uniform.default_value.resize(cn->values.size());
+								uint32_t offset = 0U;
+								OperatorNode *op = static_cast<OperatorNode *>(expr);
 
-						if (!convert_constant(cn, uniform.type, uniform.default_value.ptrw())) {
-							_set_error(vformat(RTR("Can't convert constant to '%s'."), get_datatype_name(uniform.type)));
-							return ERR_PARSE_ERROR;
+								for (int i = 1; i < op->arguments.size(); i++) {
+									if (_parse_uniform_struct_initializer(op->arguments[i], uniform.members.get(i - 1), uniform.default_value.ptrw(), offset) != OK) {
+										return ERR_PARSE_ERROR;
+									}
+								}
+							} else {
+								_set_error(vformat(RTR("Expected '%s' initializer after '='."), uniform.struct_name));
+								return ERR_PARSE_ERROR;
+							}
+						} else {
+							if (uniform.type == TYPE_STRUCT && expr->type == Node::NODE_TYPE_OPERATOR) {
+							} else if (expr->type != Node::NODE_TYPE_CONSTANT) {
+								_set_error(RTR("Expected constant expression after '='."));
+								return ERR_PARSE_ERROR;
+							}
+
+							ConstantNode *cn = static_cast<ConstantNode *>(expr);
+
+							uniform.default_value.resize(cn->values.size());
+
+							if (!convert_constant(cn, uniform.type, uniform.default_value.ptrw())) {
+								_set_error(vformat(RTR("Can't convert constant to '%s'."), get_datatype_name(uniform.type)));
+								return ERR_PARSE_ERROR;
+							}
 						}
 						tk = _get_token();
 					}
