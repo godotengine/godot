@@ -507,6 +507,10 @@
 		</member>
 		<member name="debug/gdscript/warnings/exclude_addons" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], scripts in the [code]res://addons[/code] folder will not generate warnings.
+			[b]Note:[/b] It is not recommended to change the setting as the project's warning configuration may break third-party addons. Instead, consider including individual addons to [member debug/gdscript/warnings/exclude_addons_exceptions].
+		</member>
+		<member name="debug/gdscript/warnings/exclude_addons_exceptions" type="PackedStringArray" setter="" getter="" default="PackedStringArray()">
+			Contains a list of addons that will produce warnings even if [member debug/gdscript/warnings/exclude_addons] is [code]true[/code]. It is recommended to add your own addons, either project-specific or actively being developed at the moment. Third-party or project-agnostic addons should not be included in the list, as they may be incompatible with the project's warning configuration.
 		</member>
 		<member name="debug/gdscript/warnings/function_used_as_property" type="int" setter="" getter="" default="1" deprecated="This warning is never produced. When a function is used as a property, a [Callable] is returned.">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when using a function as if it is a property.

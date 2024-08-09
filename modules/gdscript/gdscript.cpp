@@ -2236,6 +2236,13 @@ void GDScriptLanguage::init() {
 		_add_global(E.name, E.ptr);
 	}
 
+#ifdef DEBUG_ENABLED
+	GDScriptParser::update_project_settings();
+	if (!ProjectSettings::get_singleton()->is_connected("settings_changed", callable_mp_static(&GDScriptParser::update_project_settings))) {
+		ProjectSettings::get_singleton()->connect("settings_changed", callable_mp_static(&GDScriptParser::update_project_settings));
+	}
+#endif
+
 #ifdef TESTS_ENABLED
 	GDScriptTests::GDScriptTestRunner::handle_cmdline();
 #endif
@@ -2873,6 +2880,11 @@ GDScriptLanguage::GDScriptLanguage() {
 #ifdef DEBUG_ENABLED
 	GLOBAL_DEF("debug/gdscript/warnings/enable", true);
 	GLOBAL_DEF("debug/gdscript/warnings/exclude_addons", true);
+	GLOBAL_DEF(PropertyInfo(Variant::PACKED_STRING_ARRAY,
+					   "debug/gdscript/warnings/exclude_addons_exceptions",
+					   PROPERTY_HINT_TYPE_STRING,
+					   vformat("%d/%d:plugin.cfg", Variant::STRING, PROPERTY_HINT_FILE)),
+			PackedStringArray());
 	for (int i = 0; i < (int)GDScriptWarning::WARNING_MAX; i++) {
 		GDScriptWarning::Code code = (GDScriptWarning::Code)i;
 		Variant default_enabled = GDScriptWarning::get_default_value(code);

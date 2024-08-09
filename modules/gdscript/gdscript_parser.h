@@ -1348,7 +1348,10 @@ private:
 		Vector<String> symbols;
 	};
 
-	bool is_ignoring_warnings = false;
+	static bool is_ignoring_warnings;
+	static bool is_excluding_addons;
+	static Vector<String> exclude_addons_exceptions;
+
 	List<GDScriptWarning> warnings;
 	List<PendingWarning> pending_warnings;
 	HashSet<int> warning_ignored_lines[GDScriptWarning::WARNING_MAX];
@@ -1581,7 +1584,9 @@ public:
 		// TODO: Keep track of deps.
 		return List<String>();
 	}
+
 #ifdef DEBUG_ENABLED
+	static void update_project_settings();
 	const List<GDScriptWarning> &get_warnings() const { return warnings; }
 	const HashSet<int> &get_unsafe_lines() const { return unsafe_lines; }
 	int get_last_line_number() const { return current.end_line; }

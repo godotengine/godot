@@ -141,6 +141,9 @@ void PluginConfigDialog::_on_required_text_changed() {
 			active_edit->set_disabled(false);
 		}
 	}
+	if (language->get_name() == "GDScript") {
+		validation_panel->set_message(MSG_ID_ENABLE_WARNINGS, TTR("For your own plugins, it's recommended to enable warnings by adding an entry to the project setting Debug > GDScript > Warnings > Exclude Addons Exceptions."), EditorValidationPanel::MSG_INFO);
+	}
 }
 
 String PluginConfigDialog::_get_subfolder() {
@@ -332,6 +335,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	validation_panel->add_line(MSG_ID_SCRIPT, TTR("Script extension is valid."));
 	validation_panel->add_line(MSG_ID_SUBFOLDER, TTR("Subfolder name is valid."));
 	validation_panel->add_line(MSG_ID_ACTIVE, "");
+	validation_panel->add_line(MSG_ID_ENABLE_WARNINGS, "");
 	validation_panel->set_update_callback(callable_mp(this, &PluginConfigDialog::_on_required_text_changed));
 	validation_panel->set_accept_button(get_ok_button());
 
