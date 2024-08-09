@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MotionBlurCompositorEffect" inherits="CompositorEffect" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A [CompositorEffect] that applies motion blur to the rendered scene.
+	</brief_description>
+	<description>
+		The [MotionBlurCompositorEffect] applies a motion blur effect to the rendered scene. This effect simulates the blurring of an image when objects are moving rapidly in the scene. The amount and direction of the blur is based on the movement of the objects in the scene.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="motion_blur_center_fade" type="float" setter="set_motion_blur_center_fade" getter="get_motion_blur_center_fade" default="0.0">
+			Controls the center fade (edge blur) of the motion blur effect.
+		</member>
+		<member name="motion_blur_intensity" type="float" setter="set_motion_blur_intensity" getter="get_motion_blur_intensity" default="0.25">
+			Controls the intensity of the motion blur. Higher values result in a stronger blur effect.
+		</member>
+		<member name="motion_blur_samples" type="int" setter="set_motion_blur_samples" getter="get_motion_blur_samples" default="8">
+			Determines the number of samples used to calculate the motion blur. Higher numbers result in a smoother blur but may impact performance.
+		</member>
+	</members>
+</class>
