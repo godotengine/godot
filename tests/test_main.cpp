@@ -165,6 +165,7 @@
 #include "servers/navigation_server_3d.h"
 #endif // _3D_DISABLED
 #include "servers/physics_server_2d.h"
+#include "servers/physics_server_2d_dummy.h"
 #ifndef _3D_DISABLED
 #include "servers/physics_server_3d.h"
 #endif // _3D_DISABLED
@@ -285,6 +286,9 @@ struct GodotTestCaseListener : public doctest::IReporter {
 #endif // _3D_DISABLED
 
 			physics_server_2d = PhysicsServer2DManager::get_singleton()->new_default_server();
+			if (!physics_server_2d) {
+				physics_server_2d = memnew(PhysicsServer2DDummy);
+			}
 			physics_server_2d->init();
 
 #ifndef _3D_DISABLED
