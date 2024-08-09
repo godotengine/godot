@@ -8,6 +8,21 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="get_constant_v4" qualifiers="const">
+			<return type="Vector4" />
+			<description>
+				Sets the constant to a value from a [Vector4] type.
+			</description>
+		</method>
+		<method name="set_constant_v4">
+			<return type="void" />
+			<param index="0" name="constant" type="Vector4" />
+			<description>
+				Returns the constant as a value of [Vector4] type.
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="constant" type="Quaternion" setter="set_constant" getter="get_constant" default="Quaternion(0, 0, 0, 1)">
 			A 4D vector (represented as a [Quaternion]) constant which represents the state of this node.
