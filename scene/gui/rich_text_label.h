@@ -39,6 +39,7 @@
 
 class CharFXTransform;
 class RichTextEffect;
+class RichTextTransition;
 
 class RichTextLabel : public Control {
 	GDCLASS(RichTextLabel, Control);
@@ -488,6 +489,8 @@ private:
 
 	Array custom_effects;
 
+	Ref<RichTextTransition> visibility_transition;
+
 	void _invalidate_current_line(ItemFrame *p_frame);
 
 	void _thread_function(void *p_userdata);
@@ -838,6 +841,9 @@ public:
 
 	void set_effects(Array p_effects);
 	Array get_effects();
+
+	void set_visibility_transition(Ref<RichTextTransition> p_visibility_transition);
+	Ref<RichTextTransition> get_visibility_transition();
 
 	void install_effect(const Variant effect);
 
