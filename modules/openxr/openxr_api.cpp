@@ -1459,6 +1459,10 @@ void OpenXRAPI::set_form_factor(XrFormFactor p_form_factor) {
 	form_factor = p_form_factor;
 }
 
+uint32_t OpenXRAPI::get_view_count() {
+	return view_count;
+}
+
 void OpenXRAPI::set_view_configuration(XrViewConfigurationType p_view_configuration) {
 	ERR_FAIL_COND(is_initialized());
 
@@ -1913,15 +1917,6 @@ bool OpenXRAPI::poll_events() {
 
 				// We probably didn't poll fast enough, just output warning
 				WARN_PRINT("OpenXR EVENT: " + itos(event->lostEventCount) + " event data lost!");
-			} break;
-			case XR_TYPE_EVENT_DATA_VISIBILITY_MASK_CHANGED_KHR: {
-				// XrEventDataVisibilityMaskChangedKHR *event = (XrEventDataVisibilityMaskChangedKHR *)&runtimeEvent;
-
-				// TODO implement this in the future, we should call xrGetVisibilityMaskKHR to obtain a mask,
-				// this will allow us to prevent rendering the part of our view which is never displayed giving us
-				// a decent performance improvement.
-
-				print_verbose("OpenXR EVENT: STUB: visibility mask changed");
 			} break;
 			case XR_TYPE_EVENT_DATA_INSTANCE_LOSS_PENDING: {
 				XrEventDataInstanceLossPending *event = (XrEventDataInstanceLossPending *)&runtimeEvent;
