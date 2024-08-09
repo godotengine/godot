@@ -1580,6 +1580,10 @@ float AudioServer::get_mix_rate() const {
 	return AudioDriver::get_singleton()->get_mix_rate();
 }
 
+float AudioServer::get_capture_mix_rate() const {
+	return AudioDriver::get_singleton()->get_capture_mix_rate();
+}
+
 float AudioServer::read_output_peak_db() const {
 	return 0;
 }
@@ -1903,6 +1907,7 @@ void AudioServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_speaker_mode"), &AudioServer::get_speaker_mode);
 	ClassDB::bind_method(D_METHOD("get_mix_rate"), &AudioServer::get_mix_rate);
+	ClassDB::bind_method(D_METHOD("get_capture_mix_rate"), &AudioServer::get_capture_mix_rate);
 
 	ClassDB::bind_method(D_METHOD("get_output_device_list"), &AudioServer::get_output_device_list);
 	ClassDB::bind_method(D_METHOD("get_output_device"), &AudioServer::get_output_device);
