@@ -3023,6 +3023,9 @@
 		<constant name="PROPERTY_USAGE_SECRET" value="536870912" enum="PropertyUsageFlags" is_bitfield="true">
 			An export preset property with this flag contains confidential information and is stored separately from the rest of the export preset configuration.
 		</constant>
+		<constant name="PROPERTY_USAGE_SHOW_IF_ROOT" value="1073741824" enum="PropertyUsageFlags" is_bitfield="true">
+			This property will only be displayed in the editor if its [Node] is the root of the current scene.
+		</constant>
 		<constant name="PROPERTY_USAGE_DEFAULT" value="6" enum="PropertyUsageFlags" is_bitfield="true">
 			Default usage (storage and editor).
 		</constant>
