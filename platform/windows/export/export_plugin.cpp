@@ -392,7 +392,9 @@ bool EditorExportPlatformWindows::get_export_option_visibility(const EditorExpor
 		return false;
 	}
 
-	if (p_option == "dotnet/embed_build_outputs") {
+	if (p_option == "dotnet/embed_build_outputs" ||
+			p_option == "custom_template/debug" ||
+			p_option == "custom_template/release") {
 		return advanced_options_enabled;
 	}
 	return true;
