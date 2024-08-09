@@ -3946,10 +3946,12 @@ String String::format(const Variant &values, const String &placeholder) const {
 		for (int i = 0; i < values_arr.size(); i++) {
 			String i_as_str = String::num_int64(i);
 
-			if (values_arr[i].get_type() == Variant::ARRAY) { //Array in Array structure [["name","RobotGuy"],[0,"godot"],["strength",9000.91]]
+#ifndef DISABLE_DEPRECATED
+			if (values_arr[i].get_type() == Variant::ARRAY) { // Array in Array structure [["name","RobotGuy"], [0,"godot"], ["strength",9000.91]].
 				Array value_arr = values_arr[i];
 
 				if (value_arr.size() == 2) {
+					WARN_DEPRECATED_MSG("Arrays structured as key-value pairs in String.format() are deprecated. Consider using a Dictionary instead.");
 					Variant v_key = value_arr[0];
 					String key = v_key;
 
@@ -3960,15 +3962,18 @@ String String::format(const Variant &values, const String &placeholder) const {
 				} else {
 					ERR_PRINT(String("STRING.format Inner Array size != 2 ").ascii().get_data());
 				}
-			} else { //Array structure ["RobotGuy","Logis","rookie"]
-				Variant v_val = values_arr[i];
-				String val = v_val;
+				continue;
+			}
+#endif // DISABLE_DEPRECATED
 
-				if (placeholder.contains("_")) {
-					new_string = new_string.replace(placeholder.replace("_", i_as_str), val);
-				} else {
-					new_string = new_string.replace_first(placeholder, val);
-				}
+			// Array structure ["RobotGuy", "Logis", "rookie"].
+			Variant v_val = values_arr[i];
+			String val = v_val;
+
+			if (placeholder.contains("_")) {
+				new_string = new_string.replace(placeholder.replace("_", i_as_str), val);
+			} else {
+				new_string = new_string.replace_first(placeholder, val);
 			}
 		}
 	} else if (values.get_type() == Variant::DICTIONARY) {
