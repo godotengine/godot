@@ -675,18 +675,6 @@ bool OS_MacOS::is_process_running(const ProcessID &p_pid) const {
 	return ![app isTerminated];
 }
 
-Error OS_MacOS::kill(const ProcessID &p_pid) {
-	NSRunningApplication *app = [NSRunningApplication runningApplicationWithProcessIdentifier:(pid_t)p_pid];
-	if (!app) {
-		return OS_Unix::kill(p_pid);
-	}
-	bool terminated = [app terminate];
-	if (!terminated) {
-		terminated = [app forceTerminate];
-	}
-	return terminated ? OK : ERR_INVALID_PARAMETER;
-}
-
 String OS_MacOS::get_unique_id() const {
 	static String serial_number;
 
