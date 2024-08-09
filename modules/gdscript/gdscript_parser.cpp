@@ -245,8 +245,26 @@ void GDScriptParser::apply_pending_warnings() {
 }
 #endif
 
-void GDScriptParser::make_completion_context(CompletionType p_type, Node *p_node, int p_argument, bool p_force) {
-	if (!for_completion || (!p_force && completion_context.type != COMPLETION_NONE)) {
+void GDScriptParser::override_completion_context(const Node *p_for_node, CompletionType p_type, Node *p_node, int p_argument) {
+	if (!for_completion) {
+		return;
+	}
+	if (completion_context.node != p_for_node) {
+		return;
+	}
+	CompletionContext context;
+	context.type = p_type;
+	context.current_class = current_class;
+	context.current_function = current_function;
+	context.current_suite = current_suite;
+	context.current_line = tokenizer->get_cursor_line();
+	context.current_argument = p_argument;
+	context.node = p_node;
+	completion_context = context;
+}
+
+void GDScriptParser::make_completion_context(CompletionType p_type, Node *p_node, int p_argument) {
+	if (!for_completion) {
 		return;
 	}
 	if (previous.cursor_place != GDScriptTokenizerText::CURSOR_MIDDLE && previous.cursor_place != GDScriptTokenizerText::CURSOR_END && current.cursor_place == GDScriptTokenizerText::CURSOR_NONE) {
@@ -264,8 +282,8 @@ void GDScriptParser::make_completion_context(CompletionType p_type, Node *p_node
 	completion_context = context;
 }
 
-void GDScriptParser::make_completion_context(CompletionType p_type, Variant::Type p_builtin_type, bool p_force) {
-	if (!for_completion || (!p_force && completion_context.type != COMPLETION_NONE)) {
+void GDScriptParser::make_completion_context(CompletionType p_type, Variant::Type p_builtin_type) {
+	if (!for_completion) {
 		return;
 	}
 	if (previous.cursor_place != GDScriptTokenizerText::CURSOR_MIDDLE && previous.cursor_place != GDScriptTokenizerText::CURSOR_END && current.cursor_place == GDScriptTokenizerText::CURSOR_NONE) {
@@ -1620,7 +1638,7 @@ GDScriptParser::AnnotationNode *GDScriptParser::parse_annotation(uint32_t p_vali
 		advance();
 		// Arguments.
 		push_completion_call(annotation);
-		make_completion_context(COMPLETION_ANNOTATION_ARGUMENTS, annotation, 0, true);
+		make_completion_context(COMPLETION_ANNOTATION_ARGUMENTS, annotation, 0);
 		int argument_index = 0;
 		do {
 			if (check(GDScriptTokenizer::Token::PARENTHESIS_CLOSE)) {
@@ -1628,7 +1646,7 @@ GDScriptParser::AnnotationNode *GDScriptParser::parse_annotation(uint32_t p_vali
 				break;
 			}
 
-			make_completion_context(COMPLETION_ANNOTATION_ARGUMENTS, annotation, argument_index, true);
+			make_completion_context(COMPLETION_ANNOTATION_ARGUMENTS, annotation, argument_index);
 			set_last_completion_call_arg(argument_index++);
 			ExpressionNode *argument = parse_expression(false);
 			if (argument == nullptr) {
@@ -2569,8 +2587,11 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_literal(ExpressionNode *p_
 	}
 
 	LiteralNode *literal = alloc_node<LiteralNode>();
-	complete_extents(literal);
 	literal->value = previous.literal;
+	reset_extents(literal, p_previous_operand);
+	update_extents(literal);
+	make_completion_context(COMPLETION_NONE, literal, -1);
+	complete_extents(literal);
 	return literal;
 }
 
@@ -3065,12 +3086,12 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_attribute(ExpressionNode *
 			const IdentifierNode *id = static_cast<const IdentifierNode *>(p_previous_operand);
 			Variant::Type builtin_type = get_builtin_type(id->name);
 			if (builtin_type < Variant::VARIANT_MAX) {
-				make_completion_context(COMPLETION_BUILT_IN_TYPE_CONSTANT_OR_STATIC_METHOD, builtin_type, true);
+				make_completion_context(COMPLETION_BUILT_IN_TYPE_CONSTANT_OR_STATIC_METHOD, builtin_type);
 				is_builtin = true;
 			}
 		}
 		if (!is_builtin) {
-			make_completion_context(COMPLETION_ATTRIBUTE, attribute, -1, true);
+			make_completion_context(COMPLETION_ATTRIBUTE, attribute, -1);
 		}
 	}
 
@@ -3195,23 +3216,24 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 	push_completion_call(call);
 	int argument_index = 0;
 	do {
-		make_completion_context(ct, call, argument_index++, true);
+		make_completion_context(ct, call, argument_index);
 		if (check(GDScriptTokenizer::Token::PARENTHESIS_CLOSE)) {
 			// Allow for trailing comma.
 			break;
 		}
-		bool use_identifier_completion = current.cursor_place == GDScriptTokenizerText::CURSOR_END || current.cursor_place == GDScriptTokenizerText::CURSOR_MIDDLE;
 		ExpressionNode *argument = parse_expression(false);
 		if (argument == nullptr) {
 			push_error(R"(Expected expression as the function argument.)");
 		} else {
 			call->arguments.push_back(argument);
 
-			if (argument->type == Node::IDENTIFIER && use_identifier_completion) {
-				completion_context.type = COMPLETION_IDENTIFIER;
+			if (argument->type == Node::LITERAL) {
+				override_completion_context(argument, ct, call, argument_index);
 			}
 		}
+
 		ct = COMPLETION_CALL_ARGUMENTS;
+		argument_index++;
 	} while (match(GDScriptTokenizer::Token::COMMA));
 	pop_completion_call();
 
@@ -3224,7 +3246,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	// We want code completion after a DOLLAR even if the current code is invalid.
-	make_completion_context(COMPLETION_GET_NODE, nullptr, -1, true);
+	make_completion_context(COMPLETION_GET_NODE, nullptr, -1);
 
 	if (!current.is_node_name() && !check(GDScriptTokenizer::Token::LITERAL) && !check(GDScriptTokenizer::Token::SLASH) && !check(GDScriptTokenizer::Token::PERCENT)) {
 		push_error(vformat(R"(Expected node path as string or identifier after "%s".)", previous.get_name()));
@@ -3281,7 +3303,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p
 			path_state = PATH_STATE_SLASH;
 		}
 
-		make_completion_context(COMPLETION_GET_NODE, get_node, context_argument++, true);
+		make_completion_context(COMPLETION_GET_NODE, get_node, context_argument++);
 
 		if (match(GDScriptTokenizer::Token::LITERAL)) {
 			if (previous.literal.get_type() != Variant::STRING) {
