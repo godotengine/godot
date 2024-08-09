@@ -576,7 +576,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				}
 			}
 
-			create_dialog->popup_create(true);
+			const bool is_on_macos = OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos");
+			const String placeholder = TTR("Hold Shift to create as sibling. Hold %s to create another node afterwards.", is_on_macos ? "Cmd" : "Ctrl");
+			create_dialog->popup_create(true, false, "", "", placeholder);
 			if (!p_confirm_override) {
 				emit_signal(SNAME("add_node_used"));
 			}
@@ -2761,7 +2763,7 @@ void SceneTreeDock::_selection_changed() {
 	_update_script_button();
 }
 
-void SceneTreeDock::_do_create(Node *p_parent) {
+void SceneTreeDock::_do_create(Node *p_parent, bool p_create_as_sibling, bool p_create_another) {
 	Variant c = create_dialog->instantiate_selected();
 	Node *child = Object::cast_to<Node>(c);
 	ERR_FAIL_NULL(child);
@@ -2776,16 +2778,22 @@ void SceneTreeDock::_do_create(Node *p_parent) {
 	undo_redo->create_action_for_history(TTR("Create Node"), editor_data->get_current_edited_scene_history_id());
 
 	if (edited_scene) {
-		undo_redo->add_do_method(p_parent, "add_child", child, true);
+		Node *parent;
+		if (p_create_as_sibling) {
+			parent = p_parent->get_parent();
+		} else {
+			parent = p_parent;
+		}
+		undo_redo->add_do_method(parent, "add_child", child, true);
 		undo_redo->add_do_method(child, "set_owner", edited_scene);
 		undo_redo->add_do_method(editor_selection, "clear");
 		undo_redo->add_do_method(editor_selection, "add_node", child);
 		undo_redo->add_do_reference(child);
-		undo_redo->add_undo_method(p_parent, "remove_child", child);
+		undo_redo->add_undo_method(parent, "remove_child", child);
 
 		EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
-		undo_redo->add_do_method(ed, "live_debug_create_node", edited_scene->get_path_to(p_parent), child->get_class(), new_name);
-		undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(p_parent)).path_join(new_name)));
+		undo_redo->add_do_method(ed, "live_debug_create_node", edited_scene->get_path_to(parent), child->get_class(), new_name);
+		undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(parent)).path_join(new_name)));
 
 	} else {
 		undo_redo->add_do_method(EditorNode::get_singleton(), "set_edited_scene", child);
@@ -2816,6 +2824,13 @@ void SceneTreeDock::_do_create(Node *p_parent) {
 	}
 
 	emit_signal(SNAME("node_created"), c);
+
+	if (p_create_another) {
+		// Show the dialog again, so the user can create another node immediately.
+		const bool is_on_macos = OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos");
+		const String placeholder = TTR("Hold Shift to create as sibling. Hold %s to create another node afterwards.", is_on_macos ? "Cmd" : "Ctrl");
+		create_dialog->popup_create(true, false, child->get_class(), child->get_name(), placeholder);
+	}
 }
 
 void SceneTreeDock::_create() {
@@ -2835,7 +2850,7 @@ void SceneTreeDock::_create() {
 			ERR_FAIL_NULL(parent);
 		}
 
-		_do_create(parent);
+		_do_create(parent, Input::get_singleton()->is_key_pressed(Key::SHIFT), Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL));
 
 	} else if (current_option == TOOL_REPLACE) {
 		List<Node *> selection = editor_selection->get_selected_node_list();
