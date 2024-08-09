@@ -272,7 +272,7 @@ void EditorInterface::set_current_feature_profile(const String &p_profile_name) 
 
 // Editor dialogs.
 
-void EditorInterface::popup_node_selector(const Callable &p_callback, const TypedArray<StringName> &p_valid_types) {
+void EditorInterface::popup_node_selector(const Callable &p_callback, const TypedArray<StringName> &p_valid_types, Node *p_current_value) {
 	// TODO: Should reuse dialog instance instead of creating a fresh one, but need to rework set_valid_types first.
 	if (node_selector) {
 		node_selector->disconnect(SNAME("selected"), callable_mp(this, &EditorInterface::_node_selected).bind(p_callback));
@@ -292,7 +292,7 @@ void EditorInterface::popup_node_selector(const Callable &p_callback, const Type
 
 	get_base_control()->add_child(node_selector);
 
-	node_selector->popup_scenetree_dialog();
+	node_selector->popup_scenetree_dialog(p_current_value);
 
 	const Callable selected_callback = callable_mp(this, &EditorInterface::_node_selected).bind(p_callback);
 	node_selector->connect(SNAME("selected"), selected_callback, CONNECT_DEFERRED);
@@ -301,7 +301,7 @@ void EditorInterface::popup_node_selector(const Callable &p_callback, const Type
 	node_selector->connect(SNAME("canceled"), canceled_callback, CONNECT_DEFERRED);
 }
 
-void EditorInterface::popup_property_selector(Object *p_object, const Callable &p_callback, const PackedInt32Array &p_type_filter) {
+void EditorInterface::popup_property_selector(Object *p_object, const Callable &p_callback, const PackedInt32Array &p_type_filter, const String &p_current_value) {
 	// TODO: Should reuse dialog instance instead of creating a fresh one, but need to rework set_type_filter first.
 	if (property_selector) {
 		property_selector->disconnect(SNAME("selected"), callable_mp(this, &EditorInterface::_property_selected).bind(p_callback));
@@ -321,7 +321,7 @@ void EditorInterface::popup_property_selector(Object *p_object, const Callable &
 
 	get_base_control()->add_child(property_selector);
 
-	property_selector->select_property_from_instance(p_object);
+	property_selector->select_property_from_instance(p_object, p_current_value);
 
 	const Callable selected_callback = callable_mp(this, &EditorInterface::_property_selected).bind(p_callback);
 	property_selector->connect(SNAME("selected"), selected_callback, CONNECT_DEFERRED);
@@ -559,8 +559,8 @@ void EditorInterface::_bind_methods() {
 
 	// Editor dialogs.
 
-	ClassDB::bind_method(D_METHOD("popup_node_selector", "callback", "valid_types"), &EditorInterface::popup_node_selector, DEFVAL(TypedArray<StringName>()));
-	ClassDB::bind_method(D_METHOD("popup_property_selector", "object", "callback", "type_filter"), &EditorInterface::popup_property_selector, DEFVAL(PackedInt32Array()));
+	ClassDB::bind_method(D_METHOD("popup_node_selector", "callback", "valid_types", "current_value"), &EditorInterface::popup_node_selector, DEFVAL(TypedArray<StringName>()), DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("popup_property_selector", "object", "callback", "type_filter", "current_value"), &EditorInterface::popup_property_selector, DEFVAL(PackedInt32Array()), DEFVAL(String()));
 
 	// Editor docks.
 
