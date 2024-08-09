@@ -2755,12 +2755,16 @@ Transform2D Window::get_popup_base_transform() const {
 	return popup_base_transform;
 }
 
-bool Window::is_directly_attached_to_screen() const {
+Viewport *Window::get_section_root_viewport() const {
 	if (get_embedder()) {
-		return get_embedder()->is_directly_attached_to_screen();
+		return get_embedder()->get_section_root_viewport();
 	}
-	// Distinguish between the case that this is a native Window and not inside the tree.
-	return is_inside_tree();
+	if (is_inside_tree()) {
+		// Native window.
+		return SceneTree::get_singleton()->get_root();
+	}
+	Window *vp = const_cast<Window *>(this);
+	return vp;
 }
 
 bool Window::is_attached_in_viewport() const {
