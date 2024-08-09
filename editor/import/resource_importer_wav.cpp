@@ -458,6 +458,8 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 	AudioStreamWAV::Format dst_format;
 
 	if (compression == 1) {
+#ifndef DISABLE_DEPRECATED
+		WARN_DEPRECATED_MSG("IMA-ADPCM compression is deprecated. Consider using QOA (Quite OK Audio) instead.");
 		dst_format = AudioStreamWAV::FORMAT_IMA_ADPCM;
 		if (format_channels == 1) {
 			_compress_ima_adpcm(data, pcm_data);
@@ -493,7 +495,9 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 				w[i * 2 + 1] = rr[i];
 			}
 		}
-
+#else
+		ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "This engine build was compiled without deprecated features. IMA-ADPCM is not available.");
+#endif // DISABLE_DEPRECATED
 	} else {
 		dst_format = is16 ? AudioStreamWAV::FORMAT_16_BITS : AudioStreamWAV::FORMAT_8_BITS;
 		bool enforce16 = is16 || compression == 2;
