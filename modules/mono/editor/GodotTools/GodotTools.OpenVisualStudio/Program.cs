@@ -25,6 +25,7 @@ namespace GodotTools.OpenVisualStudio
             Console.WriteLine();
             Console.WriteLine("Usage:");
             Console.WriteLine(@"  GodotTools.OpenVisualStudio.exe solution [file[;line[;col]]...]");
+            Console.WriteLine(@"  GodotTools.OpenVisualStudio.exe solution [file[;AddMethod[;methodname[;parameter:type;...]]]...]");
             Console.WriteLine();
             Console.WriteLine("Lines and columns begin at one. Zero or lower will result in an error.");
             Console.WriteLine("If a line is specified but a column is not, the line is selected in the text editor.");
@@ -43,6 +44,19 @@ namespace GodotTools.OpenVisualStudio
             string solutionFile = NormalizePath(args[0]);
 
             var dte = FindInstanceEditingSolution(solutionFile);
+
+            if (dte == null && args.Length > 1 && args[1].Contains(";AddMethod"))
+            {
+                DateTime startTime = DateTime.Now;
+                while (true)
+                {
+                    dte = FindInstanceEditingSolution(solutionFile);
+                    if (dte != null || DateTime.Now - startTime > TimeSpan.FromSeconds(20))
+                    {
+                        break;
+                    }
+                }
+            }
 
             if (dte == null)
             {
@@ -102,7 +116,14 @@ namespace GodotTools.OpenVisualStudio
 
                     if (fileArgumentParts.Length > 1)
                     {
-                        if (int.TryParse(fileArgumentParts[1], out int line))
+                        if (fileArgumentParts[1].ToString() == "AddMethod")
+                        {
+                            if (fileArgumentParts.Length > 2)
+                            {
+                                AddMethod(dte, fileArgumentParts);
+                            }
+                        }
+                        else if (int.TryParse(fileArgumentParts[1], out int line))
                         {
                             var textSelection = (TextSelection)dte.ActiveDocument.Selection;
 
@@ -215,6 +236,72 @@ namespace GodotTools.OpenVisualStudio
             return new Uri(Path.GetFullPath(path)).LocalPath
                 .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
                 .ToUpperInvariant();
+        }
+
+        static void AddMethod(DTE dte, string[] parameters)
+        {
+            var document = dte.ActiveDocument;
+            if (dte.ActiveDocument == null)
+                return;
+
+            var projectItem = document.ProjectItem;
+            if (projectItem == null)
+                return;
+
+            var codeModel = projectItem.FileCodeModel;
+            if (codeModel == null)
+                return;
+
+            var codeElements = codeModel.CodeElements;
+
+            CodeNamespace codeNamespace = null;
+            foreach (CodeElement codeElement in codeElements)
+            {
+                if (codeElement.Kind == vsCMElement.vsCMElementNamespace)
+                {
+                    codeNamespace = codeElement as CodeNamespace;
+                    break;
+                }
+            }
+
+            CodeClass codeClass = null;
+            if (codeNamespace == null)
+            {
+                foreach (CodeElement codeElement in codeElements)
+                {
+                    if (codeElement.Kind == vsCMElement.vsCMElementClass)
+                    {
+                        codeClass = codeElement as CodeClass;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                foreach (CodeElement codeElement in codeNamespace.Members)
+                {
+                    if (codeElement.Kind == vsCMElement.vsCMElementClass)
+                    {
+                        codeClass = codeElement as CodeClass;
+                        break;
+                    }
+                }
+            }
+
+            if (codeClass == null)
+                return;
+
+            CodeFunction codeFunction = codeClass.AddFunction(parameters[2], vsCMFunction.vsCMFunctionFunction, vsCMTypeRef.vsCMTypeRefVoid, -1, vsCMAccess.vsCMAccessPrivate);
+            for (int i = 3; i < parameters.Length; i++)
+            {
+                string[] parameter = parameters[i].Split(':');
+                if (parameter.Length == 2)
+                {
+                    codeFunction.AddParameter(parameter[0], parameter[1], -1);
+                }
+            }
+            var textSelection = (TextSelection)dte.ActiveDocument.Selection;
+            textSelection.MoveToPoint(codeFunction.GetStartPoint(vsCMPart.vsCMPartBody));
         }
 
         #region MessageFilter. See: http: //msdn.microsoft.com/en-us/library/ms228772.aspx
