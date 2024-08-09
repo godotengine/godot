@@ -73,15 +73,36 @@ void Callable::callp(const Variant **p_arguments, int p_argcount, Variant &r_ret
 Variant Callable::callv(const Array &p_arguments) const {
 	int argcount = p_arguments.size();
 	const Variant **argptrs = nullptr;
-	if (argcount) {
+	Variant *args = nullptr;
+
+	if (argcount > 0) {
 		argptrs = (const Variant **)alloca(sizeof(Variant *) * argcount);
-		for (int i = 0; i < argcount; i++) {
-			argptrs[i] = &p_arguments[i];
+
+		// Make copies of the arguments if the array is read-only, otherwise the address of p_arguments->read_only will be copied for each.
+		if (p_arguments.is_read_only()) {
+			args = (Variant *)alloca(sizeof(Variant) * argcount);
+			for (int i = 0; i < argcount; i++) {
+				memnew_placement(args + i, Variant(p_arguments[i]));
+				argptrs[i] = &args[i];
+			}
+		} else {
+			for (int i = 0; i < argcount; i++) {
+				argptrs[i] = &p_arguments[i];
+			}
 		}
 	}
+
 	CallError ce;
 	Variant ret;
 	callp(argptrs, argcount, ret, ce);
+
+	// Destroy the copies of the arguments if any.
+	if (args) {
+		for (int i = 0; i < argcount; i++) {
+			args[i].~Variant();
+		}
+	}
+
 	return ret;
 }
 
