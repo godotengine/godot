@@ -1742,20 +1742,20 @@ void AnimationTimelineEdit::update_values() {
 
 	switch (animation->get_loop_mode()) {
 		case Animation::LOOP_NONE: {
-			loop->set_icon(get_editor_theme_icon(SNAME("Loop")));
-			loop->set_pressed(false);
+			loop->set_icon(get_editor_theme_icon(SNAME("NoLoop")));
 		} break;
 		case Animation::LOOP_LINEAR: {
 			loop->set_icon(get_editor_theme_icon(SNAME("Loop")));
-			loop->set_pressed(true);
 		} break;
 		case Animation::LOOP_PINGPONG: {
 			loop->set_icon(get_editor_theme_icon(SNAME("PingPongLoop")));
-			loop->set_pressed(true);
 		} break;
 		default:
 			break;
 	}
+
+	loop->set_pressed(false);
+	loop->set_disabled(read_only);
 
 	editing = false;
 }
