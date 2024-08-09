@@ -73,7 +73,14 @@ public:
 		EMISSION_SHAPE_RECTANGLE,
 		EMISSION_SHAPE_POINTS,
 		EMISSION_SHAPE_DIRECTED_POINTS,
+		EMISSION_SHAPE_CIRCLE,
 		EMISSION_SHAPE_MAX
+	};
+
+	enum EmissionCircleMode {
+		EMISSION_CIRCLE_MODE_RANDOM,
+		EMISSION_CIRCLE_MODE_CW,
+		EMISSION_CIRCLE_MODE_CCW,
 	};
 
 private:
@@ -163,6 +170,7 @@ private:
 	bool particle_flags[PARTICLE_FLAG_MAX];
 
 	EmissionShape emission_shape = EMISSION_SHAPE_POINT;
+	EmissionCircleMode emission_circle_mode = EMISSION_CIRCLE_MODE_RANDOM;
 	real_t emission_sphere_radius = 1.0;
 	Vector2 emission_rect_extents = Vector2(1, 1);
 	Vector<Vector2> emission_points;
@@ -260,6 +268,7 @@ public:
 	bool get_particle_flag(ParticleFlags p_particle_flag) const;
 
 	void set_emission_shape(EmissionShape p_shape);
+	void set_emission_circle_mode(EmissionCircleMode p_circle_mode);
 	void set_emission_sphere_radius(real_t p_radius);
 	void set_emission_rect_extents(Vector2 p_extents);
 	void set_emission_points(const Vector<Vector2> &p_points);
@@ -270,6 +279,7 @@ public:
 	void set_split_scale(bool p_split_scale);
 
 	EmissionShape get_emission_shape() const;
+	EmissionCircleMode get_emission_circle_mode() const;
 	real_t get_emission_sphere_radius() const;
 	Vector2 get_emission_rect_extents() const;
 	Vector<Vector2> get_emission_points() const;
@@ -296,5 +306,6 @@ VARIANT_ENUM_CAST(CPUParticles2D::DrawOrder)
 VARIANT_ENUM_CAST(CPUParticles2D::Parameter)
 VARIANT_ENUM_CAST(CPUParticles2D::ParticleFlags)
 VARIANT_ENUM_CAST(CPUParticles2D::EmissionShape)
+VARIANT_ENUM_CAST(CPUParticles2D::EmissionCircleMode)
 
 #endif // CPU_PARTICLES_2D_H
