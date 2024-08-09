@@ -149,11 +149,11 @@ MAKE_TYPED_ARRAY(IPAddress, Variant::STRING)
 
 template <typename T>
 struct PtrToArg<TypedArray<T>> {
-	_FORCE_INLINE_ static TypedArray<T> convert(const void *p_ptr) {
+	static _FORCE_INLINE_ TypedArray<T> convert(const void *p_ptr) {
 		return TypedArray<T>(*reinterpret_cast<const Array *>(p_ptr));
 	}
 	typedef Array EncodeT;
-	_FORCE_INLINE_ static void encode(TypedArray<T> p_val, void *p_ptr) {
+	static _FORCE_INLINE_ void encode(TypedArray<T> p_val, void *p_ptr) {
 		*(Array *)p_ptr = p_val;
 	}
 };
@@ -161,7 +161,7 @@ struct PtrToArg<TypedArray<T>> {
 template <typename T>
 struct PtrToArg<const TypedArray<T> &> {
 	typedef Array EncodeT;
-	_FORCE_INLINE_ static TypedArray<T> convert(const void *p_ptr) {
+	static _FORCE_INLINE_ TypedArray<T> convert(const void *p_ptr) {
 		return TypedArray<T>(*reinterpret_cast<const Array *>(p_ptr));
 	}
 };

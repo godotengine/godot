@@ -482,7 +482,7 @@ private:
 	};
 
 	// FIXME: Is this the right thing to do?
-	inline static const char *proxy_tag = "godot";
+	static inline const char *proxy_tag = "godot";
 
 	Thread events_thread;
 	ThreadData thread_data;

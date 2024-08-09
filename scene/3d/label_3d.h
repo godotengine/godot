@@ -98,7 +98,7 @@ private:
 	};
 
 	struct SurfaceKeyHasher {
-		_FORCE_INLINE_ static uint32_t hash(const SurfaceKey &p_a) {
+		static _FORCE_INLINE_ uint32_t hash(const SurfaceKey &p_a) {
 			return hash_murmur3_buffer(&p_a, sizeof(SurfaceKey));
 		}
 	};

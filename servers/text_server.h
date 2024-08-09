@@ -609,7 +609,7 @@ private:
 	Vector<Ref<TextServer>> interfaces;
 
 public:
-	_FORCE_INLINE_ static TextServerManager *get_singleton() {
+	static _FORCE_INLINE_ TextServerManager *get_singleton() {
 		return singleton;
 	}
 

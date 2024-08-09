@@ -594,7 +594,7 @@ public:
 		max = x2;                        \
 	}
 
-	_FORCE_INLINE_ static bool planeBoxOverlap(Vector3 normal, real_t d, Vector3 maxbox) {
+	static _FORCE_INLINE_ bool planeBoxOverlap(Vector3 normal, real_t d, Vector3 maxbox) {
 		int q;
 		Vector3 vmin, vmax;
 		for (q = 0; q <= 2; q++) {
@@ -709,7 +709,7 @@ public:
 		return false;                              \
 	}
 
-	_FORCE_INLINE_ static bool triangle_box_overlap(const Vector3 &boxcenter, const Vector3 boxhalfsize, const Vector3 *triverts) {
+	static _FORCE_INLINE_ bool triangle_box_overlap(const Vector3 &boxcenter, const Vector3 boxhalfsize, const Vector3 *triverts) {
 		/*    use separating axis theorem to test overlap between triangle and box */
 		/*    need to test for overlap in these directions: */
 		/*    1) the {x,y,z}-directions (actually, since we use the AABB of the triangle */
@@ -830,7 +830,7 @@ public:
 #undef STP
 	}
 
-	_FORCE_INLINE_ static Vector3 octahedron_map_decode(const Vector2 &p_uv) {
+	static _FORCE_INLINE_ Vector3 octahedron_map_decode(const Vector2 &p_uv) {
 		// https://twitter.com/Stubbesaurus/status/937994790553227264
 		const Vector2 f = p_uv * 2.0f - Vector2(1.0f, 1.0f);
 		Vector3 n = Vector3(f.x, f.y, 1.0f - Math::abs(f.x) - Math::abs(f.y));

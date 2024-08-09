@@ -54,20 +54,20 @@ The `dependencies` section and fields are optional and defined as follow:
  See https://github.com/godotengine/godot/issues/38157#issuecomment-618773871
  */
 struct PluginConfigAndroid {
-	inline static const char *PLUGIN_CONFIG_EXT = ".gdap";
+	static inline const char *PLUGIN_CONFIG_EXT = ".gdap";
 
-	inline static const char *CONFIG_SECTION = "config";
-	inline static const char *CONFIG_NAME_KEY = "name";
-	inline static const char *CONFIG_BINARY_TYPE_KEY = "binary_type";
-	inline static const char *CONFIG_BINARY_KEY = "binary";
+	static inline const char *CONFIG_SECTION = "config";
+	static inline const char *CONFIG_NAME_KEY = "name";
+	static inline const char *CONFIG_BINARY_TYPE_KEY = "binary_type";
+	static inline const char *CONFIG_BINARY_KEY = "binary";
 
-	inline static const char *DEPENDENCIES_SECTION = "dependencies";
-	inline static const char *DEPENDENCIES_LOCAL_KEY = "local";
-	inline static const char *DEPENDENCIES_REMOTE_KEY = "remote";
-	inline static const char *DEPENDENCIES_CUSTOM_MAVEN_REPOS_KEY = "custom_maven_repos";
+	static inline const char *DEPENDENCIES_SECTION = "dependencies";
+	static inline const char *DEPENDENCIES_LOCAL_KEY = "local";
+	static inline const char *DEPENDENCIES_REMOTE_KEY = "remote";
+	static inline const char *DEPENDENCIES_CUSTOM_MAVEN_REPOS_KEY = "custom_maven_repos";
 
-	inline static const char *BINARY_TYPE_LOCAL = "local";
-	inline static const char *BINARY_TYPE_REMOTE = "remote";
+	static inline const char *BINARY_TYPE_LOCAL = "local";
+	static inline const char *BINARY_TYPE_REMOTE = "remote";
 
 	// Set to true when the config file is properly loaded.
 	bool valid_config = false;

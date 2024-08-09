@@ -622,7 +622,7 @@ class TextServerAdvanced : public TextServerExtension {
 	};
 
 	struct SystemFontKeyHasher {
-		_FORCE_INLINE_ static uint32_t hash(const SystemFontKey &p_a) {
+		static _FORCE_INLINE_ uint32_t hash(const SystemFontKey &p_a) {
 			uint32_t hash = p_a.font_name.hash();
 			hash = hash_murmur3_one_32(p_a.variation_coordinates.hash(), hash);
 			hash = hash_murmur3_one_32(p_a.weight, hash);

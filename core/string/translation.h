@@ -137,7 +137,7 @@ class TranslationServer : public Object {
 	void init_locale_info();
 
 public:
-	_FORCE_INLINE_ static TranslationServer *get_singleton() { return singleton; }
+	static _FORCE_INLINE_ TranslationServer *get_singleton() { return singleton; }
 
 	void set_enabled(bool p_enabled) { enabled = p_enabled; }
 	_FORCE_INLINE_ bool is_enabled() const { return enabled; }

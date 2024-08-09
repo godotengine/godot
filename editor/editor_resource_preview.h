@@ -76,8 +76,8 @@ public:
 class EditorResourcePreview : public Node {
 	GDCLASS(EditorResourcePreview, Node);
 
-	inline static constexpr int CURRENT_METADATA_VERSION = 1; // Increment this number to invalidate all previews.
-	inline static EditorResourcePreview *singleton = nullptr;
+	static inline constexpr int CURRENT_METADATA_VERSION = 1; // Increment this number to invalidate all previews.
+	static inline EditorResourcePreview *singleton = nullptr;
 
 	struct QueueItem {
 		Ref<Resource> resource;

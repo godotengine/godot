@@ -274,11 +274,11 @@ class EditorHelpBit : public VBoxContainer {
 		Vector<ArgumentData> arguments; // For methods and signals.
 	};
 
-	inline static HashMap<StringName, HelpData> doc_class_cache;
-	inline static HashMap<StringName, HashMap<StringName, HelpData>> doc_property_cache;
-	inline static HashMap<StringName, HashMap<StringName, HelpData>> doc_method_cache;
-	inline static HashMap<StringName, HashMap<StringName, HelpData>> doc_signal_cache;
-	inline static HashMap<StringName, HashMap<StringName, HelpData>> doc_theme_item_cache;
+	static inline HashMap<StringName, HelpData> doc_class_cache;
+	static inline HashMap<StringName, HashMap<StringName, HelpData>> doc_property_cache;
+	static inline HashMap<StringName, HashMap<StringName, HelpData>> doc_method_cache;
+	static inline HashMap<StringName, HashMap<StringName, HelpData>> doc_signal_cache;
+	static inline HashMap<StringName, HashMap<StringName, HelpData>> doc_theme_item_cache;
 
 	RichTextLabel *title = nullptr;
 	RichTextLabel *content = nullptr;

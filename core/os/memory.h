@@ -69,8 +69,8 @@ public:
 
 class DefaultAllocator {
 public:
-	_FORCE_INLINE_ static void *alloc(size_t p_memory) { return Memory::alloc_static(p_memory, false); }
-	_FORCE_INLINE_ static void free(void *p_ptr) { Memory::free_static(p_ptr, false); }
+	static _FORCE_INLINE_ void *alloc(size_t p_memory) { return Memory::alloc_static(p_memory, false); }
+	static _FORCE_INLINE_ void free(void *p_ptr) { Memory::free_static(p_ptr, false); }
 };
 
 void *operator new(size_t p_size, const char *p_description); ///< operator new that takes a description and uses MemoryStaticPool

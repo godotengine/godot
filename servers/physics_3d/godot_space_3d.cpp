@@ -38,7 +38,7 @@
 #define TEST_MOTION_MARGIN_MIN_VALUE 0.0001
 #define TEST_MOTION_MIN_CONTACT_DEPTH_FACTOR 0.05
 
-_FORCE_INLINE_ static bool _can_collide_with(GodotCollisionObject3D *p_object, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
+static _FORCE_INLINE_ bool _can_collide_with(GodotCollisionObject3D *p_object, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
 	if (!(p_object->get_collision_layer() & p_collision_mask)) {
 		return false;
 	}

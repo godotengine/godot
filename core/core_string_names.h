@@ -46,7 +46,7 @@ class CoreStringNames {
 	CoreStringNames();
 
 public:
-	_FORCE_INLINE_ static CoreStringNames *get_singleton() { return singleton; }
+	static _FORCE_INLINE_ CoreStringNames *get_singleton() { return singleton; }
 
 	static CoreStringNames *singleton;
 

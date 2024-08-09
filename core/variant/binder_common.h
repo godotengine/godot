@@ -93,11 +93,11 @@ struct VariantCaster<const T &> {
 	};                                                                                                                  \
 	template <>                                                                                                         \
 	struct PtrToArg<m_enum> {                                                                                           \
-		_FORCE_INLINE_ static m_enum convert(const void *p_ptr) {                                                       \
+		static _FORCE_INLINE_ m_enum convert(const void *p_ptr) {                                                       \
 			return m_enum(*reinterpret_cast<const int64_t *>(p_ptr));                                                   \
 		}                                                                                                               \
 		typedef int64_t EncodeT;                                                                                        \
-		_FORCE_INLINE_ static void encode(m_enum p_val, const void *p_ptr) {                                            \
+		static _FORCE_INLINE_ void encode(m_enum p_val, const void *p_ptr) {                                            \
 			*(int64_t *)p_ptr = (int64_t)p_val;                                                                         \
 		}                                                                                                               \
 	};                                                                                                                  \
@@ -121,11 +121,11 @@ struct VariantCaster<const T &> {
 	};                                                                                                                                      \
 	template <>                                                                                                                             \
 	struct PtrToArg<BitField<m_enum>> {                                                                                                     \
-		_FORCE_INLINE_ static BitField<m_enum> convert(const void *p_ptr) {                                                                 \
+		static _FORCE_INLINE_ BitField<m_enum> convert(const void *p_ptr) {                                                                 \
 			return BitField<m_enum>(*reinterpret_cast<const int64_t *>(p_ptr));                                                             \
 		}                                                                                                                                   \
 		typedef int64_t EncodeT;                                                                                                            \
-		_FORCE_INLINE_ static void encode(BitField<m_enum> p_val, const void *p_ptr) {                                                      \
+		static _FORCE_INLINE_ void encode(BitField<m_enum> p_val, const void *p_ptr) {                                                      \
 			*(int64_t *)p_ptr = p_val;                                                                                                      \
 		}                                                                                                                                   \
 	};                                                                                                                                      \
@@ -213,11 +213,11 @@ struct VariantCaster<char32_t> {
 
 template <>
 struct PtrToArg<char32_t> {
-	_FORCE_INLINE_ static char32_t convert(const void *p_ptr) {
+	static _FORCE_INLINE_ char32_t convert(const void *p_ptr) {
 		return char32_t(*reinterpret_cast<const int *>(p_ptr));
 	}
 	typedef int64_t EncodeT;
-	_FORCE_INLINE_ static void encode(char32_t p_val, const void *p_ptr) {
+	static _FORCE_INLINE_ void encode(char32_t p_val, const void *p_ptr) {
 		*(int *)p_ptr = p_val;
 	}
 };

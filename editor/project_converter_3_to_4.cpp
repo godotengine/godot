@@ -2528,7 +2528,7 @@ Vector<String> ProjectConverter3To4::check_for_rename_csharp_attributes(Vector<S
 	return found_renames;
 }
 
-_FORCE_INLINE_ static String builtin_escape(const String &p_str, bool p_builtin) {
+static _FORCE_INLINE_ String builtin_escape(const String &p_str, bool p_builtin) {
 	if (p_builtin) {
 		return p_str.replace("\"", "\\\"");
 	} else {

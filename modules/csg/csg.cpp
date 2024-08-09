@@ -36,11 +36,11 @@
 
 // Static helper functions.
 
-inline static bool is_snapable(const Vector3 &p_point1, const Vector3 &p_point2, real_t p_distance) {
+static inline bool is_snapable(const Vector3 &p_point1, const Vector3 &p_point2, real_t p_distance) {
 	return p_point2.distance_squared_to(p_point1) < p_distance * p_distance;
 }
 
-inline static Vector2 interpolate_segment_uv(const Vector2 p_segment_points[2], const Vector2 p_uvs[2], const Vector2 &p_interpolation_point) {
+static inline Vector2 interpolate_segment_uv(const Vector2 p_segment_points[2], const Vector2 p_uvs[2], const Vector2 &p_interpolation_point) {
 	if (p_segment_points[0].is_equal_approx(p_segment_points[1])) {
 		return p_uvs[0];
 	}
@@ -52,7 +52,7 @@ inline static Vector2 interpolate_segment_uv(const Vector2 p_segment_points[2], 
 	return p_uvs[0].lerp(p_uvs[1], fraction);
 }
 
-inline static Vector2 interpolate_triangle_uv(const Vector2 p_vertices[3], const Vector2 p_uvs[3], const Vector2 &p_interpolation_point) {
+static inline Vector2 interpolate_triangle_uv(const Vector2 p_vertices[3], const Vector2 p_uvs[3], const Vector2 &p_interpolation_point) {
 	if (p_interpolation_point.is_equal_approx(p_vertices[0])) {
 		return p_uvs[0];
 	}
@@ -154,7 +154,7 @@ inline bool is_point_in_triangle(const Vector3 &p_point, const Vector3 p_vertice
 	return true;
 }
 
-inline static bool is_triangle_degenerate(const Vector2 p_vertices[3], real_t p_vertex_snap2) {
+static inline bool is_triangle_degenerate(const Vector2 p_vertices[3], real_t p_vertex_snap2) {
 	real_t det = p_vertices[0].x * p_vertices[1].y - p_vertices[0].x * p_vertices[2].y +
 			p_vertices[0].y * p_vertices[2].x - p_vertices[0].y * p_vertices[1].x +
 			p_vertices[1].x * p_vertices[2].y - p_vertices[1].y * p_vertices[2].x;
@@ -162,7 +162,7 @@ inline static bool is_triangle_degenerate(const Vector2 p_vertices[3], real_t p_
 	return det < p_vertex_snap2;
 }
 
-inline static bool are_segments_parallel(const Vector2 p_segment1_points[2], const Vector2 p_segment2_points[2], float p_vertex_snap2) {
+static inline bool are_segments_parallel(const Vector2 p_segment1_points[2], const Vector2 p_segment2_points[2], float p_vertex_snap2) {
 	Vector2 segment1 = p_segment1_points[1] - p_segment1_points[0];
 	Vector2 segment2 = p_segment2_points[1] - p_segment2_points[0];
 	real_t segment1_length2 = segment1.dot(segment1);

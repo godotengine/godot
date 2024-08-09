@@ -51,7 +51,7 @@ struct _CollectorCallback2D {
 
 typedef void (*GenerateContactsFunc)(const Vector2 *, int, const Vector2 *, int, _CollectorCallback2D *);
 
-_FORCE_INLINE_ static void _generate_contacts_point_point(const Vector2 *p_points_A, int p_point_count_A, const Vector2 *p_points_B, int p_point_count_B, _CollectorCallback2D *p_collector) {
+static _FORCE_INLINE_ void _generate_contacts_point_point(const Vector2 *p_points_A, int p_point_count_A, const Vector2 *p_points_B, int p_point_count_B, _CollectorCallback2D *p_collector) {
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND(p_point_count_A != 1);
 	ERR_FAIL_COND(p_point_count_B != 1);
@@ -60,7 +60,7 @@ _FORCE_INLINE_ static void _generate_contacts_point_point(const Vector2 *p_point
 	p_collector->call(*p_points_A, *p_points_B);
 }
 
-_FORCE_INLINE_ static void _generate_contacts_point_edge(const Vector2 *p_points_A, int p_point_count_A, const Vector2 *p_points_B, int p_point_count_B, _CollectorCallback2D *p_collector) {
+static _FORCE_INLINE_ void _generate_contacts_point_edge(const Vector2 *p_points_A, int p_point_count_A, const Vector2 *p_points_B, int p_point_count_B, _CollectorCallback2D *p_collector) {
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND(p_point_count_A != 1);
 	ERR_FAIL_COND(p_point_count_B != 2);
@@ -77,7 +77,7 @@ struct _generate_contacts_Pair {
 	_FORCE_INLINE_ bool operator<(const _generate_contacts_Pair &l) const { return d < l.d; }
 };
 
-_FORCE_INLINE_ static void _generate_contacts_edge_edge(const Vector2 *p_points_A, int p_point_count_A, const Vector2 *p_points_B, int p_point_count_B, _CollectorCallback2D *p_collector) {
+static _FORCE_INLINE_ void _generate_contacts_edge_edge(const Vector2 *p_points_A, int p_point_count_A, const Vector2 *p_points_B, int p_point_count_B, _CollectorCallback2D *p_collector) {
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND(p_point_count_A != 2);
 	ERR_FAIL_COND(p_point_count_B != 2); // circle is actually a 4x3 matrix

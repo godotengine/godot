@@ -401,7 +401,7 @@ void RendererCanvasRenderRD::_bind_canvas_texture(RD::DrawListID p_draw_list, RI
 	r_last_texture = p_texture;
 }
 
-_FORCE_INLINE_ static uint32_t _indices_to_primitives(RS::PrimitiveType p_primitive, uint32_t p_indices) {
+static _FORCE_INLINE_ uint32_t _indices_to_primitives(RS::PrimitiveType p_primitive, uint32_t p_indices) {
 	static const uint32_t divisor[RS::PRIMITIVE_MAX] = { 1, 2, 1, 3, 1 };
 	static const uint32_t subtractor[RS::PRIMITIVE_MAX] = { 0, 0, 1, 0, 1 };
 	return (p_indices - subtractor[p_primitive]) / divisor[p_primitive];

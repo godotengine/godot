@@ -257,7 +257,7 @@ int register_test_command(String p_command, TestFunc p_function);
 
 class SignalWatcher : public Object {
 private:
-	inline static SignalWatcher *singleton;
+	static inline SignalWatcher *singleton;
 
 	/* Equal to: RBMap<String, Vector<Vector<Variant>>> */
 	HashMap<String, Array> _signals;

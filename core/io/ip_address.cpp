@@ -218,7 +218,7 @@ IPAddress::IPAddress(const String &p_string) {
 	}
 }
 
-_FORCE_INLINE_ static void _32_to_buf(uint8_t *p_dst, uint32_t p_n) {
+static _FORCE_INLINE_ void _32_to_buf(uint8_t *p_dst, uint32_t p_n) {
 	p_dst[0] = (p_n >> 24) & 0xff;
 	p_dst[1] = (p_n >> 16) & 0xff;
 	p_dst[2] = (p_n >> 8) & 0xff;

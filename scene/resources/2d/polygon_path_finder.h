@@ -53,7 +53,7 @@ class PolygonPathFinder : public Resource {
 		_FORCE_INLINE_ bool operator==(const Edge &p_edge) const {
 			return key == p_edge.key;
 		}
-		_FORCE_INLINE_ static uint32_t hash(const Edge &p_edge) {
+		static _FORCE_INLINE_ uint32_t hash(const Edge &p_edge) {
 			return hash_one_uint64(p_edge.key);
 		}
 

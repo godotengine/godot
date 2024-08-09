@@ -448,10 +448,10 @@ public:                                                                         
 	}                                                                                                                                            \
                                                                                                                                                  \
 protected:                                                                                                                                       \
-	_FORCE_INLINE_ static void (*_get_bind_methods())() {                                                                                        \
+	static _FORCE_INLINE_ void (*_get_bind_methods())() {                                                                                        \
 		return &m_class::_bind_methods;                                                                                                          \
 	}                                                                                                                                            \
-	_FORCE_INLINE_ static void (*_get_bind_compatibility_methods())() {                                                                          \
+	static _FORCE_INLINE_ void (*_get_bind_compatibility_methods())() {                                                                          \
 		return &m_class::_bind_compatibility_methods;                                                                                            \
 	}                                                                                                                                            \
                                                                                                                                                  \
@@ -719,10 +719,10 @@ protected:
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return false; };
 	void _notification(int p_notification) {}
 
-	_FORCE_INLINE_ static void (*_get_bind_methods())() {
+	static _FORCE_INLINE_ void (*_get_bind_methods())() {
 		return &Object::_bind_methods;
 	}
-	_FORCE_INLINE_ static void (*_get_bind_compatibility_methods())() {
+	static _FORCE_INLINE_ void (*_get_bind_compatibility_methods())() {
 		return &Object::_bind_compatibility_methods;
 	}
 	_FORCE_INLINE_ bool (Object::*_get_get() const)(const StringName &p_name, Variant &r_ret) const {
@@ -783,7 +783,7 @@ protected:
 
 public: // Should be protected, but bug in clang++.
 	static void initialize_class();
-	_FORCE_INLINE_ static void register_custom_data_to_otdb() {}
+	static _FORCE_INLINE_ void register_custom_data_to_otdb() {}
 
 public:
 	static constexpr bool _class_is_enabled = true;
@@ -1040,7 +1040,7 @@ class ObjectDB {
 public:
 	typedef void (*DebugFunc)(Object *p_obj);
 
-	_ALWAYS_INLINE_ static Object *get_instance(ObjectID p_instance_id) {
+	static _ALWAYS_INLINE_ Object *get_instance(ObjectID p_instance_id) {
 		uint64_t id = p_instance_id;
 		uint32_t slot = id & OBJECTDB_SLOT_MAX_COUNT_MASK;
 
