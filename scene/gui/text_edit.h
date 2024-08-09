@@ -505,8 +505,9 @@ private:
 	HScrollBar *h_scroll = nullptr;
 	VScrollBar *v_scroll = nullptr;
 
-	float content_height_cache = 0.0;
+	Vector2i content_size_cache;
 	bool fit_content_height = false;
+	bool fit_content_width = false;
 	bool scroll_past_end_of_file_enabled = false;
 
 	// Smooth scrolling.
@@ -734,7 +735,7 @@ public:
 	void cancel_ime();
 	void apply_ime();
 
-	void set_editable(const bool p_editable);
+	void set_editable(bool p_editable);
 	bool is_editable() const;
 
 	void set_text_direction(TextDirection p_text_direction);
@@ -755,7 +756,7 @@ public:
 	bool is_indent_wrapped_lines() const;
 
 	// User controls
-	void set_overtype_mode_enabled(const bool p_enabled);
+	void set_overtype_mode_enabled(bool p_enabled);
 	bool is_overtype_mode_enabled() const;
 
 	void set_context_menu_enabled(bool p_enabled);
@@ -862,7 +863,7 @@ public:
 	void set_caret_type(CaretType p_type);
 	CaretType get_caret_type() const;
 
-	void set_caret_blink_enabled(const bool p_enabled);
+	void set_caret_blink_enabled(bool p_enabled);
 	bool is_caret_blink_enabled() const;
 
 	void set_caret_blink_interval(const float p_interval);
@@ -871,10 +872,10 @@ public:
 	void set_draw_caret_when_editable_disabled(bool p_enable);
 	bool is_drawing_caret_when_editable_disabled() const;
 
-	void set_move_caret_on_right_click_enabled(const bool p_enabled);
+	void set_move_caret_on_right_click_enabled(bool p_enabled);
 	bool is_move_caret_on_right_click_enabled() const;
 
-	void set_caret_mid_grapheme_enabled(const bool p_enabled);
+	void set_caret_mid_grapheme_enabled(bool p_enabled);
 	bool is_caret_mid_grapheme_enabled() const;
 
 	void set_multiple_carets_enabled(bool p_enabled);
@@ -910,13 +911,13 @@ public:
 	String get_word_under_caret(int p_caret = -1) const;
 
 	/* Selection. */
-	void set_selecting_enabled(const bool p_enabled);
+	void set_selecting_enabled(bool p_enabled);
 	bool is_selecting_enabled() const;
 
-	void set_deselect_on_focus_loss_enabled(const bool p_enabled);
+	void set_deselect_on_focus_loss_enabled(bool p_enabled);
 	bool is_deselect_on_focus_loss_enabled() const;
 
-	void set_drag_and_drop_selection_enabled(const bool p_enabled);
+	void set_drag_and_drop_selection_enabled(bool p_enabled);
 	bool is_drag_and_drop_selection_enabled() const;
 
 	void set_selection_mode(SelectionMode p_mode);
@@ -965,10 +966,10 @@ public:
 
 	/* Viewport. */
 	// Scrolling.
-	void set_smooth_scroll_enabled(const bool p_enabled);
+	void set_smooth_scroll_enabled(bool p_enabled);
 	bool is_smooth_scroll_enabled() const;
 
-	void set_scroll_past_end_of_file_enabled(const bool p_enabled);
+	void set_scroll_past_end_of_file_enabled(bool p_enabled);
 	bool is_scroll_past_end_of_file_enabled() const;
 
 	VScrollBar *get_v_scroll_bar() const;
@@ -983,8 +984,11 @@ public:
 	void set_v_scroll_speed(float p_speed);
 	float get_v_scroll_speed() const;
 
-	void set_fit_content_height_enabled(const bool p_enabled);
+	void set_fit_content_height_enabled(bool p_enabled);
 	bool is_fit_content_height_enabled() const;
+
+	void set_fit_content_width_enabled(bool p_enabled);
+	bool is_fit_content_width_enabled() const;
 
 	double get_scroll_pos_for_line(int p_line, int p_wrap_index = 0) const;
 
@@ -1071,7 +1075,7 @@ public:
 	void set_highlight_current_line(bool p_enabled);
 	bool is_highlight_current_line_enabled() const;
 
-	void set_highlight_all_occurrences(const bool p_enabled);
+	void set_highlight_all_occurrences(bool p_enabled);
 	bool is_highlight_all_occurrences_enabled() const;
 
 	void set_draw_control_chars(bool p_enabled);
