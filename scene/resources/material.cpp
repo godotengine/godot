@@ -1642,6 +1642,11 @@ void fragment() {)";
 		code += R"(
 	// Proximity Fade: Enabled
 	float depth_tex = textureLod(depth_texture, SCREEN_UV, 0.0).r;
+)";
+		if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+			code += "	depth_tex = depth_tex * 2.0 - 1.0;";
+		}
+		code += R"(
 	vec4 world_pos = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, depth_tex, 1.0);
 	world_pos.xyz /= world_pos.w;
 	ALPHA *= clamp(1.0 - smoothstep(world_pos.z + proximity_fade_distance, world_pos.z, VERTEX.z), 0.0, 1.0);
