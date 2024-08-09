@@ -77,6 +77,9 @@ venv
 __pycache__/
 *.pyc
 
+# Python modules
+.*_cache/
+
 # Documentation
 doc/_build/
 
@@ -163,9 +166,6 @@ gmon.out
 
 # Kdevelop
 *.kdev4
-
-# Mypy
-.mypy_cache
 
 # Qt Creator
 *.config
