@@ -65,6 +65,12 @@ public:
 		FLAG_MAX = DisplayServer::WINDOW_FLAG_MAX,
 	};
 
+	enum EmbedMode {
+		EMBED_DEFAULT,
+		EMBED_FORCE_EMBED,
+		EMBED_FORCE_NATIVE
+	};
+
 	enum ContentScaleMode {
 		CONTENT_SCALE_MODE_DISABLED,
 		CONTENT_SCALE_MODE_CANVAS_ITEMS,
@@ -122,7 +128,7 @@ private:
 	bool visible = true;
 	bool focused = false;
 	WindowInitialPosition initial_position = WINDOW_INITIAL_POSITION_ABSOLUTE;
-	bool force_native = false;
+	EmbedMode embed_mode = EMBED_DEFAULT;
 
 	bool use_font_oversampling = false;
 	bool transient = false;
@@ -276,8 +282,11 @@ public:
 	void set_initial_position(WindowInitialPosition p_initial_position);
 	WindowInitialPosition get_initial_position() const;
 
-	void set_force_native(bool p_force_native);
+	void set_force_native(bool p_force_native); // Deprecated, use embed_mode
 	bool get_force_native() const;
+
+	void set_embed_mode(EmbedMode p_embed_mode);
+	EmbedMode get_embed_mode() const;
 
 	void set_current_screen(int p_screen);
 	int get_current_screen() const;
@@ -487,6 +496,7 @@ public:
 
 VARIANT_ENUM_CAST(Window::Mode);
 VARIANT_ENUM_CAST(Window::Flags);
+VARIANT_ENUM_CAST(Window::EmbedMode);
 VARIANT_ENUM_CAST(Window::ContentScaleMode);
 VARIANT_ENUM_CAST(Window::ContentScaleAspect);
 VARIANT_ENUM_CAST(Window::ContentScaleStretch);
