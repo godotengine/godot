@@ -189,6 +189,12 @@ public:
 	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const = 0;
 	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const = 0;
 
+	/* SHADER TEMPLATE API */
+
+	virtual RID shader_template_create() = 0;
+
+	virtual void shader_template_set_raster_code(RID p_shader_template, const String &p_vertex_code, const String &p_fragment_code, const String &p_name) = 0;
+
 	/* SHADER API */
 
 	enum ShaderMode {
@@ -202,6 +208,7 @@ public:
 
 	virtual RID shader_create() = 0;
 
+	virtual void shader_set_shader_template(RID p_shader, RID p_shader_template = RID(), bool p_clear_code = false) = 0;
 	virtual void shader_set_code(RID p_shader, const String &p_code) = 0;
 	virtual void shader_set_path_hint(RID p_shader, const String &p_path) = 0;
 	virtual String shader_get_code(RID p_shader) const = 0;

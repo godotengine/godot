@@ -51,7 +51,12 @@ using namespace RendererRD;
 ////////////////////////////////////////////////////////////////////////////////
 // SKY SHADER
 
-void SkyRD::SkyShaderData::set_code(const String &p_code) {
+void SkyRD::SkyShaderData::set_code(const String &p_code, RID p_shader_template) {
+	// Shader template isn't supported here yet.
+	if (p_shader_template.is_valid()) {
+		WARN_PRINT_ONCE("Shader templates are not supported for sky shaders.");
+	}
+
 	//compile
 
 	code = p_code;

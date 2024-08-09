@@ -4,85 +4,11 @@
 
 #VERSION_DEFINES
 
-#include "scene_forward_clustered_inc.glsl"
+#include "scene_forward_clustered_standard_inc.glsl"
 
 #define SHADER_IS_SRGB false
 
-/* INPUT ATTRIBS */
-
-// Always contains vertex position in XYZ, can contain tangent angle in W.
-layout(location = 0) in vec4 vertex_angle_attrib;
-
-//only for pure render depth when normal is not used
-
-#if defined(NORMAL_USED) || defined(TANGENT_USED)
-// Contains Normal/Axis in RG, can contain tangent in BA.
-layout(location = 1) in vec4 axis_tangent_attrib;
-#endif
-
-// Location 2 is unused.
-
-#if defined(COLOR_USED)
-layout(location = 3) in vec4 color_attrib;
-#endif
-
-#ifdef UV_USED
-layout(location = 4) in vec2 uv_attrib;
-#endif
-
-#if defined(UV2_USED) || defined(USE_LIGHTMAP) || defined(MODE_RENDER_MATERIAL)
-layout(location = 5) in vec2 uv2_attrib;
-#endif
-
-#if defined(CUSTOM0_USED)
-layout(location = 6) in vec4 custom0_attrib;
-#endif
-
-#if defined(CUSTOM1_USED)
-layout(location = 7) in vec4 custom1_attrib;
-#endif
-
-#if defined(CUSTOM2_USED)
-layout(location = 8) in vec4 custom2_attrib;
-#endif
-
-#if defined(CUSTOM3_USED)
-layout(location = 9) in vec4 custom3_attrib;
-#endif
-
-#if defined(BONES_USED) || defined(USE_PARTICLE_TRAILS)
-layout(location = 10) in uvec4 bone_attrib;
-#endif
-
-#if defined(WEIGHTS_USED) || defined(USE_PARTICLE_TRAILS)
-layout(location = 11) in vec4 weight_attrib;
-#endif
-
-#ifdef MOTION_VECTORS
-layout(location = 12) in vec4 previous_vertex_attrib;
-
-#if defined(NORMAL_USED) || defined(TANGENT_USED)
-layout(location = 13) in vec4 previous_normal_attrib;
-#endif
-
-#endif // MOTION_VECTORS
-
-vec3 oct_to_vec3(vec2 e) {
-	vec3 v = vec3(e.xy, 1.0 - abs(e.x) - abs(e.y));
-	float t = max(-v.z, 0.0);
-	v.xy += t * -sign(v.xy);
-	return normalize(v);
-}
-
-void axis_angle_to_tbn(vec3 axis, float angle, out vec3 tangent, out vec3 binormal, out vec3 normal) {
-	float c = cos(angle);
-	float s = sin(angle);
-	vec3 omc_axis = (1.0 - c) * axis;
-	vec3 s_axis = s * axis;
-	tangent = omc_axis.xxx * axis + vec3(c, -s_axis.z, s_axis.y);
-	binormal = omc_axis.yyy * axis + vec3(s_axis.z, c, -s_axis.x);
-	normal = omc_axis.zzz * axis + vec3(-s_axis.y, s_axis.x, c);
-}
+#include "scene_forward_clustered_input_attributes_inc.glsl"
 
 /* Varyings */
 
@@ -114,12 +40,6 @@ layout(location = 7) out vec4 screen_position;
 layout(location = 8) out vec4 prev_screen_position;
 #endif
 
-#ifdef MATERIAL_UNIFORMS_USED
-layout(set = MATERIAL_UNIFORM_SET, binding = 0, std140) uniform MaterialUniforms{
-#MATERIAL_UNIFORMS
-} material;
-#endif
-
 float global_time;
 
 #ifdef MODE_DUAL_PARABOLOID
@@ -131,28 +51,7 @@ layout(location = 9) out float dp_clip;
 layout(location = 10) out flat uint instance_index_interp;
 
 #ifdef USE_MULTIVIEW
-#ifdef has_VK_KHR_multiview
-#define ViewIndex gl_ViewIndex
-#else // has_VK_KHR_multiview
-// !BAS! This needs to become an input once we implement our fallback!
-#define ViewIndex 0
-#endif // has_VK_KHR_multiview
-vec3 multiview_uv(vec2 uv) {
-	return vec3(uv, ViewIndex);
-}
-ivec3 multiview_uv(ivec2 uv) {
-	return ivec3(uv, int(ViewIndex));
-}
 layout(location = 11) out vec4 combined_projected;
-#else // USE_MULTIVIEW
-// Set to zero, not supported in non stereo
-#define ViewIndex 0
-vec2 multiview_uv(vec2 uv) {
-	return uv;
-}
-ivec2 multiview_uv(ivec2 uv) {
-	return uv;
-}
 #endif //USE_MULTIVIEW
 
 invariant gl_Position;
@@ -502,46 +401,6 @@ void vertex_shader(vec3 vertex_input,
 #endif
 }
 
-void _unpack_vertex_attributes(vec4 p_vertex_in, vec3 p_compressed_aabb_position, vec3 p_compressed_aabb_size,
-#if defined(NORMAL_USED) || defined(TANGENT_USED)
-		vec4 p_normal_in,
-#ifdef NORMAL_USED
-		out vec3 r_normal,
-#endif
-		out vec3 r_tangent,
-		out vec3 r_binormal,
-#endif
-		out vec3 r_vertex) {
-
-	r_vertex = p_vertex_in.xyz * p_compressed_aabb_size + p_compressed_aabb_position;
-#ifdef NORMAL_USED
-	r_normal = oct_to_vec3(p_normal_in.xy * 2.0 - 1.0);
-#endif
-
-#if defined(NORMAL_USED) || defined(TANGENT_USED)
-
-	float binormal_sign;
-
-	// This works because the oct value (0, 1) maps onto (0, 0, -1) which encodes to (1, 1).
-	// Accordingly, if p_normal_in.z contains octahedral values, it won't equal (0, 1).
-	if (p_normal_in.z > 0.0 || p_normal_in.w < 1.0) {
-		// Uncompressed format.
-		vec2 signed_tangent_attrib = p_normal_in.zw * 2.0 - 1.0;
-		r_tangent = oct_to_vec3(vec2(signed_tangent_attrib.x, abs(signed_tangent_attrib.y) * 2.0 - 1.0));
-		binormal_sign = sign(signed_tangent_attrib.y);
-		r_binormal = normalize(cross(r_normal, r_tangent) * binormal_sign);
-	} else {
-		// Compressed format.
-		float angle = p_vertex_in.w;
-		binormal_sign = angle > 0.5 ? 1.0 : -1.0; // 0.5 does not exist in UNORM16, so values are either greater or smaller.
-		angle = abs(angle * 2.0 - 1.0) * M_PI; // 0.5 is basically zero, allowing to encode both signs reliably.
-		vec3 axis = r_normal;
-		axis_angle_to_tbn(axis, angle, r_tangent, r_binormal, r_normal);
-		r_binormal *= binormal_sign;
-	}
-#endif
-}
-
 void main() {
 	uint instance_index = draw_call.instance_index;
 
@@ -590,10 +449,10 @@ void main() {
 			prev_binormal,
 #endif
 			instance_index, is_multimesh, draw_call.multimesh_motion_vectors_previous_offset, scene_data_block.prev_data, instances.data[instance_index].prev_transform, prev_screen_position);
-#else
+#else // MOTION_VECTORS
 	// Unused output.
 	vec4 screen_position;
-#endif
+#endif // MOTION_VECTORS
 
 	vec3 vertex;
 #ifdef NORMAL_USED
@@ -612,7 +471,7 @@ void main() {
 			axis_tangent_attrib,
 #ifdef NORMAL_USED
 			normal,
-#endif
+#endif // NORMAL_USED
 			tangent,
 			binormal,
 #endif
@@ -639,29 +498,11 @@ void main() {
 
 #define SHADER_IS_SRGB false
 
-/* Specialization Constants (Toggles) */
-
-layout(constant_id = 0) const bool sc_use_forward_gi = false;
-layout(constant_id = 1) const bool sc_use_light_projector = false;
-layout(constant_id = 2) const bool sc_use_light_soft_shadows = false;
-layout(constant_id = 3) const bool sc_use_directional_soft_shadows = false;
-
-/* Specialization Constants (Values) */
-
-layout(constant_id = 6) const uint sc_soft_shadow_samples = 4;
-layout(constant_id = 7) const uint sc_penumbra_shadow_samples = 4;
-
-layout(constant_id = 8) const uint sc_directional_soft_shadow_samples = 4;
-layout(constant_id = 9) const uint sc_directional_penumbra_shadow_samples = 4;
-
-layout(constant_id = 10) const bool sc_decal_use_mipmaps = true;
-layout(constant_id = 11) const bool sc_projector_use_mipmaps = true;
-layout(constant_id = 12) const bool sc_use_depth_fog = false;
-
 // not used in clustered renderer but we share some code with the mobile renderer that requires this.
 const float sc_luminance_multiplier = 1.0;
 
-#include "scene_forward_clustered_inc.glsl"
+#include "scene_forward_clustered_specialization_constants_inc.glsl"
+#include "scene_forward_clustered_standard_inc.glsl"
 
 /* Varyings */
 
@@ -702,28 +543,7 @@ layout(location = 9) in float dp_clip;
 layout(location = 10) in flat uint instance_index_interp;
 
 #ifdef USE_MULTIVIEW
-#ifdef has_VK_KHR_multiview
-#define ViewIndex gl_ViewIndex
-#else // has_VK_KHR_multiview
-// !BAS! This needs to become an input once we implement our fallback!
-#define ViewIndex 0
-#endif // has_VK_KHR_multiview
-vec3 multiview_uv(vec2 uv) {
-	return vec3(uv, ViewIndex);
-}
-ivec3 multiview_uv(ivec2 uv) {
-	return ivec3(uv, int(ViewIndex));
-}
 layout(location = 11) in vec4 combined_projected;
-#else // USE_MULTIVIEW
-// Set to zero, not supported in non stereo
-#define ViewIndex 0
-vec2 multiview_uv(vec2 uv) {
-	return uv;
-}
-ivec2 multiview_uv(ivec2 uv) {
-	return uv;
-}
 #endif //USE_MULTIVIEW
 
 //defines to keep compatibility with vertex
@@ -743,52 +563,9 @@ ivec2 multiview_uv(ivec2 uv) {
 #define LIGHT_TRANSMITTANCE_USED
 #endif
 
-#ifdef MATERIAL_UNIFORMS_USED
-layout(set = MATERIAL_UNIFORM_SET, binding = 0, std140) uniform MaterialUniforms{
-
-#MATERIAL_UNIFORMS
-
-} material;
-#endif
-
 #GLOBALS
 
-#ifdef MODE_RENDER_DEPTH
-
-#ifdef MODE_RENDER_MATERIAL
-
-layout(location = 0) out vec4 albedo_output_buffer;
-layout(location = 1) out vec4 normal_output_buffer;
-layout(location = 2) out vec4 orm_output_buffer;
-layout(location = 3) out vec4 emission_output_buffer;
-layout(location = 4) out float depth_output_buffer;
-
-#endif // MODE_RENDER_MATERIAL
-
-#ifdef MODE_RENDER_NORMAL_ROUGHNESS
-layout(location = 0) out vec4 normal_roughness_output_buffer;
-
-#ifdef MODE_RENDER_VOXEL_GI
-layout(location = 1) out uvec2 voxel_gi_buffer;
-#endif
-
-#endif //MODE_RENDER_NORMAL
-#else // RENDER DEPTH
-
-#ifdef MODE_SEPARATE_SPECULAR
-
-layout(location = 0) out vec4 diffuse_buffer; //diffuse (rgb) and roughness
-layout(location = 1) out vec4 specular_buffer; //specular and SSS (subsurface scatter)
-#else
-
-layout(location = 0) out vec4 frag_color;
-#endif // MODE_SEPARATE_SPECULAR
-
-#endif // RENDER DEPTH
-
-#ifdef MOTION_VECTORS
-layout(location = 2) out vec2 motion_vector;
-#endif
+#include "scene_forward_clustered_output_buffers_inc.glsl"
 
 #include "../scene_forward_aa_inc.glsl"
 

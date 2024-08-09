@@ -14,9 +14,30 @@
 #endif
 #endif // MOLTENVK_USED
 
-#if defined(USE_MULTIVIEW) && defined(has_VK_KHR_multiview)
-#extension GL_EXT_multiview : enable
-#endif
+#ifdef USE_MULTIVIEW
+#ifdef has_VK_KHR_multiview
+#extension GL_EXT_multiview : enable // Enable our multiview GLSL extension
+#define ViewIndex gl_ViewIndex
+#else // has_VK_KHR_multiview
+// This needs to become an input if we implement a fallback!
+#define ViewIndex 0
+#endif // has_VK_KHR_multiview
+vec3 multiview_uv(vec2 uv) {
+	return vec3(uv, ViewIndex);
+}
+ivec3 multiview_uv(ivec2 uv) {
+	return ivec3(uv, int(ViewIndex));
+}
+#else // USE_MULTIVIEW
+// Set to zero, not supported in non stereo
+#define ViewIndex 0
+vec2 multiview_uv(vec2 uv) {
+	return uv;
+}
+ivec2 multiview_uv(ivec2 uv) {
+	return uv;
+}
+#endif //USE_MULTIVIEW
 
 #include "../cluster_data_inc.glsl"
 #include "../decal_data_inc.glsl"
@@ -31,6 +52,8 @@
 #if !defined(TANGENT_USED) && (defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED))
 #define TANGENT_USED
 #endif
+
+// Push constant
 
 layout(push_constant, std430) uniform DrawCall {
 	uint instance_index;
@@ -348,3 +371,9 @@ layout(set = 2, binding = 0, std430) restrict readonly buffer Transforms {
 transforms;
 
 /* Set 3 User Material */
+
+#ifdef MATERIAL_UNIFORMS_USED
+layout(set = MATERIAL_UNIFORM_SET, binding = 0, std140) uniform MaterialUniforms{
+#MATERIAL_UNIFORMS
+} material;
+#endif

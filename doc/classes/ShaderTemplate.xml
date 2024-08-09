@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ShaderTemplate" inherits="Resource" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A shader template contains the template GLSL code into which user shader code is injected.
+	</brief_description>
+	<description>
+		Shader templates form the heart of Godots shader code. Godot has a built-in template for each renderer and shader mode into which user shader code is injected. Shader Templates allow you to create custom versions of these shaders and gain fine grained control over the shaders.
+		[b]Warning[/b], this is a highly advanced feature that requires intimate knowledge of Godots renderers. It is highly likely that as Godots internal shaders evolve with each new release of Godot, that this will impact any custom shader templates you create. The aim is to improve this over time however full backwards compatibility is not something we can guarantee in this feature.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_mode" qualifiers="const">
+			<return type="int" enum="Shader.Mode" />
+			<description>
+				Get shader mode for this shader template.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="code" type="String" setter="set_code" getter="get_code" default="&quot;shader_type spatial;  #[vertex]  #[fragment] &quot;">
+			The shader code for this shader template.
+		</member>
+	</members>
+</class>

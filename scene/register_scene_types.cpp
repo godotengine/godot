@@ -135,6 +135,7 @@
 #include "scene/resources/portable_compressed_texture.h"
 #include "scene/resources/resource_format_text.h"
 #include "scene/resources/shader_include.h"
+#include "scene/resources/shader_template.h"
 #include "scene/resources/skeleton_profile.h"
 #include "scene/resources/sky.h"
 #include "scene/resources/style_box.h"
@@ -313,6 +314,9 @@ static Ref<ResourceFormatLoaderCompressedTexture2D> resource_loader_stream_textu
 static Ref<ResourceFormatLoaderCompressedTextureLayered> resource_loader_texture_layered;
 static Ref<ResourceFormatLoaderCompressedTexture3D> resource_loader_texture_3d;
 
+static Ref<ResourceFormatSaverShaderTemplate> resource_saver_shader_template;
+static Ref<ResourceFormatLoaderShaderTemplate> resource_loader_shader_template;
+
 static Ref<ResourceFormatSaverShader> resource_saver_shader;
 static Ref<ResourceFormatLoaderShader> resource_loader_shader;
 
@@ -342,6 +346,12 @@ void register_scene_types() {
 
 	resource_loader_text.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_loader_text, true);
+
+	resource_saver_shader_template.instantiate();
+	ResourceSaver::add_resource_format_saver(resource_saver_shader_template, true);
+
+	resource_loader_shader_template.instantiate();
+	ResourceLoader::add_resource_format_loader(resource_loader_shader_template, true);
 
 	resource_saver_shader.instantiate();
 	ResourceSaver::add_resource_format_saver(resource_saver_shader, true);
@@ -641,6 +651,10 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); // may take time to init
 #endif // _3D_DISABLED
+
+	/* REGISTER SHADER TEMPLATE */
+
+	GDREGISTER_CLASS(ShaderTemplate);
 
 	/* REGISTER SHADER */
 
@@ -1255,6 +1269,12 @@ void unregister_scene_types() {
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_text);
 	resource_loader_text.unref();
+
+	ResourceSaver::remove_resource_format_saver(resource_saver_shader_template);
+	resource_saver_shader_template.unref();
+
+	ResourceLoader::remove_resource_format_loader(resource_loader_shader_template);
+	resource_loader_shader_template.unref();
 
 	ResourceSaver::remove_resource_format_saver(resource_saver_shader);
 	resource_saver_shader.unref();

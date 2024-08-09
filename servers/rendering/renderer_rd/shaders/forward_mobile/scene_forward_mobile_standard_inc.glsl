@@ -1,9 +1,30 @@
 #define M_PI 3.14159265359
 #define MAX_VIEWS 2
 
-#if defined(USE_MULTIVIEW) && defined(has_VK_KHR_multiview)
+#ifdef USE_MULTIVIEW
+#ifdef has_VK_KHR_multiview
 #extension GL_EXT_multiview : enable
+#define ViewIndex gl_ViewIndex
+#else
+// !BAS! This needs to become an input once we implement our fallback!
+#define ViewIndex 0
 #endif
+vec3 multiview_uv(vec2 uv) {
+	return vec3(uv, ViewIndex);
+}
+ivec3 multiview_uv(ivec2 uv) {
+	return ivec3(uv, int(ViewIndex));
+}
+#else
+// Set to zero, not supported in non stereo
+#define ViewIndex 0
+vec2 multiview_uv(vec2 uv) {
+	return uv;
+}
+ivec2 multiview_uv(ivec2 uv) {
+	return uv;
+}
+#endif //USE_MULTIVIEW
 
 #include "../decal_data_inc.glsl"
 #include "../scene_data_inc.glsl"
@@ -15,6 +36,8 @@
 #endif
 
 #define USING_MOBILE_RENDERER
+
+// Push constant
 
 layout(push_constant, std430) uniform DrawCall {
 	vec2 uv_offset;
@@ -189,3 +212,9 @@ layout(set = 2, binding = 0, std430) restrict readonly buffer Transforms {
 transforms;
 
 /* Set 3 User Material */
+
+#ifdef MATERIAL_UNIFORMS_USED
+layout(set = MATERIAL_UNIFORM_SET, binding = 0, std140) uniform MaterialUniforms{
+#MATERIAL_UNIFORMS
+} material;
+#endif

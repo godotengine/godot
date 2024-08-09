@@ -31,6 +31,10 @@
 #include "render_forward_mobile.h"
 #include "core/config/project_settings.h"
 #include "core/object/worker_thread_pool.h"
+#include "servers/rendering/renderer_rd/shaders/forward_mobile/scene_forward_mobile_input_attributes_inc.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/forward_mobile/scene_forward_mobile_output_buffers_inc.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/forward_mobile/scene_forward_mobile_specialization_constants_inc.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/forward_mobile/scene_forward_mobile_standard_inc.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/light_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/mesh_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/particles_storage.h"
@@ -2789,16 +2793,29 @@ void RenderForwardMobile::_update_shader_quality_settings() {
 RenderForwardMobile::RenderForwardMobile() {
 	singleton = this;
 
+	/* INCLUDE FILES */
+
+	RenderingDevice::register_built_in_include_file("standard_includes.glsl", scene_forward_mobile_standard_inc_shader_glsl);
+	RenderingDevice::register_built_in_include_file("input_attributes.glsl", scene_forward_mobile_input_attributes_inc_shader_glsl);
+	RenderingDevice::register_built_in_include_file("specialization_constants.glsl", scene_forward_mobile_specialization_constants_inc_shader_glsl);
+	RenderingDevice::register_built_in_include_file("output_buffers.glsl", scene_forward_mobile_output_buffers_inc_shader_glsl);
+
+	/* SKY SHADER */
+
 	sky.set_texture_format(_render_buffers_get_color_format());
+
+	/* SCENE SHADER */
 
 	String defines;
 
-	defines += "\n#define MAX_ROUGHNESS_LOD " + itos(get_roughness_layers() - 1) + ".0\n";
-	if (is_using_radiance_cubemap_array()) {
-		defines += "\n#define USE_RADIANCE_CUBEMAP_ARRAY \n";
+	{
+		defines += "\n#define MAX_ROUGHNESS_LOD " + itos(get_roughness_layers() - 1) + ".0\n";
+		if (is_using_radiance_cubemap_array()) {
+			defines += "\n#define USE_RADIANCE_CUBEMAP_ARRAY \n";
+		}
+		// defines += "\n#define SDFGI_OCT_SIZE " + itos(gi.sdfgi_get_lightprobe_octahedron_size()) + "\n";
+		defines += "\n#define MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS " + itos(MAX_DIRECTIONAL_LIGHTS) + "\n";
 	}
-	// defines += "\n#define SDFGI_OCT_SIZE " + itos(gi.sdfgi_get_lightprobe_octahedron_size()) + "\n";
-	defines += "\n#define MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS " + itos(MAX_DIRECTIONAL_LIGHTS) + "\n";
 
 	{
 		//lightmaps

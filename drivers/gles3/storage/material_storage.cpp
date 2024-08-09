@@ -2129,6 +2129,37 @@ void MaterialStorage::_update_global_shader_uniforms() {
 	}
 }
 
+/* SHADER TEMPLATE API */
+
+void GLES3::ShaderTemplate::cleanup() {
+	if (shader) {
+		memdelete(shader);
+		shader = nullptr;
+	}
+}
+
+RID MaterialStorage::shader_template_allocate() {
+	return shader_template_owner.allocate_rid();
+}
+
+void MaterialStorage::shader_template_initialize(RID p_rid) {
+	ShaderTemplate shader_template;
+	shader_template.shader = nullptr;
+	shader_template_owner.initialize_rid(p_rid, shader_template);
+}
+
+void MaterialStorage::shader_template_free(RID p_rid) {
+	ShaderTemplate *shader_template = shader_template_owner.get_or_null(p_rid);
+	ERR_FAIL_NULL(shader_template);
+
+	shader_template->cleanup();
+	shader_template_owner.free(p_rid);
+}
+
+void MaterialStorage::shader_template_set_raster_code(RID p_template_shader, const String &p_vertex_code, const String &p_fragment_code, const String &p_name) {
+	// Not supported in compatibility (yet).
+}
+
 /* SHADER API */
 
 RID MaterialStorage::shader_allocate() {
@@ -2157,6 +2188,15 @@ void MaterialStorage::shader_free(RID p_rid) {
 		memdelete(shader->data);
 	}
 	shader_owner.free(p_rid);
+}
+
+void MaterialStorage::shader_set_shader_template(RID p_shader, RID p_shader_template, bool p_clear_code) {
+	GLES3::Shader *shader = shader_owner.get_or_null(p_shader);
+	ERR_FAIL_NULL(shader);
+
+	if (shader->shader_template != p_shader_template) {
+		shader->shader_template = p_shader_template;
+	}
 }
 
 void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
@@ -2227,7 +2267,7 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 	}
 
 	if (shader->data) {
-		shader->data->set_code(p_code);
+		shader->data->set_code(p_code, shader->shader_template);
 	}
 
 	for (Material *E : shader->owners) {
@@ -2533,7 +2573,12 @@ LocalVector<ShaderGLES3::TextureUniformData> get_texture_uniform_data(const Vect
 
 /* Canvas Shader Data */
 
-void CanvasShaderData::set_code(const String &p_code) {
+void CanvasShaderData::set_code(const String &p_code, RID p_shader_template) {
+	// Shader template isn't supported here yet.
+	if (p_shader_template.is_valid()) {
+		WARN_PRINT_ONCE("Shader templates are not supported for canvas shaders.");
+	}
+
 	// Initialize and compile the shader.
 
 	code = p_code;
@@ -2700,7 +2745,12 @@ GLES3::MaterialData *GLES3::_create_canvas_material_func(ShaderData *p_shader) {
 ////////////////////////////////////////////////////////////////////////////////
 // SKY SHADER
 
-void SkyShaderData::set_code(const String &p_code) {
+void SkyShaderData::set_code(const String &p_code, RID p_shader_template) {
+	// Shader template isn't supported here yet.
+	if (p_shader_template.is_valid()) {
+		WARN_PRINT_ONCE("Shader templates are not supported for sky shaders.");
+	}
+
 	// Initialize and compile the shader.
 
 	code = p_code;
@@ -2842,7 +2892,12 @@ void SkyMaterialData::bind_uniforms() {
 ////////////////////////////////////////////////////////////////////////////////
 // Scene SHADER
 
-void SceneShaderData::set_code(const String &p_code) {
+void SceneShaderData::set_code(const String &p_code, RID p_shader_template) {
+	// Shader template isn't supported here yet.
+	if (p_shader_template.is_valid()) {
+		WARN_PRINT_ONCE("Shader templates are not supported on the compatibility render.");
+	}
+
 	// Initialize and compile the shader.
 
 	code = p_code;
@@ -3120,7 +3175,12 @@ void SceneMaterialData::bind_uniforms() {
 
 /* Particles SHADER */
 
-void ParticlesShaderData::set_code(const String &p_code) {
+void ParticlesShaderData::set_code(const String &p_code, RID p_shader_template) {
+	// Shader template isn't supported here yet.
+	if (p_shader_template.is_valid()) {
+		WARN_PRINT_ONCE("Shader templates are not supported for particle shaders.");
+	}
+
 	// Initialize and compile the shader.
 
 	code = p_code;

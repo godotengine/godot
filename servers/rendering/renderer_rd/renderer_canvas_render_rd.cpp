@@ -2165,7 +2165,12 @@ void RendererCanvasRenderRD::occluder_polygon_set_cull_mode(RID p_occluder, RS::
 	oc->cull_mode = p_mode;
 }
 
-void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
+void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code, RID p_shader_template) {
+	// Shader template isn't supported here yet.
+	if (p_shader_template.is_valid()) {
+		WARN_PRINT_ONCE("Shader templates are not supported for Canvas shaders.");
+	}
+
 	//compile
 
 	code = p_code;

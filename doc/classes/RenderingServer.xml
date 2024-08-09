@@ -3261,6 +3261,7 @@
 			<param index="1" name="code" type="String" />
 			<description>
 				Sets the shader's source code (which triggers recompilation after being changed).
+				[b]Note:[/b] if your shader uses a custom shader template, make sure to call [method shader_set_shader_template] first to prevent two (re)compilations!
 			</description>
 		</method>
 		<method name="shader_set_default_texture_parameter">
@@ -3280,6 +3281,34 @@
 			<param index="1" name="path" type="String" />
 			<description>
 				Sets the path hint for the specified shader. This should generally match the [Shader] resource's [member Resource.resource_path].
+			</description>
+		</method>
+		<method name="shader_set_shader_template">
+			<return type="void" />
+			<param index="0" name="shader" type="RID" />
+			<param index="1" name="shader_template" type="RID" default="RID()" />
+			<param index="2" name="clear_code" type="bool" default="false" />
+			<description>
+				Set the shader template to use with this shader. If not set the built-in template is used.
+				[b]Note:[/b] if [method shader_set_code] was previously called, this will trigger a recompile with the new template. If you are about to update the code as well you can set [param clear_code] to [code]true[/code] to prevent an unnecessary compile step.
+			</description>
+		</method>
+		<method name="shader_template_create">
+			<return type="RID" />
+			<description>
+				Creates an empty shader template and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]shader_template_*[/code] RenderingServer functions.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				[b]Note:[/b] The equivalent resource is ShaderTemplate.
+			</description>
+		</method>
+		<method name="shader_template_set_raster_code">
+			<return type="void" />
+			<param index="0" name="shader_template" type="RID" />
+			<param index="1" name="vertex_code" type="String" />
+			<param index="2" name="fragment_code" type="String" />
+			<param index="3" name="name" type="String" />
+			<description>
+				Set the vertex and fragment code for the shader template. [param name] is used for caching this shader.
 			</description>
 		</method>
 		<method name="skeleton_allocate_data">

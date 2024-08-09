@@ -1861,6 +1861,13 @@ void fragment() {)";
 	shader_data.shader = RS::get_singleton()->shader_create();
 	shader_data.users = 1;
 
+	// Set shader template.
+	RID shader_template_rid;
+	if (shader_template.is_valid()) {
+		shader_template_rid = shader_template->get_rid();
+	}
+
+	RS::get_singleton()->shader_set_shader_template(shader_data.shader, shader_template_rid, true);
 	RS::get_singleton()->shader_set_code(shader_data.shader, code);
 
 	shader_map[mk] = shader_data;
@@ -1883,6 +1890,19 @@ void BaseMaterial3D::_queue_shader_change() {
 	if (_is_initialized() && !element.in_list()) {
 		dirty_materials.add(&element);
 	}
+}
+
+void BaseMaterial3D::set_shader_template(const Ref<ShaderTemplate> &p_shader_template) {
+	if (shader_template == p_shader_template) {
+		return;
+	}
+
+	shader_template = p_shader_template;
+	_queue_shader_change();
+}
+
+Ref<ShaderTemplate> BaseMaterial3D::get_shader_template() const {
+	return shader_template;
 }
 
 void BaseMaterial3D::set_albedo(const Color &p_albedo) {
@@ -2849,7 +2869,10 @@ Shader::Mode BaseMaterial3D::get_shader_mode() const {
 }
 
 void BaseMaterial3D::_bind_methods() {
-	static_assert(sizeof(MaterialKey) == 16, "MaterialKey should be 16 bytes");
+	static_assert(sizeof(MaterialKey) == 24, "MaterialKey should be 24 bytes");
+
+	ClassDB::bind_method(D_METHOD("set_shader_template", "shader_template"), &BaseMaterial3D::set_shader_template);
+	ClassDB::bind_method(D_METHOD("get_shader_template"), &BaseMaterial3D::get_shader_template);
 
 	ClassDB::bind_method(D_METHOD("set_albedo", "albedo"), &BaseMaterial3D::set_albedo);
 	ClassDB::bind_method(D_METHOD("get_albedo"), &BaseMaterial3D::get_albedo);
@@ -3067,6 +3090,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "no_depth_test"), "set_flag", "get_flag", FLAG_DISABLE_DEPTH_TEST);
 
 	ADD_GROUP("Shading", "");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shader_template", PROPERTY_HINT_RESOURCE_TYPE, "ShaderTemplate"), "set_shader_template", "get_shader_template");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shading_mode", PROPERTY_HINT_ENUM, "Unshaded,Per-Pixel,Per-Vertex"), "set_shading_mode", "get_shading_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "diffuse_mode", PROPERTY_HINT_ENUM, "Burley,Lambert,Lambert Wrap,Toon"), "set_diffuse_mode", "get_diffuse_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "specular_mode", PROPERTY_HINT_ENUM, "SchlickGGX,Toon,Disabled"), "set_specular_mode", "get_specular_mode");
