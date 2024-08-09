@@ -771,11 +771,11 @@ Vector<String> OS_LinuxBSD::get_system_font_path_for_text(const String &p_font_n
 			FcLangSetAdd(lang_set, reinterpret_cast<const FcChar8 *>(p_locale.utf8().get_data()));
 			FcPatternAddLangSet(pattern, FC_LANG, lang_set);
 
-			FcConfigSubstitute(0, pattern, FcMatchPattern);
+			FcConfigSubstitute(nullptr, pattern, FcMatchPattern);
 			FcDefaultSubstitute(pattern);
 
 			FcResult result;
-			FcPattern *match = FcFontMatch(0, pattern, &result);
+			FcPattern *match = FcFontMatch(nullptr, pattern, &result);
 			if (match) {
 				char *file_name = nullptr;
 				if (FcPatternGetString(match, FC_FILE, 0, reinterpret_cast<FcChar8 **>(&file_name)) == FcResultMatch) {
@@ -816,11 +816,11 @@ String OS_LinuxBSD::get_system_font_path(const String &p_font_name, int p_weight
 			FcPatternAddInteger(pattern, FC_WIDTH, _stretch_to_fc(p_stretch));
 			FcPatternAddInteger(pattern, FC_SLANT, p_italic ? FC_SLANT_ITALIC : FC_SLANT_ROMAN);
 
-			FcConfigSubstitute(0, pattern, FcMatchPattern);
+			FcConfigSubstitute(nullptr, pattern, FcMatchPattern);
 			FcDefaultSubstitute(pattern);
 
 			FcResult result;
-			FcPattern *match = FcFontMatch(0, pattern, &result);
+			FcPattern *match = FcFontMatch(nullptr, pattern, &result);
 			if (match) {
 				if (!allow_substitutes) {
 					char *family_name = nullptr;

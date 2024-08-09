@@ -247,13 +247,13 @@ private:
 		Ref<Texture2D> folded_eol_icon;
 
 		Color breakpoint_color = Color(1, 1, 1);
-		Ref<Texture2D> breakpoint_icon = Ref<Texture2D>();
+		Ref<Texture2D> breakpoint_icon;
 
 		Color bookmark_color = Color(1, 1, 1);
-		Ref<Texture2D> bookmark_icon = Ref<Texture2D>();
+		Ref<Texture2D> bookmark_icon;
 
 		Color executing_line_color = Color(1, 1, 1);
-		Ref<Texture2D> executing_line_icon = Ref<Texture2D>();
+		Ref<Texture2D> executing_line_icon;
 
 		Color line_number_color = Color(1, 1, 1);
 
