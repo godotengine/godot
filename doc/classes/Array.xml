@@ -396,6 +396,15 @@
 				[b]Note:[/b] For performance reasons, the search is affected by [param what]'s [enum Variant.Type]. For example, [code]7[/code] ([int]) and [code]7.0[/code] ([float]) are not considered equal for this method.
 			</description>
 		</method>
+		<method name="find_custom" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="func" type="Callable" />
+			<param index="1" name="from" type="int" default="0" />
+			<description>
+				Searches the array for the first value that causes [param func] to return true, or [code]-1[/code] if not found. Optionally, the initial search index can be passed.
+				[param func] is a callable that should accept an array element as an argument, and return a boolean.
+			</description>
+		</method>
 		<method name="front" qualifiers="const">
 			<return type="Variant" />
 			<description>
@@ -653,6 +662,15 @@
 			<param index="1" name="from" type="int" default="-1" />
 			<description>
 				Returns the index of the [b]last[/b] occurrence of [param what] in this array, or [code]-1[/code] if there are none. The search's start can be specified with [param from], continuing to the beginning of the array. This method is the reverse of [method find].
+			</description>
+		</method>
+		<method name="rfind_custom" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="func" type="Callable" />
+			<param index="1" name="from" type="int" default="-1" />
+			<description>
+				Searches the array for the last value that causes [param func] to return true by searching in reverse order. Optionally, a start search index can be passed. If negative, the start index is considered relative to the end of the array.
+				[param func] is a callable that should accept an array element as an argument, and return a boolean.
 			</description>
 		</method>
 		<method name="shuffle">

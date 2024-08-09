@@ -129,6 +129,27 @@ TEST_CASE("[Array] has() and count()") {
 	CHECK(arr.count(2) == 0);
 }
 
+static bool array_test_callable(int p_val) {
+	// Basic even number check.
+	return p_val % 2 == 0;
+}
+
+TEST_CASE("[Array] find_custom() and rfind_custom()") {
+	Array arr;
+	arr.push_back(1);
+	arr.push_back(2);
+	arr.push_back(3);
+	arr.push_back(4);
+	arr.push_back(5);
+	arr.push_back(6);
+
+	CHECK(arr.find_custom(callable_mp_static(array_test_callable)) == 1); // Should be the number 2.
+	CHECK(arr.rfind_custom(callable_mp_static(array_test_callable)) == 5); // Should be the number 6.
+
+	CHECK(arr.find_custom(callable_mp_static(array_test_callable), 2) == 3); // Should be the number 4.
+	CHECK(arr.rfind_custom(callable_mp_static(array_test_callable), 4) == 3); // Should be the number 4.
+}
+
 TEST_CASE("[Array] remove_at()") {
 	Array arr;
 	arr.push_back(1);
