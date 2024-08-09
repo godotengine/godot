@@ -260,38 +260,6 @@ bool FileAccessCompressed::eof_reached() const {
 	}
 }
 
-uint8_t FileAccessCompressed::get_8() const {
-	ERR_FAIL_COND_V_MSG(f.is_null(), 0, "File must be opened before use.");
-	ERR_FAIL_COND_V_MSG(writing, 0, "File has not been opened in read mode.");
-
-	if (at_end) {
-		read_eof = true;
-		return 0;
-	}
-
-	uint8_t ret = read_ptr[read_pos];
-
-	read_pos++;
-	if (read_pos >= read_block_size) {
-		read_block++;
-
-		if (read_block < read_block_count) {
-			//read another block of compressed data
-			f->get_buffer(comp_buffer.ptrw(), read_blocks[read_block].csize);
-			int total = Compression::decompress(buffer.ptrw(), read_blocks.size() == 1 ? read_total : block_size, comp_buffer.ptr(), read_blocks[read_block].csize, cmode);
-			ERR_FAIL_COND_V_MSG(total == -1, 0, "Compressed file is corrupt.");
-			read_block_size = read_block == read_block_count - 1 ? read_total % block_size : block_size;
-			read_pos = 0;
-
-		} else {
-			read_block--;
-			at_end = true;
-		}
-	}
-
-	return ret;
-}
-
 uint64_t FileAccessCompressed::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 	ERR_FAIL_COND_V_MSG(f.is_null(), -1, "File must be opened before use.");
@@ -341,12 +309,13 @@ void FileAccessCompressed::flush() {
 	// compressed files keep data in memory till close()
 }
 
-void FileAccessCompressed::store_8(uint8_t p_dest) {
+void FileAccessCompressed::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 	ERR_FAIL_COND_MSG(f.is_null(), "File must be opened before use.");
 	ERR_FAIL_COND_MSG(!writing, "File has not been opened in write mode.");
 
-	WRITE_FIT(1);
-	write_ptr[write_pos++] = p_dest;
+	WRITE_FIT(p_length);
+	memcpy(write_ptr + write_pos, p_src, p_length);
+	write_pos += p_length;
 }
 
 bool FileAccessCompressed::file_exists(const String &p_name) {

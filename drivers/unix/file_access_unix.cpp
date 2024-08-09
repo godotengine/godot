@@ -218,67 +218,13 @@ bool FileAccessUnix::eof_reached() const {
 	return last_error == ERR_FILE_EOF;
 }
 
-uint8_t FileAccessUnix::get_8() const {
-	ERR_FAIL_NULL_V_MSG(f, 0, "File must be opened before use.");
-	uint8_t b;
-	if (fread(&b, 1, 1, f) == 0) {
-		check_errors();
-		b = '\0';
-	}
-	return b;
-}
-
-uint16_t FileAccessUnix::get_16() const {
-	ERR_FAIL_NULL_V_MSG(f, 0, "File must be opened before use.");
-
-	uint16_t b = 0;
-	if (fread(&b, 1, 2, f) != 2) {
-		check_errors();
-	}
-
-	if (big_endian) {
-		b = BSWAP16(b);
-	}
-
-	return b;
-}
-
-uint32_t FileAccessUnix::get_32() const {
-	ERR_FAIL_NULL_V_MSG(f, 0, "File must be opened before use.");
-
-	uint32_t b = 0;
-	if (fread(&b, 1, 4, f) != 4) {
-		check_errors();
-	}
-
-	if (big_endian) {
-		b = BSWAP32(b);
-	}
-
-	return b;
-}
-
-uint64_t FileAccessUnix::get_64() const {
-	ERR_FAIL_NULL_V_MSG(f, 0, "File must be opened before use.");
-
-	uint64_t b = 0;
-	if (fread(&b, 1, 8, f) != 8) {
-		check_errors();
-	}
-
-	if (big_endian) {
-		b = BSWAP64(b);
-	}
-
-	return b;
-}
-
 uint64_t FileAccessUnix::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
-	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 	ERR_FAIL_NULL_V_MSG(f, -1, "File must be opened before use.");
+	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 
 	uint64_t read = fread(p_dst, 1, p_length, f);
 	check_errors();
+
 	return read;
 }
 
@@ -306,41 +252,6 @@ Error FileAccessUnix::resize(int64_t p_length) {
 void FileAccessUnix::flush() {
 	ERR_FAIL_NULL_MSG(f, "File must be opened before use.");
 	fflush(f);
-}
-
-void FileAccessUnix::store_8(uint8_t p_dest) {
-	ERR_FAIL_NULL_MSG(f, "File must be opened before use.");
-	ERR_FAIL_COND(fwrite(&p_dest, 1, 1, f) != 1);
-}
-
-void FileAccessUnix::store_16(uint16_t p_dest) {
-	ERR_FAIL_NULL_MSG(f, "File must be opened before use.");
-
-	if (big_endian) {
-		p_dest = BSWAP16(p_dest);
-	}
-
-	ERR_FAIL_COND(fwrite(&p_dest, 1, 2, f) != 2);
-}
-
-void FileAccessUnix::store_32(uint32_t p_dest) {
-	ERR_FAIL_NULL_MSG(f, "File must be opened before use.");
-
-	if (big_endian) {
-		p_dest = BSWAP32(p_dest);
-	}
-
-	ERR_FAIL_COND(fwrite(&p_dest, 1, 4, f) != 4);
-}
-
-void FileAccessUnix::store_64(uint64_t p_dest) {
-	ERR_FAIL_NULL_MSG(f, "File must be opened before use.");
-
-	if (big_endian) {
-		p_dest = BSWAP64(p_dest);
-	}
-
-	ERR_FAIL_COND(fwrite(&p_dest, 1, 8, f) != 8);
 }
 
 void FileAccessUnix::store_buffer(const uint8_t *p_src, uint64_t p_length) {

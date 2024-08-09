@@ -137,7 +137,7 @@ public:
 
 	virtual bool eof_reached() const = 0; ///< reading passed EOF
 
-	virtual uint8_t get_8() const = 0; ///< get a byte
+	virtual uint8_t get_8() const; ///< get a byte
 	virtual uint16_t get_16() const; ///< get 16 bits uint
 	virtual uint32_t get_32() const; ///< get 32 bits uint
 	virtual uint64_t get_64() const; ///< get 64 bits uint
@@ -148,7 +148,7 @@ public:
 
 	Variant get_var(bool p_allow_objects = false) const;
 
-	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const; ///< get an array of bytes
+	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const = 0; ///< get an array of bytes, needs to be overwritten by children.
 	Vector<uint8_t> get_buffer(int64_t p_length) const;
 	virtual String get_line() const;
 	virtual String get_token() const;
@@ -168,7 +168,7 @@ public:
 
 	virtual Error resize(int64_t p_length) = 0;
 	virtual void flush() = 0;
-	virtual void store_8(uint8_t p_dest) = 0; ///< store a byte
+	virtual void store_8(uint8_t p_dest); ///< store a byte
 	virtual void store_16(uint16_t p_dest); ///< store 16 bits uint
 	virtual void store_32(uint32_t p_dest); ///< store 32 bits uint
 	virtual void store_64(uint64_t p_dest); ///< store 64 bits uint
@@ -184,7 +184,7 @@ public:
 	virtual void store_pascal_string(const String &p_string);
 	virtual String get_pascal_string();
 
-	virtual void store_buffer(const uint8_t *p_src, uint64_t p_length); ///< store an array of bytes
+	virtual void store_buffer(const uint8_t *p_src, uint64_t p_length) = 0; ///< store an array of bytes, needs to be overwritten by children.
 	void store_buffer(const Vector<uint8_t> &p_buffer);
 
 	void store_var(const Variant &p_var, bool p_full_objects = false);

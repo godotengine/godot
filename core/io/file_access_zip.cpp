@@ -291,12 +291,6 @@ bool FileAccessZip::eof_reached() const {
 	return at_eof;
 }
 
-uint8_t FileAccessZip::get_8() const {
-	uint8_t ret = 0;
-	get_buffer(&ret, 1);
-	return ret;
-}
-
 uint64_t FileAccessZip::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 	ERR_FAIL_NULL_V(zfile, -1);
@@ -328,7 +322,7 @@ void FileAccessZip::flush() {
 	ERR_FAIL();
 }
 
-void FileAccessZip::store_8(uint8_t p_dest) {
+void FileAccessZip::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 	ERR_FAIL();
 }
 
