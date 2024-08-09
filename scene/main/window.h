@@ -33,6 +33,7 @@
 
 #include "scene/main/viewport.h"
 #include "scene/resources/theme.h"
+#include "servers/display_server.h"
 
 class Font;
 class Shortcut;
@@ -62,6 +63,7 @@ public:
 		FLAG_POPUP = DisplayServer::WINDOW_FLAG_POPUP,
 		FLAG_EXTEND_TO_TITLE = DisplayServer::WINDOW_FLAG_EXTEND_TO_TITLE,
 		FLAG_MOUSE_PASSTHROUGH = DisplayServer::WINDOW_FLAG_MOUSE_PASSTHROUGH,
+		FLAG_EXCLUDE_FROM_CAPTURE = DisplayServer::WINDOW_FLAG_EXCLUDE_FROM_CAPTURE,
 		FLAG_MAX = DisplayServer::WINDOW_FLAG_MAX,
 	};
 
