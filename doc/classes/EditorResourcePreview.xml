@@ -14,14 +14,14 @@
 			<return type="void" />
 			<param index="0" name="generator" type="EditorResourcePreviewGenerator" />
 			<description>
-				Create an own, custom preview generator.
+				Register a custom preview generator. See [EditorResourcePreviewGenerator] for instructions on implementing a custom generator.
 			</description>
 		</method>
 		<method name="check_for_invalidation">
 			<return type="void" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Check if the resource changed, if so, it will be invalidated and the corresponding signal emitted.
+				Check if the resource changed. If so, it will be invalidated and the corresponding signal emitted.
 			</description>
 		</method>
 		<method name="queue_edited_resource_preview">
