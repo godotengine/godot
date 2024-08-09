@@ -134,7 +134,7 @@
 			<param index="1" name="polygon_index" type="int" />
 			<param index="2" name="one_way_margin" type="float" />
 			<description>
-				Enables/disables one-way collisions on the polygon at index [param polygon_index] for TileSet physics layer with index [param layer_id].
+				Sets the one-way margin (for one-way platforms) of the polygon at index [param polygon_index] for TileSet physics layer with index [param layer_id].
 			</description>
 		</method>
 		<method name="set_collision_polygon_points">
