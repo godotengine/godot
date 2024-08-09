@@ -338,7 +338,9 @@ public:
 		int leftmost_column = 0, rightmost_column = 0;
 		Node *next = nullptr;
 		List<AnnotationNode *> annotations;
-
+#ifdef TOOLS_ENABLED
+		Vector<Node *> incomplete_fragments;
+#endif
 		DataType datatype;
 
 		virtual DataType get_datatype() const { return datatype; }
@@ -1354,6 +1356,9 @@ private:
 	HashSet<int> warning_ignored_lines[GDScriptWarning::WARNING_MAX];
 	HashSet<int> unsafe_lines;
 #endif
+#ifdef TOOLS_ENABLED
+	Vector<GDScriptParser::Node *> incomplete_fragments;
+#endif
 
 	GDScriptTokenizer *tokenizer = nullptr;
 	GDScriptTokenizer::Token previous;
@@ -1455,6 +1460,8 @@ private:
 	}
 	void apply_pending_warnings();
 #endif
+	inline void push_incomplete(GDScriptParser::Node *p_incomplete);
+	inline void apply_incomplete(GDScriptParser::Node *p_apply_to);
 
 	void make_completion_context(CompletionType p_type, Node *p_node, int p_argument = -1, bool p_force = false);
 	void make_completion_context(CompletionType p_type, Variant::Type p_builtin_type, bool p_force = false);
