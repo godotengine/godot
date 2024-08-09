@@ -7141,7 +7141,6 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 #endif // DEBUG_ENABLED
 
 			int array_size = 0;
-			bool fixed_array_size = false;
 			bool first = true;
 
 			VariableDeclarationNode *vdnode = alloc_node<VariableDeclarationNode>();
@@ -7174,8 +7173,6 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 							return error;
 						}
 						decl.size = array_size;
-
-						fixed_array_size = true;
 						tk = _get_token();
 					}
 				}
@@ -7477,10 +7474,6 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				vdnode->declarations.push_back(decl);
 				p_block->variables[name] = var;
 				is_const_decl = false;
-
-				if (!fixed_array_size) {
-					array_size = 0;
-				}
 
 				if (tk.type == TK_SEMICOLON) {
 					break;
@@ -9321,14 +9314,12 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 #endif // DEBUG_ENABLED
 
 				bool unknown_size = false;
-				bool fixed_array_size = false;
 
 				if (tk.type == TK_BRACKET_OPEN) {
 					Error error = _parse_array_size(nullptr, constants, !is_constant, nullptr, &array_size, &unknown_size);
 					if (error != OK) {
 						return error;
 					}
-					fixed_array_size = true;
 					prev_pos = _get_tkpos();
 				}
 
@@ -9622,10 +9613,6 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 							}
 
 							tk = _get_token();
-
-							if (!fixed_array_size) {
-								array_size = 0;
-							}
 							unknown_size = false;
 
 						} else if (tk.type == TK_SEMICOLON) {
