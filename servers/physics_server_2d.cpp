@@ -895,7 +895,7 @@ PhysicsServer2D::PhysicsServer2D() {
 	singleton = this;
 
 	// World2D physics space
-	GLOBAL_DEF_BASIC("physics/2d/default_gravity", 980.0);
+	GLOBAL_DEF_BASIC("physics/2d/default_gravity", 981.0);
 	GLOBAL_DEF_BASIC("physics/2d/default_gravity_vector", Vector2(0, 1));
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/2d/default_linear_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"), 0.1);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/2d/default_angular_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"), 1.0);
