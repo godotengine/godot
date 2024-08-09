@@ -60,6 +60,8 @@ struct ErrorHandlerList {
 void add_error_handler(ErrorHandlerList *p_handler);
 void remove_error_handler(const ErrorHandlerList *p_handler);
 
+void print_stack_trace(int p_skip_called = 0, int p_skip_callers = 0);
+
 // Functions used by the error macros.
 void _err_print_error(const char *p_function, const char *p_file, int p_line, const char *p_error, bool p_editor_notify = false, ErrorHandlerType p_type = ERR_HANDLER_ERROR);
 void _err_print_error(const char *p_function, const char *p_file, int p_line, const String &p_error, bool p_editor_notify = false, ErrorHandlerType p_type = ERR_HANDLER_ERROR);
