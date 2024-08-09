@@ -73,6 +73,8 @@ namespace Godot.SourceGenerators
 
             bool isInnerClass = symbol.ContainingType != null;
 
+            bool isTool = symbol.SelfOrContainerHasToolAttribute();
+
             string uniqueHint = symbol.FullQualifiedNameOmitGlobal().SanitizeQualifiedNameForUniqueHint()
                                 + "_ScriptPropertyDefVal.generated";
 
@@ -206,6 +208,17 @@ namespace Godot.SourceGenerators
                         ));
                         continue;
                     }
+
+                    if (isTool
+                        && !propertyType.SelfOrContainerHasToolAttribute()
+                        && propertyType.ContainingAssembly?.Name != "GodotTools")
+                    {
+                        context.ReportDiagnostic(Diagnostic.Create(
+                            Common.ToolsCanOnlyExportToolsRule,
+                            property.Locations.FirstLocationWithSourceTreeOrDefault()
+                        ));
+                        continue;
+                    }
                 }
 
                 var propertyDeclarationSyntax = property.DeclaringSyntaxReferences
@@ -321,6 +334,17 @@ namespace Godot.SourceGenerators
                     {
                         context.ReportDiagnostic(Diagnostic.Create(
                             Common.OnlyNodesShouldExportNodesRule,
+                            field.Locations.FirstLocationWithSourceTreeOrDefault()
+                        ));
+                        continue;
+                    }
+
+                    if (isTool
+                        && !fieldType.SelfOrContainerHasToolAttribute()
+                        && fieldType.ContainingAssembly?.Name != "GodotTools")
+                    {
+                        context.ReportDiagnostic(Diagnostic.Create(
+                            Common.ToolsCanOnlyExportToolsRule,
                             field.Locations.FirstLocationWithSourceTreeOrDefault()
                         ));
                         continue;
