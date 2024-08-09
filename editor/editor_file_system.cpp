@@ -1934,7 +1934,7 @@ void EditorFileSystem::_update_scene_groups() {
 		}
 
 		if (ep) {
-			ep->step(TTR("Updating Scene Groups..."), step_count++);
+			ep->step(TTR("Updating Scene Groups..."), step_count++, false);
 		}
 	}
 
@@ -2652,6 +2652,16 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 
 	EditorProgress pr("reimport", TTR("(Re)Importing Assets"), p_files.size());
 
+	// The method reimport_files runs on the main thread, and if VSync is enabled
+	// or Update Continuously is disabled, Main::Iteration takes longer each frame.
+	// Each EditorProgress::step can trigger a redraw, and when there are many files to import,
+	// this could lead to a slow import process, especially when the editor is unfocused.
+	// Temporarily disabling VSync and low_processor_usage_mode while reimporting fixes this.
+	const bool old_low_processor_usage_mode = OS::get_singleton()->is_in_low_processor_usage_mode();
+	const DisplayServer::VSyncMode old_vsync_mode = DisplayServer::get_singleton()->window_get_vsync_mode(DisplayServer::MAIN_WINDOW_ID);
+	OS::get_singleton()->set_low_processor_usage_mode(false);
+	DisplayServer::get_singleton()->window_set_vsync_mode(DisplayServer::VSyncMode::VSYNC_DISABLED);
+
 	Vector<ImportFile> reimport_files;
 
 	HashSet<String> groups_to_reimport;
@@ -2716,7 +2726,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 			if (i + 1 == reimport_files.size() || reimport_files[i + 1].importer != reimport_files[from].importer || groups_to_reimport.has(reimport_files[i + 1].path)) {
 				if (from - i == 0) {
 					// Single file, do not use threads.
-					pr.step(reimport_files[i].path.get_file(), i);
+					pr.step(reimport_files[i].path.get_file(), i, false);
 					_reimport_file(reimport_files[i].path);
 				} else {
 					Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(reimport_files[from].importer);
@@ -2738,7 +2748,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 					do {
 						if (current_index < tdata.max_index.get()) {
 							current_index = tdata.max_index.get();
-							pr.step(reimport_files[current_index].path.get_file(), current_index);
+							pr.step(reimport_files[current_index].path.get_file(), current_index, false);
 						}
 						OS::get_singleton()->delay_usec(1);
 					} while (!WorkerThreadPool::get_singleton()->is_group_task_completed(group_task));
@@ -2752,7 +2762,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 			}
 
 		} else {
-			pr.step(reimport_files[i].path.get_file(), i);
+			pr.step(reimport_files[i].path.get_file(), i, false);
 			_reimport_file(reimport_files[i].path);
 
 			// We need to increment the counter, maybe the next file is multithreaded
@@ -2769,7 +2779,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 		HashMap<String, Vector<String>> group_files;
 		_find_group_files(filesystem, group_files, groups_to_reimport);
 		for (const KeyValue<String, Vector<String>> &E : group_files) {
-			pr.step(E.key.get_file(), from++);
+			pr.step(E.key.get_file(), from++, false);
 			Error err = _reimport_group(E.key, E.value);
 			reloads.push_back(E.key);
 			reloads.append_array(E.value);
@@ -2778,11 +2788,17 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 			}
 		}
 	}
+	pr.step(TTR("Finalizing Asset Import..."), p_files.size());
 
 	ResourceUID::get_singleton()->update_cache(); // After reimporting, update the cache.
 
 	_save_filesystem_cache();
 	_process_update_pending();
+
+	// Revert to previous values to restore editor settings for VSync and Update Continuously.
+	OS::get_singleton()->set_low_processor_usage_mode(old_low_processor_usage_mode);
+	DisplayServer::get_singleton()->window_set_vsync_mode(old_vsync_mode);
+
 	importing = false;
 	if (!is_scanning()) {
 		emit_signal(SNAME("filesystem_changed"));
