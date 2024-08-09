@@ -3303,11 +3303,36 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 		case GDScriptParser::COMPLETION_SUBSCRIPT: {
 			const GDScriptParser::SubscriptNode *subscript = static_cast<const GDScriptParser::SubscriptNode *>(completion_context.node);
 			GDScriptCompletionIdentifier base;
-			if (!_guess_expression_type(completion_context, subscript->base, base)) {
-				break;
-			}
+			const bool res = _guess_expression_type(completion_context, subscript->base, base);
 
-			_find_identifiers_in_base(base, false, false, options, 0);
+			// If the type is not known, we assume it is BUILTIN, since indices on arrays is the most common use case.
+			if (!subscript->is_attribute && (!res || base.type.kind == GDScriptParser::DataType::BUILTIN || base.type.is_variant())) {
+				if (base.value.get_type() == Variant::DICTIONARY) {
+					List<PropertyInfo> members;
+					base.value.get_property_list(&members);
+
+					for (const PropertyInfo &E : members) {
+						ScriptLanguage::CodeCompletionOption option(E.name.quote(quote_style), ScriptLanguage::CODE_COMPLETION_KIND_MEMBER, ScriptLanguage::LOCATION_LOCAL);
+						options.insert(option.display, option);
+					}
+				}
+				if (!subscript->index || subscript->index->type != GDScriptParser::Node::LITERAL) {
+					_find_identifiers(completion_context, false, options, 0);
+				}
+			} else if (res) {
+				if (!subscript->is_attribute) {
+					// Quote the options if they are not accessed as attribute.
+
+					HashMap<String, ScriptLanguage::CodeCompletionOption> opt;
+					_find_identifiers_in_base(base, false, false, opt, 0);
+					for (const KeyValue<String, CodeCompletionOption> &E : opt) {
+						ScriptLanguage::CodeCompletionOption option(E.value.insert_text.quote(quote_style), E.value.kind, E.value.location);
+						options.insert(option.display, option);
+					}
+				} else {
+					_find_identifiers_in_base(base, false, false, options, 0);
+				}
+			}
 		} break;
 		case GDScriptParser::COMPLETION_TYPE_ATTRIBUTE: {
 			if (!completion_context.current_class) {
