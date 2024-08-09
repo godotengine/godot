@@ -1071,6 +1071,8 @@ void main() {
 
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
+#ifndef AMBIENT_LIGHT_DISABLED
+
 	if (scene_data.use_reflection_cubemap) {
 #ifdef LIGHT_ANISOTROPY_USED
 		// https://google.github.io/filament/Filament.html#lighting/imagebasedlights/anisotropy
@@ -1158,13 +1160,14 @@ void main() {
 #endif //USE_RADIANCE_CUBEMAP_ARRAY
 		specular_light += clearcoat_light * horizon * horizon * Fc * scene_data.ambient_light_color_energy.a;
 	}
-#endif
+#endif // LIGHT_CLEARCOAT_USED
+#endif // !AMBIENT_LIGHT_DISABLED
 #endif //!defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
 	//radiance
 
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
-
+#ifndef AMBIENT_LIGHT_DISABLED
 #ifdef USE_LIGHTMAP
 
 	//lightmap
@@ -1274,14 +1277,11 @@ void main() {
 	} //Reflection probes
 
 	// finalize ambient light here
-	{
-#if defined(AMBIENT_LIGHT_DISABLED)
-		ambient_light = vec3(0.0, 0.0, 0.0);
-#else
-		ambient_light *= albedo.rgb;
-		ambient_light *= ao;
-#endif // AMBIENT_LIGHT_DISABLED
-	}
+
+	ambient_light *= albedo.rgb;
+	ambient_light *= ao;
+
+#endif // !AMBIENT_LIGHT_DISABLED
 
 	// convert ao to direct light ao
 	ao = mix(1.0, ao, ao_light_affect);
@@ -1289,6 +1289,7 @@ void main() {
 	//this saves some VGPRs
 	vec3 f0 = F0(metallic, specular, albedo);
 
+#ifndef AMBIENT_LIGHT_DISABLED
 	{
 #if defined(DIFFUSE_TOON)
 		//simplify for toon, as
@@ -1310,6 +1311,7 @@ void main() {
 #endif
 	}
 
+#endif // !AMBIENT_LIGHT_DISABLED
 #endif // !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
 #if !defined(MODE_RENDER_DEPTH)
