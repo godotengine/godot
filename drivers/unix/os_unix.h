@@ -100,7 +100,7 @@ public:
 	virtual void initialize_debugging() override;
 
 	virtual String get_executable_path() const override;
-	virtual String get_user_data_dir() const override;
+	virtual String get_user_data_dir(const String &p_appname) const override;
 };
 
 class UnixTerminalLogger : public StdLogger {

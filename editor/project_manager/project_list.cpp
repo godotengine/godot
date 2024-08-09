@@ -417,14 +417,16 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 	String conf = p_path.path_join("project.godot");
 	bool grayed = false;
 	bool missing = false;
+	bool safe_mode = false;
 
 	Ref<ConfigFile> cf = memnew(ConfigFile);
 	Error cf_err = cf->load(conf);
 
 	int config_version = 0;
+	String cf_project_name;
 	String project_name = TTR("Unnamed Project");
 	if (cf_err == OK) {
-		String cf_project_name = cf->get_value("application", "config/name", "");
+		cf_project_name = cf->get_value("application", "config/name", "");
 		if (!cf_project_name.is_empty()) {
 			project_name = cf_project_name.xml_unescape();
 		}
@@ -486,7 +488,13 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 		ProjectManager::get_singleton()->add_new_tag(tag);
 	}
 
-	return Item(project_name, description, project_version, tags, p_path, icon, main_scene, unsupported_features, last_edited, p_favorite, grayed, missing, config_version);
+	// We can't use globalize_path because there is no loaded project. So we replicate the behavior of accessing user://
+	if (!cf_project_name.is_empty()) {
+		String safe_mode_lock_file = OS::get_singleton()->get_user_data_dir(cf_project_name).path_join(".safe_mode_lock");
+		safe_mode = FileAccess::exists(safe_mode_lock_file);
+	}
+
+	return Item(project_name, description, project_version, tags, p_path, icon, main_scene, unsupported_features, last_edited, p_favorite, grayed, missing, safe_mode, config_version);
 }
 
 void ProjectList::_update_icons_async() {

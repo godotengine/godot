@@ -40,6 +40,7 @@ class EditorRunNative;
 class EditorQuickOpen;
 class PanelContainer;
 class HBoxContainer;
+class AcceptDialog;
 
 class EditorRunBar : public MarginContainer {
 	GDCLASS(EditorRunBar, MarginContainer);
@@ -55,6 +56,11 @@ class EditorRunBar : public MarginContainer {
 
 	PanelContainer *main_panel = nullptr;
 	HBoxContainer *main_hbox = nullptr;
+
+	PanelContainer *safe_mode_panel = nullptr;
+	Button *safe_mode_button = nullptr;
+	Button *safe_mode_reload_button = nullptr;
+	AcceptDialog *safe_mode_popup = nullptr;
 
 	Button *play_button = nullptr;
 	Button *pause_button = nullptr;
@@ -92,6 +98,9 @@ protected:
 
 public:
 	static EditorRunBar *get_singleton() { return singleton; }
+
+	void safe_mode_show_dialog();
+	void safe_mode_reload_project();
 
 	void play_main_scene(bool p_from_native = false);
 	void play_current_scene(bool p_reload = false);

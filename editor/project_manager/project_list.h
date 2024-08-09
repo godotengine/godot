@@ -115,6 +115,7 @@ public:
 		bool favorite = false;
 		bool grayed = false;
 		bool missing = false;
+		bool safe_mode = false;
 		int version = 0;
 
 		ProjectListItemControl *control = nullptr;
@@ -133,6 +134,7 @@ public:
 				bool p_favorite,
 				bool p_grayed,
 				bool p_missing,
+				bool p_safe_mode,
 				int p_version) {
 			project_name = p_name;
 			description = p_description;
@@ -146,6 +148,7 @@ public:
 			favorite = p_favorite;
 			grayed = p_grayed;
 			missing = p_missing;
+			safe_mode = p_safe_mode;
 			version = p_version;
 
 			control = nullptr;

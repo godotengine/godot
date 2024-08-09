@@ -83,6 +83,7 @@ private:
 	bool editor_hint = false;
 	bool project_manager_hint = false;
 	bool extension_reloading = false;
+	bool safe_mode_hint = false;
 
 	bool _print_header = true;
 
@@ -152,6 +153,9 @@ public:
 
 	_FORCE_INLINE_ void set_extension_reloading_enabled(bool p_enabled) { extension_reloading = p_enabled; }
 	_FORCE_INLINE_ bool is_extension_reloading_enabled() const { return extension_reloading; }
+
+	_FORCE_INLINE_ void set_safe_mode_hint(bool p_enabled) { safe_mode_hint = p_enabled; }
+	_FORCE_INLINE_ bool is_safe_mode_hint() const { return safe_mode_hint; }
 #else
 	_FORCE_INLINE_ void set_editor_hint(bool p_enabled) {}
 	_FORCE_INLINE_ bool is_editor_hint() const { return false; }
@@ -161,6 +165,9 @@ public:
 
 	_FORCE_INLINE_ void set_extension_reloading_enabled(bool p_enabled) {}
 	_FORCE_INLINE_ bool is_extension_reloading_enabled() const { return false; }
+
+	_FORCE_INLINE_ void set_safe_mode_hint(bool p_enabled) {}
+	_FORCE_INLINE_ bool is_safe_mode_hint() const { return false; }
 #endif
 
 	Dictionary get_version_info() const;
