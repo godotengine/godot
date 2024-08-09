@@ -33,6 +33,10 @@
 #include "core/math/geometry_2d.h"
 #include "core/math/math_funcs.h"
 #include "core/templates/sort_array.h"
+#include "scene/resources/mesh_data_tool.h"
+#include "scene/resources/surface_tool.h"
+
+#include "manifold.h"
 
 // Static helper functions.
 
@@ -185,15 +189,6 @@ inline static bool are_segments_parallel(const Vector2 p_segment1_points[2], con
 
 // CSGBrush
 
-void CSGBrush::_regen_face_aabbs() {
-	for (int i = 0; i < faces.size(); i++) {
-		faces.write[i].aabb = AABB();
-		faces.write[i].aabb.position = faces[i].vertices[0];
-		faces.write[i].aabb.expand_to(faces[i].vertices[1]);
-		faces.write[i].aabb.expand_to(faces[i].vertices[2]);
-	}
-}
-
 void CSGBrush::build_from_faces(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uvs, const Vector<bool> &p_smooth, const Vector<Ref<Material>> &p_materials, const Vector<bool> &p_flip_faces) {
 	faces.clear();
 
@@ -278,188 +273,200 @@ void CSGBrush::copy_from(const CSGBrush &p_brush, const Transform3D &p_xform) {
 	_regen_face_aabbs();
 }
 
+enum {
+	MANIFOLD_PROPERTY_POSITION_X = 0,
+	MANIFOLD_PROPERTY_POSITION_Y,
+	MANIFOLD_PROPERTY_POSITION_Z,
+	MANIFOLD_PROPERTY_NORMAL_X,
+	MANIFOLD_PROPERTY_NORMAL_Y,
+	MANIFOLD_PROPERTY_NORMAL_Z,
+	MANIFOLD_PROPERTY_INVERT,
+	MANIFOLD_PROPERTY_SMOOTH_GROUP,
+	MANIFOLD_PROPERTY_UV_X_0,
+	MANIFOLD_PROPERTY_UV_X_1,
+	MANIFOLD_PROPERTY_UV_X_2,
+	MANIFOLD_PROPERTY_UV_Y_0,
+	MANIFOLD_PROPERTY_UV_Y_1,
+	MANIFOLD_PROPERTY_UV_Y_2,
+	MANIFOLD_PROPERTY_PLACEHOLDER_MATERIAL,
+	MANIFOLD_MAX
+};
+
+static void pack_manifold(
+		const CSGBrush *const p_mesh_merge,
+		manifold::Manifold &r_manifold,
+		HashMap<int32_t, Ref<Material>> &mesh_materials,
+		const float p_snap) {
+	if (!p_mesh_merge) {
+		ERR_PRINT("p_mesh_merge is null");
+		return;
+	}
+
+	HashMap<uint32_t, Vector<CSGBrush::Face>> faces_by_material;
+	for (int face_i = 0; face_i < p_mesh_merge->faces.size(); face_i++) {
+		const CSGBrush::Face &face = p_mesh_merge->faces[face_i];
+		faces_by_material[face.material].push_back(face);
+	}
+
+	manifold::MeshGL mesh;
+	mesh.numProp = MANIFOLD_MAX;
+	mesh.runOriginalID.reserve(faces_by_material.size());
+	mesh.runIndex.reserve(faces_by_material.size() + 1);
+	mesh.vertProperties.reserve(p_mesh_merge->faces.size() * 3 * MANIFOLD_MAX);
+
+	// Make a run of triangles for each material.
+	for (const KeyValue<uint32_t, Vector<CSGBrush::Face>> &E : faces_by_material) {
+		const uint32_t material_id = E.key;
+		const Vector<CSGBrush::Face> &faces = E.value;
+		mesh.runIndex.push_back(mesh.triVerts.size());
+
+		// Associate the material with an ID.
+		uint32_t reserved_id = r_manifold.ReserveIDs(1);
+		mesh.runOriginalID.push_back(reserved_id);
+		Ref<Material> material;
+		if (material_id >= 0 && material_id < p_mesh_merge->materials.size()) {
+			material = p_mesh_merge->materials[material_id];
+		}
+		mesh_materials.insert(reserved_id, material);
+
+		for (const CSGBrush::Face &face : faces) {
+			for (int32_t tri_order_i = 0; tri_order_i < 3; tri_order_i++) {
+				constexpr int32_t order[3] = { 0, 2, 1 };
+				int i = order[tri_order_i];
+
+				mesh.triVerts.push_back(mesh.vertProperties.size() / MANIFOLD_MAX);
+
+				size_t begin = mesh.vertProperties.size();
+				mesh.vertProperties.resize(mesh.vertProperties.size() + MANIFOLD_MAX);
+				// Add the vertex properties.
+				// Use CSGBrush constants rather than push_back for clarity.
+				float *vert = &mesh.vertProperties[begin];
+				vert[MANIFOLD_PROPERTY_POSITION_X] = face.vertices[i].x;
+				vert[MANIFOLD_PROPERTY_POSITION_Y] = face.vertices[i].y;
+				vert[MANIFOLD_PROPERTY_POSITION_Z] = face.vertices[i].z;
+				vert[MANIFOLD_PROPERTY_UV_X_0] = face.uvs[i].x;
+				vert[MANIFOLD_PROPERTY_UV_Y_0] = face.uvs[i].y;
+				vert[MANIFOLD_PROPERTY_SMOOTH_GROUP] = face.smooth ? 1.0f : 0.0f;
+				vert[MANIFOLD_PROPERTY_INVERT] = face.invert ? 1.0f : 0.0f;
+			}
+		}
+	}
+	// runIndex needs an explicit end value.
+	mesh.runIndex.push_back(mesh.triVerts.size());
+
+	ERR_FAIL_COND_MSG(mesh.vertProperties.size() % mesh.numProp != 0, "Invalid vertex properties size");
+
+	mesh.precision = p_snap;
+
+	/**
+	 * MeshGL::merge(): updates the mergeFromVert and mergeToVert vectors in order to create a
+	 * manifold solid. If the MeshGL is already manifold, no change will occur, and
+	 * the function will return false.
+	 */
+	if (mesh.Merge()) {
+		std::vector<int32_t> index_map(mesh.vertProperties.size() / MANIFOLD_MAX, -1);
+		const size_t vertices_count = mesh.mergeFromVert.size();
+		for (size_t i = 0; i < vertices_count; ++i) {
+			index_map[mesh.mergeFromVert[i]] = mesh.mergeToVert[i];
+		}
+		const size_t indices_count = mesh.triVerts.size();
+		for (size_t i = 0; i < indices_count; ++i) {
+			if (index_map[i] > -1) {
+				mesh.triVerts[i] = index_map[i];
+			}
+		}
+	}
+
+	r_manifold = manifold::Manifold(mesh);
+	manifold::Manifold::Error err = r_manifold.Status();
+	if (err != manifold::Manifold::Error::NoError) {
+		print_error(String("Manifold creation from mesh failed:" + itos((int)err)));
+	}
+}
+
+static void unpack_manifold(
+		const manifold::Manifold &p_manifold,
+		const HashMap<int32_t, Ref<Material>> &mesh_materials,
+		CSGBrush *r_mesh_merge) {
+	Ref<StandardMaterial3D> default_material;
+	default_material.instantiate();
+
+	manifold::MeshGL mesh = p_manifold.GetMeshGL();
+
+	constexpr int32_t order[3] = { 0, 2, 1 };
+
+	for (size_t run_i = 0; run_i < mesh.runIndex.size() - 1; run_i++) {
+		uint32_t original_id = -1;
+		if (run_i < mesh.runOriginalID.size()) {
+			original_id = mesh.runOriginalID[run_i];
+		}
+
+		Ref<Material> material = default_material;
+		if (mesh_materials.has(original_id)) {
+			material = mesh_materials[original_id];
+		}
+		// Find or reserve a material ID in the brush.
+		int run_material = 0;
+		int32_t material_id = r_mesh_merge->materials.find(material);
+		if (material_id != -1) {
+			run_material = material_id;
+		} else {
+			run_material = r_mesh_merge->materials.size();
+			r_mesh_merge->materials.push_back(material);
+		}
+
+		size_t begin = mesh.runIndex[run_i];
+		size_t end = mesh.runIndex[run_i + 1];
+		for (size_t vert_i = begin; vert_i < end; vert_i += 3) {
+			CSGBrush::Face face;
+			face.material = run_material;
+
+			for (int32_t tri_order_i = 0; tri_order_i < 3; tri_order_i++) {
+				int32_t property_i = mesh.triVerts[vert_i + order[tri_order_i]];
+
+				ERR_FAIL_COND_MSG(property_i * mesh.numProp >= mesh.vertProperties.size(), "Invalid index into vertex properties");
+
+				face.vertices[tri_order_i] = Vector3(
+						mesh.vertProperties[property_i * mesh.numProp + MANIFOLD_PROPERTY_POSITION_X],
+						mesh.vertProperties[property_i * mesh.numProp + MANIFOLD_PROPERTY_POSITION_Y],
+						mesh.vertProperties[property_i * mesh.numProp + MANIFOLD_PROPERTY_POSITION_Z]);
+
+				face.uvs[tri_order_i] = Vector2(
+						mesh.vertProperties[property_i * mesh.numProp + MANIFOLD_PROPERTY_UV_X_0],
+						mesh.vertProperties[property_i * mesh.numProp + MANIFOLD_PROPERTY_UV_Y_0]);
+
+				face.smooth = mesh.vertProperties[property_i * mesh.numProp + MANIFOLD_PROPERTY_SMOOTH_GROUP] > 0.5f;
+				face.invert = mesh.vertProperties[property_i * mesh.numProp + MANIFOLD_PROPERTY_INVERT] > 0.5f;
+			}
+
+			r_mesh_merge->faces.push_back(face);
+		}
+	}
+
+	r_mesh_merge->_regen_face_aabbs();
+}
+
 // CSGBrushOperation
 
 void CSGBrushOperation::merge_brushes(Operation p_operation, const CSGBrush &p_brush_a, const CSGBrush &p_brush_b, CSGBrush &r_merged_brush, float p_vertex_snap) {
-	// Check for face collisions and add necessary faces.
-	Build2DFaceCollection build2DFaceCollection;
-	for (int i = 0; i < p_brush_a.faces.size(); i++) {
-		for (int j = 0; j < p_brush_b.faces.size(); j++) {
-			if (p_brush_a.faces[i].aabb.intersects_inclusive(p_brush_b.faces[j].aabb)) {
-				update_faces(p_brush_a, i, p_brush_b, j, build2DFaceCollection, p_vertex_snap);
-			}
-		}
-	}
-
-	// Add faces to MeshMerge.
-	MeshMerge mesh_merge;
-	mesh_merge.vertex_snap = p_vertex_snap;
-
-	for (int i = 0; i < p_brush_a.faces.size(); i++) {
-		Ref<Material> material;
-		if (p_brush_a.faces[i].material != -1) {
-			material = p_brush_a.materials[p_brush_a.faces[i].material];
-		}
-
-		if (build2DFaceCollection.build2DFacesA.has(i)) {
-			build2DFaceCollection.build2DFacesA[i].addFacesToMesh(mesh_merge, p_brush_a.faces[i].smooth, p_brush_a.faces[i].invert, material, false);
-		} else {
-			Vector3 points[3];
-			Vector2 uvs[3];
-			for (int j = 0; j < 3; j++) {
-				points[j] = p_brush_a.faces[i].vertices[j];
-				uvs[j] = p_brush_a.faces[i].uvs[j];
-			}
-			mesh_merge.add_face(points, uvs, p_brush_a.faces[i].smooth, p_brush_a.faces[i].invert, material, false);
-		}
-	}
-
-	for (int i = 0; i < p_brush_b.faces.size(); i++) {
-		Ref<Material> material;
-		if (p_brush_b.faces[i].material != -1) {
-			material = p_brush_b.materials[p_brush_b.faces[i].material];
-		}
-
-		if (build2DFaceCollection.build2DFacesB.has(i)) {
-			build2DFaceCollection.build2DFacesB[i].addFacesToMesh(mesh_merge, p_brush_b.faces[i].smooth, p_brush_b.faces[i].invert, material, true);
-		} else {
-			Vector3 points[3];
-			Vector2 uvs[3];
-			for (int j = 0; j < 3; j++) {
-				points[j] = p_brush_b.faces[i].vertices[j];
-				uvs[j] = p_brush_b.faces[i].uvs[j];
-			}
-			mesh_merge.add_face(points, uvs, p_brush_b.faces[i].smooth, p_brush_b.faces[i].invert, material, true);
-		}
-	}
-
-	// Mark faces that ended up inside the intersection.
-	mesh_merge.mark_inside_faces();
-
-	// Create new brush and fill with new faces.
-	r_merged_brush.faces.clear();
-
+	HashMap<int32_t, Ref<Material>> mesh_materials;
+	manifold::Manifold brush_a;
+	pack_manifold(&p_brush_a, brush_a, mesh_materials, p_vertex_snap);
+	manifold::Manifold brush_b;
+	pack_manifold(&p_brush_b, brush_b, mesh_materials, p_vertex_snap);
+	manifold::Manifold merged_brush;
 	switch (p_operation) {
-		case OPERATION_UNION: {
-			int outside_count = 0;
-
-			for (int i = 0; i < mesh_merge.faces.size(); i++) {
-				if (mesh_merge.faces[i].inside) {
-					continue;
-				}
-				outside_count++;
-			}
-
-			r_merged_brush.faces.resize(outside_count);
-
-			outside_count = 0;
-
-			for (int i = 0; i < mesh_merge.faces.size(); i++) {
-				if (mesh_merge.faces[i].inside) {
-					continue;
-				}
-
-				for (int j = 0; j < 3; j++) {
-					r_merged_brush.faces.write[outside_count].vertices[j] = mesh_merge.points[mesh_merge.faces[i].points[j]];
-					r_merged_brush.faces.write[outside_count].uvs[j] = mesh_merge.faces[i].uvs[j];
-				}
-
-				r_merged_brush.faces.write[outside_count].smooth = mesh_merge.faces[i].smooth;
-				r_merged_brush.faces.write[outside_count].invert = mesh_merge.faces[i].invert;
-				r_merged_brush.faces.write[outside_count].material = mesh_merge.faces[i].material_idx;
-				outside_count++;
-			}
-
-			r_merged_brush._regen_face_aabbs();
-
-		} break;
-
-		case OPERATION_INTERSECTION: {
-			int inside_count = 0;
-
-			for (int i = 0; i < mesh_merge.faces.size(); i++) {
-				if (!mesh_merge.faces[i].inside) {
-					continue;
-				}
-				inside_count++;
-			}
-
-			r_merged_brush.faces.resize(inside_count);
-
-			inside_count = 0;
-
-			for (int i = 0; i < mesh_merge.faces.size(); i++) {
-				if (!mesh_merge.faces[i].inside) {
-					continue;
-				}
-
-				for (int j = 0; j < 3; j++) {
-					r_merged_brush.faces.write[inside_count].vertices[j] = mesh_merge.points[mesh_merge.faces[i].points[j]];
-					r_merged_brush.faces.write[inside_count].uvs[j] = mesh_merge.faces[i].uvs[j];
-				}
-
-				r_merged_brush.faces.write[inside_count].smooth = mesh_merge.faces[i].smooth;
-				r_merged_brush.faces.write[inside_count].invert = mesh_merge.faces[i].invert;
-				r_merged_brush.faces.write[inside_count].material = mesh_merge.faces[i].material_idx;
-				inside_count++;
-			}
-
-			r_merged_brush._regen_face_aabbs();
-
-		} break;
-
-		case OPERATION_SUBTRACTION: {
-			int face_count = 0;
-
-			for (int i = 0; i < mesh_merge.faces.size(); i++) {
-				if (mesh_merge.faces[i].from_b && !mesh_merge.faces[i].inside) {
-					continue;
-				}
-				if (!mesh_merge.faces[i].from_b && mesh_merge.faces[i].inside) {
-					continue;
-				}
-				face_count++;
-			}
-
-			r_merged_brush.faces.resize(face_count);
-
-			face_count = 0;
-
-			for (int i = 0; i < mesh_merge.faces.size(); i++) {
-				if (mesh_merge.faces[i].from_b && !mesh_merge.faces[i].inside) {
-					continue;
-				}
-				if (!mesh_merge.faces[i].from_b && mesh_merge.faces[i].inside) {
-					continue;
-				}
-
-				for (int j = 0; j < 3; j++) {
-					r_merged_brush.faces.write[face_count].vertices[j] = mesh_merge.points[mesh_merge.faces[i].points[j]];
-					r_merged_brush.faces.write[face_count].uvs[j] = mesh_merge.faces[i].uvs[j];
-				}
-
-				if (mesh_merge.faces[i].from_b) {
-					//invert facing of insides of B
-					SWAP(r_merged_brush.faces.write[face_count].vertices[1], r_merged_brush.faces.write[face_count].vertices[2]);
-					SWAP(r_merged_brush.faces.write[face_count].uvs[1], r_merged_brush.faces.write[face_count].uvs[2]);
-				}
-
-				r_merged_brush.faces.write[face_count].smooth = mesh_merge.faces[i].smooth;
-				r_merged_brush.faces.write[face_count].invert = mesh_merge.faces[i].invert;
-				r_merged_brush.faces.write[face_count].material = mesh_merge.faces[i].material_idx;
-				face_count++;
-			}
-
-			r_merged_brush._regen_face_aabbs();
-
-		} break;
+		case OPERATION_UNION:
+			merged_brush = brush_a + brush_b;
+			break;
+		case OPERATION_INTERSECTION:
+			merged_brush = brush_a ^ brush_b;
+			break;
+		case OPERATION_SUBTRACTION:
+			merged_brush = brush_a - brush_b;
+			break;
 	}
-
-	// Update the list of materials.
-	r_merged_brush.materials.resize(mesh_merge.materials.size());
-	for (const KeyValue<Ref<Material>, int> &E : mesh_merge.materials) {
-		r_merged_brush.materials.write[E.value] = E.key;
-	}
+	unpack_manifold(merged_brush, mesh_materials, &r_merged_brush);
 }
 
 // CSGBrushOperation::MeshMerge

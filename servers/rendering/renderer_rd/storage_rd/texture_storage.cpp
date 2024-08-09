@@ -891,7 +891,7 @@ void TextureStorage::texture_2d_layered_initialize(RID p_texture, const Vector<R
 		}
 	}
 
-	Texture texture;
+	Texture texture = {};
 
 	texture.type = TextureStorage::TYPE_LAYERED;
 	texture.layered_type = p_layered_type;
