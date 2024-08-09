@@ -697,6 +697,11 @@ static String _get_visual_datatype(const PropertyInfo &p_info, bool p_is_arg, co
 		return _trim_parent_class(class_name, p_base_class);
 	} else if (p_info.type == Variant::ARRAY && p_info.hint == PROPERTY_HINT_ARRAY_TYPE && !p_info.hint_string.is_empty()) {
 		return "Array[" + _trim_parent_class(p_info.hint_string, p_base_class) + "]";
+	} else if (p_info.type == Variant::DICTIONARY && p_info.hint == PROPERTY_HINT_DICTIONARY_TYPE && !p_info.hint_string.is_empty()) {
+		PackedStringArray split = p_info.hint_string.split(";");
+		String key = split.get(0);
+		String value = split.get(1);
+		return "Dictionary[" + _trim_parent_class(key, p_base_class) + ";" + _trim_parent_class(value, p_base_class) + "]";
 	} else if (p_info.type == Variant::NIL) {
 		if (p_is_arg || (p_info.usage & PROPERTY_USAGE_NIL_IS_VARIANT)) {
 			return "Variant";
