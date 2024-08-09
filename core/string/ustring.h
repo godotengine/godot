@@ -186,15 +186,15 @@ class String {
 	static const char32_t _replacement_char;
 
 	void copy_from(const char *p_cstr);
-	void copy_from(const char *p_cstr, const int p_clip_to);
+	void copy_from(const char *p_cstr, const int p_len);
 	void copy_from(const wchar_t *p_cstr);
-	void copy_from(const wchar_t *p_cstr, const int p_clip_to);
+	void copy_from(const wchar_t *p_cstr, const int p_len);
 	void copy_from(const char32_t *p_cstr);
-	void copy_from(const char32_t *p_cstr, const int p_clip_to);
+	void copy_from(const char32_t *p_cstr, const int p_len);
 
 	void copy_from(const char32_t &p_char);
 
-	void copy_from_unchecked(const char32_t *p_char, const int p_length);
+	void copy_from_unchecked(const char32_t *p_char, const int p_length, const bool p_allow_null);
 
 	bool _base_is_subsequence_of(const String &p_string, bool case_insensitive) const;
 	int _count(const String &p_string, int p_from, int p_to, bool p_case_insensitive) const;
@@ -232,7 +232,7 @@ public:
 	String operator+(const String &p_str) const;
 	String operator+(char32_t p_char) const;
 
-	String &operator+=(const String &);
+	String &operator+=(const String &p_str);
 	String &operator+=(char32_t p_char);
 	String &operator+=(const char *p_str);
 	String &operator+=(const wchar_t *p_str);
@@ -487,9 +487,9 @@ public:
 	String(const char *p_str);
 	String(const wchar_t *p_str);
 	String(const char32_t *p_str);
-	String(const char *p_str, int p_clip_to_len);
-	String(const wchar_t *p_str, int p_clip_to_len);
-	String(const char32_t *p_str, int p_clip_to_len);
+	String(const char *p_str, int p_len);
+	String(const wchar_t *p_str, int p_len);
+	String(const char32_t *p_str, int p_len);
 	String(const StrRange &p_range);
 };
 
