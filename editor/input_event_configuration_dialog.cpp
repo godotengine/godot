@@ -720,7 +720,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	for (int i = 0; i < MOD_MAX; i++) {
 		String name = mods[i];
 		mod_checkboxes[i] = memnew(CheckBox);
-		mod_checkboxes[i]->connect("toggled", callable_mp(this, &InputEventConfigurationDialog::_mod_toggled).bind(i));
+		mod_checkboxes[i]->connect(SceneStringName(toggled), callable_mp(this, &InputEventConfigurationDialog::_mod_toggled).bind(i));
 		mod_checkboxes[i]->set_text(name);
 		mod_checkboxes[i]->set_tooltip_text(TTR(mods_tip[i]));
 		mod_container->add_child(mod_checkboxes[i]);
@@ -729,7 +729,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	mod_container->add_child(memnew(VSeparator));
 
 	autoremap_command_or_control_checkbox = memnew(CheckBox);
-	autoremap_command_or_control_checkbox->connect("toggled", callable_mp(this, &InputEventConfigurationDialog::_autoremap_command_or_control_toggled));
+	autoremap_command_or_control_checkbox->connect(SceneStringName(toggled), callable_mp(this, &InputEventConfigurationDialog::_autoremap_command_or_control_toggled));
 	autoremap_command_or_control_checkbox->set_pressed(false);
 	autoremap_command_or_control_checkbox->set_text(TTR("Command / Control (auto)"));
 	autoremap_command_or_control_checkbox->set_tooltip_text(TTR("Automatically remaps between 'Meta' ('Command') and 'Control' depending on current platform."));

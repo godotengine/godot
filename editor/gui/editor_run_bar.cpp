@@ -445,7 +445,7 @@ EditorRunBar::EditorRunBar() {
 	write_movie_button->set_pressed(false);
 	write_movie_button->set_focus_mode(Control::FOCUS_NONE);
 	write_movie_button->set_tooltip_text(TTR("Enable Movie Maker mode.\nThe project will run at stable FPS and the visual and audio output will be recorded to a video file."));
-	write_movie_button->connect("toggled", callable_mp(this, &EditorRunBar::_write_movie_toggled));
+	write_movie_button->connect(SceneStringName(toggled), callable_mp(this, &EditorRunBar::_write_movie_toggled));
 
 	quick_run = memnew(EditorQuickOpen);
 	add_child(quick_run);

@@ -140,7 +140,7 @@ void BaseButton::_pressed() {
 void BaseButton::_toggled(bool p_pressed) {
 	GDVIRTUAL_CALL(_toggled, p_pressed);
 	toggled(p_pressed);
-	emit_signal(SNAME("toggled"), p_pressed);
+	emit_signal(SceneStringName(toggled), p_pressed);
 }
 
 void BaseButton::on_action_event(Ref<InputEvent> p_event) {
