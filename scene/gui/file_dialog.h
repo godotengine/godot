@@ -39,8 +39,6 @@
 #include "scene/gui/tree.h"
 #include "scene/property_list_helper.h"
 
-class GridContainer;
-
 class FileDialog : public ConfirmationDialog {
 	GDCLASS(FileDialog, ConfirmationDialog);
 
@@ -73,7 +71,7 @@ private:
 	Button *makedir = nullptr;
 	Access access = ACCESS_RESOURCES;
 	VBoxContainer *vbox = nullptr;
-	GridContainer *grid_options = nullptr;
+	VBoxContainer *vbox_options = nullptr;
 	FileMode mode;
 	LineEdit *dir = nullptr;
 	HBoxContainer *drives_container = nullptr;

@@ -35,7 +35,6 @@
 #include "scene/gui/dialogs.h"
 #include "scene/property_list_helper.h"
 
-class GridContainer;
 class DependencyRemoveDialog;
 class HSplitContainer;
 class ItemList;
@@ -89,7 +88,7 @@ private:
 	Button *makedir = nullptr;
 	Access access = ACCESS_RESOURCES;
 
-	GridContainer *grid_options = nullptr;
+	VBoxContainer *vbox_options = nullptr;
 	VBoxContainer *vbox = nullptr;
 	FileMode mode = FILE_MODE_SAVE_FILE;
 	bool can_create_dir = false;
@@ -176,6 +175,8 @@ private:
 		Ref<Texture2D> file_medium_thumbnail;
 		Ref<Texture2D> folder_big_thumbnail;
 		Ref<Texture2D> file_big_thumbnail;
+
+		Ref<StyleBox> check_box_normal;
 
 		Ref<Texture2D> progress[8]{};
 	} theme_cache;

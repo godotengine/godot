@@ -33,9 +33,9 @@
 #include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
 #include "core/string/print_string.h"
-#include "scene/gui/check_box.h"
-#include "scene/gui/grid_container.h"
+#include "scene/gui/check_button.h"
 #include "scene/gui/label.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/option_button.h"
 #include "scene/theme/theme_db.h"
 
@@ -249,6 +249,19 @@ void FileDialog::_notification(int p_what) {
 			makedir->add_theme_color_override("icon_pressed_color", theme_cache.icon_pressed_color);
 			makedir->end_bulk_theme_override();
 
+			Ref<StyleBox> sb = get_theme_stylebox(CoreStringName(normal), "CheckButton");
+			for (int i = 0; i < vbox_options->get_child_count(); i++) {
+				MarginContainer *mb_option = Object::cast_to<MarginContainer>(vbox_options->get_child(i));
+				if (mb_option) {
+					if (sb.is_valid()) {
+						mb_option->add_theme_constant_override("margin_left", sb->get_margin(SIDE_LEFT));
+						mb_option->add_theme_constant_override("margin_right", sb->get_margin(SIDE_RIGHT));
+					} else {
+						mb_option->remove_theme_font_override("margin_left");
+						mb_option->remove_theme_font_override("margin_right");
+					}
+				}
+			}
 			invalidate();
 		} break;
 
@@ -1128,30 +1141,51 @@ void FileDialog::_update_option_controls() {
 	}
 	options_dirty = false;
 
-	while (grid_options->get_child_count() > 0) {
-		Node *child = grid_options->get_child(0);
-		grid_options->remove_child(child);
+	while (vbox_options->get_child_count() > 0) {
+		Node *child = vbox_options->get_child(0);
+		vbox_options->remove_child(child);
 		child->queue_free();
 	}
 	selected_options.clear();
 
+	Ref<StyleBox> sb = get_theme_stylebox(CoreStringName(normal), "CheckButton");
 	for (const FileDialog::Option &opt : options) {
-		Label *lbl = memnew(Label);
-		lbl->set_text(opt.name);
-		grid_options->add_child(lbl);
 		if (opt.values.is_empty()) {
-			CheckBox *cb = memnew(CheckBox);
+			CheckButton *cb = memnew(CheckButton);
+			cb->set_text(opt.name);
 			cb->set_pressed(opt.default_idx);
-			grid_options->add_child(cb);
+			vbox_options->add_child(cb);
+
 			cb->connect("toggled", callable_mp(this, &FileDialog::_option_changed_checkbox_toggled).bind(opt.name));
 			selected_options[opt.name] = (bool)opt.default_idx;
 		} else {
+			MarginContainer *mb_option = memnew(MarginContainer);
+			if (sb.is_valid()) {
+				mb_option->add_theme_constant_override("margin_left", sb->get_margin(SIDE_LEFT));
+				mb_option->add_theme_constant_override("margin_right", sb->get_margin(SIDE_RIGHT));
+			}
+			vbox_options->add_child(mb_option);
+
+			HBoxContainer *hb_option = memnew(HBoxContainer);
+			hb_option->set_alignment(BoxContainer::ALIGNMENT_CENTER);
+			mb_option->add_child(hb_option);
+
+			Label *lbl = memnew(Label);
+			lbl->set_text(opt.name);
+			lbl->add_theme_style_override(CoreStringName(normal), memnew(StyleBoxEmpty));
+			hb_option->add_child(lbl);
+
+			Control *spacer = memnew(Control);
+			spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+			hb_option->add_child(spacer);
+
 			OptionButton *ob = memnew(OptionButton);
 			for (const String &val : opt.values) {
 				ob->add_item(val);
 			}
 			ob->select(opt.default_idx);
-			grid_options->add_child(ob);
+			hb_option->add_child(ob);
+
 			ob->connect(SceneStringName(item_selected), callable_mp(this, &FileDialog::_option_changed_item_selected).bind(opt.name));
 			selected_options[opt.name] = opt.default_idx;
 		}
@@ -1479,10 +1513,10 @@ FileDialog::FileDialog() {
 	file_box->add_child(filter);
 	vbox->add_child(file_box);
 
-	grid_options = memnew(GridContainer);
-	grid_options->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
-	grid_options->set_columns(2);
-	vbox->add_child(grid_options);
+	vbox_options = memnew(VBoxContainer);
+	vbox_options->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
+	vbox_options->set_alignment(BoxContainer::ALIGNMENT_CENTER);
+	vbox->add_child(vbox_options);
 
 	dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	_update_drives();
