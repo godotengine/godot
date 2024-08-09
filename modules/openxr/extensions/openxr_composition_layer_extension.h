@@ -49,7 +49,7 @@ public:
 	virtual ~OpenXRCompositionLayerExtension() override;
 
 	virtual HashMap<String, bool *> get_requested_extensions() override;
-	virtual void on_session_created(const XrSession p_instance) override;
+	virtual void on_session_created(const XrSession p_session) override;
 	virtual void on_session_destroyed() override;
 	virtual void on_pre_render() override;
 
