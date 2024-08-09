@@ -97,6 +97,8 @@ class GDScriptCache {
 
 	Mutex mutex;
 
+	static void _on_resource_evicted(void *p_context, const String &p_path);
+
 public:
 	static void move_script(const String &p_from, const String &p_to);
 	static void remove_script(const String &p_path);
