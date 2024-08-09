@@ -1551,7 +1551,7 @@ void SceneTreeDock::_notification(int p_what) {
 			node_shortcuts_toggle->set_tooltip_text(TTR("Toggle the display of favorite nodes."));
 			node_shortcuts_toggle->set_pressed(EDITOR_GET("_use_favorites_root_selection"));
 			node_shortcuts_toggle->set_anchors_and_offsets_preset(Control::PRESET_CENTER_RIGHT);
-			node_shortcuts_toggle->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_update_create_root_dialog));
+			node_shortcuts_toggle->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_update_create_root_dialog).bind(false));
 			top_row->add_child(node_shortcuts_toggle);
 
 			create_root_dialog->add_child(top_row);
@@ -1601,7 +1601,7 @@ void SceneTreeDock::_notification(int p_what) {
 			button_clipboard->set_icon(get_editor_theme_icon(SNAME("ActionPaste")));
 			button_clipboard->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_PASTE, false));
 
-			_update_create_root_dialog();
+			_update_create_root_dialog(true);
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -4116,9 +4116,12 @@ void SceneTreeDock::_local_tree_selected() {
 	edit_local->set_pressed(true);
 }
 
-void SceneTreeDock::_update_create_root_dialog() {
-	EditorSettings::get_singleton()->set_setting("_use_favorites_root_selection", node_shortcuts_toggle->is_pressed());
-	EditorSettings::get_singleton()->save();
+void SceneTreeDock::_update_create_root_dialog(bool p_initializing) {
+	if (!p_initializing) {
+		EditorSettings::get_singleton()->set_setting("_use_favorites_root_selection", node_shortcuts_toggle->is_pressed());
+		EditorSettings::get_singleton()->save();
+	}
+
 	if (node_shortcuts_toggle->is_pressed()) {
 		for (int i = 0; i < favorite_node_shortcuts->get_child_count(); i++) {
 			favorite_node_shortcuts->get_child(i)->queue_free();
@@ -4542,7 +4545,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	create_dialog->set_base_type("Node");
 	add_child(create_dialog);
 	create_dialog->connect("create", callable_mp(this, &SceneTreeDock::_create));
-	create_dialog->connect("favorites_updated", callable_mp(this, &SceneTreeDock::_update_create_root_dialog));
+	create_dialog->connect("favorites_updated", callable_mp(this, &SceneTreeDock::_update_create_root_dialog).bind(false));
 
 #ifdef MODULE_REGEX_ENABLED
 	rename_dialog = memnew(RenameDialog(scene_tree));
