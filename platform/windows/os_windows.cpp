@@ -622,6 +622,72 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 	return info;
 }
 
+bool OS_Windows::get_user_prefers_integrated_gpu() const {
+	// On Windows 10, the preferred GPU configured in Windows Settings is
+	// stored in the registry under the key
+	// `HKEY_CURRENT_USER\SOFTWARE\Microsoft\DirectX\UserGpuPreferences`
+	// with the name being the app ID or EXE path. The value is in the form of
+	// `GpuPreference=1;`, with the value being 1 for integrated GPU and 2
+	// for discrete GPU. On Windows 11, there may be more flags, separated
+	// by semicolons.
+
+	// If this is a packaged app, use the "application user model ID".
+	// Otherwise, use the EXE path.
+	WCHAR value_name[32768];
+	bool is_packaged = false;
+	{
+		HMODULE kernel32 = GetModuleHandleW(L"kernel32.dll");
+		if (kernel32) {
+			using GetCurrentApplicationUserModelIdPtr = LONG(WINAPI *)(UINT32 * length, PWSTR id);
+			GetCurrentApplicationUserModelIdPtr GetCurrentApplicationUserModelId = (GetCurrentApplicationUserModelIdPtr)GetProcAddress(kernel32, "GetCurrentApplicationUserModelId");
+
+			if (GetCurrentApplicationUserModelId) {
+				UINT32 length = sizeof(value_name) / sizeof(value_name[0]);
+				LONG result = GetCurrentApplicationUserModelId(&length, value_name);
+				if (result == ERROR_SUCCESS) {
+					is_packaged = true;
+				}
+			}
+		}
+	}
+	if (!is_packaged && GetModuleFileNameW(nullptr, value_name, sizeof(value_name) / sizeof(value_name[0])) >= sizeof(value_name) / sizeof(value_name[0])) {
+		// Paths should never be longer than 32767, but just in case.
+		return false;
+	}
+
+	LPCWSTR subkey = L"SOFTWARE\\Microsoft\\DirectX\\UserGpuPreferences";
+	HKEY hkey = nullptr;
+	LSTATUS result = RegOpenKeyExW(HKEY_CURRENT_USER, subkey, 0, KEY_READ, &hkey);
+	if (result != ERROR_SUCCESS) {
+		return false;
+	}
+
+	DWORD size = 0;
+	result = RegGetValueW(hkey, nullptr, value_name, RRF_RT_REG_SZ, nullptr, nullptr, &size);
+	if (result != ERROR_SUCCESS || size == 0) {
+		RegCloseKey(hkey);
+		return false;
+	}
+
+	Vector<WCHAR> buffer;
+	buffer.resize(size / sizeof(WCHAR));
+	result = RegGetValueW(hkey, nullptr, value_name, RRF_RT_REG_SZ, nullptr, (LPBYTE)buffer.ptrw(), &size);
+	if (result != ERROR_SUCCESS) {
+		RegCloseKey(hkey);
+		return false;
+	}
+
+	RegCloseKey(hkey);
+	const String flags = String::utf16((const char16_t *)buffer.ptr(), size / sizeof(WCHAR));
+
+	for (const String &flag : flags.split(";", false)) {
+		if (flag == "GpuPreference=1") {
+			return true;
+		}
+	}
+	return false;
+}
+
 OS::DateTime OS_Windows::get_datetime(bool p_utc) const {
 	SYSTEMTIME systemtime;
 	if (p_utc) {
