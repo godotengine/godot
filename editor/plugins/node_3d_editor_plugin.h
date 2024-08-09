@@ -207,6 +207,9 @@ private:
 
 	int index;
 	ViewType view_type;
+
+	// Used to toggle back to the last used display mode (other than `Viewport::DEBUG_DRAW_DISABLED`).
+	int last_display_mode = VIEW_DISPLAY_WIREFRAME;
 	void _menu_option(int p_option);
 	void _set_auto_orthogonal();
 	Node3D *preview_node = nullptr;
