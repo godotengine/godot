@@ -1,4 +1,5 @@
 #!/usr/bin/python
+from misc.utility.scons_hints import *
 
 Import("env")
 
