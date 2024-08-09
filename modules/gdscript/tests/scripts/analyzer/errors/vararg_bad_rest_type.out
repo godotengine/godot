@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+The rest parameter type must be "Array", but "int" is specified.

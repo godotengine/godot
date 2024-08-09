@@ -511,10 +511,12 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	} else {
 		if (p_argcount != _argument_count) {
 			if (p_argcount > _argument_count) {
-				r_err.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
-				r_err.expected = _argument_count;
-				call_depth--;
-				return _get_default_variant_for_data_type(return_type);
+				if (!is_vararg()) {
+					r_err.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+					r_err.expected = _argument_count;
+					call_depth--;
+					return _get_default_variant_for_data_type(return_type);
+				}
 			} else if (p_argcount < _argument_count - _default_arg_count) {
 				r_err.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 				r_err.expected = _argument_count - _default_arg_count;
@@ -525,21 +527,21 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 		}
 
-		// Add 3 here for self, class, and nil.
-		alloca_size = sizeof(Variant *) * 3 + sizeof(Variant *) * _instruction_args_size + sizeof(Variant) * _stack_size;
+		alloca_size = sizeof(Variant *) * FIXED_ADDRESSES_MAX + sizeof(Variant *) * _instruction_args_size + sizeof(Variant) * _stack_size;
 
 		uint8_t *aptr = (uint8_t *)alloca(alloca_size);
 		stack = (Variant *)aptr;
 
-		for (int i = 0; i < p_argcount; i++) {
+		const int non_vararg_arg_count = MIN(p_argcount, _argument_count);
+		for (int i = 0; i < non_vararg_arg_count; i++) {
 			if (!argument_types[i].has_type) {
-				memnew_placement(&stack[i + 3], Variant(*p_args[i]));
+				memnew_placement(&stack[i + FIXED_ADDRESSES_MAX], Variant(*p_args[i]));
 				continue;
 			}
 			// If types already match, don't call Variant::construct(). Constructors of some types
 			// (e.g. packed arrays) do copies, whereas they pass by reference when inside a Variant.
 			if (argument_types[i].is_type(*p_args[i], false)) {
-				memnew_placement(&stack[i + 3], Variant(*p_args[i]));
+				memnew_placement(&stack[i + FIXED_ADDRESSES_MAX], Variant(*p_args[i]));
 				continue;
 			}
 			if (!argument_types[i].is_type(*p_args[i], true)) {
@@ -553,7 +555,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				if (argument_types[i].builtin_type == Variant::ARRAY && argument_types[i].has_container_element_type(0)) {
 					const GDScriptDataType &arg_type = argument_types[i].container_element_types[0];
 					Array array(p_args[i]->operator Array(), arg_type.builtin_type, arg_type.native_type, arg_type.script_type);
-					memnew_placement(&stack[i + 3], Variant(array));
+					memnew_placement(&stack[i + FIXED_ADDRESSES_MAX], Variant(array));
 				} else {
 					Variant variant;
 					Variant::construct(argument_types[i].builtin_type, variant, &p_args[i], 1, r_err);
@@ -564,14 +566,25 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						call_depth--;
 						return _get_default_variant_for_data_type(return_type);
 					}
-					memnew_placement(&stack[i + 3], Variant(variant));
+					memnew_placement(&stack[i + FIXED_ADDRESSES_MAX], Variant(variant));
 				}
 			} else {
-				memnew_placement(&stack[i + 3], Variant(*p_args[i]));
+				memnew_placement(&stack[i + FIXED_ADDRESSES_MAX], Variant(*p_args[i]));
 			}
 		}
-		for (int i = p_argcount + 3; i < _stack_size; i++) {
+		for (int i = non_vararg_arg_count + FIXED_ADDRESSES_MAX; i < _stack_size; i++) {
 			memnew_placement(&stack[i], Variant);
+		}
+
+		if (is_vararg()) {
+			Array vararg;
+			stack[_vararg_index] = vararg;
+			if (p_argcount > _argument_count) {
+				vararg.resize(p_argcount - _argument_count);
+				for (int i = 0; i < p_argcount - _argument_count; i++) {
+					vararg[i] = *p_args[i + _argument_count];
+				}
+			}
 		}
 
 		if (_instruction_args_size) {
