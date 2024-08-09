@@ -38,6 +38,7 @@
 class CanvasLayer;
 class MultiMesh;
 class StyleBox;
+class SubViewport;
 class Window;
 class World2D;
 
@@ -96,9 +97,11 @@ private:
 	bool y_sort_enabled = false;
 
 	Window *window = nullptr;
+	SubViewport *sub_viewport = nullptr;
 	bool visible = true;
 	bool parent_visible_in_tree = false;
 	bool pending_update = false;
+	bool draw_commands_dirty = false;
 	bool top_level = false;
 	bool drawing = false;
 	bool block_transform_notify = false;
