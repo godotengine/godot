@@ -1232,6 +1232,7 @@ void main() {
 	if (!sc_disable_reflection_probes) { //Reflection probes
 		vec4 reflection_accum = vec4(0.0, 0.0, 0.0, 0.0);
 		vec4 ambient_accum = vec4(0.0, 0.0, 0.0, 0.0);
+		uint priority = 0;
 
 		uint reflection_indices = instances.data[draw_call.instance_index].reflection_probes.x;
 
@@ -1259,7 +1260,7 @@ void main() {
 				break;
 			}
 
-			reflection_process(reflection_index, vertex, ref_vec, bent_normal, roughness, ambient_light, specular_light, ambient_accum, reflection_accum);
+			reflection_process(reflection_index, vertex, ref_vec, bent_normal, roughness, ambient_light, specular_light, ambient_accum, reflection_accum, priority);
 		}
 
 		if (reflection_accum.a > 0.0) {
