@@ -146,4 +146,9 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="size_override" type="Vector2i" setter="set_size_override" getter="get_size_override" default="Vector2i(0, 0)">
+			Allow overriding the texture size.
+		</member>
+	</members>
 </class>

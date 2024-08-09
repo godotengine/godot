@@ -62,7 +62,6 @@ private:
 	bool keep_compressed_buffer = false;
 	Vector<uint8_t> compressed_buffer;
 	Size2 size;
-	Size2 size_override;
 	bool mipmaps = false;
 	Image::Format format = Image::FORMAT_L8;
 
@@ -89,6 +88,8 @@ public:
 	int get_width() const override;
 	int get_height() const override;
 
+	void set_size_override(const Vector2i &p_size) override;
+
 	virtual RID get_rid() const override;
 
 	bool has_alpha() const override;
@@ -99,9 +100,6 @@ public:
 	bool is_pixel_opaque(int p_x, int p_y) const override;
 
 	virtual void set_path(const String &p_path, bool p_take_over = false) override;
-
-	void set_size_override(const Size2 &p_size);
-	Size2 get_size_override() const;
 
 	void set_keep_compressed_buffer(bool p_keep);
 	bool is_keeping_compressed_buffer() const;

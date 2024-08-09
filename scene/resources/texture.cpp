@@ -94,16 +94,44 @@ Ref<Resource> Texture2D::create_placeholder() const {
 	return placeholder;
 }
 
+void Texture2D::set_size_override(const Size2i &p_size) {
+	if (size_override == p_size) {
+		return;
+	}
+
+	size_override = p_size;
+
+	int width = get_width();
+	int height = get_height();
+	if (p_size.x != 0) {
+		width = p_size.x;
+	}
+	if (p_size.y != 0) {
+		height = p_size.y;
+	}
+	RenderingServer::get_singleton()->texture_set_size_override(get_rid(), width, height);
+}
+
+Size2i Texture2D::get_size_override() const {
+	return size_override;
+}
+
 void Texture2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_width"), &Texture2D::get_width);
 	ClassDB::bind_method(D_METHOD("get_height"), &Texture2D::get_height);
 	ClassDB::bind_method(D_METHOD("get_size"), &Texture2D::get_size);
 	ClassDB::bind_method(D_METHOD("has_alpha"), &Texture2D::has_alpha);
+
+	ClassDB::bind_method(D_METHOD("set_size_override", "size"), &Texture2D::set_size_override);
+	ClassDB::bind_method(D_METHOD("get_size_override"), &Texture2D::get_size_override);
+
 	ClassDB::bind_method(D_METHOD("draw", "canvas_item", "position", "modulate", "transpose"), &Texture2D::draw, DEFVAL(Color(1, 1, 1)), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_rect", "canvas_item", "rect", "tile", "modulate", "transpose"), &Texture2D::draw_rect, DEFVAL(Color(1, 1, 1)), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_rect_region", "canvas_item", "rect", "src_rect", "modulate", "transpose", "clip_uv"), &Texture2D::draw_rect_region, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_image"), &Texture2D::get_image);
 	ClassDB::bind_method(D_METHOD("create_placeholder"), &Texture2D::create_placeholder);
+
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size_override", PROPERTY_HINT_RANGE, "1,16384,1"), "set_size_override", "get_size_override");
 
 	ADD_GROUP("", "");
 

@@ -171,6 +171,11 @@ void Sprite2DEditor::_update_mesh_data() {
 		image->decompress();
 	}
 
+	Vector2i size_override = texture->get_size_override();
+	if (size_override.width > 0 && size_override.height > 0) {
+		image->resize(size_override.width, size_override.height);
+	}
+
 	Rect2 rect = node->is_region_enabled() ? node->get_region_rect() : Rect2(Point2(), image->get_size());
 	rect.size /= Vector2(node->get_hframes(), node->get_vframes());
 	rect.position += node->get_frame_coords() * rect.size;

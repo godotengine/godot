@@ -59,9 +59,6 @@
 			This flag allows to keep the compressed data in memory if you intend it to persist after loading.
 		</member>
 		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="false" />
-		<member name="size_override" type="Vector2" setter="set_size_override" getter="get_size_override" default="Vector2(0, 0)">
-			Allow overriding the texture size (for 2D only).
-		</member>
 	</members>
 	<constants>
 		<constant name="COMPRESSION_MODE_LOSSLESS" value="0" enum="CompressionMode">
