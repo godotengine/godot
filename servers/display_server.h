@@ -594,6 +594,8 @@ public:
 	static Vector<String> get_create_function_rendering_drivers(int p_index);
 	static DisplayServer *create(int p_index, const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error);
 
+	static bool can_create_rendering_device();
+
 	DisplayServer();
 	~DisplayServer();
 };
