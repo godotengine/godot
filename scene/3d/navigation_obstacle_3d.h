@@ -51,8 +51,6 @@ class NavigationObstacle3D : public Node3D {
 
 	bool use_3d_avoidance = false;
 
-	Transform3D previous_transform;
-
 	Vector3 velocity;
 	Vector3 previous_velocity;
 	bool velocity_submitted = false;
@@ -61,13 +59,14 @@ class NavigationObstacle3D : public Node3D {
 	bool carve_navigation_mesh = false;
 
 #ifdef DEBUG_ENABLED
-	RID fake_agent_radius_debug_instance;
-	Ref<ArrayMesh> fake_agent_radius_debug_mesh;
+	RID fake_agent_radius_debug_instance_rid;
+	RID fake_agent_radius_debug_mesh_rid;
 
-	RID static_obstacle_debug_instance;
-	Ref<ArrayMesh> static_obstacle_debug_mesh;
+	RID static_obstacle_debug_instance_rid;
+	RID static_obstacle_debug_mesh_rid;
 
 private:
+	void _update_debug();
 	void _update_fake_agent_radius_debug();
 	void _update_static_obstacle_debug();
 #endif // DEBUG_ENABLED
