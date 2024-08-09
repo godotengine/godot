@@ -89,6 +89,7 @@ platform_opts = {}  # options for each platform
 platform_flags = {}  # flags for each platform
 platform_doc_class_path = {}
 platform_exporters = []
+platform_exporters_available = []
 platform_apis = []
 
 time_at_start = time.time()
@@ -113,7 +114,7 @@ for x in sorted(glob.glob("platform/*")):
     platform_name = x[9:]
 
     if os.path.exists(x + "/export/export.cpp"):
-        platform_exporters.append(platform_name)
+        platform_exporters_available.append(platform_name)
     if os.path.exists(x + "/api/api.cpp"):
         platform_apis.append(platform_name)
     if detect.can_build():
@@ -454,10 +455,6 @@ Help(opts.GenerateHelpText(env))
 
 env.Prepend(CPPPATH=["#"])
 
-# configure ENV for platform
-env.platform_exporters = platform_exporters
-env.platform_apis = platform_apis
-
 # Configuration of build targets:
 # - Editor or template
 # - Debug features (DEBUG_ENABLED code)
@@ -525,6 +522,27 @@ if not env["deprecated"]:
 
 if env["precision"] == "double":
     env.Append(CPPDEFINES=["REAL_T_IS_DOUBLE"])
+
+# Now we can check if platforms support exporting
+for platform_name in platform_exporters_available:
+    can_export = True
+    tmppath = "./platform/" + platform_name
+    sys.path.insert(0, tmppath)
+    import detect
+
+    try:
+        can_export = detect.can_export(env)
+    except Exception:
+        pass
+    sys.path.remove(tmppath)
+
+    if can_export:
+        platform_exporters.append(platform_name)
+    sys.modules.pop("detect")
+
+# configure ENV for platform
+env.platform_exporters = platform_exporters
+env.platform_apis = platform_apis
 
 tmppath = "./platform/" + env["platform"]
 sys.path.insert(0, tmppath)
