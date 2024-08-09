@@ -940,6 +940,16 @@ void AudioServer::set_bus_name(int p_bus, const String &p_name) {
 	emit_signal(SNAME("bus_renamed"), p_bus, old_name, attempt);
 }
 
+PackedStringArray AudioServer::get_buses() const {
+	PackedStringArray ret;
+
+	for (int i = 0; i < buses.size(); ++i) {
+		ret.push_back(buses[i]->name);
+	}
+
+	return ret;
+}
+
 String AudioServer::get_bus_name(int p_bus) const {
 	ERR_FAIL_INDEX_V(p_bus, buses.size(), String());
 	return buses[p_bus]->name;
@@ -1863,6 +1873,7 @@ void AudioServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bus_name", "bus_idx", "name"), &AudioServer::set_bus_name);
 	ClassDB::bind_method(D_METHOD("get_bus_name", "bus_idx"), &AudioServer::get_bus_name);
 	ClassDB::bind_method(D_METHOD("get_bus_index", "bus_name"), &AudioServer::get_bus_index);
+	ClassDB::bind_method(D_METHOD("get_buses"), &AudioServer::get_buses);
 
 	ClassDB::bind_method(D_METHOD("get_bus_channels", "bus_idx"), &AudioServer::get_bus_channels);
 

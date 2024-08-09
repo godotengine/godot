@@ -365,6 +365,7 @@ public:
 
 	void set_bus_name(int p_bus, const String &p_name);
 	String get_bus_name(int p_bus) const;
+	PackedStringArray get_buses() const;
 	int get_bus_index(const StringName &p_bus_name) const;
 
 	int get_bus_channels(int p_bus) const;
