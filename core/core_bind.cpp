@@ -53,6 +53,14 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 	return ::ResourceLoader::load_threaded_request(p_path, p_type_hint, p_use_sub_threads, ResourceFormatLoader::CacheMode(p_cache_mode));
 }
 
+void ResourceLoader::load_threaded_forget(const String &p_path) {
+	return ::ResourceLoader::load_threaded_forget(p_path);
+}
+
+PackedStringArray ResourceLoader::get_requested_paths() {
+	return ::ResourceLoader::get_requested_paths();
+}
+
 ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const String &p_path, Array r_progress) {
 	float progress = 0;
 	::ResourceLoader::ThreadLoadStatus tls = ::ResourceLoader::load_threaded_get_status(p_path, &progress);
@@ -127,6 +135,8 @@ void ResourceLoader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_threaded_request", "path", "type_hint", "use_sub_threads", "cache_mode"), &ResourceLoader::load_threaded_request, DEFVAL(""), DEFVAL(false), DEFVAL(CACHE_MODE_REUSE));
 	ClassDB::bind_method(D_METHOD("load_threaded_get_status", "path", "progress"), &ResourceLoader::load_threaded_get_status, DEFVAL(Array()));
 	ClassDB::bind_method(D_METHOD("load_threaded_get", "path"), &ResourceLoader::load_threaded_get);
+	ClassDB::bind_method(D_METHOD("load_threaded_forget", "path"), &ResourceLoader::load_threaded_forget);
+	ClassDB::bind_method(D_METHOD("get_requested_paths"), &ResourceLoader::get_requested_paths);
 
 	ClassDB::bind_method(D_METHOD("load", "path", "type_hint", "cache_mode"), &ResourceLoader::load, DEFVAL(""), DEFVAL(CACHE_MODE_REUSE));
 	ClassDB::bind_method(D_METHOD("get_recognized_extensions_for_type", "type"), &ResourceLoader::get_recognized_extensions_for_type);
