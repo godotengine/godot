@@ -38,6 +38,12 @@ RID NavigationRegion2D::get_rid() const {
 	return region;
 }
 
+#ifndef DISABLE_DEPRECATED
+RID NavigationRegion2D::get_region_rid() const {
+	return get_rid();
+}
+#endif // DISABLE_DEPRECATED
+
 void NavigationRegion2D::set_enabled(bool p_enabled) {
 	if (enabled == p_enabled) {
 		return;
@@ -136,10 +142,6 @@ void NavigationRegion2D::set_travel_cost(real_t p_travel_cost) {
 
 real_t NavigationRegion2D::get_travel_cost() const {
 	return travel_cost;
-}
-
-RID NavigationRegion2D::get_region_rid() const {
-	return get_rid();
 }
 
 #ifdef TOOLS_ENABLED
@@ -305,6 +307,9 @@ PackedStringArray NavigationRegion2D::get_configuration_warnings() const {
 
 void NavigationRegion2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationRegion2D::get_rid);
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("get_region_rid"), &NavigationRegion2D::get_region_rid);
+#endif // DISABLE_DEPRECATED
 
 	ClassDB::bind_method(D_METHOD("set_navigation_polygon", "navigation_polygon"), &NavigationRegion2D::set_navigation_polygon);
 	ClassDB::bind_method(D_METHOD("get_navigation_polygon"), &NavigationRegion2D::get_navigation_polygon);
@@ -323,8 +328,6 @@ void NavigationRegion2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_navigation_layer_value", "layer_number", "value"), &NavigationRegion2D::set_navigation_layer_value);
 	ClassDB::bind_method(D_METHOD("get_navigation_layer_value", "layer_number"), &NavigationRegion2D::get_navigation_layer_value);
-
-	ClassDB::bind_method(D_METHOD("get_region_rid"), &NavigationRegion2D::get_region_rid);
 
 	ClassDB::bind_method(D_METHOD("set_enter_cost", "enter_cost"), &NavigationRegion2D::set_enter_cost);
 	ClassDB::bind_method(D_METHOD("get_enter_cost"), &NavigationRegion2D::get_enter_cost);
