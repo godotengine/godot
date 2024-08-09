@@ -467,16 +467,6 @@ def use_windows_spawn_fix(self, platform=None):
     if os.name != "nt":
         return  # not needed, only for windows
 
-    # On Windows, due to the limited command line length, when creating a static library
-    # from a very high number of objects SCons will invoke "ar" once per object file;
-    # that makes object files with same names to be overwritten so the last wins and
-    # the library loses symbols defined by overwritten objects.
-    # By enabling quick append instead of the default mode (replacing), libraries will
-    # got built correctly regardless the invocation strategy.
-    # Furthermore, since SCons will rebuild the library from scratch when an object file
-    # changes, no multiple versions of the same object file will be present.
-    self.Replace(ARFLAGS="q")
-
     def mySubProcess(cmdline, env):
         startupinfo = subprocess.STARTUPINFO()
         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
@@ -495,6 +485,8 @@ def use_windows_spawn_fix(self, platform=None):
         rv = proc.wait()
         if rv:
             print_error(err)
+        elif len(err) > 0 and not err.isspace():
+            print(err)
         return rv
 
     def mySpawn(sh, escape, cmd, args, env):

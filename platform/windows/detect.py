@@ -19,34 +19,26 @@ def get_name():
     return "Windows"
 
 
-def try_cmd(test, prefix, arch):
+def try_cmd(test, prefix, arch, check_clang=False):
+    archs = ["x86_64", "x86_32", "arm64", "arm32"]
     if arch:
+        archs = [arch]
+
+    for a in archs:
         try:
             out = subprocess.Popen(
-                get_mingw_bin_prefix(prefix, arch) + test,
+                get_mingw_bin_prefix(prefix, a) + test,
                 shell=True,
                 stderr=subprocess.PIPE,
                 stdout=subprocess.PIPE,
             )
-            out.communicate()
+            outs, errs = out.communicate()
             if out.returncode == 0:
+                if check_clang and not outs.startswith(b"clang"):
+                    return False
                 return True
         except Exception:
             pass
-    else:
-        for a in ["x86_64", "x86_32", "arm64", "arm32"]:
-            try:
-                out = subprocess.Popen(
-                    get_mingw_bin_prefix(prefix, a) + test,
-                    shell=True,
-                    stderr=subprocess.PIPE,
-                    stdout=subprocess.PIPE,
-                )
-                out.communicate()
-                if out.returncode == 0:
-                    return True
-            except Exception:
-                pass
 
     return False
 
@@ -644,6 +636,10 @@ def configure_mingw(env: "SConsEnvironment"):
     if env["use_llvm"] and not try_cmd("clang --version", env["mingw_prefix"], env["arch"]):
         env["use_llvm"] = False
 
+    if not env["use_llvm"] and try_cmd("gcc --version", env["mingw_prefix"], env["arch"], True):
+        print("Detected GCC to be a wrapper for Clang.")
+        env["use_llvm"] = True
+
     # TODO: Re-evaluate the need for this / streamline with common config.
     if env["target"] == "template_release":
         if env["arch"] != "arm64":
@@ -731,6 +727,11 @@ def configure_mingw(env: "SConsEnvironment"):
 
     if not env["use_llvm"]:
         env.Append(CCFLAGS=["-mwindows"])
+
+    if env["use_llvm"] and os.name == "nt" and methods._colorize:
+        env.Append(CCFLAGS=["$(-fansi-escape-codes$)", "$(-fcolor-diagnostics$)"])
+
+    env.Append(ARFLAGS=["--thin"])
 
     env.Append(CPPDEFINES=["WINDOWS_ENABLED", "WASAPI_ENABLED", "WINMIDI_ENABLED"])
     env.Append(
