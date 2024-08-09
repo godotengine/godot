@@ -298,7 +298,8 @@ namespace GodotTools.Build
             string platform,
             string runtimeIdentifier,
             string publishOutputDir,
-            bool includeDebugSymbols = true
+            bool includeDebugSymbols = true,
+            string[]? features = null
         )
         {
             var buildInfo = new BuildInfo(GodotSharpDirs.ProjectSlnPath, GodotSharpDirs.ProjectCsProjPath, configuration,
@@ -314,6 +315,12 @@ namespace GodotTools.Build
 
             if (Internal.GodotIsRealTDouble())
                 buildInfo.CustomProperties.Add("GodotFloat64=true");
+
+            if (features != null && features.Length > 0)
+            {
+                // Use '%3B' as the separator which is ';' escaped. See https://github.com/dotnet/msbuild/issues/471.
+                buildInfo.CustomProperties.Add($"GodotFeatureConstants={string.Join("%3B", SanitizeFeatures(features))}");
+            }
 
             return buildInfo;
         }
@@ -334,9 +341,30 @@ namespace GodotTools.Build
             string platform,
             string runtimeIdentifier,
             string publishOutputDir,
-            bool includeDebugSymbols = true
+            bool includeDebugSymbols = true,
+            string[]? features = null
         ) => PublishProjectBlocking(CreatePublishBuildInfo(configuration,
-            platform, runtimeIdentifier, publishOutputDir, includeDebugSymbols));
+            platform, runtimeIdentifier, publishOutputDir, includeDebugSymbols, features));
+
+        private static List<string> SanitizeFeatures(string[] features)
+        {
+            var sanitizedFeatures = new List<string>();
+
+            foreach (string feature in features)
+            {
+                if (string.IsNullOrWhiteSpace(feature))
+                    continue;
+
+                string sanitizedFeature = feature.ToUpperInvariant()
+                                                 .Replace("-", "_")
+                                                 .Replace(" ", "_")
+                                                 .Replace(";", "_");
+
+                sanitizedFeatures.Add($"GODOT_FEATURE_{sanitizedFeature}");
+            }
+
+            return sanitizedFeatures;
+        }
 
         public static bool GenerateXCFrameworkBlocking(
             List<string> outputPaths,
