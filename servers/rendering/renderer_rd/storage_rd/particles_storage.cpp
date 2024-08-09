@@ -1717,6 +1717,10 @@ bool ParticlesStorage::ParticlesShaderData::casts_shadows() const {
 	return false;
 }
 
+bool ParticlesStorage::ParticlesShaderData::needs_alpha_pass() const {
+	return false;
+}
+
 RS::ShaderNativeSourceCode ParticlesStorage::ParticlesShaderData::get_native_source_code() const {
 	return ParticlesStorage::get_singleton()->particles_shader.shader.version_get_native_source_code(version);
 }

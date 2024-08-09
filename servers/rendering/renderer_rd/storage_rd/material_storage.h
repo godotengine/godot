@@ -70,6 +70,7 @@ public:
 		virtual void set_code(const String &p_Code) = 0;
 		virtual bool is_animated() const = 0;
 		virtual bool casts_shadows() const = 0;
+		virtual bool needs_alpha_pass() const = 0;
 		virtual RS::ShaderNativeSourceCode get_native_source_code() const { return RS::ShaderNativeSourceCode(); }
 
 		virtual ~ShaderData() {}
@@ -426,6 +427,8 @@ public:
 
 	virtual void material_set_next_pass(RID p_material, RID p_next_material) override;
 	virtual void material_set_render_priority(RID p_material, int priority) override;
+
+	virtual bool material_needs_alpha_pass(RID p_material) const override;
 
 	virtual bool material_is_animated(RID p_material) override;
 	virtual bool material_casts_shadows(RID p_material) override;

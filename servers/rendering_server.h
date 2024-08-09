@@ -242,6 +242,8 @@ public:
 
 	virtual void material_set_next_pass(RID p_material, RID p_next_material) = 0;
 
+	virtual bool material_needs_alpha_pass(RID p_material) const = 0;
+
 	/* MESH API */
 
 	enum ArrayType {
