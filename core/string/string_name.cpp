@@ -39,18 +39,9 @@ StaticCString StaticCString::create(const char *p_ptr) {
 	return scs;
 }
 
-StringName::_Data *StringName::_table[STRING_TABLE_LEN];
-
 StringName _scs_create(const char *p_chr, bool p_static) {
 	return (p_chr[0] ? StringName(StaticCString::create(p_chr), p_static) : StringName());
 }
-
-bool StringName::configured = false;
-Mutex StringName::mutex;
-
-#ifdef DEBUG_ENABLED
-bool StringName::debug_stringname = false;
-#endif
 
 void StringName::setup() {
 	ERR_FAIL_COND(configured);
