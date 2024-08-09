@@ -396,6 +396,10 @@ void CollisionObject3D::_update_debug_shapes() {
 				if (s.debug_shape.is_null()) {
 					s.debug_shape = RS::get_singleton()->instance_create();
 					RS::get_singleton()->instance_set_scenario(s.debug_shape, get_world_3d()->get_scenario());
+					RS::get_singleton()->instance_geometry_set_cast_shadows_setting(s.debug_shape, RS::SHADOW_CASTING_SETTING_OFF);
+					RS::get_singleton()->instance_geometry_set_flag(s.debug_shape, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+					RS::get_singleton()->instance_geometry_set_flag(s.debug_shape, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+					RS::get_singleton()->instance_set_layer_mask(s.debug_shape, 1 << 26); // GIZMO_EDIT_LAYER
 					s.shape->connect_changed(callable_mp(this, &CollisionObject3D::_shape_changed).bind(s.shape), CONNECT_DEFERRED);
 					++debug_shapes_count;
 				}

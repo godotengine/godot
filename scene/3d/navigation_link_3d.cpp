@@ -54,6 +54,10 @@ void NavigationLink3D::_update_debug_mesh() {
 
 	if (!debug_instance.is_valid()) {
 		debug_instance = RenderingServer::get_singleton()->instance_create();
+		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(debug_instance, RS::SHADOW_CASTING_SETTING_OFF);
+		RS::get_singleton()->instance_set_layer_mask(debug_instance, 1 << 26); // GIZMO_EDIT_LAYER
+		RS::get_singleton()->instance_geometry_set_flag(debug_instance, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+		RS::get_singleton()->instance_geometry_set_flag(debug_instance, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 	}
 
 	if (!debug_mesh.is_valid()) {
