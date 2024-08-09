@@ -318,7 +318,8 @@ public:
 		AREA_PARAM_GRAVITY_OVERRIDE_MODE,
 		AREA_PARAM_GRAVITY,
 		AREA_PARAM_GRAVITY_VECTOR,
-		AREA_PARAM_GRAVITY_IS_POINT,
+		AREA_PARAM_GRAVITY_TYPE,
+		AREA_PARAM_GRAVITY_IS_POINT = AREA_PARAM_GRAVITY_TYPE,
 		AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE,
 		AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE,
 		AREA_PARAM_LINEAR_DAMP,
@@ -342,6 +343,12 @@ public:
 		AREA_SPACE_OVERRIDE_COMBINE_REPLACE,
 		AREA_SPACE_OVERRIDE_REPLACE,
 		AREA_SPACE_OVERRIDE_REPLACE_COMBINE
+	};
+
+	enum AreaGravityType {
+		AREA_GRAVITY_TYPE_DIRECTIONAL,
+		AREA_GRAVITY_TYPE_POINT,
+		AREA_GRAVITY_TYPE_TARGET,
 	};
 
 	virtual void area_add_shape(RID p_area, RID p_shape, const Transform3D &p_transform = Transform3D(), bool p_disabled = false) = 0;
@@ -376,6 +383,7 @@ public:
 
 	virtual void area_set_monitor_callback(RID p_area, const Callable &p_callback) = 0;
 	virtual void area_set_area_monitor_callback(RID p_area, const Callable &p_callback) = 0;
+	virtual void area_set_gravity_target_callback(RID p_area, const Callable &p_callback) = 0;
 
 	virtual void area_set_ray_pickable(RID p_area, bool p_enable) = 0;
 
@@ -1041,6 +1049,7 @@ VARIANT_ENUM_CAST(PhysicsServer3D::ShapeType);
 VARIANT_ENUM_CAST(PhysicsServer3D::SpaceParameter);
 VARIANT_ENUM_CAST(PhysicsServer3D::AreaParameter);
 VARIANT_ENUM_CAST(PhysicsServer3D::AreaSpaceOverrideMode);
+VARIANT_ENUM_CAST(PhysicsServer3D::AreaGravityType);
 VARIANT_ENUM_CAST(PhysicsServer3D::BodyMode);
 VARIANT_ENUM_CAST(PhysicsServer3D::BodyParameter);
 VARIANT_ENUM_CAST(PhysicsServer3D::BodyDampMode);
