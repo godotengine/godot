@@ -295,6 +295,8 @@ void Node::_propagate_enter_tree() {
 		E.value.group = data.tree->add_to_group(E.key, this);
 	}
 
+	data.tree->node_adding(this);
+
 	notification(NOTIFICATION_ENTER_TREE);
 
 	GDVIRTUAL_CALL(_enter_tree);
