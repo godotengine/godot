@@ -87,6 +87,25 @@ void SpriteBase3D::_notification(int p_what) {
 	}
 }
 
+Point2 SpriteBase3D::_get_pivot(const Ref<Texture2D> &p_texture, const Size2 &p_size, const Point2 &p_offset, Texture2D::Pivot p_mode) const {
+	Point2 pivot = TexturePivotUtils::get_pivot(p_texture, p_size, p_offset, p_mode);
+
+	// Given that the Y axis is inverted in 3D, the anchor's "y" must be inverted
+	// as well, relatively to the texture's height.
+	pivot.y = (p_size.height + pivot.y) * -1;
+
+	if (flip_around_pivot) {
+		if (hflip) {
+			pivot.x = (p_size.width + pivot.x) * -1;
+		}
+		if (vflip) {
+			pivot.y = (p_size.height + pivot.y) * -1;
+		}
+	}
+
+	return pivot;
+}
+
 void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect, Rect2 p_src_rect) {
 	ERR_FAIL_COND(p_texture.is_null());
 
@@ -284,17 +303,43 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 	}
 }
 
-void SpriteBase3D::set_centered(bool p_center) {
-	if (centered == p_center) {
+#ifndef DISABLE_DEPRECATED
+void SpriteBase3D::set_centered(bool p_centered) {
+	if (p_centered && pivot_mode == Texture2D::PIVOT_LEGACY_CENTER) {
 		return;
 	}
 
-	centered = p_center;
+	if (!p_centered && pivot_mode == Texture2D::PIVOT_FREE) {
+		return;
+	}
+
+	pivot_mode = p_centered ? Texture2D::PIVOT_LEGACY_CENTER : Texture2D::PIVOT_FREE;
+
 	_queue_redraw();
+	notify_property_list_changed();
 }
 
 bool SpriteBase3D::is_centered() const {
-	return centered;
+	return pivot_mode == Texture2D::PIVOT_LEGACY_CENTER;
+}
+#endif
+
+void SpriteBase3D::set_pivot_mode(Texture2D::Pivot p_mode) {
+	if (pivot_mode == p_mode) {
+		return;
+	}
+
+	pivot_mode = p_mode;
+	_queue_redraw();
+	notify_property_list_changed();
+}
+
+Texture2D::Pivot SpriteBase3D::get_pivot_mode() const {
+	return pivot_mode;
+}
+
+Point2 SpriteBase3D::get_pivot() const {
+	return Point2();
 }
 
 void SpriteBase3D::set_offset(const Point2 &p_offset) {
@@ -334,6 +379,18 @@ void SpriteBase3D::set_flip_v(bool p_flip) {
 
 bool SpriteBase3D::is_flipped_v() const {
 	return vflip;
+}
+
+void SpriteBase3D::set_flip_around_pivot(bool p_flip) {
+	if (flip_around_pivot == p_flip) {
+		return;
+	}
+
+	flip_around_pivot = p_flip;
+	_queue_redraw();
+}
+bool SpriteBase3D::is_flipped_around_pivot() const {
+	return flip_around_pivot;
 }
 
 void SpriteBase3D::set_modulate(const Color &p_color) {
@@ -588,8 +645,14 @@ StandardMaterial3D::TextureFilter SpriteBase3D::get_texture_filter() const {
 }
 
 void SpriteBase3D::_bind_methods() {
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_centered", "centered"), &SpriteBase3D::set_centered);
 	ClassDB::bind_method(D_METHOD("is_centered"), &SpriteBase3D::is_centered);
+#endif
+
+	ClassDB::bind_method(D_METHOD("set_pivot_mode", "pivot"), &SpriteBase3D::set_pivot_mode);
+	ClassDB::bind_method(D_METHOD("get_pivot_mode"), &SpriteBase3D::get_pivot_mode);
+	ClassDB::bind_method(D_METHOD("get_pivot"), &SpriteBase3D::get_pivot);
 
 	ClassDB::bind_method(D_METHOD("set_offset", "offset"), &SpriteBase3D::set_offset);
 	ClassDB::bind_method(D_METHOD("get_offset"), &SpriteBase3D::get_offset);
@@ -599,6 +662,9 @@ void SpriteBase3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_flip_v", "flip_v"), &SpriteBase3D::set_flip_v);
 	ClassDB::bind_method(D_METHOD("is_flipped_v"), &SpriteBase3D::is_flipped_v);
+
+	ClassDB::bind_method(D_METHOD("set_flip_around_pivot", "flip_around_pivot"), &SpriteBase3D::set_flip_around_pivot);
+	ClassDB::bind_method(D_METHOD("is_flipped_around_pivot"), &SpriteBase3D::is_flipped_around_pivot);
 
 	ClassDB::bind_method(D_METHOD("set_modulate", "modulate"), &SpriteBase3D::set_modulate);
 	ClassDB::bind_method(D_METHOD("get_modulate"), &SpriteBase3D::get_modulate);
@@ -639,10 +705,19 @@ void SpriteBase3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_rect"), &SpriteBase3D::get_item_rect);
 	ClassDB::bind_method(D_METHOD("generate_triangle_mesh"), &SpriteBase3D::generate_triangle_mesh);
 
+#ifndef DISABLE_DEPRECATED
+	// The centered property is only defined for compatibility reason.
+	// In that case, when true, it results in a `PIVOT_LEGACY_CENTER` mode,
+	// which shouldn't be supported once the centered property is completely removed.
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "pivot_mode", PROPERTY_HINT_ENUM, "Anchor,Free,Free Relative,Center,Top Left,Top Center,Top Right,Center Right,Bottom Right,Bottom Center,Bottom Left,Center Left,Legacy Center"), "set_pivot_mode", "get_pivot_mode");
+#else
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "pivot_mode", PROPERTY_HINT_ENUM, "Anchor,Free,Free Relative,Center,Top Left,Top Center,Top Right,Center Right,Bottom Right,Bottom Center,Bottom Left,Center Left"), "set_pivot_mode", "get_pivot_mode");
+#endif
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "is_flipped_v");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_around_pivot"), "set_flip_around_pivot", "is_flipped_around_pivot");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pixel_size", PROPERTY_HINT_RANGE, "0.0001,128,0.0001,suffix:m"), "set_pixel_size", "get_pixel_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis", PROPERTY_HINT_ENUM, "X-Axis,Y-Axis,Z-Axis"), "set_axis", "get_axis");
@@ -778,16 +853,40 @@ void Sprite3D::_draw() {
 
 	Size2 frame_size = base_rect.size / Size2(hframes, vframes);
 	Point2 frame_offset = Point2(frame % hframes, frame / hframes) * frame_size;
-
-	Point2 dst_offset = get_offset();
-	if (is_centered()) {
-		dst_offset -= frame_size / 2.0f;
-	}
+	Point2 dst_offset = _get_pivot(texture, frame_size, get_offset(), get_pivot_mode());
 
 	Rect2 src_rect(base_rect.position + frame_offset, frame_size);
 	Rect2 dst_rect(dst_offset, frame_size);
 
 	draw_texture_rect(texture, dst_rect, src_rect);
+}
+
+Point2 Sprite3D::_get_pivot(const Ref<Texture2D> &p_texture, const Size2 &p_size, const Point2 &p_offset, Texture2D::Pivot p_mode) const {
+	Point2 pivot;
+	// When a region is defined for this sprite, the texture's anchor
+	// becomes irrelevant and another mode should be used instead.
+	if (p_mode == Texture2D::PIVOT_ANCHOR && region) {
+		return pivot;
+	}
+
+	return SpriteBase3D::_get_pivot(p_texture, p_size, p_offset, p_mode);
+}
+
+Point2 Sprite3D::get_pivot() const {
+	if (texture.is_null()) {
+		return Point2();
+	}
+
+	Size2 size;
+
+	if (region) {
+		size = region_rect.size;
+	} else {
+		size = texture->get_size();
+	}
+
+	size = Size2i(size) / Point2(hframes, vframes);
+	return _get_pivot(texture, size, get_offset(), get_pivot_mode());
 }
 
 void Sprite3D::set_texture(const Ref<Texture2D> &p_texture) {
@@ -929,10 +1028,7 @@ Rect2 Sprite3D::get_item_rect() const {
 		s = s / Point2(hframes, vframes);
 	}
 
-	Point2 ofs = get_offset();
-	if (is_centered()) {
-		ofs -= s / 2;
-	}
+	Point2 ofs = _get_pivot(texture, s, get_offset(), get_pivot_mode());
 
 	if (s == Size2(0, 0)) {
 		s = Size2(1, 1);
@@ -942,6 +1038,31 @@ Rect2 Sprite3D::get_item_rect() const {
 }
 
 void Sprite3D::_validate_property(PropertyInfo &p_property) const {
+	Texture2D::Pivot pivot = get_pivot_mode();
+	if (p_property.name == "offset") {
+		if (pivot != Texture2D::PIVOT_FREE && pivot != Texture2D::PIVOT_FREE_RELATIVE) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+
+		if (pivot == Texture2D::PIVOT_FREE) {
+			p_property.hint_string = "suffix:px";
+		} else if (pivot == Texture2D::PIVOT_FREE_RELATIVE) {
+			p_property.hint_string = "suffix:* size";
+		}
+	}
+
+#ifndef DISABLE_DEPRECATED
+	// The centered property is supported for compatibility reason but shouldn't be used directly.
+	if (p_property.name == "centered") {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+	// In legacy center mode, the offset field is needed.
+	if (p_property.name == "offset" && pivot == Texture2D::PIVOT_LEGACY_CENTER) {
+		p_property.usage = PROPERTY_USAGE_DEFAULT;
+		p_property.hint_string = "suffix:px";
+	}
+#endif
+
 	if (p_property.name == "frame") {
 		p_property.hint = PROPERTY_HINT_RANGE;
 		p_property.hint_string = "0," + itos(vframes * hframes - 1) + ",1";
@@ -1020,10 +1141,7 @@ void AnimatedSprite3D::_draw() {
 	Rect2 src_rect;
 	src_rect.size = tsize;
 
-	Point2 ofs = get_offset();
-	if (is_centered()) {
-		ofs -= tsize / 2;
-	}
+	Point2 ofs = _get_pivot(texture, tsize, get_offset(), get_pivot_mode());
 
 	Rect2 dst_rect(ofs, tsize);
 
@@ -1034,6 +1152,31 @@ void AnimatedSprite3D::_validate_property(PropertyInfo &p_property) const {
 	if (!frames.is_valid()) {
 		return;
 	}
+
+	Texture2D::Pivot pivot = get_pivot_mode();
+	if (p_property.name == "offset") {
+		if (pivot != Texture2D::PIVOT_FREE && pivot != Texture2D::PIVOT_FREE_RELATIVE) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+
+		if (pivot == Texture2D::PIVOT_FREE) {
+			p_property.hint_string = "suffix:px";
+		} else if (pivot == Texture2D::PIVOT_FREE_RELATIVE) {
+			p_property.hint_string = "suffix:* size";
+		}
+	}
+
+#ifndef DISABLE_DEPRECATED
+	// The centered property is supported for compatibility reason but shouldn't be used directly.
+	if (p_property.name == "centered") {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+	// In legacy center mode, the offset field is needed.
+	if (p_property.name == "offset" && pivot == Texture2D::PIVOT_LEGACY_CENTER) {
+		p_property.usage = PROPERTY_USAGE_DEFAULT;
+		p_property.hint_string = "suffix:px";
+	}
+#endif
 
 	if (p_property.name == "animation") {
 		List<StringName> names;
@@ -1170,6 +1313,21 @@ void AnimatedSprite3D::_notification(int p_what) {
 	}
 }
 
+Point2 AnimatedSprite3D::get_pivot() const {
+	if (frames.is_null() || !frames->has_animation(animation)) {
+		return Point2();
+	}
+
+	Ref<Texture2D> texture = frames->get_frame_texture(animation, frame);
+
+	if (texture.is_null()) {
+		return Point2();
+	}
+
+	Size2 size = texture->get_size();
+	return _get_pivot(texture, size, get_offset(), get_pivot_mode());
+}
+
 void AnimatedSprite3D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 	if (frames == p_frames) {
 		return;
@@ -1283,10 +1441,7 @@ Rect2 AnimatedSprite3D::get_item_rect() const {
 	}
 	Size2 s = t->get_size();
 
-	Point2 ofs = get_offset();
-	if (is_centered()) {
-		ofs -= s / 2;
-	}
+	Point2 ofs = _get_pivot(t, s, get_offset(), get_pivot_mode());
 
 	if (s == Size2(0, 0)) {
 		s = Size2(1, 1);

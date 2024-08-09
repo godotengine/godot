@@ -430,6 +430,7 @@ public:
 
 	virtual int get_width() const override;
 	virtual int get_height() const override;
+	virtual Point2 get_anchor() const override;
 
 	virtual bool is_pixel_opaque(int p_x, int p_y) const override;
 	virtual bool has_alpha() const override;

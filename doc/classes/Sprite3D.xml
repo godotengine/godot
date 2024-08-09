@@ -20,6 +20,7 @@
 		</member>
 		<member name="region_enabled" type="bool" setter="set_region_enabled" getter="is_region_enabled" default="false">
 			If [code]true[/code], the sprite will use [member region_rect] and display only the specified part of its texture.
+			[b]Note:[/b] When [code]true[/code] with [member SpriteBase3D.pivot_mode] set to [code]Anchor[/code] the texture's anchor is ignored.
 		</member>
 		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect" default="Rect2(0, 0, 0, 0)">
 			The region of the atlas texture to display. [member region_enabled] must be [code]true[/code].
