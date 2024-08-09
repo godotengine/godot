@@ -214,11 +214,11 @@ struct VariantCaster<char32_t> {
 template <>
 struct PtrToArg<char32_t> {
 	_FORCE_INLINE_ static char32_t convert(const void *p_ptr) {
-		return char32_t(*reinterpret_cast<const int *>(p_ptr));
+		return char32_t(*reinterpret_cast<const int64_t *>(p_ptr));
 	}
 	typedef int64_t EncodeT;
 	_FORCE_INLINE_ static void encode(char32_t p_val, const void *p_ptr) {
-		*(int *)p_ptr = p_val;
+		*(int64_t *)p_ptr = p_val;
 	}
 };
 
