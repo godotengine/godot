@@ -561,7 +561,9 @@ void AnimationLibraryEditor::_button_pressed(TreeItem *p_item, int p_column, int
 					return;
 				}
 
-				anim = anim->duplicate(); // Users simply dont care about referencing, so making a copy works better here.
+				if (!anim->get_path().is_resource_file()) {
+					anim = anim->duplicate(); // Users simply dont care about referencing, so making a copy works better here.
+				}
 
 				String base_name;
 				if (anim->get_name() != "") {
