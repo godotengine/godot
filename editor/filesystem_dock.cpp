@@ -1299,6 +1299,15 @@ void FileSystemDock::_fs_changed() {
 	set_process(false);
 }
 
+void FileSystemDock::_directory_created(const String &p_path) {
+	if (!DirAccess::exists(p_path)) {
+		return;
+	}
+	EditorFileSystem::get_singleton()->add_new_directory(p_path);
+	_update_tree(get_uncollapsed_paths());
+	_update_file_list(true);
+}
+
 void FileSystemDock::_set_scanning_mode() {
 	button_hist_prev->set_disabled(true);
 	button_hist_next->set_disabled(true);
@@ -4115,7 +4124,7 @@ FileSystemDock::FileSystemDock() {
 
 	make_dir_dialog = memnew(DirectoryCreateDialog);
 	add_child(make_dir_dialog);
-	make_dir_dialog->connect("dir_created", callable_mp(this, &FileSystemDock::_rescan).unbind(1));
+	make_dir_dialog->connect("dir_created", callable_mp(this, &FileSystemDock::_directory_created));
 
 	make_scene_dialog = memnew(SceneCreateDialog);
 	add_child(make_scene_dialog);
