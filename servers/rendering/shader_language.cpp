@@ -9217,6 +9217,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 				tk = _get_token();
 				if (tk.type == TK_IDENTIFIER) {
 					current_uniform_group_name = tk.text;
+					current_uniform_subgroup_name = "";
 					tk = _get_token();
 					if (tk.type == TK_PERIOD) {
 						tk = _get_token();
