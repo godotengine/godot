@@ -63,6 +63,19 @@
 			<description>
 			</description>
 		</method>
+		<method name="_intersect_ray_multiple" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="from" type="Vector2" />
+			<param index="1" name="to" type="Vector2" />
+			<param index="2" name="collision_mask" type="int" />
+			<param index="3" name="collide_with_bodies" type="bool" />
+			<param index="4" name="collide_with_areas" type="bool" />
+			<param index="5" name="hit_from_inside" type="bool" />
+			<param index="6" name="results" type="PhysicsServer2DExtensionRayResult*" />
+			<param index="7" name="max_results" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="_intersect_shape" qualifiers="virtual">
 			<return type="int" />
 			<param index="0" name="shape_rid" type="RID" />
