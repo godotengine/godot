@@ -174,14 +174,14 @@ public:
 
 		while (true) {
 			while (compare(p_array[p_first], p_pivot)) {
-				if (Validate) {
+				if constexpr (Validate) {
 					ERR_BAD_COMPARE(p_first == unmodified_last - 1);
 				}
 				p_first++;
 			}
 			p_last--;
 			while (compare(p_pivot, p_array[p_last])) {
-				if (Validate) {
+				if constexpr (Validate) {
 					ERR_BAD_COMPARE(p_last == unmodified_first);
 				}
 				p_last--;
@@ -251,7 +251,7 @@ public:
 	inline void unguarded_linear_insert(int64_t p_last, T p_value, T *p_array) const {
 		int64_t next = p_last - 1;
 		while (compare(p_value, p_array[next])) {
-			if (Validate) {
+			if constexpr (Validate) {
 				ERR_BAD_COMPARE(next == 0);
 			}
 			p_array[p_last] = p_array[next];
