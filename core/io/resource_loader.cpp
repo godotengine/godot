@@ -319,10 +319,16 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 	}
 	// --
 
+	print_verbose("Loading resource: " + load_task.remapped_path);
+
 	Error load_err = OK;
 	Ref<Resource> res = _load(load_task.remapped_path, load_task.remapped_path != load_task.local_path ? load_task.local_path : String(), load_task.type_hint, load_task.cache_mode, &load_err, load_task.use_sub_threads, &load_task.progress);
 	if (MessageQueue::get_singleton() != MessageQueue::get_main_singleton()) {
 		MessageQueue::get_singleton()->flush();
+	}
+
+	if (res.is_null()) {
+		print_verbose("Failed loading resource: " + load_task.remapped_path);
 	}
 
 	thread_load_mutex.lock();
