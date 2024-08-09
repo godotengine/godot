@@ -676,6 +676,12 @@ void ResourceCache::get_cached_resources(List<Ref<Resource>> *p_resources) {
 	lock.unlock();
 }
 
+void ResourceCache::remove_cached_resource(const String &p_path) {
+	lock.lock();
+	resources.erase(p_path);
+	lock.unlock();
+}
+
 int ResourceCache::get_cached_resource_count() {
 	lock.lock();
 	int rc = resources.size();
