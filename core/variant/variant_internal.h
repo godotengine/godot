@@ -84,6 +84,9 @@ public:
 			case Variant::DICTIONARY:
 				init_dictionary(v);
 				break;
+			case Variant::SET:
+				init_set(v);
+				break;
 			case Variant::ARRAY:
 				init_array(v);
 				break;
@@ -186,6 +189,8 @@ public:
 	_FORCE_INLINE_ static const Signal *get_signal(const Variant *v) { return reinterpret_cast<const Signal *>(v->_data._mem); }
 	_FORCE_INLINE_ static Dictionary *get_dictionary(Variant *v) { return reinterpret_cast<Dictionary *>(v->_data._mem); }
 	_FORCE_INLINE_ static const Dictionary *get_dictionary(const Variant *v) { return reinterpret_cast<const Dictionary *>(v->_data._mem); }
+	_FORCE_INLINE_ static Set *get_set(Variant *v) { return reinterpret_cast<Set *>(v->_data._mem); }
+	_FORCE_INLINE_ static const Set *get_set(const Variant *v) { return reinterpret_cast<const Set *>(v->_data._mem); }
 	_FORCE_INLINE_ static Array *get_array(Variant *v) { return reinterpret_cast<Array *>(v->_data._mem); }
 	_FORCE_INLINE_ static const Array *get_array(const Variant *v) { return reinterpret_cast<const Array *>(v->_data._mem); }
 
@@ -277,6 +282,10 @@ public:
 	_FORCE_INLINE_ static void init_dictionary(Variant *v) {
 		memnew_placement(v->_data._mem, Dictionary);
 		v->type = Variant::DICTIONARY;
+	}
+	_FORCE_INLINE_ static void init_set(Variant *v) {
+		memnew_placement(v->_data._mem, Set);
+		v->type = Variant::SET;
 	}
 	_FORCE_INLINE_ static void init_array(Variant *v) {
 		memnew_placement(v->_data._mem, Array);
@@ -408,6 +417,8 @@ public:
 				return get_dictionary(v);
 			case Variant::ARRAY:
 				return get_array(v);
+			case Variant::SET:
+				return get_set(v);
 			case Variant::PACKED_BYTE_ARRAY:
 				return get_byte_array(v);
 			case Variant::PACKED_INT32_ARRAY:
@@ -492,6 +503,8 @@ public:
 				return get_signal(v);
 			case Variant::DICTIONARY:
 				return get_dictionary(v);
+			case Variant::SET:
+				return get_set(v);
 			case Variant::ARRAY:
 				return get_array(v);
 			case Variant::PACKED_BYTE_ARRAY:
@@ -748,6 +761,12 @@ template <>
 struct VariantGetInternalPtr<Dictionary> {
 	static Dictionary *get_ptr(Variant *v) { return VariantInternal::get_dictionary(v); }
 	static const Dictionary *get_ptr(const Variant *v) { return VariantInternal::get_dictionary(v); }
+};
+
+template <>
+struct VariantGetInternalPtr<Set> {
+	static Set *get_ptr(Variant *v) { return VariantInternal::get_set(v); }
+	static const Set *get_ptr(const Variant *v) { return VariantInternal::get_set(v); }
 };
 
 template <>
@@ -1017,6 +1036,12 @@ struct VariantInternalAccessor<Dictionary> {
 };
 
 template <>
+struct VariantInternalAccessor<Set> {
+	static _FORCE_INLINE_ const Set &get(const Variant *v) { return *VariantInternal::get_set(v); }
+	static _FORCE_INLINE_ void set(Variant *v, const Set &p_value) { *VariantInternal::get_set(v) = p_value; }
+};
+
+template <>
 struct VariantInternalAccessor<Array> {
 	static _FORCE_INLINE_ const Array &get(const Variant *v) { return *VariantInternal::get_array(v); }
 	static _FORCE_INLINE_ void set(Variant *v, const Array &p_value) { *VariantInternal::get_array(v) = p_value; }
@@ -1272,6 +1297,11 @@ struct VariantInitializer<Dictionary> {
 };
 
 template <>
+struct VariantInitializer<Set> {
+	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_set(v); }
+};
+
+template <>
 struct VariantInitializer<Array> {
 	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_array(v); }
 };
@@ -1468,6 +1498,11 @@ struct VariantDefaultInitializer<Signal> {
 template <>
 struct VariantDefaultInitializer<Dictionary> {
 	static _FORCE_INLINE_ void init(Variant *v) { *VariantInternal::get_dictionary(v) = Dictionary(); }
+};
+
+template <>
+struct VariantDefaultInitializer<Set> {
+	static _FORCE_INLINE_ void init(Variant *v) { *VariantInternal::get_set(v) = Set(); }
 };
 
 template <>

@@ -1414,6 +1414,16 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 			return true;
 
 		} break;
+		case SET: {
+			const Set *set = reinterpret_cast<const Set *>(_data._mem);
+			if (set->is_empty()) {
+				return false;
+			}
+
+			const Variant *next = set->next(nullptr);
+			r_iter = *next;
+			return true;
+		} break;
 		case ARRAY: {
 			const Array *arr = reinterpret_cast<const Array *>(_data._mem);
 			if (arr->is_empty()) {
@@ -1652,6 +1662,17 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			return true;
 
 		} break;
+		case SET: {
+			const Set *set = reinterpret_cast<const Set *>(_data._mem);
+			const Variant *next = set->next(&r_iter);
+			if (!next) {
+				return false;
+			}
+
+			r_iter = *next;
+			return true;
+
+		} break;
 		case ARRAY: {
 			const Array *arr = reinterpret_cast<const Array *>(_data._mem);
 			int idx = r_iter;
@@ -1831,6 +1852,10 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			return r_iter; //iterator is the same as the key
 
 		} break;
+		case SET: {
+			return r_iter;
+
+		} break;
 		case ARRAY: {
 			const Array *arr = reinterpret_cast<const Array *>(_data._mem);
 			int idx = r_iter;
@@ -1979,6 +2004,8 @@ Variant Variant::recursive_duplicate(bool p_deep, int recursion_count) const {
 		} break;
 		case DICTIONARY:
 			return operator Dictionary().recursive_duplicate(p_deep, recursion_count);
+		case SET:
+			return operator Set().recursive_duplicate(p_deep, recursion_count);
 		case ARRAY:
 			return operator Array().recursive_duplicate(p_deep, recursion_count);
 		case PACKED_BYTE_ARRAY:

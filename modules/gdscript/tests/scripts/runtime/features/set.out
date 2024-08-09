@@ -1,0 +1,24 @@
+GDTEST_OK
+{4, 5, 6}
+true
+true
+true
+true
+{4}
+{5}
+true
+false
+{5}
+true
+{5, 4, 6}
+true
+{}
+{4, 6}
+{}
+{4, 6}
+true
+true
+[4, 5, 6]
+[4, 6]
+{4, 6, 192, 9, 72, 44}
+true

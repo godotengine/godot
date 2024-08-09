@@ -84,6 +84,7 @@ const Vector<String> classes_with_csharp_differences = {
 	"Color",
 	"Array",
 	"Dictionary",
+	"Set",
 	"PackedByteArray",
 	"PackedColorArray",
 	"PackedFloat32Array",

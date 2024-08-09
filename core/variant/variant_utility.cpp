@@ -896,6 +896,8 @@ Variant VariantUtilityFunctions::type_convert(const Variant &p_variant, const Va
 			return p_variant.operator Signal();
 		case Variant::Type::DICTIONARY:
 			return p_variant.operator Dictionary();
+		case Variant::Type::SET:
+			return p_variant.operator Set();
 		case Variant::Type::ARRAY:
 			return p_variant.operator Array();
 		case Variant::Type::PACKED_BYTE_ARRAY:

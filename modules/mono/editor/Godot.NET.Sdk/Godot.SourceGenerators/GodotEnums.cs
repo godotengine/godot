@@ -45,7 +45,8 @@ namespace Godot.SourceGenerators
         PackedVector3Array = 36,
         PackedColorArray = 37,
         PackedVector4Array = 38,
-        Max = 39
+        Set = 39,
+        Max = 40
     }
 
     internal enum PropertyHint

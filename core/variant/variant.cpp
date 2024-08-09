@@ -169,6 +169,9 @@ String Variant::get_type_name(Variant::Type p_type) {
 		case PACKED_VECTOR4_ARRAY: {
 			return "PackedVector4Array";
 		}
+		case SET: {
+			return "Set";
+		}
 		default: {
 		}
 	}
@@ -1003,6 +1006,10 @@ bool Variant::is_zero() const {
 		case PACKED_VECTOR4_ARRAY: {
 			return PackedArrayRef<Vector4>::get_array(_data.packed_array).size() == 0;
 		}
+
+		case SET: {
+			return reinterpret_cast<const Set *>(_data._mem)->is_empty();
+		}
 		default: {
 		}
 	}
@@ -1265,6 +1272,9 @@ void Variant::reference(const Variant &p_variant) {
 				_data.packed_array = PackedArrayRef<Vector4>::create();
 			}
 		} break;
+		case SET: {
+			memnew_placement(_data._mem, Set(*reinterpret_cast<const Set *>(p_variant._data._mem)));
+		} break;
 		default: {
 		}
 	}
@@ -1441,6 +1451,9 @@ void Variant::_clear_internal() {
 		} break;
 		case PACKED_VECTOR4_ARRAY: {
 			PackedArrayRefBase::destroy(_data.packed_array);
+		} break;
+		case SET: {
+			reinterpret_cast<Set *>(_data._mem)->~Set();
 		} break;
 		default: {
 			// Not needed, there is no point. The following do not allocate memory:
@@ -1841,6 +1854,23 @@ String Variant::stringify(int recursion_count) const {
 			const ::RID &s = *reinterpret_cast<const ::RID *>(_data._mem);
 			return "RID(" + itos(s.get_id()) + ")";
 		}
+		case SET: {
+			ERR_FAIL_COND_V_MSG(recursion_count > MAX_RECURSION, "[...]", "Maximum array recursion reached!");
+			recursion_count++;
+			String str("{");
+
+			Array arr = operator Set().values();
+			for (int i = 0; i < arr.size(); i++) {
+				if (i > 0) {
+					str += ", ";
+				}
+
+				str += stringify_variant_clean(arr[i], recursion_count);
+			}
+			str += "}";
+			return str;
+		}
+
 		default: {
 			return "<" + get_type_name(type) + ">";
 		}
@@ -2162,6 +2192,14 @@ Variant::operator Dictionary() const {
 		return *reinterpret_cast<const Dictionary *>(_data._mem);
 	} else {
 		return Dictionary();
+	}
+}
+
+Variant::operator Set() const {
+	if (type == SET) {
+		return *reinterpret_cast<const Set *>(_data._mem);
+	} else {
+		return Set();
 	}
 }
 
@@ -2636,6 +2674,11 @@ Variant::Variant(const Array &p_array) :
 	memnew_placement(_data._mem, Array(p_array));
 }
 
+Variant::Variant(const Set &p_set) :
+		type(SET) {
+	memnew_placement(_data._mem, Set(p_set));
+}
+
 Variant::Variant(const PackedByteArray &p_byte_array) :
 		type(PACKED_BYTE_ARRAY) {
 	_data.packed_array = PackedArrayRef<uint8_t>::create(p_byte_array);
@@ -2906,6 +2949,9 @@ void Variant::operator=(const Variant &p_variant) {
 		} break;
 		case PACKED_VECTOR4_ARRAY: {
 			_data.packed_array = PackedArrayRef<Vector4>::reference_from(_data.packed_array, p_variant._data.packed_array);
+		} break;
+		case SET: {
+			*reinterpret_cast<Set *>(_data._mem) = *reinterpret_cast<const Set *>(p_variant._data._mem);
 		} break;
 		default: {
 		}
@@ -3248,6 +3294,12 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 
 			return hash;
 		} break;
+		case SET: {
+			const Set &set = *reinterpret_cast<const Set *>(_data._mem);
+			return set.recursive_hash(recursion_count);
+
+		} break;
+
 		default: {
 		}
 	}
@@ -3507,6 +3559,17 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count, bool s
 			hash_compare_packed_array(_data.packed_array, p_variant._data.packed_array, Vector4, hash_compare_vector4);
 		} break;
 
+		case SET: {
+			const Set &l = *(reinterpret_cast<const Set *>(_data._mem));
+			const Set &r = *(reinterpret_cast<const Set *>(p_variant._data._mem));
+
+			if (!l.recursive_equal(r, recursion_count + 1)) {
+				return false;
+			}
+
+			return true;
+		} break;
+
 		default:
 			bool v;
 			Variant r;
@@ -3528,6 +3591,12 @@ bool Variant::identity_compare(const Variant &p_variant) const {
 		case DICTIONARY: {
 			const Dictionary &l = *(reinterpret_cast<const Dictionary *>(_data._mem));
 			const Dictionary &r = *(reinterpret_cast<const Dictionary *>(p_variant._data._mem));
+			return l.id() == r.id();
+		} break;
+
+		case SET: {
+			const Set &l = *(reinterpret_cast<const Set *>(_data._mem));
+			const Set &r = *(reinterpret_cast<const Set *>(p_variant._data._mem));
 			return l.id() == r.id();
 		} break;
 

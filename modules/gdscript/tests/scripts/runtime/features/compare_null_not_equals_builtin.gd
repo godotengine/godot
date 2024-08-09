@@ -140,3 +140,7 @@ func test():
 	# PackedVector4Array
 	value = PackedVector4Array()
 	print(null != value)
+
+	# Set
+	value = Set()
+	print(null != value)

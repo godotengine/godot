@@ -67,8 +67,10 @@ namespace Godot.SourceGenerators
         NodePath,
         Rid,
         GodotDictionary,
+        GodotSet,
         GodotArray,
         GodotGenericDictionary,
+        GodotGenericSet,
         GodotGenericArray,
     }
 }

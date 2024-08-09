@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Set" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A unordered set that contains elements, but they cannot repeat.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<constructors>
+		<constructor name="Set">
+			<return type="Set" />
+			<description>
+				Creates an empty set.
+			</description>
+		</constructor>
+		<constructor name="Set">
+			<return type="Set" />
+			<param index="0" name="base" type="Set" />
+			<param index="1" name="type" type="int" />
+			<param index="2" name="class_name" type="StringName" />
+			<param index="3" name="script" type="Variant" />
+			<description>
+				Creates a typed set.
+			</description>
+		</constructor>
+		<constructor name="Set">
+			<return type="Set" />
+			<param index="0" name="from" type="Set" />
+			<description>
+				Copies by reference another set.
+			</description>
+		</constructor>
+	</constructors>
+	<methods>
+		<method name="add">
+			<return type="void" />
+			<param index="0" name="value" type="Variant" />
+			<description>
+				Adds an element to the set.
+				See also: [method remove]
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Clears the set.
+			</description>
+		</method>
+		<method name="difference">
+			<return type="void" />
+			<param index="0" name="set" type="Set" />
+			<description>
+				Removes all elements inside this set that are in the other one.
+				See also: [method differentiated]
+			</description>
+		</method>
+		<method name="differentiated" qualifiers="const">
+			<return type="Set" />
+			<param index="0" name="set" type="Set" />
+			<description>
+				Creates a copy and removes all elements that are in the set passed to the function.
+				See also: [method difference]
+			</description>
+		</method>
+		<method name="duplicate" qualifiers="const">
+			<return type="Set" />
+			<param index="0" name="deep" type="bool" default="false" />
+			<description>
+				Creates a copy (or deep copy is [param deep] is specified) of this set.
+			</description>
+		</method>
+		<method name="erase">
+			<return type="bool" />
+			<param index="0" name="value" type="Variant" />
+			<description>
+				Removes an element from this set.
+				See also: [method remove]
+			</description>
+		</method>
+		<method name="get_typed_builtin" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_typed_class_name" qualifiers="const">
+			<return type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="get_typed_script" qualifiers="const">
+			<return type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="has" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="value" type="Variant" />
+			<description>
+				Returns [code]true[/code] if the element is inside the set.
+			</description>
+		</method>
+		<method name="has_all" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="values" type="Array" />
+			<description>
+				Returns [code]true[/code] if [b]all[/b] elements inside the Array are inside the set.
+			</description>
+		</method>
+		<method name="hash" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns a hash of this set and all elements inside of it.
+			</description>
+		</method>
+		<method name="includes" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="set" type="Set" />
+			<description>
+				Returns [code]true[/code] if this set includes the other set.
+			</description>
+		</method>
+		<method name="insert">
+			<return type="void" />
+			<param index="0" name="value" type="Variant" />
+			<description>
+				Inserts an element into this Set.
+				See also: [method add]
+			</description>
+		</method>
+		<method name="intersect">
+			<return type="void" />
+			<param index="0" name="set" type="Set" />
+			<description>
+				Intersects this array with the other one and replaces this set.
+				See also: [method intersected]
+			</description>
+		</method>
+		<method name="intersected" qualifiers="const">
+			<return type="Set" />
+			<param index="0" name="set" type="Set" />
+			<description>
+				Returns the intersection between this set and the other one.
+				See also: [method intersect]
+			</description>
+		</method>
+		<method name="is_disjoint" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="set" type="Set" />
+			<description>
+				Returns [code]true[/code] if the intersection between this set and the other one is an empty Set.
+				See also: [method is_overlapping]
+			</description>
+		</method>
+		<method name="is_empty" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the size of this set is empty.
+				See also: [method size]
+			</description>
+		</method>
+		<method name="is_overlapping" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="set" type="Set" />
+			<description>
+				Returns [code]true[/code] if the intersection between this set and the other one is not an empty Set.
+				See also: [method is_disjoint]
+			</description>
+		</method>
+		<method name="is_read_only" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the Set is read only.\
+				See also: [method make_read_only]
+			</description>
+		</method>
+		<method name="is_same_typed" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="set" type="Set" />
+			<description>
+			</description>
+		</method>
+		<method name="is_typed" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="make_read_only">
+			<return type="void" />
+			<description>
+				Makes this set read only.
+				See also: [method is_read_only]
+			</description>
+		</method>
+		<method name="merge">
+			<return type="void" />
+			<param index="0" name="set" type="Set" />
+			<description>
+				Adds all elements from the other Set.
+				See also: [method merged]
+			</description>
+		</method>
+		<method name="merged" qualifiers="const">
+			<return type="Set" />
+			<param index="0" name="set" type="Set" />
+			<description>
+				Returns the union between this set and the other one.
+				See also: [method merge]
+			</description>
+		</method>
+		<method name="remove">
+			<return type="void" />
+			<param index="0" name="value" type="Variant" />
+			<description>
+				Removes the element from the set.
+			</description>
+		</method>
+		<method name="size" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the size of this set.
+				See also: [method is_empty]
+			</description>
+		</method>
+		<method name="symmetric_difference">
+			<return type="void" />
+			<param index="0" name="set" type="Set" />
+			<description>
+				Replaces this set with the union of both sets differenced by the intersection of them.
+				See also: [method symmetric_differentiated]
+			</description>
+		</method>
+		<method name="symmetric_differentiated" qualifiers="const">
+			<return type="Set" />
+			<param index="0" name="set" type="Set" />
+			<description>
+				Returns a set that is the union of both sets subtracted with the intersection of both sets.
+				See also: [method symmetric_difference]
+			</description>
+		</method>
+		<method name="values" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Returns an [Array] containing all elements inside this set.
+			</description>
+		</method>
+	</methods>
+	<operators>
+		<operator name="operator +">
+			<return type="Set" />
+			<param index="0" name="right" type="Set" />
+			<description>
+				Performs union between two sets.
+			</description>
+		</operator>
+		<operator name="operator -">
+			<return type="Set" />
+			<param index="0" name="right" type="Set" />
+			<description>
+				Performs difference between two sets.
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<param index="0" name="right" type="Set" />
+			<description>
+				Performs check for equality between the two sets.
+			</description>
+		</operator>
+	</operators>
+</class>

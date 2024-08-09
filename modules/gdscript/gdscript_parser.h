@@ -90,6 +90,7 @@ public:
 	struct PreloadNode;
 	struct ReturnNode;
 	struct SelfNode;
+	struct SetNode;
 	struct SignalNode;
 	struct SubscriptNode;
 	struct SuiteNode;
@@ -321,6 +322,7 @@ public:
 			PRELOAD,
 			RETURN,
 			SELF,
+			SET,
 			SIGNAL,
 			SUBSCRIPT,
 			SUITE,
@@ -1044,6 +1046,14 @@ public:
 		}
 	};
 
+	struct SetNode : public ExpressionNode {
+		Vector<ExpressionNode *> elements;
+
+		SetNode() {
+			type = SET;
+		}
+	};
+
 	struct SignalNode : public Node {
 		IdentifierNode *identifier = nullptr;
 		Vector<ParameterNode *> parameters;
@@ -1445,6 +1455,31 @@ private:
 
 		return node;
 	}
+	template <typename T>
+	T *replace_node() {
+		Node *to_replace = nodes_in_progress.back()->get();
+		nodes_in_progress.pop_back();
+		T *node2 = memnew(T);
+
+		node2->next = to_replace->next;
+
+		Node *it = list;
+		while (it->next != to_replace && it != nullptr) {
+			it = it->next;
+		}
+		if (it != nullptr) {
+			it->next = node2;
+		}
+		// else {
+		// 	list = node2;
+		// }
+
+		reset_extents(node2, to_replace);
+		nodes_in_progress.push_back(node2);
+
+		memdelete(to_replace);
+		return node2;
+	}
 	void clear();
 	void push_error(const String &p_message, const Node *p_origin = nullptr);
 #ifdef DEBUG_ENABLED
@@ -1538,6 +1573,7 @@ private:
 	ExpressionNode *parse_assignment(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_array(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_dictionary(ExpressionNode *p_previous_operand, bool p_can_assign);
+	ExpressionNode *parse_set(DictionaryNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_call(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_get_node(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_preload(ExpressionNode *p_previous_operand, bool p_can_assign);
@@ -1633,6 +1669,7 @@ public:
 		void print_preload(PreloadNode *p_preload);
 		void print_return(ReturnNode *p_return);
 		void print_self(SelfNode *p_self);
+		void print_set(SetNode *p_set);
 		void print_signal(SignalNode *p_signal);
 		void print_statement(Node *p_statement);
 		void print_subscript(SubscriptNode *p_subscript);

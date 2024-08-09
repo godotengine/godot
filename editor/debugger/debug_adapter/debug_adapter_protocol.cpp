@@ -457,6 +457,24 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			variable_list.insert(id, arr);
 			return id;
 		}
+		case Variant::SET: {
+			int id = variable_id++;
+			Set set = p_var;
+			Array translated = set.values();
+			Array arr;
+
+			for (int i = 0; i < translated.size(); i++) {
+				DAP::Variable var;
+				var.name = itos(i);
+				Variant value = translated[i];
+				var.type = Variant::get_type_name(value.get_type());
+				var.value = value;
+				var.variablesReference = parse_variant(value);
+				arr.push_back(var.to_json());
+			}
+			variable_list.insert(id, arr);
+			return id;
+		}
 		case Variant::PACKED_BYTE_ARRAY: {
 			int id = variable_id++;
 			PackedByteArray array = p_var;

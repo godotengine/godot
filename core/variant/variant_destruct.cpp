@@ -47,6 +47,7 @@ void Variant::_register_variant_destructors() {
 	add_destructor<VariantDestruct<Signal>>();
 	add_destructor<VariantDestruct<Dictionary>>();
 	add_destructor<VariantDestruct<Array>>();
+	add_destructor<VariantDestruct<Set>>();
 	add_destructor<VariantDestruct<PackedByteArray>>();
 	add_destructor<VariantDestruct<PackedInt32Array>>();
 	add_destructor<VariantDestruct<PackedInt64Array>>();

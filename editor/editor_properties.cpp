@@ -3905,8 +3905,11 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 			editor->setup(Variant::PACKED_VECTOR4_ARRAY, p_hint_text);
 			return editor;
 		} break;
-		default: {
-		}
+		case Variant::SET: {
+			ERR_FAIL_V_MSG(memnew(EditorPropertyNil), "Sets are currently unexportable.");
+		} break;
+		case Variant::VARIANT_MAX: {
+		} break; //unreachable
 	}
 
 	return nullptr;

@@ -88,6 +88,13 @@ static String _get_var_type(const Variant *p_var) {
 			if (builtin_type != Variant::NIL) {
 				basestr += "[" + _get_element_type(builtin_type, p_array->get_typed_class_name(), p_array->get_typed_script()) + "]";
 			}
+		} else if (p_var->get_type() == Variant::SET) {
+			basestr = "Set";
+			const Set *p_set = VariantInternal::get_set(p_var);
+			Variant::Type builtin_type = (Variant::Type)p_set->get_typed_builtin();
+			if (builtin_type != Variant::NIL) {
+				basestr += "[" + _get_element_type(builtin_type, p_set->get_typed_class_name(), p_set->get_typed_script()) + "]";
+			}
 		} else {
 			basestr = Variant::get_type_name(p_var->get_type());
 		}
@@ -120,6 +127,15 @@ Variant GDScriptFunction::_get_default_variant_for_data_type(const GDScriptDataT
 			}
 
 			return array;
+		} else if (p_data_type.builtin_type == Variant::SET) {
+			Set set;
+			// Typed set.
+			if (p_data_type.has_container_element_type(0)) {
+				const GDScriptDataType &element_type = p_data_type.get_container_element_type(0);
+				set.set_typed(element_type.builtin_type, element_type.native_type, element_type.script_type);
+			}
+
+			return set;
 		} else {
 			Callable::CallError ce;
 			Variant variant;
@@ -146,6 +162,8 @@ String GDScriptFunction::_get_call_error(const Callable::CallError &p_err, const
 			err_text = "Invalid type in " + p_where + ". The Object-derived class of argument " + itos(errorarg + 1) + " (" + _get_var_type(argptrs[errorarg]) + ") is not a subclass of the expected argument class.";
 		} else if (p_err.expected == Variant::ARRAY && argptrs[errorarg]->get_type() == p_err.expected) {
 			err_text = "Invalid type in " + p_where + ". The array of argument " + itos(errorarg + 1) + " (" + _get_var_type(argptrs[errorarg]) + ") does not have the same element type as the expected typed array argument.";
+		} else if (p_err.expected == Variant::SET && argptrs[errorarg]->get_type() == p_err.expected) {
+			err_text = "Invalid type in " + p_where + ". The set of argument " + itos(errorarg + 1) + " (" + _get_var_type(argptrs[errorarg]) + ") does not have the same element type as the expected typed set argument.";
 		} else
 #endif // DEBUG_ENABLED
 		{
@@ -208,7 +226,11 @@ void (*type_init_function_table[])(Variant *) = {
 	&VariantInitializer<PackedVector3Array>::init, // PACKED_VECTOR3_ARRAY.
 	&VariantInitializer<PackedColorArray>::init, // PACKED_COLOR_ARRAY.
 	&VariantInitializer<PackedVector4Array>::init, // PACKED_VECTOR4_ARRAY.
+	&VariantInitializer<Set>::init, // SET.
 };
+// FUTURE NOTE FOR DEVELOPERS MODIFYING THE OPCODE TABLE:
+//
+// Please put it in the same order as the opcodes defined in gdscript_function.h
 
 #if defined(__GNUC__)
 #define OPCODES_TABLE                                    \
@@ -217,6 +239,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_OPERATOR_VALIDATED,                     \
 		&&OPCODE_TYPE_TEST_BUILTIN,                      \
 		&&OPCODE_TYPE_TEST_ARRAY,                        \
+		&&OPCODE_TYPE_TEST_SET,                          \
 		&&OPCODE_TYPE_TEST_NATIVE,                       \
 		&&OPCODE_TYPE_TEST_SCRIPT,                       \
 		&&OPCODE_SET_KEYED,                              \
@@ -239,6 +262,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_ASSIGN_FALSE,                           \
 		&&OPCODE_ASSIGN_TYPED_BUILTIN,                   \
 		&&OPCODE_ASSIGN_TYPED_ARRAY,                     \
+		&&OPCODE_ASSIGN_TYPED_SET,                       \
 		&&OPCODE_ASSIGN_TYPED_NATIVE,                    \
 		&&OPCODE_ASSIGN_TYPED_SCRIPT,                    \
 		&&OPCODE_CAST_TO_BUILTIN,                        \
@@ -249,6 +273,8 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_CONSTRUCT_ARRAY,                        \
 		&&OPCODE_CONSTRUCT_TYPED_ARRAY,                  \
 		&&OPCODE_CONSTRUCT_DICTIONARY,                   \
+		&&OPCODE_CONSTRUCT_SET,                          \
+		&&OPCODE_CONSTRUCT_TYPED_SET,                    \
 		&&OPCODE_CALL,                                   \
 		&&OPCODE_CALL_RETURN,                            \
 		&&OPCODE_CALL_ASYNC,                             \
@@ -277,6 +303,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_RETURN,                                 \
 		&&OPCODE_RETURN_TYPED_BUILTIN,                   \
 		&&OPCODE_RETURN_TYPED_ARRAY,                     \
+		&&OPCODE_RETURN_TYPED_SET,                       \
 		&&OPCODE_RETURN_TYPED_NATIVE,                    \
 		&&OPCODE_RETURN_TYPED_SCRIPT,                    \
 		&&OPCODE_ITERATE_BEGIN,                          \
@@ -288,6 +315,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_ITERATE_BEGIN_VECTOR3I,                 \
 		&&OPCODE_ITERATE_BEGIN_STRING,                   \
 		&&OPCODE_ITERATE_BEGIN_DICTIONARY,               \
+		&&OPCODE_ITERATE_BEGIN_SET,                      \
 		&&OPCODE_ITERATE_BEGIN_ARRAY,                    \
 		&&OPCODE_ITERATE_BEGIN_PACKED_BYTE_ARRAY,        \
 		&&OPCODE_ITERATE_BEGIN_PACKED_INT32_ARRAY,       \
@@ -309,6 +337,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_ITERATE_VECTOR3I,                       \
 		&&OPCODE_ITERATE_STRING,                         \
 		&&OPCODE_ITERATE_DICTIONARY,                     \
+		&&OPCODE_ITERATE_SET,                            \
 		&&OPCODE_ITERATE_ARRAY,                          \
 		&&OPCODE_ITERATE_PACKED_BYTE_ARRAY,              \
 		&&OPCODE_ITERATE_PACKED_INT32_ARRAY,             \
@@ -350,6 +379,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_TYPE_ADJUST_CALLABLE,                   \
 		&&OPCODE_TYPE_ADJUST_SIGNAL,                     \
 		&&OPCODE_TYPE_ADJUST_DICTIONARY,                 \
+		&&OPCODE_TYPE_ADJUST_SET,                        \
 		&&OPCODE_TYPE_ADJUST_ARRAY,                      \
 		&&OPCODE_TYPE_ADJUST_PACKED_BYTE_ARRAY,          \
 		&&OPCODE_TYPE_ADJUST_PACKED_INT32_ARRAY,         \
@@ -424,6 +454,7 @@ void (*type_init_function_table[])(Variant *) = {
 #define OP_GET_SIGNAL get_signal
 #define OP_GET_ARRAY get_array
 #define OP_GET_DICTIONARY get_dictionary
+#define OP_GET_SET get_set
 #define OP_GET_PACKED_BYTE_ARRAY get_byte_array
 #define OP_GET_PACKED_INT32_ARRAY get_int32_array
 #define OP_GET_PACKED_INT64_ARRAY get_int64_array
@@ -630,6 +661,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			} else {                                                                                \
 				err_text = "Bad address index.";                                                    \
 			}                                                                                       \
+			CRASH_NOW();                                                                            \
 			OPCODE_BREAK;                                                                           \
 		}                                                                                           \
 		m_v = &variant_addresses[address_type][address_index];                                      \
@@ -822,6 +854,29 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				if (value->get_type() == Variant::ARRAY) {
 					Array *array = VariantInternal::get_array(value);
 					result = array->get_typed_builtin() == ((uint32_t)builtin_type) && array->get_typed_class_name() == native_type && array->get_typed_script() == *script_type;
+				}
+
+				*dst = result;
+				ip += 6;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_TYPE_TEST_SET) {
+				CHECK_SPACE(6);
+
+				GET_VARIANT_PTR(dst, 0);
+				GET_VARIANT_PTR(value, 1);
+
+				GET_VARIANT_PTR(script_type, 2);
+				Variant::Type builtin_type = (Variant::Type)_code_ptr[ip + 4];
+				int native_type_idx = _code_ptr[ip + 5];
+				GD_ERR_BREAK(native_type_idx < 0 || native_type_idx >= _global_names_count);
+				const StringName native_type = _global_names_ptr[native_type_idx];
+
+				bool result = false;
+				if (value->get_type() == Variant::SET) {
+					Set *set = VariantInternal::get_set(value);
+					result = set->get_typed_builtin() == ((uint32_t)builtin_type) && set->get_typed_class_name() == native_type && set->get_typed_script() == *script_type;
 				}
 
 				*dst = result;
@@ -1386,6 +1441,41 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 			DISPATCH_OPCODE;
 
+			OPCODE(OPCODE_ASSIGN_TYPED_SET) {
+				CHECK_SPACE(6);
+				GET_VARIANT_PTR(dst, 0);
+				GET_VARIANT_PTR(src, 1);
+
+				GET_VARIANT_PTR(script_type, 2);
+				Variant::Type builtin_type = (Variant::Type)_code_ptr[ip + 4];
+				int native_type_idx = _code_ptr[ip + 5];
+				GD_ERR_BREAK(native_type_idx < 0 || native_type_idx >= _global_names_count);
+				const StringName native_type = _global_names_ptr[native_type_idx];
+
+				if (src->get_type() != Variant::SET) {
+#ifdef DEBUG_ENABLED
+					err_text = vformat(R"(Trying to assign a value of type "%s" to a variable of type "Set[%s]".)",
+							_get_var_type(src), _get_element_type(builtin_type, native_type, *script_type));
+#endif // DEBUG_ENABLED
+					OPCODE_BREAK;
+				}
+
+				Set *set = VariantInternal::get_set(src);
+
+				if (set->get_typed_builtin() != ((uint32_t)builtin_type) || set->get_typed_class_name() != native_type || set->get_typed_script() != *script_type) {
+#ifdef DEBUG_ENABLED
+					err_text = vformat(R"(Trying to assign an set of type "%s" to a variable of type "Set[%s]".)",
+							_get_var_type(src), _get_element_type(builtin_type, native_type, *script_type));
+#endif // DEBUG_ENABLED
+					OPCODE_BREAK;
+				}
+
+				*dst = *src;
+
+				ip += 6;
+			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_ASSIGN_TYPED_NATIVE) {
 				CHECK_SPACE(4);
 				GET_VARIANT_PTR(dst, 0);
@@ -1708,6 +1798,53 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				*dst = dict;
 
 				ip += 2;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_CONSTRUCT_SET) {
+				LOAD_INSTRUCTION_ARGS
+				CHECK_SPACE(1 + instr_arg_count);
+				ip += instr_arg_count;
+
+				int argc = _code_ptr[ip + 1];
+				Set set;
+
+				for (int i = 0; i < argc; i++) {
+					set.add(*(instruction_args[i]));
+				}
+
+				GET_INSTRUCTION_ARG(dst, argc);
+
+				*dst = set;
+
+				ip += 2;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_CONSTRUCT_TYPED_SET) {
+				LOAD_INSTRUCTION_ARGS
+				CHECK_SPACE(3 + instr_arg_count);
+				ip += instr_arg_count;
+
+				int argc = _code_ptr[ip + 1];
+
+				GET_INSTRUCTION_ARG(script_type, argc + 1);
+				Variant::Type builtin_type = (Variant::Type)_code_ptr[ip + 2];
+				int native_type_idx = _code_ptr[ip + 3];
+				GD_ERR_BREAK(native_type_idx < 0 || native_type_idx >= _global_names_count);
+				const StringName native_type = _global_names_ptr[native_type_idx];
+
+				Set set;
+				for (int i = 0; i < argc; i++) {
+					set.insert(*instruction_args[i]);
+				}
+
+				GET_INSTRUCTION_ARG(dst, argc);
+				*dst = Variant(); // Clear potential previous typed set.
+
+				*dst = Set(set, builtin_type, native_type, *script_type);
+
+				ip += 4;
 			}
 			DISPATCH_OPCODE;
 
@@ -2656,6 +2793,42 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				OPCODE_BREAK;
 			}
 
+			OPCODE(OPCODE_RETURN_TYPED_SET) {
+				CHECK_SPACE(5);
+				GET_VARIANT_PTR(r, 0);
+
+				GET_VARIANT_PTR(script_type, 1);
+				Variant::Type builtin_type = (Variant::Type)_code_ptr[ip + 3];
+				int native_type_idx = _code_ptr[ip + 4];
+				GD_ERR_BREAK(native_type_idx < 0 || native_type_idx >= _global_names_count);
+				const StringName native_type = _global_names_ptr[native_type_idx];
+
+				if (r->get_type() != Variant::SET) {
+#ifdef DEBUG_ENABLED
+					err_text = vformat(R"(Trying to return value of type "%s" from a function whose return type is "Set[%s]".)",
+							Variant::get_type_name(r->get_type()), Variant::get_type_name(builtin_type));
+#endif
+					OPCODE_BREAK;
+				}
+
+				Set *set = VariantInternal::get_set(r);
+
+				if (set->get_typed_builtin() != ((uint32_t)builtin_type) || set->get_typed_class_name() != native_type || set->get_typed_script() != *script_type) {
+#ifdef DEBUG_ENABLED
+					err_text = vformat(R"(Trying to return an set of type "%s" where expected return type is "Set[%s]".)",
+							_get_var_type(r), _get_element_type(builtin_type, native_type, *script_type));
+#endif // DEBUG_ENABLED
+					OPCODE_BREAK;
+				}
+
+				retvalue = *set;
+
+#ifdef DEBUG_ENABLED
+				exit_ok = true;
+#endif // DEBUG_ENABLED
+				OPCODE_BREAK;
+			}
+
 			OPCODE(OPCODE_RETURN_TYPED_NATIVE) {
 				CHECK_SPACE(3);
 				GET_VARIANT_PTR(r, 0);
@@ -3019,6 +3192,31 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 			DISPATCH_OPCODE;
 
+			OPCODE(OPCODE_ITERATE_BEGIN_SET) {
+				CHECK_SPACE(8); // Check space for iterate instruction too.
+
+				GET_VARIANT_PTR(counter, 0);
+				GET_VARIANT_PTR(container, 1);
+
+				Set *set = VariantInternal::get_set(container);
+				const Variant *next = set->next(nullptr);
+
+				if (!set->is_empty()) {
+					GET_VARIANT_PTR(iterator, 2);
+					*counter = *next;
+					*iterator = *next;
+
+					// Skip regular iterate.
+					ip += 5;
+				} else {
+					// Jump to end of loop.
+					int jumpto = _code_ptr[ip + 4];
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					ip = jumpto;
+				}
+			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_ITERATE_BEGIN_ARRAY) {
 				CHECK_SPACE(8); // Check space for iterate instruction too.
 
@@ -3360,6 +3558,29 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 			DISPATCH_OPCODE;
 
+			OPCODE(OPCODE_ITERATE_SET) {
+				CHECK_SPACE(4);
+
+				GET_VARIANT_PTR(counter, 0);
+				GET_VARIANT_PTR(container, 1);
+
+				const Set *set = VariantInternal::get_set((const Variant *)container);
+				const Variant *next = set->next(counter);
+
+				if (!next) {
+					int jumpto = _code_ptr[ip + 4];
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					ip = jumpto;
+				} else {
+					GET_VARIANT_PTR(iterator, 2);
+					*counter = *next;
+					*iterator = *next;
+
+					ip += 5; // Loop again.
+				}
+			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_ITERATE_ARRAY) {
 				CHECK_SPACE(4);
 
@@ -3534,6 +3755,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE_TYPE_ADJUST(CALLABLE, Callable);
 			OPCODE_TYPE_ADJUST(SIGNAL, Signal);
 			OPCODE_TYPE_ADJUST(DICTIONARY, Dictionary);
+			OPCODE_TYPE_ADJUST(SET, Set);
 			OPCODE_TYPE_ADJUST(ARRAY, Array);
 			OPCODE_TYPE_ADJUST(PACKED_BYTE_ARRAY, PackedByteArray);
 			OPCODE_TYPE_ADJUST(PACKED_INT32_ARRAY, PackedInt32Array);
