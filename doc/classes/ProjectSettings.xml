@@ -2162,17 +2162,17 @@
 			During each physics tick, Godot will multiply the linear velocity of RigidBodies by [code]1.0 - combined_damp / physics_ticks_per_second[/code]. By default, bodies combine damp factors: [code]combined_damp[/code] is the sum of the damp value of the body and this value or the area's value the body is in. See [enum RigidBody2D.DampMode].
 			[b]Warning:[/b] Godot's damping calculations are simulation tick rate dependent. Changing [member physics/common/physics_ticks_per_second] may significantly change the outcomes and feel of your simulation. This is true for the entire range of damping values greater than 0. To get back to a similar feel, you also need to change your damp values. This needed change is not proportional and differs from case to case.
 		</member>
-		<member name="physics/2d/default_gravity" type="float" setter="" getter="" default="980.0">
+		<member name="physics/2d/default_gravity" type="float" setter="" getter="" default="981.0">
 			The default gravity strength in 2D (in pixels per second squared).
 			[b]Note:[/b] This property is only read when the project starts. To change the default gravity at runtime, use the following code sample:
 			[codeblocks]
 			[gdscript]
-			# Set the default gravity strength to 980.
-			PhysicsServer2D.area_set_param(get_viewport().find_world_2d().space, PhysicsServer2D.AREA_PARAM_GRAVITY, 980)
+			# Set the default gravity strength to 981.
+			PhysicsServer2D.area_set_param(get_viewport().find_world_2d().space, PhysicsServer2D.AREA_PARAM_GRAVITY, 981)
 			[/gdscript]
 			[csharp]
-			// Set the default gravity strength to 980.
-			PhysicsServer2D.AreaSetParam(GetViewport().FindWorld2D().Space, PhysicsServer2D.AreaParameter.Gravity, 980);
+			// Set the default gravity strength to 981.
+			PhysicsServer2D.AreaSetParam(GetViewport().FindWorld2D().Space, PhysicsServer2D.AreaParameter.Gravity, 981);
 			[/csharp]
 			[/codeblocks]
 		</member>
@@ -2240,17 +2240,17 @@
 			During each physics tick, Godot will multiply the angular velocity of RigidBodies by [code]1.0 - combined_damp / physics_ticks_per_second[/code]. By default, bodies combine damp factors: [code]combined_damp[/code] is the sum of the damp value of the body and this value or the area's value the body is in. See [enum RigidBody3D.DampMode].
 			[b]Warning:[/b] Godot's damping calculations are simulation tick rate dependent. Changing [member physics/common/physics_ticks_per_second] may significantly change the outcomes and feel of your simulation. This is true for the entire range of damping values greater than 0. To get back to a similar feel, you also need to change your damp values. This needed change is not proportional and differs from case to case.
 		</member>
-		<member name="physics/3d/default_gravity" type="float" setter="" getter="" default="9.8">
+		<member name="physics/3d/default_gravity" type="float" setter="" getter="" default="9.81">
 			The default gravity strength in 3D (in meters per second squared).
 			[b]Note:[/b] This property is only read when the project starts. To change the default gravity at runtime, use the following code sample:
 			[codeblocks]
 			[gdscript]
-			# Set the default gravity strength to 9.8.
-			PhysicsServer3D.area_set_param(get_viewport().find_world_3d().space, PhysicsServer3D.AREA_PARAM_GRAVITY, 9.8)
+			# Set the default gravity strength to 9.81.
+			PhysicsServer3D.area_set_param(get_viewport().find_world_3d().space, PhysicsServer3D.AREA_PARAM_GRAVITY, 9.81)
 			[/gdscript]
 			[csharp]
-			// Set the default gravity strength to 9.8.
-			PhysicsServer3D.AreaSetParam(GetViewport().FindWorld3D().Space, PhysicsServer3D.AreaParameter.Gravity, 9.8);
+			// Set the default gravity strength to 9.81.
+			PhysicsServer3D.AreaSetParam(GetViewport().FindWorld3D().Space, PhysicsServer3D.AreaParameter.Gravity, 9.81);
 			[/csharp]
 			[/codeblocks]
 		</member>
