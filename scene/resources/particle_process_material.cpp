@@ -110,6 +110,7 @@ void ParticleProcessMaterial::init_shaders() {
 	shader_names->emission_ring_height = "emission_ring_height";
 	shader_names->emission_ring_radius = "emission_ring_radius";
 	shader_names->emission_ring_inner_radius = "emission_ring_inner_radius";
+	shader_names->emission_ring_cone_angle = "emission_ring_cone_angle";
 	shader_names->emission_shape_offset = "emission_shape_offset";
 	shader_names->emission_shape_scale = "emission_shape_scale";
 
@@ -269,6 +270,7 @@ void ParticleProcessMaterial::_update_shader() {
 			code += "uniform float " + shader_names->emission_ring_height + ";\n";
 			code += "uniform float " + shader_names->emission_ring_radius + ";\n";
 			code += "uniform float " + shader_names->emission_ring_inner_radius + ";\n";
+			code += "uniform float " + shader_names->emission_ring_cone_angle + ";\n";
 		} break;
 		case EMISSION_SHAPE_MAX: { // Max value for validity check.
 			break;
@@ -643,8 +645,14 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "		pos = texelFetch(emission_texture_points, emission_tex_ofs, 0).xyz;\n";
 	}
 	if (emission_shape == EMISSION_SHAPE_RING) {
+		code += "		float radius_clamped = max(0.001, emission_ring_radius);\n";
+		code += "		float top_radius = max(radius_clamped - tan(radians(90.0 - emission_ring_cone_angle)) * emission_ring_height, 0.0);\n";
+		code += "		float y_pos = rand_from_seed(alt_seed);\n";
+		code += "		float skew = max(min(radius_clamped, top_radius) / max(radius_clamped, top_radius), 0.5);\n";
+		code += "		y_pos = radius_clamped < top_radius ? pow(y_pos, skew) : 1.0 - pow(y_pos, skew);\n";
 		code += "		float ring_spawn_angle = rand_from_seed(alt_seed) * 2.0 * pi;\n";
-		code += "		float ring_random_radius = sqrt(rand_from_seed(alt_seed) * (emission_ring_radius * emission_ring_radius - emission_ring_inner_radius * emission_ring_inner_radius) + emission_ring_inner_radius * emission_ring_inner_radius);\n";
+		code += "		float ring_random_radius = sqrt(rand_from_seed(alt_seed) * (radius_clamped * radius_clamped - emission_ring_inner_radius * emission_ring_inner_radius) + emission_ring_inner_radius * emission_ring_inner_radius);\n";
+		code += "		ring_random_radius = mix(ring_random_radius, ring_random_radius * (top_radius / radius_clamped), y_pos);\n";
 		code += "		vec3 axis = emission_ring_axis == vec3(0.0) ? vec3(0.0, 0.0, 1.0) : normalize(emission_ring_axis);\n";
 		code += "		vec3 ortho_axis = vec3(0.0);\n";
 		code += "		if (abs(axis) == vec3(1.0, 0.0, 0.0)) {\n";
@@ -662,7 +670,7 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "			vec3(axis.z * axis.x * oc - axis.y * s, axis.z * axis.y * oc + axis.x * s, c + axis.z * axis.z * oc)\n";
 		code += "			) * ortho_axis;\n";
 		code += "		ortho_axis = normalize(ortho_axis);\n";
-		code += "		pos = ortho_axis * ring_random_radius + (rand_from_seed(alt_seed) * emission_ring_height - emission_ring_height / 2.0) * axis;\n";
+		code += "		pos = ortho_axis * ring_random_radius + (y_pos * emission_ring_height - emission_ring_height / 2.0) * axis;\n";
 	}
 	code += "	}\n";
 	code += "	return pos * emission_shape_scale + emission_shape_offset;\n";
@@ -1615,6 +1623,11 @@ void ParticleProcessMaterial::set_emission_ring_inner_radius(real_t p_radius) {
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_ring_inner_radius, p_radius);
 }
 
+void ParticleProcessMaterial::set_emission_ring_cone_angle(real_t p_angle) {
+	emission_ring_cone_angle = p_angle;
+	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_ring_cone_angle, p_angle);
+}
+
 void ParticleProcessMaterial::set_inherit_velocity_ratio(double p_ratio) {
 	inherit_emitter_velocity_ratio = p_ratio;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->inherit_emitter_velocity_ratio, p_ratio);
@@ -1662,6 +1675,10 @@ real_t ParticleProcessMaterial::get_emission_ring_radius() const {
 
 real_t ParticleProcessMaterial::get_emission_ring_inner_radius() const {
 	return emission_ring_inner_radius;
+}
+
+real_t ParticleProcessMaterial::get_emission_ring_cone_angle() const {
+	return emission_ring_cone_angle;
 }
 
 void ParticleProcessMaterial::set_emission_shape_offset(const Vector3 &p_emission_shape_offset) {
@@ -2015,6 +2032,9 @@ void ParticleProcessMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emission_ring_inner_radius", "inner_radius"), &ParticleProcessMaterial::set_emission_ring_inner_radius);
 	ClassDB::bind_method(D_METHOD("get_emission_ring_inner_radius"), &ParticleProcessMaterial::get_emission_ring_inner_radius);
 
+	ClassDB::bind_method(D_METHOD("set_emission_ring_cone_angle", "cone_angle"), &ParticleProcessMaterial::set_emission_ring_cone_angle);
+	ClassDB::bind_method(D_METHOD("get_emission_ring_cone_angle"), &ParticleProcessMaterial::get_emission_ring_cone_angle);
+
 	ClassDB::bind_method(D_METHOD("set_emission_shape_offset", "emission_shape_offset"), &ParticleProcessMaterial::set_emission_shape_offset);
 	ClassDB::bind_method(D_METHOD("get_emission_shape_offset"), &ParticleProcessMaterial::get_emission_shape_offset);
 
@@ -2096,9 +2116,10 @@ void ParticleProcessMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "emission_color_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_emission_color_texture", "get_emission_color_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_point_count", PROPERTY_HINT_RANGE, "0,1000000,1"), "set_emission_point_count", "get_emission_point_count");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "emission_ring_axis"), "set_emission_ring_axis", "get_emission_ring_axis");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_ring_height"), "set_emission_ring_height", "get_emission_ring_height");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_ring_radius"), "set_emission_ring_radius", "get_emission_ring_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_ring_inner_radius"), "set_emission_ring_inner_radius", "get_emission_ring_inner_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_ring_height", PROPERTY_HINT_RANGE, "0,1000,0.01,or_greater"), "set_emission_ring_height", "get_emission_ring_height");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_ring_radius", PROPERTY_HINT_RANGE, "0,1000,0.01,or_greater"), "set_emission_ring_radius", "get_emission_ring_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_ring_inner_radius", PROPERTY_HINT_RANGE, "0,1000,0.01,or_greater"), "set_emission_ring_inner_radius", "get_emission_ring_inner_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_ring_cone_angle", PROPERTY_HINT_RANGE, "0,90,0.01,degrees"), "set_emission_ring_cone_angle", "get_emission_ring_cone_angle");
 	ADD_SUBGROUP("Angle", "");
 	ADD_MIN_MAX_PROPERTY("angle", "-720,720,0.1,or_less,or_greater,degrees", PARAM_ANGLE);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "angle_curve", PROPERTY_HINT_RESOURCE_TYPE, "CurveTexture"), "set_param_texture", "get_param_texture", PARAM_ANGLE);
@@ -2276,6 +2297,7 @@ ParticleProcessMaterial::ParticleProcessMaterial() :
 	set_emission_ring_height(1);
 	set_emission_ring_radius(1);
 	set_emission_ring_inner_radius(0);
+	set_emission_ring_cone_angle(90);
 	set_emission_shape_offset(Vector3(0.0, 0.0, 0.0));
 	set_emission_shape_scale(Vector3(1.0, 1.0, 1.0));
 

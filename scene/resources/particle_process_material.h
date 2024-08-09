@@ -259,6 +259,7 @@ private:
 		StringName emission_ring_height;
 		StringName emission_ring_radius;
 		StringName emission_ring_inner_radius;
+		StringName emission_ring_cone_angle;
 		StringName emission_shape_offset;
 		StringName emission_shape_scale;
 
@@ -325,6 +326,7 @@ private:
 	real_t emission_ring_height = 0.0f;
 	real_t emission_ring_radius = 0.0f;
 	real_t emission_ring_inner_radius = 0.0f;
+	real_t emission_ring_cone_angle = 0.0f;
 	int emission_point_count = 1;
 	Vector3 emission_shape_offset;
 	Vector3 emission_shape_scale;
@@ -417,6 +419,7 @@ public:
 	void set_emission_ring_height(real_t p_height);
 	void set_emission_ring_radius(real_t p_radius);
 	void set_emission_ring_inner_radius(real_t p_radius);
+	void set_emission_ring_cone_angle(real_t p_angle);
 	void set_emission_point_count(int p_count);
 
 	EmissionShape get_emission_shape() const;
@@ -429,6 +432,7 @@ public:
 	real_t get_emission_ring_height() const;
 	real_t get_emission_ring_radius() const;
 	real_t get_emission_ring_inner_radius() const;
+	real_t get_emission_ring_cone_angle() const;
 	int get_emission_point_count() const;
 
 	void set_turbulence_enabled(bool p_turbulence_enabled);
