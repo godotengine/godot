@@ -2700,8 +2700,8 @@ EditorPropertyColor::EditorPropertyColor() {
 	picker->set_flat(true);
 	picker->connect("color_changed", callable_mp(this, &EditorPropertyColor::_color_changed));
 	picker->connect("popup_closed", callable_mp(this, &EditorPropertyColor::_popup_closed));
-	picker->get_popup()->connect("about_to_popup", callable_mp(EditorNode::get_singleton(), &EditorNode::setup_color_picker).bind(picker->get_picker()));
-	picker->get_popup()->connect("about_to_popup", callable_mp(this, &EditorPropertyColor::_picker_opening));
+	picker->get_popup_panel()->connect("about_to_popup", callable_mp(EditorNode::get_singleton(), &EditorNode::setup_color_picker).bind(picker->get_picker()));
+	picker->get_popup_panel()->connect("about_to_popup", callable_mp(this, &EditorPropertyColor::_picker_opening));
 }
 
 ////////////// NODE PATH //////////////////////
