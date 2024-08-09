@@ -289,14 +289,14 @@ void GDScript::_placeholder_erased(PlaceHolderScriptInstance *p_placeholder) {
 
 #endif
 
-void GDScript::_get_script_method_list(List<MethodInfo> *r_list, bool p_include_base) const {
+void GDScript::get_script_method_list(List<MethodInfo> *r_list, bool p_no_inheritance) const {
 	const GDScript *current = this;
 	while (current) {
 		for (const KeyValue<StringName, GDScriptFunction *> &E : current->member_functions) {
 			r_list->push_back(E.value->get_method_info());
 		}
 
-		if (!p_include_base) {
+		if (p_no_inheritance) {
 			return;
 		}
 
@@ -304,11 +304,7 @@ void GDScript::_get_script_method_list(List<MethodInfo> *r_list, bool p_include_
 	}
 }
 
-void GDScript::get_script_method_list(List<MethodInfo> *r_list) const {
-	_get_script_method_list(r_list, true);
-}
-
-void GDScript::_get_script_property_list(List<PropertyInfo> *r_list, bool p_include_base) const {
+void GDScript::get_script_property_list(List<PropertyInfo> *r_list, bool p_no_inheritance) const {
 	const GDScript *sptr = this;
 	List<PropertyInfo> props;
 
@@ -338,17 +334,13 @@ void GDScript::_get_script_property_list(List<PropertyInfo> *r_list, bool p_incl
 			r_list->push_back(E);
 		}
 
-		if (!p_include_base) {
-			break;
+		if (p_no_inheritance) {
+			return;
 		}
 
 		props.clear();
 		sptr = sptr->_base;
 	}
-}
-
-void GDScript::get_script_property_list(List<PropertyInfo> *r_list) const {
-	_get_script_property_list(r_list, true);
 }
 
 bool GDScript::has_method(const StringName &p_method) const {
@@ -1306,27 +1298,23 @@ bool GDScript::has_script_signal(const StringName &p_signal) const {
 	return false;
 }
 
-void GDScript::_get_script_signal_list(List<MethodInfo> *r_list, bool p_include_base) const {
+void GDScript::get_script_signal_list(List<MethodInfo> *r_signals, bool p_no_inheritance) const {
 	for (const KeyValue<StringName, MethodInfo> &E : _signals) {
-		r_list->push_back(E.value);
+		r_signals->push_back(E.value);
 	}
 
-	if (!p_include_base) {
+	if (p_no_inheritance) {
 		return;
 	}
 
 	if (base.is_valid()) {
-		base->get_script_signal_list(r_list);
+		base->get_script_signal_list(r_signals);
 	}
 #ifdef TOOLS_ENABLED
 	else if (base_cache.is_valid()) {
-		base_cache->get_script_signal_list(r_list);
+		base_cache->get_script_signal_list(r_signals);
 	}
 #endif
-}
-
-void GDScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
-	_get_script_signal_list(r_signals, true);
 }
 
 GDScript *GDScript::_get_gdscript_from_variant(const Variant &p_variant) {

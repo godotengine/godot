@@ -114,13 +114,20 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	TypedArray<Dictionary> _get_script_property_list_bind_compat_80418();
+	TypedArray<Dictionary> _get_script_method_list_bind_compat_80418();
+	TypedArray<Dictionary> _get_script_signal_list_bind_compat_80418();
+	static void _bind_compatibility_methods();
+#endif
+
 	friend class PlaceHolderScriptInstance;
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) {}
 
 	Variant _get_property_default_value(const StringName &p_property);
-	TypedArray<Dictionary> _get_script_property_list();
-	TypedArray<Dictionary> _get_script_method_list();
-	TypedArray<Dictionary> _get_script_signal_list();
+	TypedArray<Dictionary> _get_script_property_list(bool p_no_inheritance = false);
+	TypedArray<Dictionary> _get_script_method_list(bool p_no_inheritance = false);
+	TypedArray<Dictionary> _get_script_signal_list(bool p_no_inheritance = false);
 	Dictionary _get_script_constant_map();
 
 	void _set_debugger_break_language();
@@ -165,13 +172,13 @@ public:
 	virtual ScriptLanguage *get_language() const = 0;
 
 	virtual bool has_script_signal(const StringName &p_signal) const = 0;
-	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const = 0;
+	virtual void get_script_signal_list(List<MethodInfo> *r_signals, bool p_no_inheritance = false) const = 0;
 
 	virtual bool get_property_default_value(const StringName &p_property, Variant &r_value) const = 0;
 
 	virtual void update_exports() {} //editor tool
-	virtual void get_script_method_list(List<MethodInfo> *p_list) const = 0;
-	virtual void get_script_property_list(List<PropertyInfo> *p_list) const = 0;
+	virtual void get_script_method_list(List<MethodInfo> *p_list, bool p_no_inheritance = false) const = 0;
+	virtual void get_script_property_list(List<PropertyInfo> *p_list, bool p_no_inheritance = false) const = 0;
 
 	virtual int get_member_line(const StringName &p_member) const { return -1; }
 

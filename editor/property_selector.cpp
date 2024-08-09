@@ -106,17 +106,22 @@ void PropertySelector::_update_search() {
 
 			v.get_property_list(&props);
 		} else {
-			Object *obj = ObjectDB::get_instance(script);
-			if (Object::cast_to<Script>(obj)) {
-				props.push_back(PropertyInfo(Variant::NIL, "Script Variables", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CATEGORY));
-				Object::cast_to<Script>(obj)->get_script_property_list(&props);
+			Ref<Script> script_base = Object::cast_to<Script>(ObjectDB::get_instance(script));
+			while (script_base.is_valid()) {
+				String class_name = script_base->get_global_name();
+				if (class_name.is_empty()) {
+					class_name = script_base->get_path().get_file();
+				}
+				props.push_back(PropertyInfo(Variant::NIL, class_name, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CATEGORY));
+				script_base->get_script_property_list(&props, true);
+				script_base = script_base->get_base_script();
 			}
 
-			StringName base = base_type;
-			while (base) {
-				props.push_back(PropertyInfo(Variant::NIL, base, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CATEGORY));
-				ClassDB::get_property_list(base, &props, true);
-				base = ClassDB::get_parent_class(base);
+			StringName native_base = base_type;
+			while (native_base) {
+				props.push_back(PropertyInfo(Variant::NIL, native_base, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CATEGORY));
+				ClassDB::get_property_list(native_base, &props, true);
+				native_base = ClassDB::get_parent_class(native_base);
 			}
 		}
 
@@ -170,17 +175,17 @@ void PropertySelector::_update_search() {
 		for (const PropertyInfo &E : props) {
 			if (E.usage == PROPERTY_USAGE_CATEGORY) {
 				if (category && category->get_first_child() == nullptr) {
-					memdelete(category); //old category was unused
+					memdelete(category); // Old category was unused.
 				}
 				category = search_options->create_item(root);
 				category->set_text(0, E.name);
 				category->set_selectable(0, false);
 
 				Ref<Texture2D> icon;
-				if (E.name == "Script Variables") {
-					icon = search_options->get_editor_theme_icon(SNAME("Script"));
-				} else {
+				if (ClassDB::class_exists(E.name) || ScriptServer::is_global_class(E.name)) {
 					icon = EditorNode::get_singleton()->get_class_icon(E.name);
+				} else {
+					icon = search_options->get_editor_theme_icon(SNAME("Script"));
 				}
 				category->set_icon(0, icon);
 				continue;
@@ -212,27 +217,34 @@ void PropertySelector::_update_search() {
 		}
 
 		if (category && category->get_first_child() == nullptr) {
-			memdelete(category); //old category was unused
+			memdelete(category); // Old category was unused.
 		}
 	} else {
 		List<MethodInfo> methods;
 
 		if (type != Variant::NIL) {
-			Variant v;
+			methods.push_back(MethodInfo("*" + Variant::get_type_name(type)));
+
+			Variant dummy;
 			Callable::CallError ce;
-			Variant::construct(type, v, nullptr, 0, ce);
-			v.get_method_list(&methods);
+			Variant::construct(type, dummy, nullptr, 0, ce);
+			dummy.get_method_list(&methods);
 		} else {
-			Ref<Script> script_ref = Object::cast_to<Script>(ObjectDB::get_instance(script));
-			if (script_ref.is_valid()) {
-				if (script_ref->is_built_in()) {
-					script_ref->reload(true);
+			Ref<Script> script_base = Object::cast_to<Script>(ObjectDB::get_instance(script));
+			while (script_base.is_valid()) {
+				if (script_base->is_built_in()) {
+					script_base->reload(true);
 				}
 
-				List<MethodInfo> script_methods;
-				script_ref->get_script_method_list(&script_methods);
+				String class_name = script_base->get_global_name();
+				if (class_name.is_empty()) {
+					class_name = script_base->get_path().get_file();
+				}
 
-				methods.push_back(MethodInfo("*Script Methods")); // TODO: Split by inheritance.
+				methods.push_back(MethodInfo("*" + class_name));
+
+				List<MethodInfo> script_methods;
+				script_base->get_script_method_list(&script_methods, true);
 
 				for (const MethodInfo &mi : script_methods) {
 					if (mi.name.begins_with("@")) {
@@ -243,38 +255,41 @@ void PropertySelector::_update_search() {
 					}
 					methods.push_back(mi);
 				}
+
+				script_base = script_base->get_base_script();
 			}
 
-			StringName base = base_type;
-			while (base) {
-				methods.push_back(MethodInfo("*" + String(base)));
-				ClassDB::get_method_list(base, &methods, true, true);
-				base = ClassDB::get_parent_class(base);
+			StringName native_base = base_type;
+			while (native_base) {
+				methods.push_back(MethodInfo("*" + String(native_base)));
+
+				ClassDB::get_method_list(native_base, &methods, true, true);
+				native_base = ClassDB::get_parent_class(native_base);
 			}
 		}
 
 		TreeItem *category = nullptr;
 
 		bool found = false;
-		bool script_methods = false;
+		bool is_native_class = true;
 
 		for (MethodInfo &mi : methods) {
 			if (mi.name.begins_with("*")) {
+				String class_name = mi.name.replace_first("*", "");
+				is_native_class = ClassDB::class_exists(class_name);
+
 				if (category && category->get_first_child() == nullptr) {
-					memdelete(category); //old category was unused
+					memdelete(category); // Old category was unused.
 				}
 				category = search_options->create_item(root);
-				category->set_text(0, mi.name.replace_first("*", ""));
+				category->set_text(0, class_name);
 				category->set_selectable(0, false);
 
 				Ref<Texture2D> icon;
-				script_methods = false;
-				String rep = mi.name.replace("*", "");
-				if (mi.name == "*Script Methods") {
-					icon = search_options->get_editor_theme_icon(SNAME("Script"));
-					script_methods = true;
+				if (is_native_class || ScriptServer::is_global_class(class_name)) {
+					icon = EditorNode::get_singleton()->get_class_icon(class_name);
 				} else {
-					icon = EditorNode::get_singleton()->get_class_icon(rep);
+					icon = search_options->get_editor_theme_icon(SNAME("Script"));
 				}
 				category->set_icon(0, icon);
 
@@ -282,7 +297,7 @@ void PropertySelector::_update_search() {
 			}
 
 			String name = mi.name.get_slice(":", 0);
-			if (!script_methods && name.begins_with("_") && !(mi.flags & METHOD_FLAG_VIRTUAL)) {
+			if (is_native_class && name.begins_with("_") && !(mi.flags & METHOD_FLAG_VIRTUAL)) {
 				continue;
 			}
 
@@ -350,7 +365,7 @@ void PropertySelector::_update_search() {
 		}
 
 		if (category && category->get_first_child() == nullptr) {
-			memdelete(category); //old category was unused
+			memdelete(category); // Old category was unused.
 		}
 	}
 
