@@ -165,10 +165,14 @@ void GenericTilePolygonEditor::_base_control_draw() {
 	base_control->draw_set_transform_matrix(xform);
 
 	// Draw fill rect under texture region.
-	Rect2 texture_rect(-background_region.size / 2, background_region.size);
+	Rect2 texture_rect(Vector2(), background_region.size);
 	if (tile_data) {
 		texture_rect.position -= tile_data->get_texture_origin();
+		if (tile_data->get_transpose()) {
+			texture_rect.size = Size2(texture_rect.size.y, texture_rect.size.x);
+		}
 	}
+	texture_rect.position -= texture_rect.size / 2; // Half-size offset must be applied after transposing.
 	base_control->draw_rect(texture_rect, Color(1, 1, 1, 0.3));
 
 	// Draw the background.
@@ -180,18 +184,14 @@ void GenericTilePolygonEditor::_base_control_draw() {
 		if (tile_data->get_flip_v()) {
 			region_size.y = -region_size.y;
 		}
-		base_control->draw_texture_rect_region(background_atlas_source->get_texture(), Rect2(-background_region.size / 2 - tile_data->get_texture_origin(), region_size), background_region, tile_data->get_modulate(), tile_data->get_transpose());
+		// Destination rect position must account for transposing, size must not.
+		base_control->draw_texture_rect_region(background_atlas_source->get_texture(), Rect2(texture_rect.position, region_size), background_region, tile_data->get_modulate(), tile_data->get_transpose());
 	}
 
 	// Compute and draw the grid area.
 	Rect2 grid_area = Rect2(-base_tile_size / 2, base_tile_size);
-	if (tile_data) {
-		grid_area.expand_to(-background_region.get_size() / 2 - tile_data->get_texture_origin());
-		grid_area.expand_to(background_region.get_size() / 2 - tile_data->get_texture_origin());
-	} else {
-		grid_area.expand_to(-background_region.get_size() / 2);
-		grid_area.expand_to(background_region.get_size() / 2);
-	}
+	grid_area.expand_to(texture_rect.position);
+	grid_area.expand_to(texture_rect.get_end());
 	base_control->draw_rect(grid_area, Color(1, 1, 1, 0.3), false);
 
 	// Draw grid.
