@@ -39,6 +39,7 @@ class MenuButton;
 class ShaderCreateDialog;
 class TabContainer;
 class TextShaderEditor;
+class VBoxContainer;
 class VisualShaderEditor;
 class WindowWrapper;
 
@@ -75,6 +76,7 @@ class ShaderEditorPlugin : public EditorPlugin {
 	};
 
 	HSplitContainer *main_split = nullptr;
+	VBoxContainer *left_panel = nullptr;
 	ItemList *shader_list = nullptr;
 	TabContainer *shader_tabs = nullptr;
 
