@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorContextMenuPlugin" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_popup_menu" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="paths" type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
+		<method name="add_context_menu_item">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="callback" type="Callable" />
+			<param index="2" name="icon" type="Texture2D" default="null" />
+			<param index="3" name="shortcut" type="Shortcut" default="null" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>
