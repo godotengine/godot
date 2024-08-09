@@ -99,6 +99,8 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 
 	int id = tabs->get_tab_count();
 	node->connect("stop_requested", callable_mp(this, &EditorDebuggerNode::_debugger_wants_stop).bind(id));
+	node->connect("play_main_scene_requested", callable_mp(this, &EditorDebuggerNode::_debugger_wants_run_main).bind(id));
+	node->connect("play_current_scene_requested", callable_mp(this, &EditorDebuggerNode::_debugger_wants_run_current).bind(id));
 	node->connect("stopped", callable_mp(this, &EditorDebuggerNode::_debugger_stopped).bind(id));
 	node->connect("stack_frame_selected", callable_mp(this, &EditorDebuggerNode::_stack_frame_selected).bind(id));
 	node->connect("error_selected", callable_mp(this, &EditorDebuggerNode::_error_selected).bind(id));
@@ -461,6 +463,20 @@ void EditorDebuggerNode::_debugger_wants_stop(int p_id) {
 	int pid = get_debugger(p_id)->get_remote_pid();
 	if (pid) {
 		callable_mp(EditorNode::get_singleton(), &EditorNode::stop_child_process).call_deferred(pid);
+	}
+}
+
+void EditorDebuggerNode::_debugger_wants_run_main(int p_id) {
+	int pid = get_debugger(p_id)->get_remote_pid();
+	if (pid) {
+		EditorNode::get_singleton()->get_project_run_bar()->play_main_scene();
+	}
+}
+
+void EditorDebuggerNode::_debugger_wants_run_current(int p_id) {
+	int pid = get_debugger(p_id)->get_remote_pid();
+	if (pid) {
+		EditorNode::get_singleton()->get_project_run_bar()->play_current_scene();
 	}
 }
 
