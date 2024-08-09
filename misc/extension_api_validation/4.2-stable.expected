@@ -380,3 +380,10 @@ Validate extension JSON: Error: Field 'classes/Image/methods/get_mipmap_offset/r
 
 Type changed to int64_t to support baking large lightmaps.
 No compatibility method needed, both GDExtension and C# generate it as int64_t anyway.
+
+
+GH-94684
+--------
+Validate extension JSON: Error: Field 'classes/SoftBody3D/methods/set_point_pinned/arguments': size changed value in new API, from 3 to 4.
+
+Optional argument added to allow for adding pin point at specific index. Compatibility method registered.
