@@ -109,6 +109,20 @@ namespace Godot.SourceGenerators
             source.Append(symbol.NameWithTypeParameters());
             source.Append("\n{\n");
 
+            source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
+            source.Append("#if TOOLS\n");
+
+            source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
+            source.Append("    internal new static global::System.Collections.Generic.Dictionary<global::Godot.StringName, string> GetGodotClassDocs()\n    {\n");
+            source.Append("        var docs = new global::System.Collections.Generic.Dictionary<global::Godot.StringName, string>();\n");
+            source.Append("        docs.Add(\"");
+            source.Append(symbol.Name);
+            source.Append("\", \"");
+            source.Append(symbol.GetDocumentationSummaryText());
+            source.Append("\");\n");
+            source.Append("        return docs;\n    }\n\n");
+            StringBuilder docMethodString = new StringBuilder();
+
             var exportedMembers = new List<ExportedPropertyMetadata>();
 
             var members = symbol.GetMembers();
@@ -276,6 +290,8 @@ namespace Godot.SourceGenerators
 
                 exportedMembers.Add(new ExportedPropertyMetadata(
                     property.Name, marshalType.Value, propertyType, value));
+
+                GenerateExportDoc(docMethodString, property);
             }
 
             foreach (var field in exportedFields)
@@ -343,18 +359,16 @@ namespace Godot.SourceGenerators
 
                 exportedMembers.Add(new ExportedPropertyMetadata(
                     field.Name, marshalType.Value, fieldType, value));
+
+                GenerateExportDoc(docMethodString, field);
             }
 
             // Generate GetGodotExportedProperties
 
             if (exportedMembers.Count > 0)
             {
-                source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
-
                 const string DictionaryType =
                     "global::System.Collections.Generic.Dictionary<global::Godot.StringName, global::Godot.Variant>";
-
-                source.Append("#if TOOLS\n");
 
                 source.Append("    /// <summary>\n")
                     .Append("    /// Get the default values for all properties declared in this class.\n")
@@ -395,12 +409,21 @@ namespace Godot.SourceGenerators
                 }
 
                 source.Append("        return values;\n");
-                source.Append("    }\n");
+                source.Append("    }\n\n");
 
-                source.Append("#endif // TOOLS\n");
+                source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
+                source.Append("    internal new static global::System.Collections.Generic.Dictionary<global::Godot.StringName, string> GetGodotPropertyDocs()\n    {\n");
+                source.Append("        var docs = new global::System.Collections.Generic.Dictionary<global::Godot.StringName, string>(");
+                source.Append(exportedMembers.Count);
+                source.Append(");\n");
+                source.Append(docMethodString);
+                source.Append("        return docs;\n    }\n");
 
-                source.Append("#pragma warning restore CS0109\n");
             }
+
+            source.Append("#endif // TOOLS\n");
+
+            source.Append("#pragma warning restore CS0109\n");
 
             source.Append("}\n"); // partial class
 
@@ -422,6 +445,19 @@ namespace Godot.SourceGenerators
             }
 
             context.AddSource(uniqueHint, SourceText.From(source.ToString(), Encoding.UTF8));
+        }
+
+        private static void GenerateExportDoc(StringBuilder docMethodString, ISymbol symbol)
+        {
+            string? text = symbol.GetDocumentationSummaryText();
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                docMethodString.Append("        docs.Add(PropertyName.")
+                    .Append(symbol.Name)
+                    .Append(", \"")
+                    .Append(text)
+                    .Append("\");\n");
+            }
         }
 
         private struct ExportedPropertyMetadata
