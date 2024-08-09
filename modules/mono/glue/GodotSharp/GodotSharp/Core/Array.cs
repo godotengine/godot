@@ -7,8 +7,6 @@ using System.Runtime.CompilerServices;
 using Godot.NativeInterop;
 using System.Diagnostics;
 
-#nullable enable
-
 namespace Godot.Collections
 {
     /// <summary>
@@ -161,7 +159,7 @@ namespace Godot.Collections
         /// The <paramref name="array"/> is <see langword="null"/>.
         /// </exception>
         /// <returns>A new Godot Array.</returns>
-        public Array(ReadOnlySpan<GodotObject> array)
+        public Array(ReadOnlySpan<GodotObject?> array)
         {
             if (array == null)
                 throw new ArgumentNullException(nameof(array));
@@ -1054,7 +1052,7 @@ namespace Godot.Collections
         IEnumerable<T>,
         IGenericGodotArray
     {
-        private static godot_variant ToVariantFunc(in Array<T> godotArray) =>
+        private static godot_variant ToVariantFunc(in Array<T>? godotArray) =>
             VariantUtils.CreateFromArray(godotArray);
 
         private static Array<T> FromVariantFunc(in godot_variant variant) =>
@@ -1199,7 +1197,7 @@ namespace Godot.Collections
         /// is returned.
         /// </summary>
         /// <returns>The maximum value contained in the array.</returns>
-        public T Max()
+        public T? Max()
         {
             godot_variant resVariant;
             var self = (godot_array)_underlyingArray.NativeValue;
@@ -1213,7 +1211,7 @@ namespace Godot.Collections
         /// is returned.
         /// </summary>
         /// <returns>The minimum value contained in the array.</returns>
-        public T Min()
+        public T? Min()
         {
             godot_variant resVariant;
             var self = (godot_array)_underlyingArray.NativeValue;
@@ -1236,7 +1234,7 @@ namespace Godot.Collections
             godot_variant resVariant;
             var self = (godot_array)_underlyingArray.NativeValue;
             NativeFuncs.godotsharp_array_pick_random(ref self, out resVariant);
-            return VariantUtils.ConvertTo<T>(resVariant);
+            return VariantUtils.ConvertTo<T>(resVariant)!;
         }
 
         /// <summary>
@@ -1415,7 +1413,7 @@ namespace Godot.Collections
             get
             {
                 _underlyingArray.GetVariantBorrowElementAt(index, out godot_variant borrowElem);
-                return VariantUtils.ConvertTo<T>(borrowElem);
+                return VariantUtils.ConvertTo<T>(borrowElem)!;
             }
             set
             {

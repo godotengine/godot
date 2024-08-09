@@ -97,7 +97,7 @@ namespace Godot
         /// </example>
         /// <param name="path">Path of the <see cref="Resource"/> to load.</param>
         /// <returns>The loaded <see cref="Resource"/>.</returns>
-        public static Resource Load(string path)
+        public static Resource? Load(string path)
         {
             return ResourceLoader.Load(path);
         }
@@ -123,13 +123,16 @@ namespace Godot
         /// </code>
         /// </example>
         /// <param name="path">Path of the <see cref="Resource"/> to load.</param>
+        /// <exception cref="InvalidCastException">
+        /// The loaded resource can't be casted to the given type <typeparamref name="T"/>.
+        /// </exception>
         /// <typeparam name="T">The type to cast to. Should be a descendant of <see cref="Resource"/>.</typeparam>
-        public static T Load<T>(string path) where T : class
+        public static T? Load<T>(string path) where T : class?
         {
             return ResourceLoader.Load<T>(path);
         }
 
-        private static string AppendPrintParams(object[] parameters)
+        private static string AppendPrintParams(object?[] parameters)
         {
             if (parameters == null)
             {
@@ -144,7 +147,7 @@ namespace Godot
             return sb.ToString();
         }
 
-        private static string AppendPrintParams(char separator, object[] parameters)
+        private static string AppendPrintParams(char separator, object?[] parameters)
         {
             if (parameters == null)
             {
@@ -192,7 +195,7 @@ namespace Godot
         /// </code>
         /// </example>
         /// <param name="what">Arguments that will be printed.</param>
-        public static void Print(params object[] what)
+        public static void Print(params object?[] what)
         {
             Print(AppendPrintParams(what));
         }
@@ -245,7 +248,7 @@ namespace Godot
         /// </code>
         /// </example>
         /// <param name="what">Arguments that will be printed.</param>
-        public static void PrintRich(params object[] what)
+        public static void PrintRich(params object?[] what)
         {
             PrintRich(AppendPrintParams(what));
         }
@@ -269,7 +272,7 @@ namespace Godot
         /// </code>
         /// </example>
         /// <param name="what">Arguments that will be printed.</param>
-        public static void PrintErr(params object[] what)
+        public static void PrintErr(params object?[] what)
         {
             PrintErr(AppendPrintParams(what));
         }
@@ -298,7 +301,7 @@ namespace Godot
         /// </code>
         /// </example>
         /// <param name="what">Arguments that will be printed.</param>
-        public static void PrintRaw(params object[] what)
+        public static void PrintRaw(params object?[] what)
         {
             PrintRaw(AppendPrintParams(what));
         }
@@ -312,7 +315,7 @@ namespace Godot
         /// </code>
         /// </example>
         /// <param name="what">Arguments that will be printed.</param>
-        public static void PrintS(params object[] what)
+        public static void PrintS(params object?[] what)
         {
             string message = AppendPrintParams(' ', what);
             using var godotStr = Marshaling.ConvertStringToNative(message);
@@ -328,7 +331,7 @@ namespace Godot
         /// </code>
         /// </example>
         /// <param name="what">Arguments that will be printed.</param>
-        public static void PrintT(params object[] what)
+        public static void PrintT(params object?[] what)
         {
             string message = AppendPrintParams('\t', what);
             using var godotStr = Marshaling.ConvertStringToNative(message);
@@ -339,8 +342,8 @@ namespace Godot
         private static void ErrPrintError(string message, godot_error_handler_type type = godot_error_handler_type.ERR_HANDLER_ERROR)
         {
             // Skip 1 frame to avoid current method.
-            var stackFrame = DebuggingUtils.GetCurrentStackFrame(skipFrames: 1);
-            string callerFilePath = ProjectSettings.LocalizePath(stackFrame.GetFileName());
+            var stackFrame = DebuggingUtils.GetCurrentStackFrame(skipFrames: 1)!;
+            string callerFilePath = ProjectSettings.LocalizePath(stackFrame.GetFileName()!);
             DebuggingUtils.GetStackFrameMethodDecl(stackFrame, out string callerName);
             int callerLineNumber = stackFrame.GetFileLineNumber();
 
@@ -377,7 +380,7 @@ namespace Godot
         /// </code>
         /// </example>
         /// <param name="what">Arguments that form the error message.</param>
-        public static void PushError(params object[] what)
+        public static void PushError(params object?[] what)
         {
             ErrPrintError(AppendPrintParams(what));
         }
@@ -405,7 +408,7 @@ namespace Godot
         /// </code>
         /// </example>
         /// <param name="what">Arguments that form the warning message.</param>
-        public static void PushWarning(params object[] what)
+        public static void PushWarning(params object?[] what)
         {
             ErrPrintError(AppendPrintParams(what), type: godot_error_handler_type.ERR_HANDLER_WARNING);
         }

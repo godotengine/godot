@@ -7,8 +7,6 @@ using System.Runtime.CompilerServices;
 
 namespace Godot.Bridge;
 
-#nullable enable
-
 public static partial class ScriptManagerBridge
 {
     private class ScriptTypeBiMap

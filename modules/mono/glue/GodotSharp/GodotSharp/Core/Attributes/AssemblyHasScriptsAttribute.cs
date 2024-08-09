@@ -1,8 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-#nullable enable
-
 namespace Godot
 {
     /// <summary>
@@ -46,5 +44,3 @@ namespace Godot
         }
     }
 }
-
-#nullable restore

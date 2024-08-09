@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Godot.Bridge;
 
@@ -8,7 +9,7 @@ namespace Godot.NativeInterop
 {
     internal static class InteropUtils
     {
-        public static GodotObject UnmanagedGetManaged(IntPtr unmanaged)
+        public static GodotObject? UnmanagedGetManaged(IntPtr unmanaged)
         {
             // The native pointer may be null
             if (unmanaged == IntPtr.Zero)
@@ -23,7 +24,7 @@ namespace Godot.NativeInterop
                 unmanaged, out hasCsScriptInstance);
 
             if (gcHandlePtr != IntPtr.Zero)
-                return (GodotObject)GCHandle.FromIntPtr(gcHandlePtr).Target;
+                return (GodotObject?)GCHandle.FromIntPtr(gcHandlePtr).Target;
 
             // Otherwise, if the object has a CSharpInstance script instance, return null
 
@@ -34,7 +35,7 @@ namespace Godot.NativeInterop
 
             gcHandlePtr = NativeFuncs.godotsharp_internal_unmanaged_get_instance_binding_managed(unmanaged);
 
-            object target = gcHandlePtr != IntPtr.Zero ? GCHandle.FromIntPtr(gcHandlePtr).Target : null;
+            object? target = gcHandlePtr != IntPtr.Zero ? GCHandle.FromIntPtr(gcHandlePtr).Target : null;
 
             if (target != null)
                 return (GodotObject)target;
@@ -44,7 +45,7 @@ namespace Godot.NativeInterop
             gcHandlePtr = NativeFuncs.godotsharp_internal_unmanaged_instance_binding_create_managed(
                 unmanaged, gcHandlePtr);
 
-            return gcHandlePtr != IntPtr.Zero ? (GodotObject)GCHandle.FromIntPtr(gcHandlePtr).Target : null;
+            return gcHandlePtr != IntPtr.Zero ? (GodotObject?)GCHandle.FromIntPtr(gcHandlePtr).Target : null;
         }
 
         public static void TieManagedToUnmanaged(GodotObject managed, IntPtr unmanaged,
@@ -90,7 +91,9 @@ namespace Godot.NativeInterop
         public static GodotObject EngineGetSingleton(string name)
         {
             using godot_string src = Marshaling.ConvertStringToNative(name);
-            return UnmanagedGetManaged(NativeFuncs.godotsharp_engine_get_singleton(src));
+            var singleton = UnmanagedGetManaged(NativeFuncs.godotsharp_engine_get_singleton(src));
+            Debug.Assert(singleton is not null, "Valid singleton name must be passed.");
+            return singleton;
         }
     }
 }
