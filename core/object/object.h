@@ -704,6 +704,7 @@ protected:
 	virtual bool _property_can_revertv(const StringName &p_name) const { return false; };
 	virtual bool _property_get_revertv(const StringName &p_name, Variant &r_property) const { return false; };
 	virtual void _notificationv(int p_notification, bool p_reversed) {}
+	virtual String _to_string();
 
 	static void _bind_methods();
 #ifndef DISABLE_DEPRECATED
@@ -887,7 +888,7 @@ public:
 	}
 
 	void notification(int p_notification, bool p_reversed = false);
-	virtual String to_string();
+	String to_string();
 
 	// Used mainly by script, get and set all INCLUDING string.
 	virtual Variant getvar(const Variant &p_key, bool *r_valid = nullptr) const;
