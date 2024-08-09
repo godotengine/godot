@@ -272,6 +272,7 @@ private:
 		RS::PrimitiveType primitive = RS::PRIMITIVE_MAX;
 		uint32_t flags = 0;
 		uint32_t surface_index = 0;
+		uint8_t pass_index : 8;
 		uint32_t lod_index = 0;
 		uint32_t index_count = 0;
 		int32_t light_pass_index = -1;
@@ -621,7 +622,16 @@ private:
 
 		struct SortByReverseDepthAndPriority {
 			_FORCE_INLINE_ bool operator()(const GeometryInstanceSurface *A, const GeometryInstanceSurface *B) const {
-				return (A->sort.priority == B->sort.priority) ? (A->owner->depth > B->owner->depth) : (A->sort.priority < B->sort.priority);
+				if (A->sort.priority == B->sort.priority) {
+					if (A->owner->depth == B->owner->depth) {
+						return A->pass_index < B->pass_index;
+					} else {
+						return A->owner->depth > B->owner->depth;
+					}
+				} else {
+					return A->sort.priority < B->sort.priority;
+				}
+				//return (A->sort.priority == B->sort.priority) ? (A->owner->depth > B->owner->depth) : (A->sort.priority < B->sort.priority);
 			}
 		};
 

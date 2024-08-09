@@ -2476,6 +2476,7 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 		String mesh_path = mesh_storage->mesh_get_path(p_mesh).is_empty() ? "" : "(" + mesh_storage->mesh_get_path(p_mesh) + ")";
 		WARN_PRINT_ED(vformat("Attempting to use a shader %s that requires tangents with a mesh %s that doesn't contain tangents. Ensure that meshes are imported with the 'ensure_tangents' option. If creating your own meshes, add an `ARRAY_TANGENT` array (when using ArrayMesh) or call `generate_tangents()` (when using SurfaceTool).", shader_path, mesh_path));
 	}
+	sdcache->pass_index = p_material->pass_index;
 }
 
 void RenderForwardMobile::_geometry_instance_add_surface_with_material_chain(GeometryInstanceForwardMobile *ginstance, uint32_t p_surface, SceneShaderForwardMobile::MaterialData *p_material, RID p_mat_src, RID p_mesh) {
@@ -2484,12 +2485,15 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material_chain(Geo
 
 	_geometry_instance_add_surface_with_material(ginstance, p_surface, material, p_mat_src.get_local_index(), material_storage->material_get_shader_id(p_mat_src), p_mesh);
 
+	uint64_t pass_index = material->pass_index;
 	while (material->next_pass.is_valid()) {
 		RID next_pass = material->next_pass;
 		material = static_cast<SceneShaderForwardMobile::MaterialData *>(material_storage->material_get_data(next_pass, RendererRD::MaterialStorage::SHADER_TYPE_3D));
 		if (!material || !material->shader_data->valid) {
 			break;
 		}
+		pass_index += 1;
+		material->pass_index = pass_index;
 		if (ginstance->data->dirty_dependencies) {
 			material_storage->material_update_dependency(next_pass, &ginstance->data->dependency_tracker);
 		}
@@ -2522,7 +2526,7 @@ void RenderForwardMobile::_geometry_instance_add_surface(GeometryInstanceForward
 	}
 
 	ERR_FAIL_NULL(material);
-
+	material->pass_index = 0;
 	_geometry_instance_add_surface_with_material_chain(ginstance, p_surface, material, m_src, p_mesh);
 
 	if (ginstance->data->material_overlay.is_valid()) {
@@ -2533,7 +2537,7 @@ void RenderForwardMobile::_geometry_instance_add_surface(GeometryInstanceForward
 			if (ginstance->data->dirty_dependencies) {
 				material_storage->material_update_dependency(m_src, &ginstance->data->dependency_tracker);
 			}
-
+			material->pass_index = 128;
 			_geometry_instance_add_surface_with_material_chain(ginstance, p_surface, material, m_src, p_mesh);
 		}
 	}
