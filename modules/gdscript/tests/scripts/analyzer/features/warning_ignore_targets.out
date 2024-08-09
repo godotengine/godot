@@ -6,15 +6,15 @@ GDTEST_OK
 >> WARNING
 >> Line: 8
 >> NARROWING_CONVERSION
->> Narrowing conversion (float is converted to int and loses precision).
+>> Narrowing conversion (float is converted to int and loses precision). If this is intended, cast the float to an integer: "int(x)".
 >> WARNING
 >> Line: 19
 >> NARROWING_CONVERSION
->> Narrowing conversion (float is converted to int and loses precision).
+>> Narrowing conversion (float is converted to int and loses precision). If this is intended, cast the float to an integer: "int(x)".
 >> WARNING
 >> Line: 24
 >> NARROWING_CONVERSION
->> Narrowing conversion (float is converted to int and loses precision).
+>> Narrowing conversion (float is converted to int and loses precision). If this is intended, cast the float to an integer: "int(x)".
 >> WARNING
 >> Line: 27
 >> CONFUSABLE_IDENTIFIER
@@ -22,8 +22,8 @@ GDTEST_OK
 >> WARNING
 >> Line: 31
 >> NARROWING_CONVERSION
->> Narrowing conversion (float is converted to int and loses precision).
+>> Narrowing conversion (float is converted to int and loses precision). If this is intended, cast the float to an integer: "int(x)".
 >> WARNING
 >> Line: 35
 >> NARROWING_CONVERSION
->> Narrowing conversion (float is converted to int and loses precision).
+>> Narrowing conversion (float is converted to int and loses precision). If this is intended, cast the float to an integer: "int(x)".

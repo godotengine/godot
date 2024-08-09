@@ -120,9 +120,10 @@ String GDScriptWarning::get_message() const {
 		case INTEGER_DIVISION:
 			return "Integer division, decimal part will be discarded.";
 		case NARROWING_CONVERSION:
-			return "Narrowing conversion (float is converted to int and loses precision).";
+			return R"*(Narrowing conversion (float is converted to int and loses precision). If this is intended, cast the float to an integer: "int(x)".)*";
 		case INT_AS_ENUM_WITHOUT_CAST:
-			return "Integer used when an enum value is expected. If this is intended cast the integer to the enum type.";
+			CHECK_SYMBOLS(1);
+			return vformat(R"*(Integer is used when an enum value of type "%s" is expected. If this is intended, cast the integer to the enum type: "x as %s".)*", symbols[0], symbols[0]);
 		case INT_AS_ENUM_WITHOUT_MATCH:
 			CHECK_SYMBOLS(3);
 			return vformat(R"(Cannot %s %s as Enum "%s": no enum member has matching value.)", symbols[0], symbols[1], symbols[2]);
