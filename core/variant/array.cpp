@@ -369,6 +369,36 @@ int Array::find(const Variant &p_value, int p_from) const {
 	return ret;
 }
 
+int Array::find_custom(const Callable &p_callable, int p_from) const {
+	if (_p->array.size() == 0) {
+		return -1;
+	}
+
+	if (p_from < 0 || size() == 0) {
+		return -1;
+	}
+
+	const Variant *argptrs[1];
+
+	for (int i = p_from; i < size(); i++) {
+		argptrs[0] = &get(i);
+
+		Variant result;
+		Callable::CallError ce;
+
+		p_callable.callp(argptrs, 1, result, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_FAIL_V_MSG(-1, "Error calling method from 'find_custom': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce) + ".");
+		}
+		// Return as soon as possible.
+		if (result.operator bool()) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
 int Array::rfind(const Variant &p_value, int p_from) const {
 	if (_p->array.size() == 0) {
 		return -1;
@@ -377,16 +407,51 @@ int Array::rfind(const Variant &p_value, int p_from) const {
 	ERR_FAIL_COND_V(!_p->typed.validate(value, "rfind"), -1);
 
 	if (p_from < 0) {
-		// Relative offset from the end
+		// Relative offset from the end.
 		p_from = _p->array.size() + p_from;
 	}
 	if (p_from < 0 || p_from >= _p->array.size()) {
-		// Limit to array boundaries
+		// Limit to array boundaries.
 		p_from = _p->array.size() - 1;
 	}
 
 	for (int i = p_from; i >= 0; i--) {
 		if (StringLikeVariantComparator::compare(_p->array[i], value)) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+int Array::rfind_custom(const Callable &p_callable, int p_from) const {
+	if (_p->array.size() == 0) {
+		return -1;
+	}
+
+	if (p_from < 0) {
+		// Relative offset from the end.
+		p_from = _p->array.size() + p_from;
+	}
+	if (p_from < 0 || p_from >= _p->array.size()) {
+		// Limit to array boundaries.
+		p_from = _p->array.size() - 1;
+	}
+
+	const Variant *argptrs[1];
+
+	for (int i = p_from; i >= 0; i--) {
+		argptrs[0] = &get(i);
+
+		Variant result;
+		Callable::CallError ce;
+
+		p_callable.callp(argptrs, 1, result, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_FAIL_V_MSG(-1, "Error calling method from 'rfind_custom': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce) + ".");
+		}
+		// Return as soon as possible.
+		if (result.operator bool()) {
 			return i;
 		}
 	}

@@ -2289,7 +2289,9 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(Array, back, sarray(), varray());
 	bind_method(Array, pick_random, sarray(), varray());
 	bind_method(Array, find, sarray("what", "from"), varray(0));
+	bind_method(Array, find_custom, sarray("func", "from"), varray(0));
 	bind_method(Array, rfind, sarray("what", "from"), varray(-1));
+	bind_method(Array, rfind_custom, sarray("func", "from"), varray(-1));
 	bind_method(Array, count, sarray("value"), varray());
 	bind_method(Array, has, sarray("value"), varray());
 	bind_method(Array, pop_back, sarray(), varray());
