@@ -86,20 +86,33 @@ void Range::Shared::redraw_owners() {
 
 void Range::set_value(double p_val) {
 	double prev_val = shared->val;
-	_set_value_no_signal(p_val);
+	_set_value_no_signal(p_val, is_infinite_input_allowed(), false);
 
 	if (shared->val != prev_val) {
 		shared->emit_value_changed();
 	}
 }
 
-void Range::_set_value_no_signal(double p_val) {
+void Range::_set_value_no_signal(double p_val, bool p_allow_inf, bool p_allow_nan) {
 	if (!Math::is_finite(p_val)) {
-		return;
+		// HACK: Assumes that if p_allow_nan is true then p_allow_inf will also be true.
+		if (p_allow_inf) {
+			if (Math::is_nan(p_val)) {
+				if (p_allow_nan) {
+					shared->val = p_val;
+				}
+				return;
+			}
+		} else {
+			return;
+		}
 	}
 
 	if (shared->step > 0) {
-		p_val = Math::round((p_val - shared->min) / shared->step) * shared->step + shared->min;
+		// This breaks if min is inf.
+		if (Math::is_finite(shared->min)) {
+			p_val = Math::round((p_val - shared->min) / shared->step) * shared->step + shared->min;
+		}
 	}
 
 	if (_rounded_values) {
@@ -123,9 +136,9 @@ void Range::_set_value_no_signal(double p_val) {
 
 void Range::set_value_no_signal(double p_val) {
 	double prev_val = shared->val;
-	_set_value_no_signal(p_val);
+	_set_value_no_signal(p_val, is_display_non_finite_allowed(), is_display_non_finite_allowed());
 
-	if (shared->val != prev_val) {
+	if (shared->val != prev_val || Math::is_nan(shared->val)) {
 		shared->redraw_owners();
 	}
 }
@@ -371,6 +384,22 @@ void Range::set_allow_lesser(bool p_allow) {
 
 bool Range::is_lesser_allowed() const {
 	return shared->allow_lesser;
+}
+
+void Range::set_allow_infinite_input(bool p_allow) {
+	shared->allow_infinite_input = p_allow;
+}
+
+bool Range::is_infinite_input_allowed() const {
+	return shared->allow_infinite_input;
+}
+
+void Range::set_allow_display_non_finite(bool p_allow) {
+	shared->allow_display_non_finite = p_allow;
+}
+
+bool Range::is_display_non_finite_allowed() const {
+	return shared->allow_display_non_finite;
 }
 
 Range::Range() {
