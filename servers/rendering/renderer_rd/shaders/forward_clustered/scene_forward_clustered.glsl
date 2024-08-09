@@ -1371,7 +1371,13 @@ void fragment_shader(in SceneData scene_data) {
 #ifdef LIGHT_CLEARCOAT_USED
 
 	if (scene_data.use_reflection_cubemap) {
-		vec3 n = normalize(normal_interp); // We want to use geometric normal, not normal_map
+#ifdef CLEARCOAT_NORMAL_MAP
+		// Use normal map texture and geometric normal.
+		vec3 n = normal;
+#else
+		// By default, we want to use geometric normal only, not normal_map. See GH-69327 for rationale.
+		vec3 n = normalize(normal_interp);
+#endif
 		float NoV = max(dot(n, view), 0.0001);
 		vec3 ref_vec = reflect(-view, n);
 		// The clear coat layer assumes an IOR of 1.5 (4% reflectance)
@@ -2082,7 +2088,11 @@ void fragment_shader(in SceneData scene_data) {
 					rim, rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
+#ifdef CLEARCOAT_NORMAL_MAP
+					clearcoat, clearcoat_roughness, normal,
+#else
 					clearcoat, clearcoat_roughness, normalize(normal_interp),
+#endif // CLEARCOAT_NORMAL_MAP
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 					binormal,
@@ -2154,7 +2164,11 @@ void fragment_shader(in SceneData scene_data) {
 						rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
+#ifdef CLEARCOAT_NORMAL_MAP
+						clearcoat, clearcoat_roughness, normal,
+#else
 						clearcoat, clearcoat_roughness, normalize(normal_interp),
+#endif // CLEARCOAT_NORMAL_MAP
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 						tangent, binormal, anisotropy,
@@ -2226,7 +2240,11 @@ void fragment_shader(in SceneData scene_data) {
 						rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
+#ifdef CLEARCOAT_NORMAL_MAP
+						clearcoat, clearcoat_roughness, normal,
+#else
 						clearcoat, clearcoat_roughness, normalize(normal_interp),
+#endif // CLEARCOAT_NORMAL_MAP
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 						tangent,
