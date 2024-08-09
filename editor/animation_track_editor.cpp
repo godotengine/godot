@@ -5370,6 +5370,7 @@ void AnimationTrackEditor::_key_selected(int p_key, bool p_single, int p_track) 
 	KeyInfo ki;
 	ki.pos = animation->track_get_key_time(p_track, p_key);
 	selection[sk] = ki;
+	emit_signal("timeline_changed", ki.pos, false);
 
 	_redraw_tracks();
 	_update_key_edit();
