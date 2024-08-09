@@ -3,14 +3,6 @@
 This file list third-party libraries used in the Android source folder,
 with their provenance and, when relevant, modifications made to those files.
 
-## com.android.vending.billing
-
-- Upstream: https://github.com/googlesamples/android-play-billing/tree/master/TrivialDrive/app/src/main
-- Version: git (7a94c69, 2019)
-- License: Apache 2.0
-
-Overwrite the file `aidl/com/android/vending/billing/IInAppBillingService.aidl`.
-
 ## com.google.android.vending.expansion.downloader
 
 - Upstream: https://github.com/google/play-apk-expansion/tree/master/apkx_library
@@ -37,3 +29,13 @@ Overwrite all files under:
 
 Some files have been modified to silence linter errors or fix downstream issues.
 See the `patches/com.google.android.vending.licensing.patch` file.
+
+## com.android.apksig
+
+- Upstream: https://android.googlesource.com/platform/tools/apksig/+/ac5cbb07d87cc342fcf07715857a812305d69888
+- Version: git (ac5cbb07d87cc342fcf07715857a812305d69888, 2024)
+- License: Apache 2.0
+
+Overwrite all files under:
+
+- `src/com/android/apksig`

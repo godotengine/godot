@@ -38,7 +38,8 @@ internal enum class FileErrors(val nativeValue: Int) {
 	FAILED(-1),
 	FILE_NOT_FOUND(-2),
 	FILE_CANT_OPEN(-3),
-	INVALID_PARAMETER(-4);
+	INVALID_PARAMETER(-4),
+	UNSUPPORTED_OPERATION(-5);
 
 	companion object {
 		fun fromNativeError(error: Int): FileErrors? {

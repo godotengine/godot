@@ -246,4 +246,9 @@ public class GodotLib {
 	 * dispatched from the UI thread.
 	 */
 	public static native boolean shouldDispatchInputToRenderThread();
+
+	/**
+	 * @return the project resource directory
+	 */
+	public static native String getProjectResourceDir();
 }
