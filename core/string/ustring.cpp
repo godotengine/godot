@@ -4853,14 +4853,28 @@ bool String::is_valid_int() const {
 		return false;
 	}
 
+	int64_t sign = 1;
+	int64_t integer = 0;
 	int from = 0;
 	if (len != 1 && (operator[](0) == '+' || operator[](0) == '-')) {
 		from++;
+		if (operator[](0) == '-') {
+			sign = -1;
+		}
 	}
 
 	for (int i = from; i < len; i++) {
-		if (!is_digit(operator[](i))) {
-			return false; // no start with number plz
+		char32_t c = operator[](i);
+
+		if (is_digit(c)) {
+			bool overflow = (integer > INT64_MAX / 10) || (integer == INT64_MAX / 10 && ((sign == 1 && c > '7') || (sign == -1 && c > '8')));
+			if (overflow) {
+				return false;
+			}
+			integer *= 10;
+			integer += c - '0';
+		} else {
+			return false;
 		}
 	}
 
@@ -4874,27 +4888,44 @@ bool String::is_valid_hex_number(bool p_with_prefix) const {
 		return false;
 	}
 
-	int from = 0;
-	if (len != 1 && (operator[](0) == '+' || operator[](0) == '-')) {
-		from++;
+	const char32_t *s = ptr();
+
+	int64_t sign = s[0] == '-' ? -1 : 1;
+
+	if (sign < 0) {
+		s++;
 	}
 
-	if (p_with_prefix) {
-		if (len < 3) {
+	if (len > 2 && s[0] == '0' && lower_case(s[1]) == 'x') {
+		if (p_with_prefix) {
+			s += 2;
+		} else {
 			return false;
 		}
-		if (operator[](from) != '0' || operator[](from + 1) != 'x') {
-			return false;
-		}
-		from += 2;
-	}
-
-	for (int i = from; i < len; i++) {
-		char32_t c = operator[](i);
-		if (is_hex_digit(c)) {
-			continue;
-		}
+	} else if (p_with_prefix) {
 		return false;
+	}
+
+	int64_t hex = 0;
+
+	while (*s) {
+		char32_t c = lower_case(*s);
+		int64_t n;
+		if (is_digit(c)) {
+			n = c - '0';
+		} else if (c >= 'a' && c <= 'f') {
+			n = (c - 'a') + 10;
+		} else {
+			return false;
+		}
+		// Check for overflow/underflow, with special case to ensure INT64_MIN does not result in error
+		bool overflow = ((hex > INT64_MAX / 16) && (sign == 1 || (sign == -1 && hex != (INT64_MAX >> 4) + 1))) || (sign == -1 && hex == (INT64_MAX >> 4) + 1 && c > '0');
+		if (overflow) {
+			return false;
+		}
+		hex *= 16;
+		hex += n;
+		s++;
 	}
 
 	return true;
