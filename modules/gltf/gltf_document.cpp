@@ -5658,6 +5658,15 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIn
 	if (p_scene_root == nullptr) {
 		// If the root node argument is null, this is the root node.
 		p_scene_root = current_node;
+		// If multiple nodes were generated under the root node, ensure they have the owner set.
+		if (unlikely(current_node->get_child_count() > 0)) {
+			Array args;
+			args.append(p_scene_root);
+			for (int i = 0; i < current_node->get_child_count(); i++) {
+				Node *child = current_node->get_child(i);
+				child->propagate_call(StringName("set_owner"), args);
+			}
+		}
 	} else {
 		// Add the node we generated and set the owner to the scene root.
 		p_scene_parent->add_child(current_node, true);
