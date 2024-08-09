@@ -123,7 +123,7 @@
 	</methods>
 	<constants>
 		<constant name="TIME_FPS" value="0" enum="Monitor">
-			The number of frames rendered in the last second. This metric is only updated once per second, even if queried more often. [i]Higher is better.[/i]
+			The number of frames rendered in the last second (identical to [method Engine.get_frames_per_second]). This metric is only updated once per second, even if queried more often. [i]Higher is better.[/i]
 		</constant>
 		<constant name="TIME_PROCESS" value="1" enum="Monitor">
 			Time it took to complete one frame, in seconds. [i]Lower is better.[/i]
@@ -192,7 +192,7 @@
 			Number of islands in the 3D physics engine. [i]Lower is better.[/i]
 		</constant>
 		<constant name="AUDIO_OUTPUT_LATENCY" value="23" enum="Monitor">
-			Output latency of the [AudioServer]. Equivalent to calling [method AudioServer.get_output_latency], it is not recommended to call this every frame.
+			Output latency of the [AudioServer]. Equivalent to calling [method AudioServer.get_output_latency], it is not recommended to call this every frame. [i]Lower is better.[/i]
 		</constant>
 		<constant name="NAVIGATION_ACTIVE_MAPS" value="24" enum="Monitor">
 			Number of active navigation maps in the [NavigationServer3D]. This also includes the two empty default navigation maps created by World2D and World3D.
@@ -221,7 +221,10 @@
 		<constant name="NAVIGATION_EDGE_FREE_COUNT" value="32" enum="Monitor">
 			Number of navigation mesh polygon edges that could not be merged in the [NavigationServer3D]. The edges still may be connected by edge proximity or with links.
 		</constant>
-		<constant name="MONITOR_MAX" value="33" enum="Monitor">
+		<constant name="TIME_FPS_1_PERCENT_LOW" value="33" enum="Monitor">
+			The worst 1% percentile of frametimes rendered in the last second, converted to a FPS value (identical to [method Engine.get_frames_per_second_1_percent_low]). This metric may be updated less than once per second at low framerates, even if queried more often. [i]Higher is better.[/i]
+		</constant>
+		<constant name="MONITOR_MAX" value="34" enum="Monitor">
 			Represents the size of the [enum Monitor] enum.
 		</constant>
 	</constants>

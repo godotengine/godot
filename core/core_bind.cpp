@@ -1671,6 +1671,10 @@ double Engine::get_frames_per_second() const {
 	return ::Engine::get_singleton()->get_frames_per_second();
 }
 
+double Engine::get_frames_per_second_1_percent_low() const {
+	return ::Engine::get_singleton()->get_frames_per_second_1_percent_low();
+}
+
 uint64_t Engine::get_physics_frames() const {
 	return ::Engine::get_singleton()->get_physics_frames();
 }
@@ -1827,6 +1831,7 @@ void Engine::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_frames_drawn"), &Engine::get_frames_drawn);
 	ClassDB::bind_method(D_METHOD("get_frames_per_second"), &Engine::get_frames_per_second);
+	ClassDB::bind_method(D_METHOD("get_frames_per_second_1_percent_low"), &Engine::get_frames_per_second_1_percent_low);
 	ClassDB::bind_method(D_METHOD("get_physics_frames"), &Engine::get_physics_frames);
 	ClassDB::bind_method(D_METHOD("get_process_frames"), &Engine::get_process_frames);
 
