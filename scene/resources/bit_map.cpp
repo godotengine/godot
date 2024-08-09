@@ -704,6 +704,125 @@ void BitMap::blit(const Vector2i &p_pos, const Ref<BitMap> &p_bitmap) {
 	}
 }
 
+Ref<BitMap> BitMap::bitwise_and(const Ref<BitMap> &p_other) const {
+	ERR_FAIL_COND_V_EDMSG(p_other.is_null(), Ref<BitMap>(), "Null reference to supplied BitMap other.");
+
+	Ref<BitMap> new_bitmap;
+	new_bitmap.instantiate();
+
+	ERR_FAIL_COND_V_EDMSG(get_size() != p_other->get_size(), new_bitmap, "The given bitmap is not the expected size for the specified operation.");
+
+	new_bitmap->create(get_size());
+
+	int ds = bitmask.size();
+	const uint8_t *d = bitmask.ptr();
+	const uint8_t *d2 = p_other->bitmask.ptr();
+	uint8_t *w = new_bitmap->bitmask.ptrw();
+
+	const uint64_t *d_u64 = (uint64_t *)d;
+	const uint64_t *d2_u64 = (uint64_t *)d2;
+	uint64_t *w_u64 = (uint64_t *)w;
+
+	for (int i = 0; i < (ds >> 3); i++) {
+		w_u64[i] = d_u64[i] & d2_u64[i];
+	}
+
+	for (int i = ds & ~0b111; i < ds; i++) {
+		w[i] = d[i] & d2[i];
+	}
+
+	return new_bitmap;
+}
+
+Ref<BitMap> BitMap::bitwise_not() const {
+	Ref<BitMap> new_bitmap;
+	new_bitmap.instantiate();
+	new_bitmap->create(get_size());
+
+	int ds = bitmask.size();
+	const uint8_t *d = bitmask.ptr();
+	uint8_t *w = new_bitmap->bitmask.ptrw();
+
+	const uint64_t *d_u64 = (uint64_t *)d;
+	uint64_t *w_u64 = (uint64_t *)w;
+
+	for (int i = 0; i < (ds >> 3); i++) {
+		w_u64[i] = ~d_u64[i];
+	}
+
+	for (int i = ds & ~0b111; i < ds; i++) {
+		w[i] = ~d[i];
+	}
+
+	// mask "hidden" bits for true bit count
+	int hidden_count = (ds << 3) - (width * height);
+	if (hidden_count > 0) {
+		w[ds - 1] &= 0xFF << hidden_count;
+	}
+
+	return new_bitmap;
+}
+
+Ref<BitMap> BitMap::bitwise_or(const Ref<BitMap> &p_other) const {
+	ERR_FAIL_COND_V_EDMSG(p_other.is_null(), Ref<BitMap>(), "Null reference to supplied BitMap other.");
+
+	Ref<BitMap> new_bitmap;
+	new_bitmap.instantiate();
+
+	ERR_FAIL_COND_V_EDMSG(get_size() != p_other->get_size(), new_bitmap, "The given bitmap is not the expected size for the specified operation.");
+
+	new_bitmap->create(get_size());
+
+	int ds = bitmask.size();
+	const uint8_t *d = bitmask.ptr();
+	const uint8_t *d2 = p_other->bitmask.ptr();
+	uint8_t *w = new_bitmap->bitmask.ptrw();
+
+	const uint64_t *d_u64 = (uint64_t *)d;
+	const uint64_t *d2_u64 = (uint64_t *)d2;
+	uint64_t *w_u64 = (uint64_t *)w;
+
+	for (int i = 0; i < (ds >> 3); i++) {
+		w_u64[i] = d_u64[i] | d2_u64[i];
+	}
+
+	for (int i = ds & ~0b111; i < ds; i++) {
+		w[i] = d[i] | d2[i];
+	}
+
+	return new_bitmap;
+}
+
+Ref<BitMap> BitMap::bitwise_xor(const Ref<BitMap> &p_other) const {
+	ERR_FAIL_COND_V_EDMSG(p_other.is_null(), Ref<BitMap>(), "Null reference to supplied BitMap other.");
+
+	Ref<BitMap> new_bitmap;
+	new_bitmap.instantiate();
+
+	ERR_FAIL_COND_V_EDMSG(get_size() != p_other->get_size(), new_bitmap, "The given bitmap is not the expected size for the specified operation.");
+
+	new_bitmap->create(get_size());
+
+	int ds = bitmask.size();
+	const uint8_t *d = bitmask.ptr();
+	const uint8_t *d2 = p_other->bitmask.ptr();
+	uint8_t *w = new_bitmap->bitmask.ptrw();
+
+	const uint64_t *d_u64 = (uint64_t *)d;
+	const uint64_t *d2_u64 = (uint64_t *)d2;
+	uint64_t *w_u64 = (uint64_t *)w;
+
+	for (int i = 0; i < (ds >> 3); i++) {
+		w_u64[i] = d_u64[i] ^ d2_u64[i];
+	}
+
+	for (int i = ds & ~0b111; i < ds; i++) {
+		w[i] = d[i] ^ d2[i];
+	}
+
+	return new_bitmap;
+}
+
 void BitMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create", "size"), &BitMap::create);
 	ClassDB::bind_method(D_METHOD("create_from_image_alpha", "image", "threshold"), &BitMap::create_from_image_alpha, DEFVAL(0.1));
@@ -725,6 +844,11 @@ void BitMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("grow_mask", "pixels", "rect"), &BitMap::grow_mask);
 	ClassDB::bind_method(D_METHOD("convert_to_image"), &BitMap::convert_to_image);
 	ClassDB::bind_method(D_METHOD("opaque_to_polygons", "rect", "epsilon"), &BitMap::_opaque_to_polygons_bind, DEFVAL(2.0));
+
+	ClassDB::bind_method(D_METHOD("bitwise_and", "other"), &BitMap::bitwise_and);
+	ClassDB::bind_method(D_METHOD("bitwise_not"), &BitMap::bitwise_not);
+	ClassDB::bind_method(D_METHOD("bitwise_or", "other"), &BitMap::bitwise_or);
+	ClassDB::bind_method(D_METHOD("bitwise_xor", "other"), &BitMap::bitwise_xor);
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 }

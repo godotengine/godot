@@ -79,6 +79,11 @@ public:
 
 	Vector<Vector<Vector2>> clip_opaque_to_polygons(const Rect2i &p_rect, float p_epsilon = 2.0) const;
 
+	Ref<BitMap> bitwise_and(const Ref<BitMap> &p_other) const;
+	Ref<BitMap> bitwise_not() const;
+	Ref<BitMap> bitwise_or(const Ref<BitMap> &p_other) const;
+	Ref<BitMap> bitwise_xor(const Ref<BitMap> &p_other) const;
+
 	BitMap();
 };
 
