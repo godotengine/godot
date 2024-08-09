@@ -216,6 +216,7 @@ xcuserdata/
 *.xcscmblueprint
 *.xccheckout
 *.xcodeproj/*
+doc/*.xcodeproj/*
 
 ##############################
 ### Visual Studio specific ###
