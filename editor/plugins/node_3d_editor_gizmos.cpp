@@ -81,6 +81,8 @@ void EditorNode3DGizmo::redraw() {
 		gizmo_plugin->redraw(this);
 	}
 
+	_update_bvh();
+
 	if (Node3DEditor::get_singleton()->is_current_selected_gizmo(this)) {
 		Node3DEditor::get_singleton()->update_transform_gizmo();
 	}
@@ -242,6 +244,32 @@ void EditorNode3DGizmo::add_mesh(const Ref<Mesh> &p_mesh, const Ref<Material> &p
 	}
 
 	instances.push_back(ins);
+}
+
+void EditorNode3DGizmo::_update_bvh() {
+	ERR_FAIL_NULL(spatial_node);
+
+	Transform3D transform = spatial_node->get_global_transform();
+
+	float effective_icon_size = selectable_icon_size > 0.0f ? selectable_icon_size : 0.0f;
+	Vector3 icon_size_vector3 = Vector3(effective_icon_size, effective_icon_size, effective_icon_size);
+	AABB aabb(spatial_node->get_position() - icon_size_vector3 * 100.0f, icon_size_vector3 * 200.0f);
+
+	for (const Vector3 &segment_end : collision_segments) {
+		aabb.expand_to(transform.xform(segment_end));
+	}
+
+	if (collision_mesh.is_valid()) {
+		for (const Face3 &face : collision_mesh->get_faces()) {
+			aabb.expand_to(transform.xform(face.vertex[0]));
+			aabb.expand_to(transform.xform(face.vertex[1]));
+			aabb.expand_to(transform.xform(face.vertex[2]));
+		}
+	}
+
+	Node3DEditor::get_singleton()->update_gizmo_bvh_node(
+			bvh_node_id,
+			aabb);
 }
 
 void EditorNode3DGizmo::add_lines(const Vector<Vector3> &p_lines, const Ref<Material> &p_material, bool p_billboard, const Color &p_modulate) {
@@ -765,6 +793,10 @@ void EditorNode3DGizmo::create() {
 		instances.write[i].create_instance(spatial_node, hidden);
 	}
 
+	bvh_node_id = Node3DEditor::get_singleton()->insert_gizmo_bvh_node(
+			spatial_node,
+			AABB(spatial_node->get_position(), Vector3(0, 0, 0)));
+
 	transform();
 }
 
@@ -774,6 +806,8 @@ void EditorNode3DGizmo::transform() {
 	for (int i = 0; i < instances.size(); i++) {
 		RS::get_singleton()->instance_set_transform(instances[i].instance, spatial_node->get_global_transform() * instances[i].xform);
 	}
+
+	_update_bvh();
 }
 
 void EditorNode3DGizmo::free() {
@@ -789,6 +823,9 @@ void EditorNode3DGizmo::free() {
 	}
 
 	clear();
+
+	Node3DEditor::get_singleton()->remove_gizmo_bvh_node(bvh_node_id);
+	bvh_node_id = DynamicBVH::ID();
 
 	valid = false;
 }

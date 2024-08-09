@@ -31,6 +31,7 @@
 #ifndef NODE_3D_EDITOR_PLUGIN_H
 #define NODE_3D_EDITOR_PLUGIN_H
 
+#include "core/math/dynamic_bvh.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/node_3d_editor_gizmos.h"
 #include "editor/themes/editor_scale.h"
@@ -629,6 +630,8 @@ private:
 	int current_hover_gizmo_handle;
 	bool current_hover_gizmo_handle_secondary;
 
+	DynamicBVH gizmo_bvh;
+
 	real_t snap_translate_value;
 	real_t snap_rotate_value;
 	real_t snap_scale_value;
@@ -932,6 +935,12 @@ public:
 
 	void add_gizmo_plugin(Ref<EditorNode3DGizmoPlugin> p_plugin);
 	void remove_gizmo_plugin(Ref<EditorNode3DGizmoPlugin> p_plugin);
+
+	DynamicBVH::ID insert_gizmo_bvh_node(Node3D *p_node, const AABB &p_aabb);
+	void update_gizmo_bvh_node(DynamicBVH::ID p_id, const AABB &p_aabb);
+	void remove_gizmo_bvh_node(DynamicBVH::ID p_id);
+	Vector<Node3D *> gizmo_bvh_ray_query(const Vector3 &p_ray_start, const Vector3 &p_ray_end);
+	Vector<Node3D *> gizmo_bvh_frustum_query(const Vector<Plane> &p_frustum);
 
 	void edit(Node3D *p_spatial);
 	void clear();
