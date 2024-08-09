@@ -74,6 +74,9 @@ private:
 	bool advanced_options_enabled = false;
 	bool dedicated_server = false;
 
+	Vector<String> patches;
+	Vector<String> disabled_patches;
+
 	friend class EditorExport;
 	friend class EditorExportPlatform;
 
@@ -143,6 +146,16 @@ public:
 
 	void set_exclude_filter(const String &p_exclude);
 	String get_exclude_filter() const;
+
+	void add_patch(const String &p_path, bool p_enable = true, int p_at_pos = -1);
+	void set_patch(int p_index, const String &p_path, bool p_enable);
+	String get_patch(int p_index);
+	void remove_patch(int p_index);
+	void set_patches(const Vector<String> &p_patches, const Vector<String> &p_disabled_patches);
+	Vector<String> get_patches() const;
+	Vector<String> get_disabled_patches() const;
+	bool is_patch_enabled(const String &p_path) const;
+	Vector<String> get_enabled_patches() const;
 
 	void set_custom_features(const String &p_custom_features);
 	String get_custom_features() const;

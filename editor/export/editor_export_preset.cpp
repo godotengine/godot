@@ -324,6 +324,67 @@ EditorExportPreset::FileExportMode EditorExportPreset::get_file_export_mode(cons
 	return p_default;
 }
 
+void EditorExportPreset::add_patch(const String &p_path, bool p_enabled, int p_at_pos) {
+	ERR_FAIL_COND_EDMSG(patches.has(p_path), vformat("Failed to add patch \"%s\". Patches must be unique.", p_path));
+
+	if (p_at_pos < 0) {
+		patches.push_back(p_path);
+	} else {
+		patches.insert(p_at_pos, p_path);
+	}
+
+	if (!p_enabled) {
+		disabled_patches.push_back(p_path);
+	}
+
+	EditorExport::singleton->save_presets();
+}
+
+void EditorExportPreset::set_patch(int p_index, const String &p_path, bool p_enabled) {
+	remove_patch(p_index);
+	add_patch(p_path, p_enabled, p_index);
+	EditorExport::singleton->save_presets();
+}
+
+String EditorExportPreset::get_patch(int p_index) {
+	ERR_FAIL_INDEX_V(p_index, patches.size(), String());
+	return patches[p_index];
+}
+
+void EditorExportPreset::remove_patch(int p_index) {
+	ERR_FAIL_INDEX(p_index, patches.size());
+	disabled_patches.erase(patches[p_index]);
+	patches.remove_at(p_index);
+	EditorExport::singleton->save_presets();
+}
+
+void EditorExportPreset::set_patches(const Vector<String> &p_patches, const Vector<String> &p_disabled_patches) {
+	patches = p_patches;
+	disabled_patches = p_disabled_patches;
+}
+
+Vector<String> EditorExportPreset::get_patches() const {
+	return patches;
+}
+
+Vector<String> EditorExportPreset::get_disabled_patches() const {
+	return disabled_patches;
+}
+
+bool EditorExportPreset::is_patch_enabled(const String &p_path) const {
+	return !disabled_patches.has(p_path);
+}
+
+Vector<String> EditorExportPreset::get_enabled_patches() const {
+	Vector<String> res;
+	for (const String &path : patches) {
+		if (is_patch_enabled(path)) {
+			res.push_back(path);
+		}
+	}
+	return res;
+}
+
 void EditorExportPreset::set_custom_features(const String &p_custom_features) {
 	custom_features = p_custom_features;
 	EditorExport::singleton->save_presets();
