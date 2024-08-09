@@ -404,12 +404,17 @@ public:
 
 	CharString ascii(bool p_allow_extended = false) const;
 	CharString utf8() const;
-	Error parse_utf8(const char *p_utf8, int p_len = -1, bool p_skip_cr = false);
+	Error parse_utf8(const char *p_utf8, int p_len = -1, bool p_skip_cr = false, bool p_keep_unpaired = false);
+	static Error validate_utf8(const char *p_utf8, int p_len = -1, bool p_skip_cr = false);
 	static String utf8(const char *p_utf8, int p_len = -1);
 
 	Char16String utf16() const;
-	Error parse_utf16(const char16_t *p_utf16, int p_len = -1, bool p_default_little_endian = true);
+	Error parse_utf16(const char16_t *p_utf16, int p_len = -1, bool p_default_little_endian = true, bool p_keep_unpaired = true);
+	static Error validate_utf16(const char16_t *p_utf16, int p_len = -1, bool p_default_little_endian = true);
 	static String utf16(const char16_t *p_utf16, int p_len = -1);
+
+	Error parse_utf32(const char32_t *p_utf32, int p_len = -1, bool p_keep_unpaired = true);
+	static Error validate_utf32(const char32_t *p_utf32, int p_len = -1);
 
 	static uint32_t hash(const char32_t *p_cstr, int p_len); /* hash the string */
 	static uint32_t hash(const char32_t *p_cstr); /* hash the string */
