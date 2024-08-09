@@ -3743,6 +3743,10 @@ int Main::start() {
 			editor_node = memnew(EditorNode);
 			sml->get_root()->add_child(editor_node);
 
+			if (!_export_preset.is_empty() || wait_for_import) {
+				editor_node->set_verbose_tasks(true);
+			}
+
 			if (!_export_preset.is_empty()) {
 				editor_node->export_preset(_export_preset, positional_arg, export_debug, export_pack_only, install_android_build_template);
 				game_path = ""; // Do not load anything.
