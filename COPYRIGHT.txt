@@ -130,6 +130,11 @@ Copyright: 2007, Starbreeze Studios
  2007-2014, Juan Linietsky, Ariel Manzur
 License: Expat and Zlib
 
+Files: ./servers/rendering/renderer_rd/shaders/effects/tonemap.glsl
+Comment: FXAA 3.11
+Copyright: 2014-2015, NVIDIA CORPORATION
+License: BSD-3-clause
+
 Files: ./servers/rendering/renderer_rd/shaders/ss_effects_downsample.glsl
  ./servers/rendering/renderer_rd/shaders/ssao_blur.glsl
  ./servers/rendering/renderer_rd/shaders/ssao_importance_map.glsl
