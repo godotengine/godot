@@ -1448,6 +1448,7 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 	bool line_clicked = false;
 	float text_rect_begin = 0.0;
 	int char_pos = -1;
+	bool char_clicked = false;
 	Line &l = p_frame->lines[p_line];
 	MutexLock lock(l.text_buf->get_mutex());
 
@@ -1578,6 +1579,9 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 		}
 
 		if (p_click.y >= rect.position.y && p_click.y <= rect.position.y + rect.size.y) {
+			if (!p_meta) {
+				char_pos = rtl ? TS->shaped_text_get_range(rid).y : TS->shaped_text_get_range(rid).x;
+			}
 			if ((!rtl && p_click.x >= rect.position.x) || (rtl && p_click.x <= rect.position.x + rect.size.x)) {
 				if (p_meta) {
 					int64_t glyph_idx = TS->shaped_text_hit_test_grapheme(rid, p_click.x - rect.position.x);
@@ -1592,6 +1596,7 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 									obj_rect.position.y += baseline_y;
 									if (p_click.y >= obj_rect.position.y && p_click.y <= obj_rect.position.y + obj_rect.size.y) {
 										char_pos = glyphs[glyph_idx].start;
+										char_clicked = true;
 									}
 									break;
 								}
@@ -1602,18 +1607,21 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 							float fd = TS->font_get_descent(glyphs[glyph_idx].font_rid, glyphs[glyph_idx].font_size);
 							if (p_click.y >= baseline_y - fa && p_click.y <= baseline_y + fd) {
 								char_pos = glyphs[glyph_idx].start;
+								char_clicked = true;
 							}
 						} else if (!(glyphs[glyph_idx].flags & TextServer::GRAPHEME_IS_VIRTUAL)) {
 							// Hex code box.
 							Vector2 gl_size = TS->get_hex_code_box_size(glyphs[glyph_idx].font_size, glyphs[glyph_idx].index);
 							if (p_click.y >= baseline_y - gl_size.y * 0.9 && p_click.y <= baseline_y + gl_size.y * 0.2) {
 								char_pos = glyphs[glyph_idx].start;
+								char_clicked = true;
 							}
 						}
 					}
 				} else {
 					char_pos = TS->shaped_text_hit_test_position(rid, p_click.x - rect.position.x);
 					char_pos = TS->shaped_text_closest_character_pos(rid, char_pos);
+					char_clicked = true;
 				}
 			}
 			line_clicked = true;
@@ -1621,7 +1629,7 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 		}
 
 		// If table hit was detected, and line hit is in the table bounds use table hit.
-		if (table_hit && (((char_pos + p_frame->lines[p_line].char_offset) >= table_range.x && (char_pos + p_frame->lines[p_line].char_offset) <= table_range.y) || char_pos == -1)) {
+		if (table_hit && (((char_pos + p_frame->lines[p_line].char_offset) >= table_range.x && (char_pos + p_frame->lines[p_line].char_offset) <= table_range.y) || !char_clicked)) {
 			if (r_click_frame != nullptr) {
 				*r_click_frame = table_click_frame;
 			}
