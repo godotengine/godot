@@ -81,7 +81,7 @@
 			<return type="Array" />
 			<param index="0" name="from" type="Array" />
 			<description>
-				Returns the same array as [param from]. If you need a copy of the array, use [method duplicate].
+				Constructs an [Array] as a [i]shallow[/i] copy of the given [Array], similarly to [method duplicate].
 			</description>
 		</constructor>
 		<constructor name="Array">

@@ -197,10 +197,10 @@ void Variant::_register_variant_constructors() {
 	add_constructor<VariantConstructorSignalArgs>(sarray("object", "signal"));
 
 	add_constructor<VariantConstructNoArgs<Dictionary>>(sarray());
-	add_constructor<VariantConstructor<Dictionary, Dictionary>>(sarray("from"));
+	add_constructor<VariantConstructorDictionaryDuplicate>(sarray("from"));
 
 	add_constructor<VariantConstructNoArgs<Array>>(sarray());
-	add_constructor<VariantConstructor<Array, Array>>(sarray("from"));
+	add_constructor<VariantConstructorArrayDuplicate>(sarray("from"));
 	add_constructor<VariantConstructorTypedArray>(sarray("base", "type", "class_name", "script"));
 	add_constructor<VariantConstructorToArray<PackedByteArray>>(sarray("from"));
 	add_constructor<VariantConstructorToArray<PackedInt32Array>>(sarray("from"));
