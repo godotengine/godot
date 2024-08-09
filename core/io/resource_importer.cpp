@@ -138,22 +138,50 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 
 Ref<Resource> ResourceFormatImporter::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	PathAndType pat;
-	Error err = _get_path_and_type(p_path, pat);
-
-	if (err != OK) {
-		if (r_error) {
-			*r_error = err;
-		}
-
-		return Ref<Resource>();
-	}
-
-	Ref<Resource> res = ResourceLoader::_load(pat.path, p_path, pat.type, p_cache_mode, r_error, p_use_sub_threads, r_progress);
+	Ref<Resource> res;
 
 #ifdef TOOLS_ENABLED
-	if (res.is_valid()) {
-		res->set_import_last_modified_time(res->get_last_modified_time()); //pass this, if used
-		res->set_import_path(pat.path);
+	bool can_retry = false;
+	if (ResourceLoader::get_reimport_file_on_failed_load()) {
+		can_retry = true;
+		// Disable error output to prevent displaying all the errors from accessing resource
+		// that are not yet loaded.
+		set_print_error_enabled(false);
+	}
+	bool retry = true;
+	while (retry) {
+		retry = false;
+#endif
+
+		Error err = _get_path_and_type(p_path, pat);
+
+		if (err != OK) {
+			if (r_error) {
+				*r_error = err;
+			}
+			res = Ref<Resource>();
+		} else {
+			res = ResourceLoader::_load(pat.path, p_path, pat.type, p_cache_mode, r_error, p_use_sub_threads, r_progress);
+		}
+
+#ifdef TOOLS_ENABLED
+		if (res.is_valid()) {
+			res->set_import_last_modified_time(res->get_last_modified_time()); //pass this, if used
+			res->set_import_path(pat.path);
+		} else if (can_retry) {
+			can_retry = false;
+			set_print_error_enabled(true);
+			if (ResourceLoader::import_file) {
+				err = ResourceLoader::import_file(p_path, false);
+				if (err == OK) {
+					retry = true;
+				}
+			}
+		}
+	}
+
+	if (can_retry) {
+		set_print_error_enabled(true);
 	}
 #endif
 

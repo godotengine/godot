@@ -98,6 +98,7 @@ typedef void (*DependencyErrorNotify)(const String &p_loading, const String &p_w
 
 typedef Error (*ResourceLoaderImport)(const String &p_path);
 typedef void (*ResourceLoadedCallback)(Ref<Resource> p_resource, const String &p_path);
+typedef Error (*ResourceLoaderImportFile)(const String &p_path, bool p_update_file_system);
 
 class ResourceLoader {
 	enum {
@@ -145,6 +146,8 @@ private:
 	static void *dep_err_notify_ud;
 	static DependencyErrorNotify dep_err_notify;
 	static bool abort_on_missing_resource;
+	static bool reimport_file_on_failed_load;
+	static ResourceLoaderImportFile import_file;
 	static bool create_missing_resources_if_class_unavailable;
 	static HashMap<String, Vector<String>> translation_remaps;
 	static HashMap<String, String> path_remaps;
@@ -252,6 +255,12 @@ public:
 
 	static void set_abort_on_missing_resources(bool p_abort) { abort_on_missing_resource = p_abort; }
 	static bool get_abort_on_missing_resources() { return abort_on_missing_resource; }
+
+	static void set_reimport_file_on_failed_load(bool p_reimport_file_on_failed_load) { reimport_file_on_failed_load = p_reimport_file_on_failed_load; }
+	static bool get_reimport_file_on_failed_load() { return reimport_file_on_failed_load; }
+	static void set_reimport_file_func(ResourceLoaderImportFile p_import_file) {
+		import_file = p_import_file;
+	}
 
 	static String path_remap(const String &p_path);
 	static String import_remap(const String &p_path);

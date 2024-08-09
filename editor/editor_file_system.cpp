@@ -860,6 +860,7 @@ void EditorFileSystem::scan() {
 		// Set first_scan to false before the signals so the function doing_first_scan can return false
 		// in editor_node to start the export if needed.
 		first_scan = false;
+		ResourceLoader::set_reimport_file_on_failed_load(false);
 		emit_signal(SNAME("filesystem_changed"));
 		emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
 	} else {
@@ -1473,6 +1474,7 @@ void EditorFileSystem::_notification(int p_what) {
 						// Set first_scan to false before the signals so the function doing_first_scan can return false
 						// in editor_node to start the export if needed.
 						first_scan = false;
+						ResourceLoader::set_reimport_file_on_failed_load(false);
 						if (changed) {
 							emit_signal(SNAME("filesystem_changed"));
 						}
@@ -1495,6 +1497,7 @@ void EditorFileSystem::_notification(int p_what) {
 					// Set first_scan to false before the signals so the function doing_first_scan can return false
 					// in editor_node to start the export if needed.
 					first_scan = false;
+					ResourceLoader::set_reimport_file_on_failed_load(false);
 					emit_signal(SNAME("filesystem_changed"));
 					emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
 				}
@@ -2347,14 +2350,20 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 	return err;
 }
 
-Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<StringName, Variant> &p_custom_options, const String &p_custom_importer, Variant *p_generator_parameters) {
+Error EditorFileSystem::import_file(const String &p_file, bool p_update_file_system) {
+	return _reimport_file(p_file, HashMap<StringName, Variant>(), "", nullptr, p_update_file_system);
+}
+
+Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<StringName, Variant> &p_custom_options, const String &p_custom_importer, Variant *p_generator_parameters, bool p_update_file_system) {
 	print_verbose(vformat("EditorFileSystem: Importing file: %s", p_file));
 	uint64_t start_time = OS::get_singleton()->get_ticks_msec();
 
 	EditorFileSystemDirectory *fs = nullptr;
 	int cpos = -1;
-	bool found = _find_file(p_file, &fs, cpos);
-	ERR_FAIL_COND_V_MSG(!found, ERR_FILE_NOT_FOUND, "Can't find file '" + p_file + "'.");
+	if (p_update_file_system) {
+		bool found = _find_file(p_file, &fs, cpos);
+		ERR_FAIL_COND_V_MSG(!found, ERR_FILE_NOT_FOUND, "Can't find file '" + p_file + "'.");
+	}
 
 	//try to obtain existing params
 
@@ -2408,11 +2417,13 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 
 	if (importer_name == "keep" || importer_name == "skip") {
 		//keep files, do nothing.
-		fs->files[cpos]->modified_time = FileAccess::get_modified_time(p_file);
-		fs->files[cpos]->import_modified_time = FileAccess::get_modified_time(p_file + ".import");
-		fs->files[cpos]->deps.clear();
-		fs->files[cpos]->type = "";
-		fs->files[cpos]->import_valid = false;
+		if (p_update_file_system) {
+			fs->files[cpos]->modified_time = FileAccess::get_modified_time(p_file);
+			fs->files[cpos]->import_modified_time = FileAccess::get_modified_time(p_file + ".import");
+			fs->files[cpos]->deps.clear();
+			fs->files[cpos]->type = "";
+			fs->files[cpos]->import_valid = false;
+		}
 		EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
 		return OK;
 	}
@@ -2572,16 +2583,18 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		}
 	}
 
-	// Update cpos, newly created files could've changed the index of the reimported p_file.
-	_find_file(p_file, &fs, cpos);
+	if (p_update_file_system) {
+		// Update cpos, newly created files could've changed the index of the reimported p_file.
+		_find_file(p_file, &fs, cpos);
 
-	// Update modified times, to avoid reimport.
-	fs->files[cpos]->modified_time = FileAccess::get_modified_time(p_file);
-	fs->files[cpos]->import_modified_time = FileAccess::get_modified_time(p_file + ".import");
-	fs->files[cpos]->deps = _get_dependencies(p_file);
-	fs->files[cpos]->type = importer->get_resource_type();
-	fs->files[cpos]->uid = uid;
-	fs->files[cpos]->import_valid = fs->files[cpos]->type == "TextFile" ? true : ResourceLoader::is_import_valid(p_file);
+		// Update modified times, to avoid reimport.
+		fs->files[cpos]->modified_time = FileAccess::get_modified_time(p_file);
+		fs->files[cpos]->import_modified_time = FileAccess::get_modified_time(p_file + ".import");
+		fs->files[cpos]->deps = _get_dependencies(p_file);
+		fs->files[cpos]->type = importer->get_resource_type();
+		fs->files[cpos]->uid = uid;
+		fs->files[cpos]->import_valid = fs->files[cpos]->type == "TextFile" ? true : ResourceLoader::is_import_valid(p_file);
+	}
 
 	if (ResourceUID::get_singleton()->has_id(uid)) {
 		ResourceUID::get_singleton()->set_id(uid, p_file);
@@ -2816,6 +2829,10 @@ Error EditorFileSystem::_resource_import(const String &p_path) {
 	return OK;
 }
 
+Error EditorFileSystem::_resource_import_file(const String &p_path, bool p_update_file_system) {
+	return singleton->import_file(p_path, p_update_file_system);
+}
+
 bool EditorFileSystem::_should_skip_directory(const String &p_path) {
 	String project_data_path = ProjectSettings::get_singleton()->get_project_data_path();
 	if (p_path == project_data_path || p_path.begins_with(project_data_path + "/")) {
@@ -3047,6 +3064,8 @@ EditorFileSystem::EditorFileSystem() {
 #endif
 
 	ResourceLoader::import = _resource_import;
+	ResourceLoader::set_reimport_file_func(_resource_import_file);
+
 	reimport_on_missing_imported_files = GLOBAL_GET("editor/import/reimport_missing_imported_files");
 	singleton = this;
 	filesystem = memnew(EditorFileSystemDirectory); //like, empty
@@ -3061,6 +3080,7 @@ EditorFileSystem::EditorFileSystem() {
 	scan_total = 0;
 	callable_mp(ResourceUID::get_singleton(), &ResourceUID::clear).call_deferred(); // Will be updated on scan.
 	ResourceSaver::set_get_resource_id_for_path(_resource_saver_get_resource_id_for_path);
+	ResourceLoader::set_reimport_file_on_failed_load(true);
 }
 
 EditorFileSystem::~EditorFileSystem() {

@@ -35,6 +35,7 @@
 #include "core/string/ustring.h"
 
 static ErrorHandlerList *error_handler_list = nullptr;
+static bool print_error_enabled = true;
 
 void add_error_handler(ErrorHandlerList *p_handler) {
 	// If p_handler is already in error_handler_list
@@ -72,6 +73,10 @@ void remove_error_handler(const ErrorHandlerList *p_handler) {
 	_global_unlock();
 }
 
+void set_print_error_enabled(bool p_enabled) {
+	print_error_enabled = p_enabled;
+}
+
 // Errors without messages.
 void _err_print_error(const char *p_function, const char *p_file, int p_line, const char *p_error, bool p_editor_notify, ErrorHandlerType p_type) {
 	_err_print_error(p_function, p_file, p_line, p_error, "", p_editor_notify, p_type);
@@ -83,6 +88,9 @@ void _err_print_error(const char *p_function, const char *p_file, int p_line, co
 
 // Main error printing function.
 void _err_print_error(const char *p_function, const char *p_file, int p_line, const char *p_error, const char *p_message, bool p_editor_notify, ErrorHandlerType p_type) {
+	if (!print_error_enabled) {
+		return;
+	}
 	if (OS::get_singleton()) {
 		OS::get_singleton()->print_error(p_function, p_file, p_line, p_error, p_message, p_editor_notify, (Logger::ErrorType)p_type);
 	} else {
