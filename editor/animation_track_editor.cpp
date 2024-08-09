@@ -7212,9 +7212,6 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	scroll = memnew(ScrollContainer);
 	timeline_vbox->add_child(scroll);
 	scroll->set_v_size_flags(SIZE_EXPAND_FILL);
-	VScrollBar *sb = scroll->get_v_scroll_bar();
-	scroll->remove_child(sb);
-	timeline_scroll->add_child(sb); // Move here so timeline and tracks are always aligned.
 	scroll->set_focus_mode(FOCUS_CLICK);
 	scroll->connect(SceneStringName(gui_input), callable_mp(this, &AnimationTrackEditor::_scroll_input));
 	scroll->connect(SceneStringName(focus_exited), callable_mp(panner.ptr(), &ViewPanner::release_pan_key));

@@ -298,11 +298,11 @@ void ScrollContainer::_reposition_children() {
 	ofs += theme_cache.panel_style->get_offset();
 	bool rtl = is_layout_rtl();
 
-	if (h_scroll->is_visible_in_tree() && h_scroll->get_parent() == this) { //scrolls may have been moved out for reasons
+	if (h_scroll->is_visible_in_tree()) {
 		size.y -= h_scroll->get_minimum_size().y;
 	}
 
-	if (v_scroll->is_visible_in_tree() && v_scroll->get_parent() == this) { //scrolls may have been moved out for reasons
+	if (v_scroll->is_visible_in_tree()) {
 		size.x -= v_scroll->get_minimum_size().x;
 	}
 
@@ -324,7 +324,7 @@ void ScrollContainer::_reposition_children() {
 			r.size.height = MAX(size.height, minsize.height);
 		}
 		r.position += ofs;
-		if (rtl && v_scroll->is_visible_in_tree() && v_scroll->get_parent() == this) {
+		if (rtl && v_scroll->is_visible_in_tree()) {
 			r.position.x += v_scroll->get_minimum_size().x;
 		}
 		r.position = r.position.floor();
