@@ -2264,6 +2264,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		render_data.inv_cam_transform = render_data.cam_transform.affine_inverse();
 		render_data.cam_projection = p_camera_data->main_projection;
 		render_data.cam_orthogonal = p_camera_data->is_orthogonal;
+		render_data.cam_frustum = p_camera_data->is_frustum;
 		render_data.camera_visible_layers = p_camera_data->visible_layers;
 		render_data.main_cam_transform = p_camera_data->main_transform;
 
@@ -2594,14 +2595,20 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		scene_state.enable_gl_blend(false);
 		scene_state.set_gl_cull_mode(GLES3::SceneShaderData::CULL_BACK);
 
+		Transform3D transform = render_data.cam_transform;
 		Projection projection = render_data.cam_projection;
-		if (is_reflection_probe) {
+		if (is_reflection_probe || render_data.cam_frustum) {
 			Projection correction;
 			correction.columns[1][1] = -1.0;
 			projection = correction * render_data.cam_projection;
+
+			if (render_data.cam_frustum) {
+				// Flipping the Y for rotation fixes the projection alignment but not the transform!
+				transform = transform.scaled_local(Vector3(1, -1, 1));
+			}
 		}
 
-		_draw_sky(render_data.environment, projection, render_data.cam_transform, sky_energy_multiplier, render_data.luminance_multiplier, p_camera_data->view_count > 1, flip_y, apply_color_adjustments_in_post);
+		_draw_sky(render_data.environment, projection, transform, sky_energy_multiplier, render_data.luminance_multiplier, p_camera_data->view_count > 1, flip_y, apply_color_adjustments_in_post);
 	}
 
 	if (rt && (scene_state.used_screen_texture || scene_state.used_depth_texture)) {

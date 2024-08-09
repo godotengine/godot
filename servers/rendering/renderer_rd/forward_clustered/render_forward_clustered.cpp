@@ -1876,7 +1876,18 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 				sky.setup_sky(p_render_data->environment, rb, *p_render_data->lights, p_render_data->camera_attributes, 1, &projection, &eye_offset, p_render_data->scene_data->cam_transform, projection, screen_size, Vector2(0.0f, 0.0f), this);
 			} else {
-				sky.setup_sky(p_render_data->environment, rb, *p_render_data->lights, p_render_data->camera_attributes, p_render_data->scene_data->view_count, p_render_data->scene_data->view_projection, p_render_data->scene_data->view_eye_offset, p_render_data->scene_data->cam_transform, p_render_data->scene_data->cam_projection, screen_size, p_render_data->scene_data->taa_jitter, this);
+				Transform3D transform = p_render_data->scene_data->cam_transform;
+				Projection projection = p_render_data->scene_data->cam_projection;
+				if (p_render_data->scene_data->cam_frustum) {
+					Projection correction;
+					correction.set_depth_correction(true);
+					projection = correction * projection;
+
+					// Flipping the Y for rotation fixes the projection alignment but not the transform!
+					transform = transform.scaled_local(Vector3(1, -1, 1));
+				}
+
+				sky.setup_sky(p_render_data->environment, rb, *p_render_data->lights, p_render_data->camera_attributes, p_render_data->scene_data->view_count, &projection, p_render_data->scene_data->view_eye_offset, transform, projection, screen_size, p_render_data->scene_data->taa_jitter, this);
 			}
 
 			sky_energy_multiplier *= bg_energy_multiplier;
