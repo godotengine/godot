@@ -1822,7 +1822,14 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 							}
 						}
 					}
-					err_text = _get_call_error(err, "function '" + methodstr + (is_callable ? "" : "' in base '" + basestr) + "'", (const Variant **)argptrs);
+
+					String tool_suffix;
+					if (base->has_method(methodstr)) {
+						// If the method isn't found but `has_method()` returns `true`,
+						// this is because it's a non-tool script called from a tool script.
+						tool_suffix = " ('" + methodstr + "' is from a non-@tool script, but is called from @tool script; make the script containing '" + methodstr + "' @tool)";
+					}
+					err_text = _get_call_error(err, "function '" + methodstr + (is_callable ? "" : "' in base '" + basestr) + "'" + tool_suffix, (const Variant **)argptrs);
 					OPCODE_BREAK;
 				}
 #endif
@@ -1906,7 +1913,14 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 							}
 						}
 					}
-					err_text = _get_call_error(err, "function '" + methodstr + "' in base '" + basestr + "'", (const Variant **)argptrs);
+
+					String tool_suffix;
+					if (base->has_method(methodstr)) {
+						// If the method isn't found but `has_method()` returns `true`,
+						// this is because it's a non-tool script called from a tool script.
+						tool_suffix = " ('" + methodstr + "' is from a non-@tool script, but is called from @tool script; make the script containing '" + methodstr + "' @tool)";
+					}
+					err_text = _get_call_error(err, "function '" + methodstr + "' in base '" + basestr + "'" + tool_suffix, (const Variant **)argptrs);
 					OPCODE_BREAK;
 				}
 #endif
