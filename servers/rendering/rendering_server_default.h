@@ -175,6 +175,7 @@ public:
 
 	//these go pass-through, as they can be called from any thread
 	FUNCRIDTEX1(texture_2d, const Ref<Image> &)
+	FUNCRIDTEX1(texture_external, const Ref<Image> &)
 	FUNCRIDTEX2(texture_2d_layered, const Vector<Ref<Image>> &, TextureLayeredType)
 	FUNCRIDTEX6(texture_3d, Image::Format, int, int, int, bool, const Vector<Ref<Image>> &)
 	FUNCRIDTEX1(texture_proxy, RID)

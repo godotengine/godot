@@ -679,6 +679,7 @@ static const GLenum target_from_type[ShaderLanguage::TYPE_MAX] = {
 	GL_TEXTURE_3D, // TYPE_USAMPLER3D,
 	GL_TEXTURE_CUBE_MAP, // TYPE_SAMPLERCUBE,
 	GL_TEXTURE_CUBE_MAP, // TYPE_SAMPLERCUBEARRAY,
+	_GL_TEXTURE_EXTERNAL_OES, // TYPE_SAMPLEREXT
 	GL_TEXTURE_2D, // TYPE_STRUCT
 };
 
@@ -949,6 +950,9 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 				} break;
 				case ShaderLanguage::TYPE_SAMPLERCUBEARRAY: {
 					ERR_PRINT_ONCE("Type: SamplerCubeArray not supported in GL Compatibility rendering backend, please use another type.");
+				} break;
+				case ShaderLanguage::TYPE_SAMPLEREXT: {
+					gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_EXT);
 				} break;
 
 				case ShaderLanguage::TYPE_ISAMPLER3D:
