@@ -282,6 +282,7 @@ private:
 	EditorPluginList *editor_plugins_force_over = nullptr;
 	EditorPluginList *editor_plugins_over = nullptr;
 	EditorQuickOpen *quick_open = nullptr;
+	EditorQuickOpen *quick_open_color_palette = nullptr;
 	EditorResourcePreview *resource_preview = nullptr;
 	EditorSelection *editor_selection = nullptr;
 	EditorSettingsDialog *editor_settings_dialog = nullptr;
@@ -434,6 +435,7 @@ private:
 	Timer *editor_layout_save_delay_timer = nullptr;
 	Timer *scan_changes_timer = nullptr;
 	Button *distraction_free = nullptr;
+	Callable palette_file_selected_callback;
 
 	EditorBottomPanel *bottom_panel = nullptr;
 
@@ -550,6 +552,7 @@ private:
 	void _export_as_menu_option(int p_idx);
 	void _update_file_menu_opened();
 	void _update_file_menu_closed();
+	void _palette_quick_open_dialog();
 
 	void _remove_plugin_from_enabled(const String &p_name);
 	void _plugin_over_edit(EditorPlugin *p_plugin, Object *p_object);
@@ -590,6 +593,7 @@ private:
 	void _instantiate_request(const Vector<String> &p_files);
 
 	void _quick_opened();
+	void _quick_opened_color_palette();
 	void _open_command_palette();
 
 	void _project_run_started();

@@ -3431,6 +3431,11 @@ void EditorNode::_update_file_menu_closed() {
 	file_menu->set_item_disabled(file_menu->get_item_index(FILE_OPEN_PREV), false);
 }
 
+void EditorNode::_palette_quick_open_dialog() {
+	quick_open_color_palette->popup_dialog("ColorPalette", true);
+	quick_open_color_palette->set_title(TTR("Quick Open Color Palette..."));
+}
+
 VBoxContainer *EditorNode::get_main_screen_control() {
 	return main_screen_vbox;
 }
@@ -3932,6 +3937,10 @@ void EditorNode::setup_color_picker(ColorPicker *p_picker) {
 
 	p_picker->set_color_mode((ColorPicker::ColorModeType)default_color_mode);
 	p_picker->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);
+
+	p_picker->set_quick_open_callback(callable_mp(this, &EditorNode::_palette_quick_open_dialog));
+	p_picker->set_palette_saved_callback(callable_mp(EditorFileSystem::get_singleton(), &EditorFileSystem::update_file));
+	palette_file_selected_callback = callable_mp(p_picker, &ColorPicker::_quick_open_palette_file_selected);
 }
 
 bool EditorNode::is_scene_open(const String &p_path) {
@@ -4629,6 +4638,16 @@ void EditorNode::_quick_opened() {
 			open_request(res_path);
 		} else {
 			load_resource(res_path);
+		}
+	}
+}
+
+void EditorNode::_quick_opened_color_palette() {
+	Vector<String> files = quick_open_color_palette->get_selected_files();
+
+	for (const String &res_path : files) {
+		if (ClassDB::is_parent_class(ResourceLoader::get_resource_type(res_path), "ColorPalette")) {
+			palette_file_selected_callback.call_deferred(res_path);
 		}
 	}
 }
@@ -7732,6 +7751,10 @@ EditorNode::EditorNode() {
 	quick_open = memnew(EditorQuickOpen);
 	gui_base->add_child(quick_open);
 	quick_open->connect("quick_open", callable_mp(this, &EditorNode::_quick_opened));
+
+	quick_open_color_palette = memnew(EditorQuickOpen);
+	gui_base->add_child(quick_open_color_palette);
+	quick_open_color_palette->connect("quick_open", callable_mp(this, &EditorNode::_quick_opened_color_palette));
 
 	_update_recent_scenes();
 
