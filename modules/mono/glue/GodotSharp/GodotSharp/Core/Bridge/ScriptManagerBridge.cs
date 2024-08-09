@@ -103,7 +103,7 @@ namespace Godot.Bridge
 
                 Type nativeType = TypeGetProxyClass(nativeTypeNameStr) ?? throw new InvalidOperationException(
                     "Wrapper class not found for type: " + nativeTypeNameStr);
-                var obj = (GodotObject)FormatterServices.GetUninitializedObject(nativeType);
+                var obj = (GodotObject)RuntimeHelpers.GetUninitializedObject(nativeType);
 
                 var ctor = nativeType.GetConstructor(
                     BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
@@ -155,7 +155,7 @@ namespace Godot.Bridge
                     }
                 }
 
-                var obj = (GodotObject)FormatterServices.GetUninitializedObject(scriptType);
+                var obj = (GodotObject)RuntimeHelpers.GetUninitializedObject(scriptType);
 
                 var parameters = ctor.GetParameters();
                 int paramCount = parameters.Length;
