@@ -70,6 +70,7 @@ public:
 		UNSAFE_VOID_RETURN, // Function returns void but returned a call to a function that can't be type checked.
 		RETURN_VALUE_DISCARDED, // Function call returns something but the value isn't used.
 		STATIC_CALLED_ON_INSTANCE, // A static method was called on an instance of a class instead of on the class itself.
+		MISSING_TOOL, // The base class script has the "@tool" annotation, but this script does not have it.
 		REDUNDANT_STATIC_UNLOAD, // The `@static_unload` annotation is used but the class does not have static data.
 		REDUNDANT_AWAIT, // await is used but expression is synchronous (not a signal nor a coroutine).
 		ASSERT_ALWAYS_TRUE, // Expression for assert argument is always true.
@@ -123,6 +124,7 @@ public:
 		WARN, // UNSAFE_VOID_RETURN
 		IGNORE, // RETURN_VALUE_DISCARDED // Too spammy by default on common cases (connect, Tween, etc.).
 		WARN, // STATIC_CALLED_ON_INSTANCE
+		WARN, // MISSING_TOOL
 		WARN, // REDUNDANT_STATIC_UNLOAD
 		WARN, // REDUNDANT_AWAIT
 		WARN, // ASSERT_ALWAYS_TRUE
