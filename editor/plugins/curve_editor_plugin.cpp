@@ -411,7 +411,7 @@ void CurveEdit::_curve_changed() {
 	}
 }
 
-int CurveEdit::get_point_at(Vector2 p_pos) const {
+int CurveEdit::get_point_at(const Vector2 &p_pos) const {
 	if (curve.is_null()) {
 		return -1;
 	}
@@ -432,7 +432,7 @@ int CurveEdit::get_point_at(Vector2 p_pos) const {
 	return closest_idx;
 }
 
-CurveEdit::TangentIndex CurveEdit::get_tangent_at(Vector2 p_pos) const {
+CurveEdit::TangentIndex CurveEdit::get_tangent_at(const Vector2 &p_pos) const {
 	if (curve.is_null() || selected_index < 0) {
 		return TANGENT_NONE;
 	}
@@ -491,7 +491,7 @@ float CurveEdit::get_offset_without_collision(int p_current_index, float p_offse
 	return safe_offset;
 }
 
-void CurveEdit::add_point(Vector2 p_pos) {
+void CurveEdit::add_point(const Vector2 &p_pos) {
 	ERR_FAIL_COND(curve.is_null());
 
 	// Add a point to get its index, then remove it immediately. Trick to feed the UndoRedo.
@@ -531,7 +531,7 @@ void CurveEdit::remove_point(int p_index) {
 	undo_redo->commit_action();
 }
 
-void CurveEdit::set_point_position(int p_index, Vector2 p_pos) {
+void CurveEdit::set_point_position(int p_index, const Vector2 &p_pos) {
 	ERR_FAIL_COND(curve.is_null());
 	ERR_FAIL_INDEX_MSG(p_index, curve->get_point_count(), "Curve point is out of bounds.");
 
@@ -707,70 +707,54 @@ Vector2 CurveEdit::get_tangent_view_pos(int p_index, TangentIndex p_tangent) con
 	return tangent_view_pos;
 }
 
-Vector2 CurveEdit::get_view_pos(Vector2 p_world_pos) const {
+Vector2 CurveEdit::get_view_pos(const Vector2 &p_world_pos) const {
 	return _world_to_view.xform(p_world_pos);
 }
 
-Vector2 CurveEdit::get_world_pos(Vector2 p_view_pos) const {
+Vector2 CurveEdit::get_world_pos(const Vector2 &p_view_pos) const {
 	return _world_to_view.affine_inverse().xform(p_view_pos);
 }
 
 // Uses non-baked points, but takes advantage of ordered iteration to be faster.
-template <typename T>
-static void plot_curve_accurate(const Curve &curve, float step, Vector2 scaling, T plot_func) {
-	if (curve.get_point_count() <= 1) {
-		// Not enough points to make a curve, so it's just a straight line.
-		// The added tiny vectors make the drawn line stay exactly within the bounds in practice.
-		float y = curve.sample(0);
-		plot_func(Vector2(0, y) * scaling + Vector2(0.5, 0), Vector2(1.f, y) * scaling - Vector2(1.5, 0), true);
+void CurveEdit::plot_curve_accurate(float p_step, const Color &p_line_color, const Color &p_edge_line_color) {
+	if (curve->get_point_count() <= 1) { // Draw single line through entire plot
+		float y = curve->sample(0);
+		draw_line(get_view_pos(Vector2(0.f, y)) + Vector2(0.5, 0), get_view_pos(Vector2(1.f, y)) - Vector2(1.5, 0), p_line_color, LINE_WIDTH, true);
+		return;
+	}
 
-	} else {
-		Vector2 first_point = curve.get_point_position(0);
-		Vector2 last_point = curve.get_point_position(curve.get_point_count() - 1);
+	Vector2 first_point = curve->get_point_position(0);
+	Vector2 last_point = curve->get_point_position(curve->get_point_count() - 1);
 
-		// Edge lines
-		plot_func(Vector2(0, first_point.y) * scaling + Vector2(0.5, 0), first_point * scaling, false);
-		plot_func(Vector2(Curve::MAX_X, last_point.y) * scaling - Vector2(1.5, 0), last_point * scaling, false);
+	// Transform pixels-per-step into curve domain. Only works for non-rotated transforms.
+	const float world_step_size = p_step / _world_to_view.get_scale().x;
 
-		// Draw section by section, so that we get maximum precision near points.
-		// It's an accurate representation, but slower than using the baked one.
-		for (int i = 1; i < curve.get_point_count(); ++i) {
-			Vector2 a = curve.get_point_position(i - 1);
-			Vector2 b = curve.get_point_position(i);
+	// Edge lines
+	draw_line(get_view_pos(Vector2(0, first_point.y)) + Vector2(0.5, 0), get_view_pos(first_point), p_edge_line_color, LINE_WIDTH, true);
+	draw_line(get_view_pos(last_point), get_view_pos(Vector2(Curve::MAX_X, last_point.y)) - Vector2(1.5, 0), p_edge_line_color, LINE_WIDTH, true);
 
-			Vector2 pos = a;
-			Vector2 prev_pos = a;
+	// Draw section by section, so that we get maximum precision near points.
+	// It's an accurate representation, but slower than using the baked one.
+	for (int i = 1; i < curve->get_point_count(); ++i) {
+		Vector2 a = curve->get_point_position(i - 1);
+		Vector2 b = curve->get_point_position(i);
 
-			float scaled_step = step / scaling.x;
-			float samples = (b.x - a.x) / scaled_step;
+		Vector2 pos = a;
+		Vector2 prev_pos = a;
 
-			for (int j = 1; j < samples; j++) {
-				float x = j * scaled_step;
-				pos.x = a.x + x;
-				pos.y = curve.sample_local_nocheck(i - 1, x);
-				plot_func(prev_pos * scaling, pos * scaling, true);
-				prev_pos = pos;
-			}
+		float samples = (b.x - a.x) / world_step_size;
 
-			plot_func(prev_pos * scaling, b * scaling, true);
+		for (int j = 1; j < samples; j++) {
+			float x = j * world_step_size;
+			pos.x = a.x + x;
+			pos.y = curve->sample_local_nocheck(i - 1, x);
+			draw_line(get_view_pos(prev_pos), get_view_pos(pos), p_line_color, LINE_WIDTH, true);
+			prev_pos = pos;
 		}
+
+		draw_line(get_view_pos(prev_pos), get_view_pos(b), p_line_color, LINE_WIDTH, true);
 	}
 }
-
-struct CanvasItemPlotCurve {
-	CanvasItem &ci;
-	Color color1;
-	Color color2;
-
-	CanvasItemPlotCurve(CanvasItem &p_ci, Color p_color1, Color p_color2) :
-			ci(p_ci),
-			color1(p_color1),
-			color2(p_color2) {}
-
-	void operator()(Vector2 pos0, Vector2 pos1, bool in_definition) {
-		ci.draw_line(pos0, pos1, in_definition ? color1 : color2, 0.5, true);
-	}
-};
 
 void CurveEdit::_redraw() {
 	if (curve.is_null()) {
@@ -829,20 +813,14 @@ void CurveEdit::_redraw() {
 		draw_string(font, get_view_pos(Vector2(0, y)) + Vector2(2, -2), String::num(y, 2), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_color);
 	}
 
-	// Draw curve.
-
-	// An unusual transform so we can offset the curve before scaling it up, allowing the curve to be antialiased.
-	// The scaling up ensures that the curve rendering doesn't break when we use a quad line to draw it.
-	draw_set_transform_matrix(Transform2D(0, get_view_pos(Vector2(0, 0))));
+	// Draw curve in view coordinates. Curve world-to-view point conversion happens in plot_curve_accurate().
 
 	const Color line_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
 	const Color edge_line_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor)) * Color(1, 1, 1, 0.75);
 
-	CanvasItemPlotCurve plot_func(*this, line_color, edge_line_color);
-	plot_curve_accurate(**curve, 2.f, (get_view_pos(Vector2(1, curve->get_max_value())) - get_view_pos(Vector2(0, curve->get_min_value()))) / Vector2(1, curve->get_range()), plot_func);
+	plot_curve_accurate(STEP_SIZE, line_color, edge_line_color);
 
 	// Draw points, except for the selected one.
-	draw_set_transform_matrix(Transform2D());
 
 	bool shift_pressed = Input::get_singleton()->is_key_pressed(Key::SHIFT);
 
