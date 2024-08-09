@@ -37,6 +37,8 @@ SceneStringNames::SceneStringNames() {
 	draw = StaticCString::create("draw");
 	hidden = StaticCString::create("hidden");
 	visibility_changed = StaticCString::create("visibility_changed");
+	node_active_changed = StaticCString::create("node_active_changed");
+	node_active_in_tree_changed = StaticCString::create("node_active_in_tree_changed");
 	input_event = StaticCString::create("input_event");
 	shader = StaticCString::create("shader");
 	tree_entered = StaticCString::create("tree_entered");
@@ -82,6 +84,8 @@ SceneStringNames::SceneStringNames() {
 	updated = StaticCString::create("updated");
 
 	_ready = StaticCString::create("_ready");
+	_node_active = StaticCString::create("_node_active");
+	_node_inactive = StaticCString::create("_node_inactive");
 
 	screen_entered = StaticCString::create("screen_entered");
 	screen_exited = StaticCString::create("screen_exited");

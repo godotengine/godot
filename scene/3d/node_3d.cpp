@@ -226,6 +226,14 @@ void Node3D::_notification(int p_what) {
 			}
 #endif
 		} break;
+
+		case NOTIFICATION_NODE_ACTIVE_CHANGED: {
+			ERR_THREAD_GUARD;
+
+			if (is_inside_tree()) {
+				_propagate_visibility_changed();
+			}
+		} break;
 	}
 }
 
@@ -786,7 +794,7 @@ void Node3D::_propagate_visibility_changed() {
 #endif
 
 	for (Node3D *c : data.children) {
-		if (!c || !c->data.visible) {
+		if (!c || !c->is_visible()) {
 			continue;
 		}
 		c->_propagate_visibility_changed();
@@ -827,7 +835,7 @@ bool Node3D::is_visible_in_tree() const {
 	const Node3D *s = this;
 
 	while (s) {
-		if (!s->data.visible) {
+		if (!s->is_visible() || !s->is_node_active_self()) {
 			return false;
 		}
 		s = s->data.parent;

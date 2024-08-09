@@ -97,6 +97,14 @@ void Node::_notification(int p_notification) {
 				}
 			}
 
+			if (data.node_active) {
+				if (data.parent) {
+					data.parent_active_in_tree = data.parent->is_node_active_in_tree();
+				} else {
+					data.parent_active_in_tree = true;
+				}
+			}
+
 			if (data.physics_interpolation_mode == PHYSICS_INTERPOLATION_MODE_INHERIT) {
 				bool interpolate = true; // Root node default is for interpolation to be on.
 				if (data.parent) {
@@ -215,6 +223,23 @@ void Node::_notification(int p_notification) {
 			}
 
 			GDVIRTUAL_CALL(_ready);
+		} break;
+
+		case NOTIFICATION_NODE_ACTIVE: {
+			if (data.completed_active_callback) {
+				// We've already run the callback.
+				// This can happen if a user sets node_active in _ready() before the lifecycle call starts.
+				return;
+			}
+			data.completed_active_callback = true;
+
+			GDVIRTUAL_CALL(_node_active);
+		} break;
+
+		case NOTIFICATION_NODE_INACTIVE: {
+			data.completed_active_callback = false;
+
+			GDVIRTUAL_CALL(_node_inactive);
 		} break;
 
 		case NOTIFICATION_POSTINITIALIZE: {
@@ -358,6 +383,12 @@ void Node::_propagate_after_exit_tree() {
 }
 
 void Node::_propagate_exit_tree() {
+	// For lifecycle consistency, run the inactive signal.
+	// Note we don't actually disable the node so that tab switching in the editor doesn't change node state.
+	if (is_node_active_in_tree()) {
+		notification(NOTIFICATION_NODE_INACTIVE);
+	}
+
 	//block while removing children
 
 #ifdef DEBUG_ENABLED
@@ -405,6 +436,24 @@ void Node::_propagate_exit_tree() {
 	data.ready_notified = false;
 	data.tree = nullptr;
 	data.depth = -1;
+}
+
+void Node::_propagate_initial_node_active() {
+	if (is_node_active_in_tree()) {
+		notification(NOTIFICATION_NODE_ACTIVE);
+	} else {
+		// No need to check further down.
+		return;
+	}
+
+	// Block while checking children.
+	data.blocked++;
+
+	for (KeyValue<StringName, Node *> &K : data.children) {
+		K.value->_propagate_initial_node_active();
+	}
+
+	data.blocked--;
 }
 
 void Node::_propagate_physics_interpolated(bool p_interpolated) {
@@ -659,6 +708,86 @@ void Node::set_process_mode(ProcessMode p_mode) {
 #endif
 }
 
+void Node::set_node_active(bool p_enabled) {
+	ERR_THREAD_GUARD
+	if (data.node_active == p_enabled) {
+		return;
+	}
+
+	if (!is_inside_tree()) {
+		data.node_active = p_enabled;
+		return;
+	}
+
+	bool prev_can_process = can_process();
+	bool prev_enabled = _is_enabled();
+
+	if (p_enabled) {
+		if (data.parent) {
+			data.parent_active_in_tree = data.parent->is_node_active_in_tree();
+		} else {
+			data.parent_active_in_tree = true;
+		}
+	}
+
+	data.node_active = p_enabled;
+
+	bool next_can_process = can_process();
+	bool next_enabled = _is_enabled();
+
+	int pause_notification = 0;
+
+	if (prev_can_process && !next_can_process) {
+		pause_notification = NOTIFICATION_PAUSED;
+	} else if (!prev_can_process && next_can_process) {
+		pause_notification = NOTIFICATION_UNPAUSED;
+	}
+
+	int enabled_notification = 0;
+
+	if (prev_enabled && !next_enabled) {
+		enabled_notification = NOTIFICATION_DISABLED;
+	} else if (!prev_enabled && next_enabled) {
+		enabled_notification = NOTIFICATION_ENABLED;
+	}
+
+	_propagate_node_active(p_enabled, false, pause_notification, enabled_notification);
+
+	notification(NOTIFICATION_NODE_ACTIVE_CHANGED);
+	emit_signal(SceneStringName(node_active_changed));
+}
+
+void Node::_propagate_node_active(bool p_enabled, bool p_set_parent_active, int p_pause_notification, int p_enabled_notification) {
+	if (p_set_parent_active) {
+		data.parent_active_in_tree = p_enabled;
+	}
+
+	if (p_pause_notification != 0) {
+		notification(p_pause_notification);
+	}
+
+	if (p_enabled_notification != 0) {
+		notification(p_enabled_notification);
+	}
+
+	if (p_enabled) {
+		notification(NOTIFICATION_NODE_ACTIVE);
+	} else {
+		notification(NOTIFICATION_NODE_INACTIVE);
+	}
+	emit_signal(SceneStringName(node_active_in_tree_changed));
+
+	data.blocked++;
+	for (KeyValue<StringName, Node *> &K : data.children) {
+		Node *c = K.value;
+		if (c->data.node_active) {
+			// Only active children will change based on parent changing.
+			c->_propagate_node_active(p_enabled, true, p_pause_notification, p_enabled_notification);
+		}
+	}
+	data.blocked--;
+}
+
 void Node::_propagate_pause_notification(bool p_enable) {
 	bool prev_can_process = _can_process(!p_enable);
 	bool next_can_process = _can_process(p_enable);
@@ -837,6 +966,11 @@ bool Node::can_process() const {
 }
 
 bool Node::_can_process(bool p_paused) const {
+	if (!_is_node_active_in_tree()) {
+		// Active state being disabled overrides process_mode
+		return false;
+	}
+
 	ProcessMode process_mode;
 
 	if (data.process_mode == PROCESS_MODE_INHERIT) {
@@ -914,12 +1048,25 @@ bool Node::_is_enabled() const {
 		process_mode = data.process_mode;
 	}
 
-	return (process_mode != PROCESS_MODE_DISABLED);
+	return (process_mode != PROCESS_MODE_DISABLED && _is_node_active_in_tree());
 }
 
 bool Node::is_enabled() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
 	return _is_enabled();
+}
+
+bool Node::is_node_active_in_tree() const {
+	ERR_THREAD_GUARD_V(false);
+	return _is_node_active_in_tree();
+}
+
+bool Node::_is_node_active_in_tree() const {
+	return is_node_active_self() && data.parent_active_in_tree;
+}
+
+bool Node::is_node_active_self() const {
+	return data.node_active;
 }
 
 double Node::get_physics_process_delta_time() const {
@@ -3171,6 +3318,9 @@ void Node::_set_tree(SceneTree *p_tree) {
 			_propagate_ready(); //reverse_notification(NOTIFICATION_READY);
 		}
 
+		// Send initial lifecycle notification after ready but on each time a tree is set.
+		_propagate_initial_node_active();
+
 		tree_changed_b = data.tree;
 	}
 
@@ -3555,6 +3705,9 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_process_mode", "mode"), &Node::set_process_mode);
 	ClassDB::bind_method(D_METHOD("get_process_mode"), &Node::get_process_mode);
 	ClassDB::bind_method(D_METHOD("can_process"), &Node::can_process);
+	ClassDB::bind_method(D_METHOD("set_node_active", "enable"), &Node::set_node_active);
+	ClassDB::bind_method(D_METHOD("is_node_active_in_tree"), &Node::is_node_active_in_tree);
+	ClassDB::bind_method(D_METHOD("is_node_active_self"), &Node::is_node_active_self);
 
 	ClassDB::bind_method(D_METHOD("set_process_thread_group", "mode"), &Node::set_process_thread_group);
 	ClassDB::bind_method(D_METHOD("get_process_thread_group"), &Node::get_process_thread_group);
@@ -3685,6 +3838,9 @@ void Node::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_POST_ENTER_TREE);
 	BIND_CONSTANT(NOTIFICATION_DISABLED);
 	BIND_CONSTANT(NOTIFICATION_ENABLED);
+	BIND_CONSTANT(NOTIFICATION_NODE_ACTIVE_CHANGED);
+	BIND_CONSTANT(NOTIFICATION_NODE_ACTIVE);
+	BIND_CONSTANT(NOTIFICATION_NODE_INACTIVE);
 	BIND_CONSTANT(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
 
 	BIND_CONSTANT(NOTIFICATION_EDITOR_PRE_SAVE);
@@ -3749,6 +3905,8 @@ void Node::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tree_exited"));
 	ADD_SIGNAL(MethodInfo("child_entered_tree", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
 	ADD_SIGNAL(MethodInfo("child_exiting_tree", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
+	ADD_SIGNAL(MethodInfo("node_active_changed"));
+	ADD_SIGNAL(MethodInfo("node_active_in_tree_changed"));
 
 	ADD_SIGNAL(MethodInfo("child_order_changed"));
 	ADD_SIGNAL(MethodInfo("replacing_by", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
@@ -3759,6 +3917,8 @@ void Node::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "scene_file_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_scene_file_path", "get_scene_file_path");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "owner", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "set_owner", "get_owner");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", PROPERTY_USAGE_NONE), "", "get_multiplayer");
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "node_active", PROPERTY_HINT_NONE, ""), "set_node_active", "is_node_active_self");
 
 	ADD_GROUP("Process", "process_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Inherit,Pausable,When Paused,Always,Disabled"), "set_process_mode", "get_process_mode");
@@ -3784,6 +3944,8 @@ void Node::_bind_methods() {
 	GDVIRTUAL_BIND(_enter_tree);
 	GDVIRTUAL_BIND(_exit_tree);
 	GDVIRTUAL_BIND(_ready);
+	GDVIRTUAL_BIND(_node_active);
+	GDVIRTUAL_BIND(_node_inactive);
 	GDVIRTUAL_BIND(_get_configuration_warnings);
 	GDVIRTUAL_BIND(_input, "event");
 	GDVIRTUAL_BIND(_shortcut_input, "event");
@@ -3818,6 +3980,10 @@ Node::Node() {
 
 	data.physics_process_internal = false;
 	data.process_internal = false;
+
+	data.node_active = true;
+	data.parent_active_in_tree = true;
+	data.completed_active_callback = false;
 
 	data.input = false;
 	data.shortcut_input = false;

@@ -57,9 +57,9 @@ void CanvasLayer::set_visible(bool p_visible) {
 	for (int i = 0; i < get_child_count(); i++) {
 		CanvasItem *c = Object::cast_to<CanvasItem>(get_child(i));
 		if (c) {
-			RenderingServer::get_singleton()->canvas_item_set_visible(c->get_canvas_item(), p_visible && c->is_visible());
+			RenderingServer::get_singleton()->canvas_item_set_visible(c->get_canvas_item(), is_visible() && c->is_visible());
 
-			c->_propagate_visibility_changed(p_visible);
+			c->_propagate_visibility_changed(is_visible());
 		}
 	}
 }
@@ -73,7 +73,7 @@ void CanvasLayer::hide() {
 }
 
 bool CanvasLayer::is_visible() const {
-	return visible;
+	return visible && is_node_active_in_tree();
 }
 
 void CanvasLayer::set_transform(const Transform2D &p_xform) {
@@ -198,6 +198,19 @@ void CanvasLayer::_notification(int p_what) {
 			viewport = RID();
 			_update_follow_viewport(false);
 		} break;
+
+		case NOTIFICATION_NODE_ACTIVE_CHANGED: {
+			emit_signal(SceneStringName(visibility_changed));
+
+			for (int i = 0; i < get_child_count(); i++) {
+				CanvasItem *c = Object::cast_to<CanvasItem>(get_child(i));
+				if (c) {
+					RenderingServer::get_singleton()->canvas_item_set_visible(c->get_canvas_item(), is_visible() && c->is_visible());
+
+					c->_propagate_visibility_changed(is_visible());
+				}
+			}
+		}
 	}
 }
 
