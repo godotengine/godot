@@ -175,6 +175,7 @@ void EditorFileDialog::_update_theme_item_cache() {
 	theme_cache.back_folder = get_editor_theme_icon(SNAME("Back"));
 	theme_cache.reload = get_editor_theme_icon(SNAME("Reload"));
 	theme_cache.toggle_hidden = get_editor_theme_icon(SNAME("GuiVisibilityVisible"));
+	theme_cache.toggle_filename_filter = get_editor_theme_icon(SNAME("FilenameFilter"));
 	theme_cache.favorite = get_editor_theme_icon(SNAME("Favorites"));
 	theme_cache.mode_thumbnails = get_editor_theme_icon(SNAME("FileThumbnail"));
 	theme_cache.mode_list = get_editor_theme_icon(SNAME("FileList"));
@@ -327,6 +328,11 @@ void EditorFileDialog::shortcut_input(const Ref<InputEvent> &p_event) {
 			}
 			if (ED_IS_SHORTCUT("file_dialog/move_favorite_down", p_event)) {
 				_favorite_move_down();
+				handled = true;
+			}
+			if (ED_IS_SHORTCUT("file_dialog/toggle_filename_filter", p_event)) {
+				show_filename_filter_button->set_pressed(!show_filename_filter_button->is_pressed());
+				filename_filter->grab_focus();
 				handled = true;
 			}
 
@@ -984,24 +990,28 @@ void EditorFileDialog::update_file_list() {
 	dirs.sort_custom<FileNoCaseComparator>();
 	files.sort_custom<FileNoCaseComparator>();
 
+	String filename_filter_lower = file_name_filter.to_lower();
+
 	while (!dirs.is_empty()) {
 		const String &dir_name = dirs.front()->get();
 
-		item_list->add_item(dir_name);
+		if (filename_filter_lower.is_empty() || dir_name.to_lower().contains(filename_filter_lower)) {
+			item_list->add_item(dir_name);
 
-		if (display_mode == DISPLAY_THUMBNAILS) {
-			item_list->set_item_icon(-1, folder_thumbnail);
-		} else {
-			item_list->set_item_icon(-1, theme_cache.folder);
+			if (display_mode == DISPLAY_THUMBNAILS) {
+				item_list->set_item_icon(-1, folder_thumbnail);
+			} else {
+				item_list->set_item_icon(-1, theme_cache.folder);
+			}
+
+			Dictionary d;
+			d["name"] = dir_name;
+			d["path"] = cdir.path_join(dir_name);
+			d["dir"] = true;
+
+			item_list->set_item_metadata(-1, d);
+			item_list->set_item_icon_modulate(-1, get_dir_icon_color(String(d["path"])));
 		}
-
-		Dictionary d;
-		d["name"] = dir_name;
-		d["path"] = cdir.path_join(dir_name);
-		d["dir"] = true;
-
-		item_list->set_item_metadata(-1, d);
-		item_list->set_item_icon_modulate(-1, get_dir_icon_color(String(d["path"])));
 
 		dirs.pop_front();
 	}
@@ -1042,7 +1052,7 @@ void EditorFileDialog::update_file_list() {
 			}
 		}
 
-		if (match) {
+		if (match && (filename_filter_lower.is_empty() || files.front()->get().to_lower().contains(filename_filter_lower))) {
 			item_list->add_item(files.front()->get());
 
 			if (get_icon_func) {
@@ -1110,6 +1120,21 @@ void EditorFileDialog::_filter_selected(int) {
 	update_file_list();
 }
 
+void EditorFileDialog::_filename_filter_changed() {
+	update_filename_filter();
+	item_list->call_deferred("select", 0);
+	update_file_list();
+}
+
+void EditorFileDialog::_filename_filter_selected() {
+	Vector items = item_list->get_selected_items();
+	if (!items.is_empty()) {
+		int index = items[0];
+		file->set_text(item_list->get_item_text(index));
+		file->emit_signal("text_submitted", file->get_text());
+	}
+}
+
 void EditorFileDialog::update_filters() {
 	filter->clear();
 
@@ -1145,6 +1170,30 @@ void EditorFileDialog::update_filters() {
 	filter->add_item(TTR("All Files (*)"));
 }
 
+void EditorFileDialog::clear_filename_filter() {
+	set_filename_filter("");
+	update_filename_filter_gui();
+	invalidate();
+}
+
+void EditorFileDialog::update_filename_filter_gui() {
+	filename_filter_box->set_visible(show_filename_filter);
+	if (!show_filename_filter) {
+		file_name_filter.clear();
+	}
+	if (filename_filter->get_text() == file_name_filter) {
+		return;
+	}
+	filename_filter->set_text(file_name_filter);
+}
+
+void EditorFileDialog::update_filename_filter() {
+	if (filename_filter->get_text() == file_name_filter) {
+		return;
+	}
+	set_filename_filter(filename_filter->get_text());
+}
+
 void EditorFileDialog::clear_filters() {
 	filters.clear();
 	update_filters();
@@ -1170,8 +1219,22 @@ void EditorFileDialog::set_filters(const Vector<String> &p_filters) {
 	invalidate();
 }
 
+void EditorFileDialog::set_filename_filter(const String &p_filename_filter) {
+	if (file_name_filter == p_filename_filter) {
+		return;
+	}
+	file_name_filter = p_filename_filter;
+	update_filename_filter_gui();
+	emit_signal(SNAME("filename_filter_changed"), filter);
+	invalidate();
+}
+
 Vector<String> EditorFileDialog::get_filters() const {
 	return filters;
+}
+
+String EditorFileDialog::get_filename_filter() const {
+	return file_name_filter;
 }
 
 String EditorFileDialog::get_current_dir() const {
@@ -1438,6 +1501,7 @@ void EditorFileDialog::_update_icons() {
 	favorite->set_icon(theme_cache.favorite);
 	show_hidden->set_icon(theme_cache.toggle_hidden);
 	makedir->set_icon(theme_cache.create_folder);
+	show_filename_filter_button->set_icon(theme_cache.toggle_filename_filter);
 
 	fav_up->set_icon(theme_cache.favorites_up);
 	fav_down->set_icon(theme_cache.favorites_down);
@@ -1910,6 +1974,9 @@ void EditorFileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_option_count"), &EditorFileDialog::get_option_count);
 	ClassDB::bind_method(D_METHOD("add_option", "name", "values", "default_value_index"), &EditorFileDialog::add_option);
 	ClassDB::bind_method(D_METHOD("get_selected_options"), &EditorFileDialog::get_selected_options);
+	ClassDB::bind_method(D_METHOD("clear_filename_filter"), &EditorFileDialog::clear_filename_filter);
+	ClassDB::bind_method(D_METHOD("set_filename_filter", "filter"), &EditorFileDialog::set_filename_filter);
+	ClassDB::bind_method(D_METHOD("get_filename_filter"), &EditorFileDialog::get_filename_filter);
 	ClassDB::bind_method(D_METHOD("get_current_dir"), &EditorFileDialog::get_current_dir);
 	ClassDB::bind_method(D_METHOD("get_current_file"), &EditorFileDialog::get_current_file);
 	ClassDB::bind_method(D_METHOD("get_current_path"), &EditorFileDialog::get_current_path);
@@ -1938,6 +2005,7 @@ void EditorFileDialog::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("file_selected", PropertyInfo(Variant::STRING, "path")));
 	ADD_SIGNAL(MethodInfo("files_selected", PropertyInfo(Variant::PACKED_STRING_ARRAY, "paths")));
 	ADD_SIGNAL(MethodInfo("dir_selected", PropertyInfo(Variant::STRING, "dir")));
+	ADD_SIGNAL(MethodInfo("filename_filter_changed", PropertyInfo(Variant::STRING, "filter")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "access", PROPERTY_HINT_ENUM, "Resources,User data,File system"), "set_access", "get_access");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "display_mode", PROPERTY_HINT_ENUM, "Thumbnails,List"), "set_display_mode", "get_display_mode");
@@ -1982,6 +2050,26 @@ void EditorFileDialog::set_show_hidden_files(bool p_show) {
 	show_hidden_files = p_show;
 	show_hidden->set_pressed(p_show);
 	invalidate();
+}
+
+void EditorFileDialog::set_show_filename_filter(bool p_show) {
+	if (p_show == show_filename_filter) {
+		return;
+	}
+	if (p_show) {
+		filename_filter->grab_focus();
+	} else {
+		if (filename_filter->has_focus()) {
+			item_list->call_deferred("grab_focus");
+		}
+	}
+	show_filename_filter = p_show;
+	update_filename_filter_gui();
+	invalidate();
+}
+
+bool EditorFileDialog::get_show_filename_filter() const {
+	return show_filename_filter;
 }
 
 bool EditorFileDialog::is_showing_hidden_files() const {
@@ -2090,6 +2178,7 @@ EditorFileDialog::EditorFileDialog() {
 			{ int32_t(KeyModifierMask::META | Key::L), int32_t(KeyModifierMask::META | KeyModifierMask::SHIFT | Key::G) });
 	ED_SHORTCUT("file_dialog/move_favorite_up", TTR("Move Favorite Up"), KeyModifierMask::CMD_OR_CTRL | Key::UP);
 	ED_SHORTCUT("file_dialog/move_favorite_down", TTR("Move Favorite Down"), KeyModifierMask::CMD_OR_CTRL | Key::DOWN);
+	ED_SHORTCUT("file_dialog/toggle_filename_filter", TTR("Toggle Filename Filter"), KeyModifierMask::CMD_OR_CTRL | Key::F);
 
 	ED_SHORTCUT_OVERRIDE("file_dialog/toggle_hidden_files", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::PERIOD);
 	ED_SHORTCUT_OVERRIDE("file_dialog/toggle_favorite", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::F);
@@ -2148,6 +2237,14 @@ EditorFileDialog::EditorFileDialog() {
 	show_hidden->set_tooltip_text(TTR("Toggle the visibility of hidden files."));
 	show_hidden->connect("toggled", callable_mp(this, &EditorFileDialog::set_show_hidden_files));
 	pathhb->add_child(show_hidden);
+
+	show_filename_filter_button = memnew(Button);
+	show_filename_filter_button->set_theme_type_variation("FlatButton");
+	show_filename_filter_button->set_toggle_mode(true);
+	show_filename_filter_button->set_pressed(false);
+	show_filename_filter_button->set_tooltip_text(TTR("Toggle the visibility of the filter for file names."));
+	show_filename_filter_button->connect("toggled", callable_mp(this, &EditorFileDialog::set_show_filename_filter));
+	pathhb->add_child(show_filename_filter_button);
 
 	pathhb->add_child(memnew(VSeparator));
 
@@ -2281,6 +2378,17 @@ EditorFileDialog::EditorFileDialog() {
 	prev_cc->add_child(preview);
 	preview_vb->hide();
 
+	filename_filter_box = memnew(HBoxContainer);
+	filename_filter_box->add_child(memnew(Label(RTR("Filter:"))));
+	filename_filter = memnew(LineEdit);
+	filename_filter->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
+	filename_filter->set_stretch_ratio(4);
+	filename_filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	filename_filter->set_clear_button_enabled(true);
+	filename_filter_box->add_child(filename_filter);
+	filename_filter_box->set_visible(false);
+	item_vb->add_child(filename_filter_box);
+
 	file_box = memnew(HBoxContainer);
 
 	l = memnew(Label(TTR("File:")));
@@ -2309,6 +2417,8 @@ EditorFileDialog::EditorFileDialog() {
 	item_list->connect("item_activated", callable_mp(this, &EditorFileDialog::_item_dc_selected).bind());
 	item_list->connect("empty_clicked", callable_mp(this, &EditorFileDialog::_items_clear_selection));
 	dir->connect("text_submitted", callable_mp(this, &EditorFileDialog::_dir_submitted));
+	filename_filter->connect(SceneStringName(text_changed), callable_mp(this, &EditorFileDialog::_filename_filter_changed).unbind(1));
+	filename_filter->connect("text_submitted", callable_mp(this, &EditorFileDialog::_filename_filter_selected).unbind(1));
 	file->connect("text_submitted", callable_mp(this, &EditorFileDialog::_file_submitted));
 	filter->connect(SceneStringName(item_selected), callable_mp(this, &EditorFileDialog::_filter_selected));
 
@@ -2339,6 +2449,7 @@ EditorFileDialog::EditorFileDialog() {
 	add_child(error_dialog);
 
 	update_filters();
+	update_filename_filter_gui();
 	update_dir();
 
 	set_hide_on_ok(false);
