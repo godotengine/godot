@@ -7983,6 +7983,11 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				block = block->parent_block;
 			}
 		} else if (tk.type == TK_CF_DISCARD) {
+			if (!is_discard_supported) {
+				_set_error(vformat(RTR("Use of '%s' is not supported for the '%s' shader type."), "discard", shader_type_identifier));
+				return ERR_PARSE_ERROR;
+			}
+
 			//check return type
 			BlockNode *b = p_block;
 			while (b && !b->parent_function) {
@@ -7994,7 +7999,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			}
 
 			if (!b->parent_function->can_discard) {
-				_set_error(vformat(RTR("Use of '%s' is not allowed here."), "discard"));
+				_set_error(vformat(RTR("'%s' cannot be used within the '%s' processor function."), "discard", b->parent_function->name));
 				return ERR_PARSE_ERROR;
 			}
 
@@ -8003,6 +8008,9 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 
 			pos = _get_tkpos();
 			tk = _get_token();
+
+			calls_info[b->parent_function->name].uses_restricted_items.push_back(Pair<StringName, CallInfo::Item>("discard", CallInfo::Item(CallInfo::Item::ITEM_TYPE_BUILTIN, pos)));
+
 			if (tk.type != TK_SEMICOLON) {
 				_set_expected_after_error(";", "discard");
 				return ERR_PARSE_ERROR;
@@ -8229,7 +8237,9 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 	ShaderNode::Uniform::Scope uniform_scope = ShaderNode::Uniform::SCOPE_LOCAL;
 
 	stages = &p_functions;
-	is_supported_frag_only_funcs = shader_type_identifier == "canvas_item" || shader_type_identifier == "spatial" || shader_type_identifier == "sky";
+
+	is_discard_supported = shader_type_identifier == "canvas_item" || shader_type_identifier == "spatial";
+	is_supported_frag_only_funcs = is_discard_supported || shader_type_identifier == "sky";
 
 	const FunctionInfo &constants = p_functions.has("constants") ? p_functions["constants"] : FunctionInfo();
 
@@ -9690,6 +9700,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 				if (p_functions.has(name)) {
 					func_node->can_discard = p_functions[name].can_discard;
 				} else {
+					func_node->can_discard = is_discard_supported; // Allow use it for custom functions (in supported shader types).
 #ifdef DEBUG_ENABLED
 					if (check_warnings && HAS_WARNING(ShaderWarning::UNUSED_FUNCTION_FLAG)) {
 						used_functions.insert(name, Usage(tk_line));
