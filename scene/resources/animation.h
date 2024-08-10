@@ -396,7 +396,6 @@ public:
 	int add_track(TrackType p_type, int p_at_pos = -1);
 	void remove_track(int p_track);
 
-	void set_capture_included(bool p_capture_included);
 	bool is_capture_included() const;
 
 	int get_track_count() const;

@@ -599,7 +599,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="capture_included" type="bool" setter="_set_capture_included" getter="is_capture_included" default="false">
+		<member name="capture_included" type="bool" setter="" getter="is_capture_included" default="false">
 			Returns [code]true[/code] if the capture track is included. This is a cached readonly value for performance.
 		</member>
 		<member name="length" type="float" setter="set_length" getter="get_length" default="1.0">
