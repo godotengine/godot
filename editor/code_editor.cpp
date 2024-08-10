@@ -798,8 +798,6 @@ FindReplaceBar::FindReplaceBar() {
 
 /*** CODE EDITOR ****/
 
-static constexpr float ZOOM_FACTOR_PRESETS[7] = { 0.25f, 0.5f, 0.75f, 1.0f, 1.5f, 2.0f, 3.0f };
-
 // This function should be used to handle shortcuts that could otherwise
 // be handled too late if they weren't handled here.
 void CodeTextEditor::input(const Ref<InputEvent> &event) {

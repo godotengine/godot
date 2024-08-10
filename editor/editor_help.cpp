@@ -47,6 +47,7 @@
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/separator.h"
 
 #include "modules/modules_enabled.gen.h" // For gdscript, mono.
 
@@ -331,7 +332,111 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 	}
 }
 
-void EditorHelp::_class_desc_input(const Ref<InputEvent> &p_input) {
+void EditorHelp::_class_desc_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouseButton> mb = p_event;
+
+	if (mb.is_valid() && mb->is_command_or_control_pressed()) {
+		if (mb->is_pressed()) {
+			if (mb->get_button_index() == MouseButton::WHEEL_UP) {
+				_zoom_in();
+				accept_event();
+				return;
+			}
+			if (mb->get_button_index() == MouseButton::WHEEL_DOWN) {
+				_zoom_out();
+				accept_event();
+				return;
+			}
+		} else {
+			// Prevents of button's 'released' event propagation, causing RichTextLabel scroll while zooming.
+			if (mb->get_button_index() == MouseButton::WHEEL_UP || mb->get_button_index() == MouseButton::WHEEL_DOWN) {
+				accept_event();
+				return;
+			}
+		}
+	}
+
+	Ref<InputEventMagnifyGesture> magnify_gesture = p_event;
+	if (magnify_gesture.is_valid()) {
+		_zoom_to(zoom_factor * powf(magnify_gesture->get_factor(), 0.25f));
+		accept_event();
+		return;
+	}
+
+	Ref<InputEventKey> k = p_event;
+	if (k.is_valid() && k->is_pressed()) {
+		if (ED_IS_SHORTCUT("script_editor/zoom_in", p_event)) {
+			_zoom_in();
+			accept_event();
+			return;
+		}
+		if (ED_IS_SHORTCUT("script_editor/zoom_out", p_event)) {
+			_zoom_out();
+			accept_event();
+			return;
+		}
+		if (ED_IS_SHORTCUT("script_editor/reset_zoom", p_event)) {
+			_zoom_to(1);
+			accept_event();
+			return;
+		}
+	}
+}
+
+void EditorHelp::_zoom_popup_id_pressed(int p_idx) {
+	_zoom_to(zoom_button->get_popup()->get_item_metadata(p_idx));
+}
+
+void EditorHelp::_zoom_in() {
+	int s = class_desc->get_theme_font_size("normal_font_size");
+	_zoom_to(zoom_factor * (s + MAX(1.0f, EDSCALE)) / s);
+}
+
+void EditorHelp::_zoom_out() {
+	int s = class_desc->get_theme_font_size("normal_font_size");
+	_zoom_to(zoom_factor * (s - MAX(1.0f, EDSCALE)) / s);
+}
+
+void EditorHelp::_zoom_to(float p_zoom_factor) {
+	if (zoom_factor == p_zoom_factor) {
+		return;
+	}
+
+	float old_zoom_factor = zoom_factor;
+
+	set_zoom_factor(p_zoom_factor);
+
+	if (old_zoom_factor != zoom_factor) {
+		emit_signal(SNAME("zoomed"), zoom_factor);
+	}
+}
+
+void EditorHelp::set_zoom_factor(float p_zoom_factor) {
+	int preset_count = sizeof(ZOOM_FACTOR_PRESETS) / sizeof(float);
+	zoom_factor = CLAMP(p_zoom_factor, ZOOM_FACTOR_PRESETS[0], ZOOM_FACTOR_PRESETS[preset_count - 1]);
+
+	int neutral_help_font_size = int(EDITOR_GET("text_editor/help/help_font_size")) * EDSCALE;
+	int neutral_help_title_font_size = int(EDITOR_GET("text_editor/help/help_title_font_size")) * EDSCALE;
+	int neutral_help_source_font_size = int(EDITOR_GET("text_editor/help/help_source_font_size")) * EDSCALE;
+	int neutral_help_kb_font_size = (int(EDITOR_GET("text_editor/help/help_source_font_size")) - 1) * EDSCALE;
+
+	int new_help_font_size = Math::round(zoom_factor * neutral_help_font_size);
+	int new_help_title_font_size = Math::round(zoom_factor * neutral_help_title_font_size);
+	int new_help_source_font_size = Math::round(zoom_factor * neutral_help_source_font_size);
+	int new_help_kb_font_size = Math::round(zoom_factor * neutral_help_kb_font_size);
+
+	theme_cache.doc_font_size = new_help_font_size;
+	theme_cache.doc_title_font_size = new_help_title_font_size;
+	theme_cache.doc_code_font_size = new_help_source_font_size;
+	theme_cache.doc_kbd_font_size = new_help_kb_font_size;
+
+	_update_doc();
+	_class_desc_resized(true);
+	zoom_button->set_text(itos(Math::round(zoom_factor * 100)) + " %");
+}
+
+float EditorHelp::get_zoom_factor() const {
+	return zoom_factor;
 }
 
 void EditorHelp::_class_desc_resized(bool p_force_update_theme) {
@@ -926,8 +1031,6 @@ void EditorHelp::_update_doc() {
 		return;
 	}
 
-	scroll_locked = true;
-
 	class_desc->clear();
 	method_line.clear();
 	section_line.clear();
@@ -1027,11 +1130,13 @@ void EditorHelp::_update_doc() {
 
 		class_desc->push_indent(1);
 		class_desc->push_font(theme_cache.doc_bold_font);
+		class_desc->push_font_size(theme_cache.doc_code_font_size);
 		class_desc->push_color(theme_cache.text_color);
 
 		_add_text(brief_class_descr);
 
 		class_desc->pop(); // color
+		class_desc->pop(); // font_size
 		class_desc->pop(); // font
 		class_desc->pop(); // indent
 	}
@@ -2263,9 +2368,6 @@ void EditorHelp::_update_doc() {
 	class_desc->add_newline();
 	class_desc->add_newline();
 
-	// Free the scroll.
-	scroll_locked = false;
-
 #undef HANDLE_DOC
 }
 
@@ -2349,7 +2451,7 @@ void EditorHelp::_help_callback(const String &p_topic) {
 	}
 }
 
-static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const Control *p_owner_node, const String &p_class) {
+static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const Control *p_owner_node, const String &p_class, int p_doc_code_font_size = 0, int p_doc_kbd_font_size = 0) {
 	const DocTools *doc = EditorHelp::get_doc_data();
 
 	bool is_native = false;
@@ -2368,8 +2470,15 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 	const Ref<Font> doc_code_font = p_owner_node->get_theme_font(SNAME("doc_source"), EditorStringName(EditorFonts));
 	const Ref<Font> doc_kbd_font = p_owner_node->get_theme_font(SNAME("doc_keyboard"), EditorStringName(EditorFonts));
 
-	const int doc_code_font_size = p_owner_node->get_theme_font_size(SNAME("doc_source_size"), EditorStringName(EditorFonts));
-	const int doc_kbd_font_size = p_owner_node->get_theme_font_size(SNAME("doc_keyboard_size"), EditorStringName(EditorFonts));
+	int doc_code_font_size = p_doc_code_font_size;
+	int doc_kbd_font_size = p_doc_kbd_font_size;
+
+	if (doc_code_font_size <= 0) {
+		doc_code_font_size = p_owner_node->get_theme_font_size(SNAME("doc_source_size"), EditorStringName(EditorFonts));
+	}
+	if (doc_kbd_font_size <= 0) {
+		doc_kbd_font_size = p_owner_node->get_theme_font_size(SNAME("doc_keyboard_size"), EditorStringName(EditorFonts));
+	}
 
 	const Color type_color = p_owner_node->get_theme_color(SNAME("type_color"), SNAME("EditorHelp"));
 	const Color code_color = p_owner_node->get_theme_color(SNAME("code_color"), SNAME("EditorHelp"));
@@ -2837,7 +2946,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 }
 
 void EditorHelp::_add_text(const String &p_bbcode) {
-	_add_text_to_rt(p_bbcode, class_desc, this, edited_class);
+	_add_text_to_rt(p_bbcode, class_desc, this, edited_class, theme_cache.doc_code_font_size, theme_cache.doc_kbd_font_size);
 }
 
 int EditorHelp::doc_generation_count = 0;
@@ -3085,6 +3194,7 @@ void EditorHelp::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("go_to_help"));
 	ADD_SIGNAL(MethodInfo("request_save_history"));
+	ADD_SIGNAL(MethodInfo("zoomed", PropertyInfo(Variant::FLOAT, "zoom_factor")));
 }
 
 void EditorHelp::init_gdext_pointers() {
@@ -3096,6 +3206,10 @@ EditorHelp::EditorHelp() {
 	set_custom_minimum_size(Size2(150 * EDSCALE, 0));
 
 	EDITOR_DEF("text_editor/help/sort_functions_alphabetically", true);
+
+	ED_SHORTCUT("script_editor/zoom_in", TTR("Zoom In"), KeyModifierMask::CMD_OR_CTRL | Key::EQUAL);
+	ED_SHORTCUT("script_editor/zoom_out", TTR("Zoom Out"), KeyModifierMask::CMD_OR_CTRL | Key::MINUS);
+	ED_SHORTCUT("script_editor/reset_zoom", TTR("Reset Zoom"), KeyModifierMask::CMD_OR_CTRL | Key::KEY_0);
 
 	class_desc = memnew(RichTextLabel);
 	class_desc->set_tab_size(8);
@@ -3123,6 +3237,27 @@ EditorHelp::EditorHelp() {
 	toggle_scripts_button->set_flat(true);
 	toggle_scripts_button->connect(SceneStringName(pressed), callable_mp(this, &EditorHelp::_toggle_scripts_pressed));
 	status_bar->add_child(toggle_scripts_button);
+	status_bar->add_spacer();
+	status_bar->add_child(memnew(VSeparator));
+
+	// Zoom
+	zoom_button = memnew(MenuButton);
+	status_bar->add_child(zoom_button);
+	zoom_button->set_flat(true);
+	zoom_button->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
+	zoom_button->set_tooltip_text(TTR("Zoom factor"));
+	zoom_button->set_text("100 %");
+
+	PopupMenu *zoom_menu = zoom_button->get_popup();
+	int preset_count = sizeof(ZOOM_FACTOR_PRESETS) / sizeof(float);
+
+	for (int i = 0; i < preset_count; i++) {
+		float z = ZOOM_FACTOR_PRESETS[i];
+		zoom_menu->add_item(itos(Math::round(z * 100)) + " %");
+		zoom_menu->set_item_metadata(i, z);
+	}
+
+	zoom_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorHelp::_zoom_popup_id_pressed));
 
 	class_desc->set_selection_enabled(true);
 	class_desc->set_context_menu_enabled(true);

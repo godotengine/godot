@@ -3503,11 +3503,13 @@ void ScriptEditor::_help_class_open(const String &p_class) {
 	EditorHelp *eh = memnew(EditorHelp);
 
 	eh->set_name(p_class);
+	eh->set_zoom_factor(zoom_factor);
 	tab_container->add_child(eh);
 	_go_to_tab(tab_container->get_tab_count() - 1);
 	eh->go_to_class(p_class);
 	eh->connect("go_to_help", callable_mp(this, &ScriptEditor::_help_class_goto));
 	eh->connect("request_save_history", callable_mp(this, &ScriptEditor::_save_history));
+	eh->connect("zoomed", callable_mp(this, &ScriptEditor::_set_zoom_factor));
 	_add_recent_script(p_class);
 	_sort_list_on_update = true;
 	_update_script_names();
@@ -3524,9 +3526,11 @@ void ScriptEditor::_help_class_goto(const String &p_desc) {
 	EditorHelp *eh = memnew(EditorHelp);
 
 	eh->set_name(cname);
+	eh->set_zoom_factor(zoom_factor);
 	tab_container->add_child(eh);
 	eh->go_to_help(p_desc);
 	eh->connect("go_to_help", callable_mp(this, &ScriptEditor::_help_class_goto));
+	eh->connect("zoomed", callable_mp(this, &ScriptEditor::_set_zoom_factor));
 	_add_recent_script(eh->get_class());
 	_sort_list_on_update = true;
 	_update_script_names();
@@ -3940,6 +3944,11 @@ void ScriptEditor::_set_zoom_factor(float p_zoom_factor) {
 				if (zoom_factor != cte->get_zoom_factor()) {
 					cte->set_zoom_factor(zoom_factor);
 				}
+			}
+		} else {
+			EditorHelp *help = Object::cast_to<EditorHelp>(tab_container->get_tab_control(i));
+			if (help) {
+				help->set_zoom_factor(zoom_factor);
 			}
 		}
 	}

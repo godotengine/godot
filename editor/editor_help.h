@@ -112,6 +112,9 @@ class EditorHelp : public VBoxContainer {
 	HashMap<String, HashMap<String, int>> enum_values_line;
 	int description_line = 0;
 
+	MenuButton *zoom_button = nullptr;
+	float zoom_factor = 1.0f;
+
 	RichTextLabel *class_desc = nullptr;
 	HSplitContainer *h_split = nullptr;
 	static DocTools *doc;
@@ -156,7 +159,6 @@ class EditorHelp : public VBoxContainer {
 	void _help_callback(const String &p_topic);
 
 	void _add_text(const String &p_bbcode);
-	bool scroll_locked = false;
 
 	//void _button_pressed(int p_idx);
 	void _add_type(const String &p_type, const String &p_enum = String(), bool p_is_bitfield = false);
@@ -178,6 +180,11 @@ class EditorHelp : public VBoxContainer {
 	void _class_desc_input(const Ref<InputEvent> &p_input);
 	void _class_desc_resized(bool p_force_update_theme);
 	int display_margin = 0;
+
+	void _zoom_popup_id_pressed(int p_idx);
+	void _zoom_in();
+	void _zoom_out();
+	void _zoom_to(float p_zoom_factor);
 
 	Error _goto_desc(const String &p_class);
 	//void _update_history_buttons();
@@ -242,6 +249,9 @@ public:
 
 	int get_scroll() const;
 	void set_scroll(int p_scroll);
+
+	void set_zoom_factor(float p_zoom_factor);
+	float get_zoom_factor() const;
 
 	void update_toggle_scripts_button();
 
