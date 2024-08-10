@@ -88,6 +88,9 @@ private:
 	RenderingDeviceDriver *driver = nullptr;
 	RenderingContextDriver::Device device;
 
+	bool local_device_processing = false;
+	bool is_main_instance = false;
+
 protected:
 	static void _bind_methods();
 
