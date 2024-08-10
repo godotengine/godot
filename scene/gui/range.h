@@ -33,19 +33,27 @@
 
 #include "scene/gui/control.h"
 
-class Range : public Control {
-	GDCLASS(Range, Control);
+// clang-format off
+#define RANGE_CLASS_MAP \
+	std::is_same_v<T, double> ? "Range" : \
+	std::is_same_v<T, int64_t> ? "RangeInt" : \
+	"RangeInvalid"
+// clang-format on
+
+template <typename T>
+class RangeTemplate : public Control {
+	GDCLASS_TEMPLATE(RangeTemplate<T>, RANGE_CLASS_MAP, Control, "Control", RangeTemplate)
 
 	struct Shared {
-		double val = 0.0;
-		double min = 0.0;
-		double max = 100.0;
-		double step = 1.0;
-		double page = 0.0;
+		T val = 0.0;
+		T min = 0.0;
+		T max = 100.0;
+		T step = 1.0;
+		T page = 0.0;
 		bool exp_ratio = false;
 		bool allow_greater = false;
 		bool allow_lesser = false;
-		HashSet<Range *> owners;
+		HashSet<RangeTemplate<T> *> owners;
 		void emit_value_changed();
 		void emit_changed(const char *p_what = "");
 		void redraw_owners();
@@ -60,32 +68,33 @@ class Range : public Control {
 
 	void _value_changed_notify();
 	void _changed_notify(const char *p_what = "");
-	void _set_value_no_signal(double p_val);
+	void _set_value_no_signal(T p_val);
+	bool _set_page_no_value(T p_page);
 
 protected:
-	virtual void _value_changed(double p_value);
+	virtual void _value_changed(T p_value);
 	void _notify_shared_value_changed() { shared->emit_value_changed(); };
 
 	static void _bind_methods();
 
 	bool _rounded_values = false;
 
-	GDVIRTUAL1(_value_changed, double)
+	GDVIRTUAL1(_value_changed, T)
 
 public:
-	void set_value(double p_val);
-	void set_value_no_signal(double p_val);
-	void set_min(double p_min);
-	void set_max(double p_max);
-	void set_step(double p_step);
-	void set_page(double p_page);
+	void set_value(T p_val);
+	void set_value_no_signal(T p_val);
+	void set_min(T p_min);
+	void set_max(T p_max);
+	void set_step(T p_step);
+	void set_page(T p_page);
 	void set_as_ratio(double p_value);
 
-	double get_value() const;
-	double get_min() const;
-	double get_max() const;
-	double get_step() const;
-	double get_page() const;
+	T get_value() const;
+	T get_min() const;
+	T get_max() const;
+	T get_step() const;
+	T get_page() const;
 	double get_as_ratio() const;
 
 	void set_use_rounded_values(bool p_enable);
@@ -100,13 +109,16 @@ public:
 	void set_allow_lesser(bool p_allow);
 	bool is_lesser_allowed() const;
 
-	void share(Range *p_range);
+	void share(RangeTemplate<T> *p_range);
 	void unshare();
 
 	PackedStringArray get_configuration_warnings() const override;
 
-	Range();
-	~Range();
+	RangeTemplate<T>();
+	~RangeTemplate<T>();
 };
+
+using Range = RangeTemplate<double>;
+using RangeInt = RangeTemplate<int64_t>;
 
 #endif // RANGE_H

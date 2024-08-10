@@ -32,8 +32,8 @@
 #define EDITOR_PROPERTIES_VECTOR_H
 
 #include "editor/editor_inspector.h"
+#include "editor/gui/editor_spin_slider.h"
 
-class EditorSpinSlider;
 class TextureButton;
 
 class EditorPropertyVectorN : public EditorProperty {

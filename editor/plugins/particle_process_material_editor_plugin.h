@@ -32,13 +32,15 @@
 #define PARTICLE_PROCESS_MATERIAL_EDITOR_PLUGIN_H
 
 #include "editor/editor_properties.h"
+#include "editor/gui/editor_spin_slider.h"
 #include "editor/plugins/editor_plugin.h"
 
 class Button;
-class EditorSpinSlider;
 class Label;
 class ParticleProcessMaterial;
-class Range;
+template <typename T>
+class RangeTemplate;
+using Range = RangeTemplate<double>;
 class VBoxContainer;
 
 class ParticleProcessMaterialMinMaxPropertyEditor : public EditorProperty {

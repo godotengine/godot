@@ -32,6 +32,7 @@
 #define EDITOR_PROPERTIES_H
 
 #include "editor/editor_inspector.h"
+#include "editor/gui/editor_spin_slider.h"
 
 class CheckBox;
 class ColorPickerButton;
@@ -39,7 +40,6 @@ class CreateDialog;
 class EditorFileDialog;
 class EditorLocaleDialog;
 class EditorResourcePicker;
-class EditorSpinSlider;
 class MenuButton;
 class PropertySelector;
 class SceneTreeDialog;
@@ -339,7 +339,7 @@ public:
 
 class EditorPropertyInteger : public EditorProperty {
 	GDCLASS(EditorPropertyInteger, EditorProperty);
-	EditorSpinSlider *spin = nullptr;
+	EditorSpinSliderInt *spin = nullptr;
 	void _value_changed(int64_t p_val);
 
 protected:
