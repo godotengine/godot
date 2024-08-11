@@ -5001,14 +5001,24 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 		} break;
 
 		case TRANSFORM_ROTATE: {
-			Plane plane = Plane(_get_camera_normal(), _edit.center);
+			Plane plane;
+			if (camera->get_projection() == Camera3D::PROJECTION_PERSPECTIVE) {
+				Vector3 cam_to_obj = _edit.center - _get_camera_position();
+				if (!cam_to_obj.is_zero_approx()) {
+					plane = Plane(cam_to_obj.normalized(), _edit.center);
+				} else {
+					plane = Plane(_get_camera_normal(), _edit.center);
+				}
+			} else {
+				plane = Plane(_get_camera_normal(), _edit.center);
+			}
 
 			Vector3 local_axis;
 			Vector3 global_axis;
 			switch (_edit.plane) {
 				case TRANSFORM_VIEW:
 					// local_axis unused
-					global_axis = _get_camera_normal();
+					global_axis = plane.normal;
 					break;
 				case TRANSFORM_X_AXIS:
 					local_axis = Vector3(1, 0, 0);
@@ -5039,7 +5049,7 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 				break;
 			}
 
-			static const float orthogonal_threshold = Math::cos(Math::deg_to_rad(87.0f));
+			static const float orthogonal_threshold = Math::cos(Math::deg_to_rad(85.0f));
 			bool axis_is_orthogonal = ABS(plane.normal.dot(global_axis)) < orthogonal_threshold;
 
 			double angle = 0.0f;
