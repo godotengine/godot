@@ -134,6 +134,8 @@ public:
 	void set_default_theme(const Ref<Theme> &p_default);
 	Ref<Theme> get_default_theme();
 
+	Ref<Theme> generate_default_theme();
+
 	void set_project_theme(const Ref<Theme> &p_project_default);
 	Ref<Theme> get_project_theme();
 

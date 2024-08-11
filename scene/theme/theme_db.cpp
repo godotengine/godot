@@ -123,6 +123,39 @@ Ref<Theme> ThemeDB::get_default_theme() {
 	return default_theme;
 }
 
+Ref<Theme> ThemeDB::generate_default_theme() {
+	Ref<Theme> t;
+	t.instantiate();
+
+	float default_scale = default_theme->get_default_base_scale();
+	Ref<Font> default_font = default_theme->get_default_font();
+
+	Ref<Texture2D> default_icon;
+	Ref<StyleBox> default_style;
+
+	Ref<FontVariation> bold_font;
+	Ref<FontVariation> bold_italics_font;
+	Ref<FontVariation> italics_font;
+
+	if (default_font.is_valid()) {
+		bold_font.instantiate();
+		bold_font->set_base_font(default_font);
+		bold_font->set_variation_embolden(1.2);
+
+		bold_italics_font.instantiate();
+		bold_italics_font->set_base_font(default_font);
+		bold_italics_font->set_variation_embolden(1.2);
+		bold_italics_font->set_variation_transform(Transform2D(1.0, 0.2, 0.0, 1.0, 0.0, 0.0));
+
+		italics_font.instantiate();
+		italics_font->set_base_font(default_font);
+		italics_font->set_variation_transform(Transform2D(1.0, 0.2, 0.0, 1.0, 0.0, 0.0));
+	}
+
+	fill_default_theme(t, default_font, Ref<Font>(), Ref<Font>(), Ref<Font>(), default_icon, default_style, default_scale);
+	return t;
+}
+
 void ThemeDB::set_project_theme(const Ref<Theme> &p_project_default) {
 	project_theme = p_project_default;
 }
@@ -417,6 +450,7 @@ void ThemeDB::_sort_theme_items() {
 void ThemeDB::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_default_theme"), &ThemeDB::get_default_theme);
 	ClassDB::bind_method(D_METHOD("get_project_theme"), &ThemeDB::get_project_theme);
+	ClassDB::bind_method(D_METHOD("generate_default_theme"), &ThemeDB::generate_default_theme);
 
 	ClassDB::bind_method(D_METHOD("set_fallback_base_scale", "base_scale"), &ThemeDB::set_fallback_base_scale);
 	ClassDB::bind_method(D_METHOD("get_fallback_base_scale"), &ThemeDB::get_fallback_base_scale);

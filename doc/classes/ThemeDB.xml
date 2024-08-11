@@ -10,6 +10,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="generate_default_theme">
+			<return type="Theme" />
+			<description>
+				Returns a new copy of the default engine [Theme]. Unlike [method get_default_theme], this theme resource can be overridden.
+			</description>
+		</method>
 		<method name="get_default_theme">
 			<return type="Theme" />
 			<description>
