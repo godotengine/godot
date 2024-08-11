@@ -85,6 +85,11 @@ const GUID CLSID_D3D12SDKConfigurationGodot = { 0x7cda6aca, 0xa03e, 0x49c8, { 0x
 RenderingContextDriverD3D12::RenderingContextDriverD3D12() {}
 
 RenderingContextDriverD3D12::~RenderingContextDriverD3D12() {
+	// Let's release manually everything that may still be holding
+	// onto the DLLs before freeing them.
+	device_factory.Reset();
+	dxgi_factory.Reset();
+
 	if (lib_d3d12) {
 		FreeLibrary(lib_d3d12);
 	}

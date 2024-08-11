@@ -23,10 +23,10 @@ def generate_bundle(target, source, env):
             prefix += ".double"
 
         # Lipo editor executable.
-        target_bin = lipo(bin_dir + "/" + prefix, env.extra_suffix)
+        target_bin = lipo(bin_dir + "/" + prefix, env.extra_suffix + env.module_version_string)
 
         # Assemble .app bundle and update version info.
-        app_dir = Dir("#bin/" + (prefix + env.extra_suffix).replace(".", "_") + ".app").abspath
+        app_dir = Dir("#bin/" + (prefix + env.extra_suffix + env.module_version_string).replace(".", "_") + ".app").abspath
         templ = Dir("#misc/dist/macos_tools.app").abspath
         if os.path.exists(app_dir):
             shutil.rmtree(app_dir)
@@ -35,6 +35,8 @@ def generate_bundle(target, source, env):
             os.mkdir(app_dir + "/Contents/MacOS")
         if target_bin != "":
             shutil.copy(target_bin, app_dir + "/Contents/MacOS/Godot")
+        if "mono" in env.module_version_string:
+            shutil.copytree(Dir("#bin/GodotSharp").abspath, app_dir + "/Contents/Resources/GodotSharp")
         version = get_build_version(False)
         short_version = get_build_version(True)
         with open(Dir("#misc/dist/macos").abspath + "/editor_info_plist.template", "rt", encoding="utf-8") as fin:
@@ -76,8 +78,8 @@ def generate_bundle(target, source, env):
             dbg_prefix += ".double"
 
         # Lipo template executables.
-        rel_target_bin = lipo(bin_dir + "/" + rel_prefix, env.extra_suffix)
-        dbg_target_bin = lipo(bin_dir + "/" + dbg_prefix, env.extra_suffix)
+        rel_target_bin = lipo(bin_dir + "/" + rel_prefix, env.extra_suffix + env.module_version_string)
+        dbg_target_bin = lipo(bin_dir + "/" + dbg_prefix, env.extra_suffix + env.module_version_string)
 
         # Assemble .app bundle.
         app_dir = Dir("#bin/macos_template.app").abspath
@@ -93,7 +95,7 @@ def generate_bundle(target, source, env):
             shutil.copy(dbg_target_bin, app_dir + "/Contents/MacOS/godot_macos_debug.universal")
 
         # ZIP .app bundle.
-        zip_dir = Dir("#bin/" + (app_prefix + env.extra_suffix).replace(".", "_")).abspath
+        zip_dir = Dir("#bin/" + (app_prefix + env.extra_suffix + env.module_version_string).replace(".", "_")).abspath
         shutil.make_archive(zip_dir, "zip", root_dir=bin_dir, base_dir="macos_template.app")
         shutil.rmtree(app_dir)
 
