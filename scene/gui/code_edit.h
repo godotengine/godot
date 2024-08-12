@@ -113,6 +113,9 @@ private:
 	int line_number_gutter = -1;
 	int line_number_digits = 1;
 	String line_number_padding = " ";
+	HashMap<int, RID> line_number_text_cache;
+	void _clear_line_number_text_cache();
+	void _update_line_number_gutter_width();
 	void _line_number_draw_callback(int p_line, int p_gutter, const Rect2 &p_region);
 
 	/* Fold Gutter */
