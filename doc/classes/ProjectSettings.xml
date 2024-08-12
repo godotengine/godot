@@ -3451,6 +3451,10 @@
 			If [code]true[/code], support for the unobstructed data source is requested. If supported, you will receive hand tracking data based on the actual finger positions of the user often determined by optical tracking.
 			[b]Note:[/b] This requires the OpenXR data source extension and unobstructed handtracking to be supported by the XR runtime. If not supported this setting will be ignored. [member xr/openxr/extensions/hand_tracking] must be enabled for this setting to be used.
 		</member>
+		<member name="xr/openxr/extensions/render_model" type="bool" setter="" getter="" default="false">
+			If [code]true[/code] we enable the render model extension if available.
+			[b]Note:[/b] This relates to the core OpenXR render model extension and has no relation to any vendor render model extensions.
+		</member>
 		<member name="xr/openxr/form_factor" type="int" setter="" getter="" default="&quot;0&quot;">
 			Specify whether OpenXR should be configured for an HMD or a hand held device.
 		</member>

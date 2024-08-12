@@ -633,7 +633,7 @@ bool OpenXRAPI::create_instance() {
 	}
 
 	XrResult result = xrCreateInstance(&instance_create_info, &instance);
-	ERR_FAIL_COND_V_MSG(XR_FAILED(result), false, "Failed to create XR instance.");
+	ERR_FAIL_COND_V_MSG(XR_FAILED(result), false, "Failed to create XR instance [" + get_error_string(result) + "].");
 
 	// from this point on we can use get_error_string to get more info about our errors...
 
@@ -2902,6 +2902,20 @@ XrPath OpenXRAPI::get_xr_path(const String &p_path) {
 	return path;
 }
 
+String OpenXRAPI::get_xr_path_name(const XrPath &p_path) {
+	ERR_FAIL_COND_V(instance == XR_NULL_HANDLE, String());
+
+	uint32_t size = 0;
+	char path_name[XR_MAX_PATH_LENGTH];
+
+	XrResult result = xrPathToString(instance, p_path, XR_MAX_PATH_LENGTH, &size, path_name);
+	if (XR_FAILED(result)) {
+		ERR_FAIL_V_MSG(String(), "OpenXR: failed to get name for a path! [" + get_error_string(result) + "]");
+	}
+
+	return String(path_name);
+}
+
 RID OpenXRAPI::get_tracker_rid(XrPath p_path) {
 	for (const RID &tracker_rid : tracker_owner.get_owned_list()) {
 		Tracker *tracker = tracker_owner.get_or_null(tracker_rid);
@@ -3462,6 +3476,10 @@ bool OpenXRAPI::sync_action_sets(const Vector<RID> p_active_sets) {
 		}
 
 		interaction_profile_changed = false;
+	}
+
+	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
+		wrapper->on_sync_actions();
 	}
 
 	return true;
