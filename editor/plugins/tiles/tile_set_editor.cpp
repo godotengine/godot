@@ -818,7 +818,7 @@ TileSetEditor::TileSetEditor() {
 	tabs_bar = memnew(TabBar);
 	tabs_bar->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
 	tabs_bar->set_clip_tabs(false);
-	tabs_bar->add_tab(TTR("Tiles"));
+	tabs_bar->add_tab(TTR("Tile Sources"));
 	tabs_bar->add_tab(TTR("Patterns"));
 	tabs_bar->connect("tab_changed", callable_mp(this, &TileSetEditor::_tab_changed));
 
