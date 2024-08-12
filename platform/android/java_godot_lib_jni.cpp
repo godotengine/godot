@@ -83,6 +83,10 @@ static Vector3 magnetometer;
 static Vector3 gyroscope;
 
 static void _terminate(JNIEnv *env, bool p_restart = false) {
+	if (step.get() == STEP_TERMINATED) {
+		return;
+	}
+
 	step.set(STEP_TERMINATED); // Ensure no further steps are attempted and no further events are sent
 
 	// lets cleanup
@@ -114,6 +118,7 @@ static void _terminate(JNIEnv *env, bool p_restart = false) {
 	NetSocketAndroid::terminate();
 
 	if (godot_java) {
+		godot_java->on_godot_terminating(env);
 		if (!restart_on_cleanup) {
 			if (p_restart) {
 				godot_java->restart(env);

@@ -138,34 +138,29 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(const AnimationMixe
 	bool p_seek = p_playback_info.seeked;
 	bool p_is_external_seeking = p_playback_info.is_external_seeking;
 
-	bool is_just_looped = false;
-
 	// 1. Progress for AnimationNode.
+	bool will_end = Animation::is_greater_or_equal_approx(cur_time + cur_delta, cur_len);
 	if (cur_loop_mode != Animation::LOOP_NONE) {
 		if (cur_loop_mode == Animation::LOOP_LINEAR) {
 			if (!Math::is_zero_approx(cur_len)) {
-				if (prev_time <= cur_len && cur_time > cur_len) {
-					is_just_looped = true; // Don't break with negative timescale since remain will not be 0.
-				}
 				cur_time = Math::fposmod(cur_time, cur_len);
 			}
 			backward = false;
 		} else {
 			if (!Math::is_zero_approx(cur_len)) {
-				if (prev_time >= 0 && cur_time < 0) {
+				if (Animation::is_greater_or_equal_approx(prev_time, 0) && Animation::is_less_approx(cur_time, 0)) {
 					backward = !backward;
-				} else if (prev_time <= cur_len && cur_time > cur_len) {
+				} else if (Animation::is_less_or_equal_approx(prev_time, cur_len) && Animation::is_greater_approx(cur_time, cur_len)) {
 					backward = !backward;
-					is_just_looped = true; // Don't break with negative timescale since remain will not be 0.
 				}
 				cur_time = Math::pingpong(cur_time, cur_len);
 			}
 		}
 	} else {
-		if (cur_time < 0) {
+		if (Animation::is_less_approx(cur_time, 0)) {
 			cur_delta += cur_time;
 			cur_time = 0;
-		} else if (cur_time > cur_len) {
+		} else if (Animation::is_greater_approx(cur_time, cur_len)) {
 			cur_delta += cur_time - cur_len;
 			cur_time = cur_len;
 		}
@@ -173,11 +168,11 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(const AnimationMixe
 		// If ended, don't progress AnimationNode. So set delta to 0.
 		if (!Math::is_zero_approx(cur_delta)) {
 			if (play_mode == PLAY_MODE_FORWARD) {
-				if (prev_time >= cur_len) {
+				if (Animation::is_greater_or_equal_approx(prev_time, cur_len)) {
 					cur_delta = 0;
 				}
 			} else {
-				if (prev_time <= 0) {
+				if (Animation::is_less_or_equal_approx(prev_time, 0)) {
 					cur_delta = 0;
 				}
 			}
@@ -190,13 +185,14 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(const AnimationMixe
 	nti.position = cur_time;
 	nti.delta = cur_delta;
 	nti.loop_mode = cur_loop_mode;
-	nti.is_just_looped = is_just_looped;
+	nti.will_end = will_end;
 
 	// 3. Progress for Animation.
 	double prev_playback_time = prev_time + start_offset;
 	double cur_playback_time = cur_time + start_offset;
 	if (stretch_time_scale) {
 		double mlt = anim_size / cur_len;
+		prev_playback_time *= mlt;
 		cur_playback_time *= mlt;
 		cur_delta *= mlt;
 	}
@@ -204,31 +200,31 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(const AnimationMixe
 		if (!Math::is_zero_approx(anim_size)) {
 			prev_playback_time = Math::fposmod(prev_playback_time, anim_size);
 			cur_playback_time = Math::fposmod(cur_playback_time, anim_size);
-			if (prev_playback_time >= 0 && cur_playback_time < 0) {
+			if (Animation::is_greater_or_equal_approx(prev_playback_time, 0) && Animation::is_less_approx(cur_playback_time, 0)) {
 				looped_flag = node_backward ? Animation::LOOPED_FLAG_END : Animation::LOOPED_FLAG_START;
 			}
-			if (prev_playback_time <= anim_size && cur_playback_time > anim_size) {
+			if (Animation::is_less_or_equal_approx(prev_playback_time, anim_size) && Animation::is_greater_approx(cur_playback_time, anim_size)) {
 				looped_flag = node_backward ? Animation::LOOPED_FLAG_START : Animation::LOOPED_FLAG_END;
 			}
 		}
 	} else if (cur_loop_mode == Animation::LOOP_PINGPONG) {
 		if (!Math::is_zero_approx(anim_size)) {
-			if (Math::fposmod(cur_playback_time, anim_size * 2.0) >= anim_size) {
+			if (Animation::is_greater_or_equal_approx(Math::fposmod(cur_playback_time, anim_size * 2.0), anim_size)) {
 				cur_delta = -cur_delta; // Needed for retrieving discrete keys correctly.
 			}
 			prev_playback_time = Math::pingpong(prev_playback_time, anim_size);
 			cur_playback_time = Math::pingpong(cur_playback_time, anim_size);
-			if (prev_playback_time >= 0 && cur_playback_time < 0) {
+			if (Animation::is_greater_or_equal_approx(prev_playback_time, 0) && Animation::is_less_approx(cur_playback_time, 0)) {
 				looped_flag = node_backward ? Animation::LOOPED_FLAG_END : Animation::LOOPED_FLAG_START;
 			}
-			if (prev_playback_time <= anim_size && cur_playback_time > anim_size) {
+			if (Animation::is_less_or_equal_approx(prev_playback_time, anim_size) && Animation::is_greater_approx(cur_playback_time, anim_size)) {
 				looped_flag = node_backward ? Animation::LOOPED_FLAG_START : Animation::LOOPED_FLAG_END;
 			}
 		}
 	} else {
-		if (cur_playback_time < 0) {
+		if (Animation::is_less_approx(cur_playback_time, 0)) {
 			cur_playback_time = 0;
-		} else if (cur_playback_time > anim_size) {
+		} else if (Animation::is_greater_approx(cur_playback_time, anim_size)) {
 			cur_playback_time = anim_size;
 		}
 
@@ -236,11 +232,12 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(const AnimationMixe
 		// We should use call_deferred since the track keys are still being processed.
 		if (process_state->tree && !p_test_only) {
 			// AnimationTree uses seek to 0 "internally" to process the first key of the animation, which is used as the start detection.
-			if (p_seek && !p_is_external_seeking && cur_playback_time == 0) {
+			if (p_seek && !p_is_external_seeking && Math::is_zero_approx(cur_playback_time)) {
 				process_state->tree->call_deferred(SNAME("emit_signal"), SceneStringName(animation_started), animation);
 			}
 			// Finished.
-			if (prev_time + start_offset < anim_size && cur_playback_time >= anim_size) {
+			if (Animation::is_less_approx(prev_playback_time, anim_size) && Animation::is_greater_or_equal_approx(cur_playback_time, anim_size)) {
+				cur_playback_time = anim_size;
 				process_state->tree->call_deferred(SNAME("emit_signal"), SceneStringName(animation_finished), animation);
 			}
 		}
@@ -522,7 +519,7 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(const AnimationMixer:
 	bool p_seek = p_playback_info.seeked;
 	bool p_is_external_seeking = p_playback_info.is_external_seeking;
 
-	if (p_time == 0 && p_seek && !p_is_external_seeking) {
+	if (Math::is_zero_approx(p_time) && p_seek && !p_is_external_seeking) {
 		clear_remaining_fade = true; // Reset occurs.
 	}
 
@@ -545,9 +542,9 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(const AnimationMixer:
 		set_parameter(internal_active, false);
 		set_parameter(time_to_restart, -1);
 	} else if (!do_start && !cur_active) {
-		if (cur_time_to_restart >= 0.0 && !p_seek) {
+		if (Animation::is_greater_or_equal_approx(cur_time_to_restart, 0) && !p_seek) {
 			cur_time_to_restart -= abs_delta;
-			if (cur_time_to_restart < 0) {
+			if (Animation::is_less_approx(cur_time_to_restart, 0)) {
 				do_start = true; // Restart.
 			}
 			set_parameter(time_to_restart, cur_time_to_restart);
@@ -590,8 +587,8 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(const AnimationMixer:
 	real_t blend = 1.0;
 	bool use_blend = sync;
 
-	if (cur_fade_in_remaining > 0) {
-		if (fade_in > 0) {
+	if (Animation::is_greater_approx(cur_fade_in_remaining, 0)) {
+		if (Animation::is_greater_approx(fade_in, 0)) {
 			use_blend = true;
 			blend = (fade_in - cur_fade_in_remaining) / fade_in;
 			if (fade_in_curve.is_valid()) {
@@ -604,7 +601,7 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(const AnimationMixer:
 
 	if (is_fading_out) {
 		use_blend = true;
-		if (fade_out > 0) {
+		if (Animation::is_greater_approx(fade_out, 0)) {
 			blend = cur_fade_out_remaining / fade_out;
 			if (fade_out_curve.is_valid()) {
 				blend = 1.0 - fade_out_curve->sample(1.0 - blend);
@@ -636,7 +633,7 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(const AnimationMixer:
 
 	NodeTimeInfo os_nti = blend_input(1, pi, FILTER_PASS, true, p_test_only); // Blend values must be more than CMP_EPSILON to process discrete keys in edge.
 
-	if (cur_fade_in_remaining <= 0 && !do_start && !is_fading_out && os_nti.get_remain(break_loop_at_end) <= fade_out) {
+	if (Animation::is_less_or_equal_approx(cur_fade_in_remaining, 0) && !do_start && !is_fading_out && Animation::is_less_or_equal_approx(os_nti.get_remain(break_loop_at_end), fade_out)) {
 		is_fading_out = true;
 		cur_fade_out_remaining = os_nti.get_remain(break_loop_at_end);
 		cur_fade_in_remaining = 0;
@@ -644,7 +641,7 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(const AnimationMixer:
 	}
 
 	if (!p_seek) {
-		if (os_nti.get_remain(break_loop_at_end) <= 0 || (is_fading_out && cur_fade_out_remaining <= 0)) {
+		if (Animation::is_less_or_equal_approx(os_nti.get_remain(break_loop_at_end), 0) || (is_fading_out && Animation::is_less_or_equal_approx(cur_fade_out_remaining, 0))) {
 			set_parameter(internal_active, false);
 			set_parameter(active, false);
 			if (auto_restart) {
@@ -1007,7 +1004,7 @@ AnimationNode::NodeTimeInfo AnimationNodeTimeSeek::_process(const AnimationMixer
 
 	AnimationMixer::PlaybackInfo pi = p_playback_info;
 	pi.weight = 1.0;
-	if (cur_seek_pos >= 0) {
+	if (Animation::is_greater_or_equal_approx(cur_seek_pos, 0)) {
 		pi.time = cur_seek_pos;
 		pi.seeked = true;
 		pi.is_external_seeking = true;
@@ -1252,7 +1249,7 @@ AnimationNode::NodeTimeInfo AnimationNodeTransition::_process(const AnimationMix
 	bool p_seek = p_playback_info.seeked;
 	bool p_is_external_seeking = p_playback_info.is_external_seeking;
 
-	if (p_time == 0 && p_seek && !p_is_external_seeking) {
+	if (Math::is_zero_approx(p_time) && p_seek && !p_is_external_seeking) {
 		clear_remaining_fade = true; // Reset occurs.
 	}
 
@@ -1317,7 +1314,7 @@ AnimationNode::NodeTimeInfo AnimationNodeTransition::_process(const AnimationMix
 	if (cur_prev_index < 0) { // Process current animation, check for transition.
 		pi.weight = 1.0;
 		cur_nti = blend_input(cur_current_index, pi, FILTER_IGNORE, true, p_test_only);
-		if (input_data[cur_current_index].auto_advance && cur_nti.get_remain(input_data[cur_current_index].break_loop_at_end) <= xfade_time) {
+		if (input_data[cur_current_index].auto_advance && Animation::is_less_or_equal_approx(cur_nti.get_remain(input_data[cur_current_index].break_loop_at_end), xfade_time)) {
 			set_parameter(transition_request, get_input_name((cur_current_index + 1) % get_input_count()));
 		}
 	} else { // Cross-fading from prev to current.
@@ -1349,7 +1346,7 @@ AnimationNode::NodeTimeInfo AnimationNodeTransition::_process(const AnimationMix
 		pi.weight = blend;
 		blend_input(cur_prev_index, pi, FILTER_IGNORE, true, p_test_only);
 		if (!p_seek) {
-			if (cur_prev_xfading <= 0) {
+			if (Animation::is_less_or_equal_approx(cur_prev_xfading, 0)) {
 				set_parameter(prev_index, -1);
 			}
 			cur_prev_xfading -= Math::abs(p_playback_info.delta);

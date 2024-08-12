@@ -329,7 +329,7 @@ private:
 	friend class AudioDriver;
 	void _driver_process(int p_frames, int32_t *p_buffer);
 
-	LocalVector<Ref<AudioStreamPlayback>> sample_playback_list;
+	LocalVector<Ref<AudioSamplePlayback>> sample_playback_list;
 
 protected:
 	static void _bind_methods();

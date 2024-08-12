@@ -702,7 +702,7 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 	bool p_is_external_seeking = p_playback_info.is_external_seeking;
 
 	// Check seek to 0 (means reset) by parent AnimationNode.
-	if (p_time == 0 && p_seek && !p_is_external_seeking) {
+	if (Math::is_zero_approx(p_time) && p_seek && !p_is_external_seeking) {
 		if (p_state_machine->state_machine_type != AnimationNodeStateMachine::STATE_MACHINE_TYPE_NESTED || is_end() || !playing) {
 			// Restart state machine.
 			if (p_state_machine->get_state_machine_type() != AnimationNodeStateMachine::STATE_MACHINE_TYPE_GROUPED) {
@@ -804,7 +804,7 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 		pi.weight = 0;
 		current_nti = p_state_machine->blend_node(p_state_machine->states[current].node, current, pi, AnimationNode::FILTER_IGNORE, true, true);
 		// Don't process first node if not necessary, insteads process next node.
-		_transition_to_next_recursive(tree, p_state_machine, p_test_only);
+		_transition_to_next_recursive(tree, p_state_machine, p_delta, p_test_only);
 	}
 
 	// Check current node existence.
@@ -873,7 +873,7 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 		}
 		fadeing_from_nti = p_state_machine->blend_node(p_state_machine->states[fading_from].node, fading_from, pi, AnimationNode::FILTER_IGNORE, true, p_test_only); // Blend values must be more than CMP_EPSILON to process discrete keys in edge.
 
-		if (fading_pos >= fading_time) {
+		if (Animation::is_greater_or_equal_approx(fading_pos, fading_time)) {
 			// Finish fading.
 			fading_from = StringName();
 			fadeing_from_nti = AnimationNode::NodeTimeInfo();
@@ -881,13 +881,13 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 	}
 
 	// Find next and see when to transition.
-	bool will_end = _transition_to_next_recursive(tree, p_state_machine, p_test_only) || current == AnimationNodeStateMachine::END_NODE;
+	bool will_end = _transition_to_next_recursive(tree, p_state_machine, p_delta, p_test_only) || current == AnimationNodeStateMachine::END_NODE;
 
 	// Predict remaining time.
 	if (will_end || ((p_state_machine->get_state_machine_type() == AnimationNodeStateMachine::STATE_MACHINE_TYPE_NESTED) && !p_state_machine->has_transition_from(current))) {
 		// There is no next transition.
 		if (fading_from != StringName()) {
-			return current_nti.get_remain() > fadeing_from_nti.get_remain() ? current_nti : fadeing_from_nti;
+			return Animation::is_greater_approx(current_nti.get_remain(), fadeing_from_nti.get_remain()) ? current_nti : fadeing_from_nti;
 		}
 		return current_nti;
 	}
@@ -899,10 +899,11 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 	return current_nti;
 }
 
-bool AnimationNodeStateMachinePlayback::_transition_to_next_recursive(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, bool p_test_only) {
+bool AnimationNodeStateMachinePlayback::_transition_to_next_recursive(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, double p_delta, bool p_test_only) {
 	_reset_request_for_fading_from = false;
 
 	AnimationMixer::PlaybackInfo pi;
+	pi.delta = p_delta;
 	NextInfo next;
 	Vector<StringName> transition_path;
 	transition_path.push_back(current);
@@ -1015,7 +1016,7 @@ bool AnimationNodeStateMachinePlayback::_can_transition_to_next(AnimationTree *p
 	}
 
 	if (current != AnimationNodeStateMachine::START_NODE && p_next.switch_mode == AnimationNodeStateMachineTransition::SWITCH_MODE_AT_END) {
-		return current_nti.get_remain(p_next.break_loop_at_end) <= p_next.xfade;
+		return Animation::is_less_or_equal_approx(current_nti.get_remain(p_next.break_loop_at_end), p_next.xfade);
 	}
 	return true;
 }

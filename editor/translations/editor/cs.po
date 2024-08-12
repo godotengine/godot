@@ -47,13 +47,14 @@
 # Deleted User <noreply+89092@weblate.org>, 2024.
 # Demon <scheuer.cz@gmail.com>, 2024.
 # Moneroboi <davidkylar@email.cz>, 2024.
+# michaloM <michalsvoboda2004@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-20 21:30+0000\n"
-"Last-Translator: Demon <scheuer.cz@gmail.com>\n"
+"PO-Revision-Date: 2024-07-27 00:53+0000\n"
+"Last-Translator: michaloM <michalsvoboda2004@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -3442,8 +3443,17 @@ msgstr "Bit %d, hodnota %d"
 msgid "Rename"
 msgstr "Přejmenovat"
 
+msgid "Rename layer"
+msgstr "Přejmenovat vrstvu"
+
 msgid "Layer %d"
 msgstr "Vrstva %d"
+
+msgid "Edit Layer Names"
+msgstr "Upravit Názvy Vrstev"
+
+msgid "<empty>"
+msgstr "<prázdné>"
 
 msgid "Temporary Euler may be changed implicitly!"
 msgstr "Dočasný Euler může být implicitně změněn!"
@@ -3465,6 +3475,9 @@ msgstr "Dočasný Euler"
 
 msgid "Assign..."
 msgstr "Přiřadit..."
+
+msgid "Copy as Text"
+msgstr "Kopírovat jako text"
 
 msgid "Invalid RID"
 msgstr "Neplatné RID"
@@ -3525,6 +3538,9 @@ msgstr "Velikost:"
 msgid "Remove Item"
 msgstr "Odstranit položku"
 
+msgid "Dictionary (size %d)"
+msgstr "Slovník (velikost %d)"
+
 msgid "Add Key/Value Pair"
 msgstr "Vložte pár klíč/hodnota"
 
@@ -3550,8 +3566,14 @@ msgstr "Rychlé načtení..."
 msgid "Load..."
 msgstr "Načíst..."
 
+msgid "Inspect"
+msgstr "Zkontrolovat"
+
 msgid "Make Unique"
 msgstr "Vytvořit unikátní"
+
+msgid "Make Unique (Recursive)"
+msgstr "Vytvořit unikátní (Rekurzivně)"
 
 msgid "Save As..."
 msgstr "Uložit jako..."
@@ -3568,6 +3590,15 @@ msgstr "Nový %s"
 msgid "New Script..."
 msgstr "Nový skript..."
 
+msgid "Extend Script..."
+msgstr "Rozšířit skript..."
+
+msgid "New Shader..."
+msgstr "Nový Shader..."
+
+msgid "Remote Debug"
+msgstr "Vzdálené Ladění"
+
 msgid ""
 "No runnable export preset found for this platform.\n"
 "Please add a runnable preset in the Export menu or define an existing preset "
@@ -3580,6 +3611,9 @@ msgstr ""
 
 msgid "Write your logic in the _run() method."
 msgstr "Napište svůj kód v _run() metodě."
+
+msgid "The current scene already has a root node."
+msgstr "Aktuální scéna již má kořenový uzel."
 
 msgid "Edit Built-in Action: %s"
 msgstr "Upravit vestavěnou funkci: %s"
@@ -3610,6 +3644,9 @@ msgstr "Vazba"
 
 msgid "Offline mode, update checks disabled."
 msgstr "Offline mód, kontrola updatů vypnutá."
+
+msgid "Click to open download page."
+msgstr "Kliknutím otevřete stránku pro stažení."
 
 msgid "Unicode"
 msgstr "Unicode"

@@ -190,13 +190,14 @@
 # Marcia Perez <cristianemarcia50@gmail.com>, 2024.
 # Gustavo Alves <gustavoaw2@gmail.com>, 2024.
 # Christian <cristianvito22@gmail.com>, 2024.
+# Mateus Bueno <mateusmbdev@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2024-07-22 14:23+0000\n"
-"Last-Translator: Christian <cristianvito22@gmail.com>\n"
+"PO-Revision-Date: 2024-07-30 16:40+0000\n"
+"Last-Translator: Mateus Bueno <mateusmbdev@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -207,7 +208,7 @@ msgstr ""
 "X-Generator: Weblate 5.7-dev\n"
 
 msgid "Main Thread"
-msgstr "Thread principal"
+msgstr "Thread Principal"
 
 msgid "Unset"
 msgstr "Restaurar"
@@ -2407,6 +2408,9 @@ msgstr "Não pode começar com um dígito."
 msgid "Valid characters:"
 msgstr "Caracteres válidos:"
 
+msgid "Must not collide with an existing engine class name."
+msgstr "Não deve coincidir com um nome de classe existente na engine."
+
 msgid "Must not collide with an existing global script class name."
 msgstr "Não deve coincidir com um nome de classe global existente."
 
@@ -2415,6 +2419,9 @@ msgstr "O nome não pode estar em conflito com o de um tipo interno existente."
 
 msgid "Must not collide with an existing global constant name."
 msgstr "Não deve coincidir com um nome de constante global existente."
+
+msgid "Keyword cannot be used as an Autoload name."
+msgstr "Palavra-chave não pode ser usado como nome para autocarregamento."
 
 msgid "Autoload '%s' already exists!"
 msgstr "Autoload '%s' já existe!"
@@ -2839,6 +2846,10 @@ msgstr "Importar Perfil/Perfis"
 msgid "Manage Editor Feature Profiles"
 msgstr "Gerenciar Perfis de Funcionalidades do Editor"
 
+msgid "Some extensions need the editor to restart to take effect."
+msgstr ""
+"Algumas extensões precisam que o editor seja reiniciado para terem efeito."
+
 msgid "Restart"
 msgstr "Reiniciar"
 
@@ -3145,6 +3156,9 @@ msgstr "Sinal:"
 msgid "Theme Property:"
 msgstr "Propriedade do Tema:"
 
+msgid "%d match."
+msgstr "%d corresponde."
+
 msgid "%d matches."
 msgstr "%d correspondências."
 
@@ -3304,6 +3318,9 @@ msgstr "Definir Múltiplos: %s"
 
 msgid "Remove metadata %s"
 msgstr "Remover metadados %s"
+
+msgid "Pinned %s"
+msgstr "Fixado %s"
 
 msgid "Unpinned %s"
 msgstr "%s não fixado"
@@ -3471,8 +3488,22 @@ msgstr ""
 msgid "Save Resource As..."
 msgstr "Salvar Recurso como..."
 
+msgid "Can't open file for writing:"
+msgstr "Não foi possível abrir o arquivo para gravação;"
+
+msgid "Can't open file '%s'. The file could have been moved or deleted."
+msgstr ""
+"Não foi possível abrir arquivo '%s'. O arquivo pode ter sido movido ou "
+"deletado."
+
+msgid "Error while parsing file '%s'."
+msgstr "Erro ao salvar o arquivo '%s'."
+
 msgid "Scene file '%s' appears to be invalid/corrupt."
 msgstr "Arquivo de cena '%s' aparenta estar inválido/corrupto."
+
+msgid "Missing file '%s' or one of its dependencies."
+msgstr "Não foi encontrado arquivo %s ou uma de suas dependências."
 
 msgid ""
 "File '%s' is saved in a format that is newer than the formats supported by "
@@ -3490,12 +3521,22 @@ msgstr "Analisando"
 msgid "Creating Thumbnail"
 msgstr "Criando Miniatura"
 
+msgid "This operation can't be done without a tree root."
+msgstr "Esta operação não pode ser feita sem uma raiz da árvore."
+
 msgid ""
 "This scene can't be saved because there is a cyclic instance inclusion.\n"
 "Please resolve it and then attempt to save again."
 msgstr ""
 "Esta cena não pode ser salva porque há uma inclusão de instância cíclica.\n"
 "Por favor a resolva e tente novamente."
+
+msgid ""
+"Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
+"be satisfied."
+msgstr ""
+"Não é possível salvar a cena. Provavelmente dependências (instâncias ou "
+"herança) não foram satisfeitas."
 
 msgid "Save scene before running..."
 msgstr "Salvar a cena antes de executar..."
@@ -3600,6 +3641,13 @@ msgstr ""
 "%s não existe mais! Por favor especifique um novo diretório para salvar."
 
 msgid ""
+"The current scene has no root node, but %d modified external resource(s) and/"
+"or plugin data were saved anyway."
+msgstr ""
+"A cena atual não tem um nó raiz, mas %d recurso(s) externo(s) modificado(s) e/"
+"ou dados de plugin foram salvos de qualquer forma."
+
+msgid ""
 "A root node is required to save the scene. You can add a root node using the "
 "Scene tree dock."
 msgstr ""
@@ -3670,6 +3718,9 @@ msgstr "Salvar recursos modificados antes de fechar?"
 msgid "Save changes to the following scene(s) before reloading?"
 msgstr "Salvar alterações na(s) seguinte(s) cena(s) antes de recarregar?"
 
+msgid "Save changes to the following scene(s) before quitting?"
+msgstr "Salvar alterações na(s) seguinte(s) cena(s) antes de sair?"
+
 msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
 "Salvar alterações na(s) seguinte(s) cena(s) antes de abrir o Gerenciador de "
@@ -3684,6 +3735,9 @@ msgstr ""
 
 msgid "Pick a Main Scene"
 msgstr "Escolha uma Cena Principal"
+
+msgid "This operation can't be done without a scene."
+msgstr "Esta operação não pode ser feita sem uma cena."
 
 msgid "Export Mesh Library"
 msgstr "Exportar Biblioteca de Malhas"
@@ -10455,12 +10509,6 @@ msgstr ""
 "Modo Edição\n"
 "Mostrar botões nas junções."
 
-msgid "Insert key of bone poses already exist track."
-msgstr "Chave inserida na postura de ossos já existe na faixa."
-
-msgid "Insert key of all bone poses."
-msgstr "Inserir Chaves de Todas as Posturas de Ossos."
-
 msgid "Insert Key (All Bones)"
 msgstr "Inserir Chave (Todos os Ossos)"
 
@@ -14998,22 +15046,8 @@ msgstr "Exportar Configurações:"
 msgid "glTF 2.0 Scene..."
 msgstr "Cena glTF 2.0..."
 
-msgid "Path to Blender installation is valid (Autodetected)."
-msgstr ""
-"O caminho para a instalação do Blender é válido (detectado automaticamente)."
-
-msgid "Path to Blender installation is valid."
-msgstr "O caminho para a instalação do Blender é válido."
-
 msgid "Configure Blender Importer"
 msgstr "Configurar Importador do Blender"
-
-msgid ""
-"Blender 3.0+ is required to import '.blend' files.\n"
-"Please provide a valid path to a Blender installation:"
-msgstr ""
-"O Blender 3.0+ é necessário para importar arquivos '.blend'.\n"
-"Forneça um caminho válido para uma instalação do Blender:"
 
 msgid "Disable '.blend' Import"
 msgstr "Desativar Importação '.blend'"
@@ -17472,13 +17506,6 @@ msgstr ""
 "texturas integradas e uniformes, isso não é suportado (use um ou outro)."
 
 msgid ""
-"Sampler argument %d of function '%s' called more than once using textures "
-"that differ in either filter or repeat setting."
-msgstr ""
-"Argumento de amostra %d da função '%s' chamado mais de uma vez usando "
-"texturas que diferem na configuração de filtro ou repetição."
-
-msgid ""
 "Sampler argument %d of function '%s' called more than once using different "
 "built-ins. Only calling with the same built-in is supported."
 msgstr ""
@@ -17526,11 +17553,6 @@ msgstr "Esperava um nome de função."
 
 msgid "No matching function found for: '%s'."
 msgstr "Nenhuma função correspondente encontrada para: '%s'."
-
-msgid ""
-"Varying '%s' must be assigned in the 'vertex' or 'fragment' function first."
-msgstr ""
-"Varying '%s' deve ser atribuída na função 'vertex' ou 'fragment' primeiro."
 
 msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr "Varying '%s' não pode ser passada para o parâmetro '%s' nesse contexto."

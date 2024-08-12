@@ -69,12 +69,13 @@
 # Libre <ht1722@users.noreply.hosted.weblate.org>, 2024.
 # neuve project <neuvecom@gmail.com>, 2024.
 # James Phillips <XFX@users.noreply.hosted.weblate.org>, 2024.
+# Shigefumi Sasaki <polycharacter@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-16 19:57+0000\n"
+"PO-Revision-Date: 2024-07-29 11:09+0000\n"
 "Last-Translator: ueshita <nalto32@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
@@ -4370,6 +4371,9 @@ msgstr "プロジェクトの実行"
 msgid "Write your logic in the _run() method."
 msgstr "ロジックを _run() メソッドに記述する。"
 
+msgid "The current scene already has a root node."
+msgstr "現在のシーンには既にルートノードがあります。"
+
 msgid "Edit Built-in Action: %s"
 msgstr "組み込みアクションの編集: %s"
 
@@ -7910,6 +7914,12 @@ msgstr ""
 msgid "Change Default Type"
 msgstr "デフォルトの型を変更"
 
+msgid ""
+"All selected CanvasItems are either invisible or locked in some way and can't "
+"be transformed."
+msgstr ""
+"選択された全てのカンバスアイテムが不可視化または固定されていて変換できません。"
+
 msgid "Set Target Position"
 msgstr "目標位置を設定"
 
@@ -8212,7 +8222,7 @@ msgstr ""
 "が、ゲーム実行中にも表示されるようになります。"
 
 msgid "Visible Paths"
-msgstr "可視パス"
+msgstr "パスを表示"
 
 msgid ""
 "When this option is enabled, curve resources used by path nodes will be "
@@ -10574,12 +10584,6 @@ msgstr ""
 "編集モード\n"
 "関節にボタンを表示します。"
 
-msgid "Insert key of bone poses already exist track."
-msgstr "すでにトラックが存在するスケルタルポーズにキーフレームを挿入します。"
-
-msgid "Insert key of all bone poses."
-msgstr "すべてのボーンポーズのキーを挿入します。"
-
 msgid "Insert Key (All Bones)"
 msgstr "キーの挿入(全てのボーン)"
 
@@ -11704,6 +11708,9 @@ msgstr "タイルをプロキシに置き換える"
 
 msgid "The selected TileMap has no layer to edit."
 msgstr "選択されたTileMapには編集するレイヤーがありません。"
+
+msgid "The edited layer is disabled or invisible"
+msgstr "編集されたレイヤーは無効化または不可視化されています"
 
 msgid "Select Next Tile Map Layer"
 msgstr "次のタイル マップ レイヤーを選択"
@@ -14280,13 +14287,13 @@ msgid "Instance Configuration"
 msgstr "インスタンス設定"
 
 msgid "Override Main Run Args"
-msgstr "メイン実行の引数を優先する"
+msgstr "メイン実行の引数を無視する"
 
 msgid "Launch Arguments"
 msgstr "起動時の引数"
 
 msgid "Override Main Tags"
-msgstr "メイン機能のタグを優先する"
+msgstr "メイン機能のタグを無視する"
 
 msgid "Feature Tags"
 msgstr "機能タグ"
@@ -15064,37 +15071,8 @@ msgstr "エクスポート設定:"
 msgid "glTF 2.0 Scene..."
 msgstr "glTF 2.0 シーン..."
 
-msgid "Path does not contain a Blender installation."
-msgstr "パスにはBlenderのインストール先が含まれていません。"
-
-msgid "Can't execute Blender binary."
-msgstr "Blenderバイナリを実行できません。"
-
-msgid "Unexpected --version output from Blender binary at: %s."
-msgstr "Blenderバイナリの --version からの予期しない出力: %s。"
-
-msgid "Path supplied lacks a Blender binary."
-msgstr "指定されたパスにはBlenderバイナリがありません。"
-
-msgid "This Blender installation is too old for this importer (not 3.0+)."
-msgstr "このBlenderはこのインポーターにとって古すぎます (3.0以降が必要です)。"
-
-msgid "Path to Blender installation is valid (Autodetected)."
-msgstr "Blenderのインストールパスは有効です(自動検出)。"
-
-msgid "Path to Blender installation is valid."
-msgstr "Blenderのインストールパスは有効です。"
-
 msgid "Configure Blender Importer"
 msgstr "Blenderインポーターを設定"
-
-msgid ""
-"Blender 3.0+ is required to import '.blend' files.\n"
-"Please provide a valid path to a Blender installation:"
-msgstr ""
-"「.blend」ファイルをインポートするには、Blender 3.0以上のバージョンが必要で"
-"す。\n"
-"有効なBlenderインストールパスを提供してください："
 
 msgid "Disable '.blend' Import"
 msgstr "'.blend'インポートを無効にする"
@@ -17699,13 +17677,6 @@ msgstr ""
 "用してください)。"
 
 msgid ""
-"Sampler argument %d of function '%s' called more than once using textures "
-"that differ in either filter or repeat setting."
-msgstr ""
-"サンプラー引数 %d (関数 '%s')が、フィルターまたは繰り返し設定のいずれかが異な"
-"るテクスチャを使用して複数回呼び出されています。"
-
-msgid ""
 "Sampler argument %d of function '%s' called more than once using different "
 "built-ins. Only calling with the same built-in is supported."
 msgstr ""
@@ -17753,12 +17724,6 @@ msgstr "関数名が必要です。"
 
 msgid "No matching function found for: '%s'."
 msgstr "'%s' に一致する関数が見つかりません。"
-
-msgid ""
-"Varying '%s' must be assigned in the 'vertex' or 'fragment' function first."
-msgstr ""
-"Varying '%s' を最初に 'vertex' または 'fragment' 関数で割り当てる必要がありま"
-"す。"
 
 msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr ""

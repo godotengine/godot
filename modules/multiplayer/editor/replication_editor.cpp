@@ -430,7 +430,7 @@ void ReplicationEditor::_tree_item_edited() {
 		undo_redo->add_do_method(config.ptr(), "property_set_spawn", prop, value);
 		undo_redo->add_undo_method(config.ptr(), "property_set_spawn", prop, !value);
 		undo_redo->add_do_method(this, "_update_value", prop, column, value ? 1 : 0);
-		undo_redo->add_undo_method(this, "_update_value", prop, column, value ? 1 : 0);
+		undo_redo->add_undo_method(this, "_update_value", prop, column, value ? 0 : 1);
 		undo_redo->commit_action();
 	} else if (column == 2) {
 		undo_redo->create_action(TTR("Set sync property"));

@@ -608,7 +608,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 					return;
 				}
 				// Disable clicks under a time threshold to avoid selection right when opening the popup.
-				if (was_during_grabbed_click && OS::get_singleton()->get_ticks_msec() - popup_time_msec < 150) {
+				if (was_during_grabbed_click && OS::get_singleton()->get_ticks_msec() - popup_time_msec < 400) {
 					return;
 				}
 
@@ -1064,6 +1064,7 @@ void PopupMenu::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_POST_POPUP: {
+			popup_time_msec = OS::get_singleton()->get_ticks_msec();
 			initial_button_mask = Input::get_singleton()->get_mouse_button_mask();
 			during_grabbed_click = (bool)initial_button_mask;
 		} break;

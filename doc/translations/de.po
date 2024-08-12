@@ -41,7 +41,7 @@
 # Rémi Verschelde <remi@godotengine.org>, 2021.
 # Antonio Noack <corperateraider@gmail.com>, 2022.
 # ‎ <artism90@googlemail.com>, 2022, 2023.
-# Coxcopi70f00b67b61542fe <hn_vogel@gmx.net>, 2022.
+# Coxcopi70f00b67b61542fe <hn_vogel@gmx.net>, 2022, 2024.
 # Leon Marz <main@lmarz.org>, 2022.
 # Robin <robin.janzen@gmx.net>, 2022.
 # Andreas <self@andreasbresser.de>, 2022.
@@ -95,8 +95,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2024-07-17 20:09+0000\n"
-"Last-Translator: Random Person Games <ranpergames@gmail.com>\n"
+"PO-Revision-Date: 2024-07-27 00:54+0000\n"
+"Last-Translator: Coxcopi70f00b67b61542fe <hn_vogel@gmx.net>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot-"
 "class-reference/de/>\n"
 "Language: de\n"
@@ -9813,8 +9813,33 @@ msgstr ""
 "Animation, die als Ausgabe verwendet werden soll. Es ist eine der "
 "Animationen, die von [member AnimationTree.anim_player] bereitgestellt werden."
 
+msgid ""
+"If [member use_custom_timeline] is [code]true[/code], override the loop "
+"settings of the original [Animation] resource with the value."
+msgstr ""
+"Wenn [member use_custom_timeline] auf [code]true[/code] gesetzt ist, wird der "
+"loop-Parameter der ursprünglichen [Animation] Ressource mit diesem Wert "
+"überschrieben."
+
 msgid "Determines the playback direction of the animation."
 msgstr "Bestimmt die Abspielrichtung der Animation."
+
+msgid ""
+"If [member use_custom_timeline] is [code]true[/code], offset the start "
+"position of the animation.\n"
+"This is useful for adjusting which foot steps first in 3D walking animations."
+msgstr ""
+"Wenn [member use_custom_timeline] auf [code]true[/code] gesetzt ist, wird der "
+"Startzeitpunkt der Animation verschoben.\n"
+"Dies kann genutzt werden um anzupassen, welcher Fuß in einer 3D-Laufanimation "
+"den ersten Schritt macht."
+
+msgid ""
+"If [member use_custom_timeline] is [code]true[/code], offset the start "
+"position of the animation."
+msgstr ""
+"Wenn [member use_custom_timeline] auf [code]true[/code] gesetzt ist, wird der "
+"Startzeitpunkt der Animation verschoben."
 
 msgid "Plays animation in forward direction."
 msgstr "Spielt die Animation in Vorwärtsrichtung ab."
@@ -18278,12 +18303,47 @@ msgstr ""
 "[b]Hinweis:[/b] Diese Eigenschaft ist unter Linux, macOS und Windows "
 "implementiert."
 
+msgid "Represents a triggered keyboard [Shortcut]."
+msgstr "Stellt einen Tastatur-[Shortcut] dar."
+
+msgid ""
+"Abstract base class for input events affected by modifier keys like "
+"[kbd]Shift[/kbd] and [kbd]Alt[/kbd]."
+msgstr ""
+"Abstrakte Basisklasse für Eingabeereignisse, die durch Zusatztasten wie "
+"[kbd]Shift[/kbd] und [kbd]Alt[/kbd] aktiviert wurden."
+
+msgid "State of the [kbd]Alt[/kbd] modifier."
+msgstr "Zustand der [kbd]Alt[/kbd] Zusatztaste."
+
+msgid "State of the [kbd]Ctrl[/kbd] modifier."
+msgstr "Zustand der [kbd]Ctrl[/kbd] Zusatztaste."
+
+msgid "State of the [kbd]Shift[/kbd] modifier."
+msgstr "Zustand der [kbd]Shift[/kbd] Zusatztaste."
+
+msgid "Sets a deadzone value for the action."
+msgstr "Bestimmt den Deadzone-Wert für die Aktion."
+
+msgid "Placeholder for the root [Node] of a [PackedScene]."
+msgstr "Platzhalter für die Root-Node einer [PackedScene]."
+
+msgid "A built-in type for integers."
+msgstr "Ein eingebauter Datentyp für Ganzzahlen."
+
 msgid ""
 "Constructs a new [int] from a [bool]. [code]true[/code] is converted to "
 "[code]1[/code] and [code]false[/code] is converted to [code]0[/code]."
 msgstr ""
 "Konstruiert ein neues [int] aus einem [bool]. [code]true[/code] wird in "
 "[code]1[/code] und [code]false[/code] wird in [code]0[/code] umgewandelt."
+
+msgid ""
+"Constructs a new [int] from a [float]. This will truncate the [float], "
+"discarding anything after the floating point."
+msgstr ""
+"Konstruiert einen neuen [int] aus einem [float]. Dabei wird der [float] "
+"gekürzt, wodurch alle Nachkommastellen verworfen werden."
 
 msgid ""
 "Multiplies each component of the [Vector2] by the [int].\n"
@@ -18295,6 +18355,9 @@ msgstr ""
 "[Codeblock]\n"
 "print(2 * Vector2(1, 4)) # Druckt (2, 8)\n"
 "[/codeblock]"
+
+msgid "Multiplies the [float] by the [int]. The result is a [float]."
+msgstr "Multipliziert den [float] mit dem [int]. Das Ergebnis ist ein [float]."
 
 msgid ""
 "Divides the two [int]s. The result is an [int]. This will truncate the "
@@ -18327,6 +18390,78 @@ msgstr ""
 "print(~4) # Gibt -5 zurück\n"
 "print(~(-7)) # Gibt 6 zurück\n"
 "[/codeblock]"
+
+msgid "Internet protocol (IP) support functions such as DNS resolution."
+msgstr "Internetprotokoll (IP) unterstützt Funktionen wie DNS-Auflösung."
+
+msgid "Returns all the user's current IPv4 and IPv6 addresses as an array."
+msgstr ""
+"Gibt alle derzeitigen IPv4- und IPv6-Addressen des Nutzers as Array zurück."
+
+msgid ""
+"Returns all network adapters as an array.\n"
+"Each adapter is a dictionary of the form:\n"
+"[codeblock]\n"
+"{\n"
+"    \"index\": \"1\", # Interface index.\n"
+"    \"name\": \"eth0\", # Interface name.\n"
+"    \"friendly\": \"Ethernet One\", # A friendly name (might be empty).\n"
+"    \"addresses\": [\"192.168.1.101\"], # An array of IP addresses associated "
+"to this interface.\n"
+"}\n"
+"[/codeblock]"
+msgstr ""
+"Gibt alle Netzwerkadapter als Array zurück.\n"
+"Jeder Adapter wird durch ein Dictionary im folgenden Format dargestellt:\n"
+"[codeblock]\n"
+"{\n"
+"    \"index\": \"1\", # Index der Schnittstelle.\n"
+"    \"name\": \"eth0\", # Name der Schnittstelle.\n"
+"    \"friendly\": \"Ethernet One\", # Benutzerfreundlicherer Name (kann leer "
+"sein).\n"
+"    \"addresses\": [\"192.168.1.101\"], # Ein Array von IP-Addressen die zu "
+"dieser Schnittstelle gehören.\n"
+"}\n"
+"[/codeblock]"
+
+msgid "DNS hostname resolver status: No status."
+msgstr "DNS-Hostname-Auflöser Status: Kein Status."
+
+msgid "DNS hostname resolver status: Waiting."
+msgstr "DNS-Hostname-Auflöser Status: Wartend."
+
+msgid "DNS hostname resolver status: Done."
+msgstr "DNS-Hostname-Auflöser Status: Fertig."
+
+msgid "DNS hostname resolver status: Error."
+msgstr "DNS-Hostname-Auflöser Status: Fehler."
+
+msgid "Address type: None."
+msgstr "Addresstyp: Keiner."
+
+msgid "Address type: Internet protocol version 4 (IPv4)."
+msgstr "Addresstyp: Internetprotokoll Version 4 (IPv4)."
+
+msgid "Address type: Internet protocol version 6 (IPv6)."
+msgstr "Addresstyp: Internetprotokoll Version 6 (IPv6)."
+
+msgid "Address type: Any."
+msgstr "Addresstyp: Beliebig."
+
+msgid "A vertical list of selectable items with one or multiple columns."
+msgstr ""
+"Eine vertikale Liste auswählbarer Artikel mit einer oder mehreren Spalten."
+
+msgid "Helper class for creating and parsing JSON data."
+msgstr "Hilfsklasse um JSON-Daten zu erstellen und aufzuschlüsseln."
+
+msgid ""
+"Returns [code]0[/code] if the last call to [method parse] was successful, or "
+"the line number where the parse failed."
+msgstr ""
+"Gibt [code]0[/code] zurück wenn der letzte Aufruf von [method parse] "
+"erfolgreich war, oder die Nummer der Zeile, in der die Aufschlüsselung "
+"fehlschlug."
 
 msgid "Returns the moving object's travel before collision."
 msgstr "Gibt den Weg des bewegten Objekts vor der Kollision zurück."

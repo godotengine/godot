@@ -105,13 +105,14 @@
 # Lorenzo Colelli <lorenzo.colelli@protonmail.com>, 2024.
 # Nicholas <nicholas.ricci.92@gmail.com>, 2024.
 # Samuel Mediani <medianisamuel@gmail.com>, 2024.
+# Daniele Basso <d.bass05@proton.me>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-16 19:57+0000\n"
-"Last-Translator: Micky <micheledevita2@gmail.com>\n"
+"PO-Revision-Date: 2024-07-30 16:40+0000\n"
+"Last-Translator: Daniele Basso <d.bass05@proton.me>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -720,7 +721,7 @@ msgid "Blend Shape Track..."
 msgstr "Traccia di plasma forme..."
 
 msgid "Call Method Track..."
-msgstr "Traccia di metodi..."
+msgstr "Traccia di chiamata di metodi..."
 
 msgid "Bezier Curve Track..."
 msgstr "Traccia di curve di Bézier..."
@@ -4450,6 +4451,9 @@ msgstr "Esegui Progetto"
 msgid "Write your logic in the _run() method."
 msgstr "Inserisci la logica dello script nel metodo _run()."
 
+msgid "The current scene already has a root node."
+msgstr "La scena attuale ha un nodo radice."
+
 msgid "Edit Built-in Action: %s"
 msgstr "Modifica l'Azione Integrata: %s"
 
@@ -6553,6 +6557,12 @@ msgstr "Espandi non-predefinita"
 msgid "Property Name Style"
 msgstr "Stile Nome Proprietà"
 
+msgid "Raw (e.g. \"%s\")"
+msgstr "Riga (es. \"%s\")"
+
+msgid "Capitalized (e.g. \"%s\")"
+msgstr "Iniziale maiuscola (es. \"%s\")"
+
 msgid "Localization not available for current language."
 msgstr "Localizzazione non disponibile per la lingua attuale."
 
@@ -8029,6 +8039,13 @@ msgstr ""
 
 msgid "Change Default Type"
 msgstr "Cambia Tipo Predefinito"
+
+msgid ""
+"All selected CanvasItems are either invisible or locked in some way and can't "
+"be transformed."
+msgstr ""
+"Tutti i CanvasItem selezionati sono invisibili o bloccati in qualche maniera "
+"e per questo non possono essere trasformati."
 
 msgid "Set Target Position"
 msgstr "Imposta la posizione del'obiettivo"
@@ -10726,12 +10743,6 @@ msgstr ""
 "Modalità modifica\n"
 "Mostra bottoni sulle articolazioni."
 
-msgid "Insert key of bone poses already exist track."
-msgstr "Inserisci chiave per le pose di ossa che hanno già una traccia."
-
-msgid "Insert key of all bone poses."
-msgstr "Inserisci una chiave della posa di tutti gli ossi."
-
 msgid "Insert Key (All Bones)"
 msgstr "Inserisci una chiave (tutte le ossa)"
 
@@ -13051,6 +13062,13 @@ msgid ""
 "false."
 msgstr ""
 "Restituisce un vettore 3D associato se il valore booleano fornito è vero o "
+"falso."
+
+msgid ""
+"Returns an associated 4D vector if the provided boolean value is true or "
+"false."
+msgstr ""
+"Restituisce un vettore 4D associato se il valore booleano fornito è vero o "
 "falso."
 
 msgid ""
@@ -15503,38 +15521,8 @@ msgstr "Impostazioni di Esportazione:"
 msgid "glTF 2.0 Scene..."
 msgstr "Scena glTF 2.0..."
 
-msgid "Path does not contain a Blender installation."
-msgstr "Il percorso non contiene un'installazione di Blender."
-
-msgid "Can't execute Blender binary."
-msgstr "Impossibile eseguire Blender."
-
-msgid "Unexpected --version output from Blender binary at: %s."
-msgstr "Risultato di --version inaspettato dall'eseguibile di Blender a: %s."
-
-msgid "Path supplied lacks a Blender binary."
-msgstr "Il percorso fornito non contiene un eseguibile di Blender."
-
-msgid "This Blender installation is too old for this importer (not 3.0+)."
-msgstr ""
-"Questa installazione di Blender è troppo vecchia per questo importatore (non "
-"è 3.0+)."
-
-msgid "Path to Blender installation is valid (Autodetected)."
-msgstr "Il percorso all'installazione di Blender è valido (autorilevato)."
-
-msgid "Path to Blender installation is valid."
-msgstr "Il percorso all'installazione di Blender è valido."
-
 msgid "Configure Blender Importer"
 msgstr "Configura l'importatore di Blender"
-
-msgid ""
-"Blender 3.0+ is required to import '.blend' files.\n"
-"Please provide a valid path to a Blender installation:"
-msgstr ""
-"È richiesto Blender 3.0+ per importare i file \".blend\".\n"
-"Per favore fornire un percorso valido per un'installazione di Blender:"
 
 msgid "Disable '.blend' Import"
 msgstr "Disabilita l'importazione dei \".blend\""
@@ -16592,6 +16580,10 @@ msgid ""
 msgstr ""
 "La libreria di modelli '%s' richiesta non è stata trovata. Potrebbe essere "
 "mancante dal tuo archivio dei modelli."
+
+msgid "ARM64 simulator library, generating from device library."
+msgstr ""
+"Biblioteche di emulazione ARM64, generate dalle biblioteche dei dispositivi."
 
 msgid "Could not copy a file at path \"%s\" to \"%s\"."
 msgstr "Impossibile copiare file dal percorso \"%s\" a \"%s\"."
@@ -18426,13 +18418,6 @@ msgstr ""
 "uno o l'altro)."
 
 msgid ""
-"Sampler argument %d of function '%s' called more than once using textures "
-"that differ in either filter or repeat setting."
-msgstr ""
-"Argomento sampler %d della funzione '%s' è chiamato più di una volta "
-"utilizzando texture con modalità di filtro o ripetizione diverse."
-
-msgid ""
 "Sampler argument %d of function '%s' called more than once using different "
 "built-ins. Only calling with the same built-in is supported."
 msgstr ""
@@ -18481,12 +18466,6 @@ msgstr "Previsto il nome di una funzione."
 
 msgid "No matching function found for: '%s'."
 msgstr "Nessuna funzione corrispondente trovata per: \"%s\"."
-
-msgid ""
-"Varying '%s' must be assigned in the 'vertex' or 'fragment' function first."
-msgstr ""
-"La variabile '%s' deve essere prima assegnata nella funzione 'vertex' o "
-"'fragment'."
 
 msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr ""

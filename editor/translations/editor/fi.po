@@ -10010,9 +10010,6 @@ msgstr "Muuta toruksen sisäsädettä"
 msgid "Change Torus Outer Radius"
 msgstr "Muuta toruksen ulkosädettä"
 
-msgid "Path to Blender installation is valid."
-msgstr "Polku Blender asennukseen on kelvollinen."
-
 msgid "Next Plane"
 msgstr "Seuraava taso"
 

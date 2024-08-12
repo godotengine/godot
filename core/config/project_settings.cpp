@@ -1491,7 +1491,7 @@ ProjectSettings::ProjectSettings() {
 
 	PackedStringArray extensions;
 	extensions.push_back("gd");
-	if (Engine::get_singleton()->has_singleton("GodotSharp")) {
+	if (ClassDB::class_exists("CSharpScript")) {
 		extensions.push_back("cs");
 	}
 	extensions.push_back("gdshader");
