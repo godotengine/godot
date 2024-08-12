@@ -1295,7 +1295,7 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_timeline_o
 	}
 	pos = CLAMP(pos, 0, (double)anim->get_length() - CMP_EPSILON2); // Hack: Avoid fposmod with LOOP_LINEAR.
 
-	if (!p_timeline_only && anim.is_valid()) {
+	if (!p_timeline_only && anim.is_valid() && (!player->is_valid() || !Math::is_equal_approx(pos, player->get_current_animation_position()))) {
 		player->seek_internal(pos, true, true, false);
 	}
 
