@@ -634,6 +634,40 @@ TEST_CASE("[Array] Typed copying") {
 	a6.clear();
 }
 
+TEST_CASE("[Array] Typed insertion") {
+	TypedArray<int32_t> int32_array;
+	TypedArray<int64_t> int64_array;
+	TypedArray<float> float_array;
+
+	int32_t int32_value = 42;
+	int64_t int64_value = 10000000000;
+	float float_value = 4.2;
+
+	int32_array.push_back(int32_value);
+	int64_array.push_back(int32_value);
+	float_array.push_back(int32_value);
+
+	// Can't insert a int64_t in a TypedArray<int32_t>.
+	ERR_PRINT_OFF
+	int32_array.push_back(int64_value);
+	ERR_PRINT_ON
+	int64_array.push_back(int64_value);
+	float_array.push_back(int64_value);
+
+	// Can't insert a float in a TypedArray<int>.
+	ERR_PRINT_OFF
+	int32_array.push_back(float_value);
+	int64_array.push_back(float_value);
+	ERR_PRINT_ON
+	float_array.push_back(float_value);
+
+	// Check that only the compatible values were added to the array,
+	// otherwise it would have printed an error and ignored the value.
+	CHECK_EQ(int32_array.size(), 1);
+	CHECK_EQ(int64_array.size(), 2);
+	CHECK_EQ(float_array.size(), 3);
+}
+
 } // namespace TestArray
 
 #endif // TEST_ARRAY_H

@@ -183,6 +183,8 @@ public:
 
 	const void *id() const;
 
+	void _set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script, uint32_t p_meta);
+
 	void set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	bool is_typed() const;
 	bool is_same_typed(const Array &p_other) const;
