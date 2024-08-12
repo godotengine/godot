@@ -40,6 +40,9 @@ def get_doc_classes():
         "OpenXRBindingModifierEditor",
         "OpenXRHapticBase",
         "OpenXRHapticVibration",
+        "OpenXRRenderModelExtension",
+        "OpenXRRenderModel",
+        "OpenXRRenderModelManager",
     ]
 
 
