@@ -115,7 +115,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-30 16:40+0000\n"
+"PO-Revision-Date: 2024-08-05 14:04+0000\n"
 "Last-Translator: Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
@@ -975,6 +975,9 @@ msgstr "İz yolu geçersiz, o yüzden bir anahtar eklenemez."
 
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "Bu iz, Node3D düğüm tipinde değil, anahtar eklenemez"
+
+msgid "Track is not of type MeshInstance3D, can't insert key"
+msgstr "İz, MeshInstance3D türünde değil, anahtar eklenemiyor"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr "İz yolu geçersiz, o yüzden yöntem anahtarı eklenemez."
@@ -10704,6 +10707,12 @@ msgstr ""
 "Düzenleme Kipi\n"
 "Eklemlerdeki düğmeleri göster."
 
+msgid "Insert key (based on mask) for bones with an existing track."
+msgstr "Mevcut bir izi olan kemikler için anahtar ekleyin (maskelemeye dayalı)."
+
+msgid "Insert key (based on mask) for all bones."
+msgstr "Tüm kemikler için anahtar (maskelemeye dayalı) ekleyin."
+
 msgid "Insert Key (All Bones)"
 msgstr "Anahtar Ekle (Tüm Kemikler)"
 
@@ -14298,6 +14307,9 @@ msgid ""
 "recommended."
 msgstr "Seçilen yol boş değil. Boş bir klasör seçilmesi önemle tavsiye edilir."
 
+msgid "New Game Project"
+msgstr "Yeni Oyun Projesi"
+
 msgid "Supports desktop platforms only."
 msgstr "Sadece masaüstü platformları destekler."
 
@@ -14374,9 +14386,6 @@ msgid ""
 "Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr ""
 "%s yolundaki proje yüklenemedi (hata: %d). Eksik veya bozulmuş olabilir."
-
-msgid "New Game Project"
-msgstr "Yeni Oyun Projesi"
 
 msgid "Import & Edit"
 msgstr "İçe Aktar & Düzenle"
@@ -15445,8 +15454,47 @@ msgstr "Dışa Aktarma Ayarları:"
 msgid "glTF 2.0 Scene..."
 msgstr "glTF 2.0 Sahnesi..."
 
+msgid "Path does not point to a valid executable."
+msgstr "Yol geçerli bir çalıştırılabilir dosyaya işaret etmiyor."
+
+msgid "Couldn't run Blender executable."
+msgstr "Blender çalıştırılabilir dosyası çalıştırılamadı."
+
+msgid "Unexpected --version output from Blender executable at: %s."
+msgstr "Blender çalıştırılabilir dosyasından beklenmeyen --version çıktısı: %s."
+
+msgid "Couldn't extract version information from Blender executable at: %s."
+msgstr "Blender çalıştırılabilir dosyasından sürüm bilgisi çıkarılamadı: %s."
+
+msgid ""
+"Found Blender version %d.x, which is too old for this importer (3.0+ is "
+"required)."
+msgstr ""
+"Blender sürümü %d.x bulundu, ama içe aktarıcı için bu sürüm çok eskidir (3.0+ "
+"gereklidir)."
+
+msgid "Path to Blender executable is valid (Autodetected)."
+msgstr "Blender çalıştırılabilir dosyasının yolu geçerli (Otomatik algılandı)."
+
+msgid "Path to Blender executable is valid."
+msgstr "Blender çalıştırılabilir dosyasının yolu geçerli."
+
 msgid "Configure Blender Importer"
 msgstr "Blender İçe Aktarıcıyı Yapılandır"
+
+msgid ""
+"Blender 3.0+ is required to import '.blend' files.\n"
+"Please provide a valid path to a Blender executable."
+msgstr ""
+"'.blend' dosyalarını içe aktarmak için Blender 3.0+ gereklidir.\n"
+"Lütfen geçerli bir Blender çalıştırılabilir dosyası yolu sağlayın."
+
+msgid ""
+"On macOS, this should be the `Contents/MacOS/blender` file within the Blender "
+"`.app` folder."
+msgstr ""
+"MacOS'ta bu, Blender `.app` klasörü içindeki `Contents/MacOS/blender` dosyası "
+"olmalıdır."
 
 msgid "Disable '.blend' Import"
 msgstr "'.blend' İçe Aktarmayı Devre Dışı Bırak"
@@ -16771,6 +16819,9 @@ msgid ""
 msgstr ""
 "Kod imzalama (codesign) yürütülebilir dosyası başlatılamadı, Xcode komut "
 "satırı araçlarının yüklü olduğundan emin olun."
+
+msgid "Cannot sign directory %s."
+msgstr "%s dizini imzalanamıyor."
 
 msgid "Cannot sign file %s."
 msgstr "%s dosyası imzalanamıyor."
@@ -18344,6 +18395,14 @@ msgstr ""
 "%d örnekleyici girdi değişkeni ('%s' fonksiyonu içinde), hem yerleşik hem de "
 "düzenli dokular kullanılarak birden fazla kez çağrıldı, ama bu desteklenmiyor "
 "(ya birini veya diğerini kullanın)."
+
+msgid ""
+"Sampler argument %d of function '%s' called more than once using textures "
+"that differ in either filter, repeat, or texture hint setting."
+msgstr ""
+"%d örnekleyici girdi değişkeni ('%s' fonksiyonunda), filtreleme, tekrarlama "
+"veya doku ipucu ayarlarından farklı dokular kullanılarak birden fazla kez "
+"çağrıldı."
 
 msgid ""
 "Sampler argument %d of function '%s' called more than once using different "

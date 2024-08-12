@@ -5538,6 +5538,9 @@ msgid ""
 "Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
 msgstr "فایل پروژه \".zip\" نامعتبر است؛ زیرا حاوی فایل \"project.godot\" نیست."
 
+msgid "New Game Project"
+msgstr "پروژه بازی جدید"
+
 msgid "Supports desktop platforms only."
 msgstr "تنها حمایت از سکو‌های دسکتاپ."
 
@@ -5568,9 +5571,6 @@ msgstr "خطای گشودن بسته بندی پرونده، به شکل ZIP ن�
 
 msgid "The following files failed extraction from package:"
 msgstr "استخراج پرونده های زیر از بسته بندی انجام نشد:"
-
-msgid "New Game Project"
-msgstr "پروژه بازی جدید"
 
 msgid "Import & Edit"
 msgstr "وارد کردن و ویرایش"

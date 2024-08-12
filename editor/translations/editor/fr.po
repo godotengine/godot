@@ -173,13 +173,14 @@
 # Stevan Coroller <stevan.coroller@gmail.com>, 2024.
 # Unreal Vision <unrealvisionyt@gmail.com>, 2024.
 # Jokod <jb.jokod@gmail.com>, 2024.
+# didierGuieu <didier.guieu@hotmail.fr>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-23 21:48+0000\n"
-"Last-Translator: Jokod <jb.jokod@gmail.com>\n"
+"PO-Revision-Date: 2024-08-03 22:03+0000\n"
+"Last-Translator: didierGuieu <didier.guieu@hotmail.fr>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot/"
 "fr/>\n"
 "Language: fr\n"
@@ -1048,6 +1049,9 @@ msgstr "Le chemin de la piste est invalide, impossible d’ajouter une clé."
 
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "La piste n’est pas de type Node3D, impossible d’insérer une clé"
+
+msgid "Track is not of type MeshInstance3D, can't insert key"
+msgstr "La piste n'est pas de type MeshInstance3D, impossible d'insérer une clé"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr ""
@@ -3692,6 +3696,13 @@ msgstr ""
 "'%s' n'existe plus ! Veuillez indiquer un nouvel emplacement de sauvegarde."
 
 msgid ""
+"The current scene has no root node, but %d modified external resource(s) and/"
+"or plugin data were saved anyway."
+msgstr ""
+"La scène actuelle n'a pas de nœud racine, mais %d ressources externes "
+"modifiées et/ou données de plugin ont quand même été enregistrées."
+
+msgid ""
 "A root node is required to save the scene. You can add a root node using the "
 "Scene tree dock."
 msgstr ""
@@ -3963,6 +3974,24 @@ msgid ""
 msgstr ""
 "Impossible d'écrire dans le fichier '%s', le fichier est peut-être utilisé, "
 "verrouillé ou vous n'avez pas les permissions en écriture."
+
+msgid "Preparing scenes for reload"
+msgstr "Préparation des scènes à recharger"
+
+msgid "Analyzing scene %s"
+msgstr "Analyse de la scène %s"
+
+msgid "Preparation done."
+msgstr "Préparation terminée."
+
+msgid "Scenes reloading"
+msgstr "Rechargement des scènes"
+
+msgid "Reloading..."
+msgstr "Rechargement..."
+
+msgid "Reloading done."
+msgstr "Rechargement terminé."
 
 msgid ""
 "Changing the renderer requires restarting the editor.\n"
@@ -6672,7 +6701,7 @@ msgid "Raw (e.g. \"%s\")"
 msgstr "Brut (par exemple, \"%s\")"
 
 msgid "Capitalized (e.g. \"%s\")"
-msgstr "En majuscules (ex: \"%s\")"
+msgstr "En majuscules (ex : \"%s\")"
 
 msgid "Localized (e.g. \"Z Index\")"
 msgstr "Localisé (par exemple, \"Z Index\")"
@@ -7685,8 +7714,8 @@ msgid ""
 "Children of a container get their position and size determined only by their "
 "parent."
 msgstr ""
-"Les position et taille des enfants d'un Container sont déterminées par leur "
-"parent."
+"Les position et taille des enfants d'un conteneur sont uniquement déterminées "
+"par leur parent."
 
 msgid "Move Node(s) to Position"
 msgstr "Déplacer la/les Node(s) en position"
@@ -8177,10 +8206,10 @@ msgstr ""
 "Utilisez les propriétés de disposition selon où vous souhaitez le mettre."
 
 msgid "This node is a child of a container."
-msgstr "Ce nœud est enfant d'un contenant."
+msgstr "Ce nœud est enfant d'un conteneur."
 
 msgid "Use container properties for positioning."
-msgstr "Utiliser les propriétés du contenant pour le positionnement."
+msgstr "Utiliser les propriétés du conteneur pour le positionnement."
 
 msgid "This node is a child of a regular control."
 msgstr "Ce nœud est enfant d'un contrôle régulier."
@@ -8195,7 +8224,7 @@ msgid "Expand positioning hint."
 msgstr "Dévoiler les aides au positionnement."
 
 msgid "Container Default"
-msgstr "Contenant par défaut"
+msgstr "Conteneur par défaut"
 
 msgid "Fill"
 msgstr "Remplissage"
@@ -8314,7 +8343,7 @@ msgstr ""
 "au lieu de leur marges."
 
 msgid "Sizing settings for children of a Container node."
-msgstr "Options de taille pour les enfants du noeud Contenant."
+msgstr "Options de taille pour les enfants du nœud Container."
 
 msgid "Horizontal alignment"
 msgstr "Alignement horizontal"
@@ -10867,6 +10896,13 @@ msgstr ""
 "Mode Édition\n"
 "Montre les boutons sur les jointures."
 
+msgid "Insert key (based on mask) for bones with an existing track."
+msgstr ""
+"Insérer une clé (basée sur le masque) pour les os dans une piste existante."
+
+msgid "Insert key (based on mask) for all bones."
+msgstr "Insérer une clé (basé sur le masque) pour tous les os."
+
 msgid "Insert Key (All Bones)"
 msgstr "Insérer une clé (Tous les os)"
 
@@ -13207,6 +13243,13 @@ msgstr ""
 "faux."
 
 msgid ""
+"Returns an associated 4D vector if the provided boolean value is true or "
+"false."
+msgstr ""
+"Retourne un vecteur 4D associé si la valeur booléenne fournie est vrai ou "
+"faux."
+
+msgid ""
 "Returns an associated boolean if the provided boolean value is true or false."
 msgstr ""
 "Retourne un booléen associé si la valeur booléenne fournie est vrai ou faux."
@@ -14508,6 +14551,9 @@ msgstr ""
 "Le chemin sélectionné n'est pas vide. Il est fortement recommandé de choisir "
 "un répertoire vide."
 
+msgid "New Game Project"
+msgstr "Nouveau projet de jeu"
+
 msgid "Supports desktop platforms only."
 msgstr "Ne supporte que les technologies pour PC de bureau."
 
@@ -14585,9 +14631,6 @@ msgid ""
 msgstr ""
 "Impossible de charger le project à \"%s\" (erreur %d). Il peut être manquant "
 "ou corrompu."
-
-msgid "New Game Project"
-msgstr "Nouveau projet de jeu"
 
 msgid "Import & Edit"
 msgstr "Importer et Modifier"
@@ -15674,8 +15717,49 @@ msgstr "Paramètres d'export :"
 msgid "glTF 2.0 Scene..."
 msgstr "Scène au format glTF 2.0..."
 
+msgid "Path does not point to a valid executable."
+msgstr "La propriété Path ne pointe pas vers un exécutable valide."
+
+msgid "Couldn't run Blender executable."
+msgstr "Impossible de lancer l'exécutable de Blender."
+
+msgid "Unexpected --version output from Blender executable at: %s."
+msgstr "Sortie inattendue --version de l'exécutable Blender à : %s."
+
+msgid "Couldn't extract version information from Blender executable at: %s."
+msgstr ""
+"Impossible d'extraire les informations de version de l'exécutable Blender à : "
+"%s."
+
+msgid ""
+"Found Blender version %d.x, which is too old for this importer (3.0+ is "
+"required)."
+msgstr ""
+"La version de Blender %d.x trouvée est trop ancienne pour cet importateur "
+"(3.0+ est requis)."
+
+msgid "Path to Blender executable is valid (Autodetected)."
+msgstr "Le chemin vers l'exécutable de Blender est correct (Auto-détecté)."
+
+msgid "Path to Blender executable is valid."
+msgstr "Le chemin vers l'exécutable de Blender est valide."
+
 msgid "Configure Blender Importer"
 msgstr "Configurer l'importateur de Blender"
+
+msgid ""
+"Blender 3.0+ is required to import '.blend' files.\n"
+"Please provide a valid path to a Blender executable."
+msgstr ""
+"Blender 3.0+ est requis pour importer les fichiers '.blend'.\n"
+"Veuillez fournir un chemin valide vers l'exécutable de Blender."
+
+msgid ""
+"On macOS, this should be the `Contents/MacOS/blender` file within the Blender "
+"`.app` folder."
+msgstr ""
+"Sous macOS, il s'agit du fichier `Contents/MacOS/blender` dans le dossier `."
+"app` de Blender."
 
 msgid "Disable '.blend' Import"
 msgstr "Désactiver l'importation '.blend'"
@@ -17053,6 +17137,9 @@ msgstr ""
 "Ne peut lancer l'exécutable codesign, vérifiez que les outils en ligne de "
 "commande de Xcode sont installés."
 
+msgid "Cannot sign directory %s."
+msgstr "Impossible de signer le dossier %s."
+
 msgid "Cannot sign file %s."
 msgstr "Impossible de signer le fichier %s."
 
@@ -17404,6 +17491,13 @@ msgstr "Exécuter sur un système Windows distant"
 
 msgid "Run exported project on remote Windows system"
 msgstr "Exécuter le projet exporté sur un système Windows distant"
+
+msgid ""
+"A SpriteFrames resource must be created or set in the \"Sprite Frames\" "
+"property in order for AnimatedSprite2D to display frames."
+msgstr ""
+"Une ressource SpriteFrames doit être créée ou définie dans la propriété "
+"\"Sprite Frames\" afin que l'AnimatedSprite2D affiche les images."
 
 msgid ""
 "Only one visible CanvasModulate is allowed per canvas.\n"
@@ -18103,6 +18197,13 @@ msgid "This body will be ignored until you set a mesh."
 msgstr "Ce corps sera ignoré jusqu'à ce que vous définissiez un maillage."
 
 msgid ""
+"A SpriteFrames resource must be created or set in the \"Sprite Frames\" "
+"property in order for AnimatedSprite3D to display frames."
+msgstr ""
+"Une ressource de type SpriteFrames doit être créée ou définie dans la "
+"propriété \"Sprite Frames\" afin que l'AnimatedSprite3D affiche les images."
+
+msgid ""
 "The GeometryInstance3D visibility range's End distance is set to a non-zero "
 "value, but is lower than the Begin distance.\n"
 "This means the GeometryInstance3D will never be visible.\n"
@@ -18255,7 +18356,7 @@ msgid ""
 "placement behavior.\n"
 "If you don't intend to add a script, use a plain Control node instead."
 msgstr ""
-"Le conteneur en lui-même ne sert à rien à moins qu'un script ne configure son "
+"Container en lui-même ne sert à rien à moins qu'un script ne configure son "
 "comportement de placement de ses enfants.\n"
 "Si vous n'avez pas l'intention d'ajouter un script, utilisez plutôt un nœud "
 "Control."
@@ -18320,7 +18421,8 @@ msgid ""
 "The default mouse cursor shape of SubViewportContainer has no effect.\n"
 "Consider leaving it at its initial value `CURSOR_ARROW`."
 msgstr ""
-"Le curseur de la souris par défaut de SubViewportContainer n'a aucun effet.\n"
+"La forme du curseur de la souris par défaut de SubViewportContainer n'a aucun "
+"effet.\n"
 "Il est préférable de laisser la valeur initiale de 'CURSOR_ARROW'."
 
 msgid ""
@@ -18581,6 +18683,9 @@ msgstr ""
 "Les variables affectées dans la fonction 'fragment' ne peuvent pas être "
 "réaffectées dans les fonctions 'vertex' ou 'light'."
 
+msgid "'%s' cannot be used within the '%s' processor function."
+msgstr "'%s' ne peut pas être utilisé dans la fonction processeur '%s'."
+
 msgid ""
 "'%s' cannot be used here, because '%s' is called by the '%s' processor "
 "function (which is not allowed)."
@@ -18607,6 +18712,14 @@ msgstr ""
 "L'argument d'échantillonneur %d de la fonction '%s' appelée plus d'une fois à "
 "l'aide de textures intégrées et uniformes, ceci n'est pas supporté (utilisez "
 "l'un ou l'autre)."
+
+msgid ""
+"Sampler argument %d of function '%s' called more than once using textures "
+"that differ in either filter, repeat, or texture hint setting."
+msgstr ""
+"L'argument de l'échantillonneur %d de la fonction '%s' est appelé plus d'une "
+"fois en utilisant des textures qui diffèrent dans le paramètre de filtre, de "
+"répétition ou d'indice de texture."
 
 msgid ""
 "Sampler argument %d of function '%s' called more than once using different "
@@ -18651,6 +18764,11 @@ msgstr "Une '(' est attendue après le nom du type."
 
 msgid "No matching constructor found for: '%s'."
 msgstr "Pas de constructeur correspondant trouvé pour : '%s'."
+
+msgid "Built-in function '%s' is not supported for the '%s' shader type."
+msgstr ""
+"La fonction intégrée '%s' n'est pas prise en charge pour le type de shader "
+"'%s'."
 
 msgid "Expected a function name."
 msgstr "Un nom de fonction était attendu."

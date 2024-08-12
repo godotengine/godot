@@ -100,7 +100,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-30 16:40+0000\n"
+"PO-Revision-Date: 2024-08-05 14:04+0000\n"
 "Last-Translator: Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/tr/>\n"
@@ -2895,6 +2895,12 @@ msgstr "En Çok Günlük Dosyası"
 
 msgid "Driver"
 msgstr "Sürücü"
+
+msgid "Fallback to Vulkan"
+msgstr "Son Çare Vulkan'a Geri Dön"
+
+msgid "Fallback to D3D12"
+msgstr "Son Çare D3D12'ye Geri Dön"
 
 msgid "GL Compatibility"
 msgstr "GL Uyumluluğu"

@@ -5766,6 +5766,9 @@ msgstr "Άκυρο αρχείο έργου «.zip»: Δεν περιέχει α�
 msgid "The path specified doesn't exist."
 msgstr "Η ορισμένη διαδρομή δεν υπάρχει."
 
+msgid "New Game Project"
+msgstr "Νέο έργο παιχνιδιού"
+
 msgid "Couldn't create project.godot in project path."
 msgstr "Δεν ήταν δυνατή η δημιουργία του project.godot στη διαδρομή έργου."
 
@@ -5774,9 +5777,6 @@ msgstr "Σφάλμα ανοίγματος αρχείου πακέτου, δεν 
 
 msgid "The following files failed extraction from package:"
 msgstr "Η εξαγωγή των ακόλουθων αρχείων από το πακέτο απέτυχε:"
-
-msgid "New Game Project"
-msgstr "Νέο έργο παιχνιδιού"
 
 msgid "Import & Edit"
 msgstr "Εισαγωγή & Επεξεργασία"

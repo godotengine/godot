@@ -21,6 +21,12 @@ msgstr ""
 msgid "New Code Region"
 msgstr "新建程式碼區域"
 
+msgid "Pick a color from the screen."
+msgstr "從螢幕上選擇一種顏色。"
+
+msgid "Pick a color from the application window."
+msgstr "從應用程式視窗中選擇一種顏色。"
+
 msgid ""
 "Color: #%s\n"
 "LMB: Apply color\n"
@@ -39,12 +45,6 @@ msgstr ""
 
 msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
 msgstr "輸入十六進位碼（“#ff0000”）或顏色名稱（“red”）。"
-
-msgid "Pick a color from the screen."
-msgstr "從螢幕上選擇一種顏色。"
-
-msgid "Pick a color from the application window."
-msgstr "從應用程式視窗中選擇一種顏色。"
 
 msgid "Select a picker shape."
 msgstr "選擇選取器形狀。"

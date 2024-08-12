@@ -111,13 +111,14 @@
 # Krzysztof Rams <krzysztofeczek@gmail.com>, 2024.
 # TrueJole <jole.koop@gmail.com>, 2024.
 # Dirk Graf <bb3234@web.de>, 2024.
+# tct123 <tct1234@protonmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-25 23:49+0000\n"
-"Last-Translator: Wuzzy <Wuzzy@disroot.org>\n"
+"PO-Revision-Date: 2024-08-09 17:09+0000\n"
+"Last-Translator: tct123 <tct1234@protonmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot/"
 "de/>\n"
 "Language: de\n"
@@ -984,6 +985,10 @@ msgstr "Track-Pfad ist ungültig, Key kann nicht hinzugefügt werden."
 
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "Track ist nicht vom Typ Node3D, Key kann nicht hinzugefügt werden"
+
+msgid "Track is not of type MeshInstance3D, can't insert key"
+msgstr ""
+"Track ist nicht vom Typ MeshInstance3D, Key kann nicht hinzugefügt werden"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Track-Pfad ist ungültig, Methoden-Key kann nicht hinzugefügt werden."
@@ -10796,6 +10801,13 @@ msgstr ""
 "Bearbeitungsmodus\n"
 "Buttons an Gelenken anzeigen."
 
+msgid "Insert key (based on mask) for bones with an existing track."
+msgstr ""
+"Key einfügen (basierend auf Maske) für Knochen mit einem existierenden Track."
+
+msgid "Insert key (based on mask) for all bones."
+msgstr "Key für alle Knochen einfügen (basierend auf Maske)."
+
 msgid "Insert Key (All Bones)"
 msgstr "Key einfügen (alle Knochen)"
 
@@ -14429,6 +14441,9 @@ msgstr ""
 "Der ausgewählte Pfad ist nicht leer. Ein leeres Verzeichnis wird dringend "
 "empfohlen."
 
+msgid "New Game Project"
+msgstr "Neues Spiel"
+
 msgid "Supports desktop platforms only."
 msgstr "Nur auf Desktop-Plattformen lauffähig."
 
@@ -14508,9 +14523,6 @@ msgid ""
 msgstr ""
 "Projekt in ‚%s‘ konnte nicht geladen werden (Fehler %d). Es ist "
 "möglicherweise nicht vorhanden oder beschädigt."
-
-msgid "New Game Project"
-msgstr "Neues Spiel"
 
 msgid "Import & Edit"
 msgstr "Importieren & Bearbeiten"
@@ -15592,8 +15604,49 @@ msgstr "Export-Einstellungen:"
 msgid "glTF 2.0 Scene..."
 msgstr "glTF-2.0-Szene …"
 
+msgid "Path does not point to a valid executable."
+msgstr "Der Pfad zeigt nicht auf eine gültige ausführbare Datei."
+
+msgid "Couldn't run Blender executable."
+msgstr "Blender konnte nicht ausgeführt werden."
+
+msgid "Unexpected --version output from Blender executable at: %s."
+msgstr "Unerwartete Ausgabe von --version von der Blender-Binärdatei bei: %s."
+
+msgid "Couldn't extract version information from Blender executable at: %s."
+msgstr ""
+"Versionsinformationen konnten aus der Blender-Binärdatei nicht extrahiert "
+"werden, bei: %s."
+
+msgid ""
+"Found Blender version %d.x, which is too old for this importer (3.0+ is "
+"required)."
+msgstr ""
+"Blender-Version %d.x gefunden. Dies ist zu alt für diesen Importer (3.0+ wird "
+"benötigt)."
+
+msgid "Path to Blender executable is valid (Autodetected)."
+msgstr "Pfad zur Blender-Binärdatei ist gültig (automatisch ermittelt)."
+
+msgid "Path to Blender executable is valid."
+msgstr "Pfad zur Blender-Binärdatei ist gültig."
+
 msgid "Configure Blender Importer"
 msgstr "Blender-Importer konfigurieren"
+
+msgid ""
+"Blender 3.0+ is required to import '.blend' files.\n"
+"Please provide a valid path to a Blender executable."
+msgstr ""
+"Blender 3.0 oder neuer wird benötigt, um ‚.blend‘-Dateien zu importieren.\n"
+"Bitte gültigen Pfad zu einer Blender-Binärdatei angeben."
+
+msgid ""
+"On macOS, this should be the `Contents/MacOS/blender` file within the Blender "
+"`.app` folder."
+msgstr ""
+"Auf macOS sollte dies die Datei `Contents/MacOS/blender` innerhalb des "
+"Blender-Ordners `.app`sein."
 
 msgid "Disable '.blend' Import"
 msgstr "‚.blend‘-Importe deaktivieren"
@@ -16940,6 +16993,9 @@ msgid ""
 msgstr ""
 "Codesign-Anwendung konnte nicht gestartet werden, bitte sicher stellen dass "
 "die Xcode-Kommandozeilen-Tools installiert sind."
+
+msgid "Cannot sign directory %s."
+msgstr "Verzeichnis %s konnte nicht signiert werden."
 
 msgid "Cannot sign file %s."
 msgstr "Datei %s konnte nicht signiert werden."
@@ -18499,6 +18555,14 @@ msgstr ""
 "Sampler-Argument %d von Funktion ‚%s‘ wurde mehr als einmal aufgerufen von "
 "sowohl Built-ins als auch Uniform-Texturen. Dies wird nicht unterstützt, "
 "bitte nur eines von beiden verwenden."
+
+msgid ""
+"Sampler argument %d of function '%s' called more than once using textures "
+"that differ in either filter, repeat, or texture hint setting."
+msgstr ""
+"Sampler-Argument %d von Funktion ‚%s‘ wurde mehr als einmal aufgerufen mit "
+"Texturen, die sich entweder in Filter-, Wiederholungs- oder Texturen-Hint-"
+"Einstellungen unterscheiden."
 
 msgid ""
 "Sampler argument %d of function '%s' called more than once using different "

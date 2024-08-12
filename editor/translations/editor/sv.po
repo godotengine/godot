@@ -37,13 +37,14 @@
 # Evelyn <gfo.957@gmail.com>, 2024.
 # Joakim Hulthe <joakim@hulthe.net>, 2024.
 # Lexag <lexa.grebnets@gmail.com>, 2024.
+# Freezing <sebastian.akerhielm@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-28 08:33+0000\n"
-"Last-Translator: Lexag <lexa.grebnets@gmail.com>\n"
+"PO-Revision-Date: 2024-08-09 17:09+0000\n"
+"Last-Translator: Freezing <sebastian.akerhielm@gmail.com>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
 "Language: sv\n"
@@ -202,6 +203,12 @@ msgstr "Styrspaksknapp %d"
 
 msgid "Pressure:"
 msgstr "Tryck:"
+
+msgid "canceled"
+msgstr "Avbruten"
+
+msgid "touched"
+msgstr "Rörd"
 
 msgid "released"
 msgstr "släppt"
@@ -880,6 +887,9 @@ msgstr "Kurva är felaktig så det går inte att skapa en nyckel."
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "Spåret är inte av typen Node3D, kan inte infoga nyckel"
 
+msgid "Track is not of type MeshInstance3D, can't insert key"
+msgstr "Spåret är inte av typen MeshInstance3D, kan inte infoga nyckel"
+
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Spårväg ogiltig, kan således inte lägga till en metod nyckel."
 
@@ -956,6 +966,19 @@ msgstr ""
 "Anpassade Spår\", sedan importera om.\n"
 "Alternativt, använd en importförinställning som importerar animationer till "
 "separata filer."
+
+msgid ""
+"Some AnimationPlayerEditor's options are disabled since this is the dummy "
+"AnimationPlayer for preview.\n"
+"\n"
+"The dummy player is forced active, non-deterministic and doesn't have the "
+"root motion track. Furthermore, the original node is inactive temporary."
+msgstr ""
+"Vissa alternativ i AnimationPlayerEditors är inaktiverade eftersom detta är "
+"en dummy AnimationPlayer för förhandsvisning.\n"
+"\n"
+"Dummyspelaren är tvångsaktiverad, indeterministisk och har inget "
+"rotrörelsespår. Dessutom är orginalnoden temporärt inaktiv."
 
 msgid "AnimationPlayer is inactive. The playback will not be processed."
 msgstr ""
@@ -6360,6 +6383,9 @@ msgid ""
 "recommended."
 msgstr "Den valda sökvägen är inte tom. Att välja en tom katalog rekomenderas."
 
+msgid "New Game Project"
+msgstr "Nytt Spelprojekt"
+
 msgid "Supports desktop platforms only."
 msgstr "Stödjer desktop platformar enbart."
 
@@ -6426,9 +6452,6 @@ msgid ""
 "Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr ""
 "Kunde inte ladda projektet vid '%s' (error %d). Det saknas eller är korrupt."
-
-msgid "New Game Project"
-msgstr "Nytt Spelprojekt"
 
 msgid "Import & Edit"
 msgstr "Importera & Ändra"
