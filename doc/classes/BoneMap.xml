@@ -40,6 +40,9 @@
 	<members>
 		<member name="profile" type="SkeletonProfile" setter="set_profile" getter="get_profile">
 			A [SkeletonProfile] of the mapping target. Key names in the [BoneMap] are synchronized with it.
+
+			
+			Note: this property is not accessible to import scripts. The [BoneMap.SkeletonProfile] is only accessible to the UI during import.
 		</member>
 	</members>
 	<signals>
