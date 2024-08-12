@@ -42,7 +42,7 @@
 			A [SkeletonProfile] of the mapping target. Key names in the [BoneMap] are synchronized with it.
 
 			
-			[b]Note:[/b] this property is not accessible to import scripts. The [SkeletonProfile] is only accessible to the UI during import.
+			[b]Note:[/b] This property is not accessible to import scripts. The [SkeletonProfile] is only accessible to the UI during import.
 		</member>
 	</members>
 	<signals>
