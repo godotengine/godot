@@ -70,13 +70,14 @@
 # neuve project <neuvecom@gmail.com>, 2024.
 # James Phillips <XFX@users.noreply.hosted.weblate.org>, 2024.
 # Shigefumi Sasaki <polycharacter@gmail.com>, 2024.
+# Tomoo Amano <sh.eer.cat@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-29 11:09+0000\n"
-"Last-Translator: ueshita <nalto32@gmail.com>\n"
+"PO-Revision-Date: 2024-08-09 17:09+0000\n"
+"Last-Translator: Tomoo Amano <sh.eer.cat@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -1611,7 +1612,7 @@ msgid "Sending file:"
 msgstr "ファイルを送信中："
 
 msgid "ms"
-msgstr "ミリ秒"
+msgstr "ms"
 
 msgid "Monitors"
 msgstr "モニター"
@@ -11706,6 +11707,9 @@ msgstr "レイヤーなし"
 msgid "Replace Tiles with Proxies"
 msgstr "タイルをプロキシに置き換える"
 
+msgid "Can't edit multiple layers at once."
+msgstr "一度に複数のレイヤーの編集はできません。"
+
 msgid "The selected TileMap has no layer to edit."
 msgstr "選択されたTileMapには編集するレイヤーがありません。"
 
@@ -13937,6 +13941,9 @@ msgid ""
 msgstr ""
 "選択したパスは空ではありません。空のフォルダを選択することを強くお勧めします。"
 
+msgid "New Game Project"
+msgstr "新しいゲームプロジェクト"
+
 msgid "Supports desktop platforms only."
 msgstr "対応プラットフォームはデスクトップのみ。"
 
@@ -14016,9 +14023,6 @@ msgid ""
 msgstr ""
 "%s のプロジェクトを読み込めませんでした (エラー %d)。見つからないか破損してい"
 "る可能性があります。"
-
-msgid "New Game Project"
-msgstr "新しいゲームプロジェクト"
 
 msgid "Import & Edit"
 msgstr "インポートして編集"

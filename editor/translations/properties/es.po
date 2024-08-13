@@ -113,7 +113,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-31 15:41+0000\n"
+"PO-Revision-Date: 2024-08-01 02:20+0000\n"
 "Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/es/>\n"
@@ -2909,6 +2909,12 @@ msgstr "Archivos de Registro Máximo"
 msgid "Driver"
 msgstr "Controlador"
 
+msgid "Fallback to Vulkan"
+msgstr "Alternativa a Vulkan"
+
+msgid "Fallback to D3D12"
+msgstr "Alternativa a D3D12"
+
 msgid "GL Compatibility"
 msgstr "Compatibilidad GL"
 
@@ -2916,13 +2922,13 @@ msgid "Nvidia Disable Threaded Optimization"
 msgstr "Desactivar la Optimización con Hilos de Nvidia"
 
 msgid "Fallback to Angle"
-msgstr "Angle como Respaldo"
+msgstr "Alternativa a Angle"
 
 msgid "Fallback to Native"
-msgstr "Native como Respaldo"
+msgstr "Alternativa a Native"
 
 msgid "Fallback to Gles"
-msgstr "Gles como Respaldo"
+msgstr "Alternativa a Gles"
 
 msgid "Force Angle on Devices"
 msgstr "Forzar Ángulo en Dispositivos"
@@ -8478,7 +8484,7 @@ msgid "Night Sky"
 msgstr "Cielo Nocturno"
 
 msgid "Fallback Environment"
-msgstr "Entorno de Retorno"
+msgstr "Entorno de Respaldo"
 
 msgid "Plane"
 msgstr "Plano"

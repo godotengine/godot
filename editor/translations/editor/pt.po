@@ -60,13 +60,16 @@
 # Ruan Victor <ruanvictordossantoscorrea128@gmail.com>, 2024.
 # Christian <cristianvito22@gmail.com>, 2024.
 # Ricardo  Farinha <Ricardoarfarinha@gmail.com>, 2024.
+# Rick and Morty <7777rickandmorty@gmail.com>, 2024.
+# David Alysson <davialysson1@gmail.com>, 2024.
+# "Francisco (F4VSE)" <kikosgc@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-31 15:41+0000\n"
-"Last-Translator: Ricardo  Farinha <Ricardoarfarinha@gmail.com>\n"
+"PO-Revision-Date: 2024-08-12 20:09+0000\n"
+"Last-Translator: Rick and Morty <7777rickandmorty@gmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pt/>\n"
 "Language: pt\n"
@@ -3530,6 +3533,13 @@ msgid "%s no longer exists! Please specify a new save location."
 msgstr "%s não existe mais! Por favor, especifique um novo local de salvamento."
 
 msgid ""
+"The current scene has no root node, but %d modified external resource(s) and/"
+"or plugin data were saved anyway."
+msgstr ""
+"A cena atual não tem um nó raiz, mas %d recurso(s) externo(s) modificado(s) e/"
+"ou dados de plugin foram salvos mesmo assim."
+
+msgid ""
 "A root node is required to save the scene. You can add a root node using the "
 "Scene tree dock."
 msgstr ""
@@ -3543,7 +3553,7 @@ msgid "Current scene not saved. Open anyway?"
 msgstr "A cena atual não foi guardada. Abrir na mesma?"
 
 msgid "Can't undo while mouse buttons are pressed."
-msgstr "Incapaz de desfazer enquanto os botões do rato estão premidos."
+msgstr "Incapaz de desfazer enquanto os botões do ‘mouse’ estão pressionados."
 
 msgid "Nothing to undo."
 msgstr "Nada para desfazer."
@@ -3558,7 +3568,7 @@ msgid "Scene Undo: %s"
 msgstr "Cena Desfeita: %s"
 
 msgid "Can't redo while mouse buttons are pressed."
-msgstr "Incapaz de refazer enquanto os botões do rato estão premidos."
+msgstr "Incapaz de refazer enquanto os botões do ‘mouse’ estão pressionados."
 
 msgid "Nothing to redo."
 msgstr "Nada para refazer."
@@ -3573,29 +3583,29 @@ msgid "Scene Redo: %s"
 msgstr "Refazer Cena: %s"
 
 msgid "Can't reload a scene that was never saved."
-msgstr "Incapaz de recarregar uma cena que nunca foi guardada."
+msgstr "Incapaz de recarregar uma cena que nunca foi salva."
 
 msgid "Reload Saved Scene"
-msgstr "Recarregar Cena Guardada"
+msgstr "Recarregar Cena Salva"
 
 msgid ""
 "The current scene has unsaved changes.\n"
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
-"A cena atual tem alterações não guardadas.\n"
-"Recarregar na mesma a cena guardada? Esta ação não pode ser desfeita."
+"A cena atual tem alterações não salvas.\n"
+"Recarregar a cena salva mesmo assim? Esta ação não poderá ser desfeita."
 
 msgid "Save & Reload"
-msgstr "Salvar E Reiniciar"
+msgstr "Salvar & Reiniciar"
 
 msgid "Save modified resources before reloading?"
-msgstr "Gravar recursos modificados antes de recarregar?"
+msgstr "Salvar recursos modificados antes de recarregar?"
 
 msgid "Save & Quit"
-msgstr "Guardar & Sair"
+msgstr "Salvar & Sair"
 
 msgid "Save modified resources before closing?"
-msgstr "Gravar recursos modificados antes de fechar?"
+msgstr "Salvar recursos modificados antes de fechar?"
 
 msgid "Save changes to the following scene(s) before reloading?"
 msgstr "Salvar alterações da(s) seguinte(s) cena(s) antes de reiniciar?"
@@ -3605,7 +3615,7 @@ msgstr "Salvar alterações na(s) seguinte(s) cena(s) antes de sair?"
 
 msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
-"Guardar alterações da(s) seguinte(s) cena(s) antes de abrir o Gestor de "
+"Salvar alterações da(s) seguinte(s) cena(s) antes de abrir o Gestor de "
 "Projeto?"
 
 msgid ""
@@ -3613,10 +3623,10 @@ msgid ""
 "considered a bug. Please report."
 msgstr ""
 "Esta opção foi descontinuada. Situações onde a atualização deve ser forçada "
-"são consideradas um bug. Por favor, relate."
+"agora são consideradas um bug. Por favor reporte."
 
 msgid "Pick a Main Scene"
-msgstr "Escolha a Cena Principal"
+msgstr "Escolha uma Cena Principal"
 
 msgid "This operation can't be done without a scene."
 msgstr "Esta operação não pode ser feita sem uma cena."
@@ -3625,27 +3635,28 @@ msgid "Export Mesh Library"
 msgstr "Exportar Biblioteca de Malhas"
 
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
-msgstr "Incapaz de ativar plugin em: '%s' falha de análise ou configuração."
+msgstr ""
+"Incapaz de ativar plugin adicional em: '%s' análise da configuração falhou."
 
 msgid "Unable to find script field for addon plugin at: '%s'."
-msgstr "Incapaz de localizar campo script para plugin em: '%s'."
+msgstr "Incapaz de localizar campo script para plugin adicional em: '%s'."
 
 msgid "Unable to load addon script from path: '%s'."
-msgstr "Incapaz de carregar script addon do caminho: '%s'."
+msgstr "Incapaz de carregar script adicional do caminho: '%s'."
 
 msgid ""
 "Unable to load addon script from path: '%s'. This might be due to a code "
 "error in that script.\n"
 "Disabling the addon at '%s' to prevent further errors."
 msgstr ""
-"Incapaz de carregar script addon do caminho: '%s' Parece haver um erro no "
-"código, reveja a sintaxe.\n"
-"A desativar o addon em '%s' para prevenir mais erros."
+"Incapaz de carregar script adicional do caminho: '%s'. Isso pode ser devido a "
+"um erro de código nesse script.\n"
+"Desabilitando o script adicional em '%s' para prevenir o avanço de erros."
 
 msgid ""
 "Unable to load addon script from path: '%s'. Base type is not 'EditorPlugin'."
 msgstr ""
-"Incapaz de carregar script da extensão pelo Caminho: '%s' Tipo base não é "
+"Incapaz de carregar script adicional pelo caminho: '%s'. Tipo base não é "
 "'EditorPlugin'."
 
 msgid "Unable to load addon script from path: '%s'. Script is not in tool mode."
@@ -4374,6 +4385,9 @@ msgstr "Projeto"
 
 msgid "Write your logic in the _run() method."
 msgstr "Escreva a sua lógica no Método _run()."
+
+msgid "The current scene already has a root node."
+msgstr "A cena atual já tem um nó raiz."
 
 msgid "Edit Built-in Action: %s"
 msgstr "Editar Ações Integradas: %s"
@@ -6464,6 +6478,12 @@ msgstr "Expandir Não-Padrões"
 msgid "Property Name Style"
 msgstr "Estilo de Nome da Propriedade"
 
+msgid "Raw (e.g. \"%s\")"
+msgstr "Bruto (por exemplo, \"%s\")"
+
+msgid "Localized (e.g. \"Z Index\")"
+msgstr "Localizado (por exemplo, \"Índice Z\")"
+
 msgid "Localization not available for current language."
 msgstr "Localização não disponível para o idioma atual."
 
@@ -7922,6 +7942,13 @@ msgstr "Segure Alt+Shift ao soltar para adicionar como outro tipo de nó."
 msgid "Change Default Type"
 msgstr "Mudar Tipo Predefinido"
 
+msgid ""
+"All selected CanvasItems are either invisible or locked in some way and can't "
+"be transformed."
+msgstr ""
+"Todos os Itens de tela selecionados estão invisíveis ou bloqueados de alguma "
+"forma e não podem ser transformados."
+
 msgid "Set Target Position"
 msgstr "Definir Posição do Alvo"
 
@@ -8634,6 +8661,13 @@ msgstr ""
 "selecionadas para o pré-calculo tenham um valor de `lightmap_size_hint` "
 "grande o suficiente e que o valor do `texel_scale` no LightmapGI não seja "
 "pequeno demais."
+
+msgid ""
+"Failed fitting a lightmap image into an atlas. This should never happen and "
+"should be reported."
+msgstr ""
+"Falha ao ajustar uma imagem de mapa de luz em um atlas. Isso nunca deveria "
+"acontecer e deve ser reportado."
 
 msgid "Bake Lightmaps"
 msgstr "Consolidar Lightmaps"
@@ -12391,7 +12425,7 @@ msgid "Push"
 msgstr "Impulso"
 
 msgid "Force Push"
-msgstr "Forçar Impulso"
+msgstr "Forçar [Push]"
 
 msgid "Modified"
 msgstr "Modificado"
@@ -13324,6 +13358,14 @@ msgstr ""
 "Remapeia uma determinada entrada do intervalo de entrada para o intervalo de "
 "saída."
 
+msgid ""
+"Builds a rotation matrix from the given axis and angle, multiply the input "
+"vector by it and returns both this vector and a matrix."
+msgstr ""
+"Constrói uma matriz de rotação a partir do eixo e ângulo fornecidos, "
+"multiplica o vetor de entrada por ela e retorna tanto esse vetor quanto a "
+"matriz."
+
 msgid "Vector function."
 msgstr "Função Vetor."
 
@@ -13951,6 +13993,9 @@ msgid ""
 msgstr ""
 "O caminho selecionado não está vazio. É recomendado escolher uma pasta vazia."
 
+msgid "New Game Project"
+msgstr "Novo Projeto de jogo"
+
 msgid "Supports desktop platforms only."
 msgstr "Suporta apenas plataformas de desktop."
 
@@ -14024,9 +14069,6 @@ msgid ""
 msgstr ""
 "Não pode carregar o projeto em '%s' (error %d). Pode estar sumido ou "
 "corrompido."
-
-msgid "New Game Project"
-msgstr "Novo Projeto de jogo"
 
 msgid "Import & Edit"
 msgstr "Importar & Editar"
@@ -14942,6 +14984,13 @@ msgstr "Cena glTF 2.0..."
 msgid "Configure Blender Importer"
 msgstr "Configurar Importador do Blender"
 
+msgid ""
+"On macOS, this should be the `Contents/MacOS/blender` file within the Blender "
+"`.app` folder."
+msgstr ""
+"No macOS, este deve ser o ficheiro `Contents/MacOS/blender` dentro da pasta `."
+"app` do Blender."
+
 msgid "Disable '.blend' Import"
 msgstr "Desativar Importação '.blend'"
 
@@ -14951,6 +15000,9 @@ msgid ""
 msgstr ""
 "Desativa a importação de ficheiros '.blend' do Blender para este projeto. "
 "Pode ser reativado nas configurações do projeto."
+
+msgid "Disabling '.blend' file import requires restarting the editor."
+msgstr "Desativar a importação de ficheiro '.blend' requer reiniciar o editor."
 
 msgid "Next Plane"
 msgstr "Plano Seguinte"
@@ -15051,6 +15103,15 @@ msgstr "Esvanecimento Gradual"
 msgid "Cross-Fade"
 msgstr "Desbotamento Cruzado"
 
+msgid "Using Any Clip -> %s."
+msgstr "Utilizar qualquer clip -> %s."
+
+msgid "Using %s -> Any Clip."
+msgstr "Utilizando %s -> Qualquer clip."
+
+msgid "Using All Clips -> Any Clip."
+msgstr "Usando todos os clipes -> Qualquer Clipe."
+
 msgid "Clip End"
 msgstr "Cortar o Final"
 
@@ -15112,11 +15173,46 @@ msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr ""
 "Número de \"bytes\" insuficientes para descodificar, ou o formato é inválido."
 
+msgid ""
+"Unable to load .NET runtime, no compatible version was found.\n"
+"Attempting to create/edit a project will lead to a crash.\n"
+"\n"
+"Please install the .NET SDK 6.0 or later from https://dotnet.microsoft.com/en-"
+"us/download and restart Godot."
+msgstr ""
+"Não foi possível carregar o .NET runtime, não foi encontrada uma versão "
+"compatível.\n"
+"A tentativa de criar/editar um projeto conduzirá a uma falha.\n"
+"\n"
+"Instale o .NET SDK 6.0 ou posterior a partir de https://dotnet.microsoft.com/"
+"en-us/download e reinicie o Godot."
+
 msgid "Failed to load .NET runtime"
 msgstr "Falha ao carregar tempo de execução .NET"
 
+msgid ""
+"Unable to find the .NET assemblies directory.\n"
+"Make sure the '%s' directory exists and contains the .NET assemblies."
+msgstr ""
+"Não foi possível encontrar o diretório de montagens .NET.\n"
+"Certifique-se que o diretório '%s' exista e contenha os montadores .NET."
+
 msgid ".NET assemblies not found"
 msgstr "Assemblies .NET não encontrados"
+
+msgid ""
+"Unable to load .NET runtime, specifically hostfxr.\n"
+"Attempting to create/edit a project will lead to a crash.\n"
+"\n"
+"Please install the .NET SDK 6.0 or later from https://dotnet.microsoft.com/en-"
+"us/download and restart Godot."
+msgstr ""
+"Não é possível carregar o tempo de execução do .NET, especificamente "
+"hostfxr.\n"
+"A tentativa de criar/editar um projeto levará a uma falha.\n"
+"\n"
+"Instale o .NET SDK 6.0 ou posterior de https://dotnet.microsoft.com/pt-br/"
+"download e reinicie o Godot."
 
 msgid "%d (%s)"
 msgstr "%d (%s)"
@@ -15210,6 +15306,14 @@ msgstr "Remover Propriedade"
 
 msgid "Property of this type not supported."
 msgstr "Propriedades desse tipo não são suportadas."
+
+msgctxt "Replication Mode"
+msgid "Never"
+msgstr "Nunca"
+
+msgctxt "Replication Mode"
+msgid "Always"
+msgstr "Sempre"
 
 msgid ""
 "A valid NodePath must be set in the \"Spawn Path\" property in order for "
@@ -15379,6 +15483,25 @@ msgid ""
 msgstr ""
 "Camadas de Composição OpenXR devem ter transformações orto-normalizadas (sem "
 "escala ou cortes)."
+
+msgid ""
+"Hole punching won't work as expected unless the sort order is less than zero."
+msgstr ""
+"A perfuração não funcionará como esperado, a menos que a ordem de "
+"classificação seja menor que zero."
+
+msgid "Package segments must be of non-zero length."
+msgstr "Os segmentos do Pacote devem ter comprimento diferente de zero."
+
+msgid "A digit cannot be the first character in a package segment."
+msgstr "Um dígito não pode ser o primeiro caractere em um segmento de pacote."
+
+msgid "The character '%s' cannot be the first character in a package segment."
+msgstr ""
+"O caractere '%s' não pode ser o primeiro caractere em um segmento de pacote."
+
+msgid "The package must have at least one '.' separator."
+msgstr "O pacote deve ter pelo menos um  '.'  como separador."
 
 msgid "Error creating keystores directory:"
 msgstr "Erro ao criar diretório keystores:"
@@ -17250,6 +17373,9 @@ msgstr ""
 "O modo de precisão `%s` não está disponível para o perfil "
 "`gl_compatibility`.\n"
 "Revertido à precisão `None`."
+
+msgid "'%s' default color is incompatible with '%s' source."
+msgstr "A cor padrão de '%s' é incompatível com a fonte '%s'."
 
 msgid "Default Color"
 msgstr "Cor Padrão"

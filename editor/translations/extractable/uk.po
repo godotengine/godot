@@ -19,6 +19,9 @@ msgstr ""
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Generator: Weblate 5.4-dev\n"
 
+msgid "Pick a color from the application window."
+msgstr "Вибрати колір з вікна програми."
+
 msgid ""
 "Color: #%s\n"
 "LMB: Apply color\n"
@@ -38,9 +41,6 @@ msgstr ""
 msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
 msgstr ""
 "Введите шестнадцатеричный код (\"#ff0000\") или названный цвет (\"красный\")."
-
-msgid "Pick a color from the application window."
-msgstr "Вибрати колір з вікна програми."
 
 msgid "Select a picker shape."
 msgstr "Виберіть фігуру вибору."

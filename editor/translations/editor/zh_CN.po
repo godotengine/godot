@@ -105,7 +105,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2024-07-23 03:39+0000\n"
+"PO-Revision-Date: 2024-08-01 02:20+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -956,6 +956,9 @@ msgstr "轨道路径无效，因此无法添加关键帧。"
 
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "轨道不是 Node3D 类型，无法插入关键帧"
+
+msgid "Track is not of type MeshInstance3D, can't insert key"
+msgstr "轨道不是 MeshInstance3D 类型，无法插入关键帧"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr "轨道路径无效，所以无法添加方法帧。"
@@ -10323,6 +10326,12 @@ msgstr ""
 "编辑模式\n"
 "在关节处显示按钮。"
 
+msgid "Insert key (based on mask) for bones with an existing track."
+msgstr "为已存在轨道的骨骼插入关键帧（基于遮罩）。"
+
+msgid "Insert key (based on mask) for all bones."
+msgstr "为所有骨骼插入关键帧（基于遮罩）。"
+
 msgid "Insert Key (All Bones)"
 msgstr "插入关键帧（所有骨骼）"
 
@@ -13721,6 +13730,9 @@ msgid ""
 "recommended."
 msgstr "所选路径不为空。强烈建议选择一个空文件夹。"
 
+msgid "New Game Project"
+msgstr "新建游戏项目"
+
 msgid "Supports desktop platforms only."
 msgstr "仅支持桌面平台。"
 
@@ -13795,9 +13807,6 @@ msgstr "以下文件无法从包中提取："
 msgid ""
 "Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr "无法加载位于“%s”的项目（错误 %d）。项目可能缺失或已损坏。"
-
-msgid "New Game Project"
-msgstr "新建游戏项目"
 
 msgid "Import & Edit"
 msgstr "导入并编辑"
@@ -14813,8 +14822,45 @@ msgstr "导出设置："
 msgid "glTF 2.0 Scene..."
 msgstr "glTF 2.0 场景..."
 
+msgid "Path does not point to a valid executable."
+msgstr "路径未指向有效的可执行文件。"
+
+msgid "Couldn't run Blender executable."
+msgstr "无法运行 Blender 可执行文件。"
+
+msgid "Unexpected --version output from Blender executable at: %s."
+msgstr "位于 %s 的 Blender 可执行文件的 --version 输出与预期不符。"
+
+msgid "Couldn't extract version information from Blender executable at: %s."
+msgstr "无法提取位于 %s 的 Blender 可执行文件的版本。"
+
+msgid ""
+"Found Blender version %d.x, which is too old for this importer (3.0+ is "
+"required)."
+msgstr "检测到 Blender 版本为 %d.x，低于导入器的要求（不是 3.0+）。"
+
+msgid "Path to Blender executable is valid (Autodetected)."
+msgstr "Blender 可执行文件路径有效（自动检测）。"
+
+msgid "Path to Blender executable is valid."
+msgstr "Blender 可执行文件路径有效。"
+
 msgid "Configure Blender Importer"
 msgstr "配置 Blender 导入器"
+
+msgid ""
+"Blender 3.0+ is required to import '.blend' files.\n"
+"Please provide a valid path to a Blender executable."
+msgstr ""
+"导入“.blend”文件需要至少 Blender 3.0 版本。\n"
+"请提供有效的 Blender 可执行文件路径。"
+
+msgid ""
+"On macOS, this should be the `Contents/MacOS/blender` file within the Blender "
+"`.app` folder."
+msgstr ""
+"在 macOS 上，该路径应为 Blender `.app` 文件夹中的 `Contents/MacOS/blender` 文"
+"件。"
 
 msgid "Disable '.blend' Import"
 msgstr "禁用“.blend”导入"
@@ -16042,6 +16088,9 @@ msgid ""
 "Could not start codesign executable, make sure Xcode command line tools are "
 "installed."
 msgstr "无法启动 codesign 可执行文件，请确保已安装 Xcode 命令行工具。"
+
+msgid "Cannot sign directory %s."
+msgstr "无法签名目录 %s。"
 
 msgid "Cannot sign file %s."
 msgstr "无法签名文件 %s。"
@@ -17375,15 +17424,22 @@ msgid ""
 "Sampler argument %d of function '%s' called more than once using both built-"
 "ins and uniform textures, this is not supported (use either one or the other)."
 msgstr ""
-"采样器参数 %d：函数“%s”有多次调用，同时使用了内置和 uniform 纹理，不支持这种用"
-"法（请在其中选择一种使用）。"
+"采样器参数 %d 在函数“%s”中存在多次调用，同时使用了内置和 uniform 纹理，不支持"
+"这种用法（请在其中选择一种使用）。"
+
+msgid ""
+"Sampler argument %d of function '%s' called more than once using textures "
+"that differ in either filter, repeat, or texture hint setting."
+msgstr ""
+"采样器参数 %d 在函数“%s”中存在多次调用，调用时所使用纹理过滤、纹理重复或纹理提"
+"示设置不同。"
 
 msgid ""
 "Sampler argument %d of function '%s' called more than once using different "
 "built-ins. Only calling with the same built-in is supported."
 msgstr ""
-"采样器参数 %d：函数“%s”有多次调用，使用的内置不同。仅支持使用相同的内置进行调"
-"用。"
+"采样器参数 %d 在函数“%s”中存在多次调用，调用时使用的内置不同。仅支持使用相同的"
+"内置进行调用。"
 
 msgid "Array size is already defined."
 msgstr "数组大小已定义。"

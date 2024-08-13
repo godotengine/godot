@@ -61,13 +61,14 @@
 # RYP <rizkysaputrapakpahan@gmail.com>, 2024.
 # Hajir Asyafi <hajirasyafi@gmail.com>, 2024.
 # Azizkhasyi 11 <azizkhasyi11@gmail.com>, 2024.
+# "@andiDermawan" <andidermawan2004@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-04 12:08+0000\n"
-"Last-Translator: Azizkhasyi 11 <azizkhasyi11@gmail.com>\n"
+"PO-Revision-Date: 2024-08-03 22:03+0000\n"
+"Last-Translator: \"@andiDermawan\" <andidermawan2004@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -226,6 +227,15 @@ msgstr "Tombol Joystick %d"
 
 msgid "Pressure:"
 msgstr "Tekanan:"
+
+msgid "canceled"
+msgstr "dibatalkan"
+
+msgid "touched"
+msgstr "disentuh"
+
+msgid "released"
+msgstr "Dirilis"
 
 msgid "Screen %s at (%s) with %s touch points"
 msgstr "Layar %s pada (%s) dengan titik sentuh %s"
@@ -489,6 +499,9 @@ msgstr "Kembalikan Tindakan"
 msgid "Add Event"
 msgstr "Tambah Event"
 
+msgid "Remove Action"
+msgstr "Hapus Aksi"
+
 msgid "Cannot Remove Action"
 msgstr "Tidak Dapat Menghapus Tindakan"
 
@@ -530,6 +543,12 @@ msgstr "Sisipkan Key Disini"
 
 msgid "Duplicate Selected Key(s)"
 msgstr "Duplikat Key Terpilih"
+
+msgid "Copy Selected Key(s)"
+msgstr "Salin Kunci Yang Dipilih"
+
+msgid "Paste Key(s)"
+msgstr "Tempel Kunci"
 
 msgid "Delete Selected Key(s)"
 msgstr "Hapus Kunci Terpilih"
@@ -789,6 +808,12 @@ msgstr "Masukkan Kunci..."
 msgid "Duplicate Key(s)"
 msgstr "Duplikat Key"
 
+msgid "Cut Key(s)"
+msgstr "Potong Kunci"
+
+msgid "Copy Key(s)"
+msgstr "Salin Kunci"
+
 msgid "Add RESET Value(s)"
 msgstr "Tambahkan Nilai RESET"
 
@@ -885,6 +910,9 @@ msgstr "Tidak bisa menambahkan key karena path pada track tidak sah."
 
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "Trek bukan tipe Node3D, tidak dapat memasukkan kunci"
+
+msgid "Track is not of type MeshInstance3D, can't insert key"
+msgstr "Trek bukan tipe MeshInstance3D, tidak dapat memasukkan kunci"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr ""
@@ -1018,6 +1046,9 @@ msgstr "Detik"
 msgid "FPS"
 msgstr "FPS"
 
+msgid "Fit to panel"
+msgstr "Mengepaskan ke Panel"
+
 msgid "Edit"
 msgstr "Sunting"
 
@@ -1033,14 +1064,38 @@ msgstr "Seleksi Skala..."
 msgid "Scale From Cursor..."
 msgstr "Skala dari Kursor..."
 
+msgid "Set Start Offset (Audio)"
+msgstr "Atur Offset Awal (Audio)"
+
+msgid "Set End Offset (Audio)"
+msgstr "Atur Offset Akhir (Audio)"
+
 msgid "Make Easing Selection..."
 msgstr "Lakukan Seleksi Easing..."
+
+msgid "Duplicate Selected Keys"
+msgstr "Duplikat Key Yang Terpilih"
+
+msgid "Cut Selected Keys"
+msgstr "Potong Kunci Yang Terpilih"
+
+msgid "Copy Selected Keys"
+msgstr "Salin Kunci Yang Terpilih"
+
+msgid "Paste Keys"
+msgstr "Tempelkan Kunci"
+
+msgid "Move First Selected Key to Cursor"
+msgstr "Pindahkan Key Pertama Yang Terpilih ke Kursor"
+
+msgid "Move Last Selected Key to Cursor"
+msgstr "Pindahkan Key Terakhir Yang Terpilih ke Kursor"
 
 msgid "Delete Selection"
 msgstr "Hapus Pilihan"
 
 msgid "Go to Next Step"
-msgstr "Pergi ke Langkah Berikutnya"
+msgstr "Pergi ke Langkah Selanjutnya"
 
 msgid "Go to Previous Step"
 msgstr "Pergi ke Langkah Sebelumnya"
@@ -1048,11 +1103,17 @@ msgstr "Pergi ke Langkah Sebelumnya"
 msgid "Apply Reset"
 msgstr "Terapkan Reset"
 
+msgid "Optimize Animation (no undo)..."
+msgstr "Optimalkan Animasi (tanpa undo)..."
+
+msgid "Clean-Up Animation (no undo)..."
+msgstr "Bersihkan Animasi (tanpa undo)..."
+
 msgid "Pick a node to animate:"
-msgstr "Pilih node yang ingin dianimasikan:"
+msgstr "Pilih sebuah node yang ingin dianimasikan:"
 
 msgid "Use Bezier Curves"
-msgstr "Gunakan Lengkungan Bezier"
+msgstr "Gunakan Bezier Curves"
 
 msgid "Create RESET Track(s)"
 msgstr "Buat RESET Track"
@@ -1088,7 +1149,7 @@ msgid "Clean-up all animations"
 msgstr "Bersihkan semua animasi"
 
 msgid "Clean-Up Animation(s) (NO UNDO!)"
-msgstr "Bersihkan Animasi (Tidak Dapat Dikembalikan!)"
+msgstr "Bersihkan Animasi (TANPA UNDO!)"
 
 msgid "Clean-Up"
 msgstr "Bersihkan"
@@ -10712,6 +10773,9 @@ msgstr ""
 msgid "The path specified doesn't exist."
 msgstr "Lokasi yang ditentukan tidak ada."
 
+msgid "New Game Project"
+msgstr "Proyek Baru Permainan"
+
 msgid "Couldn't create project.godot in project path."
 msgstr "Tidak dapat membuat project.godot dalam lokasi proyek."
 
@@ -10720,9 +10784,6 @@ msgstr "Gagal saat membuka paket, tidak dalam bentuk zip."
 
 msgid "The following files failed extraction from package:"
 msgstr "Berkas berikut gagal diekstrak dari paket:"
-
-msgid "New Game Project"
-msgstr "Proyek Baru Permainan"
 
 msgid "Import & Edit"
 msgstr "Impor & Ubah"

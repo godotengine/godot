@@ -13965,6 +13965,9 @@ msgid ""
 msgstr ""
 "O caminho selecionado não está vazio. É recomendado escolher uma pasta vazia."
 
+msgid "New Game Project"
+msgstr "Novo Projeto de Jogo"
+
 msgid "Supports desktop platforms only."
 msgstr "Suporta apenas plataformas de desktop."
 
@@ -14038,9 +14041,6 @@ msgid ""
 msgstr ""
 "Não foi possível carregar project.godot em '%s' (erro %d). Ele pode estar "
 "ausente ou corrompido."
-
-msgid "New Game Project"
-msgstr "Novo Projeto de Jogo"
 
 msgid "Import & Edit"
 msgstr "Importar & Editar"

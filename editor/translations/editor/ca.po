@@ -23,13 +23,15 @@
 # Francesc Arpi Roca <francesc.arpi@gmail.com>, 2024.
 # bene toff <benetoffix@gmail.com>, 2024.
 # pc <polct50@users.noreply.hosted.weblate.org>, 2024.
+# sprin <graham32@tutamail.com>, 2024.
+# Azor Carreras Alcaraz <azorcarreras@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-16 19:57+0000\n"
-"Last-Translator: pc <polct50@users.noreply.hosted.weblate.org>\n"
+"PO-Revision-Date: 2024-08-07 15:09+0000\n"
+"Last-Translator: Azor Carreras Alcaraz <azorcarreras@gmail.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
 "Language: ca\n"
@@ -363,6 +365,9 @@ msgstr "Selecciona la paraula sota el cursor"
 msgid "Add Selection for Next Occurrence"
 msgstr "Afegeix la selecció per la següent ocurrència"
 
+msgid "Skip Selection for Next Occurrence"
+msgstr "Omet la selecció per la següent ocurrència"
+
 msgid "Clear Carets and Selection"
 msgstr "Esborra els cursors i la Selecció"
 
@@ -469,6 +474,9 @@ msgstr "Afegeix un Esdeveniment"
 msgid "Remove Event"
 msgstr "Elimina Esdeveniment"
 
+msgid "Filter by Name"
+msgstr "Filtra pel nom"
+
 msgid "Clear All"
 msgstr "Neteja-ho tot"
 
@@ -504,6 +512,9 @@ msgstr "Insereix una Clau aquí"
 
 msgid "Duplicate Selected Key(s)"
 msgstr "Duplica les Claus seleccionades"
+
+msgid "Copy Selected Key(s)"
+msgstr "Copia les Claus seleccionades"
 
 msgid "Paste Key(s)"
 msgstr "Enganxar les Claus"
@@ -860,6 +871,9 @@ msgstr "El camí de la Pista no és vàlid i per tant no s'hi poden afegir claus
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "La pista no és de tipus Node3D, no s'hi pot inserir la clau"
 
+msgid "Track is not of type MeshInstance3D, can't insert key"
+msgstr "La pista no és de tipus MeshInstance3D, no s'hi pot inserir la clau"
+
 msgid "Track path is invalid, so can't add a method key."
 msgstr "No s'hi pot afegit cap clau de mètode. El camí de la pista no és vàlid."
 
@@ -929,6 +943,20 @@ msgstr ""
 "Algunes opcions, com la repetició, poden trobar-s'hi. Per afegir-hi pistes "
 "personalitzades, activeu \"Desa en un fitxer\" i\n"
 "\"Mantingues les pistes personalitzades\"."
+
+msgid ""
+"Some AnimationPlayerEditor's options are disabled since this is the dummy "
+"AnimationPlayer for preview.\n"
+"\n"
+"The dummy player is forced active, non-deterministic and doesn't have the "
+"root motion track. Furthermore, the original node is inactive temporary."
+msgstr ""
+"Algunes opcions del AnimationPlayerEditor estan deshabilitades ja que aquesta "
+"és una previsualització del AnimationPlayer de prova.\n"
+"\n"
+"El reproductor de prova està actiu de manera forçada, no determinista i no té "
+"la pista de seguiment del moviment. A mes, el node original está inactiu de "
+"manera temporal."
 
 msgid "AnimationPlayer is inactive. The playback will not be processed."
 msgstr "AnimationPlayer està inactiu. El playback no serà processat."
@@ -5707,6 +5735,9 @@ msgstr "Treu-los tots"
 msgid "It would be a good idea to name your project."
 msgstr "Fóra bo anomenar el projecte."
 
+msgid "New Game Project"
+msgstr "Nou Projecte de Joc"
+
 msgid "Couldn't create project.godot in project path."
 msgstr "No es pot crear el fitxer 'project.godot' en el camí del projecte."
 
@@ -5716,9 +5747,6 @@ msgstr ""
 
 msgid "The following files failed extraction from package:"
 msgstr "Ha fracassat l'extracció del paquet dels següents fitxers:"
-
-msgid "New Game Project"
-msgstr "Nou Projecte de Joc"
 
 msgid "Import & Edit"
 msgstr "Importa i Edita"
