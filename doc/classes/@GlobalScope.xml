@@ -2030,16 +2030,16 @@
 			Help key.
 		</constant>
 		<constant name="KEY_BACK" value="4194376" enum="Key">
-			Media back key. Not to be confused with the Back button on an Android device.
+			Back key.
 		</constant>
 		<constant name="KEY_FORWARD" value="4194377" enum="Key">
-			Media forward key.
+			Forward key.
 		</constant>
 		<constant name="KEY_STOP" value="4194378" enum="Key">
 			Media stop key.
 		</constant>
 		<constant name="KEY_REFRESH" value="4194379" enum="Key">
-			Media refresh key.
+			Refresh key.
 		</constant>
 		<constant name="KEY_VOLUMEDOWN" value="4194380" enum="Key">
 			Volume down key.
