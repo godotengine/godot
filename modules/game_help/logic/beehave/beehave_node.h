@@ -5,6 +5,14 @@
 class BeehaveNode : public RefCounted
 {
     GDCLASS(BeehaveNode, RefCounted);
+    static void bind_methods()
+    {
+        ClassDB::bind_method(D_METHOD("set_children"), &BeehaveNode::set_children);
+        ClassDB::bind_method(D_METHOD("get_children"), &BeehaveNode::get_children);
+
+
+        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "children", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("BeehaveNode"), PROPERTY_USAGE_NO_EDITOR), "set_children", "get_children");
+    }
 public:
     enum SequenceRunState
     {
@@ -77,6 +85,29 @@ public:
 	{
 		return StringName(String::num_int64((uint64_t)get_instance_id()));
 	}
+    void add_child(Ref<BeehaveNode> p_child)
+    {
+        children.push_back(p_child);
+    }
+public:
+    void set_children(TypedArray<BeehaveNode> p_children)
+    {
+        children.clear();
+        for(uint32_t i = 0; i < p_children.size(); ++i)
+        {
+            children.push_back(p_children[i]);
+        }
+    }
+
+    TypedArray<BeehaveNode> get_children()
+    {
+        TypedArray<BeehaveNode> rs;
+        for(uint32_t i = 0; i < children.size(); ++i)
+        {
+            rs.push_back(children[i]);
+        }
+        return rs;
+    }
 
 
     LocalVector<Ref<BeehaveNode>> children;

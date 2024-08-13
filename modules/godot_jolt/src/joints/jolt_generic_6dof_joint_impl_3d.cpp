@@ -635,33 +635,41 @@ void JoltGeneric6DOFJointImpl3D::_update_spring_equilibrium(int32_t p_axis) {
 
 void JoltGeneric6DOFJointImpl3D::_limits_changed() {
 	rebuild();
+	_wake_up_bodies();
 }
 
 void JoltGeneric6DOFJointImpl3D::_limit_spring_parameters_changed(int32_t p_axis) {
 	_update_limit_spring_parameters(p_axis);
+	_wake_up_bodies();
 }
 
 void JoltGeneric6DOFJointImpl3D::_motor_state_changed(int32_t p_axis) {
 	_update_motor_state(p_axis);
 	_update_motor_limit(p_axis);
+	_wake_up_bodies();
 }
 
 void JoltGeneric6DOFJointImpl3D::_motor_speed_changed(int32_t p_axis) {
 	_update_motor_velocity(p_axis);
+	_wake_up_bodies();
 }
 
 void JoltGeneric6DOFJointImpl3D::_motor_limit_changed(int32_t p_axis) {
 	_update_motor_limit(p_axis);
+	_wake_up_bodies();
 }
 
 void JoltGeneric6DOFJointImpl3D::_spring_state_changed(int32_t p_axis) {
 	_update_motor_state(p_axis);
+	_wake_up_bodies();
 }
 
 void JoltGeneric6DOFJointImpl3D::_spring_parameters_changed(int32_t p_axis) {
 	_update_spring_parameters(p_axis);
+	_wake_up_bodies();
 }
 
 void JoltGeneric6DOFJointImpl3D::_spring_equilibrium_changed(int32_t p_axis) {
 	_update_spring_equilibrium(p_axis);
+	_wake_up_bodies();
 }

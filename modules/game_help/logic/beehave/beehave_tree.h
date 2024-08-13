@@ -6,6 +6,13 @@
 class BeehaveTree : public Resource
 {
     GDCLASS(BeehaveTree, Resource);
+    static void _bind_methods()
+    {
+        ClassDB::bind_method(D_METHOD("set_root_node", "root_node"), &BeehaveTree::set_root_node);
+        ClassDB::bind_method(D_METHOD("get_root_node"), &BeehaveTree::get_root_node);
+
+        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "root_node", PROPERTY_HINT_RESOURCE_TYPE, "BeehaveNode"), "set_root_node", "get_root_node");
+    }
     enum Status { SUCCESS, FAILURE, RUNNING };
 public:
     // 初始化
@@ -76,6 +83,8 @@ public:
     }
 
 public:
+
+    ObjectID last_editor_id;
 
     Ref<BeehaveNode> root_node;
     float tick_rate = 0.1f;

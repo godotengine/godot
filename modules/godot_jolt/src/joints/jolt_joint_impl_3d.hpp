@@ -60,6 +60,8 @@ protected:
 		Transform3D& p_shifted_ref_b
 	);
 
+	void _wake_up_bodies();
+
 	void _update_enabled();
 
 	void _update_iterations();

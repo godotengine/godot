@@ -227,7 +227,4 @@ public:
 
 	float GetVolume() const override { return mInnerShape->GetVolume(); }
 
-	bool IsValidScale(JPH::Vec3Arg p_scale) const override {
-		return mInnerShape->IsValidScale(p_scale);
-	}
 };

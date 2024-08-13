@@ -190,6 +190,16 @@ void JoltJointImpl3D::_shift_reference_frames(
 	p_shifted_ref_b = Transform3D(basis_b, origin_b);
 }
 
+void JoltJointImpl3D::_wake_up_bodies() {
+	if (body_a != nullptr) {
+		body_a->wake_up();
+	}
+
+	if (body_b != nullptr) {
+		body_b->wake_up();
+	}
+}
+
 void JoltJointImpl3D::_update_enabled() {
 	if (jolt_ref != nullptr) {
 		jolt_ref->SetEnabled(enabled);
@@ -205,10 +215,12 @@ void JoltJointImpl3D::_update_iterations() {
 
 void JoltJointImpl3D::_enabled_changed() {
 	_update_enabled();
+	_wake_up_bodies();
 }
 
 void JoltJointImpl3D::_iterations_changed() {
 	_update_iterations();
+	_wake_up_bodies();
 }
 
 String JoltJointImpl3D::_bodies_to_string() const {

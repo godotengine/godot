@@ -365,24 +365,30 @@ void JoltConeTwistJointImpl3D::_update_twist_motor_limit() {
 
 void JoltConeTwistJointImpl3D::_limits_changed() {
 	rebuild();
+	_wake_up_bodies();
 }
 
 void JoltConeTwistJointImpl3D::_swing_motor_state_changed() {
 	_update_swing_motor_state();
+	_wake_up_bodies();
 }
 
 void JoltConeTwistJointImpl3D::_twist_motor_state_changed() {
 	_update_twist_motor_state();
+	_wake_up_bodies();
 }
 
 void JoltConeTwistJointImpl3D::_motor_velocity_changed() {
 	_update_motor_velocity();
+	_wake_up_bodies();
 }
 
 void JoltConeTwistJointImpl3D::_swing_motor_limit_changed() {
 	_update_swing_motor_limit();
+	_wake_up_bodies();
 }
 
 void JoltConeTwistJointImpl3D::_twist_motor_limit_changed() {
 	_update_twist_motor_limit();
+	_wake_up_bodies();
 }

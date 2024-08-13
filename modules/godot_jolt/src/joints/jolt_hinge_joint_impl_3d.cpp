@@ -396,20 +396,25 @@ void JoltHingeJointImpl3D::_update_motor_limit() {
 
 void JoltHingeJointImpl3D::_limits_changed() {
 	rebuild();
+	_wake_up_bodies();
 }
 
 void JoltHingeJointImpl3D::_limit_spring_changed() {
 	rebuild();
+	_wake_up_bodies();
 }
 
 void JoltHingeJointImpl3D::_motor_state_changed() {
 	_update_motor_state();
+	_wake_up_bodies();
 }
 
 void JoltHingeJointImpl3D::_motor_speed_changed() {
 	_update_motor_velocity();
+	_wake_up_bodies();
 }
 
 void JoltHingeJointImpl3D::_motor_limit_changed() {
 	_update_motor_limit();
+	_wake_up_bodies();
 }

@@ -1,9 +1,14 @@
 #pragma once
 
 #include "modules/game_help/logic/beehave/beehave_tree.h"
-#include "scene/gui/graph_edit.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/image_texture.h"
+#include "editor/editor_node.h"
+#include "editor/editor_properties.h"
+#include "editor/inspector_dock.h"
+#include "scene/gui/graph_edit_arranger.h"
+#include "scene/gui/view_panner.h"
+#include "scene/gui/graph_edit.h"
 
 class BeehaveGraphFrames : public RefCounted
 {
@@ -1033,4 +1038,308 @@ protected:
 	LocalVector<BeehaveGraphNodes*> active_nodes;
 	Ref<BeehaveGraphFrames> frames;
 	Button* layout_button;
+};
+
+// 设置编辑的对象
+class BeehaveNodeChildChildEditor : public EditorPropertyArray {
+	GDCLASS(BeehaveNodeChildChildEditor, EditorPropertyArray);
+
+
+public:
+	void setup(Ref<BeehaveNode> p_beehave_node,StringName property_name,Variant::Type p_array_type, const String &p_hint_string = "")
+	{
+		beehave_node = p_beehave_node;
+		set_object_and_property(p_beehave_node.ptr(),property_name);
+		base_class_type::setup(p_array_type,p_hint_string);
+		// 关闭内置的增加节点按钮
+		button_add_item->set_visible(false);
+	}	void on_reorder_button_gui_input(const Ref<InputEvent> &p_event)
+	{
+		_reorder_button_gui_input(p_event);
+	}
+	void on_reorder_button_up()
+	{
+		_reorder_button_up();
+	}
+	void on_reorder_button_down(int p_idx)
+	{
+		_reorder_button_down(p_idx);
+	}
+	void on_change_type(Object *p_button, int p_slot_index)
+	{
+		_change_type(p_button,p_slot_index);
+	}
+	void on_remove_pressed(int p_idx)
+	{
+		_remove_pressed(p_idx);
+	}
+	void on_update_state()
+	{
+	}
+	virtual void _on_clear_slots()
+	{
+	}
+	virtual void _create_new_property_slot() override
+	{
+		int idx = slots.size();
+		HBoxContainer *hbox = memnew(HBoxContainer);
+
+		Button *reorder_button = memnew(Button);
+		reorder_button->set_icon(get_editor_theme_icon(SNAME("TripleBar")));
+		reorder_button->set_default_cursor_shape(Control::CURSOR_MOVE);
+		reorder_button->set_disabled(is_read_only());
+		reorder_button->connect(SceneStringName(gui_input), callable_mp(this, &BeehaveNodeChildChildEditor::on_reorder_button_gui_input));
+		reorder_button->connect(SNAME("button_up"), callable_mp(this, &BeehaveNodeChildChildEditor::on_reorder_button_up));
+		reorder_button->connect(SNAME("button_down"), callable_mp(this, &BeehaveNodeChildChildEditor::on_reorder_button_down).bind(idx));
+
+		hbox->add_child(reorder_button);
+		EditorProperty *prop = memnew(EditorPropertyNil);
+		hbox->add_child(prop);
+
+		// 增加状态按钮
+
+		bool is_untyped_array = object->get_array().get_type() == Variant::ARRAY && subtype == Variant::NIL;
+
+		if (is_untyped_array) {
+			Button *edit_btn = memnew(Button);
+			edit_btn->set_icon(get_editor_theme_icon(SNAME("Edit")));
+			edit_btn->set_disabled(is_read_only());
+			edit_btn->connect(SceneStringName(pressed), callable_mp(this, &BeehaveNodeChildChildEditor::on_change_type).bind(edit_btn, idx));
+			hbox->add_child(edit_btn);
+		} else {
+			Button *remove_btn = memnew(Button);
+			remove_btn->set_icon(get_editor_theme_icon(SNAME("Remove")));
+			remove_btn->set_disabled(is_read_only());
+			remove_btn->connect(SceneStringName(pressed), callable_mp(this, &BeehaveNodeChildChildEditor::on_remove_pressed).bind(idx));
+			hbox->add_child(remove_btn);
+		}
+		property_vbox->add_child(hbox);
+
+		EditorPropertyArray::Slot slot;
+		slot.prop = prop;
+		slot.object = object;
+		slot.container = hbox;
+		slot.reorder_button = reorder_button;
+		slot.state_button = nullptr;
+		slot.set_index(idx + page_index * page_length);
+		slots.push_back(slot);
+	}
+protected:
+	Ref<BeehaveNode> beehave_node;
+
+};
+
+
+
+class BeehaveGraphProperty : public VBoxContainer
+{
+	GDCLASS(BeehaveGraphProperty, VBoxContainer);
+public:
+	BeehaveGraphProperty()
+	{
+		set_custom_minimum_size(Vector2(300,200));
+
+		beehave_editor = memnew(BeehaveGraphEditor);
+		add_child(beehave_editor);
+		beehave_editor->set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
+		beehave_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+
+
+		sub_inspector = memnew(EditorInspector);
+		
+		sub_inspector->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+		sub_inspector->set_use_doc_hints(true);
+
+		sub_inspector->set_sub_inspector(true);
+		sub_inspector->set_property_name_style(InspectorDock::get_singleton()->get_property_name_style());
+
+		sub_inspector->connect("property_keyed", callable_mp(this, &BeehaveGraphProperty::_sub_inspector_property_keyed));
+		sub_inspector->connect("resource_selected", callable_mp(this, &BeehaveGraphProperty::_sub_inspector_resource_selected));
+		sub_inspector->connect("object_id_selected", callable_mp(this, &BeehaveGraphProperty::_sub_inspector_object_id_selected));
+		sub_inspector->set_keying(true);
+		sub_inspector->set_read_only(false);
+		sub_inspector->set_use_folding(false);
+
+		sub_inspector->set_mouse_filter(MOUSE_FILTER_STOP);
+
+		add_child(sub_inspector);
+
+
+		child_list = memnew(BeehaveNodeChildChildEditor);
+		beehave_editor->add_child(child_list);
+		child_list->setup(beehave_node, "children", Variant::OBJECT,  MAKE_RESOURCE_TYPE_HINT("BeehaveNode"));
+		child_list->set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
+		child_list->set_visible(false);
+	}
+	void setup(Ref<BeehaveTree> p_beehave_tree)
+	{
+		beehave_tree = p_beehave_tree;
+	}
+
+	
+	void BeehaveGraphProperty::_sub_inspector_property_keyed(const String &p_property, const Variant &p_value, bool p_advance) {
+		// The second parameter could be null, causing the event to fire with less arguments, so use the pointer call which preserves it.
+		const Variant args[3] = { String("children") + ":" + p_property, p_value, p_advance };
+		const Variant *argp[3] = { &args[0], &args[1], &args[2] };
+		emit_signalp(SNAME("property_keyed_with_value"), argp, 3);
+	}
+
+	void BeehaveGraphProperty::_sub_inspector_resource_selected(const Ref<RefCounted> &p_resource, const String &p_property) {
+		emit_signal(SNAME("resource_selected"), String("children") + ":" + p_property, p_resource);
+	}
+
+	void BeehaveGraphProperty::_sub_inspector_object_id_selected(int p_id) {
+		emit_signal(SNAME("object_id_selected"), "children", p_id);
+	}
+	void set_editor_node(Ref<BeehaveTree> p_beehave_tree,Ref<BeehaveNode> p_beehave_node)
+	{
+		beehave_tree = p_beehave_tree;
+		beehave_node = p_beehave_node;
+		beehave_tree->last_editor_id = beehave_node->get_instance_id();
+		sub_inspector->edit(beehave_node.ptr());
+	}
+
+	void create_leaf_pop_sub()
+	{
+		leaf_pop_sub = memnew(PopupMenu);
+
+		leaf_class_name.clear();
+		HashSet<StringName> leaf_class_name_set;
+		_add_allowed_type(SNAME("BeehaveLeaf"), &leaf_class_name_set);
+
+		for (const StringName &S : leaf_class_name_set) {
+			leaf_class_name.push_back(S);
+			leaf_pop_sub->add_item(S);
+		}
+		leaf_pop_sub->connect(SceneStringName(id_pressed), callable_mp(this, &BeehaveGraphProperty::on_leaf_pop_pressed));
+
+	}
+
+	void create_composite_pop_sub()
+	{
+		composite_pop_sub = memnew(PopupMenu);
+		composite_class_name.clear();
+		HashSet<StringName> composite_class_name_set;
+
+		_add_allowed_type(SNAME("BeehaveComposite"), &composite_class_name_set);
+		for (const StringName &S : composite_class_name_set) {
+			composite_class_name.push_back(S);
+			composite_pop_sub->add_item(S);
+		}
+
+		composite_pop_sub->connect(SceneStringName(id_pressed), callable_mp(this, &BeehaveGraphProperty::on_composite_pop_pressed));
+	}
+
+	void create_decorator_pop_sub()
+	{
+		decorator_pop_sub = memnew(PopupMenu);
+		decorator_class_name.clear();
+		HashSet<StringName> decorator_class_name_set;
+		_add_allowed_type(SNAME("BeehaveDecorator"), &decorator_class_name_set);
+		for (const StringName &S : decorator_class_name_set) {
+			decorator_class_name.push_back(S);
+			decorator_pop_sub->add_item(S);
+		}
+		decorator_pop_sub->connect(SceneStringName(id_pressed), callable_mp(this, &BeehaveGraphProperty::on_decorator_pop_pressed));
+	}
+
+	void on_leaf_pop_pressed(int p_op)
+	{
+		Ref<BeehaveLeaf> leaf = create_class_instance(leaf_class_name[p_op]);
+		if(leaf.is_valid())
+		{
+			beehave_node->add_child(leaf);
+			beehave_tree->notify_property_list_changed();
+		}
+	}
+
+	void on_composite_pop_pressed(int p_op)
+	{
+		Ref<BeehaveComposite> composite = create_class_instance(composite_class_name[p_op]);
+		if(composite.is_valid())
+		{
+			beehave_node->add_child(composite);
+			beehave_tree->notify_property_list_changed();
+		}
+	}
+	
+	void on_decorator_pop_pressed(int p_op)
+	{
+		Ref<BeehaveDecorator> decorator = create_class_instance(decorator_class_name[p_op]);
+		if(decorator.is_valid())
+		{
+			beehave_node->add_child(decorator);
+			beehave_tree->notify_property_list_changed();
+		}
+	}
+
+	Ref<RefCounted> create_class_instance(StringName p_class_name)
+	{
+		Variant obj;
+
+		if (ScriptServer::is_global_class(p_class_name)) {
+			obj = EditorNode::get_editor_data().script_class_instance(p_class_name);
+		} else {
+			obj = ClassDB::instantiate(p_class_name);
+		}
+
+		if (!obj) {
+			obj = EditorNode::get_editor_data().instantiate_custom_type(p_class_name, "Resource");
+		}
+
+		RefCounted *resp = Object::cast_to<RefCounted>(obj);
+		
+
+		return Ref<RefCounted>(resp);
+	}
+	
+	static void _add_allowed_type(const StringName &p_type, HashSet<StringName> *p_vector) {
+		if (p_vector->has(p_type)) {
+			// Already added
+			return;
+		}
+
+		if (ClassDB::class_exists(p_type)) {
+			// Engine class,
+
+			if (!ClassDB::is_virtual(p_type)) {
+				p_vector->insert(p_type);
+			}
+
+			List<StringName> inheriters;
+			ClassDB::get_inheriters_from_class(p_type, &inheriters);
+			for (const StringName &S : inheriters) {
+				_add_allowed_type(S, p_vector);
+			}
+		} else {
+			// Script class.
+			p_vector->insert(p_type);
+		}
+
+		List<StringName> inheriters;
+		ScriptServer::get_inheriters_list(p_type, &inheriters);
+		for (const StringName &S : inheriters) {
+			_add_allowed_type(S, p_vector);
+		}
+	}
+	
+protected:
+	Ref<BeehaveTree> beehave_tree;
+	Ref<BeehaveNode> beehave_node;
+	BeehaveGraphEditor* beehave_editor = nullptr;
+	EditorInspector* sub_inspector = nullptr;
+	BeehaveNodeChildChildEditor* child_list = nullptr;
+	Button* buton_create_beehave_node = nullptr;
+	PopupMenu* cteate_beehave_node_pop = nullptr;
+
+	PopupMenu* leaf_pop_sub = nullptr;
+	PopupMenu* composite_pop_sub = nullptr;
+	PopupMenu* decorator_pop_sub = nullptr;
+
+
+	LocalVector<StringName> leaf_class_name;
+	LocalVector<StringName> composite_class_name;
+	LocalVector<StringName> decorator_class_name;
+
+
 };

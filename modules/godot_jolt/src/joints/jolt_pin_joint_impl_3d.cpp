@@ -161,4 +161,5 @@ JPH::Constraint* JoltPinJointImpl3D::_build_pin(
 
 void JoltPinJointImpl3D::_points_changed() {
 	rebuild();
+	_wake_up_bodies();
 }
