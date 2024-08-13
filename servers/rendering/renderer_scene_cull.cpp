@@ -1636,6 +1636,8 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 		if (p_instance->scenario) {
 			RendererSceneOcclusionCull::get_singleton()->scenario_set_instance(p_instance->scenario->self, p_instance->self, p_instance->base, p_instance->transform, p_instance->visible);
 		}
+	} else if (p_instance->base_type == RS::INSTANCE_NONE) {
+		return;
 	}
 
 	if (!p_instance->aabb.has_surface()) {
