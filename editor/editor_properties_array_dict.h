@@ -156,6 +156,7 @@ protected:
 
 	bool updating = false;
 	bool dropping = false;
+	bool show_add = true;
 
 	static void _bind_methods();
 	void _notification(int p_what);
@@ -216,6 +217,7 @@ protected:
 
 	PopupMenu *change_type = nullptr;
 	bool updating = false;
+	bool show_add = true;
 
 	Ref<EditorPropertyDictionaryObject> object;
 	int page_length = 20;

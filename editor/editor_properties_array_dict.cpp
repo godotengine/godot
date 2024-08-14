@@ -395,11 +395,13 @@ void EditorPropertyArray::update_property() {
 			property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
 			vbox->add_child(property_vbox);
 
-			button_add_item = EditorInspector::create_inspector_action_button(TTR("Add Element"));
-			button_add_item->set_icon(get_editor_theme_icon(SNAME("Add")));
-			button_add_item->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_add_element));
-			button_add_item->set_disabled(is_read_only());
-			vbox->add_child(button_add_item);
+			if(show_add) {
+				button_add_item = EditorInspector::create_inspector_action_button(TTR("Add Element"));
+				button_add_item->set_icon(get_editor_theme_icon(SNAME("Add")));
+				button_add_item->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_add_element));
+				button_add_item->set_disabled(is_read_only());
+				vbox->add_child(button_add_item);
+			}
 
 			paginator = memnew(EditorPaginator);
 			paginator->connect("page_changed", callable_mp(this, &EditorPropertyArray::_page_changed));
@@ -1040,12 +1042,13 @@ void EditorPropertyDictionary::update_property() {
 
 			_create_new_property_slot(EditorPropertyDictionaryObject::NEW_KEY_INDEX);
 			_create_new_property_slot(EditorPropertyDictionaryObject::NEW_VALUE_INDEX);
-
-			button_add_item = EditorInspector::create_inspector_action_button(TTR("Add Key/Value Pair"));
-			button_add_item->set_icon(get_theme_icon(SNAME("Add"), EditorStringName(EditorIcons)));
-			button_add_item->set_disabled(is_read_only());
-			button_add_item->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyDictionary::_add_key_value));
-			add_vbox->add_child(button_add_item);
+			if(show_add) {
+				button_add_item = EditorInspector::create_inspector_action_button(TTR("Add Key/Value Pair"));
+				button_add_item->set_icon(get_theme_icon(SNAME("Add"), EditorStringName(EditorIcons)));
+				button_add_item->set_disabled(is_read_only());
+				button_add_item->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyDictionary::_add_key_value));
+				add_vbox->add_child(button_add_item);
+			}
 		}
 
 		int size = dict.size();

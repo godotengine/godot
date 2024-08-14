@@ -203,6 +203,7 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 
 
 		ClassDB::register_class<BeehaveNode>();
+		ClassDB::register_class<BeehaveTree>();
 		ClassDB::register_class<BeehaveComposite>();
 		ClassDB::register_class<BeehaveDecorator>();
 		ClassDB::register_class<BeehaveLeaf>();

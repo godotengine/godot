@@ -1046,14 +1046,17 @@ class BeehaveNodeChildChildEditor : public EditorPropertyArray {
 
 
 public:
+	BeehaveNodeChildChildEditor()
+	{
+		show_add = false;
+	}
 	void setup(Ref<BeehaveNode> p_beehave_node,StringName property_name,Variant::Type p_array_type, const String &p_hint_string = "")
 	{
 		beehave_node = p_beehave_node;
 		set_object_and_property(p_beehave_node.ptr(),property_name);
 		base_class_type::setup(p_array_type,p_hint_string);
-		// 关闭内置的增加节点按钮
-		button_add_item->set_visible(false);
-	}	void on_reorder_button_gui_input(const Ref<InputEvent> &p_event)
+	}
+	void on_reorder_button_gui_input(const Ref<InputEvent> &p_event)
 	{
 		_reorder_button_gui_input(p_event);
 	}
@@ -1174,6 +1177,8 @@ public:
 	void setup(Ref<BeehaveTree> p_beehave_tree)
 	{
 		beehave_tree = p_beehave_tree;
+		Ref<BeehaveNode> node = ObjectDB::get_instance(beehave_tree->last_editor_id); 
+		set_editor_node(p_beehave_tree, node);
 	}
 
 	

@@ -815,7 +815,7 @@ class GameHelpInspectorPlugin : public EditorInspectorPlugin
 		Ref<BeehaveTree> tree_object = p_object;
 		if (/* condition */tree_object.is_valid())
 		{
-			return ConditionList_ED::_parse_beehave_tree_property(this,root_object, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide);
+			return ConditionList_ED::_parse_beehave_tree_property(this,tree_object, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide);
 		}
 		return false;
 	}
