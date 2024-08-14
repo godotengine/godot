@@ -210,6 +210,13 @@ void Button::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
+			// Reshape and update size min. if text is invalidated by an external source (e.g., oversampling).
+			if (text_buf.is_valid() && !TS->shaped_text_is_ready(text_buf->get_rid())) {
+				_shape();
+
+				update_minimum_size();
+			}
+
 			const RID ci = get_canvas_item();
 			const Size2 size = get_size();
 
