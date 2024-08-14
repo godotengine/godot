@@ -119,6 +119,11 @@ Ref<Curve> Line2D::get_curve() const {
 	return _curve;
 }
 
+void Line2D::set_curve_offset(float curve_offset) {
+	_curve_offset = curve_offset;
+	queue_redraw();
+}
+
 Vector<Vector2> Line2D::get_points() const {
 	return _points;
 }
@@ -277,9 +282,61 @@ void Line2D::_draw() {
 	}
 
 	// TODO Maybe have it as member rather than copying parameters and allocating memory?
+
+	int num_segments = _curve.is_valid() ? _curve->get_bake_resolution() : -1;
+	if (static_cast<int>(_generated_draw_points.get_capacity()) < num_segments)
+		_generated_draw_points.reserve(num_segments);
+	_generated_draw_points.clear();
+
+	bool just_use_points = num_segments == -1;
+	// We have less segments than what's defined, so we just use the points.
+	if (just_use_points) {
+		_generated_draw_points = _points;
+	} else {
+		// Set the first and last points from our line data.
+		_generated_draw_points.push_back(_points[0]);
+
+		// TODO: Cache the memory somewhere so we don't keep allocating memory
+		int line_count = _closed ? len : len - 1;
+		LocalVector<float> dists_between_points;
+		LocalVector<Vector2> line_directions;
+		dists_between_points.reserve(line_count);
+		line_directions.reserve(line_count);
+
+		// Gather the total line length, with distances and directions for each sub-line
+		float total_line_length = 0.0f;
+		for (int i = 0; i < line_count; ++i) {
+			Vector2 line_dir = _points[(i + 1) % len] - _points[i];
+			float distance_bt_points = line_dir.length();
+			total_line_length += distance_bt_points;
+			dists_between_points.push_back(distance_bt_points);
+			line_directions.push_back(line_dir / distance_bt_points);
+		}
+
+		// Can't have negative segments!
+		float segment_length = total_line_length / MAX(1, static_cast<float>(num_segments));
+		for (int s = 0; s < line_count; ++s) {
+			int segments_for_line = static_cast<int>(Math::ceil(dists_between_points[s] / segment_length));
+
+			Vector2 line_start = _points[s];
+			Vector2 line_end = _points[(s + 1) % len];
+			float line_distance = dists_between_points[s];
+			_generated_draw_points.push_back(_points[s]);
+
+			if (segments_for_line > 1) {
+				for (int l = 1; l < segments_for_line; ++l) {
+					float current_length_from_line_start = segment_length * static_cast<float>(l);
+					_generated_draw_points.push_back(line_start + (line_end - line_start) * (current_length_from_line_start / line_distance));
+				}
+			}
+		}
+		// Set last point.
+		_generated_draw_points.push_back(_points[line_count % len]);
+	}
+
 	LineBuilder lb;
-	lb.points = _points;
-	lb.closed = _closed;
+	lb.closed = _closed && just_use_points;
+	lb.points = &_generated_draw_points;
 	lb.default_color = _default_color;
 	lb.gradient = *_gradient;
 	lb.texture_mode = _texture_mode;
@@ -290,6 +347,7 @@ void Line2D::_draw() {
 	lb.sharp_limit = _sharp_limit;
 	lb.width = _width;
 	lb.curve = *_curve;
+	lb.curve_offset = _curve_offset;
 
 	RID texture_rid;
 	if (_texture.is_valid()) {
@@ -358,6 +416,9 @@ void Line2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_curve", "curve"), &Line2D::set_curve);
 	ClassDB::bind_method(D_METHOD("get_curve"), &Line2D::get_curve);
 
+	ClassDB::bind_method(D_METHOD("set_curve_offset", "curve_offset"), &Line2D::set_curve_offset);
+	ClassDB::bind_method(D_METHOD("get_curve_offset"), &Line2D::get_curve_offset);
+
 	ClassDB::bind_method(D_METHOD("set_default_color", "color"), &Line2D::set_default_color);
 	ClassDB::bind_method(D_METHOD("get_default_color"), &Line2D::get_default_color);
 
@@ -392,6 +453,7 @@ void Line2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "closed"), "set_closed", "is_closed");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "width", PROPERTY_HINT_NONE, "suffix:px"), "set_width", "get_width");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "width_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve", "get_curve");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "curve_offset", PROPERTY_HINT_RANGE, "-1.0,1.0,0.01"), "set_curve_offset", "get_curve_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "default_color"), "set_default_color", "get_default_color");
 	ADD_GROUP("Fill", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gradient", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_gradient", "get_gradient");

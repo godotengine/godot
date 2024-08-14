@@ -85,6 +85,9 @@ public:
 	void set_curve(const Ref<Curve> &curve);
 	Ref<Curve> get_curve() const;
 
+	void set_curve_offset(float curve_offset);
+	float get_curve_offset() const { return _curve_offset; }
+
 	void set_default_color(Color color);
 	Color get_default_color() const;
 
@@ -127,12 +130,14 @@ private:
 
 private:
 	Vector<Vector2> _points;
+	LocalVector<Vector2> _generated_draw_points;
 	LineJointMode _joint_mode = LINE_JOINT_SHARP;
 	LineCapMode _begin_cap_mode = LINE_CAP_NONE;
 	LineCapMode _end_cap_mode = LINE_CAP_NONE;
 	bool _closed = false;
 	float _width = 10.0;
 	Ref<Curve> _curve;
+	float _curve_offset = 0.0f;
 	Color _default_color = Color(1, 1, 1);
 	Ref<Gradient> _gradient;
 	Ref<Texture2D> _texture;
