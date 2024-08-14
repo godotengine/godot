@@ -105,7 +105,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2024-08-01 02:20+0000\n"
+"PO-Revision-Date: 2024-08-13 23:09+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -3730,6 +3730,24 @@ msgstr "其他 %d 个文件"
 msgid ""
 "Unable to write to file '%s', file in use, locked or lacking permissions."
 msgstr "无法写入文件“%s”，文件被占用、已锁定、或权限不足。"
+
+msgid "Preparing scenes for reload"
+msgstr "正在准备场景重新加载"
+
+msgid "Analyzing scene %s"
+msgstr "正在分析场景 %s"
+
+msgid "Preparation done."
+msgstr "准备完成。"
+
+msgid "Scenes reloading"
+msgstr "正在重新加载场景"
+
+msgid "Reloading..."
+msgstr "正在重新加载..."
+
+msgid "Reloading done."
+msgstr "重新加载完成。"
 
 msgid ""
 "Changing the renderer requires restarting the editor.\n"
@@ -16606,6 +16624,18 @@ msgstr "Bone2D 节点仅适用于 Skeleton2D 节点或者另一个作为父节�
 msgid ""
 "This bone lacks a proper REST pose. Go to the Skeleton2D node and set one."
 msgstr "这根骨骼没有合适的放松姿势。请到 Skeleton2D 节点中设置一个。"
+
+msgid ""
+"The TileMap node is deprecated as it is superseded by the use of multiple "
+"TileMapLayer nodes.\n"
+"To convert a TileMap to a set of TileMapLayer nodes, open the TileMap bottom "
+"panel with this node selected, click the toolbox icon in the top-right corner "
+"and choose \"Extract TileMap layers as individual TileMapLayer nodes\"."
+msgstr ""
+"TileMap 节点被已弃用，由多个 TileMapLayer 节点代替。\n"
+"将 TileMap 节点转换为多个 TileMapLayer 节点：选中该节点后打开 TileMap 底部面"
+"板，点击右上角的工具箱图标，然后选择“将 TileMap 图层提取为独立的 TileMapLayer "
+"节点”。"
 
 msgid ""
 "A Y-sorted layer has the same Z-index value as a not Y-sorted layer.\n"

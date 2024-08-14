@@ -91,7 +91,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-08-12 20:46+0000\n"
+"PO-Revision-Date: 2024-08-13 23:09+0000\n"
 "Last-Translator: Micky <micheledevita2@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/it/>\n"
@@ -121,7 +121,7 @@ msgid "Version"
 msgstr "Versione"
 
 msgid "Run"
-msgstr "Esegui"
+msgstr "Esecuzione"
 
 msgid "Main Scene"
 msgstr "Scena principale"
@@ -373,7 +373,7 @@ msgid "Tooltip Delay (sec)"
 msgstr "Ritardo dei tooltip (sec)"
 
 msgid "Common"
-msgstr "Comune"
+msgstr "Comuni"
 
 msgid "Snap Controls to Pixels"
 msgstr "Scatta i nodi Control ai pixel"
@@ -673,7 +673,7 @@ msgid "Offset"
 msgstr "Scostamento"
 
 msgid "Cell Size"
-msgstr "Dimensione Cella"
+msgstr "Dimensione cella"
 
 msgid "Cell Shape"
 msgstr "Forma Cella"
@@ -763,7 +763,7 @@ msgid "Fake BiDi"
 msgstr "Usa BiDi falso"
 
 msgid "Expansion Ratio"
-msgstr "Ratio di espansione"
+msgstr "Rapporto di espansione"
 
 msgid "Prefix"
 msgstr "Prefisso"
@@ -799,10 +799,10 @@ msgid "Stream"
 msgstr "Flusso"
 
 msgid "Start Offset"
-msgstr "Scostamento Dall'Inizio"
+msgstr "Scostamento dall'inizio"
 
 msgid "End Offset"
-msgstr "Scostamento Dalla Fine"
+msgstr "Scostamento dalla fine"
 
 msgid "Easing"
 msgstr "Allentamento"
@@ -811,7 +811,7 @@ msgid "Debug Adapter"
 msgstr "Adattatore di debug"
 
 msgid "Remote Port"
-msgstr "Porta Remota"
+msgstr "Porta remota"
 
 msgid "Request Timeout"
 msgstr "Scadenza di richiesta (Timeout)"
@@ -832,16 +832,16 @@ msgid "Password"
 msgstr "Password"
 
 msgid "Default Feature Profile"
-msgstr "Profilo di Funzionalità Predefinito"
+msgstr "Profilo di funzionalità predefinito"
 
 msgid "Text Editor"
-msgstr "Editor di Testo"
+msgstr "Editor di testo"
 
 msgid "Help"
 msgstr "Aiuto"
 
 msgid "Sort Functions Alphabetically"
-msgstr "Ordina le Funzioni Alfabeticamente"
+msgstr "Ordina le funzioni alfabeticamente"
 
 msgid "Label"
 msgstr "Etichetta"
@@ -874,13 +874,13 @@ msgid "Theme"
 msgstr "Tema"
 
 msgid "Line Spacing"
-msgstr "Spaziatura Linee"
+msgstr "Spaziatura righe"
 
 msgid "Base Type"
 msgstr "Tipo di Base"
 
 msgid "Editable"
-msgstr "Elemento Modificabile"
+msgstr "Modificabile"
 
 msgid "Toggle Mode"
 msgstr "Modalità Interruttore"
@@ -898,7 +898,7 @@ msgid "Dock Tab Style"
 msgstr "Stile scheda di pannello"
 
 msgid "UI Layout Direction"
-msgstr "Direzione Layout UI"
+msgstr "Direzione di layout dell'UI"
 
 msgid "Display Scale"
 msgstr "Scala di visualizzazione"
@@ -916,7 +916,7 @@ msgid "Connection"
 msgstr "Connessione"
 
 msgid "Engine Version Update Mode"
-msgstr "Modalità di Aggiornamento Versione del Motore"
+msgstr "Modalità di aggiornamento versione del motore"
 
 msgid "Use Embedded Menu"
 msgstr "Usa menù integrato"
@@ -1620,6 +1620,12 @@ msgstr "Auto-rinomina tracce di animazione"
 msgid "Confirm Insert Track"
 msgstr "Conferma l'inserimento d'una traccia"
 
+msgid "Onion Layers Past Color"
+msgstr "Colore strati di cipolla precedenti"
+
+msgid "Onion Layers Future Color"
+msgstr "Colore strati di cipolla successivi"
+
 msgid "Shader Editor"
 msgstr "Editor di Shader"
 
@@ -1756,169 +1762,170 @@ msgid "Highlighting"
 msgstr "Evidenziazione"
 
 msgid "Symbol Color"
-msgstr "Colore simbolo"
+msgstr "Colore per i simboli"
 
 msgid "Keyword Color"
-msgstr "Colore parola chiave"
+msgstr "Colore per parola chiave"
 
 msgid "Control Flow Keyword Color"
-msgstr "Colore parola chiave del controllo di flusso"
+msgstr "Colore per parola chiave di controllo di flusso"
 
 msgid "Base Type Color"
-msgstr "Colore tipo di base"
+msgstr "Colore per tipo di base"
 
 msgid "Engine Type Color"
-msgstr "Colore tipo definito dal motore"
+msgstr "Colore per tipo definito dal motore"
 
 msgid "User Type Color"
-msgstr "Colore tipo definito dall'utente"
+msgstr "Colore per tipo definito dall'utente"
 
 msgid "Comment Color"
-msgstr "Colore commenti"
+msgstr "Colore per i commenti"
 
 msgid "Doc Comment Color"
-msgstr "Colore commenti per documentazione"
+msgstr "Colore per i commenti di documentazione"
 
 msgid "String Color"
-msgstr "Colore stringhe"
+msgstr "Colore per le stringhe"
 
 msgid "Background Color"
-msgstr "Colore sfondo"
+msgstr "Colore per lo sfondo"
 
 msgid "Completion Background Color"
-msgstr "Colore sfondo di completamento"
+msgstr "Colore per lo sfondo del completamento"
 
 msgid "Completion Selected Color"
-msgstr "Colore selezione del completamento"
+msgstr "Colore per la selezione del completamento"
 
 msgid "Completion Existing Color"
-msgstr "Colore parte esistente del completamento"
+msgstr "Colore per la parte esistente del completamento"
 
 msgid "Completion Scroll Color"
-msgstr "Colore scorrimento del completamento"
+msgstr "Colore per la barra di scorrimento del completamento"
 
 msgid "Completion Scroll Hovered Color"
-msgstr "Colore scorrimento del completamento al passaggio del mouse"
+msgstr ""
+"Colore al passaggio del mouse per la barra di scorrimento del completamento"
 
 msgid "Completion Font Color"
-msgstr "Colore carattere del completamento"
+msgstr "Colore per il carattere del completamento"
 
 msgid "Text Color"
-msgstr "Colore testo"
+msgstr "Colore per il testo"
 
 msgid "Line Number Color"
-msgstr "Colore numero di riga"
+msgstr "Colore per numero di riga"
 
 msgid "Safe Line Number Color"
-msgstr "Colore numero di riga sicura"
+msgstr "Colore per numero di riga sicura"
 
 msgid "Caret Color"
-msgstr "Colore cursore"
+msgstr "Colore per il cursore"
 
 msgid "Caret Background Color"
-msgstr "Colore sfondo del cursore"
+msgstr "Colore per lo sfondo del cursore"
 
 msgid "Text Selected Color"
-msgstr "Colore testo selezionato"
+msgstr "Colore per il testo selezionato"
 
 msgid "Selection Color"
-msgstr "Colore selezione"
+msgstr "Colore per la selezione"
 
 msgid "Brace Mismatch Color"
-msgstr "Colore mancata corrispondenza tra parentesi"
+msgstr "Colore per mancata corrispondenza tra parentesi"
 
 msgid "Current Line Color"
-msgstr "Colore riga attuale"
+msgstr "Colore per la riga attuale"
 
 msgid "Line Length Guideline Color"
-msgstr "Colore linea guida della lunghezza della riga"
+msgstr "Colore per la linea guida della lunghezza della riga"
 
 msgid "Word Highlighted Color"
-msgstr "Colore parola evidenziata"
+msgstr "Colore per parola evidenziata"
 
 msgid "Number Color"
-msgstr "Colore numero"
+msgstr "Colore per numero"
 
 msgid "Function Color"
-msgstr "Colore funzione"
+msgstr "Colore per funzione"
 
 msgid "Member Variable Color"
-msgstr "Colore variabile membro"
+msgstr "Colore per variabile membro"
 
 msgid "Bookmark Color"
-msgstr "Colore segnalibro"
+msgstr "Colore per segnalibro"
 
 msgid "Breakpoint Color"
-msgstr "Colore punti di interruzione"
+msgstr "Colore per punto di interruzione"
 
 msgid "Executing Line Color"
-msgstr "Colore linea in esecuzione"
+msgstr "Colore per la riga in esecuzione"
 
 msgid "Code Folding Color"
-msgstr "Colore compressione del codice"
+msgstr "Colore per righe di codice compresse"
 
 msgid "Folded Code Region Color"
-msgstr "Colore regione di codice chiusa"
+msgstr "Colore per una regione di codice chiusa"
 
 msgid "Search Result Color"
-msgstr "Colore risultati di ricerca"
+msgstr "Colore per i risultati di ricerca"
 
 msgid "Search Result Border Color"
-msgstr "Colore bordo dei risultati di ricerca"
+msgstr "Colore per il bordo dei risultati di ricerca"
 
 msgid "Connection Colors"
 msgstr "Colori per connessioni"
 
 msgid "Scalar Color"
-msgstr "Colore Scalare"
+msgstr "Colore per tipo scalare"
 
 msgid "Vector2 Color"
-msgstr "Colore Vector2"
+msgstr "Colore per tipo Vector2"
 
 msgid "Vector 3 Color"
-msgstr "Colore Vector 3"
+msgstr "Colore per tipo Vector 3"
 
 msgid "Vector 4 Color"
-msgstr "Colore Vector 4"
+msgstr "Colore per tipo Vector 4"
 
 msgid "Boolean Color"
-msgstr "Colore Booleano"
+msgstr "Colore per tipo booleano"
 
 msgid "Transform Color"
-msgstr "Colore Trasformazione"
+msgstr "Colore per tipo trasformazione"
 
 msgid "Sampler Color"
-msgstr "Colore Sampler"
+msgstr "Colore per tipo campionatore"
 
 msgid "Category Colors"
-msgstr "Colori Categorie"
+msgstr "Colori per le categorie"
 
 msgid "Output Color"
-msgstr "Colore Output"
+msgstr "Colore di uscita"
 
 msgid "Color Color"
-msgstr "Colore tipo Color"
+msgstr "Colore per tipo Color"
 
 msgid "Conditional Color"
-msgstr "Colore Condizionale"
+msgstr "Colore per condizionale"
 
 msgid "Input Color"
-msgstr "Colore Input"
+msgstr "Colore di ingresso"
 
 msgid "Textures Color"
-msgstr "Colore Texture"
+msgstr "Colore per le texture"
 
 msgid "Utility Color"
-msgstr "Colore Utilità"
+msgstr "Colore per utilità"
 
 msgid "Vector Color"
-msgstr "Colore Vector"
+msgstr "Colore per tipo vettore"
 
 msgid "Special Color"
-msgstr "Colore Speciale"
+msgstr "Colore speciale"
 
 msgid "Particle Color"
-msgstr "Colore Particella"
+msgstr "Colore per particella"
 
 msgid "Custom Template"
 msgstr "Modello personalizzato"
@@ -2212,7 +2219,7 @@ msgid "Max Precision Error"
 msgstr "Tolleranza di errore di precisione"
 
 msgid "Page Size"
-msgstr "Dimensione Pagina"
+msgstr "Dimensione pagina"
 
 msgid "Import Tracks"
 msgstr "Importa tracce"
@@ -2336,6 +2343,9 @@ msgstr "Supporto per script"
 
 msgid "OpenType Features"
 msgstr "Funzionalità OpenType"
+
+msgid "Fallbacks"
+msgstr "Alternative"
 
 msgid "Compress"
 msgstr "Comprimi"
@@ -2866,6 +2876,9 @@ msgstr "Modo di fusione d'ambiente"
 msgid "Foveation Level"
 msgstr "Livello di foveazione"
 
+msgid "Foveation Dynamic"
+msgstr "Foveazione dinamica"
+
 msgid "Submit Depth Buffer"
 msgstr "Riempi buffer di profondità"
 
@@ -3148,6 +3161,9 @@ msgstr "Percorsi uniti"
 msgid "CSG"
 msgstr "CSG"
 
+msgid "Importer"
+msgstr "Importatore"
+
 msgid "Allow Geometry Helper Nodes"
 msgstr "Consenti nodi ausiliari di geometria"
 
@@ -3285,6 +3301,9 @@ msgstr "Orientazione d'inerzia"
 
 msgid "Inertia Tensor"
 msgstr "Tensore d'inerzia"
+
+msgid "Is Trigger"
+msgstr "È attivatore"
 
 msgid "Mesh Index"
 msgstr "Indice di mesh"
@@ -3431,7 +3450,7 @@ msgid "Perspective"
 msgstr "Prospettiva"
 
 msgid "FOV"
-msgstr "Campo Visivo"
+msgstr "Campo visivo"
 
 msgid "Depth Far"
 msgstr "Profondità lontana"
@@ -3780,6 +3799,9 @@ msgstr "Frequenza di aggiornamento del display"
 
 msgid "Render Target Size Multiplier"
 msgstr "Moltiplicatore delle dimensioni finali di renderizzazione"
+
+msgid "Sort Order"
+msgstr "Tipo di ordinamento"
 
 msgid "Alpha Blend"
 msgstr "Fusione dell'alfa"
@@ -4588,6 +4610,9 @@ msgstr "Marchi registrati"
 msgid "Export D3D12"
 msgstr "Esporta D3D12"
 
+msgid "D3D12 Agility SDK Multiarch"
+msgstr "D3D12 Agility SDK Multiarch"
+
 msgid "Sprite Frames"
 msgstr "Sprite Frames"
 
@@ -4641,6 +4666,9 @@ msgstr "Maschera di area"
 
 msgid "Playback Type"
 msgstr "Tipo di riproduzione"
+
+msgid "Copy Mode"
+msgstr "Modo di copia"
 
 msgid "Anchor Mode"
 msgstr "Modalità ancora"
@@ -5589,7 +5617,7 @@ msgid "Keep Aspect"
 msgstr "Mantieni l'aspetto"
 
 msgid "Cull Mask"
-msgstr "Maschera di cull"
+msgstr "Maschera di culling"
 
 msgid "Attributes"
 msgstr "Attributi"
@@ -6292,7 +6320,7 @@ msgid "Target"
 msgstr "Obiettivo"
 
 msgid "Override Tip Basis"
-msgstr "Sovrascrivi la Basis d'estremità"
+msgstr "Sovrascrivi la base d'estremità"
 
 msgid "Use Magnet"
 msgstr "Utilizza il magnetismo"
@@ -7579,11 +7607,17 @@ msgstr "2D MSAA"
 msgid "MSAA 3D"
 msgstr "3D MSAA"
 
+msgid "Viewport"
+msgstr "Viewport"
+
 msgid "Transparent Background"
 msgstr "Sfondo trasparente"
 
 msgid "HDR 2D"
 msgstr "Alta gamma dinamica 2D (HDR)"
+
+msgid "Screen Space AA"
+msgstr "Antialiasing nello spazio dello schermo"
 
 msgid "Use TAA"
 msgstr "Usa TTA"
@@ -7593,6 +7627,9 @@ msgstr "Usa il Debanding"
 
 msgid "Use Occlusion Culling"
 msgstr "Usa l'Occlusion Culling"
+
+msgid "Mesh LOD"
+msgstr "LOD di mesh"
 
 msgid "LOD Change"
 msgstr "Cambio di LOD"
@@ -7675,6 +7712,9 @@ msgstr "Sfondo trasparente"
 msgid "Handle Input Locally"
 msgstr "Gestisci gli input localmente"
 
+msgid "Debug Draw"
+msgstr "Disegno per debug"
+
 msgid "Use HDR 2D"
 msgstr "Usa alta gamma dinamica 2D (HDR)"
 
@@ -7719,6 +7759,9 @@ msgstr "Seleziona solamente il primo oggetto"
 
 msgid "Disable Input"
 msgstr "Disabilita input"
+
+msgid "Positional Shadow Atlas"
+msgstr "Atlante d'ombre posizionali"
 
 msgid "16 Bits"
 msgstr "16 bit"
@@ -7780,6 +7823,9 @@ msgstr "Finestra popup"
 msgid "Mouse Passthrough"
 msgstr "Oltrepassaggio del mouse"
 
+msgid "Force Native"
+msgstr "Forza nativa"
+
 msgid "Min Size"
 msgstr "Dimensioni minime"
 
@@ -7822,8 +7868,14 @@ msgstr "Segmenti"
 msgid "Parsed Geometry Type"
 msgstr "Tipo di geometria analizzata"
 
+msgid "Parsed Collision Mask"
+msgstr "Maschera di collisione analizzata"
+
 msgid "Source Geometry Mode"
 msgstr "Modalità geometrie sorgenti"
+
+msgid "Source Geometry Group Name"
+msgstr "Nome del gruppo della geometria sorgente"
 
 msgid "Cells"
 msgstr "Celle"
@@ -7851,6 +7903,9 @@ msgstr "Modalità d'esecuzione"
 
 msgid "Target Nodepath"
 msgstr "NodePath di destinazione"
+
+msgid "Tip Nodepath"
+msgstr "Percorso di nodo della punta"
 
 msgid "CCDIK Data Chain Length"
 msgstr "Lunghezza di catena di dati CCDIK"
@@ -7969,6 +8024,15 @@ msgstr "Dimensioni tassello"
 msgid "UV Clipping"
 msgstr "Clipping UV"
 
+msgid "Occlusion Layers"
+msgstr "Livelli di occlusione"
+
+msgid "Physics Layers"
+msgstr "Livelli di fisica"
+
+msgid "Terrain Sets"
+msgstr "Insiemi di terreni"
+
 msgid "Custom Data Layers"
 msgstr "Strati di dati personalizzati"
 
@@ -7990,8 +8054,17 @@ msgstr "A senso unico"
 msgid "One Way Margin"
 msgstr "Margine a senso unico"
 
+msgid "Terrains Peering Bit"
+msgstr "Bit di adattamento di terreni"
+
 msgid "Transpose"
 msgstr "Trasponi"
+
+msgid "Texture Origin"
+msgstr "Origine della texture"
+
+msgid "Terrain Set"
+msgstr "Insieme di terreni"
 
 msgid "Terrain"
 msgstr "Terreno"
@@ -8010,6 +8083,9 @@ msgstr "Collisione con le facce posteriori"
 
 msgid "Density"
 msgstr "Densità"
+
+msgid "Height Falloff"
+msgstr "Attenuazione di altezza"
 
 msgid "Edge Fade"
 msgstr "Bordo dissolvenza"
@@ -8130,6 +8206,9 @@ msgstr "Rayleigh"
 
 msgid "Coefficient"
 msgstr "Coefficiente"
+
+msgid "Mie"
+msgstr "Mie"
 
 msgid "Eccentricity"
 msgstr "Eccentricità"
@@ -8313,6 +8392,9 @@ msgstr "Sfondo"
 
 msgid "Canvas Max Layer"
 msgstr "Strato massimo del canvas"
+
+msgid "Custom FOV"
+msgstr "Campo visivo personalizzato"
 
 msgid "Ambient Light"
 msgstr "Luce Ambientale"
@@ -8725,6 +8807,9 @@ msgstr "Dissolvenza in prossimità"
 msgid "MSDF"
 msgstr "MSDF"
 
+msgid "Pixel Range"
+msgstr "Raggio di pixel"
+
 msgid "Convex Hull Downsampling"
 msgstr "Sottocampionamento hull convesso"
 
@@ -8733,6 +8818,9 @@ msgstr "Approssimazione hull convesso"
 
 msgid "Lightmap Size Hint"
 msgstr "Guida delle dimensioni della lightmap"
+
+msgid "Blend Shape Mode"
+msgstr "Modalità forma di fusione"
 
 msgid "Shadow Mesh"
 msgstr "Mesh per le ombre"
@@ -9262,11 +9350,20 @@ msgstr "Segnalibro"
 msgid "Executing Line"
 msgstr "Linea in esecuzione"
 
+msgid "Can Fold"
+msgstr "Può comprimere"
+
 msgid "Folded"
 msgstr "Piegato"
 
+msgid "Can Fold Code Region"
+msgstr "Può comprimere regione di codice"
+
 msgid "Folded Code Region"
 msgstr "Regione di codice compressa"
+
+msgid "Folded EOL Icon"
+msgstr "Icona di fine riga compressa"
 
 msgid "Completion Lines"
 msgstr "Righe di completamento"
@@ -9655,6 +9752,9 @@ msgstr "Larghezza dell'etichetta"
 msgid "Center Slider Grabbers"
 msgstr "Centra i grabber della barra"
 
+msgid "Folded Arrow"
+msgstr "Freccia compressa"
+
 msgid "Expanded Arrow"
 msgstr "Freccia estesa"
 
@@ -9846,6 +9946,12 @@ msgstr "Modalità antialiasing del font predefinita"
 
 msgid "Default Font Hinting"
 msgstr "Suggerimento del font predefinito"
+
+msgid "Default Font Subpixel Positioning"
+msgstr "Posizionamento predefinito di sotto-pixel del font"
+
+msgid "Default Font Multichannel Signed Distance Field"
+msgstr "Campo predefinito di distanza con segno multicanale del font"
 
 msgid "Default Font Generate Mipmaps"
 msgstr "Generazione mipmap del font predefinito"
@@ -10044,6 +10150,9 @@ msgstr "Altezza cella predefinita"
 
 msgid "Default Up"
 msgstr "Direzione in alto predefinita"
+
+msgid "Merge Rasterizer Cell Scale"
+msgstr "Scala cella per il rasterizzatore unione"
 
 msgid "Avoidance Use Multiple Threads"
 msgstr "Usa più di un thread per l'evazione"
@@ -10516,6 +10625,9 @@ msgstr "Raggi d'occlusione per thread"
 msgid "Upscale Mode"
 msgstr "Modalità upscale"
 
+msgid "Screen Space Reflection"
+msgstr "Riflessione nello spazio dello schermo"
+
 msgid "Roughness Quality"
 msgstr "Qualità di rugosità"
 
@@ -10599,6 +10711,9 @@ msgstr "Ha dati di tracciamento"
 
 msgid "Body Flags"
 msgstr "Flag di corpo"
+
+msgid "Blend Shapes"
+msgstr "Forme di fusione"
 
 msgid "Hand Tracking Source"
 msgstr "Sorgente di tracciamento della mano"

@@ -129,7 +129,7 @@
 # Rémi Verschelde <remi@godotengine.org>, 2023, 2024.
 # Nifou <nifou@mailfence.com>, 2023.
 # Antonia Carrier <carrier.antonia@gmail.com>, 2023.
-# #Guigui <guillaume.grosjean@outlook.fr>, 2023.
+# #Guigui <guillaume.grosjean@outlook.fr>, 2023, 2024.
 # Dorifor <doryantilmant25@gmail.com>, 2023.
 # elouan_sys6 <elouan660.deschamps@protonmail.com>, 2023.
 # John Donne <akheron@zaclys.net>, 2023.
@@ -179,8 +179,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-08-03 22:03+0000\n"
-"Last-Translator: didierGuieu <didier.guieu@hotmail.fr>\n"
+"PO-Revision-Date: 2024-08-13 23:09+0000\n"
+"Last-Translator: #Guigui <guillaume.grosjean@outlook.fr>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot/"
 "fr/>\n"
 "Language: fr\n"
@@ -17727,6 +17727,20 @@ msgid ""
 msgstr ""
 "Cet os ne dispose pas d'une position de repos appropriée. Accédez au nœud "
 "Skeleton2D et définissez-en une."
+
+msgid ""
+"The TileMap node is deprecated as it is superseded by the use of multiple "
+"TileMapLayer nodes.\n"
+"To convert a TileMap to a set of TileMapLayer nodes, open the TileMap bottom "
+"panel with this node selected, click the toolbox icon in the top-right corner "
+"and choose \"Extract TileMap layers as individual TileMapLayer nodes\"."
+msgstr ""
+"Le nœud TileMap est déprécié car il est dépassé par l'utilisation de "
+"plusieurs nœuds TileMapLayer.\n"
+"Pour convertir un TileMap en un groupe de nœuds TileMapLayer, ouvrez le "
+"panneau du bas TileMap avec ce nœud sélectionné, cliquez sur l'icône de "
+"toolbox dans le coin en haut à droite et choisissez \"Extraire les calques de "
+"TileMap comme nœuds TileMapLayer individuels\"."
 
 msgid ""
 "A Y-sorted layer has the same Z-index value as a not Y-sorted layer.\n"
