@@ -2112,8 +2112,8 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 		}
 		if (!is_scanning()) {
 			_process_update_pending();
-			call_deferred(SNAME("emit_signal"), "filesystem_changed"); //update later
 		}
+		call_deferred(SNAME("emit_signal"), "filesystem_changed"); // Update later
 	}
 }
 
