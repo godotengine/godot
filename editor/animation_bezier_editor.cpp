@@ -1083,7 +1083,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 					if (I.key == REMOVE_ICON) {
 						if (!read_only) {
 							EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-							undo_redo->create_action("Remove Bezier Track");
+							undo_redo->create_action("Remove Bezier Track", UndoRedo::MERGE_DISABLE, animation.ptr());
 
 							undo_redo->add_do_method(this, "_update_locked_tracks_after", track);
 							undo_redo->add_do_method(this, "_update_hidden_tracks_after", track);
