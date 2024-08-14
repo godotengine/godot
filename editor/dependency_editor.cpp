@@ -766,7 +766,7 @@ bool OrphanResourcesDialog::_fill_owners(EditorFileSystemDirectory *efsd, HashMa
 	}
 
 	bool has_children = false;
-
+	String main_scene = GLOBAL_GET("application/run/main_scene");
 	for (int i = 0; i < efsd->get_subdir_count(); i++) {
 		TreeItem *dir_item = nullptr;
 		if (p_parent) {
@@ -798,7 +798,12 @@ bool OrphanResourcesDialog::_fill_owners(EditorFileSystemDirectory *efsd, HashMa
 			if (!refs.has(path)) {
 				TreeItem *ti = files->create_item(p_parent);
 				ti->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-				ti->set_text(0, efsd->get_file(i));
+				String additional_info;
+				if (main_scene == efsd->get_file_path(i)) {
+					ti->set_custom_color(0, get_theme_color(SNAME("accent_color"), "Editor"));
+					additional_info = "(" + TTR("Main Scene") + ")";
+				}
+				ti->set_text(0, efsd->get_file(i) + " " + additional_info);
 				ti->set_editable(0, true);
 
 				String type = efsd->get_file_type(i);
@@ -871,7 +876,7 @@ void OrphanResourcesDialog::_bind_methods() {
 OrphanResourcesDialog::OrphanResourcesDialog() {
 	set_title(TTR("Orphan Resource Explorer"));
 	delete_confirm = memnew(ConfirmationDialog);
-	set_ok_button_text(TTR("Delete"));
+	set_ok_button_text(TTR("Delete Selected..."));
 	add_child(delete_confirm);
 	dep_edit = memnew(DependencyEditor);
 	add_child(dep_edit);
