@@ -280,6 +280,10 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 		return res;
 	}
 
+	if (r_error) {
+		*r_error = ERR_FILE_UNRECOGNIZED;
+	}
+
 	ERR_FAIL_COND_V_MSG(found, Ref<Resource>(),
 			vformat("Failed loading resource: %s. Make sure resources have been imported by opening the project in the editor at least once.", p_path));
 
