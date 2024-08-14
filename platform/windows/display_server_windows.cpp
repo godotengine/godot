@@ -5391,13 +5391,15 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 	{
 		WindowData *wd_transient_parent = nullptr;
 		HWND owner_hwnd = nullptr;
-		if (p_transient_parent != INVALID_WINDOW_ID && !windows.has(p_transient_parent)) {
-			ERR_PRINT("Condition \"!windows.has(p_transient_parent)\" is true.");
-			p_transient_parent = INVALID_WINDOW_ID;
-		} else {
-			wd_transient_parent = &windows[p_transient_parent];
-			if (p_exclusive) {
-				owner_hwnd = wd_transient_parent->hWnd;
+		if (p_transient_parent != INVALID_WINDOW_ID) {
+			if (!windows.has(p_transient_parent)) {
+				ERR_PRINT("Condition \"!windows.has(p_transient_parent)\" is true.");
+				p_transient_parent = INVALID_WINDOW_ID;
+			} else {
+				wd_transient_parent = &windows[p_transient_parent];
+				if (p_exclusive) {
+					owner_hwnd = wd_transient_parent->hWnd;
+				}
 			}
 		}
 
