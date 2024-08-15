@@ -154,7 +154,6 @@ VSRerouteNode::VSRerouteNode() {
 	title_lbl->hide();
 
 	const Size2 size = Size2(32, 32) * EDSCALE;
-	print_line("VSRerouteNode size: " + size);
 
 	Control *slot_area = memnew(Control);
 	slot_area->set_custom_minimum_size(size);
