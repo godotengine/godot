@@ -33,6 +33,7 @@
 #include "core/io/compression.h"
 #include "core/io/file_access_memory.h"
 #include "core/io/translation_loader_po.h"
+#include "core/string/translation_server.h"
 #include "editor/doc_translations.gen.h"
 #include "editor/editor_translations.gen.h"
 #include "editor/extractable_translations.gen.h"
