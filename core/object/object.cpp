@@ -41,6 +41,7 @@
 #include "core/string/translation.h"
 #include "core/templates/local_vector.h"
 #include "core/variant/typed_array.h"
+#include "scene/main/node.h"
 
 #ifdef DEBUG_ENABLED
 
@@ -745,7 +746,7 @@ Variant Object::callv(const StringName &p_method, const Array &p_args) {
 	Callable::CallError ce;
 	Variant ret = callp(p_method, argptrs, p_args.size(), ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
-		ERR_FAIL_V_MSG(Variant(), "Error calling method from 'callv': " + Variant::get_call_error_text(this, p_method, argptrs, p_args.size(), ce) + ".");
+		ERR_FAIL_V_MSG(Variant(), "Error calling method from \"callv\": " + Variant::get_call_error_text(this, p_method, argptrs, p_args.size(), ce) + ".");
 	}
 	return ret;
 }
@@ -925,7 +926,7 @@ void Object::set_script(const Variant &p_script) {
 	Ref<Script> s = p_script;
 	if (!p_script.is_null()) {
 		ERR_FAIL_COND_MSG(s.is_null(), "Cannot set object script. Parameter should be null or a reference to a valid script.");
-		ERR_FAIL_COND_MSG(s->is_abstract(), vformat("Cannot set object script. Script '%s' should not be abstract.", s->get_path()));
+		ERR_FAIL_COND_MSG(s->is_abstract(), vformat("Cannot set object script. Script \"%s\" should not be abstract.", s->get_path()));
 	}
 
 	script = p_script;
@@ -994,7 +995,7 @@ void Object::set_meta(const StringName &p_name, const Variant &p_value) {
 	if (E) {
 		E->value = p_value;
 	} else {
-		ERR_FAIL_COND_MSG(!p_name.operator String().is_valid_identifier(), "Invalid metadata identifier: '" + p_name + "'.");
+		ERR_FAIL_COND_MSG(!p_name.operator String().is_valid_identifier(), vformat("Invalid metadata identifier \"%s\". See `String.is_valid_identifier()`'s description for details on what is considered valid.", p_name));
 		Variant *V = &metadata.insert(p_name, p_value)->value;
 
 		const String &sname = p_name;
@@ -1010,7 +1011,7 @@ Variant Object::get_meta(const StringName &p_name, const Variant &p_default) con
 		if (p_default != Variant()) {
 			return p_default;
 		} else {
-			ERR_FAIL_V_MSG(Variant(), "The object does not have any 'meta' values with the key '" + p_name + "'.");
+			ERR_FAIL_V_MSG(Variant(), vformat("The object does not have any metadata values with the key \"%s\", and no default was specified.", p_name));
 		}
 	}
 	return metadata[p_name];
@@ -1057,9 +1058,9 @@ void Object::get_meta_list(List<StringName> *p_list) const {
 }
 
 void Object::add_user_signal(const MethodInfo &p_signal) {
-	ERR_FAIL_COND_MSG(p_signal.name.is_empty(), "Signal name cannot be empty.");
-	ERR_FAIL_COND_MSG(ClassDB::has_signal(get_class_name(), p_signal.name), "User signal's name conflicts with a built-in signal of '" + get_class_name() + "'.");
-	ERR_FAIL_COND_MSG(signal_map.has(p_signal.name), "Trying to add already existing signal '" + p_signal.name + "'.");
+	ERR_FAIL_COND_MSG(p_signal.name.is_empty(), "The signal name cannot be empty.");
+	ERR_FAIL_COND_MSG(ClassDB::has_signal(get_class_name(), p_signal.name), vformat("The user signal's name \"%s\" conflicts with a built-in signal of %s.", p_signal.name, get_class_name()));
+	ERR_FAIL_COND_MSG(signal_map.has(p_signal.name), vformat("Trying to add a signal \"%s\" that already exists.", p_signal.name));
 	SignalData s;
 	s.user = p_signal;
 	signal_map[p_signal.name] = s;
@@ -1074,8 +1075,8 @@ bool Object::_has_user_signal(const StringName &p_name) const {
 
 void Object::_remove_user_signal(const StringName &p_name) {
 	SignalData *s = signal_map.getptr(p_name);
-	ERR_FAIL_NULL_MSG(s, "Provided signal does not exist.");
-	ERR_FAIL_COND_MSG(!s->removable, "Signal is not removable (not added with add_user_signal).");
+	ERR_FAIL_NULL_MSG(s, vformat("The provided signal \"%s\" does not exist.", p_name));
+	ERR_FAIL_COND_MSG(!s->removable, vformat("The provided signal \"%s\" is not removable, since it was not added using `add_user_signal()`.", p_name));
 	for (const KeyValue<Callable, SignalData::Slot> &slot_kv : s->slot_map) {
 		Object *target = slot_kv.key.get_object();
 		if (likely(target)) {
@@ -1197,7 +1198,7 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 				if (ce.error == Callable::CallError::CALL_ERROR_INVALID_METHOD && target && !ClassDB::class_exists(target->get_class_name())) {
 					//most likely object is not initialized yet, do not throw error.
 				} else {
-					ERR_PRINT("Error calling from signal '" + String(p_name) + "' to callable: " + Variant::get_callable_error_text(callable, args, argc, ce) + ".");
+					ERR_PRINT("Error calling from signal \"" + String(p_name) + "\" to callable: " + Variant::get_callable_error_text(callable, args, argc, ce) + ".");
 					err = ERR_METHOD_NOT_FOUND;
 				}
 			}
@@ -1358,15 +1359,28 @@ void Object::get_signals_connected_to_this(List<Connection> *p_connections) cons
 }
 
 Error Object::connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags) {
-	ERR_FAIL_COND_V_MSG(p_callable.is_null(), ERR_INVALID_PARAMETER, "Cannot connect to '" + p_signal + "': the provided callable is null.");
+	const Node *node = Object::cast_to<Node>(this);
+	if (node) {
+		ERR_FAIL_COND_V_MSG(p_callable.is_null(), ERR_INVALID_PARAMETER, vformat("%s: Cannot connect to \"%s\" in node of type %s, as the provided callable is null.", node->get_debug_path(), p_signal, node->get_class()));
+	} else {
+		ERR_FAIL_COND_V_MSG(p_callable.is_null(), ERR_INVALID_PARAMETER, vformat("Cannot connect to \"%s\" in %s, as the provided callable is null.", to_string(), p_signal));
+	}
 
 	if (p_callable.is_standard()) {
 		// FIXME: This branch should probably removed in favor of the `is_valid()` branch, but there exist some classes
 		// that call `connect()` before they are fully registered with ClassDB. Until all such classes can be found
 		// and registered soon enough this branch is needed to allow `connect()` to succeed.
-		ERR_FAIL_NULL_V_MSG(p_callable.get_object(), ERR_INVALID_PARAMETER, "Cannot connect to '" + p_signal + "' to callable '" + p_callable + "': the callable object is null.");
+		if (node) {
+			ERR_FAIL_NULL_V_MSG(p_callable.get_object(), ERR_INVALID_PARAMETER, vformat("%s: Cannot connect to \"%s\" to callable \"%s\" in node of type %s, as the callable object is null.", node->get_debug_path(), p_signal, p_callable, node->get_class()));
+		} else {
+			ERR_FAIL_NULL_V_MSG(p_callable.get_object(), ERR_INVALID_PARAMETER, vformat("Cannot connect to \"%s\" to callable \"%s\", as the callable object is null.", p_signal, p_callable, to_string()));
+		}
 	} else {
-		ERR_FAIL_COND_V_MSG(!p_callable.is_valid(), ERR_INVALID_PARAMETER, "Cannot connect to '" + p_signal + "': the provided callable is not valid: " + p_callable);
+		if (node) {
+			ERR_FAIL_COND_V_MSG(!p_callable.is_valid(), ERR_INVALID_PARAMETER, vformat("%s: Cannot connect to \"%s\" in node of type %s, as the provided callable is not valid: \"%s\"", node->get_debug_path(), p_signal, node->get_class(), p_callable));
+		} else {
+			ERR_FAIL_COND_V_MSG(!p_callable.is_valid(), ERR_INVALID_PARAMETER, vformat("Cannot connect to \"%s\" in %s, as the provided callable is not valid: \"%s\"", p_signal, to_string(), p_callable));
+		}
 	}
 
 	SignalData *s = signal_map.getptr(p_signal);
@@ -1387,7 +1401,11 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 #endif
 		}
 
-		ERR_FAIL_COND_V_MSG(!signal_is_valid, ERR_INVALID_PARAMETER, "In Object of type '" + String(get_class()) + "': Attempt to connect nonexistent signal '" + p_signal + "' to callable '" + p_callable + "'.");
+		if (node) {
+			ERR_FAIL_COND_V_MSG(!signal_is_valid, ERR_INVALID_PARAMETER, vformat("%s: Attempted to connect nonexistent signal \"%s\" to callable \"%s\" in node of type %s.", node->get_debug_path(), p_signal, p_callable, node->get_class()));
+		} else {
+			ERR_FAIL_COND_V_MSG(!signal_is_valid, ERR_INVALID_PARAMETER, vformat("Attempted to connect nonexistent signal \"%s\" to callable \"%s\" in \"%s\".", p_signal, p_callable, to_string()));
+		}
 
 		signal_map[p_signal] = SignalData();
 		s = &signal_map[p_signal];
@@ -1399,7 +1417,11 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 			s->slot_map[*p_callable.get_base_comparator()].reference_count++;
 			return OK;
 		} else {
-			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Signal '" + p_signal + "' is already connected to given callable '" + p_callable + "' in that object.");
+			if (node) {
+				ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, vformat("%s: Signal \"%s\" is already connected to given callable \"%s\" in that node of type %s.", node->get_debug_path(), p_signal, p_callable, node->get_class()));
+			} else {
+				ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, vformat("Signal \"%s\" is already connected to given callable \"%s\" in %s.", p_signal, p_callable, to_string()));
+			}
 		}
 	}
 
@@ -1426,7 +1448,19 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 }
 
 bool Object::is_connected(const StringName &p_signal, const Callable &p_callable) const {
-	ERR_FAIL_COND_V_MSG(p_callable.is_null(), false, "Cannot determine if connected to '" + p_signal + "': the provided callable is null."); // Should use `is_null`, see note in `connect` about the use of `is_valid`.
+	const Node *node = Object::cast_to<Node>(this);
+	if (node) {
+		// Should use `is_null`, see note in `connect` about the use of `is_valid`.
+		ERR_FAIL_COND_V_MSG(p_callable.is_null(), false,
+				vformat("%s: Can't determine if connected to \"%s\" in node of type %s, as the the provided callable is null.",
+						node->get_debug_path(),
+						p_signal,
+						node->get_class()));
+	} else {
+		ERR_FAIL_COND_V_MSG(p_callable.is_null(), false,
+				vformat("Can't determine if connected to \"%s\", as the the provided callable is null.",
+						p_signal));
+	}
 	const SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
 		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal);
@@ -1438,7 +1472,11 @@ bool Object::is_connected(const StringName &p_signal, const Callable &p_callable
 			return false;
 		}
 
-		ERR_FAIL_V_MSG(false, "Nonexistent signal: " + p_signal + ".");
+		if (node) {
+			ERR_FAIL_V_MSG(false, vformat("%s: The signal \"%s\" does not exist in node of type %s.", node->get_debug_path(), p_signal, node->get_class()));
+		} else {
+			ERR_FAIL_V_MSG(false, vformat("The signal \"%s\" does not exist in the object of type %s.", p_signal, get_class()));
+		}
 	}
 
 	return s->slot_map.has(*p_callable.get_base_comparator());
@@ -1449,17 +1487,68 @@ void Object::disconnect(const StringName &p_signal, const Callable &p_callable) 
 }
 
 bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force) {
-	ERR_FAIL_COND_V_MSG(p_callable.is_null(), false, "Cannot disconnect from '" + p_signal + "': the provided callable is null."); // Should use `is_null`, see note in `connect` about the use of `is_valid`.
+	const Node *node = Object::cast_to<Node>(this);
+	if (node) {
+		// Should use `is_null`, see note in `connect` about the use of `is_valid`.
+		ERR_FAIL_COND_V_MSG(p_callable.is_null(), false,
+				vformat("%s: Can't disconnect from \"%s\" in node of type %s, as the provided callable is null.",
+						node->get_debug_path(),
+						node->get_class(),
+						p_signal));
+	} else {
+		ERR_FAIL_COND_V_MSG(p_callable.is_null(), false,
+				vformat("Can't disconnect from \"%s\", as the provided callable is null.",
+						p_signal));
+	}
 
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
 		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal) ||
 				(!script.is_null() && Ref<Script>(script)->has_script_signal(p_signal));
-		ERR_FAIL_COND_V_MSG(signal_is_valid, false, "Attempt to disconnect a nonexistent connection from '" + to_string() + "'. Signal: '" + p_signal + "', callable: '" + p_callable + "'.");
-	}
-	ERR_FAIL_NULL_V_MSG(s, false, vformat("Disconnecting nonexistent signal '%s' in %s.", p_signal, to_string()));
 
-	ERR_FAIL_COND_V_MSG(!s->slot_map.has(*p_callable.get_base_comparator()), false, "Attempt to disconnect a nonexistent connection from '" + to_string() + "'. Signal: '" + p_signal + "', callable: '" + p_callable + "'.");
+		if (node) {
+			ERR_FAIL_COND_V_MSG(signal_is_valid, false,
+					vformat("%s: Attempted to disconnect a nonexistent connection in node of type %s. Signal: \"%s\", callable: \"%s\"",
+							node->get_debug_path(),
+							node->get_class(),
+							p_signal,
+							p_callable));
+		} else {
+			ERR_FAIL_COND_V_MSG(signal_is_valid, false,
+					vformat("Attempted to disconnect a nonexistent connection from \"%s\". Signal: \"%s\", callable: \"%s\"",
+							to_string(),
+							p_signal,
+							p_callable));
+		}
+	}
+
+	if (node) {
+		ERR_FAIL_NULL_V_MSG(s, false,
+				vformat("%s: The signal \"%s\" does not exist in node of type %s.",
+						node->get_debug_path(),
+						p_signal,
+						node->get_class()));
+
+		ERR_FAIL_COND_V_MSG(!s->slot_map.has(*p_callable.get_base_comparator()), false,
+				vformat("%s: Attempted to disconnect a nonexistent connection from \"%s\" in node of type %s. Signal: \"%s\", callable: \"%s\".",
+						node->get_debug_path(),
+						node->get_class(),
+						to_string(),
+						p_signal,
+						p_callable));
+
+	} else {
+		ERR_FAIL_NULL_V_MSG(s, false,
+				vformat("The signal \"%s\" does not exist in %s.",
+						p_signal,
+						to_string()));
+
+		ERR_FAIL_COND_V_MSG(!s->slot_map.has(*p_callable.get_base_comparator()), false,
+				vformat("Attempted to disconnect a nonexistent connection from \"%s\". Signal: \"%s\", callable: \"%s\".",
+						to_string(),
+						p_signal,
+						p_callable));
+	}
 
 	SignalData::Slot *slot = &s->slot_map[*p_callable.get_base_comparator()];
 
@@ -2074,8 +2163,8 @@ Object::~Object() {
 #endif
 
 	if (_emitting) {
-		//@todo this may need to actually reach the debugger prioritarily somehow because it may crash before
-		ERR_PRINT("Object " + to_string() + " was freed or unreferenced while a signal is being emitted from it. Try connecting to the signal using 'CONNECT_DEFERRED' flag, or use queue_free() to free the object (if this object is a Node) to avoid this error and potential crashes.");
+		// TODO: This may need to actually reach the debugger prioritarily somehow because it may crash before.
+		ERR_PRINT(vformat("The object %s was freed or unreferenced while a signal is being emitted from it. Try connecting to the signal using the `CONNECT_DEFERRED` flag, or use `queue_free()` to free the object (if this object is a Node) to avoid this error and potential crashes.", to_string()));
 	}
 
 	// Drop all connections to the signals of this object.

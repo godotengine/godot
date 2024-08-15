@@ -2276,6 +2276,11 @@ NodePath Node::get_path() const {
 	return *data.path_cache;
 }
 
+// Helper method for use in engine error messages.
+String Node::get_debug_path() const {
+	return is_inside_tree() ? String(get_path()) : String(get_name()) + " (out-of-tree)";
+}
+
 bool Node::is_in_group(const StringName &p_identifier) const {
 	ERR_THREAD_GUARD_V(false);
 	return data.grouped.has(p_identifier);
