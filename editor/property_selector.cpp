@@ -123,50 +123,6 @@ void PropertySelector::_update_search() {
 		TreeItem *category = nullptr;
 
 		bool found = false;
-
-		Ref<Texture2D> type_icons[] = {
-			search_options->get_editor_theme_icon(SNAME("Variant")),
-			search_options->get_editor_theme_icon(SNAME("bool")),
-			search_options->get_editor_theme_icon(SNAME("int")),
-			search_options->get_editor_theme_icon(SNAME("float")),
-			search_options->get_editor_theme_icon(SNAME("String")),
-			search_options->get_editor_theme_icon(SNAME("Vector2")),
-			search_options->get_editor_theme_icon(SNAME("Vector2i")),
-			search_options->get_editor_theme_icon(SNAME("Rect2")),
-			search_options->get_editor_theme_icon(SNAME("Rect2i")),
-			search_options->get_editor_theme_icon(SNAME("Vector3")),
-			search_options->get_editor_theme_icon(SNAME("Vector3i")),
-			search_options->get_editor_theme_icon(SNAME("Transform2D")),
-			search_options->get_editor_theme_icon(SNAME("Vector4")),
-			search_options->get_editor_theme_icon(SNAME("Vector4i")),
-			search_options->get_editor_theme_icon(SNAME("Plane")),
-			search_options->get_editor_theme_icon(SNAME("Quaternion")),
-			search_options->get_editor_theme_icon(SNAME("AABB")),
-			search_options->get_editor_theme_icon(SNAME("Basis")),
-			search_options->get_editor_theme_icon(SNAME("Transform3D")),
-			search_options->get_editor_theme_icon(SNAME("Projection")),
-			search_options->get_editor_theme_icon(SNAME("Color")),
-			search_options->get_editor_theme_icon(SNAME("StringName")),
-			search_options->get_editor_theme_icon(SNAME("NodePath")),
-			search_options->get_editor_theme_icon(SNAME("RID")),
-			search_options->get_editor_theme_icon(SNAME("MiniObject")),
-			search_options->get_editor_theme_icon(SNAME("Callable")),
-			search_options->get_editor_theme_icon(SNAME("Signal")),
-			search_options->get_editor_theme_icon(SNAME("Dictionary")),
-			search_options->get_editor_theme_icon(SNAME("Array")),
-			search_options->get_editor_theme_icon(SNAME("PackedByteArray")),
-			search_options->get_editor_theme_icon(SNAME("PackedInt32Array")),
-			search_options->get_editor_theme_icon(SNAME("PackedInt64Array")),
-			search_options->get_editor_theme_icon(SNAME("PackedFloat32Array")),
-			search_options->get_editor_theme_icon(SNAME("PackedFloat64Array")),
-			search_options->get_editor_theme_icon(SNAME("PackedStringArray")),
-			search_options->get_editor_theme_icon(SNAME("PackedVector2Array")),
-			search_options->get_editor_theme_icon(SNAME("PackedVector3Array")),
-			search_options->get_editor_theme_icon(SNAME("PackedColorArray")),
-			search_options->get_editor_theme_icon(SNAME("PackedVector4Array")),
-		};
-		static_assert((sizeof(type_icons) / sizeof(type_icons[0])) == Variant::VARIANT_MAX, "Number of type icons doesn't match the number of Variant types.");
-
 		for (const PropertyInfo &E : props) {
 			if (E.usage == PROPERTY_USAGE_CATEGORY) {
 				if (category && category->get_first_child() == nullptr) {
@@ -201,7 +157,7 @@ void PropertySelector::_update_search() {
 			TreeItem *item = search_options->create_item(category ? category : root);
 			item->set_text(0, E.name);
 			item->set_metadata(0, E.name);
-			item->set_icon(0, type_icons[E.type]);
+			item->set_icon(0, search_options->get_editor_theme_icon(Variant::get_type_name(E.type)));
 
 			if (!found && !search_box->get_text().is_empty() && E.name.containsn(search_text)) {
 				item->select(0);
