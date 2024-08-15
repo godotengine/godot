@@ -46,9 +46,6 @@ void Camera3DEditor::_pressed() {
 	Node3DEditor::get_singleton()->set_custom_camera(sn);
 }
 
-void Camera3DEditor::_bind_methods() {
-}
-
 void Camera3DEditor::edit(Node *p_camera) {
 	node = p_camera;
 

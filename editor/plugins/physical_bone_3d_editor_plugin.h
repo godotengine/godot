@@ -45,9 +45,6 @@ class PhysicalBone3DEditor : public Object {
 
 	PhysicalBone3D *selected = nullptr;
 
-protected:
-	static void _bind_methods();
-
 private:
 	void _on_toggle_button_transform_joint(bool p_is_pressed);
 	void _set_move_joint();

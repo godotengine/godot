@@ -95,8 +95,6 @@ public:
 	virtual RID get_uniform_buffer() const override;
 
 private:
-	static void _bind_methods();
-
 	RID uniform_buffer; // loaded into this uniform buffer (supplied externally)
 
 	// This struct is loaded into Set 1 - Binding 0, populated at start of rendering a frame, must match with shader code

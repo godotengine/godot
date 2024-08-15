@@ -198,9 +198,6 @@ void GPUParticles3DEditorBase::_node_selected(const NodePath &p_path) {
 	emission_dialog->popup_centered(Size2(300, 130));
 }
 
-void GPUParticles3DEditorBase::_bind_methods() {
-}
-
 GPUParticles3DEditorBase::GPUParticles3DEditorBase() {
 	emission_dialog = memnew(ConfirmationDialog);
 	emission_dialog->set_title(TTR("Create Emitter"));
@@ -400,9 +397,6 @@ void GPUParticles3DEditor::_generate_emission_points() {
 		mat->set_emission_point_count(point_count);
 		mat->set_emission_point_texture(tex);
 	}
-}
-
-void GPUParticles3DEditor::_bind_methods() {
 }
 
 GPUParticles3DEditor::GPUParticles3DEditor() {

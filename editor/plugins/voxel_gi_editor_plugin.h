@@ -58,7 +58,6 @@ class VoxelGIEditorPlugin : public EditorPlugin {
 	void _voxel_gi_save_path_and_bake(const String &p_path);
 
 protected:
-	static void _bind_methods();
 	void _notification(int p_what);
 
 public:

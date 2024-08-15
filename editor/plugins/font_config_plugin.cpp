@@ -63,9 +63,6 @@ bool EditorPropertyFontMetaObject::_get(const StringName &p_name, Variant &r_ret
 	return false;
 }
 
-void EditorPropertyFontMetaObject::_bind_methods() {
-}
-
 void EditorPropertyFontMetaObject::set_dict(const Dictionary &p_dict) {
 	dict = p_dict;
 }

@@ -216,9 +216,6 @@ void EditorObjectSelector::_notification(int p_what) {
 	}
 }
 
-void EditorObjectSelector::_bind_methods() {
-}
-
 EditorObjectSelector::EditorObjectSelector(EditorSelectionHistory *p_history) {
 	history = p_history;
 

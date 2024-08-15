@@ -342,12 +342,6 @@ bool AudioStreamMicrophone::is_monophonic() const {
 	return true;
 }
 
-void AudioStreamMicrophone::_bind_methods() {
-}
-
-AudioStreamMicrophone::AudioStreamMicrophone() {
-}
-
 int AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	AudioDriver::get_singleton()->lock();
 

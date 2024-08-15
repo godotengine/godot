@@ -35,9 +35,6 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 
-void OpenXRSelectRuntime::_bind_methods() {
-}
-
 void OpenXRSelectRuntime::_update_items() {
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	OS *os = OS::get_singleton();
