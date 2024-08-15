@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TranslationDomain" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A self-contained collection of [Translation] resources.
+	</brief_description>
+	<description>
+		[TranslationDomain] is a self-contained collection of [Translation] resources. Translations can be added to or removed from it.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_translation">
+			<return type="void" />
+			<param index="0" name="translation" type="Translation" />
+			<description>
+				Adds a translation.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Removes all translations.
+			</description>
+		</method>
+		<method name="get_translation_object" qualifiers="const">
+			<return type="Translation" />
+			<param index="0" name="locale" type="String" />
+			<description>
+				Returns the [Translation] instance that best matches [param locale]. Returns [code]null[/code] if there are no matches.
+			</description>
+		</method>
+		<method name="remove_translation">
+			<return type="void" />
+			<param index="0" name="translation" type="Translation" />
+			<description>
+				Removes the given translation.
+			</description>
+		</method>
+		<method name="translate" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="message" type="StringName" />
+			<param index="1" name="context" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Returns the current locale's translation for the given message and context.
+			</description>
+		</method>
+		<method name="translate_plural" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="message" type="StringName" />
+			<param index="1" name="message_plural" type="StringName" />
+			<param index="2" name="n" type="int" />
+			<param index="3" name="context" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Returns the current locale's translation for the given message, plural message and context.
+				The number [param n] is the number or quantity of the plural object. It will be used to guide the translation system to fetch the correct plural form for the selected language.
+			</description>
+		</method>
+	</methods>
+</class>

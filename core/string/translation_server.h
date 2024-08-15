@@ -32,6 +32,7 @@
 #define TRANSLATION_SERVER_H
 
 #include "core/string/translation.h"
+#include "core/string/translation_domain.h"
 
 class TranslationServer : public Object {
 	GDCLASS(TranslationServer, Object);
@@ -39,7 +40,9 @@ class TranslationServer : public Object {
 	String locale = "en";
 	String fallback;
 
-	HashSet<Ref<Translation>> translations;
+	Ref<TranslationDomain> main_domain;
+	HashMap<StringName, Ref<TranslationDomain>> custom_domains;
+
 	Ref<Translation> tool_translation;
 	Ref<Translation> property_translation;
 	Ref<Translation> doc_translation;
@@ -70,8 +73,6 @@ class TranslationServer : public Object {
 	bool _load_translations(const String &p_from);
 	String _standardize_locale(const String &p_locale, bool p_add_defaults) const;
 
-	StringName _get_message_from_translations(const StringName &p_message, const StringName &p_context, const String &p_locale, bool plural, const String &p_message_plural = "", int p_n = 0) const;
-
 	static void _bind_methods();
 
 	struct LocaleScriptInfo {
@@ -99,6 +100,7 @@ public:
 
 	void set_locale(const String &p_locale);
 	String get_locale() const;
+	String get_fallback_locale() const;
 	Ref<Translation> get_translation_object(const String &p_locale);
 
 	Vector<String> get_all_languages() const;
@@ -143,6 +145,10 @@ public:
 	void set_extractable_translation(const Ref<Translation> &p_translation);
 	StringName extractable_translate(const StringName &p_message, const StringName &p_context = "") const;
 	StringName extractable_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
+
+	bool has_domain(const StringName &p_domain) const;
+	Ref<TranslationDomain> get_or_add_domain(const StringName &p_domain);
+	void remove_domain(const StringName &p_domain);
 
 	void setup();
 
