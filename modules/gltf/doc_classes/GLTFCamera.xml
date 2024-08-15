@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="GLTFCamera" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
-		Represents a GLTF camera.
+		Represents a glTF camera.
 	</brief_description>
 	<description>
-		Represents a camera as defined by the base GLTF spec.
+		Represents a camera as defined by the base glTF spec.
 	</description>
 	<tutorials>
 		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
-		<link title="GLTF camera detailed specification">https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#reference-camera</link>
-		<link title="GLTF camera spec and example file">https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_015_SimpleCameras.md</link>
+		<link title="glTF camera detailed specification">https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#reference-camera</link>
+		<link title="glTF camera spec and example file">https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_015_SimpleCameras.md</link>
 	</tutorials>
 	<methods>
 		<method name="from_dictionary" qualifiers="static">
@@ -41,19 +41,19 @@
 	</methods>
 	<members>
 		<member name="depth_far" type="float" setter="set_depth_far" getter="get_depth_far" default="4000.0">
-			The distance to the far culling boundary for this camera relative to its local Z axis, in meters. This maps to GLTF's [code]zfar[/code] property.
+			The distance to the far culling boundary for this camera relative to its local Z axis, in meters. This maps to glTF's [code]zfar[/code] property.
 		</member>
 		<member name="depth_near" type="float" setter="set_depth_near" getter="get_depth_near" default="0.05">
-			The distance to the near culling boundary for this camera relative to its local Z axis, in meters. This maps to GLTF's [code]znear[/code] property.
+			The distance to the near culling boundary for this camera relative to its local Z axis, in meters. This maps to glTF's [code]znear[/code] property.
 		</member>
 		<member name="fov" type="float" setter="set_fov" getter="get_fov" default="1.309">
-			The FOV of the camera. This class and GLTF define the camera FOV in radians, while Godot uses degrees. This maps to GLTF's [code]yfov[/code] property. This value is only used for perspective cameras, when [member perspective] is true.
+			The FOV of the camera. This class and glTF define the camera FOV in radians, while Godot uses degrees. This maps to glTF's [code]yfov[/code] property. This value is only used for perspective cameras, when [member perspective] is true.
 		</member>
 		<member name="perspective" type="bool" setter="set_perspective" getter="get_perspective" default="true">
-			Whether or not the camera is in perspective mode. If false, the camera is in orthographic/orthogonal mode. This maps to GLTF's camera [code]type[/code] property. See [member Camera3D.projection] and the GLTF spec for more information.
+			Whether or not the camera is in perspective mode. If false, the camera is in orthographic/orthogonal mode. This maps to glTF's camera [code]type[/code] property. See [member Camera3D.projection] and the glTF spec for more information.
 		</member>
 		<member name="size_mag" type="float" setter="set_size_mag" getter="get_size_mag" default="0.5">
-			The size of the camera. This class and GLTF define the camera size magnitude as a radius in meters, while Godot defines it as a diameter in meters. This maps to GLTF's [code]ymag[/code] property. This value is only used for orthographic/orthogonal cameras, when [member perspective] is false.
+			The size of the camera. This class and glTF define the camera size magnitude as a radius in meters, while Godot defines it as a diameter in meters. This maps to glTF's [code]ymag[/code] property. This value is only used for orthographic/orthogonal cameras, when [member perspective] is false.
 		</member>
 	</members>
 </class>

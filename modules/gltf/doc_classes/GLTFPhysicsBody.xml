@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="GLTFPhysicsBody" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
-		Represents a GLTF physics body.
+		Represents a glTF physics body.
 	</brief_description>
 	<description>
-		Represents a physics body as an intermediary between the [code]OMI_physics_body[/code] GLTF data and Godot's nodes, and it's abstracted in a way that allows adding support for different GLTF physics extensions in the future.
+		Represents a physics body as an intermediary between the [code]OMI_physics_body[/code] glTF data and Godot's nodes, and it's abstracted in a way that allows adding support for different glTF physics extensions in the future.
 	</description>
 	<tutorials>
 		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
-		<link title="OMI_physics_body GLTF extension">https://github.com/omigroup/gltf-extensions/tree/main/extensions/2.0/OMI_physics_body</link>
+		<link title="OMI_physics_body glTF extension">https://github.com/omigroup/gltf-extensions/tree/main/extensions/2.0/OMI_physics_body</link>
 	</tutorials>
 	<methods>
 		<method name="from_dictionary" qualifiers="static">
 			<return type="GLTFPhysicsBody" />
 			<param index="0" name="dictionary" type="Dictionary" />
 			<description>
-				Creates a new GLTFPhysicsBody instance by parsing the given [Dictionary] in the [code]OMI_physics_body[/code] GLTF extension format.
+				Creates a new GLTFPhysicsBody instance by parsing the given [Dictionary] in the [code]OMI_physics_body[/code] glTF extension format.
 			</description>
 		</method>
 		<method name="from_node" qualifiers="static">
@@ -28,7 +28,7 @@
 		<method name="to_dictionary" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
-				Serializes this GLTFPhysicsBody instance into a [Dictionary]. It will be in the format expected by the [code]OMI_physics_body[/code] GLTF extension.
+				Serializes this GLTFPhysicsBody instance into a [Dictionary]. It will be in the format expected by the [code]OMI_physics_body[/code] glTF extension.
 			</description>
 		</method>
 		<method name="to_node" qualifiers="const">
