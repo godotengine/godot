@@ -725,7 +725,7 @@ void ProjectDialog::ok_pressed() {
 
 	hide();
 	if (mode == MODE_NEW || mode == MODE_IMPORT || mode == MODE_INSTALL) {
-		emit_signal(SNAME("project_created"), path);
+		emit_signal(SNAME("project_created"), path, edit_check_box->is_pressed());
 	} else if (mode == MODE_RENAME) {
 		emit_signal(SNAME("projects_updated"));
 	}
@@ -767,6 +767,7 @@ void ProjectDialog::show_dialog(bool p_reset_name) {
 		create_dir->hide();
 		project_status_rect->hide();
 		project_browse->hide();
+		edit_check_box->hide();
 
 		name_container->show();
 		install_path_container->hide();
@@ -797,10 +798,11 @@ void ProjectDialog::show_dialog(bool p_reset_name) {
 		create_dir->show();
 		project_status_rect->show();
 		project_browse->show();
+		edit_check_box->show();
 
 		if (mode == MODE_IMPORT) {
 			set_title(TTR("Import Existing Project"));
-			set_ok_button_text(TTR("Import & Edit"));
+			set_ok_button_text(TTR("Import"));
 
 			name_container->hide();
 			install_path_container->hide();
@@ -810,7 +812,7 @@ void ProjectDialog::show_dialog(bool p_reset_name) {
 			// Project path dialog is also opened; no need to change focus.
 		} else if (mode == MODE_NEW) {
 			set_title(TTR("Create New Project"));
-			set_ok_button_text(TTR("Create & Edit"));
+			set_ok_button_text(TTR("Create"));
 
 			name_container->show();
 			install_path_container->hide();
@@ -821,7 +823,7 @@ void ProjectDialog::show_dialog(bool p_reset_name) {
 			callable_mp(project_name, &LineEdit::select_all).call_deferred();
 		} else if (mode == MODE_INSTALL) {
 			set_title(TTR("Install Project:") + " " + zip_title);
-			set_ok_button_text(TTR("Install & Edit"));
+			set_ok_button_text(TTR("Install"));
 
 			project_name->set_text(zip_title);
 
@@ -1062,6 +1064,16 @@ ProjectDialog::ProjectDialog() {
 	fdialog_install->set_previews_enabled(false); //Crucial, otherwise the engine crashes.
 	fdialog_install->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	add_child(fdialog_install);
+
+	Control *spacer2 = memnew(Control);
+	spacer2->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	vb->add_child(spacer2);
+
+	edit_check_box = memnew(CheckBox);
+	edit_check_box->set_text(TTR("Edit Now"));
+	edit_check_box->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
+	edit_check_box->set_pressed(true);
+	vb->add_child(edit_check_box);
 
 	project_name->connect(SceneStringName(text_changed), callable_mp(this, &ProjectDialog::_project_name_changed).unbind(1));
 	project_name->connect(SceneStringName(text_submitted), callable_mp(this, &ProjectDialog::ok_pressed).unbind(1));
