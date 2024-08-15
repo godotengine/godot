@@ -7,6 +7,7 @@
 		This resource defines a custom rendering effect that can be applied to [Viewport]s through the viewports' [Environment]. You can implement a callback that is called during rendering at a given stage of the rendering pipeline and allows you to insert additional passes. Note that this callback happens on the rendering thread. CompositorEffect is an abstract base class and must be extended to implement specific rendering logic.
 	</description>
 	<tutorials>
+		<link title="The Compositor">$DOCS_URL/tutorials/rendering/compositor.html</link>
 	</tutorials>
 	<methods>
 		<method name="_render_callback" qualifiers="virtual">
