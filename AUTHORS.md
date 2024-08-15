@@ -28,8 +28,10 @@ name is available.
 (in alphabetical order, with over 10 commits excluding merges)
 
     Aaron Franke (aaronfranke)
+    Aaron Pagano (aaronp64)
     Aaron Record (LightningAA)
     Adam Scott (adamscott)
+    Alexander Hartmann (Alex2782)
     Alexander Holland (AlexHolly)
     Alex Drozd (brno32)
     Alexey Khoroshavin (allkhor)
@@ -58,8 +60,8 @@ name is available.
     Bernhard Liebl (poke1024)
     Bhuvan Vemula (Bhu1-V)
     bitsawer
-    BlueCube3310
     Błażej Szczygieł (zaps166)
+    BlueCube3310
     Bojidar Marinov (bojidar-bg)
     Brian Semrau (briansemrau)
     Bruno Lourenço (MadEqua)
@@ -70,8 +72,10 @@ name is available.
     Carter Anderson (cart)
     ChibiDenDen
     Chris Bradfield (cbscribe)
+    Christian Kaiser (ckaiser)
     Clay John (clayjohn)
     ConteZero
+    CookieBadger
     Dana Olson (adolson)
     Daniel J. Ramirez (djrm)
     Daniel Rakos (aqnuep)
@@ -89,6 +93,7 @@ name is available.
     Douglas Leão (DeeJayLSP)
     DualMatrix
     Ellen Poe (ellenhp)
+    Emilio Coppola (coppolaemilio)
     Emmanuel Barroga (codecustard)
     Emmanuel Leblond (touilleMan)
     Eoin O'Neill (Eoin-ONeill-Yokai)
@@ -120,6 +125,7 @@ name is available.
     Haoyu Qiu (timothyqiu)
     Hein-Pieter van Braam-Stewart (hpvb)
     Hendrik Brucker (Geometror)
+    Hilderin
     hilfazer
     Hiroshi Ogawa (hi-ogawa)
     HolonProduction
@@ -128,10 +134,11 @@ name is available.
     Hugo Locurcio (Calinou)
     Ian Bishop (ianb96)
     Ibrahn Sahir (ibrahn)
-    Ignacio Etcheverry (neikeq)
+    Ignacio Roldán Etcheverry (neikeq)
     Igor Kordiukiewicz (IgorKordiukiewicz)
     Ilaria Cislaghi (QbieShay)
     Indah Sylvia (ISylvox)
+    Ivan Šachov (van800)
     J08nY
     Jake Young (Duroxxigar)
     Jakub Grzesik (kubecz3k)
@@ -167,6 +174,8 @@ name is available.
     Lucien Menassol (Kanabenki)
     Lyuma
     Maganty Rushyendra (mrushyendra)
+    Magian (magian1127)
+    Mai Lavelle (maiself)
     Malcolm Nixon (Malcolmnixon)
     Manuele Finocchiaro (m4nu3lf)
     Marcel Admiraal (madmiraal)
@@ -179,6 +188,7 @@ name is available.
     Mario Schlack (hurikhan)
     Marios Staikopoulos (marstaik)
     Marius Hanl (Maran23)
+    Mark DiBarry (markdibarry)
     Mark Riedesel (klowner)
     Markus Sauermann (Sauermann)
     Martin Capitanio (capnm)
@@ -206,6 +216,7 @@ name is available.
     Muhammad Huri (CakHuri)
     muiroc
     myaaaaaaaaa
+    Nathalie Galla (MurderVeggie)
     Nathan Franke (nathanfranke)
     Nathan Lovato (NathanLovato)
     Nathan Warden (NathanWarden)
@@ -235,8 +246,8 @@ name is available.
     Poommetee Ketson (Noshyaar)
     Przemysław Gołąb (n-pigeon)
     Rafael M. G. (rafallus)
-    Raffaele Picca (RPicster)
     Rafał Mikrut (qarmin)
+    Raffaele Picca (RPicster)
     Ralf Hölzemer (rollenrolm)
     Ramesh Ravone (RameshRavone)
     Raphael2048
@@ -304,5 +315,7 @@ name is available.
     Zher Huei Lee (leezh)
     Zi Ye (MajorMcDoom)
     ZuBsPaCe
+    Дмитрий Сальников (DmitriySalnikov)
+    忘忧の (Daylily-Zeleen)
     谢天 (jsjtxietian)
     风青山 (Rindbee)

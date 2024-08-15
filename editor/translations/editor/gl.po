@@ -12,19 +12,20 @@
 # Carlos Cortes Garcia <carlos.cortes.games@gmail.com>, 2023.
 # C H O P O <ograncthulhu@gmail.com>, 2024.
 # ninjum <ninhum@gmx.com>, 2024.
+# spukes <soyceltista@hotmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2024-06-20 12:09+0000\n"
-"Last-Translator: ninjum <ninhum@gmx.com>\n"
+"PO-Revision-Date: 2024-08-12 20:09+0000\n"
+"Last-Translator: spukes <soyceltista@hotmail.com>\n"
 "Language-Team: Galician <https://hosted.weblate.org/projects/godot-engine/"
 "godot/gl/>\n"
 "Language: gl\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.6-rc\n"
+"X-Generator: Weblate 5.7-dev\n"
 
 msgid "Main Thread"
 msgstr "Fío principal"
@@ -175,6 +176,12 @@ msgstr "Botón Joystick %d"
 
 msgid "Pressure:"
 msgstr "Presión:"
+
+msgid "canceled"
+msgstr "cancelado"
+
+msgid "touched"
+msgstr "tocado"
 
 msgid "released"
 msgstr "liberado"
@@ -435,11 +442,17 @@ msgstr ""
 msgid "An action with the name '%s' already exists."
 msgstr "Xa existe unha acción co nome '%s'."
 
+msgid "Cannot Revert - Action is same as initial"
+msgstr "Non se pode reverter - A acción é igual ca inicial"
+
 msgid "Revert Action"
 msgstr "Revertir Acción"
 
 msgid "Add Event"
 msgstr "Engadir Evento"
+
+msgid "Remove Action"
+msgstr "Eliminar acción"
 
 msgid "Cannot Remove Action"
 msgstr "Non se pode eliminar a acción"
@@ -455,6 +468,9 @@ msgstr "Filtrar por nome"
 
 msgid "Clear All"
 msgstr "Limpar Todo"
+
+msgid "Clear all search filters."
+msgstr "Limpar tódolos filtros de búsqueda."
 
 msgid "Add New Action"
 msgstr "Engadir Nova Acción"
@@ -576,9 +592,41 @@ msgstr "Cambiar Lonxitude da Animación"
 msgid "Change Animation Loop"
 msgstr "Cambiar Ciclo da Animación"
 
+msgid "Can't change loop mode on animation instanced from imported scene."
+msgstr ""
+"Non se pode cambiar o modo de bucle nunha animación creada a partires dunha "
+"escena importada."
+
 msgid "Can't change loop mode on animation embedded in another scene."
 msgstr ""
 "Non se pode cambiar o modo de bucle na animación incorporada noutra escena."
+
+msgid "Property Track..."
+msgstr "Pista de Propiedades..."
+
+msgid "3D Position Track..."
+msgstr "Pista de Posición 3D..."
+
+msgid "3D Rotation Track..."
+msgstr "Pista de Rotación 3D..."
+
+msgid "3D Scale Track..."
+msgstr "Pista de Escala 3D..."
+
+msgid "Blend Shape Track..."
+msgstr "Pista de Forma Combinada..."
+
+msgid "Call Method Track..."
+msgstr "Pista de Chamadas de Métodos..."
+
+msgid "Bezier Curve Track..."
+msgstr "Pista de Curva Bezier..."
+
+msgid "Audio Playback Track..."
+msgstr "Pista de Reprodución de audio..."
+
+msgid "Animation Playback Track..."
+msgstr "Pista de Reprodución de animación..."
 
 msgid "Animation length (frames)"
 msgstr "Lonxitude da Animacion (en fotogramas)"
@@ -655,11 +703,17 @@ msgstr "Fluxo:"
 msgid "Start (s):"
 msgstr "Inicio (s):"
 
+msgid "End (s):"
+msgstr "Fin (s):"
+
 msgid "Animation Clip:"
 msgstr "Clip de Animación:"
 
 msgid "Toggle Track Enabled"
 msgstr "Act./Desact. Pista"
+
+msgid "Don't Use Blend"
+msgstr "Non usar mestura"
 
 msgid "Continuous"
 msgstr "Continuo"
@@ -691,8 +745,20 @@ msgstr "Interpolación de Bucle Recortado"
 msgid "Wrap Loop Interp"
 msgstr "Interpolación de Bucle Envolvente"
 
+msgid "Insert Key..."
+msgstr "Insertar Chave..."
+
 msgid "Duplicate Key(s)"
 msgstr "Duplicar Chave(s)"
+
+msgid "Cut Key(s)"
+msgstr "Cortar Nodo(s)"
+
+msgid "Copy Key(s)"
+msgstr "Copiar chave(s)"
+
+msgid "Add RESET Value(s)"
+msgstr "Engadir valor(es) de RESET"
 
 msgid "Delete Key(s)"
 msgstr "Eliminar Chave(s)"
@@ -709,6 +775,13 @@ msgstr "Cambiar Modo de Bucle da Animación"
 msgid "Change Animation Use Blend"
 msgstr "Cambiar Uso de Mezcla na Animación"
 
+msgid ""
+"Compressed tracks can't be edited or removed. Re-import the animation with "
+"compression disabled in order to edit."
+msgstr ""
+"As pistas comprimidas non poden editarse nin eliminarse. Volve a importar a "
+"animación coa compresión desactivada para poder editala."
+
 msgid "Remove Anim Track"
 msgstr "Eliminar Pista de Animación"
 
@@ -717,6 +790,11 @@ msgstr "Crear nova pista para %s e insertar clave?"
 
 msgid "Create %d new tracks and insert keys?"
 msgstr "Crear %d novas pistas e insertar claves?"
+
+msgid "Hold Shift when clicking the key icon to skip this dialog."
+msgstr ""
+"Manteña premida a tecla Maiúsculas ao facer clic na icona da chave para "
+"omitir este cadro de diálogo."
 
 msgid "Create"
 msgstr "Crear"
@@ -779,6 +857,9 @@ msgstr "A ruta á pista é inválida, polo que non se poden engadir chaves."
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "A pista non e do tipo Node3D, non se pode insertar a clave"
 
+msgid "Track is not of type MeshInstance3D, can't insert key"
+msgstr "A pista non e do tipo MeshInstance3D, non se pode insertar a clave"
+
 msgid "Track path is invalid, so can't add a method key."
 msgstr ""
 "A ruta á pista é inválida, polo que non se pode engadir unha clave de método."
@@ -806,6 +887,9 @@ msgstr "BlendShape"
 
 msgid "Methods"
 msgstr "Métodos"
+
+msgid "Bezier"
+msgstr "Bezier"
 
 msgid "Audio"
 msgstr "Son"
@@ -4597,6 +4681,9 @@ msgstr ""
 "O arquivo de proxecto '.zip' non é válido; non conteñe ningún arquivo de "
 "configuración 'project.godot'."
 
+msgid "New Game Project"
+msgstr "Novo Proxecto de Xogo"
+
 msgid "Couldn't create project.godot in project path."
 msgstr "Non se pudo crear o arquivo 'project.godot' na ruta do proxecto."
 
@@ -4605,9 +4692,6 @@ msgstr "Erro ao abrir o arquivo comprimido, non está en formato ZIP."
 
 msgid "The following files failed extraction from package:"
 msgstr "Os seguintes arquivos non se poideron extraer do paquete:"
-
-msgid "New Game Project"
-msgstr "Novo Proxecto de Xogo"
 
 msgid "Import & Edit"
 msgstr "Importar e Editar"

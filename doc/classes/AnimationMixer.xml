@@ -8,6 +8,7 @@
 		After instantiating the playback information data within the extended class, the blending is processed by the [AnimationMixer].
 	</description>
 	<tutorials>
+		<link title="Migrating Animations from Godot 4.0 to 4.3">https://godotengine.org/article/migrating-animations-from-godot-4-0-to-4-3/</link>
 	</tutorials>
 	<methods>
 		<method name="_post_process_key_value" qualifiers="virtual const">
@@ -122,7 +123,7 @@
 				    move_and_slide()
 				[/gdscript]
 				[/codeblocks]
-				By using this in combination with [method get_root_motion_position_accumulator], you can apply the root motion position more correctly to account for the rotation of the node.
+				By using this in combination with [method get_root_motion_rotation_accumulator], you can apply the root motion position more correctly to account for the rotation of the node.
 				[codeblocks]
 				[gdscript]
 				func _process(delta):

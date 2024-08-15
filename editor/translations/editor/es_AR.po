@@ -6872,6 +6872,9 @@ msgstr ""
 msgid "The path specified doesn't exist."
 msgstr "La ruta especificada no existe."
 
+msgid "New Game Project"
+msgstr "Nuevo Proyecto de Juego"
+
 msgid "Couldn't create project.godot in project path."
 msgstr "No se pudo crear project.godot en la ruta de proyecto."
 
@@ -6880,9 +6883,6 @@ msgstr "Error al abrir el archivo comprimido, no está en formato ZIP."
 
 msgid "The following files failed extraction from package:"
 msgstr "Los siguientes archivos no se pudieron extraer del paquete:"
-
-msgid "New Game Project"
-msgstr "Nuevo Proyecto de Juego"
 
 msgid "Import & Edit"
 msgstr "Importar y Editar"

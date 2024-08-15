@@ -424,15 +424,6 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 					surf_tool->set_material(material);
 				}
 
-				if (!current_material.is_empty()) {
-					if (mesh->get_surface_count() >= 1) {
-						mesh->set_surface_name(mesh->get_surface_count() - 1, current_material.get_basename());
-					}
-				} else if (!current_group.is_empty()) {
-					if (mesh->get_surface_count() >= 1) {
-						mesh->set_surface_name(mesh->get_surface_count() - 1, current_group);
-					}
-				}
 				Array array = surf_tool->commit_to_arrays();
 
 				if (mesh_flags & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES && generate_tangents) {
@@ -450,6 +441,16 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 
 				mesh->add_surface(Mesh::PRIMITIVE_TRIANGLES, array, TypedArray<Array>(), Dictionary(), material, name, mesh_flags);
 				print_verbose("OBJ: Added surface :" + mesh->get_surface_name(mesh->get_surface_count() - 1));
+
+				if (!current_material.is_empty()) {
+					if (mesh->get_surface_count() >= 1) {
+						mesh->set_surface_name(mesh->get_surface_count() - 1, current_material.get_basename());
+					}
+				} else if (!current_group.is_empty()) {
+					if (mesh->get_surface_count() >= 1) {
+						mesh->set_surface_name(mesh->get_surface_count() - 1, current_group);
+					}
+				}
 
 				surf_tool->clear();
 				surf_tool->begin(Mesh::PRIMITIVE_TRIANGLES);
