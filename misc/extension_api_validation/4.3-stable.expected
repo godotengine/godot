@@ -1,0 +1,9 @@
+This file contains the expected output of --validate-extension-api when run against the extension_api.json of the
+4.3-stable tag (the basename of this file).
+
+Only lines that start with "Validate extension JSON:" matter, everything else is considered a comment and ignored. They
+should instead be used to justify these changes and describe how users should work around these changes.
+
+Add new entries at the end of the file.
+
+## Changes between 4.3-stable and 4.4-stable
