@@ -157,7 +157,7 @@ void ShapeCast3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collide_with_bodies", "enable"), &ShapeCast3D::set_collide_with_bodies);
 	ClassDB::bind_method(D_METHOD("is_collide_with_bodies_enabled"), &ShapeCast3D::is_collide_with_bodies_enabled);
 
-	ClassDB::bind_method(D_METHOD("_get_collision_result"), &ShapeCast3D::_get_collision_result);
+	ClassDB::bind_method(D_METHOD("get_collision_result"), &ShapeCast3D::get_collision_result);
 
 	ClassDB::bind_method(D_METHOD("set_debug_shape_custom_color", "debug_shape_custom_color"), &ShapeCast3D::set_debug_shape_custom_color);
 	ClassDB::bind_method(D_METHOD("get_debug_shape_custom_color"), &ShapeCast3D::get_debug_shape_custom_color);
@@ -169,7 +169,7 @@ void ShapeCast3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin", PROPERTY_HINT_RANGE, "0,100,0.01,suffix:m"), "set_margin", "get_margin");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_results"), "set_max_results", "get_max_results");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "collision_result", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "", "_get_collision_result");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "collision_result", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "", "get_collision_result");
 
 	ADD_GROUP("Collide With", "collide_with");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collide_with_areas", "is_collide_with_areas_enabled");
@@ -475,7 +475,7 @@ bool ShapeCast3D::is_collide_with_bodies_enabled() const {
 	return collide_with_bodies;
 }
 
-Array ShapeCast3D::_get_collision_result() const {
+Array ShapeCast3D::get_collision_result() const {
 	Array ret;
 
 	for (int i = 0; i < result.size(); ++i) {

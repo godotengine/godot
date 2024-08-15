@@ -146,7 +146,7 @@
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
 			The shape's collision mask. Only objects in at least one collision layer enabled in the mask will be detected. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
-		<member name="collision_result" type="Array" setter="" getter="_get_collision_result" default="[]">
+		<member name="collision_result" type="Array" setter="" getter="get_collision_result" default="[]">
 			Returns the complete collision information from the collision sweep. The data returned is the same as in the [method PhysicsDirectSpaceState3D.get_rest_info] method.
 		</member>
 		<member name="debug_shape_custom_color" type="Color" setter="set_debug_shape_custom_color" getter="get_debug_shape_custom_color" default="Color(0, 0, 0, 1)">
