@@ -6,6 +6,10 @@
 class BeehaveLeafBlackboardSet : public BeehaveLeaf
 {
     GDCLASS(BeehaveLeafBlackboardSet, BeehaveLeaf);
+    static void _bind_methods()
+    {
+        
+    }
 
 public:
     virtual String get_tooltip()override

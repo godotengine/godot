@@ -82,8 +82,8 @@ void draw_angular_limits(
 	auto calculate_point = [&](int32_t p_index) {
 		const float angle = p_limit_lower + angle_step * (float)p_index;
 
-		const float x = GIZMO_RADIUS * cosf(-angle);
-		const float y = GIZMO_RADIUS * sinf(-angle);
+		const float x = GIZMO_RADIUS * Math::cos(angle);
+		const float y = GIZMO_RADIUS * Math::sin(angle);
 
 		return to_3d(p_axis, x, y);
 	};

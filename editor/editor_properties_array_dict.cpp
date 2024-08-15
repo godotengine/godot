@@ -414,7 +414,8 @@ void EditorPropertyArray::update_property() {
 
 		size_slider->set_value(size);
 		property_vbox->set_visible(size > 0);
-		button_add_item->set_visible(page_index == max_page);
+		if(button_add_item != nullptr)
+			button_add_item->set_visible(page_index == max_page);
 		paginator->update(page_index, max_page);
 		paginator->set_visible(max_page > 0);
 

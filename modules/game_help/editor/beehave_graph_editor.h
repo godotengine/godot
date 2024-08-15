@@ -6,6 +6,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_properties.h"
 #include "editor/inspector_dock.h"
+#include "editor/gui/editor_bottom_panel.h"
 #include "scene/gui/graph_edit_arranger.h"
 #include "scene/gui/view_panner.h"
 #include "scene/gui/graph_edit.h"
@@ -44,8 +45,10 @@ public:
 	{
 
 	}
-	void init(Control* p_control)
+	void init()
 	{
+		EditorBottomPanel* p_control = EditorNode::get_bottom_panel();
+
 		titlebar_normal = p_control->get_theme_stylebox(SNAME("titlebar"), SNAME("GraphEdit"))->duplicate();
 		titlebar_success = titlebar_normal->duplicate();
 		titlebar_failure = titlebar_normal->duplicate();
@@ -109,11 +112,15 @@ public:
 	Ref<BeehaveGraphFrames> frames;
 	bool horizontal = false;
 
-	void _init(Ref<BeehaveGraphFrames> p_frames,const StringName& p_icon, bool p_horizontal)
+	void _init(Ref<BeehaveGraphFrames> p_frames,const String& p_title_text,const String& p_text, const StringName& p_icon, bool p_horizontal)
 	{
+		title_text = p_title_text;
+		text = p_text;
 		frames = p_frames;
 		horizontal = p_horizontal;
-		icon = get_editor_theme_icon(p_icon);
+		EditorBottomPanel* p_control = EditorNode::get_bottom_panel();
+		icon = p_control->get_editor_theme_icon(p_icon);
+		set_draggable(false);
 	}
 	void _ready()
 	{
@@ -129,6 +136,7 @@ public:
 
 		icon_rect = memnew(TextureRect);
 		icon_rect->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
+		icon_rect->set_texture(icon);
 		
 		titlebar_hbox = get_titlebar_hbox();
 		titlebar_hbox->get_child(0)->queue_free();
@@ -151,7 +159,8 @@ public:
 		add_child(bottom_port);
 
 
-		connect("_on_size_changed", callable_mp(this, &BeehaveGraphNodes::_on_size_changed));
+		connect(SceneStringName(minimum_size_changed), callable_mp(this, &BeehaveGraphNodes::_on_size_changed));
+		callable_mp(this, &BeehaveGraphNodes::_on_size_changed).call_deferred();
 
 	}
 
@@ -165,7 +174,7 @@ public:
 			}
 			if(is_slot_enabled_right(1))
 			{
-				draw_texture(frames->icon_port_right,Vector2(get_size().x, get_size().y/2) + Vector2(4,-5),p_color);
+				draw_texture(frames->icon_port_right,Vector2(get_size().x, get_size().y/2) + Vector2(-5, -4.5),p_color);
 			}
 		}
 		else
@@ -176,7 +185,7 @@ public:
 			}
 			else if(p_slot_index == 1 )
 			{
-				draw_texture(frames->icon_port_bottom,Vector2(get_size().x/2,get_size().y) + Vector2(-4.5f,5),p_color);
+				draw_texture(frames->icon_port_bottom,Vector2(get_size().x/2,get_size().y) + Vector2(-4.5f,-5),p_color);
 			}
 		}
 	}
@@ -264,6 +273,11 @@ public:
 	{
 		text = p_text;
 		label->set_text(text);
+	}
+	void set_title_text(String p_text)
+	{
+		title_text = p_text;
+		title_label->set_text(title_text);
 	}
 };
 class BeehaveGraphEditor : public GraphEdit
@@ -654,12 +668,12 @@ public:
 		}
 		active_nodes.clear();
 		beehave_tree = p_beehave_tree;
+		frames.instantiate();
+		frames->init();
 		_update_graph();
 	}
 	void _ready() override
 	{
-		frames.instantiate();
-		frames->init(this);
 		set_minimap_enabled(false);
 
 		layout_button = memnew(Button);
@@ -668,6 +682,7 @@ public:
 		layout_button->connect("pressed", callable_mp(this, &BeehaveGraphEditor::on_layout_changed));
 
 		get_menu_hbox()->add_child(layout_button);
+		_update_layout_button();
 
 	}
 	void _update_graph()
@@ -704,9 +719,14 @@ public:
 			return;
 		}
 		BeehaveGraphNodes* nodes = memnew(BeehaveGraphNodes);
-		nodes->set_title(p_beehave_node->get_lable_name());
+		//nodes->set_title(p_beehave_node->get_lable_name());
 		nodes->set_name(p_beehave_node->get_id());
-		nodes->_init(frames,p_beehave_node->get_icon(),horizontal_layout);
+		String tile_name = p_beehave_node->get_lable_name();
+		if(p_beehave_node->get_name().length() > 0)
+		{
+			tile_name = "\n (" + p_beehave_node->get_name() + ")";
+		}
+		nodes->_init(frames, tile_name, "test", p_beehave_node->get_icon(), horizontal_layout);
 
 		add_child(nodes);
 		if(Object::cast_to<BeehaveLeaf>(p_beehave_node.ptr()))
@@ -739,7 +759,7 @@ public:
 			return;
 		}
 
-		Ref<TreeNode> tree_node = p_beehave_tree->get_root_node();
+		Ref<TreeNode> tree_node = _create_tree_nodes(p_beehave_tree->get_root_node(),Ref<TreeNode>());
 		tree_node->update_position(horizontal_layout);
 		_place_nodes(tree_node);
 
@@ -803,6 +823,7 @@ public:
 
 	void process_begin(StringName id_name)
 	{
+		
 		TypedArray<BeehaveGraphNodes> nodes = _get_child_nodes();
 		for(int i = 0; i < nodes.size(); ++i)
 		{
@@ -861,6 +882,12 @@ public:
 				node->set_color(INACTIVE_COLOR);
 				node->set_status(status);
 			}
+			String tile_name = p_beehave_node->get_lable_name();
+			if(p_beehave_node->get_name().length() > 0)
+			{
+				tile_name = "\n (" + p_beehave_node->get_name() + ")";
+			}
+			node->set_title_text(tile_name);
 		}
 	}
 
@@ -1012,13 +1039,14 @@ public:
 
 	void _update_layout_button()
 	{
+		EditorBottomPanel* p_control = EditorNode::get_bottom_panel();
 		if(horizontal_layout)
 		{
-			layout_button->set_icon(get_editor_theme_icon("horizontal_layout"));
+			layout_button->set_icon(p_control->get_editor_theme_icon("horizontal_layout"));
 		}
 		else
 		{
-			layout_button->set_icon(get_editor_theme_icon("vertical_layout"));
+			layout_button->set_icon(p_control->get_editor_theme_icon("vertical_layout"));
 		}
 
 	}
@@ -1037,7 +1065,7 @@ protected:
 	Ref<BeehaveTree> beehave_tree;
 	LocalVector<BeehaveGraphNodes*> active_nodes;
 	Ref<BeehaveGraphFrames> frames;
-	Button* layout_button;
+	Button* layout_button = nullptr;
 };
 
 // 设置编辑的对象
@@ -1053,8 +1081,9 @@ public:
 	void setup(Ref<BeehaveNode> p_beehave_node,StringName property_name,Variant::Type p_array_type, const String &p_hint_string = "")
 	{
 		beehave_node = p_beehave_node;
+		base_class_type::setup(p_array_type, p_hint_string);
 		set_object_and_property(p_beehave_node.ptr(),property_name);
-		base_class_type::setup(p_array_type,p_hint_string);
+		set_label(property_name);
 	}
 	void on_reorder_button_gui_input(const Ref<InputEvent> &p_event)
 	{
@@ -1084,11 +1113,12 @@ public:
 	}
 	virtual void _create_new_property_slot() override
 	{
+		EditorBottomPanel* p_control = EditorNode::get_bottom_panel();
 		int idx = slots.size();
 		HBoxContainer *hbox = memnew(HBoxContainer);
 
 		Button *reorder_button = memnew(Button);
-		reorder_button->set_icon(get_editor_theme_icon(SNAME("TripleBar")));
+		reorder_button->set_icon(p_control->get_editor_theme_icon(SNAME("TripleBar")));
 		reorder_button->set_default_cursor_shape(Control::CURSOR_MOVE);
 		reorder_button->set_disabled(is_read_only());
 		reorder_button->connect(SceneStringName(gui_input), callable_mp(this, &BeehaveNodeChildChildEditor::on_reorder_button_gui_input));
@@ -1105,13 +1135,13 @@ public:
 
 		if (is_untyped_array) {
 			Button *edit_btn = memnew(Button);
-			edit_btn->set_icon(get_editor_theme_icon(SNAME("Edit")));
+			edit_btn->set_icon(p_control->get_editor_theme_icon(SNAME("Edit")));
 			edit_btn->set_disabled(is_read_only());
 			edit_btn->connect(SceneStringName(pressed), callable_mp(this, &BeehaveNodeChildChildEditor::on_change_type).bind(edit_btn, idx));
 			hbox->add_child(edit_btn);
 		} else {
 			Button *remove_btn = memnew(Button);
-			remove_btn->set_icon(get_editor_theme_icon(SNAME("Remove")));
+			remove_btn->set_icon(p_control->get_editor_theme_icon(SNAME("Remove")));
 			remove_btn->set_disabled(is_read_only());
 			remove_btn->connect(SceneStringName(pressed), callable_mp(this, &BeehaveNodeChildChildEditor::on_remove_pressed).bind(idx));
 			hbox->add_child(remove_btn);
@@ -1140,45 +1170,68 @@ class BeehaveGraphProperty : public VBoxContainer
 public:
 	BeehaveGraphProperty()
 	{
-		set_custom_minimum_size(Vector2(300,200));
+		set_custom_minimum_size(Vector2(300,600));
+		set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
 
 		beehave_editor = memnew(BeehaveGraphEditor);
 		add_child(beehave_editor);
 		beehave_editor->set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
 		beehave_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+		beehave_editor->set_minimap_size(Vector2(0, 200));
 
 
-		sub_inspector = memnew(EditorInspector);
-		
-		sub_inspector->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
-		sub_inspector->set_use_doc_hints(true);
 
-		sub_inspector->set_sub_inspector(true);
-		sub_inspector->set_property_name_style(InspectorDock::get_singleton()->get_property_name_style());
+		//add_child(select_node_property_vbox);
 
-		sub_inspector->connect("property_keyed", callable_mp(this, &BeehaveGraphProperty::_sub_inspector_property_keyed));
-		sub_inspector->connect("resource_selected", callable_mp(this, &BeehaveGraphProperty::_sub_inspector_resource_selected));
-		sub_inspector->connect("object_id_selected", callable_mp(this, &BeehaveGraphProperty::_sub_inspector_object_id_selected));
-		sub_inspector->set_keying(true);
-		sub_inspector->set_read_only(false);
-		sub_inspector->set_use_folding(false);
+		//sub_inspector = memnew(EditorInspector);
+		//
+		//sub_inspector->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+		//sub_inspector->set_use_doc_hints(true);
 
-		sub_inspector->set_mouse_filter(MOUSE_FILTER_STOP);
+		//sub_inspector->set_sub_inspector(true);
+		//sub_inspector->set_property_name_style(InspectorDock::get_singleton()->get_property_name_style());
 
-		add_child(sub_inspector);
+		//sub_inspector->connect("property_keyed", callable_mp(this, &BeehaveGraphProperty::_sub_inspector_property_keyed));
+		//sub_inspector->connect("resource_selected", callable_mp(this, &BeehaveGraphProperty::_sub_inspector_resource_selected));
+		//sub_inspector->connect("object_id_selected", callable_mp(this, &BeehaveGraphProperty::_sub_inspector_object_id_selected));
+		//sub_inspector->set_keying(true);
+		//sub_inspector->set_read_only(false);
+		//sub_inspector->set_use_folding(true);
 
+		//sub_inspector->set_mouse_filter(MOUSE_FILTER_STOP);
 
-		child_list = memnew(BeehaveNodeChildChildEditor);
-		beehave_editor->add_child(child_list);
-		child_list->setup(beehave_node, "children", Variant::OBJECT,  MAKE_RESOURCE_TYPE_HINT("BeehaveNode"));
-		child_list->set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
-		child_list->set_visible(false);
+		//select_node_property_vbox->add_child(sub_inspector);
+
 	}
-	void setup(Ref<BeehaveTree> p_beehave_tree)
+	void setup(Ref<BeehaveTree> p_beehave_tree,VBoxContainer * p_select_node_property_vbox,Button* p_buton_create_beehave_node)
 	{
+		select_node_property_vbox = p_select_node_property_vbox;
+		select_node_property_vbox->set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
 		beehave_tree = p_beehave_tree;
 		Ref<BeehaveNode> node = ObjectDB::get_instance(beehave_tree->last_editor_id); 
+		if(node.is_null())
+		{
+			node = beehave_tree->get_root_node();
+		}
+		if (node.is_null())
+		{
+			return;
+		}
+		child_list = memnew(BeehaveNodeChildChildEditor);
+		child_list->set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
+		child_list->set_visible(true);
+		select_node_property_vbox->add_child(child_list);
+
+
+		buton_create_beehave_node = p_buton_create_beehave_node;
+		buton_create_beehave_node->set_text("Add Beehave Node");
+		buton_create_beehave_node->set_modulate(Color(1, 0.255238, 0.196011, 1));
+
+
+
+
 		set_editor_node(p_beehave_tree, node);
+		beehave_editor->set_beehave_tree(p_beehave_tree);
 	}
 
 	
@@ -1200,8 +1253,37 @@ public:
 	{
 		beehave_tree = p_beehave_tree;
 		beehave_node = p_beehave_node;
-		beehave_tree->last_editor_id = beehave_node->get_instance_id();
-		sub_inspector->edit(beehave_node.ptr());
+		if(beehave_node.is_valid())
+		{
+			beehave_tree->last_editor_id = beehave_node->get_instance_id();
+		}
+		//sub_inspector->edit(beehave_node.ptr());
+		update_creted_beehave_node_state();
+	}
+
+	void update_creted_beehave_node_state()
+	{
+		// 更新按鈕狀態
+		bool show = true;
+		if (beehave_node->get_supper_child_count() < 0)
+		{
+			show = true;
+		}
+		else if(beehave_node->get_supper_child_count() == 0)
+		{
+			show = false;
+		}
+		else
+		{
+			if(beehave_node->get_child_count() >= beehave_node->get_supper_child_count())
+			{
+				show = false;
+			}
+		}
+		buton_create_beehave_node->set_visible(show);
+		child_list->setup(beehave_node, "children", Variant::OBJECT, MAKE_RESOURCE_TYPE_HINT("BeehaveNode"));
+		child_list->update_property();
+
 	}
 
 	void create_leaf_pop_sub()
@@ -1332,6 +1414,8 @@ protected:
 	Ref<BeehaveTree> beehave_tree;
 	Ref<BeehaveNode> beehave_node;
 	BeehaveGraphEditor* beehave_editor = nullptr;
+
+	VBoxContainer* select_node_property_vbox = nullptr;
 	EditorInspector* sub_inspector = nullptr;
 	BeehaveNodeChildChildEditor* child_list = nullptr;
 	Button* buton_create_beehave_node = nullptr;

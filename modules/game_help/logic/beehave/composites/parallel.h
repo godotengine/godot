@@ -5,6 +5,10 @@
 class BeehaveCompositeParallel : public BeehaveComposite
 {
     GDCLASS(BeehaveCompositeParallel, BeehaveComposite);
+    static void _bind_methods()
+    {
+        
+    }
 public:
     virtual String get_tooltip()override
     {

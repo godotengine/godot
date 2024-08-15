@@ -5,13 +5,18 @@
 class BeehaveNode : public RefCounted
 {
     GDCLASS(BeehaveNode, RefCounted);
-    static void bind_methods()
+    static void _bind_methods()
     {
-        ClassDB::bind_method(D_METHOD("set_children"), &BeehaveNode::set_children);
+        ClassDB::bind_method(D_METHOD("set_children", "children"), &BeehaveNode::set_children);
         ClassDB::bind_method(D_METHOD("get_children"), &BeehaveNode::get_children);
+
+        ClassDB::bind_method(D_METHOD("set_name", "name"), &BeehaveNode::set_name);
+        ClassDB::bind_method(D_METHOD("get_name"), &BeehaveNode::get_name);
 
 
         ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "children", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("BeehaveNode"), PROPERTY_USAGE_NO_EDITOR), "set_children", "get_children");
+
+        ADD_PROPERTY(PropertyInfo(Variant::STRING, "name"), "set_name", "get_name");
     }
 public:
     enum SequenceRunState
@@ -108,11 +113,21 @@ public:
         }
         return rs;
     }
+    void set_name(String p_name)
+    {
+        name = p_name;
+    }
+
+    String get_name()
+    {
+        return name;
+    }
 
 
     LocalVector<Ref<BeehaveNode>> children;
     LocalVector<uint8_t> child_state;
     int id = 0;
+    String name;
 };
 
 
@@ -120,6 +135,11 @@ public:
 class BeehaveComposite : public BeehaveNode
 {
     GDCLASS(BeehaveComposite, BeehaveNode);
+    
+    static void _bind_methods()
+    {
+
+    }
 public:
     virtual String get_tooltip()override
     {
@@ -149,6 +169,10 @@ public:
 class BeehaveDecorator : public BeehaveNode
 {
     GDCLASS(BeehaveDecorator, BeehaveNode);
+    static void _bind_methods()
+    {
+        
+    }
 public:
     virtual String get_tooltip()override
     {
@@ -178,6 +202,10 @@ public:
 class BeehaveLeaf : public BeehaveNode
 {
     GDCLASS(BeehaveLeaf, BeehaveNode);
+    static void _bind_methods()
+    {
+        
+    }
 public:
     virtual String get_tooltip()override
     {

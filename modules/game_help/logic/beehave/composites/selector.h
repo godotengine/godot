@@ -3,6 +3,10 @@
 class BeehaveCompositeSelector : public BeehaveComposite
 {
     GDCLASS(BeehaveCompositeSelector, BeehaveComposite);
+    static void _bind_methods()
+    {
+        
+    }
 public:
     virtual TypedArray<StringName> get_class_name()override
     {

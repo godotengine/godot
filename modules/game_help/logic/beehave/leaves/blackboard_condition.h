@@ -5,6 +5,10 @@
 class BeehaveLeafBlackboardCondition : public BeehaveLeaf
 {
     GDCLASS(BeehaveLeafBlackboardCondition, BeehaveLeaf);
+    static void _bind_methods()
+    {
+        
+    }
 
 public:
     virtual String get_tooltip()override

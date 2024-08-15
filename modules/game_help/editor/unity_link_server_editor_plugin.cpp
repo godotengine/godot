@@ -743,14 +743,20 @@ public:
 	{
 		if(name == "root_node")
 		{
+			VBoxContainer* p_select_node_property_vbox = memnew( VBoxContainer);	
+			Button* add_button = memnew(Button);		
+			
 			BeehaveGraphProperty* section = memnew(BeehaveGraphProperty);
 			// 初始化
 			if(object->get_root_node().is_null())
 			{
 				object->set_root_node(memnew(BeehaveCompositeParallel));
 			}
-			section->setup(object);
+			section->setup(object, p_select_node_property_vbox,add_button);
 			p_plugin->add_custom_control( section);
+			p_plugin->add_custom_control( p_select_node_property_vbox);
+			p_plugin->add_custom_control( add_button);
+
 			return true;
 
 		}

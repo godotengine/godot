@@ -3,6 +3,10 @@
 class BeehaveDecoratorDelayer : public BeehaveDecorator
 {
     GDCLASS(BeehaveDecoratorDelayer, BeehaveDecorator);
+    static void _bind_methods()
+    {
+        
+    }
     public:
     virtual String get_tooltip()override
     {
