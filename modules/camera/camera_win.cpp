@@ -264,24 +264,24 @@ bool CameraFeedWindows::activate_feed() {
 		goto done;
 	}
 
-	// Prepare images and textures
-	if (format == MFVideoFormat_RGB24) {
-		diffuse = Image::create_empty(width, height, false, Image::FORMAT_RGB8);
-		set_texture(diffuse);
-	}
-
-	if (format == MFVideoFormat_NV12) {
-		diffuse = Image::create_empty(width, height, false, Image::FORMAT_R8);
-		set_texture(diffuse);
-
-		normal = Image::create_empty(width / 2, height / 2, false, Image::FORMAT_RG8);
-		set_normal_texture(normal);
-	}
-
 	// Create media reader
 	hr = MFCreateSourceReaderFromMediaSource(source, NULL, &reader);
 	if (FAILED(hr)) {
 		goto done;
+	}
+
+	// Prepare images and textures
+	if (format == MFVideoFormat_RGB24) {
+		set_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_DIFFUSE,
+				Image::create_empty(width, height, false, Image::FORMAT_RGB8));
+	}
+
+	if (format == MFVideoFormat_NV12) {
+		set_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_DIFFUSE,
+				Image::create_empty(width, height, false, Image::FORMAT_R8));
+
+		set_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_NORMAL,
+				Image::create_empty(width / 2, height / 2, false, Image::FORMAT_RG8));
 	}
 
 	// Start reading
@@ -314,7 +314,8 @@ void CameraFeedWindows::deactivate_feed() {
 
 void CameraFeedWindows::capture(CameraFeedWindows *feed) {
 	print_verbose("Camera feed is now streaming");
-	while (feed->is_active()) {
+	feed->active = true;
+	while (feed->active) {
 		feed->read();
 		Sleep(100);
 	}
@@ -373,19 +374,13 @@ void CameraFeedWindows::read() {
 		buffer->Lock(&data, NULL, &len);
 
 		// Get RGB or Y plane
-		Vector<uint8_t> dataY = diffuse->get_data();
-		uint8_t *inY = dataY.ptrw();
-		CopyMemory(inY, data, dataY.size());
-		diffuse->set_data(diffuse->get_width(), diffuse->get_height(), false, diffuse->get_format(), dataY);
-		set_texture(diffuse);
+		Ref<Image> yImage = get_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_DIFFUSE);
+		set_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_DIFFUSE, data, 0, yImage->get_data().size());
 
 		// Get UV plane
 		if (format == MFVideoFormat_NV12) {
-			Vector<uint8_t> dataUV = normal->get_data();
-			uint8_t *inUV = dataUV.ptrw();
-			CopyMemory(inUV, data + dataY.size(), dataUV.size());
-			normal->set_data(normal->get_width(), normal->get_height(), false, normal->get_format(), dataUV);
-			set_normal_texture(normal);
+			Ref<Image> uvImage = get_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_NORMAL);
+			set_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_NORMAL, data, yImage->get_data().size(), uvImage->get_data().size());
 		}
 
 		buffer->Unlock();

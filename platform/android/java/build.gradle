@@ -232,6 +232,10 @@ def generateBuildTasks(String flavor = "template") {
     return tasks
 }
 
+def isAndroidStudio() {
+    return System.getProperty('idea.active') == "true"
+}
+
 task copyEditorReleaseApkToBin(type: Copy) {
     dependsOn ':editor:assembleRelease'
     from('editor/build/outputs/apk/release')

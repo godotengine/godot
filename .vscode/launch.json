@@ -1,0 +1,81 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        
+        {
+            "name": "Godot Editor",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/godot.windows.editor.dev.x86_64.exe",
+            "args": [
+                "--editor",
+                "--path",
+                "${workspaceFolder}/examples/camera"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "internalConsole",
+            "visualizerFile": "${workspaceFolder}/platform/windows/godot.natvis",
+            "preLaunchTask": "Build Godot"
+        },
+        {
+            "name": "Godot Project",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/godot.windows.editor.dev.x86_64.exe",
+            "args": [
+                "--path",
+                "${workspaceFolder}/examples/camera"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "internalConsole",
+            "visualizerFile": "${workspaceFolder}/platform/windows/godot.natvis",
+            "preLaunchTask": "Build Godot"
+        },
+        {
+            "name": "Godot Attach",
+            "type": "cppvsdbg",
+            "request": "attach",
+            "processId": "${command:pickProcess}"
+        },
+        {
+            // configuration type, request  and name. "launch" is used to deploy the app
+            // to your device and start a debugging session.
+            "type": "android",
+            "request": "launch",
+            "name": "Debug Android export template",
+
+            // Location of the App source files. This value must point to the root of
+            // your App source tree (containing AndroidManifest.xml).
+            "appSrcRoot": "${workspaceRoot}/platform/android/java/app",
+
+            // Fully qualified path to the built APK (Android Application Package).
+            "apkFile": "${workspaceRoot}/bin/android_debug.apk",
+
+            // `host:port` configuration for connecting to the ADB (Android Debug Bridge) server instance.
+            // Default: localhost:5037
+            "adbSocket": "localhost:5037",
+
+            // Automatically launch 'adb start-server' if not already started.
+            // Default: true
+            "autoStartADB": true,
+
+            // Launch behaviour if source files have been saved after the APK was built.
+            // One of: [ ignore warn stop ]. Default: warn
+            "staleBuild": "warn",
+
+            // Time in milliseconds to wait after launching an app before attempting to attach
+            // the debugger. Default: 1000ms
+            "postLaunchPause": 1000,
+
+            // Set to true to output debugging logs for diagnostics.
+            "trace": false
+        }
+    ]
+}

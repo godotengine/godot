@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  camera_win.h                                                          */
+/*  camera_android.h                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,56 +28,55 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CAMERA_WIN_H
-#define CAMERA_WIN_H
+#ifndef CAMERA_ANDROID_H
+#define CAMERA_ANDROID_H
 
 #include "servers/camera/camera_feed.h"
 #include "servers/camera_server.h"
-#include <initguid.h>
-#include <mfapi.h>
-#include <mfidl.h>
-#include <mferror.h>
-#include <mfreadwrite.h>
-#include <windows.h>
 
-class CameraFeedWindows : public CameraFeed {
+#include <camera/NdkCameraDevice.h>
+#include <camera/NdkCameraError.h>
+#include <camera/NdkCameraManager.h>
+#include <camera/NdkCameraMetadataTags.h>
+#include <media/NdkImageReader.h>
+
+class CameraFeedAndroid : public CameraFeed {
 private:
-	LPCWSTR camera_id;
-	IMFMediaSource *source = NULL;
-	IMFMediaType *type = NULL;
-	GUID format;
+    String camera_id;
+    int32_t format;
 
-	IMFSourceReader *reader = NULL;
-	std::thread *worker;
-	
-	static void capture(CameraFeedWindows *feed);
-	void read();
+	ACameraManager *manager = nullptr;
+	ACameraDevice *device = nullptr;
+	AImageReader *reader = nullptr;
+	ACameraCaptureSession *session = nullptr;
+	ACaptureRequest *request = nullptr;
+
+    static void onError(void *context, ACameraDevice *p_device, int error);
+	static void onDisconnected(void *context, ACameraDevice *p_device);
+    static void onImage(void *context, AImageReader *p_reader);
+    static void onSessionReady(void *context, ACameraCaptureSession *session);
+    static void onSessionActive(void *context, ACameraCaptureSession *session);
+    static void onSessionClosed(void *context, ACameraCaptureSession *session);
 
 protected:
 public:
-	CameraFeedWindows(LPCWSTR camera_id, IMFMediaType *type, String name, int width, int height, GUID format);
-	virtual ~CameraFeedWindows();
+	CameraFeedAndroid(ACameraManager *manager, const char *id, int32_t position, int32_t width, int32_t height,
+                      int32_t format, int32_t orientation);
+	virtual ~CameraFeedAndroid();
 
 	bool activate_feed();
 	void deactivate_feed();
 };
 
-class CameraWindows : public CameraServer {
+class CameraAndroid : public CameraServer {
 private:
+	ACameraManager *cameraManager;
+
 	void update_feeds();
 
 public:
-	CameraWindows();
-	~CameraWindows();
+	CameraAndroid();
+	~CameraAndroid();
 };
 
-template <class T> void SafeRelease(T **ppT)
-{
-    if (*ppT)
-    {
-        (*ppT)->Release();
-        *ppT = NULL;
-    }
-}
-
-#endif // CAMERA_WIN_H
+#endif // CAMERA_ANDROID_H

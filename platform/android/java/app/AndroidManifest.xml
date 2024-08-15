@@ -15,6 +15,12 @@
         android:glEsVersion="0x00030000"
         android:required="true" />
 
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
+    <uses-permission android:name="android.permission.CAMERA" />
+
     <application
         android:label="@string/godot_project_name_string"
         android:allowBackup="false"
@@ -41,9 +47,8 @@
             android:launchMode="singleInstancePerTask"
             android:excludeFromRecents="false"
             android:exported="true"
-            android:screenOrientation="landscape"
+            android:screenOrientation="portrait"
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
-            android:resizeableActivity="false"
             tools:ignore="UnusedAttribute" >
 
             <intent-filter>

@@ -41,6 +41,7 @@ void CameraFeed::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_position"), &CameraFeed::get_position);
 	ClassDB::bind_method(D_METHOD("get_width"), &CameraFeed::get_width);
 	ClassDB::bind_method(D_METHOD("get_heigth"), &CameraFeed::get_height);
+    ClassDB::bind_method(D_METHOD("get_datatype"), &CameraFeed::get_datatype);
 
 	ClassDB::bind_method(D_METHOD("is_active"), &CameraFeed::is_active);
 	ClassDB::bind_method(D_METHOD("set_active", "active"), &CameraFeed::set_active);
@@ -56,6 +57,13 @@ void CameraFeed::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEED_UNSPECIFIED);
 	BIND_ENUM_CONSTANT(FEED_FRONT);
 	BIND_ENUM_CONSTANT(FEED_BACK);
+
+    BIND_ENUM_CONSTANT(FEED_UNSUPPORTED);
+    BIND_ENUM_CONSTANT(FEED_RGB);
+    BIND_ENUM_CONSTANT(FEED_RGBA);
+    BIND_ENUM_CONSTANT(FEED_YCBCR);
+    BIND_ENUM_CONSTANT(FEED_YCBCR_SEP);
+    BIND_ENUM_CONSTANT(FEED_NV12);
 }
 
 int CameraFeed::get_id() const {
@@ -99,6 +107,10 @@ CameraFeed::FeedPosition CameraFeed::get_position() const {
 	return position;
 }
 
+CameraFeed::FeedDataType CameraFeed::get_datatype() const {
+	return datatype;
+}
+
 Transform2D CameraFeed::get_transform() const {
 	return transform;
 }
@@ -107,41 +119,44 @@ void CameraFeed::set_transform(const Transform2D &p_transform) {
 	transform = p_transform;
 }
 
-RID CameraFeed::get_texture() {
+RID CameraFeed::get_texture() const {
 	return texture;
 }
 
-void CameraFeed::set_texture(Ref<Image> &diffuse) {
-	if (diffuse_texture.is_null()) {
-		diffuse_texture = RenderingServer::get_singleton()->texture_2d_create(diffuse);
-		RenderingServer::get_singleton()->canvas_texture_set_channel(texture, RenderingServer::CANVAS_TEXTURE_CHANNEL_DIFFUSE, diffuse_texture);
+Ref<Image> CameraFeed::get_image(RenderingServer::CanvasTextureChannel channel) {
+	return channel_image[channel];
+}
+
+void CameraFeed::set_image(RenderingServer::CanvasTextureChannel channel, const Ref<Image> &image) {
+	if (channel_image[channel] != image) {
+		channel_image[channel] = image;
+		RenderingServer::get_singleton()->free(channel_texture[channel]);
+		channel_texture[channel] = RenderingServer::get_singleton()->texture_2d_create(image);
+		RenderingServer::get_singleton()->canvas_texture_set_channel(texture, channel, channel_texture[channel]);
 	} else {
-		RenderingServer::get_singleton()->texture_2d_update(diffuse_texture, diffuse);
+		RenderingServer::get_singleton()->texture_2d_update(channel_texture[channel], image);
 	}
 }
 
-void CameraFeed::set_normal_texture(Ref<Image> &normal) {
-	if (normal_texture.is_null()) {
-		normal_texture = RenderingServer::get_singleton()->texture_2d_create(normal);
-		RenderingServer::get_singleton()->canvas_texture_set_channel(texture, RenderingServer::CANVAS_TEXTURE_CHANNEL_NORMAL, normal_texture);
-	} else {
-		RenderingServer::get_singleton()->texture_2d_update(normal_texture, normal);
-	}
-}
-
-RID CameraFeed::get_shader() {
-	// TODO Return shader for camera frames
-	return RID();
+void CameraFeed::set_image(RenderingServer::CanvasTextureChannel channel, uint8_t *data, size_t offset, size_t len) {
+	Ref<Image> image = channel_image[channel];
+	ERR_FAIL_COND_MSG(image.is_null(), "Channel not initialized");
+	Vector<uint8_t> image_data = image->get_data();
+	uint8_t *dest = image_data.ptrw();
+	memcpy(dest, data + offset, len);
+	image->set_data(image->get_width(), image->get_height(), false, image->get_format(), image_data);
+	RenderingServer::get_singleton()->texture_2d_update(channel_texture[channel], image);
 }
 
 CameraFeed::CameraFeed() {
 	// initialize our feed
 	id = CameraServer::get_singleton()->get_free_id();
-	name = "???";
+	name = "?";
 	width = 0;
 	height = 0;
 	active = false;
 	position = CameraFeed::FEED_UNSPECIFIED;
+    datatype = CameraFeed::FEED_UNSUPPORTED;
 	transform = Transform2D(1.0, 0.0, 0.0, -1.0, 0.0, 1.0);
 	texture = RenderingServer::get_singleton()->canvas_texture_create();
 }
@@ -150,8 +165,9 @@ CameraFeed::~CameraFeed() {
 	// Free our textures
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RenderingServer::get_singleton()->free(texture);
-	RenderingServer::get_singleton()->free(diffuse_texture);
-	RenderingServer::get_singleton()->free(normal_texture);
+	for (size_t i = 0; i < 3; i++) {
+		RenderingServer::get_singleton()->free(channel_texture[i]);
+	}
 }
 
 bool CameraFeed::activate_feed() {

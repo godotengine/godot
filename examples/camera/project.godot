@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="basic"
+config/name="NOOMI camera test"
 run/main_scene="res://control.tscn"
 config/features=PackedStringArray("4.2")
 config/icon="res://icon.svg"
@@ -20,3 +20,7 @@ config/icon="res://icon.svg"
 window/size/viewport_width=720
 window/size/viewport_height=1280
 window/handheld/orientation=1
+
+[rendering]
+
+textures/vram_compression/import_etc2_astc=true

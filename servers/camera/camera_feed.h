@@ -51,13 +51,25 @@ public:
 		FEED_BACK // this is a camera on the back of the device
 	};
 
+    enum FeedDataType {
+        FEED_UNSUPPORTED, // unsupported type
+		FEED_RGB, // TEXTURE contains RGB data
+        FEED_RGBA, // TEXTURE contains RGBA data
+        FEED_NV12, // TEXTURE contains Y data, NORMAL_TEXTURE contains CbCr data
+		FEED_YCBCR, // TEXTURE contains YCbCr data
+		FEED_YCBCR_SEP // TEXTURE contains Y data, NORMAL_TEXTURE contains Cb data, SPECULAR_TEXTURE contains Cr data
+	};
+
 private:
 	int id; // unique id for this, for internal use in case feeds are removed
 
-	RID texture, diffuse_texture, normal_texture; // canvas textures
+	RID texture; // layered texture
+	RID channel_texture[3]; // channel textures
+	Ref<Image> channel_image[3]; // channel images
 
 protected:
 	String name; // name of our camera feed
+    FeedDataType datatype; // type of texture data stored
 	FeedPosition position; // position of camera on the device
 	int width; // width of camera frames
 	int height; // height of camera frames
@@ -68,18 +80,19 @@ protected:
 
 	static void _bind_methods();
 
-	void set_texture(Ref<Image> &image);
-	void set_normal_texture(Ref<Image> &image);
+	Ref<Image> get_image(RenderingServer::CanvasTextureChannel channel);
+	void set_image(RenderingServer::CanvasTextureChannel channel, const Ref<Image> &image);
+	void set_image(RenderingServer::CanvasTextureChannel channel, uint8_t *data, size_t offset, size_t len);
 
 public:
 	int get_id() const;
-	int get_format() const;
 	String get_name() const;
 	int get_width() const;
 	int get_height() const;
 	FeedPosition get_position() const;
+    FeedDataType get_datatype() const;
 
-	RID get_texture();
+	RID get_texture() const;
 
 	bool is_active() const;
 	void set_active(bool p_is_active);
@@ -95,5 +108,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(CameraFeed::FeedPosition);
+VARIANT_ENUM_CAST(CameraFeed::FeedDataType);
 
 #endif // CAMERA_FEED_H
