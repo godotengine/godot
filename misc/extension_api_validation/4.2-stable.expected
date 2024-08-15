@@ -86,7 +86,6 @@ Property hints reordered to improve editor usability. The types allowed are stil
 
 GH-86907
 --------
-
 Validate extension JSON: Error: Field 'classes/AudioStreamPlayer/methods/is_autoplay_enabled': is_const changed value in new API, from false to true.
 Validate extension JSON: Error: Field 'classes/AudioStreamPlayer2D/methods/is_autoplay_enabled': is_const changed value in new API, from false to true.
 Validate extension JSON: Error: Field 'classes/AudioStreamPlayer3D/methods/is_autoplay_enabled': is_const changed value in new API, from false to true.
@@ -380,3 +379,12 @@ Validate extension JSON: Error: Field 'classes/Image/methods/get_mipmap_offset/r
 
 Type changed to int64_t to support baking large lightmaps.
 No compatibility method needed, both GDExtension and C# generate it as int64_t anyway.
+
+
+GH-80418
+--------
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/Script/methods/get_script_method_list': arguments
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/Script/methods/get_script_property_list': arguments
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/Script/methods/get_script_signal_list': arguments
+
+Added optional argument. Compatibility method registered.

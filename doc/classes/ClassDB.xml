@@ -80,6 +80,7 @@
 			<param index="1" name="no_inheritance" type="bool" default="false" />
 			<description>
 				Returns an array with all the methods of [param class] or its ancestry if [param no_inheritance] is [code]false[/code]. Every element of the array is a [Dictionary] with the following keys: [code]args[/code], [code]default_args[/code], [code]flags[/code], [code]id[/code], [code]name[/code], [code]return: (class_name, hint, hint_string, name, type, usage)[/code].
+				See also [method Object.get_method_list] and [method Script.get_script_method_list].
 				[b]Note:[/b] In exported release builds the debug info is not available, so the returned dictionaries will contain only method names.
 			</description>
 		</method>
@@ -105,6 +106,7 @@
 			<param index="1" name="no_inheritance" type="bool" default="false" />
 			<description>
 				Returns an array with all the properties of [param class] or its ancestry if [param no_inheritance] is [code]false[/code].
+				See also [method Object.get_property_list] and [method Script.get_script_property_list].
 			</description>
 		</method>
 		<method name="class_get_signal" qualifiers="const">
@@ -121,6 +123,7 @@
 			<param index="1" name="no_inheritance" type="bool" default="false" />
 			<description>
 				Returns an array with all the signals of [param class] or its ancestry if [param no_inheritance] is [code]false[/code]. Every element of the array is a [Dictionary] as described in [method class_get_signal].
+				See also [method Object.get_signal_list] and [method Script.get_script_signal_list].
 			</description>
 		</method>
 		<method name="class_has_enum" qualifiers="const">

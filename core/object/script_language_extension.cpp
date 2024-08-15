@@ -67,14 +67,23 @@ void ScriptExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_language);
 
 	GDVIRTUAL_BIND(_has_script_signal, "signal");
+#ifndef DISABLE_DEPRECATED
 	GDVIRTUAL_BIND(_get_script_signal_list);
+#endif
+	GDVIRTUAL_BIND(_get_script_signal_list_2, "no_inheritance");
 
 	GDVIRTUAL_BIND(_has_property_default_value, "property");
 	GDVIRTUAL_BIND(_get_property_default_value, "property");
 
 	GDVIRTUAL_BIND(_update_exports);
+#ifndef DISABLE_DEPRECATED
 	GDVIRTUAL_BIND(_get_script_method_list);
+#endif
+	GDVIRTUAL_BIND(_get_script_method_list_2, "no_inheritance");
+#ifndef DISABLE_DEPRECATED
 	GDVIRTUAL_BIND(_get_script_property_list);
+#endif
+	GDVIRTUAL_BIND(_get_script_property_list_2, "no_inheritance");
 
 	GDVIRTUAL_BIND(_get_member_line, "member");
 
