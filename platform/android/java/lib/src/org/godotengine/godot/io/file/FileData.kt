@@ -53,7 +53,7 @@ internal class FileData(filePath: String, accessFlag: FileAccessFlags) : DataAcc
 
 		fun fileLastModified(filepath: String): Long {
 			return try {
-				File(filepath).lastModified()
+				File(filepath).lastModified() / 1000L
 			} catch (e: SecurityException) {
 				0L
 			}
