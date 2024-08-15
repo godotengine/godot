@@ -56,3 +56,12 @@ Validate extension JSON: Error: Field 'classes/RegEx/methods/compile/arguments':
 Validate extension JSON: Error: Field 'classes/RegEx/methods/create_from_string/arguments': size changed value in new API, from 1 to 2.
 
 Add optional argument to control error printing on compilation fail. Compatibility methods registered.
+
+
+GH-95375
+--------
+Validate extension JSON: Error: Field 'classes/AudioStreamPlayer/properties/playing': setter changed value in new API, from "_set_playing" to &"set_playing".
+Validate extension JSON: Error: Field 'classes/AudioStreamPlayer2D/properties/playing': setter changed value in new API, from "_set_playing" to &"set_playing".
+Validate extension JSON: Error: Field 'classes/AudioStreamPlayer3D/properties/playing': setter changed value in new API, from "_set_playing" to &"set_playing".
+
+These setters have been renamed to expose them. GDExtension language bindings couldn't have exposed these properties before.
