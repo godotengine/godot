@@ -711,14 +711,17 @@ void ProjectManager::_on_projects_updated() {
 	project_list->update_dock_menu();
 }
 
-void ProjectManager::_on_project_created(const String &dir) {
+void ProjectManager::_on_project_created(const String &dir, bool edit) {
 	project_list->add_project(dir, false);
 	project_list->save_config();
 	search_box->clear();
 	int i = project_list->refresh_project(dir);
 	project_list->select_project(i);
 	project_list->ensure_project_visible(i);
-	_open_selected_projects_ask();
+
+	if (edit) {
+		_open_selected_projects_ask();
+	}
 
 	project_list->update_dock_menu();
 }
