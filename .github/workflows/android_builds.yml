@@ -5,7 +5,7 @@ on:
 # Global Settings
 env:
   # Used for the cache key. Add version suffix to force clean build.
-  GODOT_BASE_BRANCH: master
+  GODOT_BASE_BRANCH: 4.3
   SCONSFLAGS: verbose=yes warnings=extra werror=yes debug_symbols=no module_text_server_fb_enabled=yes
 
 concurrency:
