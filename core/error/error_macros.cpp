@@ -34,6 +34,14 @@
 #include "core/os/os.h"
 #include "core/string/ustring.h"
 
+#if defined(MACOS_ENABLED) || defined(X11_ENABLED)
+#include <execinfo.h>
+#elif defined(WINDOWS_ENABLED)
+#include <windows.h>
+// dbghelp.h must be included after windows.h
+#include <dbghelp.h>
+#endif
+
 static ErrorHandlerList *error_handler_list = nullptr;
 
 void add_error_handler(ErrorHandlerList *p_handler) {
@@ -127,4 +135,115 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 
 void _err_flush_stdout() {
 	fflush(stdout);
+}
+
+void print_stack_trace(int p_skip_called, int p_skip_callers) {
+	// On an optimized build of Godot, stack trace printing will not work as
+	// expected (the compiler can inline methods), so it is not supported.
+#ifdef DEV_ENABLED
+	p_skip_called += 1; // Skip the first one on the stack trace (this method, print_stack_trace)
+#if defined(MACOS_ENABLED) || defined(X11_ENABLED)
+	p_skip_callers += 2; // Skip the final 2 callers (main method / program entry point).
+	// Getting the stack trace is easy on macOS and Linux.
+	void *callstack[128];
+	int frames = backtrace(callstack, 128);
+	char **strs = backtrace_symbols(callstack, frames);
+	// Print out the desired stack trace frames.
+	for (int i = p_skip_called; i < frames - p_skip_callers; i++) {
+		OS::get_singleton()->print("%s\n", strs[i]);
+	}
+	free(strs);
+#elif defined(WINDOWS_ENABLED)
+#if defined(_M_X64) || defined(_M_IX86)
+	// The StackWalk method in Windows only supports x86 architectures (technically, Itanium too).
+#if defined(_M_X64)
+	DWORD machine = IMAGE_FILE_MACHINE_AMD64; // x86_64
+#elif defined(_M_IX86)
+	DWORD machine = IMAGE_FILE_MACHINE_I386; // x86_32
+#endif
+	HANDLE process = GetCurrentProcess();
+	HANDLE thread = GetCurrentThread();
+	if (SymInitialize(process, NULL, TRUE) == FALSE) {
+		return;
+	}
+	SymSetOptions(SYMOPT_LOAD_LINES);
+
+	CONTEXT context = {};
+	context.ContextFlags = CONTEXT_FULL;
+	RtlCaptureContext(&context);
+
+	STACKFRAME frame = {};
+	frame.AddrPC.Mode = AddrModeFlat;
+	frame.AddrFrame.Mode = AddrModeFlat;
+	frame.AddrStack.Mode = AddrModeFlat;
+#if defined(_M_X64)
+	frame.AddrPC.Offset = context.Rip;
+	frame.AddrFrame.Offset = context.Rbp;
+	frame.AddrStack.Offset = context.Rsp;
+#elif defined(_M_IX86)
+	frame.AddrPC.Offset = context.Eip;
+	frame.AddrFrame.Offset = context.Ebp;
+	frame.AddrStack.Offset = context.Esp;
+#endif
+	// Helper struct, only needed in this method.
+	struct StackFrame {
+		String symbol_name;
+		String module_name;
+		String file_name;
+		unsigned int line;
+	};
+	Vector<StackFrame> frames;
+	while (StackWalk(machine, process, thread, &frame, &context, NULL, SymFunctionTableAccess, SymGetModuleBase, NULL)) {
+		StackFrame f = {};
+		// Module name (executable name).
+		int64_t moduleBase = SymGetModuleBase(process, frame.AddrPC.Offset);
+		char moduelBuff[MAX_PATH];
+		if (moduleBase && GetModuleFileNameA((HINSTANCE)moduleBase, moduelBuff, MAX_PATH)) {
+			f.module_name = moduelBuff;
+		} else {
+			continue;
+		}
+		// Symbol name (method name).
+		char symbolBuffer[sizeof(IMAGEHLP_SYMBOL) + 255];
+		PIMAGEHLP_SYMBOL symbol = (PIMAGEHLP_SYMBOL)symbolBuffer;
+		symbol->SizeOfStruct = (sizeof IMAGEHLP_SYMBOL) + 255;
+		symbol->MaxNameLength = 254;
+		if (SymGetSymFromAddr(process, frame.AddrPC.Offset, nullptr, symbol)) {
+			f.symbol_name = symbol->Name;
+			if (f.symbol_name == "widechar_main") {
+				break;
+			}
+		} else {
+			continue;
+		}
+		// File name and line number.
+		IMAGEHLP_LINE line;
+		line.SizeOfStruct = sizeof(IMAGEHLP_LINE);
+		DWORD offset_ln = 0;
+		if (SymGetLineFromAddr(process, frame.AddrPC.Offset, &offset_ln, &line)) {
+			f.file_name = line.FileName;
+			f.line = line.LineNumber;
+		} else {
+			continue;
+		}
+		frames.push_back(f);
+	}
+	SymCleanup(process);
+	// Format and print out the desired stack trace frames.
+	for (int i = p_skip_called; i < frames.size() - p_skip_callers; i++) {
+		String s = vformat("%s %s\t%s (%s:%s)\n",
+				String::num_int64(i).rpad(3),
+				frames[i].module_name.get_file(),
+				frames[i].symbol_name.get_file(),
+				frames[i].file_name.get_file(),
+				frames[i].line);
+		OS::get_singleton()->print(s.utf8().get_data());
+	}
+#else // Not x86_64 or x86_32.
+	OS::get_singleton()->print("Stack trace printing is not supported on this architecture on Windows.\n");
+#endif
+#else // Not Windows, macOS, or Linux.
+	OS::get_singleton()->print("Stack trace printing is only supported on Windows, macOS, and Linux.\n");
+#endif
+#endif // DEV_ENABLED
 }
