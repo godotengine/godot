@@ -3747,27 +3747,25 @@ void SceneTreeDock::_add_children_to_popup(Object *p_obj, int p_depth) {
 }
 
 void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
-	if (!EditorNode::get_singleton()->get_edited_scene()) {
-		menu->clear(false);
-		if (profile_allow_editing) {
-			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Add")), ED_GET_SHORTCUT("scene_tree/add_child_node"), TOOL_NEW);
-			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Instance")), ED_GET_SHORTCUT("scene_tree/instantiate_scene"), TOOL_INSTANTIATE);
-		}
-
-		menu->reset_size();
-		menu->set_position(get_screen_position() + p_menu_pos);
-		menu->popup();
-		return;
-	}
+	ERR_FAIL_COND(!EditorNode::get_singleton()->get_edited_scene());
+	menu->clear(false);
 
 	List<Node *> selection = editor_selection->get_top_selected_node_list();
 	List<Node *> full_selection = editor_selection->get_full_selected_node_list(); // Above method only returns nodes with common parent.
 
 	if (selection.is_empty()) {
+		if (!profile_allow_editing) {
+			return;
+		}
+
+		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Add")), ED_GET_SHORTCUT("scene_tree/add_child_node"), TOOL_NEW);
+		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Instance")), ED_GET_SHORTCUT("scene_tree/instantiate_scene"), TOOL_INSTANTIATE);
+
+		menu->reset_size();
+		menu->set_position(p_menu_pos);
+		menu->popup();
 		return;
 	}
-
-	menu->clear(false);
 
 	Ref<Script> existing_script;
 	bool existing_script_removable = true;
