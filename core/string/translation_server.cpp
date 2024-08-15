@@ -404,69 +404,36 @@ String TranslationServer::get_locale() const {
 	return locale;
 }
 
+String TranslationServer::get_fallback_locale() const {
+	return fallback;
+}
+
 PackedStringArray TranslationServer::get_loaded_locales() const {
-	PackedStringArray locales;
-	for (const Ref<Translation> &E : translations) {
-		const Ref<Translation> &t = E;
-		ERR_FAIL_COND_V(t.is_null(), PackedStringArray());
-		String l = t->get_locale();
-
-		locales.push_back(l);
-	}
-
-	return locales;
+	return main_domain->get_loaded_locales();
 }
 
 void TranslationServer::add_translation(const Ref<Translation> &p_translation) {
-	translations.insert(p_translation);
+	main_domain->add_translation(p_translation);
 }
 
 void TranslationServer::remove_translation(const Ref<Translation> &p_translation) {
-	translations.erase(p_translation);
+	main_domain->remove_translation(p_translation);
 }
 
 Ref<Translation> TranslationServer::get_translation_object(const String &p_locale) {
-	Ref<Translation> res;
-	int best_score = 0;
-
-	for (const Ref<Translation> &E : translations) {
-		const Ref<Translation> &t = E;
-		ERR_FAIL_COND_V(t.is_null(), nullptr);
-		String l = t->get_locale();
-
-		int score = compare_locales(p_locale, l);
-		if (score > 0 && score >= best_score) {
-			res = t;
-			best_score = score;
-			if (score == 10) {
-				break; // Exact match, skip the rest.
-			}
-		}
-	}
-	return res;
+	return main_domain->get_translation_object(p_locale);
 }
 
 void TranslationServer::clear() {
-	translations.clear();
+	main_domain->clear();
 }
 
 StringName TranslationServer::translate(const StringName &p_message, const StringName &p_context) const {
-	// Match given message against the translation catalog for the project locale.
-
 	if (!enabled) {
 		return p_message;
 	}
 
-	StringName res = _get_message_from_translations(p_message, p_context, locale, false);
-
-	if (!res && fallback.length() >= 2) {
-		res = _get_message_from_translations(p_message, p_context, fallback, false);
-	}
-
-	if (!res) {
-		return pseudolocalization_enabled ? pseudolocalize(p_message) : p_message;
-	}
-
+	const StringName res = main_domain->translate(p_message, p_context);
 	return pseudolocalization_enabled ? pseudolocalize(res) : res;
 }
 
@@ -478,51 +445,7 @@ StringName TranslationServer::translate_plural(const StringName &p_message, cons
 		return p_message_plural;
 	}
 
-	StringName res = _get_message_from_translations(p_message, p_context, locale, true, p_message_plural, p_n);
-
-	if (!res && fallback.length() >= 2) {
-		res = _get_message_from_translations(p_message, p_context, fallback, true, p_message_plural, p_n);
-	}
-
-	if (!res) {
-		if (p_n == 1) {
-			return p_message;
-		}
-		return p_message_plural;
-	}
-
-	return res;
-}
-
-StringName TranslationServer::_get_message_from_translations(const StringName &p_message, const StringName &p_context, const String &p_locale, bool plural, const String &p_message_plural, int p_n) const {
-	StringName res;
-	int best_score = 0;
-
-	for (const Ref<Translation> &E : translations) {
-		const Ref<Translation> &t = E;
-		ERR_FAIL_COND_V(t.is_null(), p_message);
-		String l = t->get_locale();
-
-		int score = compare_locales(p_locale, l);
-		if (score > 0 && score >= best_score) {
-			StringName r;
-			if (!plural) {
-				r = t->get_message(p_message, p_context);
-			} else {
-				r = t->get_plural_message(p_message, p_message_plural, p_n, p_context);
-			}
-			if (!r) {
-				continue;
-			}
-			res = r;
-			best_score = score;
-			if (score == 10) {
-				break; // Exact match, skip the rest.
-			}
-		}
-	}
-
-	return res;
+	return main_domain->translate_plural(p_message, p_message_plural, p_n, p_context);
 }
 
 TranslationServer *TranslationServer::singleton = nullptr;
@@ -547,6 +470,34 @@ bool TranslationServer::_load_translations(const String &p_from) {
 	}
 
 	return false;
+}
+
+bool TranslationServer::has_domain(const StringName &p_domain) const {
+	if (p_domain == StringName()) {
+		return true;
+	}
+	return custom_domains.has(p_domain);
+}
+
+Ref<TranslationDomain> TranslationServer::get_or_add_domain(const StringName &p_domain) {
+	if (p_domain == StringName()) {
+		return main_domain;
+	}
+	const Ref<TranslationDomain> *domain = custom_domains.getptr(p_domain);
+	if (domain) {
+		if (domain->is_valid()) {
+			return *domain;
+		}
+		ERR_PRINT("Bug (please report): Found invalid translation domain.");
+	}
+	Ref<TranslationDomain> new_domain = memnew(TranslationDomain);
+	custom_domains[p_domain] = new_domain;
+	return new_domain;
+}
+
+void TranslationServer::remove_domain(const StringName &p_domain) {
+	ERR_FAIL_COND_MSG(p_domain == StringName(), "Cannot remove main translation domain.");
+	custom_domains.erase(p_domain);
 }
 
 void TranslationServer::setup() {
@@ -595,24 +546,11 @@ String TranslationServer::get_tool_locale() {
 	{
 #endif
 		// Look for best matching loaded translation.
-		String best_locale = "en";
-		int best_score = 0;
-
-		for (const Ref<Translation> &E : translations) {
-			const Ref<Translation> &t = E;
-			ERR_FAIL_COND_V(t.is_null(), best_locale);
-			String l = t->get_locale();
-
-			int score = compare_locales(locale, l);
-			if (score > 0 && score >= best_score) {
-				best_locale = l;
-				best_score = score;
-				if (score == 10) {
-					break; // Exact match, skip the rest.
-				}
-			}
+		Ref<Translation> t = main_domain->get_translation_object(locale);
+		if (t.is_null()) {
+			return "en";
 		}
-		return best_locale;
+		return t->get_locale();
 	}
 }
 
@@ -925,6 +863,10 @@ void TranslationServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_translation", "translation"), &TranslationServer::remove_translation);
 	ClassDB::bind_method(D_METHOD("get_translation_object", "locale"), &TranslationServer::get_translation_object);
 
+	ClassDB::bind_method(D_METHOD("has_domain", "domain"), &TranslationServer::has_domain);
+	ClassDB::bind_method(D_METHOD("get_or_add_domain", "domain"), &TranslationServer::get_or_add_domain);
+	ClassDB::bind_method(D_METHOD("remove_domain", "domain"), &TranslationServer::remove_domain);
+
 	ClassDB::bind_method(D_METHOD("clear"), &TranslationServer::clear);
 
 	ClassDB::bind_method(D_METHOD("get_loaded_locales"), &TranslationServer::get_loaded_locales);
@@ -947,5 +889,6 @@ void TranslationServer::load_translations() {
 
 TranslationServer::TranslationServer() {
 	singleton = this;
+	main_domain.instantiate();
 	init_locale_info();
 }
