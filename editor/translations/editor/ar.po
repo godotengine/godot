@@ -92,13 +92,14 @@
 # Ahmed Nehad <nmkao333@gmail.com>, 2024.
 # Rashid Al Haqbany <haqbany@gmail.com>, 2024.
 # cat lover <mongo@users.noreply.hosted.weblate.org>, 2024.
+# Mohammed Almosawy <nairex1212m1@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-15 21:54+0000\n"
-"Last-Translator: Ahmed Nehad <nmkao333@gmail.com>\n"
+"PO-Revision-Date: 2024-08-13 23:09+0000\n"
+"Last-Translator: Mohammed Almosawy <nairex1212m1@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ar/>\n"
 "Language: ar\n"
@@ -699,6 +700,9 @@ msgstr "مسار الموقع ثلاثي الأبعاد..."
 msgid "3D Rotation Track..."
 msgstr "مسار الدوران ثلاثي الأبعاد..."
 
+msgid "Animation Playback Track..."
+msgstr "مسار تشغيل الرسوم المتحركة..."
+
 msgid "Animation length (frames)"
 msgstr "مدة الرسم المتحرك (بالإطارات)"
 
@@ -1078,11 +1082,17 @@ msgstr "ثواني"
 msgid "FPS"
 msgstr "ط/ث"
 
+msgid "Fit to panel"
+msgstr "المناسبة للإطار"
+
 msgid "Edit"
 msgstr "تعديل"
 
 msgid "Animation properties."
 msgstr "خاصيات الحركة."
+
+msgid "Scale Selection..."
+msgstr "تكبير/تصغير المحدد..."
 
 msgid "Scale From Cursor..."
 msgstr "تكبير/تصغير من المؤشر..."

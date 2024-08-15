@@ -111,7 +111,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-08-12 20:09+0000\n"
+"PO-Revision-Date: 2024-08-13 23:09+0000\n"
 "Last-Translator: Micky <micheledevita2@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
@@ -543,19 +543,19 @@ msgid "Revert Action"
 msgstr "Ripristina l'azione"
 
 msgid "Add Event"
-msgstr "Aggiungi Evento"
+msgstr "Aggiungi evento"
 
 msgid "Remove Action"
-msgstr "Rimuovi l'azione"
+msgstr "Rimuovi azione"
 
 msgid "Cannot Remove Action"
 msgstr "Impossibile rimuovere l'azione"
 
 msgid "Edit Event"
-msgstr "Modifica l'evento"
+msgstr "Modifica evento"
 
 msgid "Remove Event"
-msgstr "Rimuovi l'evento"
+msgstr "Rimuovi evento"
 
 msgid "Filter by Name"
 msgstr "Filtra per nome"
@@ -603,13 +603,13 @@ msgid "Copy Selected Key(s)"
 msgstr "Copia le chiavi selezionate"
 
 msgid "Paste Key(s)"
-msgstr "Incolla le chiavi selezionate"
+msgstr "Incolla le chiavi"
 
 msgid "Delete Selected Key(s)"
 msgstr "Elimina le chiavi selezionate"
 
 msgid "Make Handles Free"
-msgstr "Rendi le maniglie libere"
+msgstr "Rendi libere le maniglie"
 
 msgid "Make Handles Linear"
 msgstr "Rendi lineari le maniglie"
@@ -654,34 +654,34 @@ msgid "Deselect All Keys"
 msgstr "Deseleziona tutte le chiavi"
 
 msgid "Animation Change Transition"
-msgstr "Animazione Cambia Transizione"
+msgstr "Modifica la transizione di un'animazione"
 
 msgid "Animation Change Position3D"
-msgstr "Animazione Cambia posizione3D"
+msgstr "Modifica traccia di Posizione 3D di un'animazione"
 
 msgid "Animation Change Rotation3D"
-msgstr "Animazione Cambia rotazione3D"
+msgstr "Modifica traccia di Rotazione 3D di un'animazione"
 
 msgid "Animation Change Scale3D"
-msgstr "Animazione Cambia scala3D"
+msgstr "Modifica traccia di Scala 3D di un'animazione"
 
 msgid "Animation Change Keyframe Value"
-msgstr "Animazione Cambia Valore di Fotogramma Chiave"
+msgstr "Cambia valore di fotogramma chiave di un'animazione"
 
 msgid "Animation Change Call"
-msgstr "Animazione Cambia chiamata"
+msgstr "Cambia chiamata di un'animazione"
 
 msgid "Animation Multi Change Transition"
 msgstr "Cambio multiplo di transizione di un'animazione"
 
 msgid "Animation Multi Change Position3D"
-msgstr "Cambio multiplo della Position3D di un'animazione"
+msgstr "Cambio multiplo di traccia Posizione 3D di un'animazione"
 
 msgid "Animation Multi Change Rotation3D"
-msgstr "Cambio multiplo della Rotation3D di un'animazione"
+msgstr "Cambio multiplo di traccia Rotazione 3D di un'animazione"
 
 msgid "Animation Multi Change Scale3D"
-msgstr "Cambio multiplo della Scale3D di un'animazione"
+msgstr "Cambio multiplo di traccia Scala 3D di un'animazione"
 
 msgid "Animation Multi Change Keyframe Value"
 msgstr "Cambio multiplo del valore dei fotogrammi chiave di un'animazione"
@@ -690,7 +690,7 @@ msgid "Animation Multi Change Call"
 msgstr "Cambio multiplo della chiamata di un'animazione"
 
 msgid "Change Animation Length"
-msgstr "Cambia la durata dell'animazione"
+msgstr "Cambia la durata di un'animazione"
 
 msgid "Change Animation Loop"
 msgstr "Cambia ciclo di animazione"
@@ -727,7 +727,7 @@ msgid "Bezier Curve Track..."
 msgstr "Traccia di curve di Bézier..."
 
 msgid "Audio Playback Track..."
-msgstr "Traccia sonora..."
+msgstr "Traccia di riproduzione audio..."
 
 msgid "Animation Playback Track..."
 msgstr "Traccia di animazioni..."
@@ -754,7 +754,7 @@ msgid "Animation Clips:"
 msgstr "Clip di animazione:"
 
 msgid "Change Track Path"
-msgstr "Cambia Percorso Traccia"
+msgstr "Cambia il percorso di una traccia"
 
 msgid "Toggle this track on/off."
 msgstr "Abilita/Disabilita questa traccia."
@@ -1141,7 +1141,7 @@ msgid "Scale From Cursor..."
 msgstr "Scala dal cursore..."
 
 msgid "Set Start Offset (Audio)"
-msgstr "Imposta offset iniziale (audio)"
+msgstr "Imposta offset iniziale (Audio)"
 
 msgid "Set End Offset (Audio)"
 msgstr "Imposta offset finale (Audio)"
@@ -1216,7 +1216,7 @@ msgid "Trim keys placed in negative time"
 msgstr "Rimuovi le chiavi nel tempo negativo"
 
 msgid "Trim keys placed exceed the animation length"
-msgstr "Rimuovi le chiavi che superano la lunghezza dell'animazione"
+msgstr "Rimuovi le chiavi che superano la durata dell'animazione"
 
 msgid "Remove invalid keys"
 msgstr "Rimuovi le chiavi non valide"
@@ -1237,7 +1237,7 @@ msgid "Scale Ratio:"
 msgstr "Fattore di scala:"
 
 msgid "Select Transition and Easing"
-msgstr "Seleziona Transizione e Easing"
+msgstr "Seleziona transizione e allentamento"
 
 msgctxt "Transition Type"
 msgid "Linear"
@@ -1343,7 +1343,7 @@ msgid "Change Audio Track Clip End Offset"
 msgstr "Modifica l'offset finale di una clip di una traccia audio"
 
 msgid "Go to Line"
-msgstr "Vai alla linea"
+msgstr "Vai alla riga"
 
 msgid "Line Number:"
 msgstr "Numero di riga:"
@@ -3886,6 +3886,24 @@ msgid ""
 msgstr ""
 "Impossibile scrivere sul file '%s', il file potrebbe essere in uso, bloccato "
 "o mancano i permessi."
+
+msgid "Preparing scenes for reload"
+msgstr "Preparando le scene da ricaricare"
+
+msgid "Analyzing scene %s"
+msgstr "Analisi della scena %s"
+
+msgid "Preparation done."
+msgstr "Preparazione completata."
+
+msgid "Scenes reloading"
+msgstr "Ricaricamento delle scene"
+
+msgid "Reloading..."
+msgstr "Ricaricamento…"
+
+msgid "Reloading done."
+msgstr "Ricaricamento completato."
 
 msgid ""
 "Changing the renderer requires restarting the editor.\n"
@@ -17581,6 +17599,20 @@ msgid ""
 msgstr ""
 "Questo osso non ha un'adeguata posizione di RIPOSO. Vai al nodo Skeleton2D e "
 "impostane una."
+
+msgid ""
+"The TileMap node is deprecated as it is superseded by the use of multiple "
+"TileMapLayer nodes.\n"
+"To convert a TileMap to a set of TileMapLayer nodes, open the TileMap bottom "
+"panel with this node selected, click the toolbox icon in the top-right corner "
+"and choose \"Extract TileMap layers as individual TileMapLayer nodes\"."
+msgstr ""
+"Il nodo TileMap è deprecato in quanto sostituito dall'uso di più nodi "
+"TileMapLayer.\n"
+"Per convertire una TileMap in una serie di nodi TileMapLayer, apri il "
+"pannello inferiore di TileMap con questo nodo selezionato, clicca sull'icona "
+"della casella degli strumenti nell'angolo in alto a destra, e scegli \"Estrai "
+"livelli di TileMap come nodi TileMapLayer\"."
 
 msgid ""
 "A Y-sorted layer has the same Z-index value as a not Y-sorted layer.\n"

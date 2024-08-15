@@ -49,7 +49,7 @@
 # EngageIndo <engageindo@gmail.com>, 2023.
 # Septian Kurniawan <septgsk@outlook.com>, 2023.
 # Septian Ganendra Savero Kurniawan <septgsk@outlook.com>, 2023.
-# Septian Ganendra Savero Kurniawan <mail@init.id>, 2023.
+# Septian Ganendra Savero Kurniawan <mail@init.id>, 2023, 2024.
 # GID <ghavind12345@gmail.com>, 2023.
 # Luqman Firmansyah <luqm4n.firm4n@gmail.com>, 2023.
 # Bayu Satiyo <itsyuukunz@gmail.com>, 2023.
@@ -67,8 +67,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-08-03 22:03+0000\n"
-"Last-Translator: \"@andiDermawan\" <andidermawan2004@gmail.com>\n"
+"PO-Revision-Date: 2024-08-14 12:59+0000\n"
+"Last-Translator: Septian Ganendra Savero Kurniawan <mail@init.id>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -235,7 +235,7 @@ msgid "touched"
 msgstr "disentuh"
 
 msgid "released"
-msgstr "Dirilis"
+msgstr "dirilis"
 
 msgid "Screen %s at (%s) with %s touch points"
 msgstr "Layar %s pada (%s) dengan titik sentuh %s"
@@ -542,7 +542,7 @@ msgid "Insert Key Here"
 msgstr "Sisipkan Key Disini"
 
 msgid "Duplicate Selected Key(s)"
-msgstr "Duplikat Key Terpilih"
+msgstr "Duplikat Kunci Terpilih"
 
 msgid "Copy Selected Key(s)"
 msgstr "Salin Kunci Yang Dipilih"
@@ -1074,7 +1074,7 @@ msgid "Make Easing Selection..."
 msgstr "Lakukan Seleksi Easing..."
 
 msgid "Duplicate Selected Keys"
-msgstr "Duplikat Key Yang Terpilih"
+msgstr "Duplikat Kunci Terpilih"
 
 msgid "Cut Selected Keys"
 msgstr "Potong Kunci Yang Terpilih"
