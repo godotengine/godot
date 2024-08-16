@@ -2385,6 +2385,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF("debug/settings/stdout/print_fps", false);
 	GLOBAL_DEF("debug/settings/stdout/print_gpu_profile", false);
 	GLOBAL_DEF("debug/settings/stdout/verbose_stdout", false);
+	GLOBAL_DEF("debug/settings/physics_interpolation/enable_warnings", true);
 
 	if (!OS::get_singleton()->_verbose_stdout) { // Not manually overridden.
 		OS::get_singleton()->_verbose_stdout = GLOBAL_GET("debug/settings/stdout/verbose_stdout");
@@ -4054,15 +4055,15 @@ bool Main::iteration() {
 
 		uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
 
-#ifndef _3D_DISABLED
-		PhysicsServer3D::get_singleton()->sync();
-		PhysicsServer3D::get_singleton()->flush_queries();
-#endif // _3D_DISABLED
-
 		// Prepare the fixed timestep interpolated nodes BEFORE they are updated
 		// by the physics server, otherwise the current and previous transforms
 		// may be the same, and no interpolation takes place.
 		OS::get_singleton()->get_main_loop()->iteration_prepare();
+
+#ifndef _3D_DISABLED
+		PhysicsServer3D::get_singleton()->sync();
+		PhysicsServer3D::get_singleton()->flush_queries();
+#endif // _3D_DISABLED
 
 		PhysicsServer2D::get_singleton()->sync();
 		PhysicsServer2D::get_singleton()->flush_queries();
@@ -4073,6 +4074,7 @@ bool Main::iteration() {
 #endif // _3D_DISABLED
 			PhysicsServer2D::get_singleton()->end_sync();
 
+			Engine::get_singleton()->_in_physics = false;
 			exit = true;
 			break;
 		}
@@ -4095,6 +4097,8 @@ bool Main::iteration() {
 		PhysicsServer2D::get_singleton()->step(physics_step * time_scale);
 
 		message_queue->flush();
+
+		OS::get_singleton()->get_main_loop()->iteration_end();
 
 		physics_process_ticks = MAX(physics_process_ticks, OS::get_singleton()->get_ticks_usec() - physics_begin); // keep the largest one for reference
 		physics_process_max = MAX(OS::get_singleton()->get_ticks_usec() - physics_begin, physics_process_max);

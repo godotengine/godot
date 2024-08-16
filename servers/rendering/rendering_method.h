@@ -83,6 +83,8 @@ public:
 	virtual void instance_set_layer_mask(RID p_instance, uint32_t p_mask) = 0;
 	virtual void instance_set_pivot_data(RID p_instance, float p_sorting_offset, bool p_use_aabb_center) = 0;
 	virtual void instance_set_transform(RID p_instance, const Transform3D &p_transform) = 0;
+	virtual void instance_set_interpolated(RID p_instance, bool p_interpolated) = 0;
+	virtual void instance_reset_physics_interpolation(RID p_instance) = 0;
 	virtual void instance_attach_object_instance_id(RID p_instance, ObjectID p_id) = 0;
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight) = 0;
 	virtual void instance_set_surface_override_material(RID p_instance, int p_surface, RID p_material) = 0;
@@ -349,6 +351,16 @@ public:
 	virtual void light_projectors_set_filter(RS::LightProjectorFilter p_filter) = 0;
 
 	virtual bool free(RID p_rid) = 0;
+
+	/* Physics interpolation */
+
+	virtual void update_interpolation_tick(bool p_process = true) = 0;
+	virtual void set_physics_interpolation_enabled(bool p_enabled) = 0;
+
+	/* Event queueing */
+
+	virtual void tick() = 0;
+	virtual void pre_draw(bool p_will_draw) = 0;
 
 	RenderingMethod();
 	virtual ~RenderingMethod();

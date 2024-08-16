@@ -85,7 +85,15 @@ private:
 		DIRTY_GLOBAL_TRANSFORM = 4
 	};
 
+	struct ClientPhysicsInterpolationData {
+		Transform3D global_xform_curr;
+		Transform3D global_xform_prev;
+		uint64_t current_physics_tick = 0;
+		uint64_t timeout_physics_tick = 0;
+	};
+
 	mutable SelfList<Node> xform_change;
+	SelfList<Node3D> _client_physics_interpolation_node_3d_list;
 
 	// This Data struct is to avoid namespace pollution in derived classes.
 
@@ -101,8 +109,19 @@ private:
 
 		Viewport *viewport = nullptr;
 
-		bool top_level = false;
-		bool inside_world = false;
+		bool top_level : 1;
+		bool inside_world : 1;
+
+		// This is cached, and only currently kept up to date in visual instances.
+		// This is set if a visual instance is (a) in the tree AND (b) visible via is_visible_in_tree() call.
+		bool vi_visible : 1;
+
+		bool ignore_notification : 1;
+		bool notify_local_transform : 1;
+		bool notify_transform : 1;
+
+		bool visible : 1;
+		bool disable_scale : 1;
 
 		RID visibility_parent;
 
@@ -110,18 +129,13 @@ private:
 		List<Node3D *> children;
 		List<Node3D *>::Element *C = nullptr;
 
-		bool ignore_notification = false;
-		bool notify_local_transform = false;
-		bool notify_transform = false;
-
-		bool visible = true;
-		bool disable_scale = false;
+		ClientPhysicsInterpolationData *client_physics_interpolation_data = nullptr;
 
 #ifdef TOOLS_ENABLED
 		Vector<Ref<Node3DGizmo>> gizmos;
-		bool gizmos_disabled = false;
-		bool gizmos_dirty = false;
-		bool transform_gizmo_visible = true;
+		bool gizmos_disabled : 1;
+		bool gizmos_dirty : 1;
+		bool transform_gizmo_visible : 1;
 #endif
 
 	} data;
@@ -149,6 +163,11 @@ protected:
 
 	_FORCE_INLINE_ void _update_local_transform() const;
 	_FORCE_INLINE_ void _update_rotation_and_scale() const;
+
+	void _set_vi_visible(bool p_visible) { data.vi_visible = p_visible; }
+	bool _is_vi_visible() const { return data.vi_visible; }
+	Transform3D _get_global_transform_interpolated(real_t p_interpolation_fraction);
+	void _disable_client_physics_interpolation();
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -207,6 +226,9 @@ public:
 	Basis get_basis() const;
 	Quaternion get_quaternion() const;
 	Transform3D get_global_transform() const;
+
+	Transform3D get_global_transform_interpolated();
+	bool update_client_physics_interpolation_data();
 
 #ifdef TOOLS_ENABLED
 	virtual Transform3D get_global_gizmo_transform() const;
@@ -279,6 +301,7 @@ public:
 	NodePath get_visibility_parent() const;
 
 	Node3D();
+	~Node3D();
 };
 
 VARIANT_ENUM_CAST(Node3D::RotationEditMode)

@@ -32,6 +32,7 @@
 #define RENDERER_SCENE_CULL_H
 
 #include "core/math/dynamic_bvh.h"
+#include "core/math/transform_interpolator.h"
 #include "core/templates/bin_sorted_array.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/paged_allocator.h"
@@ -65,6 +66,11 @@ public:
 	uint64_t render_pass;
 
 	static RendererSceneCull *singleton;
+
+	/* EVENT QUEUING */
+
+	void tick();
+	void pre_draw(bool p_will_draw);
 
 	/* CAMERA API */
 
@@ -406,7 +412,15 @@ public:
 
 		RID mesh_instance; //only used for meshes and when skeleton/blendshapes exist
 
+		// This is the main transform to be drawn with ...
+		// This will either be the interpolated transform (when using fixed timestep interpolation)
+		// or the ONLY transform (when not using FTI).
 		Transform3D transform;
+
+		// For interpolation we store the current transform (this physics tick)
+		// and the transform in the previous tick.
+		Transform3D transform_curr;
+		Transform3D transform_prev;
 
 		float lod_bias;
 
@@ -418,13 +432,23 @@ public:
 		RS::ShadowCastingSetting cast_shadows;
 
 		uint32_t layer_mask;
-		//fit in 32 bits
-		bool mirror : 8;
-		bool receive_shadows : 8;
-		bool visible : 8;
-		bool baked_light : 2; //this flag is only to know if it actually did use baked light
-		bool dynamic_gi : 2; //same above for dynamic objects
-		bool redraw_if_visible : 4;
+		// Fit in 32 bits.
+		bool mirror : 1;
+		bool receive_shadows : 1;
+		bool visible : 1;
+		bool baked_light : 1; // This flag is only to know if it actually did use baked light.
+		bool dynamic_gi : 1; // Same as above for dynamic objects.
+		bool redraw_if_visible : 1;
+
+		bool on_interpolate_list : 1;
+		bool on_interpolate_transform_list : 1;
+		bool interpolated : 1;
+		TransformInterpolator::Method interpolation_method : 3;
+
+		// For fixed timestep interpolation.
+		// Note 32 bits is plenty for checksum, no need for real_t
+		float transform_checksum_curr;
+		float transform_checksum_prev;
 
 		Instance *lightmap = nullptr;
 		Rect2 lightmap_uv_scale;
@@ -574,6 +598,14 @@ public:
 			baked_light = true;
 			dynamic_gi = false;
 			redraw_if_visible = false;
+
+			on_interpolate_list = false;
+			on_interpolate_transform_list = false;
+			interpolated = true;
+			interpolation_method = TransformInterpolator::INTERP_LERP;
+			transform_checksum_curr = 0.0;
+			transform_checksum_prev = 0.0;
+
 			lightmap_slice_index = 0;
 			lightmap = nullptr;
 			lightmap_cull_index = 0;
@@ -1027,6 +1059,8 @@ public:
 	virtual void instance_set_layer_mask(RID p_instance, uint32_t p_mask);
 	virtual void instance_set_pivot_data(RID p_instance, float p_sorting_offset, bool p_use_aabb_center);
 	virtual void instance_set_transform(RID p_instance, const Transform3D &p_transform);
+	virtual void instance_set_interpolated(RID p_instance, bool p_interpolated);
+	virtual void instance_reset_physics_interpolation(RID p_instance);
 	virtual void instance_attach_object_instance_id(RID p_instance, ObjectID p_id);
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight);
 	virtual void instance_set_surface_override_material(RID p_instance, int p_surface, RID p_material);
@@ -1392,6 +1426,22 @@ public:
 	void set_scene_render(RendererSceneRender *p_scene_render);
 
 	virtual void update_visibility_notifiers();
+
+	/* INTERPOLATION */
+
+	void update_interpolation_tick(bool p_process = true);
+	void update_interpolation_frame(bool p_process = true);
+	virtual void set_physics_interpolation_enabled(bool p_enabled);
+
+	struct InterpolationData {
+		void notify_free_instance(RID p_rid, Instance &r_instance);
+		LocalVector<RID> instance_interpolate_update_list;
+		LocalVector<RID> instance_transform_update_lists[2];
+		LocalVector<RID> *instance_transform_update_list_curr = &instance_transform_update_lists[0];
+		LocalVector<RID> *instance_transform_update_list_prev = &instance_transform_update_lists[1];
+
+		bool interpolation_enabled = false;
+	} _interpolation_data;
 
 	RendererSceneCull();
 	virtual ~RendererSceneCull();
