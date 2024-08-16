@@ -113,7 +113,7 @@ void EditorPropertyText::update_property() {
 void EditorPropertyText::set_string_name(bool p_enabled) {
 	string_name = p_enabled;
 	if (p_enabled) {
-		Label *prefix = memnew(Label("&"));
+		prefix = memnew(Label("&"));
 		prefix->set_tooltip_text("StringName");
 		prefix->set_mouse_filter(MOUSE_FILTER_STOP);
 		text->get_parent()->add_child(prefix);
@@ -127,6 +127,17 @@ void EditorPropertyText::set_secret(bool p_enabled) {
 
 void EditorPropertyText::set_placeholder(const String &p_string) {
 	text->set_placeholder(p_string);
+}
+
+void EditorPropertyText::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			if (prefix) {
+				Color font_color = get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor));
+				prefix->set_modulate(font_color);
+			}
+		} break;
+	}
 }
 
 void EditorPropertyText::_bind_methods() {
