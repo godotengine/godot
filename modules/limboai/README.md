@@ -8,18 +8,19 @@
 [![🔎 Unit Tests](https://github.com/limbonaut/limboai/actions/workflows/test_builds.yml/badge.svg)](https://github.com/limbonaut/limboai/actions/workflows/test_builds.yml)
 [![Documentation Status](https://readthedocs.org/projects/limboai/badge/?version=latest)](https://limboai.readthedocs.io/en/latest/?badge=latest)
 [![GitHub License](https://img.shields.io/github/license/limbonaut/limboai)](https://github.com/limbonaut/limboai/blob/master/LICENSE.md)
-
 [![Discord](https://img.shields.io/discord/1185664967379267774?logo=discord&link=https%3A%2F%2Fdiscord.gg%2FN5MGC95GpP)](https://discord.gg/N5MGC95GpP)
-[![Support this project](https://img.shields.io/badge/Support%20this%20project-red?logo=kofi&logoColor=white&link=https%3A%2F%2Fko-fi.com%2Flimbonaut)](https://ko-fi.com/limbonaut)
 [![Mastodon Follow](https://img.shields.io/mastodon/follow/109346796150895359?domain=https%3A%2F%2Fmastodon.gamedev.place)](https://mastodon.gamedev.place/@limbo)
 
+>**🛈 Supported Godot Engine:** **4.2** (latest release) | **4.3-rc** (`master` branch)
 
 **LimboAI** is an open-source C++ plugin for **Godot Engine 4** providing a combination of
 **Behavior Trees** and **State Machines**, which can be used together to create complex AI behaviors.
 It comes with a behavior tree editor, built-in documentation, visual debugger, extensive demo project with a tutorial, and more!
 While it is implemented in C++, it fully supports GDScript for [creating your own tasks](https://limboai.readthedocs.io/en/latest/getting-started/custom-tasks.html) and [states](https://limboai.readthedocs.io/en/latest/getting-started/hsm.html).
 
->**🛈 Supported Godot Engine: 4.2**
+If you enjoy using LimboAI, please **consider supporting** my efforts with a donation on Ko-fi 😊 Your contribution will help me continue developing and improving it.
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/Y8Y2TCNH0)
 
 ![Textured screenshot](doc/images/behavior-tree-editor-debugger.png)
 
@@ -35,8 +36,12 @@ Behavior Trees are powerful hierarchical structures used to model and control th
 
 ### Videos
 
+> **🛈** YouTube videos produced by various creators
+
 <a href="https://www.youtube.com/watch?v=NWaMArUg7mY"><img src="https://img.youtube.com/vi/NWaMArUg7mY/0.jpg" width=410></a>
 <a href="https://www.youtube.com/watch?v=aP0Aacdxmno"><img src="https://img.youtube.com/vi/aP0Aacdxmno/0.jpg" width=410></a>
+<a href="https://www.youtube.com/watch?v=vZHzMO90IwQ"><img src="https://img.youtube.com/vi/vZHzMO90IwQ/0.jpg" width=410></a>
+<a href="https://www.youtube.com/watch?v=gAk3xl5fBsM"><img src="https://img.youtube.com/vi/gAk3xl5fBsM/0.jpg" width=410></a>
 
 ## Features
 
@@ -88,12 +93,18 @@ LimboAI can be used as either a C++ module or as a GDExtension shared library. G
 
 ### Compiling from source
 
->**🛈 For GDExtension:** Refer to comments in [setup_gdextension.sh](./gdextension/setup_gdextension.sh) file.
-
 - Download the Godot Engine source code and put this module source into the `modules/limboai` directory.
 - Consult the Godot Engine documentation for instructions on [how to build from source code](https://docs.godotengine.org/en/stable/contributing/development/compiling/index.html).
 - If you plan to export a game utilizing the LimboAI module, you'll also need to build export templates.
 - To execute unit tests, compile the engine with `tests=yes` and run it with `--test --tc="*[LimboAI]*"`.
+
+#### For GDExtension
+
+- You'll need SCons build tool and a C++ compiler. See also [Compiling](https://docs.godotengine.org/en/stable/contributing/development/compiling/index.html).
+- Run `scons target=editor` to build the plugin library for your current platform.
+  - SCons will automatically clone the godot-cpp/ repository if it doesn't already exist in the `limboai/godot-cpp` directory.
+  - By default, built targets are placed in the demo project: `demo/addons/limboai/bin/`
+- Check `scons -h` for other options and targets.
 
 ## Using the plugin
 
@@ -122,4 +133,6 @@ I write about LimboAI development on Mastodon: https://mastodon.gamedev.place/@l
 
 ## License
 
-Use of this source code is governed by an MIT-style license that can be found in the LICENSE file or at https://opensource.org/licenses/MIT.
+Use of this source code is governed by an MIT-style license that can be found in the LICENSE file or at https://opensource.org/licenses/MIT
+
+LimboAI logo and demo project art assets are licensed under the Creative Commons Attribution 4.0 International license that can be found at https://creativecommons.org/licenses/by/4.0/

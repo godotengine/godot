@@ -15,6 +15,7 @@ dest_files=["res://.godot/imported/junction_bold.otf-4db2200a8b1a6423bafe2a4e7c7
 Rendering=null
 antialiasing=1
 generate_mipmaps=false
+disable_embedded_bitmaps=true
 multichannel_signed_distance_field=false
 msdf_pixel_range=8
 msdf_size=48

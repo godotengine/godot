@@ -12,6 +12,7 @@
 #ifndef LIMBO_DEBUGGER_H
 #define LIMBO_DEBUGGER_H
 
+#include "../../bt/bt_instance.h"
 #include "../../bt/tasks/bt_task.h"
 
 #ifdef LIMBOAI_MODULE
@@ -23,6 +24,7 @@
 #ifdef LIMBOAI_GDEXTENSION
 #include <godot_cpp/classes/object.hpp>
 #include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/templates/hash_set.hpp>
 #include <godot_cpp/variant/node_path.hpp>
 #endif // LIMBOAI_GDEXTENSION
 
@@ -37,7 +39,7 @@ private:
 public:
 	static void initialize();
 	static void deinitialize();
-	static LimboDebugger *get_singleton();
+	_FORCE_INLINE_ static LimboDebugger *get_singleton() { return singleton; }
 
 	~LimboDebugger();
 
@@ -46,17 +48,15 @@ protected:
 
 #ifdef DEBUG_ENABLED
 private:
-	HashMap<NodePath, Ref<BTTask>> active_trees;
-	NodePath tracked_player;
-	String bt_resource_path;
+	HashSet<uint64_t> active_bt_instances;
+	uint64_t tracked_instance_id = 0;
 	bool session_active = false;
 
-	void _track_tree(NodePath p_path);
+	void _track_tree(uint64_t p_instance_id);
 	void _untrack_tree();
 	void _send_active_bt_players();
 
-	void _on_bt_updated(int status, NodePath p_path);
-	void _on_state_updated(float _delta, NodePath p_path);
+	void _on_bt_instance_updated(int status, uint64_t p_instance_id);
 
 public:
 	static Error parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured);
@@ -64,8 +64,9 @@ public:
 	bool parse_message_gdext(const String &p_msg, const Array &p_args);
 #endif
 
-	void register_bt_instance(Ref<BTTask> p_instance, NodePath p_player_path);
-	void unregister_bt_instance(Ref<BTTask> p_instance, NodePath p_player_path);
+	void register_bt_instance(uint64_t p_instance_id);
+	void unregister_bt_instance(uint64_t p_instance_id);
+	bool is_active() const;
 
 #endif // ! DEBUG_ENABLED
 };

@@ -52,6 +52,7 @@ public:
 	Variant get_var(const StringName &p_name, const Variant &p_default = Variant(), bool p_complain = true) const;
 	void set_var(const StringName &p_name, const Variant &p_value);
 	bool has_var(const StringName &p_name) const;
+	_FORCE_INLINE_ bool has_local_var(const StringName &p_name) const { return data.has(p_name); }
 	void erase_var(const StringName &p_name);
 	void clear() { data.clear(); }
 	TypedArray<StringName> list_vars() const;

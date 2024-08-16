@@ -77,13 +77,16 @@ void BehaviorTree::copy_other(const Ref<BehaviorTree> &p_other) {
 	root_task = p_other->get_root_task();
 }
 
-Ref<BTTask> BehaviorTree::instantiate(Node *p_agent, const Ref<Blackboard> &p_blackboard, Node *p_scene_root) const {
-	ERR_FAIL_COND_V_MSG(root_task == nullptr, memnew(BTTask), "Trying to instance a behavior tree with no valid root task.");
-	ERR_FAIL_NULL_V_MSG(p_agent, memnew(BTTask), "Trying to instance a behavior tree with no valid agent.");
-	ERR_FAIL_NULL_V_MSG(p_scene_root, memnew(BTTask), "Trying to instance a behavior tree with no valid scene root.");
-	Ref<BTTask> inst = root_task->clone();
-	inst->initialize(p_agent, p_blackboard, p_scene_root);
-	return inst;
+Ref<BTInstance> BehaviorTree::instantiate(Node *p_agent, const Ref<Blackboard> &p_blackboard, Node *p_instance_owner, Node *p_custom_scene_root) const {
+	ERR_FAIL_COND_V_MSG(root_task == nullptr, nullptr, "BehaviorTree: Instantiation failed - BT has no valid root task.");
+	ERR_FAIL_NULL_V_MSG(p_agent, nullptr, "BehaviorTree: Instantiation failed - agent can't be null.");
+	ERR_FAIL_NULL_V_MSG(p_instance_owner, nullptr, "BehaviorTree: Instantiation failed -- instance owner can't be null.");
+	ERR_FAIL_NULL_V_MSG(p_blackboard, nullptr, "BehaviorTree: Instantiation failed - blackboard can't be null.");
+	Node *scene_root = p_custom_scene_root ? p_custom_scene_root : p_instance_owner->get_owner();
+	ERR_FAIL_NULL_V_MSG(scene_root, nullptr, "BehaviorTree: Instantiation failed - unable to establish scene root. This is likely due to the instance owner not being owned by a scene node and custom_scene_root being null.");
+	Ref<BTTask> root_copy = root_task->clone();
+	root_copy->initialize(p_agent, p_blackboard, scene_root);
+	return BTInstance::create(root_copy, get_path(), p_instance_owner);
 }
 
 void BehaviorTree::_plan_changed() {
@@ -116,7 +119,7 @@ void BehaviorTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_root_task"), &BehaviorTree::get_root_task);
 	ClassDB::bind_method(D_METHOD("clone"), &BehaviorTree::clone);
 	ClassDB::bind_method(D_METHOD("copy_other", "other"), &BehaviorTree::copy_other);
-	ClassDB::bind_method(D_METHOD("instantiate", "agent", "blackboard", "scene_root"), &BehaviorTree::instantiate);
+	ClassDB::bind_method(D_METHOD("instantiate", "agent", "blackboard", "instance_owner", "custom_scene_root"), &BehaviorTree::instantiate, DEFVAL(Variant()));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "description", PROPERTY_HINT_MULTILINE_TEXT), "set_description", "get_description");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_blackboard_plan", "get_blackboard_plan");

@@ -41,7 +41,11 @@
 			<param index="0" name="event" type="StringName" />
 			<param index="1" name="handler" type="Callable" />
 			<description>
-				Registers a [param handler] to be called when [param event] is dispatched.
+				Registers a [param handler] to be called when [param event] is dispatched. The handler function should have the following signature:
+				[codeblock]
+				func my_event_handler(cargo=null) -> bool:
+				[/codeblock]
+				If the handler returns [code]true[/code], the event will be consumed. Cargo is an optional parameter that can be passed to the handler. See also [method dispatch].
 			</description>
 		</method>
 		<method name="call_on_enter">

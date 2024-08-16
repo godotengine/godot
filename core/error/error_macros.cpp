@@ -194,6 +194,8 @@
         static void initialize() { }
         static LocalVector<StackFrame> getStackTrace() { return { StackFrame { "??", "Stacktrace collecting not available!", 0 } }; }
 
+#endif
+
 // Optional physics interpolation warnings try to include the path to the relevant node.
 #if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
 #include "core/config/project_settings.h"

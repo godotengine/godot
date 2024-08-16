@@ -386,15 +386,20 @@ void BTTask::print_tree(int p_initial_tabs) {
 	}
 }
 
-#ifdef TOOLS_ENABLED
-
 Ref<BehaviorTree> BTTask::editor_get_behavior_tree() {
+#ifdef TOOLS_ENABLED
 	BTTask *task = this;
 	while (task->data.behavior_tree_id.is_null() && task->get_parent().is_valid()) {
 		task = task->data.parent;
 	}
 	return Object::cast_to<BehaviorTree>(ObjectDB::get_instance(task->data.behavior_tree_id));
+#else
+	ERR_PRINT("BTTask::editor_get_behavior_tree: Not available in release builds.");
+	return Ref<BehaviorTree>();
+#endif
 }
+
+#ifdef TOOLS_ENABLED
 
 void BTTask::editor_set_behavior_tree(const Ref<BehaviorTree> &p_bt) {
 	data.behavior_tree_id = p_bt->get_instance_id();
@@ -423,9 +428,7 @@ void BTTask::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("print_tree", "initial_tabs"), &BTTask::print_tree, Variant(0));
 	ClassDB::bind_method(D_METHOD("get_task_name"), &BTTask::get_task_name);
 	ClassDB::bind_method(D_METHOD("abort"), &BTTask::abort);
-#ifdef TOOLS_ENABLED
 	ClassDB::bind_method(D_METHOD("editor_get_behavior_tree"), &BTTask::editor_get_behavior_tree);
-#endif // TOOLS_ENABLED
 
 	// Properties, setters and getters.
 	ClassDB::bind_method(D_METHOD("get_agent"), &BTTask::get_agent);

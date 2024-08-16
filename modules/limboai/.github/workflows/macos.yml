@@ -199,7 +199,6 @@ jobs:
 
       - name: Prepare artifact
         run: |
-          strip bin/godot.*
           chmod +x bin/godot.*
 
       - name: Upload artifact
@@ -257,9 +256,6 @@ jobs:
         run: |
           ls bin/
           lipo -create bin/godot.macos.editor.x86_64* bin/godot.macos.editor.arm64* -output bin/godot.macos.editor.universal
-          du -sh bin/
-          strip bin/godot.macos.editor.universal
-          du -sh bin/
           mkdir -p out/editor/
           cp -r misc/dist/macos_tools.app out/editor/${APP_NAME}
           mkdir -p out/editor/${APP_NAME}/Contents/{MacOS,Resources}
@@ -295,7 +291,6 @@ jobs:
           ls bin/
           lipo -create bin/godot.macos.template_release.x86_64* bin/godot.macos.template_release.arm64* -output bin/godot.macos.template_release.universal
           lipo -create bin/godot.macos.template_debug.x86_64* bin/godot.macos.template_debug.arm64* -output bin/godot.macos.template_debug.universal
-          strip bin/godot.*.universal
           cp -r misc/dist/macos_template.app macos_template.app
           mkdir -p macos_template.app/Contents/MacOS
           cp bin/godot.macos.template_debug.universal macos_template.app/Contents/MacOS/godot_macos_debug.universal

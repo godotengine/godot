@@ -166,8 +166,8 @@ public:
 
 	void print_tree(int p_initial_tabs = 0);
 
-#ifdef TOOLS_ENABLED
 	Ref<BehaviorTree> editor_get_behavior_tree();
+#ifdef TOOLS_ENABLED
 	void editor_set_behavior_tree(const Ref<BehaviorTree> &p_bt);
 #endif
 

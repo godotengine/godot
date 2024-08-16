@@ -46,6 +46,8 @@ jobs:
       fail-fast: false
       matrix:
         opts:
+          # * Standard x86_64
+
           - name: Editor (x86_64, release)
             target: editor
             arch: x86_64
@@ -63,6 +65,8 @@ jobs:
             arch: x86_64
             dotnet: false
             should-build: ${{ !inputs.test-build }}
+
+          # * Standard x86_32
 
           # - name: Editor (x86_32, release)
           #   target: editor
@@ -82,11 +86,33 @@ jobs:
             dotnet: false
             should-build: ${{ !inputs.test-build }}
 
+          # * Standard arm64
+
+          # - name: Editor (arm64, release)
+          #   target: editor
+          #   arch: arm64
+          #   dotnet: false
+          #   should-build: ${{ !inputs.test-build }}
+
+          - name: Template (arm64, release)
+            target: template_release
+            arch: arm64
+            dotnet: false
+            should-build: ${{ !inputs.test-build }}
+
+          - name: Template (arm64, debug)
+            target: template_debug
+            arch: arm64
+            dotnet: false
+            should-build: ${{ !inputs.test-build }}
+
+          # * .NET x86_64
+
           - name: Editor .NET (x86_64, release)
             target: editor
             arch: x86_64
             dotnet: true
-            should-build: true
+            should-build: ${{ !inputs.test-build }}
 
           - name: Template .NET (x86_64, release)
             target: template_release
@@ -99,6 +125,8 @@ jobs:
             arch: x86_64
             dotnet: true
             should-build: ${{ !inputs.test-build }}
+
+          # * .NET x86_32
 
           # - name: Editor .NET (x86_32, release)
           #   target: editor
@@ -115,6 +143,26 @@ jobs:
           - name: Template .NET (x86_32, debug)
             target: template_debug
             arch: x86_32
+            dotnet: true
+            should-build: ${{ !inputs.test-build }}
+
+            # * .NET arm64
+
+          # - name: Editor (arm64, release)
+          #   target: editor
+          #   arch: arm64
+          #   dotnet: true
+          #   should-build: ${{ !inputs.test-build }}
+
+          - name: Template (arm64, release)
+            target: template_release
+            arch: arm64
+            dotnet: true
+            should-build: ${{ !inputs.test-build }}
+
+          - name: Template (arm64, debug)
+            target: template_debug
+            arch: arm64
             dotnet: true
             should-build: ${{ !inputs.test-build }}
 
@@ -174,16 +222,18 @@ jobs:
 
       - name: Generate C# glue
         if: matrix.opts.dotnet && matrix.opts.target == 'editor'
-        env:
-          GODOT_VERSION_STATUS: limboai
+        shell: bash
         run: |
+          GODOT_VERSION_STATUS=$(echo "${GODOT_VERSION_STATUS}" | sed "s|+|-|")
+          echo "GODOT_VERSION_STATUS: ${GODOT_VERSION_STATUS}"
           ./bin/${{ env.BIN }} --headless --generate-mono-glue ./modules/mono/glue || true
 
       - name: Build .NET solutions
         if: matrix.opts.dotnet && matrix.opts.target == 'editor'
-        env:
-          GODOT_VERSION_STATUS: limboai
+        shell: bash
         run: |
+          GODOT_VERSION_STATUS=$(echo "${GODOT_VERSION_STATUS}" | sed "s|+|-|")
+          echo "GODOT_VERSION_STATUS: ${GODOT_VERSION_STATUS}"
           python ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin --godot-platform=windows
 
       - name: Prepare artifact

@@ -5,7 +5,7 @@ on:
       godot-cpp-ref:
         description: A tag, branch or commit hash in the godot-cpp repository.
         type: string
-        default: 4.2
+        default: godot-4.3-stable
       limboai-ref:
         description: A tag, branch or commit hash in the LimboAI repository.
         type: string
@@ -20,7 +20,7 @@ on:
       godot-cpp-ref:
         description: A tag, branch or commit hash in the godot-cpp repository.
         type: string
-        default: 4.2
+        default: godot-4.3-stable
       limboai-ref:
         description: A tag, branch or commit hash in the LimboAI repository.
         type: string
@@ -36,7 +36,7 @@ env:
   SCONSFLAGS: dev_build=no debug_symbols=no
   EM_VERSION: 3.1.45
   EM_CACHE_FOLDER: "emsdk-cache"
-  GODOT_VERSION: 4.2-stable
+  GODOT_VERSION: 4.3-stable
 
 jobs:
   gdextension:
@@ -167,6 +167,12 @@ jobs:
       BIN: liblimboai.${{matrix.opts.platform}}.${{matrix.opts.target}}.${{matrix.opts.arch}}
 
     steps:
+      - name: Clone LimboAI module
+        uses: actions/checkout@v4
+        with:
+          fetch-tags: true
+          ref: ${{ inputs.limboai-ref }}
+
       - name: Clone godot-cpp
         uses: actions/checkout@v4
         with:
@@ -175,15 +181,8 @@ jobs:
           path: godot-cpp
           ref: ${{ inputs.godot-cpp-ref }}
 
-      - name: Clone LimboAI module
-        uses: actions/checkout@v4
-        with:
-          path: limboai
-          fetch-tags: true
-          ref: ${{ inputs.limboai-ref }}
-
       # Inits GDEXTENSION_VERSION, LIMBOAI_VERSION and NAME_PREFIX environment variables.
-      - uses: ./limboai/.github/actions/init-version-gdext
+      - uses: ./.github/actions/init-version-gdext
 
       - name: Output NAME_PREFIX
         id: output-name-prefix
@@ -191,7 +190,7 @@ jobs:
 
       - name: Setup Linux toolchain
         if: matrix.opts.platform == 'linux'
-        uses: ./limboai/.github/actions/setup-linux-toolchain
+        uses: ./.github/actions/setup-linux-toolchain
         with:
           arch: ${{matrix.opts.arch}}
 
@@ -257,15 +256,6 @@ jobs:
             ${{env.BIN}}-${{inputs.godot-cpp-ref}}-${{inputs.limboai-ref}}
             ${{env.BIN}}-${{inputs.godot-cpp-ref}}
 
-      - name: Setup project structure for GDExtension
-        shell: bash
-        run: |
-          bash ./limboai/gdextension/setup_gdextension.sh --copy-all
-          echo "---"
-          ls -l
-          echo "---"
-          ls -l -R ./demo/
-
       - name: Compilation
         shell: bash
         env:
@@ -279,26 +269,13 @@ jobs:
         run: |
           mkdir out
           mv demo/addons/ out/
-          cp limboai/{README,LICENSE,LOGO_LICENSE}.md out/addons/limboai/
-          cp -R limboai/demo/demo/ out/demo/
-          cp limboai/demo/LICENSE_ASSETS.md out/demo/
+          cp {README,LICENSE,LOGO_LICENSE}.md out/addons/limboai/
+          cp -R demo/demo/ out/demo/
+          cp demo/LICENSE_ASSETS.md out/demo/
           rm -f out/addons/limboai/bin/*.{exp,lib,pdb}
           echo "${LIMBOAI_VERSION}" > out/addons/limboai/version.txt
           echo "---"
           ls -R out/
-
-      - name: Strip lib
-        if: matrix.opts.platform != 'windows' && matrix.opts.platform != 'web' && (matrix.opts.platform != 'android' || startsWith(matrix.opts.arch, 'x86'))
-        run: |
-          ls -l -R out/addons/limboai/bin/
-          echo "---"
-          if [ "$RUNNER_OS" == "macOS" ]; then
-            strip -u out/addons/limboai/bin/liblimboai*/liblimboai*
-          else
-            strip out/addons/limboai/bin/liblimboai*
-          fi
-          echo "---"
-          ls -l -R out/addons/limboai/bin/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

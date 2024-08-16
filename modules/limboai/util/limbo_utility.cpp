@@ -25,6 +25,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
+#include "editor/editor_settings.h"
 #endif // TOOLS_ENABLED
 
 #endif // ! LIMBOAI_MODULE
@@ -569,33 +570,41 @@ Ref<Shortcut> LimboUtility::get_shortcut(const String &p_path) const {
 	return nullptr;
 }
 
+inline void _open_online_doc_page(const String &p_page) {
+	OS::get_singleton()->shell_open(vformat("%s/%s", LIMBOAI_VERSION_DOC_URL, p_page));
+}
+
 void LimboUtility::open_doc_introduction() {
-	OS::get_singleton()->shell_open(vformat("%s/getting-started/introduction.html", LIMBOAI_VERSION_DOC_URL));
+	_open_online_doc_page("getting-started/introduction.html");
 }
 
 void LimboUtility::open_doc_online() {
-	OS::get_singleton()->shell_open(vformat("%s/index.html", LIMBOAI_VERSION_DOC_URL));
+	_open_online_doc_page("index.html");
 }
 
 void LimboUtility::open_doc_gdextension_limitations() {
-	OS::get_singleton()->shell_open(vformat("%s/getting-started/gdextension.html#limitations-of-the-gdextension-version", LIMBOAI_VERSION_DOC_URL));
+	_open_online_doc_page("getting-started/gdextension.html#limitations-of-the-gdextension-version");
 }
 
 void LimboUtility::open_doc_custom_tasks() {
-	OS::get_singleton()->shell_open(vformat("%s/getting-started/custom-tasks.html", LIMBOAI_VERSION_DOC_URL));
+	_open_online_doc_page("getting-started/custom-tasks.html");
 }
 
 void LimboUtility::open_doc_class(const String &p_class_name) {
 	if (p_class_name.begins_with("res://")) {
-		SHOW_DOC(vformat("class_name:\"%s\"", p_class_name));
+		// ! FIXME: Opening script documentation is unreliable in Godot, because script
+		// !        documentation is only parsed when script is re-saved in the script editor.
+		// ! Workaround: Opening script in the editor instead...
+		EDIT_SCRIPT(p_class_name);
+		// SHOW_DOC(vformat("class_name:\"%s\"", p_class_name.trim_prefix("res://")));
 		return;
 	}
 
-#ifdef LIMBOAI_MODULE
-	SHOW_DOC("class_name:" + p_class_name);
-#elif LIMBOAI_GDEXTENSION
-	OS::get_singleton()->shell_open(vformat("%s/classes/class_%s.html", LIMBOAI_VERSION_DOC_URL, p_class_name.to_lower()));
-#endif
+	if (EDITOR_GET("limbo_ai/editor/prefer_online_documentation")) {
+		_open_online_doc_page(vformat("classes/class_%s.html", p_class_name.to_lower()));
+	} else {
+		SHOW_BUILTIN_DOC("class_name:" + p_class_name);
+	}
 }
 
 #endif // ! TOOLS_ENABLED

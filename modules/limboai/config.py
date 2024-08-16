@@ -83,6 +83,7 @@ def get_doc_classes():
         "BTDynamicSequence",
         "BTFail",
         "BTForEach",
+        "BTInstance",
         "BTInvert",
         "BTNewScope",
         "BTParallel",

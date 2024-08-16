@@ -85,6 +85,7 @@ LimboStringNames::LimboStringNames() {
 	font_color = SN("font_color");
 	font_size = SN("font_size");
 	Forward = SN("Forward");
+	freed = SN("freed");
 	gui_input = SN("gui_input");
 	GuiOptionArrow = SN("GuiOptionArrow");
 	GuiTreeArrowDown = SN("GuiTreeArrowDown");
@@ -156,6 +157,7 @@ LimboStringNames::LimboStringNames() {
 	Tools = SN("Tools");
 	Tree = SN("Tree");
 	TripleBar = SN("TripleBar");
+	update_mode = SN("update_mode");
 	update_task = SN("update_task");
 	update_tree = SN("update_tree");
 	updated = SN("updated");

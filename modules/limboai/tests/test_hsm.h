@@ -86,6 +86,21 @@ TEST_CASE("[Modules][LimboAI] HSM") {
 	hsm->initialize(agent, parent_scope);
 	hsm->set_active(true);
 
+	SUBCASE("Test has_transition() and remove_transition()") {
+		CHECK(hsm->has_transition(state_alpha, "event_one"));
+		CHECK(hsm->has_transition(state_beta, "event_two"));
+		CHECK(hsm->has_transition(hsm->anystate(), "goto_nested"));
+		CHECK_FALSE(hsm->has_transition(state_alpha, "event_two"));
+		CHECK_FALSE(hsm->has_transition(state_beta, "event_one"));
+		CHECK_FALSE(hsm->has_transition(hsm->anystate(), "event_one"));
+
+		hsm->remove_transition(state_alpha, "event_one");
+		CHECK_FALSE(hsm->has_transition(state_alpha, "event_one"));
+		hsm->remove_transition(state_beta, "event_two");
+		CHECK_FALSE(hsm->has_transition(state_beta, "event_two"));
+		hsm->remove_transition(hsm->anystate(), "goto_nested");
+		CHECK_FALSE(hsm->has_transition(hsm->anystate(), "goto_nested"));
+	}
 	SUBCASE("Test get_root()") {
 		CHECK(state_alpha->get_root() == hsm);
 		CHECK(state_beta->get_root() == hsm);
@@ -168,6 +183,37 @@ TEST_CASE("[Modules][LimboAI] HSM") {
 		CHECK(beta_exits->num_callbacks == 1);
 		CHECK_FALSE(hsm->is_active()); // * not active
 		CHECK(hsm->get_active_state() == nullptr);
+	}
+	SUBCASE("Test change_active_state()") {
+		REQUIRE(hsm->is_active());
+		REQUIRE(hsm->get_active_state() == state_alpha);
+
+		CHECK(alpha_entries->num_callbacks == 1); // * entered
+		CHECK(alpha_updates->num_callbacks == 0);
+		CHECK(alpha_exits->num_callbacks == 0);
+		CHECK(beta_entries->num_callbacks == 0);
+		CHECK(beta_updates->num_callbacks == 0);
+		CHECK(beta_exits->num_callbacks == 0);
+
+		hsm->change_active_state(state_beta);
+		CHECK(hsm->get_active_state() == state_beta);
+
+		CHECK(alpha_entries->num_callbacks == 1);
+		CHECK(alpha_updates->num_callbacks == 0);
+		CHECK(alpha_exits->num_callbacks == 1); // * exited
+		CHECK(beta_entries->num_callbacks == 1); // * entered
+		CHECK(beta_updates->num_callbacks == 0);
+		CHECK(beta_exits->num_callbacks == 0);
+
+		hsm->change_active_state(state_beta); // * should exit and re-enter
+		CHECK(hsm->get_active_state() == state_beta);
+
+		CHECK(alpha_entries->num_callbacks == 1);
+		CHECK(alpha_updates->num_callbacks == 0);
+		CHECK(alpha_exits->num_callbacks == 1);
+		CHECK(beta_entries->num_callbacks == 2); // * re-entered
+		CHECK(beta_updates->num_callbacks == 0);
+		CHECK(beta_exits->num_callbacks == 1); // * exited
 	}
 	SUBCASE("Test transition with guard") {
 		Ref<TestGuard> guard = memnew(TestGuard);

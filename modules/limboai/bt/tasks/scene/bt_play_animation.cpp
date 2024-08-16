@@ -16,8 +16,9 @@
 void BTPlayAnimation::set_animation_player(Ref<BBNode> p_animation_player) {
 	animation_player_param = p_animation_player;
 	emit_changed();
-	if (Engine::get_singleton()->is_editor_hint() && animation_player_param.is_valid()) {
-		animation_player_param->connect(LW_NAME(changed), Callable(this, LW_NAME(emit_changed)));
+	if (Engine::get_singleton()->is_editor_hint() && animation_player_param.is_valid() &&
+			!animation_player_param->is_connected(LW_NAME(changed), callable_mp((Resource *)this, &Resource::emit_changed))) {
+		animation_player_param->connect(LW_NAME(changed), callable_mp((Resource *)this, &Resource::emit_changed));
 	}
 }
 

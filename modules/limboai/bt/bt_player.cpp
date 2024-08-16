@@ -11,7 +11,6 @@
 
 #include "bt_player.h"
 
-#include "../editor/debugger/limbo_debugger.h"
 #include "../util/limbo_compat.h"
 #include "../util/limbo_string_names.h"
 
@@ -44,24 +43,20 @@
 VARIANT_ENUM_CAST(BTPlayer::UpdateMode);
 
 void BTPlayer::_load_tree() {
-#ifdef DEBUG_ENABLED
-	if (tree_instance.is_valid() && IS_DEBUGGER_ACTIVE()) {
-		LimboDebugger::get_singleton()->unregister_bt_instance(tree_instance, get_path());
-	}
-#endif
-	tree_instance.unref();
+	bt_instance.unref();
 	ERR_FAIL_COND_MSG(!behavior_tree.is_valid(), "BTPlayer: Initialization failed - needs a valid behavior tree.");
 	ERR_FAIL_COND_MSG(!behavior_tree->get_root_task().is_valid(), "BTPlayer: Initialization failed - behavior tree has no valid root task.");
 	Node *agent = GET_NODE(this, agent_node);
 	ERR_FAIL_NULL_MSG(agent, vformat("BTPlayer: Initialization failed - can't get agent with path '%s'.", agent_node));
-	Node *scene_root = get_owner();
-	ERR_FAIL_NULL_MSG(scene_root, "BTPlayer: Initialization failed - can't get scene root (make sure the BTPlayer's owner property is set).");
-	tree_instance = behavior_tree->instantiate(agent, blackboard, scene_root);
+	Node *scene_root = scene_root_hint ? scene_root_hint : get_owner();
+	ERR_FAIL_COND_MSG(scene_root == nullptr,
+			"BTPlayer: Initialization failed - unable to establish scene root. This is likely due to BTPlayer not being owned by a scene node. Check BTPlayer.set_scene_root_hint().");
+	bt_instance = behavior_tree->instantiate(agent, blackboard, this);
+	ERR_FAIL_COND_MSG(bt_instance.is_null(), "BTPlayer: Failed to instantiate behavior tree.");
 #ifdef DEBUG_ENABLED
-	if (IS_DEBUGGER_ACTIVE()) {
-		LimboDebugger::get_singleton()->register_bt_instance(tree_instance, get_path());
-	}
-#endif
+	bt_instance->set_monitor_performance(monitor_performance);
+	bt_instance->register_with_debugger();
+#endif // DEBUG_ENABLED
 }
 
 void BTPlayer::_update_blackboard_plan() {
@@ -73,6 +68,27 @@ void BTPlayer::_update_blackboard_plan() {
 	}
 
 	blackboard_plan->set_base_plan(behavior_tree.is_valid() ? behavior_tree->get_blackboard_plan() : nullptr);
+}
+
+void BTPlayer::set_bt_instance(const Ref<BTInstance> &p_bt_instance) {
+	ERR_FAIL_COND_MSG(p_bt_instance.is_null(), "BTPlayer: Failed to set behavior tree instance - instance is null.");
+	ERR_FAIL_COND_MSG(!p_bt_instance->is_instance_valid(), "BTPlayer: Failed to set behavior tree instance - instance is not valid.");
+
+	bt_instance = p_bt_instance;
+	blackboard = p_bt_instance->get_blackboard();
+	agent_node = p_bt_instance->get_agent()->get_path();
+
+	blackboard_plan.unref();
+	behavior_tree.unref();
+}
+
+void BTPlayer::set_scene_root_hint(Node *p_scene_root) {
+	ERR_FAIL_NULL_MSG(p_scene_root, "BTPlayer: Failed to set scene root hint - scene root is null.");
+	if (bt_instance.is_valid()) {
+		ERR_PRINT("BTPlayer: Scene root hint shouldn't be set after the behavior tree is instantiated. This change will not affect the current behavior tree instance.");
+	}
+
+	scene_root_hint = p_scene_root;
 }
 
 void BTPlayer::set_behavior_tree(const Ref<BehaviorTree> &p_tree) {
@@ -87,7 +103,7 @@ void BTPlayer::set_behavior_tree(const Ref<BehaviorTree> &p_tree) {
 		_update_blackboard_plan();
 	} else {
 		behavior_tree = p_tree;
-		if (get_owner()) {
+		if (get_owner() && is_inside_tree()) {
 			_load_tree();
 		}
 	}
@@ -95,7 +111,7 @@ void BTPlayer::set_behavior_tree(const Ref<BehaviorTree> &p_tree) {
 
 void BTPlayer::set_agent_node(const NodePath &p_agent_node) {
 	agent_node = p_agent_node;
-	if (tree_instance.is_valid()) {
+	if (bt_instance.is_valid()) {
 		ERR_PRINT("BTPlayer: Agent node cannot be set after the behavior tree is instantiated. This change will not affect the behavior tree instance.");
 	}
 }
@@ -119,79 +135,37 @@ void BTPlayer::set_active(bool p_active) {
 }
 
 void BTPlayer::update(double p_delta) {
-	if (!tree_instance.is_valid()) {
+	if (!bt_instance.is_valid()) {
 		ERR_PRINT_ONCE(vformat("BTPlayer doesn't have a behavior tree with a valid root task to execute (owner: %s)", get_owner()));
 		return;
 	}
 
-#ifdef DEBUG_ENABLED
-	double start = GET_TICKS_USEC();
-#endif
-
 	if (active) {
-		last_status = tree_instance->execute(p_delta);
-		emit_signal(LimboStringNames::get_singleton()->updated, last_status);
-		if (last_status == BTTask::SUCCESS || last_status == BTTask::FAILURE) {
-			emit_signal(LimboStringNames::get_singleton()->behavior_tree_finished, last_status);
+		BT::Status status = bt_instance->update(p_delta);
+		emit_signal(LW_NAME(updated), status);
+#ifndef DISABLE_DEPRECATED
+		if (status == BTTask::SUCCESS || status == BTTask::FAILURE) {
+			emit_signal(LW_NAME(behavior_tree_finished), status);
 		}
+#endif // DISABLE_DEPRECATED
 	}
-
-#ifdef DEBUG_ENABLED
-	double end = GET_TICKS_USEC();
-	update_time_acc += (end - start);
-	update_time_n += 1.0;
-#endif
 }
 
 void BTPlayer::restart() {
-	tree_instance->abort();
+	ERR_FAIL_COND_MSG(bt_instance.is_null(), "BTPlayer: Restart failed - no valid tree instance. Make sure the BTPlayer has a valid behavior tree with a valid root task.");
+	bt_instance->get_root_task()->abort();
 	set_active(true);
 }
 
-#ifdef DEBUG_ENABLED
-
-void BTPlayer::_set_monitor_performance(bool p_monitor_performance) {
+void BTPlayer::set_monitor_performance(bool p_monitor_performance) {
 	monitor_performance = p_monitor_performance;
 
-	if (!get_owner() && monitor_performance) {
-		// Don't add custom monitor if not in scene.
-		return;
+#ifdef DEBUG_ENABLED
+	if (bt_instance.is_valid()) {
+		bt_instance->set_monitor_performance(monitor_performance);
 	}
-
-	if (monitor_performance) {
-		_add_custom_monitor();
-	} else {
-		_remove_custom_monitor();
-	}
+#endif
 }
-
-void BTPlayer::_add_custom_monitor() {
-	if (monitor_id == StringName()) {
-		monitor_id = vformat("LimboAI/update_ms|%s_%s_%s", get_owner()->get_name(), get_name(),
-				String(itos(get_instance_id())).md5_text().substr(0, 4));
-	}
-	if (!Performance::get_singleton()->has_custom_monitor(monitor_id)) {
-		PERFORMANCE_ADD_CUSTOM_MONITOR(monitor_id, callable_mp(this, &BTPlayer::_get_mean_update_time_msec));
-	}
-}
-
-void BTPlayer::_remove_custom_monitor() {
-	if (monitor_id != StringName() && Performance::get_singleton()->has_custom_monitor(monitor_id)) {
-		Performance::get_singleton()->remove_custom_monitor(monitor_id);
-	}
-}
-
-double BTPlayer::_get_mean_update_time_msec() {
-	if (update_time_n) {
-		double mean_time_msec = (update_time_acc * 0.001) / update_time_n;
-		update_time_acc = 0.0;
-		update_time_n = 0.0;
-		return mean_time_msec;
-	}
-	return 0.0;
-}
-
-#endif // ! DEBUG_ENABLED
 
 void BTPlayer::_notification(int p_notification) {
 	switch (p_notification) {
@@ -209,6 +183,7 @@ void BTPlayer::_notification(int p_notification) {
 					blackboard = Ref<Blackboard>(memnew(Blackboard));
 				}
 				if (blackboard_plan.is_valid()) {
+					// Don't overwrite existing blackboard values as they may be initialized from code.
 					blackboard_plan->populate_blackboard(blackboard, false, this);
 				}
 				if (behavior_tree.is_valid()) {
@@ -221,21 +196,17 @@ void BTPlayer::_notification(int p_notification) {
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 #ifdef DEBUG_ENABLED
-			if (tree_instance.is_valid() && IS_DEBUGGER_ACTIVE()) {
-				LimboDebugger::get_singleton()->register_bt_instance(tree_instance, get_path());
-			}
-			if (monitor_performance) {
-				_add_custom_monitor();
+			if (bt_instance.is_valid()) {
+				bt_instance->set_monitor_performance(monitor_performance);
+				bt_instance->register_with_debugger();
 			}
 #endif // DEBUG_ENABLED
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 #ifdef DEBUG_ENABLED
-			if (tree_instance.is_valid() && IS_DEBUGGER_ACTIVE()) {
-				LimboDebugger::get_singleton()->unregister_bt_instance(tree_instance, get_path());
-			}
-			if (monitor_performance) {
-				_remove_custom_monitor();
+			if (bt_instance.is_valid()) {
+				bt_instance->set_monitor_performance(false);
+				bt_instance->unregister_with_debugger();
 			}
 #endif // DEBUG_ENABLED
 
@@ -263,11 +234,16 @@ void BTPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_blackboard_plan", "plan"), &BTPlayer::set_blackboard_plan);
 	ClassDB::bind_method(D_METHOD("get_blackboard_plan"), &BTPlayer::get_blackboard_plan);
 
+	ClassDB::bind_method(D_METHOD("set_monitor_performance", "enable"), &BTPlayer::set_monitor_performance);
+	ClassDB::bind_method(D_METHOD("get_monitor_performance"), &BTPlayer::get_monitor_performance);
+
 	ClassDB::bind_method(D_METHOD("update", "delta"), &BTPlayer::update);
 	ClassDB::bind_method(D_METHOD("restart"), &BTPlayer::restart);
-	ClassDB::bind_method(D_METHOD("get_last_status"), &BTPlayer::get_last_status);
 
-	ClassDB::bind_method(D_METHOD("get_tree_instance"), &BTPlayer::get_tree_instance);
+	ClassDB::bind_method(D_METHOD("get_bt_instance"), &BTPlayer::get_bt_instance);
+	ClassDB::bind_method(D_METHOD("set_bt_instance", "bt_instance"), &BTPlayer::set_bt_instance);
+
+	ClassDB::bind_method(D_METHOD("set_scene_root_hint", "scene_root"), &BTPlayer::set_scene_root_hint);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "behavior_tree", PROPERTY_HINT_RESOURCE_TYPE, "BehaviorTree"), "set_behavior_tree", "get_behavior_tree");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "agent_node"), "set_agent_node", "get_agent_node");
@@ -275,19 +251,17 @@ void BTPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "active"), "set_active", "get_active");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard", PROPERTY_HINT_NONE, "Blackboard", 0), "set_blackboard", "get_blackboard");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT | PROPERTY_USAGE_ALWAYS_DUPLICATE), "set_blackboard_plan", "get_blackboard_plan");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "monitor_performance"), "set_monitor_performance", "get_monitor_performance");
 
 	BIND_ENUM_CONSTANT(IDLE);
 	BIND_ENUM_CONSTANT(PHYSICS);
 	BIND_ENUM_CONSTANT(MANUAL);
 
-	ADD_SIGNAL(MethodInfo("behavior_tree_finished", PropertyInfo(Variant::INT, "status")));
 	ADD_SIGNAL(MethodInfo("updated", PropertyInfo(Variant::INT, "status")));
 
-#ifdef DEBUG_ENABLED
-	ClassDB::bind_method(D_METHOD("_set_monitor_performance", "enable"), &BTPlayer::_set_monitor_performance);
-	ClassDB::bind_method(D_METHOD("_get_monitor_performance"), &BTPlayer::_get_monitor_performance);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "monitor_performance"), "_set_monitor_performance", "_get_monitor_performance");
-#endif // DEBUG_ENABLED
+#ifndef DISABLE_DEPRECATED
+	ADD_SIGNAL(MethodInfo("behavior_tree_finished", PropertyInfo(Variant::INT, "status")));
+#endif
 }
 
 BTPlayer::BTPlayer() {

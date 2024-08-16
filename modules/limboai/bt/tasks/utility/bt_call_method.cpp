@@ -28,8 +28,9 @@ void BTCallMethod::set_method(const StringName &p_method_name) {
 void BTCallMethod::set_node_param(const Ref<BBNode> &p_object) {
 	node_param = p_object;
 	emit_changed();
-	if (Engine::get_singleton()->is_editor_hint() && node_param.is_valid()) {
-		node_param->connect(LW_NAME(changed), Callable(this, LW_NAME(emit_changed)));
+	if (Engine::get_singleton()->is_editor_hint() && node_param.is_valid() &&
+			!node_param->is_connected(LW_NAME(changed), callable_mp((Resource *)this, &Resource::emit_changed))) {
+		node_param->connect(LW_NAME(changed), callable_mp((Resource *)this, &Resource::emit_changed));
 	}
 }
 

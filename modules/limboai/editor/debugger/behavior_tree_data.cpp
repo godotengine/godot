@@ -17,14 +17,15 @@
 
 //**** BehaviorTreeData
 
-Array BehaviorTreeData::serialize(const Ref<BTTask> &p_tree_instance, const NodePath &p_player_path, const String &p_bt_resource_path) {
+Array BehaviorTreeData::serialize(const Ref<BTInstance> &p_instance) {
 	Array arr;
-	arr.push_back(p_player_path);
-	arr.push_back(p_bt_resource_path);
+	arr.push_back(uint64_t(p_instance->get_instance_id()));
+	arr.push_back(p_instance->get_owner_node() ? p_instance->get_owner_node()->get_path() : NodePath());
+	arr.push_back(p_instance->get_source_bt_path());
 
 	// Flatten tree into list depth first
 	List<Ref<BTTask>> stack;
-	stack.push_back(p_tree_instance);
+	stack.push_back(p_instance->get_root_task());
 	while (stack.size()) {
 		Ref<BTTask> task = stack.front()->get();
 		stack.pop_front();
@@ -54,15 +55,17 @@ Array BehaviorTreeData::serialize(const Ref<BTTask> &p_tree_instance, const Node
 }
 
 Ref<BehaviorTreeData> BehaviorTreeData::deserialize(const Array &p_array) {
-	ERR_FAIL_COND_V(p_array.size() < 2, nullptr);
-	ERR_FAIL_COND_V(p_array[0].get_type() != Variant::NODE_PATH, nullptr);
-	ERR_FAIL_COND_V(p_array[1].get_type() != Variant::STRING, nullptr);
+	ERR_FAIL_COND_V(p_array.size() < 3, nullptr);
+	ERR_FAIL_COND_V(p_array[0].get_type() != Variant::INT, nullptr);
+	ERR_FAIL_COND_V(p_array[1].get_type() != Variant::NODE_PATH, nullptr);
+	ERR_FAIL_COND_V(p_array[2].get_type() != Variant::STRING, nullptr);
 
 	Ref<BehaviorTreeData> data = memnew(BehaviorTreeData);
-	data->bt_player_path = p_array[0];
-	data->bt_resource_path = p_array[1];
+	data->bt_instance_id = uint64_t(p_array[0]);
+	data->node_owner_path = p_array[1];
+	data->source_bt_path = p_array[2];
 
-	int idx = 2;
+	int idx = 3;
 	while (p_array.size() > idx + 1) {
 		ERR_FAIL_COND_V(p_array.size() < idx + 7, nullptr);
 		ERR_FAIL_COND_V(p_array[idx].get_type() != Variant::INT, nullptr);
@@ -80,12 +83,16 @@ Ref<BehaviorTreeData> BehaviorTreeData::deserialize(const Array &p_array) {
 	return data;
 }
 
-Ref<BehaviorTreeData> BehaviorTreeData::create_from_tree_instance(const Ref<BTTask> &p_tree_instance) {
+Ref<BehaviorTreeData> BehaviorTreeData::create_from_bt_instance(const Ref<BTInstance> &p_bt_instance) {
 	Ref<BehaviorTreeData> data = memnew(BehaviorTreeData);
+
+	data->bt_instance_id = p_bt_instance->get_instance_id();
+	data->node_owner_path = p_bt_instance->get_owner_node() ? p_bt_instance->get_owner_node()->get_path() : NodePath();
+	data->source_bt_path = p_bt_instance->get_source_bt_path();
 
 	// Flatten tree into list depth first
 	List<Ref<BTTask>> stack;
-	stack.push_back(p_tree_instance);
+	stack.push_back(p_bt_instance->get_root_task());
 	while (stack.size()) {
 		Ref<BTTask> task = stack.front()->get();
 		stack.pop_front();
@@ -115,9 +122,7 @@ Ref<BehaviorTreeData> BehaviorTreeData::create_from_tree_instance(const Ref<BTTa
 }
 
 void BehaviorTreeData::_bind_methods() {
-	// ClassDB::bind_static_method("BehaviorTreeData", D_METHOD("serialize", "p_tree_instance", "p_player_path", "p_bt_resource_path"), &BehaviorTreeData::serialize);
-	// ClassDB::bind_static_method("BehaviorTreeData", D_METHOD("deserialize", "p_array"), &BehaviorTreeData::deserialize);
-	ClassDB::bind_static_method("BehaviorTreeData", D_METHOD("create_from_tree_instance", "tree_instance"), &BehaviorTreeData::create_from_tree_instance);
+	ClassDB::bind_static_method("BehaviorTreeData", D_METHOD("create_from_bt_instance", "bt_instance"), &BehaviorTreeData::create_from_bt_instance);
 }
 
 BehaviorTreeData::BehaviorTreeData() {

@@ -45,17 +45,20 @@ void LimboHSM::set_active(bool p_active) {
 	}
 }
 
-void LimboHSM::_change_state(LimboState *p_state) {
-	ERR_FAIL_COND(p_state == nullptr);
-	ERR_FAIL_COND(p_state->get_parent() != this);
+void LimboHSM::change_active_state(LimboState *p_state) {
+	ERR_FAIL_NULL(p_state);
+	ERR_FAIL_COND_MSG(!is_active(), "LimboHSM: Unable to change active state when HSM is not active.");
+	ERR_FAIL_COND_MSG(p_state->get_parent() != this, "LimboHSM: Unable to perform transition to a state that is not a child of this HSM.");
 
 	if (active_state) {
 		active_state->_exit();
+		active_state->set_process_input(false);
 		previous_active = active_state;
 	}
 
 	active_state = p_state;
 	active_state->_enter();
+	active_state->set_process_input(true);
 
 	emit_signal(LimboStringNames::get_singleton()->active_state_changed, active_state, previous_active);
 }
@@ -66,7 +69,7 @@ void LimboHSM::_enter() {
 	ERR_FAIL_COND_MSG(initial_state == nullptr, "LimboHSM: Initial state is not set.");
 
 	LimboState::_enter();
-	_change_state(initial_state);
+	change_active_state(initial_state);
 }
 
 void LimboHSM::_exit() {
@@ -92,7 +95,7 @@ void LimboHSM::update(double p_delta) {
 	_update(p_delta);
 	updating = false;
 	if (next_active) {
-		_change_state(next_active);
+		change_active_state(next_active);
 		next_active = nullptr;
 	}
 }
@@ -103,8 +106,29 @@ void LimboHSM::add_transition(LimboState *p_from_state, LimboState *p_to_state, 
 	ERR_FAIL_COND_MSG(p_to_state->get_parent() != this, "LimboHSM: Unable to add a transition to a state that is not an immediate child of mine.");
 	ERR_FAIL_COND_MSG(p_event == StringName(), "LimboHSM: Failed to add transition due to empty event string.");
 
-	uint64_t key = _get_transition_key(p_from_state, p_event);
-	transitions[key] = Object::cast_to<LimboState>(p_to_state);
+	TransitionKey key = Transition::make_key(p_from_state, p_event);
+	ERR_FAIL_COND_MSG(transitions.has(key), "LimboHSM: Unable to add another transition with the same event and origin.");
+	// Note: Explicit casting needed for GDExtension.
+	transitions[key] = { p_from_state != nullptr ? ObjectID(p_from_state->get_instance_id()) : ObjectID(), ObjectID(p_to_state->get_instance_id()), p_event };
+}
+
+void LimboHSM::remove_transition(LimboState *p_from_state, const StringName &p_event) {
+	ERR_FAIL_COND_MSG(p_from_state != nullptr && p_from_state->get_parent() != this, "LimboHSM: Unable to remove a transition from a state that is not an immediate child of mine.");
+	ERR_FAIL_COND_MSG(p_event == StringName(), "LimboHSM: Unable to remove a transition due to empty event string.");
+
+	TransitionKey key = Transition::make_key(p_from_state, p_event);
+	ERR_FAIL_COND_MSG(!transitions.has(key), "LimboHSM: Unable to remove a transition that does not exist.");
+	transitions.erase(key);
+}
+
+void LimboHSM::_get_transition(LimboState *p_from_state, const StringName &p_event, Transition &r_transition) const {
+	ERR_FAIL_COND_MSG(p_from_state != nullptr && p_from_state->get_parent() != this, "LimboHSM: Unable to get a transition from a state that is not an immediate child of this HSM.");
+	ERR_FAIL_COND_MSG(p_event == StringName(), "LimboHSM: Unable to get a transition with an empty event string.");
+
+	TransitionKey key = Transition::make_key(p_from_state, p_event);
+	if (transitions.has(key)) {
+		r_transition = transitions[key];
+	}
 }
 
 LimboState *LimboHSM::get_leaf_state() const {
@@ -138,16 +162,18 @@ bool LimboHSM::_dispatch(const StringName &p_event, const Variant &p_cargo) {
 	}
 
 	if (!event_consumed && active_state) {
-		uint64_t key = _get_transition_key(active_state, p_event);
 		LimboState *to_state = nullptr;
-		if (transitions.has(key)) {
-			to_state = transitions[key];
+
+		Transition transition;
+		_get_transition(active_state, p_event, transition);
+		if (transition.is_valid()) {
+			to_state = Object::cast_to<LimboState>(ObjectDB::get_instance(transition.to_state));
 		}
 		if (to_state == nullptr) {
 			// Get ANYSTATE transition.
-			key = _get_transition_key(nullptr, p_event);
-			if (transitions.has(key)) {
-				to_state = transitions[key];
+			_get_transition(nullptr, p_event, transition);
+			if (transition.is_valid()) {
+				to_state = Object::cast_to<LimboState>(ObjectDB::get_instance(transition.to_state));
 				if (to_state == active_state) {
 					// Transitions to self are not allowed with ANYSTATE.
 					to_state = nullptr;
@@ -177,7 +203,7 @@ bool LimboHSM::_dispatch(const StringName &p_event, const Variant &p_cargo) {
 			}
 			if (permitted) {
 				if (!updating) {
-					_change_state(to_state);
+					change_active_state(to_state);
 				} else if (!next_active) {
 					// Only set next_active if we are not already in the process of changing states.
 					next_active = to_state;
@@ -227,6 +253,13 @@ void LimboHSM::_initialize(Node *p_agent, const Ref<Blackboard> &p_blackboard) {
 	}
 }
 
+void LimboHSM::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == LW_NAME(update_mode) && !is_root()) {
+		// Hide update_mode for non-root HSMs.
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+}
+
 void LimboHSM::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POST_ENTER_TREE: {
@@ -253,9 +286,11 @@ void LimboHSM::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_active", "active"), &LimboHSM::set_active);
 	ClassDB::bind_method(D_METHOD("update", "delta"), &LimboHSM::update);
 	ClassDB::bind_method(D_METHOD("add_transition", "from_state", "to_state", "event"), &LimboHSM::add_transition);
+	ClassDB::bind_method(D_METHOD("remove_transition", "from_state", "event"), &LimboHSM::remove_transition);
+	ClassDB::bind_method(D_METHOD("has_transition", "from_state", "event"), &LimboHSM::has_transition);
 	ClassDB::bind_method(D_METHOD("anystate"), &LimboHSM::anystate);
-
 	ClassDB::bind_method(D_METHOD("initialize", "agent", "parent_scope"), &LimboHSM::initialize, Variant());
+	ClassDB::bind_method(D_METHOD("change_active_state", "state"), &LimboHSM::change_active_state);
 
 	BIND_ENUM_CONSTANT(IDLE);
 	BIND_ENUM_CONSTANT(PHYSICS);

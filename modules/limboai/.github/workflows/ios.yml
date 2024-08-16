@@ -25,7 +25,7 @@ on:
 # Global Settings
 env:
   SCONS_CACHE_LIMIT: 4096
-  SCONSFLAGS: production=yes tests=no verbose=yes warnings=extra werror=yes
+  SCONSFLAGS: production=yes tests=no verbose=yes warnings=extra
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
 
@@ -169,9 +169,6 @@ jobs:
           ls bin/
           cp -r misc/dist/ios_xcode bin/
           cd bin/
-
-          # --- Note: Doesn't look like libs need stripping ---
-          # strip *.a
 
           mv libgodot.ios.template_debug.arm64.a ios_xcode/libgodot.ios.debug.xcframework/ios-arm64/libgodot.a
           # ! lipo -create libgodot.ios.template_debug.arm64.simulator.a libgodot.ios.template_debug.x86_64.simulator.a -output ios_xcode/libgodot.ios.debug.xcframework/ios-arm64_x86_64-simulator/libgodot.a

@@ -22,9 +22,11 @@ class BTState : public LimboState {
 
 private:
 	Ref<BehaviorTree> behavior_tree;
-	Ref<BTTask> tree_instance;
+	Ref<BTInstance> bt_instance;
 	StringName success_event;
 	StringName failure_event;
+	Node *scene_root_hint = nullptr;
+	bool monitor_performance = false;
 
 protected:
 	static void _bind_methods();
@@ -42,13 +44,18 @@ public:
 	void set_behavior_tree(const Ref<BehaviorTree> &p_value);
 	Ref<BehaviorTree> get_behavior_tree() const { return behavior_tree; }
 
-	Ref<BTTask> get_tree_instance() const { return tree_instance; }
+	Ref<BTInstance> get_bt_instance() const { return bt_instance; }
 
 	void set_success_event(const StringName &p_success_event) { success_event = p_success_event; }
 	StringName get_success_event() const { return success_event; }
 
 	void set_failure_event(const StringName &p_failure_event) { failure_event = p_failure_event; }
 	StringName get_failure_event() const { return failure_event; }
+
+	void set_monitor_performance(bool p_monitor);
+	bool get_monitor_performance() const { return monitor_performance; }
+
+	void set_scene_root_hint(Node *p_node);
 
 	BTState();
 };

@@ -54,10 +54,12 @@ necessary for :ref:`BehaviorTree<class_BehaviorTree>` initialization.
 
 To add, modify, or remove variables from the Blackboard Plan, follow these steps:
 
-1. Load the behavior tree in the LimboAI editor.
-2. Click on the resource header to access :ref:`BehaviorTree<class_BehaviorTree>` data in the Inspector.
-3. In the Inspector, select the "Blackboard Plan" property and click the "Manage..." button.
-4. A popup window will appear, allowing you to edit behavior tree variables, reorder them, and modify property types and hints.
+1. Open the LimboAI editor and load the behavior tree you want to edit.
+2. In the editor, click on the small button located inside the tab. This will open the :ref:`BlackboardPlan<class_BlackboardPlan>` in the Inspector.
+3. In the Inspector, click the "Manage..." button to show the blackboard plan editor.
+4. In the blackboard plan editor, you can add, remove, or reorder variables, and modify their data type and hint.
+5. The hint provides additional information about the variable to the Inspector, such as minimum and maximum values for an integer variable. Learn more about `property hints in the official Godot documentation <https://docs.godotengine.org/en/stable/classes/class_%40globalscope.html#enum-globalscope-propertyhint>`_.
+6. You can specify the default values of the variables directly in the Inspector.
 
 Overriding variables in BTPlayer
 --------------------------------

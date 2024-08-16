@@ -12,6 +12,7 @@
 #ifndef BEHAVIOR_TREE_DATA_H
 #define BEHAVIOR_TREE_DATA_H
 
+#include "../../bt/bt_instance.h"
 #include "../../bt/tasks/bt_task.h"
 
 class BehaviorTreeData : public RefCounted {
@@ -46,13 +47,14 @@ public:
 	};
 
 	List<TaskData> tasks;
-	NodePath bt_player_path;
-	String bt_resource_path;
+	uint64_t bt_instance_id = 0;
+	NodePath node_owner_path;
+	String source_bt_path;
 
 public:
-	static Array serialize(const Ref<BTTask> &p_tree_instance, const NodePath &p_player_path, const String &p_bt_resource_path);
+	static Array serialize(const Ref<BTInstance> &p_instance);
 	static Ref<BehaviorTreeData> deserialize(const Array &p_array);
-	static Ref<BehaviorTreeData> create_from_tree_instance(const Ref<BTTask> &p_tree_instance);
+	static Ref<BehaviorTreeData> create_from_bt_instance(const Ref<BTInstance> &p_bt_instance);
 
 	BehaviorTreeData();
 };

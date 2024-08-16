@@ -51,13 +51,18 @@ class LimboDebuggerTab : public PanelContainer {
 	GDCLASS(LimboDebuggerTab, PanelContainer);
 
 private:
-	List<String> active_bt_players;
+	struct BTInstanceInfo {
+		uint64_t instance_id = 0;
+		String owner_node_path;
+	};
+
+	Vector<BTInstanceInfo> active_bt_instances;
 	Ref<EditorDebuggerSession> session;
 	VBoxContainer *root_vb = nullptr;
 	HBoxContainer *toolbar = nullptr;
 	HSplitContainer *hsc = nullptr;
 	Label *info_message = nullptr;
-	ItemList *bt_player_list = nullptr;
+	ItemList *bt_instance_list = nullptr;
 	BehaviorTreeView *bt_view = nullptr;
 	VBoxContainer *view_box = nullptr;
 	HBoxContainer *alert_box = nullptr;
@@ -71,8 +76,8 @@ private:
 
 	void _reset_controls();
 	void _show_alert(const String &p_message);
-	void _update_bt_player_list(const List<String> &p_node_paths, const String &p_filter);
-	void _bt_selected(int p_idx);
+	void _update_bt_instance_list(const Vector<BTInstanceInfo> &p_instances, const String &p_filter);
+	void _bt_instance_selected(int p_idx);
 	void _filter_changed(String p_text);
 	void _window_visibility_changed(bool p_visible);
 	void _resource_header_pressed();
@@ -84,9 +89,9 @@ protected:
 public:
 	void start_session();
 	void stop_session();
-	void update_active_bt_players(const Array &p_node_paths);
+	void update_active_bt_instances(const Array &p_data);
 	BehaviorTreeView *get_behavior_tree_view() const { return bt_view; }
-	String get_selected_bt_player();
+	uint64_t get_selected_bt_instance_id();
 	void update_behavior_tree(const Ref<BehaviorTreeData> &p_data);
 
 	void setup(Ref<EditorDebuggerSession> p_session, CompatWindowWrapper *p_wrapper);

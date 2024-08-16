@@ -9,10 +9,17 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="get_tree_instance" qualifiers="const">
-			<return type="BTTask" />
+		<method name="get_bt_instance" qualifiers="const">
+			<return type="BTInstance" />
 			<description>
-				Returns the root task of the instantiated behavior tree.
+				Returns the behavior tree instance.
+			</description>
+		</method>
+		<method name="set_scene_root_hint">
+			<return type="void" />
+			<param index="0" name="scene_root" type="Node" />
+			<description>
+				Sets the [Node] that will be used as the scene root for the newly instantiated behavior tree. Should be called before the state machine is initialized. This is typically useful when creating [BTState] nodes dynamically from code.
 			</description>
 		</method>
 	</methods>
@@ -22,6 +29,9 @@
 		</member>
 		<member name="failure_event" type="StringName" setter="set_failure_event" getter="get_failure_event" default="&amp;&quot;failure&quot;">
 			HSM event that will be dispatched when the behavior tree results in [code]FAILURE[/code]. See [method LimboState.dispatch].
+		</member>
+		<member name="monitor_performance" type="bool" setter="_set_monitor_performance" getter="_get_monitor_performance" default="false">
+			If [code]true[/code], adds a performance monitor to "Debugger-&gt;Monitors" for each instance of this [BTState] node.
 		</member>
 		<member name="success_event" type="StringName" setter="set_success_event" getter="get_success_event" default="&amp;&quot;success&quot;">
 			HSM event that will be dispatched when the behavior tree results in [code]SUCCESS[/code]. See [method LimboState.dispatch].

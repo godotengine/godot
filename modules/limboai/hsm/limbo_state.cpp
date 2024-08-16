@@ -95,7 +95,8 @@ void LimboState::_initialize(Node *p_agent, const Ref<Blackboard> &p_blackboard)
 		blackboard = p_blackboard;
 	}
 	if (blackboard_plan.is_valid() && !blackboard_plan->is_empty()) {
-		blackboard_plan->populate_blackboard(blackboard, true, this);
+		// Don't overwrite existing blackboard values as they may be initialized from code.
+		blackboard_plan->populate_blackboard(blackboard, false, this);
 	}
 
 	_setup();

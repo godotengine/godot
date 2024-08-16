@@ -18,6 +18,14 @@
 				Establishes a transition from one state to another when [param event] is dispatched. Both [param from_state] and [param to_state] must be immediate children of this state.
 			</description>
 		</method>
+		<method name="change_active_state">
+			<return type="void" />
+			<param index="0" name="state" type="LimboState" />
+			<description>
+				Changes the currently active substate to [param state]. If [param state] is already active, it will be exited and reentered.
+				[param state] must be a child of this [LimboHSM].
+			</description>
+		</method>
 		<method name="get_active_state" qualifiers="const">
 			<return type="LimboState" />
 			<description>
@@ -36,12 +44,28 @@
 				Returns the previously active substate.
 			</description>
 		</method>
+		<method name="has_transition" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="from_state" type="LimboState" />
+			<param index="1" name="event" type="StringName" />
+			<description>
+				Returns [code]true[/code] if there is a transition from [param from_state] for a given [param event].
+			</description>
+		</method>
 		<method name="initialize">
 			<return type="void" />
 			<param index="0" name="agent" type="Node" />
 			<param index="1" name="parent_scope" type="Blackboard" default="null" />
 			<description>
 				Initiates the state and calls [method LimboState._setup] for both itself and all substates.
+			</description>
+		</method>
+		<method name="remove_transition">
+			<return type="void" />
+			<param index="0" name="from_state" type="LimboState" />
+			<param index="1" name="event" type="StringName" />
+			<description>
+				Removes a transition from a state associated with specific [param event].
 			</description>
 		</method>
 		<method name="set_active">

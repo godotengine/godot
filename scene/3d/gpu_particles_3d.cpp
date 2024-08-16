@@ -509,10 +509,6 @@ void GPUParticles3D::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			RS::get_singleton()->particles_set_subemitter(particles, RID());
-
-			Ref<ParticleProcessMaterial> material = get_process_material();
-			ERR_FAIL_COND(material.is_null());
-			material->disconnect("emission_shape_changed", callable_mp((Node3D *)this, &GPUParticles3D::update_gizmos));
 		} break;
 
 		case NOTIFICATION_PAUSED:

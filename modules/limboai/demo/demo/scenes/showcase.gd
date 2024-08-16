@@ -42,8 +42,8 @@ func _ready() -> void:
 
 
 func _physics_process(_delta: float) -> void:
-	var inst: BTTask = bt_player.get_tree_instance()
-	var bt_data: BehaviorTreeData = BehaviorTreeData.create_from_tree_instance(inst)
+	var inst: BTInstance = bt_player.get_bt_instance()
+	var bt_data: BehaviorTreeData = BehaviorTreeData.create_from_bt_instance(inst)
 	behavior_tree_view.update_tree(bt_data)
 
 

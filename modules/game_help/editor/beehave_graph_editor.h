@@ -1188,16 +1188,19 @@ public:
 		Control*space = memnew(Control);
 		space->set_h_size_flags(SIZE_EXPAND_FILL);
 		play_help->add_child(space);
+
+
 		play_button = memnew(Button);
-		play_button->set_text(TTR("Play"));
+		play_button->set_text(L"播放");
+		play_help->add_child(play_button);
 
 		pause_button = memnew(Button);
-		pause_button->set_text(TTR("Pause"));
+		pause_button->set_text(L"暂停");
 		pause_button->set_disabled(true);
 		play_help->add_child(pause_button);
 
 		stop_button = memnew(Button);
-		stop_button->set_text(TTR("Stop"));
+		stop_button->set_text(L"停止");
 		stop_button->set_disabled(true);
 		play_help->add_child(stop_button);
 
@@ -1262,6 +1265,13 @@ public:
 		buton_create_beehave_node->set_modulate(Color(1, 0.255238, 0.196011, 1));
 
 
+		cteate_beehave_node_pop = memnew(PopupMenu);
+		cteate_beehave_node_pop->set_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
+		buton_create_beehave_node->add_child(cteate_beehave_node_pop);
+		cteate_beehave_node_pop->set_visible(false);
+		buton_create_beehave_node->connect("pressed", callable_mp(this, &BeehaveGraphProperty::_create_beehave_node_pop_menu_pressed));
+
+
 
 
 		set_editor_node(p_beehave_tree, node);
@@ -1320,12 +1330,38 @@ public:
 				show = false;
 			}
 		}
+		if(Object::cast_to<BeehaveLeaf>(beehave_node.ptr()))
+		{
+			show = false;
+		}
 		buton_create_beehave_node->set_visible(show);
 		child_list->setup(beehave_node, "children", Variant::OBJECT, MAKE_RESOURCE_TYPE_HINT("BeehaveNode"));
 		child_list->update_property();
+		if(buton_create_beehave_node->get_child_count() > 0)
+		{
+			buton_create_beehave_node->get_child(0)->queue_free();
+		}
+		
+		if(!show)
+		{
+			return;
+		}
+		bool is_build_leaf = false;
+		bool is_build_composite = false;
+		bool is_build_decorator = false;
+		create_leaf_pop_sub();
+		create_composite_pop_sub();
+		create_decorator_pop_sub();
+
+		cteate_beehave_node_pop->add_submenu_node_item(L"叶节点", leaf_pop_sub);
+		cteate_beehave_node_pop->add_submenu_node_item(L"组合节点", composite_pop_sub);
+		cteate_beehave_node_pop->add_submenu_node_item(L"修饰器", decorator_pop_sub);
 
 	}
-
+	void _create_beehave_node_pop_menu_pressed()
+	{
+		popup_on_target(cteate_beehave_node_pop, buton_create_beehave_node);
+	}
 	void create_leaf_pop_sub()
 	{
 		leaf_pop_sub = memnew(PopupMenu);
@@ -1333,13 +1369,49 @@ public:
 		leaf_class_name.clear();
 		HashSet<StringName> leaf_class_name_set;
 		_add_allowed_type(SNAME("BeehaveLeaf"), &leaf_class_name_set);
-
+		int i = 0;
 		for (const StringName &S : leaf_class_name_set) {
 			leaf_class_name.push_back(S);
-			leaf_pop_sub->add_item(S);
+			Ref<BeehaveLeaf> instance = create_class_instance(S);
+			leaf_pop_sub->add_item(instance->get_lable_name());
+			leaf_pop_sub->set_item_tooltip(i, instance->get_tooltip());
+			leaf_class_name_to_instance[S] = instance;
+			++i;
 		}
 		leaf_pop_sub->connect(SceneStringName(id_pressed), callable_mp(this, &BeehaveGraphProperty::on_leaf_pop_pressed));
 
+	}
+	void popup_on_target(PopupMenu *p_menu,Control* p_target) {
+		p_menu->reset_size();
+		Rect2i usable_rect =  Rect2i(Point2i(0,0), DisplayServer::get_singleton()->window_get_size_with_decorations());
+		Rect2i cp_rect = Rect2i(Point2i(0,0), p_target->get_size());
+
+		for(int i = 0; i < 4; i++) {
+			if(i > 1)
+			{
+				cp_rect.position.y = p_target->get_global_position().x - p_target->get_size().y;
+			}
+			else
+			{
+				cp_rect.position.y = p_target->get_global_position().y + p_target->get_size().y;
+			}
+			if(i & 1) {
+				cp_rect.position.x = p_target->get_global_position().x ;
+			}
+			else
+			{
+				cp_rect.position.x = p_target->get_global_position().x - MAX(0,cp_rect.size.x - p_target->get_size().x);
+			}
+			if(usable_rect.encloses(cp_rect))
+			{
+				break;
+			}
+		}
+		Point2i main_window_position = DisplayServer::get_singleton()->window_get_position();
+		Point2i popup_position = main_window_position + Point2i(cp_rect.position);
+		p_menu->set_position(popup_position);
+		p_menu->popup();
+		
 	}
 
 	void create_composite_pop_sub()
@@ -1349,9 +1421,14 @@ public:
 		HashSet<StringName> composite_class_name_set;
 
 		_add_allowed_type(SNAME("BeehaveComposite"), &composite_class_name_set);
+		int i = 0;
 		for (const StringName &S : composite_class_name_set) {
 			composite_class_name.push_back(S);
-			composite_pop_sub->add_item(S);
+			Ref<BeehaveComposite> instance = create_class_instance(S);
+			composite_pop_sub->add_item(instance->get_lable_name());
+			composite_pop_sub->set_item_tooltip(i, instance->get_tooltip());
+			composite_class_name_to_instance[S] = instance;
+			++i;
 		}
 
 		composite_pop_sub->connect(SceneStringName(id_pressed), callable_mp(this, &BeehaveGraphProperty::on_composite_pop_pressed));
@@ -1363,9 +1440,14 @@ public:
 		decorator_class_name.clear();
 		HashSet<StringName> decorator_class_name_set;
 		_add_allowed_type(SNAME("BeehaveDecorator"), &decorator_class_name_set);
+		int i = 0;
 		for (const StringName &S : decorator_class_name_set) {
 			decorator_class_name.push_back(S);
-			decorator_pop_sub->add_item(S);
+			Ref<BeehaveDecorator> instance = create_class_instance(S);
+			decorator_pop_sub->add_item(instance->get_lable_name());
+			decorator_pop_sub->set_item_tooltip(i, instance->get_tooltip());
+			decorator_class_name_to_instance[S] = instance;
+			++i;
 		}
 		decorator_pop_sub->connect(SceneStringName(id_pressed), callable_mp(this, &BeehaveGraphProperty::on_decorator_pop_pressed));
 	}
@@ -1470,8 +1552,11 @@ protected:
 
 	PlayState play_state = PLAY_STATE_STOP;
 	LocalVector<StringName> leaf_class_name;
+	HashMap<StringName,Ref<BeehaveLeaf>> leaf_class_name_to_instance;
 	LocalVector<StringName> composite_class_name;
+	HashMap<StringName,Ref<BeehaveComposite>> composite_class_name_to_instance;
 	LocalVector<StringName> decorator_class_name;
+	HashMap<StringName,Ref<BeehaveDecorator>> decorator_class_name_to_instance;
 
 
 };

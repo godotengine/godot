@@ -210,7 +210,7 @@ Variant VARIANT_DEFAULT(Variant::Type p_type) {
 
 #ifdef TOOLS_ENABLED
 
-void SHOW_DOC(const String &p_topic) {
+void SHOW_BUILTIN_DOC(const String &p_topic) {
 #ifdef LIMBOAI_MODULE
 	ScriptEditor::get_singleton()->goto_help(p_topic);
 	EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);

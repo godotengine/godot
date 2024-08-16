@@ -113,9 +113,6 @@ public:
     {
         get_bt_player()->restart();
     }
-	int get_last_status() { return get_bt_player()->get_last_status(); }
-
-	Ref<BTTask> get_tree_instance() { return get_bt_player()->get_tree_instance(); }
 
     void set_navigation_agent(const Ref<CharacterNavigationAgent3D> &p_navigation_agent);
     Ref<CharacterNavigationAgent3D> get_navigation_agent();

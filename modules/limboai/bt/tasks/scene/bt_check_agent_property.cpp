@@ -24,8 +24,9 @@ void BTCheckAgentProperty::set_check_type(LimboUtility::CheckType p_check_type) 
 void BTCheckAgentProperty::set_value(Ref<BBVariant> p_value) {
 	value = p_value;
 	emit_changed();
-	if (Engine::get_singleton()->is_editor_hint() && value.is_valid()) {
-		value->connect(LW_NAME(changed), Callable(this, LW_NAME(emit_changed)));
+	if (Engine::get_singleton()->is_editor_hint() && value.is_valid() &&
+			!value->is_connected(LW_NAME(changed), callable_mp((Resource *)this, &Resource::emit_changed))) {
+		value->connect(LW_NAME(changed), callable_mp((Resource *)this, &Resource::emit_changed));
 	}
 }
 

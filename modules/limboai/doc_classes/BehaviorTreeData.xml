@@ -10,12 +10,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="create_from_tree_instance" qualifiers="static">
+		<method name="create_from_bt_instance" qualifiers="static">
 			<return type="BehaviorTreeData" />
-			<param index="0" name="tree_instance" type="BTTask" />
+			<param index="0" name="bt_instance" type="BTInstance" />
 			<description>
-				Returns current state of the [param tree_instance] encoded as a [BehaviorTreeData], suitable for use with [BehaviorTreeView].
-				Behavior tree instance can be acquired with [method BTPlayer.get_tree_instance].
+				Returns current state of the [param bt_instance] encoded as a [BehaviorTreeData], suitable for use with [BehaviorTreeView].
+				Behavior tree instance can be acquired with [method BTPlayer.get_bt_instance].
 			</description>
 		</method>
 	</methods>

@@ -11,13 +11,13 @@
 
 #include "limbo_debugger.h"
 
+#include "../../bt/bt_instance.h"
 #include "../../bt/tasks/bt_task.h"
 #include "../../util/limbo_compat.h"
 #include "behavior_tree_data.h"
 
 #ifdef LIMBOAI_MODULE
 #include "core/debugger/engine_debugger.h"
-#include "core/error/error_macros.h"
 #include "core/io/resource.h"
 #include "core/string/node_path.h"
 #include "scene/main/scene_tree.h"
@@ -33,9 +33,6 @@
 //**** LimboDebugger
 
 LimboDebugger *LimboDebugger::singleton = nullptr;
-LimboDebugger *LimboDebugger::get_singleton() {
-	return singleton;
-}
 
 LimboDebugger::LimboDebugger() {
 	singleton = this;
@@ -63,14 +60,6 @@ void LimboDebugger::deinitialize() {
 }
 
 void LimboDebugger::_bind_methods() {
-#ifdef DEBUG_ENABLED
-
-#ifdef LIMBOAI_GDEXTENSION
-	ClassDB::bind_method(D_METHOD("parse_message_gdext"), &LimboDebugger::parse_message_gdext);
-#endif
-	ClassDB::bind_method(D_METHOD("_on_bt_updated", "status", "path"), &LimboDebugger::_on_bt_updated);
-	ClassDB::bind_method(D_METHOD("_on_state_updated", "delta", "path"), &LimboDebugger::_on_state_updated);
-#endif // ! DEBUG_ENABLED
 }
 
 #ifdef DEBUG_ENABLED
@@ -99,100 +88,96 @@ bool LimboDebugger::parse_message_gdext(const String &p_msg, const Array &p_args
 }
 #endif // LIMBOAI_GDEXTENSION
 
-void LimboDebugger::register_bt_instance(Ref<BTTask> p_instance, NodePath p_player_path) {
-	ERR_FAIL_COND(p_instance.is_null());
-	ERR_FAIL_COND(p_player_path.is_empty());
-	if (active_trees.has(p_player_path)) {
+void LimboDebugger::register_bt_instance(uint64_t p_instance_id) {
+	ERR_FAIL_COND(p_instance_id == 0);
+	if (!IS_DEBUGGER_ACTIVE()) {
 		return;
 	}
 
-	active_trees.insert(p_player_path, p_instance);
+	BTInstance *inst = Object::cast_to<BTInstance>(OBJECT_DB_GET_INSTANCE(p_instance_id));
+	ERR_FAIL_NULL(inst);
+	ERR_FAIL_COND(!inst->is_instance_valid());
+
+	if (active_bt_instances.has(p_instance_id)) {
+		return;
+	}
+
+	if (!inst->is_connected(LW_NAME(freed), callable_mp(this, &LimboDebugger::unregister_bt_instance).bind(p_instance_id))) {
+		inst->connect(LW_NAME(freed), callable_mp(this, &LimboDebugger::unregister_bt_instance).bind(p_instance_id));
+	}
+
+	active_bt_instances.insert(p_instance_id);
 	if (session_active) {
 		_send_active_bt_players();
 	}
 }
 
-void LimboDebugger::unregister_bt_instance(Ref<BTTask> p_instance, NodePath p_player_path) {
-	ERR_FAIL_COND(p_instance.is_null());
-	ERR_FAIL_COND(p_player_path.is_empty());
-	ERR_FAIL_COND(!active_trees.has(p_player_path));
+void LimboDebugger::unregister_bt_instance(uint64_t p_instance_id) {
+	if (!active_bt_instances.has(p_instance_id)) {
+		return;
+	}
 
-	if (tracked_player == p_player_path) {
+	if (tracked_instance_id == p_instance_id) {
 		_untrack_tree();
 	}
-	active_trees.erase(p_player_path);
+	active_bt_instances.erase(p_instance_id);
 
 	if (session_active) {
 		_send_active_bt_players();
 	}
 }
 
-void LimboDebugger::_track_tree(NodePath p_path) {
-	ERR_FAIL_COND(!active_trees.has(p_path));
+bool LimboDebugger::is_active() const {
+	return IS_DEBUGGER_ACTIVE();
+}
 
-	if (!tracked_player.is_empty()) {
-		_untrack_tree();
-	}
+void LimboDebugger::_track_tree(uint64_t p_instance_id) {
+	ERR_FAIL_COND(p_instance_id == 0);
+	ERR_FAIL_COND(!active_bt_instances.has(p_instance_id));
 
-	Node *node = SCENE_TREE()->get_root()->get_node_or_null(p_path);
-	ERR_FAIL_COND(node == nullptr);
+	_untrack_tree();
 
-	tracked_player = p_path;
+	tracked_instance_id = p_instance_id;
 
-	Ref<Resource> bt = node->get(LW_NAME(behavior_tree));
-
-	if (bt.is_valid()) {
-		bt_resource_path = bt->get_path();
-	} else {
-		bt_resource_path = "";
-	}
-
-	if (node->is_class("BTPlayer")) {
-		node->connect(LW_NAME(updated), callable_mp(this, &LimboDebugger::_on_bt_updated).bind(p_path));
-	} else if (node->is_class("BTState")) {
-		node->connect(LW_NAME(updated), callable_mp(this, &LimboDebugger::_on_state_updated).bind(p_path));
-	}
+	BTInstance *inst = Object::cast_to<BTInstance>(OBJECT_DB_GET_INSTANCE(p_instance_id));
+	ERR_FAIL_NULL(inst);
+	inst->connect(LW_NAME(updated), callable_mp(this, &LimboDebugger::_on_bt_instance_updated).bind(p_instance_id));
 }
 
 void LimboDebugger::_untrack_tree() {
-	if (tracked_player.is_empty()) {
+	if (tracked_instance_id == 0) {
 		return;
 	}
 
-	NodePath was_tracking = tracked_player;
-	tracked_player = NodePath();
-
-	Node *node = SCENE_TREE()->get_root()->get_node_or_null(was_tracking);
-	ERR_FAIL_COND(node == nullptr);
-
-	if (node->is_class("BTPlayer")) {
-		node->disconnect(LW_NAME(updated), callable_mp(this, &LimboDebugger::_on_bt_updated));
-	} else if (node->is_class("BTState")) {
-		node->disconnect(LW_NAME(updated), callable_mp(this, &LimboDebugger::_on_state_updated));
+	BTInstance *inst = Object::cast_to<BTInstance>(OBJECT_DB_GET_INSTANCE(tracked_instance_id));
+	if (inst) {
+		inst->disconnect(LW_NAME(updated), callable_mp(this, &LimboDebugger::_on_bt_instance_updated));
 	}
+	tracked_instance_id = 0;
 }
 
 void LimboDebugger::_send_active_bt_players() {
 	Array arr;
-	for (KeyValue<NodePath, Ref<BTTask>> kv : active_trees) {
-		arr.append(kv.key);
+	for (uint64_t instance_id : active_bt_instances) {
+		arr.append(instance_id);
+		BTInstance *inst = Object::cast_to<BTInstance>(OBJECT_DB_GET_INSTANCE(instance_id));
+		if (inst == nullptr) {
+			ERR_PRINT("LimboDebugger::_send_active_bt_players: Registered BTInstance not found (no longer exists?).");
+			continue;
+		}
+		Node *owner_node = inst->get_owner_node();
+		arr.append(owner_node ? owner_node->get_path() : NodePath());
 	}
 	EngineDebugger::get_singleton()->send_message("limboai:active_bt_players", arr);
 }
 
-void LimboDebugger::_on_bt_updated(int _status, NodePath p_path) {
-	if (p_path != tracked_player) {
+void LimboDebugger::_on_bt_instance_updated(int _status, uint64_t p_instance_id) {
+	if (p_instance_id != tracked_instance_id) {
 		return;
 	}
-	Array arr = BehaviorTreeData::serialize(active_trees.get(tracked_player), tracked_player, bt_resource_path);
-	EngineDebugger::get_singleton()->send_message("limboai:bt_update", arr);
-}
-
-void LimboDebugger::_on_state_updated(float _delta, NodePath p_path) {
-	if (p_path != tracked_player) {
-		return;
-	}
-	Array arr = BehaviorTreeData::serialize(active_trees.get(tracked_player), tracked_player, bt_resource_path);
+	BTInstance *inst = Object::cast_to<BTInstance>(OBJECT_DB_GET_INSTANCE(p_instance_id));
+	ERR_FAIL_NULL(inst);
+	Array arr = BehaviorTreeData::serialize(inst);
 	EngineDebugger::get_singleton()->send_message("limboai:bt_update", arr);
 }
 

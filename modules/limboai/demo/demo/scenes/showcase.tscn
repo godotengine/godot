@@ -234,18 +234,18 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 140)
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_font_sizes/bold_italics_font_size = 20
+theme_override_font_sizes/italics_font_size = 20
+theme_override_font_sizes/mono_font_size = 20
 theme_override_font_sizes/normal_font_size = 20
 theme_override_font_sizes/bold_font_size = 20
-theme_override_font_sizes/italics_font_size = 20
-theme_override_font_sizes/bold_italics_font_size = 20
-theme_override_font_sizes/mono_font_size = 20
 bbcode_enabled = true
 text = "[b]Behavior Trees[/b] are composed of tasks that represent specific actions or decision-making rules. Tasks can be broadly categorized into two main types: control tasks and leaf tasks. Control tasks determine the execution flow within the tree. They include Sequence, Selector, and Invert. Leaf tasks represent specific actions to perform, like moving or attacking, or conditions that need to be checked. The BTTask class provides the foundation for various building blocks of the Behavior Trees. BT tasks can share data with the help of the Blackboard."
 fit_content = true
 
 [node name="CodePopup" type="PopupPanel" parent="UI Layer/Control"]
 unique_name_in_owner = true
-position = Vector2i(135, 60)
+position = Vector2i(0, 60)
 size = Vector2i(1024, 708)
 visible = true
 
@@ -257,8 +257,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 4.0
 offset_top = 4.0
-offset_right = -4.0
-offset_bottom = -4.0
+offset_right = 1020.0
+offset_bottom = 704.0
 grow_horizontal = 2
 grow_vertical = 2
 gutters_draw_line_numbers = true

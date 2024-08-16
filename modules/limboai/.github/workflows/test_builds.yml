@@ -26,8 +26,8 @@ concurrency:
 
 # Global Settings.
 env:
-  GODOT_REF: "master"
-  GODOT_CPP_REF: "master"
+  GODOT_REF: "4.3-stable"
+  GODOT_CPP_REF: "godot-4.3-stable"
 
 jobs:
   unit-tests:

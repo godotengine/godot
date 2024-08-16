@@ -776,6 +776,17 @@ void LimboAIEditor::_on_tree_task_selected(const Ref<BTTask> &p_task) {
 	EDIT_RESOURCE(p_task);
 }
 
+void LimboAIEditor::_on_tree_task_activated() {
+	Ref<BTTask> selected = task_tree->get_selected();
+	ERR_FAIL_COND(selected.is_null());
+	Ref<Script> scr = selected->get_script();
+	if (scr.is_valid()) {
+		EDIT_SCRIPT(scr->get_path());
+	} else {
+		LimboUtility::get_singleton()->open_doc_class(selected->get_class());
+	}
+}
+
 void LimboAIEditor::_on_visibility_changed() {
 	if (task_tree->is_visible_in_tree()) {
 		Ref<BTTask> sel = task_tree->get_selected();
@@ -788,6 +799,11 @@ void LimboAIEditor::_on_visibility_changed() {
 		task_palette->refresh();
 	}
 	_update_favorite_tasks();
+
+	if (request_update_tabs && history.size() > 0) {
+		_update_tabs();
+		request_update_tabs = false;
+	}
 }
 
 void LimboAIEditor::_on_header_pressed() {
@@ -901,6 +917,18 @@ void LimboAIEditor::_on_resources_reload(const PackedStringArray &p_resources) {
 #elif LIMBOAI_GDEXTENSION
 	task_tree->update_tree();
 #endif
+}
+
+void LimboAIEditor::_on_filesystem_changed() {
+	if (history.size() == 0) {
+		return;
+	}
+
+	if (is_visible_in_tree()) {
+		_update_tabs();
+	} else {
+		request_update_tabs = true;
+	}
 }
 
 void LimboAIEditor::_on_new_script_pressed() {
@@ -1364,7 +1392,7 @@ void LimboAIEditor::_notification(int p_what) {
 			task_tree->connect("rmb_pressed", callable_mp(this, &LimboAIEditor::_on_tree_rmb));
 			task_tree->connect("task_selected", callable_mp(this, &LimboAIEditor::_on_tree_task_selected));
 			task_tree->connect("task_dragged", callable_mp(this, &LimboAIEditor::_on_task_dragged));
-			task_tree->connect("task_activated", callable_mp(this, &LimboAIEditor::_action_selected).bind(ACTION_RENAME));
+			task_tree->connect("task_activated", callable_mp(this, &LimboAIEditor::_on_tree_task_activated));
 			task_tree->connect("probability_clicked", callable_mp(this, &LimboAIEditor::_action_selected).bind(ACTION_EDIT_PROBABILITY));
 			task_tree->connect("visibility_changed", callable_mp(this, &LimboAIEditor::_on_visibility_changed));
 			task_tree->connect("visibility_changed", callable_mp(this, &LimboAIEditor::_update_banners));
@@ -1392,6 +1420,7 @@ void LimboAIEditor::_notification(int p_what) {
 			version_btn->connect(LW_NAME(pressed), callable_mp(this, &LimboAIEditor::_copy_version_info));
 
 			EDITOR_FILE_SYSTEM()->connect("resources_reload", callable_mp(this, &LimboAIEditor::_on_resources_reload));
+			EDITOR_FILE_SYSTEM()->connect("filesystem_changed", callable_mp(this, &LimboAIEditor::_on_filesystem_changed));
 
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
@@ -1434,12 +1463,13 @@ LimboAIEditor::LimboAIEditor() {
 	plugin = nullptr;
 	idx_history = 0;
 
-#ifdef LIMBOAI_MODULE
+	EDITOR_DEF("limbo_ai/editor/prefer_online_documentation", false);
+
 	EDITOR_DEF("limbo_ai/editor/layout", 0);
+#ifdef LIMBOAI_MODULE
 	EDITOR_SETTINGS()->add_property_hint(PropertyInfo(Variant::INT, "limbo_ai/editor/layout", PROPERTY_HINT_ENUM, "Classic:0,Widescreen Optimized:1"));
 	EDITOR_SETTINGS()->set_restart_if_changed("limbo_ai/editor/layout", true);
 #elif LIMBOAI_GDEXTENSION
-	EDITOR_SETTINGS()->set_initial_value("limbo_ai/editor/layout", 0, false);
 	Dictionary pinfo;
 	pinfo["name"] = "limbo_ai/editor/layout";
 	pinfo["type"] = Variant::INT;

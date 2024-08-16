@@ -2,6 +2,7 @@
 demo/addons/
 demo/script_templates/
 icons/*.import
+godot-cpp
 
 # Godot auto generated files
 *.gen.*
