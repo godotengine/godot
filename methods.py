@@ -1049,6 +1049,12 @@ def dump(env):
 # To generate AND build from the command line:
 #   scons vsproj=yes vsproj_gen_only=no
 def generate_vs_project(env, original_args, project_name="godot"):
+    custom_mod = env["custom_modules"]
+    abs_custom_mod = None
+
+    if custom_mod:
+        abs_custom_mod = os.path.abspath(custom_mod) + "\\"
+
     # Augmented glob_recursive that also fills the dirs argument with traversed directories that have content.
     def glob_recursive_2(pattern, dirs, node="."):
         from SCons import Node
@@ -1059,9 +1065,14 @@ def generate_vs_project(env, original_args, project_name="godot"):
             if type(f) is Node.FS.Dir:
                 results += glob_recursive_2(pattern, dirs, f)
         r = Glob(str(node) + "/" + pattern, source=True)
-        if len(r) > 0 and str(node) not in dirs:
+        node_str = str(node)
+        if len(r) > 0 and node_str not in dirs:
             d = ""
-            for part in str(node).split("\\"):
+            if (os.path.isabs(node_str)) and abs_custom_mod and node_str.startswith(abs_custom_mod):
+                d = abs_custom_mod
+                node_str = node_str[len(abs_custom_mod) :]
+
+            for part in node_str.split("\\"):
                 d += part
                 if d not in dirs:
                     dirs.append(d)
@@ -1154,12 +1165,23 @@ def generate_vs_project(env, original_args, project_name="godot"):
     for file in glob_recursive_2("*.hpp", headers_dirs):
         headers.append(str(file).replace("/", "\\"))
 
+    if custom_mod:
+        for file in glob_recursive_2("*.h", headers_dirs, custom_mod):
+            headers.append(str(file).replace("/", "\\"))
+        for file in glob_recursive_2("*.hpp", headers_dirs, custom_mod):
+            headers.append(str(file).replace("/", "\\"))
+
     sources = []
     sources_dirs = []
     for file in glob_recursive_2("*.cpp", sources_dirs):
         sources.append(str(file).replace("/", "\\"))
     for file in glob_recursive_2("*.c", sources_dirs):
         sources.append(str(file).replace("/", "\\"))
+    if custom_mod:
+        for file in glob_recursive_2("*.cpp", sources_dirs, custom_mod):
+            sources.append(str(file).replace("/", "\\"))
+        for file in glob_recursive_2("*.c", sources_dirs, custom_mod):
+            sources.append(str(file).replace("/", "\\"))
 
     others = []
     others_dirs = []
@@ -1167,6 +1189,11 @@ def generate_vs_project(env, original_args, project_name="godot"):
         others.append(str(file).replace("/", "\\"))
     for file in glob_recursive_2("*.glsl", others_dirs):
         others.append(str(file).replace("/", "\\"))
+    if custom_mod:
+        for file in glob_recursive_2("*.natvis", others_dirs, custom_mod):
+            others.append(str(file).replace("/", "\\"))
+        for file in glob_recursive_2("*.glsl", others_dirs, custom_mod):
+            others.append(str(file).replace("/", "\\"))
 
     skip_filters = False
     import hashlib
@@ -1187,6 +1214,21 @@ def generate_vs_project(env, original_args, project_name="godot"):
 
     import uuid
 
+    def get_active_path(path):
+        if os.path.isabs(path) and abs_custom_mod and path.startswith(abs_custom_mod):
+            return "modules\\" + path[len(abs_custom_mod) :]
+        return path
+
+    def get_rel_path(path):
+        if os.path.isabs(path):
+            return os.path.relpath(path, os.curdir)
+        return path
+
+    def get_active_filter(path):
+        if os.path.isabs(path) and abs_custom_mod and path.startswith(abs_custom_mod):
+            return "modules\\" + path[len(abs_custom_mod) :]
+        return get_rel_path(path)
+
     # Don't regenerate the filters file if nothing has changed, so we keep the existing UUIDs.
     if not skip_filters:
         print(f"Regenerating {project_name}.vcxproj.filters")
@@ -1199,32 +1241,34 @@ def generate_vs_project(env, original_args, project_name="godot"):
         filters = ""
 
         for d in headers_dirs:
+            d = get_active_filter(d)
             filters += f'<Filter Include="Header Files\\{d}"><UniqueIdentifier>{{{str(uuid.uuid4())}}}</UniqueIdentifier></Filter>\n'
         for d in sources_dirs:
+            d = get_active_filter(d)
             filters += f'<Filter Include="Source Files\\{d}"><UniqueIdentifier>{{{str(uuid.uuid4())}}}</UniqueIdentifier></Filter>\n'
         for d in others_dirs:
+            d = get_active_filter(d)
             filters += f'<Filter Include="Other Files\\{d}"><UniqueIdentifier>{{{str(uuid.uuid4())}}}</UniqueIdentifier></Filter>\n'
 
         filters_template = filters_template.replace("%%FILTERS%%", filters)
 
         filters = ""
         for file in headers:
-            filters += (
-                f'<ClInclude Include="{file}"><Filter>Header Files\\{os.path.dirname(file)}</Filter></ClInclude>\n'
-            )
+            filter_path = get_active_filter(os.path.dirname(file))
+            filters += f'<ClInclude Include="{file}"><Filter>Header Files\\{filter_path}</Filter></ClInclude>\n'
         filters_template = filters_template.replace("%%INCLUDES%%", filters)
 
         filters = ""
         for file in sources:
-            filters += (
-                f'<ClCompile Include="{file}"><Filter>Source Files\\{os.path.dirname(file)}</Filter></ClCompile>\n'
-            )
+            filter_path = get_active_filter(os.path.dirname(file))
+            filters += f'<ClCompile Include="{file}"><Filter>Source Files\\{filter_path}</Filter></ClCompile>\n'
 
         filters_template = filters_template.replace("%%COMPILES%%", filters)
 
         filters = ""
         for file in others:
-            filters += f'<None Include="{file}"><Filter>Other Files\\{os.path.dirname(file)}</Filter></None>\n'
+            filter_path = get_active_filter(os.path.dirname(file))
+            filters += f'<None Include="{file}"><Filter>Other Files\\{filter_path}</Filter></None>\n'
         filters_template = filters_template.replace("%%OTHERS%%", filters)
 
         filters_template = filters_template.replace("%%HASH%%", md5)
@@ -1294,7 +1338,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
     set_sources = set(sources_active)
     set_others = set(others_active)
     for file in headers:
-        base_path = os.path.dirname(file).replace("\\", "_")
+        base_path = get_active_path(os.path.dirname(file)).replace("\\", "_")
         all_items.append(f'<ClInclude Include="{file}">')
         all_items.append(
             f"  <ExcludedFromBuild Condition=\"!$(ActiveProjectItemList_{base_path}.Contains(';{file};'))\">true</ExcludedFromBuild>"
@@ -1304,7 +1348,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
             activeItems.append(file)
 
     for file in sources:
-        base_path = os.path.dirname(file).replace("\\", "_")
+        base_path = get_active_path(os.path.dirname(file)).replace("\\", "_")
         all_items.append(f'<ClCompile Include="{file}">')
         all_items.append(
             f"  <ExcludedFromBuild Condition=\"!$(ActiveProjectItemList_{base_path}.Contains(';{file};'))\">true</ExcludedFromBuild>"
@@ -1314,7 +1358,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
             activeItems.append(file)
 
     for file in others:
-        base_path = os.path.dirname(file).replace("\\", "_")
+        base_path = get_active_path(os.path.dirname(file)).replace("\\", "_")
         all_items.append(f'<None Include="{file}">')
         all_items.append(
             f"  <ExcludedFromBuild Condition=\"!$(ActiveProjectItemList_{base_path}.Contains(';{file};'))\">true</ExcludedFromBuild>"
@@ -1333,7 +1377,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
         condition = "'$(GodotConfiguration)|$(GodotPlatform)'=='" + vsconf + "'"
         itemlist = {}
         for item in activeItems:
-            key = os.path.dirname(item).replace("\\", "_")
+            key = get_active_path(os.path.dirname(item)).replace("\\", "_")
             if key not in itemlist:
                 itemlist[key] = [item]
             else:
