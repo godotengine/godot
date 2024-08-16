@@ -665,6 +665,8 @@ private:
 	Object(bool p_reference);
 
 protected:
+	StringName _translation_domain;
+
 	_FORCE_INLINE_ bool _instance_binding_reference(bool p_reference) {
 		bool can_die = true;
 		if (_instance_bindings) {
@@ -953,6 +955,9 @@ public:
 
 	_FORCE_INLINE_ void set_message_translation(bool p_enable) { _can_translate = p_enable; }
 	_FORCE_INLINE_ bool can_translate_messages() const { return _can_translate; }
+
+	virtual StringName get_translation_domain() const;
+	virtual void set_translation_domain(const StringName &p_domain);
 
 #ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;

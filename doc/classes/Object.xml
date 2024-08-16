@@ -818,6 +818,12 @@
 				[b]Note:[/b] Due of the implementation, each [Dictionary] is formatted very similarly to the returned values of [method get_method_list].
 			</description>
 		</method>
+		<method name="get_translation_domain" qualifiers="const">
+			<return type="StringName" />
+			<description>
+				Returns the name of the translation domain used by [method tr] and [method tr_n]. See also [TranslationServer].
+			</description>
+		</method>
 		<method name="has_meta" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
@@ -1068,6 +1074,13 @@
 			<description>
 				Attaches [param script] to the object, and instantiates it. As a result, the script's [method _init] is called. A [Script] is used to extend the object's functionality.
 				If a script already exists, its instance is detached, and its property values and state are lost. Built-in property values are still kept.
+			</description>
+		</method>
+		<method name="set_translation_domain">
+			<return type="void" />
+			<param index="0" name="domain" type="StringName" />
+			<description>
+				Sets the name of the translation domain used by [method tr] and [method tr_n]. See also [TranslationServer].
 			</description>
 		</method>
 		<method name="to_string">
