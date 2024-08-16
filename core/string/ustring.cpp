@@ -3179,7 +3179,7 @@ Vector<uint8_t> String::sha256_buffer() const {
 }
 
 String String::insert(int p_at_pos, const String &p_string) const {
-	if (p_at_pos < 0) {
+	if (p_string.is_empty() || p_at_pos < 0) {
 		return *this;
 	}
 
@@ -3187,17 +3187,27 @@ String String::insert(int p_at_pos, const String &p_string) const {
 		p_at_pos = length();
 	}
 
-	String pre;
+	String ret;
+	ret.resize(length() + p_string.length() + 1);
+	char32_t *ret_ptrw = ret.ptrw();
+	const char32_t *this_ptr = ptr();
+
 	if (p_at_pos > 0) {
-		pre = substr(0, p_at_pos);
+		memcpy(ret_ptrw, this_ptr, p_at_pos * sizeof(char32_t));
+		ret_ptrw += p_at_pos;
 	}
 
-	String post;
+	memcpy(ret_ptrw, p_string.ptr(), p_string.length() * sizeof(char32_t));
+	ret_ptrw += p_string.length();
+
 	if (p_at_pos < length()) {
-		post = substr(p_at_pos, length() - p_at_pos);
+		memcpy(ret_ptrw, this_ptr + p_at_pos, (length() - p_at_pos) * sizeof(char32_t));
+		ret_ptrw += length() - p_at_pos;
 	}
 
-	return pre + p_string + post;
+	*ret_ptrw = 0;
+
+	return ret;
 }
 
 String String::erase(int p_pos, int p_chars) const {
