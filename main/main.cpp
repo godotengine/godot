@@ -1511,6 +1511,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				main_args.push_back(arg);
 				main_args.push_back(N->get());
 				N = N->next();
+				// GDScript docgen requires Autoloads, but loading those also creates a main loop.
+				// This forces main loop to quit without adding more GDScript-specific exceptions to setup.
+				quit_after = 1;
 			} else {
 				OS::get_singleton()->print("Missing relative or absolute path to project for --gdscript-docs, aborting.\n");
 				goto error;
