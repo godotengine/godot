@@ -9,12 +9,18 @@
 	<tutorials>
 	</tutorials>
 	<members>
+		<member name="depth" type="float" setter="set_depth" getter="get_depth" default="1.0">
+			Depth of sphere.
+		</member>
 		<member name="height" type="float" setter="set_height" getter="get_height" default="1.0">
 			Full height of the sphere.
 		</member>
 		<member name="is_hemisphere" type="bool" setter="set_is_hemisphere" getter="get_is_hemisphere" default="false">
 			If [code]true[/code], a hemisphere is created rather than a full sphere.
-			[b]Note:[/b] To get a regular hemisphere, the height and radius of the sphere must be equal.
+			[b]Note:[/b] To get a regular hemisphere, one of the following must be true:
+			1. Shape mode is set to SPHERE.
+			2. If the shape mode is SPHEROID, the height must be equal to the radius.
+			3. If shape mode is ELLIPSOID, the width and depth must be equal, and the height must be half of the width or depth.
 		</member>
 		<member name="radial_segments" type="int" setter="set_radial_segments" getter="get_radial_segments" default="64">
 			Number of radial segments on the sphere.
@@ -25,5 +31,22 @@
 		<member name="rings" type="int" setter="set_rings" getter="get_rings" default="32">
 			Number of segments along the height of the sphere.
 		</member>
+		<member name="shape" type="int" setter="set_shape" getter="get_shape" enum="SphereMesh.Shape" default="1">
+			Sets the shape mode to one of [enum SphereMesh.Shape].
+		</member>
+		<member name="width" type="float" setter="set_width" getter="get_width" default="1.0">
+			Width of sphere.
+		</member>
 	</members>
+	<constants>
+		<constant name="SPHERE" value="0" enum="Shape">
+			A regular sphere controlled only by radius.
+		</constant>
+		<constant name="SPHEROID" value="1" enum="Shape">
+			A sphere with adjustable height and radius.
+		</constant>
+		<constant name="ELLIPSOID" value="2" enum="Shape">
+			A sphere with adjustable height, width, and depth.
+		</constant>
+	</constants>
 </class>
