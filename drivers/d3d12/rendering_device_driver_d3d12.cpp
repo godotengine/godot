@@ -2143,17 +2143,28 @@ void RenderingDeviceDriverD3D12::command_pipeline_barrier(CommandBufferID p_cmd_
 	for (uint32_t i = 0; i < p_texture_barriers.size(); i++) {
 		const TextureBarrier &texture_barrier_rd = p_texture_barriers[i];
 		const TextureInfo *texture_info = (const TextureInfo *)(texture_barrier_rd.texture.id);
+		if (texture_info->main_texture) {
+			texture_info = texture_info->main_texture;
+		}
 		_rd_stages_and_access_to_d3d12(p_src_stages, texture_barrier_rd.prev_layout, texture_barrier_rd.src_access, texture_barrier_d3d12.SyncBefore, texture_barrier_d3d12.AccessBefore);
 		_rd_stages_and_access_to_d3d12(p_dst_stages, texture_barrier_rd.next_layout, texture_barrier_rd.dst_access, texture_barrier_d3d12.SyncAfter, texture_barrier_d3d12.AccessAfter);
 		texture_barrier_d3d12.LayoutBefore = _rd_texture_layout_to_d3d12_barrier_layout(texture_barrier_rd.prev_layout);
 		texture_barrier_d3d12.LayoutAfter = _rd_texture_layout_to_d3d12_barrier_layout(texture_barrier_rd.next_layout);
 		texture_barrier_d3d12.pResource = texture_info->resource;
-		texture_barrier_d3d12.Subresources.IndexOrFirstMipLevel = texture_barrier_rd.subresources.base_mipmap;
-		texture_barrier_d3d12.Subresources.NumMipLevels = texture_barrier_rd.subresources.mipmap_count;
-		texture_barrier_d3d12.Subresources.FirstArraySlice = texture_barrier_rd.subresources.base_layer;
-		texture_barrier_d3d12.Subresources.NumArraySlices = texture_barrier_rd.subresources.layer_count;
-		texture_barrier_d3d12.Subresources.FirstPlane = _compute_plane_slice(texture_info->format, texture_barrier_rd.subresources.aspect);
-		texture_barrier_d3d12.Subresources.NumPlanes = format_get_plane_count(texture_info->format);
+		if (texture_barrier_rd.subresources.mipmap_count == texture_info->mipmaps && texture_barrier_rd.subresources.layer_count == texture_info->layers) {
+			// So, all resources. Then, let's be explicit about it so D3D12 doesn't think
+			// we are dealing with a subset of subresources.
+			texture_barrier_d3d12.Subresources.IndexOrFirstMipLevel = 0xffffffff;
+			texture_barrier_d3d12.Subresources.NumMipLevels = 0;
+			// Because NumMipLevels == 0, all the other fields are ignored by D3D12.
+		} else {
+			texture_barrier_d3d12.Subresources.IndexOrFirstMipLevel = texture_barrier_rd.subresources.base_mipmap;
+			texture_barrier_d3d12.Subresources.NumMipLevels = texture_barrier_rd.subresources.mipmap_count;
+			texture_barrier_d3d12.Subresources.FirstArraySlice = texture_barrier_rd.subresources.base_layer;
+			texture_barrier_d3d12.Subresources.NumArraySlices = texture_barrier_rd.subresources.layer_count;
+			texture_barrier_d3d12.Subresources.FirstPlane = _compute_plane_slice(texture_info->format, texture_barrier_rd.subresources.aspect);
+			texture_barrier_d3d12.Subresources.NumPlanes = format_get_plane_count(texture_info->format);
+		}
 		texture_barrier_d3d12.Flags = (texture_barrier_rd.prev_layout == RDD::TEXTURE_LAYOUT_UNDEFINED) ? D3D12_TEXTURE_BARRIER_FLAG_DISCARD : D3D12_TEXTURE_BARRIER_FLAG_NONE;
 		texture_barriers.push_back(texture_barrier_d3d12);
 	}
