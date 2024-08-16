@@ -38,7 +38,10 @@ class BeehaveDecoratorDelayer : public BeehaveDecorator
             children[0]->before_run(actor,blackboard);
             child_state[0] = 1;
         }
-        return children[0]->tick(actor,blackboard);
+        int rs = children[0]->tick(actor,blackboard);
+        
+        children[0]->set_status(rs);
+        return rs;
     }
     float wait_time = 0.0;
     float total_time = 0.0;

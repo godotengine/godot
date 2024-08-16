@@ -76,6 +76,7 @@ public:
                     children[i]->after_run(actor,blackboard);
                     child_state[i] = 2;
                 }
+                children[i]->set_status(child_rs);
             }    
         }
 

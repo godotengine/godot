@@ -43,6 +43,7 @@ public:
                 child_state[0] = 1;
             }
             int rs = children[0]->tick(actor,blackboard);
+            children[0]->set_status(rs);
             if(rs == SUCCESS || rs == FAILURE)
             {
                 for(int i = 0; i < get_child_count(); ++i)

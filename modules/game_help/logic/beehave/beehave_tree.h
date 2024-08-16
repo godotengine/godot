@@ -69,6 +69,7 @@ public:
         {
             root_node->after_run(actor, blackboard);
         }
+        root_node->set_status(status);
         return status;
     }
 

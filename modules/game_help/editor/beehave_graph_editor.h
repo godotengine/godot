@@ -111,9 +111,14 @@ public:
 	HBoxContainer* titlebar_hbox;
 	Ref<BeehaveGraphFrames> frames;
 	bool horizontal = false;
-
-	void _init(Ref<BeehaveGraphFrames> p_frames,const String& p_title_text,const String& p_text, const StringName& p_icon, bool p_horizontal)
+	Ref<BeehaveNode> beehave_node;
+	BeehaveGraphNodes()
 	{
+		
+	}
+	void _init(const Ref<BeehaveNode>& p_beehave_node,Ref<BeehaveGraphFrames> p_frames,const String& p_title_text,const String& p_text, const StringName& p_icon, bool p_horizontal)
+	{
+		beehave_node = p_beehave_node;
 		title_text = p_title_text;
 		text = p_text;
 		frames = p_frames;
@@ -278,6 +283,16 @@ public:
 	{
 		title_text = p_text;
 		title_label->set_text(title_text);
+	}
+	void update_text()
+	{
+	
+		String tile_name = beehave_node->get_lable_name();
+		if(beehave_node->get_name().length() > 0)
+		{
+			tile_name = "\n (" + beehave_node->get_name() + ")";
+		}
+		set_title_text(tile_name);
 	}
 };
 class BeehaveGraphEditor : public GraphEdit
@@ -726,7 +741,7 @@ public:
 		{
 			tile_name = "\n (" + p_beehave_node->get_name() + ")";
 		}
-		nodes->_init(frames, tile_name, "test", p_beehave_node->get_icon(), horizontal_layout);
+		nodes->_init(p_beehave_node,frames, tile_name, "test", p_beehave_node->get_icon(), horizontal_layout);
 
 		add_child(nodes);
 		if(Object::cast_to<BeehaveLeaf>(p_beehave_node.ptr()))
@@ -821,17 +836,14 @@ public:
 		
 	}
 
-	void process_begin(StringName id_name)
+	void process_begin()
 	{
 		
 		TypedArray<BeehaveGraphNodes> nodes = _get_child_nodes();
 		for(int i = 0; i < nodes.size(); ++i)
 		{
 			BeehaveGraphNodes* node = Object::cast_to<BeehaveGraphNodes>(nodes[i]);
-			if(node->get_name() == id_name)
-			{
-				node->set_meta("status",-1);
-			}
+			node->set_meta("status",-1);
 		}
 	}
 
@@ -855,7 +867,7 @@ public:
 
 	}
 
-	void process_end(StringName id_name)
+	void process_end()
 	{
 		TypedArray<BeehaveGraphNodes> nodes = _get_child_nodes();
 		for(int i = 0; i < nodes.size(); ++i)
@@ -882,12 +894,7 @@ public:
 				node->set_color(INACTIVE_COLOR);
 				node->set_status(status);
 			}
-			String tile_name = p_beehave_node->get_lable_name();
-			if(p_beehave_node->get_name().length() > 0)
-			{
-				tile_name = "\n (" + p_beehave_node->get_name() + ")";
-			}
-			node->set_title_text(tile_name);
+			node->update_text();
 		}
 	}
 
@@ -954,7 +961,7 @@ public:
 		
 	}
 	int progress = 0;
-	void _process(float delta)
+	virtual void process(double delta)override
 	{
 		if(!active_nodes.is_empty())
 		{
@@ -1173,6 +1180,27 @@ public:
 		set_custom_minimum_size(Vector2(300,600));
 		set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
 
+		HBoxContainer* play_help = memnew(HBoxContainer);
+		add_child(play_help);
+		play_help->set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
+		play_help->set_h_size_flags(SIZE_EXPAND_FILL);
+
+		Control*space = memnew(Control);
+		space->set_h_size_flags(SIZE_EXPAND_FILL);
+		play_help->add_child(space);
+		play_button = memnew(Button);
+		play_button->set_text(TTR("Play"));
+
+		pause_button = memnew(Button);
+		pause_button->set_text(TTR("Pause"));
+		pause_button->set_disabled(true);
+		play_help->add_child(pause_button);
+
+		stop_button = memnew(Button);
+		stop_button->set_text(TTR("Stop"));
+		stop_button->set_disabled(true);
+		play_help->add_child(stop_button);
+
 		beehave_editor = memnew(BeehaveGraphEditor);
 		add_child(beehave_editor);
 		beehave_editor->set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
@@ -1203,6 +1231,12 @@ public:
 		//select_node_property_vbox->add_child(sub_inspector);
 
 	}
+	enum PlayState
+	{
+		PLAY_STATE_PLAY,
+		PLAY_STATE_PAUSE,
+		PLAY_STATE_STOP
+	};
 	void setup(Ref<BeehaveTree> p_beehave_tree,VBoxContainer * p_select_node_property_vbox,Button* p_buton_create_beehave_node)
 	{
 		select_node_property_vbox = p_select_node_property_vbox;
@@ -1232,6 +1266,12 @@ public:
 
 		set_editor_node(p_beehave_tree, node);
 		beehave_editor->set_beehave_tree(p_beehave_tree);
+	}
+	void process(float delta)
+	{
+		beehave_editor->process_begin();
+		beehave_editor->process(delta);
+		beehave_editor->process_end();
 	}
 
 	
@@ -1424,8 +1464,11 @@ protected:
 	PopupMenu* leaf_pop_sub = nullptr;
 	PopupMenu* composite_pop_sub = nullptr;
 	PopupMenu* decorator_pop_sub = nullptr;
+	Button* play_button = nullptr;
+	Button* pause_button = nullptr;
+	Button* stop_button = nullptr;
 
-
+	PlayState play_state = PLAY_STATE_STOP;
 	LocalVector<StringName> leaf_class_name;
 	LocalVector<StringName> composite_class_name;
 	LocalVector<StringName> decorator_class_name;

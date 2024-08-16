@@ -53,6 +53,7 @@ public:
         {
             response = child->tick(actor,blackboard);
         }
+        child->set_status(response);
         return response;
     }
     float wait_time = 0;

@@ -42,6 +42,7 @@ public:
                 children[i]->before_run(actor,blackboard);
             }
             int rs = children[i]->tick(actor,blackboard);
+            children[i]->set_status(rs);
             if(rs == SUCCESS )
             {
                 last_execution_index = i + 1;

@@ -44,6 +44,7 @@ public:
                 child_state[0] = 1;
             }
             int rs = children[0]->tick(actor,blackboard);
+            children[0]->set_status(rs);
             if(rs == RUNNING)
             {
                 return rs;

@@ -37,6 +37,7 @@ public:
 
     virtual int tick(Node * actor, Blackboard* blackboard) 
     {
+        set_status(SUCCESS);
         return SUCCESS;
 
     }
@@ -49,6 +50,7 @@ public:
         {
             children[i]->interrupt(actor,blackboard);
         }
+        status = -1;
     }
     // Called before the first time it ticks by the parent.
     virtual void  before_run(Node * actor, Blackboard* blackboard)  
@@ -122,12 +124,20 @@ public:
     {
         return name;
     }
-
-
+    void set_status(int p_status)
+    {
+        status = p_status;
+    }
+    int get_status()
+    {
+        return status;
+    }
+protected:
     LocalVector<Ref<BeehaveNode>> children;
     LocalVector<uint8_t> child_state;
     int id = 0;
     String name;
+    int status = -1;
 };
 
 
@@ -268,9 +278,12 @@ public:
         {            
             int rs;
             GDVIRTUAL_CALL(_tick, actor, blackboard,rs);
+            set_status(rs);
             return rs;
         }
-        return base_class_type::tick(actor,blackboard);
+        int rs = base_class_type::tick(actor,blackboard);
+        set_status(rs);
+        return rs;
     }
 
     
