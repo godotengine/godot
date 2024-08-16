@@ -6677,6 +6677,8 @@ EditorNode::EditorNode() {
 	DEV_ASSERT(!singleton);
 	singleton = this;
 
+	set_translation_domain("godot.editor");
+
 	Resource::_get_local_scene_func = _resource_get_edited_scene;
 
 	{

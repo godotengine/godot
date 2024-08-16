@@ -525,22 +525,14 @@ void TranslationServer::setup() {
 #endif
 }
 
-void TranslationServer::set_tool_translation(const Ref<Translation> &p_translation) {
-	tool_translation = p_translation;
-}
-
-Ref<Translation> TranslationServer::get_tool_translation() const {
-	return tool_translation;
-}
-
 String TranslationServer::get_tool_locale() {
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) {
-		if (TranslationServer::get_singleton()->get_tool_translation().is_valid()) {
-			return tool_translation->get_locale();
-		} else {
+		const PackedStringArray &locales = editor_domain->get_loaded_locales();
+		if (locales.is_empty()) {
 			return "en";
 		}
+		return locales[0];
 	} else {
 #else
 	{
@@ -555,97 +547,23 @@ String TranslationServer::get_tool_locale() {
 }
 
 StringName TranslationServer::tool_translate(const StringName &p_message, const StringName &p_context) const {
-	if (tool_translation.is_valid()) {
-		StringName r = tool_translation->get_message(p_message, p_context);
-		if (r) {
-			return r;
-		}
-	}
-	return p_message;
+	return editor_domain->translate(p_message, p_context);
 }
 
 StringName TranslationServer::tool_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
-	if (tool_translation.is_valid()) {
-		StringName r = tool_translation->get_plural_message(p_message, p_message_plural, p_n, p_context);
-		if (r) {
-			return r;
-		}
-	}
-
-	if (p_n == 1) {
-		return p_message;
-	}
-	return p_message_plural;
-}
-
-void TranslationServer::set_property_translation(const Ref<Translation> &p_translation) {
-	property_translation = p_translation;
+	return editor_domain->translate_plural(p_message, p_message_plural, p_n, p_context);
 }
 
 StringName TranslationServer::property_translate(const StringName &p_message, const StringName &p_context) const {
-	if (property_translation.is_valid()) {
-		StringName r = property_translation->get_message(p_message, p_context);
-		if (r) {
-			return r;
-		}
-	}
-	return p_message;
-}
-
-void TranslationServer::set_doc_translation(const Ref<Translation> &p_translation) {
-	doc_translation = p_translation;
+	return property_domain->translate(p_message, p_context);
 }
 
 StringName TranslationServer::doc_translate(const StringName &p_message, const StringName &p_context) const {
-	if (doc_translation.is_valid()) {
-		StringName r = doc_translation->get_message(p_message, p_context);
-		if (r) {
-			return r;
-		}
-	}
-	return p_message;
+	return doc_domain->translate(p_message, p_context);
 }
 
 StringName TranslationServer::doc_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
-	if (doc_translation.is_valid()) {
-		StringName r = doc_translation->get_plural_message(p_message, p_message_plural, p_n, p_context);
-		if (r) {
-			return r;
-		}
-	}
-
-	if (p_n == 1) {
-		return p_message;
-	}
-	return p_message_plural;
-}
-
-void TranslationServer::set_extractable_translation(const Ref<Translation> &p_translation) {
-	extractable_translation = p_translation;
-}
-
-StringName TranslationServer::extractable_translate(const StringName &p_message, const StringName &p_context) const {
-	if (extractable_translation.is_valid()) {
-		StringName r = extractable_translation->get_message(p_message, p_context);
-		if (r) {
-			return r;
-		}
-	}
-	return p_message;
-}
-
-StringName TranslationServer::extractable_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
-	if (extractable_translation.is_valid()) {
-		StringName r = extractable_translation->get_plural_message(p_message, p_message_plural, p_n, p_context);
-		if (r) {
-			return r;
-		}
-	}
-
-	if (p_n == 1) {
-		return p_message;
-	}
-	return p_message_plural;
+	return doc_domain->translate_plural(p_message, p_message_plural, p_n, p_context);
 }
 
 bool TranslationServer::is_pseudolocalization_enabled() const {
@@ -890,5 +808,8 @@ void TranslationServer::load_translations() {
 TranslationServer::TranslationServer() {
 	singleton = this;
 	main_domain.instantiate();
+	editor_domain = get_or_add_domain("godot.editor");
+	property_domain = get_or_add_domain("godot.properties");
+	doc_domain = get_or_add_domain("godot.documentation");
 	init_locale_info();
 }

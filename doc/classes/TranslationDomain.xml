@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		[TranslationDomain] is a self-contained collection of [Translation] resources. Translations can be added to or removed from it.
+		If you're working with the main translation domain, it is more convenient to use the wrap methods on [TranslationServer].
 	</description>
 	<tutorials>
 	</tutorials>

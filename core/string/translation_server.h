@@ -41,12 +41,10 @@ class TranslationServer : public Object {
 	String fallback;
 
 	Ref<TranslationDomain> main_domain;
+	Ref<TranslationDomain> editor_domain;
+	Ref<TranslationDomain> property_domain;
+	Ref<TranslationDomain> doc_domain;
 	HashMap<StringName, Ref<TranslationDomain>> custom_domains;
-
-	Ref<Translation> tool_translation;
-	Ref<Translation> property_translation;
-	Ref<Translation> doc_translation;
-	Ref<Translation> extractable_translation;
 
 	bool enabled = true;
 
@@ -133,18 +131,11 @@ public:
 	int compare_locales(const String &p_locale_a, const String &p_locale_b) const;
 
 	String get_tool_locale();
-	void set_tool_translation(const Ref<Translation> &p_translation);
-	Ref<Translation> get_tool_translation() const;
 	StringName tool_translate(const StringName &p_message, const StringName &p_context = "") const;
 	StringName tool_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
-	void set_property_translation(const Ref<Translation> &p_translation);
 	StringName property_translate(const StringName &p_message, const StringName &p_context = "") const;
-	void set_doc_translation(const Ref<Translation> &p_translation);
 	StringName doc_translate(const StringName &p_message, const StringName &p_context = "") const;
 	StringName doc_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
-	void set_extractable_translation(const Ref<Translation> &p_translation);
-	StringName extractable_translate(const StringName &p_message, const StringName &p_context = "") const;
-	StringName extractable_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
 
 	bool has_domain(const StringName &p_domain) const;
 	Ref<TranslationDomain> get_or_add_domain(const StringName &p_domain);
