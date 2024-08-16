@@ -150,7 +150,7 @@ void PropertySelector::_update_search() {
 				continue;
 			}
 
-			if (type_filter.size() && !type_filter.has(E.type)) {
+			if (!type_filter.is_empty() && !type_filter.has(E.type)) {
 				continue;
 			}
 
@@ -165,6 +165,9 @@ void PropertySelector::_update_search() {
 			}
 
 			item->set_selectable(0, true);
+
+			_create_subproperties(item, E.type);
+			item->set_collapsed(true);
 		}
 
 		if (category && category->get_first_child() == nullptr) {
@@ -363,6 +366,133 @@ void PropertySelector::_hide_requested() {
 	_cancel_pressed(); // From AcceptDialog.
 }
 
+void PropertySelector::_create_subproperties(TreeItem *p_parent_item, Variant::Type p_type) {
+	switch (p_type) {
+		case Variant::VECTOR2: {
+			_create_subproperty(p_parent_item, "x", Variant::FLOAT);
+			_create_subproperty(p_parent_item, "y", Variant::FLOAT);
+		} break;
+
+		case Variant::VECTOR2I: {
+			_create_subproperty(p_parent_item, "x", Variant::INT);
+			_create_subproperty(p_parent_item, "y", Variant::INT);
+		} break;
+
+		case Variant::RECT2: {
+			_create_subproperty(p_parent_item, "position", Variant::VECTOR2);
+			_create_subproperty(p_parent_item, "size", Variant::VECTOR2);
+			_create_subproperty(p_parent_item, "end", Variant::VECTOR2);
+		} break;
+
+		case Variant::RECT2I: {
+			_create_subproperty(p_parent_item, "position", Variant::VECTOR2I);
+			_create_subproperty(p_parent_item, "size", Variant::VECTOR2I);
+			_create_subproperty(p_parent_item, "end", Variant::VECTOR2I);
+		} break;
+
+		case Variant::VECTOR3: {
+			_create_subproperty(p_parent_item, "x", Variant::FLOAT);
+			_create_subproperty(p_parent_item, "y", Variant::FLOAT);
+			_create_subproperty(p_parent_item, "z", Variant::FLOAT);
+		} break;
+
+		case Variant::VECTOR3I: {
+			_create_subproperty(p_parent_item, "x", Variant::INT);
+			_create_subproperty(p_parent_item, "y", Variant::INT);
+			_create_subproperty(p_parent_item, "z", Variant::INT);
+		} break;
+
+		case Variant::TRANSFORM2D: {
+			_create_subproperty(p_parent_item, "origin", Variant::VECTOR2);
+			_create_subproperty(p_parent_item, "x", Variant::VECTOR2);
+			_create_subproperty(p_parent_item, "y", Variant::VECTOR2);
+		} break;
+
+		case Variant::VECTOR4: {
+			_create_subproperty(p_parent_item, "x", Variant::FLOAT);
+			_create_subproperty(p_parent_item, "y", Variant::FLOAT);
+			_create_subproperty(p_parent_item, "z", Variant::FLOAT);
+			_create_subproperty(p_parent_item, "w", Variant::FLOAT);
+		} break;
+
+		case Variant::VECTOR4I: {
+			_create_subproperty(p_parent_item, "x", Variant::INT);
+			_create_subproperty(p_parent_item, "y", Variant::INT);
+			_create_subproperty(p_parent_item, "z", Variant::INT);
+			_create_subproperty(p_parent_item, "w", Variant::INT);
+		} break;
+
+		case Variant::PLANE: {
+			_create_subproperty(p_parent_item, "x", Variant::FLOAT);
+			_create_subproperty(p_parent_item, "y", Variant::FLOAT);
+			_create_subproperty(p_parent_item, "z", Variant::FLOAT);
+			_create_subproperty(p_parent_item, "normal", Variant::VECTOR3);
+			_create_subproperty(p_parent_item, "d", Variant::FLOAT);
+		} break;
+
+		case Variant::QUATERNION: {
+			_create_subproperty(p_parent_item, "x", Variant::FLOAT);
+			_create_subproperty(p_parent_item, "y", Variant::FLOAT);
+			_create_subproperty(p_parent_item, "z", Variant::FLOAT);
+			_create_subproperty(p_parent_item, "w", Variant::FLOAT);
+		} break;
+
+		case Variant::AABB: {
+			_create_subproperty(p_parent_item, "position", Variant::VECTOR3);
+			_create_subproperty(p_parent_item, "size", Variant::VECTOR3);
+			_create_subproperty(p_parent_item, "end", Variant::VECTOR3);
+		} break;
+
+		case Variant::BASIS: {
+			_create_subproperty(p_parent_item, "x", Variant::VECTOR3);
+			_create_subproperty(p_parent_item, "y", Variant::VECTOR3);
+			_create_subproperty(p_parent_item, "z", Variant::VECTOR3);
+		} break;
+
+		case Variant::TRANSFORM3D: {
+			_create_subproperty(p_parent_item, "basis", Variant::BASIS);
+			_create_subproperty(p_parent_item, "origin", Variant::VECTOR3);
+		} break;
+
+		case Variant::PROJECTION: {
+			_create_subproperty(p_parent_item, "x", Variant::VECTOR4);
+			_create_subproperty(p_parent_item, "y", Variant::VECTOR4);
+			_create_subproperty(p_parent_item, "z", Variant::VECTOR4);
+			_create_subproperty(p_parent_item, "w", Variant::VECTOR4);
+		} break;
+
+		case Variant::COLOR: {
+			_create_subproperty(p_parent_item, "r", Variant::FLOAT);
+			_create_subproperty(p_parent_item, "g", Variant::FLOAT);
+			_create_subproperty(p_parent_item, "b", Variant::FLOAT);
+			_create_subproperty(p_parent_item, "a", Variant::FLOAT);
+			_create_subproperty(p_parent_item, "r8", Variant::INT);
+			_create_subproperty(p_parent_item, "g8", Variant::INT);
+			_create_subproperty(p_parent_item, "b8", Variant::INT);
+			_create_subproperty(p_parent_item, "a8", Variant::INT);
+			_create_subproperty(p_parent_item, "h", Variant::FLOAT);
+			_create_subproperty(p_parent_item, "s", Variant::FLOAT);
+			_create_subproperty(p_parent_item, "v", Variant::FLOAT);
+		} break;
+
+		default: {
+		}
+	}
+}
+
+void PropertySelector::_create_subproperty(TreeItem *p_parent_item, const String &p_name, Variant::Type p_type) {
+	if (!type_filter.is_empty() && !type_filter.has(p_type)) {
+		return;
+	}
+
+	TreeItem *item = search_options->create_item(p_parent_item);
+	item->set_text(0, p_name);
+	item->set_metadata(0, String(p_parent_item->get_metadata(0)) + ":" + p_name);
+	item->set_icon(0, search_options->get_editor_theme_icon(Variant::get_type_name(p_type)));
+
+	_create_subproperties(item, p_type);
+}
+
 void PropertySelector::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -532,7 +662,6 @@ PropertySelector::PropertySelector() {
 	search_options->connect("item_activated", callable_mp(this, &PropertySelector::_confirmed));
 	search_options->connect("cell_selected", callable_mp(this, &PropertySelector::_item_selected));
 	search_options->set_hide_root(true);
-	search_options->set_hide_folding(true);
 
 	help_bit = memnew(EditorHelpBit);
 	help_bit->set_content_height_limits(80 * EDSCALE, 80 * EDSCALE);
