@@ -311,13 +311,13 @@
 			The grid size in units. Higher values prevent the grid from appearing "cut off" at certain angles, but make the grid more demanding to render. Depending on the camera's position, the grid may not be fully visible since a shader is used to fade it progressively.
 		</member>
 		<member name="editors/3d/grid_xy_plane" type="bool" setter="" getter="">
-			If [code]true[/code], render the grid on an XY plane. This can be useful for 3D side-scrolling games.
+			If [code]true[/code], renders the grid on the XY plane in perspective view. This can be useful for 3D side-scrolling games.
 		</member>
 		<member name="editors/3d/grid_xz_plane" type="bool" setter="" getter="">
-			If [code]true[/code], render the grid on an XZ plane.
+			If [code]true[/code], renders the grid on the XZ plane in perspective view.
 		</member>
 		<member name="editors/3d/grid_yz_plane" type="bool" setter="" getter="">
-			If [code]true[/code], render the grid on a YZ plane. This can be useful for 3D side-scrolling games.
+			If [code]true[/code], renders the grid on the YZ plane in perspective view. This can be useful for 3D side-scrolling games.
 		</member>
 		<member name="editors/3d/navigation/emulate_3_button_mouse" type="bool" setter="" getter="">
 			If [code]true[/code], enables 3-button mouse emulation mode. This is useful on laptops when using a trackpad.

@@ -7315,9 +7315,9 @@ void Node3DEditor::_init_grid() {
 	int primary_grid_steps = EDITOR_GET("editors/3d/primary_grid_steps");
 
 	// Which grid planes are enabled? Which should we generate?
-	grid_enable[0] = grid_visible[0] = EDITOR_GET("editors/3d/grid_xy_plane");
-	grid_enable[1] = grid_visible[1] = EDITOR_GET("editors/3d/grid_yz_plane");
-	grid_enable[2] = grid_visible[2] = EDITOR_GET("editors/3d/grid_xz_plane");
+	grid_enable[0] = grid_visible[0] = orthogonal || EDITOR_GET("editors/3d/grid_xy_plane");
+	grid_enable[1] = grid_visible[1] = orthogonal || EDITOR_GET("editors/3d/grid_yz_plane");
+	grid_enable[2] = grid_visible[2] = orthogonal || EDITOR_GET("editors/3d/grid_xz_plane");
 
 	// Offsets division_level for bigger or smaller grids.
 	// Default value is -0.2. -1.0 gives Blender-like behavior, 0.5 gives huge grids.
