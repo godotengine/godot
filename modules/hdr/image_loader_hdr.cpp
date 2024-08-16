@@ -68,9 +68,11 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField
 	imgdata.resize(height * width * (int)sizeof(uint32_t));
 
 	{
-		uint8_t *w = imgdata.ptrw();
+		uint8_t *ptr = imgdata.ptrw();
 
-		uint8_t *ptr = (uint8_t *)w;
+		Vector<uint8_t> temp_read_data;
+		temp_read_data.resize(128);
+		uint8_t *temp_read_ptr = temp_read_data.ptrw();
 
 		if (width < 8 || width >= 32768) {
 			// Read flat data
@@ -113,8 +115,9 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField
 							}
 						} else {
 							// Dump
+							f->get_buffer(temp_read_ptr, count);
 							for (int z = 0; z < count; ++z) {
-								ptr[(j * width + i++) * 4 + k] = f->get_8();
+								ptr[(j * width + i++) * 4 + k] = temp_read_ptr[z];
 							}
 						}
 					}
@@ -122,20 +125,27 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField
 			}
 		}
 
+		const bool force_linear = p_flags & FLAG_FORCE_LINEAR;
+
 		//convert
 		for (int i = 0; i < width * height; i++) {
-			float exp = pow(2.0f, ptr[3] - 128.0f);
+			int e = ptr[3] - 128;
 
-			Color c(
-					ptr[0] * exp / 255.0,
-					ptr[1] * exp / 255.0,
-					ptr[2] * exp / 255.0);
+			if (force_linear || (e < -15 || e > 15)) {
+				float exp = pow(2.0f, e);
+				Color c(ptr[0] * exp / 255.0, ptr[1] * exp / 255.0, ptr[2] * exp / 255.0);
 
-			if (p_flags & FLAG_FORCE_LINEAR) {
-				c = c.srgb_to_linear();
+				if (force_linear) {
+					c = c.srgb_to_linear();
+				}
+
+				*(uint32_t *)ptr = c.to_rgbe9995();
+			} else {
+				// https://github.com/george-steel/rgbe-rs/blob/e7cc33b7f42b4eb3272c166dac75385e48687c92/src/types.rs#L123-L129
+				uint32_t e5 = (uint32_t)(e + 15);
+				*(uint32_t *)ptr = ((e5 << 27) | ((uint32_t)ptr[2] << 19) | ((uint32_t)ptr[1] << 10) | ((uint32_t)ptr[0] << 1));
 			}
 
-			*(uint32_t *)ptr = c.to_rgbe9995();
 			ptr += 4;
 		}
 	}
