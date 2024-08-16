@@ -40,6 +40,15 @@
 #include "scene/resources/style_box.h"
 #include "scene/resources/world_2d.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/editor_help.h"
+
+#include "modules/modules_enabled.gen.h" // For regex.
+#ifdef MODULE_REGEX_ENABLED
+#include "modules/regex/regex.h"
+#endif // MODULE_REGEX_ENABLED
+#endif // TOOLS_ENABLED
+
 #define ERR_DRAW_GUARD \
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside this node's `_draw()`, functions connected to its `draw` signal, or when it receives NOTIFICATION_DRAW.")
 
@@ -601,7 +610,25 @@ bool CanvasItem::_get(const StringName &p_name, Variant &r_ret) const {
 void CanvasItem::_get_property_list(List<PropertyInfo> *p_list) const {
 	List<PropertyInfo> pinfo;
 	RS::get_singleton()->canvas_item_get_instance_shader_parameter_list(get_canvas_item(), &pinfo);
+#ifdef TOOLS_ENABLED
+	DocData::ClassDoc class_doc;
+	String code;
 
+	if (Engine::get_singleton()->is_editor_hint()) {
+		class_doc.name = "CanvasItem";
+		class_doc.is_script_doc = true;
+
+		if (get_material().is_valid()) {
+			const Ref<ShaderMaterial> shader_material = get_material();
+			if (shader_material.is_valid()) {
+				const Ref<Shader> shader = shader_material->get_shader();
+				if (shader.is_valid()) {
+					code = shader->get_code();
+				}
+			}
+		}
+	}
+#endif // TOOLS_ENABLED
 	for (PropertyInfo &pi : pinfo) {
 		bool has_def_value = false;
 		Variant def_value = RS::get_singleton()->canvas_item_get_instance_shader_parameter_default_value(get_canvas_item(), pi.name);
@@ -613,9 +640,32 @@ void CanvasItem::_get_property_list(List<PropertyInfo> *p_list) const {
 		} else {
 			pi.usage = PROPERTY_USAGE_EDITOR | (has_def_value ? PROPERTY_USAGE_CHECKABLE : PROPERTY_USAGE_NONE); // Do not save if not changed.
 		}
-
+#if defined(TOOLS_ENABLED) && defined(MODULE_REGEX_ENABLED)
+		const String pname = pi.name;
+#endif
 		pi.name = "instance_shader_parameters/" + pi.name;
 		p_list->push_back(pi);
+#ifdef TOOLS_ENABLED
+		if (Engine::get_singleton()->is_editor_hint()) {
+			DocData::PropertyDoc prop_doc;
+			prop_doc.name = pi.name;
+#ifdef MODULE_REGEX_ENABLED
+			const RegEx pattern(R"(/\*\*\s([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/\s*instance\s+uniform\s+\w+\s+)" + pname + R"((?=[\s:;=]))");
+
+			const Ref<RegExMatch> pattern_ref = pattern.search(code);
+			if (pattern_ref.is_valid()) {
+				const RegEx pattern_tip(R"(\/\*\*([\s\S]*?)\*/)");
+				Ref<RegExMatch> pattern_tip_ref = pattern_tip.search(pattern_ref->get_string(0));
+				const RegEx pattern_stripped(R"(\n\s*\*\s*)");
+				prop_doc.description = pattern_stripped.sub(pattern_tip_ref->get_string(1), "\n", true);
+			}
+#endif // MODULE_REGEX_ENABLED
+			class_doc.properties.push_back(prop_doc);
+		}
+		if (EditorHelp::get_doc_data() != nullptr) {
+			EditorHelp::get_doc_data()->add_doc(class_doc);
+		}
+#endif // TOOLS_ENABLED
 	}
 }
 
