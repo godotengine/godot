@@ -160,7 +160,7 @@ private:
 		return *out;
 	}
 
-	void _unref(void *p_data);
+	void _unref();
 	void _ref(const CowData *p_from);
 	void _ref(const CowData &p_from);
 	USize _copy_on_write();
@@ -245,30 +245,29 @@ public:
 };
 
 template <typename T>
-void CowData<T>::_unref(void *p_data) {
-	if (!p_data) {
+void CowData<T>::_unref() {
+	if (!_ptr) {
 		return;
 	}
 
 	SafeNumeric<USize> *refc = _get_refcount();
-
 	if (refc->decrement() > 0) {
 		return; // still in use
 	}
 	// clean up
 
 	if constexpr (!std::is_trivially_destructible_v<T>) {
-		USize *count = _get_size();
-		T *data = (T *)(count + 1);
+		USize current_size = *_get_size();
 
-		for (USize i = 0; i < *count; ++i) {
+		for (USize i = 0; i < current_size; ++i) {
 			// call destructors
-			data[i].~T();
+			T *t = &_ptr[i];
+			t->~T();
 		}
 	}
 
 	// free mem
-	Memory::free_static(((uint8_t *)p_data) - DATA_OFFSET, false);
+	Memory::free_static(((uint8_t *)_ptr) - DATA_OFFSET, false);
 }
 
 template <typename T>
@@ -303,7 +302,7 @@ typename CowData<T>::USize CowData<T>::_copy_on_write() {
 			}
 		}
 
-		_unref(_ptr);
+		_unref();
 		_ptr = _data_ptr;
 
 		rc = 1;
@@ -324,7 +323,7 @@ Error CowData<T>::resize(Size p_size) {
 
 	if (p_size == 0) {
 		// wants to clean up
-		_unref(_ptr);
+		_unref();
 		_ptr = nullptr;
 		return OK;
 	}
@@ -463,7 +462,7 @@ void CowData<T>::_ref(const CowData &p_from) {
 		return; // self assign, do nothing.
 	}
 
-	_unref(_ptr);
+	_unref();
 	_ptr = nullptr;
 
 	if (!p_from._ptr) {
@@ -477,7 +476,7 @@ void CowData<T>::_ref(const CowData &p_from) {
 
 template <typename T>
 CowData<T>::~CowData() {
-	_unref(_ptr);
+	_unref();
 }
 
 #if defined(__GNUC__) && !defined(__clang__)
