@@ -3236,7 +3236,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 		Vector<Instance *> lights_with_shadow;
 
 		for (Instance *E : scenario->directional_lights) {
-			if (!E->visible) {
+			if (!E->visible || !(E->layer_mask & p_visible_layers)) {
 				continue;
 			}
 
