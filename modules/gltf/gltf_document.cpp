@@ -620,7 +620,7 @@ Error GLTFDocument::_parse_nodes(Ref<GLTFState> p_state) {
 			for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 				ERR_CONTINUE(ext.is_null());
 				Error err = ext->parse_node_extensions(p_state, node, extensions);
-				ERR_CONTINUE_MSG(err != OK, "GLTF: Encountered error " + itos(err) + " when parsing node extensions for node " + node->get_name() + " in file " + p_state->filename + ". Continuing.");
+				ERR_CONTINUE_MSG(err != OK, "glTF: Encountered error " + itos(err) + " when parsing node extensions for node " + node->get_name() + " in file " + p_state->filename + ". Continuing.");
 			}
 		}
 
@@ -3353,7 +3353,7 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> p_state) {
 		ERR_CONTINUE(image.is_null());
 		if (image->is_compressed()) {
 			image->decompress();
-			ERR_FAIL_COND_V_MSG(image->is_compressed(), ERR_INVALID_DATA, "GLTF: Image was compressed, but could not be decompressed.");
+			ERR_FAIL_COND_V_MSG(image->is_compressed(), ERR_INVALID_DATA, "glTF: Image was compressed, but could not be decompressed.");
 		}
 
 		if (p_state->filename.to_lower().ends_with("gltf")) {
@@ -3374,7 +3374,7 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> p_state) {
 			if (_image_save_extension.is_valid()) {
 				img_name = img_name + _image_save_extension->get_image_file_extension();
 				Error err = _image_save_extension->save_image_at_path(p_state, image, full_texture_dir.path_join(img_name), _image_format, _lossy_quality);
-				ERR_FAIL_COND_V_MSG(err != OK, err, "GLTF: Failed to save image in '" + _image_format + "' format as a separate file.");
+				ERR_FAIL_COND_V_MSG(err != OK, err, "glTF: Failed to save image in '" + _image_format + "' format as a separate file.");
 			} else if (_image_format == "PNG") {
 				img_name = img_name + ".png";
 				image->save_png(full_texture_dir.path_join(img_name));
@@ -3382,7 +3382,7 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> p_state) {
 				img_name = img_name + ".jpg";
 				image->save_jpg(full_texture_dir.path_join(img_name), _lossy_quality);
 			} else {
-				ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "GLTF: Unknown image format '" + _image_format + "'.");
+				ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "glTF: Unknown image format '" + _image_format + "'.");
 			}
 			image_dict["uri"] = relative_texture_dir.path_join(img_name).uri_encode();
 		} else {
@@ -3412,9 +3412,9 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> p_state) {
 				buffer = image->save_jpg_to_buffer(_lossy_quality);
 				image_dict["mimeType"] = "image/jpeg";
 			} else {
-				ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "GLTF: Unknown image format '" + _image_format + "'.");
+				ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "glTF: Unknown image format '" + _image_format + "'.");
 			}
-			ERR_FAIL_COND_V_MSG(buffer.is_empty(), ERR_INVALID_DATA, "GLTF: Failed to save image in '" + _image_format + "' format.");
+			ERR_FAIL_COND_V_MSG(buffer.is_empty(), ERR_INVALID_DATA, "glTF: Failed to save image in '" + _image_format + "' format.");
 
 			bv->byte_length = buffer.size();
 			p_state->buffers.write[bi].resize(p_state->buffers[bi].size() + bv->byte_length);
@@ -3445,7 +3445,7 @@ Ref<Image> GLTFDocument::_parse_image_bytes_into_image(Ref<GLTFState> p_state, c
 	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 		ERR_CONTINUE(ext.is_null());
 		Error err = ext->parse_image_data(p_state, p_bytes, p_mime_type, r_image);
-		ERR_CONTINUE_MSG(err != OK, "GLTF: Encountered error " + itos(err) + " when parsing image " + itos(p_index) + " in file " + p_state->filename + ". Continuing.");
+		ERR_CONTINUE_MSG(err != OK, "glTF: Encountered error " + itos(err) + " when parsing image " + itos(p_index) + " in file " + p_state->filename + ". Continuing.");
 		if (!r_image->is_empty()) {
 			r_file_extension = ext->get_image_file_extension();
 			return r_image;
@@ -3736,13 +3736,13 @@ Error GLTFDocument::_parse_textures(Ref<GLTFState> p_state) {
 		for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 			ERR_CONTINUE(ext.is_null());
 			Error err = ext->parse_texture_json(p_state, texture_dict, gltf_texture);
-			ERR_CONTINUE_MSG(err != OK, "GLTF: Encountered error " + itos(err) + " when parsing texture JSON " + String(Variant(texture_dict)) + " in file " + p_state->filename + ". Continuing.");
+			ERR_CONTINUE_MSG(err != OK, "glTF: Encountered error " + itos(err) + " when parsing texture JSON " + String(Variant(texture_dict)) + " in file " + p_state->filename + ". Continuing.");
 			if (gltf_texture->get_src_image() != -1) {
 				break;
 			}
 		}
 		if (gltf_texture->get_src_image() == -1) {
-			// No extensions handled it, so use the base GLTF source.
+			// No extensions handled it, so use the base glTF source.
 			// This may be the fallback, or the only option anyway.
 			ERR_FAIL_COND_V(!texture_dict.has("source"), ERR_PARSE_ERROR);
 			gltf_texture->set_src_image(texture_dict["source"]);
@@ -5631,7 +5631,7 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIn
 	// If none of our GLTFDocumentExtension classes generated us a node, we generate one.
 	if (!current_node) {
 		if (gltf_node->skin >= 0 && gltf_node->mesh >= 0 && !gltf_node->children.is_empty()) {
-			// GLTF specifies that skinned meshes should ignore their node transforms,
+			// glTF specifies that skinned meshes should ignore their node transforms,
 			// only being controlled by the skeleton, so Godot will reparent a skinned
 			// mesh to its skeleton. However, we still need to ensure any child nodes
 			// keep their place in the tree, so if there are any child nodes, the skinned
@@ -7138,9 +7138,9 @@ Node *GLTFDocument::_generate_scene_node_tree(Ref<GLTFState> p_state) {
 	HashMap<ObjectID, SkinSkeletonIndex> skeleton_map;
 	Error err = SkinTool::_create_skeletons(p_state->unique_names, p_state->skins, p_state->nodes,
 			skeleton_map, p_state->skeletons, p_state->scene_nodes);
-	ERR_FAIL_COND_V_MSG(err != OK, nullptr, "GLTF: Failed to create skeletons.");
+	ERR_FAIL_COND_V_MSG(err != OK, nullptr, "glTF: Failed to create skeletons.");
 	err = _create_skins(p_state);
-	ERR_FAIL_COND_V_MSG(err != OK, nullptr, "GLTF: Failed to create skins.");
+	ERR_FAIL_COND_V_MSG(err != OK, nullptr, "glTF: Failed to create skins.");
 	// Generate the node tree.
 	Node *single_root;
 	if (p_state->extensions_used.has("GODOT_single_root")) {
@@ -7459,7 +7459,7 @@ Error GLTFDocument::_parse_gltf_extensions(Ref<GLTFState> p_state) {
 	Error ret = OK;
 	for (int i = 0; i < p_state->extensions_required.size(); i++) {
 		if (!supported_extensions.has(p_state->extensions_required[i])) {
-			ERR_PRINT("GLTF: Can't import file '" + p_state->filename + "', required extension '" + String(p_state->extensions_required[i]) + "' is not supported. Are you missing a GLTFDocumentExtension plugin?");
+			ERR_PRINT("glTF: Can't import file '" + p_state->filename + "', required extension '" + String(p_state->extensions_required[i]) + "' is not supported. Are you missing a GLTFDocumentExtension plugin?");
 			ret = ERR_UNAVAILABLE;
 		}
 	}
