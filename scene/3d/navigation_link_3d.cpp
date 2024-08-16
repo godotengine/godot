@@ -152,6 +152,9 @@ void NavigationLink3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &NavigationLink3D::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &NavigationLink3D::is_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_navigation_map", "navigation_map"), &NavigationLink3D::set_navigation_map);
+	ClassDB::bind_method(D_METHOD("get_navigation_map"), &NavigationLink3D::get_navigation_map);
+
 	ClassDB::bind_method(D_METHOD("set_bidirectional", "bidirectional"), &NavigationLink3D::set_bidirectional);
 	ClassDB::bind_method(D_METHOD("is_bidirectional"), &NavigationLink3D::is_bidirectional);
 
@@ -217,16 +220,7 @@ bool NavigationLink3D::_get(const StringName &p_name, Variant &r_ret) const {
 void NavigationLink3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			if (enabled) {
-				NavigationServer3D::get_singleton()->link_set_map(link, get_world_3d()->get_navigation_map());
-			}
-			current_global_transform = get_global_transform();
-			NavigationServer3D::get_singleton()->link_set_start_position(link, current_global_transform.xform(start_position));
-			NavigationServer3D::get_singleton()->link_set_end_position(link, current_global_transform.xform(end_position));
-
-#ifdef DEBUG_ENABLED
-			_update_debug_mesh();
-#endif // DEBUG_ENABLED
+			_link_enter_navigation_map();
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
@@ -235,30 +229,11 @@ void NavigationLink3D::_notification(int p_what) {
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			set_physics_process_internal(false);
-			if (is_inside_tree()) {
-				Transform3D new_global_transform = get_global_transform();
-				if (current_global_transform != new_global_transform) {
-					current_global_transform = new_global_transform;
-					NavigationServer3D::get_singleton()->link_set_start_position(link, current_global_transform.xform(start_position));
-					NavigationServer3D::get_singleton()->link_set_end_position(link, current_global_transform.xform(end_position));
-#ifdef DEBUG_ENABLED
-					if (debug_instance.is_valid()) {
-						RS::get_singleton()->instance_set_transform(debug_instance, current_global_transform);
-					}
-#endif // DEBUG_ENABLED
-				}
-			}
+			_link_update_transform();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			NavigationServer3D::get_singleton()->link_set_map(link, RID());
-
-#ifdef DEBUG_ENABLED
-			if (debug_instance.is_valid()) {
-				RS::get_singleton()->instance_set_scenario(debug_instance, RID());
-				RS::get_singleton()->instance_set_visible(debug_instance, false);
-			}
-#endif // DEBUG_ENABLED
+			_link_exit_navigation_map();
 		} break;
 	}
 }
@@ -318,6 +293,25 @@ void NavigationLink3D::set_enabled(bool p_enabled) {
 #endif // DEBUG_ENABLED
 
 	update_gizmos();
+}
+
+void NavigationLink3D::set_navigation_map(RID p_navigation_map) {
+	if (map_override == p_navigation_map) {
+		return;
+	}
+
+	map_override = p_navigation_map;
+
+	NavigationServer3D::get_singleton()->link_set_map(link, map_override);
+}
+
+RID NavigationLink3D::get_navigation_map() const {
+	if (map_override.is_valid()) {
+		return map_override;
+	} else if (is_inside_tree()) {
+		return get_world_3d()->get_navigation_map();
+	}
+	return RID();
 }
 
 void NavigationLink3D::set_bidirectional(bool p_bidirectional) {
@@ -466,4 +460,54 @@ PackedStringArray NavigationLink3D::get_configuration_warnings() const {
 	}
 
 	return warnings;
+}
+
+void NavigationLink3D::_link_enter_navigation_map() {
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	if (map_override.is_valid()) {
+		NavigationServer3D::get_singleton()->link_set_map(link, map_override);
+	} else {
+		NavigationServer3D::get_singleton()->link_set_map(link, get_world_3d()->get_navigation_map());
+	}
+
+	current_global_transform = get_global_transform();
+	NavigationServer3D::get_singleton()->link_set_start_position(link, current_global_transform.xform(start_position));
+	NavigationServer3D::get_singleton()->link_set_end_position(link, current_global_transform.xform(end_position));
+	NavigationServer3D::get_singleton()->link_set_enabled(link, enabled);
+
+#ifdef DEBUG_ENABLED
+	if (NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
+		_update_debug_mesh();
+	}
+#endif // DEBUG_ENABLED
+}
+
+void NavigationLink3D::_link_exit_navigation_map() {
+	NavigationServer3D::get_singleton()->link_set_map(link, RID());
+#ifdef DEBUG_ENABLED
+	if (debug_instance.is_valid()) {
+		RS::get_singleton()->instance_set_visible(debug_instance, false);
+	}
+#endif // DEBUG_ENABLED
+}
+
+void NavigationLink3D::_link_update_transform() {
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	Transform3D new_global_transform = get_global_transform();
+	if (current_global_transform != new_global_transform) {
+		current_global_transform = new_global_transform;
+		NavigationServer3D::get_singleton()->link_set_start_position(link, current_global_transform.xform(start_position));
+		NavigationServer3D::get_singleton()->link_set_end_position(link, current_global_transform.xform(end_position));
+#ifdef DEBUG_ENABLED
+		if (NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
+			_update_debug_mesh();
+		}
+#endif // DEBUG_ENABLED
+	}
 }
