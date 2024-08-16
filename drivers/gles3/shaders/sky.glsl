@@ -108,11 +108,11 @@ uniform float sky_energy_multiplier;
 uniform float luminance_multiplier;
 
 uniform float fog_aerial_perspective;
-uniform vec3 fog_light_color;
+uniform vec4 fog_light_color;
 uniform float fog_sun_scatter;
 uniform bool fog_enabled;
 uniform float fog_density;
-uniform float z_far;
+uniform float fog_sky_affect;
 uniform uint directional_light_count;
 
 #ifdef USE_MULTIVIEW
@@ -134,6 +134,24 @@ vec3 interleaved_gradient_noise(vec2 pos) {
 	return vec3(res, -res, res) / 255.0;
 }
 #endif
+
+#if !defined(DISABLE_FOG)
+vec4 fog_process(vec3 view, vec3 sky_color) {
+	vec3 fog_color = mix(fog_light_color.rgb, sky_color, fog_aerial_perspective);
+
+	if (fog_sun_scatter > 0.001) {
+		vec4 sun_scatter = vec4(0.0);
+		float sun_total = 0.0;
+		for (uint i = 0u; i < directional_light_count; i++) {
+			vec3 light_color = directional_lights.data[i].color_size.xyz * directional_lights.data[i].direction_energy.w;
+			float light_amount = pow(max(dot(view, directional_lights.data[i].direction_energy.xyz), 0.0), 8.0);
+			fog_color += light_color * light_amount * fog_sun_scatter;
+		}
+	}
+
+	return vec4(fog_color, 1.0);
+}
+#endif // !DISABLE_FOG
 
 void main() {
 	vec3 cube_normal;
@@ -203,6 +221,21 @@ void main() {
 
 	// Convert to Linear for tonemapping so color matches scene shader better
 	color = srgb_to_linear(color);
+
+#if !defined(DISABLE_FOG) && !defined(USE_CUBEMAP_PASS)
+
+	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
+	if (fog_enabled) {
+		vec4 fog = fog_process(cube_normal, color.rgb);
+		color.rgb = mix(color.rgb, fog.rgb, fog.a * fog_sky_affect);
+	}
+
+	if (custom_fog.a > 0.0) {
+		color.rgb = mix(color.rgb, custom_fog.rgb, custom_fog.a);
+	}
+
+#endif // DISABLE_FOG
+
 	color *= exposure;
 #ifdef APPLY_TONEMAPPING
 	color = apply_tonemapping(color, white);
