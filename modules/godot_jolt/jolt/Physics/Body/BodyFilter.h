@@ -12,7 +12,7 @@ JPH_NAMESPACE_BEGIN
 class Body;
 
 /// Class function to filter out bodies, returns true if test should collide with body
-class BodyFilter : public NonCopyable
+class JPH_EXPORT BodyFilter : public NonCopyable
 {
 public:
 	/// Destructor
@@ -32,7 +32,7 @@ public:
 };
 
 /// A simple body filter implementation that ignores a single, specified body
-class IgnoreSingleBodyFilter : public BodyFilter
+class JPH_EXPORT IgnoreSingleBodyFilter : public BodyFilter
 {
 public:
 	/// Constructor, pass the body you want to ignore
@@ -52,7 +52,7 @@ private:
 };
 
 /// A simple body filter implementation that ignores multiple, specified bodies
-class IgnoreMultipleBodiesFilter : public BodyFilter
+class JPH_EXPORT IgnoreMultipleBodiesFilter : public BodyFilter
 {
 public:
 	/// Remove all bodies from the filter
@@ -83,9 +83,37 @@ private:
 	Array<BodyID>			mBodyIDs;
 };
 
+/// Ignores a single body and chains the filter to another filter
+class JPH_EXPORT IgnoreSingleBodyFilterChained : public BodyFilter
+{
+public:
+	/// Constructor
+	explicit				IgnoreSingleBodyFilterChained(const BodyID inBodyID, const BodyFilter &inFilter) :
+		mBodyID(inBodyID),
+		mFilter(inFilter)
+	{
+	}
+
+	/// Filter function. Returns true if we should collide with inBodyID
+	virtual bool			ShouldCollide(const BodyID &inBodyID) const override
+	{
+		return inBodyID != mBodyID && mFilter.ShouldCollide(inBodyID);
+	}
+
+	/// Filter function. Returns true if we should collide with inBody (this is called after the body is locked and makes it possible to filter based on body members)
+	virtual bool			ShouldCollideLocked(const Body &inBody) const override
+	{
+		return mFilter.ShouldCollideLocked(inBody);
+	}
+
+private:
+	BodyID					mBodyID;
+	const BodyFilter &		mFilter;
+};
+
 #ifdef JPH_DEBUG_RENDERER
 /// Class function to filter out bodies for debug rendering, returns true if body should be rendered
-class BodyDrawFilter : public NonCopyable
+class JPH_EXPORT BodyDrawFilter : public NonCopyable
 {
 public:
 	/// Destructor

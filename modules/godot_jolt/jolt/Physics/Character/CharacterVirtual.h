@@ -9,11 +9,13 @@
 #include <Jolt/Physics/Body/BodyFilter.h>
 #include <Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h>
 #include <Jolt/Physics/Collision/ObjectLayer.h>
+#include <Jolt/Physics/Collision/TransformedShape.h>
 #include <Jolt/Core/STLTempAllocator.h>
 
 JPH_NAMESPACE_BEGIN
 
 class CharacterVirtual;
+class CollideShapeSettings;
 
 /// Contains the configuration of a character
 class JPH_EXPORT CharacterVirtualSettings : public CharacterBaseSettings
@@ -41,14 +43,28 @@ public:
 	uint								mMaxNumHits = 256;										///< Max num hits to collect in order to avoid excess of contact points collection
 	float								mHitReductionCosMaxAngle = 0.999f;						///< Cos(angle) where angle is the maximum angle between two hits contact normals that are allowed to be merged during hit reduction. Default is around 2.5 degrees. Set to -1 to turn off.
 	float								mPenetrationRecoverySpeed = 1.0f;						///< This value governs how fast a penetration will be resolved, 0 = nothing is resolved, 1 = everything in one update
+
+	/// This character can optionally have an inner rigid body. This rigid body can be used to give the character presence in the world. When set it means that:
+	/// - Regular collision checks (e.g. NarrowPhaseQuery::CastRay) will collide with the rigid body (they cannot collide with CharacterVirtual since it is not added to the broad phase)
+	/// - Regular contact callbacks will be called through the ContactListener (next to the ones that will be passed to the CharacterContactListener)
+	/// - Fast moving objects of motion quality LinearCast will not be able to pass through the CharacterVirtual in 1 time step
+	RefConst<Shape>						mInnerBodyShape;
+
+	/// Layer that the inner rigid body will be added to
+	ObjectLayer							mInnerBodyLayer = 0;
 };
 
 /// This class contains settings that allow you to override the behavior of a character's collision response
 class CharacterContactSettings
 {
 public:
-	bool								mCanPushCharacter = true;								///< True when the object can push the virtual character
-	bool								mCanReceiveImpulses = true;								///< True when the virtual character can apply impulses (push) the body
+	/// True when the object can push the virtual character.
+	bool								mCanPushCharacter = true;
+
+	/// True when the virtual character can apply impulses (push) the body.
+	/// Note that this only works against rigid bodies. Other CharacterVirtual objects can only be moved in their own update,
+	/// so you must ensure that in their OnCharacterContactAdded mCanPushCharacter is true.
+	bool								mCanReceiveImpulses = true;
 };
 
 /// This class receives callbacks when a virtual character hits something.
@@ -65,6 +81,9 @@ public:
 	/// Checks if a character can collide with specified body. Return true if the contact is valid.
 	virtual bool						OnContactValidate(const CharacterVirtual *inCharacter, const BodyID &inBodyID2, const SubShapeID &inSubShapeID2) { return true; }
 
+	/// Same as OnContactValidate but when colliding with a CharacterVirtual
+	virtual bool						OnCharacterContactValidate(const CharacterVirtual *inCharacter, const CharacterVirtual *inOtherCharacter, const SubShapeID &inSubShapeID2) { return true; }
+
 	/// Called whenever the character collides with a body.
 	/// @param inCharacter Character that is being solved
 	/// @param inBodyID2 Body ID of body that is being hit
@@ -73,6 +92,9 @@ public:
 	/// @param inContactNormal World space contact normal
 	/// @param ioSettings Settings returned by the contact callback to indicate how the character should behave
 	virtual void						OnContactAdded(const CharacterVirtual *inCharacter, const BodyID &inBodyID2, const SubShapeID &inSubShapeID2, RVec3Arg inContactPosition, Vec3Arg inContactNormal, CharacterContactSettings &ioSettings) { /* Default do nothing */ }
+
+	/// Same as OnContactAdded but when colliding with a CharacterVirtual
+	virtual void						OnCharacterContactAdded(const CharacterVirtual *inCharacter, const CharacterVirtual *inOtherCharacter, const SubShapeID &inSubShapeID2, RVec3Arg inContactPosition, Vec3Arg inContactNormal, CharacterContactSettings &ioSettings) { /* Default do nothing */ }
 
 	/// Called whenever a contact is being used by the solver. Allows the listener to override the resulting character velocity (e.g. by preventing sliding along certain surfaces).
 	/// @param inCharacter Character that is being solved
@@ -85,6 +107,53 @@ public:
 	/// @param inCharacterVelocity World space velocity of the character prior to hitting this contact
 	/// @param ioNewCharacterVelocity Contains the calculated world space velocity of the character after hitting this contact, this velocity slides along the surface of the contact. Can be modified by the listener to provide an alternative velocity.
 	virtual void						OnContactSolve(const CharacterVirtual *inCharacter, const BodyID &inBodyID2, const SubShapeID &inSubShapeID2, RVec3Arg inContactPosition, Vec3Arg inContactNormal, Vec3Arg inContactVelocity, const PhysicsMaterial *inContactMaterial, Vec3Arg inCharacterVelocity, Vec3 &ioNewCharacterVelocity) { /* Default do nothing */ }
+
+	/// Same as OnContactSolve but when colliding with a CharacterVirtual
+	virtual void						OnCharacterContactSolve(const CharacterVirtual *inCharacter, const CharacterVirtual *inOtherCharacter, const SubShapeID &inSubShapeID2, RVec3Arg inContactPosition, Vec3Arg inContactNormal, Vec3Arg inContactVelocity, const PhysicsMaterial *inContactMaterial, Vec3Arg inCharacterVelocity, Vec3 &ioNewCharacterVelocity) { /* Default do nothing */ }
+};
+
+/// Interface class that allows a CharacterVirtual to check collision with other CharacterVirtual instances.
+/// Since CharacterVirtual instances are not registered anywhere, it is up to the application to test collision against relevant characters.
+/// The characters could be stored in a tree structure to make this more efficient.
+class JPH_EXPORT CharacterVsCharacterCollision : public NonCopyable
+{
+public:
+	virtual								~CharacterVsCharacterCollision() = default;
+
+	/// Collide a character against other CharacterVirtuals.
+	/// @param inCharacter The character to collide.
+	/// @param inCenterOfMassTransform Center of mass transform for this character.
+	/// @param inCollideShapeSettings Settings for the collision check.
+	/// @param inBaseOffset All hit results will be returned relative to this offset, can be zero to get results in world position, but when you're testing far from the origin you get better precision by picking a position that's closer e.g. GetPosition() since floats are most accurate near the origin
+	/// @param ioCollector Collision collector that receives the collision results.
+	virtual void						CollideCharacter(const CharacterVirtual *inCharacter, RMat44Arg inCenterOfMassTransform, const CollideShapeSettings &inCollideShapeSettings, RVec3Arg inBaseOffset, CollideShapeCollector &ioCollector) const = 0;
+
+	/// Cast a character against other CharacterVirtuals.
+	/// @param inCharacter The character to cast.
+	/// @param inCenterOfMassTransform Center of mass transform for this character.
+	/// @param inDirection Direction and length to cast in.
+	/// @param inShapeCastSettings Settings for the shape cast.
+	/// @param inBaseOffset All hit results will be returned relative to this offset, can be zero to get results in world position, but when you're testing far from the origin you get better precision by picking a position that's closer e.g. GetPosition() since floats are most accurate near the origin
+	/// @param ioCollector Collision collector that receives the collision results.
+	virtual void						CastCharacter(const CharacterVirtual *inCharacter, RMat44Arg inCenterOfMassTransform, Vec3Arg inDirection, const ShapeCastSettings &inShapeCastSettings, RVec3Arg inBaseOffset, CastShapeCollector &ioCollector) const = 0;
+};
+
+/// Simple collision checker that loops over all registered characters.
+/// Note that this is not thread safe, so make sure that only one CharacterVirtual is checking collision at a time.
+class JPH_EXPORT CharacterVsCharacterCollisionSimple : public CharacterVsCharacterCollision
+{
+public:
+	/// Add a character to the list of characters to check collision against.
+	void								Add(CharacterVirtual *inCharacter)						{ mCharacters.push_back(inCharacter); }
+
+	/// Remove a character from the list of characters to check collision against.
+	void								Remove(const CharacterVirtual *inCharacter);
+
+	// See: CharacterVsCharacterCollision
+	virtual void						CollideCharacter(const CharacterVirtual *inCharacter, RMat44Arg inCenterOfMassTransform, const CollideShapeSettings &inCollideShapeSettings, RVec3Arg inBaseOffset, CollideShapeCollector &ioCollector) const override;
+	virtual void						CastCharacter(const CharacterVirtual *inCharacter, RMat44Arg inCenterOfMassTransform, Vec3Arg inDirection, const ShapeCastSettings &inShapeCastSettings, RVec3Arg inBaseOffset, CastShapeCollector &ioCollector) const override;
+
+	Array<CharacterVirtual *>			mCharacters;											///< The list of characters to check collision against
 };
 
 /// Runtime character object.
@@ -102,17 +171,23 @@ public:
 	/// @param inPosition Initial position for the character
 	/// @param inRotation Initial rotation for the character (usually only around the up-axis)
 	/// @param inUserData Application specific value
-	/// @param inSystem Physics system that this character will be added to later
+	/// @param inSystem Physics system that this character will be added to
 										CharacterVirtual(const CharacterVirtualSettings *inSettings, RVec3Arg inPosition, QuatArg inRotation, uint64 inUserData, PhysicsSystem *inSystem);
 
 	/// Constructor without user data
 										CharacterVirtual(const CharacterVirtualSettings *inSettings, RVec3Arg inPosition, QuatArg inRotation, PhysicsSystem *inSystem) : CharacterVirtual(inSettings, inPosition, inRotation, 0, inSystem) { }
+
+	/// Destructor
+	virtual								~CharacterVirtual() override;
 
 	/// Set the contact listener
 	void								SetListener(CharacterContactListener *inListener)		{ mListener = inListener; }
 
 	/// Get the current contact listener
 	CharacterContactListener *			GetListener() const										{ return mListener; }
+
+	/// Set the character vs character collision interface
+	void								SetCharacterVsCharacterCollision(CharacterVsCharacterCollision *inCharacterVsCharacterCollision) { mCharacterVsCharacterCollision = inCharacterVsCharacterCollision; }
 
 	/// Get the linear velocity of the character (m / s)
 	Vec3								GetLinearVelocity() const								{ return mLinearVelocity; }
@@ -124,13 +199,16 @@ public:
 	RVec3								GetPosition() const										{ return mPosition; }
 
 	/// Set the position of the character
-	void								SetPosition(RVec3Arg inPosition)						{ mPosition = inPosition; }
+	void								SetPosition(RVec3Arg inPosition)						{ mPosition = inPosition; UpdateInnerBodyTransform(); }
 
 	/// Get the rotation of the character
 	Quat								GetRotation() const										{ return mRotation; }
 
 	/// Set the rotation of the character
-	void								SetRotation(QuatArg inRotation)							{ mRotation = inRotation; }
+	void								SetRotation(QuatArg inRotation)							{ mRotation = inRotation; UpdateInnerBodyTransform(); }
+
+	// Get the center of mass position of the shape
+	inline RVec3						GetCenterOfMassPosition() const							{ return mPosition + (mRotation * (mShapeOffset + mShape->GetCenterOfMass()) + mCharacterPadding * mUp); }
 
 	/// Calculate the world transform of the character
 	RMat44								GetWorldTransform() const								{ return RMat44::sRotationTranslation(mRotation, mPosition); }
@@ -173,11 +251,14 @@ public:
 
 	/// An extra offset applied to the shape in local space. This allows applying an extra offset to the shape in local space. Note that setting it on the fly can cause the shape to teleport into collision.
 	Vec3								GetShapeOffset() const									{ return mShapeOffset; }
-	void								SetShapeOffset(Vec3Arg inShapeOffset)					{ mShapeOffset = inShapeOffset; }
+	void								SetShapeOffset(Vec3Arg inShapeOffset)					{ mShapeOffset = inShapeOffset; UpdateInnerBodyTransform(); }
 
 	/// Access to the user data, can be used for anything by the application
 	uint64								GetUserData() const										{ return mUserData; }
-	void								SetUserData(uint64 inUserData)							{ mUserData = inUserData; }
+	void								SetUserData(uint64 inUserData);
+
+	/// Optional inner rigid body that proxies the character in the world. Can be used to update body properties.
+	BodyID								GetInnerBodyID() const									{ return mInnerBodyID; }
 
 	/// This function can be called prior to calling Update() to convert a desired velocity into a velocity that won't make the character move further onto steep slopes.
 	/// This velocity can then be set on the character using SetLinearVelocity()
@@ -271,7 +352,14 @@ public:
 	/// @return Returns true if the switch succeeded.
 	bool								SetShape(const Shape *inShape, float inMaxPenetrationDepth, const BroadPhaseLayerFilter &inBroadPhaseLayerFilter, const ObjectLayerFilter &inObjectLayerFilter, const BodyFilter &inBodyFilter, const ShapeFilter &inShapeFilter, TempAllocator &inAllocator);
 
-	/// @brief Get all contacts for the character at a particular location
+	/// Updates the shape of the inner rigid body. Should be called after a successful call to SetShape.
+	void								SetInnerBodyShape(const Shape *inShape);
+
+	/// Get the transformed shape that represents the volume of the character, can be used for collision checks.
+	TransformedShape					GetTransformedShape() const								{ return TransformedShape(GetCenterOfMassPosition(), mRotation, mShape, mInnerBodyID); }
+
+	/// @brief Get all contacts for the character at a particular location.
+	/// When colliding with another character virtual, this pointer will be provided through CollideShapeCollector::SetUserContext before adding a hit.
 	/// @param inPosition Position to test, note that this position will be corrected for the character padding.
 	/// @param inRotation Rotation at which to test the shape.
 	/// @param inMovementDirection A hint in which direction the character is moving, will be used to calculate a proper normal.
@@ -302,13 +390,17 @@ public:
 		void							SaveState(StateRecorder &inStream) const;
 		void							RestoreState(StateRecorder &inStream);
 
+		// Checks if two contacts refer to the same body (or virtual character)
+		inline bool						IsSameBody(const Contact &inOther) const				{ return mBodyB == inOther.mBodyB && mCharacterB == inOther.mCharacterB; }
+
 		RVec3							mPosition;												///< Position where the character makes contact
 		Vec3							mLinearVelocity;										///< Velocity of the contact point
 		Vec3							mContactNormal;											///< Contact normal, pointing towards the character
 		Vec3							mSurfaceNormal;											///< Surface normal of the contact
 		float							mDistance;												///< Distance to the contact <= 0 means that it is an actual contact, > 0 means predictive
 		float							mFraction;												///< Fraction along the path where this contact takes place
-		BodyID							mBodyB;													///< ID of body we're colliding with
+		BodyID							mBodyB;													///< ID of body we're colliding with (if not invalid)
+		CharacterVirtual *				mCharacterB = nullptr;									///< Character we're colliding with (if not null)
 		SubShapeID						mSubShapeIDB;											///< Sub shape ID of body we're colliding with
 		EMotionType						mMotionTypeB;											///< Motion type of B, used to determine the priority of the contact
 		bool							mIsSensorB;												///< If B is a sensor
@@ -324,6 +416,24 @@ public:
 
 	/// Access to the internal list of contacts that the character has found.
 	const ContactList &					GetActiveContacts() const								{ return mActiveContacts; }
+
+	/// Check if the character is currently in contact with or has collided with another body in the last time step
+	bool								HasCollidedWith(const BodyID &inBody) const
+	{
+		for (const CharacterVirtual::Contact &c : mActiveContacts)
+			if (c.mHadCollision && c.mBodyB == inBody)
+				return true;
+		return false;
+	}
+
+	/// Check if the character is currently in contact with or has collided with another character in the last time step
+	bool								HasCollidedWith(const CharacterVirtual *inCharacter) const
+	{
+		for (const CharacterVirtual::Contact &c : mActiveContacts)
+			if (c.mHadCollision && c.mCharacterB == inCharacter)
+				return true;
+		return false;
+	}
 
 private:
 	// Sorting predicate for making contact order deterministic
@@ -369,12 +479,15 @@ private:
 	public:
 										ContactCollector(PhysicsSystem *inSystem, const CharacterVirtual *inCharacter, uint inMaxHits, float inHitReductionCosMaxAngle, Vec3Arg inUp, RVec3Arg inBaseOffset, TempContactList &outContacts) : mBaseOffset(inBaseOffset), mUp(inUp), mSystem(inSystem), mCharacter(inCharacter), mContacts(outContacts), mMaxHits(inMaxHits), mHitReductionCosMaxAngle(inHitReductionCosMaxAngle) { }
 
+		virtual void					SetUserData(uint64 inUserData) override					{ mOtherCharacter = reinterpret_cast<CharacterVirtual *>(inUserData); }
+
 		virtual void					AddHit(const CollideShapeResult &inResult) override;
 
 		RVec3							mBaseOffset;
 		Vec3							mUp;
 		PhysicsSystem *					mSystem;
 		const CharacterVirtual *		mCharacter;
+		CharacterVirtual *				mOtherCharacter = nullptr;
 		TempContactList &				mContacts;
 		uint							mMaxHits;
 		float							mHitReductionCosMaxAngle;
@@ -387,6 +500,8 @@ private:
 	public:
 										ContactCastCollector(PhysicsSystem *inSystem, const CharacterVirtual *inCharacter, Vec3Arg inDisplacement, Vec3Arg inUp, const IgnoredContactList &inIgnoredContacts, RVec3Arg inBaseOffset, Contact &outContact) : mBaseOffset(inBaseOffset), mDisplacement(inDisplacement), mUp(inUp), mSystem(inSystem), mCharacter(inCharacter), mIgnoredContacts(inIgnoredContacts), mContact(outContact) { }
 
+		virtual void					SetUserData(uint64 inUserData) override					{ mOtherCharacter = reinterpret_cast<CharacterVirtual *>(inUserData); }
+
 		virtual void					AddHit(const ShapeCastResult &inResult) override;
 
 		RVec3							mBaseOffset;
@@ -394,6 +509,7 @@ private:
 		Vec3							mUp;
 		PhysicsSystem *					mSystem;
 		const CharacterVirtual *		mCharacter;
+		CharacterVirtual *				mOtherCharacter = nullptr;
 		const IgnoredContactList &		mIgnoredContacts;
 		Contact &						mContact;
 	};
@@ -401,6 +517,7 @@ private:
 	// Helper function to convert a Jolt collision result into a contact
 	template <class taCollector>
 	inline static void					sFillContactProperties(const CharacterVirtual *inCharacter, Contact &outContact, const Body &inBody, Vec3Arg inUp, RVec3Arg inBaseOffset, const taCollector &inCollector, const CollideShapeResult &inResult);
+	inline static void					sFillCharacterContactProperties(Contact &outContact, CharacterVirtual *inOtherCharacter, RVec3Arg inBaseOffset, const CollideShapeResult &inResult);
 
 	// Move the shape from ioPosition and try to displace it by inVelocity * inDeltaTime, this will try to slide the shape along the world geometry
 	void								MoveShape(RVec3 &ioPosition, Vec3Arg inVelocity, float inDeltaTime, ContactList *outActiveContacts, const BroadPhaseLayerFilter &inBroadPhaseLayerFilter, const ObjectLayerFilter &inObjectLayerFilter, const BodyFilter &inBodyFilter, const ShapeFilter &inShapeFilter, TempAllocator &inAllocator
@@ -411,6 +528,9 @@ private:
 
 	// Ask the callback if inContact is a valid contact point
 	bool								ValidateContact(const Contact &inContact) const;
+
+	// Trigger the contact callback for inContact and get the contact settings
+	void								ContactAdded(const Contact &inContact, CharacterContactSettings &ioSettings) const;
 
 	// Tests the shape for collision around inPosition
 	void								GetContactsAtPosition(RVec3Arg inPosition, Vec3Arg inMovementDirection, const Shape *inShape, TempContactList &outContacts, const BroadPhaseLayerFilter &inBroadPhaseLayerFilter, const ObjectLayerFilter &inObjectLayerFilter, const BodyFilter &inBodyFilter, const ShapeFilter &inShapeFilter) const;
@@ -457,8 +577,20 @@ private:
 		return RMat44::sRotationTranslation(inRotation, inPosition).PreTranslated(mShapeOffset + inShape->GetCenterOfMass()).PostTranslated(mCharacterPadding * mUp);
 	}
 
+	// This function returns the position of the inner rigid body
+	inline RVec3						GetInnerBodyPosition() const
+	{
+		return mPosition + (mRotation * mShapeOffset + mCharacterPadding * mUp);
+	}
+
+	// Move the inner rigid body to the current position
+	void								UpdateInnerBodyTransform();
+
 	// Our main listener for contacts
 	CharacterContactListener *			mListener = nullptr;
+
+	// Interface to detect collision between characters
+	CharacterVsCharacterCollision *		mCharacterVsCharacterCollision = nullptr;
 
 	// Movement settings
 	EBackFaceMode						mBackFaceMode;											// When colliding with back faces, the character will not be able to move through back facing triangles. Use this if you have triangles that need to collide on both sides.
@@ -502,6 +634,9 @@ private:
 
 	// User data, can be used for anything by the application
 	uint64								mUserData = 0;
+
+	// The inner rigid body that proxies the character in the world
+	BodyID								mInnerBodyID;
 };
 
 JPH_NAMESPACE_END

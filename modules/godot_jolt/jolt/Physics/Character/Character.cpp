@@ -315,4 +315,9 @@ bool Character::SetShape(const Shape *inShape, float inMaxPenetrationDepth, bool
 	return true;
 }
 
+TransformedShape Character::GetTransformedShape(bool inLockBodies) const
+{
+	return sGetBodyInterface(mSystem, inLockBodies).GetTransformedShape(mBodyID);
+}
+
 JPH_NAMESPACE_END

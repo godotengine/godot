@@ -34,17 +34,6 @@ private:
 	const ObjectStorage &	GetStorage(uint32 inObjectIndex) const	{ return mPages[inObjectIndex >> mPageShift][inObjectIndex & mObjectMask]; }
 	ObjectStorage &			GetStorage(uint32 inObjectIndex)		{ return mPages[inObjectIndex >> mPageShift][inObjectIndex & mObjectMask]; }
 
-	/// Number of objects that we currently have in the free list / new pages
-#ifdef JPH_ENABLE_ASSERTS
-	atomic<uint32>			mNumFreeObjects;
-#endif // JPH_ENABLE_ASSERTS
-
-	/// Simple counter that makes the first free object pointer update with every CAS so that we don't suffer from the ABA problem
-	atomic<uint32>			mAllocationTag;
-
-	/// Index of first free object, the first 32 bits of an object are used to point to the next free object
-	atomic<uint64>			mFirstFreeObjectAndTag;
-
 	/// Size (in objects) of a single page
 	uint32					mPageSize;
 
@@ -60,14 +49,27 @@ private:
 	/// Total number of objects that have been allocated
 	uint32					mNumObjectsAllocated;
 
-	/// The first free object to use when the free list is empty (may need to allocate a new page)
-	atomic<uint32>			mFirstFreeObjectInNewPage;
-
 	/// Array of pages of objects
 	ObjectStorage **		mPages = nullptr;
 
 	/// Mutex that is used to allocate a new page if the storage runs out
-	Mutex					mPageMutex;
+	/// This variable is aligned to the cache line to prevent false sharing with
+	/// the constants used to index into the list via `Get()`.
+	alignas(JPH_CACHE_LINE_SIZE) Mutex mPageMutex;
+
+	/// Number of objects that we currently have in the free list / new pages
+#ifdef JPH_ENABLE_ASSERTS
+	atomic<uint32>			mNumFreeObjects;
+#endif // JPH_ENABLE_ASSERTS
+
+	/// Simple counter that makes the first free object pointer update with every CAS so that we don't suffer from the ABA problem
+	atomic<uint32>			mAllocationTag;
+
+	/// Index of first free object, the first 32 bits of an object are used to point to the next free object
+	atomic<uint64>			mFirstFreeObjectAndTag;
+
+	/// The first free object to use when the free list is empty (may need to allocate a new page)
+	atomic<uint32>			mFirstFreeObjectInNewPage;
 
 public:
 	/// Invalid index

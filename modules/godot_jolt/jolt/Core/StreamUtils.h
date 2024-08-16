@@ -126,7 +126,8 @@ Result<Ref<Type>>	RestoreObjectReference(StreamIn &inStream, IDToObjectMap<Type>
 template <class ArrayType, class ValueType>
 void				SaveObjectArray(StreamOut &inStream, const ArrayType &inArray, ObjectToIDMap<ValueType> *ioObjectToIDMap)
 {
-	inStream.Write(size_t(inArray.size()));
+	uint32 len = uint32(inArray.size());
+	inStream.Write(len);
 	for (const ValueType *value: inArray)
 		SaveObjectReference(inStream, value, ioObjectToIDMap);
 }
@@ -137,7 +138,7 @@ Result<ArrayType>	RestoreObjectArray(StreamIn &inStream, IDToObjectMap<ValueType
 {
 	Result<ArrayType> result;
 
-	size_t len;
+	uint32 len;
 	inStream.Read(len);
 	if (inStream.IsEOF() || inStream.IsFailed())
 	{

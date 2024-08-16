@@ -43,7 +43,7 @@ public:
 	struct Split
 	{
 		inline uint			GetNumContacts() const								{ return mContactBufferEnd - mContactBufferBegin; }
-		inline uint 		GetNumConstraints() const							{ return mConstraintBufferEnd - mConstraintBufferBegin; }
+		inline uint			GetNumConstraints() const							{ return mConstraintBufferEnd - mConstraintBufferBegin; }
 		inline uint			GetNumItems() const									{ return GetNumContacts() + GetNumConstraints(); }
 
 		uint32				mContactBufferBegin;								///< Begin of the contact buffer (offset relative to mContactAndConstraintIndices)

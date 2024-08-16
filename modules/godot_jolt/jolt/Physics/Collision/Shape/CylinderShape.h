@@ -83,9 +83,6 @@ public:
 	// See: Shape::CollideSoftBodyVertices
 	virtual void			CollideSoftBodyVertices(Mat44Arg inCenterOfMassTransform, Vec3Arg inScale, SoftBodyVertex *ioVertices, uint inNumVertices, float inDeltaTime, Vec3Arg inDisplacementDueToGravity, int inCollidingShapeIndex) const override;
 
-	// See Shape::TransformShape
-	virtual void			TransformShape(Mat44Arg inCenterOfMassTransform, TransformedShapeCollector &ioCollector) const override;
-
 	// See Shape::GetTrianglesStart
 	virtual void			GetTrianglesStart(GetTrianglesContext &ioContext, const AABox &inBox, Vec3Arg inPositionCOM, QuatArg inRotation, Vec3Arg inScale) const override;
 
@@ -106,6 +103,9 @@ public:
 
 	// See Shape::IsValidScale
 	virtual bool			IsValidScale(Vec3Arg inScale) const override;
+
+	// See Shape::MakeScaleValid
+	virtual Vec3			MakeScaleValid(Vec3Arg inScale) const override;
 
 	// Register shape functions with the registry
 	static void				sRegister();

@@ -60,10 +60,10 @@ public:
 
 	/// Reallocate memory
 	template <bool has_reallocate_v = has_reallocate, typename = std::enable_if_t<has_reallocate_v>>
-	inline pointer			reallocate(pointer inOldPointer, [[maybe_unused]] size_type inOldSize, size_type inNewSize)
+	inline pointer			reallocate(pointer inOldPointer, size_type inOldSize, size_type inNewSize)
 	{
 		JPH_ASSERT(inNewSize > 0); // Reallocating to zero size is implementation dependent, so we don't allow it
-		return pointer(Reallocate(inOldPointer, inNewSize * sizeof(value_type)));
+		return pointer(Reallocate(inOldPointer, inOldSize * sizeof(value_type), inNewSize * sizeof(value_type)));
 	}
 
 	/// Free memory

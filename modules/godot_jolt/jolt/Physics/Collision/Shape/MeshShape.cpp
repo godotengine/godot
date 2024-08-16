@@ -392,7 +392,7 @@ Vec3 MeshShape::GetSurfaceNormal(const SubShapeID &inSubShapeID, Vec3Arg inLocal
 	const TriangleCodec::DecodingContext triangle_ctx(sGetTriangleHeader(mTree));
 	triangle_ctx.GetTriangle(block_start, triangle_idx, v1, v2, v3);
 
-	//  Calculate normal
+	// Calculate normal
 	return (v3 - v2).Cross(v1 - v2).Normalized();
 }
 
@@ -588,7 +588,7 @@ void MeshShape::Draw(DebugRenderer *inRenderer, RMat44Arg inCenterOfMassTransfor
 	{
 		struct Visitor
 		{
-			JPH_INLINE 			Visitor(DebugRenderer *inRenderer, RMat44Arg inTransform) :
+			JPH_INLINE			Visitor(DebugRenderer *inRenderer, RMat44Arg inTransform) :
 				mRenderer(inRenderer),
 				mTransform(inTransform)
 			{
@@ -938,7 +938,7 @@ void MeshShape::sCastSphereVsMesh(const ShapeCast &inShapeCast, const ShapeCastS
 
 struct MeshShape::MSGetTrianglesContext
 {
-	JPH_INLINE 		MSGetTrianglesContext(const MeshShape *inShape, const AABox &inBox, Vec3Arg inPositionCOM, QuatArg inRotation, Vec3Arg inScale) :
+	JPH_INLINE		MSGetTrianglesContext(const MeshShape *inShape, const AABox &inBox, Vec3Arg inPositionCOM, QuatArg inRotation, Vec3Arg inScale) :
 		mDecodeCtx(sGetNodeHeader(inShape->mTree)),
 		mShape(inShape),
 		mLocalBox(Mat44::sInverseRotationTranslation(inRotation, inPositionCOM), inBox),

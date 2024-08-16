@@ -145,7 +145,7 @@ public:
 		bool				operator != (const Iterator &inRHS) const	{ return !(*this == inRHS); }
 
 		/// Convert to key value pair
-		KeyValue & 			operator * ();
+		KeyValue &			operator * ();
 
 		/// Next item
 		Iterator &			operator ++ ();

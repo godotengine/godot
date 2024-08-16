@@ -30,7 +30,7 @@ JPH_EXPORT extern TraceFunction Trace;
 
 	#define JPH_IF_ENABLE_ASSERTS(...)		__VA_ARGS__
 #else
-    #define JPH_ASSERT(...)					((void)0)
+	#define JPH_ASSERT(...)					((void)0)
 
 	#define JPH_IF_ENABLE_ASSERTS(...)
 #endif // JPH_ENABLE_ASSERTS

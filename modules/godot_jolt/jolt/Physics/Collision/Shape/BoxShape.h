@@ -44,7 +44,7 @@ public:
 							BoxShape(Vec3Arg inHalfExtent, float inConvexRadius = cDefaultConvexRadius, const PhysicsMaterial *inMaterial = nullptr) : ConvexShape(EShapeSubType::Box, inMaterial), mHalfExtent(inHalfExtent), mConvexRadius(inConvexRadius) { JPH_ASSERT(inConvexRadius >= 0.0f); JPH_ASSERT(inHalfExtent.ReduceMin() >= inConvexRadius); }
 
 	/// Get half extent of box
-	Vec3		 			GetHalfExtent() const										{ return mHalfExtent; }
+	Vec3					GetHalfExtent() const										{ return mHalfExtent; }
 
 	// See Shape::GetLocalBounds
 	virtual AABox			GetLocalBounds() const override								{ return AABox(-mHalfExtent, mHalfExtent); }

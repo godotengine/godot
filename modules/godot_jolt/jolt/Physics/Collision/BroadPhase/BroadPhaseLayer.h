@@ -19,7 +19,7 @@ class BroadPhaseLayer
 public:
 	using Type = uint8;
 
-	JPH_INLINE 						BroadPhaseLayer() = default;
+	JPH_INLINE						BroadPhaseLayer() = default;
 	JPH_INLINE explicit constexpr	BroadPhaseLayer(Type inValue) : mValue(inValue) { }
 	JPH_INLINE constexpr			BroadPhaseLayer(const BroadPhaseLayer &) = default;
 	JPH_INLINE BroadPhaseLayer &	operator = (const BroadPhaseLayer &) = default;
@@ -57,7 +57,7 @@ private:
 static constexpr BroadPhaseLayer cBroadPhaseLayerInvalid(0xff);
 
 /// Interface that the application should implement to allow mapping object layers to broadphase layers
-class BroadPhaseLayerInterface : public NonCopyable
+class JPH_EXPORT BroadPhaseLayerInterface : public NonCopyable
 {
 public:
 	/// Destructor
@@ -76,7 +76,7 @@ public:
 };
 
 /// Class to test if an object can collide with a broadphase layer. Used while finding collision pairs.
-class ObjectVsBroadPhaseLayerFilter : public NonCopyable
+class JPH_EXPORT ObjectVsBroadPhaseLayerFilter : public NonCopyable
 {
 public:
 	/// Destructor
@@ -90,7 +90,7 @@ public:
 };
 
 /// Filter class for broadphase layers
-class BroadPhaseLayerFilter : public NonCopyable
+class JPH_EXPORT BroadPhaseLayerFilter : public NonCopyable
 {
 public:
 	/// Destructor
@@ -104,7 +104,7 @@ public:
 };
 
 /// Default filter class that uses the pair filter in combination with a specified layer to filter layers
-class DefaultBroadPhaseLayerFilter : public BroadPhaseLayerFilter
+class JPH_EXPORT DefaultBroadPhaseLayerFilter : public BroadPhaseLayerFilter
 {
 public:
 	/// Constructor
@@ -126,7 +126,7 @@ private:
 };
 
 /// Allows objects from a specific broad phase layer only
-class SpecifiedBroadPhaseLayerFilter : public BroadPhaseLayerFilter
+class JPH_EXPORT SpecifiedBroadPhaseLayerFilter : public BroadPhaseLayerFilter
 {
 public:
 	/// Constructor

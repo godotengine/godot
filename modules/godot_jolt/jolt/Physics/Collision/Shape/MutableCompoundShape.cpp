@@ -87,7 +87,6 @@ void MutableCompoundShape::AdjustCenterOfMass()
 	for (CompoundShape::SubShape &sub_shape : mSubShapes)
 		sub_shape.SetPositionCOM(sub_shape.GetPositionCOM() - center_of_mass);
 
-
 	// Update bounding boxes
 	for (Bounds &bounds : mSubShapeBounds)
 	{
@@ -103,8 +102,8 @@ void MutableCompoundShape::AdjustCenterOfMass()
 	}
 	mLocalBounds.Translate(-center_of_mass);
 
-	// And adjust the center of mass for this shape in the opposite direction		// And adjust the center of mass for this shape in the opposite direction
-	mCenterOfMass += center_of_mass;		mCenterOfMass += center_of_mass;
+	// And adjust the center of mass for this shape in the opposite direction
+	mCenterOfMass += center_of_mass;
 }
 
 void MutableCompoundShape::CalculateLocalBounds()
@@ -178,7 +177,7 @@ void MutableCompoundShape::CalculateSubShapeBounds(uint inStartIdx, uint inNumbe
 			{
 				const SubShape &sub_shape = mSubShapes[sub_shape_idx];
 
-				// Tranform the shape's bounds into our local space
+				// Transform the shape's bounds into our local space
 				Mat44 transform = Mat44::sRotationTranslation(sub_shape.GetRotation(), sub_shape.GetPositionCOM());
 
 				// Get the bounding box
@@ -190,7 +189,7 @@ void MutableCompoundShape::CalculateSubShapeBounds(uint inStartIdx, uint inNumbe
 			bounds_max.SetColumn3(col, sub_shape_bounds.mMax);
 		}
 
-		// Transpose to go to strucucture of arrays format
+		// Transpose to go to structure of arrays format
 		Mat44 bounds_min_t = bounds_min.Transposed();
 		Mat44 bounds_max_t = bounds_max.Transposed();
 

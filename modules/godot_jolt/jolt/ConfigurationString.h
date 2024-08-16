@@ -82,6 +82,12 @@ inline const char *GetConfigurationString()
 #ifdef JPH_DEBUG
 		"(Debug) "
 #endif
+#if defined(__cpp_rtti) && __cpp_rtti
+		"(C++ RTTI) "
+#endif
+#if defined(__cpp_exceptions) && __cpp_exceptions
+		"(C++ Exceptions) "
+#endif
 		;
 }
 

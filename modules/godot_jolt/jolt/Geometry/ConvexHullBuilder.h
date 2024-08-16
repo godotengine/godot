@@ -255,7 +255,7 @@ private:
 #endif
 
 	const Positions &	mPositions;							///< List of positions (some of them are part of the hull)
-	Faces 				mFaces;								///< List of faces that are part of the hull (if !mRemoved)
+	Faces				mFaces;								///< List of faces that are part of the hull (if !mRemoved)
 
 	struct Coplanar
 	{

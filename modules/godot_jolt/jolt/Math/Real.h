@@ -26,7 +26,7 @@ using RMat44Arg = DMat44Arg;
 // Define real to float
 using Real = float;
 using Real3 = Float3;
-using RVec3  = Vec3;
+using RVec3 = Vec3;
 using RVec3Arg = Vec3Arg;
 using RMat44 = Mat44;
 using RMat44Arg = Mat44Arg;

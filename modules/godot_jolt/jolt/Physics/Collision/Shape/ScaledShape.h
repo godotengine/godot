@@ -46,7 +46,7 @@ public:
 									ScaledShape(const Shape *inShape, Vec3Arg inScale)		: DecoratedShape(EShapeSubType::Scaled, inShape), mScale(inScale) { JPH_ASSERT(!ScaleHelpers::IsZeroScale(mScale)); }
 
 	/// Get the scale
-	Vec3		 					GetScale() const										{ return mScale; }
+	Vec3							GetScale() const										{ return mScale; }
 
 	// See Shape::GetCenterOfMass
 	virtual Vec3					GetCenterOfMass() const override						{ return mScale * mInnerShape->GetCenterOfMass(); }
@@ -120,6 +120,9 @@ public:
 
 	// See Shape::IsValidScale
 	virtual bool					IsValidScale(Vec3Arg inScale) const override;
+
+	// See Shape::MakeScaleValid
+	virtual Vec3					MakeScaleValid(Vec3Arg inScale) const override;
 
 	// Register shape functions with the registry
 	static void						sRegister();

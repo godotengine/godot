@@ -17,30 +17,16 @@ public:
 	JPH_OVERRIDE_NEW_DELETE
 
 	/// Constructor
-							SubShapeIDPair() 
-							{
-
-							}
+							SubShapeIDPair() = default;
 							SubShapeIDPair(const BodyID &inBody1ID, const SubShapeID &inSubShapeID1, const BodyID &inBody2ID, const SubShapeID &inSubShapeID2) : mBody1ID(inBody1ID), mSubShapeID1(inSubShapeID1), mBody2ID(inBody2ID), mSubShapeID2(inSubShapeID2) { }
-	 SubShapeIDPair &		operator = (const SubShapeIDPair & other) 
-	 {
-		mBody1ID = other.mBody1ID;
-		mSubShapeID1 = other.mSubShapeID1;
-		mBody2ID = other.mBody2ID;
-		mSubShapeID2 = other.mSubShapeID2;
-		return *this;
-	 }
-	 						SubShapeIDPair(const SubShapeIDPair & other) : mBody1ID(other.mBody1ID), mSubShapeID1(other.mSubShapeID1), mBody2ID(other.mBody2ID), mSubShapeID2(other.mSubShapeID2)
-							{
-
-							}
+	SubShapeIDPair &		operator = (const SubShapeIDPair &) = default;
+							SubShapeIDPair(const SubShapeIDPair &) = default;
 
 	/// Equality operator
 	inline bool				operator == (const SubShapeIDPair &inRHS) const
 	{
 		return UVec4::sLoadInt4(reinterpret_cast<const uint32 *>(this)) == UVec4::sLoadInt4(reinterpret_cast<const uint32 *>(&inRHS));
 	}
-	static bool compare(const SubShapeIDPair &inLHS, const SubShapeIDPair &inRHS) { return inLHS == inRHS; }
 
 	/// Less than operator, used to consistently order contact points for a deterministic simulation
 	inline bool				operator < (const SubShapeIDPair &inRHS) const

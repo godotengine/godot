@@ -26,7 +26,7 @@ public:
 	}
 
 	// Properties
-	inline Vec3 		GetCenter() const										{ return Vec3::sLoadFloat3Unsafe(mCenter); }
+	inline Vec3			GetCenter() const										{ return Vec3::sLoadFloat3Unsafe(mCenter); }
 	inline float		GetRadius() const										{ return mRadius; }
 
 	/// Test if two spheres overlap

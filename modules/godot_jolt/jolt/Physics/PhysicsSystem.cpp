@@ -77,6 +77,7 @@ PhysicsSystem::~PhysicsSystem()
 void PhysicsSystem::Init(uint inMaxBodies, uint inNumBodyMutexes, uint inMaxBodyPairs, uint inMaxContactConstraints, const BroadPhaseLayerInterface &inBroadPhaseLayerInterface, const ObjectVsBroadPhaseLayerFilter &inObjectVsBroadPhaseLayerFilter, const ObjectLayerPairFilter &inObjectLayerPairFilter)
 {
 	JPH_ASSERT(inMaxBodies <= BodyID::cMaxBodyIndex, "Cannot support this many bodies");
+
 	mObjectVsBroadPhaseLayerFilter = &inObjectVsBroadPhaseLayerFilter;
 	mObjectLayerPairFilter = &inObjectLayerPairFilter;
 
@@ -1128,6 +1129,7 @@ void PhysicsSystem::ProcessBodyPair(ContactAllocator &ioContactAllocator, const 
 			};
 			ReductionCollideShapeCollector collector(this, body1, body2);
 
+			// Perform collision detection between the two shapes
 			SubShapeIDCreator part1, part2;
 			auto f = enhanced_active_edges? InternalEdgeRemovingCollector::sCollideShapeVsShape : CollisionDispatch::sCollideShapeVsShape;
 			f(body1->GetShape(), body2->GetShape(), Vec3::sReplicate(1.0f), Vec3::sReplicate(1.0f), transform1, transform2, part1, part2, settings, collector, { });
@@ -1230,7 +1232,7 @@ void PhysicsSystem::ProcessBodyPair(ContactAllocator &ioContactAllocator, const 
 
 			// Perform collision detection between the two shapes
 			SubShapeIDCreator part1, part2;
-			auto f = body1->GetEnhancedInternalEdgeRemovalWithBody(*body2)? InternalEdgeRemovingCollector::sCollideShapeVsShape : CollisionDispatch::sCollideShapeVsShape;
+			auto f = enhanced_active_edges? InternalEdgeRemovingCollector::sCollideShapeVsShape : CollisionDispatch::sCollideShapeVsShape;
 			f(body1->GetShape(), body2->GetShape(), Vec3::sReplicate(1.0f), Vec3::sReplicate(1.0f), transform1, transform2, part1, part2, settings, collector, { });
 
 			constraint_created = collector.mConstraintCreated;

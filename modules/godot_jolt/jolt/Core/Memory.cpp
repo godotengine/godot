@@ -25,10 +25,10 @@ JPH_ALLOC_SCOPE void *JPH_ALLOC_FN(Allocate)(size_t inSize)
 	return malloc(inSize);
 }
 
-JPH_ALLOC_SCOPE void *JPH_ALLOC_FN(Reallocate)(void *inBlock, size_t inSize)
+JPH_ALLOC_SCOPE void *JPH_ALLOC_FN(Reallocate)(void *inBlock, [[maybe_unused]] size_t inOldSize, size_t inNewSize)
 {
-	JPH_ASSERT(inSize > 0);
-	return realloc(inBlock, inSize);
+	JPH_ASSERT(inNewSize > 0);
+	return realloc(inBlock, inNewSize);
 }
 
 JPH_ALLOC_SCOPE void JPH_ALLOC_FN(Free)(void *inBlock)

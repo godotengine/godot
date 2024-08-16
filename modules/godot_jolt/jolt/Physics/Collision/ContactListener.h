@@ -64,6 +64,7 @@ enum class ValidateResult
 /// A listener class that receives collision contact events.
 /// It can be registered with the ContactConstraintManager (or PhysicsSystem).
 /// Note that contact listener callbacks are called from multiple threads at the same time when all bodies are locked, you're only allowed to read from the bodies and you can't change physics state.
+/// During OnContactRemoved you cannot access the bodies at all, see the comments at that function.
 class ContactListener
 {
 public:
@@ -102,8 +103,12 @@ public:
 	virtual void			OnContactPersisted([[maybe_unused]] const Body &inBody1, [[maybe_unused]] const Body &inBody2, [[maybe_unused]] const ContactManifold &inManifold, [[maybe_unused]] ContactSettings &ioSettings) { /* Do nothing */ }
 
 	/// Called whenever a contact was detected last update but is not detected anymore.
-	/// Note that this callback is called when all bodies are locked, so don't use any locking functions!
-	/// Note that we're using BodyID's since the bodies may have been removed at the time of callback.
+	/// You cannot access the bodies at the time of this callback because:
+	/// - All bodies are locked at the time of this callback.
+	/// - Some properties of the bodies are being modified from another thread at the same time.
+	/// - The body may have been removed and destroyed (you'll receive an OnContactRemoved callback in the PhysicsSystem::Update after the body has been removed).
+	/// Cache what you need in the OnContactAdded and OnContactPersisted callbacks and store it in a separate structure to use during this callback.
+	/// Alternatively, you could just record that the contact was removed and process it after PhysicsSimulation::Update.
 	/// Body 1 and 2 will be sorted such that body 1 ID < body 2 ID, so body 1 may not be dynamic.
 	/// The sub shape ID were created in the previous simulation step too, so if the structure of a shape changes (e.g. by adding/removing a child shape of a compound shape),
 	/// the sub shape ID may not be valid / may not point to the same sub shape anymore.

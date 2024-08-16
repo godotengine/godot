@@ -83,10 +83,12 @@ public:
 	/// @param outBodies If not null on input, this will contain a list of body pointers corresponding to inBodyIDs that can be destroyed afterwards (caller assumes ownership over these).
 	void						UnassignBodyIDs(const BodyID *inBodyIDs, int inNumber, Body **outBodies);
 
-	/// Destroy a body
+	/// Destroy a body.
+	/// Make sure that you remove the body from the physics system using BodyInterface::RemoveBody before calling this function.
 	void						DestroyBody(const BodyID &inBodyID);
 
 	/// Destroy multiple bodies
+	/// Make sure that you remove the bodies from the physics system using BodyInterface::RemoveBody before calling this function.
 	void						DestroyBodies(const BodyID *inBodyIDs, int inNumber);
 
 	/// Add body to the physics system.

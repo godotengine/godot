@@ -17,7 +17,7 @@ public:
 	JPH_OVERRIDE_NEW_DELETE
 
 	/// Constructor
-	explicit 					ObjectStreamBinaryIn(istream &inStream);
+	explicit					ObjectStreamBinaryIn(istream &inStream);
 
 	///@name Input type specific operations
 	virtual bool				ReadDataType(EOSDataType &outType) override;

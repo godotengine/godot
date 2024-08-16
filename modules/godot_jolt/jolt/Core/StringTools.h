@@ -15,9 +15,9 @@ template<typename T>
 String ConvertToString(const T &inValue)
 {
 	using OStringStream = std::basic_ostringstream<char, std::char_traits<char>, STLAllocator<char>>;
-    OStringStream oss;
-    oss << inValue;
-    return oss.str();
+	OStringStream oss;
+	oss << inValue;
+	return oss.str();
 }
 
 /// Calculate the FNV-1a hash of inString.

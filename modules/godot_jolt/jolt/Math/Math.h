@@ -116,7 +116,9 @@ inline uint CountTrailingZeros(uint32 inValue)
 		_BitScanForward(&result, inValue);
 		return result;
 	#else
-		return __builtin_clz(__builtin_bitreverse32(inValue));
+		if (inValue == 0)
+			return 32;
+		return __builtin_ctz(inValue);
 	#endif
 #elif defined(JPH_CPU_E2K)
 		return inValue ? __builtin_ctz(inValue) : 32;

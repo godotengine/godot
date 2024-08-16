@@ -66,10 +66,10 @@ public:
 	/// Update the attachment point for body 2
 	void						SetPoint2(EConstraintSpace inSpace, RVec3Arg inPoint2);
 
-	/// Get the attachment point for body 1 relative to body 1 COM
+	/// Get the attachment point for body 1 relative to body 1 COM (transform by Body::GetCenterOfMassTransform to take to world space)
 	inline Vec3					GetLocalSpacePoint1() const									{ return mLocalSpacePosition1; }
 
-	/// Get the attachment point for body 2 relative to body 2 COM
+	/// Get the attachment point for body 2 relative to body 2 COM (transform by Body::GetCenterOfMassTransform to take to world space)
 	inline Vec3					GetLocalSpacePoint2() const									{ return mLocalSpacePosition2; }
 
 	// See: TwoBodyConstraint
@@ -77,7 +77,7 @@ public:
 	virtual Mat44				GetConstraintToBody2Matrix() const override					{ return Mat44::sTranslation(mLocalSpacePosition2); } // Note: Incorrect rotation as we don't track the original rotation difference, should not matter though as the constraint is not limiting rotation.
 
 	///@name Get Lagrange multiplier from last physics update (the linear impulse applied to satisfy the constraint)
-	inline Vec3		 			GetTotalLambdaPosition() const								{ return mPointConstraintPart.GetTotalLambda(); }
+	inline Vec3					GetTotalLambdaPosition() const								{ return mPointConstraintPart.GetTotalLambda(); }
 
 private:
 	// Internal helper function to calculate the values below

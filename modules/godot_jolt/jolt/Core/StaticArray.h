@@ -26,8 +26,8 @@ public:
 	explicit			StaticArray(std::initializer_list<T> inList)
 	{
 		JPH_ASSERT(inList.size() <= N);
-		for (typename std::initializer_list<T>::iterator i = inList.begin(); i != inList.end(); ++i)
-			::new (reinterpret_cast<T *>(&mElements[mSize++])) T(*i);
+		for (const T &v : inList)
+			::new (reinterpret_cast<T *>(&mElements[mSize++])) T(v);
 	}
 
 	/// Copy constructor
@@ -311,13 +311,13 @@ namespace std
 			std::size_t ret = 0;
 
 			// Hash length first
-            JPH::HashCombine(ret, inRHS.size());
+			JPH::HashCombine(ret, inRHS.size());
 
 			// Then hash elements
 			for (const T &t : inRHS)
-	            JPH::HashCombine(ret, t);
+				JPH::HashCombine(ret, t);
 
-            return ret;
+			return ret;
 		}
 	};
 }

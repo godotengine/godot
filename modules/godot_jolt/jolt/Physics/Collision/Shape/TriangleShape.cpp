@@ -313,15 +313,6 @@ void TriangleShape::sCastSphereVsTriangle(const ShapeCast &inShapeCast, const Sh
 	caster.Cast(shape->mV1, shape->mV2, shape->mV3, 0b111, inSubShapeIDCreator2.GetID());
 }
 
-void TriangleShape::TransformShape(Mat44Arg inCenterOfMassTransform, TransformedShapeCollector &ioCollector) const
-{
-	Vec3 scale;
-	Mat44 transform = inCenterOfMassTransform.Decompose(scale);
-	TransformedShape ts(RVec3(transform.GetTranslation()), transform.GetQuaternion(), this, BodyID(), SubShapeIDCreator());
-	ts.SetShapeScale(mConvexRadius == 0.0f? scale : scale.GetSign() * ScaleHelpers::MakeUniformScale(scale.Abs()));
-	ioCollector.AddHit(ts);
-}
-
 class TriangleShape::TSGetTrianglesContext
 {
 public:
@@ -391,6 +382,16 @@ void TriangleShape::RestoreBinaryState(StreamIn &inStream)
 bool TriangleShape::IsValidScale(Vec3Arg inScale) const
 {
 	return ConvexShape::IsValidScale(inScale) && (mConvexRadius == 0.0f || ScaleHelpers::IsUniformScale(inScale.Abs()));
+}
+
+Vec3 TriangleShape::MakeScaleValid(Vec3Arg inScale) const
+{
+	Vec3 scale = ScaleHelpers::MakeNonZeroScale(inScale);
+
+	if (mConvexRadius == 0.0f)
+		return scale;
+
+	return scale.GetSign() * ScaleHelpers::MakeUniformScale(scale.Abs());
 }
 
 void TriangleShape::sRegister()

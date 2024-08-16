@@ -308,7 +308,7 @@ public:																												\
 
 #define JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(linkage, name_space, class_name)								\
 	namespace name_space {																							\
-		class class_name; 																							\
+		class class_name;																							\
 		linkage RTTI *			GetRTTIOfType(class class_name *);													\
 	}
 

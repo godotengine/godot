@@ -99,7 +99,7 @@ public:
 	float						GetCosHalfConeAngle() const					{ return mCosHalfConeAngle; }
 
 	///@name Get Lagrange multiplier from last physics update (the linear/angular impulse applied to satisfy the constraint)
-	inline Vec3 				GetTotalLambdaPosition() const				{ return mPointConstraintPart.GetTotalLambda(); }
+	inline Vec3					GetTotalLambdaPosition() const				{ return mPointConstraintPart.GetTotalLambda(); }
 	inline float				GetTotalLambdaRotation() const				{ return mAngleConstraintPart.GetTotalLambda(); }
 
 private:

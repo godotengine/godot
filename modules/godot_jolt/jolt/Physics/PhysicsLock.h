@@ -83,7 +83,7 @@ private:
 	struct LockData
 	{
 		uint32					mLockedMutexes = 0;
-		PhysicsLockContext 		mContext = nullptr;
+		PhysicsLockContext		mContext = nullptr;
 	};
 
 	static thread_local LockData sLocks[4];
@@ -133,7 +133,7 @@ public:
 private:
 	LockType &					mLock;
 #ifdef JPH_ENABLE_ASSERTS
-	PhysicsLockContext 			mContext;
+	PhysicsLockContext			mContext;
 	EPhysicsLockTypes			mType;
 #endif // JPH_ENABLE_ASSERTS
 };
@@ -161,7 +161,7 @@ public:
 private:
 	LockType &					mLock;
 #ifdef JPH_ENABLE_ASSERTS
-	PhysicsLockContext 			mContext;
+	PhysicsLockContext			mContext;
 	EPhysicsLockTypes			mType;
 #endif // JPH_ENABLE_ASSERTS
 };

@@ -102,10 +102,10 @@ public:
 	void					SetInverseMass(float inInverseMass)								{ mInvMass = inInverseMass; }
 
 	/// Diagonal of inverse inertia matrix: D. Should only be called on a dynamic object (static or kinematic bodies have infinite mass so should be treated as D = 0)
-	inline Vec3		 		GetInverseInertiaDiagonal() const								{ JPH_ASSERT(mCachedMotionType == EMotionType::Dynamic); return mInvInertiaDiagonal; }
+	inline Vec3				GetInverseInertiaDiagonal() const								{ JPH_ASSERT(mCachedMotionType == EMotionType::Dynamic); return mInvInertiaDiagonal; }
 
 	/// Rotation (R) that takes inverse inertia diagonal to local space: \f$I_{body}^{-1} = R \: D \: R^{-1}\f$
-	inline Quat		 		GetInertiaRotation() const										{ return mInertiaRotation; }
+	inline Quat				GetInertiaRotation() const										{ return mInertiaRotation; }
 
 	/// Set the inverse inertia tensor in local space by setting the diagonal and the rotation: \f$I_{body}^{-1} = R \: D \: R^{-1}\f$.
 	/// Note that mass and inertia are linearly related (e.g. inertia of a sphere with mass m and radius r is \f$2/5 \: m \: r^2\f$).
@@ -114,10 +114,10 @@ public:
 	void					SetInverseInertia(Vec3Arg inDiagonal, QuatArg inRot)			{ mInvInertiaDiagonal = inDiagonal; mInertiaRotation = inRot; }
 
 	/// Get inverse inertia matrix (\f$I_{body}^{-1}\f$). Will be a matrix of zeros for a static or kinematic object.
-	inline Mat44 			GetLocalSpaceInverseInertia() const;
+	inline Mat44			GetLocalSpaceInverseInertia() const;
 
 	/// Same as GetLocalSpaceInverseInertia() but doesn't check if the body is dynamic
-	inline Mat44 			GetLocalSpaceInverseInertiaUnchecked() const;
+	inline Mat44			GetLocalSpaceInverseInertiaUnchecked() const;
 
 	/// Get inverse inertia matrix (\f$I^{-1}\f$) for a given object rotation (translation will be ignored). Zero if object is static or kinematic.
 	inline Mat44			GetInverseInertiaForRotation(Mat44Arg inRotation) const;
@@ -191,7 +191,7 @@ public:
 	inline void				AddLinearVelocityStep(Vec3Arg inLinearVelocityChange)			{ JPH_DET_LOG("AddLinearVelocityStep: " << inLinearVelocityChange); JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sVelocityAccess, BodyAccess::EAccess::ReadWrite)); mLinearVelocity = LockTranslation(mLinearVelocity + inLinearVelocityChange); JPH_ASSERT(!mLinearVelocity.IsNaN()); }
 	inline void				SubLinearVelocityStep(Vec3Arg inLinearVelocityChange)			{ JPH_DET_LOG("SubLinearVelocityStep: " << inLinearVelocityChange); JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sVelocityAccess, BodyAccess::EAccess::ReadWrite)); mLinearVelocity = LockTranslation(mLinearVelocity - inLinearVelocityChange); JPH_ASSERT(!mLinearVelocity.IsNaN()); }
 	inline void				AddAngularVelocityStep(Vec3Arg inAngularVelocityChange)			{ JPH_DET_LOG("AddAngularVelocityStep: " << inAngularVelocityChange); JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sVelocityAccess, BodyAccess::EAccess::ReadWrite)); mAngularVelocity += inAngularVelocityChange; JPH_ASSERT(!mAngularVelocity.IsNaN()); }
-	inline void				SubAngularVelocityStep(Vec3Arg inAngularVelocityChange) 		{ JPH_DET_LOG("SubAngularVelocityStep: " << inAngularVelocityChange); JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sVelocityAccess, BodyAccess::EAccess::ReadWrite)); mAngularVelocity -= inAngularVelocityChange; JPH_ASSERT(!mAngularVelocity.IsNaN()); }
+	inline void				SubAngularVelocityStep(Vec3Arg inAngularVelocityChange)			{ JPH_DET_LOG("SubAngularVelocityStep: " << inAngularVelocityChange); JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sVelocityAccess, BodyAccess::EAccess::ReadWrite)); mAngularVelocity -= inAngularVelocityChange; JPH_ASSERT(!mAngularVelocity.IsNaN()); }
 	///@}
 
 	/// Apply the gyroscopic force (aka Dzhanibekov effect, see https://en.wikipedia.org/wiki/Tennis_racket_theorem)

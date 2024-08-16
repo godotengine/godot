@@ -31,7 +31,7 @@ public:
 	/// Hinge axis is the axis where rotation is allowed.
 	/// When the normal axis of both bodies align in world space, the hinge angle is defined to be 0.
 	/// mHingeAxis1 and mNormalAxis1 should be perpendicular. mHingeAxis2 and mNormalAxis2 should also be perpendicular.
-	/// If you configure the joint in world space and create both bodies with a relative rotation you want to be defined as zero, 
+	/// If you configure the joint in world space and create both bodies with a relative rotation you want to be defined as zero,
 	/// you can simply set mHingeAxis1 = mHingeAxis2 and mNormalAxis1 = mNormalAxis2.
 	RVec3						mPoint1 = RVec3::sZero();
 	Vec3						mHingeAxis1 = Vec3::sAxisY();
@@ -135,7 +135,7 @@ public:
 	void						SetLimitsSpringSettings(const SpringSettings &inLimitsSpringSettings) { mLimitsSpringSettings = inLimitsSpringSettings; }
 
 	///@name Get Lagrange multiplier from last physics update (the linear/angular impulse applied to satisfy the constraint)
-	inline Vec3		 			GetTotalLambdaPosition() const							{ return mPointConstraintPart.GetTotalLambda(); }
+	inline Vec3					GetTotalLambdaPosition() const							{ return mPointConstraintPart.GetTotalLambda(); }
 	inline Vector<2>			GetTotalLambdaRotation() const							{ return mRotationConstraintPart.GetTotalLambda(); }
 	inline float				GetTotalLambdaRotationLimits() const					{ return mRotationLimitsConstraintPart.GetTotalLambda(); }
 	inline float				GetTotalLambdaMotor() const								{ return mMotorConstraintPart.GetTotalLambda(); }

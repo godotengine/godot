@@ -92,7 +92,7 @@ public:
 	float						GetCurrentLength() const									{ return Vec3(mWorldSpacePosition1 - mFixedPosition1).Length() + mRatio * Vec3(mWorldSpacePosition2 - mFixedPosition2).Length(); }
 
 	///@name Get Lagrange multiplier from last physics update (the linear impulse applied to satisfy the constraint)
-	inline float	 			GetTotalLambdaPosition() const								{ return mIndependentAxisConstraintPart.GetTotalLambda(); }
+	inline float				GetTotalLambdaPosition() const								{ return mIndependentAxisConstraintPart.GetTotalLambda(); }
 
 private:
 	// Calculates world positions and normals and returns current length

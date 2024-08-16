@@ -124,6 +124,9 @@ public:
 	// See Shape::IsValidScale
 	virtual bool					IsValidScale(Vec3Arg inScale) const override;
 
+	// See Shape::MakeScaleValid
+	virtual Vec3					MakeScaleValid(Vec3Arg inScale) const override;
+
 	// Register shape functions with the registry
 	static void						sRegister();
 

@@ -36,12 +36,6 @@ class alignas(JPH_RVECTOR_ALIGNMENT) JPH_EXPORT_GCC_BUG_WORKAROUND Body : public
 public:
 	JPH_OVERRIDE_NEW_DELETE
 
-	/// Default constructor
-							Body() = default;
-
-	/// Destructor
-							~Body()															{ JPH_ASSERT(mMotionProperties == nullptr); }
-
 	/// Get the id of this body
 	inline const BodyID &	GetID() const													{ return mID; }
 
@@ -234,13 +228,13 @@ public:
 	inline RVec3			GetPosition() const												{ JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sPositionAccess, BodyAccess::EAccess::Read)); return mPosition - mRotation * mShape->GetCenterOfMass(); }
 
 	/// World space rotation of the body
-	inline Quat 			GetRotation() const												{ JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sPositionAccess, BodyAccess::EAccess::Read)); return mRotation; }
+	inline Quat				GetRotation() const												{ JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sPositionAccess, BodyAccess::EAccess::Read)); return mRotation; }
 
 	/// Calculates the transform of this body
 	inline RMat44			GetWorldTransform() const;
 
 	/// Gets the world space position of this body's center of mass
-	inline RVec3 			GetCenterOfMassPosition() const									{ JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sPositionAccess, BodyAccess::EAccess::Read)); return mPosition; }
+	inline RVec3			GetCenterOfMassPosition() const									{ JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sPositionAccess, BodyAccess::EAccess::Read)); return mPosition; }
 
 	/// Calculates the transform for this body's center of mass
 	inline RMat44			GetCenterOfMassTransform() const;
@@ -287,7 +281,7 @@ public:
 
 	/// Update position using an Euler step (used during position integrate & constraint solving)
 	inline void				AddPositionStep(Vec3Arg inLinearVelocityTimesDeltaTime)			{ JPH_ASSERT(IsRigidBody()); JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sPositionAccess, BodyAccess::EAccess::ReadWrite)); mPosition += mMotionProperties->LockTranslation(inLinearVelocityTimesDeltaTime); JPH_ASSERT(!mPosition.IsNaN()); }
-	inline void				SubPositionStep(Vec3Arg inLinearVelocityTimesDeltaTime) 		{ JPH_ASSERT(IsRigidBody()); JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sPositionAccess, BodyAccess::EAccess::ReadWrite)); mPosition -= mMotionProperties->LockTranslation(inLinearVelocityTimesDeltaTime); JPH_ASSERT(!mPosition.IsNaN()); }
+	inline void				SubPositionStep(Vec3Arg inLinearVelocityTimesDeltaTime)			{ JPH_ASSERT(IsRigidBody()); JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sPositionAccess, BodyAccess::EAccess::ReadWrite)); mPosition -= mMotionProperties->LockTranslation(inLinearVelocityTimesDeltaTime); JPH_ASSERT(!mPosition.IsNaN()); }
 
 	/// Update rotation using an Euler step (using during position integrate & constraint solving)
 	inline void				AddRotationStep(Vec3Arg inAngularVelocityTimesDeltaTime);
@@ -336,8 +330,14 @@ public:
 
 private:
 	friend class BodyManager;
+	friend class BodyWithMotionProperties;
+	friend class SoftBodyWithMotionPropertiesAndShape;
+
+							Body() = default;												///< Bodies must be created through BodyInterface::CreateBody
 
 	explicit				Body(bool);														///< Alternative constructor that initializes all members
+
+							~Body()															{ JPH_ASSERT(mMotionProperties == nullptr); } ///< Bodies must be destroyed through BodyInterface::DestroyBody
 
 	inline void				GetSleepTestPoints(RVec3 *outPoints) const;						///< Determine points to test for checking if body is sleeping: COM, COM + largest bounding box axis, COM + second largest bounding box axis
 

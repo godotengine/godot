@@ -380,15 +380,6 @@ void CapsuleShape::CollideSoftBodyVertices(Mat44Arg inCenterOfMassTransform, Vec
 		}
 }
 
-void CapsuleShape::TransformShape(Mat44Arg inCenterOfMassTransform, TransformedShapeCollector &ioCollector) const
-{
-	Vec3 scale;
-	Mat44 transform = inCenterOfMassTransform.Decompose(scale);
-	TransformedShape ts(RVec3(transform.GetTranslation()), transform.GetQuaternion(), this, BodyID(), SubShapeIDCreator());
-	ts.SetShapeScale(ScaleHelpers::MakeUniformScale(scale.Abs()));
-	ioCollector.AddHit(ts);
-}
-
 void CapsuleShape::GetTrianglesStart(GetTrianglesContext &ioContext, const AABox &inBox, Vec3Arg inPositionCOM, QuatArg inRotation, Vec3Arg inScale) const
 {
 	JPH_ASSERT(IsValidScale(inScale));
@@ -434,6 +425,13 @@ void CapsuleShape::RestoreBinaryState(StreamIn &inStream)
 bool CapsuleShape::IsValidScale(Vec3Arg inScale) const
 {
 	return ConvexShape::IsValidScale(inScale) && ScaleHelpers::IsUniformScale(inScale.Abs());
+}
+
+Vec3 CapsuleShape::MakeScaleValid(Vec3Arg inScale) const
+{
+	Vec3 scale = ScaleHelpers::MakeNonZeroScale(inScale);
+
+	return scale.GetSign() * ScaleHelpers::MakeUniformScale(scale.Abs());
 }
 
 void CapsuleShape::sRegister()

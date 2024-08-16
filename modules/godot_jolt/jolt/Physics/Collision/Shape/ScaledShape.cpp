@@ -5,6 +5,7 @@
 #include <Jolt/Jolt.h>
 
 #include <Jolt/Physics/Collision/Shape/ScaledShape.h>
+#include <Jolt/Physics/Collision/Shape/ScaleHelpers.h>
 #include <Jolt/Physics/Collision/RayCast.h>
 #include <Jolt/Physics/Collision/ShapeCast.h>
 #include <Jolt/Physics/Collision/TransformedShape.h>
@@ -179,6 +180,11 @@ float ScaledShape::GetVolume() const
 bool ScaledShape::IsValidScale(Vec3Arg inScale) const
 {
 	return mInnerShape->IsValidScale(inScale * mScale);
+}
+
+Vec3 ScaledShape::MakeScaleValid(Vec3Arg inScale) const
+{
+	return mInnerShape->MakeScaleValid(mScale * inScale) / mScale;
 }
 
 void ScaledShape::sCollideScaledVsShape(const Shape *inShape1, const Shape *inShape2, Vec3Arg inScale1, Vec3Arg inScale2, Mat44Arg inCenterOfMassTransform1, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, const CollideShapeSettings &inCollideShapeSettings, CollideShapeCollector &ioCollector, const ShapeFilter &inShapeFilter)

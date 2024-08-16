@@ -117,7 +117,7 @@ void Shape::SaveWithChildren(StreamOut &inStream, ShapeToIDMap &ioShapeMap, Mate
 		// Write the ID's of all sub shapes
 		ShapeList sub_shapes;
 		SaveSubShapeState(sub_shapes);
-		inStream.Write(sub_shapes.size());
+		inStream.Write(uint32(sub_shapes.size()));
 		for (const Shape *shape : sub_shapes)
 		{
 			if (shape == nullptr)
@@ -173,7 +173,7 @@ Shape::ShapeResult Shape::sRestoreWithChildren(StreamIn &inStream, IDToShapeMap 
 	ioShapeMap.push_back(result.Get());
 
 	// Read the sub shapes
-	size_t len;
+	uint32 len;
 	inStream.Read(len);
 	if (inStream.IsEOF() || inStream.IsFailed())
 	{

@@ -51,7 +51,7 @@ JPH_NAMESPACE_BEGIN
 	{																												\
 		if (inPointer)																								\
 			ioStream.WritePointerData(GetRTTI(inPointer), (void *)inPointer);										\
-		else 																										\
+		else																										\
 			ioStream.WritePointerData(nullptr, nullptr);															\
 	}																												\
 	void		OSWriteDataType(IObjectStreamOut &ioStream, class_name *)											\

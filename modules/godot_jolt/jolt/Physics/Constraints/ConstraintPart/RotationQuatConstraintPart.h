@@ -218,7 +218,7 @@ public:
 	}
 
 	/// Return lagrange multiplier
-	Vec3		 				GetTotalLambda() const
+	Vec3						GetTotalLambda() const
 	{
 		return mTotalLambda;
 	}

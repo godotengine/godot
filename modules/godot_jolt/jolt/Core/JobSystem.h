@@ -33,9 +33,9 @@ JPH_NAMESPACE_BEGIN
 ///		barrier->AddJob(third_job);
 ///		job_system->WaitForJobs(barrier);
 ///
-/// 	// Clean up
-/// 	job_system->DestroyBarrier(barrier);
-/// 	delete job_system;
+///		// Clean up
+///		job_system->DestroyBarrier(barrier);
+///		delete job_system;
 ///
 ///	Jobs are guaranteed to be started in the order that their dependency counter becomes zero (in case they're scheduled on a background thread)
 ///	or in the order they're added to the barrier (when dependency count is zero and when executing on the thread that calls WaitForJobs).

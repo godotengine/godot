@@ -340,7 +340,7 @@ void DebugRenderer::Create8thSphereRecursive(Array<uint32> &ioIndices, Array<Ver
 		uint32 idx3 = 0xffffffff;
 
 		Create8thSphereRecursive(ioIndices, ioVertices, inDir1,  ioIdx1, center1, idx1,   center3, idx3,   inUV, inGetSupport, inLevel - 1);
-		Create8thSphereRecursive(ioIndices, ioVertices, center1, idx1,	  center2, idx2,   center3, idx3,   inUV, inGetSupport, inLevel - 1);
+		Create8thSphereRecursive(ioIndices, ioVertices, center1, idx1,	 center2, idx2,   center3, idx3,   inUV, inGetSupport, inLevel - 1);
 		Create8thSphereRecursive(ioIndices, ioVertices, center1, idx1,   inDir2,  ioIdx2, center2, idx2,   inUV, inGetSupport, inLevel - 1);
 		Create8thSphereRecursive(ioIndices, ioVertices, center3, idx3,   center2, idx2,   inDir3,  ioIdx3, inUV, inGetSupport, inLevel - 1);
 	}

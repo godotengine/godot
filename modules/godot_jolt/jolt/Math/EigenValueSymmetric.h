@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <Jolt/Core/FPFlushDenormals.h>
+#include <Jolt/Core/FPException.h>
 
 JPH_NAMESPACE_BEGIN
 
@@ -28,9 +28,9 @@ JPH_NAMESPACE_BEGIN
 template <class Vector, class Matrix>
 bool EigenValueSymmetric(const Matrix &inMatrix, Matrix &outEigVec, Vector &outEigVal)
 {
-	// This algorithm works with very small numbers and can trigger invalid float exceptions when not flushing denormals
-	FPFlushDenormals flush_denormals;
-	(void)flush_denormals;
+	// This algorithm can generate infinite values, see comment below
+	FPExceptionDisableInvalid disable_invalid;
+	(void)disable_invalid;
 
 	// Maximum number of sweeps to make
 	const int cMaxSweeps = 50;
@@ -70,9 +70,10 @@ bool EigenValueSymmetric(const Matrix &inMatrix, Matrix &outEigVec, Vector &outE
 		for (uint ip = 0; ip < n - 1; ++ip)
 			for (uint iq = ip + 1; iq < n; ++iq)
 				sm += abs(a(ip, iq));
+		float avg_sm = sm / Square(n);
 
 		// Normal return, convergence to machine underflow
-		if (sm == 0.0f)
+		if (avg_sm < FLT_MIN) // Original code: sm == 0.0f, when the average is denormal, we also consider it machine underflow
 		{
 			// Sanity checks
 			#ifdef JPH_ENABLE_ASSERTS
@@ -93,68 +94,69 @@ bool EigenValueSymmetric(const Matrix &inMatrix, Matrix &outEigVec, Vector &outE
 		}
 
 		// On the first three sweeps use a fraction of the sum of the off diagonal elements as threshold
-		float tresh = sweep < 4? 0.2f * sm / Square(n) : 0.0f;
+		// Note that we pick a minimum threshold of FLT_MIN because dividing by a denormalized number is likely to result in infinity.
+		float tresh = sweep < 4? 0.2f * avg_sm : FLT_MIN; // Original code: 0.0f instead of FLT_MIN
 
 		for (uint ip = 0; ip < n - 1; ++ip)
 			for (uint iq = ip + 1; iq < n; ++iq)
 			{
-				float g = 100.0f * abs(a(ip, iq));
+				float &a_pq = a(ip, iq);
+				float &eigval_p = outEigVal[ip];
+				float &eigval_q = outEigVal[iq];
+
+				float abs_a_pq = abs(a_pq);
+				float g = 100.0f * abs_a_pq;
 
 				// After four sweeps, skip the rotation if the off-diagonal element is small
 				if (sweep > 4
-					&& abs(outEigVal[ip]) + g == abs(outEigVal[ip])
-					&& abs(outEigVal[iq]) + g == abs(outEigVal[iq]))
+					&& abs(eigval_p) + g == abs(eigval_p)
+					&& abs(eigval_q) + g == abs(eigval_q))
 				{
-					a(ip, iq) = 0.0f;
+					a_pq = 0.0f;
 				}
-				else if (abs(a(ip, iq)) > tresh)
+				else if (abs_a_pq > tresh)
 				{
-					float h = outEigVal[iq] - outEigVal[ip];
+					float h = eigval_q - eigval_p;
+					float abs_h = abs(h);
 
 					float t;
-					if (abs(h) + g == abs(h))
+					if (abs_h + g == abs_h)
 					{
-						t = a(ip, iq) / h;
+						t = a_pq / h;
 					}
 					else
 					{
-						float theta = 0.5f * h / a(ip, iq); // Warning: Can become inf if a(ip, iq) too small
-						t = 1.0f / (abs(theta) + sqrt(1.0f + theta * theta)); // Warning: Squaring large value can make it inf
+						float theta = 0.5f * h / a_pq; // Warning: Can become infinite if a(ip, iq) is very small which may trigger an invalid float exception
+						t = 1.0f / (abs(theta) + sqrt(1.0f + theta * theta)); // If theta becomes inf, t will be 0 so the infinite is not a problem for the algorithm
 						if (theta < 0.0f) t = -t;
 					}
 
 					float c = 1.0f / sqrt(1.0f + t * t);
 					float s = t * c;
 					float tau = s / (1.0f + c);
-					h = t * a(ip, iq);
+					h = t * a_pq;
 
-					a(ip, iq) = 0.0f;
+					a_pq = 0.0f;
 
-					// !Modification from Numerical Recipes!
-					// h can become infinite due to numerical overflow, this only happens when a(ip, iq) is very small
-					// so we can safely set a(ip, iq) to zero and skip the rotation, see lines marked with 'Warning' above.
-					if (!isnan(h))
-					{
-						z[ip] -= h;
-						z[iq] += h;
+					z[ip] -= h;
+					z[iq] += h;
 
-						outEigVal[ip] -= h;
-						outEigVal[iq] += h;
+					eigval_p -= h;
+					eigval_q += h;
 
-						#define JPH_EVS_ROTATE(a, i, j, k, l)		\
-							g = a(i, j),							\
-							h = a(k, l),							\
-							a(i, j) = g - s * (h + g * tau),		\
-							a(k, l) = h + s * (g - h * tau)
+					#define JPH_EVS_ROTATE(a, i, j, k, l)		\
+						g = a(i, j),							\
+						h = a(k, l),							\
+						a(i, j) = g - s * (h + g * tau),		\
+						a(k, l) = h + s * (g - h * tau)
 
-						uint j;
-						for (j = 0; j < ip; ++j)		JPH_EVS_ROTATE(a, j, ip, j, iq);
-						for (j = ip + 1; j < iq; ++j)	JPH_EVS_ROTATE(a, ip, j, j, iq);
-						for (j = iq + 1; j < n; ++j)	JPH_EVS_ROTATE(a, ip, j, iq, j);
-						for (j = 0; j < n; ++j)			JPH_EVS_ROTATE(outEigVec, j, ip, j, iq);
+					uint j;
+					for (j = 0; j < ip; ++j)		JPH_EVS_ROTATE(a, j, ip, j, iq);
+					for (j = ip + 1; j < iq; ++j)	JPH_EVS_ROTATE(a, ip, j, j, iq);
+					for (j = iq + 1; j < n; ++j)	JPH_EVS_ROTATE(a, ip, j, iq, j);
+					for (j = 0; j < n; ++j)			JPH_EVS_ROTATE(outEigVec, j, ip, j, iq);
 
-						#undef JPH_EVS_ROTATE
-					}
+					#undef JPH_EVS_ROTATE
 				}
 			}
 

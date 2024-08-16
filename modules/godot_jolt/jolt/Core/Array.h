@@ -194,8 +194,8 @@ public:
 		clear();
 		reserve(size_type(inList.size()));
 
-		for (typename std::initializer_list<T>::iterator i = inList.begin(); i != inList.end(); ++i)
-			::new (&mElements[mSize++]) T(*i);
+		for (const T &v : inList)
+			::new (&mElements[mSize++]) T(v);
 	}
 
 	/// Default constructor
@@ -582,13 +582,13 @@ namespace std
 			std::size_t ret = 0;
 
 			// Hash length first
-            JPH::HashCombine(ret, inRHS.size());
+			JPH::HashCombine(ret, inRHS.size());
 
 			// Then hash elements
 			for (const T &t : inRHS)
-	            JPH::HashCombine(ret, t);
+				JPH::HashCombine(ret, t);
 
-            return ret;
+			return ret;
 		}
 	};
 }

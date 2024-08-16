@@ -180,7 +180,7 @@ private:
 		float							mFriction;									///< Combined friction of the two bodies
 		float							mRestitution;								///< Combined restitution of the two bodies
 		float							mSoftBodyInvMassScale;						///< Scale factor for the inverse mass of the soft body vertices
-		bool 							mUpdateVelocities;							///< If the linear/angular velocity changed and the body needs to be updated
+		bool							mUpdateVelocities;							///< If the linear/angular velocity changed and the body needs to be updated
 		Mat44							mInvInertia;								///< Inverse inertia in local space to the soft body
 		Vec3							mLinearVelocity;							///< Linear velocity of the body in local space to the soft body
 		Vec3							mAngularVelocity;							///< Angular velocity of the body in local space to the soft body

@@ -73,7 +73,7 @@ private:
 		}
 
 #ifdef JPH_GJK_DEBUG
- 		Trace("GetClosest: set = 0b%s, v = [%s], |v| = %g", NibbleToBinary(set), ConvertToString(v).c_str(), (double)v.Length());
+		Trace("GetClosest: set = 0b%s, v = [%s], |v| = %g", NibbleToBinary(set), ConvertToString(v).c_str(), (double)v.Length());
 #endif
 
 		float v_len_sq = v.LengthSq();

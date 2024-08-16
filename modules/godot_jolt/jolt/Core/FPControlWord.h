@@ -75,11 +75,11 @@ public:
 				FPControlWord()
 	{
 		uint64 val;
-	    asm volatile("mrs %0, fpcr" : "=r" (val));
+		asm volatile("mrs %0, fpcr" : "=r" (val));
 		mPrevState = val;
 		val &= ~Mask;
 		val |= Value;
-	    asm volatile("msr fpcr, %0" : /* no output */ : "r" (val));
+		asm volatile("msr fpcr, %0" : /* no output */ : "r" (val));
 	}
 
 				~FPControlWord()

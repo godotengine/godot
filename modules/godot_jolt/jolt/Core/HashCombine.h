@@ -46,7 +46,7 @@ template <typename T>
 inline void HashCombineHelper(size_t &ioSeed, const T &inValue)
 {
 	std::hash<T> hasher;
-    ioSeed ^= hasher(inValue) + 0x9e3779b9 + (ioSeed << 6) + (ioSeed >> 2);
+	ioSeed ^= hasher(inValue) + 0x9e3779b9 + (ioSeed << 6) + (ioSeed >> 2);
 }
 
 /// Hash combiner to use a custom struct in an unordered map or set
@@ -55,9 +55,9 @@ inline void HashCombineHelper(size_t &ioSeed, const T &inValue)
 ///
 ///		struct SomeHashKey
 ///		{
-///		    std::string key1;
-///		    std::string key2;
-///		    bool key3;
+///			std::string key1;
+///			std::string key2;
+///			bool key3;
 ///		};
 ///
 ///		JPH_MAKE_HASHABLE(SomeHashKey, t.key1, t.key2, t.key3)
@@ -76,22 +76,22 @@ JPH_CLANG_SUPPRESS_WARNING("-Wc++98-compat-pedantic")
 #define JPH_MAKE_HASH_STRUCT(type, name, ...)				\
 	struct [[nodiscard]] name								\
 	{														\
-        std::size_t operator()(const type &t) const			\
+		std::size_t operator()(const type &t) const			\
 		{													\
-            std::size_t ret = 0;							\
-            ::JPH::HashCombine(ret, __VA_ARGS__);			\
-            return ret;										\
-        }													\
-    };
+			std::size_t ret = 0;							\
+			::JPH::HashCombine(ret, __VA_ARGS__);			\
+			return ret;										\
+		}													\
+	};
 
 #define JPH_MAKE_HASHABLE(type, ...)						\
 	JPH_SUPPRESS_WARNING_PUSH								\
 	JPH_SUPPRESS_WARNINGS									\
-    namespace std											\
+	namespace std											\
 	{														\
-        template<>											\
+		template<>											\
 		JPH_MAKE_HASH_STRUCT(type, hash<type>, __VA_ARGS__)	\
-    }														\
+	}														\
 	JPH_SUPPRESS_WARNING_POP
 
 JPH_SUPPRESS_WARNING_POP

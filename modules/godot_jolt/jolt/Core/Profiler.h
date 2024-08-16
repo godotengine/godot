@@ -25,6 +25,7 @@ using ProfileEndMeasurementFunction = void (*)(uint8 *ioUserData);
 JPH_EXPORT extern ProfileStartMeasurementFunction ProfileStartMeasurement;
 JPH_EXPORT extern ProfileEndMeasurementFunction ProfileEndMeasurement;
 #endif // JPH_SHARED_LIBRARY
+
 /// Create this class on the stack to start sampling timing information of a particular scope.
 ///
 /// For statically linked builds, this is left unimplemented intentionally. Needs to be implemented by the user of the library.

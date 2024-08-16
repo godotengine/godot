@@ -33,11 +33,11 @@ private:
 		JPH_OVERRIDE_NEW_DELETE
 
 		/// Default constructor does not initialize
-		inline 					NodeID() = default;
+		inline					NodeID() = default;
 
 		/// Construct a node ID
 		static inline NodeID	sInvalid()							{ return NodeID(cInvalidNodeIndex); }
-		static inline NodeID	sFromBodyID(BodyID inID) 			{ NodeID node_id(inID.GetIndexAndSequenceNumber()); JPH_ASSERT(node_id.IsBody()); return node_id; }
+		static inline NodeID	sFromBodyID(BodyID inID)			{ NodeID node_id(inID.GetIndexAndSequenceNumber()); JPH_ASSERT(node_id.IsBody()); return node_id; }
 		static inline NodeID	sFromNodeIndex(uint32 inIdx)		{ NodeID node_id(inIdx | cIsNode); JPH_ASSERT(node_id.IsNode()); return node_id; }
 
 		/// Check what type of ID it is
@@ -325,6 +325,25 @@ private:
 	void						DumpTree(const NodeID &inRoot, const char *inFileNamePrefix) const;
 #endif
 
+	/// Allocator that controls adding / freeing nodes
+	Allocator *					mAllocator = nullptr;
+
+	/// This is a list of nodes that must be deleted after the trees are swapped and the old tree is no longer in use
+	Allocator::Batch			mFreeNodeBatch;
+
+	/// Number of bodies currently in the tree
+	/// This is aligned to be in a different cache line from the `Allocator` pointer to prevent cross-thread syncs
+	/// when reading nodes.
+	alignas(JPH_CACHE_LINE_SIZE) atomic<uint32> mNumBodies { 0 };
+
+	/// We alternate between two tree root nodes. When updating, we activate the new tree and we keep the old tree alive.
+	/// for queries that are in progress until the next time DiscardOldTree() is called.
+	RootNode					mRootNode[2];
+	atomic<uint32>				mRootNodeIndex { 0 };
+
+	/// Flag to keep track of changes to the broadphase, if false, we don't need to UpdatePrepare/Finalize()
+	atomic<bool>				mIsDirty = false;
+
 #ifdef JPH_TRACK_BROADPHASE_STATS
 	/// Mutex protecting the various LayerToStats members
 	mutable Mutex				mStatsMutex;
@@ -366,23 +385,6 @@ private:
 	/// Name of this tree for debugging purposes
 	const char *				mName = "Layer";
 #endif // JPH_EXTERNAL_PROFILE || JPH_PROFILE_ENABLED
-
-	/// Number of bodies currently in the tree
-	atomic<uint32>				mNumBodies { 0 };
-
-	/// We alternate between two tree root nodes. When updating, we activate the new tree and we keep the old tree alive.
-	/// for queries that are in progress until the next time DiscardOldTree() is called.
-	RootNode					mRootNode[2];
-	atomic<uint32>				mRootNodeIndex { 0 };
-
-	/// Allocator that controls adding / freeing nodes
-	Allocator *					mAllocator = nullptr;
-
-	/// This is a list of nodes that must be deleted after the trees are swapped and the old tree is no longer in use
-	Allocator::Batch			mFreeNodeBatch;
-
-	/// Flag to keep track of changes to the broadphase, if false, we don't need to UpdatePrepare/Finalize()
-	atomic<bool>				mIsDirty = false;
 };
 
 JPH_NAMESPACE_END

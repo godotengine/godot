@@ -188,7 +188,7 @@ Body *BodyManager::AllocateBody(const BodyCreationSettings &inBodyCreationSettin
 	}
 	else
 	{
-	 	body = new Body;
+		body = new Body;
 	}
 	body->mBodyType = EBodyType::RigidBody;
 	body->mShape = inBodyCreationSettings.GetShape();
@@ -403,7 +403,7 @@ Body *BodyManager::RemoveBodyInternal(const BodyID &inBodyID)
 	// Validate that it can be removed
 	JPH_ASSERT(body->GetID() == inBodyID);
 	JPH_ASSERT(!body->IsActive());
-	JPH_ASSERT(!body->IsInBroadPhase());
+	JPH_ASSERT(!body->IsInBroadPhase(), "Use BodyInterface::RemoveBody to remove this body first!");
 
 	// Push the id onto the freelist
 	mBodies[idx] = (Body *)mBodyIDFreeListStart;
@@ -554,7 +554,7 @@ void BodyManager::ActivateBodies(const BodyID *inBodyIDs, int inNumber)
 			Body &body = *mBodies[body_id.GetIndex()];
 
 			JPH_ASSERT(body.GetID() == body_id);
-			JPH_ASSERT(body.IsInBroadPhase());
+			JPH_ASSERT(body.IsInBroadPhase(), "Use BodyInterface::AddBody to add the body first!");
 
 			if (!body.IsStatic())
 			{
@@ -591,7 +591,7 @@ void BodyManager::DeactivateBodies(const BodyID *inBodyIDs, int inNumber)
 			Body &body = *mBodies[body_id.GetIndex()];
 
 			JPH_ASSERT(body.GetID() == body_id);
-			JPH_ASSERT(body.IsInBroadPhase());
+			JPH_ASSERT(body.IsInBroadPhase(), "Use BodyInterface::AddBody to add the body first!");
 
 			if (body.mMotionProperties != nullptr
 				&& body.mMotionProperties->mIndexInActiveBodies != Body::cInactiveIndex)

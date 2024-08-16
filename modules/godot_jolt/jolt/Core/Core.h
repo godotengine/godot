@@ -6,7 +6,7 @@
 
 // Jolt library version
 #define JPH_VERSION_MAJOR 5
-#define JPH_VERSION_MINOR 0
+#define JPH_VERSION_MINOR 1
 #define JPH_VERSION_PATCH 1
 
 // Determine which features the library was compiled with
@@ -69,18 +69,7 @@
 
 // Combine the version and features in a single ID
 #define JPH_VERSION_ID ((JPH_VERSION_FEATURES << 24) | (JPH_VERSION_MAJOR << 16) | (JPH_VERSION_MINOR << 8) | JPH_VERSION_PATCH)
-#if defined(__arm__)
-# ifndef (__ARM_NEON)
-#   define __ARM_NEON
-# endif
-#else
-# ifndef __AVX__
-#   define __AVX__
-# endif
-# ifndef __SSE__
-#   define __SSE__
-# endif
-#endif
+
 // Determine platform
 #if defined(JPH_PLATFORM_BLUE)
 	// Correct define already defined, this overrides everything else
@@ -97,12 +86,12 @@
 #elif defined(__FreeBSD__)
 	#define JPH_PLATFORM_FREEBSD
 #elif defined(__APPLE__)
-    #include <TargetConditionals.h>
-    #if defined(TARGET_OS_IPHONE) && !TARGET_OS_IPHONE
-        #define JPH_PLATFORM_MACOS
-    #else
-        #define JPH_PLATFORM_IOS
-    #endif
+	#include <TargetConditionals.h>
+	#if defined(TARGET_OS_IPHONE) && !TARGET_OS_IPHONE
+		#define JPH_PLATFORM_MACOS
+	#else
+		#define JPH_PLATFORM_IOS
+	#endif
 #elif defined(__EMSCRIPTEN__)
 	#define JPH_PLATFORM_WASM
 #endif
@@ -417,6 +406,9 @@ JPH_SUPPRESS_WARNINGS_STD_BEGIN
 #include <functional>
 #include <algorithm>
 #include <cstdint>
+#ifdef JPH_COMPILER_MSVC
+	#include <malloc.h> // for alloca
+#endif
 #if defined(JPH_USE_SSE)
 	#include <immintrin.h>
 #elif defined(JPH_USE_NEON)

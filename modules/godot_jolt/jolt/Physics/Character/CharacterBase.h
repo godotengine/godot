@@ -100,10 +100,10 @@ public:
 	bool								IsSupported() const										{ return mGroundState == EGroundState::OnGround || mGroundState == EGroundState::OnSteepGround; }
 
 	/// Get the contact point with the ground
-	RVec3 								GetGroundPosition() const								{ return mGroundPosition; }
+	RVec3								GetGroundPosition() const								{ return mGroundPosition; }
 
 	/// Get the contact normal with the ground
-	Vec3	 							GetGroundNormal() const									{ return mGroundNormal; }
+	Vec3								GetGroundNormal() const									{ return mGroundNormal; }
 
 	/// Velocity in world space of ground
 	Vec3								GetGroundVelocity() const								{ return mGroundVelocity; }

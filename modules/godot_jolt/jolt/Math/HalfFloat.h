@@ -193,7 +193,7 @@ JPH_INLINE Vec4 ToFloat(UVec4Arg inValue)
 #if defined(JPH_USE_F16C)
 	return _mm_cvtph_ps(inValue.mValue);
 #elif defined(JPH_USE_NEON)
-	return vcvt_f32_f16(vreinterpret_f16_f32(vget_low_f32(inValue.mValue)));
+	return vcvt_f32_f16(vreinterpret_f16_u32(vget_low_u32(inValue.mValue)));
 #else
 	return ToFloatFallback(inValue);
 #endif
