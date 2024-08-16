@@ -30,6 +30,8 @@
 
 #include "visual_instance_3d.h"
 
+#include "core/config/project_settings.h"
+
 AABB VisualInstance3D::get_aabb() const {
 	AABB ret;
 	GDVIRTUAL_CALL(_get_aabb, ret);
@@ -41,7 +43,38 @@ void VisualInstance3D::_update_visibility() {
 		return;
 	}
 
-	RS::get_singleton()->instance_set_visible(get_instance(), is_visible_in_tree());
+	bool already_visible = _is_vi_visible();
+	bool visible = is_visible_in_tree();
+	_set_vi_visible(visible);
+
+	// If making visible, make sure the rendering server is up to date with the transform.
+	if (visible && !already_visible) {
+		if (!_is_using_identity_transform()) {
+			Transform3D gt = get_global_transform();
+			RS::get_singleton()->instance_set_transform(instance, gt);
+		}
+	}
+
+	RS::get_singleton()->instance_set_visible(instance, visible);
+}
+
+void VisualInstance3D::_physics_interpolated_changed() {
+	RenderingServer::get_singleton()->instance_set_interpolated(instance, is_physics_interpolated());
+}
+
+void VisualInstance3D::set_instance_use_identity_transform(bool p_enable) {
+	// Prevent sending instance transforms when using global coordinates.
+	_set_use_identity_transform(p_enable);
+
+	if (is_inside_tree()) {
+		if (p_enable) {
+			// Want to make sure instance is using identity transform.
+			RS::get_singleton()->instance_set_transform(instance, Transform3D());
+		} else {
+			// Want to make sure instance is up to date.
+			RS::get_singleton()->instance_set_transform(instance, get_global_transform());
+		}
+	}
 }
 
 void VisualInstance3D::_notification(int p_what) {
@@ -53,13 +86,52 @@ void VisualInstance3D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			Transform3D gt = get_global_transform();
-			RenderingServer::get_singleton()->instance_set_transform(instance, gt);
+			if (_is_vi_visible() || is_physics_interpolated_and_enabled()) {
+				if (!_is_using_identity_transform()) {
+					RenderingServer::get_singleton()->instance_set_transform(instance, get_global_transform());
+
+					// For instance when first adding to the tree, when the previous transform is
+					// unset, to prevent streaking from the origin.
+					if (_is_physics_interpolation_reset_requested() && is_physics_interpolated_and_enabled() && is_inside_tree()) {
+						if (_is_vi_visible()) {
+							_notification(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
+						}
+						_set_physics_interpolation_reset_requested(false);
+					}
+				}
+			}
+		} break;
+
+		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
+			if (_is_vi_visible() && is_physics_interpolated() && is_inside_tree()) {
+				// We must ensure the RenderingServer transform is up to date before resetting.
+				// This is because NOTIFICATION_TRANSFORM_CHANGED is deferred,
+				// and cannot be relied to be called in order before NOTIFICATION_RESET_PHYSICS_INTERPOLATION.
+				if (!_is_using_identity_transform()) {
+					RenderingServer::get_singleton()->instance_set_transform(instance, get_global_transform());
+				}
+
+				RenderingServer::get_singleton()->instance_reset_physics_interpolation(instance);
+			}
+#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+			else if (GLOBAL_GET("debug/settings/physics_interpolation/enable_warnings")) {
+
+				String node_name = is_inside_tree() ? String(get_path()) : String(get_name());
+				if (!_is_vi_visible()) {
+					WARN_PRINT("[Physics interpolation] NOTIFICATION_RESET_PHYSICS_INTERPOLATION only works with unhidden nodes: \"" + node_name + "\".");
+				}
+				if (!is_physics_interpolated()) {
+					WARN_PRINT("[Physics interpolation] NOTIFICATION_RESET_PHYSICS_INTERPOLATION only works with interpolated nodes: \"" + node_name + "\".");
+				}
+			}
+#endif
+
 		} break;
 
 		case NOTIFICATION_EXIT_WORLD: {
 			RenderingServer::get_singleton()->instance_set_scenario(instance, RID());
 			RenderingServer::get_singleton()->instance_attach_skeleton(instance, RID());
+			_set_vi_visible(false);
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {

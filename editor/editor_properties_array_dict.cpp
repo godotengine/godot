@@ -844,9 +844,6 @@ bool EditorPropertyArray::is_colored(ColorationMode p_mode) {
 	return p_mode == COLORATION_CONTAINER_RESOURCE;
 }
 
-void EditorPropertyArray::_bind_methods() {
-}
-
 EditorPropertyArray::EditorPropertyArray() {
 	object.instantiate();
 	page_length = int(EDITOR_GET("interface/inspector/max_array_dictionary_items_per_page"));
@@ -1175,9 +1172,6 @@ void EditorPropertyDictionary::_page_changed(int p_page) {
 	update_property();
 }
 
-void EditorPropertyDictionary::_bind_methods() {
-}
-
 bool EditorPropertyDictionary::is_colored(ColorationMode p_mode) {
 	return p_mode == COLORATION_CONTAINER_RESOURCE;
 }
@@ -1392,9 +1386,6 @@ void EditorPropertyLocalizableString::_page_changed(int p_page) {
 	}
 	page_index = p_page;
 	update_property();
-}
-
-void EditorPropertyLocalizableString::_bind_methods() {
 }
 
 EditorPropertyLocalizableString::EditorPropertyLocalizableString() {

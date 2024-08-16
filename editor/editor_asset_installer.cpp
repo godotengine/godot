@@ -659,9 +659,6 @@ void EditorAssetInstaller::_notification(int p_what) {
 	}
 }
 
-void EditorAssetInstaller::_bind_methods() {
-}
-
 EditorAssetInstaller::EditorAssetInstaller() {
 	VBoxContainer *vb = memnew(VBoxContainer);
 	add_child(vb);

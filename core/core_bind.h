@@ -447,6 +447,8 @@ public:
 	TypedArray<Dictionary> class_get_signal_list(const StringName &p_class, bool p_no_inheritance = false) const;
 
 	TypedArray<Dictionary> class_get_property_list(const StringName &p_class, bool p_no_inheritance = false) const;
+	StringName class_get_property_getter(const StringName &p_class, const StringName &p_property);
+	StringName class_get_property_setter(const StringName &p_class, const StringName &p_property);
 	Variant class_get_property(Object *p_object, const StringName &p_property) const;
 	Error class_set_property(Object *p_object, const StringName &p_property, const Variant &p_value) const;
 

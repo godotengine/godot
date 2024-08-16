@@ -218,6 +218,8 @@ Config::Config() {
 			//https://github.com/godotengine/godot/issues/92662#issuecomment-2161199477
 			//disable_particles_workaround = false;
 		}
+	} else if (rendering_device_name == "PowerVR Rogue GE8320") {
+		disable_transform_feedback_shader_cache = true;
 	}
 }
 

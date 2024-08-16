@@ -48,11 +48,11 @@
 	</methods>
 	<members>
 		<member name="spawn_function" type="Callable" setter="set_spawn_function" getter="get_spawn_function">
-			Method called on all peers when for every custom [method spawn] requested by the authority. Will receive the [code]data[/code] parameter, and should return a [Node] that is not in the scene tree.
+			Method called on all peers when a custom [method spawn] is requested by the authority. Will receive the [code]data[/code] parameter, and should return a [Node] that is not in the scene tree.
 			[b]Note:[/b] The returned node should [b]not[/b] be added to the scene with [method Node.add_child]. This is done automatically.
 		</member>
 		<member name="spawn_limit" type="int" setter="set_spawn_limit" getter="get_spawn_limit" default="0">
-			Maximum nodes that is allowed to be spawned by this spawner. Includes both spawnable scenes and custom spawns.
+			Maximum number of nodes allowed to be spawned by this spawner. Includes both spawnable scenes and custom spawns.
 			When set to [code]0[/code] (the default), there is no limit.
 		</member>
 		<member name="spawn_path" type="NodePath" setter="set_spawn_path" getter="get_spawn_path" default="NodePath(&quot;&quot;)">

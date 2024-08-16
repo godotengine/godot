@@ -36,9 +36,6 @@
 #include "scene/3d/physics/physical_bone_3d.h"
 #include "scene/gui/separator.h"
 
-void PhysicalBone3DEditor::_bind_methods() {
-}
-
 void PhysicalBone3DEditor::_on_toggle_button_transform_joint(bool p_is_pressed) {
 	_set_move_joint();
 }

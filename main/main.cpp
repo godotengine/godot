@@ -49,7 +49,7 @@
 #include "core/os/os.h"
 #include "core/os/time.h"
 #include "core/register_core_types.h"
-#include "core/string/translation.h"
+#include "core/string/translation_server.h"
 #include "core/version.h"
 #include "drivers/register_driver_types.h"
 #include "main/app_icon.gen.h"
@@ -2086,7 +2086,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		BLOCK_DEVICE("Intel", "Intel HD Graphics P3000");
 		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics P3000");
 		BLOCK_DEVICE("0x8086", "0x0112"); // HD Graphics P3000, Gen6, Sandy Bridge
-		BLOCK_DEVICE("0x8086", "0x0122"); // HD Graphics P3000, Gen6, Sandy Bridge
+		BLOCK_DEVICE("0x8086", "0x0122");
 		BLOCK_DEVICE("0x8086", "0x015A"); // HD Graphics, Gen7, Ivy Bridge
 		BLOCK_DEVICE("Intel", "Intel HD Graphics 2500");
 		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 2500");
@@ -2094,10 +2094,81 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		BLOCK_DEVICE("Intel", "Intel HD Graphics 4000");
 		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 4000");
 		BLOCK_DEVICE("0x8086", "0x0162"); // HD Graphics 4000, Gen7, Ivy Bridge
-		BLOCK_DEVICE("0x8086", "0x0166"); // HD Graphics 4000, Gen7, Ivy Bridge
+		BLOCK_DEVICE("0x8086", "0x0166");
 		BLOCK_DEVICE("Intel", "Intel HD Graphics P4000");
 		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics P4000");
 		BLOCK_DEVICE("0x8086", "0x016A"); // HD Graphics P4000, Gen7, Ivy Bridge
+		BLOCK_DEVICE("Intel", "Intel(R) Vallyview Graphics");
+		BLOCK_DEVICE("0x8086", "0x0F30"); // Intel(R) Vallyview Graphics, Gen7, Vallyview
+		BLOCK_DEVICE("0x8086", "0x0F31");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 4200");
+		BLOCK_DEVICE("0x8086", "0x0A1E"); // Intel(R) HD Graphics 4200, Gen7.5, Haswell
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 4400");
+		BLOCK_DEVICE("0x8086", "0x0A16"); // Intel(R) HD Graphics 4400, Gen7.5, Haswell
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 4600");
+		BLOCK_DEVICE("0x8086", "0x0412"); // Intel(R) HD Graphics 4600, Gen7.5, Haswell
+		BLOCK_DEVICE("0x8086", "0x0416");
+		BLOCK_DEVICE("0x8086", "0x0426");
+		BLOCK_DEVICE("0x8086", "0x0D12");
+		BLOCK_DEVICE("0x8086", "0x0D16");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics P4600/P4700");
+		BLOCK_DEVICE("0x8086", "0x041A"); // Intel(R) HD Graphics P4600/P4700, Gen7.5, Haswell
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 5000");
+		BLOCK_DEVICE("0x8086", "0x0422"); // Intel(R) HD Graphics 5000, Gen7.5, Haswell
+		BLOCK_DEVICE("0x8086", "0x042A");
+		BLOCK_DEVICE("0x8086", "0x0A26");
+		BLOCK_DEVICE("Intel", "Intel(R) Iris(TM) Graphics 5100");
+		BLOCK_DEVICE("0x8086", "0x0A22"); // Intel(R) Iris(TM) Graphics 5100, Gen7.5, Haswell
+		BLOCK_DEVICE("0x8086", "0x0A2A");
+		BLOCK_DEVICE("0x8086", "0x0A2B");
+		BLOCK_DEVICE("0x8086", "0x0A2E");
+		BLOCK_DEVICE("Intel", "Intel(R) Iris(TM) Pro Graphics 5200");
+		BLOCK_DEVICE("0x8086", "0x0D22"); // Intel(R) Iris(TM) Pro Graphics 5200, Gen7.5, Haswell
+		BLOCK_DEVICE("0x8086", "0x0D26");
+		BLOCK_DEVICE("0x8086", "0x0D2A");
+		BLOCK_DEVICE("0x8086", "0x0D2B");
+		BLOCK_DEVICE("0x8086", "0x0D2E");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 400");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 405");
+		BLOCK_DEVICE("0x8086", "0x22B0"); // Intel(R) HD Graphics, Gen8, Cherryview Braswell
+		BLOCK_DEVICE("0x8086", "0x22B1");
+		BLOCK_DEVICE("0x8086", "0x22B2");
+		BLOCK_DEVICE("0x8086", "0x22B3");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 5300");
+		BLOCK_DEVICE("0x8086", "0x161E"); // Intel(R) HD Graphics 5300, Gen8, Broadwell
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 5500");
+		BLOCK_DEVICE("0x8086", "0x1616"); // Intel(R) HD Graphics 5500, Gen8, Broadwell
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 5600");
+		BLOCK_DEVICE("0x8086", "0x1612"); // Intel(R) HD Graphics 5600, Gen8, Broadwell
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 6000");
+		BLOCK_DEVICE("0x8086", "0x1626"); // Intel(R) HD Graphics 6000, Gen8, Broadwell
+		BLOCK_DEVICE("Intel", "Intel(R) Iris(TM) Graphics 6100");
+		BLOCK_DEVICE("0x8086", "0x162B"); // Intel(R) Iris(TM) Graphics 6100, Gen8, Broadwell
+		BLOCK_DEVICE("Intel", "Intel(R) Iris(TM) Pro Graphics 6200");
+		BLOCK_DEVICE("0x8086", "0x1622"); // Intel(R) Iris(TM) Pro Graphics 6200, Gen8, Broadwell
+		BLOCK_DEVICE("Intel", "Intel(R) Iris(TM) Pro Graphics P6300");
+		BLOCK_DEVICE("0x8086", "0x162A"); // Intel(R) Iris(TM) Pro Graphics P6300, Gen8, Broadwell
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 500");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 505");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 510");
+		BLOCK_DEVICE("0x8086", "0x1902"); // Intel(R) HD Graphics 510, Gen9, Skylake
+		BLOCK_DEVICE("0x8086", "0x1906");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 520");
+		BLOCK_DEVICE("0x8086", "0x1916"); // Intel(R) HD Graphics 520, Gen9, Skylake
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 530");
+		BLOCK_DEVICE("0x8086", "0x1912"); // Intel(R) HD Graphics 530, Gen9, Skylake
+		BLOCK_DEVICE("0x8086", "0x191B");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics P530");
+		BLOCK_DEVICE("0x8086", "0x191D"); // Intel(R) HD Graphics P530, Gen9, Skylake
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 515");
+		BLOCK_DEVICE("0x8086", "0x191E"); // Intel(R) HD Graphics 515, Gen9, Skylake
+		BLOCK_DEVICE("Intel", "Intel(R) Iris Graphics 540");
+		BLOCK_DEVICE("0x8086", "0x1926"); // Intel(R) Iris Graphics 540, Gen9, Skylake
+		BLOCK_DEVICE("0x8086", "0x1927");
+		BLOCK_DEVICE("Intel", "Intel(R) Iris Pro Graphics 580");
+		BLOCK_DEVICE("0x8086", "0x193B"); // Intel(R) Iris Pro Graphics 580, Gen9, Skylake
+		BLOCK_DEVICE("Intel", "Intel(R) Iris Pro Graphics P580");
+		BLOCK_DEVICE("0x8086", "0x193D"); // Intel(R) Iris Pro Graphics P580, Gen9, Skylake
 
 #undef BLOCK_DEVICE
 
@@ -2418,6 +2489,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF("debug/settings/stdout/print_fps", false);
 	GLOBAL_DEF("debug/settings/stdout/print_gpu_profile", false);
 	GLOBAL_DEF("debug/settings/stdout/verbose_stdout", false);
+	GLOBAL_DEF("debug/settings/physics_interpolation/enable_warnings", true);
 
 	if (!OS::get_singleton()->_verbose_stdout) { // Not manually overridden.
 		OS::get_singleton()->_verbose_stdout = GLOBAL_GET("debug/settings/stdout/verbose_stdout");
@@ -2498,7 +2570,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	OS::get_singleton()->benchmark_end_measure("Startup", "Main::Setup");
 
 	if (p_second_phase) {
-		return setup2();
+		exit_err = setup2();
+		if (exit_err != OK) {
+			goto error;
+		}
 	}
 
 	return OK;
@@ -2796,6 +2871,30 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 		if (err != OK || display_server == nullptr) {
 			ERR_PRINT("Unable to create DisplayServer, all display drivers failed.\nUse \"--headless\" command line argument to run the engine in headless mode if this is desired (e.g. for continuous integration).");
+
+			if (display_server) {
+				memdelete(display_server);
+			}
+
+			GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
+			uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
+			unregister_server_types();
+
+			if (input) {
+				memdelete(input);
+			}
+			if (tsman) {
+				memdelete(tsman);
+			}
+#ifndef _3D_DISABLED
+			if (physics_server_3d_manager) {
+				memdelete(physics_server_3d_manager);
+			}
+#endif // _3D_DISABLED
+			if (physics_server_2d_manager) {
+				memdelete(physics_server_2d_manager);
+			}
+
 			return err;
 		}
 
@@ -3099,6 +3198,14 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 		OS::get_singleton()->benchmark_end_measure("Scene", "Modules and Extensions");
 	}
+
+	PackedStringArray extensions;
+	extensions.push_back("gd");
+	if (ClassDB::class_exists("CSharpScript")) {
+		extensions.push_back("cs");
+	}
+	extensions.push_back("gdshader");
+	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::PACKED_STRING_ARRAY, "editor/script/search_in_file_extensions"), extensions); // Note: should be defined after Scene level modules init to see .NET.
 
 	OS::get_singleton()->benchmark_end_measure("Startup", "Scene");
 
@@ -4092,15 +4199,15 @@ bool Main::iteration() {
 
 		uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
 
-#ifndef _3D_DISABLED
-		PhysicsServer3D::get_singleton()->sync();
-		PhysicsServer3D::get_singleton()->flush_queries();
-#endif // _3D_DISABLED
-
 		// Prepare the fixed timestep interpolated nodes BEFORE they are updated
 		// by the physics server, otherwise the current and previous transforms
 		// may be the same, and no interpolation takes place.
 		OS::get_singleton()->get_main_loop()->iteration_prepare();
+
+#ifndef _3D_DISABLED
+		PhysicsServer3D::get_singleton()->sync();
+		PhysicsServer3D::get_singleton()->flush_queries();
+#endif // _3D_DISABLED
 
 		PhysicsServer2D::get_singleton()->sync();
 		PhysicsServer2D::get_singleton()->flush_queries();
@@ -4111,6 +4218,7 @@ bool Main::iteration() {
 #endif // _3D_DISABLED
 			PhysicsServer2D::get_singleton()->end_sync();
 
+			Engine::get_singleton()->_in_physics = false;
 			exit = true;
 			break;
 		}
@@ -4133,6 +4241,8 @@ bool Main::iteration() {
 		PhysicsServer2D::get_singleton()->step(physics_step * time_scale);
 
 		message_queue->flush();
+
+		OS::get_singleton()->get_main_loop()->iteration_end();
 
 		physics_process_ticks = MAX(physics_process_ticks, OS::get_singleton()->get_ticks_usec() - physics_begin); // keep the largest one for reference
 		physics_process_max = MAX(OS::get_singleton()->get_ticks_usec() - physics_begin, physics_process_max);

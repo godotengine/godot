@@ -142,7 +142,14 @@ if env["builtin_harfbuzz"]:
     env_harfbuzz.Append(CCFLAGS=["-DHAVE_ICU"])
     if env["builtin_icu4c"]:
         env_harfbuzz.Prepend(CPPPATH=["#thirdparty/icu4c/common/", "#thirdparty/icu4c/i18n/"])
-        env_harfbuzz.Append(CCFLAGS=["-DU_HAVE_LIB_SUFFIX=1", "-DU_LIB_SUFFIX_C_NAME=_godot", "-DHAVE_ICU_BUILTIN"])
+        env_harfbuzz.Append(
+            CCFLAGS=[
+                "-DU_STATIC_IMPLEMENTATION",
+                "-DU_HAVE_LIB_SUFFIX=1",
+                "-DU_LIB_SUFFIX_C_NAME=_godot",
+                "-DHAVE_ICU_BUILTIN",
+            ]
+        )
 
     if freetype_enabled:
         env_harfbuzz.Append(
@@ -499,6 +506,7 @@ if env["builtin_icu4c"]:
     )
     env_text_server_adv.Append(
         CXXFLAGS=[
+            "-DU_STATIC_IMPLEMENTATION",
             "-DU_HAVE_LIB_SUFFIX=1",
             "-DU_LIB_SUFFIX_C_NAME=_godot",
             "-DICU_DATA_NAME=" + icu_data_name,

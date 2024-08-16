@@ -258,9 +258,6 @@ void CPUParticles2DEditorPlugin::_notification(int p_what) {
 	}
 }
 
-void CPUParticles2DEditorPlugin::_bind_methods() {
-}
-
 CPUParticles2DEditorPlugin::CPUParticles2DEditorPlugin() {
 	particles = nullptr;
 

@@ -96,6 +96,9 @@ public:
 	bool disable_particles_workaround = false; // set to 'true' to disable 'GPUParticles'
 	bool flip_xy_workaround = false;
 
+	// PowerVR GE 8320 workaround
+	bool disable_transform_feedback_shader_cache = false;
+
 #ifdef ANDROID_ENABLED
 	PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC eglFramebufferTextureMultiviewOVR = nullptr;
 	PFNGLTEXSTORAGE3DMULTISAMPLEPROC eglTexStorage3DMultisample = nullptr;

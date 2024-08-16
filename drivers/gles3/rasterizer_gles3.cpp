@@ -62,6 +62,10 @@
 #define _EXT_DEBUG_SEVERITY_LOW_ARB 0x9148
 #define _EXT_DEBUG_OUTPUT 0x92E0
 
+#ifndef GL_FRAMEBUFFER_SRGB
+#define GL_FRAMEBUFFER_SRGB 0x8DB9
+#endif
+
 #ifndef GLAPIENTRY
 #if defined(WINDOWS_ENABLED)
 #define GLAPIENTRY APIENTRY
@@ -344,6 +348,9 @@ RasterizerGLES3::RasterizerGLES3() {
 			}
 		}
 	}
+
+	// Disable OpenGL linear to sRGB conversion, because Godot will always do this conversion itself.
+	glDisable(GL_FRAMEBUFFER_SRGB);
 
 	// OpenGL needs to be initialized before initializing the Rasterizers
 	config = memnew(GLES3::Config);

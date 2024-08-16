@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		GLTFDocument supports reading data from a glTF file, buffer, or Godot scene. This data can then be written to the filesystem, buffer, or used to create a Godot scene.
-		All of the data in a GLTF scene is stored in the [GLTFState] class. GLTFDocument processes state objects, but does not contain any scene data itself. GLTFDocument has member variables to store export configuration settings such as the image format, but is otherwise stateless. Multiple scenes can be processed with the same settings using the same GLTFDocument object and different [GLTFState] objects.
+		All of the data in a glTF scene is stored in the [GLTFState] class. GLTFDocument processes state objects, but does not contain any scene data itself. GLTFDocument has member variables to store export configuration settings such as the image format, but is otherwise stateless. Multiple scenes can be processed with the same settings using the same GLTFDocument object and different [GLTFState] objects.
 		GLTFDocument can be extended with arbitrary functionality by extending the [GLTFDocumentExtension] class and registering it with GLTFDocument via [method register_gltf_document_extension]. This allows for custom data to be imported and exported.
 	</description>
 	<tutorials>
@@ -21,7 +21,7 @@
 			<param index="2" name="state" type="GLTFState" />
 			<param index="3" name="flags" type="int" default="0" />
 			<description>
-				Takes a [PackedByteArray] defining a GLTF and imports the data to the given [GLTFState] object through the [param state] parameter.
+				Takes a [PackedByteArray] defining a glTF and imports the data to the given [GLTFState] object through the [param state] parameter.
 				[b]Note:[/b] The [param base_path] tells [method append_from_buffer] where to find dependencies and can be empty.
 			</description>
 		</method>
@@ -32,7 +32,7 @@
 			<param index="2" name="flags" type="int" default="0" />
 			<param index="3" name="base_path" type="String" default="&quot;&quot;" />
 			<description>
-				Takes a path to a GLTF file and imports the data at that file path to the given [GLTFState] object through the [param state] parameter.
+				Takes a path to a glTF file and imports the data at that file path to the given [GLTFState] object through the [param state] parameter.
 				[b]Note:[/b] The [param base_path] tells [method append_from_file] where to find dependencies and can be empty.
 			</description>
 		</method>
@@ -49,7 +49,7 @@
 			<return type="PackedByteArray" />
 			<param index="0" name="state" type="GLTFState" />
 			<description>
-				Takes a [GLTFState] object through the [param state] parameter and returns a GLTF [PackedByteArray].
+				Takes a [GLTFState] object through the [param state] parameter and returns a glTF [PackedByteArray].
 			</description>
 		</method>
 		<method name="generate_scene">
@@ -91,7 +91,7 @@
 	</methods>
 	<members>
 		<member name="image_format" type="String" setter="set_image_format" getter="get_image_format" default="&quot;PNG&quot;">
-			The user-friendly name of the export image format. This is used when exporting the GLTF file, including writing to a file and writing to a byte array.
+			The user-friendly name of the export image format. This is used when exporting the glTF file, including writing to a file and writing to a byte array.
 			By default, Godot allows the following options: "None", "PNG", "JPEG", "Lossless WebP", and "Lossy WebP". Support for more image formats can be added in [GLTFDocumentExtension] classes.
 		</member>
 		<member name="lossy_quality" type="float" setter="set_lossy_quality" getter="get_lossy_quality" default="0.75">

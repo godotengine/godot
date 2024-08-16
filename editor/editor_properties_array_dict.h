@@ -158,7 +158,6 @@ protected:
 	bool dropping = false;
 	bool show_add = true;
 
-	static void _bind_methods();
 	void _notification(int p_what);
 
 	virtual void _add_element();
@@ -244,7 +243,6 @@ protected:
 	void _object_id_selected(const StringName &p_property, ObjectID p_id);
 
 protected:
-	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
@@ -281,7 +279,6 @@ class EditorPropertyLocalizableString : public EditorProperty {
 	void _object_id_selected(const StringName &p_property, ObjectID p_id);
 
 protected:
-	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
