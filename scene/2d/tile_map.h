@@ -167,6 +167,10 @@ public:
 	// Helper method to make accessing the data easier.
 	TileData *get_cell_tile_data(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
 
+	bool is_cell_flipped_h(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
+	bool is_cell_flipped_v(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
+	bool is_cell_transposed(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
+
 	// Patterns.
 	Ref<TileMapPattern> get_pattern(int p_layer, TypedArray<Vector2i> p_coords_array);
 	Vector2i map_pattern(const Vector2i &p_position_in_tilemap, const Vector2i &p_coords_in_pattern, Ref<TileMapPattern> p_pattern);

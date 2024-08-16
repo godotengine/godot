@@ -153,6 +153,27 @@
 				Returns whether the provided [param body] [RID] belongs to one of this [TileMapLayer]'s cells.
 			</description>
 		</method>
+		<method name="is_cell_flipped_h" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="coords" type="Vector2i" />
+			<description>
+				Returns [code]true[/code] if the cell at coordinates [param coords] is flipped horizontally. The result is valid only for atlas sources.
+			</description>
+		</method>
+		<method name="is_cell_flipped_v" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="coords" type="Vector2i" />
+			<description>
+				Returns [code]true[/code] if the cell at coordinates [param coords] is flipped vertically. The result is valid only for atlas sources.
+			</description>
+		</method>
+		<method name="is_cell_transposed" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="coords" type="Vector2i" />
+			<description>
+				Returns [code]true[/code] if the cell at coordinates [param coords] is transposed. The result is valid only for atlas sources.
+			</description>
+		</method>
 		<method name="local_to_map" qualifiers="const">
 			<return type="Vector2i" />
 			<param index="0" name="local_position" type="Vector2" />
