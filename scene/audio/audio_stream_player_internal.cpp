@@ -132,7 +132,7 @@ Ref<AudioStreamPlayback> AudioStreamPlayerInternal::play_basic() {
 	}
 	ERR_FAIL_COND_V_MSG(!node->is_inside_tree(), stream_playback, "Playback can only happen when a node is inside the scene tree");
 	if (stream->is_monophonic() && is_playing()) {
-		stop();
+		stop_callable.call();
 	}
 	stream_playback = stream->instantiate_playback();
 	ERR_FAIL_COND_V_MSG(stream_playback.is_null(), stream_playback, "Failed to instantiate playback.");
@@ -242,7 +242,7 @@ void AudioStreamPlayerInternal::set_stream(Ref<AudioStream> p_stream) {
 	if (stream.is_valid()) {
 		stream->disconnect(SNAME("parameter_list_changed"), callable_mp(this, &AudioStreamPlayerInternal::_update_stream_parameters));
 	}
-	stop();
+	stop_callable.call();
 	stream = p_stream;
 	_update_stream_parameters();
 	if (stream.is_valid()) {
@@ -253,12 +253,12 @@ void AudioStreamPlayerInternal::set_stream(Ref<AudioStream> p_stream) {
 
 void AudioStreamPlayerInternal::seek(float p_seconds) {
 	if (is_playing()) {
-		stop();
+		stop_callable.call();
 		play_callable.call(p_seconds);
 	}
 }
 
-void AudioStreamPlayerInternal::stop() {
+void AudioStreamPlayerInternal::stop_basic() {
 	for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
 		AudioServer::get_singleton()->stop_playback_stream(playback);
 	}
@@ -289,7 +289,7 @@ void AudioStreamPlayerInternal::set_playing(bool p_enable) {
 	if (p_enable) {
 		play_callable.call(0.0);
 	} else {
-		stop();
+		stop_callable.call();
 	}
 }
 
@@ -339,9 +339,10 @@ StringName AudioStreamPlayerInternal::get_bus() const {
 	return SceneStringName(Master);
 }
 
-AudioStreamPlayerInternal::AudioStreamPlayerInternal(Node *p_node, const Callable &p_play_callable, bool p_physical) {
+AudioStreamPlayerInternal::AudioStreamPlayerInternal(Node *p_node, const Callable &p_play_callable, const Callable &p_stop_callable, bool p_physical) {
 	node = p_node;
 	play_callable = p_play_callable;
+	stop_callable = p_stop_callable;
 	physical = p_physical;
 	bus = SceneStringName(Master);
 
