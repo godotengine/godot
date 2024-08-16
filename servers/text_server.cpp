@@ -1564,7 +1564,7 @@ int64_t TextServer::shaped_text_prev_grapheme_pos(const RID &p_shaped, int64_t p
 
 int64_t TextServer::shaped_text_prev_character_pos(const RID &p_shaped, int64_t p_pos) const {
 	const PackedInt32Array &chars = shaped_text_get_character_breaks(p_shaped);
-	int64_t prev = 0;
+	int64_t prev = shaped_text_get_range(p_shaped).x;
 	for (const int32_t &E : chars) {
 		if (E >= p_pos) {
 			return prev;
@@ -1576,7 +1576,7 @@ int64_t TextServer::shaped_text_prev_character_pos(const RID &p_shaped, int64_t 
 
 int64_t TextServer::shaped_text_next_character_pos(const RID &p_shaped, int64_t p_pos) const {
 	const PackedInt32Array &chars = shaped_text_get_character_breaks(p_shaped);
-	int64_t prev = 0;
+	int64_t prev = shaped_text_get_range(p_shaped).x;
 	for (const int32_t &E : chars) {
 		if (E > p_pos) {
 			return E;
@@ -1588,7 +1588,7 @@ int64_t TextServer::shaped_text_next_character_pos(const RID &p_shaped, int64_t 
 
 int64_t TextServer::shaped_text_closest_character_pos(const RID &p_shaped, int64_t p_pos) const {
 	const PackedInt32Array &chars = shaped_text_get_character_breaks(p_shaped);
-	int64_t prev = 0;
+	int64_t prev = shaped_text_get_range(p_shaped).x;
 	for (const int32_t &E : chars) {
 		if (E == p_pos) {
 			return E;
