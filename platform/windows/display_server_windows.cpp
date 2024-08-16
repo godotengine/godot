@@ -5612,6 +5612,8 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 	return id;
 }
 
+BitField<DisplayServerWindows::DriverID> DisplayServerWindows::tested_drivers = 0;
+
 // WinTab API.
 bool DisplayServerWindows::wintab_available = false;
 WTOpenPtr DisplayServerWindows::wintab_WTOpen = nullptr;
@@ -5773,6 +5775,8 @@ void DisplayServerWindows::tablet_set_current_driver(const String &p_driver) {
 
 DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
 	KeyMappingWindows::initialize();
+
+	tested_drivers.clear();
 
 	drop_events = false;
 	key_event_pos = 0;
@@ -5942,7 +5946,6 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	wc.lpszClassName = L"Engine";
 
 	if (!RegisterClassExW(&wc)) {
-		MessageBoxW(nullptr, L"Failed To Register The Window Class.", L"ERROR", MB_OK | MB_ICONEXCLAMATION);
 		r_error = ERR_UNAVAILABLE;
 		return;
 	}
@@ -5953,11 +5956,13 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
 		rendering_context = memnew(RenderingContextDriverVulkanWindows);
+		tested_drivers.set_flag(DRIVER_ID_RD_VULKAN);
 	}
 #endif
 #if defined(D3D12_ENABLED)
 	if (rendering_driver == "d3d12") {
 		rendering_context = memnew(RenderingContextDriverD3D12);
+		tested_drivers.set_flag(DRIVER_ID_RD_D3D12);
 	}
 #endif
 
@@ -5969,6 +5974,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 			if (failed && fallback_to_vulkan && rendering_driver != "vulkan") {
 				memdelete(rendering_context);
 				rendering_context = memnew(RenderingContextDriverVulkanWindows);
+				tested_drivers.set_flag(DRIVER_ID_RD_VULKAN);
 				if (rendering_context->initialize() == OK) {
 					WARN_PRINT("Your video card drivers seem not to support Direct3D 12, switching to Vulkan.");
 					rendering_driver = "vulkan";
@@ -5981,6 +5987,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 			if (failed && fallback_to_d3d12 && rendering_driver != "d3d12") {
 				memdelete(rendering_context);
 				rendering_context = memnew(RenderingContextDriverD3D12);
+				tested_drivers.set_flag(DRIVER_ID_RD_D3D12);
 				if (rendering_context->initialize() == OK) {
 					WARN_PRINT("Your video card drivers seem not to support Vulkan, switching to Direct3D 12.");
 					rendering_driver = "d3d12";
@@ -6051,6 +6058,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		}
 
 		if (force_angle || (gl_info["version"].operator int() < 30003)) {
+			tested_drivers.set_flag(DRIVER_ID_COMPAT_OPENGL3);
 			if (show_warning) {
 				WARN_PRINT("Your video card drivers seem not to support the required OpenGL 3.3 version, switching to ANGLE.");
 			}
@@ -6060,6 +6068,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 	if (rendering_driver == "opengl3") {
 		gl_manager_native = memnew(GLManagerNative_Windows);
+		tested_drivers.set_flag(DRIVER_ID_COMPAT_OPENGL3);
 
 		if (gl_manager_native->initialize() != OK) {
 			memdelete(gl_manager_native);
@@ -6072,6 +6081,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	}
 	if (rendering_driver == "opengl3_angle") {
 		gl_manager_angle = memnew(GLManagerANGLE_Windows);
+		tested_drivers.set_flag(DRIVER_ID_COMPAT_ANGLE_D3D11);
 
 		if (gl_manager_angle->initialize() != OK) {
 			memdelete(gl_manager_angle);
@@ -6205,32 +6215,41 @@ Vector<String> DisplayServerWindows::get_rendering_drivers_func() {
 DisplayServer *DisplayServerWindows::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
 	DisplayServer *ds = memnew(DisplayServerWindows(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, r_error));
 	if (r_error != OK) {
-		if (p_rendering_driver == "vulkan") {
+		if (tested_drivers == 0) {
+			OS::get_singleton()->alert("Failed to register the window class.", "Unable to initialize DisplayServer");
+		} else if (tested_drivers.has_flag(DRIVER_ID_RD_VULKAN) || tested_drivers.has_flag(DRIVER_ID_RD_D3D12)) {
+			Vector<String> drivers;
+			if (tested_drivers.has_flag(DRIVER_ID_RD_VULKAN)) {
+				drivers.push_back("Vulkan");
+			}
+			if (tested_drivers.has_flag(DRIVER_ID_RD_D3D12)) {
+				drivers.push_back("Direct3D 12");
+			}
 			String executable_name = OS::get_singleton()->get_executable_path().get_file();
 			OS::get_singleton()->alert(
-					vformat("Your video card drivers seem not to support the required Vulkan version.\n\n"
+					vformat("Your video card drivers seem not to support the required %s version.\n\n"
 							"If possible, consider updating your video card drivers or using the OpenGL 3 driver.\n\n"
 							"You can enable the OpenGL 3 driver by starting the engine from the\n"
 							"command line with the command:\n\n    \"%s\" --rendering-driver opengl3\n\n"
 							"If you have recently updated your video card drivers, try rebooting.",
+							String(" or ").join(drivers),
 							executable_name),
-					"Unable to initialize Vulkan video driver");
-		} else if (p_rendering_driver == "d3d12") {
-			String executable_name = OS::get_singleton()->get_executable_path().get_file();
-			OS::get_singleton()->alert(
-					vformat("Your video card drivers seem not to support the required DirectX 12 version.\n\n"
-							"If possible, consider updating your video card drivers or using the OpenGL 3 driver.\n\n"
-							"You can enable the OpenGL 3 driver by starting the engine from the\n"
-							"command line with the command:\n\n    \"%s\" --rendering-driver opengl3\n\n"
-							"If you have recently updated your video card drivers, try rebooting.",
-							executable_name),
-					"Unable to initialize DirectX 12 video driver");
+					"Unable to initialize video driver");
 		} else {
+			Vector<String> drivers;
+			if (tested_drivers.has_flag(DRIVER_ID_COMPAT_OPENGL3)) {
+				drivers.push_back("OpenGL 3.3");
+			}
+			if (tested_drivers.has_flag(DRIVER_ID_COMPAT_ANGLE_D3D11)) {
+				drivers.push_back("Direct3D 11");
+			}
 			OS::get_singleton()->alert(
-					"Your video card drivers seem not to support the required OpenGL 3.3 version.\n\n"
-					"If possible, consider updating your video card drivers.\n\n"
-					"If you have recently updated your video card drivers, try rebooting.",
-					"Unable to initialize OpenGL video driver");
+					vformat(
+							"Your video card drivers seem not to support the required %s version.\n\n"
+							"If possible, consider updating your video card drivers.\n\n"
+							"If you have recently updated your video card drivers, try rebooting.",
+							String(" or ").join(drivers)),
+					"Unable to initialize video driver");
 		}
 	}
 	return ds;
