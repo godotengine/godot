@@ -1334,6 +1334,8 @@ public:
 	virtual void instance_set_layer_mask(RID p_instance, uint32_t p_mask) = 0;
 	virtual void instance_set_pivot_data(RID p_instance, float p_sorting_offset, bool p_use_aabb_center) = 0;
 	virtual void instance_set_transform(RID p_instance, const Transform3D &p_transform) = 0;
+	virtual void instance_set_interpolated(RID p_instance, bool p_interpolated) = 0;
+	virtual void instance_reset_physics_interpolation(RID p_instance) = 0;
 	virtual void instance_attach_object_instance_id(RID p_instance, ObjectID p_id) = 0;
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight) = 0;
 	virtual void instance_set_surface_override_material(RID p_instance, int p_surface, RID p_material) = 0;
@@ -1647,7 +1649,6 @@ public:
 
 	/* INTERPOLATION */
 
-	virtual void tick() = 0;
 	virtual void set_physics_interpolation_enabled(bool p_enabled) = 0;
 
 	/* EVENT QUEUING */
@@ -1659,6 +1660,8 @@ public:
 	virtual bool has_changed() const = 0;
 	virtual void init();
 	virtual void finish() = 0;
+	virtual void tick() = 0;
+	virtual void pre_draw(bool p_will_draw) = 0;
 
 	/* STATUS INFORMATION */
 

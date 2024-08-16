@@ -323,8 +323,10 @@ public:
 
 	virtual bool font_has_char(const RID &p_font_rid, int64_t p_char) const override;
 	virtual String font_get_supported_chars(const RID &p_font_rid) const override;
+	virtual PackedInt32Array font_get_supported_glyphs(const RID &p_font_rid) const override;
 	GDVIRTUAL2RC(bool, _font_has_char, RID, int64_t);
 	GDVIRTUAL1RC(String, _font_get_supported_chars, RID);
+	GDVIRTUAL1RC(PackedInt32Array, _font_get_supported_glyphs, RID);
 
 	virtual void font_render_range(const RID &p_font, const Vector2i &p_size, int64_t p_start, int64_t p_end) override;
 	virtual void font_render_glyph(const RID &p_font_rid, const Vector2i &p_size, int64_t p_index) override;

@@ -48,8 +48,10 @@ TEST_CASE("[GraphNode][SceneTree]") {
 		test_node->add_child(test_child);
 
 		// Test.
-		CHECK_NOTHROW_MESSAGE(test_node->remove_child(test_child));
+		test_node->remove_child(test_child);
+		CHECK(test_node->get_child_count(false) == 0);
 
+		memdelete(test_child);
 		memdelete(test_node);
 	}
 }

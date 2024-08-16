@@ -124,6 +124,16 @@ bool EditorPropertyDictionaryObject::_set(const StringName &p_name, const Varian
 }
 
 bool EditorPropertyDictionaryObject::_get(const StringName &p_name, Variant &r_ret) const {
+	if (!get_by_property_name(p_name, r_ret)) {
+		return false;
+	}
+	if (r_ret.get_type() == Variant::OBJECT && Object::cast_to<EncodedObjectAsID>(r_ret)) {
+		r_ret = Object::cast_to<EncodedObjectAsID>(r_ret)->get_object_id();
+	}
+	return true;
+}
+
+bool EditorPropertyDictionaryObject::get_by_property_name(const String &p_name, Variant &r_ret) const {
 	String name = p_name;
 
 	if (name == "new_item_key") {
@@ -140,10 +150,6 @@ bool EditorPropertyDictionaryObject::_get(const StringName &p_name, Variant &r_r
 		int index = name.get_slicec('/', 1).to_int();
 		Variant key = dict.get_key_at_index(index);
 		r_ret = dict[key];
-		if (r_ret.get_type() == Variant::OBJECT && Object::cast_to<EncodedObjectAsID>(r_ret)) {
-			r_ret = Object::cast_to<EncodedObjectAsID>(r_ret)->get_object_id();
-		}
-
 		return true;
 	}
 
@@ -830,9 +836,6 @@ bool EditorPropertyArray::is_colored(ColorationMode p_mode) {
 	return p_mode == COLORATION_CONTAINER_RESOURCE;
 }
 
-void EditorPropertyArray::_bind_methods() {
-}
-
 EditorPropertyArray::EditorPropertyArray() {
 	object.instantiate();
 	page_length = int(EDITOR_GET("interface/inspector/max_array_dictionary_items_per_page"));
@@ -901,6 +904,8 @@ void EditorPropertyDictionary::_add_key_value() {
 	VariantInternal::initialize(&new_value, type);
 	object->set_new_item_value(new_value);
 
+	object->set_dict(dict);
+	slots[(dict.size() - 1) % page_length].update_prop_or_index();
 	emit_changed(get_edited_property(), dict);
 }
 
@@ -954,6 +959,10 @@ void EditorPropertyDictionary::_change_type_menu(int p_index) {
 				dict[key] = value;
 			} else {
 				dict.erase(key);
+				object->set_dict(dict);
+				for (Slot &slot : slots) {
+					slot.update_prop_or_index();
+				}
 			}
 
 			emit_changed(get_edited_property(), dict);
@@ -1050,7 +1059,8 @@ void EditorPropertyDictionary::update_property() {
 			if (!slot_visible) {
 				continue;
 			}
-			Variant value = object->get(slot.prop_name);
+			Variant value;
+			object->get_by_property_name(slot.prop_name, value);
 			Variant::Type value_type = value.get_type();
 
 			// Check if the editor property needs to be updated.
@@ -1151,9 +1161,6 @@ void EditorPropertyDictionary::_page_changed(int p_page) {
 		return;
 	}
 	update_property();
-}
-
-void EditorPropertyDictionary::_bind_methods() {
 }
 
 bool EditorPropertyDictionary::is_colored(ColorationMode p_mode) {
@@ -1370,9 +1377,6 @@ void EditorPropertyLocalizableString::_page_changed(int p_page) {
 	}
 	page_index = p_page;
 	update_property();
-}
-
-void EditorPropertyLocalizableString::_bind_methods() {
 }
 
 EditorPropertyLocalizableString::EditorPropertyLocalizableString() {

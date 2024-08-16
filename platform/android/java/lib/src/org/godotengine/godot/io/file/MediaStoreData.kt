@@ -203,7 +203,7 @@ internal class MediaStoreData(context: Context, filePath: String, accessFlag: Fi
 			}
 
 			val dataItem = result[0]
-			return dataItem.dateModified.toLong()
+			return dataItem.dateModified.toLong() / 1000L
 		}
 
 		fun rename(context: Context, from: String, to: String): Boolean {

@@ -38,7 +38,7 @@
 #include "core/os/os.h"
 #include "core/os/safe_binary_mutex.h"
 #include "core/string/print_string.h"
-#include "core/string/translation.h"
+#include "core/string/translation_server.h"
 #include "core/variant/variant_parser.h"
 #include "servers/rendering_server.h"
 
@@ -345,7 +345,14 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 
 	bool ignoring = load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_IGNORE || load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_IGNORE_DEEP;
 	bool replacing = load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE || load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE_DEEP;
+	bool unlock_pending = true;
 	if (load_task.resource.is_valid()) {
+		// From now on, no critical section needed as no one will write to the task anymore.
+		// Moreover, the mutex being unlocked is a requirement if some of the calls below
+		// that set the resource up invoke code that in turn requests resource loading.
+		thread_load_mutex.unlock();
+		unlock_pending = false;
+
 		if (!ignoring) {
 			if (replacing) {
 				Ref<Resource> old_res = ResourceCache::get_ref(load_task.local_path);
@@ -383,20 +390,28 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 			load_task.status = THREAD_LOAD_LOADED;
 			load_task.progress = 1.0;
 
+			thread_load_mutex.unlock();
+			unlock_pending = false;
+
 			if (_loaded_callback) {
 				_loaded_callback(load_task.resource, load_task.local_path);
 			}
 		}
 	}
 
-	thread_load_mutex.unlock();
+	if (unlock_pending) {
+		thread_load_mutex.unlock();
+	}
 
 	if (load_nesting == 0) {
 		if (own_mq_override) {
 			MessageQueue::set_thread_singleton_override(nullptr);
 			memdelete(own_mq_override);
 		}
-		memdelete(load_paths_stack);
+		if (load_paths_stack) {
+			memdelete(load_paths_stack);
+			load_paths_stack = nullptr;
+		}
 	}
 }
 
@@ -459,6 +474,7 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 	bool ignoring_cache = p_cache_mode == ResourceFormatLoader::CACHE_MODE_IGNORE || p_cache_mode == ResourceFormatLoader::CACHE_MODE_IGNORE_DEEP;
 
 	Ref<LoadToken> load_token;
+	bool must_not_register = false;
 	ThreadLoadTask unregistered_load_task; // Once set, must be valid up to the call to do the load.
 	ThreadLoadTask *load_task_ptr = nullptr;
 	bool run_on_current_thread = false;
@@ -501,8 +517,9 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 				}
 			}
 
-			// Cache-ignoring tasks aren't registered in the map and so must finish within scope.
-			if (ignoring_cache) {
+			// If we want to ignore cache, but there's another task loading it, we can't add this one to the map and we also have to finish within scope.
+			must_not_register = ignoring_cache && thread_load_tasks.has(local_path);
+			if (must_not_register) {
 				load_token->local_path.clear();
 				unregistered_load_task = load_task;
 				load_task_ptr = &unregistered_load_task;
@@ -513,7 +530,7 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 			}
 		}
 
-		run_on_current_thread = ignoring_cache || p_thread_mode == LOAD_THREAD_FROM_CURRENT;
+		run_on_current_thread = must_not_register || p_thread_mode == LOAD_THREAD_FROM_CURRENT;
 
 		if (run_on_current_thread) {
 			load_task_ptr->thread_id = Thread::get_caller_id();
@@ -524,7 +541,7 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 
 	if (run_on_current_thread) {
 		_thread_load_function(load_task_ptr);
-		if (ignoring_cache) {
+		if (must_not_register) {
 			load_token->res_if_unregistered = load_task_ptr->resource;
 		}
 	}
@@ -566,13 +583,7 @@ ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const 
 		}
 
 		String local_path = _validate_local_path(p_path);
-		if (!thread_load_tasks.has(local_path)) {
-#ifdef DEV_ENABLED
-			CRASH_NOW();
-#endif
-			// On non-dev, be defensive and at least avoid crashing (at this point at least).
-			return THREAD_LOAD_INVALID_RESOURCE;
-		}
+		ERR_FAIL_COND_V_MSG(!thread_load_tasks.has(local_path), THREAD_LOAD_INVALID_RESOURCE, "Bug in ResourceLoader logic, please report.");
 
 		ThreadLoadTask &load_task = thread_load_tasks[local_path];
 		status = load_task.status;
@@ -661,14 +672,10 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 
 	if (!p_load_token.local_path.is_empty()) {
 		if (!thread_load_tasks.has(p_load_token.local_path)) {
-#ifdef DEV_ENABLED
-			CRASH_NOW();
-#endif
-			// On non-dev, be defensive and at least avoid crashing (at this point at least).
 			if (r_error) {
 				*r_error = ERR_BUG;
 			}
-			return Ref<Resource>();
+			ERR_FAIL_V_MSG(Ref<Resource>(), "Bug in ResourceLoader logic, please report.");
 		}
 
 		ThreadLoadTask &load_task = thread_load_tasks[p_load_token.local_path];
@@ -1292,7 +1299,7 @@ bool ResourceLoader::timestamp_on_load = false;
 
 thread_local int ResourceLoader::load_nesting = 0;
 thread_local WorkerThreadPool::TaskID ResourceLoader::caller_task_id = 0;
-thread_local Vector<String> *ResourceLoader::load_paths_stack;
+thread_local Vector<String> *ResourceLoader::load_paths_stack = nullptr;
 thread_local HashMap<int, HashMap<String, Ref<Resource>>> ResourceLoader::res_ref_overrides;
 
 template <>

@@ -224,16 +224,16 @@
 			Indicates whether your app uses advertising data for tracking.
 		</member>
 		<member name="privacy/collected_data/audio_data/collected" type="bool" setter="" getter="">
-			Indicates whether your app collects audio data data.
+			Indicates whether your app collects audio data.
 		</member>
 		<member name="privacy/collected_data/audio_data/collection_purposes" type="int" setter="" getter="">
 			The reasons your app collects audio data. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
 		</member>
 		<member name="privacy/collected_data/audio_data/linked_to_user" type="bool" setter="" getter="">
-			Indicates whether your app links audio data data to the user's identity.
+			Indicates whether your app links audio data to the user's identity.
 		</member>
 		<member name="privacy/collected_data/audio_data/used_for_tracking" type="bool" setter="" getter="">
-			Indicates whether your app uses audio data data for tracking.
+			Indicates whether your app uses audio data for tracking.
 		</member>
 		<member name="privacy/collected_data/browsing_history/collected" type="bool" setter="" getter="">
 			Indicates whether your app collects browsing history.

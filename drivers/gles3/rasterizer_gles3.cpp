@@ -62,6 +62,10 @@
 #define _EXT_DEBUG_SEVERITY_LOW_ARB 0x9148
 #define _EXT_DEBUG_OUTPUT 0x92E0
 
+#ifndef GL_FRAMEBUFFER_SRGB
+#define GL_FRAMEBUFFER_SRGB 0x8DB9
+#endif
+
 #ifndef GLAPIENTRY
 #if defined(WINDOWS_ENABLED)
 #define GLAPIENTRY APIENTRY
@@ -107,7 +111,7 @@ void RasterizerGLES3::end_frame(bool p_swap_buffers) {
 	utils->capture_timestamps_end();
 }
 
-void RasterizerGLES3::end_viewport(bool p_swap_buffers) {
+void RasterizerGLES3::gl_end_frame(bool p_swap_buffers) {
 	if (p_swap_buffers) {
 		DisplayServer::get_singleton()->swap_buffers();
 	} else {
@@ -345,6 +349,9 @@ RasterizerGLES3::RasterizerGLES3() {
 		}
 	}
 
+	// Disable OpenGL linear to sRGB conversion, because Godot will always do this conversion itself.
+	glDisable(GL_FRAMEBUFFER_SRGB);
+
 	// OpenGL needs to be initialized before initializing the Rasterizers
 	config = memnew(GLES3::Config);
 	utilities = memnew(GLES3::Utilities);
@@ -491,7 +498,7 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	copy_effects->copy_to_rect(screenrect);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	end_viewport(true);
+	gl_end_frame(true);
 
 	texture_storage->texture_free(texture);
 }

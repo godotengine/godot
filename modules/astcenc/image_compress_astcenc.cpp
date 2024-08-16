@@ -97,7 +97,7 @@ void _compress_astc(Image *r_img, Image::ASTCFormat p_format) {
 
 	// Initialize astcenc.
 
-	int dest_size = Image::get_image_data_size(width, height, target_format, mipmaps);
+	int64_t dest_size = Image::get_image_data_size(width, height, target_format, mipmaps);
 	Vector<uint8_t> dest_data;
 	dest_data.resize(dest_size);
 	uint8_t *dest_write = dest_data.ptrw();
@@ -125,12 +125,12 @@ void _compress_astc(Image *r_img, Image::ASTCFormat p_format) {
 	int mip_count = mipmaps ? Image::get_image_required_mipmaps(width, height, target_format) : 0;
 	for (int i = 0; i < mip_count + 1; i++) {
 		int src_mip_w, src_mip_h;
-		int src_ofs = Image::get_image_mipmap_offset_and_dimensions(width, height, r_img->get_format(), i, src_mip_w, src_mip_h);
+		int64_t src_ofs = Image::get_image_mipmap_offset_and_dimensions(width, height, r_img->get_format(), i, src_mip_w, src_mip_h);
 
 		const uint8_t *slices = &image_data.ptr()[src_ofs];
 
 		int dst_mip_w, dst_mip_h;
-		int dst_ofs = Image::get_image_mipmap_offset_and_dimensions(width, height, target_format, i, dst_mip_w, dst_mip_h);
+		int64_t dst_ofs = Image::get_image_mipmap_offset_and_dimensions(width, height, target_format, i, dst_mip_w, dst_mip_h);
 		// Ensure that mip offset is a multiple of 8 (etcpak expects uint64_t pointer).
 		if (unlikely(dst_ofs % 8 != 0)) {
 			astcenc_context_free(context);
@@ -231,7 +231,7 @@ void _decompress_astc(Image *r_img) {
 	const bool mipmaps = r_img->has_mipmaps();
 	int width = r_img->get_width();
 	int height = r_img->get_height();
-	int dest_size = Image::get_image_data_size(width, height, target_format, mipmaps);
+	int64_t dest_size = Image::get_image_data_size(width, height, target_format, mipmaps);
 	Vector<uint8_t> dest_data;
 	dest_data.resize(dest_size);
 	uint8_t *dest_write = dest_data.ptrw();
@@ -244,9 +244,9 @@ void _decompress_astc(Image *r_img) {
 	for (int i = 0; i < mip_count + 1; i++) {
 		int src_mip_w, src_mip_h;
 
-		int src_ofs = Image::get_image_mipmap_offset_and_dimensions(width, height, r_img->get_format(), i, src_mip_w, src_mip_h);
+		int64_t src_ofs = Image::get_image_mipmap_offset_and_dimensions(width, height, r_img->get_format(), i, src_mip_w, src_mip_h);
 		const uint8_t *src_data = &image_data.ptr()[src_ofs];
-		int src_size;
+		int64_t src_size;
 		if (i == mip_count) {
 			src_size = image_data.size() - src_ofs;
 		} else {
@@ -255,7 +255,7 @@ void _decompress_astc(Image *r_img) {
 		}
 
 		int dst_mip_w, dst_mip_h;
-		int dst_ofs = Image::get_image_mipmap_offset_and_dimensions(width, height, target_format, i, dst_mip_w, dst_mip_h);
+		int64_t dst_ofs = Image::get_image_mipmap_offset_and_dimensions(width, height, target_format, i, dst_mip_w, dst_mip_h);
 		// Ensure that mip offset is a multiple of 8 (etcpak expects uint64_t pointer).
 		ERR_FAIL_COND(dst_ofs % 8 != 0);
 		uint8_t *dest_mip_write = (uint8_t *)&dest_write[dst_ofs];

@@ -117,6 +117,7 @@
 #include "tests/scene/test_node_2d.h"
 #include "tests/scene/test_packed_scene.h"
 #include "tests/scene/test_path_2d.h"
+#include "tests/scene/test_path_follow_2d.h"
 #include "tests/scene/test_sprite_frames.h"
 #include "tests/scene/test_theme.h"
 #include "tests/scene/test_timer.h"
@@ -149,6 +150,7 @@
 #include "tests/scene/test_arraymesh.h"
 #include "tests/scene/test_camera_3d.h"
 #include "tests/scene/test_path_3d.h"
+#include "tests/scene/test_path_follow_3d.h"
 #include "tests/scene/test_primitives.h"
 #endif // _3D_DISABLED
 

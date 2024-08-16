@@ -845,7 +845,7 @@ Files extracted from upstream source:
 Some downstream changes have been made and are identified by
 `// -- GODOT begin --` and `// -- GODOT end --` comments.
 They can be reapplied using the patches included in the `patches`
-folder.
+folder, in order.
 
 
 ## squish

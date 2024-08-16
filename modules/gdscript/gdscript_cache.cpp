@@ -135,7 +135,11 @@ void GDScriptParserRef::clear() {
 
 GDScriptParserRef::~GDScriptParserRef() {
 	clear();
-	GDScriptCache::remove_parser(path);
+
+	if (!abandoned) {
+		MutexLock lock(GDScriptCache::singleton->mutex);
+		GDScriptCache::singleton->parser_map.erase(path);
+	}
 }
 
 GDScriptCache *GDScriptCache::singleton = nullptr;
@@ -151,15 +155,7 @@ void GDScriptCache::move_script(const String &p_from, const String &p_to) {
 		return;
 	}
 
-	if (singleton->parser_map.has(p_from) && !p_from.is_empty()) {
-		singleton->parser_map[p_to] = singleton->parser_map[p_from];
-	}
-	singleton->parser_map.erase(p_from);
-
-	if (singleton->parser_inverse_dependencies.has(p_from) && !p_from.is_empty()) {
-		singleton->parser_inverse_dependencies[p_to] = singleton->parser_inverse_dependencies[p_from];
-	}
-	singleton->parser_inverse_dependencies.erase(p_from);
+	remove_parser(p_from);
 
 	if (singleton->shallow_gdscript_cache.has(p_from) && !p_from.is_empty()) {
 		singleton->shallow_gdscript_cache[p_to] = singleton->shallow_gdscript_cache[p_from];
@@ -182,6 +178,17 @@ void GDScriptCache::remove_script(const String &p_path) {
 	if (singleton->cleared) {
 		return;
 	}
+
+	if (HashMap<String, Vector<ObjectID>>::Iterator E = singleton->abandoned_parser_map.find(p_path)) {
+		for (ObjectID parser_ref_id : E->value) {
+			Ref<GDScriptParserRef> parser_ref{ ObjectDB::get_instance(parser_ref_id) };
+			if (parser_ref.is_valid()) {
+				parser_ref->clear();
+			}
+		}
+	}
+
+	singleton->abandoned_parser_map.erase(p_path);
 
 	if (singleton->parser_map.has(p_path)) {
 		singleton->parser_map[p_path]->clear();
@@ -229,6 +236,13 @@ bool GDScriptCache::has_parser(const String &p_path) {
 
 void GDScriptCache::remove_parser(const String &p_path) {
 	MutexLock lock(singleton->mutex);
+
+	if (singleton->parser_map.has(p_path)) {
+		GDScriptParserRef *parser_ref = singleton->parser_map[p_path];
+		parser_ref->abandoned = true;
+		singleton->abandoned_parser_map[p_path].push_back(parser_ref->get_instance_id());
+	}
+
 	// Can't clear the parser because some other parser might be currently using it in the chain of calls.
 	singleton->parser_map.erase(p_path);
 
@@ -431,6 +445,17 @@ void GDScriptCache::clear() {
 	singleton->cleared = true;
 
 	singleton->parser_inverse_dependencies.clear();
+
+	for (const KeyValue<String, Vector<ObjectID>> &KV : singleton->abandoned_parser_map) {
+		for (ObjectID parser_ref_id : KV.value) {
+			Ref<GDScriptParserRef> parser_ref{ ObjectDB::get_instance(parser_ref_id) };
+			if (parser_ref.is_valid()) {
+				parser_ref->clear();
+			}
+		}
+	}
+
+	singleton->abandoned_parser_map.clear();
 
 	RBSet<Ref<GDScriptParserRef>> parser_map_refs;
 	for (KeyValue<String, GDScriptParserRef *> &E : singleton->parser_map) {

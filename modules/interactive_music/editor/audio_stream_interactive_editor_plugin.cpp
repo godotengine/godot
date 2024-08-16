@@ -34,6 +34,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/spin_box.h"
@@ -290,7 +291,6 @@ void AudioStreamInteractiveTransitionEditor::edit(Object *p_obj) {
 		}
 
 		int min_w = header_font->get_string_size(name + "XX").width;
-		tree->set_column_expand(cell_index, false);
 		tree->set_column_custom_minimum_width(cell_index, min_w);
 		max_w = MAX(max_w, min_w);
 
@@ -314,11 +314,10 @@ void AudioStreamInteractiveTransitionEditor::edit(Object *p_obj) {
 		}
 	}
 
-	tree->set_column_expand(header_index, false);
 	tree->set_column_custom_minimum_width(header_index, max_w);
 	selection_order.clear();
 	_update_selection();
-	popup_centered_ratio(0.6);
+	popup_centered_clamped(Size2(900, 450) * EDSCALE);
 	updating = false;
 	_update_transitions();
 }
@@ -332,6 +331,7 @@ AudioStreamInteractiveTransitionEditor::AudioStreamInteractiveTransitionEditor()
 	tree->set_hide_root(true);
 	tree->add_theme_constant_override("draw_guides", 1);
 	tree->set_select_mode(Tree::SELECT_MULTI);
+	tree->set_custom_minimum_size(Size2(400, 0) * EDSCALE);
 	split->add_child(tree);
 
 	tree->set_h_size_flags(Control::SIZE_EXPAND_FILL);

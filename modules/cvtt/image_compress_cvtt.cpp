@@ -190,14 +190,14 @@ void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
 	const uint8_t *rb = p_image->get_data().ptr();
 
 	Vector<uint8_t> data;
-	int target_size = Image::get_image_data_size(w, h, target_format, p_image->has_mipmaps());
+	int64_t target_size = Image::get_image_data_size(w, h, target_format, p_image->has_mipmaps());
 	int mm_count = p_image->has_mipmaps() ? Image::get_image_required_mipmaps(w, h, target_format) : 0;
 	data.resize(target_size);
 	int shift = Image::get_format_pixel_rshift(target_format);
 
 	uint8_t *wb = data.ptrw();
 
-	int dst_ofs = 0;
+	int64_t dst_ofs = 0;
 
 	CVTTCompressionJobQueue job_queue;
 	job_queue.job_params.is_hdr = is_hdr;
@@ -219,7 +219,7 @@ void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
 		int bw = w % 4 != 0 ? w + (4 - w % 4) : w;
 		int bh = h % 4 != 0 ? h + (4 - h % 4) : h;
 
-		int src_ofs = p_image->get_mipmap_offset(i);
+		int64_t src_ofs = p_image->get_mipmap_offset(i);
 
 		const uint8_t *in_bytes = &rb[src_ofs];
 		uint8_t *out_bytes = &wb[dst_ofs];
@@ -279,7 +279,7 @@ void image_decompress_cvtt(Image *p_image) {
 	const uint8_t *rb = p_image->get_data().ptr();
 
 	Vector<uint8_t> data;
-	int target_size = Image::get_image_data_size(w, h, target_format, p_image->has_mipmaps());
+	int64_t target_size = Image::get_image_data_size(w, h, target_format, p_image->has_mipmaps());
 	int mm_count = p_image->get_mipmap_count();
 	data.resize(target_size);
 
@@ -287,10 +287,10 @@ void image_decompress_cvtt(Image *p_image) {
 
 	int bytes_per_pixel = is_hdr ? 6 : 4;
 
-	int dst_ofs = 0;
+	int64_t dst_ofs = 0;
 
 	for (int i = 0; i <= mm_count; i++) {
-		int src_ofs = p_image->get_mipmap_offset(i);
+		int64_t src_ofs = p_image->get_mipmap_offset(i);
 
 		const uint8_t *in_bytes = &rb[src_ofs];
 		uint8_t *out_bytes = &wb[dst_ofs];

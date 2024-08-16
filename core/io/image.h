@@ -353,7 +353,7 @@ public:
 	static int get_format_block_size(Format p_format);
 	static void get_format_min_pixel_size(Format p_format, int &r_w, int &r_h);
 
-	static int get_image_data_size(int p_width, int p_height, Format p_format, bool p_mipmaps = false);
+	static int64_t get_image_data_size(int p_width, int p_height, Format p_format, bool p_mipmaps = false);
 	static int get_image_required_mipmaps(int p_width, int p_height, Format p_format);
 	static Size2i get_image_mipmap_size(int p_width, int p_height, Format p_format, int p_mipmap);
 	static int64_t get_image_mipmap_offset(int p_width, int p_height, Format p_format, int p_mipmap);

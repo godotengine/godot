@@ -190,6 +190,8 @@ def configure(env: "SConsEnvironment"):
         env.Append(CCFLAGS=["-mfix-cortex-a53-835769"])
         env.Append(CPPDEFINES=["__ARM_ARCH_8A__"])
 
+    env.Append(CCFLAGS=["-ffp-contract=off"])
+
     # Link flags
 
     env.Append(LINKFLAGS="-Wl,--gc-sections -Wl,--no-undefined -Wl,-z,now".split())

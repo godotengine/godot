@@ -141,6 +141,16 @@ void EditorSelectionHistory::add_object(ObjectID p_object, const String &p_prope
 	current_elem_idx++;
 }
 
+void EditorSelectionHistory::replace_object(ObjectID p_old_object, ObjectID p_new_object) {
+	for (HistoryElement &element : history) {
+		for (int index = 0; index < element.path.size(); index++) {
+			if (element.path[index].object == p_old_object) {
+				element.path.write[index].object = p_new_object;
+			}
+		}
+	}
+}
+
 int EditorSelectionHistory::get_history_len() {
 	return history.size();
 }

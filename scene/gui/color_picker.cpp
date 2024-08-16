@@ -54,6 +54,18 @@ void ColorPicker::_notification(int p_what) {
 			_update_color();
 		} break;
 
+		case NOTIFICATION_READY: {
+			// FIXME: The embedding check is needed to fix a bug in single-window mode (GH-93718).
+			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SCREEN_CAPTURE) && !get_tree()->get_root()->is_embedding_subwindows()) {
+				btn_pick->set_tooltip_text(ETR("Pick a color from the screen."));
+				btn_pick->connect(SceneStringName(pressed), callable_mp(this, &ColorPicker::_pick_button_pressed));
+			} else {
+				// On unsupported platforms, use a legacy method for color picking.
+				btn_pick->set_tooltip_text(ETR("Pick a color from the application window."));
+				btn_pick->connect(SceneStringName(pressed), callable_mp(this, &ColorPicker::_pick_button_pressed_legacy));
+			}
+		} break;
+
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			List<BaseButton *> buttons;
 			preset_group->get_buttons(&buttons);
@@ -1834,14 +1846,6 @@ ColorPicker::ColorPicker() {
 
 	btn_pick = memnew(Button);
 	sample_hbc->add_child(btn_pick);
-	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SCREEN_CAPTURE)) {
-		btn_pick->set_tooltip_text(ETR("Pick a color from the screen."));
-		btn_pick->connect(SceneStringName(pressed), callable_mp(this, &ColorPicker::_pick_button_pressed));
-	} else {
-		// On unsupported platforms, use a legacy method for color picking.
-		btn_pick->set_tooltip_text(ETR("Pick a color from the application window."));
-		btn_pick->connect(SceneStringName(pressed), callable_mp(this, &ColorPicker::_pick_button_pressed_legacy));
-	}
 
 	sample = memnew(TextureRect);
 	sample_hbc->add_child(sample);

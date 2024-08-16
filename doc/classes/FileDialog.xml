@@ -80,12 +80,14 @@
 			<description>
 				Returns the vertical box container of the dialog, custom controls can be added to it.
 				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.
+				[b]Note:[/b] Changes to this node are ignored by native file dialogs, use [method add_option] to add custom elements to the dialog instead.
 			</description>
 		</method>
 		<method name="invalidate">
 			<return type="void" />
 			<description>
 				Invalidate and update the current dialog content list.
+				[b]Note:[/b] This method does nothing on native file dialogs.
 			</description>
 		</method>
 		<method name="set_option_default">
@@ -116,10 +118,11 @@
 	<members>
 		<member name="access" type="int" setter="set_access" getter="get_access" enum="FileDialog.Access" default="0">
 			The file system access scope. See [enum Access] constants.
-			[b]Warning:[/b] Currently, in sandboxed environments such as Web builds or sandboxed macOS apps, FileDialog cannot access the host file system. See [url=https://github.com/godotengine/godot-proposals/issues/1123]godot-proposals#1123[/url].
+			[b]Warning:[/b] In Web builds, FileDialog cannot access the host file system. In sandboxed Linux and macOS environments, [member use_native_dialog] is automatically used to allow limited access to host file system.
 		</member>
 		<member name="current_dir" type="String" setter="set_current_dir" getter="get_current_dir">
 			The current working directory of the file dialog.
+			[b]Note:[/b] For native file dialogs, this property is only treated as a hint and may not be respected by specific OS implementations.
 		</member>
 		<member name="current_file" type="String" setter="set_current_file" getter="get_current_file">
 			The currently selected file of the file dialog.
@@ -142,14 +145,18 @@
 		</member>
 		<member name="root_subfolder" type="String" setter="set_root_subfolder" getter="get_root_subfolder" default="&quot;&quot;">
 			If non-empty, the given sub-folder will be "root" of this [FileDialog], i.e. user won't be able to go to its parent directory.
+			[b]Note:[/b] This property is ignored by native file dialogs.
 		</member>
 		<member name="show_hidden_files" type="bool" setter="set_show_hidden_files" getter="is_showing_hidden_files" default="false">
 			If [code]true[/code], the dialog will show hidden files.
+			[b]Note:[/b] This property is ignored by native file dialogs on Linux.
 		</member>
 		<member name="title" type="String" setter="set_title" getter="get_title" overrides="Window" default="&quot;Save a File&quot;" />
 		<member name="use_native_dialog" type="bool" setter="set_use_native_dialog" getter="get_use_native_dialog" default="false">
 			If [code]true[/code], [member access] is set to [constant ACCESS_FILESYSTEM], and it is supported by the current [DisplayServer], OS native dialog will be used instead of custom one.
-			[b]Note:[/b] On macOS, sandboxed apps always use native dialogs to access host filesystem.
+			[b]Note:[/b] On Linux and macOS, sandboxed apps always use native dialogs to access the host file system.
+			[b]Note:[/b] On macOS, sandboxed apps will save security-scoped bookmarks to retain access to the opened folders across multiple sessions. Use [method OS.get_granted_permissions] to get a list of saved bookmarks.
+			[b]Note:[/b] Native dialogs are isolated from the base process, file dialog properties can't be modified once the dialog is shown.
 		</member>
 	</members>
 	<signals>

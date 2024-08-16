@@ -412,7 +412,7 @@ void ShaderEditorPlugin::_close_builtin_shaders_from_scene(const String &p_scene
 void ShaderEditorPlugin::_resource_saved(Object *obj) {
 	// May have been renamed on save.
 	for (EditedShader &edited_shader : edited_shaders) {
-		if (edited_shader.shader.ptr() == obj) {
+		if (edited_shader.shader.ptr() == obj || edited_shader.shader_inc.ptr() == obj) {
 			_update_shader_list();
 			return;
 		}

@@ -52,13 +52,15 @@
 # lemtea8 <polylemtea@gmail.com>, 2024.
 # Chang-Chia Tseng <pswo10680@gmail.com>, 2024.
 # hugoalh <hugoalh@users.noreply.hosted.weblate.org>, 2024.
+# gecko322 chen <cabyzzit@gmail.com>, 2024.
+# Ricky From Hong Kong <lamricky11@hotmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-06-08 05:09+0000\n"
-"Last-Translator: hugoalh <hugoalh@users.noreply.hosted.weblate.org>\n"
+"PO-Revision-Date: 2024-07-25 01:09+0000\n"
+"Last-Translator: Ricky From Hong Kong <lamricky11@hotmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -66,7 +68,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.6-dev\n"
+"X-Generator: Weblate 5.7-dev\n"
 
 msgid "Main Thread"
 msgstr "主執行緒"
@@ -387,6 +389,9 @@ msgstr "選擇光標下的單詞"
 msgid "Add Selection for Next Occurrence"
 msgstr "將下一個匹配項添加到選區"
 
+msgid "Skip Selection for Next Occurrence"
+msgstr "將下一個匹配項略過選區"
+
 msgid "Clear Carets and Selection"
 msgstr "清除光標和選區"
 
@@ -476,6 +481,9 @@ msgstr "還原動作"
 msgid "Add Event"
 msgstr "新增事件"
 
+msgid "Remove Action"
+msgstr "移除動作"
+
 msgid "Cannot Remove Action"
 msgstr "無法移除動作"
 
@@ -490,6 +498,9 @@ msgstr "按名稱篩選"
 
 msgid "Clear All"
 msgstr "全部清除"
+
+msgid "Clear all search filters."
+msgstr "清除所有的搜尋篩選。"
 
 msgid "Add New Action"
 msgstr "新增動作"
@@ -808,14 +819,14 @@ msgstr "壓縮軌道沒有辦法被編輯或移除。重新加上不要壓縮的
 msgid "Remove Anim Track"
 msgstr "刪除動畫軌"
 
-msgid "Hold Shift when clicking the key icon to skip this dialog."
-msgstr "按住 Shift 時點擊按鍵圖示可跳過此對話框。"
-
 msgid "Create new track for %s and insert key?"
 msgstr "確定要為 %s 建立動畫軌並插入關鍵影格嗎？"
 
 msgid "Create %d new tracks and insert keys?"
 msgstr "確定要建立 %d 個動畫軌並插入影格嗎？"
+
+msgid "Hold Shift when clicking the key icon to skip this dialog."
+msgstr "按住 Shift 時點擊按鍵圖示可跳過此對話框。"
 
 msgid "Create"
 msgstr "建立"
@@ -875,18 +886,6 @@ msgstr "無效的軌道路徑，無法新增關鍵影格。"
 
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "非NODE3D型別之軌道，無法插入關鍵影格"
-
-msgid "Add Position Key"
-msgstr "添加座標關鍵影格"
-
-msgid "Add Rotation Key"
-msgstr "添加旋轉關鍵影格"
-
-msgid "Add Scale Key"
-msgstr "添加縮放關鍵影格"
-
-msgid "Add Track Key"
-msgstr "添加軌道關鍵影格"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr "無效軌道路徑，無法新增方法關鍵影格。"
@@ -1595,6 +1594,9 @@ msgstr "恢復操作。"
 msgid "Bytes:"
 msgstr "位元組："
 
+msgid "Warning:"
+msgstr "警告："
+
 msgid "Error:"
 msgstr "錯誤："
 
@@ -2136,11 +2138,23 @@ msgstr "建立新匯流排配置。"
 msgid "Audio Bus Layout"
 msgstr "音訊匯流排佈局"
 
+msgid "Cannot begin with a digit."
+msgstr "不能以數字開頭。"
+
+msgid "Valid characters:"
+msgstr "有效字元："
+
+msgid "Must not collide with an existing global script class name."
+msgstr "不可與現存的全域腳本類別名稱衝突。"
+
+msgid "Must not collide with an existing built-in type name."
+msgstr "不可與現存的內建型別名稱衝突。"
+
 msgid "Autoload '%s' already exists!"
-msgstr "Autoload「%s」已經存在！"
+msgstr "自動載入「%s」已經存在！"
 
 msgid "Rename Autoload"
-msgstr "重新命名 Autoload"
+msgstr "重新命名自動載入"
 
 msgid "Toggle Autoload Globals"
 msgstr "開啟／關閉全域 AutoLoad"
@@ -3026,6 +3040,9 @@ msgstr "編輯器視窗重新繪製時旋轉。"
 msgid "OK"
 msgstr "好"
 
+msgid "Error saving resource!"
+msgstr "保存資料發生錯誤！"
+
 msgid ""
 "This resource can't be saved because it does not belong to the edited scene. "
 "Make it unique first."
@@ -3038,6 +3055,9 @@ msgstr "由於該資源已從別的檔案導入，無法儲存該資源。請先
 
 msgid "Save Resource As..."
 msgstr "另存資源為..."
+
+msgid "Error while parsing file '%s'."
+msgstr "無法解析檔案：%s。"
 
 msgid "Saving Scene"
 msgstr "正在保存場景"
@@ -3062,6 +3082,9 @@ msgstr "與現有的合併"
 
 msgid "Apply MeshInstance Transforms"
 msgstr "套用MeshInstance變換"
+
+msgid "Error saving MeshLibrary!"
+msgstr "儲存網格庫出錯！"
 
 msgid ""
 "An error occurred while trying to save the editor layout.\n"
@@ -3131,11 +3154,6 @@ msgstr "快速開啟場景…"
 
 msgid "Quick Open Script..."
 msgstr "快速開啟腳本…"
-
-msgid ""
-"The current scene has no root node, but %d modified external resource(s) were "
-"saved anyway."
-msgstr "目前的場景無根節點，但%d個被更改的外部資源已被儲存。"
 
 msgid ""
 "A root node is required to save the scene. You can add a root node using the "
@@ -3802,15 +3820,6 @@ msgstr "執行專案"
 msgid "Write your logic in the _run() method."
 msgstr "在 _run() 方法中填寫邏輯。"
 
-msgid "There is an edited scene already."
-msgstr "已有一個已編輯的場景。"
-
-msgid "Undo: %s"
-msgstr "復原：%s"
-
-msgid "Redo: %s"
-msgstr "取消復原：%s"
-
 msgid "Edit Built-in Action: %s"
 msgstr "編輯內建動作：%s"
 
@@ -3924,6 +3933,60 @@ msgstr "聆聽輸入中"
 
 msgid "Filter by Event"
 msgstr "按事件篩選"
+
+msgid "Can't get filesystem access."
+msgstr "無法存取檔案系統。"
+
+msgid "Failed to get Info.plist hash."
+msgstr "無法獲得 Info.plist hash。"
+
+msgid "Invalid Info.plist, no exe name."
+msgstr "無效的 info.plist，沒有可執行檔名稱。"
+
+msgid "Invalid Info.plist, no bundle id."
+msgstr "無效的 info.plist，沒有套件識別碼。"
+
+msgid "Invalid Info.plist, can't load."
+msgstr "無效的 info.plist，無法載入。"
+
+msgid "Failed to create \"%s\" subfolder."
+msgstr "無法新增「%s」子資料夾。"
+
+msgid "Failed to extract thin binary."
+msgstr "提取精簡執行檔失敗。"
+
+msgid "Invalid binary format."
+msgstr "無效的二進位檔案格式。"
+
+msgid "Already signed!"
+msgstr "已被簽署！"
+
+msgid "Failed to process nested resources."
+msgstr "處理巢狀資源失敗。"
+
+msgid "Failed to create _CodeSignature subfolder."
+msgstr "創建 _CodeSignature 子資料夾失敗。"
+
+msgid "Failed to get CodeResources hash."
+msgstr "取得 CodeResources 雜湊失敗。"
+
+msgid "Invalid entitlements file."
+msgstr "授權檔無效。"
+
+msgid "Invalid executable file."
+msgstr "無效的執行檔。"
+
+msgid "Can't resize signature load command."
+msgstr "無法改變簽名載入命令的大小。"
+
+msgid "Failed to create fat binary."
+msgstr "無法建立肥胖的執行檔。"
+
+msgid "Unknown bundle type."
+msgstr "未知捆綁包型別。"
+
+msgid "Unknown object type."
+msgstr "未知物件型別。"
 
 msgid "Project export for platform:"
 msgstr "專案匯出平台："
@@ -5476,15 +5539,6 @@ msgstr "展開非預設"
 
 msgid "Property Name Style"
 msgstr "屬性名稱樣式"
-
-msgid "Raw"
-msgstr "原始"
-
-msgid "Capitalized"
-msgstr "首字父大寫"
-
-msgid "Localized"
-msgstr "已本地化"
 
 msgid "Localization not available for current language."
 msgstr "目前的語言不支援本地化。"
@@ -9065,12 +9119,6 @@ msgstr ""
 "編輯模式\n"
 "在關節上顯示按鈕。"
 
-msgid "Insert key of bone poses already exist track."
-msgstr "插入骨骼姿勢的關鍵影格已經存在軌道。"
-
-msgid "Insert key of all bone poses."
-msgstr "插入所有骨骼姿勢的關鍵影格。"
-
 msgid "Insert Key (All Bones)"
 msgstr "插入關鍵影格（所有骨骼）"
 
@@ -10949,14 +10997,14 @@ msgid "Not Equal (!=)"
 msgstr "不等於 (!=)"
 
 msgid ""
-"Returns an associated 3D vector if the provided boolean value is true or "
-"false."
-msgstr "若提供的布林值為 true 或 false，則回傳相關的 3D 向量。"
-
-msgid ""
 "Returns an associated 2D vector if the provided boolean value is true or "
 "false."
 msgstr "若提供的布林值為 true 或 false，則回傳相關的 2D 向量。"
+
+msgid ""
+"Returns an associated 3D vector if the provided boolean value is true or "
+"false."
+msgstr "若提供的布林值為 true 或 false，則回傳相關的 3D 向量。"
 
 msgid ""
 "Returns an associated boolean if the provided boolean value is true or false."
@@ -11476,9 +11524,6 @@ msgstr "返回一個介於最小和最大輸入值之間的隨機值。"
 
 msgid "Remaps a given input from the input range to the output range."
 msgstr "將給定輸入從輸入範圍重新映射到輸出範圍。"
-
-msgid "Rotates an input vector by a given angle."
-msgstr "按給定角度旋轉輸入向量。"
 
 msgid "Vector function."
 msgstr "向量函式。"
@@ -12035,6 +12080,9 @@ msgid ""
 "recommended."
 msgstr "選定的路徑不為空。強烈建議選擇一個空的資料夾。"
 
+msgid "New Game Project"
+msgstr "新遊戲專案"
+
 msgid "Supports desktop platforms only."
 msgstr "只支援桌面平臺。"
 
@@ -12106,9 +12154,6 @@ msgstr "自套件中取得下列檔案失敗："
 msgid ""
 "Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr "無法自路徑 '%s' 載入專案（錯誤 %d）。檔案可能遺失或損毀。"
-
-msgid "New Game Project"
-msgstr "新遊戲專案"
 
 msgid "Import & Edit"
 msgstr "匯入並編輯"
@@ -12906,6 +12951,9 @@ msgstr "更改環面內半徑"
 msgid "Change Torus Outer Radius"
 msgstr "更改環面外半徑"
 
+msgid "Not based on a resource file"
+msgstr "加載資源失敗"
+
 msgid "Export Scene to glTF 2.0 File"
 msgstr "將場景匯出為 glTF 2.0 檔案"
 
@@ -12915,21 +12963,8 @@ msgstr "匯出設定："
 msgid "glTF 2.0 Scene..."
 msgstr "glTF 2.0 場景..."
 
-msgid "Path to Blender installation is valid (Autodetected)."
-msgstr "Blender 安裝路徑有效（已自動偵測）。"
-
-msgid "Path to Blender installation is valid."
-msgstr "至 Blender 安裝的路徑有效。"
-
 msgid "Configure Blender Importer"
 msgstr "設定 Blender 匯入工具"
-
-msgid ""
-"Blender 3.0+ is required to import '.blend' files.\n"
-"Please provide a valid path to a Blender installation:"
-msgstr ""
-"需要 Blender 3.0+ 來匯入 '.blend' 檔案。\n"
-"請提供一個有效的 Blender 安裝路徑："
 
 msgid "Disable '.blend' Import"
 msgstr "停用 '.blend' 匯入"
@@ -13254,11 +13289,11 @@ msgstr "移除動作集"
 msgid "Add interaction profile"
 msgstr "添加交互配置檔"
 
-msgid "Error saving file %s: %s"
-msgstr "無法保存檔案 %s：%s"
-
 msgid "Error loading %s: %s."
 msgstr "載入 %s 時發生錯誤：%s。"
+
+msgid "Error saving file %s: %s"
+msgstr "無法保存檔案 %s：%s"
 
 msgid "OpenXR Action map:"
 msgstr "OpenXR 動作映射："
@@ -13696,60 +13731,6 @@ msgstr "正在啟動專案..."
 msgid "All Files"
 msgstr "所有檔案"
 
-msgid "Can't get filesystem access."
-msgstr "無法存取檔案系統。"
-
-msgid "Failed to get Info.plist hash."
-msgstr "無法獲得 Info.plist hash。"
-
-msgid "Invalid Info.plist, no exe name."
-msgstr "無效的 info.plist，沒有可執行檔名稱。"
-
-msgid "Invalid Info.plist, no bundle id."
-msgstr "無效的 info.plist，沒有套件識別碼。"
-
-msgid "Invalid Info.plist, can't load."
-msgstr "無效的 info.plist，無法載入。"
-
-msgid "Failed to create \"%s\" subfolder."
-msgstr "無法新增「%s」子資料夾。"
-
-msgid "Failed to extract thin binary."
-msgstr "提取精簡執行檔失敗。"
-
-msgid "Invalid binary format."
-msgstr "無效的二進位檔案格式。"
-
-msgid "Already signed!"
-msgstr "已被簽署！"
-
-msgid "Failed to process nested resources."
-msgstr "處理巢狀資源失敗。"
-
-msgid "Failed to create _CodeSignature subfolder."
-msgstr "創建 _CodeSignature 子資料夾失敗。"
-
-msgid "Failed to get CodeResources hash."
-msgstr "取得 CodeResources 雜湊失敗。"
-
-msgid "Invalid entitlements file."
-msgstr "授權檔無效。"
-
-msgid "Invalid executable file."
-msgstr "無效的執行檔。"
-
-msgid "Can't resize signature load command."
-msgstr "無法改變簽名載入命令的大小。"
-
-msgid "Failed to create fat binary."
-msgstr "無法建立肥胖的執行檔。"
-
-msgid "Unknown bundle type."
-msgstr "未知捆綁包型別。"
-
-msgid "Unknown object type."
-msgstr "未知物件型別。"
-
 msgid "Invalid bundle identifier:"
 msgstr "無效的捆綁識別符："
 
@@ -14147,13 +14128,6 @@ msgstr "在遠端 Windows 系統執行"
 
 msgid "Run exported project on remote Windows system"
 msgstr "在遠端 Windows 系統上執行匯出的專案"
-
-msgid ""
-"A SpriteFrames resource must be created or set in the \"Frames\" property in "
-"order for AnimatedSprite2D to display frames."
-msgstr ""
-"必須為「Frames」屬性建立或設定 SpriteFrames 資源以令 AnimatedSprite3D 顯示影"
-"格。"
 
 msgid ""
 "Only one visible CanvasModulate is allowed per canvas.\n"
@@ -14680,13 +14654,6 @@ msgid "This body will be ignored until you set a mesh."
 msgstr "該形體在設定網格前都將被忽略。"
 
 msgid ""
-"A SpriteFrames resource must be created or set in the \"Frames\" property in "
-"order for AnimatedSprite3D to display frames."
-msgstr ""
-"必須先為「Frames」屬性建立或設定 SpriteFrames 資源以令 AnimatedSprite3D 顯示影"
-"格。"
-
-msgid ""
 "The GeometryInstance3D visibility range's End distance is set to a non-zero "
 "value, but is lower than the Begin distance.\n"
 "This means the GeometryInstance3D will never be visible.\n"
@@ -15023,11 +14990,6 @@ msgstr ""
 "法（請在其中選擇一種使用）。"
 
 msgid ""
-"Sampler argument %d of function '%s' called more than once using textures "
-"that differ in either filter or repeat setting."
-msgstr "採樣器參數%d：函數”%s“有多次被呼叫，所使用紋理的過濾或重複設定不同。"
-
-msgid ""
 "Sampler argument %d of function '%s' called more than once using different "
 "built-ins. Only calling with the same built-in is supported."
 msgstr ""
@@ -15075,10 +15037,6 @@ msgstr "預期為函數名稱。"
 
 msgid "No matching function found for: '%s'."
 msgstr "未找到符合的函式：「%s」。"
-
-msgid ""
-"Varying '%s' must be assigned in the 'vertex' or 'fragment' function first."
-msgstr "Varying”%s“必須先在”vertex“或”fragment“函數中賦值。"
 
 msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr "Varying變數'%s'不可在「%s」函式中作為參數傳遞。"

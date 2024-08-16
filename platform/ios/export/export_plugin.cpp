@@ -1628,7 +1628,7 @@ Error EditorExportPlatformIOS::_copy_asset(const Ref<EditorExportPreset> &p_pres
 
 		asset_path = asset_path.path_join(framework_name);
 		destination_dir = p_out_dir.path_join(asset_path);
-		destination = destination_dir.path_join(file_name);
+		destination = destination_dir;
 
 		// Convert to framework and copy.
 		Error err = _convert_to_framework(p_asset, destination, p_preset->get("application/bundle_identifier"));

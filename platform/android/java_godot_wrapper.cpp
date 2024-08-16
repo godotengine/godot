@@ -76,6 +76,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_get_input_fallback_mapping = p_env->GetMethodID(godot_class, "getInputFallbackMapping", "()Ljava/lang/String;");
 	_on_godot_setup_completed = p_env->GetMethodID(godot_class, "onGodotSetupCompleted", "()V");
 	_on_godot_main_loop_started = p_env->GetMethodID(godot_class, "onGodotMainLoopStarted", "()V");
+	_on_godot_terminating = p_env->GetMethodID(godot_class, "onGodotTerminating", "()V");
 	_create_new_godot_instance = p_env->GetMethodID(godot_class, "createNewGodotInstance", "([Ljava/lang/String;)I");
 	_get_render_view = p_env->GetMethodID(godot_class, "getRenderView", "()Lorg/godotengine/godot/GodotRenderView;");
 	_begin_benchmark_measure = p_env->GetMethodID(godot_class, "nativeBeginBenchmarkMeasure", "(Ljava/lang/String;Ljava/lang/String;)V");
@@ -133,6 +134,16 @@ void GodotJavaWrapper::on_godot_main_loop_started(JNIEnv *p_env) {
 		}
 		ERR_FAIL_NULL(p_env);
 		p_env->CallVoidMethod(godot_instance, _on_godot_main_loop_started);
+	}
+}
+
+void GodotJavaWrapper::on_godot_terminating(JNIEnv *p_env) {
+	if (_on_godot_terminating) {
+		if (p_env == nullptr) {
+			p_env = get_jni_env();
+		}
+		ERR_FAIL_NULL(p_env);
+		p_env->CallVoidMethod(godot_instance, _on_godot_terminating);
 	}
 }
 

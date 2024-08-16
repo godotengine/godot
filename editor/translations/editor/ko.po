@@ -61,13 +61,17 @@
 # nulta <un5450@outlook.com>, 2024.
 # Sovlus Haesaun <josuke4832@gmail.com>, 2024.
 # Minhyeok Lee <tracertw@gmail.com>, 2024.
+# Jun Hwi Ku <siguning@gmail.com>, 2024.
+# 신윤섭 <a97968765@gmail.com>, 2024.
+# Lee Dogeon <dev.moreal@gmail.com>, 2024.
+# Koo Youngmin <youngminz.kr@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-03-16 14:27+0000\n"
-"Last-Translator: nulta <un5450@outlook.com>\n"
+"PO-Revision-Date: 2024-08-09 17:09+0000\n"
+"Last-Translator: Koo Youngmin <youngminz.kr@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ko/>\n"
 "Language: ko\n"
@@ -75,7 +79,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.5-dev\n"
+"X-Generator: Weblate 5.7-dev\n"
 
 msgid "Main Thread"
 msgstr "메인 스레드"
@@ -228,7 +232,7 @@ msgid "Pressure:"
 msgstr "압력:"
 
 msgid "released"
-msgstr "출시된"
+msgstr "놓음"
 
 msgid "Screen %s at (%s) with %s touch points"
 msgstr "터치 포인트가 %s개인 (%s)의 %s 화면"
@@ -397,6 +401,9 @@ msgstr "캐럿 아래에서 단어 선택"
 msgid "Add Selection for Next Occurrence"
 msgstr "다음 발생을 위한 선택 항목 추가"
 
+msgid "Skip Selection for Next Occurrence"
+msgstr "다음 발생을 위한 선택 항목 건너뛰기"
+
 msgid "Clear Carets and Selection"
 msgstr "캐럿과 선택 영역 지우기"
 
@@ -481,6 +488,9 @@ msgstr ""
 msgid "An action with the name '%s' already exists."
 msgstr "이름 '%s'을(를) 가진 액션이 이미 있습니다."
 
+msgid "Cannot Revert - Action is same as initial"
+msgstr "되돌릴 수 없습니다 - 액션이 초기 상태와 동일합니다"
+
 msgid "Revert Action"
 msgstr "작업 복원"
 
@@ -501,6 +511,9 @@ msgstr "이름으로 필터링"
 
 msgid "Clear All"
 msgstr "모두 지우기"
+
+msgid "Clear all search filters."
+msgstr "모든 검색 필터들을 지웁니다."
 
 msgid "Add New Action"
 msgstr "새로운 액션 추가"
@@ -836,16 +849,16 @@ msgstr ""
 msgid "Remove Anim Track"
 msgstr "애니메이션 트랙 제거"
 
-msgid "Hold Shift when clicking the key icon to skip this dialog."
-msgstr ""
-"키 아이콘을 누를 때 Shift 키를 누르고 있으면 이 대화 상자를 건너뛸 수 있습니"
-"다."
-
 msgid "Create new track for %s and insert key?"
 msgstr "\"%s\"을(를) 위한 새로운 트랙을 생성하고 키를 삽입하시겠습니까?"
 
 msgid "Create %d new tracks and insert keys?"
 msgstr "%d개의 새로운 트랙을 생성하고 키를 삽입하시겠습니까?"
+
+msgid "Hold Shift when clicking the key icon to skip this dialog."
+msgstr ""
+"키 아이콘을 누를 때 Shift 키를 누르고 있으면 이 대화 상자를 건너뛸 수 있습니"
+"다."
 
 msgid "Create"
 msgstr "만들기"
@@ -908,17 +921,8 @@ msgstr "트랙 경로가 올바르지 않아 키를 추가할 수 없습니다."
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "트랙이 3D 노드 타입이 아니므로 키를 추가할 수 없습니다"
 
-msgid "Add Position Key"
-msgstr "위치 키 추가"
-
-msgid "Add Rotation Key"
-msgstr "회전 키 추가"
-
-msgid "Add Scale Key"
-msgstr "스케일 키 추가"
-
-msgid "Add Track Key"
-msgstr "트랙 키 추가"
+msgid "Track is not of type MeshInstance3D, can't insert key"
+msgstr "트랙이 3D 메시 인스턴스 타입이 아니므로 키를 추가할 수 없습니다"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr "트랙 경로가 올바르지 않아 메서드 키를 추가할 수 없습니다."
@@ -1053,6 +1057,9 @@ msgstr "초"
 
 msgid "FPS"
 msgstr "초당 프레임"
+
+msgid "Fit to panel"
+msgstr "패널에 맞추기"
 
 msgid "Edit"
 msgstr "편집"
@@ -1308,6 +1315,10 @@ msgstr "선택 영역만"
 
 msgid "Hide"
 msgstr "숨김"
+
+msgctxt "Indentation"
+msgid "Spaces"
+msgstr "공백"
 
 msgctxt "Indentation"
 msgid "Tabs"
@@ -2055,6 +2066,9 @@ msgstr "에셋 \"%s\"에서 다음 파일의 압축 해제를 실패함:"
 msgid "(and %s more files)"
 msgstr "(및 더 많은 파일 %s개)"
 
+msgid "Asset \"%s\" installed successfully!"
+msgstr "에셋 \"%s\" 가 성공적으로 설치되었습니다!"
+
 msgid "Success!"
 msgstr "성공!"
 
@@ -2221,6 +2235,18 @@ msgstr "새로운 버스 레이아웃을 만듭니다."
 msgid "Audio Bus Layout"
 msgstr "오디오 버스 레이아웃"
 
+msgid "Must not collide with an existing engine class name."
+msgstr "기존 엔진 클래스 이름과 충돌해서는 안 됩니다."
+
+msgid "Must not collide with an existing global script class name."
+msgstr "기존 전역 스크립트 클래스 이름과 충돌해서는 안 됩니다."
+
+msgid "Must not collide with an existing built-in type name."
+msgstr "기존 내장 타입 이름과 충돌해서는 안 됩니다."
+
+msgid "Must not collide with an existing global constant name."
+msgstr "기존 전역 상수 이름과 충돌해서는 안 됩니다."
+
 msgid "Autoload '%s' already exists!"
 msgstr "오토로드 '%s'이(가) 이미 있습니다!"
 
@@ -2256,6 +2282,9 @@ msgstr "오토로드 추가"
 
 msgid "Path:"
 msgstr "경로:"
+
+msgid "Set path or press \"%s\" to create a script."
+msgstr "경로를 설정하거나 “%s”를 눌러 스크립트를 생성합니다."
 
 msgid "Node Name:"
 msgstr "노드 이름:"
@@ -2381,6 +2410,9 @@ msgstr "텍스트 렌더링 및 글꼴 옵션:"
 msgid "File saving failed."
 msgstr "파일 저장 실패."
 
+msgid "This will scan all files in the current project to detect used classes."
+msgstr "현재 프로젝트의 모든 파일을 스캔하여 사용된 클래스를 감지합니다."
+
 msgid "Nodes and Classes:"
 msgstr "노드와 클래스:"
 
@@ -2462,6 +2494,9 @@ msgstr "이 독을 창으로 띄웁니다."
 
 msgid "Move to Bottom"
 msgstr "아래로 이동"
+
+msgid "Move this dock to the bottom panel."
+msgstr "이 독을 하단 패널로 옮깁니다."
 
 msgid "3D Editor"
 msgstr "3D 에디터"
@@ -2752,6 +2787,9 @@ msgstr ""
 "현재 이 클래스의 설명이 없습니다. [color=$color][url=$url]관련 정보를 기여하여"
 "[/url][/color] 개선할 수 있도록 도와주세요!"
 
+msgid "Note:"
+msgstr "참고:"
+
 msgid ""
 "There are notable differences when using this API with C#. See [url=%s]C# API "
 "differences to GDScript[/url] for more information."
@@ -2849,6 +2887,13 @@ msgstr "(값)"
 msgid "This property may be changed or removed in future versions."
 msgstr "이 속성은 향후 버전에서 변경되거나 삭제될 수도 있습니다."
 
+msgid ""
+"[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will "
+"not update the original property value. See [%s] for more details."
+msgstr ""
+"[b]참고:[/b] 반환된 배열은 [i]복사된 배열[/i] 이며, 배열을 변경해도 원래 속성 "
+"값은 업데이트되지 않습니다. 자세한 내용은 [%s]를 참조하세요."
+
 msgid "There is currently no description for this property."
 msgstr "현재 이 속성에 대한 설명이 없습니다."
 
@@ -2861,6 +2906,9 @@ msgstr ""
 
 msgid "Editor"
 msgstr "에디터"
+
+msgid "Click to copy."
+msgstr "클릭하여 복사합니다."
 
 msgid "No description available."
 msgstr "사용 가능한 설명이 없습니다."
@@ -3303,13 +3351,6 @@ msgstr "빠른 씬 열기..."
 
 msgid "Quick Open Script..."
 msgstr "빠른 스크립트 열기..."
-
-msgid ""
-"The current scene has no root node, but %d modified external resource(s) were "
-"saved anyway."
-msgstr ""
-"현재 씬에는 루트 노드가 없지만, 그래도 수정된 외부 리소스 %d개가 저장되었습니"
-"다."
 
 msgid ""
 "A root node is required to save the scene. You can add a root node using the "
@@ -4061,15 +4102,6 @@ msgstr "프로젝트 실행"
 msgid "Write your logic in the _run() method."
 msgstr "_run() 메서드에 당신의 논리를 작성하세요."
 
-msgid "There is an edited scene already."
-msgstr "이미 편집된 씬이 있습니다."
-
-msgid "Undo: %s"
-msgstr "실행 취소: %s"
-
-msgid "Redo: %s"
-msgstr "다시 실행: %s"
-
 msgid "Edit Built-in Action: %s"
 msgstr "내장 액션 편집: %s"
 
@@ -4177,6 +4209,54 @@ msgstr "입력 대기 중"
 
 msgid "Filter by Event"
 msgstr "이벤트로 필터링"
+
+msgid "Can't get filesystem access."
+msgstr "파일시스템 접근 권한을 얻지 못했습니다."
+
+msgid "Failed to get Info.plist hash."
+msgstr "Info.plist 해시를 가져오지 못했습니다."
+
+msgid "Invalid Info.plist, no exe name."
+msgstr "Info.plist가 올바르지 않습니다. exe 이름이 없습니다."
+
+msgid "Invalid Info.plist, no bundle id."
+msgstr "Info.plist가 올바르지 않습니다. bundle id가 없습니다."
+
+msgid "Invalid Info.plist, can't load."
+msgstr "Info.plist가 올바르지 않습니다. 로드할 수 없습니다."
+
+msgid "Failed to create \"%s\" subfolder."
+msgstr "서브폴더 \"%s\"을(를) 만들 수 없습니다."
+
+msgid "Failed to extract thin binary."
+msgstr "thin binary 내보내기에 실패했습니다."
+
+msgid "Invalid binary format."
+msgstr "잘못된 바이너리 포맷."
+
+msgid "Already signed!"
+msgstr "이미 서명되었습니다!"
+
+msgid "Failed to process nested resources."
+msgstr "중첩된 리소스를 처리하지 못했습니다."
+
+msgid "Failed to create _CodeSignature subfolder."
+msgstr "_CodeSignature 하위 폴더를 생성하지 못했습니다."
+
+msgid "Failed to get CodeResources hash."
+msgstr "CodeResources 해시를 가져오지 못했습니다."
+
+msgid "Invalid entitlements file."
+msgstr "잘못된 자격 파일."
+
+msgid "Invalid executable file."
+msgstr "잘못된 실행 파일."
+
+msgid "Unknown bundle type."
+msgstr "알 수 없는 번들 타입입니다."
+
+msgid "Unknown object type."
+msgstr "알 수 없는 오브젝트 타입입니다."
 
 msgid "Project export for platform:"
 msgstr "플랫폼용 프로젝트 내보내기:"
@@ -5922,15 +6002,6 @@ msgstr "기본값 아닌 값 펼치기"
 
 msgid "Property Name Style"
 msgstr "속성 이름 스타일"
-
-msgid "Raw"
-msgstr "RAW"
-
-msgid "Capitalized"
-msgstr "대문자로 시작"
-
-msgid "Localized"
-msgstr "현지화"
 
 msgid "Localization not available for current language."
 msgstr "현재 언어로는 현지화가 불가능합니다."
@@ -9653,12 +9724,6 @@ msgstr ""
 "편집 모드\n"
 "관절 위에 버튼을 보입니다."
 
-msgid "Insert key of bone poses already exist track."
-msgstr "이미 존재하는 트랙의 본 포즈에 키를 삽입합니다."
-
-msgid "Insert key of all bone poses."
-msgstr "모든 본 포즈의 키를 삽입합니다."
-
 msgid "Insert Key (All Bones)"
 msgstr "키 삽입 (모든 본에)"
 
@@ -11579,14 +11644,14 @@ msgid "Not Equal (!=)"
 msgstr "같지 않다 (!=)"
 
 msgid ""
-"Returns an associated 3D vector if the provided boolean value is true or "
-"false."
-msgstr "불리언 값이 참이거나 거짓이면 관련 3D 벡터를 반환합니다."
-
-msgid ""
 "Returns an associated 2D vector if the provided boolean value is true or "
 "false."
 msgstr "불리언 값이 참이거나 거짓이면 2D 관련 벡터를 반환합니다."
+
+msgid ""
+"Returns an associated 3D vector if the provided boolean value is true or "
+"false."
+msgstr "불리언 값이 참이거나 거짓이면 관련 3D 벡터를 반환합니다."
 
 msgid ""
 "Returns an associated boolean if the provided boolean value is true or false."
@@ -12114,9 +12179,6 @@ msgstr "입력된 값의 최소값과 최대값 사이의 임의의 값을 반�
 
 msgid "Remaps a given input from the input range to the output range."
 msgstr "주어진 입력을 입력 범위에서 출력 범위로 리매핑합니다."
-
-msgid "Rotates an input vector by a given angle."
-msgstr "입력된 벡터를 주어진 각도만큼 회전합니다."
 
 msgid "Vector function."
 msgstr "벡터 함수."
@@ -12697,6 +12759,9 @@ msgstr ""
 "선택된 경로는 비어있지 않습니다. 비어 있는 폴더를 선택하는 것을 매우 권장합니"
 "다."
 
+msgid "New Game Project"
+msgstr "새 게임 프로젝트"
+
 msgid "Supports desktop platforms only."
 msgstr "데스크톱 플랫폼만을 지원합니다."
 
@@ -12770,9 +12835,6 @@ msgid ""
 msgstr ""
 "'%s'에서 프로젝트를 불러올 수 없습니다 (오류 %d). 프로젝트가 누락되거나 손상"
 "된 것 같습니다."
-
-msgid "New Game Project"
-msgstr "새 게임 프로젝트"
 
 msgid "Import & Edit"
 msgstr "가져오기 & 편집"
@@ -13693,21 +13755,8 @@ msgstr "내보내기 설정:"
 msgid "glTF 2.0 Scene..."
 msgstr "glTF 2.0 씬..."
 
-msgid "Path to Blender installation is valid (Autodetected)."
-msgstr "Blender 실행 파일의 경로가 올바릅니다 (자동 감지됨)."
-
-msgid "Path to Blender installation is valid."
-msgstr "Blender 실행 파일의 경로가 올바릅니다."
-
 msgid "Configure Blender Importer"
 msgstr "Blender 임포터 설정"
-
-msgid ""
-"Blender 3.0+ is required to import '.blend' files.\n"
-"Please provide a valid path to a Blender installation:"
-msgstr ""
-"'.blend' 파일을 가져오기 위해서는 3.0버전 이상의 Blender가 필요합니다.\n"
-"Blender 실행 파일이 있는 경로를 제공해 주세요:"
 
 msgid "Disable '.blend' Import"
 msgstr "'.blend' 가져오기 비활성화"
@@ -14031,11 +14080,11 @@ msgstr "액션 세트 제거"
 msgid "Add interaction profile"
 msgstr "상호작용 프로필 추가"
 
-msgid "Error saving file %s: %s"
-msgstr "파일 %s 저장 중 오류: %s"
-
 msgid "Error loading %s: %s."
 msgstr "%s 불러오는 중 오류: %s."
+
+msgid "Error saving file %s: %s"
+msgstr "파일 %s 저장 중 오류: %s"
 
 msgid "OpenXR Action map:"
 msgstr "OpenXR 액션 맵:"
@@ -14465,54 +14514,6 @@ msgstr "프로젝트 시작 중..."
 msgid "All Files"
 msgstr "모든 파일"
 
-msgid "Can't get filesystem access."
-msgstr "파일시스템 접근 권한을 얻지 못했습니다."
-
-msgid "Failed to get Info.plist hash."
-msgstr "Info.plist 해시를 가져오지 못했습니다."
-
-msgid "Invalid Info.plist, no exe name."
-msgstr "Info.plist가 올바르지 않습니다. exe 이름이 없습니다."
-
-msgid "Invalid Info.plist, no bundle id."
-msgstr "Info.plist가 올바르지 않습니다. bundle id가 없습니다."
-
-msgid "Invalid Info.plist, can't load."
-msgstr "Info.plist가 올바르지 않습니다. 로드할 수 없습니다."
-
-msgid "Failed to create \"%s\" subfolder."
-msgstr "서브폴더 \"%s\"을(를) 만들 수 없습니다."
-
-msgid "Failed to extract thin binary."
-msgstr "thin binary 내보내기에 실패했습니다."
-
-msgid "Invalid binary format."
-msgstr "잘못된 바이너리 포맷."
-
-msgid "Already signed!"
-msgstr "이미 서명되었습니다!"
-
-msgid "Failed to process nested resources."
-msgstr "중첩된 리소스를 처리하지 못했습니다."
-
-msgid "Failed to create _CodeSignature subfolder."
-msgstr "_CodeSignature 하위 폴더를 생성하지 못했습니다."
-
-msgid "Failed to get CodeResources hash."
-msgstr "CodeResources 해시를 가져오지 못했습니다."
-
-msgid "Invalid entitlements file."
-msgstr "잘못된 자격 파일."
-
-msgid "Invalid executable file."
-msgstr "잘못된 실행 파일."
-
-msgid "Unknown bundle type."
-msgstr "알 수 없는 번들 타입입니다."
-
-msgid "Unknown object type."
-msgstr "알 수 없는 오브젝트 타입입니다."
-
 msgid "Invalid bundle identifier:"
 msgstr "잘못된 bundle 식별자:"
 
@@ -14746,13 +14747,6 @@ msgstr "원격 Windows 시스템에서 실행"
 
 msgid "Run exported project on remote Windows system"
 msgstr "내보낸 프로젝트를 원격 Windows 시스템에서 실행"
-
-msgid ""
-"A SpriteFrames resource must be created or set in the \"Frames\" property in "
-"order for AnimatedSprite2D to display frames."
-msgstr ""
-"AnimatedSprite2D가 프레임을 보여주기 위해서는 \"Frames\" 속성에서 "
-"SpriteFrames 리소스를 만들거나 설정해야 합니다."
 
 msgid ""
 "Only one visible CanvasModulate is allowed per canvas.\n"
@@ -15298,13 +15292,6 @@ msgstr ""
 msgid "This body will be ignored until you set a mesh."
 msgstr "이 바디는 메시를 설정할 때까지 무시됩니다."
 
-msgid ""
-"A SpriteFrames resource must be created or set in the \"Frames\" property in "
-"order for AnimatedSprite3D to display frames."
-msgstr ""
-"AnimatedSprite3D가 프레임을 보여주기 위해서는 \"Frames\" 속성에 SpriteFrames "
-"리소스를 만들거나 설정해야 합니다."
-
 msgid "Plotting Meshes"
 msgstr "메시 구분"
 
@@ -15622,12 +15609,6 @@ msgstr "함수 이름이 와야 합니다."
 
 msgid "No matching function found for: '%s'."
 msgstr "다음 함수를 찾을 수 없습니다: '%s'."
-
-msgid ""
-"Varying '%s' must be assigned in the 'vertex' or 'fragment' function first."
-msgstr ""
-"Varying '%s'는 반드시 먼저 'vertex' 또는 'fragment' 함수에서 할당되어야 합니"
-"다."
 
 msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr "Varying '%s'은 해당 문맥에서 '%s' 인자로 전달할 수 없습니다."

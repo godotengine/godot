@@ -603,9 +603,6 @@ msgstr "Προσθήκη κομματιού Bezier"
 msgid "Track path is invalid, so can't add a key."
 msgstr "Αδύνατη η προσθήκη κλειδιού, λόγω άκυρης διαδρομής κομματιού."
 
-msgid "Add Track Key"
-msgstr "Προσθήκη κλειδιού"
-
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Αδύνατη η προσθήκη κλειδιού μεθόδου, λόγω άκυρης διαδρομής κομματιού."
 
@@ -2244,9 +2241,6 @@ msgstr ""
 msgid "Write your logic in the _run() method."
 msgstr "Γράψτε τη λογική σας στη μέθοδο _run()."
 
-msgid "There is an edited scene already."
-msgstr "Υπάρχει ήδη μία σκηνή για επεξεργασία."
-
 msgid "Editor Settings"
 msgstr "Ρυθμίσεις επεξεργαστή"
 
@@ -2840,9 +2834,6 @@ msgstr "Συσκευή:"
 
 msgid "Failed to load resource."
 msgstr "Απέτυχε η φόρτωση πόρου."
-
-msgid "Raw"
-msgstr "Ωμό"
 
 msgid "Make Sub-Resources Unique"
 msgstr "Κάνε τους υπό-πόρους μοναδικούς"
@@ -5775,6 +5766,9 @@ msgstr "Άκυρο αρχείο έργου «.zip»: Δεν περιέχει α�
 msgid "The path specified doesn't exist."
 msgstr "Η ορισμένη διαδρομή δεν υπάρχει."
 
+msgid "New Game Project"
+msgstr "Νέο έργο παιχνιδιού"
+
 msgid "Couldn't create project.godot in project path."
 msgstr "Δεν ήταν δυνατή η δημιουργία του project.godot στη διαδρομή έργου."
 
@@ -5783,9 +5777,6 @@ msgstr "Σφάλμα ανοίγματος αρχείου πακέτου, δεν 
 
 msgid "The following files failed extraction from package:"
 msgstr "Η εξαγωγή των ακόλουθων αρχείων από το πακέτο απέτυχε:"
-
-msgid "New Game Project"
-msgstr "Νέο έργο παιχνιδιού"
 
 msgid "Import & Edit"
 msgstr "Εισαγωγή & Επεξεργασία"
@@ -6451,13 +6442,6 @@ msgstr ""
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "Το σώμα αυτό δε θα ληφθεί υπόψιν μέχρι να ορίσετε ένα πλέγμα (mesh)."
-
-msgid ""
-"A SpriteFrames resource must be created or set in the \"Frames\" property in "
-"order for AnimatedSprite3D to display frames."
-msgstr ""
-"Απαιτείται ο ορισμός ενός πόρου SpriteFrames στην ιδιότητα «Frames» για την "
-"εμφάνιση καρέ από το AnimatedSprite3D."
 
 msgid "Plotting Meshes"
 msgstr "Τοποθέτηση πλεγμάτων"

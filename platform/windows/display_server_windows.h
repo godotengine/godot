@@ -388,6 +388,14 @@ class DisplayServerWindows : public DisplayServer {
 	String tablet_driver;
 	Vector<String> tablet_drivers;
 
+	enum DriverID {
+		DRIVER_ID_COMPAT_OPENGL3 = 1 << 0,
+		DRIVER_ID_COMPAT_ANGLE_D3D11 = 1 << 1,
+		DRIVER_ID_RD_VULKAN = 1 << 2,
+		DRIVER_ID_RD_D3D12 = 1 << 3,
+	};
+	static BitField<DriverID> tested_drivers;
+
 	enum TimerID {
 		TIMER_ID_MOVE_REDRAW = 1,
 		TIMER_ID_WINDOW_ACTIVATION = 2,
@@ -441,6 +449,7 @@ class DisplayServerWindows : public DisplayServer {
 
 		Vector<Vector2> mpath;
 
+		bool create_completed = false;
 		bool pre_fs_valid = false;
 		RECT pre_fs_rect;
 		bool maximized = false;
@@ -517,7 +526,7 @@ class DisplayServerWindows : public DisplayServer {
 	uint64_t time_since_popup = 0;
 	Ref<Image> icon;
 
-	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect);
+	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, WindowID p_transient_parent);
 	WindowID window_id_counter = MAIN_WINDOW_ID;
 	RBMap<WindowID, WindowData> windows;
 
@@ -652,7 +661,7 @@ public:
 
 	virtual Vector<DisplayServer::WindowID> get_window_list() const override;
 
-	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i()) override;
+	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i(), bool p_exclusive = false, WindowID p_transient_parent = INVALID_WINDOW_ID) override;
 	virtual void show_window(WindowID p_window) override;
 	virtual void delete_sub_window(WindowID p_window) override;
 

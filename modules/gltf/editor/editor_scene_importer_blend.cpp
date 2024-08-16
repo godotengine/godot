@@ -57,7 +57,7 @@
 static bool _get_blender_version(const String &p_path, int &r_major, int &r_minor, String *r_err = nullptr) {
 	if (!FileAccess::exists(p_path)) {
 		if (r_err) {
-			*r_err = TTR("Path does not contain a Blender installation.");
+			*r_err = TTR("Path does not point to a valid executable.");
 		}
 		return false;
 	}
@@ -67,14 +67,14 @@ static bool _get_blender_version(const String &p_path, int &r_major, int &r_mino
 	Error err = OS::get_singleton()->execute(p_path, args, &pipe);
 	if (err != OK) {
 		if (r_err) {
-			*r_err = TTR("Can't execute Blender binary.");
+			*r_err = TTR("Couldn't run Blender executable.");
 		}
 		return false;
 	}
 	int bl = pipe.find("Blender ");
 	if (bl == -1) {
 		if (r_err) {
-			*r_err = vformat(TTR("Unexpected --version output from Blender binary at: %s."), p_path);
+			*r_err = vformat(TTR("Unexpected --version output from Blender executable at: %s."), p_path);
 		}
 		return false;
 	}
@@ -83,7 +83,7 @@ static bool _get_blender_version(const String &p_path, int &r_major, int &r_mino
 	int pp = pipe.find(".");
 	if (pp == -1) {
 		if (r_err) {
-			*r_err = TTR("Path supplied lacks a Blender binary.");
+			*r_err = vformat(TTR("Couldn't extract version information from Blender executable at: %s."), p_path);
 		}
 		return false;
 	}
@@ -91,7 +91,7 @@ static bool _get_blender_version(const String &p_path, int &r_major, int &r_mino
 	r_major = v.to_int();
 	if (r_major < 3) {
 		if (r_err) {
-			*r_err = TTR("This Blender installation is too old for this importer (not 3.0+).");
+			*r_err = vformat(TTR("Found Blender version %d.x, which is too old for this importer (3.0+ is required)."), r_major);
 		}
 		return false;
 	}
@@ -392,9 +392,9 @@ void EditorFileSystemImportFormatSupportQueryBlend::_validate_path(String p_path
 		if (_test_blender_path(p_path, &error)) {
 			success = true;
 			if (auto_detected_path == p_path) {
-				error = TTR("Path to Blender installation is valid (Autodetected).");
+				error = TTR("Path to Blender executable is valid (Autodetected).");
 			} else {
-				error = TTR("Path to Blender installation is valid.");
+				error = TTR("Path to Blender executable is valid.");
 			}
 		}
 	}
@@ -490,11 +490,15 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 	if (!configure_blender_dialog) {
 		configure_blender_dialog = memnew(ConfirmationDialog);
 		configure_blender_dialog->set_title(TTR("Configure Blender Importer"));
-		configure_blender_dialog->set_flag(Window::FLAG_BORDERLESS, true); // Avoid closing accidentally .
+		configure_blender_dialog->set_flag(Window::FLAG_BORDERLESS, true); // Avoid closing accidentally.
 		configure_blender_dialog->set_close_on_escape(false);
 
+		String select_exec_label = TTR("Blender 3.0+ is required to import '.blend' files.\nPlease provide a valid path to a Blender executable.");
+#ifdef MACOS_ENABLED
+		select_exec_label += "\n" + TTR("On macOS, this should be the `Contents/MacOS/blender` file within the Blender `.app` folder.");
+#endif
 		VBoxContainer *vb = memnew(VBoxContainer);
-		vb->add_child(memnew(Label(TTR("Blender 3.0+ is required to import '.blend' files.\nPlease provide a valid path to a Blender installation:"))));
+		vb->add_child(memnew(Label(select_exec_label)));
 
 		HBoxContainer *hb = memnew(HBoxContainer);
 
@@ -528,8 +532,8 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 
 		browse_dialog = memnew(EditorFileDialog);
 		browse_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-		browse_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
-		browse_dialog->connect("dir_selected", callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_select_install));
+		browse_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
+		browse_dialog->connect("file_selected", callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_select_install));
 
 		EditorNode::get_singleton()->get_gui_base()->add_child(browse_dialog);
 

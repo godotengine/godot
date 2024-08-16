@@ -1071,11 +1071,10 @@ Ref<Texture2D> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, cons
 		return Ref<Texture2D>();
 	}
 
-	Size2 thumbnail_size = p_size * EDSCALE;
 	Ref<Image> img_ref;
 	img_ref.instantiate();
 	Image &im = **img_ref;
-	im.initialize_data(thumbnail_size.x, thumbnail_size.y, false, Image::FORMAT_RGBA8);
+	im.initialize_data(p_size.x, p_size.y, false, Image::FORMAT_RGBA8);
 
 	Color line_color = EditorInterface::get_singleton()->get_editor_theme()->get_color(SceneStringName(font_color), EditorStringName(Editor));
 

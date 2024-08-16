@@ -438,7 +438,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path + ".import", FileAccess::READ, &err);
 
-	if (f.is_null()) { //no import file, do reimport
+	if (f.is_null()) { // No import file, reimport.
 		return true;
 	}
 
@@ -472,10 +472,15 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 			break;
 		} else if (err != OK) {
 			ERR_PRINT("ResourceFormatImporter::load - '" + p_path + ".import:" + itos(lines) + "' error '" + error_text + "'.");
-			return false; //parse error, try reimport manually (Avoid reimport loop on broken file)
+			// Parse error, skip and let user attempt manual reimport to avoid reimport loop.
+			return false;
 		}
 
 		if (!assign.is_empty()) {
+			if (assign == "valid" && value.operator bool() == false) {
+				// Invalid import (failed previous import), skip and let user attempt manual reimport to avoid reimport loop.
+				return false;
+			}
 			if (assign.begins_with("path")) {
 				to_check.push_back(value);
 			} else if (assign == "files") {
@@ -500,6 +505,11 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 		} else if (next_tag.name != "remap" && next_tag.name != "deps") {
 			break;
 		}
+	}
+
+	if (!ResourceFormatImporter::get_singleton()->are_import_settings_valid(p_path)) {
+		// Reimport settings are out of sync with project settings, reimport.
+		return true;
 	}
 
 	if (importer_name == "keep" || importer_name == "skip") {
@@ -722,12 +732,16 @@ bool EditorFileSystem::_update_scan_actions() {
 				String full_path = ia.dir->get_file_path(idx);
 
 				bool need_reimport = _test_for_reimport(full_path, false);
+				// Workaround GH-94416 for the Android editor for now.
+				// `import_mt` seems to always be 0 and force a reimport on any fs scan.
+#ifndef ANDROID_ENABLED
 				if (!need_reimport && FileAccess::exists(full_path + ".import")) {
 					uint64_t import_mt = ia.dir->get_file_import_modified_time(idx);
 					if (import_mt != FileAccess::get_modified_time(full_path + ".import")) {
 						need_reimport = true;
 					}
 				}
+#endif
 
 				if (need_reimport) {
 					//must reimport
@@ -1339,11 +1353,16 @@ void EditorFileSystem::_thread_func_sources(void *_userdata) {
 
 void EditorFileSystem::_remove_invalid_global_class_names(const HashSet<String> &p_existing_class_names) {
 	List<StringName> global_classes;
+	bool must_save = false;
 	ScriptServer::get_global_class_list(&global_classes);
 	for (const StringName &class_name : global_classes) {
 		if (!p_existing_class_names.has(class_name)) {
 			ScriptServer::remove_global_class(class_name);
+			must_save = true;
 		}
+	}
+	if (must_save) {
+		ScriptServer::save_global_classes();
 	}
 }
 
@@ -1760,7 +1779,9 @@ String EditorFileSystem::_get_global_script_class(const String &p_type, const St
 
 void EditorFileSystem::_update_file_icon_path(EditorFileSystemDirectory::FileInfo *file_info) {
 	String icon_path;
-	if (file_info->script_class_icon_path.is_empty() && !file_info->deps.is_empty()) {
+	if (file_info->resource_script_class != StringName()) {
+		icon_path = EditorNode::get_editor_data().script_class_get_icon_path(file_info->resource_script_class);
+	} else if (file_info->script_class_icon_path.is_empty() && !file_info->deps.is_empty()) {
 		const String &script_dep = file_info->deps[0]; // Assuming the first dependency is a script.
 		const String &script_path = script_dep.contains("::") ? script_dep.get_slice("::", 2) : script_dep;
 		if (!script_path.is_empty()) {
@@ -1798,6 +1819,10 @@ void EditorFileSystem::_update_files_icon_path(EditorFileSystemDirectory *edp) {
 
 void EditorFileSystem::_update_script_classes() {
 	if (update_script_paths.is_empty()) {
+		// Ensure the global class file is always present; it's essential for exports to work.
+		if (!FileAccess::exists(ProjectSettings::get_singleton()->get_global_class_list_path())) {
+			ScriptServer::save_global_classes();
+		}
 		return;
 	}
 
@@ -1888,7 +1913,7 @@ void EditorFileSystem::_update_scene_groups() {
 	}
 
 	EditorProgress *ep = nullptr;
-	if (update_scene_paths.size() > 1) {
+	if (update_scene_paths.size() > 20) {
 		ep = memnew(EditorProgress("update_scene_groups", TTR("Update Scene Groups"), update_scene_paths.size()));
 	}
 	int step_count = 0;
@@ -2089,8 +2114,8 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 		}
 		if (!is_scanning()) {
 			_process_update_pending();
-			call_deferred(SNAME("emit_signal"), "filesystem_changed"); //update later
 		}
+		call_deferred(SNAME("emit_signal"), "filesystem_changed"); // Update later
 	}
 }
 

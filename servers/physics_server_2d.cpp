@@ -754,6 +754,8 @@ void PhysicsServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_set_omit_force_integration", "body", "enable"), &PhysicsServer2D::body_set_omit_force_integration);
 	ClassDB::bind_method(D_METHOD("body_is_omitting_force_integration", "body"), &PhysicsServer2D::body_is_omitting_force_integration);
 
+	ClassDB::bind_method(D_METHOD("body_set_state_sync_callback", "body", "callable"), &PhysicsServer2D::body_set_state_sync_callback);
+
 	ClassDB::bind_method(D_METHOD("body_set_force_integration_callback", "body", "callable", "userdata"), &PhysicsServer2D::body_set_force_integration_callback, DEFVAL(Variant()));
 
 	ClassDB::bind_method(D_METHOD("body_test_motion", "body", "parameters", "result"), &PhysicsServer2D::_body_test_motion, DEFVAL(Variant()));

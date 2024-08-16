@@ -666,6 +666,15 @@ Error OS_MacOS::create_instance(const List<String> &p_arguments, ProcessID *r_ch
 	}
 }
 
+bool OS_MacOS::is_process_running(const ProcessID &p_pid) const {
+	NSRunningApplication *app = [NSRunningApplication runningApplicationWithProcessIdentifier:(pid_t)p_pid];
+	if (!app) {
+		return OS_Unix::is_process_running(p_pid);
+	}
+
+	return ![app isTerminated];
+}
+
 String OS_MacOS::get_unique_id() const {
 	static String serial_number;
 

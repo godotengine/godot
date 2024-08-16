@@ -37,7 +37,7 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
-#include "core/string/translation.h"
+#include "core/string/translation_server.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel.h"
 #include "scene/main/canvas_layer.h"

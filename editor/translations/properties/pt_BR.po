@@ -964,9 +964,6 @@ msgstr "Tela do Editor"
 msgid "Project Manager Screen"
 msgstr "Tela do Gerenciador de Projetos"
 
-msgid "Enable Pseudolocalization"
-msgstr "Habilitar Pseudo Localização"
-
 msgid "Use Embedded Menu"
 msgstr "Usar Menu Integrado"
 
@@ -1665,6 +1662,15 @@ msgstr "Intervalo de Atualização da Inspeção Remota"
 
 msgid "Profile Native Calls"
 msgstr "Chamadas Nativas de Perfil"
+
+msgid "Input"
+msgstr "Entrada"
+
+msgid "Buffering"
+msgstr "Preparando"
+
+msgid "Agile Event Flushing"
+msgstr "Limpeza de Eventos Agil"
 
 msgid "Project Manager"
 msgstr "Gerenciador de Projetos"
@@ -2632,18 +2638,6 @@ msgstr "Ambiente"
 msgid "Default Clear Color"
 msgstr "Cor Limpa Padrão"
 
-msgid "Show Image"
-msgstr "Mostrar Imagem"
-
-msgid "Image"
-msgstr "Imagem"
-
-msgid "Fullsize"
-msgstr "Tamanho Inteiro"
-
-msgid "Use Filter"
-msgstr "Usar Filtro"
-
 msgid "Icon"
 msgstr "Ícone"
 
@@ -2652,12 +2646,6 @@ msgstr "Ícone Nativo macOS"
 
 msgid "Windows Native Icon"
 msgstr "Ícone Nativo Windows"
-
-msgid "Buffering"
-msgstr "Preparando"
-
-msgid "Agile Event Flushing"
-msgstr "Limpeza de Eventos Agil"
 
 msgid "Pointing"
 msgstr "Apontando"
@@ -2682,6 +2670,18 @@ msgstr "Imagem Personalizada de Hotspot"
 
 msgid "Tooltip Position Offset"
 msgstr "Deslocamento de Posição da Dica de Ferramenta"
+
+msgid "Show Image"
+msgstr "Mostrar Imagem"
+
+msgid "Image"
+msgstr "Imagem"
+
+msgid "Fullsize"
+msgstr "Tamanho Inteiro"
+
+msgid "Use Filter"
+msgstr "Usar Filtro"
 
 msgid "Minimum Display Time"
 msgstr "Tempo mínimo de exibição"
@@ -4322,9 +4322,6 @@ msgstr "Ao sair"
 
 msgid "Disable Mode"
 msgstr "Desativar Modo"
-
-msgid "Input"
-msgstr "Entrada"
 
 msgid "Pickable"
 msgstr "Pegável"
@@ -6764,6 +6761,3 @@ msgstr "A detecção de âncora está habilitada"
 
 msgid "Tracking Confidence"
 msgstr "Rastreando a confiança"
-
-msgid "Property"
-msgstr "Propriedade"

@@ -622,7 +622,7 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		enable_stdout();
 		result.status = GDTEST_COMPILER_ERROR;
 		result.output = get_text_for_status(result.status) + "\n";
-		result.output = compiler.get_error();
+		result.output += compiler.get_error() + "\n";
 		if (!p_is_generating) {
 			result.passed = check_output(result.output);
 		}

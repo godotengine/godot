@@ -219,9 +219,6 @@ class AudioStreamMicrophone : public AudioStream {
 
 	HashSet<AudioStreamPlaybackMicrophone *> playbacks;
 
-protected:
-	static void _bind_methods();
-
 public:
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
 	virtual String get_stream_name() const override;
@@ -229,8 +226,6 @@ public:
 	virtual double get_length() const override; //if supported, otherwise return 0
 
 	virtual bool is_monophonic() const override;
-
-	AudioStreamMicrophone();
 };
 
 class AudioStreamPlaybackMicrophone : public AudioStreamPlaybackResampled {

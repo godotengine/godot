@@ -83,6 +83,10 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 	}
 #endif
 
+#ifdef THREADS_ENABLED
+	bool low_priority = p_task->low_priority;
+#endif
+
 	if (p_task->group) {
 		// Handling a group
 		bool do_post = false;
@@ -159,7 +163,7 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 #ifdef THREADS_ENABLED
 	{
 		curr_thread.current_task = prev_task;
-		if (p_task->low_priority) {
+		if (low_priority) {
 			low_priority_threads_used--;
 
 			if (_try_promote_low_priority_task()) {

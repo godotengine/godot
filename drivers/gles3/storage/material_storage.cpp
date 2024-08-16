@@ -874,7 +874,8 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 				if (V->value.is_array()) {
 					Array array = (Array)V->value;
 					if (uniform_array_size > 0) {
-						for (int j = 0; j < array.size(); j++) {
+						int size = MIN(uniform_array_size, array.size());
+						for (int j = 0; j < size; j++) {
 							textures.push_back(array[j]);
 						}
 					} else {

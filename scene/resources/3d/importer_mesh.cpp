@@ -269,7 +269,7 @@ void ImporterMesh::set_surface_material(int p_surface, const Ref<Material> &p_ma
 	}                                                                                                              \
 	write_array[vert_idx] = transformed_vert;
 
-void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_split_angle, Array p_bone_transform_array) {
+void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_split_angle, Array p_bone_transform_array, bool p_raycast_normals) {
 	if (!SurfaceTool::simplify_scale_func) {
 		return;
 	}
@@ -295,6 +295,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 		Vector<Vector3> vertices = surfaces[i].arrays[RS::ARRAY_VERTEX];
 		PackedInt32Array indices = surfaces[i].arrays[RS::ARRAY_INDEX];
 		Vector<Vector3> normals = surfaces[i].arrays[RS::ARRAY_NORMAL];
+		Vector<float> tangents = surfaces[i].arrays[RS::ARRAY_TANGENT];
 		Vector<Vector2> uvs = surfaces[i].arrays[RS::ARRAY_TEX_UV];
 		Vector<Vector2> uv2s = surfaces[i].arrays[RS::ARRAY_TEX_UV2];
 		Vector<int> bones = surfaces[i].arrays[RS::ARRAY_BONES];
@@ -354,6 +355,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 		LocalVector<int> merged_normals_counts;
 		const Vector2 *uvs_ptr = uvs.ptr();
 		const Vector2 *uv2s_ptr = uv2s.ptr();
+		const float *tangents_ptr = tangents.ptr();
 
 		for (unsigned int j = 0; j < vertex_count; j++) {
 			const Vector3 &v = vertices_ptr[j];
@@ -368,9 +370,10 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 				for (const Pair<int, int> &idx : close_verts) {
 					bool is_uvs_close = (!uvs_ptr || uvs_ptr[j].distance_squared_to(uvs_ptr[idx.second]) < CMP_EPSILON2);
 					bool is_uv2s_close = (!uv2s_ptr || uv2s_ptr[j].distance_squared_to(uv2s_ptr[idx.second]) < CMP_EPSILON2);
+					bool is_tang_aligned = !tangents_ptr || (tangents_ptr[j * 4 + 3] < 0) == (tangents_ptr[idx.second * 4 + 3] < 0);
 					ERR_FAIL_INDEX(idx.second, normals.size());
 					bool is_normals_close = normals[idx.second].dot(n) > normal_merge_threshold;
-					if (is_uvs_close && is_uv2s_close && is_normals_close) {
+					if (is_uvs_close && is_uv2s_close && is_normals_close && is_tang_aligned) {
 						vertex_remap.push_back(idx.first);
 						merged_normals[idx.first] += normals[idx.second];
 						merged_normals_counts[idx.first]++;
@@ -429,6 +432,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 		unsigned int index_target = 12; // Start with the smallest target, 4 triangles
 		unsigned int last_index_count = 0;
 
+		// Only used for normal raycasting
 		int split_vertex_count = vertex_count;
 		LocalVector<Vector3> split_vertex_normals;
 		LocalVector<int> split_vertex_indices;
@@ -438,7 +442,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 		RandomPCG pcg;
 		pcg.seed(123456789); // Keep seed constant across imports
 
-		Ref<StaticRaycaster> raycaster = StaticRaycaster::create();
+		Ref<StaticRaycaster> raycaster = p_raycast_normals ? StaticRaycaster::create() : Ref<StaticRaycaster>();
 		if (raycaster.is_valid()) {
 			raycaster->add_mesh(vertices, indices, 0);
 			raycaster->commit();
@@ -485,19 +489,22 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 			}
 
 			new_indices.resize(new_index_count);
-
-			LocalVector<LocalVector<int>> vertex_corners;
-			vertex_corners.resize(vertex_count);
 			{
 				int *ptrw = new_indices.ptrw();
 				for (unsigned int j = 0; j < new_index_count; j++) {
-					const int &remapped = vertex_inverse_remap[ptrw[j]];
-					vertex_corners[remapped].push_back(j);
-					ptrw[j] = remapped;
+					ptrw[j] = vertex_inverse_remap[ptrw[j]];
 				}
 			}
 
 			if (raycaster.is_valid()) {
+				LocalVector<LocalVector<int>> vertex_corners;
+				vertex_corners.resize(vertex_count);
+
+				int *ptrw = new_indices.ptrw();
+				for (unsigned int j = 0; j < new_index_count; j++) {
+					vertex_corners[ptrw[j]].push_back(j);
+				}
+
 				float error_factor = 1.0f / (scale * MAX(mesh_error, 0.15));
 				const float ray_bias = 0.05;
 				float ray_length = ray_bias + mesh_error * scale * 3.0f;
@@ -668,7 +675,10 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 			}
 		}
 
-		surfaces.write[i].split_normals(split_vertex_indices, split_vertex_normals);
+		if (raycaster.is_valid()) {
+			surfaces.write[i].split_normals(split_vertex_indices, split_vertex_normals);
+		}
+
 		surfaces.write[i].lods.sort_custom<Surface::LODComparator>();
 
 		for (int j = 0; j < surfaces.write[i].lods.size(); j++) {
@@ -677,6 +687,10 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 			SurfaceTool::optimize_vertex_cache_func(lod_indices_ptr, lod_indices_ptr, lod.indices.size(), split_vertex_count);
 		}
 	}
+}
+
+void ImporterMesh::_generate_lods_bind(float p_normal_merge_angle, float p_normal_split_angle, Array p_skin_pose_transform_array) {
+	generate_lods(p_normal_merge_angle, p_normal_split_angle, p_skin_pose_transform_array);
 }
 
 bool ImporterMesh::has_mesh() const {
@@ -1364,7 +1378,7 @@ void ImporterMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_surface_name", "surface_idx", "name"), &ImporterMesh::set_surface_name);
 	ClassDB::bind_method(D_METHOD("set_surface_material", "surface_idx", "material"), &ImporterMesh::set_surface_material);
 
-	ClassDB::bind_method(D_METHOD("generate_lods", "normal_merge_angle", "normal_split_angle", "bone_transform_array"), &ImporterMesh::generate_lods);
+	ClassDB::bind_method(D_METHOD("generate_lods", "normal_merge_angle", "normal_split_angle", "bone_transform_array"), &ImporterMesh::_generate_lods_bind);
 	ClassDB::bind_method(D_METHOD("get_mesh", "base_mesh"), &ImporterMesh::get_mesh, DEFVAL(Ref<ArrayMesh>()));
 	ClassDB::bind_method(D_METHOD("clear"), &ImporterMesh::clear);
 

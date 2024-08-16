@@ -2346,7 +2346,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		}
 
 		// VisualShader editor.
-		p_theme->set_stylebox("label_style", "VShaderEditor", make_empty_stylebox(2, 1, 2, 1));
+		p_theme->set_stylebox("label_style", "VShaderEditor", make_empty_stylebox(4, 6, 4, 6));
 
 		// StateMachine graph.
 		{

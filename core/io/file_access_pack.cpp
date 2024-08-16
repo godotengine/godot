@@ -119,6 +119,10 @@ void PackedData::_free_packed_dirs(PackedDir *p_dir) {
 }
 
 PackedData::~PackedData() {
+	if (singleton == this) {
+		singleton = nullptr;
+	}
+
 	for (int i = 0; i < sources.size(); i++) {
 		memdelete(sources[i]);
 	}

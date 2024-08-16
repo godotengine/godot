@@ -2323,7 +2323,8 @@ static bool has_valid_keystore_credentials(String &r_error_str, const String &p_
 	args.push_back(p_password);
 	args.push_back("-alias");
 	args.push_back(p_username);
-	Error error = OS::get_singleton()->execute("keytool", args, &output, nullptr, true);
+	String keytool_path = EditorExportPlatformAndroid::get_keytool_path();
+	Error error = OS::get_singleton()->execute(keytool_path, args, &output, nullptr, true);
 	String keytool_error = "keytool error:";
 	bool valid = output.substr(0, keytool_error.length()) != keytool_error;
 
@@ -3269,17 +3270,16 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		}
 
 		List<String> copy_args;
-		String copy_command;
-		if (export_format == EXPORT_FORMAT_AAB) {
-			copy_command = vformat("copyAndRename%sAab", build_type);
-		} else if (export_format == EXPORT_FORMAT_APK) {
-			copy_command = vformat("copyAndRename%sApk", build_type);
-		}
-
+		String copy_command = "copyAndRenameBinary";
 		copy_args.push_back(copy_command);
 
 		copy_args.push_back("-p"); // argument to specify the start directory.
 		copy_args.push_back(build_path); // start directory.
+
+		copy_args.push_back("-Pexport_build_type=" + build_type.to_lower());
+
+		String export_format_arg = export_format == EXPORT_FORMAT_AAB ? "aab" : "apk";
+		copy_args.push_back("-Pexport_format=" + export_format_arg);
 
 		String export_filename = p_path.get_file();
 		String export_path = p_path.get_base_dir();

@@ -352,7 +352,7 @@ void main() {
 	}
 
 #ifdef OVERRIDE_POSITION
-	vec4 position;
+	vec4 position = vec4(1.0);
 #endif
 
 #ifdef USE_MULTIVIEW
@@ -1765,7 +1765,7 @@ void main() {
 	alpha = min(alpha, clamp(length(ambient_light), 0.0, 1.0));
 
 #if defined(ALPHA_SCISSOR_USED)
-	if (alpha < alpha_scissor) {
+	if (alpha < alpha_scissor_threshold) {
 		discard;
 	}
 #endif // !ALPHA_SCISSOR_USED

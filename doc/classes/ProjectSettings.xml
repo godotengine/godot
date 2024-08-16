@@ -630,6 +630,10 @@
 		<member name="debug/settings/gdscript/max_call_stack" type="int" setter="" getter="" default="1024">
 			Maximum call stack allowed for debugging GDScript.
 		</member>
+		<member name="debug/settings/physics_interpolation/enable_warnings" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], enables warnings which can help pinpoint where nodes are being incorrectly updated, which will result in incorrect interpolation and visual glitches.
+			When a node is being interpolated, it is essential that the transform is set during [method Node._physics_process] (during a physics tick) rather than [method Node._process] (during a frame).
+		</member>
 		<member name="debug/settings/profiler/max_functions" type="int" setter="" getter="" default="16384">
 			Maximum number of functions per frame allowed when profiling.
 		</member>
@@ -913,7 +917,9 @@
 			[b]Note:[/b] When using integer scaling with a stretch mode, resizing the window to be smaller than the base viewport size will clip the contents. Consider preventing that by setting [member Window.min_size] to the same value as the base viewport size defined in [member display/window/size/viewport_width] and [member display/window/size/viewport_height].
 		</member>
 		<member name="display/window/subwindows/embed_subwindows" type="bool" setter="" getter="" default="true">
-			If [code]true[/code] subwindows are embedded in the main window.
+			If [code]true[/code], subwindows are embedded in the main window (this is also called single-window mode). Single-window mode can be faster as it does not need to create a separate window for every popup and tooltip, which can be a slow operation depending on the operating system and rendering method in use.
+			If [code]false[/code], subwindows are created as separate windows (this is also called multi-window mode). This allows them to be moved outside the main window and use native operating system window decorations.
+			This is equivalent to [member EditorSettings.interface/editor/single_window_mode] in the editor, except the setting's value is inverted.
 		</member>
 		<member name="display/window/vsync/vsync_mode" type="int" setter="" getter="" default="1">
 			Sets the V-Sync mode for the main game window. The editor's own V-Sync mode can be set using [member EditorSettings.interface/editor/vsync_mode].
@@ -998,7 +1004,7 @@
 			prime-run %command%
 			[/codeblock]
 		</member>
-		<member name="editor/script/search_in_file_extensions" type="PackedStringArray" setter="" getter="" default="PackedStringArray(&quot;gd&quot;, &quot;gdshader&quot;)">
+		<member name="editor/script/search_in_file_extensions" type="PackedStringArray" setter="" getter="">
 			Text-based file extensions to include in the script editor's "Find in Files" feature. You can add e.g. [code]tscn[/code] if you wish to also parse your scene files, especially if you use built-in scripts which are serialized in the scene files.
 		</member>
 		<member name="editor/script/templates_search_path" type="String" setter="" getter="" default="&quot;res://script_templates&quot;">
@@ -2320,7 +2326,8 @@
 		</member>
 		<member name="physics/common/physics_jitter_fix" type="float" setter="" getter="" default="0.5">
 			Controls how much physics ticks are synchronized with real time. For 0 or less, the ticks are synchronized. Such values are recommended for network games, where clock synchronization matters. Higher values cause higher deviation of in-game clock and real clock, but allows smoothing out framerate jitters. The default value of 0.5 should be good enough for most; values above 2 could cause the game to react to dropped frames with a noticeable delay and are not recommended.
-			[b]Note:[/b] When using a physics interpolation solution (such as enabling [member physics/common/physics_interpolation] or using a custom solution), the physics jitter fix should be disabled by setting [member physics/common/physics_jitter_fix] to [code]0.0[/code].
+			[b]Note:[/b] Jitter fix is automatically disabled at runtime when [member physics/common/physics_interpolation] is enabled.
+			[b]Note:[/b] When using a custom physics interpolation solution, the physics jitter fix should be disabled by setting [member physics/common/physics_jitter_fix] to [code]0.0[/code].
 			[b]Note:[/b] This property is only read when the project starts. To change the physics jitter fix at runtime, set [member Engine.physics_jitter_fix] instead.
 		</member>
 		<member name="physics/common/physics_ticks_per_second" type="int" setter="" getter="" default="60">
@@ -2764,6 +2771,14 @@
 		</member>
 		<member name="rendering/rendering_device/driver.windows" type="String" setter="" getter="">
 			Windows override for [member rendering/rendering_device/driver].
+		</member>
+		<member name="rendering/rendering_device/fallback_to_d3d12" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the forward renderer will fall back to Direct3D 12 if Vulkan is not supported.
+			[b]Note:[/b] This setting is implemented only on Windows.
+		</member>
+		<member name="rendering/rendering_device/fallback_to_vulkan" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the forward renderer will fall back to Vulkan if Direct3D 12 is not supported.
+			[b]Note:[/b] This setting is implemented only on Windows.
 		</member>
 		<member name="rendering/rendering_device/pipeline_cache/enable" type="bool" setter="" getter="" default="true">
 			Enable the pipeline cache that is saved to disk if the graphics API supports it.

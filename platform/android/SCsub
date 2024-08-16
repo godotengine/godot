@@ -95,25 +95,18 @@ if lib_arch_dir != "":
         else:
             gradle_process = ["./gradlew"]
 
-        if env["target"] != "editor" and env["dev_build"]:
-            subprocess.run(
-                gradle_process
-                + [
-                    "generateDevTemplate",
-                    "--quiet",
-                ],
-                cwd="platform/android/java",
-            )
-        else:
-            # Android editor with `dev_build=yes` is handled by the `generateGodotEditor` task.
-            subprocess.run(
-                gradle_process
-                + [
-                    "generateGodotEditor" if env["target"] == "editor" else "generateGodotTemplates",
-                    "--quiet",
-                ],
-                cwd="platform/android/java",
-            )
+        gradle_process += [
+            "generateGodotEditor" if env["target"] == "editor" else "generateGodotTemplates",
+            "--quiet",
+        ]
+
+        if env["debug_symbols"]:
+            gradle_process += ["-PdoNotStrip=true"]
+
+        subprocess.run(
+            gradle_process,
+            cwd="platform/android/java",
+        )
 
     if env["generate_apk"]:
         generate_apk_command = env_android.Command("generate_apk", [], generate_apk)
