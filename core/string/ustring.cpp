@@ -4430,10 +4430,7 @@ String String::simplify_path() const {
 			dirs.remove_at(i);
 			i--;
 		} else if (d == "..") {
-			if (i == 0) {
-				dirs.remove_at(i);
-				i--;
-			} else {
+			if (i != 0) {
 				dirs.remove_at(i);
 				dirs.remove_at(i - 1);
 				i -= 2;
