@@ -39,7 +39,10 @@ vec3 F0(float metallic, float specular, vec3 albedo) {
 	return mix(vec3(dielectric), albedo, vec3(metallic));
 }
 
-void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_directional, float attenuation, vec3 f0, uint orms, float specular_amount, vec3 albedo, inout float alpha,
+void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_directional, float attenuation, vec3 f0, uint orms, float specular_amount, vec3 albedo,
+#ifdef USE_SHADOW_TO_OPACITY
+		inout float shadow_to_opacity,
+#endif
 #ifdef LIGHT_BACKLIGHT_USED
 		vec3 backlight,
 #endif
@@ -249,7 +252,7 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 	}
 
 #ifdef USE_SHADOW_TO_OPACITY
-	alpha = min(alpha, clamp(1.0 - attenuation, 0.0, 1.0));
+	shadow_to_opacity = max(shadow_to_opacity, clamp(1.0 - attenuation, 0.0, 1.0));
 #endif
 
 #endif //defined(LIGHT_CODE_USED)
@@ -547,7 +550,10 @@ float light_process_omni_shadow(uint idx, vec3 vertex, vec3 normal) {
 	return 1.0;
 }
 
-void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 vertex_ddx, vec3 vertex_ddy, vec3 f0, uint orms, float shadow, vec3 albedo, inout float alpha,
+void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 vertex_ddx, vec3 vertex_ddy, vec3 f0, uint orms, float shadow, vec3 albedo,
+#ifdef USE_SHADOW_TO_OPACITY
+		inout float shadow_to_opacity,
+#endif
 #ifdef LIGHT_BACKLIGHT_USED
 		vec3 backlight,
 #endif
@@ -670,7 +676,10 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 
 	light_attenuation *= shadow;
 
-	light_compute(normal, normalize(light_rel_vec), eye_vec, size_A, color, false, light_attenuation, f0, orms, omni_lights.data[idx].specular_amount, albedo, alpha,
+	light_compute(normal, normalize(light_rel_vec), eye_vec, size_A, color, false, light_attenuation, f0, orms, omni_lights.data[idx].specular_amount, albedo,
+#ifdef USE_SHADOW_TO_OPACITY
+			shadow_to_opacity,
+#endif
 #ifdef LIGHT_BACKLIGHT_USED
 			backlight,
 #endif
@@ -788,7 +797,10 @@ vec2 normal_to_panorama(vec3 n) {
 	return panorama_coords;
 }
 
-void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 vertex_ddx, vec3 vertex_ddy, vec3 f0, uint orms, float shadow, vec3 albedo, inout float alpha,
+void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 vertex_ddx, vec3 vertex_ddy, vec3 f0, uint orms, float shadow, vec3 albedo,
+#ifdef USE_SHADOW_TO_OPACITY
+		inout float shadow_to_opacity,
+#endif
 #ifdef LIGHT_BACKLIGHT_USED
 		vec3 backlight,
 #endif
@@ -877,7 +889,10 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 	}
 	light_attenuation *= shadow;
 
-	light_compute(normal, normalize(light_rel_vec), eye_vec, size_A, color, false, light_attenuation, f0, orms, spot_lights.data[idx].specular_amount, albedo, alpha,
+	light_compute(normal, normalize(light_rel_vec), eye_vec, size_A, color, false, light_attenuation, f0, orms, spot_lights.data[idx].specular_amount, albedo,
+#ifdef USE_SHADOW_TO_OPACITY
+			shadow_to_opacity,
+#endif
 #ifdef LIGHT_BACKLIGHT_USED
 			backlight,
 #endif
