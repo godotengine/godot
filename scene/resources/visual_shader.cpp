@@ -412,7 +412,6 @@ String VisualShaderNode::get_warning(Shader::Mode p_mode, VisualShader::Type p_t
 }
 
 VisualShaderNode::Category VisualShaderNode::get_category() const {
-	WARN_PRINT(get_caption() + " is missing a category.");
 	return CATEGORY_NONE;
 }
 
