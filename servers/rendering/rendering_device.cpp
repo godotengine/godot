@@ -5065,13 +5065,19 @@ void RenderingDevice::swap_buffers() {
 
 void RenderingDevice::submit() {
 	_THREAD_SAFE_METHOD_
+	ERR_FAIL_COND_MSG(is_main_instance, "Only local devices can submit and sync.");
+	ERR_FAIL_COND_MSG(local_device_processing, "device already submitted, call sync to wait until done.");
 	_end_frame();
 	_execute_frame(false);
+	local_device_processing = true;
 }
 
 void RenderingDevice::sync() {
 	_THREAD_SAFE_METHOD_
+	ERR_FAIL_COND_MSG(is_main_instance, "Only local devices can submit and sync.");
+	ERR_FAIL_COND_MSG(!local_device_processing, "sync can only be called after a submit");
 	_begin_frame();
+	local_device_processing = false;
 }
 
 void RenderingDevice::_free_pending_resources(int p_frame) {
@@ -5323,7 +5329,7 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 	Error err;
 
 	RenderingContextDriver::SurfaceID main_surface = 0;
-	const bool main_instance = (singleton == this) && (p_main_window != DisplayServer::INVALID_WINDOW_ID);
+	is_main_instance = (singleton == this) && (p_main_window != DisplayServer::INVALID_WINDOW_ID);
 	if (p_main_window != DisplayServer::INVALID_WINDOW_ID) {
 		// Retrieve the surface from the main window if it was specified.
 		main_surface = p_context->surface_get_from_window(p_main_window);
@@ -5371,7 +5377,7 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 	err = driver->initialize(device_index, frame_count);
 	ERR_FAIL_COND_V_MSG(err != OK, FAILED, "Failed to initialize driver for device.");
 
-	if (main_instance) {
+	if (is_main_instance) {
 		// Only the singleton instance with a display should print this information.
 		String rendering_method;
 		if (OS::get_singleton()->get_current_rendering_method() == "mobile") {
@@ -5499,7 +5505,7 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 	compute_list = nullptr;
 
 	bool project_pipeline_cache_enable = GLOBAL_GET("rendering/rendering_device/pipeline_cache/enable");
-	if (main_instance && project_pipeline_cache_enable) {
+	if (is_main_instance && project_pipeline_cache_enable) {
 		// Only the instance that is not a local device and is also the singleton is allowed to manage a pipeline cache.
 		pipeline_cache_file_path = vformat("user://vulkan/pipelines.%s.%s",
 				OS::get_singleton()->get_current_rendering_method(),
