@@ -42,10 +42,6 @@
 
 @interface MyCaptureSession : AVCaptureSession <AVCaptureVideoDataOutputSampleBufferDelegate> {
 	Ref<CameraFeed> feed;
-	size_t width[2];
-	size_t height[2];
-	Vector<uint8_t> img_data[2];
-
 	AVCaptureDeviceInput *input;
 	AVCaptureVideoDataOutput *output;
 }
@@ -58,10 +54,6 @@
 	if (self = [super init]) {
 		NSError *error;
 		feed = p_feed;
-		width[0] = 0;
-		height[0] = 0;
-		width[1] = 0;
-		height[1] = 0;
 
 		[self beginConfiguration];
 
@@ -135,28 +127,44 @@
 	CVPixelBufferLockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
 
 	// get our buffers
-	unsigned char *dataY = (unsigned char *)CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 0);
-	unsigned char *dataCbCr = (unsigned char *)CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 1);
-	if (dataY == nullptr) {
-		print_line("Couldn't access Y pixel buffer data");
-	} else if (dataCbCr == nullptr) {
-		print_line("Couldn't access CbCr pixel buffer data");
-	} else {
-		{
-			// do Y
-			size_t new_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 0);
-			size_t new_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 0);
-			feed->set_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_DIFFUSE, dataY, 0, new_width*new_height);
+	{
+		// do Y
+		unsigned char *dataY = (unsigned char *)CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 0);
+		if (dataY == nullptr) {
+			print_line("Couldn't access Y pixel buffer data");
+			return;
 		}
 
-		{
-			// do CbCr
-			size_t new_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 1);
-			size_t new_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 1);
-			feed->set_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_NORMAL, dataCbCr, 0,  2 * new_width * new_height);
+		size_t new_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 0);
+		size_t new_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 0);
+		
+		Ref<Image> image = feed->get_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_DIFFUSE);
+		if (image.is_null() || image->get_width()!=new_width || image->get_height()!=new_height) {
+			feed->set_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_DIFFUSE, Image::create_empty(new_width, new_height, false, Image::FORMAT_R8));	
+		} else {
+			feed->set_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_DIFFUSE, dataY, 0, new_width*new_height);
 		}
 	}
 
+	{
+		// do CbCr
+		unsigned char *dataCbCr = (unsigned char *)CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 1);
+		if (dataCbCr == nullptr) {
+			print_line("Couldn't access CbCr pixel buffer data");
+			return;
+		}
+
+		size_t new_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 1);
+		size_t new_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 1);
+
+		Ref<Image> image = feed->get_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_NORMAL);
+		if (image.is_null() || image->get_width()!=new_width || image->get_height()!=new_height) {
+			feed->set_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_NORMAL, Image::create_empty(new_width, new_height, false, Image::FORMAT_RG8));
+		} else {
+			feed->set_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_NORMAL, dataCbCr, 0,  2 * new_width * new_height);
+		}
+	}
+	
 	// and unlock
 	CVPixelBufferUnlockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
 }
@@ -206,12 +214,6 @@ void CameraFeedMacOS::set_device(AVCaptureDevice *p_device) {
 };
 
 bool CameraFeedMacOS::activate_feed() {
-	// Create image buffers
-    set_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_DIFFUSE,
-              Image::create_empty(width, height, false, Image::FORMAT_R8));
-    set_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_NORMAL,
-              Image::create_empty(width, height, false, Image::FORMAT_R8));
-
 	if (capture_session) {
 		// Already recording!
 	} else {
@@ -315,11 +317,6 @@ void CameraMacOS::update_feeds() {
 			Ref<CameraFeedMacOS> newfeed;
 			newfeed.instantiate();
 			newfeed->set_device(device);
-
-			// assume display camera so inverse
-			Transform2D transform = Transform2D(-1.0, 0.0, 0.0, -1.0, 1.0, 1.0);
-			newfeed->set_transform(transform);
-
 			add_feed(newfeed);
 		};
 	};

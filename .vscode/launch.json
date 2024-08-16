@@ -16,8 +16,10 @@
                 "${workspaceFolder}/examples/camera"
             ],
             "stopAtEntry": false,
+            "externalConsole": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
+            "MIMode": "lldb",
             "preLaunchTask": "Build Godot"
         },
         {
@@ -30,6 +32,7 @@
                 "${workspaceFolder}/examples/camera"
             ],
             "stopAtEntry": false,
+            "externalConsole": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
             "preLaunchTask": "Build Godot"

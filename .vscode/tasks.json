@@ -9,7 +9,8 @@
       "type": "shell",
       "command": "scons",
       "args": [
-        "--clean"
+        "--clean",
+        "dev_build=yes"
       ],
       "problemMatcher": {
         "base": "$gcc",
@@ -27,7 +28,8 @@
       "args": [
         "dev_build=yes",
         "debug_symbols=yes",
-        "progress=no"
+        "progress=no",
+        "vulkan=no"
       ],
       "problemMatcher": {
         "base": "$gcc",

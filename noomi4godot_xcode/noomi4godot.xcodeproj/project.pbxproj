@@ -18,11 +18,12 @@
 /* Begin PBXLegacyTarget section */
 		F94D54292C6F634D002DC9B4 /* noomi4godot */ = {
 			isa = PBXLegacyTarget;
-			buildArgumentsString = "$(ACTION)";
+			buildArgumentsString = "dev_build=yes";
 			buildConfigurationList = F94D542C2C6F634D002DC9B4 /* Build configuration list for PBXLegacyTarget "noomi4godot" */;
 			buildPhases = (
 			);
 			buildToolPath = /Library/Frameworks/Python.framework/Versions/3.12/bin/scons;
+			buildWorkingDirectory = /Users/penninghlhd/Code/noomi4godot;
 			dependencies = (
 			);
 			name = noomi4godot;
