@@ -31,6 +31,7 @@
 #include "editor_locale_dialog.h"
 
 #include "core/config/project_settings.h"
+#include "core/string/translation_server.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_button.h"
