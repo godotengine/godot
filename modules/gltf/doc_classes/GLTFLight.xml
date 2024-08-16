@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="GLTFLight" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
-		Represents a GLTF light.
+		Represents a glTF light.
 	</brief_description>
 	<description>
-		Represents a light as defined by the [code]KHR_lights_punctual[/code] GLTF extension.
+		Represents a light as defined by the [code]KHR_lights_punctual[/code] glTF extension.
 	</description>
 	<tutorials>
 		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
-		<link title="KHR_lights_punctual GLTF extension spec">https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_lights_punctual</link>
+		<link title="KHR_lights_punctual glTF extension spec">https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_lights_punctual</link>
 	</tutorials>
 	<methods>
 		<method name="from_dictionary" qualifiers="static">
@@ -70,7 +70,7 @@
 			At this angle, the light drops off to zero brightness. Between the inner and outer cone angles, there is a transition from full brightness to zero brightness. If this angle is a half turn, then the spotlight emits in all directions. When creating a Godot [SpotLight3D], the outer cone angle is used as the angle of the spotlight.
 		</member>
 		<member name="range" type="float" setter="set_range" getter="get_range" default="inf">
-			The range of the light, beyond which the light has no effect. GLTF lights with no range defined behave like physical lights (which have infinite range). When creating a Godot light, the range is clamped to 4096.
+			The range of the light, beyond which the light has no effect. glTF lights with no range defined behave like physical lights (which have infinite range). When creating a Godot light, the range is clamped to 4096.
 		</member>
 	</members>
 </class>
