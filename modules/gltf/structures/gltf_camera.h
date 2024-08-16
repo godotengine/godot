@@ -42,8 +42,8 @@ class GLTFCamera : public Resource {
 	GDCLASS(GLTFCamera, Resource);
 
 private:
-	// GLTF has no default camera values, they should always be specified in
-	// the GLTF file. Here we default to Godot's default camera settings.
+	// glTF has no default camera values, they should always be specified in
+	// the glTF file. Here we default to Godot's default camera settings.
 	bool perspective = true;
 	real_t fov = Math::deg_to_rad(75.0);
 	real_t size_mag = 0.5;

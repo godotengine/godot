@@ -88,7 +88,7 @@ Error GLTFDocumentExtensionPhysics::parse_node_extensions(Ref<GLTFState> p_state
 			// "collider" is the index of the collider in the state colliders array.
 			int node_collider_index = node_collider_ext["collider"];
 			Array state_colliders = p_state->get_additional_data(StringName("GLTFPhysicsShapes"));
-			ERR_FAIL_INDEX_V_MSG(node_collider_index, state_colliders.size(), Error::ERR_FILE_CORRUPT, "GLTF Physics: On node " + p_gltf_node->get_name() + ", the collider index " + itos(node_collider_index) + " is not in the state colliders (size: " + itos(state_colliders.size()) + ").");
+			ERR_FAIL_INDEX_V_MSG(node_collider_index, state_colliders.size(), Error::ERR_FILE_CORRUPT, "glTF Physics: On node " + p_gltf_node->get_name() + ", the collider index " + itos(node_collider_index) + " is not in the state colliders (size: " + itos(state_colliders.size()) + ").");
 			p_gltf_node->set_additional_data(StringName("GLTFPhysicsShape"), state_colliders[node_collider_index]);
 		} else {
 			p_gltf_node->set_additional_data(StringName("GLTFPhysicsShape"), GLTFPhysicsShape::from_dictionary(node_collider_ext));
@@ -103,7 +103,7 @@ Error GLTFDocumentExtensionPhysics::parse_node_extensions(Ref<GLTFState> p_state
 			int node_shape_index = node_collider.get("shape", -1);
 			if (node_shape_index != -1) {
 				Array state_shapes = p_state->get_additional_data(StringName("GLTFPhysicsShapes"));
-				ERR_FAIL_INDEX_V_MSG(node_shape_index, state_shapes.size(), Error::ERR_FILE_CORRUPT, "GLTF Physics: On node " + p_gltf_node->get_name() + ", the shape index " + itos(node_shape_index) + " is not in the state shapes (size: " + itos(state_shapes.size()) + ").");
+				ERR_FAIL_INDEX_V_MSG(node_shape_index, state_shapes.size(), Error::ERR_FILE_CORRUPT, "glTF Physics: On node " + p_gltf_node->get_name() + ", the shape index " + itos(node_shape_index) + " is not in the state shapes (size: " + itos(state_shapes.size()) + ").");
 				p_gltf_node->set_additional_data(StringName("GLTFPhysicsColliderShape"), state_shapes[node_shape_index]);
 			} else {
 				// If this node is a collider but does not have a collider
@@ -117,7 +117,7 @@ Error GLTFDocumentExtensionPhysics::parse_node_extensions(Ref<GLTFState> p_state
 			int node_shape_index = node_trigger.get("shape", -1);
 			if (node_shape_index != -1) {
 				Array state_shapes = p_state->get_additional_data(StringName("GLTFPhysicsShapes"));
-				ERR_FAIL_INDEX_V_MSG(node_shape_index, state_shapes.size(), Error::ERR_FILE_CORRUPT, "GLTF Physics: On node " + p_gltf_node->get_name() + ", the shape index " + itos(node_shape_index) + " is not in the state shapes (size: " + itos(state_shapes.size()) + ").");
+				ERR_FAIL_INDEX_V_MSG(node_shape_index, state_shapes.size(), Error::ERR_FILE_CORRUPT, "glTF Physics: On node " + p_gltf_node->get_name() + ", the shape index " + itos(node_shape_index) + " is not in the state shapes (size: " + itos(state_shapes.size()) + ").");
 				p_gltf_node->set_additional_data(StringName("GLTFPhysicsTriggerShape"), state_shapes[node_shape_index]);
 			} else {
 				// If this node is a trigger but does not have a trigger shape,
@@ -150,7 +150,7 @@ void _setup_shape_mesh_resource_from_index_if_needed(Ref<GLTFState> p_state, Ref
 		return; // The mesh resource is already set up.
 	}
 	TypedArray<GLTFMesh> state_meshes = p_state->get_meshes();
-	ERR_FAIL_INDEX_MSG(shape_mesh_index, state_meshes.size(), "GLTF Physics: When importing '" + p_state->get_scene_name() + "', the shape mesh index " + itos(shape_mesh_index) + " is not in the state meshes (size: " + itos(state_meshes.size()) + ").");
+	ERR_FAIL_INDEX_MSG(shape_mesh_index, state_meshes.size(), "glTF Physics: When importing '" + p_state->get_scene_name() + "', the shape mesh index " + itos(shape_mesh_index) + " is not in the state meshes (size: " + itos(state_meshes.size()) + ").");
 	Ref<GLTFMesh> gltf_mesh = state_meshes[shape_mesh_index];
 	ERR_FAIL_COND(gltf_mesh.is_null());
 	importer_mesh = gltf_mesh->get_mesh();
@@ -164,12 +164,12 @@ CollisionObject3D *_generate_shape_with_body(Ref<GLTFState> p_state, Ref<GLTFNod
 	bool is_trigger = p_physics_shape->get_is_trigger();
 	// This method is used for the case where we must generate a parent body.
 	// This is can happen for multiple reasons. One possibility is that this
-	// GLTF file is using OMI_collider but not OMI_physics_body, or at least
+	// glTF file is using OMI_collider but not OMI_physics_body, or at least
 	// this particular node is not using it. Another possibility is that the
-	// physics body information is set up on the same GLTF node, not a parent.
+	// physics body information is set up on the same glTF node, not a parent.
 	CollisionObject3D *body;
 	if (p_physics_body.is_valid()) {
-		// This code is run when the physics body is on the same GLTF node.
+		// This code is run when the physics body is on the same glTF node.
 		body = p_physics_body->to_node();
 		if (is_trigger && (p_physics_body->get_body_type() != "trigger")) {
 			// Edge case: If the body's trigger and the collider's trigger
@@ -266,7 +266,7 @@ Node3D *GLTFDocumentExtensionPhysics::generate_scene_node(Ref<GLTFState> p_state
 	Ref<GLTFPhysicsShape> gltf_physics_shape = p_gltf_node->get_additional_data(StringName("GLTFPhysicsShape"));
 	if (gltf_physics_shape.is_valid()) {
 		_setup_shape_mesh_resource_from_index_if_needed(p_state, gltf_physics_shape);
-		// If this GLTF node specifies both a shape and a body, generate both.
+		// If this glTF node specifies both a shape and a body, generate both.
 		if (gltf_physics_body.is_valid()) {
 			return _generate_shape_with_body(p_state, p_gltf_node, gltf_physics_shape, gltf_physics_body);
 		}
@@ -309,7 +309,7 @@ Node3D *GLTFDocumentExtensionPhysics::generate_scene_node(Ref<GLTFState> p_state
 			}
 		} else if (!Object::cast_to<PhysicsBody3D>(ancestor_col_obj)) {
 			if (p_gltf_node->get_additional_data(StringName("GLTFPhysicsCompoundCollider"))) {
-				// If the GLTF file wants this node to group solid shapes together,
+				// If the glTF file wants this node to group solid shapes together,
 				// and there is no parent body, we need to create a static body.
 				ancestor_col_obj = memnew(StaticBody3D);
 				ret = ancestor_col_obj;
@@ -386,7 +386,7 @@ void GLTFDocumentExtensionPhysics::convert_scene_node(Ref<GLTFState> p_state, Re
 	if (cast_to<CollisionShape3D>(p_scene_node)) {
 		CollisionShape3D *godot_shape = Object::cast_to<CollisionShape3D>(p_scene_node);
 		Ref<GLTFPhysicsShape> gltf_shape = GLTFPhysicsShape::from_node(godot_shape);
-		ERR_FAIL_COND_MSG(gltf_shape.is_null(), "GLTF Physics: Could not convert CollisionShape3D to GLTFPhysicsShape. Does it have a valid Shape3D?");
+		ERR_FAIL_COND_MSG(gltf_shape.is_null(), "glTF Physics: Could not convert CollisionShape3D to GLTFPhysicsShape. Does it have a valid Shape3D?");
 		{
 			Ref<ImporterMesh> importer_mesh = gltf_shape->get_importer_mesh();
 			if (importer_mesh.is_valid()) {
