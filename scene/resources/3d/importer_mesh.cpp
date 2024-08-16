@@ -1108,9 +1108,12 @@ Ref<NavigationMesh> ImporterMesh::create_navigation_mesh() {
 	}
 
 	HashMap<Vector3, int> unique_vertices;
-	LocalVector<int> face_indices;
+	Vector<Vector<int>> face_polygons;
+	face_polygons.resize(faces.size());
 
 	for (int i = 0; i < faces.size(); i++) {
+		Vector<int> face_indices;
+		face_indices.resize(3);
 		for (int j = 0; j < 3; j++) {
 			Vector3 v = faces[i].vertex[j];
 			int idx;
@@ -1120,8 +1123,9 @@ Ref<NavigationMesh> ImporterMesh::create_navigation_mesh() {
 				idx = unique_vertices.size();
 				unique_vertices[v] = idx;
 			}
-			face_indices.push_back(idx);
+			face_indices.write[j] = idx;
 		}
+		face_polygons.write[i] = face_indices;
 	}
 
 	Vector<Vector3> vertices;
@@ -1132,16 +1136,7 @@ Ref<NavigationMesh> ImporterMesh::create_navigation_mesh() {
 
 	Ref<NavigationMesh> nm;
 	nm.instantiate();
-	nm->set_vertices(vertices);
-
-	Vector<int> v3;
-	v3.resize(3);
-	for (uint32_t i = 0; i < face_indices.size(); i += 3) {
-		v3.write[0] = face_indices[i + 0];
-		v3.write[1] = face_indices[i + 1];
-		v3.write[2] = face_indices[i + 2];
-		nm->add_polygon(v3);
-	}
+	nm->set_data(vertices, face_polygons);
 
 	return nm;
 }

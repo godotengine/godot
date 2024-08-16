@@ -39,10 +39,7 @@ class NavigationPolygon : public Resource {
 	RWLock rwlock;
 
 	Vector<Vector2> vertices;
-	struct Polygon {
-		Vector<int> indices;
-	};
-	Vector<Polygon> polygons;
+	Vector<Vector<int>> polygons;
 	Vector<Vector<Vector2>> outlines;
 	Vector<Vector<Vector2>> baked_outlines;
 
@@ -109,6 +106,8 @@ public:
 	Vector<Vector2> get_outline(int p_idx) const;
 	void remove_outline(int p_idx);
 	int get_outline_count() const;
+	void set_outlines(const Vector<Vector<Vector2>> &p_outlines);
+	Vector<Vector<Vector2>> get_outlines() const;
 
 	void clear_outlines();
 #ifndef DISABLE_DEPRECATED
@@ -116,7 +115,7 @@ public:
 #endif // DISABLE_DEPRECATED
 
 	void set_polygons(const Vector<Vector<int>> &p_polygons);
-	const Vector<Vector<int>> &get_polygons() const;
+	Vector<Vector<int>> get_polygons() const;
 	Vector<int> get_polygon(int p_idx);
 	void clear_polygons();
 
@@ -155,7 +154,9 @@ public:
 	void clear();
 
 	void set_data(const Vector<Vector2> &p_vertices, const Vector<Vector<int>> &p_polygons);
+	void set_data(const Vector<Vector2> &p_vertices, const Vector<Vector<int>> &p_polygons, const Vector<Vector<Vector2>> &p_outlines);
 	void get_data(Vector<Vector2> &r_vertices, Vector<Vector<int>> &r_polygons);
+	void get_data(Vector<Vector2> &r_vertices, Vector<Vector<int>> &r_polygons, Vector<Vector<Vector2>> &r_outlines);
 
 	NavigationPolygon() {}
 	~NavigationPolygon() {}
