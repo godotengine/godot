@@ -269,7 +269,7 @@ void ImporterMesh::set_surface_material(int p_surface, const Ref<Material> &p_ma
 	}                                                                                                              \
 	write_array[vert_idx] = transformed_vert;
 
-void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_split_angle, Array p_bone_transform_array) {
+void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_split_angle, Array p_bone_transform_array, bool p_raycast_normals) {
 	if (!SurfaceTool::simplify_scale_func) {
 		return;
 	}
@@ -432,6 +432,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 		unsigned int index_target = 12; // Start with the smallest target, 4 triangles
 		unsigned int last_index_count = 0;
 
+		// Only used for normal raycasting
 		int split_vertex_count = vertex_count;
 		LocalVector<Vector3> split_vertex_normals;
 		LocalVector<int> split_vertex_indices;
@@ -441,7 +442,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 		RandomPCG pcg;
 		pcg.seed(123456789); // Keep seed constant across imports
 
-		Ref<StaticRaycaster> raycaster = StaticRaycaster::create();
+		Ref<StaticRaycaster> raycaster = p_raycast_normals ? StaticRaycaster::create() : Ref<StaticRaycaster>();
 		if (raycaster.is_valid()) {
 			raycaster->add_mesh(vertices, indices, 0);
 			raycaster->commit();
@@ -488,19 +489,22 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 			}
 
 			new_indices.resize(new_index_count);
-
-			LocalVector<LocalVector<int>> vertex_corners;
-			vertex_corners.resize(vertex_count);
 			{
 				int *ptrw = new_indices.ptrw();
 				for (unsigned int j = 0; j < new_index_count; j++) {
-					const int &remapped = vertex_inverse_remap[ptrw[j]];
-					vertex_corners[remapped].push_back(j);
-					ptrw[j] = remapped;
+					ptrw[j] = vertex_inverse_remap[ptrw[j]];
 				}
 			}
 
 			if (raycaster.is_valid()) {
+				LocalVector<LocalVector<int>> vertex_corners;
+				vertex_corners.resize(vertex_count);
+
+				int *ptrw = new_indices.ptrw();
+				for (unsigned int j = 0; j < new_index_count; j++) {
+					vertex_corners[ptrw[j]].push_back(j);
+				}
+
 				float error_factor = 1.0f / (scale * MAX(mesh_error, 0.15));
 				const float ray_bias = 0.05;
 				float ray_length = ray_bias + mesh_error * scale * 3.0f;
@@ -671,7 +675,10 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 			}
 		}
 
-		surfaces.write[i].split_normals(split_vertex_indices, split_vertex_normals);
+		if (raycaster.is_valid()) {
+			surfaces.write[i].split_normals(split_vertex_indices, split_vertex_normals);
+		}
+
 		surfaces.write[i].lods.sort_custom<Surface::LODComparator>();
 
 		for (int j = 0; j < surfaces.write[i].lods.size(); j++) {
@@ -680,6 +687,10 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 			SurfaceTool::optimize_vertex_cache_func(lod_indices_ptr, lod_indices_ptr, lod.indices.size(), split_vertex_count);
 		}
 	}
+}
+
+void ImporterMesh::_generate_lods_bind(float p_normal_merge_angle, float p_normal_split_angle, Array p_skin_pose_transform_array) {
+	generate_lods(p_normal_merge_angle, p_normal_split_angle, p_skin_pose_transform_array);
 }
 
 bool ImporterMesh::has_mesh() const {
@@ -1367,7 +1378,7 @@ void ImporterMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_surface_name", "surface_idx", "name"), &ImporterMesh::set_surface_name);
 	ClassDB::bind_method(D_METHOD("set_surface_material", "surface_idx", "material"), &ImporterMesh::set_surface_material);
 
-	ClassDB::bind_method(D_METHOD("generate_lods", "normal_merge_angle", "normal_split_angle", "bone_transform_array"), &ImporterMesh::generate_lods);
+	ClassDB::bind_method(D_METHOD("generate_lods", "normal_merge_angle", "normal_split_angle", "bone_transform_array"), &ImporterMesh::_generate_lods_bind);
 	ClassDB::bind_method(D_METHOD("get_mesh", "base_mesh"), &ImporterMesh::get_mesh, DEFVAL(Ref<ArrayMesh>()));
 	ClassDB::bind_method(D_METHOD("clear"), &ImporterMesh::clear);
 
