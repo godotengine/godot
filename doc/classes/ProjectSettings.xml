@@ -1190,6 +1190,10 @@
 		<member name="input/ui_swap_input_direction" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to swap input direction, i.e. change between left-to-right to right-to-left modes. Affects text-editing controls ([LineEdit], [TextEdit]).
 		</member>
+		<member name="input/ui_take_screenshot" type="Dictionary" setter="" getter="">
+			Saves a screenshot in PNG format to [code]user://screenshot_YYYY-MM-DDTHHMMSS.png[/code]. The path to the screenshot is printed to standard output after taking the screenshot.
+			[b]Note:[/b] If the project uses the [code]viewport[/code] [member display/window/stretch/mode], the screenshot's dimensions will match the base window size defined by [member display/window/size/viewport_width] and [member display/window/size/viewport_height] instead of the current window size.
+		</member>
 		<member name="input/ui_text_add_selection_for_next_occurrence" type="Dictionary" setter="" getter="">
 			If a selection is currently active with the last caret in text fields, searches for the next occurrence of the selection, adds a caret and selects the next occurrence.
 			If no selection is currently active with the last caret in text fields, selects the word currently under the caret.
