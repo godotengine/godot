@@ -676,11 +676,19 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 	if (token.type == TK_CURLY_BRACKET_OPEN) {
 		Dictionary d;
 		Error err = _parse_dictionary(d, p_stream, line, r_err_str, p_res_parser);
-		if (err) {
-			return err;
+		if (err == OK && r_err_str == "Set") {
+			// It's actually supposed to parse a set, not a dictionary.
+			Set s;
+			s.add(d[true]);
+			_parse_set(s, p_stream, line, r_err_str, p_res_parser);
+			if (err != OK) {
+				return err;
+			}
+			value = s;
+		} else {
+			value = d;
 		}
-		value = d;
-		return OK;
+		return err;
 	} else if (token.type == TK_BRACKET_OPEN) {
 		Array a;
 		Error err = _parse_array(a, p_stream, line, r_err_str, p_res_parser);
@@ -1501,6 +1509,7 @@ Error VariantParser::_parse_dictionary(Dictionary &object, Stream *p_stream, int
 	Variant key;
 	Token token;
 	bool need_comma = false;
+	bool first = true;
 
 	while (true) {
 		if (p_stream->is_eof()) {
@@ -1540,8 +1549,18 @@ Error VariantParser::_parse_dictionary(Dictionary &object, Stream *p_stream, int
 				return err;
 			}
 			if (token.type != TK_COLON) {
-				r_err_str = "Expected ':'";
-				return ERR_PARSE_ERROR;
+				if (first) {
+					object[true] = key;
+					r_err_str = "Set";
+					return OK;
+				} else {
+					r_err_str = "Expected ':'";
+					return ERR_PARSE_ERROR;
+				}
+			} else if (token.type == TK_CURLY_BRACKET_CLOSE) {
+				object[true] = key;
+				r_err_str = "Set";
+				return OK;
 			}
 			at_key = false;
 		} else {
@@ -1559,6 +1578,48 @@ Error VariantParser::_parse_dictionary(Dictionary &object, Stream *p_stream, int
 			need_comma = true;
 			at_key = true;
 		}
+	}
+}
+
+Error VariantParser::_parse_set(Set &object, Stream *p_stream, int &line, String &r_err_str, ResourceParser *p_res_parser) {
+	Token token;
+	bool need_comma = false;
+
+	Variant v;
+
+	while (true) {
+		if (p_stream->is_eof()) {
+			r_err_str = "Unexpected End of File while parsing dictionary";
+			return ERR_FILE_CORRUPT;
+		}
+
+		Error err = get_token(p_stream, token, line, r_err_str);
+		if (err != OK) {
+			return err;
+		}
+
+		if (token.type == TK_CURLY_BRACKET_CLOSE) {
+			return OK;
+		}
+
+		if (need_comma) {
+			if (token.type != TK_COMMA) {
+				r_err_str = "Expected '}' or ','";
+				return ERR_PARSE_ERROR;
+			} else {
+				need_comma = false;
+				continue;
+			}
+		}
+
+		err = parse_value(token, v, p_stream, line, r_err_str, p_res_parser);
+
+		if (err != OK) {
+			return err;
+		}
+
+		object.add(v);
+		need_comma = true;
 	}
 }
 

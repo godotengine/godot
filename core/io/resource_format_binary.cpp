@@ -86,6 +86,7 @@ enum {
 	VARIANT_VECTOR4I = 51,
 	VARIANT_PROJECTION = 52,
 	VARIANT_PACKED_VECTOR4_ARRAY = 53,
+	VARIANT_SET = 54,
 	OBJECT_EMPTY = 0,
 	OBJECT_EXTERNAL_RESOURCE = 1,
 	OBJECT_INTERNAL_RESOURCE = 2,
@@ -95,7 +96,8 @@ enum {
 	// Version 4: New string ID for ext/subresources, breaks forward compat.
 	// Version 5: Ability to store script class in the header.
 	// Version 6: Added PackedVector4Array Variant type.
-	FORMAT_VERSION = 6,
+	// Version 7: Added Set Variant type.
+	FORMAT_VERSION = 7,
 	FORMAT_VERSION_CAN_RENAME_DEPS = 1,
 	FORMAT_VERSION_NO_NODEPATH_PROPERTY = 3,
 };
@@ -666,6 +668,21 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			ERR_FAIL_COND_V(err != OK, err);
 
 			r_v = array;
+
+		} break;
+		case VARIANT_SET: {
+			uint32_t len = f->get_32();
+
+			Set set;
+
+			for (uint32_t i = 0; i < len; i++) {
+				Variant v;
+				const Error err = parse_variant(v);
+				ERR_FAIL_COND_V(err != OK, err);
+				set.add(v);
+			}
+
+			r_v = set;
 
 		} break;
 		default: {
@@ -1989,6 +2006,15 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 				f->store_real(r[i].y);
 				f->store_real(r[i].z);
 				f->store_real(r[i].w);
+			}
+
+		} break;
+		case Variant::SET: {
+			f->store_32(VARIANT_SET);
+			Set set = p_property;
+			f->store_32(set.size());
+			for (const Variant &var : set) {
+				write_variant(f, var, resource_map, external_resources, string_map);
 			}
 
 		} break;

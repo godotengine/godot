@@ -354,3 +354,12 @@ func test():
 	prints(x and true)
 	prints(x or false)
 	prints(x or true)
+
+	# TYPE_SET
+	x = {1}
+	prints("TYPE_SET")
+	prints(not x)
+	prints(x and false)
+	prints(x and true)
+	prints(x or false)
+	prints(x or true)

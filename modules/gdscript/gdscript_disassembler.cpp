@@ -176,6 +176,31 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr += 6;
 			} break;
+			case OPCODE_TYPE_TEST_SET: {
+				text += "type test ";
+				text += DADDR(1);
+				text += " = ";
+				text += DADDR(2);
+				text += " is Set[";
+
+				Ref<Script> script_type = get_constant(_code_ptr[ip + 3] & ADDR_MASK);
+				Variant::Type builtin_type = (Variant::Type)_code_ptr[ip + 4];
+				StringName native_type = get_global_name(_code_ptr[ip + 5]);
+
+				if (script_type.is_valid() && script_type->is_valid()) {
+					text += "script(";
+					text += GDScript::debug_get_script_name(script_type);
+					text += ")";
+				} else if (native_type != StringName()) {
+					text += native_type;
+				} else {
+					text += Variant::get_type_name(builtin_type);
+				}
+
+				text += "]";
+
+				incr += 6;
+			} break;
 			case OPCODE_TYPE_TEST_NATIVE: {
 				text += "type test ";
 				text += DADDR(1);
@@ -399,6 +424,14 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr += 6;
 			} break;
+			case OPCODE_ASSIGN_TYPED_SET: {
+				text += "assign typed set ";
+				text += DADDR(1);
+				text += " = ";
+				text += DADDR(2);
+
+				incr += 6;
+			} break;
 			case OPCODE_ASSIGN_TYPED_NATIVE: {
 				text += "assign typed native (";
 				text += DADDR(3);
@@ -563,6 +596,59 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += "}";
 
 				incr += 3 + argc * 2;
+			} break;
+			case OPCODE_CONSTRUCT_SET: {
+				int instr_var_args = _code_ptr[++ip];
+				int argc = _code_ptr[ip + 1 + instr_var_args];
+				text += "make_set ";
+				text += DADDR(1 + argc);
+				text += " = {";
+
+				for (int i = 0; i < argc; i++) {
+					if (i > 0) {
+						text += ", ";
+					}
+					text += DADDR(1 + i);
+				}
+
+				text += "}";
+
+				incr += 3 + argc;
+			} break;
+			case OPCODE_CONSTRUCT_TYPED_SET: {
+				int instr_var_args = _code_ptr[++ip];
+				int argc = _code_ptr[ip + 1 + instr_var_args];
+
+				Ref<Script> script_type = get_constant(_code_ptr[ip + argc + 2] & ADDR_MASK);
+				Variant::Type builtin_type = (Variant::Type)_code_ptr[ip + argc + 4];
+				StringName native_type = get_global_name(_code_ptr[ip + argc + 5]);
+
+				String type_name;
+				if (script_type.is_valid() && script_type->is_valid()) {
+					type_name = "script(" + GDScript::debug_get_script_name(script_type) + ")";
+				} else if (native_type != StringName()) {
+					type_name = native_type;
+				} else {
+					type_name = Variant::get_type_name(builtin_type);
+				}
+
+				text += " make_typed_set (";
+				text += type_name;
+				text += ") ";
+
+				text += DADDR(1 + argc);
+				text += " = {";
+
+				for (int i = 0; i < argc; i++) {
+					if (i > 0) {
+						text += ", ";
+					}
+					text += DADDR(1 + i);
+				}
+
+				text += "}";
+
+				incr += 6 + argc;
 			} break;
 			case OPCODE_CALL:
 			case OPCODE_CALL_RETURN:
@@ -978,6 +1064,12 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr += 5;
 			} break;
+			case OPCODE_RETURN_TYPED_SET: {
+				text += "return typed set ";
+				text += DADDR(1);
+
+				incr += 5;
+			} break;
 			case OPCODE_RETURN_TYPED_NATIVE: {
 				text += "return typed native (";
 				text += DADDR(2);
@@ -1047,6 +1139,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 	m_macro(PACKED_VECTOR3_ARRAY);         \
 	m_macro(PACKED_COLOR_ARRAY);           \
 	m_macro(PACKED_VECTOR4_ARRAY);         \
+	m_macro(SET);                          \
 	m_macro(OBJECT)
 
 			case OPCODE_ITERATE_BEGIN: {
@@ -1152,6 +1245,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				DISASSEMBLE_TYPE_ADJUST(PACKED_VECTOR3_ARRAY);
 				DISASSEMBLE_TYPE_ADJUST(PACKED_COLOR_ARRAY);
 				DISASSEMBLE_TYPE_ADJUST(PACKED_VECTOR4_ARRAY);
+				DISASSEMBLE_TYPE_ADJUST(SET);
 
 			case OPCODE_ASSERT: {
 				text += "assert (";

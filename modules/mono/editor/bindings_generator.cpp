@@ -289,7 +289,7 @@ String BindingsGenerator::bbcode_to_text(const String &p_bbcode, const TypeInter
 
 			pos = brk_end + 1;
 		} else if (doc->class_list.has(tag)) {
-			if (tag == "Array" || tag == "Dictionary") {
+			if (tag == "Array" || tag == "Dictionary" || tag == "Set") {
 				output.append("'" BINDINGS_NAMESPACE_COLLECTIONS ".");
 				output.append(tag);
 				output.append("'");
@@ -603,7 +603,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 
 			pos = brk_end + 1;
 		} else if (doc->class_list.has(tag)) {
-			if (tag == "Array" || tag == "Dictionary") {
+			if (tag == "Array" || tag == "Dictionary" || tag == "Set") {
 				xml_output.append("<see cref=\"" BINDINGS_NAMESPACE_COLLECTIONS ".");
 				xml_output.append(tag);
 				xml_output.append("\"/>");
@@ -3530,6 +3530,8 @@ bool BindingsGenerator::_arg_default_value_is_assignable_to_type(const Variant &
 			return p_arg_type.name == Variant::get_type_name(p_val.get_type()) || p_arg_type.cname == name_cache.type_Array_generic;
 		case Variant::DICTIONARY:
 			return p_arg_type.name == Variant::get_type_name(p_val.get_type()) || p_arg_type.cname == name_cache.type_Dictionary_generic;
+		case Variant::SET:
+			return p_arg_type.name == Variant::get_type_name(p_val.get_type()) || p_arg_type.cname == name_cache.type_Set_generic;
 		case Variant::OBJECT:
 			return p_arg_type.is_object_type;
 		case Variant::VECTOR2I:
@@ -4226,6 +4228,13 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			r_iarg.default_argument = "null";
 			r_iarg.def_param_mode = ArgumentInterface::CONSTANT;
 			break;
+		case Variant::SET:
+			ERR_FAIL_COND_V_MSG(!p_val.operator Dictionary().is_empty(), false,
+					"Default value of type 'Set' must be an empty set.");
+			// The [cs_in] expression already interprets null values as empty sets.
+			r_iarg.default_argument = "null";
+			r_iarg.def_param_mode = ArgumentInterface::CONSTANT;
+			break;
 		case Variant::RID:
 			ERR_FAIL_COND_V_MSG(r_iarg.type.cname != name_cache.type_RID, false,
 					"Parameter of type '" + String(r_iarg.type.cname) + "' cannot have a default value of type '" + String(name_cache.type_RID) + "'.");
@@ -4646,6 +4655,33 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	// For generic Godot collections, Variant.From<T>/As<T> is slower, so we need this special case
 	itype.cs_variant_to_managed = "VariantUtils.ConvertToDictionary(%0)";
 	itype.cs_managed_to_variant = "VariantUtils.CreateFromDictionary(%0)";
+	builtin_types.insert(itype.cname, itype);
+
+	// Set
+	itype = TypeInterface();
+	itype.name = "Set";
+	itype.cname = itype.name;
+	itype.proxy_name = itype.name;
+	itype.type_parameter_count = 2;
+	itype.cs_type = BINDINGS_NAMESPACE_COLLECTIONS "." + itype.proxy_name;
+	itype.cs_in_expr = "(%1)(%0 ?? new()).NativeValue";
+	itype.c_out = "%5return %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
+	itype.c_arg_in = "&%s";
+	itype.c_type = "godot_set";
+	itype.c_type_in = itype.c_type;
+	itype.c_type_out = itype.cs_type;
+	itype.c_type_is_disposable_struct = false; // [c_out] takes ownership
+	itype.c_ret_needs_default_initialization = true;
+	builtin_types.insert(itype.cname, itype);
+
+	// Set_@generic
+	// Reuse Set's itype
+	itype.name = "Set_@generic";
+	itype.cname = itype.name;
+	itype.cs_out = "%5return new %2(%0(%1));";
+	// For generic Godot collections, Variant.From<T>/As<T> is slower, so we need this special case
+	itype.cs_variant_to_managed = "VariantUtils.ConvertToSet(%0)";
+	itype.cs_managed_to_variant = "VariantUtils.CreateFromSet(%0)";
 	builtin_types.insert(itype.cname, itype);
 
 	// void (fictitious type to represent the return type of methods that do not return anything)

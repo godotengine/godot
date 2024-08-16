@@ -2266,6 +2266,40 @@ static void _register_variant_builtin_methods_misc() {
 	bind_method(Dictionary, make_read_only, sarray(), varray());
 	bind_method(Dictionary, is_read_only, sarray(), varray());
 	bind_method(Dictionary, recursive_equal, sarray("dictionary", "recursion_count"), varray());
+
+	/* Set */
+
+	bind_method(Set, size, sarray(), varray());
+	bind_method(Set, is_empty, sarray(), varray());
+	bind_method(Set, clear, sarray(), varray());
+	bind_method(Set, merge, sarray("set"), varray());
+	bind_method(Set, merged, sarray("set"), varray());
+	bind_method(Set, add, sarray("value"), varray());
+	bind_method(Set, remove, sarray("value"), varray());
+	bind_method(Set, has, sarray("value"), varray());
+	bind_method(Set, has_all, sarray("values"), varray());
+	bind_method(Set, erase, sarray("value"), varray());
+	bind_method(Set, insert, sarray("value"), varray());
+	bind_method(Set, hash, sarray(), varray());
+	bind_method(Set, values, sarray(), varray());
+	bind_method(Set, duplicate, sarray("deep"), varray(false));
+	bind_method(Set, make_read_only, sarray(), varray());
+	bind_method(Set, is_read_only, sarray(), varray());
+	bind_method(Set, is_overlapping, sarray("set"), varray());
+	bind_method(Set, is_disjoint, sarray("set"), varray());
+	bind_method(Set, difference, sarray("set"), varray());
+	bind_method(Set, differentiated, sarray("set"), varray());
+	bind_method(Set, intersect, sarray("set"), varray());
+	bind_method(Set, intersected, sarray("set"), varray());
+	bind_method(Set, symmetric_difference, sarray("set"), varray());
+	bind_method(Set, symmetric_differentiated, sarray("set"), varray());
+	bind_method(Set, includes, sarray("set"), varray());
+	bind_method(Set, is_typed, sarray(), varray());
+	bind_method(Set, is_same_typed, sarray("set"), varray());
+	bind_method(Set, get_typed_builtin, sarray(), varray());
+	bind_method(Set, get_typed_class_name, sarray(), varray());
+	bind_method(Set, get_typed_script, sarray(), varray());
+	bind_method(Set, assign, sarray("set"), varray());
 }
 
 static void _register_variant_builtin_methods_array() {

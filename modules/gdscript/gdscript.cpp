@@ -695,6 +695,11 @@ void GDScript::_static_default_init() {
 			const GDScriptDataType &element_type = type.get_container_element_type(0);
 			default_value.set_typed(element_type.builtin_type, element_type.native_type, element_type.script_type);
 			static_variables.write[E.value.index] = default_value;
+		} else if (type.builtin_type == Variant::SET && type.has_container_element_type(0)) {
+			Set default_value;
+			const GDScriptDataType &element_type = type.get_container_element_type(0);
+			default_value.set_typed(element_type.builtin_type, element_type.native_type, element_type.script_type);
+			static_variables.write[E.value.index] = default_value;
 		} else {
 			Variant default_value;
 			Callable::CallError err;

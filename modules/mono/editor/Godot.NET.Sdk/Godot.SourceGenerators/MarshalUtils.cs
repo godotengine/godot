@@ -78,8 +78,10 @@ namespace Godot.SourceGenerators
                 MarshalType.NodePath => VariantType.NodePath,
                 MarshalType.Rid => VariantType.Rid,
                 MarshalType.GodotDictionary => VariantType.Dictionary,
+                MarshalType.GodotSet => VariantType.Set,
                 MarshalType.GodotArray => VariantType.Array,
                 MarshalType.GodotGenericDictionary => VariantType.Dictionary,
+                MarshalType.GodotGenericSet => VariantType.Set,
                 MarshalType.GodotGenericArray => VariantType.Array,
                 _ => null
             };

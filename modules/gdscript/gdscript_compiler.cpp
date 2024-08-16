@@ -576,6 +576,33 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 			return result;
 		} break;
+		case GDScriptParser::Node::SET: {
+			const GDScriptParser::SetNode *sn = static_cast<const GDScriptParser::SetNode *>(p_expression);
+			Vector<GDScriptCodeGenerator::Address> elements;
+
+			// Create the result temporary first since it's the last to be killed.
+			GDScriptDataType set_type = _gdtype_from_datatype(sn->get_datatype(), codegen.script);
+			GDScriptCodeGenerator::Address result = codegen.add_temporary(set_type);
+
+			for (int i = 0; i < sn->elements.size(); i++) {
+				// Key.
+				elements.push_back(_parse_expression(codegen, r_error, sn->elements[i]));
+			}
+
+			if (set_type.has_container_element_type(0)) {
+				gen->write_construct_typed_set(result, set_type.get_container_element_type(0), elements);
+			} else {
+				gen->write_construct_set(result, elements);
+			}
+
+			for (int i = 0; i < elements.size(); i++) {
+				if (elements[i].mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+					gen->pop_temporary();
+				}
+			}
+
+			return result;
+		} break;
 		case GDScriptParser::Node::CAST: {
 			const GDScriptParser::CastNode *cn = static_cast<const GDScriptParser::CastNode *>(p_expression);
 			GDScriptDataType cast_type = _gdtype_from_datatype(cn->get_datatype(), codegen.script, false);
@@ -2326,7 +2353,13 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 				GDScriptCodeGenerator::Address dst_address(GDScriptCodeGenerator::Address::MEMBER, codegen.script->member_indices[field->identifier->name].index, field_type);
 
 				if (field_type.has_container_element_type(0)) {
-					codegen.generator->write_construct_typed_array(dst_address, field_type.get_container_element_type(0), Vector<GDScriptCodeGenerator::Address>());
+					if (field_type.builtin_type == Variant::ARRAY) {
+						codegen.generator->write_construct_typed_array(dst_address, field_type.get_container_element_type(0), Vector<GDScriptCodeGenerator::Address>());
+					} else if (field_type.builtin_type == Variant::SET) {
+						codegen.generator->write_construct_typed_set(dst_address, field_type.get_container_element_type(0), Vector<GDScriptCodeGenerator::Address>());
+					} else {
+						ERR_PRINT("Unreachable condition reached: container element type exists, container isn't Array/Set.");
+					}
 				} else if (field_type.kind == GDScriptDataType::BUILTIN) {
 					codegen.generator->write_construct(dst_address, field_type.builtin_type, Vector<GDScriptCodeGenerator::Address>());
 				}
@@ -2516,10 +2549,19 @@ GDScriptFunction *GDScriptCompiler::_make_static_initializer(Error &r_error, GDS
 			codegen.generator->write_newline(field->start_line);
 
 			if (field_type.has_container_element_type(0)) {
-				GDScriptCodeGenerator::Address temp = codegen.add_temporary(field_type);
-				codegen.generator->write_construct_typed_array(temp, field_type.get_container_element_type(0), Vector<GDScriptCodeGenerator::Address>());
-				codegen.generator->write_set_static_variable(temp, class_addr, p_script->static_variables_indices[field->identifier->name].index);
-				codegen.generator->pop_temporary();
+				if (field_type.builtin_type == Variant::ARRAY) {
+					GDScriptCodeGenerator::Address temp = codegen.add_temporary(field_type);
+					codegen.generator->write_construct_typed_array(temp, field_type.get_container_element_type(0), Vector<GDScriptCodeGenerator::Address>());
+					codegen.generator->write_set_static_variable(temp, class_addr, p_script->static_variables_indices[field->identifier->name].index);
+					codegen.generator->pop_temporary();
+				} else if (field_type.builtin_type == Variant::SET) {
+					GDScriptCodeGenerator::Address temp = codegen.add_temporary(field_type);
+					codegen.generator->write_construct_typed_set(temp, field_type.get_container_element_type(0), Vector<GDScriptCodeGenerator::Address>());
+					codegen.generator->write_set_static_variable(temp, class_addr, p_script->static_variables_indices[field->identifier->name].index);
+					codegen.generator->pop_temporary();
+				} else {
+					ERR_PRINT("Unreachable condition reached: container element type exists, container isn't Array/Set.");
+				}
 			} else if (field_type.kind == GDScriptDataType::BUILTIN) {
 				GDScriptCodeGenerator::Address temp = codegen.add_temporary(field_type);
 				codegen.generator->write_construct(temp, field_type.builtin_type, Vector<GDScriptCodeGenerator::Address>());
