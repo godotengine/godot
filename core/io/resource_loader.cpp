@@ -583,13 +583,7 @@ ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const 
 		}
 
 		String local_path = _validate_local_path(p_path);
-		if (!thread_load_tasks.has(local_path)) {
-#ifdef DEV_ENABLED
-			CRASH_NOW();
-#endif
-			// On non-dev, be defensive and at least avoid crashing (at this point at least).
-			return THREAD_LOAD_INVALID_RESOURCE;
-		}
+		ERR_FAIL_COND_V_MSG(!thread_load_tasks.has(local_path), THREAD_LOAD_INVALID_RESOURCE, "Bug in ResourceLoader logic, please report.");
 
 		ThreadLoadTask &load_task = thread_load_tasks[local_path];
 		status = load_task.status;
@@ -678,14 +672,10 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 
 	if (!p_load_token.local_path.is_empty()) {
 		if (!thread_load_tasks.has(p_load_token.local_path)) {
-#ifdef DEV_ENABLED
-			CRASH_NOW();
-#endif
-			// On non-dev, be defensive and at least avoid crashing (at this point at least).
 			if (r_error) {
 				*r_error = ERR_BUG;
 			}
-			return Ref<Resource>();
+			ERR_FAIL_V_MSG(Ref<Resource>(), "Bug in ResourceLoader logic, please report.");
 		}
 
 		ThreadLoadTask &load_task = thread_load_tasks[p_load_token.local_path];
