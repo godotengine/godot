@@ -224,6 +224,22 @@ ext.getExportFilename = {
     return exportFilename
 }
 
+ext.getExportBuildType = {
+    String exportBuildType = project.hasProperty("export_build_type") ? project.property("export_build_type") : ""
+    if (exportBuildType == null || exportBuildType.isEmpty()) {
+        exportBuildType = "debug"
+    }
+    return exportBuildType
+}
+
+ext.getExportFormat = {
+    String exportFormat = project.hasProperty("export_format") ? project.property("export_format") : ""
+    if (exportFormat == null || exportFormat.isEmpty()) {
+        exportFormat = "apk"
+    }
+    return exportFormat
+}
+
 /**
  * Parse the project properties for the 'plugins_maven_repos' property and return the list
  * of maven repos.
