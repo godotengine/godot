@@ -56,11 +56,6 @@
 // feature off.
 // See: https://registry.khronos.org/OpenGL/extensions/EXT/EXT_sRGB_write_control.txt
 
-// On OpenGLES this is not defined in our standard headers..
-#ifndef GL_FRAMEBUFFER_SRGB
-#define GL_FRAMEBUFFER_SRGB 0x8DB9
-#endif
-
 HashMap<String, bool *> OpenXROpenGLExtension::get_requested_extensions() {
 	HashMap<String, bool *> request_extensions;
 
@@ -194,23 +189,6 @@ void OpenXROpenGLExtension::get_usable_depth_formats(Vector<int64_t> &p_usable_d
 	p_usable_depth_formats.push_back(GL_DEPTH24_STENCIL8);
 	p_usable_depth_formats.push_back(GL_DEPTH32F_STENCIL8);
 	p_usable_depth_formats.push_back(GL_DEPTH_COMPONENT24);
-}
-
-void OpenXROpenGLExtension::on_pre_draw_viewport(RID p_render_target) {
-	if (srgb_ext_is_available) {
-		hw_linear_to_srgb_is_enabled = glIsEnabled(GL_FRAMEBUFFER_SRGB);
-		if (hw_linear_to_srgb_is_enabled) {
-			// Disable this.
-			glDisable(GL_FRAMEBUFFER_SRGB);
-		}
-	}
-}
-
-void OpenXROpenGLExtension::on_post_draw_viewport(RID p_render_target) {
-	if (srgb_ext_is_available && hw_linear_to_srgb_is_enabled) {
-		// Re-enable this.
-		glEnable(GL_FRAMEBUFFER_SRGB);
-	}
 }
 
 bool OpenXROpenGLExtension::get_swapchain_image_data(XrSwapchain p_swapchain, int64_t p_swapchain_format, uint32_t p_width, uint32_t p_height, uint32_t p_sample_count, uint32_t p_array_size, void **r_swapchain_graphics_data) {
