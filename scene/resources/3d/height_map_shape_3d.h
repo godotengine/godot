@@ -53,7 +53,7 @@ public:
 	int get_map_width() const;
 	void set_map_depth(int p_new);
 	int get_map_depth() const;
-	void set_map_data(Vector<real_t> p_new);
+	void set_map_data(const Vector<real_t> &p_new);
 	Vector<real_t> get_map_data() const;
 
 	real_t get_min_height() const;

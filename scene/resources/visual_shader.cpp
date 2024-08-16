@@ -3467,7 +3467,7 @@ String VisualShaderNodeInput::generate_code(Shader::Mode p_mode, VisualShader::T
 	}
 }
 
-void VisualShaderNodeInput::set_input_name(String p_name) {
+void VisualShaderNodeInput::set_input_name(const String &p_name) {
 	PortType prev_type = get_input_type_by_name(input_name);
 	input_name = p_name;
 	emit_changed();
@@ -3493,7 +3493,7 @@ String VisualShaderNodeInput::get_input_real_name() const {
 	return "";
 }
 
-VisualShaderNodeInput::PortType VisualShaderNodeInput::get_input_type_by_name(String p_name) const {
+VisualShaderNodeInput::PortType VisualShaderNodeInput::get_input_type_by_name(const String &p_name) const {
 	int idx = 0;
 
 	while (ports[idx].mode != Shader::MODE_MAX) {
@@ -5182,7 +5182,7 @@ VisualShaderNodeVarying::PortType VisualShaderNodeVarying::get_port_type(VisualS
 	return PORT_TYPE_SCALAR;
 }
 
-void VisualShaderNodeVarying::set_varying_name(String p_varying_name) {
+void VisualShaderNodeVarying::set_varying_name(const String &p_varying_name) {
 	if (varying_name == p_varying_name) {
 		return;
 	}

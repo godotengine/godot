@@ -947,7 +947,7 @@ void AnimationMixer::_process_animation(double p_delta, bool p_update_only) {
 	clear_animation_instances();
 }
 
-Variant AnimationMixer::post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, ObjectID p_object_id, int p_object_sub_idx) {
+Variant AnimationMixer::post_process_key_value(const Ref<Animation> &p_anim, int p_track, const Variant &p_value, ObjectID p_object_id, int p_object_sub_idx) {
 	Variant res;
 	if (GDVIRTUAL_CALL(_post_process_key_value, p_anim, p_track, p_value, p_object_id, p_object_sub_idx, res)) {
 		return res;
@@ -955,7 +955,7 @@ Variant AnimationMixer::post_process_key_value(const Ref<Animation> &p_anim, int
 	return _post_process_key_value(p_anim, p_track, p_value, p_object_id, p_object_sub_idx);
 }
 
-Variant AnimationMixer::_post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, ObjectID p_object_id, int p_object_sub_idx) {
+Variant AnimationMixer::_post_process_key_value(const Ref<Animation> &p_anim, int p_track, const Variant &p_value, ObjectID p_object_id, int p_object_sub_idx) {
 #ifndef _3D_DISABLED
 	switch (p_anim->track_get_type(p_track)) {
 		case Animation::TYPE_POSITION_3D: {
@@ -2348,7 +2348,7 @@ AnimationMixer::AnimationMixer() {
 AnimationMixer::~AnimationMixer() {
 }
 
-void AnimatedValuesBackup::set_data(const HashMap<Animation::TypeHash, AnimationMixer::TrackCache *> p_data) {
+void AnimatedValuesBackup::set_data(const HashMap<Animation::TypeHash, AnimationMixer::TrackCache *> &p_data) {
 	clear_data();
 
 	for (const KeyValue<Animation::TypeHash, AnimationMixer::TrackCache *> &E : p_data) {

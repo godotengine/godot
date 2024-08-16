@@ -55,7 +55,7 @@ protected:
 	bool enabled = true;
 	bool is_setup = false;
 
-	bool _print_execution_error(bool p_condition, String p_message);
+	bool _print_execution_error(bool p_condition, const String &p_message);
 
 	virtual void reset_state() override;
 

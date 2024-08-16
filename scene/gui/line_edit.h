@@ -284,7 +284,7 @@ public:
 	void delete_char();
 	void delete_text(int p_from_column, int p_to_column);
 
-	void set_text(String p_text);
+	void set_text(const String &p_text);
 	String get_text() const;
 	void set_text_with_selection(const String &p_text); // Set text, while preserving selection.
 
@@ -300,10 +300,10 @@ public:
 	void set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser);
 	TextServer::StructuredTextParser get_structured_text_bidi_override() const;
 
-	void set_structured_text_bidi_override_options(Array p_args);
+	void set_structured_text_bidi_override_options(const Array &p_args);
 	Array get_structured_text_bidi_override_options() const;
 
-	void set_placeholder(String p_text);
+	void set_placeholder(const String &p_text);
 	String get_placeholder() const;
 
 	void set_caret_column(int p_column);

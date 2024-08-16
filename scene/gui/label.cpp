@@ -920,7 +920,7 @@ TextServer::StructuredTextParser Label::get_structured_text_bidi_override() cons
 	return st_parser;
 }
 
-void Label::set_structured_text_bidi_override_options(Array p_args) {
+void Label::set_structured_text_bidi_override_options(const Array &p_args) {
 	if (st_args == p_args) {
 		return;
 	}

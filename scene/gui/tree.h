@@ -226,7 +226,7 @@ private:
 	TreeItem *_get_next_in_tree(bool p_wrap = false, bool p_include_invisible = false);
 
 public:
-	void set_text(int p_column, String p_text);
+	void set_text(int p_column, const String &p_text);
 	String get_text(int p_column) const;
 
 	void set_text_direction(int p_column, Control::TextDirection p_text_direction);
@@ -241,13 +241,13 @@ public:
 	void set_structured_text_bidi_override(int p_column, TextServer::StructuredTextParser p_parser);
 	TextServer::StructuredTextParser get_structured_text_bidi_override(int p_column) const;
 
-	void set_structured_text_bidi_override_options(int p_column, Array p_args);
+	void set_structured_text_bidi_override_options(int p_column, const Array &p_args);
 	Array get_structured_text_bidi_override_options(int p_column) const;
 
 	void set_language(int p_column, const String &p_language);
 	String get_language(int p_column) const;
 
-	void set_suffix(int p_column, String p_suffix);
+	void set_suffix(int p_column, const String &p_suffix);
 	String get_suffix(int p_column) const;
 
 	void set_icon(int p_column, const Ref<Texture2D> &p_icon);
@@ -501,12 +501,12 @@ private:
 	void update_column(int p_col);
 	void update_item_cell(TreeItem *p_item, int p_col);
 	void update_item_cache(TreeItem *p_item);
-	//void draw_item_text(String p_text,const Ref<Texture2D>& p_icon,int p_icon_max_w,bool p_tool,Rect2i p_rect,const Color& p_color);
+	//void draw_item_text(const String &p_text,const Ref<Texture2D>& p_icon,int p_icon_max_w,bool p_tool,Rect2i p_rect,const Color& p_color);
 	void draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Color &p_color, const Color &p_icon_color, int p_ol_size, const Color &p_ol_color);
 	int draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item, int &r_self_height);
 	void select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_col, TreeItem *p_prev = nullptr, bool *r_in_range = nullptr, bool p_force_deselect = false);
 	int propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int x_limit, bool p_double_click, TreeItem *p_item, MouseButton p_button, const Ref<InputEventWithModifiers> &p_mod);
-	void _line_editor_submit(String p_text);
+	void _line_editor_submit(const String &p_text);
 	void _apply_multiline_edit();
 	void _text_editor_popup_modal_close();
 	void _text_editor_gui_input(const Ref<InputEvent> &p_event);

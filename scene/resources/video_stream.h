@@ -60,7 +60,7 @@ protected:
 	GDVIRTUAL0RC(int, _get_channels);
 	GDVIRTUAL0RC(int, _get_mix_rate);
 
-	int mix_audio(int num_frames, PackedFloat32Array buffer = {}, int offset = 0);
+	int mix_audio(int num_frames, const PackedFloat32Array &buffer = {}, int offset = 0);
 
 public:
 	VideoStreamPlayback();

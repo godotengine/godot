@@ -3831,7 +3831,7 @@ void RichTextLabel::push_fgcolor(const Color &p_color) {
 	_add_item(item, true);
 }
 
-void RichTextLabel::push_customfx(Ref<RichTextEffect> p_custom_effect, Dictionary p_environment) {
+void RichTextLabel::push_customfx(Ref<RichTextEffect> p_custom_effect, const Dictionary &p_environment) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
@@ -5755,7 +5755,7 @@ TextServer::StructuredTextParser RichTextLabel::get_structured_text_bidi_overrid
 	return st_parser;
 }
 
-void RichTextLabel::set_structured_text_bidi_override_options(Array p_args) {
+void RichTextLabel::set_structured_text_bidi_override_options(const Array &p_args) {
 	if (st_args != p_args) {
 		_stop_thread();
 
@@ -5831,7 +5831,7 @@ float RichTextLabel::get_visible_ratio() const {
 	return visible_ratio;
 }
 
-void RichTextLabel::set_effects(Array p_effects) {
+void RichTextLabel::set_effects(const Array &p_effects) {
 	custom_effects = p_effects;
 	if ((!text.is_empty()) && use_bbcode) {
 		parse_bbcode(atr(text));
@@ -5842,7 +5842,7 @@ Array RichTextLabel::get_effects() {
 	return custom_effects;
 }
 
-void RichTextLabel::install_effect(const Variant effect) {
+void RichTextLabel::install_effect(const Variant &effect) {
 	Ref<RichTextEffect> rteffect;
 	rteffect = effect;
 
@@ -6359,7 +6359,7 @@ void RichTextLabel::menu_option(int p_option) {
 	}
 }
 
-Ref<RichTextEffect> RichTextLabel::_get_custom_effect_by_code(String p_bbcode_identifier) {
+Ref<RichTextEffect> RichTextLabel::_get_custom_effect_by_code(const String &p_bbcode_identifier) {
 	for (int i = 0; i < custom_effects.size(); i++) {
 		Ref<RichTextEffect> effect = custom_effects[i];
 		if (!effect.is_valid()) {
@@ -6374,7 +6374,7 @@ Ref<RichTextEffect> RichTextLabel::_get_custom_effect_by_code(String p_bbcode_id
 	return Ref<RichTextEffect>();
 }
 
-Dictionary RichTextLabel::parse_expressions_for_values(Vector<String> p_expressions) {
+Dictionary RichTextLabel::parse_expressions_for_values(const Vector<String> &p_expressions) {
 	Dictionary d;
 	for (int i = 0; i < p_expressions.size(); i++) {
 		Array a;

@@ -74,7 +74,7 @@ protected:
 
 public:
 #ifdef TOOLS_ENABLED
-	virtual void notify_skeleton_bones_renamed(Node *p_base_scene, Skeleton3D *p_skeleton, Dictionary p_rename_map);
+	virtual void notify_skeleton_bones_renamed(Node *p_base_scene, Skeleton3D *p_skeleton, const Dictionary &p_rename_map);
 #endif // TOOLS_ENABLED
 
 	virtual PackedStringArray get_configuration_warnings() const override;

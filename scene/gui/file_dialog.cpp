@@ -353,7 +353,7 @@ void FileDialog::update_dir() {
 	deselect_all();
 }
 
-void FileDialog::_dir_submitted(String p_dir) {
+void FileDialog::_dir_submitted(const String &p_dir) {
 	_change_dir(root_prefix.path_join(p_dir));
 	file->set_text("");
 	_push_history();
