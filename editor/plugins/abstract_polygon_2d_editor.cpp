@@ -620,9 +620,6 @@ void AbstractPolygon2DEditor::edit(Node *p_polygon) {
 	canvas_item_editor->update_viewport();
 }
 
-void AbstractPolygon2DEditor::_bind_methods() {
-}
-
 void AbstractPolygon2DEditor::remove_point(const Vertex &p_vertex) {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	Vector<Vector2> vertices = _get_polygon(p_vertex.polygon);

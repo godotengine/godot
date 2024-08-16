@@ -266,9 +266,6 @@ void MultiMeshEditor::_browse(bool p_source) {
 	std->popup_scenetree_dialog(browsed_node);
 }
 
-void MultiMeshEditor::_bind_methods() {
-}
-
 MultiMeshEditor::MultiMeshEditor() {
 	options = memnew(MenuButton);
 	options->set_switch_on_hover(true);

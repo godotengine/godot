@@ -177,9 +177,6 @@ void VoxelGIEditorPlugin::_voxel_gi_save_path_and_bake(const String &p_path) {
 	}
 }
 
-void VoxelGIEditorPlugin::_bind_methods() {
-}
-
 VoxelGIEditorPlugin::VoxelGIEditorPlugin() {
 	bake_hb = memnew(HBoxContainer);
 	bake_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);

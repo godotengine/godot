@@ -157,9 +157,6 @@ void CPUParticles3DEditor::_generate_emission_points() {
 	}
 }
 
-void CPUParticles3DEditor::_bind_methods() {
-}
-
 CPUParticles3DEditor::CPUParticles3DEditor() {
 	particles_editor_hb = memnew(HBoxContainer);
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(particles_editor_hb);

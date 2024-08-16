@@ -68,9 +68,6 @@ class MeshLibraryEditor : public Control {
 	static void _import_scene(Node *p_scene, Ref<MeshLibrary> p_library, bool p_merge, bool p_apply_xforms);
 	static void _import_scene_parse_node(Ref<MeshLibrary> p_library, HashMap<int, MeshInstance3D *> &p_mesh_instances, Node *p_node, bool p_merge, bool p_apply_xforms);
 
-protected:
-	static void _bind_methods();
-
 public:
 	MenuButton *get_menu_button() const { return menu; }
 

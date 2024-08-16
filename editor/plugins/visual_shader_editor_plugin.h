@@ -630,9 +630,6 @@ class EditorPropertyVisualShaderMode : public EditorProperty {
 
 	void _option_selected(int p_which);
 
-protected:
-	static void _bind_methods();
-
 public:
 	void setup(const Vector<String> &p_options);
 	virtual void update_property() override;
@@ -658,7 +655,6 @@ class VisualShaderNodePortPreview : public Control {
 	void _shader_changed(); //must regen
 protected:
 	void _notification(int p_what);
-	static void _bind_methods();
 
 public:
 	virtual Size2 get_minimum_size() const override;

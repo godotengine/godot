@@ -62,7 +62,6 @@ class ShaderFileEditor : public PanelContainer {
 
 protected:
 	void _notification(int p_what);
-	static void _bind_methods();
 
 public:
 	static ShaderFileEditor *singleton;

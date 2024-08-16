@@ -859,9 +859,6 @@ void ExportTemplateManager::_notification(int p_what) {
 	}
 }
 
-void ExportTemplateManager::_bind_methods() {
-}
-
 ExportTemplateManager::ExportTemplateManager() {
 	set_title(TTR("Export Template Manager"));
 	set_hide_on_ok(false);
