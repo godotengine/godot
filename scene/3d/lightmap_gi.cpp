@@ -709,7 +709,7 @@ void LightmapGI::_gen_new_positions_from_octree(const GenProbesOctree *p_cell, f
 			const Vector3 *pp = probe_positions.ptr();
 			bool exists = false;
 			for (int j = 0; j < ppcount; j++) {
-				if (pp[j].is_equal_approx(real_pos)) {
+				if (pp[j].distance_to(real_pos) < (p_cell_size * 0.5f)) {
 					exists = true;
 					break;
 				}
