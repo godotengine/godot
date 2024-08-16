@@ -41,10 +41,10 @@ struct VariantDestruct {};
 #define MAKE_PTRDESTRUCT(m_type)                               \
 	template <>                                                \
 	struct VariantDestruct<m_type> {                           \
-		_FORCE_INLINE_ static void ptr_destruct(void *p_ptr) { \
+		static _FORCE_INLINE_ void ptr_destruct(void *p_ptr) { \
 			reinterpret_cast<m_type *>(p_ptr)->~m_type();      \
 		}                                                      \
-		_FORCE_INLINE_ static Variant::Type get_base_type() {  \
+		static _FORCE_INLINE_ Variant::Type get_base_type() {  \
 			return GetTypeInfo<m_type>::VARIANT_TYPE;          \
 		}                                                      \
 	}

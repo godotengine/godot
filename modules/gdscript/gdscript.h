@@ -232,7 +232,7 @@ public:
 #endif
 
 	static String canonicalize_path(const String &p_path);
-	_FORCE_INLINE_ static bool is_canonically_equal_paths(const String &p_path_a, const String &p_path_b) {
+	static _FORCE_INLINE_ bool is_canonically_equal_paths(const String &p_path_a, const String &p_path_b) {
 		return canonicalize_path(p_path_a) == canonicalize_path(p_path_b);
 	}
 
@@ -544,7 +544,7 @@ public:
 	bool has_any_global_constant(const StringName &p_name) { return named_globals.has(p_name) || globals.has(p_name); }
 	Variant get_any_global_constant(const StringName &p_name);
 
-	_FORCE_INLINE_ static GDScriptLanguage *get_singleton() { return singleton; }
+	static _FORCE_INLINE_ GDScriptLanguage *get_singleton() { return singleton; }
 
 	virtual String get_name() const override;
 

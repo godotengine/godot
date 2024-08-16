@@ -150,7 +150,7 @@ public:
 		_FORCE_INLINE_ String to_string_strict() const { return is_hard_type() ? to_string() : "Variant"; }
 		PropertyInfo to_property_info(const String &p_name) const;
 
-		_FORCE_INLINE_ static DataType get_variant_type() { // Default DataType for container elements.
+		static _FORCE_INLINE_ DataType get_variant_type() { // Default DataType for container elements.
 			DataType datatype;
 			datatype.kind = VARIANT;
 			datatype.type_source = INFERRED;

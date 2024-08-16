@@ -628,7 +628,7 @@ public:
 		}
 	}
 
-	_FORCE_INLINE_ static bool is_group_processing() { return current_process_thread_group; }
+	static _FORCE_INLINE_ bool is_group_processing() { return current_process_thread_group; }
 
 	void set_process_thread_messages(BitField<ProcessThreadMessages> p_flags);
 	BitField<ProcessThreadMessages> get_process_thread_messages() const;

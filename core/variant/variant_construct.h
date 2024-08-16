@@ -47,7 +47,7 @@ struct PtrConstruct {};
 #define MAKE_PTRCONSTRUCT(m_type)                                                  \
 	template <>                                                                    \
 	struct PtrConstruct<m_type> {                                                  \
-		_FORCE_INLINE_ static void construct(const m_type &p_value, void *p_ptr) { \
+		static _FORCE_INLINE_ void construct(const m_type &p_value, void *p_ptr) { \
 			memnew_placement(p_ptr, m_type(p_value));                              \
 		}                                                                          \
 	};
@@ -78,7 +78,7 @@ MAKE_PTRCONSTRUCT(RID);
 
 template <>
 struct PtrConstruct<Object *> {
-	_FORCE_INLINE_ static void construct(Object *p_value, void *p_ptr) {
+	static _FORCE_INLINE_ void construct(Object *p_value, void *p_ptr) {
 		*((Object **)p_ptr) = p_value;
 	}
 };

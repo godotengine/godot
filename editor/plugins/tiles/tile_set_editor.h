@@ -115,7 +115,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	_FORCE_INLINE_ static TileSetEditor *get_singleton() { return singleton; }
+	static _FORCE_INLINE_ TileSetEditor *get_singleton() { return singleton; }
 
 	void edit(Ref<TileSet> p_tile_set);
 

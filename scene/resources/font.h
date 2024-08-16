@@ -73,7 +73,7 @@ class Font : public Resource {
 	};
 
 	struct ShapedTextKeyHasher {
-		_FORCE_INLINE_ static uint32_t hash(const ShapedTextKey &p_a) {
+		static _FORCE_INLINE_ uint32_t hash(const ShapedTextKey &p_a) {
 			uint32_t hash = p_a.text.hash();
 			hash = hash_murmur3_one_32(p_a.font_size, hash);
 			hash = hash_murmur3_one_float(p_a.width, hash);

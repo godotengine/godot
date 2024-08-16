@@ -110,7 +110,7 @@ public:
 #endif // TOOLS_ENABLED
 #endif // DEBUG_METHODS_ENABLED
 
-	_FORCE_INLINE_ static String get_expected_api_build_config() {
+	static _FORCE_INLINE_ String get_expected_api_build_config() {
 #ifdef TOOLS_ENABLED
 		return "Debug";
 #else
