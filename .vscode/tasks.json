@@ -12,7 +12,7 @@
         "--clean"
       ],
       "problemMatcher": {
-        "base": "$msCompile",
+        "base": "$gcc",
         "fileLocation": [
           "autoDetect",
           "${workspaceFolder}"
@@ -26,13 +26,11 @@
       "command": "scons",
       "args": [
         "dev_build=yes",
-        "platform=windows",
         "debug_symbols=yes",
-        "progress=no",
-        "vulkan=no"
+        "progress=no"
       ],
       "problemMatcher": {
-        "base": "$msCompile",
+        "base": "$gcc",
         "fileLocation": [
           "autoDetect",
           "${workspaceFolder}"
@@ -51,7 +49,7 @@
         "progress=no"
       ],
       "problemMatcher": {
-        "base": "$msCompile",
+        "base": "$gcc",
         "fileLocation": [
           "autoDetect",
           "${workspaceFolder}"
@@ -70,7 +68,7 @@
         "progress=no"
       ],
       "problemMatcher": {
-        "base": "$msCompile",
+        "base": "$gcc",
         "fileLocation": [
           "autoDetect",
           "${workspaceFolder}"
@@ -89,7 +87,7 @@
         "progress=no"
       ],
       "problemMatcher": {
-        "base": "$msCompile",
+        "base": "$gcc",
         "fileLocation": [
           "autoDetect",
           "${workspaceFolder}"
@@ -108,7 +106,7 @@
         "progress=no"
       ],
       "problemMatcher": {
-        "base": "$msCompile",
+        "base": "$gcc",
         "fileLocation": [
           "autoDetect",
           "${workspaceFolder}"
@@ -127,7 +125,7 @@
         "progress=no"
       ],
       "problemMatcher": {
-        "base": "$msCompile",
+        "base": "$gcc",
         "fileLocation": [
           "autoDetect",
           "${workspaceFolder}"
@@ -146,7 +144,7 @@
         "progress=no"
       ],
       "problemMatcher": {
-        "base": "$msCompile",
+        "base": "$gcc",
         "fileLocation": [
           "autoDetect",
           "${workspaceFolder}"
@@ -165,7 +163,7 @@
         "progress=no"
       ],
       "problemMatcher": {
-        "base": "$msCompile",
+        "base": "$gcc",
         "fileLocation": [
           "autoDetect",
           "${workspaceFolder}"
@@ -184,7 +182,7 @@
         "progress=no"
       ],
       "problemMatcher": {
-        "base": "$msCompile",
+        "base": "$gcc",
         "fileLocation": [
           "autoDetect",
           "${workspaceFolder}"

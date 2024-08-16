@@ -7,9 +7,9 @@
         
         {
             "name": "Godot Editor",
-            "type": "cppvsdbg",
+            "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/bin/godot.windows.editor.dev.x86_64.exe",
+            "program": "${workspaceFolder}/bin/godot.macos.editor.dev.arm64",
             "args": [
                 "--editor",
                 "--path",
@@ -18,13 +18,11 @@
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
-            "console": "internalConsole",
-            "visualizerFile": "${workspaceFolder}/platform/windows/godot.natvis",
             "preLaunchTask": "Build Godot"
         },
         {
             "name": "Godot Project",
-            "type": "cppvsdbg",
+            "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/bin/godot.windows.editor.dev.x86_64.exe",
             "args": [
@@ -34,13 +32,11 @@
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
-            "console": "internalConsole",
-            "visualizerFile": "${workspaceFolder}/platform/windows/godot.natvis",
             "preLaunchTask": "Build Godot"
         },
         {
             "name": "Godot Attach",
-            "type": "cppvsdbg",
+            "type": "cppdbg",
             "request": "attach",
             "processId": "${command:pickProcess}"
         },

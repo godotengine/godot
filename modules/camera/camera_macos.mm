@@ -142,47 +142,19 @@
 	} else if (dataCbCr == nullptr) {
 		print_line("Couldn't access CbCr pixel buffer data");
 	} else {
-		Ref<Image> img[2];
-
 		{
 			// do Y
 			size_t new_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 0);
 			size_t new_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 0);
-
-			if ((width[0] != new_width) || (height[0] != new_height)) {
-				width[0] = new_width;
-				height[0] = new_height;
-				img_data[0].resize(new_width * new_height);
-			}
-
-			uint8_t *w = img_data[0].ptrw();
-			memcpy(w, dataY, new_width * new_height);
-
-			img[0].instantiate();
-			img[0]->set_data(new_width, new_height, 0, Image::FORMAT_R8, img_data[0]);
+			feed->set_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_DIFFUSE, dataY, 0, new_width*new_height);
 		}
 
 		{
 			// do CbCr
 			size_t new_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 1);
 			size_t new_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 1);
-
-			if ((width[1] != new_width) || (height[1] != new_height)) {
-				width[1] = new_width;
-				height[1] = new_height;
-				img_data[1].resize(2 * new_width * new_height);
-			}
-
-			uint8_t *w = img_data[1].ptrw();
-			memcpy(w, dataCbCr, 2 * new_width * new_height);
-
-			///TODO OpenGL doesn't support FORMAT_RG8, need to do some form of conversion
-			img[1].instantiate();
-			img[1]->set_data(new_width, new_height, 0, Image::FORMAT_RG8, img_data[1]);
+			feed->set_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_NORMAL, dataCbCr, 0,  2 * new_width * new_height);
 		}
-
-		// set our texture...
-		feed->set_YCbCr_imgs(img[0], img[1]);
 	}
 
 	// and unlock
@@ -234,6 +206,12 @@ void CameraFeedMacOS::set_device(AVCaptureDevice *p_device) {
 };
 
 bool CameraFeedMacOS::activate_feed() {
+	// Create image buffers
+    set_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_DIFFUSE,
+              Image::create_empty(width, height, false, Image::FORMAT_R8));
+    set_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_NORMAL,
+              Image::create_empty(width, height, false, Image::FORMAT_R8));
+
 	if (capture_session) {
 		// Already recording!
 	} else {

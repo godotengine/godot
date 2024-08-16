@@ -80,10 +80,6 @@ protected:
 
 	static void _bind_methods();
 
-	Ref<Image> get_image(RenderingServer::CanvasTextureChannel channel);
-	void set_image(RenderingServer::CanvasTextureChannel channel, const Ref<Image> &image);
-	void set_image(RenderingServer::CanvasTextureChannel channel, uint8_t *data, size_t offset, size_t len);
-
 public:
 	int get_id() const;
 	String get_name() const;
@@ -99,6 +95,10 @@ public:
 
 	Transform2D get_transform() const;
 	void set_transform(const Transform2D &p_transform);
+
+	Ref<Image> get_image(RenderingServer::CanvasTextureChannel channel);
+	void set_image(RenderingServer::CanvasTextureChannel channel, const Ref<Image> &image);
+	void set_image(RenderingServer::CanvasTextureChannel channel, uint8_t *data, size_t offset, size_t len);
 
 	CameraFeed();
 	virtual ~CameraFeed();
