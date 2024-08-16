@@ -97,7 +97,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2024-07-23 03:39+0000\n"
+"PO-Revision-Date: 2024-08-12 20:09+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-properties/zh_Hans/>\n"
@@ -2494,7 +2494,7 @@ msgid "Rows"
 msgstr "行数"
 
 msgid "Image Margin"
-msgstr "图片边距"
+msgstr "图像边距"
 
 msgid "Character Margin"
 msgstr "字符边距"
@@ -2892,6 +2892,12 @@ msgstr "最大日志文件数"
 
 msgid "Driver"
 msgstr "驱动"
+
+msgid "Fallback to Vulkan"
+msgstr "回退至 Vulkan"
+
+msgid "Fallback to D3D12"
+msgstr "回退至 D3D12"
 
 msgid "GL Compatibility"
 msgstr "GL 兼容性"

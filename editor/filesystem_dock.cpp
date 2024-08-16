@@ -953,7 +953,8 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 		files->set_max_columns(1);
 		files->set_max_text_lines(1);
 		files->set_fixed_column_width(0);
-		files->set_fixed_icon_size(Size2());
+		const int icon_size = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
+		files->set_fixed_icon_size(Size2(icon_size, icon_size));
 	}
 
 	Ref<Texture2D> folder_icon = (use_thumbnails) ? folder_thumbnail : get_theme_icon(SNAME("folder"), SNAME("FileDialog"));

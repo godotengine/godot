@@ -311,13 +311,13 @@
 			The grid size in units. Higher values prevent the grid from appearing "cut off" at certain angles, but make the grid more demanding to render. Depending on the camera's position, the grid may not be fully visible since a shader is used to fade it progressively.
 		</member>
 		<member name="editors/3d/grid_xy_plane" type="bool" setter="" getter="">
-			If [code]true[/code], render the grid on an XY plane. This can be useful for 3D side-scrolling games.
+			If [code]true[/code], renders the grid on the XY plane in perspective view. This can be useful for 3D side-scrolling games.
 		</member>
 		<member name="editors/3d/grid_xz_plane" type="bool" setter="" getter="">
-			If [code]true[/code], render the grid on an XZ plane.
+			If [code]true[/code], renders the grid on the XZ plane in perspective view.
 		</member>
 		<member name="editors/3d/grid_yz_plane" type="bool" setter="" getter="">
-			If [code]true[/code], render the grid on a YZ plane. This can be useful for 3D side-scrolling games.
+			If [code]true[/code], renders the grid on the YZ plane in perspective view. This can be useful for 3D side-scrolling games.
 		</member>
 		<member name="editors/3d/navigation/emulate_3_button_mouse" type="bool" setter="" getter="">
 			If [code]true[/code], enables 3-button mouse emulation mode. This is useful on laptops when using a trackpad.
@@ -655,6 +655,9 @@
 		<member name="interface/editor/expand_to_title" type="bool" setter="" getter="">
 			Expanding main editor window content to the title, if supported by [DisplayServer]. See [constant DisplayServer.WINDOW_FLAG_EXTEND_TO_TITLE].
 			Specific to the macOS platform.
+		</member>
+		<member name="interface/editor/font_allow_msdf" type="bool" setter="" getter="">
+			If set to [code]true[/code], MSDF font rendering will be used for the visual shader graph editor. You may need to set this to [code]false[/code] when using a custom main font, as some fonts will look broken due to the use of self-intersecting outlines in their font data. Downloading the font from the font maker's official website as opposed to a service like Google Fonts can help resolve this issue.
 		</member>
 		<member name="interface/editor/font_antialiasing" type="int" setter="" getter="">
 			FreeType's font anti-aliasing mode used to render the editor fonts. Most fonts are not designed to look good with anti-aliasing disabled, so it's recommended to leave this enabled unless you're using a pixel art font.

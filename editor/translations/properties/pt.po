@@ -43,13 +43,14 @@
 # Leonardo dos Anjos Boslooper <leoprincipalacc@gmail.com>, 2024.
 # Jeyson Hilario da SIlva <jeysonhilario@gmail.com>, 2024.
 # Marcia Perez <cristianemarcia50@gmail.com>, 2024.
+# Rick and Morty <7777rickandmorty@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-05-28 16:22+0000\n"
-"Last-Translator: Marcia Perez <cristianemarcia50@gmail.com>\n"
+"PO-Revision-Date: 2024-08-09 17:09+0000\n"
+"Last-Translator: Rick and Morty <7777rickandmorty@gmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/pt/>\n"
 "Language: pt\n"
@@ -57,7 +58,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.6-dev\n"
+"X-Generator: Weblate 5.7-dev\n"
 
 msgid "Application"
 msgstr "Aplicação"
@@ -2496,7 +2497,7 @@ msgid "Allowed"
 msgstr "Permitido"
 
 msgid "Threads"
-msgstr "Threads"
+msgstr "Threads (Partes_Paralelizáveis)"
 
 msgid "Thread Model"
 msgstr "Modelo de Thread"

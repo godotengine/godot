@@ -64,13 +64,14 @@
 # Jun Hwi Ku <siguning@gmail.com>, 2024.
 # 신윤섭 <a97968765@gmail.com>, 2024.
 # Lee Dogeon <dev.moreal@gmail.com>, 2024.
+# Koo Youngmin <youngminz.kr@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-28 08:33+0000\n"
-"Last-Translator: Lee Dogeon <dev.moreal@gmail.com>\n"
+"PO-Revision-Date: 2024-08-09 17:09+0000\n"
+"Last-Translator: Koo Youngmin <youngminz.kr@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ko/>\n"
 "Language: ko\n"
@@ -511,6 +512,9 @@ msgstr "이름으로 필터링"
 msgid "Clear All"
 msgstr "모두 지우기"
 
+msgid "Clear all search filters."
+msgstr "모든 검색 필터들을 지웁니다."
+
 msgid "Add New Action"
 msgstr "새로운 액션 추가"
 
@@ -917,6 +921,9 @@ msgstr "트랙 경로가 올바르지 않아 키를 추가할 수 없습니다."
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "트랙이 3D 노드 타입이 아니므로 키를 추가할 수 없습니다"
 
+msgid "Track is not of type MeshInstance3D, can't insert key"
+msgstr "트랙이 3D 메시 인스턴스 타입이 아니므로 키를 추가할 수 없습니다"
+
 msgid "Track path is invalid, so can't add a method key."
 msgstr "트랙 경로가 올바르지 않아 메서드 키를 추가할 수 없습니다."
 
@@ -1050,6 +1057,9 @@ msgstr "초"
 
 msgid "FPS"
 msgstr "초당 프레임"
+
+msgid "Fit to panel"
+msgstr "패널에 맞추기"
 
 msgid "Edit"
 msgstr "편집"
@@ -12749,6 +12759,9 @@ msgstr ""
 "선택된 경로는 비어있지 않습니다. 비어 있는 폴더를 선택하는 것을 매우 권장합니"
 "다."
 
+msgid "New Game Project"
+msgstr "새 게임 프로젝트"
+
 msgid "Supports desktop platforms only."
 msgstr "데스크톱 플랫폼만을 지원합니다."
 
@@ -12822,9 +12835,6 @@ msgid ""
 msgstr ""
 "'%s'에서 프로젝트를 불러올 수 없습니다 (오류 %d). 프로젝트가 누락되거나 손상"
 "된 것 같습니다."
-
-msgid "New Game Project"
-msgstr "새 게임 프로젝트"
 
 msgid "Import & Edit"
 msgstr "가져오기 & 편집"

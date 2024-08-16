@@ -147,7 +147,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-31 15:41+0000\n"
+"PO-Revision-Date: 2024-08-01 02:20+0000\n"
 "Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
@@ -1012,6 +1012,9 @@ msgstr "Ruta inválida de pista, no se puede agregar una clave."
 
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "La pista no es del tipo Node3D, no se puede insertar la clave"
+
+msgid "Track is not of type MeshInstance3D, can't insert key"
+msgstr "La pista no es del tipo MeshInstance3D, no se puede insertar la clave"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr ""
@@ -10800,6 +10803,13 @@ msgstr ""
 "Modo Edición\n"
 "Mostrar botones en las uniones."
 
+msgid "Insert key (based on mask) for bones with an existing track."
+msgstr ""
+"Insertar clave (basada en la máscara) para huesos en una pista existente."
+
+msgid "Insert key (based on mask) for all bones."
+msgstr "Insertar clave (basada en la máscara) para todos los huesos."
+
 msgid "Insert Key (All Bones)"
 msgstr "Insertar Clave (Todos los Huesos)"
 
@@ -14422,6 +14432,9 @@ msgstr ""
 "La ruta seleccionada no está vacía. Lo más recomendable es elegir una carpeta "
 "vacía."
 
+msgid "New Game Project"
+msgstr "Nuevo Proyecto de Juego"
+
 msgid "Supports desktop platforms only."
 msgstr "Compatible solo con plataformas de escritorio."
 
@@ -14500,9 +14513,6 @@ msgid ""
 msgstr ""
 "No se pudo cargar el proyecto desde la ruta '%s' (error %d). La ruta no "
 "existe o está corrupta."
-
-msgid "New Game Project"
-msgstr "Nuevo Proyecto de Juego"
 
 msgid "Import & Edit"
 msgstr "Importar y Editar"
@@ -15580,8 +15590,49 @@ msgstr "Configuración de Exportación:"
 msgid "glTF 2.0 Scene..."
 msgstr "Escena glTF 2.0..."
 
+msgid "Path does not point to a valid executable."
+msgstr "La ruta no apunta a un ejecutable válido."
+
+msgid "Couldn't run Blender executable."
+msgstr "No se pudo iniciar el ejecutable de Blender."
+
+msgid "Unexpected --version output from Blender executable at: %s."
+msgstr "Salida inesperada de --version del ejecutable de Blender en: %s."
+
+msgid "Couldn't extract version information from Blender executable at: %s."
+msgstr ""
+"No se pudo extraer la información de la versión del ejecutable de Blender en: "
+"%s."
+
+msgid ""
+"Found Blender version %d.x, which is too old for this importer (3.0+ is "
+"required)."
+msgstr ""
+"Se encontró la versión %d.x de Blender, que es demasiado antigua para este "
+"importador (se requiere 3.0 o superior)."
+
+msgid "Path to Blender executable is valid (Autodetected)."
+msgstr "La ruta al ejecutable de Blender es válida (Autodetectada)."
+
+msgid "Path to Blender executable is valid."
+msgstr "La ruta al ejecutable de Blender es válida."
+
 msgid "Configure Blender Importer"
 msgstr "Configurar el Importador de Blender"
+
+msgid ""
+"Blender 3.0+ is required to import '.blend' files.\n"
+"Please provide a valid path to a Blender executable."
+msgstr ""
+"Se requiere Blender 3.0 o superior para importar archivos ‘.blend’.\n"
+"Por favor, proporciona una ruta válida a un ejecutable de Blender."
+
+msgid ""
+"On macOS, this should be the `Contents/MacOS/blender` file within the Blender "
+"`.app` folder."
+msgstr ""
+"En macOS, este debería ser el archivo `Contents/MacOS/blender` dentro de la "
+"carpeta `.app` de Blender."
 
 msgid "Disable '.blend' Import"
 msgstr "Desactivar Importación '.blend'"
@@ -16939,6 +16990,9 @@ msgid ""
 msgstr ""
 "No se pudo iniciar el ejecutable codesign. Asegúrate de que las herramientas "
 "de línea de comandos de Xcode estén instaladas."
+
+msgid "Cannot sign directory %s."
+msgstr "No se puede firmar el directorio %s."
 
 msgid "Cannot sign file %s."
 msgstr "No se puede firmar el archivo %s."
@@ -18494,6 +18548,14 @@ msgstr ""
 "Argumento de muestreo %d de la función '%s' llamada más de una vez utilizando "
 "tanto texturas incorporadas como uniformes, esto no es compatible (utilice "
 "una u otra)."
+
+msgid ""
+"Sampler argument %d of function '%s' called more than once using textures "
+"that differ in either filter, repeat, or texture hint setting."
+msgstr ""
+"El argumento de muestreador %d de la función ‘%s’ se llamó más de una vez "
+"usando texturas que difieren en la configuración de filtro, repetición o "
+"sugerencia de textura."
 
 msgid ""
 "Sampler argument %d of function '%s' called more than once using different "

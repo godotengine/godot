@@ -3752,6 +3752,9 @@ msgstr ""
 msgid "The path specified doesn't exist."
 msgstr "La provizinta dosierindiko ne ekzistas."
 
+msgid "New Game Project"
+msgstr "Nova luda projekto"
+
 msgid "Couldn't create project.godot in project path."
 msgstr "Ne eblas krei project.godot en projekta dosierindiko."
 
@@ -3760,9 +3763,6 @@ msgstr "Eraro dum malfermi la pakaĵan dosieron, ne de ZIP formato."
 
 msgid "The following files failed extraction from package:"
 msgstr "La jenaj dosieroj malplenumis malkompaktigi el la pakaĵo:"
-
-msgid "New Game Project"
-msgstr "Nova luda projekto"
 
 msgid "Import & Edit"
 msgstr "Enporti kaj redakti"

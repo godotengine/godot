@@ -12080,6 +12080,9 @@ msgid ""
 "recommended."
 msgstr "選定的路徑不為空。強烈建議選擇一個空的資料夾。"
 
+msgid "New Game Project"
+msgstr "新遊戲專案"
+
 msgid "Supports desktop platforms only."
 msgstr "只支援桌面平臺。"
 
@@ -12151,9 +12154,6 @@ msgstr "自套件中取得下列檔案失敗："
 msgid ""
 "Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr "無法自路徑 '%s' 載入專案（錯誤 %d）。檔案可能遺失或損毀。"
-
-msgid "New Game Project"
-msgstr "新遊戲專案"
 
 msgid "Import & Edit"
 msgstr "匯入並編輯"

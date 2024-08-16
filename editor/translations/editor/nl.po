@@ -8201,6 +8201,9 @@ msgstr "Ongeldig '.zip' projectbestand, bevat geen 'project.godot' bestand."
 msgid "The path specified doesn't exist."
 msgstr "Dit pad bestaat niet."
 
+msgid "New Game Project"
+msgstr "Nieuw spelproject"
+
 msgid "Couldn't create project.godot in project path."
 msgstr "Kan project.godot niet in projectpad maken."
 
@@ -8209,9 +8212,6 @@ msgstr "Fout bij het openen van het pakketbestand, geen zip-formaat."
 
 msgid "The following files failed extraction from package:"
 msgstr "De volgende bestanden konden niet worden uitgepakt:"
-
-msgid "New Game Project"
-msgstr "Nieuw spelproject"
 
 msgid "Import & Edit"
 msgstr "Importeer & Bewerk"

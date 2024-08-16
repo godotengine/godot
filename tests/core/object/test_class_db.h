@@ -139,6 +139,7 @@ struct NamesCache {
 	StringName vector2_type = StaticCString::create("Vector2");
 	StringName rect2_type = StaticCString::create("Rect2");
 	StringName vector3_type = StaticCString::create("Vector3");
+	StringName vector4_type = StaticCString::create("Vector4");
 
 	// Object not included as it must be checked for all derived classes
 	static constexpr int nullable_types_count = 18;
@@ -247,6 +248,8 @@ bool arg_default_value_is_assignable_to_type(const Context &p_context, const Var
 		case Variant::VECTOR2:
 		case Variant::RECT2:
 		case Variant::VECTOR3:
+		case Variant::VECTOR4:
+		case Variant::PROJECTION:
 		case Variant::RID:
 		case Variant::ARRAY:
 		case Variant::DICTIONARY:
@@ -274,13 +277,15 @@ bool arg_default_value_is_assignable_to_type(const Context &p_context, const Var
 		case Variant::VECTOR3I:
 			return p_arg_type.name == p_context.names_cache.vector3_type ||
 					p_arg_type.name == Variant::get_type_name(p_val.get_type());
-		default:
-			if (r_err_msg) {
-				*r_err_msg = "Unexpected Variant type: " + itos(p_val.get_type());
-			}
+		case Variant::VECTOR4I:
+			return p_arg_type.name == p_context.names_cache.vector4_type ||
+					p_arg_type.name == Variant::get_type_name(p_val.get_type());
+		case Variant::VARIANT_MAX:
 			break;
 	}
-
+	if (r_err_msg) {
+		*r_err_msg = "Unexpected Variant type: " + itos(p_val.get_type());
+	}
 	return false;
 }
 

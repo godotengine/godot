@@ -4179,14 +4179,14 @@ msgstr "Válassza ki a mappát a kereséshez"
 msgid "The path specified doesn't exist."
 msgstr "A megadott útvonal nem létezik."
 
+msgid "New Game Project"
+msgstr "Új játék projekt"
+
 msgid "Error opening package file, not in ZIP format."
 msgstr "Hiba a csomagfájl megnyitása során, nem ZIP formátumú."
 
 msgid "The following files failed extraction from package:"
 msgstr "A következő fájlokat nem sikerült kibontani a csomagból:"
-
-msgid "New Game Project"
-msgstr "Új játék projekt"
 
 msgid "Create & Edit"
 msgstr "Létrehozás és Szerkesztés"

@@ -459,9 +459,11 @@ class GDScriptLanguage : public ScriptLanguage {
 	friend class GDScriptFunction;
 
 	SelfList<GDScriptFunction>::List function_list;
+#ifdef DEBUG_ENABLED
 	bool profiling;
 	bool profile_native_calls;
 	uint64_t script_frame_time;
+#endif
 
 	HashMap<String, ObjectID> orphan_subclasses;
 

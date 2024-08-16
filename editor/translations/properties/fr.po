@@ -128,13 +128,15 @@
 # Unreal Vision <unrealvisionyt@gmail.com>, 2024.
 # David <sayendvd@gmail.com>, 2024.
 # zefdzeqf <azrzrezfafe@users.noreply.hosted.weblate.org>, 2024.
+# Mathieu Druart <mathieu.druart@gmail.com>, 2024.
+# Xabi GOITY <xabigoity@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-16 05:13+0000\n"
-"Last-Translator: Unreal Vision <unrealvisionyt@gmail.com>\n"
+"PO-Revision-Date: 2024-08-11 19:09+0000\n"
+"Last-Translator: Xabi GOITY <xabigoity@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/fr/>\n"
 "Language: fr\n"
@@ -1305,6 +1307,9 @@ msgstr "Tout déplier quand une fenêtre « Créer » s'ouvre"
 msgid "Auto Expand to Selected"
 msgstr "Auto-déplier jusqu'à la sélection"
 
+msgid "Center Node on Reparent"
+msgstr "Centrer le nœud lors du changement de parent"
+
 msgid "Always Show Folders"
 msgstr "Toujours afficher les dossiers"
 
@@ -1424,6 +1429,9 @@ msgstr "Rester sur l’éditeur de script à la sélection d'un nœud"
 
 msgid "Open Script When Connecting Signal to Existing Method"
 msgstr "Ouvrir le script quand signal se connecte à une méthode existante"
+
+msgid "Use Default Word Separators"
+msgstr "Utiliser les séparateurs de mots par défaut"
 
 msgid "Indent"
 msgstr "Indentation"
@@ -1716,6 +1724,9 @@ msgstr "Délayer automatiquement le pré-calcul"
 msgid "Autorename Animation Tracks"
 msgstr "Renommer les pistes d'animation automatiquement"
 
+msgid "Confirm Insert Track"
+msgstr "Confirmer l'insertion d'une piste"
+
 msgid "Default Create Bezier Tracks"
 msgstr "Créer pistes de Bézier par défaut"
 
@@ -1772,6 +1783,9 @@ msgstr "Sauvegarde auto"
 
 msgid "Save Before Running"
 msgstr "Enregistrer Avant d’Exécuter"
+
+msgid "Bottom Panel"
+msgstr "Panneau inférieur"
 
 msgid "Action on Play"
 msgstr "Action au démarrage"
@@ -4192,6 +4206,9 @@ msgstr "Interpolation des icônes"
 msgid "Export Project Only"
 msgstr "Exporter le projet uniquement"
 
+msgid "Generate Simulator Library If Missing"
+msgstr "Générer la librairie du simulateur si elle est manquante"
+
 msgid "Capabilities"
 msgstr "Fonctionnalités"
 
@@ -6263,6 +6280,9 @@ msgstr "Modificateur"
 
 msgid "Callback Mode Process"
 msgstr "Mode processus de repli"
+
+msgid "Deprecated"
+msgstr "Déprécié"
 
 msgid "Root Bone"
 msgstr "Os racine"

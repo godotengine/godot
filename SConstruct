@@ -1011,11 +1011,12 @@ if env["vsproj"]:
     env.vs_incs = []
     env.vs_srcs = []
 
-if env["compiledb"] and env.scons_version < (4, 0, 0):
-    # Generating the compilation DB (`compile_commands.json`) requires SCons 4.0.0 or later.
-    print_error("The `compiledb=yes` option requires SCons 4.0 or later, but your version is %s." % scons_raw_version)
-    Exit(255)
-if env.scons_version >= (4, 0, 0):
+if env["compiledb"]:
+    if env.scons_version < (4, 0, 0):
+        # Generating the compilation DB (`compile_commands.json`) requires SCons 4.0.0 or later.
+        print_error("The `compiledb=yes` option requires SCons 4.0 or later, but your version is %s." % scons_raw_version)
+        Exit(255)
+
     env.Tool("compilation_db")
     env.Alias("compiledb", env.CompilationDatabase())
 

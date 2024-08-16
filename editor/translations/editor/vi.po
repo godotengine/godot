@@ -5561,6 +5561,9 @@ msgstr ""
 msgid "The path specified doesn't exist."
 msgstr "Đường dẫn đã cho không tồn tại."
 
+msgid "New Game Project"
+msgstr "Dự án Trò chơi Mới"
+
 msgid "Fastest rendering of simple scenes."
 msgstr "Render nhanh nhất cho Cảnh đơn giản."
 
@@ -5590,9 +5593,6 @@ msgstr "Không thể lấy các tệp sau khỏi gói:"
 msgid ""
 "Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr "Không thể tải dự án ở '%s' (lỗi %d). Nó có thể đã bị mất hoặc bị hỏng."
-
-msgid "New Game Project"
-msgstr "Dự án Trò chơi Mới"
 
 msgid "Import & Edit"
 msgstr "Nhập & Chỉnh sửa"

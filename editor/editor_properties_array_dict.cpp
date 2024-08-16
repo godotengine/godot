@@ -836,9 +836,6 @@ bool EditorPropertyArray::is_colored(ColorationMode p_mode) {
 	return p_mode == COLORATION_CONTAINER_RESOURCE;
 }
 
-void EditorPropertyArray::_bind_methods() {
-}
-
 EditorPropertyArray::EditorPropertyArray() {
 	object.instantiate();
 	page_length = int(EDITOR_GET("interface/inspector/max_array_dictionary_items_per_page"));
@@ -907,6 +904,8 @@ void EditorPropertyDictionary::_add_key_value() {
 	VariantInternal::initialize(&new_value, type);
 	object->set_new_item_value(new_value);
 
+	object->set_dict(dict);
+	slots[(dict.size() - 1) % page_length].update_prop_or_index();
 	emit_changed(get_edited_property(), dict);
 }
 
@@ -960,6 +959,10 @@ void EditorPropertyDictionary::_change_type_menu(int p_index) {
 				dict[key] = value;
 			} else {
 				dict.erase(key);
+				object->set_dict(dict);
+				for (Slot &slot : slots) {
+					slot.update_prop_or_index();
+				}
 			}
 
 			emit_changed(get_edited_property(), dict);
@@ -1158,9 +1161,6 @@ void EditorPropertyDictionary::_page_changed(int p_page) {
 		return;
 	}
 	update_property();
-}
-
-void EditorPropertyDictionary::_bind_methods() {
 }
 
 bool EditorPropertyDictionary::is_colored(ColorationMode p_mode) {
@@ -1377,9 +1377,6 @@ void EditorPropertyLocalizableString::_page_changed(int p_page) {
 	}
 	page_index = p_page;
 	update_property();
-}
-
-void EditorPropertyLocalizableString::_bind_methods() {
 }
 
 EditorPropertyLocalizableString::EditorPropertyLocalizableString() {

@@ -38,9 +38,4 @@ void Translation::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("erase_message", "src_message", "context"), &Translation::erase_message, DEFVAL(""));
 }
 
-void TranslationServer::_bind_compatibility_methods() {
-	ClassDB::bind_compatibility_method(D_METHOD("translate", "message", "context"), &TranslationServer::translate, DEFVAL(""));
-	ClassDB::bind_compatibility_method(D_METHOD("translate_plural", "message", "plural_message", "n", "context"), &TranslationServer::translate_plural, DEFVAL(""));
-}
-
 #endif

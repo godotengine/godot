@@ -126,9 +126,6 @@ void NavigationMeshEditor::edit(NavigationRegion3D *p_nav_region) {
 	node = p_nav_region;
 }
 
-void NavigationMeshEditor::_bind_methods() {
-}
-
 NavigationMeshEditor::NavigationMeshEditor() {
 	bake_hbox = memnew(HBoxContainer);
 

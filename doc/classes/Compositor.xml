@@ -7,6 +7,7 @@
 		The compositor resource stores attributes used to customize how a [Viewport] is rendered.
 	</description>
 	<tutorials>
+		<link title="The Compositor">$DOCS_URL/tutorials/rendering/compositor.html</link>
 	</tutorials>
 	<members>
 		<member name="compositor_effects" type="CompositorEffect[]" setter="set_compositor_effects" getter="get_compositor_effects" default="[]">

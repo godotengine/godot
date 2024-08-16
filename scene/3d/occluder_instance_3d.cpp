@@ -129,9 +129,6 @@ void Occluder3D::_notification(int p_what) {
 	}
 }
 
-void Occluder3D::_bind_methods() {
-}
-
 Occluder3D::Occluder3D() {
 	occluder = RS::get_singleton()->occluder_create();
 }

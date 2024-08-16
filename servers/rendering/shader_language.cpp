@@ -898,6 +898,13 @@ bool ShaderLanguage::_lookup_next(Token &r_tk) {
 	return false;
 }
 
+ShaderLanguage::Token ShaderLanguage::_peek() {
+	TkPos pre_pos = _get_tkpos();
+	Token tk = _get_token();
+	_set_tkpos(pre_pos);
+	return tk;
+}
+
 String ShaderLanguage::token_debug(const String &p_code) {
 	clear();
 
@@ -8061,7 +8068,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			if (!expr) {
 				return ERR_PARSE_ERROR;
 			}
-			is_condition = expr->type == Node::NODE_TYPE_OPERATOR && expr->get_datatype() == TYPE_BOOL;
+			is_condition = expr->get_datatype() == TYPE_BOOL;
 
 			if (expr->type == Node::NODE_TYPE_OPERATOR) {
 				OperatorNode *op = static_cast<OperatorNode *>(expr);
@@ -8077,7 +8084,12 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			if (p_block->block_type == BlockNode::BLOCK_TYPE_FOR_CONDITION) {
 				if (tk.type == TK_COMMA) {
 					if (!is_condition) {
-						_set_error(RTR("The middle expression is expected to be a boolean operator."));
+						_set_error(RTR("The middle expression is expected to have a boolean data type."));
+						return ERR_PARSE_ERROR;
+					}
+					tk = _peek();
+					if (tk.type == TK_SEMICOLON) {
+						_set_error(vformat(RTR("Expected expression, found: '%s'."), get_token_text(tk)));
 						return ERR_PARSE_ERROR;
 					}
 					continue;
@@ -8088,6 +8100,11 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				}
 			} else if (p_block->block_type == BlockNode::BLOCK_TYPE_FOR_EXPRESSION) {
 				if (tk.type == TK_COMMA) {
+					tk = _peek();
+					if (tk.type == TK_PARENTHESIS_CLOSE) {
+						_set_error(vformat(RTR("Expected expression, found: '%s'."), get_token_text(tk)));
+						return ERR_PARSE_ERROR;
+					}
 					continue;
 				}
 				if (tk.type != TK_PARENTHESIS_CLOSE) {
@@ -8106,7 +8123,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				return ERR_PARSE_ERROR;
 			}
 			if (p_block->block_type == BlockNode::BLOCK_TYPE_FOR_CONDITION && !is_condition) {
-				_set_error(RTR("The middle expression is expected to be a boolean operator."));
+				_set_error(RTR("The middle expression is expected to have a boolean data type."));
 				return ERR_PARSE_ERROR;
 			}
 		}
@@ -9217,6 +9234,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 				tk = _get_token();
 				if (tk.type == TK_IDENTIFIER) {
 					current_uniform_group_name = tk.text;
+					current_uniform_subgroup_name = "";
 					tk = _get_token();
 					if (tk.type == TK_PERIOD) {
 						tk = _get_token();

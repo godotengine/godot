@@ -3292,14 +3292,14 @@ msgstr "Norādīt mapi kuru skenēt"
 msgid "Remove All"
 msgstr "Noņemt visu"
 
+msgid "New Game Project"
+msgstr "Jauns spēles projekts"
+
 msgid "Error opening package file, not in ZIP format."
 msgstr "Kļūda atverot failu arhīvu, nav ZIP formātā."
 
 msgid "The following files failed extraction from package:"
 msgstr "Sekojošie faili netika izvilkti no paketes:"
-
-msgid "New Game Project"
-msgstr "Jauns spēles projekts"
 
 msgid "Install & Edit"
 msgstr "Instalēt & Rediģēt"

@@ -447,14 +447,22 @@ public:
 
 	static _ALWAYS_INLINE_ double smoothstep(double p_from, double p_to, double p_s) {
 		if (is_equal_approx(p_from, p_to)) {
-			return p_from;
+			if (likely(p_from <= p_to)) {
+				return p_s <= p_from ? 0.0 : 1.0;
+			} else {
+				return p_s <= p_to ? 1.0 : 0.0;
+			}
 		}
 		double s = CLAMP((p_s - p_from) / (p_to - p_from), 0.0, 1.0);
 		return s * s * (3.0 - 2.0 * s);
 	}
 	static _ALWAYS_INLINE_ float smoothstep(float p_from, float p_to, float p_s) {
 		if (is_equal_approx(p_from, p_to)) {
-			return p_from;
+			if (likely(p_from <= p_to)) {
+				return p_s <= p_from ? 0.0f : 1.0f;
+			} else {
+				return p_s <= p_to ? 1.0f : 0.0f;
+			}
 		}
 		float s = CLAMP((p_s - p_from) / (p_to - p_from), 0.0f, 1.0f);
 		return s * s * (3.0f - 2.0f * s);

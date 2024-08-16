@@ -8119,6 +8119,9 @@ msgstr "Neplatný soubor projektu \".zip\"; neobsahuje soubor \"project.godot\".
 msgid "The path specified doesn't exist."
 msgstr "Zadaná cesta neexistuje."
 
+msgid "New Game Project"
+msgstr "Nový projekt hry"
+
 msgid "Warning: This folder is not empty"
 msgstr "Varování: Tato složka není prázdná"
 
@@ -8134,9 +8137,6 @@ msgstr "Selhala extrakce následujících souborů z balíčku:"
 msgid ""
 "Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr "Nelze načíst projekt z '%s' (chyba %d). Může chybět nebo být poškozený."
-
-msgid "New Game Project"
-msgstr "Nový projekt hry"
 
 msgid "Import & Edit"
 msgstr "Importovat a upravit"

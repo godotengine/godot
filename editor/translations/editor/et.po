@@ -8683,11 +8683,11 @@ msgstr "Loo Uus Silt"
 msgid "It would be a good idea to name your project."
 msgstr "Hea mõte oleks oma Projektile nimi panna."
 
-msgid "Couldn't create project.godot in project path."
-msgstr "Projekti kaustas ei saanud faili project.godot luua."
-
 msgid "New Game Project"
 msgstr "Uus Mängu Projekt"
+
+msgid "Couldn't create project.godot in project path."
+msgstr "Projekti kaustas ei saanud faili project.godot luua."
 
 msgid "Import & Edit"
 msgstr "Impordi & Redigeeri"
