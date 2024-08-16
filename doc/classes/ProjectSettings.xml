@@ -1004,7 +1004,7 @@
 			prime-run %command%
 			[/codeblock]
 		</member>
-		<member name="editor/script/search_in_file_extensions" type="PackedStringArray" setter="" getter="" default="PackedStringArray(&quot;gd&quot;, &quot;gdshader&quot;)">
+		<member name="editor/script/search_in_file_extensions" type="PackedStringArray" setter="" getter="">
 			Text-based file extensions to include in the script editor's "Find in Files" feature. You can add e.g. [code]tscn[/code] if you wish to also parse your scene files, especially if you use built-in scripts which are serialized in the scene files.
 		</member>
 		<member name="editor/script/templates_search_path" type="String" setter="" getter="" default="&quot;res://script_templates&quot;">
