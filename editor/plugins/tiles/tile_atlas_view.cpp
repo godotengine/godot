@@ -372,7 +372,7 @@ void TileAtlasView::_draw_base_tiles_shape_grid() {
 	for (int i = 0; i < tile_set_atlas_source->get_tiles_count(); i++) {
 		Vector2i tile_id = tile_set_atlas_source->get_tile_id(i);
 		Vector2 in_tile_base_offset = tile_set_atlas_source->get_tile_data(tile_id, 0)->get_texture_origin();
-		if (tile_set_atlas_source->is_position_in_tile_texture_region(tile_id, 0, -tile_shape_size / 2) && tile_set_atlas_source->is_position_in_tile_texture_region(tile_id, 0, tile_shape_size / 2 - Vector2(1, 1))) {
+		if (tile_set_atlas_source->is_rect_in_tile_texture_region(tile_id, 0, Rect2(Vector2(-tile_shape_size) / 2, tile_shape_size))) {
 			for (int frame = 0; frame < tile_set_atlas_source->get_tile_animation_frames_count(tile_id); frame++) {
 				Color color = grid_color;
 				if (frame > 0) {

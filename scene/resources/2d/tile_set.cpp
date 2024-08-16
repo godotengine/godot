@@ -5275,9 +5275,24 @@ Rect2i TileSetAtlasSource::get_tile_texture_region(Vector2i p_atlas_coords, int 
 
 bool TileSetAtlasSource::is_position_in_tile_texture_region(const Vector2i p_atlas_coords, int p_alternative_tile, Vector2 p_position) const {
 	Size2 size = get_tile_texture_region(p_atlas_coords).size;
-	Rect2 rect = Rect2(-size / 2 - get_tile_data(p_atlas_coords, p_alternative_tile)->get_texture_origin(), size);
+	TileData *tile_data = get_tile_data(p_atlas_coords, p_alternative_tile);
+	if (tile_data->get_transpose()) {
+		size = Size2(size.y, size.x);
+	}
+	Rect2 rect = Rect2(-size / 2 - tile_data->get_texture_origin(), size);
 
 	return rect.has_point(p_position);
+}
+
+bool TileSetAtlasSource::is_rect_in_tile_texture_region(const Vector2i p_atlas_coords, int p_alternative_tile, Rect2 p_rect) const {
+	Size2 size = get_tile_texture_region(p_atlas_coords).size;
+	TileData *tile_data = get_tile_data(p_atlas_coords, p_alternative_tile);
+	if (tile_data->get_transpose()) {
+		size = Size2(size.y, size.x);
+	}
+	Rect2 rect = Rect2(-size / 2 - tile_data->get_texture_origin(), size);
+
+	return p_rect.intersection(rect) == p_rect;
 }
 
 int TileSetAtlasSource::alternative_no_transform(int p_alternative_id) {
