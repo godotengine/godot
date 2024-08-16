@@ -739,6 +739,7 @@ public:
 
 	MODBIND2RC(bool, font_has_char, const RID &, int64_t);
 	MODBIND1RC(String, font_get_supported_chars, const RID &);
+	MODBIND1RC(PackedInt32Array, font_get_supported_glyphs, const RID &);
 
 	MODBIND4(font_render_range, const RID &, const Vector2i &, int64_t, int64_t);
 	MODBIND3(font_render_glyph, const RID &, const Vector2i &, int64_t);
