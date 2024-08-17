@@ -66,7 +66,8 @@ protected:
 	AnchorMode anchor_mode = ANCHOR_MODE_DRAG_CENTER;
 	bool ignore_rotation = true;
 	bool enabled = true;
-	real_t position_smoothing_speed = 5.0;
+	real_t position_smoothing_horizontal_speed = 5.0;
+	real_t position_smoothing_vertical_speed = 5.0;
 	bool position_smoothing_enabled = false;
 
 	real_t camera_angle = 0.0;
@@ -156,8 +157,11 @@ public:
 	void set_position_smoothing_enabled(bool p_enabled);
 	bool is_position_smoothing_enabled() const;
 
-	void set_position_smoothing_speed(real_t p_speed);
-	real_t get_position_smoothing_speed() const;
+	void set_horizontal_position_smoothing_speed(real_t p_speed);
+	real_t get_horizontal_position_smoothing_speed() const;
+
+	void set_vertical_position_smoothing_speed(real_t p_speed);
+	real_t get_vertical_position_smoothing_speed() const;
 
 	void set_rotation_smoothing_speed(real_t p_speed);
 	real_t get_rotation_smoothing_speed() const;
