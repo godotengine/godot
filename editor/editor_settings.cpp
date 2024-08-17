@@ -65,7 +65,7 @@ bool EditorSettings::_set(const StringName &p_name, const Variant &p_value) {
 	_THREAD_SAFE_METHOD_
 
 	bool changed = _set_only(p_name, p_value);
-	if (changed) {
+	if (changed && initialized) {
 		changed_settings.insert(p_name);
 		emit_signal(SNAME("settings_changed"));
 	}
@@ -328,6 +328,10 @@ bool EditorSettings::has_default_value(const String &p_setting) const {
 		return false;
 	}
 	return props[p_setting].has_default_value;
+}
+
+void EditorSettings::_set_initialized() {
+	initialized = true;
 }
 
 void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
@@ -1926,7 +1930,5 @@ EditorSettings::EditorSettings() {
 	last_order = 0;
 
 	_load_defaults();
-}
-
-EditorSettings::~EditorSettings() {
+	callable_mp(this, &EditorSettings::_set_initialized).call_deferred();
 }
