@@ -114,7 +114,7 @@ public:
 
 	virtual Error import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
 
-	virtual bool are_import_settings_valid(const String &p_path) const override;
+	virtual bool are_import_settings_valid(const String &p_path, const Dictionary &p_meta) const override;
 	virtual String get_import_settings_string() const override;
 
 	void set_mode(Mode p_mode) { mode = p_mode; }
