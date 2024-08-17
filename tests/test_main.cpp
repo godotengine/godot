@@ -52,6 +52,8 @@
 #include "tests/core/io/test_marshalls.h"
 #include "tests/core/io/test_pck_packer.h"
 #include "tests/core/io/test_resource.h"
+#include "tests/core/io/test_stream_peer.h"
+#include "tests/core/io/test_stream_peer_buffer.h"
 #include "tests/core/io/test_xml_parser.h"
 #include "tests/core/math/test_aabb.h"
 #include "tests/core/math/test_astar.h"
