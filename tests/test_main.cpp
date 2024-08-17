@@ -118,6 +118,7 @@
 #include "tests/scene/test_packed_scene.h"
 #include "tests/scene/test_path_2d.h"
 #include "tests/scene/test_path_follow_2d.h"
+#include "tests/scene/test_range.h"
 #include "tests/scene/test_sprite_frames.h"
 #include "tests/scene/test_theme.h"
 #include "tests/scene/test_timer.h"
