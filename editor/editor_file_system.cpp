@@ -282,6 +282,21 @@ void EditorFileSystem::_first_scan_process_scripts(const ScannedDirectory *p_sca
 	}
 
 	for (const String &scan_file : p_scan_dir->files) {
+		// Optimization to skip the ResourceLoader::get_resource_type for files
+		// that are not scripts. Some loader get_resource_type methods read the file
+		// which can be very slow on large projects.
+		String ext = scan_file.get_extension().to_lower();
+		bool is_script = false;
+		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+			if (ScriptServer::get_language(i)->get_extension() == ext) {
+				is_script = true;
+				break;
+			}
+		}
+		if (!is_script) {
+			continue; // Not a script.
+		}
+
 		String path = p_scan_dir->full_path.path_join(scan_file);
 		String type = ResourceLoader::get_resource_type(path);
 
@@ -371,6 +386,11 @@ void EditorFileSystem::_scan_filesystem() {
 					fc.script_class_name = split[7].get_slice("<>", 0);
 					fc.script_class_extends = split[7].get_slice("<>", 1);
 					fc.script_class_icon_path = split[7].get_slice("<>", 2);
+					fc.import_md5 = split[7].get_slice("<>", 3);
+					String dest_paths = split[7].get_slice("<>", 4);
+					if (!dest_paths.is_empty()) {
+						fc.import_dest_paths = dest_paths.split("<*>");
+					}
 
 					String deps = split[8].strip_edges();
 					if (deps.length()) {
@@ -463,12 +483,33 @@ void EditorFileSystem::_thread_func(void *_userdata) {
 	sd->_scan_filesystem();
 }
 
-bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_imported_files) {
-	if (!reimport_on_missing_imported_files && p_only_imported_files) {
-		return false;
+bool EditorFileSystem::_is_test_for_reimport_needed(const String &p_path, uint64_t p_last_modification_time, uint64_t p_modification_time, uint64_t p_last_import_modification_time, uint64_t p_import_modification_time, const Vector<String> &p_import_dest_paths) {
+	// The idea here is to trust the cache. If the last modification times in the cache correspond
+	// to the last modification times of the files on disk, it means the files have not changed since
+	// the last import, and the files in .godot/imported (p_import_dest_paths) should all be valid.
+	if (p_last_modification_time != p_modification_time) {
+		return true;
 	}
+	if (p_last_import_modification_time != p_import_modification_time) {
+		return true;
+	}
+	if (reimport_on_missing_imported_files) {
+		for (const String &path : p_import_dest_paths) {
+			if (!FileAccess::exists(path)) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
 
-	if (!FileAccess::exists(p_path + ".import")) {
+bool EditorFileSystem::_test_for_reimport(const String &p_path, const String &p_expected_import_md5) {
+	if (p_expected_import_md5.is_empty()) {
+		// Marked as reimportation needed.
+		return true;
+	}
+	String new_md5 = FileAccess::get_md5(p_path + ".import");
+	if (p_expected_import_md5 != new_md5) {
 		return true;
 	}
 
@@ -489,7 +530,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 	int lines = 0;
 	String error_text;
 
-	List<String> to_check;
+	Vector<String> to_check;
 
 	String importer_name;
 	String source_file = "";
@@ -498,6 +539,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 	String dest_md5 = "";
 	int version = 0;
 	bool found_uid = false;
+	Variant meta;
 
 	while (true) {
 		assign = Variant();
@@ -522,8 +564,8 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 				to_check.push_back(value);
 			} else if (assign == "files") {
 				Array fa = value;
-				for (int i = 0; i < fa.size(); i++) {
-					to_check.push_back(fa[i]);
+				for (const Variant &check_path : fa) {
+					to_check.push_back(check_path);
 				}
 			} else if (assign == "importer_version") {
 				version = value;
@@ -531,12 +573,12 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 				importer_name = value;
 			} else if (assign == "uid") {
 				found_uid = true;
-			} else if (!p_only_imported_files) {
-				if (assign == "source_file") {
-					source_file = value;
-				} else if (assign == "dest_files") {
-					dest_files = value;
-				}
+			} else if (assign == "source_file") {
+				source_file = value;
+			} else if (assign == "dest_files") {
+				dest_files = value;
+			} else if (assign == "metadata") {
+				meta = value;
 			}
 
 		} else if (next_tag.name != "remap" && next_tag.name != "deps") {
@@ -544,33 +586,40 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 		}
 	}
 
-	if (!ResourceFormatImporter::get_singleton()->are_import_settings_valid(p_path)) {
-		// Reimport settings are out of sync with project settings, reimport.
-		return true;
-	}
-
 	if (importer_name == "keep" || importer_name == "skip") {
-		return false; //keep mode, do not reimport
+		return false; // Keep mode, do not reimport.
 	}
 
 	if (!found_uid) {
-		return true; //UID not found, old format, reimport.
+		return true; // UID not found, old format, reimport.
+	}
+
+	// Imported files are gone, reimport.
+	for (const String &E : to_check) {
+		if (!FileAccess::exists(E)) {
+			return true;
+		}
 	}
 
 	Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(importer_name);
 
 	if (importer.is_null()) {
-		return true; // the importer has possibly changed, try to reimport.
+		return true; // The importer has possibly changed, try to reimport.
 	}
 
 	if (importer->get_format_version() > version) {
-		return true; // version changed, reimport
+		return true; // Version changed, reimport.
 	}
 
-	// Read the md5's from a separate file (so the import parameters aren't dependent on the file version
+	if (!importer->are_import_settings_valid(p_path, meta)) {
+		// Reimport settings are out of sync with project settings, reimport.
+		return true;
+	}
+
+	// Read the md5's from a separate file (so the import parameters aren't dependent on the file version).
 	String base_path = ResourceFormatImporter::get_singleton()->get_import_base_path(p_path);
 	Ref<FileAccess> md5s = FileAccess::open(base_path + ".md5", FileAccess::READ, &err);
-	if (md5s.is_null()) { // No md5's stored for this resource
+	if (md5s.is_null()) { // No md5's stored for this resource.
 		return true;
 	}
 
@@ -588,50 +637,101 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 			break;
 		} else if (err != OK) {
 			ERR_PRINT("ResourceFormatImporter::load - '" + p_path + ".import.md5:" + itos(lines) + "' error '" + error_text + "'.");
-			return false; // parse error
+			return false; // Parse error.
 		}
 		if (!assign.is_empty()) {
-			if (!p_only_imported_files) {
-				if (assign == "source_md5") {
-					source_md5 = value;
-				} else if (assign == "dest_md5") {
-					dest_md5 = value;
+			if (assign == "source_md5") {
+				source_md5 = value;
+			} else if (assign == "dest_md5") {
+				dest_md5 = value;
+			}
+		}
+	}
+
+	// Check source md5 matching.
+	if (!source_file.is_empty() && source_file != p_path) {
+		return true; // File was moved, reimport.
+	}
+
+	if (source_md5.is_empty()) {
+		return true; // Lacks md5, so just reimport.
+	}
+
+	String md5 = FileAccess::get_md5(p_path);
+	if (md5 != source_md5) {
+		return true;
+	}
+
+	if (!dest_files.is_empty() && !dest_md5.is_empty()) {
+		md5 = FileAccess::get_multiple_md5(dest_files);
+		if (md5 != dest_md5) {
+			return true;
+		}
+	}
+
+	return false; // Nothing changed.
+}
+
+Vector<String> EditorFileSystem::_get_import_dest_paths(const String &p_path) {
+	Error err;
+	Ref<FileAccess> f = FileAccess::open(p_path + ".import", FileAccess::READ, &err);
+
+	if (f.is_null()) { // No import file, reimport.
+		return Vector<String>();
+	}
+
+	VariantParser::StreamFile stream;
+	stream.f = f;
+
+	String assign;
+	Variant value;
+	VariantParser::Tag next_tag;
+
+	int lines = 0;
+	String error_text;
+
+	Vector<String> dest_paths;
+	String importer_name;
+
+	while (true) {
+		assign = Variant();
+		next_tag.fields.clear();
+		next_tag.name = String();
+
+		err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, nullptr, true);
+		if (err == ERR_FILE_EOF) {
+			break;
+		} else if (err != OK) {
+			ERR_PRINT("ResourceFormatImporter::load - '" + p_path + ".import:" + itos(lines) + "' error '" + error_text + "'.");
+			// Parse error, skip and let user attempt manual reimport to avoid reimport loop.
+			return Vector<String>();
+		}
+
+		if (!assign.is_empty()) {
+			if (assign == "valid" && value.operator bool() == false) {
+				// Invalid import (failed previous import), skip and let user attempt manual reimport to avoid reimport loop.
+				return Vector<String>();
+			}
+			if (assign.begins_with("path")) {
+				dest_paths.push_back(value);
+			} else if (assign == "files") {
+				Array fa = value;
+				for (const Variant &dest_path : fa) {
+					dest_paths.push_back(dest_path);
 				}
+			} else if (assign == "importer") {
+				importer_name = value;
 			}
+		} else if (next_tag.name != "remap" && next_tag.name != "deps") {
+			break;
 		}
 	}
 
-	//imported files are gone, reimport
-	for (const String &E : to_check) {
-		if (!FileAccess::exists(E)) {
-			return true;
-		}
+	if (importer_name == "keep" || importer_name == "skip") {
+		return Vector<String>();
 	}
 
-	//check source md5 matching
-	if (!p_only_imported_files) {
-		if (!source_file.is_empty() && source_file != p_path) {
-			return true; //file was moved, reimport
-		}
-
-		if (source_md5.is_empty()) {
-			return true; //lacks md5, so just reimport
-		}
-
-		String md5 = FileAccess::get_md5(p_path);
-		if (md5 != source_md5) {
-			return true;
-		}
-
-		if (dest_files.size() && !dest_md5.is_empty()) {
-			md5 = FileAccess::get_multiple_md5(dest_files);
-			if (md5 != dest_md5) {
-				return true;
-			}
-		}
-	}
-
-	return false; //nothing changed
+	return dest_paths;
 }
 
 bool EditorFileSystem::_scan_import_support(const Vector<String> &reimports) {
@@ -774,20 +874,9 @@ bool EditorFileSystem::_update_scan_actions() {
 				ERR_CONTINUE(idx == -1);
 				String full_path = ia.dir->get_file_path(idx);
 
-				bool need_reimport = _test_for_reimport(full_path, false);
-				// Workaround GH-94416 for the Android editor for now.
-				// `import_mt` seems to always be 0 and force a reimport on any fs scan.
-#ifndef ANDROID_ENABLED
-				if (!need_reimport && FileAccess::exists(full_path + ".import")) {
-					uint64_t import_mt = ia.dir->get_file_import_modified_time(idx);
-					if (import_mt != FileAccess::get_modified_time(full_path + ".import")) {
-						need_reimport = true;
-					}
-				}
-#endif
-
+				bool need_reimport = _test_for_reimport(full_path, ia.dir->files[idx]->import_md5);
 				if (need_reimport) {
-					//must reimport
+					// Must reimport.
 					reimports.push_back(full_path);
 					Vector<String> dependencies = _get_dependencies(full_path);
 					for (const String &dep : dependencies) {
@@ -797,10 +886,14 @@ bool EditorFileSystem::_update_scan_actions() {
 						}
 					}
 				} else {
-					//must not reimport, all was good
-					//update modified times, to avoid reimport
+					// Must not reimport, all was good.
+					// Update modified times, md5 and destination paths, to avoid reimport.
 					ia.dir->files[idx]->modified_time = FileAccess::get_modified_time(full_path);
 					ia.dir->files[idx]->import_modified_time = FileAccess::get_modified_time(full_path + ".import");
+					if (ia.dir->files[idx]->import_md5.is_empty()) {
+						ia.dir->files[idx]->import_md5 = FileAccess::get_md5(full_path + ".import");
+					}
+					ia.dir->files[idx]->import_dest_paths = _get_import_dest_paths(full_path);
 				}
 
 				fs_changed = true;
@@ -1029,26 +1122,36 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 
 		if (import_extensions.has(ext)) {
 			//is imported
-			uint64_t import_mt = 0;
-			if (FileAccess::exists(path + ".import")) {
-				import_mt = FileAccess::get_modified_time(path + ".import");
-			}
+			uint64_t import_mt = FileAccess::get_modified_time(path + ".import");
 
-			if (fc && fc->modification_time == mt && fc->import_modification_time == import_mt && !_test_for_reimport(path, true)) {
+			if (fc) {
 				fi->type = fc->type;
 				fi->resource_script_class = fc->resource_script_class;
 				fi->uid = fc->uid;
 				fi->deps = fc->deps;
-				fi->modified_time = fc->modification_time;
-				fi->import_modified_time = fc->import_modification_time;
-
+				fi->modified_time = mt;
+				fi->import_modified_time = import_mt;
+				fi->import_md5 = fc->import_md5;
+				fi->import_dest_paths = fc->import_dest_paths;
 				fi->import_valid = fc->import_valid;
 				fi->script_class_name = fc->script_class_name;
 				fi->import_group_file = fc->import_group_file;
 				fi->script_class_extends = fc->script_class_extends;
 				fi->script_class_icon_path = fc->script_class_icon_path;
 
-				if (revalidate_import_files && !ResourceFormatImporter::get_singleton()->are_import_settings_valid(path)) {
+				// Ensures backward compatibility when the project is loaded for the first time with the added import_md5
+				// and import_dest_paths properties in the file cache.
+				if (fc->import_md5.is_empty()) {
+					fi->import_md5 = FileAccess::get_md5(path + ".import");
+					fi->import_dest_paths = _get_import_dest_paths(path);
+				}
+
+				// The method _is_test_for_reimport_needed checks if the files were modified and ensures that
+				// all the destination files still exist without reading the .import file.
+				// If something is different, we will queue a test for reimportation that will check
+				// the md5 of all files and import settings and, if necessary, execute a reimportation.
+				if (_is_test_for_reimport_needed(path, fc->modification_time, mt, fc->import_modification_time, import_mt, fi->import_dest_paths) ||
+						(revalidate_import_files && !ResourceFormatImporter::get_singleton()->are_import_settings_valid(path))) {
 					ItemAction ia;
 					ia.action = ItemAction::ACTION_FILE_TEST_REIMPORT;
 					ia.dir = p_dir;
@@ -1075,6 +1178,8 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 				fi->script_class_name = _get_global_script_class(fi->type, path, &fi->script_class_extends, &fi->script_class_icon_path);
 				fi->modified_time = 0;
 				fi->import_modified_time = 0;
+				fi->import_md5 = "";
+				fi->import_dest_paths = Vector<String>();
 				fi->import_valid = (fi->type == "TextFile" || fi->type == "OtherFile") ? true : ResourceLoader::is_import_valid(path);
 
 				ItemAction ia;
@@ -1089,9 +1194,11 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 				fi->type = fc->type;
 				fi->resource_script_class = fc->resource_script_class;
 				fi->uid = fc->uid;
-				fi->modified_time = fc->modification_time;
+				fi->modified_time = mt;
 				fi->deps = fc->deps;
 				fi->import_modified_time = 0;
+				fi->import_md5 = "";
+				fi->import_dest_paths = Vector<String>();
 				fi->import_valid = true;
 				fi->script_class_name = fc->script_class_name;
 				fi->script_class_extends = fc->script_class_extends;
@@ -1126,6 +1233,8 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 				fi->deps = _get_dependencies(path);
 				fi->modified_time = mt;
 				fi->import_modified_time = 0;
+				fi->import_md5 = "";
+				fi->import_dest_paths = Vector<String>();
 				fi->import_valid = true;
 
 				// Files in dep_update_list are forced for rescan to update dependencies. They don't need other updates.
@@ -1269,6 +1378,8 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanPr
 					String path = cd.path_join(fi->file);
 					fi->modified_time = FileAccess::get_modified_time(path);
 					fi->import_modified_time = 0;
+					fi->import_md5 = "";
+					fi->import_dest_paths = Vector<String>();
 					fi->type = ResourceLoader::get_resource_type(path);
 					fi->resource_script_class = ResourceLoader::get_resource_script_class(path);
 					if (fi->type == "" && textfile_extensions.has(ext)) {
@@ -1323,26 +1434,13 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanPr
 		String path = cd.path_join(p_dir->files[i]->file);
 
 		if (import_extensions.has(p_dir->files[i]->file.get_extension().to_lower())) {
-			//check here if file must be imported or not
-
+			// Check here if file must be imported or not.
+			// Same logic as in _process_file_system, the last modifications dates
+			// needs to be trusted to prevent reading all the .import files and the md5
+			// each time the user switch back to Godot.
 			uint64_t mt = FileAccess::get_modified_time(path);
-
-			bool reimport = false;
-
-			if (mt != p_dir->files[i]->modified_time) {
-				reimport = true; //it was modified, must be reimported.
-			} else if (!FileAccess::exists(path + ".import")) {
-				reimport = true; //no .import file, obviously reimport
-			} else {
-				uint64_t import_mt = FileAccess::get_modified_time(path + ".import");
-				if (import_mt != p_dir->files[i]->import_modified_time) {
-					reimport = true;
-				} else if (_test_for_reimport(path, true)) {
-					reimport = true;
-				}
-			}
-
-			if (reimport) {
+			uint64_t import_mt = FileAccess::get_modified_time(path + ".import");
+			if (_is_test_for_reimport_needed(path, p_dir->files[i]->modified_time, mt, p_dir->files[i]->import_modified_time, import_mt, p_dir->files[i]->import_dest_paths)) {
 				ItemAction ia;
 				ia.action = ItemAction::ACTION_FILE_TEST_REIMPORT;
 				ia.dir = p_dir;
@@ -1625,7 +1723,7 @@ void EditorFileSystem::_save_filesystem_cache(EditorFileSystemDirectory *p_dir, 
 		cache_string.append(itos(file_info->import_modified_time));
 		cache_string.append(itos(file_info->import_valid));
 		cache_string.append(file_info->import_group_file);
-		cache_string.append(String("<>").join({ file_info->script_class_name, file_info->script_class_extends, file_info->script_class_icon_path }));
+		cache_string.append(String("<>").join({ file_info->script_class_name, file_info->script_class_extends, file_info->script_class_icon_path, file_info->import_md5, String("<*>").join(file_info->import_dest_paths) }));
 		cache_string.append(String("<>").join(file_info->deps));
 
 		p_file->store_line(String("::").join(cache_string));
@@ -2183,6 +2281,8 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 				fi->file = file_name;
 				fi->import_modified_time = 0;
 				fi->import_valid = (type == "TextFile" || type == "OtherFile") ? true : ResourceLoader::is_import_valid(file);
+				fi->import_md5 = "";
+				fi->import_dest_paths = Vector<String>();
 
 				if (idx == fs->files.size()) {
 					fs->files.push_back(fi);
@@ -2458,6 +2558,8 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		//update modified times, to avoid reimport
 		fs->files[cpos]->modified_time = FileAccess::get_modified_time(file);
 		fs->files[cpos]->import_modified_time = FileAccess::get_modified_time(file + ".import");
+		fs->files[cpos]->import_md5 = FileAccess::get_md5(file + ".import");
+		fs->files[cpos]->import_dest_paths = dest_paths;
 		fs->files[cpos]->deps = _get_dependencies(file);
 		fs->files[cpos]->uid = uid;
 		fs->files[cpos]->type = importer->get_resource_type();
@@ -2559,11 +2661,13 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		if (p_update_file_system) {
 			fs->files[cpos]->modified_time = FileAccess::get_modified_time(p_file);
 			fs->files[cpos]->import_modified_time = FileAccess::get_modified_time(p_file + ".import");
+			fs->files[cpos]->import_md5 = FileAccess::get_md5(p_file + ".import");
+			fs->files[cpos]->import_dest_paths = Vector<String>();
 			fs->files[cpos]->deps.clear();
 			fs->files[cpos]->type = "";
 			fs->files[cpos]->import_valid = false;
+			EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
 		}
-		EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
 		return OK;
 	}
 	Ref<ResourceImporter> importer;
@@ -2729,6 +2833,8 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		// Update modified times, to avoid reimport.
 		fs->files[cpos]->modified_time = FileAccess::get_modified_time(p_file);
 		fs->files[cpos]->import_modified_time = FileAccess::get_modified_time(p_file + ".import");
+		fs->files[cpos]->import_md5 = FileAccess::get_md5(p_file + ".import");
+		fs->files[cpos]->import_dest_paths = dest_paths;
 		fs->files[cpos]->deps = _get_dependencies(p_file);
 		fs->files[cpos]->type = importer->get_resource_type();
 		fs->files[cpos]->uid = uid;
