@@ -255,6 +255,21 @@ void EditorFileSystem::_first_scan_process_scripts(const ScannedDirectory *p_sca
 	}
 
 	for (const String &scan_file : p_scan_dir->files) {
+		// Optimization to skip the ResourceLoader::get_resource_type for files
+		// that are not scripts. Some loader get_resource_type methods read the file
+		// which can be very slow on large projects.
+		String ext = scan_file.get_extension().to_lower();
+		bool is_script = false;
+		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+			if (ScriptServer::get_language(i)->get_extension() == ext) {
+				is_script = true;
+				break;
+			}
+		}
+		if (!is_script) {
+			continue; // Not a script.
+		}
+
 		String path = p_scan_dir->full_path.path_join(scan_file);
 		String type = ResourceLoader::get_resource_type(path);
 
