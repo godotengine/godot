@@ -221,7 +221,10 @@
 		<constant name="NAVIGATION_EDGE_FREE_COUNT" value="32" enum="Monitor">
 			Number of navigation mesh polygon edges that could not be merged in the [NavigationServer3D]. The edges still may be connected by edge proximity or with links.
 		</constant>
-		<constant name="MONITOR_MAX" value="33" enum="Monitor">
+		<constant name="NAVIGATION_OBSTACLE_COUNT" value="33" enum="Monitor">
+			Number of active navigation obstacles in the [NavigationServer3D].
+		</constant>
+		<constant name="MONITOR_MAX" value="34" enum="Monitor">
 			Represents the size of the [enum Monitor] enum.
 		</constant>
 	</constants>

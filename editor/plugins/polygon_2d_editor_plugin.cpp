@@ -1255,44 +1255,43 @@ void Polygon2DEditor::_uv_draw() {
 
 		//draw skeleton
 		NodePath skeleton_path = node->get_skeleton();
-		if (node->has_node(skeleton_path)) {
-			Skeleton2D *skeleton = Object::cast_to<Skeleton2D>(node->get_node(skeleton_path));
-			if (skeleton) {
-				for (int i = 0; i < skeleton->get_bone_count(); i++) {
-					Bone2D *bone = skeleton->get_bone(i);
-					if (bone->get_rest() == Transform2D(0, 0, 0, 0, 0, 0)) {
-						continue; //not set
+		Skeleton2D *skeleton = Object::cast_to<Skeleton2D>(node->get_node_or_null(skeleton_path));
+		if (skeleton) {
+			Transform2D skeleton_xform = node->get_global_transform().affine_inverse().translated(-node->get_offset()) * skeleton->get_global_transform();
+			for (int i = 0; i < skeleton->get_bone_count(); i++) {
+				Bone2D *bone = skeleton->get_bone(i);
+				if (bone->get_rest() == Transform2D(0, 0, 0, 0, 0, 0)) {
+					continue; //not set
+				}
+
+				bool current = bone_path == skeleton->get_path_to(bone);
+
+				bool found_child = false;
+
+				for (int j = 0; j < bone->get_child_count(); j++) {
+					Bone2D *n = Object::cast_to<Bone2D>(bone->get_child(j));
+					if (!n) {
+						continue;
 					}
 
-					bool current = bone_path == skeleton->get_path_to(bone);
+					found_child = true;
 
-					bool found_child = false;
+					Transform2D bone_xform = skeleton_xform * bone->get_skeleton_rest();
+					Transform2D endpoint_xform = bone_xform * n->get_transform();
 
-					for (int j = 0; j < bone->get_child_count(); j++) {
-						Bone2D *n = Object::cast_to<Bone2D>(bone->get_child(j));
-						if (!n) {
-							continue;
-						}
+					Color color = current ? Color(1, 1, 1) : Color(0.5, 0.5, 0.5);
+					uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), Color(0, 0, 0), Math::round((current ? 5 : 4) * EDSCALE));
+					uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), color, Math::round((current ? 3 : 2) * EDSCALE));
+				}
 
-						found_child = true;
+				if (!found_child) {
+					//draw normally
+					Transform2D bone_xform = skeleton_xform * bone->get_skeleton_rest();
+					Transform2D endpoint_xform = bone_xform * Transform2D(0, Vector2(bone->get_length(), 0)).rotated(bone->get_bone_angle());
 
-						Transform2D bone_xform = node->get_global_transform().affine_inverse().translated(-node->get_offset()) * (skeleton->get_global_transform() * bone->get_skeleton_rest());
-						Transform2D endpoint_xform = bone_xform * n->get_transform();
-
-						Color color = current ? Color(1, 1, 1) : Color(0.5, 0.5, 0.5);
-						uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), Color(0, 0, 0), Math::round((current ? 5 : 4) * EDSCALE));
-						uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), color, Math::round((current ? 3 : 2) * EDSCALE));
-					}
-
-					if (!found_child) {
-						//draw normally
-						Transform2D bone_xform = node->get_global_transform().affine_inverse().translated(-node->get_offset()) * (skeleton->get_global_transform() * bone->get_skeleton_rest());
-						Transform2D endpoint_xform = bone_xform * Transform2D(0, Vector2(bone->get_length(), 0));
-
-						Color color = current ? Color(1, 1, 1) : Color(0.5, 0.5, 0.5);
-						uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), Color(0, 0, 0), Math::round((current ? 5 : 4) * EDSCALE));
-						uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), color, Math::round((current ? 3 : 2) * EDSCALE));
-					}
+					Color color = current ? Color(1, 1, 1) : Color(0.5, 0.5, 0.5);
+					uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), Color(0, 0, 0), Math::round((current ? 5 : 4) * EDSCALE));
+					uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), color, Math::round((current ? 3 : 2) * EDSCALE));
 				}
 			}
 		}
