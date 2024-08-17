@@ -386,6 +386,8 @@ void EditorFileSystem::_scan_filesystem() {
 	// On the first scan, the first_scan_root_dir is created in _first_scan_filesystem.
 	if (first_scan) {
 		sd = first_scan_root_dir;
+		// Will be updated on scan.
+		ResourceUID::get_singleton()->clear();
 	} else {
 		Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		sd = memnew(ScannedDirectory);
@@ -3061,7 +3063,6 @@ EditorFileSystem::EditorFileSystem() {
 	using_fat32_or_exfat = (da->get_filesystem_type() == "FAT32" || da->get_filesystem_type() == "exFAT");
 
 	scan_total = 0;
-	callable_mp(ResourceUID::get_singleton(), &ResourceUID::clear).call_deferred(); // Will be updated on scan.
 	ResourceSaver::set_get_resource_id_for_path(_resource_saver_get_resource_id_for_path);
 }
 
