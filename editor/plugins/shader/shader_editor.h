@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  GodotRenderView.java                                                  */
+/*  shader_editor.h                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,42 +28,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot;
+#ifndef SHADER_EDITOR_H
+#define SHADER_EDITOR_H
 
-import org.godotengine.godot.input.GodotInputHandler;
+#include "scene/gui/control.h"
+#include "scene/resources/shader.h"
 
-import android.view.SurfaceView;
+class ShaderEditor : public Control {
+	GDCLASS(ShaderEditor, Control);
 
-public interface GodotRenderView {
-	SurfaceView getView();
+public:
+	virtual void edit_shader(const Ref<Shader> &p_shader) = 0;
+	virtual void edit_shader_include(const Ref<ShaderInclude> &p_shader_inc) {}
 
-	/**
-	 * Starts the thread that will drive Godot's rendering.
-	 */
-	void startRenderer();
+	virtual void apply_shaders() = 0;
+	virtual bool is_unsaved() const = 0;
+	virtual void save_external_data(const String &p_str = "") = 0;
+	virtual void validate_script() = 0;
+};
 
-	/**
-	 * Queues a runnable to be run on the rendering thread.
-	 */
-	void queueOnRenderThread(Runnable event);
-
-	void onActivityPaused();
-
-	void onActivityStopped();
-
-	void onActivityResumed();
-
-	void onActivityStarted();
-
-	void onActivityDestroyed();
-
-	GodotInputHandler getInputHandler();
-
-	void configurePointerIcon(int pointerType, String imagePath, float hotSpotX, float hotSpotY);
-
-	void setPointerIcon(int pointerType);
-
-	default boolean canCapturePointer() {
-		return getInputHandler().canCapturePointer();
-	}
-}
+#endif // SHADER_EDITOR_H

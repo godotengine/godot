@@ -1428,6 +1428,18 @@
 		<member name="input_devices/pointing/emulate_touch_from_mouse" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], sends touch input events when clicking or dragging the mouse.
 		</member>
+		<member name="input_devices/sensors/enable_accelerometer" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the accelerometer sensor is enabled and [method Input.get_accelerometer] returns valid data.
+		</member>
+		<member name="input_devices/sensors/enable_gravity" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the gravity sensor is enabled and [method Input.get_gravity] returns valid data.
+		</member>
+		<member name="input_devices/sensors/enable_gyroscope" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the gyroscope sensor is enabled and [method Input.get_gyroscope] returns valid data.
+		</member>
+		<member name="input_devices/sensors/enable_magnetometer" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the magnetometer sensor is enabled and [method Input.get_magnetometer] returns valid data.
+		</member>
 		<member name="internationalization/locale/fallback" type="String" setter="" getter="" default="&quot;en&quot;">
 			The locale to fall back to if a translation isn't available in a given language. If left empty, [code]en[/code] (English) will be used.
 		</member>

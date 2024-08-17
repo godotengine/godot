@@ -92,9 +92,13 @@ private:
 	RBSet<JoyButton> joy_buttons_pressed;
 	RBMap<JoyAxis, float> _joy_axis;
 	//RBMap<StringName,int> custom_action_press;
+	bool gravity_enabled = false;
 	Vector3 gravity;
+	bool accelerometer_enabled = false;
 	Vector3 accelerometer;
+	bool magnetometer_enabled = false;
 	Vector3 magnetometer;
+	bool gyroscope_enabled = false;
 	Vector3 gyroscope;
 	Vector2 mouse_pos;
 	int64_t mouse_window = 0;
