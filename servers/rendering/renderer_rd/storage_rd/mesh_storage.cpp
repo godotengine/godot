@@ -1056,8 +1056,9 @@ void MeshStorage::update_mesh_instances() {
 
 			mi->surfaces[i].previous_buffer = mi->surfaces[i].current_buffer;
 
-			if (uses_motion_vectors && (frame - mi->surfaces[i].last_change) == 1) {
-				// Previous buffer's data can only be one frame old to be able to use motion vectors.
+			if (uses_motion_vectors && mi->surfaces[i].last_change && (frame - mi->surfaces[i].last_change) <= 2) {
+				// Use a 2-frame tolerance so that stepped skeletal animations have correct motion vectors
+				// (stepped animation is common for distant NPCs).
 				uint32_t new_buffer_index = mi->surfaces[i].current_buffer ^ 1;
 
 				if (mi->surfaces[i].uniform_set[new_buffer_index].is_null()) {
