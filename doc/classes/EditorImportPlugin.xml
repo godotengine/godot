@@ -278,8 +278,6 @@
 				[csharp]
 				public partial class MyEditorImportPlugin : EditorImportPlugin
 				{
-					private EditorInterface _editor;
-
 					public override Error _Import(string sourceFile, string savePath, Godot.Collections.Dictionary options, Godot.Collections.Array&lt;string&gt; platformVariants, Godot.Collections.Array&lt;string&gt; genFiles)
 					{
 						// Make textures folder if required.
@@ -293,8 +291,8 @@
 						exportImageFile.StoreBuffer(FileAccess.GetFileAsBytes("res://Game/MyIcon.png"));
 						exportImageFile.Close();
 
-						// Refresh view of exported file.
-						EditorFileSystem editorFileSystem = _editor.GetResourceFilesystem();
+						// Ensure file visibility for ResourceLoader later.
+						EditorFileSystem editorFileSystem = EditorInterface.Singleton.GetResourceFilesystem();
 						editorFileSystem.UpdateFile(texturesFolder);
 						editorFileSystem.UpdateFile(exportPath);
 
