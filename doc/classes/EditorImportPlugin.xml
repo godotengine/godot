@@ -304,7 +304,7 @@
 						}
 
 						// Load exported image as a Texture2D.
-						Texture2D exportImageTex = ResourceLoader.Load<Texture2D>(exportPath, nameof(Texture2D), ResourceLoader.CacheMode.Replace);
+						Texture2D exportImageTex = ResourceLoader.Load&lt;Texture2D&gt;(exportPath, nameof(Texture2D), ResourceLoader.CacheMode.Replace);
 						if (exportImageTex == null)
 						{
 							return Error.ScriptFailed;
