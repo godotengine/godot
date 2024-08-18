@@ -165,6 +165,9 @@
 		<member name="position_smoothing_speed" type="float" setter="set_position_smoothing_speed" getter="get_position_smoothing_speed" default="5.0">
 			Speed in pixels per second of the camera's smoothing effect when [member position_smoothing_enabled] is [code]true[/code].
 		</member>
+		<member name="position_smoothing_velocity" type="Vector2" setter="set_position_smoothing_velocity" getter="get_position_smoothing_velocity" default="Vector2(5, 5)">
+			Speed in pixels per second for the X and Y axes of the camera's smoothing effect when [member position_smoothing_enabled] is [code]true[/code].
+		</member>
 		<member name="process_callback" type="int" setter="set_process_callback" getter="get_process_callback" enum="Camera2D.Camera2DProcessCallback" default="1">
 			The camera's process callback. See [enum Camera2DProcessCallback].
 		</member>
