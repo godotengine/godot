@@ -181,7 +181,8 @@
 			[b]Note:[/b] [member glow_map] has no effect when using the Compatibility rendering method, due to this rendering method using a simpler glow implementation optimized for low-end devices.
 		</member>
 		<member name="glow_map_strength" type="float" setter="set_glow_map_strength" getter="get_glow_map_strength" default="0.8">
-			How strong of an impact the [member glow_map] should have on the overall glow effect. A strength of [code]0.0[/code] means the glow map has no effect on the overall glow effect. A strength of [code]1.0[/code] means the glow has a full effect on the overall glow effect (and can turn off glow entirely in specific areas of the screen if the glow map has black areas).
+			How strong of an influence the [member glow_map] should have on the overall glow effect. A strength of [code]0.0[/code] means the glow map has no influence, while a strength of [code]1.0[/code] means the glow map has full influence.
+			[b]Note:[/b] If the glow map has black areas, a value of [code]1.0[/code] can also turn off the glow effect entirely in specific areas of the screen.
 			[b]Note:[/b] [member glow_map_strength] has no effect when using the Compatibility rendering method, due to this rendering method using a simpler glow implementation optimized for low-end devices.
 		</member>
 		<member name="glow_mix" type="float" setter="set_glow_mix" getter="get_glow_mix" default="0.05">

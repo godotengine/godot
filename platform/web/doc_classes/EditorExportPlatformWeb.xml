@@ -60,15 +60,15 @@
 		</member>
 		<member name="progressive_web_app/icon_144x144" type="String" setter="" getter="">
 			File path to the smallest icon for this web application. If not defined, defaults to the project icon.
-			[b]Note:[/b] If the icon is not 144x144, it will be automatically resized for the final build.
+			[b]Note:[/b] If the icon is not 144×144, it will be automatically resized for the final build.
 		</member>
 		<member name="progressive_web_app/icon_180x180" type="String" setter="" getter="">
 			File path to the small icon for this web application. If not defined, defaults to the project icon.
-			[b]Note:[/b] If the icon is not 180x180, it will be automatically resized for the final build.
+			[b]Note:[/b] If the icon is not 180×180, it will be automatically resized for the final build.
 		</member>
 		<member name="progressive_web_app/icon_512x512" type="String" setter="" getter="">
-			File path to the smallest icon for this web application. If not defined, defaults to the project icon.
-			[b]Note:[/b] If the icon is not 512x512, it will be automatically resized for the final build.
+			File path to the largest icon for this web application. If not defined, defaults to the project icon.
+			[b]Note:[/b] If the icon is not 512×512, it will be automatically resized for the final build.
 		</member>
 		<member name="progressive_web_app/offline_page" type="String" setter="" getter="">
 			The page to display, should the server hosting the page not be available. This page is saved in the client's machine.

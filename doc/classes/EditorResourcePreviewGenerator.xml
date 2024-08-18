@@ -4,7 +4,7 @@
 		Custom generator of previews.
 	</brief_description>
 	<description>
-		Custom code to generate previews. Please check [code]file_dialog/thumbnail_size[/code] in [EditorSettings] to find out the right size to do previews at.
+		Custom code to generate previews. Check [member EditorSettings.filesystem/file_dialog/thumbnail_size] to find a proper size to generate previews at.
 	</description>
 	<tutorials>
 	</tutorials>
