@@ -185,13 +185,15 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 		ClassDB::register_class<CharacterAILogicNode_Dead>();
 
 
-		ClassDB::register_class<BeehaveNode>();
+		ClassDB::register_abstract_class<BeehaveNode>();
+		ClassDB::register_abstract_class<BeehaveComposite>();
+		ClassDB::register_abstract_class<BeehaveDecorator>();
+		ClassDB::register_abstract_class<BeehaveLeaf>();
+		ClassDB::register_abstract_class<BeehaveAction>();
+
+		
 		ClassDB::register_class<BeehaveListener>();
 		ClassDB::register_class<BeehaveTree>();
-		ClassDB::register_class<BeehaveComposite>();
-		ClassDB::register_class<BeehaveDecorator>();
-		ClassDB::register_class<BeehaveLeaf>();
-		ClassDB::register_class<BeehaveAction>();
 
 		ClassDB::register_class<BeehaveCompositeParallel>();
 		ClassDB::register_class<BeehaveCompositeSelector>();
