@@ -20,7 +20,9 @@ var image_rotation:int=0
 
 var wpx:Texture2D
 
-func _ready():
+var is_being_edited = false
+
+func _ready():	
 	size.x = current_size
 	size.z = current_size
 	angle_offset = Vector3(size.x/2,0,size.z/2)
@@ -29,46 +31,59 @@ func _ready():
 	wpx = ImageTexture.create_from_image(img)
 	
 
-func set_absolute_terrain_pos(pos:Vector3,terrain:MTerrain):
-	active_terrain = terrain
+func set_absolute_terrain_pos(pos:Vector3, force =false):
 	if is_dirty:
 		update_active_image()
 	if orignal_image:
-		terrain.set_brush_mask(active_image)
+		active_terrain.set_brush_mask(active_image)		
 	else:
-		terrain.disable_brush_mask()
-	if not is_fix:
+		active_terrain.disable_brush_mask()		
+	if is_being_edited or force:
 		var angle_pos = pos - angle_offset
-		angle_pos -= terrain.offset
-		angle_pos = angle_pos/terrain.get_h_scale()
+		angle_pos -= active_terrain.offset
+		angle_pos = angle_pos/active_terrain.get_h_scale()
 		angle_pos = Vector3(round(angle_pos.x),pos.y,round(angle_pos.z))
 		var px_pos = Vector2i(angle_pos.x,angle_pos.z)
-		angle_pos.x *= terrain.get_h_scale()
-		angle_pos.z *= terrain.get_h_scale()
-		angle_pos += terrain.offset
+		angle_pos.x *= active_terrain.get_h_scale()
+		angle_pos.z *= active_terrain.get_h_scale()
+		angle_pos += active_terrain.offset
 		desire_position = angle_pos + angle_offset
-		terrain.set_brush_mask_px_pos(px_pos)
+		active_terrain.set_brush_mask_px_pos(px_pos)
 		set_process(true)
 
-func toggle_fix():
-	is_fix = not is_fix
+func increase_size(amount:int=1):
+	if active_terrain is MTerrain:
+		change_size(amount)
+	else:
+		push_error("trying to set mterrain mask size, but mask has no active_terrain")
 
-func increase_size(terrain:MTerrain,amount:int=1):
-	change_size(amount,terrain)
-
-func change_size(amount:float,terrain:MTerrain):
+func change_size(amount:float):
 	if is_fix: return
-	if current_size < terrain.get_h_scale():
-		current_size = terrain.min_h_scale
-	current_size += amount * terrain.get_h_scale()
-	if current_size < terrain.get_h_scale():
-		current_size = terrain.get_h_scale()
+	if current_size < active_terrain.get_h_scale():
+		current_size = active_terrain.min_h_scale
+	current_size += amount * active_terrain.get_h_scale()
+	if current_size < active_terrain.get_h_scale():
+		current_size = active_terrain.get_h_scale()
 	size.x = current_size
 	size.z = current_size
 	var last_pos = position
 	angle_offset = Vector3(size.x/2,0,size.z/2)
 	is_dirty = true
-	set_absolute_terrain_pos(position,terrain)
+	set_absolute_terrain_pos(position)
+
+func set_size(value):	
+	if current_size < active_terrain.get_h_scale():
+		current_size = active_terrain.min_h_scale
+	current_size = value * active_terrain.get_h_scale()
+	if current_size < active_terrain.get_h_scale():
+		current_size = active_terrain.get_h_scale()
+	size.x = current_size
+	size.z = current_size
+	var last_pos = position
+	angle_offset = Vector3(size.x/2,0,size.z/2)
+	is_dirty = true
+	update_active_image()
+	is_being_edited = true
 
 func _process(delta):
 	if (desire_position - position).length() < 0.01:
@@ -77,7 +92,7 @@ func _process(delta):
 
 
 func set_mask(img:Image,tex:Texture2D):
-	image_rotation = 0
+	#image_rotation = 0
 	active_tex = tex
 	orignal_image = img
 	original_tex = tex
@@ -87,8 +102,13 @@ func set_mask(img:Image,tex:Texture2D):
 		albedo_mix = 0.8
 	else:
 		texture_albedo = wpx
-		albedo_mix = 0.0
-	
+		albedo_mix = 0.0	
+	if active_terrain:
+		update_active_image()	
+		if orignal_image:
+			active_terrain.set_brush_mask(active_image)
+		else:
+			active_terrain.disable_brush_mask()		
 
 func reset_image_rotation():
 	image_rotation = 0
@@ -101,10 +121,16 @@ func rotate_image(amount:int):
 	is_dirty = true
 	update_active_image()
 
+func set_image_rotation(value:int):
+	image_rotation = value % 4
+	is_dirty = true
+	update_active_image()
+	is_being_edited = true
+
 func update_active_image():
 	if not active_terrain:return
 	is_dirty = false
-	if orignal_image == null:
+	if orignal_image == null:		
 		return
 	active_image = orignal_image.duplicate()
 	if image_rotation != 0:
@@ -124,6 +150,3 @@ func update_active_image():
 	var new_size = current_size/active_terrain.get_h_scale()
 	active_image.resize(new_size,new_size)
 	
-
-
-

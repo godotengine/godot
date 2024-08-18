@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 100 100"
+   width="100"
+   height="100"
+   version="1.1"
+   id="svg3"
+   sodipodi:docname="MOctTree.svg"
+   inkscape:version="1.3.2 (091e20ef0f, 2023-11-25, custom)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs3" />
+  <sodipodi:namedview
+     id="namedview3"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="true"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="5.7134228"
+     inkscape:cx="36.493011"
+     inkscape:cy="55.308352"
+     inkscape:window-width="1920"
+     inkscape:window-height="1172"
+     inkscape:window-x="1920"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg3" />
+  <!-- Background -->
+  <!-- 3D Cube -->
+  <!-- Front face -->
+  <!-- Side face -->
+  <!-- Top face -->
+  <g
+     id="g3"
+     transform="matrix(1.9076455,0,0,1.8504077,-11.547467,-7.9194463)">
+    <polygon
+       points="70,70 30,70 30,30 70,30 "
+       fill="#e0e0e0"
+       id="polygon1"
+       transform="translate(-22.524752,-13.910887)"
+       style="fill:#af0000;fill-opacity:1;stroke:#005c00;stroke-width:0.534294;stroke-dasharray:none;stroke-opacity:1" />
+    <polygon
+       points="80,60 70,70 70,30 80,20 "
+       fill="#b0b0b0"
+       id="polygon2"
+       transform="translate(-22.524752,-13.910887)"
+       style="fill:#ff0b00;fill-opacity:1;stroke:#005c00;stroke-width:0.185082;stroke-dasharray:none;stroke-opacity:1" />
+    <polygon
+       points="80,20 70,30 30,30 40,20 "
+       fill="#c0c0c0"
+       id="polygon3"
+       transform="translate(-22.524752,-13.910887)"
+       style="fill:#e64242;fill-opacity:1;stroke:#005c00;stroke-width:0.301486;stroke-dasharray:none;stroke-opacity:1" />
+  </g>
+  <!-- Letter on top -->
+  <path
+     style="fill:none;stroke:#0004d3;stroke-width:1.922;stroke-dashoffset:0;stroke-opacity:0.88324797;stroke-dasharray:15.3760004, 1.92200005"
+     d="M 51.107675,2.8704324 40.332112,21.534255 v 74.310214"
+     id="path3" />
+  <path
+     style="fill:none;stroke:#0000ff;stroke-width:1.922;stroke-dasharray:15.376, 1.922;stroke-dashoffset:0;stroke-opacity:0.88324797"
+     d="M 14.002072,10.851633 H 90.033579 V 85.412888"
+     id="path4" />
+  <path
+     style="fill:none;stroke:#0000f7;stroke-width:1.922;stroke-dasharray:15.376, 1.922;stroke-dashoffset:0;stroke-opacity:0.88324797"
+     d="M 98.644871,45.716895 78.471792,57.363828 H 2.8003802"
+     id="path5" />
+</svg>

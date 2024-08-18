@@ -2,16 +2,39 @@
 
 [ext_resource type="Script" path="res://addons/m_terrain/gui/control_prop_element/bool.gd" id="1_j602s"]
 
-[node name="bool" type="HBoxContainer"]
-offset_right = 40.0
-offset_bottom = 40.0
+[node name="bool" type="VBoxContainer"]
+offset_right = 55.0
+offset_bottom = 115.0
 script = ExtResource("1_j602s")
 
-[node name="lable" type="Label" parent="."]
+[node name="Control" type="Control" parent="."]
+custom_minimum_size = Vector2(24, 88)
 layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 1
+
+[node name="CheckButton" type="CheckButton" parent="Control"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -24.0
+offset_top = -1.0
+offset_right = 20.0
+offset_bottom = 23.0
+grow_horizontal = 2
+grow_vertical = 0
+rotation = -1.5708
+mouse_filter = 1
+theme_type_variation = &"button_icon_only"
+
+[node name="label" type="Label" parent="."]
+layout_mode = 2
+size_flags_horizontal = 4
 text = "bool var "
+horizontal_alignment = 1
+uppercase = true
 
-[node name="CheckButton" type="CheckButton" parent="."]
-layout_mode = 2
-
-[connection signal="toggled" from="CheckButton" to="." method="_on_check_button_toggled"]
+[connection signal="toggled" from="Control/CheckButton" to="." method="_on_check_button_toggled"]

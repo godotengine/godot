@@ -18,7 +18,7 @@
 #include "mresource.h"
 
 
-
+using namespace godot;
 
 class MRegion;
 
@@ -33,7 +33,7 @@ struct MImageUndoData {
     }
 };
 
-class MImage {
+struct MImage {
 public:
     int index=-1;
     MRegion* region=nullptr;
@@ -42,7 +42,7 @@ public:
     int compression=-1;
     uint32_t width;
     uint32_t height;
-    int32_t current_size;
+    uint32_t current_size;
     uint32_t current_scale = 1;
     uint32_t pixel_size;
     uint32_t total_pixel_amount;
@@ -70,6 +70,7 @@ public:
     bool is_init=false;
     bool is_corrupt_file = false;
     bool is_null_image=true;
+    bool is_ram_image=false; // in case the image exist only on RAM not VRAM
     
     MImage();
     MImage(const String& _name,const String& _uniform_name,MGridPos _grid_pos,MRegion* r);
@@ -78,6 +79,7 @@ public:
     void unload(Ref<MResource> mres);
     void set_active_layer(int l);
     void add_layer(String lname);
+    void rename_layer(int layer_index,String new_name);
     void merge_layer();
     void remove_layer(bool is_visible);
     void layer_visible(bool input);
@@ -100,7 +102,7 @@ public:
     void check_undo(); // Register the state of image before the draw
     void remove_undo_data(int ur_id);
     void remove_undo_data_in_layer(int layer_index);
-    void go_to_undo(int ur_id);
+    bool go_to_undo(int ur_id);
     bool has_undo(int ur_id);
 
     // This functions exist in godot source code

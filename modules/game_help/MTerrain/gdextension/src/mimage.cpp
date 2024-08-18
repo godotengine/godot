@@ -145,6 +145,14 @@ void MImage::add_layer(String lname){
 	}
 }
 
+void MImage::rename_layer(int layer_index,String new_name){
+	if(name!=HEIGHTMAP_NAME){
+		return;
+	}
+	std::lock_guard<std::recursive_mutex> lock(load_mutex);
+	layer_names.set(layer_index,new_name);
+}
+
 void MImage::load_layer(String lname){
 	std::lock_guard<std::recursive_mutex> lock(load_mutex);
 	if(!is_init){
@@ -416,6 +424,9 @@ void MImage::get_data(PackedByteArray* out,int scale){
 }
 
 void MImage::update_texture(int scale,bool apply_update){
+	if(is_ram_image){
+		return;
+	}
 	std::lock_guard<std::recursive_mutex> lock(load_mutex);
 	if(!is_init){
 		return;
@@ -453,6 +464,9 @@ void MImage::update_texture(int scale,bool apply_update){
 }
 
 void MImage::apply_update() {
+	if(is_ram_image){
+		return;
+	}
 	std::lock_guard<std::recursive_mutex> lock(load_mutex);
 	if(!is_init){
 		return;
@@ -621,7 +635,6 @@ bool MImage::save(Ref<MResource> mres,bool force_save) {
 			bool cmp_qtq = region->grid->save_config.heightmap_compress_qtq;
 			MResource::FileCompress fcmp = region->grid->save_config.heightmap_file_compress;
 			mres->insert_heightmap_rf(background_data,accq,cmp_qtq,fcmp);
-			is_saved_layers.set(0,true);
 		}
 		for(int i=1;i<image_layers.size();i++){
 			if(!is_saved_layers[i]){
@@ -639,7 +652,10 @@ bool MImage::save(Ref<MResource> mres,bool force_save) {
 			}
 		}
 		is_save = true;
-		return true;
+		if(!is_saved_layers[0]){
+			is_saved_layers.set(0,true);
+			return true;
+		}
 	}
 	return false;
 }
@@ -676,9 +692,9 @@ void MImage::remove_undo_data_in_layer(int layer_index){
 	}
 }
 
-void MImage::go_to_undo(int ur_id){
+bool MImage::go_to_undo(int ur_id){
 	if(!undo_data.has(ur_id)){
-		return; // noting to do here we don't have any data change corrispond to this undo redo
+		return false; // noting to do here we don't have any data change corrispond to this undo redo
 	}
 	MImageUndoData ur = undo_data[ur_id];
 	if(ur.layer!=active_layer){
@@ -724,6 +740,7 @@ void MImage::go_to_undo(int ur_id){
 		region->recalculate_normals();
 	}
 	is_dirty = true;
+	return true;
 }
 
 bool MImage::has_undo(int ur_id){

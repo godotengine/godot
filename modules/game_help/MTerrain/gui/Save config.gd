@@ -236,4 +236,3 @@ func save_config_file():
 		conf.set_value(key,"file_compress",state["file_compress"])
 		conf.set_value(key,"compress",state["compress"])
 	conf.save(path)
-

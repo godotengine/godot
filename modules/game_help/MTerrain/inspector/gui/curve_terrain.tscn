@@ -1,0 +1,287 @@
+[gd_scene load_steps=5 format=3 uid="uid://br05oyiapuwpf"]
+
+[ext_resource type="Script" path="res://addons/m_terrain/inspector/gui/curve_terrain.gd" id="1_txmoh"]
+[ext_resource type="Texture2D" uid="uid://bsdfn2yec6vtv" path="res://addons/m_terrain/icons/terrain_icon.png" id="2_n3lna"]
+[ext_resource type="Texture2D" uid="uid://c08s0xlu8tted" path="res://addons/m_terrain/icons/brush_icon.png" id="3_bwp6e"]
+[ext_resource type="Texture2D" uid="uid://d03ukmldfnxs3" path="res://addons/m_terrain/icons/foilage_icon.png" id="4_ftpdb"]
+
+[node name="curve_terrain" type="VBoxContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_txmoh")
+
+[node name="panle_open" type="CheckButton" parent="."]
+layout_mode = 2
+text = "Terrain"
+
+[node name="HSeparator3" type="HSeparator" parent="."]
+layout_mode = 2
+
+[node name="tsv" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="tilt" type="CheckBox" parent="tsv"]
+layout_mode = 2
+text = "Tilt"
+
+[node name="scale" type="CheckBox" parent="tsv"]
+layout_mode = 2
+text = "Scale"
+
+[node name="tsv2" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="auto_deform" type="CheckBox" parent="tsv2"]
+layout_mode = 2
+text = "Auto deform"
+
+[node name="deform_tools" type="MenuButton" parent="tsv2"]
+custom_minimum_size = Vector2(30, 0)
+layout_mode = 2
+text = "Deform Tools"
+icon = ExtResource("2_n3lna")
+flat = false
+item_count = 4
+popup/item_0/text = "only selected"
+popup/item_0/checkable = 1
+popup/item_0/checked = true
+popup/item_0/id = 0
+popup/item_1/text = "Deform"
+popup/item_1/id = 1
+popup/item_2/text = "clear"
+popup/item_2/id = 2
+popup/item_3/text = "clear large"
+popup/item_3/id = 3
+
+[node name="tlv" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="tlv"]
+layout_mode = 2
+text = "Terrain Layer    "
+
+[node name="tlayer" type="LineEdit" parent="tlv"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="rv" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="rv"]
+layout_mode = 2
+text = "Deform Radius "
+
+[node name="dradius" type="SpinBox" parent="rv"]
+layout_mode = 2
+size_flags_horizontal = 3
+step = 0.01
+
+[node name="fv" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="fv"]
+layout_mode = 2
+text = "Deform Falloff  "
+
+[node name="dfalloff" type="SpinBox" parent="fv"]
+layout_mode = 2
+size_flags_horizontal = 3
+step = 0.01
+
+[node name="ov" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ov"]
+layout_mode = 2
+text = "Deform Ofsset  "
+
+[node name="doffset" type="SpinBox" parent="ov"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -500.0
+max_value = 500.0
+step = 0.01
+
+[node name="HSeparator" type="HSeparator" parent="."]
+layout_mode = 2
+
+[node name="tsv3" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="auto_paint" type="CheckBox" parent="tsv3"]
+layout_mode = 2
+text = "Auto Paint"
+
+[node name="paint_tools" type="MenuButton" parent="tsv3"]
+custom_minimum_size = Vector2(30, 0)
+layout_mode = 2
+text = "Paint Tools"
+icon = ExtResource("3_bwp6e")
+flat = false
+item_count = 4
+popup/item_0/text = "only selected"
+popup/item_0/checkable = 1
+popup/item_0/checked = true
+popup/item_0/id = 0
+popup/item_1/text = "Paint"
+popup/item_1/id = 1
+popup/item_2/text = "clear"
+popup/item_2/id = 2
+popup/item_3/text = "clear large"
+popup/item_3/id = 3
+
+[node name="ov2" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ov2"]
+layout_mode = 2
+text = "Image Name  "
+
+[node name="iname" type="LineEdit" parent="ov2"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ov3" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ov3"]
+layout_mode = 2
+text = "Paint radius   "
+
+[node name="pradius" type="SpinBox" parent="ov3"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -500.0
+max_value = 500.0
+step = 0.01
+
+[node name="ov5" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ov5"]
+layout_mode = 2
+text = "Paint Falloff   "
+
+[node name="pfalloff" type="SpinBox" parent="ov5"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -500.0
+max_value = 500.0
+step = 0.01
+
+[node name="ov4" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ov4"]
+layout_mode = 2
+text = "Paint Color "
+
+[node name="pcolor" type="ColorPickerButton" parent="ov4"]
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="ov4"]
+layout_mode = 2
+text = "BG Color "
+
+[node name="bgcolor" type="ColorPickerButton" parent="ov4"]
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+
+[node name="grass_start" type="HSeparator" parent="."]
+layout_mode = 2
+
+[node name="g_container" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="gt" type="HBoxContainer" parent="g_container"]
+layout_mode = 2
+
+[node name="auto_g_modify" type="CheckBox" parent="g_container/gt"]
+layout_mode = 2
+text = "Auto Modify"
+
+[node name="grass_tool" type="MenuButton" parent="g_container/gt"]
+layout_mode = 2
+text = "Grass Tool"
+icon = ExtResource("4_ftpdb")
+flat = false
+item_count = 4
+popup/item_0/text = "Only Selected"
+popup/item_0/checkable = 1
+popup/item_0/checked = true
+popup/item_0/id = 0
+popup/item_1/text = "modify"
+popup/item_1/id = 1
+popup/item_2/text = "clear"
+popup/item_2/id = 2
+popup/item_3/text = "clear large"
+popup/item_3/id = 3
+
+[node name="grass_list" type="ItemList" parent="g_container"]
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+max_columns = 4
+
+[node name="gh" type="HBoxContainer" parent="g_container"]
+layout_mode = 2
+
+[node name="gactive" type="CheckBox" parent="g_container/gh"]
+layout_mode = 2
+text = "Active"
+
+[node name="gadd" type="CheckBox" parent="g_container/gh"]
+layout_mode = 2
+text = "Add Grass"
+
+[node name="ov7" type="HBoxContainer" parent="g_container"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="g_container/ov7"]
+layout_mode = 2
+text = "Radius         "
+
+[node name="gradius" type="SpinBox" parent="g_container/ov7"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 500.0
+step = 0.01
+update_on_text_changed = true
+
+[node name="ov6" type="HBoxContainer" parent="g_container"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="g_container/ov6"]
+layout_mode = 2
+text = "Start Offset"
+
+[node name="goffset" type="SpinBox" parent="g_container/ov6"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 500.0
+step = 0.01
+update_on_text_changed = true
+
+[connection signal="toggled" from="panle_open" to="." method="_on_panle_open_toggled"]
+[connection signal="toggled" from="tsv/tilt" to="." method="_on_tilt_toggled"]
+[connection signal="toggled" from="tsv/scale" to="." method="_on_scale_toggled"]
+[connection signal="toggled" from="tsv2/auto_deform" to="." method="_on_auto_deform_toggled"]
+[connection signal="text_changed" from="tlv/tlayer" to="." method="_on_tlayer_text_changed"]
+[connection signal="value_changed" from="rv/dradius" to="." method="_on_dradius_value_changed"]
+[connection signal="value_changed" from="fv/dfalloff" to="." method="_on_dfalloff_value_changed"]
+[connection signal="value_changed" from="ov/doffset" to="." method="_on_doffset_value_changed"]
+[connection signal="toggled" from="tsv3/auto_paint" to="." method="_on_auto_paint_toggled"]
+[connection signal="text_changed" from="ov2/iname" to="." method="_on_iname_text_changed"]
+[connection signal="value_changed" from="ov3/pradius" to="." method="_on_pradius_value_changed"]
+[connection signal="value_changed" from="ov5/pfalloff" to="." method="_on_pfalloff_value_changed"]
+[connection signal="color_changed" from="ov4/pcolor" to="." method="_on_pcolor_color_changed"]
+[connection signal="color_changed" from="ov4/bgcolor" to="." method="_on_bgcolor_color_changed"]
+[connection signal="toggled" from="g_container/gt/auto_g_modify" to="." method="_on_auto_g_modify_toggled"]
+[connection signal="item_selected" from="g_container/grass_list" to="." method="_on_grass_list_item_selected"]
+[connection signal="pressed" from="g_container/gh/gactive" to="." method="upate_grass_meta"]
+[connection signal="pressed" from="g_container/gh/gadd" to="." method="upate_grass_meta"]
+[connection signal="value_changed" from="g_container/ov7/gradius" to="." method="_on_gradius_value_changed"]
+[connection signal="value_changed" from="g_container/ov6/goffset" to="." method="_on_goffset_value_changed"]

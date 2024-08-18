@@ -194,6 +194,7 @@ class MResource : public Resource {
         FILE_COMPRESSION_ZSTD = 3,
         FILE_COMPRESSION_GZIP = 4
     };
+    Array get_data_names();
     bool has_data(const StringName& name);
     void set_compressed_data(const Dictionary& data);
     const Dictionary& get_compressed_data();

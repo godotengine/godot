@@ -58,6 +58,7 @@ class MBrushLayers : public Resource {
     bool _set(const StringName &p_name, const Variant &p_value);
 
     Array get_layers_info();
+    Color get_layer_color(int index);
     void set_layer(int index,MColorBrush* brush);
     
 

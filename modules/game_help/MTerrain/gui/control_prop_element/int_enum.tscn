@@ -2,16 +2,17 @@
 
 [ext_resource type="Script" path="res://addons/m_terrain/gui/control_prop_element/int_enum.gd" id="1_heunk"]
 
-[node name="int_enum" type="HBoxContainer"]
-offset_right = 40.0
-offset_bottom = 40.0
+[node name="int_enum" type="MarginContainer"]
+offset_right = 112.0
+offset_bottom = 47.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
 script = ExtResource("1_heunk")
 
-[node name="lable" type="Label" parent="."]
+[node name="ItemList" type="ItemList" parent="."]
 layout_mode = 2
-text = "Enum val "
-
-[node name="values" type="OptionButton" parent="."]
-layout_mode = 2
-
-[connection signal="item_selected" from="values" to="." method="_on_values_item_selected"]
+mouse_filter = 1

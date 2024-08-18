@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://cesssdkp0wyi8"]
 
-[ext_resource type="Script" path="res://addons/m_terrain/gui/paint_panel.gd" id="1_udfkn"]
-[ext_resource type="PackedScene" uid="uid://b6wfdaqojnwju" path="res://addons/m_terrain/gui/brush_masks.tscn" id="2_o8i15"]
+[ext_resource type="Script" path="res://addons/m_terrain/gui/paint_panel_old.gd" id="1_udfkn"]
+[ext_resource type="PackedScene" uid="uid://b6wfdaqojnwju" path="res://addons/m_terrain/gui/mtools_mask_list.tscn" id="2_o8i15"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_iouu7"]
 bg_color = Color(0.117647, 0.180392, 0.537255, 1)
@@ -124,10 +124,9 @@ layout_mode = 2
 
 [node name="brush_list" type="OptionButton" parent="."]
 layout_mode = 2
-item_count = 5
 selected = 0
+item_count = 5
 popup/item_0/text = "Raise"
-popup/item_0/id = 0
 popup/item_1/text = "To Height"
 popup/item_1/id = 1
 popup/item_2/text = "Smooth"

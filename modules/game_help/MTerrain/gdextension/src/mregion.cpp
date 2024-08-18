@@ -170,6 +170,7 @@ void MRegion::apply_update() {
 		return dest;
 	}
 void MRegion::create_physics() {
+	std::lock_guard<std::mutex> lock(physics_mutex);
 	ERR_FAIL_COND(heightmap == nullptr);
 	if(has_physic || heightmap->is_corrupt_file || heightmap->is_null_image || to_be_remove || !get_data_load_status()){
 		return;
@@ -194,9 +195,9 @@ void MRegion::create_physics() {
 	#endif
 	d["min_height"] = min_height;
 	d["max_height"] = max_height;
-	Vector3 _pos = world_pos + Vector3(grid->region_size_meter,0,grid->region_size_meter)/2;
+	Vector3 pos = world_pos + Vector3(grid->region_size_meter,0,grid->region_size_meter)/2;
 	Basis basis(Vector3(grid->_chunks->h_scale,0,0), Vector3(0,1,0), Vector3(0,0,grid->_chunks->h_scale) );
-	Transform3D transform(basis, _pos);
+	Transform3D transform(basis, pos);
 	PhysicsServer3D::get_singleton()->shape_set_data(heightmap_shape, d);
 	PhysicsServer3D::get_singleton()->body_add_shape(physic_body, heightmap_shape);
 	PhysicsServer3D::get_singleton()->body_set_space(physic_body, grid->space);
@@ -212,7 +213,33 @@ void MRegion::create_physics() {
 	has_physic = true;
 }
 
+void MRegion::update_physics(){
+	std::lock_guard<std::mutex> lock(physics_mutex);
+	if(!has_physic){
+		return;
+	}
+	Dictionary d;
+	d["width"] = heightmap->width;
+	d["depth"] = heightmap->height;
+	#ifdef REAL_T_IS_DOUBLE
+	const float* hdata = (float*)heightmap->data.ptr();
+	PackedFloat64Array hdata64;
+	int size = heightmap->data.size()/4;
+	hdata64.resize(size);
+	for(int i=0;i<size;i++){
+		hdata64.set(i,hdata[i]);
+	}
+	d["heights"] = hdata64;
+	#else
+	d["heights"] = _PackedByteArray_decode_float_array(&heightmap->data);
+	#endif
+	d["min_height"] = min_height;
+	d["max_height"] = max_height;
+	PhysicsServer3D::get_singleton()->shape_set_data(heightmap_shape, d);
+}
+
 void MRegion::remove_physics(){
+	std::lock_guard<std::mutex> lock(physics_mutex);
 	if(!has_physic){
 		return;
 	}
@@ -253,12 +280,12 @@ void MRegion::set_height_by_pixel(const uint32_t x, const uint32_t y,const real_
 	heightmap->set_pixel_RF(x,y,value);
 }
 
-real_t MRegion::get_closest_height(Vector3 _pos){
-	_pos.x -= world_pos.x;
-	_pos.z -= world_pos.z;
-	_pos /= grid->_chunks->h_scale;
-	uint32_t x = (uint32_t)round(_pos.x);
-	uint32_t y = (uint32_t)round(_pos.z);
+real_t MRegion::get_closest_height(Vector3 pos){
+	pos.x -= world_pos.x;
+	pos.z -= world_pos.z;
+	pos /= grid->_chunks->h_scale;
+	uint32_t x = (uint32_t)round(pos.x);
+	uint32_t y = (uint32_t)round(pos.z);
 	return heightmap->get_pixel_RF(x,y);
 }
 

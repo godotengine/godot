@@ -2,12 +2,23 @@
 #include "core/io/marshalls.h"
 #include "core/variant/variant.h"
 #include "core/variant/variant_utility.h"
+#include "editor/editor_script.h"
 
+
+#include "editor/editor_interface.h"
+
+Vector<Node3D*> MTool::editor_cameras;
+Vector<Vector3> MTool::editor_cameras_last_pos;
+int MTool::camera_index = -1;
+bool MTool::editor_plugin_active = false;
 
 void MTool::_bind_methods() {
    ClassDB::bind_static_method("MTool", D_METHOD("get_r16_image","file_path","width","height","min_height","max_height","is_half"), &MTool::get_r16_image);
    ClassDB::bind_static_method("MTool", D_METHOD("write_r16","file_path","data","min_height","max_height"), &MTool::write_r16);
    ClassDB::bind_static_method("MTool", D_METHOD("normalize_rf_data","data","min_height","max_height"), &MTool::normalize_rf_data);
+   ClassDB::bind_static_method("MTool", D_METHOD("find_camera","changed_camera"), &MTool::find_editor_camera);
+   ClassDB::bind_static_method("MTool", D_METHOD("enable_editor_plugin"), &MTool::enable_editor_plugin);
+   ClassDB::bind_static_method("MTool", D_METHOD("ray_collision_y_zero_plane","ray_origin","ray"), &MTool::ray_collision_y_zero_plane);
 }
 
 
@@ -120,4 +131,76 @@ PackedByteArray MTool::normalize_rf_data(const PackedByteArray& data,double min_
         ptrw[i] = val;
     }
     return out;
+}
+
+Node3D* MTool::find_editor_camera(bool changed_camera){
+	if (Engine::get_singleton()->is_editor_hint()) {
+        if(editor_cameras.size()==0){
+            EditorScript script;
+            EditorInterface *edit_interface = script.get_editor_interface();
+            Node* main_screen = (Node*)edit_interface->get_editor_main_screen();
+            Node* edit_scene_root = edit_interface->get_edited_scene_root();
+            TypedArray<Node> process_nodes;
+            process_nodes.push_back(main_screen);
+            while (process_nodes.size() > 0)
+            {
+                Node* current_node = Object::cast_to<Node>(process_nodes[process_nodes.size() - 1]);
+                process_nodes.remove_at(process_nodes.size() - 1);
+                if(current_node==edit_scene_root){
+                    continue;
+                }
+                if(current_node->is_class("Camera3D")){
+                    editor_cameras.push_back(Object::cast_to<Node3D>(current_node));
+                }
+                process_nodes.append_array(current_node->get_children());
+            }
+            for(int i=0; i < editor_cameras.size(); i++){
+                editor_cameras_last_pos.push_back(editor_cameras[i]->get_global_position());
+            }
+            if(editor_cameras.size()!=0){
+                return editor_cameras[editor_cameras.size() - 1]; // Return last element
+            } else {
+                return nullptr;
+            }
+        }
+        if(changed_camera){
+            for(int i=editor_cameras.size() - 1; i >= 0 ; i--){
+                if(editor_cameras[i]->get_global_position() != editor_cameras_last_pos[i]){
+                    camera_index = i; // updating to camera which changed
+                    break;
+                }
+            }
+            for(int i=0; i < editor_cameras.size(); i++){
+                editor_cameras_last_pos.set(i,editor_cameras[i]->get_global_position());
+            }
+            if(editor_cameras.size() - 1 >= camera_index && camera_index!=-1){
+                return editor_cameras[camera_index];
+            }
+        }
+        if(editor_cameras.size()!=0){
+            return editor_cameras[editor_cameras.size() - 1]; // Return last element
+        } else {
+            return nullptr;
+        }
+	}
+    return nullptr;
+}
+
+void MTool::enable_editor_plugin(){
+    editor_plugin_active = true;
+}
+
+bool MTool::is_editor_plugin_active(){
+    return editor_plugin_active;
+}
+
+Ref<MCollision> MTool::ray_collision_y_zero_plane(const Vector3& ray_origin,const Vector3& ray){
+    Ref<MCollision> col;
+    col.instantiate();
+    if(ray.y > -0.001){
+        return col;
+    }
+    col->collision_position = ray_origin - (ray_origin.y/ray.y)*ray;
+    col->collided = true;
+    return col;
 }

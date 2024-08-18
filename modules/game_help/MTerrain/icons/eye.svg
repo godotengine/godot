@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="24"
+   height="24"
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="eye.svg"
+   inkscape:version="1.3.2 (091e20e, 2023-11-25, custom)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="56.75"
+     inkscape:cx="12"
+     inkscape:cy="12"
+     inkscape:current-layer="svg1" />
+  <path
+     id="path1"
+     style="fill:#e0e0e0;stroke-width:2.2;stroke-dasharray:none"
+     d="m 11.527344,3.5097656 c -5.0144264,0.2303621 -9.4447936,3.591004 -11.95117212,7.8007814 -0.38104544,0.4374 0.35633925,0.88292 0.48046874,1.324219 2.32298418,3.560187 5.72466898,6.759036 9.99414038,7.667968 4.132962,0.841969 8.375329,-1.093513 11.203027,-4.059877 1.363543,-1.36594 2.457319,-2.979375 3.334083,-4.694029 C 21.978473,6.9169899 17.013365,3.2758646 11.527344,3.5097656 Z M 12.009766,5.5 c 4.040981,-0.02883 7.630855,2.5286001 9.950497,5.674329 0.572221,0.410763 0.0031,0.875606 -0.241513,1.296374 -2.104329,3.061879 -5.29371,5.783564 -9.152344,6.011719 C 9.112529,18.724343 6.0262163,16.610523 3.7929688,14.167969 3.0610061,13.358361 2.371106,12.507362 1.7753906,11.591797 4.122806,8.2839356 7.7915062,5.4859445 12.009766,5.5 Z"
+     sodipodi:nodetypes="cccccccccccccc" />
+  <path
+     id="path1-4"
+     style="fill:#e0e0e0;stroke-width:2.2;stroke-dasharray:none"
+     d="M 11.884766,8.1601562 C 9.3391374,8.1325436 7.5306839,11.483585 9.0748968,13.551081 10.213896,15.38256 13.165459,15.747426 14.570742,14.026443 15.93023,12.593629 15.787614,9.9995296 14.095145,8.8778885 13.471078,8.3971989 12.675591,8.1220411 11.884766,8.1601562 Z" />
+</svg>

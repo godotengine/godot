@@ -1,11 +1,10 @@
 #ifndef MBOUND
 #define MBOUND
 
-
-#include <godot_cpp/core/defs.hpp>
-#include <godot_cpp/core/math.hpp>
-#include <godot_cpp/variant/rect2i.hpp>
-#include <godot_cpp/templates/vector.hpp>
+#include "core/math/math_funcs.h"
+#include "core/math/rect2i.h"
+#include "core/templates/vector.h"
+#include <math.h>
 
 #include "mconfig.h"
 
@@ -26,7 +25,7 @@ struct MGridPos
     }
 
     int32_t get_distance(const MGridPos& other){
-        if(std::isnan((float)y) || std::isnan((float)other.y)){ // in case there is a hole on ground, solution for now
+        if(Math::is_nan((float)y) || Math::is_nan((float)other.y)){ // in case there is a hole on ground, solution for now
             return sqrt(  pow((x - other.x),2) + pow((z-other.z),2) );
         }
         return sqrt(  pow((x - other.x),2) + pow((y-other.y),2) + pow((z-other.z),2) );
@@ -59,6 +58,7 @@ struct  MBound
     bool has_point(const int32_t x, const int32_t y);
     bool has_point(const MGridPos& p);
     void intersect(const MBound& other);
+    void merge(const MBound& other);
 
     bool operator==(const MBound& other);
     bool operator!=(const MBound& other);

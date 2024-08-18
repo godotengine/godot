@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+
+<svg
+   version="1.1"
+   id="Icons"
+   viewBox="0 0 32 32"
+   xml:space="preserve"
+   sodipodi:docname="mirror_icon.svg"
+   inkscape:version="1.3.2 (091e20e, 2023-11-25, custom)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><defs
+   id="defs6" /><sodipodi:namedview
+   id="namedview6"
+   pagecolor="#505050"
+   bordercolor="#eeeeee"
+   borderopacity="1"
+   inkscape:showpageshadow="0"
+   inkscape:pageopacity="0"
+   inkscape:pagecheckerboard="0"
+   inkscape:deskcolor="#d1d1d1"
+   inkscape:zoom="21.28125"
+   inkscape:cx="14.519824"
+   inkscape:cy="11.183554"
+   inkscape:current-layer="Icons" />
+<style
+   type="text/css"
+   id="style1">
+	.st0{fill:none;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}
+	.st1{fill:none;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+	.st2{fill:none;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:6,6;}
+	.st3{fill:none;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:4,4;}
+	.st4{fill:none;stroke:#000000;stroke-width:2;stroke-linecap:round;}
+	.st5{fill:none;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-dasharray:3.1081,3.1081;}
+	
+		.st6{fill:none;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:4,3;}
+</style>
+<polygon
+   class="st0"
+   points="12,22 3,27 3,5 12,10 "
+   id="polygon1"
+   style="stroke:#e0e0e0;stroke-width:1.4;stroke-dasharray:none" />
+<polygon
+   class="st0"
+   points="20,10 29,5 29,27 20,22 "
+   id="polygon2"
+   style="stroke:#e0e0e0;stroke-width:1.4;stroke-dasharray:none" />
+<line
+   class="st0"
+   x1="16"
+   y1="3"
+   x2="16"
+   y2="6"
+   id="line2"
+   style="stroke:#e0e0e0" />
+<line
+   class="st0"
+   x1="16"
+   y1="27"
+   x2="16"
+   y2="30"
+   id="line3"
+   style="stroke:#e0e0e0" />
+<line
+   class="st0"
+   x1="16"
+   y1="15"
+   x2="16"
+   y2="18"
+   id="line4"
+   style="stroke:#e0e0e0" />
+<line
+   class="st0"
+   x1="16"
+   y1="9"
+   x2="16"
+   y2="12"
+   id="line5"
+   style="stroke:#e0e0e0" />
+<line
+   class="st0"
+   x1="16"
+   y1="21"
+   x2="16"
+   y2="24"
+   id="line6"
+   style="stroke:#e0e0e0" />
+</svg>

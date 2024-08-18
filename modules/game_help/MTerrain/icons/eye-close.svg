@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+
+<svg
+   width="64"
+   height="64"
+   viewBox="0 0 1.92 1.92"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="eye-close.svg"
+   inkscape:version="1.3.2 (091e20e, 2023-11-25, custom)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <defs
+     id="defs1" />
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="6.81"
+     inkscape:cx="27.165932"
+     inkscape:cy="110.279"
+     inkscape:current-layer="svg1" />
+  <title
+     id="title1">eye_close_fill</title>
+  <path
+     d="m 0.2000881,0.64138591 c 0,-0.0662667 0.0537194,-0.1199861 0.1199861,-0.1199861 0.055112,0 0.1014506,0.037121 0.115569,0.087653 0.1557371,0.52008449 0.8925621,0.52022049 1.0486,4.104e-4 0.013982,-0.0507429 0.060425,-0.0880634 0.1156826,-0.0880634 0.066264,0 0.1199861,0.053719 0.1199861,0.1199861 0,0.012527 -0.00194,0.024678 -0.00554,0.036129 -0.029628,0.09912 -0.074143,0.1854617 -0.1297849,0.2587812 l 0.076759,0.076759 c 0.046859,0.046859 0.046859,0.1228338 0,0.1696843 -0.046851,0.046859 -0.1228258,0.046859 -0.1696843,0 l -0.080847,-0.080847 c -0.042283,0.028981 -0.087062,0.053362 -0.1335285,0.073151 l 0.01943,0.072488 c 0.01715,0.064009 -0.020838,0.129801 -0.084846,0.146951 -0.064009,0.01715 -0.1298009,-0.020838 -0.146951,-0.084838 l -0.020054,-0.074831 c -0.056385,0.00584 -0.1133389,0.00584 -0.1697244,0 l -0.020054,0.074831 C 0.8379368,1.3736454 0.7721438,1.4116326 0.708135,1.3944824 0.644126,1.3773324 0.6061412,1.3115404 0.623292,1.2475314 L 0.642717,1.1750354 C 0.5962598,1.1552543 0.5514858,1.1308811 0.5092043,1.1019005 l -0.080845,0.080839 c -0.046857,0.046859 -0.1228281,0.046859 -0.1696859,0 -0.046857,-0.04685 -0.046857,-0.1228257 0,-0.1696843 l 0.076754,-0.076751 c -0.0555486,-0.0732 -0.1000114,-0.159382 -0.1296368,-0.2582978 -0.003713,-0.0115938 -0.005702,-0.0239132 -0.005702,-0.0366205 z"
+     id="路径"
+     fill="#09244B"
+     style="fill:#e0e0e0;stroke-width:0.0799907"
+     inkscape:label="eye_close" />
+  <metadata
+     id="metadata1">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:title>eye_close_fill</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+</svg>

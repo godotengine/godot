@@ -10,6 +10,8 @@ src.append(Glob("src/height_brushes/*.cpp"))
 src.append(Glob("src/color_brushes/*.cpp"))
 src.append(Glob("src/grass/*.cpp"))
 src.append(Glob("src/navmesh/*.cpp"))
+src.append(Glob("src/octmesh/*.cpp"))
+src.append(Glob("src/path/*.cpp"))
 
 libpath = '../libs/MTerrain{}{}'.format( env['suffix'], env['SHLIBSUFFIX'] )
 sharedlib = env.SharedLibrary(libpath, src)

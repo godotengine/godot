@@ -1,0 +1,85 @@
+[gd_scene load_steps=7 format=3 uid="uid://yyvmuhqx1jgi"]
+
+[ext_resource type="Script" path="res://addons/m_terrain/gui/mtools_layer_item.gd" id="1_v5m32"]
+[ext_resource type="Texture2D" uid="uid://fj1va27m7i5e" path="res://addons/m_terrain/icons/eye.svg" id="2_h5ewu"]
+[ext_resource type="Texture2D" uid="uid://s6jqtql0r2bw" path="res://addons/m_terrain/icons/edit_icon.svg" id="3_8xkqq"]
+[ext_resource type="Texture2D" uid="uid://tow1rj13cxaw" path="res://addons/m_terrain/icons/merge_down_icon.svg" id="4_brtxh"]
+[ext_resource type="Texture2D" uid="uid://t8tdan3853oy" path="res://addons/m_terrain/icons/icon_close.svg" id="5_yuyg3"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_swm5a"]
+
+[node name="Panel" type="Panel"]
+custom_minimum_size = Vector2(0, 42)
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+mouse_filter = 1
+theme_override_styles/panel = SubResource("StyleBoxEmpty_swm5a")
+script = ExtResource("1_v5m32")
+
+[node name="hbox" type="HBoxContainer" parent="."]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="visible" type="Button" parent="hbox"]
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+mouse_filter = 1
+toggle_mode = true
+icon = ExtResource("2_h5ewu")
+expand_icon = true
+
+[node name="name" type="Button" parent="hbox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+text = "Panel"
+alignment = 0
+
+[node name="move_up" type="Button" parent="hbox"]
+visible = false
+layout_mode = 2
+mouse_filter = 1
+text = "^"
+
+[node name="move_down" type="Button" parent="hbox"]
+visible = false
+layout_mode = 2
+mouse_filter = 1
+text = "v"
+
+[node name="rename_input" type="LineEdit" parent="hbox"]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+placeholder_text = "Old Layer name"
+expand_to_text_length = true
+
+[node name="rename" type="Button" parent="hbox"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+mouse_filter = 1
+icon = ExtResource("3_8xkqq")
+expand_icon = true
+
+[node name="merge_down" type="Button" parent="hbox"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+mouse_filter = 1
+icon = ExtResource("4_brtxh")
+expand_icon = true
+
+[node name="remove" type="Button" parent="hbox"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+mouse_filter = 1
+icon = ExtResource("5_yuyg3")
+expand_icon = true
+
+[connection signal="resized" from="." to="." method="_on_resized"]

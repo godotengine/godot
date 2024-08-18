@@ -1,0 +1,28 @@
+[gd_scene load_steps=2 format=3 uid="uid://b76ioum2i7yjy"]
+
+[ext_resource type="Script" path="res://addons/m_terrain/gizmos/mcurve_mesh_gui.gd" id="1_16uhh"]
+
+[node name="mcurve_mesh" type="HBoxContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_16uhh")
+
+[node name="active" type="CheckBox" parent="."]
+layout_mode = 2
+text = "Modify"
+
+[node name="segment_select" type="OptionButton" parent="."]
+visible = false
+layout_mode = 2
+
+[node name="socket_select" type="OptionButton" parent="."]
+visible = false
+layout_mode = 2
+
+[connection signal="visibility_changed" from="." to="." method="_on_visibility_changed"]
+[connection signal="toggled" from="active" to="." method="_on_active_toggled"]
+[connection signal="item_selected" from="segment_select" to="." method="_on_segment_select_item_selected"]
+[connection signal="item_selected" from="socket_select" to="." method="_on_socket_select_item_selected"]

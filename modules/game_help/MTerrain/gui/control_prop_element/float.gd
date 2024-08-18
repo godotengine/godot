@@ -1,5 +1,5 @@
 @tool
-extends HBoxContainer
+extends BoxContainer
 
 signal prop_changed
 
@@ -17,7 +17,7 @@ func set_min(input):
 
 func set_name(input:String):
 	prop_name = input
-	$lable.text = input
+	$label.text = input
 
 func set_value(input:float):
 	value = input

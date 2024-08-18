@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://addons/m_terrain/gui/terrain_info.gd" id="1_wd31j"]
 [ext_resource type="Script" path="res://addons/m_terrain/gui/Save config.gd" id="2_iihim"]
-[ext_resource type="StyleBox" uid="uid://cjys1hccuc4wx" path="res://addons/m_terrain/gui/styles/terrain_infor_lable_stylebox.tres" id="2_mc1wb"]
+[ext_resource type="StyleBox" uid="uid://cjys1hccuc4wx" path="res://addons/m_terrain/gui/styles/terrain_info_label_stylebox.tres" id="2_mc1wb"]
 [ext_resource type="PackedScene" uid="uid://c2pjojed3ox4q" path="res://addons/m_terrain/gui/gui_part/data_compress_option.tscn" id="3_41fbb"]
 [ext_resource type="PackedScene" uid="uid://bt4wolcb7b55e" path="res://addons/m_terrain/gui/gui_part/file_compress.tscn" id="4_cuomh"]
 
@@ -23,7 +23,7 @@ content_margin_left = 5.0
 [node name="Terrain_info" type="Window"]
 title = "M Terrain Info"
 initial_position = 1
-size = Vector2i(620, 320)
+size = Vector2i(520, 500)
 script = ExtResource("1_wd31j")
 
 [node name="base" type="Control" parent="."]
@@ -42,7 +42,51 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
+[node name="Shortcuts" type="Panel" parent="base/TabContainer"]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="base/TabContainer/Shortcuts"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="ScrollContainer" type="ScrollContainer" parent="base/TabContainer/Shortcuts/MarginContainer"]
+layout_mode = 2
+
+[node name="vbox" type="VBoxContainer" parent="base/TabContainer/Shortcuts/MarginContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Label" type="Label" parent="base/TabContainer/Shortcuts/MarginContainer/ScrollContainer/vbox"]
+layout_mode = 2
+text = "MTerrain Shortcuts"
+horizontal_alignment = 1
+
+[node name="mterrain_action_list" type="VBoxContainer" parent="base/TabContainer/Shortcuts/MarginContainer/ScrollContainer/vbox"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="base/TabContainer/Shortcuts/MarginContainer/ScrollContainer/vbox"]
+layout_mode = 2
+text = "MPath Shortcuts"
+horizontal_alignment = 1
+
+[node name="mpath_action_list" type="VBoxContainer" parent="base/TabContainer/Shortcuts/MarginContainer/ScrollContainer/vbox"]
+layout_mode = 2
+
+[node name="restore_default_keymap" type="Button" parent="base/TabContainer/Shortcuts/MarginContainer/ScrollContainer/vbox"]
+layout_mode = 2
+text = "Restore Defaults"
+
 [node name="Save config" type="TabBar" parent="base/TabContainer"]
+visible = false
 layout_mode = 2
 script = ExtResource("2_iihim")
 

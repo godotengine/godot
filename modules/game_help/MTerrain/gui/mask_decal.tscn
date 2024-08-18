@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://cu3koya88juu"]
 
-[ext_resource type="Script" path="res://addons/m_terrain/gui/stencil_decal.gd" id="1_8ow5o"]
+[ext_resource type="Script" path="res://addons/m_terrain/gui/mask_decal.gd" id="1_8ow5o"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_ejyee"]
 

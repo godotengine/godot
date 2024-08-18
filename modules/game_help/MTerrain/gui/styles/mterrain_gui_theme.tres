@@ -1,0 +1,32 @@
+[gd_resource type="Theme" load_steps=10 format=3 uid="uid://b3bd1lceed8ec"]
+
+[ext_resource type="StyleBox" uid="uid://b1hcaoigsih7c" path="res://addons/m_terrain/gui/styles/popup_panel_stylebox.tres" id="1_pvcuc"]
+[ext_resource type="StyleBox" uid="uid://b6h5l26dxm8gu" path="res://addons/m_terrain/gui/styles/button_stylebox.tres" id="1_set7o"]
+[ext_resource type="Texture2D" uid="uid://bxeg3w2i6m1dd" path="res://addons/m_terrain/icons/slider_grabber.svg" id="3_0xpim"]
+[ext_resource type="Texture2D" uid="uid://b0m46wjnrfder" path="res://addons/m_terrain/icons/slider_grabber_highlight_icon.svg" id="4_wqnvw"]
+[ext_resource type="StyleBox" uid="uid://boeh2uxqt0aso" path="res://addons/m_terrain/gui/styles/sider_front_stylebox.tres" id="5_uxsd7"]
+[ext_resource type="StyleBox" uid="uid://ppgo6r7jw03e" path="res://addons/m_terrain/gui/styles/sider_highlight_stylebox.tres" id="6_uducl"]
+[ext_resource type="StyleBox" uid="uid://bwtrldgojexog" path="res://addons/m_terrain/gui/styles/button_stylebox_icon_only_hover.tres" id="7_b6jf6"]
+[ext_resource type="StyleBox" uid="uid://c3g6qjhhpkliw" path="res://addons/m_terrain/gui/styles/button_stylebox_icon_only.tres" id="7_wkvrx"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_2e40r"]
+
+[resource]
+default_font_size = 17
+Button/styles/hover = null
+Button/styles/normal = ExtResource("1_set7o")
+Button/styles/pressed = ExtResource("1_set7o")
+CheckBox/styles/normal = ExtResource("1_set7o")
+CheckBox/styles/pressed = SubResource("StyleBoxEmpty_2e40r")
+ItemList/styles/panel = ExtResource("1_pvcuc")
+Panel/styles/panel = ExtResource("1_pvcuc")
+PanelContainer/styles/panel = ExtResource("1_pvcuc")
+VSlider/icons/grabber = ExtResource("3_0xpim")
+VSlider/icons/grabber_highlight = ExtResource("4_wqnvw")
+VSlider/styles/grabber_area = ExtResource("5_uxsd7")
+VSlider/styles/grabber_area_highlight = ExtResource("6_uducl")
+VSlider/styles/slider = ExtResource("5_uxsd7")
+button_icon_only/base_type = &"Button"
+button_icon_only/styles/hover = ExtResource("7_b6jf6")
+button_icon_only/styles/normal = ExtResource("7_wkvrx")
+button_icon_only/styles/pressed = SubResource("StyleBoxEmpty_2e40r")

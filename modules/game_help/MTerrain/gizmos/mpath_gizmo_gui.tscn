@@ -1,0 +1,261 @@
+[gd_scene load_steps=14 format=3 uid="uid://btfhp7mnhc5nj"]
+
+[ext_resource type="Theme" uid="uid://b3bd1lceed8ec" path="res://addons/m_terrain/gui/styles/mterrain_gui_theme.tres" id="1_byb3a"]
+[ext_resource type="Script" path="res://addons/m_terrain/gizmos/mpath_gizmo_gui.gd" id="1_y34ur"]
+[ext_resource type="Texture2D" uid="uid://c64direekaeap" path="res://addons/m_terrain/icons/mirror_icon.svg" id="2_tic3q"]
+[ext_resource type="Texture2D" uid="uid://ckbvdmvbcxfb6" path="res://addons/m_terrain/icons/magnet_icon.svg" id="3_yoi5b"]
+[ext_resource type="Texture2D" uid="uid://30e6iyx7q1y7" path="res://addons/m_terrain/icons/mpath_collapse_point_icon.svg" id="4_38e8d"]
+[ext_resource type="Texture2D" uid="uid://t8tdan3853oy" path="res://addons/m_terrain/icons/icon_close.svg" id="5_8fq58"]
+[ext_resource type="Texture2D" uid="uid://ckrq26s3bkih3" path="res://addons/m_terrain/icons/switch_direction_icon.svg" id="5_xw4f1"]
+[ext_resource type="PackedScene" uid="uid://cjjqtr6xhktp4" path="res://addons/m_terrain/gui/control_prop_element/float_range.tscn" id="6_bsspt"]
+[ext_resource type="Texture2D" uid="uid://jw6maiih4qf8" path="res://addons/m_terrain/icons/lock.svg" id="7_0ucgh"]
+[ext_resource type="Texture2D" uid="uid://cylua0xddvmx7" path="res://addons/m_terrain/icons/connect_icon.svg" id="7_mbnvb"]
+[ext_resource type="Texture2D" uid="uid://bnafvu7s1g7dn" path="res://addons/m_terrain/icons/disconnect_icon.svg" id="8_777vd"]
+[ext_resource type="Texture2D" uid="uid://b4ylxie43lan2" path="res://addons/m_terrain/icons/more_options_icon.svg" id="10_01bp8"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7loo7"]
+content_margin_left = 6.0
+bg_color = Color(0, 0.419608, 0, 0.188235)
+
+[node name="PanelContainer" type="PanelContainer"]
+offset_right = 40.0
+offset_bottom = 40.0
+theme = ExtResource("1_byb3a")
+script = ExtResource("1_y34ur")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="mode" type="OptionButton" parent="HBoxContainer"]
+visible = false
+layout_mode = 2
+tooltip_text = "Change Mode
+Hot-keys: grave accent(`)"
+theme_override_styles/normal = SubResource("StyleBoxFlat_7loo7")
+item_count = 2
+selected = 0
+popup/item_0/text = "Edit"
+popup/item_0/id = 0
+popup/item_1/text = "Create"
+popup/item_1/id = 1
+
+[node name="mirror_checkbox" type="CheckBox" parent="HBoxContainer"]
+custom_minimum_size = Vector2(5, 0)
+layout_mode = 2
+tooltip_text = "Mirror-Controls
+Hot-key: M"
+theme_type_variation = &"button_icon_only"
+button_pressed = true
+icon = ExtResource("2_tic3q")
+alignment = 1
+icon_alignment = 2
+
+[node name="mirror_l_checkbox" type="CheckBox" parent="HBoxContainer"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+tooltip_text = "Mirror-Controls-Lenght
+Hot-key: L"
+theme_type_variation = &"button_icon_only"
+button_pressed = true
+text = "ML"
+alignment = 1
+icon_alignment = 1
+
+[node name="snap" type="CheckBox" parent="HBoxContainer"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+tooltip_text = "Snap to Terrain"
+theme_type_variation = &"button_icon_only"
+button_pressed = true
+icon = ExtResource("3_yoi5b")
+icon_alignment = 2
+
+[node name="collapse" type="Button" parent="HBoxContainer"]
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+tooltip_text = "Collapse point: move point handles to center of point"
+theme_type_variation = &"button_icon_only"
+icon = ExtResource("4_38e8d")
+expand_icon = true
+
+[node name="toggle_connection" type="Button" parent="HBoxContainer"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+tooltip_text = "Switch Connection Direction
+Hot-key: T"
+theme_type_variation = &"button_icon_only"
+theme_override_font_sizes/font_size = 18
+icon = ExtResource("5_xw4f1")
+expand_icon = true
+
+[node name="Connect" type="Button" parent="HBoxContainer"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+tooltip_text = "Connect points
+Hot-key: C"
+theme_type_variation = &"button_icon_only"
+theme_override_colors/font_color = Color(0.14902, 1, 0.25098, 1)
+theme_override_font_sizes/font_size = 18
+icon = ExtResource("7_mbnvb")
+expand_icon = true
+
+[node name="Disconnect" type="Button" parent="HBoxContainer"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+tooltip_text = "Disconnect points
+Hot-key: B"
+theme_type_variation = &"button_icon_only"
+theme_override_colors/font_color = Color(0.717647, 0.952941, 0, 1)
+theme_override_font_sizes/font_size = 18
+icon = ExtResource("8_777vd")
+expand_icon = true
+
+[node name="remove" type="Button" parent="HBoxContainer"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+tooltip_text = "Remove point
+Hot-key: Backspace"
+theme_type_variation = &"button_icon_only"
+theme_override_colors/font_color = Color(1, 0.2, 0.2, 1)
+theme_override_font_sizes/font_size = 18
+icon = ExtResource("5_8fq58")
+expand_icon = true
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="VSeparator" type="MarginContainer" parent="HBoxContainer/HBoxContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+
+[node name="Label4" type="Label" parent="HBoxContainer/HBoxContainer"]
+visible = false
+layout_mode = 2
+text = "axis lock: "
+
+[node name="TextureRect" type="TextureRect" parent="HBoxContainer/HBoxContainer"]
+layout_mode = 2
+texture = ExtResource("7_0ucgh")
+stretch_mode = 5
+
+[node name="x_lock" type="CheckBox" parent="HBoxContainer/HBoxContainer"]
+layout_mode = 2
+tooltip_text = "lock point's x position"
+theme_type_variation = &"button_icon_only"
+text = " X  "
+
+[node name="y_lock" type="CheckBox" parent="HBoxContainer/HBoxContainer"]
+layout_mode = 2
+tooltip_text = "lock point's y position"
+theme_type_variation = &"button_icon_only"
+text = " Y  "
+
+[node name="z_lock" type="CheckBox" parent="HBoxContainer/HBoxContainer"]
+layout_mode = 2
+tooltip_text = "lock point's z position"
+theme_type_variation = &"button_icon_only"
+text = " Z  "
+
+[node name="Button" type="Button" parent="HBoxContainer"]
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+tooltip_text = "show MPath help window"
+theme_type_variation = &"button_icon_only"
+theme_override_font_sizes/font_size = 21
+text = "?"
+
+[node name="show_rest" type="Button" parent="HBoxContainer"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+tooltip_text = "More settings"
+theme_type_variation = &"button_icon_only"
+toggle_mode = true
+icon = ExtResource("10_01bp8")
+icon_alignment = 1
+expand_icon = true
+
+[node name="settings_panel" type="PanelContainer" parent="HBoxContainer/show_rest"]
+visible = false
+layout_mode = 1
+offset_left = -558.0
+offset_top = -309.0
+offset_right = 32.0
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="HBoxContainer/show_rest/settings_panel"]
+layout_mode = 2
+
+[node name="tilt" parent="HBoxContainer/show_rest/settings_panel/HBoxContainer2" instance=ExtResource("6_bsspt")]
+layout_mode = 2
+size_flags_horizontal = 4
+tooltip_text = "Change Tilt
+Hotkey: R"
+
+[node name="scale" parent="HBoxContainer/show_rest/settings_panel/HBoxContainer2" instance=ExtResource("6_bsspt")]
+layout_mode = 2
+size_flags_horizontal = 4
+tooltip_text = "Change Tilt
+Hotkey: E"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="HBoxContainer/show_rest/settings_panel/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="FlowContainer" type="VBoxContainer" parent="HBoxContainer/show_rest/settings_panel/HBoxContainer2/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="depth_test" type="CheckBox" parent="HBoxContainer/show_rest/settings_panel/HBoxContainer2/ScrollContainer/FlowContainer"]
+visible = false
+layout_mode = 2
+tooltip_text = "gizmo line depth test"
+text = "Depth Test Connection Lines"
+expand_icon = true
+
+[node name="select_lock" type="CheckBox" parent="HBoxContainer/show_rest/settings_panel/HBoxContainer2/ScrollContainer/FlowContainer"]
+layout_mode = 2
+tooltip_text = "Keep the Path node selected!"
+button_pressed = true
+text = "     lock selection "
+expand_icon = true
+
+[node name="debug_col" type="CheckBox" parent="HBoxContainer/show_rest/settings_panel/HBoxContainer2/ScrollContainer/FlowContainer"]
+layout_mode = 2
+tooltip_text = "Collission for debug line in editor!
+If activated by clicking on line it will select path node
+but it will take more processing power,
+So if you have a huge path deactive this!"
+button_pressed = true
+text = "     debug collision"
+
+[node name="swap_points" type="Button" parent="HBoxContainer/show_rest/settings_panel/HBoxContainer2/ScrollContainer/FlowContainer"]
+layout_mode = 2
+tooltip_text = "Toggle Connection
+Hot-key: shift+T"
+text = "Swap"
+
+[node name="sort_increasing" type="Button" parent="HBoxContainer/show_rest/settings_panel/HBoxContainer2/ScrollContainer/FlowContainer"]
+layout_mode = 2
+tooltip_text = "sort increasing"
+text = "sort"
+
+[node name="sort_decreasing" type="Button" parent="HBoxContainer/show_rest/settings_panel/HBoxContainer2/ScrollContainer/FlowContainer"]
+layout_mode = 2
+tooltip_text = "Toggle Connection
+sort decreasing"
+text = "sort rev"
+
+[node name="MarginContainer" type="MarginContainer" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="active_point_label" type="Label" parent="HBoxContainer"]
+layout_mode = 2
+
+[node name="MarginContainer2" type="MarginContainer" parent="HBoxContainer"]
+layout_mode = 2
+theme_override_constants/margin_right = 12
+
+[connection signal="pressed" from="HBoxContainer/Button" to="." method="show_mpath_help_window"]
+[connection signal="minimum_size_changed" from="HBoxContainer/show_rest" to="." method="_on_show_rest_minimum_size_changed"]
+[connection signal="toggled" from="HBoxContainer/show_rest" to="." method="_on_show_rest_toggled"]

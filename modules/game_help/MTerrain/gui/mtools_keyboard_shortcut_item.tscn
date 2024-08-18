@@ -1,0 +1,23 @@
+[gd_scene load_steps=2 format=3 uid="uid://co53fkr4oogwn"]
+
+[ext_resource type="Script" path="res://addons/m_terrain/gui/mtools_keyboard_shortcut_item.gd" id="1_e0rfo"]
+
+[node name="HBoxContainer" type="HBoxContainer"]
+alignment = 1
+script = ExtResource("1_e0rfo")
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "key"
+horizontal_alignment = 2
+
+[node name="VSeparator" type="VSeparator" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="Button" type="Button" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "value"
+alignment = 0

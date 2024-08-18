@@ -712,7 +712,7 @@ void MResource::_bind_methods(){
     ClassDB::bind_method(D_METHOD("get_compressed_data"), &MResource::get_compressed_data);
     ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY,"compressed_data"), "set_compressed_data","get_compressed_data");
 
-    ClassDB::bind_method(D_METHOD("get_data_format","_name"), &MResource::get_data_format);
+    ClassDB::bind_method(D_METHOD("get_data_format","name"), &MResource::get_data_format);
     ClassDB::bind_method(D_METHOD("get_data_width","name"), &MResource::get_data_width);
     ClassDB::bind_method(D_METHOD("get_heightmap_width"), &MResource::get_heightmap_width);
     ClassDB::bind_method(D_METHOD("get_min_height"), &MResource::get_min_height);
@@ -744,6 +744,10 @@ void MResource::_bind_methods(){
 MResource::MResource(){
 }
 MResource::~MResource(){
+}
+
+Array MResource::get_data_names(){
+    return compressed_data.keys();
 }
 
 bool MResource::has_data(const StringName& _name){
@@ -1034,7 +1038,7 @@ void MResource::insert_heightmap_rf(const PackedByteArray& data,float accuracy,b
         final_data.resize(new_size);
         // Copy rows
         uint32_t new_row_size = new_width*pixel_size;
-        for(uint32_t row=0;row<new_width;row++){
+        for(int row=0;row<new_width;row++){
             uint32_t pos_old = row * width * pixel_size;
             uint32_t pos_new = row * new_width * pixel_size;
             memcpy(final_data.ptrw()+pos_new,data.ptr()+pos_old,new_row_size);
@@ -1136,9 +1140,9 @@ void MResource::insert_heightmap_rf(const PackedByteArray& data,float accuracy,b
 
 PackedByteArray MResource::get_heightmap_rf(bool two_plus_one){
     PackedByteArray out;
-    StringName _name("heightmap");
-    ERR_FAIL_COND_V(!compressed_data.has(_name),out);
-    PackedByteArray comp_data = compressed_data[_name];
+    StringName name("heightmap");
+    ERR_FAIL_COND_V(!compressed_data.has(name),out);
+    PackedByteArray comp_data = compressed_data[name];
     //Getting Header
     ERR_FAIL_COND_V_MSG(comp_data[0]!=MMAGIC_NUM,out,"Magic number not found this file can be corrupted");
     ERR_FAIL_COND_V_MSG(comp_data[1]!=CURRENT_MRESOURCE_VERSION,out,"Resource version not match, Please export your data with version "+itos(comp_data[1])+" of MResource to a raw format and reimport that here");
@@ -1147,7 +1151,7 @@ PackedByteArray MResource::get_heightmap_rf(bool two_plus_one){
     ERR_FAIL_COND_V(format!=Image::Format::FORMAT_RF,out);
     uint16_t width = decode_uint16(comp_data.ptr()+6);
     uint32_t data_size_before_file_compress = decode_uint32(comp_data.ptr()+DATA_SIZE_BEFORE_FILE_COMPRESS_INDEX);
-    width_cache.insert(_name,width);
+    width_cache.insert(name,width);
     uint8_t pixel_size = MImage::get_format_pixel_size(format);
     ERR_FAIL_COND_V(pixel_size==0,out);
     //Finish Getting Header

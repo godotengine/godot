@@ -83,6 +83,14 @@ void MBound::intersect(const MBound& other){
     recalculate_center();
 }
 
+void MBound::merge(const MBound& other){
+    left = std::min(other.left,left);
+    right = std::max(other.right,right);
+    top = std::min(other.top,top);
+    bottom = std::max(other.bottom,bottom);
+    recalculate_center();
+}
+
 bool MBound::operator==(const MBound& other) {
     return (left==other.left && right==other.right && top==other.top && bottom==other.bottom);
 }

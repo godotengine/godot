@@ -1,0 +1,94 @@
+[gd_scene load_steps=3 format=3 uid="uid://dpd66ybtq65sa"]
+
+[sub_resource type="GDScript" id="GDScript_xqplk"]
+script/source = "@tool
+extends Window
+
+func _on_button_pressed():
+	queue_free()
+"
+
+[sub_resource type="LabelSettings" id="LabelSettings_cjcwk"]
+font_size = 32
+
+[node name="Window" type="Window"]
+initial_position = 2
+size = Vector2i(600, 450)
+exclusive = true
+popup_window = true
+script = SubResource("GDScript_xqplk")
+
+[node name="Panel" type="PanelContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Panel"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Panel" type="PanelContainer" parent="Panel/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/ScrollContainer/VBoxContainer/Panel"]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel/ScrollContainer/VBoxContainer/Panel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 12)
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+
+[node name="Label" type="Label" parent="Panel/ScrollContainer/VBoxContainer/Panel/VBoxContainer"]
+layout_mode = 2
+text = "MPath Help"
+label_settings = SubResource("LabelSettings_cjcwk")
+horizontal_alignment = 1
+
+[node name="Label2" type="Label" parent="Panel/ScrollContainer/VBoxContainer/Panel/VBoxContainer"]
+layout_mode = 2
+horizontal_alignment = 1
+
+[node name="Label3" type="Label" parent="Panel/ScrollContainer/VBoxContainer/Panel/VBoxContainer"]
+layout_mode = 2
+text = "Click : Select Point"
+horizontal_alignment = 1
+
+[node name="Label4" type="Label" parent="Panel/ScrollContainer/VBoxContainer/Panel/VBoxContainer"]
+layout_mode = 2
+text = "     Shift + Click : Select multiple points"
+horizontal_alignment = 1
+
+[node name="Label5" type="Label" parent="Panel/ScrollContainer/VBoxContainer/Panel/VBoxContainer"]
+layout_mode = 2
+text = "Ctrl + Click : Add Point               "
+horizontal_alignment = 1
+
+[node name="Label6" type="Label" parent="Panel/ScrollContainer/VBoxContainer/Panel/VBoxContainer"]
+layout_mode = 2
+text = "         Alt + Click : Remove Point               "
+horizontal_alignment = 1
+
+[node name="Label7" type="Label" parent="Panel/ScrollContainer/VBoxContainer/Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "
+For more keyboard shortcuts, please see:
+settings / more settings"
+horizontal_alignment = 1
+
+[node name="Button" type="Button" parent="Panel/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "OK"
+
+[connection signal="pressed" from="Panel/ScrollContainer/VBoxContainer/Button" to="." method="_on_button_pressed"]

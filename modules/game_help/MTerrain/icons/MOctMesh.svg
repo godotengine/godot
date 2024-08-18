@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 100 100"
+   width="100"
+   height="100"
+   version="1.1"
+   id="svg3"
+   sodipodi:docname="MOctMesh.svg"
+   inkscape:version="1.3.2 (091e20ef0f, 2023-11-25, custom)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs3" />
+  <sodipodi:namedview
+     id="namedview3"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="true"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="5.7134228"
+     inkscape:cx="36.493011"
+     inkscape:cy="55.308352"
+     inkscape:window-width="1920"
+     inkscape:window-height="1012"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg3" />
+  <!-- Background -->
+  <!-- 3D Cube -->
+  <!-- Front face -->
+  <!-- Side face -->
+  <!-- Top face -->
+  <g
+     id="g3"
+     transform="matrix(1.9076455,0,0,1.8504077,-11.547467,-7.9194463)">
+    <polygon
+       points="70,70 30,70 30,30 70,30 "
+       fill="#e0e0e0"
+       id="polygon1"
+       transform="translate(-22.524752,-13.910887)"
+       style="fill:#0087ff;fill-opacity:1;stroke:#005c00;stroke-width:0.534294;stroke-dasharray:none;stroke-opacity:1" />
+    <polygon
+       points="80,60 70,70 70,30 80,20 "
+       fill="#b0b0b0"
+       id="polygon2"
+       transform="translate(-22.524752,-13.910887)"
+       style="fill:#214ab0;fill-opacity:1;stroke:#005c00;stroke-width:0.185082;stroke-dasharray:none;stroke-opacity:1" />
+    <polygon
+       points="80,20 70,30 30,30 40,20 "
+       fill="#c0c0c0"
+       id="polygon3"
+       transform="translate(-22.524752,-13.910887)"
+       style="fill:#c031ce;fill-opacity:1;stroke:#005c00;stroke-width:0.301486;stroke-dasharray:none;stroke-opacity:1" />
+  </g>
+  <!-- Letter on top -->
+  <path
+     style="fill:none;stroke:#004000;stroke-width:1.922;stroke-dashoffset:0;stroke-opacity:0.88324797;stroke-dasharray:15.3760004,1.92200005"
+     d="M 51.107675,2.8704324 40.332112,21.534255 v 74.310214"
+     id="path3" />
+  <path
+     style="fill:none;stroke:#004000;stroke-width:1.922;stroke-dasharray:15.376, 1.922;stroke-dashoffset:0;stroke-opacity:0.883248"
+     d="M 14.002072,10.851633 H 90.033579 V 85.412888"
+     id="path4" />
+  <path
+     style="fill:none;stroke:#004000;stroke-width:1.922;stroke-dasharray:15.376, 1.922;stroke-dashoffset:0;stroke-opacity:0.883248"
+     d="M 98.644871,45.716895 78.471792,57.363828 H 2.8003802"
+     id="path5" />
+  <path
+     style="font-size:94.5315px;font-family:'Noto Sans Armenian';-inkscape-font-specification:'Noto Sans Armenian';text-anchor:middle;stroke:none;stroke-width:3.22988;stroke-opacity:0.883248"
+     d="M 36.127968,55.943116 12.03844,32.189427 h -0.412888 c 0.206444,2.060425 0.37848,4.851969 0.51611,8.374633 0.137629,3.456199 0.206444,7.078562 0.206444,10.867087 V 94.600404 H 3.7806909 V 23.415995 H 17.5092 l 22.030994,0.592267 h 0.412888 L 63.752598,23.415995 H 77.377885 V 94.600404 H 68.191139 V 50.83296 c 0,-3.456199 0.06881,-6.879166 0.206442,-10.2689 0.206445,-3.389731 0.378482,-6.148045 0.516111,-8.274938 H 68.500805 L 43.766387,55.943116 Z"
+     id="text3"
+     aria-label="M"
+     sodipodi:nodetypes="ccccsccccccccccsccccc" />
+</svg>

@@ -1363,6 +1363,8 @@ public:
 		create_composite_pop_sub();
 		create_decorator_pop_sub();
 
+		cteate_beehave_node_pop->clear();
+
 		cteate_beehave_node_pop->add_submenu_node_item(L"叶节点", leaf_pop_sub);
 		cteate_beehave_node_pop->add_submenu_node_item(L"组合节点", composite_pop_sub);
 		cteate_beehave_node_pop->add_submenu_node_item(L"修饰器", decorator_pop_sub);

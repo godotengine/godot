@@ -6,7 +6,7 @@ Import("env_modules")
 env_game_help = env_modules.Clone()
 # Module files
 env_game_help.add_source_files(env.modules_sources, "*.cpp")
-env_game_help.add_source_files(env.modules_sources, "Terrain3D/src/*.cpp")
+# env_game_help.add_source_files(env.modules_sources, "Terrain3D/src/*.cpp")
 env_game_help.add_source_files(env.modules_sources, "foliage_manager/*.cpp")
 env_game_help.add_source_files(env.modules_sources, "game_gui/*.cpp")
 env_game_help.add_source_files(env.modules_sources, "logic/*.cpp")
@@ -24,6 +24,8 @@ env_game_help.add_source_files(env.modules_sources, "MTerrain/gdextension/src/he
 env_game_help.add_source_files(env.modules_sources, "MTerrain/gdextension/src/color_brushes/*.cpp")
 env_game_help.add_source_files(env.modules_sources, "MTerrain/gdextension/src/grass/*.cpp")
 env_game_help.add_source_files(env.modules_sources, "MTerrain/gdextension/src/navmesh/*.cpp")
+env_game_help.add_source_files(env.modules_sources, "MTerrain/gdextension/src/octmesh/*.cpp")
+env_game_help.add_source_files(env.modules_sources, "MTerrain/gdextension/src/path/*.cpp")
 
 env_game_help.add_source_files(env.modules_sources, "yaml/*.cpp")
 env_game_help.add_source_files(env.modules_sources, "yaml/std/*.cpp")

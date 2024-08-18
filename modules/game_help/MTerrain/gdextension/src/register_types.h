@@ -2,10 +2,11 @@
 #define EXAMPLE_REGISTER_TYPES_H
 
 // #include <godot_cpp/core/class_db.hpp>
+#include "modules/register_module_types.h"
 
 // 
 
-// void initialize_test_module(ModuleInitializationLevel p_level);
-// void uninitialize_test_module(ModuleInitializationLevel p_level);
+void initialize_mterrain_module(ModuleInitializationLevel p_level);
+void uninitialize_mterrain_module(ModuleInitializationLevel p_level);
 
 #endif 

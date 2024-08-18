@@ -12,11 +12,12 @@
 #include "servers/rendering_server.h"
 
 #include "mconfig.h"
+#include "mresource.h"
 
 
 
 class MGrid;
-class MImage;
+struct MImage;
 
 
 class MTerrainMaterial : public Resource {
@@ -71,9 +72,9 @@ class MTerrainMaterial : public Resource {
     // Each time this is called it is going to generate a new material for that region
     RID get_material(int region_id); // OR region Index in grid
     void remove_material(int region_id);
-    void load_images();
+    void load_images(Array images_names,Ref<MResource> first_res);
     void clear();
-    void add_terrain_image(StringName name); // The order of adding image will determine image ID in each grid creation
+    void add_terrain_image(StringName name, bool is_ram_image,Image::Format _f); // The order of adding image will determine image ID in each grid creation
     void create_empty_terrain_image(StringName name,Image::Format format);
     int get_texture_id(const String& name);
     PackedStringArray get_textures_list();

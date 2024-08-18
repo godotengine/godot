@@ -93,6 +93,7 @@ class MTerrain : public  Node3D {
 
     std::future<void> update_regions_future;
     bool is_update_regions_future_valid = false;
+    bool set_mtime=false;
     
 
 
@@ -209,14 +210,16 @@ class MTerrain : public  Node3D {
     void set_heightmap_layers(PackedStringArray input);
     const PackedStringArray& get_heightmap_layers();
 
-    void set_active_layer_by_name(String lname);
+    bool set_active_layer_by_name(String lname);
+    String get_active_layer_name();
     bool get_layer_visibility(String lname);
     void add_heightmap_layer(String lname);
+    bool rename_heightmap_layer(String old_name,String new_name);
     void merge_heightmap_layer();
     void remove_heightmap_layer();
     void toggle_heightmap_layer_visibile();
     void terrain_child_changed(Node* n);
-    void update_grass_list();
+    void terrain_ready_signal();
     Vector2i get_region_grid_size();
     int get_region_id_by_world_pos(const Vector3& world_pos);
     int32_t get_base_size();
@@ -228,6 +231,9 @@ class MTerrain : public  Node3D {
     Array get_brush_layers();
     void set_brush_layers_num(int input);
     int get_brush_layers_num();
+
+    void set_set_mtime(bool input);
+    bool get_set_mtime();
 
     Array get_layers_info();
     void set_color_layer(int index,int group_index,String brush_name);
@@ -250,7 +256,16 @@ class MTerrain : public  Node3D {
     Vector3 get_normal(const Vector3 world_pos);
     Vector3 get_normal_accurate(Vector3 world_pos);
 
+    void update_all_dirty_image_texture(bool update_physics);
+    void update_normals(uint32_t left, uint32_t right, uint32_t top, uint32_t bottom);
+
     void _notification(int32_t what);
+    void _frame_draw();
+
+    void _update_visibility();
+
+    void _dummy_setter(bool input){}
+    bool _dummy_getter(){return true;}
 };
 
 

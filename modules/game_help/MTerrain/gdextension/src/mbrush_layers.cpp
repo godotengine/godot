@@ -210,6 +210,7 @@ Array MBrushLayers::get_layers_info(){
         Dictionary l = layers[i];
         Dictionary dic;
         dic["name"]=l["NAME"];
+        dic["icon-color"]=get_layer_color(i);
         if(textures.has(l["ICON"])){
             current_textures.insert(l["ICON"],textures.get(l["ICON"]));
             dic["icon"]=textures.get(l["ICON"]);
@@ -232,6 +233,35 @@ Array MBrushLayers::get_layers_info(){
         }
     }
     return out;
+}
+
+Color MBrushLayers::get_layer_color(int index){
+    Color col(0.5,0.5,0.5,1.0);
+    Dictionary dic = layers[index];
+    if(brush_name=="Color Paint"){
+        return dic["color"];
+    }
+    if(brush_name=="Channel Painter"){
+        bool red = dic["red"];
+        bool green = dic["green"];
+        bool blue = dic["blue"];
+        bool alpha = dic["alpha"];
+        if(alpha && !green && !blue && !red){
+            float alpha_val = dic["blue-value"];
+            col = Color(alpha,alpha,alpha);
+            return col;
+        }
+        if(red){
+            col.r = dic["red-value"];
+        }
+        if(green){
+            col.g = dic["green"];
+        }
+        if(blue){
+            col.g = dic["blue-value"];
+        }
+    }
+    return col;
 }
 
 void MBrushLayers::set_layer(int index,MColorBrush* brush){

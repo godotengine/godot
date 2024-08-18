@@ -52,7 +52,7 @@ class MRegion : public Object{
     int32_t current_scale=1;
     bool is_min_max_height_calculated = false;
     _FORCE_INLINE_ void _calculate_min_max_height();
-    std::mutex rload_mutex;
+    std::mutex physics_mutex;
     std::atomic<bool> is_data_loaded;
 
 
@@ -95,6 +95,7 @@ class MRegion : public Object{
     void insert_lod(const int8_t input);
     void apply_update();
     void create_physics();
+    void update_physics();
     void remove_physics();
     Color get_pixel(const uint32_t x, const uint32_t y, const int32_t& index) const;
     void set_pixel(const uint32_t x, const uint32_t y,const Color& color,const int32_t& index);

@@ -1,0 +1,93 @@
+[gd_scene load_steps=4 format=3 uid="uid://d4l2pvir8hm8l"]
+
+[ext_resource type="Script" path="res://addons/m_terrain/inspector/gui/mpath_inspector_gui.gd" id="1_jv20c"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jefn3"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_t7soo"]
+bg_color = Color(0.6, 0, 0, 1)
+
+[node name="mpath_inspector_gui" type="VBoxContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_jv20c")
+
+[node name="point_count_lable" type="Label" parent="."]
+layout_mode = 2
+text = "Point count: "
+
+[node name="HSeparator2" type="HSeparator" parent="."]
+layout_mode = 2
+
+[node name="child_selctor" type="OptionButton" parent="."]
+layout_mode = 2
+item_count = 2
+popup/item_0/text = "None"
+popup/item_0/id = 0
+popup/item_1/text = "Other_child"
+popup/item_1/id = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+visible = false
+layout_mode = 2
+
+[node name="connection_tab" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = SubResource("StyleBoxFlat_jefn3")
+toggle_mode = true
+button_pressed = true
+text = "Connection"
+
+[node name="intersection_tab" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = SubResource("StyleBoxFlat_jefn3")
+toggle_mode = true
+text = "Intersection"
+
+[node name="HSeparator" type="HSeparator" parent="."]
+layout_mode = 2
+
+[node name="mesh_mode_option" type="OptionButton" parent="."]
+visible = false
+layout_mode = 2
+item_count = 2
+selected = 0
+popup/item_0/text = "mesh"
+popup/item_0/id = 0
+popup/item_1/text = "material"
+popup/item_1/id = 1
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="."]
+visible = false
+layout_mode = 2
+
+[node name="clear_override" type="Button" parent="HBoxContainer2"]
+layout_mode = 2
+text = "restore default"
+
+[node name="Remove_mesh" type="Button" parent="HBoxContainer2"]
+layout_mode = 2
+theme_override_styles/pressed = SubResource("StyleBoxFlat_t7soo")
+toggle_mode = true
+text = "Remove mesh"
+
+[node name="itemlist" type="ItemList" parent="."]
+visible = false
+custom_minimum_size = Vector2(0, 260)
+layout_mode = 2
+allow_reselect = true
+
+[node name="update_info_timer" type="Timer" parent="."]
+wait_time = 0.752
+autostart = true
+
+[node name="HSeparator4" type="HSeparator" parent="."]
+layout_mode = 2
+
+[connection signal="item_selected" from="child_selctor" to="." method="_on_child_selctor_item_selected"]
+[connection signal="timeout" from="update_info_timer" to="." method="_on_update_info_timer_timeout"]

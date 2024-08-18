@@ -70,6 +70,9 @@ void MGrid::clear() {
     lowest_undo_id=0;
     _regions_count = 0;
     grid_pixel_region.clear();
+    grid_update_info.clear();
+    remove_instance_list.clear();
+    update_mesh_list.clear();
     if(is_update_regions_future_valid && update_regions_future.valid()){
         update_regions_future.wait();
         is_update_regions_future_valid = false;
@@ -93,6 +96,7 @@ RID MGrid::get_scenario(){
 }
 
 void MGrid::create(const int32_t width,const int32_t height, MChunks* chunks) {
+    update_renderer_info();
     if (width == 0 || height == 0) return;
     _chunks = chunks;
     _size.x = width;
@@ -113,10 +117,24 @@ void MGrid::create(const int32_t width,const int32_t height, MChunks* chunks) {
     region_size_meter = region_size*_chunks->base_size_meter;
     rp = (region_size_meter/_chunks->h_scale);
     region_pixel_size = rp + 1;
+    /// Checking if region pixel size is correct
+    /// Also grabing the images name from the first terrain resource
+    String first_res_path = dataDir.path_join("x0_y0.res");
+    Array images_names;
+    Ref<MResource> first_res;
+    if(ResourceLoader::exists(first_res_path)){  // if not exist data directory is empty and a empty data will be created
+        first_res = ResourceLoader::load(first_res_path);
+        ERR_FAIL_COND_EDMSG(!first_res.is_valid(), "Data x0_y0.res is not valid MResource file ");
+        images_names = first_res->get_data_names();
+        for(int i=0; i < images_names.size(); i++){
+            StringName _n = images_names[i];
+            ERR_FAIL_COND_EDMSG(first_res->get_data_width(_n)!=region_pixel_size-1,String(_n)+" width "+itos(first_res->get_heightmap_width())+" in data directory does not match the your region size in pixel "+itos(region_pixel_size-1)+" Please change your regions size width so it match with data directory");
+        }
+    }
     _grid_bound = MBound(0,width-1, 0, height-1);
     regions = memnew_arr(MRegion, _regions_count);
-    int total_points = _size.z*_size.x;
-    points_row = memnew_arr(MPoint, total_points);
+    total_points_count = _size.z*_size.x;
+    points_row = memnew_arr(MPoint, total_points_count);
     points = memnew_arr(MPoint*, _size.z);
     for (int32_t z=0; z<_size.z; z++){
         points[z] = &points_row[z*_size.x];
@@ -148,7 +166,7 @@ void MGrid::create(const int32_t width,const int32_t height, MChunks* chunks) {
         }
     }
     is_dirty = true;
-    _terrain_material->load_images();
+    _terrain_material->load_images(images_names,first_res);
     for(int i=0; i<_regions_count; i++){
         regions[i].configure();
     }
@@ -528,7 +546,7 @@ bool MGrid::check_bigger_size(const int8_t lod,const int8_t size,const int32_t r
                     }
                     int32_t region_id = get_region_id_by_point(x,z);
                     //MRegion* region = get_region_by_point(x,z);
-                    points[z][x].create_instance(get_world_pos(x,0,z), _scenario, regions[region_id].get_material_rid());
+                    points[z][x].create_instance(get_world_pos(x,0,z), _scenario, regions[region_id].get_material_rid(),is_visible);
                     rs->instance_set_visible(points[z][x].instance, false);
                     rs->instance_set_base(points[z][x].instance, mesh);
                     /*
@@ -618,6 +636,10 @@ void MGrid::set_terrain_material(Ref<MTerrainMaterial> m) {
     _terrain_material = m;
 }
 
+Ref<MTerrainMaterial> MGrid::get_terrain_material(){
+    return _terrain_material;
+}
+
 
 MGridPos MGrid::get_3d_grid_pos_by_middle_point(MGridPos input) {
     MRegion* r = get_region_by_point(input.x,input.z);
@@ -638,10 +660,13 @@ real_t MGrid::get_closest_height(const Vector3& pos) {
 }
 
 real_t MGrid::get_height(Vector3 pos){
+    if(!is_created()){
+        return 0.0;
+    }
     pos -= offset;
     pos = pos/_chunks->h_scale;
     if(pos.x <0 || pos.z <0){
-        return 0;
+        return 0.0;
     }
     uint32_t x = (uint32_t)pos.x;
     uint32_t y = (uint32_t)pos.z;
@@ -683,6 +708,7 @@ Ref<MCollision> MGrid::get_ray_collision_point(Vector3 ray_origin,Vector3 ray_ve
 }
 
 void MGrid::update_chunks(const Vector3& cam_pos) {
+    std::lock_guard<std::mutex> lock(update_chunks_mutex);
     _update_id++;
     num_chunks = 0;
     update_mesh_list.clear();
@@ -722,6 +748,33 @@ void MGrid::update_regions(){
     }
 }
 
+void MGrid::update_regions_at_load(){
+    for(MRegion* reg : unload_region_list){
+        reg->unload();
+        reg->is_data_loaded_reg_thread = false;
+    }
+    Vector<std::thread*> threads_pull;
+    for(MRegion* reg : load_region_list){
+        std::thread* t = new std::thread(&MRegion::load,reg);
+        reg->is_data_loaded_reg_thread = true;
+        threads_pull.push_back(t);
+    }
+    for(std::thread* t : threads_pull){
+        t->join();
+        delete t;
+    }
+    for(MRegion* reg : load_region_list){
+        reg->correct_edges();
+    }
+    for(MRegion* reg : load_region_list){
+        reg->is_edge_corrected = false;
+        reg->recalculate_normals(true,false);
+    }
+    for(MRegion* reg : load_region_list){
+        reg->set_data_load_status(true);
+    }
+}
+
 void MGrid::apply_update_chunks() {
     for(int i=0; i < _regions_count; i++){
         regions[i].apply_update();
@@ -730,8 +783,10 @@ void MGrid::apply_update_chunks() {
     for(RID rm: remove_instance_list){
         rs->free(rm);
     }
-    for(RID add : update_mesh_list){
-        rs->instance_set_visible(add, true);
+    if(is_visible){
+        for(RID add : update_mesh_list){
+            rs->instance_set_visible(add, true);
+        }
     }
 }
 
@@ -1008,43 +1063,50 @@ void MGrid::generate_normals(MPixelRegion pxr) {
     ERR_FAIL_COND(id==-1);
     for(uint32_t y=pxr.top; y<=pxr.bottom; y++){
         for(uint32_t x=pxr.left; x<=pxr.right; x++){
-            Vector3 normal_vec;
             Vector2i px(x,y);
             real_t h = get_height_by_pixel(x,y);
             // Caculating face normals around point
             // and average them
             // In total there are 8 face around each point
-            for(int i=0;i<nvec8.size()-1;i++){
-                Vector2i px1(nvec8[i].x,nvec8[i].z);
-                Vector2i px2(nvec8[i+1].x,nvec8[i+1].z);
-                px1 += px;
-                px2 += px;
-                // Edge of the terrain
-                if(!_has_pixel(px1.x,px1.y) || !_has_pixel(px2.x,px2.y)){
-                    continue;
-                }
-                Vector3 vec1 = nvec8[i];
-                Vector3 vec2 = nvec8[i+1];
-                vec1.y = get_height_by_pixel(px1.x,px1.y) - h;
-                vec2.y = get_height_by_pixel(px2.x,px2.y) - h;
-                normal_vec += vec1.cross(vec2);
-            }
-            normal_vec.normalize();
+            float heightL = _has_pixel(x-1,y) ? get_height_by_pixel(x-1,y) : h;
+            float heightR = _has_pixel(x+1,y) ? get_height_by_pixel(x+1,y) : h;
+            float heightU = _has_pixel(x,y-1) ? get_height_by_pixel(x,y-1) : h;
+            float heightD = _has_pixel(x,y+1) ? get_height_by_pixel(x,y+1) : h;
+
+            float heightTL = _has_pixel(x-1,y-1) ? get_height_by_pixel(x-1,y-1) : h;
+            float heightTR = _has_pixel(x+1,y-1) ? get_height_by_pixel(x+1,y-1) : h;
+            float heightBL = _has_pixel(x-1,y+1) ? get_height_by_pixel(x-1,y+1) : h;
+            float heightBR = _has_pixel(x+1,y+1) ? get_height_by_pixel(x+1,y+1) : h;
+
+            float nx = heightTL - heightBR + 2.0f * (heightL - heightR) + heightBL - heightTR;
+            //float ny = 8.0f;
+            float nz = heightTL - heightBR + 2.0f * (heightU - heightD) + heightTR - heightBL;
+            float nl = sqrt(nx*nx + 64.0f + nz*nz);
+            
+            nx /= nl;
+            float ny = 8.0f/nl;
+            nz /= nl;
+
+            nx = nx/2.0 + 0.5;
+            nz = nz/2.0 + 0.5;
+
             // packing normals for image
-            normal_vec = normal_vec*0.5 + Vector3(0.5,0.5,0.5);
-            Color col(normal_vec.x,normal_vec.y,normal_vec.z);
+            Color col(nx,ny,nz);
             set_pixel(x,y,col,id);
         }
     }
+}
+
+void MGrid::update_normals(uint32_t left, uint32_t right, uint32_t top, uint32_t bottom){
+    MPixelRegion pxr(left,right,top,bottom);
+    generate_normals(pxr);
 }
 
 Vector3 MGrid::get_normal_by_pixel(uint32_t x,uint32_t y) {
     int id = _terrain_material->get_texture_id(NORMALS_NAME);
     ERR_FAIL_COND_V(id==-1,Vector3());
     Color c = get_pixel(x,y,id);
-    Vector3 n(c.r,c.g,c.b);
-    n = n*2.0 - Vector3(1.0,1.0,1.0);
-    n.normalize();
+    Vector3 n(c.r*2.0 -1.0,c.g,c.b*2.0 -1.0);
     return n;
 }
 
@@ -1363,13 +1425,18 @@ void MGrid::draw_color_region(MImage* img, MPixelRegion _draw_pixel_region, MPix
 }
 
 //&MGrid::generate_normals,this, px_regions[i]
-void MGrid::update_all_dirty_image_texture(){
+void MGrid::update_all_dirty_image_texture(bool update_physics){
     Vector<std::thread*> threads_pull;
     for(int i=0;i<_all_image_list.size();i++){
         if(_all_image_list[i]->is_dirty){
             //_all_image_list[i]->update_texture(_all_image_list[i]->current_scale,true);
             std::thread* t = new std::thread(&MImage::update_texture,_all_image_list[i],_all_image_list[i]->current_scale,true);
             threads_pull.push_back(t);
+            if(_all_image_list[i]->name == HEIGHTMAP_NAME && update_physics){
+                MRegion* reg = _all_image_list[i]->region;
+                std::thread* pt = new std::thread(&MRegion::update_physics,reg);
+                threads_pull.push_back(pt);
+            }
         }
     }
     for(int i=0;i<threads_pull.size();i++){
@@ -1378,24 +1445,41 @@ void MGrid::update_all_dirty_image_texture(){
     }
 }
 
-void MGrid::set_active_layer(String input){
+bool MGrid::set_active_layer(String input){
     // We did not add background to heightmap layers so the error handling down here is ok
     int index = heightmap_layers.find(input);
     if(index != -1){
         active_heightmap_layer = index;
     } else {
+        ERR_FAIL_V_MSG(false,"Active Layer "+input+"is not found");
         active_heightmap_layer = 0;
     }
     for(int i=0;i<_all_heightmap_image_list.size();i++){
         _all_heightmap_image_list[i]->set_active_layer(active_heightmap_layer);
     }
+    return index!=-1;
 }
 
+String MGrid::get_active_layer(){
+    ERR_FAIL_INDEX_V(active_heightmap_layer, heightmap_layers.size(),"background");
+    return heightmap_layers[active_heightmap_layer];
+}
+
+// heightmap_layers will be set in MTerrain!
+// This function should be called only from MTerrain
 void MGrid::add_heightmap_layer(String lname){
     for(int i=0;i<_all_heightmap_image_list.size();i++){
         _all_heightmap_image_list[i]->add_layer(lname);
     }
     heightmap_layers_visibility.push_back(true);
+}
+
+// This function should be called only from MTerrain
+void MGrid::rename_heightmap_layer(int layer_index,String lname){
+    for(int i=0;i<_all_heightmap_image_list.size();i++){
+        _all_heightmap_image_list[i]->rename_layer(layer_index,lname);
+    }
+    heightmap_layers.set(layer_index,lname);
 }
 
 void MGrid::merge_heightmap_layer(){
@@ -1424,7 +1508,7 @@ void MGrid::remove_heightmap_layer(){
     heightmap_layers_visibility.remove_at(active_heightmap_layer);
 }
 
-void MGrid::toggle_heightmap_layer_visibile(){
+void MGrid::toggle_heightmap_layer_visible(){
     ERR_FAIL_COND_EDMSG(active_heightmap_layer==0, "Can not Hide background layer");
     bool input = !heightmap_layers_visibility[active_heightmap_layer];
     for(int i=0;i<_all_heightmap_image_list.size();i++){
@@ -1488,14 +1572,18 @@ void MGrid::images_add_undo_stage(){
 }
 
 void MGrid::images_undo(){
+    last_images_undo_affected_list.clear();
     if(current_undo_id <= lowest_undo_id){
         // No more undo data
         return;
     }
     current_undo_id--;
     for(int i=0;i<_all_image_list.size();i++){
-        _all_image_list[i]->go_to_undo(current_undo_id);
+        if(_all_image_list[i]->go_to_undo(current_undo_id)) {
+            last_images_undo_affected_list.push_back(_all_image_list[i]);
+        }
         _all_image_list[i]->remove_undo_data(current_undo_id);
+        
     }
     update_all_dirty_image_texture();
 }
@@ -1504,4 +1592,38 @@ void MGrid::refresh_all_regions_uniforms(){
     for(int i=0;i<_regions_count;i++){
         regions[i].refresh_all_uniforms();
     }
+}
+
+void MGrid::update_renderer_info(){
+    _is_opengl = RenderingServer::get_singleton()->get_rendering_device() == nullptr;
+}
+
+bool MGrid::is_opengl(){
+    return _is_opengl;
+}
+
+bool MGrid::get_visibility(){
+    return is_visible;
+}
+
+void MGrid::set_visibility(bool input){
+    if(!is_created()){
+        is_visible = input;
+        return;
+    }
+    if(input == is_visible){
+        return;
+    }
+    std::lock_guard<std::mutex> lock(update_chunks_mutex);
+    MBound current_bound = _search_bound;
+    current_bound.merge(_last_search_bound);
+    for(int32_t z=current_bound.top; z <=current_bound.bottom; z++)
+    {
+        for(int32_t x=current_bound.left; x <=current_bound.right; x++){
+            if(points[z][x].has_instance){
+                RenderingServer::get_singleton()->instance_set_visible(points[z][x].instance,input);
+            }
+        }
+    }
+    is_visible = input;
 }

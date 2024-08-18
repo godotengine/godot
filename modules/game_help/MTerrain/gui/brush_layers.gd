@@ -9,6 +9,7 @@ var uniform:String
 var brush_name:String
 
 func create_layers(input:Array):
+	print("sss input ",input)
 	var index = -1
 	for i in input:
 		index +=1
@@ -19,3 +20,4 @@ func create_layers(input:Array):
 		if not icon:
 			icon = no_image
 		var id = add_item(iname,icon)
+		set_item_custom_bg_color(index,i["icon-color"])

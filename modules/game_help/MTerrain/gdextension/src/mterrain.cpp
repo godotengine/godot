@@ -7,16 +7,17 @@
 // #include <godot_cpp/classes/reg_ex.hpp>
 // #include <godot_cpp/classes/reg_ex_match.hpp>
 #include "core/io/file_access.h"
-#include "core/io/file_access.h"
+#include "core/io/dir_access.h"
 
 #include "mbrush_manager.h"
 #include "navmesh/mnavigation_region_3d.h"
 #include "mbrush_layers.h"
+#include "mtool.h"
 
 
 void MTerrain::_bind_methods() {
-    //ADD_SIGNAL(MethodInfo("finish_updating"));
-    //ADD_SIGNAL(MethodInfo("finish_updating_physics"));
+    ClassDB::bind_method(D_METHOD("_dummy_setter","input"), &MTerrain::_dummy_setter);
+    ClassDB::bind_method(D_METHOD("_dummy_getter"), &MTerrain::_dummy_getter);
 
     ClassDB::bind_method(D_METHOD("_finish_terrain"), &MTerrain::_finish_terrain);
     ClassDB::bind_method(D_METHOD("create_grid"), &MTerrain::create_grid);
@@ -58,19 +59,11 @@ void MTerrain::_bind_methods() {
     
     ClassDB::bind_method(D_METHOD("set_heightmap_layers", "input"), &MTerrain::set_heightmap_layers);
     ClassDB::bind_method(D_METHOD("get_heightmap_layers"), &MTerrain::get_heightmap_layers);
-    ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "heightmap_layers"), "set_heightmap_layers","get_heightmap_layers");
-
-    ClassDB::bind_method(D_METHOD("set_regions_limit","input"), &MTerrain::set_regions_limit);
-    ClassDB::bind_method(D_METHOD("get_regions_limit"), &MTerrain::get_regions_limit);
-    ADD_PROPERTY(PropertyInfo(Variant::INT, "regions_limit"), "set_regions_limit", "get_regions_limit");
+    ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "heightmap_layers",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_STORAGE), "set_heightmap_layers","get_heightmap_layers");
 
     ClassDB::bind_method(D_METHOD("set_update_chunks_interval","interval"), &MTerrain::set_update_chunks_interval);
     ClassDB::bind_method(D_METHOD("get_update_chunks_interval"), &MTerrain::get_update_chunks_interval);
     ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "update_chunks_interval"), "set_update_chunks_interval", "get_update_chunks_interval");
-    
-    ClassDB::bind_method(D_METHOD("set_distance_update_threshold","input"), &MTerrain::set_distance_update_threshold);
-    ClassDB::bind_method(D_METHOD("get_distance_update_threshold"), &MTerrain::get_distance_update_threshold);
-    ADD_PROPERTY(PropertyInfo(Variant::FLOAT,"distance_update_threshold"),"set_distance_update_threshold","get_distance_update_threshold");
 
     ClassDB::bind_method(D_METHOD("set_update_chunks_loop", "val"), &MTerrain::set_update_chunks_loop);
     ClassDB::bind_method(D_METHOD("get_update_chunks_loop"), &MTerrain::get_update_chunks_loop);
@@ -84,16 +77,21 @@ void MTerrain::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_update_physics_loop"), &MTerrain::get_update_physics_loop);
     ADD_PROPERTY(PropertyInfo(Variant::BOOL, "update_physics_loop"), "set_update_physics_loop", "get_update_physics_loop");
 
+    ADD_PROPERTY(PropertyInfo(Variant::BOOL,"Region Unit",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_CATEGORY),"_dummy_setter","_dummy_getter");
+
+    ClassDB::bind_method(D_METHOD("set_regions_limit","input"), &MTerrain::set_regions_limit);
+    ClassDB::bind_method(D_METHOD("get_regions_limit"), &MTerrain::get_regions_limit);
+    ADD_PROPERTY(PropertyInfo(Variant::INT, "regions_limit"), "set_regions_limit", "get_regions_limit");
+
     ClassDB::bind_method(D_METHOD("set_physics_update_limit", "val"), &MTerrain::set_physics_update_limit);
     ClassDB::bind_method(D_METHOD("get_physics_update_limit"), &MTerrain::get_physics_update_limit);
     ADD_PROPERTY(PropertyInfo(Variant::INT, "physics_update_limit"), "set_physics_update_limit", "get_physics_update_limit");
 
+    ADD_PROPERTY(PropertyInfo(Variant::BOOL,"Grid unit (min_size)",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_CATEGORY),"_dummy_setter","_dummy_getter");
+
     ClassDB::bind_method(D_METHOD("get_terrain_size"), &MTerrain::get_terrain_size);
     ClassDB::bind_method(D_METHOD("set_terrain_size", "size"), &MTerrain::set_terrain_size);
     ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I,"terrain_size"), "set_terrain_size", "get_terrain_size");
-    ClassDB::bind_method(D_METHOD("set_offset", "offset"), &MTerrain::set_offset);
-    ClassDB::bind_method(D_METHOD("get_offset"), &MTerrain::get_offset);
-    ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "offset"), "set_offset", "get_offset");
 
     ClassDB::bind_method(D_METHOD("set_region_size", "region_size"), &MTerrain::set_region_size);
     ClassDB::bind_method(D_METHOD("get_region_size"), &MTerrain::get_region_size);
@@ -106,7 +104,16 @@ void MTerrain::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_custom_camera", "camera"), &MTerrain::set_custom_camera);
     ClassDB::bind_method(D_METHOD("set_editor_camera", "camera"), &MTerrain::set_editor_camera);
 
-    
+    ADD_PROPERTY(PropertyInfo(Variant::BOOL,"Meter unit",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_CATEGORY),"_dummy_setter","_dummy_getter");
+
+    ClassDB::bind_method(D_METHOD("set_distance_update_threshold","input"), &MTerrain::set_distance_update_threshold);
+    ClassDB::bind_method(D_METHOD("get_distance_update_threshold"), &MTerrain::get_distance_update_threshold);
+    ADD_PROPERTY(PropertyInfo(Variant::FLOAT,"distance_update_threshold"),"set_distance_update_threshold","get_distance_update_threshold");
+
+    ClassDB::bind_method(D_METHOD("set_offset", "offset"), &MTerrain::set_offset);
+    ClassDB::bind_method(D_METHOD("get_offset"), &MTerrain::get_offset);
+    ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "offset"), "set_offset", "get_offset");
+
     ClassDB::bind_method(D_METHOD("set_min_size","index"), &MTerrain::set_min_size);
     ClassDB::bind_method(D_METHOD("get_min_size"), &MTerrain::get_min_size);
     ADD_PROPERTY(PropertyInfo(Variant::INT,"min_size",PROPERTY_HINT_ENUM, M_SIZE_LIST_STRING), "set_min_size", "get_min_size");
@@ -131,7 +138,7 @@ void MTerrain::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_lod_distance"), &MTerrain::get_lod_distance);
     ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "lod_distance",PROPERTY_HINT_NONE,"", PROPERTY_USAGE_STORAGE),"set_lod_distance","get_lod_distance");
 
-    ADD_SUBGROUP("Physics","");
+    ADD_GROUP("Physics","");
 
     ClassDB::bind_method(D_METHOD("set_physics_material","input"), &MTerrain::set_physics_material);
     ClassDB::bind_method(D_METHOD("get_physics_material"), &MTerrain::get_physics_material);
@@ -154,12 +161,13 @@ void MTerrain::_bind_methods() {
 
     ClassDB::bind_method(D_METHOD("set_active_layer_by_name","layer_name"), &MTerrain::set_active_layer_by_name);
     ClassDB::bind_method(D_METHOD("add_heightmap_layer","layer_name"), &MTerrain::add_heightmap_layer);
+    ClassDB::bind_method(D_METHOD("rename_heightmap_layer","old_name","new_name"), &MTerrain::rename_heightmap_layer);
     ClassDB::bind_method(D_METHOD("merge_heightmap_layer"), &MTerrain::merge_heightmap_layer);
     ClassDB::bind_method(D_METHOD("remove_heightmap_layer"), &MTerrain::remove_heightmap_layer);
     ClassDB::bind_method(D_METHOD("toggle_heightmap_layer_visibile"), &MTerrain::toggle_heightmap_layer_visibile);
     ClassDB::bind_method(D_METHOD("get_layer_visibility","input"), &MTerrain::get_layer_visibility);
 
-    ClassDB::bind_method(D_METHOD("update_grass_list"), &MTerrain::update_grass_list);
+    ClassDB::bind_method(D_METHOD("_terrain_ready_signal"), &MTerrain::terrain_ready_signal);
     ClassDB::bind_method(D_METHOD("terrain_child_changed"), &MTerrain::terrain_child_changed);
     ClassDB::bind_method(D_METHOD("get_region_grid_size"), &MTerrain::get_region_grid_size);
     ClassDB::bind_method(D_METHOD("get_region_id_by_world_pos","world_pos"), &MTerrain::get_region_id_by_world_pos);
@@ -174,6 +182,13 @@ void MTerrain::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_brush_layers_num","input"), &MTerrain::set_brush_layers_num);
     ClassDB::bind_method(D_METHOD("get_brush_layers_num"), &MTerrain::get_brush_layers_num);
     ADD_PROPERTY(PropertyInfo(Variant::INT,"brush_layers_groups_num",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NONE),"set_brush_layers_num","get_brush_layers_num");
+    
+    ADD_GROUP("util","");
+    ClassDB::bind_method(D_METHOD("set_set_mtime","input"), &MTerrain::set_set_mtime);
+    ClassDB::bind_method(D_METHOD("get_set_mtime"), &MTerrain::get_set_mtime);
+    ADD_PROPERTY(PropertyInfo(Variant::BOOL,"set_mtime"),"set_set_mtime","get_set_mtime");
+    
+    
     ClassDB::bind_method(D_METHOD("get_layers_info"), &MTerrain::get_layers_info);
     ClassDB::bind_method(D_METHOD("set_color_layer","index","group_index","brush_name"), &MTerrain::set_color_layer);
     ClassDB::bind_method(D_METHOD("disable_brush_mask"), &MTerrain::disable_brush_mask);
@@ -187,6 +202,10 @@ void MTerrain::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_normal","world_pos"), &MTerrain::get_normal);
     ClassDB::bind_method(D_METHOD("get_normal_accurate","world_pos"), &MTerrain::get_normal_accurate);
     ClassDB::bind_method(D_METHOD("is_grid_created"), &MTerrain::is_grid_created);
+    ClassDB::bind_method(D_METHOD("update_all_dirty_image_texture","update_physics"), &MTerrain::update_all_dirty_image_texture);
+    ClassDB::bind_method(D_METHOD("update_normals","left","right","top","bottom"), &MTerrain::update_normals);
+
+    ClassDB::bind_method(D_METHOD("_update_visibility") , &MTerrain::_update_visibility);
 }
 
 MTerrain::MTerrain() {
@@ -195,7 +214,8 @@ MTerrain::MTerrain() {
     lod_distance.append(12);
     lod_distance.append(16);
     lod_distance.append(24);
-    connect("tree_exiting", Callable(this, "_finish_terrain"));
+    connect("tree_exited", Callable(this, "_update_visibility"));
+    connect("tree_entered", Callable(this, "_update_visibility"));
     recalculate_terrain_config(true);
     grid = memnew(MGrid);
     update_chunks_timer = memnew(Timer);
@@ -211,12 +231,13 @@ MTerrain::MTerrain() {
     update_physics_timer->connect("timeout", Callable(this, "finish_update_physics"));
 
     // Grass List update conditions
-    connect("ready",Callable(this,"update_grass_list"));
+    connect("ready",Callable(this,"_terrain_ready_signal"));
     connect("child_exiting_tree",Callable(this,"terrain_child_changed"));
     connect("child_entered_tree",Callable(this,"terrain_child_changed"));
 }
 
 MTerrain::~MTerrain() {
+    remove_grid();
     memdelete(grid);
 }
 
@@ -225,7 +246,7 @@ void MTerrain::_finish_terrain() {
     if(update_thread_chunks.valid()){
         update_thread_chunks.wait();
     }
-    grid->clear();
+    remove_grid();
 }
 
 void MTerrain::create_grid(){
@@ -233,6 +254,7 @@ void MTerrain::create_grid(){
     ERR_FAIL_COND_EDMSG(terrain_size.x%region_size!=0,"Terrain size X component is not divisible by region size");
     ERR_FAIL_COND_EDMSG(terrain_size.y%region_size!=0,"Terrain size Y component is not divisible by region size");
     _chunks = memnew(MChunks);
+    grid->update_renderer_info();
     _chunks->create_chunks(size_list[min_size_index],size_list[max_size_index],h_scale_list[min_h_scale_index],h_scale_list[max_h_scale_index],size_info);
     grid->set_scenario(get_world_3d()->get_scenario());
     grid->space = get_world_3d()->get_space();
@@ -258,21 +280,29 @@ void MTerrain::create_grid(){
     if(terrain_material.is_valid()){
         grid->set_terrain_material(terrain_material);
     } else {
-        Ref<MTerrainMaterial> m = ResourceLoader::load(M_DEAFAULT_MATERIAL_PATH);
+        Ref<MTerrainMaterial> m;
+        if(grid->is_opengl()){
+            m = ResourceLoader::load(M_DEAFAULT_MATERIAL_OPENGL_PATH);
+        } else {
+            m = ResourceLoader::load(M_DEAFAULT_MATERIAL_PATH);
+        }
         grid->set_terrain_material(m);
     }
     grid->lod_distance = lod_distance;
     grid->create(terrain_size.x,terrain_size.y,_chunks);
+    if(!grid->is_created()){
+        return;
+    }
     get_cam_pos();
     grid->update_regions_bounds(cam_pos,false);
-    grid->update_regions();
+    grid->update_regions_at_load();
     grid->clear_region_bounds();
     grid->update_chunks(cam_pos);
     grid->apply_update_chunks();
     grid->update_physics(cam_pos);
     last_update_pos = cam_pos;
     // Grass Part
-    update_grass_list();
+    terrain_ready_signal();
     for(int i=0;i<grass_list.size();i++){
         grass_list[i]->init_grass(grid);
         if(grass_list[i]->is_grass_init){
@@ -539,17 +569,27 @@ void MTerrain::get_cam_pos() {
         cam_pos = custom_camera->get_global_position();
         return;
     }
-    if(editor_camera !=nullptr){
-        cam_pos = editor_camera->get_global_position();
-        return;
+    if(Engine::get_singleton()->is_editor_hint()){
+        Node3D* cam = MTool::find_editor_camera(true);
+        if(cam!=nullptr){
+            cam_pos = cam->get_global_position();
+            return;
+        }
+
     }
     Viewport* v = get_viewport();
-    Camera3D* camera = v->get_camera_3d();
-    ERR_FAIL_COND_EDMSG(camera==nullptr, "No camera is detected, If you are in editor activate MTerrain plugin and click on terrain node");
-    cam_pos = camera->get_global_position();
+    if(v!=nullptr){
+        Camera3D* camera = v->get_camera_3d();
+        if(camera!=nullptr){
+            cam_pos = camera->get_global_position();
+            return;
+        }
+    }    
+    ERR_FAIL_MSG("No camera is detected");
 }
 
 void MTerrain::set_dataDir(String input) {
+    ERR_FAIL_COND_MSG(grid->is_created(),"Can not change dataDir after terrain is created!");
     dataDir = input;
 }
 
@@ -558,6 +598,7 @@ String MTerrain::get_dataDir() {
 }
 
 void MTerrain::set_layersDataDir(String input){
+    ERR_FAIL_COND_MSG(grid->is_created(),"Can not change layersDataDir after terrain is created!");
     layersDataDir = input;
 }
 String MTerrain::get_layersDataDir(){
@@ -828,13 +869,15 @@ PackedInt32Array MTerrain::get_lod_distance() {
 
 void MTerrain::_get_property_list(List<PropertyInfo> *p_list) const {
     //Adding lod distance property
-    PropertyInfo sub_lod(Variant::INT, "LOD distance", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_SUBGROUP);
+    PropertyInfo sub_lod(Variant::INT, "LOD distance", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP);
     p_list->push_back(sub_lod);
     for(int i=0; i<lod_distance.size();i++){
         PropertyInfo p(Variant::INT,"M_LOD_"+itos(i),PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR);
         p_list->push_back(p);
     }
     //Adding size info property
+    PropertyInfo size_group(Variant::INT, "Generating Chunks", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP);
+    p_list->push_back(size_group);
     for(int size=0;size<size_info.size();size++){
         Array lod_info = size_info[size];
         PropertyInfo sub(Variant::INT, "Size "+itos(size_list[size+min_size_index]), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_SUBGROUP);
@@ -871,10 +914,10 @@ Ref<MCollision> MTerrain::get_ray_collision_point(Vector3 ray_origin,Vector3 ray
     return grid->get_ray_collision_point(ray_origin,ray_vector,step,max_step);
 }
 
-bool MTerrain::_get(const StringName &p_name, Variant &r_ret) const {
-    String _name = p_name;
-    if(_name.begins_with("SIZE_")){
-        PackedStringArray parts = _name.split("_");
+bool MTerrain::_get(const StringName &_name, Variant &r_ret) const {
+    String p_name = _name;
+    if(p_name.begins_with("SIZE_")){
+        PackedStringArray parts = p_name.split("_");
         if(parts.size() != 6){
             return false;
         }
@@ -884,13 +927,13 @@ bool MTerrain::_get(const StringName &p_name, Variant &r_ret) const {
         r_ret = lod_info[lod];
         return true;
     }
-    if(_name.begins_with("M_LOD_")){
-        int64_t index = _name.get_slicec('_',2).to_int();
+    if(p_name.begins_with("M_LOD_")){
+        int64_t index = p_name.get_slicec('_',2).to_int();
         r_ret = (float)lod_distance[index];
         return true;
     }
-    if(_name.begins_with("MBL_")){
-        int64_t index = _name.get_slicec('_',1).to_int();
+    if(p_name.begins_with("MBL_")){
+        int64_t index = p_name.get_slicec('_',1).to_int();
         r_ret = brush_layers[index];
         return true;
     }
@@ -898,10 +941,10 @@ bool MTerrain::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 
-bool MTerrain::_set(const StringName &p_name, const Variant &p_value) {
-    String _name = p_name;
-    if(_name.begins_with("SIZE_")){
-        PackedStringArray parts = _name.split("_");
+bool MTerrain::_set(const StringName &_name, const Variant &p_value) {
+    String p_name = _name;
+    if(p_name.begins_with("SIZE_")){
+        PackedStringArray parts = p_name.split("_");
         if(parts.size() != 6){
             return false;
         }
@@ -915,8 +958,8 @@ bool MTerrain::_set(const StringName &p_name, const Variant &p_value) {
         size_info[size] = lod_info;
         return true;
     }
-    if(_name.begins_with("M_LOD_")){
-        int64_t index = _name.get_slicec('_',2).to_int();
+    if(p_name.begins_with("M_LOD_")){
+        int64_t index = p_name.get_slicec('_',2).to_int();
         int32_t val = p_value;
         if(val<0){
             return false;
@@ -924,8 +967,8 @@ bool MTerrain::_set(const StringName &p_name, const Variant &p_value) {
         lod_distance.write[index] = val;
         return true;
     }
-    if(_name.begins_with("MBL_")){
-        int64_t index = _name.get_slicec('_',1).to_int();
+    if(p_name.begins_with("MBL_")){
+        int64_t index = p_name.get_slicec('_',1).to_int();
         brush_layers[index] = p_value;
         return true;
     }
@@ -957,6 +1000,23 @@ void MTerrain::draw_color(Vector3 brush_pos,real_t radius,String brush_name, Str
     int id = get_image_id(uniform_name);
     ERR_FAIL_COND(id==-1);
     grid->draw_color(brush_pos,radius,brush,id);
+    for(MGrass* g : confirm_grass_list){
+        if(g->is_depend_on_image(id)){
+            Vector2i px_pos = g->get_closest_pixel(brush_pos);
+            int l = ceil(radius/g->grass_data->density);
+            int left = px_pos.x - l;
+            int right = px_pos.x + l;
+            int top = px_pos.y - l;
+            int bottom = px_pos.y + l;
+
+            for(int x=left;x<=right;x++){
+                for(int y=top;y<=bottom;y++){
+                    g->make_grass_dirty_by_pixel(x,y);
+                }
+            }
+            g->update_dirty_chunks();
+        }
+    }
 }
 
 Vector3 MTerrain::get_pixel_world_pos(uint32_t x,uint32_t y){
@@ -966,6 +1026,7 @@ Vector3 MTerrain::get_pixel_world_pos(uint32_t x,uint32_t y){
 
 
 void MTerrain::set_heightmap_layers(PackedStringArray input){
+    ERR_FAIL_COND_MSG(grid->is_created(),"Can not change layers name when terrain grid is created!");
     grid->heightmap_layers.clear();
     if(input.size()==0){
         input.push_back("background");
@@ -982,9 +1043,14 @@ const PackedStringArray& MTerrain::get_heightmap_layers(){
     return grid->heightmap_layers;
 }
 
-void MTerrain::set_active_layer_by_name(String lname){
-    ERR_FAIL_COND(!grid->is_created());
-    grid->set_active_layer(lname);
+bool MTerrain::set_active_layer_by_name(String lname){
+    ERR_FAIL_COND_V_MSG(!grid->is_created(),false,"Please call set_active_layer_by_name function after creating grid");
+    return grid->set_active_layer(lname);
+}
+
+String MTerrain::get_active_layer_name(){
+    ERR_FAIL_COND_V(!grid->is_created(),String());
+    return grid->get_active_layer();
 }
 
 bool MTerrain::get_layer_visibility(String lname){
@@ -1004,6 +1070,45 @@ void MTerrain::add_heightmap_layer(String lname){
     grid->heightmap_layers.push_back(lname);
 }
 
+bool MTerrain::rename_heightmap_layer(String old_name,String new_name){
+    int layer_index = grid->heightmap_layers.find(old_name);
+    ERR_FAIL_COND_V_MSG(layer_index==-1,false,"Can not find layer "+old_name);
+    /// Renaming files
+    Ref<DirAccess> dir = DirAccess::open(layersDataDir);
+    PackedStringArray layers_file_names;
+    // Getting a list of layer files path
+    if(dir.is_valid()){
+        dir->list_dir_begin();
+        String fname = dir->get_next();
+        while (fname != "")
+        {
+            if (!dir->current_is_dir()){
+                layers_file_names.push_back(fname);
+            }
+            fname = dir->get_next();
+        }
+    }
+    Ref<RegEx> reg;
+    reg.instantiate();
+    reg->compile(old_name+"_x\\d+_y\\d+\\.(res|r32)");
+    for(int i=0; i < layers_file_names.size(); i++){
+        String fname = layers_file_names[i];
+        Ref<RegExMatch> result = reg->search(fname);
+        if(result.is_valid()){
+            String new_file_name = fname.replace(old_name,new_name);
+            String old_path = layersDataDir.path_join(fname);
+            String new_path = layersDataDir.path_join(new_file_name);
+            Error err = dir->rename(old_path,new_path);
+            ERR_FAIL_COND_V_MSG(err!=OK,false,"Can not rename layer file!");
+        }
+    }
+    grid->heightmap_layers.set(layer_index,new_name);
+    if(grid->is_created()){
+        grid->rename_heightmap_layer(layer_index,new_name);
+    }
+    return true;
+}
+
 void MTerrain::merge_heightmap_layer(){
     ERR_FAIL_COND(!grid->is_created());
     grid->merge_heightmap_layer();
@@ -1016,7 +1121,7 @@ void MTerrain::remove_heightmap_layer(){
 
 void MTerrain::toggle_heightmap_layer_visibile(){
     ERR_FAIL_COND(!grid->is_created());
-    grid->toggle_heightmap_layer_visibile();
+    grid->toggle_heightmap_layer_visible();
 }
 
 void MTerrain::terrain_child_changed(Node* n){
@@ -1026,12 +1131,16 @@ void MTerrain::terrain_child_changed(Node* n){
     if(n->is_class("MGrass")){
         MGrass* g = Object::cast_to<MGrass>(n);
         if(grass_list.find(g)==-1){
-            update_grass_list();
+            terrain_ready_signal();
         }
     }
 }
 
-void MTerrain::update_grass_list(){
+void MTerrain::terrain_ready_signal(){
+    if(set_mtime){
+        RenderingServer::get_singleton()->global_shader_parameter_add("mtime",RenderingServer::GlobalShaderParameterType::GLOBAL_VAR_TYPE_FLOAT,0.0);
+        set_process(true);
+    }
     // Grass part
     grass_list.clear(); // First make sure grass list is clear
     int child_count = get_child_count();
@@ -1043,6 +1152,7 @@ void MTerrain::update_grass_list(){
         }
     }
     is_ready = true;
+    grid->update_renderer_info();
     /// Finish initlaztion start update
 }
 
@@ -1094,6 +1204,13 @@ int MTerrain::get_brush_layers_num(){
     return brush_layers.size();
 }
 
+void MTerrain::set_set_mtime(bool input){
+    set_mtime = input;
+}
+bool MTerrain::get_set_mtime(){
+    return set_mtime;
+}
+
 Array MTerrain::get_layers_info(){
     Array info;
     for(int i=0;i<brush_layers.size();i++){
@@ -1142,11 +1259,26 @@ void MTerrain::images_add_undo_stage(){
 }
 void MTerrain::images_undo(){
     grid->images_undo();
+    VSet<int> changed_images;
+    for(MImage* img : grid->last_images_undo_affected_list){
+        changed_images.insert(img->index);
+    }
+    for(int i=0;i<changed_images.size();i++){
+        int index = changed_images[i];
+        for(MGrass* g : confirm_grass_list){
+            if(g->is_depend_on_image(index)){
+                g->recreate_all_grass();
+            }
+        }
+    }
 }
 
 void MTerrain::set_terrain_material(Ref<MTerrainMaterial> input){
     ERR_FAIL_COND_EDMSG(grid->is_created(),"You should destroy terrain to change terrain material");
     terrain_material = input;
+    if(terrain_material.is_valid()){
+        terrain_material->set_grid(grid);
+    }
 }
 Ref<MTerrainMaterial> MTerrain::get_terrain_material(){
     return terrain_material;
@@ -1176,8 +1308,37 @@ Vector3 MTerrain::get_normal_accurate(Vector3 world_pos){
 }
 
 
+void MTerrain::update_all_dirty_image_texture(bool update_physics){
+    ERR_FAIL_COND(!grid->is_created());
+    grid->update_all_dirty_image_texture(update_physics);
+}
+
+void MTerrain::update_normals(uint32_t left, uint32_t right, uint32_t top, uint32_t bottom){
+    ERR_FAIL_COND(!grid->is_created());
+    grid->update_normals(left, right, top,bottom);
+}
+
 void MTerrain::_notification(int32_t what){
-    if(what == NOTIFICATION_WM_CLOSE_REQUEST || what == NOTIFICATION_WM_GO_BACK_REQUEST){
-        _finish_terrain();
+    if(what == NOTIFICATION_PROCESS){
+        if(set_mtime){
+            RenderingServer::get_singleton()->global_shader_parameter_set("mtime",MGrass::get_shader_time());
+        }
+        return;
     }
+    else if(what == NOTIFICATION_WM_CLOSE_REQUEST || what == NOTIFICATION_WM_GO_BACK_REQUEST){
+        _finish_terrain();
+        return;
+    }
+    else if(what == NOTIFICATION_VISIBILITY_CHANGED){
+        _update_visibility();
+    }
+    
+}
+
+void MTerrain::_update_visibility(){
+    if(!is_inside_tree()){
+        grid->set_visibility(false);
+        return;
+    }
+    grid->set_visibility(is_visible_in_tree());
 }

@@ -57,7 +57,6 @@ var is_heightmap:=false
 func _on_close_requested():
 	queue_free()
 
-
 func _on_button_button_down():
 	fileDialog.visible = true
 
@@ -65,7 +64,6 @@ func _on_file_dialog_files_selected(paths):
 	var path:String = paths[0]
 	select_file_line.text = path 
 	_on_filepath_line_text_changed(path)
-
 
 func _on_filepath_line_text_changed(new_text:String):
 	var ext = new_text.get_extension()
@@ -75,7 +73,6 @@ func _on_filepath_line_text_changed(new_text:String):
 	var is_tiled = (not x==-1 and not y==-1)
 	flips_container.visible = is_tiled
 	region_container.visible = not is_tiled
-
 
 func _on_check_button_toggled(button_pressed):
 	min_height_root.visible = button_pressed
@@ -93,7 +90,6 @@ func _on_check_button_toggled(button_pressed):
 	elif unform_name_line.text == "heightmap":
 		unform_name_line.text = ""
 		image_format_option.disabled = false
-
 
 func _on_save_folder_button_pressed():
 	fileDialog_save_folder.visible = true
@@ -378,7 +374,7 @@ func correct_edges(u_name:String, dir:String):
 		var save_name = u_name + "_x"+str(x)+"_y"+str(y)+".res"
 		var r_save_path = save_path.path_join(save_name)
 		ResourceSaver.save(img, r_save_path)
-		print("svae ", r_save_path)
+		print("save ", r_save_path)
 		x+=1
 
 
