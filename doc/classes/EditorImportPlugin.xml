@@ -276,41 +276,44 @@
 				    ...
 				[/gdscript]
 				[csharp]
-				public EditorInterface editor;
-
-				public override int _Import(string sourceFile, string savePath, Godot.Collections.Dictionary options, Godot.Collections.Array&lt;string&gt; platformVariants, Godot.Collections.Array&lt;string&gt; genFiles)
+				public partial class MyEditorImportPlugin : EditorImportPlugin
 				{
-				    // Make textures folder if required.
-				    string sourceFileFolder = sourceFile.Substring(0, sourceFile.LastIndexOf("/"));
-				    string texturesFolder = $"{sourceFileFolder}/textures";
-				    DirAccess.MakeDirRecursiveAbsolute(texturesFolder);
+					private EditorInterface _editor;
 
-				    // Simulate image export by copying the source file to the textures folder.
-				    string exportPath = $"{texturesFolder}/icon.png";
-				    FileAccess exportImageFile = FileAccess.Open(exportPath, FileAccess.ModeFlags.Write);
-				    exportImageFile.StoreBuffer(FileAccess.GetFileAsBytes("res://game/my_icon.png"));
-				    exportImageFile.Close();
+					public override Error _Import(string sourceFile, string savePath, Godot.Collections.Dictionary options, Godot.Collections.Array&lt;string&gt; platformVariants, Godot.Collections.Array&lt;string&gt; genFiles)
+					{
+						// Make textures folder if required.
+						string sourceFileFolder = sourceFile.Substring(0, sourceFile.LastIndexOf('/'));
+						string texturesFolder = $"{sourceFileFolder}/Textures";
+						DirAccess.MakeDirRecursiveAbsolute(texturesFolder);
 
-				    // Refresh view of exported file.
-				    EditorFileSystem editorFileSystem = this.editor.GetResourceFilesystem();
-				    editorFileSystem.UpdateFile(texturesFolder);
-				    editorFileSystem.UpdateFile(exportPath);
+						// Simulate image export by copying the source file to the textures folder.
+						string exportPath = $"{texturesFolder}/Icon.png";
+						using FileAccess exportImageFile = FileAccess.Open(exportPath, FileAccess.ModeFlags.Write);
+						exportImageFile.StoreBuffer(FileAccess.GetFileAsBytes("res://Game/MyIcon.png"));
+						exportImageFile.Close();
 
-				    // Append exported file as external resource.
-				    Error err = this.AppendImportExternalResource(exportPath);
-				    if (err != Error.Ok)
-				    {
-				        return err;
-				    }
+						// Refresh view of exported file.
+						EditorFileSystem editorFileSystem = _editor.GetResourceFilesystem();
+						editorFileSystem.UpdateFile(texturesFolder);
+						editorFileSystem.UpdateFile(exportPath);
 
-				    // Load exported image as a Texture2D.
-				    Texture2D exportImageTex = (Texture2D)ResourceLoader.Load(exportPath, "Texture2D");
-				    if (exportImageTex == null)
-				    {
-				        return Error.ScriptFailed;
-				    }
+						// Append exported file as external resource.
+						Error err = AppendImportExternalResource(exportPath);
+						if (err != Error.Ok)
+						{
+							return err;
+						}
 
-				    ...
+						// Load exported image as a Texture2D.
+						Texture2D exportImageTex = ResourceLoader.Load<Texture2D>(exportPath, "Texture2D", ResourceLoader.CacheMode.Replace);
+						if (exportImageTex == null)
+						{
+							return Error.ScriptFailed;
+						}
+
+						...
+					}
 				}
 				[/csharp]
 				[/codeblocks]
