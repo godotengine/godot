@@ -369,7 +369,7 @@ void MResource::QuadTreeRF::save_quad_tree_data(PackedByteArray& save_data,uint3
     if(data_encoding == DATA_ENCODE_FLAT || data_encoding == DATA_ENCODE_ONLY_HOLE){
         #ifdef PRINT_DEBUG
         if(data_encoding == DATA_ENCODE_FLAT){
-            VariantUtilityFunctions::_print("EncodeFLAT L ",px_region.left," R ",px_region.right," T ",px_region.top, " B ",px_region.bottom, " save_index ",save_index, " ----- ");
+            UtilityFunctions::print("EncodeFLAT L ",px_region.left," R ",px_region.right," T ",px_region.top, " B ",px_region.bottom, " save_index ",save_index, " ----- ");
         }
         else if(data_encoding == DATA_ENCODE_ONLY_HOLE){
             VariantUtilityFunctions::_print("EncodeOnlyHole L ",px_region.left," R ",px_region.right," T ",px_region.top, " B ",px_region.bottom, " save_index ",save_index, " ----- ");
@@ -579,7 +579,7 @@ void MResource::QuadTreeRF::encode_data_float(PackedByteArray& save_data,uint32_
 
 void MResource::QuadTreeRF::decode_data_flat(){
     #ifdef PRINT_DEBUG
-    VariantUtilityFunctions::_print("DecodeFlat L ",px_region.left," R ",px_region.right," T ",px_region.top, " B ",px_region.bottom, " ----- ");
+    UtilityFunctions::print("DecodeFlat L ",px_region.left," R ",px_region.right," T ",px_region.top, " B ",px_region.bottom, " ----- ");
     #endif
     for(uint32_t y=px_region.top;y<=px_region.bottom;y++){
         for(uint32_t x=px_region.left;x<=px_region.right;x++){

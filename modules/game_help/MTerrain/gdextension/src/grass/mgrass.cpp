@@ -659,7 +659,7 @@ void MGrass::update_physics(Vector3 cam_pos){
         remove_all_physics();
         return;
     }
-    //VariantUtilityFunctions::_print("Left ",physics_search_bound.left," right ",physics_search_bound.right," top ",physics_search_bound.top," bottom ",physics_search_bound.bottom );
+    //UtilityFunctions::print("Left ",physics_search_bound.left," right ",physics_search_bound.right," top ",physics_search_bound.top," bottom ",physics_search_bound.bottom );
     // culling
     /// Removing out of bound shapes
     int remove_count=0;

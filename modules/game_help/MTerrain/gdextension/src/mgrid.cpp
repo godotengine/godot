@@ -1250,7 +1250,7 @@ void MGrid::draw_height(Vector3 brush_pos,real_t radius,int brush_id){
             x++;
         }
         local_x=0;
-        x=_draw_pixel_region.left;
+        x=draw_pixel_region.left;
         local_y++;
         y++;
     }

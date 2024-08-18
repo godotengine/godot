@@ -2,11 +2,10 @@
 #define MBOUND
 
 
-#include <cmath>
-#include "core/math/math_funcs.h"
-#include "core/math/vector2i.h"
-#include "core/math/rect2i.h"
-#include "core/templates/vector.h"
+#include <godot_cpp/core/defs.hpp>
+#include <godot_cpp/core/math.hpp>
+#include <godot_cpp/variant/rect2i.hpp>
+#include <godot_cpp/templates/vector.hpp>
 
 #include "mconfig.h"
 
