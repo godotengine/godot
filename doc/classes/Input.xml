@@ -133,6 +133,7 @@
 				[code]vendor_id[/code]: The USB vendor ID of the device.
 				[code]product_id[/code]: The USB product ID of the device.
 				[code]steam_input_index[/code]: The Steam Input gamepad index, if the device is not a Steam Input device this key won't be present.
+				[b]Note:[/b] The returned dictionary is always empty on Web, iOS, Android, and macOS.
 			</description>
 		</method>
 		<method name="get_joy_name">
