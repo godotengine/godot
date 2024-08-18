@@ -236,7 +236,7 @@
 			<param index="0" name="position" type="Vector2i" />
 			<param index="1" name="pattern" type="TileMapPattern" />
 			<description>
-				Pastes the [TileMapPattern] at the given [param position] in the tile map. See also [method get_pattern].
+				Pastes the [TileMapPattern] at the given [param position] in the tile map. See also TileMapLayer.[method get_pattern] or the get_pattern method for the TileSet class.
 			</description>
 		</method>
 		<method name="update_internals">

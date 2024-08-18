@@ -29,7 +29,9 @@
 /**************************************************************************/
 
 #ifndef TILE_MAP_LAYER_H
+
 #define TILE_MAP_LAYER_H
+
 
 #include "scene/resources/2d/tile_set.h"
 
@@ -271,7 +273,7 @@ public:
 private:
 	// Properties.
 	HashMap<Vector2i, CellData> tile_map_layer_data;
-
+	Vector<TileMapLayer *> tile_map_layers_in_scene;
 	bool enabled = true;
 	Ref<TileSet> tile_set;
 
@@ -424,11 +426,15 @@ public:
 	TypedArray<Vector2i> get_used_cells() const;
 	TypedArray<Vector2i> get_used_cells_by_id(int p_source_id = TileSet::INVALID_SOURCE, const Vector2i &p_atlas_coords = TileSetSource::INVALID_ATLAS_COORDS, int p_alternative_tile = TileSetSource::INVALID_TILE_ALTERNATIVE) const;
 	Rect2i get_used_rect() const;
-
+	
 	// Patterns.
-	Ref<TileMapPattern> get_pattern(TypedArray<Vector2i> p_coords_array, bool is_single_layer = true);
+	
+	Ref<TileMapPattern> get_pattern(TypedArray<Vector2i> p_coords_array);
+	Ref<TileMapPattern> get_pattern_multi_layer(TypedArray<Vector2i> p_coords_array, Node *p_scene_root);
+	void TileMapLayer::_find_tile_map_layers_in_scene(Node *p_current, const Node *p_owner, Vector<TileMapLayer *> &r_list) const;
 	Ref<TileMapPattern> get_pattern_layer(TypedArray<Vector2i> p_coords_array, Ref<TileMapPattern> p_pattern, int p_layer);
 	void set_pattern(const Vector2i &p_position, const Ref<TileMapPattern> p_pattern);
+	void set_pattern_multi_layer(const Vector2i &p_position, const Ref<TileMapPattern> p_pattern, TypedArray<TileMapLayer> p_layers);
 	void set_pattern_layer(int p_layer, const Vector2i &p_position, const Ref<TileMapPattern> p_pattern);
 	// Terrains.
 	void set_cells_terrain_connect(TypedArray<Vector2i> p_cells, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true);

@@ -165,6 +165,7 @@ Vector<TileMapLayerSubEditorPlugin::TabData> TileMapLayerEditorTilesPlugin::get_
 }
 
 void TileMapLayerEditorTilesPlugin::_tab_changed() {
+
 	if (tiles_bottom_panel->is_visible_in_tree()) {
 		_update_selection_pattern_from_tileset_tiles_selection();
 	} else if (patterns_bottom_panel->is_visible_in_tree()) {
@@ -930,9 +931,16 @@ bool TileMapLayerEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEven
 				coords_array.push_back(E);
 			}
 			if (multi_layer_selection_mode == false) {
-				tile_map_clipboard = edited_layer->get_pattern(coords_array, true);
-			} else if (multi_layer_selection_mode == true) {
-				tile_map_clipboard = edited_layer->get_pattern(coords_array, false);
+				tile_map_clipboard = edited_layer->get_pattern(coords_array);
+			}
+
+			else if (multi_layer_selection_mode == true) {
+				EditorNode *en = EditorNode::get_singleton();
+				Node *edited_scene_root = en->get_edited_scene();
+				if (!edited_scene_root) {
+					return false;
+				}
+				tile_map_clipboard = edited_layer->get_pattern_multi_layer(coords_array, edited_scene_root);
 			}
 		}
 
@@ -2200,10 +2208,15 @@ void TileMapLayerEditorTilesPlugin::_stop_dragging() {
 				Ref<TileMapPattern> new_selection_pattern;
 				if (multi_layer_selection_mode == false) {
 					print_line("DRAG_TYPE_PICK singlelayer used");
-					selection_pattern = edited_layer->get_pattern( coords_array, true);
+					selection_pattern = edited_layer->get_pattern( coords_array);
 				}  else if (multi_layer_selection_mode == true) {
 					print_line("DRAG_TYPE_PICK multilayer used");
-					selection_pattern = edited_layer->get_pattern( coords_array, false);
+					EditorNode *en = EditorNode::get_singleton();
+					Node *edited_scene_root = en->get_edited_scene();
+					if (!edited_scene_root) {
+						return;
+					}
+					selection_pattern = edited_layer->get_pattern_multi_layer( coords_array, edited_scene_root);
 				} 
 
 				if (!new_selection_pattern->is_empty()) {
@@ -2499,9 +2512,6 @@ void TileMapLayerEditorTilesPlugin::_update_selection_pattern_from_tilemap_selec
 	if (tile_set.is_null()) {
 		return;
 	}
-	
-	//MERGE CHECK 1 ERR_FAIL_INDEX( edited_layer->get_layers_count());
-
 
 	selection_pattern.instantiate();
 
@@ -2511,11 +2521,17 @@ void TileMapLayerEditorTilesPlugin::_update_selection_pattern_from_tilemap_selec
 	}
 	//CHANGE 20
 	if (multi_layer_selection_mode == false) {
-	selection_pattern = edited_layer->get_pattern( coords_array, true);
+		selection_pattern = edited_layer->get_pattern( coords_array);
 	}
 
 	else if (multi_layer_selection_mode == true) {
-	selection_pattern = edited_layer->get_pattern( coords_array, false);
+		EditorNode *en = EditorNode::get_singleton();
+		Node *edited_scene_root = en->get_edited_scene();
+		if (!edited_scene_root) {
+			return;
+		}
+
+		selection_pattern = edited_layer->get_pattern_multi_layer( coords_array, edited_scene_root);
 	}
 	_update_transform_buttons();
 }

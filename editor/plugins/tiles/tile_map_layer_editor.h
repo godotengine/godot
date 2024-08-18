@@ -448,6 +448,7 @@ protected:
 	void _draw_shape(Control *p_control, Rect2 p_region, TileSet::TileShape p_shape, TileSet::TileOffsetAxis p_offset_axis, Color p_color);
 
 public:
+	// Determine the amount of TileMapLayers in the scene tree.
 	inline static Vector<TileMapLayer *> tile_map_layers_in_scene_cache;
 	void _update_tile_map_layers_in_scene_list_cache();
 	Vector<TileMapLayer *> get_tile_map_layers_in_scene() const; 
