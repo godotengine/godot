@@ -301,7 +301,7 @@
 			<param index="1" name="valid_types" type="StringName[]" default="[]" />
 			<description>
 				Pops up an editor dialog for selecting a [Node] from the edited scene. The [param callback] must take a single argument of type [NodePath]. It is called on the selected [NodePath] or the empty path [code]^""[/code] if the dialog is canceled. If [param valid_types] is provided, the dialog will only show Nodes that match one of the listed Node types.
-				[b]Example:[/b]
+				[b]Example:[/b] Display the node selection dialog as soon as this node is added to the tree for the first time:
 				[codeblock]
 				func _ready():
 				    if Engine.is_editor_hint():
@@ -322,7 +322,6 @@
 			<param index="2" name="type_filter" type="PackedInt32Array" default="PackedInt32Array()" />
 			<description>
 				Pops up an editor dialog for selecting properties from [param object]. The [param callback] must take a single argument of type [NodePath]. It is called on the selected property path (see [method NodePath.get_as_property_path]) or the empty path [code]^""[/code] if the dialog is canceled. If [param type_filter] is provided, the dialog will only show properties that match one of the listed [enum Variant.Type] values.
-				[b]Example:[/b]
 				[codeblock]
 				func _ready():
 				    if Engine.is_editor_hint():

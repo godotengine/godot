@@ -5,7 +5,6 @@
 	</brief_description>
 	<description>
 		[Callable] is a built-in [Variant] type that represents a function. It can either be a method within an [Object] instance, or a custom callable used for different purposes (see [method is_custom]). Like all [Variant] types, it can be stored in variables and passed to other functions. It is most commonly used for signal callbacks.
-		[b]Example:[/b]
 		[codeblocks]
 		[gdscript]
 		func print_args(arg1, arg2, arg3 = ""):

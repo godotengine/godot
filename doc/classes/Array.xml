@@ -4,8 +4,7 @@
 		A built-in data structure that holds a sequence of elements.
 	</brief_description>
 	<description>
-		An array data structure that can contain a sequence of elements of any [Variant] type. Elements are accessed by a numerical index starting at 0. Negative indices are used to count from the back (-1 is the last element, -2 is the second to last, etc.).
-		[b]Example:[/b]
+		An array data structure that can contain a sequence of elements of any [Variant] type. Elements are accessed by a numerical index starting at [code]0[/code]. Negative indices are used to count from the back ([code]-1[/code] is the last element, [code]-2[/code] is the second to last, etc.).
 		[codeblocks]
 		[gdscript]
 		var array = ["First", 2, 3, "Last"]

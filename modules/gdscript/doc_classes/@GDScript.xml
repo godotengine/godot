@@ -133,7 +133,7 @@
 				- An [Object]-derived class which exists in [ClassDB], for example [Node].
 				- A [Script] (you can use any class, including inner one).
 				Unlike the right operand of the [code]is[/code] operator, [param type] can be a non-constant value. The [code]is[/code] operator supports more features (such as typed arrays). Use the operator instead of this method if you do not need dynamic type checking.
-				Examples:
+				[b]Examples:[/b]
 				[codeblock]
 				print(is_instance_of(a, TYPE_INT))
 				print(is_instance_of(a, Node))
@@ -220,7 +220,7 @@
 				[code]range(b: int, n: int, s: int)[/code]: Starts from [code]b[/code], increases/decreases by steps of [code]s[/code], and stops [i]before[/i] [code]n[/code]. The arguments [code]b[/code] and [code]n[/code] are [b]inclusive[/b] and [b]exclusive[/b], respectively. The argument [code]s[/code] [b]can[/b] be negative, but not [code]0[/code]. If [code]s[/code] is [code]0[/code], an error message is printed.
 				[method range] converts all arguments to [int] before processing.
 				[b]Note:[/b] Returns an empty array if no value meets the value constraint (e.g. [code]range(2, 5, -1)[/code] or [code]range(5, 5, 1)[/code]).
-				Examples:
+				[b]Examples:[/b]
 				[codeblock]
 				print(range(4))        # Prints [0, 1, 2, 3]
 				print(range(2, 5))     # Prints [2, 3, 4]

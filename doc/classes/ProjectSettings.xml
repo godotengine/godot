@@ -23,7 +23,6 @@
 				- [code]"name"[/code]: [String] (the property's name)
 				- [code]"type"[/code]: [int] (see [enum Variant.Type])
 				- optionally [code]"hint"[/code]: [int] (see [enum PropertyHint]) and [code]"hint_string"[/code]: [String]
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				ProjectSettings.set("category/property_name", 0)
@@ -85,7 +84,6 @@
 			<param index="1" name="default_value" type="Variant" default="null" />
 			<description>
 				Returns the value of the setting identified by [param name]. If the setting doesn't exist and [param default_value] is specified, the value of [param default_value] is returned. Otherwise, [code]null[/code] is returned.
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				print(ProjectSettings.get_setting("application/config/name"))
@@ -104,8 +102,7 @@
 			<param index="0" name="name" type="StringName" />
 			<description>
 				Similar to [method get_setting], but applies feature tag overrides if any exists and is valid.
-				[b]Example:[/b]
-				If the following setting override exists "application/config/name.windows", and the following code is executed:
+				[b]Example:[/b]	If the setting override [code]"application/config/name.windows"[/code] exists, and the following code is executed on a [i]Windows[/i] operating system, the overridden setting is printed instead:
 				[codeblocks]
 				[gdscript]
 				print(ProjectSettings.get_setting_with_override("application/config/name"))
@@ -114,7 +111,6 @@
 				GD.Print(ProjectSettings.GetSettingWithOverride("application/config/name"));
 				[/csharp]
 				[/codeblocks]
-				Then the overridden setting will be returned instead if the project is running on the [i]Windows[/i] operating system.
 			</description>
 		</method>
 		<method name="globalize_path" qualifiers="const">
@@ -224,7 +220,6 @@
 			<param index="1" name="value" type="Variant" />
 			<description>
 				Sets the value of a setting.
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				ProjectSettings.set_setting("application/config/name", "Example")

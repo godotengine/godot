@@ -104,7 +104,6 @@
 			<param index="1" name="event" type="InputEvent" />
 			<description>
 				Called when there is a root node in the current edited scene, [method _handles] is implemented, and an [InputEvent] happens in the 3D viewport. The return value decides whether the [InputEvent] is consumed or forwarded to other [EditorPlugin]s. See [enum AfterGUIInput] for options.
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				# Prevents the InputEvent from reaching other Editor classes.
@@ -119,8 +118,7 @@
 				}
 				[/csharp]
 				[/codeblocks]
-				Must [code]return EditorPlugin.AFTER_GUI_INPUT_PASS[/code] in order to forward the [InputEvent] to other Editor classes.
-				[b]Example:[/b]
+				This method must return [constant AFTER_GUI_INPUT_PASS] in order to forward the [InputEvent] to other Editor classes.
 				[codeblocks]
 				[gdscript]
 				# Consumes InputEventMouseMotion and forwards other InputEvent types.
@@ -188,8 +186,7 @@
 			<return type="bool" />
 			<param index="0" name="event" type="InputEvent" />
 			<description>
-				Called when there is a root node in the current edited scene, [method _handles] is implemented and an [InputEvent] happens in the 2D viewport. Intercepts the [InputEvent], if [code]return true[/code] [EditorPlugin] consumes the [param event], otherwise forwards [param event] to other Editor classes.
-				[b]Example:[/b]
+				Called when there is a root node in the current edited scene, [method _handles] is implemented, and an [InputEvent] happens in the 2D viewport. If this method returns [code]true[/code], [param event] is intercepted by this [EditorPlugin], otherwise [param event] is forwarded to other Editor classes.
 				[codeblocks]
 				[gdscript]
 				# Prevents the InputEvent from reaching other Editor classes.
@@ -204,8 +201,7 @@
 				}
 				[/csharp]
 				[/codeblocks]
-				Must [code]return false[/code] in order to forward the [InputEvent] to other Editor classes.
-				[b]Example:[/b]
+				This method must return [code]false[/code] in order to forward the [InputEvent] to other Editor classes.
 				[codeblocks]
 				[gdscript]
 				# Consumes InputEventMouseMotion and forwards other InputEvent types.

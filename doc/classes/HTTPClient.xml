@@ -59,8 +59,7 @@
 		<method name="get_response_headers_as_dictionary">
 			<return type="Dictionary" />
 			<description>
-				Returns all response headers as a Dictionary of structure [code]{ "key": "value1; value2" }[/code] where the case-sensitivity of the keys and values is kept like the server delivers it. A value is a simple String, this string can have more than one value where "; " is used as separator.
-				[b]Example:[/b]
+				Returns all response headers as a [Dictionary]. Each entry is composed by the header name, and a [String] containing the values separated by [code]"; "[/code]. The casing is kept the same as the headers were received.
 				[codeblock]
 				{
 				    "content-length": 12,

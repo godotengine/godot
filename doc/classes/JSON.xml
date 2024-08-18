@@ -6,8 +6,7 @@
 	<description>
 		The [JSON] class enables all data types to be converted to and from a JSON string. This is useful for serializing data, e.g. to save to a file or send over the network.
 		[method stringify] is used to convert any data type into a JSON string.
-		[method parse] is used to convert any existing JSON data into a [Variant] that can be used within Godot. If successfully parsed, use [member data] to retrieve the [Variant], and use [code]typeof[/code] to check if the Variant's type is what you expect. JSON Objects are converted into a [Dictionary], but JSON data can be used to store [Array]s, numbers, [String]s and even just a boolean.
-		[b]Example[/b]
+		[method parse] is used to convert any existing JSON data into a [Variant] that can be used within Godot. If successfully parsed, use [member data] to retrieve the [Variant], and use [method @GlobalScope.typeof] to check if the Variant's type is what you expect. JSON Objects are converted into a [Dictionary], but JSON data can be used to store [Array]s, numbers, [String]s and even just a boolean.
 		[codeblock]
 		var data_to_send = ["a", "b", "c"]
 		var json_string = JSON.stringify(data_to_send)
@@ -33,7 +32,7 @@
 		- Trailing commas in arrays or objects are ignored, instead of causing a parser error.
 		- New line and tab characters are accepted in string literals, and are treated like their corresponding escape sequences [code]\n[/code] and [code]\t[/code].
 		- Numbers are parsed using [method String.to_float] which is generally more lax than the JSON specification.
-		- Certain errors, such as invalid Unicode sequences, do not cause a parser error. Instead, the string is cleansed and an error is logged to the console.
+		- Certain errors, such as invalid Unicode sequences, do not cause a parser error. Instead, the string is cleaned up and an error is logged to the console.
 	</description>
 	<tutorials>
 	</tutorials>

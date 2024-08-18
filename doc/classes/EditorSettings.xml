@@ -38,7 +38,6 @@
 				- [code]name[/code]: [String] (the name of the property)
 				- [code]type[/code]: [int] (see [enum Variant.Type])
 				- optionally [code]hint[/code]: [int] (see [enum PropertyHint]) and [code]hint_string[/code]: [String]
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var settings = EditorInterface.get_editor_settings()
