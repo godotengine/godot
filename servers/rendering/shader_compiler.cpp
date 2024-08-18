@@ -674,7 +674,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				const StringName &varying_name = varying_names[k];
 				const SL::ShaderNode::Varying &varying = pnode->varyings[varying_name];
 
-				if (varying.stage == SL::ShaderNode::Varying::STAGE_FRAGMENT_TO_LIGHT || varying.stage == SL::ShaderNode::Varying::STAGE_FRAGMENT) {
+				if (varying.stage == SL::ShaderNode::Varying::STAGE_FRAGMENT) {
 					var_frag_to_light.push_back(Pair<StringName, SL::ShaderNode::Varying>(varying_name, varying));
 					fragment_varyings.insert(varying_name);
 					continue;

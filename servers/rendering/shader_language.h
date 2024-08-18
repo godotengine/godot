@@ -620,10 +620,8 @@ public:
 		struct Varying {
 			enum Stage {
 				STAGE_UNKNOWN,
-				STAGE_VERTEX, // transition stage to STAGE_VERTEX_TO_FRAGMENT_LIGHT, emits warning if it's not used
-				STAGE_FRAGMENT, // transition stage to STAGE_FRAGMENT_TO_LIGHT, emits warning if it's not used
-				STAGE_VERTEX_TO_FRAGMENT_LIGHT,
-				STAGE_FRAGMENT_TO_LIGHT,
+				STAGE_VERTEX,
+				STAGE_FRAGMENT,
 			};
 
 			Stage stage = STAGE_UNKNOWN;
