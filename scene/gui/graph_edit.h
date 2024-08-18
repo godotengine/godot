@@ -264,7 +264,6 @@ private:
 	HashSet<ConnectionType, ConnectionType> valid_connection_types;
 	HashSet<int> valid_left_disconnect_types;
 	HashSet<int> valid_right_disconnect_types;
-
 protected:
 	struct ThemeCache {
 		float base_scale = 1.0;
@@ -295,6 +294,8 @@ protected:
 		float port_hotzone_inner_extent = 0.0;
 		float port_hotzone_outer_extent = 0.0;
 	} theme_cache;
+	// 是否支持多选
+	bool multi_select_active = true;
 
 	// This separates the children in two layers to ensure the order
 	// of both background nodes (e.g frame nodes) and foreground nodes (connectable nodes).
@@ -506,6 +507,12 @@ public:
 	void set_warped_panning(bool p_warped);
 
 	void arrange_nodes();
+
+	void set_multi_select_active(bool p_active) {
+		multi_select_active = p_active;
+	}
+	bool is_multi_select_active() const {
+		return multi_select_active;}
 
 	GraphEdit();
 };

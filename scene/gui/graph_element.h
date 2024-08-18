@@ -91,6 +91,8 @@ public:
 		return resizing;
 	}
 
+	virtual void on_selected(bool p_selected) {}
+
 	GraphElement() {}
 };
 

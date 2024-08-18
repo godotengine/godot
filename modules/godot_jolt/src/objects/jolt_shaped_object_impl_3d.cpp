@@ -131,19 +131,23 @@ JPH::ShapeRefC JoltShapedObjectImpl3D::try_build_shape() {
 	}
 
 	if (scale != Vector3(1, 1, 1)) {
-#ifdef TOOLS_ENABLED
-		if (unlikely(!result->IsValidScale(to_jolt(scale)))) {
-			ERR_PRINT(vformat(
-				"Godot Jolt failed to scale body '%s'. "
-				"%v is not a valid scale for the types of shapes in this body. "
-				"Its scale will instead be treated as (1, 1, 1).",
-				to_string(),
-				scale
-			));
+// #ifdef TOOLS_ENABLED
+// 		if (unlikely(!result->IsValidScale(to_jolt(scale)))) {
+// 			ERR_PRINT(vformat(
+// 				"Godot Jolt failed to scale body '%s'. "
+// 				"%v is not a valid scale for the types of shapes in this body. "
+// 				"Its scale will instead be treated as (1, 1, 1).",
+// 				to_string(),
+// 				scale
+// 			));
 
-			scale = Vector3(1, 1, 1);
-		}
-#endif // TOOLS_ENABLED
+// 			scale = Vector3(1, 1, 1);
+// 		}
+// #endif // TOOLS_ENABLED
+
+		float scale_factor =  Math::abs(scale.x) + Math::abs(scale.y) + Math::abs(scale.z);
+		scale_factor /= 3.0f;
+		scale = Vector3(scale_factor, scale_factor, scale_factor);
 
 		result = JoltShapeImpl3D::with_scale(result, scale);
 	}

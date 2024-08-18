@@ -1154,7 +1154,19 @@ void ClassDB::get_enum_constants(const StringName &p_class, const StringName &p_
 		type = type->inherits_ptr;
 	}
 }
+PackedStringArray ClassDB::class_get_enum_constants(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance)  {
+	List<StringName> constants;
+	get_enum_constants(p_class, p_enum, &constants, p_no_inheritance);
 
+	PackedStringArray ret;
+	ret.resize(constants.size());
+	int idx = 0;
+	for (const StringName &E : constants) {
+		ret.set(idx++, E);
+	}
+
+	return ret;
+}
 void ClassDB::set_method_error_return_values(const StringName &p_class, const StringName &p_method, const Vector<Error> &p_values) {
 #ifdef DEBUG_METHODS_ENABLED
 	OBJTYPE_WLOCK;

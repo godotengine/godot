@@ -379,3 +379,5 @@ $RECYCLE.BIN/
 *.msp
 *.lnk
 *.generated.props
+modules/orchestrator
+modules/新建 文本文档.cmd

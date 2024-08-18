@@ -117,6 +117,7 @@ void GraphElement::set_selected(bool p_selected) {
 		return;
 	}
 	selected = p_selected;
+	on_selected(p_selected);
 	emit_signal(p_selected ? SNAME("node_selected") : SNAME("node_deselected"));
 	queue_redraw();
 }

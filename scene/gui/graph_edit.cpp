@@ -1795,7 +1795,14 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 					if (graph_element) {
 						Rect2 r = graph_element->get_rect();
 						if (r.has_point(mb->get_position())) {
-							graph_element->set_selected(false);
+							if(multi_select_active)
+							{
+								graph_element->set_selected(false);
+							}
+							else
+							{
+								set_selected(graph_element);
+							}
 						}
 					}
 				}
@@ -1930,6 +1937,9 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 					return;
 				}
 				if (panner->is_panning()) {
+					return;
+				}
+				if(!multi_select_active) {
 					return;
 				}
 
@@ -2674,6 +2684,10 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_right_disconnects", "enable"), &GraphEdit::set_right_disconnects);
 	ClassDB::bind_method(D_METHOD("is_right_disconnects_enabled"), &GraphEdit::is_right_disconnects_enabled);
 
+
+	ClassDB::bind_method(D_METHOD("set_multi_select_active", "active"), &GraphEdit::set_multi_select_active);
+	ClassDB::bind_method(D_METHOD("is_multi_select_active"), &GraphEdit::is_multi_select_active);
+
 	GDVIRTUAL_BIND(_is_in_input_hotzone, "in_node", "in_port", "mouse_position");
 	GDVIRTUAL_BIND(_is_in_output_hotzone, "in_node", "in_port", "mouse_position");
 
@@ -2693,6 +2707,9 @@ void GraphEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "snapping_distance", PROPERTY_HINT_NONE, "suffix:px"), "set_snapping_distance", "get_snapping_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "panning_scheme", PROPERTY_HINT_ENUM, "Scroll Zooms,Scroll Pans"), "set_panning_scheme", "get_panning_scheme");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "right_disconnects"), "set_right_disconnects", "is_right_disconnects_enabled");
+
+	
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "multi_select_active"), "set_multi_select_active", "is_multi_select_active");
 
 	ADD_GROUP("Connection Lines", "connection_lines");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "connection_lines_curvature"), "set_connection_lines_curvature", "get_connection_lines_curvature");
