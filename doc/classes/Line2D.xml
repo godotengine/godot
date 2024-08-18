@@ -70,6 +70,10 @@
 			[b]Note:[/b] The shape of the closing segment is not guaranteed to be seamless if a [member width_curve] is provided.
 			[b]Note:[/b] The joint between the closing segment and the first segment is drawn first and it samples the [member gradient] and the [member width_curve] at the beginning. This is an implementation detail that might change in a future version.
 		</member>
+		<member name="curve_line_segments" type="int" setter="set_curve_line_segments" getter="get_curve_line_segments" default="1">
+			Subdivide the line into the number of [member curve_line_segments] at minimum. The resulting segment count varies depending on the use of a fill gradient and the distances between points.
+			[b]Note:[/b] Using higher values results in more segments (and vertices/indices) that need to be generated which can degrade performance, particularly if you are animating properties on your line.
+		</member>
 		<member name="curve_offset" type="float" setter="set_curve_offset" getter="get_curve_offset" default="0.0">
 			The horizontal offset value used when sampling from the width curve. Typically ranges from -1.0 to 1.0.
 		</member>
