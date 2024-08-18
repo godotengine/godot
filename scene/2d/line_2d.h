@@ -85,8 +85,8 @@ public:
 	void set_curve(const Ref<Curve> &curve);
 	Ref<Curve> get_curve() const;
 
-	void set_curve_line_segments(int curve_line_segments);
-	int get_curve_line_segments() const { return _curve_line_segments; }
+	void set_min_curve_line_segments(int min_curve_line_segments);
+	int get_min_curve_line_segments() const { return _min_curve_line_segments; }
 
 	void set_curve_offset(float curve_offset);
 	float get_curve_offset() const { return _curve_offset; }
@@ -139,7 +139,7 @@ private:
 	bool _closed = false;
 	float _width = 10.0;
 	Ref<Curve> _curve;
-	int _curve_line_segments = 1;
+	int _min_curve_line_segments = 1;
 	float _curve_offset = 0.0f;
 	Color _default_color = Color(1, 1, 1);
 	Ref<Gradient> _gradient;

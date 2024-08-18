@@ -119,8 +119,8 @@ Ref<Curve> Line2D::get_curve() const {
 	return _curve;
 }
 
-void Line2D::set_curve_line_segments(int curve_line_segments) {
-	_curve_line_segments = curve_line_segments;
+void Line2D::set_min_curve_line_segments(int min_curve_line_segments) {
+	_min_curve_line_segments = min_curve_line_segments;
 	queue_redraw();
 }
 
@@ -352,7 +352,7 @@ void Line2D::_draw() {
 	}
 
 	int subline_count = static_cast<int>(gradient_inclusive_points.size()) - 1;
-	int num_segments = _curve.is_valid() ? _curve_line_segments : -1;
+	int num_segments = _curve.is_valid() ? _min_curve_line_segments : -1;
 	num_segments = MAX(subline_count, num_segments);
 	generated_draw_points.reserve(num_segments);
 	generated_draw_points.clear();
@@ -475,8 +475,8 @@ void Line2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_curve", "curve"), &Line2D::set_curve);
 	ClassDB::bind_method(D_METHOD("get_curve"), &Line2D::get_curve);
 
-	ClassDB::bind_method(D_METHOD("set_curve_line_segments", "curve_offset"), &Line2D::set_curve_line_segments);
-	ClassDB::bind_method(D_METHOD("get_curve_line_segments"), &Line2D::get_curve_line_segments);
+	ClassDB::bind_method(D_METHOD("set_min_curve_line_segments", "curve_offset"), &Line2D::set_min_curve_line_segments);
+	ClassDB::bind_method(D_METHOD("get_min_curve_line_segments"), &Line2D::get_min_curve_line_segments);
 
 	ClassDB::bind_method(D_METHOD("set_curve_offset", "curve_offset"), &Line2D::set_curve_offset);
 	ClassDB::bind_method(D_METHOD("get_curve_offset"), &Line2D::get_curve_offset);
@@ -515,7 +515,7 @@ void Line2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "closed"), "set_closed", "is_closed");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "width", PROPERTY_HINT_NONE, "suffix:px"), "set_width", "get_width");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "width_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve", "get_curve");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "curve_line_segments", PROPERTY_HINT_RANGE, "1,64,1,or_greater"), "set_curve_line_segments", "get_curve_line_segments");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "min_curve_line_segments", PROPERTY_HINT_RANGE, "1,64,1,or_greater"), "set_min_curve_line_segments", "get_min_curve_line_segments");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "curve_offset", PROPERTY_HINT_RANGE, "-1.0,1.0,0.01"), "set_curve_offset", "get_curve_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "default_color"), "set_default_color", "get_default_color");
 	ADD_GROUP("Fill", "");
