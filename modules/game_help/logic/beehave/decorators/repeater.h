@@ -17,7 +17,7 @@ public:
 
     virtual String get_lable_name()
     {
-        return "重复执行装饰器";
+        return L"重复执行装饰器";
     }
     virtual void interrupt(Node * actor, Blackboard* blackboard)override
     {
