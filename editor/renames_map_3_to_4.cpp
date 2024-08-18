@@ -311,7 +311,7 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "get_filename", "get_scene_file_path" }, // Node -- WARNING: This may be used in a lot of other places.
 	{ "get_final_location", "get_final_position" }, // NavigationAgent2D, NavigationAgent3D
 	{ "get_focus_neighbour", "get_focus_neighbor" }, // Control
-	{ "get_follow_smoothing", "get_horizontal_position_smoothing_speed" }, // Camera2D
+	{ "get_follow_smoothing", "get_position_smoothing_speed" }, // Camera2D
 	{ "get_font_types", "get_font_type_list" }, // Theme
 	{ "get_frame_color", "get_color" }, // ColorRect
 	{ "get_global_rate_scale", "get_playback_speed_scale" }, // AudioServer
@@ -521,7 +521,7 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "set_expand_to_text_length", "set_expand_to_text_length_enabled" }, // LineEdit
 	{ "set_filename", "set_scene_file_path" }, // Node -- WARNING: This may be used in a lot of other places.
 	{ "set_focus_neighbour", "set_focus_neighbor" }, // Control
-	{ "set_follow_smoothing", "set_horizontal_position_smoothing_speed" }, // Camera2D
+	{ "set_follow_smoothing", "set_position_smoothing_speed" }, // Camera2D
 	{ "set_frame_color", "set_color" }, // ColorRect
 	{ "set_global_rate_scale", "set_playback_speed_scale" }, // AudioServer
 	{ "set_gravity_distance_scale", "set_gravity_point_unit_distance" }, // Area2D, Area3D
@@ -1151,7 +1151,7 @@ const char *RenamesMap3To4::gdscript_properties_renames[][2] = {
 	{ "size_override_stretch", "size_2d_override_stretch" }, // SubViewport
 	{ "slips_on_slope", "slide_on_slope" }, // SeparationRayShape2D
 	{ "smoothing_enabled", "position_smoothing_enabled" }, // Camera2D
-	{ "smoothing_speed", "position_smoothing_horizontal_speed" }, // Camera2D
+	{ "smoothing_speed", "position_smoothing_speed" }, // Camera2D
 	{ "ss_reflections_depth_tolerance", "ssr_depth_tolerance" }, // Environment
 	{ "ss_reflections_enabled", "ssr_enabled" }, // Environment
 	{ "ss_reflections_fade_in", "ssr_fade_in" }, // Environment

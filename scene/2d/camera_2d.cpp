@@ -652,6 +652,17 @@ void Camera2D::align() {
 	_update_scroll();
 }
 
+// deprecated
+void Camera2D::set_position_smoothing_speed(real_t p_speed) {
+	position_smoothing_speed = MAX(0, p_speed);
+	_update_process_internal_for_smoothing();
+}
+
+// deprecated
+real_t Camera2D::get_position_smoothing_speed() const {
+	return position_smoothing_speed;
+}
+
 void Camera2D::set_horizontal_position_smoothing_speed(real_t p_speed) {
 	position_smoothing_horizontal_speed = MAX(0, p_speed);
 	_update_process_internal_for_smoothing();
@@ -744,6 +755,7 @@ void Camera2D::_set_old_smoothing(real_t p_enable) {
 	if (p_enable > 0) {
 		position_smoothing_enabled = true;
 		set_horizontal_position_smoothing_speed(p_enable);
+		set_vertical_position_smoothing_speed(p_enable);
 	}
 }
 
@@ -824,6 +836,9 @@ bool Camera2D::is_margin_drawing_enabled() const {
 }
 
 void Camera2D::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "position_smoothing_speed" && position_smoothing_speed == 5.0) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
 	if (!position_smoothing_enabled && p_property.name == "position_smoothing_horizontal_speed") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
@@ -887,6 +902,9 @@ void Camera2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_custom_viewport", "viewport"), &Camera2D::set_custom_viewport);
 	ClassDB::bind_method(D_METHOD("get_custom_viewport"), &Camera2D::get_custom_viewport);
 
+	ClassDB::bind_method(D_METHOD("set_position_smoothing_speed", "position_smoothing_speed"), &Camera2D::set_position_smoothing_speed);
+	ClassDB::bind_method(D_METHOD("get_position_smoothing_speed"), &Camera2D::get_position_smoothing_speed);
+
 	ClassDB::bind_method(D_METHOD("set_horizontal_position_smoothing_speed", "position_smoothing_horizontal_speed"), &Camera2D::set_horizontal_position_smoothing_speed);
 	ClassDB::bind_method(D_METHOD("get_horizontal_position_smoothing_speed"), &Camera2D::get_horizontal_position_smoothing_speed);
 
@@ -934,10 +952,9 @@ void Camera2D::_bind_methods() {
 
 	ADD_GROUP("Position Smoothing", "position_smoothing_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "position_smoothing_enabled"), "set_position_smoothing_enabled", "is_position_smoothing_enabled");
-	//ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "position_smoothing_speed", PROPERTY_HINT_NONE, "suffix:px/s"), "set_position_smoothing_speed", "get_position_smoothing_speed");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "position_smoothing_speed", PROPERTY_HINT_NONE, "suffix:px/s"), "set_position_smoothing_speed", "get_position_smoothing_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "position_smoothing_horizontal_speed", PROPERTY_HINT_NONE, "suffix:px/s"), "set_horizontal_position_smoothing_speed", "get_horizontal_position_smoothing_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "position_smoothing_vertical_speed", PROPERTY_HINT_NONE, "suffix:px/s"), "set_vertical_position_smoothing_speed", "get_vertical_position_smoothing_speed");
-
 
 	ADD_GROUP("Rotation Smoothing", "rotation_smoothing_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rotation_smoothing_enabled"), "set_rotation_smoothing_enabled", "is_rotation_smoothing_enabled");

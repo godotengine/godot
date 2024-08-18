@@ -164,7 +164,6 @@ TEST_CASE("[SceneTree][Camera2D] Getters and setters") {
 		CHECK(test_camera->get_horizontal_position_smoothing_speed() == smoothing_speed_horizontal);
 		test_camera->set_vertical_position_smoothing_speed(smoothing_speed_vertical);
 		CHECK(test_camera->get_vertical_position_smoothing_speed() == smoothing_speed_vertical);
-
 	}
 
 	memdelete(test_camera);
