@@ -510,7 +510,7 @@
 			<param index="1" name="lossy" type="bool" default="false" />
 			<param index="2" name="quality" type="float" default="0.75" />
 			<description>
-				Saves the image as a WebP (Web Picture) file to the file at [param path]. By default it will save lossless. If [param lossy] is true, the image will be saved lossy, using the [param quality] setting between 0.0 and 1.0 (inclusive). Lossless WebP offers more efficient compression than PNG.
+				Saves the image as a WebP (Web Picture) file to the file at [param path]. By default it will save lossless. If [param lossy] is [code]true[/code], the image will be saved lossy, using the [param quality] setting between [code]0.0[/code] and [code]1.0[/code] (inclusive). Lossless WebP offers more efficient compression than PNG.
 				[b]Note:[/b] The WebP format is limited to a size of 16383×16383 pixels, while PNG can save larger images.
 			</description>
 		</method>
@@ -519,7 +519,7 @@
 			<param index="0" name="lossy" type="bool" default="false" />
 			<param index="1" name="quality" type="float" default="0.75" />
 			<description>
-				Saves the image as a WebP (Web Picture) file to a byte array. By default it will save lossless. If [param lossy] is true, the image will be saved lossy, using the [param quality] setting between 0.0 and 1.0 (inclusive). Lossless WebP offers more efficient compression than PNG.
+				Saves the image as a WebP (Web Picture) file to a byte array. By default it will save lossless. If [param lossy] is [code]true[/code], the image will be saved lossy, using the [param quality] setting between [code]0.0[/code] and [code]1.0[/code] (inclusive). Lossless WebP offers more efficient compression than PNG.
 				[b]Note:[/b] The WebP format is limited to a size of 16383×16383 pixels, while PNG can save larger images.
 			</description>
 		</method>
