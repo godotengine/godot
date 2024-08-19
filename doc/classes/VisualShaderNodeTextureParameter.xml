@@ -105,7 +105,10 @@
 		<constant name="SOURCE_NORMAL_ROUGHNESS" value="3" enum="TextureSource">
 			The texture source is the normal-roughness buffer from the depth prepass.
 		</constant>
-		<constant name="SOURCE_MAX" value="4" enum="TextureSource">
+		<constant name="SOURCE_MASK" value="4" enum="TextureSource">
+			For [CanvasGroup] or [CanvasItem] with [member CanvasItem.clip_children] set to anything other than [constant CanvasItem.CLIP_CHILDREN_DISABLED], the texture source is made from rendering all child items. If used, the default masking operation is disabled.
+		</constant>
+		<constant name="SOURCE_MAX" value="5" enum="TextureSource">
 			Represents the size of the [enum TextureSource] enum.
 		</constant>
 	</constants>

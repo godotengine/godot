@@ -63,6 +63,18 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		SHADER_VARIANT_PRIMITIVE_POINTS_LIGHT,
 		SHADER_VARIANT_ATTRIBUTES_LIGHT,
 		SHADER_VARIANT_ATTRIBUTES_POINTS_LIGHT,
+		SHADER_VARIANT_QUAD_MASK,
+		SHADER_VARIANT_NINEPATCH_MASK,
+		SHADER_VARIANT_PRIMITIVE_MASK,
+		SHADER_VARIANT_PRIMITIVE_POINTS_MASK,
+		SHADER_VARIANT_ATTRIBUTES_MASK,
+		SHADER_VARIANT_ATTRIBUTES_POINTS_MASK,
+		SHADER_VARIANT_QUAD_LIGHT_MASK,
+		SHADER_VARIANT_NINEPATCH_LIGHT_MASK,
+		SHADER_VARIANT_PRIMITIVE_LIGHT_MASK,
+		SHADER_VARIANT_PRIMITIVE_POINTS_LIGHT_MASK,
+		SHADER_VARIANT_ATTRIBUTES_LIGHT_MASK,
+		SHADER_VARIANT_ATTRIBUTES_POINTS_LIGHT_MASK,
 		SHADER_VARIANT_MAX
 	};
 
@@ -83,6 +95,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		FLAGS_NINEPATCH_H_MODE_SHIFT = 16,
 		FLAGS_NINEPATCH_V_MODE_SHIFT = 18,
 		FLAGS_LIGHT_COUNT_SHIFT = 20,
+		FLAGS_MASK_MODE_SHIFT = 24,
 
 		FLAGS_DEFAULT_NORMAL_MAP_USED = (1 << 26),
 		FLAGS_DEFAULT_SPECULAR_MAP_USED = (1 << 27),
@@ -135,6 +148,8 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	enum PipelineLightMode {
 		PIPELINE_LIGHT_MODE_DISABLED,
 		PIPELINE_LIGHT_MODE_ENABLED,
+		PIPELINE_LIGHT_MODE_DISABLED_WITH_MASK,
+		PIPELINE_LIGHT_MODE_ENABLED_WITH_MASK,
 		PIPELINE_LIGHT_MODE_MAX
 	};
 
@@ -176,6 +191,8 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 		bool uses_screen_texture = false;
 		bool uses_screen_texture_mipmaps = false;
+		bool uses_mask_texture = false;
+		bool uses_mask_texture_mipmaps = false;
 		bool uses_sdf = false;
 		bool uses_time = false;
 
@@ -408,15 +425,10 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	bool using_directional_lights = false;
 	RID default_canvas_texture;
 
-	RID default_canvas_group_shader;
-	RID default_canvas_group_material;
-	RID default_clip_children_material;
-	RID default_clip_children_shader;
-
 	RS::CanvasItemTextureFilter default_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
 	RS::CanvasItemTextureRepeat default_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
 
-	RID _create_base_uniform_set(RID p_to_render_target, bool p_backbuffer);
+	RID _create_base_uniform_set(RID p_to_render_target, uint32_t p_canvas_group_level, bool p_alias_screen_to_mask);
 
 	bool debug_redraw = false;
 	Color debug_redraw_color;
@@ -424,7 +436,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 	inline void _bind_canvas_texture(RD::DrawListID p_draw_list, RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, RID &r_last_texture, PushConstant &push_constant, Size2 &r_texpixel_size, bool p_texture_is_data = false); //recursive, so regular inline used instead.
 	void _render_item(RenderingDevice::DrawListID p_draw_list, RID p_render_target, const Item *p_item, RenderingDevice::FramebufferFormatID p_framebuffer_format, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights, PipelineVariants *p_pipeline_variants, bool &r_sdf_used, const Point2 &p_offset, RenderingMethod::RenderInfo *r_render_info = nullptr);
-	void _render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool &r_sdf_used, bool p_to_backbuffer = false, RenderingMethod::RenderInfo *r_render_info = nullptr);
+	void _render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool &r_sdf_used, uint32_t p_canvas_group_level, bool p_alias_screen_to_mask = false, RenderingMethod::RenderInfo *r_render_info = nullptr);
 
 	_FORCE_INLINE_ void _update_transform_2d_to_mat2x4(const Transform2D &p_transform, float *p_mat2x4);
 	_FORCE_INLINE_ void _update_transform_2d_to_mat2x3(const Transform2D &p_transform, float *p_mat2x3);

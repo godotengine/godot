@@ -334,6 +334,7 @@ public:
 
 		CanvasGroup *canvas_group = nullptr;
 		bool use_canvas_group = false;
+		uint32_t canvas_group_level = 0;
 		int light_mask;
 		int z_final;
 
@@ -357,7 +358,6 @@ public:
 		Rect2 final_clip_rect;
 		Item *final_clip_owner = nullptr;
 		Item *material_owner = nullptr;
-		Item *canvas_group_owner = nullptr;
 		ViewportRender *vp_render = nullptr;
 		bool distance_field;
 		bool light_masked;
@@ -467,7 +467,6 @@ public:
 			vp_render = nullptr;
 			next = nullptr;
 			final_clip_owner = nullptr;
-			canvas_group_owner = nullptr;
 			clip = false;
 			final_modulate = Color(1, 1, 1, 1);
 			visible = true;
