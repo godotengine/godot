@@ -160,7 +160,7 @@ public:
 	bool is_position_smoothing_enabled() const;
 
 #ifndef DISABLE_DEPRECATED
-	void set_position_smoothing_speed(real_t s_speed);
+	void set_position_smoothing_speed(real_t p_speed);
 	real_t get_position_smoothing_speed() const;
 #endif
 	void set_position_smoothing_velocity(Vector2 p_speed);
