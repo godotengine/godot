@@ -125,6 +125,8 @@ class NavMap : public NavRid {
 	int pm_edge_free_count = 0;
 	int pm_obstacle_count = 0;
 
+	HashMap<NavRegion *, LocalVector<gd::Edge::Connection>> region_external_connections;
+
 public:
 	NavMap();
 	~NavMap();
@@ -218,6 +220,10 @@ public:
 	int get_pm_edge_connection_count() const { return pm_edge_connection_count; }
 	int get_pm_edge_free_count() const { return pm_edge_free_count; }
 	int get_pm_obstacle_count() const { return pm_obstacle_count; }
+
+	int get_region_connections_count(NavRegion *p_region) const;
+	Vector3 get_region_connection_pathway_start(NavRegion *p_region, int p_connection_id) const;
+	Vector3 get_region_connection_pathway_end(NavRegion *p_region, int p_connection_id) const;
 
 private:
 	void compute_single_step(uint32_t index, NavAgent **agent);

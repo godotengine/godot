@@ -5070,6 +5070,7 @@ void SubViewport::_internal_set_size(const Size2i &p_size, bool p_force) {
 
 	if (c) {
 		c->update_minimum_size();
+		c->queue_redraw();
 	}
 }
 

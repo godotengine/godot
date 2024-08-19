@@ -40,7 +40,6 @@
 class NavRegion : public NavBase {
 	NavMap *map = nullptr;
 	Transform3D transform;
-	Vector<gd::Edge::Connection> connections;
 	bool enabled = true;
 
 	bool use_edge_connections = true;
@@ -84,13 +83,6 @@ public:
 	}
 
 	void set_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh);
-
-	Vector<gd::Edge::Connection> &get_connections() {
-		return connections;
-	}
-	int get_connections_count() const;
-	Vector3 get_connection_pathway_start(int p_connection_id) const;
-	Vector3 get_connection_pathway_end(int p_connection_id) const;
 
 	LocalVector<gd::Polygon> const &get_polygons() const {
 		return polygons;
