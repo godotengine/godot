@@ -827,6 +827,7 @@ void Camera2D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "position_smoothing_speed" && position_smoothing_speed == 5.0) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
+#endif
 	if (!position_smoothing_enabled && p_property.name == "position_smoothing_velocity") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
