@@ -66,7 +66,9 @@ protected:
 	AnchorMode anchor_mode = ANCHOR_MODE_DRAG_CENTER;
 	bool ignore_rotation = true;
 	bool enabled = true;
-	real_t position_smoothing_speed = 5.0; // deprecated
+#ifndef DISABLE_DEPRECATED
+	real_t position_smoothing_speed = 5.0;
+#endif
 	Vector2 position_smoothing_velocity = Vector2(5.0, 5.0);
 	bool position_smoothing_enabled = false;
 
@@ -157,10 +159,10 @@ public:
 	void set_position_smoothing_enabled(bool p_enabled);
 	bool is_position_smoothing_enabled() const;
 
-	// deprecated
+#ifndef DISABLE_DEPRECATED
 	void set_position_smoothing_speed(real_t s_speed);
 	real_t get_position_smoothing_speed() const;
-
+#endif
 	void set_position_smoothing_velocity(Vector2 p_speed);
 	Vector2 get_position_smoothing_velocity() const;
 

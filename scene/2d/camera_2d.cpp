@@ -650,16 +650,16 @@ void Camera2D::align() {
 	_update_scroll();
 }
 
-// deprecated
+#ifndef DISABLE_DEPRECATED
 void Camera2D::set_position_smoothing_speed(real_t p_speed) {
 	position_smoothing_speed = MAX(0, p_speed);
 	_update_process_internal_for_smoothing();
 }
 
-// deprecated
 real_t Camera2D::get_position_smoothing_speed() const {
 	return position_smoothing_speed;
 }
+#endif
 
 void Camera2D::set_position_smoothing_velocity(Vector2 p_speed) {
 	position_smoothing_velocity = Vector2(MAX(0, p_speed.x), MAX(0, p_speed.y));
@@ -886,8 +886,10 @@ void Camera2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_custom_viewport", "viewport"), &Camera2D::set_custom_viewport);
 	ClassDB::bind_method(D_METHOD("get_custom_viewport"), &Camera2D::get_custom_viewport);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_position_smoothing_speed", "position_smoothing_speed"), &Camera2D::set_position_smoothing_speed);
 	ClassDB::bind_method(D_METHOD("get_position_smoothing_speed"), &Camera2D::get_position_smoothing_speed);
+#endif
 
 	ClassDB::bind_method(D_METHOD("set_position_smoothing_velocity", "position_smoothing_velocity"), &Camera2D::set_position_smoothing_velocity);
 	ClassDB::bind_method(D_METHOD("get_position_smoothing_velocity"), &Camera2D::get_position_smoothing_velocity);
@@ -933,7 +935,9 @@ void Camera2D::_bind_methods() {
 
 	ADD_GROUP("Position Smoothing", "position_smoothing_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "position_smoothing_enabled"), "set_position_smoothing_enabled", "is_position_smoothing_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "position_smoothing_speed", PROPERTY_HINT_NONE, "suffix:px/s"), "set_position_smoothing_speed", "get_position_smoothing_speed"); // deprecated
+#ifndef DISABLE_DEPRECATED
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "position_smoothing_speed", PROPERTY_HINT_NONE, "suffix:px/s"), "set_position_smoothing_speed", "get_position_smoothing_speed");
+#endif
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position_smoothing_velocity", PROPERTY_HINT_LINK, "suffix:px/s"), "set_position_smoothing_velocity", "get_position_smoothing_velocity");
 
 	ADD_GROUP("Rotation Smoothing", "rotation_smoothing_");
