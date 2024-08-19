@@ -823,6 +823,7 @@ bool Camera2D::is_margin_drawing_enabled() const {
 }
 
 void Camera2D::_validate_property(PropertyInfo &p_property) const {
+#ifndef DISABLE_DEPRECATED
 	if (p_property.name == "position_smoothing_speed" && position_smoothing_speed == 5.0) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
