@@ -184,11 +184,42 @@ public:
 	PagedAllocator<Item::VisibilityNotifierData> visibility_notifier_allocator;
 	SelfList<Item::VisibilityNotifierData>::List visibility_notifier_list;
 
-	_FORCE_INLINE_ void _attach_canvas_item_for_draw(Item *ci, Item *p_canvas_clip, RendererCanvasRender::Item **r_z_list, RendererCanvasRender::Item **r_z_last_list, const Transform2D &p_transform, const Rect2 &p_clip_rect, Rect2 p_global_rect, const Color &modulate, int p_z, RendererCanvasCull::Item *p_material_owner, bool p_use_canvas_group, RendererCanvasRender::Item *r_canvas_group_from);
-
 private:
+	// MinMaxPair is used to efficiently track the minimum and maximum z-indices
+	// of canvas items during the culling process. This allows for optimized
+	// iteration over only the used z-index range when rendering, reducing
+	// unnecessary loop iterations through empty z-indices.
+	struct MinMaxPair {
+	private:
+		unsigned int min;
+		unsigned int max;
+
+	public:
+		MinMaxPair() :
+				min(z_range - 1), max(0) {}
+
+		_FORCE_INLINE_ void merge(const MinMaxPair &p_other) {
+			min = MIN(min, p_other.min);
+			max = MAX(max, p_other.max);
+		}
+
+		_FORCE_INLINE_ void include(unsigned int p_zidx) {
+			min = MIN(min, p_zidx);
+			max = MAX(max, p_zidx);
+		}
+
+		_FORCE_INLINE_ unsigned int get_min() const {
+			return min;
+		}
+
+		_FORCE_INLINE_ unsigned int get_max() const {
+			return max;
+		}
+	};
+
 	void _render_canvas_item_tree(RID p_to_render_target, Canvas::ChildItem *p_child_items, int p_child_item_count, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RendererCanvasRender::Light *p_lights, RendererCanvasRender::Light *p_directional_lights, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, uint32_t p_canvas_cull_mask, RenderingMethod::RenderInfo *r_render_info = nullptr);
-	void _cull_canvas_item(Item *p_canvas_item, const Transform2D &p_parent_xform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RendererCanvasRender::Item **r_z_list, RendererCanvasRender::Item **r_z_last_list, Item *p_canvas_clip, Item *p_material_owner, bool p_allow_y_sort, uint32_t p_canvas_cull_mask, const Point2 &p_repeat_size, int p_repeat_times);
+	RendererCanvasCull::MinMaxPair _cull_canvas_item(Item *p_canvas_item, const Transform2D &p_parent_xform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RendererCanvasRender::Item **r_z_list, RendererCanvasRender::Item **r_z_last_list, Item *p_canvas_clip, Item *p_material_owner, bool p_allow_y_sort, uint32_t p_canvas_cull_mask, const Point2 &p_repeat_size, int p_repeat_times);
+	_FORCE_INLINE_ RendererCanvasCull::MinMaxPair _attach_canvas_item_for_draw(Item *ci, Item *p_canvas_clip, RendererCanvasRender::Item **r_z_list, RendererCanvasRender::Item **r_z_last_list, const Transform2D &p_transform, const Rect2 &p_clip_rect, Rect2 p_global_rect, const Color &modulate, int p_z, RendererCanvasCull::Item *p_material_owner, bool p_use_canvas_group, RendererCanvasRender::Item *r_canvas_group_from);
 
 	static constexpr int z_range = RS::CANVAS_ITEM_Z_MAX - RS::CANVAS_ITEM_Z_MIN + 1;
 
