@@ -901,7 +901,7 @@ void AnimationPlayerEditor::set_state(const Dictionary &p_state) {
 					player->connect(SNAME("animation_list_changed"), callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated), CONNECT_DEFERRED);
 				}
 				if (!player->is_connected(SNAME("current_animation_changed"), callable_mp(this, &AnimationPlayerEditor::_current_animation_changed))) {
-					player->connect(SNAME("current_animation_changed"), callable_mp(this, &AnimationPlayerEditor::_current_animation_changed), CONNECT_DEFERRED);
+					player->connect(SNAME("current_animation_changed"), callable_mp(this, &AnimationPlayerEditor::_current_animation_changed));
 				}
 			}
 
