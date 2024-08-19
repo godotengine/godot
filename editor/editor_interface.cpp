@@ -33,6 +33,7 @@
 
 #include "editor/editor_command_palette.h"
 #include "editor/editor_feature_profile.h"
+#include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_resource_preview.h"
@@ -215,7 +216,7 @@ Control *EditorInterface::get_base_control() const {
 }
 
 VBoxContainer *EditorInterface::get_editor_main_screen() const {
-	return EditorNode::get_singleton()->get_main_screen_control();
+	return EditorNode::get_singleton()->get_editor_main_screen()->get_control();
 }
 
 ScriptEditor *EditorInterface::get_script_editor() const {
@@ -232,7 +233,7 @@ SubViewport *EditorInterface::get_editor_viewport_3d(int p_idx) const {
 }
 
 void EditorInterface::set_main_screen_editor(const String &p_name) {
-	EditorNode::get_singleton()->select_editor_by_name(p_name);
+	EditorNode::get_singleton()->get_editor_main_screen()->select_by_name(p_name);
 }
 
 void EditorInterface::set_distraction_free_mode(bool p_enter) {
