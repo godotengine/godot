@@ -1549,3 +1549,17 @@ void Geometry::sort_polygon_winding(Vector<Vector2> &r_verts, bool p_clockwise) 
 		r_verts.invert();
 	}
 }
+
+bool Geometry::verify_indices(const int *p_indices, int p_num_indices, int p_num_vertices) {
+	ERR_FAIL_NULL_V(p_indices, false);
+	ERR_FAIL_COND_V(p_num_indices < 0, false);
+	ERR_FAIL_COND_V(p_num_vertices < 0, false);
+
+	for (int n = 0; n < p_num_indices; n++) {
+		if ((unsigned int)p_indices[n] >= (unsigned int)p_num_vertices) {
+			return false;
+		}
+	}
+
+	return true;
+}
