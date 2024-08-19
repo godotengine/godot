@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  nav_region.h                                                          */
+/*  openxr_mxink_extension.h                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,74 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAV_REGION_H
-#define NAV_REGION_H
+#ifndef OPENXR_MXINK_EXTENSION_H
+#define OPENXR_MXINK_EXTENSION_H
 
-#include "nav_base.h"
-#include "nav_utils.h"
+#include "openxr_extension_wrapper.h"
 
-#include "core/os/rw_lock.h"
-#include "scene/resources/navigation_mesh.h"
-
-class NavRegion : public NavBase {
-	NavMap *map = nullptr;
-	Transform3D transform;
-	bool enabled = true;
-
-	bool use_edge_connections = true;
-
-	bool polygons_dirty = true;
-
-	/// Cache
-	LocalVector<gd::Polygon> polygons;
-
-	real_t surface_area = 0.0;
-
-	RWLock navmesh_rwlock;
-	Vector<Vector3> pending_navmesh_vertices;
-	Vector<Vector<int>> pending_navmesh_polygons;
-
+class OpenXRMxInkExtension : public OpenXRExtensionWrapper {
 public:
-	NavRegion() {
-		type = NavigationUtilities::PathSegmentType::PATH_SEGMENT_TYPE_REGION;
-	}
+	virtual HashMap<String, bool *> get_requested_extensions() override;
 
-	void scratch_polygons() {
-		polygons_dirty = true;
-	}
+	bool is_available();
 
-	void set_enabled(bool p_enabled);
-	bool get_enabled() const { return enabled; }
-
-	void set_map(NavMap *p_map);
-	NavMap *get_map() const {
-		return map;
-	}
-
-	void set_use_edge_connections(bool p_enabled);
-	bool get_use_edge_connections() const {
-		return use_edge_connections;
-	}
-
-	void set_transform(Transform3D transform);
-	const Transform3D &get_transform() const {
-		return transform;
-	}
-
-	void set_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh);
-
-	LocalVector<gd::Polygon> const &get_polygons() const {
-		return polygons;
-	}
-
-	Vector3 get_random_point(uint32_t p_navigation_layers, bool p_uniformly) const;
-
-	real_t get_surface_area() const { return surface_area; };
-
-	bool sync();
+	virtual void on_register_metadata() override;
 
 private:
-	void update_polygons();
+	bool available = false;
 };
 
-#endif // NAV_REGION_H
+#endif // OPENXR_MXINK_EXTENSION_H

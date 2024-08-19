@@ -648,6 +648,7 @@ public:
 			};
 
 			int order = 0;
+			int prop_order = 0;
 			int texture_order = 0;
 			int texture_binding = 0;
 			DataType type = TYPE_VOID;
@@ -663,6 +664,11 @@ public:
 			int instance_index = 0;
 			String group;
 			String subgroup;
+
+			_FORCE_INLINE_ bool is_texture() const {
+				// Order is assigned to -1 for texture uniforms.
+				return order < 0;
+			}
 
 			Uniform() {
 				hint_range[0] = 0.0f;

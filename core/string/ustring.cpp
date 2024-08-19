@@ -4032,54 +4032,161 @@ String String::format(const Variant &values, const String &placeholder) const {
 	return new_string;
 }
 
-String String::replace(const String &p_key, const String &p_with) const {
-	String new_string;
+static String _replace_common(const String &p_this, const String &p_key, const String &p_with, bool p_case_insensitive) {
+	if (p_key.is_empty() || p_this.is_empty()) {
+		return p_this;
+	}
+
+	const int key_length = p_key.length();
+
 	int search_from = 0;
 	int result = 0;
 
-	while ((result = find(p_key, search_from)) >= 0) {
-		new_string += substr(search_from, result - search_from);
-		new_string += p_with;
-		search_from = result + p_key.length();
+	LocalVector<int> found;
+
+	while ((result = (p_case_insensitive ? p_this.findn(p_key, search_from) : p_this.find(p_key, search_from))) >= 0) {
+		found.push_back(result);
+		search_from = result + key_length;
 	}
 
-	if (search_from == 0) {
-		return *this;
+	if (found.is_empty()) {
+		return p_this;
 	}
 
-	new_string += substr(search_from, length() - search_from);
+	String new_string;
+
+	const int with_length = p_with.length();
+	const int old_length = p_this.length();
+
+	new_string.resize(old_length + found.size() * (with_length - key_length) + 1);
+
+	char32_t *new_ptrw = new_string.ptrw();
+	const char32_t *old_ptr = p_this.ptr();
+	const char32_t *with_ptr = p_with.ptr();
+
+	int last_pos = 0;
+
+	for (const int &pos : found) {
+		if (last_pos != pos) {
+			memcpy(new_ptrw, old_ptr + last_pos, (pos - last_pos) * sizeof(char32_t));
+			new_ptrw += (pos - last_pos);
+		}
+		if (with_length) {
+			memcpy(new_ptrw, with_ptr, with_length * sizeof(char32_t));
+			new_ptrw += with_length;
+		}
+		last_pos = pos + key_length;
+	}
+
+	if (last_pos != old_length) {
+		memcpy(new_ptrw, old_ptr + last_pos, (old_length - last_pos) * sizeof(char32_t));
+		new_ptrw += old_length - last_pos;
+	}
+
+	*new_ptrw = 0;
 
 	return new_string;
 }
 
-String String::replace(const char *p_key, const char *p_with) const {
-	String new_string;
+static String _replace_common(const String &p_this, char const *p_key, char const *p_with, bool p_case_insensitive) {
+	int key_length = strlen(p_key);
+
+	if (key_length == 0 || p_this.is_empty()) {
+		return p_this;
+	}
+
 	int search_from = 0;
 	int result = 0;
 
-	while ((result = find(p_key, search_from)) >= 0) {
-		new_string += substr(search_from, result - search_from);
-		new_string += p_with;
-		int k = 0;
-		while (p_key[k] != '\0') {
-			k++;
+	LocalVector<int> found;
+
+	while ((result = (p_case_insensitive ? p_this.findn(p_key, search_from) : p_this.find(p_key, search_from))) >= 0) {
+		found.push_back(result);
+		search_from = result + key_length;
+	}
+
+	if (found.is_empty()) {
+		return p_this;
+	}
+
+	String new_string;
+
+	// Create string to speed up copying as we can't do `memcopy` between `char32_t` and `char`.
+	const String with_string(p_with);
+	const int with_length = with_string.length();
+	const int old_length = p_this.length();
+
+	new_string.resize(old_length + found.size() * (with_length - key_length) + 1);
+
+	char32_t *new_ptrw = new_string.ptrw();
+	const char32_t *old_ptr = p_this.ptr();
+	const char32_t *with_ptr = with_string.ptr();
+
+	int last_pos = 0;
+
+	for (const int &pos : found) {
+		if (last_pos != pos) {
+			memcpy(new_ptrw, old_ptr + last_pos, (pos - last_pos) * sizeof(char32_t));
+			new_ptrw += (pos - last_pos);
 		}
-		search_from = result + k;
+		if (with_length) {
+			memcpy(new_ptrw, with_ptr, with_length * sizeof(char32_t));
+			new_ptrw += with_length;
+		}
+		last_pos = pos + key_length;
 	}
 
-	if (search_from == 0) {
-		return *this;
+	if (last_pos != old_length) {
+		memcpy(new_ptrw, old_ptr + last_pos, (old_length - last_pos) * sizeof(char32_t));
+		new_ptrw += old_length - last_pos;
 	}
 
-	new_string += substr(search_from, length() - search_from);
+	*new_ptrw = 0;
 
 	return new_string;
+}
+
+String String::replace(const String &p_key, const String &p_with) const {
+	return _replace_common(*this, p_key, p_with, false);
+}
+
+String String::replace(const char *p_key, const char *p_with) const {
+	return _replace_common(*this, p_key, p_with, false);
 }
 
 String String::replace_first(const String &p_key, const String &p_with) const {
 	int pos = find(p_key);
 	if (pos >= 0) {
-		return substr(0, pos) + p_with + substr(pos + p_key.length(), length());
+		const int old_length = length();
+		const int key_length = p_key.length();
+		const int with_length = p_with.length();
+
+		String new_string;
+		new_string.resize(old_length + (with_length - key_length) + 1);
+
+		char32_t *new_ptrw = new_string.ptrw();
+		const char32_t *old_ptr = ptr();
+		const char32_t *with_ptr = p_with.ptr();
+
+		if (pos > 0) {
+			memcpy(new_ptrw, old_ptr, pos * sizeof(char32_t));
+			new_ptrw += pos;
+		}
+
+		if (with_length) {
+			memcpy(new_ptrw, with_ptr, with_length * sizeof(char32_t));
+			new_ptrw += with_length;
+		}
+		pos += key_length;
+
+		if (pos != old_length) {
+			memcpy(new_ptrw, old_ptr + pos, (old_length - pos) * sizeof(char32_t));
+			new_ptrw += (old_length - pos);
+		}
+
+		*new_ptrw = 0;
+
+		return new_string;
 	}
 
 	return *this;
@@ -4088,55 +4195,45 @@ String String::replace_first(const String &p_key, const String &p_with) const {
 String String::replace_first(const char *p_key, const char *p_with) const {
 	int pos = find(p_key);
 	if (pos >= 0) {
-		int substring_length = strlen(p_key);
-		return substr(0, pos) + p_with + substr(pos + substring_length, length());
+		const int old_length = length();
+		const int key_length = strlen(p_key);
+		const int with_length = strlen(p_with);
+
+		String new_string;
+		new_string.resize(old_length + (with_length - key_length) + 1);
+
+		char32_t *new_ptrw = new_string.ptrw();
+		const char32_t *old_ptr = ptr();
+
+		if (pos > 0) {
+			memcpy(new_ptrw, old_ptr, pos * sizeof(char32_t));
+			new_ptrw += pos;
+		}
+
+		for (int i = 0; i < with_length; ++i) {
+			*new_ptrw++ = p_with[i];
+		}
+		pos += key_length;
+
+		if (pos != old_length) {
+			memcpy(new_ptrw, old_ptr + pos, (old_length - pos) * sizeof(char32_t));
+			new_ptrw += (old_length - pos);
+		}
+
+		*new_ptrw = 0;
+
+		return new_string;
 	}
 
 	return *this;
 }
 
 String String::replacen(const String &p_key, const String &p_with) const {
-	String new_string;
-	int search_from = 0;
-	int result = 0;
-
-	while ((result = findn(p_key, search_from)) >= 0) {
-		new_string += substr(search_from, result - search_from);
-		new_string += p_with;
-		search_from = result + p_key.length();
-	}
-
-	if (search_from == 0) {
-		return *this;
-	}
-
-	new_string += substr(search_from, length() - search_from);
-	return new_string;
+	return _replace_common(*this, p_key, p_with, true);
 }
 
 String String::replacen(const char *p_key, const char *p_with) const {
-	String new_string;
-	int search_from = 0;
-	int result = 0;
-	int substring_length = strlen(p_key);
-
-	if (substring_length == 0) {
-		return *this; // there's nothing to match or substitute
-	}
-
-	while ((result = findn(p_key, search_from)) >= 0) {
-		new_string += substr(search_from, result - search_from);
-		new_string += p_with;
-		search_from = result + substring_length;
-	}
-
-	if (search_from == 0) {
-		return *this;
-	}
-
-	new_string += substr(search_from, length() - search_from);
-
-	return new_string;
+	return _replace_common(*this, p_key, p_with, true);
 }
 
 String String::repeat(int p_count) const {

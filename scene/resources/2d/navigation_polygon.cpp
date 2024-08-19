@@ -436,6 +436,15 @@ real_t NavigationPolygon::get_border_size() const {
 	return border_size;
 }
 
+void NavigationPolygon::set_sample_partition_type(SamplePartitionType p_value) {
+	ERR_FAIL_INDEX(p_value, SAMPLE_PARTITION_MAX);
+	partition_type = p_value;
+}
+
+NavigationPolygon::SamplePartitionType NavigationPolygon::get_sample_partition_type() const {
+	return partition_type;
+}
+
 void NavigationPolygon::set_parsed_geometry_type(ParsedGeometryType p_geometry_type) {
 	ERR_FAIL_INDEX(p_geometry_type, PARSED_GEOMETRY_MAX);
 	parsed_geometry_type = p_geometry_type;
@@ -550,6 +559,9 @@ void NavigationPolygon::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_border_size", "border_size"), &NavigationPolygon::set_border_size);
 	ClassDB::bind_method(D_METHOD("get_border_size"), &NavigationPolygon::get_border_size);
 
+	ClassDB::bind_method(D_METHOD("set_sample_partition_type", "sample_partition_type"), &NavigationPolygon::set_sample_partition_type);
+	ClassDB::bind_method(D_METHOD("get_sample_partition_type"), &NavigationPolygon::get_sample_partition_type);
+
 	ClassDB::bind_method(D_METHOD("set_parsed_geometry_type", "geometry_type"), &NavigationPolygon::set_parsed_geometry_type);
 	ClassDB::bind_method(D_METHOD("get_parsed_geometry_type"), &NavigationPolygon::get_parsed_geometry_type);
 
@@ -579,6 +591,8 @@ void NavigationPolygon::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons", "_get_polygons");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "outlines", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_outlines", "_get_outlines");
 
+	ADD_GROUP("Sampling", "sample_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "sample_partition_type", PROPERTY_HINT_ENUM, "Convex Partition,Triangulate"), "set_sample_partition_type", "get_sample_partition_type");
 	ADD_GROUP("Geometry", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "parsed_geometry_type", PROPERTY_HINT_ENUM, "Mesh Instances,Static Colliders,Meshes and Static Colliders"), "set_parsed_geometry_type", "get_parsed_geometry_type");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "parsed_collision_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_parsed_collision_mask", "get_parsed_collision_mask");
@@ -594,6 +608,10 @@ void NavigationPolygon::_bind_methods() {
 	ADD_GROUP("Filters", "");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "baking_rect"), "set_baking_rect", "get_baking_rect");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "baking_rect_offset"), "set_baking_rect_offset", "get_baking_rect_offset");
+
+	BIND_ENUM_CONSTANT(SAMPLE_PARTITION_CONVEX_PARTITION);
+	BIND_ENUM_CONSTANT(SAMPLE_PARTITION_TRIANGULATE);
+	BIND_ENUM_CONSTANT(SAMPLE_PARTITION_MAX);
 
 	BIND_ENUM_CONSTANT(PARSED_GEOMETRY_MESH_INSTANCES);
 	BIND_ENUM_CONSTANT(PARSED_GEOMETRY_STATIC_COLLIDERS);

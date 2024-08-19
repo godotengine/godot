@@ -647,18 +647,17 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 			_record_item_commands(ci, p_to_render_target, p_canvas_transform_inverse, current_clip, blend_mode, p_lights, index, batch_broken, r_sdf_used, Point2());
 		} else {
 			Point2 start_pos = ci->repeat_size * -(ci->repeat_times / 2);
-			Point2 end_pos = ci->repeat_size * ci->repeat_times + ci->repeat_size + start_pos;
-			Point2 pos = start_pos;
+			Point2 offset;
 
-			do {
-				do {
-					_record_item_commands(ci, p_to_render_target, p_canvas_transform_inverse, current_clip, blend_mode, p_lights, index, batch_broken, r_sdf_used, pos);
-					pos.y += ci->repeat_size.y;
-				} while (pos.y < end_pos.y);
-
-				pos.x += ci->repeat_size.x;
-				pos.y = start_pos.y;
-			} while (pos.x < end_pos.x);
+			int repeat_times_x = ci->repeat_size.x ? ci->repeat_times : 0;
+			int repeat_times_y = ci->repeat_size.y ? ci->repeat_times : 0;
+			for (int ry = 0; ry <= repeat_times_y; ry++) {
+				offset.y = start_pos.y + ry * ci->repeat_size.y;
+				for (int rx = 0; rx <= repeat_times_x; rx++) {
+					offset.x = start_pos.x + rx * ci->repeat_size.x;
+					_record_item_commands(ci, p_to_render_target, p_canvas_transform_inverse, current_clip, blend_mode, p_lights, index, batch_broken, r_sdf_used, offset);
+				}
+			}
 		}
 	}
 
@@ -809,7 +808,7 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 	state.last_item_index += index;
 }
 
-void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_render_target, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, GLES3::CanvasShaderData::BlendMode p_blend_mode, Light *p_lights, uint32_t &r_index, bool &r_batch_broken, bool &r_sdf_used, const Point2 &p_offset) {
+void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_render_target, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, GLES3::CanvasShaderData::BlendMode p_blend_mode, Light *p_lights, uint32_t &r_index, bool &r_batch_broken, bool &r_sdf_used, const Point2 &p_repeat_offset) {
 	RenderingServer::CanvasItemTextureFilter texture_filter = p_item->texture_filter == RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT ? state.default_filter : p_item->texture_filter;
 
 	if (texture_filter != state.canvas_instance_batches[state.current_batch_index].filter) {
@@ -826,11 +825,11 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 		state.canvas_instance_batches[state.current_batch_index].repeat = texture_repeat;
 	}
 
-	Transform2D base_transform = p_canvas_transform_inverse * p_item->final_transform;
-
-	if (p_offset.x || p_offset.y) {
-		base_transform *= Transform2D(0, p_offset / p_item->xform_curr.get_scale()); // TODO: Interpolate or explain why not needed.
+	Transform2D base_transform = p_item->final_transform;
+	if (p_item->repeat_source_item && (p_repeat_offset.x || p_repeat_offset.y)) {
+		base_transform.columns[2] += p_item->repeat_source_item->final_transform.basis_xform(p_repeat_offset);
 	}
+	base_transform = p_canvas_transform_inverse * base_transform;
 
 	Transform2D draw_transform; // Used by transform command
 

@@ -93,7 +93,7 @@ protected:
 	float detail_sample_max_error = 1.0f;
 
 	SamplePartitionType partition_type = SAMPLE_PARTITION_WATERSHED;
-	ParsedGeometryType parsed_geometry_type = PARSED_GEOMETRY_MESH_INSTANCES;
+	ParsedGeometryType parsed_geometry_type = PARSED_GEOMETRY_BOTH;
 	uint32_t collision_mask = 0xFFFFFFFF;
 
 	SourceGeometryMode source_geometry_mode = SOURCE_GEOMETRY_ROOT_NODE_CHILDREN;

@@ -71,6 +71,11 @@ public:
 	Rect2 _edit_get_rect() const;
 	bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
 #endif
+	enum SamplePartitionType {
+		SAMPLE_PARTITION_CONVEX_PARTITION = 0,
+		SAMPLE_PARTITION_TRIANGULATE,
+		SAMPLE_PARTITION_MAX
+	};
 
 	enum ParsedGeometryType {
 		PARSED_GEOMETRY_MESH_INSTANCES = 0,
@@ -88,6 +93,7 @@ public:
 
 	real_t agent_radius = 10.0f;
 
+	SamplePartitionType partition_type = SAMPLE_PARTITION_CONVEX_PARTITION;
 	ParsedGeometryType parsed_geometry_type = PARSED_GEOMETRY_BOTH;
 	uint32_t parsed_collision_mask = 0xFFFFFFFF;
 
@@ -118,6 +124,9 @@ public:
 	Vector<Vector<int>> get_polygons() const;
 	Vector<int> get_polygon(int p_idx);
 	void clear_polygons();
+
+	void set_sample_partition_type(SamplePartitionType p_value);
+	SamplePartitionType get_sample_partition_type() const;
 
 	void set_parsed_geometry_type(ParsedGeometryType p_geometry_type);
 	ParsedGeometryType get_parsed_geometry_type() const;
@@ -162,6 +171,7 @@ public:
 	~NavigationPolygon() {}
 };
 
+VARIANT_ENUM_CAST(NavigationPolygon::SamplePartitionType);
 VARIANT_ENUM_CAST(NavigationPolygon::ParsedGeometryType);
 VARIANT_ENUM_CAST(NavigationPolygon::SourceGeometryMode);
 

@@ -937,8 +937,9 @@ void NavMap::sync() {
 		_new_pm_edge_free_count = 0;
 
 		// Remove regions connections.
+		region_external_connections.clear();
 		for (NavRegion *region : regions) {
-			region->get_connections().clear();
+			region_external_connections[region] = LocalVector<gd::Edge::Connection>();
 		}
 
 		// Resize the polygon count.
@@ -1072,7 +1073,7 @@ void NavMap::sync() {
 				free_edge.polygon->edges[free_edge.edge].connections.push_back(new_connection);
 
 				// Add the connection to the region_connection map.
-				((NavRegion *)free_edge.polygon->owner)->get_connections().push_back(new_connection);
+				region_external_connections[(NavRegion *)free_edge.polygon->owner].push_back(new_connection);
 				_new_pm_edge_connection_count += 1;
 			}
 		}
@@ -1426,6 +1427,40 @@ void NavMap::clip_path(const LocalVector<gd::NavigationPoly> &p_navigation_polys
 void NavMap::_update_merge_rasterizer_cell_dimensions() {
 	merge_rasterizer_cell_size = cell_size * merge_rasterizer_cell_scale;
 	merge_rasterizer_cell_height = cell_height * merge_rasterizer_cell_scale;
+}
+
+int NavMap::get_region_connections_count(NavRegion *p_region) const {
+	ERR_FAIL_NULL_V(p_region, 0);
+
+	HashMap<NavRegion *, LocalVector<gd::Edge::Connection>>::ConstIterator found_connections = region_external_connections.find(p_region);
+	if (found_connections) {
+		return found_connections->value.size();
+	}
+	return 0;
+}
+
+Vector3 NavMap::get_region_connection_pathway_start(NavRegion *p_region, int p_connection_id) const {
+	ERR_FAIL_NULL_V(p_region, Vector3());
+
+	HashMap<NavRegion *, LocalVector<gd::Edge::Connection>>::ConstIterator found_connections = region_external_connections.find(p_region);
+	if (found_connections) {
+		ERR_FAIL_INDEX_V(p_connection_id, int(found_connections->value.size()), Vector3());
+		return found_connections->value[p_connection_id].pathway_start;
+	}
+
+	return Vector3();
+}
+
+Vector3 NavMap::get_region_connection_pathway_end(NavRegion *p_region, int p_connection_id) const {
+	ERR_FAIL_NULL_V(p_region, Vector3());
+
+	HashMap<NavRegion *, LocalVector<gd::Edge::Connection>>::ConstIterator found_connections = region_external_connections.find(p_region);
+	if (found_connections) {
+		ERR_FAIL_INDEX_V(p_connection_id, int(found_connections->value.size()), Vector3());
+		return found_connections->value[p_connection_id].pathway_end;
+	}
+
+	return Vector3();
 }
 
 NavMap::NavMap() {
