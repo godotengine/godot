@@ -34,6 +34,7 @@
 
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
+#include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
@@ -958,7 +959,7 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 	_update_selection_transform();
 	_update_paste_indicator();
 
-	spatial_editor = Object::cast_to<Node3DEditorPlugin>(EditorNode::get_singleton()->get_editor_plugin_screen());
+	spatial_editor = Object::cast_to<Node3DEditorPlugin>(EditorNode::get_singleton()->get_editor_main_screen()->get_selected_plugin());
 
 	if (!node) {
 		set_process(false);

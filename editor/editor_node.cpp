@@ -88,6 +88,7 @@
 #include "editor/editor_interface.h"
 #include "editor/editor_layouts_dialog.h"
 #include "editor/editor_log.h"
+#include "editor/editor_main_screen.h"
 #include "editor/editor_native_shader_source_visualizer.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_properties.h"
@@ -348,19 +349,19 @@ void EditorNode::shortcut_input(const Ref<InputEvent> &p_event) {
 		if (ED_IS_SHORTCUT("editor/filter_files", p_event)) {
 			FileSystemDock::get_singleton()->focus_on_filter();
 		} else if (ED_IS_SHORTCUT("editor/editor_2d", p_event)) {
-			editor_select(EDITOR_2D);
+			editor_main_screen->select(EditorMainScreen::EDITOR_2D);
 		} else if (ED_IS_SHORTCUT("editor/editor_3d", p_event)) {
-			editor_select(EDITOR_3D);
+			editor_main_screen->select(EditorMainScreen::EDITOR_3D);
 		} else if (ED_IS_SHORTCUT("editor/editor_script", p_event)) {
-			editor_select(EDITOR_SCRIPT);
+			editor_main_screen->select(EditorMainScreen::EDITOR_SCRIPT);
 		} else if (ED_IS_SHORTCUT("editor/editor_help", p_event)) {
 			emit_signal(SNAME("request_help_search"), "");
 		} else if (ED_IS_SHORTCUT("editor/editor_assetlib", p_event) && AssetLibraryEditorPlugin::is_available()) {
-			editor_select(EDITOR_ASSETLIB);
+			editor_main_screen->select(EditorMainScreen::EDITOR_ASSETLIB);
 		} else if (ED_IS_SHORTCUT("editor/editor_next", p_event)) {
-			_editor_select_next();
+			editor_main_screen->select_next();
 		} else if (ED_IS_SHORTCUT("editor/editor_prev", p_event)) {
-			_editor_select_prev();
+			editor_main_screen->select_prev();
 		} else if (ED_IS_SHORTCUT("editor/command_palette", p_event)) {
 			_open_command_palette();
 		} else if (ED_IS_SHORTCUT("editor/toggle_last_opened_bottom_panel", p_event)) {
@@ -489,26 +490,6 @@ void EditorNode::_gdextensions_reloaded() {
 	EditorHelp::generate_doc();
 }
 
-void EditorNode::_select_default_main_screen_plugin() {
-	if (EDITOR_3D < main_editor_buttons.size() && main_editor_buttons[EDITOR_3D]->is_visible()) {
-		// If the 3D editor is enabled, use this as the default.
-		editor_select(EDITOR_3D);
-		return;
-	}
-
-	// Switch to the first main screen plugin that is enabled. Usually this is
-	// 2D, but may be subsequent ones if 2D is disabled in the feature profile.
-	for (int i = 0; i < main_editor_buttons.size(); i++) {
-		Button *editor_button = main_editor_buttons[i];
-		if (editor_button->is_visible()) {
-			editor_select(i);
-			return;
-		}
-	}
-
-	editor_select(-1);
-}
-
 void EditorNode::_update_theme(bool p_skip_creation) {
 	if (!p_skip_creation) {
 		theme = EditorThemeManager::generate_theme(theme);
@@ -546,7 +527,7 @@ void EditorNode::_update_theme(bool p_skip_creation) {
 		main_vbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, theme->get_constant(SNAME("window_border_margin"), EditorStringName(Editor)));
 		main_vbox->add_theme_constant_override("separation", theme->get_constant(SNAME("top_bar_separation"), EditorStringName(Editor)));
 
-		scene_root_parent->add_theme_style_override(SceneStringName(panel), theme->get_stylebox(SNAME("Content"), EditorStringName(EditorStyles)));
+		editor_main_screen->add_theme_style_override(SceneStringName(panel), theme->get_stylebox(SNAME("Content"), EditorStringName(EditorStyles)));
 		bottom_panel->add_theme_style_override(SceneStringName(panel), theme->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
 		distraction_free->set_icon(theme->get_icon(SNAME("DistractionFree"), EditorStringName(EditorIcons)));
 		distraction_free->add_theme_style_override(SceneStringName(pressed), theme->get_stylebox(CoreStringName(normal), "FlatMenuButton"));
@@ -558,18 +539,6 @@ void EditorNode::_update_theme(bool p_skip_creation) {
 
 		if (EditorDebuggerNode::get_singleton()->is_visible()) {
 			bottom_panel->add_theme_style_override(SceneStringName(panel), theme->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles)));
-		}
-
-		for (int i = 0; i < main_editor_buttons.size(); i++) {
-			Button *tb = main_editor_buttons[i];
-			EditorPlugin *p_editor = editor_table[i];
-			Ref<Texture2D> icon = p_editor->get_icon();
-
-			if (icon.is_valid()) {
-				tb->set_icon(icon);
-			} else if (theme->has_icon(p_editor->get_name(), EditorStringName(EditorIcons))) {
-				tb->set_icon(theme->get_icon(p_editor->get_name(), EditorStringName(EditorIcons)));
-			}
 		}
 
 		_update_renderer_color();
@@ -747,8 +716,6 @@ void EditorNode::_notification(int p_what) {
 			DisplayServer::get_singleton()->screen_set_keep_on(EDITOR_GET("interface/editor/keep_screen_on"));
 
 			feature_profile_manager->notify_changed();
-
-			_select_default_main_screen_plugin();
 
 			// Save the project after opening to mark it as last modified, except in headless mode.
 			if (DisplayServer::get_singleton()->window_can_draw()) {
@@ -1293,36 +1260,8 @@ void EditorNode::_node_renamed() {
 	}
 }
 
-void EditorNode::_editor_select_next() {
-	int editor = _get_current_main_editor();
-
-	do {
-		if (editor == editor_table.size() - 1) {
-			editor = 0;
-		} else {
-			editor++;
-		}
-	} while (!main_editor_buttons[editor]->is_visible());
-
-	editor_select(editor);
-}
-
 void EditorNode::_open_command_palette() {
 	command_palette->open_popup();
-}
-
-void EditorNode::_editor_select_prev() {
-	int editor = _get_current_main_editor();
-
-	do {
-		if (editor == 0) {
-			editor = editor_table.size() - 1;
-		} else {
-			editor--;
-		}
-	} while (!main_editor_buttons[editor]->is_visible());
-
-	editor_select(editor);
 }
 
 Error EditorNode::load_resource(const String &p_resource, bool p_ignore_broken_deps) {
@@ -2645,16 +2584,11 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 	if (!inspector_only) {
 		EditorPlugin *main_plugin = editor_data.get_handling_main_editor(current_obj);
 
-		int plugin_index = 0;
-		for (; plugin_index < editor_table.size(); plugin_index++) {
-			if (editor_table[plugin_index] == main_plugin) {
-				if (!main_editor_buttons[plugin_index]->is_visible()) {
-					main_plugin = nullptr; // If button is not visible, then no plugin is active.
-				}
-
-				break;
-			}
+		int plugin_index = editor_main_screen->get_plugin_index(main_plugin);
+		if (main_plugin && plugin_index >= 0 && !editor_main_screen->is_button_enabled(plugin_index)) {
+			main_plugin = nullptr;
 		}
+		EditorPlugin *editor_plugin_screen = editor_main_screen->get_selected_plugin();
 
 		ObjectID editor_owner_id = editor_owner->get_instance_id();
 		if (main_plugin && !skip_main_plugin) {
@@ -2671,7 +2605,7 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 				editor_plugin_screen->edit(nullptr);
 				active_plugins[editor_owner_id].erase(editor_plugin_screen);
 				// Update screen main_plugin.
-				editor_select(plugin_index);
+				editor_main_screen->select(plugin_index);
 				main_plugin->edit(current_obj);
 			} else {
 				editor_plugin_screen->edit(current_obj);
@@ -3294,9 +3228,9 @@ void EditorNode::_screenshot(bool p_use_utc) {
 }
 
 void EditorNode::_save_screenshot(NodePath p_path) {
-	Control *editor_main_screen = EditorInterface::get_singleton()->get_editor_main_screen();
-	ERR_FAIL_NULL_MSG(editor_main_screen, "Cannot get the editor main screen control.");
-	Viewport *viewport = editor_main_screen->get_viewport();
+	Control *main_screen_control = editor_main_screen->get_control();
+	ERR_FAIL_NULL_MSG(main_screen_control, "Cannot get the editor main screen control.");
+	Viewport *viewport = main_screen_control->get_viewport();
 	ERR_FAIL_NULL_MSG(viewport, "Cannot get a viewport from the editor main screen.");
 	Ref<ViewportTexture> texture = viewport->get_texture();
 	ERR_FAIL_COND_MSG(texture.is_null(), "Cannot get a viewport texture from the editor main screen.");
@@ -3501,97 +3435,9 @@ void EditorNode::_update_file_menu_closed() {
 	file_menu->set_item_disabled(file_menu->get_item_index(FILE_OPEN_PREV), false);
 }
 
-VBoxContainer *EditorNode::get_main_screen_control() {
-	return main_screen_vbox;
-}
-
-void EditorNode::editor_select(int p_which) {
-	static bool selecting = false;
-	if (selecting || changing_scene) {
-		return;
-	}
-
-	ERR_FAIL_INDEX(p_which, editor_table.size());
-
-	if (!main_editor_buttons[p_which]->is_visible()) { // Button hidden, no editor.
-		return;
-	}
-
-	selecting = true;
-
-	for (int i = 0; i < main_editor_buttons.size(); i++) {
-		main_editor_buttons[i]->set_pressed(i == p_which);
-	}
-
-	selecting = false;
-
-	EditorPlugin *new_editor = editor_table[p_which];
-	ERR_FAIL_NULL(new_editor);
-
-	if (editor_plugin_screen == new_editor) {
-		return;
-	}
-
-	if (editor_plugin_screen) {
-		editor_plugin_screen->make_visible(false);
-	}
-
-	editor_plugin_screen = new_editor;
-	editor_plugin_screen->make_visible(true);
-	editor_plugin_screen->selected_notify();
-
-	int plugin_count = editor_data.get_editor_plugin_count();
-	for (int i = 0; i < plugin_count; i++) {
-		editor_data.get_editor_plugin(i)->notify_main_screen_changed(editor_plugin_screen->get_name());
-	}
-
-	if (EDITOR_GET("interface/editor/separate_distraction_mode")) {
-		if (p_which == EDITOR_SCRIPT) {
-			set_distraction_free_mode(script_distraction_free);
-		} else {
-			set_distraction_free_mode(scene_distraction_free);
-		}
-	}
-}
-
-void EditorNode::select_editor_by_name(const String &p_name) {
-	ERR_FAIL_COND(p_name.is_empty());
-
-	for (int i = 0; i < main_editor_buttons.size(); i++) {
-		if (main_editor_buttons[i]->get_text() == p_name) {
-			editor_select(i);
-			return;
-		}
-	}
-
-	ERR_FAIL_MSG("The editor name '" + p_name + "' was not found.");
-}
-
 void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed) {
 	if (p_editor->has_main_screen()) {
-		Button *tb = memnew(Button);
-		tb->set_toggle_mode(true);
-		tb->set_theme_type_variation("MainScreenButton");
-		tb->set_name(p_editor->get_name());
-		tb->set_text(p_editor->get_name());
-
-		Ref<Texture2D> icon = p_editor->get_icon();
-		if (icon.is_null() && singleton->theme->has_icon(p_editor->get_name(), EditorStringName(EditorIcons))) {
-			icon = singleton->theme->get_icon(p_editor->get_name(), EditorStringName(EditorIcons));
-		}
-		if (icon.is_valid()) {
-			tb->set_icon(icon);
-			// Make sure the control is updated if the icon is reimported.
-			icon->connect_changed(callable_mp((Control *)tb, &Control::update_minimum_size));
-		}
-
-		tb->connect(SceneStringName(pressed), callable_mp(singleton, &EditorNode::editor_select).bind(singleton->main_editor_buttons.size()));
-
-		singleton->main_editor_buttons.push_back(tb);
-		singleton->main_editor_button_hb->add_child(tb);
-		singleton->editor_table.push_back(p_editor);
-
-		singleton->distraction_free->move_to_front();
+		singleton->editor_main_screen->add_main_plugin(p_editor);
 	}
 	singleton->editor_data.add_editor_plugin(p_editor);
 	singleton->add_child(p_editor);
@@ -3602,29 +3448,7 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed
 
 void EditorNode::remove_editor_plugin(EditorPlugin *p_editor, bool p_config_changed) {
 	if (p_editor->has_main_screen()) {
-		// Remove the main editor button and update the bindings of
-		// all buttons behind it to point to the correct main window.
-		for (int i = singleton->main_editor_buttons.size() - 1; i >= 0; i--) {
-			if (p_editor->get_name() == singleton->main_editor_buttons[i]->get_text()) {
-				if (singleton->main_editor_buttons[i]->is_pressed()) {
-					singleton->editor_select(EDITOR_SCRIPT);
-				}
-
-				memdelete(singleton->main_editor_buttons[i]);
-				singleton->main_editor_buttons.remove_at(i);
-
-				break;
-			} else {
-				singleton->main_editor_buttons[i]->disconnect(SceneStringName(pressed), callable_mp(singleton, &EditorNode::editor_select));
-				singleton->main_editor_buttons[i]->connect(SceneStringName(pressed), callable_mp(singleton, &EditorNode::editor_select).bind(i - 1));
-			}
-		}
-
-		if (singleton->editor_plugin_screen == p_editor) {
-			singleton->editor_plugin_screen = nullptr;
-		}
-
-		singleton->editor_table.erase(p_editor);
+		singleton->editor_main_screen->remove_main_plugin(p_editor);
 	}
 	p_editor->make_visible(false);
 	p_editor->clear();
@@ -3848,19 +3672,8 @@ void EditorNode::set_edited_scene_root(Node *p_scene, bool p_auto_add) {
 	}
 }
 
-int EditorNode::_get_current_main_editor() {
-	for (int i = 0; i < editor_table.size(); i++) {
-		if (editor_table[i] == editor_plugin_screen) {
-			return i;
-		}
-	}
-
-	return 0;
-}
-
 Dictionary EditorNode::_get_main_scene_state() {
 	Dictionary state;
-	state["main_tab"] = _get_current_main_editor();
 	state["scene_tree_offset"] = SceneTreeDock::get_singleton()->get_tree_editor()->get_scene_tree()->get_vscroll_bar()->get_value();
 	state["property_edit_offset"] = InspectorDock::get_inspector_singleton()->get_scroll_offset();
 	state["node_filter"] = SceneTreeDock::get_singleton()->get_filter();
@@ -3874,32 +3687,19 @@ void EditorNode::_set_main_scene_state(Dictionary p_state, Node *p_for_scene) {
 
 	changing_scene = false;
 
-	int current_tab = -1;
-	for (int i = 0; i < editor_table.size(); i++) {
-		if (editor_plugin_screen == editor_table[i]) {
-			current_tab = i;
-			break;
-		}
-	}
-
-	if (p_state.has("editor_index")) {
-		int index = p_state["editor_index"];
-		if (current_tab < 2) { // If currently in spatial/2d, only switch to spatial/2d. If currently in script, stay there.
-			if (index < 2 || !get_edited_scene()) {
-				editor_select(index);
-			}
-		}
-	}
-
 	if (get_edited_scene()) {
+		int current_tab = editor_main_screen->get_selected_index();
 		if (current_tab < 2) {
-			Node *editor_node = SceneTreeDock::get_singleton()->get_tree_editor()->get_selected();
-			editor_node = editor_node == nullptr ? get_edited_scene() : editor_node;
+			// Switch between 2D and 3D if currently in 2D or 3D.
+			Node *selected_node = SceneTreeDock::get_singleton()->get_tree_editor()->get_selected();
+			if (!selected_node) {
+				selected_node = get_edited_scene();
+			}
 
-			if (Object::cast_to<CanvasItem>(editor_node)) {
-				editor_select(EDITOR_2D);
-			} else if (Object::cast_to<Node3D>(editor_node)) {
-				editor_select(EDITOR_3D);
+			if (Object::cast_to<CanvasItem>(selected_node)) {
+				editor_main_screen->select(EditorMainScreen::EDITOR_2D);
+			} else if (Object::cast_to<Node3D>(selected_node)) {
+				editor_main_screen->select(EditorMainScreen::EDITOR_3D);
 			}
 		}
 	}
@@ -5357,18 +5157,7 @@ void EditorNode::_save_central_editor_layout_to_config(Ref<ConfigFile> p_config_
 
 	// Main editor (plugin).
 
-	int selected_main_editor_idx = -1;
-	for (int i = 0; i < main_editor_buttons.size(); i++) {
-		if (main_editor_buttons[i]->is_pressed()) {
-			selected_main_editor_idx = i;
-			break;
-		}
-	}
-	if (selected_main_editor_idx != -1) {
-		p_config_file->set_value(EDITOR_NODE_CONFIG_SECTION, "selected_main_editor_idx", selected_main_editor_idx);
-	} else {
-		p_config_file->set_value(EDITOR_NODE_CONFIG_SECTION, "selected_main_editor_idx", Variant());
-	}
+	editor_main_screen->save_layout_to_config(p_config_file, EDITOR_NODE_CONFIG_SECTION);
 }
 
 void EditorNode::_load_central_editor_layout_from_config(Ref<ConfigFile> p_config_file) {
@@ -5390,12 +5179,7 @@ void EditorNode::_load_central_editor_layout_from_config(Ref<ConfigFile> p_confi
 
 	// Main editor (plugin).
 
-	if (p_config_file->has_section_key(EDITOR_NODE_CONFIG_SECTION, "selected_main_editor_idx")) {
-		int selected_main_editor_idx = p_config_file->get_value(EDITOR_NODE_CONFIG_SECTION, "selected_main_editor_idx");
-		if (selected_main_editor_idx >= 0 && selected_main_editor_idx < main_editor_buttons.size()) {
-			callable_mp(this, &EditorNode::editor_select).call_deferred(selected_main_editor_idx);
-		}
-	}
+	editor_main_screen->load_layout_from_config(p_config_file, EDITOR_NODE_CONFIG_SECTION);
 }
 
 void EditorNode::_save_window_settings_to_config(Ref<ConfigFile> p_layout, const String &p_section) {
@@ -5716,15 +5500,9 @@ void EditorNode::_cancel_close_scene_tab() {
 
 void EditorNode::_toggle_distraction_free_mode() {
 	if (EDITOR_GET("interface/editor/separate_distraction_mode")) {
-		int screen = -1;
-		for (int i = 0; i < editor_table.size(); i++) {
-			if (editor_plugin_screen == editor_table[i]) {
-				screen = i;
-				break;
-			}
-		}
+		int screen = editor_main_screen->get_selected_index();
 
-		if (screen == EDITOR_SCRIPT) {
+		if (screen == EditorMainScreen::EDITOR_SCRIPT) {
 			script_distraction_free = !script_distraction_free;
 			set_distraction_free_mode(script_distraction_free);
 		} else {
@@ -5733,6 +5511,18 @@ void EditorNode::_toggle_distraction_free_mode() {
 		}
 	} else {
 		set_distraction_free_mode(distraction_free->is_pressed());
+	}
+}
+
+void EditorNode::update_distraction_free_mode() {
+	if (!EDITOR_GET("interface/editor/separate_distraction_mode")) {
+		return;
+	}
+	int screen = editor_main_screen->get_selected_index();
+	if (screen == EditorMainScreen::EDITOR_SCRIPT) {
+		set_distraction_free_mode(script_distraction_free);
+	} else {
+		set_distraction_free_mode(scene_distraction_free);
 	}
 }
 
@@ -6625,25 +6415,20 @@ void EditorNode::_feature_profile_changed() {
 		editor_dock_manager->set_dock_enabled(ImportDock::get_singleton(), !fs_dock_disabled && !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_IMPORT_DOCK));
 		editor_dock_manager->set_dock_enabled(history_dock, !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_HISTORY_DOCK));
 
-		main_editor_buttons[EDITOR_3D]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D));
-		main_editor_buttons[EDITOR_SCRIPT]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_SCRIPT));
+		editor_main_screen->set_button_enabled(EditorMainScreen::EDITOR_3D, !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D));
+		editor_main_screen->set_button_enabled(EditorMainScreen::EDITOR_SCRIPT, !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_SCRIPT));
 		if (AssetLibraryEditorPlugin::is_available()) {
-			main_editor_buttons[EDITOR_ASSETLIB]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_ASSET_LIB));
-		}
-		if ((profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D) && singleton->main_editor_buttons[EDITOR_3D]->is_pressed()) ||
-				(profile->is_feature_disabled(EditorFeatureProfile::FEATURE_SCRIPT) && singleton->main_editor_buttons[EDITOR_SCRIPT]->is_pressed()) ||
-				(AssetLibraryEditorPlugin::is_available() && profile->is_feature_disabled(EditorFeatureProfile::FEATURE_ASSET_LIB) && singleton->main_editor_buttons[EDITOR_ASSETLIB]->is_pressed())) {
-			editor_select(EDITOR_2D);
+			editor_main_screen->set_button_enabled(EditorMainScreen::EDITOR_ASSETLIB, !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_ASSET_LIB));
 		}
 	} else {
 		editor_dock_manager->set_dock_enabled(ImportDock::get_singleton(), true);
 		editor_dock_manager->set_dock_enabled(NodeDock::get_singleton(), true);
 		editor_dock_manager->set_dock_enabled(FileSystemDock::get_singleton(), true);
 		editor_dock_manager->set_dock_enabled(history_dock, true);
-		main_editor_buttons[EDITOR_3D]->set_visible(true);
-		main_editor_buttons[EDITOR_SCRIPT]->set_visible(true);
+		editor_main_screen->set_button_enabled(EditorMainScreen::EDITOR_3D, true);
+		editor_main_screen->set_button_enabled(EditorMainScreen::EDITOR_SCRIPT, true);
 		if (AssetLibraryEditorPlugin::is_available()) {
-			main_editor_buttons[EDITOR_ASSETLIB]->set_visible(true);
+			editor_main_screen->set_button_enabled(EditorMainScreen::EDITOR_ASSETLIB, true);
 		}
 	}
 }
@@ -7178,24 +6963,17 @@ EditorNode::EditorNode() {
 	scene_tabs->add_extra_button(distraction_free);
 	distraction_free->connect(SceneStringName(pressed), callable_mp(this, &EditorNode::_toggle_distraction_free_mode));
 
-	scene_root_parent = memnew(PanelContainer);
-	scene_root_parent->set_custom_minimum_size(Size2(0, 80) * EDSCALE);
-	scene_root_parent->add_theme_style_override(SceneStringName(panel), theme->get_stylebox(SNAME("Content"), EditorStringName(EditorStyles)));
-	scene_root_parent->set_draw_behind_parent(true);
-	srt->add_child(scene_root_parent);
-	scene_root_parent->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	editor_main_screen = memnew(EditorMainScreen);
+	editor_main_screen->set_custom_minimum_size(Size2(0, 80) * EDSCALE);
+	editor_main_screen->set_draw_behind_parent(true);
+	srt->add_child(editor_main_screen);
+	editor_main_screen->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	scene_root = memnew(SubViewport);
 	scene_root->set_embedding_subwindows(true);
 	scene_root->set_disable_3d(true);
 	scene_root->set_disable_input(true);
 	scene_root->set_as_audio_listener_2d(true);
-
-	main_screen_vbox = memnew(VBoxContainer);
-	main_screen_vbox->set_name("MainScreen");
-	main_screen_vbox->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	main_screen_vbox->add_theme_constant_override("separation", 0);
-	scene_root_parent->add_child(main_screen_vbox);
 
 	bool global_menu = !bool(EDITOR_GET("interface/editor/use_embedded_menu")) && NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_GLOBAL_MENU);
 	bool can_expand = bool(EDITOR_GET("interface/editor/expand_to_title")) && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_EXTEND_TO_TITLE);
@@ -7390,8 +7168,9 @@ EditorNode::EditorNode() {
 		left_spacer->add_child(project_title);
 	}
 
-	main_editor_button_hb = memnew(HBoxContainer);
+	HBoxContainer *main_editor_button_hb = memnew(HBoxContainer);
 	main_editor_button_hb->set_mouse_filter(Control::MOUSE_FILTER_STOP);
+	editor_main_screen->set_button_container(main_editor_button_hb);
 	title_bar->add_child(main_editor_button_hb);
 
 	// Options are added and handled by DebuggerEditorPlugin.
@@ -7864,7 +7643,6 @@ EditorNode::EditorNode() {
 	update_spinner_step_msec = OS::get_singleton()->get_ticks_msec();
 	update_spinner_step_frame = Engine::get_singleton()->get_frames_drawn();
 
-	editor_plugin_screen = nullptr;
 	editor_plugins_over = memnew(EditorPluginList);
 	editor_plugins_force_over = memnew(EditorPluginList);
 	editor_plugins_force_input_forwarding = memnew(EditorPluginList);
