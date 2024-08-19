@@ -153,13 +153,13 @@ public:
 	bool is_ignoring_valid_connection_type() const;
 
 	int get_input_port_count();
-	Vector2 get_input_port_position(int p_port_idx);
+	virtual Vector2 get_input_port_position(int p_port_idx);
 	int get_input_port_type(int p_port_idx);
 	Color get_input_port_color(int p_port_idx);
 	int get_input_port_slot(int p_port_idx);
 
 	int get_output_port_count();
-	Vector2 get_output_port_position(int p_port_idx);
+	virtual Vector2 get_output_port_position(int p_port_idx);
 	int get_output_port_type(int p_port_idx);
 	Color get_output_port_color(int p_port_idx);
 	int get_output_port_slot(int p_port_idx);

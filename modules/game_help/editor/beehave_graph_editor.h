@@ -142,7 +142,7 @@ public:
 	}
 	void _place_nodes(Ref<BeehaveGraphTreeNode> p_tree_node)
 	{
-		p_tree_node->item->set_position_offset(Vector2( p_tree_node->x,p_tree_node->y));
+		p_tree_node->item->set_position_offset(Vector2( p_tree_node->pos_x,p_tree_node->pos_y));
 
 		for(uint32_t i = 0; i < p_tree_node->children.size(); i++)
 		{
@@ -263,30 +263,7 @@ public:
 
 	virtual PackedVector2Array get_connection_line(const Vector2 &p_from, const Vector2 &p_to) const override
 	{
-		Vector2 from = p_from;
-		Vector2 to = p_to;
-		TypedArray<BeehaveGraphNodes> nodes = _get_child_nodes();
-		for(int i = 0; i < nodes.size(); ++i)
-		{
-			BeehaveGraphNodes* child = Object::cast_to<BeehaveGraphNodes>(nodes[i]);
-			for(int port = 0; port < child->get_input_port_count(); ++port)
-			{
-				if (! (child->get_position_offset() + child->get_input_port_position(port)).is_equal_approx(to))
-				{
-					continue;
-				}
-				to = child->get_position_offset() + child->get_custom_input_port_position(horizontal_layout);
-
-			}
-
-			for(int port = 0; port < child->get_output_port_count(); ++port)
-			{
-				if( ! (child->get_position_offset() + child->get_output_port_position(port)).is_equal_approx(from))
-					continue;
-				from = child->get_position_offset() + child->get_custom_output_port_position(horizontal_layout);
-			}
-		}
-		return _get_elbow_connection_line(from, to);
+		return _get_elbow_connection_line(p_from, p_to);
 	}
 
 	PackedVector2Array _get_elbow_connection_line(Vector2 p_from, Vector2 p_to) const
@@ -358,8 +335,8 @@ public:
 			float scale_factor = from_node->get_rect().size.x / from_node->get_size().x;
 
 			auto line = _get_elbow_connection_line(
-				from_node->get_position() + from_node->get_custom_output_port_position(horizontal_layout) * scale_factor,
-				to_node->get_position() + to_node->get_custom_input_port_position(horizontal_layout) * scale_factor
+				(from_node->get_position_offset() + from_node->get_output_port_position(0)) * get_zoom(),
+				(to_node->get_position_offset() + to_node->get_input_port_position(0)) * get_zoom()
 			);
 
 			Curve2D curve;

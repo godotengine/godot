@@ -182,41 +182,46 @@ public:
 		{
 			if(is_slot_enabled_left(1))
 			{
-				draw_texture(frames->icon_port_left,Vector2(0,get_size().y/2) + Vector2(-4,10),p_color);
+				draw_texture(frames->icon_port_left, get_input_port_position(0) + Vector2(-4, 10),p_color);
 			}
 			if(is_slot_enabled_right(1))
 			{
-				draw_texture(frames->icon_port_right,Vector2(get_size().x, get_size().y/2) + Vector2(-4, 10),p_color);
+				draw_texture(frames->icon_port_right, get_output_port_position(0) + Vector2(5, -7),p_color);
 			}
 		}
 		else
 		{
 			if(p_slot_index == 0 && is_slot_enabled_left(0))
 			{
-				draw_texture(frames->icon_port_top,Vector2(get_size().x/2,0) + Vector2(5,-7),p_color);
+				draw_texture(frames->icon_port_top, get_input_port_position(0) + Vector2(-5, 10),p_color);
 			}
 			else if(p_slot_index == 1 )
 			{
-				draw_texture(frames->icon_port_bottom,Vector2(get_size().x/2,get_size().y) + Vector2(5,-7),p_color);
+				draw_texture(frames->icon_port_bottom, get_output_port_position(0) + Vector2(5, -7),p_color);
 			}
 		}
 	}
-	Vector2 get_custom_input_port_position(bool p_horizontal) const
+	virtual Vector2 get_input_port_position(int p_port_idx) override
 	{
-		if(p_horizontal)
+		if (horizontal)
 		{
-			return Vector2(0, get_size().y/2);
+			return  Vector2(2, get_size().y / 2) ;
 		}
-		return Vector2(get_size().x/2, 0);
+		else
+		{
+			return Vector2(get_size().x / 2, 2) ;
+		}
 	}
-
-	Vector2 get_custom_output_port_position(bool p_horizontal) const
+	virtual Vector2 get_output_port_position(int p_port_idx) override
 	{
-		if(p_horizontal)
+		if (horizontal)
 		{
-			return Vector2(get_size().x, get_size().y/2);
+			return  Vector2(get_size().x - 2, get_size().y / 2);
 		}
-		return Vector2(get_size().x/2, get_size().y);
+		else
+		{
+			return Vector2(get_size().x / 2, get_size().y - 2);
+		}
 	}
 	void set_status(int p_status)
 	{
@@ -284,6 +289,8 @@ public:
 	void set_text(String p_text)
 	{
 		text = p_text;
+		text = String::num_int64(get_position_offset().x) + " " + String::num_int64(get_position_offset().y)
+			+ "\n" + String::num_int64(get_position().x) + " " + String::num_int64(get_position().y);
 		label->set_text(text);
 	}
 	void set_title_text(String p_text)
@@ -309,9 +316,11 @@ class BeehaveGraphTreeNode : public RefCounted
     public:
     float SIBLING_DISTANCE = 90.0;
     float LEVEL_DISTANCE = 180.0;
-    float x = 0;
-    float y = 0;
+    float pos_x = 0;
+    float pos_y = 0;
     float mod = 0;
+    Vector2 total_size;
+	
     BeehaveGraphTreeNode* parent = nullptr;
     LocalVector<Ref<BeehaveGraphTreeNode>> children;
     BeehaveGraphNodes* item = nullptr;
@@ -413,272 +422,75 @@ class BeehaveGraphTreeNode : public RefCounted
         return children[children.size() - 1];
     }
 
-    void update_position(bool p_horizontal_layout)
+	void update_bound_size(bool p_horizontal_layout)
+	{
+        for(uint32_t i = 0; i < children.size(); i++)
+        {
+            children[i]->update_bound_size(p_horizontal_layout);
+        }
+        if(children.size() > 0)
+        {
+            total_size = Vector2(0,0);
+            for(uint32_t i = 0; i < children.size(); i++)
+            {
+                total_size += children[i]->total_size;
+            }
+            if(p_horizontal_layout)
+            {
+                total_size.y += SIBLING_DISTANCE * (children.size() - 1);
+            }
+            else
+            {
+                total_size.x += SIBLING_DISTANCE * (children.size() - 1);
+            }
+        }
+        else
+        {
+            total_size = get_cell_size();
+        }
+	}
+	Vector2 get_cell_size()
+	{
+		return Vector2(180, 90);
+	}
+
+    void compute_position(const Vector2& p_offset,bool p_horizontal_layout)
     {
-        _initialize_nodes(this,0);
-        _calculate_initial_x(this);
-
-        _check_all_children_on_screen(this);
-        _calculate_final_positions(this,0);
-
+        
         if(p_horizontal_layout)
         {
-            _swap_x_y(this);
-            _calculate_x(this,0);
-        }
-        else
-        {
-            _calculate_y(this,0);
-        }
-
-    }
-
-    void _initialize_nodes(Ref<BeehaveGraphTreeNode> p_node,int depth)
-    {
-        p_node->x = -1;
-        p_node->y = depth;
-        p_node->mod = 0;
-
-        for(uint32_t i = 0; i < p_node->children.size(); i++)
-        {
-            _initialize_nodes(p_node->children[i],depth + 1);
-        }
-    }
-
-    void _calculate_initial_x(Ref<BeehaveGraphTreeNode> p_node)
-    {
-        for(uint32_t i = 0; i < p_node->children.size(); i++)
-        {
-            _calculate_initial_x(p_node->children[i]);
-        }
-        if(p_node->is_leaf())
-        {
-            if(!p_node->is_most_left())
+            pos_x = p_offset.x;
+			pos_y = p_offset.y + (total_size.y / 2);
+            Vector2 offset = p_offset;
+            offset.x += get_cell_size().x + LEVEL_DISTANCE;
+            for(uint32_t i = 0; i < children.size(); i++)
             {
-                Ref<BeehaveGraphTreeNode> p_node_prev = p_node->get_previous_sibling();
-                p_node->x = p_node_prev->x + p_node_prev->item->get_layout_size() + SIBLING_DISTANCE;
-            }
-            else
-            {
-                p_node->x = 0;
+                children[i]->compute_position(offset,p_horizontal_layout);
+                offset.y += children[i]->total_size.y + SIBLING_DISTANCE;
             }
         }
         else
         {
-            float mid = 0;
-            if(p_node->children.size() == 1)
+			pos_x = p_offset.x + total_size.x / 2;
+			pos_y = p_offset.y;
+            Vector2 offset = p_offset;
+            offset.y += get_cell_size().y + LEVEL_DISTANCE;
+            for(uint32_t i = 0; i < children.size(); i++)
             {
-                float offset = p_node->children[0]->item->get_layout_size() - p_node->item->get_layout_size();
-                offset /= 2;
-                mid = p_node->children[0]->x + offset;
-            }
-            else
-            {
-                Ref<BeehaveGraphTreeNode> p_node_most_left = p_node->get_most_left_child();
-                Ref<BeehaveGraphTreeNode> p_node_most_right = p_node->get_most_right_child();
-                mid = (p_node_most_left->x + p_node_most_right->x + p_node_most_right->item->get_layout_size() - p_node->item->get_layout_size()) / 2;
-            }
-
-            if(p_node->is_most_left())
-            {
-                p_node->x = mid;
-            }
-            else
-            {
-                p_node->x = p_node->get_previous_sibling()->x + p_node->get_previous_sibling()->item->get_layout_size() + SIBLING_DISTANCE;
-            }
-            p_node->mod = p_node->x - mid;
-        }
-
-
-        if(!p_node->is_leaf() && !p_node->is_most_left())
-        {
-            _check_for_conflicts(p_node);
-        }
-    }
-
-    void _calculate_final_positions(Ref<BeehaveGraphTreeNode> p_node,float mod_sum)
-    {
-        p_node->x += mod_sum;
-        mod_sum += p_node->mod;
-        for(uint32_t i = 0; i < p_node->children.size(); i++)
-        {
-            _calculate_final_positions(p_node->children[i],mod_sum);
-        }
-    }
-
-    void _check_all_children_on_screen(Ref<BeehaveGraphTreeNode> p_node)
-    {
-        HashMap<uint32_t,float> node_contour;
-        _get_left_contour(p_node,0,node_contour);
-        float shift_amount = 0;
-        for(auto& it : node_contour)
-        {
-            if(it.value + shift_amount < 0)
-            {
-                shift_amount = -it.value;
-            }
-        }
-        if(shift_amount > 0)
-        {
-            p_node->x += shift_amount;
-            p_node->mod += shift_amount;
-        }
-    }
-
-    void _check_for_conflicts(Ref<BeehaveGraphTreeNode> p_node)
-    {
-        float min_distance = SIBLING_DISTANCE;
-        float shift_value = 0;
-        Ref<BeehaveGraphTreeNode> shift_sibling;
-
-
-        HashMap<uint32_t,float> node_contour;
-        _get_left_contour(p_node,0,node_contour);
-
-        Ref<BeehaveGraphTreeNode> sibling = p_node->get_most_left_sibling();
-
-        while(sibling.is_valid() && sibling != p_node)
-        {
-            HashMap<uint32_t,float> sibling_contour;
-            _get_right_contour(sibling,0,sibling_contour);
-
-            for(uint32_t level = p_node->y + 1; level < MIN(sibling_contour.size(),node_contour.size()); level++)
-            {
-
-                float distance = node_contour[level] - sibling_contour[level];
-                if(distance + shift_value < min_distance)
-                {
-                    shift_value = min_distance - distance;
-                    shift_sibling = sibling;
-                }
-            }
-            sibling = sibling->get_next_sibling();
-        }
-        if(shift_value > 0)
-        {
-            p_node->x += shift_value;
-            p_node->mod += shift_value;
-            if(shift_sibling.is_valid())
-            {
-                _center_nodes_between(shift_sibling,p_node);
-            }
-        }
-
-    }
-    void _center_nodes_between(Ref<BeehaveGraphTreeNode> p_left_node,Ref<BeehaveGraphTreeNode> p_right_node)
-    {
-        auto left_index = p_left_node->children.find(p_left_node);
-        auto right_index = p_right_node->children.find(p_right_node);
-
-        int num_nodes_between = right_index - left_index - 1;
-        if(num_nodes_between > 0)
-        {
-            // The extra distance that needs to be split into num_nodes_between + 1
-            // in order to find the new node spacing so that nodes are equally spa
-            float distance_to_allocate = p_right_node->x - p_left_node->x - p_left_node->item->get_layout_size();
-            // Subtract sizes on nodes in between
-            for(int i = left_index + 1; i < right_index; i++)
-            {
-                distance_to_allocate -= p_left_node->children[i]->item->get_layout_size();
-            }
-            float distance_between_nodes = distance_to_allocate / (num_nodes_between + 1);
-
-            Ref<BeehaveGraphTreeNode> prev_node = p_left_node;
-            Ref<BeehaveGraphTreeNode> middle_node = p_left_node->get_next_sibling();
-
-            while(middle_node != p_right_node)
-            {
-                float desired_x = prev_node->x + prev_node->item->get_layout_size() + distance_between_nodes;
-                float offset = desired_x - middle_node->x;
-                middle_node->x += offset;
-                middle_node->mod += offset;
-                prev_node = middle_node;
-                middle_node = middle_node->get_next_sibling();	
+                children[i]->compute_position(offset,p_horizontal_layout);
+                offset.x += children[i]->total_size.x + SIBLING_DISTANCE;
             }
         }
     }
 
-    void _get_left_contour(Ref<BeehaveGraphTreeNode> p_node,float mod_sum,HashMap<uint32_t,float>& values)
+    void update_position(bool p_horizontal_layout)
     {
-        float node_left = p_node->x + mod_sum;
-        int depth = p_node->y;
-        if(!values.has(depth))
-        {
-            values[depth] = node_left;
-        }
-        else
-        {
-            values[depth] = MIN(values[depth],node_left);
-        }
-        for(uint32_t i = 0; i < p_node->children.size(); i++)
-        {
-            _get_left_contour(p_node->children[i],mod_sum + p_node->mod,values);
-        }
-    }
-    void _get_right_contour(Ref<BeehaveGraphTreeNode> p_node,float mod_sum,HashMap<uint32_t,float>& values)
-    {
-        float node_right = p_node->x + mod_sum + p_node->item->get_layout_size();
-        int depth = p_node->y;
-        if(!values.has(depth))
-        {
-            values[depth] = node_right;
-        }
-        else
-        {
-            values[depth] = MAX(values[depth],node_right);
-        }
-        for(uint32_t i = 0; i < p_node->children.size(); i++)
-        {
-            _get_right_contour(p_node->children[i],mod_sum + p_node->mod,values);
-        }
+        update_bound_size(p_horizontal_layout);
+        Vector2 offset = Vector2(0,0);
+        compute_position(offset,p_horizontal_layout);
+
+
     }
 
-    void _swap_x_y(Ref<BeehaveGraphTreeNode> p_node)
-    {
-        for(uint32_t i = 0; i < p_node->children.size(); i++)
-        {
-            _swap_x_y(p_node->children[i]);
-        }
-
-        int temp = p_node->x;
-        p_node->x = p_node->y;
-        p_node->y = temp;
-    }
-
-    void _calculate_x(Ref<BeehaveGraphTreeNode> p_node,int offset)
-    {
-        p_node->x = offset;
-        Ref<BeehaveGraphTreeNode> sibling = p_node->get_most_left_sibling();
-        int max_size = p_node->item->get_size().x;
-        while(sibling.is_valid())
-        {
-            max_size = MAX(max_size,sibling->item->get_size().x);
-            sibling = sibling->get_next_sibling();
-        }
-
-        for(uint32_t i = 0; i < p_node->children.size(); i++)
-        {
-            _calculate_x(p_node->children[i],offset + max_size + LEVEL_DISTANCE * EDSCALE);
-        }
-    }
-
-    void _calculate_y(Ref<BeehaveGraphTreeNode> p_node,int offset)
-    {
-        p_node->y = offset;
-        Ref<BeehaveGraphTreeNode> sibling = p_node->get_most_left_sibling();
-        int max_size = p_node->item->get_size().y;
-        while(sibling.is_valid())
-        {
-            max_size = MAX(max_size,sibling->item->get_size().y);
-            sibling = sibling->get_next_sibling();
-        }
-
-        for(uint32_t i = 0; i < p_node->children.size(); i++)
-        {
-            _calculate_y(p_node->children[i],offset + max_size + LEVEL_DISTANCE * EDSCALE);
-        }
-
-    }
 
 };
