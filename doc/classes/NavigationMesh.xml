@@ -139,7 +139,7 @@
 			The physics layers to scan for static colliders.
 			Only used when [member geometry_parsed_geometry_type] is [constant PARSED_GEOMETRY_STATIC_COLLIDERS] or [constant PARSED_GEOMETRY_BOTH].
 		</member>
-		<member name="geometry_parsed_geometry_type" type="int" setter="set_parsed_geometry_type" getter="get_parsed_geometry_type" enum="NavigationMesh.ParsedGeometryType" default="0">
+		<member name="geometry_parsed_geometry_type" type="int" setter="set_parsed_geometry_type" getter="get_parsed_geometry_type" enum="NavigationMesh.ParsedGeometryType" default="2">
 			Determines which type of nodes will be parsed as geometry. See [enum ParsedGeometryType] for possible values.
 		</member>
 		<member name="geometry_source_geometry_mode" type="int" setter="set_source_geometry_mode" getter="get_source_geometry_mode" enum="NavigationMesh.SourceGeometryMode" default="0">
