@@ -34,9 +34,9 @@
 #include "editor/editor_inspector.h"
 #include "editor/editor_locale_dialog.h"
 #include "editor/filesystem_dock.h"
+#include "editor/gui/editor_spin_slider.h"
 
 class Button;
-class EditorSpinSlider;
 class MarginContainer;
 
 class EditorPropertyArrayObject : public RefCounted {

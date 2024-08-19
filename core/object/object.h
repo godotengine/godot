@@ -396,24 +396,24 @@ public:                                                             \
                                                                     \
 private:
 
-#define GDCLASS(m_class, m_inherits)                                                                                                             \
+#define GDCLASS_TEMPLATE(m_class, m_class_str, m_inherits, m_inherits_str, disable_token)                                                        \
 private:                                                                                                                                         \
 	void operator=(const m_class &p_rval) {}                                                                                                     \
 	friend class ::ClassDB;                                                                                                                      \
                                                                                                                                                  \
 public:                                                                                                                                          \
 	typedef m_class self_type;                                                                                                                   \
-	static constexpr bool _class_is_enabled = !bool(GD_IS_DEFINED(ClassDB_Disable_##m_class)) && m_inherits::_class_is_enabled;                  \
+	static constexpr bool _class_is_enabled = !bool(GD_IS_DEFINED(ClassDB_Disable_##disable_token)) && m_inherits::_class_is_enabled;            \
 	virtual String get_class() const override {                                                                                                  \
 		if (_get_extension()) {                                                                                                                  \
 			return _get_extension()->class_name.operator String();                                                                               \
 		}                                                                                                                                        \
-		return String(#m_class);                                                                                                                 \
+		return String(m_class_str);                                                                                                              \
 	}                                                                                                                                            \
 	virtual const StringName *_get_class_namev() const override {                                                                                \
 		static StringName _class_name_static;                                                                                                    \
 		if (unlikely(!_class_name_static)) {                                                                                                     \
-			StringName::assign_static_unique_class_name(&_class_name_static, #m_class);                                                          \
+			StringName::assign_static_unique_class_name(&_class_name_static, m_class_str);                                                       \
 		}                                                                                                                                        \
 		return &_class_name_static;                                                                                                              \
 	}                                                                                                                                            \
@@ -422,20 +422,20 @@ public:                                                                         
 		return &ptr;                                                                                                                             \
 	}                                                                                                                                            \
 	static _FORCE_INLINE_ String get_class_static() {                                                                                            \
-		return String(#m_class);                                                                                                                 \
+		return String(m_class_str);                                                                                                              \
 	}                                                                                                                                            \
 	static _FORCE_INLINE_ String get_parent_class_static() {                                                                                     \
 		return m_inherits::get_class_static();                                                                                                   \
 	}                                                                                                                                            \
 	static void get_inheritance_list_static(List<String> *p_inheritance_list) {                                                                  \
 		m_inherits::get_inheritance_list_static(p_inheritance_list);                                                                             \
-		p_inheritance_list->push_back(String(#m_class));                                                                                         \
+		p_inheritance_list->push_back(String(m_class_str));                                                                                      \
 	}                                                                                                                                            \
 	virtual bool is_class(const String &p_class) const override {                                                                                \
 		if (_get_extension() && _get_extension()->is_class(p_class)) {                                                                           \
 			return true;                                                                                                                         \
 		}                                                                                                                                        \
-		return (p_class == (#m_class)) ? true : m_inherits::is_class(p_class);                                                                   \
+		return (p_class == (m_class_str)) ? true : m_inherits::is_class(p_class);                                                                \
 	}                                                                                                                                            \
 	virtual bool is_class_ptr(void *p_ptr) const override { return (p_ptr == get_class_ptr_static()) ? true : m_inherits::is_class_ptr(p_ptr); } \
                                                                                                                                                  \
@@ -508,13 +508,13 @@ protected:                                                                      
 		}                                                                                                                                        \
 		p_list->push_back(PropertyInfo(Variant::NIL, get_class_static(), PROPERTY_HINT_NONE, get_class_static(), PROPERTY_USAGE_CATEGORY));      \
 		if (!_is_gpl_reversed()) {                                                                                                               \
-			::ClassDB::get_property_list(#m_class, p_list, true, this);                                                                          \
+			::ClassDB::get_property_list(m_class_str, p_list, true, this);                                                                       \
 		}                                                                                                                                        \
 		if (m_class::_get_get_property_list() != m_inherits::_get_get_property_list()) {                                                         \
 			_get_property_list(p_list);                                                                                                          \
 		}                                                                                                                                        \
 		if (_is_gpl_reversed()) {                                                                                                                \
-			::ClassDB::get_property_list(#m_class, p_list, true, this);                                                                          \
+			::ClassDB::get_property_list(m_class_str, p_list, true, this);                                                                       \
 		}                                                                                                                                        \
 		if (p_reversed) {                                                                                                                        \
 			m_inherits::_get_property_listv(p_list, p_reversed);                                                                                 \
@@ -567,6 +567,8 @@ protected:                                                                      
 	}                                                                                                                                            \
                                                                                                                                                  \
 private:
+
+#define GDCLASS(m_class, m_inherits) GDCLASS_TEMPLATE(m_class, #m_class, m_inherits, #m_inherits, m_class)
 
 #define OBJ_SAVE_TYPE(m_class)                                          \
 public:                                                                 \

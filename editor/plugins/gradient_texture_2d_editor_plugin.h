@@ -32,10 +32,10 @@
 #define GRADIENT_TEXTURE_2D_EDITOR_PLUGIN_H
 
 #include "editor/editor_inspector.h"
+#include "editor/gui/editor_spin_slider.h"
 #include "editor/plugins/editor_plugin.h"
 
 class Button;
-class EditorSpinSlider;
 class GradientTexture2D;
 
 class GradientTexture2DEdit : public Control {

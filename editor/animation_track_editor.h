@@ -33,6 +33,7 @@
 
 #include "editor/editor_data.h"
 #include "editor/editor_properties.h"
+#include "editor/gui/editor_spin_slider.h"
 #include "editor/property_selector.h"
 #include "scene/3d/node_3d.h"
 #include "scene/gui/control.h"
@@ -44,7 +45,6 @@
 class AnimationTrackEditor;
 class AnimationTrackEdit;
 class CheckBox;
-class EditorSpinSlider;
 class HSlider;
 class OptionButton;
 class PanelContainer;

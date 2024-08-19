@@ -32,9 +32,9 @@
 #define GRADIENT_EDITOR_PLUGIN_H
 
 #include "editor/editor_inspector.h"
+#include "editor/gui/editor_spin_slider.h"
 #include "editor/plugins/editor_plugin.h"
 
-class EditorSpinSlider;
 class ColorPicker;
 class PopupPanel;
 class GradientTexture1D;

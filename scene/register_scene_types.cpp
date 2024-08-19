@@ -409,6 +409,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(LinkButton);
 	GDREGISTER_CLASS(Panel);
 	GDREGISTER_VIRTUAL_CLASS(Range);
+	GDREGISTER_VIRTUAL_CLASS(RangeInt);
 
 	OS::get_singleton()->yield(); // may take time to init
 

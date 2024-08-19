@@ -31,6 +31,7 @@
 #ifndef NODE_3D_EDITOR_PLUGIN_H
 #define NODE_3D_EDITOR_PLUGIN_H
 
+#include "editor/gui/editor_spin_slider.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/node_3d_editor_gizmos.h"
 #include "editor/themes/editor_scale.h"
@@ -45,7 +46,6 @@ class ConfirmationDialog;
 class DirectionalLight3D;
 class EditorData;
 class EditorSelection;
-class EditorSpinSlider;
 class HSplitContainer;
 class LineEdit;
 class MenuButton;

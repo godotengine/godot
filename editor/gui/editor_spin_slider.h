@@ -35,8 +35,16 @@
 #include "scene/gui/range.h"
 #include "scene/gui/texture_rect.h"
 
-class EditorSpinSlider : public Range {
-	GDCLASS(EditorSpinSlider, Range);
+// clang-format off
+#define ESS_CLASS_MAP \
+	std::is_same_v<T, double> ? "EditorSpinSlider" : \
+	std::is_same_v<T, int64_t> ? "EditorSpinSliderInt" : \
+	"EditorSpinSliderInvalid"
+// clang-format on
+
+template <typename T>
+class EditorSpinSliderTemplate : public RangeTemplate<T> {
+	GDCLASS_TEMPLATE(EditorSpinSliderTemplate<T>, ESS_CLASS_MAP, RangeTemplate<T>, RANGE_CLASS_MAP, EditorSpinSliderTemplate)
 
 	String label;
 	String suffix;
@@ -62,7 +70,7 @@ class EditorSpinSlider : public Range {
 	float grabbing_spinner_dist_cache = 0.0f;
 	float grabbing_spinner_speed = 0.0f;
 	Vector2 grabbing_spinner_mouse_pos;
-	double pre_grab_value = 0.0;
+	T pre_grab_value = 0;
 
 	Control *value_input_popup = nullptr;
 	LineEdit *value_input = nullptr;
@@ -122,7 +130,10 @@ public:
 	LineEdit *get_line_edit();
 
 	virtual Size2 get_minimum_size() const override;
-	EditorSpinSlider();
+	EditorSpinSliderTemplate();
 };
+
+using EditorSpinSlider = EditorSpinSliderTemplate<double>;
+using EditorSpinSliderInt = EditorSpinSliderTemplate<int64_t>;
 
 #endif // EDITOR_SPIN_SLIDER_H
