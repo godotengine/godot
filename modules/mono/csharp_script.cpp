@@ -2351,8 +2351,8 @@ CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_arg
 	if (!ok) {
 		// Important to clear this before destroying the script instance here
 		instance->script = Ref<CSharpScript>();
-		instance->owner = nullptr;
 		p_owner->set_script_instance(nullptr);
+		instance->owner = nullptr;
 
 		return nullptr;
 	}

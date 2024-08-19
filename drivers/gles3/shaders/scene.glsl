@@ -1609,6 +1609,7 @@ void main() {
 #ifdef BASE_PASS
 	/////////////////////// LIGHTING //////////////////////////////
 
+#ifndef AMBIENT_LIGHT_DISABLED
 	// IBL precalculations
 	float ndotv = clamp(dot(normal, view), 0.0, 1.0);
 	vec3 F = f0 + (max(vec3(1.0 - roughness), f0) - f0) * pow(1.0 - ndotv, 5.0);
@@ -1746,18 +1747,14 @@ void main() {
 #endif // USE_LIGHTMAP_CAPTURE
 #endif // !DISABLE_LIGHTMAP
 
-	{
-#if defined(AMBIENT_LIGHT_DISABLED)
-		ambient_light = vec3(0.0, 0.0, 0.0);
-#else
-		ambient_light *= albedo.rgb;
-		ambient_light *= ao;
-#endif // AMBIENT_LIGHT_DISABLED
-	}
+	ambient_light *= albedo.rgb;
+	ambient_light *= ao;
+
+#endif // !AMBIENT_LIGHT_DISABLED
 
 	// convert ao to direct light ao
 	ao = mix(1.0, ao, ao_light_affect);
-
+#ifndef AMBIENT_LIGHT_DISABLED
 	{
 #if defined(DIFFUSE_TOON)
 		//simplify for toon, as
@@ -1778,6 +1775,8 @@ void main() {
 		specular_light *= env.x * f0 + env.y * clamp(50.0 * f0.g, metallic, 1.0);
 #endif
 	}
+
+#endif // !AMBIENT_LIGHT_DISABLED
 
 #ifndef DISABLE_LIGHT_DIRECTIONAL
 	for (uint i = uint(0); i < scene_data.directional_light_count; i++) {
