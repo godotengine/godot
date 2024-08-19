@@ -162,7 +162,7 @@
 		<member name="position_smoothing_enabled" type="bool" setter="set_position_smoothing_enabled" getter="is_position_smoothing_enabled" default="false">
 			If [code]true[/code], the camera's view smoothly moves towards its target position at [member position_smoothing_speed].
 		</member>
-		<member name="position_smoothing_speed" type="float" setter="set_position_smoothing_speed" getter="get_position_smoothing_speed" default="5.0">
+		<member name="position_smoothing_speed" type="float" setter="set_position_smoothing_speed" getter="get_position_smoothing_speed" default="5.0" deprecated="Use [member position_smoothing_velocity] instead.">
 			Speed in pixels per second of the camera's smoothing effect when [member position_smoothing_enabled] is [code]true[/code].
 		</member>
 		<member name="position_smoothing_velocity" type="Vector2" setter="set_position_smoothing_velocity" getter="get_position_smoothing_velocity" default="Vector2(5, 5)">
