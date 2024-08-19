@@ -800,7 +800,6 @@ ObjectID Node3DEditorViewport::_select_ray(const Point2 &p_pos) const {
 		RS::get_singleton()->sdfgi_set_debug_probe_select(pos, ray);
 	}
 
-	Vector<ObjectID> instances = RenderingServer::get_singleton()->instances_cull_ray(pos, pos + ray * camera->get_far(), get_tree()->get_root()->get_world_3d()->get_scenario());
 	HashSet<Ref<EditorNode3DGizmo>> found_gizmos;
 
 	Node *edited_scene = get_tree()->get_edited_scene_root();
@@ -808,9 +807,9 @@ ObjectID Node3DEditorViewport::_select_ray(const Point2 &p_pos) const {
 	Node *item = nullptr;
 	float closest_dist = 1e20;
 
-	for (int i = 0; i < instances.size(); i++) {
-		Node3D *spat = Object::cast_to<Node3D>(ObjectDB::get_instance(instances[i]));
+	Vector<Node3D *> nodes_with_gizmos = Node3DEditor::get_singleton()->gizmo_bvh_ray_query(pos, pos + ray * camera->get_far());
 
+	for (Node3D *spat : nodes_with_gizmos) {
 		if (!spat) {
 			continue;
 		}
@@ -863,12 +862,11 @@ void Node3DEditorViewport::_find_items_at_pos(const Point2 &p_pos, Vector<_RayRe
 	Vector3 ray = get_ray(p_pos);
 	Vector3 pos = get_ray_pos(p_pos);
 
-	Vector<ObjectID> instances = RenderingServer::get_singleton()->instances_cull_ray(pos, pos + ray * camera->get_far(), get_tree()->get_root()->get_world_3d()->get_scenario());
+	Vector<Node3D *> nodes_with_gizmos = Node3DEditor::get_singleton()->gizmo_bvh_ray_query(pos, pos + ray * camera->get_far());
+
 	HashSet<Node3D *> found_nodes;
 
-	for (int i = 0; i < instances.size(); i++) {
-		Node3D *spat = Object::cast_to<Node3D>(ObjectDB::get_instance(instances[i]));
-
+	for (Node3D *spat : nodes_with_gizmos) {
 		if (!spat) {
 			continue;
 		}
@@ -1046,7 +1044,7 @@ void Node3DEditorViewport::_select_region() {
 		_clear_selected();
 	}
 
-	Vector<ObjectID> instances = RenderingServer::get_singleton()->instances_cull_convex(frustum, get_tree()->get_root()->get_world_3d()->get_scenario());
+	Vector<Node3D *> nodes_with_gizmos = Node3DEditor::get_singleton()->gizmo_bvh_frustum_query(frustum);
 	HashSet<Node3D *> found_nodes;
 	Vector<Node *> selected;
 
@@ -1055,8 +1053,7 @@ void Node3DEditorViewport::_select_region() {
 		return;
 	}
 
-	for (int i = 0; i < instances.size(); i++) {
-		Node3D *sp = Object::cast_to<Node3D>(ObjectDB::get_instance(instances[i]));
+	for (Node3D *sp : nodes_with_gizmos) {
 		if (!sp || _is_node_locked(sp)) {
 			continue;
 		}
@@ -9234,6 +9231,49 @@ void Node3DEditor::remove_gizmo_plugin(Ref<EditorNode3DGizmoPlugin> p_plugin) {
 	gizmo_plugins_by_priority.erase(p_plugin);
 	gizmo_plugins_by_name.erase(p_plugin);
 	_update_gizmos_menu();
+}
+
+DynamicBVH::ID Node3DEditor::insert_gizmo_bvh_node(Node3D *p_node, const AABB &p_aabb) {
+	return gizmo_bvh.insert(p_aabb, p_node);
+}
+
+void Node3DEditor::update_gizmo_bvh_node(DynamicBVH::ID p_id, const AABB &p_aabb) {
+	gizmo_bvh.update(p_id, p_aabb);
+	gizmo_bvh.optimize_incremental(1);
+}
+
+void Node3DEditor::remove_gizmo_bvh_node(DynamicBVH::ID p_id) {
+	gizmo_bvh.remove(p_id);
+}
+
+Vector<Node3D *> Node3DEditor::gizmo_bvh_ray_query(const Vector3 &p_ray_start, const Vector3 &p_ray_end) {
+	struct Result {
+		Vector<Node3D *> nodes;
+		bool operator()(void *p_data) {
+			nodes.append((Node3D *)p_data);
+			return false;
+		}
+	} result;
+
+	gizmo_bvh.ray_query(p_ray_start, p_ray_end, result);
+
+	return result.nodes;
+}
+
+Vector<Node3D *> Node3DEditor::gizmo_bvh_frustum_query(const Vector<Plane> &p_frustum) {
+	Vector<Vector3> points = Geometry3D::compute_convex_mesh_points(&p_frustum[0], p_frustum.size());
+
+	struct Result {
+		Vector<Node3D *> nodes;
+		bool operator()(void *p_data) {
+			nodes.append((Node3D *)p_data);
+			return false;
+		}
+	} result;
+
+	gizmo_bvh.convex_query(p_frustum.ptr(), p_frustum.size(), points.ptr(), points.size(), result);
+
+	return result.nodes;
 }
 
 Node3DEditorPlugin::Node3DEditorPlugin() {
