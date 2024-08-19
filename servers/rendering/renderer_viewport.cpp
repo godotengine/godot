@@ -327,9 +327,9 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 		if (p_viewport->sdf_active) {
 			// Process SDF.
 
-			Rect2 sdf_rect = RSG::texture_storage->render_target_get_sdf_rect(p_viewport->render_target);
+			RendererCanvasRender::LightOccluderInstance *sdf_occluders = nullptr;
 
-			RendererCanvasRender::LightOccluderInstance *occluders = nullptr;
+			Rect2 sdf_rect = RSG::texture_storage->render_target_get_sdf_rect(p_viewport->render_target);
 
 			// Make list of occluders.
 			for (KeyValue<RID, Viewport::CanvasData> &E : p_viewport->canvas_map) {
@@ -350,13 +350,13 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 					}
 
 					if (sdf_rect.intersects_transformed(F->xform_cache, F->aabb_cache)) {
-						F->next = occluders;
-						occluders = F;
+						F->next = sdf_occluders;
+						sdf_occluders = F;
 					}
 				}
 			}
 
-			RSG::canvas_render->render_sdf(p_viewport->render_target, occluders);
+			RSG::canvas_render->render_sdf(p_viewport->render_target, sdf_occluders);
 			RSG::texture_storage->render_target_mark_sdf_enabled(p_viewport->render_target, true);
 
 			p_viewport->sdf_active = false; // If used, gets set active again.
@@ -365,8 +365,6 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 		}
 
 		Rect2 shadow_rect;
-
-		int shadow_count = 0;
 		int directional_light_count = 0;
 
 		RENDER_TIMESTAMP("Cull 2D Lights");
@@ -445,15 +443,20 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 			canvas_map[Viewport::CanvasKey(E.key, E.value.layer, E.value.sublayer)] = &E.value;
 		}
 
+		RendererCanvasRender::LightOccluderInstance *occluders = nullptr;
+
+		// reset occluder states
+		if (lights_with_shadow || directional_lights_with_shadow) {
+			for (KeyValue<RID, Viewport::CanvasData> &E : p_viewport->canvas_map) {
+				RendererCanvasCull::Canvas *canvas = static_cast<RendererCanvasCull::Canvas *>(E.value.canvas);
+				for (RendererCanvasRender::LightOccluderInstance *F : canvas->occluders) {
+					F->culled = false;
+				}
+			}
+		}
+
 		if (lights_with_shadow) {
-			//update shadows if any
-
-			RendererCanvasRender::LightOccluderInstance *occluders = nullptr;
-
-			RENDER_TIMESTAMP("> Render PointLight2D Shadows");
-			RENDER_TIMESTAMP("Cull LightOccluder2Ds");
-
-			//make list of occluders
+			RENDER_TIMESTAMP("> Cull PointLight2D occluders");
 			for (KeyValue<RID, Viewport::CanvasData> &E : p_viewport->canvas_map) {
 				RendererCanvasCull::Canvas *canvas = static_cast<RendererCanvasCull::Canvas *>(E.value.canvas);
 				Transform2D xf = _canvas_get_transform(p_viewport, canvas, &E.value, clip_rect.size);
@@ -470,25 +473,17 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 						F->xform_cache = xf * F->xform_cache;
 					}
 					if (shadow_rect.intersects_transformed(F->xform_cache, F->aabb_cache)) {
+						F->culled = true;
 						F->next = occluders;
 						occluders = F;
 					}
 				}
 			}
-			//update the light shadowmaps with them
-
-			RendererCanvasRender::Light *light = lights_with_shadow;
-			while (light) {
-				RENDER_TIMESTAMP("Render PointLight2D Shadow");
-
-				RSG::canvas_render->light_update_shadow(light->light_internal, shadow_count++, light->xform_cache.affine_inverse(), light->item_shadow_mask, light->radius_cache / 1000.0, light->radius_cache * 1.1, occluders);
-				light = light->shadows_next_ptr;
-			}
-
-			RENDER_TIMESTAMP("< Render PointLight2D Shadows");
+			RENDER_TIMESTAMP("< Cull PointLight2D occluders");
 		}
 
 		if (directional_lights_with_shadow) {
+			RENDER_TIMESTAMP("> Cull DirectionalLight2D occluders");
 			//update shadows if any
 			RendererCanvasRender::Light *light = directional_lights_with_shadow;
 			while (light) {
@@ -534,18 +529,12 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 				}
 
 				Vector2 xf_points[6];
-
-				RendererCanvasRender::LightOccluderInstance *occluders = nullptr;
-
-				RENDER_TIMESTAMP("> Render DirectionalLight2D Shadows");
-
-				// Make list of occluders.
 				for (KeyValue<RID, Viewport::CanvasData> &E : p_viewport->canvas_map) {
 					RendererCanvasCull::Canvas *canvas = static_cast<RendererCanvasCull::Canvas *>(E.value.canvas);
 					Transform2D xf = _canvas_get_transform(p_viewport, canvas, &E.value, clip_rect.size);
 
 					for (RendererCanvasRender::LightOccluderInstance *F : canvas->occluders) {
-						if (!F->enabled) {
+						if (!F->enabled || F->culled) {
 							continue;
 						}
 						if (!RSG::canvas->_interpolation_data.interpolation_enabled || !F->interpolated) {
@@ -561,18 +550,15 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 							xf_points[j] = localizer.xform(points[j]);
 						}
 						if (F->aabb_cache.intersects_filled_polygon(xf_points, point_count)) {
+							F->culled = true;
 							F->next = occluders;
 							occluders = F;
 						}
 					}
 				}
-
-				RSG::canvas_render->light_update_directional_shadow(light->light_internal, shadow_count++, light->xform_cache, light->item_shadow_mask, cull_distance, clip_rect, occluders);
-
 				light = light->shadows_next_ptr;
 			}
-
-			RENDER_TIMESTAMP("< Render DirectionalLight2D Shadows");
+			RENDER_TIMESTAMP("< Cull DirectionalLight2D occluders");
 		}
 
 		if (scenario_draw_canvas_bg && canvas_map.begin() && canvas_map.begin()->key.get_layer() > scenario_canvas_max_layer) {
@@ -613,7 +599,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 				ptr = ptr->filter_next_ptr;
 			}
 
-			RSG::canvas->render_canvas(p_viewport->render_target, canvas, xform, canvas_lights, canvas_directional_lights, clip_rect, p_viewport->texture_filter, p_viewport->texture_repeat, p_viewport->snap_2d_transforms_to_pixel, p_viewport->snap_2d_vertices_to_pixel, p_viewport->canvas_cull_mask, &p_viewport->render_info);
+			RSG::canvas->render_canvas(p_viewport->render_target, canvas, xform, canvas_lights, canvas_directional_lights, occluders, clip_rect, p_viewport->texture_filter, p_viewport->texture_repeat, p_viewport->snap_2d_transforms_to_pixel, p_viewport->snap_2d_vertices_to_pixel, p_viewport->canvas_cull_mask, &p_viewport->render_info);
 			if (RSG::canvas->was_sdf_used()) {
 				p_viewport->sdf_active = true;
 			}
