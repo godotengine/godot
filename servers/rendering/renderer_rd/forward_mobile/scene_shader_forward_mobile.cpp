@@ -634,6 +634,21 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.render_mode_defines["unshaded"] = "#define MODE_UNSHADED\n";
 		actions.render_mode_defines["debug_shadow_splits"] = "#define DEBUG_DRAW_PSSM_SPLITS\n";
 		actions.render_mode_defines["fog_disabled"] = "#define FOG_DISABLED\n";
+		actions.render_mode_defines["specular_occlusion_conservative"] = "#define SPECULAR_OCCLUSION_CONSERVATIVE\n";
+		actions.render_mode_defines["specular_occlusion"] = "#define SPECULAR_OCCLUSION\n";
+
+		int specular_occlusion_mode = GLOBAL_GET("rendering/lightmapping/specular_occlusion/mode");
+
+		switch (specular_occlusion_mode) {
+			case 0:
+				break; // disabled, skip
+			case 1:
+				actions.render_mode_defines["specular_occlusion"] = "#define SPECULAR_OCCLUSION\n";
+				break;
+			case 2:
+				actions.render_mode_defines["specular_occlusion"] = "#define SPECULAR_OCCLUSION_CONSERVATIVE\n";
+				break;
+		}
 
 		actions.base_texture_binding_index = 1;
 		actions.texture_layout_set = RenderForwardMobile::MATERIAL_UNIFORM_SET;
