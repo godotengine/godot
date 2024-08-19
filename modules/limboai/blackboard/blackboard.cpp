@@ -10,6 +10,7 @@
  */
 
 #include "blackboard.h"
+#include "blackboard_plan.h"
 
 #ifdef LIMBOAI_MODULE
 #include "core/variant/variant.h"
@@ -32,105 +33,6 @@ Ref<Blackboard> Blackboard::top() const {
 	return bb;
 }
 
-Variant Blackboard::get_var(const StringName &p_name, const Variant &p_default, bool p_complain) const {
-	if (data.has(p_name)) {
-		return data.get(p_name).get_value();
-	} else if (parent.is_valid()) {
-		return parent->get_var(p_name, p_default, p_complain);
-	} else {
-		if (p_complain) {
-			ERR_PRINT(vformat("Blackboard: Variable \"%s\" not found.", p_name));
-		}
-		return p_default;
-	}
-}
-
-void Blackboard::set_var(const StringName &p_name, const Variant &p_value) {
-	if (data.has(p_name)) {
-		// Not checking type - allowing duck-typing.
-		data[p_name].set_value(p_value);
-		// 调用回调
-		if(changed_value_callback.is_valid()) {
-			changed_value_callback.call(this,p_name);
-		}
-	} else {
-		BBVariable var(p_value.get_type());
-		var.set_value(p_value);
-		data.insert(p_name, var);
-	}
-}
-
-bool Blackboard::has_var(const StringName &p_name) const {
-	return data.has(p_name) || (parent.is_valid() && parent->has_var(p_name));
-}
-
-void Blackboard::erase_var(const StringName &p_name) {
-	data.erase(p_name);
-}
-
-TypedArray<StringName> Blackboard::list_vars() const {
-	TypedArray<StringName> var_names;
-	var_names.resize(data.size());
-	int idx = 0;
-	for (const KeyValue<StringName, BBVariable> &kv : data) {
-		var_names[idx] = kv.key;
-		idx += 1;
-	}
-	return var_names;
-}
-
-Dictionary Blackboard::get_vars_as_dict() const {
-	Dictionary dict;
-	for (const KeyValue<StringName, BBVariable> &kv : data) {
-		dict[kv.key] = kv.value.get_value();
-	}
-	return dict;
-}
-
-void Blackboard::populate_from_dict(const Dictionary &p_dictionary) {
-	Array keys = p_dictionary.keys();
-	for (int i = 0; i < keys.size(); i++) {
-		if (keys[i].get_type() == Variant::STRING_NAME || keys[i].get_type() == Variant::STRING) {
-			set_var(keys[i], p_dictionary[keys[i]]);
-		} else {
-			ERR_PRINT("Blackboard: Invalid key type in dictionary to populate blackboard. Must be StringName or String.");
-		}
-	}
-}
-
-void Blackboard::bind_var_to_property(const StringName &p_name, Object *p_object, const StringName &p_property, bool p_create) {
-	if (!data.has(p_name)) {
-		if (p_create) {
-			data.insert(p_name, BBVariable());
-		} else {
-			ERR_FAIL_MSG("Blackboard: Can't bind variable that doesn't exist (var: " + p_name + ").");
-		}
-	}
-	data[p_name].bind(p_object, p_property);
-}
-
-void Blackboard::unbind_var(const StringName &p_name) {
-	ERR_FAIL_COND_MSG(!data.has(p_name), "Blackboard: Can't unbind variable that doesn't exist (var: " + p_name + ").");
-	data[p_name].unbind();
-}
-
-void Blackboard::assign_var(const StringName &p_name, const BBVariable &p_var) {
-	data.insert(p_name, p_var);
-}
-
-void Blackboard::link_var(const StringName &p_name, const Ref<Blackboard> &p_target_blackboard, const StringName &p_target_var, bool p_create) {
-	if (!data.has(p_name)) {
-		if (p_create) {
-			data.insert(p_name, BBVariable());
-		} else {
-			ERR_FAIL_MSG("Blackboard: Can't link variable that doesn't exist (var: " + p_name + ").");
-		}
-	}
-	ERR_FAIL_COND_MSG(p_target_blackboard.is_null(), "Blackboard: Can't link variable to target blackboard that is null (var: " + p_name + ").");
-	ERR_FAIL_COND_MSG(!p_target_blackboard->data.has(p_target_var), "Blackboard: Can't link variable to non-existent target (var: " + p_name + ", target: " + p_target_var + ").");
-	data[p_name] = p_target_blackboard->data[p_target_var];
-}
-
 void Blackboard::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_var", "var_name", "default", "complain"), &Blackboard::get_var, DEFVAL(Variant()), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("set_var", "var_name", "value"), &Blackboard::set_var);
@@ -147,3 +49,141 @@ void Blackboard::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("unbind_var", "var_name"), &Blackboard::unbind_var);
 	ClassDB::bind_method(D_METHOD("link_var", "var_name", "target_blackboard", "target_var", "create"), &Blackboard::link_var, DEFVAL(false));
 }
+
+////////////////////////////////////////////////////////BlackboardRuntime///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Variant BlackboardRuntime::get_var(const StringName &p_name, const Variant &p_default, bool p_complain) const {
+	if (data.has(p_name)) {
+		return data.get(p_name).get_value();
+	} else if (parent.is_valid()) {
+		return parent->get_var(p_name, p_default, p_complain);
+	} else {
+		if (p_complain) {
+			ERR_PRINT(vformat("Blackboard: Variable \"%s\" not found.", p_name));
+		}
+		return p_default;
+	}
+}
+
+void BlackboardRuntime::set_var(const StringName &p_name, const Variant &p_value) {
+	if (data.has(p_name)) {
+		// Not checking type - allowing duck-typing.
+		data[p_name].set_value(p_value);
+		// 调用回调
+		if(changed_value_callback.is_valid()) {
+			changed_value_callback.call(this,p_name);
+		}
+	} else {
+		BBVariable var(p_value.get_type());
+		var.set_value(p_value);
+		data.insert(p_name, var);
+	}
+}
+
+bool BlackboardRuntime::has_var(const StringName &p_name) const {
+	return data.has(p_name) || (parent.is_valid() && parent->has_var(p_name));
+}
+
+void BlackboardRuntime::erase_var(const StringName &p_name) {
+	data.erase(p_name);
+}
+
+TypedArray<StringName> BlackboardRuntime::list_vars() const {
+	TypedArray<StringName> var_names;
+	var_names.resize(data.size());
+	int idx = 0;
+	for (const KeyValue<StringName, BBVariable> &kv : data) {
+		var_names[idx] = kv.key;
+		idx += 1;
+	}
+	return var_names;
+}
+
+Dictionary BlackboardRuntime::get_vars_as_dict() const {
+	Dictionary dict;
+	for (const KeyValue<StringName, BBVariable> &kv : data) {
+		dict[kv.key] = kv.value.get_value();
+	}
+	return dict;
+}
+
+void BlackboardRuntime::populate_from_dict(const Dictionary &p_dictionary) {
+	Array keys = p_dictionary.keys();
+	for (int i = 0; i < keys.size(); i++) {
+		if (keys[i].get_type() == Variant::STRING_NAME || keys[i].get_type() == Variant::STRING) {
+			set_var(keys[i], p_dictionary[keys[i]]);
+		} else {
+			ERR_PRINT("Blackboard: Invalid key type in dictionary to populate blackboard. Must be StringName or String.");
+		}
+	}
+}
+
+void BlackboardRuntime::bind_var_to_property(const StringName &p_name, Object *p_object, const StringName &p_property, bool p_create) {
+	if (!data.has(p_name)) {
+		if (p_create) {
+			data.insert(p_name, BBVariable());
+		} else {
+			ERR_FAIL_MSG("Blackboard: Can't bind variable that doesn't exist (var: " + p_name + ").");
+		}
+	}
+	data[p_name].bind(p_object, p_property);
+}
+
+void BlackboardRuntime::unbind_var(const StringName &p_name) {
+	ERR_FAIL_COND_MSG(!data.has(p_name), "Blackboard: Can't unbind variable that doesn't exist (var: " + p_name + ").");
+	data[p_name].unbind();
+}
+
+void BlackboardRuntime::assign_var(const StringName &p_name, const BBVariable &p_var) {
+	data.insert(p_name, p_var);
+}
+
+void BlackboardRuntime::link_var(const StringName &p_name, const Ref<Blackboard> &p_target_blackboard, const StringName &p_target_var, bool p_create) {
+	if (!data.has(p_name)) {
+		if (p_create) {
+			data.insert(p_name, BBVariable());
+		} else {
+			ERR_FAIL_MSG("Blackboard: Can't link variable that doesn't exist (var: " + p_name + ").");
+		}
+	}
+	ERR_FAIL_COND_MSG(p_target_blackboard.is_null(), "Blackboard: Can't link variable to target blackboard that is null (var: " + p_name + ").");
+	ERR_FAIL_COND_MSG(!p_target_blackboard->has_var(p_target_var), "Blackboard: Can't link variable to non-existent target (var: " + p_name + ", target: " + p_target_var + ").");
+	data[p_name] = p_target_blackboard->get_bb_var(p_target_var);
+}
+
+
+////////////////////////////////////////////////////////BlackboardEditorVirtual///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+Variant BlackboardEditorVirtual::get_var(const StringName &p_name, const Variant &p_default , bool p_complain ) const
+{
+	if(blackboard_plan != nullptr) {
+		if(blackboard_plan->has_var(p_name))
+		{
+			return blackboard_plan->get_var(p_name).get_value();
+		}
+	}
+	return Variant();
+}
+void BlackboardEditorVirtual::set_var(const StringName &p_name, const Variant &p_value)
+{
+	if(blackboard_plan != nullptr) {
+		if(blackboard_plan->has_var(p_name))
+		{
+			return blackboard_plan->set_var(p_name, p_value);
+		}
+	}
+
+}
+bool BlackboardEditorVirtual::has_var(const StringName &p_name) const
+{
+	if(blackboard_plan != nullptr) {
+		if(blackboard_plan->has_var(p_name))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+

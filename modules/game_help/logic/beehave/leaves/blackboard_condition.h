@@ -7,7 +7,10 @@ class BeehaveLeafBlackboardCondition : public BeehaveLeaf
     GDCLASS(BeehaveLeafBlackboardCondition, BeehaveLeaf);
     static void _bind_methods()
     {
-        
+        ClassDB::bind_method(D_METHOD("set_blackboard_condition", "blackboard_condition"), &BeehaveLeafBlackboardCondition::set_blackboard_condition);
+        ClassDB::bind_method(D_METHOD("get_blackboard_condition"), &BeehaveLeafBlackboardCondition::get_blackboard_condition);
+
+        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_condition", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimatorCondition"), "set_blackboard_condition", "get_blackboard_condition");
     }
 
 public:
@@ -23,22 +26,32 @@ public:
     {
         return SNAME("condition");
     }
-    virtual void after_run(Node * actor, Blackboard* blackboard) override
+    virtual int tick(Node * actor, Blackboard* blackboard) 
     {
         if(blackboard_condition.is_valid())
         {
             if(blackboard_condition->is_enable(blackboard))
             {
-                return ;
+                return SUCCESS;
             }
             else
             {
-                return ;
+                return FAILURE;
             }
         }
-        return ;
+        return SUCCESS;
+
+    }
+protected:
+    void set_blackboard_condition(Ref<CharacterAnimatorCondition> _blackboard_condition)
+    {
+        blackboard_condition = _blackboard_condition;
     }
 
+    Ref<CharacterAnimatorCondition> get_blackboard_condition()
+    {
+        return blackboard_condition;
+    }
 
 public:
     Ref<CharacterAnimatorCondition> blackboard_condition;

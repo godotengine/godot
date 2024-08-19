@@ -46,6 +46,9 @@ private:
 	// If true, NodePath variables will be prefetched, so that the vars will contain node pointers instead (upon BB creation/population).
 	bool prefetch_nodepath_vars = true;
 
+	// 编辑用的黑板
+	Ref<Blackboard> editor_blackboard;
+
 protected:
 	static void _bind_methods();
 
@@ -71,6 +74,7 @@ public:
 	void add_var(const StringName &p_name, const BBVariable &p_var);
 	void remove_var(const StringName &p_name);
 	BBVariable get_var(const StringName &p_name);
+	void set_var(const StringName &p_name, const Variant &p_var);
 	Pair<StringName, BBVariable> get_var_by_index(int p_index);
 	_FORCE_INLINE_ bool has_var(const StringName &p_name) { return var_map.has(p_name); }
 	_FORCE_INLINE_ bool is_empty() const { return var_map.is_empty(); }
@@ -89,6 +93,9 @@ public:
 	void populate_blackboard(const Ref<Blackboard> &p_blackboard, bool overwrite, Node *p_node);
 
 	void get_property_names_by_type(Variant::Type p_type,Array p_result);
+
+	// 获取编辑器的黑板
+	Ref<Blackboard> get_editor_blackboard();
 
 	BlackboardPlan();
 };

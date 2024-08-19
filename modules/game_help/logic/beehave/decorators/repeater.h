@@ -7,6 +7,11 @@ class BeehaveDecoratorRepeater : public BeehaveDecorator
     public:protected:
     static void _bind_methods()
     {
+        ClassDB::bind_method(D_METHOD("get_max_count"),&BeehaveDecoratorRepeater::get_max_count);
+        ClassDB::bind_method(D_METHOD("set_max_count","max_count"),&BeehaveDecoratorRepeater::set_max_count);
+
+        
+        ADD_PROPERTY(PropertyInfo(Variant::INT, "max_count"), "set_max_count", "get_max_count");
         
     }
 public:
@@ -65,6 +70,18 @@ public:
         }
         return SUCCESS;
     }
+public:
+
+    void set_max_count(int p_max_count)
+    {
+        max_count = p_max_count;
+    }
+
+    int get_max_count()
+    {
+        return max_count;
+    }
+protected:
 
     int max_count = 0;
     int current_count = 0;

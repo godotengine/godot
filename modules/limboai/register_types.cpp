@@ -139,7 +139,7 @@ void initialize_limboai_module(ModuleInitializationLevel p_level) {
 		LimboDebugger::initialize();
 
 		GDREGISTER_CLASS(LimboUtility);
-		GDREGISTER_CLASS(Blackboard);
+		GDREGISTER_ABSTRACT_CLASS(Blackboard);
 		GDREGISTER_CLASS(BlackboardPlan);
 
 		GDREGISTER_CLASS(LimboState);

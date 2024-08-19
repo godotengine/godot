@@ -5,7 +5,10 @@ class BeehaveDecoratorLimiterTimer : public BeehaveDecorator
     GDCLASS(BeehaveDecoratorLimiterTimer, BeehaveDecorator);
     static void _bind_methods()
     {
-        
+        ClassDB::bind_method(D_METHOD("set_max_time","time"),&BeehaveDecoratorLimiterTimer::set_max_time);
+        ClassDB::bind_method(D_METHOD("get_max_time"),&BeehaveDecoratorLimiterTimer::get_max_time);
+
+        ADD_PROPERTY(PropertyInfo(Variant::FLOAT,"max_time"),"set_max_time","get_max_time");        
     }
 
 public:
@@ -65,6 +68,16 @@ public:
         }
         return FAILURE;
     }
+public:
+    void set_max_time(float time)
+    {
+        max_time = time;
+    }
+    float get_max_time()
+    {
+        return max_time;
+    }
+protected:
     float max_time = 0.0f;
     float current_time = 0.0f;
 };

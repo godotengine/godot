@@ -5,6 +5,14 @@ class BeehaveDecoratorCooldown : public BeehaveDecorator
     GDCLASS(BeehaveDecoratorCooldown, BeehaveDecorator);
     static void _bind_methods()
     {
+        ClassDB::bind_method(D_METHOD("set_wait_time","time"),&BeehaveDecoratorCooldown::set_wait_time);
+        ClassDB::bind_method(D_METHOD("get_wait_time"),&BeehaveDecoratorCooldown::get_wait_time);
+        
+        ClassDB::bind_method(D_METHOD("set_remaining_time","time"),&BeehaveDecoratorCooldown::set_remaining_time);
+        ClassDB::bind_method(D_METHOD("get_remaining_time"),&BeehaveDecoratorCooldown::get_remaining_time);
+
+        ADD_PROPERTY(PropertyInfo(Variant::FLOAT,"wait_time"),"set_wait_time","get_wait_time");
+        ADD_PROPERTY(PropertyInfo(Variant::FLOAT,"remaining_time"),"set_remaining_time","get_remaining_time");
         
     }
 public:
@@ -56,6 +64,25 @@ public:
         child->set_status(response);
         return response;
     }
+public:
+    void set_wait_time(float time)
+    {
+        wait_time = time;
+    }
+    float get_wait_time()
+    {
+        return wait_time;
+    }
+
+    void set_remaining_time(float time)
+    {
+        remaining_time = time;
+    }
+    float get_remaining_time()
+    {
+        return remaining_time;
+    }
+protected:
     float wait_time = 0;
     float remaining_time = 0;
     bool is_init = false;

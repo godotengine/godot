@@ -209,6 +209,13 @@ void BlackboardPlan::remove_var(const StringName &p_name) {
 	notify_property_list_changed();
 	emit_changed();
 }
+void BlackboardPlan::set_var(const StringName &p_name, const Variant &p_var)
+{
+	ERR_FAIL_COND(!var_map.has(p_name));
+	var_map[p_name].set_value(p_var);
+	notify_property_list_changed();
+	emit_changed();
+}
 
 BBVariable BlackboardPlan::get_var(const StringName &p_name) {
 	ERR_FAIL_COND_V(!var_map.has(p_name), BBVariable());
@@ -386,11 +393,20 @@ inline void bb_add_var_dup_with_prefetch(const Ref<Blackboard> &p_blackboard, co
 }
 
 Ref<Blackboard> BlackboardPlan::create_blackboard(Node *p_node, const Ref<Blackboard> &p_parent_scope) {
-	ERR_FAIL_COND_V(p_node == nullptr && prefetch_nodepath_vars, memnew(Blackboard));
-	Ref<Blackboard> bb = memnew(Blackboard);
+	ERR_FAIL_COND_V(p_node == nullptr && prefetch_nodepath_vars, memnew(BlackboardRuntime));
+	Ref<Blackboard> bb = memnew(BlackboardRuntime);
 	bb->set_parent(p_parent_scope);
 	populate_blackboard(bb, true, p_node);
 	return bb;
+}
+Ref<Blackboard> BlackboardPlan::get_editor_blackboard()
+{
+	if (editor_blackboard.is_null()) {
+		Ref<BlackboardEditorVirtual> bb = memnew(BlackboardEditorVirtual);
+		bb->init(this);
+		editor_blackboard = bb;
+	}
+	return editor_blackboard;
 }
 
 void BlackboardPlan::populate_blackboard(const Ref<Blackboard> &p_blackboard, bool overwrite, Node *p_node) {

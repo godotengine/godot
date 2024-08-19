@@ -20,6 +20,13 @@ class BeehaveGraphEditor : public GraphEdit
 	GDCLASS(BeehaveGraphEditor, GraphEdit);
 
 public:
+
+	static Color get_select_color()
+	{
+		return Color(1.0f, 0.65f, 0.55f, 0.5f);
+	}
+
+public:
 	void set_beehave_tree(Ref<BeehaveTree> p_beehave_tree,BeehaveGraphProperty *p_beehave_graph_property)
 	{
 		if(beehave_tree == p_beehave_tree)
@@ -187,10 +194,19 @@ public:
 	{
 		
 		TypedArray<BeehaveGraphNodes> nodes = _get_child_nodes();
+		Ref<BeehaveNode> beehave_node = ObjectDB::get_instance(beehave_tree->last_editor_id); 
 		for(int i = 0; i < nodes.size(); ++i)
 		{
 			BeehaveGraphNodes* node = Object::cast_to<BeehaveGraphNodes>(nodes[i]);
 			node->set_meta("status",-1);
+			if(node->beehave_node == beehave_node)
+			{
+				node->set_modulate(get_select_color());
+			}
+			else{
+				node->set_modulate(Color(1,1,1,0.85f));
+
+			}
 			
 		}
 	}
@@ -384,7 +400,7 @@ public:
 		}
 
 	}
-
+	
 
 protected:
 	Color INACTIVE_COLOR  = Color("#898989");
@@ -587,12 +603,13 @@ public:
 		sub_inspector->set_use_folding(true);
 
 		sub_inspector->set_mouse_filter(MOUSE_FILTER_STOP);
+		sub_inspector->set_modulate(BeehaveGraphEditor::get_select_color());
 
 		select_node_property_vbox->add_child(sub_inspector);
 
 		buton_create_beehave_node = p_buton_create_beehave_node;
 		buton_create_beehave_node->set_text("Add Beehave Node");
-		buton_create_beehave_node->set_modulate(Color(1, 0.255238, 0.196011, 1));
+		buton_create_beehave_node->set_modulate(BeehaveGraphEditor::get_select_color());
 
 		if(buton_create_beehave_node->get_child_count() > 0)
 		{

@@ -5,7 +5,10 @@ class BeehaveDecoratorDelayer : public BeehaveDecorator
     GDCLASS(BeehaveDecoratorDelayer, BeehaveDecorator);
     static void _bind_methods()
     {
-        
+        ClassDB::bind_method(D_METHOD("set_wait_time","time"),&BeehaveDecoratorDelayer::set_wait_time);
+        ClassDB::bind_method(D_METHOD("get_wait_time"),&BeehaveDecoratorDelayer::get_wait_time);
+
+        ADD_PROPERTY(PropertyInfo(Variant::FLOAT,"wait_time"),"set_wait_time","get_wait_time");
     }
     public:
     virtual String get_tooltip()override
@@ -43,6 +46,16 @@ class BeehaveDecoratorDelayer : public BeehaveDecorator
         children[0]->set_status(rs);
         return rs;
     }
+public:
+    void set_wait_time(float time)
+    {
+        wait_time = time;
+    }
+    float get_wait_time()
+    {
+        return wait_time;
+    }
+protected:
     float wait_time = 0.0;
     float total_time = 0.0;
 };

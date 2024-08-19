@@ -35,12 +35,6 @@ public:
     }
 
 
-    virtual int tick(Node * actor, Blackboard* blackboard) 
-    {
-        set_status(SUCCESS);
-        return SUCCESS;
-
-    }
     // Called when this node needs to be interrupted before it can return FAILURE or SUCCESS.
     virtual void interrupt(Node * actor, Blackboard* blackboard) 
     {
@@ -55,6 +49,12 @@ public:
     // Called before the first time it ticks by the parent.
     virtual void  before_run(Node * actor, Blackboard* blackboard)  
     {
+
+    }
+    virtual int tick(Node * actor, Blackboard* blackboard) 
+    {
+        set_status(SUCCESS);
+        return SUCCESS;
 
     }
     // Called after the last time it ticks and returns

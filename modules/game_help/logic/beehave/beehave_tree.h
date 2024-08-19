@@ -12,6 +12,17 @@ class BeehaveListener : public RefCounted
     }
 
 public:
+    virtual void start(Node * actor, Blackboard* blackboard)
+    {
+        #if !TOOLS_ENABLED
+           if(is_editor_only)
+           {
+               return;
+           }
+        #endif
+        GDVIRTUAL_CALL(_start, actor, blackboard);
+
+    }
     virtual void process(Node * actor, Blackboard* blackboard)
     {
         #if !TOOLS_ENABLED
@@ -22,7 +33,19 @@ public:
         #endif
         GDVIRTUAL_CALL(_process, actor, blackboard);
     }
+    virtual void stop(Node * actor, Blackboard* blackboard)
+    {
+        #if !TOOLS_ENABLED
+           if(is_editor_only)
+           {
+               return;
+           }
+        #endif
+        GDVIRTUAL_CALL(_stop, actor, blackboard);
+    }
+	GDVIRTUAL2(_start,Node*,Blackboard*);
 	GDVIRTUAL2(_process,Node*,Blackboard*);
+	GDVIRTUAL2(_stop,Node*,Blackboard*);
     bool is_editor_only = false;
 
 };
@@ -32,13 +55,21 @@ class BeehaveTree : public Resource
     GDCLASS(BeehaveTree, Resource);
     static void _bind_methods()
     {
+        ClassDB::bind_method(D_METHOD("set_blackboard_plan", "blackboard_plan"), &BeehaveTree::set_blackboard_plan);
+        ClassDB::bind_method(D_METHOD("get_blackboard_plan"), &BeehaveTree::get_blackboard_plan);
+
         ClassDB::bind_method(D_METHOD("set_root_node", "root_node"), &BeehaveTree::set_root_node);
         ClassDB::bind_method(D_METHOD("get_root_node"), &BeehaveTree::get_root_node);
 
         ClassDB::bind_method(D_METHOD("set_listener", "listener"), &BeehaveTree::set_listener);
         ClassDB::bind_method(D_METHOD("get_listener"), &BeehaveTree::get_listener);
 
+
         ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "root_node", PROPERTY_HINT_RESOURCE_TYPE, "BeehaveNode"), "set_root_node", "get_root_node");
+        
+        
+        ADD_SUBGROUP("BeehaveTree","");
+        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan"), "set_blackboard_plan", "get_blackboard_plan");
         ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "listener", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("BeehaveListener")), "set_listener", "get_listener");
     }
     enum Status { SUCCESS, FAILURE, RUNNING };
@@ -50,6 +81,11 @@ public:
         _can_send_message = false;
         _process_time_metric_value = 0;
         status = RUNNING;
+        
+        for (int i = 0; i < listeners.size(); i++)
+        {
+            listeners[i]->start(actor, blackboard);
+        }
         if(root_node.is_valid())
         {
             root_node->interrupt(actor,blackboard);
@@ -68,7 +104,11 @@ public:
         float start_time = OS::get_singleton()->get_ticks_usec();
 
 	    blackboard->set_var("can_send_message", _can_send_message);
-
+        
+        for (int i = 0; i < listeners.size(); i++)
+        {
+            listeners[i]->process(actor, blackboard);
+        }
         // if _can_send_message:
         // 	BeehaveDebuggerMessages.process_begin(get_instance_id())
         tick(actor, blackboard);
@@ -77,6 +117,13 @@ public:
         // 	BeehaveDebuggerMessages.process_end(get_instance_id())
 
 	    _process_time_metric_value = OS::get_singleton()->get_ticks_usec() - start_time;
+    }
+    void stop(Node * actor, Blackboard* blackboard)
+    {        
+        for (int i = 0; i < listeners.size(); i++)
+        {
+            listeners[i]->stop(actor, blackboard);
+        }
     }
     int tick(Node * actor, Blackboard* blackboard)
     {	
@@ -99,6 +146,16 @@ public:
         }
         root_node->set_status(status);
         return status;
+    }
+public:
+    void set_blackboard_plan(const Ref<BlackboardPlan> &p_blackboard_plan)
+    {
+        blackboard_plan = p_blackboard_plan;
+    }
+
+    Ref<BlackboardPlan> get_blackboard_plan()
+    {
+        return blackboard_plan;
     }
 
     void set_root_node(const Ref<BeehaveNode> &p_root_node)
@@ -129,12 +186,29 @@ public:
         }
         return ret;
     }
+public:
+    void editor_init()
+    {
+
+    }
+
+    void editor_process()
+    {
+
+    }
+
+    void editor_stop()
+    {
+        
+    }
 
 public:
+    Ref<BeehaveNode> root_node;
+
+    Ref<BlackboardPlan> blackboard_plan;
+    LocalVector<Ref<BeehaveListener>> listeners;
 
     ObjectID last_editor_id;
-    LocalVector<Ref<BeehaveListener>> listeners;
-    Ref<BeehaveNode> root_node;
     float tick_rate = 0.1f;
     float last_tick = 0.0f;
     float _process_time_metric_value = 0.0f;
