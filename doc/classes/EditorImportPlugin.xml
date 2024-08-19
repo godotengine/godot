@@ -256,7 +256,7 @@
 				    export_image_file.store_buffer(FileAccess.get_file_as_bytes("res://game/my_icon.png"))
 				    export_image_file.close()
 
-				    # Refresh view of exported file.
+				    # Ensure file visibility for ResourceLoader later.
 				    var editor_file_system: EditorFileSystem = EditorInterface.get_resource_filesystem()
 				    editor_file_system.update_file(textures_folder)
 				    editor_file_system.update_file(export_path)
