@@ -559,7 +559,6 @@ void TileMap::set_pattern(int p_layer, const Vector2i &p_position, const Ref<Til
 			p_layer = layers.size() + p_layer;
 		};
 		if ((p_layer) < 0 || (p_layer) >= ((int)layers.size())) {
-			_err_print_index_error(__FUNCTION__, "C:\\Users\\LPC\\source\\repos\\Godot Extension Project\\Godot Engine Fork\\godot\\scene\\2d\\tile_map.cpp", 628, p_layer, (int)layers.size(), "p_layer", "(int)layers.size()");
 			return;
 		} else
 			((void)0);

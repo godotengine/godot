@@ -79,7 +79,6 @@ void TileMapPattern::_set_tile_data(const Vector<int> &p_data, int p_layer) {
 
 
 	if (get_is_single_layer() == false) {
-		print_line("p_layer is", p_layer);
 		int c = p_data.size();
 		const int *r = p_data.ptr();
 
@@ -260,6 +259,7 @@ int TileMapPattern::get_cell_alternative_tile(const Vector2i &p_coords, int p_la
 	}
 }
 Vector<HashMap<Vector2i, TileMapCell>> &TileMapPattern::get_pattern_multi_layer() {
+	// The two different functions multi_layer and single_layer are neccessary because the return types are different.
 	if (get_is_single_layer() == true) {
 		WARN_PRINT_ED("get_pattern_multi_layer called on a single layer pattern. get_pattern_multi_layer will return an array of pattern layers with the single layer at index 0. Consider using get_pattern_single_layer instead");
 	}

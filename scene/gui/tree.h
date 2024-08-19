@@ -399,7 +399,6 @@ class VBoxContainer;
 class Tree : public Control {
 	GDCLASS(Tree, Control);
 	
-
 public:
 	enum SelectMode {
 		SELECT_SINGLE,

@@ -260,6 +260,15 @@
 				Pastes the [TileMapPattern] at the given [param position] in the tile map. See also TileMapLayer.[method get_pattern] or the get_pattern method for the TileSet class.
 			</description>
 		</method>
+		<method name="set_pattern_multi_layer">
+			<return type="void" />
+			<param index="0" name="position" type="Vector2i" />
+			<param index="1" name="pattern" type="TileMapPattern" />
+			<param index="2" name="layers" type="Array" />
+			<description>
+				Functions similar to set_pattern, but for multi-layer patterns. Pastes the [TileMapPattern] at the given [param position] in the tile map. However, you must also include a list of TileMapLayers that is at least as big as the number of layers in the pattern you're trying to set.
+			</description>
+		</method>
 		<method name="update_internals">
 			<return type="void" />
 			<description>

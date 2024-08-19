@@ -29,8 +29,6 @@
 /**************************************************************************/
 
 #include "tile_map_layer.h"
-
-//CHECK ME #include "editor/plugins/tiles/tile_map_layer_editor.h"
 #include "editor/editor_node.h"
 #include "core/core_string_names.h"
 #include "core/io/marshalls.h"
@@ -2605,7 +2603,6 @@ Ref<TileMapPattern> TileMapLayer::get_pattern_multi_layer(TypedArray<Vector2i> p
 	}
 
 	for (int pattern_layer = 0; pattern_layer < tile_map_layers_in_scene.size(); pattern_layer++) {
-		print_line("the number of layers in the scene tree when getting the pattern is", tile_map_layers_in_scene.size());
 		tile_map_layers_in_scene[pattern_layer]->get_pattern_layer(p_coords_array, output, pattern_layer);
 	}
 	output->set_size((max + Vector2i(1, 1)) - min);

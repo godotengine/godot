@@ -404,7 +404,7 @@ void TileSetEditor::_notification(int p_what) {
 	}
 }
 
-/* CHECK ME
+/* Previously used for displaying the simple and earlier pattern system. With some modification this can be used to display the newer advanced one.
 void TileSetEditor::_patterns_item_list_gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(!tile_set.is_valid());
 
@@ -436,10 +436,7 @@ void TileSetEditor::_pattern_preview_done(Ref<TileMapPattern> p_pattern, Ref<Tex
 		}
 	}
 }
-*/
 
-//Check me later. Do I want to add a patterns display to tileset?
-/*
 void TileSetEditor::_update_patterns_list() {
 	ERR_FAIL_COND(!tile_set.is_valid());
 	TreeItem *pattern_set;
@@ -850,6 +847,7 @@ TileSetEditor::TileSetEditor() {
 	tabs_bar->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
 	tabs_bar->set_clip_tabs(false);
 	tabs_bar->add_tab(TTR("Tile Sources"));
+	//tabs_bar->add_tab(TTR("Patterns"));
 	tabs_bar->connect("tab_changed", callable_mp(this, &TileSetEditor::_tab_changed));
 
 	tile_set_toolbar = memnew(HBoxContainer);
