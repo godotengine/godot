@@ -245,9 +245,9 @@ ResourceLoader::LoadToken::~LoadToken() {
 Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_original_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error, bool p_use_sub_threads, float *r_progress) {
 	const String &original_path = p_original_path.is_empty() ? p_path : p_original_path;
 	load_nesting++;
-	if (load_paths_stack->size()) {
+	if (load_paths_stack.size()) {
 		thread_load_mutex.lock();
-		const String &parent_task_path = load_paths_stack->get(load_paths_stack->size() - 1);
+		const String &parent_task_path = load_paths_stack.get(load_paths_stack.size() - 1);
 		HashMap<String, ThreadLoadTask>::Iterator E = thread_load_tasks.find(parent_task_path);
 		// Avoid double-tracking, for progress reporting, resources that boil down to a remapped path containing the real payload (e.g., imported resources).
 		bool is_remapped_load = original_path == parent_task_path;
@@ -256,7 +256,7 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 		}
 		thread_load_mutex.unlock();
 	}
-	load_paths_stack->push_back(original_path);
+	load_paths_stack.push_back(original_path);
 
 	// Try all loaders and pick the first match for the type hint
 	bool found = false;
@@ -272,7 +272,7 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 		}
 	}
 
-	load_paths_stack->resize(load_paths_stack->size() - 1);
+	load_paths_stack.resize(load_paths_stack.size() - 1);
 	res_ref_overrides.erase(load_nesting);
 	load_nesting--;
 
@@ -306,8 +306,7 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 	// Thread-safe either if it's the current thread or a brand new one.
 	CallQueue *own_mq_override = nullptr;
 	if (load_nesting == 0) {
-		load_paths_stack = memnew(Vector<String>);
-
+		DEV_ASSERT(load_paths_stack.is_empty());
 		if (!Thread::is_main_thread()) {
 			// Let the caller thread use its own, for added flexibility. Provide one otherwise.
 			if (MessageQueue::get_singleton() == MessageQueue::get_main_singleton()) {
@@ -408,10 +407,7 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 			MessageQueue::set_thread_singleton_override(nullptr);
 			memdelete(own_mq_override);
 		}
-		if (load_paths_stack) {
-			memdelete(load_paths_stack);
-			load_paths_stack = nullptr;
-		}
+		DEV_ASSERT(load_paths_stack.is_empty());
 	}
 }
 
@@ -1299,7 +1295,7 @@ bool ResourceLoader::timestamp_on_load = false;
 
 thread_local int ResourceLoader::load_nesting = 0;
 thread_local WorkerThreadPool::TaskID ResourceLoader::caller_task_id = 0;
-thread_local Vector<String> *ResourceLoader::load_paths_stack = nullptr;
+thread_local Vector<String> ResourceLoader::load_paths_stack;
 thread_local HashMap<int, HashMap<String, Ref<Resource>>> ResourceLoader::res_ref_overrides;
 
 template <>
