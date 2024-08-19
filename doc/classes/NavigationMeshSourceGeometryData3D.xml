@@ -63,6 +63,12 @@
 				Clears all projected obstructions.
 			</description>
 		</method>
+		<method name="get_bounds">
+			<return type="AABB" />
+			<description>
+				Returns an axis-aligned bounding box that covers all the stored geometry data. The bounds are calculated when calling this function with the result cached until further geometry changes are made.
+			</description>
+		</method>
 		<method name="get_indices" qualifiers="const">
 			<return type="PackedInt32Array" />
 			<description>
