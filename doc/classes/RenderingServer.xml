@@ -944,7 +944,8 @@
 			<param index="1" name="item" type="RID" />
 			<param index="2" name="mirroring" type="Vector2" />
 			<description>
-				A copy of the canvas item will be drawn with a local offset of the mirroring [Vector2].
+				A copy of the canvas item will be drawn with a local offset of the [param mirroring].
+				[b]Note:[/b] This is equivalent to calling [method canvas_set_item_repeat] like [code]canvas_set_item_repeat(item, mirroring, 1)[/code], with an additional check ensuring [param canvas] is a parent of [param item].
 			</description>
 		</method>
 		<method name="canvas_set_item_repeat">
