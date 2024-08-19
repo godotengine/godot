@@ -102,6 +102,7 @@
 				    await RenderingServer.frame_post_draw
 				    $Viewport.get_texture().get_image().save_png("user://Screenshot.png")
 				[/codeblock]
+				[b]Note:[/b] When [member use_hdr_2d] is [code]true[/code] the returned texture will be an HDR image encoded in linear space.
 			</description>
 		</method>
 		<method name="get_viewport_rid" qualifiers="const">
