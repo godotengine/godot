@@ -737,6 +737,7 @@ namespace Godot.Bridge
             godot_string className = Marshaling.ConvertStringToNative(typeName);
 
             bool isTool = scriptType.IsDefined(typeof(ToolAttribute), inherit: false);
+            bool isInternal = scriptType.IsDefined(typeof(InternalAttribute), inherit: false);
 
             // If the type is nested and the parent type is a tool script,
             // consider the nested type a tool script as well.
@@ -762,6 +763,7 @@ namespace Godot.Bridge
             outTypeInfo->ClassName = className;
             outTypeInfo->IconPath = iconPath;
             outTypeInfo->IsTool = isTool.ToGodotBool();
+            outTypeInfo->IsInternal = isInternal.ToGodotBool();
             outTypeInfo->IsGlobalClass = isGlobalClass.ToGodotBool();
             outTypeInfo->IsAbstract = scriptType.IsAbstract.ToGodotBool();
             outTypeInfo->IsGenericTypeDefinition = scriptType.IsGenericTypeDefinition.ToGodotBool();

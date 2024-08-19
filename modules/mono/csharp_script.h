@@ -79,6 +79,11 @@ public:
 		bool is_tool = false;
 
 		/**
+		 * Script is marked for internal use only.
+		 */
+		bool is_internal = false;
+
+		/**
 		 * Script is marked as global class and will be registered in the editor.
 		 * Registered classes can be created using certain editor dialogs and
 		 * can be referenced by name from other languages that support the feature.
@@ -261,6 +266,9 @@ public:
 
 	bool is_tool() const override {
 		return type_info.is_tool;
+	}
+	bool is_internal() const override {
+		return type_info.is_internal;
 	}
 	bool is_valid() const override {
 		return valid;

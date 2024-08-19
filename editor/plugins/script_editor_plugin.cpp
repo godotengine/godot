@@ -1928,6 +1928,7 @@ struct _ScriptEditorItemData {
 	String sort_key;
 	Ref<Texture2D> icon;
 	bool tool = false;
+	bool internal = false;
 	int index = 0;
 	String tooltip;
 	bool used = false;
@@ -2146,6 +2147,7 @@ void ScriptEditor::_update_script_names() {
 			sd.ref = se;
 			if (scr.is_valid()) {
 				sd.tool = scr->is_tool();
+				sd.internal = scr->is_internal();
 			}
 
 			switch (sort_by) {

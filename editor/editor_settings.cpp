@@ -478,6 +478,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/vsync_mode", 1, "Disabled,Enabled,Adaptive,Mailbox")
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/update_continuously", false, "")
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/show_internal_matches_in_create_dialog", false, "")
 
 	// Inspector
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "interface/inspector/max_array_dictionary_items_per_page", 20, "10,100,1")

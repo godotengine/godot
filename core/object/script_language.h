@@ -161,6 +161,7 @@ public:
 	virtual bool is_tool() const = 0;
 	virtual bool is_valid() const = 0;
 	virtual bool is_abstract() const = 0;
+	virtual bool is_internal() const = 0;
 
 	virtual ScriptLanguage *get_language() const = 0;
 
