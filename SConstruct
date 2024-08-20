@@ -257,7 +257,12 @@ opts.Add(
 opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False))
 opts.Add(BoolVariable("scu_build", "Use single compilation unit build", False))
 opts.Add("scu_limit", "Max includes per SCU file when using scu_build (determines RAM use)", "0")
+
+# Editor options
+opts.Add(BoolVariable("editor_can_call_home", "Enable the editor to call home", True))
+opts.Add(BoolVariable("education", "Sets editor options for the education build", False))
 opts.Add(BoolVariable("engine_update_check", "Enable engine update checks in the Project Manager", True))
+opts.Add(BoolVariable("asset_library", "Enable the asset library tab in the editor", True))
 opts.Add(BoolVariable("steamapi", "Enable minimal SteamAPI integration for usage time tracking (editor only)", False))
 
 # Thirdparty libraries
@@ -512,8 +517,30 @@ if env["use_precise_math_checks"]:
     env.Append(CPPDEFINES=["PRECISE_MATH_CHECKS"])
 
 if env.editor_build:
+    if env["education"]:
+        env.add_module_version_string("education")
+        if env["editor_can_call_home"]:
+            print_warning("`education=yes target=editor` build requires `editor_can_call_home=no`, disabling editor capability to call home.")
+            env["editor_can_call_home"] = False
+    if not env["editor_can_call_home"]:
+        if env["engine_update_check"]:
+            print_warning("`target=editor editor_can_call_home=no` build requires `engine_update_check=no`, disabling engine update check.")
+            env["engine_update_check"] = False
+        if env["asset_library"]:
+            print_warning("`target=editor editor_can_call_home=no` build requires `asset_library=no`, disabling the asset library.")
+            env["asset_library"] = False
+        if env["steamapi"]:
+            print_warning("`target=editor editor_can_call_home=no` build requires `steamapi=no`, disabling SteamAPI integration.")
+            env["steamapi"] = False
+
+    if env["education"]:
+        env.Append(CPPDEFINES=["EDUCATION_ENABLED"])
+    if env["editor_can_call_home"]:
+        env.Append(CPPDEFINES=["EDITOR_CALL_HOME_ENABLED"])
     if env["engine_update_check"]:
         env.Append(CPPDEFINES=["ENGINE_UPDATE_CHECK_ENABLED"])
+    if env["asset_library"]:
+        env.Append(CPPDEFINES=["ASSET_LIBRARY_ENABLED"])
 
     if not env.File("#main/splash_editor.png").exists():
         # Force disabling editor splash if missing.
@@ -1019,7 +1046,9 @@ if env["vsproj"]:
 if env["compiledb"]:
     if env.scons_version < (4, 0, 0):
         # Generating the compilation DB (`compile_commands.json`) requires SCons 4.0.0 or later.
-        print_error("The `compiledb=yes` option requires SCons 4.0 or later, but your version is %s." % scons_raw_version)
+        print_error(
+            "The `compiledb=yes` option requires SCons 4.0 or later, but your version is %s." % scons_raw_version
+        )
         Exit(255)
 
     env.Tool("compilation_db")
