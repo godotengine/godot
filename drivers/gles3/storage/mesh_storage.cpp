@@ -301,7 +301,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 			Vector<uint8_t> ir = new_surface.index_data;
 			wr = wf_indices.ptrw();
 
-			if (new_surface.vertex_count < (1 << 16)) {
+			if (new_surface.vertex_count <= 65536) {
 				// Read 16 bit indices.
 				const uint16_t *src_idx = (const uint16_t *)ir.ptr();
 				for (uint32_t i = 0; i + 5 < wf_index_count; i += 6) {
