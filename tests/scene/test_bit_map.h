@@ -449,7 +449,7 @@ TEST_CASE("[BitMap] Clip to polygon") {
 	reset_bit_map(bit_map);
 	bit_map.set_bit_rect(Rect2i(0, 0, 32, 32), true);
 	bit_map.set_bit_rect(Rect2i(64, 64, 32, 32), true);
-	polygons = bit_map.clip_opaque_to_polygons(Rect2i(0, 0, 128, 128), 2.0, true);
+	polygons = bit_map.clip_opaque_to_polygons(Rect2i(0, 0, 128, 128));
 	CHECK_MESSAGE(polygons.size() == 2, "We should have exactly 2 polygons");
 	CHECK_MESSAGE(polygons[0].size() == 4, "The polygon should have exactly 4 points");
 	CHECK_MESSAGE(polygons[1].size() == 4, "The polygon should have exactly 4 points");
@@ -457,14 +457,14 @@ TEST_CASE("[BitMap] Clip to polygon") {
 	reset_bit_map(bit_map);
 	bit_map.set_bit_rect(Rect2i(124, 112, 8, 32), true);
 	bit_map.set_bit_rect(Rect2i(112, 124, 32, 8), true);
-	polygons = bit_map.clip_opaque_to_polygons(Rect2i(0, 0, 256, 256), 2.0, true);
+	polygons = bit_map.clip_opaque_to_polygons(Rect2i(0, 0, 256, 256));
 	CHECK_MESSAGE(polygons.size() == 1, "We should have exactly 1 polygon");
 	CHECK_MESSAGE(polygons[0].size() == 12, "The polygon should have exactly 12 points");
 
 	reset_bit_map(bit_map);
 	bit_map.set_bit_rect(Rect2i(124, 112, 8, 32), true);
 	bit_map.set_bit_rect(Rect2i(112, 124, 32, 8), true);
-	polygons = bit_map.clip_opaque_to_polygons(Rect2i(0, 0, 128, 128), 2.0, true);
+	polygons = bit_map.clip_opaque_to_polygons(Rect2i(0, 0, 128, 128));
 	CHECK_MESSAGE(polygons.size() == 1, "We should have exactly 1 polygon");
 	CHECK_MESSAGE(polygons[0].size() == 6, "The polygon should have exactly 6 points");
 
@@ -473,7 +473,7 @@ TEST_CASE("[BitMap] Clip to polygon") {
 	bit_map.set_bit_rect(Rect2i(64, 64, 64, 64), true);
 	bit_map.set_bit_rect(Rect2i(192, 128, 64, 64), true);
 	bit_map.set_bit_rect(Rect2i(128, 192, 64, 64), true);
-	polygons = bit_map.clip_opaque_to_polygons(Rect2i(0, 0, 256, 256), 2.0, true);
+	polygons = bit_map.clip_opaque_to_polygons(Rect2i(0, 0, 256, 256));
 	CHECK_MESSAGE(polygons.size() == 4, "We should have exactly 4 polygons");
 	CHECK_MESSAGE(polygons[0].size() == 4, "The polygon should have exactly 4 points");
 	CHECK_MESSAGE(polygons[1].size() == 4, "The polygon should have exactly 4 points");
@@ -484,7 +484,7 @@ TEST_CASE("[BitMap] Clip to polygon") {
 	bit_map.set_bit(0, 0, true);
 	bit_map.set_bit(2, 0, true);
 	bit_map.set_bit_rect(Rect2i(1, 1, 1, 2), true);
-	polygons = bit_map.clip_opaque_to_polygons(Rect2i(0, 0, 3, 3), 2.0, true);
+	polygons = bit_map.clip_opaque_to_polygons(Rect2i(0, 0, 3, 3));
 	CHECK_MESSAGE(polygons.size() == 3, "We should have exactly 3 polygons");
 	CHECK_MESSAGE(polygons[0].size() == 4, "The polygon should have exactly 4 points");
 	CHECK_MESSAGE(polygons[1].size() == 4, "The polygon should have exactly 4 points");
@@ -495,7 +495,7 @@ TEST_CASE("[BitMap] Clip to polygon") {
 	bit_map.set_bit_rect(Rect2i(0, 2, 3, 1), true);
 	bit_map.set_bit(0, 1, true);
 	bit_map.set_bit(2, 1, true);
-	polygons = bit_map.clip_opaque_to_polygons(Rect2i(0, 0, 4, 4), 2.0, true);
+	polygons = bit_map.clip_opaque_to_polygons(Rect2i(0, 0, 4, 4));
 	CHECK_MESSAGE(polygons.size() == 1, "We should have exactly 1 polygon");
 	CHECK_MESSAGE(polygons[0].size() == 6, "The polygon should have exactly 6 points");
 }
