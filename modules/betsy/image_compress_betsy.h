@@ -34,11 +34,38 @@
 #include "core/io/image.h"
 
 enum BetsyFormat {
-	BETSY_FORMAT_BC6,
+	BETSY_FORMAT_BC1,
+	BETSY_FORMAT_BC1_DITHER,
+	BETSY_FORMAT_BC3,
+	BETSY_FORMAT_BC6_SIGNED,
+	BETSY_FORMAT_BC6_UNSIGNED,
 };
 
-Error _compress_betsy(BetsyFormat p_format, Image *r_img);
+class BetsyShader : public RefCounted {
+public:
+	RID compiled;
+	RID pipeline;
+
+	BetsyShader();
+	~BetsyShader();
+};
+
+struct BC6PushConstant {
+	float sizeX;
+	float sizeY;
+	uint32_t padding[2];
+};
+
+struct BC1PushConstant {
+	uint32_t num_refines;
+	uint32_t padding[3];
+};
+
+void free_device();
+
+Error compress_betsy(BetsyFormat p_format, Image *r_img);
 
 Error _betsy_compress_bptc(Image *r_img, Image::UsedChannels p_channels);
+Error _betsy_compress_s3tc(Image *r_img, Image::UsedChannels p_channels);
 
 #endif // IMAGE_COMPRESS_BETSY_H

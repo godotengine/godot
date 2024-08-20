@@ -78,7 +78,7 @@ fix build with our own copy of zstd (patch in `patches`).
 
 Files extracted from upstream source:
 
-- `bc6h.glsl`, `CrossPlatformSettings_piece_all.glsl` and `UavCrossPlatform_piece_all.glsl`.
+- `bc6h.glsl`, `bc1.glsl`, `CrossPlatformSettings_piece_all.glsl` and `UavCrossPlatform_piece_all.glsl`.
 - `LICENSE.md`
 
 
