@@ -303,6 +303,8 @@ StringName XRNode3D::get_pose_name() const {
 
 void XRNode3D::set_show_when_tracked(bool p_show) {
 	show_when_tracked = p_show;
+
+	_update_visibility();
 }
 
 bool XRNode3D::get_show_when_tracked() const {
@@ -361,6 +363,9 @@ void XRNode3D::_bind_tracker() {
 		if (pose.is_valid()) {
 			set_transform(pose->get_adjusted_transform());
 			_set_has_tracking_data(pose->get_has_tracking_data());
+		} else {
+			// Pose has been invalidated or was never set.
+			_set_has_tracking_data(false);
 		}
 	}
 }
@@ -407,6 +412,10 @@ void XRNode3D::_pose_lost_tracking(const Ref<XRPose> &p_pose) {
 }
 
 void XRNode3D::_set_has_tracking_data(bool p_has_tracking_data) {
+	// Always update our visibility, we may have set our tracking data
+	// when conditions weren't right.
+	_update_visibility();
+
 	// Ignore if the has_tracking_data state isn't changing.
 	if (p_has_tracking_data == has_tracking_data) {
 		return;
@@ -415,10 +424,19 @@ void XRNode3D::_set_has_tracking_data(bool p_has_tracking_data) {
 	// Handle change of has_tracking_data.
 	has_tracking_data = p_has_tracking_data;
 	emit_signal(SNAME("tracking_changed"), has_tracking_data);
+}
 
+void XRNode3D::_update_visibility() {
 	// If configured, show or hide the node based on tracking data.
 	if (show_when_tracked) {
-		set_visible(has_tracking_data);
+		// Only react to this if we have a primary interface.
+		XRServer *xr_server = XRServer::get_singleton();
+		if (xr_server != nullptr) {
+			Ref<XRInterface> xr_interface = xr_server->get_primary_interface();
+			if (xr_interface.is_valid()) {
+				set_visible(has_tracking_data);
+			}
+		}
 	}
 }
 
