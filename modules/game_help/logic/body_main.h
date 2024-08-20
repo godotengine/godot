@@ -48,6 +48,8 @@ struct CharacterAIContext
     Ref<CharacterAILogicNode> logic_node;
     StringName logic_name;
     CharacterCamp camp;
+    // xingweishu
+    Ref<BeehaveRuncontext> beehave_run_context;
     
 };
 
@@ -79,11 +81,11 @@ public:
 
 	void set_blackboard_plan(const Ref<BlackboardPlan> &p_plan)
     {
+        blackboard_plan = p_plan;
+        init_ai_context();
         init_blackboard_plan(p_plan);
-        get_bt_player()->set_blackboard_plan(p_plan);
     }
-	Ref<BlackboardPlan> get_blackboard_plan() { return get_bt_player()->get_blackboard_plan(); }
-    static void init_blackboard_plan(Ref<BlackboardPlan> p_plan);
+	Ref<BlackboardPlan> get_blackboard_plan() { return blackboard_plan; }
 
 	void set_update_mode(int p_mode)
     {
@@ -188,6 +190,7 @@ public:
     Ref<CharacterAI> get_character_ai();
 
     // 动画相关
+    void init_ai_context();
 public:
     void set_animation_library(const Ref<CharacterAnimationLibrary> &p_library) 
     {
@@ -370,12 +373,30 @@ protected:
             }
         }
     }
+public:
+    void set_editor_form_mesh_file_path(const String& p_file_path)
+    {
+        editor_form_mesh_file_path = p_file_path;
+    }
+    String get_editor_form_mesh_file_path()
+    {
+        return editor_form_mesh_file_path;
+    }
+    DECL_MEMBER_BUTTON(editor_build_form_mesh_file_path);
     static ObjectID& get_curr_editor_player();
+    // 获取当前编辑的角色
+    static CharacterBodyMain* get_current_editor_player()
+    {
+        return Object::cast_to<CharacterBodyMain>(ObjectDB::get_instance(get_curr_editor_player()));
+    }
+    static void init_blackboard_plan(Ref<BlackboardPlan> p_plan);
 protected:
     LocalVector<Ref<CharacterCheckArea3D>> check_area;
     Ref<CollisionObject3DConnectionShape> mainShape;
     // 初始化数据
     Dictionary init_data;
+    // 角色的编辑器模型
+    String editor_form_mesh_file_path;
 
 
     mutable BTPlayer *btPlayer = nullptr;
@@ -383,7 +404,7 @@ protected:
     // 技能播放器
     mutable BTPlayer *btSkillPlayer = nullptr;
 
-
+    Ref<BlackboardPlan> blackboard_plan;
     // 角色自己的黑板
     Ref<Blackboard> player_blackboard;
     Ref<CharacterMovement> character_movement;

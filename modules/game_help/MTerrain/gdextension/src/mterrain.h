@@ -118,6 +118,7 @@ class MTerrain : public  Node3D {
     void finish_update_physics();
     bool is_finish_updating();
     bool is_finish_updating_physics();
+    bool is_ram_image(const String& uniform_name);
     PackedStringArray get_image_list();
     int get_image_id(String uniform_name);
     void set_save_config(Ref<ConfigFile> conf);

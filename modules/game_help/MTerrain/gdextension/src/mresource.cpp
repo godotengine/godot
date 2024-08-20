@@ -713,6 +713,7 @@ void MResource::_bind_methods(){
     ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY,"compressed_data"), "set_compressed_data","get_compressed_data");
 
     ClassDB::bind_method(D_METHOD("has_data","name"), &MResource::has_data);
+    ClassDB::bind_method(D_METHOD("get_data_names"), &MResource::get_data_names);
     ClassDB::bind_method(D_METHOD("get_data_format","name"), &MResource::get_data_format);
     ClassDB::bind_method(D_METHOD("get_data_width","name"), &MResource::get_data_width);
     ClassDB::bind_method(D_METHOD("get_heightmap_width"), &MResource::get_heightmap_width);

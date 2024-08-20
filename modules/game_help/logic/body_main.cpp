@@ -61,8 +61,13 @@ void CharacterBodyMain::_bind_methods()
     ClassDB::bind_method(D_METHOD("set_skeleton_resource", "skeleton"), &CharacterBodyMain::set_skeleton_resource);
     ClassDB::bind_method(D_METHOD("get_skeleton_resource"), &CharacterBodyMain::get_skeleton_resource);
 
-
     
+    ClassDB::bind_method(D_METHOD("set_editor_form_mesh_file_path", "editor_form_mesh_file_path"), &CharacterBodyMain::set_editor_form_mesh_file_path);
+    ClassDB::bind_method(D_METHOD("get_editor_form_mesh_file_path"), &CharacterBodyMain::get_editor_form_mesh_file_path);
+
+    ADD_GROUP("editor", "editor_");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_form_mesh_file_path"), "set_editor_form_mesh_file_path", "get_editor_form_mesh_file_path");
+    ADD_MEMBER_BUTTON(editor_build_form_mesh_file_path,L"根据模型初始化",CharacterBodyMain);
 
 
     //ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "behavior_tree", PROPERTY_HINT_RESOURCE_TYPE, "BehaviorTree"), "set_behavior_tree", "get_behavior_tree");
@@ -122,8 +127,30 @@ void CharacterBodyMain::_notification( int p_notification )
             CharacterManager::get_singleton()->register_character(this);
         } break;
         case NOTIFICATION_EXIT_TREE: {
-            CharacterManager::get_singleton()->unregister_character(this);
+            CharacterManager::get_singleton()->unregister_character(this);            
         }
+        break;
+    }
+
+}
+void CharacterBodyMain::editor_build_form_mesh_file_path()
+{
+    if(!FileAccess::exists(editor_form_mesh_file_path))
+    {
+        return;
+    }
+}
+
+void CharacterBodyMain::init_ai_context()
+{
+    if(ai_context.beehave_run_context.is_null())
+    {
+        ai_context.beehave_run_context.instantiate();
+    }
+    ai_context.beehave_run_context->blackboard = get_blackboard();
+    if(blackboard_plan.is_valid())
+    {
+        ai_context.beehave_run_context->editor_blackboard = blackboard_plan->get_editor_blackboard();
     }
 
 }

@@ -20,7 +20,7 @@ public:
 
     virtual String get_lable_name()
     {
-        return L"执行次数限制装饰器";
+        return L"次数限制装饰器";
     }
     virtual void interrupt(const Ref<BeehaveRuncontext>& run_context)override
     {

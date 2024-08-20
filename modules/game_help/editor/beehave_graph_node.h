@@ -489,7 +489,6 @@ class BeehaveGraphTreeNode : public RefCounted
         Vector2 offset = Vector2(0,0);
         compute_position(offset,p_horizontal_layout);
 
-
     }
 
 

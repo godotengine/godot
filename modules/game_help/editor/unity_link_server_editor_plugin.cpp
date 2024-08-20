@@ -13,6 +13,7 @@
 #include "scene/gui/label.h"
 #include "scene/gui/flow_container.h"
 #include "unity_link_server_editor_plugin.h"
+#include "../logic/body_main.h"
 
 
 #include "modules/game_help/logic/character_ai/blackboard_set_item/animator_blackboard_item_bool.h"
@@ -37,7 +38,48 @@
 #include "../unity/unity_link_server.h"
 #include "beehave_graph_editor.h"
 #endif
+class CharacterBodyMainLable : public Label
+{
+	GDCLASS(CharacterBodyMainLable, Label);
+	static void _bind_methods() {
+		
+	}
+public:
 
+	CharacterBodyMainLable()
+	{
+
+		this->set_text(L"角色编辑面板");
+		set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	}
+	void _notification(int p_what)
+	{
+		switch (p_what) {
+			case NOTIFICATION_ENTER_TREE: {
+				if(body_main != nullptr)
+				{
+					CharacterBodyMain::get_curr_editor_player() = body_main->get_instance_id();
+				}
+			} break;
+			case NOTIFICATION_EXIT_TREE: {
+				// 解除绑定黑板设置回调
+				if(body_main != nullptr)
+				{
+					if(CharacterBodyMain::get_curr_editor_player() == body_main->get_instance_id())
+					{
+						CharacterBodyMain::get_curr_editor_player() = ObjectID();
+					}
+				}
+			} break;
+		}
+	}
+	void set_body_main(CharacterBodyMain* p_body_main)
+	{
+		body_main = p_body_main;
+	}
+protected:
+	CharacterBodyMain* body_main = nullptr;
+};
 class BlackbordSet_ED  : public HBoxContainer
 {
 	GDCLASS(BlackbordSet_ED, HBoxContainer);
@@ -798,6 +840,10 @@ class GameHelpInspectorPlugin : public EditorInspectorPlugin
 		{
 			return true;
 		}
+		if(Object::cast_to<CharacterBodyMain>(p_object) != nullptr)
+		{
+			return true;
+		}
 
 		return false;
 	}
@@ -822,6 +868,18 @@ class GameHelpInspectorPlugin : public EditorInspectorPlugin
 		if (/* condition */tree_object.is_valid())
 		{
 			return ConditionList_ED::_parse_beehave_tree_property(this,tree_object, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide);
+		}
+		CharacterBodyMain* body_main = Object::cast_to<CharacterBodyMain>(p_object);
+		if(body_main != nullptr)
+		{
+			
+			if(p_path == "update_mode")
+			{
+				CharacterBodyMainLable* lable = memnew(CharacterBodyMainLable);
+				lable->set_body_main(body_main);
+				add_custom_control( lable);
+			}
+			return false;
 		}
 		return false;
 	}

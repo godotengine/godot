@@ -47,6 +47,7 @@ class BeehaveRuncontext : public RefCounted
     double delta = 0.0;
     Node* actor = nullptr;
     Ref<Blackboard> blackboard;
+    Ref<Blackboard> editor_blackboard;
 };
 /// 序列节点
 class BeehaveNode : public RefCounted

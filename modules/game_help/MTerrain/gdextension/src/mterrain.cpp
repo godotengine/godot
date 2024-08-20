@@ -27,6 +27,7 @@ void MTerrain::_bind_methods() {
     ClassDB::bind_method(D_METHOD("finish_update"), &MTerrain::finish_update);
     ClassDB::bind_method(D_METHOD("update_physics"), &MTerrain::update_physics);
     ClassDB::bind_method(D_METHOD("finish_update_physics"), &MTerrain::finish_update_physics);
+    ClassDB::bind_method(D_METHOD("is_ram_image","uniform_name"), &MTerrain::is_ram_image);
     ClassDB::bind_method(D_METHOD("get_image_list"), &MTerrain::get_image_list);
     ClassDB::bind_method(D_METHOD("get_image_id", "uniform_name"), &MTerrain::get_image_id);
     ClassDB::bind_method(D_METHOD("set_save_config","conf"), &MTerrain::set_save_config);
@@ -489,14 +490,24 @@ bool MTerrain::is_finish_updating_physics(){
     return finish_updating_physics;
 }
 
+bool MTerrain::is_ram_image(const String& uniform_name){
+    ERR_FAIL_COND_V(!grid->is_created(),false);
+    ERR_FAIL_COND_V(!grid->get_terrain_material().is_valid(),false);
+    int img_id = grid->get_terrain_material()->get_texture_id(uniform_name);
+    ERR_FAIL_COND_V(img_id==-1,false);
+    return grid->regions[0].images[img_id]->is_ram_image;
+}
+
 PackedStringArray MTerrain::get_image_list(){
-    ERR_FAIL_COND_V(!terrain_material.is_valid(),PackedStringArray());
-    return terrain_material->get_textures_list();
+    ERR_FAIL_COND_V(!grid->is_created(),PackedStringArray());
+    ERR_FAIL_COND_V(!grid->get_terrain_material().is_valid(),PackedStringArray());
+    return grid->get_terrain_material()->get_textures_list();
 }
 
 int MTerrain::get_image_id(String uniform_name){
-    ERR_FAIL_COND_V(!terrain_material.is_valid(),-1);
-    return terrain_material->get_texture_id(uniform_name);
+    ERR_FAIL_COND_V(!grid->is_created(),false);
+    ERR_FAIL_COND_V(!grid->get_terrain_material().is_valid(),-1);
+    return grid->get_terrain_material()->get_texture_id(uniform_name);
 }
 
 void MTerrain::set_save_config(Ref<ConfigFile> conf){
