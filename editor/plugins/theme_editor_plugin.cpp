@@ -3201,7 +3201,7 @@ void ThemeTypeEditor::_change_pinned_stylebox() {
 
 		Ref<StyleBox> new_stylebox = edited_theme->get_stylebox(leading_stylebox.item_name, edited_type);
 		leading_stylebox.stylebox = new_stylebox;
-		leading_stylebox.ref_stylebox = (new_stylebox.is_valid() ? new_stylebox->duplicate() : Ref<Resource>());
+		leading_stylebox.ref_stylebox = (new_stylebox.is_valid() ? new_stylebox->duplicate() : Ref<RefCounted>());
 
 		if (leading_stylebox.stylebox.is_valid()) {
 			new_stylebox->connect_changed(callable_mp(this, &ThemeTypeEditor::_update_stylebox_from_leading));
@@ -3239,7 +3239,7 @@ void ThemeTypeEditor::_pin_leading_stylebox(String p_item_name, Ref<StyleBox> p_
 	leader.pinned = true;
 	leader.item_name = p_item_name;
 	leader.stylebox = p_stylebox;
-	leader.ref_stylebox = (p_stylebox.is_valid() ? p_stylebox->duplicate() : Ref<Resource>());
+	leader.ref_stylebox = (p_stylebox.is_valid() ? p_stylebox->duplicate() : Ref<RefCounted>());
 
 	leading_stylebox = leader;
 	if (p_stylebox.is_valid()) {

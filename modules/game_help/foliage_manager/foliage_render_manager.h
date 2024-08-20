@@ -330,13 +330,13 @@ namespace Foliage
             wait_cull_task();
 
             // 處理卸載
-            for(int i = 0; i < cull_unload_list.size(); ++i)
+            for(int i = 0; i < cull_unload_list.Length(); ++i)
             {
                 PendingProtoBox** _cellBox = cull_unload_list.GetUnsafePtr(i);
                 unload_once_cell_box(*_cellBox);
             }
             // 處理加載
-            for(int i = 0; i < cull_load_list.size(); ++i)
+            for(int i = 0; i < cull_load_list.Length(); ++i)
             {
                 PendingProtoBox** _cellBox = cull_load_list.GetUnsafePtr(i);
                 load_once_cell_box(*_cellBox);
@@ -446,7 +446,7 @@ namespace Foliage
                 cellLayer.write[i].clear(cellBoxes);
             }
             auto box_ptr = cellBoxes.list.GetUnsafePtr();
-            int length = cellBoxes.list.size();
+            int length = cellBoxes.list.Length();
             for(int i = 0; i < length; ++i)
             {
                 unload_once_cell_box(box_ptr + i);

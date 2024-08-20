@@ -14,6 +14,10 @@ namespace Foliage
 
 		int64_t memorySize = 0;
 		bool isSafeAlocal = false;
+		int64_t Length() const 
+        {
+             return MIN(listCount.get(),memorySize);
+        }
 		int64_t size() const 
         {
              return MIN(listCount.get(),memorySize);

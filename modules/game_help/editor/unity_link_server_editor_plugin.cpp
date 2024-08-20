@@ -803,22 +803,22 @@ class GameHelpInspectorPlugin : public EditorInspectorPlugin
 	}
 	bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide)override {
 	
-		Ref<CharacterAnimatorCondition> object = p_object;
+		Ref<CharacterAnimatorCondition> object = Object::cast_to< CharacterAnimatorCondition> (p_object);
 		if(object.is_valid())
 		{
 			return ConditionList_ED::_parse_condition_property(this,object, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide);
 		}
-		Ref<AnimatorBlackboardSet> set_object = p_object;
+		Ref<AnimatorBlackboardSet> set_object = Object::cast_to<AnimatorBlackboardSet> (p_object);
 		if (/* condition */set_object.is_valid())
 		{
 			return ConditionList_ED::_parse_blackboard_property(this,set_object, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide);
 		}
-		Ref<CharacterAnimationLogicRoot> root_object = p_object;
+		Ref<CharacterAnimationLogicRoot> root_object = Object::cast_to<CharacterAnimationLogicRoot> (p_object);
 		if (/* condition */root_object.is_valid())
 		{
 			return ConditionList_ED::_parse_node_root_property(this,root_object, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide);
 		}
-		Ref<BeehaveTree> tree_object = p_object;
+		Ref<BeehaveTree> tree_object = Object::cast_to<BeehaveTree>(p_object);
 		if (/* condition */tree_object.is_valid())
 		{
 			return ConditionList_ED::_parse_beehave_tree_property(this,tree_object, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide);

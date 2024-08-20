@@ -253,7 +253,7 @@ namespace Foliage
             computeShaderArg.clear();
         }
         void AddLoadInfo(FoliageCellAsset::CellData & info,MemoryPool::Block* dest_point
-            ,Vector3& mapOffset,AABB& boxOS,Vector2i& instanceRange);
+            , const Vector3& mapOffset, const AABB& boxOS, const Vector2i& instanceRange);
         void load_cell_gpu_instance(Vector<FoliageInstanceRenderDataChangeInfo>& instanceBufferChangeINfo)
         {
             // 處理緩衝區改變消息
@@ -371,7 +371,7 @@ namespace Foliage
         }
         int64_t size()
         {
-            return list.size();
+            return list.Length();
         }
         void clear()
         {

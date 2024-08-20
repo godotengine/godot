@@ -7,7 +7,7 @@ namespace Foliage
 {
     CellBlockItem * CellBlockItem::unuseNodeRoot = nullptr;
     void FoliageCellGpuInstanceLoadBuffer::AddLoadInfo(FoliageCellAsset::CellData & info,MemoryPool::Block* dest_point
-        ,Vector3& mapOffset,AABB& boxOS,Vector2i& instanceRange)
+        ,const Vector3& mapOffset,const AABB& boxOS, const Vector2i& instanceRange)
     {
         int copy_index = tempLoadCellData.size();
         tempLoadCellData.resize(tempLoadCellData.size() + (info.instances.size() * sizeof(FoliageCellAsset::InstanceData)) );

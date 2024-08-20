@@ -194,7 +194,7 @@ public:
 	{
 		
 		TypedArray<BeehaveGraphNodes> nodes = _get_child_nodes();
-		Ref<BeehaveNode> beehave_node = ObjectDB::get_instance(beehave_tree->last_editor_id); 
+		Ref<BeehaveNode> beehave_node = Object::cast_to<BeehaveNode>( ObjectDB::get_instance(beehave_tree->last_editor_id));
 		for(int i = 0; i < nodes.size(); ++i)
 		{
 			BeehaveGraphNodes* node = Object::cast_to<BeehaveGraphNodes>(nodes[i]);
@@ -570,7 +570,7 @@ public:
 		select_node_property_vbox = p_select_node_property_vbox;
 		select_node_property_vbox->set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
 		beehave_tree = p_beehave_tree;
-		Ref<BeehaveNode> node = ObjectDB::get_instance(beehave_tree->last_editor_id); 
+		Ref<BeehaveNode> node = Object::cast_to<BeehaveNode>(ObjectDB::get_instance(beehave_tree->last_editor_id));
 		if(node.is_null())
 		{
 			node = beehave_tree->get_root_node();
@@ -637,18 +637,18 @@ public:
 	}
 
 	
-	void BeehaveGraphProperty::_sub_inspector_property_keyed(const String &p_property, const Variant &p_value, bool p_advance) {
+	void _sub_inspector_property_keyed(const String &p_property, const Variant &p_value, bool p_advance) {
 		// The second parameter could be null, causing the event to fire with less arguments, so use the pointer call which preserves it.
 		const Variant args[3] = { String("children") + ":" + p_property, p_value, p_advance };
 		const Variant *argp[3] = { &args[0], &args[1], &args[2] };
 		emit_signalp(SNAME("property_keyed_with_value"), argp, 3);
 	}
 
-	void BeehaveGraphProperty::_sub_inspector_resource_selected(const Ref<RefCounted> &p_resource, const String &p_property) {
+	void _sub_inspector_resource_selected(const Ref<RefCounted> &p_resource, const String &p_property) {
 		emit_signal(SNAME("resource_selected"), String("children") + ":" + p_property, p_resource);
 	}
 
-	void BeehaveGraphProperty::_sub_inspector_object_id_selected(int p_id) {
+	void _sub_inspector_object_id_selected(int p_id) {
 		emit_signal(SNAME("object_id_selected"), "children", p_id);
 	}
 	void set_editor_node(Ref<BeehaveNode> p_beehave_node)

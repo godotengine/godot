@@ -67,7 +67,7 @@ namespace Foliage
             {
                 auto& protype = prototypes[_cell->prototypes[i].guid];
                 // 计算原型的最大加载距离
-                auto& dis = protype.lodEndDistance();
+                auto dis = protype.lodEndDistance();
                 dis.y = protype.lod1Enabled ? dis.y : 0;
                 dis.z = protype.lod2Enabled ? dis.z : 0;
                 dis.w = protype.lod3Enabled ? dis.w : 0;
