@@ -894,7 +894,7 @@ number and run the script.
 ## ufbx
 
 - Upstream: https://github.com/ufbx/ufbx
-- Version: 0.14.0 (80ff790ab36507b99ec7e4ef55b9cfb076ce821b, 2024)
+- Version: 0.14.3 (19bdb7e7ef02eb914d5e7211a3685f50ee6d27e3, 2024)
 - License: MIT
 
 Files extracted from upstream source:
