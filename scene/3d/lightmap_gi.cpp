@@ -151,6 +151,14 @@ bool LightmapGIData::is_using_spherical_harmonics() const {
 	return uses_spherical_harmonics;
 }
 
+void LightmapGIData::_set_uses_packed_directional(bool p_enable) {
+	_uses_packed_directional = p_enable;
+}
+
+bool LightmapGIData::_is_using_packed_directional() const {
+	return _uses_packed_directional;
+}
+
 void LightmapGIData::set_capture_data(const AABB &p_bounds, bool p_interior, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree, float p_baked_exposure) {
 	if (p_points.size()) {
 		int pc = p_points.size();
@@ -255,6 +263,9 @@ void LightmapGIData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_uses_spherical_harmonics", "uses_spherical_harmonics"), &LightmapGIData::set_uses_spherical_harmonics);
 	ClassDB::bind_method(D_METHOD("is_using_spherical_harmonics"), &LightmapGIData::is_using_spherical_harmonics);
 
+	ClassDB::bind_method(D_METHOD("_set_uses_packed_directional", "_uses_packed_directional"), &LightmapGIData::_set_uses_packed_directional);
+	ClassDB::bind_method(D_METHOD("_is_using_packed_directional"), &LightmapGIData::_is_using_packed_directional);
+
 	ClassDB::bind_method(D_METHOD("add_user", "path", "uv_scale", "slice_index", "sub_instance"), &LightmapGIData::add_user);
 	ClassDB::bind_method(D_METHOD("get_user_count"), &LightmapGIData::get_user_count);
 	ClassDB::bind_method(D_METHOD("get_user_path", "user_idx"), &LightmapGIData::get_user_path);
@@ -267,6 +278,7 @@ void LightmapGIData::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uses_spherical_harmonics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_uses_spherical_harmonics", "is_using_spherical_harmonics");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "user_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_user_data", "_get_user_data");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "probe_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_probe_data", "_get_probe_data");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "_uses_packed_directional", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_uses_packed_directional", "_is_using_packed_directional");
 
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_light_texture", "light_texture"), &LightmapGIData::set_light_texture);
@@ -1187,6 +1199,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 	}
 
 	gi_data->set_lightmap_textures(textures);
+	gi_data->_set_uses_packed_directional(directional); // New SH lightmaps are packed automatically.
 	gi_data->set_uses_spherical_harmonics(directional);
 
 	for (int i = 0; i < lightmapper->get_bake_mesh_count(); i++) {
@@ -1352,6 +1365,12 @@ void LightmapGI::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POST_ENTER_TREE: {
 			if (light_data.is_valid()) {
+				ERR_FAIL_COND_MSG(
+						light_data->is_using_spherical_harmonics() && !light_data->_is_using_packed_directional(),
+						vformat(
+								"%s (%s): The directional lightmap textures are stored in a format that isn't supported anymore. Please bake lightmaps again to make lightmaps display from this node again.",
+								get_light_data()->get_path(), get_name()));
+
 				_assign_lightmaps();
 			}
 		} break;
