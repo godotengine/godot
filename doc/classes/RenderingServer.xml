@@ -2566,6 +2566,15 @@
 				Returns the [Transform2D] of the specified instance. For use when the multimesh is set to use 2D transforms.
 			</description>
 		</method>
+		<method name="multimesh_instance_reset_physics_interpolation">
+			<return type="void" />
+			<param index="0" name="multimesh" type="RID" />
+			<param index="1" name="index" type="int" />
+			<description>
+				Prevents physics interpolation for the specified instance during the current physics tick.
+				This is useful when moving an instance to a new location, to give an instantaneous change rather than interpolation from the previous location.
+			</description>
+		</method>
 		<method name="multimesh_instance_set_color">
 			<return type="void" />
 			<param index="0" name="multimesh" type="RID" />
@@ -2623,6 +2632,16 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="multimesh_set_buffer_interpolated">
+			<return type="void" />
+			<param index="0" name="multimesh" type="RID" />
+			<param index="1" name="buffer" type="PackedFloat32Array" />
+			<param index="2" name="buffer_previous" type="PackedFloat32Array" />
+			<description>
+				Alternative version of [method multimesh_set_buffer] for use with physics interpolation.
+				Takes both an array of current data and an array of data for the previous physics tick.
+			</description>
+		</method>
 		<method name="multimesh_set_custom_aabb">
 			<return type="void" />
 			<param index="0" name="multimesh" type="RID" />
@@ -2637,6 +2656,23 @@
 			<param index="1" name="mesh" type="RID" />
 			<description>
 				Sets the mesh to be drawn by the multimesh. Equivalent to [member MultiMesh.mesh].
+			</description>
+		</method>
+		<method name="multimesh_set_physics_interpolated">
+			<return type="void" />
+			<param index="0" name="multimesh" type="RID" />
+			<param index="1" name="interpolated" type="bool" />
+			<description>
+				Turns on and off physics interpolation for this MultiMesh resource.
+			</description>
+		</method>
+		<method name="multimesh_set_physics_interpolation_quality">
+			<return type="void" />
+			<param index="0" name="multimesh" type="RID" />
+			<param index="1" name="quality" type="int" enum="RenderingServer.MultimeshPhysicsInterpolationQuality" />
+			<description>
+				Sets the physics interpolation quality for the [MultiMesh].
+				A value of [constant MULTIMESH_INTERP_QUALITY_FAST] gives fast but low quality interpolation, a value of [constant MULTIMESH_INTERP_QUALITY_HIGH] gives slower but higher quality interpolation.
 			</description>
 		</method>
 		<method name="multimesh_set_visible_instances">
@@ -4507,6 +4543,12 @@
 		</constant>
 		<constant name="MULTIMESH_TRANSFORM_3D" value="1" enum="MultimeshTransformFormat">
 			Use [Transform3D] to store MultiMesh transform.
+		</constant>
+		<constant name="MULTIMESH_INTERP_QUALITY_FAST" value="0" enum="MultimeshPhysicsInterpolationQuality">
+			MultiMesh physics interpolation favors speed over quality.
+		</constant>
+		<constant name="MULTIMESH_INTERP_QUALITY_HIGH" value="1" enum="MultimeshPhysicsInterpolationQuality">
+			MultiMesh physics interpolation favors quality over speed.
 		</constant>
 		<constant name="LIGHT_PROJECTOR_FILTER_NEAREST" value="0" enum="LightProjectorFilter">
 			Nearest-neighbor filter for light projectors (use for pixel art light projectors). No mipmaps are used for rendering, which means light projectors at a distance will look sharp but grainy. This has roughly the same performance cost as using mipmaps.

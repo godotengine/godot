@@ -344,6 +344,11 @@ public:
 	FUNC2(multimesh_set_buffer, RID, const Vector<float> &)
 	FUNC1RC(Vector<float>, multimesh_get_buffer, RID)
 
+	FUNC3(multimesh_set_buffer_interpolated, RID, const Vector<float> &, const Vector<float> &)
+	FUNC2(multimesh_set_physics_interpolated, RID, bool)
+	FUNC2(multimesh_set_physics_interpolation_quality, RID, MultimeshPhysicsInterpolationQuality)
+	FUNC2(multimesh_instance_reset_physics_interpolation, RID, int)
+
 	FUNC2(multimesh_set_visible_instances, RID, int)
 	FUNC1RC(int, multimesh_get_visible_instances, RID)
 
