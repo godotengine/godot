@@ -11,6 +11,7 @@ inputs:
     description: Target platform.
     required: false
   sconsflags:
+    description: Scons Flags
     default: ""
   scons-cache:
     description: The SCons cache path.
