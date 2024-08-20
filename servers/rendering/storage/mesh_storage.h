@@ -89,39 +89,110 @@ public:
 	virtual void update_mesh_instances() = 0;
 
 	/* MULTIMESH API */
+	struct MultiMeshInterpolator {
+		RS::MultimeshTransformFormat _transform_format = RS::MULTIMESH_TRANSFORM_3D;
+		bool _use_colors = false;
+		bool _use_custom_data = false;
 
-	virtual RID multimesh_allocate() = 0;
-	virtual void multimesh_initialize(RID p_rid) = 0;
-	virtual void multimesh_free(RID p_rid) = 0;
+		// The stride of the buffer in floats.
+		int _stride = 0;
 
-	virtual void multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false) = 0;
+		// Vertex format sizes in floats.
+		int _vf_size_xform = 0;
+		int _vf_size_color = 0;
+		int _vf_size_data = 0;
 
-	virtual int multimesh_get_instance_count(RID p_multimesh) const = 0;
+		// Set by allocate, can be used to prevent indexing out of range.
+		int _num_instances = 0;
 
-	virtual void multimesh_set_mesh(RID p_multimesh, RID p_mesh) = 0;
-	virtual void multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform3D &p_transform) = 0;
-	virtual void multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) = 0;
-	virtual void multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) = 0;
-	virtual void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) = 0;
+		// Quality determines whether to use lerp or slerp etc.
+		int quality = 0;
+		bool interpolated = false;
+		bool on_interpolate_update_list = false;
+		bool on_transform_update_list = false;
 
-	virtual void multimesh_set_custom_aabb(RID p_multimesh, const AABB &p_aabb) = 0;
-	virtual AABB multimesh_get_custom_aabb(RID p_multimesh) const = 0;
+		Vector<float> _data_prev;
+		Vector<float> _data_curr;
+		Vector<float> _data_interpolated;
+	};
 
-	virtual RID multimesh_get_mesh(RID p_multimesh) const = 0;
+	virtual RID multimesh_allocate();
+	virtual void multimesh_initialize(RID p_rid);
+	virtual void multimesh_free(RID p_rid);
 
-	virtual Transform3D multimesh_instance_get_transform(RID p_multimesh, int p_index) const = 0;
-	virtual Transform2D multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const = 0;
-	virtual Color multimesh_instance_get_color(RID p_multimesh, int p_index) const = 0;
-	virtual Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const = 0;
+	virtual void multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false);
 
-	virtual void multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_buffer) = 0;
-	virtual Vector<float> multimesh_get_buffer(RID p_multimesh) const = 0;
+	virtual int multimesh_get_instance_count(RID p_multimesh) const;
 
-	virtual void multimesh_set_visible_instances(RID p_multimesh, int p_visible) = 0;
-	virtual int multimesh_get_visible_instances(RID p_multimesh) const = 0;
+	virtual void multimesh_set_mesh(RID p_multimesh, RID p_mesh);
+	virtual void multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform3D &p_transform);
+	virtual void multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform);
+	virtual void multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color);
+	virtual void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color);
 
-	virtual AABB multimesh_get_aabb(RID p_multimesh) const = 0;
+	virtual void multimesh_set_custom_aabb(RID p_multimesh, const AABB &p_aabb);
+	virtual AABB multimesh_get_custom_aabb(RID p_multimesh) const;
 
+	virtual RID multimesh_get_mesh(RID p_multimesh) const;
+
+	virtual Transform3D multimesh_instance_get_transform(RID p_multimesh, int p_index) const;
+	virtual Transform2D multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const;
+	virtual Color multimesh_instance_get_color(RID p_multimesh, int p_index) const;
+	virtual Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const;
+
+	virtual void multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_buffer);
+	virtual Vector<float> multimesh_get_buffer(RID p_multimesh) const;
+
+	virtual void multimesh_set_buffer_interpolated(RID p_multimesh, const Vector<float> &p_buffer, const Vector<float> &p_buffer_prev);
+	virtual void multimesh_set_physics_interpolated(RID p_multimesh, bool p_interpolated);
+	virtual void multimesh_set_physics_interpolation_quality(RID p_multimesh, RS::MultimeshPhysicsInterpolationQuality p_quality);
+	virtual void multimesh_instance_reset_physics_interpolation(RID p_multimesh, int p_index);
+
+	virtual void multimesh_set_visible_instances(RID p_multimesh, int p_visible);
+	virtual int multimesh_get_visible_instances(RID p_multimesh) const;
+
+	virtual AABB multimesh_get_aabb(RID p_multimesh) const;
+
+	virtual RID _multimesh_allocate() = 0;
+	virtual void _multimesh_initialize(RID p_rid) = 0;
+	virtual void _multimesh_free(RID p_rid) = 0;
+
+	virtual void _multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false) = 0;
+
+	virtual int _multimesh_get_instance_count(RID p_multimesh) const = 0;
+
+	virtual void _multimesh_set_mesh(RID p_multimesh, RID p_mesh) = 0;
+	virtual void _multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform3D &p_transform) = 0;
+	virtual void _multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) = 0;
+	virtual void _multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) = 0;
+	virtual void _multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) = 0;
+
+	virtual void _multimesh_set_custom_aabb(RID p_multimesh, const AABB &p_aabb) = 0;
+	virtual AABB _multimesh_get_custom_aabb(RID p_multimesh) const = 0;
+
+	virtual RID _multimesh_get_mesh(RID p_multimesh) const = 0;
+
+	virtual Transform3D _multimesh_instance_get_transform(RID p_multimesh, int p_index) const = 0;
+	virtual Transform2D _multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const = 0;
+	virtual Color _multimesh_instance_get_color(RID p_multimesh, int p_index) const = 0;
+	virtual Color _multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const = 0;
+
+	virtual void _multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_buffer) = 0;
+	virtual Vector<float> _multimesh_get_buffer(RID p_multimesh) const = 0;
+
+	virtual void _multimesh_set_visible_instances(RID p_multimesh, int p_visible) = 0;
+	virtual int _multimesh_get_visible_instances(RID p_multimesh) const = 0;
+
+	virtual AABB _multimesh_get_aabb(RID p_multimesh) const = 0;
+
+	// Multimesh is responsible for allocating / destroying a MultiMeshInterpolator object.
+	// This allows shared functionality for interpolation across backends.
+	virtual MultiMeshInterpolator *_multimesh_get_interpolator(RID p_multimesh) const = 0;
+
+private:
+	void _multimesh_add_to_interpolation_lists(RID p_multimesh, MultiMeshInterpolator &r_mmi);
+
+public:
 	/* SKELETON API */
 
 	virtual RID skeleton_allocate() = 0;
@@ -137,6 +208,19 @@ public:
 	virtual void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) = 0;
 
 	virtual void skeleton_update_dependency(RID p_base, DependencyTracker *p_instance) = 0;
+
+	/* INTERPOLATION */
+
+	struct InterpolationData {
+		void notify_free_multimesh(RID p_rid);
+		LocalVector<RID> multimesh_interpolate_update_list;
+		LocalVector<RID> multimesh_transform_update_lists[2];
+		LocalVector<RID> *multimesh_transform_update_list_curr = &multimesh_transform_update_lists[0];
+		LocalVector<RID> *multimesh_transform_update_list_prev = &multimesh_transform_update_lists[1];
+	} _interpolation_data;
+
+	void update_interpolation_tick(bool p_process = true);
+	void update_interpolation_frame(bool p_process = true);
 };
 
 #endif // MESH_STORAGE_H

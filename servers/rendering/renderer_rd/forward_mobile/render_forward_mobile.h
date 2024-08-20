@@ -82,7 +82,7 @@ private:
 		SPEC_CONSTANT_DISABLE_FOG = 14,
 		SPEC_CONSTANT_USE_DEPTH_FOG = 16,
 		SPEC_CONSTANT_IS_MULTIMESH = 17,
-
+		SPEC_CONSTANT_USE_LIGHTMAP_BICUBIC_FILTER = 18,
 	};
 
 	enum {
@@ -208,8 +208,9 @@ private:
 
 	struct LightmapData {
 		float normal_xform[12];
-		float pad[3];
+		float texture_size[2];
 		float exposure_normalization;
+		float pad;
 	};
 
 	struct LightmapCaptureData {

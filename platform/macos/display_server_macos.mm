@@ -2332,7 +2332,7 @@ void DisplayServerMacOS::window_set_window_buttons_offset(const Vector2i &p_offs
 	wd.wb_offset = p_offset / scale;
 	wd.wb_offset = wd.wb_offset.maxi(12);
 	if (wd.window_button_view) {
-		[wd.window_button_view setOffset:NSMakePoint(wd.wb_offset.x, wd.wb_offset.y)];
+		[(GodotButtonView *)wd.window_button_view setOffset:NSMakePoint(wd.wb_offset.x, wd.wb_offset.y)];
 	}
 }
 

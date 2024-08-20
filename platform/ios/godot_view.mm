@@ -441,6 +441,9 @@ static const float earth_gravity = 9.80665;
 
 	UIInterfaceOrientation interfaceOrientation = UIInterfaceOrientationUnknown;
 
+#if __IPHONE_OS_VERSION_MAX_ALLOWED < 140000
+	interfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+#else
 	if (@available(iOS 13, *)) {
 		interfaceOrientation = [UIApplication sharedApplication].delegate.window.windowScene.interfaceOrientation;
 #if !defined(TARGET_OS_SIMULATOR) || !TARGET_OS_SIMULATOR
@@ -448,6 +451,7 @@ static const float earth_gravity = 9.80665;
 		interfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
 #endif
 	}
+#endif
 
 	switch (interfaceOrientation) {
 		case UIInterfaceOrientationLandscapeLeft: {

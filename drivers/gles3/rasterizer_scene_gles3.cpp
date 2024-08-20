@@ -3210,6 +3210,10 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 							if (lm->uses_spherical_harmonics) {
 								spec_constants |= SceneShaderGLES3::USE_SH_LIGHTMAP;
 							}
+
+							if (lightmap_bicubic_upscale) {
+								spec_constants |= SceneShaderGLES3::LIGHTMAP_BICUBIC_FILTER;
+							}
 						} else if (inst->lightmap_sh) {
 							spec_constants |= SceneShaderGLES3::USE_LIGHTMAP_CAPTURE;
 						} else {
@@ -3351,6 +3355,11 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 
 						Vector4 uv_scale(inst->lightmap_uv_scale.position.x, inst->lightmap_uv_scale.position.y, inst->lightmap_uv_scale.size.x, inst->lightmap_uv_scale.size.y);
 						material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::LIGHTMAP_UV_SCALE, uv_scale, shader->version, instance_variant, spec_constants);
+
+						if (lightmap_bicubic_upscale) {
+							Vector2 light_texture_size(lm->light_texture_size.x, lm->light_texture_size.y);
+							material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::LIGHTMAP_TEXTURE_SIZE, light_texture_size, shader->version, instance_variant, spec_constants);
+						}
 
 						float exposure_normalization = 1.0;
 						if (p_render_data->camera_attributes.is_valid()) {
@@ -4047,6 +4056,10 @@ void RasterizerSceneGLES3::decals_set_filter(RS::DecalFilter p_filter) {
 void RasterizerSceneGLES3::light_projectors_set_filter(RS::LightProjectorFilter p_filter) {
 }
 
+void RasterizerSceneGLES3::lightmaps_set_bicubic_filter(bool p_enable) {
+	lightmap_bicubic_upscale = p_enable;
+}
+
 RasterizerSceneGLES3::RasterizerSceneGLES3() {
 	singleton = this;
 
@@ -4060,6 +4073,7 @@ RasterizerSceneGLES3::RasterizerSceneGLES3() {
 
 	positional_soft_shadow_filter_set_quality((RS::ShadowQuality)(int)GLOBAL_GET("rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality"));
 	directional_soft_shadow_filter_set_quality((RS::ShadowQuality)(int)GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality"));
+	lightmaps_set_bicubic_filter(GLOBAL_GET("rendering/lightmapping/lightmap_gi/use_bicubic_filter"));
 
 	{
 		// Setup Lights

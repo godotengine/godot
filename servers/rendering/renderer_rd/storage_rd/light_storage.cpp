@@ -1813,6 +1813,7 @@ void LightStorage::lightmap_set_textures(RID p_lightmap, RID p_light, bool p_use
 	}
 
 	t->lightmap_users.insert(p_lightmap);
+	lm->light_texture_size = Vector2i(t->width, t->height);
 
 	if (using_lightmap_array) {
 		if (lm->array_index < 0) {
