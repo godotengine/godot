@@ -583,6 +583,8 @@ void main() {
 
 #define SHADER_IS_SRGB true
 
+#define FLAGS_NON_UNIFORM_SCALE (1 << 4)
+
 /* Varyings */
 
 #if defined(COLOR_USED)
@@ -955,6 +957,7 @@ ivec2 multiview_uv(ivec2 uv) {
 
 uniform highp mat4 world_transform;
 uniform mediump float opaque_prepass_threshold;
+uniform highp uint model_flags;
 
 #if defined(RENDER_MATERIAL)
 layout(location = 0) out vec4 albedo_output_buffer;
@@ -1520,6 +1523,13 @@ void main() {
 #ifdef LIGHT_VERTEX_USED
 	vec3 light_vertex = vertex;
 #endif //LIGHT_VERTEX_USED
+
+	highp mat3 model_normal_matrix;
+	if (bool(model_flags & uint(FLAGS_NON_UNIFORM_SCALE))) {
+		model_normal_matrix = transpose(inverse(mat3(model_matrix)));
+	} else {
+		model_normal_matrix = mat3(model_matrix);
+	}
 
 	{
 #CODE : FRAGMENT
