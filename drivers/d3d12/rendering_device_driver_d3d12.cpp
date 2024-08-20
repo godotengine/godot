@@ -3058,7 +3058,7 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 
 	// Translate SPIR-V shaders to DXIL, and collect shader info from the new representation.
 	HashMap<ShaderStage, Vector<uint8_t>> dxil_blobs;
-	BitField<ShaderStage> stages_processed;
+	BitField<ShaderStage> stages_processed = {};
 	{
 		HashMap<int, nir_shader *> stages_nir_shaders;
 

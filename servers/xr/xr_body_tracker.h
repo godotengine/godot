@@ -161,7 +161,7 @@ protected:
 
 private:
 	bool has_tracking_data = false;
-	BitField<BodyFlags> body_flags;
+	BitField<BodyFlags> body_flags = {};
 
 	BitField<JointFlags> joint_flags[JOINT_MAX];
 	Transform3D joint_transforms[JOINT_MAX];

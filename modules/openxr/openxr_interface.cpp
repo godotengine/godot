@@ -1466,7 +1466,7 @@ OpenXRInterface::HandTrackedSource OpenXRInterface::get_hand_tracking_source(con
 }
 
 BitField<OpenXRInterface::HandJointFlags> OpenXRInterface::get_hand_joint_flags(Hand p_hand, HandJoints p_joint) const {
-	BitField<OpenXRInterface::HandJointFlags> bits;
+	BitField<OpenXRInterface::HandJointFlags> bits = HAND_JOINT_NONE;
 
 	OpenXRHandTrackingExtension *hand_tracking_ext = OpenXRHandTrackingExtension::get_singleton();
 	if (hand_tracking_ext && hand_tracking_ext->get_active()) {
