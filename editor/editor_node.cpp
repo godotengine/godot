@@ -174,6 +174,32 @@ static const String EDITOR_NODE_CONFIG_SECTION = "EditorNode";
 static const String REMOVE_ANDROID_BUILD_TEMPLATE_MESSAGE = "The Android build template is already installed in this project and it won't be overwritten.\nRemove the \"%s\" directory manually before attempting this operation again.";
 static const String INSTALL_ANDROID_BUILD_TEMPLATE_MESSAGE = "This will set up your project for gradle Android builds by installing the source template to \"%s\".\nNote that in order to make gradle builds instead of using pre-built APKs, the \"Use Gradle Build\" option should be enabled in the Android export preset.";
 
+bool EditorProgress::step(const String &p_state, int p_step, bool p_force_refresh) {
+	if (Thread::is_main_thread()) {
+		return EditorNode::progress_task_step(task, p_state, p_step, p_force_refresh);
+	} else {
+		EditorNode::progress_task_step_bg(task, p_step);
+		return false;
+	}
+}
+
+EditorProgress::EditorProgress(const String &p_task, const String &p_label, int p_amount, bool p_can_cancel) {
+	if (Thread::is_main_thread()) {
+		EditorNode::progress_add_task(p_task, p_label, p_amount, p_can_cancel);
+	} else {
+		EditorNode::progress_add_task_bg(p_task, p_label, p_amount);
+	}
+	task = p_task;
+}
+
+EditorProgress::~EditorProgress() {
+	if (Thread::is_main_thread()) {
+		EditorNode::progress_end_task(task);
+	} else {
+		EditorNode::progress_end_task_bg(task);
+	}
+}
+
 void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vector<String> &r_filenames) {
 	ERR_FAIL_COND_MSG(p_full_paths.size() != r_filenames.size(), vformat("disambiguate_filenames requires two string vectors of same length (%d != %d).", p_full_paths.size(), r_filenames.size()));
 
@@ -1662,17 +1688,17 @@ void EditorNode::_find_node_types(Node *p_node, int &count_2d, int &count_3d) {
 }
 
 void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
-	EditorProgress save("save", TTR("Saving Scene"), 4);
+	save_scene_progress = memnew(EditorProgress("save", TTR("Saving Scene"), 4));
 
 	if (editor_data.get_edited_scene_root() != nullptr) {
-		save.step(TTR("Analyzing"), 0);
+		save_scene_progress->step(TTR("Analyzing"), 0);
 
 		int c2d = 0;
 		int c3d = 0;
 
 		_find_node_types(editor_data.get_edited_scene_root(), c2d, c3d);
 
-		save.step(TTR("Creating Thumbnail"), 1);
+		save_scene_progress->step(TTR("Creating Thumbnail"), 1);
 		// Current view?
 
 		Ref<Image> img;
@@ -1700,8 +1726,7 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 		if (img.is_valid() && img->get_width() > 0 && img->get_height() > 0) {
 			img = img->duplicate();
 
-			save.step(TTR("Creating Thumbnail"), 2);
-			save.step(TTR("Creating Thumbnail"), 3);
+			save_scene_progress->step(TTR("Creating Thumbnail"), 3);
 
 			int preview_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
 			preview_size *= EDSCALE;
@@ -1737,12 +1762,19 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 		}
 	}
 
-	save.step(TTR("Saving Scene"), 4);
+	save_scene_progress->step(TTR("Saving Scene"), 4);
 	_save_scene(p_file, p_idx);
 
 	if (!singleton->cmdline_export_mode) {
 		EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
 	}
+
+	_close_save_scene_progress();
+}
+
+void EditorNode::_close_save_scene_progress() {
+	memdelete_notnull(save_scene_progress);
+	save_scene_progress = nullptr;
 }
 
 bool EditorNode::_validate_scene_recursive(const String &p_filename, Node *p_node) {
@@ -5136,6 +5168,7 @@ bool EditorNode::is_project_exporting() const {
 void EditorNode::show_accept(const String &p_text, const String &p_title) {
 	current_menu_option = -1;
 	if (accept) {
+		_close_save_scene_progress();
 		accept->set_ok_button_text(p_title);
 		accept->set_text(p_text);
 		EditorInterface::get_singleton()->popup_dialog_centered(accept);
@@ -5145,6 +5178,7 @@ void EditorNode::show_accept(const String &p_text, const String &p_title) {
 void EditorNode::show_save_accept(const String &p_text, const String &p_title) {
 	current_menu_option = -1;
 	if (save_accept) {
+		_close_save_scene_progress();
 		save_accept->set_ok_button_text(p_title);
 		save_accept->set_text(p_text);
 		EditorInterface::get_singleton()->popup_dialog_centered(save_accept);
@@ -5153,6 +5187,7 @@ void EditorNode::show_save_accept(const String &p_text, const String &p_title) {
 
 void EditorNode::show_warning(const String &p_text, const String &p_title) {
 	if (warning) {
+		_close_save_scene_progress();
 		warning->set_text(p_text);
 		warning->set_title(p_title);
 		EditorInterface::get_singleton()->popup_dialog_centered(warning);
