@@ -748,7 +748,7 @@ with the provided patch.
 ## openxr
 
 - Upstream: https://github.com/KhronosGroup/OpenXR-SDK
-- Version: 1.0.34 (288d3a7ebc1ad959f62d51da75baa3d27438c499, 2024)
+- Version: 1.1.38 (f90488c4fb1537f4256d09d4a4d3ad5543ebaf24, 2024)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -894,7 +894,7 @@ number and run the script.
 ## ufbx
 
 - Upstream: https://github.com/ufbx/ufbx
-- Version: 0.14.0 (80ff790ab36507b99ec7e4ef55b9cfb076ce821b, 2024)
+- Version: 0.14.3 (19bdb7e7ef02eb914d5e7211a3685f50ee6d27e3, 2024)
 - License: MIT
 
 Files extracted from upstream source:

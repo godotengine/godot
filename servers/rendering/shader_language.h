@@ -59,6 +59,7 @@ public:
 		TK_FLOAT_CONSTANT,
 		TK_INT_CONSTANT,
 		TK_UINT_CONSTANT,
+		TK_STRING_CONSTANT,
 		TK_TYPE_VOID,
 		TK_TYPE_BOOL,
 		TK_TYPE_BVEC2,
@@ -175,6 +176,7 @@ public:
 		TK_HINT_ANISOTROPY_TEXTURE,
 		TK_HINT_SOURCE_COLOR,
 		TK_HINT_RANGE,
+		TK_HINT_ENUM,
 		TK_HINT_INSTANCE_INDEX,
 		TK_HINT_SCREEN_TEXTURE,
 		TK_HINT_NORMAL_ROUGHNESS_TEXTURE,
@@ -623,6 +625,7 @@ public:
 			enum Hint {
 				HINT_NONE,
 				HINT_RANGE,
+				HINT_ENUM,
 				HINT_SOURCE_COLOR,
 				HINT_NORMAL,
 				HINT_ROUGHNESS_NORMAL,
@@ -648,6 +651,7 @@ public:
 			};
 
 			int order = 0;
+			int prop_order = 0;
 			int texture_order = 0;
 			int texture_binding = 0;
 			DataType type = TYPE_VOID;
@@ -660,9 +664,15 @@ public:
 			TextureFilter filter = FILTER_DEFAULT;
 			TextureRepeat repeat = REPEAT_DEFAULT;
 			float hint_range[3];
+			PackedStringArray hint_enum_names;
 			int instance_index = 0;
 			String group;
 			String subgroup;
+
+			_FORCE_INLINE_ bool is_texture() const {
+				// Order is assigned to -1 for texture uniforms.
+				return order < 0;
+			}
 
 			Uniform() {
 				hint_range[0] = 0.0f;

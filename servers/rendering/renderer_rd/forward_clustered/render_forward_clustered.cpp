@@ -1103,9 +1103,17 @@ void RenderForwardClustered::_setup_lightmaps(const RenderDataRD *p_render_data,
 
 		RID lightmap = light_storage->lightmap_instance_get_lightmap(p_lightmaps[i]);
 
+		// Transform (for directional lightmaps).
 		Basis to_lm = light_storage->lightmap_instance_get_transform(p_lightmaps[i]).basis.inverse() * p_cam_transform.basis;
 		to_lm = to_lm.inverse().transposed(); //will transform normals
 		RendererRD::MaterialStorage::store_transform_3x3(to_lm, scene_state.lightmaps[i].normal_xform);
+
+		// Light texture size.
+		Vector2i lightmap_size = light_storage->lightmap_get_light_texture_size(lightmap);
+		scene_state.lightmaps[i].texture_size[0] = lightmap_size[0];
+		scene_state.lightmaps[i].texture_size[1] = lightmap_size[1];
+
+		// Exposure.
 		scene_state.lightmaps[i].exposure_normalization = 1.0;
 		if (p_render_data->camera_attributes.is_valid()) {
 			float baked_exposure = light_storage->lightmap_get_baked_exposure_normalization(lightmap);
@@ -1749,7 +1757,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	int *render_info = p_render_data->render_info ? p_render_data->render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_VISIBLE] : (int *)nullptr;
 	_fill_instance_data(RENDER_LIST_OPAQUE, render_info);
 	_fill_instance_data(RENDER_LIST_MOTION, render_info);
-	_fill_instance_data(RENDER_LIST_ALPHA);
+	_fill_instance_data(RENDER_LIST_ALPHA, render_info);
 
 	RD::get_singleton()->draw_command_end_label();
 
@@ -1827,7 +1835,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				clear_color.r *= bg_energy_multiplier;
 				clear_color.g *= bg_energy_multiplier;
 				clear_color.b *= bg_energy_multiplier;
-				if (!p_render_data->transparent_bg && rb->has_custom_data(RB_SCOPE_FOG) && environment_get_fog_enabled(p_render_data->environment)) {
+				if (!p_render_data->transparent_bg && (rb->has_custom_data(RB_SCOPE_FOG) || environment_get_fog_enabled(p_render_data->environment))) {
 					draw_sky_fog_only = true;
 					RendererRD::MaterialStorage::get_singleton()->material_set_param(sky.sky_scene_state.fog_material, "clear_color", Variant(clear_color.srgb_to_linear()));
 				}
@@ -1837,7 +1845,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				clear_color.r *= bg_energy_multiplier;
 				clear_color.g *= bg_energy_multiplier;
 				clear_color.b *= bg_energy_multiplier;
-				if (!p_render_data->transparent_bg && rb->has_custom_data(RB_SCOPE_FOG) && environment_get_fog_enabled(p_render_data->environment)) {
+				if (!p_render_data->transparent_bg && (rb->has_custom_data(RB_SCOPE_FOG) || environment_get_fog_enabled(p_render_data->environment))) {
 					draw_sky_fog_only = true;
 					RendererRD::MaterialStorage::get_singleton()->material_set_param(sky.sky_scene_state.fog_material, "clear_color", Variant(clear_color.srgb_to_linear()));
 				}
@@ -4239,6 +4247,11 @@ void RenderForwardClustered::_update_shader_quality_settings() {
 			light_projectors_get_filter() == RS::LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS ||
 			light_projectors_get_filter() == RS::LIGHT_PROJECTOR_FILTER_NEAREST_MIPMAPS_ANISOTROPIC ||
 			light_projectors_get_filter() == RS::LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS_ANISOTROPIC;
+
+	spec_constants.push_back(sc);
+
+	sc.constant_id = SPEC_CONSTANT_USE_LIGHTMAP_BICUBIC_FILTER;
+	sc.bool_value = lightmap_filter_bicubic_get();
 
 	spec_constants.push_back(sc);
 

@@ -1000,6 +1000,7 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 	TreeItem *item = p_node ? _find(tree->get_root(), p_node->get_path()) : nullptr;
 
 	if (item) {
+		selected = p_node;
 		if (auto_expand_selected) {
 			// Make visible when it's collapsed.
 			TreeItem *node = item->get_parent();
@@ -1009,8 +1010,24 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 			}
 			item->select(0);
 			item->set_as_cursor(0);
-			selected = p_node;
 			tree->ensure_cursor_is_visible();
+		} else {
+			// Ensure the node is selected and visible for the user if the node
+			// is not collapsed.
+			bool collapsed = false;
+			TreeItem *node = item;
+			while (node && node != tree->get_root()) {
+				if (node->is_collapsed()) {
+					collapsed = true;
+					break;
+				}
+				node = node->get_parent();
+			}
+			if (!collapsed) {
+				item->select(0);
+				item->set_as_cursor(0);
+				tree->ensure_cursor_is_visible();
+			}
 		}
 	} else {
 		if (!p_node) {

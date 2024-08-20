@@ -1040,6 +1040,14 @@ void RendererSceneRenderRD::light_projectors_set_filter(RenderingServer::LightPr
 	_update_shader_quality_settings();
 }
 
+void RendererSceneRenderRD::lightmaps_set_bicubic_filter(bool p_enable) {
+	if (lightmap_filter_bicubic == p_enable) {
+		return;
+	}
+	lightmap_filter_bicubic = p_enable;
+	_update_shader_quality_settings();
+}
+
 int RendererSceneRenderRD::get_roughness_layers() const {
 	return sky.roughness_layers;
 }
@@ -1483,6 +1491,7 @@ void RendererSceneRenderRD::init() {
 
 	decals_set_filter(RS::DecalFilter(int(GLOBAL_GET("rendering/textures/decals/filter"))));
 	light_projectors_set_filter(RS::LightProjectorFilter(int(GLOBAL_GET("rendering/textures/light_projectors/filter"))));
+	lightmaps_set_bicubic_filter(GLOBAL_GET("rendering/lightmapping/lightmap_gi/use_bicubic_filter"));
 
 	cull_argument.set_page_pool(&cull_argument_pool);
 

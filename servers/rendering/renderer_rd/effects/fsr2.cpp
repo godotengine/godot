@@ -800,9 +800,6 @@ FSR2Effect::~FSR2Effect() {
 	RD::get_singleton()->free(device.linear_clamp_sampler);
 
 	for (uint32_t i = 0; i < FFX_FSR2_PASS_COUNT; i++) {
-		if (device.passes[i].pipeline.pipeline_rid.is_valid()) {
-			RD::get_singleton()->free(device.passes[i].pipeline.pipeline_rid);
-		}
 		device.passes[i].shader->version_free(device.passes[i].shader_version);
 	}
 }

@@ -73,6 +73,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		SPEC_CONSTANT_DECAL_FILTER = 10,
 		SPEC_CONSTANT_PROJECTOR_FILTER = 11,
 		SPEC_CONSTANT_USE_DEPTH_FOG = 12,
+		SPEC_CONSTANT_USE_LIGHTMAP_BICUBIC_FILTER = 13,
 	};
 
 	enum {
@@ -235,8 +236,9 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 
 	struct LightmapData {
 		float normal_xform[12];
-		float pad[3];
+		float texture_size[2];
 		float exposure_normalization;
+		float pad;
 	};
 
 	struct LightmapCaptureData {

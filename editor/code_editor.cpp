@@ -994,6 +994,9 @@ Ref<Texture2D> CodeTextEditor::_get_completion_icon(const ScriptLanguage::CodeCo
 				tex = get_editor_theme_icon(p_option.display);
 			} else {
 				tex = EditorNode::get_singleton()->get_class_icon(p_option.display);
+				if (!tex.is_valid()) {
+					tex = get_editor_theme_icon(SNAME("Object"));
+				}
 			}
 		} break;
 		case ScriptLanguage::CODE_COMPLETION_KIND_ENUM:

@@ -149,7 +149,7 @@ void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
 	int h = p_image->get_height();
 
 	bool is_ldr = (p_image->get_format() <= Image::FORMAT_RGBA8);
-	bool is_hdr = (p_image->get_format() >= Image::FORMAT_RH) && (p_image->get_format() <= Image::FORMAT_RGBE9995);
+	bool is_hdr = (p_image->get_format() >= Image::FORMAT_RF) && (p_image->get_format() <= Image::FORMAT_RGBE9995);
 
 	if (!is_ldr && !is_hdr) {
 		return; // Not a usable source format

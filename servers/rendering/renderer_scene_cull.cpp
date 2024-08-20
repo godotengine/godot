@@ -4392,7 +4392,8 @@ void RendererSceneCull::set_scene_render(RendererSceneRender *p_scene_render) {
 /* INTERPOLATION API */
 
 void RendererSceneCull::update_interpolation_tick(bool p_process) {
-	// TODO (MultiMesh): Update interpolation in storage.
+	// MultiMesh: Update interpolation in storage.
+	RSG::mesh_storage->update_interpolation_tick(p_process);
 
 	// INSTANCES
 
@@ -4450,7 +4451,8 @@ void RendererSceneCull::update_interpolation_tick(bool p_process) {
 }
 
 void RendererSceneCull::update_interpolation_frame(bool p_process) {
-	// TODO (MultiMesh): Update interpolation in storage.
+	// MultiMesh: Update interpolation in storage.
+	RSG::mesh_storage->update_interpolation_frame(p_process);
 
 	if (p_process) {
 		real_t f = Engine::get_singleton()->get_physics_interpolation_fraction();
