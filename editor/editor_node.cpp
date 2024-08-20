@@ -671,7 +671,10 @@ void EditorNode::_notification(int p_what) {
 
 			callable_mp(this, &EditorNode::_begin_first_scan).call_deferred();
 
-			DisplayServer::get_singleton()->set_system_theme_change_callback(callable_mp(this, &EditorNode::_update_theme).bind(false));
+			last_dark_mode_state = DisplayServer::get_singleton()->is_dark_mode();
+			last_system_accent_color = DisplayServer::get_singleton()->get_accent_color();
+			last_system_base_color = DisplayServer::get_singleton()->get_base_color();
+			DisplayServer::get_singleton()->set_system_theme_change_callback(callable_mp(this, &EditorNode::_check_system_theme_changed));
 
 			/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
 		} break;
