@@ -24,39 +24,43 @@ public:
     {
         return L"重复执行装饰器";
     }
-    virtual void interrupt(Node * actor, Blackboard* blackboard)override
+    virtual void interrupt(const Ref<BeehaveRuncontext>& run_context)override
     {
-        base_class_type::interrupt(actor,blackboard);
+        base_class_type::interrupt(run_context);
     }
 
-    virtual void before_run(Node * actor, Blackboard* blackboard)override
+    virtual void before_run(const Ref<BeehaveRuncontext>& run_context)override
     {
-        base_class_type::before_run(actor,blackboard);
-        current_count = 0;
+        base_class_type::before_run(run_context);
+		Dictionary prop = run_context->get_property(this);
+		prop[SNAME("current_count")] = 0;
     }
-    virtual int tick(Node * actor, Blackboard* blackboard)override
+    virtual int tick(const Ref<BeehaveRuncontext>& run_context)override
     {
         if(get_child_count() == 0)
         {
             return FAILURE;
         }
+		auto child_state = run_context->get_child_state(this);
+		Dictionary prop = run_context->get_property(this);
+		int current_count = prop.get(SNAME("current_count"), 0);
         if(current_count < max_count)
         {
             current_count++;
             if(child_state[0] == 0)
             {
-                children[0]->before_run(actor,blackboard);
-                child_state[0] = 1;
+                children[0]->before_run(run_context);
+                child_state.write[0] = 1;
             }
-            int rs = children[0]->tick(actor,blackboard);
-            children[0]->set_status(rs);
+            int rs = children[0]->tick(run_context);
+			run_context->set_run_state(children[0].ptr(), rs);
             if(rs == RUNNING)
             {
                 return rs;
             }
             current_count += 1;
-            child_state[0] = 0;
-            children[0]->after_run(actor,blackboard);
+            child_state.write[0] = 0;
+            children[0]->after_run(run_context);
             if(rs == FAILURE)
             {
                 return FAILURE;
@@ -64,8 +68,8 @@ public:
         }
         else
         {
-            children[0]->after_run(actor,blackboard);
-            child_state[0] = 2;
+            children[0]->after_run(run_context);
+            child_state.write[0] = 2;
             return FAILURE;
         }
         return SUCCESS;
@@ -84,5 +88,4 @@ public:
 protected:
 
     int max_count = 0;
-    int current_count = 0;
 };

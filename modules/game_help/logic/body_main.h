@@ -16,6 +16,7 @@
 #include "./character_shape/character_body_prefab.h"
 #include "navigation/character_navigation_agent.h"
 #include "modules/renik/renik.h"
+#include "beehave/beehave_tree.h"
 
 
 #include "modules/limboai/bt/bt_player.h"
@@ -369,6 +370,7 @@ protected:
             }
         }
     }
+    static ObjectID& get_curr_editor_player();
 protected:
     LocalVector<Ref<CharacterCheckArea3D>> check_area;
     Ref<CollisionObject3DConnectionShape> mainShape;

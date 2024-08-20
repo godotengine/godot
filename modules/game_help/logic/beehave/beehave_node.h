@@ -1,6 +1,53 @@
 #pragma once
 #include "core/object/ref_counted.h"
 
+// 行为树运行上下文
+class BeehaveRuncontext : public RefCounted
+{
+    public:
+
+    // 获取属性
+    Dictionary get_property(Object* curr_this_node)
+    {
+        if(properties.has(curr_this_node->get_instance_id()))
+        {
+            return properties[curr_this_node->get_instance_id()];
+        }
+        Dictionary rs;
+        properties[curr_this_node->get_instance_id()] = rs;
+        return rs;
+    }
+    void set_run_state(Object* curr_this_node,int state)
+    {
+        Dictionary rs = get_property(curr_this_node);
+        rs[SNAME("run_state")] = state;
+    }
+    int get_run_state(Object* curr_this_node)
+    {
+        Dictionary rs = get_property(curr_this_node);
+        return rs.get(SNAME("run_state"),-1);
+    }
+
+    void init_child_state(Object* curr_this_node,int child_count)
+    {
+        Dictionary rs = get_property(curr_this_node);
+        Vector<int32_t> child_state = rs.get("child_status", Vector<int32_t>());
+        child_state.resize(child_count);
+        child_state.fill(0);
+        rs[SNAME("run_state")] = -1;
+    }
+    Vector<int32_t> get_child_state(Object* curr_this_node)
+    {
+        Dictionary rs = get_property(curr_this_node);
+        Vector<int32_t> child_state = rs.get("child_status", Vector<int32_t>());
+        return child_state;
+    }
+    HashMap<uint64_t,Dictionary> properties;
+    double time = 0.0;
+    double delta = 0.0;
+    Node* actor = nullptr;
+    Ref<Blackboard> blackboard;
+};
 /// 序列节点
 class BeehaveNode : public RefCounted
 {
@@ -21,7 +68,7 @@ class BeehaveNode : public RefCounted
 public:
     enum SequenceRunState
     {
-        SUCCESS, FAILURE, RUNNING
+        NONE_PROCESS = -1,SUCCESS, FAILURE, RUNNING
     };
     int get_child_count() const { return children.size(); }
 
@@ -36,30 +83,28 @@ public:
 
 
     // Called when this node needs to be interrupted before it can return FAILURE or SUCCESS.
-    virtual void interrupt(Node * actor, Blackboard* blackboard) 
+    virtual void interrupt(const Ref<BeehaveRuncontext>& run_context) 
     {
-        child_state.resize(children.size());
-        child_state.fill(0);
+        run_context->init_child_state(this, children.size());
         for(uint32_t i = 0; i < children.size(); ++i)
         {
-            children[i]->interrupt(actor,blackboard);
+            children[i]->interrupt(run_context);
         }
-        status = -1;
     }
     // Called before the first time it ticks by the parent.
-    virtual void  before_run(Node * actor, Blackboard* blackboard)  
+    virtual void  before_run(const Ref<BeehaveRuncontext>& run_context)  
     {
 
     }
-    virtual int tick(Node * actor, Blackboard* blackboard) 
+    virtual int tick(const Ref<BeehaveRuncontext>& run_context) 
     {
-        set_status(SUCCESS);
+        run_context->set_run_state(this,SequenceRunState::SUCCESS);
         return SUCCESS;
 
     }
     // Called after the last time it ticks and returns
     // [code]SUCCESS[/code] or [code]FAILURE[/code].
-    virtual void after_run(Node * actor, Blackboard* blackboard)  
+    virtual void after_run(const Ref<BeehaveRuncontext>& run_context)  
     {
         
     }
@@ -124,20 +169,9 @@ public:
     {
         return name;
     }
-    void set_status(int p_status)
-    {
-        status = p_status;
-    }
-    int get_status()
-    {
-        return status;
-    }
 protected:
     LocalVector<Ref<BeehaveNode>> children;
-    LocalVector<uint8_t> child_state;
-    int id = 0;
     String name;
-    int status = -1;
 };
 
 
@@ -159,9 +193,9 @@ public:
     {
         return String(L"组合节点");
     }
-    virtual void interrupt(Node * actor, Blackboard* blackboard)override
+    virtual void interrupt(const Ref<BeehaveRuncontext>& run_context)override
     {
-        base_class_type::interrupt(actor,blackboard);
+        base_class_type::interrupt(run_context);
     }
     virtual TypedArray<StringName> get_class_name()override
     {
@@ -192,9 +226,9 @@ public:
     {
         return String(L"装饰器节点");
     }
-    virtual void interrupt(Node * actor, Blackboard* blackboard)override
+    virtual void interrupt(const Ref<BeehaveRuncontext>& run_context)override
     {
-        base_class_type::interrupt(actor,blackboard);
+        base_class_type::interrupt(run_context);
     }
     virtual TypedArray<StringName> get_class_name()override
     {
@@ -225,9 +259,9 @@ public:
     {
         return String(L"叶节点");
     }
-    virtual void interrupt(Node * actor, Blackboard* blackboard)override
+    virtual void interrupt(const Ref<BeehaveRuncontext>& run_context)override
     {
-        base_class_type::interrupt(actor,blackboard);
+        base_class_type::interrupt(run_context);
     }
     virtual TypedArray<StringName> get_class_name()override
     {
@@ -247,48 +281,48 @@ class BeehaveAction : public BeehaveLeaf
     GDCLASS(BeehaveAction, BeehaveLeaf);
     static void _bind_methods()
     {
-	    GDVIRTUAL_BIND(_interrupt, "owenr_node", "blackboard");
-	    GDVIRTUAL_BIND(_before_run, "owenr_node", "blackboard");
-	    GDVIRTUAL_BIND(_after_run, "owenr_node", "blackboard");
-	    GDVIRTUAL_BIND(_tick, "owenr_node", "blackboard");
+	    GDVIRTUAL_BIND(_interrupt, "run_context");
+	    GDVIRTUAL_BIND(_before_run, "run_context");
+	    GDVIRTUAL_BIND(_after_run, "run_context");
+	    GDVIRTUAL_BIND(_tick, "run_context");
     }
 public:
     virtual StringName get_icon()
     {
         return SNAME("action");
     }
-    virtual void interrupt(Node * actor, Blackboard* blackboard)  override
+    virtual void interrupt(const Ref<BeehaveRuncontext>& run_context)  override
     {
-        base_class_type::interrupt(actor,blackboard);	
-        GDVIRTUAL_CALL(_interrupt, actor, blackboard);
+        base_class_type::interrupt(run_context);	
+        GDVIRTUAL_CALL(_interrupt, run_context);
     }
-    virtual void before_run(Node * actor, Blackboard* blackboard)  override
+    virtual void before_run(const Ref<BeehaveRuncontext>& run_context)  override
     {
-        base_class_type::before_run(actor,blackboard);
-        GDVIRTUAL_CALL(_before_run, actor, blackboard);
+        base_class_type::before_run(run_context);
+        GDVIRTUAL_CALL(_before_run, run_context);
     }
-    virtual void after_run(Node * actor, Blackboard* blackboard)  override
+    virtual void after_run(const Ref<BeehaveRuncontext>& run_context)  override
     {
-        base_class_type::after_run(actor,blackboard);
-        GDVIRTUAL_CALL(_after_run, actor, blackboard);
+        base_class_type::after_run(run_context);
+        GDVIRTUAL_CALL(_after_run, run_context);
     }
-    virtual int tick(Node * actor, Blackboard* blackboard)  override
+    virtual int tick(const Ref<BeehaveRuncontext>& run_context)  override
     {
         if (GDVIRTUAL_IS_OVERRIDDEN(_tick))
         {            
             int rs;
-            GDVIRTUAL_CALL(_tick, actor, blackboard,rs);
-            set_status(rs);
+            GDVIRTUAL_CALL(_tick, run_context,rs);
+			run_context->set_run_state(this,rs);
             return rs;
         }
-        int rs = base_class_type::tick(actor,blackboard);
-        set_status(rs);
+        int rs = base_class_type::tick(run_context);
+		run_context->set_run_state(this, rs);
         return rs;
     }
 
     
-	GDVIRTUAL2(_interrupt,Node*,Blackboard*);
-	GDVIRTUAL2(_before_run,Node*,Blackboard*);
-	GDVIRTUAL2(_after_run,Node*,Blackboard*);
-	GDVIRTUAL2R(int,_tick,Node*,Blackboard*);
+	GDVIRTUAL1(_interrupt,const Ref<BeehaveRuncontext>&);
+	GDVIRTUAL1(_before_run,const Ref<BeehaveRuncontext>&);
+	GDVIRTUAL1(_after_run,const Ref<BeehaveRuncontext>&);
+	GDVIRTUAL1R(int,_tick,const Ref<BeehaveRuncontext>&);
 };

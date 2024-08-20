@@ -20,10 +20,11 @@ public:
     {
         return SNAME("BTSequence");
     }
-    virtual void interrupt(Node * actor, Blackboard* blackboard)override
+    virtual void interrupt(const Ref<BeehaveRuncontext>& run_context)override
     {
-        base_class_type::interrupt(actor,blackboard);
-        successful_index = 0;
+        base_class_type::interrupt(run_context);
+		Dictionary prop = run_context->get_property(this);
+		prop[SNAME("successful_index")] = 0;
     }
 
     virtual TypedArray<StringName> get_class_name()override
@@ -33,28 +34,31 @@ public:
         return rs;  
     }
 
-    virtual int tick(Node * actor, Blackboard* blackboard)override
+    virtual int tick(const Ref<BeehaveRuncontext>& run_context)override
     {
+		auto child_state = run_context->get_child_state(this);
+		Dictionary prop = run_context->get_property(this);
+		int successful_index = prop.get(SNAME("successful_index"), 0);
         for(int i = successful_index; i < get_child_count(); i++)
         {
             if(child_state[i] == 0)
             {
-                child_state[i] = 1;
-                children[i]->before_run(actor,blackboard);
+                child_state.write[i] = 1;
+                children[i]->before_run(run_context);
             }
-            int rs = children[i]->tick(actor,blackboard);
-            children[i]->set_status(rs);
+			int rs = children[i]->tick(run_context);
+			run_context->set_run_state(children[i].ptr(), rs);
             if(rs == SUCCESS)
             {
                 successful_index = i + 1;
-                child_state[i] = 2;
-                children[i]->after_run(actor,blackboard);
+                child_state.write[i] = 2;
+                children[i]->after_run(run_context);
             }
             if(rs == FAILURE)
             {
                 successful_index = i + 1;
-                children[i]->after_run(actor,blackboard);
-                child_state[i] = 0;
+                children[i]->after_run(run_context);
+                child_state.write[i] = 0;
                 return rs;
             }
             if(rs == RUNNING)

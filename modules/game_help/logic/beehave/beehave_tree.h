@@ -12,7 +12,7 @@ class BeehaveListener : public RefCounted
     }
 
 public:
-    virtual void start(Node * actor, Blackboard* blackboard)
+    virtual void start(const Ref<BeehaveRuncontext>& run_context)
     {
         #if !TOOLS_ENABLED
            if(is_editor_only)
@@ -20,10 +20,10 @@ public:
                return;
            }
         #endif
-        GDVIRTUAL_CALL(_start, actor, blackboard);
+        GDVIRTUAL_CALL(_start, run_context);
 
     }
-    virtual void process(Node * actor, Blackboard* blackboard)
+    virtual void process(const Ref<BeehaveRuncontext>& run_context)
     {
         #if !TOOLS_ENABLED
            if(is_editor_only)
@@ -31,9 +31,9 @@ public:
                return;
            }
         #endif
-        GDVIRTUAL_CALL(_process, actor, blackboard);
+        GDVIRTUAL_CALL(_process, run_context);
     }
-    virtual void stop(Node * actor, Blackboard* blackboard)
+    virtual void stop(const Ref<BeehaveRuncontext>& run_context)
     {
         #if !TOOLS_ENABLED
            if(is_editor_only)
@@ -41,11 +41,11 @@ public:
                return;
            }
         #endif
-        GDVIRTUAL_CALL(_stop, actor, blackboard);
+        GDVIRTUAL_CALL(_stop, run_context);
     }
-	GDVIRTUAL2(_start,Node*,Blackboard*);
-	GDVIRTUAL2(_process,Node*,Blackboard*);
-	GDVIRTUAL2(_stop,Node*,Blackboard*);
+	GDVIRTUAL1(_start, const Ref<BeehaveRuncontext>&);
+	GDVIRTUAL1(_process, const Ref<BeehaveRuncontext>&);
+	GDVIRTUAL1(_stop, const Ref<BeehaveRuncontext>&);
     bool is_editor_only = false;
 
 };
@@ -75,7 +75,7 @@ class BeehaveTree : public Resource
     enum Status { SUCCESS, FAILURE, RUNNING };
 public:
     // 初始化
-    void init(Node * actor, Blackboard* blackboard)
+    void init(const Ref<BeehaveRuncontext>& run_context)
     {
         last_tick = 0;
         _can_send_message = false;
@@ -84,15 +84,15 @@ public:
         
         for (int i = 0; i < listeners.size(); i++)
         {
-            listeners[i]->start(actor, blackboard);
+            listeners[i]->start(run_context);
         }
         if(root_node.is_valid())
         {
-            root_node->interrupt(actor,blackboard);
+            root_node->interrupt(run_context);
         }
     }
 
-    void process(Node * actor, Blackboard* blackboard, double delta)
+    void process(const Ref<BeehaveRuncontext>& run_context)
     {
         if (last_tick < tick_rate - 1)
         {
@@ -103,29 +103,28 @@ public:
         last_tick = 0;
         float start_time = OS::get_singleton()->get_ticks_usec();
 
-	    blackboard->set_var("can_send_message", _can_send_message);
         
         for (int i = 0; i < listeners.size(); i++)
         {
-            listeners[i]->process(actor, blackboard);
+            listeners[i]->process(run_context);
         }
         // if _can_send_message:
         // 	BeehaveDebuggerMessages.process_begin(get_instance_id())
-        tick(actor, blackboard);
+        tick(run_context);
 
         // if _can_send_message:
         // 	BeehaveDebuggerMessages.process_end(get_instance_id())
 
 	    _process_time_metric_value = OS::get_singleton()->get_ticks_usec() - start_time;
     }
-    void stop(Node * actor, Blackboard* blackboard)
+    void stop(const Ref<BeehaveRuncontext>& run_context)
     {        
         for (int i = 0; i < listeners.size(); i++)
         {
-            listeners[i]->stop(actor, blackboard);
+            listeners[i]->stop(run_context);
         }
     }
-    int tick(Node * actor, Blackboard* blackboard)
+    int tick(const Ref<BeehaveRuncontext>& run_context)
     {	
         if (actor == nullptr || root_node.is_null())
 		{
@@ -133,18 +132,18 @@ public:
         }
         if (status != RUNNING)
         {
-            root_node->before_run(actor, blackboard);
+            root_node->before_run(run_context);
         }
-        status = root_node->tick(actor, blackboard);
+        status = root_node->tick(run_context);
 
         // 	if _can_send_message:
 		// BeehaveDebuggerMessages.process_tick(child.get_instance_id(), status)
 		// BeehaveDebuggerMessages.process_tick(get_instance_id(), status)
         if (status != RUNNING)
         {
-            root_node->after_run(actor, blackboard);
+            root_node->after_run(run_context);
         }
-        root_node->set_status(status);
+		run_context->set_run_state(this,status);
         return status;
     }
 public:
@@ -189,7 +188,10 @@ public:
 public:
     void editor_init()
     {
-
+        if(blackboard_plan.is_null())
+        {
+            return;
+        }
     }
 
     void editor_process()
@@ -207,6 +209,8 @@ public:
 
     Ref<BlackboardPlan> blackboard_plan;
     LocalVector<Ref<BeehaveListener>> listeners;
+
+    Node* actor = nullptr;
 
     ObjectID last_editor_id;
     float tick_rate = 0.1f;

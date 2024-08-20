@@ -173,16 +173,6 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 		ClassDB::register_class<CharacterAI_CheckPatrol>();
 
 		ClassDB::register_class<CharacterAILogicNode>();
-		ClassDB::register_class<CharacterAILogicNode_Patrol>();
-		ClassDB::register_class<CharacterAILogicNode_Jump>();
-		ClassDB::register_class<CharacterAILogicNode_Jump2>();
-		ClassDB::register_class<CharacterAILogicNode_Follow>();
-		ClassDB::register_class<CharacterAILogicNode_Escape>();
-		ClassDB::register_class<CharacterAILogicNode_Battle>();
-		ClassDB::register_class<CharacterAILogicNode_Respawn>();
-		ClassDB::register_class<CharacterAILogicNode_Provoke>();
-		ClassDB::register_class<CharacterAILogicNode_Idle>();
-		ClassDB::register_class<CharacterAILogicNode_Dead>();
 
 
 		ClassDB::register_class<BeehaveNode>(true);

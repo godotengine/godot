@@ -23,27 +23,31 @@ class BeehaveDecoratorDelayer : public BeehaveDecorator
     {
         return SNAME("delayer");
     }
-    virtual int tick(Node * actor, Blackboard* blackboard) override
+    virtual int tick(const Ref<BeehaveRuncontext>& run_context) override
     {
         if(get_child_count() == 0)
         {
             return SUCCESS;
         }
+		Dictionary prop = run_context->get_property(this);
+		float total_time = prop.get(SNAME("total_time"),0.0f);
+		auto child_state = run_context->get_child_state(this);
         if (total_time < wait_time)
         {
 
-            total_time += (float)blackboard->get_var(SNAME("delta_time"), 0.0);
+			total_time += run_context->delta;
+			prop[SNAME("total_time")] = total_time;
             return RUNNING;
 
         }
         if(child_state[0] == 0)
         {
-            children[0]->before_run(actor,blackboard);
-            child_state[0] = 1;
+            children[0]->before_run(run_context);
+            child_state.write[0] = 1;
         }
-        int rs = children[0]->tick(actor,blackboard);
+        int rs = children[0]->tick(run_context);
         
-        children[0]->set_status(rs);
+		run_context->set_run_state(children[0].ptr(),rs);
         return rs;
     }
 public:
@@ -57,5 +61,4 @@ public:
     }
 protected:
     float wait_time = 0.0;
-    float total_time = 0.0;
 };

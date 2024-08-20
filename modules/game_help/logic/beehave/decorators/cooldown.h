@@ -8,11 +8,8 @@ class BeehaveDecoratorCooldown : public BeehaveDecorator
         ClassDB::bind_method(D_METHOD("set_wait_time","time"),&BeehaveDecoratorCooldown::set_wait_time);
         ClassDB::bind_method(D_METHOD("get_wait_time"),&BeehaveDecoratorCooldown::get_wait_time);
         
-        ClassDB::bind_method(D_METHOD("set_remaining_time","time"),&BeehaveDecoratorCooldown::set_remaining_time);
-        ClassDB::bind_method(D_METHOD("get_remaining_time"),&BeehaveDecoratorCooldown::get_remaining_time);
 
         ADD_PROPERTY(PropertyInfo(Variant::FLOAT,"wait_time"),"set_wait_time","get_wait_time");
-        ADD_PROPERTY(PropertyInfo(Variant::FLOAT,"remaining_time"),"set_remaining_time","get_remaining_time");
         
     }
 public:
@@ -34,13 +31,14 @@ public:
     {
         return SNAME("cooldown");
     }
-    virtual void interrupt(Node * actor, Blackboard* blackboard)override
+    virtual void interrupt(const Ref<BeehaveRuncontext>& run_context)override
     {
-        base_class_type::interrupt(actor,blackboard);
-        is_init = true;
-        remaining_time = wait_time;
+        base_class_type::interrupt(run_context);
+		Dictionary prop = run_context->get_property(this);
+		prop[SNAME("is_init")] = false;
+		prop[SNAME("remaining_time")] = wait_time;
     }
-    int tick(Node * actor, Blackboard* blackboard)override
+    int tick(const Ref<BeehaveRuncontext>& run_context)override
     {
         Ref<BeehaveNode> child = get_child(0);
         if(child.is_null())
@@ -48,20 +46,26 @@ public:
             return FAILURE;
         }
         int response ;
+		Dictionary prop = run_context->get_property(this);
+		float total_time = prop.get(SNAME("total_time"), 0.0f);
+		auto child_state = run_context->get_child_state(this);
+		bool is_init = prop.get(SNAME("is_init"), false);
         if(!is_init)
         {
-            interrupt(actor,blackboard);
+            interrupt(run_context);
         }
+		float remaining_time = prop.get(SNAME("remaining_time"), wait_time);
         if(remaining_time > 0)
         {
             response = FAILURE;
-            remaining_time -= (double)blackboard->get_var(SNAME("delta_time"), 0.0);
+            remaining_time -= run_context->delta;
+			prop[SNAME("remaining_time")] = remaining_time;
         }
         else
         {
-            response = child->tick(actor,blackboard);
+            response = child->tick(run_context);
         }
-        child->set_status(response);
+		run_context->set_run_state(child.ptr(),response);
         return response;
     }
 public:
@@ -73,17 +77,6 @@ public:
     {
         return wait_time;
     }
-
-    void set_remaining_time(float time)
-    {
-        remaining_time = time;
-    }
-    float get_remaining_time()
-    {
-        return remaining_time;
-    }
 protected:
     float wait_time = 0;
-    float remaining_time = 0;
-    bool is_init = false;
 };

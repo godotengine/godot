@@ -5,6 +5,11 @@
 #include "character_manager.h"
 
 
+ObjectID& CharacterBodyMain::get_curr_editor_player()
+{
+    static ObjectID curr_editor_player;
+    return curr_editor_player;
+}
 void CharacterBodyMain::_bind_methods()
 {
     
@@ -220,6 +225,8 @@ Ref<CharacterAI> CharacterBodyMain::get_character_ai()
 {
     return character_ai;
 } 
+
+
 void CharacterBodyMain::set_skeleton_resource(const String& p_skeleton_path)
 {        
     skeleton_res = p_skeleton_path;

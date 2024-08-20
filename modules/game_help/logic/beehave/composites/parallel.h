@@ -22,9 +22,9 @@ public:
     {
         return SNAME("BTParallel");
     }
-    virtual void interrupt(Node * actor, Blackboard* blackboard)override
+    virtual void interrupt(const Ref<BeehaveRuncontext>& run_context)override
     {
-        base_class_type::interrupt(actor,blackboard);
+        base_class_type::interrupt(run_context);
     }
 
     virtual TypedArray<StringName> get_class_name()override
@@ -33,26 +33,28 @@ public:
         rs.push_back(StringName("BeehaveCompositeParallel"));
         return rs;  
     }
-    virtual int tick(Node * actor, Blackboard* blackboard)override
+    virtual int tick(const Ref<BeehaveRuncontext>& run_context)override
     {
         if(get_child_count() == 0)
         {
             return SUCCESS;
         }
+		auto child_state = run_context->get_child_state(this);
+		Dictionary prop = run_context->get_property(this);
         if(child_state[0] == 0)
         {
-            children[0]->before_run(actor,blackboard);
-            child_state[0] = 1;
+            children[0]->before_run(run_context);
+            child_state.write[0] = 1;
         }
-        int rs = children[0]->tick(actor,blackboard);
+        int rs = children[0]->tick(run_context);
         if(rs == SUCCESS || rs == FAILURE)
         {
             for(int i = 0; i < get_child_count(); ++i)
             {
                 if(child_state[i] == 1)
                 {
-                    children[i]->after_run(actor,blackboard);
-                    child_state[i] = 2;
+                    children[i]->after_run(run_context);
+                    child_state.write[i] = 2;
                 }
             }
             return rs;
@@ -61,8 +63,8 @@ public:
         {
             if(child_state[i] == 0)
             {
-                children[i]->before_run(actor,blackboard);
-                child_state[i] = 1;
+                children[i]->before_run(run_context);
+                child_state.write[i] = 1;
             }
         }
         int child_rs;
@@ -70,13 +72,13 @@ public:
         {
             if(child_state[i] == 1)  
             {
-                child_rs = children[i]->tick(actor,blackboard);
+                child_rs = children[i]->tick(run_context);
                 if(child_rs == SUCCESS || child_rs == FAILURE)
                 {
-                    children[i]->after_run(actor,blackboard);
-                    child_state[i] = 2;
+                    children[i]->after_run(run_context);
+                    child_state.write[i] = 2;
                 }
-                children[i]->set_status(child_rs);
+				run_context->set_run_state(children[i].ptr(), child_rs);
             }    
         }
 

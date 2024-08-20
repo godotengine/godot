@@ -32,29 +32,30 @@ public:
         return SNAME("selector");
     }
 
-    virtual int tick(Node * actor, Blackboard* blackboard)override
+    virtual int tick(const Ref<BeehaveRuncontext>& run_context)override
     {
+		auto child_state = run_context->get_child_state(this);
         for(int i = last_execution_index; i < get_child_count(); i++)
         {
             if(child_state[i] == 0)
             {
-                child_state[i] = 1;
-                children[i]->before_run(actor,blackboard);
+                child_state.write[i] = 1;
+                children[i]->before_run(run_context);
             }
-            int rs = children[i]->tick(actor,blackboard);
-            children[i]->set_status(rs);
+            int rs = children[i]->tick(run_context);
+			run_context->set_run_state(children[i].ptr(), rs);
             if(rs == SUCCESS )
             {
                 last_execution_index = i + 1;
-                child_state[i] = 2;
-                children[i]->after_run(actor,blackboard);
+                child_state.write[i] = 2;
+                children[i]->after_run(run_context);
                 return SUCCESS;
             }
             else if(rs == FAILURE)
             {
                 last_execution_index = i + 1;
-                child_state[i] = 2;
-                children[i]->after_run(actor,blackboard);
+                child_state.write[i] = 2;
+                children[i]->after_run(run_context);
                 return rs;
             }
             else if(rs == RUNNING)
@@ -64,14 +65,14 @@ public:
         }
         return FAILURE;
     }
-    virtual void interrupt(Node * actor, Blackboard* blackboard)override
+    virtual void interrupt(const Ref<BeehaveRuncontext>& run_context)override
     {
-        base_class_type::interrupt(actor,blackboard);
+        base_class_type::interrupt(run_context);
         last_execution_index = 0;
     }
-    virtual void after_run(Node * actor, Blackboard* blackboard)override
+    virtual void after_run(const Ref<BeehaveRuncontext>& run_context)override
     {
-        base_class_type::after_run(actor,blackboard);
+        base_class_type::after_run(run_context);
         last_execution_index = 0;
     }
 

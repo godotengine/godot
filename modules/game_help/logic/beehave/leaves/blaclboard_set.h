@@ -28,11 +28,11 @@ public:
     {
         return SNAME("BTSetVar");
     }
-    virtual void after_run(Node * actor, Blackboard* blackboard) override
+    virtual void after_run(const Ref<BeehaveRuncontext>& run_context) override
     {
         if(blackboard_set.is_valid())
         {
-            blackboard_set->execute(blackboard);
+            blackboard_set->execute(run_context->blackboard.ptr());
         }
         return ;
     }
