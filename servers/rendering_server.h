@@ -687,6 +687,8 @@ public:
 
 	virtual void lightmap_set_probe_capture_update_speed(float p_speed) = 0;
 
+	virtual void lightmaps_set_bicubic_filter(bool p_enable) = 0;
+
 	/* PARTICLES API */
 
 	virtual RID particles_create() = 0;

@@ -36,6 +36,7 @@ ADDITIVE_OMNI = false
 ADDITIVE_SPOT = false
 RENDER_MATERIAL = false
 SECOND_REFLECTION_PROBE = false
+LIGHTMAP_BICUBIC_FILTER = false
 
 
 #[vertex]
@@ -925,6 +926,10 @@ uniform lowp uint lightmap_slice;
 uniform highp vec4 lightmap_uv_scale;
 uniform float lightmap_exposure_normalization;
 
+#ifdef LIGHTMAP_BICUBIC_FILTER
+uniform highp vec2 lightmap_texture_size;
+#endif
+
 #ifdef USE_SH_LIGHTMAP
 uniform mediump mat3 lightmap_normal_xform;
 #endif // USE_SH_LIGHTMAP
@@ -1417,6 +1422,67 @@ void reflection_process(samplerCube reflection_map,
 
 #endif // !MODE_RENDER_DEPTH
 
+#ifdef LIGHTMAP_BICUBIC_FILTER
+// w0, w1, w2, and w3 are the four cubic B-spline basis functions
+float w0(float a) {
+	return (1.0 / 6.0) * (a * (a * (-a + 3.0) - 3.0) + 1.0);
+}
+
+float w1(float a) {
+	return (1.0 / 6.0) * (a * a * (3.0 * a - 6.0) + 4.0);
+}
+
+float w2(float a) {
+	return (1.0 / 6.0) * (a * (a * (-3.0 * a + 3.0) + 3.0) + 1.0);
+}
+
+float w3(float a) {
+	return (1.0 / 6.0) * (a * a * a);
+}
+
+// g0 and g1 are the two amplitude functions
+float g0(float a) {
+	return w0(a) + w1(a);
+}
+
+float g1(float a) {
+	return w2(a) + w3(a);
+}
+
+// h0 and h1 are the two offset functions
+float h0(float a) {
+	return -1.0 + w1(a) / (w0(a) + w1(a));
+}
+
+float h1(float a) {
+	return 1.0 + w3(a) / (w2(a) + w3(a));
+}
+
+vec4 textureArray_bicubic(sampler2DArray tex, vec3 uv, vec2 texture_size) {
+	vec2 texel_size = vec2(1.0) / texture_size;
+
+	uv.xy = uv.xy * texture_size + vec2(0.5);
+
+	vec2 iuv = floor(uv.xy);
+	vec2 fuv = fract(uv.xy);
+
+	float g0x = g0(fuv.x);
+	float g1x = g1(fuv.x);
+	float h0x = h0(fuv.x);
+	float h1x = h1(fuv.x);
+	float h0y = h0(fuv.y);
+	float h1y = h1(fuv.y);
+
+	vec2 p0 = (vec2(iuv.x + h0x, iuv.y + h0y) - vec2(0.5)) * texel_size;
+	vec2 p1 = (vec2(iuv.x + h1x, iuv.y + h0y) - vec2(0.5)) * texel_size;
+	vec2 p2 = (vec2(iuv.x + h0x, iuv.y + h1y) - vec2(0.5)) * texel_size;
+	vec2 p3 = (vec2(iuv.x + h1x, iuv.y + h1y) - vec2(0.5)) * texel_size;
+
+	return (g0(fuv.y) * (g0x * texture(tex, vec3(p0, uv.z)) + g1x * texture(tex, vec3(p1, uv.z)))) +
+			(g1(fuv.y) * (g0x * texture(tex, vec3(p2, uv.z)) + g1x * texture(tex, vec3(p3, uv.z))));
+}
+#endif //LIGHTMAP_BICUBIC_FILTER
+
 void main() {
 	//lay out everything, whatever is unused is optimized away anyway
 	vec3 vertex = vertex_interp;
@@ -1732,10 +1798,18 @@ void main() {
 
 #ifdef USE_SH_LIGHTMAP
 		uvw.z *= 4.0; // SH textures use 4 times more data.
+
+#ifdef LIGHTMAP_BICUBIC_FILTER
+		vec3 lm_light_l0 = textureArray_bicubic(lightmap_textures, uvw + vec3(0.0, 0.0, 0.0), lightmap_texture_size).rgb;
+		vec3 lm_light_l1n1 = textureArray_bicubic(lightmap_textures, uvw + vec3(0.0, 0.0, 1.0), lightmap_texture_size).rgb;
+		vec3 lm_light_l1_0 = textureArray_bicubic(lightmap_textures, uvw + vec3(0.0, 0.0, 2.0), lightmap_texture_size).rgb;
+		vec3 lm_light_l1p1 = textureArray_bicubic(lightmap_textures, uvw + vec3(0.0, 0.0, 3.0), lightmap_texture_size).rgb;
+#else
 		vec3 lm_light_l0 = textureLod(lightmap_textures, uvw + vec3(0.0, 0.0, 0.0), 0.0).rgb;
 		vec3 lm_light_l1n1 = textureLod(lightmap_textures, uvw + vec3(0.0, 0.0, 1.0), 0.0).rgb;
 		vec3 lm_light_l1_0 = textureLod(lightmap_textures, uvw + vec3(0.0, 0.0, 2.0), 0.0).rgb;
 		vec3 lm_light_l1p1 = textureLod(lightmap_textures, uvw + vec3(0.0, 0.0, 3.0), 0.0).rgb;
+#endif
 
 		vec3 n = normalize(lightmap_normal_xform * normal);
 
@@ -1750,7 +1824,11 @@ void main() {
 			specular_light += lm_light_l1p1 * 0.32573 * r.x * lightmap_exposure_normalization;
 		}
 #else
+#ifdef LIGHTMAP_BICUBIC_FILTER
+		ambient_light += textureArray_bicubic(lightmap_textures, uvw, lightmap_texture_size).rgb * lightmap_exposure_normalization;
+#else
 		ambient_light += textureLod(lightmap_textures, uvw, 0.0).rgb * lightmap_exposure_normalization;
+#endif
 #endif
 	}
 #endif // USE_LIGHTMAP

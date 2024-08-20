@@ -762,6 +762,7 @@ public:
 	FUNC1(directional_soft_shadow_filter_set_quality, ShadowQuality);
 	FUNC1(decals_set_filter, RS::DecalFilter);
 	FUNC1(light_projectors_set_filter, RS::LightProjectorFilter);
+	FUNC1(lightmaps_set_bicubic_filter, bool);
 
 	/* CAMERA ATTRIBUTES */
 

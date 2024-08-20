@@ -2604,6 +2604,10 @@
 			- Intel GPUs: SYCL libraries
 			If no GPU acceleration is configured on the system, multi-threaded CPU-based denoising will be performed instead. This CPU-based denoising is significantly slower than the JNLM denoiser in most cases.
 		</member>
+		<member name="rendering/lightmapping/lightmap_gi/use_bicubic_filter" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], applies a bicubic filter during lightmap sampling. This makes lightmaps look much smoother, at a moderate performance cost.
+			[b]Note:[/b] The bicubic filter exaggerates the 'bleeding' effect that occurs when a lightmap's resolution is low enough.
+		</member>
 		<member name="rendering/lightmapping/primitive_meshes/texel_size" type="float" setter="" getter="" default="0.2">
 			The texel_size that is used to calculate the [member Mesh.lightmap_size_hint] on [PrimitiveMesh] resources if [member PrimitiveMesh.add_uv2] is enabled.
 		</member>
