@@ -68,7 +68,6 @@ protected:
 	void _notification(int p_what);
 
 public:
-
 	void update_plugins();
 
 	EditorPluginSettings();

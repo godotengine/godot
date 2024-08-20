@@ -307,7 +307,7 @@ void EditorPluginSettings::update_plugins() {
 								keyi->set_metadata(COLUMN_STATUS, "key_callable");
 								keyi->set_tooltip_text(COLUMN_NAME, key + ": Callable");
 								keyi->set_icon(COLUMN_NAME, plugin_list->get_editor_theme_icon(SNAME("Callable")));
-							}  else if (value.get_type() == Variant::RID) {
+							} else if (value.get_type() == Variant::RID) {
 								TreeItem *keyi = setting->create_child(0);
 								keyi->set_text(COLUMN_NAME, key);
 								keyi->set_metadata(COLUMN_NAME, key);
@@ -319,7 +319,7 @@ void EditorPluginSettings::update_plugins() {
 								keyi->set_metadata(COLUMN_STATUS, "key_rid");
 								keyi->set_tooltip_text(COLUMN_NAME, key + ": RID");
 								keyi->set_icon(COLUMN_NAME, plugin_list->get_editor_theme_icon(SNAME("RID")));
-							}  else if (value.get_type() == Variant::TRANSFORM2D) {
+							} else if (value.get_type() == Variant::TRANSFORM2D) {
 								TreeItem *keyi = setting->create_child(0);
 								keyi->set_text(COLUMN_NAME, key);
 								keyi->set_metadata(COLUMN_NAME, key);
@@ -331,7 +331,7 @@ void EditorPluginSettings::update_plugins() {
 								keyi->set_metadata(COLUMN_STATUS, "key_transform2d");
 								keyi->set_tooltip_text(COLUMN_NAME, key + ": Transform2D");
 								keyi->set_icon(COLUMN_NAME, plugin_list->get_editor_theme_icon(SNAME("Transform2D")));
-							}  else if (value.get_type() == Variant::TRANSFORM3D) {
+							} else if (value.get_type() == Variant::TRANSFORM3D) {
 								TreeItem *keyi = setting->create_child(0);
 								keyi->set_text(COLUMN_NAME, key);
 								keyi->set_metadata(COLUMN_NAME, key);
