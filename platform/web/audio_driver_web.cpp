@@ -294,6 +294,7 @@ void AudioDriverWeb::start_sample_playback(const Ref<AudioSamplePlayback> &p_pla
 			itos(p_playback->stream->get_instance_id()).utf8().get_data(),
 			AudioServer::get_singleton()->get_bus_index(p_playback->bus),
 			p_playback->offset,
+			p_playback->pitch_scale,
 			volume_ptrw);
 }
 
