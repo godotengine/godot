@@ -709,7 +709,7 @@ static Vector<Vector2> star_shaped_rdp(Vector<Vector2> &v, Vector<Vector2> &orig
 	return v;
 }
 
-static Vector<Vector2> reduce(Vector<Vector2> &points, const Rect2i &rect, float epsilon) {
+static Vector<Vector2> reduce(Vector<Vector2> &points, const Rect2i &rect, float epsilon, bool star_rdp) {
 	int size = points.size();
 	// If there are less than 3 points, then we have nothing.
 	ERR_FAIL_COND_V(size < 3, Vector<Vector2>());
@@ -810,7 +810,7 @@ static void fill_bits(const BitMap *p_src, Ref<BitMap> &p_map, const Point2i &p_
 }
 
 
-Vector<Vector<Vector2>> BitMap::clip_opaque_to_polygons(const Rect2i &p_rect, float p_epsilon) const {
+Vector<Vector<Vector2>> BitMap::clip_opaque_to_polygons(const Rect2i &p_rect, float p_epsilon, bool star_rdp) const {
 	Rect2i r = Rect2i(0, 0, width, height).intersection(p_rect);
 
 	Point2i from;
@@ -825,7 +825,7 @@ Vector<Vector<Vector2>> BitMap::clip_opaque_to_polygons(const Rect2i &p_rect, fl
 				fill_bits(this, fill, Point2i(j, i), r);
 
 				for (Vector<Vector2> polygon : _march_square(r, Point2i(j, i))) {
-					polygon = reduce(polygon, r, p_epsilon);
+					polygon = reduce(polygon, r, p_epsilon, star_rdp);
 
 					if (polygon.size() < 3) {
 						print_verbose("Invalid polygon, skipped");
@@ -903,8 +903,8 @@ void BitMap::shrink_mask(int p_pixels, const Rect2i &p_rect) {
 	grow_mask(-p_pixels, p_rect);
 }
 
-TypedArray<PackedVector2Array> BitMap::_opaque_to_polygons_bind(const Rect2i &p_rect, float p_epsilon) const {
-	Vector<Vector<Vector2>> result = clip_opaque_to_polygons(p_rect, p_epsilon);
+TypedArray<PackedVector2Array> BitMap::_opaque_to_polygons_bind(const Rect2i &p_rect, float p_epsilon, bool star_rdp) const {
+	Vector<Vector<Vector2>> result = clip_opaque_to_polygons(p_rect, p_epsilon, star_rdp);
 
 	// Convert result to bindable types.
 
@@ -1013,7 +1013,7 @@ void BitMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("grow_mask", "pixels", "rect"), &BitMap::grow_mask);
 	ClassDB::bind_method(D_METHOD("convert_to_image"), &BitMap::convert_to_image);
-	ClassDB::bind_method(D_METHOD("opaque_to_polygons", "rect", "epsilon"), &BitMap::_opaque_to_polygons_bind, DEFVAL(2.0));
+	ClassDB::bind_method(D_METHOD("opaque_to_polygons", "rect", "epsilon", "star_rdp"), &BitMap::_opaque_to_polygons_bind, DEFVAL(2.0), DEFVAL(false));
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 }
