@@ -2951,10 +2951,19 @@
 			Specify whether to enable eye tracking for this project. Depending on the platform, additional export configuration may be needed.
 		</member>
 		<member name="xr/openxr/extensions/hand_interaction_profile" type="bool" setter="" getter="" default="false">
-			If true the hand interaction profile extension will be activated if supported by the platform.
+			If [code]true[/code] the hand interaction profile extension will be activated if supported by the platform.
 		</member>
-		<member name="xr/openxr/extensions/hand_tracking" type="bool" setter="" getter="" default="true">
-			If true we enable the hand tracking extension if available.
+		<member name="xr/openxr/extensions/hand_tracking" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the hand tracking extension is enabled if available.
+			[b]Note:[/b] By default hand tracking will only work for data sources chosen by the XR runtime. For SteamVR this is the controller inferred data source, for most other runtimes this is the unobstructed data source. There is no way to query this. If a runtime supports the OpenXR data source extension you can use the [member xr/openxr/extensions/hand_tracking_controller_data_source] and/or [member xr/openxr/extensions/hand_tracking_unobstructed_data_source] to indicate you wish to enable these data sources. If neither is selected the data source extension is not enabled and the XR runtimes default behavior persists.
+		</member>
+		<member name="xr/openxr/extensions/hand_tracking_controller_data_source" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], support for the controller inferred data source is requested. If supported, you will receive hand tracking data even if the user has a controller in hand, with finger positions automatically inferred from controller input and/or sensors.
+			[b]Node:[/b] This requires the OpenXR data source extension and controller inferred handtracking to be supported by the XR runtime. If not supported this setting will be ignored. [member xr/openxr/extensions/hand_tracking] must be enabled for this setting to be used.
+		</member>
+		<member name="xr/openxr/extensions/hand_tracking_unobstructed_data_source" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], support for the unobstructed data source is requested. If supported, you will receive hand tracking data based on the actual finger positions of the user often determined by optical tracking.
+			[b]Node:[/b] This requires the OpenXR data source extension and unobstructed handtracking to be supported by the XR runtime. If not supported this setting will be ignored. [member xr/openxr/extensions/hand_tracking] must be enabled for this setting to be used.
 		</member>
 		<member name="xr/openxr/form_factor" type="int" setter="" getter="" default="&quot;0&quot;">
 			Specify whether OpenXR should be configured for an HMD or a hand held device.
