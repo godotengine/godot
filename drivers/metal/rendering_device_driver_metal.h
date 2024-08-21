@@ -231,6 +231,7 @@ public:
 	virtual Vector<uint8_t> shader_compile_binary_from_spirv(VectorView<ShaderStageSPIRVData> p_spirv, const String &p_shader_name) override final;
 	virtual ShaderID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name) override final;
 	virtual void shader_free(ShaderID p_shader) override final;
+	virtual void shader_destroy_modules(ShaderID p_shader) override final;
 
 #pragma mark - Uniform Set
 
@@ -375,6 +376,10 @@ public:
 
 	virtual void command_begin_label(CommandBufferID p_cmd_buffer, const char *p_label_name, const Color &p_color) override final;
 	virtual void command_end_label(CommandBufferID p_cmd_buffer) override final;
+
+#pragma mark - Debug
+
+	virtual void command_insert_breadcrumb(CommandBufferID p_cmd_buffer, uint32_t p_data) override final;
 
 #pragma mark - Submission
 
