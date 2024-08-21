@@ -52,7 +52,7 @@ def get_flags():
         "target": "template_debug",
         "use_volk": False,
         "metal": True,
-        "supported": ["mono"],
+        "supported": ["metal", "mono"],
         "builtin_pcre2_with_jit": False,
     }
 
