@@ -205,7 +205,7 @@ void ThemeEditorPreview::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
-			List<Ref<Theme>> preview_themes;
+			Vector<Ref<Theme>> preview_themes;
 			preview_themes.push_back(ThemeDB::get_singleton()->get_default_theme());
 			ThemeDB::get_singleton()->create_theme_context(preview_root, preview_themes);
 		} break;
