@@ -36,6 +36,7 @@
 #include "core/templates/safe_refcount.h"
 
 #include <string.h>
+#include <initializer_list>
 #include <type_traits>
 
 template <typename T>
@@ -250,6 +251,7 @@ public:
 
 	_FORCE_INLINE_ CowData() {}
 	_FORCE_INLINE_ ~CowData();
+	_FORCE_INLINE_ CowData(std::initializer_list<T> p_init);
 	_FORCE_INLINE_ CowData(const CowData<T> &p_from) { _ref(p_from); }
 	_FORCE_INLINE_ CowData(CowData<T> &&p_from) {
 		_ptr = p_from._ptr;
@@ -490,6 +492,19 @@ void CowData<T>::_ref(const CowData &p_from) {
 template <typename T>
 CowData<T>::~CowData() {
 	_unref();
+}
+
+template <typename T>
+CowData<T>::CowData(std::initializer_list<T> p_init) {
+	Error err = resize(p_init.size());
+	if (err != OK) {
+		return;
+	}
+
+	Size i = 0;
+	for (const T &element : p_init) {
+		set(i++, element);
+	}
 }
 
 #if defined(__GNUC__) && !defined(__clang__)

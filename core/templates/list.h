@@ -35,6 +35,8 @@
 #include "core/os/memory.h"
 #include "core/templates/sort_array.h"
 
+#include <initializer_list>
+
 /**
  * Generic Templatized Linked List Implementation.
  * The implementation differs from the STL one because
@@ -762,6 +764,12 @@ public:
 	}
 
 	List() {}
+
+	List(std::initializer_list<T> p_init) {
+		for (const T &E : p_init) {
+			push_back(E);
+		}
+	}
 
 	~List() {
 		clear();
