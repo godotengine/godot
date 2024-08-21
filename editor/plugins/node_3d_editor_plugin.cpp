@@ -4011,6 +4011,14 @@ void Node3DEditorViewport::set_state(const Dictionary &p_state) {
 			_menu_option(VIEW_GIZMOS);
 		}
 	}
+	if (p_state.has("grid")) {
+		bool grid = p_state["grid"];
+
+		int idx = view_menu->get_popup()->get_item_index(VIEW_GRID);
+		if (view_menu->get_popup()->is_item_checked(idx) != grid) {
+			_menu_option(VIEW_GRID);
+		}
+	}
 	if (p_state.has("information")) {
 		bool information = p_state["information"];
 
@@ -4089,6 +4097,7 @@ Dictionary Node3DEditorViewport::get_state() const {
 	d["listener"] = viewport->is_audio_listener_3d();
 	d["doppler"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_AUDIO_DOPPLER));
 	d["gizmos"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_GIZMOS));
+	d["grid"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_GRID));
 	d["information"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_INFORMATION));
 	d["frame_time"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_FRAME_TIME));
 	d["half_res"] = subviewport_container->get_stretch_shrink() > 1;
