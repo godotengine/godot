@@ -9,6 +9,10 @@
 #include "modules/game_help/logic/character_ai/condition/animator_condition_float.h"
 #include "modules/game_help/logic/character_ai/condition/animator_condition_int.h"
 #include "modules/game_help/logic/character_ai/condition/animator_condition_string.h"
+#include "modules/game_help/logic/character_ai/blackboard_set_item/animator_blackboard_item_bool.h"
+#include "modules/game_help/logic/character_ai/blackboard_set_item/animator_blackboard_item_float.h"
+#include "modules/game_help/logic/character_ai/blackboard_set_item/animator_blackboard_item_int.h"
+#include "modules/game_help/logic/character_ai/blackboard_set_item/animator_blackboard_item_string.h"
 
 
 class ConditionSection : public VBoxContainer {
