@@ -216,6 +216,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 	TreeItem *item = tree->create_item(p_parent);
 
 	item->set_text(0, p_node->get_name());
+	item->set_text_overrun_behavior(0, TextServer::OVERRUN_NO_TRIMMING);
 	if (can_rename && !part_of_subscene) {
 		item->set_editable(0, true);
 	}
