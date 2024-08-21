@@ -359,7 +359,36 @@ float get_omni_attenuation(float distance, float inv_range, float decay) {
 	return nd * pow(max(distance, 0.0001), -decay);
 }
 
-void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool p_soft_shadowing, out vec3 r_light, out vec3 r_light_dir, inout uint r_noise) {
+const int AA_SAMPLES = 16;
+
+const vec2 halton_map[AA_SAMPLES] = vec2[](
+		vec2(0.5, 0.33333333),
+		vec2(0.25, 0.66666667),
+		vec2(0.75, 0.11111111),
+		vec2(0.125, 0.44444444),
+		vec2(0.625, 0.77777778),
+		vec2(0.375, 0.22222222),
+		vec2(0.875, 0.55555556),
+		vec2(0.0625, 0.88888889),
+		vec2(0.5625, 0.03703704),
+		vec2(0.3125, 0.37037037),
+		vec2(0.8125, 0.7037037),
+		vec2(0.1875, 0.14814815),
+		vec2(0.6875, 0.48148148),
+		vec2(0.4375, 0.81481481),
+		vec2(0.9375, 0.25925926),
+		vec2(0.03125, 0.59259259));
+
+vec2 get_vogel_disk(float p_i, float p_rotation, float p_sample_count_sqrt) {
+	const float golden_angle = 2.4;
+
+	float r = sqrt(p_i + 0.5) / p_sample_count_sqrt;
+	float theta = p_i * golden_angle + p_rotation;
+
+	return vec2(cos(theta), sin(theta)) * r;
+}
+
+void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool p_soft_shadowing, out vec3 r_light, out vec3 r_light_dir, inout uint r_noise, float p_texel_size) {
 	r_light = vec3(0.0f);
 
 	vec3 light_pos;
@@ -407,46 +436,70 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 	}
 
 	float penumbra = 0.0;
-	if ((light_data.size > 0.0) && p_soft_shadowing) {
+	if (p_soft_shadowing) {
+		const bool use_soft_shadows = (light_data.size > 0.0);
+		const uint ray_count = AA_SAMPLES;
+		const uint total_ray_count = use_soft_shadows ? params.ray_count : ray_count;
+		const uint shadowing_rays_check_penumbra_denom = 2;
+		const uint shadowing_ray_count = max(1, params.ray_count / ray_count);
+		const float shadowing_ray_count_sqrt = sqrt(float(total_ray_count));
+
+		// Setup tangent pass to calculate AA samples over the current texel.
+		vec3 aux = p_normal.y < 0.777 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+		vec3 tangent = normalize(cross(p_normal, aux));
+		vec3 bitan = normalize(cross(p_normal, tangent));
+
+		// Setup light tangent pass to calculate samples over disk aligned towards the light
 		vec3 light_to_point = -r_light_dir;
-		vec3 aux = light_to_point.y < 0.777 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
-		vec3 light_to_point_tan = normalize(cross(light_to_point, aux));
+		vec3 light_aux = light_to_point.y < 0.777 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+		vec3 light_to_point_tan = normalize(cross(light_to_point, light_aux));
 		vec3 light_to_point_bitan = normalize(cross(light_to_point, light_to_point_tan));
 
-		const uint shadowing_rays_check_penumbra_denom = 2;
-		uint shadowing_ray_count = p_soft_shadowing ? params.ray_count : 1;
-
 		uint hits = 0;
-		vec3 light_disk_to_point = light_to_point;
-		for (uint j = 0; j < shadowing_ray_count; j++) {
-			// Optimization:
-			// Once already traced an important proportion of rays, if all are hits or misses,
-			// assume we're not in the penumbra so we can infer the rest would have the same result
-			if (p_soft_shadowing) {
-				if (j == shadowing_ray_count / shadowing_rays_check_penumbra_denom) {
-					if (hits == j) {
-						// Assume totally lit
-						hits = shadowing_ray_count;
-						break;
-					} else if (hits == 0) {
-						// Assume totally dark
-						hits = 0;
-						break;
+		for (uint i = 0; i < ray_count; i++) {
+			// Create a random sample within the texel.
+			vec2 disk_sample = (halton_map[i] - vec2(0.5)) * p_texel_size * light_data.shadow_blur;
+			// Align the sample to world space.
+			vec3 disk_aligned = (disk_sample.x * tangent + disk_sample.y * bitan);
+			vec3 origin = p_position - disk_aligned;
+			vec3 light_dir = normalize(light_pos - origin);
+
+			if (use_soft_shadows) {
+				uint soft_shadow_hits = 0;
+				for (uint j = 0; j < shadowing_ray_count; j++) {
+					// Optimization:
+					// Once already traced an important proportion of rays, if all are hits or misses,
+					// assume we're not in the penumbra so we can infer the rest would have the same result.
+					if (j == shadowing_ray_count / shadowing_rays_check_penumbra_denom) {
+						if (soft_shadow_hits == j) {
+							// Assume totally lit
+							soft_shadow_hits = shadowing_ray_count;
+							break;
+						} else if (soft_shadow_hits == 0) {
+							// Assume totally dark
+							soft_shadow_hits = 0;
+							break;
+						}
+					}
+
+					float a = randomize(r_noise) * 2.0 * PI;
+					float vogel_index = float(total_ray_count - 1 - (i * shadowing_ray_count + j)); // Start from (total_ray_count - 1) so we check the outer points first.
+					vec2 light_disk_sample = (get_vogel_disk(vogel_index, a, shadowing_ray_count_sqrt)) * soft_shadowing_disk_size * light_data.shadow_blur;
+					vec3 light_disk_to_point = normalize(light_to_point + light_disk_sample.x * light_to_point_tan + light_disk_sample.y * light_to_point_bitan);
+					// Offset the ray origin for AA, offset the light position for soft shadows.
+					if (trace_ray_any_hit(origin - light_disk_to_point * (bake_params.bias + length(disk_sample)), p_position - light_disk_to_point * dist) == RAY_MISS) {
+						soft_shadow_hits++;
 					}
 				}
-			}
-
-			float r = randomize(r_noise);
-			float a = randomize(r_noise) * 2.0 * PI;
-			vec2 disk_sample = (r * vec2(cos(a), sin(a))) * soft_shadowing_disk_size * light_data.shadow_blur;
-			light_disk_to_point = normalize(light_to_point + disk_sample.x * light_to_point_tan + disk_sample.y * light_to_point_bitan);
-
-			if (trace_ray_any_hit(p_position - light_disk_to_point * bake_params.bias, p_position - light_disk_to_point * dist) == RAY_MISS) {
-				hits++;
+				hits += soft_shadow_hits;
+			} else {
+				// Offset the ray origin based on the disk. Also increase the bias for further samples to avoid bleeding.
+				if (trace_ray_any_hit(origin + light_dir * (bake_params.bias + length(disk_sample)), light_pos) == RAY_MISS) {
+					hits++;
+				}
 			}
 		}
-
-		penumbra = float(hits) / float(shadowing_ray_count);
+		penumbra = float(hits) / float(total_ray_count);
 	} else {
 		if (trace_ray_any_hit(p_position + r_light_dir * bake_params.bias, light_pos) == RAY_MISS) {
 			penumbra = 1.0;
@@ -470,7 +523,7 @@ vec3 trace_environment_color(vec3 ray_dir) {
 	return textureLod(sampler2D(environment, linear_sampler), st / vec2(PI * 2.0, PI), 0.0).rgb;
 }
 
-vec3 trace_indirect_light(vec3 p_position, vec3 p_ray_dir, inout uint r_noise) {
+vec3 trace_indirect_light(vec3 p_position, vec3 p_ray_dir, inout uint r_noise, float p_texel_size) {
 	// The lower limit considers the case where the lightmapper might have bounces disabled but light probes are requested.
 	vec3 position = p_position;
 	vec3 ray_dir = p_ray_dir;
@@ -502,7 +555,7 @@ vec3 trace_indirect_light(vec3 p_position, vec3 p_ray_dir, inout uint r_noise) {
 			for (uint i = 0; i < bake_params.light_count; i++) {
 				vec3 light;
 				vec3 light_dir;
-				trace_direct_light(position, normal, i, false, light, light_dir, r_noise);
+				trace_direct_light(position, normal, i, false, light, light_dir, r_noise, p_texel_size);
 				direct_light += light * lights.data[i].indirect_energy;
 			}
 
@@ -566,6 +619,14 @@ void main() {
 		return; //empty texel, no process
 	}
 	vec3 position = texelFetch(sampler2DArray(source_position, linear_sampler), ivec3(atlas_pos, params.atlas_slice), 0).xyz;
+	vec4 neighbor_position = texelFetch(sampler2DArray(source_position, linear_sampler), ivec3(atlas_pos + ivec2(1, 0), params.atlas_slice), 0).xyzw;
+
+	if (neighbor_position.w < 0.001) {
+		// Empty texel, try again.
+		neighbor_position.xyz = texelFetch(sampler2DArray(source_position, linear_sampler), ivec3(atlas_pos + ivec2(-1, 0), params.atlas_slice), 0).xyz;
+	}
+	float texel_size_world_space = distance(position, neighbor_position.xyz);
+
 	vec3 light_for_texture = vec3(0.0);
 	vec3 light_for_bounces = vec3(0.0);
 
@@ -582,7 +643,7 @@ void main() {
 	for (uint i = 0; i < bake_params.light_count; i++) {
 		vec3 light;
 		vec3 light_dir;
-		trace_direct_light(position, normal, i, true, light, light_dir, noise);
+		trace_direct_light(position, normal, i, true, light, light_dir, noise, texel_size_world_space);
 
 		if (lights.data[i].static_bake) {
 			light_for_texture += light;
@@ -640,10 +701,13 @@ void main() {
 	}
 
 	vec3 position = texelFetch(sampler2DArray(source_position, linear_sampler), ivec3(atlas_pos, params.atlas_slice), 0).xyz;
+	int neighbor_offset = atlas_pos.x < bake_params.atlas_size.x - 1 ? 1 : -1;
+	vec3 neighbor_position = texelFetch(sampler2DArray(source_position, linear_sampler), ivec3(atlas_pos + ivec2(neighbor_offset, 0), params.atlas_slice), 0).xyz;
+	float texel_size_world_space = distance(position, neighbor_position);
 	uint noise = random_seed(ivec3(params.ray_from, atlas_pos));
 	for (uint i = params.ray_from; i < params.ray_to; i++) {
 		vec3 ray_dir = generate_ray_dir_from_normal(normal, noise);
-		vec3 light = trace_indirect_light(position, ray_dir, noise);
+		vec3 light = trace_indirect_light(position, ray_dir, noise, texel_size_world_space);
 
 #ifdef USE_SH_LIGHTMAPS
 		float c[4] = float[](
@@ -737,7 +801,7 @@ void main() {
 	uint noise = random_seed(ivec3(params.ray_from, probe_index, 49502741 /* some prime */));
 	for (uint i = params.ray_from; i < params.ray_to; i++) {
 		vec3 ray_dir = generate_sphere_uniform_direction(noise);
-		vec3 light = trace_indirect_light(position, ray_dir, noise);
+		vec3 light = trace_indirect_light(position, ray_dir, noise, 0.0);
 
 		float c[9] = float[](
 				0.282095, //l0

@@ -1584,9 +1584,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 #endif
 
 	/* SECONDARY (indirect) LIGHT PASS(ES) */
-	if (p_step_function) {
-		p_step_function(0.6, RTR("Integrate indirect lighting"), p_bake_userdata, true);
-	}
 
 	if (p_bounces > 0) {
 		Vector<RD::Uniform> uniforms;
@@ -1649,6 +1646,10 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 		rd->submit();
 		rd->sync();
+
+		if (p_step_function) {
+			p_step_function(0.6, RTR("Integrate indirect lighting"), p_bake_userdata, true);
+		}
 
 		int count = 0;
 		for (int s = 0; s < atlas_slices; s++) {

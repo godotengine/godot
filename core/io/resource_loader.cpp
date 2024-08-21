@@ -340,11 +340,10 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 		load_task.status = THREAD_LOAD_LOADED;
 	}
 
-	if (load_task.cond_var) {
+	if (load_task.cond_var && load_task.need_wait) {
 		load_task.cond_var->notify_all();
-		memdelete(load_task.cond_var);
-		load_task.cond_var = nullptr;
 	}
+	load_task.need_wait = false;
 
 	bool ignoring = load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_IGNORE || load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_IGNORE_DEEP;
 	bool replacing = load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE || load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE_DEEP;
@@ -723,15 +722,21 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 						DEV_ASSERT(wtp_task_err == OK);
 						thread_load_mutex.lock();
 					}
-				} else {
+				} else if (load_task.need_wait) {
 					// Loading thread is main or user thread.
 					if (!load_task.cond_var) {
 						load_task.cond_var = memnew(ConditionVariable);
 					}
+					load_task.awaiters_count++;
 					do {
 						load_task.cond_var->wait(p_thread_load_lock);
 						DEV_ASSERT(thread_load_tasks.has(p_load_token.local_path) && p_load_token.get_reference_count());
-					} while (load_task.cond_var);
+					} while (load_task.need_wait);
+					load_task.awaiters_count--;
+					if (load_task.awaiters_count == 0) {
+						memdelete(load_task.cond_var);
+						load_task.cond_var = nullptr;
+					}
 				}
 			} else {
 				if (loader_is_wtp) {
@@ -1159,11 +1164,10 @@ void ResourceLoader::clear_thread_load_tasks() {
 		if (thread_load_tasks.size()) {
 			for (KeyValue<String, ResourceLoader::ThreadLoadTask> &E : thread_load_tasks) {
 				if (E.value.status == THREAD_LOAD_IN_PROGRESS) {
-					if (E.value.cond_var) {
+					if (E.value.cond_var && E.value.need_wait) {
 						E.value.cond_var->notify_all();
-						memdelete(E.value.cond_var);
-						E.value.cond_var = nullptr;
 					}
+					E.value.need_wait = false;
 					none_running = false;
 				}
 			}
