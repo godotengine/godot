@@ -111,9 +111,6 @@ protected:
 	virtual void initialize() = 0;
 	virtual void initialize_joypads() = 0;
 
-	void set_current_rendering_driver_name(const String &p_driver_name) { _current_rendering_driver_name = p_driver_name; }
-	void set_current_rendering_method(const String &p_name) { _current_rendering_method = p_name; }
-
 	void set_display_driver_id(int p_display_driver_id) { _display_driver_id = p_display_driver_id; }
 
 	virtual void set_main_loop(MainLoop *p_main_loop) = 0;
@@ -130,6 +127,9 @@ public:
 	typedef int64_t ProcessID;
 
 	static OS *get_singleton();
+
+	void set_current_rendering_driver_name(const String &p_driver_name) { _current_rendering_driver_name = p_driver_name; }
+	void set_current_rendering_method(const String &p_name) { _current_rendering_method = p_name; }
 
 	String get_current_rendering_driver_name() const { return _current_rendering_driver_name; }
 	String get_current_rendering_method() const { return _current_rendering_method; }
