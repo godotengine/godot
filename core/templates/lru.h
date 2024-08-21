@@ -42,8 +42,8 @@ private:
 		TKey key;
 		TData data;
 
-		Pair() {}
-		Pair(const TKey &p_key, const TData &p_data) :
+		_FORCE_INLINE_ Pair() {}
+		_FORCE_INLINE_ Pair(const TKey &p_key, const TData &p_data) :
 				key(p_key),
 				data(p_data) {
 		}
@@ -75,23 +75,23 @@ public:
 		return &n->get().data;
 	}
 
-	void clear() {
+	_FORCE_INLINE_ void clear() {
 		_map.clear();
 		_list.clear();
 	}
 
-	bool has(const TKey &p_key) const {
+	_FORCE_INLINE_ bool has(const TKey &p_key) const {
 		return _map.getptr(p_key);
 	}
 
-	const TData &get(const TKey &p_key) {
+	_FORCE_INLINE_ const TData &get(const TKey &p_key) {
 		Element *e = _map.getptr(p_key);
 		CRASH_COND(!e);
 		_list.move_to_front(*e);
 		return (*e)->get().data;
 	};
 
-	const TData *getptr(const TKey &p_key) {
+	_FORCE_INLINE_ const TData *getptr(const TKey &p_key) {
 		Element *e = _map.getptr(p_key);
 		if (!e) {
 			return nullptr;
@@ -115,11 +115,11 @@ public:
 		}
 	}
 
-	LRUCache() {
+	_FORCE_INLINE_ LRUCache() {
 		capacity = 64;
 	}
 
-	LRUCache(int p_capacity) {
+	_FORCE_INLINE_ LRUCache(int p_capacity) {
 		capacity = p_capacity;
 	}
 };

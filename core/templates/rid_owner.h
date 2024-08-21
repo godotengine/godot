@@ -47,19 +47,19 @@ class RID_AllocBase {
 	static SafeNumeric<uint64_t> base_id;
 
 protected:
-	static RID _make_from_id(uint64_t p_id) {
+	static _FORCE_INLINE_ RID _make_from_id(uint64_t p_id) {
 		RID rid;
 		rid._id = p_id;
 		return rid;
 	}
 
-	static RID _gen_rid() {
+	static _FORCE_INLINE_ RID _gen_rid() {
 		return _make_from_id(_gen_id());
 	}
 
 	friend struct VariantUtilityFunctions;
 
-	static uint64_t _gen_id() {
+	static _FORCE_INLINE_ uint64_t _gen_id() {
 		return base_id.increment();
 	}
 
@@ -136,19 +136,19 @@ class RID_Alloc : public RID_AllocBase {
 	}
 
 public:
-	RID make_rid() {
+	_FORCE_INLINE_ RID make_rid() {
 		RID rid = _allocate_rid();
 		initialize_rid(rid);
 		return rid;
 	}
-	RID make_rid(const T &p_value) {
+	_FORCE_INLINE_ RID make_rid(const T &p_value) {
 		RID rid = _allocate_rid();
 		initialize_rid(rid, p_value);
 		return rid;
 	}
 
 	//allocate but don't initialize, use initialize_rid afterwards
-	RID allocate_rid() {
+	_FORCE_INLINE_ RID allocate_rid() {
 		return _allocate_rid();
 	}
 
@@ -209,12 +209,12 @@ public:
 
 		return ptr;
 	}
-	void initialize_rid(RID p_rid) {
+	_FORCE_INLINE_ void initialize_rid(RID p_rid) {
 		T *mem = get_or_null(p_rid, true);
 		ERR_FAIL_NULL(mem);
 		memnew_placement(mem, T);
 	}
-	void initialize_rid(RID p_rid, const T &p_value) {
+	_FORCE_INLINE_ void initialize_rid(RID p_rid, const T &p_value) {
 		T *mem = get_or_null(p_rid, true);
 		ERR_FAIL_NULL(mem);
 		memnew_placement(mem, T(p_value));
@@ -325,11 +325,11 @@ public:
 		}
 	}
 
-	void set_description(const char *p_descrption) {
+	_FORCE_INLINE_ void set_description(const char *p_descrption) {
 		description = p_descrption;
 	}
 
-	RID_Alloc(uint32_t p_target_chunk_byte_size = 65536) {
+	_FORCE_INLINE_ RID_Alloc(uint32_t p_target_chunk_byte_size = 65536) {
 		elements_in_chunk = sizeof(T) > p_target_chunk_byte_size ? 1 : (p_target_chunk_byte_size / sizeof(T));
 	}
 
@@ -411,15 +411,15 @@ public:
 		return alloc.get_owned_list(p_owned);
 	}
 
-	void fill_owned_buffer(RID *p_rid_buffer) const {
+	_FORCE_INLINE_ void fill_owned_buffer(RID *p_rid_buffer) const {
 		alloc.fill_owned_buffer(p_rid_buffer);
 	}
 
-	void set_description(const char *p_descrption) {
+	_FORCE_INLINE_ void set_description(const char *p_descrption) {
 		alloc.set_description(p_descrption);
 	}
 
-	RID_PtrOwner(uint32_t p_target_chunk_byte_size = 65536) :
+	_FORCE_INLINE_ RID_PtrOwner(uint32_t p_target_chunk_byte_size = 65536) :
 			alloc(p_target_chunk_byte_size) {}
 };
 
@@ -466,14 +466,14 @@ public:
 	_FORCE_INLINE_ void get_owned_list(List<RID> *p_owned) const {
 		return alloc.get_owned_list(p_owned);
 	}
-	void fill_owned_buffer(RID *p_rid_buffer) const {
+	_FORCE_INLINE_ void fill_owned_buffer(RID *p_rid_buffer) const {
 		alloc.fill_owned_buffer(p_rid_buffer);
 	}
 
-	void set_description(const char *p_descrption) {
+	_FORCE_INLINE_ void set_description(const char *p_descrption) {
 		alloc.set_description(p_descrption);
 	}
-	RID_Owner(uint32_t p_target_chunk_byte_size = 65536) :
+	_FORCE_INLINE_ RID_Owner(uint32_t p_target_chunk_byte_size = 65536) :
 			alloc(p_target_chunk_byte_size) {}
 };
 

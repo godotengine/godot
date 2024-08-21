@@ -83,7 +83,7 @@ public:
 		return alloc;
 	}
 
-	void free(T *p_mem) {
+	_FORCE_INLINE_ void free(T *p_mem) {
 		if (thread_safe) {
 			spin_lock.lock();
 		}
@@ -96,7 +96,7 @@ public:
 	}
 
 	template <typename... Args>
-	T *new_allocation(Args &&...p_args) { return alloc(p_args...); }
+	_FORCE_INLINE_ T *new_allocation(Args &&...p_args) { return alloc(p_args...); }
 	void delete_allocation(T *p_mem) { free(p_mem); }
 
 private:
@@ -119,7 +119,7 @@ private:
 	}
 
 public:
-	void reset(bool p_allow_unfreed = false) {
+	_FORCE_INLINE_ void reset(bool p_allow_unfreed = false) {
 		if (thread_safe) {
 			spin_lock.lock();
 		}
@@ -129,7 +129,7 @@ public:
 		}
 	}
 
-	bool is_configured() const {
+	_FORCE_INLINE_ bool is_configured() const {
 		if (thread_safe) {
 			spin_lock.lock();
 		}
@@ -140,7 +140,7 @@ public:
 		return result;
 	}
 
-	void configure(uint32_t p_page_size) {
+	_FORCE_INLINE_ void configure(uint32_t p_page_size) {
 		if (thread_safe) {
 			spin_lock.lock();
 		}
@@ -156,11 +156,11 @@ public:
 
 	// Power of 2 recommended because of alignment with OS page sizes.
 	// Even if element is bigger, it's still a multiple and gets rounded to amount of pages.
-	PagedAllocator(uint32_t p_page_size = DEFAULT_PAGE_SIZE) {
+	_FORCE_INLINE_ PagedAllocator(uint32_t p_page_size = DEFAULT_PAGE_SIZE) {
 		configure(p_page_size);
 	}
 
-	~PagedAllocator() {
+	_FORCE_INLINE_ ~PagedAllocator() {
 		if (thread_safe) {
 			spin_lock.lock();
 		}

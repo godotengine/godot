@@ -128,7 +128,7 @@ public:
 			value = (T &)p_value;
 		}
 
-		void erase() {
+		_FORCE_INLINE_ void erase() {
 			data->erase(this);
 		}
 
@@ -189,11 +189,11 @@ public:
 		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return E == b.E; }
 		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return E != b.E; }
 
-		Iterator(Element *p_E) { E = p_E; }
-		Iterator() {}
-		Iterator(const Iterator &p_it) { E = p_it.E; }
+		_FORCE_INLINE_ Iterator(Element *p_E) { E = p_E; }
+		_FORCE_INLINE_ Iterator() {}
+		_FORCE_INLINE_ Iterator(const Iterator &p_it) { E = p_it.E; }
 
-		operator ConstIterator() const {
+		_FORCE_INLINE_  operator ConstIterator() const {
 			return ConstIterator(E);
 		}
 
@@ -323,7 +323,7 @@ public:
 		return n;
 	}
 
-	void pop_back() {
+	_FORCE_INLINE_ void pop_back() {
 		if (_data && _data->last) {
 			erase(_data->last);
 		}
@@ -337,7 +337,7 @@ public:
 	/**
 	 * store a new element at the beginning of the list
 	 */
-	Element *push_front(const T &value) {
+	_FORCE_INLINE_ Element *push_front(const T &value) {
 		if (!_data) {
 			_data = memnew_allocator(_Data, A);
 			_data->first = nullptr;
@@ -366,13 +366,13 @@ public:
 		return n;
 	}
 
-	void pop_front() {
+	_FORCE_INLINE_ void pop_front() {
 		if (_data && _data->first) {
 			erase(_data->first);
 		}
 	}
 
-	Element *insert_after(Element *p_element, const T &p_value) {
+	_FORCE_INLINE_ Element *insert_after(Element *p_element, const T &p_value) {
 		CRASH_COND(p_element && (!_data || p_element->data != _data));
 
 		if (!p_element) {
@@ -398,7 +398,7 @@ public:
 		return n;
 	}
 
-	Element *insert_before(Element *p_element, const T &p_value) {
+	_FORCE_INLINE_ Element *insert_before(Element *p_element, const T &p_value) {
 		CRASH_COND(p_element && (!_data || p_element->data != _data));
 
 		if (!p_element) {
@@ -443,7 +443,7 @@ public:
 	/**
 	 * erase an element in the list, by iterator pointing to it. Return true if it was found/erased.
 	 */
-	bool erase(const Element *p_I) {
+	_FORCE_INLINE_ bool erase(const Element *p_I) {
 		if (_data && p_I) {
 			bool ret = _data->erase(p_I);
 
@@ -460,7 +460,7 @@ public:
 	/**
 	 * erase an element in the list, by iterator pointing to it. Return true if it was found/erased.
 	 */
-	Iterator erase(Iterator it) {
+	_FORCE_INLINE_ Iterator erase(Iterator it) {
 		if(!it)
 		{
 			return it;
@@ -580,7 +580,7 @@ public:
 		return I->get();
 	}
 
-	void move_to_back(Element *p_I) {
+	_FORCE_INLINE_ void move_to_back(Element *p_I) {
 		ERR_FAIL_COND(p_I->data != _data);
 		if (!p_I->next_ptr) {
 			return;
@@ -617,7 +617,7 @@ public:
 		}
 	}
 
-	void move_to_front(Element *p_I) {
+	_FORCE_INLINE_ void move_to_front(Element *p_I) {
 		ERR_FAIL_COND(p_I->data != _data);
 		if (!p_I->prev_ptr) {
 			return;
@@ -643,7 +643,7 @@ public:
 		_data->first = p_I;
 	}
 
-	void move_before(Element *value, Element *where) {
+	_FORCE_INLINE_ void move_before(Element *value, Element *where) {
 		if (value->prev_ptr) {
 			value->prev_ptr->next_ptr = value->next_ptr;
 		} else {
@@ -677,7 +677,7 @@ public:
 	 * simple insertion sort
 	 */
 
-	void sort() {
+	_FORCE_INLINE_ void sort() {
 		sort_custom<Comparator<T>>();
 	}
 
@@ -773,7 +773,7 @@ public:
 		memdelete_arr(aux_buffer);
 	}
 
-	const void *id() const {
+	_FORCE_INLINE_ const void *id() const {
 		return (void *)_data;
 	}
 
@@ -788,9 +788,9 @@ public:
 		}
 	}
 
-	List() {}
+	_FORCE_INLINE_ List() {}
 
-	~List() {
+	_FORCE_INLINE_ ~List() {
 		clear();
 		if (_data) {
 			ERR_FAIL_COND(_data->size_cache);

@@ -274,7 +274,7 @@ public:
 		}
 	}
 
-	inline void insertion_sort(int64_t p_first, int64_t p_last, T *p_array) const {
+	_FORCE_INLINE_  void insertion_sort(int64_t p_first, int64_t p_last, T *p_array) const {
 		if (p_first == p_last) {
 			return;
 		}
@@ -283,13 +283,13 @@ public:
 		}
 	}
 
-	inline void unguarded_insertion_sort(int64_t p_first, int64_t p_last, T *p_array) const {
+	_FORCE_INLINE_  void unguarded_insertion_sort(int64_t p_first, int64_t p_last, T *p_array) const {
 		for (int64_t i = p_first; i != p_last; i++) {
 			unguarded_linear_insert(i, p_array[i], p_array);
 		}
 	}
 
-	inline void final_insertion_sort(int64_t p_first, int64_t p_last, T *p_array) const {
+	_FORCE_INLINE_  void final_insertion_sort(int64_t p_first, int64_t p_last, T *p_array) const {
 		if (p_last - p_first > INTROSORT_THRESHOLD) {
 			insertion_sort(p_first, p_first + INTROSORT_THRESHOLD, p_array);
 			unguarded_insertion_sort(p_first + INTROSORT_THRESHOLD, p_last, p_array);
@@ -298,18 +298,18 @@ public:
 		}
 	}
 
-	inline void sort_range(int64_t p_first, int64_t p_last, T *p_array) const {
+	_FORCE_INLINE_  void sort_range(int64_t p_first, int64_t p_last, T *p_array) const {
 		if (p_first != p_last) {
 			introsort(p_first, p_last, p_array, bitlog(p_last - p_first) * 2);
 			final_insertion_sort(p_first, p_last, p_array);
 		}
 	}
 
-	inline void sort(T *p_array, int64_t p_len) const {
+	_FORCE_INLINE_  void sort(T *p_array, int64_t p_len) const {
 		sort_range(0, p_len, p_array);
 	}
 
-	inline void nth_element(int64_t p_first, int64_t p_last, int64_t p_nth, T *p_array) const {
+	_FORCE_INLINE_  void nth_element(int64_t p_first, int64_t p_last, int64_t p_nth, T *p_array) const {
 		if (p_first == p_last || p_nth == p_last) {
 			return;
 		}

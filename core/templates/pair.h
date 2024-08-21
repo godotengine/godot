@@ -38,30 +38,30 @@ struct Pair {
 	F first;
 	S second;
 
-	Pair() :
+	_FORCE_INLINE_ Pair() :
 			first(),
 			second() {
 	}
 
-	Pair(const F& p_first, const S &p_second) :
+	_FORCE_INLINE_ Pair(const F& p_first, const S &p_second) :
 			first(p_first),
 			second(p_second) {
 	}
 };
 
 template <typename F, typename S>
-bool operator==(const Pair<F, S> &pair, const Pair<F, S> &other) {
+_FORCE_INLINE_ bool operator==(const Pair<F, S> &pair, const Pair<F, S> &other) {
 	return (pair.first == other.first) && (pair.second == other.second);
 }
 
 template <typename F, typename S>
-bool operator!=(const Pair<F, S> &pair, const Pair<F, S> &other) {
+_FORCE_INLINE_ bool operator!=(const Pair<F, S> &pair, const Pair<F, S> &other) {
 	return (pair.first != other.first) || (pair.second != other.second);
 }
 
 template <typename F, typename S>
 struct PairSort {
-	bool operator()(const Pair<F, S> &A, const Pair<F, S> &B) const {
+	_FORCE_INLINE_ bool operator()(const Pair<F, S> &A, const Pair<F, S> &B) const {
 		if (A.first != B.first) {
 			return A.first < B.first;
 		}
@@ -71,7 +71,7 @@ struct PairSort {
 
 template <typename F, typename S>
 struct PairHash {
-	static uint32_t hash(const Pair<F, S> &P) {
+	static _FORCE_INLINE_ uint32_t hash(const Pair<F, S> &P) {
 		uint64_t h1 = HashMapHasherDefault::hash(P.first);
 		uint64_t h2 = HashMapHasherDefault::hash(P.second);
 		return hash_one_uint64((h1 << 32) | h2);
@@ -95,18 +95,18 @@ struct KeyValue {
 };
 
 template <typename K, typename V>
-bool operator==(const KeyValue<K, V> &pair, const KeyValue<K, V> &other) {
+_FORCE_INLINE_ bool operator==(const KeyValue<K, V> &pair, const KeyValue<K, V> &other) {
 	return (pair.key == other.key) && (pair.value == other.value);
 }
 
 template <typename K, typename V>
-bool operator!=(const KeyValue<K, V> &pair, const KeyValue<K, V> &other) {
+_FORCE_INLINE_ bool operator!=(const KeyValue<K, V> &pair, const KeyValue<K, V> &other) {
 	return (pair.key != other.key) || (pair.value != other.value);
 }
 
 template <typename K, typename V>
 struct KeyValueSort {
-	bool operator()(const KeyValue<K, V> &A, const KeyValue<K, V> &B) const {
+	_FORCE_INLINE_ bool operator()(const KeyValue<K, V> &A, const KeyValue<K, V> &B) const {
 		return A.key < B.key;
 	}
 };

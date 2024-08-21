@@ -49,14 +49,14 @@ private:
 	T *data = nullptr;
 
 public:
-	T *ptr() {
+	_FORCE_INLINE_ T *ptr() {
 		return data;
 	}
 
-	const T *ptr() const {
+	_FORCE_INLINE_ const T *ptr() const {
 		return data;
 	}
-	void fill(uint8_t p_value) {
+	_FORCE_INLINE_ void fill(uint8_t p_value) {
 		memset(data, p_value, sizeof(T) * count);
 	}
 
@@ -93,7 +93,7 @@ public:
 
 	/// Removes the item copying the last value into the position of the one to
 	/// remove. It's generally faster than `remove_at`.
-	void remove_at_unordered(U p_index) {
+	_FORCE_INLINE_ void remove_at_unordered(U p_index) {
 		ERR_FAIL_INDEX(p_index, count);
 		count--;
 		if (count > p_index) {
@@ -112,7 +112,7 @@ public:
 		}
 		return false;
 	}
-	_FORCE_INLINE_ void swap(U p_index,U p_new_index) {
+	_FORCE_INLINE_ void swap(const U& p_index,const U& p_new_index) {
 		ERR_FAIL_INDEX(p_index, count);
 		ERR_FAIL_INDEX(p_new_index, count);
 		T var = data[p_index];
@@ -163,7 +163,7 @@ public:
 	}
 
 	_FORCE_INLINE_ U size() const { return count; }
-	void resize(U p_size) {
+	void resize(const U& p_size) {
 		if (p_size < count) {
 			if constexpr (!std::is_trivially_destructible_v<T> && !force_trivial) {
 				for (U i = p_size; i < count; i++) {
@@ -185,11 +185,11 @@ public:
 			count = p_size;
 		}
 	}
-	_FORCE_INLINE_ const T &operator[](U p_index) const {
+	_FORCE_INLINE_ const T &operator[](const U& p_index) const {
 		CRASH_BAD_UNSIGNED_INDEX(p_index, count);
 		return data[p_index];
 	}
-	_FORCE_INLINE_ T &operator[](U p_index) {
+	_FORCE_INLINE_ T &operator[](const U& p_index) {
 		CRASH_BAD_UNSIGNED_INDEX(p_index, count);
 		return data[p_index];
 	}
@@ -211,9 +211,9 @@ public:
 		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return elem_ptr == b.elem_ptr; }
 		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return elem_ptr != b.elem_ptr; }
 
-		Iterator(T *p_ptr) { elem_ptr = p_ptr; }
-		Iterator() {}
-		Iterator(const Iterator &p_it) { elem_ptr = p_it.elem_ptr; }
+		_FORCE_INLINE_ Iterator(T *p_ptr) { elem_ptr = p_ptr; }
+		_FORCE_INLINE_ Iterator() {}
+		_FORCE_INLINE_ Iterator(const Iterator &p_it) { elem_ptr = p_it.elem_ptr; }
 
 	private:
 		T *elem_ptr = nullptr;
@@ -236,9 +236,9 @@ public:
 		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const { return elem_ptr == b.elem_ptr; }
 		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const { return elem_ptr != b.elem_ptr; }
 
-		ConstIterator(const T *p_ptr) { elem_ptr = p_ptr; }
-		ConstIterator() {}
-		ConstIterator(const ConstIterator &p_it) { elem_ptr = p_it.elem_ptr; }
+		_FORCE_INLINE_ ConstIterator(const T *p_ptr) { elem_ptr = p_ptr; }
+		_FORCE_INLINE_ ConstIterator() {}
+		_FORCE_INLINE_ ConstIterator(const ConstIterator &p_it) { elem_ptr = p_it.elem_ptr; }
 
 	private:
 		const T *elem_ptr = nullptr;
@@ -258,7 +258,7 @@ public:
 		return ConstIterator(ptr() + size());
 	}
 
-	void insert(U p_pos, T p_val) {
+	void insert(const U& p_pos, const T& p_val) {
 		ERR_FAIL_UNSIGNED_INDEX(p_pos, count + 1);
 		if (p_pos == count) {
 			push_back(p_val);
@@ -271,7 +271,7 @@ public:
 		}
 	}
 
-	int64_t find(const T &p_val, U p_from = 0) const {
+	int64_t find(const T &p_val, const U& p_from = 0) const {
 		for (U i = p_from; i < count; i++) {
 			if (data[i] == p_val) {
 				return int64_t(i);
@@ -280,12 +280,12 @@ public:
 		return -1;
 	}
 
-	bool has(const T &p_val) const {
+	_FORCE_INLINE_ bool has(const T &p_val) const {
 		return find(p_val) != -1;
 	}
 
 	template <typename C>
-	void sort_custom() {
+	_FORCE_INLINE_ void sort_custom() {
 		U len = count;
 		if (len == 0) {
 			return;
@@ -295,11 +295,11 @@ public:
 		sorter.sort(data, len);
 	}
 
-	void sort() {
+	_FORCE_INLINE_ void sort() {
 		sort_custom<_DefaultComparator<T>>();
 	}
 
-	void ordered_insert(T p_val) {
+	void ordered_insert(const T& p_val) {
 		U i;
 		for (i = 0; i < count; i++) {
 			if (p_val < data[i]) {
@@ -309,7 +309,7 @@ public:
 		insert(i, p_val);
 	}
 	template<typename TPredicate>
-	_FORCE_INLINE_ void ordered_insert(T p_val, TPredicate&& p_pred) {
+	_FORCE_INLINE_ void ordered_insert(const T& p_val, TPredicate&& p_pred) {
 		U i;
 		for (i = 0; i < count; i++) {
 			if (p_pred(p_val , data[i])) {
@@ -336,7 +336,7 @@ public:
 		return ret;
 	}
 		template<typename TPredicate>
-	_FORCE_INLINE_ int32_t find_if(TPredicate&& p_pred, int32_t p_from = 0) const {
+	_FORCE_INLINE_ int32_t find_if(TPredicate&& p_pred, const int32_t& p_from = 0) const {
 		U i;
 		for (i = p_from; i < count; i++) {
 			if (p_pred(data[i])) {
@@ -347,7 +347,7 @@ public:
 		return -1;
 	}
 
-	operator Vector<T>() const {
+	_FORCE_INLINE_ operator Vector<T>() const {
 		Vector<T> ret;
 		ret.resize(size());
 		T *w = ret.ptrw();
@@ -355,7 +355,7 @@ public:
 		return ret;
 	}
 
-	Vector<uint8_t> to_byte_array() const { //useful to pass stuff to gpu or variant
+	_FORCE_INLINE_ Vector<uint8_t> to_byte_array() const { //useful to pass stuff to gpu or variant
 		Vector<uint8_t> ret;
 		ret.resize(count * sizeof(T));
 		uint8_t *w = ret.ptrw();
@@ -364,7 +364,7 @@ public:
 	}
 
 	_FORCE_INLINE_ LocalVector() {}
-	_FORCE_INLINE_ LocalVector(std::initializer_list<T> p_init) {
+	_FORCE_INLINE_ LocalVector(const std::initializer_list<T>& p_init) {
 		reserve(p_init.size());
 		for (const T &element : p_init) {
 			push_back(element);

@@ -74,7 +74,7 @@ private:
 		return hash;
 	}
 
-	static _FORCE_INLINE_ uint32_t _get_probe_length(const uint32_t p_pos, const uint32_t p_hash, const uint32_t p_capacity, const uint64_t p_capacity_inv) {
+	static _FORCE_INLINE_ uint32_t _get_probe_length(const uint32_t& p_pos, const uint32_t& p_hash, const uint32_t& p_capacity, const uint64_t& p_capacity_inv) {
 		const uint32_t original_pos = fastmod(p_hash, p_capacity_inv, p_capacity);
 		return fastmod(p_pos - original_pos + p_capacity, p_capacity_inv, p_capacity);
 	}
@@ -91,15 +91,16 @@ private:
 		uint32_t distance = 0;
 
 		while (true) {
-			if (hashes[pos] == EMPTY_HASH) {
+			auto& h = hashes[pos];
+			if (h == EMPTY_HASH) {
 				return false;
 			}
 
-			if (distance > _get_probe_length(pos, hashes[pos], capacity, capacity_inv)) {
+			if (distance > _get_probe_length(pos, h, capacity, capacity_inv)) {
 				return false;
 			}
 
-			if (hashes[pos] == hash && Comparator::compare(keys[hash_to_key[pos]], p_key)) {
+			if (h == hash && Comparator::compare(keys[hash_to_key[pos]], p_key)) {
 				r_pos = hash_to_key[pos];
 				return true;
 			}
@@ -118,18 +119,19 @@ private:
 		uint32_t pos = fastmod(hash, capacity_inv, capacity);
 
 		while (true) {
-			if (hashes[pos] == EMPTY_HASH) {
-				hashes[pos] = hash;
+			auto& h = hashes[pos];
+			if (h == EMPTY_HASH) {
+				h = hash;
 				key_to_hash[index] = pos;
 				hash_to_key[pos] = index;
 				return pos;
 			}
 
 			// Not an empty slot, let's check the probing length of the existing one.
-			uint32_t existing_probe_len = _get_probe_length(pos, hashes[pos], capacity, capacity_inv);
+			uint32_t existing_probe_len = _get_probe_length(pos, h, capacity, capacity_inv);
 			if (existing_probe_len < distance) {
 				key_to_hash[index] = pos;
-				SWAP(hash, hashes[pos]);
+				SWAP(hash, h);
 				SWAP(index, hash_to_key[pos]);
 				distance = existing_probe_len;
 			}
@@ -232,7 +234,7 @@ public:
 
 	/* Standard Godot Container API */
 
-	bool is_empty() const {
+	_FORCE_INLINE_ bool is_empty() const {
 		return num_elements == 0;
 	}
 
@@ -429,7 +431,7 @@ public:
 
 	/* Constructors */
 
-	HashSet(const HashSet &p_other) {
+	_FORCE_INLINE_ HashSet(const HashSet &p_other) {
 		_init_from(p_other);
 	}
 
@@ -463,7 +465,7 @@ public:
 		capacity_index = MIN_CAPACITY_INDEX;
 	}
 
-	void reset() {
+	_FORCE_INLINE_ void reset() {
 		clear();
 
 		if (keys != nullptr) {

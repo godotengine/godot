@@ -196,7 +196,7 @@ public:
 	Array get_connections() const;
 	Signal(const Object *p_object, const StringName &p_name);
 	Signal(ObjectID p_object, const StringName &p_name);
-	Signal() {}
+	_FORCE_INLINE_ Signal() {}
 };
 
 struct CallableComparator {

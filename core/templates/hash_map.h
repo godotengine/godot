@@ -93,7 +93,7 @@ private:
 		return hash;
 	}
 
-	static _FORCE_INLINE_ uint32_t _get_probe_length(const uint32_t p_pos, const uint32_t p_hash, const uint32_t p_capacity, const uint64_t p_capacity_inv) {
+	static _FORCE_INLINE_ uint32_t _get_probe_length(const uint32_t& p_pos, const uint32_t& p_hash, const uint32_t& p_capacity, const uint64_t& p_capacity_inv) {
 		const uint32_t original_pos = fastmod(p_hash, p_capacity_inv, p_capacity);
 		return fastmod(p_pos - original_pos + p_capacity, p_capacity_inv, p_capacity);
 	}
@@ -110,15 +110,16 @@ private:
 		uint32_t distance = 0;
 
 		while (true) {
-			if (hashes[pos] == EMPTY_HASH) {
+			auto& h = hashes[pos];
+			if (h == EMPTY_HASH) {
 				return false;
 			}
 
-			if (distance > _get_probe_length(pos, hashes[pos], capacity, capacity_inv)) {
+			if (distance > _get_probe_length(pos, h, capacity, capacity_inv)) {
 				return false;
 			}
 
-			if (hashes[pos] == hash && Comparator::compare(elements[pos]->data.key, p_key)) {
+			if (h == hash && Comparator::compare(elements[pos]->data.key, p_key)) {
 				r_pos = pos;
 				return true;
 			}
@@ -137,9 +138,10 @@ private:
 		uint32_t pos = fastmod(hash, capacity_inv, capacity);
 
 		while (true) {
-			if (hashes[pos] == EMPTY_HASH) {
+			auto& h = hashes[pos];
+			if (h == EMPTY_HASH) {
 				elements[pos] = value;
-				hashes[pos] = hash;
+				h = hash;
 
 				num_elements++;
 
@@ -147,9 +149,9 @@ private:
 			}
 
 			// Not an empty slot, let's check the probing length of the existing one.
-			uint32_t existing_probe_len = _get_probe_length(pos, hashes[pos], capacity, capacity_inv);
+			uint32_t existing_probe_len = _get_probe_length(pos, h, capacity, capacity_inv);
 			if (existing_probe_len < distance) {
-				SWAP(hash, hashes[pos]);
+				SWAP(hash, h);
 				SWAP(value, elements[pos]);
 				distance = existing_probe_len;
 			}
@@ -249,7 +251,7 @@ public:
 
 	/* Standard Godot Container API */
 
-	bool is_empty() const {
+	_FORCE_INLINE_ bool is_empty() const {
 		return num_elements == 0;
 	}
 
@@ -314,21 +316,21 @@ public:
 		}
 	}
 	
-	TValue &get(const TKey &p_key) {
+	_FORCE_INLINE_ TValue &get(const TKey &p_key) {
 		uint32_t pos = 0;
 		bool exists = _lookup_pos(p_key, pos);
 		CRASH_COND_MSG(!exists, "HashMap key not found.");
 		return elements[pos]->data.value;
 	}
 
-	const TValue &get(const TKey &p_key) const {
+	_FORCE_INLINE_ const TValue &get(const TKey &p_key) const {
 		uint32_t pos = 0;
 		bool exists = _lookup_pos(p_key, pos);
 		CRASH_COND_MSG(!exists, "HashMap key not found.");
 		return elements[pos]->data.value;
 	}
 
-	const TValue *getptr(const TKey &p_key) const {
+	_FORCE_INLINE_ const TValue *getptr(const TKey &p_key) const {
 		uint32_t pos = 0;
 		bool exists = _lookup_pos(p_key, pos);
 
@@ -338,7 +340,7 @@ public:
 		return nullptr;
 	}
 
-	TValue *getptr(const TKey &p_key) {
+	_FORCE_INLINE_ TValue *getptr(const TKey &p_key) {
 		uint32_t pos = 0;
 		bool exists = _lookup_pos(p_key, pos);
 
@@ -592,14 +594,14 @@ public:
 
 	/* Indexing */
 
-	const TValue &operator[](const TKey &p_key) const {
+	_FORCE_INLINE_ const TValue &operator[](const TKey &p_key) const {
 		uint32_t pos = 0;
 		bool exists = _lookup_pos(p_key, pos);
 		CRASH_COND(!exists);
 		return elements[pos]->data.value;
 	}
 
-	TValue &operator[](const TKey &p_key) {
+	_FORCE_INLINE_ TValue &operator[](const TKey &p_key) {
 		uint32_t pos = 0;
 		bool exists = _lookup_pos(p_key, pos);
 		if (!exists) {
@@ -611,7 +613,7 @@ public:
 
 	/* Insert */
 
-	Iterator insert(const TKey &p_key, const TValue &p_value, bool p_front_insert = false) {
+	_FORCE_INLINE_ Iterator insert(const TKey &p_key, const TValue &p_value, bool p_front_insert = false) {
 		return Iterator(_insert(p_key, p_value, p_front_insert));
 	}
 
@@ -648,28 +650,28 @@ public:
 		}
 	}
 
-	HashMap(uint32_t p_initial_capacity) {
+	_FORCE_INLINE_ HashMap(uint32_t p_initial_capacity) {
 		// Capacity can't be 0.
 		capacity_index = 0;
 		reserve(p_initial_capacity);
 	}
-	HashMap(std::initializer_list<KeyValue<TKey, TValue>> p_from)
+	_FORCE_INLINE_ HashMap(const std::initializer_list<KeyValue<TKey, TValue>>& p_from)
 	{		
 		for (auto&& item : p_from)
 			insert(item.key, item.value);
 	}
-	HashMap() {
+	_FORCE_INLINE_ HashMap() {
 		capacity_index = MIN_CAPACITY_INDEX;
 	}
 
-	uint32_t debug_get_hash(uint32_t p_index) {
+	_FORCE_INLINE_ uint32_t debug_get_hash(uint32_t p_index) {
 		if (num_elements == 0) {
 			return 0;
 		}
 		ERR_FAIL_INDEX_V(p_index, get_capacity(), 0);
 		return hashes[p_index];
 	}
-	Iterator debug_get_element(uint32_t p_index) {
+	_FORCE_INLINE_ Iterator debug_get_element(uint32_t p_index) {
 		if (num_elements == 0) {
 			return Iterator();
 		}

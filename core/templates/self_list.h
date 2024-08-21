@@ -42,7 +42,7 @@ public:
 		SelfList<T> *_last = nullptr;
 
 	public:
-		void add(SelfList<T> *p_elem) {
+		_FORCE_INLINE_ void add(SelfList<T> *p_elem) {
 			ERR_FAIL_COND(p_elem->_root);
 
 			p_elem->_root = this;
@@ -59,7 +59,7 @@ public:
 			_first = p_elem;
 		}
 
-		void add_last(SelfList<T> *p_elem) {
+		_FORCE_INLINE_ void add_last(SelfList<T> *p_elem) {
 			ERR_FAIL_COND(p_elem->_root);
 
 			p_elem->_root = this;
@@ -105,7 +105,7 @@ public:
 			}
 		}
 
-		void sort() {
+		_FORCE_INLINE_ void sort() {
 			sort_custom<Comparator<T>>();
 		}
 

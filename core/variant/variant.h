@@ -141,20 +141,20 @@ public:
 private:
 	struct Pools {
 		union BucketSmall {
-			BucketSmall() {}
-			~BucketSmall() {}
+			_FORCE_INLINE_ BucketSmall() {}
+			_FORCE_INLINE_ ~BucketSmall() {}
 			Transform2D _transform2d;
 			::AABB _aabb;
 		};
 		union BucketMedium {
-			BucketMedium() {}
-			~BucketMedium() {}
+			_FORCE_INLINE_ BucketMedium() {}
+			_FORCE_INLINE_ ~BucketMedium() {}
 			Basis _basis;
 			Transform3D _transform3d;
 		};
 		union BucketLarge {
-			BucketLarge() {}
-			~BucketLarge() {}
+			_FORCE_INLINE_ BucketLarge() {}
+			_FORCE_INLINE_ ~BucketLarge() {}
 			Projection _projection;
 		};
 
@@ -436,63 +436,63 @@ public:
 	Object *get_validated_object_with_check(bool &r_previously_freed) const;
 
 	
-	Vector<uint8_t> * get_byte_array() const
+	_FORCE_INLINE_ Vector<uint8_t> * get_byte_array() const
 	{		
 		if (type == PACKED_BYTE_ARRAY) {
 			return &static_cast<PackedArrayRef<uint8_t> *>(_data.packed_array)->array;
 		}
 		return nullptr;
 	}
-	Vector<int32_t> * get_int32_array() const
+	_FORCE_INLINE_ Vector<int32_t> * get_int32_array() const
 	{
 		if (type == PACKED_INT32_ARRAY) {
 			return &static_cast<PackedArrayRef<int32_t> *>(_data.packed_array)->array;
 		}
 		return nullptr;
 	}
-	Vector<int64_t> * get_int64_array() const
+	_FORCE_INLINE_ Vector<int64_t> * get_int64_array() const
 	{
 		if (type == PACKED_INT64_ARRAY) {
 			return &static_cast<PackedArrayRef<int64_t> *>(_data.packed_array)->array;
 		}
 		return nullptr;
 	}
-	Vector<float> * get_float32_array() const
+	_FORCE_INLINE_ Vector<float> * get_float32_array() const
 	{
 		if (type == PACKED_FLOAT32_ARRAY) {
 			return &static_cast<PackedArrayRef<float> *>(_data.packed_array)->array;
 		}
 		return nullptr;
 	}
-	Vector<double> * get_float64_array() const
+	_FORCE_INLINE_ Vector<double> * get_float64_array() const
 	{
 		if (type == PACKED_FLOAT64_ARRAY) {
 			return &static_cast<PackedArrayRef<double> *>(_data.packed_array)->array;
 		}
 		return nullptr;
 	}
-	Vector<String> * get_string_array() const
+	_FORCE_INLINE_ Vector<String> * get_string_array() const
 	{
 		if (type == PACKED_STRING_ARRAY) {
 			return &static_cast<PackedArrayRef<String> *>(_data.packed_array)->array;
 		}
 		return nullptr;
 	}
-	Vector<Vector3> * get_vector3_array() const
+	_FORCE_INLINE_ Vector<Vector3> * get_vector3_array() const
 	{
 		if (type == PACKED_VECTOR3_ARRAY) {
 			return &static_cast<PackedArrayRef<Vector3> *>(_data.packed_array)->array;
 		}
 		return nullptr;
 	}
-	Vector<Vector2> * get_vector2_array() const
+	_FORCE_INLINE_ Vector<Vector2> * get_vector2_array() const
 	{
 		if (type == PACKED_VECTOR2_ARRAY) {
 			return &static_cast<PackedArrayRef<Vector2> *>(_data.packed_array)->array;
 		}
 		return nullptr;
 	}
-	Vector<Color> * get_color_array() const
+	_FORCE_INLINE_ Vector<Color> * get_color_array() const
 	{
 		if (type == PACKED_COLOR_ARRAY) {
 			return &static_cast<PackedArrayRef<Color> *>(_data.packed_array)->array;
@@ -865,7 +865,7 @@ public:
 	static void register_types();
 	static void unregister_types();
 
-	Variant(const Variant &p_variant);
+	_FORCE_INLINE_ Variant(const Variant &p_variant);
 	_FORCE_INLINE_ Variant() :
 			type(NIL) {}
 	_FORCE_INLINE_ ~Variant() {

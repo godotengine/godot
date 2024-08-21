@@ -181,7 +181,7 @@ private:
 		Memory::free_static(old_hashes);
 	}
 
-	void _resize_and_rehash() {
+	_FORCE_INLINE_ void _resize_and_rehash() {
 		_resize_and_rehash(capacity * 2);
 	}
 
@@ -189,7 +189,7 @@ public:
 	_FORCE_INLINE_ uint32_t get_capacity() const { return capacity; }
 	_FORCE_INLINE_ uint32_t get_num_elements() const { return num_elements; }
 
-	bool is_empty() const {
+	_FORCE_INLINE_ bool is_empty() const {
 		return num_elements == 0;
 	}
 
@@ -207,7 +207,7 @@ public:
 		num_elements = 0;
 	}
 
-	void insert(const TKey &p_key, const TValue &p_value) {
+	_FORCE_INLINE_ void insert(const TKey &p_key, const TValue &p_value) {
 		if (num_elements + 1 > 0.9 * capacity) {
 			_resize_and_rehash();
 		}
@@ -217,7 +217,7 @@ public:
 		_insert_with_hash(hash, p_key, p_value);
 	}
 
-	void set(const TKey &p_key, const TValue &p_data) {
+	_FORCE_INLINE_ void set(const TKey &p_key, const TValue &p_data) {
 		uint32_t pos = 0;
 		bool exists = _lookup_pos(p_key, pos);
 
@@ -234,7 +234,7 @@ public:
 	 * if r_data is not nullptr then the value will be written to the object
 	 * it points to.
 	 */
-	bool lookup(const TKey &p_key, TValue &r_data) const {
+	_FORCE_INLINE_ bool lookup(const TKey &p_key, TValue &r_data) const {
 		uint32_t pos = 0;
 		bool exists = _lookup_pos(p_key, pos);
 
@@ -246,7 +246,7 @@ public:
 		return false;
 	}
 
-	const TValue *lookup_ptr(const TKey &p_key) const {
+	_FORCE_INLINE_ const TValue *lookup_ptr(const TKey &p_key) const {
 		uint32_t pos = 0;
 		bool exists = _lookup_pos(p_key, pos);
 
@@ -256,7 +256,7 @@ public:
 		return nullptr;
 	}
 
-	TValue *lookup_ptr(const TKey &p_key) {
+	_FORCE_INLINE_ TValue *lookup_ptr(const TKey &p_key) {
 		uint32_t pos = 0;
 		bool exists = _lookup_pos(p_key, pos);
 
@@ -301,7 +301,7 @@ public:
 	 *  if adding a known (possibly large) number of elements at once, must be larger than old
 	 *  capacity.
 	 **/
-	void reserve(uint32_t p_new_capacity) {
+	_FORCE_INLINE_ void reserve(uint32_t p_new_capacity) {
 		ERR_FAIL_COND(p_new_capacity < capacity);
 		_resize_and_rehash(p_new_capacity);
 	}
@@ -317,7 +317,7 @@ public:
 		friend class OAHashMap;
 	};
 
-	Iterator iter() const {
+	_FORCE_INLINE_ Iterator iter() const {
 		Iterator it;
 
 		it.valid = true;
@@ -353,7 +353,7 @@ public:
 		return it;
 	}
 
-	OAHashMap(const OAHashMap &p_other) {
+	_FORCE_INLINE_ OAHashMap(const OAHashMap &p_other) {
 		(*this) = p_other;
 	}
 

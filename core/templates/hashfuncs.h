@@ -389,40 +389,40 @@ struct HashMapHasherDefault {
 // TODO: Fold this into HashMapHasherDefault once C++20 concepts are allowed
 template <typename T>
 struct HashableHasher {
-	static _FORCE_INLINE_ uint32_t hash(const T &hashable) { return hashable.hash(); }
+	static _ALWAYS_INLINE_ uint32_t hash(const T &hashable) { return hashable.hash(); }
 };
 
 template <typename T>
 struct HashMapComparatorDefault {
-	static bool compare(const T &p_lhs, const T &p_rhs) {
+	static _ALWAYS_INLINE_ bool compare(const T &p_lhs, const T &p_rhs) {
 		return p_lhs == p_rhs;
 	}
 };
 
 template <>
 struct HashMapComparatorDefault<float> {
-	static bool compare(const float &p_lhs, const float &p_rhs) {
+	static _ALWAYS_INLINE_ bool compare(const float &p_lhs, const float &p_rhs) {
 		return (p_lhs == p_rhs) || (Math::is_nan(p_lhs) && Math::is_nan(p_rhs));
 	}
 };
 
 template <>
 struct HashMapComparatorDefault<double> {
-	static bool compare(const double &p_lhs, const double &p_rhs) {
+	static _ALWAYS_INLINE_ bool compare(const double &p_lhs, const double &p_rhs) {
 		return (p_lhs == p_rhs) || (Math::is_nan(p_lhs) && Math::is_nan(p_rhs));
 	}
 };
 
 template <>
 struct HashMapComparatorDefault<Vector2> {
-	static bool compare(const Vector2 &p_lhs, const Vector2 &p_rhs) {
+	static _ALWAYS_INLINE_ bool compare(const Vector2 &p_lhs, const Vector2 &p_rhs) {
 		return ((p_lhs.x == p_rhs.x) || (Math::is_nan(p_lhs.x) && Math::is_nan(p_rhs.x))) && ((p_lhs.y == p_rhs.y) || (Math::is_nan(p_lhs.y) && Math::is_nan(p_rhs.y)));
 	}
 };
 
 template <>
 struct HashMapComparatorDefault<Vector3> {
-	static bool compare(const Vector3 &p_lhs, const Vector3 &p_rhs) {
+	static _ALWAYS_INLINE_ bool compare(const Vector3 &p_lhs, const Vector3 &p_rhs) {
 		return ((p_lhs.x == p_rhs.x) || (Math::is_nan(p_lhs.x) && Math::is_nan(p_rhs.x))) && ((p_lhs.y == p_rhs.y) || (Math::is_nan(p_lhs.y) && Math::is_nan(p_rhs.y))) && ((p_lhs.z == p_rhs.z) || (Math::is_nan(p_lhs.z) && Math::is_nan(p_rhs.z)));
 	}
 };
@@ -500,7 +500,7 @@ inline constexpr uint64_t hash_table_size_primes_inv[HASH_TABLE_SIZE_MAX] = {
  * Faster Remainder by Direct Computation: Applications to Compilers and Software Libraries
  * https://arxiv.org/abs/1902.01961
  */
-static _FORCE_INLINE_ uint32_t fastmod(const uint32_t n, const uint64_t c, const uint32_t d) {
+static _FORCE_INLINE_ uint32_t fastmod(const uint32_t& n, const uint64_t& c, const uint32_t& d) {
 #if defined(_MSC_VER)
 	// Returns the upper 64 bits of the product of two 64-bit unsigned integers.
 	// This intrinsic function is required since MSVC does not support unsigned 128-bit integers.

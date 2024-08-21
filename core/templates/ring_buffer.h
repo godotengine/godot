@@ -48,7 +48,7 @@ class RingBuffer {
 	}
 
 public:
-	T read() {
+	_FORCE_INLINE_ T read() {
 		ERR_FAIL_COND_V(space_left() < 1, T());
 		return data.ptr()[inc(read_pos, 1)];
 	}
@@ -129,19 +129,19 @@ public:
 		return -1;
 	}
 
-	inline int advance_read(int p_n) {
+	_FORCE_INLINE_  int advance_read(int p_n) {
 		p_n = MIN(p_n, data_left());
 		inc(read_pos, p_n);
 		return p_n;
 	}
 
-	inline int decrease_write(int p_n) {
+	_FORCE_INLINE_  int decrease_write(int p_n) {
 		p_n = MIN(p_n, data_left());
 		inc(write_pos, size_mask + 1 - p_n);
 		return p_n;
 	}
 
-	Error write(const T &p_v) {
+	_FORCE_INLINE_ Error write(const T &p_v) {
 		ERR_FAIL_COND_V(space_left() < 1, FAILED);
 		data.write[inc(write_pos, 1)] = p_v;
 		return OK;
@@ -170,7 +170,7 @@ public:
 		return p_size;
 	}
 
-	inline int space_left() const {
+	_FORCE_INLINE_  int space_left() const {
 		int left = read_pos - write_pos;
 		if (left < 0) {
 			return size() + left - 1;
@@ -180,20 +180,20 @@ public:
 		}
 		return left - 1;
 	}
-	inline int data_left() const {
+	_FORCE_INLINE_  int data_left() const {
 		return size() - space_left() - 1;
 	}
 
-	inline int size() const {
+	_FORCE_INLINE_  int size() const {
 		return data.size();
 	}
 
-	inline void clear() {
+	_FORCE_INLINE_  void clear() {
 		read_pos = 0;
 		write_pos = 0;
 	}
 
-	void resize(int p_power) {
+	_FORCE_INLINE_ void resize(int p_power) {
 		int old_size = size();
 		int new_size = 1 << p_power;
 		int mask = new_size - 1;
@@ -211,10 +211,10 @@ public:
 		size_mask = mask;
 	}
 
-	RingBuffer(int p_power = 0) {
+	_FORCE_INLINE_ RingBuffer(int p_power = 0) {
 		resize(p_power);
 	}
-	~RingBuffer() {}
+	_FORCE_INLINE_ ~RingBuffer() {}
 };
 
 #endif // RING_BUFFER_H

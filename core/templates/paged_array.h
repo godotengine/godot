@@ -81,18 +81,18 @@ public:
 		return PageInfo{ page, page_id };
 	}
 
-	void free_page(uint32_t p_page_id) {
+	_FORCE_INLINE_ void free_page(uint32_t p_page_id) {
 		spin_lock.lock();
 		available_page_pool[pages_available] = p_page_id;
 		pages_available++;
 		spin_lock.unlock();
 	}
 
-	uint32_t get_page_size_shift() const {
+	_FORCE_INLINE_ uint32_t get_page_size_shift() const {
 		return get_shift_from_power_of_2(page_size);
 	}
 
-	uint32_t get_page_size_mask() const {
+	_FORCE_INLINE_ uint32_t get_page_size_mask() const {
 		return page_size - 1;
 	}
 
@@ -110,21 +110,21 @@ public:
 			pages_available = 0;
 		}
 	}
-	bool is_configured() const {
+	_FORCE_INLINE_ bool is_configured() const {
 		return page_size > 0;
 	}
 
-	void configure(uint32_t p_page_size) {
+	_FORCE_INLINE_ void configure(uint32_t p_page_size) {
 		ERR_FAIL_COND(page_pool != nullptr); // Safety check.
 		ERR_FAIL_COND(p_page_size == 0);
 		page_size = nearest_power_of_2_templated(p_page_size);
 	}
 
-	PagedArrayPool(uint32_t p_page_size = 4096) { // power of 2 recommended because of alignment with OS page sizes. Even if element is bigger, its still a multiple and get rounded amount of pages
+	_FORCE_INLINE_ PagedArrayPool(uint32_t p_page_size = 4096) { // power of 2 recommended because of alignment with OS page sizes. Even if element is bigger, its still a multiple and get rounded amount of pages
 		configure(p_page_size);
 	}
 
-	~PagedArrayPool() {
+	_FORCE_INLINE_ ~PagedArrayPool() {
 		ERR_FAIL_COND_MSG(pages_available < pages_allocated, "Pages in use exist at exit in PagedArrayPool");
 		reset();
 	}
@@ -153,7 +153,7 @@ class PagedArray {
 		}
 	}
 
-	void _grow_page_array() {
+	_FORCE_INLINE_ void _grow_page_array() {
 		//no more room in the page array to put the new page, make room
 		if (max_pages_used == 0) {
 			max_pages_used = 1;
@@ -229,7 +229,7 @@ public:
 		count--;
 	}
 
-	void remove_at_unordered(uint64_t p_index) {
+	_FORCE_INLINE_ void remove_at_unordered(uint64_t p_index) {
 		ERR_FAIL_UNSIGNED_INDEX(p_index, count);
 		(*this)[p_index] = (*this)[count - 1];
 		pop_back();
@@ -256,7 +256,7 @@ public:
 		//note we leave page_data and page_indices intact for next use. If you really want to clear them call reset()
 	}
 
-	void reset() {
+	_FORCE_INLINE_ void reset() {
 		clear();
 		if (page_data) {
 			memfree(page_data);
@@ -360,7 +360,7 @@ public:
 		return count;
 	}
 
-	void set_page_pool(PagedArrayPool<T> *p_page_pool) {
+	_FORCE_INLINE_ void set_page_pool(PagedArrayPool<T> *p_page_pool) {
 		ERR_FAIL_COND(max_pages_used > 0); // Safety check.
 
 		page_pool = p_page_pool;
@@ -368,7 +368,7 @@ public:
 		page_size_shift = page_pool->get_page_size_shift();
 	}
 
-	~PagedArray() {
+	_FORCE_INLINE_ ~PagedArray() {
 		reset();
 	}
 };

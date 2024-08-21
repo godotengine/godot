@@ -319,7 +319,7 @@ public:
 		if(name == "root_node")
 		{
 			VBoxContainer* p_select_node_property_vbox = memnew( VBoxContainer);	
-			Button* add_button = memnew(Button);		
+			HBoxContainer* add_button = memnew(HBoxContainer);		
 			
 			BeehaveGraphProperty* section = memnew(BeehaveGraphProperty);
 			// 初始化

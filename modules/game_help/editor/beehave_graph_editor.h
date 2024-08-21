@@ -418,7 +418,7 @@ protected:
 	BeehaveGraphProperty* beehave_graph_property = nullptr;
 };
 
-// 设置编辑的对象
+// 绿豆蝇行为树子节点列表编辑
 class BeehaveNodeChildChildEditor : public EditorPropertyArray {
 	GDCLASS(BeehaveNodeChildChildEditor, EditorPropertyArray);
 
@@ -513,7 +513,7 @@ protected:
 };
 
 
-
+// 绿豆蝇行为树属性编辑
 class BeehaveGraphProperty : public VBoxContainer
 {
 	GDCLASS(BeehaveGraphProperty, VBoxContainer);
@@ -572,7 +572,7 @@ public:
 		PLAY_STATE_PAUSE,
 		PLAY_STATE_STOP
 	};
-	void setup(Ref<BeehaveTree> p_beehave_tree,VBoxContainer * p_select_node_property_vbox,Button* p_buton_create_beehave_node)
+	void setup(Ref<BeehaveTree> p_beehave_tree,VBoxContainer * p_select_node_property_vbox,HBoxContainer* p_buton_create_beehave_box)
 	{
 		frames.instantiate();
 		frames->init();
@@ -618,7 +618,10 @@ public:
 
 		select_node_property_vbox->add_child(sub_inspector);
 
-		buton_create_beehave_node = p_buton_create_beehave_node;
+		buton_create_beehave_node_panel = p_buton_create_beehave_box;
+
+		buton_create_beehave_node = memnew(Button);
+		buton_create_beehave_node_panel->add_child(buton_create_beehave_node);
 		buton_create_beehave_node->set_text("Add Beehave Node");
 		buton_create_beehave_node->set_modulate(BeehaveGraphEditor::get_select_color());
 
@@ -674,6 +677,7 @@ public:
 		beehave_editor->set_visible(!p_collapsed);
 		sub_inspector->set_visible(!p_collapsed);
 		child_list->set_visible(!p_collapsed);
+		buton_create_beehave_node_panel->set_visible(!p_collapsed);
 	#ifdef TOOLS_ENABLED
 		beehave_tree->editor_set_section_unfold("Beehave Tree Condition", !p_collapsed);
 	#endif
@@ -941,6 +945,7 @@ protected:
 	VBoxContainer* select_node_property_vbox = nullptr;
 	EditorInspector* sub_inspector = nullptr;
 	BeehaveNodeChildChildEditor* child_list = nullptr;
+	HBoxContainer* buton_create_beehave_node_panel = nullptr;
 	Button* buton_create_beehave_node = nullptr;
 	PopupMenu* cteate_beehave_node_pop = nullptr;
 
