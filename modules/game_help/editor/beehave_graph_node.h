@@ -43,6 +43,10 @@ public:
 	Ref<ImageTexture> icon_port_bottom;
 	Ref<ImageTexture> icon_port_left;
 	Ref<ImageTexture> icon_port_right;
+
+
+	Ref<ImageTexture> arrow_down_icon;
+	Ref<ImageTexture> arrow_right_icon;
 	Ref<Font> font;
 	float scale = 1.0f;
 	BeehaveGraphFrames()
@@ -95,6 +99,9 @@ public:
 		icon_port_bottom = p_control->get_editor_theme_icon(SNAME("port_bottom"));
 		icon_port_left = p_control->get_editor_theme_icon(SNAME("port_left"));
 		icon_port_right = p_control->get_editor_theme_icon(SNAME("port_right"));
+		
+		arrow_down_icon = p_control->get_editor_theme_icon(SNAME("GuiTreeArrowDown"));
+		arrow_right_icon = p_control->get_editor_theme_icon(SNAME("GuiTreeArrowRight"));
 	}
 };
 

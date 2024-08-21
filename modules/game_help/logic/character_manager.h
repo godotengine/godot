@@ -17,7 +17,7 @@ public:
         return singleton;
     }
 
-    public:
+public:
 
     void register_character(class CharacterBodyMain* character);
     void unregister_character(class CharacterBodyMain* character);

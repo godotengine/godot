@@ -124,10 +124,12 @@ void CharacterBodyMain::_notification( int p_notification )
     }
 	switch (p_notification) {
         case NOTIFICATION_ENTER_TREE: {
-            CharacterManager::get_singleton()->register_character(this);
+			if(CharacterManager::get_singleton() != nullptr)
+				CharacterManager::get_singleton()->register_character(this);
         } break;
         case NOTIFICATION_EXIT_TREE: {
-            CharacterManager::get_singleton()->unregister_character(this);            
+			if (CharacterManager::get_singleton() != nullptr)
+				CharacterManager::get_singleton()->unregister_character(this);            
         }
         break;
     }

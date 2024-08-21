@@ -27,18 +27,17 @@ public:
 	}
 
 public:
-	void set_beehave_tree(Ref<BeehaveTree> p_beehave_tree,BeehaveGraphProperty *p_beehave_graph_property)
+	void set_beehave_tree(Ref<BeehaveGraphFrames> p_frames,Ref<BeehaveTree> p_beehave_tree,BeehaveGraphProperty *p_beehave_graph_property)
 	{
 		if(beehave_tree == p_beehave_tree)
 		{
 			return;
 		}
+		frames = p_frames;
 		set_multi_select_active(false);
 		beehave_graph_property = p_beehave_graph_property;
 		active_nodes.clear();
 		beehave_tree = p_beehave_tree;
-		frames.instantiate();
-		frames->init();
 		_update_graph();
 	}
 	void _ready() override
@@ -524,14 +523,22 @@ public:
 		set_custom_minimum_size(Vector2(300,600));
 		set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
 
-		HBoxContainer* play_help = memnew(HBoxContainer);
-		add_child(play_help);
-		play_help->set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
-		play_help->set_h_size_flags(SIZE_EXPAND_FILL);
+		HBoxContainer* section = memnew(HBoxContainer);
+		add_child(section);
+		section->set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
+		section->set_h_size_flags(SIZE_EXPAND_FILL);
 
-		Control*space = memnew(Control);
-		space->set_h_size_flags(SIZE_EXPAND_FILL);
-		play_help->add_child(space);
+
+		
+		section_button = memnew(Button);
+		section_button->set_h_size_flags(SIZE_EXPAND_FILL);
+		section_button->set_text(L"绿豆蝇行为树");
+		section_button->connect(SceneStringName(pressed), callable_mp(this, &BeehaveGraphProperty::_on_section_pressed));
+		section->add_child(section_button);
+
+
+		play_help = memnew(HBoxContainer);
+		section->add_child(play_help);
 
 
 		play_button = memnew(Button);
@@ -567,6 +574,9 @@ public:
 	};
 	void setup(Ref<BeehaveTree> p_beehave_tree,VBoxContainer * p_select_node_property_vbox,Button* p_buton_create_beehave_node)
 	{
+		frames.instantiate();
+		frames->init();
+
 		select_node_property_vbox = p_select_node_property_vbox;
 		select_node_property_vbox->set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
 		beehave_tree = p_beehave_tree;
@@ -582,6 +592,7 @@ public:
 		child_list = memnew(BeehaveNodeChildChildEditor);
 		child_list->set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
 		child_list->set_visible(true);
+		child_list->set_modulate(BeehaveGraphEditor::get_select_color());
 		select_node_property_vbox->add_child(child_list);
 
 
@@ -627,14 +638,52 @@ public:
 
 		beehave_tree = p_beehave_tree;
 		set_editor_node( node);
-		beehave_editor->set_beehave_tree(p_beehave_tree,this);
+		beehave_editor->set_beehave_tree(frames,p_beehave_tree,this);
+
+
+
+		
+#ifdef TOOLS_ENABLED
+			set_collapsed(!beehave_tree->editor_is_section_unfolded("Beehave Tree Condition"));
+#endif
 	}
 	void process(double delta)override
 	{
+		if(CharacterBodyMain::get_current_editor_player() != nullptr)
+		{
+			play_help->set_visible(true);
+			// 更新播放状态
+		}
+		else
+		{
+			play_help->set_visible(false);
+		}
 		beehave_editor->process_begin();
 		beehave_editor->process(delta);
 		beehave_editor->process_end();
 	}
+	
+	void _on_section_pressed() {
+		if(beehave_editor == nullptr || frames.is_null())
+		{
+			return;
+		}
+		set_collapsed(!is_collapsed());
+	}
+	void set_collapsed(bool p_collapsed) {
+		beehave_editor->set_visible(!p_collapsed);
+		sub_inspector->set_visible(!p_collapsed);
+		child_list->set_visible(!p_collapsed);
+	#ifdef TOOLS_ENABLED
+		beehave_tree->editor_set_section_unfold("Beehave Tree Condition", !p_collapsed);
+	#endif
+		section_button->set_icon(p_collapsed ? frames->arrow_right_icon : frames->arrow_down_icon);
+	}
+	bool is_collapsed() const {
+		return !beehave_editor->is_visible();
+	}
+
+
 
 	
 	void _sub_inspector_property_keyed(const String &p_property, const Variant &p_value, bool p_advance) {
@@ -882,10 +931,13 @@ public:
 	}
 	
 protected:
+	Ref<BeehaveGraphFrames> frames;
 	Ref<BeehaveTree> beehave_tree;
 	Ref<BeehaveNode> beehave_node;
 	BeehaveGraphEditor* beehave_editor = nullptr;
 
+	HBoxContainer* play_help = nullptr;
+	Button*  section_button = nullptr;
 	VBoxContainer* select_node_property_vbox = nullptr;
 	EditorInspector* sub_inspector = nullptr;
 	BeehaveNodeChildChildEditor* child_list = nullptr;

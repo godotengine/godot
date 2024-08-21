@@ -208,6 +208,7 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 		animation_help = memnew(AnimationManager);
 
 		character_manager = memnew(CharacterManager);
+		CharacterManager::singleton = character_manager;
 
 		Engine::get_singleton()->add_singleton(Engine::Singleton("AnimationManager", animation_help));
 		Engine::get_singleton()->add_singleton(Engine::Singleton("DataTableManager", data_table_manager));
@@ -236,6 +237,7 @@ void uninitialize_game_help_module(ModuleInitializationLevel p_level) {
 	}
 	Engine::get_singleton()->remove_singleton("DataTableManager");
 	Engine::get_singleton()->remove_singleton("PathManager");
+	CharacterManager::singleton = nullptr;
 	if(Engine::get_singleton() != nullptr)
 	{
 		Engine::get_singleton()->remove_globale_ticker(character_manager);
