@@ -314,13 +314,20 @@ namespace Godot
         /// <returns>A vector representing the support.</returns>
         public readonly Vector3 GetSupport(Vector3 dir)
         {
-            Vector3 halfExtents = _size * 0.5f;
-            Vector3 ofs = _position + halfExtents;
-
-            return ofs + new Vector3(
-                dir.X > 0f ? halfExtents.X : -halfExtents.X,
-                dir.Y > 0f ? halfExtents.Y : -halfExtents.Y,
-                dir.Z > 0f ? halfExtents.Z : -halfExtents.Z);
+            Vector3 support = _position;
+            if (dir.X > 0.0f)
+            {
+                support.X += _size.X;
+            }
+            if (dir.Y > 0.0f)
+            {
+                support.Y += _size.Y;
+            }
+            if (dir.Z > 0.0f)
+            {
+                support.Z += _size.Z;
+            }
+            return support;
         }
 
         /// <summary>
