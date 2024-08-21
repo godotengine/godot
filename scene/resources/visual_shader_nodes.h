@@ -2116,6 +2116,7 @@ public:
 		HINT_RANGE,
 		HINT_RANGE_STEP,
 		HINT_ENUM,
+		HINT_FLAGS,
 		HINT_MAX,
 	};
 
@@ -2124,7 +2125,7 @@ private:
 	int hint_range_min = 0;
 	int hint_range_max = 100;
 	int hint_range_step = 1;
-	PackedStringArray hint_enum_names;
+	PackedStringArray hint_names;
 	bool default_value_enabled = false;
 	int default_value = 0;
 
@@ -2160,8 +2161,8 @@ public:
 	void set_step(int p_value);
 	int get_step() const;
 
-	void set_enum_names(const PackedStringArray &p_names);
-	PackedStringArray get_enum_names() const;
+	void set_hint_names(const PackedStringArray &p_names);
+	PackedStringArray get_hint_names() const;
 
 	void set_default_value_enabled(bool p_enabled);
 	bool is_default_value_enabled() const;
