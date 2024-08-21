@@ -794,49 +794,6 @@ ConditionSection::~ConditionSection() {
 }
 
 
-class BlackbordSetSection : public VBoxContainer {
-	GDCLASS(BlackbordSetSection, VBoxContainer);
-
-private:
-	struct ThemeCache {
-		Ref<Texture2D> arrow_down_icon;
-		Ref<Texture2D> arrow_right_icon;
-	} theme_cache;
-
-	VBoxContainer *tasks_container;
-	Button *section_header;
-
-	Ref<AnimatorBlackboardSet> object;
-
-	void _on_header_pressed();
-
-protected:
-	static void _bind_methods();
-
-	void _notification(int p_what);
-
-	virtual void _do_update_theme_item_cache();
-
-public:
-	void setup(Ref<AnimatorBlackboardSet> p_object)
-	{
-
-		object = p_object;
-#ifdef TOOLS_ENABLED
-			set_collapsed(!object->editor_is_section_unfolded("Change List"));
-#endif
-	}
-	void set_filter(String p_filter);
-	void add_condition(Control* p_task_button);
-
-	void set_collapsed(bool p_collapsed);
-	bool is_collapsed() const;
-
-	String get_category_name() const { return section_header->get_text(); }
-	void set_category_name(const String &p_cat) { section_header->set_text(p_cat); }
-
-	BlackbordSetSection();
-};
 
 class BlackbordSetButtonList_ED : public HBoxContainer
 {

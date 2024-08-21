@@ -604,6 +604,18 @@ void CharacterBodyMain::init_blackboard_plan(Ref<BlackboardPlan> p_plan)
     {
         p_plan->add_var("dead/request_revive_life",BBVariable(Variant::FLOAT,0.0f));
     }
+
+    // 人物情绪
+    if(!p_plan->has_var("ai/emotion"))
+    {
+        p_plan->add_var("ai/emotion",BBVariable(Variant::INT,0,PROPERTY_HINT_ENUM,L"平静,感激,愤怒,激动,开心,恐惧"));
+    }
+
+    // 人物性格
+    if(!p_plan->has_var("ai/personality"))
+    {
+        p_plan->add_var("ai/personality",BBVariable(Variant::INT,0,PROPERTY_HINT_ENUM,L"和平,好斗,胆小,忠诚,复仇心强,狡猾"));
+    }
 }
 
 void CharacterBodyMain::set_body_part(const Dictionary& part)
