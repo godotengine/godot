@@ -30,6 +30,7 @@
 
 #include "image.h"
 
+#include "core/config/project_settings.h"
 #include "core/error/error_list.h"
 #include "core/error/error_macros.h"
 #include "core/io/image_loader.h"
@@ -2734,6 +2735,27 @@ Error Image::compress(CompressMode p_mode, CompressSource p_source, ASTCFormat p
 Error Image::compress_from_channels(CompressMode p_mode, UsedChannels p_channels, ASTCFormat p_astc_format) {
 	ERR_FAIL_COND_V(data.is_empty(), ERR_INVALID_DATA);
 
+	// RenderingDevice only.
+	if (GLOBAL_GET("rendering/textures/vram_compression/compress_with_gpu")) {
+		switch (p_mode) {
+			case COMPRESS_BPTC: {
+				// BC7 is unsupported currently.
+				if ((format >= FORMAT_RF && format <= FORMAT_RGBE9995) && _image_compress_bptc_rd_func) {
+					Error result = _image_compress_bptc_rd_func(this, p_channels);
+
+					// If the image was compressed successfully, we return here. If not, we fall back to the default compression scheme.
+					if (result == OK) {
+						return OK;
+					}
+				}
+
+			} break;
+
+			default: {
+			}
+		}
+	}
+
 	switch (p_mode) {
 		case COMPRESS_S3TC: {
 			ERR_FAIL_NULL_V(_image_compress_bc_func, ERR_UNAVAILABLE);
@@ -3115,6 +3137,7 @@ void (*Image::_image_compress_bptc_func)(Image *, Image::UsedChannels) = nullptr
 void (*Image::_image_compress_etc1_func)(Image *) = nullptr;
 void (*Image::_image_compress_etc2_func)(Image *, Image::UsedChannels) = nullptr;
 void (*Image::_image_compress_astc_func)(Image *, Image::ASTCFormat) = nullptr;
+Error (*Image::_image_compress_bptc_rd_func)(Image *, Image::UsedChannels) = nullptr;
 void (*Image::_image_decompress_bc)(Image *) = nullptr;
 void (*Image::_image_decompress_bptc)(Image *) = nullptr;
 void (*Image::_image_decompress_etc1)(Image *) = nullptr;

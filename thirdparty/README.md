@@ -70,6 +70,17 @@ Files extracted from upstream source:
 Applied upstream PR https://github.com/BinomialLLC/basis_universal/pull/344 to
 fix build with our own copy of zstd (patch in `patches`).
 
+## betsy
+
+- Upstream: https://github.com/darksylinc/betsy
+- Version: git (cc723dcae9a6783ae572f64d12a90d60ef8d631a, 2022)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `bc6h.glsl`, `CrossPlatformSettings_piece_all.glsl` and `UavCrossPlatform_piece_all.glsl`.
+- `LICENSE.md`
+
 
 ## brotli
 
@@ -825,6 +836,22 @@ Important: Nearly all files have Godot-made changes and renames
 to make the 2D and 3D rvo libraries compatible with each other
 and solve conflicts and also enrich the feature set originally
 proposed by these libraries and better integrate them with Godot.
+
+
+## spirv-cross
+
+- Upstream: https://github.com/KhronosGroup/SPIRV-Cross
+- Version: vulkan-sdk-1.3.290.0 (5d127b917f080c6f052553c47170ec0ba702e54f, 2024)
+- License: Apache 2.0
+
+Files extracted from upstream source:
+
+- All `.cpp`, `.hpp` and `.h` files, minus `main.cpp`, `spirv_cross_c.*`, `spirv_hlsl.*`, `spirv_cpp.*`
+- `include/` folder
+- `LICENSE` and `LICENSES/` folder, minus `CC-BY-4.0.txt`
+
+Versions of this SDK do not have to match the `vulkan` section, as this SDK is required
+to generate Metal source from Vulkan SPIR-V.
 
 
 ## spirv-reflect
