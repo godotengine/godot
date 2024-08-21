@@ -2592,14 +2592,6 @@ void PopupMenu::clear_autohide_areas() {
 	autohide_areas.clear();
 }
 
-void PopupMenu::take_mouse_focus() {
-	ERR_FAIL_COND(!is_inside_tree());
-
-	if (get_parent()) {
-		get_parent()->get_viewport()->pass_mouse_focus_to(this, control);
-	}
-}
-
 bool PopupMenu::_set(const StringName &p_name, const Variant &p_value) {
 	if (property_helper.property_set_value(p_name, p_value)) {
 		return true;
