@@ -586,11 +586,7 @@ void ShaderData::get_shader_uniform_list(List<PropertyInfo> *p_param_list) const
 		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_LOCAL) {
 			continue;
 		}
-		if (E.value.texture_order >= 0) {
-			filtered_uniforms.push_back(Pair<StringName, int>(E.key, E.value.texture_order + 100000));
-		} else {
-			filtered_uniforms.push_back(Pair<StringName, int>(E.key, E.value.order));
-		}
+		filtered_uniforms.push_back(Pair<StringName, int>(E.key, E.value.prop_order));
 	}
 	int uniform_count = filtered_uniforms.size();
 	sorter.sort(filtered_uniforms.ptr(), uniform_count);
@@ -640,7 +636,7 @@ bool ShaderData::is_parameter_texture(const StringName &p_param) const {
 		return false;
 	}
 
-	return uniforms[p_param].texture_order >= 0;
+	return uniforms[p_param].is_texture();
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -719,7 +715,7 @@ void MaterialData::update_uniform_buffer(const HashMap<StringName, ShaderLanguag
 	bool uses_global_buffer = false;
 
 	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : p_uniforms) {
-		if (E.value.order < 0) {
+		if (E.value.is_texture()) {
 			continue; // texture, does not go here
 		}
 
@@ -874,7 +870,8 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 				if (V->value.is_array()) {
 					Array array = (Array)V->value;
 					if (uniform_array_size > 0) {
-						for (int j = 0; j < array.size(); j++) {
+						int size = MIN(uniform_array_size, array.size());
+						for (int j = 0; j < size; j++) {
 							textures.push_back(array[j]);
 						}
 					} else {
@@ -1280,7 +1277,7 @@ MaterialStorage::MaterialStorage() {
 
 		actions.renames["NODE_POSITION_WORLD"] = "model_matrix[3].xyz";
 		actions.renames["CAMERA_POSITION_WORLD"] = "scene_data.inv_view_matrix[3].xyz";
-		actions.renames["CAMERA_DIRECTION_WORLD"] = "scene_data.view_matrix[3].xyz";
+		actions.renames["CAMERA_DIRECTION_WORLD"] = "scene_data.inv_view_matrix[2].xyz";
 		actions.renames["CAMERA_VISIBLE_LAYERS"] = "scene_data.camera_visible_layers";
 		actions.renames["NODE_POSITION_VIEW"] = "(scene_data.view_matrix * model_matrix)[3].xyz";
 

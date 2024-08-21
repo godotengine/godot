@@ -50,19 +50,19 @@ import androidx.annotation.Keep;
 
 import java.io.InputStream;
 
-public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderView {
+class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderView {
 	private final GodotHost host;
 	private final Godot godot;
 	private final GodotInputHandler mInputHandler;
 	private final VkRenderer mRenderer;
 	private final SparseArray<PointerIcon> customPointerIcons = new SparseArray<>();
 
-	public GodotVulkanRenderView(GodotHost host, Godot godot) {
+	public GodotVulkanRenderView(GodotHost host, Godot godot, GodotInputHandler inputHandler) {
 		super(host.getActivity());
 
 		this.host = host;
 		this.godot = godot;
-		mInputHandler = new GodotInputHandler(this);
+		mInputHandler = inputHandler;
 		mRenderer = new VkRenderer();
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
 			setPointerIcon(PointerIcon.getSystemIcon(getContext(), PointerIcon.TYPE_DEFAULT));
@@ -78,11 +78,6 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 	@Override
 	public SurfaceView getView() {
 		return this;
-	}
-
-	@Override
-	public void initInputDevices() {
-		mInputHandler.initInputDevices();
 	}
 
 	@Override
@@ -119,8 +114,8 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 	}
 
 	@Override
-	public void onBackPressed() {
-		godot.onBackPressed(host);
+	public void onActivityDestroyed() {
+		requestRenderThreadExitAndWait();
 	}
 
 	@Override

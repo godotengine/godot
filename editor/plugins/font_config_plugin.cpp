@@ -30,6 +30,7 @@
 
 #include "font_config_plugin.h"
 
+#include "core/string/translation_server.h"
 #include "editor/editor_settings.h"
 #include "editor/import/dynamic_font_import_settings.h"
 #include "editor/themes/editor_scale.h"
@@ -61,9 +62,6 @@ bool EditorPropertyFontMetaObject::_get(const StringName &p_name, Variant &r_ret
 	}
 
 	return false;
-}
-
-void EditorPropertyFontMetaObject::_bind_methods() {
 }
 
 void EditorPropertyFontMetaObject::set_dict(const Dictionary &p_dict) {

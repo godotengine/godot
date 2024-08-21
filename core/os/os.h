@@ -328,8 +328,6 @@ public:
 	virtual void benchmark_end_measure(const String &p_context, const String &p_what);
 	virtual void benchmark_dump();
 
-	virtual void process_and_drop_events() {}
-
 	virtual Error setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path);
 
 	enum PreferredTextureFormat {

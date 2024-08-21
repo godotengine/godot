@@ -865,7 +865,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		// CheckBox.
 		{
 			Ref<StyleBoxFlat> checkbox_style = p_config.panel_container_style->duplicate();
-			checkbox_style->set_content_margin_all(p_config.base_margin * EDSCALE);
+			checkbox_style->set_content_margin_individual((p_config.increased_margin + 2) * EDSCALE, p_config.base_margin * EDSCALE, (p_config.increased_margin + 2) * EDSCALE, p_config.base_margin * EDSCALE);
 
 			p_theme->set_stylebox(CoreStringName(normal), "CheckBox", checkbox_style);
 			p_theme->set_stylebox(SceneStringName(pressed), "CheckBox", checkbox_style);
@@ -2346,7 +2346,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		}
 
 		// VisualShader editor.
-		p_theme->set_stylebox("label_style", "VShaderEditor", make_empty_stylebox(2, 1, 2, 1));
+		p_theme->set_stylebox("label_style", "VShaderEditor", make_empty_stylebox(4, 6, 4, 6));
 
 		// StateMachine graph.
 		{
@@ -2652,8 +2652,6 @@ bool EditorThemeManager::is_generated_theme_outdated() {
 				EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/font") ||
 				EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/main_font") ||
 				EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/code_font") ||
-				EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen/increase_scrollbar_touch_area") ||
-				EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen/scale_gizmo_handles") ||
 				EditorSettings::get_singleton()->check_changed_settings_in_group("editors/visual_editors") ||
 				EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/theme") ||
 				EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/help/help") ||

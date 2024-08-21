@@ -3799,7 +3799,10 @@ void ScriptEditor::_on_find_in_files_result_selected(const String &fpath, int li
 			ShaderEditorPlugin *shader_editor = Object::cast_to<ShaderEditorPlugin>(EditorNode::get_editor_data().get_editor_by_name("Shader"));
 			shader_editor->edit(res.ptr());
 			shader_editor->make_visible(true);
-			shader_editor->get_shader_editor(res)->goto_line_selection(line_number - 1, begin, end);
+			TextShaderEditor *text_shader_editor = Object::cast_to<TextShaderEditor>(shader_editor->get_shader_editor(res));
+			if (text_shader_editor) {
+				text_shader_editor->goto_line_selection(line_number - 1, begin, end);
+			}
 			return;
 		} else if (fpath.get_extension() == "tscn") {
 			Ref<FileAccess> f = FileAccess::open(fpath, FileAccess::READ);

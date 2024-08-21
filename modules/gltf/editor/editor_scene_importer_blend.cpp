@@ -57,7 +57,7 @@
 static bool _get_blender_version(const String &p_path, int &r_major, int &r_minor, String *r_err = nullptr) {
 	if (!FileAccess::exists(p_path)) {
 		if (r_err) {
-			*r_err = TTR("Path does not contain a Blender installation.");
+			*r_err = TTR("Path does not point to a valid executable.");
 		}
 		return false;
 	}
@@ -67,14 +67,14 @@ static bool _get_blender_version(const String &p_path, int &r_major, int &r_mino
 	Error err = OS::get_singleton()->execute(p_path, args, &pipe);
 	if (err != OK) {
 		if (r_err) {
-			*r_err = TTR("Can't execute Blender binary.");
+			*r_err = TTR("Couldn't run Blender executable.");
 		}
 		return false;
 	}
 	int bl = pipe.find("Blender ");
 	if (bl == -1) {
 		if (r_err) {
-			*r_err = vformat(TTR("Unexpected --version output from Blender binary at: %s."), p_path);
+			*r_err = vformat(TTR("Unexpected --version output from Blender executable at: %s."), p_path);
 		}
 		return false;
 	}
@@ -83,7 +83,7 @@ static bool _get_blender_version(const String &p_path, int &r_major, int &r_mino
 	int pp = pipe.find(".");
 	if (pp == -1) {
 		if (r_err) {
-			*r_err = TTR("Path supplied lacks a Blender binary.");
+			*r_err = vformat(TTR("Couldn't extract version information from Blender executable at: %s."), p_path);
 		}
 		return false;
 	}
@@ -91,7 +91,7 @@ static bool _get_blender_version(const String &p_path, int &r_major, int &r_mino
 	r_major = v.to_int();
 	if (r_major < 3) {
 		if (r_err) {
-			*r_err = TTR("This Blender installation is too old for this importer (not 3.0+).");
+			*r_err = vformat(TTR("Found Blender version %d.x, which is too old for this importer (3.0+ is required)."), r_major);
 		}
 		return false;
 	}
@@ -115,8 +115,15 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 		List<String> *r_missing_deps, Error *r_err) {
 	String blender_path = EDITOR_GET("filesystem/import/blender/blender_path");
 
-	if (blender_major_version == -1 || blender_minor_version == -1) {
-		_get_blender_version(blender_path, blender_major_version, blender_minor_version, nullptr);
+	ERR_FAIL_COND_V_MSG(blender_path.is_empty(), nullptr, "Blender path is empty, check your Editor Settings.");
+	ERR_FAIL_COND_V_MSG(!FileAccess::exists(blender_path), nullptr, vformat("Invalid Blender path: %s, check your Editor Settings.", blender_path));
+
+	if (blender_major_version == -1 || blender_minor_version == -1 || last_tested_blender_path != blender_path) {
+		String error;
+		if (!_get_blender_version(blender_path, blender_major_version, blender_minor_version, &error)) {
+			ERR_FAIL_V_MSG(nullptr, error);
+		}
+		last_tested_blender_path = blender_path;
 	}
 
 	// Get global paths for source and sink.
@@ -227,6 +234,18 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	} else {
 		parameters_map["export_normals"] = false;
 	}
+
+	if (blender_major_version > 4 || (blender_major_version == 4 && blender_minor_version >= 1)) {
+		if (p_options.has(SNAME("blender/meshes/export_geometry_nodes_instances")) && p_options[SNAME("blender/meshes/export_geometry_nodes_instances")]) {
+			parameters_map["export_gn_mesh"] = true;
+			if (blender_major_version == 4 && blender_minor_version == 1) {
+				// There is a bug in Blender 4.1 where it can't export lights and geometry nodes at the same time, one must be disabled.
+				parameters_map["export_lights"] = false;
+			}
+		} else {
+			parameters_map["export_gn_mesh"] = false;
+		}
+	}
 	if (p_options.has(SNAME("blender/meshes/tangents")) && p_options[SNAME("blender/meshes/tangents")]) {
 		parameters_map["export_tangents"] = true;
 	} else {
@@ -332,7 +351,8 @@ Variant EditorSceneFormatImporterBlend::get_option_visibility(const String &p_pa
 }
 
 void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options) {
-	if (p_path.get_extension().to_lower() != "blend") {
+	// Returns all the options when path is empty because that means it's for the Project Settings.
+	if (!p_path.is_empty() && p_path.get_extension().to_lower() != "blend") {
 		return;
 	}
 #define ADD_OPTION_BOOL(PATH, VALUE) \
@@ -349,6 +369,7 @@ void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, Li
 	ADD_OPTION_BOOL("blender/meshes/colors", false);
 	ADD_OPTION_BOOL("blender/meshes/uvs", true);
 	ADD_OPTION_BOOL("blender/meshes/normals", true);
+	ADD_OPTION_BOOL("blender/meshes/export_geometry_nodes_instances", false);
 	ADD_OPTION_BOOL("blender/meshes/tangents", true);
 	ADD_OPTION_ENUM("blender/meshes/skins", "None,4 Influences (Compatible),All Influences", BLEND_BONE_INFLUENCES_ALL);
 	ADD_OPTION_BOOL("blender/meshes/export_bones_deforming_mesh_only", false);
@@ -391,9 +412,9 @@ void EditorFileSystemImportFormatSupportQueryBlend::_validate_path(String p_path
 		if (_test_blender_path(p_path, &error)) {
 			success = true;
 			if (auto_detected_path == p_path) {
-				error = TTR("Path to Blender installation is valid (Autodetected).");
+				error = TTR("Path to Blender executable is valid (Autodetected).");
 			} else {
-				error = TTR("Path to Blender installation is valid.");
+				error = TTR("Path to Blender executable is valid.");
 			}
 		}
 	}
@@ -489,11 +510,15 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 	if (!configure_blender_dialog) {
 		configure_blender_dialog = memnew(ConfirmationDialog);
 		configure_blender_dialog->set_title(TTR("Configure Blender Importer"));
-		configure_blender_dialog->set_flag(Window::FLAG_BORDERLESS, true); // Avoid closing accidentally .
+		configure_blender_dialog->set_flag(Window::FLAG_BORDERLESS, true); // Avoid closing accidentally.
 		configure_blender_dialog->set_close_on_escape(false);
 
+		String select_exec_label = TTR("Blender 3.0+ is required to import '.blend' files.\nPlease provide a valid path to a Blender executable.");
+#ifdef MACOS_ENABLED
+		select_exec_label += "\n" + TTR("On macOS, this should be the `Contents/MacOS/blender` file within the Blender `.app` folder.");
+#endif
 		VBoxContainer *vb = memnew(VBoxContainer);
-		vb->add_child(memnew(Label(TTR("Blender 3.0+ is required to import '.blend' files.\nPlease provide a valid path to a Blender installation:"))));
+		vb->add_child(memnew(Label(select_exec_label)));
 
 		HBoxContainer *hb = memnew(HBoxContainer);
 
@@ -527,8 +552,8 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 
 		browse_dialog = memnew(EditorFileDialog);
 		browse_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-		browse_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
-		browse_dialog->connect("dir_selected", callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_select_install));
+		browse_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
+		browse_dialog->connect("file_selected", callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_select_install));
 
 		EditorNode::get_singleton()->get_gui_base()->add_child(browse_dialog);
 

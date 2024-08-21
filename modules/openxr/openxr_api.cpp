@@ -525,7 +525,7 @@ bool OpenXRAPI::create_instance() {
 		1, // applicationVersion, we don't currently have this
 		"Godot Game Engine", // engineName
 		VERSION_MAJOR * 10000 + VERSION_MINOR * 100 + VERSION_PATCH, // engineVersion 4.0 -> 40000, 4.0.1 -> 40001, 4.1 -> 40100, etc.
-		XR_CURRENT_API_VERSION // apiVersion
+		XR_API_VERSION_1_0 // apiVersion
 	};
 
 	void *next_pointer = nullptr;
@@ -707,13 +707,6 @@ bool OpenXRAPI::load_supported_environmental_blend_modes() {
 		print_verbose(String("OpenXR: Found environmental blend mode ") + OpenXRUtil::get_environment_blend_mode_name(supported_environment_blend_modes[i]));
 	}
 
-	// Check value we loaded at startup...
-	if (!is_environment_blend_mode_supported(environment_blend_mode)) {
-		print_verbose(String("OpenXR: ") + OpenXRUtil::get_environment_blend_mode_name(environment_blend_mode) + String(" isn't supported, defaulting to ") + OpenXRUtil::get_environment_blend_mode_name(supported_environment_blend_modes[0]));
-
-		environment_blend_mode = supported_environment_blend_modes[0];
-	}
-
 	return true;
 }
 
@@ -835,6 +828,13 @@ bool OpenXRAPI::create_session() {
 
 	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
 		wrapper->on_session_created(session);
+	}
+
+	// Check our environment blend mode. This needs to happen after we call `on_session_created()`
+	// on the extension wrappers, so they can emulate alpha blend mode.
+	if (!set_environment_blend_mode(environment_blend_mode)) {
+		print_verbose(String("OpenXR: ") + OpenXRUtil::get_environment_blend_mode_name(environment_blend_mode) + String(" isn't supported, defaulting to ") + OpenXRUtil::get_environment_blend_mode_name(supported_environment_blend_modes[0]));
+		set_environment_blend_mode(supported_environment_blend_modes[0]);
 	}
 
 	return true;
@@ -1459,6 +1459,10 @@ void OpenXRAPI::set_form_factor(XrFormFactor p_form_factor) {
 	form_factor = p_form_factor;
 }
 
+uint32_t OpenXRAPI::get_view_count() {
+	return view_count;
+}
+
 void OpenXRAPI::set_view_configuration(XrViewConfigurationType p_view_configuration) {
 	ERR_FAIL_COND(is_initialized());
 
@@ -1913,15 +1917,6 @@ bool OpenXRAPI::poll_events() {
 
 				// We probably didn't poll fast enough, just output warning
 				WARN_PRINT("OpenXR EVENT: " + itos(event->lostEventCount) + " event data lost!");
-			} break;
-			case XR_TYPE_EVENT_DATA_VISIBILITY_MASK_CHANGED_KHR: {
-				// XrEventDataVisibilityMaskChangedKHR *event = (XrEventDataVisibilityMaskChangedKHR *)&runtimeEvent;
-
-				// TODO implement this in the future, we should call xrGetVisibilityMaskKHR to obtain a mask,
-				// this will allow us to prevent rendering the part of our view which is never displayed giving us
-				// a decent performance improvement.
-
-				print_verbose("OpenXR EVENT: STUB: visibility mask changed");
 			} break;
 			case XR_TYPE_EVENT_DATA_INSTANCE_LOSS_PENDING: {
 				XrEventDataInstanceLossPending *event = (XrEventDataInstanceLossPending *)&runtimeEvent;

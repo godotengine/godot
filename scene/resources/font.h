@@ -99,8 +99,6 @@ protected:
 
 	virtual void _update_rids_fb(const Ref<Font> &p_f, int p_depth) const;
 	virtual void _update_rids() const;
-	virtual bool _is_cyclic(const Ref<Font> &p_f, int p_depth) const;
-
 	virtual void reset_state() override;
 
 #ifndef DISABLE_DEPRECATED
@@ -110,6 +108,8 @@ protected:
 #endif
 
 public:
+	virtual bool _is_cyclic(const Ref<Font> &p_f, int p_depth) const;
+	virtual bool _is_base_cyclic(const Ref<Font> &p_f, int p_depth) const;
 	virtual void _invalidate_rids();
 
 	static constexpr int DEFAULT_FONT_SIZE = 16;
@@ -494,6 +494,7 @@ protected:
 	virtual void reset_state() override;
 
 public:
+	virtual Ref<Font> get_base_font() const { return base_font; }
 	virtual Ref<Font> _get_base_font_or_default() const;
 
 	virtual void set_antialiasing(TextServer::FontAntialiasing p_antialiasing);

@@ -96,6 +96,7 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"FLOAT_CONSTANT",
 	"INT_CONSTANT",
 	"UINT_CONSTANT",
+	"STRING_CONSTANT",
 	"TYPE_VOID",
 	"TYPE_BOOL",
 	"TYPE_BVEC2",
@@ -212,6 +213,7 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"HINT_ANISOTROPY_TEXTURE",
 	"HINT_SOURCE_COLOR",
 	"HINT_RANGE",
+	"HINT_ENUM",
 	"HINT_INSTANCE_INDEX",
 	"HINT_SCREEN_TEXTURE",
 	"HINT_NORMAL_ROUGHNESS_TEXTURE",
@@ -365,6 +367,7 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 
 	{ TK_HINT_SOURCE_COLOR, "source_color", CF_UNSPECIFIED, {}, {} },
 	{ TK_HINT_RANGE, "hint_range", CF_UNSPECIFIED, {}, {} },
+	{ TK_HINT_ENUM, "hint_enum", CF_UNSPECIFIED, {}, {} },
 	{ TK_HINT_INSTANCE_INDEX, "instance_index", CF_UNSPECIFIED, {}, {} },
 
 	// sampler hints
@@ -512,7 +515,54 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 				return _make_token(TK_OP_NOT);
 
 			} break;
-			//case '"' //string - no strings in shader
+			case '"': {
+				String _content = "";
+				bool _previous_backslash = false;
+
+				while (true) {
+					bool _ended = false;
+					char32_t c = GETCHAR(0);
+					if (c == 0) {
+						return _make_token(TK_ERROR, "EOF reached before string termination.");
+					}
+					switch (c) {
+						case '"': {
+							if (_previous_backslash) {
+								_content += '"';
+								_previous_backslash = false;
+							} else {
+								_ended = true;
+							}
+							break;
+						}
+						case '\\': {
+							if (_previous_backslash) {
+								_content += '\\';
+							}
+							_previous_backslash = !_previous_backslash;
+							break;
+						}
+						case '\n': {
+							return _make_token(TK_ERROR, "Unexpected end of string.");
+						}
+						default: {
+							if (!_previous_backslash) {
+								_content += c;
+							} else {
+								return _make_token(TK_ERROR, "Only \\\" and \\\\ escape characters supported.");
+							}
+							break;
+						}
+					}
+
+					char_idx++;
+					if (_ended) {
+						break;
+					}
+				}
+
+				return _make_token(TK_STRING_CONSTANT, _content);
+			} break;
 			//case '\'' //string - no strings in shader
 			case '{':
 				return _make_token(TK_CURLY_BRACKET_OPEN);
@@ -898,6 +948,13 @@ bool ShaderLanguage::_lookup_next(Token &r_tk) {
 	return false;
 }
 
+ShaderLanguage::Token ShaderLanguage::_peek() {
+	TkPos pre_pos = _get_tkpos();
+	Token tk = _get_token();
+	_set_tkpos(pre_pos);
+	return tk;
+}
+
 String ShaderLanguage::token_debug(const String &p_code) {
 	clear();
 
@@ -1119,6 +1176,9 @@ String ShaderLanguage::get_uniform_hint_name(ShaderNode::Uniform::Hint p_hint) {
 	switch (p_hint) {
 		case ShaderNode::Uniform::HINT_RANGE: {
 			result = "hint_range";
+		} break;
+		case ShaderNode::Uniform::HINT_ENUM: {
+			result = "hint_enum";
 		} break;
 		case ShaderNode::Uniform::HINT_SOURCE_COLOR: {
 			result = "source_color";
@@ -4139,6 +4199,11 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::PACKED_INT32_ARRAY;
 				// TODO: Handle range and encoding for for unsigned values.
+			} else if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_ENUM) {
+				pi.type = Variant::INT;
+				pi.hint = PROPERTY_HINT_ENUM;
+				String hint_string;
+				pi.hint_string = String(",").join(p_uniform.hint_enum_names);
 			} else {
 				pi.type = Variant::INT;
 				pi.hint = PROPERTY_HINT_RANGE;
@@ -4664,9 +4729,18 @@ bool ShaderLanguage::_validate_restricted_func(const StringName &p_name, const C
 		}
 	}
 
-	if (!p_func_info->uses_restricted_functions.is_empty()) {
-		const Pair<StringName, TkPos> &first_element = p_func_info->uses_restricted_functions.get(0);
-		_set_tkpos(first_element.second);
+	if (!p_func_info->uses_restricted_items.is_empty()) {
+		const Pair<StringName, CallInfo::Item> &first_element = p_func_info->uses_restricted_items.get(0);
+
+		if (first_element.second.type == CallInfo::Item::ITEM_TYPE_VARYING) {
+			const ShaderNode::Varying &varying = shader->varyings[first_element.first];
+
+			if (varying.stage == ShaderNode::Varying::STAGE_VERTEX) {
+				return true;
+			}
+		}
+
+		_set_tkpos(first_element.second.pos);
 
 		if (is_in_restricted_function) {
 			_set_error(vformat(RTR("'%s' cannot be used within the '%s' processor function."), first_element.first, "vertex"));
@@ -4752,7 +4826,16 @@ bool ShaderLanguage::_validate_assign(Node *p_node, const FunctionInfo &p_functi
 	return false;
 }
 
-bool ShaderLanguage::_propagate_function_call_sampler_uniform_settings(const StringName &p_name, int p_argument, TextureFilter p_filter, TextureRepeat p_repeat) {
+ShaderLanguage::ShaderNode::Uniform::Hint ShaderLanguage::_sanitize_hint(ShaderNode::Uniform::Hint p_hint) {
+	if (p_hint == ShaderNode::Uniform::HINT_SCREEN_TEXTURE ||
+			p_hint == ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE ||
+			p_hint == ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
+		return p_hint;
+	}
+	return ShaderNode::Uniform::HINT_NONE;
+}
+
+bool ShaderLanguage::_propagate_function_call_sampler_uniform_settings(const StringName &p_name, int p_argument, TextureFilter p_filter, TextureRepeat p_repeat, ShaderNode::Uniform::Hint p_hint) {
 	for (int i = 0; i < shader->vfunctions.size(); i++) {
 		if (shader->vfunctions[i].name == p_name) {
 			ERR_FAIL_INDEX_V(p_argument, shader->vfunctions[i].function->arguments.size(), false);
@@ -4761,20 +4844,21 @@ bool ShaderLanguage::_propagate_function_call_sampler_uniform_settings(const Str
 				_set_error(vformat(RTR("Sampler argument %d of function '%s' called more than once using both built-ins and uniform textures, this is not supported (use either one or the other)."), p_argument, String(p_name)));
 				return false;
 			} else if (arg->tex_argument_check) {
-				//was checked, verify that filter and repeat are the same
-				if (arg->tex_argument_filter == p_filter && arg->tex_argument_repeat == p_repeat) {
+				// Was checked, verify that filter, repeat, and hint are the same.
+				if (arg->tex_argument_filter == p_filter && arg->tex_argument_repeat == p_repeat && arg->tex_hint == _sanitize_hint(p_hint)) {
 					return true;
 				} else {
-					_set_error(vformat(RTR("Sampler argument %d of function '%s' called more than once using textures that differ in either filter or repeat setting."), p_argument, String(p_name)));
+					_set_error(vformat(RTR("Sampler argument %d of function '%s' called more than once using textures that differ in either filter, repeat, or texture hint setting."), p_argument, String(p_name)));
 					return false;
 				}
 			} else {
 				arg->tex_argument_check = true;
 				arg->tex_argument_filter = p_filter;
 				arg->tex_argument_repeat = p_repeat;
+				arg->tex_hint = _sanitize_hint(p_hint);
 				for (KeyValue<StringName, HashSet<int>> &E : arg->tex_argument_connect) {
 					for (const int &F : E.value) {
-						if (!_propagate_function_call_sampler_uniform_settings(E.key, F, p_filter, p_repeat)) {
+						if (!_propagate_function_call_sampler_uniform_settings(E.key, F, p_filter, p_repeat, p_hint)) {
 							return false;
 						}
 					}
@@ -5352,7 +5436,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 									return nullptr;
 								}
 								// Register usage of the restricted function.
-								calls_info[current_function].uses_restricted_functions.push_back(Pair<StringName, TkPos>(name, _get_tkpos()));
+								calls_info[current_function].uses_restricted_items.push_back(Pair<StringName, CallInfo::Item>(name, CallInfo::Item(CallInfo::Item::ITEM_TYPE_BUILTIN, _get_tkpos())));
 								is_builtin = true;
 								break;
 							}
@@ -5469,10 +5553,11 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 										if (shader->varyings.has(varname)) {
 											switch (shader->varyings[varname].stage) {
-												case ShaderNode::Varying::STAGE_UNKNOWN: {
-													_set_error(vformat(RTR("Varying '%s' must be assigned in the 'vertex' or 'fragment' function first."), varname));
-													return nullptr;
-												}
+												case ShaderNode::Varying::STAGE_UNKNOWN:
+													if (is_out_arg) {
+														error = true;
+													}
+													break;
 												case ShaderNode::Varying::STAGE_VERTEX_TO_FRAGMENT_LIGHT:
 													[[fallthrough]];
 												case ShaderNode::Varying::STAGE_VERTEX:
@@ -5548,10 +5633,16 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 										}
 									}
 									if (is_sampler_type(call_function->arguments[i].type)) {
-										//let's see where our argument comes from
-										ERR_CONTINUE(n->type != Node::NODE_TYPE_VARIABLE); //bug? this should always be a variable
-										VariableNode *vn = static_cast<VariableNode *>(n);
-										StringName varname = vn->name;
+										// Let's see where our argument comes from.
+										StringName varname;
+										if (n->type == Node::NODE_TYPE_VARIABLE) {
+											VariableNode *vn = static_cast<VariableNode *>(n);
+											varname = vn->name;
+										} else if (n->type == Node::NODE_TYPE_ARRAY) {
+											ArrayNode *an = static_cast<ArrayNode *>(n);
+											varname = an->name;
+										}
+
 										if (shader->uniforms.has(varname)) {
 											//being sampler, this either comes from a uniform
 											ShaderNode::Uniform *u = &shader->uniforms[varname];
@@ -5567,7 +5658,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 											}
 
 											//propagate
-											if (!_propagate_function_call_sampler_uniform_settings(name, i, u->filter, u->repeat)) {
+											if (!_propagate_function_call_sampler_uniform_settings(name, i, u->filter, u->repeat, u->hint)) {
 												return nullptr;
 											}
 										} else if (p_function_info.built_ins.has(varname)) {
@@ -5666,6 +5757,8 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						_set_tkpos(prev_pos);
 
 						ShaderNode::Varying &var = shader->varyings[identifier];
+						calls_info[current_function].uses_restricted_items.push_back(Pair<StringName, CallInfo::Item>(identifier, CallInfo::Item(CallInfo::Item::ITEM_TYPE_VARYING, prev_pos)));
+
 						String error;
 						if (is_token_operator_assign(next_token.type)) {
 							if (!_validate_varying_assign(shader->varyings[identifier], &error)) {
@@ -7393,6 +7486,9 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 									return ERR_PARSE_ERROR;
 								}
 								tk = _get_token();
+							} else {
+								_set_expected_error("(");
+								return ERR_PARSE_ERROR;
 							}
 						}
 					} else {
@@ -8030,7 +8126,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			if (!expr) {
 				return ERR_PARSE_ERROR;
 			}
-			is_condition = expr->type == Node::NODE_TYPE_OPERATOR && expr->get_datatype() == TYPE_BOOL;
+			is_condition = expr->get_datatype() == TYPE_BOOL;
 
 			if (expr->type == Node::NODE_TYPE_OPERATOR) {
 				OperatorNode *op = static_cast<OperatorNode *>(expr);
@@ -8046,7 +8142,12 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			if (p_block->block_type == BlockNode::BLOCK_TYPE_FOR_CONDITION) {
 				if (tk.type == TK_COMMA) {
 					if (!is_condition) {
-						_set_error(RTR("The middle expression is expected to be a boolean operator."));
+						_set_error(RTR("The middle expression is expected to have a boolean data type."));
+						return ERR_PARSE_ERROR;
+					}
+					tk = _peek();
+					if (tk.type == TK_SEMICOLON) {
+						_set_error(vformat(RTR("Expected expression, found: '%s'."), get_token_text(tk)));
 						return ERR_PARSE_ERROR;
 					}
 					continue;
@@ -8057,6 +8158,11 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				}
 			} else if (p_block->block_type == BlockNode::BLOCK_TYPE_FOR_EXPRESSION) {
 				if (tk.type == TK_COMMA) {
+					tk = _peek();
+					if (tk.type == TK_PARENTHESIS_CLOSE) {
+						_set_error(vformat(RTR("Expected expression, found: '%s'."), get_token_text(tk)));
+						return ERR_PARSE_ERROR;
+					}
 					continue;
 				}
 				if (tk.type != TK_PARENTHESIS_CLOSE) {
@@ -8075,7 +8181,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				return ERR_PARSE_ERROR;
 			}
 			if (p_block->block_type == BlockNode::BLOCK_TYPE_FOR_CONDITION && !is_condition) {
-				_set_error(RTR("The middle expression is expected to be a boolean operator."));
+				_set_error(RTR("The middle expression is expected to have a boolean data type."));
 				return ERR_PARSE_ERROR;
 			}
 		}
@@ -8180,6 +8286,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 	int texture_binding = 0;
 	int uniforms = 0;
 	int instance_index = 0;
+	int prop_index = 0;
 #ifdef DEBUG_ENABLED
 	uint64_t uniform_buffer_size = 0;
 	uint64_t max_uniform_buffer_size = 0;
@@ -8734,6 +8841,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 							++texture_binding;
 						}
 						uniform.order = -1;
+						uniform.prop_order = prop_index++;
 					} else {
 						if (uniform_scope == ShaderNode::Uniform::SCOPE_INSTANCE && (type == TYPE_MAT2 || type == TYPE_MAT3 || type == TYPE_MAT4)) {
 							_set_error(vformat(RTR("The '%s' qualifier is not supported for matrix types."), "SCOPE_INSTANCE"));
@@ -8742,6 +8850,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 						uniform.texture_order = -1;
 						if (uniform_scope != ShaderNode::Uniform::SCOPE_INSTANCE) {
 							uniform.order = uniforms++;
+							uniform.prop_order = prop_index++;
 #ifdef DEBUG_ENABLED
 							if (check_device_limit_warnings) {
 								if (uniform.array_size > 0) {
@@ -8937,6 +9046,40 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 
 									new_hint = ShaderNode::Uniform::HINT_RANGE;
 								} break;
+								case TK_HINT_ENUM: {
+									if (type != TYPE_INT) {
+										_set_error(vformat(RTR("Enum hint is for '%s' only."), "int"));
+										return ERR_PARSE_ERROR;
+									}
+
+									tk = _get_token();
+									if (tk.type != TK_PARENTHESIS_OPEN) {
+										_set_expected_after_error("(", "hint_enum");
+										return ERR_PARSE_ERROR;
+									}
+
+									while (true) {
+										tk = _get_token();
+
+										if (tk.type != TK_STRING_CONSTANT) {
+											_set_error(RTR("Expected a string constant."));
+											return ERR_PARSE_ERROR;
+										}
+
+										uniform.hint_enum_names.push_back(tk.text);
+
+										tk = _get_token();
+
+										if (tk.type == TK_PARENTHESIS_CLOSE) {
+											break;
+										} else if (tk.type != TK_COMMA) {
+											_set_error(RTR("Expected ',' or ')' after string constant."));
+											return ERR_PARSE_ERROR;
+										}
+									}
+
+									new_hint = ShaderNode::Uniform::HINT_ENUM;
+								} break;
 								case TK_HINT_INSTANCE_INDEX: {
 									if (custom_instance_index != -1) {
 										_set_error(vformat(RTR("Can only specify '%s' once."), "instance_index"));
@@ -9031,7 +9174,9 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 								default:
 									break;
 							}
-							if (((new_filter != FILTER_DEFAULT || new_repeat != REPEAT_DEFAULT) || (new_hint != ShaderNode::Uniform::HINT_NONE && new_hint != ShaderNode::Uniform::HINT_SOURCE_COLOR && new_hint != ShaderNode::Uniform::HINT_RANGE)) && !is_sampler_type(type)) {
+
+							bool is_sampler_hint = new_hint != ShaderNode::Uniform::HINT_NONE && new_hint != ShaderNode::Uniform::HINT_SOURCE_COLOR && new_hint != ShaderNode::Uniform::HINT_RANGE && new_hint != ShaderNode::Uniform::HINT_ENUM;
+							if (((new_filter != FILTER_DEFAULT || new_repeat != REPEAT_DEFAULT) || is_sampler_hint) && !is_sampler_type(type)) {
 								_set_error(RTR("This hint is only for sampler types."));
 								return ERR_PARSE_ERROR;
 							}
@@ -9186,6 +9331,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 				tk = _get_token();
 				if (tk.type == TK_IDENTIFIER) {
 					current_uniform_group_name = tk.text;
+					current_uniform_subgroup_name = "";
 					tk = _get_token();
 					if (tk.type == TK_PERIOD) {
 						tk = _get_token();
@@ -9502,6 +9648,9 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 										_set_error(RTR("Array size mismatch."));
 										return ERR_PARSE_ERROR;
 									}
+								} else {
+									_set_expected_error("(");
+									return ERR_PARSE_ERROR;
 								}
 
 								array_size = constant.array_size;
@@ -10730,15 +10879,21 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 				}
 			} else if ((completion_base == DataType::TYPE_INT || completion_base == DataType::TYPE_FLOAT) && !completion_base_array) {
 				if (current_uniform_hint == ShaderNode::Uniform::HINT_NONE) {
-					ScriptLanguage::CodeCompletionOption option("hint_range", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+					Vector<String> options;
 
 					if (completion_base == DataType::TYPE_INT) {
-						option.insert_text = "hint_range(0, 100, 1)";
+						options.push_back("hint_range(0, 100, 1)");
+						options.push_back("hint_enum(\"Zero\", \"One\", \"Two\")");
 					} else {
-						option.insert_text = "hint_range(0.0, 1.0, 0.1)";
+						options.push_back("hint_range(0.0, 1.0, 0.1)");
 					}
 
-					r_options->push_back(option);
+					for (const String &option_text : options) {
+						String hint_name = option_text.substr(0, option_text.find_char(char32_t('(')));
+						ScriptLanguage::CodeCompletionOption option(hint_name, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+						option.insert_text = option_text;
+						r_options->push_back(option);
+					}
 				}
 			} else if ((int(completion_base) > int(TYPE_MAT4) && int(completion_base) < int(TYPE_STRUCT))) {
 				Vector<String> options;

@@ -39,8 +39,6 @@ import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Color
 import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.*
 import android.util.Log
@@ -53,6 +51,7 @@ import androidx.core.view.WindowInsetsAnimationCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.vending.expansion.downloader.*
 import org.godotengine.godot.input.GodotEditText
+import org.godotengine.godot.input.GodotInputHandler
 import org.godotengine.godot.io.directory.DirectoryAccessHandler
 import org.godotengine.godot.io.file.FileAccessHandler
 import org.godotengine.godot.plugin.GodotPluginRegistry
@@ -73,6 +72,8 @@ import java.io.InputStream
 import java.lang.Exception
 import java.security.MessageDigest
 import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * Core component used to interface with the native layer of the engine.
@@ -80,7 +81,7 @@ import java.util.*
  * Can be hosted by [Activity], [Fragment] or [Service] android components, so long as its
  * lifecycle methods are properly invoked.
  */
-class Godot(private val context: Context) : SensorEventListener {
+class Godot(private val context: Context) {
 
 	private companion object {
 		private val TAG = Godot::class.java.simpleName
@@ -98,15 +99,23 @@ class Godot(private val context: Context) : SensorEventListener {
 	private val pluginRegistry: GodotPluginRegistry by lazy {
 		GodotPluginRegistry.getPluginRegistry()
 	}
+
+	private val accelerometer_enabled = AtomicBoolean(false)
 	private val mAccelerometer: Sensor? by lazy {
 		mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 	}
+
+	private val gravity_enabled = AtomicBoolean(false)
 	private val mGravity: Sensor? by lazy {
 		mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY)
 	}
+
+	private val magnetometer_enabled = AtomicBoolean(false)
 	private val mMagnetometer: Sensor? by lazy {
 		mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
 	}
+
+	private val gyroscope_enabled = AtomicBoolean(false)
 	private val mGyroscope: Sensor? by lazy {
 		mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
 	}
@@ -126,6 +135,12 @@ class Godot(private val context: Context) : SensorEventListener {
 	val fileAccessHandler = FileAccessHandler(context)
 	val netUtils = GodotNetUtils(context)
 	private val commandLineFileParser = CommandLineFileParser()
+	private val godotInputHandler = GodotInputHandler(context, this)
+
+	/**
+	 * Task to run when the engine terminates.
+	 */
+	private val runOnTerminate = AtomicReference<Runnable>()
 
 	/**
 	 * Tracks whether [onCreate] was completed successfully.
@@ -147,6 +162,17 @@ class Godot(private val context: Context) : SensorEventListener {
 	 */
 	private var renderViewInitialized = false
 	private var primaryHost: GodotHost? = null
+
+	/**
+	 * Tracks whether we're in the RESUMED lifecycle state.
+	 * See [onResume] and [onPause]
+	 */
+	private var resumed = false
+
+	/**
+	 * Tracks whether [onGodotSetupCompleted] fired.
+	 */
+	private val godotMainLoopStarted = AtomicBoolean(false)
 
 	var io: GodotIO? = null
 
@@ -410,10 +436,10 @@ class Godot(private val context: Context) : SensorEventListener {
 				if (!meetsVulkanRequirements(activity.packageManager)) {
 					throw IllegalStateException(activity.getString(R.string.error_missing_vulkan_requirements_message))
 				}
-				GodotVulkanRenderView(host, this)
+				GodotVulkanRenderView(host, this, godotInputHandler)
 			} else {
 				// Fallback to openGl
-				GodotGLRenderView(host, this, xrMode, useDebugOpengl)
+				GodotGLRenderView(host, this, godotInputHandler, xrMode, useDebugOpengl)
 			}
 
 			if (host == primaryHost) {
@@ -514,23 +540,13 @@ class Godot(private val context: Context) : SensorEventListener {
 
 	fun onResume(host: GodotHost) {
 		Log.v(TAG, "OnResume: $host")
+		resumed = true
 		if (host != primaryHost) {
 			return
 		}
 
 		renderView?.onActivityResumed()
-		if (mAccelerometer != null) {
-			mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME)
-		}
-		if (mGravity != null) {
-			mSensorManager.registerListener(this, mGravity, SensorManager.SENSOR_DELAY_GAME)
-		}
-		if (mMagnetometer != null) {
-			mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_GAME)
-		}
-		if (mGyroscope != null) {
-			mSensorManager.registerListener(this, mGyroscope, SensorManager.SENSOR_DELAY_GAME)
-		}
+		registerSensorsIfNeeded()
 		if (useImmersive) {
 			val window = requireActivity().window
 			window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
@@ -545,14 +561,34 @@ class Godot(private val context: Context) : SensorEventListener {
 		}
 	}
 
+	private fun registerSensorsIfNeeded() {
+		if (!resumed || !godotMainLoopStarted.get()) {
+			return
+		}
+
+		if (accelerometer_enabled.get() && mAccelerometer != null) {
+			mSensorManager.registerListener(godotInputHandler, mAccelerometer, SensorManager.SENSOR_DELAY_GAME)
+		}
+		if (gravity_enabled.get() && mGravity != null) {
+			mSensorManager.registerListener(godotInputHandler, mGravity, SensorManager.SENSOR_DELAY_GAME)
+		}
+		if (magnetometer_enabled.get() && mMagnetometer != null) {
+			mSensorManager.registerListener(godotInputHandler, mMagnetometer, SensorManager.SENSOR_DELAY_GAME)
+		}
+		if (gyroscope_enabled.get() && mGyroscope != null) {
+			mSensorManager.registerListener(godotInputHandler, mGyroscope, SensorManager.SENSOR_DELAY_GAME)
+		}
+	}
+
 	fun onPause(host: GodotHost) {
 		Log.v(TAG, "OnPause: $host")
+		resumed = false
 		if (host != primaryHost) {
 			return
 		}
 
 		renderView?.onActivityPaused()
-		mSensorManager.unregisterListener(this)
+		mSensorManager.unregisterListener(godotInputHandler)
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onMainPause()
 		}
@@ -577,10 +613,7 @@ class Godot(private val context: Context) : SensorEventListener {
 			plugin.onMainDestroy()
 		}
 
-		runOnRenderThread {
-			GodotLib.ondestroy()
-			forceQuit()
-		}
+		renderView?.onActivityDestroyed()
 	}
 
 	/**
@@ -628,26 +661,19 @@ class Godot(private val context: Context) : SensorEventListener {
 	private fun onGodotSetupCompleted() {
 		Log.v(TAG, "OnGodotSetupCompleted")
 
-		if (!isEditorBuild()) {
-			// These properties are defined after Godot setup completion, so we retrieve them here.
-			val longPressEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_long_press_as_right_click"))
-			val panScaleEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_pan_and_scale_gestures"))
-			val rotaryInputAxisValue = GodotLib.getGlobal("input_devices/pointing/android/rotary_input_scroll_axis")
+		// These properties are defined after Godot setup completion, so we retrieve them here.
+		val longPressEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_long_press_as_right_click"))
+		val panScaleEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_pan_and_scale_gestures"))
+		val rotaryInputAxisValue = GodotLib.getGlobal("input_devices/pointing/android/rotary_input_scroll_axis")
 
-			val useInputBuffering = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/buffering/android/use_input_buffering"))
-			val useAccumulatedInput = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/buffering/android/use_accumulated_input"))
-			GodotLib.updateInputDispatchSettings(useAccumulatedInput, useInputBuffering)
-
-			runOnUiThread {
-				renderView?.inputHandler?.apply {
-					enableLongPress(longPressEnabled)
-					enablePanningAndScalingGestures(panScaleEnabled)
-					enableInputDispatchToRenderThread(!useInputBuffering && !useAccumulatedInput)
-					try {
-						setRotaryInputAxis(Integer.parseInt(rotaryInputAxisValue))
-					} catch (e: NumberFormatException) {
-						Log.w(TAG, e)
-					}
+		runOnUiThread {
+			renderView?.inputHandler?.apply {
+				enableLongPress(longPressEnabled)
+				enablePanningAndScalingGestures(panScaleEnabled)
+				try {
+					setRotaryInputAxis(Integer.parseInt(rotaryInputAxisValue))
+				} catch (e: NumberFormatException) {
+					Log.w(TAG, e)
 				}
 			}
 		}
@@ -663,11 +689,30 @@ class Godot(private val context: Context) : SensorEventListener {
 	 */
 	private fun onGodotMainLoopStarted() {
 		Log.v(TAG, "OnGodotMainLoopStarted")
+		godotMainLoopStarted.set(true)
+
+		accelerometer_enabled.set(java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/sensors/enable_accelerometer")))
+		gravity_enabled.set(java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/sensors/enable_gravity")))
+		gyroscope_enabled.set(java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/sensors/enable_gyroscope")))
+		magnetometer_enabled.set(java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/sensors/enable_magnetometer")))
+
+		runOnUiThread {
+			registerSensorsIfNeeded()
+		}
 
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onGodotMainLoopStarted()
 		}
 		primaryHost?.onGodotMainLoopStarted()
+	}
+
+	/**
+	 * Invoked on the render thread when the engine is about to terminate.
+	 */
+	@Keep
+	private fun onGodotTerminating() {
+		Log.v(TAG, "OnGodotTerminating")
+		runOnTerminate.get()?.run()
 	}
 
 	private fun restart() {
@@ -805,8 +850,28 @@ class Godot(private val context: Context) : SensorEventListener {
 		mClipboard.setPrimaryClip(clip)
 	}
 
-	fun forceQuit() {
-		forceQuit(0)
+	/**
+	 * Destroys the Godot Engine and kill the process it's running in.
+	 */
+	@JvmOverloads
+	fun destroyAndKillProcess(destroyRunnable: Runnable? = null) {
+		val host = primaryHost
+		val activity = host?.activity
+		if (host == null || activity == null) {
+			// Run the destroyRunnable right away as we are about to force quit.
+			destroyRunnable?.run()
+
+			// Fallback to force quit
+			forceQuit(0)
+			return
+		}
+
+		// Store the destroyRunnable so it can be run when the engine is terminating
+		runOnTerminate.set(destroyRunnable)
+
+		runOnUiThread {
+			onDestroy(host)
+		}
 	}
 
 	@Keep
@@ -821,11 +886,7 @@ class Godot(private val context: Context) : SensorEventListener {
 		} ?: return false
 	}
 
-	fun onBackPressed(host: GodotHost) {
-		if (host != primaryHost) {
-			return
-		}
-
+	fun onBackPressed() {
 		var shouldQuit = true
 		for (plugin in pluginRegistry.allPlugins) {
 			if (plugin.onMainBackPressed()) {
@@ -836,77 +897,6 @@ class Godot(private val context: Context) : SensorEventListener {
 			renderView?.queueOnRenderThread { GodotLib.back() }
 		}
 	}
-
-	private fun getRotatedValues(values: FloatArray?): FloatArray? {
-		if (values == null || values.size != 3) {
-			return null
-		}
-		val rotatedValues = FloatArray(3)
-		when (windowManager.defaultDisplay.rotation) {
-			Surface.ROTATION_0 -> {
-				rotatedValues[0] = values[0]
-				rotatedValues[1] = values[1]
-				rotatedValues[2] = values[2]
-			}
-			Surface.ROTATION_90 -> {
-				rotatedValues[0] = -values[1]
-				rotatedValues[1] = values[0]
-				rotatedValues[2] = values[2]
-			}
-			Surface.ROTATION_180 -> {
-				rotatedValues[0] = -values[0]
-				rotatedValues[1] = -values[1]
-				rotatedValues[2] = values[2]
-			}
-			Surface.ROTATION_270 -> {
-				rotatedValues[0] = values[1]
-				rotatedValues[1] = -values[0]
-				rotatedValues[2] = values[2]
-			}
-		}
-		return rotatedValues
-	}
-
-	override fun onSensorChanged(event: SensorEvent) {
-		if (renderView == null) {
-			return
-		}
-
-		val rotatedValues = getRotatedValues(event.values)
-
-		when (event.sensor.type) {
-			Sensor.TYPE_ACCELEROMETER -> {
-				rotatedValues?.let {
-					renderView?.queueOnRenderThread {
-						GodotLib.accelerometer(-it[0], -it[1], -it[2])
-					}
-				}
-			}
-			Sensor.TYPE_GRAVITY -> {
-				rotatedValues?.let {
-					renderView?.queueOnRenderThread {
-						GodotLib.gravity(-it[0], -it[1], -it[2])
-					}
-				}
-			}
-			Sensor.TYPE_MAGNETIC_FIELD -> {
-				rotatedValues?.let {
-					renderView?.queueOnRenderThread {
-						GodotLib.magnetometer(-it[0], -it[1], -it[2])
-					}
-				}
-			}
-			Sensor.TYPE_GYROSCOPE -> {
-				rotatedValues?.let {
-					renderView?.queueOnRenderThread {
-						GodotLib.gyroscope(it[0], it[1], it[2])
-					}
-				}
-			}
-		}
-	}
-
-	override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
 	/**
 	 * Used by the native code (java_godot_wrapper.h) to vibrate the device.
@@ -1042,7 +1032,7 @@ class Godot(private val context: Context) : SensorEventListener {
 
 	@Keep
 	private fun initInputDevices() {
-		renderView?.initInputDevices()
+		godotInputHandler.initInputDevices()
 	}
 
 	@Keep

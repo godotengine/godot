@@ -98,6 +98,7 @@ private:
 
 	bool save_changed_setting = true;
 	bool optimize_save = true; //do not save stuff that came from config but was not set from engine
+	bool initialized = false;
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _set_only(const StringName &p_name, const Variant &p_value);
@@ -108,12 +109,16 @@ private:
 	bool _property_can_revert(const StringName &p_name) const;
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
+	void _set_initialized();
 	void _load_defaults(Ref<ConfigFile> p_extra_config = Ref<ConfigFile>());
 	void _load_godot2_text_editor_theme();
 	void _load_default_visual_shader_editor_theme();
 	bool _save_text_editor_theme(const String &p_file);
 	bool _is_default_text_editor_theme(const String &p_theme_name);
 	const String _get_project_metadata_path() const;
+#ifndef DISABLE_DEPRECATED
+	void _remove_deprecated_settings();
+#endif
 
 protected:
 	static void _bind_methods();
@@ -193,7 +198,6 @@ public:
 #endif
 
 	EditorSettings();
-	~EditorSettings();
 };
 
 //not a macro any longer

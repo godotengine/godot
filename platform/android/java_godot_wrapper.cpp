@@ -76,6 +76,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_get_input_fallback_mapping = p_env->GetMethodID(godot_class, "getInputFallbackMapping", "()Ljava/lang/String;");
 	_on_godot_setup_completed = p_env->GetMethodID(godot_class, "onGodotSetupCompleted", "()V");
 	_on_godot_main_loop_started = p_env->GetMethodID(godot_class, "onGodotMainLoopStarted", "()V");
+	_on_godot_terminating = p_env->GetMethodID(godot_class, "onGodotTerminating", "()V");
 	_create_new_godot_instance = p_env->GetMethodID(godot_class, "createNewGodotInstance", "([Ljava/lang/String;)I");
 	_get_render_view = p_env->GetMethodID(godot_class, "getRenderView", "()Lorg/godotengine/godot/GodotRenderView;");
 	_begin_benchmark_measure = p_env->GetMethodID(godot_class, "nativeBeginBenchmarkMeasure", "(Ljava/lang/String;Ljava/lang/String;)V");
@@ -133,6 +134,16 @@ void GodotJavaWrapper::on_godot_main_loop_started(JNIEnv *p_env) {
 		}
 		ERR_FAIL_NULL(p_env);
 		p_env->CallVoidMethod(godot_instance, _on_godot_main_loop_started);
+	}
+}
+
+void GodotJavaWrapper::on_godot_terminating(JNIEnv *p_env) {
+	if (_on_godot_terminating) {
+		if (p_env == nullptr) {
+			p_env = get_jni_env();
+		}
+		ERR_FAIL_NULL(p_env);
+		p_env->CallVoidMethod(godot_instance, _on_godot_terminating);
 	}
 }
 
@@ -202,25 +213,27 @@ bool GodotJavaWrapper::has_get_clipboard() {
 }
 
 String GodotJavaWrapper::get_clipboard() {
+	String clipboard;
 	if (_get_clipboard) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL_V(env, String());
 		jstring s = (jstring)env->CallObjectMethod(godot_instance, _get_clipboard);
-		return jstring_to_string(s, env);
-	} else {
-		return String();
+		clipboard = jstring_to_string(s, env);
+		env->DeleteLocalRef(s);
 	}
+	return clipboard;
 }
 
 String GodotJavaWrapper::get_input_fallback_mapping() {
+	String input_fallback_mapping;
 	if (_get_input_fallback_mapping) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL_V(env, String());
 		jstring fallback_mapping = (jstring)env->CallObjectMethod(godot_instance, _get_input_fallback_mapping);
-		return jstring_to_string(fallback_mapping, env);
-	} else {
-		return String();
+		input_fallback_mapping = jstring_to_string(fallback_mapping, env);
+		env->DeleteLocalRef(fallback_mapping);
 	}
+	return input_fallback_mapping;
 }
 
 bool GodotJavaWrapper::has_set_clipboard() {
@@ -313,14 +326,15 @@ Vector<String> GodotJavaWrapper::get_gdextension_list_config_file() const {
 }
 
 String GodotJavaWrapper::get_ca_certificates() const {
+	String ca_certificates;
 	if (_get_ca_certificates) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL_V(env, String());
 		jstring s = (jstring)env->CallObjectMethod(godot_instance, _get_ca_certificates);
-		return jstring_to_string(s, env);
-	} else {
-		return String();
+		ca_certificates = jstring_to_string(s, env);
+		env->DeleteLocalRef(s);
 	}
+	return ca_certificates;
 }
 
 void GodotJavaWrapper::init_input_devices() {

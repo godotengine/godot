@@ -411,6 +411,8 @@ class GDScriptLanguage : public ScriptLanguage {
 
 	static GDScriptLanguage *singleton;
 
+	bool finishing = false;
+
 	Variant *_global_array = nullptr;
 	Vector<Variant> global_array;
 	HashMap<StringName, int> globals;
@@ -457,9 +459,11 @@ class GDScriptLanguage : public ScriptLanguage {
 	friend class GDScriptFunction;
 
 	SelfList<GDScriptFunction>::List function_list;
+#ifdef DEBUG_ENABLED
 	bool profiling;
 	bool profile_native_calls;
 	uint64_t script_frame_time;
+#endif
 
 	HashMap<String, ObjectID> orphan_subclasses;
 

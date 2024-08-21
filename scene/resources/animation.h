@@ -396,7 +396,6 @@ public:
 	int add_track(TrackType p_type, int p_at_pos = -1);
 	void remove_track(int p_track);
 
-	void set_capture_included(bool p_capture_included);
 	bool is_capture_included() const;
 
 	int get_track_count() const;
@@ -526,6 +525,22 @@ public:
 	static Variant blend_variant(const Variant &a, const Variant &b, float c);
 	static Variant interpolate_variant(const Variant &a, const Variant &b, float c, bool p_snap_array_element = false);
 	static Variant cubic_interpolate_in_time_variant(const Variant &pre_a, const Variant &a, const Variant &b, const Variant &post_b, float c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t, bool p_snap_array_element = false);
+
+	static bool is_less_or_equal_approx(double a, double b) {
+		return a < b || Math::is_equal_approx(a, b);
+	}
+
+	static bool is_less_approx(double a, double b) {
+		return a < b && !Math::is_equal_approx(a, b);
+	}
+
+	static bool is_greater_or_equal_approx(double a, double b) {
+		return a > b || Math::is_equal_approx(a, b);
+	}
+
+	static bool is_greater_approx(double a, double b) {
+		return a > b && !Math::is_equal_approx(a, b);
+	}
 
 	static TrackType get_cache_type(TrackType p_type);
 

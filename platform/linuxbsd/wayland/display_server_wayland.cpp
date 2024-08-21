@@ -1238,7 +1238,7 @@ void DisplayServerWayland::process_events() {
 		} else {
 			try_suspend();
 		}
-	} else if (wayland_thread.get_reset_frame()) {
+	} else if (!wayland_thread.is_suspended() || wayland_thread.get_reset_frame()) {
 		// At last, a sign of life! We're no longer suspended.
 		suspended = false;
 	}

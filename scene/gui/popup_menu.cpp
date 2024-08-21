@@ -589,6 +589,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 		// This allows for opening the popup and triggering an action in a single mouse click.
 		if (button_idx == MouseButton::LEFT || initial_button_mask.has_flag(mouse_button_to_mask(button_idx))) {
 			if (b->is_pressed()) {
+				during_grabbed_click = false;
 				is_scrolling = is_layout_rtl() ? b->get_position().x < item_clickable_area.position.x : b->get_position().x > item_clickable_area.size.width;
 
 				if (!item_clickable_area.has_point(b->get_position())) {
@@ -608,7 +609,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 					return;
 				}
 				// Disable clicks under a time threshold to avoid selection right when opening the popup.
-				if (was_during_grabbed_click && OS::get_singleton()->get_ticks_msec() - popup_time_msec < 150) {
+				if (was_during_grabbed_click && OS::get_singleton()->get_ticks_msec() - popup_time_msec < 400) {
 					return;
 				}
 
@@ -1064,6 +1065,7 @@ void PopupMenu::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_POST_POPUP: {
+			popup_time_msec = OS::get_singleton()->get_ticks_msec();
 			initial_button_mask = Input::get_singleton()->get_mouse_button_mask();
 			during_grabbed_click = (bool)initial_button_mask;
 		} break;

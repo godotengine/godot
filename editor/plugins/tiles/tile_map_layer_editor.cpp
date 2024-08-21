@@ -163,7 +163,10 @@ void TileMapLayerEditorTilesPlugin::_update_tile_set_sources_list() {
 	int old_source = -1;
 	if (old_current > -1) {
 		old_source = sources_list->get_item_metadata(old_current);
+	} else {
+		old_source = sources_list->get_meta("old_source", -1);
 	}
+	sources_list->set_meta("old_source", old_source);
 	sources_list->clear();
 
 	TileMapLayer *edited_layer = _get_edited_layer();
@@ -2365,7 +2368,7 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 	tiles_bottom_panel->set_name(TTR("Tiles"));
 
 	missing_source_label = memnew(Label);
-	missing_source_label->set_text(TTR("This TileMap's TileSet has no source configured. Go to the TileSet bottom panel to add one."));
+	missing_source_label->set_text(TTR("This TileMap's TileSet has no Tile Source configured. Go to the TileSet bottom panel to add one."));
 	missing_source_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	missing_source_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	missing_source_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);

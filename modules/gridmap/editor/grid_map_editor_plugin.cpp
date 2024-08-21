@@ -643,6 +643,7 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 					_do_paste();
 					input_action = INPUT_NONE;
 					_update_paste_indicator();
+					return EditorPlugin::AFTER_GUI_INPUT_STOP;
 				} else if (mb->is_shift_pressed() && can_edit) {
 					input_action = INPUT_SELECT;
 					last_selection = selection;

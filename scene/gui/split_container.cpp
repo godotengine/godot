@@ -122,11 +122,11 @@ void SplitContainerDragger::_notification(int p_what) {
 	}
 }
 
-Control *SplitContainer::_get_sortable_child(int p_idx) const {
+Control *SplitContainer::_get_sortable_child(int p_idx, SortableVisbilityMode p_visibility_mode) const {
 	int idx = 0;
 
 	for (int i = 0; i < get_child_count(false); i++) {
-		Control *c = as_sortable_control(get_child(i, false));
+		Control *c = as_sortable_control(get_child(i, false), p_visibility_mode);
 		if (!c) {
 			continue;
 		}
@@ -258,7 +258,8 @@ Size2 SplitContainer::get_minimum_size() const {
 	int sep = (dragger_visibility != DRAGGER_HIDDEN_COLLAPSED) ? MAX(theme_cache.separation, vertical ? g->get_height() : g->get_width()) : 0;
 
 	for (int i = 0; i < 2; i++) {
-		if (!_get_sortable_child(i)) {
+		Control *child = _get_sortable_child(i, SortableVisbilityMode::VISIBLE);
+		if (!child) {
 			break;
 		}
 
@@ -270,7 +271,7 @@ Size2 SplitContainer::get_minimum_size() const {
 			}
 		}
 
-		Size2 ms = _get_sortable_child(i)->get_combined_minimum_size();
+		Size2 ms = child->get_combined_minimum_size();
 
 		if (vertical) {
 			minimum.height += ms.height;

@@ -68,6 +68,7 @@ private:
 	jmethodID _get_input_fallback_mapping = nullptr;
 	jmethodID _on_godot_setup_completed = nullptr;
 	jmethodID _on_godot_main_loop_started = nullptr;
+	jmethodID _on_godot_terminating = nullptr;
 	jmethodID _create_new_godot_instance = nullptr;
 	jmethodID _get_render_view = nullptr;
 	jmethodID _begin_benchmark_measure = nullptr;
@@ -85,6 +86,7 @@ public:
 
 	void on_godot_setup_completed(JNIEnv *p_env = nullptr);
 	void on_godot_main_loop_started(JNIEnv *p_env = nullptr);
+	void on_godot_terminating(JNIEnv *p_env = nullptr);
 	void restart(JNIEnv *p_env = nullptr);
 	bool force_quit(JNIEnv *p_env = nullptr, int p_instance_id = 0);
 	void set_keep_screen_on(bool p_enabled);

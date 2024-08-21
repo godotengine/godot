@@ -407,7 +407,7 @@ _FORCE_INLINE_ static uint32_t _indices_to_primitives(RS::PrimitiveType p_primit
 	return (p_indices - subtractor[p_primitive]) / divisor[p_primitive];
 }
 
-void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_render_target, const Item *p_item, RD::FramebufferFormatID p_framebuffer_format, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights, PipelineVariants *p_pipeline_variants, bool &r_sdf_used, const Point2 &p_offset, RenderingMethod::RenderInfo *r_render_info) {
+void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_render_target, const Item *p_item, RD::FramebufferFormatID p_framebuffer_format, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights, PipelineVariants *p_pipeline_variants, bool &r_sdf_used, const Point2 &p_repeat_offset, RenderingMethod::RenderInfo *r_render_info) {
 	//create an empty push constant
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MeshStorage *mesh_storage = RendererRD::MeshStorage::get_singleton();
@@ -425,11 +425,11 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 	}
 
 	PushConstant push_constant;
-	Transform2D base_transform = p_canvas_transform_inverse * p_item->final_transform;
-
-	if (p_offset.x || p_offset.y) {
-		base_transform *= Transform2D(0, p_offset / p_item->xform_curr.get_scale()); // TODO: Interpolate or explain why not needed.
+	Transform2D base_transform = p_item->final_transform;
+	if (p_item->repeat_source_item && (p_repeat_offset.x || p_repeat_offset.y)) {
+		base_transform.columns[2] += p_item->repeat_source_item->final_transform.basis_xform(p_repeat_offset);
 	}
+	base_transform = p_canvas_transform_inverse * base_transform;
 
 	Transform2D draw_transform;
 	_update_transform_2d_to_mat2x3(base_transform, push_constant.world);
@@ -509,11 +509,16 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 					current_repeat = RenderingServer::CanvasItemTextureRepeat::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED;
 				}
 
+				Color modulated = rect->modulate * base_color;
+				if (use_linear_colors) {
+					modulated = modulated.srgb_to_linear();
+				}
+
 				//bind pipeline
 				if (rect->flags & CANVAS_RECT_LCD) {
 					RID pipeline = pipeline_variants->variants[light_mode][PIPELINE_VARIANT_QUAD_LCD_BLEND].get_render_pipeline(RD::INVALID_ID, p_framebuffer_format);
 					RD::get_singleton()->draw_list_bind_render_pipeline(p_draw_list, pipeline);
-					RD::get_singleton()->draw_list_set_blend_constants(p_draw_list, rect->modulate);
+					RD::get_singleton()->draw_list_set_blend_constants(p_draw_list, modulated);
 				} else {
 					RID pipeline = pipeline_variants->variants[light_mode][PIPELINE_VARIANT_QUAD].get_render_pipeline(RD::INVALID_ID, p_framebuffer_format);
 					RD::get_singleton()->draw_list_bind_render_pipeline(p_draw_list, pipeline);
@@ -580,11 +585,6 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 					push_constant.msdf[3] = 0.f; // Reserved.
 				} else if (rect->flags & CANVAS_RECT_LCD) {
 					push_constant.flags |= FLAGS_USE_LCD;
-				}
-
-				Color modulated = rect->modulate * base_color;
-				if (use_linear_colors) {
-					modulated = modulated.srgb_to_linear();
 				}
 
 				push_constant.modulation[0] = modulated.r;
@@ -1250,18 +1250,17 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 			_render_item(draw_list, p_to_render_target, ci, fb_format, canvas_transform_inverse, current_clip, p_lights, pipeline_variants, r_sdf_used, Point2(), r_render_info);
 		} else {
 			Point2 start_pos = ci->repeat_size * -(ci->repeat_times / 2);
-			Point2 end_pos = ci->repeat_size * ci->repeat_times + ci->repeat_size + start_pos;
-			Point2 pos = start_pos;
+			Point2 offset;
 
-			do {
-				do {
-					_render_item(draw_list, p_to_render_target, ci, fb_format, canvas_transform_inverse, current_clip, p_lights, pipeline_variants, r_sdf_used, pos, r_render_info);
-					pos.y += ci->repeat_size.y;
-				} while (pos.y < end_pos.y);
-
-				pos.x += ci->repeat_size.x;
-				pos.y = start_pos.y;
-			} while (pos.x < end_pos.x);
+			int repeat_times_x = ci->repeat_size.x ? ci->repeat_times : 0;
+			int repeat_times_y = ci->repeat_size.y ? ci->repeat_times : 0;
+			for (int ry = 0; ry <= repeat_times_y; ry++) {
+				offset.y = start_pos.y + ry * ci->repeat_size.y;
+				for (int rx = 0; rx <= repeat_times_x; rx++) {
+					offset.x = start_pos.x + rx * ci->repeat_size.x;
+					_render_item(draw_list, p_to_render_target, ci, fb_format, canvas_transform_inverse, current_clip, p_lights, pipeline_variants, r_sdf_used, offset, r_render_info);
+				}
+			}
 		}
 
 		prev_material = material;
@@ -1451,10 +1450,15 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 		normal_transform.columns[2] = Vector2();
 		_update_transform_2d_to_mat4(normal_transform, state_buffer.canvas_normal_transform);
 
-		state_buffer.canvas_modulate[0] = p_modulate.r;
-		state_buffer.canvas_modulate[1] = p_modulate.g;
-		state_buffer.canvas_modulate[2] = p_modulate.b;
-		state_buffer.canvas_modulate[3] = p_modulate.a;
+		bool use_linear_colors = texture_storage->render_target_is_using_hdr(p_to_render_target);
+		Color modulate = p_modulate;
+		if (use_linear_colors) {
+			modulate = p_modulate.srgb_to_linear();
+		}
+		state_buffer.canvas_modulate[0] = modulate.r;
+		state_buffer.canvas_modulate[1] = modulate.g;
+		state_buffer.canvas_modulate[2] = modulate.b;
+		state_buffer.canvas_modulate[3] = modulate.a;
 
 		Size2 render_target_size = texture_storage->render_target_get_size(p_to_render_target);
 		state_buffer.screen_pixel_size[0] = 1.0 / render_target_size.x;

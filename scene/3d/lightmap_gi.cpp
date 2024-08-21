@@ -709,7 +709,7 @@ void LightmapGI::_gen_new_positions_from_octree(const GenProbesOctree *p_cell, f
 			const Vector3 *pp = probe_positions.ptr();
 			bool exists = false;
 			for (int j = 0; j < ppcount; j++) {
-				if (pp[j].is_equal_approx(real_pos)) {
+				if (pp[j].distance_to(real_pos) < (p_cell_size * 0.5f)) {
 					exists = true;
 					break;
 				}
@@ -1072,6 +1072,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 					if (env.is_valid()) {
 						environment_image = RS::get_singleton()->environment_bake_panorama(env->get_rid(), true, Size2i(128, 64));
+						environment_transform = Basis::from_euler(env->get_sky_rotation()).inverse();
 					}
 				}
 			} break;
@@ -1104,10 +1105,12 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 	Lightmapper::BakeError bake_err = lightmapper->bake(Lightmapper::BakeQuality(bake_quality), use_denoiser, denoiser_strength, denoiser_range, bounces, bounce_indirect_energy, bias, max_texture_size, directional, use_texture_for_bounces, Lightmapper::GenerateProbes(gen_probes), environment_image, environment_transform, _lightmap_bake_step_function, &bsud, exposure_normalization);
 
-	if (bake_err == Lightmapper::BAKE_ERROR_LIGHTMAP_TOO_SMALL) {
+	if (bake_err == Lightmapper::BAKE_ERROR_TEXTURE_EXCEEDS_MAX_SIZE) {
 		return BAKE_ERROR_TEXTURE_SIZE_TOO_SMALL;
 	} else if (bake_err == Lightmapper::BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES) {
 		return BAKE_ERROR_MESHES_INVALID;
+	} else if (bake_err == Lightmapper::BAKE_ERROR_ATLAS_TOO_SMALL) {
+		return BAKE_ERROR_ATLAS_TOO_SMALL;
 	}
 
 	// POSTBAKE: Save Textures.
@@ -1333,7 +1336,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		/* Compute a BSP tree of the simplices, so it's easy to find the exact one */
 	}
 
-	gi_data->set_path(p_image_data_path);
+	gi_data->set_path(p_image_data_path, true);
 	Error err = ResourceSaver::save(gi_data);
 
 	if (err != OK) {
@@ -1711,6 +1714,8 @@ void LightmapGI::_bind_methods() {
 	BIND_ENUM_CONSTANT(BAKE_ERROR_CANT_CREATE_IMAGE);
 	BIND_ENUM_CONSTANT(BAKE_ERROR_USER_ABORTED);
 	BIND_ENUM_CONSTANT(BAKE_ERROR_TEXTURE_SIZE_TOO_SMALL);
+	BIND_ENUM_CONSTANT(BAKE_ERROR_LIGHTMAP_TOO_SMALL);
+	BIND_ENUM_CONSTANT(BAKE_ERROR_ATLAS_TOO_SMALL);
 
 	BIND_ENUM_CONSTANT(ENVIRONMENT_MODE_DISABLED);
 	BIND_ENUM_CONSTANT(ENVIRONMENT_MODE_SCENE);

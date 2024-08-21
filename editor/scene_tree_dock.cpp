@@ -149,7 +149,8 @@ void SceneTreeDock::input(const Ref<InputEvent> &p_event) {
 void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (get_viewport()->gui_get_focus_owner() && get_viewport()->gui_get_focus_owner()->is_text_field()) {
+	Control *focus_owner = get_viewport()->gui_get_focus_owner();
+	if (focus_owner && focus_owner->is_text_field()) {
 		return;
 	}
 
@@ -158,7 +159,11 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (ED_IS_SHORTCUT("scene_tree/rename", p_event)) {
-		_tool_selected(TOOL_RENAME);
+		// Prevent renaming if a button is focused
+		// to avoid conflict with Enter shortcut on macOS
+		if (!focus_owner || !Object::cast_to<BaseButton>(focus_owner)) {
+			_tool_selected(TOOL_RENAME);
+		}
 #ifdef MODULE_REGEX_ENABLED
 	} else if (ED_IS_SHORTCUT("scene_tree/batch_rename", p_event)) {
 		_tool_selected(TOOL_BATCH_RENAME);
@@ -985,6 +990,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			undo_redo->add_do_method(root, "set_scene_file_path", String());
 			undo_redo->add_do_method(node, "set_owner", (Object *)nullptr);
 			undo_redo->add_do_method(root, "set_owner", node);
+			undo_redo->add_do_method(node, "set_unique_name_in_owner", false);
 			_node_replace_owner(root, root, node, MODE_DO);
 
 			undo_redo->add_undo_method(root, "set_scene_file_path", root->get_scene_file_path());
@@ -995,6 +1001,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			undo_redo->add_undo_method(node->get_parent(), "move_child", node, node->get_index(false));
 			undo_redo->add_undo_method(root, "set_owner", (Object *)nullptr);
 			undo_redo->add_undo_method(node, "set_owner", root);
+			undo_redo->add_undo_method(node, "set_unique_name_in_owner", node->is_unique_name_in_owner());
 			_node_replace_owner(root, root, root, MODE_UNDO);
 
 			undo_redo->add_do_method(scene_tree, "update_tree");
@@ -1544,7 +1551,7 @@ void SceneTreeDock::_notification(int p_what) {
 			node_shortcuts_toggle->set_tooltip_text(TTR("Toggle the display of favorite nodes."));
 			node_shortcuts_toggle->set_pressed(EDITOR_GET("_use_favorites_root_selection"));
 			node_shortcuts_toggle->set_anchors_and_offsets_preset(Control::PRESET_CENTER_RIGHT);
-			node_shortcuts_toggle->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_update_create_root_dialog));
+			node_shortcuts_toggle->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_update_create_root_dialog).bind(false));
 			top_row->add_child(node_shortcuts_toggle);
 
 			create_root_dialog->add_child(top_row);
@@ -1594,7 +1601,7 @@ void SceneTreeDock::_notification(int p_what) {
 			button_clipboard->set_icon(get_editor_theme_icon(SNAME("ActionPaste")));
 			button_clipboard->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_PASTE, false));
 
-			_update_create_root_dialog();
+			_update_create_root_dialog(true);
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -2409,6 +2416,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 
 	if (need_edit) {
 		EditorNode::get_singleton()->edit_current();
+		editor_selection->clear();
 	}
 }
 
@@ -3323,9 +3331,10 @@ void SceneTreeDock::_files_dropped(const Vector<String> &p_files, NodePath p_to,
 
 	const String &res_path = p_files[0];
 	const StringName res_type = EditorFileSystem::get_singleton()->get_file_type(res_path);
+	const bool is_dropping_scene = ClassDB::is_parent_class(res_type, "PackedScene");
 
-	// Dropping as property when possible.
-	if (p_type == 0 && p_files.size() == 1) {
+	// Dropping as property.
+	if (p_type == 0 && p_files.size() == 1 && !is_dropping_scene) {
 		List<String> valid_properties;
 
 		List<PropertyInfo> pinfo;
@@ -3370,7 +3379,7 @@ void SceneTreeDock::_files_dropped(const Vector<String> &p_files, NodePath p_to,
 	// Either instantiate scenes or create AudioStreamPlayers.
 	int to_pos = -1;
 	_normalize_drop(node, to_pos, p_type);
-	if (ClassDB::is_parent_class(res_type, "PackedScene")) {
+	if (is_dropping_scene) {
 		_perform_instantiate_scenes(p_files, node, to_pos);
 	} else if (ClassDB::is_parent_class(res_type, "AudioStream")) {
 		_perform_create_audio_stream_players(p_files, node, to_pos);
@@ -4107,9 +4116,12 @@ void SceneTreeDock::_local_tree_selected() {
 	edit_local->set_pressed(true);
 }
 
-void SceneTreeDock::_update_create_root_dialog() {
-	EditorSettings::get_singleton()->set_setting("_use_favorites_root_selection", node_shortcuts_toggle->is_pressed());
-	EditorSettings::get_singleton()->save();
+void SceneTreeDock::_update_create_root_dialog(bool p_initializing) {
+	if (!p_initializing) {
+		EditorSettings::get_singleton()->set_setting("_use_favorites_root_selection", node_shortcuts_toggle->is_pressed());
+		EditorSettings::get_singleton()->save();
+	}
+
 	if (node_shortcuts_toggle->is_pressed()) {
 		for (int i = 0; i < favorite_node_shortcuts->get_child_count(); i++) {
 			favorite_node_shortcuts->get_child(i)->queue_free();
@@ -4533,7 +4545,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	create_dialog->set_base_type("Node");
 	add_child(create_dialog);
 	create_dialog->connect("create", callable_mp(this, &SceneTreeDock::_create));
-	create_dialog->connect("favorites_updated", callable_mp(this, &SceneTreeDock::_update_create_root_dialog));
+	create_dialog->connect("favorites_updated", callable_mp(this, &SceneTreeDock::_update_create_root_dialog).bind(false));
 
 #ifdef MODULE_REGEX_ENABLED
 	rename_dialog = memnew(RenameDialog(scene_tree));

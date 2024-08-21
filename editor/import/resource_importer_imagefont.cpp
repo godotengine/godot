@@ -293,18 +293,20 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 		}
 		String from_tokens;
 		for (int i = 0; i < kp_tokens[0].length(); i++) {
-			if (i <= kp_tokens[0].length() - 6 && kp_tokens[0][i] == '\\' && kp_tokens[0][i + 1] == 'u') {
+			if (i <= kp_tokens[0].length() - 6 && kp_tokens[0][i] == '\\' && kp_tokens[0][i + 1] == 'u' && is_hex_digit(kp_tokens[0][i + 2]) && is_hex_digit(kp_tokens[0][i + 3]) && is_hex_digit(kp_tokens[0][i + 4]) && is_hex_digit(kp_tokens[0][i + 5])) {
 				char32_t charcode = kp_tokens[0].substr(i + 2, 4).hex_to_int();
 				from_tokens += charcode;
+				i += 5;
 			} else {
 				from_tokens += kp_tokens[0][i];
 			}
 		}
 		String to_tokens;
 		for (int i = 0; i < kp_tokens[1].length(); i++) {
-			if (i <= kp_tokens[1].length() - 6 && kp_tokens[1][i] == '\\' && kp_tokens[1][i + 1] == 'u') {
+			if (i <= kp_tokens[1].length() - 6 && kp_tokens[1][i] == '\\' && kp_tokens[1][i + 1] == 'u' && is_hex_digit(kp_tokens[1][i + 2]) && is_hex_digit(kp_tokens[1][i + 3]) && is_hex_digit(kp_tokens[1][i + 4]) && is_hex_digit(kp_tokens[1][i + 5])) {
 				char32_t charcode = kp_tokens[1].substr(i + 2, 4).hex_to_int();
 				to_tokens += charcode;
+				i += 5;
 			} else {
 				to_tokens += kp_tokens[1][i];
 			}

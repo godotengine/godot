@@ -49,7 +49,7 @@
 #include "core/os/os.h"
 #include "core/os/time.h"
 #include "core/register_core_types.h"
-#include "core/string/translation.h"
+#include "core/string/translation_server.h"
 #include "core/version.h"
 #include "drivers/register_driver_types.h"
 #include "main/app_icon.gen.h"
@@ -1511,6 +1511,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				main_args.push_back(arg);
 				main_args.push_back(N->get());
 				N = N->next();
+				// GDScript docgen requires Autoloads, but loading those also creates a main loop.
+				// This forces main loop to quit without adding more GDScript-specific exceptions to setup.
+				quit_after = 1;
 			} else {
 				OS::get_singleton()->print("Missing relative or absolute path to project for --gdscript-docs, aborting.\n");
 				goto error;
@@ -1932,6 +1935,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	{
 		String driver_hints = "";
 		String driver_hints_with_d3d12 = "";
+		String driver_hints_with_metal = "";
 
 		{
 			Vector<String> driver_hints_arr;
@@ -1944,18 +1948,28 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			driver_hints_arr.push_back("d3d12");
 #endif
 			driver_hints_with_d3d12 = String(",").join(driver_hints_arr);
+
+#ifdef METAL_ENABLED
+			// Make metal the preferred and default driver.
+			driver_hints_arr.insert(0, "metal");
+#endif
+			driver_hints_with_metal = String(",").join(driver_hints_arr);
 		}
 
 		String default_driver = driver_hints.get_slice(",", 0);
 		String default_driver_with_d3d12 = driver_hints_with_d3d12.get_slice(",", 0);
+		String default_driver_with_metal = driver_hints_with_metal.get_slice(",", 0);
 
 		// For now everything defaults to vulkan when available. This can change in future updates.
 		GLOBAL_DEF_RST_NOVAL("rendering/rendering_device/driver", default_driver);
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.windows", PROPERTY_HINT_ENUM, driver_hints_with_d3d12), default_driver_with_d3d12);
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.linuxbsd", PROPERTY_HINT_ENUM, driver_hints), default_driver);
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.android", PROPERTY_HINT_ENUM, driver_hints), default_driver);
-		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.ios", PROPERTY_HINT_ENUM, driver_hints), default_driver);
-		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.macos", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.ios", PROPERTY_HINT_ENUM, driver_hints_with_metal), default_driver_with_metal);
+		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.macos", PROPERTY_HINT_ENUM, driver_hints_with_metal), default_driver_with_metal);
+
+		GLOBAL_DEF_RST("rendering/rendering_device/fallback_to_vulkan", true);
+		GLOBAL_DEF_RST("rendering/rendering_device/fallback_to_d3d12", true);
 	}
 
 	{
@@ -2050,7 +2064,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		BLOCK_DEVICE("Intel", "Intel HD Graphics P3000");
 		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics P3000");
 		BLOCK_DEVICE("0x8086", "0x0112"); // HD Graphics P3000, Gen6, Sandy Bridge
-		BLOCK_DEVICE("0x8086", "0x0122"); // HD Graphics P3000, Gen6, Sandy Bridge
+		BLOCK_DEVICE("0x8086", "0x0122");
 		BLOCK_DEVICE("0x8086", "0x015A"); // HD Graphics, Gen7, Ivy Bridge
 		BLOCK_DEVICE("Intel", "Intel HD Graphics 2500");
 		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 2500");
@@ -2058,10 +2072,81 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		BLOCK_DEVICE("Intel", "Intel HD Graphics 4000");
 		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 4000");
 		BLOCK_DEVICE("0x8086", "0x0162"); // HD Graphics 4000, Gen7, Ivy Bridge
-		BLOCK_DEVICE("0x8086", "0x0166"); // HD Graphics 4000, Gen7, Ivy Bridge
+		BLOCK_DEVICE("0x8086", "0x0166");
 		BLOCK_DEVICE("Intel", "Intel HD Graphics P4000");
 		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics P4000");
 		BLOCK_DEVICE("0x8086", "0x016A"); // HD Graphics P4000, Gen7, Ivy Bridge
+		BLOCK_DEVICE("Intel", "Intel(R) Vallyview Graphics");
+		BLOCK_DEVICE("0x8086", "0x0F30"); // Intel(R) Vallyview Graphics, Gen7, Vallyview
+		BLOCK_DEVICE("0x8086", "0x0F31");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 4200");
+		BLOCK_DEVICE("0x8086", "0x0A1E"); // Intel(R) HD Graphics 4200, Gen7.5, Haswell
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 4400");
+		BLOCK_DEVICE("0x8086", "0x0A16"); // Intel(R) HD Graphics 4400, Gen7.5, Haswell
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 4600");
+		BLOCK_DEVICE("0x8086", "0x0412"); // Intel(R) HD Graphics 4600, Gen7.5, Haswell
+		BLOCK_DEVICE("0x8086", "0x0416");
+		BLOCK_DEVICE("0x8086", "0x0426");
+		BLOCK_DEVICE("0x8086", "0x0D12");
+		BLOCK_DEVICE("0x8086", "0x0D16");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics P4600/P4700");
+		BLOCK_DEVICE("0x8086", "0x041A"); // Intel(R) HD Graphics P4600/P4700, Gen7.5, Haswell
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 5000");
+		BLOCK_DEVICE("0x8086", "0x0422"); // Intel(R) HD Graphics 5000, Gen7.5, Haswell
+		BLOCK_DEVICE("0x8086", "0x042A");
+		BLOCK_DEVICE("0x8086", "0x0A26");
+		BLOCK_DEVICE("Intel", "Intel(R) Iris(TM) Graphics 5100");
+		BLOCK_DEVICE("0x8086", "0x0A22"); // Intel(R) Iris(TM) Graphics 5100, Gen7.5, Haswell
+		BLOCK_DEVICE("0x8086", "0x0A2A");
+		BLOCK_DEVICE("0x8086", "0x0A2B");
+		BLOCK_DEVICE("0x8086", "0x0A2E");
+		BLOCK_DEVICE("Intel", "Intel(R) Iris(TM) Pro Graphics 5200");
+		BLOCK_DEVICE("0x8086", "0x0D22"); // Intel(R) Iris(TM) Pro Graphics 5200, Gen7.5, Haswell
+		BLOCK_DEVICE("0x8086", "0x0D26");
+		BLOCK_DEVICE("0x8086", "0x0D2A");
+		BLOCK_DEVICE("0x8086", "0x0D2B");
+		BLOCK_DEVICE("0x8086", "0x0D2E");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 400");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 405");
+		BLOCK_DEVICE("0x8086", "0x22B0"); // Intel(R) HD Graphics, Gen8, Cherryview Braswell
+		BLOCK_DEVICE("0x8086", "0x22B1");
+		BLOCK_DEVICE("0x8086", "0x22B2");
+		BLOCK_DEVICE("0x8086", "0x22B3");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 5300");
+		BLOCK_DEVICE("0x8086", "0x161E"); // Intel(R) HD Graphics 5300, Gen8, Broadwell
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 5500");
+		BLOCK_DEVICE("0x8086", "0x1616"); // Intel(R) HD Graphics 5500, Gen8, Broadwell
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 5600");
+		BLOCK_DEVICE("0x8086", "0x1612"); // Intel(R) HD Graphics 5600, Gen8, Broadwell
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 6000");
+		BLOCK_DEVICE("0x8086", "0x1626"); // Intel(R) HD Graphics 6000, Gen8, Broadwell
+		BLOCK_DEVICE("Intel", "Intel(R) Iris(TM) Graphics 6100");
+		BLOCK_DEVICE("0x8086", "0x162B"); // Intel(R) Iris(TM) Graphics 6100, Gen8, Broadwell
+		BLOCK_DEVICE("Intel", "Intel(R) Iris(TM) Pro Graphics 6200");
+		BLOCK_DEVICE("0x8086", "0x1622"); // Intel(R) Iris(TM) Pro Graphics 6200, Gen8, Broadwell
+		BLOCK_DEVICE("Intel", "Intel(R) Iris(TM) Pro Graphics P6300");
+		BLOCK_DEVICE("0x8086", "0x162A"); // Intel(R) Iris(TM) Pro Graphics P6300, Gen8, Broadwell
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 500");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 505");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 510");
+		BLOCK_DEVICE("0x8086", "0x1902"); // Intel(R) HD Graphics 510, Gen9, Skylake
+		BLOCK_DEVICE("0x8086", "0x1906");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 520");
+		BLOCK_DEVICE("0x8086", "0x1916"); // Intel(R) HD Graphics 520, Gen9, Skylake
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 530");
+		BLOCK_DEVICE("0x8086", "0x1912"); // Intel(R) HD Graphics 530, Gen9, Skylake
+		BLOCK_DEVICE("0x8086", "0x191B");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics P530");
+		BLOCK_DEVICE("0x8086", "0x191D"); // Intel(R) HD Graphics P530, Gen9, Skylake
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 515");
+		BLOCK_DEVICE("0x8086", "0x191E"); // Intel(R) HD Graphics 515, Gen9, Skylake
+		BLOCK_DEVICE("Intel", "Intel(R) Iris Graphics 540");
+		BLOCK_DEVICE("0x8086", "0x1926"); // Intel(R) Iris Graphics 540, Gen9, Skylake
+		BLOCK_DEVICE("0x8086", "0x1927");
+		BLOCK_DEVICE("Intel", "Intel(R) Iris Pro Graphics 580");
+		BLOCK_DEVICE("0x8086", "0x193B"); // Intel(R) Iris Pro Graphics 580, Gen9, Skylake
+		BLOCK_DEVICE("Intel", "Intel(R) Iris Pro Graphics P580");
+		BLOCK_DEVICE("0x8086", "0x193D"); // Intel(R) Iris Pro Graphics P580, Gen9, Skylake
 
 #undef BLOCK_DEVICE
 
@@ -2155,6 +2240,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif
 #ifdef D3D12_ENABLED
 			available_drivers.push_back("d3d12");
+#endif
+#ifdef METAL_ENABLED
+			available_drivers.push_back("metal");
 #endif
 		}
 #ifdef GLES3_ENABLED
@@ -2326,12 +2414,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// Make sure that headless is the last one, which it is assumed to be by design.
 	DEV_ASSERT(NULL_DISPLAY_DRIVER == DisplayServer::get_create_function_name(DisplayServer::get_create_function_count() - 1));
 
-	GLOBAL_DEF_RST_NOVAL("display/display_server/driver", "default");
-	GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.windows", PROPERTY_HINT_ENUM_SUGGESTION, "default,windows,headless"), "default");
-	GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.linuxbsd", PROPERTY_HINT_ENUM_SUGGESTION, "default,x11,wayland,headless"), "default");
-	GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.android", PROPERTY_HINT_ENUM_SUGGESTION, "default,android,headless"), "default");
-	GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.ios", PROPERTY_HINT_ENUM_SUGGESTION, "default,iOS,headless"), "default");
-	GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.macos", PROPERTY_HINT_ENUM_SUGGESTION, "default,macos,headless"), "default");
+	GLOBAL_DEF_NOVAL("display/display_server/driver", "default");
+	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.windows", PROPERTY_HINT_ENUM_SUGGESTION, "default,windows,headless"), "default");
+	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.linuxbsd", PROPERTY_HINT_ENUM_SUGGESTION, "default,x11,wayland,headless"), "default");
+	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.android", PROPERTY_HINT_ENUM_SUGGESTION, "default,android,headless"), "default");
+	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.ios", PROPERTY_HINT_ENUM_SUGGESTION, "default,iOS,headless"), "default");
+	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.macos", PROPERTY_HINT_ENUM_SUGGESTION, "default,macos,headless"), "default");
 
 	GLOBAL_DEF_RST_NOVAL("audio/driver/driver", AudioDriverManager::get_driver(0)->get_name());
 	if (audio_driver.is_empty()) { // Specified in project.godot.
@@ -2382,6 +2470,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF("debug/settings/stdout/print_fps", false);
 	GLOBAL_DEF("debug/settings/stdout/print_gpu_profile", false);
 	GLOBAL_DEF("debug/settings/stdout/verbose_stdout", false);
+	GLOBAL_DEF("debug/settings/physics_interpolation/enable_warnings", true);
 
 	if (!OS::get_singleton()->_verbose_stdout) { // Not manually overridden.
 		OS::get_singleton()->_verbose_stdout = GLOBAL_GET("debug/settings/stdout/verbose_stdout");
@@ -2434,7 +2523,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF_BASIC("xr/openxr/startup_alert", true);
 
 	// OpenXR project extensions settings.
-	GLOBAL_DEF_BASIC("xr/openxr/extensions/hand_tracking", true);
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/hand_tracking", false);
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/hand_tracking_unobstructed_data_source", false); // XR_HAND_TRACKING_DATA_SOURCE_UNOBSTRUCTED_EXT
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/hand_tracking_controller_data_source", false); // XR_HAND_TRACKING_DATA_SOURCE_CONTROLLER_EXT
 	GLOBAL_DEF_RST_BASIC("xr/openxr/extensions/hand_interaction_profile", false);
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/eye_gaze_interaction", false);
 
@@ -2459,11 +2550,15 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 #endif
 
+	OS::get_singleton()->benchmark_end_measure("Startup", "Main::Setup");
+
 	if (p_second_phase) {
-		return setup2();
+		exit_err = setup2();
+		if (exit_err != OK) {
+			goto error;
+		}
 	}
 
-	OS::get_singleton()->benchmark_end_measure("Startup", "Main::Setup");
 	return OK;
 
 error:
@@ -2516,7 +2611,6 @@ error:
 		memdelete(message_queue);
 	}
 
-	OS::get_singleton()->benchmark_end_measure("Startup", "Core");
 	OS::get_singleton()->benchmark_end_measure("Startup", "Main::Setup");
 
 #if defined(STEAMAPI_ENABLED)
@@ -2592,6 +2686,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 					String screen_property;
 
 					bool prefer_wayland_found = false;
+					bool prefer_wayland = false;
 
 					if (editor) {
 						screen_property = "interface/editor/editor_screen";
@@ -2624,14 +2719,17 @@ Error Main::setup2(bool p_show_boot_logo) {
 							}
 
 							if (!prefer_wayland_found && assign == "run/platforms/linuxbsd/prefer_wayland") {
-								if (value) {
-									display_driver = "wayland";
-								} else {
-									display_driver = "default";
-								}
-
+								prefer_wayland = value;
 								prefer_wayland_found = true;
 							}
+						}
+					}
+
+					if (display_driver.is_empty()) {
+						if (prefer_wayland) {
+							display_driver = "wayland";
+						} else {
+							display_driver = "default";
 						}
 					}
 				}
@@ -2756,6 +2854,30 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 		if (err != OK || display_server == nullptr) {
 			ERR_PRINT("Unable to create DisplayServer, all display drivers failed.\nUse \"--headless\" command line argument to run the engine in headless mode if this is desired (e.g. for continuous integration).");
+
+			if (display_server) {
+				memdelete(display_server);
+			}
+
+			GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
+			uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
+			unregister_server_types();
+
+			if (input) {
+				memdelete(input);
+			}
+			if (tsman) {
+				memdelete(tsman);
+			}
+#ifndef _3D_DISABLED
+			if (physics_server_3d_manager) {
+				memdelete(physics_server_3d_manager);
+			}
+#endif // _3D_DISABLED
+			if (physics_server_2d_manager) {
+				memdelete(physics_server_2d_manager);
+			}
+
 			return err;
 		}
 
@@ -2917,8 +3039,6 @@ Error Main::setup2(bool p_show_boot_logo) {
 		MAIN_PRINT("Main: Clear Color");
 
 		DisplayServer::set_early_window_clear_color_override(false);
-		RenderingServer::get_singleton()->set_default_clear_color(
-				GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
 
 		GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/config/icon", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), String());
 		GLOBAL_DEF(PropertyInfo(Variant::STRING, "application/config/macos_native_icon", PROPERTY_HINT_FILE, "*.icns"), String());
@@ -2928,7 +3048,8 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 		Input *id = Input::get_singleton();
 		if (id) {
-			agile_input_event_flushing = GLOBAL_DEF("input_devices/buffering/agile_event_flushing", false);
+			bool agile_input_event_flushing = GLOBAL_DEF("input_devices/buffering/agile_event_flushing", false);
+			id->set_agile_input_event_flushing(agile_input_event_flushing);
 
 			if (bool(GLOBAL_DEF_BASIC("input_devices/pointing/emulate_touch_from_mouse", false)) &&
 					!(editor || project_manager)) {
@@ -2941,11 +3062,6 @@ Error Main::setup2(bool p_show_boot_logo) {
 			id->set_emulate_mouse_from_touch(bool(GLOBAL_DEF_BASIC("input_devices/pointing/emulate_mouse_from_touch", true)));
 		}
 
-		GLOBAL_DEF("input_devices/buffering/android/use_accumulated_input", true);
-		GLOBAL_DEF("input_devices/buffering/android/use_input_buffering", true);
-		GLOBAL_DEF_BASIC("input_devices/pointing/android/enable_long_press_as_right_click", false);
-		GLOBAL_DEF_BASIC("input_devices/pointing/android/enable_pan_and_scale_gestures", false);
-		GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "input_devices/pointing/android/rotary_input_scroll_axis", PROPERTY_HINT_ENUM, "Horizontal,Vertical"), 1);
 		OS::get_singleton()->benchmark_end_measure("Startup", "Setup Window and Boot");
 	}
 
@@ -3057,6 +3173,14 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 		OS::get_singleton()->benchmark_end_measure("Scene", "Modules and Extensions");
 	}
+
+	PackedStringArray extensions;
+	extensions.push_back("gd");
+	if (ClassDB::class_exists("CSharpScript")) {
+		extensions.push_back("cs");
+	}
+	extensions.push_back("gdshader");
+	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::PACKED_STRING_ARRAY, "editor/script/search_in_file_extensions"), extensions); // Note: should be defined after Scene level modules init to see .NET.
 
 	OS::get_singleton()->benchmark_end_measure("Startup", "Scene");
 
@@ -3219,6 +3343,8 @@ void Main::setup_boot_logo() {
 		}
 #endif
 	}
+	RenderingServer::get_singleton()->set_default_clear_color(
+			GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
 }
 
 String Main::get_rendering_driver_name() {
@@ -3979,7 +4105,6 @@ uint32_t Main::hide_print_fps_attempts = 3;
 uint32_t Main::frame = 0;
 bool Main::force_redraw_requested = false;
 int Main::iterating = 0;
-bool Main::agile_input_event_flushing = false;
 
 bool Main::is_iterating() {
 	return iterating > 0;
@@ -4040,7 +4165,7 @@ bool Main::iteration() {
 	NavigationServer3D::get_singleton()->sync();
 
 	for (int iters = 0; iters < advance.physics_steps; ++iters) {
-		if (Input::get_singleton()->is_using_input_buffering() && agile_input_event_flushing) {
+		if (Input::get_singleton()->is_agile_input_event_flushing()) {
 			Input::get_singleton()->flush_buffered_events();
 		}
 
@@ -4049,15 +4174,15 @@ bool Main::iteration() {
 
 		uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
 
-#ifndef _3D_DISABLED
-		PhysicsServer3D::get_singleton()->sync();
-		PhysicsServer3D::get_singleton()->flush_queries();
-#endif // _3D_DISABLED
-
 		// Prepare the fixed timestep interpolated nodes BEFORE they are updated
 		// by the physics server, otherwise the current and previous transforms
 		// may be the same, and no interpolation takes place.
 		OS::get_singleton()->get_main_loop()->iteration_prepare();
+
+#ifndef _3D_DISABLED
+		PhysicsServer3D::get_singleton()->sync();
+		PhysicsServer3D::get_singleton()->flush_queries();
+#endif // _3D_DISABLED
 
 		PhysicsServer2D::get_singleton()->sync();
 		PhysicsServer2D::get_singleton()->flush_queries();
@@ -4068,6 +4193,7 @@ bool Main::iteration() {
 #endif // _3D_DISABLED
 			PhysicsServer2D::get_singleton()->end_sync();
 
+			Engine::get_singleton()->_in_physics = false;
 			exit = true;
 			break;
 		}
@@ -4091,13 +4217,15 @@ bool Main::iteration() {
 
 		message_queue->flush();
 
+		OS::get_singleton()->get_main_loop()->iteration_end();
+
 		physics_process_ticks = MAX(physics_process_ticks, OS::get_singleton()->get_ticks_usec() - physics_begin); // keep the largest one for reference
 		physics_process_max = MAX(OS::get_singleton()->get_ticks_usec() - physics_begin, physics_process_max);
 
 		Engine::get_singleton()->_in_physics = false;
 	}
 
-	if (Input::get_singleton()->is_using_input_buffering() && agile_input_event_flushing) {
+	if (Input::get_singleton()->is_agile_input_event_flushing()) {
 		Input::get_singleton()->flush_buffered_events();
 	}
 
@@ -4110,7 +4238,7 @@ bool Main::iteration() {
 
 	RenderingServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
-	if (DisplayServer::get_singleton()->can_any_window_draw() &&
+	if ((DisplayServer::get_singleton()->can_any_window_draw() || DisplayServer::get_singleton()->has_additional_outputs()) &&
 			RenderingServer::get_singleton()->is_render_loop_enabled()) {
 		if ((!force_redraw_requested) && OS::get_singleton()->is_in_low_processor_usage_mode()) {
 			if (RenderingServer::get_singleton()->has_changed()) {
@@ -4169,16 +4297,17 @@ bool Main::iteration() {
 
 	iterating--;
 
-	// Needed for OSs using input buffering regardless accumulation (like Android)
-	if (Input::get_singleton()->is_using_input_buffering() && !agile_input_event_flushing) {
-		Input::get_singleton()->flush_buffered_events();
-	}
-
 	if (movie_writer) {
 		movie_writer->add_frame();
 	}
 
+#ifdef TOOLS_ENABLED
+	bool quit_after_timeout = false;
+#endif
 	if ((quit_after > 0) && (Engine::get_singleton()->_process_frames >= quit_after)) {
+#ifdef TOOLS_ENABLED
+		quit_after_timeout = true;
+#endif
 		exit = true;
 	}
 
@@ -4208,6 +4337,12 @@ bool Main::iteration() {
 			ERR_FAIL_V_MSG(true,
 					"Command line option --build-solutions was passed, but the build callback failed. Aborting.");
 		}
+	}
+#endif
+
+#ifdef TOOLS_ENABLED
+	if (exit && quit_after_timeout && EditorNode::get_singleton()) {
+		EditorNode::get_singleton()->unload_editor_addons();
 	}
 #endif
 

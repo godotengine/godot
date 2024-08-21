@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		The [AudioStreamPlayer] node plays an audio stream non-positionally. It is ideal for user interfaces, menus, or background music.
-		To use this node, [member stream] needs to be set to a valid [AudioStream] resource. Playing more than one sound at the time is also supported, see [member max_polyphony].
+		To use this node, [member stream] needs to be set to a valid [AudioStream] resource. Playing more than one sound at the same time is also supported, see [member max_polyphony].
 		If you need to play audio at a specific position, use [AudioStreamPlayer2D] or [AudioStreamPlayer3D] instead.
 	</description>
 	<tutorials>

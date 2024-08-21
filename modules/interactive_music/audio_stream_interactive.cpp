@@ -858,10 +858,7 @@ int AudioStreamPlaybackInteractive::mix(AudioFrame *p_buffer, float p_rate_scale
 	}
 
 	if (!active) {
-		for (int i = 0; i < p_frames; i++) {
-			p_buffer[i] = AudioFrame(0.0, 0.0);
-		}
-		return p_frames;
+		return 0;
 	}
 
 	int todo = p_frames;
@@ -975,6 +972,8 @@ void AudioStreamPlaybackInteractive::switch_to_clip_by_name(const StringName &p_
 		switch_request = -1;
 		return;
 	}
+
+	ERR_FAIL_COND_MSG(stream.is_null(), "Attempted to switch while not playing back any stream.");
 
 	for (int i = 0; i < stream->get_clip_count(); i++) {
 		if (stream->get_clip_name(i) == p_name) {

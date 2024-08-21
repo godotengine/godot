@@ -121,8 +121,9 @@ void MenuBar::_open_popup(int p_index, bool p_focus_item) {
 	}
 
 	Rect2 item_rect = _get_menu_item_rect(p_index);
-	Point2 screen_pos = get_screen_position() + item_rect.position * get_viewport()->get_canvas_transform().get_scale();
-	Size2 screen_size = item_rect.size * get_viewport()->get_canvas_transform().get_scale();
+	Size2 canvas_scale = get_canvas_transform().get_scale();
+	Point2 screen_pos = get_screen_position() + item_rect.position * canvas_scale;
+	Size2 screen_size = item_rect.size * canvas_scale;
 
 	active_menu = p_index;
 
@@ -679,7 +680,10 @@ void MenuBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_menu_hidden", "menu", "hidden"), &MenuBar::set_menu_hidden);
 	ClassDB::bind_method(D_METHOD("is_menu_hidden", "menu"), &MenuBar::is_menu_hidden);
 
+	// TODO: Properly handle popups when advanced GUI is disabled.
+#ifndef ADVANCED_GUI_DISABLED
 	ClassDB::bind_method(D_METHOD("get_menu_popup", "menu"), &MenuBar::get_menu_popup);
+#endif // ADVANCED_GUI_DISABLED
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "start_index"), "set_start_index", "get_start_index");

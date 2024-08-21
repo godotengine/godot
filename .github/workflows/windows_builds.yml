@@ -34,16 +34,17 @@ jobs:
           - name: Template (target=template_release)
             cache-name: windows-template
             target: template_release
-            tests: false
-            sconsflags: debug_symbols=no
+            tests: true
+            sconsflags: debug_symbols=no tests=yes
+            bin: "./bin/godot.windows.template_release.x86_64.console.exe"
 
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Setup Godot build cache
-        uses: ./.github/actions/godot-cache
+      - name: Restore Godot build cache
+        uses: ./.github/actions/godot-cache-restore
         with:
           cache-name: ${{ matrix.cache-name }}
         continue-on-error: true
@@ -76,6 +77,12 @@ jobs:
           target: ${{ matrix.target }}
           tests: ${{ matrix.tests }}
 
+      - name: Save Godot build cache
+        uses: ./.github/actions/godot-cache-save
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
+
       - name: Prepare artifact
         run: |
           Remove-Item bin/* -Include *.exp,*.lib,*.pdb -Force
@@ -85,7 +92,6 @@ jobs:
         with:
           name: ${{ matrix.cache-name }}
 
-      # Execute unit tests for the editor
       - name: Unit tests
         if: ${{ matrix.tests }}
         run: |

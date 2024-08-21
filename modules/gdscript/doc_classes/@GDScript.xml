@@ -52,9 +52,9 @@
 			<description>
 				Returns a single character (as a [String]) of the given Unicode code point (which is compatible with ASCII code).
 				[codeblock]
-				a = char(65)      # a is "A"
-				a = char(65 + 32) # a is "a"
-				a = char(8364)    # a is "€"
+				var upper = char(65)      # upper is "A"
+				var lower = char(65 + 32) # lower is "a"
+				var euro = char(8364)     # euro is "€"
 				[/codeblock]
 			</description>
 		</method>
@@ -150,10 +150,10 @@
 			<description>
 				Returns the length of the given Variant [param var]. The length can be the character count of a [String] or [StringName], the element count of any array type, or the size of a [Dictionary]. For every other Variant type, a run-time error is generated and execution is stopped.
 				[codeblock]
-				a = [1, 2, 3, 4]
+				var a = [1, 2, 3, 4]
 				len(a) # Returns 4
 
-				b = "Hello!"
+				var b = "Hello!"
 				len(b) # Returns 6
 				[/codeblock]
 			</description>

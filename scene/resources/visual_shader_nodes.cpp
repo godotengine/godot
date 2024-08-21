@@ -5368,6 +5368,20 @@ String VisualShaderNodeIntParameter::generate_global(Shader::Mode p_mode, Visual
 		code += _get_qual_str() + "uniform int " + get_parameter_name() + " : hint_range(" + itos(hint_range_min) + ", " + itos(hint_range_max) + ")";
 	} else if (hint == HINT_RANGE_STEP) {
 		code += _get_qual_str() + "uniform int " + get_parameter_name() + " : hint_range(" + itos(hint_range_min) + ", " + itos(hint_range_max) + ", " + itos(hint_range_step) + ")";
+	} else if (hint == HINT_ENUM) {
+		code += _get_qual_str() + "uniform int " + get_parameter_name() + " : hint_enum(";
+
+		bool first = true;
+		for (const String &_name : hint_enum_names) {
+			if (first) {
+				first = false;
+			} else {
+				code += ", ";
+			}
+			code += "\"" + _name.c_escape() + "\"";
+		}
+
+		code += ")";
 	} else {
 		code += _get_qual_str() + "uniform int " + get_parameter_name();
 	}
@@ -5439,6 +5453,18 @@ int VisualShaderNodeIntParameter::get_step() const {
 	return hint_range_step;
 }
 
+void VisualShaderNodeIntParameter::set_enum_names(const PackedStringArray &p_names) {
+	if (hint_enum_names == p_names) {
+		return;
+	}
+	hint_enum_names = p_names;
+	emit_changed();
+}
+
+PackedStringArray VisualShaderNodeIntParameter::get_enum_names() const {
+	return hint_enum_names;
+}
+
 void VisualShaderNodeIntParameter::set_default_value_enabled(bool p_default_value_enabled) {
 	if (default_value_enabled == p_default_value_enabled) {
 		return;
@@ -5476,22 +5502,27 @@ void VisualShaderNodeIntParameter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_step", "value"), &VisualShaderNodeIntParameter::set_step);
 	ClassDB::bind_method(D_METHOD("get_step"), &VisualShaderNodeIntParameter::get_step);
 
+	ClassDB::bind_method(D_METHOD("set_enum_names", "names"), &VisualShaderNodeIntParameter::set_enum_names);
+	ClassDB::bind_method(D_METHOD("get_enum_names"), &VisualShaderNodeIntParameter::get_enum_names);
+
 	ClassDB::bind_method(D_METHOD("set_default_value_enabled", "enabled"), &VisualShaderNodeIntParameter::set_default_value_enabled);
 	ClassDB::bind_method(D_METHOD("is_default_value_enabled"), &VisualShaderNodeIntParameter::is_default_value_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_default_value", "value"), &VisualShaderNodeIntParameter::set_default_value);
 	ClassDB::bind_method(D_METHOD("get_default_value"), &VisualShaderNodeIntParameter::get_default_value);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "hint", PROPERTY_HINT_ENUM, "None,Range,Range + Step"), "set_hint", "get_hint");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "hint", PROPERTY_HINT_ENUM, "None,Range,Range + Step,Enum"), "set_hint", "get_hint");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "min"), "set_min", "get_min");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max"), "set_max", "get_max");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "step"), "set_step", "get_step");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "enum_names"), "set_enum_names", "get_enum_names");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "default_value_enabled"), "set_default_value_enabled", "is_default_value_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "default_value"), "set_default_value", "get_default_value");
 
 	BIND_ENUM_CONSTANT(HINT_NONE);
 	BIND_ENUM_CONSTANT(HINT_RANGE);
 	BIND_ENUM_CONSTANT(HINT_RANGE_STEP);
+	BIND_ENUM_CONSTANT(HINT_ENUM);
 	BIND_ENUM_CONSTANT(HINT_MAX);
 }
 
@@ -5512,6 +5543,9 @@ Vector<StringName> VisualShaderNodeIntParameter::get_editable_properties() const
 	}
 	if (hint == HINT_RANGE_STEP) {
 		props.push_back("step");
+	}
+	if (hint == HINT_ENUM) {
+		props.push_back("enum_names");
 	}
 	props.push_back("default_value_enabled");
 	if (default_value_enabled) {
@@ -6498,6 +6532,8 @@ bool VisualShaderNodeTextureParameter::is_show_prop_names() const {
 }
 
 String VisualShaderNodeTextureParameter::get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const {
+	String warning = VisualShaderNodeParameter::get_warning(p_mode, p_type);
+
 	if (texture_source != SOURCE_NONE) {
 		String texture_source_str;
 
@@ -6528,7 +6564,10 @@ String VisualShaderNodeTextureParameter::get_warning(Shader::Mode p_mode, Visual
 				default:
 					break;
 			}
-			return vformat(RTR("'%s' type is incompatible with '%s' source."), texture_type_str, texture_source_str);
+			if (!warning.is_empty()) {
+				warning += "\n";
+			}
+			warning += vformat(RTR("'%s' type is incompatible with '%s' source."), texture_type_str, texture_source_str);
 		} else if (color_default != COLOR_DEFAULT_WHITE) {
 			String color_default_str;
 
@@ -6542,11 +6581,14 @@ String VisualShaderNodeTextureParameter::get_warning(Shader::Mode p_mode, Visual
 				default:
 					break;
 			}
-			return vformat(RTR("'%s' default color is incompatible with '%s' source."), color_default_str, texture_source_str);
+			if (!warning.is_empty()) {
+				warning += "\n";
+			}
+			warning += vformat(RTR("'%s' default color is incompatible with '%s' source."), color_default_str, texture_source_str);
 		}
 	}
 
-	return "";
+	return warning;
 }
 
 HashMap<StringName, String> VisualShaderNodeTextureParameter::get_editable_properties_names() const {
@@ -8177,6 +8219,9 @@ String VisualShaderNodeRotationByAxis::get_output_port_name(int p_port) const {
 }
 
 bool VisualShaderNodeRotationByAxis::has_output_port_preview(int p_port) const {
+	if (p_port == 0) {
+		return true;
+	}
 	return false;
 }
 
@@ -8190,15 +8235,20 @@ String VisualShaderNodeRotationByAxis::generate_code(Shader::Mode p_mode, Visual
 	code += vformat("			vec3( __axis.y*__axis.x*(1.0-cos(__angle))+__axis.z*sin(__angle), cos(__angle)+__axis.y*__axis.y*(1.0-cos(__angle)), __axis.y*__axis.z*(1.0-cos(__angle))-__axis.x*sin(__angle) ),\n");
 	code += vformat("			vec3( __axis.z*__axis.x*(1.0-cos(__angle))-__axis.y*sin(__angle), __axis.z*__axis.y*(1.0-cos(__angle))+__axis.x*sin(__angle), cos(__angle)+__axis.z*__axis.z*(1.0-cos(__angle)) )\n");
 	code += vformat("		);\n");
-	code += vformat("		%s = %s * __rot_matrix;\n", p_output_vars[0], p_input_vars[0]);
-	code += vformat("		%s = mat4(__rot_matrix);\n", p_output_vars[1]);
+	if (is_output_port_connected(0)) {
+		code += vformat("		%s = %s * __rot_matrix;\n", p_output_vars[0], p_input_vars[0]);
+	}
+	if (is_output_port_connected(1)) {
+		code += vformat("		%s = mat4(__rot_matrix);\n", p_output_vars[1]);
+	}
 	code += "	}\n";
 	return code;
 }
 
 VisualShaderNodeRotationByAxis::VisualShaderNodeRotationByAxis() {
+	set_input_port_default_value(0, Vector3());
 	set_input_port_default_value(1, 0.0);
-	set_input_port_default_value(2, Vector3(0.0, 0.0, 0.0));
+	set_input_port_default_value(2, Vector3());
 
 	simple_decl = false;
 }

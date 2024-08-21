@@ -2800,12 +2800,16 @@ typedef void (*GDExtensionInterfaceClassdbRegisterExtensionClassVirtualMethod)(G
  *
  * Registers an integer constant on an extension class in the ClassDB.
  *
+ * Note about registering bitfield values (if p_is_bitfield is true): even though p_constant_value is signed, language bindings are
+ * advised to treat bitfields as uint64_t, since this is generally clearer and can prevent mistakes like using -1 for setting all bits.
+ * Language APIs should thus provide an abstraction that registers bitfields (uint64_t) separately from regular constants (int64_t).
+ *
  * @param p_library A pointer the library received by the GDExtension's entry point function.
  * @param p_class_name A pointer to a StringName with the class name.
  * @param p_enum_name A pointer to a StringName with the enum name.
  * @param p_constant_name A pointer to a StringName with the constant name.
  * @param p_constant_value The constant value.
- * @param p_is_bitfield Whether or not this is a bit field.
+ * @param p_is_bitfield Whether or not this constant is part of a bitfield.
  */
 typedef void (*GDExtensionInterfaceClassdbRegisterExtensionClassIntegerConstant)(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_enum_name, GDExtensionConstStringNamePtr p_constant_name, GDExtensionInt p_constant_value, GDExtensionBool p_is_bitfield);
 

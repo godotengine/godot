@@ -2143,33 +2143,59 @@ void RenderingDeviceDriverD3D12::command_pipeline_barrier(CommandBufferID p_cmd_
 	for (uint32_t i = 0; i < p_texture_barriers.size(); i++) {
 		const TextureBarrier &texture_barrier_rd = p_texture_barriers[i];
 		const TextureInfo *texture_info = (const TextureInfo *)(texture_barrier_rd.texture.id);
+		if (texture_info->main_texture) {
+			texture_info = texture_info->main_texture;
+		}
 		_rd_stages_and_access_to_d3d12(p_src_stages, texture_barrier_rd.prev_layout, texture_barrier_rd.src_access, texture_barrier_d3d12.SyncBefore, texture_barrier_d3d12.AccessBefore);
 		_rd_stages_and_access_to_d3d12(p_dst_stages, texture_barrier_rd.next_layout, texture_barrier_rd.dst_access, texture_barrier_d3d12.SyncAfter, texture_barrier_d3d12.AccessAfter);
 		texture_barrier_d3d12.LayoutBefore = _rd_texture_layout_to_d3d12_barrier_layout(texture_barrier_rd.prev_layout);
 		texture_barrier_d3d12.LayoutAfter = _rd_texture_layout_to_d3d12_barrier_layout(texture_barrier_rd.next_layout);
 		texture_barrier_d3d12.pResource = texture_info->resource;
-		texture_barrier_d3d12.Subresources.IndexOrFirstMipLevel = texture_barrier_rd.subresources.base_mipmap;
-		texture_barrier_d3d12.Subresources.NumMipLevels = texture_barrier_rd.subresources.mipmap_count;
-		texture_barrier_d3d12.Subresources.FirstArraySlice = texture_barrier_rd.subresources.base_layer;
-		texture_barrier_d3d12.Subresources.NumArraySlices = texture_barrier_rd.subresources.layer_count;
-		texture_barrier_d3d12.Subresources.FirstPlane = _compute_plane_slice(texture_info->format, texture_barrier_rd.subresources.aspect);
-		texture_barrier_d3d12.Subresources.NumPlanes = format_get_plane_count(texture_info->format);
+		if (texture_barrier_rd.subresources.mipmap_count == texture_info->mipmaps && texture_barrier_rd.subresources.layer_count == texture_info->layers) {
+			// So, all resources. Then, let's be explicit about it so D3D12 doesn't think
+			// we are dealing with a subset of subresources.
+			texture_barrier_d3d12.Subresources.IndexOrFirstMipLevel = 0xffffffff;
+			texture_barrier_d3d12.Subresources.NumMipLevels = 0;
+			// Because NumMipLevels == 0, all the other fields are ignored by D3D12.
+		} else {
+			texture_barrier_d3d12.Subresources.IndexOrFirstMipLevel = texture_barrier_rd.subresources.base_mipmap;
+			texture_barrier_d3d12.Subresources.NumMipLevels = texture_barrier_rd.subresources.mipmap_count;
+			texture_barrier_d3d12.Subresources.FirstArraySlice = texture_barrier_rd.subresources.base_layer;
+			texture_barrier_d3d12.Subresources.NumArraySlices = texture_barrier_rd.subresources.layer_count;
+			texture_barrier_d3d12.Subresources.FirstPlane = _compute_plane_slice(texture_info->format, texture_barrier_rd.subresources.aspect);
+			texture_barrier_d3d12.Subresources.NumPlanes = format_get_plane_count(texture_info->format);
+		}
 		texture_barrier_d3d12.Flags = (texture_barrier_rd.prev_layout == RDD::TEXTURE_LAYOUT_UNDEFINED) ? D3D12_TEXTURE_BARRIER_FLAG_DISCARD : D3D12_TEXTURE_BARRIER_FLAG_NONE;
 		texture_barriers.push_back(texture_barrier_d3d12);
 	}
 
 	// Define the barrier groups and execute.
+
 	D3D12_BARRIER_GROUP barrier_groups[3] = {};
-	barrier_groups[0].Type = D3D12_BARRIER_TYPE_GLOBAL;
-	barrier_groups[1].Type = D3D12_BARRIER_TYPE_BUFFER;
-	barrier_groups[2].Type = D3D12_BARRIER_TYPE_TEXTURE;
-	barrier_groups[0].NumBarriers = global_barriers.size();
-	barrier_groups[1].NumBarriers = buffer_barriers.size();
-	barrier_groups[2].NumBarriers = texture_barriers.size();
-	barrier_groups[0].pGlobalBarriers = global_barriers.ptr();
-	barrier_groups[1].pBufferBarriers = buffer_barriers.ptr();
-	barrier_groups[2].pTextureBarriers = texture_barriers.ptr();
-	cmd_list_7->Barrier(ARRAY_SIZE(barrier_groups), barrier_groups);
+	uint32_t barrier_groups_count = 0;
+
+	if (!global_barriers.is_empty()) {
+		D3D12_BARRIER_GROUP &barrier_group = barrier_groups[barrier_groups_count++];
+		barrier_group.Type = D3D12_BARRIER_TYPE_GLOBAL;
+		barrier_group.NumBarriers = global_barriers.size();
+		barrier_group.pGlobalBarriers = global_barriers.ptr();
+	}
+
+	if (!buffer_barriers.is_empty()) {
+		D3D12_BARRIER_GROUP &barrier_group = barrier_groups[barrier_groups_count++];
+		barrier_group.Type = D3D12_BARRIER_TYPE_BUFFER;
+		barrier_group.NumBarriers = buffer_barriers.size();
+		barrier_group.pBufferBarriers = buffer_barriers.ptr();
+	}
+
+	if (!texture_barriers.is_empty()) {
+		D3D12_BARRIER_GROUP &barrier_group = barrier_groups[barrier_groups_count++];
+		barrier_group.Type = D3D12_BARRIER_TYPE_TEXTURE;
+		barrier_group.NumBarriers = texture_barriers.size();
+		barrier_group.pTextureBarriers = texture_barriers.ptr();
+	}
+
+	cmd_list_7->Barrier(barrier_groups_count, barrier_groups);
 }
 
 /****************/
@@ -5057,6 +5083,7 @@ void RenderingDeviceDriverD3D12::command_begin_render_pass(CommandBufferID p_cmd
 			if (pass_info->attachments[i].load_op == ATTACHMENT_LOAD_OP_CLEAR) {
 				clear.aspect.set_flag(TEXTURE_ASPECT_COLOR_BIT);
 				clear.color_attachment = i;
+				tex_info->pending_clear.remove_from_list();
 			}
 		} else if ((tex_info->desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL)) {
 			if (pass_info->attachments[i].stencil_load_op == ATTACHMENT_LOAD_OP_CLEAR) {
@@ -5335,10 +5362,12 @@ void RenderingDeviceDriverD3D12::command_bind_render_pipeline(CommandBufferID p_
 	cmd_buf_info->cmd_list->OMSetBlendFactor(pso_extra_info.dyn_params.blend_constant.components);
 	cmd_buf_info->cmd_list->OMSetStencilRef(pso_extra_info.dyn_params.stencil_reference);
 
-	ComPtr<ID3D12GraphicsCommandList1> command_list_1;
-	cmd_buf_info->cmd_list->QueryInterface(command_list_1.GetAddressOf());
-	if (command_list_1) {
-		command_list_1->OMSetDepthBounds(pso_extra_info.dyn_params.depth_bounds_min, pso_extra_info.dyn_params.depth_bounds_max);
+	if (misc_features_support.depth_bounds_supported) {
+		ComPtr<ID3D12GraphicsCommandList1> command_list_1;
+		cmd_buf_info->cmd_list->QueryInterface(command_list_1.GetAddressOf());
+		if (command_list_1) {
+			command_list_1->OMSetDepthBounds(pso_extra_info.dyn_params.depth_bounds_min, pso_extra_info.dyn_params.depth_bounds_max);
+		}
 	}
 
 	cmd_buf_info->render_pass_state.vf_info = pso_extra_info.vf_info;
@@ -5728,8 +5757,15 @@ RDD::PipelineID RenderingDeviceDriverD3D12::render_pipeline_create(
 		(&pipeline_desc.DepthStencilState)->BackFace.StencilDepthFailOp = RD_TO_D3D12_STENCIL_OP[p_depth_stencil_state.back_op.depth_fail];
 		(&pipeline_desc.DepthStencilState)->BackFace.StencilFunc = RD_TO_D3D12_COMPARE_OP[p_depth_stencil_state.back_op.compare];
 
-		pso_extra_info.dyn_params.depth_bounds_min = p_depth_stencil_state.enable_depth_range ? p_depth_stencil_state.depth_range_min : 0.0f;
-		pso_extra_info.dyn_params.depth_bounds_max = p_depth_stencil_state.enable_depth_range ? p_depth_stencil_state.depth_range_max : 1.0f;
+		if (misc_features_support.depth_bounds_supported) {
+			pso_extra_info.dyn_params.depth_bounds_min = p_depth_stencil_state.enable_depth_range ? p_depth_stencil_state.depth_range_min : 0.0f;
+			pso_extra_info.dyn_params.depth_bounds_max = p_depth_stencil_state.enable_depth_range ? p_depth_stencil_state.depth_range_max : 1.0f;
+		} else {
+			if (p_depth_stencil_state.enable_depth_range) {
+				WARN_PRINT_ONCE("Depth bounds test is not supported by the GPU driver.");
+			}
+		}
+
 		pso_extra_info.dyn_params.stencil_reference = p_depth_stencil_state.front_op.reference;
 	}
 
@@ -6441,6 +6477,12 @@ Error RenderingDeviceDriverD3D12::_check_capabilities() {
 		subgroup_capabilities.wave_ops_supported = options1.WaveOps;
 	}
 
+	D3D12_FEATURE_DATA_D3D12_OPTIONS2 options2 = {};
+	res = device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS2, &options2, sizeof(options2));
+	if (SUCCEEDED(res)) {
+		misc_features_support.depth_bounds_supported = options2.DepthBoundsTestSupported;
+	}
+
 	D3D12_FEATURE_DATA_D3D12_OPTIONS3 options3 = {};
 	res = device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS3, &options3, sizeof(options3));
 	if (SUCCEEDED(res)) {
@@ -6525,6 +6567,12 @@ Error RenderingDeviceDriverD3D12::_check_capabilities() {
 	}
 
 	print_verbose(String("- D3D12 16-bit ops supported: ") + (shader_capabilities.native_16bit_ops ? "yes" : "no"));
+
+	if (misc_features_support.depth_bounds_supported) {
+		print_verbose("- Depth bounds test supported");
+	} else {
+		print_verbose("- Depth bounds test not supported");
+	}
 
 	return OK;
 }

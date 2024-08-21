@@ -344,6 +344,11 @@ public:
 	FUNC2(multimesh_set_buffer, RID, const Vector<float> &)
 	FUNC1RC(Vector<float>, multimesh_get_buffer, RID)
 
+	FUNC3(multimesh_set_buffer_interpolated, RID, const Vector<float> &, const Vector<float> &)
+	FUNC2(multimesh_set_physics_interpolated, RID, bool)
+	FUNC2(multimesh_set_physics_interpolation_quality, RID, MultimeshPhysicsInterpolationQuality)
+	FUNC2(multimesh_instance_reset_physics_interpolation, RID, int)
+
 	FUNC2(multimesh_set_visible_instances, RID, int)
 	FUNC1RC(int, multimesh_get_visible_instances, RID)
 
@@ -639,6 +644,7 @@ public:
 	FUNC3(viewport_set_canvas_transform, RID, RID, const Transform2D &)
 	FUNC2(viewport_set_transparent_background, RID, bool)
 	FUNC2(viewport_set_use_hdr_2d, RID, bool)
+	FUNC1RC(bool, viewport_is_using_hdr_2d, RID)
 	FUNC2(viewport_set_snap_2d_transforms_to_pixel, RID, bool)
 	FUNC2(viewport_set_snap_2d_vertices_to_pixel, RID, bool)
 
@@ -761,6 +767,7 @@ public:
 	FUNC1(directional_soft_shadow_filter_set_quality, ShadowQuality);
 	FUNC1(decals_set_filter, RS::DecalFilter);
 	FUNC1(light_projectors_set_filter, RS::LightProjectorFilter);
+	FUNC1(lightmaps_set_bicubic_filter, bool);
 
 	/* CAMERA ATTRIBUTES */
 
@@ -802,6 +809,8 @@ public:
 	FUNC2(instance_set_layer_mask, RID, uint32_t)
 	FUNC3(instance_set_pivot_data, RID, float, bool)
 	FUNC2(instance_set_transform, RID, const Transform3D &)
+	FUNC2(instance_set_interpolated, RID, bool)
+	FUNC1(instance_reset_physics_interpolation, RID)
 	FUNC2(instance_attach_object_instance_id, RID, ObjectID)
 	FUNC3(instance_set_blend_shape_weight, RID, int, float)
 	FUNC3(instance_set_surface_override_material, RID, int, RID)
@@ -1048,7 +1057,6 @@ public:
 
 	/* INTERPOLATION */
 
-	virtual void tick() override;
 	virtual void set_physics_interpolation_enabled(bool p_enabled) override;
 
 	/* EVENT QUEUING */
@@ -1060,6 +1068,8 @@ public:
 	virtual bool has_changed() const override;
 	virtual void init() override;
 	virtual void finish() override;
+	virtual void tick() override;
+	virtual void pre_draw(bool p_will_draw) override;
 
 	virtual bool is_on_render_thread() override {
 		return Thread::get_caller_id() == server_thread;

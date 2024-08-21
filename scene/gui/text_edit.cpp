@@ -38,7 +38,7 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/string/string_builder.h"
-#include "core/string/translation.h"
+#include "core/string/translation_server.h"
 #include "scene/gui/label.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
@@ -764,7 +764,7 @@ void TextEdit::_notification(int p_what) {
 				}
 			}
 
-			bool draw_placeholder = text.size() == 1 && text[0].is_empty() && ime_text.is_empty();
+			bool draw_placeholder = _using_placeholder();
 
 			// Get the highlighted words.
 			String highlighted_text = get_selected_text(0);
@@ -2849,6 +2849,10 @@ void TextEdit::_update_placeholder() {
 	}
 }
 
+bool TextEdit::_using_placeholder() const {
+	return text.size() == 1 && text[0].is_empty() && ime_text.is_empty();
+}
+
 void TextEdit::_update_theme_item_cache() {
 	Control::_update_theme_item_cache();
 
@@ -4324,24 +4328,11 @@ Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos, bool p_allow_out_
 		return Point2i(text[row].length(), row);
 	}
 
-	int col = 0;
 	int colx = p_pos.x - (theme_cache.style_normal->get_margin(SIDE_LEFT) + gutters_width + gutter_padding);
 	colx += first_visible_col;
 	if (!editable) {
 		colx -= theme_cache.style_readonly->get_offset().x / 2;
 		colx += theme_cache.style_normal->get_offset().x / 2;
-	}
-	col = _get_char_pos_for_line(colx, row, wrap_index);
-	if (get_line_wrapping_mode() != LineWrappingMode::LINE_WRAPPING_NONE && wrap_index < get_line_wrap_count(row)) {
-		// Move back one if we are at the end of the row.
-		Vector<String> rows2 = get_line_wrapped_text(row);
-		int row_end_col = 0;
-		for (int i = 0; i < wrap_index + 1; i++) {
-			row_end_col += rows2[i].length();
-		}
-		if (col >= row_end_col) {
-			col -= 1;
-		}
 	}
 
 	RID text_rid = text.get_line_data(row)->get_line_rid(wrap_index);
@@ -4351,7 +4342,7 @@ Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos, bool p_allow_out_
 	} else {
 		colx -= wrap_indent;
 	}
-	col = TS->shaped_text_hit_test_position(text_rid, colx);
+	int col = TS->shaped_text_hit_test_position(text_rid, colx);
 	if (!caret_mid_grapheme_enabled) {
 		col = TS->shaped_text_closest_character_pos(text_rid, col);
 	}
@@ -5913,6 +5904,11 @@ void TextEdit::adjust_viewport_to_caret(int p_caret) {
 	}
 	visible_width -= 20; // Give it a little more space.
 
+	if (visible_width <= 0) {
+		// Not resized yet.
+		return;
+	}
+
 	Vector2i caret_pos;
 
 	// Get position of the start of caret.
@@ -6858,9 +6854,9 @@ void TextEdit::_bind_methods() {
 
 	ADD_GROUP("Scroll", "scroll_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_smooth"), "set_smooth_scroll_enabled", "is_smooth_scroll_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_v_scroll_speed", PROPERTY_HINT_NONE, "suffix:px/s"), "set_v_scroll_speed", "get_v_scroll_speed");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_v_scroll_speed", PROPERTY_HINT_NONE, "suffix:lines/s"), "set_v_scroll_speed", "get_v_scroll_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_past_end_of_file"), "set_scroll_past_end_of_file_enabled", "is_scroll_past_end_of_file_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_vertical", PROPERTY_HINT_NONE, "suffix:px"), "set_v_scroll", "get_v_scroll");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_vertical", PROPERTY_HINT_NONE, "suffix:lines"), "set_v_scroll", "get_v_scroll");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_horizontal", PROPERTY_HINT_NONE, "suffix:px"), "set_h_scroll", "get_h_scroll");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_fit_content_height"), "set_fit_content_height_enabled", "is_fit_content_height_enabled");
 
@@ -7522,7 +7518,7 @@ int TextEdit::_get_column_x_offset_for_line(int p_char, int p_line, int p_column
 	int row = 0;
 	Vector<Vector2i> rows2 = text.get_line_wrap_ranges(p_line);
 	for (int i = 0; i < rows2.size(); i++) {
-		if ((p_char >= rows2[i].x) && (p_char <= rows2[i].y)) {
+		if ((p_char >= rows2[i].x) && (p_char < rows2[i].y || (i == rows2.size() - 1 && p_char == rows2[i].y))) {
 			row = i;
 			break;
 		}
@@ -7835,10 +7831,10 @@ void TextEdit::_update_scrollbars() {
 	h_scroll->set_begin(Point2(0, size.height - hmin.height));
 	h_scroll->set_end(Point2(size.width - vmin.width, size.height));
 
-	bool draw_placeholder = text.size() == 1 && text[0].length() == 0;
+	bool draw_placeholder = _using_placeholder();
 
 	int visible_rows = get_visible_line_count();
-	int total_rows = draw_placeholder ? placeholder_wraped_rows.size() - 1 : get_total_visible_line_count();
+	int total_rows = draw_placeholder ? placeholder_wraped_rows.size() : get_total_visible_line_count();
 	if (scroll_past_end_of_file_enabled && !fit_content_height) {
 		total_rows += visible_rows - 1;
 	}
@@ -7916,7 +7912,7 @@ void TextEdit::_scroll_moved(double p_to_val) {
 	}
 	if (v_scroll->is_visible_in_tree()) {
 		// Set line ofs and wrap ofs.
-		bool draw_placeholder = text.size() == 1 && text[0].length() == 0;
+		bool draw_placeholder = _using_placeholder();
 
 		int v_scroll_i = floor(get_v_scroll());
 		int sc = 0;
@@ -8143,7 +8139,7 @@ void TextEdit::_update_gutter_width() {
 
 /* Syntax highlighting. */
 Dictionary TextEdit::_get_line_syntax_highlighting(int p_line) {
-	return syntax_highlighter.is_null() && !setting_text ? Dictionary() : syntax_highlighter->get_line_syntax_highlighting(p_line);
+	return (syntax_highlighter.is_null() || setting_text) ? Dictionary() : syntax_highlighter->get_line_syntax_highlighting(p_line);
 }
 
 /* Deprecated. */

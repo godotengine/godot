@@ -869,9 +869,6 @@ msgstr "Koneksi"
 msgid "Engine Version Update Mode"
 msgstr "Mode Pembaruan Versi Engine"
 
-msgid "Enable Pseudolocalization"
-msgstr "Aktifkan Pseudolokalisasi"
-
 msgid "Use Embedded Menu"
 msgstr "Gunakan Menu Tersemat"
 
@@ -1630,6 +1627,15 @@ msgstr "Interval Refresg Pohon Adegan Remot"
 
 msgid "Remote Inspect Refresh Interval"
 msgstr "Interval Refresh Pemeriksaan Remot"
+
+msgid "Input"
+msgstr "Input"
+
+msgid "Buffering"
+msgstr "Proses Pengumpulan Data"
+
+msgid "Agile Event Flushing"
+msgstr "Flushing Event yang Tangkas"
 
 msgid "Project Manager"
 msgstr "Manajer Proyek"
@@ -2642,18 +2648,6 @@ msgstr "Default"
 msgid "Default Clear Color"
 msgstr "Warna Jelas Default"
 
-msgid "Show Image"
-msgstr "Tampilkan Gambar"
-
-msgid "Image"
-msgstr "Gambar"
-
-msgid "Fullsize"
-msgstr "Ukuran penuh"
-
-msgid "Use Filter"
-msgstr "Gunakan Filter"
-
 msgid "Icon"
 msgstr "Ikon"
 
@@ -2662,12 +2656,6 @@ msgstr "Ikon Asli macOS"
 
 msgid "Windows Native Icon"
 msgstr "Ikon Windows"
-
-msgid "Buffering"
-msgstr "Proses Pengumpulan Data"
-
-msgid "Agile Event Flushing"
-msgstr "Flushing Event yang Tangkas"
 
 msgid "Pointing"
 msgstr "Menunjuk"
@@ -2689,6 +2677,18 @@ msgstr "Hotspot Gambar Kustom"
 
 msgid "Tooltip Position Offset"
 msgstr "Offset Posisi Tooltip"
+
+msgid "Show Image"
+msgstr "Tampilkan Gambar"
+
+msgid "Image"
+msgstr "Gambar"
+
+msgid "Fullsize"
+msgstr "Ukuran penuh"
+
+msgid "Use Filter"
+msgstr "Gunakan Filter"
 
 msgid "Minimum Display Time"
 msgstr "Waktu Tampilan Minimal"
@@ -4747,9 +4747,6 @@ msgstr "Batas Aman"
 
 msgid "Disable Mode"
 msgstr "Mode Nonaktifkan"
-
-msgid "Input"
-msgstr "Input"
 
 msgid "Pickable"
 msgstr "Dapat dipilih"
@@ -8282,9 +8279,6 @@ msgstr "Indeks Permukaan"
 msgid "Degrees Mode"
 msgstr "Mode Derajat"
 
-msgid "Font Color"
-msgstr "Warna Font"
-
 msgid "Font Pressed Color"
 msgstr "Warna Font yang Ditekan"
 
@@ -9715,6 +9709,3 @@ msgstr "Pangkal Dunia"
 
 msgid "Primary Interface"
 msgstr "Antarmuka Utama"
-
-msgid "Property"
-msgstr "Properti"

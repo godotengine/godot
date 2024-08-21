@@ -51,6 +51,7 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "main/main.h"
+#include "servers/xr_server.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
@@ -83,6 +84,10 @@ static Vector3 magnetometer;
 static Vector3 gyroscope;
 
 static void _terminate(JNIEnv *env, bool p_restart = false) {
+	if (step.get() == STEP_TERMINATED) {
+		return;
+	}
+
 	step.set(STEP_TERMINATED); // Ensure no further steps are attempted and no further events are sent
 
 	// lets cleanup
@@ -114,6 +119,7 @@ static void _terminate(JNIEnv *env, bool p_restart = false) {
 	NetSocketAndroid::terminate();
 
 	if (godot_java) {
+		godot_java->on_godot_terminating(env);
 		if (!restart_on_cleanup) {
 			if (p_restart) {
 				godot_java->restart(env);
@@ -265,7 +271,18 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env,
 	}
 
 	if (step.get() == STEP_SHOW_LOGO) {
-		Main::setup_boot_logo();
+		bool xr_enabled;
+		if (XRServer::get_xr_mode() == XRServer::XRMODE_DEFAULT) {
+			xr_enabled = GLOBAL_GET("xr/shaders/enabled");
+		} else {
+			xr_enabled = XRServer::get_xr_mode() == XRServer::XRMODE_ON;
+		}
+		// Unlike PCVR, there's no additional 2D screen onto which to render the boot logo,
+		// so we skip this step if xr is enabled.
+		if (!xr_enabled) {
+			Main::setup_boot_logo();
+		}
+
 		step.increment();
 		return true;
 	}
@@ -550,10 +567,11 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onRendererPaused(JNIE
 	}
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_updateInputDispatchSettings(JNIEnv *env, jclass clazz, jboolean p_use_accumulated_input, jboolean p_use_input_buffering) {
-	if (Input::get_singleton()) {
-		Input::get_singleton()->set_use_accumulated_input(p_use_accumulated_input);
-		Input::get_singleton()->set_use_input_buffering(p_use_input_buffering);
+JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_shouldDispatchInputToRenderThread(JNIEnv *env, jclass clazz) {
+	Input *input = Input::get_singleton();
+	if (input) {
+		return !input->is_agile_input_event_flushing();
 	}
+	return false;
 }
 }

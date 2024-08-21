@@ -3,7 +3,7 @@
 This document summarizes the most important points for people interested in
 contributing to Godot, especially via bug reports or pull requests.
 
-The Godot documentation has a dedicated [Contributing section](https://docs.godotengine.org/en/latest/contributing/ways_to_contribute.html)
+The Godot documentation has a dedicated [Contributing section](https://docs.godotengine.org/en/latest/contributing/how_to_contribute.html)
 which details these points and more, and is a recommended read.
 
 ## Table of contents
@@ -63,7 +63,7 @@ In addition to the following tips, also take a look at the
 [Engine development guide](https://docs.godotengine.org/en/latest/contributing/development/index.html)
 for an introduction to developing on Godot.
 
-The [Contributing docs](https://docs.godotengine.org/en/latest/contributing/ways_to_contribute.html)
+The [Contributing docs](https://docs.godotengine.org/en/latest/contributing/how_to_contribute.html)
 also have important information on the [PR workflow](https://docs.godotengine.org/en/latest/contributing/workflow/pr_workflow.html)
 (with a helpful guide for Git usage), and our [Code style guidelines](https://docs.godotengine.org/en/latest/contributing/development/code_style_guidelines.html)
 which all contributions need to follow.

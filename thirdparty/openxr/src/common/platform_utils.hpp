@@ -47,7 +47,7 @@
 #define XR_ARCH_ABI "aarch64"
 #elif (defined(__ARM_ARCH) && __ARM_ARCH >= 7 && (defined(__ARM_PCS_VFP) || defined(__ANDROID__))) || defined(_M_ARM)
 #define XR_ARCH_ABI "armv7a-vfp"
-#elif defined(__ARM_ARCH_5TE__)
+#elif defined(__ARM_ARCH_5TE__) || (defined(__ARM_ARCH) && __ARM_ARCH > 5)
 #define XR_ARCH_ABI "armv5te"
 #elif defined(__mips64)
 #define XR_ARCH_ABI "mips64"
@@ -90,8 +90,6 @@ void LogPlatformUtilsError(const std::string& message);
 namespace detail {
 
 static inline char* ImplGetEnv(const char* name) { return getenv(name); }
-
-static inline int ImplSetEnv(const char* name, const char* value, int overwrite) { return setenv(name, value, overwrite); }
 
 static inline char* ImplGetSecureEnv(const char* name) {
 #ifdef HAVE_SECURE_GETENV
@@ -162,12 +160,6 @@ static inline std::string PlatformUtilsGetSecureEnv(const char* name) {
 
 static inline bool PlatformUtilsGetEnvSet(const char* name) { return detail::ImplGetEnv(name) != nullptr; }
 
-static inline bool PlatformUtilsSetEnv(const char* name, const char* value) {
-    const int shouldOverwrite = 1;
-    int result = detail::ImplSetEnv(name, value, shouldOverwrite);
-    return (result == 0);
-}
-
 #elif defined(XR_OS_APPLE)
 
 static inline std::string PlatformUtilsGetEnv(const char* name) {
@@ -187,12 +179,6 @@ static inline std::string PlatformUtilsGetSecureEnv(const char* name) {
 }
 
 static inline bool PlatformUtilsGetEnvSet(const char* name) { return detail::ImplGetEnv(name) != nullptr; }
-
-static inline bool PlatformUtilsSetEnv(const char* name, const char* value) {
-    const int shouldOverwrite = 1;
-    int result = detail::ImplSetEnv(name, value, shouldOverwrite);
-    return (result == 0);
-}
 
 static inline bool PlatformGetGlobalRuntimeFileName(uint16_t major_version, std::string& file_name) {
     return detail::ImplTryRuntimeFilename("/usr/local/share/openxr/", major_version, file_name);
@@ -337,18 +323,9 @@ static inline std::string PlatformUtilsGetSecureEnv(const char* name) {
     return envValue;
 }
 
-// Sets an environment variable via UTF8 strings.
-// The name is case-sensitive.
-// Overwrites the variable if it already exists.
-// Returns true if it could be set.
-static inline bool PlatformUtilsSetEnv(const char* name, const char* value) {
-    const std::wstring wname = utf8_to_wide(name);
-    const std::wstring wvalue = utf8_to_wide(value);
-    BOOL result = ::SetEnvironmentVariableW(wname.c_str(), wvalue.c_str());
-    return (result != 0);
-}
-
 #elif defined(XR_OS_ANDROID)
+
+#include <sys/system_properties.h>
 
 static inline bool PlatformUtilsGetEnvSet(const char* /* name */) {
     // Stub func
@@ -363,11 +340,6 @@ static inline std::string PlatformUtilsGetEnv(const char* /* name */) {
 static inline std::string PlatformUtilsGetSecureEnv(const char* /* name */) {
     // Stub func
     return {};
-}
-
-static inline bool PlatformUtilsSetEnv(const char* /* name */, const char* /* value */) {
-    // Stub func
-    return false;
 }
 
 // Intended to be only used as a fallback on Android, with a more open, "native" technique used in most cases
@@ -385,6 +357,37 @@ static inline bool PlatformGetGlobalRuntimeFileName(uint16_t major_version, std:
 
     return false;
 }
+
+// Android system properties are sufficiently different from environment variables that we are not re-using
+// PlatformUtilsGetEnv for this purpose
+static inline std::string PlatformUtilsGetAndroidSystemProperty(const char* name) {
+    std::string result;
+    const prop_info* pi = __system_property_find(name);
+    if (pi == nullptr) {
+        return {};
+    }
+
+#if __ANDROID_API__ >= 26
+    // use callback to retrieve > 92 character sys prop values, if available
+    __system_property_read_callback(
+        pi,
+        [](void* cookie, const char*, const char* value, uint32_t) {
+            auto property_value = reinterpret_cast<std::string*>(cookie);
+            *property_value = value;
+        },
+        reinterpret_cast<void*>(&result));
+#endif  // __ANDROID_API__ >= 26
+    // fallback to __system_property_get if no value retrieved via callback
+    if (result.empty()) {
+        char value[PROP_VALUE_MAX] = {};
+        if (__system_property_get(name, value) != 0) {
+            result = value;
+        }
+    }
+
+    return result;
+}
+
 #else  // Not Linux, Apple, nor Windows
 
 static inline bool PlatformUtilsGetEnvSet(const char* /* name */) {
@@ -400,11 +403,6 @@ static inline std::string PlatformUtilsGetEnv(const char* /* name */) {
 static inline std::string PlatformUtilsGetSecureEnv(const char* /* name */) {
     // Stub func
     return {};
-}
-
-static inline bool PlatformUtilsSetEnv(const char* /* name */, const char* /* value */) {
-    // Stub func
-    return false;
 }
 
 static inline bool PlatformGetGlobalRuntimeFileName(uint16_t /* major_version */, std::string const& /* file_name */) {

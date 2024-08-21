@@ -252,9 +252,6 @@ StringName BonePicker::get_selected_bone() {
 	return selected->get_text(0);
 }
 
-void BonePicker::_bind_methods() {
-}
-
 void BonePicker::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {

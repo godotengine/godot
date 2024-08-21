@@ -228,7 +228,7 @@ void JoypadMacOS::joypad_vibration_stop(Joypad *p_joypad, uint64_t p_timestamp) 
 @property(assign, nonatomic) BOOL isObserving;
 @property(assign, nonatomic) BOOL isProcessing;
 @property(strong, nonatomic) NSMutableDictionary<NSNumber *, Joypad *> *connectedJoypads;
-@property(strong, nonatomic) NSMutableArray<Joypad *> *joypadsQueue;
+@property(strong, nonatomic) NSMutableArray<GCController *> *joypadsQueue;
 
 @end
 
@@ -364,8 +364,7 @@ void JoypadMacOS::joypad_vibration_stop(Joypad *p_joypad, uint64_t p_timestamp) 
 	if ([[self getAllKeysForController:controller] count] > 0) {
 		print_verbose("Controller is already registered.");
 	} else if (!self.isProcessing) {
-		Joypad *joypad = [[Joypad alloc] init:controller];
-		[self.joypadsQueue addObject:joypad];
+		[self.joypadsQueue addObject:controller];
 	} else {
 		[self addMacOSJoypad:controller];
 	}

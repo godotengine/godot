@@ -398,6 +398,13 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			item->set_button_color(0, item->get_button_count(0) - 1, button_color);
 		}
 
+		if (p_node->has_meta("_edit_lock_")) {
+			item->add_button(0, get_editor_theme_icon(SNAME("Lock")), BUTTON_LOCK, false, TTR("Node is locked.\nClick to unlock it."));
+		}
+		if (p_node->has_meta("_edit_group_")) {
+			item->add_button(0, get_editor_theme_icon(SNAME("Group")), BUTTON_GROUP, false, TTR("Children are not selectable.\nClick to make them selectable."));
+		}
+
 		if (p_node->has_method("is_visible") && p_node->has_method("set_visible") && p_node->has_signal(SceneStringName(visibility_changed))) {
 			bool is_visible = p_node->call("is_visible");
 			if (is_visible) {
@@ -410,13 +417,6 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 				p_node->connect(SceneStringName(visibility_changed), vis_changed.bind(p_node));
 			}
 			_update_visibility_color(p_node, item);
-		}
-
-		if (p_node->has_meta("_edit_lock_")) {
-			item->add_button(0, get_editor_theme_icon(SNAME("Lock")), BUTTON_LOCK, false, TTR("Node is locked.\nClick to unlock it."));
-		}
-		if (p_node->has_meta("_edit_group_")) {
-			item->add_button(0, get_editor_theme_icon(SNAME("Group")), BUTTON_GROUP, false, TTR("Children are not selectable.\nClick to make them selectable."));
 		}
 
 		if (p_node->is_class("AnimationMixer")) {
@@ -1000,6 +1000,7 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 	TreeItem *item = p_node ? _find(tree->get_root(), p_node->get_path()) : nullptr;
 
 	if (item) {
+		selected = p_node;
 		if (auto_expand_selected) {
 			// Make visible when it's collapsed.
 			TreeItem *node = item->get_parent();
@@ -1009,8 +1010,24 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 			}
 			item->select(0);
 			item->set_as_cursor(0);
-			selected = p_node;
 			tree->ensure_cursor_is_visible();
+		} else {
+			// Ensure the node is selected and visible for the user if the node
+			// is not collapsed.
+			bool collapsed = false;
+			TreeItem *node = item;
+			while (node && node != tree->get_root()) {
+				if (node->is_collapsed()) {
+					collapsed = true;
+					break;
+				}
+				node = node->get_parent();
+			}
+			if (!collapsed) {
+				item->select(0);
+				item->set_as_cursor(0);
+				tree->ensure_cursor_is_visible();
+			}
 		}
 	} else {
 		if (!p_node) {

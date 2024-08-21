@@ -170,7 +170,7 @@
 		<method name="get_shortest_axis" qualifiers="const">
 			<return type="Vector3" />
 			<description>
-				Returns the shortest normaalized axis of this bounding box's [member size], as a [Vector3] ([constant Vector3.RIGHT], [constant Vector3.UP], or [constant Vector3.BACK]).
+				Returns the shortest normalized axis of this bounding box's [member size], as a [Vector3] ([constant Vector3.RIGHT], [constant Vector3.UP], or [constant Vector3.BACK]).
 				[codeblocks]
 				[gdscript]
 				var box = AABB(Vector3(0, 0, 0), Vector3(2, 4, 8))

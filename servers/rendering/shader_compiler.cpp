@@ -922,7 +922,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				if (shader->uniforms.has(vnode->name)) {
 					//its a uniform!
 					const ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[vnode->name];
-					if (u.texture_order >= 0) {
+					if (u.is_texture()) {
 						StringName name;
 						if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE) {
 							name = "color_buffer";
@@ -1039,7 +1039,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				if (shader->uniforms.has(anode->name)) {
 					//its a uniform!
 					const ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[anode->name];
-					if (u.texture_order >= 0) {
+					if (u.is_texture()) {
 						code = _mkid(anode->name); //texture, use as is
 					} else {
 						//a scalar or vector
@@ -1286,6 +1286,13 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 													break;
 												}
 												if (function->arguments[j].tex_argument_check) {
+													if (function->arguments[j].tex_hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE) {
+														is_screen_texture = true;
+													} else if (function->arguments[j].tex_hint == ShaderLanguage::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
+														is_depth_texture = true;
+													} else if (function->arguments[j].tex_hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE) {
+														is_normal_roughness_texture = true;
+													}
 													sampler_name = _get_sampler_name(function->arguments[j].tex_argument_filter, function->arguments[j].tex_argument_repeat);
 													found = true;
 													break;

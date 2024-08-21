@@ -45,10 +45,6 @@ class GodotGame : GodotEditor() {
 
 	override fun enablePanAndScaleGestures() = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_pan_and_scale_gestures"))
 
-	override fun useInputBuffering() = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/buffering/android/use_input_buffering"))
-
-	override fun useAccumulatedInput() = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/buffering/android/use_accumulated_input"))
-
 	override fun checkForProjectPermissionsToEnable() {
 		// Nothing to do.. by the time we get here, the project permissions will have already
 		// been requested by the Editor window.

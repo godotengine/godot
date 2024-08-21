@@ -291,14 +291,18 @@ bool ResourceImporterScene::get_option_visibility(const String &p_path, const St
 	for (int i = 0; i < post_importer_plugins.size(); i++) {
 		Variant ret = post_importer_plugins.write[i]->get_option_visibility(p_path, animation_importer, p_option, p_options);
 		if (ret.get_type() == Variant::BOOL) {
-			return ret;
+			if (!ret) {
+				return false;
+			}
 		}
 	}
 
 	for (Ref<EditorSceneFormatImporter> importer : scene_importers) {
 		Variant ret = importer->get_option_visibility(p_path, animation_importer, p_option, p_options);
 		if (ret.get_type() == Variant::BOOL) {
-			return ret;
+			if (!ret) {
+				return false;
+			}
 		}
 	}
 
@@ -2009,6 +2013,7 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/lods", PROPERTY_HINT_ENUM, "Default,Enable,Disable"), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "lods/normal_split_angle", PROPERTY_HINT_RANGE, "0,180,0.1,degrees"), 25.0f));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "lods/normal_merge_angle", PROPERTY_HINT_RANGE, "0,180,0.1,degrees"), 60.0f));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "lods/raycast_normals", PROPERTY_HINT_NONE, ""), false));
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_MATERIAL: {
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "use_external/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
@@ -2436,6 +2441,7 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 				bool generate_lods = p_generate_lods;
 				float split_angle = 25.0f;
 				float merge_angle = 60.0f;
+				bool raycast_normals = false;
 				bool create_shadow_meshes = p_create_shadow_meshes;
 				bool bake_lightmaps = p_light_bake_mode == LIGHT_BAKE_STATIC_LIGHTMAPS;
 				String save_to_file;
@@ -2490,6 +2496,10 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 						merge_angle = mesh_settings["lods/normal_merge_angle"];
 					}
 
+					if (mesh_settings.has("lods/raycast_normals")) {
+						raycast_normals = mesh_settings["lods/raycast_normals"];
+					}
+
 					if (bool(mesh_settings.get("save_to_file/enabled", false))) {
 						save_to_file = mesh_settings.get("save_to_file/path", String());
 						if (!save_to_file.is_resource_file()) {
@@ -2534,9 +2544,11 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 					}
 				}
 
+				src_mesh_node->get_mesh()->optimize_indices_for_cache();
+
 				if (generate_lods) {
 					Array skin_pose_transform_array = _get_skinned_pose_transforms(src_mesh_node);
-					src_mesh_node->get_mesh()->generate_lods(merge_angle, split_angle, skin_pose_transform_array);
+					src_mesh_node->get_mesh()->generate_lods(merge_angle, split_angle, skin_pose_transform_array, raycast_normals);
 				}
 
 				if (create_shadow_meshes) {
@@ -2802,6 +2814,7 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file, const HashM
 	}
 
 	ERR_FAIL_COND_V(!importer.is_valid(), nullptr);
+	ERR_FAIL_COND_V(p_options.is_empty(), nullptr);
 
 	Error err = OK;
 
@@ -2860,6 +2873,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	}
 
 	ERR_FAIL_COND_V(!importer.is_valid(), ERR_FILE_UNRECOGNIZED);
+	ERR_FAIL_COND_V(p_options.is_empty(), ERR_BUG);
 
 	int import_flags = 0;
 

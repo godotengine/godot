@@ -34,9 +34,6 @@
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_default.h"
 
-void RenderSceneDataRD::_bind_methods() {
-}
-
 Transform3D RenderSceneDataRD::get_cam_transform() const {
 	return cam_transform;
 }

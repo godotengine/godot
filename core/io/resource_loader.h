@@ -167,10 +167,11 @@ private:
 		Thread::ID thread_id = 0; // Used if running on an user thread (e.g., simple non-threaded load).
 		bool awaited = false; // If it's in the pool, this helps not awaiting from more than one dependent thread.
 		ConditionVariable *cond_var = nullptr; // In not in the worker pool or already awaiting, this is used as a secondary awaiting mechanism.
+		uint32_t awaiters_count = 0;
+		bool need_wait = true;
 		LoadToken *load_token = nullptr;
 		String local_path;
 		String remapped_path;
-		String dependent_path;
 		String type_hint;
 		float progress = 0.0f;
 		float max_reported_progress = 0.0f;
@@ -189,7 +190,7 @@ private:
 	static thread_local int load_nesting;
 	static thread_local WorkerThreadPool::TaskID caller_task_id;
 	static thread_local HashMap<int, HashMap<String, Ref<Resource>>> res_ref_overrides; // Outermost key is nesting level.
-	static thread_local Vector<String> *load_paths_stack; // A pointer to avoid broken TLS implementations from double-running the destructor.
+	static thread_local Vector<String> load_paths_stack;
 	static SafeBinaryMutex<BINARY_MUTEX_TAG> thread_load_mutex;
 	static HashMap<String, ThreadLoadTask> thread_load_tasks;
 	static bool cleaning_tasks;

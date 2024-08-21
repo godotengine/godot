@@ -187,7 +187,12 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 		final Activity activity = getActivity();
 		mCurrentIntent = activity.getIntent();
 
-		godot = new Godot(requireContext());
+		if (parentHost != null) {
+			godot = parentHost.getGodot();
+		}
+		if (godot == null) {
+			godot = new Godot(requireContext());
+		}
 		performEngineInitialization();
 		BenchmarkUtils.endBenchmarkMeasure("Startup", "GodotFragment::onCreate");
 	}
@@ -209,7 +214,7 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 			final String errorMessage = TextUtils.isEmpty(e.getMessage())
 					? getString(R.string.error_engine_setup_message)
 					: e.getMessage();
-			godot.alert(errorMessage, getString(R.string.text_error_title), godot::forceQuit);
+			godot.alert(errorMessage, getString(R.string.text_error_title), godot::destroyAndKillProcess);
 		} catch (IllegalArgumentException ignored) {
 			final Activity activity = getActivity();
 			Intent notifierIntent = new Intent(activity, activity.getClass());
@@ -325,7 +330,7 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 	}
 
 	public void onBackPressed() {
-		godot.onBackPressed(this);
+		godot.onBackPressed();
 	}
 
 	/**

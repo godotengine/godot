@@ -5440,6 +5440,24 @@ int Tree::get_drop_section_at_position(const Point2 &p_pos) const {
 	return -100;
 }
 
+bool Tree::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
+	if (drag_touching) {
+		// Disable data drag & drop when touch dragging.
+		return false;
+	}
+
+	return Control::can_drop_data(p_point, p_data);
+}
+
+Variant Tree::get_drag_data(const Point2 &p_point) {
+	if (drag_touching) {
+		// Disable data drag & drop when touch dragging.
+		return Variant();
+	}
+
+	return Control::get_drag_data(p_point);
+}
+
 TreeItem *Tree::get_item_at_position(const Point2 &p_pos) const {
 	if (root) {
 		Point2 pos = p_pos;

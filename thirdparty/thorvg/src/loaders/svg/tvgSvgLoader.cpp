@@ -647,9 +647,9 @@ static bool _hslToRgb(float hue, float saturation, float brightness, uint8_t* re
         }
     }
 
-    *red = static_cast<uint8_t>(ceil(_red * 255.0f));
-    *green = static_cast<uint8_t>(ceil(_green * 255.0f));
-    *blue = static_cast<uint8_t>(ceil(_blue * 255.0f));
+    *red = (uint8_t)nearbyint(_red * 255.0f);
+    *green = (uint8_t)nearbyint(_green * 255.0f);
+    *blue = (uint8_t)nearbyint(_blue * 255.0f);
 
     return true;
 }
@@ -3254,19 +3254,34 @@ static void _clonePostponedNodes(Array<SvgNodeIdPair>* cloneNodes, SvgNode* doc)
 }
 
 
-static void _svgLoaderParserXmlClose(SvgLoaderData* loader, const char* content)
+static void _svgLoaderParserXmlClose(SvgLoaderData* loader, const char* content, unsigned int length)
 {
+    const char* itr = nullptr;
+    int sz = length;
+    char tagName[20] = "";
+
     content = _skipSpace(content, nullptr);
+    itr = content;
+    while ((itr != nullptr) && *itr != '>') itr++;
+
+    if (itr) {
+        sz = itr - content;
+        while ((sz > 0) && (isspace(content[sz - 1]))) sz--;
+        if ((unsigned int)sz >= sizeof(tagName)) sz = sizeof(tagName) - 1;
+        strncpy(tagName, content, sz);
+        tagName[sz] = '\0';
+    }
+    else return;
 
     for (unsigned int i = 0; i < sizeof(groupTags) / sizeof(groupTags[0]); i++) {
-        if (!strncmp(content, groupTags[i].tag, groupTags[i].sz - 1)) {
+        if (!strncmp(tagName, groupTags[i].tag, sz)) {
             loader->stack.pop();
             break;
         }
     }
 
     for (unsigned int i = 0; i < sizeof(graphicsTags) / sizeof(graphicsTags[0]); i++) {
-        if (!strncmp(content, graphicsTags[i].tag, graphicsTags[i].sz - 1)) {
+        if (!strncmp(tagName, graphicsTags[i].tag, sz)) {
             loader->currentGraphicsNode = nullptr;
             loader->stack.pop();
             break;
@@ -3437,7 +3452,7 @@ static bool _svgLoaderParser(void* data, SimpleXMLType type, const char* content
             break;
         }
         case SimpleXMLType::Close: {
-            _svgLoaderParserXmlClose(loader, content);
+            _svgLoaderParserXmlClose(loader, content, length);
             break;
         }
         case SimpleXMLType::Data:

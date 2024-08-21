@@ -38,7 +38,7 @@
 #include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
-#include "core/string/translation.h"
+#include "core/string/translation_server.h"
 #include "core/templates/local_vector.h"
 #include "core/variant/typed_array.h"
 
@@ -763,7 +763,7 @@ Variant Object::callp(const StringName &p_method, const Variant **p_args, int p_
 		}
 		if (is_ref_counted()) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-			ERR_FAIL_V_MSG(Variant(), "Can't 'free' a reference.");
+			ERR_FAIL_V_MSG(Variant(), "Can't free a RefCounted object.");
 		}
 
 		if (_lock_index.get() > 1) {
@@ -2097,7 +2097,11 @@ Object::~Object() {
 	// Disconnect signals that connect to this object.
 	while (connections.size()) {
 		Connection c = connections.front()->get();
-		bool disconnected = c.signal.get_object()->_disconnect(c.signal.get_name(), c.callable, true);
+		Object *obj = c.callable.get_object();
+		bool disconnected = false;
+		if (likely(obj)) {
+			disconnected = c.signal.get_object()->_disconnect(c.signal.get_name(), c.callable, true);
+		}
 		if (unlikely(!disconnected)) {
 			// If the disconnect has failed, abandon the connection to avoid getting trapped in an infinite loop here.
 			connections.pop_front();

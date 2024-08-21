@@ -763,6 +763,7 @@ public:
 	Vector2i get_atlas_grid_size() const;
 	Rect2i get_tile_texture_region(Vector2i p_atlas_coords, int p_frame = 0) const;
 	bool is_position_in_tile_texture_region(const Vector2i p_atlas_coords, int p_alternative_tile, Vector2 p_position) const;
+	bool is_rect_in_tile_texture_region(const Vector2i p_atlas_coords, int p_alternative_tile, Rect2 p_rect) const;
 
 	static int alternative_no_transform(int p_alternative_id);
 

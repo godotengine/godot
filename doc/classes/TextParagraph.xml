@@ -175,7 +175,7 @@
 			<return type="Vector2" />
 			<param index="0" name="line" type="int" />
 			<description>
-				Returns size of the bounding box of the line of text.
+				Returns size of the bounding box of the line of text. Returned size is rounded up.
 			</description>
 		</method>
 		<method name="get_line_underline_position" qualifiers="const">

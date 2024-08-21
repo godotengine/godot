@@ -66,6 +66,11 @@ OSStatus AudioDriverCoreAudio::output_device_address_cb(AudioObjectID inObjectID
 
 	return noErr;
 }
+
+// Switch to kAudioObjectPropertyElementMain everywhere to remove deprecated warnings.
+#if (TARGET_OS_OSX && __MAC_OS_X_VERSION_MAX_ALLOWED < 120000) || (TARGET_OS_IOS && __IPHONE_OS_VERSION_MAX_ALLOWED < 150000)
+#define kAudioObjectPropertyElementMain kAudioObjectPropertyElementMaster
+#endif
 #endif
 
 Error AudioDriverCoreAudio::init() {
@@ -89,7 +94,7 @@ Error AudioDriverCoreAudio::init() {
 	AudioObjectPropertyAddress prop;
 	prop.mSelector = kAudioHardwarePropertyDefaultOutputDevice;
 	prop.mScope = kAudioObjectPropertyScopeGlobal;
-	prop.mElement = kAudioObjectPropertyElementMaster;
+	prop.mElement = kAudioObjectPropertyElementMain;
 
 	result = AudioObjectAddPropertyListener(kAudioObjectSystemObject, &prop, &output_device_address_cb, this);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
@@ -319,7 +324,7 @@ void AudioDriverCoreAudio::finish() {
 		AudioObjectPropertyAddress prop;
 		prop.mSelector = kAudioHardwarePropertyDefaultOutputDevice;
 		prop.mScope = kAudioObjectPropertyScopeGlobal;
-		prop.mElement = kAudioObjectPropertyElementMaster;
+		prop.mElement = kAudioObjectPropertyElementMain;
 
 		result = AudioObjectRemovePropertyListener(kAudioObjectSystemObject, &prop, &output_device_address_cb, this);
 		if (result != noErr) {
@@ -358,7 +363,7 @@ Error AudioDriverCoreAudio::init_input_device() {
 	AudioObjectPropertyAddress prop;
 	prop.mSelector = kAudioHardwarePropertyDefaultInputDevice;
 	prop.mScope = kAudioObjectPropertyScopeGlobal;
-	prop.mElement = kAudioObjectPropertyElementMaster;
+	prop.mElement = kAudioObjectPropertyElementMain;
 
 	result = AudioObjectAddPropertyListener(kAudioObjectSystemObject, &prop, &input_device_address_cb, this);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
@@ -375,7 +380,7 @@ Error AudioDriverCoreAudio::init_input_device() {
 #ifdef MACOS_ENABLED
 	AudioDeviceID deviceId;
 	size = sizeof(AudioDeviceID);
-	AudioObjectPropertyAddress property = { kAudioHardwarePropertyDefaultInputDevice, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
+	AudioObjectPropertyAddress property = { kAudioHardwarePropertyDefaultInputDevice, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMain };
 
 	result = AudioObjectGetPropertyData(kAudioObjectSystemObject, &property, 0, nullptr, &size, &deviceId);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
@@ -453,7 +458,7 @@ void AudioDriverCoreAudio::finish_input_device() {
 		AudioObjectPropertyAddress prop;
 		prop.mSelector = kAudioHardwarePropertyDefaultInputDevice;
 		prop.mScope = kAudioObjectPropertyScopeGlobal;
-		prop.mElement = kAudioObjectPropertyElementMaster;
+		prop.mElement = kAudioObjectPropertyElementMain;
 
 		result = AudioObjectRemovePropertyListener(kAudioObjectSystemObject, &prop, &input_device_address_cb, this);
 		if (result != noErr) {
@@ -504,7 +509,7 @@ PackedStringArray AudioDriverCoreAudio::_get_device_list(bool input) {
 
 	prop.mSelector = kAudioHardwarePropertyDevices;
 	prop.mScope = kAudioObjectPropertyScopeGlobal;
-	prop.mElement = kAudioObjectPropertyElementMaster;
+	prop.mElement = kAudioObjectPropertyElementMain;
 
 	UInt32 size = 0;
 	AudioObjectGetPropertyDataSize(kAudioObjectSystemObject, &prop, 0, nullptr, &size);
@@ -563,7 +568,7 @@ void AudioDriverCoreAudio::_set_device(const String &output_device, bool input) 
 
 		prop.mSelector = kAudioHardwarePropertyDevices;
 		prop.mScope = kAudioObjectPropertyScopeGlobal;
-		prop.mElement = kAudioObjectPropertyElementMaster;
+		prop.mElement = kAudioObjectPropertyElementMain;
 
 		UInt32 size = 0;
 		AudioObjectGetPropertyDataSize(kAudioObjectSystemObject, &prop, 0, nullptr, &size);
@@ -619,7 +624,7 @@ void AudioDriverCoreAudio::_set_device(const String &output_device, bool input) 
 		// If we haven't found the desired device get the system default one
 		UInt32 size = sizeof(AudioDeviceID);
 		UInt32 elem = input ? kAudioHardwarePropertyDefaultInputDevice : kAudioHardwarePropertyDefaultOutputDevice;
-		AudioObjectPropertyAddress property = { elem, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
+		AudioObjectPropertyAddress property = { elem, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMain };
 
 		OSStatus result = AudioObjectGetPropertyData(kAudioObjectSystemObject, &property, 0, nullptr, &size, &deviceId);
 		ERR_FAIL_COND(result != noErr);

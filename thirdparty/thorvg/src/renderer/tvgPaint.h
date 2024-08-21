@@ -87,7 +87,6 @@ namespace tvg
             if (!rTransform) {
                 if (mathIdentity(&m)) return true;
                 rTransform = new RenderTransform();
-                if (!rTransform) return false;
             }
             rTransform->override(m);
             renderFlag |= RenderUpdateFlag::Transform;
@@ -98,7 +97,7 @@ namespace tvg
         Matrix* transform()
         {
             if (rTransform) {
-                rTransform->update();
+                if (renderFlag & RenderUpdateFlag::Transform) rTransform->update();
                 return &rTransform->m;
             }
             return nullptr;

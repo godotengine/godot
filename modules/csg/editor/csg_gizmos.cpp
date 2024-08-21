@@ -38,6 +38,135 @@
 #include "editor/plugins/gizmos/gizmo_3d_helper.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/camera_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/physics/collision_shape_3d.h"
+#include "scene/3d/physics/static_body_3d.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/menu_button.h"
+
+void CSGShapeEditor::_node_removed(Node *p_node) {
+	if (p_node == node) {
+		node = nullptr;
+		options->hide();
+	}
+}
+
+void CSGShapeEditor::edit(CSGShape3D *p_csg_shape) {
+	node = p_csg_shape;
+	if (node) {
+		options->show();
+	} else {
+		options->hide();
+	}
+}
+
+void CSGShapeEditor::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			options->set_icon(get_editor_theme_icon(SNAME("CSGCombiner3D")));
+		} break;
+	}
+}
+
+void CSGShapeEditor::_menu_option(int p_option) {
+	Array meshes = node->get_meshes();
+	if (meshes.is_empty()) {
+		err_dialog->set_text(TTR("CSG operation returned an empty array."));
+		err_dialog->popup_centered();
+		return;
+	}
+
+	switch (p_option) {
+		case MENU_OPTION_BAKE_MESH_INSTANCE: {
+			_create_baked_mesh_instance();
+		} break;
+		case MENU_OPTION_BAKE_COLLISION_SHAPE: {
+			_create_baked_collision_shape();
+		} break;
+	}
+}
+
+void CSGShapeEditor::_create_baked_mesh_instance() {
+	if (node == get_tree()->get_edited_scene_root()) {
+		err_dialog->set_text(TTR("Can not add a baked mesh as sibling for the scene root.\nMove the CSG root node below a parent node."));
+		err_dialog->popup_centered();
+		return;
+	}
+
+	Ref<ArrayMesh> mesh = node->bake_static_mesh();
+	if (mesh.is_null()) {
+		err_dialog->set_text(TTR("CSG operation returned an empty mesh."));
+		err_dialog->popup_centered();
+		return;
+	}
+
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(TTR("Create baked CSGShape3D Mesh Instance"));
+
+	Node *owner = get_tree()->get_edited_scene_root();
+
+	MeshInstance3D *mi = memnew(MeshInstance3D);
+	mi->set_mesh(mesh);
+	mi->set_name("CSGBakedMeshInstance3D");
+	mi->set_transform(node->get_transform());
+	ur->add_do_method(node, "add_sibling", mi, true);
+	ur->add_do_method(mi, "set_owner", owner);
+	ur->add_do_method(Node3DEditor::get_singleton(), SceneStringName(_request_gizmo), mi);
+
+	ur->add_do_reference(mi);
+	ur->add_undo_method(node->get_parent(), "remove_child", mi);
+
+	ur->commit_action();
+}
+
+void CSGShapeEditor::_create_baked_collision_shape() {
+	if (node == get_tree()->get_edited_scene_root()) {
+		err_dialog->set_text(TTR("Can not add a baked collision shape as sibling for the scene root.\nMove the CSG root node below a parent node."));
+		err_dialog->popup_centered();
+		return;
+	}
+
+	Ref<Shape3D> shape = node->bake_collision_shape();
+	if (shape.is_null()) {
+		err_dialog->set_text(TTR("CSG operation returned an empty shape."));
+		err_dialog->popup_centered();
+		return;
+	}
+
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(TTR("Create baked CSGShape3D Collision Shape"));
+
+	Node *owner = get_tree()->get_edited_scene_root();
+
+	CollisionShape3D *cshape = memnew(CollisionShape3D);
+	cshape->set_shape(shape);
+	cshape->set_name("CSGBakedCollisionShape3D");
+	cshape->set_transform(node->get_transform());
+	ur->add_do_method(node, "add_sibling", cshape, true);
+	ur->add_do_method(cshape, "set_owner", owner);
+	ur->add_do_method(Node3DEditor::get_singleton(), SceneStringName(_request_gizmo), cshape);
+
+	ur->add_do_reference(cshape);
+	ur->add_undo_method(node->get_parent(), "remove_child", cshape);
+
+	ur->commit_action();
+}
+
+CSGShapeEditor::CSGShapeEditor() {
+	options = memnew(MenuButton);
+	options->hide();
+	options->set_text(TTR("CSG"));
+	options->set_switch_on_hover(true);
+	Node3DEditor::get_singleton()->add_control_to_menu_panel(options);
+
+	options->get_popup()->add_item(TTR("Bake Mesh Instance"), MENU_OPTION_BAKE_MESH_INSTANCE);
+	options->get_popup()->add_item(TTR("Bake Collision Shape"), MENU_OPTION_BAKE_COLLISION_SHAPE);
+
+	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &CSGShapeEditor::_menu_option));
+
+	err_dialog = memnew(AcceptDialog);
+	add_child(err_dialog);
+}
 
 ///////////
 
@@ -393,9 +522,26 @@ void CSGShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	}
 }
 
+void EditorPluginCSG::edit(Object *p_object) {
+	CSGShape3D *csg_shape = Object::cast_to<CSGShape3D>(p_object);
+	if (csg_shape && csg_shape->is_root_shape()) {
+		csg_shape_editor->edit(csg_shape);
+	} else {
+		csg_shape_editor->edit(nullptr);
+	}
+}
+
+bool EditorPluginCSG::handles(Object *p_object) const {
+	CSGShape3D *csg_shape = Object::cast_to<CSGShape3D>(p_object);
+	return csg_shape && csg_shape->is_root_shape();
+}
+
 EditorPluginCSG::EditorPluginCSG() {
 	Ref<CSGShape3DGizmoPlugin> gizmo_plugin = Ref<CSGShape3DGizmoPlugin>(memnew(CSGShape3DGizmoPlugin));
 	Node3DEditor::get_singleton()->add_gizmo_plugin(gizmo_plugin);
+
+	csg_shape_editor = memnew(CSGShapeEditor);
+	EditorNode::get_singleton()->get_main_screen_control()->add_child(csg_shape_editor);
 }
 
 #endif // TOOLS_ENABLED

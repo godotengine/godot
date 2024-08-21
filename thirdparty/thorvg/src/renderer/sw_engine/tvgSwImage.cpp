@@ -114,8 +114,8 @@ bool imagePrepare(SwImage* image, const RenderMesh* mesh, const Matrix* transfor
 
     //Fast track: Non-transformed image but just shifted.
     if (image->direct) {
-        image->ox = -static_cast<int32_t>(round(transform->e13));
-        image->oy = -static_cast<int32_t>(round(transform->e23));
+        image->ox = -static_cast<int32_t>(nearbyint(transform->e13));
+        image->oy = -static_cast<int32_t>(nearbyint(transform->e23));
     //Figure out the scale factor by transform matrix
     } else {
         auto scaleX = sqrtf((transform->e11 * transform->e11) + (transform->e21 * transform->e21));

@@ -78,13 +78,7 @@ void ParallaxLayer::_update_mirroring() {
 }
 
 void ParallaxLayer::set_mirroring(const Size2 &p_mirroring) {
-	mirroring = p_mirroring;
-	if (mirroring.x < 0) {
-		mirroring.x = 0;
-	}
-	if (mirroring.y < 0) {
-		mirroring.y = 0;
-	}
+	mirroring = p_mirroring.maxf(0);
 
 	_update_mirroring();
 }

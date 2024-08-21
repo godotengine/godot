@@ -620,6 +620,8 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_in
 		}
 
 		cb->draw(ci, Point2i(cb_rect.position.x + style->get_margin(SIDE_LEFT), cb_rect.position.y + style->get_margin(SIDE_TOP)));
+	} else {
+		tabs.write[p_index].cb_rect = Rect2();
 	}
 }
 

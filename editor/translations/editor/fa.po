@@ -45,13 +45,14 @@
 # Amirhossein Basirat <amir.basirat.2004@gmail.com>, 2023.
 # Mehdi Fardadi <mahdi777jan@gmail.com>, 2024.
 # saeed dashti <saeed777724@gmail.com>, 2024.
+# Armin <Armin-KF@users.noreply.hosted.weblate.org>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-04-21 15:07+0000\n"
-"Last-Translator: saeed dashti <saeed777724@gmail.com>\n"
+"PO-Revision-Date: 2024-07-23 23:03+0000\n"
+"Last-Translator: Armin <Armin-KF@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
 "Language: fa\n"
@@ -59,7 +60,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.5-dev\n"
+"X-Generator: Weblate 5.7-dev\n"
 
 msgid "Main Thread"
 msgstr "موضوع اصلی"
@@ -210,6 +211,12 @@ msgstr "دکمه جوی‌پد %d"
 
 msgid "Pressure:"
 msgstr "فشار:"
+
+msgid "canceled"
+msgstr "لغو شده"
+
+msgid "touched"
+msgstr "لمس شده"
 
 msgid "released"
 msgstr "منتشر شد"
@@ -380,6 +387,9 @@ msgstr "انتخاب کلمه پایین نشانه"
 msgid "Add Selection for Next Occurrence"
 msgstr "افزودن گزینش برای رخداد بعدی"
 
+msgid "Skip Selection for Next Occurrence"
+msgstr "رد کردن انتخاب برای رخداد بعدی"
+
 msgid "Clear Carets and Selection"
 msgstr "پاکسازی نشانه‌ها و انتخاب"
 
@@ -471,6 +481,9 @@ msgstr "بازگردانی کنش"
 msgid "Add Event"
 msgstr "افزودن رویداد"
 
+msgid "Remove Action"
+msgstr "حذف عمل"
+
 msgid "Cannot Remove Action"
 msgstr "نمی‌توان کنش را حذف کرد"
 
@@ -485,6 +498,9 @@ msgstr "فیلتر بر اساس نام..."
 
 msgid "Clear All"
 msgstr "پاک کردن همه"
+
+msgid "Clear all search filters."
+msgstr "پاک کردن تمام فیلتر های جستجو."
 
 msgid "Add New Action"
 msgstr "افزودن کنش تازه"
@@ -614,6 +630,15 @@ msgstr "نمی‌‏توان حالت حلقه را روی انیمیشن نمو
 
 msgid "Can't change loop mode on animation embedded in another scene."
 msgstr "نمی‌توان حالت حلقه را در انیمیشن تعبیه شده در صحنه دیگر تغییر داد."
+
+msgid "3D Position Track..."
+msgstr "موقعیت مسیر سه بعدی..."
+
+msgid "3D Rotation Track..."
+msgstr "مسیر چرخش سه بعدی..."
+
+msgid "3D Scale Track..."
+msgstr "مسیر اندازه سه‌بعدی..."
 
 msgid "Animation length (frames)"
 msgstr "طول انیمیشن (فریم)"
@@ -787,15 +812,15 @@ msgstr ""
 msgid "Remove Anim Track"
 msgstr "حذف ترک انیمیشن"
 
-msgid "Hold Shift when clicking the key icon to skip this dialog."
-msgstr ""
-"هنگام کلیک کردن روی نماد، کلید Shift را نگه دارید تا از این گفتگو رد شوید."
-
 msgid "Create new track for %s and insert key?"
 msgstr "یک مسیر جدید برای %s بساز و کلید را درج کن؟"
 
 msgid "Create %d new tracks and insert keys?"
 msgstr "ساختن مسیر‌های جدید %d و درج کلیدها؟"
+
+msgid "Hold Shift when clicking the key icon to skip this dialog."
+msgstr ""
+"هنگام کلیک کردن روی نماد، کلید Shift را نگه دارید تا از این گفتگو رد شوید."
 
 msgid "Create"
 msgstr "ساخت"
@@ -856,18 +881,6 @@ msgstr "مسیر قطعه نامعتبر است، پس نمی‌توان کلی�
 
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "ترک از نوع گره سه‌بعدی (Node3D) نیست، نمی‌توان کلید را وارد کرد"
-
-msgid "Add Position Key"
-msgstr "افزودن کلید موقعیت"
-
-msgid "Add Rotation Key"
-msgstr "افزودن کلید دوران"
-
-msgid "Add Scale Key"
-msgstr "افزودن کلید اندازه"
-
-msgid "Add Track Key"
-msgstr "افزودن کلید ترک"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr "مسیر نامعتبر است، پس نمی‌توان کلید تابعی (متد) اضافه کرد."
@@ -2612,6 +2625,12 @@ msgstr "ویرایشگر"
 msgid "Property:"
 msgstr "ویژگی:"
 
+msgid "Internal Property:"
+msgstr "ویژگی داخلی :"
+
+msgid "This property can only be set in the Inspector."
+msgstr "این ویژگی فقط در اینسپکتور ( inspector ) قابل تنظیم است ."
+
 msgid "Signal:"
 msgstr "سیگنال:"
 
@@ -2648,8 +2667,14 @@ msgstr "نشان دادن همه"
 msgid "Classes Only"
 msgstr "تنها کلاس‌ها"
 
+msgid "Constructors Only"
+msgstr "فقط سازندگان"
+
 msgid "Methods Only"
 msgstr "تنها روش‌ها"
+
+msgid "Operators Only"
+msgstr "فقط عملگرها"
 
 msgid "Signals Only"
 msgstr "تنها سیگنال‌ها"
@@ -2666,6 +2691,9 @@ msgstr "تنها ویژگی‌های زمینه"
 msgid "Member Type"
 msgstr "نوع عضو"
 
+msgid "Keywords"
+msgstr "کلید واژه ها"
+
 msgid "Class"
 msgstr "کلاس"
 
@@ -2679,6 +2707,11 @@ msgid "Pinning a value forces it to be saved even if it's equal to the default."
 msgstr ""
 "پین کردن یک مقدار آن را مجبور می کند حتی اگر برابر با مقدار پیش فرض باشد "
 "ذخیره شود."
+
+msgid "(%d change)"
+msgid_plural "(%d changes)"
+msgstr[0] "%dتغییر"
+msgstr[1] "%dتغییرات"
 
 msgid "Move Up"
 msgstr "حرکت به بالا"
@@ -2837,13 +2870,6 @@ msgstr "گشودن فوری صحنه..."
 
 msgid "Quick Open Script..."
 msgstr "گشودن سریع اسکریپت..."
-
-msgid ""
-"The current scene has no root node, but %d modified external resource(s) were "
-"saved anyway."
-msgstr ""
-"صحنه کنونی گیره ریشه ای ندارد، اما %d منبع خارجی تغییر کرده به هرحال ذخیره "
-"شدند."
 
 msgid "Save Scene As..."
 msgstr "ذخیره صحنه در ..."
@@ -3127,9 +3153,6 @@ msgstr "اسکریپت جدید..."
 
 msgid "Project Run"
 msgstr "اجرای پروژه"
-
-msgid "There is an edited scene already."
-msgstr "در حال حاضر یک صحنه ویرایش شده وجود دارد."
 
 msgid "Editor Settings"
 msgstr "ویرایشگر ترجیحات"
@@ -3721,12 +3744,6 @@ msgstr "بارگیری منبع انجام نشد."
 
 msgid "Property Name Style"
 msgstr "سبک نام ویژگی"
-
-msgid "Raw"
-msgstr "خام"
-
-msgid "Capitalized"
-msgstr "با حروف بزرگ"
 
 msgid "Localization not available for current language."
 msgstr "محلی‌سازی برای زبان فعلی موجود نمی‌باشد."
@@ -5270,16 +5287,16 @@ msgid "Not Equal (!=)"
 msgstr "نا مساوی (=!)"
 
 msgid ""
-"Returns an associated 3D vector if the provided boolean value is true or "
-"false."
-msgstr ""
-"اگر مقدار بولی ارائه‌شده درست یا نادرست باشد یک بردار ۳‌ بعدی مربوط برمی‌گرداند."
-
-msgid ""
 "Returns an associated 2D vector if the provided boolean value is true or "
 "false."
 msgstr ""
 "اگر مقدار بولی ارائه‌شده درست یا نادرست باشد یک بردار ۲ بعدی مربوط برمی‌گرداند."
+
+msgid ""
+"Returns an associated 3D vector if the provided boolean value is true or "
+"false."
+msgstr ""
+"اگر مقدار بولی ارائه‌شده درست یا نادرست باشد یک بردار ۳‌ بعدی مربوط برمی‌گرداند."
 
 msgid "Boolean constant."
 msgstr "ثابت بولی."
@@ -5521,6 +5538,9 @@ msgid ""
 "Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
 msgstr "فایل پروژه \".zip\" نامعتبر است؛ زیرا حاوی فایل \"project.godot\" نیست."
 
+msgid "New Game Project"
+msgstr "پروژه بازی جدید"
+
 msgid "Supports desktop platforms only."
 msgstr "تنها حمایت از سکو‌های دسکتاپ."
 
@@ -5551,9 +5571,6 @@ msgstr "خطای گشودن بسته بندی پرونده، به شکل ZIP ن�
 
 msgid "The following files failed extraction from package:"
 msgstr "استخراج پرونده های زیر از بسته بندی انجام نشد:"
-
-msgid "New Game Project"
-msgstr "پروژه بازی جدید"
 
 msgid "Import & Edit"
 msgstr "وارد کردن و ویرایش"

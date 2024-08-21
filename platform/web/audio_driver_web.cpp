@@ -65,19 +65,7 @@ void AudioDriverWeb::_sample_playback_finished_callback(const char *p_playback_o
 		return;
 	}
 
-	Object *player_object = ObjectDB::get_instance(playback->player_id);
-	if (player_object == nullptr) {
-		return;
-	}
-	Node *player = Object::cast_to<Node>(player_object);
-	if (player == nullptr) {
-		return;
-	}
-
-	const StringName finished = SNAME("finished");
-	if (player->has_signal(finished)) {
-		player->emit_signal(finished);
-	}
+	AudioServer::get_singleton()->stop_sample_playback(playback);
 }
 
 void AudioDriverWeb::_audio_driver_process(int p_from, int p_samples) {
@@ -322,6 +310,11 @@ void AudioDriverWeb::set_sample_playback_pause(const Ref<AudioSamplePlayback> &p
 bool AudioDriverWeb::is_sample_playback_active(const Ref<AudioSamplePlayback> &p_playback) {
 	ERR_FAIL_COND_V_MSG(p_playback.is_null(), false, "Parameter p_playback is null.");
 	return godot_audio_sample_is_active(itos(p_playback->get_instance_id()).utf8().get_data()) != 0;
+}
+
+double AudioDriverWeb::get_sample_playback_position(const Ref<AudioSamplePlayback> &p_playback) {
+	ERR_FAIL_COND_V_MSG(p_playback.is_null(), false, "Parameter p_playback is null.");
+	return godot_audio_get_sample_playback_position(itos(p_playback->get_instance_id()).utf8().get_data());
 }
 
 void AudioDriverWeb::update_sample_playback_pitch_scale(const Ref<AudioSamplePlayback> &p_playback, float p_pitch_scale) {

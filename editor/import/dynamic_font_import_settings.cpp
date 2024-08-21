@@ -31,6 +31,7 @@
 #include "dynamic_font_import_settings.h"
 
 #include "core/config/project_settings.h"
+#include "core/string/translation_server.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_locale_dialog.h"

@@ -1187,7 +1187,7 @@
 		</constant>
 		<constant name="NOTIFICATION_WM_GO_BACK_REQUEST" value="1007">
 			Notification received from the OS when a go back request is sent (e.g. pressing the "Back" button on Android).
-			Implemented only on iOS.
+			Implemented only on Android.
 		</constant>
 		<constant name="NOTIFICATION_WM_SIZE_CHANGED" value="1008">
 			Notification received when the window is resized.

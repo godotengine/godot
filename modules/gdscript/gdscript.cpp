@@ -1537,10 +1537,14 @@ void GDScript::clear(ClearData *p_clear_data) {
 		}
 	}
 
-	RBSet<GDScript *> must_clear_dependencies = get_must_clear_dependencies();
-	for (GDScript *E : must_clear_dependencies) {
-		clear_data->scripts.insert(E);
-		E->clear(clear_data);
+	// If we're in the process of shutting things down then every single script will be cleared
+	// anyway, so we can safely skip this very costly operation.
+	if (!GDScriptLanguage::singleton->finishing) {
+		RBSet<GDScript *> must_clear_dependencies = get_must_clear_dependencies();
+		for (GDScript *E : must_clear_dependencies) {
+			clear_data->scripts.insert(E);
+			E->clear(clear_data);
+		}
 	}
 
 	for (const KeyValue<StringName, GDScriptFunction *> &E : member_functions) {
@@ -2246,6 +2250,11 @@ String GDScriptLanguage::get_extension() const {
 }
 
 void GDScriptLanguage::finish() {
+	if (finishing) {
+		return;
+	}
+	finishing = true;
+
 	_call_stack.free();
 
 	// Clear the cache before parsing the script_list
@@ -2281,6 +2290,8 @@ void GDScriptLanguage::finish() {
 	}
 	script_list.clear();
 	function_list.clear();
+
+	finishing = false;
 }
 
 void GDScriptLanguage::profiling_start() {
@@ -2846,8 +2857,11 @@ GDScriptLanguage::GDScriptLanguage() {
 	_debug_parse_err_line = -1;
 	_debug_parse_err_file = "";
 
+#ifdef DEBUG_ENABLED
 	profiling = false;
+	profile_native_calls = false;
 	script_frame_time = 0;
+#endif
 
 	int dmcs = GLOBAL_DEF(PropertyInfo(Variant::INT, "debug/settings/gdscript/max_call_stack", PROPERTY_HINT_RANGE, "512," + itos(GDScriptFunction::MAX_CALL_DEPTH - 1) + ",1"), 1024);
 

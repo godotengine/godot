@@ -36,6 +36,10 @@
 #include "editor/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 
+bool EditorSpinSlider::is_text_field() const {
+	return true;
+}
+
 String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 	if (!read_only && grabber->is_visible()) {
 		Key key = (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) ? Key::META : Key::CTRL;
@@ -610,13 +614,13 @@ void EditorSpinSlider::_value_focus_exited() {
 	// -> TAB was pressed
 	// -> modal_close was not called
 	// -> need to close/hide manually
-	if (value_input_closed_frame != Engine::get_singleton()->get_frames_drawn()) {
+	if (!is_visible_in_tree() || value_input_closed_frame != Engine::get_singleton()->get_frames_drawn()) {
+		// Hidden or something else took focus.
 		if (value_input_popup) {
 			value_input_popup->hide();
 		}
-		//tab was pressed
 	} else {
-		//enter, click, esc
+		// Enter or Esc was pressed.
 		grab_focus();
 	}
 

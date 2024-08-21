@@ -74,16 +74,18 @@ jobs:
           - name: Template w/ Mono (target=template_release)
             cache-name: linux-template-mono
             target: template_release
-            sconsflags: module_mono_enabled=yes
+            sconsflags: module_mono_enabled=yes tests=yes
+            bin: "./bin/godot.linuxbsd.template_release.x86_64.mono"
             build-mono: false
-            tests: false
+            tests: true
             artifact: true
 
           - name: Minimal template (target=template_release, everything disabled)
             cache-name: linux-template-minimal
             target: template_release
-            sconsflags: modules_enabled_by_default=no disable_3d=yes disable_advanced_gui=yes deprecated=no minizip=no
-            tests: false
+            sconsflags: modules_enabled_by_default=no disable_3d=yes disable_advanced_gui=yes deprecated=no minizip=no tests=yes
+            bin: "./bin/godot.linuxbsd.template_release.x86_64"
+            tests: true
             artifact: true
 
     steps:
@@ -111,8 +113,8 @@ jobs:
           sudo rm -rf /usr/local/lib/android
           echo "Disk usage after:" && df -h
 
-      - name: Setup Godot build cache
-        uses: ./.github/actions/godot-cache
+      - name: Restore Godot build cache
+        uses: ./.github/actions/godot-cache-restore
         with:
           cache-name: ${{ matrix.cache-name }}
         continue-on-error: true
@@ -139,6 +141,12 @@ jobs:
           platform: linuxbsd
           target: ${{ matrix.target }}
           tests: ${{ matrix.tests }}
+
+      - name: Save Godot build cache
+        uses: ./.github/actions/godot-cache-save
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
 
       - name: Generate C# glue
         if: ${{ matrix.build-mono }}
@@ -168,7 +176,6 @@ jobs:
         with:
           bin: ${{ matrix.bin }}
 
-      # Execute unit tests for the editor
       - name: Unit tests
         if: ${{ matrix.tests }}
         run: |

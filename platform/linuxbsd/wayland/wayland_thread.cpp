@@ -1263,23 +1263,25 @@ void WaylandThread::_wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat
 
 	// Pointer handling.
 	if (capabilities & WL_SEAT_CAPABILITY_POINTER) {
-		ss->cursor_surface = wl_compositor_create_surface(ss->registry->wl_compositor);
-		wl_surface_commit(ss->cursor_surface);
+		if (!ss->wl_pointer) {
+			ss->cursor_surface = wl_compositor_create_surface(ss->registry->wl_compositor);
+			wl_surface_commit(ss->cursor_surface);
 
-		ss->wl_pointer = wl_seat_get_pointer(wl_seat);
-		wl_pointer_add_listener(ss->wl_pointer, &wl_pointer_listener, ss);
+			ss->wl_pointer = wl_seat_get_pointer(wl_seat);
+			wl_pointer_add_listener(ss->wl_pointer, &wl_pointer_listener, ss);
 
-		if (ss->registry->wp_relative_pointer_manager) {
-			ss->wp_relative_pointer = zwp_relative_pointer_manager_v1_get_relative_pointer(ss->registry->wp_relative_pointer_manager, ss->wl_pointer);
-			zwp_relative_pointer_v1_add_listener(ss->wp_relative_pointer, &wp_relative_pointer_listener, ss);
+			if (ss->registry->wp_relative_pointer_manager) {
+				ss->wp_relative_pointer = zwp_relative_pointer_manager_v1_get_relative_pointer(ss->registry->wp_relative_pointer_manager, ss->wl_pointer);
+				zwp_relative_pointer_v1_add_listener(ss->wp_relative_pointer, &wp_relative_pointer_listener, ss);
+			}
+
+			if (ss->registry->wp_pointer_gestures) {
+				ss->wp_pointer_gesture_pinch = zwp_pointer_gestures_v1_get_pinch_gesture(ss->registry->wp_pointer_gestures, ss->wl_pointer);
+				zwp_pointer_gesture_pinch_v1_add_listener(ss->wp_pointer_gesture_pinch, &wp_pointer_gesture_pinch_listener, ss);
+			}
+
+			// TODO: Constrain new pointers if the global mouse mode is constrained.
 		}
-
-		if (ss->registry->wp_pointer_gestures) {
-			ss->wp_pointer_gesture_pinch = zwp_pointer_gestures_v1_get_pinch_gesture(ss->registry->wp_pointer_gestures, ss->wl_pointer);
-			zwp_pointer_gesture_pinch_v1_add_listener(ss->wp_pointer_gesture_pinch, &wp_pointer_gesture_pinch_listener, ss);
-		}
-
-		// TODO: Constrain new pointers if the global mouse mode is constrained.
 	} else {
 		if (ss->cursor_frame_callback) {
 			// Just in case. I got bitten by weird race-like conditions already.
@@ -1317,11 +1319,13 @@ void WaylandThread::_wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat
 
 	// Keyboard handling.
 	if (capabilities & WL_SEAT_CAPABILITY_KEYBOARD) {
-		ss->xkb_context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
-		ERR_FAIL_NULL(ss->xkb_context);
+		if (!ss->wl_keyboard) {
+			ss->xkb_context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+			ERR_FAIL_NULL(ss->xkb_context);
 
-		ss->wl_keyboard = wl_seat_get_keyboard(wl_seat);
-		wl_keyboard_add_listener(ss->wl_keyboard, &wl_keyboard_listener, ss);
+			ss->wl_keyboard = wl_seat_get_keyboard(wl_seat);
+			wl_keyboard_add_listener(ss->wl_keyboard, &wl_keyboard_listener, ss);
+		}
 	} else {
 		if (ss->xkb_context) {
 			xkb_context_unref(ss->xkb_context);
@@ -2047,6 +2051,11 @@ void WaylandThread::_wp_relative_pointer_on_relative_motion(void *data, struct z
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
+	if (!ss->pointed_surface) {
+		// We're probably on a decoration or some other third-party thing.
+		return;
+	}
+
 	PointerData &pd = ss->pointer_data_buffer;
 
 	WindowState *ws = wl_surface_get_window_state(ss->pointed_surface);
@@ -2249,13 +2258,11 @@ void WaylandThread::_wp_tablet_tool_on_done(void *data, struct zwp_tablet_tool_v
 
 void WaylandThread::_wp_tablet_tool_on_removed(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2) {
 	TabletToolState *ts = wp_tablet_tool_get_state(wp_tablet_tool_v2);
-
 	if (!ts) {
 		return;
 	}
 
 	SeatState *ss = wl_seat_get_seat_state(ts->wl_seat);
-
 	if (!ss) {
 		return;
 	}
@@ -2275,14 +2282,17 @@ void WaylandThread::_wp_tablet_tool_on_removed(void *data, struct zwp_tablet_too
 }
 
 void WaylandThread::_wp_tablet_tool_on_proximity_in(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2, uint32_t serial, struct zwp_tablet_v2 *tablet, struct wl_surface *surface) {
-	TabletToolState *ts = wp_tablet_tool_get_state(wp_tablet_tool_v2);
+	if (!surface || !wl_proxy_is_godot((struct wl_proxy *)surface)) {
+		// We're probably on a decoration or something.
+		return;
+	}
 
+	TabletToolState *ts = wp_tablet_tool_get_state(wp_tablet_tool_v2);
 	if (!ts) {
 		return;
 	}
 
 	SeatState *ss = wl_seat_get_seat_state(ts->wl_seat);
-
 	if (!ss) {
 		return;
 	}
@@ -2304,13 +2314,12 @@ void WaylandThread::_wp_tablet_tool_on_proximity_in(void *data, struct zwp_table
 
 void WaylandThread::_wp_tablet_tool_on_proximity_out(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2) {
 	TabletToolState *ts = wp_tablet_tool_get_state(wp_tablet_tool_v2);
-
-	if (!ts) {
+	if (!ts || !ts->data_pending.proximal_surface) {
+		// Not our stuff, we don't care.
 		return;
 	}
 
 	SeatState *ss = wl_seat_get_seat_state(ts->wl_seat);
-
 	if (!ss) {
 		return;
 	}
@@ -2331,7 +2340,6 @@ void WaylandThread::_wp_tablet_tool_on_proximity_out(void *data, struct zwp_tabl
 
 void WaylandThread::_wp_tablet_tool_on_down(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2, uint32_t serial) {
 	TabletToolState *ts = wp_tablet_tool_get_state(wp_tablet_tool_v2);
-
 	if (!ts) {
 		return;
 	}
@@ -2349,7 +2357,6 @@ void WaylandThread::_wp_tablet_tool_on_down(void *data, struct zwp_tablet_tool_v
 
 void WaylandThread::_wp_tablet_tool_on_up(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2) {
 	TabletToolState *ts = wp_tablet_tool_get_state(wp_tablet_tool_v2);
-
 	if (!ts) {
 		return;
 	}
@@ -2365,8 +2372,12 @@ void WaylandThread::_wp_tablet_tool_on_up(void *data, struct zwp_tablet_tool_v2 
 
 void WaylandThread::_wp_tablet_tool_on_motion(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2, wl_fixed_t x, wl_fixed_t y) {
 	TabletToolState *ts = wp_tablet_tool_get_state(wp_tablet_tool_v2);
-
 	if (!ts) {
+		return;
+	}
+
+	if (!ts->data_pending.proximal_surface) {
+		// We're probably on a decoration or some other third-party thing.
 		return;
 	}
 
@@ -2386,7 +2397,6 @@ void WaylandThread::_wp_tablet_tool_on_motion(void *data, struct zwp_tablet_tool
 
 void WaylandThread::_wp_tablet_tool_on_pressure(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2, uint32_t pressure) {
 	TabletToolState *ts = wp_tablet_tool_get_state(wp_tablet_tool_v2);
-
 	if (!ts) {
 		return;
 	}
@@ -2400,7 +2410,6 @@ void WaylandThread::_wp_tablet_tool_on_distance(void *data, struct zwp_tablet_to
 
 void WaylandThread::_wp_tablet_tool_on_tilt(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2, wl_fixed_t tilt_x, wl_fixed_t tilt_y) {
 	TabletToolState *ts = wp_tablet_tool_get_state(wp_tablet_tool_v2);
-
 	if (!ts) {
 		return;
 	}
@@ -2425,7 +2434,6 @@ void WaylandThread::_wp_tablet_tool_on_wheel(void *data, struct zwp_tablet_tool_
 
 void WaylandThread::_wp_tablet_tool_on_button(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2, uint32_t serial, uint32_t button, uint32_t state) {
 	TabletToolState *ts = wp_tablet_tool_get_state(wp_tablet_tool_v2);
-
 	if (!ts) {
 		return;
 	}
@@ -2461,13 +2469,11 @@ void WaylandThread::_wp_tablet_tool_on_button(void *data, struct zwp_tablet_tool
 
 void WaylandThread::_wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2, uint32_t time) {
 	TabletToolState *ts = wp_tablet_tool_get_state(wp_tablet_tool_v2);
-
 	if (!ts) {
 		return;
 	}
 
 	SeatState *ss = wl_seat_get_seat_state(ts->wl_seat);
-
 	if (!ss) {
 		return;
 	}
@@ -3244,6 +3250,8 @@ void WaylandThread::window_create(DisplayServer::WindowID p_window_id, int p_wid
 		ws.xdg_exported = zxdg_exporter_v1_export(registry.xdg_exporter, ws.wl_surface);
 		zxdg_exported_v1_add_listener(ws.xdg_exported, &xdg_exported_listener, &ws);
 	}
+
+	wl_surface_commit(ws.wl_surface);
 
 	// Wait for the surface to be configured before continuing.
 	wl_display_roundtrip(wl_display);
