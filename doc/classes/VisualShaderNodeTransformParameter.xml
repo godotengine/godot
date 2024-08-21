@@ -15,5 +15,8 @@
 		<member name="default_value_enabled" type="bool" setter="set_default_value_enabled" getter="is_default_value_enabled" default="false">
 			Enables usage of the [member default_value].
 		</member>
+		<member name="hint_triplanar_enabled" type="bool" setter="set_hint_triplanar_enabled" getter="is_hint_triplanar_enabled" default="false">
+			If enabled, adds the "hint_triplanar_mat" hint to the uniform.
+		</member>
 	</members>
 </class>
