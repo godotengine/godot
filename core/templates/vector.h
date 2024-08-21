@@ -283,15 +283,8 @@ public:
 	}
 
 	_FORCE_INLINE_ Vector() {}
-	_FORCE_INLINE_ Vector(std::initializer_list<T> p_init) {
-		Error err = _cowdata.resize(p_init.size());
-		ERR_FAIL_COND(err);
-
-		Size i = 0;
-		for (const T &element : p_init) {
-			_cowdata.set(i++, element);
-		}
-	}
+	_FORCE_INLINE_ Vector(std::initializer_list<T> p_init) :
+			_cowdata(p_init) {}
 	_FORCE_INLINE_ Vector(const Vector &p_from) { _cowdata._ref(p_from._cowdata); }
 	_FORCE_INLINE_ Vector(Vector &&p_from) :
 			_cowdata(std::move(p_from._cowdata)) {}
