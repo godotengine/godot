@@ -4327,6 +4327,12 @@ bool DisplayServerX11::_window_focus_check() {
 void DisplayServerX11::process_events() {
 	ERR_FAIL_COND(!Thread::is_main_thread());
 
+#ifdef RD_ENABLED
+	if (rendering_device) {
+		rendering_device->screen_wait_for_present(get_focused_window() == INVALID_WINDOW_ID ? MAIN_WINDOW_ID : get_focused_window());
+	}
+#endif
+
 	_THREAD_SAFE_LOCK_
 
 #ifdef DISPLAY_SERVER_X11_DEBUG_LOGS_ENABLED
