@@ -3091,12 +3091,22 @@ RenderingDeviceDriverMetal::Result<id<MTLFunction>> RenderingDeviceDriverMetal::
 		}];
 	}
 
+	// Initialize an array of integers representing the indexes of p_specialization_constants
+	uint32_t *indexes = (uint32_t *)alloca(p_specialization_constants.size() * sizeof(uint32_t));
+	for (uint32_t i = 0; i < p_specialization_constants.size(); i++) {
+		indexes[i] = i;
+	}
+	// Sort the array of integers based on the values in p_specialization_constants
+	std::sort(indexes, &indexes[p_specialization_constants.size()], [&](int a, int b) {
+		return p_specialization_constants[a].constant_id < p_specialization_constants[b].constant_id;
+	});
+
 	MTLFunctionConstantValues *constantValues = [MTLFunctionConstantValues new];
 	uint32_t i = 0;
 	uint32_t j = 0;
 	while (i < constants.count && j < p_specialization_constants.size()) {
 		MTLFunctionConstant *curr = constants[i];
-		PipelineSpecializationConstant const &sc = p_specialization_constants[j];
+		PipelineSpecializationConstant const &sc = p_specialization_constants[indexes[j]];
 		if (curr.index == sc.constant_id) {
 			switch (curr.type) {
 				case MTLDataTypeBool:
@@ -3769,7 +3779,7 @@ uint64_t RenderingDeviceDriverMetal::api_trait_get(ApiTrait p_trait) {
 bool RenderingDeviceDriverMetal::has_feature(Features p_feature) {
 	switch (p_feature) {
 		case SUPPORTS_MULTIVIEW:
-			return true;
+			return false;
 		case SUPPORTS_FSR_HALF_FLOAT:
 			return true;
 		case SUPPORTS_ATTACHMENT_VRS:
