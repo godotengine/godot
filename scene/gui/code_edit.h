@@ -311,6 +311,7 @@ private:
 	void _text_changed();
 
 	void _apply_project_settings();
+	Vector<Callable> new_lines_actions;
 
 protected:
 	void _notification(int p_what);
@@ -515,6 +516,8 @@ public:
 	void delete_lines();
 	void duplicate_selection();
 	void duplicate_lines();
+
+	void add_new_line_actions(const Callable &p_action);
 
 	CodeEdit();
 	~CodeEdit();

@@ -1196,6 +1196,16 @@ void CodeEdit::_new_line(bool p_split_current_line, bool p_above) {
 
 	end_multicaret_edit();
 	end_complex_operation();
+
+	if (new_lines_actions.size() > 0) {
+		for (Callable &action : new_lines_actions) {
+			action.call_deferred(p_above);
+		}
+	}
+}
+
+void CodeEdit::add_new_line_actions(const Callable &p_action) {
+	new_lines_actions.push_back(p_action);
 }
 
 /* Auto brace completion */
