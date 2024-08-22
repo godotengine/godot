@@ -1855,6 +1855,8 @@ void AnimationTimelineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		if (dragging_hsize) {
 			int ofs = mm->get_position().x - dragging_hsize_from;
 			name_limit = dragging_hsize_at + ofs;
+			// Make sure name_limit is clamped to the range that UI allows.
+			name_limit = get_name_limit();
 			queue_redraw();
 			emit_signal(SNAME("name_limit_changed"));
 			play_position->queue_redraw();
