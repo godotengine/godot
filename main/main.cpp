@@ -2213,7 +2213,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				Vector<String> r_drivers = DisplayServer::get_create_function_rendering_drivers(i);
 
 				for (int d = 0; d < r_drivers.size(); d++) {
-					OS::get_singleton()->print("'%s', ", r_drivers[d].utf8().get_data());
+					if (d == r_drivers.size() - 1 && i == DisplayServer::get_create_function_count() - 1) {
+						OS::get_singleton()->print(" and ");
+					} else if (d != 0 || i != 0) {
+						OS::get_singleton()->print(", ");
+					}
+
+					OS::get_singleton()->print("'%s'", r_drivers[d].utf8().get_data());
 				}
 			}
 
@@ -2268,7 +2274,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			OS::get_singleton()->print("Invalid renderer/driver combination '%s' and '%s', aborting. %s only supports the following drivers ", rendering_method.utf8().get_data(), rendering_driver.utf8().get_data(), rendering_method.utf8().get_data());
 
 			for (int d = 0; d < available_drivers.size(); d++) {
-				OS::get_singleton()->print("'%s', ", available_drivers[d].utf8().get_data());
+				if (d == available_drivers.size() - 1) {
+					OS::get_singleton()->print(" and ");
+				} else if (d != 0) {
+					OS::get_singleton()->print(", ");
+				}
+
+				OS::get_singleton()->print("'%s'", available_drivers[d].utf8().get_data());
 			}
 
 			OS::get_singleton()->print(".\n");
