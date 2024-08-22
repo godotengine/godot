@@ -12,10 +12,10 @@
 	<methods>
 		<method name="_fit_child_in_rect" qualifiers="virtual">
 			<return type="void" />
-			<param index="0" name="" type="Control" />
-			<param index="1" name="" type="Rect2" />
+			<param index="0" name="child" type="Control" />
+			<param index="1" name="rect" type="Rect2" />
 			<description>
-				Manual do the fit a child control in a given rect, when it's called, it will override method `fit_child_in_rect` behaviour.
+				Manual do the fit a child control in a given rect, when it's called, it will override method `fit_child_in_rect`.
 			</description>
 		</method>
 		<method name="_get_allowed_size_flags_horizontal" qualifiers="virtual const">
