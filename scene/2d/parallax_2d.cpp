@@ -249,6 +249,17 @@ bool Parallax2D::is_ignore_camera_scroll() {
 	return ignore_camera_scroll;
 }
 
+void Parallax2D::set_inherit_visibility_layer(bool p_enable) {
+	ERR_THREAD_GUARD;
+	inherit_visibility_layer = p_enable;
+	RenderingServer::get_singleton()->canvas_item_set_inherit_visibility_layer(get_canvas_item(), p_enable);
+}
+
+bool Parallax2D::is_inherit_visibility_layer() const {
+	ERR_READ_THREAD_GUARD_V(false);
+	return inherit_visibility_layer;
+}
+
 void Parallax2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_camera_moved", "transform", "screen_offset", "adj_screen_offset"), &Parallax2D::_camera_moved);
 	ClassDB::bind_method(D_METHOD("set_scroll_scale", "scale"), &Parallax2D::set_scroll_scale);
@@ -271,6 +282,8 @@ void Parallax2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_follow_viewport"), &Parallax2D::get_follow_viewport);
 	ClassDB::bind_method(D_METHOD("set_ignore_camera_scroll", "ignore"), &Parallax2D::set_ignore_camera_scroll);
 	ClassDB::bind_method(D_METHOD("is_ignore_camera_scroll"), &Parallax2D::is_ignore_camera_scroll);
+	ClassDB::bind_method(D_METHOD("set_inherit_visibility_layer", "enabled"), &Parallax2D::set_inherit_visibility_layer);
+	ClassDB::bind_method(D_METHOD("is_inherit_visibility_layer"), &Parallax2D::is_inherit_visibility_layer);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scroll_scale", PROPERTY_HINT_LINK), "set_scroll_scale", "get_scroll_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scroll_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_scroll_offset", "get_scroll_offset");
@@ -288,6 +301,7 @@ void Parallax2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_viewport"), "set_follow_viewport", "get_follow_viewport");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_camera_scroll"), "set_ignore_camera_scroll", "is_ignore_camera_scroll");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "screen_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_screen_offset", "get_screen_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "inherit_visibility_layer"), "set_inherit_visibility_layer", "is_inherit_visibility_layer");
 }
 
 Parallax2D::Parallax2D() {

@@ -44,5 +44,8 @@
 			Multiplier to the final [Parallax2D]'s offset. Can be used to simulate distance from the camera.
 			For example, a value of [code]1[/code] scrolls at the same speed as the camera. A value greater than [code]1[/code] scrolls faster, making objects appear closer. Less than [code]1[/code] scrolls slower, making objects appear further, and a value of [code]0[/code] stops the objects completely.
 		</member>
+		<member name="inherit_visibility_layer" type="bool" setter="set_inherit_visibility_layer" getter="is_inherit_visibility_layer" default="false">
+			If [code]true[/code], this node and all descendents will inherit the visibility layers of the [Parallax2D]'s parent.
+		</member>
 	</members>
 </class>

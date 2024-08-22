@@ -50,6 +50,7 @@ class Parallax2D : public Node2D {
 	Point2 autoscroll_offset;
 	bool follow_viewport = true;
 	bool ignore_camera_scroll = false;
+	bool inherit_visibility_layer = false;
 
 	void _update_process();
 	void _update_repeat();
@@ -94,6 +95,9 @@ public:
 
 	void set_ignore_camera_scroll(bool p_ignore);
 	bool is_ignore_camera_scroll();
+
+	void set_inherit_visibility_layer(bool p_enable);
+	bool is_inherit_visibility_layer() const;
 
 	Parallax2D();
 };
