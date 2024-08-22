@@ -1416,10 +1416,10 @@ void WaylandThread::_wl_pointer_on_motion(void *data, struct wl_pointer *wl_poin
 	PointerData &pd = ss->pointer_data_buffer;
 
 	// TODO: Scale only when sending the Wayland message.
-	pd.position.x = wl_fixed_to_int(surface_x);
-	pd.position.y = wl_fixed_to_int(surface_y);
+	pd.position.x = wl_fixed_to_double(surface_x);
+	pd.position.y = wl_fixed_to_double(surface_y);
 
-	pd.position = scale_vector2i(pd.position, window_state_get_scale_factor(ws));
+	pd.position *= window_state_get_scale_factor(ws);
 
 	pd.motion_time = time;
 }
@@ -1532,7 +1532,7 @@ void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_point
 		mm->set_position(pd.position);
 		mm->set_global_position(pd.position);
 
-		Vector2i pos_delta = pd.position - old_pd.position;
+		Vector2 pos_delta = pd.position - old_pd.position;
 
 		if (old_pd.relative_motion_time != pd.relative_motion_time) {
 			uint32_t time_delta = pd.relative_motion_time - old_pd.relative_motion_time;
@@ -1649,7 +1649,7 @@ void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_point
 
 				// We have to set the last position pressed here as we can't take for
 				// granted what the individual events might have seen due to them not having
-				// a garaunteed order.
+				// a guaranteed order.
 				if (mb->is_pressed()) {
 					pd.last_pressed_position = pd.position;
 				}
@@ -2388,9 +2388,9 @@ void WaylandThread::_wp_tablet_tool_on_motion(void *data, struct zwp_tablet_tool
 
 	double scale_factor = window_state_get_scale_factor(ws);
 
-	td.position.x = wl_fixed_to_int(x);
-	td.position.y = wl_fixed_to_int(y);
-	td.position = scale_vector2i(td.position, scale_factor);
+	td.position.x = wl_fixed_to_double(x);
+	td.position.y = wl_fixed_to_double(y);
+	td.position *= scale_factor;
 
 	td.motion_time = OS::get_singleton()->get_ticks_msec();
 }
@@ -2520,7 +2520,7 @@ void WaylandThread::_wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_
 		mm->set_relative(td.position - old_td.position);
 		mm->set_relative_screen_position(mm->get_relative());
 
-		Vector2i pos_delta = td.position - old_td.position;
+		Vector2 pos_delta = td.position - old_td.position;
 		uint32_t time_delta = td.motion_time - old_td.motion_time;
 		mm->set_velocity((Vector2)pos_delta / time_delta);
 

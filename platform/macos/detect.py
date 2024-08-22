@@ -57,7 +57,7 @@ def get_flags():
         "arch": detect_arch(),
         "use_volk": False,
         "metal": True,
-        "supported": ["mono"],
+        "supported": ["metal", "mono"],
     }
 
 

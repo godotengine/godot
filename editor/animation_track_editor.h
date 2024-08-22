@@ -400,6 +400,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	ScrollContainer *scroll = nullptr;
 	VBoxContainer *track_vbox = nullptr;
 	AnimationBezierTrackEdit *bezier_edit = nullptr;
+	VBoxContainer *timeline_vbox = nullptr;
 
 	Label *info_message = nullptr;
 

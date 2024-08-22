@@ -438,6 +438,8 @@ void ProjectDialog::_renderer_selected() {
 
 	String renderer_type = renderer_button_group->get_pressed_button()->get_meta(SNAME("rendering_method"));
 
+	bool rd_error = false;
+
 	if (renderer_type == "forward_plus") {
 		renderer_info->set_text(
 				String::utf8("•  ") + TTR("Supports desktop platforms only.") +
@@ -445,6 +447,7 @@ void ProjectDialog::_renderer_selected() {
 				String::utf8("\n•  ") + TTR("Can scale to large complex scenes.") +
 				String::utf8("\n•  ") + TTR("Uses RenderingDevice backend.") +
 				String::utf8("\n•  ") + TTR("Slower rendering of simple scenes."));
+		rd_error = !rendering_device_supported;
 	} else if (renderer_type == "mobile") {
 		renderer_info->set_text(
 				String::utf8("•  ") + TTR("Supports desktop + mobile platforms.") +
@@ -452,15 +455,23 @@ void ProjectDialog::_renderer_selected() {
 				String::utf8("\n•  ") + TTR("Less scalable for complex scenes.") +
 				String::utf8("\n•  ") + TTR("Uses RenderingDevice backend.") +
 				String::utf8("\n•  ") + TTR("Fast rendering of simple scenes."));
+		rd_error = !rendering_device_supported;
 	} else if (renderer_type == "gl_compatibility") {
 		renderer_info->set_text(
 				String::utf8("•  ") + TTR("Supports desktop, mobile + web platforms.") +
-				String::utf8("\n•  ") + TTR("Least advanced 3D graphics (currently work-in-progress).") +
+				String::utf8("\n•  ") + TTR("Least advanced 3D graphics.") +
 				String::utf8("\n•  ") + TTR("Intended for low-end/older devices.") +
 				String::utf8("\n•  ") + TTR("Uses OpenGL 3 backend (OpenGL 3.3/ES 3.0/WebGL2).") +
 				String::utf8("\n•  ") + TTR("Fastest rendering of simple scenes."));
 	} else {
 		WARN_PRINT("Unknown renderer type. Please report this as a bug on GitHub.");
+	}
+
+	rd_not_supported->set_visible(rd_error);
+	get_ok_button()->set_disabled(rd_error);
+	if (rd_error) {
+		// Needs to be set here since theme colors aren't available at startup.
+		rd_not_supported->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 	}
 }
 
@@ -916,10 +927,16 @@ ProjectDialog::ProjectDialog() {
 		default_renderer_type = EditorSettings::get_singleton()->get_setting("project_manager/default_renderer");
 	}
 
+	rendering_device_supported = DisplayServer::can_create_rendering_device();
+
+	if (!rendering_device_supported) {
+		default_renderer_type = "gl_compatibility";
+	}
+
 	Button *rs_button = memnew(CheckBox);
 	rs_button->set_button_group(renderer_button_group);
 	rs_button->set_text(TTR("Forward+"));
-#if defined(WEB_ENABLED)
+#ifndef RD_ENABLED
 	rs_button->set_disabled(true);
 #endif
 	rs_button->set_meta(SNAME("rendering_method"), "forward_plus");
@@ -931,7 +948,7 @@ ProjectDialog::ProjectDialog() {
 	rs_button = memnew(CheckBox);
 	rs_button->set_button_group(renderer_button_group);
 	rs_button->set_text(TTR("Mobile"));
-#if defined(WEB_ENABLED)
+#ifndef RD_ENABLED
 	rs_button->set_disabled(true);
 #endif
 	rs_button->set_meta(SNAME("rendering_method"), "mobile");
@@ -963,6 +980,15 @@ ProjectDialog::ProjectDialog() {
 	renderer_info = memnew(Label);
 	renderer_info->set_modulate(Color(1, 1, 1, 0.7));
 	rvb->add_child(renderer_info);
+
+	rd_not_supported = memnew(Label);
+	rd_not_supported->set_text(TTR("Rendering Device backend not available. Please use the Compatibility renderer."));
+	rd_not_supported->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	rd_not_supported->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
+	rd_not_supported->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	rd_not_supported->set_visible(false);
+	renderer_container->add_child(rd_not_supported);
+
 	_renderer_selected();
 
 	l = memnew(Label);

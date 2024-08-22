@@ -172,6 +172,26 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the support point in a given direction.
+        /// This is useful for collision detection algorithms.
+        /// </summary>
+        /// <param name="direction">The direction to find support for.</param>
+        /// <returns>A vector representing the support.</returns>
+        public readonly Vector2 GetSupport(Vector2 direction)
+        {
+            Vector2 support = _position;
+            if (direction.X > 0.0f)
+            {
+                support.X += _size.X;
+            }
+            if (direction.Y > 0.0f)
+            {
+                support.Y += _size.Y;
+            }
+            return support;
+        }
+
+        /// <summary>
         /// Returns a copy of the <see cref="Rect2"/> grown by the specified amount
         /// on all sides.
         /// </summary>

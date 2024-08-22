@@ -2447,6 +2447,10 @@ void RenderingDeviceDriverMetal::shader_free(ShaderID p_shader) {
 	delete obj;
 }
 
+void RenderingDeviceDriverMetal::shader_destroy_modules(ShaderID p_shader) {
+	// TODO.
+}
+
 /*********************/
 /**** UNIFORM SET ****/
 /*********************/
@@ -3539,6 +3543,12 @@ void RenderingDeviceDriverMetal::command_begin_label(CommandBufferID p_cmd_buffe
 void RenderingDeviceDriverMetal::command_end_label(CommandBufferID p_cmd_buffer) {
 	MDCommandBuffer *cb = (MDCommandBuffer *)(p_cmd_buffer.id);
 	[cb->get_command_buffer() popDebugGroup];
+}
+
+#pragma mark - Debug
+
+void RenderingDeviceDriverMetal::command_insert_breadcrumb(CommandBufferID p_cmd_buffer, uint32_t p_data) {
+	// TODO: Implement.
 }
 
 #pragma mark - Submission

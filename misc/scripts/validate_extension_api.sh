@@ -8,6 +8,7 @@ fi
 
 if [ $# != 1 ]; then
   echo "Usage: @0 <path-to-godot-executable>"
+  exit 1
 fi
 
 api_validation_dir="$( dirname -- "$( dirname -- "${BASH_SOURCE[0]//\.\//}" )" )/extension_api_validation/"

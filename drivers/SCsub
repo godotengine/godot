@@ -3,6 +3,7 @@
 Import("env")
 
 env.drivers_sources = []
+supported = env.get("supported", [])
 
 # OS drivers
 SConscript("unix/SCsub")
@@ -17,6 +18,9 @@ if env["platform"] == "windows":
     if not env.msvc:
         SConscript("backtrace/SCsub")
 if env["xaudio2"]:
+    if "xaudio2" not in supported:
+        print("Target platform '{}' does not support the XAudio2 audio driver. Aborting.".format(env["platform"]))
+        Exit(255)
     SConscript("xaudio2/SCsub")
 
 # Midi drivers
@@ -28,12 +32,18 @@ SConscript("winmidi/SCsub")
 if env["vulkan"]:
     SConscript("vulkan/SCsub")
 if env["d3d12"]:
+    if "d3d12" not in supported:
+        print("Target platform '{}' does not support the D3D12 rendering driver. Aborting.".format(env["platform"]))
+        Exit(255)
     SConscript("d3d12/SCsub")
 if env["opengl3"]:
     SConscript("gl_context/SCsub")
     SConscript("gles3/SCsub")
     SConscript("egl/SCsub")
 if env["metal"]:
+    if "metal" not in supported:
+        print("Target platform '{}' does not support the Metal rendering driver. Aborting.".format(env["platform"]))
+        Exit(255)
     SConscript("metal/SCsub")
 
 # Core dependencies
