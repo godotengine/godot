@@ -94,6 +94,7 @@
 
 			typedef SYMBOL_INFO sym_type;
 			sym_type *symbol = (sym_type *) alloca(sizeof(sym_type) + 1024);
+			int index = 0;
             while (true) {
                 if (StackWalk64(
                         image, process, thread,
@@ -103,7 +104,12 @@
 
                 if (stackFrame.AddrReturn.Offset == stackFrame.AddrPC.Offset)
                     break;
-
+					
+				++index;
+				if(index < 4)
+				{
+					continue;
+				}
 				memset(symbol, '\0', sizeof(sym_type) + 1024);
                 symbol->SizeOfStruct = sizeof(sym_type);
                 symbol->MaxNameLen = 1024;

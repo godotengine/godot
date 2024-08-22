@@ -168,6 +168,7 @@ public:
 		title_label->set_vertical_alignment(VerticalAlignment::VERTICAL_ALIGNMENT_CENTER);
 		title_label->set_text(title_text);
 		titlebar_hbox->add_child(title_label);
+		
 
 		label = memnew(Label);
 		label->set_text(text.is_empty() ? " " : text);

@@ -520,7 +520,6 @@ class BeehaveGraphProperty : public VBoxContainer
 public:
 	BeehaveGraphProperty()
 	{
-		set_custom_minimum_size(Vector2(300,600));
 		set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
 
 		HBoxContainer* section = memnew(HBoxContainer);
@@ -559,7 +558,7 @@ public:
 		add_child(beehave_editor);
 		beehave_editor->set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
 		beehave_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-		beehave_editor->set_minimap_size(Vector2(0, 200));
+		beehave_editor->set_minimap_size(Vector2(0, 300));
 
 		set_process(true);
 
