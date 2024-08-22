@@ -197,7 +197,7 @@
 				astar.ConnectPoints(2, 3, false);
 				astar.ConnectPoints(4, 3, false);
 				astar.ConnectPoints(1, 4, false);
-				int[] res = astar.GetIdPath(1, 3); // Returns [1, 2, 3]
+				long[] res = astar.GetIdPath(1, 3); // Returns [1, 2, 3]
 				[/csharp]
 				[/codeblocks]
 				If you change the 2nd point's weight to 3, then the result will be [code][1, 4, 3][/code] instead, because now even though the distance is longer, it's "easier" to get through point 4 than through point 2.
@@ -236,7 +236,7 @@
 				astar.ConnectPoints(1, 2, true);
 				astar.ConnectPoints(1, 3, true);
 
-				int[] neighbors = astar.GetPointConnections(1); // Returns [2, 3]
+				long[] neighbors = astar.GetPointConnections(1); // Returns [2, 3]
 				[/csharp]
 				[/codeblocks]
 			</description>
