@@ -448,7 +448,7 @@ void unregister_core_types() {
 	ResourceCache::clear();
 	ClassDB::cleanup();
 	CoreStringNames::free();
-	StringName::cleanup();
+	StringName::cleanup(); //
 
 	OS::get_singleton()->benchmark_end_measure("Core", "Unregister Types");
 }

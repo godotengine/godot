@@ -35,6 +35,8 @@
 #include "core/string/ustring.h"
 #include "core/templates/safe_refcount.h"
 
+#include <queue>
+
 #define UNIQUE_NODE_PREFIX "%"
 
 class Main;
@@ -98,6 +100,11 @@ public:
 	bool operator==(const char *p_name) const;
 	bool operator!=(const String &p_name) const;
 	bool operator!=(const char *p_name) const;
+	void reset() {
+		_data = nullptr;
+		//configured = false;
+		//memdelete(_data);
+	}
 
 	_FORCE_INLINE_ bool is_node_unique_name() const {
 		if (!_data) {

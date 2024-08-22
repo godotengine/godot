@@ -32,6 +32,7 @@
 
 #include "core/os/os.h"
 #include "core/string/print_string.h"
+#include <iostream>
 
 StaticCString StaticCString::create(const char *p_ptr) {
 	StaticCString scs;
@@ -132,6 +133,9 @@ void StringName::unref() {
 		if (_data->next) {
 			_data->next->prev = _data->prev;
 		}
+		//if (_data->name == "_get_loop_count") {
+		//std::cout << "TotoTATATiti" << std::endl;
+		//}
 		memdelete(_data);
 	}
 
@@ -169,16 +173,11 @@ bool StringName::operator!=(const StringName &p_name) const {
 }
 
 void StringName::operator=(const StringName &p_name) {
-	static int versionYoloLocal = 0;
 	if (this == &p_name) {
 		return;
 	}
 
-	if (Main::versionYolo != versionYoloLocal) {
-		versionYoloLocal = Main::versionYolo;
-	} else {
-		unref();
-	}
+	unref();
 
 	if (p_name._data && p_name._data->refcount.ref()) {
 		_data = p_name._data;

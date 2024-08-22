@@ -419,15 +419,30 @@ public:                                                                         
 		static int versionYoloLocal = -1;                                                                                                        \
 		if (unlikely(Main::versionYolo != versionYoloLocal)) {                                                                                   \
 			versionYoloLocal = Main::versionYolo;                                                                                                \
+			/*_class_name_static.reset();*/                                                                                                      \
+			/*StringName::assign_static_unique_class_name(&_class_name_static, #m_class); */                                                     \
+                                                                                                                                                 \
+			/*StringName local;   */                                                                                                             \
+			/*if (_class_name_static) {                                                                                                          \
+				_class_name_static.reset();                                                                                                      \
+				_class_name_static = StringName();                                                                                               \
+			}   */                                                                                                                               \
+			/*std::swap(local, _class_name_static);*/                                                                                            \
 			if (_class_name_statics.size() > 0) {                                                                                                \
-				/*_class_name_statics.pop();*/                                                                                                   \
+				/*_class_name_statics.pop();  */                                                                                                 \
+				/*std::queue<StringName>().swap(_class_name_statics); */                                                                         \
 			}                                                                                                                                    \
 			_class_name_statics.push(StringName());                                                                                              \
+			/*StringName::assign_static_unique_class_name(&local, #m_class);*/                                                                   \
 		}                                                                                                                                        \
 		if (unlikely(!_class_name_statics.back())) {                                                                                             \
 			StringName::assign_static_unique_class_name(&_class_name_statics.back(), #m_class);                                                  \
 		}                                                                                                                                        \
 		return &_class_name_statics.back();                                                                                                      \
+		if (unlikely(!_class_name_static)) {                                                                                                     \
+			StringName::assign_static_unique_class_name(&_class_name_static, #m_class);                                                          \
+		}                                                                                                                                        \
+		return &_class_name_static;                                                                                                              \
 	}                                                                                                                                            \
 	static _FORCE_INLINE_ void *get_class_ptr_static() {                                                                                         \
 		static int ptr;                                                                                                                          \
@@ -775,7 +790,7 @@ protected:
 				/*_class_name_statics.pop();*/
 			}
 			_class_name_statics.push(StringName());
-		}     
+		}
 		if (unlikely(!_class_name_statics.back())) {
 			StringName::assign_static_unique_class_name(&_class_name_statics.back(), "Object");
 		}
