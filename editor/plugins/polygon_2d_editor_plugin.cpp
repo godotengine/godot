@@ -1387,7 +1387,8 @@ Polygon2DEditor::Polygon2DEditor() {
 	uv_button[UV_MODE_CREATE_INTERNAL]->set_tooltip_text(TTR("Create Internal Vertex"));
 	uv_button[UV_MODE_REMOVE_INTERNAL]->set_tooltip_text(TTR("Remove Internal Vertex"));
 	Key key = (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) ? Key::META : Key::CTRL;
-	uv_button[UV_MODE_EDIT_POINT]->set_tooltip_text(TTR("Move Points") + "\n" + find_keycode_name(key) + TTR(": Rotate") + "\n" + TTR("Shift: Move All") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Shift: Scale"));
+	// TRANSLATORS: %s is Control or Command key name.
+	uv_button[UV_MODE_EDIT_POINT]->set_tooltip_text(TTR("Move Points") + "\n" + vformat(TTR("%s: Rotate"), find_keycode_name(key)) + "\n" + TTR("Shift: Move All") + "\n" + vformat(TTR("%s + Shift: Scale"), find_keycode_name(key)));
 	uv_button[UV_MODE_MOVE]->set_tooltip_text(TTR("Move Polygon"));
 	uv_button[UV_MODE_ROTATE]->set_tooltip_text(TTR("Rotate Polygon"));
 	uv_button[UV_MODE_SCALE]->set_tooltip_text(TTR("Scale Polygon"));
