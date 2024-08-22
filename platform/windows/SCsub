@@ -20,10 +20,12 @@ common_win = [
     "windows_utils.cpp",
     "native_menu_windows.cpp",
     "gl_manager_windows_native.cpp",
-    "gl_manager_windows_angle.cpp",
     "wgl_detect_version.cpp",
     "rendering_context_driver_vulkan_windows.cpp",
 ]
+
+if env["angle"]:
+    common_win += ["gl_manager_windows_angle.cpp"]
 
 if env.msvc:
     common_win += ["crash_handler_windows_seh.cpp"]

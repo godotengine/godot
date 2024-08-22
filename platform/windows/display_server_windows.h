@@ -57,7 +57,9 @@
 #endif
 
 #if defined(GLES3_ENABLED)
+#if defined(ANGLE_ENABLED)
 #include "gl_manager_windows_angle.h"
+#endif
 #include "gl_manager_windows_native.h"
 #endif // GLES3_ENABLED
 
@@ -429,7 +431,9 @@ class DisplayServerWindows : public DisplayServer {
 	Point2i center;
 
 #if defined(GLES3_ENABLED)
+#if defined(ANGLE_ENABLED)
 	GLManagerANGLE_Windows *gl_manager_angle = nullptr;
+#endif
 	GLManagerNative_Windows *gl_manager_native = nullptr;
 #endif
 

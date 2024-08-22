@@ -57,7 +57,8 @@ def get_flags():
         "arch": detect_arch(),
         "use_volk": False,
         "metal": True,
-        "supported": ["metal", "mono"],
+        "angle": True,
+        "supported": ["metal", "mono", "angle"],
     }
 
 
@@ -230,13 +231,15 @@ def configure(env: "SConsEnvironment"):
 
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES3_ENABLED"])
-        if env["angle_libs"] != "":
-            env.AppendUnique(CPPDEFINES=["EGL_STATIC"])
-            env.Append(LINKFLAGS=["-L" + env["angle_libs"]])
-            env.Append(LINKFLAGS=["-lANGLE.macos." + env["arch"]])
-            env.Append(LINKFLAGS=["-lEGL.macos." + env["arch"]])
-            env.Append(LINKFLAGS=["-lGLES.macos." + env["arch"]])
-        env.Prepend(CPPPATH=["#thirdparty/angle/include"])
+        if env["angle"]:
+            env.Append(CPPDEFINES=["ANGLE_ENABLED"])
+            if env["angle_libs"] != "":
+                env.AppendUnique(CPPDEFINES=["EGL_STATIC"])
+                env.Append(LINKFLAGS=["-L" + env["angle_libs"]])
+                env.Append(LINKFLAGS=["-lANGLE.macos." + env["arch"]])
+                env.Append(LINKFLAGS=["-lEGL.macos." + env["arch"]])
+                env.Append(LINKFLAGS=["-lGLES.macos." + env["arch"]])
+            env.Prepend(CPPPATH=["#thirdparty/angle/include"])
 
     env.Append(LINKFLAGS=["-rpath", "@executable_path/../Frameworks", "-rpath", "@executable_path"])
 

@@ -1978,7 +1978,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		String driver_hints_egl = "";
 #ifdef GLES3_ENABLED
 		driver_hints = "opengl3";
+#if defined(ANGLE_ENABLED)
 		driver_hints_angle = "opengl3,opengl3_angle"; // macOS, Windows.
+#else
+		driver_hints_angle = "opengl3";
+#endif
 		driver_hints_egl = "opengl3,opengl3_es"; // Linux.
 #endif
 
@@ -2224,7 +2228,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 		// Set a default renderer if none selected. Try to choose one that matches the driver.
 		if (rendering_method.is_empty()) {
-			if (rendering_driver == "opengl3" || rendering_driver == "opengl3_angle" || rendering_driver == "opengl3_es") {
+			if (rendering_driver.begins_with("opengl3")) {
 				rendering_method = "gl_compatibility";
 			} else {
 				rendering_method = "forward_plus";
@@ -2248,7 +2252,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #ifdef GLES3_ENABLED
 		if (rendering_method == "gl_compatibility") {
 			available_drivers.push_back("opengl3");
+#if defined(ANGLE_ENABLED)
 			available_drivers.push_back("opengl3_angle");
+#endif
 			available_drivers.push_back("opengl3_es");
 		}
 #endif
