@@ -153,6 +153,11 @@
 			<description>
 			</description>
 		</method>
+		<method name="_get_doc_comment_block_delimiters" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
 		<method name="_get_doc_comment_delimiters" qualifiers="virtual const">
 			<return type="PackedStringArray" />
 			<description>
