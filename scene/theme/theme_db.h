@@ -46,26 +46,29 @@ class ThemeContext;
 // Macros for binding theme items of this class. This information is used for the documentation, theme
 // overrides, etc. This is also the basis for theme cache.
 
-#define BIND_THEME_ITEM(m_data_type, m_class, m_prop)                                                                   \
-	ThemeDB::get_singleton()->bind_class_item(m_data_type, get_class_static(), #m_prop, #m_prop, [](Node *p_instance) { \
-		m_class *p_cast = Object::cast_to<m_class>(p_instance);                                                         \
-		p_cast->theme_cache.m_prop = p_cast->get_theme_item(m_data_type, _scs_create(#m_prop));                         \
-	})
+#define BIND_THEME_ITEM(m_data_type, m_class, m_prop)                                                       \
+	ThemeDB::get_singleton()->bind_class_item(m_data_type, get_class_static(), #m_prop, #m_prop,            \
+			[](Node *p_instance, const StringName &p_item_name, const StringName &p_type_name) {            \
+				m_class *p_cast = Object::cast_to<m_class>(p_instance);                                     \
+				p_cast->theme_cache.m_prop = p_cast->get_theme_item(m_data_type, p_item_name, p_type_name); \
+			})
 
-#define BIND_THEME_ITEM_CUSTOM(m_data_type, m_class, m_prop, m_item_name)                                                   \
-	ThemeDB::get_singleton()->bind_class_item(m_data_type, get_class_static(), #m_prop, m_item_name, [](Node *p_instance) { \
-		m_class *p_cast = Object::cast_to<m_class>(p_instance);                                                             \
-		p_cast->theme_cache.m_prop = p_cast->get_theme_item(m_data_type, _scs_create(m_item_name));                         \
-	})
+#define BIND_THEME_ITEM_CUSTOM(m_data_type, m_class, m_prop, m_item_name)                                   \
+	ThemeDB::get_singleton()->bind_class_item(m_data_type, get_class_static(), #m_prop, m_item_name,        \
+			[](Node *p_instance, const StringName &p_item_name, const StringName &p_type_name) {            \
+				m_class *p_cast = Object::cast_to<m_class>(p_instance);                                     \
+				p_cast->theme_cache.m_prop = p_cast->get_theme_item(m_data_type, p_item_name, p_type_name); \
+			})
 
 // Macro for binding theme items used by this class, but defined/binded by other classes. This is primarily used for
 // the theme cache. Can also be used to list such items in documentation.
 
-#define BIND_THEME_ITEM_EXT(m_data_type, m_class, m_prop, m_item_name, m_type_name)                                                               \
-	ThemeDB::get_singleton()->bind_class_external_item(m_data_type, get_class_static(), #m_prop, m_item_name, m_type_name, [](Node *p_instance) { \
-		m_class *p_cast = Object::cast_to<m_class>(p_instance);                                                                                   \
-		p_cast->theme_cache.m_prop = p_cast->get_theme_item(m_data_type, _scs_create(m_item_name), _scs_create(m_type_name));                     \
-	})
+#define BIND_THEME_ITEM_EXT(m_data_type, m_class, m_prop, m_item_name, m_type_name)                                        \
+	ThemeDB::get_singleton()->bind_class_external_item(m_data_type, get_class_static(), #m_prop, m_item_name, m_type_name, \
+			[](Node *p_instance, const StringName &p_item_name, const StringName &p_type_name) {                           \
+				m_class *p_cast = Object::cast_to<m_class>(p_instance);                                                    \
+				p_cast->theme_cache.m_prop = p_cast->get_theme_item(m_data_type, p_item_name, p_type_name);                \
+			})
 
 class ThemeDB : public Object {
 	GDCLASS(ThemeDB, Object);
@@ -97,7 +100,7 @@ class ThemeDB : public Object {
 	// Binding of theme items to Node classes.
 
 public:
-	typedef std::function<void(Node *)> ThemeItemSetter;
+	typedef std::function<void(Node *, const StringName &, const StringName &)> ThemeItemSetter;
 
 	struct ThemeItemBind {
 		Theme::DataType data_type;
@@ -154,11 +157,11 @@ public:
 	void set_fallback_stylebox(const Ref<StyleBox> &p_stylebox);
 	Ref<StyleBox> get_fallback_stylebox();
 
-	void get_native_type_dependencies(const StringName &p_base_type, List<StringName> *p_list);
+	void get_native_type_dependencies(const StringName &p_base_type, Vector<StringName> &r_result);
 
 	// Global theme contexts.
 
-	ThemeContext *create_theme_context(Node *p_node, List<Ref<Theme>> &p_themes);
+	ThemeContext *create_theme_context(Node *p_node, Vector<Ref<Theme>> &p_themes);
 	void destroy_theme_context(Node *p_node);
 
 	ThemeContext *get_theme_context(Node *p_node) const;
@@ -191,7 +194,7 @@ class ThemeContext : public Object {
 	// Themes are stacked in the order of relevance, for easy iteration.
 	// This means that the first theme is the one you should check first,
 	// and the last theme is the fallback theme where every lookup ends.
-	List<Ref<Theme>> themes;
+	Vector<Ref<Theme>> themes;
 
 	void _emit_changed();
 
@@ -199,8 +202,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_themes(List<Ref<Theme>> &p_themes);
-	List<Ref<Theme>> get_themes() const;
+	void set_themes(Vector<Ref<Theme>> &p_themes);
+	const Vector<Ref<Theme>> get_themes() const;
 	Ref<Theme> get_fallback_theme() const;
 };
 

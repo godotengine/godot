@@ -141,13 +141,14 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 				unique_resources_list_tree->clear();
 				if (resource_propnames.size()) {
-					TreeItem *root = unique_resources_list_tree->create_item();
+					const EditorPropertyNameProcessor::Style name_style = inspector->get_property_name_style();
 
-					for (int i = 0; i < resource_propnames.size(); i++) {
-						String propname = resource_propnames[i].replace("/", " / ");
+					TreeItem *root = unique_resources_list_tree->create_item();
+					for (const String &E : resource_propnames) {
+						const String propname = EditorPropertyNameProcessor::get_singleton()->process_name(E, name_style);
 
 						TreeItem *ti = unique_resources_list_tree->create_item(root);
-						ti->set_text(0, bool(EDITOR_GET("interface/inspector/capitalize_properties")) ? propname.capitalize() : propname);
+						ti->set_text(0, propname);
 					}
 
 					unique_resources_label->set_text(TTR("The following resources will be duplicated and embedded within this resource/object."));

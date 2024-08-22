@@ -2233,6 +2233,71 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		p_theme->set_stylebox("DictionaryAddItem0", EditorStringName(EditorStyles), style_dictionary_add_item);
 	}
 
+	// Animation Editor.
+	{
+		// Timeline general.
+		p_theme->set_constant("timeline_v_separation", "AnimationTrackEditor", 0);
+		p_theme->set_constant("track_v_separation", "AnimationTrackEditor", 0);
+
+		// AnimationTimelineEdit.
+		// "primary" is used for integer timeline values, "secondary" for decimals.
+
+		Ref<StyleBoxFlat> style_time_unavailable = make_flat_stylebox(p_config.dark_color_2, 0, 0, 0, 0, 0);
+		Ref<StyleBoxFlat> style_time_available = make_flat_stylebox(p_config.font_color * Color(1, 1, 1, 0.2), 0, 0, 0, 0, 0);
+
+		p_theme->set_stylebox("time_unavailable", "AnimationTimelineEdit", style_time_unavailable);
+		p_theme->set_stylebox("time_available", "AnimationTimelineEdit", style_time_available);
+
+		p_theme->set_color("v_line_primary_color", "AnimationTimelineEdit", p_config.font_color * Color(1, 1, 1, 0.2));
+		p_theme->set_color("v_line_secondary_color", "AnimationTimelineEdit", p_config.font_color * Color(1, 1, 1, 0.2));
+		p_theme->set_color("h_line_color", "AnimationTimelineEdit", p_config.font_color * Color(1, 1, 1, 0.2));
+		p_theme->set_color("font_primary_color", "AnimationTimelineEdit", p_config.font_color);
+		p_theme->set_color("font_secondary_color", "AnimationTimelineEdit", p_config.font_color * Color(1, 1, 1, 0.5));
+
+		p_theme->set_constant("v_line_primary_margin", "AnimationTimelineEdit", 0);
+		p_theme->set_constant("v_line_secondary_margin", "AnimationTimelineEdit", 0);
+		p_theme->set_constant("v_line_primary_width", "AnimationTimelineEdit", 1 * EDSCALE);
+		p_theme->set_constant("v_line_secondary_width", "AnimationTimelineEdit", 1 * EDSCALE);
+		p_theme->set_constant("text_primary_margin", "AnimationTimelineEdit", 3 * EDSCALE);
+		p_theme->set_constant("text_secondary_margin", "AnimationTimelineEdit", 3 * EDSCALE);
+
+		// AnimationTrackEdit.
+
+		Ref<StyleBoxFlat> style_animation_track_odd = make_flat_stylebox(Color(0.5, 0.5, 0.5, 0.05), 0, 0, 0, 0, p_config.corner_radius);
+		Ref<StyleBoxFlat> style_animation_track_hover = make_flat_stylebox(Color(0.5, 0.5, 0.5, 0.1), 0, 0, 0, 0, p_config.corner_radius);
+
+		p_theme->set_stylebox("odd", "AnimationTrackEdit", style_animation_track_odd);
+		p_theme->set_stylebox("hover", "AnimationTrackEdit", style_animation_track_hover);
+		p_theme->set_stylebox("focus", "AnimationTrackEdit", p_config.button_style_focus);
+
+		p_theme->set_color("h_line_color", "AnimationTrackEdit", p_config.font_color * Color(1, 1, 1, 0.2));
+
+		p_theme->set_constant("h_separation", "AnimationTrackEdit", (p_config.increased_margin + 2) * EDSCALE);
+		p_theme->set_constant("outer_margin", "AnimationTrackEdit", p_config.increased_margin * 6 * EDSCALE);
+
+		// AnimationTrackEditGroup.
+
+		Ref<StyleBoxFlat> style_animation_track_header = make_flat_stylebox(p_config.dark_color_2 * Color(1, 1, 1, 0.6), p_config.increased_margin * 3, 0, 0, 0, p_config.corner_radius);
+
+		p_theme->set_stylebox("header", "AnimationTrackEditGroup", style_animation_track_header);
+
+		p_theme->set_color("h_line_color", "AnimationTrackEditGroup", p_config.font_color * Color(1, 1, 1, 0.2));
+		p_theme->set_color("v_line_color", "AnimationTrackEditGroup", p_config.font_color * Color(1, 1, 1, 0.2));
+
+		p_theme->set_constant("h_separation", "AnimationTrackEditGroup", (p_config.increased_margin + 2) * EDSCALE);
+		p_theme->set_constant("v_separation", "AnimationTrackEditGroup", 0);
+
+		// AnimationBezierTrackEdit.
+
+		p_theme->set_color("focus_color", "AnimationBezierTrackEdit", p_config.accent_color * Color(1, 1, 1, 0.7));
+		p_theme->set_color("track_focus_color", "AnimationBezierTrackEdit", p_config.accent_color * Color(1, 1, 1, 0.5));
+		p_theme->set_color("h_line_color", "AnimationBezierTrackEdit", p_config.font_color * Color(1, 1, 1, 0.2));
+		p_theme->set_color("v_line_color", "AnimationBezierTrackEdit", p_config.font_color * Color(1, 1, 1, 0.2));
+
+		p_theme->set_constant("h_separation", "AnimationBezierTrackEdit", (p_config.increased_margin + 2) * EDSCALE);
+		p_theme->set_constant("v_separation", "AnimationBezierTrackEdit", p_config.forced_even_separation * EDSCALE);
+	}
+
 	// Editor help.
 	{
 		Ref<StyleBoxFlat> style_editor_help = p_config.base_style->duplicate();
