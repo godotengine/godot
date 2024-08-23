@@ -1788,6 +1788,7 @@ int EditorNode::_save_external_resources(bool p_also_save_external_data) {
 
 		res->set_edited(false);
 	}
+	bool save_scripts = !bool(EDITOR_GET("text_editor/external/use_external_editor"));
 
 	for (const String &E : edited_resources) {
 		Ref<Resource> res = ResourceCache::get_ref(E);
@@ -1797,6 +1798,10 @@ int EditorNode::_save_external_resources(bool p_also_save_external_data) {
 		Ref<PackedScene> ps = res;
 		if (ps.is_valid()) {
 			continue; // Do not save PackedScenes, this will mess up the editor.
+		}
+		if (res->is_class("Script") && !save_scripts) {
+			WARN_PRINT_ONCE_ED("Cannot save scripts modified in the internal editor if using external editor!");
+			continue; // Do not save scripts if they're being externally modified.
 		}
 		ResourceSaver::save(res, res->get_path(), flg);
 		saved++;
