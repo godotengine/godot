@@ -152,7 +152,7 @@ TEST_CASE("[Modules][ManyBoneIK][IKKusudama3D] Test a point outside the bounds w
 	Vector3 test_point_outside = Vector3(1, 0, 0);
 	Vector3 returned_point_outside = kusudama->get_local_point_in_limits(test_point_outside, &bounds);
 	CHECK_EQ(bounds[0], -1);
-	CHECK(returned_point_outside.is_equal_approx(Vector3(0.50000001261839133, 0, 0.86602539649920684 )));
+	CHECK(returned_point_outside.is_equal_approx(Vector3(0.50000001261839133, 0, 0.86602539649920684)));
 }
 
 TEST_CASE("[Modules][ManyBoneIK][IKKusudama3D] Adding and retrieving Limit Cones") {
