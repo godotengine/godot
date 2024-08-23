@@ -194,6 +194,7 @@ void RayCast2D::_update_raycast_state() {
 
 	PhysicsDirectSpaceState2D::RayResult rr;
 	bool prev_collision_state = collided;
+	RID prev_against_rid = against_rid;
 
 	PhysicsDirectSpaceState2D::RayParameters ray_params;
 	ray_params.from = gt.get_origin();
@@ -218,7 +219,7 @@ void RayCast2D::_update_raycast_state() {
 		against_shape = 0;
 	}
 
-	if (prev_collision_state != collided) {
+	if (prev_collision_state != collided || prev_against_rid != against_rid) {
 		queue_redraw();
 		emit_signal(SceneStringName(collision_state_changed), is_colliding(), get_collider_rid(), get_collider(), get_collision_point(), get_collision_normal());
 	}

@@ -203,10 +203,13 @@ void RayCast3D::_notification(int p_what) {
 			}
 
 			bool prev_collision_state = collided;
+			RID prev_against_rid = against_rid;
 			_update_raycast_state();
+			if (prev_collision_state != collided || prev_against_rid != against_rid) {
+				emit_signal(SceneStringName(collision_state_changed), is_colliding(), get_collider_rid(), get_collider(), get_collision_point(), get_collision_normal(), get_collision_face_index());
+			}
 			if (get_tree()->is_debugging_collisions_hint()) {
 				if (prev_collision_state != collided) {
-					emit_signal(SceneStringName(collision_state_changed), is_colliding(), get_collider_rid(), get_collider(), get_collision_point(), get_collision_normal(), get_collision_face_index());
 					_update_debug_shape_material(true);
 				}
 				if (is_inside_tree() && debug_instance.is_valid()) {
