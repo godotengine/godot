@@ -57,7 +57,7 @@ int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 		mp3dec_frame_info_t frame_info;
 		mp3d_sample_t *buf_frame = nullptr;
 
-		int samples_mixed = mp3dec_ex_read_frame(mp3d, &buf_frame, &frame_info, mp3_stream->channels);
+		int samples_mixed = mp3dec_ex_read_frame(&mp3d, &buf_frame, &frame_info, mp3_stream->channels);
 
 		if (samples_mixed) {
 			p_buffer[p_frames - todo] = AudioFrame(buf_frame[0], buf_frame[samples_mixed - 1]);
@@ -70,7 +70,7 @@ int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 
 			if (beat_loop && (int)frames_mixed >= beat_length_frames) {
 				for (int i = 0; i < FADE_SIZE; i++) {
-					samples_mixed = mp3dec_ex_read_frame(mp3d, &buf_frame, &frame_info, mp3_stream->channels);
+					samples_mixed = mp3dec_ex_read_frame(&mp3d, &buf_frame, &frame_info, mp3_stream->channels);
 					loop_fade[i] = AudioFrame(buf_frame[0], buf_frame[samples_mixed - 1]);
 					if (!samples_mixed) {
 						break;
@@ -138,7 +138,7 @@ void AudioStreamPlaybackMP3::seek(double p_time) {
 	}
 
 	frames_mixed = uint32_t(mp3_stream->sample_rate * p_time);
-	mp3dec_ex_seek(mp3d, (uint64_t)frames_mixed * mp3_stream->channels);
+	mp3dec_ex_seek(&mp3d, (uint64_t)frames_mixed * mp3_stream->channels);
 }
 
 void AudioStreamPlaybackMP3::tag_used_streams() {
@@ -181,10 +181,7 @@ Variant AudioStreamPlaybackMP3::get_parameter(const StringName &p_name) const {
 }
 
 AudioStreamPlaybackMP3::~AudioStreamPlaybackMP3() {
-	if (mp3d) {
-		mp3dec_ex_close(mp3d);
-		memfree(mp3d);
-	}
+	mp3dec_ex_close(&mp3d);
 }
 
 Ref<AudioStreamPlayback> AudioStreamMP3::instantiate_playback() {
@@ -197,9 +194,8 @@ Ref<AudioStreamPlayback> AudioStreamMP3::instantiate_playback() {
 
 	mp3s.instantiate();
 	mp3s->mp3_stream = Ref<AudioStreamMP3>(this);
-	mp3s->mp3d = (mp3dec_ex_t *)memalloc(sizeof(mp3dec_ex_t));
 
-	int errorcode = mp3dec_ex_open_buf(mp3s->mp3d, data.ptr(), data_len, MP3D_SEEK_TO_SAMPLE);
+	int errorcode = mp3dec_ex_open_buf(&mp3s->mp3d, data.ptr(), data_len, MP3D_SEEK_TO_SAMPLE);
 
 	mp3s->frames_mixed = 0;
 	mp3s->active = false;
