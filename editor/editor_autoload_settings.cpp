@@ -88,7 +88,7 @@ void EditorAutoloadSettings::_notification(int p_what) {
 }
 
 bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, String *r_error) {
-	if (!p_name.is_valid_identifier()) {
+	if (!p_name.is_valid_ascii_identifier()) {
 		if (r_error) {
 			*r_error = TTR("Invalid name.") + " ";
 			if (p_name.size() > 0 && p_name.left(1).is_numeric()) {
