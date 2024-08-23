@@ -42,6 +42,7 @@
 #include "editor/editor_paths.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_settings.h"
+#include "editor/plugins/script_editor_plugin.h"
 #include "editor/project_settings_editor.h"
 #include "scene/resources/packed_scene.h"
 
@@ -806,18 +807,11 @@ bool EditorFileSystem::_update_scan_actions() {
 			case ItemAction::ACTION_FILE_RELOAD: {
 				int idx = ia.dir->find_file_index(ia.file);
 				ERR_CONTINUE(idx == -1);
-				String full_path = ia.dir->get_file_path(idx);
 
-				const EditorFileSystemDirectory::FileInfo *fi = ia.dir->files[idx];
-				if (ClassDB::is_parent_class(fi->type, SNAME("Script"))) {
-					_queue_update_script_class(full_path, fi->type, fi->script_class_name, fi->script_class_extends, fi->script_class_icon_path);
+				// Only reloads the resources that are already loaded.
+				if (ResourceCache::has(ia.dir->get_file_path(idx))) {
+					reloads.push_back(ia.dir->get_file_path(idx));
 				}
-				if (fi->type == SNAME("PackedScene")) {
-					_queue_update_scene_groups(full_path);
-				}
-
-				reloads.push_back(full_path);
-
 			} break;
 		}
 
@@ -841,7 +835,7 @@ bool EditorFileSystem::_update_scan_actions() {
 		}
 	}
 
-	if (reimports.size()) {
+	if (!reimports.is_empty()) {
 		if (_scan_import_support(reimports)) {
 			return true;
 		}
@@ -850,6 +844,11 @@ bool EditorFileSystem::_update_scan_actions() {
 	} else {
 		//reimport files will update the uid cache file so if nothing was reimported, update it manually
 		ResourceUID::get_singleton()->update_cache();
+	}
+
+	if (!reloads.is_empty()) {
+		// Update global class names, dependencies, etc...
+		update_files(reloads);
 	}
 
 	if (first_scan) {
@@ -1341,8 +1340,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanPr
 				ia.file = p_dir->files[i]->file;
 				scan_actions.push_back(ia);
 			}
-		} else if (ResourceCache::has(path)) { //test for potential reload
-
+		} else {
 			uint64_t mt = FileAccess::get_modified_time(path);
 
 			if (mt != p_dir->files[i]->modified_time) {
@@ -1967,6 +1965,14 @@ void EditorFileSystem::_update_script_documentation() {
 		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 			ScriptLanguage *lang = ScriptServer::get_language(i);
 			if (lang->supports_documentation() && efd->files[index]->type == lang->get_type()) {
+				// Reloading the script from disk if resource already in memory. Otherwise, the
+				// ResourceLoader::load will return the last loaded version of the script (without the modifications).
+				// The only have the script already loaded here is to edit the script outside the
+				// editor without being connected to the LSP server.
+				Ref<Resource> res = ResourceCache::get_ref(path);
+				if (res.is_valid()) {
+					res->reload_from_file();
+				}
 				Ref<Script> scr = ResourceLoader::load(path);
 				if (scr.is_null()) {
 					continue;
@@ -1974,6 +1980,10 @@ void EditorFileSystem::_update_script_documentation() {
 				Vector<DocData::ClassDoc> docs = scr->get_documentation();
 				for (int j = 0; j < docs.size(); j++) {
 					EditorHelp::get_doc_data()->add_doc(docs[j]);
+					if (!first_scan) {
+						// Update the documentation in the Script Editor if it is open.
+						ScriptEditor::get_singleton()->update_doc(docs[j].name);
+					}
 				}
 			}
 		}
