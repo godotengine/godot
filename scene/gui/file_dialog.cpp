@@ -124,6 +124,8 @@ void FileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_files, int
 			file_name = ProjectSettings::get_singleton()->localize_path(file_name);
 		}
 	}
+	selected_options = p_selected_options;
+
 	String f = files[0];
 	if (mode == FILE_MODE_OPEN_FILES) {
 		emit_signal(SNAME("files_selected"), files);
@@ -155,7 +157,6 @@ void FileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_files, int
 	}
 	file->set_text(f);
 	dir->set_text(f.get_base_dir());
-	selected_options = p_selected_options;
 	filter->select(p_filter);
 }
 
