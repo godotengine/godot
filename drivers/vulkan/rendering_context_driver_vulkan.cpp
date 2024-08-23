@@ -229,6 +229,13 @@ VkAllocationCallbacks *RenderingContextDriverVulkan::get_allocation_callbacks(Vk
 #if !defined(VK_TRACK_DRIVER_MEMORY)
 	return nullptr;
 #else
+
+#ifdef _MSC_VER
+#define LAMBDA_VK_CALL_CONV
+#else
+#define LAMBDA_VK_CALL_CONV VKAPI_PTR
+#endif
+
 	struct TrackedMemHeader {
 		size_t size;
 		VkSystemAllocationScope allocation_scope;
@@ -241,7 +248,7 @@ VkAllocationCallbacks *RenderingContextDriverVulkan::get_allocation_callbacks(Vk
 				void *p_user_data,
 				size_t size,
 				size_t alignment,
-				VkSystemAllocationScope allocation_scope) -> void * {
+				VkSystemAllocationScope allocation_scope) LAMBDA_VK_CALL_CONV -> void * {
 			static constexpr size_t tracking_data_size = 32;
 			VkTrackedObjectType type = static_cast<VkTrackedObjectType>(*reinterpret_cast<VkTrackedObjectType *>(p_user_data));
 
@@ -274,7 +281,7 @@ VkAllocationCallbacks *RenderingContextDriverVulkan::get_allocation_callbacks(Vk
 				void *p_original,
 				size_t size,
 				size_t alignment,
-				VkSystemAllocationScope allocation_scope) -> void * {
+				VkSystemAllocationScope allocation_scope) LAMBDA_VK_CALL_CONV -> void * {
 			if (p_original == nullptr) {
 				VkObjectType type = static_cast<VkObjectType>(*reinterpret_cast<uint32_t *>(p_user_data));
 				return get_allocation_callbacks(type)->pfnAllocation(p_user_data, size, alignment, allocation_scope);
@@ -305,7 +312,7 @@ VkAllocationCallbacks *RenderingContextDriverVulkan::get_allocation_callbacks(Vk
 		// Free function
 		[](
 				void *p_user_data,
-				void *p_memory) {
+				void *p_memory) LAMBDA_VK_CALL_CONV {
 			if (!p_memory) {
 				return;
 			}
@@ -326,13 +333,13 @@ VkAllocationCallbacks *RenderingContextDriverVulkan::get_allocation_callbacks(Vk
 				void *p_user_data,
 				size_t size,
 				VkInternalAllocationType allocation_type,
-				VkSystemAllocationScope allocation_scope) {
+				VkSystemAllocationScope allocation_scope) LAMBDA_VK_CALL_CONV {
 		},
 		[](
 				void *p_user_data,
 				size_t size,
 				VkInternalAllocationType allocation_type,
-				VkSystemAllocationScope allocation_scope) {
+				VkSystemAllocationScope allocation_scope) LAMBDA_VK_CALL_CONV {
 		},
 	};
 
