@@ -58,6 +58,9 @@ class BeehaveNode : public RefCounted
         ClassDB::bind_method(D_METHOD("set_name", "name"), &BeehaveNode::set_name);
         ClassDB::bind_method(D_METHOD("get_name"), &BeehaveNode::get_name);
 
+        ClassDB::bind_method(D_METHOD("set_annotation", "annotation"), &BeehaveNode::set_annotation);
+        ClassDB::bind_method(D_METHOD("get_annotation"), &BeehaveNode::get_annotation);
+
         ClassDB::bind_method(D_METHOD("set_children", "children"), &BeehaveNode::set_children);
         ClassDB::bind_method(D_METHOD("get_children"), &BeehaveNode::get_children);
 
@@ -69,7 +72,8 @@ class BeehaveNode : public RefCounted
         ClassDB::bind_method(D_METHOD("get_editor_collapsed_children"), &BeehaveNode::get_editor_collapsed_children);
 
 
-        ADD_PROPERTY(PropertyInfo(Variant::STRING, "name"), "set_name", "get_name");
+        ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name"), "set_name", "get_name");
+        ADD_PROPERTY(PropertyInfo(Variant::STRING, "annotation"), "set_annotation", "get_annotation");
         ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enable", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_enable", "get_enable");
         ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_collapsed_children", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_editor_collapsed_children", "get_editor_collapsed_children");
         ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "children", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("BeehaveNode"), PROPERTY_USAGE_NO_EDITOR), "set_children", "get_children");
@@ -169,14 +173,23 @@ public:
         }
         return rs;
     }
-    void set_name(String p_name)
+    void set_name(StringName p_name)
     {
         name = p_name;
     }
 
-    String get_name()
+    StringName get_name()
     {
         return name;
+    }
+
+	void set_annotation(String p_annotation)
+    {
+        annotation = p_annotation;
+    }
+    String get_annotation()
+    {
+        return annotation;
     }
     void set_enable(bool p_enable)
     {
@@ -247,7 +260,9 @@ public:
     }
 protected:
     LocalVector<Ref<BeehaveNode>> children;
-    String name;
+	StringName name;
+	// 获取描述
+	String annotation;
     bool enabled = true;
     // 是否编辑器折叠子节点
     bool editor_collapsed_children = false;
@@ -417,8 +432,6 @@ public:
 
 protected:
     StringName group;
-    StringName name;
-    String annotation;
 
     Ref<BeehaveNode> node;
 };

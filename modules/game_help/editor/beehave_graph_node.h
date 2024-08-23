@@ -368,6 +368,7 @@ public:
 	TextureRect* icon_rect;
 	Label* title_label;
 	Label* label;
+	Label* state_label;
 	HBoxContainer* titlebar_hbox;
 
 	CheckBox* enable = nullptr;
@@ -472,6 +473,7 @@ public:
 				move_down->connect("pressed", callable_mp(this, &BeehaveGraphNodes::_on_move_down));
 
 				separator = memnew(Separator);
+				separator->set_modulate(Color(1, 1, 1, 0.2));
 				hbox->add_child(separator);
 
 			}
@@ -498,13 +500,22 @@ public:
 				create_child_node = memnew(Button);
 				hbox->add_child(create_child_node);
 				create_child_node->set_icon(frames->add_node_icon);
-				create_child_node->set_tooltip_text(L"增加子节点");
 				create_child_node->connect("pressed", callable_mp(this, &BeehaveGraphNodes::_on_create_child_node));
+				if(beehave_node->get_editor_collapsed_children())
+				{
+					create_child_node->set_disabled(beehave_node->get_editor_collapsed_children());
+					create_child_node->set_tooltip_text(L"子节点被折叠,无法新增子节点");
+				}
+				else{
+					
+					create_child_node->set_tooltip_text(L"增加子节点");
+				}
 			}
 
 			if(parent_beehave_node.is_valid()) 
 			{
 				separator = memnew(Separator);
+				separator->set_modulate(Color(1, 1, 1, 0.2));
 				hbox->add_child(separator);
 
 
@@ -520,6 +531,7 @@ public:
 		
 		Separator* separator = memnew(Separator);
 		separator->set_h_size_flags(SIZE_EXPAND_FILL);
+		separator->set_modulate(Color(1, 1, 1, 0.2));
 		add_child(separator);
 
 
@@ -530,9 +542,15 @@ public:
 		title_label->set_text(title_text);
 		titlebar_hbox->add_child(title_label);
 
+
 		label = memnew(Label);
 		label->set_text(text.is_empty() ? " " : text);
 		add_child(label);
+
+
+		state_label = memnew(Label);
+		state_label->set_text(L"");
+		add_child(state_label);
 
 		if(beehave_node->get_child_count() > 0)
 		{
@@ -545,6 +563,7 @@ public:
 		else{
 			separator = memnew(Separator);
 			separator->set_h_size_flags(SIZE_EXPAND_FILL);
+			separator->set_modulate(Color(1, 1, 1, 0.2));
 			add_child(separator);
 		}
 
@@ -567,7 +586,7 @@ public:
 			{
 				draw_texture(frames->icon_port_left, get_input_port_position(0) + Vector2(-4, 10),p_color);
 			}
-			if(is_slot_enabled_right(1))
+			if(is_slot_enabled_right(1) && !beehave_node->get_editor_collapsed_children())
 			{
 				draw_texture(frames->icon_port_right, get_output_port_position(0) + Vector2(5, -7),p_color);
 			}
@@ -578,7 +597,7 @@ public:
 			{
 				draw_texture(frames->icon_port_top, get_input_port_position(0) + Vector2(-5, 10),p_color);
 			}
-			else if(p_slot_index == 1 )
+			else if(p_slot_index == 1  && !beehave_node->get_editor_collapsed_children())
 			{
 				draw_texture(frames->icon_port_bottom, get_output_port_position(0) + Vector2(5, -7),p_color);
 			}
@@ -672,9 +691,8 @@ public:
 	void set_text(String p_text)
 	{
 		text = p_text;
-		text = String::num_int64(get_position_offset().x) + " " + String::num_int64(get_position_offset().y)
-			+ "\n" + String::num_int64(get_position().x) + " " + String::num_int64(get_position().y);
-		label->set_text(text);
+		label->set_text(beehave_node->get_annotation());
+		state_label->set_text(text);
 	}
 	void set_title_text(String p_text)
 	{
@@ -888,7 +906,7 @@ class BeehaveGraphTreeNode : public RefCounted
 	}
 	Vector2 get_cell_size()
 	{
-		return Vector2(180, 90);
+		return Vector2(180, 120);
 	}
 
     void compute_position(const Vector2& p_offset,bool p_horizontal_layout)
