@@ -42,8 +42,19 @@ public:
 		return Plane(transformed_normal, GetConstant() - inTransform.GetTranslation().Dot(transformed_normal));
 	}
 
+	/// Scale the plane, can handle non-uniform and negative scaling
+	inline Plane	Scaled(Vec3Arg inScale) const
+	{
+		Vec3 scaled_normal = GetNormal() / inScale;
+		float scaled_normal_length = scaled_normal.Length();
+		return Plane(scaled_normal / scaled_normal_length, GetConstant() / scaled_normal_length);
+	}
+
 	/// Distance point to plane
 	float			SignedDistance(Vec3Arg inPoint) const									{ return inPoint.Dot(GetNormal()) + GetConstant(); }
+
+	/// Project inPoint onto the plane
+	Vec3			ProjectPointOnPlane(Vec3Arg inPoint) const								{ return inPoint - GetNormal() * SignedDistance(inPoint); }
 
 	/// Returns intersection point between 3 planes
 	static bool		sIntersectPlanes(const Plane &inP1, const Plane &inP2, const Plane &inP3, Vec3 &outPoint)
@@ -80,6 +91,10 @@ public:
 	}
 
 private:
+#ifdef JPH_OBJECT_STREAM
+	friend void		CreateRTTIPlane(class RTTI &);										// For JPH_IMPLEMENT_SERIALIZABLE_OUTSIDE_CLASS
+#endif
+
 	Vec4			mNormalAndConstant;													///< XYZ = normal, W = constant, plane: x . normal + constant = 0
 };
 

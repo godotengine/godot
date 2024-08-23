@@ -23,7 +23,7 @@ public:
 
 	static Color get_select_color()
 	{
-		return Color(1.0f, 0.65f, 0.55f, 0.5f);
+		return Color(0.7f, 0.65f, 1.0f, 0.5f);
 	}
 
 public:
@@ -80,7 +80,7 @@ public:
 
 	}
 
-	void _add_nodes(const Ref<BeehaveNode>& p_beehave_node)
+	void _add_nodes(const Ref<BeehaveNode>& p_beehave_node,const Ref<BeehaveNode>& p_parent_beehave_node = Ref<BeehaveNode>())
 	{
 		if(p_beehave_node.is_null())
 		{
@@ -94,7 +94,7 @@ public:
 		{
 			tile_name = "\n (" + p_beehave_node->get_name() + ")";
 		}
-		nodes->_init(beehave_graph_property,p_beehave_node,frames, tile_name, "test", p_beehave_node->get_icon(), horizontal_layout);
+		nodes->_init(beehave_graph_property,p_parent_beehave_node,p_beehave_node,frames, tile_name, "test", p_beehave_node->get_icon(), horizontal_layout);
 
 		add_child(nodes);
 		if(Object::cast_to<BeehaveLeaf>(p_beehave_node.ptr()))
@@ -105,10 +105,12 @@ public:
 		{
 			nodes->set_slots(true,true);
 		}
-
-		for(int i = 0; i < p_beehave_node->get_child_count(); i++) 
+		if(!p_beehave_node->get_editor_collapsed_children())
 		{
-			_add_nodes(p_beehave_node->get_child(i)); 
+			for(int i = 0; i < p_beehave_node->get_child_count(); i++) 
+			{
+				_add_nodes(p_beehave_node->get_child(i),p_beehave_node); 
+			}
 		}
 
 	}
@@ -138,11 +140,14 @@ public:
 		Ref<BeehaveGraphTreeNode> tree_node = memnew(BeehaveGraphTreeNode);
 		Node* n = get_node(NodePath(p_beehave_node->get_id()));
 		tree_node->_init(p_parent.ptr(), Object::cast_to<BeehaveGraphNodes>(n ));
-
-		for(int i = 0; i < p_beehave_node->get_child_count(); i++)
+		
+		if(!p_beehave_node->get_editor_collapsed_children())
 		{
-			Ref<BeehaveGraphTreeNode> child = _create_tree_nodes(p_beehave_node->get_child(i),tree_node);
-			tree_node->children.push_back(child);
+			for(int i = 0; i < p_beehave_node->get_child_count(); i++)
+			{
+				Ref<BeehaveGraphTreeNode> child = _create_tree_nodes(p_beehave_node->get_child(i),tree_node);
+				tree_node->children.push_back(child);
+			}
 		}
 		return tree_node;
 	}
@@ -200,10 +205,10 @@ public:
 			node->set_meta("status",-1);
 			if(node->beehave_node == beehave_node)
 			{
-				node->set_modulate(get_select_color());
+				node->set_title_color(get_select_color());
 			}
 			else{
-				node->set_modulate(Color(1,1,1,0.85f));
+				node->set_title_color(Color(1,1,1,0.85f));
 
 			}
 			
@@ -558,7 +563,6 @@ public:
 		add_child(beehave_editor);
 		beehave_editor->set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
 		beehave_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-		beehave_editor->set_minimap_size(Vector2(0, 300));
 
 		set_process(true);
 
@@ -571,7 +575,7 @@ public:
 		PLAY_STATE_PAUSE,
 		PLAY_STATE_STOP
 	};
-	void setup(Ref<BeehaveTree> p_beehave_tree,VBoxContainer * p_select_node_property_vbox,HBoxContainer* p_buton_create_beehave_box)
+	void setup(Ref<BeehaveTree> p_beehave_tree,VBoxContainer * p_select_node_property_vbox)
 	{
 		frames.instantiate();
 		frames->init();
@@ -617,24 +621,6 @@ public:
 
 		select_node_property_vbox->add_child(sub_inspector);
 
-		buton_create_beehave_node_panel = p_buton_create_beehave_box;
-
-		buton_create_beehave_node = memnew(Button);
-		buton_create_beehave_node_panel->add_child(buton_create_beehave_node);
-		buton_create_beehave_node->set_text("Add Beehave Node");
-		buton_create_beehave_node->set_modulate(BeehaveGraphEditor::get_select_color());
-
-		if(buton_create_beehave_node->get_child_count() > 0)
-		{
-			buton_create_beehave_node->get_child(0)->queue_free();
-		}
-
-		cteate_beehave_node_pop = memnew(PopupMenu);
-		buton_create_beehave_node->add_child(cteate_beehave_node_pop);
-		cteate_beehave_node_pop->set_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
-		cteate_beehave_node_pop->set_visible(false);
-		buton_create_beehave_node->connect("pressed", callable_mp(this, &BeehaveGraphProperty::_create_beehave_node_pop_menu_pressed));
-
 
 
 
@@ -673,10 +659,16 @@ public:
 		set_collapsed(!is_collapsed());
 	}
 	void set_collapsed(bool p_collapsed) {
+		if(p_collapsed)
+		{
+			set_custom_minimum_size(Size2(0, 20));
+		}else
+		{
+			set_custom_minimum_size(Size2(0, 600));
+		}
 		beehave_editor->set_visible(!p_collapsed);
 		sub_inspector->set_visible(!p_collapsed);
 		child_list->set_visible(!p_collapsed);
-		buton_create_beehave_node_panel->set_visible(!p_collapsed);
 	#ifdef TOOLS_ENABLED
 		beehave_tree->editor_set_section_unfold("Beehave Tree Condition", !p_collapsed);
 	#endif
@@ -737,201 +729,18 @@ public:
 		{
 			show = false;
 		}
-		buton_create_beehave_node->set_visible(show);
 		child_list->setup(beehave_node, "children", Variant::OBJECT, MAKE_RESOURCE_TYPE_HINT("BeehaveNode"));
 		child_list->update_property();
 		
-		if(!show)
-		{
-			return;
-		}
-		bool is_build_leaf = false;
-		bool is_build_composite = false;
-		bool is_build_decorator = false;
-		create_leaf_pop_sub();
-		create_composite_pop_sub();
-		create_decorator_pop_sub();
-
-		cteate_beehave_node_pop->clear();
-
-		cteate_beehave_node_pop->add_submenu_node_item(L"叶节点", leaf_pop_sub);
-		cteate_beehave_node_pop->add_submenu_node_item(L"组合节点", composite_pop_sub);
-		cteate_beehave_node_pop->add_submenu_node_item(L"修饰器", decorator_pop_sub);
 
 	}
-	void popup_on_target(PopupMenu *p_menu,Control* p_target) {
-		p_menu->reset_size();
-		Rect2i usable_rect =  Rect2i(Point2i(0,0), DisplayServer::get_singleton()->window_get_size_with_decorations());
-		Rect2i cp_rect = Rect2i(Point2i(0,0), p_target->get_size());
 
-		for(int i = 0; i < 4; i++) {
-			if(i > 1)
-			{
-				cp_rect.position.y = p_target->get_global_position().x - p_target->get_size().y;
-			}
-			else
-			{
-				cp_rect.position.y = p_target->get_global_position().y + p_target->get_size().y;
-			}
-			if(i & 1) {
-				cp_rect.position.x = p_target->get_global_position().x ;
-			}
-			else
-			{
-				cp_rect.position.x = p_target->get_global_position().x - MAX(0,cp_rect.size.x - p_target->get_size().x);
-			}
-			if(usable_rect.encloses(cp_rect))
-			{
-				break;
-			}
-		}
-		Point2i main_window_position = DisplayServer::get_singleton()->window_get_position();
-		Point2i popup_position = main_window_position + Point2i(cp_rect.position);
-		p_menu->set_position(popup_position);
-		p_menu->popup();
-		
-	}
-
-	void _create_beehave_node_pop_menu_pressed()
+	void on_beehave_node_change()
 	{
-		popup_on_target(cteate_beehave_node_pop, buton_create_beehave_node);
-	}
-	void create_leaf_pop_sub()
-	{
-		leaf_pop_sub = memnew(PopupMenu);
-
-		leaf_class_name.clear();
-		HashSet<StringName> leaf_class_name_set;
-		_add_allowed_type(SNAME("BeehaveLeaf"), &leaf_class_name_set);
-		int i = 0;
-		for (const StringName &S : leaf_class_name_set) {
-			leaf_class_name.push_back(S);
-			Ref<BeehaveLeaf> instance = create_class_instance(S);
-			leaf_pop_sub->add_item(instance->get_lable_name());
-			leaf_pop_sub->set_item_tooltip(i, instance->get_tooltip());
-			leaf_class_name_to_instance[S] = instance;
-			++i;
-		}
-		leaf_pop_sub->connect(SceneStringName(id_pressed), callable_mp(this, &BeehaveGraphProperty::on_leaf_pop_pressed));
-
-	}
-	void create_composite_pop_sub()
-	{
-		composite_pop_sub = memnew(PopupMenu);
-		composite_class_name.clear();
-		HashSet<StringName> composite_class_name_set;
-
-		_add_allowed_type(SNAME("BeehaveComposite"), &composite_class_name_set);
-		int i = 0;
-		for (const StringName &S : composite_class_name_set) {
-			composite_class_name.push_back(S);
-			Ref<BeehaveComposite> instance = create_class_instance(S);
-			composite_pop_sub->add_item(instance->get_lable_name());
-			composite_pop_sub->set_item_tooltip(i, instance->get_tooltip());
-			composite_class_name_to_instance[S] = instance;
-			++i;
-		}
-
-		composite_pop_sub->connect(SceneStringName(id_pressed), callable_mp(this, &BeehaveGraphProperty::on_composite_pop_pressed));
+		beehave_editor->_update_graph();
 	}
 
-	void create_decorator_pop_sub()
-	{
-		decorator_pop_sub = memnew(PopupMenu);
-		decorator_class_name.clear();
-		HashSet<StringName> decorator_class_name_set;
-		_add_allowed_type(SNAME("BeehaveDecorator"), &decorator_class_name_set);
-		int i = 0;
-		for (const StringName &S : decorator_class_name_set) {
-			decorator_class_name.push_back(S);
-			Ref<BeehaveDecorator> instance = create_class_instance(S);
-			decorator_pop_sub->add_item(instance->get_lable_name());
-			decorator_pop_sub->set_item_tooltip(i, instance->get_tooltip());
-			decorator_class_name_to_instance[S] = instance;
-			++i;
-		}
-		decorator_pop_sub->connect(SceneStringName(id_pressed), callable_mp(this, &BeehaveGraphProperty::on_decorator_pop_pressed));
-	}
-
-	void on_leaf_pop_pressed(int p_op)
-	{
-		Ref<BeehaveLeaf> leaf = create_class_instance(leaf_class_name[p_op]);
-		if(leaf.is_valid())
-		{
-			beehave_node->add_child(leaf);
-			beehave_tree->notify_property_list_changed();
-		}
-	}
-
-	void on_composite_pop_pressed(int p_op)
-	{
-		Ref<BeehaveComposite> composite = create_class_instance(composite_class_name[p_op]);
-		if(composite.is_valid())
-		{
-			beehave_node->add_child(composite);
-			beehave_tree->notify_property_list_changed();
-		}
-	}
 	
-	void on_decorator_pop_pressed(int p_op)
-	{
-		Ref<BeehaveDecorator> decorator = create_class_instance(decorator_class_name[p_op]);
-		if(decorator.is_valid())
-		{
-			beehave_node->add_child(decorator);
-			beehave_tree->notify_property_list_changed();
-		}
-	}
-
-	Ref<RefCounted> create_class_instance(StringName p_class_name)
-	{
-		Variant obj;
-
-		if (ScriptServer::is_global_class(p_class_name)) {
-			obj = EditorNode::get_editor_data().script_class_instance(p_class_name);
-		} else {
-			obj = ClassDB::instantiate(p_class_name);
-		}
-
-		if (!obj) {
-			obj = EditorNode::get_editor_data().instantiate_custom_type(p_class_name, "Resource");
-		}
-
-		RefCounted *resp = Object::cast_to<RefCounted>(obj);
-		
-
-		return Ref<RefCounted>(resp);
-	}
-	
-	static void _add_allowed_type(const StringName &p_type, HashSet<StringName> *p_vector) {
-		if (p_vector->has(p_type)) {
-			// Already added
-			return;
-		}
-
-		if (ClassDB::class_exists(p_type)) {
-			// Engine class,
-
-			if (!ClassDB::is_virtual(p_type) && !ClassDB::is_abstract(p_type)) {
-				p_vector->insert(p_type);
-			}
-
-			List<StringName> inheriters;
-			ClassDB::get_inheriters_from_class(p_type, &inheriters);
-			for (const StringName &S : inheriters) {
-				_add_allowed_type(S, p_vector);
-			}
-		} else {
-			// Script class.
-			p_vector->insert(p_type);
-		}
-
-		List<StringName> inheriters;
-		ScriptServer::get_inheriters_list(p_type, &inheriters);
-		for (const StringName &S : inheriters) {
-			_add_allowed_type(S, p_vector);
-		}
-	}
 	
 protected:
 	Ref<BeehaveGraphFrames> frames;
@@ -944,31 +753,23 @@ protected:
 	VBoxContainer* select_node_property_vbox = nullptr;
 	EditorInspector* sub_inspector = nullptr;
 	BeehaveNodeChildChildEditor* child_list = nullptr;
-	HBoxContainer* buton_create_beehave_node_panel = nullptr;
-	Button* buton_create_beehave_node = nullptr;
-	PopupMenu* cteate_beehave_node_pop = nullptr;
-
-	PopupMenu* leaf_pop_sub = nullptr;
-	PopupMenu* composite_pop_sub = nullptr;
-	PopupMenu* decorator_pop_sub = nullptr;
 	Button* play_button = nullptr;
 	Button* pause_button = nullptr;
 	Button* stop_button = nullptr;
 
 	PlayState play_state = PLAY_STATE_STOP;
-	LocalVector<StringName> leaf_class_name;
-	HashMap<StringName,Ref<BeehaveLeaf>> leaf_class_name_to_instance;
-	LocalVector<StringName> composite_class_name;
-	HashMap<StringName,Ref<BeehaveComposite>> composite_class_name_to_instance;
-	LocalVector<StringName> decorator_class_name;
-	HashMap<StringName,Ref<BeehaveDecorator>> decorator_class_name_to_instance;
 
 
 };
+
 
 void BeehaveGraphNodes::on_selected(bool p_selected)
 {
 	if (p_selected) {
 		beehave_graph_property->set_editor_node(beehave_node);
 	}
+}
+void BeehaveGraphNodes::on_beehave_node_change()
+{
+	beehave_graph_property->on_beehave_node_change();
 }

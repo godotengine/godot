@@ -4,7 +4,7 @@
 // 行为树运行上下文
 class BeehaveRuncontext : public RefCounted
 {
-    public:
+public:
 
     // 获取属性
     Dictionary get_property(Object* curr_this_node)
@@ -55,16 +55,24 @@ class BeehaveNode : public RefCounted
     GDCLASS(BeehaveNode, RefCounted);
     static void _bind_methods()
     {
-        ClassDB::bind_method(D_METHOD("set_children", "children"), &BeehaveNode::set_children);
-        ClassDB::bind_method(D_METHOD("get_children"), &BeehaveNode::get_children);
-
         ClassDB::bind_method(D_METHOD("set_name", "name"), &BeehaveNode::set_name);
         ClassDB::bind_method(D_METHOD("get_name"), &BeehaveNode::get_name);
 
+        ClassDB::bind_method(D_METHOD("set_children", "children"), &BeehaveNode::set_children);
+        ClassDB::bind_method(D_METHOD("get_children"), &BeehaveNode::get_children);
 
-        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "children", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("BeehaveNode"), PROPERTY_USAGE_NO_EDITOR), "set_children", "get_children");
+
+        ClassDB::bind_method(D_METHOD("set_enable", "enable"), &BeehaveNode::set_enable);
+        ClassDB::bind_method(D_METHOD("get_enable"), &BeehaveNode::get_enable);
+
+        ClassDB::bind_method(D_METHOD("set_editor_collapsed_children", "enable"), &BeehaveNode::set_editor_collapsed_children);
+        ClassDB::bind_method(D_METHOD("get_editor_collapsed_children"), &BeehaveNode::get_editor_collapsed_children);
+
 
         ADD_PROPERTY(PropertyInfo(Variant::STRING, "name"), "set_name", "get_name");
+        ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enable", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_enable", "get_enable");
+        ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_collapsed_children", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_editor_collapsed_children", "get_editor_collapsed_children");
+        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "children", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("BeehaveNode"), PROPERTY_USAGE_NO_EDITOR), "set_children", "get_children");
     }
 public:
     enum SequenceRunState
@@ -170,9 +178,79 @@ public:
     {
         return name;
     }
+    void set_enable(bool p_enable)
+    {
+        enabled = p_enable;
+    }
+
+    bool get_enable()
+    {
+        return enabled;
+    }
+    void set_editor_collapsed_children(bool p_enable)
+    {
+        editor_collapsed_children = p_enable;
+    }
+
+    bool get_editor_collapsed_children()
+    {
+        return editor_collapsed_children;
+    }
+public:
+    // 上移子节点
+    void move_child_up(const Ref<BeehaveNode>& p_child)
+    {
+        for(uint32_t i = 0; i < children.size(); ++i)
+        {
+            if(children[i] == p_child)
+            {
+                if(i == 0)
+                {
+                    return;
+                }
+                Ref<BeehaveNode> tmp = children[i];
+                children[i] = children[i - 1];
+                children[i - 1] = tmp;
+                break;
+            }
+        }
+    }
+    // 下移子节点
+    void move_child_down(const Ref<BeehaveNode>& p_child)
+    {
+        for(uint32_t i = 0; i < children.size(); ++i)
+        {
+            if(children[i] == p_child)
+            {
+                if(i == children.size() - 1)
+                {
+                    return;
+                }
+                Ref<BeehaveNode> tmp = children[i];
+                children[i] = children[i + 1];
+                children[i + 1] = tmp;
+                break;
+            }
+        }
+    }
+    // 删除子节点
+    void remove_child(const Ref<BeehaveNode>& p_child)
+    {
+        for(uint32_t i = 0; i < children.size(); ++i)
+        {
+            if(children[i] == p_child)
+            {
+                children.remove_at(i);
+                break;
+            }
+        }
+    }
 protected:
     LocalVector<Ref<BeehaveNode>> children;
     String name;
+    bool enabled = true;
+    // 是否编辑器折叠子节点
+    bool editor_collapsed_children = false;
 };
 
 
@@ -327,3 +405,39 @@ public:
 	GDVIRTUAL1(_after_run,const Ref<BeehaveRuncontext>&);
 	GDVIRTUAL1R(int,_tick,const Ref<BeehaveRuncontext>&);
 };
+
+// 模板
+class BeehaveNodeTemplate : public RefCounted
+{
+    GDCLASS(BeehaveNodeTemplate, RefCounted);
+    static void _bind_methods()
+    {
+    }
+public:
+
+protected:
+    StringName group;
+    StringName name;
+    String annotation;
+
+    Ref<BeehaveNode> node;
+};
+
+class BeehaveNodeTemplateManager : public RefCounted
+{
+    GDCLASS(BeehaveNodeTemplateManager, RefCounted);
+    static void _bind_methods()
+    {
+    }
+public:
+    Ref<BeehaveNodeTemplate> get_template(const String& group, const String& name)
+    {
+        return nullptr;
+    }
+
+
+protected:
+	HashMap<StringName, HashMap<StringName, Ref<BeehaveNodeTemplate> > > templates;
+};
+
+

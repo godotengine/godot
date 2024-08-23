@@ -23,10 +23,11 @@ class InternalEdgeRemovingCollector : public CollideShapeCollector
 	static constexpr uint cMaxVoidedFeatures = 128;
 
 	/// Check if a vertex is voided
-	inline bool				IsVoided(Vec3 inV) const
+	inline bool				IsVoided(const SubShapeID &inSubShapeID, Vec3 inV) const
 	{
-		for (const Float3 &vf : mVoidedFeatures)
-			if (inV.IsClose(Vec3::sLoadFloat3Unsafe(vf), 1.0e-8f))
+		for (const Voided &vf : mVoidedFeatures)
+			if (vf.mSubShapeID == inSubShapeID
+				&& inV.IsClose(Vec3::sLoadFloat3Unsafe(vf.mFeature), 1.0e-8f))
 				return true;
 		return false;
 	}
@@ -34,15 +35,17 @@ class InternalEdgeRemovingCollector : public CollideShapeCollector
 	/// Add all vertices of a face to the voided features
 	inline void				VoidFeatures(const CollideShapeResult &inResult)
 	{
-		for (const Vec3 &v : inResult.mShape2Face)
-			if (!IsVoided(v))
-			{
-				if (mVoidedFeatures.size() == cMaxVoidedFeatures)
-					break;
-				Float3 f;
-				v.StoreFloat3(&f);
-				mVoidedFeatures.push_back(f);
-			}
+		if (mVoidedFeatures.size() < cMaxVoidedFeatures)
+			for (const Vec3 &v : inResult.mShape2Face)
+				if (!IsVoided(inResult.mSubShapeID1, v))
+				{
+					Voided vf;
+					v.StoreFloat3(&vf.mFeature);
+					vf.mSubShapeID = inResult.mSubShapeID1;
+					mVoidedFeatures.push_back(vf);
+					if (mVoidedFeatures.size() == cMaxVoidedFeatures)
+						break;
+				}
 	}
 
 	/// Call the chained collector
@@ -193,16 +196,16 @@ public:
 			}
 
 			// Check if this vertex/edge is voided
-			bool voided = IsVoided(r.mShape2Face[best_v1_idx])
-				&& (best_v1_idx == best_v2_idx || IsVoided(r.mShape2Face[best_v2_idx]));
+			bool voided = IsVoided(r.mSubShapeID1, r.mShape2Face[best_v1_idx])
+				&& (best_v1_idx == best_v2_idx || IsVoided(r.mSubShapeID1, r.mShape2Face[best_v2_idx]));
 
 		#ifdef JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
 			Color color = voided? Color::sRed : Color::sYellow;
 			DebugRenderer::sInstance->DrawText3D(RVec3(r.mContactPointOn2), StringFormat("%d: %g", i, r.mPenetrationDepth), color, 0.1f);
 			DebugRenderer::sInstance->DrawWirePolygon(RMat44::sIdentity(), r.mShape2Face, color);
 			DebugRenderer::sInstance->DrawArrow(RVec3(r.mContactPointOn2), RVec3(r.mContactPointOn2) + r.mPenetrationAxis.NormalizedOr(Vec3::sZero()), color, 0.1f);
-			DebugRenderer::sInstance->DrawMarker(RVec3(r.mShape2Face[best_v1_idx]), IsVoided(r.mShape2Face[best_v1_idx])? Color::sRed : Color::sYellow, 0.1f);
-			DebugRenderer::sInstance->DrawMarker(RVec3(r.mShape2Face[best_v2_idx]), IsVoided(r.mShape2Face[best_v2_idx])? Color::sRed : Color::sYellow, 0.1f);
+			DebugRenderer::sInstance->DrawMarker(RVec3(r.mShape2Face[best_v1_idx]), IsVoided(r.mSubShapeID1, r.mShape2Face[best_v1_idx])? Color::sRed : Color::sYellow, 0.1f);
+			DebugRenderer::sInstance->DrawMarker(RVec3(r.mShape2Face[best_v2_idx]), IsVoided(r.mSubShapeID1, r.mShape2Face[best_v2_idx])? Color::sRed : Color::sYellow, 0.1f);
 		#endif // JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
 
 			// No voided features, accept the contact
@@ -229,8 +232,17 @@ public:
 	}
 
 private:
+	// This algorithm tests a convex shape (shape 1) against a set of polygons (shape 2).
+	// This assumption doesn't hold if the shape we're testing is a compound shape, so we must also
+	// store the sub shape ID and ignore voided features that belong to another sub shape ID.
+	struct Voided
+	{
+		Float3				mFeature;				// Feature that is voided (of shape 2). Read with Vec3::sLoadFloat3Unsafe so must not be the last member.
+		SubShapeID			mSubShapeID;			// Sub shape ID of the shape that is colliding against the feature (of shape 1).
+	};
+
 	CollideShapeCollector &	mChainedCollector;
-	StaticArray<Float3, cMaxVoidedFeatures> mVoidedFeatures; // Read with Vec3::sLoadFloat3Unsafe so must not be the last member
+	StaticArray<Voided, cMaxVoidedFeatures> mVoidedFeatures;
 	StaticArray<CollideShapeResult, cMaxDelayedResults> mDelayedResults;
 };
 

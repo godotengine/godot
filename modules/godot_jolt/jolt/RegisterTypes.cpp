@@ -10,6 +10,7 @@
 #include <Jolt/Core/TickCounter.h>
 #include <Jolt/Physics/Collision/CollisionDispatch.h>
 #include <Jolt/Physics/Collision/Shape/TriangleShape.h>
+#include <Jolt/Physics/Collision/Shape/PlaneShape.h>
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
 #include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
@@ -32,6 +33,7 @@ JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH_EXPORT, JPH, CompoundShapeSettin
 JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH_EXPORT, JPH, StaticCompoundShapeSettings)
 JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH_EXPORT, JPH, MutableCompoundShapeSettings)
 JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH_EXPORT, JPH, TriangleShapeSettings)
+JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH_EXPORT, JPH, PlaneShapeSettings)
 JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH_EXPORT, JPH, SphereShapeSettings)
 JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH_EXPORT, JPH, BoxShapeSettings)
 JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH_EXPORT, JPH, CapsuleShapeSettings)
@@ -116,6 +118,7 @@ void RegisterTypesInternal(uint64 inVersionID)
 
 	// Leaf classes
 	TriangleShape::sRegister();
+	PlaneShape::sRegister();
 	SphereShape::sRegister();
 	BoxShape::sRegister();
 	CapsuleShape::sRegister();
@@ -139,6 +142,7 @@ void RegisterTypesInternal(uint64 inVersionID)
 		JPH_RTTI(StaticCompoundShapeSettings),
 		JPH_RTTI(MutableCompoundShapeSettings),
 		JPH_RTTI(TriangleShapeSettings),
+		JPH_RTTI(PlaneShapeSettings),
 		JPH_RTTI(SphereShapeSettings),
 		JPH_RTTI(BoxShapeSettings),
 		JPH_RTTI(CapsuleShapeSettings),

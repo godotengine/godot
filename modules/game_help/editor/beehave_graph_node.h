@@ -38,6 +38,7 @@ public:
 
 
 	Ref<ImageTexture> icon_close;
+	Ref<ImageTexture> add_template_icon;
 	
 	Ref<ImageTexture> icon_port_top;
 	Ref<ImageTexture> icon_port_bottom;
@@ -47,6 +48,16 @@ public:
 
 	Ref<ImageTexture> arrow_down_icon;
 	Ref<ImageTexture> arrow_right_icon;
+
+	Ref<ImageTexture> move_left_icon;
+	Ref<ImageTexture> move_right_icon;
+	Ref<ImageTexture> move_up_icon;
+	Ref<ImageTexture> move_down_icon;
+
+	
+	Ref<ImageTexture> add_node_icon;
+	Ref<ImageTexture> remove_node_icon;
+
 	Ref<Font> font;
 	float scale = 1.0f;
 	BeehaveGraphFrames()
@@ -94,6 +105,7 @@ public:
 		{
 			file->set_font_weight(700);
 		}
+		add_template_icon = p_control->get_theme_icon(SNAME("EditKey"));
 
 		icon_port_top = p_control->get_editor_theme_icon(SNAME("port_top"));
 		icon_port_bottom = p_control->get_editor_theme_icon(SNAME("port_bottom"));
@@ -102,7 +114,244 @@ public:
 		
 		arrow_down_icon = p_control->get_editor_theme_icon(SNAME("GuiTreeArrowDown"));
 		arrow_right_icon = p_control->get_editor_theme_icon(SNAME("GuiTreeArrowRight"));
+
+		move_left_icon = p_control->get_editor_theme_icon(SNAME("MoveLeft"));
+		move_right_icon = p_control->get_editor_theme_icon(SNAME("MoveRight"));
+		move_up_icon = p_control->get_editor_theme_icon(SNAME("MoveUp"));
+		move_down_icon = p_control->get_editor_theme_icon(SNAME("MoveDown"));
+
+		add_node_icon = p_control->get_editor_theme_icon(SNAME("InsertBefore"));
+		remove_node_icon = p_control->get_editor_theme_icon(SNAME("Remove"));
+
+
 	}
+};
+
+class BeehaveGraphNodesCreatePopmenu : public RefCounted
+{
+
+	GDCLASS(BeehaveGraphNodesCreatePopmenu, RefCounted);
+public:
+	// 初始化会自动清除按钮的所有子节点
+	void init(Button* p_parent, Ref<BeehaveNode> p_beehave_node)
+	{
+		while(p_parent->get_child_count() > 0)
+		{
+			p_parent->get_child(p_parent->get_child_count() - 1)->queue_free();
+			p_parent->remove_child(p_parent->get_child(p_parent->get_child_count() - 1));
+		}
+		parent = p_parent;
+		beehave_node = p_beehave_node;
+
+
+		
+		cteate_beehave_node_pop = memnew(PopupMenu);
+		cteate_beehave_node_pop->set_auto_translate_mode(PopupMenu::AUTO_TRANSLATE_MODE_ALWAYS);
+		cteate_beehave_node_pop->set_visible(false);
+		parent->add_child(cteate_beehave_node_pop);
+
+		
+		create_leaf_pop_sub();
+		create_composite_pop_sub();
+		create_decorator_pop_sub();
+		cteate_beehave_node_pop->add_submenu_node_item(L"叶节点", leaf_pop_sub);
+		cteate_beehave_node_pop->add_submenu_node_item(L"组合节点", composite_pop_sub);
+		cteate_beehave_node_pop->add_submenu_node_item(L"修饰器", decorator_pop_sub);
+		cteate_beehave_node_pop->add_separator();
+		cteate_beehave_node_pop->add_item(L"添加模板子节点");
+		cteate_beehave_node_pop->add_item(L"添加到模板列表");
+	}
+	void popup_on_target() {
+		cteate_beehave_node_pop->reset_size();
+		Rect2i usable_rect =  Rect2i(Point2i(0,0), DisplayServer::get_singleton()->window_get_size_with_decorations());
+		Rect2i cp_rect = Rect2i(Point2i(0,0), parent->get_size());
+
+		for(int i = 0; i < 4; i++) {
+			if(i > 1)
+			{
+				cp_rect.position.y = parent->get_global_position().x - parent->get_size().y;
+			}
+			else
+			{
+				cp_rect.position.y = parent->get_global_position().y + parent->get_size().y;
+			}
+			if(i & 1) {
+				cp_rect.position.x = parent->get_global_position().x ;
+			}
+			else
+			{
+				cp_rect.position.x = parent->get_global_position().x - MAX(0,cp_rect.size.x - parent->get_size().x);
+			}
+			if(usable_rect.encloses(cp_rect))
+			{
+				break;
+			}
+		}
+		Point2i main_window_position = DisplayServer::get_singleton()->window_get_position();
+		Point2i popup_position = main_window_position + Point2i(cp_rect.position);
+		cteate_beehave_node_pop->set_position(popup_position);
+		cteate_beehave_node_pop->popup();
+		
+	}
+	Callable on_node_changed;
+protected:
+
+	void on_leaf_pop_pressed(int p_op)
+	{
+		Ref<BeehaveLeaf> leaf = create_class_instance(leaf_class_name[p_op]);
+		if(leaf.is_valid())
+		{
+			beehave_node->add_child(leaf);
+			on_node_changed.call();
+		}
+	}
+
+	void on_composite_pop_pressed(int p_op)
+	{
+		Ref<BeehaveComposite> composite = create_class_instance(composite_class_name[p_op]);
+		if(composite.is_valid())
+		{
+			beehave_node->add_child(composite);
+			on_node_changed.call();
+		}
+	}
+	
+	void on_decorator_pop_pressed(int p_op)
+	{
+		Ref<BeehaveDecorator> decorator = create_class_instance(decorator_class_name[p_op]);
+		if(decorator.is_valid())
+		{
+			beehave_node->add_child(decorator);
+			on_node_changed.call();
+		}
+	}
+
+protected:
+	// 增加节点到模板
+	void on_add_node_to_template(const String& p_template_group, const String& p_template_name,const String& p_template_dis){
+
+	}
+	void create_leaf_pop_sub()
+	{
+		leaf_pop_sub = memnew(PopupMenu);
+
+		leaf_class_name.clear();
+		HashSet<StringName> leaf_class_name_set;
+		_add_allowed_type(SNAME("BeehaveLeaf"), &leaf_class_name_set);
+		int i = 0;
+		for (const StringName &S : leaf_class_name_set) {
+			leaf_class_name.push_back(S);
+			Ref<BeehaveLeaf> instance = create_class_instance(S);
+			leaf_pop_sub->add_item(instance->get_lable_name());
+			leaf_pop_sub->set_item_tooltip(i, instance->get_tooltip());
+			leaf_class_name_to_instance[S] = instance;
+			++i;
+		}
+		leaf_pop_sub->connect(SceneStringName(id_pressed), callable_mp(this, &BeehaveGraphNodesCreatePopmenu::on_leaf_pop_pressed));
+
+	}
+	void create_composite_pop_sub()
+	{
+		composite_pop_sub = memnew(PopupMenu);
+		composite_class_name.clear();
+		HashSet<StringName> composite_class_name_set;
+
+		_add_allowed_type(SNAME("BeehaveComposite"), &composite_class_name_set);
+		int i = 0;
+		for (const StringName &S : composite_class_name_set) {
+			composite_class_name.push_back(S);
+			Ref<BeehaveComposite> instance = create_class_instance(S);
+			composite_pop_sub->add_item(instance->get_lable_name());
+			composite_pop_sub->set_item_tooltip(i, instance->get_tooltip());
+			composite_class_name_to_instance[S] = instance;
+			++i;
+		}
+
+		composite_pop_sub->connect(SceneStringName(id_pressed), callable_mp(this, &BeehaveGraphNodesCreatePopmenu::on_composite_pop_pressed));
+	}
+
+	void create_decorator_pop_sub()
+	{
+		decorator_pop_sub = memnew(PopupMenu);
+		decorator_class_name.clear();
+		HashSet<StringName> decorator_class_name_set;
+		_add_allowed_type(SNAME("BeehaveDecorator"), &decorator_class_name_set);
+		int i = 0;
+		for (const StringName &S : decorator_class_name_set) {
+			decorator_class_name.push_back(S);
+			Ref<BeehaveDecorator> instance = create_class_instance(S);
+			decorator_pop_sub->add_item(instance->get_lable_name());
+			decorator_pop_sub->set_item_tooltip(i, instance->get_tooltip());
+			decorator_class_name_to_instance[S] = instance;
+			++i;
+		}
+		decorator_pop_sub->connect(SceneStringName(id_pressed), callable_mp(this, &BeehaveGraphNodesCreatePopmenu::on_decorator_pop_pressed));
+	}
+
+protected:		
+	Ref<RefCounted> create_class_instance(StringName p_class_name)
+	{
+		Variant obj;
+
+		if (ScriptServer::is_global_class(p_class_name)) {
+			obj = EditorNode::get_editor_data().script_class_instance(p_class_name);
+		} else {
+			obj = ClassDB::instantiate(p_class_name);
+		}
+
+		if (!obj) {
+			obj = EditorNode::get_editor_data().instantiate_custom_type(p_class_name, "Resource");
+		}
+
+		RefCounted *resp = Object::cast_to<RefCounted>(obj);
+		
+
+		return Ref<RefCounted>(resp);
+	}
+	static void _add_allowed_type(const StringName &p_type, HashSet<StringName> *p_vector) {
+		if (p_vector->has(p_type)) {
+			// Already added
+			return;
+		}
+
+		if (ClassDB::class_exists(p_type)) {
+			// Engine class,
+
+			if (!ClassDB::is_virtual(p_type) && !ClassDB::is_abstract(p_type)) {
+				p_vector->insert(p_type);
+			}
+
+			List<StringName> inheriters;
+			ClassDB::get_inheriters_from_class(p_type, &inheriters);
+			for (const StringName &S : inheriters) {
+				_add_allowed_type(S, p_vector);
+			}
+		} else {
+			// Script class.
+			p_vector->insert(p_type);
+		}
+
+		List<StringName> inheriters;
+		ScriptServer::get_inheriters_list(p_type, &inheriters);
+		for (const StringName &S : inheriters) {
+			_add_allowed_type(S, p_vector);
+		}
+	}
+protected:
+	Control* parent = nullptr;
+	Ref<BeehaveNode> beehave_node ;
+	PopupMenu* cteate_beehave_node_pop = nullptr;
+
+	PopupMenu* leaf_pop_sub = nullptr;
+	PopupMenu* composite_pop_sub = nullptr;
+	PopupMenu* decorator_pop_sub = nullptr;
+
+	LocalVector<StringName> leaf_class_name;
+	HashMap<StringName,Ref<BeehaveLeaf>> leaf_class_name_to_instance;
+	LocalVector<StringName> composite_class_name;
+	HashMap<StringName,Ref<BeehaveComposite>> composite_class_name_to_instance;
+	LocalVector<StringName> decorator_class_name;
+	HashMap<StringName,Ref<BeehaveDecorator>> decorator_class_name_to_instance;
 };
 
 // BeehaveGraphNodes
@@ -120,18 +369,34 @@ public:
 	Label* title_label;
 	Label* label;
 	HBoxContainer* titlebar_hbox;
+
+	CheckBox* enable = nullptr;
+	Button* move_up = nullptr;
+	Button* move_down = nullptr;
+	Button* create_child_node = nullptr;
+	Button* delete_node = nullptr;
+	Button* child_collapsed = nullptr;
+	AcceptDialog* dialog = nullptr;
+
 	Ref<BeehaveGraphFrames> frames;
-	bool horizontal = false;
+	Ref<BeehaveGraphNodesCreatePopmenu> cteate_beehave_node_pop;
+	Ref<BeehaveNode> parent_beehave_node;
 	Ref<BeehaveNode> beehave_node;
 	BeehaveGraphProperty* beehave_graph_property = nullptr;
+	bool horizontal = false;
 	BeehaveGraphNodes()
 	{
 		
 	}
-	void _init(BeehaveGraphProperty *p_beehave_graph_property,const Ref<BeehaveNode>& p_beehave_node,Ref<BeehaveGraphFrames> p_frames,const String& p_title_text,const String& p_text, const StringName& p_icon, bool p_horizontal)
+	void set_title_color(Color p_color)
+	{
+		title_label->set_modulate(p_color);
+	}
+	void _init(BeehaveGraphProperty *p_beehave_graph_property,const Ref<BeehaveNode>& p_parent_beehave_node,const Ref<BeehaveNode>& p_beehave_node,Ref<BeehaveGraphFrames> p_frames,const String& p_title_text,const String& p_text, const StringName& p_icon, bool p_horizontal)
 	{
 
 		beehave_graph_property = p_beehave_graph_property;
+		parent_beehave_node = p_parent_beehave_node;
 		beehave_node = p_beehave_node;
 		title_text = p_title_text;
 		text = p_text;
@@ -162,17 +427,127 @@ public:
 		titlebar_hbox->set_alignment(BoxContainer::ALIGNMENT_BEGIN);
 		titlebar_hbox->add_child(icon_rect);
 
+		{
+			Separator* separator = nullptr;
+			HBoxContainer* hbox = memnew(HBoxContainer);
+			add_child(hbox);
+			hbox->set_h_size_flags(SIZE_EXPAND_FILL);
+			hbox->set_custom_minimum_size(Vector2(160, 0));
+
+			enable = memnew(CheckBox);
+			hbox->add_child(enable);
+			enable->set_pressed(beehave_node->get_enable());
+			enable->connect("toggled", callable_mp(this, &BeehaveGraphNodes::_on_enable));
+
+
+			// 增加一个空白区域
+			Control* blank = memnew(Control);
+			blank->set_h_size_flags(SIZE_EXPAND_FILL);
+			hbox->add_child(blank);
+			if(parent_beehave_node.is_valid()) 
+			{
+
+				move_up = memnew(Button);
+				hbox->add_child(move_up);
+
+
+				move_down = memnew(Button);
+				hbox->add_child(move_down);
+
+				
+				if(horizontal)
+				{
+					move_up->set_icon(frames->move_up_icon);
+					move_down->set_tooltip_text(L"上移");
+					move_down->set_icon(frames->move_down_icon);
+					move_down->set_tooltip_text(L"下移");
+				}else
+				{
+					move_up->set_icon(frames->move_left_icon);
+					move_up->set_tooltip_text(L"左移");
+					move_down->set_icon(frames->move_right_icon);
+					move_up->set_tooltip_text(L"右移");
+				}
+				move_up->connect("pressed", callable_mp(this, &BeehaveGraphNodes::_on_move_up));
+				move_down->connect("pressed", callable_mp(this, &BeehaveGraphNodes::_on_move_down));
+
+				separator = memnew(Separator);
+				hbox->add_child(separator);
+
+			}
+
+
+			bool is_show_create_child_node = false;
+			if (beehave_node->get_supper_child_count() < 0)
+			{
+				is_show_create_child_node = true;
+			}
+			else if(beehave_node->get_supper_child_count() == 0)
+			{
+				is_show_create_child_node = false;
+			}
+			else
+			{
+				if(beehave_node->get_child_count() >= beehave_node->get_supper_child_count())
+				{
+					is_show_create_child_node = false;
+				}
+			}
+			if(is_show_create_child_node)
+			{
+				create_child_node = memnew(Button);
+				hbox->add_child(create_child_node);
+				create_child_node->set_icon(frames->add_node_icon);
+				create_child_node->set_tooltip_text(L"增加子节点");
+				create_child_node->connect("pressed", callable_mp(this, &BeehaveGraphNodes::_on_create_child_node));
+			}
+
+			if(parent_beehave_node.is_valid()) 
+			{
+				separator = memnew(Separator);
+				hbox->add_child(separator);
+
+
+				delete_node = memnew(Button);
+				hbox->add_child(delete_node);
+				delete_node->set_icon(frames->remove_node_icon);
+				delete_node->connect("pressed", callable_mp(this, &BeehaveGraphNodes::_on_delete_node));
+				delete_node->set_tooltip_text(L"删除本节点");
+			}
+
+
+		}
+		
+		Separator* separator = memnew(Separator);
+		separator->set_h_size_flags(SIZE_EXPAND_FILL);
+		add_child(separator);
+
+
 		title_label = memnew(Label);
 		title_label->add_theme_color_override("font_color", Color(1, 1, 1, 1));
 		title_label->add_theme_font_override("font", frames->font);
 		title_label->set_vertical_alignment(VerticalAlignment::VERTICAL_ALIGNMENT_CENTER);
 		title_label->set_text(title_text);
 		titlebar_hbox->add_child(title_label);
-		
 
 		label = memnew(Label);
 		label->set_text(text.is_empty() ? " " : text);
 		add_child(label);
+
+		if(beehave_node->get_child_count() > 0)
+		{
+			child_collapsed = memnew(Button);
+			add_child(child_collapsed);
+			child_collapsed->set_text(L"(收起/展开)子节点");
+			child_collapsed->connect("pressed", callable_mp(this, &BeehaveGraphNodes::_on_child_collapsed));
+			child_collapsed->set_icon(beehave_node->get_editor_collapsed_children() ? frames->arrow_right_icon : frames->arrow_down_icon);
+		}
+		else{
+			separator = memnew(Separator);
+			separator->set_h_size_flags(SIZE_EXPAND_FILL);
+			add_child(separator);
+		}
+
 
 		// For bottom port
 		Control* bottom_port = memnew(Control);
@@ -271,12 +646,12 @@ public:
 
 	void set_input_color(const Color &p_color)
 	{
-		set_slot_color_left(horizontal ? 0 : 1,p_color);
+		set_slot_color_left(horizontal ? 1 : 0,p_color);
 	}
 
 	void set_output_color(const Color &p_color)
 	{
-		set_slot_color_right(horizontal ? 2 : 1,p_color);
+		set_slot_color_right(horizontal ? 1 : 2,p_color);
 	}
 
 	void _set_stylebox_override(const Ref<StyleBox> &panel_stylebox,const Ref<StyleBox>& titlebar_stylebox)
@@ -316,13 +691,67 @@ public:
 		}
 		set_title_text(tile_name);
 	}
+	void _on_enable(bool p_pressed)
+	{
+		beehave_node->set_enable(p_pressed);
+		on_beehave_node_change();
+	}
+	void _on_move_up()
+	{
+		parent_beehave_node->move_child_up(beehave_node);
+		on_beehave_node_change();
+	}
+
+	void _on_move_down()
+	{
+		parent_beehave_node->move_child_down(beehave_node);
+		on_beehave_node_change();		
+	}
+	void _on_create_child_node()
+	{
+		if (cteate_beehave_node_pop.is_null())
+		{
+			cteate_beehave_node_pop.instantiate();
+			cteate_beehave_node_pop->init(create_child_node,  beehave_node);
+			cteate_beehave_node_pop->on_node_changed = callable_mp(this, &BeehaveGraphNodes::on_beehave_node_change);
+		}
+		cteate_beehave_node_pop->popup_on_target();
+
+	}
+
+	void _on_delete_node()
+	{
+		if(dialog == nullptr)
+		{
+			
+			dialog = memnew(AcceptDialog);
+			dialog->set_title(L"是否删除节点");
+			Label* dialog_msg = memnew(Label);
+			dialog_msg->set_text(L"删除节点会删除所有子节点，确认删除吗？");
+			dialog->add_child(dialog_msg);
+			delete_node->add_child(dialog);
+			dialog->connect(SceneStringName(confirmed), callable_mp(this, &BeehaveGraphNodes::_delete_node));
+		}
+		dialog->popup_centered_ratio(0.2);
+	}
+	void _on_child_collapsed()
+	{
+		beehave_node->set_editor_collapsed_children(! beehave_node->get_editor_collapsed_children());
+		on_beehave_node_change();
+	}
+	void _delete_node()
+	{
+		parent_beehave_node->remove_child(beehave_node);
+		on_beehave_node_change();
+	}
 	virtual void on_selected(bool p_selected);
+	virtual void on_beehave_node_change();
 };
 
 class BeehaveGraphTreeNode : public RefCounted
 {
     public:
-    float SIBLING_DISTANCE = 90.0;
+    float SIBLING_DISTANCE = 110.0;
     float LEVEL_DISTANCE = 180.0;
     float pos_x = 0;
     float pos_y = 0;

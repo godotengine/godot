@@ -128,10 +128,10 @@ void ClipPolyVsEdge(const VERTEX_ARRAY &inPolygonToClip, Vec3Arg inEdgeVertex1, 
 		// In -> Out or Out -> In: Add point on clipping plane
 		if (cur_inside != prev_inside)
 		{
-			// Solve: (X - inPlaneOrigin) . inPlaneNormal = 0 and X = e1 + t * (e2 - e1) for X
+			// Solve: (inEdgeVertex1 - X) . edge_normal = 0 and X = e1 + t * (e2 - e1) for X
 			Vec3 e12 = e2 - e1;
 			float denom = e12.Dot(edge_normal);
-			Vec3 clipped_point = e1 + (prev_num / denom) * e12;
+			Vec3 clipped_point = denom != 0.0f? e1 + (prev_num / denom) * e12 : e1;
 
 			// Project point on line segment v1, v2 so see if it falls outside if the edge
 			float projection = (clipped_point - v1).Dot(v12);

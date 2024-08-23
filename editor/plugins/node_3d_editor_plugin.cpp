@@ -2987,25 +2987,31 @@ void Node3DEditorViewport::_notification(int p_what) {
 				// Color labels depending on performance level ("good" = green, "OK" = yellow, "bad" = red).
 				// Middle point is at 15 ms.
 				cpu_time_label->set_text(vformat(TTR("CPU Time: %s ms"), rtos(cpu_time).pad_decimals(2)));
-				cpu_time_label->add_theme_color_override(
-						SceneStringName(font_color),
-						frame_time_gradient->get_color_at_offset(
-								Math::remap(cpu_time, 0, 30, 0, 1)));
+				//cpu_time_label->add_theme_color_override(
+				//		SceneStringName(font_color),
+				//		frame_time_gradient->get_color_at_offset(
+				//				Math::remap(cpu_time, 0, 30, 0, 1)));
+				cpu_time_label->set_modulate(frame_time_gradient->get_color_at_offset(
+					Math::remap(cpu_time, 0, 30, 0, 1)));
 
 				gpu_time_label->set_text(vformat(TTR("GPU Time: %s ms"), rtos(gpu_time).pad_decimals(2)));
 				// Middle point is at 15 ms.
-				gpu_time_label->add_theme_color_override(
-						SceneStringName(font_color),
-						frame_time_gradient->get_color_at_offset(
-								Math::remap(gpu_time, 0, 30, 0, 1)));
+				//gpu_time_label->add_theme_color_override(
+				//		SceneStringName(font_color),
+				//		frame_time_gradient->get_color_at_offset(
+				//				Math::remap(gpu_time, 0, 30, 0, 1)));
+				gpu_time_label->set_modulate(frame_time_gradient->get_color_at_offset(
+					Math::remap(gpu_time, 0, 30, 0, 1)));
 
 				const double fps = 1000.0 / gpu_time;
 				fps_label->set_text(vformat(TTR("FPS: %d"), fps));
 				// Middle point is at 60 FPS.
-				fps_label->add_theme_color_override(
-						SceneStringName(font_color),
-						frame_time_gradient->get_color_at_offset(
-								Math::remap(fps, 110, 10, 0, 1)));
+				//fps_label->add_theme_color_override(
+				//		SceneStringName(font_color),
+				//		frame_time_gradient->get_color_at_offset(
+				//				Math::remap(fps, 110, 10, 0, 1)));
+				fps_label->set_modulate(frame_time_gradient->get_color_at_offset(
+					Math::remap(fps, 110, 10, 0, 1)));
 			}
 
 			bool show_cinema = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_CINEMATIC_PREVIEW));
