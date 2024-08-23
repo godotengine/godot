@@ -188,8 +188,14 @@ Plane Projection::get_projection_plane(Planes p_plane) const {
 					matrix[11] - matrix[10],
 					matrix[15] - matrix[14]);
 
-			new_plane.normal = -new_plane.normal;
-			new_plane.normalize();
+			if (new_plane.normal[0] == 0 && new_plane.normal[1] == 0 && new_plane.normal[2] == 0) {
+				new_plane.normal = Vector3(0, 0, -1);
+				new_plane.d = MAX_REAL_T;
+			} else {
+				new_plane.normal = -new_plane.normal;
+				new_plane.normalize();
+			}
+
 			return new_plane;
 		}
 		case PLANE_LEFT: {
@@ -408,6 +414,10 @@ real_t Projection::get_z_far() const {
 			matrix[11] - matrix[10],
 			matrix[15] - matrix[14]);
 
+	if (new_plane.normal[0] == 0 && new_plane.normal[1] == 0 && new_plane.normal[2] == 0) {
+		return MAX_REAL_T;
+	}
+
 	new_plane.normalize();
 
 	return new_plane.d;
@@ -459,7 +469,13 @@ Vector2 Projection::get_far_plane_half_extents() const {
 			matrix[7] - matrix[6],
 			matrix[11] - matrix[10],
 			-matrix[15] + matrix[14]);
-	far_plane.normalize();
+
+	if (far_plane.normal[0] == 0 && far_plane.normal[1] == 0 && far_plane.normal[2] == 0) {
+		far_plane.normal = Vector3(0, 0, 1);
+		far_plane.d = -MAX_REAL_T;
+	} else {
+		far_plane.normalize();
+	}
 
 	///////--- Right Plane ---///////
 	Plane right_plane = Plane(matrix[3] - matrix[0],
@@ -537,8 +553,13 @@ Vector<Plane> Projection::get_projection_planes(const Transform3D &p_transform) 
 			matrix[11] - matrix[10],
 			matrix[15] - matrix[14]);
 
-	new_plane.normal = -new_plane.normal;
-	new_plane.normalize();
+	if (new_plane.normal[0] == 0 && new_plane.normal[1] == 0 && new_plane.normal[2] == 0) {
+		new_plane.normal = Vector3(0, 0, -1);
+		new_plane.d = MAX_REAL_T;
+	} else {
+		new_plane.normal = -new_plane.normal;
+		new_plane.normalize();
+	}
 
 	planes.write[1] = p_transform.xform(new_plane);
 

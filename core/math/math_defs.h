@@ -133,8 +133,10 @@ enum class EulerOrder {
  */
 #ifdef REAL_T_IS_DOUBLE
 typedef double real_t;
+#define MAX_REAL_T 1.7976931348623157e+308
 #else
 typedef float real_t;
+#define MAX_REAL_T 3.40282347e+38F
 #endif
 
 #endif // MATH_DEFS_H
