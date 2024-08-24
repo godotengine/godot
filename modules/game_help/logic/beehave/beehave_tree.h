@@ -55,8 +55,6 @@ class BeehaveTree : public Resource
     GDCLASS(BeehaveTree, Resource);
     static void _bind_methods()
     {
-        ClassDB::bind_method(D_METHOD("set_blackboard_plan", "blackboard_plan"), &BeehaveTree::set_blackboard_plan);
-        ClassDB::bind_method(D_METHOD("get_blackboard_plan"), &BeehaveTree::get_blackboard_plan);
 
         ClassDB::bind_method(D_METHOD("set_root_node", "root_node"), &BeehaveTree::set_root_node);
         ClassDB::bind_method(D_METHOD("get_root_node"), &BeehaveTree::get_root_node);
@@ -69,7 +67,6 @@ class BeehaveTree : public Resource
         
         
         ADD_SUBGROUP("BeehaveTree","");
-        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan"), "set_blackboard_plan", "get_blackboard_plan");
         ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "listener", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("BeehaveListener")), "set_listener", "get_listener");
     }
     enum Status { SUCCESS, FAILURE, RUNNING };
@@ -81,6 +78,7 @@ public:
         _can_send_message = false;
         _process_time_metric_value = 0;
         status = RUNNING;
+        run_context->tree = this;
         
         for (int i = 0; i < listeners.size(); i++)
         {
@@ -100,10 +98,15 @@ public:
             return status;
 
         }
+        if(debug_break_node != nullptr)
+        {
+            return status;            
+        }
         if(status != RUNNING)
         {
             return status;
         }
+        run_context->tree = this;
         last_tick = 0;
         float start_time = OS::get_singleton()->get_ticks_usec();
 
@@ -133,6 +136,7 @@ public:
             return;
         }
         on_stop(run_context);
+		run_context->reset();
         status = SUCCESS;
     }
 protected:
@@ -166,15 +170,6 @@ protected:
         return status;
     }
 public:
-    void set_blackboard_plan(const Ref<BlackboardPlan> &p_blackboard_plan)
-    {
-        blackboard_plan = p_blackboard_plan;
-    }
-
-    Ref<BlackboardPlan> get_blackboard_plan()
-    {
-        return blackboard_plan;
-    }
 
     void set_root_node(const Ref<BeehaveNode> &p_root_node)
     {
@@ -213,29 +208,10 @@ public:
     {
         return debug_break_node;
     }
-    // 初始化
-    void editor_init()
-    {
-        if(blackboard_plan.is_null())
-        {
-            return;
-        }
-    }
-
-    void editor_process()
-    {
-
-    }
-
-    void editor_stop()
-    {
-        
-    }
 
 public:
     Ref<BeehaveNode> root_node;
 
-    Ref<BlackboardPlan> blackboard_plan;
     LocalVector<Ref<BeehaveListener>> listeners;
     // 当前中断的节点
     class BeehaveNode *debug_break_node = nullptr;

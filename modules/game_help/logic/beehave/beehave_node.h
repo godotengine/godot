@@ -7,6 +7,7 @@
 // 行为树运行上下文
 class BeehaveRuncontext : public RefCounted
 {
+    GDCLASS(BeehaveRuncontext, RefCounted);
 public:
 
     // 获取属性
@@ -45,6 +46,12 @@ public:
         Vector<int32_t> child_state = rs.get("child_status", Vector<int32_t>());
         return child_state;
     }
+	void reset()
+	{
+		properties.clear();
+		time = 0;
+		delta = 0;
+	}
     HashMap<uint64_t,Dictionary> properties;
     double time = 0.0;
     double delta = 0.0;

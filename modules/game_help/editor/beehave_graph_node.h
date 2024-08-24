@@ -437,6 +437,7 @@ public:
 
 		debug_break = memnew(Button);
 		debug_break->set_icon(beehave_node->get_debug_enabled() ? frames->debug_enable_icon : frames->debug_disable_icon);
+		debug_break->set_modulate(beehave_node->get_debug_enabled() ? Color(0.5, 0.5, 0.5, 1) :Color(1, 1, 1, 1) );
 		titlebar_hbox->add_child(debug_break);
 		debug_break->connect("pressed", callable_mp(this, &BeehaveGraphNodes::_on_debug_break));
 
@@ -785,6 +786,7 @@ public:
 	{
 		beehave_node->set_debug_enabled(! beehave_node->get_debug_enabled());
 		debug_break->set_icon(beehave_node->get_debug_enabled() ? frames->debug_enable_icon : frames->debug_disable_icon);
+		debug_break->set_modulate(beehave_node->get_debug_enabled() ? Color(0.5, 0.5, 0.5, 1) :Color(1, 1, 1, 1) );
 	}
 	virtual void on_selected(bool p_selected);
 	virtual void on_beehave_node_change();
@@ -937,7 +939,7 @@ class BeehaveGraphTreeNode : public RefCounted
 	}
 	Vector2 get_cell_size()
 	{
-		return Vector2(320, 250);
+		return Vector2(320, 280);
 	}
 
     void compute_position(const Vector2& p_offset,bool p_horizontal_layout)

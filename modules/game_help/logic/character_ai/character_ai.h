@@ -355,44 +355,17 @@ class CharacterAILogicNode : public RefCounted
         ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME,"name"), "set_name","get_name");
     }
 public:
-    void enter(CharacterBodyMain *node,Blackboard* blackboard)
-    {
-        _enter_logic(node,blackboard);
-        if (GDVIRTUAL_IS_OVERRIDDEN(_enter)) {
-            GDVIRTUAL_CALL(_enter, node,blackboard);
-        }
-
-    }
+    void enter(CharacterBodyMain *node,class CharacterAIContext* p_context);
+    bool execute(CharacterBodyMain *node,class CharacterAIContext* p_context);
+    void exit(CharacterBodyMain *node,class CharacterAIContext* p_context);
+public:
     virtual void _enter_logic(CharacterBodyMain *node,Blackboard* blackboard)
     {
 
     }
-    bool execute(CharacterBodyMain *node,Blackboard* blackboard)
-    {
-        bool rs = false;
-        if(_execute_logic(node,blackboard))
-        {
-            rs = true ;
-        }
-        if (GDVIRTUAL_IS_OVERRIDDEN(_execute)) {
-            bool is_stop = false;
-            GDVIRTUAL_CALL(_execute, node,blackboard,is_stop);
-            rs = true ;
-        }
-        return rs;
-    }
     virtual bool _execute_logic(CharacterBodyMain *node,Blackboard* blackboard)
     {
         return false;
-    }
-    void exit(CharacterBodyMain *node,Blackboard* blackboard)
-    {
-        _stop_logic(node,blackboard);
-        if (GDVIRTUAL_IS_OVERRIDDEN(_stop)) {
-
-            GDVIRTUAL_CALL(_stop, node,blackboard);
-        }
-
     }
     virtual void _stop_logic(CharacterBodyMain *node,Blackboard* blackboard)
     {
@@ -408,6 +381,7 @@ public:
     {
         return name;
     }
+protected:
 	GDVIRTUAL2(_enter,CharacterBodyMain*,Blackboard*)
 	GDVIRTUAL2R(bool,_execute,CharacterBodyMain*,Blackboard*)
 	GDVIRTUAL2(_stop,CharacterBodyMain*,Blackboard*)
@@ -502,7 +476,7 @@ public:
         return ret;
     }
 public:
-    void execute(CharacterBodyMain *node,Blackboard* blackboard,struct CharacterAIContext* p_context);
+    void execute(CharacterBodyMain *node,class CharacterAIContext* p_context);
     StringName ident_node_name = "ident";
     // 角色感應器
     Ref<CharacterAI_Inductor> inductor;

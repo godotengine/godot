@@ -44,32 +44,65 @@ bool CharacterAI_CheckEnemy::_execute_check(CharacterBodyMain *node, Blackboard*
     }
     return false;
 }
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void CharacterAILogicNode::enter(CharacterBodyMain *node,class CharacterAIContext* p_context)
+{
+    if(tree.is_valid())
+    {
+        tree->init(p_context->beehave_run_context);
+    }
+    _enter_logic(node, p_context->beehave_run_context->blackboard.ptr());
+    if (GDVIRTUAL_IS_OVERRIDDEN(_enter)) {
+        GDVIRTUAL_CALL(_enter, node, p_context->beehave_run_context->blackboard.ptr());
+    }
+
+}
+bool CharacterAILogicNode::execute(CharacterBodyMain *node,class CharacterAIContext* p_context)
+{
+    bool rs = false;
+    if(tree.is_valid())
+    {
+        int br = tree->process(p_context->beehave_run_context);
+        rs = br == 1 || br == 2;
+    }
+    if(_execute_logic(node,p_context->beehave_run_context->blackboard.ptr()))
+    {
+        rs = true ;
+    }
+    if (GDVIRTUAL_IS_OVERRIDDEN(_execute)) {
+        bool is_stop = false;
+        GDVIRTUAL_CALL(_execute, node,p_context->beehave_run_context->blackboard.ptr(),is_stop);
+        rs = true ;
+    }
+    return rs;
+}
+void CharacterAILogicNode::exit(CharacterBodyMain *node,class CharacterAIContext* p_context)
+{
+    if(tree.is_valid())
+    {
+        tree->stop(p_context->beehave_run_context);
+    }
+    _stop_logic(node,p_context->beehave_run_context->blackboard.ptr());
+    if (GDVIRTUAL_IS_OVERRIDDEN(_stop)) {
+
+        GDVIRTUAL_CALL(_stop, node,p_context->beehave_run_context->blackboard.ptr());
+    }
+
+}
 
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-void CharacterAI::execute(CharacterBodyMain *node,Blackboard* blackboard,CharacterAIContext* p_context)
+void CharacterAI::execute(CharacterBodyMain *node,CharacterAIContext* p_context)
 {
     bool is_run_brain = false;
+	auto blackboard = p_context->beehave_run_context->blackboard.ptr();
     if(p_context->logic_node.is_valid())
     {
-        if(p_context->logic_node->execute(node,blackboard))
+        if(p_context->logic_node->execute(node, p_context))
         {
             is_run_brain = true;
-            p_context->logic_node->exit(node,blackboard);
+            p_context->logic_node->exit(node, p_context);
             p_context->logic_node = Ref<CharacterAILogicNode>();
             p_context->logic_name = StringName();
         }
@@ -93,13 +126,13 @@ void CharacterAI::execute(CharacterBodyMain *node,Blackboard* blackboard,Charact
             {
                 if(p_context->logic_node.is_valid())
                 {
-                    p_context->logic_node->exit(node,blackboard);
+                    p_context->logic_node->exit(node, p_context);
                 }
                 p_context->logic_name = logic_name;
                 p_context->logic_node = logic_nodes[logic_name];
                 if(p_context->logic_node.is_valid())
                 {
-                    p_context->logic_node->enter(node,blackboard);
+                    p_context->logic_node->enter(node, p_context);
                 }
                 return;
             }
@@ -115,7 +148,7 @@ void CharacterAI::execute(CharacterBodyMain *node,Blackboard* blackboard,Charact
             p_context->logic_node = logic_nodes[ident_node_name];
             if(p_context->logic_node.is_valid())
             {
-                p_context->logic_node->enter(node,blackboard);
+                p_context->logic_node->enter(node, p_context);
             }
         }
     }

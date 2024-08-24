@@ -4,6 +4,10 @@
 #include "character_ai/character_ai.h"
 #include "character_manager.h"
 
+CharacterAIContext::CharacterAIContext()
+{
+	beehave_run_context.instantiate();
+}
 
 ObjectID& CharacterBodyMain::get_curr_editor_player()
 {
@@ -145,21 +149,15 @@ void CharacterBodyMain::editor_build_form_mesh_file_path()
 
 void CharacterBodyMain::init_ai_context()
 {
-    if(ai_context.beehave_run_context.is_null())
-    {
-        ai_context.beehave_run_context.instantiate();
-    }
-    ai_context.beehave_run_context->blackboard = get_blackboard();
+	ai_context.instantiate();
+    ai_context->beehave_run_context->blackboard = get_blackboard();
+    ai_context->beehave_run_context->actor = this;
 
 }
 void CharacterBodyMain::_update(double p_delta)
 {
         // 更新玩家位置
         GDVIRTUAL_CALL(_update_player_position);
-        if(character_ai.is_valid())
-        {
-            character_ai->execute(this,get_blackboard().ptr(),&ai_context);
-        }
         // 更新動畫
         if(animator.is_valid())
         {
@@ -179,7 +177,7 @@ void CharacterBodyMain::_update_ai()
 {
     if(character_ai.is_valid())
     {
-        character_ai->execute(this,get_blackboard().ptr(),&ai_context);
+        character_ai->execute(this,ai_context.ptr());
     }
 }
 void CharacterBodyMain::_process_animator()

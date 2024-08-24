@@ -43,12 +43,16 @@ enum CharacterCamp
     CharacterCamp_Friend,
 };
 class CharacterAILogicNode;
-struct CharacterAIContext
+class CharacterAIContext : public RefCounted
 {
+    GDCLASS(CharacterAIContext,RefCounted);
+public:
+	CharacterAIContext();
+public:
     Ref<CharacterAILogicNode> logic_node;
     StringName logic_name;
     CharacterCamp camp;
-    // xingweishu
+    // 行为树运行上下文,只有逻辑节点使用,每个逻辑节点执行结束后悔进行重置
     Ref<BeehaveRuncontext> beehave_run_context;
     
 };
@@ -410,7 +414,7 @@ protected:
     Ref<CharacterMovement> character_movement;
     Ref<CharacterNavigationAgent3D> character_agent;
 
-    CharacterAIContext ai_context;
+    Ref<CharacterAIContext> ai_context;
     Ref<CharacterAI> character_ai;
 
 
