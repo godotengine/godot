@@ -136,7 +136,7 @@
 				        }
 				    }
 
-				    private List&lt;int&gt; _numbers = new();
+				    private Godot.Collections.Array&lt;int&gt; _numbers = new();
 
 				    public override Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt; _GetPropertyList()
 				    {
