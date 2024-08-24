@@ -4951,6 +4951,16 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				Input::get_singleton()->parse_input_event(mbd);
 			}
 
+			// Propagate the button up event to the window on which the button down
+			// event was triggered. This is needed for drag & drop to work between windows,
+			// because the engine expects events to keep being processed
+			// on the same window dragging started.
+			if (mb->is_pressed()) {
+				last_mouse_button_down_window = window_id;
+			} else if (last_mouse_button_down_window != INVALID_WINDOW_ID) {
+				mb->set_window_id(last_mouse_button_down_window);
+				last_mouse_button_down_window = INVALID_WINDOW_ID;
+			}
 		} break;
 
 		case WM_WINDOWPOSCHANGED: {

@@ -218,6 +218,7 @@
 			<param index="6" name="clear_depth" type="float" default="1.0" />
 			<param index="7" name="clear_stencil" type="int" default="0" />
 			<param index="8" name="region" type="Rect2" default="Rect2(0, 0, 0, 0)" />
+			<param index="9" name="breadcrumb" type="int" default="0" />
 			<description>
 				Starts a list of raster drawing commands created with the [code]draw_*[/code] methods. The returned value should be passed to other [code]draw_list_*[/code] functions.
 				Multiple draw lists cannot be created at the same time; you must finish the previous draw list first using [method draw_list_end].
@@ -225,7 +226,7 @@
 				[codeblock]
 				var rd = RenderingDevice.new()
 				var clear_colors = PackedColorArray([Color(0, 0, 0, 0), Color(0, 0, 0, 0), Color(0, 0, 0, 0)])
-				var draw_list = rd.draw_list_begin(framebuffers[i], RenderingDevice.INITIAL_ACTION_CLEAR, RenderingDevice.FINAL_ACTION_READ, RenderingDevice.INITIAL_ACTION_CLEAR, RenderingDevice.FINAL_ACTION_DISCARD, clear_colors)
+				var draw_list = rd.draw_list_begin(framebuffers[i], RenderingDevice.INITIAL_ACTION_CLEAR, RenderingDevice.FINAL_ACTION_READ, RenderingDevice.INITIAL_ACTION_CLEAR, RenderingDevice.FINAL_ACTION_DISCARD, clear_colors, RenderingDevice.OPAQUE_PASS)
 
 				# Draw opaque.
 				rd.draw_list_bind_render_pipeline(draw_list, raster_pipeline)
@@ -239,6 +240,11 @@
 				rd.draw_list_draw(draw_list, false, 1, slice_triangle_count[i] * 3)
 
 				rd.draw_list_end()
+				[/codeblock]
+				The [param breadcrumb] parameter can be an arbitrary 32-bit integer that is useful to diagnose GPU crashes. If Godot is built in dev or debug mode; when the GPU crashes Godot will dump all shaders that were being executed at the time of the crash and the breadcrumb is useful to diagnose what passes did those shaders belong to.
+				It does not affect rendering behavior and can be set to 0. It is recommended to use [enum BreadcrumbMarker] enumerations for consistency but it's not required. It is also possible to use bitwise operations to add extra data. e.g.
+				[codeblock]
+				rd.draw_list_begin(fb[i], RenderingDevice.INITIAL_ACTION_CLEAR, RenderingDevice.FINAL_ACTION_READ, RenderingDevice.INITIAL_ACTION_CLEAR, RenderingDevice.FINAL_ACTION_DISCARD, clear_colors, RenderingDevice.OPAQUE_PASS | 5)
 				[/codeblock]
 			</description>
 		</method>
@@ -487,6 +493,31 @@
 				Returns the index of the last frame rendered that has rendering timestamps available for querying.
 			</description>
 		</method>
+		<method name="get_device_allocation_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns how many allocations the GPU has performed for internal driver structures.
+				This is only used by Vulkan in Debug builds and can return 0 when this information is not tracked or unknown.
+			</description>
+		</method>
+		<method name="get_device_allocs_by_object_type" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="type" type="int" />
+			<description>
+				Same as [method get_device_allocation_count] but filtered for a given object type.
+				The type argument must be in range [code][0; get_tracked_object_type_count - 1][/code]. If [method get_tracked_object_type_count] is 0, then type argument is ignored and always returns 0.
+				This is only used by Vulkan in Debug builds and can return 0 when this information is not tracked or unknown.
+			</description>
+		</method>
+		<method name="get_device_memory_by_object_type" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="type" type="int" />
+			<description>
+				Same as [method get_device_total_memory] but filtered for a given object type.
+				The type argument must be in range [code][0; get_tracked_object_type_count - 1][/code]. If [method get_tracked_object_type_count] is 0, then type argument is ignored and always returns 0.
+				This is only used by Vulkan in Debug builds and can return 0 when this information is not tracked or unknown.
+			</description>
+		</method>
 		<method name="get_device_name" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -499,10 +530,42 @@
 				Returns the universally unique identifier for the pipeline cache. This is used to cache shader files on disk, which avoids shader recompilations on subsequent engine runs. This UUID varies depending on the graphics card model, but also the driver version. Therefore, updating graphics drivers will invalidate the shader cache.
 			</description>
 		</method>
+		<method name="get_device_total_memory" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns how much bytes the GPU is using.
+				This is only used by Vulkan in Debug builds and can return 0 when this information is not tracked or unknown.
+			</description>
+		</method>
 		<method name="get_device_vendor_name" qualifiers="const">
 			<return type="String" />
 			<description>
 				Returns the vendor of the video adapter (e.g. "NVIDIA Corporation"). Equivalent to [method RenderingServer.get_video_adapter_vendor]. See also [method get_device_name].
+			</description>
+		</method>
+		<method name="get_driver_allocation_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns how many allocations the GPU driver has performed for internal driver structures.
+				This is only used by Vulkan in Debug builds and can return 0 when this information is not tracked or unknown.
+			</description>
+		</method>
+		<method name="get_driver_allocs_by_object_type" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="type" type="int" />
+			<description>
+				Same as [method get_driver_allocation_count] but filtered for a given object type.
+				The type argument must be in range [code][0; get_tracked_object_type_count - 1][/code]. If [method get_tracked_object_type_count] is 0, then type argument is ignored and always returns 0.
+				This is only used by Vulkan in Debug builds and can return 0 when this information is not tracked or unknown.
+			</description>
+		</method>
+		<method name="get_driver_memory_by_object_type" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="type" type="int" />
+			<description>
+				Same as [method get_driver_total_memory] but filtered for a given object type.
+				The type argument must be in range [code][0; get_tracked_object_type_count - 1][/code]. If [method get_tracked_object_type_count] is 0, then type argument is ignored and always returns 0.
+				This is only used by Vulkan in Debug builds and can return 0 when this information is not tracked or unknown.
 			</description>
 		</method>
 		<method name="get_driver_resource">
@@ -512,6 +575,13 @@
 			<param index="2" name="index" type="int" />
 			<description>
 				Returns the unique identifier of the driver [param resource] for the specified [param rid]. Some driver resource types ignore the specified [param rid] (see [enum DriverResource] descriptions). [param index] is always ignored but must be specified anyway.
+			</description>
+		</method>
+		<method name="get_driver_total_memory" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns how much bytes the GPU driver is using for internal driver structures.
+				This is only used by Vulkan in Debug builds and can return 0 when this information is not tracked or unknown.
 			</description>
 		</method>
 		<method name="get_frame_delay" qualifiers="const">
@@ -525,6 +595,33 @@
 			<param index="0" name="type" type="int" enum="RenderingDevice.MemoryType" />
 			<description>
 				Returns the memory usage in bytes corresponding to the given [param type]. When using Vulkan, these statistics are calculated by [url=https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator]Vulkan Memory Allocator[/url].
+			</description>
+		</method>
+		<method name="get_perf_report" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns a string with a performance report from the past frame. Updates every frame.
+			</description>
+		</method>
+		<method name="get_tracked_object_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="type_index" type="int" />
+			<description>
+				Returns the name of the type of object for the given [param type_index]. This value must be in range [code][0; get_tracked_object_type_count - 1][/code]. If [method get_tracked_object_type_count] is 0, then type argument is ignored and always returns the same string.
+				The return value is important because it gives meaning to the types passed to [method get_driver_memory_by_object_type], [method get_driver_allocs_by_object_type], [method get_device_memory_by_object_type], and [method get_device_allocs_by_object_type]. Examples of strings it can return (not exhaustive):
+				- DEVICE_MEMORY
+				- PIPELINE_CACHE
+				- SWAPCHAIN_KHR
+				- COMMAND_POOL
+				Thus if e.g. [code]get_tracked_object_name(5)[/code] returns "COMMAND_POOL", then [code]get_device_memory_by_object_type(5)[/code] returns the bytes used by the GPU for command pools.
+				This is only used by Vulkan in Debug builds.
+			</description>
+		</method>
+		<method name="get_tracked_object_type_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns how many types of trackable objects are.
+				This is only used by Vulkan in Debug builds.
 			</description>
 		</method>
 		<method name="index_array_create">
@@ -2361,6 +2458,32 @@
 		</constant>
 		<constant name="INVALID_FORMAT_ID" value="-1">
 			Returned by functions that return a format ID if a value is invalid.
+		</constant>
+		<constant name="NONE" value="0" enum="BreadcrumbMarker">
+		</constant>
+		<constant name="REFLECTION_PROBES" value="65536" enum="BreadcrumbMarker">
+		</constant>
+		<constant name="SKY_PASS" value="131072" enum="BreadcrumbMarker">
+		</constant>
+		<constant name="LIGHTMAPPER_PASS" value="196608" enum="BreadcrumbMarker">
+		</constant>
+		<constant name="SHADOW_PASS_DIRECTIONAL" value="262144" enum="BreadcrumbMarker">
+		</constant>
+		<constant name="SHADOW_PASS_CUBE" value="327680" enum="BreadcrumbMarker">
+		</constant>
+		<constant name="OPAQUE_PASS" value="393216" enum="BreadcrumbMarker">
+		</constant>
+		<constant name="ALPHA_PASS" value="458752" enum="BreadcrumbMarker">
+		</constant>
+		<constant name="TRANSPARENT_PASS" value="524288" enum="BreadcrumbMarker">
+		</constant>
+		<constant name="POST_PROCESSING_PASS" value="589824" enum="BreadcrumbMarker">
+		</constant>
+		<constant name="BLIT_PASS" value="655360" enum="BreadcrumbMarker">
+		</constant>
+		<constant name="UI_PASS" value="720896" enum="BreadcrumbMarker">
+		</constant>
+		<constant name="DEBUG_PASS" value="786432" enum="BreadcrumbMarker">
 		</constant>
 	</constants>
 </class>

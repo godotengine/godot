@@ -271,6 +271,44 @@ public:
 		DATA_FORMAT_MAX,
 	};
 
+	// Breadcrumb markers are useful for debugging GPU crashes (i.e. DEVICE_LOST). Internally
+	// they're just an uint32_t to "tag" a GPU command. These are only used for debugging and do not
+	// (or at least shouldn't) alter the execution behavior in any way.
+	//
+	// When a GPU crashes and Godot was built in dev or debug mode; Godot will dump what commands
+	// were being executed and what tag they were marked with.
+	// This makes narrowing down the cause of a crash easier. Note that a GPU can be executing
+	// multiple commands at the same time. It is also useful to identify data hazards.
+	//
+	// For example if each LIGHTMAPPER_PASS must be executed in sequential order, but dumps
+	// indicated that pass (LIGHTMAPPER_PASS | 5) was being executed at the same time as
+	// (LIGHTMAPPER_PASS | 4), that would indicate there is a missing barrier or a render graph bug.
+	//
+	// The enums are bitshifted by 16 bits so it's possible to add user data via bitwise operations.
+	// Using this enum is not mandatory; but it is recommended so that all subsystems agree what each
+	// ID means when dumping info.
+	enum BreadcrumbMarker {
+		NONE = 0,
+		// Environment
+		REFLECTION_PROBES = 1u << 16u,
+		SKY_PASS = 2u << 16u,
+		// Light mapping
+		LIGHTMAPPER_PASS = 3u << 16u,
+		// Shadows
+		SHADOW_PASS_DIRECTIONAL = 4u << 16u,
+		SHADOW_PASS_CUBE = 5u << 16u,
+		// Geometry passes
+		OPAQUE_PASS = 6u << 16u,
+		ALPHA_PASS = 7u << 16u,
+		TRANSPARENT_PASS = 8u << 16u,
+		// Screen effects
+		POST_PROCESSING_PASS = 9u << 16u,
+		BLIT_PASS = 10u << 16u,
+		UI_PASS = 11u << 16u,
+		// Other
+		DEBUG_PASS = 12u << 16u,
+	};
+
 	enum CompareOperator {
 		COMPARE_OP_NEVER,
 		COMPARE_OP_LESS,

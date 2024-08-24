@@ -537,7 +537,7 @@ class DisplayServerWindows : public DisplayServer {
 	RBMap<WindowID, WindowData> windows;
 
 	WindowID last_focused_window = INVALID_WINDOW_ID;
-
+	WindowID last_mouse_button_down_window = INVALID_WINDOW_ID;
 	HCURSOR hCursor;
 
 	WNDPROC user_proc = nullptr;

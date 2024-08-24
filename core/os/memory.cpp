@@ -35,6 +35,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 void *operator new(size_t p_size, const char *p_description) {
 	return Memory::alloc_static(p_size, false);
@@ -64,6 +65,38 @@ SafeNumeric<uint64_t> Memory::max_usage;
 #endif
 
 SafeNumeric<uint64_t> Memory::alloc_count;
+
+inline bool is_power_of_2(size_t x) { return x && ((x & (x - 1U)) == 0U); }
+
+void *Memory::alloc_aligned_static(size_t p_bytes, size_t p_alignment) {
+	DEV_ASSERT(is_power_of_2(p_alignment));
+
+	void *p1, *p2;
+	if ((p1 = (void *)malloc(p_bytes + p_alignment - 1 + sizeof(uint32_t))) == nullptr) {
+		return nullptr;
+	}
+
+	p2 = (void *)(((uintptr_t)p1 + sizeof(uint32_t) + p_alignment - 1) & ~((p_alignment)-1));
+	*((uint32_t *)p2 - 1) = (uint32_t)((uintptr_t)p2 - (uintptr_t)p1);
+	return p2;
+}
+
+void *Memory::realloc_aligned_static(void *p_memory, size_t p_bytes, size_t p_prev_bytes, size_t p_alignment) {
+	if (p_memory == nullptr) {
+		return alloc_aligned_static(p_bytes, p_alignment);
+	}
+
+	void *ret = alloc_aligned_static(p_bytes, p_alignment);
+	memcpy(ret, p_memory, p_prev_bytes);
+	free_aligned_static(p_memory);
+	return ret;
+}
+
+void Memory::free_aligned_static(void *p_memory) {
+	uint32_t offset = *((uint32_t *)p_memory - 1);
+	void *p = (void *)((uint8_t *)p_memory - offset);
+	free(p);
+}
 
 void *Memory::alloc_static(size_t p_bytes, bool p_pad_align) {
 #ifdef DEBUG_ENABLED

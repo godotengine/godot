@@ -3815,6 +3815,11 @@ void RenderingDeviceDriverD3D12::shader_free(ShaderID p_shader) {
 	VersatileResource::free(resources_allocator, shader_info_in);
 }
 
+void RenderingDeviceDriverD3D12::shader_destroy_modules(ShaderID p_shader) {
+	ShaderInfo *shader_info_in = (ShaderInfo *)p_shader.id;
+	shader_info_in->stages_bytecode.clear();
+}
+
 /*********************/
 /**** UNIFORM SET ****/
 /*********************/
@@ -6034,6 +6039,10 @@ void RenderingDeviceDriverD3D12::command_end_label(CommandBufferID p_cmd_buffer)
 	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
 	PIXEndEvent(cmd_buf_info->cmd_list.Get());
 #endif
+}
+
+void RenderingDeviceDriverD3D12::command_insert_breadcrumb(CommandBufferID p_cmd_buffer, uint32_t p_data) {
+	// TODO: Implement via DRED.
 }
 
 /********************/

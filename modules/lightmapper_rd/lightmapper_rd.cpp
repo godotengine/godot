@@ -715,7 +715,7 @@ void LightmapperRD::_raster_geometry(RenderingDevice *rd, Size2i atlas_size, int
 		raster_push_constant.uv_offset[0] = -0.5f / float(atlas_size.x);
 		raster_push_constant.uv_offset[1] = -0.5f / float(atlas_size.y);
 
-		RD::DrawListID draw_list = rd->draw_list_begin(framebuffers[i], RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, clear_colors);
+		RD::DrawListID draw_list = rd->draw_list_begin(framebuffers[i], RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, clear_colors, 1.0, 0, Rect2(), RDD::BreadcrumbMarker::LIGHTMAPPER_PASS);
 		//draw opaque
 		rd->draw_list_bind_render_pipeline(draw_list, raster_pipeline);
 		rd->draw_list_bind_uniform_set(draw_list, raster_base_uniform, 0);
@@ -1584,9 +1584,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 #endif
 
 	/* SECONDARY (indirect) LIGHT PASS(ES) */
-	if (p_step_function) {
-		p_step_function(0.6, RTR("Integrate indirect lighting"), p_bake_userdata, true);
-	}
 
 	if (p_bounces > 0) {
 		Vector<RD::Uniform> uniforms;
@@ -1649,6 +1646,10 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 		rd->submit();
 		rd->sync();
+
+		if (p_step_function) {
+			p_step_function(0.6, RTR("Integrate indirect lighting"), p_bake_userdata, true);
+		}
 
 		int count = 0;
 		for (int s = 0; s < atlas_slices; s++) {
@@ -1918,7 +1919,8 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				seams_push_constant.slice = uint32_t(i * subslices + k);
 				seams_push_constant.debug = debug;
 
-				RD::DrawListID draw_list = rd->draw_list_begin(framebuffers[i * subslices + k], RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, clear_colors);
+				// Store the current subslice in the breadcrumb.
+				RD::DrawListID draw_list = rd->draw_list_begin(framebuffers[i * subslices + k], RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, clear_colors, 1.0, 0, Rect2(), RDD::BreadcrumbMarker::LIGHTMAPPER_PASS | seams_push_constant.slice);
 
 				rd->draw_list_bind_uniform_set(draw_list, raster_base_uniform, 0);
 				rd->draw_list_bind_uniform_set(draw_list, blendseams_raster_uniform, 1);
