@@ -58,6 +58,10 @@ public:
 	Ref<ImageTexture> add_node_icon;
 	Ref<ImageTexture> remove_node_icon;
 
+
+	Ref<ImageTexture> debug_enable_icon;
+	Ref<ImageTexture> debug_disable_icon;
+
 	Ref<Font> font;
 	float scale = 1.0f;
 	BeehaveGraphFrames()
@@ -122,6 +126,10 @@ public:
 
 		add_node_icon = p_control->get_editor_theme_icon(SNAME("InsertBefore"));
 		remove_node_icon = p_control->get_editor_theme_icon(SNAME("Remove"));
+
+
+		debug_enable_icon = p_control->get_editor_theme_icon(SNAME("DebugSkipBreakpointsOff"));
+		debug_disable_icon = p_control->get_editor_theme_icon(SNAME("DebugSkipBreakpointsOn"));
 
 
 	}
@@ -366,6 +374,7 @@ public:
 	Ref<Texture2D> icon;
 	float layout_size = 0;
 	TextureRect* icon_rect;
+	Button* debug_break;
 	Label* title_label;
 	Label* label;
 	Label* state_label;
@@ -421,10 +430,17 @@ public:
 
 		icon_rect = memnew(TextureRect);
 		icon_rect->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
+		icon_rect->set_h_size_flags(SIZE_EXPAND_FILL);
 		icon_rect->set_texture(icon);
 		
 		titlebar_hbox = get_titlebar_hbox();
 		titlebar_hbox->get_child(0)->queue_free();
+
+		debug_break = memnew(Button);
+		debug_break->set_icon(beehave_node->get_debug_enabled() ? frames->debug_enable_icon : frames->debug_disable_icon);
+		titlebar_hbox->add_child(debug_break);
+		debug_break->connect("pressed", callable_mp(this, &BeehaveGraphNodes::_on_debug_break));
+
 		titlebar_hbox->set_alignment(BoxContainer::ALIGNMENT_BEGIN);
 		titlebar_hbox->add_child(icon_rect);
 
@@ -479,10 +495,10 @@ public:
 			}
 
 
-			bool is_show_create_child_node = false;
+			bool is_show_create_child_node = true;
 			if (beehave_node->get_supper_child_count() < 0)
 			{
-				is_show_create_child_node = true;
+
 			}
 			else if(beehave_node->get_supper_child_count() == 0)
 			{
@@ -584,22 +600,22 @@ public:
 		{
 			if(is_slot_enabled_left(1))
 			{
-				draw_texture(frames->icon_port_left, get_input_port_position(0) + Vector2(-4, 10),p_color);
+				draw_texture(frames->icon_port_left, get_input_port_position(0) + Vector2(-4, 5),p_color);
 			}
 			if(is_slot_enabled_right(1) && !beehave_node->get_editor_collapsed_children())
 			{
-				draw_texture(frames->icon_port_right, get_output_port_position(0) + Vector2(5, -7),p_color);
+				draw_texture(frames->icon_port_right, get_output_port_position(0) + Vector2(-5, -7),p_color);
 			}
 		}
 		else
 		{
 			if(p_slot_index == 0 && is_slot_enabled_left(0))
 			{
-				draw_texture(frames->icon_port_top, get_input_port_position(0) + Vector2(-5, 10),p_color);
+				draw_texture(frames->icon_port_top, get_input_port_position(0) + Vector2(-5, 5),p_color);
 			}
 			else if(p_slot_index == 1  && !beehave_node->get_editor_collapsed_children())
 			{
-				draw_texture(frames->icon_port_bottom, get_output_port_position(0) + Vector2(5, -7),p_color);
+				draw_texture(frames->icon_port_bottom, get_output_port_position(0) + Vector2(-5, -7),p_color);
 			}
 		}
 	}
@@ -691,7 +707,8 @@ public:
 	void set_text(String p_text)
 	{
 		text = p_text;
-		label->set_text(beehave_node->get_annotation());
+		//label->set_text(beehave_node->get_annotation());
+		label->set_text(String(L"") + String::num_int64(get_size().x) + " " + String::num_int64(get_size().y));
 		state_label->set_text(text);
 	}
 	void set_title_text(String p_text)
@@ -718,12 +735,14 @@ public:
 	{
 		parent_beehave_node->move_child_up(beehave_node);
 		on_beehave_node_change();
+		on_selected(true);
 	}
 
 	void _on_move_down()
 	{
 		parent_beehave_node->move_child_down(beehave_node);
 		on_beehave_node_change();		
+		on_selected(true);
 	}
 	void _on_create_child_node()
 	{
@@ -762,6 +781,11 @@ public:
 		parent_beehave_node->remove_child(beehave_node);
 		on_beehave_node_change();
 	}
+	void _on_debug_break()
+	{
+		beehave_node->set_debug_enabled(! beehave_node->get_debug_enabled());
+		debug_break->set_icon(beehave_node->get_debug_enabled() ? frames->debug_enable_icon : frames->debug_disable_icon);
+	}
 	virtual void on_selected(bool p_selected);
 	virtual void on_beehave_node_change();
 };
@@ -769,12 +793,12 @@ public:
 class BeehaveGraphTreeNode : public RefCounted
 {
     public:
-    float SIBLING_DISTANCE = 110.0;
-    float LEVEL_DISTANCE = 180.0;
+    float SIBLING_DISTANCE = 30.0f;
+    float LEVEL_DISTANCE = 30.0f;
     float pos_x = 0;
     float pos_y = 0;
     float mod = 0;
-    Vector2 total_size;
+    float total_size;
 	
     BeehaveGraphTreeNode* parent = nullptr;
     LocalVector<Ref<BeehaveGraphTreeNode>> children;
@@ -885,28 +909,35 @@ class BeehaveGraphTreeNode : public RefCounted
         }
         if(children.size() > 0)
         {
-            total_size = Vector2(0,0);
+            total_size = 0;
             for(uint32_t i = 0; i < children.size(); i++)
             {
                 total_size += children[i]->total_size;
             }
             if(p_horizontal_layout)
             {
-                total_size.y += SIBLING_DISTANCE * (children.size() - 1);
+                total_size += SIBLING_DISTANCE * (children.size() - 1);
             }
             else
             {
-                total_size.x += SIBLING_DISTANCE * (children.size() - 1);
+                total_size += SIBLING_DISTANCE * (children.size() - 1);
             }
         }
         else
         {
-            total_size = get_cell_size();
+			if (p_horizontal_layout)
+			{
+				total_size += get_cell_size().y;
+			}
+			else
+			{
+				total_size += get_cell_size().x;
+			}
         }
 	}
 	Vector2 get_cell_size()
 	{
-		return Vector2(180, 120);
+		return Vector2(320, 250);
 	}
 
     void compute_position(const Vector2& p_offset,bool p_horizontal_layout)
@@ -915,25 +946,25 @@ class BeehaveGraphTreeNode : public RefCounted
         if(p_horizontal_layout)
         {
             pos_x = p_offset.x;
-			pos_y = p_offset.y + (total_size.y / 2);
+			pos_y = p_offset.y + (total_size / 2);
             Vector2 offset = p_offset;
             offset.x += get_cell_size().x + LEVEL_DISTANCE;
             for(uint32_t i = 0; i < children.size(); i++)
             {
                 children[i]->compute_position(offset,p_horizontal_layout);
-                offset.y += children[i]->total_size.y + SIBLING_DISTANCE;
+                offset.y += children[i]->total_size + SIBLING_DISTANCE;
             }
         }
         else
         {
-			pos_x = p_offset.x + total_size.x / 2;
+			pos_x = p_offset.x + total_size / 2;
 			pos_y = p_offset.y;
             Vector2 offset = p_offset;
             offset.y += get_cell_size().y + LEVEL_DISTANCE;
             for(uint32_t i = 0; i < children.size(); i++)
             {
                 children[i]->compute_position(offset,p_horizontal_layout);
-                offset.x += children[i]->total_size.x + SIBLING_DISTANCE;
+                offset.x += children[i]->total_size + SIBLING_DISTANCE;
             }
         }
     }

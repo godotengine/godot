@@ -47,7 +47,6 @@ public:
     double delta = 0.0;
     Node* actor = nullptr;
     Ref<Blackboard> blackboard;
-    Ref<Blackboard> editor_blackboard;
 };
 /// 序列节点
 class BeehaveNode : public RefCounted
@@ -71,12 +70,16 @@ class BeehaveNode : public RefCounted
         ClassDB::bind_method(D_METHOD("set_editor_collapsed_children", "enable"), &BeehaveNode::set_editor_collapsed_children);
         ClassDB::bind_method(D_METHOD("get_editor_collapsed_children"), &BeehaveNode::get_editor_collapsed_children);
 
+        ClassDB::bind_method(D_METHOD("set_debug_enabled", "enable"), &BeehaveNode::set_debug_enabled);
+        ClassDB::bind_method(D_METHOD("get_debug_enabled"), &BeehaveNode::get_debug_enabled);
+
 
         ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name"), "set_name", "get_name");
         ADD_PROPERTY(PropertyInfo(Variant::STRING, "annotation"), "set_annotation", "get_annotation");
         ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enable", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_enable", "get_enable");
         ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_collapsed_children", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_editor_collapsed_children", "get_editor_collapsed_children");
         ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "children", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("BeehaveNode"), PROPERTY_USAGE_NO_EDITOR), "set_children", "get_children");
+        ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_debug_enabled", "get_debug_enabled");
     }
 public:
     enum SequenceRunState
@@ -209,6 +212,15 @@ public:
     {
         return editor_collapsed_children;
     }
+    void set_debug_enabled(bool p_enable)
+    {
+        debug_enabled = p_enable;
+    }
+
+    bool get_debug_enabled()
+    {
+        return debug_enabled;
+    }
 public:
     // 上移子节点
     void move_child_up(const Ref<BeehaveNode>& p_child)
@@ -266,6 +278,7 @@ protected:
     bool enabled = true;
     // 是否编辑器折叠子节点
     bool editor_collapsed_children = false;
+    bool debug_enabled = false;
 };
 
 

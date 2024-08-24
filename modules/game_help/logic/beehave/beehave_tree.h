@@ -92,13 +92,17 @@ public:
         }
     }
 
-    void process(const Ref<BeehaveRuncontext>& run_context)
+    int process(const Ref<BeehaveRuncontext>& run_context)
     {
         if (last_tick < tick_rate - 1)
         {
             last_tick += 1;
-            return;
+            return status;
 
+        }
+        if(status != RUNNING)
+        {
+            return status;
         }
         last_tick = 0;
         float start_time = OS::get_singleton()->get_ticks_usec();
@@ -110,14 +114,29 @@ public:
         }
         // if _can_send_message:
         // 	BeehaveDebuggerMessages.process_begin(get_instance_id())
-        tick(run_context);
+        status = tick(run_context);
 
+        if(status != RUNNING)
+        {
+            on_stop(run_context);
+        }
         // if _can_send_message:
         // 	BeehaveDebuggerMessages.process_end(get_instance_id())
 
 	    _process_time_metric_value = OS::get_singleton()->get_ticks_usec() - start_time;
+        return status;
     }
     void stop(const Ref<BeehaveRuncontext>& run_context)
+    {
+        if(status != RUNNING)
+        {
+            return;
+        }
+        on_stop(run_context);
+        status = SUCCESS;
+    }
+protected:
+    void on_stop(const Ref<BeehaveRuncontext>& run_context)
     {        
         for (int i = 0; i < listeners.size(); i++)
         {

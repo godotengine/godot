@@ -75,7 +75,7 @@ public:
 		}
 		_add_nodes(beehave_tree->get_root_node());
 		_connect_nodes(beehave_tree->get_root_node());
-		callable_mp(this, &BeehaveGraphEditor::_arrange_nodes).call_deferred(beehave_tree);
+		_arrange_nodes(beehave_tree);
 		updating_graph = false;
 
 	}
@@ -517,6 +517,72 @@ protected:
 
 };
 
+struct BeehaveRunTool
+{
+	float time_scale = 1.0;
+	float detail = 0.0;
+	float curr_time = 0.0;
+
+	bool is_running = false;
+	bool is_paused = false;
+
+	Ref<BeehaveRuncontext> run_context;
+	Ref<BeehaveTree> tree;
+
+	void play()
+	{
+		stop();
+		run_context.instantiate();
+		if(!init_run_context())
+		{
+			return;
+		}
+		is_running = true;
+		is_paused = false;
+		tree->init(run_context);
+	}
+
+	void tick(float p_delta)
+	{
+
+		detail = time_scale * p_delta;
+		curr_time += p_delta;
+		if(tree->process(run_context) != 2)
+		{
+			is_running = false;
+		}
+	}
+
+	void stop()
+	{
+		is_running = false;
+		is_paused = false;
+		detail = 0.0f;
+		run_context.unref();
+	}
+	bool init_run_context()
+	{
+		CharacterBodyMain* main = CharacterBodyMain::get_current_editor_player();
+		if(main == nullptr)
+		{
+			return false;
+		}
+		if(!is_running)
+		{
+			return false;
+		}
+		if(is_paused)
+		{
+			return false;
+		}
+		run_context->actor = main;
+		run_context->delta = detail;
+		run_context->blackboard = main->get_blackboard_plan()->get_editor_blackboard();
+		return true;
+
+	}
+};
+
 
 // 绿豆蝇行为树属性编辑
 class BeehaveGraphProperty : public VBoxContainer
@@ -544,18 +610,30 @@ public:
 		play_help = memnew(HBoxContainer);
 		section->add_child(play_help);
 
+		HSlider* slider = memnew(HSlider);
+		slider->set_min(0);
+		slider->set_max(5);
+		slider->set_step(0.01);
+		slider->set_value(1.0);
+		slider->set_custom_minimum_size(Vector2(80, 0));
+		play_help->add_child(slider);
+		slider->connect(SceneStringName(value_changed), callable_mp(this, &BeehaveGraphProperty::_on_slider_changed));
+
 
 		play_button = memnew(Button);
 		play_button->set_text(L"播放");
+		play_button->connect(SceneStringName(pressed), callable_mp(this, &BeehaveGraphProperty::_on_play_pressed));
 		play_help->add_child(play_button);
 
 		pause_button = memnew(Button);
 		pause_button->set_text(L"暂停");
+		pause_button->connect(SceneStringName(pressed), callable_mp(this, &BeehaveGraphProperty::_on_pause_pressed));
 		pause_button->set_disabled(true);
 		play_help->add_child(pause_button);
 
 		stop_button = memnew(Button);
 		stop_button->set_text(L"停止");
+		stop_button->connect(SceneStringName(pressed), callable_mp(this, &BeehaveGraphProperty::_on_stop_pressed));
 		stop_button->set_disabled(true);
 		play_help->add_child(stop_button);
 
@@ -650,7 +728,17 @@ public:
 		beehave_editor->process(delta);
 		beehave_editor->process_end();
 	}
-	
+	void set_editor_node(Ref<BeehaveNode> p_beehave_node)
+	{
+		beehave_node = p_beehave_node;
+		if (beehave_node.is_valid())
+		{
+			beehave_tree->last_editor_id = beehave_node->get_instance_id();
+		}
+		sub_inspector->edit(beehave_node.ptr());
+		update_creted_beehave_node_state();
+	}
+public:
 	void _on_section_pressed() {
 		if(beehave_editor == nullptr || frames.is_null())
 		{
@@ -658,6 +746,23 @@ public:
 		}
 		set_collapsed(!is_collapsed());
 	}
+	void on_beehave_node_change()
+	{
+		beehave_editor->_update_graph();
+	}
+	void _on_play_pressed() {
+		
+	}
+	void _on_pause_pressed() {
+		
+	}
+	void _on_stop_pressed() {
+		
+	}
+	void _on_slider_changed(double p_value) {
+		
+	}
+protected:
 	void set_collapsed(bool p_collapsed) {
 		if(p_collapsed)
 		{
@@ -695,16 +800,6 @@ public:
 	void _sub_inspector_object_id_selected(int p_id) {
 		emit_signal(SNAME("object_id_selected"), "children", p_id);
 	}
-	void set_editor_node(Ref<BeehaveNode> p_beehave_node)
-	{
-		beehave_node = p_beehave_node;
-		if(beehave_node.is_valid())
-		{
-			beehave_tree->last_editor_id = beehave_node->get_instance_id();
-		}
-		sub_inspector->edit(beehave_node.ptr());
-		update_creted_beehave_node_state();
-	}
 
 	void update_creted_beehave_node_state()
 	{
@@ -735,11 +830,6 @@ public:
 
 	}
 
-	void on_beehave_node_change()
-	{
-		beehave_editor->_update_graph();
-	}
-
 	
 	
 protected:
@@ -760,6 +850,8 @@ protected:
 	PlayState play_state = PLAY_STATE_STOP;
 
 
+
+
 };
 
 
@@ -772,4 +864,6 @@ void BeehaveGraphNodes::on_selected(bool p_selected)
 void BeehaveGraphNodes::on_beehave_node_change()
 {
 	beehave_graph_property->on_beehave_node_change();
+	
+	on_selected(true);
 }

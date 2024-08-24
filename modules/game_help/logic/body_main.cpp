@@ -150,10 +150,6 @@ void CharacterBodyMain::init_ai_context()
         ai_context.beehave_run_context.instantiate();
     }
     ai_context.beehave_run_context->blackboard = get_blackboard();
-    if(blackboard_plan.is_valid())
-    {
-        ai_context.beehave_run_context->editor_blackboard = blackboard_plan->get_editor_blackboard();
-    }
 
 }
 void CharacterBodyMain::_update(double p_delta)
