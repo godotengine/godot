@@ -497,7 +497,7 @@
 			<return type="int" />
 			<description>
 				Returns how many allocations the GPU has performed for internal driver structures.
-				This is only used by Vulkan in Debug builds and can return 0 when this information is not tracked or unknown.
+				This is only used by Vulkan in debug builds and can return 0 when this information is not tracked or unknown.
 			</description>
 		</method>
 		<method name="get_device_allocs_by_object_type" qualifiers="const">
@@ -506,7 +506,7 @@
 			<description>
 				Same as [method get_device_allocation_count] but filtered for a given object type.
 				The type argument must be in range [code][0; get_tracked_object_type_count - 1][/code]. If [method get_tracked_object_type_count] is 0, then type argument is ignored and always returns 0.
-				This is only used by Vulkan in Debug builds and can return 0 when this information is not tracked or unknown.
+				This is only used by Vulkan in debug builds and can return 0 when this information is not tracked or unknown.
 			</description>
 		</method>
 		<method name="get_device_memory_by_object_type" qualifiers="const">
@@ -515,7 +515,7 @@
 			<description>
 				Same as [method get_device_total_memory] but filtered for a given object type.
 				The type argument must be in range [code][0; get_tracked_object_type_count - 1][/code]. If [method get_tracked_object_type_count] is 0, then type argument is ignored and always returns 0.
-				This is only used by Vulkan in Debug builds and can return 0 when this information is not tracked or unknown.
+				This is only used by Vulkan in debug builds and can return 0 when this information is not tracked or unknown.
 			</description>
 		</method>
 		<method name="get_device_name" qualifiers="const">
@@ -534,7 +534,7 @@
 			<return type="int" />
 			<description>
 				Returns how much bytes the GPU is using.
-				This is only used by Vulkan in Debug builds and can return 0 when this information is not tracked or unknown.
+				This is only used by Vulkan in debug builds and can return 0 when this information is not tracked or unknown.
 			</description>
 		</method>
 		<method name="get_device_vendor_name" qualifiers="const">
@@ -547,7 +547,7 @@
 			<return type="int" />
 			<description>
 				Returns how many allocations the GPU driver has performed for internal driver structures.
-				This is only used by Vulkan in Debug builds and can return 0 when this information is not tracked or unknown.
+				This is only used by Vulkan in debug builds and can return 0 when this information is not tracked or unknown.
 			</description>
 		</method>
 		<method name="get_driver_allocs_by_object_type" qualifiers="const">
@@ -556,7 +556,24 @@
 			<description>
 				Same as [method get_driver_allocation_count] but filtered for a given object type.
 				The type argument must be in range [code][0; get_tracked_object_type_count - 1][/code]. If [method get_tracked_object_type_count] is 0, then type argument is ignored and always returns 0.
-				This is only used by Vulkan in Debug builds and can return 0 when this information is not tracked or unknown.
+				This is only used by Vulkan in debug builds and can return 0 when this information is not tracked or unknown.
+			</description>
+		</method>
+		<method name="get_driver_and_device_memory_report" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns string report in CSV format using the following methods:
+				- [method get_tracked_object_name]
+				- [method get_tracked_object_type_count]
+				- [method get_driver_total_memory]
+				- [method get_driver_allocation_count]
+				- [method get_driver_memory_by_object_type]
+				- [method get_driver_allocs_by_object_type]
+				- [method get_device_total_memory]
+				- [method get_device_allocation_count]
+				- [method get_device_memory_by_object_type]
+				- [method get_device_allocs_by_object_type]
+				This is only used by Vulkan in debug builds. Godot must also be started with the [code]--extra-gpu-memory-tracking[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 			</description>
 		</method>
 		<method name="get_driver_memory_by_object_type" qualifiers="const">
@@ -565,7 +582,7 @@
 			<description>
 				Same as [method get_driver_total_memory] but filtered for a given object type.
 				The type argument must be in range [code][0; get_tracked_object_type_count - 1][/code]. If [method get_tracked_object_type_count] is 0, then type argument is ignored and always returns 0.
-				This is only used by Vulkan in Debug builds and can return 0 when this information is not tracked or unknown.
+				This is only used by Vulkan in debug builds and can return 0 when this information is not tracked or unknown.
 			</description>
 		</method>
 		<method name="get_driver_resource">
@@ -581,7 +598,7 @@
 			<return type="int" />
 			<description>
 				Returns how much bytes the GPU driver is using for internal driver structures.
-				This is only used by Vulkan in Debug builds and can return 0 when this information is not tracked or unknown.
+				This is only used by Vulkan in debug builds and can return 0 when this information is not tracked or unknown.
 			</description>
 		</method>
 		<method name="get_frame_delay" qualifiers="const">
@@ -614,14 +631,14 @@
 				- SWAPCHAIN_KHR
 				- COMMAND_POOL
 				Thus if e.g. [code]get_tracked_object_name(5)[/code] returns "COMMAND_POOL", then [code]get_device_memory_by_object_type(5)[/code] returns the bytes used by the GPU for command pools.
-				This is only used by Vulkan in Debug builds.
+				This is only used by Vulkan in debug builds. Godot must also be started with the [code]--extra-gpu-memory-tracking[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 			</description>
 		</method>
 		<method name="get_tracked_object_type_count" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns how many types of trackable objects are.
-				This is only used by Vulkan in Debug builds.
+				This is only used by Vulkan in debug builds. Godot must also be started with the [code]--extra-gpu-memory-tracking[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 			</description>
 		</method>
 		<method name="index_array_create">

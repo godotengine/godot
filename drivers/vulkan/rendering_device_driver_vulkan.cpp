@@ -503,7 +503,9 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	}
 
 #if defined(VK_TRACK_DEVICE_MEMORY)
-	_register_requested_device_extension(VK_EXT_DEVICE_MEMORY_REPORT_EXTENSION_NAME, false);
+	if (Engine::get_singleton()->is_extra_gpu_memory_tracking_enabled()) {
+		_register_requested_device_extension(VK_EXT_DEVICE_MEMORY_REPORT_EXTENSION_NAME, false);
+	}
 #endif
 	_register_requested_device_extension(VK_EXT_DEVICE_FAULT_EXTENSION_NAME, false);
 
@@ -5044,6 +5046,8 @@ void RenderingDeviceDriverVulkan::on_device_lost() const {
 	if (fault_info.pAddressInfos) {
 		memfree(fault_info.pAddressInfos);
 	}
+
+	_err_print_error(FUNCTION_STR, __FILE__, __LINE__, context_driver->get_driver_and_device_memory_report());
 }
 
 void RenderingDeviceDriverVulkan::print_lost_device_info() {
