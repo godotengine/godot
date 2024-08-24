@@ -1,5 +1,8 @@
 #pragma once
-#include "core/object/ref_counted.h"
+
+#include "scene/main/node.h"
+#include "core/io/resource.h"
+#include "modules/limboai/bt/bt_player.h"
 
 // 行为树运行上下文
 class BeehaveRuncontext : public RefCounted
@@ -46,7 +49,8 @@ public:
     double time = 0.0;
     double delta = 0.0;
     Node* actor = nullptr;
-    Ref<Blackboard> blackboard;
+    class BeehaveTree* tree = nullptr;
+    Ref<class Blackboard> blackboard;
 };
 /// 序列节点
 class BeehaveNode : public RefCounted
@@ -112,6 +116,7 @@ public:
     {
 
     }
+    int process(const Ref<BeehaveRuncontext>& run_context);
     virtual int tick(const Ref<BeehaveRuncontext>& run_context) 
     {
         run_context->set_run_state(this,SequenceRunState::SUCCESS);

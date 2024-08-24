@@ -46,7 +46,11 @@ public:
             children[0]->before_run(run_context);
             child_state.write[0] = 1;
         }
-        int rs = children[0]->tick(run_context);
+        int rs = children[0]->process(run_context);
+        if(rs == NONE_PROCESS)
+        {
+            return rs;
+        }
         if(rs == SUCCESS || rs == FAILURE)
         {
             for(int i = 0; i < get_child_count(); ++i)

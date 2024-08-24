@@ -430,7 +430,6 @@ public:
 
 		icon_rect = memnew(TextureRect);
 		icon_rect->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
-		icon_rect->set_h_size_flags(SIZE_EXPAND_FILL);
 		icon_rect->set_texture(icon);
 		
 		titlebar_hbox = get_titlebar_hbox();
@@ -555,6 +554,7 @@ public:
 		title_label->add_theme_color_override("font_color", Color(1, 1, 1, 1));
 		title_label->add_theme_font_override("font", frames->font);
 		title_label->set_vertical_alignment(VerticalAlignment::VERTICAL_ALIGNMENT_CENTER);
+		title_label->set_h_size_flags(SIZE_EXPAND_FILL);
 		title_label->set_text(title_text);
 		titlebar_hbox->add_child(title_label);
 
@@ -600,7 +600,7 @@ public:
 		{
 			if(is_slot_enabled_left(1))
 			{
-				draw_texture(frames->icon_port_left, get_input_port_position(0) + Vector2(-4, 5),p_color);
+				draw_texture(frames->icon_port_left, get_input_port_position(0) + Vector2(-4, -7),p_color);
 			}
 			if(is_slot_enabled_right(1) && !beehave_node->get_editor_collapsed_children())
 			{
@@ -611,7 +611,7 @@ public:
 		{
 			if(p_slot_index == 0 && is_slot_enabled_left(0))
 			{
-				draw_texture(frames->icon_port_top, get_input_port_position(0) + Vector2(-5, 5),p_color);
+				draw_texture(frames->icon_port_top, get_input_port_position(0) + Vector2(-5, -5),p_color);
 			}
 			else if(p_slot_index == 1  && !beehave_node->get_editor_collapsed_children())
 			{
@@ -798,7 +798,7 @@ class BeehaveGraphTreeNode : public RefCounted
     float pos_x = 0;
     float pos_y = 0;
     float mod = 0;
-    float total_size;
+    float total_size = 0;
 	
     BeehaveGraphTreeNode* parent = nullptr;
     LocalVector<Ref<BeehaveGraphTreeNode>> children;

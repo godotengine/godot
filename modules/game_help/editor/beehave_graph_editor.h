@@ -75,6 +75,7 @@ public:
 		}
 		_add_nodes(beehave_tree->get_root_node());
 		_connect_nodes(beehave_tree->get_root_node());
+		callable_mp(this, &BeehaveGraphEditor::_arrange_nodes).call_deferred(beehave_tree);
 		_arrange_nodes(beehave_tree);
 		updating_graph = false;
 

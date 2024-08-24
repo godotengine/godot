@@ -46,7 +46,11 @@ public:
                 child_state.write[i] = 1;
                 children[i]->before_run(run_context);
             }
-			int rs = children[i]->tick(run_context);
+			int rs = children[i]->process(run_context);
+            if(rs == NONE_PROCESS)
+            {
+                return rs;
+            }
 			run_context->set_run_state(children[i].ptr(), rs);
             if(rs == SUCCESS)
             {

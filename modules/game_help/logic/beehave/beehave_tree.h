@@ -145,7 +145,7 @@ protected:
     }
     int tick(const Ref<BeehaveRuncontext>& run_context)
     {	
-        if (actor == nullptr || root_node.is_null())
+        if (run_context->actor == nullptr || root_node.is_null())
 		{
             return FAILURE;
         }
@@ -205,6 +205,15 @@ public:
         return ret;
     }
 public:
+    void set_debug_break_node(BeehaveNode *p_node)
+    {
+        debug_break_node = p_node;
+    }
+    BeehaveNode *get_debug_break_node()
+    {
+        return debug_break_node;
+    }
+    // 初始化
     void editor_init()
     {
         if(blackboard_plan.is_null())
@@ -228,8 +237,8 @@ public:
 
     Ref<BlackboardPlan> blackboard_plan;
     LocalVector<Ref<BeehaveListener>> listeners;
-
-    Node* actor = nullptr;
+    // 当前中断的节点
+    class BeehaveNode *debug_break_node = nullptr;
 
     ObjectID last_editor_id;
     float tick_rate = 0.1f;

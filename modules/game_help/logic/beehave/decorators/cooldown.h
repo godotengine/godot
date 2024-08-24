@@ -63,7 +63,11 @@ public:
         }
         else
         {
-            response = child->tick(run_context);
+            response = child->process(run_context);
+        }
+        if(response == NONE_PROCESS)
+        {
+            return response;
         }
 		run_context->set_run_state(child.ptr(),response);
         return response;
