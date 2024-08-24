@@ -308,9 +308,9 @@ class AnimationNodeStateMachinePlayback : public Resource {
 	AnimationNode::NodeTimeInfo process(AnimationNodeStateMachine *p_state_machine, const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only);
 	AnimationNode::NodeTimeInfo _process(AnimationNodeStateMachine *p_state_machine, const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only);
 
-	bool _check_advance_condition(const Ref<AnimationNodeStateMachine> p_state_machine, const Ref<AnimationNodeStateMachineTransition> p_transition) const;
-	bool _transition_to_next_recursive(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, double p_delta, bool p_test_only);
-	NextInfo _find_next(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine) const;
+	bool _check_advance_condition(const Ref<AnimationNodeStateMachine> p_state_machine, const Ref<AnimationNodeStateMachineTransition> p_transition, double p_delta, double p_current_time) const;
+	bool _transition_to_next_recursive(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, double p_delta, double p_current_time, bool p_test_only);
+	NextInfo _find_next(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, double p_delta, double p_current_time) const;
 	Ref<AnimationNodeStateMachineTransition> _check_group_transition(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, const AnimationNodeStateMachine::Transition &p_transition, Ref<AnimationNodeStateMachine> &r_state_machine, bool &r_bypass) const;
 	bool _can_transition_to_next(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, NextInfo p_next, bool p_test_only);
 
