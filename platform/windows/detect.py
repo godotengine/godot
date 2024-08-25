@@ -247,7 +247,8 @@ def get_flags():
 
     return {
         "arch": arch,
-        "supported": ["d3d12", "mono", "xaudio2"],
+        "angle": True,
+        "supported": ["d3d12", "mono", "xaudio2", "angle"],
     }
 
 
@@ -581,16 +582,18 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
 
     if env["opengl3"]:
         env.AppendUnique(CPPDEFINES=["GLES3_ENABLED"])
-        if env["angle_libs"] != "":
-            env.AppendUnique(CPPDEFINES=["EGL_STATIC"])
-            env.Append(LIBPATH=[env["angle_libs"]])
-            LIBS += [
-                "libANGLE.windows." + env["arch"] + prebuilt_lib_extra_suffix,
-                "libEGL.windows." + env["arch"] + prebuilt_lib_extra_suffix,
-                "libGLES.windows." + env["arch"] + prebuilt_lib_extra_suffix,
-            ]
-            LIBS += ["dxgi", "d3d9", "d3d11"]
-        env.Prepend(CPPPATH=["#thirdparty/angle/include"])
+        if env["angle"]:
+            env.Append(CPPDEFINES=["ANGLE_ENABLED"])
+            if env["angle_libs"] != "":
+                env.AppendUnique(CPPDEFINES=["EGL_STATIC"])
+                env.Append(LIBPATH=[env["angle_libs"]])
+                LIBS += [
+                    "libANGLE.windows." + env["arch"] + prebuilt_lib_extra_suffix,
+                    "libEGL.windows." + env["arch"] + prebuilt_lib_extra_suffix,
+                    "libGLES.windows." + env["arch"] + prebuilt_lib_extra_suffix,
+                ]
+                LIBS += ["dxgi", "d3d9", "d3d11"]
+            env.Prepend(CPPPATH=["#thirdparty/angle/include"])
 
     if env["target"] in ["editor", "template_debug"]:
         LIBS += ["psapi", "dbghelp"]
@@ -788,7 +791,7 @@ def configure_mingw(env: "SConsEnvironment"):
             )
             sys.exit(255)
 
-        env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
+        env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED", ("__REQUIRED_RPCNDR_H_VERSION__", 475)])
         env.Append(LIBS=["dxgi", "dxguid"])
 
         # PIX
@@ -807,18 +810,20 @@ def configure_mingw(env: "SConsEnvironment"):
 
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES3_ENABLED"])
-        if env["angle_libs"] != "":
-            env.AppendUnique(CPPDEFINES=["EGL_STATIC"])
-            env.Append(LIBPATH=[env["angle_libs"]])
-            env.Append(
-                LIBS=[
-                    "EGL.windows." + env["arch"],
-                    "GLES.windows." + env["arch"],
-                    "ANGLE.windows." + env["arch"],
-                ]
-            )
-            env.Append(LIBS=["dxgi", "d3d9", "d3d11"])
-        env.Prepend(CPPPATH=["#thirdparty/angle/include"])
+        if env["angle"]:
+            env.Append(CPPDEFINES=["ANGLE_ENABLED"])
+            if env["angle_libs"] != "":
+                env.AppendUnique(CPPDEFINES=["EGL_STATIC"])
+                env.Append(LIBPATH=[env["angle_libs"]])
+                env.Append(
+                    LIBS=[
+                        "EGL.windows." + env["arch"],
+                        "GLES.windows." + env["arch"],
+                        "ANGLE.windows." + env["arch"],
+                    ]
+                )
+                env.Append(LIBS=["dxgi", "d3d9", "d3d11"])
+            env.Prepend(CPPPATH=["#thirdparty/angle/include"])
 
     env.Append(CPPDEFINES=["MINGW_ENABLED", ("MINGW_HAS_SECURE_API", 1)])
 

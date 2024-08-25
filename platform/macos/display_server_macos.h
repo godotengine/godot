@@ -35,7 +35,9 @@
 #include "servers/display_server.h"
 
 #if defined(GLES3_ENABLED)
+#if defined(ANGLE_ENABLED)
 #include "gl_manager_macos_angle.h"
+#endif
 #include "gl_manager_macos_legacy.h"
 #endif // GLES3_ENABLED
 
@@ -138,8 +140,10 @@ public:
 
 private:
 #if defined(GLES3_ENABLED)
-	GLManagerLegacy_MacOS *gl_manager_legacy = nullptr;
+#if defined(ANGLE_ENABLED)
 	GLManagerANGLE_MacOS *gl_manager_angle = nullptr;
+#endif
+	GLManagerLegacy_MacOS *gl_manager_legacy = nullptr;
 #endif
 #if defined(RD_ENABLED)
 	RenderingContextDriver *rendering_context = nullptr;

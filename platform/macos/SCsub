@@ -122,9 +122,11 @@ files = [
     "tts_macos.mm",
     "joypad_macos.mm",
     "rendering_context_driver_vulkan_macos.mm",
-    "gl_manager_macos_angle.mm",
     "gl_manager_macos_legacy.mm",
 ]
+
+if env["angle"]:
+    files += ["gl_manager_macos_angle.mm"]
 
 prog = env.add_program("#bin/godot", files)
 

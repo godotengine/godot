@@ -45,6 +45,13 @@ if env["metal"]:
         print("Target platform '{}' does not support the Metal rendering driver. Aborting.".format(env["platform"]))
         Exit(255)
     SConscript("metal/SCsub")
+if env["angle"]:
+    if not env["opengl3"]:
+        print("ANGLE rendering driver require 'opengl3' to be enabled. Aborting.")
+        Exit(255)
+    if "angle" not in supported:
+        print("Target platform '{}' does not support the ANGLE rendering driver. Aborting.".format(env["platform"]))
+        Exit(255)
 
 # Core dependencies
 SConscript("png/SCsub")
