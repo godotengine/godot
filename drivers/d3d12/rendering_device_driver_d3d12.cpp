@@ -3919,8 +3919,8 @@ RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<Boun
 		const ShaderInfo *shader_info_in = (const ShaderInfo *)p_shader.id;
 		const ShaderInfo::UniformBindingInfo &shader_uniform = shader_info_in->sets[p_set_index].bindings[i];
 		bool is_compute = shader_info_in->stages_bytecode.has(SHADER_STAGE_COMPUTE);
-		DEV_ASSERT(!(is_compute && (shader_uniform.stages & (SHADER_STAGE_VERTEX_BIT | SHADER_STAGE_FRAGMENT_BIT))));
-		DEV_ASSERT(!(!is_compute && (shader_uniform.stages & SHADER_STAGE_COMPUTE_BIT)));
+		DEV_ASSERT(!is_compute || !(shader_uniform.stages & (SHADER_STAGE_VERTEX_BIT | SHADER_STAGE_FRAGMENT_BIT)));
+		DEV_ASSERT(is_compute || !(shader_uniform.stages & SHADER_STAGE_COMPUTE_BIT));
 #endif
 
 		switch (uniform.type) {
@@ -4383,7 +4383,7 @@ void RenderingDeviceDriverD3D12::_command_bind_uniform_set(CommandBufferID p_cmd
 				const ShaderInfo::UniformBindingInfo::RootSignatureLocation &rs_loc_resource = shader_set.bindings[i].root_sig_locations.resource;
 				if (rs_loc_resource.root_param_idx != UINT32_MAX) { // Location used?
 					DEV_ASSERT(num_resource_descs);
-					DEV_ASSERT(!(srv_uav_ambiguity && (shader_set.bindings[i].res_class != RES_CLASS_SRV && shader_set.bindings[i].res_class != RES_CLASS_UAV))); // [[SRV_UAV_AMBIGUITY]]
+					DEV_ASSERT(!srv_uav_ambiguity || shader_set.bindings[i].res_class == RES_CLASS_SRV || shader_set.bindings[i].res_class == RES_CLASS_UAV); // [[SRV_UAV_AMBIGUITY]]
 
 					bool must_flush_table = tables.resources && rs_loc_resource.root_param_idx != tables.resources->root_param_idx;
 					if (must_flush_table) {
@@ -5043,11 +5043,10 @@ void RenderingDeviceDriverD3D12::command_begin_render_pass(CommandBufferID p_cmd
 			p_rect.position.y,
 			p_rect.position.x + p_rect.size.x,
 			p_rect.position.y + p_rect.size.y);
-	cmd_buf_info->render_pass_state.region_is_all = !(
-			cmd_buf_info->render_pass_state.region_rect.left == 0 &&
-			cmd_buf_info->render_pass_state.region_rect.top == 0 &&
-			cmd_buf_info->render_pass_state.region_rect.right == fb_info->size.x &&
-			cmd_buf_info->render_pass_state.region_rect.bottom == fb_info->size.y);
+	cmd_buf_info->render_pass_state.region_is_all = cmd_buf_info->render_pass_state.region_rect.left != 0 ||
+			cmd_buf_info->render_pass_state.region_rect.top != 0 ||
+			cmd_buf_info->render_pass_state.region_rect.right != fb_info->size.x ||
+			cmd_buf_info->render_pass_state.region_rect.bottom != fb_info->size.y;
 
 	for (uint32_t i = 0; i < pass_info->attachments.size(); i++) {
 		if (pass_info->attachments[i].load_op == ATTACHMENT_LOAD_OP_DONT_CARE) {

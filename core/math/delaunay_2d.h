@@ -146,7 +146,7 @@ public:
 		int preserved_count = 0;
 		Triangle *triangles_ptrw = triangles.ptrw();
 		for (int i = 0; i < triangles.size(); i++) {
-			if (!(triangles[i].points[0] >= point_count || triangles[i].points[1] >= point_count || triangles[i].points[2] >= point_count)) {
+			if (triangles[i].points[0] < point_count && triangles[i].points[1] < point_count && triangles[i].points[2] < point_count) {
 				triangles_ptrw[preserved_count] = triangles[i];
 				preserved_count++;
 			}

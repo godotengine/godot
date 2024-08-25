@@ -3052,7 +3052,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 			id->set_agile_input_event_flushing(agile_input_event_flushing);
 
 			if (bool(GLOBAL_DEF_BASIC("input_devices/pointing/emulate_touch_from_mouse", false)) &&
-					!(editor || project_manager)) {
+					!editor && !project_manager) {
 				if (!DisplayServer::get_singleton()->is_touchscreen_available()) {
 					//only if no touchscreen ui hint, set emulation
 					id->set_emulate_touch_from_mouse(true);

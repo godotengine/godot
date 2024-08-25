@@ -698,7 +698,7 @@ void ShaderGLES3::_clear_version(Version *p_version) {
 
 void ShaderGLES3::_initialize_version(Version *p_version) {
 	ERR_FAIL_COND(p_version->variants.size() > 0);
-	bool use_cache = shader_cache_dir_valid && !(feedback_count > 0 && GLES3::Config::get_singleton()->disable_transform_feedback_shader_cache);
+	bool use_cache = shader_cache_dir_valid && (feedback_count <= 0 || !GLES3::Config::get_singleton()->disable_transform_feedback_shader_cache);
 	if (use_cache && _load_from_cache(p_version)) {
 		return;
 	}

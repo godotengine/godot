@@ -238,14 +238,14 @@ NetSocketPosix::NetError NetSocketPosix::_get_socket_error() const {
 #endif
 
 bool NetSocketPosix::_can_use_ip(const IPAddress &p_ip, const bool p_for_bind) const {
-	if (p_for_bind && !(p_ip.is_valid() || p_ip.is_wildcard())) {
+	if (p_for_bind && !p_ip.is_valid() && !p_ip.is_wildcard()) {
 		return false;
 	} else if (!p_for_bind && !p_ip.is_valid()) {
 		return false;
 	}
 	// Check if socket support this IP type.
 	IP::Type type = p_ip.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
-	return !(_ip_type != IP::TYPE_ANY && !p_ip.is_wildcard() && _ip_type != type);
+	return _ip_type == IP::TYPE_ANY || p_ip.is_wildcard() || _ip_type == type;
 }
 
 _FORCE_INLINE_ Error NetSocketPosix::_change_multicast_group(IPAddress p_ip, String p_if_name, bool p_add) {

@@ -703,7 +703,7 @@ bool ClassDB::can_instantiate(const StringName &p_class) {
 		return false;
 	}
 #endif
-	return (!ti->disabled && ti->creation_func != nullptr && !(ti->gdextension && !ti->gdextension->create_instance));
+	return (!ti->disabled && ti->creation_func != nullptr && (!ti->gdextension || ti->gdextension->create_instance));
 }
 
 bool ClassDB::is_abstract(const StringName &p_class) {
@@ -738,7 +738,7 @@ bool ClassDB::is_virtual(const StringName &p_class) {
 		return false;
 	}
 #endif
-	return (!ti->disabled && ti->creation_func != nullptr && !(ti->gdextension && !ti->gdextension->create_instance) && ti->is_virtual);
+	return (!ti->disabled && ti->creation_func != nullptr && (!ti->gdextension || ti->gdextension->create_instance) && ti->is_virtual);
 }
 
 void ClassDB::_add_class2(const StringName &p_class, const StringName &p_inherits) {

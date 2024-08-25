@@ -299,7 +299,7 @@ Vector3 AStar3D::get_closest_position_in_segment(const Vector3 &p_point) const {
 		points.lookup(E.key.first, from_point);
 		points.lookup(E.key.second, to_point);
 
-		if (!(from_point->enabled && to_point->enabled)) {
+		if (!from_point->enabled || !to_point->enabled) {
 			continue;
 		}
 

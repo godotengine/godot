@@ -777,12 +777,12 @@ public:
 	static Variant::Type get_return_type() { return Variant::BOOL; }
 };
 
-#define XOR_OP(m_a, m_b) (((m_a) || (m_b)) && !((m_a) && (m_b)))
+#define XOR_OP(m_a, m_b) (((m_a) || (m_b)) && (!(m_a) || !(m_b)))
 template <typename A, typename B>
 class OperatorEvaluatorXor {
 public:
 	_FORCE_INLINE_ static bool xor_op(const A &a, const B &b) {
-		return ((a) || (b)) && !((a) && (b));
+		return ((a) || (b)) && (!(a) || !(b));
 	}
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
 		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
@@ -1055,7 +1055,7 @@ _FORCE_INLINE_ static bool _operate_and(bool p_left, bool p_right) {
 }
 
 _FORCE_INLINE_ static bool _operate_xor(bool p_left, bool p_right) {
-	return (p_left || p_right) && !(p_left && p_right);
+	return (p_left || p_right) && (!p_left || !p_right);
 }
 
 _FORCE_INLINE_ static bool _operate_get_nil(const Variant *p_ptr) {
