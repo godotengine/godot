@@ -9755,6 +9755,11 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 					break;
 				}
 
+				if (is_constant) {
+					_set_error(vformat(RTR("'%s' qualifier cannot be used with a function return type."), "const"));
+					return ERR_PARSE_ERROR;
+				}
+
 				FunctionInfo builtins;
 				if (p_functions.has(name)) {
 					builtins = p_functions[name];
