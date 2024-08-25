@@ -3058,6 +3058,10 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	progress.step(TTR("Running Custom Script..."), 2);
 
 	String post_import_script_path = p_options["import_script/path"];
+	if (post_import_script_path.is_relative_path()) {
+		post_import_script_path = p_source_file.get_base_dir().path_join(post_import_script_path);
+	}
+
 	Ref<EditorScenePostImport> post_import_script;
 
 	if (!post_import_script_path.is_empty()) {
