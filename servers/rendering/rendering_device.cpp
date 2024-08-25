@@ -4951,6 +4951,10 @@ void RenderingDevice::free(RID p_id) {
 	_free_dependencies(p_id); // Recursively erase dependencies first, to avoid potential API problems.
 	_free_internal(p_id);
 }
+bool RenderingDevice::has_texture(RID p_id) {
+	return texture_owner.get_or_null(p_id) != nullptr;
+
+}
 
 void RenderingDevice::_free_internal(RID p_id) {
 #ifdef DEV_ENABLED
@@ -5048,9 +5052,9 @@ void RenderingDevice::_free_internal(RID p_id) {
 		compute_pipeline_owner.free(p_id);
 	} else {
 #ifdef DEV_ENABLED
-		ERR_PRINT("Attempted to free invalid ID: " + itos(p_id.get_id()) + " " + resource_name);
+		WARN_PRINT("Attempted to free invalid ID: " + itos(p_id.get_id()) + " " + resource_name);
 #else
-		ERR_PRINT("Attempted to free invalid ID: " + itos(p_id.get_id()));
+		WARN_PRINT("Attempted to free invalid ID: " + itos(p_id.get_id()));
 #endif
 	}
 }

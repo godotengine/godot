@@ -95,7 +95,10 @@ void RenderSceneBuffersRD::update_sizes(NamedTexture &p_named_texture) {
 
 void RenderSceneBuffersRD::free_named_texture(NamedTexture &p_named_texture) {
 	if (p_named_texture.texture.is_valid()) {
-		RD::get_singleton()->free(p_named_texture.texture);
+		if (p_named_texture.is_main_res)
+		{
+			RD::get_singleton()->free(p_named_texture.texture);
+		}
 	}
 	p_named_texture.texture = RID();
 	p_named_texture.slices.clear(); // slices should be freed automatically as dependents...
@@ -341,6 +344,7 @@ RID RenderSceneBuffersRD::create_texture_from_format(const StringName &p_context
 	named_texture.format = p_texture_format;
 	named_texture.is_unique = p_unique;
 	named_texture.texture = RD::get_singleton()->texture_create(p_texture_format, p_view);
+	named_texture.is_main_res = true;
 
 	Array arr;
 	arr.push_back(p_context);
@@ -380,13 +384,15 @@ RID RenderSceneBuffersRD::create_texture_view(const StringName &p_context, const
 
 	view_texture.format = named_texture.format;
 	view_texture.is_unique = named_texture.is_unique;
+	view_texture.is_main_res = false;
 
 	view_texture.texture = RD::get_singleton()->texture_create_shared(p_view, named_texture.texture);
 
 	Array arr;
 	arr.push_back(p_context);
 	arr.push_back(p_view_name);
-	RD::get_singleton()->set_resource_name(view_texture.texture, String("RenderBuffer View {0}/{1}").format(arr));
+	view_texture.name = String("RenderBuffer View {0}/{1}").format(arr);
+	RD::get_singleton()->set_resource_name(view_texture.texture, view_texture.name);
 
 	update_sizes(named_texture);
 

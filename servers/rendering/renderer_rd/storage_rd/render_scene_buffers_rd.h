@@ -149,7 +149,9 @@ private:
 	struct NamedTexture {
 		// Cache the data used to create our texture
 		RD::TextureFormat format;
+		String name;
 		bool is_unique; // If marked as unique, we return it into our pool
+		bool is_main_res = true;
 
 		// Our texture objects, slices are lazy (i.e. only created when requested).
 		RID texture;

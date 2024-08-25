@@ -3104,7 +3104,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 	// TODO see if we can lazy create this once we actually use it as we may not need to create this if we have an overridden color buffer...
 	rt->color = RD::get_singleton()->texture_create(rd_color_attachment_format, rd_view);
 	ERR_FAIL_COND(rt->color.is_null());
-
+	RD::get_singleton()->set_resource_name(rt->color, "color buffer");
 	if (rt->msaa != RS::VIEWPORT_MSAA_DISABLED) {
 		// Use the texture format of the color attachment for the multisample color attachment.
 		RD::TextureFormat rd_color_multisample_format = rd_color_attachment_format;
@@ -3119,6 +3119,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 		RD::TextureView rd_view_multisample;
 		rd_color_multisample_format.is_resolve_buffer = false;
 		rt->color_multisample = RD::get_singleton()->texture_create(rd_color_multisample_format, rd_view_multisample);
+		RD::get_singleton()->set_resource_name(rt->color, "color msaa buffer");
 		ERR_FAIL_COND(rt->color_multisample.is_null());
 	}
 
@@ -3629,6 +3630,7 @@ void TextureStorage::_render_target_allocate_sdf(RenderTarget *rt) {
 	tformat.texture_type = RD::TEXTURE_TYPE_2D;
 
 	rt->sdf_buffer_write = RD::get_singleton()->texture_create(tformat, RD::TextureView());
+	RD::get_singleton()->set_resource_name(rt->sdf_buffer_write, "sdf bufer write");
 
 	{
 		Vector<RID> write_fb;
@@ -3662,12 +3664,15 @@ void TextureStorage::_render_target_allocate_sdf(RenderTarget *rt) {
 	tformat.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT;
 
 	rt->sdf_buffer_process[0] = RD::get_singleton()->texture_create(tformat, RD::TextureView());
+	RD::get_singleton()->set_resource_name(rt->sdf_buffer_write, "sdf bufer process 0");
 	rt->sdf_buffer_process[1] = RD::get_singleton()->texture_create(tformat, RD::TextureView());
+	RD::get_singleton()->set_resource_name(rt->sdf_buffer_write, "sdf bufer process 1");
 
 	tformat.format = RD::DATA_FORMAT_R16_SNORM;
 	tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
 
 	rt->sdf_buffer_read = RD::get_singleton()->texture_create(tformat, RD::TextureView());
+	RD::get_singleton()->set_resource_name(rt->sdf_buffer_write, "sdf bufer read");
 
 	{
 		Vector<RD::Uniform> uniforms;

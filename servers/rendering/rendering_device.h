@@ -1369,6 +1369,7 @@ public:
 	void finalize();
 
 	void free(RID p_id);
+	bool has_texture(RID p_id);
 
 	/****************/
 	/**** Timing ****/
