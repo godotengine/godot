@@ -708,7 +708,7 @@ bool PList::load_string(const String &p_string, String &r_err_out) {
 				stack.push_back(dict);
 			} else {
 				// Add root node.
-				if (!root.is_null()) {
+				if (root.is_valid()) {
 					r_err_out = "Root node already set.";
 					return false;
 				}
@@ -740,7 +740,7 @@ bool PList::load_string(const String &p_string, String &r_err_out) {
 				stack.push_back(arr);
 			} else {
 				// Add root node.
-				if (!root.is_null()) {
+				if (root.is_valid()) {
 					r_err_out = "Root node already set.";
 					return false;
 				}
