@@ -46,7 +46,7 @@ void EditorSelectionHistory::cleanup_history() {
 		bool fail = false;
 
 		for (int j = 0; j < history[i].path.size(); j++) {
-			if (!history[i].path[j].ref.is_null()) {
+			if (history[i].path[j].ref.is_valid()) {
 				// If the node is a MultiNodeEdit node, examine it and see if anything is missing from it.
 				Ref<MultiNodeEdit> multi_node_edit = history[i].path[j].ref;
 				if (multi_node_edit.is_valid()) {
@@ -838,9 +838,9 @@ Ref<Script> EditorData::get_scene_root_script(int p_idx) const {
 		return Ref<Script>();
 	}
 	Ref<Script> s = edited_scene[p_idx].root->get_script();
-	if (!s.is_valid() && edited_scene[p_idx].root->get_child_count()) {
+	if (s.is_null() && edited_scene[p_idx].root->get_child_count()) {
 		Node *n = edited_scene[p_idx].root->get_child(0);
-		while (!s.is_valid() && n && n->get_scene_file_path().is_empty()) {
+		while (s.is_null() && n && n->get_scene_file_path().is_empty()) {
 			s = n->get_script();
 			n = n->get_parent();
 		}

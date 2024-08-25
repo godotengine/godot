@@ -1286,7 +1286,7 @@ Error EditorNode::load_resource(const String &p_resource, bool p_ignore_broken_d
 		OS::get_singleton()->shell_open(ProjectSettings::get_singleton()->globalize_path(p_resource));
 		return OK;
 	}
-	ERR_FAIL_COND_V(!res.is_valid(), ERR_CANT_OPEN);
+	ERR_FAIL_COND_V(res.is_null(), ERR_CANT_OPEN);
 
 	if (!p_ignore_broken_deps && dependency_errors.has(p_resource)) {
 		Vector<String> errors;
@@ -1706,7 +1706,7 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 			// This check prevents the preview from regenerating in case those scenes are then saved.
 			// The preview will be generated if no feature profile is set (as the 3D editor is enabled by default).
 			Ref<EditorFeatureProfile> profile = feature_profile_manager->get_current_profile();
-			if (!profile.is_valid() || !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D)) {
+			if (profile.is_null() || !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D)) {
 				img = Node3DEditor::get_singleton()->get_editor_viewport(0)->get_viewport_node()->get_texture()->get_image();
 			}
 		}
@@ -1815,7 +1815,7 @@ int EditorNode::_save_external_resources(bool p_also_save_external_data) {
 
 	for (const String &E : edited_resources) {
 		Ref<Resource> res = ResourceCache::get_ref(E);
-		if (!res.is_valid()) {
+		if (res.is_null()) {
 			continue; // Maybe it was erased in a thread, who knows.
 		}
 		Ref<PackedScene> ps = res;
@@ -4021,7 +4021,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		return ERR_FILE_MISSING_DEPENDENCIES;
 	}
 
-	if (!sdata.is_valid()) {
+	if (sdata.is_null()) {
 		_dialog_display_load_error(lpath, err);
 		opening_prev = false;
 

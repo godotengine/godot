@@ -2475,7 +2475,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		}
 
 		Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(importer_name);
-		ERR_FAIL_COND_V(!importer.is_valid(), ERR_FILE_CORRUPT);
+		ERR_FAIL_COND_V(importer.is_null(), ERR_FILE_CORRUPT);
 		List<ResourceImporter::ImportOption> options;
 		importer->get_import_options(p_files[i], &options);
 		//set default values

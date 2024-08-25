@@ -239,7 +239,7 @@ bool ShaderMaterial::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
-	if (!shader.is_null()) {
+	if (shader.is_valid()) {
 		List<PropertyInfo> list;
 		shader->get_shader_uniform_list(&list, true);
 

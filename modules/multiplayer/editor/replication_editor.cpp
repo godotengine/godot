@@ -490,7 +490,7 @@ void ReplicationEditor::_update_config() {
 	tree->clear();
 	tree->create_item();
 	drop_label->set_visible(true);
-	if (!config.is_valid()) {
+	if (config.is_null()) {
 		return;
 	}
 	TypedArray<NodePath> props = config->get_properties();

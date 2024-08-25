@@ -184,7 +184,7 @@ Ref<Compositor> WorldEnvironment::get_compositor() const {
 PackedStringArray WorldEnvironment::get_configuration_warnings() const {
 	PackedStringArray warnings = Node::get_configuration_warnings();
 
-	if (!environment.is_valid() && !camera_attributes.is_valid()) {
+	if (environment.is_null() && camera_attributes.is_null()) {
 		warnings.push_back(RTR("To have any visible effect, WorldEnvironment requires its \"Environment\" property to contain an Environment, its \"Camera Attributes\" property to contain a CameraAttributes resource, or both."));
 	}
 

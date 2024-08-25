@@ -127,7 +127,7 @@ PackedStringArray CollisionShape3D::get_configuration_warnings() const {
 		warnings.push_back(RTR("CollisionShape3D only serves to provide a collision shape to a CollisionObject3D derived node.\nPlease only use it as a child of Area3D, StaticBody3D, RigidBody3D, CharacterBody3D, etc. to give them a shape."));
 	}
 
-	if (!shape.is_valid()) {
+	if (shape.is_null()) {
 		warnings.push_back(RTR("A shape must be provided for CollisionShape3D to function. Please create a shape resource for it."));
 	}
 

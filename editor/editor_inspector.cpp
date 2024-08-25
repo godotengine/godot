@@ -1854,7 +1854,7 @@ void EditorInspectorArray::_panel_draw(int p_index) {
 	ERR_FAIL_INDEX(p_index, (int)array_elements.size());
 
 	Ref<StyleBox> style = get_theme_stylebox(SNAME("Focus"), EditorStringName(EditorStyles));
-	if (!style.is_valid()) {
+	if (style.is_null()) {
 		return;
 	}
 	if (array_elements[p_index].panel->has_focus()) {

@@ -69,7 +69,7 @@ void AnimationNodeBlendSpace2DEditor::edit(const Ref<AnimationNode> &p_node) {
 	blend_space = p_node;
 	read_only = false;
 
-	if (!blend_space.is_null()) {
+	if (blend_space.is_valid()) {
 		read_only = EditorNode::get_singleton()->is_resource_read_only(blend_space);
 
 		blend_space->connect("triangles_updated", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_blend_space_changed));
@@ -353,7 +353,7 @@ void AnimationNodeBlendSpace2DEditor::_add_menu_type(int p_index) {
 		node = Ref<AnimationNode>(an);
 	}
 
-	if (!node.is_valid()) {
+	if (node.is_null()) {
 		EditorNode::get_singleton()->show_warning(TTR("This type of node can't be used. Only root nodes are allowed."));
 		return;
 	}

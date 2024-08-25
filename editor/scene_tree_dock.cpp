@@ -292,7 +292,7 @@ void SceneTreeDock::_perform_instantiate_scenes(const Vector<String> &p_files, N
 
 	for (int i = 0; i < p_files.size(); i++) {
 		Ref<PackedScene> sdata = ResourceLoader::load(p_files[i]);
-		if (!sdata.is_valid()) {
+		if (sdata.is_null()) {
 			current_option = -1;
 			accept->set_text(vformat(TTR("Error loading scene from %s"), p_files[i]));
 			accept->popup_centered();
@@ -433,7 +433,7 @@ void SceneTreeDock::_replace_with_branch_scene(const String &p_file, Node *base)
 	ERR_FAIL_COND_MSG(base->get_internal_mode() != INTERNAL_MODE_DISABLED, "Trying to replace internal node, this is not supported.");
 
 	Ref<PackedScene> sdata = ResourceLoader::load(p_file);
-	if (!sdata.is_valid()) {
+	if (sdata.is_null()) {
 		accept->set_text(vformat(TTR("Error loading scene from %s"), p_file));
 		accept->popup_centered();
 		return;
@@ -3581,7 +3581,7 @@ void SceneTreeDock::_files_dropped(const Vector<String> &p_files, NodePath p_to,
 
 void SceneTreeDock::_script_dropped(const String &p_file, NodePath p_to) {
 	Ref<Script> scr = ResourceLoader::load(p_file);
-	ERR_FAIL_COND(!scr.is_valid());
+	ERR_FAIL_COND(scr.is_null());
 	Node *n = get_node(p_to);
 
 	if (!n) {

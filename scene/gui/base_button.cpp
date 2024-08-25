@@ -35,7 +35,7 @@
 #include "scene/main/window.h"
 
 void BaseButton::_unpress_group() {
-	if (!button_group.is_valid()) {
+	if (button_group.is_null()) {
 		return;
 	}
 

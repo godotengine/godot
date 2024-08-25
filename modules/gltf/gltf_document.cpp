@@ -3153,7 +3153,7 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 				v = instance_materials.get(surface_i);
 			}
 			Ref<Material> mat = v;
-			if (!mat.is_valid()) {
+			if (mat.is_null()) {
 				mat = import_mesh->get_surface_material(surface_i);
 			}
 			if (mat.is_valid()) {

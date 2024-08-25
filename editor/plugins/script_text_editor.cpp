@@ -210,7 +210,7 @@ void ScriptTextEditor::_load_theme_settings() {
 	}
 
 	theme_loaded = true;
-	if (!script.is_null()) {
+	if (script.is_valid()) {
 		_set_theme_for_script();
 	}
 }
@@ -315,7 +315,7 @@ void ScriptTextEditor::_error_clicked(const Variant &p_line) {
 			goto_line_centered(line, column);
 		} else {
 			Ref<Resource> scr = ResourceLoader::load(path);
-			if (!scr.is_valid()) {
+			if (scr.is_null()) {
 				EditorNode::get_singleton()->show_warning(TTR("Could not load file at:") + "\n\n" + path, TTR("Error!"));
 			} else {
 				int corrected_column = column;
@@ -854,7 +854,7 @@ void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_fo
 
 		if (last_date != date) {
 			Ref<Script> rel_scr = ResourceLoader::load(scr->get_path(), scr->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
-			ERR_CONTINUE(!rel_scr.is_valid());
+			ERR_CONTINUE(rel_scr.is_null());
 			scr->set_source_code(rel_scr->get_source_code());
 			scr->set_last_modified_time(rel_scr->get_last_modified_time());
 			scr->update_exports();
@@ -1280,7 +1280,7 @@ void ScriptTextEditor::_update_connected_methods() {
 				// There is a chance that the method is inherited from another script.
 				bool found_inherited_function = false;
 				Ref<Script> inherited_script = script->get_base_script();
-				while (!inherited_script.is_null()) {
+				while (inherited_script.is_valid()) {
 					if (inherited_script->has_method(method)) {
 						found_inherited_function = true;
 						break;
@@ -1315,7 +1315,7 @@ void ScriptTextEditor::_update_connected_methods() {
 		String found_base_class;
 		StringName base_class = script->get_instance_base_type();
 		Ref<Script> inherited_script = script->get_base_script();
-		while (!inherited_script.is_null()) {
+		while (inherited_script.is_valid()) {
 			if (inherited_script->has_method(name)) {
 				found_base_class = "script:" + inherited_script->get_path();
 				break;
@@ -1411,7 +1411,7 @@ void ScriptTextEditor::_gutter_clicked(int p_line, int p_gutter) {
 		if (base_class_split[0] == "script") {
 			// Go to function declaration.
 			Ref<Script> base_script = ResourceLoader::load(base_class_split[1]);
-			ERR_FAIL_COND(!base_script.is_valid());
+			ERR_FAIL_COND(base_script.is_null());
 			emit_signal(SNAME("go_to_method"), base_script, method);
 		} else if (base_class_split[0] == "builtin") {
 			// Open method documentation.
