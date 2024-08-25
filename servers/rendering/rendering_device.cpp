@@ -5723,6 +5723,10 @@ uint64_t RenderingDevice::get_driver_resource(DriverResource p_resource, RID p_r
 	return driver->get_resource_native_handle(p_resource, driver_id);
 }
 
+String RenderingDevice::get_driver_and_device_memory_report() const {
+	return context->get_driver_and_device_memory_report();
+}
+
 String RenderingDevice::get_tracked_object_name(uint32_t p_type_index) const {
 	return context->get_tracked_object_name(p_type_index);
 }
@@ -6077,6 +6081,7 @@ void RenderingDevice::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_perf_report"), &RenderingDevice::get_perf_report);
 
+	ClassDB::bind_method(D_METHOD("get_driver_and_device_memory_report"), &RenderingDevice::get_driver_and_device_memory_report);
 	ClassDB::bind_method(D_METHOD("get_tracked_object_name", "type_index"), &RenderingDevice::get_tracked_object_name);
 	ClassDB::bind_method(D_METHOD("get_tracked_object_type_count"), &RenderingDevice::get_tracked_object_type_count);
 	ClassDB::bind_method(D_METHOD("get_driver_total_memory"), &RenderingDevice::get_driver_total_memory);
