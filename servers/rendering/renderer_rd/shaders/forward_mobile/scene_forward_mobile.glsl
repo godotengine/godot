@@ -1291,17 +1291,10 @@ void main() {
 			vec3 n = normalize(lightmaps.data[ofs].normal_xform * normal);
 			float exposure_normalization = lightmaps.data[ofs].exposure_normalization;
 
-			ambient_light += lm_light_l0 * 0.282095f;
-			ambient_light += lm_light_l1n1 * 0.32573 * n.y * exposure_normalization;
-			ambient_light += lm_light_l1_0 * 0.32573 * n.z * exposure_normalization;
-			ambient_light += lm_light_l1p1 * 0.32573 * n.x * exposure_normalization;
-			if (metallic > 0.01) { // since the more direct bounced light is lost, we can kind of fake it with this trick
-				vec3 r = reflect(normalize(-vertex), normal);
-				specular_light += lm_light_l1n1 * 0.32573 * r.y * exposure_normalization;
-				specular_light += lm_light_l1_0 * 0.32573 * r.z * exposure_normalization;
-				specular_light += lm_light_l1p1 * 0.32573 * r.x * exposure_normalization;
-			}
-
+			ambient_light += lm_light_l0 * exposure_normalization;
+			ambient_light += lm_light_l1n1 * n.y * exposure_normalization;
+			ambient_light += lm_light_l1_0 * n.z * exposure_normalization;
+			ambient_light += lm_light_l1p1 * n.x * exposure_normalization;
 		} else {
 			if (sc_use_lightmap_bicubic_filter) {
 				ambient_light += textureArray_bicubic(lightmap_textures[ofs], uvw, lightmaps.data[ofs].light_texture_size).rgb * lightmaps.data[ofs].exposure_normalization;

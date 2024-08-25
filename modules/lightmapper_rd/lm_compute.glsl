@@ -649,15 +649,20 @@ void main() {
 			light_for_texture += light;
 
 #ifdef USE_SH_LIGHTMAPS
+			// These coefficients include the factored out SH evaluation, diffuse convolution, and final application, as well as the BRDF 1/PI and the spherical monte carlo factor.
+			// LO: 1/(2*sqrtPI) * 1/(2*sqrtPI) * PI * PI * 1/PI = 0.25
+			// L1: sqrt(3/(4*pi)) * sqrt(3/(4*pi)) * (PI*2/3) * (2 * PI) * 1/PI = 1.0
+			// Note: This only works because we aren't scaling, rotating, or combing harmonics, we are just directing applying them in the shader.
+
 			float c[4] = float[](
-					0.282095, //l0
-					0.488603 * light_dir.y, //l1n1
-					0.488603 * light_dir.z, //l1n0
-					0.488603 * light_dir.x //l1p1
+					0.25, //l0
+					light_dir.y, //l1n1
+					light_dir.z, //l1n0
+					light_dir.x //l1p1
 			);
 
 			for (uint j = 0; j < 4; j++) {
-				sh_accum[j].rgb += light * c[j] * 8.0;
+				sh_accum[j].rgb += light * c[j] * bake_params.exposure_normalization;
 			}
 #endif
 		}
@@ -710,15 +715,20 @@ void main() {
 		vec3 light = trace_indirect_light(position, ray_dir, noise, texel_size_world_space);
 
 #ifdef USE_SH_LIGHTMAPS
+		// These coefficients include the factored out SH evaluation, diffuse convolution, and final application, as well as the BRDF 1/PI and the spherical monte carlo factor.
+		// LO: 1/(2*sqrtPI) * 1/(2*sqrtPI) * PI * PI * 1/PI = 0.25
+		// L1: sqrt(3/(4*pi)) * sqrt(3/(4*pi)) * (PI*2/3) * (2 * PI) * 1/PI = 1.0
+		// Note: This only works because we aren't scaling, rotating, or combing harmonics, we are just directing applying them in the shader.
+
 		float c[4] = float[](
-				0.282095, //l0
-				0.488603 * ray_dir.y, //l1n1
-				0.488603 * ray_dir.z, //l1n0
-				0.488603 * ray_dir.x //l1p1
+				0.25, //l0
+				ray_dir.y, //l1n1
+				ray_dir.z, //l1n0
+				ray_dir.x //l1p1
 		);
 
 		for (uint j = 0; j < 4; j++) {
-			sh_accum[j].rgb += light * c[j] * 8.0;
+			sh_accum[j].rgb += light * c[j];
 		}
 #else
 		light_accum += light;
