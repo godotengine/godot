@@ -1396,9 +1396,9 @@ void ShaderCacheEntry::notify_free() const {
 
 @interface MDLibrary ()
 - (instancetype)initWithCacheEntry:(ShaderCacheEntry *)entry;
-- (ShaderCacheEntry *)entry;
 @end
 
+/// Loads the MTLLibrary when the library is first accessed.
 @interface MDLazyLibrary : MDLibrary {
 	id<MTLLibrary> _library;
 	NSError *_error;
@@ -1414,6 +1414,7 @@ void ShaderCacheEntry::notify_free() const {
 						   options:(MTLCompileOptions *)options;
 @end
 
+/// Loads the MTLLibrary immediately on initialization, using an asynchronous API.
 @interface MDImmediateLibrary : MDLibrary {
 	id<MTLLibrary> _library;
 	NSError *_error;
@@ -1428,9 +1429,7 @@ void ShaderCacheEntry::notify_free() const {
 						   options:(MTLCompileOptions *)options;
 @end
 
-@implementation MDLibrary {
-	ShaderCacheEntry *_entry;
-}
+@implementation MDLibrary
 
 + (instancetype)newLibraryWithCacheEntry:(ShaderCacheEntry *)entry
 								  device:(id<MTLDevice>)device
@@ -1445,10 +1444,6 @@ void ShaderCacheEntry::notify_free() const {
 		case ShaderLoadStrategy::LAZY:
 			return [[MDLazyLibrary alloc] initWithCacheEntry:entry device:device source:source options:options];
 	}
-}
-
-- (ShaderCacheEntry *)entry {
-	return _entry;
 }
 
 - (id<MTLLibrary>)library {
@@ -1489,8 +1484,8 @@ void ShaderCacheEntry::notify_free() const {
 
 	__block os_signpost_id_t compile_id = (os_signpost_id_t)(uintptr_t)self;
 	os_signpost_interval_begin(LOG_INTERVALS, compile_id, "shader_compile",
-			"shader_name=%{public}s stage=%{public}s hash=%{public}s",
-			entry->name.get_data(), SHADER_STAGE_NAMES[entry->stage], entry->short_sha.get_data());
+			"shader_name=%{public}s stage=%{public}s hash=%X",
+			entry->name.get_data(), SHADER_STAGE_NAMES[entry->stage], entry->key.short_sha());
 
 	[device newLibraryWithSource:source
 						 options:options
@@ -1556,12 +1551,10 @@ void ShaderCacheEntry::notify_free() const {
 		return;
 	}
 
-	ShaderCacheEntry *entry = [self entry];
-
 	__block os_signpost_id_t compile_id = (os_signpost_id_t)(uintptr_t)self;
 	os_signpost_interval_begin(LOG_INTERVALS, compile_id, "shader_compile",
-			"shader_name=%{public}s stage=%{public}s hash=%{public}s",
-			entry->name.get_data(), SHADER_STAGE_NAMES[entry->stage], entry->short_sha.get_data());
+			"shader_name=%{public}s stage=%{public}s hash=%X",
+			_entry->name.get_data(), SHADER_STAGE_NAMES[_entry->stage], _entry->key.short_sha());
 	NSError *error;
 	_library = [_device newLibraryWithSource:_source options:_options error:&error];
 	os_signpost_interval_end(LOG_INTERVALS, compile_id, "shader_compile");

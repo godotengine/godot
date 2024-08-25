@@ -506,10 +506,10 @@ enum class ShaderLoadStrategy {
 	LAZY,
 };
 
-/**
- * A Metal shader library.
- */
-@interface MDLibrary : NSObject
+/// A Metal shader library.
+@interface MDLibrary : NSObject {
+	ShaderCacheEntry *_entry;
+};
 - (id<MTLLibrary>)library;
 - (NSError *)error;
 - (void)setLabel:(NSString *)label;
@@ -536,6 +536,10 @@ struct SHA256Digest {
 	SHA256Digest(const char *p_data, size_t p_length) {
 		CC_SHA256(p_data, (CC_LONG)p_length, data);
 	}
+
+	_FORCE_INLINE_ uint32_t short_sha() const {
+		return __builtin_bswap32(*(uint32_t *)&data[0]);
+	}
 };
 
 template <>
@@ -545,22 +549,18 @@ struct HashMapComparatorDefault<SHA256Digest> {
 	}
 };
 
-/**
- * A cache entry for a Metal shader library.
- */
+/// A cache entry for a Metal shader library.
 struct ShaderCacheEntry {
 	RenderingDeviceDriverMetal &owner;
+	/// A hash of the Metal shader source code.
 	SHA256Digest key;
 	CharString name;
-	CharString short_sha;
 	RD::ShaderStage stage = RD::SHADER_STAGE_VERTEX;
-	/**
-	 * This reference must be weak, to ensure that when the last strong reference to the library
-	 * is released, the cache entry is freed.
-	 */
+	/// This reference must be weak, to ensure that when the last strong reference to the library
+	/// is released, the cache entry is freed.
 	MDLibrary *__weak library = nil;
 
-	/** Notify the cache that this entry is no longer needed. */
+	/// Notify the cache that this entry is no longer needed.
 	void notify_free() const;
 
 	ShaderCacheEntry(RenderingDeviceDriverMetal &p_owner, SHA256Digest p_key) :
