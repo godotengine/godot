@@ -525,7 +525,7 @@ Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hi
 		thread_mode = LOAD_THREAD_SPAWN_SINGLE;
 	}
 	Ref<LoadToken> load_token = _load_start(p_path, p_type_hint, thread_mode, p_cache_mode);
-	if (!load_token.is_valid()) {
+	if (load_token.is_null()) {
 		if (r_error) {
 			*r_error = FAILED;
 		}
@@ -945,7 +945,7 @@ Ref<Resource> ResourceLoader::ensure_resource_ref_override_for_outer_load(const 
 		Object *obj = ClassDB::instantiate(p_res_type);
 		ERR_FAIL_NULL_V(obj, Ref<Resource>());
 		Ref<Resource> res(obj);
-		if (!res.is_valid()) {
+		if (res.is_null()) {
 			memdelete(obj);
 			ERR_FAIL_V(Ref<Resource>());
 		}
