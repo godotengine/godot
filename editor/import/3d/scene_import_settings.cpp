@@ -421,7 +421,7 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 			} else if (Object::cast_to<Skeleton3D>(p_node)) {
 				category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE;
 				Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_node);
-				skeleton->connect(SNAME("tree_entered"), callable_mp(this, &SceneImportSettingsDialog::_skeleton_tree_entered).bind(skeleton));
+				skeleton->connect(SceneStringName(tree_entered), callable_mp(this, &SceneImportSettingsDialog::_skeleton_tree_entered).bind(skeleton));
 				skeletons.push_back(skeleton);
 			} else {
 				category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_NODE;
@@ -486,7 +486,27 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 
 	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_node);
 	if (skeleton) {
-		bones_mesh_preview->set_mesh(Skeleton3DGizmoPlugin::get_bones_mesh(skeleton, -1, true));
+		Ref<ArrayMesh> bones_mesh = Skeleton3DGizmoPlugin::get_bones_mesh(skeleton, -1, true);
+
+		bones_mesh_preview->set_mesh(bones_mesh);
+
+		Transform3D accum_xform;
+		Node3D *base = skeleton;
+		while (base) {
+			accum_xform = base->get_transform() * accum_xform;
+			base = Object::cast_to<Node3D>(base->get_parent());
+		}
+
+		bones_mesh_preview->set_transform(accum_xform * skeleton->get_transform());
+
+		AABB aabb = accum_xform.xform(bones_mesh->get_aabb());
+
+		if (first_aabb) {
+			contents_aabb = aabb;
+			first_aabb = false;
+		} else {
+			contents_aabb.merge_with(aabb);
+		}
 	}
 }
 
@@ -803,12 +823,12 @@ void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, cons
 	selecting = true;
 	scene_import_settings_data->hide_options = false;
 
+	bones_mesh_preview->hide();
 	if (p_type == "Node") {
 		node_selected->hide(); // Always hide just in case.
 		mesh_preview->hide();
 		_reset_animation();
 
-		bones_mesh_preview->hide();
 		if (Object::cast_to<Node3D>(scene)) {
 			Object::cast_to<Node3D>(scene)->show();
 		}
@@ -863,6 +883,8 @@ void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, cons
 
 		scene_import_settings_data->settings = &ad.settings;
 		scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION;
+
+		_animation_update_skeleton_visibility();
 	} else if (p_type == "Mesh") {
 		node_selected->hide();
 		if (Object::cast_to<Node3D>(scene)) {
@@ -1065,8 +1087,9 @@ void SceneImportSettingsDialog::_animation_slider_value_changed(double p_value) 
 	animation_player->seek(p_value * animation_map[selected_id].animation->get_length(), true);
 }
 
-void SceneImportSettingsDialog::_skeleton_tree_entered(Skeleton3D *skeleton) {
-	bones_mesh_preview->set_skeleton_path(skeleton->get_path());
+void SceneImportSettingsDialog::_skeleton_tree_entered(Skeleton3D *p_skeleton) {
+	bones_mesh_preview->set_skeleton_path(p_skeleton->get_path());
+	bones_mesh_preview->set_skin(p_skeleton->register_skin(p_skeleton->create_skin_from_rest_transforms()));
 }
 
 void SceneImportSettingsDialog::_animation_finished(const StringName &p_name) {
@@ -1091,6 +1114,14 @@ void SceneImportSettingsDialog::_animation_finished(const StringName &p_name) {
 		} break;
 		default: {
 		} break;
+	}
+}
+
+void SceneImportSettingsDialog::_animation_update_skeleton_visibility() {
+	if (animation_toggle_skeleton_visibility->is_pressed()) {
+		bones_mesh_preview->show();
+	} else {
+		bones_mesh_preview->hide();
 	}
 }
 
@@ -1296,6 +1327,8 @@ void SceneImportSettingsDialog::_notification(int p_what) {
 			light_1_switch->set_icon(theme_cache.light_1_icon);
 			light_2_switch->set_icon(theme_cache.light_2_icon);
 			light_rotate_switch->set_icon(theme_cache.rotate_icon);
+
+			animation_toggle_skeleton_visibility->set_icon(get_editor_theme_icon(SNAME("Skeleton3D")));
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -1675,6 +1708,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	animation_hbox->add_child(animation_stop_button);
 	animation_stop_button->set_flat(true);
 	animation_stop_button->set_focus_mode(Control::FOCUS_NONE);
+	animation_stop_button->set_tooltip_text(TTR("Selected Animation Stop"));
 	animation_stop_button->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_stop_current_animation));
 
 	animation_slider = memnew(HSlider);
@@ -1686,6 +1720,15 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	animation_slider->set_value_no_signal(0.0);
 	animation_slider->set_focus_mode(Control::FOCUS_NONE);
 	animation_slider->connect(SceneStringName(value_changed), callable_mp(this, &SceneImportSettingsDialog::_animation_slider_value_changed));
+
+	animation_toggle_skeleton_visibility = memnew(Button);
+	animation_hbox->add_child(animation_toggle_skeleton_visibility);
+	animation_toggle_skeleton_visibility->set_toggle_mode(true);
+	animation_toggle_skeleton_visibility->set_flat(true);
+	animation_toggle_skeleton_visibility->set_focus_mode(Control::FOCUS_NONE);
+	animation_toggle_skeleton_visibility->set_tooltip_text(TTR("Toggle Animation Skeleton Visibility"));
+
+	animation_toggle_skeleton_visibility->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_animation_update_skeleton_visibility));
 
 	base_viewport->set_use_own_world_3d(true);
 
