@@ -119,7 +119,7 @@
 		<method name="is_null" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the signal's name does not exist in its object, or the object is not valid.
+				Returns [code]true[/code] if this [Signal] has no object and the signal name is empty. Equivalent to [code]signal == Signal()[/code].
 			</description>
 		</method>
 	</methods>
