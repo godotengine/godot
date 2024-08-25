@@ -37,7 +37,7 @@ void HTTPClientWeb::_parse_headers(int p_len, const char **p_headers, void *p_re
 	}
 }
 
-Error HTTPClientWeb::connect_to_host(const String &p_host, int p_port, Ref<TLSOptions> p_tls_options) {
+Error HTTPClientWeb::connect_to_host(const String &p_host, int p_port, const Ref<TLSOptions> &p_tls_options) {
 	ERR_FAIL_COND_V(p_tls_options.is_valid() && p_tls_options->is_server(), ERR_INVALID_PARAMETER);
 
 	close();
@@ -137,15 +137,12 @@ int HTTPClientWeb::get_response_code() const {
 	return polled_response_code;
 }
 
-Error HTTPClientWeb::get_response_headers(List<String> *r_response) {
-	if (!response_headers.size()) {
-		return ERR_INVALID_PARAMETER;
-	}
-	for (int i = 0; i < response_headers.size(); i++) {
-		r_response->push_back(response_headers[i]);
-	}
+PackedStringArray HTTPClientWeb::get_response_headers() {
+	ERR_FAIL_COND_V(response_headers.is_empty(), response_headers);
+	PackedStringArray out;
+	out.append_array(response_headers);
 	response_headers.clear();
-	return OK;
+	return out;
 }
 
 int64_t HTTPClientWeb::get_response_body_length() const {

@@ -177,6 +177,13 @@
 				Sends the body data raw, as a byte array and does not encode it in any way.
 			</description>
 		</method>
+		<method name="set_default_extension" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="extension_class" type="StringName" />
+			<description>
+				Sets the [param extension_class] as the default [HTTPClientExtension] returned when creating a new [HTTPClient].
+			</description>
+		</method>
 		<method name="set_http_proxy">
 			<return type="void" />
 			<param index="0" name="host" type="String" />
