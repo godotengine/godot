@@ -13,12 +13,14 @@ custom_minimum_size = Vector2(0, 42)
 anchors_preset = 10
 anchor_right = 1.0
 grow_horizontal = 2
+size_flags_horizontal = 3
 mouse_filter = 1
 theme_override_styles/panel = SubResource("StyleBoxEmpty_swm5a")
 script = ExtResource("1_v5m32")
 
 [node name="hbox" type="HBoxContainer" parent="."]
 show_behind_parent = true
+custom_minimum_size = Vector2(42, 42)
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -27,57 +29,67 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="visible" type="Button" parent="hbox"]
-custom_minimum_size = Vector2(32, 0)
+custom_minimum_size = Vector2(42, 42)
 layout_mode = 2
+tooltip_text = "Hide layer"
 mouse_filter = 1
 toggle_mode = true
 icon = ExtResource("2_h5ewu")
 expand_icon = true
 
 [node name="name" type="Button" parent="hbox"]
+custom_minimum_size = Vector2(42, 42)
 layout_mode = 2
 size_flags_horizontal = 3
+tooltip_text = "select layer"
 mouse_filter = 1
 text = "Panel"
 alignment = 0
 
 [node name="move_up" type="Button" parent="hbox"]
 visible = false
+custom_minimum_size = Vector2(42, 42)
 layout_mode = 2
 mouse_filter = 1
 text = "^"
 
 [node name="move_down" type="Button" parent="hbox"]
 visible = false
+custom_minimum_size = Vector2(42, 42)
 layout_mode = 2
 mouse_filter = 1
 text = "v"
 
 [node name="rename_input" type="LineEdit" parent="hbox"]
 visible = false
+custom_minimum_size = Vector2(42, 42)
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 1
 placeholder_text = "Old Layer name"
+max_length = 36
 expand_to_text_length = true
 
 [node name="rename" type="Button" parent="hbox"]
-custom_minimum_size = Vector2(40, 0)
+custom_minimum_size = Vector2(42, 42)
 layout_mode = 2
+tooltip_text = "edit layer"
 mouse_filter = 1
 icon = ExtResource("3_8xkqq")
 expand_icon = true
 
 [node name="merge_down" type="Button" parent="hbox"]
-custom_minimum_size = Vector2(40, 0)
+custom_minimum_size = Vector2(42, 42)
 layout_mode = 2
+tooltip_text = "merge layer with background"
 mouse_filter = 1
 icon = ExtResource("4_brtxh")
 expand_icon = true
 
 [node name="remove" type="Button" parent="hbox"]
-custom_minimum_size = Vector2(40, 0)
+custom_minimum_size = Vector2(42, 42)
 layout_mode = 2
+tooltip_text = "remove layer"
 mouse_filter = 1
 icon = ExtResource("5_yuyg3")
 expand_icon = true

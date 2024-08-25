@@ -1,23 +1,19 @@
-[gd_scene load_steps=8 format=3 uid="uid://gsibulkr5nt"]
+[gd_scene load_steps=7 format=3 uid="uid://b8siu75pf6n01"]
 
 [ext_resource type="Theme" uid="uid://b3bd1lceed8ec" path="res://addons/m_terrain/gui/styles/mterrain_gui_theme.tres" id="1_f6oq8"]
 [ext_resource type="Script" path="res://addons/m_terrain/gui/image_creator_window.gd" id="1_ietn6"]
-[ext_resource type="PackedScene" uid="uid://c2pjojed3ox4q" path="res://addons/m_terrain/gui/gui_part/data_compress_option.tscn" id="2_ty6od"]
-[ext_resource type="PackedScene" uid="uid://bt4wolcb7b55e" path="res://addons/m_terrain/gui/gui_part/file_compress.tscn" id="3_ldhh5"]
+[ext_resource type="PackedScene" uid="uid://c2pjojed3ox4q" path="res://addons/m_terrain/gui/gui_part/data_compress_option.tscn" id="3_2dmcf"]
+[ext_resource type="PackedScene" uid="uid://bt4wolcb7b55e" path="res://addons/m_terrain/gui/gui_part/file_compress.tscn" id="4_nqnd6"]
 
-[sub_resource type="LabelSettings" id="LabelSettings_50mff"]
-font_size = 32
-
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_bk6nk"]
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_o7uxk"]
 content_margin_left = 5.0
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_h7iju"]
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ug5yd"]
 content_margin_left = 5.0
 
 [node name="image_creator_window" type="Window"]
-title = "MTerrain Image Creator"
 initial_position = 1
-size = Vector2i(550, 600)
+size = Vector2i(652, 600)
 wrap_controls = true
 popup_window = true
 theme = ExtResource("1_f6oq8")
@@ -32,44 +28,33 @@ grow_vertical = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer"]
 layout_mode = 2
+theme_override_constants/separation = 16
 
-[node name="Create Color Layer" type="ScrollContainer" parent="PanelContainer/VBoxContainer"]
+[node name="Label" type="Label" parent="PanelContainer/VBoxContainer"]
 layout_mode = 2
-size_flags_vertical = 3
-
-[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/VBoxContainer/Create Color Layer"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="Label" type="Label" parent="PanelContainer/VBoxContainer/Create Color Layer/VBoxContainer"]
-layout_mode = 2
-text = "Create New Color Layer"
-label_settings = SubResource("LabelSettings_50mff")
+text = "Create Image"
 horizontal_alignment = 1
 
-[node name="uniform_name" type="HBoxContainer" parent="PanelContainer/VBoxContainer/Create Color Layer/VBoxContainer"]
+[node name="image_name" type="LineEdit" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+placeholder_text = "new image name"
+alignment = 1
+
+[node name="advanced_settings" type="VBoxContainer" parent="PanelContainer/VBoxContainer"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="PanelContainer/VBoxContainer/Create Color Layer/VBoxContainer/uniform_name"]
+[node name="image_format_vbox" type="HBoxContainer" parent="PanelContainer/VBoxContainer/advanced_settings"]
 layout_mode = 2
-text = "Uniform name:"
+alignment = 1
 
-[node name="uniform_name_line" type="LineEdit" parent="PanelContainer/VBoxContainer/Create Color Layer/VBoxContainer/uniform_name"]
+[node name="Label" type="Label" parent="PanelContainer/VBoxContainer/advanced_settings/image_format_vbox"]
 layout_mode = 2
-size_flags_horizontal = 3
+text = "Image Format"
 
-[node name="uniform_name2" type="HBoxContainer" parent="PanelContainer/VBoxContainer/Create Color Layer/VBoxContainer"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="PanelContainer/VBoxContainer/Create Color Layer/VBoxContainer/uniform_name2"]
-layout_mode = 2
-text = "Format"
-
-[node name="uniform_name_2" type="OptionButton" parent="PanelContainer/VBoxContainer/Create Color Layer/VBoxContainer/uniform_name2"]
+[node name="image_format" type="OptionButton" parent="PanelContainer/VBoxContainer/advanced_settings/image_format_vbox"]
 layout_mode = 2
 item_count = 12
-selected = 2
+selected = 5
 popup/item_0/text = "FORMAT_L8"
 popup/item_0/id = 0
 popup/item_1/text = "FORMAT_LA8"
@@ -95,86 +80,41 @@ popup/item_10/id = 10
 popup/item_11/text = "FORMAT_RGBAF"
 popup/item_11/id = 11
 
-[node name="layer_type" type="HBoxContainer" parent="PanelContainer/VBoxContainer/Create Color Layer/VBoxContainer"]
+[node name="data_compress_settings" type="HBoxContainer" parent="PanelContainer/VBoxContainer/advanced_settings"]
 layout_mode = 2
+alignment = 1
 
-[node name="Label" type="Label" parent="PanelContainer/VBoxContainer/Create Color Layer/VBoxContainer/layer_type"]
+[node name="Label" type="Label" parent="PanelContainer/VBoxContainer/advanced_settings/data_compress_settings"]
 layout_mode = 2
-text = "Layer Type"
-
-[node name="layer_types" type="OptionButton" parent="PanelContainer/VBoxContainer/Create Color Layer/VBoxContainer/layer_type"]
-layout_mode = 2
-item_count = 5
-selected = 0
-popup/item_0/text = "Color Paint"
-popup/item_0/id = 0
-popup/item_1/text = "Channel Painter"
-popup/item_1/id = 1
-popup/item_2/text = "Bitwise Brush"
-popup/item_2/id = 2
-popup/item_3/text = "Paint 256"
-popup/item_3/id = 3
-popup/item_4/text = "Paint 16"
-popup/item_4/id = 4
-
-[node name="def_color" type="HBoxContainer" parent="PanelContainer/VBoxContainer/Create Color Layer/VBoxContainer"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="PanelContainer/VBoxContainer/Create Color Layer/VBoxContainer/def_color"]
-layout_mode = 2
-text = "Background Color"
-
-[node name="ColorPickerButton" type="ColorPickerButton" parent="PanelContainer/VBoxContainer/Create Color Layer/VBoxContainer/def_color"]
-layout_mode = 2
-text = "-------------"
-
-[node name="hb2" type="HBoxContainer" parent="PanelContainer/VBoxContainer/Create Color Layer/VBoxContainer"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="PanelContainer/VBoxContainer/Create Color Layer/VBoxContainer/hb2"]
-layout_mode = 2
-theme_override_styles/normal = SubResource("StyleBoxEmpty_bk6nk")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_o7uxk")
 text = "Compress"
 
-[node name="data_compress_option" parent="PanelContainer/VBoxContainer/Create Color Layer/VBoxContainer/hb2" instance=ExtResource("2_ty6od")]
+[node name="data_compress_option" parent="PanelContainer/VBoxContainer/advanced_settings/data_compress_settings" instance=ExtResource("3_2dmcf")]
 layout_mode = 2
 
-[node name="hb3" type="HBoxContainer" parent="PanelContainer/VBoxContainer/Create Color Layer/VBoxContainer"]
+[node name="hb3" type="HBoxContainer" parent="PanelContainer/VBoxContainer/advanced_settings"]
 layout_mode = 2
+alignment = 1
 
-[node name="Label" type="Label" parent="PanelContainer/VBoxContainer/Create Color Layer/VBoxContainer/hb3"]
+[node name="Label" type="Label" parent="PanelContainer/VBoxContainer/advanced_settings/hb3"]
 layout_mode = 2
-theme_override_styles/normal = SubResource("StyleBoxEmpty_h7iju")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_ug5yd")
 text = "File Compress"
 
-[node name="file_compress" parent="PanelContainer/VBoxContainer/Create Color Layer/VBoxContainer/hb3" instance=ExtResource("3_ldhh5")]
+[node name="file_compress" parent="PanelContainer/VBoxContainer/advanced_settings/hb3" instance=ExtResource("4_nqnd6")]
 layout_mode = 2
+selected = 4
 
-[node name="create" type="Button" parent="PanelContainer/VBoxContainer/Create Color Layer/VBoxContainer"]
+[node name="error_label" type="Label" parent="PanelContainer/VBoxContainer"]
+visible = false
+layout_mode = 2
+text = "Image already exists!"
+horizontal_alignment = 1
+
+[node name="create_button" type="Button" parent="PanelContainer/VBoxContainer"]
 layout_mode = 2
 text = "Create"
 
-[node name="no_terrain" type="Label" parent="PanelContainer/VBoxContainer/Create Color Layer/VBoxContainer"]
-visible = false
-modulate = Color(1, 0.219608, 0.266667, 1)
-layout_mode = 2
-text = "No active Terrain, Please select the terrain and open this again"
-
-[node name="no_terrain2" type="Label" parent="PanelContainer/VBoxContainer/Create Color Layer/VBoxContainer"]
-visible = false
-modulate = Color(1, 0.219608, 0.266667, 1)
-layout_mode = 2
-text = "Uniform name is empty"
-
-[node name="rlabel" type="Label" parent="PanelContainer/VBoxContainer/Create Color Layer/VBoxContainer"]
-visible = false
-modulate = Color(1, 0.219608, 0.266667, 1)
-layout_mode = 2
-text = "Remove DATA"
-
-[node name="close_button" type="Button" parent="PanelContainer/VBoxContainer"]
-layout_mode = 2
-text = "Close"
-
 [connection signal="close_requested" from="." to="." method="_on_close_requested"]
-[connection signal="button_up" from="PanelContainer/VBoxContainer/Create Color Layer/VBoxContainer/create" to="." method="_on_create_button_up"]
+[connection signal="text_changed" from="PanelContainer/VBoxContainer/image_name" to="." method="_on_image_name_text_changed"]
+[connection signal="pressed" from="PanelContainer/VBoxContainer/create_button" to="." method="_on_create_pressed"]

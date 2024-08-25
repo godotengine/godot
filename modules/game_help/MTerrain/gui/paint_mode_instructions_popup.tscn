@@ -1,4 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://ytqqrfb408u0"]
+[gd_scene load_steps=4 format=3 uid="uid://ytqqrfb408u0"]
+
+[ext_resource type="Theme" uid="uid://b3bd1lceed8ec" path="res://addons/m_terrain/gui/styles/mterrain_gui_theme.tres" id="1_stqfj"]
 
 [sub_resource type="GDScript" id="GDScript_h52qr"]
 script/source = "@tool
@@ -17,16 +19,20 @@ func load_tutorial():
 [node name="Window" type="Window"]
 initial_position = 2
 size = Vector2i(400, 300)
+theme = ExtResource("1_stqfj")
 script = SubResource("GDScript_h52qr")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="PanelContainer" type="PanelContainer" parent="."]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer"]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/margin_left = 12
@@ -34,13 +40,13 @@ theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 12
 
-[node name="Panel" type="Panel" parent="VBoxContainer/MarginContainer"]
+[node name="Panel" type="Panel" parent="PanelContainer/VBoxContainer/MarginContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxEmpty_q0632")
 
-[node name="Label" type="RichTextLabel" parent="VBoxContainer/MarginContainer/Panel"]
+[node name="Label" type="RichTextLabel" parent="PanelContainer/VBoxContainer/MarginContainer/Panel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -56,19 +62,19 @@ You will also need to use the mterrain image creator to  create a shader uniform
 For instructions on how to use mterrain color painting please watch the tutorial"
 autowrap_mode = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/VBoxContainer"]
 layout_mode = 2
 alignment = 1
 
-[node name="Button" type="Button" parent="VBoxContainer/HBoxContainer"]
+[node name="Button" type="Button" parent="PanelContainer/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Tutorial"
 
-[node name="Button2" type="Button" parent="VBoxContainer/HBoxContainer"]
+[node name="Button2" type="Button" parent="PanelContainer/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "OK"
 
-[connection signal="pressed" from="VBoxContainer/HBoxContainer/Button" to="." method="load_tutorial"]
-[connection signal="pressed" from="VBoxContainer/HBoxContainer/Button2" to="." method="_on_button_pressed"]
+[connection signal="pressed" from="PanelContainer/VBoxContainer/HBoxContainer/Button" to="." method="load_tutorial"]
+[connection signal="pressed" from="PanelContainer/VBoxContainer/HBoxContainer/Button2" to="." method="_on_button_pressed"]

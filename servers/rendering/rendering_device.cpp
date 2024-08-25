@@ -4953,7 +4953,6 @@ void RenderingDevice::free(RID p_id) {
 }
 bool RenderingDevice::has_texture(RID p_id) {
 	return texture_owner.get_or_null(p_id) != nullptr;
-
 }
 
 void RenderingDevice::_free_internal(RID p_id) {

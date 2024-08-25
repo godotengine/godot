@@ -1,0 +1,17 @@
+[gd_scene load_steps=4 format=3 uid="uid://gsibulkr5nt"]
+
+[ext_resource type="Theme" uid="uid://b3bd1lceed8ec" path="res://addons/m_terrain/gui/styles/mterrain_gui_theme.tres" id="1_f6oq8"]
+[ext_resource type="Script" path="res://addons/m_terrain/gui/color_layer_creator_window.gd" id="1_ietn6"]
+[ext_resource type="PackedScene" uid="uid://dptq8ffglb0du" path="res://addons/m_terrain/gui/color_layer_creator_panel.tscn" id="3_ep3fc"]
+
+[node name="image_creator_window" type="Window"]
+initial_position = 1
+size = Vector2i(550, 600)
+wrap_controls = true
+popup_window = true
+theme = ExtResource("1_f6oq8")
+script = ExtResource("1_ietn6")
+
+[node name="PanelContainer" parent="." instance=ExtResource("3_ep3fc")]
+
+[connection signal="close_requested" from="." to="." method="_on_close_requested"]

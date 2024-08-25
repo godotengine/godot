@@ -28,6 +28,7 @@ void CharacterManager::update_ai()
 // 更新所有的动画控制
 void CharacterManager::update_animator()
 {
+	return;
     TypedArray<TaskJobHandle> handles;
     handles.resize(characters.size());
     int index = 0;

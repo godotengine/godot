@@ -26,5 +26,8 @@ MNavigationRegion3D = "res://addons/m_terrain/icons/MNavigationRegion3D.png"
 MObstacle = "res://addons/m_terrain/icons/obstacle_icon.png"
 MOctMesh = "res://addons/m_terrain/icons/MOctMesh.svg"
 MOctree = "res://addons/m_terrain/icons/MOctree.svg"
-
-
+MPath = "res://addons/m_terrain/icons/MPath.svg"
+MCurve = "res://addons/m_terrain/icons/MCurve.svg"
+MMeshLod = "res://addons/m_terrain/icons/MMeshLod.svg"
+MCurveMesh = "res://addons/m_terrain/icons/MCurveMesh.svg"
+MIntersection = "res://addons/m_terrain/icons/MIntersection.svg"

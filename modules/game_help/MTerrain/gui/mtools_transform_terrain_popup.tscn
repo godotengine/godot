@@ -1,0 +1,129 @@
+[gd_scene load_steps=2 format=3 uid="uid://c32yod36qfp5l"]
+
+[sub_resource type="GDScript" id="GDScript_siatt"]
+script/source = "extends Panel
+@export var confirm_transform: Button
+func _ready():	
+	confirm_transform.pressed.connect(_on_button_pressed)
+	
+func _on_button_pressed() -> void:	
+	get_parent().hide()	
+"
+
+[node name="Popup" type="Popup"]
+title = "Transform Terrain"
+initial_position = 1
+size = Vector2i(200, 200)
+visible = true
+borderless = false
+keep_title_visible = true
+
+[node name="TransformTerrainPopup" type="Panel" parent="." node_paths=PackedStringArray("confirm_transform")]
+custom_minimum_size = Vector2(32, 32)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = -100.0
+offset_right = 100.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 0
+script = SubResource("GDScript_siatt")
+confirm_transform = NodePath("")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="TransformTerrainPopup"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="TransformTerrainPopup/VBoxContainer"]
+custom_minimum_size = Vector2(42.7188, 42.7188)
+layout_mode = 2
+mouse_filter = 1
+text = "Offset"
+horizontal_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="TransformTerrainPopup/VBoxContainer"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="TransformTerrainPopup/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(42.7188, 42.7188)
+layout_mode = 2
+mouse_filter = 1
+theme_override_constants/minimum_character_width = 0
+placeholder_text = "  X  "
+expand_to_text_length = true
+
+[node name="LineEdit2" type="LineEdit" parent="TransformTerrainPopup/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(42.7188, 42.7188)
+layout_mode = 2
+mouse_filter = 1
+theme_override_constants/minimum_character_width = 0
+placeholder_text = "  Y  "
+expand_to_text_length = true
+
+[node name="LineEdit3" type="LineEdit" parent="TransformTerrainPopup/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(42.7188, 42.7188)
+layout_mode = 2
+mouse_filter = 1
+theme_override_constants/minimum_character_width = 0
+placeholder_text = "  Z  "
+expand_to_text_length = true
+
+[node name="Label2" type="Label" parent="TransformTerrainPopup/VBoxContainer"]
+custom_minimum_size = Vector2(42.7188, 42.7188)
+layout_mode = 2
+mouse_filter = 1
+text = "Scale"
+horizontal_alignment = 1
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="TransformTerrainPopup/VBoxContainer"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="TransformTerrainPopup/VBoxContainer/HBoxContainer2"]
+custom_minimum_size = Vector2(42.7188, 42.7188)
+layout_mode = 2
+mouse_filter = 1
+theme_override_constants/minimum_character_width = 0
+placeholder_text = "  X  "
+expand_to_text_length = true
+
+[node name="LineEdit2" type="LineEdit" parent="TransformTerrainPopup/VBoxContainer/HBoxContainer2"]
+custom_minimum_size = Vector2(42.7188, 42.7188)
+layout_mode = 2
+mouse_filter = 1
+theme_override_constants/minimum_character_width = 0
+placeholder_text = "  Y  "
+expand_to_text_length = true
+
+[node name="LineEdit3" type="LineEdit" parent="TransformTerrainPopup/VBoxContainer/HBoxContainer2"]
+custom_minimum_size = Vector2(42.7188, 42.7188)
+layout_mode = 2
+mouse_filter = 1
+theme_override_constants/minimum_character_width = 0
+placeholder_text = "  Z  "
+expand_to_text_length = true
+
+[node name="MarginContainer" type="MarginContainer" parent="TransformTerrainPopup/VBoxContainer"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+theme_override_constants/margin_top = 12
+
+[node name="confirm_transform" type="Button" parent="TransformTerrainPopup/VBoxContainer"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+mouse_filter = 1
+text = "Transform!"

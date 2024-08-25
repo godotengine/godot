@@ -17,16 +17,24 @@ var layer_item_scene = preload("res://addons/m_terrain/gui/mtools_layer_item.tsc
 var stylebox_selected = preload("res://addons/m_terrain/gui/styles/stylebox_selected.tres")
 
 var brush_control: Control
-
 var confirmation_popup_scene = preload("res://addons/m_terrain/gui/mtools_layer_warning_popup.tscn")
 
 
 func _ready():
-	var panel = get_child(0)
+	var panel:Control = get_child(0)
 	panel.visible = false
 	panel.position.y = -panel.size.y-2
 	panel.gui_input.connect(fix_gui_input)
-	#TO DO: add a confirmation dialog "Are you sure you want to merge layers?"
+	panel.visibility_changed.connect(func():
+		var max_width = 0
+		for child in layers_container.get_children():
+			if child.get_total_width() > max_width:
+				max_width = child.get_total_width()
+		max_width = min(max_width, owner.mtools_root.get_child(0).size.x)		
+		panel.custom_minimum_size.x = max_width
+		panel.size.x = max_width
+	)
+	
 	merge_height_layers_button.pressed.connect(merge_all_heightmap_layers)
 	add_height_layer_button.pressed.connect(add_heightmap_layer)
 	add_color_layer_button.pressed.connect(add_color_layer)
@@ -38,7 +46,7 @@ func fix_gui_input(event: InputEvent):
 func clear_layers():
 	add_height_layer_button.visible = false
 	merge_height_layers_button.visible = false
-	add_color_layer_button.visible = false	
+	add_color_layer_button.visible = false		
 	for child in layers_container.get_children():
 		child.queue_free()
 		layers_container.remove_child(child)
@@ -61,7 +69,9 @@ func init_height_layers(mterrain:MTerrain):
 		#layer_item.layer_index_changed.connect(????)
 		layer_item.layer_removed.connect(remove_heightmap_layer)	
 		layer_item.layer_merged_with_background.connect(merge_heightmap_layer_with_background)
-	layers_container.get_child(0).select_layer.call_deferred()
+	if layers_container.get_child_count()!=0:
+		layers_container.get_child(0).select_layer.call_deferred()
+
 
 func add_heightmap_layer():
 	var i = 0
@@ -130,86 +140,89 @@ func rename_heightmap_layer(name_button, new_name):
 #endregion
 
 #region Color Layers
-func init_color_layers(mterrain:MTerrain, brush_button):	
+func init_color_layers(mterrain:MTerrain = active_terrain, brush_button = brush_control):
+	if not mterrain or not brush_button:
+		push_error("init color layers failed: no mterrain or no brush button" )
+		return
 	active_terrain = mterrain
 	clear_layers()
 	add_color_layer_button.visible = true
-	var layer_group_id = 0	
 	brush_control = brush_button
-	for layer in active_terrain.brush_layers:
-		add_color_layer_item(layer_group_id, layer)
-		layer_group_id += 1
-	if layer_group_id>0:
+	var valid_count:int = 0
+	for i in range(active_terrain.brush_layers.size()):
+		if validate_brush_layer_data(active_terrain.brush_layers[i]):
+			add_color_layer_item(active_terrain, i)
+			valid_count += 1
+		else:
+			active_terrain.brush_layers.erase(active_terrain.brush_layers[i])
+			active_terrain.brush_layers_groups_num -= 1
+	if valid_count > 0:
 		layers_container.get_child(0).select_layer()
+	else:
+		text = "(click to add a color layer)"
+		change_color_layer_selection(-1, "")
 
-func add_color_layer_item(layer_group_id, layer):
-		var layer_item = layer_item_scene.instantiate()
-		layer_item.name = layer.layers_title if layer.layers_title != "" else str("layer group ", layer_group_id)
-		layers_container.add_child(layer_item)
-		layer_item.init_for_colors()		
-		layer_item.layer_selected.connect(change_color_layer_selection)
-		layer_item.layer_removed.connect(remove_color_layer)
-		#layer_item.layer_visibility_changed.connect(toggle_heightmap_layer_visibility)
-		#layer_item.layer_renamed.connect(rename_heightmap_layer)
-		#layer_item.layer_index_changed.connect(????)
-		#layer_item.layer_removed.connect(remove_heightmap_layer)			
-
-func change_color_layer_selection(layer_id, layer_name):	
-	brush_control.init_color_brushes(active_terrain, layer_id)
-	text = layer_name
+func validate_brush_layer_data(layer):
+	if layer.uniform_name in active_terrain.get_image_list():
+		return true
+	else:
+		
+		push_error("layer ", layer.layers_title, " has invalid uniform: ", layer.uniform_name)		
+	
+func add_color_layer_item(terrain:MTerrain, layer_group_index:int):
+	var layer_item = layer_item_scene.instantiate()
+	#layer_item.name = layer.layers_title if layer.layers_title != "" else str("layer group ", layer_group_id)
+	layers_container.add_child(layer_item)
+	layer_item.init_for_colors(terrain,layer_group_index)		
+	#layer_item.name_button.tooltip_text = str("select ", layer.layers_title, ". Uniform: ", layer.uniform_name)
+	layer_item.layer_selected.connect(change_color_layer_selection)
+	layer_item.color_layer_removed.connect(remove_color_layer)
+	
+func change_color_layer_selection(layer_id, layer_name):		
+	if layer_id < 0:			
+		layer_changed.emit(layer_id)		
+	else:		
+		brush_control.init_color_brushes(active_terrain, layer_id)
+		text = layer_name	
+		layer_changed.emit(layer_id)
+			
 
 func add_color_layer():
-	var window = preload("res://addons/m_terrain/gui/image_creator_window.tscn").instantiate()
+	var window = preload("res://addons/m_terrain/gui/color_layer_creator_window.tscn").instantiate()
 	add_child(window)
 	window.set_terrain(active_terrain)
-	window.layer_created.connect(func(layer): add_color_layer_item(active_terrain.brush_layers_groups_num-1, layer ) )
+	window.layer_created.connect(func(layer): 
+		add_color_layer_item(active_terrain, active_terrain.brush_layers_groups_num-1 ) 
+		change_color_layer_selection(active_terrain.brush_layers_groups_num-1, active_terrain.brush_layers[active_terrain.brush_layers_groups_num-1].layers_title)
+	)
 
 func rename_color_layer():
 	pass
 	
-func remove_color_layer(dname):	
-	var dir = DirAccess.open(active_terrain.dataDir)
-	if not dir:
-		printerr("Can not open ",active_terrain.dataDir)
-		return
-	dir.list_dir_begin()
-	var file_name :String= dir.get_next()
-	var res_names:PackedStringArray = []
-	while file_name != "":
-		if file_name.get_extension() == "res":
-			res_names.append(file_name)
-		file_name = dir.get_next()
-	remove_config_file(dname)
-	for res_name in res_names:
-		var path = active_terrain.dataDir.path_join(res_name)
-		var mres = load(path)
-		if not (mres is MResource):
-			continue
-		mres.remove_data(dname)
-		ResourceSaver.save(mres,path)
-	var layers = active_terrain.brush_layers
+func remove_color_layer(terrain:MTerrain, layer_group_index:int,both:bool):
+	var layer:MBrushLayers = terrain.brush_layers[layer_group_index]
+	var dname = layer.uniform_name
+	if both:
+		owner.remove_image(active_terrain, dname)
+	var layers = terrain.brush_layers
 	var id = 0
-	for i in layers.size():
-		if layers[i].uniform_name != dname:
-			active_terrain.brush_layers[id] = layers[i]
-			id += 1		
-	active_terrain.brush_layers_groups_num -= 1	
-	change_color_layer_selection(0, active_terrain.brush_layers[0].layers_title)
-
-func remove_config_file(dname):
-	var path = active_terrain.dataDir.path_join(".save_config.ini")
-	var config = ConfigFile.new()
-	if FileAccess.file_exists(path):
-		var err = config.load(path)
-		if err != OK:
-			printerr("Can not load config with err ",err)
-			return
+	var remove_count = 0
+	if both:
+		var i:int=terrain.brush_layers.size() - 1
+		while  i >= 0:
+			if(terrain.brush_layers[i].uniform_name == dname):
+				terrain.brush_layers.remove_at(i)
+			i-=1
 	else:
-		return	
-	config.erase_section(dname)
-	config.save(path)
-#endregion
+		terrain.brush_layers.remove_at(layer_group_index)
+	terrain.brush_layers_groups_num = terrain.brush_layers.size()
+	if 	terrain.brush_layers.size() > 0:
+		change_color_layer_selection(0, terrain.brush_layers[0].layers_title)
+	else:
+		change_color_layer_selection(-1, "")
+	init_color_layers()
 
+#endregion
 
 func init_grass_toggle():
 	pass

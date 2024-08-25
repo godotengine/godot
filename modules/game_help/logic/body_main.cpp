@@ -149,9 +149,11 @@ void CharacterBodyMain::editor_build_form_mesh_file_path()
 
 void CharacterBodyMain::init_ai_context()
 {
-	ai_context.instantiate();
-    ai_context->beehave_run_context->blackboard = get_blackboard();
-    ai_context->beehave_run_context->actor = this;
+	if (ai_context.is_null()) {
+		ai_context.instantiate();
+		ai_context->beehave_run_context->blackboard = get_blackboard();
+		ai_context->beehave_run_context->actor = this;
+	}
 
 }
 void CharacterBodyMain::_update(double p_delta)
@@ -175,6 +177,7 @@ void CharacterBodyMain::_update(double p_delta)
 }
 void CharacterBodyMain::_update_ai()
 {
+	init_ai_context();
     if(character_ai.is_valid())
     {
         character_ai->execute(this,ai_context.ptr());

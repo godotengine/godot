@@ -19,11 +19,11 @@ func _parse_begin(object):
 	gui.gizmo = gizmo
 	gui.set_path(object)
 	## Curve terrain
-	if gizmo.mterrain_plugin.tools.get_active_mterrain() and is_instance_valid(gizmo.mterrain_plugin.tools.get_active_mterrain()):
+	if gizmo.tools.get_active_mterrain():
 		if not curve_terrain:
 			curve_terrain = curve_terrain_res.instantiate()
 		add_custom_control(curve_terrain)
-		gizmo.curve_terrain.terrain = gizmo.mterrain_plugin.tools.get_active_mterrain()
+		gizmo.curve_terrain.terrain = gizmo.tools.get_active_mterrain()
 		curve_terrain.start_curve_terrain(gizmo,object)
 		
 

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   height="16"
+   viewBox="0 0 16 16"
+   width="16"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="Curve2D.svg"
+   inkscape:version="1.3.2 (091e20ef0f, 2023-11-25, custom)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="37.388271"
+     inkscape:cx="4.7207318"
+     inkscape:cy="6.766828"
+     inkscape:window-width="1920"
+     inkscape:window-height="1092"
+     inkscape:window-x="1920"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1" />
+  <path
+     d="M 2 14 C 14 14 2 2 14 2"
+     fill="none"
+     stroke-linecap="round"
+     stroke-width="2"
+     stroke="#e0e0e0"
+     id="path1"
+     style="stroke:#ffc1c7;stroke-opacity:1" />
+  <path
+     d="M 2 14 C 14 14 2 2 14 2"
+     fill="none"
+     stroke-linecap="round"
+     stroke-width="2"
+     stroke="#e0e0e0"
+     id="path2"
+     style="stroke:#ffc1c7;stroke-opacity:1" />
+  <path
+     d="M 13.439599,14.177858 C 14.154356,2.1991623 1.4609042,13.463101 2.1756608,1.4844057"
+     fill="none"
+     stroke-linecap="round"
+     stroke-width="2"
+     stroke="#e0e0e0"
+     id="path3"
+     style="stroke:#ffc1c7;stroke-opacity:1" />
+</svg>

@@ -120,7 +120,7 @@ class MGrassLodSetting : public Resource {
     void set_rand_scale_end(Vector3 input);
     Vector3 get_rand_scale_end();
 
-    PackedFloat32Array* generate_random_number(float density,int amount);
+    PackedFloat32Array generate_random_number(float density,int amount);
 
 
     //Geometry setting

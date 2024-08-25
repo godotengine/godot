@@ -1,6 +1,6 @@
 @tool
 extends EditorPlugin
-var version:String="0.14.1 alpha"
+var version:String="0.15.0"
 
 var tools= null
 
@@ -8,27 +8,27 @@ var current_main_screen_name =""
 
 var tsnap = null
 
-var raw_img_importer = null
-var raw_tex_importer = null
-
-var active_snap_object:Node3D = null
-var last_camera_position:Vector3
-
-var collision_ray_step=0.2
-var ray_col:MCollision
-var col_dis:float
-var is_paint_active:bool = false
-
 var action=""
 
 var current_window_info=null
 
 var gizmo_moctmesh
 var gizmo_mpath
-var gizmo_mpath_gui
-var mcurve_mesh_gui
 
 var inspector_mpath
+
+var timer = Timer.new()
+var needs_restart = false
+	
+func check_restart():
+	if GDExtensionManager.is_extension_loaded("res://addons/m_terrain/libs/MTerrain.gdextension"):
+		if needs_restart:
+			EditorInterface.restart_editor()
+		else: return true
+	else:
+		needs_restart = true
+		timer.start(0.5)
+		return false
 
 #region keyboard actions
 var default_keyboard_actions 
@@ -64,55 +64,55 @@ func remove_keymap():
 
 #region init and de-init
 func _enter_tree():		
-	if Engine.is_editor_hint():		
+	if Engine.is_editor_hint():	
+		timer.one_shot = true
+		timer.timeout.connect(check_restart)
+		add_child(timer)
+		timer.start(0.5)
+		if not check_restart(): return
+			
 		var main_screen = EditorInterface.get_editor_main_screen()											
 		main_screen_changed.connect(_on_main_screen_changed)		
 	
-		#add_tool_menu_item("MTerrain import/export", show_import_window)
-		#add_tool_menu_item("MTerrain image create/remove", show_image_creator_window)
-		
-		tools = preload("res://addons/m_terrain/gui/mtools.tscn").instantiate()		
+		tools = load("res://addons/m_terrain/gui/mtools.tscn").instantiate()		
 		tools.request_info_window.connect(show_info_window)
 		tools.request_import_window.connect(show_import_window)
 		tools.request_image_creator.connect(show_image_creator_window)
 		tools.edit_mode_changed.connect(select_object)		
+		tools.undo_redo = get_undo_redo()
 		main_screen.add_child(tools)
 
 		get_tree().node_added.connect(tools.on_node_modified)
 		get_tree().node_renamed.connect(tools.on_node_modified)
 		get_tree().node_removed.connect(tools.on_node_modified)
 		
-		tools.set_brush_decal( preload("res://addons/m_terrain/gui/brush_decal.tscn").instantiate()	)
+		tools.set_brush_decal( load("res://addons/m_terrain/gui/brush_decal.tscn").instantiate()	)
 		main_screen.add_child(tools.brush_decal)
 		
-		tools.set_mask_decal( preload("res://addons/m_terrain/gui/mask_decal.tscn").instantiate() )
+		tools.set_mask_decal( load("res://addons/m_terrain/gui/mask_decal.tscn").instantiate() )
 		main_screen.add_child(tools.mask_decal)
 		
-		tools.human_male = preload("res://addons/m_terrain/gui/human_male.tscn").instantiate()
+		tools.human_male = load("res://addons/m_terrain/gui/human_male.tscn").instantiate()
 		main_screen.add_child(tools.human_male)
 		tools.human_male.visible = false
 		
-		MTool.enable_editor_plugin()
-		
 		get_editor_interface().get_selection().selection_changed.connect(selection_changed)
 		
-		tsnap = preload("res://addons/m_terrain/gui/tsnap.tscn").instantiate()
-		tsnap.pressed.connect(func(): tsnap_pressed(tools.get_active_mterrain()))
+		tsnap = load("res://addons/m_terrain/gui/tsnap.tscn").instantiate()
+		tsnap.pressed.connect(tsnap_pressed)
 		tsnap.visible = false
 		add_control_to_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_MENU,tsnap)				
 				
 		###### GIZMO
-		gizmo_moctmesh = preload("res://addons/m_terrain/gizmos/moct_mesh_gizmo.gd").new()
-		gizmo_mpath = preload("res://addons/m_terrain/gizmos/mpath_gizmo.gd").new()
-		gizmo_mpath_gui = tools.find_child("mpath_gizmo_gui") #load("res://addons/m_terrain/gizmos/mpath_gizmo_gui.tscn").instantiate()
-		mcurve_mesh_gui = tools.find_child("mcurve_mesh") #load("res://addons/m_terrain/gizmos/mcurve_mesh_gui.tscn").instantiate()
+		gizmo_moctmesh = load("res://addons/m_terrain/gizmos/moct_mesh_gizmo.gd").new()
+		gizmo_mpath = load("res://addons/m_terrain/gizmos/mpath_gizmo.gd").new()
 		add_node_3d_gizmo_plugin(gizmo_moctmesh)
 		gizmo_mpath.ur = get_undo_redo()
 		add_node_3d_gizmo_plugin(gizmo_mpath)		
-		gizmo_mpath.set_gui(gizmo_mpath_gui)
-		gizmo_mpath.mterrain_plugin = self		
+		gizmo_mpath.set_gui(tools.mpath_gizmo_gui)
+		gizmo_mpath.tools = tools
 		#### Inspector
-		inspector_mpath = preload("res://addons/m_terrain/inspector/mpath.gd").new()
+		inspector_mpath = load("res://addons/m_terrain/inspector/mpath.gd").new()
 		inspector_mpath.gizmo = gizmo_mpath
 		add_inspector_plugin(inspector_mpath)
 				
@@ -124,6 +124,7 @@ func _ready() -> void:
 	
 func _exit_tree():	
 	if Engine.is_editor_hint():
+		timer.queue_free()
 		remove_keymap()	
 		remove_tool_menu_item("MTerrain import/export")
 		remove_tool_menu_item("MTerrain image create/remove")		
@@ -140,8 +141,7 @@ func _exit_tree():
 		###### GIZMO
 		remove_node_3d_gizmo_plugin(gizmo_moctmesh)
 		remove_node_3d_gizmo_plugin(gizmo_mpath)
-		#remove_control_from_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_MENU,gizmo_mpath_gui)
-		#remove_control_from_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_MENU,mcurve_mesh_gui)
+		
 		### Inspector
 		remove_inspector_plugin(inspector_mpath)
 #endregion
@@ -156,241 +156,78 @@ func select_object(object, mode):
 	EditorInterface.get_selection().add_node(object)
 
 func selection_changed():
+	if not tools or not is_instance_valid(EditorInterface.get_edited_scene_root()): return
+	
 	var selection = get_editor_interface().get_selection().get_selected_nodes()
 
-	#TO DO: decide if this behaviour is good.
-	if selection.size() != 1:				
+	if selection.size() != 1 or not current_main_screen_name == "3D":
 		tools.request_hide()
-		gizmo_mpath_gui.visible = false
-		mcurve_mesh_gui.set_curve_mesh(null)		
 		return
-		
-	if not tools or not is_instance_valid(EditorInterface.get_edited_scene_root()): return
-	if not current_main_screen_name == "3D":
-		tools.request_hide()
-		return	
-	if selection[0] is MTerrain:
-		tools.request_show()	
-		return
-	if selection[0].get_parent() is MTerrain:
-		if selection[0] is MGrass or selection[0] is MNavigationRegion3D:
-			tools.request_show()	
-			return
-	if selection[0] is MPath or selection[0] is MCurveMesh:
-		tools.request_show()	
-		return
-	if mcurve_mesh_gui.obj and mcurve_mesh_gui.is_active():
-		tools.request_show()	
-		return
-	tools.request_hide()
+
+	tools.on_selection_changed(selection[0])
+	
 
 func _handles(object):
 	if not Engine.is_editor_hint(): return false
 	if not current_main_screen_name == "3D":
 		tools.request_hide()
 		return false
-	if mcurve_mesh_gui and mcurve_mesh_gui.obj and mcurve_mesh_gui.is_active(): return false
 	
-	active_snap_object = null
 	tsnap.visible = false
-	
-	if object is MPath:
-		tools.set_active_object(object)
-		tools.request_show()		
-		#gizmo_mpath_gui.visible = true		
+	if tools.on_handles(object): 		
 		return true
-	elif gizmo_mpath_gui:
-		gizmo_mpath_gui.visible = false
-	
-	if object is MCurveMesh:
-		#mcurve_mesh_gui.set_curve_mesh(object)
-		tools.set_active_object(object)
-		tools.request_show()	
-		return true
-	else:
-		mcurve_mesh_gui.set_curve_mesh(null)
-	
-	if object is MTerrain:		
-		tools.set_active_object(object)			
-		tools.request_show()		
-		return true
-	
-	if object is MGrass and object.get_parent() is MTerrain:			
-		tools.set_active_object(object)
-		tools.request_show()			
-		return true
-	
-	if object is MNavigationRegion3D and object.get_parent() is MTerrain:
-		tools.set_active_object(object)
-		tools.request_show()
-		return true
-	
-	if object is MCurveMesh and object.get_parent() is MTerrain:
-		tools.set_active_object(object)
-		tools.request_show()
-		return true
-	else:
-		#for some reason these get selected when switching from grass paint mode to terrain sculpt/paint mode:
-		if object is MTerrainMaterial or object is MBrushLayers:
-			return false
-		tools.request_hide()		
-		#TO DO: fix snap tool setting of active terain		
-		if object is Node3D:
-			for mterrain:MTerrain in tools.get_all_mterrain(EditorInterface.get_edited_scene_root()):
-				if mterrain.is_grid_created():
-					active_snap_object = object
-					tsnap.visible = true
-		return false
+	tsnap.visible = is_instance_valid(tools.active_snap_object)
 
 func _forward_3d_gui_input(viewport_camera, event):
 	if not is_instance_valid(EditorInterface.get_edited_scene_root()): 
 		return AFTER_GUI_INPUT_PASS
-		
-	var active_terrain = tools.get_active_mterrain()
-	if not active_terrain is MTerrain: 
-		ray_col = null
-	elif event is InputEventMouse:
-		var ray:Vector3 = viewport_camera.project_ray_normal(event.position)
-		var pos:Vector3 = viewport_camera.global_position
-		ray_col = active_terrain.get_ray_collision_point(pos,ray,collision_ray_step,1000)
 	
-	if tools.walking_terrain:
-		tools.editor_camera = viewport_camera
-		if tools.process_input_terrain_walk(viewport_camera, event):
-			return AFTER_GUI_INPUT_STOP
-	
-	
-	for terrain in tools.get_all_mterrain():
-		terrain.set_editor_camera(viewport_camera)	
-	######################## HANDLE CURVE GIZMO ##############################
-	if gizmo_mpath_gui.visible:				
-		return gizmo_mpath._forward_3d_gui_input(viewport_camera, event, ray_col)
-	######################## HANDLE CURVE GIZMO FINSH ########################	
-	
-	if active_terrain is MTerrain and event is InputEventMouse:						
-		if ray_col.is_collided():			
-			col_dis = ray_col.get_collision_position().distance_to(viewport_camera.global_position)
-			tools.status_bar.set_height_label(ray_col.get_collision_position().y)
-			tools.status_bar.set_distance_label(col_dis)
-			tools.status_bar.set_region_label(active_terrain.get_region_id_by_world_pos(ray_col.get_collision_position()))
-			if tools.current_edit_mode in [&"sculpt", &"paint"]:							
-				if paint_mode_handle(event):
-					return AFTER_GUI_INPUT_STOP			
-			if tools.human_male.visible:
-				if tools.edit_human_position:
-					tools.human_male.global_position = ray_col.get_collision_position()
-				if event is InputEventMouseButton:
-					if event.button_index == MOUSE_BUTTON_LEFT:
-						tools.edit_human_position = false
-					if event.button_index == MOUSE_BUTTON_RIGHT and tools.edit_human_position:
-						tools._on_human_male_toggled(false)
-					if event.button_index == MOUSE_BUTTON_MIDDLE:
-						tools.edit_human_position = true
-						
-		else:
-			col_dis=1000000
-			tools.status_bar.disable_height_label()
-			tools.status_bar.disable_distance_label()
-			tools.status_bar.disable_region_label()
-		if col_dis<1000:
-			collision_ray_step = (col_dis + 50)/100
-		else:
-			collision_ray_step = 3
-		#tools.set_save_button_disabled(not active_terrain.has_unsave_image())
-	if tools.process_input(event):
+	if tools.forward_3d_gui_input(viewport_camera, event):
 		return AFTER_GUI_INPUT_STOP
-	## Fail paint attempt
-	## returning the stop so terrain will not be unselected
-	#if tools.current_edit_mode == &"paint":		
-	#	if event is InputEventMouseButton:
-	#		if event.button_mask == MOUSE_BUTTON_LEFT:
-	#			return AFTER_GUI_INPUT_STOP
-
-
-
-var last_draw_time:int=0
-	
-func paint_mode_handle(event:InputEvent):	
-	if ray_col.is_collided():
-		tools.brush_decal.visible = true
-		tools.brush_decal.set_position(ray_col.get_collision_position())		
-		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-			if event.pressed:
-				if tools.active_object is MGrass:
-					tools.active_object.check_undo()
-					get_undo_redo().create_action("GrassPaint")
-					get_undo_redo().add_undo_method(tools.active_object,"undo")
-					get_undo_redo().commit_action(false)
-				elif tools.active_object is MNavigationRegion3D:
-					pass
-				elif tools.active_object is MTerrain: ## Start of painting						
-					tools.active_object.set_brush_start_point(ray_col.get_collision_position(),tools.brush_decal.radius)
-					#tools.set_active_layer()
-					tools.active_object.images_add_undo_stage()
-					get_undo_redo().create_action("Sculpting")
-					get_undo_redo().add_undo_method(tools.active_object,"images_undo")
-					get_undo_redo().commit_action(false)
-			else:
-				if tools.mask_decal.is_being_edited:
-					tools.mask_decal.is_being_edited = false	
-				elif tools.active_object is MGrass:
-					tools.active_object.save_grass_data()
-				elif tools.active_object is MNavigationRegion3D:
-					tools.active_object.save_nav_data()
-				elif tools.active_object is MTerrain:
-					tools.active_object.save_all_dirty_images()
-		if event.button_mask == MOUSE_BUTTON_LEFT:			
-			var t = Time.get_ticks_msec()
-			var dt = t - last_draw_time			
-			last_draw_time = t		
-			if tools.mask_decal.is_being_edited:
-				return AFTER_GUI_INPUT_STOP 
-			if tools.draw(ray_col.get_collision_position()):
-				return AFTER_GUI_INPUT_STOP 
-		if tools.mask_decal.is_being_edited:			
-			if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT:
-				tools.mask_decal.is_being_edited = false				
-				tools.mask_popup_button.clear_mask()
-			tools.mask_decal.set_absolute_terrain_pos(ray_col.get_collision_position())
-		elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_MIDDLE:
-			tools.mask_decal.is_being_edited = true
-			AFTER_GUI_INPUT_STOP
 	else:
-		tools.brush_decal.visible = false
-		tools.mask_decal.visible = false
 		return AFTER_GUI_INPUT_PASS
-
-
-
-#To do: fix tsnap pressed - how does it find active_terrain?
-func tsnap_pressed(active_terrain:MTerrain):
-	if active_terrain and active_snap_object and active_terrain.is_grid_created():
-		var h:float = active_terrain.get_height(active_snap_object.global_position)
-		active_snap_object.global_position.y = h
-
+		
+func tsnap_pressed():
+	var terrains = tools.get_all_mterrain()
+	var active_terrain
+	for terrain in terrains:
+		if terrain.is_grid_created():
+			active_terrain = terrain
+			break	
+	if active_terrain and tools.active_snap_object:		
+		var h:float = active_terrain.get_height(tools.active_snap_object.global_position)
+		tools.active_snap_object.global_position.y = h
+			
 func show_import_window():	
-	var window = preload("res://addons/m_terrain/gui/import_window.tscn").instantiate()
-	add_child(window)
-	if tools.get_active_mterrain() is MTerrain:
-		window.init_export(tools.get_active_mterrain())
+	var window = load("res://addons/m_terrain/gui/import_window.tscn").instantiate()
+	add_child(window)		
+	window.init_export(tools.get_active_mterrain())
 
 func show_image_creator_window():	
-	if tools.get_active_mterrain() is MTerrain:	
-		var window = preload("res://addons/m_terrain/gui/image_creator_window.tscn").instantiate()
-		add_child(window)
-		window.set_terrain(tools.get_active_mterrain())
+	if tools.get_active_mterrain():	
+		var window = load("res://addons/m_terrain/gui/image_creator_window.tscn").instantiate()
+		add_child(window)		
+		window.mterrain = tools.get_active_mterrain()		
 
-func show_info_window(active_terrain:MTerrain = tools.get_active_mterrain()):
+func show_info_window(active_terrain = tools.get_active_mterrain()):
+	var is_grid_created = active_terrain.is_grid_created()
 	if is_instance_valid(current_window_info):
 		current_window_info.queue_free()
-	current_window_info = preload("res://addons/m_terrain/gui/terrain_info.tscn").instantiate()
-	add_child(current_window_info)
+	if not active_terrain is MTerrain:
+		push_error("no active mterrain for info window")
+	current_window_info = load("res://addons/m_terrain/gui/terrain_info.tscn").instantiate()
+	add_child(current_window_info)	
+	if is_grid_created:
+		active_terrain.remove_grid()
 	current_window_info.generate_info(active_terrain,version, default_keyboard_actions)
+	current_window_info.mtools = tools	
 	current_window_info.keymap_changed.connect(update_keymap)
 	current_window_info.restore_default_keymap_requested.connect(func():
 		add_keymap(true)
 		current_window_info.create_keymapping_interface(default_keyboard_actions)
 	)
+	if is_grid_created:
+		current_window_info.tree_exiting.connect(active_terrain.create_grid)
 
 func set_default_keymap():
 	default_keyboard_actions = [

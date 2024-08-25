@@ -290,7 +290,7 @@ double MGrassLodSetting::rand_float(double a,double b,int _seed){
 
 
 
-PackedFloat32Array* MGrassLodSetting::generate_random_number(float density,int amount){
+PackedFloat32Array MGrassLodSetting::generate_random_number(float density,int amount){
     // if data contain only random number grass should not worry about that 
     _process_color_data = color_r!=RANDOM || color_g!=RANDOM || color_b!=RANDOM || color_a!=RANDOM;
     _process_custom_data = custom_r!=RANDOM || custom_g!=RANDOM || custom_b!=RANDOM || custom_a!=RANDOM;
@@ -303,8 +303,8 @@ PackedFloat32Array* MGrassLodSetting::generate_random_number(float density,int a
     _buffer_strid_float = 12 + int(active_color_data)*4 + int(active_custom_data)*4;
     _buffer_strid_byte = _buffer_strid_float*4;
 
-    PackedFloat32Array* out = memnew(PackedFloat32Array);
-    out->resize(amount * _buffer_strid_float);
+    PackedFloat32Array out;
+    out.resize(amount * _buffer_strid_float);
     for(int i=0;i<amount;i++){
         Vector3 _rand_pos;
         Vector3 _rand_rot;
@@ -349,44 +349,44 @@ PackedFloat32Array* MGrassLodSetting::generate_random_number(float density,int a
         
         int index = i*get_buffer_strid_float();
 
-        out->set(index,t.basis[0][0]);
-        out->set(index+1,t.basis[0][1]);
-        out->set(index+2,t.basis[0][2]);
-        out->set(index+3,t.origin[0]);
+        out.set(index,t.basis[0][0]);
+        out.set(index+1,t.basis[0][1]);
+        out.set(index+2,t.basis[0][2]);
+        out.set(index+3,t.origin[0]);
 
-        out->set(index+4,t.basis[1][0]);
-        out->set(index+5,t.basis[1][1]);
-        out->set(index+6,t.basis[1][2]);
-        out->set(index+7,t.origin[1]);
+        out.set(index+4,t.basis[1][0]);
+        out.set(index+5,t.basis[1][1]);
+        out.set(index+6,t.basis[1][2]);
+        out.set(index+7,t.origin[1]);
 
-        out->set(index+8,t.basis[2][0]);
-        out->set(index+9,t.basis[2][1]);
-        out->set(index+10,t.basis[2][2]);
-        out->set(index+11,t.origin[2]);
+        out.set(index+8,t.basis[2][0]);
+        out.set(index+9,t.basis[2][1]);
+        out.set(index+10,t.basis[2][2]);
+        out.set(index+11,t.origin[2]);
 
         index += 12;
 
         //Setting Color data
         if(active_color_data){
             int cseed = i*4 + seed + seed;
-            out->set(index,rand_float(color_rand_start.x,color_rand_end.x,cseed));
+            out.set(index,rand_float(color_rand_start.x,color_rand_end.x,cseed));
             index++; cseed++;
-            out->set(index,rand_float(color_rand_start.y,color_rand_end.y,cseed));
+            out.set(index,rand_float(color_rand_start.y,color_rand_end.y,cseed));
             index++; cseed++;
-            out->set(index,rand_float(color_rand_start.z,color_rand_end.z,cseed));
+            out.set(index,rand_float(color_rand_start.z,color_rand_end.z,cseed));
             index++; cseed++;
-            out->set(index,rand_float(color_rand_start.w,color_rand_end.w,cseed));
+            out.set(index,rand_float(color_rand_start.w,color_rand_end.w,cseed));
             index++;
         }
         if(active_custom_data){
             int cseed = i*4 + seed + seed + seed;
-            out->set(index,rand_float(custom_rand_start.x,custom_rand_end.x,cseed));
+            out.set(index,rand_float(custom_rand_start.x,custom_rand_end.x,cseed));
             index++; cseed++;
-            out->set(index,rand_float(custom_rand_start.y,custom_rand_end.y,cseed));
+            out.set(index,rand_float(custom_rand_start.y,custom_rand_end.y,cseed));
             index++; cseed++;
-            out->set(index,rand_float(custom_rand_start.z,custom_rand_end.z,cseed));
+            out.set(index,rand_float(custom_rand_start.z,custom_rand_end.z,cseed));
             index++; cseed++;
-            out->set(index,rand_float(custom_rand_start.w,custom_rand_end.w,cseed));
+            out.set(index,rand_float(custom_rand_start.w,custom_rand_end.w,cseed));
         }
     }
     return out;

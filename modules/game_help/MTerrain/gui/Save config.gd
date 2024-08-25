@@ -31,7 +31,9 @@ func init_save_config(_t:MTerrain):
 	if _t.is_grid_created():
 		error.text = "Destroy Terrain to be able apply changes"
 		return
-	var data_dir:=_t.dataDir
+	
+	data_name_option.clear()
+	var data_dir = _t.dataDir
 	var first_region_path = data_dir.path_join("x0_y0.res")
 	if( not ResourceLoader.exists(first_region_path)):
 		printerr("Can not find "+first_region_path)

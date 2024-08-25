@@ -1,0 +1,42 @@
+[gd_scene load_steps=6 format=3 uid="uid://d3k4sbpnxyybs"]
+
+[ext_resource type="Theme" uid="uid://b3bd1lceed8ec" path="res://addons/m_terrain/gui/styles/mterrain_gui_theme.tres" id="1_ch6cx"]
+[ext_resource type="Script" path="res://addons/m_terrain/gui/mtools_brush_item.gd" id="2_1pgox"]
+[ext_resource type="Texture2D" uid="uid://lwsbiudya0cf" path="res://addons/m_terrain/icons/brush_icon_to_height.svg" id="3_c0sww"]
+[ext_resource type="Texture2D" uid="uid://s6jqtql0r2bw" path="res://addons/m_terrain/icons/edit_icon.svg" id="3_uev0k"]
+[ext_resource type="Texture2D" uid="uid://t8tdan3853oy" path="res://addons/m_terrain/icons/icon_close.svg" id="4_7obfx"]
+
+[node name="BrushItem" type="PanelContainer"]
+offset_right = 175.0
+offset_bottom = 64.0
+mouse_filter = 1
+theme = ExtResource("1_ch6cx")
+script = ExtResource("2_1pgox")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="label" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+text = "Brush name"
+icon = ExtResource("3_c0sww")
+alignment = 0
+
+[node name="edit" type="Button" parent="HBoxContainer"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+mouse_filter = 1
+theme_type_variation = &"button_icon_only"
+icon = ExtResource("3_uev0k")
+expand_icon = true
+
+[node name="remove" type="Button" parent="HBoxContainer"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+mouse_filter = 1
+theme_type_variation = &"button_icon_only"
+icon = ExtResource("4_7obfx")
+expand_icon = true

@@ -2,7 +2,7 @@
 @tool
 extends Button
 
-@onready var brush_container:ItemList = find_child("brush_container")
+@onready var brush_container = find_child("brush_container")
 @onready var brush_settings_container = find_child("brush_settings")
 
 var height_brush_id = 0
@@ -27,18 +27,17 @@ var to_height_brush_id
 var hole_brush_id
 var reverse_property_control
 
+var property_element_list:Array
+
+var color_brush_layer: MBrushLayers
 var color_layer_group_id:int
-var color_brush_index:int
 var color_brush_uniform:String
-var color_brush_name:String
+var color_brush_name:String # "Color Paint", "Channel Painter", "Bitwise Brush", "Paint 16", Paint 256" 
 
 var no_image = preload("res://addons/m_terrain/icons/no_images.png") #For color brush
 
-var property_element_list:Array
-var color_brush_layers:Array
-var color_brush_titles:Array
-var selected_layer_group=0
 
+@onready var add_color_brush_button = find_child("add_color_brush_button")
 
 func _ready():
 	var panel = get_child(0)
@@ -46,6 +45,8 @@ func _ready():
 	panel.position.y = -panel.size.y
 	panel.gui_input.connect(fix_gui_input)
 	panel.size.x = get_viewport().size.x - global_position.x
+	panel.visibility_changed.connect(_on_panel_visibility_changed)
+	add_color_brush_button.pressed.connect(show_add_color_brush_popup)
 	
 func fix_gui_input(event: InputEvent):
 	if event is InputEventMouseButton:
@@ -56,18 +57,28 @@ func _toggled(toggled_on):
 		get_child(0).size.x = get_viewport().size.x - global_position.x
  
 func clear_brushes():
-	brush_container.clear()	
+	#brush_container.clear()	
+	for child in brush_container.get_children():
+		brush_container.remove_child(child)
+		child.queue_free()
 	clear_property_element()
 	set("theme_override_styles/normal", null)
 	text = ""
-	for connection in brush_container.get_signal_connection_list("item_selected"):
+	for connection in brush_container.get_signal_connection_list("brush_selected"):
 		connection.signal.disconnect(connection.callable)	
-
+	#for connection in brush_container.get_signal_connection_list("item_clicked"):
+	#	connection.signal.disconnect(connection.callable)
+	add_color_brush_button.visible = false
+	find_child("brush_settings_panel").visible = false
+	
+	
 #region Height Brushes
 func init_height_brushes(new_brush_manager):		
 	clear_brushes()	
+	find_child("brush_settings_panel").visible = true
+	
 	brush_mode = &"sculpt"	
-	brush_container.item_selected.connect(on_height_brush_select)	
+	#brush_container.brush_selected.connect(on_height_brush_select)	
 	height_brush_manager = new_brush_manager
 	smooth_brush_id = height_brush_manager.get_height_brush_id("Smooth")
 	raise_brush_id = height_brush_manager.get_height_brush_id("Raise")
@@ -76,32 +87,33 @@ func init_height_brushes(new_brush_manager):
 
 	var brush_names = height_brush_manager.get_height_brush_list()
 	
-	for n in brush_names:			
-		var id = brush_container.add_item(n)
+	for n in brush_names:		
+		var brush_item = preload("res://addons/m_terrain/gui/mtools_brush_item.tscn").instantiate()
+		brush_container.add_child(brush_item)				
 		if "raise" in n.to_lower():			
-			brush_container.set_item_icon(id, preload("res://addons/m_terrain/icons/brush_icon_raise.svg"))
+			brush_item.set_height_brush(n, preload("res://addons/m_terrain/icons/brush_icon_raise.svg"))
 		if "height" in n.to_lower():
-			brush_container.set_item_icon(id, preload("res://addons/m_terrain/icons/brush_icon_to_height.svg"))
+			brush_item.set_height_brush(n, preload("res://addons/m_terrain/icons/brush_icon_to_height.svg"))
 		if "smooth" in n.to_lower():
-			brush_container.set_item_icon(id, preload("res://addons/m_terrain/icons/brush_icon_smooth.svg"))
+			brush_item.set_height_brush(n, preload("res://addons/m_terrain/icons/brush_icon_smooth.svg"))
 		if "hole" in n.to_lower():
-			brush_container.set_item_icon(id, preload("res://addons/m_terrain/icons/brush_icon_hole.svg"))	
+			brush_item.set_height_brush(n, preload("res://addons/m_terrain/icons/brush_icon_hole.svg"))	
 		if "layer" in n.to_lower():
-			brush_container.set_item_icon(id, preload("res://addons/m_terrain/icons/eraser_icon.svg"))	
+			brush_item.set_height_brush(n, preload("res://addons/m_terrain/icons/eraser_icon.svg"))	
 			
-	on_height_brush_select(0)	
+		brush_item.brush_selected.connect(on_height_brush_select.bind(brush_item))
+	on_height_brush_select(brush_container.get_child(0))	
 	
-func on_height_brush_select(index):
-	clear_property_element()
-	if index < -1: return
-	height_brush_id = index
+func on_height_brush_select(item):
+	clear_property_element()	
+	height_brush_id = item.get_index()
 	var brush_props = height_brush_manager.get_height_brush_property(height_brush_id)
 	for p in brush_props:
 		create_props(p)
-	text = ""# brush_container.get_item_text(index)
+	text = ""
 	set("theme_override_styles/normal", null)
-	icon = brush_container.get_item_icon(index)	
-	tooltip_text = "Current brush: " + brush_container.get_item_text(index)
+	icon = item.label.icon
+	tooltip_text = "Current brush: " + item.label.text
 
 func create_props(dic:Dictionary):
 	var element
@@ -156,60 +168,133 @@ func init_color_brushes(terrain: MTerrain = null, layer_group_id=0):
 	brush_mode = &"paint"
 	if terrain == null:
 		return	
+							
+	add_color_brush_button.visible = true
+	color_brush_layer = active_terrain.brush_layers[layer_group_id]						
 		
-	brush_container.clear()	
-	var layer_group = active_terrain.get_layers_info()[layer_group_id]						
+	for i in color_brush_layer.layers.size():	
+		var brush = color_brush_layer.layers[i]					
+		var bname = brush.NAME
+		if bname.is_empty():
+			bname = str("layer ", i)
+		var bicon:Texture = load(brush.ICON) if FileAccess.file_exists(brush.ICON) else null						
+		
+		var brush_item = preload("res://addons/m_terrain/gui/mtools_brush_item.tscn").instantiate()		
+		brush_container.add_child(brush_item)		
+		brush_item.set_color_brush(color_brush_layer, i)
+		brush_item.brush_selected.connect( brush_layer_selected.bind(brush_item.get_index(), color_brush_layer))
+		brush_item.brush_edited.connect(update_color_brush)
+		brush_item.brush_removed.connect(remove_color_brush)
 	
-	var index = -1
-	for i in layer_group["info"]:				
-		index +=1
-		var layer_name:String= i["name"]
-		if layer_name.is_empty():
-			layer_name = "layer "+str(index)
-		var icon:Texture = i["icon"]
-		if not icon:
-			icon = no_image
-		var id = brush_container.add_item(layer_name,icon)
-		brush_container.set_item_custom_bg_color(index,i["icon-color"])
-	color_layer_group_id = layer_group["index"]
-	color_brush_uniform = layer_group["uniform"]
-	color_brush_name = layer_group["brush_name"]
-	brush_container.item_selected.connect(
-		func(id):
-			brush_layer_selected(id, layer_group)
-	)
-	if brush_container.item_count !=0:
-		brush_layer_selected(0, 0)
+	color_layer_group_id = layer_group_id
+	color_brush_uniform = color_brush_layer.uniform_name
+	color_brush_name = color_brush_layer.brush_name
+	
+	if brush_container.get_child_count() != 0:
+		brush_layer_selected(0, layer_group_id)
 
 func brush_layer_selected(index, layer_group):			
 	active_terrain.set_color_layer(index, color_layer_group_id,color_brush_name)
-	var brush_icon = brush_container.get_item_icon(index)
+	var brush_icon = brush_container.get_child(index).label.icon
 	if brush_icon and brush_icon != no_image:
 		icon = brush_icon
 	else:
 		icon = null
 	text = "" #brush_container.get_item_text(index)
-	tooltip_text = "Current brush: " + brush_container.get_item_text(index)
-	var color = brush_container.get_item_custom_bg_color(index)
+	tooltip_text = "Current brush: " + brush_container.get_child(index).label.text
+	var color = brush_container.get_child(index).color
 	if color:
 		var stylebox = StyleBoxFlat.new()
 		stylebox.bg_color = color
 		set("theme_override_styles/normal", stylebox)
+		set("theme_override_styles/focus", stylebox)
+		set("theme_override_styles/hover", stylebox)
+		set("theme_override_styles/pressed", stylebox)
 	else:
 		set("theme_override_styles/normal", null)
+		set("theme_override_styles/focus", null)
+		set("theme_override_styles/hover", null)
+		set("theme_override_styles/pressed", null)
+		
 
+func show_add_color_brush_popup():
+	var popup = preload("res://addons/m_terrain/gui/mtools_create_color_brush.tscn").instantiate()
+	add_child(popup)
+	popup.size = get_viewport_rect().size / 3
+	
+	var existing_brushes = color_brush_layer.layers.map(func(a): return a.NAME)
+	if color_brush_name == "Color Paint":
+		popup.init_for_color(existing_brushes)
+	elif color_brush_name == "Channel Painter":
+		popup.init_for_channel(existing_brushes)
+	elif color_brush_name == "Bitwise":
+		popup.init_for_bitwise(existing_brushes)
+	elif color_brush_name == "Paint 16":
+		popup.init_for_16(existing_brushes)
+	elif color_brush_name == "Paint 256":
+		popup.init_for_256(existing_brushes)
+	popup.brush_created.connect(update_color_brush.bind(-1))
+	
+func update_color_brush(brush_name, brush_icon, data, id):	
+	if id == -1:
+		color_brush_layer.layers_num += 1
+		id = color_brush_layer.layers_num -1
+	color_brush_layer.layers[id].NAME = brush_name
+	color_brush_layer.layers[id].ICON = brush_icon
+	if "color" in data.keys():
+		color_brush_layer.layers[id].color = data.color		
+		color_brush_layer.layers[id].hardness = data.hardness
+	elif "r_on" in data.keys():
+		color_brush_layer.layers[id].red = data.r_on
+		color_brush_layer.layers[id].green = data.g_on
+		color_brush_layer.layers[id].blue = data.b_on
+		color_brush_layer.layers[id].alpha = data.a_on
+		color_brush_layer.layers[id]["red-value"] = data.r_value
+		color_brush_layer.layers[id]["green-value"] = data.g_value
+		color_brush_layer.layers[id]["blue-value"] = data.b_value
+		color_brush_layer.layers[id]["alpha-value"] = data.a_value
+		color_brush_layer.layers[id].hardness = data.hardness
+	elif "bit" in data.keys():		
+		color_brush_layer.layers[id].value = data.bit_value
+		color_brush_layer.layers[id].bit = data.bit
+	elif "paint16layer" in data.keys():
+		color_brush_layer.layers[id]['paint-layer'] = data.paint16layer
+	elif "paint256layer" in data.keys():
+		color_brush_layer.layers[id]['paint-layer'] = data.paint256layer	
+		
+	init_color_brushes(active_terrain, color_layer_group_id)
+
+func remove_color_brush(id):
+	var group: MBrushLayers = active_terrain.brush_layers[color_layer_group_id]
+	var brushes = group.layers.duplicate()	
+	var index = 0
+	if id > brushes.size()-1 or id < 0: 
+		push_error("trying to delete nonexistant brush. Id: ", id)
+		return
+	for i in brushes.size():
+		if i != id:			
+			group.layers[index] = brushes[i]
+			index += 1
+	group.layers_num -= 1	
+	
+	init_color_brushes.call_deferred(active_terrain, color_layer_group_id)
 #endregion
 
 #region Grass Brushes
 func init_grass_brushes():
 	clear_brushes()
-	
 	brush_mode = &"grass"	
-	brush_container.item_selected.connect(on_grass_brush_select)
+	var brush_item_scene = preload("res://addons/m_terrain/gui/mtools_brush_item.tscn")
+	var brush_item = brush_item_scene.instantiate()
+	brush_container.add_child(brush_item)		
+	brush_item.set_text_brush("Add Grass")
+	brush_item.brush_selected.connect(func(): on_grass_brush_select(0))
+	
+	brush_item = brush_item_scene.instantiate()
+	brush_container.add_child(brush_item)		
+	brush_item.set_text_brush("Remove Grass")	
+	brush_item.brush_selected.connect(func(): on_grass_brush_select(1))
 		
-	brush_container.add_item("Add Grass")
-	brush_container.add_item("Remove Grass")
-	brush_container.select(0)
 	on_grass_brush_select(0)
 
 func on_grass_brush_select(id):
@@ -229,11 +314,19 @@ func init_mnavigation_brushes():
 	clear_brushes()
 	
 	brush_mode = &"navigation"
-	brush_container.item_selected.connect(on_mnavigation_brush_select)
-		
-	brush_container.add_item("Add Navigation")
-	brush_container.add_item("Remove Navigation")
-	brush_container.select(0)
+
+	var brush_item_scene = preload("res://addons/m_terrain/gui/mtools_brush_item.tscn")
+	var brush_item = brush_item_scene.instantiate()
+	brush_container.add_child(brush_item)		
+	brush_item.set_text_brush("Add Navigation")
+	brush_item.brush_selected.connect(func(): on_grass_brush_select(0))
+	
+	brush_item = brush_item_scene.instantiate()
+	brush_container.add_child(brush_item)		
+	brush_item.set_text_brush("Remove Navigation")	
+	brush_item.brush_selected.connect(func(): on_grass_brush_select(1))
+	
+	on_mnavigation_brush_select(0)
 
 func on_mnavigation_brush_select(id):
 	if id==0:
@@ -267,10 +360,8 @@ func process_input(event):
 			if not event.echo:					
 				reverse_property_control.set_value(not reverse_property_control.value)
 				
-	elif brush_mode == &"paint":
-		#to do: add remove paint?
+	elif brush_mode == &"paint":		
 		pass
-	
 	elif brush_mode == &"grass": 		
 		if event.keycode == KEY_ALT:
 			if event.is_pressed():
@@ -281,20 +372,27 @@ func process_input(event):
 #endregion
 
 
-func _on_resized():
+func _on_resized():	
 	var vbox = get_child(0)
 	var settings = find_child("brush_settings_panel")
 	settings.custom_minimum_size.x = global_position.x-owner.global_position.x
+	settings.size = settings.custom_minimum_size
 	var size_panel = find_child("brush_size_panel")
 	size_panel.custom_minimum_size.x = size.x
+	size_panel.size = size_panel.custom_minimum_size
 	var brushes_panel = find_child("brush_brushes_panel")
-	brushes_panel.custom_minimum_size.x = owner.size.x - size_panel.size.x - settings.size.x - 12
+	brushes_panel.custom_minimum_size.x = (owner.size.x - size_panel.size.x - settings.size.x - 12) *0.5
+	brushes_panel.size = brushes_panel.custom_minimum_size
 	
-	vbox.size.x = owner.size.x
-	vbox.global_position.x = owner.global_position.x
+	vbox.size.x = settings.size.x + size_panel.size.x + brushes_panel.size.x * 1.01
+	if settings.visible:
+		vbox.global_position.x = owner.global_position.x
+	else:
+		vbox.position.x = 0
+		
 	vbox.size.y = get_viewport_rect().size.y/5
 	vbox.position.y = -vbox.size.y
 
 
-func _on_panel_visibility_changed():
+func _on_panel_visibility_changed():	
 	_on_resized()

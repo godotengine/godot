@@ -19,6 +19,7 @@
 #include "../mpixel_region.h"
 #include "../mbound.h"
 #include "core/variant/variant.h"
+#include "../octmesh/mmesh_lod.h"
 
 #include "mgrass_chunk.h"
 
@@ -67,12 +68,12 @@ class MGrass : public Node3D {
     int min_grass_cutoff=1;
     Array lod_settings;
     Array materials;
-    Array meshes;
+    Ref<MMeshLod> meshes;
     Vector<Ref<MGrassLodSetting>> settings;
     Ref<MGrassLodSetting> default_lod_setting;
     Vector<RID> material_rids;
-    Vector<RID> meshe_rids;
-    Vector<PackedFloat32Array*> rand_buffer_pull;
+    //Vector<RID> meshe_rids;
+    Vector<PackedFloat32Array> rand_buffer_pull;
     HashMap<int64_t,MGrassChunk*> grid_to_grass;
     Vector<MGrassChunk*> to_be_visible;
     VSet<int>* dirty_points_id;
@@ -128,8 +129,8 @@ class MGrass : public Node3D {
     int get_min_grass_cutoff();
     void set_lod_settings(Array input);
     Array get_lod_settings();
-    void set_meshes(Array input);
-    Array get_meshes();
+    void set_meshes(Variant input);
+    Ref<MMeshLod> get_meshes();
     void set_materials(Array input);
     Array get_materials();
     uint32_t get_width();
@@ -165,6 +166,7 @@ class MGrass : public Node3D {
 
 
     Error save_grass_data();
+    void _recreate_all_grass(); // used in gdscript
     void recreate_all_grass(int lod=-1); // LOD -1 means all grass
     void update_random_buffer_pull(int lod);
     void _lod_setting_changed();

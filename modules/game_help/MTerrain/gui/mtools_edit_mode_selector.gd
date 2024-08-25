@@ -32,32 +32,29 @@ func init_edit_mode_options(all_mterrain):
 	var button_template =  Button.new()
 	button_template.mouse_filter = Control.MOUSE_FILTER_PASS
 	button_template.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	
-	if all_mterrain.size() == 0:
-		push_error("trying to init edit mode option button but didn't find any mterrain")
+	var biggest_button_size = 0
 	for child in item_container.get_children():
 		child.queue_free()
 	
-	var biggest_button_size = 0	
-	for terrain in all_mterrain:			
-		var button = button_template.duplicate()
-		button.text = "Sculpt " + terrain.name
-		item_container.add_child(button)
-		biggest_button_size = max(biggest_button_size, button.size.x)
-		button.pressed.connect(edit_selected.bind(terrain))		
-		
-		button = button_template.duplicate()
-		button.text = "Paint " + terrain.name		
-		item_container.add_child(button)
-		button.pressed.connect(edit_selected.bind(terrain, &"paint"))
-		for child in terrain.get_children():
-			if child is MGrass or child is MNavigationRegion3D:
-				button = button_template.duplicate()
-				button.text = "Paint " + child.name								
-				item_container.add_child(button)
-				biggest_button_size = max(biggest_button_size, button.size.x)
-				button.pressed.connect(edit_selected.bind(child))
-				
+	if all_mterrain.size() != 0:
+		for terrain in all_mterrain:
+			var button = button_template.duplicate()
+			button.text = "Sculpt " + terrain.name
+			item_container.add_child(button)
+			biggest_button_size = max(biggest_button_size, button.size.x)
+			button.pressed.connect(edit_selected.bind(terrain))		
+			
+			button = button_template.duplicate()
+			button.text = "Paint " + terrain.name		
+			item_container.add_child(button)
+			button.pressed.connect(edit_selected.bind(terrain, &"paint"))
+			for child in terrain.get_children():
+				if child is MGrass or child is MNavigationRegion3D:
+					button = button_template.duplicate()
+					button.text = "Paint " + child.name								
+					item_container.add_child(button)
+					biggest_button_size = max(biggest_button_size, button.size.x)
+					button.pressed.connect(edit_selected.bind(child))
 	
 	var all_nodes = EditorInterface.get_edited_scene_root().find_children("*")	
 	for child in all_nodes:
@@ -68,7 +65,7 @@ func init_edit_mode_options(all_mterrain):
 			item_container.add_child(button)
 			biggest_button_size = max(biggest_button_size, button.size.x)
 			button.pressed.connect(edit_selected.bind(child))		
-	
+	button_template.queue_free()
 	get_child(0).size. x = biggest_button_size + 12	
 	
 func change_active_object(object):	

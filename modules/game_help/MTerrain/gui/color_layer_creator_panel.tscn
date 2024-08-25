@@ -1,0 +1,198 @@
+[gd_scene load_steps=7 format=3 uid="uid://dptq8ffglb0du"]
+
+[ext_resource type="Theme" uid="uid://b3bd1lceed8ec" path="res://addons/m_terrain/gui/styles/mterrain_gui_theme.tres" id="1_g0rx7"]
+[ext_resource type="PackedScene" uid="uid://c2pjojed3ox4q" path="res://addons/m_terrain/gui/gui_part/data_compress_option.tscn" id="2_rkshc"]
+[ext_resource type="PackedScene" uid="uid://bt4wolcb7b55e" path="res://addons/m_terrain/gui/gui_part/file_compress.tscn" id="3_kynmw"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_50mff"]
+font_size = 32
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_bk6nk"]
+content_margin_left = 5.0
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_h7iju"]
+content_margin_left = 5.0
+
+[node name="PanelContainer" type="PanelContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1_g0rx7")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Create Color Layer" type="ScrollContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/Create Color Layer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Label" type="Label" parent="VBoxContainer/Create Color Layer/VBoxContainer"]
+layout_mode = 2
+text = "Create New Color Layer"
+label_settings = SubResource("LabelSettings_50mff")
+horizontal_alignment = 1
+
+[node name="HSeparator2" type="HSeparator" parent="VBoxContainer/Create Color Layer/VBoxContainer"]
+layout_mode = 2
+
+[node name="layer_name_hbox" type="HBoxContainer" parent="VBoxContainer/Create Color Layer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="VBoxContainer/Create Color Layer/VBoxContainer/layer_name_hbox"]
+layout_mode = 2
+text = "Layer Name:"
+
+[node name="layer_name" type="LineEdit" parent="VBoxContainer/Create Color Layer/VBoxContainer/layer_name_hbox"]
+layout_mode = 2
+placeholder_text = "New Layer Name"
+expand_to_text_length = true
+
+[node name="layer_type" type="HBoxContainer" parent="VBoxContainer/Create Color Layer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="VBoxContainer/Create Color Layer/VBoxContainer/layer_type"]
+layout_mode = 2
+text = "Layer Type"
+
+[node name="layer_types" type="OptionButton" parent="VBoxContainer/Create Color Layer/VBoxContainer/layer_type"]
+layout_mode = 2
+item_count = 5
+selected = 0
+popup/item_0/text = "Color Paint"
+popup/item_0/id = 0
+popup/item_1/text = "Channel Painter"
+popup/item_1/id = 1
+popup/item_2/text = "Bitwise Brush"
+popup/item_2/id = 2
+popup/item_3/text = "Paint 256"
+popup/item_3/id = 3
+popup/item_4/text = "Paint 16"
+popup/item_4/id = 4
+
+[node name="uniform_name_hbox" type="HBoxContainer" parent="VBoxContainer/Create Color Layer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="VBoxContainer/Create Color Layer/VBoxContainer/uniform_name_hbox"]
+layout_mode = 2
+text = "Uniform Name:"
+
+[node name="uniform_name" type="LineEdit" parent="VBoxContainer/Create Color Layer/VBoxContainer/uniform_name_hbox"]
+layout_mode = 2
+expand_to_text_length = true
+
+[node name="def_color" type="HBoxContainer" parent="VBoxContainer/Create Color Layer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="VBoxContainer/Create Color Layer/VBoxContainer/def_color"]
+layout_mode = 2
+text = "Background Color"
+
+[node name="ColorPickerButton" type="ColorPickerButton" parent="VBoxContainer/Create Color Layer/VBoxContainer/def_color"]
+layout_mode = 2
+text = "-------------"
+
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer/Create Color Layer/VBoxContainer"]
+layout_mode = 2
+
+[node name="advanced_settings_button" type="Button" parent="VBoxContainer/Create Color Layer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Advanced Settings"
+
+[node name="advanced_settings" type="VBoxContainer" parent="VBoxContainer/Create Color Layer/VBoxContainer"]
+visible = false
+layout_mode = 2
+
+[node name="image_format_vbox" type="HBoxContainer" parent="VBoxContainer/Create Color Layer/VBoxContainer/advanced_settings"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="VBoxContainer/Create Color Layer/VBoxContainer/advanced_settings/image_format_vbox"]
+layout_mode = 2
+text = "Image Format"
+
+[node name="image_format" type="OptionButton" parent="VBoxContainer/Create Color Layer/VBoxContainer/advanced_settings/image_format_vbox"]
+layout_mode = 2
+item_count = 12
+selected = 5
+popup/item_0/text = "FORMAT_L8"
+popup/item_0/id = 0
+popup/item_1/text = "FORMAT_LA8"
+popup/item_1/id = 1
+popup/item_2/text = "FORMAT_R8"
+popup/item_2/id = 2
+popup/item_3/text = "FORMAT_RG8"
+popup/item_3/id = 3
+popup/item_4/text = "FORMAT_RGB8"
+popup/item_4/id = 4
+popup/item_5/text = "FORMAT_RGBA8"
+popup/item_5/id = 5
+popup/item_6/text = "FORMAT_RGBA4444"
+popup/item_6/id = 6
+popup/item_7/text = "FORMAT_RGB565"
+popup/item_7/id = 7
+popup/item_8/text = "FORMAT_RF"
+popup/item_8/id = 8
+popup/item_9/text = "FORMAT_RGF"
+popup/item_9/id = 9
+popup/item_10/text = "FORMAT_RGBF"
+popup/item_10/id = 10
+popup/item_11/text = "FORMAT_RGBAF"
+popup/item_11/id = 11
+
+[node name="data_compress_settings" type="HBoxContainer" parent="VBoxContainer/Create Color Layer/VBoxContainer/advanced_settings"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="VBoxContainer/Create Color Layer/VBoxContainer/advanced_settings/data_compress_settings"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_bk6nk")
+text = "Compress"
+
+[node name="data_compress_option" parent="VBoxContainer/Create Color Layer/VBoxContainer/advanced_settings/data_compress_settings" instance=ExtResource("2_rkshc")]
+layout_mode = 2
+
+[node name="hb3" type="HBoxContainer" parent="VBoxContainer/Create Color Layer/VBoxContainer/advanced_settings"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="VBoxContainer/Create Color Layer/VBoxContainer/advanced_settings/hb3"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_h7iju")
+text = "File Compress"
+
+[node name="file_compress" parent="VBoxContainer/Create Color Layer/VBoxContainer/advanced_settings/hb3" instance=ExtResource("3_kynmw")]
+layout_mode = 2
+selected = 4
+
+[node name="HSeparator3" type="HSeparator" parent="VBoxContainer/Create Color Layer/VBoxContainer"]
+layout_mode = 2
+
+[node name="instructions_label" type="Label" parent="VBoxContainer/Create Color Layer/VBoxContainer"]
+layout_mode = 2
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="create" type="Button" parent="VBoxContainer/Create Color Layer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Create"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="close_button" type="Button" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Close"

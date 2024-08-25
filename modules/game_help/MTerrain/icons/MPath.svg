@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   height="16"
+   viewBox="0 0 16 16"
+   width="16"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="Path3D.svg"
+   inkscape:version="1.3.2 (091e20ef0f, 2023-11-25, custom)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="13.21875"
+     inkscape:cx="-4.1229314"
+     inkscape:cy="0.45390071"
+     inkscape:window-width="1920"
+     inkscape:window-height="1092"
+     inkscape:window-x="1920"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1" />
+  <path
+     d="M13 1a2 2 0 0 0-1.15 3.633c-.193.885-.554 1.34-.987 1.642-.644.451-1.713.606-2.963.73s-2.681.221-3.912 1.083c-.892.625-1.532 1.652-1.818 3.096a2 2 0 1 0 1.98.183c.193-.885.553-1.337.987-1.64.644-.451 1.713-.606 2.963-.73s2.681-.221 3.912-1.083c.892-.625 1.532-1.654 1.818-3.098A2 2 0 0 0 13 1z"
+     fill="#fc7f7f"
+     id="path1" />
+  <path
+     d="M 14.936328,12.91251 A 2.0645043,1.9693797 0 0 0 11.22879,11.658855 C 10.322568,11.439221 9.8658665,11.068684 9.5695403,10.632426 9.1269209,9.9835194 9.004622,8.9262977 8.920672,7.6919892 8.836722,6.4576805 8.7869942,5.0461526 7.9410162,3.8057757 7.3276139,2.9069681 6.2906219,2.2426677 4.8109765,1.9127508 A 2.0645043,1.9693797 0 1 0 4.5525278,3.8551629 c 0.9062228,0.2196341 1.3598656,0.5890856 1.6571881,1.026361 0.4426195,0.6489069 0.5649183,1.7061305 0.6488683,2.9404393 0.08395,1.2343085 0.1336779,2.6458348 0.9796558,3.8862128 0.6134024,0.898806 1.6524578,1.563175 3.132101,1.89309 a 2.0645043,1.9693797 0 0 0 3.965987,-0.688756 z"
+     fill="#fc7f7f"
+     id="path2"
+     style="stroke-width:1.00819" />
+</svg>

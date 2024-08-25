@@ -13,7 +13,7 @@ var handle01_tex = preload("res://addons/m_terrain/icons/handle01.png")
 #var icon_collapse = preload("res://addons/m_terrain/icons/collapse_normal.svg")
 var icon_rotation = preload("res://addons/m_terrain/icons/rotation.svg")
 
-var mterrain_plugin:EditorPlugin
+var tools #mtools.gd
 var gui:Control
 
 ### The MCurveTerrain parameter

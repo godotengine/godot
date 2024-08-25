@@ -27,3 +27,8 @@ if env.editor_build:
 module_env.add_source_files(env.modules_sources, "editor/debugger/*.cpp")
 module_env.add_source_files(env.modules_sources, "hsm/*.cpp")
 module_env.add_source_files(env.modules_sources, "util/*.cpp")
+
+
+
+
+
