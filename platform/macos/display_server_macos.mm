@@ -3609,7 +3609,11 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 			gl_manager_angle = nullptr;
 			bool fallback = GLOBAL_GET("rendering/gl_compatibility/fallback_to_native");
 			if (fallback) {
-				WARN_PRINT("Your video card drivers seem not to support the required Metal version, switching to native OpenGL.");
+#ifdef EGL_STATIC
+				WARN_PRINT("Your video card drivers seem not to support GLES3 / ANGLE, switching to native OpenGL.");
+#else
+				WARN_PRINT("Your video card drivers seem not to support GLES3 / ANGLE or ANGLE dynamic libraries (libEGL.dylib and libGLESv2.dylib) are missing, switching to native OpenGL.");
+#endif
 				rendering_driver = "opengl3";
 			} else {
 				r_error = ERR_UNAVAILABLE;
