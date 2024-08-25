@@ -615,7 +615,7 @@ Variant ShaderEditorPlugin::get_drag_data_fw(const Point2 &p_point, Control *p_f
 	String preview_name = shader_list->get_item_text(idx);
 	Ref<Texture2D> preview_icon = shader_list->get_item_icon(idx);
 
-	if (!preview_icon.is_null()) {
+	if (preview_icon.is_valid()) {
 		TextureRect *tf = memnew(TextureRect);
 		tf->set_texture(preview_icon);
 		tf->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);

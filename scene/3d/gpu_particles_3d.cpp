@@ -381,7 +381,7 @@ PackedStringArray GPUParticles3D::get_configuration_warnings() const {
 			warnings.push_back(RTR("Only one Trail mesh is supported. If you want to use more than a single mesh, a Skin is needed (see documentation)."));
 		}
 
-		if ((dp_count || !skin.is_null()) && (missing_trails || no_materials)) {
+		if ((dp_count || skin.is_valid()) && (missing_trails || no_materials)) {
 			warnings.push_back(RTR("Trails enabled, but one or more mesh materials are either missing or not set for trails rendering."));
 		}
 		if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {

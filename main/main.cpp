@@ -4007,7 +4007,7 @@ int Main::start() {
 						scn.instantiate();
 						scn->set_path(info.path);
 						scn->reload_from_file();
-						ERR_CONTINUE_MSG(!scn.is_valid(), vformat("Failed to instantiate an autoload, can't load from path: %s.", info.path));
+						ERR_CONTINUE_MSG(scn.is_null(), vformat("Failed to instantiate an autoload, can't load from path: %s.", info.path));
 
 						if (scn.is_valid()) {
 							n = scn->instantiate();

@@ -395,7 +395,7 @@ Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 		scn.instantiate();
 		scn->set_path(p_path);
 		scn->reload_from_file();
-		ERR_FAIL_COND_V_MSG(!scn.is_valid(), nullptr, vformat("Failed to create an autoload, can't load from path: %s.", p_path));
+		ERR_FAIL_COND_V_MSG(scn.is_null(), nullptr, vformat("Failed to create an autoload, can't load from path: %s.", p_path));
 
 		if (scn.is_valid()) {
 			n = scn->instantiate();

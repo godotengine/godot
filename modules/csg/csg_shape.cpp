@@ -725,7 +725,7 @@ bool CSGShape3D::_is_debug_collision_shape_visible() {
 }
 
 void CSGShape3D::_update_debug_collision_shape() {
-	if (!use_collision || !is_root_shape() || !root_collision_shape.is_valid() || !_is_debug_collision_shape_visible()) {
+	if (!use_collision || !is_root_shape() || root_collision_shape.is_null() || !_is_debug_collision_shape_visible()) {
 		return;
 	}
 
@@ -1037,7 +1037,7 @@ CSGPrimitive3D::CSGPrimitive3D() {
 /////////////////////
 
 CSGBrush *CSGMesh3D::_build_brush() {
-	if (!mesh.is_valid()) {
+	if (mesh.is_null()) {
 		return memnew(CSGBrush);
 	}
 
