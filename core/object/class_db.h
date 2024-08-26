@@ -134,15 +134,21 @@ public:
 		bool reloadable = false;
 		bool is_virtual = false;
 		bool is_runtime = false;
-		Object *(*creation_func)() = nullptr;
+		// The bool argument indicates the need to postinitialize.
+		Object *(*creation_func)(bool) = nullptr;
 
 		ClassInfo() {}
 		~ClassInfo() {}
 	};
 
 	template <typename T>
-	static Object *creator() {
-		return memnew(T);
+	static Object *creator(bool p_notify_postinitialize) {
+		Object *ret = new ("") T;
+		ret->_initialize();
+		if (p_notify_postinitialize) {
+			ret->_postinitialize();
+		}
+		return ret;
 	}
 
 	static RWLock lock;
@@ -183,7 +189,9 @@ private:
 	static MethodBind *_bind_vararg_method(MethodBind *p_bind, const StringName &p_name, const Vector<Variant> &p_default_args, bool p_compatibility);
 	static void _bind_method_custom(const StringName &p_class, MethodBind *p_method, bool p_compatibility);
 
-	static Object *_instantiate_internal(const StringName &p_class, bool p_require_real_class = false);
+	static Object *_instantiate_internal(const StringName &p_class, bool p_require_real_class = false, bool p_notify_postinitialize = true);
+
+	static bool _can_instantiate(ClassInfo *p_class_info);
 
 public:
 	// DO NOT USE THIS!!!!!! NEEDS TO BE PUBLIC BUT DO NOT USE NO MATTER WHAT!!!
@@ -256,8 +264,8 @@ public:
 	static void unregister_extension_class(const StringName &p_class, bool p_free_method_binds = true);
 
 	template <typename T>
-	static Object *_create_ptr_func() {
-		return T::create();
+	static Object *_create_ptr_func(bool p_notify_postinitialize) {
+		return T::create(p_notify_postinitialize);
 	}
 
 	template <typename T>
@@ -292,6 +300,7 @@ public:
 	static bool is_virtual(const StringName &p_class);
 	static Object *instantiate(const StringName &p_class);
 	static Object *instantiate_no_placeholders(const StringName &p_class);
+	static Object *instantiate_without_postinitialization(const StringName &p_class);
 	static void set_object_extension_instance(Object *p_object, const StringName &p_class, GDExtensionClassInstancePtr p_instance);
 
 	static APIType get_api_type(const StringName &p_class);
