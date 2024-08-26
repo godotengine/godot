@@ -38,21 +38,8 @@
 #include "scene/main/viewport.h"
 #include "scene/resources/mesh.h"
 
-OpenXRCompositionLayerEquirect::OpenXRCompositionLayerEquirect() {
-	composition_layer = {
-		XR_TYPE_COMPOSITION_LAYER_EQUIRECT2_KHR, // type
-		nullptr, // next
-		0, // layerFlags
-		XR_NULL_HANDLE, // space
-		XR_EYE_VISIBILITY_BOTH, // eyeVisibility
-		{}, // subImage
-		{ { 0, 0, 0, 0 }, { 0, 0, 0 } }, // pose
-		radius, // radius
-		central_horizontal_angle, // centralHorizontalAngle
-		upper_vertical_angle, // upperVerticalAngle
-		-lower_vertical_angle, // lowerVerticalAngle
-	};
-	openxr_layer_provider = memnew(OpenXRViewportCompositionLayerProvider((XrCompositionLayerBaseHeader *)&composition_layer));
+OpenXRCompositionLayerEquirect::OpenXRCompositionLayerEquirect() :
+		OpenXRCompositionLayer((XrCompositionLayerBaseHeader *)&composition_layer) {
 	XRServer::get_singleton()->connect("reference_frame_changed", callable_mp(this, &OpenXRCompositionLayerEquirect::update_transform));
 }
 
