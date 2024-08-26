@@ -785,7 +785,7 @@ public:
 	void deselect();
 
 	int get_pending_paragraphs() const;
-	bool is_ready() const;
+	bool is_finished() const;
 	bool is_updating() const;
 
 	void set_threaded(bool p_threaded);

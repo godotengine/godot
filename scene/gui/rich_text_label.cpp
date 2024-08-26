@@ -1905,7 +1905,7 @@ void RichTextLabel::_notification(int p_what) {
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (is_visible_in_tree()) {
-				if (!is_ready()) {
+				if (!is_finished()) {
 					return;
 				}
 				double dt = get_process_delta_time();
@@ -2796,7 +2796,7 @@ int RichTextLabel::get_pending_paragraphs() const {
 	return lines - to_line;
 }
 
-bool RichTextLabel::is_ready() const {
+bool RichTextLabel::is_finished() const {
 	const_cast<RichTextLabel *>(this)->_validate_line_caches();
 
 	if (updating.load()) {
@@ -6002,7 +6002,10 @@ void RichTextLabel::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_text"), &RichTextLabel::get_text);
 
-	ClassDB::bind_method(D_METHOD("is_ready"), &RichTextLabel::is_ready);
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("is_ready"), &RichTextLabel::is_finished);
+#endif // DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("is_finished"), &RichTextLabel::is_finished);
 
 	ClassDB::bind_method(D_METHOD("set_threaded", "threaded"), &RichTextLabel::set_threaded);
 	ClassDB::bind_method(D_METHOD("is_threaded"), &RichTextLabel::is_threaded);
