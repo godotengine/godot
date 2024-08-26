@@ -31,6 +31,7 @@
 #include "gdextension_manager.h"
 
 #include "core/extension/gdextension_compat_hashes.h"
+#include "core/extension/gdextension_library_loader.h"
 #include "core/io/file_access.h"
 #include "core/object/script_language.h"
 
@@ -69,11 +70,22 @@ GDExtensionManager::LoadStatus GDExtensionManager::_unload_extension_internal(co
 }
 
 GDExtensionManager::LoadStatus GDExtensionManager::load_extension(const String &p_path) {
+	Ref<GDExtensionLibraryLoader> loader;
+	loader.instantiate();
+	return GDExtensionManager::get_singleton()->load_extension_with_loader(p_path, loader);
+}
+
+GDExtensionManager::LoadStatus GDExtensionManager::load_extension_with_loader(const String &p_path, const Ref<GDExtensionLoader> &p_loader) {
+	DEV_ASSERT(p_loader.is_valid());
+
 	if (gdextension_map.has(p_path)) {
 		return LOAD_STATUS_ALREADY_LOADED;
 	}
-	Ref<GDExtension> extension = ResourceLoader::load(p_path);
-	if (extension.is_null()) {
+
+	Ref<GDExtension> extension;
+	extension.instantiate();
+	Error err = extension->open_library(p_path, p_loader);
+	if (err != OK) {
 		return LOAD_STATUS_FAILED;
 	}
 
@@ -82,6 +94,7 @@ GDExtensionManager::LoadStatus GDExtensionManager::load_extension(const String &
 		return status;
 	}
 
+	extension->set_path(p_path);
 	gdextension_map[p_path] = extension;
 	return LOAD_STATUS_OK;
 }
@@ -117,7 +130,7 @@ GDExtensionManager::LoadStatus GDExtensionManager::reload_extension(const String
 		extension->close_library();
 	}
 
-	Error err = GDExtensionResourceLoader::load_gdextension_resource(p_path, extension);
+	Error err = extension->open_library(p_path, extension->loader);
 	if (err != OK) {
 		return LOAD_STATUS_FAILED;
 	}

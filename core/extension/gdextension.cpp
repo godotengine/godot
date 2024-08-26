@@ -32,11 +32,9 @@
 #include "gdextension.compat.inc"
 
 #include "core/config/project_settings.h"
-#include "core/io/dir_access.h"
 #include "core/object/class_db.h"
 #include "core/object/method_bind.h"
-#include "core/os/os.h"
-#include "core/version.h"
+#include "gdextension_library_loader.h"
 #include "gdextension_manager.h"
 
 extern void gdextension_setup_interface();
@@ -46,146 +44,6 @@ typedef GDExtensionBool (*GDExtensionLegacyInitializationFunction)(void *p_inter
 
 String GDExtension::get_extension_list_config_file() {
 	return ProjectSettings::get_singleton()->get_project_data_path().path_join("extension_list.cfg");
-}
-
-Vector<SharedObject> GDExtension::find_extension_dependencies(const String &p_path, Ref<ConfigFile> p_config, std::function<bool(String)> p_has_feature) {
-	Vector<SharedObject> dependencies_shared_objects;
-	if (p_config->has_section("dependencies")) {
-		List<String> config_dependencies;
-		p_config->get_section_keys("dependencies", &config_dependencies);
-
-		for (const String &dependency : config_dependencies) {
-			Vector<String> dependency_tags = dependency.split(".");
-			bool all_tags_met = true;
-			for (int i = 0; i < dependency_tags.size(); i++) {
-				String tag = dependency_tags[i].strip_edges();
-				if (!p_has_feature(tag)) {
-					all_tags_met = false;
-					break;
-				}
-			}
-
-			if (all_tags_met) {
-				Dictionary dependency_value = p_config->get_value("dependencies", dependency);
-				for (const Variant *key = dependency_value.next(nullptr); key; key = dependency_value.next(key)) {
-					String dependency_path = *key;
-					String target_path = dependency_value[*key];
-					if (dependency_path.is_relative_path()) {
-						dependency_path = p_path.get_base_dir().path_join(dependency_path);
-					}
-					dependencies_shared_objects.push_back(SharedObject(dependency_path, dependency_tags, target_path));
-				}
-				break;
-			}
-		}
-	}
-
-	return dependencies_shared_objects;
-}
-
-String GDExtension::find_extension_library(const String &p_path, Ref<ConfigFile> p_config, std::function<bool(String)> p_has_feature, PackedStringArray *r_tags) {
-	// First, check the explicit libraries.
-	if (p_config->has_section("libraries")) {
-		List<String> libraries;
-		p_config->get_section_keys("libraries", &libraries);
-
-		// Iterate the libraries, finding the best matching tags.
-		String best_library_path;
-		Vector<String> best_library_tags;
-		for (const String &E : libraries) {
-			Vector<String> tags = E.split(".");
-			bool all_tags_met = true;
-			for (int i = 0; i < tags.size(); i++) {
-				String tag = tags[i].strip_edges();
-				if (!p_has_feature(tag)) {
-					all_tags_met = false;
-					break;
-				}
-			}
-
-			if (all_tags_met && tags.size() > best_library_tags.size()) {
-				best_library_path = p_config->get_value("libraries", E);
-				best_library_tags = tags;
-			}
-		}
-
-		if (!best_library_path.is_empty()) {
-			if (best_library_path.is_relative_path()) {
-				best_library_path = p_path.get_base_dir().path_join(best_library_path);
-			}
-			if (r_tags != nullptr) {
-				r_tags->append_array(best_library_tags);
-			}
-			return best_library_path;
-		}
-	}
-
-	// Second, try to autodetect
-	String autodetect_library_prefix;
-	if (p_config->has_section_key("configuration", "autodetect_library_prefix")) {
-		autodetect_library_prefix = p_config->get_value("configuration", "autodetect_library_prefix");
-	}
-	if (!autodetect_library_prefix.is_empty()) {
-		String autodetect_path = autodetect_library_prefix;
-		if (autodetect_path.is_relative_path()) {
-			autodetect_path = p_path.get_base_dir().path_join(autodetect_path);
-		}
-
-		// Find the folder and file parts of the prefix.
-		String folder;
-		String file_prefix;
-		if (DirAccess::dir_exists_absolute(autodetect_path)) {
-			folder = autodetect_path;
-		} else if (DirAccess::dir_exists_absolute(autodetect_path.get_base_dir())) {
-			folder = autodetect_path.get_base_dir();
-			file_prefix = autodetect_path.get_file();
-		} else {
-			ERR_FAIL_V_MSG(String(), vformat("Error in extension: %s. Could not find folder for automatic detection of libraries files. autodetect_library_prefix=\"%s\"", p_path, autodetect_library_prefix));
-		}
-
-		// Open the folder.
-		Ref<DirAccess> dir = DirAccess::open(folder);
-		ERR_FAIL_COND_V_MSG(!dir.is_valid(), String(), vformat("Error in extension: %s. Could not open folder for automatic detection of libraries files. autodetect_library_prefix=\"%s\"", p_path, autodetect_library_prefix));
-
-		// Iterate the files and check the prefixes, finding the best matching file.
-		String best_file;
-		Vector<String> best_file_tags;
-		dir->list_dir_begin();
-		String file_name = dir->_get_next();
-		while (file_name != "") {
-			if (!dir->current_is_dir() && file_name.begins_with(file_prefix)) {
-				// Check if the files matches all requested feature tags.
-				String tags_str = file_name.trim_prefix(file_prefix);
-				tags_str = tags_str.trim_suffix(tags_str.get_extension());
-
-				Vector<String> tags = tags_str.split(".", false);
-				bool all_tags_met = true;
-				for (int i = 0; i < tags.size(); i++) {
-					String tag = tags[i].strip_edges();
-					if (!p_has_feature(tag)) {
-						all_tags_met = false;
-						break;
-					}
-				}
-
-				// If all tags are found in the feature list, and we found more tags than before, use this file.
-				if (all_tags_met && tags.size() > best_file_tags.size()) {
-					best_file_tags = tags;
-					best_file = file_name;
-				}
-			}
-			file_name = dir->_get_next();
-		}
-
-		if (!best_file.is_empty()) {
-			String library_path = folder.path_join(best_file);
-			if (r_tags != nullptr) {
-				r_tags->append_array(best_file_tags);
-			}
-			return library_path;
-		}
-	}
-	return String();
 }
 
 class GDExtensionMethodBind : public MethodBind {
@@ -794,7 +652,13 @@ void GDExtension::_unregister_extension_class(GDExtensionClassLibraryPtr p_libra
 void GDExtension::_get_library_path(GDExtensionClassLibraryPtr p_library, GDExtensionUninitializedStringPtr r_path) {
 	GDExtension *self = reinterpret_cast<GDExtension *>(p_library);
 
-	memnew_placement(r_path, String(self->library_path));
+	Ref<GDExtensionLibraryLoader> library_loader = self->loader;
+	String library_path;
+	if (library_loader.is_valid()) {
+		library_path = library_loader->library_path;
+	}
+
+	memnew_placement(r_path, String(library_path));
 }
 
 HashMap<StringName, GDExtensionInterfaceFunctionPtr> GDExtension::gdextension_interface_functions;
@@ -810,55 +674,34 @@ GDExtensionInterfaceFunctionPtr GDExtension::get_interface_function(const String
 	return *function;
 }
 
-Error GDExtension::open_library(const String &p_path, const String &p_entry_symbol, Vector<SharedObject> *p_dependencies) {
+Error GDExtension::open_library(const String &p_path, const Ref<GDExtensionLoader> &p_loader) {
+	ERR_FAIL_NULL_V_MSG(p_loader, FAILED, "Can't open GDExtension without a loader.");
+	loader = p_loader;
+
 	String abs_path = ProjectSettings::get_singleton()->globalize_path(p_path);
 
-	Vector<String> abs_dependencies_paths;
-	if (p_dependencies != nullptr && !p_dependencies->is_empty()) {
-		for (const SharedObject &dependency : *p_dependencies) {
-			abs_dependencies_paths.push_back(ProjectSettings::get_singleton()->globalize_path(dependency.path));
-		}
-	}
-
-	OS::GDExtensionData data = {
-		true, // also_set_library_path
-		&library_path, // r_resolved_path
-		Engine::get_singleton()->is_editor_hint(), // generate_temp_files
-		&abs_dependencies_paths, // library_dependencies
-	};
-	Error err = OS::get_singleton()->open_dynamic_library(abs_path, library, &data);
+	Error err = loader->open_library(abs_path);
 
 	ERR_FAIL_COND_V_MSG(err == ERR_FILE_NOT_FOUND, err, "GDExtension dynamic library not found: " + abs_path);
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Can't open GDExtension dynamic library: " + abs_path);
 
-	void *entry_funcptr = nullptr;
-
-	err = OS::get_singleton()->get_dynamic_library_symbol_handle(library, p_entry_symbol, entry_funcptr, false);
+	err = loader->initialize(&gdextension_get_proc_address, this, &initialization);
 
 	if (err != OK) {
-		ERR_PRINT("GDExtension entry point '" + p_entry_symbol + "' not found in library " + abs_path);
-		OS::get_singleton()->close_dynamic_library(library);
+		// Errors already logged in initialize().
+		loader->close_library();
 		return err;
 	}
 
-	GDExtensionInitializationFunction initialization_function = (GDExtensionInitializationFunction)entry_funcptr;
-	GDExtensionBool ret = initialization_function(&gdextension_get_proc_address, this, &initialization);
+	level_initialized = -1;
 
-	if (ret) {
-		level_initialized = -1;
-		return OK;
-	} else {
-		ERR_PRINT("GDExtension initialization function '" + p_entry_symbol + "' returned an error.");
-		OS::get_singleton()->close_dynamic_library(library);
-		return FAILED;
-	}
+	return OK;
 }
 
 void GDExtension::close_library() {
-	ERR_FAIL_NULL(library);
-	OS::get_singleton()->close_dynamic_library(library);
+	ERR_FAIL_COND(!is_library_open());
+	loader->close_library();
 
-	library = nullptr;
 	class_icon_paths.clear();
 
 #ifdef TOOLS_ENABLED
@@ -867,16 +710,16 @@ void GDExtension::close_library() {
 }
 
 bool GDExtension::is_library_open() const {
-	return library != nullptr;
+	return loader.is_valid() && loader->is_library_open();
 }
 
 GDExtension::InitializationLevel GDExtension::get_minimum_library_initialization_level() const {
-	ERR_FAIL_NULL_V(library, INITIALIZATION_LEVEL_CORE);
+	ERR_FAIL_COND_V(!is_library_open(), INITIALIZATION_LEVEL_CORE);
 	return InitializationLevel(initialization.minimum_initialization_level);
 }
 
 void GDExtension::initialize_library(InitializationLevel p_level) {
-	ERR_FAIL_NULL(library);
+	ERR_FAIL_COND(!is_library_open());
 	ERR_FAIL_COND_MSG(p_level <= int32_t(level_initialized), vformat("Level '%d' must be higher than the current level '%d'", p_level, level_initialized));
 
 	level_initialized = int32_t(p_level);
@@ -886,7 +729,7 @@ void GDExtension::initialize_library(InitializationLevel p_level) {
 	initialization.initialize(initialization.userdata, GDExtensionInitializationLevel(p_level));
 }
 void GDExtension::deinitialize_library(InitializationLevel p_level) {
-	ERR_FAIL_NULL(library);
+	ERR_FAIL_COND(!is_library_open());
 	ERR_FAIL_COND(p_level > int32_t(level_initialized));
 
 	level_initialized = int32_t(p_level) - 1;
@@ -910,7 +753,7 @@ GDExtension::GDExtension() {
 }
 
 GDExtension::~GDExtension() {
-	if (library != nullptr) {
+	if (is_library_open()) {
 		close_library();
 	}
 #ifdef TOOLS_ENABLED
@@ -949,142 +792,15 @@ void GDExtension::finalize_gdextensions() {
 Error GDExtensionResourceLoader::load_gdextension_resource(const String &p_path, Ref<GDExtension> &p_extension) {
 	ERR_FAIL_COND_V_MSG(p_extension.is_valid() && p_extension->is_library_open(), ERR_ALREADY_IN_USE, "Cannot load GDExtension resource into already opened library.");
 
-	Ref<ConfigFile> config;
-	config.instantiate();
+	GDExtensionManager *extension_manager = GDExtensionManager::get_singleton();
 
-	Error err = config->load(p_path);
-
-	if (err != OK) {
-		ERR_PRINT("Error loading GDExtension configuration file: " + p_path);
-		return err;
+	GDExtensionManager::LoadStatus status = extension_manager->load_extension(p_path);
+	if (status != GDExtensionManager::LOAD_STATUS_OK && status != GDExtensionManager::LOAD_STATUS_ALREADY_LOADED) {
+		// Errors already logged in load_extension().
+		return FAILED;
 	}
 
-	if (!config->has_section_key("configuration", "entry_symbol")) {
-		ERR_PRINT("GDExtension configuration file must contain a \"configuration/entry_symbol\" key: " + p_path);
-		return ERR_INVALID_DATA;
-	}
-
-	String entry_symbol = config->get_value("configuration", "entry_symbol");
-
-	uint32_t compatibility_minimum[3] = { 0, 0, 0 };
-	if (config->has_section_key("configuration", "compatibility_minimum")) {
-		String compat_string = config->get_value("configuration", "compatibility_minimum");
-		Vector<int> parts = compat_string.split_ints(".");
-		for (int i = 0; i < parts.size(); i++) {
-			if (i >= 3) {
-				break;
-			}
-			if (parts[i] >= 0) {
-				compatibility_minimum[i] = parts[i];
-			}
-		}
-	} else {
-		ERR_PRINT("GDExtension configuration file must contain a \"configuration/compatibility_minimum\" key: " + p_path);
-		return ERR_INVALID_DATA;
-	}
-
-	if (compatibility_minimum[0] < 4 || (compatibility_minimum[0] == 4 && compatibility_minimum[1] == 0)) {
-		ERR_PRINT(vformat("GDExtension's compatibility_minimum (%d.%d.%d) must be at least 4.1.0: %s", compatibility_minimum[0], compatibility_minimum[1], compatibility_minimum[2], p_path));
-		return ERR_INVALID_DATA;
-	}
-
-	bool compatible = true;
-	// Check version lexicographically.
-	if (VERSION_MAJOR != compatibility_minimum[0]) {
-		compatible = VERSION_MAJOR > compatibility_minimum[0];
-	} else if (VERSION_MINOR != compatibility_minimum[1]) {
-		compatible = VERSION_MINOR > compatibility_minimum[1];
-	} else {
-		compatible = VERSION_PATCH >= compatibility_minimum[2];
-	}
-	if (!compatible) {
-		ERR_PRINT(vformat("GDExtension only compatible with Godot version %d.%d.%d or later: %s", compatibility_minimum[0], compatibility_minimum[1], compatibility_minimum[2], p_path));
-		return ERR_INVALID_DATA;
-	}
-
-	// Optionally check maximum compatibility.
-	if (config->has_section_key("configuration", "compatibility_maximum")) {
-		uint32_t compatibility_maximum[3] = { 0, 0, 0 };
-		String compat_string = config->get_value("configuration", "compatibility_maximum");
-		Vector<int> parts = compat_string.split_ints(".");
-		for (int i = 0; i < 3; i++) {
-			if (i < parts.size() && parts[i] >= 0) {
-				compatibility_maximum[i] = parts[i];
-			} else {
-				// If a version part is missing, set the maximum to an arbitrary high value.
-				compatibility_maximum[i] = 9999;
-			}
-		}
-
-		compatible = true;
-		if (VERSION_MAJOR != compatibility_maximum[0]) {
-			compatible = VERSION_MAJOR < compatibility_maximum[0];
-		} else if (VERSION_MINOR != compatibility_maximum[1]) {
-			compatible = VERSION_MINOR < compatibility_maximum[1];
-		}
-#if VERSION_PATCH
-		// #if check to avoid -Wtype-limits warning when 0.
-		else {
-			compatible = VERSION_PATCH <= compatibility_maximum[2];
-		}
-#endif
-
-		if (!compatible) {
-			ERR_PRINT(vformat("GDExtension only compatible with Godot version %s or earlier: %s", compat_string, p_path));
-			return ERR_INVALID_DATA;
-		}
-	}
-
-	String library_path = GDExtension::find_extension_library(p_path, config, [](const String &p_feature) { return OS::get_singleton()->has_feature(p_feature); });
-
-	if (library_path.is_empty()) {
-		const String os_arch = OS::get_singleton()->get_name().to_lower() + "." + Engine::get_singleton()->get_architecture_name();
-		ERR_PRINT(vformat("No GDExtension library found for current OS and architecture (%s) in configuration file: %s", os_arch, p_path));
-		return ERR_FILE_NOT_FOUND;
-	}
-
-	bool is_static_library = library_path.ends_with(".a") || library_path.ends_with(".xcframework");
-
-	if (!library_path.is_resource_file() && !library_path.is_absolute_path()) {
-		library_path = p_path.get_base_dir().path_join(library_path);
-	}
-
-	if (p_extension.is_null()) {
-		p_extension.instantiate();
-	}
-
-#ifdef TOOLS_ENABLED
-	p_extension->set_reloadable(config->get_value("configuration", "reloadable", false) && Engine::get_singleton()->is_extension_reloading_enabled());
-
-	p_extension->update_last_modified_time(
-			FileAccess::get_modified_time(p_path),
-			FileAccess::get_modified_time(library_path));
-#endif
-
-	Vector<SharedObject> library_dependencies = GDExtension::find_extension_dependencies(p_path, config, [](const String &p_feature) { return OS::get_singleton()->has_feature(p_feature); });
-	err = p_extension->open_library(is_static_library ? String() : library_path, entry_symbol, &library_dependencies);
-	if (err != OK) {
-		// Unreference the extension so that this loading can be considered a failure.
-		p_extension.unref();
-
-		// Errors already logged in open_library()
-		return err;
-	}
-
-	// Handle icons if any are specified.
-	if (config->has_section("icons")) {
-		List<String> keys;
-		config->get_section_keys("icons", &keys);
-		for (const String &key : keys) {
-			String icon_path = config->get_value("icons", key);
-			if (icon_path.is_relative_path()) {
-				icon_path = p_path.get_base_dir().path_join(icon_path);
-			}
-
-			p_extension->class_icon_paths[key] = icon_path;
-		}
-	}
-
+	p_extension = extension_manager->get_extension(p_path);
 	return OK;
 }
 
@@ -1125,16 +841,7 @@ String GDExtensionResourceLoader::get_resource_type(const String &p_path) const 
 
 #ifdef TOOLS_ENABLED
 bool GDExtension::has_library_changed() const {
-	// Check only that the last modified time is different (rather than checking
-	// that it's newer) since some OS's (namely Windows) will preserve the modified
-	// time by default when copying files.
-	if (FileAccess::get_modified_time(get_path()) != resource_last_modified_time) {
-		return true;
-	}
-	if (FileAccess::get_modified_time(library_path) != library_last_modified_time) {
-		return true;
-	}
-	return false;
+	return loader->has_library_changed();
 }
 
 void GDExtension::prepare_reload() {
