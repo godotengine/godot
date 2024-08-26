@@ -43,8 +43,11 @@ import android.widget.Toast
 import androidx.annotation.CallSuper
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.window.layout.WindowMetricsCalculator
+import org.godotengine.editor.utils.signApk
+import org.godotengine.editor.utils.verifyApk
 import org.godotengine.godot.GodotActivity
 import org.godotengine.godot.GodotLib
+import org.godotengine.godot.error.Error
 import org.godotengine.godot.utils.PermissionsUtil
 import org.godotengine.godot.utils.ProcessPhoenix
 import java.util.*
@@ -349,5 +352,21 @@ open class GodotEditor : GodotActivity() {
 				}
 			}
 		}
+	}
+
+	override fun signApk(
+		inputPath: String,
+		outputPath: String,
+		keystorePath: String,
+		keystoreUser: String,
+		keystorePassword: String
+	): Error {
+		val godot = godot ?: return Error.ERR_UNCONFIGURED
+		return signApk(godot.fileAccessHandler, inputPath, outputPath, keystorePath, keystoreUser, keystorePassword)
+	}
+
+	override fun verifyApk(apkPath: String): Error {
+		val godot = godot ?: return Error.ERR_UNCONFIGURED
+		return verifyApk(godot.fileAccessHandler, apkPath)
 	}
 }

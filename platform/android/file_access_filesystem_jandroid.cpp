@@ -77,15 +77,9 @@ Error FileAccessFilesystemJAndroid::open_internal(const String &p_path, int p_mo
 		int res = env->CallIntMethod(file_access_handler, _file_open, js, p_mode_flags);
 		env->DeleteLocalRef(js);
 
-		if (res <= 0) {
-			switch (res) {
-				case 0:
-				default:
-					return ERR_FILE_CANT_OPEN;
-
-				case -2:
-					return ERR_FILE_NOT_FOUND;
-			}
+		if (res < 0) {
+			// Errors are passed back as their negative value to differentiate from the positive file id.
+			return static_cast<Error>(-res);
 		}
 
 		id = res;
@@ -331,19 +325,7 @@ Error FileAccessFilesystemJAndroid::resize(int64_t p_length) {
 		ERR_FAIL_NULL_V(env, FAILED);
 		ERR_FAIL_COND_V_MSG(!is_open(), FAILED, "File must be opened before use.");
 		int res = env->CallIntMethod(file_access_handler, _file_resize, id, p_length);
-		switch (res) {
-			case 0:
-				return OK;
-			case -4:
-				return ERR_INVALID_PARAMETER;
-			case -3:
-				return ERR_FILE_CANT_OPEN;
-			case -2:
-				return ERR_FILE_NOT_FOUND;
-			case -1:
-			default:
-				return FAILED;
-		}
+		return static_cast<Error>(res);
 	} else {
 		return ERR_UNAVAILABLE;
 	}

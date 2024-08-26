@@ -50,6 +50,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsAnimationCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.vending.expansion.downloader.*
+import org.godotengine.godot.error.Error
 import org.godotengine.godot.input.GodotEditText
 import org.godotengine.godot.input.GodotInputHandler
 import org.godotengine.godot.io.directory.DirectoryAccessHandler
@@ -83,15 +84,19 @@ import java.util.concurrent.atomic.AtomicReference
  */
 class Godot(private val context: Context) {
 
-	private companion object {
+	internal companion object {
 		private val TAG = Godot::class.java.simpleName
 
 		// Supported build flavors
 		const val EDITOR_FLAVOR = "editor"
 		const val TEMPLATE_FLAVOR = "template"
+
+		/**
+		 * @return true if this is an editor build, false if this is a template build
+		 */
+		fun isEditorBuild() = BuildConfig.FLAVOR == EDITOR_FLAVOR
 	}
 
-	private val windowManager: WindowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
 	private val mSensorManager: SensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
 	private val mClipboard: ClipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
 	private val vibratorService: Vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
@@ -834,11 +839,6 @@ class Godot(private val context: Context) {
 		return mClipboard.hasPrimaryClip()
 	}
 
-	/**
-	 * @return true if this is an editor build, false if this is a template build
-	 */
-	fun isEditorBuild() = BuildConfig.FLAVOR == EDITOR_FLAVOR
-
 	fun getClipboard(): String {
 		val clipData = mClipboard.primaryClip ?: return ""
 		val text = clipData.getItemAt(0).text ?: return ""
@@ -1053,5 +1053,21 @@ class Godot(private val context: Context) {
 	@Keep
 	private fun nativeDumpBenchmark(benchmarkFile: String) {
 		dumpBenchmark(fileAccessHandler, benchmarkFile)
+	}
+
+	@Keep
+	private fun nativeSignApk(inputPath: String,
+							  outputPath: String,
+							  keystorePath: String,
+							  keystoreUser: String,
+							  keystorePassword: String): Int {
+		val signResult = primaryHost?.signApk(inputPath, outputPath, keystorePath, keystoreUser, keystorePassword) ?: Error.ERR_UNAVAILABLE
+		return signResult.toNativeValue()
+	}
+
+	@Keep
+	private fun nativeVerifyApk(apkPath: String): Int {
+		val verifyResult = primaryHost?.verifyApk(apkPath) ?: Error.ERR_UNAVAILABLE
+		return verifyResult.toNativeValue()
 	}
 }

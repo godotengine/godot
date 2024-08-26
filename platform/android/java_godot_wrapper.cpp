@@ -84,6 +84,8 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_dump_benchmark = p_env->GetMethodID(godot_class, "nativeDumpBenchmark", "(Ljava/lang/String;)V");
 	_get_gdextension_list_config_file = p_env->GetMethodID(godot_class, "getGDExtensionConfigFiles", "()[Ljava/lang/String;");
 	_has_feature = p_env->GetMethodID(godot_class, "hasFeature", "(Ljava/lang/String;)Z");
+	_sign_apk = p_env->GetMethodID(godot_class, "nativeSignApk", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I");
+	_verify_apk = p_env->GetMethodID(godot_class, "nativeVerifyApk", "(Ljava/lang/String;)I");
 }
 
 GodotJavaWrapper::~GodotJavaWrapper() {
@@ -422,5 +424,44 @@ bool GodotJavaWrapper::has_feature(const String &p_feature) const {
 		return result;
 	} else {
 		return false;
+	}
+}
+
+Error GodotJavaWrapper::sign_apk(const String &p_input_path, const String &p_output_path, const String &p_keystore_path, const String &p_keystore_user, const String &p_keystore_password) {
+	if (_sign_apk) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, ERR_UNCONFIGURED);
+
+		jstring j_input_path = env->NewStringUTF(p_input_path.utf8().get_data());
+		jstring j_output_path = env->NewStringUTF(p_output_path.utf8().get_data());
+		jstring j_keystore_path = env->NewStringUTF(p_keystore_path.utf8().get_data());
+		jstring j_keystore_user = env->NewStringUTF(p_keystore_user.utf8().get_data());
+		jstring j_keystore_password = env->NewStringUTF(p_keystore_password.utf8().get_data());
+
+		int result = env->CallIntMethod(godot_instance, _sign_apk, j_input_path, j_output_path, j_keystore_path, j_keystore_user, j_keystore_password);
+
+		env->DeleteLocalRef(j_input_path);
+		env->DeleteLocalRef(j_output_path);
+		env->DeleteLocalRef(j_keystore_path);
+		env->DeleteLocalRef(j_keystore_user);
+		env->DeleteLocalRef(j_keystore_password);
+
+		return static_cast<Error>(result);
+	} else {
+		return ERR_UNCONFIGURED;
+	}
+}
+
+Error GodotJavaWrapper::verify_apk(const String &p_apk_path) {
+	if (_verify_apk) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, ERR_UNCONFIGURED);
+
+		jstring j_apk_path = env->NewStringUTF(p_apk_path.utf8().get_data());
+		int result = env->CallIntMethod(godot_instance, _verify_apk, j_apk_path);
+		env->DeleteLocalRef(j_apk_path);
+		return static_cast<Error>(result);
+	} else {
+		return ERR_UNCONFIGURED;
 	}
 }
