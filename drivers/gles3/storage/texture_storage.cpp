@@ -1497,11 +1497,9 @@ void TextureStorage::_texture_set_data(RID p_texture, const Ref<Image> &p_image,
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 			if (texture->target == GL_TEXTURE_2D_ARRAY) {
 				if (p_initialize) {
-					glCompressedTexImage3D(GL_TEXTURE_2D_ARRAY, i, internal_format, w, h, texture->layers, 0,
-							size * texture->layers, &read[ofs]);
-				} else {
-					glCompressedTexSubImage3D(GL_TEXTURE_2D_ARRAY, i, 0, 0, p_layer, w, h, 1, internal_format, size, &read[ofs]);
+					glCompressedTexImage3D(GL_TEXTURE_2D_ARRAY, i, internal_format, w, h, texture->layers, 0, size * texture->layers, nullptr);
 				}
+				glCompressedTexSubImage3D(GL_TEXTURE_2D_ARRAY, i, 0, 0, p_layer, w, h, 1, internal_format, size, &read[ofs]);
 			} else {
 				glCompressedTexImage2D(blit_target, i, internal_format, w, h, 0, size, &read[ofs]);
 			}
