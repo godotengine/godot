@@ -690,10 +690,10 @@ Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path, Error *r_e
 		if (Thread::is_main_thread() && !load_token->local_path.is_empty()) {
 			const ThreadLoadTask &load_task = thread_load_tasks[load_token->local_path];
 			while (load_task.status == THREAD_LOAD_IN_PROGRESS) {
-				thread_load_lock.~MutexLock();
+				thread_load_lock.temp_unlock();
 				bool exit = !_ensure_load_progress();
 				OS::get_singleton()->delay_usec(1000);
-				new (&thread_load_lock) MutexLock(thread_load_mutex);
+				thread_load_lock.temp_relock();
 				if (exit) {
 					break;
 				}
@@ -754,7 +754,7 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 			bool loader_is_wtp = load_task.task_id != 0;
 			if (loader_is_wtp) {
 				// Loading thread is in the worker pool.
-				thread_load_mutex.unlock();
+				p_thread_load_lock.temp_unlock();
 
 				PREPARE_FOR_WTP_WAIT
 				Error wait_err = WorkerThreadPool::get_singleton()->wait_for_task_completion(load_task.task_id);
@@ -770,7 +770,7 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 					_run_load_task(&load_task);
 				}
 
-				thread_load_mutex.lock();
+				p_thread_load_lock.temp_relock();
 				load_task.awaited = true;
 
 				DEV_ASSERT(load_task.status == THREAD_LOAD_FAILED || load_task.status == THREAD_LOAD_LOADED);
@@ -1208,7 +1208,7 @@ void ResourceLoader::clear_translation_remaps() {
 void ResourceLoader::clear_thread_load_tasks() {
 	// Bring the thing down as quickly as possible without causing deadlocks or leaks.
 
-	thread_load_mutex.lock();
+	MutexLock thread_load_lock(thread_load_mutex);
 	cleaning_tasks = true;
 
 	while (true) {
@@ -1227,9 +1227,9 @@ void ResourceLoader::clear_thread_load_tasks() {
 		if (none_running) {
 			break;
 		}
-		thread_load_mutex.unlock();
+		thread_load_lock.temp_unlock();
 		OS::get_singleton()->delay_usec(1000);
-		thread_load_mutex.lock();
+		thread_load_lock.temp_relock();
 	}
 
 	while (user_load_tokens.begin()) {
@@ -1244,7 +1244,6 @@ void ResourceLoader::clear_thread_load_tasks() {
 	thread_load_tasks.clear();
 
 	cleaning_tasks = false;
-	thread_load_mutex.unlock();
 }
 
 void ResourceLoader::load_path_remaps() {
