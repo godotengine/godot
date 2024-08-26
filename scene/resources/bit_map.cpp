@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "bit_map.h"
+#include "bit_map.compat.inc"
 
 #include "core/io/image_loader.h"
 #include "core/variant/typed_array.h"

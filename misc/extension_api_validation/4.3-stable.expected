@@ -56,3 +56,10 @@ Validate extension JSON: Error: Field 'classes/RegEx/methods/compile/arguments':
 Validate extension JSON: Error: Field 'classes/RegEx/methods/create_from_string/arguments': size changed value in new API, from 1 to 2.
 
 Add optional argument to control error printing on compilation fail. Compatibility methods registered.
+
+
+GH-94602
+--------
+Validate extension JSON: Error: Field 'classes/BitMap/methods/opaque_to_polygons/arguments': size changed value in new API, from 2 to 3.
+
+Add an optional argument to use a star-region-restricted Ramer-Douglas-Peucker Algorithm. No adjustments should be necessary.

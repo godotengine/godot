@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  bit_map.h                                                             */
+/*  bit_map.compat.inc                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,65 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef BIT_MAP_H
-#define BIT_MAP_H
-
-#include "core/io/image.h"
-#include "core/io/resource.h"
-#include "core/io/resource_loader.h"
-#include "core/math/geometry_2d.h"
-
-template <typename T>
-class TypedArray;
-
-class BitMap : public Resource {
-	GDCLASS(BitMap, Resource);
-	OBJ_SAVE_TYPE(BitMap);
-
-	Vector<uint8_t> bitmask;
-	int width = 0;
-	int height = 0;
-
-	Vector<Vector<Vector2>> _march_square(const Rect2i &p_rect, const Point2i &p_start) const;
-
-	TypedArray<PackedVector2Array> _opaque_to_polygons_bind(const Rect2i &p_rect, float p_epsilon, bool p_star_rdp) const;
-
-protected:
-	void _set_data(const Dictionary &p_d);
-	Dictionary _get_data() const;
-
-	static void _bind_methods();
-
 #ifndef DISABLE_DEPRECATED
-	Vector<Vector<Vector2>> _clip_opaque_to_polygons_bind_compat_94602(const Rect2i &p_rect, float p_epsilon = 2.0) const;
-	TypedArray<PackedVector2Array> _opaque_to_polygons_bind_compat_94602(const Rect2i &p_rect, float p_epsilon) const;
-	static void _bind_compatibility_methods();
-#endif
 
-public:
-	void create(const Size2i &p_size);
-	void create_from_image_alpha(const Ref<Image> &p_image, float p_threshold = 0.1);
+#include "core/variant/typed_array.h"
 
-	void set_bitv(const Point2i &p_pos, bool p_value);
-	void set_bit(int p_x, int p_y, bool p_value);
-	void set_bit_rect(const Rect2i &p_rect, bool p_value);
-	bool get_bitv(const Point2i &p_pos) const;
-	bool get_bit(int p_x, int p_y) const;
+Vector<Vector<Vector2>> BitMap::_clip_opaque_to_polygons_bind_compat_94602(const Rect2i &p_rect, float p_epsilon) const {
+	return clip_opaque_to_polygons(p_rect, p_epsilon, false);
+}
 
-	int get_true_bit_count() const;
+TypedArray<PackedVector2Array> BitMap::_opaque_to_polygons_bind_compat_94602(const Rect2i &p_rect, float p_epsilon) const {
+	return _opaque_to_polygons_bind(p_rect, p_epsilon, false);
+}
 
-	Size2i get_size() const;
-	void resize(const Size2i &p_new_size);
+void BitMap::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("opaque_to_polygons", "rect", "epsilon"), &BitMap::_opaque_to_polygons_bind_compat_94602, DEFVAL(2.0));
+}
 
-	void grow_mask(int p_pixels, const Rect2i &p_rect);
-	void shrink_mask(int p_pixels, const Rect2i &p_rect);
-
-	void blit(const Vector2i &p_pos, const Ref<BitMap> &p_bitmap);
-	Ref<Image> convert_to_image() const;
-
-	Vector<Vector<Vector2>> clip_opaque_to_polygons(const Rect2i &p_rect, float p_epsilon = 2.0, bool p_star_rdp = false) const;
-
-	BitMap();
-};
-
-#endif // BIT_MAP_H
+#endif // DISABLE_DEPRECATED
