@@ -113,6 +113,13 @@
 				[b]Note:[/b] Can return fewer frames than requested, make sure to use the size of the return value.
 			</description>
 		</method>
+		<method name="seek">
+			<return type="void" />
+			<param index="0" name="time" type="float" default="0.0" />
+			<description>
+				Seeks the stream at the given [param time], in seconds.
+			</description>
+		</method>
 		<method name="set_sample_playback" experimental="">
 			<return type="void" />
 			<param index="0" name="playback_sample" type="AudioSamplePlayback" />
