@@ -4500,7 +4500,14 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 
 		} break;
 		case Animation::TYPE_BEZIER: {
-			value = animation->make_default_bezier_key(p_id.value);
+			int existing = animation->track_find_key(p_id.track_idx, time, Animation::FIND_MODE_APPROX);
+			if (existing != -1) {
+				Array arr = animation->track_get_key_value(p_id.track_idx, existing);
+				arr[0] = p_id.value;
+				value = arr;
+			} else {
+				value = animation->make_default_bezier_key(p_id.value);
+			}
 			bezier_edit_icon->set_disabled(false);
 		} break;
 		default: {
