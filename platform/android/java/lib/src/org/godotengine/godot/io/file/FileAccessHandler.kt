@@ -113,6 +113,10 @@ class FileAccessHandler(val context: Context) {
 
 	private fun hasFileId(fileId: Int) = files.indexOfKey(fileId) >= 0
 
+	fun canAccess(filePath: String?): Boolean {
+		return storageScopeIdentifier.canAccess(filePath)
+	}
+
 	/**
 	 * Returns a positive (> 0) file id when the operation succeeds.
 	 * Otherwise, returns a negative value of [Error].
