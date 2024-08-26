@@ -728,7 +728,7 @@
 				    print(my_items) # Prints [["Rice", 4], ["Tomato", 5], ["Apple", 9]]
 
 				    # Sort descending, using a lambda function.
-				    my_items.sort_custom(func(a, b): return a[0] &gt; b[0])
+				    my_items.sort_custom(func(a, b): return a[1] &gt; b[1])
 				    print(my_items) # Prints [["Apple", 9], ["Tomato", 5], ["Rice", 4]]
 				[/codeblock]
 				It may also be necessary to use this method to sort strings by natural order, with [method String.naturalnocasecmp_to], as in the following example:
