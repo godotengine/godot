@@ -2778,6 +2778,8 @@ void PopupMenu::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("id_pressed", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("id_focused", PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(MethodInfo("id_mouse_entered", PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(MethodInfo("id_mouse_exited", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("index_pressed", PropertyInfo(Variant::INT, "index")));
 	ADD_SIGNAL(MethodInfo("menu_changed"));
 
