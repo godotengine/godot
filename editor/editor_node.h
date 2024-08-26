@@ -499,6 +499,8 @@ private:
 	SurfaceUpgradeDialog *surface_upgrade_dialog = nullptr;
 	bool run_surface_upgrade_tool = false;
 
+	bool was_window_windowed_last = false;
+
 	static EditorBuildCallback build_callbacks[MAX_BUILD_CALLBACKS];
 	static EditorPluginInitializeCallback plugin_init_callbacks[MAX_INIT_CALLBACKS];
 	static int build_callback_count;
@@ -580,6 +582,7 @@ private:
 	void _show_messages();
 	void _vp_resized();
 	void _titlebar_resized();
+	void _viewport_resized();
 
 	void _update_undo_redo_allowed();
 
@@ -650,6 +653,8 @@ private:
 
 	void _save_central_editor_layout_to_config(Ref<ConfigFile> p_config_file);
 	void _load_central_editor_layout_from_config(Ref<ConfigFile> p_config_file);
+
+	void _save_window_settings_to_config(Ref<ConfigFile> p_layout, const String &p_section);
 
 	void _save_open_scenes_to_config(Ref<ConfigFile> p_layout);
 	void _load_open_scenes_from_config(Ref<ConfigFile> p_layout);
