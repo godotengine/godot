@@ -5,7 +5,6 @@
 	</brief_description>
 	<description>
 		JavaScriptObject is used to interact with JavaScript objects retrieved or created via [method JavaScriptBridge.get_interface], [method JavaScriptBridge.create_object], or [method JavaScriptBridge.create_callback].
-		[b]Example:[/b]
 		[codeblock]
 		extends Node
 

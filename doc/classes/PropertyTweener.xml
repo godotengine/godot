@@ -14,10 +14,10 @@
 			<return type="PropertyTweener" />
 			<description>
 				When called, the final value will be used as a relative value instead.
-				[b]Example:[/b]
+				[b]Example:[/b] Move the node by [code]100[/code] pixels to the right.
 				[codeblock]
 				var tween = get_tree().create_tween()
-				tween.tween_property(self, "position", Vector2.RIGHT * 100, 1).as_relative() #the node will move by 100 pixels to the right
+				tween.tween_property(self, "position", Vector2.RIGHT * 100, 1).as_relative()
 				[/codeblock]
 			</description>
 		</method>
@@ -26,10 +26,10 @@
 			<param index="0" name="value" type="Variant" />
 			<description>
 				Sets a custom initial value to the [PropertyTweener].
-				[b]Example:[/b]
+				[b]Example:[/b] Move the node from position [code](100, 100)[/code] to [code](200, 100)[/code].
 				[codeblock]
 				var tween = get_tree().create_tween()
-				tween.tween_property(self, "position", Vector2(200, 100), 1).from(Vector2(100, 100)) #this will move the node from position (100, 100) to (200, 100)
+				tween.tween_property(self, "position", Vector2(200, 100), 1).from(Vector2(100, 100))
 				[/codeblock]
 			</description>
 		</method>
@@ -48,7 +48,6 @@
 			<param index="0" name="interpolator_method" type="Callable" />
 			<description>
 				Allows interpolating the value with a custom easing function. The provided [param interpolator_method] will be called with a value ranging from [code]0.0[/code] to [code]1.0[/code] and is expected to return a value within the same range (values outside the range can be used for overshoot). The return value of the method is then used for interpolation between initial and final value. Note that the parameter passed to the method is still subject to the tweener's own easing.
-				[b]Example:[/b]
 				[codeblock]
 				@export var curve: Curve
 

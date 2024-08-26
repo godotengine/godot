@@ -301,7 +301,6 @@
 			<description>
 				Splits the string using a [param delimiter] and returns the substring at index [param slice]. Returns an empty string if the [param slice] does not exist.
 				This is faster than [method split], if you only need one substring.
-				[b]Example:[/b]
 				[codeblock]
 				print("i/am/example/hi".get_slice("/", 2)) # Prints "example"
 				[/codeblock]
@@ -496,7 +495,6 @@
 			<param index="0" name="parts" type="PackedStringArray" />
 			<description>
 				Returns the concatenation of [param parts]' elements, with each element separated by the string calling this method. This method is the opposite of [method split].
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var fruits = ["Apple", "Orange", "Pear", "Kiwi"]
@@ -703,7 +701,6 @@
 				Splits the string using a [param delimiter] and returns an array of the substrings, starting from the end of the string. The splits in the returned array appear in the same order as the original string. If [param delimiter] is an empty string, each substring will be a single character.
 				If [param allow_empty] is [code]false[/code], empty strings between adjacent delimiters are excluded from the array.
 				If [param maxsplit] is greater than [code]0[/code], the number of splits may not exceed [param maxsplit]. By default, the entire string is split, which is mostly identical to [method split].
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var some_string = "One,Two,Three,Four"
@@ -783,7 +780,6 @@
 				Splits the string using a [param delimiter] and returns an array of the substrings. If [param delimiter] is an empty string, each substring will be a single character. This method is the opposite of [method join].
 				If [param allow_empty] is [code]false[/code], empty strings between adjacent delimiters are excluded from the array.
 				If [param maxsplit] is greater than [code]0[/code], the number of splits may not exceed [param maxsplit]. By default, the entire string is split.
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var some_array = "One,Two,Three,Four".split(",", true, 2)
