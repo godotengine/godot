@@ -263,6 +263,10 @@ bool Engine::is_generate_spirv_debug_info_enabled() const {
 	return generate_spirv_debug_info;
 }
 
+bool Engine::is_extra_gpu_memory_tracking_enabled() const {
+	return extra_gpu_memory_tracking;
+}
+
 void Engine::set_print_error_messages(bool p_enabled) {
 	CoreGlobals::print_error_enabled = p_enabled;
 }

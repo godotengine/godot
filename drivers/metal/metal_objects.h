@@ -57,10 +57,12 @@
 
 #import "servers/rendering/rendering_device_driver.h"
 
+#import <CommonCrypto/CommonDigest.h>
 #import <Foundation/Foundation.h>
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
 #import <simd/simd.h>
+#import <zlib.h>
 #import <initializer_list>
 #import <optional>
 #import <spirv.hpp>
@@ -497,6 +499,76 @@ struct API_AVAILABLE(macos(11.0), ios(14.0)) UniformSet {
 	HashMap<RDC::ShaderStage, id<MTLArgumentEncoder>> encoders;
 };
 
+struct ShaderCacheEntry;
+
+enum class ShaderLoadStrategy {
+	DEFAULT,
+	LAZY,
+};
+
+/**
+ * A Metal shader library.
+ */
+@interface MDLibrary : NSObject
+- (id<MTLLibrary>)library;
+- (NSError *)error;
+- (void)setLabel:(NSString *)label;
+
++ (instancetype)newLibraryWithCacheEntry:(ShaderCacheEntry *)entry
+								  device:(id<MTLDevice>)device
+								  source:(NSString *)source
+								 options:(MTLCompileOptions *)options
+								strategy:(ShaderLoadStrategy)strategy;
+@end
+
+struct SHA256Digest {
+	unsigned char data[CC_SHA256_DIGEST_LENGTH];
+
+	uint32_t hash() const {
+		uint32_t c = crc32(0, data, CC_SHA256_DIGEST_LENGTH);
+		return c;
+	}
+
+	SHA256Digest() {
+		bzero(data, CC_SHA256_DIGEST_LENGTH);
+	}
+
+	SHA256Digest(const char *p_data, size_t p_length) {
+		CC_SHA256(p_data, (CC_LONG)p_length, data);
+	}
+};
+
+template <>
+struct HashMapComparatorDefault<SHA256Digest> {
+	static bool compare(const SHA256Digest &p_lhs, const SHA256Digest &p_rhs) {
+		return memcmp(p_lhs.data, p_rhs.data, CC_SHA256_DIGEST_LENGTH) == 0;
+	}
+};
+
+/**
+ * A cache entry for a Metal shader library.
+ */
+struct ShaderCacheEntry {
+	RenderingDeviceDriverMetal &owner;
+	SHA256Digest key;
+	CharString name;
+	CharString short_sha;
+	RD::ShaderStage stage = RD::SHADER_STAGE_VERTEX;
+	/**
+	 * This reference must be weak, to ensure that when the last strong reference to the library
+	 * is released, the cache entry is freed.
+	 */
+	MDLibrary *__weak library = nil;
+
+	/** Notify the cache that this entry is no longer needed. */
+	void notify_free() const;
+
+	ShaderCacheEntry(RenderingDeviceDriverMetal &p_owner, SHA256Digest p_key) :
+			owner(p_owner), key(p_key) {
+	}
+	~ShaderCacheEntry() = default;
+};
+
 class API_AVAILABLE(macos(11.0), ios(14.0)) MDShader {
 public:
 	CharString name;
@@ -517,15 +589,14 @@ public:
 	} push_constants;
 	MTLSize local = {};
 
-	id<MTLLibrary> kernel;
+	MDLibrary *kernel;
 #if DEV_ENABLED
 	CharString kernel_source;
 #endif
 
 	void encode_push_constant_data(VectorView<uint32_t> p_data, MDCommandBuffer *p_cb) final;
 
-	MDComputeShader(CharString p_name, Vector<UniformSet> p_sets, id<MTLLibrary> p_kernel);
-	~MDComputeShader() override = default;
+	MDComputeShader(CharString p_name, Vector<UniformSet> p_sets, MDLibrary *p_kernel);
 };
 
 class API_AVAILABLE(macos(11.0), ios(14.0)) MDRenderShader final : public MDShader {
@@ -541,8 +612,8 @@ public:
 		} frag;
 	} push_constants;
 
-	id<MTLLibrary> vert;
-	id<MTLLibrary> frag;
+	MDLibrary *vert;
+	MDLibrary *frag;
 #if DEV_ENABLED
 	CharString vert_source;
 	CharString frag_source;
@@ -550,8 +621,7 @@ public:
 
 	void encode_push_constant_data(VectorView<uint32_t> p_data, MDCommandBuffer *p_cb) final;
 
-	MDRenderShader(CharString p_name, Vector<UniformSet> p_sets, id<MTLLibrary> p_vert, id<MTLLibrary> p_frag);
-	~MDRenderShader() override = default;
+	MDRenderShader(CharString p_name, Vector<UniformSet> p_sets, MDLibrary *p_vert, MDLibrary *p_frag);
 };
 
 enum StageResourceUsage : uint32_t {

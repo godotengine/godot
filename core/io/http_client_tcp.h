@@ -76,7 +76,7 @@ private:
 	Error _get_http_data(uint8_t *p_buffer, int p_bytes, int &r_received);
 
 public:
-	static HTTPClient *_create_func();
+	static HTTPClient *_create_func(bool p_notify_postinitialize);
 
 	Error request(Method p_method, const String &p_url, const Vector<String> &p_headers, const uint8_t *p_body, int p_body_size) override;
 

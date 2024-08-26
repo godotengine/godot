@@ -100,6 +100,8 @@ typedef Error (*ResourceLoaderImport)(const String &p_path);
 typedef void (*ResourceLoadedCallback)(Ref<Resource> p_resource, const String &p_path);
 
 class ResourceLoader {
+	friend class LoadToken;
+
 	enum {
 		MAX_LOADERS = 64
 	};
@@ -121,6 +123,7 @@ public:
 	struct LoadToken : public RefCounted {
 		String local_path;
 		String user_path;
+		uint32_t user_rc = 0; // Having user RC implies regular RC incremented in one, until the user RC reaches zero.
 		Ref<Resource> res_if_unregistered;
 
 		void clear();
@@ -130,10 +133,13 @@ public:
 
 	static const int BINARY_MUTEX_TAG = 1;
 
-	static Ref<LoadToken> _load_start(const String &p_path, const String &p_type_hint, LoadThreadMode p_thread_mode, ResourceFormatLoader::CacheMode p_cache_mode);
+	static Ref<LoadToken> _load_start(const String &p_path, const String &p_type_hint, LoadThreadMode p_thread_mode, ResourceFormatLoader::CacheMode p_cache_mode, bool p_for_user = false);
 	static Ref<Resource> _load_complete(LoadToken &p_load_token, Error *r_error);
 
 private:
+	static LoadToken *_load_threaded_request_reuse_user_token(const String &p_path);
+	static void _load_threaded_request_setup_user_token(LoadToken *p_token, const String &p_path);
+
 	static Ref<Resource> _load_complete_inner(LoadToken &p_load_token, Error *r_error, MutexLock<SafeBinaryMutex<BINARY_MUTEX_TAG>> &p_thread_load_lock);
 
 	static Ref<ResourceFormatLoader> loader[MAX_LOADERS];
@@ -171,7 +177,6 @@ private:
 		bool need_wait = true;
 		LoadToken *load_token = nullptr;
 		String local_path;
-		String remapped_path;
 		String type_hint;
 		float progress = 0.0f;
 		float max_reported_progress = 0.0f;
@@ -180,18 +185,19 @@ private:
 		ResourceFormatLoader::CacheMode cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE;
 		Error error = OK;
 		Ref<Resource> resource;
-		bool xl_remapped = false;
 		bool use_sub_threads = false;
 		HashSet<String> sub_tasks;
 	};
 
-	static void _thread_load_function(void *p_userdata);
+	static void _run_load_task(void *p_userdata);
 
 	static thread_local int load_nesting;
-	static thread_local WorkerThreadPool::TaskID caller_task_id;
 	static thread_local HashMap<int, HashMap<String, Ref<Resource>>> res_ref_overrides; // Outermost key is nesting level.
 	static thread_local Vector<String> load_paths_stack;
+
 	static SafeBinaryMutex<BINARY_MUTEX_TAG> thread_load_mutex;
+	friend SafeBinaryMutex<BINARY_MUTEX_TAG> &_get_res_loader_mutex();
+
 	static HashMap<String, ThreadLoadTask> thread_load_tasks;
 	static bool cleaning_tasks;
 

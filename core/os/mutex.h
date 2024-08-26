@@ -72,13 +72,18 @@ public:
 
 template <typename MutexT>
 class MutexLock {
-	friend class ConditionVariable;
-
 	THREADING_NAMESPACE::unique_lock<typename MutexT::StdMutexType> lock;
 
 public:
 	explicit MutexLock(const MutexT &p_mutex) :
 			lock(p_mutex.mutex) {}
+
+	// Clarification: all the funny syntax is needed so this function exists only for binary mutexes.
+	template <typename T = MutexT>
+	_ALWAYS_INLINE_ THREADING_NAMESPACE::unique_lock<THREADING_NAMESPACE::mutex> &_get_lock(
+			typename std::enable_if<std::is_same<T, THREADING_NAMESPACE::mutex>::value> * = nullptr) const {
+		return const_cast<THREADING_NAMESPACE::unique_lock<THREADING_NAMESPACE::mutex> &>(lock);
+	}
 };
 
 using Mutex = MutexImpl<THREADING_NAMESPACE::recursive_mutex>; // Recursive, for general use

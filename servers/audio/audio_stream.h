@@ -50,6 +50,7 @@ public:
 	Ref<AudioStream> stream;
 
 	float offset = 0.0f;
+	float pitch_scale = 1.0;
 	Vector<AudioFrame> volume_vector;
 	StringName bus;
 };

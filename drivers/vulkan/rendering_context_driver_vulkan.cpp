@@ -106,7 +106,7 @@ const char *RenderingContextDriverVulkan::get_tracked_object_name(uint32_t p_typ
 
 	return vkTrackedObjectTypeNames[p_type_index];
 #else
-	return "VK_TRACK_DRIVER_* disabled at build time";
+	return "VK_TRACK_*_MEMORY disabled at build time";
 #endif
 }
 
@@ -120,6 +120,8 @@ uint64_t RenderingContextDriverVulkan::get_tracked_object_type_count() const {
 RenderingContextDriverVulkan::VkTrackedObjectType vk_object_to_tracked_object(VkObjectType p_type) {
 	if (p_type > VK_OBJECT_TYPE_COMMAND_POOL && p_type != (VkObjectType)RenderingContextDriverVulkan::VK_TRACKED_OBJECT_TYPE_VMA) {
 		switch (p_type) {
+			case VK_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE:
+				return RenderingContextDriverVulkan::VK_TRACKED_OBJECT_DESCRIPTOR_UPDATE_TEMPLATE_KHR;
 			case VK_OBJECT_TYPE_SURFACE_KHR:
 				return RenderingContextDriverVulkan::VK_TRACKED_OBJECT_TYPE_SURFACE;
 			case VK_OBJECT_TYPE_SWAPCHAIN_KHR:
@@ -128,6 +130,9 @@ RenderingContextDriverVulkan::VkTrackedObjectType vk_object_to_tracked_object(Vk
 				return RenderingContextDriverVulkan::VK_TRACKED_OBJECT_TYPE_DEBUG_UTILS_MESSENGER_EXT;
 			case VK_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT:
 				return RenderingContextDriverVulkan::VK_TRACKED_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT;
+			case VK_OBJECT_TYPE_ACCELERATION_STRUCTURE_KHR:
+			case VK_OBJECT_TYPE_ACCELERATION_STRUCTURE_NV:
+				return RenderingContextDriverVulkan::VK_TRACKED_OBJECT_TYPE_ACCELERATION_STRUCTURE;
 			default:
 				_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Unknown VkObjectType enum value " + itos((uint32_t)p_type) + ".Please add it to VkTrackedObjectType, switch statement in "
 																																 "vk_object_to_tracked_object and get_tracked_object_name.",
@@ -229,6 +234,9 @@ VkAllocationCallbacks *RenderingContextDriverVulkan::get_allocation_callbacks(Vk
 #if !defined(VK_TRACK_DRIVER_MEMORY)
 	return nullptr;
 #else
+	if (!Engine::get_singleton()->is_extra_gpu_memory_tracking_enabled()) {
+		return nullptr;
+	}
 
 #ifdef _MSC_VER
 #define LAMBDA_VK_CALL_CONV

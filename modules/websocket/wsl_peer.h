@@ -49,7 +49,7 @@
 class WSLPeer : public WebSocketPeer {
 private:
 	static CryptoCore::RandomGenerator *_static_rng;
-	static WebSocketPeer *_create() { return memnew(WSLPeer); }
+	static WebSocketPeer *_create(bool p_notify_postinitialize) { return static_cast<WebSocketPeer *>(ClassDB::creator<WSLPeer>(p_notify_postinitialize)); }
 
 	// Callbacks.
 	static ssize_t _wsl_recv_callback(wslay_event_context_ptr ctx, uint8_t *data, size_t len, int flags, void *user_data);

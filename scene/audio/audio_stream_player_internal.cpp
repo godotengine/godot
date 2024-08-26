@@ -152,6 +152,7 @@ Ref<AudioStreamPlayback> AudioStreamPlayerInternal::play_basic() {
 				Ref<AudioSamplePlayback> sample_playback;
 				sample_playback.instantiate();
 				sample_playback->stream = stream;
+				sample_playback->pitch_scale = pitch_scale;
 				stream_playback->set_sample_playback(sample_playback);
 			}
 		} else if (!stream->is_meta_stream()) {
