@@ -458,6 +458,7 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/additional_plist_content", PROPERTY_HINT_MULTILINE_TEXT), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "xcode/platform_build"), "14C18"));
+	// TODO(sgc): Need to set appropriate version when using Metal
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "xcode/sdk_version"), "13.1"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "xcode/sdk_build"), "22C55"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "xcode/sdk_name"), "macosx13.1"));
@@ -1092,7 +1093,7 @@ void EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pres
 			List<String> args;
 			args.push_back("sign");
 
-			if (p_path.get_extension() != "dmg") {
+			if (!p_ent_path.is_empty()) {
 				args.push_back("--entitlements-xml-path");
 				args.push_back(p_ent_path);
 			}
@@ -1153,7 +1154,7 @@ void EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pres
 				args.push_back("runtime");
 			}
 
-			if (p_path.get_extension() != "dmg") {
+			if (!p_ent_path.is_empty()) {
 				args.push_back("--entitlements");
 				args.push_back(p_ent_path);
 			}
@@ -1237,7 +1238,7 @@ void EditorExportPlatformMacOS::_code_sign_directory(const Ref<EditorExportPrese
 		}
 
 		if (extensions_to_sign.has(current_file.get_extension())) {
-			String ent_path = p_ent_path;
+			String ent_path;
 			bool set_bundle_id = false;
 			if (sandbox && FileAccess::exists(current_file_path)) {
 				int ftype = MachO::get_filetype(current_file_path);
@@ -1357,7 +1358,7 @@ Error EditorExportPlatformMacOS::_copy_and_sign_files(Ref<DirAccess> &dir_access
 			_code_sign_directory(p_preset, p_in_app_path, p_ent_path, p_helper_ent_path, p_should_error_on_non_code_sign);
 		} else {
 			if (extensions_to_sign.has(p_in_app_path.get_extension())) {
-				String ent_path = p_ent_path;
+				String ent_path;
 				bool set_bundle_id = false;
 				if (p_sandbox && FileAccess::exists(p_in_app_path)) {
 					int ftype = MachO::get_filetype(p_in_app_path);

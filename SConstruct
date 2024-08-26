@@ -218,10 +218,11 @@ opts.Add(BoolVariable("deprecated", "Enable compatibility code for deprecated an
 opts.Add(EnumVariable("precision", "Set the floating-point precision level", "single", ("single", "double")))
 opts.Add(BoolVariable("minizip", "Enable ZIP archive support using minizip", True))
 opts.Add(BoolVariable("brotli", "Enable Brotli for decompresson and WOFF2 fonts support", True))
-opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver", False))
+opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver on supported platforms", False))
 opts.Add(BoolVariable("vulkan", "Enable the vulkan rendering driver", True))
 opts.Add(BoolVariable("opengl3", "Enable the OpenGL/GLES3 rendering driver", True))
-opts.Add(BoolVariable("d3d12", "Enable the Direct3D 12 rendering driver", False))
+opts.Add(BoolVariable("d3d12", "Enable the Direct3D 12 rendering driver on supported platforms", False))
+opts.Add(BoolVariable("metal", "Enable the Metal rendering driver on supported platforms (Apple arm64 only)", False))
 opts.Add(BoolVariable("openxr", "Enable the OpenXR driver", True))
 opts.Add(BoolVariable("use_volk", "Use the volk library to load the Vulkan loader dynamically", True))
 opts.Add(BoolVariable("disable_exceptions", "Force disabling exception handling code", True))
@@ -773,6 +774,10 @@ else:
     # MSVC doesn't have clear C standard support, /std only covers C++.
     # We apply it to CCFLAGS (both C and C++ code) in case it impacts C features.
     env.Prepend(CCFLAGS=["/std:c++17"])
+    # MSVC is non-conforming with the C++ standard by default, so we enable more conformance.
+    # Note that this is still not complete conformance, as certain Windows-related headers
+    # don't compile under complete conformance.
+    env.Prepend(CCFLAGS=["/permissive-"])
 
 # Disable exception handling. Godot doesn't use exceptions anywhere, and this
 # saves around 20% of binary size and very significant build time (GH-80513).

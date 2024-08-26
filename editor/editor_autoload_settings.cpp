@@ -457,7 +457,9 @@ void EditorAutoloadSettings::init_autoloads() {
 
 	for (const AutoloadInfo &info : autoload_cache) {
 		if (info.node && info.in_editor) {
-			callable_mp((Node *)get_tree()->get_root(), &Node::add_child).call_deferred(info.node, false, Node::INTERNAL_MODE_DISABLED);
+			// It's important to add the node without deferring because code in plugins or tool scripts
+			// could use the autoload node when they are enabled.
+			get_tree()->get_root()->add_child(info.node);
 		}
 	}
 }

@@ -136,7 +136,6 @@ if env.msvc:
     ]
 else:
     extra_defines += [
-        ("__REQUIRED_RPCNDR_H_VERSION__", 475),
         "HAVE_STRUCT_TIMESPEC",
     ]
 

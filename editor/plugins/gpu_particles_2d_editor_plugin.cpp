@@ -360,9 +360,6 @@ void GPUParticles2DEditorPlugin::_notification(int p_what) {
 	}
 }
 
-void GPUParticles2DEditorPlugin::_bind_methods() {
-}
-
 GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin() {
 	particles = nullptr;
 

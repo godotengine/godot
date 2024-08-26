@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="GLTFAccessor" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
-		Represents a GLTF accessor.
+		Represents a glTF accessor.
 	</brief_description>
 	<description>
-		GLTFAccessor is a data structure representing GLTF a [code]accessor[/code] that would be found in the [code]"accessors"[/code] array. A buffer is a blob of binary data. A buffer view is a slice of a buffer. An accessor is a typed interpretation of the data in a buffer view.
-		Most custom data stored in GLTF does not need accessors, only buffer views (see [GLTFBufferView]). Accessors are for more advanced use cases such as interleaved mesh data encoded for the GPU.
+		GLTFAccessor is a data structure representing a glTF [code]accessor[/code] that would be found in the [code]"accessors"[/code] array. A buffer is a blob of binary data. A buffer view is a slice of a buffer. An accessor is a typed interpretation of the data in a buffer view.
+		Most custom data stored in glTF does not need accessors, only buffer views (see [GLTFBufferView]). Accessors are for more advanced use cases such as interleaved mesh data encoded for the GPU.
 	</description>
 	<tutorials>
 		<link title="Buffers, BufferViews, and Accessors in Khronos glTF specification">https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_005_BuffersBufferViewsAccessors.md</link>
@@ -13,7 +13,7 @@
 	</tutorials>
 	<members>
 		<member name="accessor_type" type="int" setter="set_accessor_type" getter="get_accessor_type" enum="GLTFAccessor.GLTFAccessorType" default="0">
-			The GLTF accessor type as an enum. Possible values are 0 for "SCALAR", 1 for "VEC2", 2 for "VEC3", 3 for "VEC4", 4 for "MAT2", 5 for "MAT3", and 6 for "MAT4".
+			The glTF accessor type as an enum. Possible values are 0 for "SCALAR", 1 for "VEC2", 2 for "VEC3", 3 for "VEC4", 4 for "MAT2", 5 for "MAT3", and 6 for "MAT4".
 		</member>
 		<member name="buffer_view" type="int" setter="set_buffer_view" getter="get_buffer_view" default="-1">
 			The index of the buffer view this accessor is referencing. If [code]-1[/code], this accessor is not referencing any buffer view.
@@ -22,7 +22,7 @@
 			The offset relative to the start of the buffer view in bytes.
 		</member>
 		<member name="component_type" type="int" setter="set_component_type" getter="get_component_type" default="0">
-			The GLTF component type as an enum. Possible values are 5120 for "BYTE", 5121 for "UNSIGNED_BYTE", 5122 for "SHORT", 5123 for "UNSIGNED_SHORT", 5125 for "UNSIGNED_INT", and 5126 for "FLOAT". A value of 5125 or "UNSIGNED_INT" must not be used for any accessor that is not referenced by mesh.primitive.indices.
+			The glTF component type as an enum. Possible values are 5120 for "BYTE", 5121 for "UNSIGNED_BYTE", 5122 for "SHORT", 5123 for "UNSIGNED_SHORT", 5125 for "UNSIGNED_INT", and 5126 for "FLOAT". A value of 5125 or "UNSIGNED_INT" must not be used for any accessor that is not referenced by mesh.primitive.indices.
 		</member>
 		<member name="count" type="int" setter="set_count" getter="get_count" default="0">
 			The number of elements referenced by this accessor.
@@ -55,7 +55,7 @@
 			The offset relative to the start of the bufferView in bytes.
 		</member>
 		<member name="type" type="int" setter="set_type" getter="get_type" deprecated="Use [member accessor_type] instead.">
-			The GLTF accessor type as an enum. Use [member accessor_type] instead.
+			The glTF accessor type as an enum. Use [member accessor_type] instead.
 		</member>
 	</members>
 	<constants>

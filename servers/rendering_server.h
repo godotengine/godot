@@ -426,6 +426,11 @@ public:
 		MULTIMESH_TRANSFORM_3D,
 	};
 
+	enum MultimeshPhysicsInterpolationQuality {
+		MULTIMESH_INTERP_QUALITY_FAST,
+		MULTIMESH_INTERP_QUALITY_HIGH,
+	};
+
 	virtual void multimesh_allocate_data(RID p_multimesh, int p_instances, MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false) = 0;
 	virtual int multimesh_get_instance_count(RID p_multimesh) const = 0;
 
@@ -448,6 +453,12 @@ public:
 
 	virtual void multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_buffer) = 0;
 	virtual Vector<float> multimesh_get_buffer(RID p_multimesh) const = 0;
+
+	// Interpolation.
+	virtual void multimesh_set_buffer_interpolated(RID p_multimesh, const Vector<float> &p_buffer_curr, const Vector<float> &p_buffer_prev) = 0;
+	virtual void multimesh_set_physics_interpolated(RID p_multimesh, bool p_interpolated) = 0;
+	virtual void multimesh_set_physics_interpolation_quality(RID p_multimesh, MultimeshPhysicsInterpolationQuality p_quality) = 0;
+	virtual void multimesh_instance_reset_physics_interpolation(RID p_multimesh, int p_index) = 0;
 
 	virtual void multimesh_set_visible_instances(RID p_multimesh, int p_visible) = 0;
 	virtual int multimesh_get_visible_instances(RID p_multimesh) const = 0;
@@ -687,6 +698,8 @@ public:
 
 	virtual void lightmap_set_probe_capture_update_speed(float p_speed) = 0;
 
+	virtual void lightmaps_set_bicubic_filter(bool p_enable) = 0;
+
 	/* PARTICLES API */
 
 	virtual RID particles_create() = 0;
@@ -924,6 +937,7 @@ public:
 	virtual void viewport_set_canvas_transform(RID p_viewport, RID p_canvas, const Transform2D &p_offset) = 0;
 	virtual void viewport_set_transparent_background(RID p_viewport, bool p_enabled) = 0;
 	virtual void viewport_set_use_hdr_2d(RID p_viewport, bool p_use_hdr) = 0;
+	virtual bool viewport_is_using_hdr_2d(RID p_viewport) const = 0;
 	virtual void viewport_set_snap_2d_transforms_to_pixel(RID p_viewport, bool p_enabled) = 0;
 	virtual void viewport_set_snap_2d_vertices_to_pixel(RID p_viewport, bool p_enabled) = 0;
 
@@ -1334,6 +1348,8 @@ public:
 	virtual void instance_set_layer_mask(RID p_instance, uint32_t p_mask) = 0;
 	virtual void instance_set_pivot_data(RID p_instance, float p_sorting_offset, bool p_use_aabb_center) = 0;
 	virtual void instance_set_transform(RID p_instance, const Transform3D &p_transform) = 0;
+	virtual void instance_set_interpolated(RID p_instance, bool p_interpolated) = 0;
+	virtual void instance_reset_physics_interpolation(RID p_instance) = 0;
 	virtual void instance_attach_object_instance_id(RID p_instance, ObjectID p_id) = 0;
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight) = 0;
 	virtual void instance_set_surface_override_material(RID p_instance, int p_surface, RID p_material) = 0;
@@ -1647,7 +1663,6 @@ public:
 
 	/* INTERPOLATION */
 
-	virtual void tick() = 0;
 	virtual void set_physics_interpolation_enabled(bool p_enabled) = 0;
 
 	/* EVENT QUEUING */
@@ -1659,6 +1674,8 @@ public:
 	virtual bool has_changed() const = 0;
 	virtual void init();
 	virtual void finish() = 0;
+	virtual void tick() = 0;
+	virtual void pre_draw(bool p_will_draw) = 0;
 
 	/* STATUS INFORMATION */
 
@@ -1785,6 +1802,7 @@ VARIANT_ENUM_CAST(RenderingServer::ArrayCustomFormat);
 VARIANT_ENUM_CAST(RenderingServer::PrimitiveType);
 VARIANT_ENUM_CAST(RenderingServer::BlendShapeMode);
 VARIANT_ENUM_CAST(RenderingServer::MultimeshTransformFormat);
+VARIANT_ENUM_CAST(RenderingServer::MultimeshPhysicsInterpolationQuality);
 VARIANT_ENUM_CAST(RenderingServer::LightType);
 VARIANT_ENUM_CAST(RenderingServer::LightParam);
 VARIANT_ENUM_CAST(RenderingServer::LightBakeMode);

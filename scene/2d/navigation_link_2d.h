@@ -38,6 +38,7 @@ class NavigationLink2D : public Node2D {
 
 	bool enabled = true;
 	RID link;
+	RID map_override;
 	bool bidirectional = true;
 	uint32_t navigation_layers = 1;
 	Vector2 end_position;
@@ -46,6 +47,10 @@ class NavigationLink2D : public Node2D {
 	real_t travel_cost = 1.0;
 
 	Transform2D current_global_transform;
+
+#ifdef DEBUG_ENABLED
+	void _update_debug_mesh();
+#endif // DEBUG_ENABLED
 
 protected:
 	static void _bind_methods();
@@ -65,6 +70,9 @@ public:
 
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const { return enabled; }
+
+	void set_navigation_map(RID p_navigation_map);
+	RID get_navigation_map() const;
 
 	void set_bidirectional(bool p_bidirectional);
 	bool is_bidirectional() const { return bidirectional; }
@@ -97,6 +105,11 @@ public:
 
 	NavigationLink2D();
 	~NavigationLink2D();
+
+private:
+	void _link_enter_navigation_map();
+	void _link_exit_navigation_map();
+	void _link_update_transform();
 };
 
 #endif // NAVIGATION_LINK_2D_H

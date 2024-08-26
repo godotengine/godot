@@ -30,7 +30,7 @@
 
 #include "websocket_peer.h"
 
-WebSocketPeer *(*WebSocketPeer::_create)() = nullptr;
+WebSocketPeer *(*WebSocketPeer::_create)(bool p_notify_postinitialize) = nullptr;
 
 WebSocketPeer::WebSocketPeer() {
 }

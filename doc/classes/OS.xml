@@ -802,6 +802,9 @@
 		<constant name="RENDERING_DRIVER_D3D12" value="2" enum="RenderingDriver">
 			The Direct3D 12 rendering driver.
 		</constant>
+		<constant name="RENDERING_DRIVER_METAL" value="3" enum="RenderingDriver">
+			The Metal rendering driver.
+		</constant>
 		<constant name="SYSTEM_DIR_DESKTOP" value="0" enum="SystemDir">
 			Refers to the Desktop directory path.
 		</constant>

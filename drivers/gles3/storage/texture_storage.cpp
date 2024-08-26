@@ -1497,11 +1497,9 @@ void TextureStorage::_texture_set_data(RID p_texture, const Ref<Image> &p_image,
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 			if (texture->target == GL_TEXTURE_2D_ARRAY) {
 				if (p_initialize) {
-					glCompressedTexImage3D(GL_TEXTURE_2D_ARRAY, i, internal_format, w, h, texture->layers, 0,
-							size * texture->layers, &read[ofs]);
-				} else {
-					glCompressedTexSubImage3D(GL_TEXTURE_2D_ARRAY, i, 0, 0, p_layer, w, h, 1, internal_format, size, &read[ofs]);
+					glCompressedTexImage3D(GL_TEXTURE_2D_ARRAY, i, internal_format, w, h, texture->layers, 0, size * texture->layers, nullptr);
 				}
+				glCompressedTexSubImage3D(GL_TEXTURE_2D_ARRAY, i, 0, 0, p_layer, w, h, 1, internal_format, size, &read[ofs]);
 			} else {
 				glCompressedTexImage2D(blit_target, i, internal_format, w, h, 0, size, &read[ofs]);
 			}
@@ -1678,6 +1676,14 @@ uint32_t TextureStorage::texture_get_texid(RID p_texture) const {
 	ERR_FAIL_NULL_V(texture, 0);
 
 	return texture->tex_id;
+}
+
+Vector3i TextureStorage::texture_get_size(RID p_texture) const {
+	Texture *texture = texture_owner.get_or_null(p_texture);
+
+	ERR_FAIL_NULL_V(texture, Vector3i(0, 0, 0));
+
+	return Vector3i(texture->width, texture->height, texture->depth);
 }
 
 uint32_t TextureStorage::texture_get_width(RID p_texture) const {

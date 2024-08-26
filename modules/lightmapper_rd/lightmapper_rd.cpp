@@ -715,7 +715,7 @@ void LightmapperRD::_raster_geometry(RenderingDevice *rd, Size2i atlas_size, int
 		raster_push_constant.uv_offset[0] = -0.5f / float(atlas_size.x);
 		raster_push_constant.uv_offset[1] = -0.5f / float(atlas_size.y);
 
-		RD::DrawListID draw_list = rd->draw_list_begin(framebuffers[i], RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, clear_colors);
+		RD::DrawListID draw_list = rd->draw_list_begin(framebuffers[i], RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, clear_colors, 1.0, 0, Rect2(), RDD::BreadcrumbMarker::LIGHTMAPPER_PASS);
 		//draw opaque
 		rd->draw_list_bind_render_pipeline(draw_list, raster_pipeline);
 		rd->draw_list_bind_uniform_set(draw_list, raster_base_uniform, 0);
@@ -915,7 +915,7 @@ LightmapperRD::BakeError LightmapperRD::_denoise_oidn(RenderingDevice *p_rd, RID
 	return BAKE_OK;
 }
 
-LightmapperRD::BakeError LightmapperRD::_denoise(RenderingDevice *p_rd, Ref<RDShaderFile> &p_compute_shader, const RID &p_compute_base_uniform_set, PushConstant &p_push_constant, RID p_source_light_tex, RID p_source_normal_tex, RID p_dest_light_tex, float p_denoiser_strength, int p_denoiser_range, const Size2i &p_atlas_size, int p_atlas_slices, bool p_bake_sh, BakeStepFunc p_step_function) {
+LightmapperRD::BakeError LightmapperRD::_denoise(RenderingDevice *p_rd, Ref<RDShaderFile> &p_compute_shader, const RID &p_compute_base_uniform_set, PushConstant &p_push_constant, RID p_source_light_tex, RID p_source_normal_tex, RID p_dest_light_tex, float p_denoiser_strength, int p_denoiser_range, const Size2i &p_atlas_size, int p_atlas_slices, bool p_bake_sh, BakeStepFunc p_step_function, void *p_bake_userdata) {
 	RID denoise_params_buffer = p_rd->uniform_buffer_create(sizeof(DenoiseParams));
 	DenoiseParams denoise_params;
 	denoise_params.spatial_bandwidth = 5.0f;
@@ -977,6 +977,11 @@ LightmapperRD::BakeError LightmapperRD::_denoise(RenderingDevice *p_rd, Ref<RDSh
 				p_rd->submit();
 				p_rd->sync();
 			}
+		}
+		if (p_step_function) {
+			int percent = (s + 1) * 100 / p_atlas_slices;
+			float p = float(s) / p_atlas_slices * 0.1;
+			p_step_function(0.8 + p, vformat(RTR("Denoising %d%%"), percent), p_bake_userdata, false);
 		}
 	}
 
@@ -1581,12 +1586,17 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		Ref<Image> img = Image::create_from_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
 		img->save_exr("res://2_light_primary_" + itos(i) + ".exr", false);
 	}
+
+	if (p_bake_sh) {
+		for (int i = 0; i < atlas_slices * 4; i++) {
+			Vector<uint8_t> s = rd->texture_get_data(light_accum_tex, i);
+			Ref<Image> img = Image::create_from_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
+			img->save_exr("res://2_light_primary_accum_" + itos(i) + ".exr", false);
+		}
+	}
 #endif
 
 	/* SECONDARY (indirect) LIGHT PASS(ES) */
-	if (p_step_function) {
-		p_step_function(0.6, RTR("Integrate indirect lighting"), p_bake_userdata, true);
-	}
 
 	if (p_bounces > 0) {
 		Vector<RD::Uniform> uniforms;
@@ -1649,6 +1659,10 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 		rd->submit();
 		rd->sync();
+
+		if (p_step_function) {
+			p_step_function(0.6, RTR("Integrate indirect lighting"), p_bake_userdata, true);
+		}
 
 		int count = 0;
 		for (int s = 0; s < atlas_slices; s++) {
@@ -1803,7 +1817,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			} else {
 				// JNLM (built-in).
 				SWAP(light_accum_tex, light_accum_tex2);
-				error = _denoise(rd, compute_shader, compute_base_uniform_set, push_constant, light_accum_tex2, normal_tex, light_accum_tex, p_denoiser_strength, p_denoiser_range, atlas_size, atlas_slices, p_bake_sh, p_step_function);
+				error = _denoise(rd, compute_shader, compute_base_uniform_set, push_constant, light_accum_tex2, normal_tex, light_accum_tex, p_denoiser_strength, p_denoiser_range, atlas_size, atlas_slices, p_bake_sh, p_step_function, p_bake_userdata);
 			}
 			if (unlikely(error != BAKE_OK)) {
 				return error;
@@ -1918,7 +1932,8 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				seams_push_constant.slice = uint32_t(i * subslices + k);
 				seams_push_constant.debug = debug;
 
-				RD::DrawListID draw_list = rd->draw_list_begin(framebuffers[i * subslices + k], RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, clear_colors);
+				// Store the current subslice in the breadcrumb.
+				RD::DrawListID draw_list = rd->draw_list_begin(framebuffers[i * subslices + k], RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, clear_colors, 1.0, 0, Rect2(), RDD::BreadcrumbMarker::LIGHTMAPPER_PASS | seams_push_constant.slice);
 
 				rd->draw_list_bind_uniform_set(draw_list, raster_base_uniform, 0);
 				rd->draw_list_bind_uniform_set(draw_list, blendseams_raster_uniform, 1);

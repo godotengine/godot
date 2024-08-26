@@ -1455,9 +1455,11 @@ private:
 	}
 	void apply_pending_warnings();
 #endif
-
-	void make_completion_context(CompletionType p_type, Node *p_node, int p_argument = -1, bool p_force = false);
-	void make_completion_context(CompletionType p_type, Variant::Type p_builtin_type, bool p_force = false);
+	void make_completion_context(CompletionType p_type, Node *p_node, int p_argument = -1);
+	void make_completion_context(CompletionType p_type, Variant::Type p_builtin_type);
+	// In some cases it might become necessary to alter the completion context after parsing a subexpression.
+	// For example to not override COMPLETE_CALL_ARGUMENTS with COMPLETION_NONE from string literals.
+	void override_completion_context(const Node *p_for_node, CompletionType p_type, Node *p_node, int p_argument = -1);
 	void push_completion_call(Node *p_call);
 	void pop_completion_call();
 	void set_last_completion_call_arg(int p_argument);

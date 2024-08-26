@@ -70,6 +70,17 @@ Files extracted from upstream source:
 Applied upstream PR https://github.com/BinomialLLC/basis_universal/pull/344 to
 fix build with our own copy of zstd (patch in `patches`).
 
+## betsy
+
+- Upstream: https://github.com/darksylinc/betsy
+- Version: git (cc723dcae9a6783ae572f64d12a90d60ef8d631a, 2022)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `bc6h.glsl`, `CrossPlatformSettings_piece_all.glsl` and `UavCrossPlatform_piece_all.glsl`.
+- `LICENSE.md`
+
 
 ## brotli
 
@@ -748,7 +759,7 @@ with the provided patch.
 ## openxr
 
 - Upstream: https://github.com/KhronosGroup/OpenXR-SDK
-- Version: 1.0.34 (288d3a7ebc1ad959f62d51da75baa3d27438c499, 2024)
+- Version: 1.1.38 (f90488c4fb1537f4256d09d4a4d3ad5543ebaf24, 2024)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -827,6 +838,22 @@ and solve conflicts and also enrich the feature set originally
 proposed by these libraries and better integrate them with Godot.
 
 
+## spirv-cross
+
+- Upstream: https://github.com/KhronosGroup/SPIRV-Cross
+- Version: vulkan-sdk-1.3.290.0 (5d127b917f080c6f052553c47170ec0ba702e54f, 2024)
+- License: Apache 2.0
+
+Files extracted from upstream source:
+
+- All `.cpp`, `.hpp` and `.h` files, minus `main.cpp`, `spirv_cross_c.*`, `spirv_hlsl.*`, `spirv_cpp.*`
+- `include/` folder
+- `LICENSE` and `LICENSES/` folder, minus `CC-BY-4.0.txt`
+
+Versions of this SDK do not have to match the `vulkan` section, as this SDK is required
+to generate Metal source from Vulkan SPIR-V.
+
+
 ## spirv-reflect
 
 - Upstream: https://github.com/KhronosGroup/SPIRV-Reflect
@@ -845,7 +872,7 @@ Files extracted from upstream source:
 Some downstream changes have been made and are identified by
 `// -- GODOT begin --` and `// -- GODOT end --` comments.
 They can be reapplied using the patches included in the `patches`
-folder.
+folder, in order.
 
 
 ## squish
@@ -894,7 +921,7 @@ number and run the script.
 ## ufbx
 
 - Upstream: https://github.com/ufbx/ufbx
-- Version: 0.14.0 (80ff790ab36507b99ec7e4ef55b9cfb076ce821b, 2024)
+- Version: 0.14.3 (19bdb7e7ef02eb914d5e7211a3685f50ee6d27e3, 2024)
 - License: MIT
 
 Files extracted from upstream source:

@@ -332,6 +332,7 @@ private:
 		bool interior = false;
 		AABB bounds = AABB(Vector3(), Vector3(1, 1, 1));
 		float baked_exposure = 1.0;
+		Vector2i light_texture_size;
 		int32_t array_index = -1; //unassigned
 		PackedVector3Array points;
 		PackedColorArray point_sh;
@@ -984,6 +985,10 @@ public:
 		ERR_FAIL_COND_V(!using_lightmap_array, false); //only for arrays
 		const Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
 		return lm->uses_spherical_harmonics;
+	}
+	_FORCE_INLINE_ Vector2i lightmap_get_light_texture_size(RID p_lightmap) const {
+		const Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
+		return lm->light_texture_size;
 	}
 	_FORCE_INLINE_ uint64_t lightmap_array_get_version() const {
 		ERR_FAIL_COND_V(!using_lightmap_array, 0); //only for arrays

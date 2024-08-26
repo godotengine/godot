@@ -49,7 +49,7 @@
 #include "core/os/os.h"
 #include "core/os/time.h"
 #include "core/register_core_types.h"
-#include "core/string/translation.h"
+#include "core/string/translation_server.h"
 #include "core/version.h"
 #include "drivers/register_driver_types.h"
 #include "main/app_icon.gen.h"
@@ -605,6 +605,9 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--gpu-abort", "Abort on graphics API usage errors (usually validation layer errors). May help see the problem if your system freezes.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
 #endif
 	print_help_option("--generate-spirv-debug-info", "Generate SPIR-V debug information. This allows source-level shader debugging with RenderDoc.\n");
+#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
+	print_help_option("--extra-gpu-memory-tracking", "Enables additional memory tracking (see class reference for `RenderingDevice.get_driver_and_device_memory_report()` and linked methods). Currently only implemented for Vulkan. Enabling this feature may cause crashes on some systems due to buggy drivers or bugs in the Vulkan Loader. See https://github.com/godotengine/godot/issues/95967\n");
+#endif
 	print_help_option("--remote-debug <uri>", "Remote debug (<protocol>://<host/IP>[:<port>], e.g. tcp://127.0.0.1:6007).\n");
 	print_help_option("--single-threaded-scene", "Force scene tree to run in single-threaded mode. Sub-thread groups are disabled and run on the main thread.\n");
 #if defined(DEBUG_ENABLED)
@@ -1204,6 +1207,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif
 		} else if (arg == "--generate-spirv-debug-info") {
 			Engine::singleton->generate_spirv_debug_info = true;
+		} else if (arg == "--extra-gpu-memory-tracking") {
+			Engine::singleton->extra_gpu_memory_tracking = true;
 		} else if (arg == "--tablet-driver") {
 			if (N) {
 				tablet_driver = N->get();
@@ -1511,6 +1516,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				main_args.push_back(arg);
 				main_args.push_back(N->get());
 				N = N->next();
+				// GDScript docgen requires Autoloads, but loading those also creates a main loop.
+				// This forces main loop to quit without adding more GDScript-specific exceptions to setup.
+				quit_after = 1;
 			} else {
 				OS::get_singleton()->print("Missing relative or absolute path to project for --gdscript-docs, aborting.\n");
 				goto error;
@@ -1932,6 +1940,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	{
 		String driver_hints = "";
 		String driver_hints_with_d3d12 = "";
+		String driver_hints_with_metal = "";
 
 		{
 			Vector<String> driver_hints_arr;
@@ -1944,18 +1953,25 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			driver_hints_arr.push_back("d3d12");
 #endif
 			driver_hints_with_d3d12 = String(",").join(driver_hints_arr);
+
+#ifdef METAL_ENABLED
+			// Make metal the preferred and default driver.
+			driver_hints_arr.insert(0, "metal");
+#endif
+			driver_hints_with_metal = String(",").join(driver_hints_arr);
 		}
 
 		String default_driver = driver_hints.get_slice(",", 0);
 		String default_driver_with_d3d12 = driver_hints_with_d3d12.get_slice(",", 0);
+		String default_driver_with_metal = driver_hints_with_metal.get_slice(",", 0);
 
 		// For now everything defaults to vulkan when available. This can change in future updates.
 		GLOBAL_DEF_RST_NOVAL("rendering/rendering_device/driver", default_driver);
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.windows", PROPERTY_HINT_ENUM, driver_hints_with_d3d12), default_driver_with_d3d12);
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.linuxbsd", PROPERTY_HINT_ENUM, driver_hints), default_driver);
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.android", PROPERTY_HINT_ENUM, driver_hints), default_driver);
-		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.ios", PROPERTY_HINT_ENUM, driver_hints), default_driver);
-		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.macos", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.ios", PROPERTY_HINT_ENUM, driver_hints_with_metal), default_driver_with_metal);
+		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.macos", PROPERTY_HINT_ENUM, driver_hints_with_metal), default_driver_with_metal);
 
 		GLOBAL_DEF_RST("rendering/rendering_device/fallback_to_vulkan", true);
 		GLOBAL_DEF_RST("rendering/rendering_device/fallback_to_d3d12", true);
@@ -2053,7 +2069,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		BLOCK_DEVICE("Intel", "Intel HD Graphics P3000");
 		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics P3000");
 		BLOCK_DEVICE("0x8086", "0x0112"); // HD Graphics P3000, Gen6, Sandy Bridge
-		BLOCK_DEVICE("0x8086", "0x0122"); // HD Graphics P3000, Gen6, Sandy Bridge
+		BLOCK_DEVICE("0x8086", "0x0122");
 		BLOCK_DEVICE("0x8086", "0x015A"); // HD Graphics, Gen7, Ivy Bridge
 		BLOCK_DEVICE("Intel", "Intel HD Graphics 2500");
 		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 2500");
@@ -2061,10 +2077,81 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		BLOCK_DEVICE("Intel", "Intel HD Graphics 4000");
 		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 4000");
 		BLOCK_DEVICE("0x8086", "0x0162"); // HD Graphics 4000, Gen7, Ivy Bridge
-		BLOCK_DEVICE("0x8086", "0x0166"); // HD Graphics 4000, Gen7, Ivy Bridge
+		BLOCK_DEVICE("0x8086", "0x0166");
 		BLOCK_DEVICE("Intel", "Intel HD Graphics P4000");
 		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics P4000");
 		BLOCK_DEVICE("0x8086", "0x016A"); // HD Graphics P4000, Gen7, Ivy Bridge
+		BLOCK_DEVICE("Intel", "Intel(R) Vallyview Graphics");
+		BLOCK_DEVICE("0x8086", "0x0F30"); // Intel(R) Vallyview Graphics, Gen7, Vallyview
+		BLOCK_DEVICE("0x8086", "0x0F31");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 4200");
+		BLOCK_DEVICE("0x8086", "0x0A1E"); // Intel(R) HD Graphics 4200, Gen7.5, Haswell
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 4400");
+		BLOCK_DEVICE("0x8086", "0x0A16"); // Intel(R) HD Graphics 4400, Gen7.5, Haswell
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 4600");
+		BLOCK_DEVICE("0x8086", "0x0412"); // Intel(R) HD Graphics 4600, Gen7.5, Haswell
+		BLOCK_DEVICE("0x8086", "0x0416");
+		BLOCK_DEVICE("0x8086", "0x0426");
+		BLOCK_DEVICE("0x8086", "0x0D12");
+		BLOCK_DEVICE("0x8086", "0x0D16");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics P4600/P4700");
+		BLOCK_DEVICE("0x8086", "0x041A"); // Intel(R) HD Graphics P4600/P4700, Gen7.5, Haswell
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 5000");
+		BLOCK_DEVICE("0x8086", "0x0422"); // Intel(R) HD Graphics 5000, Gen7.5, Haswell
+		BLOCK_DEVICE("0x8086", "0x042A");
+		BLOCK_DEVICE("0x8086", "0x0A26");
+		BLOCK_DEVICE("Intel", "Intel(R) Iris(TM) Graphics 5100");
+		BLOCK_DEVICE("0x8086", "0x0A22"); // Intel(R) Iris(TM) Graphics 5100, Gen7.5, Haswell
+		BLOCK_DEVICE("0x8086", "0x0A2A");
+		BLOCK_DEVICE("0x8086", "0x0A2B");
+		BLOCK_DEVICE("0x8086", "0x0A2E");
+		BLOCK_DEVICE("Intel", "Intel(R) Iris(TM) Pro Graphics 5200");
+		BLOCK_DEVICE("0x8086", "0x0D22"); // Intel(R) Iris(TM) Pro Graphics 5200, Gen7.5, Haswell
+		BLOCK_DEVICE("0x8086", "0x0D26");
+		BLOCK_DEVICE("0x8086", "0x0D2A");
+		BLOCK_DEVICE("0x8086", "0x0D2B");
+		BLOCK_DEVICE("0x8086", "0x0D2E");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 400");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 405");
+		BLOCK_DEVICE("0x8086", "0x22B0"); // Intel(R) HD Graphics, Gen8, Cherryview Braswell
+		BLOCK_DEVICE("0x8086", "0x22B1");
+		BLOCK_DEVICE("0x8086", "0x22B2");
+		BLOCK_DEVICE("0x8086", "0x22B3");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 5300");
+		BLOCK_DEVICE("0x8086", "0x161E"); // Intel(R) HD Graphics 5300, Gen8, Broadwell
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 5500");
+		BLOCK_DEVICE("0x8086", "0x1616"); // Intel(R) HD Graphics 5500, Gen8, Broadwell
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 5600");
+		BLOCK_DEVICE("0x8086", "0x1612"); // Intel(R) HD Graphics 5600, Gen8, Broadwell
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 6000");
+		BLOCK_DEVICE("0x8086", "0x1626"); // Intel(R) HD Graphics 6000, Gen8, Broadwell
+		BLOCK_DEVICE("Intel", "Intel(R) Iris(TM) Graphics 6100");
+		BLOCK_DEVICE("0x8086", "0x162B"); // Intel(R) Iris(TM) Graphics 6100, Gen8, Broadwell
+		BLOCK_DEVICE("Intel", "Intel(R) Iris(TM) Pro Graphics 6200");
+		BLOCK_DEVICE("0x8086", "0x1622"); // Intel(R) Iris(TM) Pro Graphics 6200, Gen8, Broadwell
+		BLOCK_DEVICE("Intel", "Intel(R) Iris(TM) Pro Graphics P6300");
+		BLOCK_DEVICE("0x8086", "0x162A"); // Intel(R) Iris(TM) Pro Graphics P6300, Gen8, Broadwell
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 500");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 505");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 510");
+		BLOCK_DEVICE("0x8086", "0x1902"); // Intel(R) HD Graphics 510, Gen9, Skylake
+		BLOCK_DEVICE("0x8086", "0x1906");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 520");
+		BLOCK_DEVICE("0x8086", "0x1916"); // Intel(R) HD Graphics 520, Gen9, Skylake
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 530");
+		BLOCK_DEVICE("0x8086", "0x1912"); // Intel(R) HD Graphics 530, Gen9, Skylake
+		BLOCK_DEVICE("0x8086", "0x191B");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics P530");
+		BLOCK_DEVICE("0x8086", "0x191D"); // Intel(R) HD Graphics P530, Gen9, Skylake
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 515");
+		BLOCK_DEVICE("0x8086", "0x191E"); // Intel(R) HD Graphics 515, Gen9, Skylake
+		BLOCK_DEVICE("Intel", "Intel(R) Iris Graphics 540");
+		BLOCK_DEVICE("0x8086", "0x1926"); // Intel(R) Iris Graphics 540, Gen9, Skylake
+		BLOCK_DEVICE("0x8086", "0x1927");
+		BLOCK_DEVICE("Intel", "Intel(R) Iris Pro Graphics 580");
+		BLOCK_DEVICE("0x8086", "0x193B"); // Intel(R) Iris Pro Graphics 580, Gen9, Skylake
+		BLOCK_DEVICE("Intel", "Intel(R) Iris Pro Graphics P580");
+		BLOCK_DEVICE("0x8086", "0x193D"); // Intel(R) Iris Pro Graphics P580, Gen9, Skylake
 
 #undef BLOCK_DEVICE
 
@@ -2101,7 +2188,20 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		if (rendering_method != "forward_plus" &&
 				rendering_method != "mobile" &&
 				rendering_method != "gl_compatibility") {
-			OS::get_singleton()->print("Unknown renderer name '%s', aborting. Valid options are: %s\n", rendering_method.utf8().get_data(), renderer_hints.utf8().get_data());
+			OS::get_singleton()->print("Unknown rendering method '%s', aborting.\nValid options are ",
+					rendering_method.utf8().get_data());
+
+			const Vector<String> rendering_method_hints = renderer_hints.split(",");
+			for (int i = 0; i < rendering_method_hints.size(); i++) {
+				if (i == rendering_method_hints.size() - 1) {
+					OS::get_singleton()->print(" and ");
+				} else if (i != 0) {
+					OS::get_singleton()->print(", ");
+				}
+				OS::get_singleton()->print("'%s'", rendering_method_hints[i].utf8().get_data());
+			}
+
+			OS::get_singleton()->print(".\n");
 			goto error;
 		}
 	}
@@ -2127,12 +2227,25 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			OS::get_singleton()->print("Unknown rendering driver '%s', aborting.\nValid options are ",
 					rendering_driver.utf8().get_data());
 
+			// Deduplicate driver entries, as a rendering driver may be supported by several display servers.
+			Vector<String> unique_rendering_drivers;
 			for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
 				Vector<String> r_drivers = DisplayServer::get_create_function_rendering_drivers(i);
 
 				for (int d = 0; d < r_drivers.size(); d++) {
-					OS::get_singleton()->print("'%s', ", r_drivers[d].utf8().get_data());
+					if (!unique_rendering_drivers.has(r_drivers[d])) {
+						unique_rendering_drivers.append(r_drivers[d]);
+					}
 				}
+			}
+
+			for (int i = 0; i < unique_rendering_drivers.size(); i++) {
+				if (i == unique_rendering_drivers.size() - 1) {
+					OS::get_singleton()->print(" and ");
+				} else if (i != 0) {
+					OS::get_singleton()->print(", ");
+				}
+				OS::get_singleton()->print("'%s'", unique_rendering_drivers[i].utf8().get_data());
 			}
 
 			OS::get_singleton()->print(".\n");
@@ -2158,6 +2271,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif
 #ifdef D3D12_ENABLED
 			available_drivers.push_back("d3d12");
+#endif
+#ifdef METAL_ENABLED
+			available_drivers.push_back("metal");
 #endif
 		}
 #ifdef GLES3_ENABLED
@@ -2385,6 +2501,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF("debug/settings/stdout/print_fps", false);
 	GLOBAL_DEF("debug/settings/stdout/print_gpu_profile", false);
 	GLOBAL_DEF("debug/settings/stdout/verbose_stdout", false);
+	GLOBAL_DEF("debug/settings/physics_interpolation/enable_warnings", true);
 
 	if (!OS::get_singleton()->_verbose_stdout) { // Not manually overridden.
 		OS::get_singleton()->_verbose_stdout = GLOBAL_GET("debug/settings/stdout/verbose_stdout");
@@ -2437,7 +2554,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF_BASIC("xr/openxr/startup_alert", true);
 
 	// OpenXR project extensions settings.
-	GLOBAL_DEF_BASIC("xr/openxr/extensions/hand_tracking", true);
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/hand_tracking", false);
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/hand_tracking_unobstructed_data_source", false); // XR_HAND_TRACKING_DATA_SOURCE_UNOBSTRUCTED_EXT
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/hand_tracking_controller_data_source", false); // XR_HAND_TRACKING_DATA_SOURCE_CONTROLLER_EXT
 	GLOBAL_DEF_RST_BASIC("xr/openxr/extensions/hand_interaction_profile", false);
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/eye_gaze_interaction", false);
 
@@ -2465,7 +2584,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	OS::get_singleton()->benchmark_end_measure("Startup", "Main::Setup");
 
 	if (p_second_phase) {
-		return setup2();
+		exit_err = setup2();
+		if (exit_err != OK) {
+			goto error;
+		}
 	}
 
 	return OK;
@@ -2763,6 +2885,30 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 		if (err != OK || display_server == nullptr) {
 			ERR_PRINT("Unable to create DisplayServer, all display drivers failed.\nUse \"--headless\" command line argument to run the engine in headless mode if this is desired (e.g. for continuous integration).");
+
+			if (display_server) {
+				memdelete(display_server);
+			}
+
+			GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
+			uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
+			unregister_server_types();
+
+			if (input) {
+				memdelete(input);
+			}
+			if (tsman) {
+				memdelete(tsman);
+			}
+#ifndef _3D_DISABLED
+			if (physics_server_3d_manager) {
+				memdelete(physics_server_3d_manager);
+			}
+#endif // _3D_DISABLED
+			if (physics_server_2d_manager) {
+				memdelete(physics_server_2d_manager);
+			}
+
 			return err;
 		}
 
@@ -2947,9 +3093,6 @@ Error Main::setup2(bool p_show_boot_logo) {
 			id->set_emulate_mouse_from_touch(bool(GLOBAL_DEF_BASIC("input_devices/pointing/emulate_mouse_from_touch", true)));
 		}
 
-		GLOBAL_DEF_BASIC("input_devices/pointing/android/enable_long_press_as_right_click", false);
-		GLOBAL_DEF_BASIC("input_devices/pointing/android/enable_pan_and_scale_gestures", false);
-		GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "input_devices/pointing/android/rotary_input_scroll_axis", PROPERTY_HINT_ENUM, "Horizontal,Vertical"), 1);
 		OS::get_singleton()->benchmark_end_measure("Startup", "Setup Window and Boot");
 	}
 
@@ -3061,6 +3204,14 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 		OS::get_singleton()->benchmark_end_measure("Scene", "Modules and Extensions");
 	}
+
+	PackedStringArray extensions;
+	extensions.push_back("gd");
+	if (ClassDB::class_exists("CSharpScript")) {
+		extensions.push_back("cs");
+	}
+	extensions.push_back("gdshader");
+	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::PACKED_STRING_ARRAY, "editor/script/search_in_file_extensions"), extensions); // Note: should be defined after Scene level modules init to see .NET.
 
 	OS::get_singleton()->benchmark_end_measure("Startup", "Scene");
 
@@ -4054,15 +4205,15 @@ bool Main::iteration() {
 
 		uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
 
-#ifndef _3D_DISABLED
-		PhysicsServer3D::get_singleton()->sync();
-		PhysicsServer3D::get_singleton()->flush_queries();
-#endif // _3D_DISABLED
-
 		// Prepare the fixed timestep interpolated nodes BEFORE they are updated
 		// by the physics server, otherwise the current and previous transforms
 		// may be the same, and no interpolation takes place.
 		OS::get_singleton()->get_main_loop()->iteration_prepare();
+
+#ifndef _3D_DISABLED
+		PhysicsServer3D::get_singleton()->sync();
+		PhysicsServer3D::get_singleton()->flush_queries();
+#endif // _3D_DISABLED
 
 		PhysicsServer2D::get_singleton()->sync();
 		PhysicsServer2D::get_singleton()->flush_queries();
@@ -4073,6 +4224,7 @@ bool Main::iteration() {
 #endif // _3D_DISABLED
 			PhysicsServer2D::get_singleton()->end_sync();
 
+			Engine::get_singleton()->_in_physics = false;
 			exit = true;
 			break;
 		}
@@ -4095,6 +4247,8 @@ bool Main::iteration() {
 		PhysicsServer2D::get_singleton()->step(physics_step * time_scale);
 
 		message_queue->flush();
+
+		OS::get_singleton()->get_main_loop()->iteration_end();
 
 		physics_process_ticks = MAX(physics_process_ticks, OS::get_singleton()->get_ticks_usec() - physics_begin); // keep the largest one for reference
 		physics_process_max = MAX(OS::get_singleton()->get_ticks_usec() - physics_begin, physics_process_max);

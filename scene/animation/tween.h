@@ -50,6 +50,7 @@ protected:
 	static void _bind_methods();
 
 	Ref<Tween> _get_tween();
+	void _finish();
 
 	double elapsed_time = 0;
 	bool finished = false;

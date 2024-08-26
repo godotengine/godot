@@ -30,6 +30,7 @@
 
 #include "image.h"
 
+#include "core/config/project_settings.h"
 #include "core/error/error_list.h"
 #include "core/error/error_macros.h"
 #include "core/io/image_loader.h"
@@ -501,6 +502,38 @@ static void _convert(int p_width, int p_height, const uint8_t *p_src, uint8_t *p
 	}
 }
 
+template <typename T, uint32_t read_channels, uint32_t write_channels, T def_zero, T def_one>
+static void _convert_fast(int p_width, int p_height, const T *p_src, T *p_dst) {
+	uint32_t dst_count = 0;
+	uint32_t src_count = 0;
+
+	const int resolution = p_width * p_height;
+
+	for (int i = 0; i < resolution; i++) {
+		memcpy(p_dst + dst_count, p_src + src_count, MIN(read_channels, write_channels) * sizeof(T));
+
+		if constexpr (write_channels > read_channels) {
+			const T def_value[4] = { def_zero, def_zero, def_zero, def_one };
+			memcpy(p_dst + dst_count + read_channels, &def_value[read_channels], (write_channels - read_channels) * sizeof(T));
+		}
+
+		dst_count += write_channels;
+		src_count += read_channels;
+	}
+}
+
+static bool _are_formats_compatible(Image::Format p_format0, Image::Format p_format1) {
+	if (p_format0 <= Image::FORMAT_RGBA8 && p_format1 <= Image::FORMAT_RGBA8) {
+		return true;
+	} else if (p_format0 <= Image::FORMAT_RGBAH && p_format0 >= Image::FORMAT_RH && p_format1 <= Image::FORMAT_RGBAH && p_format1 >= Image::FORMAT_RH) {
+		return true;
+	} else if (p_format0 <= Image::FORMAT_RGBAF && p_format0 >= Image::FORMAT_RF && p_format1 <= Image::FORMAT_RGBAF && p_format1 >= Image::FORMAT_RF) {
+		return true;
+	}
+
+	return false;
+}
+
 void Image::convert(Format p_new_format) {
 	ERR_FAIL_INDEX_MSG(p_new_format, FORMAT_MAX, "The Image format specified (" + itos(p_new_format) + ") is out of range. See Image's Format enum.");
 	if (data.size() == 0) {
@@ -517,7 +550,7 @@ void Image::convert(Format p_new_format) {
 	if (Image::is_format_compressed(format) || Image::is_format_compressed(p_new_format)) {
 		ERR_FAIL_MSG("Cannot convert to <-> from compressed formats. Use compress() and decompress() instead.");
 
-	} else if (format > FORMAT_RGBA8 || p_new_format > FORMAT_RGBA8) {
+	} else if (!_are_formats_compatible(format, p_new_format)) {
 		//use put/set pixel which is slower but works with non byte formats
 		Image new_img(width, height, mipmaps, p_new_format);
 
@@ -647,6 +680,78 @@ void Image::convert(Format p_new_format) {
 				break;
 			case FORMAT_RGBA8 | (FORMAT_RGB8 << 8):
 				_convert<3, true, 3, false, false, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_RH | (FORMAT_RGH << 8):
+				_convert_fast<uint16_t, 1, 2, 0x0000, 0x3C00>(mip_width, mip_height, (const uint16_t *)rptr, (uint16_t *)wptr);
+				break;
+			case FORMAT_RH | (FORMAT_RGBH << 8):
+				_convert_fast<uint16_t, 1, 3, 0x0000, 0x3C00>(mip_width, mip_height, (const uint16_t *)rptr, (uint16_t *)wptr);
+				break;
+			case FORMAT_RH | (FORMAT_RGBAH << 8):
+				_convert_fast<uint16_t, 1, 4, 0x0000, 0x3C00>(mip_width, mip_height, (const uint16_t *)rptr, (uint16_t *)wptr);
+				break;
+			case FORMAT_RGH | (FORMAT_RH << 8):
+				_convert_fast<uint16_t, 2, 1, 0x0000, 0x3C00>(mip_width, mip_height, (const uint16_t *)rptr, (uint16_t *)wptr);
+				break;
+			case FORMAT_RGH | (FORMAT_RGBH << 8):
+				_convert_fast<uint16_t, 2, 3, 0x0000, 0x3C00>(mip_width, mip_height, (const uint16_t *)rptr, (uint16_t *)wptr);
+				break;
+			case FORMAT_RGH | (FORMAT_RGBAH << 8):
+				_convert_fast<uint16_t, 2, 4, 0x0000, 0x3C00>(mip_width, mip_height, (const uint16_t *)rptr, (uint16_t *)wptr);
+				break;
+			case FORMAT_RGBH | (FORMAT_RH << 8):
+				_convert_fast<uint16_t, 3, 1, 0x0000, 0x3C00>(mip_width, mip_height, (const uint16_t *)rptr, (uint16_t *)wptr);
+				break;
+			case FORMAT_RGBH | (FORMAT_RGH << 8):
+				_convert_fast<uint16_t, 3, 2, 0x0000, 0x3C00>(mip_width, mip_height, (const uint16_t *)rptr, (uint16_t *)wptr);
+				break;
+			case FORMAT_RGBH | (FORMAT_RGBAH << 8):
+				_convert_fast<uint16_t, 3, 4, 0x0000, 0x3C00>(mip_width, mip_height, (const uint16_t *)rptr, (uint16_t *)wptr);
+				break;
+			case FORMAT_RGBAH | (FORMAT_RH << 8):
+				_convert_fast<uint16_t, 4, 1, 0x0000, 0x3C00>(mip_width, mip_height, (const uint16_t *)rptr, (uint16_t *)wptr);
+				break;
+			case FORMAT_RGBAH | (FORMAT_RGH << 8):
+				_convert_fast<uint16_t, 4, 2, 0x0000, 0x3C00>(mip_width, mip_height, (const uint16_t *)rptr, (uint16_t *)wptr);
+				break;
+			case FORMAT_RGBAH | (FORMAT_RGBH << 8):
+				_convert_fast<uint16_t, 4, 3, 0x0000, 0x3C00>(mip_width, mip_height, (const uint16_t *)rptr, (uint16_t *)wptr);
+				break;
+			case FORMAT_RF | (FORMAT_RGF << 8):
+				_convert_fast<uint32_t, 1, 2, 0x00000000, 0x3F800000>(mip_width, mip_height, (const uint32_t *)rptr, (uint32_t *)wptr);
+				break;
+			case FORMAT_RF | (FORMAT_RGBF << 8):
+				_convert_fast<uint32_t, 1, 3, 0x00000000, 0x3F800000>(mip_width, mip_height, (const uint32_t *)rptr, (uint32_t *)wptr);
+				break;
+			case FORMAT_RF | (FORMAT_RGBAF << 8):
+				_convert_fast<uint32_t, 1, 4, 0x00000000, 0x3F800000>(mip_width, mip_height, (const uint32_t *)rptr, (uint32_t *)wptr);
+				break;
+			case FORMAT_RGF | (FORMAT_RF << 8):
+				_convert_fast<uint32_t, 2, 1, 0x00000000, 0x3F800000>(mip_width, mip_height, (const uint32_t *)rptr, (uint32_t *)wptr);
+				break;
+			case FORMAT_RGF | (FORMAT_RGBF << 8):
+				_convert_fast<uint32_t, 2, 3, 0x00000000, 0x3F800000>(mip_width, mip_height, (const uint32_t *)rptr, (uint32_t *)wptr);
+				break;
+			case FORMAT_RGF | (FORMAT_RGBAF << 8):
+				_convert_fast<uint32_t, 2, 4, 0x00000000, 0x3F800000>(mip_width, mip_height, (const uint32_t *)rptr, (uint32_t *)wptr);
+				break;
+			case FORMAT_RGBF | (FORMAT_RF << 8):
+				_convert_fast<uint32_t, 3, 1, 0x00000000, 0x3F800000>(mip_width, mip_height, (const uint32_t *)rptr, (uint32_t *)wptr);
+				break;
+			case FORMAT_RGBF | (FORMAT_RGF << 8):
+				_convert_fast<uint32_t, 3, 2, 0x00000000, 0x3F800000>(mip_width, mip_height, (const uint32_t *)rptr, (uint32_t *)wptr);
+				break;
+			case FORMAT_RGBF | (FORMAT_RGBAF << 8):
+				_convert_fast<uint32_t, 3, 4, 0x00000000, 0x3F800000>(mip_width, mip_height, (const uint32_t *)rptr, (uint32_t *)wptr);
+				break;
+			case FORMAT_RGBAF | (FORMAT_RF << 8):
+				_convert_fast<uint32_t, 4, 1, 0x00000000, 0x3F800000>(mip_width, mip_height, (const uint32_t *)rptr, (uint32_t *)wptr);
+				break;
+			case FORMAT_RGBAF | (FORMAT_RGF << 8):
+				_convert_fast<uint32_t, 4, 2, 0x00000000, 0x3F800000>(mip_width, mip_height, (const uint32_t *)rptr, (uint32_t *)wptr);
+				break;
+			case FORMAT_RGBAF | (FORMAT_RGBF << 8):
+				_convert_fast<uint32_t, 4, 3, 0x00000000, 0x3F800000>(mip_width, mip_height, (const uint32_t *)rptr, (uint32_t *)wptr);
 				break;
 		}
 	}
@@ -2630,6 +2735,27 @@ Error Image::compress(CompressMode p_mode, CompressSource p_source, ASTCFormat p
 Error Image::compress_from_channels(CompressMode p_mode, UsedChannels p_channels, ASTCFormat p_astc_format) {
 	ERR_FAIL_COND_V(data.is_empty(), ERR_INVALID_DATA);
 
+	// RenderingDevice only.
+	if (GLOBAL_GET("rendering/textures/vram_compression/compress_with_gpu")) {
+		switch (p_mode) {
+			case COMPRESS_BPTC: {
+				// BC7 is unsupported currently.
+				if ((format >= FORMAT_RF && format <= FORMAT_RGBE9995) && _image_compress_bptc_rd_func) {
+					Error result = _image_compress_bptc_rd_func(this, p_channels);
+
+					// If the image was compressed successfully, we return here. If not, we fall back to the default compression scheme.
+					if (result == OK) {
+						return OK;
+					}
+				}
+
+			} break;
+
+			default: {
+			}
+		}
+	}
+
 	switch (p_mode) {
 		case COMPRESS_S3TC: {
 			ERR_FAIL_NULL_V(_image_compress_bc_func, ERR_UNAVAILABLE);
@@ -3011,6 +3137,7 @@ void (*Image::_image_compress_bptc_func)(Image *, Image::UsedChannels) = nullptr
 void (*Image::_image_compress_etc1_func)(Image *) = nullptr;
 void (*Image::_image_compress_etc2_func)(Image *, Image::UsedChannels) = nullptr;
 void (*Image::_image_compress_astc_func)(Image *, Image::ASTCFormat) = nullptr;
+Error (*Image::_image_compress_bptc_rd_func)(Image *, Image::UsedChannels) = nullptr;
 void (*Image::_image_decompress_bc)(Image *) = nullptr;
 void (*Image::_image_decompress_bptc)(Image *) = nullptr;
 void (*Image::_image_decompress_etc1)(Image *) = nullptr;
@@ -3460,6 +3587,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("fix_alpha_edges"), &Image::fix_alpha_edges);
 	ClassDB::bind_method(D_METHOD("premultiply_alpha"), &Image::premultiply_alpha);
 	ClassDB::bind_method(D_METHOD("srgb_to_linear"), &Image::srgb_to_linear);
+	ClassDB::bind_method(D_METHOD("linear_to_srgb"), &Image::linear_to_srgb);
 	ClassDB::bind_method(D_METHOD("normal_map_to_xy"), &Image::normal_map_to_xy);
 	ClassDB::bind_method(D_METHOD("rgbe_to_srgb"), &Image::rgbe_to_srgb);
 	ClassDB::bind_method(D_METHOD("bump_map_to_normal_map", "bump_scale"), &Image::bump_map_to_normal_map, DEFVAL(1.0));
@@ -3723,6 +3851,37 @@ void Image::srgb_to_linear() {
 			data_ptr[(i * 3) + 0] = srgb2lin[data_ptr[(i * 3) + 0]];
 			data_ptr[(i * 3) + 1] = srgb2lin[data_ptr[(i * 3) + 1]];
 			data_ptr[(i * 3) + 2] = srgb2lin[data_ptr[(i * 3) + 2]];
+		}
+	}
+}
+
+void Image::linear_to_srgb() {
+	if (data.size() == 0) {
+		return;
+	}
+
+	static const uint8_t lin2srgb[256] = { 0, 12, 21, 28, 33, 38, 42, 46, 49, 52, 55, 58, 61, 63, 66, 68, 70, 73, 75, 77, 79, 81, 82, 84, 86, 88, 89, 91, 93, 94, 96, 97, 99, 100, 102, 103, 104, 106, 107, 109, 110, 111, 112, 114, 115, 116, 117, 118, 120, 121, 122, 123, 124, 125, 126, 127, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 151, 152, 153, 154, 155, 156, 157, 157, 158, 159, 160, 161, 161, 162, 163, 164, 165, 165, 166, 167, 168, 168, 169, 170, 171, 171, 172, 173, 174, 174, 175, 176, 176, 177, 178, 179, 179, 180, 181, 181, 182, 183, 183, 184, 185, 185, 186, 187, 187, 188, 189, 189, 190, 191, 191, 192, 193, 193, 194, 194, 195, 196, 196, 197, 197, 198, 199, 199, 200, 201, 201, 202, 202, 203, 204, 204, 205, 205, 206, 206, 207, 208, 208, 209, 209, 210, 210, 211, 212, 212, 213, 213, 214, 214, 215, 215, 216, 217, 217, 218, 218, 219, 219, 220, 220, 221, 221, 222, 222, 223, 223, 224, 224, 225, 226, 226, 227, 227, 228, 228, 229, 229, 230, 230, 231, 231, 232, 232, 233, 233, 234, 234, 235, 235, 236, 236, 237, 237, 237, 238, 238, 239, 239, 240, 240, 241, 241, 242, 242, 243, 243, 244, 244, 245, 245, 245, 246, 246, 247, 247, 248, 248, 249, 249, 250, 250, 251, 251, 251, 252, 252, 253, 253, 254, 254, 255 };
+
+	ERR_FAIL_COND(format != FORMAT_RGB8 && format != FORMAT_RGBA8);
+
+	if (format == FORMAT_RGBA8) {
+		int len = data.size() / 4;
+		uint8_t *data_ptr = data.ptrw();
+
+		for (int i = 0; i < len; i++) {
+			data_ptr[(i << 2) + 0] = lin2srgb[data_ptr[(i << 2) + 0]];
+			data_ptr[(i << 2) + 1] = lin2srgb[data_ptr[(i << 2) + 1]];
+			data_ptr[(i << 2) + 2] = lin2srgb[data_ptr[(i << 2) + 2]];
+		}
+
+	} else if (format == FORMAT_RGB8) {
+		int len = data.size() / 3;
+		uint8_t *data_ptr = data.ptrw();
+
+		for (int i = 0; i < len; i++) {
+			data_ptr[(i * 3) + 0] = lin2srgb[data_ptr[(i * 3) + 0]];
+			data_ptr[(i * 3) + 1] = lin2srgb[data_ptr[(i * 3) + 1]];
+			data_ptr[(i * 3) + 2] = lin2srgb[data_ptr[(i * 3) + 2]];
 		}
 	}
 }

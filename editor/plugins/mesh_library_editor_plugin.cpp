@@ -242,9 +242,6 @@ void MeshLibraryEditor::_menu_cbk(int p_option) {
 	}
 }
 
-void MeshLibraryEditor::_bind_methods() {
-}
-
 MeshLibraryEditor::MeshLibraryEditor() {
 	file = memnew(EditorFileDialog);
 	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);

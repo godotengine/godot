@@ -438,6 +438,10 @@ public:
 	TypedArray<Vector2i> get_used_cells_by_id(int p_source_id = TileSet::INVALID_SOURCE, const Vector2i &p_atlas_coords = TileSetSource::INVALID_ATLAS_COORDS, int p_alternative_tile = TileSetSource::INVALID_TILE_ALTERNATIVE) const;
 	Rect2i get_used_rect() const;
 
+	bool is_cell_flipped_h(const Vector2i &p_coords) const;
+	bool is_cell_flipped_v(const Vector2i &p_coords) const;
+	bool is_cell_transposed(const Vector2i &p_coords) const;
+
 	// Patterns.
 	Ref<TileMapPattern> get_pattern(TypedArray<Vector2i> p_coords_array);
 	void set_pattern(const Vector2i &p_position, const Ref<TileMapPattern> p_pattern);

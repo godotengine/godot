@@ -28,7 +28,7 @@
 			<return type="void" />
 			<param index="0" name="time_sec" type="float" default="-1" />
 			<description>
-				Starts the timer, if it was not started already. Fails if the timer is not inside the tree. If [param time_sec] is greater than [code]0[/code], this value is used for the [member wait_time].
+				Starts the timer, or resets the timer if it was started already. Fails if the timer is not inside the tree. If [param time_sec] is greater than [code]0[/code], this value is used for the [member wait_time].
 				[b]Note:[/b] This method does not resume a paused timer. See [member paused].
 			</description>
 		</method>

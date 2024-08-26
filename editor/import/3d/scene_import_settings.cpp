@@ -117,7 +117,9 @@ class SceneImportSettingsData : public Object {
 		ERR_FAIL_NULL(settings);
 		if (r_option.name == "rest_pose/load_pose") {
 			if (!settings->has("rest_pose/load_pose") || int((*settings)["rest_pose/load_pose"]) != 2) {
-				(*settings)["rest_pose/external_animation_library"] = Variant();
+				if (settings->has("rest_pose/external_animation_library")) {
+					(*settings)["rest_pose/external_animation_library"] = Variant();
+				}
 			}
 		}
 		if (r_option.name == "rest_pose/selected_animation") {
@@ -134,7 +136,10 @@ class SceneImportSettingsData : public Object {
 					}
 				} break;
 				case 2: {
-					Object *res = (*settings)["rest_pose/external_animation_library"];
+					Object *res = nullptr;
+					if (settings->has("rest_pose/external_animation_library")) {
+						res = (*settings)["rest_pose/external_animation_library"];
+					}
 					Ref<Animation> anim(res);
 					Ref<AnimationLibrary> library(res);
 					if (anim.is_valid()) {
@@ -459,14 +464,8 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 		mesh_node->add_child(collider_view, true);
 		collider_view->set_owner(mesh_node);
 
-		Transform3D accum_xform;
-		Node3D *base = mesh_node;
-		while (base) {
-			accum_xform = base->get_transform() * accum_xform;
-			base = Object::cast_to<Node3D>(base->get_parent());
-		}
+		AABB aabb = mesh_node->get_aabb();
 
-		AABB aabb = accum_xform.xform(mesh_node->get_mesh()->get_aabb());
 		if (first_aabb) {
 			contents_aabb = aabb;
 			first_aabb = false;

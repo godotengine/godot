@@ -2439,8 +2439,15 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("multimesh_set_buffer", "multimesh", "buffer"), &RenderingServer::multimesh_set_buffer);
 	ClassDB::bind_method(D_METHOD("multimesh_get_buffer", "multimesh"), &RenderingServer::multimesh_get_buffer);
 
+	ClassDB::bind_method(D_METHOD("multimesh_set_buffer_interpolated", "multimesh", "buffer", "buffer_previous"), &RenderingServer::multimesh_set_buffer_interpolated);
+	ClassDB::bind_method(D_METHOD("multimesh_set_physics_interpolated", "multimesh", "interpolated"), &RenderingServer::multimesh_set_physics_interpolated);
+	ClassDB::bind_method(D_METHOD("multimesh_set_physics_interpolation_quality", "multimesh", "quality"), &RenderingServer::multimesh_set_physics_interpolation_quality);
+	ClassDB::bind_method(D_METHOD("multimesh_instance_reset_physics_interpolation", "multimesh", "index"), &RenderingServer::multimesh_instance_reset_physics_interpolation);
+
 	BIND_ENUM_CONSTANT(MULTIMESH_TRANSFORM_2D);
 	BIND_ENUM_CONSTANT(MULTIMESH_TRANSFORM_3D);
+	BIND_ENUM_CONSTANT(MULTIMESH_INTERP_QUALITY_FAST);
+	BIND_ENUM_CONSTANT(MULTIMESH_INTERP_QUALITY_HIGH);
 
 	/* SKELETON API */
 
@@ -2477,6 +2484,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("light_directional_set_sky_mode", "light", "mode"), &RenderingServer::light_directional_set_sky_mode);
 
 	ClassDB::bind_method(D_METHOD("light_projectors_set_filter", "filter"), &RenderingServer::light_projectors_set_filter);
+	ClassDB::bind_method(D_METHOD("lightmaps_set_bicubic_filter", "enable"), &RenderingServer::lightmaps_set_bicubic_filter);
 
 	BIND_ENUM_CONSTANT(LIGHT_PROJECTOR_FILTER_NEAREST);
 	BIND_ENUM_CONSTANT(LIGHT_PROJECTOR_FILTER_LINEAR);
@@ -3116,6 +3124,8 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("instance_set_layer_mask", "instance", "mask"), &RenderingServer::instance_set_layer_mask);
 	ClassDB::bind_method(D_METHOD("instance_set_pivot_data", "instance", "sorting_offset", "use_aabb_center"), &RenderingServer::instance_set_pivot_data);
 	ClassDB::bind_method(D_METHOD("instance_set_transform", "instance", "transform"), &RenderingServer::instance_set_transform);
+	ClassDB::bind_method(D_METHOD("instance_set_interpolated", "instance", "interpolated"), &RenderingServer::instance_set_interpolated);
+	ClassDB::bind_method(D_METHOD("instance_reset_physics_interpolation", "instance"), &RenderingServer::instance_reset_physics_interpolation);
 	ClassDB::bind_method(D_METHOD("instance_attach_object_instance_id", "instance", "id"), &RenderingServer::instance_attach_object_instance_id);
 	ClassDB::bind_method(D_METHOD("instance_set_blend_shape_weight", "instance", "shape", "weight"), &RenderingServer::instance_set_blend_shape_weight);
 	ClassDB::bind_method(D_METHOD("instance_set_surface_override_material", "instance", "surface", "material"), &RenderingServer::instance_set_surface_override_material);
@@ -3516,6 +3526,7 @@ void RenderingServer::init() {
 	// See `const bool can_s3tc_bptc` in the resource importer.
 	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_s3tc_bptc", false);
 	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_etc2_astc", false);
+	GLOBAL_DEF("rendering/textures/vram_compression/compress_with_gpu", true);
 
 	GLOBAL_DEF("rendering/textures/lossless_compression/force_png", false);
 
@@ -3616,6 +3627,7 @@ void RenderingServer::init() {
 
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/lightmapping/probe_capture/update_speed", PROPERTY_HINT_RANGE, "0.001,256,0.001"), 15);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/lightmapping/primitive_meshes/texel_size", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 0.2);
+	GLOBAL_DEF("rendering/lightmapping/lightmap_gi/use_bicubic_filter", true);
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/sdfgi/probe_ray_count", PROPERTY_HINT_ENUM, "8 (Fastest),16,32,64,96,128 (Slowest)"), 1);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/sdfgi/frames_to_converge", PROPERTY_HINT_ENUM, "5 (Less Latency but Lower Quality),10,15,20,25,30 (More Latency but Higher Quality)"), 5);

@@ -2114,9 +2114,6 @@ Error FBXDocument::_parse(Ref<FBXState> p_state, String p_path, Ref<FileAccess> 
 	return OK;
 }
 
-void FBXDocument::_bind_methods() {
-}
-
 Node *FBXDocument::generate_scene(Ref<GLTFState> p_state, float p_bake_fps, bool p_trimming, bool p_remove_immutable_tracks) {
 	Ref<FBXState> state = p_state;
 	ERR_FAIL_COND_V(state.is_null(), nullptr);

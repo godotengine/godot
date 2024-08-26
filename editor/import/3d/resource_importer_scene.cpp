@@ -2013,6 +2013,7 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/lods", PROPERTY_HINT_ENUM, "Default,Enable,Disable"), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "lods/normal_split_angle", PROPERTY_HINT_RANGE, "0,180,0.1,degrees"), 25.0f));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "lods/normal_merge_angle", PROPERTY_HINT_RANGE, "0,180,0.1,degrees"), 60.0f));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "lods/raycast_normals", PROPERTY_HINT_NONE, ""), false));
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_MATERIAL: {
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "use_external/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
@@ -2440,6 +2441,7 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 				bool generate_lods = p_generate_lods;
 				float split_angle = 25.0f;
 				float merge_angle = 60.0f;
+				bool raycast_normals = false;
 				bool create_shadow_meshes = p_create_shadow_meshes;
 				bool bake_lightmaps = p_light_bake_mode == LIGHT_BAKE_STATIC_LIGHTMAPS;
 				String save_to_file;
@@ -2494,6 +2496,10 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 						merge_angle = mesh_settings["lods/normal_merge_angle"];
 					}
 
+					if (mesh_settings.has("lods/raycast_normals")) {
+						raycast_normals = mesh_settings["lods/raycast_normals"];
+					}
+
 					if (bool(mesh_settings.get("save_to_file/enabled", false))) {
 						save_to_file = mesh_settings.get("save_to_file/path", String());
 						if (!save_to_file.is_resource_file()) {
@@ -2538,9 +2544,11 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 					}
 				}
 
+				src_mesh_node->get_mesh()->optimize_indices_for_cache();
+
 				if (generate_lods) {
 					Array skin_pose_transform_array = _get_skinned_pose_transforms(src_mesh_node);
-					src_mesh_node->get_mesh()->generate_lods(merge_angle, split_angle, skin_pose_transform_array);
+					src_mesh_node->get_mesh()->generate_lods(merge_angle, split_angle, skin_pose_transform_array, raycast_normals);
 				}
 
 				if (create_shadow_meshes) {
@@ -3050,6 +3058,10 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	progress.step(TTR("Running Custom Script..."), 2);
 
 	String post_import_script_path = p_options["import_script/path"];
+	if (post_import_script_path.is_relative_path()) {
+		post_import_script_path = p_source_file.get_base_dir().path_join(post_import_script_path);
+	}
+
 	Ref<EditorScenePostImport> post_import_script;
 
 	if (!post_import_script_path.is_empty()) {

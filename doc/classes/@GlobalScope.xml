@@ -1248,8 +1248,9 @@
 			<param index="1" name="to" type="float" />
 			<param index="2" name="x" type="float" />
 			<description>
-				Returns the result of smoothly interpolating the value of [param x] between [code]0[/code] and [code]1[/code], based on the where [param x] lies with respect to the edges [param from] and [param to].
-				The return value is [code]0[/code] if [code]x &lt;= from[/code], and [code]1[/code] if [code]x &gt;= to[/code]. If [param x] lies between [param from] and [param to], the returned value follows an S-shaped curve that maps [param x] between [code]0[/code] and [code]1[/code].
+				Returns a smooth cubic Hermite interpolation between [code]0[/code] and [code]1[/code].
+				For positive ranges (when [code]from &lt;= to[/code]) the return value is [code]0[/code] when [code]x &lt;= from[/code], and [code]1[/code] when [code]x &gt;= to[/code]. If [param x] lies between [param from] and [param to], the return value follows an S-shaped curve that smoothly transitions from [code]0[/code] to [code]1[/code].
+				For negative ranges (when [code]from &gt; to[/code]) the function is mirrored and returns [code]1[/code] when [code]x &lt;= to[/code] and [code]0[/code] when [code]x &gt;= from[/code].
 				This S-shaped curve is the cubic Hermite interpolator, given by [code]f(y) = 3*y^2 - 2*y^3[/code] where [code]y = (x-from) / (to-from)[/code].
 				[codeblock]
 				smoothstep(0, 2, -5.0) # Returns 0.0
@@ -1259,6 +1260,7 @@
 				[/codeblock]
 				Compared to [method ease] with a curve value of [code]-1.6521[/code], [method smoothstep] returns the smoothest possible curve with no sudden changes in the derivative. If you need to perform more advanced transitions, use [Tween] or [AnimationPlayer].
 				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/smoothstep_ease_comparison.png]Comparison between smoothstep() and ease(x, -1.6521) return values[/url]
+				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/smoothstep_range.webp]Smoothstep() return values with positive, zero, and negative ranges[/url]
 			</description>
 		</method>
 		<method name="snapped">

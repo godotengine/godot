@@ -104,7 +104,7 @@ void NavigationPolygon::_set_polygons(const TypedArray<Vector<int32_t>> &p_array
 	}
 	polygons.resize(p_array.size());
 	for (int i = 0; i < p_array.size(); i++) {
-		polygons.write[i].indices = p_array[i];
+		polygons.write[i] = p_array[i];
 	}
 }
 
@@ -113,7 +113,7 @@ TypedArray<Vector<int32_t>> NavigationPolygon::_get_polygons() const {
 	TypedArray<Vector<int32_t>> ret;
 	ret.resize(polygons.size());
 	for (int i = 0; i < ret.size(); i++) {
-		ret[i] = polygons[i].indices;
+		ret[i] = polygons[i];
 	}
 
 	return ret;
@@ -141,9 +141,7 @@ TypedArray<Vector<Vector2>> NavigationPolygon::_get_outlines() const {
 
 void NavigationPolygon::add_polygon(const Vector<int> &p_polygon) {
 	RWLockWrite write_lock(rwlock);
-	Polygon polygon;
-	polygon.indices = p_polygon;
-	polygons.push_back(polygon);
+	polygons.push_back(p_polygon);
 	{
 		MutexLock lock(navigation_mesh_generation);
 		navigation_mesh.unref();
@@ -164,7 +162,7 @@ int NavigationPolygon::get_polygon_count() const {
 Vector<int> NavigationPolygon::get_polygon(int p_idx) {
 	RWLockRead read_lock(rwlock);
 	ERR_FAIL_INDEX_V(p_idx, polygons.size(), Vector<int>());
-	return polygons[p_idx].indices;
+	return polygons[p_idx];
 }
 
 void NavigationPolygon::clear_polygons() {
@@ -189,10 +187,19 @@ void NavigationPolygon::clear() {
 void NavigationPolygon::set_data(const Vector<Vector2> &p_vertices, const Vector<Vector<int>> &p_polygons) {
 	RWLockWrite write_lock(rwlock);
 	vertices = p_vertices;
-	polygons.resize(p_polygons.size());
-	for (int i = 0; i < p_polygons.size(); i++) {
-		polygons.write[i].indices = p_polygons[i];
+	polygons = p_polygons;
+	{
+		MutexLock lock(navigation_mesh_generation);
+		navigation_mesh.unref();
 	}
+}
+
+void NavigationPolygon::set_data(const Vector<Vector2> &p_vertices, const Vector<Vector<int>> &p_polygons, const Vector<Vector<Vector2>> &p_outlines) {
+	RWLockWrite write_lock(rwlock);
+	vertices = p_vertices;
+	polygons = p_polygons;
+	outlines = p_outlines;
+	rect_cache_dirty = true;
 	{
 		MutexLock lock(navigation_mesh_generation);
 		navigation_mesh.unref();
@@ -202,10 +209,14 @@ void NavigationPolygon::set_data(const Vector<Vector2> &p_vertices, const Vector
 void NavigationPolygon::get_data(Vector<Vector2> &r_vertices, Vector<Vector<int>> &r_polygons) {
 	RWLockRead read_lock(rwlock);
 	r_vertices = vertices;
-	r_polygons.resize(polygons.size());
-	for (int i = 0; i < polygons.size(); i++) {
-		r_polygons.write[i] = polygons[i].indices;
-	}
+	r_polygons = polygons;
+}
+
+void NavigationPolygon::get_data(Vector<Vector2> &r_vertices, Vector<Vector<int>> &r_polygons, Vector<Vector<Vector2>> &r_outlines) {
+	RWLockRead read_lock(rwlock);
+	r_vertices = vertices;
+	r_polygons = polygons;
+	r_outlines = outlines;
 }
 
 Ref<NavigationMesh> NavigationPolygon::get_navigation_mesh() {
@@ -235,6 +246,31 @@ Ref<NavigationMesh> NavigationPolygon::get_navigation_mesh() {
 	}
 
 	return navigation_mesh;
+}
+
+void NavigationPolygon::set_outlines(const Vector<Vector<Vector2>> &p_outlines) {
+	RWLockWrite write_lock(rwlock);
+	outlines = p_outlines;
+	rect_cache_dirty = true;
+}
+
+Vector<Vector<Vector2>> NavigationPolygon::get_outlines() const {
+	RWLockRead read_lock(rwlock);
+	return outlines;
+}
+
+void NavigationPolygon::set_polygons(const Vector<Vector<int>> &p_polygons) {
+	RWLockWrite write_lock(rwlock);
+	polygons = p_polygons;
+	{
+		MutexLock lock(navigation_mesh_generation);
+		navigation_mesh.unref();
+	}
+}
+
+Vector<Vector<int>> NavigationPolygon::get_polygons() const {
+	RWLockRead read_lock(rwlock);
+	return polygons;
 }
 
 void NavigationPolygon::add_outline(const Vector<Vector2> &p_outline) {
@@ -364,7 +400,7 @@ void NavigationPolygon::make_polygons_from_outlines() {
 	for (List<TPPLPoly>::Element *I = out_poly.front(); I; I = I->next()) {
 		TPPLPoly &tp = I->get();
 
-		struct Polygon p;
+		Vector<int> p;
 
 		for (int64_t i = 0; i < tp.GetNumPoints(); i++) {
 			HashMap<Vector2, int>::Iterator E = points.find(tp[i]);
@@ -372,7 +408,7 @@ void NavigationPolygon::make_polygons_from_outlines() {
 				E = points.insert(tp[i], vertices.size());
 				vertices.push_back(tp[i]);
 			}
-			p.indices.push_back(E->value);
+			p.push_back(E->value);
 		}
 
 		polygons.push_back(p);
@@ -398,6 +434,15 @@ void NavigationPolygon::set_border_size(real_t p_value) {
 
 real_t NavigationPolygon::get_border_size() const {
 	return border_size;
+}
+
+void NavigationPolygon::set_sample_partition_type(SamplePartitionType p_value) {
+	ERR_FAIL_INDEX(p_value, SAMPLE_PARTITION_MAX);
+	partition_type = p_value;
+}
+
+NavigationPolygon::SamplePartitionType NavigationPolygon::get_sample_partition_type() const {
+	return partition_type;
 }
 
 void NavigationPolygon::set_parsed_geometry_type(ParsedGeometryType p_geometry_type) {
@@ -514,6 +559,9 @@ void NavigationPolygon::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_border_size", "border_size"), &NavigationPolygon::set_border_size);
 	ClassDB::bind_method(D_METHOD("get_border_size"), &NavigationPolygon::get_border_size);
 
+	ClassDB::bind_method(D_METHOD("set_sample_partition_type", "sample_partition_type"), &NavigationPolygon::set_sample_partition_type);
+	ClassDB::bind_method(D_METHOD("get_sample_partition_type"), &NavigationPolygon::get_sample_partition_type);
+
 	ClassDB::bind_method(D_METHOD("set_parsed_geometry_type", "geometry_type"), &NavigationPolygon::set_parsed_geometry_type);
 	ClassDB::bind_method(D_METHOD("get_parsed_geometry_type"), &NavigationPolygon::get_parsed_geometry_type);
 
@@ -543,6 +591,8 @@ void NavigationPolygon::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons", "_get_polygons");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "outlines", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_outlines", "_get_outlines");
 
+	ADD_GROUP("Sampling", "sample_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "sample_partition_type", PROPERTY_HINT_ENUM, "Convex Partition,Triangulate"), "set_sample_partition_type", "get_sample_partition_type");
 	ADD_GROUP("Geometry", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "parsed_geometry_type", PROPERTY_HINT_ENUM, "Mesh Instances,Static Colliders,Meshes and Static Colliders"), "set_parsed_geometry_type", "get_parsed_geometry_type");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "parsed_collision_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_parsed_collision_mask", "get_parsed_collision_mask");
@@ -558,6 +608,10 @@ void NavigationPolygon::_bind_methods() {
 	ADD_GROUP("Filters", "");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "baking_rect"), "set_baking_rect", "get_baking_rect");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "baking_rect_offset"), "set_baking_rect_offset", "get_baking_rect_offset");
+
+	BIND_ENUM_CONSTANT(SAMPLE_PARTITION_CONVEX_PARTITION);
+	BIND_ENUM_CONSTANT(SAMPLE_PARTITION_TRIANGULATE);
+	BIND_ENUM_CONSTANT(SAMPLE_PARTITION_MAX);
 
 	BIND_ENUM_CONSTANT(PARSED_GEOMETRY_MESH_INSTANCES);
 	BIND_ENUM_CONSTANT(PARSED_GEOMETRY_STATIC_COLLIDERS);

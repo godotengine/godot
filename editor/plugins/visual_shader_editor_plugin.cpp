@@ -115,8 +115,8 @@ void VSGraphNode::_draw_port(int p_slot_index, Point2i p_pos, bool p_left, const
 	icon_offset = -port_icon->get_size() * 0.5;
 
 	// Draw "shadow"/outline in the connection rim color.
-	draw_texture_rect(port_icon, Rect2(p_pos + icon_offset - Size2(2, 2), port_icon->get_size() + Size2(4, 4)), false, p_rim_color);
-	draw_texture(port_icon, p_pos + icon_offset, p_color);
+	draw_texture_rect(port_icon, Rect2(p_pos + (icon_offset - Size2(2, 2)) * EDSCALE, (port_icon->get_size() + Size2(4, 4)) * EDSCALE), false, p_rim_color);
+	draw_texture_rect(port_icon, Rect2(p_pos + icon_offset * EDSCALE, port_icon->get_size() * EDSCALE), false, p_color);
 }
 
 void VSGraphNode::draw_port(int p_slot_index, Point2i p_pos, bool p_left, const Color &p_color) {
@@ -154,7 +154,6 @@ VSRerouteNode::VSRerouteNode() {
 	title_lbl->hide();
 
 	const Size2 size = Size2(32, 32) * EDSCALE;
-	print_line("VSRerouteNode size: " + size);
 
 	Control *slot_area = memnew(Control);
 	slot_area->set_custom_minimum_size(size);
@@ -1509,17 +1508,18 @@ Vector2 VisualShaderEditor::selection_center;
 List<VisualShaderEditor::CopyItem> VisualShaderEditor::copy_items_buffer;
 List<VisualShader::Connection> VisualShaderEditor::copy_connections_buffer;
 
-void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
+void VisualShaderEditor::edit_shader(const Ref<Shader> &p_shader) {
 	bool changed = false;
-	if (p_visual_shader) {
+	VisualShader *visual_shader_ptr = Object::cast_to<VisualShader>(p_shader.ptr());
+	if (visual_shader_ptr) {
 		if (visual_shader.is_null()) {
 			changed = true;
 		} else {
-			if (visual_shader.ptr() != p_visual_shader) {
+			if (visual_shader.ptr() != visual_shader_ptr) {
 				changed = true;
 			}
 		}
-		visual_shader = Ref<VisualShader>(p_visual_shader);
+		visual_shader = p_shader;
 		graph_plugin->register_shader(visual_shader.ptr());
 
 		visual_shader->connect_changed(callable_mp(this, &VisualShaderEditor::_update_preview));
@@ -1544,6 +1544,19 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 			_update_graph();
 		}
 	}
+}
+
+void VisualShaderEditor::apply_shaders() {
+	// Stub. TODO: Implement apply_shaders in visual shaders for parity with text shaders.
+}
+
+bool VisualShaderEditor::is_unsaved() const {
+	// Stub. TODO: Implement is_unsaved in visual shaders for parity with text shaders.
+	return false;
+}
+
+void VisualShaderEditor::save_external_data(const String &p_str) {
+	ResourceSaver::save(visual_shader, visual_shader->get_path());
 }
 
 void VisualShaderEditor::validate_script() {
@@ -6054,8 +6067,7 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	graph = memnew(GraphEdit);
 	graph->get_menu_hbox()->set_h_size_flags(SIZE_EXPAND_FILL);
-	graph->set_v_size_flags(SIZE_EXPAND_FILL);
-	graph->set_h_size_flags(SIZE_EXPAND_FILL);
+	graph->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	graph->set_grid_pattern(GraphEdit::GridPattern::GRID_PATTERN_DOTS);
 	int grid_pattern = EDITOR_GET("editors/visual_editors/grid_pattern");
 	graph->set_grid_pattern((GraphEdit::GridPattern)grid_pattern);
@@ -7562,7 +7574,7 @@ void EditorPropertyVisualShaderMode::_option_selected(int p_which) {
 	if (!shader_editor) {
 		return;
 	}
-	VisualShaderEditor *editor = shader_editor->get_visual_shader_editor(visual_shader);
+	VisualShaderEditor *editor = Object::cast_to<VisualShaderEditor>(shader_editor->get_shader_editor(visual_shader));
 	if (!editor) {
 		return;
 	}
@@ -7651,9 +7663,6 @@ void EditorPropertyVisualShaderMode::setup(const Vector<String> &p_options) {
 
 void EditorPropertyVisualShaderMode::set_option_button_clip(bool p_enable) {
 	options->set_clip_text(p_enable);
-}
-
-void EditorPropertyVisualShaderMode::_bind_methods() {
 }
 
 EditorPropertyVisualShaderMode::EditorPropertyVisualShaderMode() {
@@ -7785,9 +7794,6 @@ void VisualShaderNodePortPreview::_notification(int p_what) {
 
 		} break;
 	}
-}
-
-void VisualShaderNodePortPreview::_bind_methods() {
 }
 
 //////////////////////////////////

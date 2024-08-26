@@ -685,7 +685,15 @@ void FileSystemDock::_tree_multi_selected(Object *p_item, int p_column, bool p_s
 }
 
 Vector<String> FileSystemDock::get_selected_paths() const {
-	return _tree_get_selected(false);
+	if (display_mode == DISPLAY_MODE_TREE_ONLY) {
+		return _tree_get_selected(false);
+	} else {
+		Vector<String> selected = _file_list_get_selected();
+		if (selected.is_empty()) {
+			selected.push_back(get_current_directory());
+		}
+		return selected;
+	}
 }
 
 String FileSystemDock::get_current_path() const {
@@ -953,7 +961,8 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 		files->set_max_columns(1);
 		files->set_max_text_lines(1);
 		files->set_fixed_column_width(0);
-		files->set_fixed_icon_size(Size2());
+		const int icon_size = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
+		files->set_fixed_icon_size(Size2(icon_size, icon_size));
 	}
 
 	Ref<Texture2D> folder_icon = (use_thumbnails) ? folder_thumbnail : get_theme_icon(SNAME("folder"), SNAME("FileDialog"));
@@ -2047,6 +2056,15 @@ Vector<String> FileSystemDock::_tree_get_selected(bool remove_self_inclusion, bo
 		selected_strings = _remove_self_included_paths(selected_strings);
 	}
 	return selected_strings;
+}
+
+Vector<String> FileSystemDock::_file_list_get_selected() const {
+	Vector<String> selected;
+
+	for (int idx : files->get_selected_items()) {
+		selected.push_back(files->get_item_metadata(idx));
+	}
+	return selected;
 }
 
 Vector<String> FileSystemDock::_remove_self_included_paths(Vector<String> selected_strings) {

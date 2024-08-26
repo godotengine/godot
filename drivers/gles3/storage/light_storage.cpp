@@ -1046,6 +1046,9 @@ void LightStorage::lightmap_set_textures(RID p_lightmap, RID p_light, bool p_use
 	lightmap->light_texture = p_light;
 	lightmap->uses_spherical_harmonics = p_uses_spherical_haromics;
 
+	Vector3i light_texture_size = GLES3::TextureStorage::get_singleton()->texture_get_size(lightmap->light_texture);
+	lightmap->light_texture_size = Vector2i(light_texture_size.x, light_texture_size.y);
+
 	GLuint tex = GLES3::TextureStorage::get_singleton()->texture_get_texid(lightmap->light_texture);
 	glBindTexture(GL_TEXTURE_2D_ARRAY, tex);
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
