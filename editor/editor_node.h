@@ -845,6 +845,8 @@ public:
 	};
 
 	HashMap<int, SceneModificationsEntry> scenes_modification_table;
+	List<String> scenes_reimported;
+	List<String> resources_reimported;
 
 	void update_node_from_node_modification_entry(Node *p_node, ModificationNodeEntry &p_node_modification);
 

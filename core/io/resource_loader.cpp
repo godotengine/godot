@@ -1104,36 +1104,39 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 		new_path = path_remaps[new_path];
 	} else {
 		// Try file remap.
-		Error err;
-		Ref<FileAccess> f = FileAccess::open(new_path + ".remap", FileAccess::READ, &err);
-		if (f.is_valid()) {
-			VariantParser::StreamFile stream;
-			stream.f = f;
+		// Usually, there's no remap file and FileAccess::exists() is faster than FileAccess::open().
+		if (FileAccess::exists(new_path + ".remap")) {
+			Error err;
+			Ref<FileAccess> f = FileAccess::open(new_path + ".remap", FileAccess::READ, &err);
+			if (f.is_valid()) {
+				VariantParser::StreamFile stream;
+				stream.f = f;
 
-			String assign;
-			Variant value;
-			VariantParser::Tag next_tag;
+				String assign;
+				Variant value;
+				VariantParser::Tag next_tag;
 
-			int lines = 0;
-			String error_text;
-			while (true) {
-				assign = Variant();
-				next_tag.fields.clear();
-				next_tag.name = String();
+				int lines = 0;
+				String error_text;
+				while (true) {
+					assign = Variant();
+					next_tag.fields.clear();
+					next_tag.name = String();
 
-				err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, nullptr, true);
-				if (err == ERR_FILE_EOF) {
-					break;
-				} else if (err != OK) {
-					ERR_PRINT("Parse error: " + p_path + ".remap:" + itos(lines) + " error: " + error_text + ".");
-					break;
-				}
+					err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, nullptr, true);
+					if (err == ERR_FILE_EOF) {
+						break;
+					} else if (err != OK) {
+						ERR_PRINT("Parse error: " + p_path + ".remap:" + itos(lines) + " error: " + error_text + ".");
+						break;
+					}
 
-				if (assign == "path") {
-					new_path = value;
-					break;
-				} else if (next_tag.name != "remap") {
-					break;
+					if (assign == "path") {
+						new_path = value;
+						break;
+					} else if (next_tag.name != "remap") {
+						break;
+					}
 				}
 			}
 		}
