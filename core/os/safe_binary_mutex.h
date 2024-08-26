@@ -37,6 +37,11 @@
 
 #ifdef THREADS_ENABLED
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundefined-var-template"
+#endif
+
 // A very special kind of mutex, used in scenarios where these
 // requirements hold at the same time:
 // - Must be used with a condition variable (only binary mutexes are suitable).
@@ -104,6 +109,10 @@ public:
 		mutex.unlock();
 	}
 };
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 #else // No threads.
 
