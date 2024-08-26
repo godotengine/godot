@@ -31,11 +31,23 @@
 #ifndef PAGED_ARRAY_H
 #define PAGED_ARRAY_H
 
+#include "core/core_globals.h"
 #include "core/os/memory.h"
 #include "core/os/spin_lock.h"
 #include "core/typedefs.h"
 
 #include <type_traits>
+
+#ifdef SANITIZERS_ENABLED
+#include <sanitizer/asan_interface.h>
+#ifdef __has_feature
+#if __has_feature(address_sanitizer)
+#define ASAN_ENABLED
+#endif
+#elif defined(__SANITIZE_ADDRESS__)
+#define ASAN_ENABLED
+#endif
+#endif
 
 // PagedArray is used mainly for filling a very large array from multiple threads efficiently and without causing major fragmentation
 
@@ -67,7 +79,13 @@ public:
 			page_pool = (T **)memrealloc(page_pool, sizeof(T *) * pages_allocated);
 			available_page_pool = (uint32_t *)memrealloc(available_page_pool, sizeof(uint32_t) * pages_allocated);
 
-			page_pool[pages_used] = (T *)memalloc(sizeof(T) * page_size);
+#ifdef ASAN_ENABLED
+			if (!CoreGlobals::allocators_use_asan_malloc()) {
+#else
+			{
+#endif
+				page_pool[pages_used] = (T *)memalloc(sizeof(T) * page_size);
+			}
 			available_page_pool[0] = pages_used;
 
 			pages_available++;
@@ -75,6 +93,13 @@ public:
 
 		pages_available--;
 		uint32_t page_id = available_page_pool[pages_available];
+#ifdef ASAN_ENABLED
+		if (CoreGlobals::allocators_use_asan_malloc()) {
+			page_pool[page_id] = (T *)memalloc(sizeof(T) * page_size);
+		} else {
+			__asan_unpoison_memory_region(page_pool[page_id], sizeof(T) * page_size);
+		}
+#endif
 		T *page = page_pool[page_id];
 		spin_lock.unlock();
 
@@ -83,6 +108,13 @@ public:
 
 	void free_page(uint32_t p_page_id) {
 		spin_lock.lock();
+#ifdef ASAN_ENABLED
+		if (CoreGlobals::allocators_use_asan_malloc()) {
+			memfree(page_pool[p_page_id]);
+		} else {
+			__asan_poison_memory_region(page_pool[p_page_id], sizeof(T) * page_size);
+		}
+#endif
 		available_page_pool[pages_available] = p_page_id;
 		pages_available++;
 		spin_lock.unlock();
@@ -99,8 +131,14 @@ public:
 	void reset() {
 		ERR_FAIL_COND(pages_available < pages_allocated);
 		if (pages_allocated) {
-			for (uint32_t i = 0; i < pages_allocated; i++) {
-				memfree(page_pool[i]);
+#ifdef ASAN_ENABLED
+			if (!CoreGlobals::allocators_use_asan_malloc()) {
+#else
+			{
+#endif
+				for (uint32_t i = 0; i < pages_allocated; i++) {
+					memfree(page_pool[i]);
+				}
 			}
 			memfree(page_pool);
 			memfree(available_page_pool);
