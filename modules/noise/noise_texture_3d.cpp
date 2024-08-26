@@ -331,6 +331,10 @@ int NoiseTexture3D::get_depth() const {
 	return depth;
 }
 
+bool NoiseTexture3D::has_mipmaps() const {
+	return false;
+}
+
 RID NoiseTexture3D::get_rid() const {
 	if (!texture.is_valid()) {
 		texture = RS::get_singleton()->texture_3d_placeholder_create();
