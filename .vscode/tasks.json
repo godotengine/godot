@@ -29,7 +29,7 @@
         "dev_build=yes",
         "debug_symbols=yes",
         "progress=no",
-        "vulkan=no"
+        "vulkan=yes"
       ],
       "problemMatcher": {
         "base": "$gcc",
