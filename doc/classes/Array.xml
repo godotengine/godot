@@ -211,6 +211,13 @@
 				[b]Note:[/b] Calling this function is not the same as writing [code]array[0][/code]. If the array is empty, accessing by index will pause project execution when running from the editor.
 			</description>
 		</method>
+		<method name="get">
+			<return type="Variant" />
+			<argument index="0" name="index" type="int" />
+			<description>
+				Returns the element at the given [code]index[/code] in the array. This is the same as using the [code][][/code] operator ([code]array[index][/code]).
+			</description>
+		</method>
 		<method name="has">
 			<return type="bool" />
 			<argument index="0" name="value" type="Variant" />
@@ -327,6 +334,13 @@
 			<argument index="1" name="from" type="int" default="-1" />
 			<description>
 				Searches the array in reverse order. Optionally, a start search index can be passed. If negative, the start index is considered relative to the end of the array. If the adjusted start index is out of bounds, this method searches from the end of the array.
+			</description>
+		</method>
+		<method name="set">
+			<argument index="0" name="index" type="int" />
+			<argument index="1" name="value" type="Variant" />
+			<description>
+				Sets the value of the element at the given [code]index[/code] to the given [code]value[/code]. This will not change the size of the array, it only changes the value at an index already in the array. This is the same as using the [code][][/code] operator ([code]array[index] = value[/code]).
 			</description>
 		</method>
 		<method name="shuffle">
