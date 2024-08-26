@@ -1185,11 +1185,11 @@ String VisualShaderNodeParticleOutput::get_caption() const {
 int VisualShaderNodeParticleOutput::get_input_port_count() const {
 	switch (shader_type) {
 		case VisualShader::TYPE_START:
-			return 8;
+			return 9;
 		case VisualShader::TYPE_PROCESS:
-			return 7;
+			return 8;
 		case VisualShader::TYPE_COLLIDE:
-			return 5;
+			return 9;
 		case VisualShader::TYPE_START_CUSTOM:
 		case VisualShader::TYPE_PROCESS_CUSTOM:
 			return 6;
@@ -1223,7 +1223,7 @@ VisualShaderNodeParticleOutput::PortType VisualShaderNodeParticleOutput::get_inp
 				break; // alpha
 			}
 			if (shader_type == VisualShader::TYPE_PROCESS) {
-				break; // scale
+				return PORT_TYPE_VECTOR_3D; // scale
 			}
 			if (shader_type == VisualShader::TYPE_COLLIDE) {
 				return PORT_TYPE_TRANSFORM; // transform
@@ -1236,13 +1236,25 @@ VisualShaderNodeParticleOutput::PortType VisualShaderNodeParticleOutput::get_inp
 			if (shader_type == VisualShader::TYPE_PROCESS) {
 				return PORT_TYPE_VECTOR_3D; // rotation_axis
 			}
-			break; // scale (scalar)
+			if (shader_type == VisualShader::TYPE_COLLIDE) {
+				return PORT_TYPE_VECTOR_3D; // position
+			}
+			return PORT_TYPE_VECTOR_3D; // scale (scalar)
 		case 6:
 			if (shader_type == VisualShader::TYPE_START) {
 				return PORT_TYPE_VECTOR_3D; // rotation_axis
 			}
+			if (shader_type == VisualShader::TYPE_COLLIDE) {
+				return PORT_TYPE_VECTOR_3D; // scale
+			}
 			break;
 		case 7:
+			if (shader_type == VisualShader::TYPE_PROCESS) {
+				return PORT_TYPE_VECTOR_3D; // position
+			}
+			if (shader_type == VisualShader::TYPE_COLLIDE) {
+				return PORT_TYPE_VECTOR_3D; // rotation_axis
+			}
 			break; // angle (scalar)
 	}
 	return PORT_TYPE_SCALAR;
@@ -1303,6 +1315,10 @@ String VisualShaderNodeParticleOutput::get_input_port_name(int p_port) const {
 				port_name = "rotation_axis";
 				break;
 			}
+			if (shader_type == VisualShader::TYPE_COLLIDE) {
+				port_name = "position";
+				break;
+			}
 			port_name = "scale";
 			break;
 		case 6:
@@ -1310,10 +1326,32 @@ String VisualShaderNodeParticleOutput::get_input_port_name(int p_port) const {
 				port_name = "angle_in_radians";
 				break;
 			}
+			if (shader_type == VisualShader::TYPE_COLLIDE) {
+				port_name = "scale";
+				break;
+			}
 			port_name = "rotation_axis";
 			break;
 		case 7:
+			if (shader_type == VisualShader::TYPE_PROCESS) {
+				port_name = "position";
+				break;
+			}
+			if (shader_type == VisualShader::TYPE_COLLIDE) {
+				port_name = "rotation_axis";
+				break;
+			}
 			port_name = "angle_in_radians";
+			break;
+		case 8:
+			if (shader_type == VisualShader::TYPE_START) {
+				port_name = "lifetime_factor";
+				break;
+			}
+			if (shader_type == VisualShader::TYPE_COLLIDE) {
+				port_name = "angle_in_radians";
+				break;
+			}
 			break;
 		default:
 			break;
@@ -1325,14 +1363,26 @@ String VisualShaderNodeParticleOutput::get_input_port_name(int p_port) const {
 }
 
 bool VisualShaderNodeParticleOutput::is_port_separator(int p_index) const {
-	if (shader_type == VisualShader::TYPE_START || shader_type == VisualShader::TYPE_PROCESS) {
-		String port_name = get_input_port_name(p_index);
-		return bool(port_name == "Scale");
+	String port_name = get_input_port_name(p_index);
+
+	switch (shader_type) {
+		case VisualShader::TYPE_START:
+			return bool(port_name == "Position" || port_name == "Color" || port_name == "Lifetime Factor");
+
+		case VisualShader::TYPE_PROCESS:
+			return bool(port_name == "Color" || port_name == "Scale");
+
+		case VisualShader::TYPE_START_CUSTOM:
+		case VisualShader::TYPE_PROCESS_CUSTOM:
+			return bool(port_name == "Velocity");
+
+		case VisualShader::TYPE_COLLIDE:
+			return bool(port_name == "Color" || port_name == "Transform");
+
+		default:
+			break;
 	}
-	if (shader_type == VisualShader::TYPE_START_CUSTOM || shader_type == VisualShader::TYPE_PROCESS_CUSTOM) {
-		String port_name = get_input_port_name(p_index);
-		return bool(port_name == "Velocity");
-	}
+
 	return false;
 }
 
@@ -1377,6 +1427,19 @@ String VisualShaderNodeParticleOutput::generate_code(Shader::Mode p_mode, Visual
 
 		// position
 		if (shader_type == VisualShader::TYPE_START) {
+			// By convention (as established by the default ParticlesProcessMaterial shader code),
+			// `CUSTOM.y` holds the progress of the particle over the default lifetime configured
+			// for the particle system.
+			code += tab + "CUSTOM.y = 0.0;\n";
+
+			// In ParticlesProcessMaterial's shader code, `CUSTOM.w` is set to the randomized lifetime
+			// ratio of the particle (a 0.0-1.0 value.)
+			if (!p_input_vars[8].is_empty()) {
+				code += tab + "CUSTOM.w = " + p_input_vars[8] + ";\n";
+			} else {
+				code += tab + "CUSTOM.w = 1.0;\n";
+			}
+
 			code += tab + "if (RESTART_POSITION) {\n";
 			if (!p_input_vars[4].is_empty()) {
 				code += tab + "	TRANSFORM = mat4(vec4(1.0, 0.0, 0.0, 0.0), vec4(0.0, 1.0, 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(" + p_input_vars[4] + ", 1.0));\n";
@@ -1388,41 +1451,76 @@ String VisualShaderNodeParticleOutput::generate_code(Shader::Mode p_mode, Visual
 			code += tab + "	}\n";
 			code += tab + "	TRANSFORM = EMISSION_TRANSFORM * TRANSFORM;\n";
 			code += tab + "}\n";
-		} else if (shader_type == VisualShader::TYPE_COLLIDE) { // position
-			if (!p_input_vars[4].is_empty()) {
-				code += tab + "TRANSFORM = " + p_input_vars[4] + ";\n";
-			}
 		}
 
-		if (shader_type == VisualShader::TYPE_START || shader_type == VisualShader::TYPE_PROCESS) {
+		if (shader_type == VisualShader::TYPE_PROCESS || shader_type == VisualShader::TYPE_COLLIDE) {
+			code += tab + "CUSTOM.y += DELTA / LIFETIME;\n\n";
+			code += tab + "if (CUSTOM.y > CUSTOM.w) ACTIVE = false;\n\n";
+		}
+
+		if (shader_type == VisualShader::TYPE_START || shader_type == VisualShader::TYPE_PROCESS || shader_type == VisualShader::TYPE_COLLIDE) {
 			int scale = 5;
 			int rotation_axis = 6;
 			int rotation = 7;
+			int position = 4;
+
 			if (shader_type == VisualShader::TYPE_PROCESS) {
 				scale = 4;
 				rotation_axis = 5;
 				rotation = 6;
-			}
-			String op;
-			if (shader_type == VisualShader::TYPE_START) {
-				op = "*=";
-			} else {
-				op = "=";
+				position = 7;
 			}
 
-			if (!p_input_vars[rotation].is_empty()) { // rotation_axis & angle_in_radians
-				String axis;
-				if (p_input_vars[rotation_axis].is_empty()) {
-					axis = "vec3(0, 1, 0)";
-				} else {
-					axis = p_input_vars[rotation_axis];
-				}
-				code += tab + "TRANSFORM " + op + " __build_rotation_mat4(" + axis + ", " + p_input_vars[rotation] + ");\n";
+			if (shader_type == VisualShader::TYPE_COLLIDE) {
+				position = 5;
+				scale = 6;
+				rotation_axis = 7;
+				rotation = 8;
 			}
-			if (!p_input_vars[scale].is_empty()) { // scale
-				code += tab + "TRANSFORM " + op + " mat4(vec4(" + p_input_vars[scale] + ", 0, 0, 0), vec4(0, " + p_input_vars[scale] + ", 0, 0), vec4(0, 0, " + p_input_vars[scale] + ", 0), vec4(0, 0, 0, 1));\n";
+
+			code += tab + "vec3 currentPosition = TRANSFORM[3].xyz;\n";
+			code += tab + "vec3 currentScale = vec3(length(TRANSFORM[0].xyz), length(TRANSFORM[1].xyz), length(TRANSFORM[2].xyz));\n";
+
+			// If we're in a collide shader and a transform is specified, use it. Otherwise, compose it from the other inputs.
+			if (shader_type == VisualShader::TYPE_COLLIDE && !p_input_vars[4].is_empty()) {
+				code += tab + "TRANSFORM = " + p_input_vars[4] + ";\n";
+			} else {
+				code += tab + "TRANSFORM = mat4(1.0);\n";
+
+				// Rotation
+				if (shader_type == VisualShader::TYPE_START)
+					code += tab + "USERDATA1 = vec4(0, 1, 0, 0);\n";
+
+				if (!p_input_vars[rotation_axis].is_empty())
+					code += tab + "USERDATA1.xyz = " + p_input_vars[rotation_axis] + ";\n";
+
+				if (!p_input_vars[rotation].is_empty())
+					code += tab + "USERDATA1.w = " + p_input_vars[rotation] + ";\n\n";
+
+				code += tab + "TRANSFORM *= __build_rotation_mat4(USERDATA1.xyz, USERDATA1.w);\n";
+
+				// Scale
+				code += tab + "mat4 scaleMatrix = mat4(1.0);";
+				if (!p_input_vars[scale].is_empty()) { // scale
+					code += tab + "scaleMatrix[0].x = " + p_input_vars[scale] + ".x;\n";
+					code += tab + "scaleMatrix[1].y = " + p_input_vars[scale] + ".y;\n";
+					code += tab + "scaleMatrix[2].z = " + p_input_vars[scale] + ".z;\n";
+				} else {
+					code += tab + "scaleMatrix[0].x = currentScale.x;\n";
+					code += tab + "scaleMatrix[1].y = currentScale.y;\n";
+					code += tab + "scaleMatrix[2].z = currentScale.z;\n";
+				}
+				code += tab + "TRANSFORM *= scaleMatrix;\n";
+
+				// Position
+				if (!p_input_vars[position].is_empty()) { // position
+					code += tab + "TRANSFORM[3].xyz = " + p_input_vars[position] + ";\n";
+				} else {
+					code += tab + "TRANSFORM[3].xyz = currentPosition;\n";
+				}
 			}
 		}
+
 		if (!p_input_vars[0].is_empty()) { // Active (end).
 			code += "	}\n";
 		}
