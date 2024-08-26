@@ -32,6 +32,7 @@
 #define SCRIPT_EDITOR_PLUGIN_H
 
 #include "core/object/script_language.h"
+#include "editor/gui/editor_scene_tabs.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/panel_container.h"
@@ -377,6 +378,8 @@ class ScriptEditor : public PanelContainer {
 
 	void _close_current_tab(bool p_save = true, bool p_history_back = true);
 	void _close_discard_current_tab(const String &p_str);
+	void _close_canceled();
+
 	void _close_docs_tab();
 	void _close_other_tabs();
 	void _close_all_tabs();
@@ -514,6 +517,14 @@ class ScriptEditor : public PanelContainer {
 	static void _open_script_request(const String &p_path);
 	void _close_builtin_scripts_from_scene(const String &p_scene);
 
+	EditorTab *_add_new_scene_tab(Node *p_node);
+	void _editor_tab_update_needed(EditorTab *p_tab);
+	void _editor_tab_selected(EditorTab *p_tab);
+	void _editor_tab_closing(EditorTab *p_tab);
+	void _editor_tab_context_menu_needed(EditorTab *p_tab, PopupMenu *p_context_menu);
+	void _editor_tab_context_menu_pressed(EditorTab *p_tab, int p_option);
+	int _get_tab_index_by_node(Node *p_node);
+
 	static ScriptEditor *script_editor;
 
 protected:
@@ -549,6 +560,7 @@ public:
 
 	void set_scene_root_script(Ref<Script> p_script);
 	Vector<Ref<Script>> get_open_scripts() const;
+	void plugin_button_pressed();
 
 	bool script_goto_method(Ref<Script> p_script, const String &p_method);
 

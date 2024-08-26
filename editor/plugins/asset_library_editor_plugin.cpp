@@ -1786,9 +1786,51 @@ bool AssetLibraryEditorPlugin::is_available() {
 void AssetLibraryEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		addon_library->show();
+
+		if (EditorSceneTabs::get_tab_content_setting() == MainEditorTabContent::ALL) {
+			EditorTab *tab = _create_editor_tab();
+			EditorSceneTabs::get_singleton()->select_tab(tab);
+		}
 	} else {
 		addon_library->hide();
 	}
+}
+
+EditorTab *AssetLibraryEditorPlugin::_create_editor_tab() {
+	EditorTab *tab = EditorSceneTabs::get_singleton()->get_tab_by_state(addon_library);
+	if (!tab) {
+		tab = EditorSceneTabs::get_singleton()->add_tab();
+		tab->set_name(get_name());
+		tab->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(get_name(), EditorStringName(EditorIcons)));
+		tab->set_state(addon_library);
+		tab->connect("selected", callable_mp(this, &AssetLibraryEditorPlugin::_editor_tab_selected));
+		tab->connect("closing", callable_mp(this, &AssetLibraryEditorPlugin::_editor_tab_closing));
+	}
+	return tab;
+}
+
+void AssetLibraryEditorPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
+	// Restore the AssetLib tab on editor startup.
+	if (EditorSceneTabs::get_tab_content_setting() == MainEditorTabContent::ALL) {
+		if (p_layout->get_value(get_name(), "displayed", false)) {
+			_create_editor_tab();
+		}
+	}
+}
+
+void AssetLibraryEditorPlugin::get_window_layout(Ref<ConfigFile> p_layout) {
+	p_layout->set_value(get_name(), "displayed", addon_library->is_visible());
+}
+
+void AssetLibraryEditorPlugin::_editor_tab_selected(EditorTab *tab) {
+	int editor_index = EditorNode::get_singleton()->get_editor_index_plugin(this);
+	if (editor_index >= 0) {
+		EditorNode::get_singleton()->editor_select(editor_index);
+	}
+}
+
+void AssetLibraryEditorPlugin::_editor_tab_closing(EditorTab *tab) {
+	make_visible(false);
 }
 
 AssetLibraryEditorPlugin::AssetLibraryEditorPlugin() {
