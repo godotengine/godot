@@ -62,6 +62,10 @@
 #define MTLGPUFamilyApple9 (MTLGPUFamily)1009
 #endif
 
+#if (TARGET_OS_OSX && __MAC_OS_X_VERSION_MAX_ALLOWED >= 130000) || (TARGET_OS_IOS && __IPHONE_OS_VERSION_MAX_ALLOWED >= 160000)
+#define MTLGPUFamilyMetal3 (MTLGPUFamily)5001
+#endif
+
 API_AVAILABLE(macos(11.0), ios(14.0))
 MTLGPUFamily &operator--(MTLGPUFamily &p_family) {
 	p_family = static_cast<MTLGPUFamily>(static_cast<int>(p_family) - 1);
@@ -76,7 +80,7 @@ void MetalDeviceProperties::init_features(id<MTLDevice> p_device) {
 	features = {};
 
 	features.highestFamily = MTLGPUFamilyApple1;
-	for (MTLGPUFamily family = MTLGPUFamilyApple9; family >= MTLGPUFamilyApple1; --family) {
+	for (MTLGPUFamily family = MTLGPUFamilyMetal3; family >= MTLGPUFamilyApple1; --family) {
 		if ([p_device supportsFamily:family]) {
 			features.highestFamily = family;
 			break;
@@ -91,13 +95,23 @@ void MetalDeviceProperties::init_features(id<MTLDevice> p_device) {
 		}
 	}
 
-	features.layeredRendering = [p_device supportsFamily:MTLGPUFamilyApple5];
-	features.multisampleLayeredRendering = [p_device supportsFamily:MTLGPUFamilyApple7];
-	features.tessellationShader = [p_device supportsFamily:MTLGPUFamilyApple3];
-	features.imageCubeArray = [p_device supportsFamily:MTLGPUFamilyApple3];
-	features.quadPermute = [p_device supportsFamily:MTLGPUFamilyApple4];
-	features.simdPermute = [p_device supportsFamily:MTLGPUFamilyApple6];
-	features.simdReduction = [p_device supportsFamily:MTLGPUFamilyApple7];
+	if ([p_device supportsFamily:MTLGPUFamilyMetal3]) {
+		features.layeredRendering = true;
+		features.multisampleLayeredRendering = true;
+		features.tessellationShader = true;
+		features.imageCubeArray = true;
+		features.quadPermute = true;
+		features.simdPermute = true;
+		features.simdReduction = true;
+	} else {
+		features.layeredRendering = [p_device supportsFamily:MTLGPUFamilyApple5];
+		features.multisampleLayeredRendering = [p_device supportsFamily:MTLGPUFamilyApple7];
+		features.tessellationShader = [p_device supportsFamily:MTLGPUFamilyApple3];
+		features.imageCubeArray = [p_device supportsFamily:MTLGPUFamilyApple3];
+		features.quadPermute = [p_device supportsFamily:MTLGPUFamilyApple4];
+		features.simdPermute = [p_device supportsFamily:MTLGPUFamilyApple6];
+		features.simdReduction = [p_device supportsFamily:MTLGPUFamilyApple7];
+	}
 
 	MTLCompileOptions *opts = [MTLCompileOptions new];
 	features.mslVersionEnum = opts.languageVersion; // By default, Metal uses the most recent language version.
@@ -154,6 +168,8 @@ void MetalDeviceProperties::init_limits(id<MTLDevice> p_device) {
 
 	// FST: https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
 
+	const bool supportsFamilyMetal3 = [p_device supportsFamily:MTLGPUFamilyMetal3];
+
 	// FST: Maximum number of layers per 1D texture array, 2D texture array, or 3D texture.
 	limits.maxImageArrayLayers = 2048;
 	if ([p_device supportsFamily:MTLGPUFamilyApple3]) {
@@ -193,7 +209,7 @@ void MetalDeviceProperties::init_limits(id<MTLDevice> p_device) {
 	limits.maxColorAttachments = 8;
 
 	// Maximum number of textures the device can access, per stage, from an argument buffer.
-	if ([p_device supportsFamily:MTLGPUFamilyApple6]) {
+	if ([p_device supportsFamily:MTLGPUFamilyApple6] || supportsFamilyMetal3) {
 		limits.maxTexturesPerArgumentBuffer = 1'000'000;
 	} else if ([p_device supportsFamily:MTLGPUFamilyApple4]) {
 		limits.maxTexturesPerArgumentBuffer = 96;
@@ -202,14 +218,14 @@ void MetalDeviceProperties::init_limits(id<MTLDevice> p_device) {
 	}
 
 	// Maximum number of samplers the device can access, per stage, from an argument buffer.
-	if ([p_device supportsFamily:MTLGPUFamilyApple6]) {
+	if ([p_device supportsFamily:MTLGPUFamilyApple6] || supportsFamilyMetal3) {
 		limits.maxSamplersPerArgumentBuffer = 1024;
 	} else {
 		limits.maxSamplersPerArgumentBuffer = 16;
 	}
 
 	// Maximum number of buffers the device can access, per stage, from an argument buffer.
-	if ([p_device supportsFamily:MTLGPUFamilyApple6]) {
+	if ([p_device supportsFamily:MTLGPUFamilyApple6] || supportsFamilyMetal3) {
 		limits.maxBuffersPerArgumentBuffer = std::numeric_limits<uint64_t>::max();
 	} else if ([p_device supportsFamily:MTLGPUFamilyApple4]) {
 		limits.maxBuffersPerArgumentBuffer = 96;
@@ -262,7 +278,7 @@ void MetalDeviceProperties::init_limits(id<MTLDevice> p_device) {
 
 	limits.maxPerStageBufferCount = 31;
 	limits.maxPerStageSamplerCount = 16;
-	if ([p_device supportsFamily:MTLGPUFamilyApple6]) {
+	if ([p_device supportsFamily:MTLGPUFamilyApple6] || supportsFamilyMetal3) {
 		limits.maxPerStageTextureCount = 128;
 	} else if ([p_device supportsFamily:MTLGPUFamilyApple4]) {
 		limits.maxPerStageTextureCount = 96;
