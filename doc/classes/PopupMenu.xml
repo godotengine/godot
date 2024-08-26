@@ -668,7 +668,7 @@
 		<signal name="id_mouse_entered">
 			<param index="0" name="id" type="int" />
 			<description>
-				Emited when mouse enters menu item
+				Emitted when the mouse cursor enters an item's clickable area.
 			</description>
 		</signal>
 		<signal name="id_mouse_exited">
