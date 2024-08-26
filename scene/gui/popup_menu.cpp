@@ -710,7 +710,7 @@ void PopupMenu::_mouse_over_update(const Point2 &p_over) {
 	if (id < 0) {
 		mouse_over = -1;
 		control->queue_redraw();
-		if (old_id>-1) {
+		if (old_id > -1) {
 			emit_signal(SNAME("id_mouse_exited"), old_id);
 		}
 		return;
@@ -724,7 +724,7 @@ void PopupMenu::_mouse_over_update(const Point2 &p_over) {
 	if (over != mouse_over) {
 		mouse_over = over;
 		control->queue_redraw();
-		if (old_id>-1) {
+		if (old_id > -1) {
 			emit_signal(SNAME("id_mouse_exited"), old_id);
 		}
 		emit_signal(SNAME("id_mouse_entered"), mouse_over);
