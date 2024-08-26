@@ -48,3 +48,14 @@ GH-93605
 Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/Semaphore/methods/post': arguments
 
 Optional arguments added. Compatibility methods registered.
+
+
+GH-96105
+--------
+Validate extension JSON: API was removed: classes/TextServerExtension/methods/_format_number
+Validate extension JSON: API was removed: classes/TextServerExtension/methods/_parse_number
+Validate extension JSON: API was removed: classes/TextServerExtension/methods/_percent_sign
+Validate extension JSON: Error: Field 'classes/TranslationServer/methods/get_tool_locale': is_const changed value in new API, from false to true.
+
+Number formatting methods moved to TranslationServer. Compatibility methods added to the base TextServer.
+TranslationServer.get_tool_locale changed to const method. Compatibility methods registered.

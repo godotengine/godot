@@ -1026,7 +1026,7 @@
 				Returns the dictionary of the supported OpenType variation coordinates.
 			</description>
 		</method>
-		<method name="format_number" qualifiers="const">
+		<method name="format_number" qualifiers="const" deprecated="Use [method TranslationServer.format_number]">
 			<return type="String" />
 			<param index="0" name="number" type="String" />
 			<param index="1" name="language" type="String" default="&quot;&quot;" />
@@ -1142,7 +1142,7 @@
 				Converts readable feature, variation, script, or language name to OpenType tag.
 			</description>
 		</method>
-		<method name="parse_number" qualifiers="const">
+		<method name="parse_number" qualifiers="const" deprecated="Use [method TranslationServer.parse_number]">
 			<return type="String" />
 			<param index="0" name="number" type="String" />
 			<param index="1" name="language" type="String" default="&quot;&quot;" />
@@ -1159,7 +1159,7 @@
 				Default implementation of the BiDi algorithm override function. See [enum StructuredTextParser] for more info.
 			</description>
 		</method>
-		<method name="percent_sign" qualifiers="const">
+		<method name="percent_sign" qualifiers="const" deprecated="Use [method TranslationServer.get_percent_sign]">
 			<return type="String" />
 			<param index="0" name="language" type="String" default="&quot;&quot;" />
 			<description>

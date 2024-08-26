@@ -133,15 +133,6 @@ class TextServerAdvanced : public TextServerExtension {
 	GDCLASS(TextServerAdvanced, TextServerExtension);
 	_THREAD_SAFE_CLASS_
 
-	struct NumSystemData {
-		HashSet<StringName> lang;
-		String digits;
-		String percent_sign;
-		String exp;
-	};
-
-	Vector<NumSystemData> num_systems;
-
 	struct FeatureInfo {
 		StringName name;
 		Variant::Type vtype = Variant::INT;
@@ -151,7 +142,6 @@ class TextServerAdvanced : public TextServerExtension {
 	HashMap<StringName, int32_t> feature_sets;
 	HashMap<int32_t, FeatureInfo> feature_sets_inv;
 
-	void _insert_num_systems_lang();
 	void _insert_feature_sets();
 	_FORCE_INLINE_ void _insert_feature(const StringName &p_name, int32_t p_tag, Variant::Type p_vtype = Variant::INT, bool p_hidden = false);
 
@@ -976,10 +966,6 @@ public:
 	MODBIND1RC(double, shaped_text_get_underline_thickness, const RID &);
 
 	MODBIND1RC(PackedInt32Array, shaped_text_get_character_breaks, const RID &);
-
-	MODBIND2RC(String, format_number, const String &, const String &);
-	MODBIND2RC(String, parse_number, const String &, const String &);
-	MODBIND1RC(String, percent_sign, const String &);
 
 	MODBIND3RC(PackedInt32Array, string_get_word_breaks, const String &, const String &, int64_t);
 	MODBIND2RC(PackedInt32Array, string_get_character_breaks, const String &, const String &);

@@ -45,6 +45,16 @@ class TranslationServer : public Object {
 	Ref<Translation> doc_translation;
 	Ref<Translation> extractable_translation;
 
+	struct NumSystemData {
+		HashSet<StringName> lang;
+		String digits;
+		String percent_sign;
+		String exp;
+	};
+
+	Vector<NumSystemData> num_systems;
+	void init_num_systems();
+
 	bool enabled = true;
 
 	bool pseudolocalization_enabled = false;
@@ -53,16 +63,30 @@ class TranslationServer : public Object {
 	bool pseudolocalization_fake_bidi_enabled = false;
 	bool pseudolocalization_override_enabled = false;
 	bool pseudolocalization_skip_placeholders_enabled = false;
+	bool pseudolocalization_numbers_enabled = false;
 	float expansion_ratio = 0.0;
 	String pseudolocalization_prefix;
 	String pseudolocalization_suffix;
 
-	StringName tool_pseudolocalize(const StringName &p_message) const;
-	String get_override_string(String &p_message) const;
-	String double_vowels(String &p_message) const;
-	String replace_with_accented_string(String &p_message) const;
-	String wrap_with_fakebidi_characters(String &p_message) const;
-	String add_padding(const String &p_message, int p_length) const;
+#if defined(TOOLS_ENABLED) && defined(ENABLE_EDITOR_PSEUDOLOCALIZATION)
+	bool ed_pseudolocalization_enabled = false;
+	bool ed_pseudolocalization_accents_enabled = false;
+	bool ed_pseudolocalization_double_vowels_enabled = false;
+	bool ed_pseudolocalization_fake_bidi_enabled = false;
+	bool ed_pseudolocalization_override_enabled = false;
+	bool ed_pseudolocalization_skip_placeholders_enabled = false;
+	bool ed_pseudolocalization_numbers_enabled = false;
+	bool ed_pseudolocalization_warn_double_translate_enabled = false;
+	float ed_expansion_ratio = 0.0;
+	String ed_pseudolocalization_prefix;
+	String ed_pseudolocalization_suffix;
+#endif
+
+	String get_override_string(String &p_message, bool p_tool) const;
+	String double_vowels(String &p_message, bool p_tool) const;
+	String replace_with_accented_string(String &p_message, bool p_tool) const;
+	String wrap_with_fakebidi_characters(String &p_message, bool p_tool) const;
+	String add_padding(const String &p_message, int p_length, bool p_tool) const;
 	const char32_t *get_accented_version(char32_t p_character) const;
 	bool is_placeholder(String &p_message, int p_index) const;
 
@@ -75,6 +99,8 @@ class TranslationServer : public Object {
 	static void _bind_methods();
 
 #ifndef DISABLE_DEPRECATED
+	String _get_tool_locale_bind_compat_96105();
+
 	static void _bind_compatibility_methods();
 #endif
 
@@ -125,16 +151,29 @@ public:
 	StringName translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
 
 	StringName pseudolocalize(const StringName &p_message) const;
+#if defined(TOOLS_ENABLED) && defined(ENABLE_EDITOR_PSEUDOLOCALIZATION)
+	StringName tool_pseudolocalize(const StringName &p_message) const;
+#endif
 
 	bool is_pseudolocalization_enabled() const;
 	void set_pseudolocalization_enabled(bool p_enabled);
 	void reload_pseudolocalization();
+#if defined(TOOLS_ENABLED) && defined(ENABLE_EDITOR_PSEUDOLOCALIZATION)
+	void reload_editor_pseudolocalization();
+#endif
+
+	String format_number(const String &p_number, const String &p_language = "") const;
+	String tool_format_number(const String &p_number) const;
+	String parse_number(const String &p_string, const String &p_language = "") const;
+	String tool_parse_number(const String &p_string) const;
+	String get_percent_sign(const String &p_language = "") const;
+	String get_tool_percent_sign() const;
 
 	String standardize_locale(const String &p_locale) const;
 
 	int compare_locales(const String &p_locale_a, const String &p_locale_b) const;
 
-	String get_tool_locale();
+	String get_tool_locale() const;
 	void set_tool_translation(const Ref<Translation> &p_translation);
 	Ref<Translation> get_tool_translation() const;
 	StringName tool_translate(const StringName &p_message, const StringName &p_context = "") const;

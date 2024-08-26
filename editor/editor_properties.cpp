@@ -31,6 +31,7 @@
 #include "editor_properties.h"
 
 #include "core/config/project_settings.h"
+#include "core/string/translation_server.h"
 #include "editor/create_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_properties_array_dict.h"
@@ -1560,7 +1561,7 @@ void EditorPropertyEasing::_draw_easing() {
 	} else {
 		decimals = 1;
 	}
-	f->draw_string(ci, Point2(10, 10 + f->get_ascent(font_size)), TS->format_number(rtos(exp).pad_decimals(decimals)), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
+	f->draw_string(ci, Point2(10, 10 + f->get_ascent(font_size)), TranslationServer::get_singleton()->tool_format_number(rtos(exp).pad_decimals(decimals)), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
 }
 
 void EditorPropertyEasing::update_property() {
@@ -1576,7 +1577,7 @@ void EditorPropertyEasing::_set_preset(int p_preset) {
 
 void EditorPropertyEasing::_setup_spin() {
 	spin->setup_and_show();
-	spin->get_line_edit()->set_text(TS->format_number(rtos(get_edited_property_value())));
+	spin->get_line_edit()->set_text(TranslationServer::get_singleton()->tool_format_number(rtos(get_edited_property_value())));
 	spin->show();
 }
 

@@ -31,6 +31,7 @@
 #include "editor_profiler.h"
 
 #include "core/os/os.h"
+#include "core/string/translation_server.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
@@ -119,19 +120,19 @@ static String _get_percent_txt(float p_value, float p_total) {
 		p_total = 0.00001;
 	}
 
-	return TS->format_number(String::num((p_value / p_total) * 100, 1)) + TS->percent_sign();
+	return TranslationServer::get_singleton()->tool_format_number(String::num((p_value / p_total) * 100, 1)) + TranslationServer::get_singleton()->get_tool_percent_sign();
 }
 
 String EditorProfiler::_get_time_as_text(const Metric &m, float p_time, int p_calls) {
 	const int dmode = display_mode->get_selected();
 
 	if (dmode == DISPLAY_FRAME_TIME) {
-		return TS->format_number(rtos(p_time * 1000).pad_decimals(2)) + " " + TTR("ms");
+		return TranslationServer::get_singleton()->tool_format_number(rtos(p_time * 1000).pad_decimals(2)) + " " + TTR("ms");
 	} else if (dmode == DISPLAY_AVERAGE_TIME) {
 		if (p_calls == 0) {
-			return TS->format_number("0.00") + " " + TTR("ms");
+			return TranslationServer::get_singleton()->tool_format_number("0.00") + " " + TTR("ms");
 		} else {
-			return TS->format_number(rtos((p_time / p_calls) * 1000).pad_decimals(2)) + " " + TTR("ms");
+			return TranslationServer::get_singleton()->tool_format_number(rtos((p_time / p_calls) * 1000).pad_decimals(2)) + " " + TTR("ms");
 		}
 	} else if (dmode == DISPLAY_FRAME_PERCENT) {
 		return _get_percent_txt(p_time, m.frame_time);

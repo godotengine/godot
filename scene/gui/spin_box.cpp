@@ -32,6 +32,7 @@
 
 #include "core/input/input.h"
 #include "core/math/expression.h"
+#include "core/string/translation_server.h"
 #include "scene/theme/theme_db.h"
 
 Size2 SpinBox::get_minimum_size() const {
@@ -43,7 +44,11 @@ Size2 SpinBox::get_minimum_size() const {
 void SpinBox::_update_text(bool p_keep_line_edit) {
 	String value = String::num(get_value(), Math::range_step_decimals(get_step()));
 	if (is_localizing_numeral_system()) {
-		value = TS->format_number(value);
+		if ((Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) && !is_part_of_edited_scene()) {
+			value = TranslationServer::get_singleton()->tool_format_number(value);
+		} else {
+			value = TranslationServer::get_singleton()->format_number(value);
+		}
 	}
 
 	if (!line_edit->has_focus()) {
@@ -70,7 +75,11 @@ void SpinBox::_text_submitted(const String &p_string) {
 	// Convert commas ',' to dots '.' for French/German etc. keyboard layouts.
 	String text = p_string.replace(",", ".");
 	text = text.replace(";", ",");
-	text = TS->parse_number(text);
+	if ((Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) && !is_part_of_edited_scene()) {
+		text = TranslationServer::get_singleton()->tool_parse_number(text);
+	} else {
+		text = TranslationServer::get_singleton()->parse_number(text);
+	}
 	// Ignore the prefix and suffix in the expression.
 	text = text.trim_prefix(prefix + " ").trim_suffix(" " + suffix);
 
@@ -78,7 +87,11 @@ void SpinBox::_text_submitted(const String &p_string) {
 	if (err != OK) {
 		// If the expression failed try without converting commas to dots - they might have been for parameter separation.
 		text = p_string;
-		text = TS->parse_number(text);
+		if ((Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) && !is_part_of_edited_scene()) {
+			text = TranslationServer::get_singleton()->tool_parse_number(text);
+		} else {
+			text = TranslationServer::get_singleton()->parse_number(text);
+		}
 		text = text.trim_prefix(prefix + " ").trim_suffix(" " + suffix);
 
 		err = expr->parse(text);
