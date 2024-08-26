@@ -220,6 +220,86 @@ TEST_CASE("[String] ASCII") {
 	CHECK(s == t);
 }
 
+TEST_CASE("[String] NUL (cstring)") {
+	// Char pointers still handled like cstrings.
+	String s = "\0";
+	CHECK(s == "");
+
+	s += (char32_t)'\0';
+	CHECK(s.length() == 1);
+	CHECK(s[0] == '\0');
+
+	String t = String::chr('\0');
+	CHECK(s == t);
+	CHECK(s != String());
+
+	s = "split\0string";
+	CHECK(s == "split");
+
+	s += t;
+	s += "string";
+	CHECK(s != "split");
+
+	// Vectors can help to work around cstring limitations.
+	Vector<char> v = { 's', 'p', 'l', 'i', 't', '\0', 's', 't', 'r', 'i', 'n', 'g' };
+	t = String(v.ptr(), v.size());
+	CHECK(s == t);
+}
+
+TEST_CASE("[String] NUL (buffer)") {
+	String s = String::chr('\0');
+
+	CharString c = s.utf8();
+	CHECK(c.length() == 1);
+	CHECK(c[0] == 0x00);
+	CHECK(String::utf8(c, 1) == s);
+
+	Char16String c16 = s.utf16();
+	CHECK(c.length() == 1);
+	CHECK(c[0] == 0x00);
+	CHECK(String::utf16(c16, 1) == s);
+
+	Vector<uint8_t> v = { 0 };
+	CHECK(s.to_utf8_buffer() == v);
+	v = { 0, 0 };
+	CHECK(s.to_utf16_buffer() == v);
+	v = { 0, 0, 0, 0 };
+	CHECK(s.to_utf32_buffer() == v);
+}
+
+TEST_CASE("[String] NUL (StringName)") {
+	String s = "string";
+	String t = s;
+	s += (char32_t)'\0';
+	s += "split";
+	CHECK(s != t);
+
+	StringName sn = s;
+	StringName tn = t;
+	CHECK(sn != tn);
+
+	CHECK(sn == s);
+	CHECK(sn != t);
+	CHECK(s == sn);
+	CHECK(t != sn);
+
+	CHECK(tn != s);
+	CHECK(tn == t);
+	CHECK(s != tn);
+	CHECK(t == tn);
+
+	StringName cn = "string\0split";
+	CHECK(cn != s);
+	CHECK(cn == t);
+	CHECK(cn != sn);
+	CHECK(cn == tn);
+
+	CHECK(s != cn);
+	CHECK(t == cn);
+	CHECK(sn != cn);
+	CHECK(tn == cn);
+}
+
 TEST_CASE("[String] Comparisons (equal)") {
 	String s = "Test Compare";
 	CHECK(s == "Test Compare");
