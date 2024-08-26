@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  packet_peer_dtls.h                                                    */
+/*  gdextension_library_loader.h                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,41 +28,57 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PACKET_PEER_DTLS_H
-#define PACKET_PEER_DTLS_H
+#ifndef GDEXTENSION_LIBRARY_LOADER_H
+#define GDEXTENSION_LIBRARY_LOADER_H
 
-#include "core/crypto/crypto.h"
-#include "core/io/packet_peer_udp.h"
+#include <functional>
 
-class PacketPeerDTLS : public PacketPeer {
-	GDCLASS(PacketPeerDTLS, PacketPeer);
+#include "core/extension/gdextension_loader.h"
+#include "core/io/config_file.h"
+#include "core/os/shared_object.h"
 
-protected:
-	static PacketPeerDTLS *(*_create)(bool p_notify_postinitialize);
-	static void _bind_methods();
+class GDExtensionLibraryLoader : public GDExtensionLoader {
+	friend class GDExtensionManager;
+	friend class GDExtension;
 
-	static bool available;
+private:
+	String resource_path;
+
+	void *library = nullptr; // pointer if valid.
+	String library_path;
+	String entry_symbol;
+
+	bool is_static_library = false;
+
+#ifdef TOOLS_ENABLED
+	bool is_reloadable = false;
+#endif
+
+	Vector<SharedObject> library_dependencies;
+
+	HashMap<String, String> class_icon_paths;
+
+#ifdef TOOLS_ENABLED
+	uint64_t resource_last_modified_time = 0;
+	uint64_t library_last_modified_time = 0;
+
+	void update_last_modified_time(uint64_t p_resource_last_modified_time, uint64_t p_library_last_modified_time) {
+		resource_last_modified_time = p_resource_last_modified_time;
+		library_last_modified_time = p_library_last_modified_time;
+	}
+#endif
 
 public:
-	enum Status {
-		STATUS_DISCONNECTED,
-		STATUS_HANDSHAKING,
-		STATUS_CONNECTED,
-		STATUS_ERROR,
-		STATUS_ERROR_HOSTNAME_MISMATCH
-	};
+	static String find_extension_library(const String &p_path, Ref<ConfigFile> p_config, std::function<bool(String)> p_has_feature, PackedStringArray *r_tags = nullptr);
+	static Vector<SharedObject> find_extension_dependencies(const String &p_path, Ref<ConfigFile> p_config, std::function<bool(String)> p_has_feature);
 
-	virtual void poll() = 0;
-	virtual Error connect_to_peer(Ref<PacketPeerUDP> p_base, const String &p_hostname, Ref<TLSOptions> p_options = Ref<TLSOptions>()) = 0;
-	virtual void disconnect_from_peer() = 0;
-	virtual Status get_status() const = 0;
+	virtual Error open_library(const String &p_path) override;
+	virtual Error initialize(GDExtensionInterfaceGetProcAddress p_get_proc_address, const Ref<GDExtension> &p_extension, GDExtensionInitialization *r_initialization) override;
+	virtual void close_library() override;
+	virtual bool is_library_open() const override;
+	virtual bool has_library_changed() const override;
 
-	static PacketPeerDTLS *create(bool p_notify_postinitialize = true);
-	static bool is_available();
-
-	PacketPeerDTLS() {}
+	Error parse_gdextension_file(const String &p_path);
 };
 
-VARIANT_ENUM_CAST(PacketPeerDTLS::Status);
-
-#endif // PACKET_PEER_DTLS_H
+#endif // GDEXTENSION_LIBRARY_LOADER_H

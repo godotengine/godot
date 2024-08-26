@@ -84,6 +84,51 @@ void RenderingContextDriver::window_destroy(DisplayServer::WindowID p_window) {
 	window_surface_map.erase(p_window);
 }
 
+String RenderingContextDriver::get_driver_and_device_memory_report() const {
+	String report;
+
+	const uint32_t num_tracked_obj_types = static_cast<uint32_t>(get_tracked_object_type_count());
+
+	report += "=== Driver Memory Report ===";
+
+	report += "\nLaunch with --extra-gpu-memory-tracking and build with "
+			  "DEBUG_ENABLED for this functionality to work.";
+	report += "\nDevice memory may be unavailable if the API does not support it"
+			  "(e.g. VK_EXT_device_memory_report is unsupported).";
+	report += "\n";
+
+	report += "\nTotal Driver Memory:";
+	report += String::num_real(double(get_driver_total_memory()) / (1024.0 * 1024.0));
+	report += " MB";
+	report += "\nTotal Driver Num Allocations: ";
+	report += String::num_uint64(get_driver_allocation_count());
+
+	report += "\nTotal Device Memory:";
+	report += String::num_real(double(get_device_total_memory()) / (1024.0 * 1024.0));
+	report += " MB";
+	report += "\nTotal Device Num Allocations: ";
+	report += String::num_uint64(get_device_allocation_count());
+
+	report += "\n\nMemory use by object type (CSV format):";
+	report += "\n\nCategory; Driver memory in MB; Driver Allocation Count; "
+			  "Device memory in MB; Device Allocation Count";
+
+	for (uint32_t i = 0u; i < num_tracked_obj_types; ++i) {
+		report += "\n";
+		report += get_tracked_object_name(i);
+		report += ";";
+		report += String::num_real(double(get_driver_memory_by_object_type(i)) / (1024.0 * 1024.0));
+		report += ";";
+		report += String::num_uint64(get_driver_allocs_by_object_type(i));
+		report += ";";
+		report += String::num_real(double(get_device_memory_by_object_type(i)) / (1024.0 * 1024.0));
+		report += ";";
+		report += String::num_uint64(get_device_allocs_by_object_type(i));
+	}
+
+	return report;
+}
+
 const char *RenderingContextDriver::get_tracked_object_name(uint32_t p_type_index) const {
 	return "Tracking Unsupported by API";
 }

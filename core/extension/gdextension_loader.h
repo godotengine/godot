@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  packet_peer_dtls.h                                                    */
+/*  gdextension_loader.h                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,41 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PACKET_PEER_DTLS_H
-#define PACKET_PEER_DTLS_H
+#ifndef GDEXTENSION_LOADER_H
+#define GDEXTENSION_LOADER_H
 
-#include "core/crypto/crypto.h"
-#include "core/io/packet_peer_udp.h"
+#include "core/object/ref_counted.h"
 
-class PacketPeerDTLS : public PacketPeer {
-	GDCLASS(PacketPeerDTLS, PacketPeer);
+class GDExtension;
 
-protected:
-	static PacketPeerDTLS *(*_create)(bool p_notify_postinitialize);
-	static void _bind_methods();
-
-	static bool available;
-
+class GDExtensionLoader : public RefCounted {
 public:
-	enum Status {
-		STATUS_DISCONNECTED,
-		STATUS_HANDSHAKING,
-		STATUS_CONNECTED,
-		STATUS_ERROR,
-		STATUS_ERROR_HOSTNAME_MISMATCH
-	};
-
-	virtual void poll() = 0;
-	virtual Error connect_to_peer(Ref<PacketPeerUDP> p_base, const String &p_hostname, Ref<TLSOptions> p_options = Ref<TLSOptions>()) = 0;
-	virtual void disconnect_from_peer() = 0;
-	virtual Status get_status() const = 0;
-
-	static PacketPeerDTLS *create(bool p_notify_postinitialize = true);
-	static bool is_available();
-
-	PacketPeerDTLS() {}
+	virtual Error open_library(const String &p_path) = 0;
+	virtual Error initialize(GDExtensionInterfaceGetProcAddress p_get_proc_address, const Ref<GDExtension> &p_extension, GDExtensionInitialization *r_initialization) = 0;
+	virtual void close_library() = 0;
+	virtual bool is_library_open() const = 0;
+	virtual bool has_library_changed() const = 0;
 };
 
-VARIANT_ENUM_CAST(PacketPeerDTLS::Status);
-
-#endif // PACKET_PEER_DTLS_H
+#endif // GDEXTENSION_LOADER_H

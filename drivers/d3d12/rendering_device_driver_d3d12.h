@@ -36,6 +36,11 @@
 #include "core/templates/self_list.h"
 #include "servers/rendering/rendering_device_driver.h"
 
+#ifndef _MSC_VER
+// Match current version used by MinGW, MSVC and Direct3D 12 headers use 500.
+#define __REQUIRED_RPCNDR_H_VERSION__ 475
+#endif
+
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
