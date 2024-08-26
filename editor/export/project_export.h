@@ -103,6 +103,7 @@ class ProjectExportDialog : public ConfirmationDialog {
 	Button *export_button = nullptr;
 	Button *export_all_button = nullptr;
 	AcceptDialog *export_all_dialog = nullptr;
+	Button *release_button = nullptr;
 
 	RBSet<String> feature_set;
 	LineEdit *custom_features = nullptr;
