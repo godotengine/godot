@@ -713,6 +713,7 @@ void WorkerThreadPool::init(int p_thread_count, float p_low_priority_task_ratio)
 	for (uint32_t i = 0; i < threads.size(); i++) {
 		threads[i].index = i;
 		threads[i].thread.start(&WorkerThreadPool::_thread_function, &threads[i]);
+		threads[i].thread.set_thread_name(String("WorkerThreadPool Thread:") + String::num_int64(i));
 		thread_ids.insert(threads[i].thread.get_id(), i);
 	}
 }
@@ -1094,6 +1095,7 @@ void WorkerTaskPool::init()
 	{
 		threads[i].index = i;
 		threads[i].thread.start(&WorkerTaskPool::_thread_task_function, &threads[i]);
+		threads[i].thread.set_thread_name(String("Worker Task Pool Thread:") + String::num_int64(i));
 	}
 
 }

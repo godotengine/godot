@@ -300,6 +300,7 @@ void register_core_types() {
 
 	worker_thread_pool = memnew(WorkerThreadPool);
 	worker_task_pool = memnew(WorkerTaskPool);
+	worker_task_pool->init();
 
 	OS::get_singleton()->benchmark_end_measure("Core", "Register Types");
 }

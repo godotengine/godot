@@ -343,6 +343,7 @@ IP::IP() {
 
 	resolver->thread_abort.clear();
 	resolver->thread.start(_IP_ResolverPrivate::_thread_function, resolver);
+	resolver->thread.set_thread_name(String("IP Thread"));
 }
 
 IP::~IP() {

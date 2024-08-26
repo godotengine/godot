@@ -102,6 +102,7 @@ private:
 
 public:
 	static void _set_platform_functions(const PlatformFunctions &p_functions);
+	void set_thread_name(const String &p_name);
 
 	_FORCE_INLINE_ ID get_id() const { return id; }
 	// get the ID of the caller thread

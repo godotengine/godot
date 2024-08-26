@@ -235,6 +235,14 @@ void CharacterBodyMain::_process_move()
 
 }
 
+void CharacterBodyMain::init()
+{
+    if(character_ai.is_null())
+    {
+		character_ai.instantiate();
+		character_ai->init();
+    }
+}
 // 初始化身體
 void CharacterBodyMain::init_main_body(String p_skeleton_file_path,StringName p_animation_group)
 {

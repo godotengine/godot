@@ -513,6 +513,7 @@ void EditorResourcePreview::start() {
 	if (is_threaded()) {
 		ERR_FAIL_COND_MSG(thread.is_started(), "Thread already started.");
 		thread.start(_thread_func, this);
+		thread.set_thread_name("EditorResourcePreview Thread");
 	} else {
 		SceneTree *st = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
 		ERR_FAIL_NULL_MSG(st, "Editor's MainLoop is not a SceneTree. This is a bug.");

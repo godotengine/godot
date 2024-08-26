@@ -373,6 +373,8 @@ class GameHelpInspectorPlugin : public EditorInspectorPlugin
 		}
 		if(Object::cast_to<CharacterBodyMain>(p_object) != nullptr)
 		{
+			CharacterBodyMain* body_main = Object::cast_to<CharacterBodyMain>(p_object);
+			body_main->init();
 			return true;
 		}
 
@@ -423,6 +425,7 @@ class UnityLinkServerEditorPlugin : public EditorPlugin {
 	UnityLinkServer server;
 
 	bool started = false;
+	CheckButton* editor_character_run_button = nullptr;
 
 private:
 	void _notification(int p_what);
@@ -476,6 +479,12 @@ void UnityLinkServerEditorPlugin::start() {
 		set_process_internal(true);
 		started = true;
 	}
+	editor_character_run_button = memnew(CheckButton);
+	EditorRunBar::get_singleton()->add_child(editor_character_run_button);
+
+	editor_character_run_button->set_text(L"编辑器运行角色");
+	
+	
 }
 
 void UnityLinkServerEditorPlugin::stop() {

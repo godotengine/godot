@@ -62,6 +62,7 @@ class CharacterBodyMain : public CharacterBody3D {
     GDCLASS(CharacterBodyMain, CharacterBody3D);
     static void _bind_methods();
 public:
+
     void _update_ai();
     void _process_move();
     void _process_animator();
@@ -69,6 +70,7 @@ public:
     void _process_ik();
 
 public:
+    void init();
     // 初始化身體
     void init_main_body(String p_skeleton_file_path,StringName p_animation_group);
     void clear_all();

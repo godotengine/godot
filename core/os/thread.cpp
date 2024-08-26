@@ -33,6 +33,7 @@
 
 #include "thread.h"
 
+
 #ifdef THREADS_ENABLED
 #include "core/object/script_language.h"
 #include "core/templates/safe_refcount.h"
@@ -40,6 +41,9 @@
 SafeNumeric<uint64_t> Thread::id_counter(1); // The first value after .increment() is 2, hence by default the main thread ID should be 1.
 
 thread_local Thread::ID Thread::caller_id = Thread::UNASSIGNED_ID;
+#if defined(WINDOWS_ENABLED)
+#include <windows.h>
+#endif
 #endif
 
 Thread::PlatformFunctions Thread::platform_functions;
@@ -86,6 +90,17 @@ void Thread::wait_to_finish() {
 	thread.join();
 	thread = THREADING_NAMESPACE::thread();
 	id = UNASSIGNED_ID;
+}
+void Thread::set_thread_name(const String& p_name)
+{
+#if defined(WINDOWS_ENABLED)
+	auto wbuf = p_name.to_wchar_buffer();
+	wchar_t* buf = (wchar_t*)alloca(sizeof(wchar_t) + wbuf.size());
+	memset(buf, 0, sizeof(wchar_t) + wbuf.size());
+	memcpy(buf, wbuf.ptr(), wbuf.size());
+	SetThreadDescription(thread.native_handle(), buf);
+#endif
+
 }
 
 Error Thread::set_name(const String &p_name) {

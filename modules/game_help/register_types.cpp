@@ -60,6 +60,7 @@
 
 #include "modules/game_help/logic/beehave/leaves/blaclboard_set.h"
 #include "modules/game_help/logic/beehave/leaves/blackboard_condition.h"
+#include "modules/game_help/logic/beehave/leaves/move_position.h"
 
 
 
@@ -200,6 +201,7 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 
 		ClassDB::register_class<BeehaveLeafBlackboardCondition>();
 		ClassDB::register_class<BeehaveLeafBlackboardSet>();
+		ClassDB::register_class<BeehaveLeafMovePosition>();
 
 		ClassDB::register_class<CharacterAI_Inductor>();
 		ClassDB::register_class<CharacterAI_Brain>();

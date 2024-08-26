@@ -542,6 +542,7 @@ Error AudioDriverWASAPI::init() {
 	ERR_FAIL_COND_V_MSG(err != OK, err, "WASAPI: init_output_device error.");
 
 	thread.start(thread_func, this);
+	thread.set_thread_name(String("AudioDriverWASAPI Thread"));
 
 	return OK;
 }

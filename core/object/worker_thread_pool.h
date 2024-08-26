@@ -300,6 +300,7 @@ class WorkerTaskPool : public Object {
 	GDCLASS(WorkerTaskPool, Object)
 	static void _bind_methods();
 	static WorkerTaskPool *singleton;
+public:
 	bool exit_threads = false;
 	// 释放的列队
 	List<class ThreadTaskGroup*> task_queue;

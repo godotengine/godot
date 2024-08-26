@@ -33,7 +33,7 @@ class CharacterAI_CheckBase : public RefCounted
         ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"enable_condition",PROPERTY_HINT_RESOURCE_TYPE,"CharacterAnimatorCondition"), "set_enable_condition","get_enable_condition");
         ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"blackboard_plan",PROPERTY_HINT_RESOURCE_TYPE,"BlackboardPlan"), "set_blackboard_plan","get_blackboard_plan");
     }
-    public:
+public:
     // 返回true 代表立即执行决策,否则大脑根据其他条件决策
     virtual bool execute(CharacterBodyMain *node, Blackboard* blackboard)
     {
@@ -83,7 +83,10 @@ class CharacterAI_CheckBase : public RefCounted
     {
         return name;
     }
-
+    virtual String get_lable_name()
+    {
+        return L"检查器基类";
+    }
     void set_enable_condition(Ref<CharacterAnimatorCondition> p_enable_condition)
     {
         this->enable_condition = p_enable_condition;
@@ -349,10 +352,14 @@ class CharacterAILogicNode : public RefCounted
 
     static void _bind_methods()
     {
-        ClassDB::bind_method(D_METHOD("set_name","name"),&CharacterAILogicNode::set_name);
-        ClassDB::bind_method(D_METHOD("get_name"),&CharacterAILogicNode::get_name);
+        ClassDB::bind_method(D_METHOD("set_name","name"),&CharacterAILogicNode::set_state_name);
+        ClassDB::bind_method(D_METHOD("get_name"),&CharacterAILogicNode::get_state_name);
 
-        ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME,"name"), "set_name","get_name");
+        ClassDB::bind_method(D_METHOD("set_tree","tree"),&CharacterAILogicNode::set_tree);
+        ClassDB::bind_method(D_METHOD("get_tree"),&CharacterAILogicNode::get_tree);
+
+        ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME,"state_name"), "set_state_name","get_state_name");
+        ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"tree",PROPERTY_HINT_RESOURCE_TYPE,"BeehaveTree"), "set_tree","get_tree");
     }
 public:
     void enter(CharacterBodyMain *node,class CharacterAIContext* p_context);
@@ -372,20 +379,29 @@ public:
 
     }
 
-    void set_name(StringName p_name)
+    void set_state_name(StringName p_name)
     {
-        this->name = p_name;
+        state_name = p_name;
     }
 
-    StringName get_name()
+    StringName get_state_name()
     {
-        return name;
+        return state_name;
+    }
+    void set_tree(Ref<BeehaveTree> p_tree)
+    {
+        tree = p_tree;
+    }
+
+    Ref<BeehaveTree> get_tree()
+    {
+        return tree;
     }
 protected:
 	GDVIRTUAL2(_enter,CharacterBodyMain*,Blackboard*)
 	GDVIRTUAL2R(bool,_execute,CharacterBodyMain*,Blackboard*)
 	GDVIRTUAL2(_stop,CharacterBodyMain*,Blackboard*)
-    StringName name;
+    StringName state_name;
     Ref<BeehaveTree> tree;
 };
 
@@ -428,6 +444,17 @@ class CharacterAI : public Resource
     GDCLASS(CharacterAI,Resource);
     static void _bind_methods();
 public:
+    void init()
+    {
+        if(!brain.is_valid())
+        {
+            brain.instantiate();
+        }
+        if(!inductor.is_valid())
+        {
+            inductor.instantiate();
+        }
+    }
     void set_inductor(const Ref<CharacterAI_Inductor>& p_inductor)
     {
         inductor = p_inductor;
@@ -458,10 +485,10 @@ public:
             logic_node_array.push_back(logic_node);
             if(logic_node.is_valid())
             {
-                StringName sn = logic_node->get_name();
+                StringName sn = logic_node->get_state_name();
                 if(sn != StringName())
                 {
-                    logic_nodes[logic_node->get_name()] = logic_node;
+                    logic_nodes[logic_node->get_state_name()] = logic_node;
                 }
             }
         }
