@@ -17,6 +17,7 @@ repos:
         exclude: |
           (?x)^(
             tests/python_build/.*|
+            platform/android/java/editor/src/main/java/com/android/.*|
             platform/android/java/lib/src/com/.*
           )
 
@@ -30,6 +31,7 @@ repos:
         exclude: |
           (?x)^(
             tests/python_build/.*|
+            platform/android/java/editor/src/main/java/com/android/.*|
             platform/android/java/lib/src/com/.*
           )
         additional_dependencies: [clang-tidy==18.1.1]
@@ -54,6 +56,11 @@ repos:
     rev: v2.3.0
     hooks:
       - id: codespell
+        exclude: |
+          (?x)^(
+            platform/android/java/editor/src/main/java/com/android/.*|
+            platform/android/java/lib/src/com/.*
+          )
         additional_dependencies: [tomli]
 
   ### Requires Docker; look into alternative implementation.
@@ -135,6 +142,7 @@ repos:
           (?x)^(
             core/math/bvh_.*\.inc$|
             platform/(?!android|ios|linuxbsd|macos|web|windows)\w+/.*|
+            platform/android/java/editor/src/main/java/com/android/.*|
             platform/android/java/lib/src/com/.*|
             platform/android/java/lib/src/org/godotengine/godot/gl/GLSurfaceView\.java$|
             platform/android/java/lib/src/org/godotengine/godot/gl/EGLLogWrapper\.java$|
