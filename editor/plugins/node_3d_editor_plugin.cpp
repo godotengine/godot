@@ -1178,7 +1178,7 @@ void Node3DEditorViewport::_update_name() {
 
 	if (auto_orthogonal) {
 		// TRANSLATORS: This will be appended to the view name when Auto Orthogonal is enabled.
-		name += TTR(" [auto]");
+		name += " " + TTR("[auto]");
 	}
 
 	view_menu->set_text(name);
