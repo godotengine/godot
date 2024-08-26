@@ -50,6 +50,7 @@ class RichTextLabel;
 class Tree;
 
 class VisualShaderEditor;
+class MaterialEditor;
 
 class VisualShaderNodePlugin : public RefCounted {
 	GDCLASS(VisualShaderNodePlugin, RefCounted);
@@ -206,11 +207,18 @@ class VisualShaderEditor : public ShaderEditor {
 	int editing_port = -1;
 	Ref<VisualShaderEditedProperty> edited_property_holder;
 
+	MaterialEditor *material_editor = nullptr;
 	Ref<VisualShader> visual_shader;
+	Ref<ShaderMaterial> preview_material;
+	Ref<Environment> env;
+	String param_filter_name;
+	EditorProperty *current_prop = nullptr;
+	VBoxContainer *shader_preview_vbox = nullptr;
 	GraphEdit *graph = nullptr;
 	Button *add_node = nullptr;
 	MenuButton *varying_button = nullptr;
-	Button *preview_shader = nullptr;
+	Button *code_preview_button = nullptr;
+	Button *shader_preview_button = nullptr;
 
 	OptionButton *edit_type = nullptr;
 	OptionButton *edit_type_standard = nullptr;
@@ -222,8 +230,8 @@ class VisualShaderEditor : public ShaderEditor {
 
 	bool pending_update_preview = false;
 	bool shader_error = false;
-	Window *preview_window = nullptr;
-	VBoxContainer *preview_vbox = nullptr;
+	Window *code_preview_window = nullptr;
+	VBoxContainer *code_preview_vbox = nullptr;
 	CodeEdit *preview_text = nullptr;
 	Ref<CodeHighlighter> syntax_highlighter = nullptr;
 	PanelContainer *error_panel = nullptr;
@@ -261,8 +269,17 @@ class VisualShaderEditor : public ShaderEditor {
 	PopupPanel *frame_tint_color_pick_popup = nullptr;
 	ColorPicker *frame_tint_color_picker = nullptr;
 
-	bool preview_first = true;
-	bool preview_showed = false;
+	bool code_preview_first = true;
+	bool code_preview_showed = false;
+
+	bool shader_preview_showed = true;
+
+	LineEdit *param_filter = nullptr;
+	String selected_param_id;
+	Tree *parameters = nullptr;
+	HashMap<String, PropertyInfo> parameter_props;
+	VBoxContainer *param_vbox = nullptr;
+	VBoxContainer *param_vbox2 = nullptr;
 
 	enum ShaderModeFlags {
 		MODE_FLAGS_SPATIAL_CANVASITEM = 1,
@@ -349,6 +366,10 @@ class VisualShaderEditor : public ShaderEditor {
 	void _show_add_varying_dialog();
 	void _show_remove_varying_dialog();
 
+	void _clear_preview_param();
+	void _update_preview_parameter_list();
+	bool _update_preview_parameter_tree();
+
 	void _update_nodes();
 	void _update_graph();
 
@@ -413,6 +434,8 @@ class VisualShaderEditor : public ShaderEditor {
 	void _update_next_previews(int p_node_id);
 	void _get_next_nodes_recursively(VisualShader::Type p_type, int p_node_id, LocalVector<int> &r_nodes) const;
 	String _get_description(int p_idx);
+
+	void _show_shader_preview();
 
 	Vector<int> nodes_link_to_frame_buffer; // Contains the nodes that are requested to be linked to a frame. This is used to perform one Undo/Redo operation for dragging nodes.
 	int frame_node_id_to_link_to = -1;
@@ -592,6 +615,12 @@ class VisualShaderEditor : public ShaderEditor {
 	void _resource_removed(const Ref<Resource> &p_resource);
 	void _resources_removed();
 
+	void _param_property_changed(const String &p_property, const Variant &p_value, const String &p_field = "", bool p_changing = false);
+	void _update_current_param();
+	void _param_filter_changed(const String &p_text);
+	void _param_selected();
+	void _param_unselected();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -652,6 +681,7 @@ public:
 class VisualShaderNodePortPreview : public Control {
 	GDCLASS(VisualShaderNodePortPreview, Control);
 	Ref<VisualShader> shader;
+	Ref<ShaderMaterial> preview_mat;
 	VisualShader::Type type = VisualShader::Type::TYPE_MAX;
 	int node = 0;
 	int port = 0;
@@ -662,7 +692,7 @@ protected:
 
 public:
 	virtual Size2 get_minimum_size() const override;
-	void setup(const Ref<VisualShader> &p_shader, VisualShader::Type p_type, int p_node, int p_port, bool p_is_valid);
+	void setup(const Ref<VisualShader> &p_shader, Ref<ShaderMaterial> &p_preview_material, VisualShader::Type p_type, int p_node, int p_port, bool p_is_valid);
 };
 
 class VisualShaderConversionPlugin : public EditorResourceConversionPlugin {
