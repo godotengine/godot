@@ -735,6 +735,59 @@ public:
 	AutoTranslateMode get_auto_translate_mode() const;
 	bool can_auto_translate() const;
 
+	/**
+	 * "Extractable TRanslate". Used for strings that can appear inside an exported
+	 * project (such as the ones in nodes like `FileDialog`), which are made possible
+	 * to add in the POT generator. A translation context can optionally be specified
+	 * to disambiguate between identical source strings in translations.
+	 * When placeholders are desired, use vformat(ETR("Example: %s"), some_string)`.
+	 * If a string mentions a quantity (and may therefore need a dynamic plural form),
+	 * use `ETRN()` instead of `ETR()`.
+	 *
+	 * NOTE: In runtime, this function is for string extraction only, and will just return the
+	 * string it was given. The translation itself should be done internally by nodes
+	 * with `atr()` instead.
+	 */
+	_FORCE_INLINE_ String ETR(const String &p_text, const String &p_context = "") {
+#ifdef TOOLS_ENABLED
+		if ((Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) && !is_part_of_edited_scene()) {
+			return TTR(p_text, p_context);
+		} else {
+#else
+		{
+#endif
+			return p_text;
+		}
+	}
+
+	/**
+	 * "Extractable TRanslate for N items". Used for strings that can appear inside an
+	 * exported project (such as the ones in nodes like `FileDialog`), which are made
+	 * possible to add in the POT generator. A translation context can optionally be
+	 * specified to disambiguate between identical source strings in translations.
+	 * Use `ETR()` if the string doesn't need dynamic plural form. When placeholders
+	 * are desired, use `vformat(ETRN("%d item", "%d items", some_integer), some_integer)`.
+	 * The placeholder must be present in both strings to avoid run-time warnings in `vformat()`.
+	 *
+	 * NOTE: In runtime, this function is for string extraction only, and will just return the
+	 * string it was given. The translation itself should be done internally by nodes
+	 * with `atr()` instead.
+	 */
+	_FORCE_INLINE_ String ETRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context = "") {
+#ifdef TOOLS_ENABLED
+		if ((Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) && !is_part_of_edited_scene()) {
+			return TTRN(p_text, p_text_plural, p_n, p_context);
+		} else {
+#else
+		{
+#endif
+			if (p_n == 1) {
+				return p_text;
+			}
+			return p_text_plural;
+		}
+	}
+
 	_FORCE_INLINE_ String atr(const String p_message, const StringName p_context = "") const { return can_auto_translate() ? tr(p_message, p_context) : p_message; }
 	_FORCE_INLINE_ String atr_n(const String p_message, const StringName &p_message_plural, int p_n, const StringName p_context = "") const { return can_auto_translate() ? tr_n(p_message, p_message_plural, p_n, p_context) : p_message; }
 

@@ -1302,6 +1302,13 @@ Node::AutoTranslateMode Node::get_auto_translate_mode() const {
 
 bool Node::can_auto_translate() const {
 	ERR_READ_THREAD_GUARD_V(false);
+
+#ifdef TOOLS_ENABLED
+	if ((Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) && !is_part_of_edited_scene()) {
+		return false;
+	}
+#endif
+
 	if (!data.is_auto_translate_dirty || data.auto_translate_mode != AUTO_TRANSLATE_MODE_INHERIT) {
 		return data.is_auto_translating;
 	}
