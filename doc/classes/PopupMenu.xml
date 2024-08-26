@@ -665,6 +665,18 @@
 				[b]Note:[/b] If [param id] is negative (either explicitly or due to overflow), this will return the corresponding index instead.
 			</description>
 		</signal>
+		<signal name="id_mouse_enter">
+			<param index="0" name="id" type="int" />
+			<description>
+				Emited when mouse enters menu item
+			</description>
+		</signal>
+		<signal name="id_mouse_exit">
+			<param index="0" name="id" type="int" />
+			<description>
+				Emited when mouse exits menu item
+			</description>
+		</signal>
 		<signal name="index_pressed">
 			<param index="0" name="index" type="int" />
 			<description>
