@@ -498,6 +498,11 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		java.lang.Boolean.parseBoolean(GodotLib.getEditorSetting("interface/touchscreen/enable_long_press_as_right_click"))
 
 	/**
+	 * Disable scroll deadzone for the Godot Android editor.
+	 */
+	protected open fun disableScrollDeadzone() = true
+
+	/**
 	 * Enable pan and scale gestures for the Godot Android editor.
 	 */
 	protected open fun enablePanAndScaleGestures() =
