@@ -207,6 +207,11 @@ void XRHandModifier3D::_process_modification() {
 
 		// Apply previous relative transforms if they are stored.
 		for (int joint = 0; joint < XRHandTracker::HAND_JOINT_MAX; joint++) {
+			const int bone = joints[joint].bone;
+			if (bone == -1) {
+				continue;
+			}
+
 			if (bone_update == BONE_UPDATE_FULL) {
 				skeleton->set_bone_pose_position(joints[joint].bone, previous_relative_transforms[joint].origin);
 			}
