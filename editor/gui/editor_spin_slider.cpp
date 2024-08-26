@@ -33,6 +33,7 @@
 #include "core/input/input.h"
 #include "core/math/expression.h"
 #include "core/os/keyboard.h"
+#include "core/string/translation_server.h"
 #include "editor/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 
@@ -43,13 +44,13 @@ bool EditorSpinSlider::is_text_field() const {
 String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 	if (!read_only && grabber->is_visible()) {
 		Key key = (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) ? Key::META : Key::CTRL;
-		return TS->format_number(rtos(get_value())) + "\n\n" + vformat(TTR("Hold %s to round to integers.\nHold Shift for more precise changes."), find_keycode_name(key));
+		return TranslationServer::get_singleton()->tool_format_number(rtos(get_value())) + "\n\n" + vformat(TTR("Hold %s to round to integers.\nHold Shift for more precise changes."), find_keycode_name(key));
 	}
-	return TS->format_number(rtos(get_value()));
+	return TranslationServer::get_singleton()->tool_format_number(rtos(get_value()));
 }
 
 String EditorSpinSlider::get_text_value() const {
-	return TS->format_number(String::num(get_value(), Math::range_step_decimals(get_step())));
+	return TranslationServer::get_singleton()->tool_format_number(String::num(get_value(), Math::range_step_decimals(get_step())));
 }
 
 void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
@@ -561,13 +562,13 @@ void EditorSpinSlider::_evaluate_input_text() {
 	// Convert commas ',' to dots '.' for French/German etc. keyboard layouts.
 	String text = value_input->get_text().replace(",", ".");
 	text = text.replace(";", ",");
-	text = TS->parse_number(text);
+	text = TranslationServer::get_singleton()->tool_parse_number(text);
 
 	Error err = expr->parse(text);
 	if (err != OK) {
 		// If the expression failed try without converting commas to dots - they might have been for parameter separation.
 		text = value_input->get_text();
-		text = TS->parse_number(text);
+		text = TranslationServer::get_singleton()->tool_parse_number(text);
 
 		err = expr->parse(text);
 		if (err != OK) {

@@ -30,6 +30,7 @@
 
 #include "progress_bar.h"
 
+#include "core/string/translation_server.h"
 #include "scene/resources/text_line.h"
 #include "scene/theme/theme_db.h"
 
@@ -159,7 +160,11 @@ void ProgressBar::_notification(int p_what) {
 				String txt = itos(int(ratio * 100));
 
 				if (is_localizing_numeral_system()) {
-					txt = TS->format_number(txt) + TS->percent_sign();
+					if ((Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) && !is_part_of_edited_scene()) {
+						txt = TranslationServer::get_singleton()->tool_format_number(txt) + TranslationServer::get_singleton()->get_tool_percent_sign();
+					} else {
+						txt = TranslationServer::get_singleton()->format_number(txt) + TranslationServer::get_singleton()->get_percent_sign();
+					}
 				} else {
 					txt += String("%");
 				}

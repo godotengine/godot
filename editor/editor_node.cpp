@@ -832,6 +832,10 @@ void EditorNode::_notification(int p_what) {
 				}
 			}
 
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/debug/pseudolocalization")) {
+				TranslationServer::get_singleton()->reload_editor_pseudolocalization();
+			}
+
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor")) {
 				_update_update_spinner();
 				_update_vsync_mode();
@@ -6678,6 +6682,7 @@ EditorNode::EditorNode() {
 	if (!EditorSettings::get_singleton()) {
 		EditorSettings::create();
 	}
+	TranslationServer::get_singleton()->reload_editor_pseudolocalization();
 
 	ED_SHORTCUT("editor/lock_selected_nodes", TTR("Lock Selected Node(s)"), KeyModifierMask::CMD_OR_CTRL | Key::L);
 	ED_SHORTCUT("editor/unlock_selected_nodes", TTR("Unlock Selected Node(s)"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::L);

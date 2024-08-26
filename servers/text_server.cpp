@@ -31,6 +31,7 @@
 #include "servers/text_server.h"
 #include "text_server.compat.inc"
 
+#include "core/string/translation_server.h"
 #include "core/variant/typed_array.h"
 #include "servers/rendering_server.h"
 
@@ -1931,6 +1932,18 @@ String TextServer::strip_diacritics(const String &p_string) const {
 		}
 	}
 	return result;
+}
+
+String TextServer::format_number(const String &p_string, const String &p_language) const {
+	return TranslationServer::get_singleton()->format_number(p_string, p_language);
+}
+
+String TextServer::parse_number(const String &p_string, const String &p_language) const {
+	return TranslationServer::get_singleton()->parse_number(p_string, p_language);
+}
+
+String TextServer::percent_sign(const String &p_language) const {
+	return TranslationServer::get_singleton()->get_percent_sign(p_language);
 }
 
 TypedArray<Vector3i> TextServer::parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {

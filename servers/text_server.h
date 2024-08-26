@@ -535,9 +535,9 @@ public:
 	virtual void shaped_text_draw_outline(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, int64_t p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
 
 	// Number conversion.
-	virtual String format_number(const String &p_string, const String &p_language = "") const = 0;
-	virtual String parse_number(const String &p_string, const String &p_language = "") const = 0;
-	virtual String percent_sign(const String &p_language = "") const = 0;
+	virtual String format_number(const String &p_string, const String &p_language = "") const;
+	virtual String parse_number(const String &p_string, const String &p_language = "") const;
+	virtual String percent_sign(const String &p_language = "") const;
 
 	// String functions.
 	virtual PackedInt32Array string_get_word_breaks(const String &p_string, const String &p_language = "", int64_t p_chars_per_line = 0) const = 0;

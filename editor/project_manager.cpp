@@ -39,6 +39,7 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/os/time.h"
+#include "core/string/translation_server.h"
 #include "core/version.h"
 #include "editor/editor_about.h"
 #include "editor/editor_settings.h"
@@ -1052,6 +1053,7 @@ ProjectManager::ProjectManager() {
 			EditorSettings::create();
 		}
 		EditorSettings::get_singleton()->set_optimize_save(false); // Just write settings as they come.
+		TranslationServer::get_singleton()->reload_editor_pseudolocalization();
 
 		{
 			bool agile_input_event_flushing = EDITOR_GET("input/buffering/agile_event_flushing");

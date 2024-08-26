@@ -547,6 +547,19 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/multi_window/maximize_window", false, "");
 	set_restart_if_changed("interface/multi_window/enable", true);
 
+	// Editor pseudolocalization
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/debug/pseudolocalization/use_pseudolocalization", false, "");
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/debug/pseudolocalization/replace_with_accents", true, "");
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/debug/pseudolocalization/double_vowels", false, "");
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/debug/pseudolocalization/fake_bidi", false, "");
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/debug/pseudolocalization/override", false, "");
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/debug/pseudolocalization/numbers", true, "");
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_NONE, "interface/debug/pseudolocalization/expansion_ratio", 0.0, "");
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_NONE, "interface/debug/pseudolocalization/prefix", "[", "");
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_NONE, "interface/debug/pseudolocalization/suffix", "]", "");
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/debug/pseudolocalization/skip_placeholders", true, "");
+	set_restart_if_changed("interface/debug/pseudolocalization/use_pseudolocalization", true);
+
 	/* Filesystem */
 
 	// External Programs

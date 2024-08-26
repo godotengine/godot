@@ -37,6 +37,7 @@
 #include "core/string/locales.h"
 
 #ifdef TOOLS_ENABLED
+#include "editor/editor_settings.h"
 #include "main/main.h"
 #endif
 
@@ -176,6 +177,189 @@ void TranslationServer::init_locale_info() {
 			country_rename_map[country_renames[idx][0]] = country_renames[idx][1];
 		}
 		idx++;
+	}
+}
+
+void TranslationServer::init_num_systems() {
+	{
+		NumSystemData ar;
+		ar.lang.insert(StringName("ar")); // Arabic
+		ar.lang.insert(StringName("ar_AE"));
+		ar.lang.insert(StringName("ar_BH"));
+		ar.lang.insert(StringName("ar_DJ"));
+		ar.lang.insert(StringName("ar_EG"));
+		ar.lang.insert(StringName("ar_ER"));
+		ar.lang.insert(StringName("ar_IL"));
+		ar.lang.insert(StringName("ar_IQ"));
+		ar.lang.insert(StringName("ar_JO"));
+		ar.lang.insert(StringName("ar_KM"));
+		ar.lang.insert(StringName("ar_KW"));
+		ar.lang.insert(StringName("ar_LB"));
+		ar.lang.insert(StringName("ar_MR"));
+		ar.lang.insert(StringName("ar_OM"));
+		ar.lang.insert(StringName("ar_PS"));
+		ar.lang.insert(StringName("ar_QA"));
+		ar.lang.insert(StringName("ar_SA"));
+		ar.lang.insert(StringName("ar_SD"));
+		ar.lang.insert(StringName("ar_SO"));
+		ar.lang.insert(StringName("ar_SS"));
+		ar.lang.insert(StringName("ar_SY"));
+		ar.lang.insert(StringName("ar_TD"));
+		ar.lang.insert(StringName("ar_YE"));
+		ar.lang.insert(StringName("ckb")); // Central Kurdish
+		ar.lang.insert(StringName("ckb_IQ"));
+		ar.lang.insert(StringName("ckb_IR"));
+		ar.lang.insert(StringName("sd")); // Sindhi
+		ar.lang.insert(StringName("sd_PK"));
+		ar.lang.insert(StringName("sd_Arab"));
+		ar.lang.insert(StringName("sd_Arab_PK"));
+		ar.digits = U"٠١٢٣٤٥٦٧٨٩٫";
+		ar.percent_sign = U"٪";
+		ar.exp = U"اس";
+		num_systems.push_back(ar);
+	}
+
+	// Persian and Urdu numerals.
+	{
+		NumSystemData pr;
+		pr.lang.insert(StringName("fa")); // Persian
+		pr.lang.insert(StringName("fa_AF"));
+		pr.lang.insert(StringName("fa_IR"));
+		pr.lang.insert(StringName("ks")); // Kashmiri
+		pr.lang.insert(StringName("ks_IN"));
+		pr.lang.insert(StringName("ks_Arab"));
+		pr.lang.insert(StringName("ks_Arab_IN"));
+		pr.lang.insert(StringName("lrc")); // Northern Luri
+		pr.lang.insert(StringName("lrc_IQ"));
+		pr.lang.insert(StringName("lrc_IR"));
+		pr.lang.insert(StringName("mzn")); // Mazanderani
+		pr.lang.insert(StringName("mzn_IR"));
+		pr.lang.insert(StringName("pa_PK")); // Panjabi
+		pr.lang.insert(StringName("pa_Arab"));
+		pr.lang.insert(StringName("pa_Arab_PK"));
+		pr.lang.insert(StringName("ps")); // Pushto
+		pr.lang.insert(StringName("ps_AF"));
+		pr.lang.insert(StringName("ps_PK"));
+		pr.lang.insert(StringName("ur_IN")); // Urdu
+		pr.lang.insert(StringName("uz_AF")); // Uzbek
+		pr.lang.insert(StringName("uz_Arab"));
+		pr.lang.insert(StringName("uz_Arab_AF"));
+		pr.digits = U"۰۱۲۳۴۵۶۷۸۹٫";
+		pr.percent_sign = U"٪";
+		pr.exp = U"اس";
+		num_systems.push_back(pr);
+	}
+
+	// Bengali numerals.
+	{
+		NumSystemData bn;
+		bn.lang.insert(StringName("as")); // Assamese
+		bn.lang.insert(StringName("as_IN"));
+		bn.lang.insert(StringName("bn")); // Bengali
+		bn.lang.insert(StringName("bn_BD"));
+		bn.lang.insert(StringName("bn_IN"));
+		bn.lang.insert(StringName("mni")); // Manipuri
+		bn.lang.insert(StringName("mni_IN"));
+		bn.lang.insert(StringName("mni_Beng"));
+		bn.lang.insert(StringName("mni_Beng_IN"));
+		bn.digits = U"০১২৩৪৫৬৭৮৯.";
+		bn.percent_sign = U"%";
+		bn.exp = U"e";
+		num_systems.push_back(bn);
+	}
+
+	// Devanagari numerals.
+	{
+		NumSystemData mr;
+		mr.lang.insert(StringName("mr")); // Marathi
+		mr.lang.insert(StringName("mr_IN"));
+		mr.lang.insert(StringName("ne")); // Nepali
+		mr.lang.insert(StringName("ne_IN"));
+		mr.lang.insert(StringName("ne_NP"));
+		mr.lang.insert(StringName("sa")); // Sanskrit
+		mr.lang.insert(StringName("sa_IN"));
+		mr.digits = U"०१२३४५६७८९.";
+		mr.percent_sign = U"%";
+		mr.exp = U"e";
+		num_systems.push_back(mr);
+	}
+
+	// Dzongkha numerals.
+	{
+		NumSystemData dz;
+		dz.lang.insert(StringName("dz")); // Dzongkha
+		dz.lang.insert(StringName("dz_BT"));
+		dz.digits = U"༠༡༢༣༤༥༦༧༨༩.";
+		dz.percent_sign = U"%";
+		dz.exp = U"e";
+		num_systems.push_back(dz);
+	}
+
+	// Santali numerals.
+	{
+		NumSystemData sat;
+		sat.lang.insert(StringName("sat")); // Santali
+		sat.lang.insert(StringName("sat_IN"));
+		sat.lang.insert(StringName("sat_Olck"));
+		sat.lang.insert(StringName("sat_Olck_IN"));
+		sat.digits = U"᱐᱑᱒᱓᱔᱕᱖᱗᱘᱙.";
+		sat.percent_sign = U"%";
+		sat.exp = U"e";
+		num_systems.push_back(sat);
+	}
+
+	// Burmese numerals.
+	{
+		NumSystemData my;
+		my.lang.insert(StringName("my")); // Burmese
+		my.lang.insert(StringName("my_MM"));
+		my.digits = U"၀၁၂၃၄၅၆၇၈၉.";
+		my.percent_sign = U"%";
+		my.exp = U"e";
+		num_systems.push_back(my);
+	}
+
+	// Chakma numerals.
+	{
+		NumSystemData ccp;
+		ccp.lang.insert(StringName("ccp")); // Chakma
+		ccp.lang.insert(StringName("ccp_BD"));
+		ccp.lang.insert(StringName("ccp_IN"));
+		ccp.digits = U"𑄶𑄷𑄸𑄹𑄺𑄻𑄼𑄽𑄾𑄿.";
+		ccp.percent_sign = U"%";
+		ccp.exp = U"e";
+		num_systems.push_back(ccp);
+	}
+
+	// Adlam numerals.
+	{
+		NumSystemData ff;
+		ff.lang.insert(StringName("ff")); // Fulah
+		ff.lang.insert(StringName("ff_Adlm_BF"));
+		ff.lang.insert(StringName("ff_Adlm_CM"));
+		ff.lang.insert(StringName("ff_Adlm_GH"));
+		ff.lang.insert(StringName("ff_Adlm_GM"));
+		ff.lang.insert(StringName("ff_Adlm_GN"));
+		ff.lang.insert(StringName("ff_Adlm_GW"));
+		ff.lang.insert(StringName("ff_Adlm_LR"));
+		ff.lang.insert(StringName("ff_Adlm_MR"));
+		ff.lang.insert(StringName("ff_Adlm_NE"));
+		ff.lang.insert(StringName("ff_Adlm_NG"));
+		ff.lang.insert(StringName("ff_Adlm_SL"));
+		ff.lang.insert(StringName("ff_Adlm_SN"));
+		ff.digits = U"𞥐𞥑𞥒𞥓𞥔𞥕𞥖𞥗𞥘𞥙.";
+		ff.percent_sign = U"%";
+		ff.exp = U"e";
+		num_systems.push_back(ff);
+	}
+
+	// Pseudolocalization.
+	{
+		NumSystemData ps;
+		ps.digits = U"ѻїԇӡһѵδґβя'";
+		ps.percent_sign = U"ϖ";
+		ps.exp = U"Σ";
+		num_systems.push_back(ps);
 	}
 }
 
@@ -453,6 +637,10 @@ StringName TranslationServer::translate(const StringName &p_message, const Strin
 		return p_message;
 	}
 
+	if (p_message == StringName()) {
+		return p_message;
+	}
+
 	StringName res = _get_message_from_translations(p_message, p_context, locale, false);
 
 	if (!res && fallback.length() >= 2) {
@@ -474,6 +662,10 @@ StringName TranslationServer::translate_plural(const StringName &p_message, cons
 		return p_message_plural;
 	}
 
+	if (p_message == StringName() && p_message_plural == StringName()) {
+		return p_message;
+	}
+
 	StringName res = _get_message_from_translations(p_message, p_context, locale, true, p_message_plural, p_n);
 
 	if (!res && fallback.length() >= 2) {
@@ -482,12 +674,12 @@ StringName TranslationServer::translate_plural(const StringName &p_message, cons
 
 	if (!res) {
 		if (p_n == 1) {
-			return p_message;
+			return pseudolocalization_enabled ? pseudolocalize(p_message) : p_message;
 		}
-		return p_message_plural;
+		return pseudolocalization_enabled ? pseudolocalize(p_message_plural) : p_message_plural;
 	}
 
-	return res;
+	return pseudolocalization_enabled ? pseudolocalize(res) : res;
 }
 
 StringName TranslationServer::_get_message_from_translations(const StringName &p_message, const StringName &p_context, const String &p_locale, bool plural, const String &p_message_plural, int p_n) const {
@@ -560,6 +752,7 @@ void TranslationServer::setup() {
 	pseudolocalization_double_vowels_enabled = GLOBAL_DEF("internationalization/pseudolocalization/double_vowels", false);
 	pseudolocalization_fake_bidi_enabled = GLOBAL_DEF("internationalization/pseudolocalization/fake_bidi", false);
 	pseudolocalization_override_enabled = GLOBAL_DEF("internationalization/pseudolocalization/override", false);
+	pseudolocalization_numbers_enabled = GLOBAL_DEF("internationalization/pseudolocalization/numbers", true);
 	expansion_ratio = GLOBAL_DEF("internationalization/pseudolocalization/expansion_ratio", 0.0);
 	pseudolocalization_prefix = GLOBAL_DEF("internationalization/pseudolocalization/prefix", "[");
 	pseudolocalization_suffix = GLOBAL_DEF("internationalization/pseudolocalization/suffix", "]");
@@ -570,6 +763,207 @@ void TranslationServer::setup() {
 #endif
 }
 
+String TranslationServer::format_number(const String &p_number, const String &p_language) const {
+	StringName lang = p_language.is_empty() ? get_locale() : p_language;
+	String res = p_number;
+	if (pseudolocalization_enabled && pseudolocalization_numbers_enabled) {
+		res.replace("e", num_systems[num_systems.size() - 1].exp);
+		res.replace("E", num_systems[num_systems.size() - 1].exp);
+		char32_t *data = res.ptrw();
+		for (int j = 0; j < res.length(); j++) {
+			if (data[j] >= 0x30 && data[j] <= 0x39) {
+				data[j] = num_systems[num_systems.size() - 1].digits[data[j] - 0x30];
+			} else if (data[j] == '.' || data[j] == ',') {
+				data[j] = num_systems[num_systems.size() - 1].digits[10];
+			}
+		}
+		return pseudolocalization_prefix + res + pseudolocalization_suffix;
+	} else {
+		for (int i = 0; i < num_systems.size() - 1; i++) {
+			if (num_systems[i].lang.has(lang)) {
+				if (num_systems[i].digits.is_empty()) {
+					return p_number;
+				}
+				res.replace("e", num_systems[i].exp);
+				res.replace("E", num_systems[i].exp);
+				char32_t *data = res.ptrw();
+				for (int j = 0; j < res.length(); j++) {
+					if (data[j] >= 0x30 && data[j] <= 0x39) {
+						data[j] = num_systems[i].digits[data[j] - 0x30];
+					} else if (data[j] == '.' || data[j] == ',') {
+						data[j] = num_systems[i].digits[10];
+					}
+				}
+				break;
+			}
+		}
+	}
+	return res;
+}
+
+String TranslationServer::tool_format_number(const String &p_number) const {
+	StringName lang = get_tool_locale();
+	String res = p_number;
+	if (ed_pseudolocalization_enabled && ed_pseudolocalization_numbers_enabled) {
+		res.replace("e", num_systems[num_systems.size() - 1].exp);
+		res.replace("E", num_systems[num_systems.size() - 1].exp);
+		char32_t *data = res.ptrw();
+		for (int j = 0; j < res.length(); j++) {
+			if (data[j] >= 0x30 && data[j] <= 0x39) {
+				data[j] = num_systems[num_systems.size() - 1].digits[data[j] - 0x30];
+			} else if (data[j] == '.' || data[j] == ',') {
+				data[j] = num_systems[num_systems.size() - 1].digits[10];
+			}
+		}
+		return ed_pseudolocalization_prefix + res + ed_pseudolocalization_suffix;
+	} else {
+		for (int i = 0; i < num_systems.size() - 1; i++) {
+			if (num_systems[i].lang.has(lang)) {
+				if (num_systems[i].digits.is_empty()) {
+					return p_number;
+				}
+				res.replace("e", num_systems[i].exp);
+				res.replace("E", num_systems[i].exp);
+				char32_t *data = res.ptrw();
+				for (int j = 0; j < res.length(); j++) {
+					if (data[j] >= 0x30 && data[j] <= 0x39) {
+						data[j] = num_systems[i].digits[data[j] - 0x30];
+					} else if (data[j] == '.' || data[j] == ',') {
+						data[j] = num_systems[i].digits[10];
+					}
+				}
+				break;
+			}
+		}
+	}
+	return res;
+}
+
+String TranslationServer::get_percent_sign(const String &p_language) const {
+	if (pseudolocalization_enabled && pseudolocalization_numbers_enabled) {
+		return pseudolocalization_prefix + num_systems[num_systems.size() - 1].percent_sign + pseudolocalization_suffix;
+	} else {
+		const StringName lang = (p_language.is_empty()) ? get_locale() : p_language;
+
+		for (int i = 0; i < num_systems.size(); i++) {
+			if (num_systems[i].lang.has(lang)) {
+				if (num_systems[i].percent_sign.is_empty()) {
+					return "%";
+				}
+				return num_systems[i].percent_sign;
+			}
+		}
+		return "%";
+	}
+}
+
+String TranslationServer::get_tool_percent_sign() const {
+	if (ed_pseudolocalization_enabled && ed_pseudolocalization_numbers_enabled) {
+		return ed_pseudolocalization_prefix + num_systems[num_systems.size() - 1].percent_sign + ed_pseudolocalization_suffix;
+	} else {
+		const StringName lang = get_tool_locale();
+
+		for (int i = 0; i < num_systems.size(); i++) {
+			if (num_systems[i].lang.has(lang)) {
+				if (num_systems[i].percent_sign.is_empty()) {
+					return "%";
+				}
+				return num_systems[i].percent_sign;
+			}
+		}
+		return "%";
+	}
+}
+
+String TranslationServer::parse_number(const String &p_string, const String &p_language) const {
+	String res = p_string;
+	if (pseudolocalization_enabled && pseudolocalization_numbers_enabled) {
+		res = res.trim_prefix(pseudolocalization_prefix).trim_suffix(pseudolocalization_suffix);
+		res.replace(num_systems[num_systems.size() - 1].exp, "e");
+		char32_t *data = res.ptrw();
+		for (int j = 0; j < res.length(); j++) {
+			if (data[j] == num_systems[num_systems.size() - 1].digits[10]) {
+				data[j] = '.';
+			} else {
+				for (int k = 0; k < 10; k++) {
+					if (data[j] == num_systems[num_systems.size() - 1].digits[k]) {
+						data[j] = 0x30 + k;
+					}
+				}
+			}
+		}
+	} else {
+		StringName lang = p_language.is_empty() ? get_locale() : p_language;
+		for (int i = 0; i < num_systems.size() - 1; i++) {
+			if (num_systems[i].lang.has(lang)) {
+				if (num_systems[i].digits.is_empty()) {
+					return p_string;
+				}
+				res.replace(num_systems[i].exp, "e");
+				char32_t *data = res.ptrw();
+				for (int j = 0; j < res.length(); j++) {
+					if (data[j] == num_systems[i].digits[10]) {
+						data[j] = '.';
+					} else {
+						for (int k = 0; k < 10; k++) {
+							if (data[j] == num_systems[i].digits[k]) {
+								data[j] = 0x30 + k;
+							}
+						}
+					}
+				}
+				break;
+			}
+		}
+	}
+	return res;
+}
+
+String TranslationServer::tool_parse_number(const String &p_string) const {
+	StringName lang = get_tool_locale();
+
+	String res = p_string;
+	if (ed_pseudolocalization_enabled && ed_pseudolocalization_numbers_enabled) {
+		res = res.trim_prefix(ed_pseudolocalization_prefix).trim_suffix(ed_pseudolocalization_suffix);
+		res.replace(num_systems[num_systems.size() - 1].exp, "e");
+		char32_t *data = res.ptrw();
+		for (int j = 0; j < res.length(); j++) {
+			if (data[j] == num_systems[num_systems.size() - 1].digits[10]) {
+				data[j] = '.';
+			} else {
+				for (int k = 0; k < 10; k++) {
+					if (data[j] == num_systems[num_systems.size() - 1].digits[k]) {
+						data[j] = 0x30 + k;
+					}
+				}
+			}
+		}
+	} else {
+		for (int i = 0; i < num_systems.size() - 1; i++) {
+			if (num_systems[i].lang.has(lang)) {
+				if (num_systems[i].digits.is_empty()) {
+					return p_string;
+				}
+				res.replace(num_systems[i].exp, "e");
+				char32_t *data = res.ptrw();
+				for (int j = 0; j < res.length(); j++) {
+					if (data[j] == num_systems[i].digits[10]) {
+						data[j] = '.';
+					} else {
+						for (int k = 0; k < 10; k++) {
+							if (data[j] == num_systems[i].digits[k]) {
+								data[j] = 0x30 + k;
+							}
+						}
+					}
+				}
+				break;
+			}
+		}
+	}
+	return res;
+}
+
 void TranslationServer::set_tool_translation(const Ref<Translation> &p_translation) {
 	tool_translation = p_translation;
 }
@@ -578,7 +972,7 @@ Ref<Translation> TranslationServer::get_tool_translation() const {
 	return tool_translation;
 }
 
-String TranslationServer::get_tool_locale() {
+String TranslationServer::get_tool_locale() const {
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) {
 		if (TranslationServer::get_singleton()->get_tool_translation().is_valid()) {
@@ -613,27 +1007,33 @@ String TranslationServer::get_tool_locale() {
 }
 
 StringName TranslationServer::tool_translate(const StringName &p_message, const StringName &p_context) const {
+	if (p_message == StringName()) {
+		return p_message;
+	}
 	if (tool_translation.is_valid()) {
 		StringName r = tool_translation->get_message(p_message, p_context);
 		if (r) {
-			return r;
+			return ed_pseudolocalization_enabled ? tool_pseudolocalize(r) : r;
 		}
 	}
-	return p_message;
+	return ed_pseudolocalization_enabled ? tool_pseudolocalize(p_message) : p_message;
 }
 
 StringName TranslationServer::tool_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
+	if (p_message == StringName() && p_message_plural == StringName()) {
+		return p_message;
+	}
 	if (tool_translation.is_valid()) {
 		StringName r = tool_translation->get_plural_message(p_message, p_message_plural, p_n, p_context);
 		if (r) {
-			return r;
+			return ed_pseudolocalization_enabled ? tool_pseudolocalize(r) : r;
 		}
 	}
 
 	if (p_n == 1) {
-		return p_message;
+		return ed_pseudolocalization_enabled ? tool_pseudolocalize(p_message) : p_message;
 	}
-	return p_message_plural;
+	return ed_pseudolocalization_enabled ? tool_pseudolocalize(p_message_plural) : p_message_plural;
 }
 
 void TranslationServer::set_property_translation(const Ref<Translation> &p_translation) {
@@ -720,11 +1120,31 @@ void TranslationServer::set_pseudolocalization_enabled(bool p_enabled) {
 	}
 }
 
+#ifdef TOOLS_ENABLED
+void TranslationServer::reload_editor_pseudolocalization() {
+	ed_pseudolocalization_enabled = EDITOR_GET("interface/debug/pseudolocalization/use_pseudolocalization");
+	ed_pseudolocalization_accents_enabled = EDITOR_GET("interface/debug/pseudolocalization/replace_with_accents");
+	ed_pseudolocalization_double_vowels_enabled = EDITOR_GET("interface/debug/pseudolocalization/double_vowels");
+	ed_pseudolocalization_fake_bidi_enabled = EDITOR_GET("interface/debug/pseudolocalization/fake_bidi");
+	ed_pseudolocalization_override_enabled = EDITOR_GET("interface/debug/pseudolocalization/override");
+	ed_pseudolocalization_numbers_enabled = EDITOR_GET("interface/debug/pseudolocalization/numbers");
+	ed_expansion_ratio = EDITOR_GET("interface/debug/pseudolocalization/expansion_ratio");
+	ed_pseudolocalization_prefix = EDITOR_GET("interface/debug/pseudolocalization/prefix");
+	ed_pseudolocalization_suffix = EDITOR_GET("interface/debug/pseudolocalization/suffix");
+	ed_pseudolocalization_skip_placeholders_enabled = EDITOR_GET("interface/debug/pseudolocalization/skip_placeholders");
+
+	if (OS::get_singleton()->get_main_loop()) {
+		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
+	}
+}
+#endif
+
 void TranslationServer::reload_pseudolocalization() {
 	pseudolocalization_accents_enabled = GLOBAL_GET("internationalization/pseudolocalization/replace_with_accents");
 	pseudolocalization_double_vowels_enabled = GLOBAL_GET("internationalization/pseudolocalization/double_vowels");
 	pseudolocalization_fake_bidi_enabled = GLOBAL_GET("internationalization/pseudolocalization/fake_bidi");
 	pseudolocalization_override_enabled = GLOBAL_GET("internationalization/pseudolocalization/override");
+	pseudolocalization_numbers_enabled = GLOBAL_GET("internationalization/pseudolocalization/numbers");
 	expansion_ratio = GLOBAL_GET("internationalization/pseudolocalization/expansion_ratio");
 	pseudolocalization_prefix = GLOBAL_GET("internationalization/pseudolocalization/prefix");
 	pseudolocalization_suffix = GLOBAL_GET("internationalization/pseudolocalization/suffix");
@@ -741,37 +1161,53 @@ StringName TranslationServer::pseudolocalize(const StringName &p_message) const 
 	String message = p_message;
 	int length = message.length();
 	if (pseudolocalization_override_enabled) {
-		message = get_override_string(message);
+		message = get_override_string(message, false);
 	}
 
 	if (pseudolocalization_double_vowels_enabled) {
-		message = double_vowels(message);
+		message = double_vowels(message, false);
 	}
 
 	if (pseudolocalization_accents_enabled) {
-		message = replace_with_accented_string(message);
+		message = replace_with_accented_string(message, false);
 	}
 
 	if (pseudolocalization_fake_bidi_enabled) {
-		message = wrap_with_fakebidi_characters(message);
+		message = wrap_with_fakebidi_characters(message, false);
 	}
 
-	StringName res = add_padding(message, length);
+	StringName res = add_padding(message, length, false);
 	return res;
 }
 
 StringName TranslationServer::tool_pseudolocalize(const StringName &p_message) const {
 	String message = p_message;
-	message = double_vowels(message);
-	message = replace_with_accented_string(message);
-	StringName res = "[!!! " + message + " !!!]";
+	int length = message.length();
+	if (ed_pseudolocalization_override_enabled) {
+		message = get_override_string(message, true);
+	}
+
+	if (ed_pseudolocalization_double_vowels_enabled) {
+		message = double_vowels(message, true);
+	}
+
+	if (ed_pseudolocalization_accents_enabled) {
+		message = replace_with_accented_string(message, true);
+	}
+
+	if (ed_pseudolocalization_fake_bidi_enabled) {
+		message = wrap_with_fakebidi_characters(message, true);
+	}
+
+	StringName res = add_padding(message, length, true);
 	return res;
 }
 
-String TranslationServer::get_override_string(String &p_message) const {
+String TranslationServer::get_override_string(String &p_message, bool p_tool) const {
 	String res;
+	bool skip = p_tool ? ed_pseudolocalization_skip_placeholders_enabled : pseudolocalization_skip_placeholders_enabled;
 	for (int i = 0; i < p_message.length(); i++) {
-		if (pseudolocalization_skip_placeholders_enabled && is_placeholder(p_message, i)) {
+		if (skip && is_placeholder(p_message, i)) {
 			res += p_message[i];
 			res += p_message[i + 1];
 			i++;
@@ -782,10 +1218,11 @@ String TranslationServer::get_override_string(String &p_message) const {
 	return res;
 }
 
-String TranslationServer::double_vowels(String &p_message) const {
+String TranslationServer::double_vowels(String &p_message, bool p_tool) const {
 	String res;
+	bool skip = p_tool ? ed_pseudolocalization_skip_placeholders_enabled : pseudolocalization_skip_placeholders_enabled;
 	for (int i = 0; i < p_message.length(); i++) {
-		if (pseudolocalization_skip_placeholders_enabled && is_placeholder(p_message, i)) {
+		if (skip && is_placeholder(p_message, i)) {
 			res += p_message[i];
 			res += p_message[i + 1];
 			i++;
@@ -800,10 +1237,11 @@ String TranslationServer::double_vowels(String &p_message) const {
 	return res;
 };
 
-String TranslationServer::replace_with_accented_string(String &p_message) const {
+String TranslationServer::replace_with_accented_string(String &p_message, bool p_tool) const {
 	String res;
+	bool skip = p_tool ? ed_pseudolocalization_skip_placeholders_enabled : pseudolocalization_skip_placeholders_enabled;
 	for (int i = 0; i < p_message.length(); i++) {
-		if (pseudolocalization_skip_placeholders_enabled && is_placeholder(p_message, i)) {
+		if (skip && is_placeholder(p_message, i)) {
 			res += p_message[i];
 			res += p_message[i + 1];
 			i++;
@@ -819,18 +1257,19 @@ String TranslationServer::replace_with_accented_string(String &p_message) const 
 	return res;
 }
 
-String TranslationServer::wrap_with_fakebidi_characters(String &p_message) const {
+String TranslationServer::wrap_with_fakebidi_characters(String &p_message, bool p_tool) const {
 	String res;
 	char32_t fakebidiprefix = U'\u202e';
 	char32_t fakebidisuffix = U'\u202c';
 	res += fakebidiprefix;
+	bool skip = p_tool ? ed_pseudolocalization_skip_placeholders_enabled : pseudolocalization_skip_placeholders_enabled;
 	// The fake bidi unicode gets popped at every newline so pushing it back at every newline.
 	for (int i = 0; i < p_message.length(); i++) {
 		if (p_message[i] == '\n') {
 			res += fakebidisuffix;
 			res += p_message[i];
 			res += fakebidiprefix;
-		} else if (pseudolocalization_skip_placeholders_enabled && is_placeholder(p_message, i)) {
+		} else if (skip && is_placeholder(p_message, i)) {
 			res += fakebidisuffix;
 			res += p_message[i];
 			res += p_message[i + 1];
@@ -844,10 +1283,10 @@ String TranslationServer::wrap_with_fakebidi_characters(String &p_message) const
 	return res;
 }
 
-String TranslationServer::add_padding(const String &p_message, int p_length) const {
-	String underscores = String("_").repeat(p_length * expansion_ratio / 2);
-	String prefix = pseudolocalization_prefix + underscores;
-	String suffix = underscores + pseudolocalization_suffix;
+String TranslationServer::add_padding(const String &p_message, int p_length, bool p_tool) const {
+	String underscores = String("_").repeat(p_length * (p_tool ? ed_expansion_ratio : expansion_ratio) / 2);
+	String prefix = (p_tool ? ed_pseudolocalization_prefix : pseudolocalization_prefix) + underscores;
+	String suffix = underscores + (p_tool ? ed_pseudolocalization_suffix : pseudolocalization_suffix);
 
 	return prefix + p_message + suffix;
 }
@@ -923,6 +1362,10 @@ void TranslationServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("clear"), &TranslationServer::clear);
 
+	ClassDB::bind_method(D_METHOD("format_number", "number", "language"), &TranslationServer::format_number, DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("get_percent_sign", "language"), &TranslationServer::get_percent_sign, DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("parse_number", "number", "language"), &TranslationServer::parse_number, DEFVAL(String()));
+
 	ClassDB::bind_method(D_METHOD("get_loaded_locales"), &TranslationServer::get_loaded_locales);
 
 	ClassDB::bind_method(D_METHOD("is_pseudolocalization_enabled"), &TranslationServer::is_pseudolocalization_enabled);
@@ -944,4 +1387,5 @@ void TranslationServer::load_translations() {
 TranslationServer::TranslationServer() {
 	singleton = this;
 	init_locale_info();
+	init_num_systems();
 }

@@ -606,6 +606,36 @@
 			Input accumulation can be disabled to get slightly more precise/reactive input at the cost of increased CPU usage.
 			[b]Note:[/b] Input accumulation is [i]enabled[/i] by default.
 		</member>
+		<member name="interface/debug/pseudolocalization/double_vowels" type="bool" setter="" getter="">
+			Double vowels in strings during pseudolocalization to simulate the lengthening of text due to localization.
+		</member>
+		<member name="interface/debug/pseudolocalization/expansion_ratio" type="float" setter="" getter="">
+			The expansion ratio to use during pseudolocalization. A value of [code]0.3[/code] is sufficient for most practical purposes, and will increase the length of each string by 30%.
+		</member>
+		<member name="interface/debug/pseudolocalization/fake_bidi" type="bool" setter="" getter="">
+			If [code]true[/code], emulate bidirectional (right-to-left) text when pseudolocalization is enabled. This can be used to spot issues with RTL layout and UI mirroring that will crop up if the project is localized to RTL languages such as Arabic or Hebrew.
+		</member>
+		<member name="interface/debug/pseudolocalization/numbers" type="bool" setter="" getter="">
+			If [code]true[/code], pseudolocalization for numbers formatted by [method TranslationServer.format_number] is enabled.
+		</member>
+		<member name="interface/debug/pseudolocalization/override" type="bool" setter="" getter="">
+			Replace all characters in the string with [code]*[/code]. Useful for finding non-localizable strings.
+		</member>
+		<member name="interface/debug/pseudolocalization/prefix" type="String" setter="" getter="">
+			Prefix that will be prepended to the pseudolocalized string.
+		</member>
+		<member name="interface/debug/pseudolocalization/replace_with_accents" type="bool" setter="" getter="">
+			Replace all characters with their accented variants during pseudolocalization.
+		</member>
+		<member name="interface/debug/pseudolocalization/skip_placeholders" type="bool" setter="" getter="">
+			Skip placeholders for string formatting like [code]%s[/code] or [code]%f[/code] during pseudolocalization. Useful to identify strings which need additional control characters to display correctly.
+		</member>
+		<member name="interface/debug/pseudolocalization/suffix" type="String" setter="" getter="">
+			Suffix that will be appended to the pseudolocalized string.
+		</member>
+		<member name="interface/debug/pseudolocalization/use_pseudolocalization" type="bool" setter="" getter="">
+			If [code]true[/code], enables pseudolocalization for the editor. This can be used to spot untranslatable strings or layout issues that may occur once the project is localized to languages that have longer strings than the source language.
+		</member>
 		<member name="interface/editor/accept_dialog_cancel_ok_buttons" type="int" setter="" getter="">
 			How to position the Cancel and OK buttons in the editor's [AcceptDialog]s. Different platforms have different standard behaviors for this, which can be overridden using this setting. This is useful if you use Godot both on Windows and macOS/Linux and your Godot muscle memory is stronger than your OS specific one.
 			- [b]Auto[/b] follows the platform convention: Cancel first on macOS and Linux, OK first on Windows.

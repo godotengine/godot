@@ -1460,6 +1460,9 @@
 		<member name="internationalization/pseudolocalization/fake_bidi" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], emulate bidirectional (right-to-left) text when pseudolocalization is enabled. This can be used to spot issues with RTL layout and UI mirroring that will crop up if the project is localized to RTL languages such as Arabic or Hebrew.
 		</member>
+		<member name="internationalization/pseudolocalization/numbers" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], pseudolocalization for numbers formatted by [method TranslationServer.format_number] is enabled.
+		</member>
 		<member name="internationalization/pseudolocalization/override" type="bool" setter="" getter="" default="false">
 			Replace all characters in the string with [code]*[/code]. Useful for finding non-localizable strings.
 		</member>

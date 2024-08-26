@@ -30,9 +30,15 @@
 
 #ifndef DISABLE_DEPRECATED
 
+String TranslationServer::_get_tool_locale_bind_compat_96105() {
+	return get_tool_locale();
+}
+
 void TranslationServer::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("translate", "message", "context"), &TranslationServer::translate, DEFVAL(""));
 	ClassDB::bind_compatibility_method(D_METHOD("translate_plural", "message", "plural_message", "n", "context"), &TranslationServer::translate_plural, DEFVAL(""));
+
+	ClassDB::bind_compatibility_method(D_METHOD("get_tool_locale"), &TranslationServer::_get_tool_locale_bind_compat_96105);
 }
 
 #endif
