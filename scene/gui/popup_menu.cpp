@@ -704,7 +704,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 
 void PopupMenu::_mouse_over_update(const Point2 &p_over) {
 	int over = _get_mouse_over(p_over);
-	int old_id = mouse_over
+	int old_id = mouse_over;
 	int id = (over < 0 || items[over].separator || items[over].disabled) ? -1 : (items[over].id >= 0 ? items[over].id : over);
 
 	if (id < 0) {
@@ -727,7 +727,7 @@ void PopupMenu::_mouse_over_update(const Point2 &p_over) {
 		if (old_id>-1) {
 			emit_signal(SNAME("id_mouse_exited"), old_id);
 		}
-		emit_signal(SNAME("id_mouse_entered"), mouse_over)
+		emit_signal(SNAME("id_mouse_entered"), mouse_over);
 	}
 }
 
