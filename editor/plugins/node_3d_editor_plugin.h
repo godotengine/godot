@@ -192,12 +192,19 @@ public:
 		NAVIGATION_GODOT,
 		NAVIGATION_MAYA,
 		NAVIGATION_MODO,
+		NAVIGATION_CUSTOM,
 	};
 
 	enum FreelookNavigationScheme {
 		FREELOOK_DEFAULT,
 		FREELOOK_PARTIALLY_AXIS_LOCKED,
 		FREELOOK_FULLY_AXIS_LOCKED,
+	};
+
+	enum ViewportNavMouseButton {
+		NAVIGATION_LEFT_MOUSE,
+		NAVIGATION_MIDDLE_MOUSE,
+		NAVIGATION_RIGHT_MOUSE,
 	};
 
 private:
@@ -294,6 +301,10 @@ private:
 	void _nav_orbit(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
 	void _nav_look(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
 
+	bool _is_shortcut_empty(const String &p_name);
+	bool _is_nav_modifier_pressed(const String &p_name);
+	int _get_shortcut_input_count(const String &p_name);
+
 	float get_znear() const;
 	float get_zfar() const;
 	float get_fov() const;
@@ -389,6 +400,28 @@ private:
 	void scale_fov(real_t p_fov_offset);
 	void reset_fov();
 	void scale_cursor_distance(real_t scale);
+
+	struct ShortcutCheckSet {
+		bool mod_pressed = false;
+		bool shortcut_not_empty = true;
+		int input_count = 0;
+		ViewportNavMouseButton mouse_preference = NAVIGATION_LEFT_MOUSE;
+		NavigationMode result_nav_mode = NAVIGATION_NONE;
+
+		ShortcutCheckSet() {}
+
+		ShortcutCheckSet(bool p_mod_pressed, bool p_shortcut_not_empty, int p_input_count, const ViewportNavMouseButton &p_mouse_preference, const NavigationMode &p_result_nav_mode) :
+				mod_pressed(p_mod_pressed), shortcut_not_empty(p_shortcut_not_empty), input_count(p_input_count), mouse_preference(p_mouse_preference), result_nav_mode(p_result_nav_mode) {
+		}
+	};
+
+	struct ShortcutCheckSetComparator {
+		_FORCE_INLINE_ bool operator()(const ShortcutCheckSet &A, const ShortcutCheckSet &B) const {
+			return A.input_count > B.input_count;
+		}
+	};
+
+	NavigationMode _get_nav_mode_from_shortcut_check(ViewportNavMouseButton p_mouse_button, Vector<ShortcutCheckSet> p_shortcut_check_sets, bool p_use_not_empty);
 
 	void set_freelook_active(bool active_now);
 	void scale_freelook_speed(real_t scale);
