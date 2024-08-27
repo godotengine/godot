@@ -123,6 +123,7 @@ class PhysicsDirectSpaceState3D : public Object {
 	GDCLASS(PhysicsDirectSpaceState3D, Object);
 
 private:
+	TypedArray<Dictionary> _intersect_ray_multiple(const Ref<PhysicsRayQueryParameters3D> &p_ray_query);
 	Dictionary _intersect_ray(const Ref<PhysicsRayQueryParameters3D> &p_ray_query);
 	TypedArray<Dictionary> _intersect_point(const Ref<PhysicsPointQueryParameters3D> &p_point_query, int p_max_results = 32);
 	TypedArray<Dictionary> _intersect_shape(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query, int p_max_results = 32);
@@ -159,69 +160,8 @@ public:
 		int face_index = -1;
 	};
 
-	struct MultipleRayResult {
-		PackedVector3Array positions;
-		PackedVector3Array normals;
-		Vector<RID> rids;
-		Vector<ObjectID> collider_ids;
-		Vector<Object*> colliders;
-		PackedInt64Array shapes;
-		PackedInt64Array face_indexes;
-		int n_collisions = 0;
-	};
 
-	_FORCE_INLINE_ void resize_multiple_ray_result(MultipleRayResult &r_result, int amount){
-		r_result.positions.resize(amount);
-		r_result.normals.resize(amount);
-		r_result.rids.resize(amount);
-		r_result.collider_ids.resize(amount);
-		r_result.colliders.resize(amount);
-		r_result.shapes.resize(amount);
-		r_result.face_indexes.resize(amount);
-	}
-
-	_FORCE_INLINE_ void add_multiple_ray_result(MultipleRayResult &r_result, const Vector3 &position, const Vector3 &normal,
-						const GodotCollisionObject3D *col_obj,
-						const int &shape, const int &face_index){
-		ObjectID collider_id = col_obj->get_instance_id();
-		Object *collider = nullptr;
-		if (collider_id.is_valid()) {
-			collider = ObjectDB::get_instance(collider_id);
-		}
-
-		if (r_result.n_collisions < r_result.positions.size()){
-			r_result.positions.set(r_result.n_collisions, position);
-			r_result.normals.set(r_result.n_collisions, normal);
-			r_result.shapes.set(r_result.n_collisions, shape);
-			r_result.face_indexes.set(r_result.n_collisions, face_index);
-			r_result.collider_ids.set(r_result.n_collisions, collider_id);
-			r_result.rids.set(r_result.n_collisions, col_obj->get_self());
-			r_result.colliders.set(r_result.n_collisions, collider);
-		}
-		else{ // Slower due to allocating new space. Avoid if possible by using `resize_multiple_ray_result` first
-			r_result.positions.push_back(position);
-			r_result.normals.push_back(normal);
-			r_result.shapes.push_back(shape);
-			r_result.face_indexes.push_back(face_index);
-			r_result.collider_ids.push_back(collider_id);
-			r_result.rids.push_back(col_obj->get_self());
-			r_result.colliders.push_back(collider);
-		}
-		r_result.n_collisions += 1;
-	}
-
-	_FORCE_INLINE_ void ray_result_from_multiple(MultipleRayResult &multi_result, RayResult &r_result, int &multi_idx){
-		ERR_FAIL_COND_MSG(multi_idx < multi_result.n_collisions, "Out of bounds index for multi ray result");
-		r_result.collider_id = multi_result.collider_ids.get(multi_idx);
-		r_result.collider = multi_result.colliders.get(multi_idx);
-		r_result.normal = multi_result.normals.get(multi_idx);
-		r_result.face_index = multi_result.face_indexes.get(multi_idx);
-		r_result.position = multi_result.positions.get(multi_idx);
-		r_result.rid = multi_result.rids.get(multi_idx);
-		r_result.shape = multi_result.shapes.get(multi_idx);
-	}
-
-	virtual bool intersect_ray_multiple(const RayParameters &p_parameters, MultipleRayResult &r_result) = 0;
+	virtual bool intersect_ray_multiple(const RayParameters &p_parameters, Vector<RayResult> &r_results) = 0;
 	virtual bool intersect_ray(const RayParameters &p_parameters, RayResult &r_result) = 0;
 
 	struct ShapeResult {

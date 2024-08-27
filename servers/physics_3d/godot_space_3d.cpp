@@ -105,7 +105,30 @@ int GodotPhysicsDirectSpaceState3D::intersect_point(const PointParameters &p_par
 	return cc;
 }
 
-bool GodotPhysicsDirectSpaceState3D::intersect_ray_multiple(const RayParameters &p_parameters, MultipleRayResult &r_result){
+// Helper for setting a singular ray result in the vector.
+_FORCE_INLINE_ static void _set_multiple_ray_result(const Vector<PhysicsDirectSpaceState3D::RayResult> &r_results,
+													const int &idx, const Vector3 &position, const Vector3 &normal,
+													const GodotCollisionObject3D *col_obj,
+													const int &shape, const int &face_index){
+		
+		ERR_FAIL_INDEX(idx, r_results.size());
+		ObjectID collider_id = col_obj->get_instance_id();
+		Object *collider = nullptr;
+		if (collider_id.is_valid()) {
+			collider = ObjectDB::get_instance(collider_id);
+		}
+
+		PhysicsDirectSpaceState3D::RayResult r_result = r_results.get(idx);
+		r_result.position = position;
+		r_result.normal = normal;
+		r_result.shape = shape;
+		r_result.face_index = face_index;
+		r_result.collider_id = collider_id;
+		r_result.rid = col_obj->get_self();
+		r_result.collider = collider;
+	}
+
+bool GodotPhysicsDirectSpaceState3D::intersect_ray_multiple(const RayParameters &p_parameters, Vector<RayResult> &r_results){
 	ERR_FAIL_COND_V(space->locked, false);
 
 	Vector3 begin, end;
@@ -115,7 +138,6 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray_multiple(const RayParameters 
 	normal = (end - begin).normalized();
 
 	int amount = space->broadphase->cull_segment(begin, end, space->intersection_query_results, GodotSpace3D::INTERSECTION_QUERY_MAX, space->intersection_query_subindex_results);
-
 	//todo, create another array that references results, compute AABBs and check closest point to ray origin, sort, and stop evaluating results when beyond first collision
 
 	bool collided = false;
@@ -125,8 +147,8 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray_multiple(const RayParameters 
 	const GodotCollisionObject3D *res_obj = nullptr;
 	real_t min_d = 1e10;
 
-	resize_multiple_ray_result(r_result, amount);
-
+	r_results.resize(amount);
+	int n_collisions = 0;
 	for (int i = 0; i < amount; i++) {
 		if (!_can_collide_with(space->intersection_query_results[i], p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas)) {
 			continue;
@@ -157,7 +179,8 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray_multiple(const RayParameters 
 			if (p_parameters.hit_from_inside) {
 				// Hit shape at starting point.
 				ERR_FAIL_NULL_V(col_obj, false); // Shouldn't happen but silences warning.
-				add_multiple_ray_result(r_result, begin, Vector3(), col_obj, shape_idx, shape_face_index);
+				_set_multiple_ray_result(r_results, n_collisions, begin, Vector3(), col_obj, shape_idx, shape_face_index);
+				n_collisions += 1;
 				continue;
 			} else {
 				// Ignore shape when starting inside.
@@ -170,19 +193,20 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray_multiple(const RayParameters 
 			Transform3D xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 			shape_point = xform.xform(shape_point);
 			res_normal = inv_xform.basis.xform_inv(shape_normal).normalized();
-			add_multiple_ray_result(r_result, shape_point, res_normal, col_obj, shape_idx, shape_face_index);
+			_set_multiple_ray_result(r_results, n_collisions, shape_point, res_normal, col_obj, shape_idx, shape_face_index);
+			n_collisions += 1;
 		}
 	}
 
-	// Reduce size of r_result arrays to n_collisions so invalid data is not propagated
-	resize_multiple_ray_result(r_result, r_result.n_collisions);
-	return r_result.n_collisions > 0;
+	// Reduce size of r_results to n_collisions so invalid data is not propagated
+	r_results.resize(n_collisions);
+	return n_collisions > 0;
 }
 
 bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parameters, RayResult &r_result) {
 	ERR_FAIL_COND_V(space->locked, false);
 
-	MultipleRayResult multi_result;
+	Vector<RayResult> multi_result;
 	bool collided = intersect_ray_multiple(p_parameters, multi_result);
 	if (!collided){
 		return false;
@@ -193,16 +217,16 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parame
 	Vector3 normal;
 	Vector3 shape_point;
 	int min_idx = 0;
-	for (int i = 0; i < multi_result.n_collisions; i++) {
-		normal = multi_result.normals.get(i);
-		shape_point = multi_result.positions.get(i);
+	for (int i = 0; i < multi_result.size(); i++) {
+		normal = multi_result.get(i).normal;
+		shape_point = multi_result.get(i).position;
 		ld = normal.dot(shape_point);
 		if (ld < min_d) {
 			min_d = ld;
 			min_idx = i;
 		}
 	}
-	ray_result_from_multiple(multi_result, r_result, min_idx);
+	r_result = multi_result.get(min_idx);
 	return true;
 }
 

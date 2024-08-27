@@ -355,6 +355,33 @@ void PhysicsShapeQueryParameters3D::_bind_methods() {
 
 /////////////////////////////////////
 
+TypedArray<Dictionary> PhysicsDirectSpaceState3D::_intersect_ray_multiple(const Ref<PhysicsRayQueryParameters3D> &p_ray_query) {
+	ERR_FAIL_COND_V(!p_ray_query.is_valid(), TypedArray<Dictionary>());
+
+	Vector<RayResult> results;
+	bool res = intersect_ray_multiple(p_ray_query->get_parameters(), results);
+
+	if (!res) {
+		return TypedArray<Dictionary>();
+	}
+	
+	int rc = results.size();
+	TypedArray<Dictionary> r;
+	r.resize(rc);
+	for (int i = 0; i < rc; i++) {
+		Dictionary d;
+		d["position"] = results.get(i).position;
+		d["normal"] = results.get(i).normal;
+		d["face_index"] = results.get(i).face_index;
+		d["collider_id"] = results.get(i).collider_id;
+		d["collider"] = results.get(i).collider;
+		d["shape"] = results.get(i).shape;
+		d["rid"] = results.get(i).rid;
+		r[i] = d;
+	}
+	return r;
+}
+
 Dictionary PhysicsDirectSpaceState3D::_intersect_ray(const Ref<PhysicsRayQueryParameters3D> &p_ray_query) {
 	ERR_FAIL_COND_V(!p_ray_query.is_valid(), Dictionary());
 
