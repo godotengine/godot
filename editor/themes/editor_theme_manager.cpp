@@ -1471,8 +1471,44 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 	}
 
 	// SpinBox.
-	p_theme->set_icon("updown", "SpinBox", p_theme->get_icon(SNAME("GuiSpinboxUpdown"), EditorStringName(EditorIcons)));
-	p_theme->set_icon("updown_disabled", "SpinBox", p_theme->get_icon(SNAME("GuiSpinboxUpdownDisabled"), EditorStringName(EditorIcons)));
+	{
+		Ref<Texture2D> empty_icon = memnew(ImageTexture);
+		p_theme->set_icon("updown", "SpinBox", empty_icon);
+		p_theme->set_icon("up", "SpinBox", p_theme->get_icon(SNAME("GuiSpinboxUp"), EditorStringName(EditorIcons)));
+		p_theme->set_icon("up_hover", "SpinBox", p_theme->get_icon(SNAME("GuiSpinboxUp"), EditorStringName(EditorIcons)));
+		p_theme->set_icon("up_pressed", "SpinBox", p_theme->get_icon(SNAME("GuiSpinboxUp"), EditorStringName(EditorIcons)));
+		p_theme->set_icon("up_disabled", "SpinBox", p_theme->get_icon(SNAME("GuiSpinboxUp"), EditorStringName(EditorIcons)));
+		p_theme->set_icon("down", "SpinBox", p_theme->get_icon(SNAME("GuiSpinboxDown"), EditorStringName(EditorIcons)));
+		p_theme->set_icon("down_hover", "SpinBox", p_theme->get_icon(SNAME("GuiSpinboxDown"), EditorStringName(EditorIcons)));
+		p_theme->set_icon("down_pressed", "SpinBox", p_theme->get_icon(SNAME("GuiSpinboxDown"), EditorStringName(EditorIcons)));
+		p_theme->set_icon("down_disabled", "SpinBox", p_theme->get_icon(SNAME("GuiSpinboxDown"), EditorStringName(EditorIcons)));
+
+		p_theme->set_stylebox("up_background", "SpinBox", make_empty_stylebox());
+		p_theme->set_stylebox("up_background_hovered", "SpinBox", p_config.button_style_hover);
+		p_theme->set_stylebox("up_background_pressed", "SpinBox", p_config.button_style_pressed);
+		p_theme->set_stylebox("up_background_disabled", "SpinBox", make_empty_stylebox());
+		p_theme->set_stylebox("down_background", "SpinBox", make_empty_stylebox());
+		p_theme->set_stylebox("down_background_hovered", "SpinBox", p_config.button_style_hover);
+		p_theme->set_stylebox("down_background_pressed", "SpinBox", p_config.button_style_pressed);
+		p_theme->set_stylebox("down_background_disabled", "SpinBox", make_empty_stylebox());
+
+		p_theme->set_color("up_icon_modulate", "SpinBox", p_config.font_color);
+		p_theme->set_color("up_hover_icon_modulate", "SpinBox", p_config.font_hover_color);
+		p_theme->set_color("up_pressed_icon_modulate", "SpinBox", p_config.font_pressed_color);
+		p_theme->set_color("up_disabled_icon_modulate", "SpinBox", p_config.font_disabled_color);
+		p_theme->set_color("down_icon_modulate", "SpinBox", p_config.font_color);
+		p_theme->set_color("down_hover_icon_modulate", "SpinBox", p_config.font_hover_color);
+		p_theme->set_color("down_pressed_icon_modulate", "SpinBox", p_config.font_pressed_color);
+		p_theme->set_color("down_disabled_icon_modulate", "SpinBox", p_config.font_disabled_color);
+
+		p_theme->set_stylebox("field_and_buttons_separator", "SpinBox", make_empty_stylebox());
+		p_theme->set_stylebox("up_down_buttons_separator", "SpinBox", make_empty_stylebox());
+
+		p_theme->set_constant("buttons_vertical_separation", "SpinBox", 0);
+		p_theme->set_constant("field_and_buttons_separation", "SpinBox", 2);
+		p_theme->set_constant("buttons_width", "SpinBox", 16);
+		p_theme->set_constant("set_min_buttons_width_from_icons", "SpinBox", 1);
+	}
 
 	// ProgressBar.
 	p_theme->set_stylebox("background", "ProgressBar", make_stylebox(p_theme->get_icon(SNAME("GuiProgressBar"), EditorStringName(EditorIcons)), 4, 4, 4, 4, 0, 0, 0, 0));
@@ -1857,6 +1893,10 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		editor_spin_label_bg->set_bg_color(p_config.dark_color_3);
 		editor_spin_label_bg->set_border_width_all(0);
 		p_theme->set_stylebox("label_bg", "EditorSpinSlider", editor_spin_label_bg);
+
+		// TODO Use separate arrows instead like on SpinBox. Planned for a different PR.
+		p_theme->set_icon("updown", "EditorSpinSlider", p_theme->get_icon(SNAME("GuiSpinboxUpdown"), EditorStringName(EditorIcons)));
+		p_theme->set_icon("updown_disabled", "EditorSpinSlider", p_theme->get_icon(SNAME("GuiSpinboxUpdownDisabled"), EditorStringName(EditorIcons)));
 
 		// Launch Pad and Play buttons.
 		Ref<StyleBoxFlat> style_launch_pad = make_flat_stylebox(p_config.dark_color_1, 2 * EDSCALE, 0, 2 * EDSCALE, 0, p_config.corner_radius);
