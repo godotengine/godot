@@ -712,8 +712,9 @@ Variant PlaceHolderScriptInstance::callp(const StringName &p_method, const Varia
 	} else {
 		return String("Attempt to call a method on a placeholder instance. Probably a bug, please report.");
 	}
-#endif
+#else
 	return Variant();
+#endif // TOOLS_ENABLED
 }
 
 void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, const HashMap<StringName, Variant> &p_values) {
