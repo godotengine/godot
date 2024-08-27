@@ -1229,9 +1229,11 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 	picklist.push_back("face");
 	int head = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_NONE, neck);
 	if (head == -1) {
-		search_path = skeleton->get_bone_children(neck);
-		if (search_path.size() == 1) {
-			head = search_path[0]; // Maybe only one child of the Neck is Head.
+		if (neck != -1) {
+			search_path = skeleton->get_bone_children(neck);
+			if (search_path.size() == 1) {
+				head = search_path[0]; // Maybe only one child of the Neck is Head.
+			}
 		}
 	}
 	if (head == -1) {

@@ -8,6 +8,7 @@
 #include "scene_forward_mobile_inc.glsl"
 
 #define SHADER_IS_SRGB false
+#define SHADER_SPACE_FAR 0.0
 
 /* INPUT ATTRIBS */
 
@@ -498,6 +499,7 @@ void main() {
 #VERSION_DEFINES
 
 #define SHADER_IS_SRGB false
+#define SHADER_SPACE_FAR 0.0
 
 /* Specialization Constants */
 

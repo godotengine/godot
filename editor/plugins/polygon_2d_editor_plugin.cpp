@@ -181,7 +181,7 @@ void Polygon2DEditor::_sync_bones() {
 			}
 
 			if (weights.size() == 0) { //create them
-				weights.resize(node->get_polygon().size());
+				weights.resize(wc);
 				float *w = weights.ptrw();
 				for (int j = 0; j < wc; j++) {
 					w[j] = 0.0;
@@ -850,8 +850,8 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 	if (mm.is_valid()) {
 		if (uv_drag) {
 			Vector2 uv_drag_to = mm->get_position();
-			uv_drag_to = snap_point(uv_drag_to); // FIXME: Only works correctly with 'UV_MODE_EDIT_POINT', it's imprecise with the rest.
-			Vector2 drag = mtx.affine_inverse().xform(uv_drag_to) - mtx.affine_inverse().xform(uv_drag_from);
+			uv_drag_to = snap_point(uv_drag_to);
+			Vector2 drag = mtx.affine_inverse().basis_xform(uv_drag_to - uv_drag_from);
 
 			switch (uv_move_current) {
 				case UV_MODE_CREATE: {
@@ -1166,12 +1166,8 @@ void Polygon2DEditor::_uv_draw() {
 		poly_line_color.a *= 0.25;
 	}
 	Color polygon_line_color = Color(0.5, 0.5, 0.9);
-	Vector<Color> polygon_fill_color;
-	{
-		Color pf = polygon_line_color;
-		pf.a *= 0.5;
-		polygon_fill_color.push_back(pf);
-	}
+	Color polygon_fill_color = polygon_line_color;
+	polygon_fill_color.a *= 0.5;
 	Color prev_color = Color(0.5, 0.5, 0.5);
 
 	int uv_draw_max = uvs.size();
@@ -1216,7 +1212,7 @@ void Polygon2DEditor::_uv_draw() {
 			uv_edit_draw->draw_line(mtx.xform(uvs[idx]), mtx.xform(uvs[idx_next]), polygon_line_color, Math::round(EDSCALE));
 		}
 		if (points.size() >= 3) {
-			uv_edit_draw->draw_polygon(polypoints, polygon_fill_color);
+			uv_edit_draw->draw_colored_polygon(polypoints, polygon_fill_color);
 		}
 	}
 
@@ -1308,8 +1304,8 @@ void Polygon2DEditor::_bind_methods() {
 
 Vector2 Polygon2DEditor::snap_point(Vector2 p_target) const {
 	if (use_snap) {
-		p_target.x = Math::snap_scalar(snap_offset.x * uv_draw_zoom - uv_draw_ofs.x, snap_step.x * uv_draw_zoom, p_target.x);
-		p_target.y = Math::snap_scalar(snap_offset.y * uv_draw_zoom - uv_draw_ofs.y, snap_step.y * uv_draw_zoom, p_target.y);
+		p_target.x = Math::snap_scalar((snap_offset.x - uv_draw_ofs.x) * uv_draw_zoom, snap_step.x * uv_draw_zoom, p_target.x);
+		p_target.y = Math::snap_scalar((snap_offset.y - uv_draw_ofs.y) * uv_draw_zoom, snap_step.y * uv_draw_zoom, p_target.y);
 	}
 
 	return p_target;

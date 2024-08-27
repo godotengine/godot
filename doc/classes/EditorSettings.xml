@@ -258,10 +258,13 @@
 			The color to use when drawing smart snapping lines in the 2D editor. The smart snapping lines will automatically display when moving 2D nodes if smart snapping is enabled in the Snapping Options menu at the top of the 2D editor viewport.
 		</member>
 		<member name="editors/2d/use_integer_zoom_by_default" type="bool" setter="" getter="">
-			If [code]true[/code], the 2D editor will snap to integer zoom values while not holding the [kbd]Alt[/kbd] key and powers of two while holding it. If [code]false[/code], this behavior is swapped.
+			If [code]true[/code], the 2D editor will snap to integer zoom values when not holding the [kbd]Alt[/kbd] key. If [code]false[/code], this behavior is swapped.
 		</member>
 		<member name="editors/2d/viewport_border_color" type="Color" setter="" getter="">
 			The color of the viewport border in the 2D editor. This border represents the viewport's size at the base resolution defined in the Project Settings. Objects placed outside this border will not be visible unless a [Camera2D] node is used, or unless the window is resized and the stretch mode is set to [code]disabled[/code].
+		</member>
+		<member name="editors/2d/zoom_speed_factor" type="float" setter="" getter="">
+			The factor to use when zooming in or out in the 2D editor. For example, [code]1.1[/code] will zoom in by 10% with every step. If set to [code]2.0[/code], zooming will only cycle through powers of two.
 		</member>
 		<member name="editors/3d/default_fov" type="float" setter="" getter="">
 			The default camera vertical field of view to use in the 3D editor (in degrees). The camera field of view can be adjusted on a per-scene basis using the [b]View[/b] menu at the top of the 3D editor. If a scene had its camera field of view adjusted using the [b]View[/b] menu, this setting is ignored in the scene in question. This setting is also ignored while a [Camera3D] node is being previewed in the editor.

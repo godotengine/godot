@@ -1724,6 +1724,8 @@ static void _register_variant_builtin_methods_string() {
 	bind_string_method(validate_node_name, sarray(), varray());
 	bind_string_method(validate_filename, sarray(), varray());
 
+	bind_string_method(is_valid_ascii_identifier, sarray(), varray());
+	bind_string_method(is_valid_unicode_identifier, sarray(), varray());
 	bind_string_method(is_valid_identifier, sarray(), varray());
 	bind_string_method(is_valid_int, sarray(), varray());
 	bind_string_method(is_valid_float, sarray(), varray());
