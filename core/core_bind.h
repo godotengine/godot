@@ -390,12 +390,17 @@ class Semaphore : public RefCounted {
 	GDCLASS(Semaphore, RefCounted);
 	::Semaphore semaphore;
 
+protected:
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	void _post_bind_compat_93605();
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
 
 public:
 	void wait();
 	bool try_wait();
-	void post();
+	void post(int p_count = 1);
 };
 
 class Thread : public RefCounted {
