@@ -1828,7 +1828,9 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 					{
 						int idx = view_menu->get_popup()->get_item_index(VIEW_GIZMOS);
+						int idx2 = view_menu->get_popup()->get_item_index(VIEW_TRANSFORM_GIZMO);
 						can_select_gizmos = can_select_gizmos && view_menu->get_popup()->is_item_checked(idx);
+						transform_gizmo_visible = view_menu->get_popup()->is_item_checked(idx2);
 					}
 
 					// Gizmo handles
@@ -3575,6 +3577,15 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 			view_menu->get_popup()->set_item_checked(idx, current);
 
 		} break;
+		case VIEW_TRANSFORM_GIZMO: {
+			int idx = view_menu->get_popup()->get_item_index(VIEW_TRANSFORM_GIZMO);
+			bool current = view_menu->get_popup()->is_item_checked(idx);
+			current = !current;
+			transform_gizmo_visible = current;
+
+			spatial_editor->update_transform_gizmo();
+			view_menu->get_popup()->set_item_checked(idx, current);
+		} break;
 		case VIEW_HALF_RESOLUTION: {
 			int idx = view_menu->get_popup()->get_item_index(VIEW_HALF_RESOLUTION);
 			bool current = view_menu->get_popup()->is_item_checked(idx);
@@ -3939,7 +3950,7 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 		return;
 	}
 
-	bool show_gizmo = spatial_editor->is_gizmo_visible() && !_edit.instant;
+	bool show_gizmo = spatial_editor->is_gizmo_visible() && !_edit.instant && transform_gizmo_visible;
 	for (int i = 0; i < 3; i++) {
 		Transform3D axis_angle;
 		if (xform.basis.get_column(i).normalized().dot(xform.basis.get_column((i + 1) % 3).normalized()) < 1.0) {
@@ -3970,7 +3981,7 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 	xform.orthonormalize();
 	xform.basis.scale(scale);
 	RenderingServer::get_singleton()->instance_set_transform(rotate_gizmo_instance[3], xform);
-	RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], spatial_editor->is_gizmo_visible() && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE));
+	RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], spatial_editor->is_gizmo_visible() && transform_gizmo_visible && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE));
 }
 
 void Node3DEditorViewport::set_state(const Dictionary &p_state) {
@@ -5366,6 +5377,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	view_menu->get_popup()->add_separator();
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_environment", TTR("View Environment")), VIEW_ENVIRONMENT);
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_gizmos", TTR("View Gizmos")), VIEW_GIZMOS);
+	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_transform_gizmo", TTR("View Transform Gizmo")), VIEW_TRANSFORM_GIZMO);
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_grid_lines", TTR("View Grid")), VIEW_GRID);
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_information", TTR("View Information")), VIEW_INFORMATION);
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_fps", TTR("View Frame Time")), VIEW_FRAME_TIME);
@@ -5376,6 +5388,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_audio_listener", TTR("Audio Listener")), VIEW_AUDIO_LISTENER);
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_audio_doppler", TTR("Enable Doppler")), VIEW_AUDIO_DOPPLER);
 	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_GIZMOS), true);
+	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_TRANSFORM_GIZMO), true);
 	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_GRID), true);
 
 	view_menu->get_popup()->add_separator();
