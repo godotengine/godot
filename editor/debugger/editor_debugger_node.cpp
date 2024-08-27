@@ -213,8 +213,8 @@ void EditorDebuggerNode::_bind_methods() {
 }
 
 void EditorDebuggerNode::register_undo_redo(UndoRedo *p_undo_redo) {
-	p_undo_redo->set_method_notify_callback(_method_changeds, this);
-	p_undo_redo->set_property_notify_callback(_property_changeds, this);
+	p_undo_redo->set_method_notify_callback(_methods_changed, this);
+	p_undo_redo->set_property_notify_callback(_properties_changed, this);
 }
 
 EditorDebuggerRemoteObject *EditorDebuggerNode::get_inspected_remote_object() {
@@ -720,7 +720,7 @@ void EditorDebuggerNode::_breakpoints_cleared_in_tree(int p_debugger) {
 }
 
 // Remote inspector/edit.
-void EditorDebuggerNode::_method_changeds(void *p_ud, Object *p_base, const StringName &p_name, const Variant **p_args, int p_argcount) {
+void EditorDebuggerNode::_methods_changed(void *p_ud, Object *p_base, const StringName &p_name, const Variant **p_args, int p_argcount) {
 	if (!singleton) {
 		return;
 	}
@@ -729,7 +729,7 @@ void EditorDebuggerNode::_method_changeds(void *p_ud, Object *p_base, const Stri
 	});
 }
 
-void EditorDebuggerNode::_property_changeds(void *p_ud, Object *p_base, const StringName &p_property, const Variant &p_value) {
+void EditorDebuggerNode::_properties_changed(void *p_ud, Object *p_base, const StringName &p_property, const Variant &p_value) {
 	if (!singleton) {
 		return;
 	}
