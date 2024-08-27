@@ -202,13 +202,7 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parame
 			min_idx = i;
 		}
 	}
-	r_result.collider_id = multi_result.collider_ids.get(min_idx);
-	r_result.collider = multi_result.colliders.get(min_idx);
-	r_result.normal = multi_result.normals.get(min_idx);
-	r_result.face_index = multi_result.face_indexes.get(min_idx);
-	r_result.position = multi_result.positions.get(min_idx);
-	r_result.rid = multi_result.rids.get(min_idx);
-	r_result.shape = multi_result.shapes.get(min_idx);
+	ray_result_from_multiple(multi_result, r_result, min_idx);
 	return true;
 }
 

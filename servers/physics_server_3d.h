@@ -210,6 +210,17 @@ public:
 		r_result.n_collisions += 1;
 	}
 
+	_FORCE_INLINE_ void ray_result_from_multiple(MultipleRayResult &multi_result, RayResult &r_result, int &multi_idx){
+		ERR_FAIL_COND_MSG(multi_idx < multi_result.n_collisions, "Out of bounds index for multi ray result");
+		r_result.collider_id = multi_result.collider_ids.get(multi_idx);
+		r_result.collider = multi_result.colliders.get(multi_idx);
+		r_result.normal = multi_result.normals.get(multi_idx);
+		r_result.face_index = multi_result.face_indexes.get(multi_idx);
+		r_result.position = multi_result.positions.get(multi_idx);
+		r_result.rid = multi_result.rids.get(multi_idx);
+		r_result.shape = multi_result.shapes.get(multi_idx);
+	}
+
 	virtual bool intersect_ray_multiple(const RayParameters &p_parameters, MultipleRayResult &r_result) = 0;
 	virtual bool intersect_ray(const RayParameters &p_parameters, RayResult &r_result) = 0;
 
