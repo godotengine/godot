@@ -486,10 +486,16 @@ void AudioServer::_mix_step() {
 		}
 
 		// Copy the bus details we mixed with to the previous bus details to maintain volume ramps.
-		std::copy(std::begin(bus_details.bus_active), std::end(bus_details.bus_active), std::begin(playback->prev_bus_details->bus_active));
-		std::copy(std::begin(bus_details.bus), std::end(bus_details.bus), std::begin(playback->prev_bus_details->bus));
-		for (int bus_idx = 0; bus_idx < MAX_BUSES_PER_PLAYBACK; bus_idx++) {
-			std::copy(std::begin(bus_details.volume[bus_idx]), std::end(bus_details.volume[bus_idx]), std::begin(playback->prev_bus_details->volume[bus_idx]));
+		for (int i = 0; i < MAX_BUSES_PER_PLAYBACK; i++) {
+			playback->prev_bus_details->bus_active[i] = bus_details.bus_active[i];
+		}
+		for (int i = 0; i < MAX_BUSES_PER_PLAYBACK; i++) {
+			playback->prev_bus_details->bus[i] = bus_details.bus[i];
+		}
+		for (int i = 0; i < MAX_BUSES_PER_PLAYBACK; i++) {
+			for (int j = 0; j < MAX_CHANNELS_PER_BUS; j++) {
+				playback->prev_bus_details->volume[i][j] = bus_details.volume[i][j];
+			}
 		}
 
 		switch (playback->state.load()) {
@@ -497,7 +503,7 @@ void AudioServer::_mix_step() {
 			case AudioStreamPlaybackListNode::FADE_OUT_TO_DELETION:
 				playback_list.erase(playback, [](AudioStreamPlaybackListNode *p) {
 					delete p->prev_bus_details;
-					delete p->bus_details;
+					delete p->bus_details.load();
 					p->stream_playback.unref();
 					delete p;
 				});
@@ -1199,7 +1205,7 @@ void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, con
 		}
 		idx++;
 	}
-	playback_node->bus_details = new_bus_details;
+	playback_node->bus_details.store(new_bus_details);
 	playback_node->prev_bus_details = new AudioStreamPlaybackBusDetails();
 
 	playback_node->pitch_scale.set(p_pitch_scale);
