@@ -41,7 +41,7 @@
 		<method name="_estimate_cost" qualifiers="virtual const">
 			<return type="float" />
 			<param index="0" name="from_id" type="Vector2i" />
-			<param index="1" name="to_id" type="Vector2i" />
+			<param index="1" name="end_id" type="Vector2i" />
 			<description>
 				Called when estimating the cost between a point and the path's ending point.
 				Note that this function is hidden in the default [AStarGrid2D] class.
