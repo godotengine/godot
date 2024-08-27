@@ -195,7 +195,7 @@ bool GodotPhysicsDirectSpaceState2D::intersect_ray_multiple(const RayParameters 
 		}
 	}
 
-	// Reduce size of r_results to n_collisions so invalid data is not propagated
+	// Reduce size of r_results to n_collisions so invalid data is not propagated.
 	r_results.resize(n_collisions);
 	return n_collisions > 0;
 }
@@ -210,7 +210,7 @@ bool GodotPhysicsDirectSpaceState2D::intersect_ray(const RayParameters &p_parame
 		return false;
 	}
 
-	// Find closest collision point - Need to base off distance sqr since we lost info on local normal
+	// Find closest collision point - Need to base off distance sqr since we lost info on local normal.
 	real_t ld;
 	Vector2 shape_point;
 	Vector2 delta;
