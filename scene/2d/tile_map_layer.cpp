@@ -411,7 +411,7 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 	}
 
 	// ----------- Occluders processing -----------
-	if (forced_cleanup) {
+	if (forced_cleanup || !occlusion_enabled) {
 		// Clean everything.
 		for (KeyValue<Vector2i, CellData> &kv : tile_map_layer_data) {
 			_rendering_occluders_clear_cell(kv.value);
@@ -433,7 +433,7 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 
 	// -----------
 	// Mark the rendering state as up to date.
-	_rendering_was_cleaned_up = forced_cleanup;
+	_rendering_was_cleaned_up = forced_cleanup || !occlusion_enabled;
 }
 
 void TileMapLayer::_rendering_notification(int p_what) {
@@ -1828,6 +1828,9 @@ void TileMapLayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_visibility_mode", "visibility_mode"), &TileMapLayer::set_collision_visibility_mode);
 	ClassDB::bind_method(D_METHOD("get_collision_visibility_mode"), &TileMapLayer::get_collision_visibility_mode);
 
+	ClassDB::bind_method(D_METHOD("set_occlusion_enabled", "enabled"), &TileMapLayer::set_occlusion_enabled);
+	ClassDB::bind_method(D_METHOD("is_occlusion_enabled"), &TileMapLayer::is_occlusion_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_navigation_enabled", "enabled"), &TileMapLayer::set_navigation_enabled);
 	ClassDB::bind_method(D_METHOD("is_navigation_enabled"), &TileMapLayer::is_navigation_enabled);
 	ClassDB::bind_method(D_METHOD("set_navigation_map", "map"), &TileMapLayer::set_navigation_map);
@@ -1843,6 +1846,7 @@ void TileMapLayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tile_set", PROPERTY_HINT_RESOURCE_TYPE, "TileSet"), "set_tile_set", "get_tile_set");
 	ADD_GROUP("Rendering", "");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "occlusion_enabled"), "set_occlusion_enabled", "is_occlusion_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "y_sort_origin"), "set_y_sort_origin", "get_y_sort_origin");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "x_draw_order_reversed"), "set_x_draw_order_reversed", "is_x_draw_order_reversed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rendering_quadrant_size"), "set_rendering_quadrant_size", "get_rendering_quadrant_size");
@@ -2958,6 +2962,20 @@ void TileMapLayer::set_collision_visibility_mode(TileMapLayer::DebugVisibilityMo
 
 TileMapLayer::DebugVisibilityMode TileMapLayer::get_collision_visibility_mode() const {
 	return collision_visibility_mode;
+}
+
+void TileMapLayer::set_occlusion_enabled(bool p_enabled) {
+	if (occlusion_enabled == p_enabled) {
+		return;
+	}
+	occlusion_enabled = p_enabled;
+	dirty.flags[DIRTY_FLAGS_LAYER_OCCLUSION_ENABLED] = true;
+	_queue_internal_update();
+	emit_signal(CoreStringName(changed));
+}
+
+bool TileMapLayer::is_occlusion_enabled() const {
+	return occlusion_enabled;
 }
 
 void TileMapLayer::set_navigation_enabled(bool p_enabled) {
