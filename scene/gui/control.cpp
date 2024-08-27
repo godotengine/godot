@@ -1746,10 +1746,10 @@ void Control::_size_changed() {
 			// so an up to date global transform could be obtained when handling these.
 			_notify_transform();
 
+			item_rect_changed(size_changed);
 			if (size_changed) {
 				notification(NOTIFICATION_RESIZED);
 			}
-			item_rect_changed(size_changed);
 		}
 
 		if (pos_changed && !size_changed) {
