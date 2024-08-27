@@ -865,7 +865,6 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		// CheckBox.
 		{
 			Ref<StyleBoxFlat> checkbox_style = p_config.panel_container_style->duplicate();
-			checkbox_style->set_content_margin_individual((p_config.increased_margin + 2) * EDSCALE, p_config.base_margin * EDSCALE, (p_config.increased_margin + 2) * EDSCALE, p_config.base_margin * EDSCALE);
 
 			p_theme->set_stylebox(CoreStringName(normal), "CheckBox", checkbox_style);
 			p_theme->set_stylebox(SceneStringName(pressed), "CheckBox", checkbox_style);
@@ -1165,9 +1164,6 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 	// LineEdit & TextEdit.
 	{
 		Ref<StyleBoxFlat> text_editor_style = p_config.button_style->duplicate();
-		// The original button_style style has an extra 1 pixel offset that makes LineEdits not align with Buttons,
-		// so this compensates for that.
-		text_editor_style->set_content_margin(SIDE_TOP, text_editor_style->get_content_margin(SIDE_TOP) - 1 * EDSCALE);
 
 		// Don't round the bottom corners to make the line look sharper.
 		text_editor_style->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
