@@ -106,7 +106,7 @@ int GodotPhysicsDirectSpaceState3D::intersect_point(const PointParameters &p_par
 }
 
 // Helper for setting a singular ray result in the vector.
-_FORCE_INLINE_ static void _set_multiple_ray_result(const Vector<PhysicsDirectSpaceState3D::RayResult> &r_results,
+_FORCE_INLINE_ static void _set_multiple_ray_result(Vector<PhysicsDirectSpaceState3D::RayResult> &r_results,
 													const int &idx, const Vector3 &position, const Vector3 &normal,
 													const GodotCollisionObject3D *col_obj,
 													const int &shape, const int &face_index){
@@ -118,7 +118,7 @@ _FORCE_INLINE_ static void _set_multiple_ray_result(const Vector<PhysicsDirectSp
 			collider = ObjectDB::get_instance(collider_id);
 		}
 
-		PhysicsDirectSpaceState3D::RayResult r_result = r_results.get(idx);
+		PhysicsDirectSpaceState3D::RayResult &r_result = r_results.ptrw()[idx];
 		r_result.position = position;
 		r_result.normal = normal;
 		r_result.shape = shape;
@@ -141,8 +141,6 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray_multiple(const RayParameters 
 	//todo, create another array that references results, compute AABBs and check closest point to ray origin, sort, and stop evaluating results when beyond first collision
 
 	Vector3 res_normal;
-	const GodotCollisionObject3D *res_obj = nullptr;
-	real_t min_d = 1e10;
 
 	r_results.resize(amount);
 	int n_collisions = 0;
@@ -209,17 +207,18 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parame
 		return false;
 	}
 
-	// Find closest collision point
+	// Find closest collision point - Need to base off distance sqr since we lost info on local normal
 	real_t ld;
-	Vector3 normal;
 	Vector3 shape_point;
-	real_t min_d = 1e10;
+	Vector3 delta;
+	real_t min_d = -1.0f;
 	int min_idx = 0;
-	for (int i = 0; i < multi_result.size(); i++) {
-		normal = multi_result.get(i).normal;
+	int n_collisions = multi_result.size();
+	for (int i = 0; i < n_collisions; i++) {
 		shape_point = multi_result.get(i).position;
-		ld = normal.dot(shape_point);
-		if (ld < min_d) {
+		delta = shape_point - p_parameters.from;
+		ld = delta.length_squared();
+		if (min_d < 0.0 || ld < min_d) {
 			min_d = ld;
 			min_idx = i;
 		}

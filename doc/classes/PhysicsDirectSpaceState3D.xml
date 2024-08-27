@@ -71,7 +71,7 @@
 				[b]Note:[/b] Returns a valid number only if the intersected shape is a [ConcavePolygonShape3D]. Otherwise, [code]-1[/code] is returned.
 				[code]rid[/code]: The intersecting object's [RID].
 				[code]shape[/code]: The shape index of the colliding shape.
-				If the ray did not intersect anything, then an empty dictionary is returned instead.
+				If the ray did not intersect anything, then an empty array is returned instead.
 				[b]Note:[/b] The result will contain only the closest collision for each unique collision body. It does *not* report all surface collisions of all bodies.
 			</description>
 		</method>
