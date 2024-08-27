@@ -58,6 +58,20 @@
 			<description>
 			</description>
 		</method>
+		<method name="_intersect_ray_multiple" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="from" type="Vector3" />
+			<param index="1" name="to" type="Vector3" />
+			<param index="2" name="collision_mask" type="int" />
+			<param index="3" name="collide_with_bodies" type="bool" />
+			<param index="4" name="collide_with_areas" type="bool" />
+			<param index="5" name="hit_from_inside" type="bool" />
+			<param index="6" name="hit_back_faces" type="bool" />
+			<param index="7" name="pick_ray" type="bool" />
+			<param index="8" name="result" type="Vector<PhysicsServer3DExtensionRayResult>*" />
+			<description>
+			</description>
+		</method>
 		<method name="_intersect_ray" qualifiers="virtual">
 			<return type="bool" />
 			<param index="0" name="from" type="Vector3" />
