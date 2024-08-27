@@ -112,7 +112,7 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 				}
 				Vector<String> slices = l.get_slice(";", 0).split("=");
 				String version = slices[0].strip_edges();
-				if (!version.is_valid_identifier()) {
+				if (!version.is_valid_ascii_identifier()) {
 					base_error = "Version names must be valid identifiers, found '" + version + "' instead.";
 					break;
 				}

@@ -1768,7 +1768,7 @@ Object *Engine::get_singleton_object(const StringName &p_name) const {
 
 void Engine::register_singleton(const StringName &p_name, Object *p_object) {
 	ERR_FAIL_COND_MSG(has_singleton(p_name), "Singleton already registered: " + String(p_name));
-	ERR_FAIL_COND_MSG(!String(p_name).is_valid_identifier(), "Singleton name is not a valid identifier: " + p_name);
+	ERR_FAIL_COND_MSG(!String(p_name).is_valid_ascii_identifier(), "Singleton name is not a valid identifier: " + p_name);
 	::Engine::Singleton s;
 	s.class_name = p_name;
 	s.name = p_name;

@@ -451,6 +451,19 @@
 				Returns [code]true[/code] if all characters of this string can be found in [param text] in their original order, [b]ignoring case[/b].
 			</description>
 		</method>
+		<method name="is_valid_ascii_identifier" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this string is a valid ASCII identifier. A valid ASCII identifier may contain only letters, digits, and underscores ([code]_[/code]), and the first character may not be a digit.
+				[codeblock]
+				print("node_2d".is_valid_ascii_identifier())    # Prints true
+				print("TYPE_FLOAT".is_valid_ascii_identifier()) # Prints true
+				print("1st_method".is_valid_ascii_identifier()) # Prints false
+				print("MyMethod#2".is_valid_ascii_identifier()) # Prints false
+				[/codeblock]
+				See also [method is_valid_unicode_identifier].
+			</description>
+		</method>
 		<method name="is_valid_filename" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -490,7 +503,7 @@
 				Returns [code]true[/code] if this string is a valid color in hexadecimal HTML notation. The string must be a hexadecimal value (see [method is_valid_hex_number]) of either 3, 4, 6 or 8 digits, and may be prefixed by a hash sign ([code]#[/code]). Other HTML notations for colors, such as names or [code]hsl()[/code], are not considered valid. See also [method Color.html].
 			</description>
 		</method>
-		<method name="is_valid_identifier" qualifiers="const">
+		<method name="is_valid_identifier" qualifiers="const" deprecated="Use [method is_valid_ascii_identifier] instead.">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this string is a valid identifier. A valid identifier may contain only letters, digits and underscores ([code]_[/code]), and the first character may not be a digit.
@@ -519,6 +532,23 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this string represents a well-formatted IPv4 or IPv6 address. This method considers [url=https://en.wikipedia.org/wiki/Reserved_IP_addresses]reserved IP addresses[/url] such as [code]"0.0.0.0"[/code] and [code]"ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"[/code] as valid.
+			</description>
+		</method>
+		<method name="is_valid_unicode_identifier" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this string is a valid Unicode identifier.
+				A valid Unicode identifier must begin with a Unicode character of class [code]XID_Start[/code] or [code]"_"[/code], and may contain Unicode characters of class [code]XID_Continue[/code] in the other positions.
+				[codeblock]
+				print("node_2d".is_valid_unicode_identifier())      # Prints true
+				print("1st_method".is_valid_unicode_identifier())   # Prints false
+				print("MyMethod#2".is_valid_unicode_identifier())   # Prints false
+				print("állóképesség".is_valid_unicode_identifier()) # Prints true
+				print("выносливость".is_valid_unicode_identifier()) # Prints true
+				print("体力".is_valid_unicode_identifier())         # Prints true
+				[/codeblock]
+				See also [method is_valid_ascii_identifier].
+				[b]Note:[/b] This method checks identifiers the same way as GDScript. See [method TextServer.is_valid_identifier] for more advanced checks.
 			</description>
 		</method>
 		<method name="join" qualifiers="const">

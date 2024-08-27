@@ -221,7 +221,7 @@ void ProjectSettingsEditor::_update_property_box() {
 
 		const Vector<String> names = name.split("/");
 		for (int i = 0; i < names.size(); i++) {
-			if (!names[i].is_valid_identifier()) {
+			if (!names[i].is_valid_ascii_identifier()) {
 				return;
 			}
 		}

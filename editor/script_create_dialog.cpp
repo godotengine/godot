@@ -100,7 +100,7 @@ static Vector<String> _get_hierarchy(const String &p_class_name) {
 	}
 
 	if (hierarchy.is_empty()) {
-		if (p_class_name.is_valid_identifier()) {
+		if (p_class_name.is_valid_ascii_identifier()) {
 			hierarchy.push_back(p_class_name);
 		}
 		hierarchy.push_back("Object");

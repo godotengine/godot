@@ -173,7 +173,7 @@ String ShaderPreprocessor::Tokenizer::get_identifier(bool *r_is_cursor, bool p_s
 	}
 
 	String id = vector_to_string(text);
-	if (!id.is_valid_identifier()) {
+	if (!id.is_valid_ascii_identifier()) {
 		return "";
 	}
 

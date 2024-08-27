@@ -2165,23 +2165,7 @@ TypedArray<Dictionary> TextServer::_shaped_text_get_ellipsis_glyphs_wrapper(cons
 }
 
 bool TextServer::is_valid_identifier(const String &p_string) const {
-	const char32_t *str = p_string.ptr();
-	int len = p_string.length();
-
-	if (len == 0) {
-		return false; // Empty string.
-	}
-
-	if (!is_unicode_identifier_start(str[0])) {
-		return false;
-	}
-
-	for (int i = 1; i < len; i++) {
-		if (!is_unicode_identifier_continue(str[i])) {
-			return false;
-		}
-	}
-	return true;
+	return p_string.is_valid_unicode_identifier();
 }
 
 bool TextServer::is_valid_letter(uint64_t p_unicode) const {

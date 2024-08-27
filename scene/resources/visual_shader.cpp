@@ -833,7 +833,7 @@ VisualShader::Type VisualShader::get_shader_type() const {
 }
 
 void VisualShader::add_varying(const String &p_name, VaryingMode p_mode, VaryingType p_type) {
-	ERR_FAIL_COND(!p_name.is_valid_identifier());
+	ERR_FAIL_COND(!p_name.is_valid_ascii_identifier());
 	ERR_FAIL_INDEX((int)p_mode, (int)VARYING_MODE_MAX);
 	ERR_FAIL_INDEX((int)p_type, (int)VARYING_TYPE_MAX);
 	ERR_FAIL_COND(varyings.has(p_name));
@@ -4574,7 +4574,7 @@ String VisualShaderNodeGroupBase::get_outputs() const {
 }
 
 bool VisualShaderNodeGroupBase::is_valid_port_name(const String &p_name) const {
-	if (!p_name.is_valid_identifier()) {
+	if (!p_name.is_valid_ascii_identifier()) {
 		return false;
 	}
 	for (int i = 0; i < get_input_port_count(); i++) {

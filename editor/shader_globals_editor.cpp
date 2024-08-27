@@ -349,7 +349,7 @@ String ShaderGlobalsEditor::_check_new_variable_name(const String &p_variable_na
 		return TTR("Name cannot be empty.");
 	}
 
-	if (!p_variable_name.is_valid_identifier()) {
+	if (!p_variable_name.is_valid_ascii_identifier()) {
 		return TTR("Name must be a valid identifier.");
 	}
 
