@@ -2711,9 +2711,11 @@ void ScriptEditor::apply_scripts() const {
 }
 
 void ScriptEditor::reload_scripts(bool p_refresh_only) {
-	if (external_editor_active) {
-		return;
-	}
+	// Call deferred to make sure it runs on the main thread.
+	callable_mp(this, &ScriptEditor::_reload_scripts).call_deferred(p_refresh_only);
+}
+
+void ScriptEditor::_reload_scripts(bool p_refresh_only) {
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
 		if (!se) {
