@@ -324,7 +324,6 @@
 		<member name="editors/3d/navigation/emulate_3_button_mouse" type="bool" setter="" getter="">
 			If [code]true[/code], enables 3-button mouse emulation mode. This is useful on laptops when using a trackpad.
 			When 3-button mouse emulation mode is enabled, the pan, zoom and orbit modifiers can always be used in the 3D editor viewport, even when not holding down any mouse button.
-			[b]Note:[/b] No matter the orbit modifier configured in [member editors/3d/navigation/orbit_modifier], [kbd]Alt[/kbd] will always remain usable for orbiting in this mode to improve usability with graphics tablets.
 		</member>
 		<member name="editors/3d/navigation/emulate_numpad" type="bool" setter="" getter="">
 			If [code]true[/code], allows using the top row [kbd]0[/kbd]-[kbd]9[/kbd] keys to function as their equivalent numpad keys for 3D editor navigation. This should be enabled on keyboards that have no numeric keypad available.
@@ -336,28 +335,25 @@
 			If [code]true[/code], invert the vertical mouse axis when panning, orbiting, or using freelook mode in the 3D editor.
 		</member>
 		<member name="editors/3d/navigation/navigation_scheme" type="int" setter="" getter="">
-			The navigation scheme to use in the 3D editor. Changing this setting will affect the mouse buttons that must be held down to perform certain operations in the 3D editor viewport.
-			- [b]Godot[/b] Middle mouse button to orbit, [kbd]Shift + Middle mouse button[/kbd] to pan. [kbd]Mouse wheel[/kbd] to zoom.
-			- [b]Maya:[/b] [kbd]Alt + Left mouse button[/kbd] to orbit. [kbd]Middle mouse button[/kbd] to pan, [kbd]Shift + Middle mouse button[/kbd] to pan 10 times faster. [kbd]Mouse wheel[/kbd] to zoom.
+			The navigation scheme preset to use in the 3D editor. Changing this setting will affect the mouse button and modifier controls used to navigate the 3D editor viewport.
+			All schemes can use [kbd]Mouse wheel[/kbd] to zoom.
+			- [b]Godot:[/b] [kbd]Middle mouse button[/kbd] to orbit. [kbd]Shift + Middle mouse button[/kbd] to pan. [kbd]Ctrl + Shift + Middle mouse button[/kbd] to zoom.
+			- [b]Maya:[/b] [kbd]Alt + Left mouse button[/kbd] to orbit. [kbd]Middle mouse button[/kbd] to pan, [kbd]Shift + Middle mouse button[/kbd] to pan 10 times faster. [kbd]Alt + Right mouse button[/kbd] to zoom.
 			- [b]Modo:[/b] [kbd]Alt + Left mouse button[/kbd] to orbit. [kbd]Alt + Shift + Left mouse button[/kbd] to pan. [kbd]Ctrl + Alt + Left mouse button[/kbd] to zoom.
-			See also [member editors/3d/freelook/freelook_navigation_scheme].
+			See also [member editors/3d/navigation/orbit_mouse_button], [member editors/3d/navigation/pan_mouse_button], [member editors/3d/navigation/zoom_mouse_button], and [member editors/3d/freelook/freelook_navigation_scheme].
 			[b]Note:[/b] On certain window managers on Linux, the [kbd]Alt[/kbd] key will be intercepted by the window manager when clicking a mouse button at the same time. This means Godot will not see the modifier key as being pressed.
 		</member>
-		<member name="editors/3d/navigation/orbit_modifier" type="int" setter="" getter="">
-			The modifier key that must be held to orbit in the 3D editor.
-			[b]Note:[/b] If [member editors/3d/navigation/emulate_3_button_mouse] is [code]true[/code], [kbd]Alt[/kbd] will always remain usable for orbiting to improve usability with graphics tablets.
-			[b]Note:[/b] On certain window managers on Linux, the [kbd]Alt[/kbd] key will be intercepted by the window manager when clicking a mouse button at the same time. This means Godot will not see the modifier key as being pressed.
+		<member name="editors/3d/navigation/orbit_mouse_button" type="int" setter="" getter="">
+			The mouse button that needs to be held down to orbit in the 3D editor viewport.
 		</member>
-		<member name="editors/3d/navigation/pan_modifier" type="int" setter="" getter="">
-			The modifier key that must be held to pan in the 3D editor.
-			[b]Note:[/b] On certain window managers on Linux, the [kbd]Alt[/kbd] key will be intercepted by the window manager when clicking a mouse button at the same time. This means Godot will not see the modifier key as being pressed.
+		<member name="editors/3d/navigation/pan_mouse_button" type="int" setter="" getter="">
+			The mouse button that needs to be held down to pan in the 3D editor viewport.
 		</member>
 		<member name="editors/3d/navigation/warped_mouse_panning" type="bool" setter="" getter="">
 			If [code]true[/code], warps the mouse around the 3D viewport while panning in the 3D editor. This makes it possible to pan over a large area without having to exit panning and adjust the mouse cursor.
 		</member>
-		<member name="editors/3d/navigation/zoom_modifier" type="int" setter="" getter="">
-			The modifier key that must be held to zoom in the 3D editor.
-			[b]Note:[/b] On certain window managers on Linux, the [kbd]Alt[/kbd] key will be intercepted by the window manager when clicking a mouse button at the same time. This means Godot will not see the modifier key as being pressed.
+		<member name="editors/3d/navigation/zoom_mouse_button" type="int" setter="" getter="">
+			The mouse button that needs to be held down to zoom in the 3D editor viewport.
 		</member>
 		<member name="editors/3d/navigation/zoom_style" type="int" setter="" getter="">
 			The mouse cursor movement direction to use when zooming by moving the mouse. This does not affect zooming with the mouse wheel.

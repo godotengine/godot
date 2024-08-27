@@ -6891,10 +6891,10 @@ EditorNode::EditorNode() {
 		import_shader_file.instantiate();
 		ResourceFormatImporter::get_singleton()->add_importer(import_shader_file);
 
-		Ref<ResourceImporterScene> import_scene = memnew(ResourceImporterScene(false, true));
+		Ref<ResourceImporterScene> import_scene = memnew(ResourceImporterScene("PackedScene", true));
 		ResourceFormatImporter::get_singleton()->add_importer(import_scene);
 
-		Ref<ResourceImporterScene> import_animation = memnew(ResourceImporterScene(true, true));
+		Ref<ResourceImporterScene> import_animation = memnew(ResourceImporterScene("AnimationLibrary", true));
 		ResourceFormatImporter::get_singleton()->add_importer(import_animation);
 
 		{
@@ -7899,6 +7899,9 @@ EditorNode::EditorNode() {
 
 	ED_SHORTCUT_AND_COMMAND("editor/editor_next", TTR("Open the next Editor"));
 	ED_SHORTCUT_AND_COMMAND("editor/editor_prev", TTR("Open the previous Editor"));
+
+	// Apply setting presets in case the editor_settings file is missing values.
+	EditorSettingsDialog::update_navigation_preset();
 
 	screenshot_timer = memnew(Timer);
 	screenshot_timer->set_one_shot(true);

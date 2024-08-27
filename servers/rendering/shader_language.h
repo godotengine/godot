@@ -747,6 +747,12 @@ public:
 		};
 	};
 
+	struct ExpressionInfo {
+		Vector<Expression> *expression = nullptr;
+		TokenType tt_break = TK_EMPTY;
+		bool is_last_expr = false;
+	};
+
 	struct VarInfo {
 		StringName name;
 		DataType type;
@@ -1143,13 +1149,13 @@ private:
 	bool _check_restricted_func(const StringName &p_name, const StringName &p_current_function) const;
 	bool _validate_restricted_func(const StringName &p_call_name, const CallInfo *p_func_info, bool p_is_builtin_hint = false);
 
-	Node *_parse_expression(BlockNode *p_block, const FunctionInfo &p_function_info);
+	Node *_parse_expression(BlockNode *p_block, const FunctionInfo &p_function_info, const ExpressionInfo *p_previous_expression_info = nullptr);
 	Error _parse_array_size(BlockNode *p_block, const FunctionInfo &p_function_info, bool p_forbid_unknown_size, Node **r_size_expression, int *r_array_size, bool *r_unknown_size);
 	Node *_parse_array_constructor(BlockNode *p_block, const FunctionInfo &p_function_info);
 	Node *_parse_array_constructor(BlockNode *p_block, const FunctionInfo &p_function_info, DataType p_type, const StringName &p_struct_name, int p_array_size);
 	ShaderLanguage::Node *_reduce_expression(BlockNode *p_block, ShaderLanguage::Node *p_node);
 
-	Node *_parse_and_reduce_expression(BlockNode *p_block, const FunctionInfo &p_function_info);
+	Node *_parse_and_reduce_expression(BlockNode *p_block, const FunctionInfo &p_function_info, const ExpressionInfo *p_previous_expression_info = nullptr);
 	Error _parse_block(BlockNode *p_block, const FunctionInfo &p_function_info, bool p_just_one = false, bool p_can_break = false, bool p_can_continue = false);
 	String _get_shader_type_list(const HashSet<String> &p_shader_types) const;
 	String _get_qualifier_str(ArgumentQualifier p_qualifier) const;

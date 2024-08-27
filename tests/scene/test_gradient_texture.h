@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_scene_importer_ufbx.h                                          */
+/*  test_gradient_texture.h                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,35 +28,60 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_SCENE_IMPORTER_UFBX_H
-#define EDITOR_SCENE_IMPORTER_UFBX_H
+#ifndef TEST_GRADIENT_TEXTURE_H
+#define TEST_GRADIENT_TEXTURE_H
 
-#ifdef TOOLS_ENABLED
+#include "scene/resources/gradient_texture.h"
 
-#include "editor/import/3d/resource_importer_scene.h"
+#include "tests/test_macros.h"
 
-class Animation;
-class Node;
+namespace TestGradientTexture {
 
-class EditorSceneFormatImporterUFBX : public EditorSceneFormatImporter {
-	GDCLASS(EditorSceneFormatImporterUFBX, EditorSceneFormatImporter);
+// [SceneTree] in a test case name enables initializing a mock render server,
+// which ImageTexture is dependent on.
+TEST_CASE("[SceneTree][GradientTexture1D] Create GradientTexture1D") {
+	Ref<GradientTexture1D> gradient_texture = memnew(GradientTexture1D);
 
-public:
-	enum FBX_IMPORTER_TYPE {
-		FBX_IMPORTER_UFBX,
-		FBX_IMPORTER_FBX2GLTF,
-	};
-	virtual uint32_t get_import_flags() const override;
-	virtual void get_extensions(List<String> *r_extensions) const override;
-	virtual Node *import_scene(const String &p_path, uint32_t p_flags,
-			const HashMap<StringName, Variant> &p_options,
-			List<String> *r_missing_deps, Error *r_err = nullptr) override;
-	virtual void get_import_options(const String &p_path,
-			List<ResourceImporter::ImportOption> *r_options) override;
-	virtual Variant get_option_visibility(const String &p_path, const String &p_scene_import_type, const String &p_option,
-			const HashMap<StringName, Variant> &p_options) override;
-	virtual void handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const override;
-};
-#endif // TOOLS_ENABLED
+	Ref<Gradient> test_gradient = memnew(Gradient);
+	gradient_texture->set_gradient(test_gradient);
+	CHECK(gradient_texture->get_gradient() == test_gradient);
 
-#endif // EDITOR_SCENE_IMPORTER_UFBX_H
+	gradient_texture->set_width(83);
+	CHECK(gradient_texture->get_width() == 83);
+
+	gradient_texture->set_use_hdr(true);
+	CHECK(gradient_texture->is_using_hdr());
+}
+
+TEST_CASE("[SceneTree][GradientTexture2D] Create GradientTexture2D") {
+	Ref<GradientTexture2D> gradient_texture = memnew(GradientTexture2D);
+
+	Ref<Gradient> test_gradient = memnew(Gradient);
+	gradient_texture->set_gradient(test_gradient);
+	CHECK(gradient_texture->get_gradient() == test_gradient);
+
+	gradient_texture->set_width(82);
+	CHECK(gradient_texture->get_width() == 82);
+
+	gradient_texture->set_height(81);
+	CHECK(gradient_texture->get_height() == 81);
+
+	gradient_texture->set_use_hdr(true);
+	CHECK(gradient_texture->is_using_hdr());
+
+	gradient_texture->set_fill(GradientTexture2D::Fill::FILL_SQUARE);
+	CHECK(gradient_texture->get_fill() == GradientTexture2D::Fill::FILL_SQUARE);
+
+	gradient_texture->set_fill_from(Vector2(0.2, 0.25));
+	CHECK(gradient_texture->get_fill_from() == Vector2(0.2, 0.25));
+
+	gradient_texture->set_fill_to(Vector2(0.35, 0.5));
+	CHECK(gradient_texture->get_fill_to() == Vector2(0.35, 0.5));
+
+	gradient_texture->set_repeat(GradientTexture2D::Repeat::REPEAT);
+	CHECK(gradient_texture->get_repeat() == GradientTexture2D::Repeat::REPEAT);
+}
+
+} //namespace TestGradientTexture
+
+#endif // TEST_GRADIENT_TEXTURE_H

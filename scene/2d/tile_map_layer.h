@@ -254,6 +254,7 @@ public:
 		DIRTY_FLAGS_LAYER_COLLISION_ENABLED,
 		DIRTY_FLAGS_LAYER_USE_KINEMATIC_BODIES,
 		DIRTY_FLAGS_LAYER_COLLISION_VISIBILITY_MODE,
+		DIRTY_FLAGS_LAYER_OCCLUSION_ENABLED,
 		DIRTY_FLAGS_LAYER_NAVIGATION_ENABLED,
 		DIRTY_FLAGS_LAYER_NAVIGATION_MAP,
 		DIRTY_FLAGS_LAYER_NAVIGATION_VISIBILITY_MODE,
@@ -287,6 +288,8 @@ private:
 	bool collision_enabled = true;
 	bool use_kinematic_bodies = false;
 	DebugVisibilityMode collision_visibility_mode = DEBUG_VISIBILITY_MODE_DEFAULT;
+
+	bool occlusion_enabled = true;
 
 	bool navigation_enabled = true;
 	RID navigation_map_override;
@@ -496,6 +499,9 @@ public:
 	bool is_using_kinematic_bodies() const;
 	void set_collision_visibility_mode(DebugVisibilityMode p_show_collision);
 	DebugVisibilityMode get_collision_visibility_mode() const;
+
+	void set_occlusion_enabled(bool p_enabled);
+	bool is_occlusion_enabled() const;
 
 	void set_navigation_enabled(bool p_enabled);
 	bool is_navigation_enabled() const;

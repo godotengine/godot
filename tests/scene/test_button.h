@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_scene_importer_ufbx.h                                          */
+/*  test_button.h                                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,35 +28,39 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_SCENE_IMPORTER_UFBX_H
-#define EDITOR_SCENE_IMPORTER_UFBX_H
+#ifndef TEST_BUTTON_H
+#define TEST_BUTTON_H
 
-#ifdef TOOLS_ENABLED
+#include "scene/gui/button.h"
+#include "scene/main/window.h"
 
-#include "editor/import/3d/resource_importer_scene.h"
+#include "tests/test_macros.h"
 
-class Animation;
-class Node;
+namespace TestButton {
+TEST_CASE("[SceneTree][Button] is_hovered()") {
+	// Create new button instance.
+	Button *button = memnew(Button);
+	CHECK(button != nullptr);
+	Window *root = SceneTree::get_singleton()->get_root();
+	root->add_child(button);
 
-class EditorSceneFormatImporterUFBX : public EditorSceneFormatImporter {
-	GDCLASS(EditorSceneFormatImporterUFBX, EditorSceneFormatImporter);
+	// Set up button's size and position.
+	button->set_size(Size2i(50, 50));
+	button->set_position(Size2i(10, 10));
 
-public:
-	enum FBX_IMPORTER_TYPE {
-		FBX_IMPORTER_UFBX,
-		FBX_IMPORTER_FBX2GLTF,
-	};
-	virtual uint32_t get_import_flags() const override;
-	virtual void get_extensions(List<String> *r_extensions) const override;
-	virtual Node *import_scene(const String &p_path, uint32_t p_flags,
-			const HashMap<StringName, Variant> &p_options,
-			List<String> *r_missing_deps, Error *r_err = nullptr) override;
-	virtual void get_import_options(const String &p_path,
-			List<ResourceImporter::ImportOption> *r_options) override;
-	virtual Variant get_option_visibility(const String &p_path, const String &p_scene_import_type, const String &p_option,
-			const HashMap<StringName, Variant> &p_options) override;
-	virtual void handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const override;
-};
-#endif // TOOLS_ENABLED
+	// Button should initially be not hovered.
+	CHECK(button->is_hovered() == false);
 
-#endif // EDITOR_SCENE_IMPORTER_UFBX_H
+	// Simulate mouse entering the button.
+	SEND_GUI_MOUSE_MOTION_EVENT(Point2i(25, 25), MouseButtonMask::NONE, Key::NONE);
+	CHECK(button->is_hovered() == true);
+
+	// Simulate mouse exiting the button.
+	SEND_GUI_MOUSE_MOTION_EVENT(Point2i(150, 150), MouseButtonMask::NONE, Key::NONE);
+	CHECK(button->is_hovered() == false);
+
+	memdelete(button);
+}
+
+} //namespace TestButton
+#endif // TEST_BUTTON_H

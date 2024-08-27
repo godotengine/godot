@@ -535,12 +535,12 @@ bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point) {
 	return found_route;
 }
 
-real_t AStarGrid2D::_estimate_cost(const Vector2i &p_from_id, const Vector2i &p_to_id) {
+real_t AStarGrid2D::_estimate_cost(const Vector2i &p_from_id, const Vector2i &p_end_id) {
 	real_t scost;
-	if (GDVIRTUAL_CALL(_estimate_cost, p_from_id, p_to_id, scost)) {
+	if (GDVIRTUAL_CALL(_estimate_cost, p_from_id, p_end_id, scost)) {
 		return scost;
 	}
-	return heuristics[default_estimate_heuristic](p_from_id, p_to_id);
+	return heuristics[default_estimate_heuristic](p_from_id, p_end_id);
 }
 
 real_t AStarGrid2D::_compute_cost(const Vector2i &p_from_id, const Vector2i &p_to_id) {
@@ -560,6 +560,33 @@ Vector2 AStarGrid2D::get_point_position(const Vector2i &p_id) const {
 	ERR_FAIL_COND_V_MSG(dirty, Vector2(), "Grid is not initialized. Call the update method.");
 	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_id), Vector2(), vformat("Can't get point's position. Point %s out of bounds %s.", p_id, region));
 	return _get_point_unchecked(p_id)->pos;
+}
+
+TypedArray<Dictionary> AStarGrid2D::get_point_data_in_region(const Rect2i &p_region) const {
+	ERR_FAIL_COND_V_MSG(dirty, TypedArray<Dictionary>(), "Grid is not initialized. Call the update method.");
+	const Rect2i inter_region = region.intersection(p_region);
+
+	const int32_t start_x = inter_region.position.x - region.position.x;
+	const int32_t start_y = inter_region.position.y - region.position.y;
+	const int32_t end_x = inter_region.get_end().x - region.position.x;
+	const int32_t end_y = inter_region.get_end().y - region.position.y;
+
+	TypedArray<Dictionary> data;
+
+	for (int32_t y = start_y; y < end_y; y++) {
+		for (int32_t x = start_x; x < end_x; x++) {
+			const Point &p = points[y][x];
+
+			Dictionary dict;
+			dict["id"] = p.id;
+			dict["position"] = p.pos;
+			dict["solid"] = p.solid;
+			dict["weight_scale"] = p.weight_scale;
+			data.push_back(dict);
+		}
+	}
+
+	return data;
 }
 
 Vector<Vector2> AStarGrid2D::get_point_path(const Vector2i &p_from_id, const Vector2i &p_to_id, bool p_allow_partial_path) {
@@ -698,10 +725,11 @@ void AStarGrid2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &AStarGrid2D::clear);
 
 	ClassDB::bind_method(D_METHOD("get_point_position", "id"), &AStarGrid2D::get_point_position);
+	ClassDB::bind_method(D_METHOD("get_point_data_in_region", "region"), &AStarGrid2D::get_point_data_in_region);
 	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id", "allow_partial_path"), &AStarGrid2D::get_point_path, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id", "allow_partial_path"), &AStarGrid2D::get_id_path, DEFVAL(false));
 
-	GDVIRTUAL_BIND(_estimate_cost, "from_id", "to_id")
+	GDVIRTUAL_BIND(_estimate_cost, "from_id", "end_id")
 	GDVIRTUAL_BIND(_compute_cost, "from_id", "to_id")
 
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2I, "region"), "set_region", "get_region");

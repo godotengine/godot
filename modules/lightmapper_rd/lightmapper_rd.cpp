@@ -1716,7 +1716,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		light_probe_buffer = rd->storage_buffer_create(sizeof(float) * 4 * 9 * probe_positions.size());
 
 		if (p_step_function) {
-			p_step_function(0.7, RTR("Baking lightprobes"), p_bake_userdata, true);
+			p_step_function(0.7, RTR("Baking light probes"), p_bake_userdata, true);
 		}
 
 		Vector<RD::Uniform> uniforms;
