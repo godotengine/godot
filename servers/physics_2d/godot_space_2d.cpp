@@ -114,7 +114,28 @@ int GodotPhysicsDirectSpaceState2D::intersect_point(const PointParameters &p_par
 	return cc;
 }
 
-bool GodotPhysicsDirectSpaceState2D::intersect_ray(const RayParameters &p_parameters, RayResult &r_result) {
+// Helper for setting a singular ray result in the vector.
+_FORCE_INLINE_ static void _set_multiple_ray_result(const Vector<PhysicsDirectSpaceState2D::RayResult> &r_results,
+													const int &idx, const Vector2 &position, const Vector2 &normal,
+													const GodotCollisionObject2D *col_obj,
+													const int &shape){
+	ERR_FAIL_INDEX(idx, r_results.size());
+	ObjectID collider_id = col_obj->get_instance_id();
+	Object *collider = nullptr;
+	if (collider_id.is_valid()) {
+		collider = ObjectDB::get_instance(collider_id);
+	}
+
+	PhysicsDirectSpaceState2D::RayResult r_result = r_results.get(idx);
+	r_result.position = position;
+	r_result.normal = normal;
+	r_result.shape = shape;
+	r_result.collider_id = collider_id;
+	r_result.rid = col_obj->get_self();
+	r_result.collider = collider;
+}
+
+bool GodotPhysicsDirectSpaceState2D::intersect_ray_multiple(const RayParameters &p_parameters, Vector<RayResult> &r_results){
 	ERR_FAIL_COND_V(space->locked, false);
 
 	Vector2 begin, end;
@@ -127,12 +148,12 @@ bool GodotPhysicsDirectSpaceState2D::intersect_ray(const RayParameters &p_parame
 
 	//todo, create another array that references results, compute AABBs and check closest point to ray origin, sort, and stop evaluating results when beyond first collision
 
-	bool collided = false;
-	Vector2 res_point, res_normal;
-	int res_shape = -1;
+	Vector2 res_normal;
 	const GodotCollisionObject2D *res_obj = nullptr;
 	real_t min_d = 1e10;
 
+	r_results.resize(amount);
+	int n_collisions = 0;
 	for (int i = 0; i < amount; i++) {
 		if (!_can_collide_with(space->intersection_query_results[i], p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas)) {
 			continue;
@@ -157,13 +178,9 @@ bool GodotPhysicsDirectSpaceState2D::intersect_ray(const RayParameters &p_parame
 		if (shape->contains_point(local_from)) {
 			if (p_parameters.hit_from_inside) {
 				// Hit shape at starting point.
-				min_d = 0;
-				res_point = begin;
-				res_normal = Vector2();
-				res_shape = shape_idx;
-				res_obj = col_obj;
-				collided = true;
-				break;
+				_set_multiple_ray_result(r_results, n_collisions, begin, Vector2(), col_obj, shape_idx);
+				n_collisions += 1;
+				continue;
 			} else {
 				// Ignore shape when starting inside.
 				continue;
@@ -171,36 +188,46 @@ bool GodotPhysicsDirectSpaceState2D::intersect_ray(const RayParameters &p_parame
 		}
 
 		if (shape->intersect_segment(local_from, local_to, shape_point, shape_normal)) {
+			ERR_FAIL_NULL_V(col_obj, false); // Shouldn't happen but silences warning.
 			Transform2D xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 			shape_point = xform.xform(shape_point);
-
-			real_t ld = normal.dot(shape_point);
-
-			if (ld < min_d) {
-				min_d = ld;
-				res_point = shape_point;
-				res_normal = inv_xform.basis_xform_inv(shape_normal).normalized();
-				res_shape = shape_idx;
-				res_obj = col_obj;
-				collided = true;
-			}
+			res_normal = inv_xform.basis_xform_inv(shape_normal).normalized();
+			_set_multiple_ray_result(r_results, n_collisions, shape_point, res_normal, col_obj, shape_idx);
+			n_collisions += 1;
 		}
 	}
 
-	if (!collided) {
+	// Reduce size of r_results to n_collisions so invalid data is not propagated
+	r_results.resize(n_collisions);
+	return n_collisions > 0;
+}
+
+bool GodotPhysicsDirectSpaceState2D::intersect_ray(const RayParameters &p_parameters, RayResult &r_result) {
+	ERR_FAIL_COND_V(space->locked, false);
+
+	Vector<RayResult> multi_result;
+	bool res = intersect_ray_multiple(p_parameters, multi_result);
+	
+	if(!res){
 		return false;
 	}
-	ERR_FAIL_NULL_V(res_obj, false); // Shouldn't happen but silences warning.
 
-	r_result.collider_id = res_obj->get_instance_id();
-	if (r_result.collider_id.is_valid()) {
-		r_result.collider = ObjectDB::get_instance(r_result.collider_id);
+	// Find closest collision point
+	Vector2 normal;
+	Vector2 shape_point;
+	real_t ld;
+	real_t min_d = 1e10;
+	int min_idx = 0;
+	for (int i = 0; i < multi_result.size(); i++) {
+		normal = multi_result.get(i).normal;
+		shape_point = multi_result.get(i).position;
+		ld = normal.dot(shape_point);
+		if (ld < min_d) {
+			min_d = ld;
+			min_idx = i;
+		}
 	}
-	r_result.normal = res_normal;
-	r_result.position = res_point;
-	r_result.rid = res_obj->get_self();
-	r_result.shape = res_shape;
-
+	r_result = multi_result.get(min_idx);
 	return true;
 }
 

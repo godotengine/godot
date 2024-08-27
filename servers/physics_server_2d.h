@@ -117,6 +117,7 @@ class PhysicsShapeQueryParameters2D;
 class PhysicsDirectSpaceState2D : public Object {
 	GDCLASS(PhysicsDirectSpaceState2D, Object);
 
+	TypedArray<Dictionary> _intersect_ray_multiple(const Ref<PhysicsRayQueryParameters2D> &p_ray_query);
 	Dictionary _intersect_ray(const Ref<PhysicsRayQueryParameters2D> &p_ray_query);
 	TypedArray<Dictionary> _intersect_point(const Ref<PhysicsPointQueryParameters2D> &p_point_query, int p_max_results = 32);
 	TypedArray<Dictionary> _intersect_shape(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results = 32);
@@ -149,6 +150,7 @@ public:
 		int shape = 0;
 	};
 
+	virtual bool intersect_ray_multiple(const RayParameters &p_parameters, Vector<RayResult> &r_results) = 0;
 	virtual bool intersect_ray(const RayParameters &p_parameters, RayResult &r_result) = 0;
 
 	struct ShapeResult {

@@ -329,6 +329,33 @@ void PhysicsShapeQueryParameters2D::_bind_methods() {
 
 ///////////////////////////////////////////////////////
 
+TypedArray<Dictionary> PhysicsDirectSpaceState2D::_intersect_ray_multiple(const Ref<PhysicsRayQueryParameters2D> &p_ray_query) {
+	ERR_FAIL_COND_V(!p_ray_query.is_valid(), TypedArray<Dictionary>());
+
+	Vector<RayResult> results;
+	bool res = intersect_ray_multiple(p_ray_query->get_parameters(), results);
+	
+	if (!res) {
+		return TypedArray<Dictionary>();
+	}
+
+	TypedArray<Dictionary> r;
+	int rc = results.size();
+	r.resize(rc);
+	for (int i = 0; i < rc; i++) {
+		Dictionary d;
+		RayResult result = results.get(i);
+		d["position"] = result.position;
+		d["normal"] = result.normal;
+		d["collider_id"] = result.collider_id;
+		d["collider"] = result.collider;
+		d["shape"] = result.shape;
+		d["rid"] = result.rid;
+	}
+	return r;
+
+}
+
 Dictionary PhysicsDirectSpaceState2D::_intersect_ray(const Ref<PhysicsRayQueryParameters2D> &p_ray_query) {
 	ERR_FAIL_COND_V(!p_ray_query.is_valid(), Dictionary());
 
@@ -454,6 +481,7 @@ PhysicsDirectSpaceState2D::PhysicsDirectSpaceState2D() {
 
 void PhysicsDirectSpaceState2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("intersect_point", "parameters", "max_results"), &PhysicsDirectSpaceState2D::_intersect_point, DEFVAL(32));
+	ClassDB::bind_method(D_METHOD("intersect_ray_multiple", "parameters"), &PhysicsDirectSpaceState2D::_intersect_ray_multiple);
 	ClassDB::bind_method(D_METHOD("intersect_ray", "parameters"), &PhysicsDirectSpaceState2D::_intersect_ray);
 	ClassDB::bind_method(D_METHOD("intersect_shape", "parameters", "max_results"), &PhysicsDirectSpaceState2D::_intersect_shape, DEFVAL(32));
 	ClassDB::bind_method(D_METHOD("cast_motion", "parameters"), &PhysicsDirectSpaceState2D::_cast_motion);

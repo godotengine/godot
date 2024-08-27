@@ -140,10 +140,7 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray_multiple(const RayParameters 
 	int amount = space->broadphase->cull_segment(begin, end, space->intersection_query_results, GodotSpace3D::INTERSECTION_QUERY_MAX, space->intersection_query_subindex_results);
 	//todo, create another array that references results, compute AABBs and check closest point to ray origin, sort, and stop evaluating results when beyond first collision
 
-	bool collided = false;
-	Vector3 res_point, res_normal;
-	int res_face_index = -1;
-	int res_shape = -1;
+	Vector3 res_normal;
 	const GodotCollisionObject3D *res_obj = nullptr;
 	real_t min_d = 1e10;
 
@@ -207,15 +204,16 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parame
 	ERR_FAIL_COND_V(space->locked, false);
 
 	Vector<RayResult> multi_result;
-	bool collided = intersect_ray_multiple(p_parameters, multi_result);
-	if (!collided){
+	bool res = intersect_ray_multiple(p_parameters, multi_result);
+	if (!res){
 		return false;
 	}
 
-	real_t min_d = 1e10;
+	// Find closest collision point
 	real_t ld;
 	Vector3 normal;
 	Vector3 shape_point;
+	real_t min_d = 1e10;
 	int min_idx = 0;
 	for (int i = 0; i < multi_result.size(); i++) {
 		normal = multi_result.get(i).normal;
