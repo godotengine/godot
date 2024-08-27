@@ -2953,7 +2953,7 @@ void VisualShader::_update_shader() const {
 	const_cast<VisualShader *>(this)->set_code(final_code);
 	for (int i = 0; i < default_tex_params.size(); i++) {
 		int j = 0;
-		for (List<Ref<Texture2D>>::ConstIterator itr = default_tex_params[i].params.begin(); itr != default_tex_params[i].params.end(); ++itr, ++j) {
+		for (List<Ref<Texture>>::ConstIterator itr = default_tex_params[i].params.begin(); itr != default_tex_params[i].params.end(); ++itr, ++j) {
 			const_cast<VisualShader *>(this)->set_default_texture_parameter(default_tex_params[i].name, *itr, j);
 		}
 	}

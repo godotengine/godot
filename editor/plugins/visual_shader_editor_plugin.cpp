@@ -7979,7 +7979,7 @@ void VisualShaderNodePortPreview::_shader_changed() {
 	preview_shader->set_code(shader_code);
 	for (int i = 0; i < default_textures.size(); i++) {
 		int j = 0;
-		for (List<Ref<Texture2D>>::ConstIterator itr = default_textures[i].params.begin(); itr != default_textures[i].params.end(); ++itr, ++j) {
+		for (List<Ref<Texture>>::ConstIterator itr = default_textures[i].params.begin(); itr != default_textures[i].params.end(); ++itr, ++j) {
 			preview_shader->set_default_texture_parameter(default_textures[i].name, *itr, j);
 		}
 	}

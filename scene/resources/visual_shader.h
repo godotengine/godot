@@ -66,7 +66,7 @@ public:
 
 	struct DefaultTextureParam {
 		StringName name;
-		List<Ref<Texture2D>> params;
+		List<Ref<Texture>> params;
 	};
 
 	enum VaryingMode {

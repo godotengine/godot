@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "shader.h"
+#include "shader.compat.inc"
 
 #include "core/io/file_access.h"
 #include "servers/rendering/shader_language.h"
@@ -185,10 +186,10 @@ RID Shader::get_rid() const {
 	return shader;
 }
 
-void Shader::set_default_texture_parameter(const StringName &p_name, const Ref<Texture2D> &p_texture, int p_index) {
+void Shader::set_default_texture_parameter(const StringName &p_name, const Ref<Texture> &p_texture, int p_index) {
 	if (p_texture.is_valid()) {
 		if (!default_textures.has(p_name)) {
-			default_textures[p_name] = HashMap<int, Ref<Texture2D>>();
+			default_textures[p_name] = HashMap<int, Ref<Texture>>();
 		}
 		default_textures[p_name][p_index] = p_texture;
 		RS::get_singleton()->shader_set_default_texture_parameter(shader, p_name, p_texture->get_rid(), p_index);
@@ -206,7 +207,7 @@ void Shader::set_default_texture_parameter(const StringName &p_name, const Ref<T
 	emit_changed();
 }
 
-Ref<Texture2D> Shader::get_default_texture_parameter(const StringName &p_name, int p_index) const {
+Ref<Texture> Shader::get_default_texture_parameter(const StringName &p_name, int p_index) const {
 	if (default_textures.has(p_name) && default_textures[p_name].has(p_index)) {
 		return default_textures[p_name][p_index];
 	}
@@ -214,7 +215,7 @@ Ref<Texture2D> Shader::get_default_texture_parameter(const StringName &p_name, i
 }
 
 void Shader::get_default_texture_parameter_list(List<StringName> *r_textures) const {
-	for (const KeyValue<StringName, HashMap<int, Ref<Texture2D>>> &E : default_textures) {
+	for (const KeyValue<StringName, HashMap<int, Ref<Texture>>> &E : default_textures) {
 		r_textures->push_back(E.key);
 	}
 }
