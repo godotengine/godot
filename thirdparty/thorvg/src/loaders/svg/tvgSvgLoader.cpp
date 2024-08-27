@@ -710,15 +710,16 @@ static bool _toColor(const char* str, uint8_t* r, uint8_t* g, uint8_t* b, char**
         return true;
     } else if (len >= 10 && (str[0] == 'h' || str[0] == 'H') && (str[1] == 's' || str[1] == 'S') && (str[2] == 'l' || str[2] == 'L') && str[3] == '(' && str[len - 1] == ')') {
         float th, ts, tb;
-        const char *content, *hue, *saturation, *brightness;
-        content = str + 4;
-        content = _skipSpace(content, nullptr);
+        const char* content = _skipSpace(str + 4, nullptr);
+        const char* hue = nullptr;
         if (_parseNumber(&content, &hue, &th) && hue) {
+            const char* saturation = nullptr;
             th = float(uint32_t(th) % 360);
             hue = _skipSpace(hue, nullptr);
             hue = (char*)_skipComma(hue);
             hue = _skipSpace(hue, nullptr);
             if (_parseNumber(&hue, &saturation, &ts) && saturation && *saturation == '%') {
+                const char* brightness = nullptr;
                 ts /= 100.0f;
                 saturation = _skipSpace(saturation + 1, nullptr);
                 saturation = (char*)_skipComma(saturation);
