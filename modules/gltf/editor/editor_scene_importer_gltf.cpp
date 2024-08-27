@@ -100,7 +100,7 @@ void EditorSceneFormatImporterGLTF::handle_compatibility_options(HashMap<StringN
 	}
 }
 
-Variant EditorSceneFormatImporterGLTF::get_option_visibility(const String &p_path, bool p_for_animation,
+Variant EditorSceneFormatImporterGLTF::get_option_visibility(const String &p_path, const String &p_scene_import_type,
 		const String &p_option, const HashMap<StringName, Variant> &p_options) {
 	return true;
 }

@@ -76,7 +76,7 @@ public:
 	virtual void on_before_instance_created() {} // `on_before_instance_created` is called before we create our OpenXR instance.
 	virtual void on_instance_created(const XrInstance p_instance) {} // `on_instance_created` is called right after we've successfully created our OpenXR instance.
 	virtual void on_instance_destroyed() {} // `on_instance_destroyed` is called right before we destroy our OpenXR instance.
-	virtual void on_session_created(const XrSession p_instance) {} // `on_session_created` is called right after we've successfully created our OpenXR session.
+	virtual void on_session_created(const XrSession p_session) {} // `on_session_created` is called right after we've successfully created our OpenXR session.
 	virtual void on_session_destroyed() {} // `on_session_destroyed` is called right before we destroy our OpenXR session.
 
 	// `on_process` is called as part of our OpenXR process handling,

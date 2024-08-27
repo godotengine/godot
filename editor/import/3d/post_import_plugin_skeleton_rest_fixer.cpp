@@ -54,7 +54,7 @@ void PostImportPluginSkeletonRestFixer::get_internal_import_options(InternalImpo
 	}
 }
 
-Variant PostImportPluginSkeletonRestFixer::get_internal_option_visibility(InternalImportCategory p_category, bool p_for_animation, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
+Variant PostImportPluginSkeletonRestFixer::get_internal_option_visibility(InternalImportCategory p_category, const String &p_scene_import_type, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
 	if (p_category == INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE) {
 		if (p_option.begins_with("retarget/rest_fixer/fix_silhouette/")) {
 			if (!bool(p_options["retarget/rest_fixer/fix_silhouette/enable"])) {

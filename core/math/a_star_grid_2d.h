@@ -151,7 +151,7 @@ private: // Internal routines.
 protected:
 	static void _bind_methods();
 
-	virtual real_t _estimate_cost(const Vector2i &p_from_id, const Vector2i &p_to_id);
+	virtual real_t _estimate_cost(const Vector2i &p_from_id, const Vector2i &p_end_id);
 	virtual real_t _compute_cost(const Vector2i &p_from_id, const Vector2i &p_to_id);
 
 	GDVIRTUAL2RC(real_t, _estimate_cost, Vector2i, Vector2i)
@@ -209,6 +209,7 @@ public:
 	void clear();
 
 	Vector2 get_point_position(const Vector2i &p_id) const;
+	TypedArray<Dictionary> get_point_data_in_region(const Rect2i &p_region) const;
 	Vector<Vector2> get_point_path(const Vector2i &p_from, const Vector2i &p_to, bool p_allow_partial_path = false);
 	TypedArray<Vector2i> get_id_path(const Vector2i &p_from, const Vector2i &p_to, bool p_allow_partial_path = false);
 };

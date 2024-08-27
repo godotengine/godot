@@ -2928,7 +2928,10 @@ void TextEdit::_update_ime_text() {
 Size2 TextEdit::get_minimum_size() const {
 	Size2 size = theme_cache.style_normal->get_minimum_size();
 	if (fit_content_height) {
-		size.y += content_height_cache;
+		size.y += content_size_cache.y;
+	}
+	if (fit_content_width) {
+		size.x += content_size_cache.x;
 	}
 	return size;
 }
@@ -3098,7 +3101,7 @@ void TextEdit::apply_ime() {
 	insert_text_at_caret(insert_ime_text);
 }
 
-void TextEdit::set_editable(const bool p_editable) {
+void TextEdit::set_editable(bool p_editable) {
 	if (editable == p_editable) {
 		return;
 	}
@@ -3223,7 +3226,7 @@ bool TextEdit::is_indent_wrapped_lines() const {
 }
 
 // User controls
-void TextEdit::set_overtype_mode_enabled(const bool p_enabled) {
+void TextEdit::set_overtype_mode_enabled(bool p_enabled) {
 	if (overtype_mode == p_enabled) {
 		return;
 	}
@@ -4473,7 +4476,7 @@ TextEdit::CaretType TextEdit::get_caret_type() const {
 	return caret_type;
 }
 
-void TextEdit::set_caret_blink_enabled(const bool p_enabled) {
+void TextEdit::set_caret_blink_enabled(bool p_enabled) {
 	if (caret_blink_enabled == p_enabled) {
 		return;
 	}
@@ -4515,7 +4518,7 @@ bool TextEdit::is_drawing_caret_when_editable_disabled() const {
 	return draw_caret_when_editable_disabled;
 }
 
-void TextEdit::set_move_caret_on_right_click_enabled(const bool p_enabled) {
+void TextEdit::set_move_caret_on_right_click_enabled(bool p_enabled) {
 	move_caret_on_right_click = p_enabled;
 }
 
@@ -4523,7 +4526,7 @@ bool TextEdit::is_move_caret_on_right_click_enabled() const {
 	return move_caret_on_right_click;
 }
 
-void TextEdit::set_caret_mid_grapheme_enabled(const bool p_enabled) {
+void TextEdit::set_caret_mid_grapheme_enabled(bool p_enabled) {
 	caret_mid_grapheme_enabled = p_enabled;
 }
 
@@ -4633,7 +4636,7 @@ void TextEdit::add_caret_at_carets(bool p_below) {
 	for (int i = 0; i < num_carets; i++) {
 		const int caret_line = get_caret_line(i);
 		const int caret_column = get_caret_column(i);
-		const bool is_selected = has_selection(i) || carets[i].last_fit_x != carets[i].selection.origin_last_fit_x;
+		bool is_selected = has_selection(i) || carets[i].last_fit_x != carets[i].selection.origin_last_fit_x;
 		const int selection_origin_line = get_selection_origin_line(i);
 		const int selection_origin_column = get_selection_origin_column(i);
 		const int caret_wrap_index = get_caret_wrap_index(i);
@@ -5098,7 +5101,7 @@ String TextEdit::get_word_under_caret(int p_caret) const {
 }
 
 /* Selection. */
-void TextEdit::set_selecting_enabled(const bool p_enabled) {
+void TextEdit::set_selecting_enabled(bool p_enabled) {
 	if (selecting_enabled == p_enabled) {
 		return;
 	}
@@ -5114,7 +5117,7 @@ bool TextEdit::is_selecting_enabled() const {
 	return selecting_enabled;
 }
 
-void TextEdit::set_deselect_on_focus_loss_enabled(const bool p_enabled) {
+void TextEdit::set_deselect_on_focus_loss_enabled(bool p_enabled) {
 	if (deselect_on_focus_loss_enabled == p_enabled) {
 		return;
 	}
@@ -5129,7 +5132,7 @@ bool TextEdit::is_deselect_on_focus_loss_enabled() const {
 	return deselect_on_focus_loss_enabled;
 }
 
-void TextEdit::set_drag_and_drop_selection_enabled(const bool p_enabled) {
+void TextEdit::set_drag_and_drop_selection_enabled(bool p_enabled) {
 	drag_and_drop_selection_enabled = p_enabled;
 }
 
@@ -5689,7 +5692,7 @@ Vector<String> TextEdit::get_line_wrapped_text(int p_line) const {
 
 /* Viewport */
 // Scrolling.
-void TextEdit::set_smooth_scroll_enabled(const bool p_enabled) {
+void TextEdit::set_smooth_scroll_enabled(bool p_enabled) {
 	v_scroll->set_smooth_scroll_enabled(p_enabled);
 	smooth_scroll_enabled = p_enabled;
 }
@@ -5698,7 +5701,7 @@ bool TextEdit::is_smooth_scroll_enabled() const {
 	return smooth_scroll_enabled;
 }
 
-void TextEdit::set_scroll_past_end_of_file_enabled(const bool p_enabled) {
+void TextEdit::set_scroll_past_end_of_file_enabled(bool p_enabled) {
 	if (scroll_past_end_of_file_enabled == p_enabled) {
 		return;
 	}
@@ -5752,7 +5755,7 @@ float TextEdit::get_v_scroll_speed() const {
 	return v_scroll_speed;
 }
 
-void TextEdit::set_fit_content_height_enabled(const bool p_enabled) {
+void TextEdit::set_fit_content_height_enabled(bool p_enabled) {
 	if (fit_content_height == p_enabled) {
 		return;
 	}
@@ -5762,6 +5765,18 @@ void TextEdit::set_fit_content_height_enabled(const bool p_enabled) {
 
 bool TextEdit::is_fit_content_height_enabled() const {
 	return fit_content_height;
+}
+
+void TextEdit::set_fit_content_width_enabled(bool p_enabled) {
+	if (fit_content_width == p_enabled) {
+		return;
+	}
+	fit_content_width = p_enabled;
+	update_minimum_size();
+}
+
+bool TextEdit::is_fit_content_width_enabled() const {
+	return fit_content_width;
 }
 
 double TextEdit::get_scroll_pos_for_line(int p_line, int p_wrap_index) const {
@@ -6317,7 +6332,7 @@ bool TextEdit::is_highlight_current_line_enabled() const {
 	return highlight_current_line;
 }
 
-void TextEdit::set_highlight_all_occurrences(const bool p_enabled) {
+void TextEdit::set_highlight_all_occurrences(bool p_enabled) {
 	if (highlight_all_occurrences == p_enabled) {
 		return;
 	}
@@ -6735,6 +6750,9 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fit_content_height_enabled", "enabled"), &TextEdit::set_fit_content_height_enabled);
 	ClassDB::bind_method(D_METHOD("is_fit_content_height_enabled"), &TextEdit::is_fit_content_height_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_fit_content_width_enabled", "enabled"), &TextEdit::set_fit_content_width_enabled);
+	ClassDB::bind_method(D_METHOD("is_fit_content_width_enabled"), &TextEdit::is_fit_content_width_enabled);
+
 	ClassDB::bind_method(D_METHOD("get_scroll_pos_for_line", "line", "wrap_index"), &TextEdit::get_scroll_pos_for_line, DEFVAL(0));
 
 	// Visible lines.
@@ -6859,6 +6877,7 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_vertical", PROPERTY_HINT_NONE, "suffix:lines"), "set_v_scroll", "get_v_scroll");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_horizontal", PROPERTY_HINT_NONE, "suffix:px"), "set_h_scroll", "get_h_scroll");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_fit_content_height"), "set_fit_content_height_enabled", "is_fit_content_height_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_fit_content_width"), "set_fit_content_width_enabled", "is_fit_content_width_enabled");
 
 	ADD_GROUP("Minimap", "minimap_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "minimap_draw"), "set_draw_minimap", "is_drawing_minimap");
@@ -7846,8 +7865,8 @@ void TextEdit::_update_scrollbars() {
 		total_width += minimap_width;
 	}
 
-	content_height_cache = MAX(total_rows, 1) * get_line_height();
-	if (fit_content_height) {
+	content_size_cache = Vector2i(total_width + 10, MAX(total_rows, 1) * get_line_height());
+	if (fit_content_height || fit_content_width) {
 		update_minimum_size();
 	}
 
@@ -8054,7 +8073,7 @@ void TextEdit::_update_minimap_hover() {
 	const Point2 mp = get_local_mouse_pos();
 	const int xmargin_end = get_size().width - theme_cache.style_normal->get_margin(SIDE_RIGHT);
 
-	const bool hovering_sidebar = mp.x > xmargin_end - minimap_width && mp.x < xmargin_end;
+	bool hovering_sidebar = mp.x > xmargin_end - minimap_width && mp.x < xmargin_end;
 	if (!hovering_sidebar) {
 		if (hovering_minimap) {
 			// Only redraw if the hovering status changed.
@@ -8068,7 +8087,7 @@ void TextEdit::_update_minimap_hover() {
 
 	const int row = get_minimap_line_at_pos(mp);
 
-	const bool new_hovering_minimap = row >= get_first_visible_line() && row <= get_last_full_visible_line();
+	bool new_hovering_minimap = row >= get_first_visible_line() && row <= get_last_full_visible_line();
 	if (new_hovering_minimap != hovering_minimap) {
 		// Only redraw if the hovering status changed.
 		hovering_minimap = new_hovering_minimap;

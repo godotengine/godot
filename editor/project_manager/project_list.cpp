@@ -760,7 +760,7 @@ void ProjectList::_create_project_item_control(int p_index) {
 	hb->set_tags(item.tags, this);
 	hb->set_unsupported_features(item.unsupported_features.duplicate());
 	hb->set_project_version(item.project_version);
-	hb->set_last_edited_info(Time::get_singleton()->get_datetime_string_from_unix_time(item.last_edited, true));
+	hb->set_last_edited_info(!item.missing ? Time::get_singleton()->get_datetime_string_from_unix_time(item.last_edited, true) : TTR("Missing Date"));
 
 	hb->set_is_favorite(item.favorite);
 	hb->set_is_missing(item.missing);

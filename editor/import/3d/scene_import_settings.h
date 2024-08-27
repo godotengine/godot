@@ -243,7 +243,7 @@ public:
 	bool is_editing_animation() const { return editing_animation; }
 	void request_generate_collider();
 	void update_view();
-	void open_settings(const String &p_path, bool p_for_animation = false);
+	void open_settings(const String &p_path, const String &p_scene_import_type = "PackedScene");
 	static SceneImportSettingsDialog *get_singleton();
 	Node *get_selected_node();
 	SceneImportSettingsDialog();

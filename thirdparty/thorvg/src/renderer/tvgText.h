@@ -36,27 +36,22 @@
 struct Text::Impl
 {
     FontLoader* loader = nullptr;
-    Shape* paint = nullptr;
+    Text* paint;
+    Shape* shape;
     char* utf8 = nullptr;
     float fontSize;
     bool italic = false;
     bool changed = false;
 
+    Impl(Text* p) : paint(p), shape(Shape::gen().release())
+    {
+    }
+
     ~Impl()
     {
         free(utf8);
         LoaderMgr::retrieve(loader);
-        delete(paint);
-    }
-
-    Result fill(uint8_t r, uint8_t g, uint8_t b)
-    {
-        return paint->fill(r, g, b);
-    }
-
-    Result fill(Fill* f)
-    {
-        return paint->fill(cast<Fill>(f));
+        delete(shape);
     }
 
     Result text(const char* utf8)
@@ -83,8 +78,6 @@ struct Text::Impl
         }
         this->loader = static_cast<FontLoader*>(loader);
 
-        if (!paint) paint = Shape::gen().release();
-
         fontSize = size;
         if (style && strstr(style, "italic")) italic = true;
         changed = true;
@@ -93,14 +86,12 @@ struct Text::Impl
 
     RenderRegion bounds(RenderMethod* renderer)
     {
-        if (paint) return P(paint)->bounds(renderer);
-        else return {0, 0, 0, 0};
+        return P(shape)->bounds(renderer);
     }
 
     bool render(RenderMethod* renderer)
     {
-        if (paint) return PP(paint)->render(renderer);
-        return true;
+        return PP(shape)->render(renderer);
     }
 
     bool load()
@@ -109,24 +100,20 @@ struct Text::Impl
 
         //reload
         if (changed) {
-            loader->request(paint, utf8, italic);
+            loader->request(shape, utf8, italic);
             loader->read();
             changed = false;
         }
-        if (paint) {
-            loader->resize(paint, fontSize, fontSize);
-            return true;
-        }
-        return false;
+        return loader->resize(shape, fontSize, fontSize);
     }
 
-    RenderData update(RenderMethod* renderer, const RenderTransform* transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag pFlag, bool clipper)
+    RenderData update(RenderMethod* renderer, const Matrix& transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag pFlag, TVG_UNUSED bool clipper)
     {
         if (!load()) return nullptr;
 
         //transform the gradient coordinates based on the final scaled font.
-        if (P(paint)->flag & RenderUpdateFlag::Gradient) {
-            auto fill = P(paint)->rs.fill;
+        auto fill = P(shape)->rs.fill;
+        if (fill && P(shape)->flag & RenderUpdateFlag::Gradient) {
             auto scale = 1.0f / loader->scale;
             if (fill->identifier() == TVG_CLASS_ID_LINEAR) {
                 P(static_cast<LinearGradient*>(fill))->x1 *= scale;
@@ -142,23 +129,25 @@ struct Text::Impl
                 P(static_cast<RadialGradient*>(fill))->fr *= scale;
             }
         }
-        return PP(paint)->update(renderer, transform, clips, opacity, pFlag, clipper);
+        return PP(shape)->update(renderer, transform, clips, opacity, pFlag, false);
     }
 
     bool bounds(float* x, float* y, float* w, float* h, TVG_UNUSED bool stroking)
     {
-        if (!load() || !paint) return false;
-        paint->bounds(x, y, w, h, true);
+        if (!load()) return false;
+        PP(shape)->bounds(x, y, w, h, true, true, false);
         return true;
     }
 
-    Paint* duplicate()
+    Paint* duplicate(Paint* ret)
     {
+        if (ret) TVGERR("RENDERER", "TODO: duplicate()");
+
         load();
 
-        auto ret = Text::gen().release();
-        auto dup = ret->pImpl;
-        if (paint) dup->paint = static_cast<Shape*>(paint->duplicate());
+        auto text = Text::gen().release();
+        auto dup = text->pImpl;
+        P(shape)->duplicate(dup->shape);
 
         if (loader) {
             dup->loader = loader;
@@ -169,7 +158,7 @@ struct Text::Impl
         dup->italic = italic;
         dup->fontSize = fontSize;
 
-        return ret;
+        return text;
     }
 
     Iterator* iterator()

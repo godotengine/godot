@@ -39,7 +39,7 @@ struct SwTask : Task
     SwSurface* surface = nullptr;
     SwMpool* mpool = nullptr;
     SwBBox bbox = {{0, 0}, {0, 0}};       //Whole Rendering Region
-    Matrix* transform = nullptr;
+    Matrix transform;
     Array<RenderData> clips;
     RenderUpdateFlag flags = RenderUpdateFlag::None;
     uint8_t opacity;
@@ -68,10 +68,7 @@ struct SwTask : Task
     virtual bool clip(SwRleData* target) = 0;
     virtual SwRleData* rle() = 0;
 
-    virtual ~SwTask()
-    {
-        free(transform);
-    }
+    virtual ~SwTask() {}
 };
 
 
@@ -100,8 +97,7 @@ struct SwShapeTask : SwTask
         if (!rshape->stroke->fill && (MULTIPLY(rshape->stroke->color[3], opacity) == 0)) return 0.0f;
         if (mathZero(rshape->stroke->trim.begin - rshape->stroke->trim.end)) return 0.0f;
 
-        if (transform) return (width * sqrt(transform->e11 * transform->e11 + transform->e12 * transform->e12));
-        else return width;
+        return (width * sqrt(transform.e11 * transform.e11 + transform.e12 * transform.e12));
     }
 
 
@@ -203,64 +199,10 @@ struct SwShapeTask : SwTask
 };
 
 
-struct SwSceneTask : SwTask
-{
-    Array<RenderData> scene;    //list of paints render data (SwTask)
-    SwRleData* sceneRle = nullptr;
-
-    bool clip(SwRleData* target) override
-    {
-        //Only one shape
-        if (scene.count == 1) {
-            return static_cast<SwTask*>(*scene.data)->clip(target);
-        }
-
-        //More than one shapes
-        if (sceneRle) rleClipPath(target, sceneRle);
-        else TVGLOG("SW_ENGINE", "No clippers in a scene?");
-
-        return true;
-    }
-
-    SwRleData* rle() override
-    {
-        return sceneRle;
-    }
-
-    void run(unsigned tid) override
-    {
-        //TODO: Skip the run if the scene hans't changed.
-        if (!sceneRle) sceneRle = static_cast<SwRleData*>(calloc(1, sizeof(SwRleData)));
-        else rleReset(sceneRle);
-
-        //Merge shapes if it has more than one shapes
-        if (scene.count > 1) {
-            //Merge first two clippers
-            auto clipper1 = static_cast<SwTask*>(*scene.data);
-            auto clipper2 = static_cast<SwTask*>(*(scene.data + 1));
-
-            rleMerge(sceneRle, clipper1->rle(), clipper2->rle());
-
-            //Unify the remained clippers
-            for (auto rd = scene.begin() + 2; rd < scene.end(); ++rd) {
-                auto clipper = static_cast<SwTask*>(*rd);
-                rleMerge(sceneRle, sceneRle, clipper->rle());
-            }
-        }
-    }
-
-    void dispose() override
-    {
-        rleFree(sceneRle);
-    }
-};
-
-
 struct SwImageTask : SwTask
 {
     SwImage image;
     Surface* source;                            //Image source
-    const RenderMesh* mesh = nullptr;           //Should be valid ptr in action
 
     bool clip(SwRleData* target) override
     {
@@ -293,10 +235,9 @@ struct SwImageTask : SwTask
             imageReset(&image);
             if (!image.data || image.w == 0 || image.h == 0) goto end;
 
-            if (!imagePrepare(&image, mesh, transform, clipRegion, bbox, mpool, tid)) goto end;
+            if (!imagePrepare(&image, transform, clipRegion, bbox, mpool, tid)) goto end;
 
-            // TODO: How do we clip the triangle mesh? Only clip non-meshed images for now
-            if (mesh->triangleCnt == 0 && clips.count > 0) {
+            if (clips.count > 0) {
                 if (!imageGenRle(&image, bbox, false)) goto end;
                 if (image.rle) {
                     //Clear current task memorypool here if the clippers would use the same memory pool
@@ -336,7 +277,7 @@ static void _renderFill(SwShapeTask* task, SwSurface* surface, uint8_t opacity)
 {
     uint8_t r, g, b, a;
     if (auto fill = task->rshape->fill) {
-        rasterGradientShape(surface, &task->shape, fill->identifier());
+        rasterGradientShape(surface, &task->shape, fill, opacity);
     } else {
         task->rshape->fillColor(&r, &g, &b, &a);
         a = MULTIPLY(opacity, a);
@@ -348,7 +289,7 @@ static void _renderStroke(SwShapeTask* task, SwSurface* surface, uint8_t opacity
 {
     uint8_t r, g, b, a;
     if (auto strokeFill = task->rshape->strokeFill()) {
-        rasterGradientStroke(surface, &task->shape, strokeFill->identifier());
+        rasterGradientStroke(surface, &task->shape, strokeFill, opacity);
     } else {
         if (task->rshape->strokeColor(&r, &g, &b, &a)) {
             a = MULTIPLY(opacity, a);
@@ -480,7 +421,7 @@ bool SwRenderer::renderImage(RenderData data)
 
     if (task->opacity == 0) return true;
 
-    return rasterImage(surface, &task->image, task->mesh, task->transform, task->bbox, task->opacity);
+    return rasterImage(surface, &task->image, task->transform, task->bbox, task->opacity);
 }
 
 
@@ -688,7 +629,8 @@ bool SwRenderer::endComposite(Compositor* cmp)
 
     //Default is alpha blending
     if (p->method == CompositeMethod::None) {
-        return rasterImage(surface, &p->image, nullptr, nullptr, p->bbox, p->opacity);
+        Matrix m = {1, 0, 0, 0, 1, 0, 0, 0, 1};
+        return rasterImage(surface, &p->image, m, p->bbox, p->opacity);
     }
 
     return true;
@@ -714,7 +656,7 @@ void SwRenderer::dispose(RenderData data)
 }
 
 
-void* SwRenderer::prepareCommon(SwTask* task, const RenderTransform* transform, const Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags)
+void* SwRenderer::prepareCommon(SwTask* task, const Matrix& transform, const Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags)
 {
     if (!surface) return task;
     if (flags == RenderUpdateFlag::None) return task;
@@ -727,20 +669,11 @@ void* SwRenderer::prepareCommon(SwTask* task, const RenderTransform* transform, 
     }
 
     task->clips = clips;
-
-    if (transform) {
-        if (!task->transform) task->transform = static_cast<Matrix*>(malloc(sizeof(Matrix)));
-        *task->transform = transform->m;
-    } else {
-        if (task->transform) free(task->transform);
-        task->transform = nullptr;
-    }
-
+    task->transform = transform;
+    
     //zero size?
-    if (task->transform) {
-        if (task->transform->e11 == 0.0f && task->transform->e12 == 0.0f) return task; //zero width
-        if (task->transform->e21 == 0.0f && task->transform->e22 == 0.0f) return task; //zero height
-    }
+    if (task->transform.e11 == 0.0f && task->transform.e12 == 0.0f) return task; //zero width
+    if (task->transform.e21 == 0.0f && task->transform.e22 == 0.0f) return task; //zero height
 
     task->opacity = opacity;
     task->surface = surface;
@@ -762,7 +695,7 @@ void* SwRenderer::prepareCommon(SwTask* task, const RenderTransform* transform, 
 }
 
 
-RenderData SwRenderer::prepare(Surface* surface, const RenderMesh* mesh, RenderData data, const RenderTransform* transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags)
+RenderData SwRenderer::prepare(Surface* surface, RenderData data, const Matrix& transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags)
 {
     //prepare task
     auto task = static_cast<SwImageTask*>(data);
@@ -770,33 +703,12 @@ RenderData SwRenderer::prepare(Surface* surface, const RenderMesh* mesh, RenderD
     else task->done();
 
     task->source = surface;
-    task->mesh = mesh;
 
     return prepareCommon(task, transform, clips, opacity, flags);
 }
 
 
-RenderData SwRenderer::prepare(const Array<RenderData>& scene, RenderData data, const RenderTransform* transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags)
-{
-    //prepare task
-    auto task = static_cast<SwSceneTask*>(data);
-    if (!task) task = new SwSceneTask;
-    else task->done();
-
-    task->scene = scene;
-
-    //TODO: Failed threading them. It would be better if it's possible.
-    //See: https://github.com/thorvg/thorvg/issues/1409
-    //Guarantee composition targets get ready.
-    for (auto task = scene.begin(); task < scene.end(); ++task) {
-        static_cast<SwTask*>(*task)->done();
-    }
-
-    return prepareCommon(task, transform, clips, opacity, flags);
-}
-
-
-RenderData SwRenderer::prepare(const RenderShape& rshape, RenderData data, const RenderTransform* transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags, bool clipper)
+RenderData SwRenderer::prepare(const RenderShape& rshape, RenderData data, const Matrix& transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags, bool clipper)
 {
     //prepare task
     auto task = static_cast<SwShapeTask*>(data);
