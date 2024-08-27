@@ -60,8 +60,6 @@ class ShaderEditorPlugin : public EditorPlugin {
 
 	LocalVector<EditedShader> edited_shaders;
 
-	// Always valid operations come first in the enum, file-specific ones
-	// should go after FILE_SAVE which is used to build the menu accordingly.
 	enum {
 		FILE_NEW,
 		FILE_NEW_INCLUDE,
@@ -71,7 +69,16 @@ class ShaderEditorPlugin : public EditorPlugin {
 		FILE_SAVE_AS,
 		FILE_INSPECT,
 		FILE_CLOSE,
-		FILE_MAX
+		CLOSE_ALL,
+		CLOSE_OTHER_TABS,
+		SHOW_IN_FILE_SYSTEM,
+		COPY_PATH,
+	};
+
+	enum PopupMenuType {
+		FILE,
+		CONTEXT,
+		CONTEXT_VALID_ITEM,
 	};
 
 	HSplitContainer *main_split = nullptr;
@@ -80,6 +87,7 @@ class ShaderEditorPlugin : public EditorPlugin {
 
 	Button *button = nullptr;
 	MenuButton *file_menu = nullptr;
+	PopupMenu *context_menu = nullptr;
 
 	WindowWrapper *window_wrapper = nullptr;
 	Button *make_floating = nullptr;
@@ -88,15 +96,19 @@ class ShaderEditorPlugin : public EditorPlugin {
 
 	float text_shader_zoom_factor = 1.0f;
 
+	Ref<Resource> _get_current_shader();
 	void _update_shader_list();
 	void _shader_selected(int p_index);
 	void _shader_list_clicked(int p_item, Vector2 p_local_mouse_pos, MouseButton p_mouse_button_index);
+	void _setup_popup_menu(PopupMenuType p_type, PopupMenu *p_menu);
+	void _make_script_list_context_menu();
 	void _menu_item_pressed(int p_index);
 	void _resource_saved(Object *obj);
 	void _close_shader(int p_index);
 	void _close_builtin_shaders_from_scene(const String &p_scene);
 	void _file_removed(const String &p_removed_file);
 	void _res_saved_callback(const Ref<Resource> &p_res);
+	void _set_file_specific_items_disabled(bool p_disabled);
 
 	void _shader_created(Ref<Shader> p_shader);
 	void _shader_include_created(Ref<ShaderInclude> p_shader_inc);
