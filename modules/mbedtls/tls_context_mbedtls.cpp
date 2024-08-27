@@ -153,7 +153,7 @@ Error TLSContextMbedTLS::init_client(int p_transport, const String &p_hostname, 
 
 	int authmode = MBEDTLS_SSL_VERIFY_REQUIRED;
 	bool unsafe = p_options->is_unsafe_client();
-	if (unsafe && p_options->get_trusted_ca_chain().is_valid()) {
+	if (unsafe && p_options->get_trusted_ca_chain().is_null()) {
 		authmode = MBEDTLS_SSL_VERIFY_NONE;
 	}
 
