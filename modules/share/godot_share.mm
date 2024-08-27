@@ -30,7 +30,7 @@
 
 #include "godot_share.h"
 
-#import "app_delegate.h"
+#include <TargetConditionals.h>
 
 #import <StoreKit/StoreKit.h>
 
@@ -46,6 +46,7 @@ GodotShare::~GodotShare() {
 }
 
 void GodotShare::share(const String &p_text, const String &p_subject, const String &p_title, const String &p_path) {
+#if TARGET_OS_IPHONE
 	UIViewController *root_controller = [[UIApplication sharedApplication] delegate].window.rootViewController;
 
 	NSString *ns_text = [NSString stringWithCString:p_text.utf8().get_data() encoding:NSUTF8StringEncoding];
@@ -70,15 +71,37 @@ void GodotShare::share(const String &p_text, const String &p_subject, const Stri
 		avc.popoverPresentationController.permittedArrowDirections = UIPopoverArrowDirection(0);
 	}
 	[root_controller presentViewController:avc animated:YES completion:nil];
+#else
+#endif
 }
 
 void GodotShare::rate() {
-	if (@available(iOS 10.3, *)) {
+#if TARGET_OS_IPHONE
+	if (@available(iOS 14.0, *)) {
+		UIViewController *root_controller = [[UIApplication sharedApplication] delegate].window.rootViewController;
+		[SKStoreReviewController requestReviewInScene:root_controller.view.window.windowScene];
+	} else if (@available(iOS 10.3, *)) {
 		[SKStoreReviewController requestReview];
 	}
+#elif TARGET_OS_OSX
+    /* linker error
+       https://developer.apple.com/documentation/storekit/skstorereviewcontroller
+	if (@available(macos 10.14, *)) {
+		[SKStoreReviewController requestReview];
+    }
+    */
+	NSString *appId = @"id6446126962"; // Your app Id from the Itunes Connect portal
+
+	NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"https://apps.apple.com/app/%@?action=write-review", appId]];
+	if (url) {
+		[[NSWorkspace sharedWorkspace] openURL:url];
+	}
+#endif
 }
 
 void GodotShare::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("share", "text", "subject", "title", "path"), &GodotShare::share);
 	ClassDB::bind_method(D_METHOD("rate"), &GodotShare::rate);
+	ADD_SIGNAL(MethodInfo("rate_success"));
+	ADD_SIGNAL(MethodInfo("rate_failed", PropertyInfo(Variant::STRING, "message")));
 }
