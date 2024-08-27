@@ -42,16 +42,17 @@
 EditorUndoRedoManager *EditorUndoRedoManager::singleton = nullptr;
 
 EditorUndoRedoManager::History &EditorUndoRedoManager::get_or_create_history(int p_idx) {
-	if (!history_map.has(p_idx)) {
+	HashMap<int, EditorUndoRedoManager::History>::Iterator I = history_map.find(p_idx);
+	if (!I) {
 		History history;
 		history.undo_redo = memnew(UndoRedo);
 		history.id = p_idx;
-		history_map[p_idx] = history;
+		I = history_map.insert(p_idx, history);
 
 		EditorNode::get_singleton()->get_log()->register_undo_redo(history.undo_redo);
 		EditorDebuggerNode::get_singleton()->register_undo_redo(history.undo_redo);
 	}
-	return history_map[p_idx];
+	return I->value;
 }
 
 UndoRedo *EditorUndoRedoManager::get_history_undo_redo(int p_idx) const {
@@ -432,8 +433,9 @@ int EditorUndoRedoManager::get_current_action_history_id() {
 }
 
 void EditorUndoRedoManager::discard_history(int p_idx, bool p_erase_from_map) {
-	ERR_FAIL_COND(!history_map.has(p_idx));
-	History &history = history_map[p_idx];
+	HashMap<int, EditorUndoRedoManager::History>::Iterator I = history_map.find(p_idx);
+	ERR_FAIL_COND_MSG(!I, vformat("Invalid history ID: %d.", p_idx));
+	History &history = I->value;
 
 	if (history.undo_redo) {
 		memdelete(history.undo_redo);
@@ -441,7 +443,7 @@ void EditorUndoRedoManager::discard_history(int p_idx, bool p_erase_from_map) {
 	}
 
 	if (p_erase_from_map) {
-		history_map.erase(p_idx);
+		history_map.remove(I);
 	}
 }
 

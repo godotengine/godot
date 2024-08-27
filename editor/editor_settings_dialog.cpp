@@ -124,10 +124,6 @@ void EditorSettingsDialog::_filter_shortcuts_by_event(const Ref<InputEvent> &p_e
 	}
 }
 
-void EditorSettingsDialog::_undo_redo_callback(void *p_self, const String &p_name) {
-	EditorNode::get_log()->add_message(p_name, EditorLog::MSG_TYPE_EDITOR);
-}
-
 void EditorSettingsDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -135,13 +131,6 @@ void EditorSettingsDialog::_notification(int p_what) {
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "editor_settings", Rect2(get_position(), get_size()));
 				set_process_shortcut_input(false);
 			}
-		} break;
-
-		case NOTIFICATION_READY: {
-			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-			undo_redo->get_or_create_history(EditorUndoRedoManager::GLOBAL_HISTORY).undo_redo->set_method_notify_callback(EditorDebuggerNode::_method_changeds, nullptr);
-			undo_redo->get_or_create_history(EditorUndoRedoManager::GLOBAL_HISTORY).undo_redo->set_property_notify_callback(EditorDebuggerNode::_property_changeds, nullptr);
-			undo_redo->get_or_create_history(EditorUndoRedoManager::GLOBAL_HISTORY).undo_redo->set_commit_notify_callback(_undo_redo_callback, this);
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {

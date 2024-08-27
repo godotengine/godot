@@ -108,8 +108,6 @@ class EditorSettingsDialog : public AcceptDialog {
 	void _shortcut_button_pressed(Object *p_item, int p_column, int p_idx, MouseButton p_button = MouseButton::LEFT);
 	void _shortcut_cell_double_clicked();
 
-	static void _undo_redo_callback(void *p_self, const String &p_name);
-
 	Label *restart_label = nullptr;
 	TextureRect *restart_icon = nullptr;
 	PanelContainer *restart_container = nullptr;
