@@ -358,6 +358,7 @@ public:
 
 	bool is_signaling_null() const;
 	static Variant create_signaling_null();
+	bool initialize_ref(Object *p_object);
 
 	// Make sure Variant is not implicitly cast when accessing it with bracket notation (GH-49469).
 	Variant &operator[](const Variant &p_key) = delete;

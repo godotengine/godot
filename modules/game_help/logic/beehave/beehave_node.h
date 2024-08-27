@@ -35,7 +35,16 @@ public:
     void init_child_state(Object* curr_this_node,int child_count)
     {
         Dictionary rs = get_property(curr_this_node);
-        Vector<int32_t> child_state = rs["child_status"];
+		Vector<int32_t> child_state;
+		StringName sn = SNAME("child_status");
+		if (!rs.has(sn))
+		{
+			rs[sn] = child_state;
+		}
+		else
+		{
+			child_state = rs[sn];
+		}
         child_state.resize(child_count);
         child_state.fill(0);
         rs[SNAME("run_state")] = -1;
