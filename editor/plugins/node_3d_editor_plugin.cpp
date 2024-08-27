@@ -4058,6 +4058,14 @@ void Node3DEditorViewport::set_state(const Dictionary &p_state) {
 			_menu_option(VIEW_GIZMOS);
 		}
 	}
+	if (p_state.has("transform_gizmo")) {
+		bool transform_gizmo = p_state["transform_gizmo"];
+
+		int idx = view_menu->get_popup()->get_item_index(VIEW_TRANSFORM_GIZMO);
+		if (view_menu->get_popup()->is_item_checked(idx) != transform_gizmo) {
+			_menu_option(VIEW_TRANSFORM_GIZMO);
+		}
+	}
 	if (p_state.has("grid")) {
 		bool grid = p_state["grid"];
 
@@ -4144,6 +4152,7 @@ Dictionary Node3DEditorViewport::get_state() const {
 	d["listener"] = viewport->is_audio_listener_3d();
 	d["doppler"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_AUDIO_DOPPLER));
 	d["gizmos"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_GIZMOS));
+	d["transform_gizmo"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_TRANSFORM_GIZMO));
 	d["grid"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_GRID));
 	d["information"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_INFORMATION));
 	d["frame_time"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_FRAME_TIME));
