@@ -3122,6 +3122,12 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_subscript(ExpressionNode *
 	subscript->base = p_previous_operand;
 	subscript->index = parse_expression(false);
 
+#ifdef TOOLS_ENABLED
+	if (subscript->index != nullptr && subscript->index->type == Node::LITERAL) {
+		override_completion_context(subscript->index, COMPLETION_SUBSCRIPT, subscript);
+	}
+#endif
+
 	if (subscript->index == nullptr) {
 		push_error(R"(Expected expression after "[".)");
 	}
