@@ -52,10 +52,6 @@ void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_f
 		err_str = String::utf8(p_file) + ":" + itos(p_line) + " - " + String::utf8(p_error);
 	}
 
-	if (p_editor_notify) {
-		err_str += " (User)";
-	}
-
 	MessageType message_type = p_type == ERR_HANDLER_WARNING ? MSG_TYPE_WARNING : MSG_TYPE_ERROR;
 
 	if (!Thread::is_main_thread()) {
