@@ -1181,7 +1181,16 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		case TOOL_OPEN_DOCUMENTATION: {
 			List<Node *> selection = editor_selection->get_selected_node_list();
 			for (const Node *node : selection) {
-				ScriptEditor::get_singleton()->goto_help("class_name:" + node->get_class());
+				String class_name;
+				Ref<Script> script_base = node->get_script();
+				if (script_base.is_valid()) {
+					class_name = script_base->get_global_name();
+				}
+				if (class_name.is_empty()) {
+					class_name = node->get_class();
+				}
+
+				ScriptEditor::get_singleton()->goto_help("class_name:" + class_name);
 			}
 			EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
 		} break;
