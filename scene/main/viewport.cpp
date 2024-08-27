@@ -884,6 +884,10 @@ void Viewport::_process_picking() {
 		}
 
 #ifndef _3D_DISABLED
+		if (physics_object_picking_first_only && is_input_handled()) {
+			continue;
+		}
+
 		CollisionObject3D *capture_object = nullptr;
 		if (physics_object_capture.is_valid()) {
 			capture_object = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(physics_object_capture));
