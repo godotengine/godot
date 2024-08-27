@@ -716,9 +716,10 @@ public:
 	}
 	void process(double delta)override
 	{
-		if(CharacterBodyMain::get_current_editor_player() != nullptr)
+		auto body = CharacterBodyMain::get_current_editor_player();
+		if(body != nullptr)
 		{
-			play_help->set_visible(true);
+			play_help->set_visible(!body->get_editor_run_ai());
 			// 更新播放状态
 		}
 		else
@@ -752,12 +753,16 @@ public:
 		beehave_editor->_update_graph();
 	}
 	void _on_play_pressed() {
-		
+		run_tool.is_running = true;		
+		run_tool.is_paused = false;		
 	}
 	void _on_pause_pressed() {
+		run_tool.is_paused = true;		
 		
 	}
 	void _on_stop_pressed() {
+		run_tool.is_running = false;		
+		run_tool.is_paused = false;	
 		
 	}
 	void _on_slider_changed(double p_value) {
@@ -847,6 +852,7 @@ protected:
 	Button* play_button = nullptr;
 	Button* pause_button = nullptr;
 	Button* stop_button = nullptr;
+	BeehaveRunTool run_tool;
 
 	PlayState play_state = PLAY_STATE_STOP;
 

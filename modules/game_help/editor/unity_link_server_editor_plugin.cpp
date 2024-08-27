@@ -55,7 +55,7 @@ public:
 		run_ai_button = memnew(CheckButton);
 		run_ai_button->set_text(L"运行AI");
 		run_ai_button->set_tooltip_text(L"运行AI,如果调试行为树,必须关闭此选项");
-		run_ai_button->connect("toggled", callable_mp(this, &RenameDialog::on_run_ai_toggled));
+		run_ai_button->connect("toggled", callable_mp(this, &CharacterBodyMainLable::on_run_ai_toggled));
 		add_child(run_ai_button);
 
 	}
