@@ -104,21 +104,6 @@ RenderRegion Picture::Impl::bounds(RenderMethod* renderer)
 }
 
 
-RenderTransform Picture::Impl::resizeTransform(const RenderTransform* pTransform)
-{
-    //Overriding Transformation by the desired image size
-    auto sx = w / loader->w;
-    auto sy = h / loader->h;
-    auto scale = sx < sy ? sx : sy;
-
-    RenderTransform tmp;
-    tmp.m = {scale, 0, 0, 0, scale, 0, 0, 0, 1};
-
-    if (!pTransform) return tmp;
-    else return RenderTransform(pTransform, &tmp);
-}
-
-
 Result Picture::Impl::load(ImageLoader* loader)
 {
     //Same resource has been loaded.
@@ -215,18 +200,24 @@ Result Picture::size(float* w, float* h) const noexcept
 }
 
 
-Result Picture::mesh(const Polygon* triangles, uint32_t triangleCnt) noexcept
+const Paint* Picture::paint(uint32_t id) noexcept
 {
-    if (!triangles && triangleCnt > 0) return Result::InvalidArguments;
-    if (triangles && triangleCnt == 0) return Result::InvalidArguments;
+    struct Value
+    {
+        uint32_t id;
+        const Paint* ret;
+    } value = {id, nullptr};
 
-    pImpl->mesh(triangles, triangleCnt);
-    return Result::Success;
-}
+    auto cb = [](const tvg::Paint* paint, void* data) -> bool
+    {
+        auto p = static_cast<Value*>(data);
+        if (p->id == paint->id) {
+            p->ret = paint;
+            return false;
+        }
+        return true;
+    };
 
-
-uint32_t Picture::mesh(const Polygon** triangles) const noexcept
-{
-    if (triangles) *triangles = pImpl->rm.triangles;
-    return pImpl->rm.triangleCnt;
+    tvg::Accessor::gen()->set(this, cb, &value);
+    return value.ret;
 }

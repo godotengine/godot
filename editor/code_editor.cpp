@@ -1299,23 +1299,29 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 	text_editor->end_complex_operation();
 }
 
-void CodeTextEditor::goto_line(int p_line) {
+void CodeTextEditor::goto_line(int p_line, int p_column) {
 	text_editor->remove_secondary_carets();
 	text_editor->deselect();
-	text_editor->unfold_line(p_line);
-	callable_mp((TextEdit *)text_editor, &TextEdit::set_caret_line).call_deferred(p_line, true, true, 0, 0);
+	text_editor->unfold_line(CLAMP(p_line, 0, text_editor->get_line_count() - 1));
+	text_editor->set_caret_line(p_line, false);
+	text_editor->set_caret_column(p_column, false);
+	// Defer in case the CodeEdit was just created and needs to be resized.
+	callable_mp((TextEdit *)text_editor, &TextEdit::adjust_viewport_to_caret).call_deferred(0);
 }
 
 void CodeTextEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
 	text_editor->remove_secondary_carets();
-	text_editor->unfold_line(p_line);
-	callable_mp((TextEdit *)text_editor, &TextEdit::set_caret_line).call_deferred(p_line, true, true, 0, 0);
-	callable_mp((TextEdit *)text_editor, &TextEdit::set_caret_column).call_deferred(p_begin, true, 0);
+	text_editor->unfold_line(CLAMP(p_line, 0, text_editor->get_line_count() - 1));
 	text_editor->select(p_line, p_begin, p_line, p_end);
+	callable_mp((TextEdit *)text_editor, &TextEdit::adjust_viewport_to_caret).call_deferred(0);
 }
 
-void CodeTextEditor::goto_line_centered(int p_line) {
-	goto_line(p_line);
+void CodeTextEditor::goto_line_centered(int p_line, int p_column) {
+	text_editor->remove_secondary_carets();
+	text_editor->deselect();
+	text_editor->unfold_line(CLAMP(p_line, 0, text_editor->get_line_count() - 1));
+	text_editor->set_caret_line(p_line, false);
+	text_editor->set_caret_column(p_column, false);
 	callable_mp((TextEdit *)text_editor, &TextEdit::center_viewport_to_caret).call_deferred(0);
 }
 
@@ -1443,13 +1449,7 @@ void CodeTextEditor::goto_error() {
 			corrected_column -= tab_count * (indent_size - 1);
 		}
 
-		if (text_editor->get_line_count() != error_line) {
-			text_editor->unfold_line(error_line);
-		}
-		text_editor->remove_secondary_carets();
-		text_editor->set_caret_line(error_line);
-		text_editor->set_caret_column(corrected_column);
-		text_editor->center_viewport_to_caret();
+		goto_line_centered(error_line, corrected_column);
 	}
 }
 

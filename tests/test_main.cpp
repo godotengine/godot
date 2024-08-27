@@ -119,6 +119,7 @@
 #include "tests/scene/test_path_2d.h"
 #include "tests/scene/test_path_follow_2d.h"
 #include "tests/scene/test_sprite_frames.h"
+#include "tests/scene/test_style_box_texture.h"
 #include "tests/scene/test_theme.h"
 #include "tests/scene/test_timer.h"
 #include "tests/scene/test_viewport.h"
@@ -133,6 +134,7 @@
 #include "tests/scene/test_color_picker.h"
 #include "tests/scene/test_graph_node.h"
 #include "tests/scene/test_text_edit.h"
+#include "tests/scene/test_tree.h"
 #endif // ADVANCED_GUI_DISABLED
 
 #ifndef _3D_DISABLED
