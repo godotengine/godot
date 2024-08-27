@@ -97,6 +97,7 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@tool"), AnnotationInfo::SCRIPT, &GDScriptParser::tool_annotation);
 		register_annotation(MethodInfo("@icon", PropertyInfo(Variant::STRING, "icon_path")), AnnotationInfo::SCRIPT, &GDScriptParser::icon_annotation);
 		register_annotation(MethodInfo("@static_unload"), AnnotationInfo::SCRIPT, &GDScriptParser::static_unload_annotation);
+		register_annotation(MethodInfo("@internal"), AnnotationInfo::SCRIPT, &GDScriptParser::internal_annotation);
 
 		register_annotation(MethodInfo("@onready"), AnnotationInfo::VARIABLE, &GDScriptParser::onready_annotation);
 		// Export annotations.
@@ -4156,6 +4157,17 @@ bool GDScriptParser::onready_annotation(const AnnotationNode *p_annotation, Node
 	return true;
 }
 
+bool GDScriptParser::internal_annotation(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+#ifdef DEBUG_ENABLED
+	if (_is_internal) {
+		push_error(R"("@internal" annotation can only be used once.)", p_annotation);
+		return false;
+	}
+#endif
+	_is_internal = true;
+	return true;
+}
+
 static String _get_annotation_error_string(const StringName &p_annotation_name, const Vector<Variant::Type> &p_expected_types, const GDScriptParser::DataType &p_provided_type) {
 	Vector<String> types;
 	for (int i = 0; i < p_expected_types.size(); i++) {
@@ -5852,6 +5864,9 @@ void GDScriptParser::TreePrinter::print_while(WhileNode *p_while) {
 void GDScriptParser::TreePrinter::print_tree(const GDScriptParser &p_parser) {
 	ERR_FAIL_NULL_MSG(p_parser.get_tree(), "Parse the code before printing the parse tree.");
 
+	if (p_parser.is_internal()) {
+		push_line("@internal");
+	}
 	if (p_parser.is_tool()) {
 		push_line("@tool");
 	}

@@ -62,6 +62,7 @@ void ScriptExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_method_info, "method");
 
 	GDVIRTUAL_BIND(_is_tool);
+	GDVIRTUAL_BIND(_is_internal);
 	GDVIRTUAL_BIND(_is_valid);
 	GDVIRTUAL_BIND(_is_abstract);
 	GDVIRTUAL_BIND(_get_language);

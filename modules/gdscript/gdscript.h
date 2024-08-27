@@ -63,6 +63,7 @@ class GDScript : public Script {
 	bool tool = false;
 	bool valid = false;
 	bool reloading = false;
+	bool internal = false;
 
 	struct MemberInfo {
 		int index = 0;
@@ -268,6 +269,7 @@ public:
 	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const override;
 
 	bool is_tool() const override { return tool; }
+	bool is_internal() const override { return internal; }
 	Ref<GDScript> get_base() const;
 
 	const HashMap<StringName, MemberInfo> &debug_get_member_indices() const { return member_indices; }

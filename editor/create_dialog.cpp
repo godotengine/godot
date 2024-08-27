@@ -241,6 +241,11 @@ void CreateDialog::_add_type(const StringName &p_type, TypeCategory p_type_categ
 			}
 			ERR_FAIL_COND(scr.is_null());
 
+			bool show_internal = EDITOR_GET("interface/editor/show_internal_matches_in_create_dialog");
+			if (!show_internal && scr->is_internal()) {
+				return;
+			}
+
 			Ref<Script> base = scr->get_base_script();
 			if (base.is_null()) {
 				// Must be a native base type.
@@ -281,6 +286,7 @@ void CreateDialog::_add_type(const StringName &p_type, TypeCategory p_type_categ
 void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringName &p_type, TypeCategory p_type_category) {
 	bool script_type = ScriptServer::is_global_class(p_type);
 	bool is_abstract = false;
+	bool is_internal = false;
 	if (p_type_category == TypeCategory::CPP_TYPE) {
 		r_item->set_text(0, p_type);
 	} else if (p_type_category == TypeCategory::PATH_TYPE) {
@@ -294,6 +300,7 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringN
 		Ref<Script> scr = ResourceLoader::load(script_path, "Script");
 		ERR_FAIL_COND(!scr.is_valid());
 		is_abstract = scr->is_abstract();
+		is_internal = scr->is_internal();
 	} else {
 		r_item->set_metadata(0, custom_type_parents[p_type]);
 		r_item->set_text(0, p_type);
@@ -319,6 +326,10 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringN
 		r_item->add_button(0, get_editor_theme_icon("StatusError"), 0, false, TTR("This class is marked as deprecated."));
 	} else if (is_experimental) {
 		r_item->add_button(0, get_editor_theme_icon("NodeWarning"), 0, false, TTR("This class is marked as experimental."));
+	}
+
+	if (is_internal) {
+		r_item->add_button(0, get_editor_theme_icon("EditInternal"), 0, false, TTR("This class is marked for internal use only."));
 	}
 
 	if (!search_box->get_text().is_empty()) {

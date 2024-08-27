@@ -111,6 +111,7 @@ namespace Godot.NativeInterop
         private godot_string _className;
         private godot_string _iconPath;
         private godot_bool _isTool;
+        private godot_bool _isInternal;
         private godot_bool _isGlobalClass;
         private godot_bool _isAbstract;
         private godot_bool _isConstructedGenericType;
@@ -132,6 +133,12 @@ namespace Godot.NativeInterop
         {
             readonly get => _isTool;
             set => _isTool = value;
+        }
+
+        public godot_bool IsInternal
+        {
+            readonly get => _isInternal;
+            set => _isInternal = value;
         }
 
         public godot_bool IsGlobalClass
