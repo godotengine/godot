@@ -77,19 +77,21 @@ void GodotShare::share(const String &p_text, const String &p_subject, const Stri
 
 void GodotShare::rate() {
 #if TARGET_OS_IPHONE
+	/* SKStoreReviewController replaced byAppStore.requestReview(in: scene)
 	if (@available(iOS 14.0, *)) {
 		UIViewController *root_controller = [[UIApplication sharedApplication] delegate].window.rootViewController;
 		[SKStoreReviewController requestReviewInScene:root_controller.view.window.windowScene];
 	} else if (@available(iOS 10.3, *)) {
 		[SKStoreReviewController requestReview];
 	}
+	*/
 #elif TARGET_OS_OSX
-    /* linker error
-       https://developer.apple.com/documentation/storekit/skstorereviewcontroller
+	/* linker error
+	   https://developer.apple.com/documentation/storekit/skstorereviewcontroller
 	if (@available(macos 10.14, *)) {
 		[SKStoreReviewController requestReview];
-    }
-    */
+	}
+	*/
 	NSString *appId = @"id6446126962"; // Your app Id from the Itunes Connect portal
 
 	NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"https://apps.apple.com/app/%@?action=write-review", appId]];

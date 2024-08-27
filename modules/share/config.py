@@ -6,4 +6,4 @@ def configure(env):
     if env["platform"] in ["ios", "macos"]:
         env.Append(LINKFLAGS=["-ObjC"])
         env.Append(CPPPATH=["#core"])
-        #env.Append(LINKFLAGS=["-lStoreKit.macos." + env["arch"]])
+        # env.Append(LINKFLAGS=["-lStoreKit.macos." + env["arch"]])
