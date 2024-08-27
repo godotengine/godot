@@ -46,8 +46,18 @@ public:
 	CharacterBodyMainLable()
 	{
 
-		this->set_text(L"角色编辑面板");
-		set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+		label = memnew(Label);
+		label->set_h_size_flags(SIZE_EXPAND_FILL);
+		label->set_text(L"角色编辑面板");
+		label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+		add_child(label);
+
+		run_ai_button = memnew(CheckButton);
+		run_ai_button->set_text(L"运行AI");
+		run_ai_button->set_tooltip_text(L"运行AI,如果调试行为树,必须关闭此选项");
+		run_ai_button->connect("toggled", callable_mp(this, &RenameDialog::on_run_ai_toggled));
+		add_child(run_ai_button);
+
 	}
 	void _notification(int p_what)
 	{
@@ -74,8 +84,14 @@ public:
 	{
 		body_main = p_body_main;
 	}
+	void on_run_ai_toggled(bool p_toggled)
+	{
+		body_main->set_editor_run_ai(p_toggled);
+	}
 protected:
 	CharacterBodyMain* body_main = nullptr;
+	Label* label = nullptr;
+	CheckButton* run_ai_button = nullptr;
 };
 
 
@@ -374,6 +390,7 @@ class GameHelpInspectorPlugin : public EditorInspectorPlugin
 		if(Object::cast_to<CharacterBodyMain>(p_object) != nullptr)
 		{
 			CharacterBodyMain* body_main = Object::cast_to<CharacterBodyMain>(p_object);
+			body_main->set_editor_run_ai(false);
 			body_main->init();
 			return true;
 		}
@@ -425,7 +442,6 @@ class UnityLinkServerEditorPlugin : public EditorPlugin {
 	UnityLinkServer server;
 
 	bool started = false;
-	CheckButton* editor_character_run_button = nullptr;
 
 private:
 	void _notification(int p_what);
@@ -479,10 +495,6 @@ void UnityLinkServerEditorPlugin::start() {
 		set_process_internal(true);
 		started = true;
 	}
-	editor_character_run_button = memnew(CheckButton);
-	EditorRunBar::get_singleton()->add_child(editor_character_run_button);
-
-	editor_character_run_button->set_text(L"编辑器运行角色");
 	
 	
 }

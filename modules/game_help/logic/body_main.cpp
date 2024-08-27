@@ -177,6 +177,12 @@ void CharacterBodyMain::_update(double p_delta)
 }
 void CharacterBodyMain::_update_ai()
 {
+#ifdef TOOLS_ENABLED
+    if(!run_ai)
+    {
+        return;
+    }
+#endif
 	init_ai_context();
     if(character_ai.is_valid())
     {

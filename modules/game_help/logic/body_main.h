@@ -388,6 +388,17 @@ public:
     {
         return editor_form_mesh_file_path;
     }
+
+    void set_editor_run_ai(bool p_run_ai)
+    {
+        ai_context.unref();
+        run_ai = p_run_ai;
+    }
+
+    bool get_editor_run_ai()
+    {
+        return run_ai;
+    }
     DECL_MEMBER_BUTTON(editor_build_form_mesh_file_path);
     static ObjectID& get_curr_editor_player();
     // 获取当前编辑的角色
@@ -439,6 +450,8 @@ protected:
     PackedStringArray   partList;
     // 插槽信息
     HashMap<StringName,BodySocket> socket;
+
+    bool run_ai = true;
 };
 
 #endif
