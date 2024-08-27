@@ -157,7 +157,7 @@ enum class FillRule
 enum class CompositeMethod
 {
     None = 0,           ///< No composition is applied.
-    ClipPath,           ///< The intersection of the source and the target is determined and only the resulting pixels from the source are rendered.
+    ClipPath,           ///< The intersection of the source and the target is determined and only the resulting pixels from the source are rendered. Note that ClipPath only supports the Shape type.
     AlphaMask,          ///< Alpha Masking using the compositing target's pixels as an alpha value.
     InvAlphaMask,       ///< Alpha Masking using the complement to the compositing target's pixels as an alpha value.
     LumaMask,           ///< Alpha Masking using the grayscale (0.2125R + 0.7154G + 0.0721*B) of the compositing target's pixels. @since 0.9
@@ -165,7 +165,9 @@ enum class CompositeMethod
     AddMask,            ///< Combines the target and source objects pixels using target alpha. (T * TA) + (S * (255 - TA)) (Experimental API)
     SubtractMask,       ///< Subtracts the source color from the target color while considering their respective target alpha. (T * TA) - (S * (255 - TA)) (Experimental API)
     IntersectMask,      ///< Computes the result by taking the minimum value between the target alpha and the source alpha and multiplies it with the target color. (T * min(TA, SA)) (Experimental API)
-    DifferenceMask      ///< Calculates the absolute difference between the target color and the source color multiplied by the complement of the target alpha. abs(T - S * (255 - TA)) (Experimental API)
+    DifferenceMask,     ///< Calculates the absolute difference between the target color and the source color multiplied by the complement of the target alpha. abs(T - S * (255 - TA)) (Experimental API)
+    LightenMask,        ///< Where multiple masks intersect, the highest transparency value is used. (Experimental API)
+    DarkenMask          ///< Where multiple masks intersect, the lowest transparency value is used. (Experimental API)
 };
 
 
@@ -229,34 +231,6 @@ struct Matrix
     float e11, e12, e13;
     float e21, e22, e23;
     float e31, e32, e33;
-};
-
-
-/**
- * @brief A data structure representing a texture mesh vertex
- *
- * @param pt The vertex coordinate
- * @param uv The normalized texture coordinate in the range (0.0..1.0, 0.0..1.0)
- *
- * @note Experimental API
- */
-struct Vertex
-{
-   Point pt;
-   Point uv;
-};
-
-
-/**
- * @brief A data structure representing a triange in a texture mesh
- *
- * @param vertex The three vertices that make up the polygon
- *
- * @note Experimental API
- */
-struct Polygon
-{
-   Vertex vertex[3];
 };
 
 
@@ -361,7 +335,7 @@ public:
      *
      * @note Experimental API
      */
-    Result blend(BlendMethod method) const noexcept;
+    Result blend(BlendMethod method) noexcept;
 
     /**
      * @deprecated Use bounds(float* x, float* y, float* w, float* h, bool transformed) instead
@@ -371,15 +345,16 @@ public:
     /**
      * @brief Gets the axis-aligned bounding box of the paint object.
      *
-     * In case @p transform is @c true, all object's transformations are applied first, and then the bounding box is established. Otherwise, the bounding box is determined before any transformations.
-     *
-     * @param[out] x The x coordinate of the upper left corner of the object.
-     * @param[out] y The y coordinate of the upper left corner of the object.
+     * @param[out] x The x-coordinate of the upper-left corner of the object.
+     * @param[out] y The y-coordinate of the upper-left corner of the object.
      * @param[out] w The width of the object.
      * @param[out] h The height of the object.
-     * @param[in] transformed If @c true, the paint's transformations are taken into account, otherwise they aren't.
+     * @param[in] transformed If @c true, the paint's transformations are taken into account in the scene it belongs to. Otherwise they aren't.
      *
+     * @note This is useful when you need to figure out the bounding box of the paint in the canvas space.
      * @note The bounding box doesn't indicate the actual drawing region. It's the smallest rectangle that encloses the object.
+     * @note If @p transformed is @c true, the paint needs to be pushed into a canvas and updated before this api is called.
+     * @see Canvas::update()
      */
     Result bounds(float* x, float* y, float* w, float* h, bool transformed) const noexcept;
 
@@ -411,9 +386,9 @@ public:
     CompositeMethod composite(const Paint** target) const noexcept;
 
     /**
-     * @brief Gets the blending method of the object.
+     * @brief Retrieves the current blending method applied to the paint object.
      *
-     * @return The blending method
+     * @return The currently set blending method.
      *
      * @note Experimental API
      */
@@ -427,6 +402,15 @@ public:
      * @return The type id of the Paint instance.
      */
     uint32_t identifier() const noexcept;
+
+    /**
+     * @brief Unique ID of this instance.
+     *
+     * This is reserved to specify an paint instance in a scene.
+     *
+     * @since Experimental API
+     */
+    uint32_t id = 0;
 
     _TVG_DECLARE_PRIVATE(Paint);
 };
@@ -675,7 +659,8 @@ public:
      * @param[in] x2 The horizontal coordinate of the second point used to determine the gradient bounds.
      * @param[in] y2 The vertical coordinate of the second point used to determine the gradient bounds.
      *
-     * @note In case the first and the second points are equal, an object filled with such a gradient fill is not rendered.
+     * @note In case the first and the second points are equal, an object is filled with a single color using the last color specified in the colorStops().
+     * @see Fill::colorStops()
      */
     Result linear(float x1, float y1, float x2, float y2) noexcept;
 
@@ -734,6 +719,8 @@ public:
      * @param[in] radius The radius of the bounding circle.
      *
      * @retval Result::InvalidArguments in case the @p radius value is zero or less.
+     *
+     * @note In case the @p radius is zero, an object is filled with a single color using the last color specified in the colorStops().
      */
     Result radial(float cx, float cy, float radius) noexcept;
 
@@ -990,7 +977,7 @@ public:
     /**
      * @brief Sets the trim of the stroke along the defined path segment, allowing control over which part of the stroke is visible.
      *
-     * The values of the arguments @p begin, @p end, and @p offset are in the range of 0.0 to 1.0, representing the beginning of the path and the end, respectively.
+     * If the values of the arguments @p begin and @p end exceed the 0-1 range, they are wrapped around in a manner similar to angle wrapping, effectively treating the range as circular.
      *
      * @param[in] begin Specifies the start of the segment to display along the path.
      * @param[in] end Specifies the end of the segment to display along the path.
@@ -1076,7 +1063,6 @@ public:
      * @param[out] b The blue color channel value in the range [0 ~ 255].
      * @param[out] a The alpha channel value in the range [0 ~ 255], where 0 is completely transparent and 255 is opaque.
      *
-     * @return Result::Success when succeed.
      */
     Result fillColor(uint8_t* r, uint8_t* g, uint8_t* b, uint8_t* a = nullptr) const noexcept;
 
@@ -1219,7 +1205,7 @@ public:
      * when the @p copy has @c false. This means that loading the same data again will not result in duplicate operations
      * for the sharable @p data. Instead, ThorVG will reuse the previously loaded picture data.
      *
-     * @param[in] data A pointer to a memory location where the content of the picture file is stored.
+     * @param[in] data A pointer to a memory location where the content of the picture file is stored. A null-terminated string is expected for non-binary data if @p copy is @c false.
      * @param[in] size The size in bytes of the memory occupied by the @p data.
      * @param[in] mimeType Mimetype or extension of data such as "jpg", "jpeg", "lottie", "svg", "svg+xml", "png", etc. In case an empty string or an unknown type is provided, the loaders will be tried one by one.
      * @param[in] copy If @c true the data are copied into the engine local buffer, otherwise they are not.
@@ -1256,7 +1242,7 @@ public:
     Result size(float* w, float* h) const noexcept;
 
     /**
-     * @brief Loads a raw data from a memory block with a given size.
+     * @brief Loads raw data in ARGB8888 format from a memory block of the given size.
      *
      * ThorVG efficiently caches the loaded data using the specified @p data address as a key
      * when the @p copy has @c false. This means that loading the same data again will not result in duplicate operations
@@ -1265,47 +1251,27 @@ public:
      * @param[in] data A pointer to a memory location where the content of the picture raw data is stored.
      * @param[in] w The width of the image @p data in pixels.
      * @param[in] h The height of the image @p data in pixels.
-     * @param[in] premultiplied If @c true, the given image data is alpha-premultiplied.
      * @param[in] copy If @c true the data are copied into the engine local buffer, otherwise they are not.
      *
+     * @note It expects premultiplied alpha data.
      * @since 0.9
      */
     Result load(uint32_t* data, uint32_t w, uint32_t h, bool copy) noexcept;
 
     /**
-     * @brief Sets or removes the triangle mesh to deform the image.
+     * @brief Retrieve a paint object from the Picture scene by its Unique ID.
      *
-     * If a mesh is provided, the transform property of the Picture will apply to the triangle mesh, and the
-     * image data will be used as the texture.
+     * This function searches for a paint object within the Picture scene that matches the provided @p id.
      *
-     * If @p triangles is @c nullptr, or @p triangleCnt is 0, the mesh will be removed.
+     * @param[in] id The Unique ID of the paint object.
      *
-     * Only raster image types are supported at this time (png, jpg). Vector types like svg and tvg do not support.
-     * mesh deformation. However, if required you should be able to render a vector image to a raster image and then apply a mesh.
+     * @return A pointer to the paint object that matches the given identifier, or @c nullptr if no matching paint object is found.
      *
-     * @param[in] triangles An array of Polygons(triangles) that make up the mesh, or null to remove the mesh.
-     * @param[in] triangleCnt The number of Polygons(triangles) provided, or 0 to remove the mesh.
-     *
-     * @note The Polygons are copied internally, so modifying them after calling Mesh::mesh has no affect.
-     * @warning Please do not use it, this API is not official one. It could be modified in the next version.
+     * @see Accessor::id()
      *
      * @note Experimental API
      */
-    Result mesh(const Polygon* triangles, uint32_t triangleCnt) noexcept;
-
-    /**
-     * @brief Return the number of triangles in the mesh, and optionally get a pointer to the array of triangles in the mesh.
-     *
-     * @param[out] triangles Optional. A pointer to the array of Polygons used by this mesh.
-     *
-     * @return The number of polygons in the array.
-     *
-     * @note Modifying the triangles returned by this method will modify them directly within the mesh.
-     * @warning Please do not use it, this API is not official one. It could be modified in the next version.
-     *
-     * @note Experimental API
-     */
-    uint32_t mesh(const Polygon** triangles) const noexcept;
+    const Paint* paint(uint32_t id) noexcept;
 
     /**
      * @brief Creates a new Picture object.
@@ -1454,8 +1420,6 @@ public:
      * @param[in] g The green color channel value in the range [0 ~ 255]. The default value is 0.
      * @param[in] b The blue color channel value in the range [0 ~ 255]. The default value is 0.
      *
-     * @retval Result::InsufficientCondition when the font has not been set up prior to this operation.
-     *
      * @see Text::font()
      *
      * @note Experimental API
@@ -1468,8 +1432,6 @@ public:
      * The parts of the text defined as inner are filled.
      *
      * @param[in] f The unique pointer to the gradient fill.
-     *
-     * @retval Result::InsufficientCondition when the font has not been set up prior to this operation.
      *
      * @note Either a solid color or a gradient fill is applied, depending on what was set as last.
      * @note Experimental API
@@ -1781,6 +1743,19 @@ public:
      */
     static Result term(CanvasEngine engine) noexcept;
 
+    /**
+     * @brief Retrieves the version of the TVG engine.
+     *
+     * @param[out] major A major version number.
+     * @param[out] minor A minor version number.
+     * @param[out] micro A micro version number.
+     *
+     * @return The version of the engine in the format major.minor.micro, or a @p nullptr in case of an internal error.
+     *
+     * @note Experimental API
+     */
+    static const char* version(uint32_t* major, uint32_t* minor, uint32_t* micro) noexcept;
+
     _TVG_DISABLE_CTOR(Initializer);
 };
 
@@ -1879,7 +1854,7 @@ public:
      * @retval Result::InsufficientCondition In case the animation is not loaded.
      * @retval Result::NonSupport When it's not animatable.
      *
-     * @note Range from 0.0~1.0
+     * @note Animation allows a range from 0.0 to 1.0. @p end should not be higher than @p begin.
      * @note If a marker has been specified, its range will be disregarded.
      * @see LottieAnimation::segment(const char* marker)
      * @note Experimental API
@@ -2030,17 +2005,36 @@ class TVG_API Accessor final
 public:
     ~Accessor();
 
+    TVG_DEPRECATED std::unique_ptr<Picture> set(std::unique_ptr<Picture> picture, std::function<bool(const Paint* paint)> func) noexcept;
+
     /**
      * @brief Set the access function for traversing the Picture scene tree nodes.
      *
      * @param[in] picture The picture node to traverse the internal scene-tree.
      * @param[in] func The callback function calling for every paint nodes of the Picture.
-     *
-     * @return Return the given @p picture instance.
+     * @param[in] data Data passed to the @p func as its argument.
      *
      * @note The bitmap based picture might not have the scene-tree.
+     *
+     * @note Experimental API
      */
-    std::unique_ptr<Picture> set(std::unique_ptr<Picture> picture, std::function<bool(const Paint* paint)> func) noexcept;
+    Result set(const Picture* picture, std::function<bool(const Paint* paint, void* data)> func, void* data) noexcept;
+
+    /**
+     * @brief Generate a unique ID (hash key) from a given name.
+     *
+     * This function computes a unique identifier value based on the provided string.
+     * You can use this to assign a unique ID to the Paint object.
+     *
+     * @param[in] name The input string to generate the unique identifier from.
+     *
+     * @return The generated unique identifier value.
+     *
+     * @see Paint::id
+     *
+     * @note Experimental API
+     */
+    static uint32_t id(const char* name) noexcept;
 
     /**
      * @brief Creates a new Accessor object.

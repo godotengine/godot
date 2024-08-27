@@ -79,7 +79,7 @@ float _bezAt(const Bezier& bz, float at, float length, LengthFunc lineLengthFunc
         Bezier left;
         bezSplitLeft(right, t, left);
         length = _bezLength(left, lineLengthFunc);
-        if (fabsf(length - at) < BEZIER_EPSILON || fabsf(smallest - biggest) < BEZIER_EPSILON) {
+        if (fabsf(length - at) < BEZIER_EPSILON || fabsf(smallest - biggest) < 1e-3f) {
             break;
         }
         if (length < at) {
