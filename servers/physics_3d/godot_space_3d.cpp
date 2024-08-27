@@ -105,7 +105,7 @@ int GodotPhysicsDirectSpaceState3D::intersect_point(const PointParameters &p_par
 	return cc;
 }
 
-bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parameters, RayResult &r_result) {
+bool GodotPhysicsDirectSpaceState3D::intersect_ray_multiple(const RayParameters &p_parameters, MultipleRayResult &r_result){
 	ERR_FAIL_COND_V(space->locked, false);
 
 	Vector3 begin, end;
@@ -124,6 +124,8 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parame
 	int res_shape = -1;
 	const GodotCollisionObject3D *res_obj = nullptr;
 	real_t min_d = 1e10;
+
+	resize_multiple_ray_result(r_result, amount);
 
 	for (int i = 0; i < amount; i++) {
 		if (!_can_collide_with(space->intersection_query_results[i], p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas)) {
@@ -154,13 +156,9 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parame
 		if (shape->intersect_point(local_from)) {
 			if (p_parameters.hit_from_inside) {
 				// Hit shape at starting point.
-				min_d = 0;
-				res_point = begin;
-				res_normal = Vector3();
-				res_shape = shape_idx;
-				res_obj = col_obj;
-				collided = true;
-				break;
+				ERR_FAIL_NULL_V(col_obj, false); // Shouldn't happen but silences warning.
+				add_multiple_ray_result(r_result, begin, Vector3(), col_obj, shape_idx, shape_face_index);
+				continue;
 			} else {
 				// Ignore shape when starting inside.
 				continue;
@@ -168,40 +166,49 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parame
 		}
 
 		if (shape->intersect_segment(local_from, local_to, shape_point, shape_normal, shape_face_index, p_parameters.hit_back_faces)) {
+			ERR_FAIL_NULL_V(col_obj, false); // Shouldn't happen but silences warning.
 			Transform3D xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 			shape_point = xform.xform(shape_point);
-
-			real_t ld = normal.dot(shape_point);
-
-			if (ld < min_d) {
-				min_d = ld;
-				res_point = shape_point;
-				res_normal = inv_xform.basis.xform_inv(shape_normal).normalized();
-				res_face_index = shape_face_index;
-				res_shape = shape_idx;
-				res_obj = col_obj;
-				collided = true;
-			}
+			res_normal = inv_xform.basis.xform_inv(shape_normal).normalized();
+			add_multiple_ray_result(r_result, shape_point, res_normal, col_obj, shape_idx, shape_face_index);
 		}
 	}
 
-	if (!collided) {
+	// Reduce size of r_result arrays to n_collisions so invalid data is not propagated
+	resize_multiple_ray_result(r_result, r_result.n_collisions);
+	return r_result.n_collisions > 0;
+}
+
+bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parameters, RayResult &r_result) {
+	ERR_FAIL_COND_V(space->locked, false);
+
+	MultipleRayResult multi_result;
+	bool collided = intersect_ray_multiple(p_parameters, multi_result);
+	if (!collided){
 		return false;
 	}
-	ERR_FAIL_NULL_V(res_obj, false); // Shouldn't happen but silences warning.
 
-	r_result.collider_id = res_obj->get_instance_id();
-	if (r_result.collider_id.is_valid()) {
-		r_result.collider = ObjectDB::get_instance(r_result.collider_id);
-	} else {
-		r_result.collider = nullptr;
+	real_t min_d = 1e10;
+	real_t ld;
+	Vector3 normal;
+	Vector3 shape_point;
+	int min_idx = 0;
+	for (int i = 0; i < multi_result.n_collisions; i++) {
+		normal = multi_result.normals.get(i);
+		shape_point = multi_result.positions.get(i);
+		ld = normal.dot(shape_point);
+		if (ld < min_d) {
+			min_d = ld;
+			min_idx = i;
+		}
 	}
-	r_result.normal = res_normal;
-	r_result.face_index = res_face_index;
-	r_result.position = res_point;
-	r_result.rid = res_obj->get_self();
-	r_result.shape = res_shape;
-
+	r_result.collider_id = multi_result.collider_ids.get(min_idx);
+	r_result.collider = multi_result.colliders.get(min_idx);
+	r_result.normal = multi_result.normals.get(min_idx);
+	r_result.face_index = multi_result.face_indexes.get(min_idx);
+	r_result.position = multi_result.positions.get(min_idx);
+	r_result.rid = multi_result.rids.get(min_idx);
+	r_result.shape = multi_result.shapes.get(min_idx);
 	return true;
 }
 
