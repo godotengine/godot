@@ -582,7 +582,7 @@ public:
 
 	virtual RID decal_allocate() override;
 	virtual void decal_initialize(RID p_rid) override;
-	virtual void decal_free(RID p_rid) override{};
+	virtual void decal_free(RID p_rid) override {}
 
 	virtual void decal_set_size(RID p_decal, const Vector3 &p_size) override;
 	virtual void decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) override;
