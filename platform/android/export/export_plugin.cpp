@@ -2700,7 +2700,7 @@ void EditorExportPlatformAndroid::get_command_line_flags(const Ref<EditorExportP
 
 	bool immersive = p_preset->get("screen/immersive_mode");
 	if (immersive) {
-		command_line_strings.push_back("--use_immersive");
+		command_line_strings.push_back("--fullscreen");
 	}
 
 	bool debug_opengl = p_preset->get("graphics/opengl_debug");

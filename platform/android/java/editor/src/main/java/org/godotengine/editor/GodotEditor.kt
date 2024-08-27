@@ -40,6 +40,7 @@ import android.content.pm.PackageManager
 import android.os.*
 import android.util.Log
 import android.view.View
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.annotation.CallSuper
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -78,6 +79,8 @@ open class GodotEditor : GodotActivity() {
 		protected val EXTRA_LAUNCH_IN_PIP = "launch_in_pip_requested"
 
 		// Command line arguments
+		private const val FULLSCREEN_ARG = "--fullscreen"
+		private const val FULLSCREEN_ARG_SHORT = "-f"
 		private const val EDITOR_ARG = "--editor"
 		private const val EDITOR_ARG_SHORT = "-e"
 		private const val EDITOR_PROJECT_MANAGER_ARG = "--project-manager"
@@ -116,10 +119,15 @@ open class GodotEditor : GodotActivity() {
 
 	override fun getGodotAppLayout() = R.layout.godot_editor_layout
 
-	internal open fun getEditorId() = EDITOR_MAIN_INFO.windowId
+	internal open fun getEditorWindowInfo() = EDITOR_MAIN_INFO
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		installSplashScreen()
+
+		// Prevent the editor window from showing in the display cutout
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && getEditorWindowInfo() == EDITOR_MAIN_INFO) {
+			window.attributes.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER
+		}
 
 		// We exclude certain permissions from the set we request at startup, as they'll be
 		// requested on demand based on use-cases.
@@ -213,10 +221,24 @@ open class GodotEditor : GodotActivity() {
 	}
 
 	protected fun getNewGodotInstanceIntent(editorWindowInfo: EditorWindowInfo, args: Array<String>): Intent {
+		val updatedArgs = if (editorWindowInfo == EDITOR_MAIN_INFO &&
+			godot?.isInImmersiveMode() == true &&
+			!args.contains(FULLSCREEN_ARG) &&
+			!args.contains(FULLSCREEN_ARG_SHORT)
+		) {
+			// If we're launching an editor window (project manager or editor) and we're in
+			// fullscreen mode, we want to remain in fullscreen mode.
+			// This doesn't apply to the play / game window since for that window fullscreen is
+			// controlled by the game logic.
+			args + FULLSCREEN_ARG
+		} else {
+			args
+		}
+
 		val newInstance = Intent()
 			.setComponent(ComponentName(this, editorWindowInfo.windowClassName))
 			.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-			.putExtra(EXTRA_COMMAND_LINE_PARAMS, args)
+			.putExtra(EXTRA_COMMAND_LINE_PARAMS, updatedArgs)
 
 		val launchPolicy = resolveLaunchPolicyIfNeeded(editorWindowInfo.launchPolicy)
 		val isPiPAvailable = if (editorWindowInfo.supportsPiPMode && hasPiPSystemFeature()) {
@@ -235,7 +257,7 @@ open class GodotEditor : GodotActivity() {
 			}
 		} else if (launchPolicy == LaunchPolicy.SAME) {
 			if (isPiPAvailable &&
-				(args.contains(BREAKPOINTS_ARG) || args.contains(BREAKPOINTS_ARG_SHORT))) {
+				(updatedArgs.contains(BREAKPOINTS_ARG) || updatedArgs.contains(BREAKPOINTS_ARG_SHORT))) {
 				Log.v(TAG, "Launching in PiP mode because of breakpoints")
 				newInstance.putExtra(EXTRA_LAUNCH_IN_PIP, true)
 			}
