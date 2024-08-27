@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "core_bind.h"
+#include "core_bind.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
@@ -1210,14 +1211,15 @@ bool Semaphore::try_wait() {
 	return semaphore.try_wait();
 }
 
-void Semaphore::post() {
-	semaphore.post();
+void Semaphore::post(int p_count) {
+	ERR_FAIL_COND(p_count <= 0);
+	semaphore.post(p_count);
 }
 
 void Semaphore::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("wait"), &Semaphore::wait);
 	ClassDB::bind_method(D_METHOD("try_wait"), &Semaphore::try_wait);
-	ClassDB::bind_method(D_METHOD("post"), &Semaphore::post);
+	ClassDB::bind_method(D_METHOD("post", "count"), &Semaphore::post, DEFVAL(1));
 }
 
 ////// Mutex //////
