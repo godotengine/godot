@@ -231,8 +231,8 @@
 		</member>
 		<member name="max_length" type="int" setter="set_max_length" getter="get_max_length" default="0">
 			Maximum number of characters that can be entered inside the [LineEdit]. If [code]0[/code], there is no limit.
-			When a limit is defined, characters that would exceed [member max_length] are truncated. This happens both for existing [member text] contents when setting the max length, or for new text inserted in the [LineEdit], including pasting. If any input text is truncated, the [signal text_change_rejected] signal is emitted with the truncated substring as parameter.
-			[b]Example:[/b]
+			When a limit is defined, characters that would exceed [member max_length] are truncated. This happens both for existing [member text] contents when setting the max length, or for new text inserted in the [LineEdit], including pasting.
+			If any input text is truncated, the [signal text_change_rejected] signal is emitted with the truncated substring as parameter:
 			[codeblocks]
 			[gdscript]
 			text = "Hello world"

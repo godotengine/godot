@@ -287,7 +287,6 @@
 			<param index="0" name="event" type="InputEvent" />
 			<description>
 				Feeds an [InputEvent] to the game. Can be used to artificially trigger input events from code. Also generates [method Node._input] calls.
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var cancel_event = InputEventAction.new()

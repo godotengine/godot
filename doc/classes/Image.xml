@@ -541,7 +541,6 @@
 			<param index="2" name="color" type="Color" />
 			<description>
 				Sets the [Color] of the pixel at [code](x, y)[/code] to [param color].
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var img_width = 10
@@ -567,7 +566,6 @@
 			<param index="1" name="color" type="Color" />
 			<description>
 				Sets the [Color] of the pixel at [param point] to [param color].
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var img_width = 10

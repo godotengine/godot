@@ -111,7 +111,9 @@ void ExportTemplateManager::_update_template_status() {
 		TreeItem *ti = installed_table->create_item(installed_root);
 		ti->set_text(0, version_string);
 
+#ifndef ANDROID_ENABLED
 		ti->add_button(0, get_editor_theme_icon(SNAME("Folder")), OPEN_TEMPLATE_FOLDER, false, TTR("Open the folder containing these templates."));
+#endif
 		ti->add_button(0, get_editor_theme_icon(SNAME("Remove")), UNINSTALL_TEMPLATE, false, TTR("Uninstall these templates."));
 	}
 }
@@ -921,11 +923,13 @@ ExportTemplateManager::ExportTemplateManager() {
 	current_installed_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	current_installed_hb->add_child(current_installed_path);
 
-	current_open_button = memnew(Button);
+#ifndef ANDROID_ENABLED
+	Button *current_open_button = memnew(Button);
 	current_open_button->set_text(TTR("Open Folder"));
 	current_open_button->set_tooltip_text(TTR("Open the folder containing installed templates for the current version."));
 	current_installed_hb->add_child(current_open_button);
 	current_open_button->connect(SceneStringName(pressed), callable_mp(this, &ExportTemplateManager::_open_template_folder).bind(VERSION_FULL_CONFIG));
+#endif
 
 	current_uninstall_button = memnew(Button);
 	current_uninstall_button->set_text(TTR("Uninstall"));

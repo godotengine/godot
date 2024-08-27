@@ -667,12 +667,9 @@
 			<return type="float" />
 			<param index="0" name="lin" type="float" />
 			<description>
-				Converts from linear energy to decibels (audio). This can be used to implement volume sliders that behave as expected (since volume isn't linear).
-				[b]Example:[/b]
+				Converts from linear energy to decibels (audio). Since volume is not normally linear, this can be used to implement volume sliders that behave as expected.
+				[b]Example:[/b] Change the Master bus's volume through a [Slider] node, which ranges from [code]0.0[/code] to [code]1.0[/code]:
 				[codeblock]
-				# "Slider" refers to a node that inherits Range such as HSlider or VSlider.
-				# Its range must be configured to go from 0 to 1.
-				# Change the bus name if you'd like to change the volume of a specific bus only.
 				AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Master"), linear_to_db($Slider.value))
 				[/codeblock]
 			</description>
@@ -2603,8 +2600,7 @@
 		</constant>
 		<constant name="OK" value="0" enum="Error">
 			Methods that return [enum Error] return [constant OK] when no error occurred.
-			Since [constant OK] has value 0, and all other error constants are positive integers, it can also be used in boolean checks.
-			[b]Example:[/b]
+			Since [constant OK] has value [code]0[/code], and all other error constants are positive integers, it can also be used in boolean checks.
 			[codeblock]
 			var error = method_that_returns_error()
 			if error != OK:
@@ -2867,7 +2863,7 @@
 			hintString = $"{Variant.Type.Array:D}:{Variant.Type.Array:D}:{elemType:D}/{elemHint:D}:{elemHintString}";
 			[/csharp]
 			[/codeblocks]
-			Examples:
+			[b]Examples:[/b]
 			[codeblocks]
 			[gdscript]
 			hint_string = "%d:" % [TYPE_INT] # Array of integers.

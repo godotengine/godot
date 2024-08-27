@@ -4415,13 +4415,9 @@ bool ScriptEditorPlugin::handles(Object *p_object) const {
 void ScriptEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		window_wrapper->show();
-		script_editor->set_process(true);
 		script_editor->ensure_select_current();
 	} else {
 		window_wrapper->hide();
-		if (!window_wrapper->get_window_enabled()) {
-			script_editor->set_process(false);
-		}
 	}
 }
 

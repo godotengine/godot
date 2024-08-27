@@ -6,6 +6,7 @@
 	<description>
 		Stores information about a mouse or a pen motion. This includes relative position, absolute position, and velocity. See [method Node._input].
 		[b]Note:[/b] By default, this event is only emitted once per frame rendered at most. If you need more precise input reporting, set [member Input.use_accumulated_input] to [code]false[/code] to make events emitted as often as possible. If you use InputEventMouseMotion to draw lines, consider implementing [url=https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm]Bresenham's line algorithm[/url] as well to avoid visible gaps in lines if the user is moving the mouse quickly.
+		[b]Note:[/b] This event may be emitted even when the mouse hasn't moved, either by the operating system or by Godot itself. If you really need to know if the mouse has moved (e.g. to suppress displaying a tooltip), you should check that [code]relative.is_zero_approx()[/code] is [code]false[/code].
 	</description>
 	<tutorials>
 		<link title="Using InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
@@ -22,12 +23,13 @@
 		</member>
 		<member name="relative" type="Vector2" setter="set_relative" getter="get_relative" default="Vector2(0, 0)">
 			The mouse position relative to the previous position (position at the last frame).
-			[b]Note:[/b] Since [InputEventMouseMotion] is only emitted when the mouse moves, the last event won't have a relative position of [code]Vector2(0, 0)[/code] when the user stops moving the mouse.
+			[b]Note:[/b] Since [InputEventMouseMotion] may only be emitted when the mouse moves, it is not possible to reliably detect when the mouse has stopped moving by checking this property. A separate, short timer may be necessary.
 			[b]Note:[/b] [member relative] is automatically scaled according to the content scale factor, which is defined by the project's stretch mode settings. This means mouse sensitivity will appear different depending on resolution when using [member relative] in a script that handles mouse aiming with the [constant Input.MOUSE_MODE_CAPTURED] mouse mode. To avoid this, use [member screen_relative] instead.
 		</member>
 		<member name="screen_relative" type="Vector2" setter="set_screen_relative" getter="get_screen_relative" default="Vector2(0, 0)">
 			The unscaled mouse position relative to the previous position in the coordinate system of the screen (position at the last frame).
-			[b]Note:[/b] Since [InputEventMouseMotion] is only emitted when the mouse moves, the last event won't have a relative position of [code]Vector2(0, 0)[/code] when the user stops moving the mouse. This coordinate is [i]not[/i] scaled according to the content scale factor or calls to [method InputEvent.xformed_by]. This should be preferred over [member relative] for mouse aiming when using the [constant Input.MOUSE_MODE_CAPTURED] mouse mode, regardless of the project's stretch mode.
+			[b]Note:[/b] Since [InputEventMouseMotion] may only be emitted when the mouse moves, it is not possible to reliably detect when the mouse has stopped moving by checking this property. A separate, short timer may be necessary.
+			[b]Note:[/b] This coordinate is [i]not[/i] scaled according to the content scale factor or calls to [method InputEvent.xformed_by]. This should be preferred over [member relative] for mouse aiming when using the [constant Input.MOUSE_MODE_CAPTURED] mouse mode, regardless of the project's stretch mode.
 		</member>
 		<member name="screen_velocity" type="Vector2" setter="set_screen_velocity" getter="get_screen_velocity" default="Vector2(0, 0)">
 			The unscaled mouse velocity in pixels per second in screen coordinates. This velocity is [i]not[/i] scaled according to the content scale factor or calls to [method InputEvent.xformed_by]. This should be preferred over [member velocity] for mouse aiming when using the [constant Input.MOUSE_MODE_CAPTURED] mouse mode, regardless of the project's stretch mode.

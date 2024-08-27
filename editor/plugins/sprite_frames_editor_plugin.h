@@ -234,6 +234,9 @@ class SpriteFramesEditor : public HSplitContainer {
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 	void _open_sprite_sheet();
+	void _auto_slice_sprite_sheet();
+	bool _matches_background_color(const Color &p_background_color, const Color &p_pixel_color);
+	Size2i _estimate_sprite_sheet_size(const Ref<Texture2D> p_texture);
 	void _prepare_sprite_sheet(const String &p_file);
 	int _sheet_preview_position_to_frame_index(const Vector2 &p_position);
 	void _sheet_preview_draw();

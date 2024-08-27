@@ -82,7 +82,7 @@ class RID_Alloc : public RID_AllocBase {
 	mutable SpinLock spin_lock;
 
 	_FORCE_INLINE_ RID _allocate_rid() {
-		if (THREAD_SAFE) {
+		if constexpr (THREAD_SAFE) {
 			spin_lock.lock();
 		}
 
@@ -128,7 +128,7 @@ class RID_Alloc : public RID_AllocBase {
 
 		alloc_count++;
 
-		if (THREAD_SAFE) {
+		if constexpr (THREAD_SAFE) {
 			spin_lock.unlock();
 		}
 
@@ -156,14 +156,14 @@ public:
 		if (p_rid == RID()) {
 			return nullptr;
 		}
-		if (THREAD_SAFE) {
+		if constexpr (THREAD_SAFE) {
 			spin_lock.lock();
 		}
 
 		uint64_t id = p_rid.get_id();
 		uint32_t idx = uint32_t(id & 0xFFFFFFFF);
 		if (unlikely(idx >= max_alloc)) {
-			if (THREAD_SAFE) {
+			if constexpr (THREAD_SAFE) {
 				spin_lock.unlock();
 			}
 			return nullptr;
@@ -176,14 +176,14 @@ public:
 
 		if (unlikely(p_initialize)) {
 			if (unlikely(!(validator_chunks[idx_chunk][idx_element] & 0x80000000))) {
-				if (THREAD_SAFE) {
+				if constexpr (THREAD_SAFE) {
 					spin_lock.unlock();
 				}
 				ERR_FAIL_V_MSG(nullptr, "Initializing already initialized RID");
 			}
 
 			if (unlikely((validator_chunks[idx_chunk][idx_element] & 0x7FFFFFFF) != validator)) {
-				if (THREAD_SAFE) {
+				if constexpr (THREAD_SAFE) {
 					spin_lock.unlock();
 				}
 				ERR_FAIL_V_MSG(nullptr, "Attempting to initialize the wrong RID");
@@ -192,7 +192,7 @@ public:
 			validator_chunks[idx_chunk][idx_element] &= 0x7FFFFFFF; //initialized
 
 		} else if (unlikely(validator_chunks[idx_chunk][idx_element] != validator)) {
-			if (THREAD_SAFE) {
+			if constexpr (THREAD_SAFE) {
 				spin_lock.unlock();
 			}
 			if ((validator_chunks[idx_chunk][idx_element] & 0x80000000) && validator_chunks[idx_chunk][idx_element] != 0xFFFFFFFF) {
@@ -203,7 +203,7 @@ public:
 
 		T *ptr = &chunks[idx_chunk][idx_element];
 
-		if (THREAD_SAFE) {
+		if constexpr (THREAD_SAFE) {
 			spin_lock.unlock();
 		}
 
@@ -221,14 +221,14 @@ public:
 	}
 
 	_FORCE_INLINE_ bool owns(const RID &p_rid) const {
-		if (THREAD_SAFE) {
+		if constexpr (THREAD_SAFE) {
 			spin_lock.lock();
 		}
 
 		uint64_t id = p_rid.get_id();
 		uint32_t idx = uint32_t(id & 0xFFFFFFFF);
 		if (unlikely(idx >= max_alloc)) {
-			if (THREAD_SAFE) {
+			if constexpr (THREAD_SAFE) {
 				spin_lock.unlock();
 			}
 			return false;
@@ -241,7 +241,7 @@ public:
 
 		bool owned = (validator != 0x7FFFFFFF) && (validator_chunks[idx_chunk][idx_element] & 0x7FFFFFFF) == validator;
 
-		if (THREAD_SAFE) {
+		if constexpr (THREAD_SAFE) {
 			spin_lock.unlock();
 		}
 
@@ -249,14 +249,14 @@ public:
 	}
 
 	_FORCE_INLINE_ void free(const RID &p_rid) {
-		if (THREAD_SAFE) {
+		if constexpr (THREAD_SAFE) {
 			spin_lock.lock();
 		}
 
 		uint64_t id = p_rid.get_id();
 		uint32_t idx = uint32_t(id & 0xFFFFFFFF);
 		if (unlikely(idx >= max_alloc)) {
-			if (THREAD_SAFE) {
+			if constexpr (THREAD_SAFE) {
 				spin_lock.unlock();
 			}
 			ERR_FAIL();
@@ -267,12 +267,12 @@ public:
 
 		uint32_t validator = uint32_t(id >> 32);
 		if (unlikely(validator_chunks[idx_chunk][idx_element] & 0x80000000)) {
-			if (THREAD_SAFE) {
+			if constexpr (THREAD_SAFE) {
 				spin_lock.unlock();
 			}
 			ERR_FAIL_MSG("Attempted to free an uninitialized or invalid RID.");
 		} else if (unlikely(validator_chunks[idx_chunk][idx_element] != validator)) {
-			if (THREAD_SAFE) {
+			if constexpr (THREAD_SAFE) {
 				spin_lock.unlock();
 			}
 			ERR_FAIL();
@@ -284,7 +284,7 @@ public:
 		alloc_count--;
 		free_list_chunks[alloc_count / elements_in_chunk][alloc_count % elements_in_chunk] = idx;
 
-		if (THREAD_SAFE) {
+		if constexpr (THREAD_SAFE) {
 			spin_lock.unlock();
 		}
 	}
@@ -293,7 +293,7 @@ public:
 		return alloc_count;
 	}
 	void get_owned_list(List<RID> *p_owned) const {
-		if (THREAD_SAFE) {
+		if constexpr (THREAD_SAFE) {
 			spin_lock.lock();
 		}
 		for (size_t i = 0; i < max_alloc; i++) {
@@ -302,14 +302,14 @@ public:
 				p_owned->push_back(_make_from_id((validator << 32) | i));
 			}
 		}
-		if (THREAD_SAFE) {
+		if constexpr (THREAD_SAFE) {
 			spin_lock.unlock();
 		}
 	}
 
 	//used for fast iteration in the elements or RIDs
 	void fill_owned_buffer(RID *p_rid_buffer) const {
-		if (THREAD_SAFE) {
+		if constexpr (THREAD_SAFE) {
 			spin_lock.lock();
 		}
 		uint32_t idx = 0;
@@ -320,7 +320,7 @@ public:
 				idx++;
 			}
 		}
-		if (THREAD_SAFE) {
+		if constexpr (THREAD_SAFE) {
 			spin_lock.unlock();
 		}
 	}

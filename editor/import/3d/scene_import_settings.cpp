@@ -464,7 +464,14 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 		mesh_node->add_child(collider_view, true);
 		collider_view->set_owner(mesh_node);
 
-		AABB aabb = mesh_node->get_aabb();
+		Transform3D accum_xform;
+		Node3D *base = mesh_node;
+		while (base) {
+			accum_xform = base->get_transform() * accum_xform;
+			base = Object::cast_to<Node3D>(base->get_parent());
+		}
+
+		AABB aabb = accum_xform.xform(mesh_node->get_mesh()->get_aabb());
 
 		if (first_aabb) {
 			contents_aabb = aabb;

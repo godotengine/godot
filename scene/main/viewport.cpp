@@ -1933,7 +1933,12 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					}
 				}
 
-				if (!is_tooltip_shown && over->can_process()) {
+				// If the tooltip timer isn't running, start it.
+				// Otherwise, only reset the timer if the mouse has moved more than 5 pixels.
+				if (!is_tooltip_shown && over->can_process() &&
+						(gui.tooltip_timer.is_null() ||
+								Math::is_zero_approx(gui.tooltip_timer->get_time_left()) ||
+								mm->get_relative().length() > 5.0)) {
 					if (gui.tooltip_timer.is_valid()) {
 						gui.tooltip_timer->release_connections();
 						gui.tooltip_timer = Ref<SceneTreeTimer>();

@@ -86,6 +86,8 @@ protected:
 	virtual void reset_local_to_scene();
 	GDVIRTUAL0(_setup_local_to_scene);
 
+	GDVIRTUAL0RC(RID, _get_rid);
+
 public:
 	void _take_over_path(const String &p_path);
 	static Node *(*_get_local_scene_func)(); //used by editor
