@@ -2630,6 +2630,15 @@
 				  - Position + Custom data: 16 floats (12 floats for Transform3D, 4 floats of custom data)
 				  - Position + Vertex color + Custom data: 20 floats (12 floats for Transform3D, 4 floats for Color, 4 floats of custom data)
 				[/codeblock]
+				All the transforms i.e Transform2D and Transform3D should be in Row-Major form.
+				Example:
+				If the Transform3D is:
+				[codeblock lang=text]
+				1 0 0 x
+				0 1 0 y
+				0 0 1 z
+				[/codeblock]
+				then the [PackedFloat32Array] will be `[1, 0, 0, x, 0, 1, 0, y, 0, 0, 1, z]`
 			</description>
 		</method>
 		<method name="multimesh_set_buffer_interpolated">
