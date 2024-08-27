@@ -415,6 +415,10 @@ public:
 		EditorBottomPanel* p_control = EditorNode::get_bottom_panel();
 		icon = p_control->get_editor_theme_icon(p_icon);
 		set_draggable(false);
+		if(Object::cast_to<BeehaveNodeTemplateRef>(beehave_node.ptr()))
+		{
+			set_modulate(Color(0.5, 0.8, 0.9, 1));
+		}
 	}
 	void _ready()
 	{

@@ -530,22 +530,42 @@ struct BeehaveRunTool
 	Ref<BeehaveRuncontext> run_context;
 	Ref<BeehaveTree> tree;
 
-	void play()
+	void play(const Ref<BeehaveTree>& p_tree)
 	{
 		stop();
-		run_context.instantiate();
-		if(!init_run_context())
+		CharacterBodyMain* main = CharacterBodyMain::get_current_editor_player();
+		if (main == nullptr || main->get_blackboard_plan().is_null())
 		{
 			return;
 		}
+		tree = p_tree;
+		if(tree.is_null())
+		{
+			return;
+		}
+		run_context.instantiate();
 		is_running = true;
 		is_paused = false;
 		tree->init(run_context);
+		run_context->actor = main;
+		run_context->delta = detail;
+		run_context->blackboard = main->get_blackboard_plan()->get_editor_blackboard();
+	}
+	void pause()
+	{
+		if(tree.is_null())
+		{
+			return;
+		}
+		is_paused = true;
 	}
 
 	void tick(float p_delta)
 	{
-
+		if(tree.is_null())
+		{
+			return;
+		}
 		detail = time_scale * p_delta;
 		curr_time += p_delta;
 		if(tree->process(run_context) != 2)
@@ -560,27 +580,6 @@ struct BeehaveRunTool
 		is_paused = false;
 		detail = 0.0f;
 		run_context.unref();
-	}
-	bool init_run_context()
-	{
-		CharacterBodyMain* main = CharacterBodyMain::get_current_editor_player();
-		if(main == nullptr)
-		{
-			return false;
-		}
-		if(!is_running)
-		{
-			return false;
-		}
-		if(is_paused)
-		{
-			return false;
-		}
-		run_context->actor = main;
-		run_context->delta = detail;
-		run_context->blackboard = main->get_blackboard_plan()->get_editor_blackboard();
-		return true;
-
 	}
 };
 
@@ -713,6 +712,7 @@ public:
 #ifdef TOOLS_ENABLED
 			set_collapsed(!beehave_tree->editor_is_section_unfolded("Beehave Tree Condition"));
 #endif
+		_update_play_gui_state();
 	}
 	void process(double delta)override
 	{
@@ -726,6 +726,7 @@ public:
 		{
 			play_help->set_visible(false);
 		}
+		run_tool.tick(delta);
 		beehave_editor->process_begin();
 		beehave_editor->process(delta);
 		beehave_editor->process_end();
@@ -753,17 +754,48 @@ public:
 		beehave_editor->_update_graph();
 	}
 	void _on_play_pressed() {
-		run_tool.is_running = true;		
-		run_tool.is_paused = false;		
+		run_tool.play(beehave_tree);
+		_update_play_gui_state();
 	}
 	void _on_pause_pressed() {
-		run_tool.is_paused = true;		
+		run_tool.pause();
 		
+		_update_play_gui_state();
 	}
 	void _on_stop_pressed() {
-		run_tool.is_running = false;		
-		run_tool.is_paused = false;	
-		
+		run_tool.stop();
+		_update_play_gui_state();
+	}
+	void _update_play_gui_state() {
+		if(run_tool.is_running)
+		{
+			play_button->set_disabled(true);
+			play_button->set_focus_mode(FOCUS_NONE);
+		}else
+		{
+			play_button->set_disabled(false);
+			play_button->set_focus_mode(FOCUS_CLICK);
+		}
+
+		if(run_tool.is_paused)
+		{
+			pause_button->set_disabled(true);
+			pause_button->set_focus_mode(FOCUS_NONE);
+		}else
+		{
+			pause_button->set_disabled(false);
+			pause_button->set_focus_mode(FOCUS_CLICK);
+		}
+
+		if(run_tool.is_paused || run_tool.is_running)
+		{
+			stop_button->set_disabled(false);
+			stop_button->set_focus_mode(FOCUS_CLICK);
+		}else
+		{
+			stop_button->set_disabled(true);
+			stop_button->set_focus_mode(FOCUS_NONE);
+		}
 	}
 	void _on_slider_changed(double p_value) {
 		

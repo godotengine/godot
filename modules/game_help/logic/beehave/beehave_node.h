@@ -35,7 +35,7 @@ public:
     void init_child_state(Object* curr_this_node,int child_count)
     {
         Dictionary rs = get_property(curr_this_node);
-        Vector<int32_t> child_state = rs.get("child_status", Vector<int32_t>());
+        Vector<int32_t> child_state = rs["child_status"];
         child_state.resize(child_count);
         child_state.fill(0);
         rs[SNAME("run_state")] = -1;
@@ -447,18 +447,120 @@ public:
 };
 
 // 模板
-class BeehaveNodeTemplate : public RefCounted
+class BeehaveNodeTemplate : public Resource
 {
-    GDCLASS(BeehaveNodeTemplate, RefCounted);
+    GDCLASS(BeehaveNodeTemplate, Resource);
     static void _bind_methods()
     {
     }
 public:
-
+	void interrupt(const Ref<BeehaveRuncontext>& run_context)  
+	{
+		if (node.is_valid())
+		{
+			node->interrupt(run_context);
+		}
+	}
+	void before_run(const Ref<BeehaveRuncontext>& run_context)  
+	{
+		if (node.is_valid())
+		{
+			node->before_run(run_context);
+		}
+	}
+	virtual void after_run(const Ref<BeehaveRuncontext>& run_context) 
+	{
+		if (node.is_valid())
+		{
+			node->after_run(run_context);
+		}
+	}
+	virtual int tick(const Ref<BeehaveRuncontext>& run_context) 
+	{
+		if (node.is_valid())
+		{
+			return node->tick(run_context);
+		}
+		return BeehaveNode::FAILURE;
+	}
 protected:
     StringName group;
 
     Ref<BeehaveNode> node;
+};
+// 模板引用节点
+class BeehaveNodeTemplateRef : public BeehaveAction
+{
+    GDCLASS(BeehaveNodeTemplateRef, BeehaveAction);
+    static void _bind_methods()
+    {
+        ClassDB::bind_method(D_METHOD("set_node_template", "node_template"), &BeehaveNodeTemplateRef::set_node_template);
+        ClassDB::bind_method(D_METHOD("get_node_template"), &BeehaveNodeTemplateRef::get_node_template);
+
+        ClassDB::bind_method(D_METHOD("set_editor_template", "editor_template"), &BeehaveNodeTemplateRef::set_editor_template);
+        ClassDB::bind_method(D_METHOD("get_editor_template"), &BeehaveNodeTemplateRef::get_editor_template);
+
+        ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_template"), "set_editor_template", "get_editor_template");
+        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "node_template", PROPERTY_HINT_RESOURCE_TYPE, "BeehaveNodeTemplate", PROPERTY_USAGE_NO_EDITOR), "set_node_template", "get_node_template");
+    }
+public:
+    virtual String get_tooltip()override
+    {
+        return String(L"这个节点可以引用一个模板,并且可以对这个模板节点进行编辑,\n编辑模板节点后可以应用到所有的引用的这个模板节点中");
+    }
+    virtual String get_lable_name()
+    {
+        return String(L"模板引用节点");
+    }
+    virtual void interrupt(const Ref<BeehaveRuncontext>& run_context)  override
+    {
+        if(node_template.is_valid())
+        {
+            node_template->interrupt(run_context);
+        }
+    }
+    virtual void before_run(const Ref<BeehaveRuncontext>& run_context)  override
+    {
+        if(node_template.is_valid())
+        {
+            node_template->before_run(run_context);
+        }
+    }
+    virtual void after_run(const Ref<BeehaveRuncontext>& run_context)  override
+    {
+        if(node_template.is_valid())
+        {
+            node_template->after_run(run_context);
+        }
+    }
+    virtual int tick(const Ref<BeehaveRuncontext>& run_context)  override
+    {
+        if(node_template.is_valid())
+        {
+            return node_template->tick(run_context);
+        }
+        return FAILURE;
+    }
+public:
+    void set_node_template(Ref<BeehaveNodeTemplate> p_node_template)
+    {
+        this->node_template = p_node_template;
+    }
+    Ref<BeehaveNodeTemplate> get_node_template()
+    {
+        return node_template;
+    }
+    void set_editor_template(bool p_editor_template)
+    {
+        editor_template = p_editor_template;
+    }
+    bool get_editor_template()
+    {
+        return editor_template;
+    }
+protected:
+    Ref<BeehaveNodeTemplate> node_template;
+    bool editor_template = false;
 };
 
 class BeehaveNodeTemplateManager : public RefCounted
