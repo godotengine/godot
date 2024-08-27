@@ -114,4 +114,36 @@ public:
 	RichTextEffect();
 };
 
+class RichTextTransition : public Resource {
+	GDCLASS(RichTextTransition, Resource);
+	OBJ_SAVE_TYPE(RichTextTransition);
+
+protected:
+	static void _bind_methods();
+
+	GDVIRTUAL1RC(bool, _process_enter_fx, Ref<CharFXTransform>);
+	GDVIRTUAL1RC(bool, _process_exit_fx, Ref<CharFXTransform>);
+
+public:
+	struct CharacterToTransition {
+		bool is_enter = true;
+		float elapsed_time = 0.0;
+
+		CharacterToTransition() {}
+		CharacterToTransition(bool p_is_enter) {
+			is_enter = p_is_enter;
+		}
+	};
+	const uint8_t MAX_CONCURRENT_TRANSITIONING_CHARS = 20;
+	// key: index of character in source text
+	HashMap<int, CharacterToTransition> characters_to_transition;
+	Ref<CharFXTransform> char_fx_transform;
+
+	void _update_characters_to_transition(int p_previous_visible_characters, int p_current_visible_characters);
+	bool _process_enter_fx_impl(Ref<class CharFXTransform> p_cfx);
+	bool _process_exit_fx_impl(Ref<class CharFXTransform> p_cfx);
+
+	RichTextTransition();
+};
+
 #endif // RICH_TEXT_EFFECT_H
