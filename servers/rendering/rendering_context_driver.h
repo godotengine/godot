@@ -102,6 +102,8 @@ public:
 	virtual void surface_destroy(SurfaceID p_surface) = 0;
 	virtual bool is_debug_utils_enabled() const = 0;
 
+	String get_driver_and_device_memory_report() const;
+
 	virtual const char *get_tracked_object_name(uint32_t p_type_index) const;
 	virtual uint64_t get_tracked_object_type_count() const;
 

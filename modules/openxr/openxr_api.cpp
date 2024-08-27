@@ -1737,8 +1737,12 @@ void OpenXRAPI::cleanup_extension_wrappers() {
 
 XrHandTrackerEXT OpenXRAPI::get_hand_tracker(int p_hand_index) {
 	ERR_FAIL_INDEX_V(p_hand_index, OpenXRHandTrackingExtension::HandTrackedHands::OPENXR_MAX_TRACKED_HANDS, XR_NULL_HANDLE);
+
+	OpenXRHandTrackingExtension *hand_tracking = OpenXRHandTrackingExtension::get_singleton();
+	ERR_FAIL_NULL_V(hand_tracking, XR_NULL_HANDLE);
+
 	OpenXRHandTrackingExtension::HandTrackedHands hand = static_cast<OpenXRHandTrackingExtension::HandTrackedHands>(p_hand_index);
-	return OpenXRHandTrackingExtension::get_singleton()->get_hand_tracker(hand)->hand_tracker;
+	return hand_tracking->get_hand_tracker(hand)->hand_tracker;
 }
 
 Size2 OpenXRAPI::get_recommended_target_size() {

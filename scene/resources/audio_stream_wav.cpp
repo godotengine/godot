@@ -560,6 +560,7 @@ double AudioStreamWAV::get_length() const {
 			qoa_desc desc = { 0, 0, 0, { { { 0 }, { 0 } } } };
 			qoa_decode_header((uint8_t *)data + DATA_PAD, data_bytes, &desc);
 			len = desc.samples * desc.channels;
+			break;
 	}
 
 	if (stereo) {

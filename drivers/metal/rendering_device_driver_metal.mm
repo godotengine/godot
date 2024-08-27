@@ -60,8 +60,21 @@
 
 #import <Metal/MTLTexture.h>
 #import <Metal/Metal.h>
+#import <os/log.h>
+#import <os/signpost.h>
 #import <spirv_msl.hpp>
 #import <spirv_parser.hpp>
+
+#pragma mark - Logging
+
+os_log_t LOG_DRIVER;
+// Used for dynamic tracing.
+os_log_t LOG_INTERVALS;
+
+__attribute__((constructor)) static void InitializeLogging(void) {
+	LOG_DRIVER = os_log_create("org.godotengine.godot.metal", OS_LOG_CATEGORY_POINTS_OF_INTEREST);
+	LOG_INTERVALS = os_log_create("org.godotengine.godot.metal", "events");
+}
 
 /*****************/
 /**** GENERIC ****/
@@ -2258,6 +2271,15 @@ Vector<uint8_t> RenderingDeviceDriverMetal::shader_compile_binary_from_spirv(Vec
 	return ret;
 }
 
+void RenderingDeviceDriverMetal::shader_cache_free_entry(const SHA256Digest &key) {
+	if (ShaderCacheEntry **pentry = _shader_cache.getptr(key); pentry != nullptr) {
+		ShaderCacheEntry *entry = *pentry;
+		_shader_cache.erase(key);
+		entry->library = nil;
+		memdelete(entry);
+	}
+}
+
 RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name) {
 	r_shader_desc = {}; // Driver-agnostic.
 
@@ -2285,18 +2307,30 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_bytecode(const Vect
 
 	MTLCompileOptions *options = [MTLCompileOptions new];
 	options.languageVersion = binary_data.get_msl_version();
-	HashMap<ShaderStage, id<MTLLibrary>> libraries;
+	HashMap<ShaderStage, MDLibrary *> libraries;
+
 	for (ShaderStageData &shader_data : binary_data.stages) {
-		NSString *source = [[NSString alloc] initWithBytesNoCopy:(void *)shader_data.source.ptr()
-														  length:shader_data.source.length()
-														encoding:NSUTF8StringEncoding
-													freeWhenDone:NO];
-		NSError *error = nil;
-		id<MTLLibrary> library = [device newLibraryWithSource:source options:options error:&error];
-		if (error != nil) {
-			print_error(error.localizedDescription.UTF8String);
-			ERR_FAIL_V_MSG(ShaderID(), "failed to compile Metal source");
+		SHA256Digest key = SHA256Digest(shader_data.source.ptr(), shader_data.source.length());
+
+		if (ShaderCacheEntry **p = _shader_cache.getptr(key); p != nullptr) {
+			libraries[shader_data.stage] = (*p)->library;
+			continue;
 		}
+
+		NSString *source = [[NSString alloc] initWithBytes:(void *)shader_data.source.ptr()
+													length:shader_data.source.length()
+												  encoding:NSUTF8StringEncoding];
+
+		ShaderCacheEntry *cd = memnew(ShaderCacheEntry(*this, key));
+		cd->name = binary_data.shader_name;
+		cd->stage = shader_data.stage;
+
+		MDLibrary *library = [MDLibrary newLibraryWithCacheEntry:cd
+														  device:device
+														  source:source
+														 options:options
+														strategy:_shader_load_strategy];
+		_shader_cache[key] = cd;
 		libraries[shader_data.stage] = library;
 	}
 
@@ -3062,8 +3096,13 @@ void RenderingDeviceDriverMetal::command_render_set_line_width(CommandBufferID p
 
 // ----- PIPELINE -----
 
-RenderingDeviceDriverMetal::Result<id<MTLFunction>> RenderingDeviceDriverMetal::_create_function(id<MTLLibrary> p_library, NSString *p_name, VectorView<PipelineSpecializationConstant> &p_specialization_constants) {
-	id<MTLFunction> function = [p_library newFunctionWithName:p_name];
+RenderingDeviceDriverMetal::Result<id<MTLFunction>> RenderingDeviceDriverMetal::_create_function(MDLibrary *p_library, NSString *p_name, VectorView<PipelineSpecializationConstant> &p_specialization_constants) {
+	id<MTLLibrary> library = p_library.library;
+	if (!library) {
+		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Failed to compile Metal library");
+	}
+
+	id<MTLFunction> function = [library newFunctionWithName:p_name];
 	ERR_FAIL_NULL_V_MSG(function, ERR_CANT_CREATE, "No function named main0");
 
 	if (function.functionConstantsDictionary.count == 0) {
@@ -3091,12 +3130,22 @@ RenderingDeviceDriverMetal::Result<id<MTLFunction>> RenderingDeviceDriverMetal::
 		}];
 	}
 
+	// Initialize an array of integers representing the indexes of p_specialization_constants
+	uint32_t *indexes = (uint32_t *)alloca(p_specialization_constants.size() * sizeof(uint32_t));
+	for (uint32_t i = 0; i < p_specialization_constants.size(); i++) {
+		indexes[i] = i;
+	}
+	// Sort the array of integers based on the values in p_specialization_constants
+	std::sort(indexes, &indexes[p_specialization_constants.size()], [&](int a, int b) {
+		return p_specialization_constants[a].constant_id < p_specialization_constants[b].constant_id;
+	});
+
 	MTLFunctionConstantValues *constantValues = [MTLFunctionConstantValues new];
 	uint32_t i = 0;
 	uint32_t j = 0;
 	while (i < constants.count && j < p_specialization_constants.size()) {
 		MTLFunctionConstant *curr = constants[i];
-		PipelineSpecializationConstant const &sc = p_specialization_constants[j];
+		PipelineSpecializationConstant const &sc = p_specialization_constants[indexes[j]];
 		if (curr.index == sc.constant_id) {
 			switch (curr.type) {
 				case MTLDataTypeBool:
@@ -3131,9 +3180,9 @@ RenderingDeviceDriverMetal::Result<id<MTLFunction>> RenderingDeviceDriverMetal::
 	}
 
 	NSError *err = nil;
-	function = [p_library newFunctionWithName:@"main0"
-							   constantValues:constantValues
-										error:&err];
+	function = [library newFunctionWithName:@"main0"
+							 constantValues:constantValues
+									  error:&err];
 	ERR_FAIL_NULL_V_MSG(function, ERR_CANT_CREATE, String("specialized function failed: ") + err.localizedDescription.UTF8String);
 
 	return function;
@@ -3177,6 +3226,14 @@ RDD::PipelineID RenderingDeviceDriverMetal::render_pipeline_create(
 	MDRenderShader *shader = (MDRenderShader *)(p_shader.id);
 	MTLVertexDescriptor *vert_desc = rid::get(p_vertex_format);
 	MDRenderPass *pass = (MDRenderPass *)(p_render_pass.id);
+
+	os_signpost_id_t reflect_id = os_signpost_id_make_with_pointer(LOG_INTERVALS, shader);
+	os_signpost_interval_begin(LOG_INTERVALS, reflect_id, "render_pipeline_create", "shader_name=%{public}s", shader->name.get_data());
+	DEFER([=]() {
+		os_signpost_interval_end(LOG_INTERVALS, reflect_id, "render_pipeline_create");
+	});
+
+	os_signpost_event_emit(LOG_DRIVER, OS_SIGNPOST_ID_EXCLUSIVE, "create_pipeline");
 
 	MTLRenderPipelineDescriptor *desc = [MTLRenderPipelineDescriptor new];
 
@@ -3472,9 +3529,15 @@ void RenderingDeviceDriverMetal::command_compute_dispatch_indirect(CommandBuffer
 RDD::PipelineID RenderingDeviceDriverMetal::compute_pipeline_create(ShaderID p_shader, VectorView<PipelineSpecializationConstant> p_specialization_constants) {
 	MDComputeShader *shader = (MDComputeShader *)(p_shader.id);
 
-	id<MTLLibrary> library = shader->kernel;
+	os_signpost_id_t reflect_id = os_signpost_id_make_with_pointer(LOG_INTERVALS, shader);
+	os_signpost_interval_begin(LOG_INTERVALS, reflect_id, "compute_pipeline_create", "shader_name=%{public}s", shader->name.get_data());
+	DEFER([=]() {
+		os_signpost_interval_end(LOG_INTERVALS, reflect_id, "compute_pipeline_create");
+	});
 
-	Result<id<MTLFunction>> function_or_err = _create_function(library, @"main0", p_specialization_constants);
+	os_signpost_event_emit(LOG_DRIVER, OS_SIGNPOST_ID_EXCLUSIVE, "create_pipeline");
+
+	Result<id<MTLFunction>> function_or_err = _create_function(shader->kernel, @"main0", p_specialization_constants);
 	ERR_FAIL_COND_V(std::holds_alternative<Error>(function_or_err), PipelineID());
 	id<MTLFunction> function = std::get<id<MTLFunction>>(function_or_err);
 
@@ -3575,12 +3638,13 @@ void RenderingDeviceDriverMetal::set_object_name(ObjectType p_type, ID p_driver_
 			buffer.label = [NSString stringWithUTF8String:p_name.utf8().get_data()];
 		} break;
 		case OBJECT_TYPE_SHADER: {
+			NSString *label = [NSString stringWithUTF8String:p_name.utf8().get_data()];
 			MDShader *shader = (MDShader *)(p_driver_id.id);
 			if (MDRenderShader *rs = dynamic_cast<MDRenderShader *>(shader); rs != nullptr) {
-				rs->vert.label = [NSString stringWithUTF8String:p_name.utf8().get_data()];
-				rs->frag.label = [NSString stringWithUTF8String:p_name.utf8().get_data()];
+				[rs->vert setLabel:label];
+				[rs->frag setLabel:label];
 			} else if (MDComputeShader *cs = dynamic_cast<MDComputeShader *>(shader); cs != nullptr) {
-				cs->kernel.label = [NSString stringWithUTF8String:p_name.utf8().get_data()];
+				[cs->kernel setLabel:label];
 			} else {
 				DEV_ASSERT(false);
 			}
@@ -3769,7 +3833,7 @@ uint64_t RenderingDeviceDriverMetal::api_trait_get(ApiTrait p_trait) {
 bool RenderingDeviceDriverMetal::has_feature(Features p_feature) {
 	switch (p_feature) {
 		case SUPPORTS_MULTIVIEW:
-			return true;
+			return false;
 		case SUPPORTS_FSR_HALF_FLOAT:
 			return true;
 		case SUPPORTS_ATTACHMENT_VRS:
@@ -3820,11 +3884,19 @@ size_t RenderingDeviceDriverMetal::get_texel_buffer_alignment_for_format(MTLPixe
 RenderingDeviceDriverMetal::RenderingDeviceDriverMetal(RenderingContextDriverMetal *p_context_driver) :
 		context_driver(p_context_driver) {
 	DEV_ASSERT(p_context_driver != nullptr);
+
+	if (String res = OS::get_singleton()->get_environment("GODOT_MTL_SHADER_LOAD_STRATEGY"); res == U"lazy") {
+		_shader_load_strategy = ShaderLoadStrategy::LAZY;
+	}
 }
 
 RenderingDeviceDriverMetal::~RenderingDeviceDriverMetal() {
 	for (MDCommandBuffer *cb : command_buffers) {
 		delete cb;
+	}
+
+	for (KeyValue<SHA256Digest, ShaderCacheEntry *> &kv : _shader_cache) {
+		memdelete(kv.value);
 	}
 }
 

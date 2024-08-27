@@ -106,7 +106,7 @@ const char *RenderingContextDriverVulkan::get_tracked_object_name(uint32_t p_typ
 
 	return vkTrackedObjectTypeNames[p_type_index];
 #else
-	return "VK_TRACK_DRIVER_* disabled at build time";
+	return "VK_TRACK_*_MEMORY disabled at build time";
 #endif
 }
 
@@ -120,6 +120,8 @@ uint64_t RenderingContextDriverVulkan::get_tracked_object_type_count() const {
 RenderingContextDriverVulkan::VkTrackedObjectType vk_object_to_tracked_object(VkObjectType p_type) {
 	if (p_type > VK_OBJECT_TYPE_COMMAND_POOL && p_type != (VkObjectType)RenderingContextDriverVulkan::VK_TRACKED_OBJECT_TYPE_VMA) {
 		switch (p_type) {
+			case VK_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE:
+				return RenderingContextDriverVulkan::VK_TRACKED_OBJECT_DESCRIPTOR_UPDATE_TEMPLATE_KHR;
 			case VK_OBJECT_TYPE_SURFACE_KHR:
 				return RenderingContextDriverVulkan::VK_TRACKED_OBJECT_TYPE_SURFACE;
 			case VK_OBJECT_TYPE_SWAPCHAIN_KHR:
@@ -128,6 +130,9 @@ RenderingContextDriverVulkan::VkTrackedObjectType vk_object_to_tracked_object(Vk
 				return RenderingContextDriverVulkan::VK_TRACKED_OBJECT_TYPE_DEBUG_UTILS_MESSENGER_EXT;
 			case VK_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT:
 				return RenderingContextDriverVulkan::VK_TRACKED_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT;
+			case VK_OBJECT_TYPE_ACCELERATION_STRUCTURE_KHR:
+			case VK_OBJECT_TYPE_ACCELERATION_STRUCTURE_NV:
+				return RenderingContextDriverVulkan::VK_TRACKED_OBJECT_TYPE_ACCELERATION_STRUCTURE;
 			default:
 				_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Unknown VkObjectType enum value " + itos((uint32_t)p_type) + ".Please add it to VkTrackedObjectType, switch statement in "
 																																 "vk_object_to_tracked_object and get_tracked_object_name.",
@@ -229,6 +234,16 @@ VkAllocationCallbacks *RenderingContextDriverVulkan::get_allocation_callbacks(Vk
 #if !defined(VK_TRACK_DRIVER_MEMORY)
 	return nullptr;
 #else
+	if (!Engine::get_singleton()->is_extra_gpu_memory_tracking_enabled()) {
+		return nullptr;
+	}
+
+#ifdef _MSC_VER
+#define LAMBDA_VK_CALL_CONV
+#else
+#define LAMBDA_VK_CALL_CONV VKAPI_PTR
+#endif
+
 	struct TrackedMemHeader {
 		size_t size;
 		VkSystemAllocationScope allocation_scope;
@@ -241,7 +256,7 @@ VkAllocationCallbacks *RenderingContextDriverVulkan::get_allocation_callbacks(Vk
 				void *p_user_data,
 				size_t size,
 				size_t alignment,
-				VkSystemAllocationScope allocation_scope) -> void * {
+				VkSystemAllocationScope allocation_scope) LAMBDA_VK_CALL_CONV -> void * {
 			static constexpr size_t tracking_data_size = 32;
 			VkTrackedObjectType type = static_cast<VkTrackedObjectType>(*reinterpret_cast<VkTrackedObjectType *>(p_user_data));
 
@@ -274,7 +289,7 @@ VkAllocationCallbacks *RenderingContextDriverVulkan::get_allocation_callbacks(Vk
 				void *p_original,
 				size_t size,
 				size_t alignment,
-				VkSystemAllocationScope allocation_scope) -> void * {
+				VkSystemAllocationScope allocation_scope) LAMBDA_VK_CALL_CONV -> void * {
 			if (p_original == nullptr) {
 				VkObjectType type = static_cast<VkObjectType>(*reinterpret_cast<uint32_t *>(p_user_data));
 				return get_allocation_callbacks(type)->pfnAllocation(p_user_data, size, alignment, allocation_scope);
@@ -305,7 +320,7 @@ VkAllocationCallbacks *RenderingContextDriverVulkan::get_allocation_callbacks(Vk
 		// Free function
 		[](
 				void *p_user_data,
-				void *p_memory) {
+				void *p_memory) LAMBDA_VK_CALL_CONV {
 			if (!p_memory) {
 				return;
 			}
@@ -326,13 +341,13 @@ VkAllocationCallbacks *RenderingContextDriverVulkan::get_allocation_callbacks(Vk
 				void *p_user_data,
 				size_t size,
 				VkInternalAllocationType allocation_type,
-				VkSystemAllocationScope allocation_scope) {
+				VkSystemAllocationScope allocation_scope) LAMBDA_VK_CALL_CONV {
 		},
 		[](
 				void *p_user_data,
 				size_t size,
 				VkInternalAllocationType allocation_type,
-				VkSystemAllocationScope allocation_scope) {
+				VkSystemAllocationScope allocation_scope) LAMBDA_VK_CALL_CONV {
 		},
 	};
 

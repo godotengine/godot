@@ -57,6 +57,10 @@
 #include "modules/svg/image_loader_svg.h"
 #endif
 
+#ifdef ANDROID_ENABLED
+#include "../os_android.h"
+#endif
+
 #include <string.h>
 
 static const char *android_perms[] = {
@@ -2417,6 +2421,10 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 			err += template_err;
 		}
 	} else {
+#ifdef ANDROID_ENABLED
+		err += TTR("Gradle build is not supported for the Android editor.") + "\n";
+		valid = false;
+#else
 		// Validate the custom gradle android source template.
 		bool android_source_template_valid = false;
 		const String android_source_template = p_preset->get("gradle_build/android_source_template");
@@ -2439,6 +2447,7 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 		}
 
 		valid = installed_android_build_template && !r_missing_templates;
+#endif
 	}
 
 	// Validate the rest of the export configuration.
@@ -2475,6 +2484,7 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 		err += TTR("Release keystore incorrectly configured in the export preset.") + "\n";
 	}
 
+#ifndef ANDROID_ENABLED
 	String java_sdk_path = EDITOR_GET("export/android/java_sdk_path");
 	if (java_sdk_path.is_empty()) {
 		err += TTR("A valid Java SDK path is required in Editor Settings.") + "\n";
@@ -2547,6 +2557,7 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 			valid = false;
 		}
 	}
+#endif
 
 	if (!err.is_empty()) {
 		r_error = err;
@@ -2717,23 +2728,9 @@ void EditorExportPlatformAndroid::get_command_line_flags(const Ref<EditorExportP
 
 Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &export_path, EditorProgress &ep) {
 	int export_format = int(p_preset->get("gradle_build/export_format"));
-	String export_label = export_format == EXPORT_FORMAT_AAB ? "AAB" : "APK";
-	String release_keystore = _get_keystore_path(p_preset, false);
-	String release_username = p_preset->get_or_env("keystore/release_user", ENV_ANDROID_KEYSTORE_RELEASE_USER);
-	String release_password = p_preset->get_or_env("keystore/release_password", ENV_ANDROID_KEYSTORE_RELEASE_PASS);
-	String target_sdk_version = p_preset->get("gradle_build/target_sdk");
-	if (!target_sdk_version.is_valid_int()) {
-		target_sdk_version = itos(DEFAULT_TARGET_SDK_VERSION);
-	}
-	String apksigner = get_apksigner_path(target_sdk_version.to_int(), true);
-	print_verbose("Starting signing of the " + export_label + " binary using " + apksigner);
-	if (apksigner == "<FAILED>") {
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("All 'apksigner' tools located in Android SDK 'build-tools' directory failed to execute. Please check that you have the correct version installed for your target sdk version. The resulting %s is unsigned."), export_label));
-		return OK;
-	}
-	if (!FileAccess::exists(apksigner)) {
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("'apksigner' could not be found. Please check that the command is available in the Android SDK build-tools directory. The resulting %s is unsigned."), export_label));
-		return OK;
+	if (export_format == EXPORT_FORMAT_AAB) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("AAB signing is not supported"));
+		return FAILED;
 	}
 
 	String keystore;
@@ -2750,15 +2747,15 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 			user = EDITOR_GET("export/android/debug_keystore_user");
 		}
 
-		if (ep.step(vformat(TTR("Signing debug %s..."), export_label), 104)) {
+		if (ep.step(TTR("Signing debug APK..."), 104)) {
 			return ERR_SKIP;
 		}
 	} else {
-		keystore = release_keystore;
-		password = release_password;
-		user = release_username;
+		keystore = _get_keystore_path(p_preset, false);
+		password = p_preset->get_or_env("keystore/release_password", ENV_ANDROID_KEYSTORE_RELEASE_PASS);
+		user = p_preset->get_or_env("keystore/release_user", ENV_ANDROID_KEYSTORE_RELEASE_USER);
 
-		if (ep.step(vformat(TTR("Signing release %s..."), export_label), 104)) {
+		if (ep.step(TTR("Signing release APK..."), 104)) {
 			return ERR_SKIP;
 		}
 	}
@@ -2766,6 +2763,36 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 	if (!FileAccess::exists(keystore)) {
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Could not find keystore, unable to export."));
 		return ERR_FILE_CANT_OPEN;
+	}
+
+	String apk_path = export_path;
+	if (apk_path.is_relative_path()) {
+		apk_path = OS::get_singleton()->get_resource_dir().path_join(apk_path);
+	}
+	apk_path = ProjectSettings::get_singleton()->globalize_path(apk_path).simplify_path();
+
+	Error err;
+#ifdef ANDROID_ENABLED
+	err = OS_Android::get_singleton()->sign_apk(apk_path, apk_path, keystore, user, password);
+	if (err != OK) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Unable to sign apk."));
+		return err;
+	}
+#else
+	String target_sdk_version = p_preset->get("gradle_build/target_sdk");
+	if (!target_sdk_version.is_valid_int()) {
+		target_sdk_version = itos(DEFAULT_TARGET_SDK_VERSION);
+	}
+
+	String apksigner = get_apksigner_path(target_sdk_version.to_int(), true);
+	print_verbose("Starting signing of the APK binary using " + apksigner);
+	if (apksigner == "<FAILED>") {
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("All 'apksigner' tools located in Android SDK 'build-tools' directory failed to execute. Please check that you have the correct version installed for your target sdk version. The resulting APK is unsigned."));
+		return OK;
+	}
+	if (!FileAccess::exists(apksigner)) {
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("'apksigner' could not be found. Please check that the command is available in the Android SDK build-tools directory. The resulting APK is unsigned."));
+		return OK;
 	}
 
 	String output;
@@ -2778,7 +2805,7 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 	args.push_back("pass:" + password);
 	args.push_back("--ks-key-alias");
 	args.push_back(user);
-	args.push_back(export_path);
+	args.push_back(apk_path);
 	if (OS::get_singleton()->is_stdout_verbose() && p_debug) {
 		// We only print verbose logs with credentials for debug builds to avoid leaking release keystore credentials.
 		print_verbose("Signing debug binary using: " + String("\n") + apksigner + " " + join_list(args, String(" ")));
@@ -2790,7 +2817,7 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 		print_line("Signing binary using: " + String("\n") + apksigner + " " + join_list(redacted_args, String(" ")));
 	}
 	int retval;
-	Error err = OS::get_singleton()->execute(apksigner, args, &output, &retval, true);
+	err = OS::get_singleton()->execute(apksigner, args, &output, &retval, true);
 	if (err != OK) {
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Could not start apksigner executable."));
 		return err;
@@ -2802,15 +2829,23 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("output: \n%s"), output));
 		return ERR_CANT_CREATE;
 	}
+#endif
 
-	if (ep.step(vformat(TTR("Verifying %s..."), export_label), 105)) {
+	if (ep.step(TTR("Verifying APK..."), 105)) {
 		return ERR_SKIP;
 	}
 
+#ifdef ANDROID_ENABLED
+	err = OS_Android::get_singleton()->verify_apk(apk_path);
+	if (err != OK) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Unable to verify signed apk."));
+		return err;
+	}
+#else
 	args.clear();
 	args.push_back("verify");
 	args.push_back("--verbose");
-	args.push_back(export_path);
+	args.push_back(apk_path);
 	if (p_debug) {
 		print_verbose("Verifying signed build using: " + String("\n") + apksigner + " " + join_list(args, String(" ")));
 	}
@@ -2823,10 +2858,11 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 	}
 	print_verbose(output);
 	if (retval) {
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("'apksigner' verification of %s failed."), export_label));
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("'apksigner' verification of APK failed."));
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("output: \n%s"), output));
 		return ERR_CANT_CREATE;
 	}
+#endif
 
 	print_verbose("Successfully completed signing build.");
 	return OK;
@@ -3319,7 +3355,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			src_apk = find_export_template("android_release.apk");
 		}
 		if (src_apk.is_empty()) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Package not found: \"%s\"."), src_apk));
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("%s export template not found: \"%s\"."), (p_debug ? "Debug" : "Release"), src_apk));
 			return ERR_FILE_NOT_FOUND;
 		}
 	}

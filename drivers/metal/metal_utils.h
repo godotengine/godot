@@ -31,6 +31,8 @@
 #ifndef METAL_UTILS_H
 #define METAL_UTILS_H
 
+#import <os/log.h>
+
 #pragma mark - Boolean flags
 
 namespace flags {
@@ -77,5 +79,23 @@ static constexpr uint64_t round_up_to_alignment(uint64_t p_value, uint64_t p_ali
 
 	return aligned_value;
 }
+
+class Defer {
+public:
+	Defer(std::function<void()> func) :
+			func_(func) {}
+	~Defer() { func_(); }
+
+private:
+	std::function<void()> func_;
+};
+
+#define CONCAT_INTERNAL(x, y) x##y
+#define CONCAT(x, y) CONCAT_INTERNAL(x, y)
+#define DEFER const Defer &CONCAT(defer__, __LINE__) = Defer
+
+extern os_log_t LOG_DRIVER;
+// Used for dynamic tracing.
+extern os_log_t LOG_INTERVALS;
 
 #endif // METAL_UTILS_H

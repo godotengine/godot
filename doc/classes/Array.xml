@@ -4,8 +4,7 @@
 		A built-in data structure that holds a sequence of elements.
 	</brief_description>
 	<description>
-		An array data structure that can contain a sequence of elements of any [Variant] type. Elements are accessed by a numerical index starting at 0. Negative indices are used to count from the back (-1 is the last element, -2 is the second to last, etc.).
-		[b]Example:[/b]
+		An array data structure that can contain a sequence of elements of any [Variant] type. Elements are accessed by a numerical index starting at [code]0[/code]. Negative indices are used to count from the back ([code]-1[/code] is the last element, [code]-2[/code] is the second to last, etc.).
 		[codeblocks]
 		[gdscript]
 		var array = ["First", 2, 3, "Last"]
@@ -243,7 +242,7 @@
 				var numbers = [1, 2, 3]
 				var extra = [4, 5, 6]
 				numbers.append_array(extra)
-				print(nums) # Prints [1, 2, 3, 4, 5, 6]
+				print(numbers) # Prints [1, 2, 3, 4, 5, 6]
 				[/codeblock]
 			</description>
 		</method>
@@ -728,7 +727,7 @@
 				    print(my_items) # Prints [["Rice", 4], ["Tomato", 5], ["Apple", 9]]
 
 				    # Sort descending, using a lambda function.
-				    my_items.sort_custom(func(a, b): return a[0] &gt; b[0])
+				    my_items.sort_custom(func(a, b): return a[1] &gt; b[1])
 				    print(my_items) # Prints [["Apple", 9], ["Tomato", 5], ["Rice", 4]]
 				[/codeblock]
 				It may also be necessary to use this method to sort strings by natural order, with [method String.naturalnocasecmp_to], as in the following example:

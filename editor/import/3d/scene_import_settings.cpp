@@ -472,6 +472,7 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 		}
 
 		AABB aabb = accum_xform.xform(mesh_node->get_mesh()->get_aabb());
+
 		if (first_aabb) {
 			contents_aabb = aabb;
 			first_aabb = false;

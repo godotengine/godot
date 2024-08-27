@@ -1855,6 +1855,8 @@ void AnimationTimelineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		if (dragging_hsize) {
 			int ofs = mm->get_position().x - dragging_hsize_from;
 			name_limit = dragging_hsize_at + ofs;
+			// Make sure name_limit is clamped to the range that UI allows.
+			name_limit = get_name_limit();
 			queue_redraw();
 			emit_signal(SNAME("name_limit_changed"));
 			play_position->queue_redraw();
@@ -4498,7 +4500,14 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 
 		} break;
 		case Animation::TYPE_BEZIER: {
-			value = animation->make_default_bezier_key(p_id.value);
+			int existing = animation->track_find_key(p_id.track_idx, time, Animation::FIND_MODE_APPROX);
+			if (existing != -1) {
+				Array arr = animation->track_get_key_value(p_id.track_idx, existing);
+				arr[0] = p_id.value;
+				value = arr;
+			} else {
+				value = animation->make_default_bezier_key(p_id.value);
+			}
 			bezier_edit_icon->set_disabled(false);
 		} break;
 		default: {

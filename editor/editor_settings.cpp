@@ -452,6 +452,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("interface/editor/separate_distraction_mode", false);
 	_initial_set("interface/editor/automatically_open_screenshots", true);
 	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/single_window_mode", false, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	_initial_set("interface/editor/remember_window_size_and_position", true);
 	_initial_set("interface/editor/mouse_extra_buttons_navigate_history", true);
 	_initial_set("interface/editor/save_each_scene_on_quit", true); // Regression
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/save_on_focus_loss", false, "")

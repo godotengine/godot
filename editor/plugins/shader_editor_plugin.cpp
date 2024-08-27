@@ -679,17 +679,17 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	file_menu = memnew(MenuButton);
 	file_menu->set_text(TTR("File"));
 	file_menu->set_shortcut_context(main_split);
-	file_menu->get_popup()->add_item(TTR("New Shader..."), FILE_NEW);
-	file_menu->get_popup()->add_item(TTR("New Shader Include..."), FILE_NEW_INCLUDE);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("shader_editor/new", TTR("New Shader..."), KeyModifierMask::CMD_OR_CTRL | Key::N), FILE_NEW);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("shader_editor/new_include", TTR("New Shader Include..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::N), FILE_NEW_INCLUDE);
 	file_menu->get_popup()->add_separator();
-	file_menu->get_popup()->add_item(TTR("Load Shader File..."), FILE_OPEN);
-	file_menu->get_popup()->add_item(TTR("Load Shader Include File..."), FILE_OPEN_INCLUDE);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("shader_editor/open", TTR("Load Shader File..."), KeyModifierMask::CMD_OR_CTRL | Key::O), FILE_OPEN);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("shader_editor/open_include", TTR("Load Shader Include File..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::O), FILE_OPEN_INCLUDE);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("shader_editor/save", TTR("Save File"), KeyModifierMask::ALT | KeyModifierMask::CMD_OR_CTRL | Key::S), FILE_SAVE);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("shader_editor/save_as", TTR("Save File As...")), FILE_SAVE_AS);
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_item(TTR("Open File in Inspector"), FILE_INSPECT);
 	file_menu->get_popup()->add_separator();
-	file_menu->get_popup()->add_item(TTR("Close File"), FILE_CLOSE);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("shader_editor/close_file", TTR("Close File"), KeyModifierMask::CMD_OR_CTRL | Key::W), FILE_CLOSE);
 	file_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ShaderEditorPlugin::_menu_item_pressed));
 	menu_hb->add_child(file_menu);
 

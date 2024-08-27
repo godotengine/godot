@@ -58,7 +58,6 @@ class ExportTemplateManager : public AcceptDialog {
 
 	HBoxContainer *current_installed_hb = nullptr;
 	LineEdit *current_installed_path = nullptr;
-	Button *current_open_button = nullptr;
 	Button *current_uninstall_button = nullptr;
 
 	VBoxContainer *install_options_vb = nullptr;

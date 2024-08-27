@@ -71,7 +71,9 @@ while read -r file; do
     obsolete_validation_error="$(comm -13 "$validation_output" "$allowed_errors")"
 
     if [ -n "$obsolete_validation_error" ] && [ "$warn_extra" = "1" ]; then
-        make_annotation "The following validation errors no longer occur (compared to $reference_tag):" "$obsolete_validation_error" warning "$file"
+        #make_annotation "The following validation errors no longer occur (compared to $reference_tag):" "$obsolete_validation_error" warning "$file"
+        echo "The following validation errors no longer occur (compared to $reference_tag):"
+        echo "$obsolete_validation_error"
     fi
     if [ -n "$new_validation_error" ]; then
         make_annotation "Compatibility to $reference_tag is broken in the following ways:" "$new_validation_error" error "$file"

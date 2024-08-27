@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		[SpinBox] is a numerical input text field. It allows entering integers and floating-point numbers.
-		[b]Example:[/b]
+		[b]Example:[/b] Create a [SpinBox], disable its context menu and set its text alignment to right.
 		[codeblocks]
 		[gdscript]
 		var spin_box = SpinBox.new()
@@ -22,7 +22,6 @@
 		spinBox.AlignHorizontal = LineEdit.HorizontalAlignEnum.Right;
 		[/csharp]
 		[/codeblocks]
-		The above code will create a [SpinBox], disable context menu on it and set the text alignment to right.
 		See [Range] class for more options over the [SpinBox].
 		[b]Note:[/b] With the [SpinBox]'s context menu disabled, you can right-click the bottom half of the spinbox to set the value to its minimum, while right-clicking the top half sets the value to its maximum.
 		[b]Note:[/b] [SpinBox] relies on an underlying [LineEdit] node. To theme a [SpinBox]'s background, add theme items for [LineEdit] and customize them.

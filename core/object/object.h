@@ -351,7 +351,10 @@ struct ObjectGDExtension {
 	}
 	void *class_userdata = nullptr;
 
+#ifndef DISABLE_DEPRECATED
 	GDExtensionClassCreateInstance create_instance;
+#endif // DISABLE_DEPRECATED
+	GDExtensionClassCreateInstance2 create_instance2;
 	GDExtensionClassFreeInstance free_instance;
 	GDExtensionClassGetVirtual get_virtual;
 	GDExtensionClassGetVirtualCallData get_virtual_call_data;
@@ -633,6 +636,7 @@ private:
 	int _predelete_ok = 0;
 	ObjectID _instance_id;
 	bool _predelete();
+	void _initialize();
 	void _postinitialize();
 	bool _can_translate = true;
 	bool _emitting = false;

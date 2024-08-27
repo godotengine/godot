@@ -297,7 +297,7 @@ void OpenXRHandTrackingExtension::on_process() {
 					godot_tracker->set_hand_joint_radius((XRHandTracker::HandJoint)joint, location.radius);
 
 					if (joint == XR_HAND_JOINT_PALM_EXT) {
-						if (location.locationFlags & XR_SPACE_LOCATION_POSITION_TRACKED_BIT) {
+						if (location.locationFlags & XR_SPACE_LOCATION_POSITION_VALID_BIT) {
 							XrHandTrackingDataSourceStateEXT &data_source = hand_trackers[i].data_source;
 
 							XRHandTracker::HandTrackingSource source = XRHandTracker::HAND_TRACKING_SOURCE_UNKNOWN;

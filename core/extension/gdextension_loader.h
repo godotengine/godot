@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  FileErrors.kt                                                         */
+/*  gdextension_loader.h                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,26 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.io.file
+#ifndef GDEXTENSION_LOADER_H
+#define GDEXTENSION_LOADER_H
 
-/**
- * Set of errors that may occur when performing data access.
- */
-internal enum class FileErrors(val nativeValue: Int) {
-	OK(0),
-	FAILED(-1),
-	FILE_NOT_FOUND(-2),
-	FILE_CANT_OPEN(-3),
-	INVALID_PARAMETER(-4);
+#include "core/object/ref_counted.h"
 
-	companion object {
-		fun fromNativeError(error: Int): FileErrors? {
-			for (fileError in entries) {
-				if (fileError.nativeValue == error) {
-					return fileError
-				}
-			}
-			return null
-		}
-	}
-}
+class GDExtension;
+
+class GDExtensionLoader : public RefCounted {
+public:
+	virtual Error open_library(const String &p_path) = 0;
+	virtual Error initialize(GDExtensionInterfaceGetProcAddress p_get_proc_address, const Ref<GDExtension> &p_extension, GDExtensionInitialization *r_initialization) = 0;
+	virtual void close_library() = 0;
+	virtual bool is_library_open() const = 0;
+	virtual bool has_library_changed() const = 0;
+};
+
+#endif // GDEXTENSION_LOADER_H
