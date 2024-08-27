@@ -5196,7 +5196,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_array_constructor(BlockNode *p_bloc
 	return an;
 }
 
-ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, const FunctionInfo &p_function_info) {
+ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, const FunctionInfo &p_function_info, const ExpressionInfo *p_previous_expression_info) {
 	Vector<Expression> expression;
 
 	//Vector<TokenType> operators;
@@ -6551,6 +6551,10 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 		pos = _get_tkpos();
 		tk = _get_token();
 
+		if (p_previous_expression_info != nullptr && tk.type == p_previous_expression_info->tt_break && !p_previous_expression_info->is_last_expr) {
+			break;
+		}
+
 		if (is_token_operator(tk.type)) {
 			Expression o;
 			o.is_op = true;
@@ -6657,6 +6661,31 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 			expression.push_back(o);
 
+			if (o.op == OP_SELECT_IF) {
+				ExpressionInfo info;
+				info.expression = &expression;
+				info.tt_break = TK_COLON;
+
+				expr = _parse_and_reduce_expression(p_block, p_function_info, &info);
+				if (!expr) {
+					return nullptr;
+				}
+
+				expression.push_back({ true, { OP_SELECT_ELSE } });
+
+				if (p_previous_expression_info != nullptr) {
+					info.is_last_expr = p_previous_expression_info->is_last_expr;
+				} else {
+					info.is_last_expr = true;
+				}
+
+				expr = _parse_and_reduce_expression(p_block, p_function_info, &info);
+				if (!expr) {
+					return nullptr;
+				}
+
+				break;
+			}
 		} else {
 			_set_tkpos(pos); //something else, so rollback and end
 			break;
@@ -6969,6 +6998,10 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 		}
 	}
 
+	if (p_previous_expression_info != nullptr) {
+		p_previous_expression_info->expression->push_back(expression[0]);
+	}
+
 	return expression[0].node;
 }
 
@@ -7081,8 +7114,8 @@ ShaderLanguage::Node *ShaderLanguage::_reduce_expression(BlockNode *p_block, Sha
 	return p_node;
 }
 
-ShaderLanguage::Node *ShaderLanguage::_parse_and_reduce_expression(BlockNode *p_block, const FunctionInfo &p_function_info) {
-	ShaderLanguage::Node *expr = _parse_expression(p_block, p_function_info);
+ShaderLanguage::Node *ShaderLanguage::_parse_and_reduce_expression(BlockNode *p_block, const FunctionInfo &p_function_info, const ExpressionInfo *p_previous_expression_info) {
+	ShaderLanguage::Node *expr = _parse_expression(p_block, p_function_info, p_previous_expression_info);
 	if (!expr) { //errored
 		return nullptr;
 	}
