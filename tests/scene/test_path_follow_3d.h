@@ -60,39 +60,30 @@ TEST_CASE("[SceneTree][PathFollow3D] Sampling with progress ratio") {
 	SceneTree::get_singleton()->get_root()->add_child(path);
 
 	path_follow_3d->set_progress_ratio(0);
-	path_follow_3d->update_transform(true);
 	CHECK(is_equal_approx(Vector3(0, 0, 0), path_follow_3d->get_transform().get_origin()));
 
 	path_follow_3d->set_progress_ratio(0.125);
-	path_follow_3d->update_transform(true);
 	CHECK(is_equal_approx(Vector3(50, 0, 0), path_follow_3d->get_transform().get_origin()));
 
 	path_follow_3d->set_progress_ratio(0.25);
-	path_follow_3d->update_transform(true);
 	CHECK(is_equal_approx(Vector3(100, 0, 0), path_follow_3d->get_transform().get_origin()));
 
 	path_follow_3d->set_progress_ratio(0.375);
-	path_follow_3d->update_transform(true);
 	CHECK(is_equal_approx(Vector3(100, 50, 0), path_follow_3d->get_transform().get_origin()));
 
 	path_follow_3d->set_progress_ratio(0.5);
-	path_follow_3d->update_transform(true);
 	CHECK(is_equal_approx(Vector3(100, 100, 0), path_follow_3d->get_transform().get_origin()));
 
 	path_follow_3d->set_progress_ratio(0.625);
-	path_follow_3d->update_transform(true);
 	CHECK(is_equal_approx(Vector3(100, 100, 50), path_follow_3d->get_transform().get_origin()));
 
 	path_follow_3d->set_progress_ratio(0.75);
-	path_follow_3d->update_transform(true);
 	CHECK(is_equal_approx(Vector3(100, 100, 100), path_follow_3d->get_transform().get_origin()));
 
 	path_follow_3d->set_progress_ratio(0.875);
-	path_follow_3d->update_transform(true);
 	CHECK(is_equal_approx(Vector3(100, 50, 100), path_follow_3d->get_transform().get_origin()));
 
 	path_follow_3d->set_progress_ratio(1);
-	path_follow_3d->update_transform(true);
 	CHECK(is_equal_approx(Vector3(100, 0, 100), path_follow_3d->get_transform().get_origin()));
 
 	memdelete(path);
@@ -113,39 +104,30 @@ TEST_CASE("[SceneTree][PathFollow3D] Sampling with progress") {
 	SceneTree::get_singleton()->get_root()->add_child(path);
 
 	path_follow_3d->set_progress(0);
-	path_follow_3d->update_transform(true);
 	CHECK(is_equal_approx(Vector3(0, 0, 0), path_follow_3d->get_transform().get_origin()));
 
 	path_follow_3d->set_progress(50);
-	path_follow_3d->update_transform(true);
 	CHECK(is_equal_approx(Vector3(50, 0, 0), path_follow_3d->get_transform().get_origin()));
 
 	path_follow_3d->set_progress(100);
-	path_follow_3d->update_transform(true);
 	CHECK(is_equal_approx(Vector3(100, 0, 0), path_follow_3d->get_transform().get_origin()));
 
 	path_follow_3d->set_progress(150);
-	path_follow_3d->update_transform(true);
 	CHECK(is_equal_approx(Vector3(100, 50, 0), path_follow_3d->get_transform().get_origin()));
 
 	path_follow_3d->set_progress(200);
-	path_follow_3d->update_transform(true);
 	CHECK(is_equal_approx(Vector3(100, 100, 0), path_follow_3d->get_transform().get_origin()));
 
 	path_follow_3d->set_progress(250);
-	path_follow_3d->update_transform(true);
 	CHECK(is_equal_approx(Vector3(100, 100, 50), path_follow_3d->get_transform().get_origin()));
 
 	path_follow_3d->set_progress(300);
-	path_follow_3d->update_transform(true);
 	CHECK(is_equal_approx(Vector3(100, 100, 100), path_follow_3d->get_transform().get_origin()));
 
 	path_follow_3d->set_progress(350);
-	path_follow_3d->update_transform(true);
 	CHECK(is_equal_approx(Vector3(100, 50, 100), path_follow_3d->get_transform().get_origin()));
 
 	path_follow_3d->set_progress(400);
-	path_follow_3d->update_transform(true);
 	CHECK(is_equal_approx(Vector3(100, 0, 100), path_follow_3d->get_transform().get_origin()));
 
 	memdelete(path);
@@ -163,13 +145,11 @@ TEST_CASE("[SceneTree][PathFollow3D] Removal of a point in curve") {
 	SceneTree::get_singleton()->get_root()->add_child(path);
 
 	path_follow_3d->set_progress_ratio(0.5);
-	path_follow_3d->update_transform(true);
 	CHECK(is_equal_approx(Vector3(100, 0, 0), path_follow_3d->get_transform().get_origin()));
 
 	curve->remove_point(1);
 
 	path_follow_3d->set_progress_ratio(0.5);
-	path_follow_3d->update_transform(true);
 	CHECK_MESSAGE(
 			is_equal_approx(Vector3(50, 50, 0), path_follow_3d->get_transform().get_origin()),
 			"Path follow's position should be updated after removing a point from the curve");
@@ -270,47 +250,36 @@ TEST_CASE("[SceneTree][PathFollow3D] Calculate forward vector") {
 	path_follow_3d->set_rotation_mode(PathFollow3D::RotationMode::ROTATION_ORIENTED);
 
 	path_follow_3d->set_progress(-50);
-	path_follow_3d->update_transform(true);
 	CHECK(is_equal_approx(Vector3(-1, 0, 0), path_follow_3d->get_transform().get_basis().get_column(2)));
 
 	path_follow_3d->set_progress(0);
-	path_follow_3d->update_transform(true);
 	CHECK(is_equal_approx(Vector3(-1, 0, 0), path_follow_3d->get_transform().get_basis().get_column(2)));
 
 	path_follow_3d->set_progress(50);
-	path_follow_3d->update_transform(true);
 	CHECK(is_equal_approx(Vector3(-1, 0, 0), path_follow_3d->get_transform().get_basis().get_column(2)));
 
 	path_follow_3d->set_progress(100);
-	path_follow_3d->update_transform(true);
 	CHECK(is_equal_approx(Vector3(-1, 0, 0), path_follow_3d->get_transform().get_basis().get_column(2)));
 
 	path_follow_3d->set_progress(100 + dist_cube_100 / 2);
-	path_follow_3d->update_transform(true);
 	CHECK(is_equal_approx(Vector3(-0.577348, -0.577348, 0.577348), path_follow_3d->get_transform().get_basis().get_column(2)));
 
 	path_follow_3d->set_progress(100 + dist_cube_100 - 0.01);
-	path_follow_3d->update_transform(true);
 	CHECK(is_equal_approx(Vector3(-0.577348, -0.577348, 0.577348), path_follow_3d->get_transform().get_basis().get_column(2)));
 
 	path_follow_3d->set_progress(250 + dist_cube_100);
-	path_follow_3d->update_transform(true);
 	CHECK(is_equal_approx(Vector3(0, 0, -1), path_follow_3d->get_transform().get_basis().get_column(2)));
 
 	path_follow_3d->set_progress(400 + dist_cube_100 - 0.01);
-	path_follow_3d->update_transform(true);
 	CHECK(is_equal_approx(Vector3(0, 0, -1), path_follow_3d->get_transform().get_basis().get_column(2)));
 
 	path_follow_3d->set_progress(400 + 1.5 * dist_cube_100);
-	path_follow_3d->update_transform(true);
 	CHECK(is_equal_approx(Vector3(0.577348, 0.577348, 0.577348), path_follow_3d->get_transform().get_basis().get_column(2)));
 
 	path_follow_3d->set_progress(400 + 2 * dist_cube_100 - 0.01);
-	path_follow_3d->update_transform(true);
 	CHECK(is_equal_approx(Vector3(0.577348, 0.577348, 0.577348), path_follow_3d->get_transform().get_basis().get_column(2)));
 
 	path_follow_3d->set_progress(500 + 2 * dist_cube_100);
-	path_follow_3d->update_transform(true);
 	CHECK(is_equal_approx(Vector3(1, 0, 0), path_follow_3d->get_transform().get_basis().get_column(2)));
 
 	memdelete(path);
