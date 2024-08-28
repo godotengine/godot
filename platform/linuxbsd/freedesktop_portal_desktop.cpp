@@ -377,17 +377,26 @@ Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServer::WindowID p_windo
 			String flt = tokens[0].strip_edges();
 			if (!flt.is_empty()) {
 				if (tokens.size() == 2) {
-					filter_exts.push_back(flt);
+					if (flt == "*.*") {
+						filter_exts.push_back("*");
+					} else {
+						filter_exts.push_back(flt);
+					}
 					filter_names.push_back(tokens[1]);
 				} else {
-					filter_exts.push_back(flt);
-					filter_names.push_back(flt);
+					if (flt == "*.*") {
+						filter_exts.push_back("*");
+						filter_names.push_back(RTR("All Files"));
+					} else {
+						filter_exts.push_back(flt);
+						filter_names.push_back(flt);
+					}
 				}
 			}
 		}
 	}
 	if (filter_names.is_empty()) {
-		filter_exts.push_back("*.*");
+		filter_exts.push_back("*");
 		filter_names.push_back(RTR("All Files"));
 	}
 
