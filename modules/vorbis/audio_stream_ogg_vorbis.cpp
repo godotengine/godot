@@ -69,7 +69,12 @@ int AudioStreamPlaybackOggVorbis::_mix_internal(AudioFrame *p_buffer, int p_fram
 		if (loop_fade_remaining < FADE_SIZE) {
 			int to_fade = loop_fade_remaining + MIN(FADE_SIZE - loop_fade_remaining, mixed);
 			for (int i = loop_fade_remaining; i < to_fade; i++) {
-				buffer[i - loop_fade_remaining] += loop_fade[i] * (float(FADE_SIZE - i) / float(FADE_SIZE));
+				float c = (float(FADE_SIZE - i) / float(FADE_SIZE));
+				if (vorbis_stream->loop_offset > 0) {
+					// Only fade-in if loop-offset > 0
+					buffer[i - loop_fade_remaining] *= 1.0 - c;
+				}
+				buffer[i - loop_fade_remaining] += loop_fade[i] * c;
 			}
 			loop_fade_remaining = to_fade;
 		}

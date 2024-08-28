@@ -75,6 +75,7 @@ String ResourceImporterOggVorbis::get_preset_name(int p_idx) const {
 
 void ResourceImporterOggVorbis::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "loop"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "loop_offset_type", PROPERTY_HINT_ENUM, "Seconds,Beats"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "loop_offset"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "bpm", PROPERTY_HINT_RANGE, "0,400,0.01,or_greater"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "beat_count", PROPERTY_HINT_RANGE, "0,512,or_greater"), 0));
@@ -98,9 +99,14 @@ void ResourceImporterOggVorbis::show_advanced_options(const String &p_path) {
 Error ResourceImporterOggVorbis::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	bool loop = p_options["loop"];
 	double loop_offset = p_options["loop_offset"];
+	int loop_offset_type = p_options["loop_offset_type"];
 	double bpm = p_options["bpm"];
 	int beat_count = p_options["beat_count"];
 	int bar_beats = p_options["bar_beats"];
+
+	if (loop_offset_type == 1) {
+		loop_offset *= (60.0 / bpm);
+	}
 
 	Ref<AudioStreamOggVorbis> ogg_vorbis_stream = load_from_file(p_source_file);
 	if (ogg_vorbis_stream.is_null()) {

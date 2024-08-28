@@ -87,7 +87,7 @@ void AudioStreamImportSettingsDialog::_draw_preview() {
 	Size2 rect_size = rect.size;
 	int width = rect_size.width;
 
-	Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(stream);
+	Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(stream_no_loop);
 	float preview_offset = zoom_bar->get_value();
 	float preview_len = zoom_bar->get_page();
 
@@ -104,6 +104,7 @@ void AudioStreamImportSettingsDialog::_draw_preview() {
 	float inactive_from = 1e20;
 	float beat_size = 0;
 	int last_beat = 0;
+	int loop_beat = 0;
 	if (stream->get_bpm() > 0) {
 		beat_size = 60 / float(stream->get_bpm());
 		int y_ofs = beat_font->get_height(main_size) + 4 * EDSCALE;
@@ -113,6 +114,10 @@ void AudioStreamImportSettingsDialog::_draw_preview() {
 		if (stream->get_beat_count() > 0) {
 			last_beat = stream->get_beat_count();
 			inactive_from = last_beat * beat_size;
+		}
+
+		if (loop->is_pressed() && loop_offset_type->get_selected() == 1) {
+			loop_beat = loop_offset->get_value();
 		}
 	}
 
@@ -136,6 +141,7 @@ void AudioStreamImportSettingsDialog::_draw_preview() {
 	if (beat_size) {
 		Color beat_color = Color(1, 1, 1, 1);
 		Color final_beat_color = beat_color;
+		Color loop_beat_color = beat_color * Color(1, 0.5, 0.5, 1.0);
 		Color bar_color = beat_color;
 		beat_color.a *= 0.4;
 		bar_color.a *= 0.6;
@@ -164,6 +170,8 @@ void AudioStreamImportSettingsDialog::_draw_preview() {
 					// Darken subsequent beats
 					beat_color.a *= 0.3;
 					color_active.a *= 0.3;
+				} else if (beat == loop_beat && loop_beat != 0) {
+					_preview->draw_rect(Rect2i(i, rect.position.y, 2, rect.size.height), loop_beat_color);
 				} else {
 					_preview->draw_rect(Rect2i(i, rect.position.y, 1, rect.size.height), (beat % bar_beats) == 0 ? bar_color : beat_color);
 				}
@@ -174,7 +182,7 @@ void AudioStreamImportSettingsDialog::_draw_preview() {
 }
 
 void AudioStreamImportSettingsDialog::_preview_changed(ObjectID p_which) {
-	if (stream.is_valid() && stream->get_instance_id() == p_which) {
+	if (stream_no_loop.is_valid() && stream_no_loop->get_instance_id() == p_which) {
 		_preview->queue_redraw();
 	}
 }
@@ -400,6 +408,14 @@ void AudioStreamImportSettingsDialog::_seek_to(real_t p_x) {
 	_indicator->queue_redraw();
 }
 
+void AudioStreamImportSettingsDialog::_update_loop_offset_type() {
+	if (loop_offset_type->get_selected() == 0) {
+		loop_offset->set_step(0.001);
+	} else {
+		loop_offset->set_step(1);
+	}
+}
+
 void AudioStreamImportSettingsDialog::edit(const String &p_path, const String &p_importer, const Ref<AudioStream> &p_stream) {
 	if (!stream.is_null()) {
 		stream->disconnect_changed(callable_mp(this, &AudioStreamImportSettingsDialog::_audio_changed));
@@ -410,6 +426,9 @@ void AudioStreamImportSettingsDialog::edit(const String &p_path, const String &p
 
 	stream = p_stream;
 	_player->set_stream(stream);
+	stream_no_loop = stream->duplicate(true);
+	stream_no_loop->call("set_loop", false);
+
 	_current = 0;
 	String text = String::num(stream->get_length(), 2).pad_decimals(2) + "s";
 	_duration_label->set_text(text);
@@ -437,6 +456,13 @@ void AudioStreamImportSettingsDialog::edit(const String &p_path, const String &p
 			beats_edit->set_value(beats);
 			beats_enabled->set_pressed(beats > 0);
 			loop->set_pressed(config_file->get_value("params", "loop", false));
+
+			if (config_file->has_section_key("params", "loop_offset_type")) {
+				loop_offset_type->select(config_file->get_value("params", "loop_offset_type", 0));
+			} else {
+				loop_offset_type->select(0);
+			}
+			_update_loop_offset_type();
 			loop_offset->set_value(config_file->get_value("params", "loop_offset", 0));
 			bar_beats_edit->set_value(config_file->get_value("params", "bar_beats", 4));
 
@@ -471,11 +497,18 @@ void AudioStreamImportSettingsDialog::_settings_changed() {
 
 	updating_settings = true;
 	stream->call("set_loop", loop->is_pressed());
-	stream->call("set_loop_offset", loop_offset->get_value());
+	float loop_sec = loop_offset->get_value();
+	if (loop_offset_type->get_selected() == 1) {
+		loop_sec *= (60.0 / bpm_edit->get_value());
+	}
+
+	stream->call("set_loop_offset", loop_sec);
 	if (loop->is_pressed()) {
 		loop_offset->set_editable(true);
+		loop_offset_type->set_disabled(false);
 	} else {
 		loop_offset->set_editable(false);
+		loop_offset_type->set_disabled(true);
 	}
 
 	if (bpm_enabled->is_pressed()) {
@@ -518,6 +551,7 @@ void AudioStreamImportSettingsDialog::_settings_changed() {
 void AudioStreamImportSettingsDialog::_reimport() {
 	params["loop"] = loop->is_pressed();
 	params["loop_offset"] = loop_offset->get_value();
+	params["loop_offset_type"] = loop_offset_type->get_selected();
 	params["bpm"] = bpm_enabled->is_pressed() ? double(bpm_edit->get_value()) : double(0);
 	params["beat_count"] = (bpm_enabled->is_pressed() && beats_enabled->is_pressed()) ? int(beats_edit->get_value()) : int(0);
 	params["bar_beats"] = (bpm_enabled->is_pressed()) ? int(bar_beats_edit->get_value()) : int(4);
@@ -541,13 +575,19 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	loop_hb->add_child(loop);
 	loop_hb->add_spacer();
 	loop_hb->add_child(memnew(Label(TTR("Offset:"))));
+
 	loop_offset = memnew(SpinBox);
 	loop_offset->set_max(10000);
 	loop_offset->set_step(0.001);
-	loop_offset->set_suffix("sec");
 	loop_offset->set_tooltip_text(TTR("Loop offset (from beginning). Note that if BPM is set, this setting will be ignored."));
 	loop_offset->connect(SceneStringName(value_changed), callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
 	loop_hb->add_child(loop_offset);
+	loop_offset_type = memnew(OptionButton);
+	loop_offset_type->add_item(TTR("Sec"));
+	loop_offset_type->add_item(TTR("Beats"));
+	loop_offset_type->connect("item_selected", callable_mp(this, &AudioStreamImportSettingsDialog::_update_loop_offset_type).unbind(1));
+	loop_offset_type->connect("item_selected", callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
+	loop_hb->add_child(loop_offset_type);
 	main_vbox->add_margin_child(TTR("Loop:"), loop_hb);
 
 	HBoxContainer *interactive_hb = memnew(HBoxContainer);
@@ -564,7 +604,7 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	interactive_hb->add_child(bpm_edit);
 	interactive_hb->add_spacer();
 	beats_enabled = memnew(CheckBox);
-	beats_enabled->set_text(TTR("Beat Count:"));
+	beats_enabled->set_text(TTR("Length (beats):"));
 	beats_enabled->connect("toggled", callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
 	interactive_hb->add_child(beats_enabled);
 	beats_edit = memnew(SpinBox);
@@ -572,7 +612,8 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	beats_edit->set_max(99999);
 	beats_edit->connect(SceneStringName(value_changed), callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
 	interactive_hb->add_child(beats_edit);
-	bar_beats_label = memnew(Label(TTR("Bar Beats:")));
+	bar_beats_label = memnew(Label(TTR("Bar (beats):")));
+	interactive_hb->add_spacer();
 	interactive_hb->add_child(bar_beats_label);
 	bar_beats_edit = memnew(SpinBox);
 	bar_beats_edit->set_tooltip_text(TTR("Configure the Beats Per Bar. This used for music-aware transitions between AudioStreams."));
