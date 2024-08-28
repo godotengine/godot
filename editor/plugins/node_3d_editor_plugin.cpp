@@ -770,7 +770,7 @@ void Node3DEditorViewport::_select_clicked(bool p_allow_locked) {
 		}
 	}
 
-	if (p_allow_locked || !_is_node_locked(selected)) {
+	if (p_allow_locked || (selected != nullptr && !_is_node_locked(selected))) {
 		if (clicked_wants_append) {
 			if (editor_selection->is_selected(selected)) {
 				editor_selection->remove_node(selected);
