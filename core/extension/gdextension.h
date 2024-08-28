@@ -129,6 +129,10 @@ public:
 	void close_library();
 	bool is_library_open() const;
 
+	String get_loaded_extension_path();
+
+	bool is_substituted();
+
 	enum InitializationLevel {
 		INITIALIZATION_LEVEL_CORE = GDEXTENSION_INITIALIZATION_CORE,
 		INITIALIZATION_LEVEL_SERVERS = GDEXTENSION_INITIALIZATION_SERVERS,

@@ -30,6 +30,7 @@
 
 #include "gdextension_manager.h"
 
+#include "core/error/error_macros.h"
 #include "core/extension/gdextension_compat_hashes.h"
 #include "core/extension/gdextension_library_loader.h"
 #include "core/io/file_access.h"
@@ -86,7 +87,23 @@ GDExtensionManager::LoadStatus GDExtensionManager::load_extension_with_loader(co
 	extension.instantiate();
 	Error err = extension->open_library(p_path, p_loader);
 	if (err != OK) {
-		return LOAD_STATUS_FAILED;
+		// Attempt to load with fallbacks if the initial load fails
+		while (p_loader->has_fallback()) {
+			String fallback_path = p_loader->get_next_fallback();
+			if (gdextension_map.has(fallback_path)) {
+				ERR_PRINT("Failed to load extension: " + p_path + ". Fallback " + fallback_path + " already loaded.");
+				return LOAD_STATUS_ALREADY_LOADED;
+			}
+			ERR_PRINT("Failed to load extension: " + p_path + ". Attempting to load fallback extension: " + fallback_path);
+			err = extension->open_library(fallback_path, p_loader);
+			if (err == OK) {
+				break; // Successfully loaded a fallback
+			}
+		}
+
+		if (err != OK) {
+			return LOAD_STATUS_FAILED;
+		}
 	}
 
 	LoadStatus status = _load_extension_internal(extension);
@@ -94,8 +111,12 @@ GDExtensionManager::LoadStatus GDExtensionManager::load_extension_with_loader(co
 		return status;
 	}
 
+	gdextension_map[extension->get_loaded_extension_path()] = extension;
+
+	// Here I'm choosing to store the original request module as the "path"
+	// This is the "primary" module you're invoking is the one you're tracking.
+	// You'll try and access it by that first and foremost, rather than determining which "fallback" of the primary module is currently running.
 	extension->set_path(p_path);
-	gdextension_map[p_path] = extension;
 	return LOAD_STATUS_OK;
 }
 
@@ -243,7 +264,16 @@ void GDExtensionManager::load_extensions() {
 	while (f.is_valid() && !f->eof_reached()) {
 		String s = f->get_line().strip_edges();
 		if (!s.is_empty()) {
-			LoadStatus err = load_extension(s);
+			Ref<GDExtensionLibraryLoader> loader;
+			loader.instantiate();
+			Error parsing = loader->parse_gdextension_file(s);
+
+			ERR_CONTINUE_MSG(parsing != OK, "Error parsing GDExtension: " + s);
+			if (!loader->requests_autoload()) {
+				continue; // Skip autoloading this extension
+			}
+
+			LoadStatus err = load_extension_with_loader(s, loader);
 			ERR_CONTINUE_MSG(err == LOAD_STATUS_FAILED, "Error loading extension: " + s);
 		}
 	}
