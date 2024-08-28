@@ -81,6 +81,7 @@ def install_ndk_if_needed(env: "SConsEnvironment"):
     if not os.path.exists(get_android_ndk_root(env)):
         extension = ".bat" if os.name == "nt" else ""
         sdkmanager = sdk_root + "/cmdline-tools/latest/bin/sdkmanager" + extension
+        sdkmanager = f'"{sdkmanager}"' if os.name == "nt" else sdkmanager
         if os.path.exists(sdkmanager):
             # Install the Android NDK
             print("Installing Android NDK...")
@@ -164,11 +165,11 @@ def configure(env: "SConsEnvironment"):
     toolchain_path = ndk_root + "/toolchains/llvm/prebuilt/" + host_subpath
     compiler_path = toolchain_path + "/bin"
 
-    env["CC"] = compiler_path + "/clang"
-    env["CXX"] = compiler_path + "/clang++"
-    env["AR"] = compiler_path + "/llvm-ar"
-    env["RANLIB"] = compiler_path + "/llvm-ranlib"
-    env["AS"] = compiler_path + "/clang"
+    env["CC"] = f'"{compiler_path + "/clang"}"'
+    env["CXX"] = f'"{compiler_path + "/clang++"}"'
+    env["AR"] = f'"{compiler_path + "/llvm-ar"}"'
+    env["RANLIB"] = f'"{compiler_path + "/llvm-ranlib"}"'
+    env["AS"] = f'"{compiler_path + "/clang"}"'
 
     env.Append(
         CCFLAGS=(
