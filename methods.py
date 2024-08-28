@@ -475,7 +475,7 @@ def use_windows_spawn_fix(self, platform=None):
     # got built correctly regardless the invocation strategy.
     # Furthermore, since SCons will rebuild the library from scratch when an object file
     # changes, no multiple versions of the same object file will be present.
-    self.Replace(ARFLAGS="q")
+    self.Replace(ARFLAGS="cq")
 
     def mySubProcess(cmdline, env):
         startupinfo = subprocess.STARTUPINFO()
