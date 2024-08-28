@@ -202,14 +202,13 @@ void ProgressDialog::add_task(const String &p_task, const String &p_label, int p
 bool ProgressDialog::task_step(const String &p_task, const String &p_state, int p_step, bool p_force_redraw) {
 	ERR_FAIL_COND_V(!tasks.has(p_task), canceled);
 
+	Task &t = tasks[p_task];
 	if (!p_force_redraw) {
 		uint64_t tus = OS::get_singleton()->get_ticks_usec();
-		if (tus - last_progress_tick < 200000) { //200ms
+		if (tus - t.last_progress_tick < 200000) { //200ms
 			return canceled;
 		}
 	}
-
-	Task &t = tasks[p_task];
 	if (p_step < 0) {
 		t.progress->set_value(t.progress->get_value() + 1);
 	} else {
@@ -217,7 +216,7 @@ bool ProgressDialog::task_step(const String &p_task, const String &p_state, int 
 	}
 
 	t.state->set_text(p_state);
-	last_progress_tick = OS::get_singleton()->get_ticks_usec();
+	t.last_progress_tick = OS::get_singleton()->get_ticks_usec();
 	_update_ui();
 
 	return canceled;
@@ -252,7 +251,6 @@ ProgressDialog::ProgressDialog() {
 	main->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	set_exclusive(true);
 	set_flag(Window::FLAG_POPUP, false);
-	last_progress_tick = 0;
 	singleton = this;
 	cancel_hb = memnew(HBoxContainer);
 	main->add_child(cancel_hb);
