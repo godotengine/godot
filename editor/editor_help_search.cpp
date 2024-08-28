@@ -207,7 +207,7 @@ void EditorHelpSearch::_notification(int p_what) {
 				tree_cache.clear();
 				callable_mp(results_tree, &Tree::clear).call_deferred(); // Wait for the Tree's mouse event propagation.
 				get_ok_button()->set_disabled(true);
-				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "search_help", Rect2(get_position(), get_size()));
+				SET_PROJECT_META("dialog_bounds", "search_help", Rect2(get_position(), get_size()));
 			}
 		} break;
 
@@ -271,7 +271,7 @@ void EditorHelpSearch::popup_dialog() {
 
 void EditorHelpSearch::popup_dialog(const String &p_term) {
 	// Restore valid window bounds or pop up at default size.
-	Rect2 saved_size = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "search_help", Rect2());
+	Rect2 saved_size = GET_PROJECT_META("dialog_bounds", "search_help", Rect2());
 	if (saved_size != Rect2()) {
 		popup(saved_size);
 	} else {
