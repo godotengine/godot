@@ -53,8 +53,6 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 		private val TAG = GodotActivity::class.java.simpleName
 
 		@JvmStatic
-		protected val EXTRA_FORCE_QUIT = "force_quit_requested"
-		@JvmStatic
 		protected val EXTRA_NEW_LAUNCH = "new_launch_requested"
 	}
 
@@ -128,12 +126,6 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 	}
 
 	private fun handleStartIntent(intent: Intent, newLaunch: Boolean) {
-		val forceQuitRequested = intent.getBooleanExtra(EXTRA_FORCE_QUIT, false)
-		if (forceQuitRequested) {
-			Log.d(TAG, "Force quit requested, terminating..")
-			ProcessPhoenix.forceQuit(this)
-			return
-		}
 		if (!newLaunch) {
 			val newLaunchRequested = intent.getBooleanExtra(EXTRA_NEW_LAUNCH, false)
 			if (newLaunchRequested) {

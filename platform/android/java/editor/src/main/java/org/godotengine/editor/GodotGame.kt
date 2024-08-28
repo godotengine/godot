@@ -30,6 +30,14 @@
 
 package org.godotengine.editor
 
+import android.annotation.SuppressLint
+import android.app.PictureInPictureParams
+import android.content.Intent
+import android.graphics.Rect
+import android.os.Build
+import android.os.Bundle
+import android.util.Log
+import android.view.View
 import org.godotengine.godot.GodotLib
 
 /**
@@ -37,7 +45,90 @@ import org.godotengine.godot.GodotLib
  */
 class GodotGame : GodotEditor() {
 
-	override fun getGodotAppLayout() = org.godotengine.godot.R.layout.godot_app_layout
+	companion object {
+		private val TAG = GodotGame::class.java.simpleName
+	}
+
+	private val gameViewSourceRectHint = Rect()
+	private val pipButton: View? by lazy {
+		findViewById(R.id.godot_pip_button)
+	}
+
+	private var pipAvailable = false
+
+	@SuppressLint("ClickableViewAccessibility")
+	override fun onCreate(savedInstanceState: Bundle?) {
+		super.onCreate(savedInstanceState)
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			val gameView = findViewById<View>(R.id.godot_fragment_container)
+			gameView?.addOnLayoutChangeListener { v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
+				gameView.getGlobalVisibleRect(gameViewSourceRectHint)
+			}
+		}
+
+		pipButton?.setOnClickListener { enterPiPMode() }
+
+		handleStartIntent(intent)
+	}
+
+	override fun onNewIntent(newIntent: Intent) {
+		super.onNewIntent(newIntent)
+		handleStartIntent(newIntent)
+	}
+
+	private fun handleStartIntent(intent: Intent) {
+		pipAvailable = intent.getBooleanExtra(EXTRA_PIP_AVAILABLE, pipAvailable)
+		updatePiPButtonVisibility()
+
+		val pipLaunchRequested = intent.getBooleanExtra(EXTRA_LAUNCH_IN_PIP, false)
+		if (pipLaunchRequested) {
+			enterPiPMode()
+		}
+	}
+
+	private fun updatePiPButtonVisibility() {
+		pipButton?.visibility = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && pipAvailable && !isInPictureInPictureMode) {
+			View.VISIBLE
+		} else {
+			View.GONE
+		}
+	}
+
+	private fun enterPiPMode() {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && pipAvailable) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+				val builder = PictureInPictureParams.Builder().setSourceRectHint(gameViewSourceRectHint)
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+					builder.setSeamlessResizeEnabled(false)
+				}
+				setPictureInPictureParams(builder.build())
+			}
+
+			Log.v(TAG, "Entering PiP mode")
+			enterPictureInPictureMode()
+		}
+	}
+
+	override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean) {
+		super.onPictureInPictureModeChanged(isInPictureInPictureMode)
+		Log.v(TAG, "onPictureInPictureModeChanged: $isInPictureInPictureMode")
+		updatePiPButtonVisibility()
+	}
+
+	override fun onStop() {
+		super.onStop()
+
+		val isInPiPMode = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInPictureInPictureMode
+		if (isInPiPMode && !isFinishing) {
+			// We get in this state when PiP is closed, so we terminate the activity.
+			finish()
+		}
+	}
+
+	override fun getGodotAppLayout() = R.layout.godot_game_layout
+
+	override fun getEditorId() = RUN_GAME_INFO.windowId
 
 	override fun overrideOrientationRequest() = false
 

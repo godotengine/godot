@@ -827,6 +827,12 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	String android_window_hints = "Auto (based on screen size):0,Same as Editor:1,Side-by-side with Editor:2";
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "run/window_placement/android_window", 0, android_window_hints)
 
+	int default_play_window_pip_mode = 0;
+#ifdef ANDROID_ENABLED
+	default_play_window_pip_mode = 2;
+#endif
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "run/window_placement/play_window_pip_mode", default_play_window_pip_mode, "Disabled:0,Enabled:1,Enabled when Play window is same as Editor:2")
+
 	// Auto save
 	_initial_set("run/auto_save/save_before_running", true);
 

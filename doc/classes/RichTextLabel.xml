@@ -631,6 +631,12 @@
 		<member name="hint_underlined" type="bool" setter="set_hint_underline" getter="is_hint_underlined" default="true">
 			If [code]true[/code], the label underlines hint tags such as [code skip-lint][hint=description]{text}[/hint][/code].
 		</member>
+		<member name="horizontal_alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="0">
+			Controls the text's horizontal alignment. Supports left, center, right, and fill, or justify. Set it to one of the [enum HorizontalAlignment] constants.
+		</member>
+		<member name="justification_flags" type="int" setter="set_justification_flags" getter="get_justification_flags" enum="TextServer.JustificationFlag" is_bitfield="true" default="163">
+			Line fill alignment rules. See [enum TextServer.JustificationFlag] for more information.
+		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 		</member>
@@ -661,6 +667,9 @@
 		</member>
 		<member name="tab_size" type="int" setter="set_tab_size" getter="get_tab_size" default="4">
 			The number of spaces associated with a single tab length. Does not affect [code]\t[/code] in text tags, only indent tags.
+		</member>
+		<member name="tab_stops" type="PackedFloat32Array" setter="set_tab_stops" getter="get_tab_stops" default="PackedFloat32Array()">
+			Aligns text to the given tab-stops.
 		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			The label's text in BBCode format. Is not representative of manual modifications to the internal tag stack. Erases changes made by other methods when edited.
