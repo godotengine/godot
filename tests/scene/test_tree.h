@@ -108,6 +108,30 @@ TEST_CASE("[SceneTree][Tree]") {
 		memdelete(tree);
 	}
 
+	// https://github.com/godotengine/godot/issues/96205
+	SUBCASE("[Tree] Get last item after removal.") {
+		Tree *tree = memnew(Tree);
+		TreeItem *root = tree->create_item();
+
+		TreeItem *child1 = tree->create_item(root);
+		TreeItem *child2 = tree->create_item(root);
+
+		CHECK_EQ(root->get_child_count(), 2);
+		CHECK_EQ(tree->get_last_item(), child2);
+
+		root->remove_child(child2);
+
+		CHECK_EQ(root->get_child_count(), 1);
+		CHECK_EQ(tree->get_last_item(), child1);
+
+		root->add_child(child2);
+
+		CHECK_EQ(root->get_child_count(), 2);
+		CHECK_EQ(tree->get_last_item(), child2);
+
+		memdelete(tree);
+	}
+
 	SUBCASE("[Tree] Previous and Next items.") {
 		Tree *tree = memnew(Tree);
 		TreeItem *root = tree->create_item();
