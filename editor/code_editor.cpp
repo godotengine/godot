@@ -755,13 +755,13 @@ FindReplaceBar::FindReplaceBar() {
 	hbc_option_search->add_child(case_sensitive);
 	case_sensitive->set_text(TTR("Match Case"));
 	case_sensitive->set_focus_mode(FOCUS_NONE);
-	case_sensitive->connect("toggled", callable_mp(this, &FindReplaceBar::_search_options_changed));
+	case_sensitive->connect(SceneStringName(toggled), callable_mp(this, &FindReplaceBar::_search_options_changed));
 
 	whole_words = memnew(CheckBox);
 	hbc_option_search->add_child(whole_words);
 	whole_words->set_text(TTR("Whole Words"));
 	whole_words->set_focus_mode(FOCUS_NONE);
-	whole_words->connect("toggled", callable_mp(this, &FindReplaceBar::_search_options_changed));
+	whole_words->connect(SceneStringName(toggled), callable_mp(this, &FindReplaceBar::_search_options_changed));
 
 	// Replace toolbar
 	replace_text = memnew(LineEdit);
@@ -786,7 +786,7 @@ FindReplaceBar::FindReplaceBar() {
 	hbc_option_replace->add_child(selection_only);
 	selection_only->set_text(TTR("Selection Only"));
 	selection_only->set_focus_mode(FOCUS_NONE);
-	selection_only->connect("toggled", callable_mp(this, &FindReplaceBar::_search_options_changed));
+	selection_only->connect(SceneStringName(toggled), callable_mp(this, &FindReplaceBar::_search_options_changed));
 
 	hide_button = memnew(TextureButton);
 	add_child(hide_button);

@@ -1769,7 +1769,7 @@ SceneTreeDialog::SceneTreeDialog() {
 	// Add 'Show All' button to HBoxContainer next to the filter, visible only when valid_types is defined.
 	show_all_nodes = memnew(CheckButton);
 	show_all_nodes->set_text(TTR("Show All"));
-	show_all_nodes->connect("toggled", callable_mp(this, &SceneTreeDialog::_show_all_nodes_changed));
+	show_all_nodes->connect(SceneStringName(toggled), callable_mp(this, &SceneTreeDialog::_show_all_nodes_changed));
 	show_all_nodes->set_h_size_flags(Control::SIZE_SHRINK_BEGIN);
 	show_all_nodes->hide();
 	filter_hbc->add_child(show_all_nodes);

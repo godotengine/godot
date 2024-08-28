@@ -857,7 +857,7 @@ ProjectDialog::ProjectDialog() {
 	create_dir->set_text(TTR("Create Folder"));
 	create_dir->set_pressed(true);
 	pphb_label->add_child(create_dir);
-	create_dir->connect("toggled", callable_mp(this, &ProjectDialog::_create_dir_toggled));
+	create_dir->connect(SceneStringName(toggled), callable_mp(this, &ProjectDialog::_create_dir_toggled));
 
 	HBoxContainer *pphb = memnew(HBoxContainer);
 	project_path_container->add_child(pphb);
