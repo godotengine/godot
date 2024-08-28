@@ -517,16 +517,19 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 	Vector<uint8_t> dst_data;
 	if (compression == 2) {
 		dst_format = AudioStreamWAV::FORMAT_QOA;
-		qoa_desc desc = { 0, 0, 0, { { { 0 }, { 0 } } } };
+		qoa_desc desc = {};
 		uint32_t qoa_len = 0;
 
 		desc.samplerate = rate;
 		desc.samples = frames;
 		desc.channels = format_channels;
 
-		void *encoded = qoa_encode((short *)pcm_data.ptrw(), &desc, &qoa_len);
-		dst_data.resize(qoa_len);
-		memcpy(dst_data.ptrw(), encoded, qoa_len);
+		void *encoded = qoa_encode((short *)pcm_data.ptr(), &desc, &qoa_len);
+		if (encoded) {
+			dst_data.resize(qoa_len);
+			memcpy(dst_data.ptrw(), encoded, qoa_len);
+			QOA_FREE(encoded);
+		}
 	} else {
 		dst_data = pcm_data;
 	}
