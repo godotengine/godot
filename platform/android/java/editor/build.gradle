@@ -37,7 +37,7 @@ ext {
     // Return the keystore file used for signing the release build.
     getGodotKeystoreFile = { ->
         def keyStore = System.getenv("GODOT_ANDROID_SIGN_KEYSTORE")
-        if (keyStore == null) {
+        if (keyStore == null || keyStore.isEmpty()) {
             return null
         }
         return file(keyStore)
