@@ -260,7 +260,7 @@ bool get_dotnet_self_registered_dir(String &r_dotnet_root) {
 		return false;
 	}
 
-	r_dotnet_root = String::utf16((const char16_t *)buffer.ptr());
+	r_dotnet_root = String::utf16((const char16_t *)buffer.ptr()).replace("\\", "/");
 	RegCloseKey(hkey);
 	return true;
 #else
