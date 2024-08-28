@@ -31,7 +31,6 @@ class BeehaveDecoratorDelayer : public BeehaveDecorator
         }
 		Dictionary prop = run_context->get_property(this);
 		float total_time = prop.get(SNAME("total_time"),0.0f);
-		auto child_state = run_context->get_child_state(this);
         if (total_time < wait_time)
         {
 
@@ -40,15 +39,19 @@ class BeehaveDecoratorDelayer : public BeehaveDecorator
             return RUNNING;
 
         }
-        if(child_state[0] == 0)
+		if (run_context->get_init_status(children[0].ptr()) == 0)
         {
             children[0]->before_run(run_context);
-            child_state.write[0] = 1;
         }
         int rs = children[0]->process(run_context);
         if(rs == NONE_PROCESS)
         {
+			// 执行到断点,直接返回
             return rs;
+        }
+        if(rs == SUCCESS || rs == FAILURE)
+        {
+            children[0]->after_run(run_context);
         }
         
 		run_context->set_run_state(children[0].ptr(),rs);

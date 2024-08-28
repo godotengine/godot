@@ -39,52 +39,49 @@ public:
         {
             return SUCCESS;
         }
-		auto child_state = run_context->get_child_state(this);
+
 		Dictionary prop = run_context->get_property(this);
-        if(child_state[0] == 0)
+        int child_rs = 0;
+		int rs = 0;
+        for(int i = 0; i < get_child_count(); ++i)
         {
-            children[0]->before_run(run_context);
-            child_state.write[0] = 1;
-        }
-        int rs = children[0]->process(run_context);
-        if(rs == NONE_PROCESS)
-        {
-            return rs;
-        }
-        if(rs == SUCCESS || rs == FAILURE)
-        {
-            for(int i = 0; i < get_child_count(); ++i)
+			if (run_context->get_init_status(children[i].ptr()) == 0)
+			{
+				children[i]->before_run(run_context);
+			}
+			if (run_context->get_init_status(children[i].ptr()) == 1)
             {
-                if(child_state[i] == 1)
-                {
-                    children[i]->after_run(run_context);
-                    child_state.write[i] = 2;
-                }
-            }
-            return rs;
-        }
-        for(int i = 1; i < get_child_count(); ++i)
-        {
-            if(child_state[i] == 0)
-            {
-                children[i]->before_run(run_context);
-                child_state.write[i] = 1;
-            }
-        }
-        int child_rs;
-        for(int i = 1; i < get_child_count(); ++i)
-        {
-            if(child_state[i] == 1)  
-            {
-                child_rs = children[i]->tick(run_context);
+                child_rs = children[i]->process(run_context);
+				if (child_rs == NONE_PROCESS)
+				{
+					// 执行到断点,直接返回
+					return child_rs;
+				}
                 if(child_rs == SUCCESS || child_rs == FAILURE)
                 {
                     children[i]->after_run(run_context);
-                    child_state.write[i] = 2;
                 }
 				run_context->set_run_state(children[i].ptr(), child_rs);
-            }    
+            }
+			if (i == 0)
+			{
+				rs = child_rs;
+			}
         }
+		if (rs == SUCCESS || rs == FAILURE)
+		{
+			// 如果主节点结束了,所有子节点也要结束
+			for (int i = 1; i < get_child_count(); ++i)
+			{
+				if (run_context->get_init_status(children[i].ptr()) == 1)
+				{
+					children[i]->after_run(run_context);
+					run_context->set_run_state(children[i].ptr(), SUCCESS);
+				}
+
+			}
+
+		}
 
         return rs;
     }

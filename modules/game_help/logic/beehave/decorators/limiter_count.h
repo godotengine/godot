@@ -41,18 +41,17 @@ public:
         }
 		Dictionary prop = run_context->get_property(this);
 		int current_count = prop.get(SNAME("current_count"), 0);
-		auto child_state = run_context->get_child_state(this);
         if(current_count < max_count)
         {
             current_count++;
-            if(child_state[0] == 0)
+			if (run_context->get_init_status(children[0].ptr()) == 0)
             {
                 children[0]->before_run(run_context);
-                child_state.write[0] = 1;
             }
             int rs = children[0]->process(run_context);
             if(rs == NONE_PROCESS)
             {
+				// 执行到断点,直接返回
                 return rs;
             }
 			run_context->set_run_state(this, rs);
@@ -60,10 +59,9 @@ public:
             {
                 for(int i = 0; i < get_child_count(); ++i)
                 {
-                    if(child_state[i] == 1)
+					if (run_context->get_init_status(children[i].ptr()) == 1)
                     {
                         children[i]->after_run(run_context);
-                        child_state.write[i] = 2;
                     }
                 }
                 return rs;
@@ -72,7 +70,6 @@ public:
         else
         {
             children[0]->after_run(run_context);
-            child_state.write[0] = 2;
             return FAILURE;
         }
         return FAILURE;

@@ -4,64 +4,105 @@
 #include "core/io/resource.h"
 #include "modules/limboai/bt/bt_player.h"
 
+struct BeehaveRunState
+{
+public:
+    void reset(int child_count)
+    {
+        run_state = -1;
+		init_state = 0;
+    }
+    Dictionary get_property()
+    {
+        return properties;
+    }
+
+    void set_run_state(int state)
+    {
+        run_state = state;
+    }
+
+    int get_run_state()
+    {
+        return run_state;
+    }
+	void set_init_state(int state)
+	{
+		init_state = state;
+	}
+	int get_init_state()
+	{
+		return init_state;
+	}
+	Dictionary properties;
+	ObjectID id;
+    int run_state = -1;
+	int init_state = 0;
+};
+
 // 行为树运行上下文
 class BeehaveRuncontext : public RefCounted
 {
     GDCLASS(BeehaveRuncontext, RefCounted);
 public:
 
+
     // 获取属性
     Dictionary get_property(Object* curr_this_node)
     {
-        if(properties.has(curr_this_node->get_instance_id()))
-        {
-            return properties[curr_this_node->get_instance_id()];
-        }
-        Dictionary rs;
-        properties[curr_this_node->get_instance_id()] = rs;
-        return rs;
+		touch(curr_this_node);
+        return currRunState->get_property();
     }
     void set_run_state(Object* curr_this_node,int state)
     {
-        Dictionary rs = get_property(curr_this_node);
-        rs[SNAME("run_state")] = state;
+		touch(curr_this_node);
+		currRunState->set_run_state(state);
     }
     int get_run_state(Object* curr_this_node)
     {
-        Dictionary rs = get_property(curr_this_node);
-        return rs.get(SNAME("run_state"),-1);
+		touch(curr_this_node);
+        return currRunState->get_run_state();
+    }
+    void set_init_status(Object* curr_this_node,int state)
+    {
+		touch(curr_this_node);
+		currRunState->set_init_state(state);
+    }
+    uint8_t get_init_status(Object* curr_this_node)
+    {
+		touch(curr_this_node);
+        return currRunState->get_init_state();
     }
 
     void init_child_state(Object* curr_this_node,int child_count)
     {
-        Dictionary rs = get_property(curr_this_node);
-		Vector<int32_t> child_state;
-		StringName sn = SNAME("child_status");
-		if (!rs.has(sn))
-		{
-			rs[sn] = child_state;
-		}
-		else
-		{
-			child_state = rs[sn];
-		}
-        child_state.resize(child_count);
-        child_state.fill(0);
-        rs[SNAME("run_state")] = -1;
-    }
-    Vector<int32_t> get_child_state(Object* curr_this_node)
-    {
-        Dictionary rs = get_property(curr_this_node);
-        Vector<int32_t> child_state = rs.get("child_status", Vector<int32_t>());
-        return child_state;
+		touch(curr_this_node);
+		currRunState->reset(child_count);
     }
 	void reset()
 	{
 		properties.clear();
 		time = 0;
 		delta = 0;
+		currRunState = nullptr;
 	}
-    HashMap<uint64_t,Dictionary> properties;
+	void touch(Object* curr_this_node)
+	{
+		if (currRunState != nullptr)
+		{
+			if (currRunState->id != curr_this_node->get_instance_id())
+			{
+				currRunState = &properties[curr_this_node->get_instance_id()];
+				return;
+			}
+		}
+		else
+		{
+			currRunState = &properties[curr_this_node->get_instance_id()];
+		}
+	}
+    HashMap<uint64_t,BeehaveRunState> properties;
+	BeehaveRunState* currRunState = nullptr;
     double time = 0.0;
     double delta = 0.0;
     Node* actor = nullptr;
@@ -130,6 +171,7 @@ public:
     // Called before the first time it ticks by the parent.
     virtual void  before_run(const Ref<BeehaveRuncontext>& run_context)  
     {
+		run_context->set_init_status(this, 1);
 
     }
     int process(const Ref<BeehaveRuncontext>& run_context);
@@ -143,6 +185,7 @@ public:
     // [code]SUCCESS[/code] or [code]FAILURE[/code].
     virtual void after_run(const Ref<BeehaveRuncontext>& run_context)  
     {
+		run_context->set_init_status(this, 2);
         
     }
     virtual TypedArray<StringName> get_class_name()
@@ -182,7 +225,7 @@ public:
     void set_children(TypedArray<BeehaveNode> p_children)
     {
         children.clear();
-        for(uint32_t i = 0; i < p_children.size(); ++i)
+        for(int32_t i = 0; i < p_children.size(); ++i)
         {
             children.push_back(p_children[i]);
         }
@@ -191,7 +234,7 @@ public:
     TypedArray<BeehaveNode> get_children()
     {
         TypedArray<BeehaveNode> rs;
-        for(uint32_t i = 0; i < children.size(); ++i)
+        for(int32_t i = 0; i < children.size(); ++i)
         {
             rs.push_back(children[i]);
         }

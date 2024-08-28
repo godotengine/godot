@@ -13,6 +13,85 @@
 #include "scene/gui/graph_edit.h"
 class BeehaveGraphProperty;
 
+struct BeehaveRunTool
+{
+	float time_scale = 1.0;
+	float delta = 0.0;
+	float curr_time = 0.0;
+
+	bool is_running = false;
+	bool is_paused = false;
+
+	Ref<BeehaveRuncontext> run_context;
+	Ref<BeehaveTree> tree;
+
+	void play(const Ref<BeehaveTree>& p_tree)
+	{
+		stop();
+		CharacterBodyMain* main = CharacterBodyMain::get_current_editor_player();
+		if (main == nullptr || main->get_blackboard_plan().is_null())
+		{
+			return;
+		}
+		tree = p_tree;
+		if (tree.is_null())
+		{
+			return;
+		}
+		run_context.instantiate();
+		is_running = true;
+		is_paused = false;
+		tree->init(run_context);
+		run_context->actor = main;
+		run_context->delta = delta;
+		run_context->blackboard = main->get_blackboard_plan()->get_editor_blackboard();
+	}
+	void pause()
+	{
+		if (tree.is_null())
+		{
+			return;
+		}
+		is_paused = true;
+	}
+
+	void tick(float p_delta)
+	{
+		if (tree.is_null())
+		{
+			return;
+		}
+		if (!is_running)
+		{
+			return;
+		}
+		if (is_paused)
+		{
+			return;
+		}
+		delta = time_scale * p_delta;
+		curr_time += p_delta;
+		run_context->delta = delta;
+		run_context->time = curr_time;
+		if (tree->process(run_context) != 2)
+		{
+			is_running = false;
+		}
+	}
+
+	void stop()
+	{
+		if (tree.is_valid())
+		{
+			tree->set_debug_break_node(nullptr);
+		}
+		is_running = false;
+		is_paused = false;
+		delta = 0.0f;
+		run_context.unref();
+		tree.unref();
+	}
+};
 
 class BeehaveGraphEditor : public GraphEdit
 {
@@ -43,6 +122,7 @@ public:
 	void _ready() override
 	{
 		set_minimap_enabled(false);
+		set_process(true);
 
 		layout_button = memnew(Button);
 		layout_button->set_flat(false);
@@ -216,20 +296,27 @@ public:
 		}
 	}
 
-	void process_tick(StringName id_name,int p_status)
+	void process_tick(BeehaveRunTool& run_tool)
 	{
-		BeehaveGraphNodes* nodes = Object::cast_to<BeehaveGraphNodes>(get_node_or_null(NodePath( id_name)));
-		if(nodes != nullptr)
+		if (run_tool.run_context.is_null())
 		{
-			nodes->set_meta("status",p_status);
-			nodes->set_status(p_status);
-			nodes->set_text(get_status(p_status));
+			active_nodes.clear();
+			return;
+		}
+		TypedArray<BeehaveGraphNodes> nodes = _get_child_nodes();
+		for (int i = 0; i < nodes.size(); ++i)
+		{
+			BeehaveGraphNodes* node = Object::cast_to<BeehaveGraphNodes>(nodes[i]);
+			int p_status = run_tool.run_context->get_run_state(node->beehave_node.ptr());
+			node->set_meta("status", p_status);
+			node->set_status(p_status);
+			node->set_text(get_status(p_status));
 
 			if(p_status == 0 || p_status == 2)
 			{
-				if(!active_nodes.has(nodes))
+				if(!active_nodes.has(node))
 				{
-					active_nodes.push_back(nodes);
+					active_nodes.push_back(node);
 				}
 			}
 		}
@@ -308,23 +395,23 @@ public:
 		return points;
 		
 	}
+
 	int progress = 0;
 	virtual void process(double delta)override
 	{
-		if(!active_nodes.is_empty())
+		if (!active_nodes.is_empty())
 		{
 			progress += (delta >= 0.05) ? 10 : 1;
-			if(progress >= 1000)
+			if (progress >= 1000)
 			{
 				progress = 0;
 			}
 			queue_redraw();
 		}
 	}
-
-	void _draw()
+	void _draw() override
 	{
-		if(!active_nodes.is_empty())
+		if(active_nodes.is_empty())
 		{
 			return;
 		}		
@@ -339,12 +426,12 @@ public:
 			BeehaveGraphNodes* from_node =  Object::cast_to<BeehaveGraphNodes>( get_node(NodePath(from)) );
 			BeehaveGraphNodes* to_node =  Object::cast_to<BeehaveGraphNodes>(get_node(NodePath(to)));
 
-			if(!active_nodes.has(from_node) || !active_nodes.has(to_node))
+			if(!active_nodes.has(from_node) && !active_nodes.has(to_node))
 			{
 				continue;
 			}
 			
-			if((int)from_node->get_meta("status") < 0 || (int)to_node->get_meta("status") < 0)
+			if((int)from_node->get_meta("status") < 0 && (int)to_node->get_meta("status") < 0)
 			{
 				return;
 			}
@@ -355,10 +442,9 @@ public:
 
 			float scale_factor = from_node->get_rect().size.x / from_node->get_size().x;
 
-			auto line = _get_elbow_connection_line(
-				(from_node->get_position_offset() + from_node->get_output_port_position(0)) * get_zoom(),
-				(to_node->get_position_offset() + to_node->get_input_port_position(0)) * get_zoom()
-			);
+			Vector2 from_graph_position = (from_node->get_position() + from_node->get_output_port_position(0) * get_zoom());
+			Vector2 to_graph_position = (to_node->get_position() + to_node->get_input_port_position(0) * get_zoom());
+			auto line = _get_elbow_connection_line(from_graph_position, to_graph_position);
 
 			Curve2D curve;
 			for(auto& j : line)
@@ -518,70 +604,6 @@ protected:
 
 };
 
-struct BeehaveRunTool
-{
-	float time_scale = 1.0;
-	float detail = 0.0;
-	float curr_time = 0.0;
-
-	bool is_running = false;
-	bool is_paused = false;
-
-	Ref<BeehaveRuncontext> run_context;
-	Ref<BeehaveTree> tree;
-
-	void play(const Ref<BeehaveTree>& p_tree)
-	{
-		stop();
-		CharacterBodyMain* main = CharacterBodyMain::get_current_editor_player();
-		if (main == nullptr || main->get_blackboard_plan().is_null())
-		{
-			return;
-		}
-		tree = p_tree;
-		if(tree.is_null())
-		{
-			return;
-		}
-		run_context.instantiate();
-		is_running = true;
-		is_paused = false;
-		tree->init(run_context);
-		run_context->actor = main;
-		run_context->delta = detail;
-		run_context->blackboard = main->get_blackboard_plan()->get_editor_blackboard();
-	}
-	void pause()
-	{
-		if(tree.is_null())
-		{
-			return;
-		}
-		is_paused = true;
-	}
-
-	void tick(float p_delta)
-	{
-		if(tree.is_null())
-		{
-			return;
-		}
-		detail = time_scale * p_delta;
-		curr_time += p_delta;
-		if(tree->process(run_context) != 2)
-		{
-			is_running = false;
-		}
-	}
-
-	void stop()
-	{
-		is_running = false;
-		is_paused = false;
-		detail = 0.0f;
-		run_context.unref();
-	}
-};
 
 
 // 绿豆蝇行为树属性编辑
@@ -728,7 +750,7 @@ public:
 		}
 		run_tool.tick(delta);
 		beehave_editor->process_begin();
-		beehave_editor->process(delta);
+		beehave_editor->process_tick(run_tool);
 		beehave_editor->process_end();
 	}
 	void set_editor_node(Ref<BeehaveNode> p_beehave_node)
@@ -798,7 +820,14 @@ public:
 		}
 	}
 	void _on_slider_changed(double p_value) {
-		
+		run_tool.time_scale = p_value;
+	}
+	void on_remove_debug(Ref<BeehaveNode> p_beehave_node)
+	{
+		if (beehave_tree->get_debug_break_node() == p_beehave_node.ptr())
+		{
+			beehave_tree->set_debug_break_node(nullptr);
+		}
 	}
 protected:
 	void set_collapsed(bool p_collapsed) {
@@ -869,7 +898,6 @@ protected:
 	}
 
 	
-	
 protected:
 	Ref<BeehaveGraphFrames> frames;
 	Ref<BeehaveTree> beehave_tree;
@@ -905,4 +933,14 @@ void BeehaveGraphNodes::on_beehave_node_change()
 	beehave_graph_property->on_beehave_node_change();
 	
 	on_selected(true);
+}
+void BeehaveGraphNodes::_on_debug_break()
+{
+	beehave_node->set_debug_enabled(! beehave_node->get_debug_enabled());
+	debug_break->set_icon(beehave_node->get_debug_enabled() ? frames->debug_enable_icon : frames->debug_disable_icon);
+	debug_break->set_modulate(beehave_node->get_debug_enabled() ? Color(0.5, 0.5, 0.5, 1) :Color(1, 1, 1, 1) );
+	if(!beehave_node->get_debug_enabled())
+	{
+		beehave_graph_property->on_remove_debug(beehave_node);
+	}
 }

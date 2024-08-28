@@ -786,12 +786,7 @@ public:
 		parent_beehave_node->remove_child(beehave_node);
 		on_beehave_node_change();
 	}
-	void _on_debug_break()
-	{
-		beehave_node->set_debug_enabled(! beehave_node->get_debug_enabled());
-		debug_break->set_icon(beehave_node->get_debug_enabled() ? frames->debug_enable_icon : frames->debug_disable_icon);
-		debug_break->set_modulate(beehave_node->get_debug_enabled() ? Color(0.5, 0.5, 0.5, 1) :Color(1, 1, 1, 1) );
-	}
+	void _on_debug_break();
 	virtual void on_selected(bool p_selected);
 	virtual void on_beehave_node_change();
 };

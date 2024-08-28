@@ -111,7 +111,7 @@ public:
         float start_time = OS::get_singleton()->get_ticks_usec();
 
         
-        for (int i = 0; i < listeners.size(); i++)
+        for (uint32_t i = 0; i < listeners.size(); i++)
         {
             listeners[i]->process(run_context);
         }

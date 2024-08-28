@@ -34,31 +34,28 @@ public:
 
     virtual int tick(const Ref<BeehaveRuncontext>& run_context)override
     {
-		auto child_state = run_context->get_child_state(this);
         for(int i = last_execution_index; i < get_child_count(); i++)
         {
-            if(child_state[i] == 0)
+            if(run_context->get_init_status(children[i].ptr()) == 0)
             {
-                child_state.write[i] = 1;
                 children[i]->before_run(run_context);
             }
             int rs = children[i]->process(run_context);
             if(rs == NONE_PROCESS)
             {
+				// 执行到断点,直接返回
                 return rs;
             }
 			run_context->set_run_state(children[i].ptr(), rs);
             if(rs == SUCCESS )
             {
                 last_execution_index = i + 1;
-                child_state.write[i] = 2;
                 children[i]->after_run(run_context);
                 return SUCCESS;
             }
             else if(rs == FAILURE)
             {
                 last_execution_index = i + 1;
-                child_state.write[i] = 2;
                 children[i]->after_run(run_context);
                 return rs;
             }

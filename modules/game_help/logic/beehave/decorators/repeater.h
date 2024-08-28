@@ -41,16 +41,14 @@ public:
         {
             return FAILURE;
         }
-		auto child_state = run_context->get_child_state(this);
 		Dictionary prop = run_context->get_property(this);
 		int current_count = prop.get(SNAME("current_count"), 0);
         if(current_count < max_count)
         {
             current_count++;
-            if(child_state[0] == 0)
+			if (run_context->get_init_status(children[0].ptr()) == 0)
             {
                 children[0]->before_run(run_context);
-                child_state.write[0] = 1;
             }
             int rs = children[0]->process(run_context);
             if(rs == NONE_PROCESS)
@@ -60,10 +58,10 @@ public:
 			run_context->set_run_state(children[0].ptr(), rs);
             if(rs == RUNNING)
             {
+				// 执行到断点,直接返回
                 return rs;
             }
             current_count += 1;
-            child_state.write[0] = 0;
             children[0]->after_run(run_context);
             if(rs == FAILURE)
             {
@@ -73,7 +71,6 @@ public:
         else
         {
             children[0]->after_run(run_context);
-            child_state.write[0] = 2;
             return FAILURE;
         }
         return SUCCESS;

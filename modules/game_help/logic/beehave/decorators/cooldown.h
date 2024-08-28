@@ -31,9 +31,9 @@ public:
     {
         return SNAME("cooldown");
     }
-    virtual void interrupt(const Ref<BeehaveRuncontext>& run_context)override
+    virtual void before_run(const Ref<BeehaveRuncontext>& run_context)override
     {
-        base_class_type::interrupt(run_context);
+        base_class_type::before_run(run_context);
 		Dictionary prop = run_context->get_property(this);
 		prop[SNAME("is_init")] = false;
 		prop[SNAME("remaining_time")] = wait_time;
@@ -48,11 +48,10 @@ public:
         int response ;
 		Dictionary prop = run_context->get_property(this);
 		float total_time = prop.get(SNAME("total_time"), 0.0f);
-		auto child_state = run_context->get_child_state(this);
 		bool is_init = prop.get(SNAME("is_init"), false);
         if(!is_init)
         {
-            interrupt(run_context);
+            before_run(run_context);
         }
 		float remaining_time = prop.get(SNAME("remaining_time"), wait_time);
         if(remaining_time > 0)
@@ -63,7 +62,20 @@ public:
         }
         else
         {
+			if (run_context->get_init_status(children[0].ptr()) == 0)
+            {
+                children[0]->before_run(run_context);
+            }
             response = child->process(run_context);
+			if (response == NONE_PROCESS)
+			{
+				// 执行到断点,直接返回
+				return response;
+			}
+            if(response == SUCCESS || response == FAILURE)
+            {
+                children[0]->after_run(run_context);
+            }
         }
         if(response == NONE_PROCESS)
         {

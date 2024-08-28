@@ -42,10 +42,9 @@ public:
 		float current_time = prop.get(SNAME("current_time"), 0.0f);
 		current_time += (float)run_context->delta;
 		prop[SNAME("current_time")] = current_time;
-		auto child_state = run_context->get_child_state(this);
         if(current_time < max_time)
         {
-            if(child_state[0] == 0)
+			if (run_context->get_init_status(children[0].ptr()) == 0)
             {
                 children[0]->before_run(run_context);
 				current_time = 0;
@@ -53,6 +52,7 @@ public:
             int rs = children[0]->process(run_context);
             if(rs == NONE_PROCESS)
             {
+				// 执行到断点,直接返回
                 return rs;
             }
 			run_context->set_run_state(children[0].ptr(), rs);
@@ -60,10 +60,9 @@ public:
             {
                 for(int i = 0; i < get_child_count(); ++i)
                 {
-                    if(child_state[i] == 1)
+					if (run_context->get_init_status(children[i].ptr()) == 1)
                     {
                         children[i]->after_run(run_context);
-                        child_state.write[i] = 2;
                     }
                 }
                 return rs;
@@ -72,7 +71,6 @@ public:
         else
         {
             children[0]->after_run(run_context);
-			child_state.write[0] = 2;
             return FAILURE;
         }
         return FAILURE;
