@@ -47,9 +47,18 @@ void Parallax2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			autoscroll_offset += autoscroll * get_process_delta_time();
-			autoscroll_offset = autoscroll_offset.posmodv(repeat_size);
+			Point2 offset = scroll_offset;
+			offset += autoscroll * get_process_delta_time();
 
+			if (repeat_size.x) {
+				offset.x = Math::fposmod(offset.x, repeat_size.x);
+			}
+
+			if (repeat_size.y) {
+				offset.y = Math::fposmod(offset.y, repeat_size.y);
+			}
+
+			scroll_offset = offset;
 			_update_scroll();
 		} break;
 
@@ -106,14 +115,14 @@ void Parallax2D::_update_scroll() {
 	scroll_ofs *= scroll_scale;
 
 	if (repeat_size.x) {
-		real_t mod = Math::fposmod(scroll_ofs.x - scroll_offset.x - autoscroll_offset.x, repeat_size.x * get_scale().x);
+		real_t mod = Math::fposmod(scroll_ofs.x - scroll_offset.x, repeat_size.x * get_scale().x);
 		scroll_ofs.x = screen_offset.x - mod;
 	} else {
 		scroll_ofs.x = screen_offset.x + scroll_offset.x - scroll_ofs.x;
 	}
 
 	if (repeat_size.y) {
-		real_t mod = Math::fposmod(scroll_ofs.y - scroll_offset.y - autoscroll_offset.y, repeat_size.y * get_scale().y);
+		real_t mod = Math::fposmod(scroll_ofs.y - scroll_offset.y, repeat_size.y * get_scale().y);
 		scroll_ofs.y = screen_offset.y - mod;
 	} else {
 		scroll_ofs.y = screen_offset.y + scroll_offset.y - scroll_ofs.y;
@@ -193,7 +202,6 @@ void Parallax2D::set_autoscroll(const Point2 &p_autoscroll) {
 	}
 
 	autoscroll = p_autoscroll;
-	autoscroll_offset = Point2();
 
 	_update_process();
 	_update_scroll();
