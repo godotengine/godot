@@ -414,7 +414,8 @@ Error OS_Windows::open_dynamic_library(const String &p_path, void *&p_library_ha
 	DLL_DIRECTORY_COOKIE cookie = nullptr;
 
 	if (p_data != nullptr && p_data->also_set_library_path && has_dll_directory_api) {
-		cookie = add_dll_directory((LPCWSTR)(load_path.get_base_dir().utf16().get_data()));
+		String dll_dir = ProjectSettings::get_singleton()->globalize_path(load_path.get_base_dir());
+		cookie = add_dll_directory((LPCWSTR)(dll_dir.utf16().get_data()));
 	}
 
 	p_library_handle = (void *)LoadLibraryExW((LPCWSTR)(load_path.utf16().get_data()), nullptr, (p_data != nullptr && p_data->also_set_library_path && has_dll_directory_api) ? LOAD_LIBRARY_SEARCH_DEFAULT_DIRS : 0);
