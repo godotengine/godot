@@ -4063,7 +4063,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	members_overview_alphabeta_sort_button->set_tooltip_text(TTR("Toggle alphabetical sorting of the method list."));
 	members_overview_alphabeta_sort_button->set_toggle_mode(true);
 	members_overview_alphabeta_sort_button->set_pressed(EDITOR_GET("text_editor/script_list/sort_members_outline_alphabetically"));
-	members_overview_alphabeta_sort_button->connect("toggled", callable_mp(this, &ScriptEditor::_toggle_members_overview_alpha_sort));
+	members_overview_alphabeta_sort_button->connect(SceneStringName(toggled), callable_mp(this, &ScriptEditor::_toggle_members_overview_alpha_sort));
 
 	buttons_hbox->add_child(members_overview_alphabeta_sort_button);
 

@@ -680,10 +680,7 @@ void MenuBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_menu_hidden", "menu", "hidden"), &MenuBar::set_menu_hidden);
 	ClassDB::bind_method(D_METHOD("is_menu_hidden", "menu"), &MenuBar::is_menu_hidden);
 
-	// TODO: Properly handle popups when advanced GUI is disabled.
-#ifndef ADVANCED_GUI_DISABLED
 	ClassDB::bind_method(D_METHOD("get_menu_popup", "menu"), &MenuBar::get_menu_popup);
-#endif // ADVANCED_GUI_DISABLED
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "start_index"), "set_start_index", "get_start_index");

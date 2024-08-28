@@ -6382,7 +6382,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	custom_mode_box->set_text(TTR("Custom"));
 	custom_mode_box->set_pressed(false);
 	custom_mode_box->set_visible(false);
-	custom_mode_box->connect("toggled", callable_mp(this, &VisualShaderEditor::_custom_mode_toggled));
+	custom_mode_box->connect(SceneStringName(toggled), callable_mp(this, &VisualShaderEditor::_custom_mode_toggled));
 
 	edit_type_standard = memnew(OptionButton);
 	edit_type_standard->add_item(TTR("Vertex"));

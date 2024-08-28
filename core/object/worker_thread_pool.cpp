@@ -461,7 +461,10 @@ void WorkerThreadPool::_wait_collaboratively(ThreadData *p_caller_pool_thread, T
 			p_caller_pool_thread->signaled = false;
 
 			if (IS_WAIT_OVER) {
-				p_caller_pool_thread->yield_is_over = false;
+				if (unlikely(p_task == ThreadData::YIELDING)) {
+					p_caller_pool_thread->yield_is_over = false;
+				}
+
 				if (!exit_threads && was_signaled) {
 					// This thread was awaken for some additional reason, but it's about to exit.
 					// Let's find out what may be pending and forward the requests.

@@ -539,6 +539,11 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 		if (!ignoring_cache && thread_load_tasks.has(local_path)) {
 			load_token = Ref<LoadToken>(thread_load_tasks[local_path].load_token);
 			if (load_token.is_valid()) {
+				if (p_for_user) {
+					// Load task exists, with no user tokens at the moment.
+					// Let's "attach" to it.
+					_load_threaded_request_setup_user_token(load_token.ptr(), p_path);
+				}
 				return load_token;
 			} else {
 				// The token is dying (reached 0 on another thread).

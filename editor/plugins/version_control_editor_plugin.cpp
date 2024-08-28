@@ -1006,7 +1006,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	toggle_vcs_choice = memnew(CheckButton);
 	toggle_vcs_choice->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	toggle_vcs_choice->set_pressed_no_signal(false);
-	toggle_vcs_choice->connect(SNAME("toggled"), callable_mp(this, &VersionControlEditorPlugin::_toggle_vcs_integration));
+	toggle_vcs_choice->connect(SceneStringName(toggled), callable_mp(this, &VersionControlEditorPlugin::_toggle_vcs_integration));
 	toggle_vcs_hbc->add_child(toggle_vcs_choice);
 
 	set_up_vbc->add_child(memnew(HSeparator));

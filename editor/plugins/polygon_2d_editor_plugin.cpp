@@ -1468,7 +1468,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	b_snap_enable->set_toggle_mode(true);
 	b_snap_enable->set_pressed(use_snap);
 	b_snap_enable->set_tooltip_text(TTR("Enable Snap"));
-	b_snap_enable->connect("toggled", callable_mp(this, &Polygon2DEditor::_set_use_snap));
+	b_snap_enable->connect(SceneStringName(toggled), callable_mp(this, &Polygon2DEditor::_set_use_snap));
 
 	b_snap_grid = memnew(Button);
 	b_snap_grid->set_theme_type_variation("FlatButton");
@@ -1478,7 +1478,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	b_snap_grid->set_toggle_mode(true);
 	b_snap_grid->set_pressed(snap_show_grid);
 	b_snap_grid->set_tooltip_text(TTR("Show Grid"));
-	b_snap_grid->connect("toggled", callable_mp(this, &Polygon2DEditor::_set_show_grid));
+	b_snap_grid->connect(SceneStringName(toggled), callable_mp(this, &Polygon2DEditor::_set_show_grid));
 
 	grid_settings = memnew(AcceptDialog);
 	grid_settings->set_title(TTR("Configure Grid:"));
