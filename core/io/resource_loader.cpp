@@ -227,27 +227,26 @@ void ResourceFormatLoader::_bind_methods() {
 
 // This should be robust enough to be called redundantly without issues.
 void ResourceLoader::LoadToken::clear() {
-	thread_load_mutex.lock();
-
 	WorkerThreadPool::TaskID task_to_await = 0;
 
-	// User-facing tokens shouldn't be deleted until completely claimed.
-	DEV_ASSERT(user_rc == 0 && user_path.is_empty());
+	{
+		MutexLock thread_load_lock(thread_load_mutex);
+		// User-facing tokens shouldn't be deleted until completely claimed.
+		DEV_ASSERT(user_rc == 0 && user_path.is_empty());
 
-	if (!local_path.is_empty()) { // Empty is used for the special case where the load task is not registered.
-		DEV_ASSERT(thread_load_tasks.has(local_path));
-		ThreadLoadTask &load_task = thread_load_tasks[local_path];
-		if (load_task.task_id && !load_task.awaited) {
-			task_to_await = load_task.task_id;
+		if (!local_path.is_empty()) { // Empty is used for the special case where the load task is not registered.
+			DEV_ASSERT(thread_load_tasks.has(local_path));
+			ThreadLoadTask &load_task = thread_load_tasks[local_path];
+			if (load_task.task_id && !load_task.awaited) {
+				task_to_await = load_task.task_id;
+			}
+			// Removing a task which is still in progress would be catastrophic.
+			// Tokens must be alive until the task thread function is done.
+			DEV_ASSERT(load_task.status == THREAD_LOAD_FAILED || load_task.status == THREAD_LOAD_LOADED);
+			thread_load_tasks.erase(local_path);
+			local_path.clear();
 		}
-		// Removing a task which is still in progress would be catastrophic.
-		// Tokens must be alive until the task thread function is done.
-		DEV_ASSERT(load_task.status == THREAD_LOAD_FAILED || load_task.status == THREAD_LOAD_LOADED);
-		thread_load_tasks.erase(local_path);
-		local_path.clear();
 	}
-
-	thread_load_mutex.unlock();
 
 	// If task is unused, await it here, locally, now the token data is consistent.
 	if (task_to_await) {
@@ -265,7 +264,7 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 	const String &original_path = p_original_path.is_empty() ? p_path : p_original_path;
 	load_nesting++;
 	if (load_paths_stack.size()) {
-		thread_load_mutex.lock();
+		MutexLock thread_load_lock(thread_load_mutex);
 		const String &parent_task_path = load_paths_stack.get(load_paths_stack.size() - 1);
 		HashMap<String, ThreadLoadTask>::Iterator E = thread_load_tasks.find(parent_task_path);
 		// Avoid double-tracking, for progress reporting, resources that boil down to a remapped path containing the real payload (e.g., imported resources).
@@ -273,7 +272,6 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 		if (E && !is_remapped_load) {
 			E->value.sub_tasks.insert(p_original_path);
 		}
-		thread_load_mutex.unlock();
 	}
 	load_paths_stack.push_back(original_path);
 
@@ -318,13 +316,13 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 void ResourceLoader::_run_load_task(void *p_userdata) {
 	ThreadLoadTask &load_task = *(ThreadLoadTask *)p_userdata;
 
-	thread_load_mutex.lock();
-	if (cleaning_tasks) {
-		load_task.status = THREAD_LOAD_FAILED;
-		thread_load_mutex.unlock();
-		return;
+	{
+		MutexLock thread_load_lock(thread_load_mutex);
+		if (cleaning_tasks) {
+			load_task.status = THREAD_LOAD_FAILED;
+			return;
+		}
 	}
-	thread_load_mutex.unlock();
 
 	// Thread-safe either if it's the current thread or a brand new one.
 	CallQueue *own_mq_override = nullptr;
@@ -1170,17 +1168,17 @@ String ResourceLoader::path_remap(const String &p_path) {
 }
 
 void ResourceLoader::reload_translation_remaps() {
-	ResourceCache::lock.lock();
-
 	List<Resource *> to_reload;
-	SelfList<Resource> *E = remapped_list.first();
 
-	while (E) {
-		to_reload.push_back(E->self());
-		E = E->next();
+	{
+		MutexLock lock(ResourceCache::lock);
+		SelfList<Resource> *E = remapped_list.first();
+
+		while (E) {
+			to_reload.push_back(E->self());
+			E = E->next();
+		}
 	}
-
-	ResourceCache::lock.unlock();
 
 	//now just make sure to not delete any of these resources while changing locale..
 	while (to_reload.front()) {
