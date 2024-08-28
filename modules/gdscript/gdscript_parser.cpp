@@ -260,6 +260,7 @@ void GDScriptParser::override_completion_context(const Node *p_for_node, Complet
 	context.current_line = tokenizer->get_cursor_line();
 	context.current_argument = p_argument;
 	context.node = p_node;
+	context.parser = this;
 	completion_context = context;
 }
 
