@@ -210,7 +210,15 @@ void FreeDesktopPortalDesktop::append_dbus_dict_filters(DBusMessageIter *p_iter,
 		append_dbus_string(&struct_iter, p_filter_names[i]);
 
 		dbus_message_iter_open_container(&struct_iter, DBUS_TYPE_ARRAY, "(us)", &array_iter);
-		const String &flt = p_filter_exts[i];
+		const String &flt_orig = p_filter_exts[i];
+		String flt;
+		for (int j = 0; j < flt_orig.length(); j++) {
+			if (is_unicode_letter(flt_orig[j])) {
+				flt += vformat("[%c%c]", String::char_lowercase(flt_orig[j]), String::char_uppercase(flt_orig[j]));
+			} else {
+				flt += flt_orig[j];
+			}
+		}
 		int filter_slice_count = flt.get_slice_count(",");
 		for (int j = 0; j < filter_slice_count; j++) {
 			dbus_message_iter_open_container(&array_iter, DBUS_TYPE_STRUCT, nullptr, &array_struct_iter);
