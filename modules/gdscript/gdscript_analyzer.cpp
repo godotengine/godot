@@ -418,6 +418,12 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 				return err;
 			}
 
+#ifdef DEBUG_ENABLED
+			if (!parser->_is_tool && ext_parser->get_parser()->_is_tool) {
+				parser->push_warning(p_class, GDScriptWarning::MISSING_TOOL);
+			}
+#endif
+
 			base = ext_parser->get_parser()->head->get_datatype();
 		} else {
 			if (p_class->extends.is_empty()) {
@@ -445,6 +451,13 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 						push_error(vformat(R"(Could not resolve super class inheritance from "%s".)", name), id);
 						return err;
 					}
+
+#ifdef DEBUG_ENABLED
+					if (!parser->_is_tool && base_parser->get_parser()->_is_tool) {
+						parser->push_warning(p_class, GDScriptWarning::MISSING_TOOL);
+					}
+#endif
+
 					base = base_parser->get_parser()->head->get_datatype();
 				}
 			} else if (ProjectSettings::get_singleton()->has_autoload(name) && ProjectSettings::get_singleton()->get_autoload(name).is_singleton) {
@@ -465,6 +478,13 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 					push_error(vformat(R"(Could not resolve super class inheritance from "%s".)", name), id);
 					return err;
 				}
+
+#ifdef DEBUG_ENABLED
+				if (!parser->_is_tool && info_parser->get_parser()->_is_tool) {
+					parser->push_warning(p_class, GDScriptWarning::MISSING_TOOL);
+				}
+#endif
+
 				base = info_parser->get_parser()->head->get_datatype();
 			} else if (class_exists(name)) {
 				if (Engine::get_singleton()->has_singleton(name)) {
