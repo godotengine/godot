@@ -56,7 +56,7 @@ void Curve::set_point_count(int p_count) {
 	notify_property_list_changed();
 }
 
-int Curve::_add_point(Vector2 p_position, real_t p_left_tangent, real_t p_right_tangent, TangentMode p_left_mode, TangentMode p_right_mode) {
+int Curve::_add_point(Vector2 p_position, real_t p_left_tangent, real_t p_right_tangent, TangentMode p_left_mode, TangentMode p_right_mode, bool p_mark_dirty) {
 	// Add a point and preserve order.
 
 	// Points must remain within the given value and domain ranges.
@@ -99,7 +99,9 @@ int Curve::_add_point(Vector2 p_position, real_t p_left_tangent, real_t p_right_
 
 	update_auto_tangents(ret);
 
-	mark_dirty();
+	if (p_mark_dirty) {
+		mark_dirty();
+	}
 
 	return ret;
 }
@@ -221,10 +223,12 @@ Curve::TangentMode Curve::get_point_right_mode(int p_index) const {
 	return _points[p_index].right_mode;
 }
 
-void Curve::_remove_point(int p_index) {
+void Curve::_remove_point(int p_index, bool p_mark_dirty) {
 	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_index, _points.size());
 	_points.remove_at(p_index);
-	mark_dirty();
+	if (p_mark_dirty) {
+		mark_dirty();
+	}
 }
 
 void Curve::remove_point(int p_index) {
@@ -252,16 +256,13 @@ void Curve::set_point_value(int p_index, real_t p_position) {
 int Curve::set_point_offset(int p_index, real_t p_offset) {
 	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_index, _points.size(), -1);
 	Point p = _points[p_index];
-	_remove_point(p_index);
-	int i = _add_point(Vector2(p_offset, p.position.y));
-	_points[i].left_tangent = p.left_tangent;
-	_points[i].right_tangent = p.right_tangent;
-	_points[i].left_mode = p.left_mode;
-	_points[i].right_mode = p.right_mode;
+	_remove_point(p_index, false);
+	int i = _add_point(Vector2(p_offset, p.position.y), p.left_tangent, p.right_tangent, p.left_mode, p.right_mode, false);
 	if (p_index != i) {
 		update_auto_tangents(p_index);
 	}
 	update_auto_tangents(i);
+	mark_dirty();
 	return i;
 }
 
