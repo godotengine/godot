@@ -694,18 +694,17 @@
 		<annotation name="@override">
 			<return type="void" />
 			<description>
-				Mark the following method to override the parent classes version of said method to allow for arguments for a builtin function to differ from parent to child
-				[codeblock]
-				class A:
-					func test(x: float): pass
+                Mark the following method to override the parent classes version of said method to allow for arguments for a builtin function to differ from parent to child
+                [codeblock]
+                class A:
+                    func test(x: float): pass
 
+                class B:
+                    extends A
 
-				class B:
-					extends A
-
-					@override
-					func test(x: String, y: String): pass
-				[/codeblock]
+                    @override
+                    func test(x: String, y: String): pass
+                [/codeblock]
 			</description>
 		</annotation>
 		<annotation name="@rpc">
