@@ -2718,7 +2718,7 @@ RDD::PipelineID RenderingDeviceDriverVulkan::render_pipeline_create(
 	rasterization_line_state_create_info_ext.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_LINE_STATE_CREATE_INFO_EXT;
 	rasterization_line_state_create_info_ext.pNext = nullptr;
 	// this line is ridiculous because the extension mimics the limitations of the original OpenGL line rasterization implementation
-	rasterization_line_state_create_info_ext.lineRasterizationMode = ((Math::is_zero_approx(p_rasterization_state.line_width) || p_rasterization_state.line_width == 1.0f) && !(p_dynamic_state.has_flag(DYNAMIC_STATE_LINE_WIDTH) || p_multisample_state.enable_alpha_to_coverage || p_multisample_state.enable_alpha_to_one || p_multisample_state.enable_sample_shading) ? VK_LINE_RASTERIZATION_MODE_BRESENHAM_EXT : VK_LINE_RASTERIZATION_MODE_DEFAULT_EXT);
+	rasterization_line_state_create_info_ext.lineRasterizationMode = ((Math::is_zero_approx(p_rasterization_state.line_width) || p_rasterization_state.line_width == 1.0f) && !p_dynamic_state.has_flag(DYNAMIC_STATE_LINE_WIDTH) && !p_multisample_state.enable_alpha_to_coverage && !p_multisample_state.enable_alpha_to_one && !p_multisample_state.enable_sample_shading) ? VK_LINE_RASTERIZATION_MODE_BRESENHAM_EXT : VK_LINE_RASTERIZATION_MODE_DEFAULT_EXT;
 	rasterization_line_state_create_info_ext.stippledLineEnable = false;
 	rasterization_line_state_create_info_ext.lineStippleFactor = 0;
 	rasterization_line_state_create_info_ext.lineStipplePattern = 0;
