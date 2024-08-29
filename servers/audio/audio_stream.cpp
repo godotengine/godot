@@ -231,12 +231,14 @@ AudioStreamPlaybackMicrophone::AudioStreamPlaybackMicrophone() {
 ////////////////////////////////
 
 void AudioStreamRandomPitch::set_audio_stream(const Ref<AudioStream> &p_audio_stream) {
+	AudioServer::get_singleton()->lock();
 	audio_stream = p_audio_stream;
 	if (audio_stream.is_valid()) {
 		for (Set<AudioStreamPlaybackRandomPitch *>::Element *E = playbacks.front(); E; E = E->next()) {
 			E->get()->playback = audio_stream->instance_playback();
 		}
 	}
+	AudioServer::get_singleton()->unlock();
 }
 
 Ref<AudioStream> AudioStreamRandomPitch::get_audio_stream() const {
