@@ -318,6 +318,109 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 	} else                                                                                                                          \
 		((void)0)
 
+// Signed integer index unsigned size out of bounds error macros.
+
+/**
+ * Try using `ERR_FAIL_SIGNED_INDEX_UNSIGNED_SIZE_MSG`.
+ * Only use this macro if there is no sensible error message.
+ *
+ * Ensures a signed integer index `m_index` is less than unsigned integer size `m_size`.
+ * If not, the current function returns.
+ */
+#define ERR_FAIL_SIGNED_INDEX_UNSIGNED_SIZE(m_index, m_size)                                                        \
+	if (unlikely((m_index) < 0 || static_cast<std::make_unsigned<typeof((m_index))>::type>(m_index) >= (m_size))) { \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size));     \
+		return;                                                                                                     \
+	} else                                                                                                          \
+		((void)0)
+
+/**
+ * Ensures an signed integer index `m_index` is less than unsigned integer size `m_size`.
+ * If not, prints `m_msg` and the current function returns.
+ */
+#define ERR_FAIL_SIGNED_INDEX_UNSIGNED_SIZE_MSG(m_index, m_size, m_msg)                                                \
+	if (unlikely((m_index) < 0 || static_cast<std::make_unsigned<typeof((m_index))>::type>(m_index) >= (m_size))) {    \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg); \
+		return;                                                                                                        \
+	} else                                                                                                             \
+		((void)0)
+
+/**
+ * Same as `ERR_FAIL_SIGNED_INDEX_UNSIGNED_SIZE_MSG` but also notifies the editor.
+ */
+#define ERR_FAIL_SIGNED_INDEX_UNSIGNED_SIZE_EDMSG(m_index, m_size, m_msg)                                                    \
+	if (unlikely((m_index) < 0 || static_cast<std::make_unsigned<typeof((m_index))>::type>(m_index) >= (m_size))) {          \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg, true); \
+		return;                                                                                                              \
+	} else                                                                                                                   \
+		((void)0)
+
+/**
+ * Try using `ERR_FAIL_SIGNED_INDEX_UNSIGNED_SIZE_V_MSG`.
+ * Only use this macro if there is no sensible error message.
+ *
+ * Ensures a signed integer index `m_index` is less than unsigned integer size `m_size`.
+ * If not, the current function returns `m_retval`.
+ */
+#define ERR_FAIL_SIGNED_INDEX_UNSIGNED_SIZE_V(m_index, m_size, m_retval)                                            \
+	if (unlikely((m_index) < 0 || static_cast<std::make_unsigned<typeof((m_index))>::type>(m_index) >= (m_size))) { \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size));     \
+		return m_retval;                                                                                            \
+	} else                                                                                                          \
+		((void)0)
+
+/**
+ * Ensures a signed integer index `m_index` is less than unsigned integer size `m_size`.
+ * If not, prints `m_msg` and the current function returns `m_retval`.
+ */
+#define ERR_FAIL_SIGNED_INDEX_UNSIGNED_SIZE_V_MSG(m_index, m_size, m_retval, m_msg)                                    \
+	if (unlikely((m_index) < 0 || static_cast<std::make_unsigned<typeof((m_index))>::type>(m_index) >= (m_size))) {    \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg); \
+		return m_retval;                                                                                               \
+	} else                                                                                                             \
+		((void)0)
+
+/**
+ * Same as `ERR_FAIL_SIGNED_INDEX_UNSIGNED_SIZE_V_EDMSG` but also notifies the editor.
+ */
+#define ERR_FAIL_SIGNED_INDEX_UNSIGNED_SIZE_V_EDMSG(m_index, m_size, m_retval, m_msg)                                        \
+	if (unlikely((m_index) < 0 || static_cast<std::make_unsigned<typeof((m_index))>::type>(m_index) >= (m_size))) {          \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg, true); \
+		return m_retval;                                                                                                     \
+	} else                                                                                                                   \
+		((void)0)
+
+/**
+ * Try using `ERR_FAIL_SIGNED_INDEX_UNSIGNED_SIZE_MSG` or `ERR_FAIL_SIGNED_INDEX_UNSIGNED_SIZE_V_MSG`.
+ * Only use this macro if there is no sensible fallback i.e. the error is unrecoverable, and
+ * there is no sensible error message.
+ *
+ * Ensures a signed integer index `m_index` is less than unsigned integer size `m_size`.
+ * If not, the application crashes.
+ */
+#define CRASH_BAD_SIGNED_INDEX_UNSIGNED_SIZE(m_index, m_size)                                                                    \
+	if (unlikely((m_index) < 0 || static_cast<std::make_unsigned<typeof((m_index))>::type>(m_index) >= (m_size))) {              \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), "", false, true); \
+		_err_flush_stdout();                                                                                                     \
+		GENERATE_TRAP();                                                                                                         \
+	} else                                                                                                                       \
+		((void)0)
+
+/**
+ * Try using `ERR_FAIL_SIGNED_INDEX_UNSIGNED_SIZE_MSG` or `ERR_FAIL_SIGNED_INDEX_UNSIGNED_SIZE_V_MSG`.
+ * Only use this macro if there is no sensible fallback i.e. the error is unrecoverable.
+ *
+ * Ensures a signed integer index `m_index` is less than umsigned integer size `m_size`.
+ * If not, prints `m_msg` and the application crashes.
+ */
+#define CRASH_BAD_SIGNED_INDEX_UNSIGNED_SIZE_MSG(m_index, m_size, m_msg)                                                            \
+	if (unlikely((m_index) < 0 || static_cast<std::make_unsigned<typeof((m_index))>::type>(m_index) >= (m_size))) {                 \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg, false, true); \
+		_err_flush_stdout();                                                                                                        \
+		GENERATE_TRAP();                                                                                                            \
+	} else                                                                                                                          \
+		((void)0)
+
 // Null reference error macros.
 
 /**
