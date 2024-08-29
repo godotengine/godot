@@ -68,7 +68,7 @@ protected:
 	Mesh::PrimitiveType primitive_type = Mesh::PRIMITIVE_TRIANGLES;
 
 	// Copy of our texel_size project setting.
-	float texel_size = 0.2;
+	texel_size = 0.2;
 
 	static void _bind_methods();
 
