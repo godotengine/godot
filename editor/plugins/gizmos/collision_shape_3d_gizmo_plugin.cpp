@@ -39,8 +39,8 @@
 #include "scene/3d/physics/collision_shape_3d.h"
 #include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
-#include "scene/resources/3d/cone_shape_3d.h"
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
+#include "scene/resources/3d/cone_shape_3d.h"
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
 #include "scene/resources/3d/cylinder_shape_3d.h"
 #include "scene/resources/3d/height_map_shape_3d.h"
@@ -250,7 +250,6 @@ void CollisionShape3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, i
 			cs2->set_height(d * 2.0);
 		}
 	}
-
 
 	if (Object::cast_to<CylinderShape3D>(*s)) {
 		Vector3 axis;

@@ -1498,7 +1498,7 @@ const char *RenamesMap3To4::class_renames[][2] = {
 	{ "CSGSphere", "CSGSphere3D" },
 	{ "CSGTorus", "CSGTorus3D" },
 	{ "CapsuleShape", "CapsuleShape3D" },
-	{ "ConeShape", "ConeShape3D"},
+	{ "ConeShape", "ConeShape3D" },
 	{ "ClippedCamera", "Camera3D" },
 	{ "CollisionObject", "CollisionObject3D" },
 	{ "CollisionPolygon", "CollisionPolygon3D" },

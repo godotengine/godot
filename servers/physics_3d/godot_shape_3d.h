@@ -246,7 +246,6 @@ public:
 	GodotCapsuleShape3D();
 };
 
-
 class GodotConeShape3D : public GodotShape3D {
 	real_t height = 0.0;
 	real_t radius = 0.0;
@@ -275,7 +274,6 @@ public:
 
 	GodotConeShape3D();
 };
-
 
 class GodotCylinderShape3D : public GodotShape3D {
 	real_t height = 0.0;

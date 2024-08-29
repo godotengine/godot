@@ -185,9 +185,9 @@ static void _generate_contacts_edge_edge(const Vector3 *p_points_A, int p_point_
 
 static void _generate_contacts_edge_circle(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
 	if (p_point_count_A != 2 || p_point_count_B > 3) {
-		// Fallback: use the first valid points for compatability.
-			p_point_count_A = MIN(p_point_count_A, 2);
-			p_point_count_B = MIN(p_point_count_B, 3);
+		// Fallback: use the first valid points for compatibility.
+		p_point_count_A = MIN(p_point_count_A, 2);
+		p_point_count_B = MIN(p_point_count_B, 3);
 	}
 
 	const Vector3 &circle_B_pos = p_points_B[0];
@@ -2048,63 +2048,63 @@ static void _collision_cone_cone(const GodotShape3D *p_a, const Transform3D &p_t
 
 template <bool withMargin>
 static void _collision_cone_cylinder(const GodotShape3D *p_a, const Transform3D &p_transform_a, const GodotShape3D *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
-    const GodotConeShape3D *cone_A = static_cast<const GodotConeShape3D *>(p_a);
-    const GodotCylinderShape3D *cylinder_B = static_cast<const GodotCylinderShape3D *>(p_b);
+	const GodotConeShape3D *cone_A = static_cast<const GodotConeShape3D *>(p_a);
+	const GodotCylinderShape3D *cylinder_B = static_cast<const GodotCylinderShape3D *>(p_b);
 
-    // Setup the separator axis test utility
-    SeparatorAxisTest<GodotConeShape3D, GodotCylinderShape3D, withMargin> separator(cone_A, p_transform_a, cylinder_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+	// Setup the separator axis test utility
+	SeparatorAxisTest<GodotConeShape3D, GodotCylinderShape3D, withMargin> separator(cone_A, p_transform_a, cylinder_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
 
-    Vector3 cone_A_axis = p_transform_a.basis.get_column(1); // Axis of the cone
-    Vector3 cylinder_B_axis = p_transform_b.basis.get_column(1); // Axis of the cylinder
+	Vector3 cone_A_axis = p_transform_a.basis.get_column(1); // Axis of the cone
+	Vector3 cylinder_B_axis = p_transform_b.basis.get_column(1); // Axis of the cylinder
 
-    // Test previously cached axes for possible separation
-    if (!separator.test_previous_axis()) {
-        return;
-    }
+	// Test previously cached axes for possible separation
+	if (!separator.test_previous_axis()) {
+		return;
+	}
 
-    // Test the cone's apex-to-base vector against the cylinder's axis for separation
-    Vector3 cone_apex_to_base = cone_A_axis.normalized();
-    if (!separator.test_axis(cone_apex_to_base)) {
-        return;
-    }
+	// Test the cone's apex-to-base vector against the cylinder's axis for separation
+	Vector3 cone_apex_to_base = cone_A_axis.normalized();
+	if (!separator.test_axis(cone_apex_to_base)) {
+		return;
+	}
 
-    // Test against the cylinder's end cap axes
-    Vector3 cylinder_axis_normalized = cylinder_B_axis.normalized();
-    if (!separator.test_axis(cylinder_axis_normalized)) {
-        return;
-    }
+	// Test against the cylinder's end cap axes
+	Vector3 cylinder_axis_normalized = cylinder_B_axis.normalized();
+	if (!separator.test_axis(cylinder_axis_normalized)) {
+		return;
+	}
 
-    // Vector between cone's apex and cylinder's center
-    Vector3 cone_diff = p_transform_b.origin - p_transform_a.origin;
+	// Vector between cone's apex and cylinder's center
+	Vector3 cone_diff = p_transform_b.origin - p_transform_a.origin;
 
-    // Test the lateral surface axis of the cone
-    Vector3 cone_lateral_axis = cone_apex_to_base.cross(cone_diff).cross(cone_apex_to_base).normalized();
-    if (!separator.test_axis(cone_lateral_axis)) {
-        return;
-    }
+	// Test the lateral surface axis of the cone
+	Vector3 cone_lateral_axis = cone_apex_to_base.cross(cone_diff).cross(cone_apex_to_base).normalized();
+	if (!separator.test_axis(cone_lateral_axis)) {
+		return;
+	}
 
-    // Test the lateral surface axis of the cylinder
-    Vector3 cylinder_lateral_axis = cylinder_axis_normalized.cross(cone_diff).cross(cylinder_axis_normalized).normalized();
-    if (!separator.test_axis(cylinder_lateral_axis)) {
-        return;
-    }
+	// Test the lateral surface axis of the cylinder
+	Vector3 cylinder_lateral_axis = cylinder_axis_normalized.cross(cone_diff).cross(cylinder_axis_normalized).normalized();
+	if (!separator.test_axis(cylinder_lateral_axis)) {
+		return;
+	}
 
-    // Handle the case where the cone's and cylinder's axes are nearly parallel
-    real_t proj = cone_apex_to_base.cross(cylinder_axis_normalized).cross(cylinder_axis_normalized).dot(cone_apex_to_base);
-    if (Math::is_zero_approx(proj)) {
-        // Parallel cone and cylinder, generate contacts directly without further axis testing
-        separator.generate_contacts();
-        return;
-    }
+	// Handle the case where the cone's and cylinder's axes are nearly parallel
+	real_t proj = cone_apex_to_base.cross(cylinder_axis_normalized).cross(cylinder_axis_normalized).dot(cone_apex_to_base);
+	if (Math::is_zero_approx(proj)) {
+		// Parallel cone and cylinder, generate contacts directly without further axis testing
+		separator.generate_contacts();
+		return;
+	}
 
-    // Fallback to a more generic solver for complex cases
-    GodotCollisionSolver3D::CallbackResult callback = SeparatorAxisTest<GodotConeShape3D, GodotCylinderShape3D, withMargin>::test_contact_points;
-    if (!fallback_collision_solver(p_a, p_transform_a, p_b, p_transform_b, callback, &separator, false, p_margin_a, p_margin_b)) {
-        return;
-    }
+	// Fallback to a more generic solver for complex cases
+	GodotCollisionSolver3D::CallbackResult callback = SeparatorAxisTest<GodotConeShape3D, GodotCylinderShape3D, withMargin>::test_contact_points;
+	if (!fallback_collision_solver(p_a, p_transform_a, p_b, p_transform_b, callback, &separator, false, p_margin_a, p_margin_b)) {
+		return;
+	}
 
-    // Generate contact points after all tests have been performed
-    separator.generate_contacts();
+	// Generate contact points after all tests have been performed
+	separator.generate_contacts();
 }
 
 template <bool withMargin>

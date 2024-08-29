@@ -624,7 +624,6 @@ int CapsuleMesh::get_rings() const {
 
 CapsuleMesh::CapsuleMesh() {}
 
-
 /**
   ConeMesh
 */
@@ -653,7 +652,6 @@ void ConeMesh::_update_lightmap_size() {
 
 void ConeMesh::_create_mesh_array(Array &p_arr) const {
 	bool _add_uv2 = get_add_uv2();
-	float texel_size = get_lightmap_texel_size();
 	float _uv2_padding = get_uv2_padding() * texel_size;
 
 	create_mesh_array(p_arr, top_radius, bottom_radius, height, radial_segments, rings, cap_top, cap_bottom, _add_uv2, _uv2_padding);

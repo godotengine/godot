@@ -671,70 +671,69 @@ GodotCapsuleShape3D::GodotCapsuleShape3D() {}
 /********** CONE *************/
 
 void GodotConeShape3D::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
-    Vector3 cone_axis = p_transform.basis.get_column(1).normalized();
-    real_t axis_dot = cone_axis.dot(p_normal);
+	Vector3 cone_axis = p_transform.basis.get_column(1).normalized();
+	real_t axis_dot = cone_axis.dot(p_normal);
 
-    Vector3 local_normal = p_transform.basis.xform_inv(p_normal);
-    real_t scale = local_normal.length();
-    real_t scaled_radius = radius * scale;
-    real_t scaled_height = height * scale;
+	Vector3 local_normal = p_transform.basis.xform_inv(p_normal);
+	real_t scale = local_normal.length();
+	real_t scaled_radius = radius * scale;
+	real_t scaled_height = height * scale;
 
-    // Calculate the projection length for a cone
-    real_t length;
-    if (Math::abs(axis_dot) > 1.0) {
-        length = scaled_height * 0.5;
-    } else {
-        real_t middle_radius = scaled_radius * 0.5; // approximate middle radius
-        length = Math::abs(axis_dot * scaled_height * 0.5) + middle_radius * Math::sqrt(1.0 - axis_dot * axis_dot);
-    }
+	// Calculate the projection length for a cone
+	real_t length;
+	if (Math::abs(axis_dot) > 1.0) {
+		length = scaled_height * 0.5;
+	} else {
+		real_t middle_radius = scaled_radius * 0.5; // approximate middle radius
+		length = Math::abs(axis_dot * scaled_height * 0.5) + middle_radius * Math::sqrt(1.0 - axis_dot * axis_dot);
+	}
 
-    real_t distance = p_normal.dot(p_transform.origin);
+	real_t distance = p_normal.dot(p_transform.origin);
 
-    r_min = distance - length;
-    r_max = distance + length;
+	r_min = distance - length;
+	r_max = distance + length;
 }
 
 Vector3 GodotConeShape3D::get_support(const Vector3 &p_normal) const {
-    Vector3 n = p_normal;
-    
-    // Determine height sign and scale factor
-    real_t y_sign = (n.y > 0) ? 1.0 : -1.0;
-    real_t h = height * 0.5 * y_sign;  // Height from the center of the cone
-    
-    // Compute horizontal length
-    real_t s = Math::sqrt(n.x * n.x + n.z * n.z);
-    
-    if (Math::is_zero_approx(s)) {
-        // If no horizontal component, support point is on the central axis
-        n.x = 0.0;
-        n.y = h;
-        n.z = 0.0;
-    } else {
-        // Calculate the position along the y-axis
-        real_t y_pos = h;  // y position based on height
-        real_t scaled_radius = radius * ((h - Math::abs(n.y)) / h);  // Linearly scale the radius
-        
-        // Compute the support point on the cone surface
-        real_t d = scaled_radius / s;
-        n.x = n.x * d;
-        n.y = y_pos;
-        n.z = n.z * d;
-    }
-    
-    return n;
+	Vector3 n = p_normal;
+
+	// Determine height sign and scale factor
+	real_t y_sign = (n.y > 0) ? 1.0 : -1.0;
+	real_t h = height * 0.5 * y_sign; // Height from the center of the cone
+
+	// Compute horizontal length
+	real_t s = Math::sqrt(n.x * n.x + n.z * n.z);
+
+	if (Math::is_zero_approx(s)) {
+		// If no horizontal component, support point is on the central axis
+		n.x = 0.0;
+		n.y = h;
+		n.z = 0.0;
+	} else {
+		// Calculate the position along the y-axis
+		real_t y_pos = h; // y position based on height
+		real_t scaled_radius = radius * ((h - Math::abs(n.y)) / h); // Linearly scale the radius
+
+		// Compute the support point on the cone surface
+		real_t d = scaled_radius / s;
+		n.x = n.x * d;
+		n.y = y_pos;
+		n.z = n.z * d;
+	}
+
+	return n;
 }
 
-
 void GodotConeShape3D::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const {
-    Vector3 n = p_normal.normalized();
-    real_t d = n.y;
+	Vector3 n = p_normal.normalized();
+	real_t d = n.y;
 
-    // Always include the apex as a support point.
-    r_supports[0] = Vector3(0, height * 0.5, 0);  // Apex of the cone
+	// Always include the apex as a support point.
+	r_supports[0] = Vector3(0, height * 0.5, 0); // Apex of the cone
 
-    if (d > cone_edge_support_threshold) {  // Point is very close to the apex direction
-        r_amount = 1;
-        r_type = FEATURE_POINT;
+	if (d > cone_edge_support_threshold) { // Point is very close to the apex direction
+		r_amount = 1;
+		r_type = FEATURE_POINT;
 	} else if (d < cone_edge_support_threshold_lower) {
 		Vector3 n = p_normal;
 		n.y = 0.0;
@@ -747,70 +746,68 @@ void GodotConeShape3D::get_supports(const Vector3 &p_normal, int p_max, Vector3 
 		r_supports[0].y += height * 0.5;
 		r_supports[1] = n;
 		r_supports[1].y -= height * 0.5;
-    } else {
-        r_amount = 6; // Use more points for better accuracy
-        r_type = FEATURE_EDGE;
-        
-        real_t angle_step = Math_TAU / 6;
-        Vector3 base_center(0, -height * 0.5, 0);
-        
-        for (int i = 1; i < r_amount; ++i) {
-            real_t angle = i * angle_step;
-            r_supports[i] = base_center + Vector3(Math::cos(angle) * radius, 0, Math::sin(angle) * radius);
-        }
-    }
-}
+	} else {
+		r_amount = 6; // Use more points for better accuracy
+		r_type = FEATURE_EDGE;
 
+		real_t angle_step = Math_TAU / 6;
+		Vector3 base_center(0, -height * 0.5, 0);
+
+		for (int i = 1; i < r_amount; ++i) {
+			real_t angle = i * angle_step;
+			r_supports[i] = base_center + Vector3(Math::cos(angle) * radius, 0, Math::sin(angle) * radius);
+		}
+	}
+}
 
 bool GodotConeShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal, int &r_face_index, bool p_hit_back_faces) const {
 	return Geometry3D::segment_intersects_cone(p_begin, p_end, height, radius, &r_result, &r_normal, 1);
 }
 
 bool GodotConeShape3D::intersect_point(const Vector3 &p_point) const {
-    // Ensure the point is within the vertical range of the cone
-    if (p_point.y < -height * 0.5 || p_point.y > height * 0.5) {
-        return false; // Point is outside the vertical bounds of the cone
-    }
+	// Ensure the point is within the vertical range of the cone
+	if (p_point.y < -height * 0.5 || p_point.y > height * 0.5) {
+		return false; // Point is outside the vertical bounds of the cone
+	}
 
-    // Calculate the radius at the given height y of the point
-    real_t normalized_height = (p_point.y + height * 0.5) / height; // Ranges from 0 to 1
-    real_t current_radius = (1.0 - normalized_height) * radius;
+	// Calculate the radius at the given height y of the point
+	real_t normalized_height = (p_point.y + height * 0.5) / height; // Ranges from 0 to 1
+	real_t current_radius = (1.0 - normalized_height) * radius;
 
-    // Check if the point lies within the radius at this height
-    return Vector2(p_point.x, p_point.z).length() < current_radius;
+	// Check if the point lies within the radius at this height
+	return Vector2(p_point.x, p_point.z).length() < current_radius;
 }
 
 Vector3 GodotConeShape3D::get_closest_point_to(const Vector3 &p_point) const {
-    real_t dist_to_apex = p_point.distance_to(Vector3(0, height * 0.5, 0));
-    real_t y_clamped = CLAMP(p_point.y, -height * 0.5, height * 0.5);
+	real_t dist_to_apex = p_point.distance_to(Vector3(0, height * 0.5, 0));
+	real_t y_clamped = CLAMP(p_point.y, -height * 0.5, height * 0.5);
 
-    // Calculate the radius at the y_clamped height
-    real_t r_at_y = radius * (1.0 - (y_clamped + height * 0.5) / height);
+	// Calculate the radius at the y_clamped height
+	real_t r_at_y = radius * (1.0 - (y_clamped + height * 0.5) / height);
 
-    // Project the point to the cone's surface
-    Vector3 proj_point = Vector3(p_point.x, 0, p_point.z).normalized() * r_at_y + Vector3(0, y_clamped, 0);
-    
-    // Compare distance to apex and proj_point, return closest
-    if (dist_to_apex < p_point.distance_to(proj_point)) {
-        return Vector3(0, height * 0.5, 0); // Apex is closer
-    } else {
-        return proj_point;
-    }
+	// Project the point to the cone's surface
+	Vector3 proj_point = Vector3(p_point.x, 0, p_point.z).normalized() * r_at_y + Vector3(0, y_clamped, 0);
+
+	// Compare distance to apex and proj_point, return closest
+	if (dist_to_apex < p_point.distance_to(proj_point)) {
+		return Vector3(0, height * 0.5, 0); // Apex is closer
+	} else {
+		return proj_point;
+	}
 }
 
 Vector3 GodotConeShape3D::get_moment_of_inertia(real_t p_mass) const {
-    real_t r_squared = radius * radius;
-    real_t h_squared = height * height;
+	real_t r_squared = radius * radius;
+	real_t h_squared = height * height;
 
-    // Moment of inertia around x and z axes (Ixx and Izz)
-    real_t Ixx_Izz = (3.0 / 10.0) * p_mass * (r_squared + 0.25 * h_squared);
+	// Moment of inertia around x and z axes (Ixx and Izz)
+	real_t Ixx_Izz = (3.0 / 10.0) * p_mass * (r_squared + 0.25 * h_squared);
 
-    // Moment of inertia around the y-axis (Iyy)
-    real_t Iyy = (3.0 / 5.0) * p_mass * r_squared;
+	// Moment of inertia around the y-axis (Iyy)
+	real_t Iyy = (3.0 / 5.0) * p_mass * r_squared;
 
-    return Vector3(Ixx_Izz, Iyy, Ixx_Izz);
+	return Vector3(Ixx_Izz, Iyy, Ixx_Izz);
 }
-
 
 void GodotConeShape3D::_setup(real_t p_height, real_t p_radius) {
 	height = p_height;
