@@ -1755,21 +1755,25 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 				}
 			}
 
-			int par_count_diff = p_function->parameters.size() - parameters_types.size();
-			valid = valid && par_count_diff >= 0;
-			valid = valid && default_value_count >= default_par_count + par_count_diff;
+			if (!p_function->is_override){
+				int par_count_diff = p_function->parameters.size() - parameters_types.size();
+				valid = valid && par_count_diff >= 0;
+				valid = valid && default_value_count >= default_par_count + par_count_diff;
+			}
 
 			if (valid) {
 				int i = 0;
-				for (const GDScriptParser::DataType &parent_par_type : parameters_types) {
-					// Check parameter type contravariance.
-					GDScriptParser::DataType current_par_type = p_function->parameters[i++]->get_datatype();
-					if (parent_par_type.is_variant() && parent_par_type.is_hard_type()) {
-						// `is_type_compatible()` returns `true` if one of the types is `Variant`.
-						// Don't allow narrowing a hard `Variant`.
-						valid = valid && current_par_type.is_variant();
-					} else {
-						valid = valid && is_type_compatible(current_par_type, parent_par_type);
+				if (!p_function->is_override) {
+					for (const GDScriptParser::DataType &parent_par_type : parameters_types) {
+						// Check parameter type contravariance.
+						GDScriptParser::DataType current_par_type = p_function->parameters[i++]->get_datatype();
+						if (parent_par_type.is_variant() && parent_par_type.is_hard_type()) {
+							// `is_type_compatible()` returns `true` if one of the types is `Variant`.
+							// Don't allow narrowing a hard `Variant`.
+							valid = valid && current_par_type.is_variant();
+						} else {
+							valid = valid && is_type_compatible(current_par_type, parent_par_type);
+						}
 					}
 				}
 			}

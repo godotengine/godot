@@ -98,6 +98,8 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@icon", PropertyInfo(Variant::STRING, "icon_path")), AnnotationInfo::SCRIPT, &GDScriptParser::icon_annotation);
 		register_annotation(MethodInfo("@static_unload"), AnnotationInfo::SCRIPT, &GDScriptParser::static_unload_annotation);
 
+		register_annotation(MethodInfo("@override"), AnnotationInfo::FUNCTION, &GDScriptParser::override_annotation);
+
 		register_annotation(MethodInfo("@onready"), AnnotationInfo::VARIABLE, &GDScriptParser::onready_annotation);
 		// Export annotations.
 		register_annotation(MethodInfo("@export"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NONE, Variant::NIL>);
@@ -4132,6 +4134,19 @@ bool GDScriptParser::icon_annotation(AnnotationNode *p_annotation, Node *p_targe
 		class_node->simplified_icon_path = path;
 	}
 
+	return true;
+}
+
+bool GDScriptParser::override_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::FUNCTION, false, R"("@override" annotation can only be applied to functions.)");
+
+	FunctionNode *function = static_cast<FunctionNode *>(p_target);
+
+	if (function->is_override) {
+		push_error(R"("@override" annotation can only be used once per function.)", p_annotation);
+		return false;
+	}
+	function->is_override = true;
 	return true;
 }
 
