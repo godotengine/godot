@@ -230,7 +230,11 @@ opts.Add("custom_modules", "A list of comma-separated directory paths containing
 opts.Add(BoolVariable("custom_modules_recursive", "Detect custom modules recursively for each specified path.", True))
 
 # Advanced options
-opts.Add(BoolVariable("dev_mode", "Alias for dev options: verbose=yes warnings=extra werror=yes tests=yes", False))
+opts.Add(
+    BoolVariable(
+        "dev_mode", "Alias for dev options: verbose=yes warnings=extra werror=yes tests=yes strict_checks=yes", False
+    )
+)
 opts.Add(BoolVariable("tests", "Build the unit tests", False))
 opts.Add(BoolVariable("fast_unsafe", "Enable unsafe options for faster rebuilds", False))
 opts.Add(BoolVariable("ninja", "Use the ninja backend for faster rebuilds", False))
@@ -262,6 +266,7 @@ opts.Add(
     "",
 )
 opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False))
+opts.Add(BoolVariable("strict_checks", "Enforce stricter checks (debug option)", False))
 opts.Add(BoolVariable("scu_build", "Use single compilation unit build", False))
 opts.Add("scu_limit", "Max includes per SCU file when using scu_build (determines RAM use)", "0")
 opts.Add(BoolVariable("engine_update_check", "Enable engine update checks in the Project Manager", True))
@@ -602,11 +607,15 @@ if env["dev_mode"]:
     env["warnings"] = ARGUMENTS.get("warnings", "extra")
     env["werror"] = methods.get_cmdline_bool("werror", True)
     env["tests"] = methods.get_cmdline_bool("tests", True)
+    env["strict_checks"] = methods.get_cmdline_bool("strict_checks", True)
 if env["production"]:
     env["use_static_cpp"] = methods.get_cmdline_bool("use_static_cpp", True)
     env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", False)
     # LTO "auto" means we handle the preferred option in each platform detect.py.
     env["lto"] = ARGUMENTS.get("lto", "auto")
+
+if env["strict_checks"]:
+    env.Append(CPPDEFINES=["STRICT_CHECKS"])
 
 # Run SCU file generation script if in a SCU build.
 if env["scu_build"]:
