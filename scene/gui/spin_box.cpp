@@ -287,7 +287,12 @@ inline void SpinBox::_compute_sizes() {
 	int buttons_block_wanted_width = theme_cache.buttons_width + theme_cache.field_and_buttons_separation;
 	int buttons_block_icon_enforced_width = _get_widest_button_icon_width() + theme_cache.field_and_buttons_separation;
 
-	int w = theme_cache.set_min_buttons_width_from_icons != 0 ? MAX(buttons_block_icon_enforced_width, buttons_block_wanted_width) : buttons_block_wanted_width;
+#ifndef DISABLE_DEPRECATED
+	const bool min_width_from_icons = theme_cache.set_min_buttons_width_from_icons || (theme_cache.buttons_width < 0);
+#else
+	const bool min_width_from_icons = theme_cache.buttons_width < 0;
+#endif
+	int w = min_width_from_icons != 0 ? MAX(buttons_block_icon_enforced_width, buttons_block_wanted_width) : buttons_block_wanted_width;
 
 	if (w != sizing_cache.buttons_block_width) {
 		line_edit->set_offset(SIDE_LEFT, 0);
@@ -551,7 +556,9 @@ void SpinBox::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SpinBox, buttons_vertical_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SpinBox, field_and_buttons_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SpinBox, buttons_width);
+#ifndef DISABLE_DEPRECATED
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SpinBox, set_min_buttons_width_from_icons);
+#endif
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, SpinBox, updown_icon, "updown");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, SpinBox, up_icon, "up");
