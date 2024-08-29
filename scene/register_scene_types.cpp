@@ -290,6 +290,7 @@
 #include "scene/animation/root_motion_view.h"
 #include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
+#include "scene/resources/3d/cone_shape_3d.h"
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
 #include "scene/resources/3d/cylinder_shape_3d.h"
@@ -866,6 +867,7 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(PrimitiveMesh);
 	GDREGISTER_CLASS(BoxMesh);
 	GDREGISTER_CLASS(CapsuleMesh);
+	GDREGISTER_CLASS(ConeMesh);
 	GDREGISTER_CLASS(CylinderMesh);
 	GDREGISTER_CLASS(PlaneMesh);
 	GDREGISTER_CLASS(PrismMesh);
@@ -895,6 +897,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(SphereShape3D);
 	GDREGISTER_CLASS(BoxShape3D);
 	GDREGISTER_CLASS(CapsuleShape3D);
+	GDREGISTER_CLASS(ConeShape3D);
 	GDREGISTER_CLASS(CylinderShape3D);
 	GDREGISTER_CLASS(HeightMapShape3D);
 	GDREGISTER_CLASS(WorldBoundaryShape3D);
@@ -1066,6 +1069,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("CollisionPolygon", "CollisionPolygon3D");
 	ClassDB::add_compatibility_class("CollisionShape", "CollisionShape3D");
 	ClassDB::add_compatibility_class("ConcavePolygonShape", "ConcavePolygonShape3D");
+	ClassDB::add_compatibility_class("ConeShape", "ConeShape3D");
 	ClassDB::add_compatibility_class("ConeTwistJoint", "ConeTwistJoint3D");
 	ClassDB::add_compatibility_class("ConvexPolygonShape", "ConvexPolygonShape3D");
 	ClassDB::add_compatibility_class("CPUParticles", "CPUParticles3D");

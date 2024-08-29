@@ -212,6 +212,7 @@ public:
 	EXBIND0R(RID, sphere_shape_create)
 	EXBIND0R(RID, box_shape_create)
 	EXBIND0R(RID, capsule_shape_create)
+	EXBIND0R(RID, cone_shape_create)
 	EXBIND0R(RID, cylinder_shape_create)
 	EXBIND0R(RID, convex_polygon_shape_create)
 	EXBIND0R(RID, concave_polygon_shape_create)

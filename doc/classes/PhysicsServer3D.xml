@@ -708,6 +708,11 @@
 			<description>
 			</description>
 		</method>
+		<method name="cone_shape_create">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="concave_polygon_shape_create">
 			<return type="RID" />
 			<description>
@@ -1609,22 +1614,25 @@
 		<constant name="SHAPE_CAPSULE" value="4" enum="ShapeType">
 			The [Shape3D] is a [CapsuleShape3D].
 		</constant>
-		<constant name="SHAPE_CYLINDER" value="5" enum="ShapeType">
+		<constant name="SHAPE_CONE" value="5" enum="ShapeType">
+			The [Shape3D] is a [ConeShape3D].
+		</constant>
+		<constant name="SHAPE_CYLINDER" value="6" enum="ShapeType">
 			The [Shape3D] is a [CylinderShape3D].
 		</constant>
-		<constant name="SHAPE_CONVEX_POLYGON" value="6" enum="ShapeType">
+		<constant name="SHAPE_CONVEX_POLYGON" value="7" enum="ShapeType">
 			The [Shape3D] is a [ConvexPolygonShape3D].
 		</constant>
-		<constant name="SHAPE_CONCAVE_POLYGON" value="7" enum="ShapeType">
+		<constant name="SHAPE_CONCAVE_POLYGON" value="8" enum="ShapeType">
 			The [Shape3D] is a [ConcavePolygonShape3D].
 		</constant>
-		<constant name="SHAPE_HEIGHTMAP" value="8" enum="ShapeType">
+		<constant name="SHAPE_HEIGHTMAP" value="9" enum="ShapeType">
 			The [Shape3D] is a [HeightMapShape3D].
 		</constant>
-		<constant name="SHAPE_SOFT_BODY" value="9" enum="ShapeType">
+		<constant name="SHAPE_SOFT_BODY" value="10" enum="ShapeType">
 			The [Shape3D] is used internally for a soft body. Any attempt to create this kind of shape results in an error.
 		</constant>
-		<constant name="SHAPE_CUSTOM" value="10" enum="ShapeType">
+		<constant name="SHAPE_CUSTOM" value="11" enum="ShapeType">
 			This constant is used internally by the engine. Any attempt to create this kind of shape results in an error.
 		</constant>
 		<constant name="AREA_PARAM_GRAVITY_OVERRIDE_MODE" value="0" enum="AreaParameter">

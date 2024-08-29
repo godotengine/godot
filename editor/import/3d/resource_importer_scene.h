@@ -38,6 +38,7 @@
 #include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
 #include "scene/resources/3d/cylinder_shape_3d.h"
+#include "scene/resources/3d/cone_shape_3d.h"
 #include "scene/resources/3d/importer_mesh.h"
 #include "scene/resources/3d/skin.h"
 #include "scene/resources/3d/sphere_shape_3d.h"
@@ -212,6 +213,7 @@ class ResourceImporterScene : public ResourceImporter {
 		SHAPE_TYPE_SPHERE,
 		SHAPE_TYPE_CYLINDER,
 		SHAPE_TYPE_CAPSULE,
+		SHAPE_TYPE_CONE,
 		SHAPE_TYPE_AUTOMATIC,
 	};
 
@@ -473,6 +475,23 @@ Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<Impor
 		return shapes;
 	} else if (generate_shape_type == SHAPE_TYPE_CAPSULE) {
 		Ref<CapsuleShape3D> capsule;
+		capsule.instantiate();
+		if (p_options.has(SNAME("primitive/height"))) {
+			capsule->set_height(p_options[SNAME("primitive/height")].operator float() * p_applied_root_scale);
+		} else {
+			capsule->set_height(1.0f * p_applied_root_scale);
+		}
+		if (p_options.has(SNAME("primitive/radius"))) {
+			capsule->set_radius(p_options[SNAME("primitive/radius")].operator float() * p_applied_root_scale);
+		} else {
+			capsule->set_radius(1.0f * p_applied_root_scale);
+		}
+
+		Vector<Ref<Shape3D>> shapes;
+		shapes.push_back(capsule);
+		return shapes;
+	} else if (generate_shape_type == SHAPE_TYPE_CONE) {
+		Ref<ConeShape3D> capsule;
 		capsule.instantiate();
 		if (p_options.has(SNAME("primitive/height"))) {
 			capsule->set_height(p_options[SNAME("primitive/height")].operator float() * p_applied_root_scale);

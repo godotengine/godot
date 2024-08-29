@@ -624,6 +624,11 @@
 			<description>
 			</description>
 		</method>
+		<method name="_cone_shape_create" qualifiers="virtual">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="_concave_polygon_shape_create" qualifiers="virtual">
 			<return type="RID" />
 			<description>
