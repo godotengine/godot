@@ -433,6 +433,19 @@ TEST_CASE("[String] Insertion") {
 	String s = "Who is Frederic?";
 	s = s.insert(s.find("?"), " Chopin");
 	CHECK(s == "Who is Frederic Chopin?");
+
+	s = "foobar";
+	CHECK(s.insert(0, "X") == "Xfoobar");
+	CHECK(s.insert(-100, "X") == "foobar");
+	CHECK(s.insert(6, "X") == "foobarX");
+	CHECK(s.insert(100, "X") == "foobarX");
+	CHECK(s.insert(2, "") == "foobar");
+
+	s = "";
+	CHECK(s.insert(0, "abc") == "abc");
+	CHECK(s.insert(100, "abc") == "abc");
+	CHECK(s.insert(-100, "abc") == "");
+	CHECK(s.insert(0, "") == "");
 }
 
 TEST_CASE("[String] Erasing") {
@@ -1811,13 +1824,25 @@ TEST_CASE("[String] SHA1/SHA256/MD5") {
 }
 
 TEST_CASE("[String] Join") {
-	String s = ", ";
+	String comma = ", ";
+	String empty = "";
 	Vector<String> parts;
+
+	CHECK(comma.join(parts) == "");
+	CHECK(empty.join(parts) == "");
+
 	parts.push_back("One");
+	CHECK(comma.join(parts) == "One");
+	CHECK(empty.join(parts) == "One");
+
 	parts.push_back("B");
 	parts.push_back("C");
-	String t = s.join(parts);
-	CHECK(t == "One, B, C");
+	CHECK(comma.join(parts) == "One, B, C");
+	CHECK(empty.join(parts) == "OneBC");
+
+	parts.push_back("");
+	CHECK(comma.join(parts) == "One, B, C, ");
+	CHECK(empty.join(parts) == "OneBC");
 }
 
 TEST_CASE("[String] Is_*") {
