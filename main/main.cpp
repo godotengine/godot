@@ -3394,7 +3394,8 @@ void Main::setup_boot_logo() {
 				boot_logo.instantiate();
 				Error load_err = ImageLoader::load_image(boot_logo_path, boot_logo);
 				if (load_err) {
-					ERR_PRINT("Non-existing or invalid boot splash at '" + boot_logo_path + "'. Loading default splash.");
+					String msg = (boot_logo_path.ends_with(".png") ? "" : "The only supported format is PNG.");
+					ERR_PRINT("Non-existing or invalid boot splash at '" + boot_logo_path + +"'. " + msg + " Loading default splash.");
 				}
 			}
 		} else {
