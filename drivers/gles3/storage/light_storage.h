@@ -203,7 +203,7 @@ struct LightmapInstance {
 
 class LightStorage : public RendererLightStorage {
 public:
-	enum ShadowAtlastQuadrant {
+	enum ShadowAtlastQuadrant : uint32_t {
 		QUADRANT_SHIFT = 27,
 		OMNI_LIGHT_FLAG = 1 << 26,
 		SHADOW_INDEX_MASK = OMNI_LIGHT_FLAG - 1,

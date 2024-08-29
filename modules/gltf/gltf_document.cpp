@@ -7060,6 +7060,8 @@ void GLTFDocument::_bind_methods() {
 			&GLTFDocument::register_gltf_document_extension, DEFVAL(false));
 	ClassDB::bind_static_method("GLTFDocument", D_METHOD("unregister_gltf_document_extension", "extension"),
 			&GLTFDocument::unregister_gltf_document_extension);
+	ClassDB::bind_static_method("GLTFDocument", D_METHOD("get_supported_gltf_extensions"),
+			&GLTFDocument::get_supported_gltf_extensions);
 }
 
 void GLTFDocument::_build_parent_hierachy(Ref<GLTFState> p_state) {
@@ -7098,6 +7100,36 @@ void GLTFDocument::unregister_all_gltf_document_extensions() {
 
 Vector<Ref<GLTFDocumentExtension>> GLTFDocument::get_all_gltf_document_extensions() {
 	return all_document_extensions;
+}
+
+Vector<String> GLTFDocument::get_supported_gltf_extensions() {
+	HashSet<String> set = get_supported_gltf_extensions_hashset();
+	Vector<String> vec;
+	for (const String &s : set) {
+		vec.append(s);
+	}
+	vec.sort();
+	return vec;
+}
+
+HashSet<String> GLTFDocument::get_supported_gltf_extensions_hashset() {
+	HashSet<String> supported_extensions;
+	// If the extension is supported directly in GLTFDocument, list it here.
+	// Other built-in extensions are supported by GLTFDocumentExtension classes.
+	supported_extensions.insert("GODOT_single_root");
+	supported_extensions.insert("KHR_lights_punctual");
+	supported_extensions.insert("KHR_materials_emissive_strength");
+	supported_extensions.insert("KHR_materials_pbrSpecularGlossiness");
+	supported_extensions.insert("KHR_materials_unlit");
+	supported_extensions.insert("KHR_texture_transform");
+	for (Ref<GLTFDocumentExtension> ext : all_document_extensions) {
+		ERR_CONTINUE(ext.is_null());
+		Vector<String> ext_supported_extensions = ext->get_supported_extensions();
+		for (int i = 0; i < ext_supported_extensions.size(); ++i) {
+			supported_extensions.insert(ext_supported_extensions[i]);
+		}
+	}
+	return supported_extensions;
 }
 
 PackedByteArray GLTFDocument::_serialize_glb_buffer(Ref<GLTFState> p_state, Error *r_err) {
@@ -7452,19 +7484,7 @@ Error GLTFDocument::_parse_gltf_extensions(Ref<GLTFState> p_state) {
 		Vector<String> ext_array = p_state->json["extensionsRequired"];
 		p_state->extensions_required = ext_array;
 	}
-	HashSet<String> supported_extensions;
-	supported_extensions.insert("KHR_lights_punctual");
-	supported_extensions.insert("KHR_materials_pbrSpecularGlossiness");
-	supported_extensions.insert("KHR_texture_transform");
-	supported_extensions.insert("KHR_materials_unlit");
-	supported_extensions.insert("KHR_materials_emissive_strength");
-	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
-		ERR_CONTINUE(ext.is_null());
-		Vector<String> ext_supported_extensions = ext->get_supported_extensions();
-		for (int i = 0; i < ext_supported_extensions.size(); ++i) {
-			supported_extensions.insert(ext_supported_extensions[i]);
-		}
-	}
+	HashSet<String> supported_extensions = get_supported_gltf_extensions_hashset();
 	Error ret = OK;
 	for (int i = 0; i < p_state->extensions_required.size(); i++) {
 		if (!supported_extensions.has(p_state->extensions_required[i])) {

@@ -96,6 +96,8 @@ public:
 class Skeleton3DEditor : public VBoxContainer {
 	GDCLASS(Skeleton3DEditor, VBoxContainer);
 
+	static void _bind_methods();
+
 	friend class Skeleton3DEditorPlugin;
 
 	enum SkeletonOption {
@@ -115,6 +117,10 @@ class Skeleton3DEditor : public VBoxContainer {
 	EditorInspectorPluginSkeleton *editor_plugin = nullptr;
 
 	Skeleton3D *skeleton = nullptr;
+
+	enum {
+		JOINT_BUTTON_REVERT = 0,
+	};
 
 	Tree *joint_tree = nullptr;
 	BoneTransformEditor *rest_editor = nullptr;
@@ -149,6 +155,7 @@ class Skeleton3DEditor : public VBoxContainer {
 	EditorFileDialog *file_export_lib = nullptr;
 
 	void update_joint_tree();
+	void update_all();
 
 	void create_editors();
 
@@ -189,6 +196,7 @@ class Skeleton3DEditor : public VBoxContainer {
 
 	void _joint_tree_selection_changed();
 	void _joint_tree_rmb_select(const Vector2 &p_pos, MouseButton p_button);
+	void _joint_tree_button_clicked(Object *p_item, int p_column, int p_id, MouseButton p_button);
 	void _update_properties();
 
 	void _subgizmo_selection_change();

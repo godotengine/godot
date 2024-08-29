@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  parallax_2d.h                                                         */
+/*  navigation_globals.h                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,73 +28,39 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PARALLAX_2D_H
-#define PARALLAX_2D_H
+#ifndef NAVIGATION_GLOBALS_H
+#define NAVIGATION_GLOBALS_H
 
-#include "scene/2d/node_2d.h"
+namespace NavigationDefaults3D {
 
-class Parallax2D : public Node2D {
-	GDCLASS(Parallax2D, Node2D);
+// Rasterization.
 
-	static constexpr real_t DEFAULT_LIMIT = 10000000;
+// To find the polygons edges the vertices are displaced in a grid where
+// each cell has the following cell_size and cell_height.
+constexpr float navmesh_cell_size{ 0.25f }; // Must match ProjectSettings default 3D cell_size and NavigationMesh cell_size.
+constexpr float navmesh_cell_height{ 0.25f }; // Must match ProjectSettings default 3D cell_height and NavigationMesh cell_height.
+constexpr auto navmesh_cell_size_hint{ "0.001,100,0.001,or_greater" };
 
-	String group_name;
-	Size2 scroll_scale = Size2(1, 1);
-	Point2 scroll_offset;
-	Point2 screen_offset;
-	Vector2 repeat_size;
-	int repeat_times = 1;
-	Point2 limit_begin = Point2(-DEFAULT_LIMIT, -DEFAULT_LIMIT);
-	Point2 limit_end = Point2(DEFAULT_LIMIT, DEFAULT_LIMIT);
-	Point2 autoscroll;
-	bool follow_viewport = true;
-	bool ignore_camera_scroll = false;
+// Map.
 
-	void _update_process();
-	void _update_repeat();
-	void _update_scroll();
+constexpr float edge_connection_margin{ 0.25f };
+constexpr float link_connection_radius{ 1.0f };
 
-protected:
-#ifdef TOOLS_ENABLED
-	void _edit_set_position(const Point2 &p_position) override;
-#endif // TOOLS_ENABLED
-	void _validate_property(PropertyInfo &p_property) const;
-	void _camera_moved(const Transform2D &p_transform, const Point2 &p_screen_offset, const Point2 &p_adj_screen_offset);
-	void _notification(int p_what);
-	static void _bind_methods();
+} //namespace NavigationDefaults3D
 
-public:
-	void set_scroll_scale(const Size2 &p_scale);
-	Size2 get_scroll_scale() const;
+namespace NavigationDefaults2D {
 
-	void set_repeat_size(const Size2 &p_repeat_size);
-	Size2 get_repeat_size() const;
+// Rasterization.
 
-	void set_repeat_times(int p_repeat_times);
-	int get_repeat_times() const;
+// Same as in 3D but larger since 1px is treated as 1m.
+constexpr float navmesh_cell_size{ 1.0f }; // Must match ProjectSettings default 2D cell_size.
+constexpr auto navmesh_cell_size_hint{ "0.001,100,0.001,or_greater" };
 
-	void set_autoscroll(const Point2 &p_autoscroll);
-	Point2 get_autoscroll() const;
+// Map.
 
-	void set_scroll_offset(const Point2 &p_offset);
-	Point2 get_scroll_offset() const;
+constexpr float edge_connection_margin{ 1.0f };
+constexpr float link_connection_radius{ 4.0f };
 
-	void set_screen_offset(const Point2 &p_offset);
-	Point2 get_screen_offset() const;
+} //namespace NavigationDefaults2D
 
-	void set_limit_begin(const Point2 &p_offset);
-	Point2 get_limit_begin() const;
-
-	void set_limit_end(const Point2 &p_offset);
-	Point2 get_limit_end() const;
-
-	void set_follow_viewport(bool p_follow);
-	bool get_follow_viewport();
-
-	void set_ignore_camera_scroll(bool p_ignore);
-	bool is_ignore_camera_scroll();
-
-	Parallax2D();
-};
-
-#endif // PARALLAX_2D_H
+#endif // NAVIGATION_GLOBALS_H
