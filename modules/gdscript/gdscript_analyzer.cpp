@@ -1755,7 +1755,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 				}
 			}
 
-			if (!p_function->is_override){
+			if (!p_function->is_override) {
 				int par_count_diff = p_function->parameters.size() - parameters_types.size();
 				valid = valid && par_count_diff >= 0;
 				valid = valid && default_value_count >= default_par_count + par_count_diff;
