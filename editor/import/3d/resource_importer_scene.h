@@ -330,19 +330,9 @@ public:
 template <typename M>
 Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<ImporterMesh> &p_mesh, const M &p_options, float p_applied_root_scale) {
 	ERR_FAIL_COND_V(p_mesh.is_null(), Vector<Ref<Shape3D>>());
-
-	ShapeType generate_shape_type = SHAPE_TYPE_AUTOMATIC;
+	ShapeType generate_shape_type = SHAPE_TYPE_TRIMESH;
 	if (p_options.has(SNAME("physics/shape_type"))) {
 		generate_shape_type = (ShapeType)p_options[SNAME("physics/shape_type")].operator int();
-	}
-
-	if (generate_shape_type == SHAPE_TYPE_AUTOMATIC) {
-		BodyType body_type = BODY_TYPE_STATIC;
-		if (p_options.has(SNAME("physics/body_type"))) {
-			body_type = (BodyType)p_options[SNAME("physics/body_type")].operator int();
-		}
-
-		generate_shape_type = body_type == BODY_TYPE_DYNAMIC ? SHAPE_TYPE_DECOMPOSE_CONVEX : SHAPE_TYPE_TRIMESH;
 	}
 
 	if (generate_shape_type == SHAPE_TYPE_DECOMPOSE_CONVEX) {
@@ -515,18 +505,9 @@ template <typename M>
 Transform3D ResourceImporterScene::get_collision_shapes_transform(const M &p_options) {
 	Transform3D transform;
 
-	ShapeType generate_shape_type = SHAPE_TYPE_AUTOMATIC;
+	ShapeType generate_shape_type = SHAPE_TYPE_TRIMESH;
 	if (p_options.has(SNAME("physics/shape_type"))) {
 		generate_shape_type = (ShapeType)p_options[SNAME("physics/shape_type")].operator int();
-	}
-
-	if (generate_shape_type == SHAPE_TYPE_AUTOMATIC) {
-		BodyType body_type = BODY_TYPE_STATIC;
-		if (p_options.has(SNAME("physics/body_type"))) {
-			body_type = (BodyType)p_options[SNAME("physics/body_type")].operator int();
-		}
-
-		generate_shape_type = body_type == BODY_TYPE_DYNAMIC ? SHAPE_TYPE_DECOMPOSE_CONVEX : SHAPE_TYPE_TRIMESH;
 	}
 
 	if (generate_shape_type == SHAPE_TYPE_BOX ||
