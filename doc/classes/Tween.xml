@@ -7,7 +7,7 @@
 		Tweens are mostly useful for animations requiring a numerical property to be interpolated over a range of values. The name [i]tween[/i] comes from [i]in-betweening[/i], an animation technique where you specify [i]keyframes[/i] and the computer interpolates the frames that appear between them. Animating something with a [Tween] is called tweening.
 		[Tween] is more suited than [AnimationPlayer] for animations where you don't know the final values in advance. For example, interpolating a dynamically-chosen camera zoom value is best done with a [Tween]; it would be difficult to do the same thing with an [AnimationPlayer] node. Tweens are also more light-weight than [AnimationPlayer], so they are very much suited for simple animations or general tasks that don't require visual tweaking provided by the editor. They can be used in a "fire-and-forget" manner for some logic that normally would be done by code. You can e.g. make something shoot periodically by using a looped [CallbackTweener] with a delay.
 		A [Tween] can be created by using either [method SceneTree.create_tween] or [method Node.create_tween]. [Tween]s created manually (i.e. by using [code]Tween.new()[/code]) are invalid and can't be used for tweening values.
-		A tween animation is created by adding [Tweener]s to the [Tween] object, using [method tween_property], [method tween_interval], [method tween_callback] or [method tween_method]:
+		A tween animation is created by adding [Tweener]s to the [Tween] object, using [method tween_property], [method tween_interval], [method tween_callback], [method tween_method], [method tween_subtween], or [method tween_await]:
 		[codeblocks]
 		[gdscript]
 		var tween = get_tree().create_tween()
@@ -315,6 +315,37 @@
 				tween.play()
 				[/codeblock]
 				[b]Note:[/b] If a Tween is stopped and not bound to any node, it will exist indefinitely until manually started or invalidated. If you lose a reference to such Tween, you can retrieve it using [method SceneTree.get_processed_tweens].
+			</description>
+		</method>
+		<method name="tween_await">
+			<return type="AwaitTweener" />
+			<param index="0" name="signal" type="Signal" />
+			<description>
+				Creates and appends an [AwaitTweener]. This method can be used to await a signal to be emitted and create asynchronous animations or cutscenes.
+				The animation will not progress to the next step until the awaited signal is emitted or the connection becomes invalid (e.g. as a result of freeing the target object). If you know that the emission may not happen, use [method AwaitTweener.set_timeout].
+				[b]Note:[/b] The awaited signal should be emitted during the step when [AwaitTweener] is active.
+				[b]Example:[/b] An object launches itself and explodes upon collision or after 4 seconds.
+				[codeblock]
+				var tween = create_tween()
+				tween.tween_callback(launch)
+				tween.tween_await(collided).set_timeout(4.0)
+				tween.tween_callback(explode)
+				[/codeblock]
+				[b]Example:[/b] A character walks to a specific point, says some lines and walks back when the player closes the message box.
+				[codeblock]
+				var tween = create_tween()
+				tween.tween_callback(walk_to.bind(600.0))
+				tween.tween_await(destination_reached)
+				tween.tween_callback(say_dialogue.bind("Good day, sir!"))
+				tween.tween_await(dialogue_closed)
+				tween.tween_callback(walk_to.bind(0.0))
+				[/codeblock]
+				[b]Note:[/b] If you are awaiting a signal from a callback called in the same [Tween], make sure the signal is emitted [i]after[/i] the await starts. If it can't be reasonably guaranteed, you can await and emit in the same step:
+				[codeblock]
+				var tween = create_tween()
+				tween.tween_await(signal)
+				tween.parallel().tween_callback(method_that_emits_signal)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="tween_callback">
