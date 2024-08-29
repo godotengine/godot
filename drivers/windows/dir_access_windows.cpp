@@ -304,7 +304,7 @@ Error DirAccessWindows::rename(String p_path, String p_new_path) {
 			}
 		}
 
-		return MoveFileW((LPCWSTR)(path.utf16().get_data()), (LPCWSTR)(p_new_path.utf16().get_data())) != 0 ? OK : FAILED;
+		return MoveFileW((LPCWSTR)(path.utf16().get_data()), (LPCWSTR)(new_path.utf16().get_data())) != 0 ? OK : FAILED;
 	}
 }
 
