@@ -86,8 +86,7 @@ void TileMapLayerEditorTilesPlugin::_update_toolbar() {
 		transform_toolbar->show();
 		tools_settings_vsep_2->show();
 		random_tile_toggle->show();
-		scatter_label->show();
-		scatter_spinbox->show();
+		scatter_controls_container->set_visible(random_tile_toggle->is_pressed());
 	} else {
 		tools_settings_vsep->show();
 		picker_button->show();
@@ -96,8 +95,7 @@ void TileMapLayerEditorTilesPlugin::_update_toolbar() {
 		tools_settings_vsep_2->show();
 		bucket_contiguous_checkbox->show();
 		random_tile_toggle->show();
-		scatter_label->show();
-		scatter_spinbox->show();
+		scatter_controls_container->set_visible(random_tile_toggle->is_pressed());
 	}
 }
 
