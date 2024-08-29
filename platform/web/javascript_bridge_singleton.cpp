@@ -59,6 +59,8 @@ extern void godot_js_wrapper_object_unref(int p_id);
 extern int godot_js_wrapper_create_cb(void *p_ref, void (*p_callback)(void *p_ref, int p_arg_id, int p_argc));
 extern void godot_js_wrapper_object_set_cb_ret(int p_type, godot_js_wrapper_ex *p_val);
 extern int godot_js_wrapper_create_object(const char *p_method, void **p_args, int p_argc, GodotJSWrapperVariant2JSCallback p_variant2js_callback, godot_js_wrapper_ex *p_cb_rval, void **p_lock, GodotJSWrapperFreeLockCallback p_lock_callback);
+extern int godot_js_wrapper_object_is_buffer(int p_id);
+extern int godot_js_wrapper_object_transfer_buffer(int p_id, void *p_byte_arr, void *p_byte_arr_write, void *(*p_callback)(void *p_ptr, void *p_ptr2, int p_len));
 };
 
 class JavaScriptObjectImpl : public JavaScriptObject {
@@ -364,6 +366,27 @@ Variant JavaScriptBridge::eval(const String &p_code, bool p_use_global_exec_cont
 		default:
 			return Variant();
 	}
+}
+
+bool JavaScriptBridge::is_js_buffer(Ref<JavaScriptObject> p_js_obj) {
+	Ref<JavaScriptObjectImpl> obj = p_js_obj;
+	if (obj.is_null()) {
+		return false;
+	}
+	return godot_js_wrapper_object_is_buffer(obj->_js_id);
+}
+
+PackedByteArray JavaScriptBridge::js_buffer_to_packed_byte_array(Ref<JavaScriptObject> p_js_obj) {
+	ERR_FAIL_COND_V_MSG(!is_js_buffer(p_js_obj), PackedByteArray(), "The JavaScript object is not a buffer.");
+	Ref<JavaScriptObjectImpl> obj = p_js_obj;
+
+	PackedByteArray arr;
+	VectorWriteProxy<uint8_t> arr_write;
+
+	godot_js_wrapper_object_transfer_buffer(obj->_js_id, &arr, &arr_write, resize_PackedByteArray_and_open_write);
+
+	arr_write = VectorWriteProxy<uint8_t>();
+	return arr;
 }
 
 #endif // JAVASCRIPT_EVAL_ENABLED
