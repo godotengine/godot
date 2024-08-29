@@ -21,12 +21,7 @@ void CharacterBodyMain::_bind_methods()
 	ClassDB::bind_method(D_METHOD("init_main_body","p_skeleton_file_path","p_animation_group"), &CharacterBodyMain::init_main_body);
 
 
-	ClassDB::bind_method(D_METHOD("set_behavior_tree", "behavior_tree"), &CharacterBodyMain::set_behavior_tree);
-	ClassDB::bind_method(D_METHOD("get_behavior_tree"), &CharacterBodyMain::get_behavior_tree);
-	ClassDB::bind_method(D_METHOD("set_update_mode", "update_mode"), &CharacterBodyMain::set_update_mode);
-	ClassDB::bind_method(D_METHOD("get_update_mode"), &CharacterBodyMain::get_update_mode);
-	ClassDB::bind_method(D_METHOD("set_blackboard", "blackboard"), &CharacterBodyMain::set_blackboard);
-	ClassDB::bind_method(D_METHOD("get_blackboard"), &CharacterBodyMain::_get_blackboard);
+
 
 	ClassDB::bind_method(D_METHOD("set_blackboard_plan", "plan"), &CharacterBodyMain::set_blackboard_plan);
 	ClassDB::bind_method(D_METHOD("get_blackboard_plan"), &CharacterBodyMain::get_blackboard_plan);
@@ -75,7 +70,6 @@ void CharacterBodyMain::_bind_methods()
 
 
     //ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "behavior_tree", PROPERTY_HINT_RESOURCE_TYPE, "BehaviorTree"), "set_behavior_tree", "get_behavior_tree");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "update_mode", PROPERTY_HINT_ENUM, "Idle,Physics,Manual"), "set_update_mode", "get_update_mode");	
 	//ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard", PROPERTY_HINT_RESOURCE_TYPE, "Blackboard",PROPERTY_USAGE_DEFAULT ), "set_blackboard", "get_blackboard");
     ADD_GROUP("logic", "");
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "character_ai", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAI"), "set_character_ai", "get_character_ai");
@@ -336,36 +330,6 @@ void CharacterBodyMain::skill_tree_update(int last_status)
 {
     emit_signal("skill_tree_updated", last_status);
 }
-BTPlayer * CharacterBodyMain::get_bt_player()
-{
-    if(btPlayer == nullptr)
-    {
-        btPlayer = memnew(BTPlayer);
-        btPlayer->set_name("BTPlayer");
-        btPlayer->connect("behavior_tree_finished", callable_mp(this, &CharacterBodyMain::behavior_tree_finished));
-        btPlayer->connect("updated", callable_mp(this, &CharacterBodyMain::behavior_tree_update));
-        btPlayer->get_blackboard()->set_parent(_get_blackboard());
-        add_child(btPlayer);
-        btPlayer->set_owner(this);
-    }
-    return btPlayer;
-}
-
-void CharacterBodyMain::set_blackboard(const Ref<Blackboard> &p_blackboard) 
-{ 
-    if(player_blackboard.is_null())
-    {
-        player_blackboard = p_blackboard;
-    }
-    else
-    {
-        player_blackboard = p_blackboard;
-    }
-    if(btPlayer != nullptr)
-    {                
-        btPlayer->get_blackboard()->set_parent(player_blackboard);
-    }
-}
 void CharacterBodyMain::set_navigation_agent(const Ref<CharacterNavigationAgent3D> &p_navigation_agent)
 {
     if(character_agent == p_navigation_agent)
@@ -385,35 +349,6 @@ void CharacterBodyMain::set_navigation_agent(const Ref<CharacterNavigationAgent3
 Ref<CharacterNavigationAgent3D> CharacterBodyMain::get_navigation_agent()
 {
     return character_agent;
-}
-bool CharacterBodyMain::play_skill(String p_skill_name)
-{
-    if(btSkillPlayer != nullptr)
-    {
-        return false;
-    }
-    btSkillPlayer = memnew(BTPlayer);
-    btSkillPlayer->set_owner((Node*)this);
-    btSkillPlayer->set_name("BTPlayer_Skill");
-    btSkillPlayer->connect("behavior_tree_finished", callable_mp(this, &CharacterBodyMain::skill_tree_finished));
-    btSkillPlayer->connect("updated", callable_mp(this, &CharacterBodyMain::skill_tree_update));
-    add_child(btSkillPlayer);
-    btSkillPlayer->set_owner(this);
-    if(has_method("skill_tree_init"))
-    {
-        call("skill_tree_init",p_skill_name);
-    }
-    btSkillPlayer->get_blackboard()->set_parent(get_blackboard());
-
-    get_blackboard()->set_var("skill_name",p_skill_name);
-    get_blackboard()->set_var("skill_play",true);
-    return true;
-}
-void CharacterBodyMain::stop_skill()
-{
-    get_blackboard()->set_var("skill_name","");
-    get_blackboard()->set_var("skill_play",false);
-    callable_mp(this, &CharacterBodyMain::_stop_skill).call_deferred();
 }
 
 

@@ -34,6 +34,7 @@
 #include "editor/editor_inspector.h"
 #include "../unity/unity_link_server.h"
 #include "beehave_graph_editor.h"
+#include "body_main_editor.h"
 #endif
 class CharacterBodyMainLable : public Label
 {
@@ -352,6 +353,28 @@ public:
 		return false;
 
 	}
+	static bool _parse_charater_ai_property(EditorInspectorPlugin *p_plugin,CharacterBodyMain* object, Variant::Type type, const String& name, PropertyHint hint_type, const String& hint_string, BitField<PropertyUsageFlags> usage_flags, bool wide)
+	{
+		
+		if(name == "update_mode")
+		{
+			CharacterBodyMainLable* lable = memnew(CharacterBodyMainLable);
+			lable->set_body_main(object);
+			p_plugin->add_custom_control( lable);
+		}
+		else if(name == "character_ai")
+		{
+			CharacterAISection* ai_setion = memnew( CharacterAISection);
+			ai_setion->init();
+			ai_setion->setup(object);
+			p_plugin->add_custom_control( ai_setion);
+
+			return true;
+
+		}
+		return false;
+
+	}
 
 };
 
@@ -423,13 +446,7 @@ class GameHelpInspectorPlugin : public EditorInspectorPlugin
 		if(body_main != nullptr)
 		{
 			
-			if(p_path == "update_mode")
-			{
-				CharacterBodyMainLable* lable = memnew(CharacterBodyMainLable);
-				lable->set_body_main(body_main);
-				add_custom_control( lable);
-			}
-			return false;
+			return ConditionList_ED::_parse_charater_ai_property(this,body_main, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide);
 		}
 		return false;
 	}

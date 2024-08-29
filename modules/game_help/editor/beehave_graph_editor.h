@@ -6,6 +6,7 @@
 #include "scene/resources/image_texture.h"
 #include "editor/editor_node.h"
 #include "editor/editor_properties.h"
+#include "editor/editor_resource_picker.h"
 #include "editor/inspector_dock.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "scene/gui/graph_edit_arranger.h"

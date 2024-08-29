@@ -79,11 +79,6 @@ public:
     ~CharacterBodyMain();
 
 public:
-	void set_behavior_tree(const Ref<BehaviorTree> &p_tree)
-    {
-        get_bt_player()->set_behavior_tree(p_tree);
-    }
-	Ref<BehaviorTree> get_behavior_tree()  { return get_bt_player()->get_behavior_tree(); };
 
 	void set_blackboard_plan(const Ref<BlackboardPlan> &p_plan)
     {
@@ -93,18 +88,11 @@ public:
     }
 	Ref<BlackboardPlan> get_blackboard_plan() { return blackboard_plan; }
 
-	void set_update_mode(int p_mode)
-    {
-        get_bt_player()->set_update_mode((BTPlayer::UpdateMode)p_mode);
-    }
-	int get_update_mode() { return (int)(get_bt_player()->get_update_mode()); }
 
     void set_skeleton_resource(const String& p_skeleton_path);
 
     String get_skeleton_resource() { return skeleton_res; }
 
-    // 设置黑板
-	void set_blackboard(const Ref<Blackboard> &p_blackboard) ;
     // 
     // 可编辑属性,必须初始类返回一个空对象
 	Ref<Blackboard> _get_blackboard()  { return player_blackboard; }
@@ -120,7 +108,6 @@ public:
 
 	void restart()
     {
-        get_bt_player()->restart();
     }
 
     void set_navigation_agent(const Ref<CharacterNavigationAgent3D> &p_navigation_agent);
@@ -326,15 +313,6 @@ public:
     }
 protected:
     void load_mesh(const StringName& part_name,String p_mesh_file_path);
-    BTPlayer * get_bt_player();
-    void _stop_skill()
-    {
-        if(btSkillPlayer != nullptr)
-        {
-            memdelete(btSkillPlayer);
-            btSkillPlayer = nullptr;
-        }
-    }
     
 protected:
     void behavior_tree_finished(int last_status);
@@ -416,10 +394,7 @@ protected:
     String editor_form_mesh_file_path;
 
 
-    mutable BTPlayer *btPlayer = nullptr;
     bool is_skill_stop = false;
-    // 技能播放器
-    mutable BTPlayer *btSkillPlayer = nullptr;
 
     Ref<BlackboardPlan> blackboard_plan;
     // 角色自己的黑板
