@@ -115,13 +115,13 @@ struct PluginConfigIOS {
 	// <name>:<type> = <value>
 	HashMap<String, PlistItem> plist;
 
-	static String resolve_local_dependency_path(String plugin_config_dir, String dependency_path);
+	static String resolve_local_dependency_path(const String &plugin_config_dir, const String &dependency_path);
 
-	static String resolve_system_dependency_path(String dependency_path);
+	static String resolve_system_dependency_path(const String &dependency_path);
 
-	static Vector<String> resolve_local_dependencies(String plugin_config_dir, Vector<String> p_paths);
+	static Vector<String> resolve_local_dependencies(const String &plugin_config_dir, const Vector<String> &p_paths);
 
-	static Vector<String> resolve_system_dependencies(Vector<String> p_paths);
+	static Vector<String> resolve_system_dependencies(const Vector<String> &p_paths);
 
 	static bool validate_plugin(PluginConfigIOS &plugin_config);
 

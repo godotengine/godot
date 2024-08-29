@@ -96,7 +96,7 @@ void WebToolsEditorPlugin::_download_zip() {
 	DirAccess::remove_file_or_error(output_path);
 }
 
-void WebToolsEditorPlugin::_zip_file(String p_path, String p_base_path, zipFile p_zip) {
+void WebToolsEditorPlugin::_zip_file(const String &p_path, const String &p_base_path, zipFile p_zip) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
 	if (f.is_null()) {
 		WARN_PRINT("Unable to open file for zipping: " + p_path);
@@ -122,7 +122,7 @@ void WebToolsEditorPlugin::_zip_file(String p_path, String p_base_path, zipFile 
 	zipCloseFileInZip(p_zip);
 }
 
-void WebToolsEditorPlugin::_zip_recursive(String p_path, String p_base_path, zipFile p_zip) {
+void WebToolsEditorPlugin::_zip_recursive(const String &p_path, const String &p_base_path, zipFile p_zip) {
 	Ref<DirAccess> dir = DirAccess::open(p_path);
 	if (dir.is_null()) {
 		WARN_PRINT("Unable to open directory for zipping: " + p_path);

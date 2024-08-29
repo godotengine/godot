@@ -58,7 +58,7 @@ public:
 	Ref<JavaScriptObject> get_interface(const String &p_interface);
 	Ref<JavaScriptObject> create_callback(const Callable &p_callable);
 	Variant _create_object_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
-	void download_buffer(Vector<uint8_t> p_arr, const String &p_name, const String &p_mime = "application/octet-stream");
+	void download_buffer(const Vector<uint8_t> &p_arr, const String &p_name, const String &p_mime = "application/octet-stream");
 	bool pwa_needs_update() const;
 	Error pwa_update();
 	void force_fs_sync();

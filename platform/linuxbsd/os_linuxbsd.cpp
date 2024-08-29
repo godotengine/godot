@@ -424,7 +424,7 @@ Vector<String> OS_LinuxBSD::get_video_adapter_driver_info() const {
 	return info;
 }
 
-Vector<String> OS_LinuxBSD::lspci_device_filter(Vector<String> vendor_device_id_mapping, String class_suffix, String check_column, String whitelist) const {
+Vector<String> OS_LinuxBSD::lspci_device_filter(const Vector<String> &vendor_device_id_mapping, const String &class_suffix, const String &check_column, const String &whitelist) const {
 	// NOTE: whitelist can be changed to `Vector<String>`, if the need arises.
 	const String sep = ":";
 	Vector<String> devices;
@@ -463,7 +463,7 @@ Vector<String> OS_LinuxBSD::lspci_device_filter(Vector<String> vendor_device_id_
 	return devices;
 }
 
-Vector<String> OS_LinuxBSD::lspci_get_device_value(Vector<String> vendor_device_id_mapping, String check_column, String blacklist) const {
+Vector<String> OS_LinuxBSD::lspci_get_device_value(const Vector<String> &vendor_device_id_mapping, const String &check_column, const String &blacklist) const {
 	// NOTE: blacklist can be changed to `Vector<String>`, if the need arises.
 	const String sep = ":";
 	Vector<String> values;

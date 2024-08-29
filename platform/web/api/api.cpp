@@ -123,7 +123,7 @@ Error JavaScriptBridge::pwa_update() {
 void JavaScriptBridge::force_fs_sync() {
 }
 
-void JavaScriptBridge::download_buffer(Vector<uint8_t> p_arr, const String &p_name, const String &p_mime) {
+void JavaScriptBridge::download_buffer(const Vector<uint8_t> &p_arr, const String &p_name, const String &p_mime) {
 }
 
 #endif

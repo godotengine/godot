@@ -34,7 +34,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 
-String PluginConfigIOS::resolve_local_dependency_path(String plugin_config_dir, String dependency_path) {
+String PluginConfigIOS::resolve_local_dependency_path(const String &plugin_config_dir, const String &dependency_path) {
 	String absolute_path;
 
 	if (dependency_path.is_empty()) {
@@ -51,7 +51,7 @@ String PluginConfigIOS::resolve_local_dependency_path(String plugin_config_dir, 
 	return absolute_path.replace(res_path, "res://");
 }
 
-String PluginConfigIOS::resolve_system_dependency_path(String dependency_path) {
+String PluginConfigIOS::resolve_system_dependency_path(const String &dependency_path) {
 	String absolute_path;
 
 	if (dependency_path.is_empty()) {
@@ -67,7 +67,7 @@ String PluginConfigIOS::resolve_system_dependency_path(String dependency_path) {
 	return system_path.path_join(dependency_path);
 }
 
-Vector<String> PluginConfigIOS::resolve_local_dependencies(String plugin_config_dir, Vector<String> p_paths) {
+Vector<String> PluginConfigIOS::resolve_local_dependencies(const String &plugin_config_dir, const Vector<String> &p_paths) {
 	Vector<String> paths;
 
 	for (int i = 0; i < p_paths.size(); i++) {
@@ -83,7 +83,7 @@ Vector<String> PluginConfigIOS::resolve_local_dependencies(String plugin_config_
 	return paths;
 }
 
-Vector<String> PluginConfigIOS::resolve_system_dependencies(Vector<String> p_paths) {
+Vector<String> PluginConfigIOS::resolve_system_dependencies(const Vector<String> &p_paths) {
 	Vector<String> paths;
 
 	for (int i = 0; i < p_paths.size(); i++) {
