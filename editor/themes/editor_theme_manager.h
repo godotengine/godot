@@ -175,7 +175,7 @@ private:
 
 	static void _reset_dirty_flag();
 
-	static ThemeColorProperties get_preset_theme_color_properties(const String& preset);
+	static ThemeColorProperties get_preset_theme_color_properties(const String &preset);
 	static float get_theme_luminance();
 
 public:
