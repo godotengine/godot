@@ -54,7 +54,7 @@ public:
 	};
 
 private:
-	LoadStatus _load_extension_internal(const Ref<GDExtension> &p_extension);
+	LoadStatus _load_extension_internal(const Ref<GDExtension> &p_extension, bool p_first_load);
 	LoadStatus _unload_extension_internal(const Ref<GDExtension> &p_extension);
 
 #ifdef TOOLS_ENABLED
@@ -85,6 +85,7 @@ public:
 
 	void load_extensions();
 	void reload_extensions();
+	bool ensure_extensions_loaded(const HashSet<String> &p_extensions);
 
 	GDExtensionManager();
 	~GDExtensionManager();

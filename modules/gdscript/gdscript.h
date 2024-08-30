@@ -417,6 +417,7 @@ class GDScriptLanguage : public ScriptLanguage {
 	Vector<Variant> global_array;
 	HashMap<StringName, int> globals;
 	HashMap<StringName, Variant> named_globals;
+	Vector<int> global_array_empty_indexes;
 
 	struct CallLevel {
 		Variant *stack = nullptr;
@@ -448,6 +449,7 @@ class GDScriptLanguage : public ScriptLanguage {
 	int _debug_max_call_stack = 0;
 
 	void _add_global(const StringName &p_name, const Variant &p_value);
+	void _remove_global(const StringName &p_name);
 
 	friend class GDScriptInstance;
 
@@ -466,6 +468,11 @@ class GDScriptLanguage : public ScriptLanguage {
 #endif
 
 	HashMap<String, ObjectID> orphan_subclasses;
+
+#ifdef TOOLS_ENABLED
+	void _extension_loaded(const Ref<GDExtension> &p_extension);
+	void _extension_unloading(const Ref<GDExtension> &p_extension);
+#endif
 
 public:
 	int calls;
