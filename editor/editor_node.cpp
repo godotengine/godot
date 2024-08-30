@@ -2964,7 +2964,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				ERR_PRINT("Failed to load scene");
 			}
 			editor_data.move_edited_scene_to_index(cur_idx);
-			EditorUndoRedoManager::get_singleton()->clear_history(false, editor_data.get_current_edited_scene_history_id());
+			EditorUndoRedoManager::get_singleton()->clear_history(editor_data.get_current_edited_scene_history_id(), false);
 			scene_tabs->set_current_tab(cur_idx);
 
 		} break;
@@ -3966,7 +3966,7 @@ void EditorNode::_set_current_scene_nocheck(int p_idx) {
 			editor_folding.load_scene_folding(editor_data.get_edited_scene_root(p_idx), editor_data.get_scene_path(p_idx));
 		}
 
-		EditorUndoRedoManager::get_singleton()->clear_history(false, editor_data.get_scene_history_id(p_idx));
+		EditorUndoRedoManager::get_singleton()->clear_history(editor_data.get_scene_history_id(p_idx), false);
 	}
 
 	Dictionary state = editor_data.restore_edited_scene_state(editor_selection, &editor_history);
@@ -4076,7 +4076,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 			_set_current_scene(idx);
 		}
 	} else {
-		EditorUndoRedoManager::get_singleton()->clear_history(false, editor_data.get_current_edited_scene_history_id());
+		EditorUndoRedoManager::get_singleton()->clear_history(editor_data.get_current_edited_scene_history_id(), false);
 	}
 
 	dependency_errors.clear();
@@ -5937,7 +5937,7 @@ void EditorNode::reload_scene(const String &p_path) {
 			bool is_unsaved = EditorUndoRedoManager::get_singleton()->is_history_unsaved(current_history_id);
 
 			// Scene is not open, so at it might be instantiated. We'll refresh the whole scene later.
-			EditorUndoRedoManager::get_singleton()->clear_history(false, current_history_id);
+			EditorUndoRedoManager::get_singleton()->clear_history(current_history_id, false);
 			if (is_unsaved) {
 				EditorUndoRedoManager::get_singleton()->set_history_as_unsaved(current_history_id);
 			}
@@ -5956,7 +5956,7 @@ void EditorNode::reload_scene(const String &p_path) {
 
 	// Adjust index so tab is back a the previous position.
 	editor_data.move_edited_scene_to_index(scene_idx);
-	EditorUndoRedoManager::get_singleton()->clear_history(false, editor_data.get_scene_history_id(scene_idx));
+	EditorUndoRedoManager::get_singleton()->clear_history(editor_data.get_scene_history_id(scene_idx), false);
 
 	// Recover the tab.
 	scene_tabs->set_current_tab(current_tab);
@@ -6101,7 +6101,7 @@ void EditorNode::reload_instances_with_path_in_edited_scenes() {
 		bool is_unsaved = EditorUndoRedoManager::get_singleton()->is_history_unsaved(current_history_id);
 
 		// Clear the history for this affected tab.
-		EditorUndoRedoManager::get_singleton()->clear_history(false, current_history_id);
+		EditorUndoRedoManager::get_singleton()->clear_history(current_history_id, false);
 
 		// Update the version
 		editor_data.is_scene_changed(current_scene_idx);

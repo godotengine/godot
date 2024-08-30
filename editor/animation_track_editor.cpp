@@ -6825,8 +6825,8 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			_redraw_tracks();
 			_update_key_edit();
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-			undo_redo->clear_history(true, undo_redo->get_history_id_for_object(animation.ptr()));
-			undo_redo->clear_history(true, undo_redo->get_history_id_for_object(this));
+			undo_redo->clear_history(undo_redo->get_history_id_for_object(animation.ptr()));
+			undo_redo->clear_history(undo_redo->get_history_id_for_object(this));
 
 		} break;
 		case EDIT_CLEAN_UP_ANIMATION: {
@@ -6968,8 +6968,8 @@ void AnimationTrackEditor::_cleanup_animation(Ref<Animation> p_animation) {
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->clear_history(true, undo_redo->get_history_id_for_object(animation.ptr()));
-	undo_redo->clear_history(true, undo_redo->get_history_id_for_object(this));
+	undo_redo->clear_history(undo_redo->get_history_id_for_object(animation.ptr()));
+	undo_redo->clear_history(undo_redo->get_history_id_for_object(this));
 	_update_tracks();
 }
 
