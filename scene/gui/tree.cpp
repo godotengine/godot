@@ -387,7 +387,7 @@ void TreeItem::set_text(int p_column, String p_text) {
 
 	_changed_notify(p_column);
 	if (get_tree()) {
-		get_tree()->update_configuration_warnings();
+		get_tree()->update_configuration_info();
 	}
 }
 
@@ -407,7 +407,7 @@ void TreeItem::set_alt_text(int p_column, String p_text) {
 
 	_changed_notify(p_column);
 	if (get_tree()) {
-		get_tree()->update_configuration_warnings();
+		get_tree()->update_configuration_info();
 	}
 }
 
@@ -1335,7 +1335,7 @@ void TreeItem::add_button(int p_column, const Ref<Texture2D> &p_button, int p_id
 
 	_changed_notify(p_column);
 	if (get_tree()) {
-		get_tree()->update_configuration_warnings();
+		get_tree()->update_configuration_info();
 	}
 }
 
@@ -1371,7 +1371,7 @@ void TreeItem::erase_button(int p_column, int p_index) {
 	cells.write[p_column].buttons.remove_at(p_index);
 	_changed_notify(p_column);
 	if (get_tree()) {
-		get_tree()->update_configuration_warnings();
+		get_tree()->update_configuration_info();
 	}
 }
 
@@ -1426,7 +1426,7 @@ void TreeItem::set_button_alt_text(int p_column, int p_index, const String &p_al
 	cells.write[p_column].buttons.write[p_index].alt_text = p_alt_text;
 	_changed_notify(p_column);
 	if (get_tree()) {
-		get_tree()->update_configuration_warnings();
+		get_tree()->update_configuration_info();
 	}
 }
 

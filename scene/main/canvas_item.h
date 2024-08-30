@@ -404,7 +404,9 @@ public:
 	int get_canvas_layer() const;
 	CanvasLayer *get_canvas_layer_node() const;
 
-	virtual PackedStringArray get_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
 
 	CanvasItem();
 	~CanvasItem();

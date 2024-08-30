@@ -76,7 +76,9 @@ public:
 
 	double get_time_left() const;
 
-	PackedStringArray get_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
 
 	void set_timer_process_callback(TimerProcessCallback p_callback);
 	TimerProcessCallback get_timer_process_callback() const;

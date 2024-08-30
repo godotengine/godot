@@ -51,7 +51,9 @@ public:
 	void set_use_mipmaps(bool p_use_mipmaps);
 	bool is_using_mipmaps() const;
 
-	virtual PackedStringArray get_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
 
 	CanvasGroup();
 	~CanvasGroup();

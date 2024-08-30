@@ -102,7 +102,12 @@ public:
 TEST_CASE("[Multiplayer][MultiplayerSpawner] Defaults") {
 	MultiplayerSpawner *multiplayer_spawner = memnew(MultiplayerSpawner);
 
-	CHECK_EQ(multiplayer_spawner->get_configuration_warnings().size(), 1);
+#ifdef TOOLS_ENABLED
+	List<ConfigurationInfo> config_info;
+	multiplayer_spawner->get_configuration_info(&config_info);
+	CHECK_EQ(config_info.size(), 1);
+#endif // TOOLS_ENABLED
+
 	CHECK_EQ(multiplayer_spawner->get_spawn_node(), nullptr);
 	CHECK_EQ(multiplayer_spawner->get_spawnable_scene_count(), 0);
 	CHECK_EQ(multiplayer_spawner->get_spawn_path(), NodePath());
@@ -112,31 +117,36 @@ TEST_CASE("[Multiplayer][MultiplayerSpawner] Defaults") {
 	memdelete(multiplayer_spawner);
 }
 
+#ifdef TOOLS_ENABLED
 TEST_CASE("[Multiplayer][MultiplayerSpawner][SceneTree] Spawn Path warning") {
 	MultiplayerSpawner *multiplayer_spawner = memnew(MultiplayerSpawner);
 	SceneTree::get_singleton()->get_root()->add_child(multiplayer_spawner);
 
 	// If there is no spawn path, there should be a warning.
-	PackedStringArray warning_messages = multiplayer_spawner->get_configuration_warnings();
-	REQUIRE_EQ(warning_messages.size(), 1);
-	CHECK_MESSAGE(warning_messages[0].contains("\"Spawn Path\""), "Invalid configuration warning");
+	List<ConfigurationInfo> config_info;
+	multiplayer_spawner->get_configuration_info(&config_info);
+	REQUIRE_EQ(config_info.size(), 1);
+	CHECK_MESSAGE(config_info.front()->get().get_property_name() == StringName("spawn_path"), "Invalid configuration warning");
+	config_info.clear();
 
 	// If there is a spawn path, but it doesn't exist a node on it, there should be a warning.
 	multiplayer_spawner->set_spawn_path(NodePath("/root/Foo"));
-	warning_messages = multiplayer_spawner->get_configuration_warnings();
-	REQUIRE_EQ(warning_messages.size(), 1);
-	CHECK_MESSAGE(warning_messages[0].contains("\"Spawn Path\""), "Invalid configuration warning");
+	multiplayer_spawner->get_configuration_info(&config_info);
+	REQUIRE_EQ(config_info.size(), 1);
+	CHECK_MESSAGE(config_info.front()->get().get_property_name() == StringName("spawn_path"), "Invalid configuration warning");
+	config_info.clear();
 
 	// If there is a spawn path and a node on it, shouldn't be a warning.
 	Node *foo = memnew(Node);
 	foo->set_name("Foo");
 	SceneTree::get_singleton()->get_root()->add_child(foo);
-	warning_messages = multiplayer_spawner->get_configuration_warnings();
-	CHECK_EQ(warning_messages.size(), 0);
+	multiplayer_spawner->get_configuration_info(&config_info);
+	CHECK_EQ(config_info.size(), 0);
 
 	memdelete(foo);
 	memdelete(multiplayer_spawner);
 }
+#endif // TOOLS_ENABLED
 
 TEST_CASE("[Multiplayer][MultiplayerSpawner][SceneTree] Spawn node") {
 	MultiplayerSpawner *multiplayer_spawner = memnew(MultiplayerSpawner);

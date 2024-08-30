@@ -648,7 +648,6 @@ void CanvasItem::set_z_index(int p_z) {
 	ERR_FAIL_COND(p_z > RS::CANVAS_ITEM_Z_MAX);
 	z_index = p_z;
 	RS::get_singleton()->canvas_item_set_z_index(canvas_item, z_index);
-	update_configuration_warnings();
 }
 
 void CanvasItem::set_z_as_relative(bool p_enabled) {
@@ -1260,9 +1259,8 @@ void CanvasItem::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
-PackedStringArray CanvasItem::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
-
+#ifdef TOOLS_ENABLED
+void CanvasItem::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (clip_children_mode != CLIP_CHILDREN_DISABLED && is_inside_tree()) {
 		bool warned_about_ancestor_clipping = false;
 		bool warned_about_canvasgroup_ancestor = false;
@@ -1270,13 +1268,13 @@ PackedStringArray CanvasItem::get_configuration_warnings() const {
 		while (n) {
 			CanvasItem *as_canvas_item = Object::cast_to<CanvasItem>(n);
 			if (!warned_about_ancestor_clipping && as_canvas_item && as_canvas_item->clip_children_mode != CLIP_CHILDREN_DISABLED) {
-				warnings.push_back(vformat(RTR("Ancestor \"%s\" clips its children, so this node will not be able to clip its children."), as_canvas_item->get_name()));
+				CONFIG_WARNING(vformat(RTR("Ancestor \"%s\" clips its children, so this node will not be able to clip its children."), as_canvas_item->get_name()));
 				warned_about_ancestor_clipping = true;
 			}
 
 			CanvasGroup *as_canvas_group = Object::cast_to<CanvasGroup>(n);
 			if (!warned_about_canvasgroup_ancestor && as_canvas_group) {
-				warnings.push_back(vformat(RTR("Ancestor \"%s\" is a CanvasGroup, so this node will not be able to clip its children."), as_canvas_group->get_name()));
+				CONFIG_WARNING(vformat(RTR("Ancestor \"%s\" is a CanvasGroup, so this node will not be able to clip its children."), as_canvas_group->get_name()));
 				warned_about_canvasgroup_ancestor = true;
 			}
 
@@ -1288,9 +1286,8 @@ PackedStringArray CanvasItem::get_configuration_warnings() const {
 			n = n->get_parent();
 		}
 	}
-
-	return warnings;
 }
+#endif // TOOLS_ENABLED
 
 void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_top_level_raise_self"), &CanvasItem::_top_level_raise_self);
@@ -1693,7 +1690,7 @@ void CanvasItem::set_clip_children_mode(ClipChildrenMode p_clip_mode) {
 	}
 	clip_children_mode = p_clip_mode;
 
-	update_configuration_warnings();
+	update_configuration_info();
 
 	if (Object::cast_to<CanvasGroup>(this) != nullptr) {
 		//avoid accidental bugs, make this not work on CanvasGroup
