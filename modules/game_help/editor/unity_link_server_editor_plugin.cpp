@@ -361,6 +361,7 @@ public:
 			CharacterBodyMainLable* lable = memnew(CharacterBodyMainLable);
 			lable->set_body_main(object);
 			p_plugin->add_custom_control( lable);
+			return false;
 		}
 		else if(name == "character_ai")
 		{
@@ -372,7 +373,7 @@ public:
 			return true;
 
 		}
-		return false;
+		return true;
 
 	}
 

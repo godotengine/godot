@@ -87,6 +87,10 @@ public:
     {
         return L"检查器基类";
     }
+    virtual String get_tooltip()
+    {
+        return String(L"检查器基类");
+    }
     void set_enable_condition(Ref<CharacterAnimatorCondition> p_enable_condition)
     {
         this->enable_condition = p_enable_condition;
@@ -132,6 +136,14 @@ class CharacterAI_CheckGround : public CharacterAI_CheckBase
     GDCLASS(CharacterAI_CheckGround, CharacterAI_CheckBase);
     static void _bind_methods(){}
 public:
+    virtual String get_lable_name() override
+    {
+        return L"检测角色是否在地面上";
+    }
+    virtual String get_tooltip() override
+    {
+        return String(L"检测是否在地面上。");
+    }
     bool _execute_check(CharacterBodyMain *node, Blackboard* blackboard);
 
 	PhysicsDirectSpaceState3D::RayResult result;
@@ -206,7 +218,15 @@ class CharacterAI_CheckEnemy : public CharacterAI_CheckBase
     {
         return body_area_name;
     }
-
+protected:
+    virtual String get_lable_name() override
+    {
+        return L"检查周围是否存在敌人";
+    }
+    virtual String get_tooltip() override
+    {
+        return String(L"检查周围是否存在敌人");
+    }
     StringName body_area_name;
     int32_t enemy_layer = 0;
     bool is_form_angle = false;
@@ -234,6 +254,15 @@ class CharacterAI_CheckJump : public CharacterAI_CheckBase
         return false;
         
     }
+protected:
+    virtual String get_lable_name() override
+    {
+        return L"检查角色跳跃";
+    }
+    virtual String get_tooltip() override
+    {
+        return String(L"检查角色跳跃");
+    }
     
 };
 // 检测角色二次跳跃
@@ -257,6 +286,15 @@ class CharacterAI_CheckJump2 : public CharacterAI_CheckBase
         return false;
         
     }
+protected:
+    virtual String get_lable_name() override
+    {
+        return L"检查角色是否二级跳跃";
+    }
+    virtual String get_tooltip() override
+    {
+        return String(L"检查角色是否二级跳跃");
+    }
     
     // 触发二次跳跃最小距离
     float min_ground_distance = 0.0;
@@ -271,6 +309,15 @@ class CharacterAI_CheckPatrol : public CharacterAI_CheckBase
     virtual bool _execute_check(Blackboard* blackboard) 
     {
         return false;
+    }
+protected:
+    virtual String get_lable_name() override
+    {
+        return L"检测是否在巡逻范围";
+    }
+    virtual String get_tooltip() override
+    {
+        return String(L"检测是否在巡逻范围");
     }
     LocalVector<Ref<CharacterAI_CheckBase>> checks;
 };
@@ -341,6 +388,40 @@ public:
         checks.sort_custom<SortCharacterCheck>();
         is_sort = true;
     }
+
+	void add_check(const Ref< CharacterAI_CheckBase>& _check)
+	{
+		checks.push_back(_check);
+	}
+	Ref< CharacterAI_CheckBase> get_check_by_index(int index) {
+		return checks[index];
+	}
+    void move_left(int check_index)
+    {
+        if(check_index > 0)
+        {
+            Ref<CharacterAI_CheckBase> check = get_check_by_index(check_index);
+            Ref<CharacterAI_CheckBase> check_left = get_check_by_index(check_index - 1);
+            checks[check_index] = check_left;
+            checks[check_index - 1] = check;
+        }
+    }
+    void move_right(int check_index)
+    {
+        if(check_index < checks.size() - 1)
+        {
+            Ref<CharacterAI_CheckBase> check = get_check_by_index(check_index);
+            Ref<CharacterAI_CheckBase> check_right = get_check_by_index(check_index + 1);
+            checks[check_index] = check_right;
+            checks[check_index + 1] = check;
+        }
+    }
+    void remove_check(int check_index)
+    {
+        checks.remove_at(check_index);
+    }
+
+protected:
 
     LocalVector<Ref<CharacterAI_CheckBase>> checks;
     bool is_sort = false;
