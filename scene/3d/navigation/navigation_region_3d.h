@@ -109,7 +109,9 @@ public:
 	void _bake_finished();
 	bool is_baking() const;
 
-	PackedStringArray get_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
 
 	AABB get_bounds() const { return bounds; }
 

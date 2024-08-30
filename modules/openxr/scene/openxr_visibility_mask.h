@@ -44,7 +44,9 @@ protected:
 	void _on_openxr_session_stopping();
 
 public:
-	virtual PackedStringArray get_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
 
 	virtual AABB get_aabb() const override;
 

@@ -3963,7 +3963,7 @@ void RichTextLabel::add_image(const Ref<Texture2D> &p_image, int p_width, int p_
 	item->image->connect_changed(callable_mp(this, &RichTextLabel::_texture_changed).bind(item->rid), CONNECT_REFERENCE_COUNTED);
 
 	_add_item(item, false);
-	update_configuration_warnings();
+	update_configuration_info();
 }
 
 void RichTextLabel::update_image(const Variant &p_key, BitField<ImageUpdateMask> p_mask, const Ref<Texture2D> &p_image, int p_width, int p_height, const Color &p_color, InlineAlignment p_alignment, const Rect2 &p_region, bool p_pad, const String &p_tooltip, bool p_size_in_percent) {
@@ -4232,7 +4232,7 @@ bool RichTextLabel::invalidate_paragraph(int p_paragraph) {
 		queue_accessibility_update();
 	}
 	queue_redraw();
-	update_configuration_warnings();
+	update_configuration_info();
 
 	return true;
 }
@@ -4838,7 +4838,7 @@ void RichTextLabel::clear() {
 		update_minimum_size();
 	}
 	queue_accessibility_update();
-	update_configuration_warnings();
+	update_configuration_info();
 }
 
 void RichTextLabel::set_tab_size(int p_spaces) {

@@ -140,5 +140,7 @@ public:
 	void remove_exception(const CollisionObject3D *p_node);
 	void clear_exceptions();
 
-	virtual PackedStringArray get_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
 };

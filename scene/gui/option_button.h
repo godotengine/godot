@@ -146,7 +146,7 @@ public:
 	void set_disable_shortcuts(bool p_disabled);
 
 #ifdef TOOLS_ENABLED
-	PackedStringArray get_configuration_warnings() const override;
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
 #endif
 
 	OptionButton(const String &p_text = String());

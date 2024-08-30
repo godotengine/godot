@@ -63,7 +63,9 @@ public:
 	Ref<Material> get_material() const;
 
 	virtual AABB get_aabb() const override;
-	PackedStringArray get_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
 
 	FogVolume();
 	~FogVolume();

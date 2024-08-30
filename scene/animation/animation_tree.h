@@ -342,7 +342,9 @@ public:
 	void set_advance_expression_base_node(const NodePath &p_path);
 	NodePath get_advance_expression_base_node() const;
 
-	PackedStringArray get_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
 
 	bool is_state_invalid() const;
 	String get_invalid_state_reason() const;

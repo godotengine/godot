@@ -79,7 +79,9 @@ protected:
 #endif
 
 public:
-	virtual PackedStringArray get_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
 	virtual bool has_process() const { return false; } // Return true if modifier needs to modify bone pose without external animation such as physics, jiggle and etc.
 
 	void set_active(bool p_active);

@@ -1465,7 +1465,7 @@ void Node::set_accessibility_name(const String &p_name) {
 	if (data.accessibility_name != p_name) {
 		data.accessibility_name = p_name;
 		queue_accessibility_update();
-		update_configuration_warnings();
+		update_configuration_info();
 	}
 }
 
@@ -3638,37 +3638,6 @@ void Node::update_configuration_warnings() {
 }
 #endif // DISABLE_DEPRECATED
 
-#ifdef TOOLS_ENABLED
-Vector<ConfigurationInfo> Node::get_configuration_info() const {
-	Vector<ConfigurationInfo> ret;
-	ERR_THREAD_GUARD_V(ret);
-
-	Array info;
-	if (GDVIRTUAL_CALL(_get_configuration_info, info)) {
-		ret.resize(info.size());
-
-		ConfigurationInfo *ptrw = ret.ptrw();
-		for (const Variant &variant : info) {
-			*ptrw++ = ConfigurationInfo::from_variant(variant);
-		}
-	}
-
-	return ret;
-}
-#endif // TOOLS_ENABLED
-
-void Node::update_configuration_info() {
-#ifdef TOOLS_ENABLED
-	ERR_THREAD_GUARD
-	if (!ConfigurationInfo::configuration_info_changed_func) {
-		return;
-	}
-	if (is_part_of_edited_scene()) {
-		ConfigurationInfo::configuration_info_changed_func(this);
-	}
-#endif // TOOLS_ENABLED
-}
-
 void Node::set_display_folded(bool p_folded) {
 	ERR_THREAD_GUARD
 	data.display_folded = p_folded;
@@ -4058,7 +4027,6 @@ void Node::_bind_methods() {
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("update_configuration_warnings"), &Node::update_configuration_warnings);
 #endif
-	ClassDB::bind_method(D_METHOD("update_configuration_info"), &Node::update_configuration_info);
 
 	{
 		MethodInfo mi;

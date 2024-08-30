@@ -422,6 +422,10 @@ public:
 
 	void accessibility_announcement(const String &p_announcement);
 
+#ifdef TOOLS_ENABLED
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
+
 	// Internationalization.
 
 	void set_layout_direction(LayoutDirection p_direction);

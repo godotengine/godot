@@ -247,7 +247,7 @@ void NavigationLink2D::set_start_position(Vector2 p_position) {
 
 	NavigationServer2D::get_singleton()->link_set_start_position(link, current_global_transform.xform(start_position));
 
-	update_configuration_warnings();
+	update_configuration_info();
 
 #ifdef DEBUG_ENABLED
 	queue_redraw();
@@ -267,7 +267,7 @@ void NavigationLink2D::set_end_position(Vector2 p_position) {
 
 	NavigationServer2D::get_singleton()->link_set_end_position(link, current_global_transform.xform(end_position));
 
-	update_configuration_warnings();
+	update_configuration_info();
 
 #ifdef DEBUG_ENABLED
 	queue_redraw();
@@ -328,15 +328,13 @@ void NavigationLink2D::set_travel_cost(real_t p_travel_cost) {
 	NavigationServer2D::get_singleton()->link_set_travel_cost(link, travel_cost);
 }
 
-PackedStringArray NavigationLink2D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node2D::get_configuration_warnings();
-
+#ifdef TOOLS_ENABLED
+void NavigationLink2D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (start_position.is_equal_approx(end_position)) {
-		warnings.push_back(RTR("NavigationLink2D start position should be different than the end position to be useful."));
+		CONFIG_WARNING(RTR("NavigationLink2D start position should be different than the end position to be useful."));
 	}
-
-	return warnings;
 }
+#endif
 
 void NavigationLink2D::_link_enter_navigation_map() {
 	if (!is_inside_tree()) {

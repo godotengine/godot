@@ -213,10 +213,8 @@ void MenuButton::set_disable_shortcuts(bool p_disabled) {
 }
 
 #ifdef TOOLS_ENABLED
-PackedStringArray MenuButton::get_configuration_warnings() const {
-	PackedStringArray warnings = Button::get_configuration_warnings();
-	warnings.append_array(popup->get_configuration_warnings());
-	return warnings;
+void MenuButton::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
+	popup->get_configuration_info(p_infos);
 }
 #endif
 

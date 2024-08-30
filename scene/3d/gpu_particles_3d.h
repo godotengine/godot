@@ -170,7 +170,9 @@ public:
 	void set_draw_pass_mesh(int p_pass, const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_draw_pass_mesh(int p_pass) const;
 
-	PackedStringArray get_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
 
 	void set_sub_emitter(const NodePath &p_path);
 	NodePath get_sub_emitter() const;

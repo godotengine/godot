@@ -186,7 +186,9 @@ public:
 	void set_border_color(Color p_color);
 	Color get_border_color() const;
 
-	virtual PackedStringArray get_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
 
 	virtual Vector2 intersects_ray(const Vector3 &p_origin, const Vector3 &p_direction) const;
 

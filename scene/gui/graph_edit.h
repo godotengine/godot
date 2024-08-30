@@ -399,7 +399,9 @@ public:
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
 
-	PackedStringArray get_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	void _get_configuration_info(List<ConfigurationInfo> *p_infos) const;
+#endif
 
 	void key_input(const Ref<InputEvent> &p_ev);
 

@@ -143,15 +143,15 @@ bool MultiplayerSynchronizer::update_inbound_sync_time(uint16_t p_network_time) 
 	return true;
 }
 
-PackedStringArray MultiplayerSynchronizer::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
-
+#ifdef TOOLS_ENABLED
+void MultiplayerSynchronizer::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (root_path.is_empty() || !has_node(root_path)) {
-		warnings.push_back(RTR("A valid NodePath must be set in the \"Root Path\" property in order for MultiplayerSynchronizer to be able to synchronize properties."));
+		CONFIG_WARNING_P(
+				RTR("A valid NodePath must be set in order for MultiplayerSynchronizer to be able to synchronize properties."),
+				"root_path");
 	}
-
-	return warnings;
 }
+#endif
 
 Error MultiplayerSynchronizer::get_state(const List<NodePath> &p_properties, Object *p_obj, Vector<Variant> &r_variant, Vector<const Variant *> &r_variant_ptrs) {
 	ERR_FAIL_NULL_V(p_obj, ERR_INVALID_PARAMETER);
@@ -354,7 +354,7 @@ void MultiplayerSynchronizer::set_root_path(const NodePath &p_path) {
 	_stop();
 	root_path = p_path;
 	_start();
-	update_configuration_warnings();
+	update_configuration_info();
 }
 
 NodePath MultiplayerSynchronizer::get_root_path() const {

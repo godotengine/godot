@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/object/configuration_info.h"
 #include "core/string/node_path.h"
 #include "core/variant/typed_array.h"
 #include "scene/main/scene_tree.h"
@@ -406,7 +405,6 @@ protected:
 #ifndef DISABLE_DEPRECATED
 	GDVIRTUAL0RC(Vector<String>, _get_configuration_warnings)
 #endif
-	GDVIRTUAL0RC(Array, _get_configuration_info)
 
 	GDVIRTUAL1(_input, Ref<InputEvent>)
 	GDVIRTUAL1(_shortcut_input, Ref<InputEvent>)
@@ -781,12 +779,6 @@ public:
 
 	void update_configuration_warnings();
 #endif
-
-#ifdef TOOLS_ENABLED
-	virtual Vector<ConfigurationInfo> get_configuration_info() const;
-#endif
-
-	void update_configuration_info();
 
 	void set_display_folded(bool p_folded);
 	bool is_displayed_folded() const;

@@ -581,15 +581,13 @@ void CollisionObject2D::_update_pickable() {
 	}
 }
 
-PackedStringArray CollisionObject2D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node2D::get_configuration_warnings();
-
+#ifdef TOOLS_ENABLED
+void CollisionObject2D::_get_configuration_info(List<ConfigurationInfo> *p_infos) const {
 	if (shapes.is_empty()) {
-		warnings.push_back(RTR("This node has no shape, so it can't collide or interact with other objects.\nConsider adding a CollisionShape2D or CollisionPolygon2D as a child to define its shape."));
+		CONFIG_WARNING(RTR("This node has no shape, so it can't collide or interact with other objects.\nConsider adding a CollisionShape2D or CollisionPolygon2D as a child to define its shape."));
 	}
-
-	return warnings;
 }
+#endif
 
 void CollisionObject2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rid"), &CollisionObject2D::get_rid);
