@@ -101,6 +101,7 @@ open class GodotEditor : GodotActivity() {
 		private const val ANDROID_WINDOW_AUTO = 0
 		private const val ANDROID_WINDOW_SAME_AS_EDITOR = 1
 		private const val ANDROID_WINDOW_SIDE_BY_SIDE_WITH_EDITOR = 2
+		private const val ANDROID_WINDOW_SAME_AS_EDITOR_AND_LAUNCH_IN_PIP_MODE = 3
 
 		/**
 		 * Sets of constants to specify the Play window PiP mode.
@@ -244,25 +245,30 @@ open class GodotEditor : GodotActivity() {
 		val isPiPAvailable = if (editorWindowInfo.supportsPiPMode && hasPiPSystemFeature()) {
 			val pipMode = getPlayWindowPiPMode()
 			pipMode == PLAY_WINDOW_PIP_ENABLED ||
-				(pipMode == PLAY_WINDOW_PIP_ENABLED_FOR_SAME_AS_EDITOR && launchPolicy == LaunchPolicy.SAME)
+				(pipMode == PLAY_WINDOW_PIP_ENABLED_FOR_SAME_AS_EDITOR &&
+					(launchPolicy == LaunchPolicy.SAME || launchPolicy == LaunchPolicy.SAME_AND_LAUNCH_IN_PIP_MODE))
 		} else {
 			false
 		}
 		newInstance.putExtra(EXTRA_PIP_AVAILABLE, isPiPAvailable)
 
+		var launchInPiP = false
 		if (launchPolicy == LaunchPolicy.ADJACENT) {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
 				Log.v(TAG, "Adding flag for adjacent launch")
 				newInstance.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT)
 			}
 		} else if (launchPolicy == LaunchPolicy.SAME) {
-			if (isPiPAvailable &&
-				(updatedArgs.contains(BREAKPOINTS_ARG) || updatedArgs.contains(BREAKPOINTS_ARG_SHORT))) {
-				Log.v(TAG, "Launching in PiP mode because of breakpoints")
-				newInstance.putExtra(EXTRA_LAUNCH_IN_PIP, true)
-			}
+			launchInPiP = isPiPAvailable &&
+				(updatedArgs.contains(BREAKPOINTS_ARG) || updatedArgs.contains(BREAKPOINTS_ARG_SHORT))
+		} else if (launchPolicy == LaunchPolicy.SAME_AND_LAUNCH_IN_PIP_MODE) {
+			launchInPiP = isPiPAvailable
 		}
 
+		if (launchInPiP) {
+			Log.v(TAG, "Launching in PiP mode")
+			newInstance.putExtra(EXTRA_LAUNCH_IN_PIP, launchInPiP)
+		}
 		return newInstance
 	}
 
@@ -403,6 +409,7 @@ open class GodotEditor : GodotActivity() {
 					when (Integer.parseInt(GodotLib.getEditorSetting("run/window_placement/android_window"))) {
 						ANDROID_WINDOW_SAME_AS_EDITOR -> LaunchPolicy.SAME
 						ANDROID_WINDOW_SIDE_BY_SIDE_WITH_EDITOR -> LaunchPolicy.ADJACENT
+						ANDROID_WINDOW_SAME_AS_EDITOR_AND_LAUNCH_IN_PIP_MODE -> LaunchPolicy.SAME_AND_LAUNCH_IN_PIP_MODE
 						else -> {
 							// ANDROID_WINDOW_AUTO
 							defaultLaunchPolicy
