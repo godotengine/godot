@@ -32,6 +32,7 @@
 #include "editor_inspector.compat.inc"
 
 #include "core/os/keyboard.h"
+#include "editor/add_metadata_dialog.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_main_screen.h"
@@ -4245,92 +4246,33 @@ Variant EditorInspector::get_property_clipboard() const {
 	return property_clipboard;
 }
 
-void EditorInspector::_add_meta_confirm() {
-	String name = add_meta_name->get_text();
-
-	object->editor_set_section_unfold("metadata", true); // Ensure metadata is unfolded when adding a new metadata.
-
-	Variant defval;
-	Callable::CallError ce;
-	Variant::construct(Variant::Type(add_meta_type->get_selected_id()), defval, nullptr, 0, ce);
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(vformat(TTR("Add metadata %s"), name));
-	undo_redo->add_do_method(object, "set_meta", name, defval);
-	undo_redo->add_undo_method(object, "remove_meta", name);
-	undo_redo->commit_action();
-}
-
-void EditorInspector::_check_meta_name() {
-	const String meta_name = add_meta_name->get_text();
-
-	if (meta_name.is_empty()) {
-		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Metadata name can't be empty."), EditorValidationPanel::MSG_ERROR);
-	} else if (!meta_name.is_valid_ascii_identifier()) {
-		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Metadata name must be a valid identifier."), EditorValidationPanel::MSG_ERROR);
-	} else if (object->has_meta(meta_name)) {
-		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, vformat(TTR("Metadata with name \"%s\" already exists."), meta_name), EditorValidationPanel::MSG_ERROR);
-	} else if (meta_name[0] == '_') {
-		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Names starting with _ are reserved for editor-only metadata."), EditorValidationPanel::MSG_ERROR);
-	}
-}
-
 void EditorInspector::_show_add_meta_dialog() {
 	if (!add_meta_dialog) {
-		add_meta_dialog = memnew(ConfirmationDialog);
-
-		VBoxContainer *vbc = memnew(VBoxContainer);
-		add_meta_dialog->add_child(vbc);
-
-		HBoxContainer *hbc = memnew(HBoxContainer);
-		vbc->add_child(hbc);
-		hbc->add_child(memnew(Label(TTR("Name:"))));
-
-		add_meta_name = memnew(LineEdit);
-		add_meta_name->set_custom_minimum_size(Size2(200 * EDSCALE, 1));
-		hbc->add_child(add_meta_name);
-		hbc->add_child(memnew(Label(TTR("Type:"))));
-
-		add_meta_type = memnew(OptionButton);
-		for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-			if (i == Variant::NIL || i == Variant::RID || i == Variant::CALLABLE || i == Variant::SIGNAL) {
-				continue; //not editable by inspector.
-			}
-			String type = i == Variant::OBJECT ? String("Resource") : Variant::get_type_name(Variant::Type(i));
-
-			add_meta_type->add_icon_item(get_editor_theme_icon(type), type, i);
-		}
-		hbc->add_child(add_meta_type);
-
-		Control *spacing = memnew(Control);
-		vbc->add_child(spacing);
-		spacing->set_custom_minimum_size(Size2(0, 10 * EDSCALE));
-
-		add_meta_dialog->set_ok_button_text(TTR("Add"));
-		add_child(add_meta_dialog);
-		add_meta_dialog->register_text_enter(add_meta_name);
+		add_meta_dialog = memnew(AddMetadataDialog());
 		add_meta_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorInspector::_add_meta_confirm));
-
-		validation_panel = memnew(EditorValidationPanel);
-		vbc->add_child(validation_panel);
-		validation_panel->add_line(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Metadata name is valid."));
-		validation_panel->set_update_callback(callable_mp(this, &EditorInspector::_check_meta_name));
-		validation_panel->set_accept_button(add_meta_dialog->get_ok_button());
-
-		add_meta_name->connect(SceneStringName(text_changed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
+		add_child(add_meta_dialog);
 	}
 
+	StringName dialog_title;
 	Node *node = Object::cast_to<Node>(object);
-	if (node) {
-		add_meta_dialog->set_title(vformat(TTR("Add Metadata Property for \"%s\""), node->get_name()));
-	} else {
-		// This should normally be reached when the object is derived from Resource.
-		add_meta_dialog->set_title(vformat(TTR("Add Metadata Property for \"%s\""), object->get_class()));
-	}
+	// If object is derived from Node use node name, if derived from Resource use classname.
+	dialog_title = node ? node->get_name() : StringName(object->get_class());
 
-	add_meta_dialog->popup_centered();
-	add_meta_name->grab_focus();
-	add_meta_name->set_text("");
-	validation_panel->update();
+	List<StringName> existing_meta_keys;
+	object->get_meta_list(&existing_meta_keys);
+	add_meta_dialog->open(dialog_title, existing_meta_keys);
+}
+
+void EditorInspector::_add_meta_confirm() {
+	// Ensure metadata is unfolded when adding a new metadata.
+	object->editor_set_section_unfold("metadata", true);
+
+	String name = add_meta_dialog->get_meta_name();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(vformat(TTR("Add metadata %s"), name));
+	undo_redo->add_do_method(object, "set_meta", name, add_meta_dialog->get_meta_defval());
+	undo_redo->add_undo_method(object, "remove_meta", name);
+	undo_redo->commit_action();
 }
 
 void EditorInspector::_bind_methods() {

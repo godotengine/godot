@@ -52,7 +52,7 @@
 #include "scene/resources/skeleton_profile.h"
 #include "scene/resources/surface_tool.h"
 
-void BoneTransformEditor::create_editors() {
+void BonePropertiesEditor::create_editors() {
 	section = memnew(EditorInspectorSection);
 	section->setup("trf_properties", label, this, Color(0.0f, 0.0f, 0.0f), true);
 	section->unfold();
@@ -61,7 +61,7 @@ void BoneTransformEditor::create_editors() {
 	enabled_checkbox = memnew(EditorPropertyCheck());
 	enabled_checkbox->set_label("Pose Enabled");
 	enabled_checkbox->set_selectable(false);
-	enabled_checkbox->connect("property_changed", callable_mp(this, &BoneTransformEditor::_value_changed));
+	enabled_checkbox->connect("property_changed", callable_mp(this, &BonePropertiesEditor::_value_changed));
 	section->get_vbox()->add_child(enabled_checkbox);
 
 	// Position property.
@@ -69,8 +69,8 @@ void BoneTransformEditor::create_editors() {
 	position_property->setup(-10000, 10000, 0.001, true);
 	position_property->set_label("Position");
 	position_property->set_selectable(false);
-	position_property->connect("property_changed", callable_mp(this, &BoneTransformEditor::_value_changed));
-	position_property->connect("property_keyed", callable_mp(this, &BoneTransformEditor::_property_keyed));
+	position_property->connect("property_changed", callable_mp(this, &BonePropertiesEditor::_value_changed));
+	position_property->connect("property_keyed", callable_mp(this, &BonePropertiesEditor::_property_keyed));
 	section->get_vbox()->add_child(position_property);
 
 	// Rotation property.
@@ -78,8 +78,8 @@ void BoneTransformEditor::create_editors() {
 	rotation_property->setup(-10000, 10000, 0.001, true);
 	rotation_property->set_label("Rotation");
 	rotation_property->set_selectable(false);
-	rotation_property->connect("property_changed", callable_mp(this, &BoneTransformEditor::_value_changed));
-	rotation_property->connect("property_keyed", callable_mp(this, &BoneTransformEditor::_property_keyed));
+	rotation_property->connect("property_changed", callable_mp(this, &BonePropertiesEditor::_value_changed));
+	rotation_property->connect("property_keyed", callable_mp(this, &BonePropertiesEditor::_property_keyed));
 	section->get_vbox()->add_child(rotation_property);
 
 	// Scale property.
@@ -87,8 +87,8 @@ void BoneTransformEditor::create_editors() {
 	scale_property->setup(-10000, 10000, 0.001, true, true);
 	scale_property->set_label("Scale");
 	scale_property->set_selectable(false);
-	scale_property->connect("property_changed", callable_mp(this, &BoneTransformEditor::_value_changed));
-	scale_property->connect("property_keyed", callable_mp(this, &BoneTransformEditor::_property_keyed));
+	scale_property->connect("property_changed", callable_mp(this, &BonePropertiesEditor::_value_changed));
+	scale_property->connect("property_keyed", callable_mp(this, &BonePropertiesEditor::_property_keyed));
 	section->get_vbox()->add_child(scale_property);
 
 	// Transform/Matrix section.
@@ -102,50 +102,136 @@ void BoneTransformEditor::create_editors() {
 	rest_matrix->set_label("Transform");
 	rest_matrix->set_selectable(false);
 	rest_section->get_vbox()->add_child(rest_matrix);
+
+	// Bone Metadata property
+	meta_section = memnew(EditorInspectorSection);
+	meta_section->setup("bone_meta", TTR("Bone Metadata"), this, Color(.0f, .0f, .0f), true);
+	section->get_vbox()->add_child(meta_section);
+
+	add_metadata_button = EditorInspector::create_inspector_action_button(TTR("Add Bone Metadata"));
+	add_metadata_button->connect(SceneStringName(pressed), callable_mp(this, &BonePropertiesEditor::_show_add_meta_dialog));
+	section->get_vbox()->add_child(add_metadata_button);
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->connect("version_changed", callable_mp(this, &BonePropertiesEditor::_update_properties));
+	undo_redo->connect("history_changed", callable_mp(this, &BonePropertiesEditor::_update_properties));
 }
 
-void BoneTransformEditor::_notification(int p_what) {
+void BonePropertiesEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			const Color section_color = get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
 			section->set_bg_color(section_color);
 			rest_section->set_bg_color(section_color);
+			add_metadata_button->set_icon(get_editor_theme_icon(SNAME("Add")));
 		} break;
 	}
 }
 
-void BoneTransformEditor::_value_changed(const String &p_property, const Variant &p_value, const String &p_name, bool p_changing) {
-	if (updating) {
+void BonePropertiesEditor::_value_changed(const String &p_property, const Variant &p_value, const String &p_name, bool p_changing) {
+	if (updating || !skeleton) {
 		return;
 	}
-	if (skeleton) {
-		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-		undo_redo->create_action(TTR("Set Bone Transform"), UndoRedo::MERGE_ENDS);
-		undo_redo->add_undo_property(skeleton, p_property, skeleton->get(p_property));
-		undo_redo->add_do_property(skeleton, p_property, p_value);
 
-		Skeleton3DEditor *se = Skeleton3DEditor::get_singleton();
-		if (se) {
-			undo_redo->add_do_method(se, "update_joint_tree");
-			undo_redo->add_undo_method(se, "update_joint_tree");
-		}
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Set Bone Transform"), UndoRedo::MERGE_ENDS);
+	undo_redo->add_undo_property(skeleton, p_property, skeleton->get(p_property));
+	undo_redo->add_do_property(skeleton, p_property, p_value);
 
-		undo_redo->commit_action();
+	Skeleton3DEditor *se = Skeleton3DEditor::get_singleton();
+	if (se) {
+		undo_redo->add_do_method(se, "update_joint_tree");
+		undo_redo->add_undo_method(se, "update_joint_tree");
 	}
+
+	undo_redo->commit_action();
 }
 
-BoneTransformEditor::BoneTransformEditor(Skeleton3D *p_skeleton) :
+void BonePropertiesEditor::_meta_changed(const String &p_property, const Variant &p_value, const String &p_name, bool p_changing) {
+	if (!skeleton || p_property.get_slicec('/', 2) != "bone_meta") {
+		return;
+	}
+
+	int bone = p_property.get_slicec('/', 1).to_int();
+	if (bone >= skeleton->get_bone_count()) {
+		return;
+	}
+
+	String key = p_property.get_slicec('/', 3);
+	if (!skeleton->has_bone_meta(1, key)) {
+		return;
+	}
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(vformat(TTR("Modify metadata '%s' for bone '%s'"), key, skeleton->get_bone_name(bone)));
+	undo_redo->add_do_property(skeleton, p_property, p_value);
+	undo_redo->add_do_method(meta_editors[p_property], "update_property");
+	undo_redo->add_undo_property(skeleton, p_property, skeleton->get_bone_meta(bone, key));
+	undo_redo->add_undo_method(meta_editors[p_property], "update_property");
+	undo_redo->commit_action();
+}
+
+void BonePropertiesEditor::_meta_deleted(const String &p_property) {
+	if (!skeleton || p_property.get_slicec('/', 2) != "bone_meta") {
+		return;
+	}
+
+	int bone = p_property.get_slicec('/', 1).to_int();
+	if (bone >= skeleton->get_bone_count()) {
+		return;
+	}
+
+	String key = p_property.get_slicec('/', 3);
+	if (!skeleton->has_bone_meta(1, key)) {
+		return;
+	}
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(vformat(TTR("Remove metadata '%s' from bone '%s'"), key, skeleton->get_bone_name(bone)));
+	undo_redo->add_do_property(skeleton, p_property, Variant());
+	undo_redo->add_undo_property(skeleton, p_property, skeleton->get_bone_meta(bone, key));
+	undo_redo->commit_action();
+
+	emit_signal(SNAME("property_deleted"), p_property);
+}
+
+void BonePropertiesEditor::_show_add_meta_dialog() {
+	if (!add_meta_dialog) {
+		add_meta_dialog = memnew(AddMetadataDialog());
+		add_meta_dialog->connect(SceneStringName(confirmed), callable_mp(this, &BonePropertiesEditor::_add_meta_confirm));
+		add_child(add_meta_dialog);
+	}
+
+	int bone = Skeleton3DEditor::get_singleton()->get_selected_bone();
+	StringName dialog_title = skeleton->get_bone_name(bone);
+
+	List<StringName> existing_meta_keys;
+	skeleton->get_bone_meta_list(bone, &existing_meta_keys);
+	add_meta_dialog->open(dialog_title, existing_meta_keys);
+}
+
+void BonePropertiesEditor::_add_meta_confirm() {
+	int bone = Skeleton3DEditor::get_singleton()->get_selected_bone();
+	String name = add_meta_dialog->get_meta_name();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(vformat(TTR("Add metadata '%s' to bone '%s'"), name, skeleton->get_bone_name(bone)));
+	undo_redo->add_do_method(skeleton, "set_bone_meta", bone, name, add_meta_dialog->get_meta_defval());
+	undo_redo->add_undo_method(skeleton, "set_bone_meta", bone, name, Variant());
+	undo_redo->commit_action();
+}
+
+BonePropertiesEditor::BonePropertiesEditor(Skeleton3D *p_skeleton) :
 		skeleton(p_skeleton) {
 	create_editors();
 }
 
-void BoneTransformEditor::set_keyable(const bool p_keyable) {
+void BonePropertiesEditor::set_keyable(const bool p_keyable) {
 	position_property->set_keying(p_keyable);
 	rotation_property->set_keying(p_keyable);
 	scale_property->set_keying(p_keyable);
 }
 
-void BoneTransformEditor::set_target(const String &p_prop) {
+void BonePropertiesEditor::set_target(const String &p_prop) {
 	enabled_checkbox->set_object_and_property(skeleton, p_prop + "enabled");
 	enabled_checkbox->update_property();
 
@@ -162,7 +248,7 @@ void BoneTransformEditor::set_target(const String &p_prop) {
 	rest_matrix->update_property();
 }
 
-void BoneTransformEditor::_property_keyed(const String &p_path, bool p_advance) {
+void BonePropertiesEditor::_property_keyed(const String &p_path, bool p_advance) {
 	AnimationTrackEditor *te = AnimationPlayerEditor::get_singleton()->get_track_editor();
 	if (!te || !te->has_keying()) {
 		return;
@@ -183,16 +269,17 @@ void BoneTransformEditor::_property_keyed(const String &p_path, bool p_advance) 
 	}
 }
 
-void BoneTransformEditor::_update_properties() {
+void BonePropertiesEditor::_update_properties() {
 	if (!skeleton) {
 		return;
 	}
 	int selected = Skeleton3DEditor::get_singleton()->get_selected_bone();
 	List<PropertyInfo> props;
+	HashSet<StringName> meta_seen;
 	skeleton->get_property_list(&props);
 	for (const PropertyInfo &E : props) {
 		PackedStringArray split = E.name.split("/");
-		if (split.size() == 3 && split[0] == "bones") {
+		if (split.size() >= 3 && split[0] == "bones") {
 			if (split[1].to_int() == selected) {
 				if (split[2] == "enabled") {
 					enabled_checkbox->set_read_only(E.usage & PROPERTY_USAGE_READ_ONLY);
@@ -224,7 +311,33 @@ void BoneTransformEditor::_update_properties() {
 					rest_matrix->update_editor_property_status();
 					rest_matrix->queue_redraw();
 				}
+				if (split[2] == "bone_meta") {
+					meta_seen.insert(E.name);
+					if (!meta_editors.find(E.name)) {
+						EditorProperty *editor = EditorInspectorDefaultPlugin::get_editor_for_property(skeleton, E.type, E.name, PROPERTY_HINT_NONE, "", E.usage);
+						editor->set_label(split[3]);
+						editor->set_object_and_property(skeleton, E.name);
+						editor->set_deletable(true);
+						editor->set_selectable(false);
+						editor->connect("property_changed", callable_mp(this, &BonePropertiesEditor::_meta_changed));
+						editor->connect("property_deleted", callable_mp(this, &BonePropertiesEditor::_meta_deleted));
+
+						meta_section->get_vbox()->add_child(editor);
+						editor->update_property();
+						editor->update_editor_property_status();
+						editor->queue_redraw();
+
+						meta_editors[E.name] = editor;
+					}
+				}
 			}
+		}
+	}
+	// UI for any bone metadata prop not seen during the iteration has to be deleted
+	for (KeyValue<StringName, EditorProperty *> iter : meta_editors) {
+		if (!meta_seen.has(iter.key)) {
+			callable_mp((Node *)meta_section->get_vbox(), &Node::remove_child).call_deferred(iter.value);
+			meta_editors.remove(meta_editors.find(iter.key));
 		}
 	}
 }
@@ -992,7 +1105,7 @@ void Skeleton3DEditor::create_editors() {
 	SET_DRAG_FORWARDING_GCD(joint_tree, Skeleton3DEditor);
 	s_con->add_child(joint_tree);
 
-	pose_editor = memnew(BoneTransformEditor(skeleton));
+	pose_editor = memnew(BonePropertiesEditor(skeleton));
 	pose_editor->set_label(TTR("Bone Transform"));
 	pose_editor->set_visible(false);
 	add_child(pose_editor);

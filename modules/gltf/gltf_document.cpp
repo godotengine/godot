@@ -5534,6 +5534,10 @@ void GLTFDocument::_convert_skeleton_to_gltf(Skeleton3D *p_skeleton3d, Ref<GLTFS
 		joint_node->set_name(_gen_unique_name(p_state, skeleton->get_bone_name(bone_i)));
 		joint_node->transform = skeleton->get_bone_pose(bone_i);
 		joint_node->joint = true;
+
+		if (p_skeleton3d->has_bone_meta(bone_i, "extras")) {
+			joint_node->set_meta("extras", p_skeleton3d->get_bone_meta(bone_i, "extras"));
+		}
 		GLTFNodeIndex current_node_i = p_state->nodes.size();
 		p_state->scene_nodes.insert(current_node_i, skeleton);
 		p_state->nodes.push_back(joint_node);
