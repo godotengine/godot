@@ -235,7 +235,7 @@ enum ThemeColors : uint8_t {
 
 const float EditorThemeManager::default_contrast = 0.3f;
 
- EditorThemeManager::ThemeColorProperties gv_theme_color_properties[ThemeColors::NUM] = {
+EditorThemeManager::ThemeColorProperties gv_theme_color_properties[ThemeColors::NUM] = {
 	EditorThemeManager::ThemeColorProperties{ Color(0.44, 0.73, 0.98), Color(0.21, 0.24, 0.29) },
 	EditorThemeManager::ThemeColorProperties{ Color(0.26, 0.76, 1.00), Color(0.24, 0.26, 0.28) },
 	EditorThemeManager::ThemeColorProperties{ Color(0.45, 0.75, 1.00), Color(0, 0, 0), 0.0 },
@@ -244,7 +244,7 @@ const float EditorThemeManager::default_contrast = 0.3f;
 	EditorThemeManager::ThemeColorProperties{ Color(0.18, 0.50, 1.00), Color(0.9, 0.9, 0.9), -0.06 },
 	EditorThemeManager::ThemeColorProperties{ Color(0.15, 0.55, 0.82), Color(0.04, 0.23, 0.27) },
 	EditorThemeManager::ThemeColorProperties{ Color(0.15, 0.55, 0.82), Color(0.89, 0.86, 0.79), -0.06 }
- };
+};
 
 EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(const Ref<EditorTheme> &p_theme) {
 	ThemeConfiguration config;
@@ -314,17 +314,14 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 		}
 
 		if (config.preset != "Custom") {
-
 			if (config.preset == "Black (OLED)") {
 				config.draw_extra_borders = true;
 			}
-
 
 			EditorSettings::get_singleton()->set_initial_value("interface/theme/accent_color", config.accent_color);
 			EditorSettings::get_singleton()->set_initial_value("interface/theme/contrast", config.contrast);
 			EditorSettings::get_singleton()->set_initial_value("interface/theme/draw_extra_borders", config.draw_extra_borders);
 		} else {
-
 			// If we select "Custom" as a preset, then we will save the params for future use on disk.
 			EditorSettings::get_singleton()->set_manually("interface/theme/accent_color", config.accent_color);
 			EditorSettings::get_singleton()->set_manually("interface/theme/base_color", config.base_color);
@@ -2716,7 +2713,6 @@ void EditorThemeManager::_reset_dirty_flag() {
 }
 
 EditorThemeManager::ThemeColorProperties EditorThemeManager::get_preset_theme_color_properties(const String &preset) {
-
 	// Please use alphabetical order if you're adding a new theme here.
 	if (preset == "Breeze Dark") {
 		return gv_theme_color_properties[ThemeColors::BREEZE_DARK];
@@ -2799,9 +2795,7 @@ bool EditorThemeManager::is_dark_theme() {
 	return icon_font_color_setting == ColorMode::LIGHT_COLOR;
 }
 
-
 float EditorThemeManager::get_theme_luminance() {
-
 	String editor_preset = EDITOR_GET("interface/theme/preset");
 
 	if (editor_preset == "Custom") {
