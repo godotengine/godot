@@ -264,5 +264,7 @@ public:
 	bool has_execute_failed() const;
 	String get_error_text() const;
 
+	static void get_reserved_words(List<String> *p_words);
+
 	~Expression();
 };
