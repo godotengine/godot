@@ -36,9 +36,9 @@
 #include "beehave_graph_editor.h"
 #include "body_main_editor.h"
 #endif
-class CharacterBodyMainLable : public Label
+class CharacterBodyMainLable : public HBoxContainer
 {
-	GDCLASS(CharacterBodyMainLable, Label);
+	GDCLASS(CharacterBodyMainLable, HBoxContainer);
 	static void _bind_methods() {
 		
 	}
@@ -356,7 +356,7 @@ public:
 	static bool _parse_charater_ai_property(EditorInspectorPlugin *p_plugin,CharacterBodyMain* object, Variant::Type type, const String& name, PropertyHint hint_type, const String& hint_string, BitField<PropertyUsageFlags> usage_flags, bool wide)
 	{
 		
-		if(name == "update_mode")
+		if(name == "blackboard_plan")
 		{
 			CharacterBodyMainLable* lable = memnew(CharacterBodyMainLable);
 			lable->set_body_main(object);
