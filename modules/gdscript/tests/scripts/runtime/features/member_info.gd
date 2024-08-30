@@ -5,8 +5,6 @@ class MyClass:
 
 enum MyEnum {}
 
-const Utils = preload("../../utils.notest.gd")
-
 static var test_static_var_untyped
 static var test_static_var_weak_null = null
 static var test_static_var_weak_int = 1
