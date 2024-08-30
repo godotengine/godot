@@ -116,6 +116,8 @@ private:
 			}
 		}
 
+		HashMap<StringName, Variant> metadata;
+
 #ifndef DISABLE_DEPRECATED
 		Transform3D pose_global_no_override;
 		real_t global_pose_override_amount = 0.0;
@@ -193,6 +195,7 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
+	TypedArray<StringName> _get_bone_meta_list_bind(int p_bone) const;
 	static void _bind_methods();
 
 	virtual void add_child_notify(Node *p_child) override;
@@ -237,6 +240,12 @@ public:
 
 	void set_motion_scale(float p_motion_scale);
 	float get_motion_scale() const;
+
+	// bone metadata
+	Variant get_bone_meta(int p_bone, const StringName &p_key) const;
+	void get_bone_meta_list(int p_bone, List<StringName> *p_list) const;
+	bool has_bone_meta(int p_bone, const StringName &p_key) const;
+	void set_bone_meta(int p_bone, const StringName &p_key, const Variant &p_value);
 
 	// Posing API
 	Transform3D get_bone_pose(int p_bone) const;
