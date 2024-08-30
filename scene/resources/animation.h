@@ -91,13 +91,13 @@ public:
 	};
 
 #ifdef TOOLS_ENABLED
-	enum HandleMode{
+	enum HandleMode {
 		HANDLE_MODE_FREE,
 		HANDLE_MODE_LINEAR,
 		HANDLE_MODE_BALANCED,
 		HANDLE_MODE_MIRRORED,
 	};
-	enum HandleSetMode{
+	enum HandleSetMode {
 		HANDLE_SET_MODE_NONE,
 		HANDLE_SET_MODE_RESET,
 		HANDLE_SET_MODE_AUTO,

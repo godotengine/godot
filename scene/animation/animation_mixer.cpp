@@ -1085,7 +1085,8 @@ void AnimationMixer::_blend_calc_total_weight() {
 		real_t weight = ai.playback_info.weight;
 		const real_t *track_weights_ptr = ai.playback_info.track_weights.ptr();
 		int track_weights_count = ai.playback_info.track_weights.size();
-		Vector<Animation::TypeHash> processed_hashes;
+		static LocalVector<Animation::TypeHash> processed_hashes;
+		processed_hashes.clear();
 		const Vector<Animation::Track *> tracks = a->get_tracks();
 		for (const Animation::Track *animation_track : tracks) {
 			if (!animation_track->enabled) {
