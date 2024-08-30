@@ -235,16 +235,16 @@ enum ThemeColors : uint8_t {
 
 const float EditorThemeManager::default_contrast = 0.3f;
 
-EditorThemeManager::ThemeColorProperties gv_theme_color_properties[ThemeColors::NUM] = {
-		EditorThemeManager::ThemeColorProperties{ Color(0.44, 0.73, 0.98), Color(0.21, 0.24, 0.29) },
-		EditorThemeManager::ThemeColorProperties{ Color(0.26, 0.76, 1.00), Color(0.24, 0.26, 0.28) },
-		EditorThemeManager::ThemeColorProperties{ Color(0.45, 0.75, 1.00), Color(0, 0, 0), 0.0 },
-		EditorThemeManager::ThemeColorProperties{ Color(0.53, 0.67, 0.89), Color(0.24, 0.23, 0.27) },
-		EditorThemeManager::ThemeColorProperties{ Color(0.44, 0.73, 0.98), Color(0.24, 0.24, 0.24) },
-		EditorThemeManager::ThemeColorProperties{ Color(0.18, 0.50, 1.00), Color(0.9, 0.9, 0.9), -0.06 },
-		EditorThemeManager::ThemeColorProperties{ Color(0.15, 0.55, 0.82), Color(0.04, 0.23, 0.27) },
-		EditorThemeManager::ThemeColorProperties{ Color(0.15, 0.55, 0.82), Color(0.89, 0.86, 0.79), -0.06 }
-};
+ EditorThemeManager::ThemeColorProperties gv_theme_color_properties[ThemeColors::NUM] = {
+	EditorThemeManager::ThemeColorProperties{ Color(0.44, 0.73, 0.98), Color(0.21, 0.24, 0.29) },
+	EditorThemeManager::ThemeColorProperties{ Color(0.26, 0.76, 1.00), Color(0.24, 0.26, 0.28) },
+	EditorThemeManager::ThemeColorProperties{ Color(0.45, 0.75, 1.00), Color(0, 0, 0), 0.0 },
+	EditorThemeManager::ThemeColorProperties{ Color(0.53, 0.67, 0.89), Color(0.24, 0.23, 0.27) },
+	EditorThemeManager::ThemeColorProperties{ Color(0.44, 0.73, 0.98), Color(0.24, 0.24, 0.24) },
+	EditorThemeManager::ThemeColorProperties{ Color(0.18, 0.50, 1.00), Color(0.9, 0.9, 0.9), -0.06 },
+	EditorThemeManager::ThemeColorProperties{ Color(0.15, 0.55, 0.82), Color(0.04, 0.23, 0.27) },
+	EditorThemeManager::ThemeColorProperties{ Color(0.15, 0.55, 0.82), Color(0.89, 0.86, 0.79), -0.06 }
+ };
 
 EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(const Ref<EditorTheme> &p_theme) {
 	ThemeConfiguration config;
@@ -256,9 +256,9 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 
 	// Only loading the color properties from disk if the theme to load is the Custom
 	if (config.preset == "Custom") {
-			config.base_color = EDITOR_GET("interface/theme/base_color");
-			config.accent_color = EDITOR_GET("interface/theme/accent_color");
-			config.contrast = EDITOR_GET("interface/theme/contrast");
+		config.base_color = EDITOR_GET("interface/theme/base_color");
+		config.accent_color = EDITOR_GET("interface/theme/accent_color");
+		config.contrast = EDITOR_GET("interface/theme/contrast");
 
 	} else {
 		ThemeColorProperties editor_theme_color_properties = get_preset_theme_color_properties(config.preset);
