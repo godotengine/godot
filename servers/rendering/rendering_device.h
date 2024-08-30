@@ -119,8 +119,20 @@ public:
 	};
 
 private:
-	HashMap<RID, HashSet<RID>> dependency_map; // IDs to IDs that depend on it.
-	HashMap<RID, HashSet<RID>> reverse_dependency_map; // Same as above, but in reverse.
+	HashMap<
+			RID,
+			HashSet<RID>,
+			HashMapHasherDefault,
+			HashMapComparatorDefault<RID>,
+			PagedAllocator<HashMapElement<RID, HashSet<RID>>, false, 512>>
+			dependency_map; // IDs to IDs that depend on it.
+	HashMap<
+			RID,
+			HashSet<RID>,
+			HashMapHasherDefault,
+			HashMapComparatorDefault<RID>,
+			PagedAllocator<HashMapElement<RID, HashSet<RID>>, false, 512>>
+			reverse_dependency_map; // Same as above, but in reverse.
 
 	void _add_dependency(RID p_id, RID p_depends_on);
 	void _free_dependencies(RID p_id);

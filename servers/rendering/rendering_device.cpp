@@ -145,7 +145,9 @@ void RenderingDevice::_add_dependency(RID p_id, RID p_depends_on) {
 void RenderingDevice::_free_dependencies(RID p_id) {
 	// Direct dependencies must be freed.
 
-	HashMap<RID, HashSet<RID>>::Iterator E = dependency_map.find(p_id);
+	HashMap<RID, HashSet<RID>, HashMapHasherDefault,
+			HashMapComparatorDefault<RID>,
+			PagedAllocator<HashMapElement<RID, HashSet<RID>>, false, 512>>::Iterator E = dependency_map.find(p_id);
 	if (E) {
 		while (E->value.size()) {
 			free(*E->value.begin());
@@ -158,7 +160,9 @@ void RenderingDevice::_free_dependencies(RID p_id) {
 
 	if (E) {
 		for (const RID &F : E->value) {
-			HashMap<RID, HashSet<RID>>::Iterator G = dependency_map.find(F);
+			HashMap<RID, HashSet<RID>, HashMapHasherDefault,
+					HashMapComparatorDefault<RID>,
+					PagedAllocator<HashMapElement<RID, HashSet<RID>>, false, 512>>::Iterator G = dependency_map.find(F);
 			ERR_CONTINUE(!G);
 			ERR_CONTINUE_MSG(!G->value.erase(p_id), "Attempted to erase non-existing dependency, bug?");
 		}
@@ -4843,7 +4847,9 @@ bool RenderingDevice::_dependency_make_mutable(RID p_id, RID p_resource_id, RDG:
 
 bool RenderingDevice::_dependencies_make_mutable(RID p_id, RDG::ResourceTracker *p_resource_tracker) {
 	bool made_mutable = false;
-	HashMap<RID, HashSet<RID>>::Iterator E = dependency_map.find(p_id);
+	HashMap<RID, HashSet<RID>, HashMapHasherDefault,
+			HashMapComparatorDefault<RID>,
+			PagedAllocator<HashMapElement<RID, HashSet<RID>>, false, 512>>::Iterator E = dependency_map.find(p_id);
 	if (E) {
 		for (RID rid : E->value) {
 			made_mutable = _dependency_make_mutable(rid, p_id, p_resource_tracker) || made_mutable;
