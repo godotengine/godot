@@ -1,3 +1,13 @@
+class_name Utils
+
+
+# `assert()` is not evaluated in non-debug builds. Do not use `assert()`
+# for anything other than testing the `assert()` itself.
+static func check(condition: Variant) -> void:
+	if not condition:
+		printerr("Check failed.")
+
+
 static func get_type(property: Dictionary, is_return: bool = false) -> String:
 	match property.type:
 		TYPE_NIL:
@@ -46,7 +56,7 @@ static func get_human_readable_hint_string(property: Dictionary) -> String:
 
 		while true:
 			if not hint_string.contains(":"):
-				push_error("Invalid PROPERTY_HINT_TYPE_STRING format.")
+				printerr("Invalid PROPERTY_HINT_TYPE_STRING format.")
 			var elem_type_hint: String = hint_string.get_slice(":", 0)
 			hint_string = hint_string.substr(elem_type_hint.length() + 1)
 
@@ -58,7 +68,7 @@ static func get_human_readable_hint_string(property: Dictionary) -> String:
 				type_hint_prefixes += "<%s>:" % type_string(elem_type)
 			else:
 				if elem_type_hint.count("/") != 1:
-					push_error("Invalid PROPERTY_HINT_TYPE_STRING format.")
+					printerr("Invalid PROPERTY_HINT_TYPE_STRING format.")
 				elem_type = elem_type_hint.get_slice("/", 0).to_int()
 				elem_hint = elem_type_hint.get_slice("/", 1).to_int()
 				type_hint_prefixes += "<%s>/<%s>:" % [
@@ -188,7 +198,7 @@ static func get_property_hint_name(hint: PropertyHint) -> String:
 			return "PROPERTY_HINT_HIDE_QUATERNION_EDIT"
 		PROPERTY_HINT_PASSWORD:
 			return "PROPERTY_HINT_PASSWORD"
-	push_error("Argument `hint` is invalid. Use `PROPERTY_HINT_*` constants.")
+	printerr("Argument `hint` is invalid. Use `PROPERTY_HINT_*` constants.")
 	return "<invalid hint>"
 
 
@@ -240,7 +250,7 @@ static func get_property_usage_string(usage: int) -> String:
 			usage &= ~flag[0]
 
 	if usage != PROPERTY_USAGE_NONE:
-		push_error("Argument `usage` is invalid. Use `PROPERTY_USAGE_*` constants.")
+		printerr("Argument `usage` is invalid. Use `PROPERTY_USAGE_*` constants.")
 		return "<invalid usage flags>"
 
 	return result.left(-1)

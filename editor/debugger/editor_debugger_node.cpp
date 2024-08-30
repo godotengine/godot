@@ -303,7 +303,7 @@ void EditorDebuggerNode::stop(bool p_force) {
 	});
 	_break_state_changed();
 	breakpoints.clear();
-	EditorUndoRedoManager::get_singleton()->clear_history(false, EditorUndoRedoManager::REMOTE_HISTORY);
+	EditorUndoRedoManager::get_singleton()->clear_history(EditorUndoRedoManager::REMOTE_HISTORY, false);
 	set_process(false);
 }
 
