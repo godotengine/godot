@@ -2297,7 +2297,7 @@ void ObjectDB::cleanup() {
 			// Ensure calling the native classes because if a leaked instance has a script
 			// that overrides any of those methods, it'd not be OK to call them at this point,
 			// now the scripting languages have already been terminated.
-			MethodBind *node_get_name = ClassDB::get_method("Node", "get_name");
+			MethodBind *node_get_path = ClassDB::get_method("Node", "get_path");
 			MethodBind *resource_get_path = ClassDB::get_method("Resource", "get_path");
 			Callable::CallError call_error;
 
@@ -2307,7 +2307,7 @@ void ObjectDB::cleanup() {
 
 					String extra_info;
 					if (obj->is_class("Node")) {
-						extra_info = " - Node name: " + String(node_get_name->call(obj, nullptr, 0, call_error));
+						extra_info = " - Node path: " + String(node_get_path->call(obj, nullptr, 0, call_error));
 					}
 					if (obj->is_class("Resource")) {
 						extra_info = " - Resource path: " + String(resource_get_path->call(obj, nullptr, 0, call_error));
