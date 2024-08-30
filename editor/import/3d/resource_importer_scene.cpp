@@ -3104,6 +3104,19 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		}
 	}
 
+	// Apply RESET animation before serializing.
+	if (_scene_import_type == "PackedScene") {
+		int scene_child_count = scene->get_child_count();
+		for (int i = 0; i < scene_child_count; i++) {
+			AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(scene->get_child(i));
+			if (ap) {
+				if (ap->can_apply_reset()) {
+					ap->apply_reset();
+				}
+			}
+		}
+	}
+
 	if (post_import_script.is_valid()) {
 		post_import_script->init(p_source_file);
 		scene = post_import_script->post_import(scene);
