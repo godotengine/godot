@@ -1299,7 +1299,7 @@ static void gdextension_object_call_script_method(GDExtensionObjectPtr p_object,
 	const StringName method = *reinterpret_cast<const StringName *>(p_method);
 	const Variant **args = (const Variant **)p_args;
 
-	Callable::CallError error;
+	Callable::CallError error; // TODO: Check `error`?
 	memnew_placement(r_return, Variant);
 	*(Variant *)r_return = o->callp(method, args, p_argument_count, error);
 

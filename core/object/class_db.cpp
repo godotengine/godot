@@ -1648,14 +1648,16 @@ bool ClassDB::get_property(Object *p_object, const StringName &p_property, Varia
 				Variant index = psg->index;
 				const Variant *arg[1] = { &index };
 				Callable::CallError ce;
-				r_value = p_object->callp(psg->getter, arg, 1, ce);
+				const Variant value = p_object->callp(psg->getter, arg, 1, ce);
+				r_value = (ce.error == Callable::CallError::CALL_OK) ? value : Variant();
 
 			} else {
 				Callable::CallError ce;
 				if (psg->_getptr) {
 					r_value = psg->_getptr->call(p_object, nullptr, 0, ce);
 				} else {
-					r_value = p_object->callp(psg->getter, nullptr, 0, ce);
+					const Variant value = p_object->callp(psg->getter, nullptr, 0, ce);
+					r_value = (ce.error == Callable::CallError::CALL_OK) ? value : Variant();
 				}
 			}
 			return true;

@@ -2113,7 +2113,7 @@ Variant::operator ::RID() const {
 		}
 #endif
 		Callable::CallError ce;
-		Variant ret = _get_obj().obj->callp(CoreStringName(get_rid), nullptr, 0, ce);
+		const Variant ret = _get_obj().obj->callp(CoreStringName(get_rid), nullptr, 0, ce);
 		if (ce.error == Callable::CallError::CALL_OK && ret.get_type() == Variant::RID) {
 			return ret;
 		}
