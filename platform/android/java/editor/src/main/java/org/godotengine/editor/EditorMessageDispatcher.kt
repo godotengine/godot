@@ -176,7 +176,7 @@ internal class EditorMessageDispatcher(private val editor: GodotEditor) {
 		registerMessenger(senderId, senderMessenger)
 
 		// Register ourselves to the sender so that it can communicate with us.
-		registerSelfTo(pm, senderMessenger, editor.getEditorId())
+		registerSelfTo(pm, senderMessenger, editor.getEditorWindowInfo().windowId)
 	}
 
 	/**
@@ -185,7 +185,7 @@ internal class EditorMessageDispatcher(private val editor: GodotEditor) {
 	 */
 	fun getMessageDispatcherPayload(): Bundle {
 		return Bundle().apply {
-			putInt(KEY_EDITOR_ID, editor.getEditorId())
+			putInt(KEY_EDITOR_ID, editor.getEditorWindowInfo().windowId)
 			putParcelable(KEY_EDITOR_MESSENGER, Messenger(dispatcherHandler))
 		}
 	}
