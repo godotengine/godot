@@ -4,7 +4,26 @@
 		Custom generator of previews.
 	</brief_description>
 	<description>
-		Custom code to generate previews. Please check [code]file_dialog/thumbnail_size[/code] in [EditorSettings] to find out the right size to do previews at.
+		Custom code to generate previews. An instance of this class can be registered in [EditorResourcePreview] as follows:
+		[codeblock]
+		# IMPORTANT: Must be a tool script to work.
+		@tool
+		class_name CustomResource
+		extends Resource
+
+		class CustomGenerator extends EditorResourcePreviewGenerator:
+		    func _generate(resource, size, metadata):
+		        var image = Image.new()
+		        # Create a solid red texture with the requested thumbnail size.
+		        image.resize(size.x, size.y)
+		        image.fill(Color.RED)
+		        var texture = ImageTexture.new()
+		        texture.create_from_image(image)
+		        return texture
+
+		func _ready():
+		    EditorInterface.get_resource_previewer().add_preview_generator(CustomGenerator.new())
+		[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -22,10 +41,11 @@
 			<param index="1" name="size" type="Vector2i" />
 			<param index="2" name="metadata" type="Dictionary" />
 			<description>
-				Generate a preview from a given resource with the specified size. This must always be implemented.
-				Returning an empty texture is an OK way to fail and let another generator take care.
-				Care must be taken because this function is always called from a thread (not the main thread).
+				Generate a preview from a given resource with the specified size. This must [b]always[/b] be implemented.
+				Returning an empty [Texture2D] (as in [code]return Texture2D.new()[/code]) is an OK way to fail and let another generator take care.
+				Care must be taken because this function is always called from a thread (not the main thread). See [url=$DOCS_URL/tutorials/performance/thread_safe_apis.html]Thread-safe APIs[/url] for more information.
 				[param metadata] dictionary can be modified to store file-specific metadata that can be used in [method EditorResourceTooltipPlugin._make_tooltip_for_path] (like image size, sample length etc.).
+				[b]Note:[/b] The requested [param size] is controlled by the [member EditorSettings.filesystem/file_dialog/thumbnail_size] editor setting. It is always multiplied by the editor scale ([method EditorInterface.get_editor_scale]). You should [i]not[/i] multiply this value by the editor scale yourself; otherwise, generated thumbnails will be pixelated or blurry at editor scales other than 100%.
 			</description>
 		</method>
 		<method name="_generate_from_path" qualifiers="virtual const">
@@ -34,10 +54,10 @@
 			<param index="1" name="size" type="Vector2i" />
 			<param index="2" name="metadata" type="Dictionary" />
 			<description>
-				Generate a preview directly from a path with the specified size. Implementing this is optional, as default code will load and call [method _generate].
-				Returning an empty texture is an OK way to fail and let another generator take care.
-				Care must be taken because this function is always called from a thread (not the main thread).
-				[param metadata] dictionary can be modified to store file-specific metadata that can be used in [method EditorResourceTooltipPlugin._make_tooltip_for_path] (like image size, sample length etc.).
+				Generate a preview directly from a path with the specified size. Implementing this is optional, as the default code will load and call [method _generate].
+				Returning an empty [Texture2D] (as in [code]return Texture2D.new()[/code]) is an OK way to fail and let another generator take care.
+				Care must be taken because this function is always called from a thread (not the main thread). See [url=$DOCS_URL/tutorials/performance/thread_safe_apis.html]Thread-safe APIs[/url] for more information.
+				[param metadata] dictionary can be modified to store file-specific metadata that can be used in [method EditorResourceTooltipPlugin._make_tooltip_for_path] (like image size, sample length, etc.).
 			</description>
 		</method>
 		<method name="_generate_small_preview_automatically" qualifiers="virtual const">
