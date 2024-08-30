@@ -71,7 +71,7 @@ bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) 
 	p_log->add_text(" ");
 	p_log->add_text(get_name());
 	p_log->add_text(" - ");
-	if (p_err == OK) {
+	if (p_err == OK && get_worst_message_type() < EditorExportPlatform::EXPORT_MESSAGE_ERROR) {
 		if (get_worst_message_type() >= EditorExportPlatform::EXPORT_MESSAGE_WARNING) {
 			p_log->add_image(p_log->get_editor_theme_icon(SNAME("StatusWarning")), 16 * EDSCALE, 16 * EDSCALE, Color(1.0, 1.0, 1.0), INLINE_ALIGNMENT_CENTER);
 			p_log->add_text(" ");
@@ -165,58 +165,6 @@ bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) 
 	p_log->add_newline();
 
 	return has_messages;
-}
-
-void EditorExportPlatform::gen_debug_flags(Vector<String> &r_flags, int p_flags) {
-	String host = EDITOR_GET("network/debug/remote_host");
-	int remote_port = (int)EDITOR_GET("network/debug/remote_port");
-
-	if (EditorSettings::get_singleton()->has_setting("export/android/use_wifi_for_remote_debug") && EDITOR_GET("export/android/use_wifi_for_remote_debug")) {
-		host = EDITOR_GET("export/android/wifi_remote_debug_host");
-	} else if (p_flags & DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST) {
-		host = "localhost";
-	}
-
-	if (p_flags & DEBUG_FLAG_DUMB_CLIENT) {
-		int port = EDITOR_GET("filesystem/file_server/port");
-		String passwd = EDITOR_GET("filesystem/file_server/password");
-		r_flags.push_back("--remote-fs");
-		r_flags.push_back(host + ":" + itos(port));
-		if (!passwd.is_empty()) {
-			r_flags.push_back("--remote-fs-password");
-			r_flags.push_back(passwd);
-		}
-	}
-
-	if (p_flags & DEBUG_FLAG_REMOTE_DEBUG) {
-		r_flags.push_back("--remote-debug");
-
-		r_flags.push_back(get_debug_protocol() + host + ":" + String::num(remote_port));
-
-		List<String> breakpoints;
-		ScriptEditor::get_singleton()->get_breakpoints(&breakpoints);
-
-		if (breakpoints.size()) {
-			r_flags.push_back("--breakpoints");
-			String bpoints;
-			for (const List<String>::Element *E = breakpoints.front(); E; E = E->next()) {
-				bpoints += E->get().replace(" ", "%20");
-				if (E->next()) {
-					bpoints += ",";
-				}
-			}
-
-			r_flags.push_back(bpoints);
-		}
-	}
-
-	if (p_flags & DEBUG_FLAG_VIEW_COLLISIONS) {
-		r_flags.push_back("--debug-collisions");
-	}
-
-	if (p_flags & DEBUG_FLAG_VIEW_NAVIGATION) {
-		r_flags.push_back("--debug-navigation");
-	}
 }
 
 Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key) {
@@ -530,7 +478,7 @@ HashSet<String> EditorExportPlatform::get_features(const Ref<EditorExportPreset>
 	return result;
 }
 
-EditorExportPlatform::ExportNotifier::ExportNotifier(EditorExportPlatform &p_platform, const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+EditorExportPlatform::ExportNotifier::ExportNotifier(EditorExportPlatform &p_platform, const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	HashSet<String> features = p_platform.get_features(p_preset, p_debug);
 	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
 	//initial export plugin callback
@@ -917,6 +865,55 @@ Vector<String> EditorExportPlatform::get_forced_export_files() {
 	}
 
 	return files;
+}
+
+Error EditorExportPlatform::_script_save_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key) {
+	Callable cb = ((ScriptCallbackData *)p_userdata)->file_cb;
+	ERR_FAIL_COND_V(!cb.is_valid(), FAILED);
+
+	Variant path = p_path;
+	Variant data = p_data;
+	Variant file = p_file;
+	Variant total = p_total;
+	Variant enc_in = p_enc_in_filters;
+	Variant enc_ex = p_enc_ex_filters;
+	Variant enc_key = p_key;
+
+	Variant ret;
+	Callable::CallError ce;
+	const Variant *args[7] = { &path, &data, &file, &total, &enc_in, &enc_ex, &enc_key };
+
+	cb.callp(args, 7, ret, ce);
+	ERR_FAIL_COND_V_MSG(ce.error != Callable::CallError::CALL_OK, FAILED, vformat("Failed to execute file save callback: %s.", Variant::get_callable_error_text(cb, args, 7, ce)));
+
+	return (Error)ret.operator int();
+}
+
+Error EditorExportPlatform::_script_add_shared_object(void *p_userdata, const SharedObject &p_so) {
+	Callable cb = ((ScriptCallbackData *)p_userdata)->so_cb;
+	if (!cb.is_valid()) {
+		return OK; // Optional.
+	}
+
+	Variant path = p_so.path;
+	Variant tags = p_so.tags;
+	Variant target = p_so.target;
+
+	Variant ret;
+	Callable::CallError ce;
+	const Variant *args[3] = { &path, &tags, &target };
+
+	cb.callp(args, 3, ret, ce);
+	ERR_FAIL_COND_V_MSG(ce.error != Callable::CallError::CALL_OK, FAILED, vformat("Failed to execute shared object save callback: %s.", Variant::get_callable_error_text(cb, args, 3, ce)));
+
+	return (Error)ret.operator int();
+}
+
+Error EditorExportPlatform::_export_project_files(const Ref<EditorExportPreset> &p_preset, bool p_debug, const Callable &p_save_func, const Callable &p_so_func) {
+	ScriptCallbackData data;
+	data.file_cb = p_save_func;
+	data.so_cb = p_so_func;
+	return export_project_files(p_preset, p_debug, _script_save_file, &data, _script_add_shared_object);
 }
 
 Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &p_preset, bool p_debug, EditorExportSaveFunction p_func, void *p_udata, EditorExportSaveSharedObject p_so_func) {
@@ -1425,10 +1422,19 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	return p_func(p_udata, "res://" + config_file, data, idx, total, enc_in_filters, enc_ex_filters, key);
 }
 
-Error EditorExportPlatform::_add_shared_object(void *p_userdata, const SharedObject &p_so) {
+Error EditorExportPlatform::_pack_add_shared_object(void *p_userdata, const SharedObject &p_so) {
 	PackData *pack_data = (PackData *)p_userdata;
 	if (pack_data->so_files) {
 		pack_data->so_files->push_back(p_so);
+	}
+
+	return OK;
+}
+
+Error EditorExportPlatform::_zip_add_shared_object(void *p_userdata, const SharedObject &p_so) {
+	ZipData *zip_data = (ZipData *)p_userdata;
+	if (zip_data->so_files) {
+		zip_data->so_files->push_back(p_so);
 	}
 
 	return OK;
@@ -1551,6 +1557,54 @@ void EditorExportPlatform::zip_folder_recursive(zipFile &p_zip, const String &p_
 	da->list_dir_end();
 }
 
+Dictionary EditorExportPlatform::_save_pack(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, bool p_embed) {
+	Vector<SharedObject> so_files;
+	int64_t embedded_start = 0;
+	int64_t embedded_size = 0;
+	Error err_code = save_pack(p_preset, p_debug, p_path, &so_files, p_embed, &embedded_start, &embedded_size);
+
+	Dictionary ret;
+	ret["result"] = err_code;
+	if (err_code == OK) {
+		Array arr;
+		for (const SharedObject &E : so_files) {
+			Dictionary so;
+			so["path"] = E.path;
+			so["tags"] = E.tags;
+			so["target_folder"] = E.target;
+			arr.push_back(so);
+		}
+		ret["so_files"] = arr;
+		if (p_embed) {
+			ret["embedded_start"] = embedded_start;
+			ret["embedded_size"] = embedded_size;
+		}
+	}
+
+	return ret;
+}
+
+Dictionary EditorExportPlatform::_save_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path) {
+	Vector<SharedObject> so_files;
+	Error err_code = save_zip(p_preset, p_debug, p_path, &so_files);
+
+	Dictionary ret;
+	ret["result"] = err_code;
+	if (err_code == OK) {
+		Array arr;
+		for (const SharedObject &E : so_files) {
+			Dictionary so;
+			so["path"] = E.path;
+			so["tags"] = E.tags;
+			so["target_folder"] = E.target;
+			arr.push_back(so);
+		}
+		ret["so_files"] = arr;
+	}
+
+	return ret;
+}
+
 Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, Vector<SharedObject> *p_so_files, bool p_embed, int64_t *r_embedded_start, int64_t *r_embedded_size) {
 	EditorProgress ep("savepack", TTR("Packing"), 102, true);
 
@@ -1570,7 +1624,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 	pd.f = ftmp;
 	pd.so_files = p_so_files;
 
-	Error err = export_project_files(p_preset, p_debug, _save_pack_file, &pd, _add_shared_object);
+	Error err = export_project_files(p_preset, p_debug, _save_pack_file, &pd, _pack_add_shared_object);
 
 	// Close temp file.
 	pd.f.unref();
@@ -1777,7 +1831,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 	return OK;
 }
 
-Error EditorExportPlatform::save_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path) {
+Error EditorExportPlatform::save_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, Vector<SharedObject> *p_so_files) {
 	EditorProgress ep("savezip", TTR("Packing"), 102, true);
 
 	Ref<FileAccess> io_fa;
@@ -1787,8 +1841,9 @@ Error EditorExportPlatform::save_zip(const Ref<EditorExportPreset> &p_preset, bo
 	ZipData zd;
 	zd.ep = &ep;
 	zd.zip = zip;
+	zd.so_files = p_so_files;
 
-	Error err = export_project_files(p_preset, p_debug, _save_zip_file, &zd);
+	Error err = export_project_files(p_preset, p_debug, _save_zip_file, &zd, _zip_add_shared_object);
 	if (err != OK && err != ERR_SKIP) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Save ZIP"), TTR("Failed to export project files."));
 	}
@@ -1798,45 +1853,48 @@ Error EditorExportPlatform::save_zip(const Ref<EditorExportPreset> &p_preset, bo
 	return OK;
 }
 
-Error EditorExportPlatform::export_pack(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+Error EditorExportPlatform::export_pack(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 	return save_pack(p_preset, p_debug, p_path);
 }
 
-Error EditorExportPlatform::export_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+Error EditorExportPlatform::export_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 	return save_zip(p_preset, p_debug, p_path);
 }
 
-void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags) {
+Vector<String> EditorExportPlatform::gen_export_flags(BitField<EditorExportPlatform::DebugFlags> p_flags) {
+	Vector<String> ret;
 	String host = EDITOR_GET("network/debug/remote_host");
 	int remote_port = (int)EDITOR_GET("network/debug/remote_port");
 
-	if (p_flags & DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST) {
+	if (get_name() == "Android" && EditorSettings::get_singleton()->has_setting("export/android/use_wifi_for_remote_debug") && EDITOR_GET("export/android/use_wifi_for_remote_debug")) {
+		host = EDITOR_GET("export/android/wifi_remote_debug_host");
+	} else if (p_flags.has_flag(DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST)) {
 		host = "localhost";
 	}
 
-	if (p_flags & DEBUG_FLAG_DUMB_CLIENT) {
+	if (p_flags.has_flag(DEBUG_FLAG_DUMB_CLIENT)) {
 		int port = EDITOR_GET("filesystem/file_server/port");
 		String passwd = EDITOR_GET("filesystem/file_server/password");
-		r_flags.push_back("--remote-fs");
-		r_flags.push_back(host + ":" + itos(port));
+		ret.push_back("--remote-fs");
+		ret.push_back(host + ":" + itos(port));
 		if (!passwd.is_empty()) {
-			r_flags.push_back("--remote-fs-password");
-			r_flags.push_back(passwd);
+			ret.push_back("--remote-fs-password");
+			ret.push_back(passwd);
 		}
 	}
 
-	if (p_flags & DEBUG_FLAG_REMOTE_DEBUG) {
-		r_flags.push_back("--remote-debug");
+	if (p_flags.has_flag(DEBUG_FLAG_REMOTE_DEBUG)) {
+		ret.push_back("--remote-debug");
 
-		r_flags.push_back(get_debug_protocol() + host + ":" + String::num(remote_port));
+		ret.push_back(get_debug_protocol() + host + ":" + String::num(remote_port));
 
 		List<String> breakpoints;
 		ScriptEditor::get_singleton()->get_breakpoints(&breakpoints);
 
 		if (breakpoints.size()) {
-			r_flags.push_back("--breakpoints");
+			ret.push_back("--breakpoints");
 			String bpoints;
 			for (List<String>::Element *E = breakpoints.front(); E; E = E->next()) {
 				bpoints += E->get().replace(" ", "%20");
@@ -1845,17 +1903,18 @@ void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags
 				}
 			}
 
-			r_flags.push_back(bpoints);
+			ret.push_back(bpoints);
 		}
 	}
 
-	if (p_flags & DEBUG_FLAG_VIEW_COLLISIONS) {
-		r_flags.push_back("--debug-collisions");
+	if (p_flags.has_flag(DEBUG_FLAG_VIEW_COLLISIONS)) {
+		ret.push_back("--debug-collisions");
 	}
 
-	if (p_flags & DEBUG_FLAG_VIEW_NAVIGATION) {
-		r_flags.push_back("--debug-navigation");
+	if (p_flags.has_flag(DEBUG_FLAG_VIEW_NAVIGATION)) {
+		ret.push_back("--debug-navigation");
 	}
+	return ret;
 }
 
 bool EditorExportPlatform::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
@@ -2035,8 +2094,61 @@ Error EditorExportPlatform::ssh_push_to_remote(const String &p_host, const Strin
 	return OK;
 }
 
+Array EditorExportPlatform::get_current_presets() const {
+	Array ret;
+	for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
+		Ref<EditorExportPreset> ep = EditorExport::get_singleton()->get_export_preset(i);
+		if (ep->get_platform() == this) {
+			ret.push_back(ep);
+		}
+	}
+	return ret;
+}
+
 void EditorExportPlatform::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_os_name"), &EditorExportPlatform::get_os_name);
+
+	ClassDB::bind_method(D_METHOD("create_preset"), &EditorExportPlatform::create_preset);
+
+	ClassDB::bind_method(D_METHOD("find_export_template", "template_file_name"), &EditorExportPlatform::_find_export_template);
+	ClassDB::bind_method(D_METHOD("get_current_presets"), &EditorExportPlatform::get_current_presets);
+
+	ClassDB::bind_method(D_METHOD("save_pack", "preset", "debug", "path", "embed"), &EditorExportPlatform::_save_pack, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("save_zip", "preset", "debug", "path"), &EditorExportPlatform::_save_zip);
+
+	ClassDB::bind_method(D_METHOD("gen_export_flags", "flags"), &EditorExportPlatform::gen_export_flags);
+
+	ClassDB::bind_method(D_METHOD("export_project_files", "preset", "debug", "save_cb", "shared_cb"), &EditorExportPlatform::_export_project_files, DEFVAL(Callable()));
+
+	ClassDB::bind_method(D_METHOD("export_project", "preset", "debug", "path", "flags"), &EditorExportPlatform::export_project, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("export_pack", "preset", "debug", "path", "flags"), &EditorExportPlatform::export_pack, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("export_zip", "preset", "debug", "path", "flags"), &EditorExportPlatform::export_zip, DEFVAL(0));
+
+	ClassDB::bind_method(D_METHOD("clear_messages"), &EditorExportPlatform::clear_messages);
+	ClassDB::bind_method(D_METHOD("add_message", "type", "category", "message"), &EditorExportPlatform::add_message);
+	ClassDB::bind_method(D_METHOD("get_message_count"), &EditorExportPlatform::get_message_count);
+
+	ClassDB::bind_method(D_METHOD("get_message_type", "index"), &EditorExportPlatform::_get_message_type);
+	ClassDB::bind_method(D_METHOD("get_message_category", "index"), &EditorExportPlatform::_get_message_category);
+	ClassDB::bind_method(D_METHOD("get_message_text", "index"), &EditorExportPlatform::_get_message_text);
+	ClassDB::bind_method(D_METHOD("get_worst_message_type"), &EditorExportPlatform::get_worst_message_type);
+
+	ClassDB::bind_method(D_METHOD("ssh_run_on_remote", "host", "port", "ssh_arg", "cmd_args", "output", "port_fwd"), &EditorExportPlatform::_ssh_run_on_remote, DEFVAL(Array()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("ssh_run_on_remote_no_wait", "host", "port", "ssh_args", "cmd_args", "port_fwd"), &EditorExportPlatform::_ssh_run_on_remote_no_wait, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("ssh_push_to_remote", "host", "port", "scp_args", "src_file", "dst_file"), &EditorExportPlatform::ssh_push_to_remote);
+
+	ClassDB::bind_static_method("EditorExportPlatform", D_METHOD("get_forced_export_files"), &EditorExportPlatform::get_forced_export_files);
+
+	BIND_ENUM_CONSTANT(EXPORT_MESSAGE_NONE);
+	BIND_ENUM_CONSTANT(EXPORT_MESSAGE_INFO);
+	BIND_ENUM_CONSTANT(EXPORT_MESSAGE_WARNING);
+	BIND_ENUM_CONSTANT(EXPORT_MESSAGE_ERROR);
+
+	BIND_BITFIELD_FLAG(DEBUG_FLAG_DUMB_CLIENT);
+	BIND_BITFIELD_FLAG(DEBUG_FLAG_REMOTE_DEBUG);
+	BIND_BITFIELD_FLAG(DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST);
+	BIND_BITFIELD_FLAG(DEBUG_FLAG_VIEW_COLLISIONS);
+	BIND_BITFIELD_FLAG(DEBUG_FLAG_VIEW_NAVIGATION);
 }
 
 EditorExportPlatform::EditorExportPlatform() {

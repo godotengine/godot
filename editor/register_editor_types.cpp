@@ -46,6 +46,7 @@
 #include "editor/editor_translation_parser.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/export/editor_export_platform.h"
+#include "editor/export/editor_export_platform_extension.h"
 #include "editor/export/editor_export_platform_pc.h"
 #include "editor/export/editor_export_plugin.h"
 #include "editor/filesystem_dock.h"
@@ -161,6 +162,8 @@ void register_editor_types() {
 	GDREGISTER_CLASS(EditorExportPlugin);
 	GDREGISTER_ABSTRACT_CLASS(EditorExportPlatform);
 	GDREGISTER_ABSTRACT_CLASS(EditorExportPlatformPC);
+	GDREGISTER_CLASS(EditorExportPlatformExtension);
+	GDREGISTER_ABSTRACT_CLASS(EditorExportPreset);
 
 	register_exporter_types();
 
