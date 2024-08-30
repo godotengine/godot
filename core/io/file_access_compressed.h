@@ -42,6 +42,7 @@ class FileAccessCompressed : public FileAccess {
 	uint32_t write_buffer_size = 0;
 	uint64_t write_max = 0;
 	uint32_t block_size = 0;
+	mutable Error last_error = OK;
 	mutable bool read_eof = false;
 	mutable bool at_end = false;
 
@@ -91,6 +92,7 @@ public:
 	virtual Error resize(int64_t p_length) override { return ERR_UNAVAILABLE; }
 	virtual void flush() override;
 	virtual void store_8(uint8_t p_dest) override; ///< store a byte
+	virtual void store_buffer(const uint8_t *p_src, uint64_t p_length) override; ///< store an array of bytes
 
 	virtual bool file_exists(const String &p_name) override; ///< return true if a file exists
 
