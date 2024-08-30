@@ -717,6 +717,7 @@ void MDCommandBuffer::render_bind_index_buffer(RDD::BufferID p_buffer, RDD::Inde
 
 	render.index_buffer = rid::get(p_buffer);
 	render.index_type = p_format == RDD::IndexBufferFormat::INDEX_BUFFER_FORMAT_UINT16 ? MTLIndexTypeUInt16 : MTLIndexTypeUInt32;
+	render.index_offset = p_offset;
 }
 
 void MDCommandBuffer::render_draw_indexed(uint32_t p_index_count,
@@ -729,13 +730,16 @@ void MDCommandBuffer::render_draw_indexed(uint32_t p_index_count,
 
 	id<MTLRenderCommandEncoder> enc = render.encoder;
 
+	uint32_t index_offset = render.index_offset;
+	index_offset += p_first_index * (render.index_type == MTLIndexTypeUInt16 ? sizeof(uint16_t) : sizeof(uint32_t));
+
 	[enc drawIndexedPrimitives:render.pipeline->raster_state.render_primitive
 					indexCount:p_index_count
 					 indexType:render.index_type
 				   indexBuffer:render.index_buffer
-			 indexBufferOffset:p_vertex_offset
+			 indexBufferOffset:index_offset
 				 instanceCount:p_instance_count
-					baseVertex:p_first_index
+					baseVertex:p_vertex_offset
 				  baseInstance:p_first_instance];
 }
 
