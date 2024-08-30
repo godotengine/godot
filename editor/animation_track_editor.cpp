@@ -7052,7 +7052,10 @@ void AnimationTrackEditor::_update_snap_unit() {
 	if (timeline->is_using_fps()) {
 		snap_unit = 1.0 / step->get_value();
 	} else {
-		snap_unit = 1.0 / Math::round(1.0 / step->get_value()); // Follow the snap behavior of the timeline editor.
+		double integer;
+		double fraction = Math::modf(step->get_value(), &integer);
+		fraction = 1.0 / Math::round(1.0 / fraction);
+		snap_unit = integer + fraction;
 	}
 }
 
