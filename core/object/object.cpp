@@ -746,7 +746,7 @@ Variant Object::callv(const StringName &p_method, const Array &p_args) {
 	}
 
 	Callable::CallError ce;
-	Variant ret = callp(p_method, argptrs, p_args.size(), ce);
+	const Variant ret = callp(p_method, argptrs, p_args.size(), ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
 		ERR_FAIL_V_MSG(Variant(), "Error calling method from 'callv': " + Variant::get_call_error_text(this, p_method, argptrs, p_args.size(), ce) + ".");
 	}
@@ -787,7 +787,7 @@ Variant Object::callp(const StringName &p_method, const Variant **p_args, int p_
 
 	if (script_instance) {
 		ret = script_instance->callp(p_method, p_args, p_argcount, r_error);
-		//force jumptable
+		// Force jump table.
 		switch (r_error.error) {
 			case Callable::CallError::CALL_OK:
 				return ret;

@@ -867,7 +867,8 @@ public:
 			argptrs[i] = &args[i];
 		}
 		Callable::CallError cerr;
-		return callp(p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args), cerr);
+		const Variant ret = callp(p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args), cerr);
+		return (cerr.error == Callable::CallError::CALL_OK) ? ret : Variant();
 	}
 
 	void notification(int p_notification, bool p_reversed = false);
