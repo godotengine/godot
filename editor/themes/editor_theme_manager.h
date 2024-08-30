@@ -50,7 +50,6 @@ class EditorThemeManager {
 	static const float default_contrast;
 
 public:
-
 	struct ThemeColorProperties {
 		ThemeColorProperties() = default;
 		Color accent_color;
@@ -58,9 +57,7 @@ public:
 		float contrast = default_contrast;
 	};
 
-
 private:
-
 	struct ThemeConfiguration {
 		// Basic properties.
 
@@ -183,7 +180,6 @@ public:
 	static bool is_generated_theme_outdated();
 
 	static bool is_dark_theme();
-
 
 	static void initialize();
 	static void finalize();
