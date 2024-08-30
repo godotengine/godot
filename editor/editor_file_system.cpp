@@ -1866,25 +1866,26 @@ void EditorFileSystem::_update_script_classes() {
 		return;
 	}
 
-	update_script_mutex.lock();
+	{
+		MutexLock update_script_lock(update_script_mutex);
 
-	EditorProgress *ep = nullptr;
-	if (update_script_paths.size() > 1) {
-		ep = memnew(EditorProgress("update_scripts_classes", TTR("Registering global classes..."), update_script_paths.size()));
-	}
-
-	int step_count = 0;
-	for (const KeyValue<String, ScriptInfo> &E : update_script_paths) {
-		_register_global_class_script(E.key, E.key, E.value.type, E.value.script_class_name, E.value.script_class_extends, E.value.script_class_icon_path);
-		if (ep) {
-			ep->step(E.value.script_class_name, step_count++, false);
+		EditorProgress *ep = nullptr;
+		if (update_script_paths.size() > 1) {
+			ep = memnew(EditorProgress("update_scripts_classes", TTR("Registering global classes..."), update_script_paths.size()));
 		}
+
+		int step_count = 0;
+		for (const KeyValue<String, ScriptInfo> &E : update_script_paths) {
+			_register_global_class_script(E.key, E.key, E.value.type, E.value.script_class_name, E.value.script_class_extends, E.value.script_class_icon_path);
+			if (ep) {
+				ep->step(E.value.script_class_name, step_count++, false);
+			}
+		}
+
+		memdelete_notnull(ep);
+
+		update_script_paths.clear();
 	}
-
-	memdelete_notnull(ep);
-
-	update_script_paths.clear();
-	update_script_mutex.unlock();
 
 	ScriptServer::save_global_classes();
 	EditorNode::get_editor_data().script_class_save_icon_paths();
@@ -1905,7 +1906,7 @@ void EditorFileSystem::_update_script_documentation() {
 		return;
 	}
 
-	update_script_mutex.lock();
+	MutexLock update_script_lock(update_script_mutex);
 
 	EditorProgress *ep = nullptr;
 	if (update_script_paths_documentation.size() > 1) {
@@ -1944,7 +1945,6 @@ void EditorFileSystem::_update_script_documentation() {
 	memdelete_notnull(ep);
 
 	update_script_paths_documentation.clear();
-	update_script_mutex.unlock();
 }
 
 void EditorFileSystem::_process_update_pending() {
@@ -1956,7 +1956,7 @@ void EditorFileSystem::_process_update_pending() {
 }
 
 void EditorFileSystem::_queue_update_script_class(const String &p_path, const String &p_type, const String &p_script_class_name, const String &p_script_class_extends, const String &p_script_class_icon_path) {
-	update_script_mutex.lock();
+	MutexLock update_script_lock(update_script_mutex);
 
 	ScriptInfo si;
 	si.type = p_type;
@@ -1966,8 +1966,6 @@ void EditorFileSystem::_queue_update_script_class(const String &p_path, const St
 	update_script_paths.insert(p_path, si);
 
 	update_script_paths_documentation.insert(p_path);
-
-	update_script_mutex.unlock();
 }
 
 void EditorFileSystem::_update_scene_groups() {
@@ -1981,31 +1979,32 @@ void EditorFileSystem::_update_scene_groups() {
 	}
 	int step_count = 0;
 
-	update_scene_mutex.lock();
-	for (const String &path : update_scene_paths) {
-		ProjectSettings::get_singleton()->remove_scene_groups_cache(path);
+	{
+		MutexLock update_scene_lock(update_scene_mutex);
+		for (const String &path : update_scene_paths) {
+			ProjectSettings::get_singleton()->remove_scene_groups_cache(path);
 
-		int index = -1;
-		EditorFileSystemDirectory *efd = find_file(path, &index);
+			int index = -1;
+			EditorFileSystemDirectory *efd = find_file(path, &index);
 
-		if (!efd || index < 0) {
-			// The file was removed.
-			continue;
+			if (!efd || index < 0) {
+				// The file was removed.
+				continue;
+			}
+
+			const HashSet<StringName> scene_groups = PackedScene::get_scene_groups(path);
+			if (!scene_groups.is_empty()) {
+				ProjectSettings::get_singleton()->add_scene_groups_cache(path, scene_groups);
+			}
+
+			if (ep) {
+				ep->step(efd->files[index]->file, step_count++, false);
+			}
 		}
 
-		const HashSet<StringName> scene_groups = PackedScene::get_scene_groups(path);
-		if (!scene_groups.is_empty()) {
-			ProjectSettings::get_singleton()->add_scene_groups_cache(path, scene_groups);
-		}
-
-		if (ep) {
-			ep->step(efd->files[index]->file, step_count++, false);
-		}
+		memdelete_notnull(ep);
+		update_scene_paths.clear();
 	}
-
-	memdelete_notnull(ep);
-	update_scene_paths.clear();
-	update_scene_mutex.unlock();
 
 	ProjectSettings::get_singleton()->save_scene_groups_cache();
 }
@@ -2020,9 +2019,8 @@ void EditorFileSystem::_update_pending_scene_groups() {
 }
 
 void EditorFileSystem::_queue_update_scene_groups(const String &p_path) {
-	update_scene_mutex.lock();
+	MutexLock update_scene_lock(update_scene_mutex);
 	update_scene_paths.insert(p_path);
-	update_scene_mutex.unlock();
 }
 
 void EditorFileSystem::_get_all_scenes(EditorFileSystemDirectory *p_dir, HashSet<String> &r_list) {
