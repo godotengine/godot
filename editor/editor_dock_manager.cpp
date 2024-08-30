@@ -509,7 +509,7 @@ void EditorDockManager::save_docks_to_config(Ref<ConfigFile> p_layout, const Str
 	}
 
 	for (int i = 0; i < hsplits.size(); i++) {
-		p_layout->set_value(p_section, "dock_hsplit_" + itos(i + 1), hsplits[i]->get_split_offset());
+		p_layout->set_value(p_section, "dock_hsplit_" + itos(i + 1), int(hsplits[i]->get_split_offset() / EDSCALE));
 	}
 
 	FileSystemDock::get_singleton()->save_layout_to_config(p_layout, p_section);
@@ -605,7 +605,7 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 			continue;
 		}
 		int ofs = p_layout->get_value(p_section, "dock_hsplit_" + itos(i + 1));
-		hsplits[i]->set_split_offset(ofs);
+		hsplits[i]->set_split_offset(ofs * EDSCALE);
 	}
 
 	FileSystemDock::get_singleton()->load_layout_from_config(p_layout, p_section);
