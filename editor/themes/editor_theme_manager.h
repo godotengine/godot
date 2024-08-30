@@ -176,13 +176,13 @@ private:
 	static void _reset_dirty_flag();
 
 	static ThemeColorProperties get_preset_theme_color_properties(const String& preset);
+	static float get_theme_luminance();
 
 public:
 	static Ref<EditorTheme> generate_theme(const Ref<EditorTheme> &p_old_theme = nullptr);
 	static bool is_generated_theme_outdated();
 
 	static bool is_dark_theme();
-	static float get_theme_luminance();
 
 
 	static void initialize();
