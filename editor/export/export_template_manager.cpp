@@ -589,6 +589,7 @@ String ExportTemplateManager::_get_selected_mirror() const {
 }
 
 void ExportTemplateManager::_mirror_options_button_cbk(int p_id) {
+#ifdef EDITOR_CALL_HOME_ENABLED
 	switch (p_id) {
 		case VISIT_WEB_MIRROR: {
 			String mirror_url = _get_selected_mirror();
@@ -610,6 +611,7 @@ void ExportTemplateManager::_mirror_options_button_cbk(int p_id) {
 			DisplayServer::get_singleton()->clipboard_set(mirror_url);
 		} break;
 	}
+#endif
 }
 
 void ExportTemplateManager::_installed_table_button_cbk(Object *p_item, int p_column, int p_id, MouseButton p_button) {
@@ -816,7 +818,9 @@ void ExportTemplateManager::_notification(int p_what) {
 			current_missing_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			current_installed_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 
+#ifdef EDITOR_CALL_HOME_ENABLED
 			mirror_options_button->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+#endif
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -866,6 +870,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	set_hide_on_ok(false);
 	set_ok_button_text(TTR("Close"));
 
+#ifdef EDITOR_CALL_HOME_ENABLED
 	// Downloadable export templates are only available for stable and official alpha/beta/RC builds
 	// (which always have a number following their status, e.g. "alpha1").
 	// Therefore, don't display download-related features when using a development version
@@ -875,6 +880,9 @@ ExportTemplateManager::ExportTemplateManager() {
 			String(VERSION_STATUS) != String("alpha") &&
 			String(VERSION_STATUS) != String("beta") &&
 			String(VERSION_STATUS) != String("rc");
+#else
+	downloads_available = false;
+#endif
 
 	VBoxContainer *main_vb = memnew(VBoxContainer);
 	add_child(main_vb);
@@ -951,6 +959,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	HBoxContainer *download_install_hb = memnew(HBoxContainer);
 	install_options_vb->add_child(download_install_hb);
 
+#ifdef EDITOR_CALL_HOME_ENABLED
 	Label *mirrors_label = memnew(Label);
 	mirrors_label->set_text(TTR("Download from:"));
 	download_install_hb->add_child(mirrors_label);
@@ -989,6 +998,7 @@ ExportTemplateManager::ExportTemplateManager() {
 		download_current_button->set_disabled(true);
 		download_current_button->set_tooltip_text(TTR("Official export templates aren't available for development builds."));
 	}
+#endif
 
 	HBoxContainer *install_file_hb = memnew(HBoxContainer);
 	install_file_hb->set_alignment(BoxContainer::ALIGNMENT_END);

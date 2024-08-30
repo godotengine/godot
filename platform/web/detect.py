@@ -114,6 +114,12 @@ def configure(env: "SConsEnvironment"):
         print("Note: Forcing `initial_memory=64` as it is required for the web editor.")
         env["initial_memory"] = 64
 
+    # Asset Library can't work on Web editor for now as most assets are sourced
+    # directly from GitHub which does not set CORS.
+    if env.editor_build and env["asset_library"]:
+        print_warning("`platform=web target=editor` build requires `asset_library=no`, disabling the asset library.")
+        env["asset_library"] = False
+
     env.Append(LINKFLAGS=["-sINITIAL_MEMORY=%sMB" % env["initial_memory"]])
 
     ## Copy env variables.
@@ -233,7 +239,7 @@ def configure(env: "SConsEnvironment"):
             env.Append(LINKFLAGS=["-sEXPORTED_FUNCTIONS=['__emscripten_thread_crashed','_main']"])
 
     elif env["proxy_to_pthread"]:
-        print_warning('"threads=no" support requires "proxy_to_pthread=no", disabling proxy to pthread.')
+        print_warning("`threads=no` support requires `proxy_to_pthread=no`, disabling proxy to pthread.")
         env["proxy_to_pthread"] = False
 
     if env["lto"] != "none":

@@ -1391,6 +1391,7 @@ ProjectManager::ProjectManager() {
 		}
 	}
 
+#ifdef ASSET_LIBRARY_ENABLED
 	// Asset library view.
 	if (AssetLibraryEditorPlugin::is_available()) {
 		asset_library = memnew(EditorAssetLibrary(true));
@@ -1404,6 +1405,7 @@ ProjectManager::ProjectManager() {
 		asset_library_toggle->set_disabled(true);
 		asset_library_toggle->set_tooltip_text(TTR("Asset Library not available (due to using Web editor, or because SSL support disabled)."));
 	}
+#endif
 
 	// Footer bar.
 	{

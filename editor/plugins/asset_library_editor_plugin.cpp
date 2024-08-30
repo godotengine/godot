@@ -1774,12 +1774,10 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 ///////
 
 bool AssetLibraryEditorPlugin::is_available() {
-#ifdef WEB_ENABLED
-	// Asset Library can't work on Web editor for now as most assets are sourced
-	// directly from GitHub which does not set CORS.
-	return false;
-#else
+#ifdef ASSET_LIBRARY_ENABLED
 	return StreamPeerTLS::is_available();
+#else
+	return false;
 #endif
 }
 
