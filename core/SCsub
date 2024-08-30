@@ -140,7 +140,7 @@ if env["builtin_zstd"]:
         "decompress/zstd_decompress_block.c",
         "decompress/zstd_decompress.c",
     ]
-    if env["platform"] in ["android", "ios", "linuxbsd", "macos"]:
+    if env["platform"] in ["android", "ios", "linuxbsd", "macos"] and env["arch"] == "x86_64":
         # Match platforms with ZSTD_ASM_SUPPORTED in common/portability_macros.h
         thirdparty_zstd_sources.append("decompress/huf_decompress_amd64.S")
     thirdparty_zstd_sources = [thirdparty_zstd_dir + file for file in thirdparty_zstd_sources]
