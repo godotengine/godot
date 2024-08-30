@@ -735,7 +735,7 @@ void GodotConeShape3D::get_supports(const Vector3 &p_normal, int p_max, Vector3 
 		r_amount = 1;
 		r_type = FEATURE_POINT;
 	} else if (d < cone_edge_support_threshold_lower) {
-		Vector3 n = p_normal;
+		n = p_normal;
 		n.y = 0.0;
 		n.normalize();
 		n *= radius;
