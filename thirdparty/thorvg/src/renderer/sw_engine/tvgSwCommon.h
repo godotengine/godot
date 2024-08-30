@@ -367,7 +367,7 @@ static inline uint32_t opBlendSrcOver(uint32_t s, TVG_UNUSED uint32_t d, TVG_UNU
 }
 
 //TODO: BlendMethod could remove the alpha parameter.
-static inline uint32_t opBlendDifference(uint32_t s, uint32_t d, TVG_UNUSED uint8_t a)
+static inline uint32_t opBlendDifference(uint32_t s, uint32_t d, uint8_t a)
 {
     //if (s > d) => s - d
     //else => d - s
@@ -404,8 +404,7 @@ static inline uint32_t opBlendScreen(uint32_t s, uint32_t d, TVG_UNUSED uint8_t 
     return JOIN(255, c1, c2, c3);
 }
 
-
-static inline uint32_t opBlendMultiply(uint32_t s, uint32_t d, TVG_UNUSED uint8_t a)
+static inline uint32_t opBlendDirectMultiply(uint32_t s, uint32_t d, uint8_t a)
 {
     // s * d
     auto c1 = MULTIPLY(C1(s), C1(d));
@@ -414,6 +413,10 @@ static inline uint32_t opBlendMultiply(uint32_t s, uint32_t d, TVG_UNUSED uint8_
     return JOIN(255, c1, c2, c3);
 }
 
+static inline uint32_t opBlendMultiply(uint32_t s, uint32_t d, uint8_t a)
+{
+    return opBlendDirectMultiply(s, d, a) + ALPHA_BLEND(d, IA(s));
+}
 
 static inline uint32_t opBlendOverlay(uint32_t s, uint32_t d, TVG_UNUSED uint8_t a)
 {
@@ -492,7 +495,8 @@ SwFixed mathSin(SwFixed angle);
 void mathSplitCubic(SwPoint* base);
 SwFixed mathDiff(SwFixed angle1, SwFixed angle2);
 SwFixed mathLength(const SwPoint& pt);
-bool mathSmallCubic(const SwPoint* base, SwFixed& angleIn, SwFixed& angleMid, SwFixed& angleOut);
+bool mathSmallCubic(const SwPoint* base);
+bool mathFlatCubic(const SwPoint* base, SwFixed& angleIn, SwFixed& angleMid, SwFixed& angleOut);
 SwFixed mathMean(SwFixed angle1, SwFixed angle2);
 SwPoint mathTransform(const Point* to, const Matrix& transform);
 bool mathUpdateOutlineBBox(const SwOutline* outline, const SwBBox& clipRegion, SwBBox& renderRegion, bool fastTrack);
