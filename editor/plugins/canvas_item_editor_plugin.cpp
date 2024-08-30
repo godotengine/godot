@@ -4331,13 +4331,13 @@ void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, 
 			Node2D *n2d = Object::cast_to<Node2D>(ci);
 
 			if (key_pos && p_location) {
-				te->insert_node_value_key(n2d, "position", n2d->get_position(), p_on_existing);
+				te->insert_node_value_key(n2d, "position", p_on_existing);
 			}
 			if (key_rot && p_rotation) {
-				te->insert_node_value_key(n2d, "rotation", n2d->get_rotation(), p_on_existing);
+				te->insert_node_value_key(n2d, "rotation", p_on_existing);
 			}
 			if (key_scale && p_scale) {
-				te->insert_node_value_key(n2d, "scale", n2d->get_scale(), p_on_existing);
+				te->insert_node_value_key(n2d, "scale", p_on_existing);
 			}
 
 			if (n2d->has_meta("_edit_bone_") && n2d->get_parent_item()) {
@@ -4363,13 +4363,13 @@ void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, 
 				if (has_chain && ik_chain.size()) {
 					for (Node2D *&F : ik_chain) {
 						if (key_pos) {
-							te->insert_node_value_key(F, "position", F->get_position(), p_on_existing);
+							te->insert_node_value_key(F, "position", p_on_existing);
 						}
 						if (key_rot) {
-							te->insert_node_value_key(F, "rotation", F->get_rotation(), p_on_existing);
+							te->insert_node_value_key(F, "rotation", p_on_existing);
 						}
 						if (key_scale) {
-							te->insert_node_value_key(F, "scale", F->get_scale(), p_on_existing);
+							te->insert_node_value_key(F, "scale", p_on_existing);
 						}
 					}
 				}
@@ -4379,13 +4379,13 @@ void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, 
 			Control *ctrl = Object::cast_to<Control>(ci);
 
 			if (key_pos) {
-				te->insert_node_value_key(ctrl, "position", ctrl->get_position(), p_on_existing);
+				te->insert_node_value_key(ctrl, "position", p_on_existing);
 			}
 			if (key_rot) {
-				te->insert_node_value_key(ctrl, "rotation", ctrl->get_rotation(), p_on_existing);
+				te->insert_node_value_key(ctrl, "rotation", p_on_existing);
 			}
 			if (key_scale) {
-				te->insert_node_value_key(ctrl, "size", ctrl->get_size(), p_on_existing);
+				te->insert_node_value_key(ctrl, "size", p_on_existing);
 			}
 		}
 	}

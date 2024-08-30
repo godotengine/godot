@@ -32,14 +32,18 @@
 
 #include "core/extension/gdextension_compat_hashes.h"
 #include "core/extension/gdextension_library_loader.h"
+#include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/object/script_language.h"
 
-GDExtensionManager::LoadStatus GDExtensionManager::_load_extension_internal(const Ref<GDExtension> &p_extension) {
+GDExtensionManager::LoadStatus GDExtensionManager::_load_extension_internal(const Ref<GDExtension> &p_extension, bool p_first_load) {
 	if (level >= 0) { // Already initialized up to some level.
-		int32_t minimum_level = p_extension->get_minimum_library_initialization_level();
-		if (minimum_level < MIN(level, GDExtension::INITIALIZATION_LEVEL_SCENE)) {
-			return LOAD_STATUS_NEEDS_RESTART;
+		int32_t minimum_level = 0;
+		if (!p_first_load) {
+			minimum_level = p_extension->get_minimum_library_initialization_level();
+			if (minimum_level < MIN(level, GDExtension::INITIALIZATION_LEVEL_SCENE)) {
+				return LOAD_STATUS_NEEDS_RESTART;
+			}
 		}
 		// Initialize up to current level.
 		for (int32_t i = minimum_level; i <= level; i++) {
@@ -51,10 +55,20 @@ GDExtensionManager::LoadStatus GDExtensionManager::_load_extension_internal(cons
 		gdextension_class_icon_paths[kv.key] = kv.value;
 	}
 
+#ifdef TOOLS_ENABLED
+	// Signals that a new extension is loaded so GDScript can register new class names.
+	emit_signal("extension_loaded", p_extension);
+#endif
+
 	return LOAD_STATUS_OK;
 }
 
 GDExtensionManager::LoadStatus GDExtensionManager::_unload_extension_internal(const Ref<GDExtension> &p_extension) {
+#ifdef TOOLS_ENABLED
+	// Signals that a new extension is unloading so GDScript can unregister class names.
+	emit_signal("extension_unloading", p_extension);
+#endif
+
 	if (level >= 0) { // Already initialized up to some level.
 		// Deinitialize down from current level.
 		for (int32_t i = level; i >= GDExtension::INITIALIZATION_LEVEL_CORE; i--) {
@@ -89,7 +103,7 @@ GDExtensionManager::LoadStatus GDExtensionManager::load_extension_with_loader(co
 		return LOAD_STATUS_FAILED;
 	}
 
-	LoadStatus status = _load_extension_internal(extension);
+	LoadStatus status = _load_extension_internal(extension, true);
 	if (status != LOAD_STATUS_OK) {
 		return status;
 	}
@@ -135,7 +149,7 @@ GDExtensionManager::LoadStatus GDExtensionManager::reload_extension(const String
 		return LOAD_STATUS_FAILED;
 	}
 
-	status = _load_extension_internal(extension);
+	status = _load_extension_internal(extension, false);
 	if (status != LOAD_STATUS_OK) {
 		return status;
 	}
@@ -274,6 +288,71 @@ void GDExtensionManager::reload_extensions() {
 #endif
 }
 
+bool GDExtensionManager::ensure_extensions_loaded(const HashSet<String> &p_extensions) {
+	Vector<String> extensions_added;
+	Vector<String> extensions_removed;
+
+	for (const String &E : p_extensions) {
+		if (!is_extension_loaded(E)) {
+			extensions_added.push_back(E);
+		}
+	}
+
+	Vector<String> loaded_extensions = get_loaded_extensions();
+	for (const String &loaded_extension : loaded_extensions) {
+		if (!p_extensions.has(loaded_extension)) {
+			// The extension may not have a .gdextension file.
+			if (!FileAccess::exists(loaded_extension)) {
+				extensions_removed.push_back(loaded_extension);
+			}
+		}
+	}
+
+	String extension_list_config_file = GDExtension::get_extension_list_config_file();
+	if (p_extensions.size()) {
+		if (extensions_added.size() || extensions_removed.size()) {
+			// Extensions were added or removed.
+			Ref<FileAccess> f = FileAccess::open(extension_list_config_file, FileAccess::WRITE);
+			for (const String &E : p_extensions) {
+				f->store_line(E);
+			}
+		}
+	} else {
+		if (loaded_extensions.size() || FileAccess::exists(extension_list_config_file)) {
+			// Extensions were removed.
+			Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+			da->remove(extension_list_config_file);
+		}
+	}
+
+	bool needs_restart = false;
+	for (const String &extension : extensions_added) {
+		GDExtensionManager::LoadStatus st = GDExtensionManager::get_singleton()->load_extension(extension);
+		if (st == GDExtensionManager::LOAD_STATUS_NEEDS_RESTART) {
+			needs_restart = true;
+		}
+	}
+
+	for (const String &extension : extensions_removed) {
+		GDExtensionManager::LoadStatus st = GDExtensionManager::get_singleton()->unload_extension(extension);
+		if (st == GDExtensionManager::LOAD_STATUS_NEEDS_RESTART) {
+			needs_restart = true;
+		}
+	}
+
+#ifdef TOOLS_ENABLED
+	if (extensions_added.size() || extensions_removed.size()) {
+		// Emitting extensions_reloaded so EditorNode can reload Inspector and regenerate documentation.
+		emit_signal("extensions_reloaded");
+
+		// Reload all scripts to clear out old references.
+		callable_mp_static(&GDExtensionManager::_reload_all_scripts).call_deferred();
+	}
+#endif
+
+	return needs_restart;
+}
+
 GDExtensionManager *GDExtensionManager::get_singleton() {
 	return singleton;
 }
@@ -294,6 +373,8 @@ void GDExtensionManager::_bind_methods() {
 	BIND_ENUM_CONSTANT(LOAD_STATUS_NEEDS_RESTART);
 
 	ADD_SIGNAL(MethodInfo("extensions_reloaded"));
+	ADD_SIGNAL(MethodInfo("extension_loaded", PropertyInfo(Variant::OBJECT, "extension", PROPERTY_HINT_RESOURCE_TYPE, "GDExtension")));
+	ADD_SIGNAL(MethodInfo("extension_unloading", PropertyInfo(Variant::OBJECT, "extension", PROPERTY_HINT_RESOURCE_TYPE, "GDExtension")));
 }
 
 GDExtensionManager *GDExtensionManager::singleton = nullptr;

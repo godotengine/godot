@@ -1127,6 +1127,14 @@ void Object::remove_meta(const StringName &p_name) {
 	set_meta(p_name, Variant());
 }
 
+void Object::merge_meta_from(const Object *p_src) {
+	List<StringName> meta_keys;
+	p_src->get_meta_list(&meta_keys);
+	for (const StringName &key : meta_keys) {
+		set_meta(key, p_src->get_meta(key));
+	}
+}
+
 TypedArray<Dictionary> Object::_get_property_list_bind() const {
 	List<PropertyInfo> lpi;
 	get_property_list(&lpi);
@@ -2011,7 +2019,7 @@ void Object::set_instance_binding(void *p_token, void *p_binding, const GDExtens
 
 void *Object::get_instance_binding(void *p_token, const GDExtensionInstanceBindingCallbacks *p_callbacks) {
 	void *binding = nullptr;
-	_instance_binding_mutex.lock();
+	MutexLock instance_binding_lock(_instance_binding_mutex);
 	for (uint32_t i = 0; i < _instance_binding_count; i++) {
 		if (_instance_bindings[i].token == p_token) {
 			binding = _instance_bindings[i].binding;
@@ -2042,14 +2050,12 @@ void *Object::get_instance_binding(void *p_token, const GDExtensionInstanceBindi
 		_instance_binding_count++;
 	}
 
-	_instance_binding_mutex.unlock();
-
 	return binding;
 }
 
 bool Object::has_instance_binding(void *p_token) {
 	bool found = false;
-	_instance_binding_mutex.lock();
+	MutexLock instance_binding_lock(_instance_binding_mutex);
 	for (uint32_t i = 0; i < _instance_binding_count; i++) {
 		if (_instance_bindings[i].token == p_token) {
 			found = true;
@@ -2057,14 +2063,12 @@ bool Object::has_instance_binding(void *p_token) {
 		}
 	}
 
-	_instance_binding_mutex.unlock();
-
 	return found;
 }
 
 void Object::free_instance_binding(void *p_token) {
 	bool found = false;
-	_instance_binding_mutex.lock();
+	MutexLock instance_binding_lock(_instance_binding_mutex);
 	for (uint32_t i = 0; i < _instance_binding_count; i++) {
 		if (!found && _instance_bindings[i].token == p_token) {
 			if (_instance_bindings[i].free_callback) {
@@ -2083,7 +2087,6 @@ void Object::free_instance_binding(void *p_token) {
 	if (found) {
 		_instance_binding_count--;
 	}
-	_instance_binding_mutex.unlock();
 }
 
 #ifdef TOOLS_ENABLED

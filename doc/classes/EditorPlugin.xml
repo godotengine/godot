@@ -455,6 +455,13 @@
 				Adds a [Script] as debugger plugin to the Debugger. The script must extend [EditorDebuggerPlugin].
 			</description>
 		</method>
+		<method name="add_export_platform">
+			<return type="void" />
+			<param index="0" name="platform" type="EditorExportPlatform" />
+			<description>
+				Registers a new [EditorExportPlatform]. Export platforms provides functionality of exporting to the specific platform.
+			</description>
+		</method>
 		<method name="add_export_plugin">
 			<return type="void" />
 			<param index="0" name="plugin" type="EditorExportPlugin" />
@@ -651,6 +658,13 @@
 			<param index="0" name="script" type="EditorDebuggerPlugin" />
 			<description>
 				Removes the debugger plugin with given script from the Debugger.
+			</description>
+		</method>
+		<method name="remove_export_platform">
+			<return type="void" />
+			<param index="0" name="platform" type="EditorExportPlatform" />
+			<description>
+				Removes an export platform registered by [method add_export_platform].
 			</description>
 		</method>
 		<method name="remove_export_plugin">

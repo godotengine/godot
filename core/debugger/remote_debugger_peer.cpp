@@ -144,9 +144,8 @@ void RemoteDebuggerPeerTCP::_read_in() {
 			Error err = decode_variant(var, buf, in_pos, &read);
 			ERR_CONTINUE(read != in_pos || err != OK);
 			ERR_CONTINUE_MSG(var.get_type() != Variant::ARRAY, "Malformed packet received, not an Array.");
-			mutex.lock();
+			MutexLock lock(mutex);
 			in_queue.push_back(var);
-			mutex.unlock();
 		}
 	}
 }

@@ -10,6 +10,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_breakpoints">
+			<return type="PackedStringArray" />
+			<description>
+				Returns array of breakpoints.
+			</description>
+		</method>
 		<method name="get_current_editor" qualifiers="const">
 			<return type="ScriptEditorBase" />
 			<description>

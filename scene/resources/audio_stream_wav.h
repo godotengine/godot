@@ -59,7 +59,7 @@ class AudioStreamPlaybackWAV : public AudioStreamPlayback {
 	} ima_adpcm[2];
 
 	struct QOA_State {
-		qoa_desc *desc = nullptr;
+		qoa_desc desc = {};
 		uint32_t data_ofs = 0;
 		uint32_t frame_len = 0;
 		int16_t *dec = nullptr;

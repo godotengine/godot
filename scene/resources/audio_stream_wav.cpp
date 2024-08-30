@@ -179,17 +179,17 @@ void AudioStreamPlaybackWAV::do_resample(const Depth *p_src, AudioFrame *p_dst, 
 				if (pos != p_qoa->cache_pos) { // Prevents triple decoding on lower mix rates.
 					for (int i = 0; i < 2; i++) {
 						// Sign operations prevent triple decoding on backward loops, maxing prevents pop.
-						uint32_t interp_pos = MIN(pos + (i * sign) + (sign < 0), p_qoa->desc->samples - 1);
+						uint32_t interp_pos = MIN(pos + (i * sign) + (sign < 0), p_qoa->desc.samples - 1);
 						uint32_t new_data_ofs = 8 + interp_pos / QOA_FRAME_LEN * p_qoa->frame_len;
 
 						if (p_qoa->data_ofs != new_data_ofs) {
 							p_qoa->data_ofs = new_data_ofs;
 							const uint8_t *src_ptr = (const uint8_t *)base->data;
 							src_ptr += p_qoa->data_ofs + AudioStreamWAV::DATA_PAD;
-							qoa_decode_frame(src_ptr, p_qoa->frame_len, p_qoa->desc, p_qoa->dec, &p_qoa->dec_len);
+							qoa_decode_frame(src_ptr, p_qoa->frame_len, &p_qoa->desc, p_qoa->dec, &p_qoa->dec_len);
 						}
 
-						uint32_t dec_idx = (interp_pos % QOA_FRAME_LEN) * p_qoa->desc->channels;
+						uint32_t dec_idx = (interp_pos % QOA_FRAME_LEN) * p_qoa->desc.channels;
 
 						if ((sign > 0 && i == 0) || (sign < 0 && i == 1)) {
 							final = p_qoa->dec[dec_idx];
@@ -286,7 +286,7 @@ int AudioStreamPlaybackWAV::mix(AudioFrame *p_buffer, float p_rate_scale, int p_
 			len *= 2;
 			break;
 		case AudioStreamWAV::FORMAT_QOA:
-			len = qoa.desc->samples * qoa.desc->channels;
+			len = qoa.desc.samples * qoa.desc.channels;
 			break;
 	}
 
@@ -484,10 +484,6 @@ void AudioStreamPlaybackWAV::set_sample_playback(const Ref<AudioSamplePlayback> 
 AudioStreamPlaybackWAV::AudioStreamPlaybackWAV() {}
 
 AudioStreamPlaybackWAV::~AudioStreamPlaybackWAV() {
-	if (qoa.desc) {
-		memfree(qoa.desc);
-	}
-
 	if (qoa.dec) {
 		memfree(qoa.dec);
 	}
@@ -557,7 +553,7 @@ double AudioStreamWAV::get_length() const {
 			len *= 2;
 			break;
 		case AudioStreamWAV::FORMAT_QOA:
-			qoa_desc desc = { 0, 0, 0, { { { 0 }, { 0 } } } };
+			qoa_desc desc = {};
 			qoa_decode_header((uint8_t *)data + DATA_PAD, data_bytes, &desc);
 			len = desc.samples * desc.channels;
 			break;
@@ -697,12 +693,11 @@ Ref<AudioStreamPlayback> AudioStreamWAV::instantiate_playback() {
 	sample->base = Ref<AudioStreamWAV>(this);
 
 	if (format == AudioStreamWAV::FORMAT_QOA) {
-		sample->qoa.desc = (qoa_desc *)memalloc(sizeof(qoa_desc));
-		uint32_t ffp = qoa_decode_header((uint8_t *)data + DATA_PAD, data_bytes, sample->qoa.desc);
+		uint32_t ffp = qoa_decode_header((uint8_t *)data + DATA_PAD, data_bytes, &sample->qoa.desc);
 		ERR_FAIL_COND_V(ffp != 8, Ref<AudioStreamPlaybackWAV>());
-		sample->qoa.frame_len = qoa_max_frame_size(sample->qoa.desc);
-		int samples_len = (sample->qoa.desc->samples > QOA_FRAME_LEN ? QOA_FRAME_LEN : sample->qoa.desc->samples);
-		int alloc_len = sample->qoa.desc->channels * samples_len * sizeof(int16_t);
+		sample->qoa.frame_len = qoa_max_frame_size(&sample->qoa.desc);
+		int samples_len = (sample->qoa.desc.samples > QOA_FRAME_LEN ? QOA_FRAME_LEN : sample->qoa.desc.samples);
+		int alloc_len = sample->qoa.desc.channels * samples_len * sizeof(int16_t);
 		sample->qoa.dec = (int16_t *)memalloc(alloc_len);
 	}
 

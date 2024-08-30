@@ -128,7 +128,7 @@ class GodotGame : GodotEditor() {
 
 	override fun getGodotAppLayout() = R.layout.godot_game_layout
 
-	override fun getEditorId() = RUN_GAME_INFO.windowId
+	override fun getEditorWindowInfo() = RUN_GAME_INFO
 
 	override fun overrideOrientationRequest() = false
 

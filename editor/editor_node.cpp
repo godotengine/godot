@@ -484,6 +484,9 @@ void EditorNode::_gdextensions_reloaded() {
 	// In case the developer is inspecting an object that will be changed by the reload.
 	InspectorDock::get_inspector_singleton()->update_tree();
 
+	// Reload script editor to revalidate GDScript if classes are added or removed.
+	ScriptEditor::get_singleton()->reload_scripts(true);
+
 	// Regenerate documentation.
 	EditorHelp::generate_doc();
 }
@@ -4952,7 +4955,9 @@ bool EditorNode::is_object_of_custom_type(const Object *p_object, const StringNa
 }
 
 void EditorNode::progress_add_task(const String &p_task, const String &p_label, int p_steps, bool p_can_cancel) {
-	if (singleton->cmdline_export_mode) {
+	if (!singleton) {
+		return;
+	} else if (singleton->cmdline_export_mode) {
 		print_line(p_task + ": begin: " + p_label + " steps: " + itos(p_steps));
 	} else if (singleton->progress_dialog) {
 		singleton->progress_dialog->add_task(p_task, p_label, p_steps, p_can_cancel);
@@ -4960,7 +4965,9 @@ void EditorNode::progress_add_task(const String &p_task, const String &p_label, 
 }
 
 bool EditorNode::progress_task_step(const String &p_task, const String &p_state, int p_step, bool p_force_refresh) {
-	if (singleton->cmdline_export_mode) {
+	if (!singleton) {
+		return false;
+	} else if (singleton->cmdline_export_mode) {
 		print_line("\t" + p_task + ": step " + itos(p_step) + ": " + p_state);
 		return false;
 	} else if (singleton->progress_dialog) {
@@ -4971,7 +4978,9 @@ bool EditorNode::progress_task_step(const String &p_task, const String &p_state,
 }
 
 void EditorNode::progress_end_task(const String &p_task) {
-	if (singleton->cmdline_export_mode) {
+	if (!singleton) {
+		return;
+	} else if (singleton->cmdline_export_mode) {
 		print_line(p_task + ": end");
 	} else if (singleton->progress_dialog) {
 		singleton->progress_dialog->end_task(p_task);
@@ -7361,11 +7370,9 @@ EditorNode::EditorNode() {
 
 	settings_menu->set_item_tooltip(-1, TTR("Screenshots are stored in the user data folder (\"user://\")."));
 
-#ifndef ANDROID_ENABLED
 	ED_SHORTCUT_AND_COMMAND("editor/fullscreen_mode", TTR("Toggle Fullscreen"), KeyModifierMask::SHIFT | Key::F11);
 	ED_SHORTCUT_OVERRIDE("editor/fullscreen_mode", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::F);
 	settings_menu->add_shortcut(ED_GET_SHORTCUT("editor/fullscreen_mode"), SETTINGS_TOGGLE_FULLSCREEN);
-#endif
 	settings_menu->add_separator();
 
 #ifndef ANDROID_ENABLED
