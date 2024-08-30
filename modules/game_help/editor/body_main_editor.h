@@ -524,7 +524,7 @@ class CharacterBrainSection : public LogicSectionBase {
 public:
     virtual void create_header(HBoxContainer *hb) override {
         beehave_tree_property = memnew(EditorResourcePicker);
-		beehave_tree_property->set_custom_minimum_size(Vector2(200, 0));
+		beehave_tree_property->set_custom_minimum_size(Vector2(300, 0));
 		beehave_tree_property->set_base_type("CharacterAI_Brain");
         beehave_tree_property->connect("resource_changed", callable_mp(this, &CharacterBrainSection::on_brain_changed));
         hb->add_child(beehave_tree_property);    
@@ -632,14 +632,17 @@ public:
 protected:
     void _on_upmove_button_pressed() {
         inductor->move_left(index);
+        on_update_check.call();
     }
 
     void _on_downmove_button_pressed() {
         inductor->move_right(index);
+        on_update_check.call();
     }
 
     void _on_delete_button_pressed() {
         inductor->remove_check(index);
+        on_update_check.call();
     }
 protected:
     Button* upmove_button = nullptr;
@@ -740,7 +743,7 @@ protected:
 			section->index = i;
             section->on_update_check = callable_mp(this, &CharacterInductorListSection::update_state);
 			section->init();
-			section->setup(node.ptr());
+			section->setup(inductor.ptr());
 			section->on_collapsed_change = callable_mp(this, &CharacterInductorListSection::on_child_node_collapsed);
 			node_list->add_child(section);
 		}

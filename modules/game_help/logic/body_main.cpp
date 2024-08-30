@@ -3,6 +3,8 @@
 #include "scene/3d/path_3d.h"
 #include "character_ai/character_ai.h"
 #include "character_manager.h"
+#include "core/io/file_access.h"
+#include "core/io/dir_access.h"
 
 CharacterAIContext::CharacterAIContext()
 {
@@ -134,12 +136,125 @@ void CharacterBodyMain::_notification( int p_notification )
     }
 
 }
+// 保存模型资源
+static void save_fbx_res( const String& group_name,const String& sub_path,const Ref<Resource>& p_resource,String& fbx_path, bool is_resource = true)
+{
+	String export_root_path = "res://Assets/public";
+	if (!DirAccess::dir_exists_absolute(export_root_path))
+	{
+		print_error("Export Root Path不存在:" + export_root_path);
+		return ;
+
+	}
+	Ref<DirAccess> dir = DirAccess::create_for_path(export_root_path);
+	if (!dir->dir_exists(group_name))
+	{
+		dir->make_dir(group_name);
+
+	}
+	dir->change_dir(group_name);
+	if (!dir->dir_exists(sub_path))
+	{
+			dir->make_dir(sub_path);
+	}
+	dir->change_dir(sub_path);
+	fbx_path = export_root_path.path_join(group_name).path_join(sub_path).path_join(p_resource->get_name() + (is_resource ? ".tres" :".tscn"));
+	ResourceSaver::save(p_resource,fbx_path);
+	print_line(L"CharacterBodyMain.save_fbx_res: 存储资源 :" + fbx_path);
+}
+static void get_fbx_meshs(Node *p_node,HashMap<String,MeshInstance3D* > &meshs)
+{
+
+	for(int i=0;i<p_node->get_child_count();i++)
+	{
+		Node * child = p_node->get_child(i);
+		if(child->get_class() == "MeshInstance3D")
+		{
+			MeshInstance3D * mesh = Object::cast_to<MeshInstance3D>(child);
+			if(!meshs.has(mesh->get_name())){
+				meshs[mesh->get_name()] = mesh;
+			}
+			else{
+				String name = mesh->get_name();
+				int index = 1;
+				while(meshs.has(name +"_"+ itos(index))){
+					name = mesh->get_name().str() + "_" + itos(index);
+					index++;
+				}
+				meshs[name] = mesh;
+			}
+		}
+		get_fbx_meshs(child,meshs);
+	}
+}
 void CharacterBodyMain::editor_build_form_mesh_file_path()
 {
     if(!FileAccess::exists(editor_form_mesh_file_path))
     {
         return;
     }
+
+    // 加载模型
+    Ref<PackedScene> scene = ResourceLoader::load(editor_form_mesh_file_path);
+
+    if(scene.is_null())
+    {
+		print_line(L"CharacterBodyMain: 路径不存在 :" + editor_form_mesh_file_path);
+        return;
+    }
+    Node* p_node = scene->instantiate(PackedScene::GEN_EDIT_STATE_DISABLED);
+    String p_group = scene->get_name();
+
+	Node * node = p_node->find_child("Skeleton3D");
+	Skeleton3D * skeleton = Object::cast_to<Skeleton3D>(node);
+
+	Dictionary bone_map;
+	String ske_save_path,bone_map_save_path;
+	if(skeleton != nullptr)
+	{
+		bone_map = skeleton->get_human_bone_mapping();
+		skeleton->set_human_bone_mapping(bone_map);
+
+		// 存儲骨架信息
+		Ref<PackedScene> packed_scene;
+		packed_scene.instantiate();
+		packed_scene->pack(skeleton);
+		packed_scene->set_name(scene->get_name());
+		save_fbx_res("skeleton",p_group,packed_scene,ske_save_path,false);
+
+		// 存储骨骼映射
+		Ref<CharacterBoneMap> bone_map_ref;
+		bone_map_ref.instantiate();
+		bone_map_ref->set_name("bone_map");
+		bone_map_ref->set_bone_map(bone_map);
+		save_fbx_res("bone_map",p_group,bone_map_ref,bone_map_save_path,true);
+	}
+    // 生成预制体
+	Ref<CharacterBodyPrefab> body_prefab;
+	body_prefab.instantiate();
+	HashMap<String,MeshInstance3D* > meshs;
+	// 便利存儲模型文件
+	get_fbx_meshs(p_node,meshs);
+	for(auto it = meshs.begin(); it != meshs.end(); ++it){
+		Ref<CharacterBodyPart> part;
+		part.instantiate();
+		MeshInstance3D* mesh = it->value;
+		part->init_form_mesh_instance(mesh,bone_map);
+		part->set_name(it->key);
+		String save_path;
+		save_fbx_res("meshs", p_group,part, save_path,false);
+		body_prefab->parts.push_back(save_path);
+	}
+    // 保存预制体
+	body_prefab->skeleton_path = ske_save_path;    
+	save_fbx_res("prefab",p_group, body_prefab,bone_map_save_path,true);
+
+
+    p_node->queue_free();
+
+    // 设置预制体
+    set_body_prefab(body_prefab);   
+    
 }
 
 void CharacterBodyMain::init_ai_context()

@@ -15,11 +15,6 @@ class CharacterAI_CheckBase : public RefCounted
     GDCLASS(CharacterAI_CheckBase,RefCounted);
     static void _bind_methods() {
 
-        ClassDB::bind_method(D_METHOD("set_priority","priority"),&CharacterAI_CheckBase::set_priority);
-        ClassDB::bind_method(D_METHOD("get_priority"),&CharacterAI_CheckBase::get_priority);
-        
-        ClassDB::bind_method(D_METHOD("set_name","name"),&CharacterAI_CheckBase::set_name);
-        ClassDB::bind_method(D_METHOD("get_name"),&CharacterAI_CheckBase::get_name);
 
 
         ClassDB::bind_method(D_METHOD("set_enable_condition","enable_condition"),&CharacterAI_CheckBase::set_enable_condition);
@@ -28,10 +23,8 @@ class CharacterAI_CheckBase : public RefCounted
         ClassDB::bind_method(D_METHOD("set_blackboard_plan","blackboard_plan"),&CharacterAI_CheckBase::set_blackboard_plan);
         ClassDB::bind_method(D_METHOD("get_blackboard_plan"),&CharacterAI_CheckBase::get_blackboard_plan);
 
-        ADD_PROPERTY(PropertyInfo(Variant::INT,"priority"), "set_priority","get_priority");
-        ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME,"name"), "set_name","get_name");
         ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"enable_condition",PROPERTY_HINT_RESOURCE_TYPE,"CharacterAnimatorCondition"), "set_enable_condition","get_enable_condition");
-        ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"blackboard_plan",PROPERTY_HINT_RESOURCE_TYPE,"BlackboardPlan"), "set_blackboard_plan","get_blackboard_plan");
+        //ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"blackboard_plan",PROPERTY_HINT_RESOURCE_TYPE,"BlackboardPlan"), "set_blackboard_plan","get_blackboard_plan");
     }
 public:
     // 返回true 代表立即执行决策,否则大脑根据其他条件决策
@@ -63,26 +56,8 @@ public:
 	GDVIRTUAL2R(bool,_execute,CharacterBodyMain*,Blackboard*)
 
 
-    public:
-    void set_priority(int p_priority)
-    {
-        this->priority = p_priority;
-    }
+public:
 
-    int get_priority()
-    {
-        return priority;
-    }
-
-    void set_name(StringName p_name)
-    {
-        this->name = p_name;
-    }
-
-    StringName get_name()
-    {
-        return name;
-    }
     virtual String get_lable_name()
     {
         return L"检查器基类";
@@ -334,23 +309,8 @@ class CharacterAI_Inductor : public RefCounted
         ADD_PROPERTY(PropertyInfo(Variant::ARRAY,"check",PROPERTY_HINT_ARRAY_TYPE,MAKE_RESOURCE_TYPE_HINT("CharacterAI_CheckBase")), "set_check","get_check");
     }
 public:
-    struct SortCharacterCheck {
-        bool operator()(const Ref<CharacterAI_CheckBase> &l, const Ref<CharacterAI_CheckBase> &r) const {
-            int lp = 0;
-            int rp = 0;
-            if(l.is_valid()){
-                lp = l->get_priority();
-            }
-            if(r.is_valid()){
-                rp = r->get_priority();
-            }
-
-            return lp > lp;
-        }
-    };
     virtual bool execute(CharacterBodyMain *node,Blackboard* blackboard) 
     {
-        sort_check();
         bool rs = false;
         for(uint32_t i=0;i<checks.size();i++)
         {
@@ -379,15 +339,6 @@ public:
         return ret;
     }
 
-    void sort_check()
-    {
-        if(!is_sort)
-        {
-            return;
-        }
-        checks.sort_custom<SortCharacterCheck>();
-        is_sort = true;
-    }
 
 	void add_check(const Ref< CharacterAI_CheckBase>& _check)
 	{
@@ -424,7 +375,6 @@ public:
 protected:
 
     LocalVector<Ref<CharacterAI_CheckBase>> checks;
-    bool is_sort = false;
 };
 // 角色 AI 逻辑节点
 class CharacterAILogicNode : public RefCounted
