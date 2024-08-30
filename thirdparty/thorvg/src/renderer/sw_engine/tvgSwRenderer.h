@@ -46,7 +46,7 @@ public:
     RenderRegion region(RenderData data) override;
     RenderRegion viewport() override;
     bool viewport(const RenderRegion& vp) override;
-    bool blend(BlendMethod method) override;
+    bool blend(BlendMethod method, bool direct) override;
     ColorSpace colorSpace() override;
     const Surface* mainSurface() override;
 

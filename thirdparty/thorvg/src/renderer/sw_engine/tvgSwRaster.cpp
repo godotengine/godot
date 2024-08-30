@@ -1383,7 +1383,7 @@ static bool _rasterDirectBlendingImage(SwSurface* surface, const SwImage* image,
                 *dst = INTERPOLATE(tmp, *dst, A(*src));
             }
         } else {
-            for (auto x = region.min.x; x < region.max.x; ++x, ++dst, ++src) {
+            for (auto x = region.min.x; x < region.max.x; x++, dst++, src++) {
                 auto tmp = ALPHA_BLEND(*src, opacity);
                 auto tmp2 = surface->blender(tmp, *dst, 255);
                 *dst = INTERPOLATE(tmp2, *dst, A(tmp));
