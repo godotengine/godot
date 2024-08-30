@@ -47,6 +47,20 @@ class EditorThemeManager {
 		LIGHT_COLOR,
 	};
 
+	static const float default_contrast;
+
+public:
+
+	struct ThemeColorProperties {
+		ThemeColorProperties() = default;
+		Color accent_color;
+		Color base_color;
+		float contrast = default_contrast;
+	};
+
+
+private:
+
 	struct ThemeConfiguration {
 		// Basic properties.
 
@@ -161,11 +175,15 @@ class EditorThemeManager {
 
 	static void _reset_dirty_flag();
 
+	static ThemeColorProperties get_preset_theme_color_properties(const String& preset);
+
 public:
 	static Ref<EditorTheme> generate_theme(const Ref<EditorTheme> &p_old_theme = nullptr);
 	static bool is_generated_theme_outdated();
 
 	static bool is_dark_theme();
+	static float get_theme_luminance();
+
 
 	static void initialize();
 	static void finalize();
