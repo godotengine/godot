@@ -139,6 +139,10 @@ bool Array::recursive_equal(const Array &p_array, int recursion_count) const {
 	if (_p == p_array._p) {
 		return true;
 	}
+	if (_p->typed != p_array._p->typed) {
+		return false;
+	}
+
 	const Vector<Variant> &a1 = _p->array;
 	const Vector<Variant> &a2 = p_array._p->array;
 	const int size = a1.size();
@@ -199,6 +203,9 @@ uint32_t Array::recursive_hash(int recursion_count) const {
 	}
 
 	uint32_t h = hash_murmur3_one_32(Variant::ARRAY);
+	h = hash_murmur3_one_32(_p->typed.type, h);
+	h = hash_murmur3_one_32(_p->typed.class_name.hash(), h);
+	h = hash_murmur3_one_32(hash_one_uint64(hash_make_uint64_t(_p->typed.script.ptr())), h);
 
 	recursion_count++;
 	for (int i = 0; i < _p->array.size(); i++) {

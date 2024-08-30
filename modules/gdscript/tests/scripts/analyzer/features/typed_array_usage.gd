@@ -137,9 +137,11 @@ func test():
 	var empty_bools: Array[bool] = []
 	var empty_basic_one := []
 	var empty_basic_two := []
-	assert(empty_strings == empty_bools)
+	assert(empty_strings.get_typed_builtin() == TYPE_STRING)
+	assert(empty_bools.get_typed_builtin() == TYPE_BOOL)
+	assert(empty_strings != empty_bools)
 	assert(empty_basic_one == empty_basic_two)
-	assert(empty_strings.hash() == empty_bools.hash())
+	assert(empty_strings.hash() != empty_bools.hash())
 	assert(empty_basic_one.hash() == empty_basic_two.hash())
 
 
