@@ -38,6 +38,7 @@
 #endif // TOOLS_ENABLED
 
 #include "tests/core/config/test_project_settings.h"
+#include "tests/core/error/test_error_macros.h"
 #include "tests/core/input/test_input_event.h"
 #include "tests/core/input/test_input_event_key.h"
 #include "tests/core/input/test_input_event_mouse.h"

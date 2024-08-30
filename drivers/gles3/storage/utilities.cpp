@@ -373,17 +373,17 @@ uint64_t Utilities::get_captured_timestamps_frame() const {
 }
 
 uint64_t Utilities::get_captured_timestamp_gpu_time(uint32_t p_index) const {
-	ERR_FAIL_UNSIGNED_INDEX_V(p_index, frames[frame].timestamp_result_count, 0);
+	ERR_FAIL_INDEX_V(p_index, frames[frame].timestamp_result_count, 0);
 	return frames[frame].timestamp_result_values[p_index];
 }
 
 uint64_t Utilities::get_captured_timestamp_cpu_time(uint32_t p_index) const {
-	ERR_FAIL_UNSIGNED_INDEX_V(p_index, frames[frame].timestamp_result_count, 0);
+	ERR_FAIL_INDEX_V(p_index, frames[frame].timestamp_result_count, 0);
 	return frames[frame].timestamp_cpu_result_values[p_index];
 }
 
 String Utilities::get_captured_timestamp_name(uint32_t p_index) const {
-	ERR_FAIL_UNSIGNED_INDEX_V(p_index, frames[frame].timestamp_result_count, String());
+	ERR_FAIL_INDEX_V(p_index, frames[frame].timestamp_result_count, String());
 	return frames[frame].timestamp_result_names[p_index];
 }
 
