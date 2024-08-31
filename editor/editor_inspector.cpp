@@ -2838,6 +2838,7 @@ void EditorInspector::update_tree() {
 	String subgroup;
 	String subgroup_base;
 	int section_depth = 0;
+	String category_label;
 	VBoxContainer *category_vbox = nullptr;
 
 	List<PropertyInfo> plist;
@@ -2926,7 +2927,6 @@ void EditorInspector::update_tree() {
 				continue; // Empty, ignore it.
 			}
 
-			String category_label;
 			String category_tooltip;
 			Ref<Texture> category_icon;
 
@@ -3192,7 +3192,7 @@ void EditorInspector::update_tree() {
 
 				Color c = sscolor;
 				c.a /= level;
-				section->setup(acc_path, label, object, c, use_folding, section_depth, level);
+				section->setup(category_label + "/" + acc_path, label, object, c, use_folding, section_depth, level);
 				section->set_tooltip_text(tooltip);
 
 				// Add editors at the start of a group.
