@@ -132,6 +132,11 @@ void EditorResourcePicker::_resource_selected() {
 	emit_signal(SNAME("resource_selected"), edited_resource, false);
 }
 
+void EditorResourcePicker::_resource_changed() {
+	emit_signal(SNAME("resource_changed"), edited_resource);
+	_update_resource();
+}
+
 void EditorResourcePicker::_file_selected(const String &p_path) {
 	Ref<Resource> loaded_resource = ResourceLoader::load(p_path);
 	ERR_FAIL_COND_MSG(loaded_resource.is_null(), "Cannot load resource from path '" + p_path + "'.");
@@ -167,8 +172,7 @@ void EditorResourcePicker::_file_selected(const String &p_path) {
 	}
 
 	edited_resource = loaded_resource;
-	emit_signal(SNAME("resource_changed"), edited_resource);
-	_update_resource();
+	_resource_changed();
 }
 
 void EditorResourcePicker::_resource_saved(Object *p_resource) {
@@ -353,8 +357,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 
 		case OBJ_MENU_CLEAR: {
 			edited_resource = Ref<Resource>();
-			emit_signal(SNAME("resource_changed"), edited_resource);
-			_update_resource();
+			_resource_changed();
 		} break;
 
 		case OBJ_MENU_MAKE_UNIQUE: {
@@ -366,8 +369,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			ERR_FAIL_COND(unique_resource.is_null()); // duplicate() may fail.
 
 			edited_resource = unique_resource;
-			emit_signal(SNAME("resource_changed"), edited_resource);
-			_update_resource();
+			_resource_changed();
 		} break;
 
 		case OBJ_MENU_MAKE_UNIQUE_RECURSIVE: {
@@ -432,9 +434,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE);
 				return;
 			}
-
-			emit_signal(SNAME("resource_changed"), edited_resource);
-			_update_resource();
+			_resource_changed();
 		} break;
 
 		case OBJ_MENU_SHOW_IN_FILE_SYSTEM: {
@@ -453,8 +453,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				ERR_FAIL_INDEX(to_type, conversions.size());
 
 				edited_resource = conversions[to_type]->convert(edited_resource);
-				emit_signal(SNAME("resource_changed"), edited_resource);
-				_update_resource();
+				_resource_changed();
 				break;
 			}
 
@@ -481,8 +480,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			// Prevent freeing of the object until the end of the update of the resource (GH-88286).
 			Ref<Resource> old_edited_resource = edited_resource;
 			edited_resource = Ref<Resource>(resp);
-			emit_signal(SNAME("resource_changed"), edited_resource);
-			_update_resource();
+			_resource_changed();
 		} break;
 	}
 }
@@ -778,8 +776,7 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 		}
 
 		edited_resource = dropped_resource;
-		emit_signal(SNAME("resource_changed"), edited_resource);
-		_update_resource();
+		_resource_changed();
 	}
 }
 
@@ -1046,8 +1043,7 @@ void EditorResourcePicker::_duplicate_selected_resources() {
 
 		if (meta.size() == 1) { // Root.
 			edited_resource = unique_resource;
-			emit_signal(SNAME("resource_changed"), edited_resource);
-			_update_resource();
+			_resource_changed();
 		} else {
 			Array parent_meta = item->get_parent()->get_metadata(0);
 			Ref<Resource> parent = parent_meta[0];
