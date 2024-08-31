@@ -47,6 +47,32 @@
 #include "scene/gui/tree.h"
 #include "scene/main/http_request.h"
 
+enum DownloadsAvailability {
+	DOWNLOADS_AVAILABLE,
+	DOWNLOADS_NOT_AVAILABLE_IN_OFFLINE_MODE,
+	DOWNLOADS_NOT_AVAILABLE_FOR_DEV_BUILDS,
+};
+
+static DownloadsAvailability _get_downloads_availability() {
+	const int network_mode = EDITOR_GET("network/connection/network_mode");
+	if (network_mode == EditorSettings::NETWORK_OFFLINE) {
+		return DOWNLOADS_NOT_AVAILABLE_IN_OFFLINE_MODE;
+	}
+
+	// Downloadable export templates are only available for stable and official alpha/beta/RC builds
+	// (which always have a number following their status, e.g. "alpha1").
+	// Therefore, don't display download-related features when using a development version
+	// (whose builds aren't numbered).
+	if (String(VERSION_STATUS) == String("dev") ||
+			String(VERSION_STATUS) == String("alpha") ||
+			String(VERSION_STATUS) == String("beta") ||
+			String(VERSION_STATUS) == String("rc")) {
+		return DOWNLOADS_NOT_AVAILABLE_FOR_DEV_BUILDS;
+	}
+
+	return DOWNLOADS_AVAILABLE;
+}
+
 void ExportTemplateManager::_update_template_status() {
 	// Fetch installed templates from the file system.
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
@@ -641,9 +667,55 @@ void ExportTemplateManager::_open_template_folder(const String &p_version) {
 
 void ExportTemplateManager::popup_manager() {
 	_update_template_status();
-	if (downloads_available && !is_downloading_templates) {
-		_refresh_mirrors();
+
+	switch (_get_downloads_availability()) {
+		case DOWNLOADS_AVAILABLE: {
+			current_missing_label->set_text(TTR("Export templates are missing. Download them or install from a file."));
+
+			mirrors_list->clear();
+			mirrors_list->add_item(TTR("Best available mirror"), 0);
+			mirrors_list->set_disabled(false);
+			mirrors_list->set_tooltip_text("");
+
+			mirror_options_button->set_disabled(false);
+
+			download_current_button->set_disabled(false);
+			download_current_button->set_tooltip_text("");
+
+			if (!is_downloading_templates) {
+				_refresh_mirrors();
+			}
+		} break;
+
+		case DOWNLOADS_NOT_AVAILABLE_IN_OFFLINE_MODE: {
+			current_missing_label->set_text(TTR("Export templates are missing. Install them from a file."));
+
+			mirrors_list->clear();
+			mirrors_list->add_item(TTR("Not available in offline mode"), 0);
+			mirrors_list->set_disabled(true);
+			mirrors_list->set_tooltip_text(TTR("Template downloading is disabled in offline mode."));
+
+			mirror_options_button->set_disabled(true);
+
+			download_current_button->set_disabled(true);
+			download_current_button->set_tooltip_text(TTR("Template downloading is disabled in offline mode."));
+		} break;
+
+		case DOWNLOADS_NOT_AVAILABLE_FOR_DEV_BUILDS: {
+			current_missing_label->set_text(TTR("Export templates are missing. Install them from a file."));
+
+			mirrors_list->clear();
+			mirrors_list->add_item(TTR("No templates for development builds"), 0);
+			mirrors_list->set_disabled(true);
+			mirrors_list->set_tooltip_text(TTR("Official export templates aren't available for development builds."));
+
+			mirror_options_button->set_disabled(true);
+
+			download_current_button->set_disabled(true);
+			download_current_button->set_tooltip_text(TTR("Official export templates aren't available for development builds."));
+		} break;
 	}
+
 	popup_centered(Size2(720, 280) * EDSCALE);
 }
 
@@ -866,16 +938,6 @@ ExportTemplateManager::ExportTemplateManager() {
 	set_hide_on_ok(false);
 	set_ok_button_text(TTR("Close"));
 
-	// Downloadable export templates are only available for stable and official alpha/beta/RC builds
-	// (which always have a number following their status, e.g. "alpha1").
-	// Therefore, don't display download-related features when using a development version
-	// (whose builds aren't numbered).
-	downloads_available =
-			String(VERSION_STATUS) != String("dev") &&
-			String(VERSION_STATUS) != String("alpha") &&
-			String(VERSION_STATUS) != String("beta") &&
-			String(VERSION_STATUS) != String("rc");
-
 	VBoxContainer *main_vb = memnew(VBoxContainer);
 	add_child(main_vb);
 
@@ -898,11 +960,6 @@ ExportTemplateManager::ExportTemplateManager() {
 
 	current_missing_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	current_missing_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
-	if (downloads_available) {
-		current_missing_label->set_text(TTR("Export templates are missing. Download them or install from a file."));
-	} else {
-		current_missing_label->set_text(TTR("Export templates are missing. Install them from a file."));
-	}
 	current_hb->add_child(current_missing_label);
 
 	// Status: Current version is installed.
@@ -957,12 +1014,6 @@ ExportTemplateManager::ExportTemplateManager() {
 
 	mirrors_list = memnew(OptionButton);
 	mirrors_list->set_custom_minimum_size(Size2(280, 0) * EDSCALE);
-	if (downloads_available) {
-		mirrors_list->add_item(TTR("Best available mirror"), 0);
-	} else {
-		mirrors_list->add_item(TTR("(no templates for development builds)"), 0);
-		mirrors_list->set_disabled(true);
-	}
 	download_install_hb->add_child(mirrors_list);
 
 	request_mirrors = memnew(HTTPRequest);
@@ -972,23 +1023,16 @@ ExportTemplateManager::ExportTemplateManager() {
 	mirror_options_button = memnew(MenuButton);
 	mirror_options_button->get_popup()->add_item(TTR("Open in Web Browser"), VISIT_WEB_MIRROR);
 	mirror_options_button->get_popup()->add_item(TTR("Copy Mirror URL"), COPY_MIRROR_URL);
-	mirror_options_button->set_disabled(!downloads_available);
 	download_install_hb->add_child(mirror_options_button);
 	mirror_options_button->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ExportTemplateManager::_mirror_options_button_cbk));
 
 	download_install_hb->add_spacer();
 
-	Button *download_current_button = memnew(Button);
+	download_current_button = memnew(Button);
 	download_current_button->set_text(TTR("Download and Install"));
 	download_current_button->set_tooltip_text(TTR("Download and install templates for the current version from the best possible mirror."));
 	download_install_hb->add_child(download_current_button);
 	download_current_button->connect(SceneStringName(pressed), callable_mp(this, &ExportTemplateManager::_download_current));
-
-	// Update downloads buttons to prevent unsupported downloads.
-	if (!downloads_available) {
-		download_current_button->set_disabled(true);
-		download_current_button->set_tooltip_text(TTR("Official export templates aren't available for development builds."));
-	}
 
 	HBoxContainer *install_file_hb = memnew(HBoxContainer);
 	install_file_hb->set_alignment(BoxContainer::ALIGNMENT_END);

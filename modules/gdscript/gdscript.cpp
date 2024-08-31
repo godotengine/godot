@@ -956,7 +956,8 @@ bool GDScript::_get(const StringName &p_name, Variant &r_ret) const {
 			if (E) {
 				if (likely(top->valid) && E->value.getter) {
 					Callable::CallError ce;
-					r_ret = const_cast<GDScript *>(this)->callp(E->value.getter, nullptr, 0, ce);
+					const Variant ret = const_cast<GDScript *>(this)->callp(E->value.getter, nullptr, 0, ce);
+					r_ret = (ce.error == Callable::CallError::CALL_OK) ? ret : Variant();
 					return true;
 				}
 				r_ret = top->static_variables[E->value.index];
@@ -1729,10 +1730,9 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 		if (E) {
 			if (likely(script->valid) && E->value.getter) {
 				Callable::CallError err;
-				r_ret = const_cast<GDScriptInstance *>(this)->callp(E->value.getter, nullptr, 0, err);
-				if (err.error == Callable::CallError::CALL_OK) {
-					return true;
-				}
+				const Variant ret = const_cast<GDScriptInstance *>(this)->callp(E->value.getter, nullptr, 0, err);
+				r_ret = (err.error == Callable::CallError::CALL_OK) ? ret : Variant();
+				return true;
 			}
 			r_ret = members[E->value.index];
 			return true;
@@ -1754,7 +1754,8 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 			if (E) {
 				if (likely(sptr->valid) && E->value.getter) {
 					Callable::CallError ce;
-					r_ret = const_cast<GDScript *>(sptr)->callp(E->value.getter, nullptr, 0, ce);
+					const Variant ret = const_cast<GDScript *>(sptr)->callp(E->value.getter, nullptr, 0, ce);
+					r_ret = (ce.error == Callable::CallError::CALL_OK) ? ret : Variant();
 					return true;
 				}
 				r_ret = sptr->static_variables[E->value.index];
