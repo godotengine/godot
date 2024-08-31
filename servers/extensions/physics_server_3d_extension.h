@@ -112,10 +112,12 @@ public:
 	PhysicsDirectBodyState3DExtension();
 };
 
+typedef Vector<PhysicsDirectSpaceState3D::RayResult> PhysicsServer3DExtensionMultiRayResult;
 typedef PhysicsDirectSpaceState3D::RayResult PhysicsServer3DExtensionRayResult;
 typedef PhysicsDirectSpaceState3D::ShapeResult PhysicsServer3DExtensionShapeResult;
 typedef PhysicsDirectSpaceState3D::ShapeRestInfo PhysicsServer3DExtensionShapeRestInfo;
 
+GDVIRTUAL_NATIVE_PTR(PhysicsServer3DExtensionMultiRayResult)
 GDVIRTUAL_NATIVE_PTR(PhysicsServer3DExtensionRayResult)
 GDVIRTUAL_NATIVE_PTR(PhysicsServer3DExtensionShapeResult)
 GDVIRTUAL_NATIVE_PTR(PhysicsServer3DExtensionShapeRestInfo)
@@ -129,7 +131,7 @@ protected:
 	static void _bind_methods();
 	bool is_body_excluded_from_query(const RID &p_body) const;
 
-	GDVIRTUAL9R(bool, _intersect_ray_multiple, const Vector3 &, const Vector3 &, uint32_t, bool, bool, bool, bool, bool, GDExtensionPtr<Vector<PhysicsServer3DExtensionRayResult>>)
+	GDVIRTUAL9R(bool, _intersect_ray_multiple, const Vector3 &, const Vector3 &, uint32_t, bool, bool, bool, bool, bool, GDExtensionPtr<PhysicsServer3DExtensionMultiRayResult>)
 	GDVIRTUAL9R(bool, _intersect_ray, const Vector3 &, const Vector3 &, uint32_t, bool, bool, bool, bool, bool, GDExtensionPtr<PhysicsServer3DExtensionRayResult>)
 	GDVIRTUAL6R(int, _intersect_point, const Vector3 &, uint32_t, bool, bool, GDExtensionPtr<PhysicsServer3DExtensionShapeResult>, int)
 	GDVIRTUAL9R(int, _intersect_shape, RID, const Transform3D &, const Vector3 &, real_t, uint32_t, bool, bool, GDExtensionPtr<PhysicsServer3DExtensionShapeResult>, int)

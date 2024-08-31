@@ -57,21 +57,6 @@
 				[b]Note:[/b] [ConcavePolygonShape2D]s and [CollisionPolygon2D]s in [code]Segments[/code] build mode are not solid shapes. Therefore, they will not be detected.
 			</description>
 		</method>
-		<method name="intersect_ray_multiple">
-			<return type="Dictionary" />
-			<param index="0" name="parameters" type="PhysicsRayQueryParameters2D" />
-			<description>
-				Intersects a ray in a given space. Ray position and other parameters are defined through [PhysicsRayQueryParameters2D]. The returned object is an array of dictionaries with the following fields:
-				[code]collider[/code]: The colliding object.
-				[code]collider_id[/code]: The colliding object's ID.
-				[code]normal[/code]: The object's surface normal at the intersection point, or [code]Vector2(0, 0)[/code] if the ray starts inside the shape and [member PhysicsRayQueryParameters2D.hit_from_inside] is [code]true[/code].
-				[code]position[/code]: The intersection point.
-				[code]rid[/code]: The intersecting object's [RID].
-				[code]shape[/code]: The shape index of the colliding shape.
-				If the ray did not intersect anything, then an empty array is returned instead.
-				[b]Note:[/b] The result will contain only the closest collision for each unique collision body. It does *not* report all surface collisions of all bodies.
-			</description>
-		</method>
 		<method name="intersect_ray">
 			<return type="Dictionary" />
 			<param index="0" name="parameters" type="PhysicsRayQueryParameters2D" />
@@ -84,6 +69,21 @@
 				[code]rid[/code]: The intersecting object's [RID].
 				[code]shape[/code]: The shape index of the colliding shape.
 				If the ray did not intersect anything, then an empty dictionary is returned instead.
+			</description>
+		</method>
+		<method name="intersect_ray_multiple">
+			<return type="Dictionary[]" />
+			<param index="0" name="parameters" type="PhysicsRayQueryParameters2D" />
+			<description>
+				Intersects a ray in a given space. Ray position and other parameters are defined through [PhysicsRayQueryParameters2D]. The returned object is an array of dictionaries with the following fields:
+				[code]collider[/code]: The colliding object.
+				[code]collider_id[/code]: The colliding object's ID.
+				[code]normal[/code]: The object's surface normal at the intersection point, or [code]Vector2(0, 0)[/code] if the ray starts inside the shape and [member PhysicsRayQueryParameters2D.hit_from_inside] is [code]true[/code].
+				[code]position[/code]: The intersection point.
+				[code]rid[/code]: The intersecting object's [RID].
+				[code]shape[/code]: The shape index of the colliding shape.
+				If the ray did not intersect anything, then an empty array is returned instead.
+				[b]Note:[/b] The result will contain only the closest collision for each unique collision body. It does *not* report all surface collisions of all bodies.
 			</description>
 		</method>
 		<method name="intersect_shape">
