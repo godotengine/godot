@@ -3368,69 +3368,131 @@ void ScriptEditor::_make_script_list_context_menu() {
 }
 
 void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
-	if (!bool(EDITOR_GET("text_editor/behavior/files/restore_scripts_on_load"))) {
-		return;
-	}
+    // First, restore layout-related properties
+    if (p_layout->has_section_key("ScriptEditor", "script_split_offset")) {
+        script_split->set_split_offset(p_layout->get_value("ScriptEditor", "script_split_offset"));
+    }
 
-	if (!p_layout->has_section_key("ScriptEditor", "open_scripts") && !p_layout->has_section_key("ScriptEditor", "open_help")) {
-		return;
-	}
+    if (p_layout->has_section_key("ScriptEditor", "list_split_offset")) {
+        list_split->set_split_offset(p_layout->get_value("ScriptEditor", "list_split_offset"));
+    }
 
-	Array scripts = p_layout->get_value("ScriptEditor", "open_scripts");
-	Array helps;
-	if (p_layout->has_section_key("ScriptEditor", "open_help")) {
-		helps = p_layout->get_value("ScriptEditor", "open_help");
-	}
+    _set_zoom_factor(p_layout->get_value("ScriptEditor", "zoom_factor", 1.0f));
 
-	restoring_layout = true;
+    // Now check the condition to restore scripts on load
+    if (!bool(EDITOR_GET("text_editor/behavior/files/restore_scripts_on_load"))) {
+        return;
+    }
 
-	HashSet<String> loaded_scripts;
-	List<String> extensions;
-	ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
-	ResourceLoader::get_recognized_extensions_for_type("JSON", &extensions);
+    if (!p_layout->has_section_key("ScriptEditor", "open_scripts") && !p_layout->has_section_key("ScriptEditor", "open_help")) {
+        return;
+    }
 
-	for (int i = 0; i < scripts.size(); i++) {
-		String path = scripts[i];
+    Array scripts = p_layout->get_value("ScriptEditor", "open_scripts");
+    Array helps;
+    if (p_layout->has_section_key("ScriptEditor", "open_help")) {
+        helps = p_layout->get_value("ScriptEditor", "open_help");
+    }
 
-		Dictionary script_info = scripts[i];
-		if (!script_info.is_empty()) {
-			path = script_info["path"];
-		}
+    restoring_layout = true;
 
-		if (!FileAccess::exists(path)) {
-			if (script_editor_cache->has_section(path)) {
-				script_editor_cache->erase_section(path);
-			}
-			continue;
-		}
-		loaded_scripts.insert(path);
+    HashSet<String> loaded_scripts;
+    List<String> extensions;
+    ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
+    ResourceLoader::get_recognized_extensions_for_type("JSON", &extensions);
 
-		if (extensions.find(path.get_extension())) {
-			Ref<Resource> scr = ResourceLoader::load(path);
-			if (!scr.is_valid()) {
-				continue;
-			}
-			if (!edit(scr, false)) {
-				continue;
-			}
-		} else {
-			Error error;
-			Ref<TextFile> text_file = _load_text_file(path, &error);
-			if (error != OK || !text_file.is_valid()) {
-				continue;
-			}
-			if (!edit(text_file, false)) {
-				continue;
-			}
-		}
+    for (int i = 0; i < scripts.size(); i++) {
+        String path = scripts[i];
 
-		if (!script_info.is_empty()) {
-			ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(tab_container->get_tab_count() - 1));
-			if (se) {
-				se->set_edit_state(script_info["state"]);
-			}
-		}
-	}
+        Dictionary script_info = scripts[i];
+        if (!script_info.is_empty()) {
+            path = script_info["path"];
+        }
+
+        if (!FileAccess::exists(path)) {
+            if (script_editor_cache->has_section(path)) {
+                script_editor_cache->erase_section(path);
+            }
+            continue;
+        }
+        loaded_scripts.insert(path);
+
+        if (extensions.find(path.get_extension())) {
+            Ref<Resource> scr = ResourceLoader::load(path);
+            if (!scr.is_valid()) {
+                continue;
+            }
+            if (!edit(scr, false)) {
+                continue;
+            }
+        } else {
+            Error error;
+            Ref<TextFile> text_file = _load_text_file(path, &error);
+            if (error != OK || !text_file.is_valid()) {
+                continue;
+            }
+            if (!edit(text_file, false)) {
+                continue;
+            }
+        }
+
+        if (!script_info.is_empty()) {
+            ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(tab_container->get_tab_count() - 1));
+            if (se) {
+                se->set_edit_state(script_info["state"]);
+            }
+        }
+    }
+
+    for (int i = 0; i < helps.size(); i++) {
+        String path = helps[i];
+        if (path.is_empty()) { // invalid, skip
+            continue;
+        }
+        _help_class_open(path);
+    }
+
+    for (int i = 0; i < tab_container->get_tab_count(); i++) {
+        tab_container->get_tab_control(i)->set_meta("__editor_pass", Variant());
+    }
+
+    // Remove any deleted editors that have been removed between launches.
+    // and if a Script, register breakpoints with the debugger.
+    List<String> cached_editors;
+    script_editor_cache->get_sections(&cached_editors);
+    for (const String &E : cached_editors) {
+        if (loaded_scripts.has(E)) {
+            continue;
+        }
+
+        if (!FileAccess::exists(E)) {
+            script_editor_cache->erase_section(E);
+            continue;
+        }
+
+        Array breakpoints = _get_cached_breakpoints_for_script(E);
+        for (int breakpoint : breakpoints) {
+            EditorDebuggerNode::get_singleton()->set_breakpoint(E, (int)breakpoint + 1, true);
+        }
+    }
+
+    restoring_layout = false;
+
+    _update_script_names();
+
+    if (p_layout->has_section_key("ScriptEditor", "selected_script")) {
+        String selected_script = p_layout->get_value("ScriptEditor", "selected_script");
+        // If the selected script is not in the list of open scripts, select nothing.
+        for (int i = 0; i < tab_container->get_tab_count(); i++) {
+            ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
+            if (se && se->get_edited_resource()->get_path() == selected_script) {
+                _go_to_tab(i);
+                break;
+            }
+        }
+    }
+}
+
 
 	for (int i = 0; i < helps.size(); i++) {
 		String path = helps[i];
