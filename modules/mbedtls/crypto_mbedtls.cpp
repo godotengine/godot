@@ -314,10 +314,6 @@ Crypto *CryptoMbedTLS::create(bool p_notify_postinitialize) {
 }
 
 void CryptoMbedTLS::initialize_crypto() {
-#ifdef DEBUG_ENABLED
-	mbedtls_debug_set_threshold(1);
-#endif
-
 	Crypto::_create = create;
 	Crypto::_load_default_certificates = load_default_certificates;
 	X509CertificateMbedTLS::make_default();
