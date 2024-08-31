@@ -71,7 +71,9 @@ struct DirAccessWindowsPrivate {
 
 String DirAccessWindows::fix_path(const String &p_path) const {
 	String r_path = DirAccess::fix_path(p_path.trim_prefix(R"(\\?\)").replace("\\", "/"));
-
+	if (r_path.ends_with(":")) {
+		r_path += "/";
+	}
 	if (r_path.is_relative_path()) {
 		r_path = current_dir.trim_prefix(R"(\\?\)").replace("\\", "/").path_join(r_path);
 	} else if (r_path == ".") {
@@ -304,7 +306,7 @@ Error DirAccessWindows::rename(String p_path, String p_new_path) {
 			}
 		}
 
-		return MoveFileW((LPCWSTR)(path.utf16().get_data()), (LPCWSTR)(p_new_path.utf16().get_data())) != 0 ? OK : FAILED;
+		return MoveFileW((LPCWSTR)(path.utf16().get_data()), (LPCWSTR)(new_path.utf16().get_data())) != 0 ? OK : FAILED;
 	}
 }
 

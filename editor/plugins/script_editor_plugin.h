@@ -539,6 +539,7 @@ public:
 	_FORCE_INLINE_ bool edit(const Ref<Resource> &p_resource, bool p_grab_focus = true) { return edit(p_resource, -1, 0, p_grab_focus); }
 	bool edit(const Ref<Resource> &p_resource, int p_line, int p_col, bool p_grab_focus = true);
 
+	Vector<String> _get_breakpoints();
 	void get_breakpoints(List<String> *p_breakpoints);
 
 	PackedStringArray get_unsaved_scripts() const;

@@ -1,7 +1,6 @@
 class_name ExportVariableTest
 extends Node
 
-const Utils = preload("../../utils.notest.gd")
 const PreloadedGlobalClass = preload("./export_variable_global.notest.gd")
 const PreloadedUnnamedClass = preload("./export_variable_unnamed.notest.gd")
 

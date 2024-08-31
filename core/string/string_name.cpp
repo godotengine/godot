@@ -191,11 +191,10 @@ StringName::StringName(const StringName &p_name) {
 }
 
 void StringName::assign_static_unique_class_name(StringName *ptr, const char *p_name) {
-	mutex.lock();
+	MutexLock lock(mutex);
 	if (*ptr == StringName()) {
 		*ptr = StringName(p_name, true);
 	}
-	mutex.unlock();
 }
 
 StringName::StringName(const char *p_name, bool p_static) {

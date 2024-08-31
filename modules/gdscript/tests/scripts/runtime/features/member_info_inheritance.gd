@@ -1,7 +1,5 @@
 # GH-82169
 
-const Utils = preload("../../utils.notest.gd")
-
 class A:
 	static var test_static_var_a1
 	static var test_static_var_a2

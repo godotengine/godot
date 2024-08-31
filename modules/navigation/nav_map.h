@@ -36,6 +36,7 @@
 
 #include "core/math/math_defs.h"
 #include "core/object/worker_thread_pool.h"
+#include "servers/navigation/navigation_globals.h"
 
 #include <KdTree2d.h>
 #include <KdTree3d.h>
@@ -55,21 +56,21 @@ class NavMap : public NavRid {
 
 	/// To find the polygons edges the vertices are displaced in a grid where
 	/// each cell has the following cell_size and cell_height.
-	real_t cell_size = 0.25; // Must match ProjectSettings default 3D cell_size and NavigationMesh cell_size.
-	real_t cell_height = 0.25; // Must match ProjectSettings default 3D cell_height and NavigationMesh cell_height.
+	real_t cell_size = NavigationDefaults3D::navmesh_cell_size;
+	real_t cell_height = NavigationDefaults3D::navmesh_cell_height;
 
 	// For the inter-region merging to work, internal rasterization is performed.
-	float merge_rasterizer_cell_size = 0.25;
-	float merge_rasterizer_cell_height = 0.25;
+	float merge_rasterizer_cell_size = NavigationDefaults3D::navmesh_cell_size;
+	float merge_rasterizer_cell_height = NavigationDefaults3D::navmesh_cell_height;
 	// This value is used to control sensitivity of internal rasterizer.
 	float merge_rasterizer_cell_scale = 1.0;
 
 	bool use_edge_connections = true;
 	/// This value is used to detect the near edges to connect.
-	real_t edge_connection_margin = 0.25;
+	real_t edge_connection_margin = NavigationDefaults3D::edge_connection_margin;
 
 	/// This value is used to limit how far links search to find polygons to connect to.
-	real_t link_connection_radius = 1.0;
+	real_t link_connection_radius = NavigationDefaults3D::link_connection_radius;
 
 	bool regenerate_polygons = true;
 	bool regenerate_links = true;

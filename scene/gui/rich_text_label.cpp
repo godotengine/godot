@@ -817,6 +817,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 	}
 
 	int line_count = 0;
+	// Bottom margin for text clipping.
+	float v_limit = theme_cache.normal_style->get_margin(SIDE_BOTTOM);
 	Size2 ctrl_size = get_size();
 	// Draw text.
 	for (int line = 0; line < l.text_buf->get_line_count(); line++) {
@@ -824,7 +826,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			off.y += theme_cache.line_separation;
 		}
 
-		if (p_ofs.y + off.y >= ctrl_size.height) {
+		if (p_ofs.y + off.y >= ctrl_size.height - v_limit) {
 			break;
 		}
 
@@ -1890,10 +1892,12 @@ void RichTextLabel::_notification(int p_what) {
 			visible_paragraph_count = 0;
 			visible_line_count = 0;
 
+			// Bottom margin for text clipping.
+			float v_limit = theme_cache.normal_style->get_margin(SIDE_BOTTOM);
 			// New cache draw.
 			Point2 ofs = text_rect.get_position() + Vector2(0, main->lines[from_line].offset.y - vofs);
 			int processed_glyphs = 0;
-			while (ofs.y < size.height && from_line < to_line) {
+			while (ofs.y < size.height - v_limit && from_line < to_line) {
 				MutexLock lock(main->lines[from_line].text_buf->get_mutex());
 
 				visible_paragraph_count++;

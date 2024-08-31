@@ -746,7 +746,7 @@ Variant Object::callv(const StringName &p_method, const Array &p_args) {
 	}
 
 	Callable::CallError ce;
-	Variant ret = callp(p_method, argptrs, p_args.size(), ce);
+	const Variant ret = callp(p_method, argptrs, p_args.size(), ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
 		ERR_FAIL_V_MSG(Variant(), "Error calling method from 'callv': " + Variant::get_call_error_text(this, p_method, argptrs, p_args.size(), ce) + ".");
 	}
@@ -787,7 +787,7 @@ Variant Object::callp(const StringName &p_method, const Variant **p_args, int p_
 
 	if (script_instance) {
 		ret = script_instance->callp(p_method, p_args, p_argcount, r_error);
-		//force jumptable
+		// Force jump table.
 		switch (r_error.error) {
 			case Callable::CallError::CALL_OK:
 				return ret;
@@ -1021,6 +1021,14 @@ Variant Object::get_meta(const StringName &p_name, const Variant &p_default) con
 
 void Object::remove_meta(const StringName &p_name) {
 	set_meta(p_name, Variant());
+}
+
+void Object::merge_meta_from(const Object *p_src) {
+	List<StringName> meta_keys;
+	p_src->get_meta_list(&meta_keys);
+	for (const StringName &key : meta_keys) {
+		set_meta(key, p_src->get_meta(key));
+	}
 }
 
 TypedArray<Dictionary> Object::_get_property_list_bind() const {
@@ -1904,7 +1912,7 @@ void Object::set_instance_binding(void *p_token, void *p_binding, const GDExtens
 
 void *Object::get_instance_binding(void *p_token, const GDExtensionInstanceBindingCallbacks *p_callbacks) {
 	void *binding = nullptr;
-	_instance_binding_mutex.lock();
+	MutexLock instance_binding_lock(_instance_binding_mutex);
 	for (uint32_t i = 0; i < _instance_binding_count; i++) {
 		if (_instance_bindings[i].token == p_token) {
 			binding = _instance_bindings[i].binding;
@@ -1935,14 +1943,12 @@ void *Object::get_instance_binding(void *p_token, const GDExtensionInstanceBindi
 		_instance_binding_count++;
 	}
 
-	_instance_binding_mutex.unlock();
-
 	return binding;
 }
 
 bool Object::has_instance_binding(void *p_token) {
 	bool found = false;
-	_instance_binding_mutex.lock();
+	MutexLock instance_binding_lock(_instance_binding_mutex);
 	for (uint32_t i = 0; i < _instance_binding_count; i++) {
 		if (_instance_bindings[i].token == p_token) {
 			found = true;
@@ -1950,14 +1956,12 @@ bool Object::has_instance_binding(void *p_token) {
 		}
 	}
 
-	_instance_binding_mutex.unlock();
-
 	return found;
 }
 
 void Object::free_instance_binding(void *p_token) {
 	bool found = false;
-	_instance_binding_mutex.lock();
+	MutexLock instance_binding_lock(_instance_binding_mutex);
 	for (uint32_t i = 0; i < _instance_binding_count; i++) {
 		if (!found && _instance_bindings[i].token == p_token) {
 			if (_instance_bindings[i].free_callback) {
@@ -1976,7 +1980,6 @@ void Object::free_instance_binding(void *p_token) {
 	if (found) {
 		_instance_binding_count--;
 	}
-	_instance_binding_mutex.unlock();
 }
 
 #ifdef TOOLS_ENABLED
@@ -2294,7 +2297,7 @@ void ObjectDB::cleanup() {
 			// Ensure calling the native classes because if a leaked instance has a script
 			// that overrides any of those methods, it'd not be OK to call them at this point,
 			// now the scripting languages have already been terminated.
-			MethodBind *node_get_name = ClassDB::get_method("Node", "get_name");
+			MethodBind *node_get_path = ClassDB::get_method("Node", "get_path");
 			MethodBind *resource_get_path = ClassDB::get_method("Resource", "get_path");
 			Callable::CallError call_error;
 
@@ -2304,7 +2307,7 @@ void ObjectDB::cleanup() {
 
 					String extra_info;
 					if (obj->is_class("Node")) {
-						extra_info = " - Node name: " + String(node_get_name->call(obj, nullptr, 0, call_error));
+						extra_info = " - Node path: " + String(node_get_path->call(obj, nullptr, 0, call_error));
 					}
 					if (obj->is_class("Resource")) {
 						extra_info = " - Resource path: " + String(resource_get_path->call(obj, nullptr, 0, call_error));

@@ -227,6 +227,7 @@ public:
 		id<MTLRenderCommandEncoder> encoder = nil;
 		id<MTLBuffer> __unsafe_unretained index_buffer = nil; // Buffer is owned by RDD.
 		MTLIndexType index_type = MTLIndexTypeUInt16;
+		uint32_t index_offset = 0;
 		LocalVector<id<MTLBuffer> __unsafe_unretained> vertex_buffers;
 		LocalVector<NSUInteger> vertex_offsets;
 		// clang-format off
