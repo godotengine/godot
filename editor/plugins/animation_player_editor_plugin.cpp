@@ -1413,6 +1413,12 @@ void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_timel
 	_seek_value_changed(p_pos, p_timeline_only);
 }
 
+void AnimationPlayerEditor::_animation_update_key_frame() {
+	if (player) {
+		player->advance(0);
+	}
+}
+
 void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 	String current = _get_current();
 
@@ -1874,6 +1880,7 @@ bool AnimationPlayerEditor::_validate_tracks(const Ref<Animation> p_anim) {
 void AnimationPlayerEditor::_bind_methods() {
 	// Needed for UndoRedo.
 	ClassDB::bind_method(D_METHOD("_animation_player_changed"), &AnimationPlayerEditor::_animation_player_changed);
+	ClassDB::bind_method(D_METHOD("_animation_update_key_frame"), &AnimationPlayerEditor::_animation_update_key_frame);
 	ClassDB::bind_method(D_METHOD("_start_onion_skinning"), &AnimationPlayerEditor::_start_onion_skinning);
 	ClassDB::bind_method(D_METHOD("_stop_onion_skinning"), &AnimationPlayerEditor::_stop_onion_skinning);
 
