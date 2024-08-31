@@ -383,8 +383,8 @@ class CharacterAILogicNode : public RefCounted
 
     static void _bind_methods()
     {
-        ClassDB::bind_method(D_METHOD("set_name","name"),&CharacterAILogicNode::set_state_name);
-        ClassDB::bind_method(D_METHOD("get_name"),&CharacterAILogicNode::get_state_name);
+        ClassDB::bind_method(D_METHOD("set_state_name","name"),&CharacterAILogicNode::set_state_name);
+        ClassDB::bind_method(D_METHOD("get_state_name"),&CharacterAILogicNode::get_state_name);
 
         ClassDB::bind_method(D_METHOD("set_tree","tree"),&CharacterAILogicNode::set_tree);
         ClassDB::bind_method(D_METHOD("get_tree"),&CharacterAILogicNode::get_tree);

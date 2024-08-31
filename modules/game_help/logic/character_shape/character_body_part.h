@@ -251,7 +251,7 @@ public:
                 if(skin.is_valid())
                 {
                     skin = skin->duplicate();
-                    mesh_instance->set_skeleton_path(NodePath("../Skeleton3D"));
+                    mesh_instance->set_skeleton_path(NodePath(".."));
                 }
                 mesh_instance->set_mesh(part->get_mesh());
                 mesh_instance->set_skin(skin);

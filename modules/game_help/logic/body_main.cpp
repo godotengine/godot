@@ -137,30 +137,30 @@ void CharacterBodyMain::_notification( int p_notification )
 
 }
 // 保存模型资源
-static void save_fbx_res( const String& group_name,const String& sub_path,const Ref<Resource>& p_resource,String& fbx_path, bool is_resource = true)
+static void save_fbx_res( const String& group_name,const String& sub_path,const Ref<Resource>& p_resource,String& save_path, bool is_resource = true)
 {
 	String export_root_path = "res://Assets/public";
-	if (!DirAccess::dir_exists_absolute(export_root_path))
+	if (!DirAccess::exists("res://Assets"))
 	{
-		print_error("Export Root Path不存在:" + export_root_path);
-		return ;
-
+		DirAccess::make_dir_absolute("res://Assets");
 	}
-	Ref<DirAccess> dir = DirAccess::create_for_path(export_root_path);
-	if (!dir->dir_exists(group_name))
+	if (!DirAccess::exists(export_root_path))
 	{
-		dir->make_dir(group_name);
-
+		DirAccess::make_dir_absolute(export_root_path);
 	}
-	dir->change_dir(group_name);
-	if (!dir->dir_exists(sub_path))
+	export_root_path  = export_root_path.path_join(group_name);
+	if (!DirAccess::exists(export_root_path))
 	{
-			dir->make_dir(sub_path);
+		DirAccess::make_dir_absolute(export_root_path);
 	}
-	dir->change_dir(sub_path);
-	fbx_path = export_root_path.path_join(group_name).path_join(sub_path).path_join(p_resource->get_name() + (is_resource ? ".tres" :".tscn"));
-	ResourceSaver::save(p_resource,fbx_path);
-	print_line(L"CharacterBodyMain.save_fbx_res: 存储资源 :" + fbx_path);
+	export_root_path = export_root_path.path_join(sub_path);
+	if (!DirAccess::exists(export_root_path))
+	{
+		DirAccess::make_dir_absolute(export_root_path);
+	}
+	save_path = export_root_path.path_join(p_resource->get_name() + (is_resource ? ".tres" :".tscn"));
+	ResourceSaver::save(p_resource, save_path);
+	print_line(L"CharacterBodyMain.save_fbx_res: 存储资源 :" + save_path);
 }
 static void get_fbx_meshs(Node *p_node,HashMap<String,MeshInstance3D* > &meshs)
 {
@@ -187,71 +187,87 @@ static void get_fbx_meshs(Node *p_node,HashMap<String,MeshInstance3D* > &meshs)
 		get_fbx_meshs(child,meshs);
 	}
 }
-void CharacterBodyMain::editor_build_form_mesh_file_path()
+void reset_owenr(Node* node, Node* owenr)
 {
-    if(!FileAccess::exists(editor_form_mesh_file_path))
-    {
-        return;
-    }
+	for (int i = 0; i < node->get_child_count(); ++i)
+	{
+		Node* c = node->get_child(i);
+		c->set_owner(nullptr);
+		reset_owenr(c, owenr);
+	}
+}
+Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path)
+{
+	if (!FileAccess::exists(mesh_path))
+	{
+		return Ref<CharacterBodyPrefab>();
+	}
 
-    // 加载模型
-    Ref<PackedScene> scene = ResourceLoader::load(editor_form_mesh_file_path);
+	// 加载模型
+	Ref<PackedScene> scene = ResourceLoader::load(mesh_path);
 
-    if(scene.is_null())
-    {
-		print_line(L"CharacterBodyMain: 路径不存在 :" + editor_form_mesh_file_path);
-        return;
-    }
-    Node* p_node = scene->instantiate(PackedScene::GEN_EDIT_STATE_DISABLED);
-    String p_group = scene->get_name();
+	if (scene.is_null())
+	{
+		print_line(L"CharacterBodyMain: 路径不存在 :" + mesh_path);
+		return Ref<CharacterBodyPrefab>();
+	}
+	Node* p_node = scene->instantiate(PackedScene::GEN_EDIT_STATE_DISABLED);
+	String p_group = mesh_path.get_file().get_basename();
 
-	Node * node = p_node->find_child("Skeleton3D");
-	Skeleton3D * skeleton = Object::cast_to<Skeleton3D>(node);
+	Node* node = p_node->find_child("Skeleton3D");
+	Skeleton3D* skeleton = Object::cast_to<Skeleton3D>(node);
 
 	Dictionary bone_map;
-	String ske_save_path,bone_map_save_path;
-	if(skeleton != nullptr)
+	String ske_save_path, bone_map_save_path;
+	if (skeleton != nullptr)
 	{
 		bone_map = skeleton->get_human_bone_mapping();
 		skeleton->set_human_bone_mapping(bone_map);
+		skeleton->set_owner(nullptr);
+		reset_owenr(skeleton, skeleton);
 
 		// 存儲骨架信息
 		Ref<PackedScene> packed_scene;
 		packed_scene.instantiate();
 		packed_scene->pack(skeleton);
-		packed_scene->set_name(scene->get_name());
-		save_fbx_res("skeleton",p_group,packed_scene,ske_save_path,false);
+		packed_scene->set_name("skeleton");
+		save_fbx_res("skeleton", p_group, packed_scene, ske_save_path, false);
 
 		// 存储骨骼映射
 		Ref<CharacterBoneMap> bone_map_ref;
 		bone_map_ref.instantiate();
 		bone_map_ref->set_name("bone_map");
 		bone_map_ref->set_bone_map(bone_map);
-		save_fbx_res("bone_map",p_group,bone_map_ref,bone_map_save_path,true);
+		save_fbx_res("bone_map", p_group, bone_map_ref, bone_map_save_path, true);
 	}
-    // 生成预制体
+	// 生成预制体
 	Ref<CharacterBodyPrefab> body_prefab;
 	body_prefab.instantiate();
-	HashMap<String,MeshInstance3D* > meshs;
+	body_prefab->set_name(p_group);
+	HashMap<String, MeshInstance3D* > meshs;
 	// 便利存儲模型文件
-	get_fbx_meshs(p_node,meshs);
-	for(auto it = meshs.begin(); it != meshs.end(); ++it){
+	get_fbx_meshs(p_node, meshs);
+	for (auto it = meshs.begin(); it != meshs.end(); ++it) {
 		Ref<CharacterBodyPart> part;
 		part.instantiate();
 		MeshInstance3D* mesh = it->value;
-		part->init_form_mesh_instance(mesh,bone_map);
+		part->init_form_mesh_instance(mesh, bone_map);
 		part->set_name(it->key);
 		String save_path;
-		save_fbx_res("meshs", p_group,part, save_path,false);
+		save_fbx_res("meshs", p_group, part, save_path, true);
 		body_prefab->parts.push_back(save_path);
 	}
-    // 保存预制体
-	body_prefab->skeleton_path = ske_save_path;    
-	save_fbx_res("prefab",p_group, body_prefab,bone_map_save_path,true);
+	// 保存预制体
+	body_prefab->skeleton_path = ske_save_path;
+	save_fbx_res("prefab", p_group, body_prefab, bone_map_save_path, true);
 
 
-    p_node->queue_free();
-
+	p_node->queue_free();
+	return body_prefab;
+}
+void CharacterBodyMain::editor_build_form_mesh_file_path()
+{
+	Ref<CharacterBodyPrefab> body_prefab = build_prefab(editor_form_mesh_file_path);
     // 设置预制体
     set_body_prefab(body_prefab);   
     
@@ -413,6 +429,9 @@ void CharacterBodyMain::set_skeleton_resource(const String& p_skeleton_path)
     {
         ik->_initialize(skeleton);
     }
+    skeletonID = skeleton->get_instance_id();
+
+    
 }
 void CharacterBodyMain::load_mesh(const StringName& part_name,String p_mesh_file_path)
 {
@@ -531,6 +550,7 @@ void CharacterBodyMain::load_prefab()
 			Ref< CharacterBodyPart> part = part_array[i];
             bodyPart[part->get_name()] = p;
         }
+        notify_property_list_changed();
     }
 
 }

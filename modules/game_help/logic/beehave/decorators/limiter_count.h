@@ -9,7 +9,7 @@ protected:
         ClassDB::bind_method(D_METHOD("set_max_count","max_count"),&BeehaveDecoratorLimiterCount::set_max_count);
         ClassDB::bind_method(D_METHOD("get_max_count"),&BeehaveDecoratorLimiterCount::get_max_count);
 
-        ADD_PROPERTY(PropertyInfo(Variant::INT,"max_time"),"set_max_time","get_max_time");        
+        ADD_PROPERTY(PropertyInfo(Variant::INT,"max_count"),"set_max_count","get_max_count");        
         
     }
 public:

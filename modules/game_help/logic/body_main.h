@@ -101,7 +101,7 @@ public:
         if(player_blackboard.is_null())
         {
             player_blackboard.instantiate();
-            ERR_PRINT_ED("get_blackboard");
+            //ERR_PRINT_ED("get_blackboard");
         }
          return player_blackboard; 
     }
@@ -377,6 +377,7 @@ public:
     {
         return run_ai;
     }
+	static Ref<CharacterBodyPrefab> build_prefab(const String& mesh_path);
     DECL_MEMBER_BUTTON(editor_build_form_mesh_file_path);
     static ObjectID& get_curr_editor_player();
     // 获取当前编辑的角色

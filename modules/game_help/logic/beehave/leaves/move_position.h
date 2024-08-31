@@ -20,7 +20,7 @@ class BeehaveLeafMovePosition : public BeehaveLeaf
 
         ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "move_direction"), "set_move_direction", "get_move_direction");
         ADD_PROPERTY(PropertyInfo(Variant::BOOL, "by_blackboard_property"), "set_by_blackboard_property", "get_by_blackboard_property");
-        ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "move_direction_blackboard_property"), "get_move_direction_blackboard_property", "set_move_direction_blackboard_property");
+        ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "move_direction_blackboard_property"), "set_move_direction_blackboard_property", "get_move_direction_blackboard_property");
         
     }
 

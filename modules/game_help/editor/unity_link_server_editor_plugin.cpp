@@ -32,6 +32,8 @@
 
 #include "editor/plugins/editor_plugin.h"
 #include "editor/editor_inspector.h"
+#include "editor/plugins/skeleton_3d_editor_plugin.h"
+
 #include "../unity/unity_link_server.h"
 #include "beehave_graph_editor.h"
 #include "body_main_editor.h"
@@ -361,6 +363,12 @@ public:
 			CharacterBodyMainLable* lable = memnew(CharacterBodyMainLable);
 			lable->set_body_main(object);
 			p_plugin->add_custom_control( lable);
+			Skeleton3D* skeleton = object->get_skeleton();
+			if(skeleton != nullptr)
+			{				
+				Skeleton3DEditor* skel_editor = memnew(Skeleton3DEditor(nullptr, skeleton));
+				p_plugin->add_custom_control( skel_editor);
+			}
 			return false;
 		}
 		else if(name == "character_ai")
