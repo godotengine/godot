@@ -107,28 +107,27 @@ int GodotPhysicsDirectSpaceState3D::intersect_point(const PointParameters &p_par
 
 // Helper for setting a singular ray result in the vector.
 _FORCE_INLINE_ static void _set_multiple_ray_result(Vector<PhysicsDirectSpaceState3D::RayResult> &r_results,
-													const int &idx, const Vector3 &position, const Vector3 &normal,
-													const GodotCollisionObject3D *col_obj,
-													const int &shape, const int &face_index){
-		
-		ERR_FAIL_INDEX(idx, r_results.size());
-		ObjectID collider_id = col_obj->get_instance_id();
-		Object *collider = nullptr;
-		if (collider_id.is_valid()) {
-			collider = ObjectDB::get_instance(collider_id);
-		}
-
-		PhysicsDirectSpaceState3D::RayResult &r_result = r_results.ptrw()[idx];
-		r_result.position = position;
-		r_result.normal = normal;
-		r_result.shape = shape;
-		r_result.face_index = face_index;
-		r_result.collider_id = collider_id;
-		r_result.rid = col_obj->get_self();
-		r_result.collider = collider;
+		const int &idx, const Vector3 &position, const Vector3 &normal,
+		const GodotCollisionObject3D *col_obj,
+		const int &shape, const int &face_index) {
+	ERR_FAIL_INDEX(idx, r_results.size());
+	ObjectID collider_id = col_obj->get_instance_id();
+	Object *collider = nullptr;
+	if (collider_id.is_valid()) {
+		collider = ObjectDB::get_instance(collider_id);
 	}
 
-bool GodotPhysicsDirectSpaceState3D::intersect_ray_multiple(const RayParameters &p_parameters, Vector<RayResult> &r_results){
+	PhysicsDirectSpaceState3D::RayResult &r_result = r_results.ptrw()[idx];
+	r_result.position = position;
+	r_result.normal = normal;
+	r_result.shape = shape;
+	r_result.face_index = face_index;
+	r_result.collider_id = collider_id;
+	r_result.rid = col_obj->get_self();
+	r_result.collider = collider;
+}
+
+bool GodotPhysicsDirectSpaceState3D::intersect_ray_multiple(const RayParameters &p_parameters, Vector<RayResult> &r_results) {
 	ERR_FAIL_COND_V(space->locked, false);
 
 	Vector3 begin, end;
@@ -203,7 +202,7 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parame
 
 	Vector<RayResult> multi_result;
 	bool res = intersect_ray_multiple(p_parameters, multi_result);
-	if (!res){
+	if (!res) {
 		return false;
 	}
 

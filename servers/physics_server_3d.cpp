@@ -364,7 +364,7 @@ TypedArray<Dictionary> PhysicsDirectSpaceState3D::_intersect_ray_multiple(const 
 	if (!res) {
 		return TypedArray<Dictionary>();
 	}
-	
+
 	int rc = results.size();
 	TypedArray<Dictionary> r;
 	r.resize(rc);

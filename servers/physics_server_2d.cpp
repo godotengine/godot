@@ -334,7 +334,7 @@ TypedArray<Dictionary> PhysicsDirectSpaceState2D::_intersect_ray_multiple(const 
 
 	Vector<RayResult> results;
 	bool res = intersect_ray_multiple(p_ray_query->get_parameters(), results);
-	
+
 	if (!res) {
 		return TypedArray<Dictionary>();
 	}
@@ -353,7 +353,6 @@ TypedArray<Dictionary> PhysicsDirectSpaceState2D::_intersect_ray_multiple(const 
 		d["rid"] = result.rid;
 	}
 	return r;
-
 }
 
 Dictionary PhysicsDirectSpaceState2D::_intersect_ray(const Ref<PhysicsRayQueryParameters2D> &p_ray_query) {

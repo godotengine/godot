@@ -116,9 +116,9 @@ int GodotPhysicsDirectSpaceState2D::intersect_point(const PointParameters &p_par
 
 // Helper for setting a singular ray result in the vector.
 _FORCE_INLINE_ static void _set_multiple_ray_result(Vector<PhysicsDirectSpaceState2D::RayResult> &r_results,
-													const int &idx, const Vector2 &position, const Vector2 &normal,
-													const GodotCollisionObject2D *col_obj,
-													const int &shape){
+		const int &idx, const Vector2 &position, const Vector2 &normal,
+		const GodotCollisionObject2D *col_obj,
+		const int &shape) {
 	ERR_FAIL_INDEX(idx, r_results.size());
 	ObjectID collider_id = col_obj->get_instance_id();
 	Object *collider = nullptr;
@@ -135,7 +135,7 @@ _FORCE_INLINE_ static void _set_multiple_ray_result(Vector<PhysicsDirectSpaceSta
 	r_result.collider = collider;
 }
 
-bool GodotPhysicsDirectSpaceState2D::intersect_ray_multiple(const RayParameters &p_parameters, Vector<RayResult> &r_results){
+bool GodotPhysicsDirectSpaceState2D::intersect_ray_multiple(const RayParameters &p_parameters, Vector<RayResult> &r_results) {
 	ERR_FAIL_COND_V(space->locked, false);
 
 	Vector2 begin, end;
@@ -205,8 +205,8 @@ bool GodotPhysicsDirectSpaceState2D::intersect_ray(const RayParameters &p_parame
 
 	Vector<RayResult> multi_result;
 	bool res = intersect_ray_multiple(p_parameters, multi_result);
-	
-	if(!res){
+
+	if (!res) {
 		return false;
 	}
 

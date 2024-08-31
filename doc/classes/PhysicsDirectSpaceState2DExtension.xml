@@ -59,7 +59,7 @@
 			<param index="3" name="collide_with_bodies" type="bool" />
 			<param index="4" name="collide_with_areas" type="bool" />
 			<param index="5" name="hit_from_inside" type="bool" />
-			<param index="6" name="result" type="Vector<PhysicsServer2DExtensionRayResult>*" />
+			<param index="6" name="result" type="Vector&lt;PhysicsServer2DExtensionRayResult&gt;*" />
 			<description>
 			</description>
 		</method>
