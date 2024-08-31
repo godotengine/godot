@@ -86,6 +86,7 @@ class EditorResourcePicker : public HBoxContainer {
 	void _update_resource_preview(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, ObjectID p_obj);
 
 	void _resource_selected();
+	void _resource_changed();
 	void _file_selected(const String &p_path);
 
 	void _resource_saved(Object *p_resource);
