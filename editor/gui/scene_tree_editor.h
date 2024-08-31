@@ -204,6 +204,7 @@ class SceneTreeDialog : public ConfirmationDialog {
 	void _cancel();
 	void _selected_changed();
 	void _filter_changed(const String &p_filter);
+	void _on_filter_gui_input(const Ref<InputEvent> &p_event);
 	void _show_all_nodes_changed(bool p_button_pressed);
 
 protected:

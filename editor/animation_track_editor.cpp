@@ -7237,24 +7237,6 @@ void AnimationTrackEditor::_pick_track_select_recursive(TreeItem *p_item, const 
 	}
 }
 
-void AnimationTrackEditor::_pick_track_filter_input(const Ref<InputEvent> &p_ie) {
-	Ref<InputEventKey> k = p_ie;
-
-	if (k.is_valid()) {
-		switch (k->get_keycode()) {
-			case Key::UP:
-			case Key::DOWN:
-			case Key::PAGEUP:
-			case Key::PAGEDOWN: {
-				pick_track->get_scene_tree()->get_scene_tree()->gui_input(k);
-				pick_track->get_filter_line_edit()->accept_event();
-			} break;
-			default:
-				break;
-		}
-	}
-}
-
 AnimationTrackEditor::AnimationTrackEditor() {
 	main_panel = memnew(PanelContainer);
 	main_panel->set_focus_mode(FOCUS_ALL); // Allow panel to have focus so that shortcuts work as expected.
@@ -7480,11 +7462,9 @@ AnimationTrackEditor::AnimationTrackEditor() {
 
 	pick_track = memnew(SceneTreeDialog);
 	add_child(pick_track);
-	pick_track->register_text_enter(pick_track->get_filter_line_edit());
 	pick_track->set_title(TTR("Pick a node to animate:"));
 	pick_track->connect("selected", callable_mp(this, &AnimationTrackEditor::_new_track_node_selected));
 	pick_track->get_filter_line_edit()->connect(SceneStringName(text_changed), callable_mp(this, &AnimationTrackEditor::_pick_track_filter_text_changed));
-	pick_track->get_filter_line_edit()->connect(SceneStringName(gui_input), callable_mp(this, &AnimationTrackEditor::_pick_track_filter_input));
 
 	prop_selector = memnew(PropertySelector);
 	add_child(prop_selector);

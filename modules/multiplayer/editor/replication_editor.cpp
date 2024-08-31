@@ -93,24 +93,6 @@ void ReplicationEditor::_pick_node_select_recursive(TreeItem *p_item, const Stri
 	}
 }
 
-void ReplicationEditor::_pick_node_filter_input(const Ref<InputEvent> &p_ie) {
-	Ref<InputEventKey> k = p_ie;
-
-	if (k.is_valid()) {
-		switch (k->get_keycode()) {
-			case Key::UP:
-			case Key::DOWN:
-			case Key::PAGEUP:
-			case Key::PAGEDOWN: {
-				pick_node->get_scene_tree()->get_scene_tree()->gui_input(k);
-				pick_node->get_filter_line_edit()->accept_event();
-			} break;
-			default:
-				break;
-		}
-	}
-}
-
 void ReplicationEditor::_pick_node_selected(NodePath p_path) {
 	Node *root = current->get_node(current->get_root_path());
 	ERR_FAIL_NULL(root);
@@ -184,11 +166,9 @@ ReplicationEditor::ReplicationEditor() {
 
 	pick_node = memnew(SceneTreeDialog);
 	add_child(pick_node);
-	pick_node->register_text_enter(pick_node->get_filter_line_edit());
 	pick_node->set_title(TTR("Pick a node to synchronize:"));
 	pick_node->connect("selected", callable_mp(this, &ReplicationEditor::_pick_node_selected));
 	pick_node->get_filter_line_edit()->connect(SceneStringName(text_changed), callable_mp(this, &ReplicationEditor::_pick_node_filter_text_changed));
-	pick_node->get_filter_line_edit()->connect("gui_input", callable_mp(this, &ReplicationEditor::_pick_node_filter_input));
 
 	prop_selector = memnew(PropertySelector);
 	add_child(prop_selector);
