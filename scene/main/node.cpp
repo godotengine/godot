@@ -3063,7 +3063,11 @@ void Node::_duplicate_signals(const Node *p_original, Node *p_copy) const {
 				if (!target) {
 					continue;
 				}
+
 				NodePath ptarget = p_original->get_path_to(target);
+				if (ptarget.is_empty()) {
+					continue;
+				}
 
 				Node *copytarget = target;
 
