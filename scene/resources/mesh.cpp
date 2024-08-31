@@ -2251,6 +2251,7 @@ Error ArrayMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, flo
 }
 
 void ArrayMesh::set_shadow_mesh(const Ref<ArrayMesh> &p_mesh) {
+	ERR_FAIL_COND_MSG(p_mesh == this, "Cannot set a mesh as its own shadow mesh.");
 	shadow_mesh = p_mesh;
 	if (shadow_mesh.is_valid()) {
 		RS::get_singleton()->mesh_set_shadow_mesh(mesh, shadow_mesh->get_rid());
