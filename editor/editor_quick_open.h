@@ -69,7 +69,7 @@ class EditorQuickOpen : public ConfirmationDialog {
 	virtual void cancel_pressed() override;
 	void _cleanup();
 
-	void _sbox_input(const Ref<InputEvent> &p_ie);
+	void _sbox_input(const Ref<InputEvent> &p_event);
 	void _text_changed(const String &p_newtext);
 
 protected:

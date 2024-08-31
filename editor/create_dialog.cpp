@@ -425,26 +425,19 @@ void CreateDialog::_text_changed(const String &p_newtext) {
 	_update_search();
 }
 
-void CreateDialog::_sbox_input(const Ref<InputEvent> &p_ie) {
-	Ref<InputEventKey> k = p_ie;
-	if (k.is_valid() && k->is_pressed()) {
-		switch (k->get_keycode()) {
-			case Key::UP:
-			case Key::DOWN:
-			case Key::PAGEUP:
-			case Key::PAGEDOWN: {
-				search_options->gui_input(k);
-				search_box->accept_event();
-			} break;
-			case Key::SPACE: {
-				TreeItem *ti = search_options->get_selected();
-				if (ti) {
-					ti->set_collapsed(!ti->is_collapsed());
-				}
-				search_box->accept_event();
-			} break;
-			default:
-				break;
+void CreateDialog::_sbox_input(const Ref<InputEvent> &p_event) {
+	// Redirect navigational key events to the tree.
+	Ref<InputEventKey> key = p_event;
+	if (key.is_valid()) {
+		if (key->is_action("ui_up", true) || key->is_action("ui_down", true) || key->is_action("ui_page_up") || key->is_action("ui_page_down")) {
+			search_options->gui_input(key);
+			search_box->accept_event();
+		} else if (key->is_action_pressed("ui_select", true)) {
+			TreeItem *ti = search_options->get_selected();
+			if (ti) {
+				ti->set_collapsed(!ti->is_collapsed());
+			}
+			search_box->accept_event();
 		}
 	}
 }
