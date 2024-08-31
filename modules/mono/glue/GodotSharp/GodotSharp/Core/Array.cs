@@ -31,6 +31,8 @@ namespace Godot.Collections
 
         private WeakReference<IDisposable>? _weakReferenceToSelf;
 
+        internal int TypedWrapperReferenceCount;
+
         /// <summary>
         /// Constructs a new empty <see cref="Array"/>.
         /// </summary>
@@ -1052,7 +1054,8 @@ namespace Godot.Collections
         IReadOnlyList<T>,
         ICollection<T>,
         IEnumerable<T>,
-        IGenericGodotArray
+        IGenericGodotArray,
+        IDisposable
     {
         private static godot_variant ToVariantFunc(in Array<T> godotArray) =>
             VariantUtils.CreateFromArray(godotArray);
@@ -1067,6 +1070,7 @@ namespace Godot.Collections
         }
 
         private readonly Array _underlyingArray;
+        private bool _disposed;
 
         Array IGenericGodotArray.UnderlyingArray => _underlyingArray;
 
@@ -1083,6 +1087,7 @@ namespace Godot.Collections
         public Array()
         {
             _underlyingArray = new Array();
+            _underlyingArray.TypedWrapperReferenceCount++;
         }
 
         /// <summary>
@@ -1099,6 +1104,7 @@ namespace Godot.Collections
                 throw new ArgumentNullException(nameof(collection));
 
             _underlyingArray = new Array();
+            _underlyingArray.TypedWrapperReferenceCount++;
 
             foreach (T element in collection)
                 Add(element);
@@ -1118,6 +1124,7 @@ namespace Godot.Collections
                 throw new ArgumentNullException(nameof(array));
 
             _underlyingArray = new Array();
+            _underlyingArray.TypedWrapperReferenceCount++;
 
             foreach (T element in array)
                 Add(element);
@@ -1137,6 +1144,7 @@ namespace Godot.Collections
                 throw new ArgumentNullException(nameof(array));
 
             _underlyingArray = array;
+            _underlyingArray.TypedWrapperReferenceCount++;
         }
 
         // Explicit name to make it very clear
@@ -1152,6 +1160,29 @@ namespace Godot.Collections
         public static explicit operator Array?(Array<T>? from)
         {
             return from?._underlyingArray;
+        }
+
+        ~Array()
+        {
+            Dispose(false);
+        }
+
+        /// <summary>
+        /// Disposes of this <see cref="Array"/>.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        public void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+            _disposed = true;
+            _underlyingArray.TypedWrapperReferenceCount--;
+            if (_underlyingArray.TypedWrapperReferenceCount > 0) return;
+            _underlyingArray.Dispose(disposing);
         }
 
         /// <summary>
