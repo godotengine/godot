@@ -234,7 +234,7 @@ public:
     TypedArray<BeehaveNode> get_children()
     {
         TypedArray<BeehaveNode> rs;
-        for(int32_t i = 0; i < children.size(); ++i)
+        for(uint32_t i = 0; i < children.size(); ++i)
         {
             rs.push_back(children[i]);
         }

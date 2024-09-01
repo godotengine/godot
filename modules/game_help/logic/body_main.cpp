@@ -267,9 +267,9 @@ Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path
 }
 void CharacterBodyMain::editor_build_form_mesh_file_path()
 {
-	Ref<CharacterBodyPrefab> body_prefab = build_prefab(editor_form_mesh_file_path);
+	Ref<CharacterBodyPrefab> prefab = build_prefab(editor_form_mesh_file_path);
     // 设置预制体
-    set_body_prefab(body_prefab);   
+    set_body_prefab(prefab);
     
 }
 

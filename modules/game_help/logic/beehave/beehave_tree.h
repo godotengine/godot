@@ -80,7 +80,7 @@ public:
         status = RUNNING;
         run_context->tree = this;
         
-        for (int i = 0; i < listeners.size(); i++)
+        for (uint32_t i = 0; i < listeners.size(); i++)
         {
             listeners[i]->start(run_context);
         }

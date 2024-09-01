@@ -166,12 +166,20 @@ public:
     float _get_animation_length();
     void _set_animation_scale_by_length(float p_length);
 
+    void set_unity_asset_path(const String& p_unity_asset_path) { unity_asset_path = p_unity_asset_path; }
+    String get_unity_asset_path() { return unity_asset_path; }
+
+public:
+
+    String unity_asset_path;
+    DECL_MEMBER_BUTTON(load_form_unity_asset);
 
     StringName animation_name;
     // 动画资源路径
     String animation_path;
     // 骨骼映射名称
     String bone_map_path;
+
     float speed = 1.0f;
     bool is_clip = true;
     Ref<Animation> animation;

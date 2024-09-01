@@ -1329,7 +1329,7 @@ static int search_bone_by_name(Skeleton3D *p_skeleton, const Vector<String> &p_p
 }
 
 static void auto_mapping_process(Skeleton3D *skeleton, Dictionary &p_bone_map) {
-	WARN_PRINT("Run auto mapping.");
+	
 
 	int bone_idx = -1;
 	Vector<String> picklist; // Use Vector<String> because match words have priority.

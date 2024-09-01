@@ -75,9 +75,9 @@ public:
         }
         return ret; 
     }
-    Ref<CharacterAnimationLogicNode> get_node(int p_index)
+    Ref<CharacterAnimationLogicNode> get_node(int32_t p_index)
     {
-        if(p_index < 0 || p_index >= node_list.size())
+        if(p_index < 0 || p_index >= (int32_t)node_list.size())
         {
             return Ref<CharacterAnimationLogicNode>();
         }
