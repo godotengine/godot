@@ -210,10 +210,10 @@ void EditorNetworkProfiler::add_rpc_frame_data(const RPCNodeInfo &p_frame) {
 		rpc_data[p_frame.node].incoming_rpc += p_frame.incoming_rpc;
 		rpc_data[p_frame.node].outgoing_rpc += p_frame.outgoing_rpc;
 	}
-	if (p_frame.incoming_rpc) {
+	if (p_frame.incoming_rpc && p_frame.incoming_rpc > 0) {
 		rpc_data[p_frame.node].incoming_size = p_frame.incoming_size / p_frame.incoming_rpc;
 	}
-	if (p_frame.outgoing_rpc) {
+	if (p_frame.outgoing_rpc && p_frame.outgoing_rpc > 0) {
 		rpc_data[p_frame.node].outgoing_size = p_frame.outgoing_size / p_frame.outgoing_rpc;
 	}
 }
@@ -227,10 +227,10 @@ void EditorNetworkProfiler::add_sync_frame_data(const SyncInfo &p_frame) {
 		sync_data[p_frame.synchronizer].outgoing_syncs += p_frame.outgoing_syncs;
 	}
 	SyncInfo &info = sync_data[p_frame.synchronizer];
-	if (info.incoming_syncs) {
+	if (info.incoming_syncs && p_frame.incoming_syncs > 0) {
 		info.incoming_size = p_frame.incoming_size / p_frame.incoming_syncs;
 	}
-	if (info.outgoing_syncs) {
+	if (info.outgoing_syncs && p_frame.outgoing_syncs > 0) {
 		info.outgoing_size = p_frame.outgoing_size / p_frame.outgoing_syncs;
 	}
 }
