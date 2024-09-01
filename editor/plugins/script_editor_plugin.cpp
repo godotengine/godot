@@ -3653,14 +3653,13 @@ void ScriptEditor::_help_class_goto(const String &p_desc) {
 
 	eh->set_name(cname);
 	tab_container->add_child(eh);
+	_go_to_tab(tab_container->get_tab_count() - 1);
 	eh->go_to_help(p_desc);
 	eh->connect("go_to_help", callable_mp(this, &ScriptEditor::_help_class_goto));
 	_add_recent_script(eh->get_class());
 	_sort_list_on_update = true;
 	_update_script_names();
 	_save_layout();
-
-	callable_mp(this, &ScriptEditor::_help_tab_goto).call_deferred(cname, p_desc);
 }
 
 bool ScriptEditor::_help_tab_goto(const String &p_name, const String &p_desc) {
