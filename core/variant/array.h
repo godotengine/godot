@@ -35,6 +35,7 @@
 #include "core/templates/vector.h"
 
 #include <climits>
+#include <initializer_list>
 
 class Variant;
 class ArrayPrivate;

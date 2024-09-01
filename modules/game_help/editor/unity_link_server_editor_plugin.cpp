@@ -1604,6 +1604,16 @@ namespace AnimationToolConst
 		return "Skeleton3D:" + strs[strs.size() - 1];
 
 	}
+	static Vector3 dict_to_vector3(Dictionary _value)
+	{
+		return Vector3(_value["x"], _value["y"], _value["z"]);
+	}
+	
+	static Quaternion dict_to_quaternion(Dictionary _value )
+	{
+		return Quaternion(_value["x"], _value["y"], _value["z"], _value["w"]);
+
+	}
 	
 	class KeyframeIterator: public RefCounted
 	{
@@ -1625,7 +1635,7 @@ namespace AnimationToolConst
 		float CONSTANT_KEYFRAME_TIMESTAMP = 0.001;
 
 		float timestamp = 0.0;
-		void _init(Dictionary p_curve)
+		KeyframeIterator(Dictionary p_curve)
 		{
 			curve = p_curve;
 			keyframes = curve["m_Curve"];
@@ -1644,6 +1654,27 @@ namespace AnimationToolConst
 			is_constant = false;
 
 		}
+		KeyframeIterator(const KeyframeIterator& p_other)
+		{
+			curve = p_other.curve;
+			keyframes = p_other.keyframes;
+			init_key = p_other.init_key;
+			final_key = p_other.final_key;
+			prev_key = p_other.prev_key;
+			next_key = p_other.next_key;
+			has_slope = p_other.has_slope;
+			prev_slope = p_other.prev_slope;
+			next_slope = p_other.next_slope;
+			is_constant = p_other.is_constant;
+			is_eof = p_other.is_eof;
+			timestamp = p_other.timestamp;
+			is_mirrored = p_other.is_mirrored;
+			CONSTANT_KEYFRAME_TIMESTAMP = p_other.CONSTANT_KEYFRAME_TIMESTAMP;
+		}
+		KeyframeIterator()
+		{
+
+		}
 		void reset()
 		{
 			key_idx = 0;
@@ -1653,6 +1684,24 @@ namespace AnimationToolConst
 			timestamp = 0.0;
 			is_constant = false;
 
+		}
+		KeyframeIterator& operator = (const KeyframeIterator& p_other)
+		{
+			curve = p_other.curve;
+			keyframes = p_other.keyframes;
+			init_key = p_other.init_key;
+			final_key = p_other.final_key;
+			prev_key = p_other.prev_key;
+			next_key = p_other.next_key;
+			has_slope = p_other.has_slope;
+			prev_slope = p_other.prev_slope;
+			next_slope = p_other.next_slope;
+			is_constant = p_other.is_constant;
+			is_eof = p_other.is_eof;
+			timestamp = p_other.timestamp;
+			is_mirrored = p_other.is_mirrored;
+			CONSTANT_KEYFRAME_TIMESTAMP = p_other.CONSTANT_KEYFRAME_TIMESTAMP;
+			return *this;
 		}
 		float get_next_timestamp(float timestep = -1.0)
 		{
@@ -1767,25 +1816,17 @@ namespace AnimationToolConst
 			return fixup_strings((float)next_key["value"]);
 
 		}
-
-
-
-
-
-
-
-
 	};
 	class LockstepKeyframeiterator : public RefCounted
 	{
 	public:
-		LocalVector<Ref<KeyframeIterator>> kf_iters;
+		LocalVector<KeyframeIterator> kf_iters;
 
 		float timestamp = 0.0;
 		bool is_eof = false;
 		bool perform_right_handed_position_conversion = false;
 		TypedArray<float> results;
-		void _init(LocalVector<Ref<KeyframeIterator>>& iters, bool is_position)
+		LockstepKeyframeiterator(LocalVector<KeyframeIterator>& iters, bool is_position)
 		{
 			kf_iters = iters;
 			results.resize(kf_iters.size());
@@ -1795,11 +1836,32 @@ namespace AnimationToolConst
 				perform_right_handed_position_conversion = true;
 
 		}
+		LockstepKeyframeiterator(const LockstepKeyframeiterator &p_it)
+		{
+			kf_iters = p_it.kf_iters;
+			results = p_it.results;
+			timestamp = p_it.timestamp;
+			is_eof = p_it.is_eof;
+			perform_right_handed_position_conversion = p_it.perform_right_handed_position_conversion;
+		}
+		LockstepKeyframeiterator()
+		{
+
+		}
+		LockstepKeyframeiterator & operator = (const LockstepKeyframeiterator &p_it)
+		{
+			kf_iters = p_it.kf_iters;
+			results = p_it.results;
+			timestamp = p_it.timestamp;
+			is_eof = p_it.is_eof;
+			perform_right_handed_position_conversion = p_it.perform_right_handed_position_conversion;
+			return *this;
+		}
 		void reset()
 		{
 			for(int i=0;i<kf_iters.size();i++)
 			{
-				kf_iters[i]->reset();
+				kf_iters[i].reset();
 			}
 			is_eof = false;
 			timestamp = 0.0;
@@ -1809,26 +1871,26 @@ namespace AnimationToolConst
 			Variant next_timestamp;
 			for(int i=0;i<kf_iters.size();i++)
 			{
-				if (kf_iters[i].is_valid())
+				//if (kf_iters[i].is_valid())
 				{
-					Ref<KeyframeIterator> key_iter = kf_iters[i];
-					if (key_iter->is_eof)
+					KeyframeIterator& key_iter = kf_iters[i];
+					if (key_iter.is_eof)
 						continue;
-					key_iter->timestamp = timestamp;
-					if (key_iter->prev_slope.get_type() == Variant::STRING)
+					key_iter.timestamp = timestamp;
+					if (key_iter.prev_slope.get_type() == Variant::STRING)
 					{
-						String t = key_iter->prev_slope;
-						key_iter->prev_slope = t.to_float();
+						String t = key_iter.prev_slope;
+						key_iter.prev_slope = t.to_float();
 					}
-					if (key_iter->next_slope.get_type() == Variant::STRING)
+					if (key_iter.next_slope.get_type() == Variant::STRING)
 					{
-						String t = key_iter->next_slope;
-						key_iter->next_slope = t.to_float();
+						String t = key_iter.next_slope;
+						key_iter.next_slope = t.to_float();
 					}
 
-					if ((key_iter->prev_slope.get_type() == Variant::FLOAT) && (key_iter->next_slope.get_type() == Variant::FLOAT))
-						key_iter->is_constant = Math::is_inf((float)key_iter->prev_slope) || Math::is_inf((float)key_iter->next_slope);
-					float this_next_timestamp = key_iter->get_next_timestamp();
+					if ((key_iter.prev_slope.get_type() == Variant::FLOAT) && (key_iter.next_slope.get_type() == Variant::FLOAT))
+						key_iter.is_constant = Math::is_inf((float)key_iter.prev_slope) || Math::is_inf((float)key_iter.next_slope);
+					float this_next_timestamp = key_iter.get_next_timestamp();
 					if ((next_timestamp.get_type() != Variant::FLOAT) || (float)next_timestamp > this_next_timestamp)
 						next_timestamp = this_next_timestamp;
 
@@ -1856,22 +1918,22 @@ namespace AnimationToolConst
 				timestamp = next_timestamp;
 				for (int i = 0; i < kf_iters.size(); i++)
 				{
-					if (kf_iters[i].is_valid())
+					//if (kf_iters[i].is_valid())
 					{
-						Ref<KeyframeIterator> key_iter = kf_iters[i];
-						if (key_iter->is_eof)
+						KeyframeIterator& key_iter = kf_iters[i];
+						if (key_iter.is_eof)
 							continue;
 						Variant res;
 						if (timestep <= 0.0)
-							res = key_iter->next(timestamp - key_iter->timestamp);
+							res = key_iter.next(timestamp - key_iter.timestamp);
 						else
-							res = key_iter->next(timestep);
+							res = key_iter.next(timestep);
 
 						results[i] = (float)res;
 						valid_components += 1;
-						if (key_iter->is_eof)
+						if (key_iter.is_eof)
 							new_eof_components += 1;
-						key_iter->timestamp = timestamp;
+						key_iter.timestamp = timestamp;
 
 					}
 
@@ -1904,8 +1966,722 @@ namespace AnimationToolConst
 
 	};
 
+	static Variant::Type typeof(const Variant& v) {
+		return v.get_type();
+	}
+	static String to_classname(Variant utype)
+	{
+		if (typeof(utype) == Variant::NODE_PATH)
+			return utype;
+		String ret = utype_to_classname.get(utype,"");
+		if (ret == "")
+			return "[UnknownType:" + (String)(utype) + "]";
+		return ret;
+	}
+	static NodePath default_gameobject_component_path(String unipath, Variant unicomp)
+	{
+		if (typeof(unicomp) == Variant::INT && ((int32_t)unicomp == 1 || (int32_t)unicomp == 4))
+			return NodePath(unipath);
+		return NodePath(unipath + "/" + to_classname(unicomp));
+
+	}
+	static NodePath resolve_gameobject_component_path(Object * animator, String unipath, Variant unicomp ) 
+	{
+		return default_gameobject_component_path(unipath, unicomp);
+
+	}
+		
+		
+
+	static void create_animation_clip_at_node(Dictionary anima_dict, int mirror, Ref<Animation> anim) {
+		auto bone_name_to_index = _bone_name_to_index(); // String -> int
+		auto muscle_name_to_index = _muscle_name_to_index(); // String -> int
+		auto muscle_index_to_bone_and_axis = _muscle_index_to_bone_and_axis(); // int -> Vector2i
+		Dictionary special_humanoid_transforms;
+		for (auto pfx : IKPrefixNames) {
+			for (auto sfx : IKSuffixNames) {
+				special_humanoid_transforms[pfx + sfx.key] = true;
+			}
+		}
+		for (auto& pfx : BoneName)
+		{
+			special_humanoid_transforms[pfx + "TDOF.x"] = "";
+			special_humanoid_transforms[pfx + "TDOF.y"] = "";
+			special_humanoid_transforms[pfx + "TDOF.z"] = "";
+		}
+		Dictionary settings = anima_dict.get("m_AnimationClipSettings", Dictionary());
+		bool is_mirror = ((int)settings.get("m_Mirror", 0)) == 1;
+		if (mirror == 1)
+			is_mirror = !is_mirror;
+		float PI = Math_PI;
+		bool bake_orientation_into_pose = (int32_t)settings.get("m_LoopBlendOrientation", 0) == 1;
+		bool bake_position_y_into_pose = (int32_t)settings.get("m_LoopBlendPositionY", 0) == 1;
+		bool bake_position_xz_into_pose = (int32_t)settings.get("m_LoopBlendPositionXZ", 0) == 1;
+		bool keep_original_orientation = (int32_t)settings.get("m_KeepOriginalOrientation", 0) == 1;
+		bool keep_original_position_y = (int32_t)settings.get("m_KeepOriginalPositionY", 0) == 1;
+		bool keep_original_position_xz = (int32_t)settings.get("m_KeepOriginalPositionXZ", 0) == 1;
+		float orientation_offset = (float)settings.get("m_OrientationOffsetY", 0.0) * PI / 180.0;
+		float root_y_level = (float)settings.get("m_Level", 0.0);
+
+		Dictionary resolved_to_default;
+		float max_ts = 0.0;
+		TypedArray<Array> humanoid_track_sets;
+		bool has_humanoid = false;
+		for(int i = 0;i < BoneCount() + 1;i++)
+		{
+			if(i == 0)
+			{
+				Array t;
+				t.append(0); t.append(0); t.append(0); t.append(0);
+				humanoid_track_sets.append(t);
+			}
+			else
+			{
+				Array t;
+				t.append(0); t.append(0); t.append(0);
+				humanoid_track_sets.append(t);
+			}
+
+		}
+		Array FloatCurves = anima_dict["m_FloatCurves"];
+		for (Dictionary track : FloatCurves)
+		{
+			String attr = track["attribute"];
+			String path = "";
+			if (track.has("path"))
+				path = track.get("path", "");  //# Some omit path if for the current GameObject...?
+			int classID = track["classID"];  //# Todo: convet classID to class guid+id
+			Variant track_curve = track["curve"];
+			if (typeof(track_curve) == Variant::ARRAY)
+			{
+				//print("Float curve is array");
+				Dictionary t = {{"m_Curve", track_curve}};
+				track_curve = t;
+
+			}
+			Dictionary track_curve_dict = track_curve.duplicate();
+			Array curve = track_curve_dict.get("m_Curve",Array());
+			if(curve.size() == 0)
+			{
+				continue;
+			}
+			NodePath nodepath = resolve_gameobject_component_path(nullptr, path, classID);
+			for (Dictionary keyframe : curve)
+			{
+				max_ts = MAX(max_ts, (float)keyframe["time"]);
+			}
+			if (classID == 95 && special_humanoid_transforms.has(attr))
+			{
+				bool flip_sign = false;
+				if (is_mirror)
+				{
+					if (attr.find("Left-Right") != -1)
+						track_curve_dict["unidot-mirror"] = true;
+					else if (attr.find("Left") != -1)
+						attr = attr.replace("Left", "Right");
+					else if( attr.find("Right") != -1)
+						attr = attr.replace("Right", "Left");
+
+				}
+				// Humanoid Root / IK target parameters
+				if (attr.begins_with("RootT."))
+				{
+					// hips position (scaled by human scale?)
+					Array t = humanoid_track_sets[0];
+					t[special_humanoid_transforms[attr]] = track_curve_dict;
+				}
+				else if (attr.begins_with("RootQ."))
+				{
+					// hips rotation
+					Array t = humanoid_track_sets[0];
+					t[special_humanoid_transforms[attr]] = track_curve_dict;
+				}
+				has_humanoid = true;
+
+			}
+			else if( classID == 95 && muscle_name_to_index.has(attr) || TraitMapping.has(attr))
+			{
+				// Humanoid muscle parameters
+				Vector2i bone_idx_axis = muscle_index_to_bone_and_axis[muscle_name_to_index[TraitMapping.get(attr, attr)]];
+				Array t = humanoid_track_sets[0];
+				t[bone_idx_axis.y] = track_curve_dict;
+				has_humanoid = true;
+
+			}
+			else if (classID == 137)
+			{
+				int bstrack = anim->add_track(Animation::TYPE_BLEND_SHAPE);
+				String str_nodepath = (String)(nodepath);
+				if (str_nodepath.ends_with("/SkinnedMeshRenderer"))
+					str_nodepath = "./Skeleton3D/" + str_nodepath.split("/")[-2];
+				nodepath = NodePath(str_nodepath + ":" + attr.substr(11));
+				Array av;
+				av.append(path);
+				av.append(attr);
+				av.append(classID);
+				resolved_to_default["B" + str_nodepath] = av;
+				anim->track_set_path(bstrack, nodepath);
+				anim->track_set_interpolation_type(bstrack, Animation::INTERPOLATION_LINEAR);
+				KeyframeIterator key_iter = KeyframeIterator(track_curve_dict);
+				while (! key_iter.is_eof)
+				{
+					Variant val_variant = key_iter.next();
+					if (typeof(val_variant) == Variant::STRING)
+						val_variant = ((String)val_variant).to_float();
+					float value = val_variant;
+					float ts  = key_iter.timestamp;
+					anim->blend_shape_track_insert_key(bstrack, ts, value / 100.0);
+
+				}
+
+			}
+			else
+			{
+				if (classID == 95) // animated Animator parameters / aaps. Humanoid should be done separately.
+					nodepath = NodePath(".:metadata/" + attr);
+				else
+				{
+					Node* target_node  = nullptr;
+					// yuk yuk. This needs to be improved but should be a good start for some properties:
+					//var adapted_obj: UnidotObject = adapter.instantiate_unidot_object_from_utype(meta, 0, classID)  # no fileID??
+					//var converted_property_keys = adapted_obj.convert_properties(target_node, {attr: 0.0}).keys()
+					Array converted_property_keys ;
+					if (converted_property_keys.is_empty())
+						// log_warn("Unknown property " + str(attr) + " for " + str(path) + " type " + str(adapted_obj.type), attr, adapted_obj)
+						continue;
+					String converted_property = converted_property_keys[0];;
+					nodepath = NodePath((String)(nodepath) + ":" + converted_property);
+
+				}
+				//log_debug("Generated TYPE_VALUE node path " + (String)(nodepath))
+				int valtrack = anim->add_track(Animation::TYPE_VALUE);
+				Array av;
+				av.append(path);
+				av.append(attr);
+				av.append(classID);
+				resolved_to_default["V" + (String)(nodepath)] = av;
+				anim->track_set_path(valtrack, nodepath);
+				anim->track_set_interpolation_type(valtrack, Animation::INTERPOLATION_LINEAR);
+				KeyframeIterator key_iter = KeyframeIterator(track_curve);
+				while (! key_iter.is_eof)
+				{
+					Variant val_variant = key_iter.next();
+					if (typeof(val_variant) == Variant::STRING)
+						val_variant = ((String)val_variant).to_float();
+					float value = val_variant;
+					float ts = key_iter.timestamp;
+					// FIXME: How does the last optional transition argument work?
+					// It says it's used for easing, but I don't see it on blendshape or position tracks?!
+					anim->track_insert_key(valtrack, ts, value);
+
+				}
+
+			}
+		}
+		if (has_humanoid)
+		{
+			LocalVector<LockstepKeyframeiterator> key_iters;
+			key_iters.resize(BoneCount() + 1);
+			Dictionary used_ts;
+			TypedArray<float> keyframe_timestamps;
+			Dictionary keyframe_affects_rootQ;
+			LocalVector<Dictionary> per_bone_keyframe_used_ts;
+			LocalVector<PackedFloat64Array> per_bone_timestamps;
+			per_bone_keyframe_used_ts.resize(BoneCount() + 1);
+			per_bone_timestamps.resize(BoneCount() + 1);
+
+			for (int bone_idx = 0; bone_idx < BoneCount() + 1; bone_idx += 1)
+			{
+				Array humanoid_track_set  = humanoid_track_sets[bone_idx];
+				LocalVector<KeyframeIterator> keyframe_iters;
+				keyframe_iters.resize(humanoid_track_set.size());
+				for(int i=0;i<humanoid_track_set.size();i++)
+				{
+						// may contain null if no animation curve exists.
+					if (typeof(humanoid_track_set[i]) == Variant::DICTIONARY)
+					{
+						// This is the outer object (["curve"]["m_Curve"])
+						keyframe_iters[i] = KeyframeIterator(humanoid_track_set[i]);
+					}
+				}
+				bool is_position_track = bone_idx == BoneCount();
+				LockstepKeyframeiterator key_iter = LockstepKeyframeiterator(keyframe_iters, is_position_track);
+				key_iters[bone_idx] = key_iter;
+				float last_ts = 0.0;;
+				bool same_ts = false;
+				int itercnt = 0;
+				int affecting_bone_idx = extraAffectingBones.get(bone_idx, -1);
+				while (! key_iter.is_eof and itercnt < 100000)
+				{
+					itercnt += 1;
+					key_iter.next();
+					float ts = key_iter.timestamp;
+					if (rootQAffectingBones.has(bone_idx) && ! keyframe_affects_rootQ.has(ts))
+						keyframe_affects_rootQ[ts] = true;
+					if (! used_ts.has(ts))
+					{
+						keyframe_timestamps.append(ts);
+						used_ts[ts] = true;
+					}
+					if (! ((Dictionary)per_bone_keyframe_used_ts[bone_idx]).has(ts))
+					{
+						Dictionary& dict = per_bone_keyframe_used_ts[affecting_bone_idx];
+						dict[ts] = true;
+						PackedFloat64Array& t = per_bone_timestamps[bone_idx];
+						t.append(ts);
+
+					}
+					if (affecting_bone_idx != -1 && ! ((Dictionary)per_bone_keyframe_used_ts[affecting_bone_idx]).has(ts))
+					{
+						Dictionary& dict = per_bone_keyframe_used_ts[affecting_bone_idx];
+						dict[ts] = true;
+						PackedFloat64Array& t = per_bone_timestamps[affecting_bone_idx];
+						t.append(ts);
+
+					}
+				}
+				key_iter.reset();
+
+			}
+			keyframe_timestamps.sort();
+			per_bone_keyframe_used_ts.clear();
+			used_ts.clear();
+			auto timestamp_count = keyframe_timestamps.size();
+			auto body_bone_count = boneIndexToParent.size();
+			for(int bone_idx = 1;  bone_idx < BoneCount() ; bone_idx += 1)
+			{
+				String godot_human_name = GodotHumanNames[bone_idx];
+				int gd_track = anim->add_track(Animation::TYPE_ROTATION_3D);
+				anim->track_set_path(gd_track, "Skeleton3D:" + godot_human_name);
+				anim->track_set_interpolation_type(gd_track, Animation::INTERPOLATION_LINEAR);
+				String bone_name = godot_human_name;
+
+				auto& key_iter = key_iters[bone_idx];
+				PackedFloat64Array& bone_timestamps = per_bone_timestamps[bone_idx];
+				bone_timestamps.sort();
+				int affected_by_bone_idx = extraAffectedByBones.get(bone_idx, -1);
+				LockstepKeyframeiterator* affected_by_key_iter  = nullptr;
+				if (affected_by_bone_idx != -1)
+					affected_by_key_iter = &key_iters[affected_by_bone_idx];
+				float last_ts = 0;
+				for(int ts_idx = 0; ts_idx < bone_timestamps.size(); ts_idx += 1)
+				{
+					float ts = bone_timestamps[ts_idx];
+					Variant val_variant = key_iter.next(ts - last_ts);
+					Vector3 this_swing_twist = dict_to_vector3(val_variant) ;
+					float weight = 1.0;
+					Quaternion pre_value = Quaternion();
+					if (affected_by_bone_idx != -1)
+					{
+						weight = 0.5;
+						this_swing_twist.x *= weight;
+						Variant affected_by_variant = affected_by_key_iter->next(ts - last_ts);
+						Vector3 affected_by_twist = dict_to_vector3(affected_by_variant);
+						affected_by_twist = Vector3(affected_by_twist.x * (1.0 - weight), 0, 0);
+						pre_value = calculate_humanoid_rotation(affected_by_bone_idx, affected_by_twist, true);
+
+					}
+					// swing-twist muscle track
+					Quaternion value = calculate_humanoid_rotation(bone_idx, this_swing_twist);
+					anim->rotation_track_insert_key(gd_track, ts, pre_value * value);
+					last_ts = ts;
+
+				}
+				key_iter.reset();
+				if (affected_by_bone_idx != -1)
+					affected_by_key_iter->reset();
+
+			}
 
 
+			if (! keyframe_timestamps.is_empty())
+			{
+				// Root position track
+				int gd_track_root_pos = anim->add_track(Animation::TYPE_POSITION_3D);
+				anim->track_set_path(gd_track_root_pos, NodePath("Skeleton3D:Root"));
+				anim->track_set_interpolation_type(gd_track_root_pos, Animation::INTERPOLATION_LINEAR);
+				Vector3 base_root_pos_offset = Vector3(0,0,0);
+				if (bake_position_xz_into_pose && bake_position_y_into_pose)
+				{
+					if (! bake_position_y_into_pose)
+					{
+						if (keep_original_position_y)
+							base_root_pos_offset.y = root_y_level; // Hips offset is always precisely 1
+						else
+						{
+							// Ignoring m_HeightFromFeet boolean. it's a small effect and not sure how it's calculated.
+							base_root_pos_offset.y = 1.0 + root_y_level;
+						}
+
+					}
+
+					anim->position_track_insert_key(gd_track_root_pos, 0.0, Vector3());
+				}
+				// Hips position track
+				int gd_track_pos = anim->add_track(Animation::TYPE_POSITION_3D);
+				anim->track_set_path(gd_track_pos, NodePath("Skeleton3D:Hips"));
+				anim->track_set_interpolation_type(gd_track_pos, Animation::INTERPOLATION_LINEAR);
+				LockstepKeyframeiterator& key_iter_pos = key_iters[BoneCount()]; // LockstepKeyframeiterator.new(keyframe_iters)
+
+				// Root rotation track
+				int gd_track_root_rot = anim->add_track(Animation::TYPE_ROTATION_3D);
+				anim->track_set_path(gd_track_root_rot, NodePath("Skeleton3D:Root"));
+				anim->track_set_interpolation_type(gd_track_root_rot, Animation::INTERPOLATION_LINEAR);
+				Quaternion base_y_rotation = Quaternion();
+				if (bake_position_xz_into_pose && bake_position_y_into_pose)
+				{
+					float euler_y = - orientation_offset;
+					base_y_rotation = Quaternion::from_euler(Vector3(0, euler_y, 0));
+					anim->rotation_track_insert_key(gd_track_root_rot, 0.0, base_y_rotation); // Root rest rotation is identity
+				}
+
+				// Hips rotation track
+				int gd_track_rot = anim->add_track(Animation::TYPE_ROTATION_3D);
+				anim->track_set_path(gd_track_rot, NodePath("Skeleton3D:Hips"));
+				anim->track_set_interpolation_type(gd_track_rot, Animation::INTERPOLATION_LINEAR);
+				LockstepKeyframeiterator& key_iter_rot = key_iters[0]; // LockstepKeyframeiterator.new(keyframe_iters)
+
+				float last_ts = 0;
+				LocalVector<Vector3> body_positions;
+				LocalVector<Quaternion> body_rotations;
+				body_positions.resize(body_bone_count);
+				body_rotations.resize(body_bone_count);
+				// We need to evaluate the position tracks at each timestep and calculate
+				// the human pose so we can apply the center of mass corerction
+				for(int ts_idx = 0; ts_idx < keyframe_timestamps.size(); ts_idx++)
+				{
+					float ts = keyframe_timestamps[ts_idx];
+					body_positions[0] = xbot_positions[0]; // Hips position is hardcoded
+					body_rotations[0] = Quaternion(); // rest Hips rotation in Godot is always identity
+					for(int body_bone_idx = 1; body_bone_idx < body_bone_count; body_bone_idx++)
+					{
+						int bone_idx = (int)boneIndexToMono[body_bone_idx];
+						int parent_body_bone_idx = boneIndexToParent[body_bone_idx];
+						Vector3 local_bone_pos  = xbot_positions[body_bone_idx];
+						LockstepKeyframeiterator& key_iter = key_iters[bone_idx];
+						//var pre_dbg: String = key_iter.debug()
+						Variant val_variant = key_iter.next(ts - last_ts);
+						Vector3 swing_twist = dict_to_vector3(val_variant);
+						// swing-twist muscle track
+						Quaternion local_rot = calculate_humanoid_rotation(bone_idx, swing_twist);
+						if (! local_rot.is_normalized())
+						{
+							//push_error("local_rot " + str(body_bone_idx) + " is not normalized!")
+							return;
+						}
+						if( (key_iter.timestamp != ts) && ! key_iter.is_eof)
+						{
+							//push_warning("State was: " + pre_dbg)
+							//push_error("bone " + str(human_trait.GodotHumanNames[bone_idx]) + " timestamp " + str(key_iter.timestamp) + " is not ts " + str(ts) + " from " + str(last_ts) + " dbg " + key_iter.debug())
+						}
+						Vector3 par_position = body_positions[parent_body_bone_idx];
+						Quaternion par_rotation = body_rotations[parent_body_bone_idx];
+						if (! par_rotation.is_normalized())
+						{
+							//push_error("par_rotation " + str(parent_body_bone_idx) + " is not normalized!")
+							return;
+						}
+						body_positions[body_bone_idx] = par_position + par_rotation.xform(local_bone_pos);
+						body_rotations[body_bone_idx] = par_rotation * local_rot;
+						if (! body_rotations[body_bone_idx].is_normalized())
+						{
+							//push_error("body_rotation " + str(body_bone_idx) + " is not normalized!")
+							return;
+						}
+
+					}
+					// Calulcate center of mass
+					//var pre_dbg_rot: String = key_iter_rot.debug()
+					Variant val_rotation_variant = key_iter_rot.next(ts - last_ts);
+					Quaternion root_q = dict_to_quaternion(val_rotation_variant);
+					if (is_mirror)
+					{
+						root_q.y = -root_q.y;
+						root_q.z = -root_q.z;
+					}
+					if (! root_q.is_normalized())
+					{
+						//push_error("root q is not normalized!")
+						return;
+					}
+					if ((key_iter_rot.timestamp != ts) and not key_iter_rot.is_eof)
+					{
+						//push_warning("RootQ State was: " + pre_dbg_rot)
+						//push_error("RootQ timestamp " + str(key_iter_rot.timestamp) + " is not ts " + str(ts) + " from " + str(last_ts) + " dbg " + key_iter_rot.debug())
+					}
+					Quaternion delta_q = get_hips_rotation_delta(body_positions, root_q);
+					if(! delta_q.is_normalized())
+					{
+						//push_error("delta_q is not normalized!")
+						return;
+					}
+					if (keyframe_affects_rootQ.has(ts))
+					{
+						Quaternion y_rotation = base_y_rotation;
+						if (! bake_orientation_into_pose)
+						{
+							float euler_y = root_q.get_euler(EulerOrder::YZX).y - orientation_offset;
+							y_rotation = Quaternion::from_euler(Vector3(0, euler_y, 0));
+							anim->rotation_track_insert_key(gd_track_root_rot, ts, y_rotation) ;// Root rest rotation is identity
+						}
+						anim->rotation_track_insert_key(gd_track_rot, ts, y_rotation.inverse() * delta_q); // Hips rest rotation is identity
+					}
+
+					//var pre_dbg_pos: String = key_iter_pos.debug()
+					Variant val_position_variant = key_iter_pos.next(ts - last_ts);
+					Vector3 root_t = dict_to_vector3(val_position_variant); 
+					if (is_mirror)
+						root_t.x = -root_t.x;
+					if ((key_iter_pos.timestamp != ts) && ! key_iter_pos.is_eof)
+					{
+						// push_warning("RootT State was: " + pre_dbg_pos)
+						// push_error("RootT timestamp " + str(key_iter_pos.timestamp) + " is not ts " + str(ts) + " from " + str(last_ts) + " dbg " + key_iter_pos.debug())
+					}
+					Vector3 hips_pos = get_hips_position(body_positions, body_rotations, delta_q, root_t);
+					Vector3 root_pos_offset = base_root_pos_offset;
+					if (! bake_position_xz_into_pose)
+					{
+						if (keep_original_position_xz)
+							root_pos_offset = Vector3(hips_pos.x, 0, hips_pos.z);
+						else
+							root_pos_offset = Vector3(root_t.x, 0, root_t.z);
+					}
+					if (! bake_position_y_into_pose)
+					{
+						if (keep_original_position_y)
+							root_pos_offset.y = hips_pos.y - 1.0 + root_y_level; // Hips offset is always precisely 1
+						else
+							// Ignoring m_HeightFromFeet boolean. it's a small effect and not sure how it's calculated.
+							root_pos_offset.y = root_t.y + root_y_level;
+					}
+					if (! bake_position_xz_into_pose || ! bake_position_y_into_pose)
+						anim->position_track_insert_key(gd_track_root_pos, ts, root_pos_offset);
+					anim->position_track_insert_key(gd_track_pos, ts, hips_pos - root_pos_offset);
+					last_ts = ts;
+
+				}
+
+
+			}
+
+
+		}
+
+		Array curves_pos = anima_dict.get("m_PositionCurves", Array());
+		for (Dictionary track : curves_pos )
+		{
+			String path = track.get("path", "");
+			int classID = 4;
+			Variant track_curve = track["curve"];
+			if (typeof(track_curve) == Variant::ARRAY)
+			{
+				//#log_warn("position curve is array")
+				Dictionary dic = {{"m_Curve", track_curve}};
+				track_curve = dic;
+
+			}
+			Array array_curve = ((Dictionary)track_curve).get("m_Curve", Array());
+			if (array_curve.size() == 0)
+			{
+				//log_warn("Empty position curve detected " + path)
+				continue;;
+			}
+			for(Dictionary keyframe: array_curve) 
+				max_ts = MAX(max_ts, (float)keyframe["time"]);
+			NodePath nodepath = NodePath(to_unity_bone_path(path));
+			int postrack = anim->add_track(Animation::TYPE_POSITION_3D);
+			anim->track_set_path(postrack, nodepath);
+			anim->track_set_interpolation_type(postrack, Animation::INTERPOLATION_LINEAR);
+			KeyframeIterator key_iter = KeyframeIterator(track_curve);
+			while (! key_iter.is_eof)
+			{
+				Vector3 value = dict_to_vector3(key_iter.next());
+				float ts = key_iter.timestamp;
+				if (path.ends_with("Spine"))
+				{
+					//log_debug("Spine " + str(ts) + " value " + str(value) + " -> " + str(Vector3(-1, 1, 1) * value))
+				}
+				anim->position_track_insert_key(postrack, ts, Vector3(-1, 1, 1) * value);
+			}
+
+		}
+
+		Basis flip_x_basis = Basis(-1, 0, 0, 0, 1, 0, 0, 0, 1);
+		// 处理常规旋转动画
+		Array curves_rot_euler = anima_dict.get("m_EulerCurves", Array());
+		for ( Dictionary track : curves_rot_euler)
+		{
+			String path = track.get("path", "");
+			int classID = 4;
+			Variant track_curve = track["curve"];
+			if (typeof(track_curve) == Variant::ARRAY)
+			{
+				//log_warn("euler curve is array")
+				Dictionary dic = {{"m_Curve", track_curve}};
+				track_curve = dic;
+
+			}
+			Array array_curve = ((Dictionary)track_curve).get("m_Curve", Array());
+			if (array_curve.size() == 0)
+			{
+				//log_warn("Empty euler curve detected " + path)
+				continue;
+			}
+			for (Dictionary keyframe : array_curve)
+			{
+				max_ts = MAX(max_ts, (float)keyframe["time"]);
+			}
+			NodePath nodepath = to_unity_bone_path(path);
+			int rottrack = anim->add_track(Animation::TYPE_ROTATION_3D);
+			Array t_a;
+			t_a.append(path);
+			t_a.append("");
+			t_a.append(classID);
+			resolved_to_default["T" + (String)(nodepath)] = t_a;
+			anim->track_set_path(rottrack, nodepath);
+			anim->track_set_interpolation_type(rottrack, Animation::INTERPOLATION_LINEAR);
+			KeyframeIterator key_iter = KeyframeIterator(track_curve);
+			while( ! key_iter.is_eof)
+			{
+				Vector3 value = dict_to_vector3(key_iter.next());
+				float ts = key_iter.timestamp;
+				// NOTE: value is assumed to be YXZ in Godot terms, but it has 6 different modes in Unidot.
+				EulerOrder godot_euler_mode = EulerOrder::YXZ;
+				Dictionary curve = track["curve"];
+				int RotationOrder = curve.get("m_RotationOrder", 2);
+				switch(RotationOrder)
+				{
+					case 0:  // XYZ
+						godot_euler_mode = EulerOrder::ZYX;
+						break;
+					case 1:  // XZY
+						godot_euler_mode = EulerOrder::YZX;
+						break;
+					case 2:  // YZX
+						godot_euler_mode = EulerOrder::XZY;
+						break;
+					case 3:  // YXZ
+						godot_euler_mode = EulerOrder::ZXY;
+						break;
+					case 4:  // ZXY
+						godot_euler_mode = EulerOrder::YXZ;
+						break;
+					case 5:  // ZYX
+						godot_euler_mode = EulerOrder::XYZ;
+						break;
+
+				}
+				// This is more complicated than this...
+				// The keys need to be baked out and sampled using this mode.
+				anim->rotation_track_insert_key(rottrack, ts, flip_x_basis.inverse() * Basis::from_euler(value * PI / 180.0, godot_euler_mode) * flip_x_basis);
+
+			}
+		}
+
+		// 处理常规旋转动画
+		Array curves_rot = anima_dict.get("m_RotationCurves", Array());
+		for (Dictionary track : curves_rot)
+		{
+			String path = track.get("path", "");
+			int classID = 4;
+			Variant track_curve = track["curve"];
+			if (typeof(track_curve) == Variant::ARRAY)
+			{
+				//log_warn("rotation curve is array")
+				Dictionary dct = { {"m_Curve", track_curve} };
+				track_curve = dct;
+			}
+			Array array_curve = ((Dictionary)track_curve).get("m_Curve", Array());
+			if (array_curve.size() == 0)
+			{
+				//log_warn("Empty rotation curve detected " + path)
+				continue;
+			}
+			for ( Dictionary keyframe : array_curve)
+			{
+				max_ts = MAX(max_ts, (float)keyframe["time"]);
+			}
+			NodePath nodepath = NodePath(to_unity_bone_path(path));
+			int rottrack = anim->add_track(Animation::TYPE_ROTATION_3D);
+			anim->track_set_path(rottrack, nodepath);
+			anim->track_set_interpolation_type(rottrack, Animation::INTERPOLATION_LINEAR);
+			KeyframeIterator key_iter = KeyframeIterator(track_curve);
+			while(! key_iter.is_eof)
+			{
+				Quaternion value = dict_to_quaternion(key_iter.next());
+				float ts = key_iter.timestamp;
+				anim->rotation_track_insert_key(rottrack, ts, flip_x_basis.inverse() * Basis(value) * flip_x_basis);
+			}
+		}
+
+		// 处理常规缩放动画
+		Array curves_scale = anima_dict.get("m_ScaleCurves", Array());
+		for (Dictionary track : curves_scale)
+		{
+			String path = track.get("path", "");
+			int classID = 4;
+			Variant track_curve = track["curve"];
+			if (typeof(track_curve) == Variant::ARRAY)
+			{
+				//log_warn("scale curve is array")
+				Dictionary dct = { {"m_Curve", track_curve} };
+				track_curve = dct;
+
+			}
+			Array array_curve = ((Dictionary)track_curve).get("m_Curve", Array());
+			if (array_curve.size() == 0)
+			{
+				// log_warn("Empty scale curve detected " + path)
+				continue;
+			}
+			for ( Dictionary keyframe : array_curve)
+				max_ts = MAX(max_ts, (float)keyframe["time"]);
+			NodePath nodepath = NodePath(to_unity_bone_path(path));
+			int scaletrack = anim->add_track(Animation::TYPE_SCALE_3D);
+			anim->track_set_path(scaletrack, nodepath);
+			anim->track_set_interpolation_type(scaletrack, Animation::INTERPOLATION_LINEAR);
+			KeyframeIterator key_iter = KeyframeIterator(track_curve);
+			while(! key_iter.is_eof)
+			{
+				Vector3 value = dict_to_vector3(key_iter.next());
+				float ts = key_iter.timestamp;
+				anim->scale_track_insert_key(scaletrack, ts, value);
+
+			}
+			
+
+		}
+		Array curves_pptr = anima_dict.get("m_PPtrCurves", Array());
+		for (Dictionary track : curves_pptr)
+		{
+			String path = track.get("path", "");
+			int classID = 4;
+			Variant track_curve = track["curve"];
+			if (typeof(track_curve) == Variant::ARRAY)
+			{
+				//log_warn("scale curve is array")
+				Dictionary dct = { {"m_Curve", track_curve} };
+				track_curve = dct;
+
+			}
+			Array array_curve = ((Dictionary)track_curve).get("m_Curve", Array());
+			if (array_curve.size() == 0)
+			{
+				// log_warn("Empty scale curve detected " + path)
+				continue;
+			}
+			for ( Dictionary keyframe : array_curve)
+				max_ts = MAX(max_ts, (float)keyframe["time"]);
+		}
+
+		if (max_ts <= 0.0)
+			max_ts = 1.0; // Animations are 1 second long by default, but can be shorter based on keyframe
+		if ((float)settings.get("m_StopTime", 0.0) > 0.0)
+			max_ts = settings.get("m_StopTime", 0.0);
+		anim->set_length(max_ts); // length = max_ts
+		if ((float)settings.get("m_LoopTime", 0) != 0)
+			anim->set_loop_mode(Animation::LOOP_LINEAR);
+	}
 
 
 
@@ -1948,7 +2724,7 @@ public:
 	}
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override
 	{		
-		p_extensions->push_back("asset");
+		p_extensions->push_back("anim");
 	}
 	virtual bool handles_type(const String &p_type) const override
 	{
@@ -1956,7 +2732,7 @@ public:
 	}
 	virtual String get_resource_type(const String &p_path) const override
 	{
-		if (p_path.get_extension().to_lower() == "asset") {
+		if (p_path.get_extension().to_lower() == "anim") {
 			return "Animation";
 		}
 		return "";

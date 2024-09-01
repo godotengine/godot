@@ -329,6 +329,15 @@ public:
 		CRASH_COND_MSG(!exists, "HashMap key not found.");
 		return elements[pos]->data.value;
 	}
+	_FORCE_INLINE_ TValue get(const TKey &p_key,const TValue & p_value) const {
+		uint32_t pos = 0;
+		bool exists = _lookup_pos(p_key, pos);
+		if (!exists)
+		{
+			return p_value;
+		}
+		return elements[pos]->data.value;
+	}
 
 	_FORCE_INLINE_ const TValue *getptr(const TKey &p_key) const {
 		uint32_t pos = 0;

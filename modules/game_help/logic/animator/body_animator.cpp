@@ -6,6 +6,25 @@
 
 
 
+void UnityAnimation::load_form_unity_asset()
+{
+	Error err;
+	Ref<FileAccess> f = FileAccess::open(unity_asset_path, FileAccess::READ, &err);
+	if(f.is_null())
+	{
+		return ;
+	}
+	String yaml_anim = f->get_as_text();
+
+	Ref<JSON> json = DataTableManager::get_singleton()->parse_yaml(yaml_anim);
+
+	Dictionary dict = json->get_data();
+	Callable on_load_animation =  DataTableManager::get_singleton()->get_animation_load_cb();
+	Dictionary clip = dict["AnimationClip"];
+	on_load_animation.call(clip,false,this);
+	optimize();
+}
+
 
 void CharacterAnimationItem::bind_methods()
 {
@@ -27,13 +46,6 @@ void CharacterAnimationItem::bind_methods()
     ClassDB::bind_method(D_METHOD("set_child_node", "child_node"), &CharacterAnimationItem::set_child_node);
     ClassDB::bind_method(D_METHOD("get_child_node"), &CharacterAnimationItem::get_child_node);
 
-	ClassDB::bind_method(D_METHOD("set_unity_asset_path", "unity_asset_path"), &CharacterAnimationItem::set_unity_asset_path);
-	ClassDB::bind_method(D_METHOD("get_unity_asset_path"), &CharacterAnimationItem::get_unity_asset_path);
-
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "unity_asset_path"), "set_unity_asset_path", "get_unity_asset_path");
-
-
-	ADD_MEMBER_BUTTON(load_form_unity_asset, L"根据Unity 动画初始化", CharacterAnimationItem);
 
     ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "animation_name"), "set_animation_name", "get_animation_name");
     ADD_PROPERTY(PropertyInfo(Variant::STRING, "animation_path"), "set_animation_path", "get_animation_path");
@@ -118,27 +130,6 @@ void CharacterAnimationItem::_set_animation_scale_by_length(float p_length)
 {
 
 }
-void CharacterAnimationItem::load_form_unity_asset()
-{
-		Error err;
-		Ref<FileAccess> f = FileAccess::open(unity_asset_path, FileAccess::READ, &err);
-		if(f.is_null())
-		{
-			return ;
-		}
-		String yaml_anim = f->get_as_text();
-
-		animation.unref();
-		animation.instantiate();
-		Ref<JSON> json = DataTableManager::get_singleton()->parse_yaml(yaml_anim);
-
-		Dictionary dict = json->get_data();
-		Callable on_load_animation =  DataTableManager::get_singleton()->get_animation_load_cb();
-		Dictionary clip = dict["AnimationClip"];
-		on_load_animation.call(clip,false,animation);
-		animation->optimize();
-}
-
 
 void CharacterAnimatorNodeBase::bind_methods()
 {

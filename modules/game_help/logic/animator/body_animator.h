@@ -16,6 +16,26 @@
 #include "modules/limboai/bt/bt_player.h"
 
 class CharacterAnimatorNodeBase;
+class UnityAnimation : public Animation
+{
+    GDCLASS(UnityAnimation, Animation);
+    static void _bind_methods()
+    {
+        ClassDB::bind_method(D_METHOD("set_unity_asset_path", "unity_asset_path"), &UnityAnimation::set_unity_asset_path);
+        ClassDB::bind_method(D_METHOD("get_unity_asset_path"), &UnityAnimation::get_unity_asset_path);
+
+        ADD_PROPERTY(PropertyInfo(Variant::STRING, "unity_asset_path"), "set_unity_asset_path", "get_unity_asset_path");
+
+
+        ADD_MEMBER_BUTTON(load_form_unity_asset, L"根据Unity 动画初始化", UnityAnimation);
+
+    }
+public:
+    DECL_MEMBER_BUTTON(load_form_unity_asset);
+    void set_unity_asset_path(const String& p_unity_asset_path) { unity_asset_path = p_unity_asset_path; }
+    String get_unity_asset_path() { return unity_asset_path; }
+    String unity_asset_path;
+};
 // 动画库
 class CharacterAnimationLibrary : public Resource
 {
@@ -166,13 +186,9 @@ public:
     float _get_animation_length();
     void _set_animation_scale_by_length(float p_length);
 
-    void set_unity_asset_path(const String& p_unity_asset_path) { unity_asset_path = p_unity_asset_path; }
-    String get_unity_asset_path() { return unity_asset_path; }
 
 public:
 
-    String unity_asset_path;
-    DECL_MEMBER_BUTTON(load_form_unity_asset);
 
     StringName animation_name;
     // 动画资源路径

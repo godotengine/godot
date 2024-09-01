@@ -45,6 +45,10 @@ struct DictionaryPrivate {
 	HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator> variant_map;
 };
 
+void* Dictionary::get_raw_hash()
+{
+	return &_p->variant_map;
+}
 void Dictionary::get_key_list(List<Variant> *p_keys) const {
 	if (_p->variant_map.is_empty()) {
 		return;

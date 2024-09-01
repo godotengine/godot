@@ -142,7 +142,7 @@ public:
 protected:
     void on_stop(const Ref<BeehaveRuncontext>& run_context)
     {        
-        for (int i = 0; i < listeners.size(); i++)
+        for (uint32_t i = 0; i < listeners.size(); i++)
         {
             listeners[i]->stop(run_context);
         }
@@ -193,7 +193,7 @@ public:
     TypedArray<BeehaveListener> get_listener()
     {
         TypedArray<BeehaveListener> ret;
-        for (int i = 0; i < listeners.size(); i++)
+        for (uint32_t i = 0; i < listeners.size(); i++)
         {
             ret.push_back(listeners[i]);
         }
