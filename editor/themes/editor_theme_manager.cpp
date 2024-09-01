@@ -1804,7 +1804,9 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		p_theme->set_color("background", EditorStringName(Editor), background_color_opaque);
 		p_theme->set_stylebox("Background", EditorStringName(EditorStyles), make_flat_stylebox(background_color_opaque, p_config.base_margin, p_config.base_margin, p_config.base_margin, p_config.base_margin));
 
-		p_theme->set_stylebox("PanelForeground", EditorStringName(EditorStyles), p_config.base_style);
+		Ref<StyleBoxFlat> editor_panel_foreground = p_config.base_style->duplicate();
+		editor_panel_foreground->set_corner_radius_all(0);
+		p_theme->set_stylebox("PanelForeground", EditorStringName(EditorStyles), editor_panel_foreground);
 
 		// Editor focus.
 		p_theme->set_stylebox("Focus", EditorStringName(EditorStyles), p_config.button_style_focus);

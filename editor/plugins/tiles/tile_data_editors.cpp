@@ -917,7 +917,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	button_expand->set_toggle_mode(true);
 	button_expand->set_pressed(false);
 	button_expand->set_tooltip_text(TTR("Expand editor"));
-	button_expand->connect("toggled", callable_mp(this, &GenericTilePolygonEditor::_toggle_expand));
+	button_expand->connect(SceneStringName(toggled), callable_mp(this, &GenericTilePolygonEditor::_toggle_expand));
 	toolbar->add_child(button_expand);
 
 	toolbar->add_child(memnew(VSeparator));

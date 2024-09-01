@@ -59,7 +59,7 @@
 			Controls the text's horizontal alignment. Supports left, center, right, and fill, or justify. Set it to one of the [enum HorizontalAlignment] constants.
 		</member>
 		<member name="justification_flags" type="int" setter="set_justification_flags" getter="get_justification_flags" enum="TextServer.JustificationFlag" is_bitfield="true" default="163">
-			Line fill alignment rules. For more info see [enum TextServer.JustificationFlag].
+			Line fill alignment rules. See [enum TextServer.JustificationFlag] for more information.
 		</member>
 		<member name="label_settings" type="LabelSettings" setter="set_label_settings" getter="get_label_settings">
 			A [LabelSettings] resource that can be shared between multiple [Label] nodes. Takes priority over theme properties.

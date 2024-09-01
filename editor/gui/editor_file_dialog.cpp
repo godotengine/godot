@@ -1779,7 +1779,7 @@ void EditorFileDialog::_update_option_controls() {
 			CheckBox *cb = memnew(CheckBox);
 			cb->set_pressed(opt.default_idx);
 			grid_options->add_child(cb);
-			cb->connect("toggled", callable_mp(this, &EditorFileDialog::_option_changed_checkbox_toggled).bind(opt.name));
+			cb->connect(SceneStringName(toggled), callable_mp(this, &EditorFileDialog::_option_changed_checkbox_toggled).bind(opt.name));
 			selected_options[opt.name] = (bool)opt.default_idx;
 		} else {
 			OptionButton *ob = memnew(OptionButton);
@@ -2146,7 +2146,7 @@ EditorFileDialog::EditorFileDialog() {
 	show_hidden->set_toggle_mode(true);
 	show_hidden->set_pressed(is_showing_hidden_files());
 	show_hidden->set_tooltip_text(TTR("Toggle the visibility of hidden files."));
-	show_hidden->connect("toggled", callable_mp(this, &EditorFileDialog::set_show_hidden_files));
+	show_hidden->connect(SceneStringName(toggled), callable_mp(this, &EditorFileDialog::set_show_hidden_files));
 	pathhb->add_child(show_hidden);
 
 	pathhb->add_child(memnew(VSeparator));

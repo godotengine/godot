@@ -40,8 +40,8 @@
 
 int main(int argc, char *argv[]) {
 	// Get executable name.
-	WCHAR exe_name[MAX_PATH] = {};
-	if (!GetModuleFileNameW(nullptr, exe_name, MAX_PATH)) {
+	WCHAR exe_name[32767] = {};
+	if (!GetModuleFileNameW(nullptr, exe_name, 32767)) {
 		wprintf(L"GetModuleFileName failed, error %d\n", GetLastError());
 		return -1;
 	}

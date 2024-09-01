@@ -4331,13 +4331,13 @@ void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, 
 			Node2D *n2d = Object::cast_to<Node2D>(ci);
 
 			if (key_pos && p_location) {
-				te->insert_node_value_key(n2d, "position", n2d->get_position(), p_on_existing);
+				te->insert_node_value_key(n2d, "position", p_on_existing);
 			}
 			if (key_rot && p_rotation) {
-				te->insert_node_value_key(n2d, "rotation", n2d->get_rotation(), p_on_existing);
+				te->insert_node_value_key(n2d, "rotation", p_on_existing);
 			}
 			if (key_scale && p_scale) {
-				te->insert_node_value_key(n2d, "scale", n2d->get_scale(), p_on_existing);
+				te->insert_node_value_key(n2d, "scale", p_on_existing);
 			}
 
 			if (n2d->has_meta("_edit_bone_") && n2d->get_parent_item()) {
@@ -4363,13 +4363,13 @@ void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, 
 				if (has_chain && ik_chain.size()) {
 					for (Node2D *&F : ik_chain) {
 						if (key_pos) {
-							te->insert_node_value_key(F, "position", F->get_position(), p_on_existing);
+							te->insert_node_value_key(F, "position", p_on_existing);
 						}
 						if (key_rot) {
-							te->insert_node_value_key(F, "rotation", F->get_rotation(), p_on_existing);
+							te->insert_node_value_key(F, "rotation", p_on_existing);
 						}
 						if (key_scale) {
-							te->insert_node_value_key(F, "scale", F->get_scale(), p_on_existing);
+							te->insert_node_value_key(F, "scale", p_on_existing);
 						}
 					}
 				}
@@ -4379,13 +4379,13 @@ void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, 
 			Control *ctrl = Object::cast_to<Control>(ci);
 
 			if (key_pos) {
-				te->insert_node_value_key(ctrl, "position", ctrl->get_position(), p_on_existing);
+				te->insert_node_value_key(ctrl, "position", p_on_existing);
 			}
 			if (key_rot) {
-				te->insert_node_value_key(ctrl, "rotation", ctrl->get_rotation(), p_on_existing);
+				te->insert_node_value_key(ctrl, "rotation", p_on_existing);
 			}
 			if (key_scale) {
-				te->insert_node_value_key(ctrl, "size", ctrl->get_size(), p_on_existing);
+				te->insert_node_value_key(ctrl, "size", p_on_existing);
 			}
 		}
 	}
@@ -5409,7 +5409,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	smart_snap_button->set_theme_type_variation("FlatButton");
 	main_menu_hbox->add_child(smart_snap_button);
 	smart_snap_button->set_toggle_mode(true);
-	smart_snap_button->connect("toggled", callable_mp(this, &CanvasItemEditor::_button_toggle_smart_snap));
+	smart_snap_button->connect(SceneStringName(toggled), callable_mp(this, &CanvasItemEditor::_button_toggle_smart_snap));
 	smart_snap_button->set_tooltip_text(TTR("Toggle smart snapping."));
 	smart_snap_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/use_smart_snap", TTR("Use Smart Snap"), KeyModifierMask::SHIFT | Key::S));
 	smart_snap_button->set_shortcut_context(this);
@@ -5418,7 +5418,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	grid_snap_button->set_theme_type_variation("FlatButton");
 	main_menu_hbox->add_child(grid_snap_button);
 	grid_snap_button->set_toggle_mode(true);
-	grid_snap_button->connect("toggled", callable_mp(this, &CanvasItemEditor::_button_toggle_grid_snap));
+	grid_snap_button->connect(SceneStringName(toggled), callable_mp(this, &CanvasItemEditor::_button_toggle_grid_snap));
 	grid_snap_button->set_tooltip_text(TTR("Toggle grid snapping."));
 	grid_snap_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/use_grid_snap", TTR("Use Grid Snap"), KeyModifierMask::SHIFT | Key::G));
 	grid_snap_button->set_shortcut_context(this);
@@ -5511,7 +5511,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	override_camera_button = memnew(Button);
 	override_camera_button->set_theme_type_variation("FlatButton");
 	main_menu_hbox->add_child(override_camera_button);
-	override_camera_button->connect("toggled", callable_mp(this, &CanvasItemEditor::_button_override_camera));
+	override_camera_button->connect(SceneStringName(toggled), callable_mp(this, &CanvasItemEditor::_button_override_camera));
 	override_camera_button->set_toggle_mode(true);
 	override_camera_button->set_disabled(true);
 	_update_override_camera_button(false);

@@ -130,15 +130,14 @@ void EditorExportPlatformWeb::_replace_strings(const HashMap<String, String> &p_
 	}
 }
 
-void EditorExportPlatformWeb::_fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, int p_flags, const Vector<SharedObject> p_shared_objects, const Dictionary &p_file_sizes) {
+void EditorExportPlatformWeb::_fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, BitField<EditorExportPlatform::DebugFlags> p_flags, const Vector<SharedObject> p_shared_objects, const Dictionary &p_file_sizes) {
 	// Engine.js config
 	Dictionary config;
 	Array libs;
 	for (int i = 0; i < p_shared_objects.size(); i++) {
 		libs.push_back(p_shared_objects[i].path.get_file());
 	}
-	Vector<String> flags;
-	gen_export_flags(flags, p_flags & (~DEBUG_FLAG_DUMB_CLIENT));
+	Vector<String> flags = gen_export_flags(p_flags & (~DEBUG_FLAG_DUMB_CLIENT));
 	Array args;
 	for (int i = 0; i < flags.size(); i++) {
 		args.push_back(flags[i]);
@@ -450,7 +449,7 @@ List<String> EditorExportPlatformWeb::get_binary_extensions(const Ref<EditorExpo
 	return list;
 }
 
-Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
 	const String custom_debug = p_preset->get("custom_template/debug");
@@ -744,7 +743,7 @@ String EditorExportPlatformWeb::get_option_tooltip(int p_index) const {
 	return "";
 }
 
-Error EditorExportPlatformWeb::run(const Ref<EditorExportPreset> &p_preset, int p_option, int p_debug_flags) {
+Error EditorExportPlatformWeb::run(const Ref<EditorExportPreset> &p_preset, int p_option, BitField<EditorExportPlatform::DebugFlags> p_debug_flags) {
 	const uint16_t bind_port = EDITOR_GET("export/web/http_port");
 	// Resolve host if needed.
 	const String bind_host = EDITOR_GET("export/web/http_host");

@@ -63,6 +63,13 @@
 				The [param bake_fps] parameter overrides the bake_fps in [param state].
 			</description>
 		</method>
+		<method name="get_supported_gltf_extensions" qualifiers="static">
+			<return type="PackedStringArray" />
+			<description>
+				Returns a list of all support glTF extensions, including extensions supported directly by the engine, and extensions supported by user plugins registering [GLTFDocumentExtension] classes.
+				[b]Note:[/b] If this method is run before a GLTFDocumentExtension is registered, its extensions won't be included in the list. Be sure to only run this method after all extensions are registered. If you run this when the engine starts, consider waiting a frame before calling this method to ensure all extensions are registered.
+			</description>
+		</method>
 		<method name="register_gltf_document_extension" qualifiers="static">
 			<return type="void" />
 			<param index="0" name="extension" type="GLTFDocumentExtension" />

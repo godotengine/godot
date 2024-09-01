@@ -644,6 +644,8 @@ void EditorPropertyArray::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
 			change_type->clear();
+			change_type->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTR("Remove Item"), Variant::VARIANT_MAX);
+			change_type->add_separator();
 			for (int i = 0; i < Variant::VARIANT_MAX; i++) {
 				if (i == Variant::CALLABLE || i == Variant::SIGNAL || i == Variant::RID) {
 					// These types can't be constructed or serialized properly, so skip them.
@@ -653,8 +655,6 @@ void EditorPropertyArray::_notification(int p_what) {
 				String type = Variant::get_type_name(Variant::Type(i));
 				change_type->add_icon_item(get_editor_theme_icon(type), type, i);
 			}
-			change_type->add_separator();
-			change_type->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTR("Remove Item"), Variant::VARIANT_MAX);
 
 			if (button_add_item) {
 				button_add_item->set_icon(get_editor_theme_icon(SNAME("Add")));
@@ -1117,6 +1117,8 @@ void EditorPropertyDictionary::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
 			change_type->clear();
+			change_type->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTR("Remove Item"), Variant::VARIANT_MAX);
+			change_type->add_separator();
 			for (int i = 0; i < Variant::VARIANT_MAX; i++) {
 				if (i == Variant::CALLABLE || i == Variant::SIGNAL || i == Variant::RID) {
 					// These types can't be constructed or serialized properly, so skip them.
@@ -1126,8 +1128,6 @@ void EditorPropertyDictionary::_notification(int p_what) {
 				String type = Variant::get_type_name(Variant::Type(i));
 				change_type->add_icon_item(get_editor_theme_icon(type), type, i);
 			}
-			change_type->add_separator();
-			change_type->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTR("Remove Item"), Variant::VARIANT_MAX);
 
 			if (button_add_item) {
 				button_add_item->set_icon(get_editor_theme_icon(SNAME("Add")));

@@ -45,6 +45,7 @@ class EditorPlugin;
 class EditorResourcePreview;
 class EditorSelection;
 class EditorSettings;
+class EditorUndoRedoManager;
 class FileSystemDock;
 class Mesh;
 class Node;
@@ -93,6 +94,7 @@ public:
 	EditorResourcePreview *get_resource_previewer() const;
 	EditorSelection *get_selection() const;
 	Ref<EditorSettings> get_editor_settings() const;
+	EditorUndoRedoManager *get_editor_undo_redo() const;
 
 	Vector<Ref<Texture2D>> make_mesh_previews(const Vector<Ref<Mesh>> &p_meshes, Vector<Transform3D> *p_transforms, int p_preview_size);
 

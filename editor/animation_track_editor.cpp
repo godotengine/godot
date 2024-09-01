@@ -41,6 +41,7 @@
 #include "editor/gui/editor_spin_slider.h"
 #include "editor/gui/scene_tree_editor.h"
 #include "editor/inspector_dock.h"
+#include "editor/multi_node_edit.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/mesh_instance_3d.h"
@@ -120,12 +121,18 @@ bool AnimationTrackKeyEdit::_set(const StringName &p_name, const Variant &p_valu
 		float val = p_value;
 		float prev_val = animation->track_get_key_transition(track, key);
 		setting = true;
+
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Animation Change Transition"), UndoRedo::MERGE_ENDS);
 		undo_redo->add_do_method(animation.ptr(), "track_set_key_transition", track, key, val);
 		undo_redo->add_undo_method(animation.ptr(), "track_set_key_transition", track, key, prev_val);
 		undo_redo->add_do_method(this, "_update_obj", animation);
 		undo_redo->add_undo_method(this, "_update_obj", animation);
+		AnimationPlayerEditor *ape = AnimationPlayerEditor::get_singleton();
+		if (ape) {
+			undo_redo->add_do_method(ape, "_animation_update_key_frame");
+			undo_redo->add_undo_method(ape, "_animation_update_key_frame");
+		}
 		undo_redo->commit_action();
 
 		setting = false;
@@ -177,12 +184,18 @@ bool AnimationTrackKeyEdit::_set(const StringName &p_name, const Variant &p_valu
 				}
 
 				setting = true;
+
 				undo_redo->create_action(TTR("Animation Change Keyframe Value"), UndoRedo::MERGE_ENDS);
 				Variant prev = animation->track_get_key_value(track, key);
 				undo_redo->add_do_method(animation.ptr(), "track_set_key_value", track, key, value);
 				undo_redo->add_undo_method(animation.ptr(), "track_set_key_value", track, key, prev);
 				undo_redo->add_do_method(this, "_update_obj", animation);
 				undo_redo->add_undo_method(this, "_update_obj", animation);
+				AnimationPlayerEditor *ape = AnimationPlayerEditor::get_singleton();
+				if (ape) {
+					undo_redo->add_do_method(ape, "_animation_update_key_frame");
+					undo_redo->add_undo_method(ape, "_animation_update_key_frame");
+				}
 				undo_redo->commit_action();
 
 				setting = false;
@@ -3281,6 +3294,11 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 			undo_redo->create_action(TTR("Change Animation Update Mode"));
 			undo_redo->add_do_method(animation.ptr(), "value_track_set_update_mode", track, update_mode);
 			undo_redo->add_undo_method(animation.ptr(), "value_track_set_update_mode", track, animation->value_track_get_update_mode(track));
+			AnimationPlayerEditor *ape = AnimationPlayerEditor::get_singleton();
+			if (ape) {
+				undo_redo->add_do_method(ape, "_animation_update_key_frame");
+				undo_redo->add_undo_method(ape, "_animation_update_key_frame");
+			}
 			undo_redo->commit_action();
 			queue_redraw();
 
@@ -3295,6 +3313,11 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 			undo_redo->create_action(TTR("Change Animation Interpolation Mode"));
 			undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_type", track, interp_mode);
 			undo_redo->add_undo_method(animation.ptr(), "track_set_interpolation_type", track, animation->track_get_interpolation_type(track));
+			AnimationPlayerEditor *ape = AnimationPlayerEditor::get_singleton();
+			if (ape) {
+				undo_redo->add_do_method(ape, "_animation_update_key_frame");
+				undo_redo->add_undo_method(ape, "_animation_update_key_frame");
+			}
 			undo_redo->commit_action();
 			queue_redraw();
 		} break;
@@ -3305,6 +3328,11 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 			undo_redo->create_action(TTR("Change Animation Loop Mode"));
 			undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_loop_wrap", track, loop_wrap);
 			undo_redo->add_undo_method(animation.ptr(), "track_set_interpolation_loop_wrap", track, animation->track_get_interpolation_loop_wrap(track));
+			AnimationPlayerEditor *ape = AnimationPlayerEditor::get_singleton();
+			if (ape) {
+				undo_redo->add_do_method(ape, "_animation_update_key_frame");
+				undo_redo->add_undo_method(ape, "_animation_update_key_frame");
+			}
 			undo_redo->commit_action();
 			queue_redraw();
 
@@ -3661,7 +3689,7 @@ void AnimationTrackEditor::update_keying() {
 	EditorSelectionHistory *editor_history = EditorNode::get_singleton()->get_editor_selection_history();
 	if (is_visible_in_tree() && animation.is_valid() && editor_history->get_path_size() > 0) {
 		Object *obj = ObjectDB::get_instance(editor_history->get_path_object(0));
-		keying_enabled = Object::cast_to<Node>(obj) != nullptr;
+		keying_enabled = Object::cast_to<Node>(obj) != nullptr || Object::cast_to<MultiNodeEdit>(obj) != nullptr;
 	}
 
 	if (keying_enabled == keying) {
@@ -4078,19 +4106,20 @@ void AnimationTrackEditor::_insert_animation_key(NodePath p_path, const Variant 
 	_query_insert(id);
 }
 
-void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_property, const Variant &p_value, bool p_only_if_exists) {
+void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_property, bool p_only_if_exists, bool p_advance) {
 	ERR_FAIL_NULL(root);
 
 	// Let's build a node path.
-	Node *node = p_node;
-	String path = root->get_path_to(node, true);
+	String path = root->get_path_to(p_node, true);
 
-	if (Object::cast_to<AnimationPlayer>(node) && p_property == "current_animation") {
-		if (node == AnimationPlayerEditor::get_singleton()->get_player()) {
+	Variant value = p_node->get(p_property);
+
+	if (Object::cast_to<AnimationPlayer>(p_node) && p_property == "current_animation") {
+		if (p_node == AnimationPlayerEditor::get_singleton()->get_player()) {
 			EditorNode::get_singleton()->show_warning(TTR("AnimationPlayer can't animate itself, only other players."));
 			return;
 		}
-		_insert_animation_key(path, p_value);
+		_insert_animation_key(path, value);
 		return;
 	}
 
@@ -4118,26 +4147,26 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 			InsertData id;
 			id.path = np;
 			id.track_idx = i;
-			id.value = p_value;
+			id.value = value;
 			id.type = Animation::TYPE_VALUE;
 			// TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 			id.query = vformat(TTR("property '%s'"), p_property);
-			id.advance = false;
+			id.advance = p_advance;
 			// Dialog insert.
 			_query_insert(id);
 			inserted = true;
 		} else if (animation->track_get_type(i) == Animation::TYPE_BEZIER) {
-			Variant value;
+			Variant actual_value;
 			String track_path = animation->track_get_path(i);
 			if (track_path == np) {
-				value = p_value; // All good.
+				actual_value = value; // All good.
 			} else {
 				int sep = track_path.rfind(":");
 				if (sep != -1) {
 					String base_path = track_path.substr(0, sep);
 					if (base_path == np) {
 						String value_name = track_path.substr(sep + 1);
-						value = p_value.get(value_name);
+						actual_value = value.get(value_name);
 					} else {
 						continue;
 					}
@@ -4149,10 +4178,10 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 			InsertData id;
 			id.path = animation->track_get_path(i);
 			id.track_idx = i;
-			id.value = value;
+			id.value = actual_value;
 			id.type = Animation::TYPE_BEZIER;
 			id.query = vformat(TTR("property '%s'"), p_property);
-			id.advance = false;
+			id.advance = p_advance;
 			// Dialog insert.
 			_query_insert(id);
 			inserted = true;
@@ -4165,105 +4194,41 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 	InsertData id;
 	id.path = np;
 	id.track_idx = -1;
-	id.value = p_value;
+	id.value = value;
 	id.type = Animation::TYPE_VALUE;
 	id.query = vformat(TTR("property '%s'"), p_property);
-	id.advance = false;
+	id.advance = p_advance;
 	// Dialog insert.
 	_query_insert(id);
 }
 
-void AnimationTrackEditor::insert_value_key(const String &p_property, const Variant &p_value, bool p_advance) {
+void AnimationTrackEditor::insert_value_key(const String &p_property, bool p_advance) {
 	EditorSelectionHistory *history = EditorNode::get_singleton()->get_editor_selection_history();
 
 	ERR_FAIL_NULL(root);
 	ERR_FAIL_COND(history->get_path_size() == 0);
 	Object *obj = ObjectDB::get_instance(history->get_path_object(0));
-	ERR_FAIL_NULL(Object::cast_to<Node>(obj));
 
-	// Let's build a node path.
-	Node *node = Object::cast_to<Node>(obj);
-	String path = root->get_path_to(node, true);
+	Ref<MultiNodeEdit> multi_node_edit(obj);
+	if (multi_node_edit.is_valid()) {
+		Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
+		ERR_FAIL_NULL(edited_scene);
 
-	if (Object::cast_to<AnimationPlayer>(node) && p_property == "current_animation") {
-		if (node == AnimationPlayerEditor::get_singleton()->get_player()) {
-			EditorNode::get_singleton()->show_warning(TTR("AnimationPlayer can't animate itself, only other players."));
-			return;
+		make_insert_queue();
+
+		for (int i = 0; i < multi_node_edit->get_node_count(); ++i) {
+			Node *node = edited_scene->get_node(multi_node_edit->get_node(i));
+			insert_node_value_key(node, p_property, false, p_advance);
 		}
-		_insert_animation_key(path, p_value);
-		return;
-	}
 
-	for (int i = 1; i < history->get_path_size(); i++) {
-		String prop = history->get_path_property(i);
-		ERR_FAIL_COND(prop.is_empty());
-		path += ":" + prop;
-	}
+		commit_insert_queue();
+	} else {
+		Node *node = Object::cast_to<Node>(obj);
+		ERR_FAIL_NULL(node);
 
-	path += ":" + p_property;
-
-	NodePath np = path;
-
-	// Locate track.
-
-	bool inserted = false;
-
-	make_insert_queue();
-	for (int i = 0; i < animation->get_track_count(); i++) {
-		if (animation->track_get_type(i) == Animation::TYPE_VALUE) {
-			if (animation->track_get_path(i) != np) {
-				continue;
-			}
-
-			InsertData id;
-			id.path = np;
-			id.track_idx = i;
-			id.value = p_value;
-			id.type = Animation::TYPE_VALUE;
-			id.query = vformat(TTR("property '%s'"), p_property);
-			id.advance = p_advance;
-			// Dialog insert.
-			_query_insert(id);
-			inserted = true;
-		} else if (animation->track_get_type(i) == Animation::TYPE_BEZIER) {
-			Variant value;
-			if (animation->track_get_path(i) == np) {
-				value = p_value; // All good.
-			} else {
-				String tpath = animation->track_get_path(i);
-				int index = tpath.rfind(":");
-				if (NodePath(tpath.substr(0, index + 1)) == np) {
-					String subindex = tpath.substr(index + 1, tpath.length() - index);
-					value = p_value.get(subindex);
-				} else {
-					continue;
-				}
-			}
-
-			InsertData id;
-			id.path = animation->track_get_path(i);
-			id.track_idx = i;
-			id.value = value;
-			id.type = Animation::TYPE_BEZIER;
-			id.query = vformat(TTR("property '%s'"), p_property);
-			id.advance = p_advance;
-			// Dialog insert.
-			_query_insert(id);
-			inserted = true;
-		}
-	}
-	commit_insert_queue();
-
-	if (!inserted) {
-		InsertData id;
-		id.path = np;
-		id.track_idx = -1;
-		id.value = p_value;
-		id.type = Animation::TYPE_VALUE;
-		id.query = vformat(TTR("property '%s'"), p_property);
-		id.advance = p_advance;
-		// Dialog insert.
-		_query_insert(id);
+		make_insert_queue();
+		insert_node_value_key(node, p_property, false, p_advance);
+		commit_insert_queue();
 	}
 }
 
@@ -5650,6 +5615,14 @@ void AnimationTrackEditor::_move_selection_commit() {
 	moving_selection = false;
 	undo_redo->add_do_method(this, "_redraw_tracks");
 	undo_redo->add_undo_method(this, "_redraw_tracks");
+
+	// Update key frame.
+	AnimationPlayerEditor *ape = AnimationPlayerEditor::get_singleton();
+	if (ape) {
+		undo_redo->add_do_method(ape, "_animation_update_key_frame");
+		undo_redo->add_undo_method(ape, "_animation_update_key_frame");
+	}
+
 	undo_redo->commit_action();
 }
 
@@ -6887,8 +6860,8 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			_redraw_tracks();
 			_update_key_edit();
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-			undo_redo->clear_history(true, undo_redo->get_history_id_for_object(animation.ptr()));
-			undo_redo->clear_history(true, undo_redo->get_history_id_for_object(this));
+			undo_redo->clear_history(undo_redo->get_history_id_for_object(animation.ptr()));
+			undo_redo->clear_history(undo_redo->get_history_id_for_object(this));
 
 		} break;
 		case EDIT_CLEAN_UP_ANIMATION: {
@@ -7030,8 +7003,8 @@ void AnimationTrackEditor::_cleanup_animation(Ref<Animation> p_animation) {
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->clear_history(true, undo_redo->get_history_id_for_object(animation.ptr()));
-	undo_redo->clear_history(true, undo_redo->get_history_id_for_object(this));
+	undo_redo->clear_history(undo_redo->get_history_id_for_object(animation.ptr()));
+	undo_redo->clear_history(undo_redo->get_history_id_for_object(this));
 	_update_tracks();
 }
 
@@ -7079,7 +7052,10 @@ void AnimationTrackEditor::_update_snap_unit() {
 	if (timeline->is_using_fps()) {
 		snap_unit = 1.0 / step->get_value();
 	} else {
-		snap_unit = 1.0 / Math::round(1.0 / step->get_value()); // Follow the snap behavior of the timeline editor.
+		double integer;
+		double fraction = Math::modf(step->get_value(), &integer);
+		fraction = 1.0 / Math::round(1.0 / fraction);
+		snap_unit = integer + fraction;
 	}
 }
 
@@ -7713,6 +7689,8 @@ void AnimationTrackKeyEditEditor::_time_edit_exited() {
 			undo_redo->add_do_method(ate, "_select_at_anim", animation, track, new_time);
 			undo_redo->add_undo_method(ate, "_select_at_anim", animation, track, key_data_cache.time);
 		}
+		undo_redo->add_do_method(ape, "_animation_update_key_frame");
+		undo_redo->add_undo_method(ape, "_animation_update_key_frame");
 	}
 
 	undo_redo->commit_action();

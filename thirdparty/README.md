@@ -692,8 +692,8 @@ Collection of single-file libraries used in Godot components.
   * License: MIT
 - `qoa.h`
   * Upstream: https://github.com/phoboslab/qoa
-  * Version: git (5c2a86d615661f34636cf179abf4fa278d3257e0, 2024)
-  * Modifications: Inlined functions, patched uninitialized variables and untyped mallocs.
+  * Version: git (e0c69447d4d3945c3c92ac1751e4cdc9803a8303, 2024)
+  * Modifications: Added a few modifiers to comply with C++ nature.
   * License: MIT
 - `r128.{c,h}`
   * Upstream: https://github.com/fahickman/r128

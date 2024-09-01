@@ -83,6 +83,7 @@ public:
 	void set_abort_on_missing_resources(bool p_abort);
 	PackedStringArray get_dependencies(const String &p_path);
 	bool has_cached(const String &p_path);
+	Ref<Resource> get_cached_ref(const String &p_path);
 	bool exists(const String &p_path, const String &p_type_hint = "");
 	ResourceUID::ID get_resource_uid(const String &p_path);
 

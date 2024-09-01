@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "regex.h"
+#include "regex.compat.inc"
 
 #include "core/os/memory.h"
 
@@ -161,10 +162,10 @@ void RegEx::_pattern_info(uint32_t what, void *where) const {
 	pcre2_pattern_info_32((pcre2_code_32 *)code, what, where);
 }
 
-Ref<RegEx> RegEx::create_from_string(const String &p_pattern) {
+Ref<RegEx> RegEx::create_from_string(const String &p_pattern, bool p_show_error) {
 	Ref<RegEx> ret;
 	ret.instantiate();
-	ret->compile(p_pattern);
+	ret->compile(p_pattern, p_show_error);
 	return ret;
 }
 
@@ -175,7 +176,7 @@ void RegEx::clear() {
 	}
 }
 
-Error RegEx::compile(const String &p_pattern) {
+Error RegEx::compile(const String &p_pattern, bool p_show_error) {
 	pattern = p_pattern;
 	clear();
 
@@ -192,10 +193,12 @@ Error RegEx::compile(const String &p_pattern) {
 	pcre2_compile_context_free_32(cctx);
 
 	if (!code) {
-		PCRE2_UCHAR32 buf[256];
-		pcre2_get_error_message_32(err, buf, 256);
-		String message = String::num(offset) + ": " + String((const char32_t *)buf);
-		ERR_PRINT(message.utf8());
+		if (p_show_error) {
+			PCRE2_UCHAR32 buf[256];
+			pcre2_get_error_message_32(err, buf, 256);
+			String message = String::num(offset) + ": " + String((const char32_t *)buf);
+			ERR_PRINT(message.utf8());
+		}
 		return FAILED;
 	}
 	return OK;
@@ -395,10 +398,10 @@ RegEx::~RegEx() {
 }
 
 void RegEx::_bind_methods() {
-	ClassDB::bind_static_method("RegEx", D_METHOD("create_from_string", "pattern"), &RegEx::create_from_string);
+	ClassDB::bind_static_method("RegEx", D_METHOD("create_from_string", "pattern", "show_error"), &RegEx::create_from_string, DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("clear"), &RegEx::clear);
-	ClassDB::bind_method(D_METHOD("compile", "pattern"), &RegEx::compile);
+	ClassDB::bind_method(D_METHOD("compile", "pattern", "show_error"), &RegEx::compile, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("search", "subject", "offset", "end"), &RegEx::search, DEFVAL(0), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("search_all", "subject", "offset", "end"), &RegEx::search_all, DEFVAL(0), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("sub", "subject", "replacement", "all", "offset", "end"), &RegEx::sub, DEFVAL(false), DEFVAL(0), DEFVAL(-1));
