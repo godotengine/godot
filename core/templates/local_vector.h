@@ -370,6 +370,15 @@ public:
 			push_back(element);
 		}
 	}
+	_FORCE_INLINE_ LocalVector(LocalVector&& p_from) {
+
+		count = p_from.count;
+		capacity = p_from.capacity;
+		data = p_from.data;
+		p_from.data = nullptr;
+		p_from.capacity = 0;
+		p_from.count = 0;
+	}
 	_FORCE_INLINE_ LocalVector(const LocalVector &p_from) {
 		resize(p_from.size());
 		for (U i = 0; i < p_from.count; i++) {

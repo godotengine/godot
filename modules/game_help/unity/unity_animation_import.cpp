@@ -1011,10 +1011,10 @@ namespace AnimationToolConst
 	LocalVector<Vector2i> _muscle_index_to_bone_and_axis()
 	{
 		LocalVector<Vector2i> ret;
-		ret.resize(MuscleFromBone.size());
+		ret.resize(MuscleCount());
 		for(int i=0;i< MuscleFromBone.size();i++)
 		{
-			LocalVector<int8_t> bone = MuscleFromBone[i];
+			LocalVector<int8_t>& bone = MuscleFromBone[i];
 
 			for(int j=0;j<3;j++)
 			{
