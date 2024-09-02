@@ -520,6 +520,14 @@
 				[b]Note:[/b] This method checks identifiers the same way as GDScript. See [method TextServer.is_valid_identifier] for more advanced checks.
 			</description>
 		</method>
+		<method name="is_whitespace" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns true if the string is formed only of 0 or more whitespace characters.
+
+				The list of whitespace characters can be found [url=https://en.wikipedia.org/wiki/Whitespace_character]here[/url] (only Is_Whitespace is considered).
+			</description>
+		</method>
 		<method name="join" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="parts" type="PackedStringArray" />
