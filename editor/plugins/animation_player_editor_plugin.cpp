@@ -224,6 +224,69 @@ void AnimationPlayerEditor::_autoplay_pressed() {
 	}
 }
 
+void AnimationPlayerEditor::_go_to_nearest_keyframe(bool p_backward) {
+	if (_get_current().is_empty()) {
+		return;
+	}
+
+	Ref<Animation> anim = player->get_animation(player->get_assigned_animation());
+
+	double current_time = player->get_current_animation_position();
+	// Offset the time to avoid finding the same keyframe with Animation::track_find_key().
+	double time_offset = MAX(CMP_EPSILON * 2, current_time * CMP_EPSILON * 2);
+	double current_time_offset = current_time + (p_backward ? -time_offset : time_offset);
+
+	float nearest_key_time = p_backward ? 0 : anim->get_length();
+	int track_count = anim->get_track_count();
+	bool bezier_active = track_editor->is_bezier_editor_active();
+
+	Node *root = get_tree()->get_edited_scene_root();
+	EditorSelection *selection = EditorNode::get_singleton()->get_editor_selection();
+
+	Vector<int> selected_tracks;
+	for (int i = 0; i < track_count; ++i) {
+		if (selection->is_selected(root->get_node_or_null(anim->track_get_path(i)))) {
+			selected_tracks.push_back(i);
+		}
+	}
+
+	// Find the nearest keyframe in selection if the scene has selected nodes
+	// or the nearest keyframe in the entire animation otherwise.
+	if (selected_tracks.size() > 0) {
+		for (int track : selected_tracks) {
+			if (bezier_active && anim->track_get_type(track) != Animation::TYPE_BEZIER) {
+				continue;
+			}
+			int key = anim->track_find_key(track, current_time_offset, Animation::FIND_MODE_NEAREST, false, !p_backward);
+			if (key == -1) {
+				continue;
+			}
+			double key_time = anim->track_get_key_time(track, key);
+			if ((p_backward && key_time > nearest_key_time) || (!p_backward && key_time < nearest_key_time)) {
+				nearest_key_time = key_time;
+			}
+		}
+	} else {
+		for (int track = 0; track < track_count; ++track) {
+			if (bezier_active && anim->track_get_type(track) != Animation::TYPE_BEZIER) {
+				continue;
+			}
+			int key = anim->track_find_key(track, current_time_offset, Animation::FIND_MODE_NEAREST, false, !p_backward);
+			if (key == -1) {
+				continue;
+			}
+			double key_time = anim->track_get_key_time(track, key);
+			if ((p_backward && key_time > nearest_key_time) || (!p_backward && key_time < nearest_key_time)) {
+				nearest_key_time = key_time;
+			}
+		}
+	}
+
+	player->seek_internal(nearest_key_time, true, true, true);
+	frame->set_value(nearest_key_time);
+	track_editor->set_anim_pos(nearest_key_time);
+}
+
 void AnimationPlayerEditor::_play_pressed() {
 	String current = _get_current();
 
@@ -1511,30 +1574,28 @@ void AnimationPlayerEditor::shortcut_input(const Ref<InputEvent> &p_ev) {
 	ERR_FAIL_COND(p_ev.is_null());
 
 	Ref<InputEventKey> k = p_ev;
-	if (is_visible_in_tree() && k.is_valid() && k->is_pressed() && !k->is_echo() && !k->is_alt_pressed() && !k->is_ctrl_pressed() && !k->is_meta_pressed()) {
-		switch (k->get_keycode()) {
-			case Key::A: {
-				if (!k->is_shift_pressed()) {
-					_play_bw_from_pressed();
-				} else {
-					_play_bw_pressed();
-				}
-				accept_event();
-			} break;
-			case Key::S: {
-				_stop_pressed();
-				accept_event();
-			} break;
-			case Key::D: {
-				if (!k->is_shift_pressed()) {
-					_play_from_pressed();
-				} else {
-					_play_pressed();
-				}
-				accept_event();
-			} break;
-			default:
-				break;
+	if (is_visible_in_tree() && k.is_valid() && k->is_pressed() && !k->is_echo()) {
+		if (ED_IS_SHORTCUT("animation_editor/stop_animation", p_ev)) {
+			_stop_pressed();
+			accept_event();
+		} else if (ED_IS_SHORTCUT("animation_editor/play_animation", p_ev)) {
+			_play_from_pressed();
+			accept_event();
+		} else if (ED_IS_SHORTCUT("animation_editor/play_animation_backwards", p_ev)) {
+			_play_bw_from_pressed();
+			accept_event();
+		} else if (ED_IS_SHORTCUT("animation_editor/play_animation_from_start", p_ev)) {
+			_play_pressed();
+			accept_event();
+		} else if (ED_IS_SHORTCUT("animation_editor/play_animation_from_end", p_ev)) {
+			_play_bw_pressed();
+			accept_event();
+		} else if (ED_IS_SHORTCUT("animation_editor/go_to_next_keyframe", p_ev)) {
+			_go_to_nearest_keyframe(false);
+			accept_event();
+		} else if (ED_IS_SHORTCUT("animation_editor/go_to_previous_keyframe", p_ev)) {
+			_go_to_nearest_keyframe(true);
+			accept_event();
 		}
 	}
 }
@@ -1909,27 +1970,27 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 
 	play_bw_from = memnew(Button);
 	play_bw_from->set_theme_type_variation("FlatButton");
-	play_bw_from->set_tooltip_text(TTR("Play selected animation backwards from current pos. (A)"));
+	play_bw_from->set_tooltip_text(TTR("Play Animation Backwards"));
 	hb->add_child(play_bw_from);
 
 	play_bw = memnew(Button);
 	play_bw->set_theme_type_variation("FlatButton");
-	play_bw->set_tooltip_text(TTR("Play selected animation backwards from end. (Shift+A)"));
+	play_bw->set_tooltip_text(TTR("Play Animation Backwards from End"));
 	hb->add_child(play_bw);
 
 	stop = memnew(Button);
 	stop->set_theme_type_variation("FlatButton");
+	stop->set_tooltip_text(TTR("Pause/Stop Animation"));
 	hb->add_child(stop);
-	stop->set_tooltip_text(TTR("Pause/stop animation playback. (S)"));
 
 	play = memnew(Button);
 	play->set_theme_type_variation("FlatButton");
-	play->set_tooltip_text(TTR("Play selected animation from start. (Shift+D)"));
+	play->set_tooltip_text(TTR("Play Animation from Start"));
 	hb->add_child(play);
 
 	play_from = memnew(Button);
 	play_from->set_theme_type_variation("FlatButton");
-	play_from->set_tooltip_text(TTR("Play selected animation from current pos. (D)"));
+	play_from->set_tooltip_text(TTR("Play Animation"));
 	hb->add_child(play_from);
 
 	frame = memnew(SpinBox);
@@ -2145,6 +2206,14 @@ void fragment() {
 }
 )");
 	RS::get_singleton()->material_set_shader(onion.capture.material->get_rid(), onion.capture.shader->get_rid());
+
+	ED_SHORTCUT("animation_editor/stop_animation", TTR("Pause/Stop Animation"), Key::S);
+	ED_SHORTCUT("animation_editor/play_animation", TTR("Play Animation"), Key::D);
+	ED_SHORTCUT("animation_editor/play_animation_backwards", TTR("Play Animation Backwards"), Key::A);
+	ED_SHORTCUT("animation_editor/play_animation_from_start", TTR("Play Animation from Start"), KeyModifierMask::SHIFT + Key::D);
+	ED_SHORTCUT("animation_editor/play_animation_from_end", TTR("Play Animation Backwards from End"), KeyModifierMask::SHIFT + Key::A);
+	ED_SHORTCUT("animation_editor/go_to_next_keyframe", TTR("Go to Next Keyframe"), KeyModifierMask::SHIFT + KeyModifierMask::ALT + Key::D);
+	ED_SHORTCUT("animation_editor/go_to_previous_keyframe", TTR("Go to Previous Keyframe"), KeyModifierMask::SHIFT + KeyModifierMask::ALT + Key::A);
 }
 
 AnimationPlayerEditor::~AnimationPlayerEditor() {

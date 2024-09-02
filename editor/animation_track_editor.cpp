@@ -4554,6 +4554,10 @@ bool AnimationTrackEditor::is_snap_enabled() const {
 	return snap->is_pressed() ^ Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
 }
 
+bool AnimationTrackEditor::is_bezier_editor_active() const {
+	return bezier_edit->is_visible();
+}
+
 bool AnimationTrackEditor::can_add_reset_key() const {
 	for (const KeyValue<SelectedKey, KeyInfo> &E : selection) {
 		const Animation::TrackType track_type = animation->track_get_type(E.key.track);
