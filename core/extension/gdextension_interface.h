@@ -268,7 +268,7 @@ typedef void (*GDExtensionClassReference)(GDExtensionClassInstancePtr p_instance
 typedef void (*GDExtensionClassUnreference)(GDExtensionClassInstancePtr p_instance);
 typedef void (*GDExtensionClassCallVirtual)(GDExtensionClassInstancePtr p_instance, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr r_ret);
 typedef GDExtensionObjectPtr (*GDExtensionClassCreateInstance)(void *p_class_userdata);
-typedef GDExtensionObjectPtr (*GDExtensionClassCreateInstance2)(void *p_class_userdata, bool p_notify_postinitialize);
+typedef GDExtensionObjectPtr (*GDExtensionClassCreateInstance2)(void *p_class_userdata, GDExtensionBool p_notify_postinitialize);
 typedef void (*GDExtensionClassFreeInstance)(void *p_class_userdata, GDExtensionClassInstancePtr p_instance);
 typedef GDExtensionClassInstancePtr (*GDExtensionClassRecreateInstance)(void *p_class_userdata, GDExtensionObjectPtr p_object);
 typedef GDExtensionClassCallVirtual (*GDExtensionClassGetVirtual)(void *p_class_userdata, GDExtensionConstStringNamePtr p_name);

@@ -181,7 +181,7 @@ public:
 		return 0;
 	}
 
-	static GDExtensionObjectPtr placeholder_class_create_instance(void *p_class_userdata, bool p_notify_postinitialize) {
+	static GDExtensionObjectPtr placeholder_class_create_instance(void *p_class_userdata, GDExtensionBool p_notify_postinitialize) {
 		ClassDB::ClassInfo *ti = (ClassDB::ClassInfo *)p_class_userdata;
 
 		// Find the closest native parent, that isn't a runtime class.
@@ -192,7 +192,7 @@ public:
 		ERR_FAIL_NULL_V(native_parent->creation_func, nullptr);
 
 		// Construct a placeholder.
-		Object *obj = native_parent->creation_func(p_notify_postinitialize);
+		Object *obj = native_parent->creation_func(static_cast<bool>(p_notify_postinitialize));
 
 		// ClassDB::set_object_extension_instance() won't be called for placeholders.
 		// We need need to make sure that all the things it would have done (even if
