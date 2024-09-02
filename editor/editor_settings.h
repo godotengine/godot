@@ -67,6 +67,7 @@ private:
 		int order = 0;
 		Variant variant;
 		Variant initial;
+		bool basic = false;
 		bool has_default_value = false;
 		bool hide_from_editor = false;
 		bool save = false;
@@ -103,7 +104,7 @@ private:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _set_only(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _initial_set(const StringName &p_name, const Variant &p_value);
+	void _initial_set(const StringName &p_name, const Variant &p_value, bool p_basic = false);
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _add_property_info_bind(const Dictionary &p_info);
 	bool _property_can_revert(const StringName &p_name) const;
@@ -147,6 +148,7 @@ public:
 	void raise_order(const String &p_setting);
 	void set_initial_value(const StringName &p_setting, const Variant &p_value, bool p_update_current = false);
 	void set_restart_if_changed(const StringName &p_setting, bool p_restart);
+	void set_basic(const StringName &p_setting, bool p_basic);
 	void set_manually(const StringName &p_setting, const Variant &p_value, bool p_emit_signal = false) {
 		if (p_emit_signal) {
 			_set(p_setting, p_value);
@@ -204,7 +206,8 @@ public:
 
 #define EDITOR_DEF(m_var, m_val) _EDITOR_DEF(m_var, Variant(m_val))
 #define EDITOR_DEF_RST(m_var, m_val) _EDITOR_DEF(m_var, Variant(m_val), true)
-Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default, bool p_restart_if_changed = false);
+#define EDITOR_DEF_BASIC(m_var, m_val) _EDITOR_DEF(m_var, Variant(m_val), false, true)
+Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default, bool p_restart_if_changed = false, bool p_basic = false);
 
 #define EDITOR_GET(m_var) _EDITOR_GET(m_var)
 Variant _EDITOR_GET(const String &p_setting);
