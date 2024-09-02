@@ -342,12 +342,6 @@ public:
 	void _convert_csg_shape_to_gltf(CSGShape3D *p_current, GLTFNodeIndex p_gltf_parent, Ref<GLTFNode> p_gltf_node, Ref<GLTFState> p_state);
 #endif // MODULE_CSG_ENABLED
 
-	void _create_gltf_node(Ref<GLTFState> p_state,
-			Node *p_scene_parent,
-			GLTFNodeIndex p_current_node_i,
-			GLTFNodeIndex p_parent_node_index,
-			GLTFNodeIndex p_root_gltf_node,
-			Ref<GLTFNode> p_gltf_node);
 	void _convert_animation_player_to_gltf(
 			AnimationPlayer *p_animation_player, Ref<GLTFState> p_state,
 			GLTFNodeIndex p_gltf_current,
