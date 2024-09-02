@@ -545,7 +545,6 @@ void SkyRD::Sky::free() {
 	}
 
 	if (material.is_valid()) {
-		RSG::material_storage->material_free(material);
 		material = RID();
 	}
 }
