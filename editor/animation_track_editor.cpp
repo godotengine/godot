@@ -1553,13 +1553,17 @@ void AnimationTimelineEdit::_notification(int p_what) {
 				max_digit_width = MAX(digit_width, max_digit_width);
 			}
 			const int max_sc = int(Math::ceil(zoomw / scale));
-			const int max_sc_width = String::num(max_sc).length() * max_digit_width;
+			const int max_sc_width = String::num(max_sc).length() * Math::ceil(max_digit_width);
+
+			const int min_margin = MAX(text_secondary_margin, text_primary_margin);
 
 			while (!step_found) {
 				int min = max_sc_width;
 				if (decimals > 0) {
-					min += period_width + max_digit_width * decimals;
+					min += Math::ceil(period_width + max_digit_width * decimals);
 				}
+
+				min += (min_margin * 2);
 
 				static const int _multp[3] = { 1, 2, 5 };
 				for (int i = 0; i < 3; i++) {
@@ -1616,10 +1620,11 @@ void AnimationTimelineEdit::_notification(int p_what) {
 
 					int sc = int(Math::floor(pos * SC_ADJ));
 					int prev_sc = int(Math::floor(prev * SC_ADJ));
-					bool sub = (sc % SC_ADJ);
 
 					if ((sc / step) != (prev_sc / step) || (prev_sc < 0 && sc >= 0)) {
 						int scd = sc < 0 ? prev_sc : sc;
+						bool sub = (((scd - (scd % step)) % (dec * 10)) != 0);
+
 						int line_margin = sub ? v_line_secondary_margin : v_line_primary_margin;
 						int line_width = sub ? v_line_secondary_width : v_line_primary_width;
 						Color line_color = sub ? v_line_secondary_color : v_line_primary_color;
