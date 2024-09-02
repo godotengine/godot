@@ -4,6 +4,8 @@
 #include "core/io/json.h"
 #include "modules/realtime_retarget/src/retarget_utility.h"
 
+#include "../../unity/unity_animation_import.h"
+
 
 
 void UnityAnimation::load_form_unity_asset()
@@ -22,6 +24,8 @@ void UnityAnimation::load_form_unity_asset()
 	Callable on_load_animation =  DataTableManager::get_singleton()->get_animation_load_cb();
 	Dictionary clip = dict["AnimationClip"];
 	on_load_animation.call(clip,false,this);
+    Ref<UnityAnimation> anim = this;
+	UnityAnimationImport::ImportAnimation(clip,false,anim);
 	optimize();
 }
 
