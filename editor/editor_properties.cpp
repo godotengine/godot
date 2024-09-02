@@ -3555,6 +3555,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 			} else if (p_hint == PROPERTY_HINT_INPUT_NAME) {
 				EditorPropertyTextEnum *editor = memnew(EditorPropertyTextEnum);
 				Vector<String> options;
+				Vector<String> builtin_options;
 				List<PropertyInfo> pinfo;
 				ProjectSettings::get_singleton()->get_property_list(&pinfo);
 
@@ -3564,11 +3565,15 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 					}
 
 					String action_name = pi.name.substr(pi.name.find("/") + 1);
-					if ((p_hint_text != "allow_builtin") && InputMap::get_singleton()->get_builtins().has(action_name)) {
+					if (InputMap::get_singleton()->get_builtins().has(action_name)) {
+						if (p_hint_text == "show_builtin") {
+							builtin_options.append(action_name);
+						}
 						continue;
 					}
 					options.append(action_name);
 				}
+				options.append_array(builtin_options);
 				editor->setup(options, false, true);
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_MULTILINE_TEXT) {
@@ -3726,6 +3731,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 			} else if (p_hint == PROPERTY_HINT_INPUT_NAME) {
 				EditorPropertyTextEnum *editor = memnew(EditorPropertyTextEnum);
 				Vector<String> options;
+				Vector<String> builtin_options;
 				List<PropertyInfo> pinfo;
 				ProjectSettings::get_singleton()->get_property_list(&pinfo);
 
@@ -3734,12 +3740,16 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 						continue;
 					}
 
-					String action_name = pi.name.substr(pi.name.find("/") + 1, pi.name.length());
-					if ((p_hint_text != "allow_builtin") && InputMap::get_singleton()->get_builtins().has(action_name)) {
+					String action_name = pi.name.substr(pi.name.find("/") + 1);
+					if (InputMap::get_singleton()->get_builtins().has(action_name)) {
+						if (p_hint_text == "show_builtin") {
+							builtin_options.append(action_name);
+						}
 						continue;
 					}
 					options.append(action_name);
 				}
+				options.append_array(builtin_options);
 				editor->setup(options, false, true);
 				return editor;
 			} else {

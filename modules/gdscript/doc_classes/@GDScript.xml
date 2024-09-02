@@ -577,6 +577,23 @@
 				[/codeblock]
 			</description>
 		</annotation>
+<<<<<<< HEAD
+=======
+		<annotation name="@export_input_action">
+			<return type="void" />
+			<param index="0" name="hint" type="String" default="&quot;&quot;" />
+			<description>
+				Exports a [StringName], [String], [Array][lb][StringName][rb], [Array][lb][String][rb], or [PackedStringArray] property as an enum of the current project's [InputMap] actions.
+				If has the hint [code]"show_builtin"[/code], then it also shows the built-in actions.
+				[codeblock]
+				@export_input_action var input_action: StringName
+				@export_input_action var input_actions: Array[StringName]
+				@export_input_action("show_builtin") var builtin_action: String
+				[/codeblock]
+			</description>
+		</annotation>
+>>>>>>> d7a92d7e3a (Reapply "Update editor/editor_properties.cpp")
+				[b]Examples:[/b]
 		<annotation name="@export_multiline">
 			<return type="void" />
 			<description>
