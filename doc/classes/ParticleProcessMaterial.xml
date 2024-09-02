@@ -207,6 +207,10 @@
 		<member name="emission_ring_axis" type="Vector3" setter="set_emission_ring_axis" getter="get_emission_ring_axis">
 			The axis of the ring when using the emitter [constant EMISSION_SHAPE_RING].
 		</member>
+		<member name="emission_ring_cone_angle" type="float" setter="set_emission_ring_cone_angle" getter="get_emission_ring_cone_angle">
+			The angle of the cone when using the emitter [constant EMISSION_SHAPE_RING]. The default angle of 90 degrees results in a ring, while an angle of 0 degrees results in a cone. Intermediate values will result in a ring where one end is larger than the other.
+			[b]Note:[/b] Depending on [member emission_ring_height], the angle may be clamped if the ring's end is reached to form a perfect cone.
+		</member>
 		<member name="emission_ring_height" type="float" setter="set_emission_ring_height" getter="get_emission_ring_height">
 			The height of the ring when using the emitter [constant EMISSION_SHAPE_RING].
 		</member>

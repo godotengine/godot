@@ -4490,9 +4490,16 @@ void Tree::item_edited(int p_column, TreeItem *p_item, MouseButton p_custom_mous
 }
 
 void Tree::item_changed(int p_column, TreeItem *p_item) {
-	if (p_item != nullptr && p_column >= 0 && p_column < p_item->cells.size()) {
-		p_item->cells.write[p_column].dirty = true;
-		columns.write[p_column].cached_minimum_width_dirty = true;
+	if (p_item != nullptr) {
+		if (p_column >= 0 && p_column < p_item->cells.size()) {
+			p_item->cells.write[p_column].dirty = true;
+			columns.write[p_column].cached_minimum_width_dirty = true;
+		} else if (p_column == -1) {
+			for (int i = 0; i < p_item->cells.size(); i++) {
+				p_item->cells.write[i].dirty = true;
+				columns.write[i].cached_minimum_width_dirty = true;
+			}
+		}
 	}
 	queue_redraw();
 }

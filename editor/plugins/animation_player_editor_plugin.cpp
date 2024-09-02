@@ -537,17 +537,12 @@ void AnimationPlayerEditor::_select_anim_by_name(const String &p_anim) {
 }
 
 float AnimationPlayerEditor::_get_editor_step() const {
-	// Returns the effective snapping value depending on snapping modifiers, or 0 if snapping is disabled.
-	if (track_editor->is_snap_enabled()) {
-		const String current = player->get_assigned_animation();
-		const Ref<Animation> anim = player->get_animation(current);
-		ERR_FAIL_COND_V(!anim.is_valid(), 0.0);
+	const String current = player->get_assigned_animation();
+	const Ref<Animation> anim = player->get_animation(current);
+	ERR_FAIL_COND_V(anim.is_null(), 0.0);
 
-		// Use more precise snapping when holding Shift
-		return Input::get_singleton()->is_key_pressed(Key::SHIFT) ? anim->get_step() * 0.25 : anim->get_step();
-	}
-
-	return 0.0f;
+	// Use more precise snapping when holding Shift
+	return Input::get_singleton()->is_key_pressed(Key::SHIFT) ? anim->get_step() * 0.25 : anim->get_step();
 }
 
 void AnimationPlayerEditor::_animation_name_edited() {
@@ -1353,7 +1348,7 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_timeline_o
 	anim = player->get_animation(current);
 
 	double pos = CLAMP((double)anim->get_length() * (p_value / frame->get_max()), 0, (double)anim->get_length());
-	if (track_editor->is_snap_enabled()) {
+	if (track_editor->is_snap_timeline_enabled()) {
 		pos = Math::snapped(pos, _get_editor_step());
 	}
 	pos = CLAMP(pos, 0, (double)anim->get_length() - CMP_EPSILON2); // Hack: Avoid fposmod with LOOP_LINEAR.
@@ -1471,7 +1466,7 @@ void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_timel
 	}
 
 	updating = true;
-	frame->set_value(Math::snapped(p_pos, _get_editor_step()));
+	frame->set_value(track_editor->is_snap_timeline_enabled() ? Math::snapped(p_pos, _get_editor_step()) : p_pos);
 	updating = false;
 	_seek_value_changed(p_pos, p_timeline_only);
 }

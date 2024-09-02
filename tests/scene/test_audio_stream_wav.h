@@ -159,6 +159,8 @@ void run_test(String file_name, AudioStreamWAV::Format data_format, bool stereo,
 		for (const ResourceImporter::ImportOption &E : options_list) {
 			options_map[E.option.name] = E.default_value;
 		}
+		// Compressed streams can't be saved, disable compression.
+		options_map["compress/mode"] = 0;
 
 		REQUIRE(wav_importer->import(save_path, save_path, options_map, nullptr) == OK);
 

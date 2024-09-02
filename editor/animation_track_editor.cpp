@@ -3615,7 +3615,8 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 		_update_step_spinbox();
 		step->set_block_signals(false);
 		step->set_read_only(false);
-		snap->set_disabled(false);
+		snap_keys->set_disabled(false);
+		snap_timeline->set_disabled(false);
 		snap_mode->set_disabled(false);
 		auto_fit->set_disabled(false);
 		auto_fit_bezier->set_disabled(false);
@@ -3636,7 +3637,8 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 		step->set_value(0);
 		step->set_block_signals(false);
 		step->set_read_only(true);
-		snap->set_disabled(true);
+		snap_keys->set_disabled(true);
+		snap_timeline->set_disabled(true);
 		snap_mode->set_disabled(true);
 		bezier_edit_icon->set_disabled(true);
 		auto_fit->set_disabled(true);
@@ -4555,8 +4557,12 @@ bool AnimationTrackEditor::is_key_clipboard_active() const {
 	return key_clipboard.keys.size();
 }
 
-bool AnimationTrackEditor::is_snap_enabled() const {
-	return snap->is_pressed() ^ Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
+bool AnimationTrackEditor::is_snap_timeline_enabled() const {
+	return snap_timeline->is_pressed() ^ Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
+}
+
+bool AnimationTrackEditor::is_snap_keys_enabled() const {
+	return snap_keys->is_pressed() ^ Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
 }
 
 bool AnimationTrackEditor::is_bezier_editor_active() const {
@@ -4896,7 +4902,8 @@ void AnimationTrackEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			zoom_icon->set_texture(get_editor_theme_icon(SNAME("Zoom")));
 			bezier_edit_icon->set_icon(get_editor_theme_icon(SNAME("EditBezier")));
-			snap->set_icon(get_editor_theme_icon(SNAME("Snap")));
+			snap_timeline->set_icon(get_editor_theme_icon(SNAME("SnapTimeline")));
+			snap_keys->set_icon(get_editor_theme_icon(SNAME("SnapKeys")));
 			view_group->set_icon(get_editor_theme_icon(view_group->is_pressed() ? SNAME("AnimationTrackList") : SNAME("AnimationTrackGroup")));
 			selected_filter->set_icon(get_editor_theme_icon(SNAME("AnimationFilter")));
 			imported_anim_warning->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
@@ -5217,7 +5224,7 @@ int AnimationTrackEditor::_get_track_selected() {
 void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 	ERR_FAIL_INDEX(p_track, animation->get_track_count());
 
-	if (snap->is_pressed() && step->get_value() != 0) {
+	if (snap_keys->is_pressed() && step->get_value() != 0) {
 		p_ofs = snap_time(p_ofs);
 	}
 	while (animation->track_find_key(p_track, p_ofs, Animation::FIND_MODE_APPROX) != -1) { // Make sure insertion point is valid.
@@ -5840,7 +5847,7 @@ void AnimationTrackEditor::_anim_duplicate_keys(float p_ofs, bool p_ofs_valid, i
 			float insert_pos = p_ofs_valid ? p_ofs : timeline->get_play_position();
 
 			if (p_ofs_valid) {
-				if (snap->is_pressed() && step->get_value() != 0) {
+				if (snap_keys->is_pressed() && step->get_value() != 0) {
 					insert_pos = snap_time(insert_pos);
 				}
 			}
@@ -5988,7 +5995,7 @@ void AnimationTrackEditor::_anim_paste_keys(float p_ofs, bool p_ofs_valid, int p
 			float insert_pos = p_ofs_valid ? p_ofs : timeline->get_play_position();
 
 			if (p_ofs_valid) {
-				if (snap->is_pressed() && step->get_value() != 0) {
+				if (snap_keys->is_pressed() && step->get_value() != 0) {
 					insert_pos = snap_time(insert_pos);
 				}
 			}
@@ -7069,7 +7076,7 @@ void AnimationTrackEditor::_update_snap_unit() {
 }
 
 float AnimationTrackEditor::snap_time(float p_value, bool p_relative) {
-	if (is_snap_enabled()) {
+	if (is_snap_keys_enabled()) {
 		if (Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
 			// Use more precise snapping when holding Shift.
 			snap_unit *= 0.25;
@@ -7323,13 +7330,21 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	bottom_hb->add_child(view_group);
 	bottom_hb->add_child(memnew(VSeparator));
 
-	snap = memnew(Button);
-	snap->set_flat(true);
-	snap->set_text(TTR("Snap:") + " ");
-	bottom_hb->add_child(snap);
-	snap->set_disabled(true);
-	snap->set_toggle_mode(true);
-	snap->set_pressed(true);
+	snap_timeline = memnew(Button);
+	snap_timeline->set_flat(true);
+	bottom_hb->add_child(snap_timeline);
+	snap_timeline->set_disabled(true);
+	snap_timeline->set_toggle_mode(true);
+	snap_timeline->set_pressed(false);
+	snap_timeline->set_tooltip_text(TTR("Apply snapping to timeline cursor."));
+
+	snap_keys = memnew(Button);
+	snap_keys->set_flat(true);
+	bottom_hb->add_child(snap_keys);
+	snap_keys->set_disabled(true);
+	snap_keys->set_toggle_mode(true);
+	snap_keys->set_pressed(true);
+	snap_keys->set_tooltip_text(TTR("Apply snapping to selected key(s)."));
 
 	step = memnew(EditorSpinSlider);
 	step->set_min(0);
