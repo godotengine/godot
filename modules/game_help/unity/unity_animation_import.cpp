@@ -1101,13 +1101,21 @@ namespace AnimationToolConst
 
 	static Quaternion calculate_humanoid_rotation(int bone_idx, Vector3 muscle_triplet, bool from_postq = false)
 	{
-		LocalVector<int8_t> muscle_from_bone  = MuscleFromBone[bone_idx];
+		LocalVector<int8_t>& muscle_from_bone  = MuscleFromBone[bone_idx];
 		for (int i = 0; i < 3; ++i)
 		{
-			muscle_triplet[i] *= Math::deg_to_rad(
-				MuscleDefaultMax[ muscle_triplet[i] < 0 ?
-				 - MuscleDefaultMin[muscle_from_bone[i]] : muscle_from_bone[i]])
-				* Signs[bone_idx][i];
+			int ms_index = muscle_from_bone[i];
+			if (ms_index < 0)
+			{
+				ms_index += MuscleDefaultMax.size();
+			}
+			auto deg = MuscleDefaultMax[ms_index];
+			if (muscle_triplet[i] >= 0) {
+			}
+			else {
+				deg = -MuscleDefaultMin[ms_index];
+			}
+			muscle_triplet[i] *= Math::deg_to_rad(deg) * Signs[bone_idx][i];
 		}
 		Quaternion preQ = preQ_exported[bone_idx];
 		if (from_postq)
@@ -1184,7 +1192,7 @@ namespace AnimationToolConst
 			keyframes = curve["m_Curve"];
 			is_mirrored = curve.get("unidot-mirror", false);
 			init_key = keyframes[0];
-			final_key = keyframes[-1];
+			final_key = keyframes[keyframes.size() - 1];
 			prev_key = init_key;
 			next_key = init_key; // if len(keyframes) == 1 else keyframes[1]
 			if (prev_key.has("outSlope"))
@@ -1754,7 +1762,7 @@ namespace AnimationToolConst
 				bool same_ts = false;
 				int itercnt = 0;
 				int affecting_bone_idx = extraAffectingBones.get(bone_idx, -1);
-				while (! key_iter.is_eof and itercnt < 100000)
+				while (! key_iter.is_eof && itercnt < 100000)
 				{
 					itercnt += 1;
 					key_iter.next();
@@ -1768,7 +1776,7 @@ namespace AnimationToolConst
 					}
 					if (! ((Dictionary)per_bone_keyframe_used_ts[bone_idx]).has(ts))
 					{
-						Dictionary& dict = per_bone_keyframe_used_ts[affecting_bone_idx];
+						Dictionary& dict = per_bone_keyframe_used_ts[bone_idx];
 						dict[ts] = true;
 						PackedFloat64Array& t = per_bone_timestamps[bone_idx];
 						t.append(ts);
@@ -1947,7 +1955,7 @@ namespace AnimationToolConst
 						//push_error("root q is not normalized!")
 						return;
 					}
-					if ((key_iter_rot.timestamp != ts) and not key_iter_rot.is_eof)
+					if ((key_iter_rot.timestamp != ts) && not key_iter_rot.is_eof)
 					{
 						//push_warning("RootQ State was: " + pre_dbg_rot)
 						//push_error("RootQ timestamp " + str(key_iter_rot.timestamp) + " is not ts " + str(ts) + " from " + str(last_ts) + " dbg " + key_iter_rot.debug())
