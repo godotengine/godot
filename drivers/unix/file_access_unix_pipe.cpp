@@ -125,22 +125,9 @@ String FileAccessUnixPipe::get_path_absolute() const {
 	return path_src;
 }
 
-uint8_t FileAccessUnixPipe::get_8() const {
-	ERR_FAIL_COND_V_MSG(fd[0] < 0, 0, "Pipe must be opened before use.");
-
-	uint8_t b;
-	if (::read(fd[0], &b, 1) == 0) {
-		last_error = ERR_FILE_CANT_READ;
-		b = '\0';
-	} else {
-		last_error = OK;
-	}
-	return b;
-}
-
 uint64_t FileAccessUnixPipe::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
-	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 	ERR_FAIL_COND_V_MSG(fd[0] < 0, -1, "Pipe must be opened before use.");
+	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 
 	uint64_t read = ::read(fd[0], p_dst, p_length);
 	if (read == p_length) {
@@ -155,18 +142,10 @@ Error FileAccessUnixPipe::get_error() const {
 	return last_error;
 }
 
-void FileAccessUnixPipe::store_8(uint8_t p_src) {
-	ERR_FAIL_COND_MSG(fd[1] < 0, "Pipe must be opened before use.");
-	if (::write(fd[1], &p_src, 1) != 1) {
-		last_error = ERR_FILE_CANT_WRITE;
-	} else {
-		last_error = OK;
-	}
-}
-
 void FileAccessUnixPipe::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 	ERR_FAIL_COND_MSG(fd[1] < 0, "Pipe must be opened before use.");
 	ERR_FAIL_COND(!p_src && p_length > 0);
+
 	if (::write(fd[1], p_src, p_length) != (ssize_t)p_length) {
 		last_error = ERR_FILE_CANT_WRITE;
 	} else {

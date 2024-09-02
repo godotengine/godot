@@ -169,43 +169,6 @@ void FileAccessFilesystemJAndroid::_set_eof(bool eof) {
 	}
 }
 
-uint8_t FileAccessFilesystemJAndroid::get_8() const {
-	ERR_FAIL_COND_V_MSG(!is_open(), 0, "File must be opened before use.");
-	uint8_t byte;
-	get_buffer(&byte, 1);
-	return byte;
-}
-
-uint16_t FileAccessFilesystemJAndroid::get_16() const {
-	ERR_FAIL_COND_V_MSG(!is_open(), 0, "File must be opened before use.");
-	uint16_t bytes = 0;
-	get_buffer(reinterpret_cast<uint8_t *>(&bytes), 2);
-	if (big_endian) {
-		bytes = BSWAP16(bytes);
-	}
-	return bytes;
-}
-
-uint32_t FileAccessFilesystemJAndroid::get_32() const {
-	ERR_FAIL_COND_V_MSG(!is_open(), 0, "File must be opened before use.");
-	uint32_t bytes = 0;
-	get_buffer(reinterpret_cast<uint8_t *>(&bytes), 4);
-	if (big_endian) {
-		bytes = BSWAP32(bytes);
-	}
-	return bytes;
-}
-
-uint64_t FileAccessFilesystemJAndroid::get_64() const {
-	ERR_FAIL_COND_V_MSG(!is_open(), 0, "File must be opened before use.");
-	uint64_t bytes = 0;
-	get_buffer(reinterpret_cast<uint8_t *>(&bytes), 8);
-	if (big_endian) {
-		bytes = BSWAP64(bytes);
-	}
-	return bytes;
-}
-
 String FileAccessFilesystemJAndroid::get_line() const {
 	ERR_FAIL_COND_V_MSG(!is_open(), String(), "File must be opened before use.");
 
@@ -269,31 +232,6 @@ uint64_t FileAccessFilesystemJAndroid::get_buffer(uint8_t *p_dst, uint64_t p_len
 	} else {
 		return 0;
 	}
-}
-
-void FileAccessFilesystemJAndroid::store_8(uint8_t p_dest) {
-	store_buffer(&p_dest, 1);
-}
-
-void FileAccessFilesystemJAndroid::store_16(uint16_t p_dest) {
-	if (big_endian) {
-		p_dest = BSWAP16(p_dest);
-	}
-	store_buffer(reinterpret_cast<uint8_t *>(&p_dest), 2);
-}
-
-void FileAccessFilesystemJAndroid::store_32(uint32_t p_dest) {
-	if (big_endian) {
-		p_dest = BSWAP32(p_dest);
-	}
-	store_buffer(reinterpret_cast<uint8_t *>(&p_dest), 4);
-}
-
-void FileAccessFilesystemJAndroid::store_64(uint64_t p_dest) {
-	if (big_endian) {
-		p_dest = BSWAP64(p_dest);
-	}
-	store_buffer(reinterpret_cast<uint8_t *>(&p_dest), 8);
 }
 
 void FileAccessFilesystemJAndroid::store_buffer(const uint8_t *p_src, uint64_t p_length) {
