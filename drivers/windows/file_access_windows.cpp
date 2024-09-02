@@ -559,11 +559,10 @@ uint64_t FileAccessWindows::_get_modified_time(const String &p_file) {
 		return 0;
 	}
 
-	String file = p_file;
-	if (file.ends_with("/") && file != "/") {
+	String file = fix_path(p_file);
+	if (file.ends_with("\\") && file != "\\") {
 		file = file.substr(0, file.length() - 1);
 	}
-	file = fix_path(file);
 
 	struct _stat st;
 	int rv = _wstat((LPCWSTR)(file.utf16().get_data()), &st);
