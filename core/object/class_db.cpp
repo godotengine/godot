@@ -181,7 +181,7 @@ public:
 		return 0;
 	}
 
-	static GDExtensionObjectPtr placeholder_class_create_instance(void *p_class_userdata, bool p_notify_postinitialize) {
+	static GDExtensionObjectPtr placeholder_class_create_instance(void *p_class_userdata, GDExtensionBool p_notify_postinitialize) {
 		ClassDB::ClassInfo *ti = (ClassDB::ClassInfo *)p_class_userdata;
 
 		// Find the closest native parent, that isn't a runtime class.
@@ -192,7 +192,7 @@ public:
 		ERR_FAIL_NULL_V(native_parent->creation_func, nullptr);
 
 		// Construct a placeholder.
-		Object *obj = native_parent->creation_func(p_notify_postinitialize);
+		Object *obj = native_parent->creation_func(static_cast<bool>(p_notify_postinitialize));
 
 		// ClassDB::set_object_extension_instance() won't be called for placeholders.
 		// We need need to make sure that all the things it would have done (even if
@@ -264,6 +264,22 @@ void ClassDB::get_extensions_class_list(List<StringName> *p_classes) {
 
 	for (const KeyValue<StringName, ClassInfo> &E : classes) {
 		if (E.value.api != API_EXTENSION && E.value.api != API_EDITOR_EXTENSION) {
+			continue;
+		}
+		p_classes->push_back(E.key);
+	}
+
+	p_classes->sort_custom<StringName::AlphCompare>();
+}
+
+void ClassDB::get_extension_class_list(const Ref<GDExtension> &p_extension, List<StringName> *p_classes) {
+	OBJTYPE_RLOCK;
+
+	for (const KeyValue<StringName, ClassInfo> &E : classes) {
+		if (E.value.api != API_EXTENSION && E.value.api != API_EDITOR_EXTENSION) {
+			continue;
+		}
+		if (!E.value.gdextension || E.value.gdextension->library != p_extension.ptr()) {
 			continue;
 		}
 		p_classes->push_back(E.key);
@@ -1632,14 +1648,16 @@ bool ClassDB::get_property(Object *p_object, const StringName &p_property, Varia
 				Variant index = psg->index;
 				const Variant *arg[1] = { &index };
 				Callable::CallError ce;
-				r_value = p_object->callp(psg->getter, arg, 1, ce);
+				const Variant value = p_object->callp(psg->getter, arg, 1, ce);
+				r_value = (ce.error == Callable::CallError::CALL_OK) ? value : Variant();
 
 			} else {
 				Callable::CallError ce;
 				if (psg->_getptr) {
 					r_value = psg->_getptr->call(p_object, nullptr, 0, ce);
 				} else {
-					r_value = p_object->callp(psg->getter, nullptr, 0, ce);
+					const Variant value = p_object->callp(psg->getter, nullptr, 0, ce);
+					r_value = (ce.error == Callable::CallError::CALL_OK) ? value : Variant();
 				}
 			}
 			return true;

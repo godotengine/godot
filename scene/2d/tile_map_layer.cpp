@@ -957,7 +957,7 @@ void TileMapLayer::_navigation_update(bool p_force_cleanup) {
 					// Create a dedicated map for each layer.
 					RID new_layer_map = ns->map_create();
 					// Set the default NavigationPolygon cell_size on the new map as a mismatch causes an error.
-					ns->map_set_cell_size(new_layer_map, 1.0);
+					ns->map_set_cell_size(new_layer_map, NavigationDefaults2D::navmesh_cell_size);
 					ns->map_set_active(new_layer_map, true);
 					navigation_map_override = new_layer_map;
 				}

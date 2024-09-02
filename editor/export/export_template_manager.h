@@ -46,7 +46,6 @@ class ExportTemplateManager : public AcceptDialog {
 	GDCLASS(ExportTemplateManager, AcceptDialog);
 
 	bool current_version_exists = false;
-	bool downloads_available = true;
 	bool mirrors_available = false;
 	bool is_refreshing_mirrors = false;
 	bool is_downloading_templates = false;
@@ -74,6 +73,7 @@ class ExportTemplateManager : public AcceptDialog {
 	Label *download_progress_label = nullptr;
 	HTTPRequest *download_templates = nullptr;
 	Button *install_file_button = nullptr;
+	Button *download_current_button = nullptr;
 	HTTPRequest *request_mirrors = nullptr;
 
 	enum TemplatesAction {

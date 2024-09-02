@@ -86,6 +86,8 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_has_feature = p_env->GetMethodID(godot_class, "hasFeature", "(Ljava/lang/String;)Z");
 	_sign_apk = p_env->GetMethodID(godot_class, "nativeSignApk", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I");
 	_verify_apk = p_env->GetMethodID(godot_class, "nativeVerifyApk", "(Ljava/lang/String;)I");
+	_enable_immersive_mode = p_env->GetMethodID(godot_class, "nativeEnableImmersiveMode", "(Z)V");
+	_is_in_immersive_mode = p_env->GetMethodID(godot_class, "isInImmersiveMode", "()Z");
 }
 
 GodotJavaWrapper::~GodotJavaWrapper() {
@@ -463,5 +465,23 @@ Error GodotJavaWrapper::verify_apk(const String &p_apk_path) {
 		return static_cast<Error>(result);
 	} else {
 		return ERR_UNCONFIGURED;
+	}
+}
+
+void GodotJavaWrapper::enable_immersive_mode(bool p_enabled) {
+	if (_enable_immersive_mode) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL(env);
+		env->CallVoidMethod(godot_instance, _enable_immersive_mode, p_enabled);
+	}
+}
+
+bool GodotJavaWrapper::is_in_immersive_mode() {
+	if (_is_in_immersive_mode) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, false);
+		return env->CallBooleanMethod(godot_instance, _is_in_immersive_mode);
+	} else {
+		return false;
 	}
 }

@@ -60,32 +60,32 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 		p_take_over = false; // Can't take over an empty path
 	}
 
-	ResourceCache::lock.lock();
+	{
+		MutexLock lock(ResourceCache::lock);
 
-	if (!path_cache.is_empty()) {
-		ResourceCache::resources.erase(path_cache);
-	}
+		if (!path_cache.is_empty()) {
+			ResourceCache::resources.erase(path_cache);
+		}
 
-	path_cache = "";
+		path_cache = "";
 
-	Ref<Resource> existing = ResourceCache::get_ref(p_path);
+		Ref<Resource> existing = ResourceCache::get_ref(p_path);
 
-	if (existing.is_valid()) {
-		if (p_take_over) {
-			existing->path_cache = String();
-			ResourceCache::resources.erase(p_path);
-		} else {
-			ResourceCache::lock.unlock();
-			ERR_FAIL_MSG("Another resource is loaded from path '" + p_path + "' (possible cyclic resource inclusion).");
+		if (existing.is_valid()) {
+			if (p_take_over) {
+				existing->path_cache = String();
+				ResourceCache::resources.erase(p_path);
+			} else {
+				ERR_FAIL_MSG("Another resource is loaded from path '" + p_path + "' (possible cyclic resource inclusion).");
+			}
+		}
+
+		path_cache = p_path;
+
+		if (!path_cache.is_empty()) {
+			ResourceCache::resources[path_cache] = this;
 		}
 	}
-
-	path_cache = p_path;
-
-	if (!path_cache.is_empty()) {
-		ResourceCache::resources[path_cache] = this;
-	}
-	ResourceCache::lock.unlock();
 
 	_resource_path_changed();
 }
@@ -486,15 +486,13 @@ void Resource::set_as_translation_remapped(bool p_remapped) {
 		return;
 	}
 
-	ResourceCache::lock.lock();
+	MutexLock lock(ResourceCache::lock);
 
 	if (p_remapped) {
 		ResourceLoader::remapped_list.add(&remapped_list);
 	} else {
 		ResourceLoader::remapped_list.remove(&remapped_list);
 	}
-
-	ResourceCache::lock.unlock();
 }
 
 #ifdef TOOLS_ENABLED
@@ -564,14 +562,13 @@ Resource::~Resource() {
 		return;
 	}
 
-	ResourceCache::lock.lock();
+	MutexLock lock(ResourceCache::lock);
 	// Only unregister from the cache if this is the actual resource listed there.
 	// (Other resources can have the same value in `path_cache` if loaded with `CACHE_IGNORE`.)
 	HashMap<String, Resource *>::Iterator E = ResourceCache::resources.find(path_cache);
 	if (likely(E && E->value == this)) {
 		ResourceCache::resources.remove(E);
 	}
-	ResourceCache::lock.unlock();
 }
 
 HashMap<String, Resource *> ResourceCache::resources;
@@ -600,18 +597,20 @@ void ResourceCache::clear() {
 }
 
 bool ResourceCache::has(const String &p_path) {
-	lock.lock();
+	Resource **res = nullptr;
 
-	Resource **res = resources.getptr(p_path);
+	{
+		MutexLock mutex_lock(lock);
 
-	if (res && (*res)->get_reference_count() == 0) {
-		// This resource is in the process of being deleted, ignore its existence.
-		(*res)->path_cache = String();
-		resources.erase(p_path);
-		res = nullptr;
+		res = resources.getptr(p_path);
+
+		if (res && (*res)->get_reference_count() == 0) {
+			// This resource is in the process of being deleted, ignore its existence.
+			(*res)->path_cache = String();
+			resources.erase(p_path);
+			res = nullptr;
+		}
 	}
-
-	lock.unlock();
 
 	if (!res) {
 		return false;
@@ -622,28 +621,27 @@ bool ResourceCache::has(const String &p_path) {
 
 Ref<Resource> ResourceCache::get_ref(const String &p_path) {
 	Ref<Resource> ref;
-	lock.lock();
+	{
+		MutexLock mutex_lock(lock);
+		Resource **res = resources.getptr(p_path);
 
-	Resource **res = resources.getptr(p_path);
+		if (res) {
+			ref = Ref<Resource>(*res);
+		}
 
-	if (res) {
-		ref = Ref<Resource>(*res);
+		if (res && !ref.is_valid()) {
+			// This resource is in the process of being deleted, ignore its existence
+			(*res)->path_cache = String();
+			resources.erase(p_path);
+			res = nullptr;
+		}
 	}
-
-	if (res && !ref.is_valid()) {
-		// This resource is in the process of being deleted, ignore its existence
-		(*res)->path_cache = String();
-		resources.erase(p_path);
-		res = nullptr;
-	}
-
-	lock.unlock();
 
 	return ref;
 }
 
 void ResourceCache::get_cached_resources(List<Ref<Resource>> *p_resources) {
-	lock.lock();
+	MutexLock mutex_lock(lock);
 
 	LocalVector<String> to_remove;
 
@@ -663,14 +661,9 @@ void ResourceCache::get_cached_resources(List<Ref<Resource>> *p_resources) {
 	for (const String &E : to_remove) {
 		resources.erase(E);
 	}
-
-	lock.unlock();
 }
 
 int ResourceCache::get_cached_resource_count() {
-	lock.lock();
-	int rc = resources.size();
-	lock.unlock();
-
-	return rc;
+	MutexLock mutex_lock(lock);
+	return resources.size();
 }

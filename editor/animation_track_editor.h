@@ -713,8 +713,8 @@ public:
 	void cleanup();
 
 	void set_anim_pos(float p_pos);
-	void insert_node_value_key(Node *p_node, const String &p_property, const Variant &p_value, bool p_only_if_exists = false);
-	void insert_value_key(const String &p_property, const Variant &p_value, bool p_advance);
+	void insert_node_value_key(Node *p_node, const String &p_property, bool p_only_if_exists = false, bool p_advance = false);
+	void insert_value_key(const String &p_property, bool p_advance);
 	void insert_transform_key(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type, const Variant &p_value);
 	bool has_track(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type);
 	void make_insert_queue();
@@ -729,6 +729,7 @@ public:
 	bool is_key_clipboard_active() const;
 	bool is_moving_selection() const;
 	bool is_snap_enabled() const;
+	bool is_bezier_editor_active() const;
 	bool can_add_reset_key() const;
 	float get_moving_selection_offset() const;
 	float snap_time(float p_value, bool p_relative = false);

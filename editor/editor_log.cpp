@@ -510,7 +510,7 @@ EditorLog::EditorLog() {
 	collapse_button->set_tooltip_text(TTR("Collapse duplicate messages into one log entry. Shows number of occurrences."));
 	collapse_button->set_toggle_mode(true);
 	collapse_button->set_pressed(false);
-	collapse_button->connect("toggled", callable_mp(this, &EditorLog::_set_collapse));
+	collapse_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_collapse));
 	hb_tools2->add_child(collapse_button);
 
 	// Show Search.
@@ -521,7 +521,7 @@ EditorLog::EditorLog() {
 	show_search_button->set_pressed(true);
 	show_search_button->set_shortcut(ED_SHORTCUT("editor/open_search", TTR("Focus Search/Filter Bar"), KeyModifierMask::CMD_OR_CTRL | Key::F));
 	show_search_button->set_shortcut_context(this);
-	show_search_button->connect("toggled", callable_mp(this, &EditorLog::_set_search_visible));
+	show_search_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_search_visible));
 	hb_tools2->add_child(show_search_button);
 
 	// Message Type Filters.

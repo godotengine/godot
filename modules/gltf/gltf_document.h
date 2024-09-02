@@ -92,6 +92,8 @@ public:
 	static void unregister_gltf_document_extension(Ref<GLTFDocumentExtension> p_extension);
 	static void unregister_all_gltf_document_extensions();
 	static Vector<Ref<GLTFDocumentExtension>> get_all_gltf_document_extensions();
+	static Vector<String> get_supported_gltf_extensions();
+	static HashSet<String> get_supported_gltf_extensions_hashset();
 
 	void set_naming_version(int p_version);
 	int get_naming_version() const;

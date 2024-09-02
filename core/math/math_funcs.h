@@ -105,6 +105,9 @@ public:
 	static _ALWAYS_INLINE_ double fmod(double p_x, double p_y) { return ::fmod(p_x, p_y); }
 	static _ALWAYS_INLINE_ float fmod(float p_x, float p_y) { return ::fmodf(p_x, p_y); }
 
+	static _ALWAYS_INLINE_ double modf(double p_x, double *r_y) { return ::modf(p_x, r_y); }
+	static _ALWAYS_INLINE_ float modf(float p_x, float *r_y) { return ::modff(p_x, r_y); }
+
 	static _ALWAYS_INLINE_ double floor(double p_x) { return ::floor(p_x); }
 	static _ALWAYS_INLINE_ float floor(float p_x) { return ::floorf(p_x); }
 

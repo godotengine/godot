@@ -54,10 +54,13 @@ struct Shape::Impl
         Compositor* cmp = nullptr;
         bool ret;
 
+        renderer->blend(shape->blend(), !needComp);
+
         if (needComp) {
             cmp = renderer->target(bounds(renderer), renderer->colorSpace());
             renderer->beginComposite(cmp, CompositeMethod::None, opacity);
         }
+
         ret = renderer->renderShape(rd);
         if (cmp) renderer->endComposite(cmp);
         return ret;

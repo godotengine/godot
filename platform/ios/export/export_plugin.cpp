@@ -2017,11 +2017,11 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 	return OK;
 }
 
-Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	return _export_project_helper(p_preset, p_debug, p_path, p_flags, false, false);
 }
 
-Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags, bool p_simulator, bool p_oneclick) {
+Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_simulator, bool p_oneclick) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
 	const String dest_dir = p_path.get_base_dir() + "/";
@@ -2983,7 +2983,7 @@ void EditorExportPlatformIOS::_update_preset_status() {
 }
 #endif
 
-Error EditorExportPlatformIOS::run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) {
+Error EditorExportPlatformIOS::run(const Ref<EditorExportPreset> &p_preset, int p_device, BitField<EditorExportPlatform::DebugFlags> p_debug_flags) {
 #ifdef MACOS_ENABLED
 	ERR_FAIL_INDEX_V(p_device, devices.size(), ERR_INVALID_PARAMETER);
 
@@ -3029,11 +3029,11 @@ Error EditorExportPlatformIOS::run(const Ref<EditorExportPreset> &p_preset, int 
 	String host = EDITOR_GET("network/debug/remote_host");
 	int remote_port = (int)EDITOR_GET("network/debug/remote_port");
 
-	if (p_debug_flags & DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST) {
+	if (p_debug_flags.has_flag(DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST)) {
 		host = "localhost";
 	}
 
-	if (p_debug_flags & DEBUG_FLAG_DUMB_CLIENT) {
+	if (p_debug_flags.has_flag(DEBUG_FLAG_DUMB_CLIENT)) {
 		int port = EDITOR_GET("filesystem/file_server/port");
 		String passwd = EDITOR_GET("filesystem/file_server/password");
 		cmd_args_list.push_back("--remote-fs");
@@ -3044,7 +3044,7 @@ Error EditorExportPlatformIOS::run(const Ref<EditorExportPreset> &p_preset, int 
 		}
 	}
 
-	if (p_debug_flags & DEBUG_FLAG_REMOTE_DEBUG) {
+	if (p_debug_flags.has_flag(DEBUG_FLAG_REMOTE_DEBUG)) {
 		cmd_args_list.push_back("--remote-debug");
 
 		cmd_args_list.push_back(get_debug_protocol() + host + ":" + String::num(remote_port));
@@ -3066,11 +3066,11 @@ Error EditorExportPlatformIOS::run(const Ref<EditorExportPreset> &p_preset, int 
 		}
 	}
 
-	if (p_debug_flags & DEBUG_FLAG_VIEW_COLLISIONS) {
+	if (p_debug_flags.has_flag(DEBUG_FLAG_VIEW_COLLISIONS)) {
 		cmd_args_list.push_back("--debug-collisions");
 	}
 
-	if (p_debug_flags & DEBUG_FLAG_VIEW_NAVIGATION) {
+	if (p_debug_flags.has_flag(DEBUG_FLAG_VIEW_NAVIGATION)) {
 		cmd_args_list.push_back("--debug-navigation");
 	}
 

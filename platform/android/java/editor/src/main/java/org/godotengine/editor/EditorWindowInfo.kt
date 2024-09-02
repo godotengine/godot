@@ -31,23 +31,24 @@
 package org.godotengine.editor
 
 /**
- * Specifies the policy for adjacent launches.
+ * Specifies the policy for launches.
  */
-enum class LaunchAdjacentPolicy {
+enum class LaunchPolicy {
 	/**
-	 * Adjacent launches are disabled.
-	 */
-	DISABLED,
-
-	/**
-	 * Adjacent launches are enabled / disabled based on the device and screen metrics.
+	 * Launch policy is determined by the editor settings or based on the device and screen metrics.
 	 */
 	AUTO,
+
+
+	/**
+	 * Launches happen in the same window.
+	 */
+	SAME,
 
 	/**
 	 * Adjacent launches are enabled.
 	 */
-	ENABLED
+	ADJACENT
 }
 
 /**
@@ -57,12 +58,14 @@ data class EditorWindowInfo(
 	val windowClassName: String,
 	val windowId: Int,
 	val processNameSuffix: String,
-	val launchAdjacentPolicy: LaunchAdjacentPolicy = LaunchAdjacentPolicy.DISABLED
+	val launchPolicy: LaunchPolicy = LaunchPolicy.SAME,
+	val supportsPiPMode: Boolean = false
 ) {
 	constructor(
 		windowClass: Class<*>,
 		windowId: Int,
 		processNameSuffix: String,
-		launchAdjacentPolicy: LaunchAdjacentPolicy = LaunchAdjacentPolicy.DISABLED
-	) : this(windowClass.name, windowId, processNameSuffix, launchAdjacentPolicy)
+		launchPolicy: LaunchPolicy = LaunchPolicy.SAME,
+		supportsPiPMode: Boolean = false
+	) : this(windowClass.name, windowId, processNameSuffix, launchPolicy, supportsPiPMode)
 }

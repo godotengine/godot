@@ -100,7 +100,6 @@ struct SwShapeTask : SwTask
         return (width * sqrt(transform.e11 * transform.e11 + transform.e12 * transform.e12));
     }
 
-
     bool clip(SwRleData* target) override
     {
         if (shape.fastTrack) rleClipRect(target, &bbox);
@@ -447,7 +446,7 @@ bool SwRenderer::renderShape(RenderData data)
 }
 
 
-bool SwRenderer::blend(BlendMethod method)
+bool SwRenderer::blend(BlendMethod method, bool direct)
 {
     if (surface->blendMethod == method) return true;
     surface->blendMethod = method;
@@ -460,7 +459,7 @@ bool SwRenderer::blend(BlendMethod method)
             surface->blender = opBlendScreen;
             break;
         case BlendMethod::Multiply:
-            surface->blender = opBlendMultiply;
+            surface->blender = direct ? opBlendDirectMultiply : opBlendMultiply;
             break;
         case BlendMethod::Overlay:
             surface->blender = opBlendOverlay;

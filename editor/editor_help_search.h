@@ -63,6 +63,7 @@ class EditorHelpSearch : public ConfirmationDialog {
 	Tree *results_tree = nullptr;
 	bool old_search = false;
 	String old_term;
+	int old_search_flags = 0;
 
 	class Runner;
 	Ref<Runner> search;
@@ -119,26 +120,30 @@ class EditorHelpSearch::Runner : public RefCounted {
 
 	template <typename T>
 	struct MemberMatch {
-		T *doc = nullptr;
+		const T *doc = nullptr;
 		bool name = false;
 		String keyword;
+
+		MemberMatch() {}
+		MemberMatch(const T *p_doc) :
+				doc(p_doc) {}
 	};
 
 	struct ClassMatch {
-		DocData::ClassDoc *doc = nullptr;
+		const DocData::ClassDoc *doc = nullptr;
 		bool name = false;
 		String keyword;
-		Vector<MemberMatch<DocData::MethodDoc>> constructors;
-		Vector<MemberMatch<DocData::MethodDoc>> methods;
-		Vector<MemberMatch<DocData::MethodDoc>> operators;
-		Vector<MemberMatch<DocData::MethodDoc>> signals;
-		Vector<MemberMatch<DocData::ConstantDoc>> constants;
-		Vector<MemberMatch<DocData::PropertyDoc>> properties;
-		Vector<MemberMatch<DocData::ThemeItemDoc>> theme_properties;
-		Vector<MemberMatch<DocData::MethodDoc>> annotations;
+		LocalVector<MemberMatch<DocData::MethodDoc>> constructors;
+		LocalVector<MemberMatch<DocData::MethodDoc>> methods;
+		LocalVector<MemberMatch<DocData::MethodDoc>> operators;
+		LocalVector<MemberMatch<DocData::MethodDoc>> signals;
+		LocalVector<MemberMatch<DocData::ConstantDoc>> constants;
+		LocalVector<MemberMatch<DocData::PropertyDoc>> properties;
+		LocalVector<MemberMatch<DocData::ThemeItemDoc>> theme_properties;
+		LocalVector<MemberMatch<DocData::MethodDoc>> annotations;
 
 		bool required() {
-			return name || !keyword.is_empty() || methods.size() || signals.size() || constants.size() || properties.size() || theme_properties.size() || annotations.size();
+			return name || !keyword.is_empty() || !constructors.is_empty() || !methods.is_empty() || !operators.is_empty() || !signals.is_empty() || !constants.is_empty() || !properties.is_empty() || !theme_properties.is_empty() || !annotations.is_empty();
 		}
 	};
 
@@ -155,6 +160,7 @@ class EditorHelpSearch::Runner : public RefCounted {
 	LocalVector<RBSet<String, NaturalNoCaseComparator>::Element *> iterator_stack;
 	HashMap<String, ClassMatch> matches;
 	HashMap<String, ClassMatch>::Iterator iterator_match;
+	LocalVector<Pair<DocData::ClassDoc *, String>> matched_classes;
 	TreeItem *root_item = nullptr;
 	HashMap<String, TreeItem *> class_items;
 	TreeItem *matched_item = nullptr;
@@ -164,6 +170,12 @@ class EditorHelpSearch::Runner : public RefCounted {
 
 	void _populate_cache();
 	bool _find_or_create_item(TreeItem *p_parent, const String &p_item_meta, TreeItem *&r_item);
+
+	bool _fill();
+	bool _phase_fill_classes_init();
+	bool _phase_fill_classes();
+	bool _phase_fill_member_items_init();
+	bool _phase_fill_member_items();
 
 	bool _slice();
 	bool _phase_match_classes_init();
@@ -177,21 +189,25 @@ class EditorHelpSearch::Runner : public RefCounted {
 	String _build_method_tooltip(const DocData::ClassDoc *p_class_doc, const DocData::MethodDoc *p_doc) const;
 	String _build_keywords_tooltip(const String &p_keywords) const;
 
-	void _match_method_name_and_push_back(Vector<DocData::MethodDoc> &p_methods, Vector<MemberMatch<DocData::MethodDoc>> *r_match_methods);
+	void _match_method_name_and_push_back(Vector<DocData::MethodDoc> &p_methods, LocalVector<MemberMatch<DocData::MethodDoc>> *r_match_methods);
 	bool _all_terms_in_name(const String &p_name) const;
 	String _match_keywords_in_all_terms(const String &p_keywords) const;
 	bool _match_string(const String &p_term, const String &p_string) const;
 	String _match_keywords(const String &p_term, const String &p_keywords) const;
 	void _match_item(TreeItem *p_item, const String &p_text, bool p_is_keywords = false);
 	TreeItem *_create_class_hierarchy(const ClassMatch &p_match);
+	TreeItem *_create_class_hierarchy(const DocData::ClassDoc *p_class_doc, const String &p_matching_keyword, bool p_gray);
 	TreeItem *_create_class_item(TreeItem *p_parent, const DocData::ClassDoc *p_doc, bool p_gray, const String &p_matching_keyword);
-	TreeItem *_create_method_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const String &p_text, const MemberMatch<DocData::MethodDoc> &p_match);
+	TreeItem *_create_category_item(TreeItem *p_parent, const String &p_class, const StringName &p_icon, const String &p_metatype, const String &p_type);
+	TreeItem *_create_method_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const MemberMatch<DocData::MethodDoc> &p_match);
+	TreeItem *_create_constructor_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const MemberMatch<DocData::MethodDoc> &p_match);
+	TreeItem *_create_operator_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const MemberMatch<DocData::MethodDoc> &p_match);
 	TreeItem *_create_signal_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const MemberMatch<DocData::MethodDoc> &p_match);
 	TreeItem *_create_annotation_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const MemberMatch<DocData::MethodDoc> &p_match);
 	TreeItem *_create_constant_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const MemberMatch<DocData::ConstantDoc> &p_match);
 	TreeItem *_create_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const MemberMatch<DocData::PropertyDoc> &p_match);
 	TreeItem *_create_theme_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const MemberMatch<DocData::ThemeItemDoc> &p_match);
-	TreeItem *_create_member_item(TreeItem *p_parent, const String &p_class_name, const String &p_icon, const String &p_name, const String &p_text, const String &p_type, const String &p_metatype, const String &p_tooltip, const String &p_keywords, bool p_is_deprecated, bool p_is_experimental, const String &p_matching_keyword);
+	TreeItem *_create_member_item(TreeItem *p_parent, const String &p_class_name, const StringName &p_icon, const String &p_name, const String &p_text, const String &p_type, const String &p_metatype, const String &p_tooltip, const String &p_keywords, bool p_is_deprecated, bool p_is_experimental, const String &p_matching_keyword);
 
 public:
 	bool work(uint64_t slot = 100000);

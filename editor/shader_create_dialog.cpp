@@ -629,7 +629,7 @@ ShaderCreateDialog::ShaderCreateDialog() {
 
 	internal = memnew(CheckBox);
 	internal->set_text(TTR("On"));
-	internal->connect("toggled", callable_mp(this, &ShaderCreateDialog::_built_in_toggled));
+	internal->connect(SceneStringName(toggled), callable_mp(this, &ShaderCreateDialog::_built_in_toggled));
 	gc->add_child(memnew(Label(TTR("Built-in Shader:"))));
 	gc->add_child(internal);
 

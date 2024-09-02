@@ -6,6 +6,6 @@ class MyObj:
 func test():
 	var obj_1 = MyObj.new()
 	var obj_2 = MyObj.new()
-	assert(obj_2.get_reference_count() == 1)
+	Utils.check(obj_2.get_reference_count() == 1)
 	obj_1.set(&"obj", obj_2)
-	assert(obj_2.get_reference_count() == 1)
+	Utils.check(obj_2.get_reference_count() == 1)

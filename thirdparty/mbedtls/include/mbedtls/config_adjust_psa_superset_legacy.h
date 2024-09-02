@@ -2,6 +2,8 @@
  * \file mbedtls/config_adjust_psa_superset_legacy.h
  * \brief Adjust PSA configuration: automatic enablement from legacy
  *
+ * This is an internal header. Do not include it directly.
+ *
  * To simplify some edge cases, we automatically enable certain cryptographic
  * mechanisms in the PSA API if they are enabled in the legacy API. The general
  * idea is that if legacy module M uses mechanism A internally, and A has
@@ -16,6 +18,14 @@
 
 #ifndef MBEDTLS_CONFIG_ADJUST_PSA_SUPERSET_LEGACY_H
 #define MBEDTLS_CONFIG_ADJUST_PSA_SUPERSET_LEGACY_H
+
+#if !defined(MBEDTLS_CONFIG_FILES_READ)
+#error "Do not include mbedtls/config_adjust_*.h manually! This can lead to problems, " \
+    "up to and including runtime errors such as buffer overflows. " \
+    "If you're trying to fix a complaint from check_config.h, just remove " \
+    "it from your configuration file: since Mbed TLS 3.0, it is included " \
+    "automatically at the right point."
+#endif /* */
 
 /****************************************************************/
 /* Hashes that are built in are also enabled in PSA.
