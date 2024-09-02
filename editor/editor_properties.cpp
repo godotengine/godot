@@ -3563,7 +3563,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 						continue;
 					}
 
-					String action_name = pi.name.substr(pi.name.find("/") + 1);
+					String action_name = pi.name.substr(pi.name.find("/") + 1, pi.name.length());
 					if ((p_hint_text != "allow_builtin") && InputMap::get_singleton()->get_builtins().has(action_name)) {
 						continue;
 					}
