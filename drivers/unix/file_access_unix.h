@@ -49,6 +49,7 @@ class FileAccessUnix : public FileAccess {
 	String path;
 	String path_src;
 
+	void _sync();
 	void _close();
 
 public:
