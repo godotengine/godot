@@ -588,6 +588,11 @@ static bool _hslToRgb(float hue, float saturation, float brightness, uint8_t* re
     float _red = 0, _green = 0, _blue = 0;
     uint32_t i = 0;
 
+    while (hue < 0) hue += 360.0f;
+    hue = fmod(hue, 360.0f);
+    saturation = saturation > 0 ? std::min(saturation, 1.0f) : 0.0f;
+    brightness = brightness > 0 ? std::min(brightness, 1.0f) : 0.0f;
+
     if (mathZero(saturation))  _red = _green = _blue = brightness;
     else {
         if (mathEqual(hue, 360.0)) hue = 0.0f;
@@ -714,7 +719,6 @@ static bool _toColor(const char* str, uint8_t* r, uint8_t* g, uint8_t* b, char**
         const char* hue = nullptr;
         if (_parseNumber(&content, &hue, &th) && hue) {
             const char* saturation = nullptr;
-            th = float(uint32_t(th) % 360);
             hue = _skipSpace(hue, nullptr);
             hue = (char*)_skipComma(hue);
             hue = _skipSpace(hue, nullptr);

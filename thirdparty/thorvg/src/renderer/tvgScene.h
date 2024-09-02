@@ -120,6 +120,8 @@ struct Scene::Impl
         Compositor* cmp = nullptr;
         auto ret = true;
 
+        renderer->blend(scene->blend());
+
         if (needComp) {
             cmp = renderer->target(bounds(renderer), renderer->colorSpace());
             renderer->beginComposite(cmp, CompositeMethod::None, opacity);
