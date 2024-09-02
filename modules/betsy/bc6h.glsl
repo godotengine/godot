@@ -1,7 +1,7 @@
 #[versions]
 
 signed = "#define SIGNED";
-unsigned = "";
+unsigned = "#define QUALITY"; // The "Quality" preset causes artifacting on signed data, so for now it's exclusive to unsigned.
 
 #[compute]
 #version 450
@@ -10,10 +10,6 @@ unsigned = "";
 #include "UavCrossPlatform_piece_all.glsl"
 
 #VERSION_DEFINES
-#define QUALITY
-
-//SIGNED macro is WIP
-//#define SIGNED
 
 float3 f32tof16(float3 value) {
 	return float3(packHalf2x16(float2(value.x, 0.0)),
@@ -48,11 +44,59 @@ params;
 const float HALF_MAX = 65504.0f;
 const uint PATTERN_NUM = 32u;
 
+#ifdef SIGNED
+const float HALF_MIN = -65504.0f;
+#else
+const float HALF_MIN = 0.0f;
+#endif
+
+#ifdef SIGNED
+// https://github.com/godotengine/godot/pull/96377#issuecomment-2323488254
+// https://github.com/godotengine/godot/pull/96377#issuecomment-2323450950
+bool isNegative(float a) {
+	return a < 0.0f;
+}
+
+float CalcSignlessMSLE(float a, float b) {
+	float err = log2((b + 1.0f) / (a + 1.0f));
+	err = err * err;
+	return err;
+}
+
+float CrossCalcMSLE(float a, float b) {
+	float result = 0.0f;
+	result += CalcSignlessMSLE(0.0f, abs(a));
+	result += CalcSignlessMSLE(0.0f, abs(b));
+	return result;
+}
+
+float CalcMSLE(float3 a, float3 b) {
+	float result = 0.0f;
+	if (isNegative(a.x) != isNegative(b.x)) {
+		result += CrossCalcMSLE(a.x, b.x);
+	} else {
+		result += CalcSignlessMSLE(abs(a.x), abs(b.x));
+	}
+	if (isNegative(a.y) != isNegative(b.y)) {
+		result += CrossCalcMSLE(a.y, b.y);
+	} else {
+		result += CalcSignlessMSLE(abs(a.y), abs(b.y));
+	}
+	if (isNegative(a.z) != isNegative(b.z)) {
+		result += CrossCalcMSLE(a.z, b.z);
+	} else {
+		result += CalcSignlessMSLE(abs(a.z), abs(b.z));
+	}
+
+	return result;
+}
+#else
 float CalcMSLE(float3 a, float3 b) {
 	float3 err = log2((b + 1.0f) / (a + 1.0f));
 	err = err * err;
 	return err.x + err.y + err.z;
 }
+#endif
 
 uint PatternFixupID(uint i) {
 	uint ret = 15u;
@@ -176,11 +220,6 @@ float3 Unquantize10(float3 x) {
 
 float3 FinishUnquantize(float3 endpoint0Unq, float3 endpoint1Unq, float weight) {
 	float3 comp = (endpoint0Unq * (64.0f - weight) + endpoint1Unq * weight + 32.0f) * (31.0f / 2048.0f);
-	/*float3 signVal;
-	signVal.x = comp.x >= 0.0f ? 0.0f : 0x8000;
-	signVal.y = comp.y >= 0.0f ? 0.0f : 0x8000;
-	signVal.z = comp.z >= 0.0f ? 0.0f : 0x8000;*/
-	//return f16tof32( uint3( signVal + abs( comp ) ) );
 	return f16tof32(uint3(comp));
 }
 #endif
@@ -207,6 +246,7 @@ uint ComputeIndex4(float texelPos, float endPoint0Pos, float endPoint1Pos) {
 	return uint(clamp(r * 14.93333f + 0.03333f + 0.5f, 0.0f, 15.0f));
 }
 
+// This adds a bitflag to quantized values that signifies whether they are negative.
 void SignExtend(inout float3 v1, uint mask, uint signFlag) {
 	int3 v = int3(v1);
 	v.x = (v.x & int(mask)) | (v.x < 0 ? int(signFlag) : 0);
@@ -215,6 +255,7 @@ void SignExtend(inout float3 v1, uint mask, uint signFlag) {
 	v1 = v;
 }
 
+// Encodes a block with mode 11 (2x 10-bit endpoints).
 void EncodeP1(inout uint4 block, inout float blockMSLE, float3 texels[16]) {
 	// compute endpoints (min/max RGB bbox)
 	float3 blockMin = texels[0];
@@ -250,6 +291,12 @@ void EncodeP1(inout uint4 block, inout float blockMSLE, float3 texels[16]) {
 	float endPoint0Pos = f32tof16(dot(blockMin, blockDir));
 	float endPoint1Pos = f32tof16(dot(blockMax, blockDir));
 
+#ifdef SIGNED
+	int maxVal10 = 0x1FF;
+	endpoint0 = clamp(endpoint0, -maxVal10, maxVal10);
+	endpoint1 = clamp(endpoint1, -maxVal10, maxVal10);
+#endif
+
 	// check if endpoint swap is required
 	float fixupTexelPos = f32tof16(dot(texels[0], blockDir));
 	uint fixupIndex = ComputeIndex4(fixupTexelPos, endPoint0Pos, endPoint1Pos);
@@ -275,6 +322,11 @@ void EncodeP1(inout uint4 block, inout float blockMSLE, float3 texels[16]) {
 
 		msle += CalcMSLE(texels[i], texelUnc);
 	}
+
+#ifdef SIGNED
+	SignExtend(endpoint0, 0x1FF, 0x200);
+	SignExtend(endpoint1, 0x1FF, 0x200);
+#endif
 
 	// encode block for mode 11
 	blockMSLE = msle;
@@ -316,11 +368,12 @@ float DistToLineSq(float3 PointOnLine, float3 LineDirection, float3 Point) {
 	return dot(x, x);
 }
 
+// Gets the deviation from the source data of a particular pattern (smaller is better).
 float EvaluateP2Pattern(uint pattern, float3 texels[16]) {
 	float3 p0BlockMin = float3(HALF_MAX, HALF_MAX, HALF_MAX);
-	float3 p0BlockMax = float3(0.0f, 0.0f, 0.0f);
+	float3 p0BlockMax = float3(HALF_MIN, HALF_MIN, HALF_MIN);
 	float3 p1BlockMin = float3(HALF_MAX, HALF_MAX, HALF_MAX);
-	float3 p1BlockMax = float3(0.0f, 0.0f, 0.0f);
+	float3 p1BlockMax = float3(HALF_MIN, HALF_MIN, HALF_MIN);
 
 	for (uint i = 0; i < 16; ++i) {
 		uint paletteID = Pattern(pattern, i);
@@ -350,11 +403,12 @@ float EvaluateP2Pattern(uint pattern, float3 texels[16]) {
 	return sqDistanceFromLine;
 }
 
+// Encodes a block with either mode 2 (7-bit base, 3x 6-bit delta), or mode 6 (9-bit base, 3x 5-bit delta). Both use pattern encoding.
 void EncodeP2Pattern(inout uint4 block, inout float blockMSLE, uint pattern, float3 texels[16]) {
 	float3 p0BlockMin = float3(HALF_MAX, HALF_MAX, HALF_MAX);
-	float3 p0BlockMax = float3(0.0f, 0.0f, 0.0f);
+	float3 p0BlockMax = float3(HALF_MIN, HALF_MIN, HALF_MIN);
 	float3 p1BlockMin = float3(HALF_MAX, HALF_MAX, HALF_MAX);
-	float3 p1BlockMax = float3(0.0f, 0.0f, 0.0f);
+	float3 p1BlockMax = float3(HALF_MIN, HALF_MIN, HALF_MIN);
 
 	for (uint i = 0u; i < 16u; ++i) {
 		uint paletteID = Pattern(pattern, i);
@@ -430,6 +484,13 @@ void EncodeP2Pattern(inout uint4 block, inout float blockMSLE, uint pattern, flo
 	endpoint952 = clamp(endpoint952, -maxVal95, maxVal95);
 	endpoint953 = clamp(endpoint953, -maxVal95, maxVal95);
 
+#ifdef SIGNED
+	int maxVal7 = 0x3F;
+	int maxVal9 = 0xFF;
+	endpoint760 = clamp(endpoint760, -maxVal7, maxVal7);
+	endpoint950 = clamp(endpoint950, -maxVal9, maxVal9);
+#endif
+
 	float3 endpoint760Unq = Unquantize7(endpoint760);
 	float3 endpoint761Unq = Unquantize7(endpoint760 + endpoint761);
 	float3 endpoint762Unq = Unquantize7(endpoint760 + endpoint762);
@@ -464,6 +525,11 @@ void EncodeP2Pattern(inout uint4 block, inout float blockMSLE, uint pattern, flo
 	SignExtend(endpoint951, 0xF, 0x10);
 	SignExtend(endpoint952, 0xF, 0x10);
 	SignExtend(endpoint953, 0xF, 0x10);
+
+#ifdef SIGNED
+	SignExtend(endpoint760, 0x3F, 0x40);
+	SignExtend(endpoint950, 0xFF, 0x100);
+#endif
 
 	// encode block
 	float p2MSLE = min(msle76, msle95);
@@ -637,7 +703,7 @@ void main() {
 	float bestScore = EvaluateP2Pattern(0, texels);
 	uint bestPattern = 0;
 
-	for (uint i = 1u; i < 32u; ++i) {
+	for (uint i = 1u; i < PATTERN_NUM; ++i) {
 		float score = EvaluateP2Pattern(i, texels);
 
 		if (score < bestScore) {

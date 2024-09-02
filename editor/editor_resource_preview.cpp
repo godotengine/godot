@@ -221,7 +221,9 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 			r_small_texture->set_image(small_image);
 		}
 
-		break;
+		if (generated.is_valid()) {
+			break;
+		}
 	}
 
 	if (!p_item.resource.is_valid()) {

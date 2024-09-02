@@ -1470,8 +1470,24 @@ void TextureStorage::texture_debug_usage(List<RS::TextureInfo> *r_info) {
 		tinfo.format = t->format;
 		tinfo.width = t->width;
 		tinfo.height = t->height;
-		tinfo.depth = t->depth;
-		tinfo.bytes = Image::get_image_data_size(t->width, t->height, t->format, t->mipmaps);
+		tinfo.bytes = Image::get_image_data_size(t->width, t->height, t->format, t->mipmaps > 1);
+
+		switch (t->type) {
+			case TextureType::TYPE_3D:
+				tinfo.depth = t->depth;
+				tinfo.bytes *= t->depth;
+				break;
+
+			case TextureType::TYPE_LAYERED:
+				tinfo.depth = t->layers;
+				tinfo.bytes *= t->layers;
+				break;
+
+			default:
+				tinfo.depth = 0;
+				break;
+		}
+
 		r_info->push_back(tinfo);
 	}
 }

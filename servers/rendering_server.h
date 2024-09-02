@@ -176,7 +176,7 @@ public:
 		uint32_t height;
 		uint32_t depth;
 		Image::Format format;
-		int bytes;
+		int64_t bytes;
 		String path;
 	};
 

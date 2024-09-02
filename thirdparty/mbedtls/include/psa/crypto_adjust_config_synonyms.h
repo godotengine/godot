@@ -2,6 +2,8 @@
  * \file psa/crypto_adjust_config_synonyms.h
  * \brief Adjust PSA configuration: enable quasi-synonyms
  *
+ * This is an internal header. Do not include it directly.
+ *
  * When two features require almost the same code, we automatically enable
  * both when either one is requested, to reduce the combinatorics of
  * possible configurations.
@@ -13,6 +15,14 @@
 
 #ifndef PSA_CRYPTO_ADJUST_CONFIG_SYNONYMS_H
 #define PSA_CRYPTO_ADJUST_CONFIG_SYNONYMS_H
+
+#if !defined(MBEDTLS_CONFIG_FILES_READ)
+#error "Do not include psa/crypto_adjust_*.h manually! This can lead to problems, " \
+    "up to and including runtime errors such as buffer overflows. " \
+    "If you're trying to fix a complaint from check_config.h, just remove " \
+    "it from your configuration file: since Mbed TLS 3.0, it is included " \
+    "automatically at the right point."
+#endif /* */
 
 /****************************************************************/
 /* De facto synonyms */

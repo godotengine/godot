@@ -106,7 +106,7 @@ public:
 	// Temporary state for blending process which needs to be started in the AnimationTree, pass through the AnimationNodes, and then return to the AnimationTree.
 	struct ProcessState {
 		AnimationTree *tree = nullptr;
-		HashMap<NodePath, int> track_map; // TODO: Is there a better way to manage filter/tracks?
+		const HashMap<NodePath, int> *track_map; // TODO: Is there a better way to manage filter/tracks?
 		bool is_testing = false;
 		bool valid = false;
 		String invalid_reasons;

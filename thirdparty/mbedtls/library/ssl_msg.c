@@ -5570,9 +5570,9 @@ static int ssl_check_ctr_renegotiate(mbedtls_ssl_context *ssl)
 
 #if defined(MBEDTLS_SSL_PROTO_TLS1_3)
 
-#if defined(MBEDTLS_SSL_SESSION_TICKETS) && defined(MBEDTLS_SSL_CLI_C)
+#if defined(MBEDTLS_SSL_CLI_C)
 MBEDTLS_CHECK_RETURN_CRITICAL
-static int ssl_tls13_check_new_session_ticket(mbedtls_ssl_context *ssl)
+static int ssl_tls13_is_new_session_ticket(mbedtls_ssl_context *ssl)
 {
 
     if ((ssl->in_hslen == mbedtls_ssl_hs_hdr_len(ssl)) ||
@@ -5580,15 +5580,9 @@ static int ssl_tls13_check_new_session_ticket(mbedtls_ssl_context *ssl)
         return 0;
     }
 
-    ssl->keep_current_message = 1;
-
-    MBEDTLS_SSL_DEBUG_MSG(3, ("NewSessionTicket received"));
-    mbedtls_ssl_handshake_set_state(ssl,
-                                    MBEDTLS_SSL_TLS1_3_NEW_SESSION_TICKET);
-
-    return MBEDTLS_ERR_SSL_WANT_READ;
+    return 1;
 }
-#endif /* MBEDTLS_SSL_SESSION_TICKETS && MBEDTLS_SSL_CLI_C */
+#endif /* MBEDTLS_SSL_CLI_C */
 
 MBEDTLS_CHECK_RETURN_CRITICAL
 static int ssl_tls13_handle_hs_message_post_handshake(mbedtls_ssl_context *ssl)
@@ -5596,14 +5590,29 @@ static int ssl_tls13_handle_hs_message_post_handshake(mbedtls_ssl_context *ssl)
 
     MBEDTLS_SSL_DEBUG_MSG(3, ("received post-handshake message"));
 
-#if defined(MBEDTLS_SSL_SESSION_TICKETS) && defined(MBEDTLS_SSL_CLI_C)
+#if defined(MBEDTLS_SSL_CLI_C)
     if (ssl->conf->endpoint == MBEDTLS_SSL_IS_CLIENT) {
-        int ret = ssl_tls13_check_new_session_ticket(ssl);
-        if (ret != 0) {
-            return ret;
+        if (ssl_tls13_is_new_session_ticket(ssl)) {
+#if defined(MBEDTLS_SSL_SESSION_TICKETS)
+            MBEDTLS_SSL_DEBUG_MSG(3, ("NewSessionTicket received"));
+            if (mbedtls_ssl_conf_is_signal_new_session_tickets_enabled(ssl->conf) ==
+                MBEDTLS_SSL_TLS1_3_SIGNAL_NEW_SESSION_TICKETS_ENABLED) {
+                ssl->keep_current_message = 1;
+
+                mbedtls_ssl_handshake_set_state(ssl,
+                                                MBEDTLS_SSL_TLS1_3_NEW_SESSION_TICKET);
+                return MBEDTLS_ERR_SSL_WANT_READ;
+            } else {
+                MBEDTLS_SSL_DEBUG_MSG(3, ("Ignoring NewSessionTicket, handling disabled."));
+                return 0;
+            }
+#else
+            MBEDTLS_SSL_DEBUG_MSG(3, ("Ignoring NewSessionTicket, not supported."));
+            return 0;
+#endif
         }
     }
-#endif /* MBEDTLS_SSL_SESSION_TICKETS && MBEDTLS_SSL_CLI_C */
+#endif /* MBEDTLS_SSL_CLI_C */
 
     /* Fail in all other cases. */
     return MBEDTLS_ERR_SSL_UNEXPECTED_MESSAGE;

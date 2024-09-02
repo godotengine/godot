@@ -649,6 +649,61 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
         env.AppendUnique(LINKFLAGS=["/STACK:" + str(STACK_SIZE)])
 
 
+def get_ar_version(env):
+    ret = {
+        "major": -1,
+        "minor": -1,
+        "patch": -1,
+        "is_llvm": False,
+    }
+    try:
+        output = (
+            subprocess.check_output([env.subst(env["AR"]), "--version"], shell=(os.name == "nt"))
+            .strip()
+            .decode("utf-8")
+        )
+    except (subprocess.CalledProcessError, OSError):
+        print_warning("Couldn't check version of `ar`.")
+        return ret
+
+    match = re.search(r"GNU ar \(GNU Binutils\) (\d+)\.(\d+)(:?\.(\d+))?", output)
+    if match:
+        ret["major"] = int(match[1])
+        ret["minor"] = int(match[2])
+        if match[3]:
+            ret["patch"] = int(match[3])
+        else:
+            ret["patch"] = 0
+        return ret
+
+    match = re.search(r"LLVM version (\d+)\.(\d+)\.(\d+)", output)
+    if match:
+        ret["major"] = int(match[1])
+        ret["minor"] = int(match[2])
+        ret["patch"] = int(match[3])
+        ret["is_llvm"] = True
+        return ret
+
+    print_warning("Couldn't parse version of `ar`.")
+    return ret
+
+
+def get_is_ar_thin_supported(env):
+    """Check whether `ar --thin` is supported. It is only supported since Binutils 2.38 or LLVM 14."""
+    ar_version = get_ar_version(env)
+    if ar_version["major"] == -1:
+        return False
+
+    if ar_version["is_llvm"]:
+        return ar_version["major"] >= 14
+
+    if ar_version["major"] == 2:
+        return ar_version["minor"] >= 38
+
+    print_warning("Unknown Binutils `ar` version.")
+    return False
+
+
 def configure_mingw(env: "SConsEnvironment"):
     # Workaround for MinGW. See:
     # https://www.scons.org/wiki/LongCmdLinesOnWin32
@@ -781,7 +836,8 @@ def configure_mingw(env: "SConsEnvironment"):
     if env["use_llvm"] and os.name == "nt" and methods._colorize:
         env.Append(CCFLAGS=["$(-fansi-escape-codes$)", "$(-fcolor-diagnostics$)"])
 
-    env.Append(ARFLAGS=["--thin"])
+    if get_is_ar_thin_supported(env):
+        env.Append(ARFLAGS=["--thin"])
 
     env.Append(CPPDEFINES=["WINDOWS_ENABLED", "WASAPI_ENABLED", "WINMIDI_ENABLED"])
     env.Append(

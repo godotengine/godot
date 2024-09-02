@@ -412,6 +412,14 @@
 				[b]Note:[/b] [param count] is unused and can be left unspecified.
 			</description>
 		</method>
+		<method name="canvas_item_attach_skeleton">
+			<return type="void" />
+			<param index="0" name="item" type="RID" />
+			<param index="1" name="skeleton" type="RID" />
+			<description>
+				Attaches a skeleton to the [CanvasItem]. Removes the previous skeleton.
+			</description>
+		</method>
 		<method name="canvas_item_clear">
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
