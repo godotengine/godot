@@ -1660,7 +1660,7 @@ void AnimationBezierTrackEdit::_menu_selected(int p_index) {
 	switch (p_index) {
 		case MENU_KEY_INSERT: {
 			if (animation->get_track_count() > 0) {
-				if (editor->snap->is_pressed() && editor->step->get_value() != 0) {
+				if (editor->snap_keys->is_pressed() && editor->step->get_value() != 0) {
 					time = editor->snap_time(time);
 				}
 				while (animation->track_find_key(selected_track, time, Animation::FIND_MODE_APPROX) != -1) {
@@ -1736,7 +1736,7 @@ void AnimationBezierTrackEdit::duplicate_selected_keys(real_t p_ofs, bool p_ofs_
 		real_t insert_pos = p_ofs_valid ? p_ofs : timeline->get_play_position();
 
 		if (p_ofs_valid) {
-			if (editor->snap->is_pressed() && editor->step->get_value() != 0) {
+			if (editor->snap_keys->is_pressed() && editor->step->get_value() != 0) {
 				insert_pos = editor->snap_time(insert_pos);
 			}
 		}
@@ -1859,7 +1859,7 @@ void AnimationBezierTrackEdit::paste_keys(real_t p_ofs, bool p_ofs_valid) {
 
 			float insert_pos = p_ofs_valid ? p_ofs : timeline->get_play_position();
 			if (p_ofs_valid) {
-				if (editor->snap->is_pressed() && editor->step->get_value() != 0) {
+				if (editor->snap_keys->is_pressed() && editor->step->get_value() != 0) {
 					insert_pos = editor->snap_time(insert_pos);
 				}
 			}
