@@ -3922,7 +3922,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 				int terrain_index = components[1].trim_prefix("terrain_").to_int();
 				ERR_FAIL_COND_V(terrain_index < 0, false);
 				if (components[2] == "name") {
-					ERR_FAIL_COND_V(p_value.get_type() != Variant::STRING, false);
+					ERR_FAIL_COND_V(!p_value.is_string(), false);
 					while (terrain_set_index >= terrain_sets.size()) {
 						add_terrain_set();
 					}
@@ -3960,7 +3960,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 			int index = components[0].trim_prefix("custom_data_layer_").to_int();
 			ERR_FAIL_COND_V(index < 0, false);
 			if (components[1] == "name") {
-				ERR_FAIL_COND_V(p_value.get_type() != Variant::STRING, false);
+				ERR_FAIL_COND_V(!p_value.is_string(), false);
 				while (index >= custom_data_layers.size()) {
 					add_custom_data_layer();
 				}

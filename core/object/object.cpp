@@ -605,7 +605,7 @@ Variant Object::_call_bind(const Variant **p_args, int p_argcount, Callable::Cal
 		return Variant();
 	}
 
-	if (p_args[0]->get_type() != Variant::STRING_NAME && p_args[0]->get_type() != Variant::STRING) {
+	if (!p_args[0]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::STRING_NAME;
@@ -624,7 +624,7 @@ Variant Object::_call_deferred_bind(const Variant **p_args, int p_argcount, Call
 		return Variant();
 	}
 
-	if (p_args[0]->get_type() != Variant::STRING_NAME && p_args[0]->get_type() != Variant::STRING) {
+	if (!p_args[0]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::STRING_NAME;
@@ -720,7 +720,7 @@ Variant Object::getvar(const Variant &p_key, bool *r_valid) const {
 		*r_valid = false;
 	}
 
-	if (p_key.get_type() == Variant::STRING_NAME || p_key.get_type() == Variant::STRING) {
+	if (p_key.is_string()) {
 		return get(p_key, r_valid);
 	}
 	return Variant();
@@ -730,7 +730,7 @@ void Object::setvar(const Variant &p_key, const Variant &p_value, bool *r_valid)
 	if (r_valid) {
 		*r_valid = false;
 	}
-	if (p_key.get_type() == Variant::STRING_NAME || p_key.get_type() == Variant::STRING) {
+	if (p_key.is_string()) {
 		return set(p_key, p_value, r_valid);
 	}
 }
@@ -1104,7 +1104,7 @@ Error Object::_emit_signal(const Variant **p_args, int p_argcount, Callable::Cal
 		ERR_FAIL_V(Error::ERR_INVALID_PARAMETER);
 	}
 
-	if (unlikely(p_args[0]->get_type() != Variant::STRING_NAME && p_args[0]->get_type() != Variant::STRING)) {
+	if (unlikely(!p_args[0]->is_string())) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::STRING_NAME;
