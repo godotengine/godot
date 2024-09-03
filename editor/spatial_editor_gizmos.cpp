@@ -586,7 +586,10 @@ bool EditorSpatialGizmo::intersect_ray(Camera *p_camera, const Point2 &p_point, 
 
 		for (int i = 0; i < handles.size(); i++) {
 			Vector3 hpos = t.xform(handles[i]);
-			Vector2 p = p_camera->unproject_position(hpos);
+			Vector2 p;
+			if (!p_camera->safe_unproject_position(hpos, p)) {
+				continue;
+			}
 
 			if (p.distance_to(p_point) < HANDLE_HALF_SIZE) {
 				real_t dp = p_camera->get_transform().origin.distance_to(hpos);
@@ -665,8 +668,12 @@ bool EditorSpatialGizmo::intersect_ray(Camera *p_camera, const Point2 &p_point, 
 			Vector3 a = t.xform(vptr[i * 2 + 0]);
 			Vector3 b = t.xform(vptr[i * 2 + 1]);
 			Vector2 s[2];
-			s[0] = p_camera->unproject_position(a);
-			s[1] = p_camera->unproject_position(b);
+			if (!p_camera->safe_unproject_position(a, s[0])) {
+				continue;
+			}
+			if (!p_camera->safe_unproject_position(b, s[1])) {
+				continue;
+			}
 
 			Vector2 p = Geometry::get_closest_point_to_segment_2d(p_point, s);
 
