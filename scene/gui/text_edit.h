@@ -145,15 +145,22 @@ private:
 			Color color = Color(1, 1, 1);
 		};
 
+		struct FontOverride {
+			Vector2i range;
+			SyntaxHighlighter::SyntaxFontStyle style = SyntaxHighlighter::SYNTAX_STYLE_REGULAR;
+		};
+
 		struct Line {
 			Vector<Gutter> gutters;
+			Vector<FontOverride> font_overrides;
 
 			String data;
 			Array bidi_override;
-			Ref<TextParagraph> data_buf;
 
 			String ime_data;
 			Array ime_bidi_override;
+
+			Ref<TextParagraph> data_buf;
 
 			Color background_color = Color(0, 0, 0, 0);
 			bool hidden = false;
@@ -170,8 +177,16 @@ private:
 		bool is_dirty = false;
 		bool tab_size_dirty = false;
 
+		Ref<SyntaxHighlighter> syntax_highlighter;
+		bool hl_stt = false;
+		bool hl_font_map = false;
+
 		mutable Vector<Line> text;
 		Ref<Font> font;
+		Ref<Font> bold_font;
+		Ref<Font> bold_italics_font;
+		Ref<Font> italics_font;
+
 		int font_size = -1;
 		int font_height = 0;
 
@@ -194,13 +209,22 @@ private:
 		int gutter_count = 0;
 		bool indent_wrapped_lines = false;
 
+		void _calculate_line_height() const;
+		void _calculate_max_line_width() const;
+
+		void _parse_highlighter_map(int p_line);
+
 	public:
+		void set_syntax_highlighter(Ref<SyntaxHighlighter> p_syntax_highlighter);
+		void set_use_syntax_highlighter_for_bidi_override(bool p_enabled);
+		void set_use_syntax_highlighter_font_change(bool p_enabled);
+
 		void set_tab_size(int p_tab_size);
 		int get_tab_size() const;
 		void set_indent_wrapped_lines(bool p_enabled);
 		bool is_indent_wrapped_lines() const;
 
-		void set_font(const Ref<Font> &p_font);
+		void set_font(const Ref<Font> &p_font, const Ref<Font> &p_bold_font, const Ref<Font> &p_bold_italics_font, const Ref<Font> &p_italics_font);
 		void set_font_size(int p_font_size);
 		void set_direction_and_language(TextServer::Direction p_direction, const String &p_language);
 		void set_draw_control_chars(bool p_enabled);
@@ -232,6 +256,7 @@ private:
 
 		void set(int p_line, const String &p_text, const Array &p_bidi_override);
 		void set_ime(int p_line, const String &p_text, const Array &p_bidi_override);
+
 		void set_hidden(int p_line, bool p_hidden);
 		bool is_hidden(int p_line) const;
 		void insert(int p_at, const Vector<String> &p_text, const Vector<Array> &p_bidi_override);
@@ -574,6 +599,9 @@ private:
 	Ref<SyntaxHighlighter> syntax_highlighter;
 	HashMap<int, Vector<Pair<int64_t, Color>>> syntax_highlighting_cache;
 
+	bool hl_stt = false;
+	bool hl_font_map = false;
+
 	Vector<Pair<int64_t, Color>> _get_line_syntax_highlighting(int p_line);
 	void _clear_syntax_highlighting_cache();
 
@@ -603,6 +631,10 @@ private:
 		Ref<Texture2D> space_icon;
 
 		Ref<Font> font;
+		Ref<Font> bold_font;
+		Ref<Font> bold_italics_font;
+		Ref<Font> italics_font;
+
 		int font_size = 16;
 		Color font_color = Color(1, 1, 1);
 		Color font_readonly_color = Color(1, 1, 1);
@@ -755,6 +787,12 @@ public:
 	TextServer::StructuredTextParser get_structured_text_bidi_override() const;
 	void set_structured_text_bidi_override_options(Array p_args);
 	Array get_structured_text_bidi_override_options() const;
+
+	void set_use_syntax_highlighter_for_bidi_override(bool p_enabled);
+	bool get_use_syntax_highlighter_for_bidi_override() const;
+
+	void set_use_syntax_highlighter_font_change(bool p_enabled);
+	bool get_use_syntax_highlighter_font_change() const;
 
 	void set_tab_size(const int p_size);
 	int get_tab_size() const;

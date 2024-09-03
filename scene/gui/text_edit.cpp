@@ -47,11 +47,44 @@
 ///                            TEXT                                         ///
 ///////////////////////////////////////////////////////////////////////////////
 
-void TextEdit::Text::set_font(const Ref<Font> &p_font) {
-	if (font == p_font) {
+void TextEdit::Text::set_syntax_highlighter(Ref<SyntaxHighlighter> p_syntax_highlighter) {
+	syntax_highlighter = p_syntax_highlighter;
+	if (hl_stt || hl_font_map) {
+		for (int i = 0; i < text.size(); i++) {
+			_parse_highlighter_map(i);
+		}
+		is_dirty = true;
+	}
+}
+
+void TextEdit::Text::set_use_syntax_highlighter_for_bidi_override(bool p_enabled) {
+	hl_stt = p_enabled;
+	if (hl_stt || hl_font_map) {
+		for (int i = 0; i < text.size(); i++) {
+			_parse_highlighter_map(i);
+		}
+	}
+	is_dirty = true;
+}
+
+void TextEdit::Text::set_use_syntax_highlighter_font_change(bool p_enabled) {
+	hl_font_map = p_enabled;
+	if (hl_stt || hl_font_map) {
+		for (int i = 0; i < text.size(); i++) {
+			_parse_highlighter_map(i);
+		}
+	}
+	is_dirty = true;
+}
+
+void TextEdit::Text::set_font(const Ref<Font> &p_font, const Ref<Font> &p_bold_font, const Ref<Font> &p_bold_italics_font, const Ref<Font> &p_italics_font) {
+	if (font == p_font && bold_font == p_bold_font && bold_italics_font == p_bold_italics_font && italics_font == p_italics_font) {
 		return;
 	}
 	font = p_font;
+	bold_font = p_bold_font;
+	bold_italics_font = p_bold_italics_font;
+	italics_font = p_italics_font;
 	is_dirty = true;
 }
 
@@ -221,17 +254,44 @@ void TextEdit::Text::invalidate_cache(int p_line, bool p_text_changed) {
 	const Array &bidi_override_with_ime = (!text_line.ime_data.is_empty()) ? text_line.ime_bidi_override : text_line.bidi_override;
 
 	if (p_text_changed) {
-		text_line.data_buf->add_string(text_with_ime, font, font_size, language);
-	}
-	if (bidi_override_with_ime.is_empty()) {
-		TS->shaped_text_set_bidi_override(text_line.data_buf->get_rid(), bidi_override_with_ime);
+		if (hl_font_map && !text_line.font_overrides.is_empty()) {
+			for (int64_t i = 0; i < text_line.font_overrides.size(); i++) {
+				const FontOverride &f_override = text_line.font_overrides[i];
+				Ref<Font> range_font = font;
+				if (f_override.style == SyntaxHighlighter::SYNTAX_STYLE_BOLD_ITALIC) {
+					range_font = bold_italics_font;
+				} else if (f_override.style == SyntaxHighlighter::SYNTAX_STYLE_BOLD) {
+					range_font = bold_font;
+				} else if (f_override.style == SyntaxHighlighter::SYNTAX_STYLE_ITALIC) {
+					range_font = italics_font;
+				}
+				text_line.data_buf->add_string(text_with_ime.substr(f_override.range.x, f_override.range.y - f_override.range.x), range_font, font_size, language, i);
+			}
+		} else {
+			text_line.data_buf->add_string(text_with_ime, font, font_size, language, -1);
+		}
+		if (!bidi_override_with_ime.is_empty()) {
+			TS->shaped_text_set_bidi_override(text_line.data_buf->get_rid(), bidi_override_with_ime);
+		}
 	}
 
 	if (!p_text_changed) {
 		RID r = text_line.data_buf->get_rid();
 		int spans = TS->shaped_get_span_count(r);
 		for (int i = 0; i < spans; i++) {
-			TS->shaped_set_span_update_font(r, i, font->get_rids(), font_size, font->get_opentype_features());
+			Ref<Font> range_font = font;
+			int64_t f_index = TS->shaped_get_span_meta(r, i);
+			if (f_index >= 0 && f_index < text_line.font_overrides.size()) {
+				const FontOverride &f_override = text_line.font_overrides[f_index];
+				if (f_override.style == SyntaxHighlighter::SYNTAX_STYLE_BOLD_ITALIC) {
+					range_font = bold_italics_font;
+				} else if (f_override.style == SyntaxHighlighter::SYNTAX_STYLE_BOLD) {
+					range_font = bold_font;
+				} else if (f_override.style == SyntaxHighlighter::SYNTAX_STYLE_ITALIC) {
+					range_font = italics_font;
+				}
+			}
+			TS->shaped_set_span_update_font(r, i, range_font->get_rids(), font_size, range_font->get_opentype_features());
 		}
 	}
 
@@ -346,6 +406,81 @@ int TextEdit::Text::get_total_visible_line_count() const {
 	return total_visible_line_count;
 }
 
+void TextEdit::Text::_parse_highlighter_map(int p_line) {
+	Array &bidi_override = (text[p_line].ime_data.length() > 0) ? text.write[p_line].ime_bidi_override : text.write[p_line].bidi_override;
+	Vector<FontOverride> &font_overrides = text.write[p_line].font_overrides;
+	const String &cur_line = get_text_with_ime(p_line);
+
+	if (hl_stt) {
+		bidi_override.clear();
+	}
+	font_overrides.clear();
+
+	int64_t stt_prev_index = 0;
+	int64_t font_prev_index = 0;
+
+	SyntaxHighlighter::SyntaxFontStyle prev_style = SyntaxHighlighter::SYNTAX_STYLE_REGULAR;
+
+	if (syntax_highlighter.is_valid() && !cur_line.is_empty()) {
+		syntax_highlighter->clear_line_highlighting_cache(p_line);
+
+		Dictionary color_map = syntax_highlighter->get_line_syntax_highlighting(p_line);
+
+		List<Variant> keys;
+		color_map.get_key_list(&keys);
+		keys.sort();
+
+		Color prev_color = Color();
+		bool prev_is_text = false;
+		for (const Variant &key : keys) {
+			int64_t index = int64_t(key);
+			if (index >= cur_line.length()) {
+				break;
+			}
+
+			const Dictionary &hl_data = color_map[key];
+			const Color &color = hl_data.get("color", Color());
+			SyntaxHighlighter::SyntaxFontStyle style = (SyntaxHighlighter::SyntaxFontStyle)(int)hl_data.get("style", SyntaxHighlighter::SYNTAX_STYLE_REGULAR);
+			bool is_text = hl_data.get("text_segment", false);
+
+			// Font override.
+			if (hl_font_map && style != prev_style) {
+				FontOverride f_override;
+				f_override.range = Vector2i(font_prev_index, index);
+				f_override.style = prev_style;
+				font_overrides.push_back(f_override);
+
+				prev_style = style;
+				font_prev_index = index;
+			}
+
+			// BiDi override.
+			if (stt_prev_index == index - 1 && is_whitespace(cur_line[index]) && prev_is_text) {
+				continue;
+			}
+
+			if (hl_stt && color != prev_color) {
+				bidi_override.push_back(Vector3i(stt_prev_index, index, is_text ? TextServer::DIRECTION_AUTO : TextServer::DIRECTION_LTR));
+			}
+
+			stt_prev_index = index;
+			prev_color = color;
+			prev_is_text = is_text;
+		}
+	}
+
+	if (hl_stt && stt_prev_index < cur_line.length()) {
+		bidi_override.push_back(Vector3i(stt_prev_index, cur_line.length(), TextServer::DIRECTION_AUTO));
+	}
+
+	if (hl_font_map && font_prev_index < cur_line.length()) {
+		FontOverride f_override;
+		f_override.range = Vector2i(font_prev_index, cur_line.length());
+		f_override.style = prev_style;
+		font_overrides.push_back(f_override);
+	}
+}
+
 void TextEdit::Text::set(int p_line, const String &p_text, const Array &p_bidi_override) {
 	ERR_FAIL_INDEX(p_line, text.size());
 
@@ -353,6 +488,9 @@ void TextEdit::Text::set(int p_line, const String &p_text, const Array &p_bidi_o
 	text.write[p_line].ime_data = String();
 	text.write[p_line].bidi_override = p_bidi_override;
 	text.write[p_line].ime_bidi_override.clear();
+	if (hl_stt || hl_font_map) {
+		_parse_highlighter_map(p_line);
+	}
 	invalidate_cache(p_line, true);
 }
 
@@ -361,6 +499,9 @@ void TextEdit::Text::set_ime(int p_line, const String &p_text, const Array &p_bi
 
 	text.write[p_line].ime_data = p_text;
 	text.write[p_line].ime_bidi_override = p_bidi_override;
+	if (hl_stt || hl_font_map) {
+		_parse_highlighter_map(p_line);
+	}
 	invalidate_cache(p_line, true);
 }
 
@@ -416,6 +557,9 @@ void TextEdit::Text::insert(int p_at, const Vector<String> &p_text, const Vector
 		line.data = p_text[i];
 		line.bidi_override = p_bidi_override[i];
 		text.write[p_at + i] = line;
+		if (hl_stt || hl_font_map) {
+			_parse_highlighter_map(p_at + i);
+		}
 		invalidate_cache(p_at + i, true);
 	}
 }
@@ -1468,7 +1612,7 @@ void TextEdit::_notification(int p_what) {
 									carets.write[c].visible = true;
 									if (draw_caret || drag_caret_force_displayed) {
 										if (caret_type == CaretType::CARET_TYPE_BLOCK || overtype_mode) {
-											//Block or underline caret, draw trailing carets at full height.
+											// Block or underline caret, draw trailing carets at full height.
 											int h = theme_cache.font->get_height(theme_cache.font_size);
 
 											if (ts_caret.t_caret != Rect2()) {
@@ -2940,15 +3084,21 @@ void TextEdit::_update_caches() {
 	}
 	text.set_direction_and_language(dir, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
 	text.set_draw_control_chars(draw_control_chars);
-	text.set_font(theme_cache.font);
+	text.set_font(theme_cache.font, theme_cache.bold_font, theme_cache.bold_italics_font, theme_cache.italics_font);
 	text.set_font_size(theme_cache.font_size);
-	text.invalidate_font();
-	_update_placeholder();
 
 	/* Syntax highlighting. */
 	if (syntax_highlighter.is_valid()) {
 		syntax_highlighter->set_text_edit(this);
 	}
+	text.set_syntax_highlighter(syntax_highlighter);
+
+	if (hl_font_map) {
+		text.invalidate_all();
+	} else {
+		text.invalidate_font();
+	}
+	_update_placeholder();
 	_clear_syntax_highlighting_cache();
 }
 
@@ -2981,7 +3131,7 @@ void TextEdit::_update_ime_text() {
 		for (int i = 0; i < get_caret_count(); i++) {
 			int l = get_caret_line(i);
 			String text_with_ime = text[l].substr(0, get_caret_column(i)) + ime_text + text[l].substr(get_caret_column(i));
-			text.set_ime(l, text_with_ime, structured_text_parser(st_parser, st_args, text_with_ime));
+			text.set_ime(l, text_with_ime, hl_stt ? Array() : structured_text_parser(st_parser, st_args, text_with_ime));
 			emit_signal(SNAME("lines_edited_from"), l, l);
 		}
 	} else {
@@ -3277,10 +3427,12 @@ String TextEdit::get_language() const {
 void TextEdit::set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser) {
 	if (st_parser != p_parser) {
 		st_parser = p_parser;
-		for (int i = 0; i < text.size(); i++) {
-			text.set(i, text[i], structured_text_parser(st_parser, st_args, text[i]));
+		if (!hl_stt) {
+			for (int i = 0; i < text.size(); i++) {
+				text.set(i, text[i], structured_text_parser(st_parser, st_args, text[i]));
+			}
+			queue_redraw();
 		}
-		queue_redraw();
 	}
 }
 
@@ -3294,14 +3446,48 @@ void TextEdit::set_structured_text_bidi_override_options(Array p_args) {
 	}
 
 	st_args = p_args;
-	for (int i = 0; i < text.size(); i++) {
-		text.set(i, text[i], structured_text_parser(st_parser, st_args, text[i]));
+	if (!hl_stt) {
+		for (int i = 0; i < text.size(); i++) {
+			text.set(i, text[i], structured_text_parser(st_parser, st_args, text[i]));
+		}
+		queue_redraw();
 	}
-	queue_redraw();
 }
 
 Array TextEdit::get_structured_text_bidi_override_options() const {
 	return st_args;
+}
+
+void TextEdit::set_use_syntax_highlighter_for_bidi_override(bool p_enabled) {
+	if (hl_stt != p_enabled) {
+		hl_stt = p_enabled;
+		text.set_use_syntax_highlighter_for_bidi_override(hl_stt);
+		if (hl_stt) {
+			text.invalidate_all();
+		} else {
+			for (int i = 0; i < text.size(); i++) {
+				text.set(i, text[i], structured_text_parser(st_parser, st_args, text[i]));
+			}
+		}
+		queue_redraw();
+	}
+}
+
+bool TextEdit::get_use_syntax_highlighter_for_bidi_override() const {
+	return hl_stt;
+}
+
+void TextEdit::set_use_syntax_highlighter_font_change(bool p_enabled) {
+	if (hl_font_map != p_enabled) {
+		hl_font_map = p_enabled;
+		text.set_use_syntax_highlighter_font_change(hl_font_map);
+		text.invalidate_all();
+		queue_redraw();
+	}
+}
+
+bool TextEdit::get_use_syntax_highlighter_font_change() const {
+	return hl_font_map;
 }
 
 void TextEdit::set_tab_size(const int p_size) {
@@ -6390,6 +6576,10 @@ void TextEdit::set_syntax_highlighter(Ref<SyntaxHighlighter> p_syntax_highlighte
 	if (syntax_highlighter.is_valid()) {
 		syntax_highlighter->set_text_edit(this);
 	}
+	text.set_syntax_highlighter(syntax_highlighter);
+	if (hl_stt || hl_font_map) {
+		text.invalidate_all();
+	}
 	_clear_syntax_highlighting_cache();
 	queue_redraw();
 }
@@ -6530,6 +6720,11 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_structured_text_bidi_override"), &TextEdit::get_structured_text_bidi_override);
 	ClassDB::bind_method(D_METHOD("set_structured_text_bidi_override_options", "args"), &TextEdit::set_structured_text_bidi_override_options);
 	ClassDB::bind_method(D_METHOD("get_structured_text_bidi_override_options"), &TextEdit::get_structured_text_bidi_override_options);
+
+	ClassDB::bind_method(D_METHOD("set_use_syntax_highlighter_for_bidi_override", "enabled"), &TextEdit::set_use_syntax_highlighter_for_bidi_override);
+	ClassDB::bind_method(D_METHOD("get_use_syntax_highlighter_for_bidi_override"), &TextEdit::get_use_syntax_highlighter_for_bidi_override);
+	ClassDB::bind_method(D_METHOD("set_use_syntax_highlighter_font_change", "enabled"), &TextEdit::set_use_syntax_highlighter_font_change);
+	ClassDB::bind_method(D_METHOD("get_use_syntax_highlighter_font_change"), &TextEdit::get_use_syntax_highlighter_font_change);
 
 	ClassDB::bind_method(D_METHOD("set_tab_size", "size"), &TextEdit::set_tab_size);
 	ClassDB::bind_method(D_METHOD("get_tab_size"), &TextEdit::get_tab_size);
@@ -7043,6 +7238,10 @@ void TextEdit::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, font_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, font_readonly_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, font_placeholder_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, TextEdit, bold_font);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, TextEdit, bold_italics_font);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, TextEdit, italics_font);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TextEdit, outline_size);
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_COLOR, TextEdit, outline_color, "font_outline_color");
@@ -8533,7 +8732,7 @@ void TextEdit::_base_insert_text(int p_line, int p_char, const String &p_text, i
 
 	/* STEP 2: Add spaces if the char is greater than the end of the line. */
 	while (p_char > text[p_line].length()) {
-		text.set(p_line, text[p_line] + String::chr(' '), structured_text_parser(st_parser, st_args, text[p_line] + String::chr(' ')));
+		text.set(p_line, text[p_line] + String::chr(' '), hl_stt ? Array() : structured_text_parser(st_parser, st_args, text[p_line] + String::chr(' ')));
 	}
 
 	/* STEP 3: Separate dest string in pre and post text. */
@@ -8545,7 +8744,7 @@ void TextEdit::_base_insert_text(int p_line, int p_char, const String &p_text, i
 	Vector<Array> bidi_override;
 	bidi_override.resize(substrings.size());
 	for (int i = 0; i < substrings.size(); i++) {
-		bidi_override.write[i] = structured_text_parser(st_parser, st_args, substrings[i]);
+		bidi_override.write[i] = hl_stt ? Array() : structured_text_parser(st_parser, st_args, substrings[i]);
 	}
 
 	text.insert(p_line, substrings, bidi_override);
@@ -8604,7 +8803,7 @@ void TextEdit::_base_remove_text(int p_from_line, int p_from_column, int p_to_li
 	String post_text = text[p_to_line].substr(p_to_column, text[p_to_line].length());
 
 	text.remove_range(p_from_line, p_to_line);
-	text.set(p_from_line, pre_text + post_text, structured_text_parser(st_parser, st_args, pre_text + post_text));
+	text.set(p_from_line, pre_text + post_text, hl_stt ? Array() : structured_text_parser(st_parser, st_args, pre_text + post_text));
 
 	_text_changed();
 	emit_signal(SNAME("lines_edited_from"), p_to_line, p_from_line);

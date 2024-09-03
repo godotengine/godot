@@ -488,6 +488,10 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("outline_size", "TextEdit", 0);
 	theme->set_constant("caret_width", "TextEdit", 1);
 
+	theme->set_font("bold_font", "TextEdit", bold_font);
+	theme->set_font("italics_font", "TextEdit", italics_font);
+	theme->set_font("bold_italics_font", "TextEdit", bold_italics_font);
+
 	// CodeEdit
 
 	theme->set_stylebox(CoreStringName(normal), "CodeEdit", style_line_edit);

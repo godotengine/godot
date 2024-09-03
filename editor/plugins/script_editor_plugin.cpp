@@ -107,29 +107,35 @@ void EditorSyntaxHighlighter::_bind_methods() {
 
 void EditorStandardSyntaxHighlighter::_update_cache() {
 	highlighter->set_text_edit(text_edit);
-	highlighter->clear_keyword_colors();
-	highlighter->clear_member_keyword_colors();
-	highlighter->clear_color_regions();
+	highlighter->clear_keywords();
+	highlighter->clear_member_keywords();
+	highlighter->clear_regions();
 
 	highlighter->set_symbol_color(EDITOR_GET("text_editor/theme/highlighting/symbol_color"));
+	highlighter->set_symbol_style((SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/symbol_style"));
 	highlighter->set_function_color(EDITOR_GET("text_editor/theme/highlighting/function_color"));
+	highlighter->set_function_style((SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/function_style"));
 	highlighter->set_number_color(EDITOR_GET("text_editor/theme/highlighting/number_color"));
+	highlighter->set_number_style((SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/number_style"));
 	highlighter->set_member_variable_color(EDITOR_GET("text_editor/theme/highlighting/member_variable_color"));
+	highlighter->set_member_variable_style((SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/member_variable_style"));
 
 	/* Engine types. */
-	const Color type_color = EDITOR_GET("text_editor/theme/highlighting/engine_type_color");
+	Color type_color = EDITOR_GET("text_editor/theme/highlighting/engine_type_color");
+	SyntaxHighlighter::SyntaxFontStyle type_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/engine_type_style");
 	List<StringName> types;
 	ClassDB::get_class_list(&types);
 	for (const StringName &E : types) {
-		highlighter->add_keyword_color(E, type_color);
+		highlighter->add_keyword(E, type_color, type_style);
 	}
 
 	/* User types. */
-	const Color usertype_color = EDITOR_GET("text_editor/theme/highlighting/user_type_color");
+	Color usertype_color = EDITOR_GET("text_editor/theme/highlighting/user_type_color");
+	SyntaxHighlighter::SyntaxFontStyle usertype_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/user_type_style");
 	List<StringName> global_classes;
 	ScriptServer::get_global_class_list(&global_classes);
 	for (const StringName &E : global_classes) {
-		highlighter->add_keyword_color(E, usertype_color);
+		highlighter->add_keyword(E, usertype_color, usertype_style);
 	}
 
 	/* Autoloads. */
@@ -137,7 +143,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 	for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : autoloads) {
 		const ProjectSettings::AutoloadInfo &info = E.value;
 		if (info.is_singleton) {
-			highlighter->add_keyword_color(info.name, usertype_color);
+			highlighter->add_keyword(info.name, usertype_color, usertype_style);
 		}
 	}
 
@@ -154,28 +160,32 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 
 	if (scr_lang != nullptr) {
 		/* Core types. */
-		const Color basetype_color = EDITOR_GET("text_editor/theme/highlighting/base_type_color");
+		Color basetype_color = EDITOR_GET("text_editor/theme/highlighting/base_type_color");
+		SyntaxHighlighter::SyntaxFontStyle basetype_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/base_type_style");
 		List<String> core_types;
 		scr_lang->get_core_type_words(&core_types);
 		for (const String &E : core_types) {
-			highlighter->add_keyword_color(E, basetype_color);
+			highlighter->add_keyword(E, basetype_color, basetype_style);
 		}
 
 		/* Reserved words. */
-		const Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
-		const Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");
+		Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
+		SyntaxHighlighter::SyntaxFontStyle keyword_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/keyword_style");
+		Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");
+		SyntaxHighlighter::SyntaxFontStyle control_flow_keyword_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_style");
 		List<String> keywords;
 		scr_lang->get_reserved_words(&keywords);
 		for (const String &E : keywords) {
 			if (scr_lang->is_control_flow_keyword(E)) {
-				highlighter->add_keyword_color(E, control_flow_keyword_color);
+				highlighter->add_keyword(E, control_flow_keyword_color, control_flow_keyword_style);
 			} else {
-				highlighter->add_keyword_color(E, keyword_color);
+				highlighter->add_keyword(E, keyword_color, keyword_style);
 			}
 		}
 
 		/* Member types. */
-		const Color member_variable_color = EDITOR_GET("text_editor/theme/highlighting/member_variable_color");
+		Color member_variable_color = EDITOR_GET("text_editor/theme/highlighting/member_variable_color");
+		SyntaxHighlighter::SyntaxFontStyle member_variable_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/member_variable_style");
 		if (instance_base != StringName()) {
 			List<PropertyInfo> plist;
 			ClassDB::get_property_list(instance_base, &plist);
@@ -187,44 +197,47 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 				if (prop_name.contains_char('/')) {
 					continue;
 				}
-				highlighter->add_member_keyword_color(prop_name, member_variable_color);
+				highlighter->add_member_keyword(prop_name, member_variable_color, member_variable_style);
 			}
 
 			List<String> clist;
 			ClassDB::get_integer_constant_list(instance_base, &clist);
 			for (const String &E : clist) {
-				highlighter->add_member_keyword_color(E, member_variable_color);
+				highlighter->add_member_keyword(E, member_variable_color, member_variable_style);
 			}
 		}
 
 		/* Comments */
-		const Color comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
+		Color comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
+		SyntaxHighlighter::SyntaxFontStyle comment_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/comment_style");
 		List<String> comments;
 		scr_lang->get_comment_delimiters(&comments);
 		for (const String &comment : comments) {
 			String beg = comment.get_slice(" ", 0);
 			String end = comment.get_slice_count(" ") > 1 ? comment.get_slice(" ", 1) : String();
-			highlighter->add_color_region(beg, end, comment_color, end.is_empty());
+			highlighter->add_region(beg, end, comment_color, comment_style, end.is_empty(), true);
 		}
 
 		/* Doc comments */
-		const Color doc_comment_color = EDITOR_GET("text_editor/theme/highlighting/doc_comment_color");
+		Color doc_comment_color = EDITOR_GET("text_editor/theme/highlighting/doc_comment_color");
+		SyntaxHighlighter::SyntaxFontStyle doc_comment_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/doc_comment_style");
 		List<String> doc_comments;
 		scr_lang->get_doc_comment_delimiters(&doc_comments);
 		for (const String &doc_comment : doc_comments) {
 			String beg = doc_comment.get_slice(" ", 0);
 			String end = doc_comment.get_slice_count(" ") > 1 ? doc_comment.get_slice(" ", 1) : String();
-			highlighter->add_color_region(beg, end, doc_comment_color, end.is_empty());
+			highlighter->add_region(beg, end, doc_comment_color, doc_comment_style, end.is_empty(), true);
 		}
 
 		/* Strings */
-		const Color string_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
+		Color string_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
+		SyntaxHighlighter::SyntaxFontStyle string_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/string_style");
 		List<String> strings;
 		scr_lang->get_string_delimiters(&strings);
 		for (const String &string : strings) {
 			String beg = string.get_slice(" ", 0);
 			String end = string.get_slice_count(" ") > 1 ? string.get_slice(" ", 1) : String();
-			highlighter->add_color_region(beg, end, string_color, end.is_empty());
+			highlighter->add_region(beg, end, string_color, string_style, end.is_empty(), true);
 		}
 	}
 }
@@ -247,15 +260,16 @@ Ref<EditorSyntaxHighlighter> EditorPlainTextSyntaxHighlighter::_create() const {
 
 void EditorJSONSyntaxHighlighter::_update_cache() {
 	highlighter->set_text_edit(text_edit);
-	highlighter->clear_keyword_colors();
-	highlighter->clear_member_keyword_colors();
-	highlighter->clear_color_regions();
+	highlighter->clear_keywords();
+	highlighter->clear_member_keywords();
+	highlighter->clear_regions();
 
 	highlighter->set_symbol_color(EDITOR_GET("text_editor/theme/highlighting/symbol_color"));
 	highlighter->set_number_color(EDITOR_GET("text_editor/theme/highlighting/number_color"));
 
-	const Color string_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
-	highlighter->add_color_region("\"", "\"", string_color);
+	Color string_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
+	SyntaxHighlighter::SyntaxFontStyle string_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/string_style");
+	highlighter->add_region("\"", "\"", string_color, string_style, true);
 }
 
 Ref<EditorSyntaxHighlighter> EditorJSONSyntaxHighlighter::_create() const {
@@ -268,9 +282,9 @@ Ref<EditorSyntaxHighlighter> EditorJSONSyntaxHighlighter::_create() const {
 
 void EditorMarkdownSyntaxHighlighter::_update_cache() {
 	highlighter->set_text_edit(text_edit);
-	highlighter->clear_keyword_colors();
-	highlighter->clear_member_keyword_colors();
-	highlighter->clear_color_regions();
+	highlighter->clear_keywords();
+	highlighter->clear_member_keywords();
+	highlighter->clear_regions();
 
 	// Disable automatic symbolic highlights, as these don't make sense for prose.
 	highlighter->set_symbol_color(EDITOR_GET("text_editor/theme/highlighting/text_color"));
@@ -280,28 +294,33 @@ void EditorMarkdownSyntaxHighlighter::_update_cache() {
 
 	// Headings (any level).
 	const Color function_color = EDITOR_GET("text_editor/theme/highlighting/function_color");
-	highlighter->add_color_region("#", "", function_color);
+	SyntaxHighlighter::SyntaxFontStyle function_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/function_style");
+	highlighter->add_region("#", "", function_color, function_style);
 
 	// Bold.
-	highlighter->add_color_region("**", "**", function_color);
+	highlighter->add_region("**", "**", function_color, function_style);
 	// `__bold__` syntax is not supported as color regions must begin with a symbol,
 	// not a character that is valid in an identifier.
 
 	// Code (both inline code and triple-backticks code blocks).
 	const Color code_color = EDITOR_GET("text_editor/theme/highlighting/engine_type_color");
-	highlighter->add_color_region("`", "`", code_color);
+	SyntaxHighlighter::SyntaxFontStyle type_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/engine_type_style");
+	highlighter->add_region("`", "`", code_color, type_style);
 
 	// Link (both references and inline links with URLs). The URL is not highlighted.
 	const Color link_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
-	highlighter->add_color_region("[", "]", link_color);
+	SyntaxHighlighter::SyntaxFontStyle keyword_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/keyword_style");
+	highlighter->add_region("[", "]", link_color, keyword_style);
 
 	// Quote.
 	const Color quote_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
-	highlighter->add_color_region(">", "", quote_color, true);
+	SyntaxHighlighter::SyntaxFontStyle string_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/string_style");
+	highlighter->add_region(">", "", quote_color, string_style, true);
 
 	// HTML comment, which is also supported in Markdown.
 	const Color comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
-	highlighter->add_color_region("<!--", "-->", comment_color);
+	SyntaxHighlighter::SyntaxFontStyle comment_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/comment_style");
+	highlighter->add_region("<!--", "-->", comment_color, comment_style);
 }
 
 Ref<EditorSyntaxHighlighter> EditorMarkdownSyntaxHighlighter::_create() const {
