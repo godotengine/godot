@@ -290,7 +290,7 @@ def generate_scu_files(max_includes_per_scu):
     process_folder(["drivers/unix"])
     process_folder(["drivers/png"])
 
-    process_folder(["editor"], ["file_system_dock", "editor_resource_preview"], 32)
+    process_folder(["editor"], ["file_system_dock", "editor_resource_preview", "editor_node"], 32)
     process_folder(["editor/debugger"])
     process_folder(["editor/debugger/debug_adapter"])
     process_folder(["editor/export"])
