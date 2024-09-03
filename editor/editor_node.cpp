@@ -45,6 +45,7 @@
 #include "core/string/translation_server.h"
 #include "core/version.h"
 #include "editor/editor_string_names.h"
+#include "editor/plugins/editor_context_menu_plugin.h"
 #include "main/main.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/animation/animation_tree.h"
@@ -6784,6 +6785,8 @@ EditorNode::EditorNode() {
 	EditorFileSystem *efs = memnew(EditorFileSystem);
 	add_child(efs);
 
+	EditorContextMenuPluginManager::create();
+
 	// Used for previews.
 	FileDialog::get_icon_func = _file_dialog_get_icon;
 	FileDialog::register_func = _file_dialog_register;
@@ -7784,6 +7787,7 @@ EditorNode::~EditorNode() {
 	EditorInspector::cleanup_plugins();
 	EditorTranslationParser::get_singleton()->clean_parsers();
 	ResourceImporterScene::clean_up_importer_plugins();
+	EditorContextMenuPluginManager::cleanup();
 
 	remove_print_handler(&print_handler);
 	EditorHelp::cleanup_doc();

@@ -1400,13 +1400,12 @@ void ScriptEditor::_menu_option(int p_option) {
 		}
 	}
 
-	// Context menu options.
-	if (p_option >= EditorData::CONTEXT_MENU_ITEM_ID_BASE) {
+	if (p_option >= EditorContextMenuPlugin::BASE_ID) {
 		Ref<Resource> resource;
 		if (current) {
 			resource = current->get_edited_resource();
 		}
-		EditorNode::get_editor_data().script_editor_options_pressed(EditorData::CONTEXT_SLOT_SCRIPT_EDITOR, p_option, resource);
+		EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR, p_option, resource);
 		return;
 	}
 
@@ -3316,10 +3315,16 @@ void ScriptEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 		_menu_option(WINDOW_MOVE_DOWN);
 		accept_event();
 	}
-	// Context menu shortcuts.
-	int match_option = EditorNode::get_editor_data().match_context_menu_shortcut(EditorData::CONTEXT_SLOT_SCRIPT_EDITOR, p_event);
-	if (match_option) {
-		_menu_option(match_option);
+
+	Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR, p_event);
+	if (custom_callback.is_valid()) {
+		Ref<Resource> resource;
+		ScriptEditorBase *current = _get_current_editor();
+		if (current) {
+			resource = current->get_edited_resource();
+		}
+		EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, resource);
+		accept_event();
 	}
 }
 
@@ -3388,7 +3393,7 @@ void ScriptEditor::_make_script_list_context_menu() {
 			selected_paths.push_back(path);
 		}
 	}
-	EditorNode::get_editor_data().add_options_from_plugins(context_menu, EditorData::CONTEXT_SLOT_SCRIPT_EDITOR, selected_paths);
+	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR, selected_paths);
 
 	context_menu->set_position(get_screen_position() + get_local_mouse_position());
 	context_menu->reset_size();
