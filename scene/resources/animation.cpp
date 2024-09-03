@@ -3694,6 +3694,19 @@ StringName Animation::animation_track_get_key_animation(int p_track, int p_key) 
 	return at->values[p_key].value;
 }
 
+void Animation::set_track_info(const TypedArray<StringName> & p_track_info)
+{
+
+}
+TypedArray<StringName> Animation::get_track_info() const
+{
+	TypedArray<StringName> ret;
+	for(int i=0;i<tracks.size();i++) {
+		ret.push_back(StringName(tracks[i]->path));
+	}	
+	return ret;
+}
+
 void Animation::set_length(real_t p_length) {
 	if (p_length < ANIM_MIN_LENGTH) {
 		p_length = ANIM_MIN_LENGTH;
@@ -3923,6 +3936,9 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("animation_track_set_key_animation", "track_idx", "key_idx", "animation"), &Animation::animation_track_set_key_animation);
 	ClassDB::bind_method(D_METHOD("animation_track_get_key_animation", "track_idx", "key_idx"), &Animation::animation_track_get_key_animation);
 
+	ClassDB::bind_method(D_METHOD("set_track_info", "info"), &Animation::set_track_info);
+	ClassDB::bind_method(D_METHOD("get_track_info"), &Animation::get_track_info);
+
 	ClassDB::bind_method(D_METHOD("set_length", "time_sec"), &Animation::set_length);
 	ClassDB::bind_method(D_METHOD("get_length"), &Animation::get_length);
 
@@ -3939,6 +3955,8 @@ void Animation::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_capture_included"), &Animation::is_capture_included);
 
+
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "track_info", PROPERTY_HINT_ARRAY_TYPE, "StringName", PROPERTY_USAGE_EDITOR), "set_track_info", "get_track_info");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "length", PROPERTY_HINT_RANGE, "0.001,99999,0.001,suffix:s"), "set_length", "get_length");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_mode", PROPERTY_HINT_ENUM, "None,Linear,Ping-Pong"), "set_loop_mode", "get_loop_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "step", PROPERTY_HINT_RANGE, "0,4096,0.001,suffix:s"), "set_step", "get_step");

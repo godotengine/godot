@@ -37,8 +37,8 @@ public:
     virtual int tick(const Ref<BeehaveRuncontext>& run_context)override
     {
 		Dictionary prop = run_context->get_property(this);
-		int successful_index = prop.get(SNAME("successful_index"), 0);
-        for(int i = successful_index; i < get_child_count(); i++)
+		int _successful_index = prop.get(SNAME("successful_index"), 0);
+        for(int i = _successful_index; i < get_child_count(); i++)
         {
             if(run_context->get_init_status(children[i].ptr()) == 0)
             {
@@ -53,12 +53,14 @@ public:
 			run_context->set_run_state(children[i].ptr(), rs);
             if(rs == SUCCESS)
             {
-                successful_index = i + 1;
+				_successful_index = i + 1;
+				prop[SNAME("successful_index")] = _successful_index;
                 children[i]->after_run(run_context);
             }
             if(rs == FAILURE)
             {
-                successful_index = i + 1;
+				_successful_index = i + 1;
+				prop[SNAME("successful_index")] = _successful_index;
                 children[i]->after_run(run_context);
                 return rs;
             }
@@ -67,8 +69,8 @@ public:
                 return rs;
             }
         }
-        successful_index = 0;
+		_successful_index = 0;
+		prop[SNAME("successful_index")] = _successful_index;
         return SUCCESS;
     }
-    int successful_index = 0;
 };

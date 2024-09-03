@@ -993,7 +993,7 @@ namespace AnimationToolConst
 	static HashMap<String, int32_t> _bone_name_to_index()
 	{
 		HashMap<String, int32_t> ret;
-		for(int i=0;i< BoneName.size();i++)
+		for(uint32_t i=0;i< BoneName.size();i++)
 		{
 			ret[BoneName[i]]=i;
 		}
@@ -1002,7 +1002,7 @@ namespace AnimationToolConst
 	static HashMap<String, int32_t> _muscle_name_to_index()
 	{
 		HashMap<String, int32_t> ret;
-		for(int i=0;i< MuscleName.size();i++)
+		for(uint32_t i=0;i< MuscleName.size();i++)
 		{
 			ret[MuscleName[i]]=i;
 		}
@@ -1012,7 +1012,7 @@ namespace AnimationToolConst
 	{
 		LocalVector<Vector2i> ret;
 		ret.resize(MuscleCount());
-		for(int i=0;i< MuscleFromBone.size();i++)
+		for(uint32_t i=0;i< MuscleFromBone.size();i++)
 		{
 			LocalVector<int8_t>& bone = MuscleFromBone[i];
 
@@ -1080,7 +1080,7 @@ namespace AnimationToolConst
 	{
 		float sum = 1.0e-6;
 		Vector3 out;
-		for (int i = 0; i < humanPositions.size(); ++i)
+		for (uint32_t i = 0; i < humanPositions.size(); ++i)
 		{
 			// var postQ_inverse : = human_trait.postQ_inverse_exported[i]
 			float m_HumanBoneMass = human_bone_mass[i];// # m_HumanBoneMass
@@ -1467,7 +1467,7 @@ namespace AnimationToolConst
 		}
 		void reset()
 		{
-			for(int i=0;i<kf_iters.size();i++)
+			for(uint32_t i=0;i<kf_iters.size();i++)
 			{
 				kf_iters[i].reset();
 			}
@@ -1477,7 +1477,7 @@ namespace AnimationToolConst
 		float get_next_timestamp(float timestep = -1.0)
 		{
 			Variant next_timestamp;
-			for(int i=0;i<kf_iters.size();i++)
+			for(uint32_t i=0;i<kf_iters.size();i++)
 			{
 				//if (kf_iters[i].is_valid())
 				{
@@ -1524,7 +1524,7 @@ namespace AnimationToolConst
 			if (!is_eof)
 			{
 				timestamp = next_timestamp;
-				for (int i = 0; i < kf_iters.size(); i++)
+				for (uint32_t i = 0; i < kf_iters.size(); i++)
 				{
 					//if (kf_iters[i].is_valid())
 					{
@@ -1961,7 +1961,7 @@ namespace AnimationToolConst
 					float ts = keyframe_timestamps[ts_idx];
 					body_positions[0] = xbot_positions[0]; // Hips position is hardcoded
 					body_rotations[0] = Quaternion(); // rest Hips rotation in Godot is always identity
-					for(int body_bone_idx = 1; body_bone_idx < body_bone_count; body_bone_idx++)
+					for(uint32_t body_bone_idx = 1; body_bone_idx < body_bone_count; body_bone_idx++)
 					{
 						int bone_idx = (int)boneIndexToMono[body_bone_idx];
 						int parent_body_bone_idx = boneIndexToParent[body_bone_idx];

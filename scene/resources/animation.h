@@ -913,6 +913,9 @@ public:
 
 	void track_get_key_indices_in_range(int p_track, double p_time, double p_delta, List<int> *p_indices, Animation::LoopedFlag p_looped_flag = Animation::LOOPED_FLAG_NONE) const;
 
+	void set_track_info(const TypedArray<StringName> & p_track_info);
+	TypedArray<StringName> get_track_info() const;
+
 	void set_length(real_t p_length);
 	real_t get_length() const;
 
