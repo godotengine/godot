@@ -1313,6 +1313,28 @@ namespace AnimationToolConst
 				String t = val;
 				val = t.to_float();
 			}
+			if (val.get_type() == Variant::DICTIONARY)
+			{
+				Dictionary t = val;
+				if(t.has("x") && t.has("y") && t.has("z") && t.has("w"))
+				{
+					Quaternion q(t["x"], t["y"], t["z"], t["w"]);
+					if(is_mirrored)
+					{
+						q = -q;
+					}
+					return q;
+				}
+				else if(t.has("x") && t.has("y") && t.has("z"))
+				{
+					Vector3 v(t["x"], t["y"], t["z"]);
+					if(is_mirrored)
+					{
+						v = -v;
+					}
+					return v;
+				}
+			}
 			if (is_mirrored)
 				//Every value comes through here, so it's a good place to make sure we negate everything
 				val = -(float)val;
