@@ -300,7 +300,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 			Vector2 gpoint = mm->get_position();
 
 			Ref<Curve2D> curve = node->get_curve();
-			if (curve == nullptr) {
+			if (curve.is_null()) {
 				return true;
 			}
 			if (curve->get_point_count() < 2) {

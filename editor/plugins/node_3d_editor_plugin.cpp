@@ -4506,8 +4506,8 @@ bool Node3DEditorViewport::_create_instance(Node *p_parent, const String &p_path
 
 	Node *instantiated_scene = nullptr;
 
-	if (mesh != nullptr || scene != nullptr) {
-		if (mesh != nullptr) {
+	if (mesh.is_valid() || scene.is_valid()) {
+		if (mesh.is_valid()) {
 			MeshInstance3D *mesh_instance = memnew(MeshInstance3D);
 			mesh_instance->set_mesh(mesh);
 
@@ -4538,7 +4538,7 @@ bool Node3DEditorViewport::_create_instance(Node *p_parent, const String &p_path
 		}
 	}
 
-	if (scene != nullptr) {
+	if (scene.is_valid()) {
 		instantiated_scene->set_scene_file_path(ProjectSettings::get_singleton()->localize_path(p_path));
 	}
 
@@ -9292,7 +9292,7 @@ struct _GizmoPluginNameComparator {
 };
 
 void Node3DEditor::add_gizmo_plugin(Ref<EditorNode3DGizmoPlugin> p_plugin) {
-	ERR_FAIL_NULL(p_plugin.ptr());
+	ERR_FAIL_COND(p_plugin.is_null());
 
 	gizmo_plugins_by_priority.push_back(p_plugin);
 	gizmo_plugins_by_priority.sort_custom<_GizmoPluginPriorityComparator>();

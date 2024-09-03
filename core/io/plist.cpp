@@ -814,7 +814,7 @@ bool PList::load_string(const String &p_string, String &r_err_out) {
 }
 
 PackedByteArray PList::save_asn1() const {
-	if (root == nullptr) {
+	if (root.is_null()) {
 		ERR_FAIL_V_MSG(PackedByteArray(), "PList: Invalid PList, no root node.");
 	}
 	size_t size = root->get_asn1_size(1);
@@ -848,7 +848,7 @@ PackedByteArray PList::save_asn1() const {
 }
 
 String PList::save_text() const {
-	if (root == nullptr) {
+	if (root.is_null()) {
 		ERR_FAIL_V_MSG(String(), "PList: Invalid PList, no root node.");
 	}
 

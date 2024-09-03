@@ -140,7 +140,7 @@ Vector<String> EditorExportPlugin::get_ios_project_static_libs() const {
 }
 
 Variant EditorExportPlugin::get_option(const StringName &p_name) const {
-	ERR_FAIL_NULL_V(export_preset, Variant());
+	ERR_FAIL_COND_V(export_preset.is_null(), Variant());
 	return export_preset->get(p_name);
 }
 

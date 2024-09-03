@@ -511,7 +511,7 @@ void ScriptEditor::_set_execution(Ref<RefCounted> p_script, int p_line) {
 				continue;
 			}
 
-			if ((scr != nullptr && se->get_edited_resource() == p_script) || se->get_edited_resource()->get_path() == scr->get_path()) {
+			if ((scr.is_valid() && se->get_edited_resource() == p_script) || se->get_edited_resource()->get_path() == scr->get_path()) {
 				se->set_executing_line(p_line);
 			}
 		}
@@ -527,7 +527,7 @@ void ScriptEditor::_clear_execution(Ref<RefCounted> p_script) {
 				continue;
 			}
 
-			if ((scr != nullptr && se->get_edited_resource() == p_script) || se->get_edited_resource()->get_path() == scr->get_path()) {
+			if ((scr.is_valid() && se->get_edited_resource() == p_script) || se->get_edited_resource()->get_path() == scr->get_path()) {
 				se->clear_executing_line();
 			}
 		}
@@ -712,7 +712,7 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 		}
 
 		Ref<Script> scr = Object::cast_to<ScriptEditorBase>(c)->get_edited_resource();
-		if (scr != nullptr) {
+		if (scr.is_valid()) {
 			notify_script_changed(scr);
 		}
 
@@ -1018,7 +1018,7 @@ void ScriptEditor::_resave_scripts(const String &p_str) {
 		}
 
 		Ref<TextFile> text_file = scr;
-		if (text_file != nullptr) {
+		if (text_file.is_valid()) {
 			se->apply_code();
 			_save_text_file(text_file, text_file->get_path());
 			break;
@@ -1229,7 +1229,7 @@ Ref<Script> ScriptEditor::_get_current_script() {
 
 	if (current) {
 		Ref<Script> scr = current->get_edited_resource();
-		return scr != nullptr ? scr : nullptr;
+		return scr.is_valid() ? scr : nullptr;
 	} else {
 		return nullptr;
 	}
@@ -1431,7 +1431,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				Ref<TextFile> text_file = resource;
 				Ref<Script> scr = resource;
 
-				if (text_file != nullptr) {
+				if (text_file.is_valid()) {
 					file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 					file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 					file_dialog_option = FILE_SAVE_AS;
@@ -1460,7 +1460,7 @@ void ScriptEditor::_menu_option(int p_option) {
 
 			case FILE_TOOL_RELOAD_SOFT: {
 				Ref<Script> scr = current->get_edited_resource();
-				if (scr == nullptr || scr.is_null()) {
+				if (scr.is_null()) {
 					EditorNode::get_singleton()->show_warning(TTR("Can't obtain the script for reloading."));
 					break;
 				}
@@ -1474,7 +1474,7 @@ void ScriptEditor::_menu_option(int p_option) {
 
 			case FILE_RUN: {
 				Ref<Script> scr = current->get_edited_resource();
-				if (scr == nullptr || scr.is_null()) {
+				if (scr.is_null()) {
 					EditorToaster::get_singleton()->popup_str(TTR("Cannot run the edited file because it's not a script."), EditorToaster::SEVERITY_WARNING);
 					break;
 				}
@@ -1807,7 +1807,7 @@ void ScriptEditor::_close_builtin_scripts_from_scene(const String &p_scene) {
 
 		if (se) {
 			Ref<Script> scr = se->get_edited_resource();
-			if (scr == nullptr || !scr.is_valid()) {
+			if (scr.is_null()) {
 				continue;
 			}
 
@@ -2511,7 +2511,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 			continue;
 		}
 
-		if ((scr != nullptr && se->get_edited_resource() == p_resource) || se->get_edited_resource()->get_path() == p_resource->get_path()) {
+		if ((scr.is_valid() && se->get_edited_resource() == p_resource) || se->get_edited_resource()->get_path() == p_resource->get_path()) {
 			if (should_open) {
 				se->enable_editor(this);
 
@@ -2561,7 +2561,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 
 		PackedStringArray languages = highlighter->_get_supported_languages();
 		// If script try language, else use extension.
-		if (scr != nullptr) {
+		if (scr.is_valid()) {
 			if (languages.has(scr->get_language()->get_name())) {
 				se->set_syntax_highlighter(highlighter);
 				highlighter_set = true;
@@ -2671,7 +2671,7 @@ void ScriptEditor::save_current_script() {
 	Ref<TextFile> text_file = resource;
 	Ref<Script> scr = resource;
 
-	if (text_file != nullptr) {
+	if (text_file.is_valid()) {
 		current->apply_code();
 		_save_text_file(text_file, text_file->get_path());
 		return;
@@ -2722,7 +2722,7 @@ void ScriptEditor::save_all_scripts() {
 			Ref<TextFile> text_file = edited_res;
 			Ref<Script> scr = edited_res;
 
-			if (text_file != nullptr) {
+			if (text_file.is_valid()) {
 				_save_text_file(text_file, text_file->get_path());
 				continue;
 			}
@@ -2799,7 +2799,7 @@ void ScriptEditor::_reload_scripts(bool p_refresh_only) {
 			}
 
 			Ref<JSON> json = edited_res;
-			if (json != nullptr) {
+			if (json.is_valid()) {
 				Ref<JSON> rel_json = ResourceLoader::load(json->get_path(), json->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
 				ERR_CONTINUE(!rel_json.is_valid());
 				json->parse(rel_json->get_parsed_text(), true);
@@ -3354,7 +3354,7 @@ void ScriptEditor::_make_script_list_context_menu() {
 	context_menu->add_separator();
 	if (se) {
 		Ref<Script> scr = se->get_edited_resource();
-		if (scr != nullptr) {
+		if (scr.is_valid()) {
 			if (!scr.is_null() && scr->is_tool()) {
 				context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/reload_script_soft"), FILE_TOOL_RELOAD_SOFT);
 				context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/run_file"), FILE_RUN);
@@ -3712,7 +3712,7 @@ void ScriptEditor::_update_history_pos(int p_new_pos) {
 		seb->ensure_focus();
 
 		Ref<Script> scr = seb->get_edited_resource();
-		if (scr != nullptr) {
+		if (scr.is_valid()) {
 			notify_script_changed(scr);
 		}
 	}
@@ -3751,7 +3751,7 @@ Vector<Ref<Script>> ScriptEditor::get_open_scripts() const {
 		}
 
 		Ref<Script> scr = se->get_edited_resource();
-		if (scr != nullptr) {
+		if (scr.is_valid()) {
 			out_scripts.push_back(scr);
 		}
 	}

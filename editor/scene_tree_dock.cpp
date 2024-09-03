@@ -3694,7 +3694,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	if (selection.size() == 1) {
 		bool is_external = (!selection.front()->get()->get_scene_file_path().is_empty());
 		if (is_external) {
-			bool is_inherited = selection.front()->get()->get_scene_inherited_state() != nullptr;
+			bool is_inherited = selection.front()->get()->get_scene_inherited_state().is_valid();
 			bool is_top_level = selection.front()->get()->get_owner() == nullptr;
 			if (is_inherited && is_top_level) {
 				menu->add_separator();

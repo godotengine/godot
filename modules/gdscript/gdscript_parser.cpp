@@ -4795,9 +4795,9 @@ String GDScriptParser::DataType::to_string() const {
 			return class_type->fqcn;
 		case SCRIPT: {
 			if (is_meta_type) {
-				return script_type != nullptr ? script_type->get_class_name().operator String() : "";
+				return script_type.is_valid() ? script_type->get_class_name().operator String() : "";
 			}
-			String name = script_type != nullptr ? script_type->get_name() : "";
+			String name = script_type.is_valid() ? script_type->get_name() : "";
 			if (!name.is_empty()) {
 				return name;
 			}
