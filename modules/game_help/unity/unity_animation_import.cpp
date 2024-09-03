@@ -1032,7 +1032,15 @@ namespace AnimationToolConst
 	static Quaternion swing_twist(float x, float y, float z )
 	{
 		float yz = Math::sqrt(y * y + z * z);
-		float sinc = Math::abs(yz) < 1e-8 ? sin(yz / 2) / yz : 0.5;
+		float sinc = 0.5;
+		if (Math::abs(yz) < 1e-8)
+		{
+
+		}
+		else
+		{
+			sinc = sin(yz / 2) / yz;
+		}
 		float swingW = Math::cos(yz / 2);
 		float twistW = Math::cos(x / 2);
 		float twistX = Math::sin(x / 2);
@@ -1060,7 +1068,7 @@ namespace AnimationToolConst
 
 	}
 
-	static Quaternion get_hips_rotation_delta(LocalVector<Vector3>& humanPositions, Quaternion targetQ)
+	static Quaternion get_hips_rotation_delta(LocalVector<Vector3>& humanPositions, const Quaternion& targetQ)
 	{
 		Quaternion sourceQ = getMassQ(humanPositions);
 		//return Quaternion(targetQ.x, -targetQ.y, -targetQ.z, targetQ.w) * sourceQ.inverse()
@@ -1090,7 +1098,7 @@ namespace AnimationToolConst
 		}
 		return out / sum;
 	}
-	static Vector3 get_hips_position(LocalVector<Vector3>& humanPositions, LocalVector<Quaternion>& humanRotations, Quaternion deltaQ, Vector3 targetT)
+	static Vector3 get_hips_position(LocalVector<Vector3>& humanPositions, LocalVector<Quaternion>& humanRotations, const Quaternion& deltaQ, const Vector3& targetT)
 	{
 		Vector3 hipsPosition = humanPositions[0];
 		Quaternion hipsRotation = humanRotations[0];
@@ -1149,21 +1157,48 @@ namespace AnimationToolConst
 		}
 		return ret;
 	}
-	static String to_unity_bone_path(String path)
+	static String to_unity_bone_path(const String& path)
 	{
+		if(path.is_empty())
+		{
+			return "Skeleton3D:Root";
+		}
 		Vector<String> strs = path.split("/", false);
 		return "Skeleton3D:" + strs[strs.size() - 1];
 
 	}
-	static Vector3 dict_to_vector3(Dictionary _value)
+	static Vector3 dict_to_vector3(const Variant& _value)
 	{
-		return Vector3(_value["x"], _value["y"], _value["z"]);
+		if(_value.get_type() == Variant::VECTOR3)
+		{
+			return _value;
+		}
+		if (_value.get_type() == Variant::DICTIONARY)
+		{
+			Dictionary _dict = _value;
+			if (_dict.has("x") && _dict.has("y") && _dict.has("z"))
+			{
+				return Vector3(_dict["x"], _dict["y"], _dict["z"]);
+			}
+		}
+		return Vector3();
 	}
 	
-	static Quaternion dict_to_quaternion(Dictionary _value )
+	static Quaternion dict_to_quaternion(const Variant& _value )
 	{
-		return Quaternion(_value["x"], _value["y"], _value["z"], _value["w"]);
-
+		if(_value.get_type() == Variant::QUATERNION)
+		{
+			return _value;
+		}
+		if (_value.get_type() == Variant::DICTIONARY)
+		{
+			Dictionary _dict = _value;
+			if (_dict.has("x") && _dict.has("y") && _dict.has("z") && _dict.has("w"))
+			{
+				return Quaternion(_dict["x"], _dict["y"], _dict["z"], _dict["w"]);
+			}
+		}
+		return Quaternion();
 	}
 	
 	class KeyframeIterator: public RefCounted

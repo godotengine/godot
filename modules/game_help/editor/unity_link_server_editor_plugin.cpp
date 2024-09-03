@@ -464,20 +464,62 @@ class GameHelpInspectorPlugin : public EditorInspectorPlugin
 	}
 
 };
-class ResourceFormatUnityAnimation : public ResourceFormatLoader {
+class ResourceImporterUnityAnimation : public ResourceImporter {
 public:
 
-	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override
+	virtual String get_importer_name() const override
 	{
-		if (r_error) {
-			*r_error = ERR_CANT_OPEN;
-		}
+		return "anim";
 
+	}
+	virtual String get_visible_name() const override{		
+			return "anim";
+	}
+	virtual void get_recognized_extensions(List<String> *p_extensions) const override {
+		p_extensions->push_back("anim");
+	}
+	virtual String get_save_extension() const override
+	{
+		return "res";
+	}
+	virtual String get_resource_type() const override {
+		return "Animation";
+	}
+
+	virtual int get_preset_count() const override {
+		return 0;
+	}
+	virtual String get_preset_name(int p_idx) const override {
+		return String();
+	}
+
+	virtual void get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset = 0) const override {
+		r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "is_human_mirrored"), false));
+
+	}
+	virtual bool get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const override
+	{
+
+		return true;
+	}
+
+#ifdef TOOLS_ENABLED
+	virtual bool has_advanced_options() const override
+	{
+		return false;
+	}
+	virtual void show_advanced_options(const String &p_path) override
+	{
+	}
+#endif
+
+	virtual Error import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override
+	{
+		int is_mirrored = p_options["is_human_mirrored"];
 		Error err;
-		Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
-		if(f.is_null())
-		{
-			return Ref<Resource>();
+		Ref<FileAccess> f = FileAccess::open(p_source_file, FileAccess::READ, &err);
+		if (err != OK) {
+			return err;
 		}
 		String yaml_anim = f->get_as_text();
 
@@ -488,28 +530,13 @@ public:
 		Dictionary dict = json->get_data();
 		Callable on_load_animation =  DataTableManager::get_singleton()->get_animation_load_cb();
 		Dictionary clip = dict["AnimationClip"];
-		UnityAnimationImport::ImportAnimation(clip,false,anim);
+		UnityAnimationImport::ImportAnimation(clip,is_mirrored,anim);
 		anim->optimize();
-		print_line(L"ResourceFormatUnityAnimation: 加载Unity动作文件 :" + p_path);	
-		return anim;
-	}
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override
-	{		
-		p_extensions->push_back("anim");
-	}
-	virtual bool handles_type(const String &p_type) const override
-	{
-		return p_type == "Animation";
-	}
-	virtual String get_resource_type(const String &p_path) const override
-	{
-		if (p_path.get_extension().to_lower() == "anim") {
-			return "Animation";
-		}
-		return "";
+		return ResourceSaver::save(anim, p_save_path + ".res");
+
 	}
 
-	virtual ~ResourceFormatUnityAnimation() {}
+	virtual ~ResourceImporterUnityAnimation() {}
 };
 
 class UnityLinkServerEditorPlugin : public EditorPlugin {
@@ -527,7 +554,7 @@ public:
 	void start();
 	void stop();
 	
-	Ref<ResourceFormatUnityAnimation> resource_loader_unity_animation;
+	Ref<ResourceImporterUnityAnimation> resource_loader_unity_animation;
 };
 void UnityLinkServerEditorPluginRegister::initialize()
 {
@@ -568,7 +595,7 @@ void UnityLinkServerEditorPlugin::_notification(int p_what) {
 
 void UnityLinkServerEditorPlugin::start() {
 	resource_loader_unity_animation.instantiate();
-	//ResourceLoader::add_resource_format_loader(resource_loader_unity_animation);
+	ResourceFormatImporter::get_singleton()->add_importer(resource_loader_unity_animation);
 	server.start() ;
 	{
 		EditorNode::get_log()->add_message("--- unity link server started port 9010---", EditorLog::MSG_TYPE_EDITOR);
@@ -583,7 +610,7 @@ void UnityLinkServerEditorPlugin::stop() {
 	server.stop();
 	started = false;
 	EditorNode::get_log()->add_message("--- unity link server stopped ---", EditorLog::MSG_TYPE_EDITOR);
-	//ResourceLoader::remove_resource_format_loader(resource_loader_unity_animation);
+	ResourceFormatImporter::get_singleton()->remove_importer(resource_loader_unity_animation);
 	resource_loader_unity_animation.unref();
 }
 #endif

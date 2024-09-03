@@ -994,7 +994,8 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 		// Not normal.
 		error = ERR_FILE_UNRECOGNIZED;
 		f.unref();
-		ERR_FAIL_MSG("Unrecognized binary resource file: " + local_path + ".");
+		return;
+		//ERR_FAIL_MSG("Unrecognized binary resource file: " + local_path + ".");
 	}
 
 	bool big_endian = f->get_32();

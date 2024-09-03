@@ -16,6 +16,7 @@ void UnityAnimation::load_form_unity_asset()
 	{
 		return ;
 	}
+	clear();
 	String yaml_anim = f->get_as_text();
 
 	Ref<JSON> json = DataTableManager::get_singleton()->parse_yaml(yaml_anim);
