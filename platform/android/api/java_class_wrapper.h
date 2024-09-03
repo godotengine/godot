@@ -32,6 +32,7 @@
 #define JAVA_CLASS_WRAPPER_H
 
 #include "core/object/ref_counted.h"
+#include "core/variant/typed_array.h"
 
 #ifdef ANDROID_ENABLED
 #include <android/log.h>
@@ -67,6 +68,7 @@ class JavaClass : public RefCounted {
 
 	struct MethodInfo {
 		bool _static = false;
+		bool _constructor = false;
 		Vector<uint32_t> param_types;
 		Vector<StringName> param_sigs;
 		uint32_t return_type = 0;
@@ -174,14 +176,29 @@ class JavaClass : public RefCounted {
 	bool _call_method(JavaObject *p_instance, const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error, Variant &ret);
 
 	friend class JavaClassWrapper;
+	friend class JavaObject;
+	String java_class_name;
+	String java_constructor_name;
 	HashMap<StringName, List<MethodInfo>> methods;
 	jclass _class;
 #endif
 
+protected:
+	static void _bind_methods();
+
 public:
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 
+	String get_java_class_name() const;
+	TypedArray<Dictionary> get_java_method_list() const;
+	Ref<JavaClass> get_java_parent_class() const;
+
+#ifdef ANDROID_ENABLED
+	virtual String to_string() override;
+#endif
+
 	JavaClass();
+	~JavaClass();
 };
 
 class JavaObject : public RefCounted {
@@ -191,14 +208,24 @@ class JavaObject : public RefCounted {
 	Ref<JavaClass> base_class;
 	friend class JavaClass;
 
-	jobject instance;
+	jobject instance = nullptr;
 #endif
+
+protected:
+	static void _bind_methods();
 
 public:
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 
+	Ref<JavaClass> get_java_class() const;
+
 #ifdef ANDROID_ENABLED
-	JavaObject(const Ref<JavaClass> &p_base, jobject *p_instance);
+	virtual String to_string() override;
+
+	jobject get_instance() { return instance; }
+
+	JavaObject();
+	JavaObject(const Ref<JavaClass> &p_base, jobject p_instance);
 	~JavaObject();
 #endif
 };
@@ -209,13 +236,17 @@ class JavaClassWrapper : public Object {
 #ifdef ANDROID_ENABLED
 	RBMap<String, Ref<JavaClass>> class_cache;
 	friend class JavaClass;
-	jmethodID getDeclaredMethods;
-	jmethodID getFields;
-	jmethodID getParameterTypes;
-	jmethodID getReturnType;
-	jmethodID getModifiers;
-	jmethodID getName;
+	jmethodID Class_getDeclaredConstructors;
+	jmethodID Class_getDeclaredMethods;
+	jmethodID Class_getFields;
 	jmethodID Class_getName;
+	jmethodID Class_getSuperclass;
+	jmethodID Constructor_getParameterTypes;
+	jmethodID Constructor_getModifiers;
+	jmethodID Method_getParameterTypes;
+	jmethodID Method_getReturnType;
+	jmethodID Method_getModifiers;
+	jmethodID Method_getName;
 	jmethodID Field_getName;
 	jmethodID Field_getModifiers;
 	jmethodID Field_get;
@@ -242,6 +273,8 @@ public:
 	Ref<JavaClass> wrap(const String &p_class);
 
 #ifdef ANDROID_ENABLED
+	Ref<JavaClass> wrap_jclass(jclass p_class);
+
 	JavaClassWrapper(jobject p_activity = nullptr);
 #else
 	JavaClassWrapper();
