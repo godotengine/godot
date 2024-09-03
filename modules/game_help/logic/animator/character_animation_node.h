@@ -75,31 +75,27 @@ public:
     void set_child_node(const Ref<class CharacterAnimatorNodeBase>& p_child_node) ;
     Ref<class CharacterAnimatorNodeBase> get_child_node();
 
+    void set_animation(Ref<Animation> p_animation) { animation = p_animation; }
     Ref<Animation> get_animation();
     Ref<CharacterBoneMap> get_bone_map();
 
     void _init();
     float _get_animation_length();
     void _set_animation_scale_by_length(float p_length);
-
-
 public:
-
-
     StringName animation_name;
     // 动画资源路径
     String animation_path;
     // 骨骼映射名称
     String bone_map_path;
-
-    float speed = 1.0f;
-    bool is_clip = true;
     Ref<Animation> animation;
-    Ref<Animation> retarget_animation;
     Ref<CharacterBoneMap> bone_map;
     Ref<class CharacterAnimatorNodeBase> child_node;
-    bool is_init = false;
+
+    float speed = 1.0f;
     float last_using_time = 0;
+    bool is_clip = true;
+    bool is_init = false;
 };
 class CharacterAnimatorNodeBase : public Resource
 {
@@ -116,36 +112,27 @@ public:
     };
 	struct Blend1dDataConstant
 	{
-		Blend1dDataConstant() : position_count(0)
-		{
-		}
-		uint32_t            position_count;
-		Vector<float>       position_array;
+		uint32_t            position_count = 0;
+		LocalVector<float>       position_array;
 	};
 	struct MotionNeighborList
 	{
-		MotionNeighborList() : m_Count(0)
-		{
-		}
-		uint32_t m_Count;
-		Vector<uint32_t> m_NeighborArray;
+		uint32_t m_Count = 0;
+		LocalVector<uint32_t> m_NeighborArray;
 	};
 	struct Blend2dDataConstant
 	{
-		Blend2dDataConstant()
-		{
-		}
 		uint32_t                    position_count = 0;
-		Vector<Vector2>             position_array;
+		LocalVector<Vector2>             position_array;
 
 		uint32_t                    m_ChildMagnitudeCount = 0;
-		Vector<float>               m_ChildMagnitudeArray; // Used by type 2
+		LocalVector<float>               m_ChildMagnitudeArray; // Used by type 2
 		uint32_t                    m_ChildPairVectorCount = 0;
-		Vector<Vector2>             m_ChildPairVectorArray; // Used by type 2, (3 TODO)
+		LocalVector<Vector2>             m_ChildPairVectorArray; // Used by type 2, (3 TODO)
 		uint32_t                    m_ChildPairAvgMagInvCount = 0;
-		Vector<float>               m_ChildPairAvgMagInvArray; // Used by type 2
+		LocalVector<float>               m_ChildPairAvgMagInvArray; // Used by type 2
 		uint32_t                    m_ChildNeighborListCount = 0;
-		Vector<MotionNeighborList>  m_ChildNeighborListArray; // Used by type 2, (3 TODO)
+		LocalVector<MotionNeighborList>  m_ChildNeighborListArray; // Used by type 2, (3 TODO)
 	};
     void touch() { lastUsingTime = OS::get_singleton()->get_unix_time(); }
 
@@ -157,14 +144,27 @@ public:
 
     }
 public:
-    void _blend_anmation(CharacterAnimatorLayer *p_layer,int child_count,struct CharacterAnimationInstance *p_playback_info,float total_weight,const Vector<float> &weight_array,const Ref<Blackboard> &p_blackboard);
+    void _blend_anmation(CharacterAnimatorLayer *p_layer,int child_count,struct CharacterAnimationInstance *p_playback_info,float total_weight,const LocalVector<float> &weight_array,const Ref<Blackboard> &p_blackboard);
     // 统一动画长度
     void _normal_animation_length();
     float _get_animation_length();
     void _set_animation_scale_by_length(float p_length);
 
-    void set_animation_arrays(TypedArray<CharacterAnimationItem> p_animation_arrays) { animation_arrays = p_animation_arrays; }
-    TypedArray<CharacterAnimationItem> get_animation_arrays() { return animation_arrays; }
+    void set_animation_arrays(TypedArray<CharacterAnimationItem> p_animation_arrays) { 
+        animation_arrays.clear();
+        for(int i=0;i<p_animation_arrays.size();i++)
+        {
+            animation_arrays.push_back(p_animation_arrays[i]);
+        }
+    }
+    TypedArray<CharacterAnimationItem> get_animation_arrays() {
+        TypedArray<CharacterAnimationItem> rs;
+        for(int i=0;i<animation_arrays.size();i++)
+        {
+            rs.push_back(animation_arrays[i]);
+        }
+         return rs; 
+    }
 
     void set_black_board_property(const StringName& p_black_board_property) { black_board_property = p_black_board_property; }
     StringName get_black_board_property() { return black_board_property; }
@@ -203,7 +203,7 @@ public:
 	}
 protected:
     
-    TypedArray<CharacterAnimationItem>		animation_arrays;
+    LocalVector<Ref<CharacterAnimationItem>>		animation_arrays;
     StringName								black_board_property;
     StringName								black_board_property_y;
     float									fade_out_time = 0.0f;
@@ -228,6 +228,7 @@ class CharacterAnimatorNode1D : public CharacterAnimatorNodeBase
         ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "position_array"), "set_position_array", "get_position_array");
     }
 public:
+    void add_animation(const Ref<Animation> & p_anim,float p_pos);
     virtual void process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,const Ref<Blackboard> &p_blackboard) override;
 
     void set_position_count(uint32_t p_count) { blend_data.position_count = p_count; }
@@ -295,8 +296,8 @@ struct CharacterAnimationInstance
 	PlayState m_PlayState = PS_None;
 	// 關閉的骨骼
 	Dictionary disable_path;
-	Vector<float> m_WeightArray;
-	Vector<AnimationMixer::PlaybackInfo> m_ChildAnimationPlaybackArray;
+	LocalVector<float> m_WeightArray;
+	LocalVector<AnimationMixer::PlaybackInfo> m_ChildAnimationPlaybackArray;
 	float time = 0.0f;
 	float delta = 0.0f;
 	float fadeTotalTime = 0.0f;

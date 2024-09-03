@@ -15,6 +15,7 @@
 
 class CharacterAnimatorNodeBase;
 class CharacterAnimatorLayer;
+class CharacterAnimator;
 // 动画库
 class CharacterAnimationLibrary : public Resource
 {
@@ -205,15 +206,7 @@ class CharacterAnimatorLayer: public AnimationMixer
     static void bind_methods()
     {
     }
-
-    List<Ref<CharacterAnimatorNodeBase>> play_list;
 public:
-    // 黑板信息
-    Ref<Blackboard>           blackboard;
-    // 逻辑上下文
-    CharacterAnimationLogicContext logic_context;
-    // 动画掩码
-    Ref<CharacterAnimatorLayerConfig> config;
 
     void _process_logic(const Ref<Blackboard> &p_playback_info,double p_delta,bool is_first = true);
     // 处理动画
@@ -223,12 +216,7 @@ public:
 
     void finish_update();
     void layer_blend_apply() ;
-    Vector<Vector2> m_ChildInputVectorArray;
-    Vector<int> m_TempCropArray;
-    Vector<float> m_TotalAnimationWeight;
-    List<CharacterAnimationInstance> m_AnimationInstances;
-    float blend_weight = 1.0f;
-    class CharacterAnimator* m_Animator = nullptr;
+
     void init(CharacterAnimator* p_animator,const Ref<CharacterAnimatorLayerConfig>& _config)
     {
          m_Animator = p_animator; 
@@ -251,6 +239,24 @@ public:
         }
     }
     ~CharacterAnimatorLayer();
+public:
+    void set_config(const Ref<CharacterAnimatorLayerConfig>& _config) { config = _config; }
+    Ref<CharacterAnimatorLayerConfig> get_config() { return config; }
+public:
+    Vector<Vector2> m_ChildInputVectorArray;
+	Vector<int> m_TempCropArray;
+protected:
+    // 黑板信息
+    Ref<Blackboard>           blackboard;
+    // 逻辑上下文
+    CharacterAnimationLogicContext logic_context;
+    // 动画掩码
+    Ref<CharacterAnimatorLayerConfig> config;
+    List<Ref<CharacterAnimatorNodeBase>> play_list;
+    Vector<float> m_TotalAnimationWeight;
+    List<CharacterAnimationInstance> m_AnimationInstances;
+    class CharacterAnimator* m_Animator = nullptr;
+    float blend_weight = 1.0f;
 };
 
 // 动画逻辑节点
@@ -426,6 +432,13 @@ class CharacterAnimatorLayerConfigInstance : public RefCounted
     GDCLASS(CharacterAnimatorLayerConfigInstance, RefCounted);
     static void _bind_methods()
     {
+        ClassDB::bind_method(D_METHOD("set_config", "config"), &CharacterAnimatorLayerConfigInstance::set_config);
+        ClassDB::bind_method(D_METHOD("get_config"), &CharacterAnimatorLayerConfigInstance::get_config);
+
+        ClassDB::bind_method(D_METHOD("set_play_animation", "play_animation"), &CharacterAnimatorLayerConfigInstance::set_play_animation);
+        ClassDB::bind_method(D_METHOD("get_play_animation"), &CharacterAnimatorLayerConfigInstance::get_play_animation);
+
+        ADD_MEMBER_BUTTON(editor_play_animation,L"播放动画",CharacterAnimatorLayerConfigInstance);
     }
 public:
 	void set_body(class CharacterBodyMain* p_body);
@@ -436,7 +449,23 @@ public:
 	void set_config(const Ref<CharacterAnimatorLayerConfig>& _config)
 	{
 		config = _config;
+		auto_init();
 	}
+    Ref<CharacterAnimatorLayerConfig> get_config()
+    {
+        return config;
+    }
+
+    void set_play_animation(const Ref<Animation>& p_play_animation)
+    {
+        play_animation = p_play_animation;
+    }
+
+    Ref<Animation> get_play_animation()
+    {
+        return play_animation;
+    }
+    
 	CharacterAnimatorLayer* get_layer()
 	{
 		return layer;
@@ -478,6 +507,9 @@ public:
 		}
 
 	}
+
+protected:
+	void auto_init();
 
 protected:
     Ref<Animation> play_animation;

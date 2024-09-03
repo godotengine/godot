@@ -382,7 +382,11 @@ CharacterAnimatorLayer::~CharacterAnimatorLayer()
 
 void CharacterAnimatorLayerConfigInstance::editor_play_animation()
 {
-
+    if(layer == nullptr)
+    {
+        return;
+    }
+    layer->play_animation(play_animation,true);
 }
 
 void CharacterAnimatorLayerConfigInstance::set_body(class CharacterBodyMain* p_body)
@@ -397,18 +401,22 @@ void CharacterAnimatorLayerConfigInstance::set_body(class CharacterBodyMain* p_b
 		layer->queue_free();
 		layer = nullptr;
 	}
+	auto_init();
+}
+void CharacterAnimatorLayerConfigInstance::auto_init()
+{
+
 	if (m_Body == nullptr || config.is_null())
 	{
 		return;
 	}
 	layer = memnew(CharacterAnimatorLayer);
-	layer->config = config;
+	layer->set_config(config);
 	layer->set_name(config->get_layer_name());
-	layer->m_Animator = p_body->get_animator().ptr();
+	layer->init(m_Body->get_animator().ptr(), config);
 
 	m_Body->add_child(layer);
 	layer->set_owner(m_Body);
-
 }
 ///////////////
 
