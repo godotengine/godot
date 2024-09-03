@@ -79,6 +79,7 @@ class EditorInterface : public Object {
 	// Editor tools.
 
 	TypedArray<Texture2D> _make_mesh_previews(const TypedArray<Mesh> &p_meshes, int p_preview_size);
+	AABB _calculate_aabb_for_scene(Node *p_node, AABB &p_scene_aabb);
 
 protected:
 	static void _bind_methods();
@@ -107,6 +108,7 @@ public:
 	EditorUndoRedoManager *get_editor_undo_redo() const;
 
 	Vector<Ref<Texture2D>> make_mesh_previews(const Vector<Ref<Mesh>> &p_meshes, Vector<Transform3D> *p_transforms, int p_preview_size);
+	void make_scene_preview(const String &p_path, Node *p_scene, int p_preview_size);
 
 	void set_plugin_enabled(const String &p_plugin, bool p_enabled);
 	bool is_plugin_enabled(const String &p_plugin) const;

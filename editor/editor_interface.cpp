@@ -31,6 +31,7 @@
 #include "editor_interface.h"
 #include "editor_interface.compat.inc"
 
+#include "core/config/project_settings.h"
 #include "editor/editor_command_palette.h"
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_main_screen.h"
@@ -50,6 +51,10 @@
 #include "editor/property_selector.h"
 #include "editor/themes/editor_scale.h"
 #include "main/main.h"
+#include "plugins/editor_preview_plugins.h"
+#include "scene/3d/light_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/world_environment.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/main/window.h"
@@ -96,6 +101,27 @@ EditorToaster *EditorInterface::get_editor_toaster() const {
 
 EditorUndoRedoManager *EditorInterface::get_editor_undo_redo() const {
 	return EditorUndoRedoManager::get_singleton();
+}
+
+AABB EditorInterface::_calculate_aabb_for_scene(Node *p_node, AABB &p_scene_aabb) {
+	MeshInstance3D *mesh_node = Object::cast_to<MeshInstance3D>(p_node);
+	if (mesh_node && mesh_node->get_mesh().is_valid()) {
+		Transform3D accum_xform;
+		Node3D *base = mesh_node;
+		while (base) {
+			accum_xform = base->get_transform() * accum_xform;
+			base = Object::cast_to<Node3D>(base->get_parent());
+		}
+
+		AABB aabb = accum_xform.xform(mesh_node->get_mesh()->get_aabb());
+		p_scene_aabb.merge_with(aabb);
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		p_scene_aabb = _calculate_aabb_for_scene(p_node->get_child(i), p_scene_aabb);
+	}
+
+	return p_scene_aabb;
 }
 
 TypedArray<Texture2D> EditorInterface::_make_mesh_previews(const TypedArray<Mesh> &p_meshes, int p_preview_size) {
@@ -201,6 +227,136 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 	RS::get_singleton()->free(scenario);
 
 	return textures;
+}
+
+void EditorInterface::make_scene_preview(const String &p_path, Node *p_scene, int p_preview_size) {
+	ERR_FAIL_NULL_MSG(p_scene, "The provided scene is null.");
+	ERR_FAIL_COND_MSG(p_scene->is_inside_tree(), "The scene must not be inside the tree.");
+	ERR_FAIL_COND_MSG(!Engine::get_singleton()->is_editor_hint(), "This function can only be called from the editor.");
+
+	SubViewport *sub_viewport_node = memnew(SubViewport);
+	AABB scene_aabb;
+	scene_aabb = _calculate_aabb_for_scene(p_scene, scene_aabb);
+
+	sub_viewport_node->set_update_mode(SubViewport::UPDATE_ALWAYS);
+	sub_viewport_node->set_size(Vector2i(p_preview_size, p_preview_size));
+	sub_viewport_node->set_transparent_background(false);
+	Ref<World3D> world;
+	world.instantiate();
+	sub_viewport_node->set_world_3d(world);
+
+	EditorNode::get_singleton()->add_child(sub_viewport_node);
+	Ref<Environment> env;
+	env.instantiate();
+	env->set_background(Environment::BG_CLEAR_COLOR);
+
+	Ref<CameraAttributesPractical> camera_attributes;
+	camera_attributes.instantiate();
+
+	Node3D *root = memnew(Node3D);
+	root->set_name("Root");
+	sub_viewport_node->add_child(root);
+
+	Camera3D *camera = memnew(Camera3D);
+	camera->set_environment(env);
+	camera->set_attributes(camera_attributes);
+	camera->set_name("Camera3D");
+	root->add_child(camera);
+	camera->set_current(true);
+
+	camera->set_position(Vector3(0.0, 0.0, 3.0));
+
+	DirectionalLight3D *light = memnew(DirectionalLight3D);
+	light->set_name("Light");
+	DirectionalLight3D *light2 = memnew(DirectionalLight3D);
+	light2->set_name("Light2");
+	light2->set_color(Color(0.7, 0.7, 0.7, 1.0));
+
+	root->add_child(light);
+	root->add_child(light2);
+
+	sub_viewport_node->add_child(p_scene);
+
+	// Calculate the camera and lighting position based on the size of the scene.
+	Vector3 center = scene_aabb.get_center();
+	float camera_size = scene_aabb.get_longest_axis_size();
+
+	const float cam_rot_x = -Math_PI / 4;
+	const float cam_rot_y = -Math_PI / 4;
+
+	camera->set_orthogonal(camera_size * 2.0, 0.0001, camera_size * 2.0);
+
+	Transform3D xf;
+	xf.basis = Basis(Vector3(0, 1, 0), cam_rot_y) * Basis(Vector3(1, 0, 0), cam_rot_x);
+	xf.origin = center;
+	xf.translate_local(0, 0, camera_size);
+
+	camera->set_transform(xf);
+
+	Transform3D xform;
+	xform.basis = Basis().rotated(Vector3(0, 1, 0), -Math_PI / 6);
+	xform.basis = Basis().rotated(Vector3(1, 0, 0), Math_PI / 6) * xform.basis;
+
+	light->set_transform(xform * Transform3D().looking_at(Vector3(-2, -1, -1), Vector3(0, 1, 0)));
+	light2->set_transform(xform * Transform3D().looking_at(Vector3(+1, -1, -2), Vector3(0, 1, 0)));
+
+	// Update the renderer to get the screenshot.
+	DisplayServer::get_singleton()->process_events();
+	Main::iteration();
+	Main::iteration();
+
+	// Get the texture.
+	Ref<Texture2D> texture = sub_viewport_node->get_texture();
+	ERR_FAIL_COND_MSG(texture.is_null(), "Failed to get texture from sub_viewport_node.");
+
+	// Remove the initial scene node.
+	sub_viewport_node->remove_child(p_scene);
+
+	// Cleanup the viewport.
+	if (sub_viewport_node) {
+		if (sub_viewport_node->get_parent()) {
+			sub_viewport_node->get_parent()->remove_child(sub_viewport_node);
+		}
+		sub_viewport_node->queue_free();
+		sub_viewport_node = nullptr;
+	}
+
+	// Now generate the cache image.
+	Ref<Image> img = texture->get_image();
+	if (img.is_valid() && img->get_width() > 0 && img->get_height() > 0) {
+		img = img->duplicate();
+
+		int preview_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
+		preview_size *= EDSCALE;
+
+		int vp_size = MIN(img->get_width(), img->get_height());
+		int x = (img->get_width() - vp_size) / 2;
+		int y = (img->get_height() - vp_size) / 2;
+
+		if (vp_size < preview_size) {
+			img->crop_from_point(x, y, vp_size, vp_size);
+		} else {
+			int ratio = vp_size / preview_size;
+			int size = preview_size * MAX(1, ratio / 2);
+
+			x = (img->get_width() - size) / 2;
+			y = (img->get_height() - size) / 2;
+
+			img->crop_from_point(x, y, size, size);
+			img->resize(preview_size, preview_size, Image::INTERPOLATE_LANCZOS);
+		}
+		img->convert(Image::FORMAT_RGB8);
+
+		String temp_path = EditorPaths::get_singleton()->get_cache_dir();
+		String cache_base = ProjectSettings::get_singleton()->globalize_path(p_path).md5_text();
+		cache_base = temp_path.path_join("resthumb-" + cache_base);
+
+		post_process_preview(img);
+		img->save_png(cache_base + ".png");
+	}
+
+	EditorResourcePreview::get_singleton()->check_for_invalidation(p_path);
+	EditorFileSystem::get_singleton()->emit_signal(SNAME("filesystem_changed"));
 }
 
 void EditorInterface::set_plugin_enabled(const String &p_plugin, bool p_enabled) {
