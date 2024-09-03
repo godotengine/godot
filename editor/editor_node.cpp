@@ -6159,7 +6159,7 @@ void EditorNode::reload_instances_with_path_in_edited_scenes() {
 						base_packed_scene = current_packed_scene;
 					}
 					if (!local_scene_cache.find(path)) {
-						current_packed_scene = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_REPLACE_DEEP, &err);
+						current_packed_scene = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_REPLACE, &err);
 						local_scene_cache[path] = current_packed_scene;
 					} else {
 						current_packed_scene = local_scene_cache[path];
