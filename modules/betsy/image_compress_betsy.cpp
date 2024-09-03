@@ -36,6 +36,9 @@
 #if defined(VULKAN_ENABLED)
 #include "drivers/vulkan/rendering_context_driver_vulkan.h"
 #endif
+#if defined(METAL_ENABLED)
+#include "drivers/metal/rendering_context_driver_metal.h"
+#endif
 
 #include "bc6h.glsl.gen.h"
 
@@ -66,9 +69,15 @@ Error _compress_betsy(BetsyFormat p_format, Image *r_img) {
 
 	if (rd == nullptr) {
 #if defined(RD_ENABLED)
-#if defined(VULKAN_ENABLED)
-		rcd = memnew(RenderingContextDriverVulkan);
+#if defined(METAL_ENABLED)
+		rcd = memnew(RenderingContextDriverMetal);
 		rd = memnew(RenderingDevice);
+#endif
+#if defined(VULKAN_ENABLED)
+		if (rcd == nullptr) {
+			rcd = memnew(RenderingContextDriverVulkan);
+			rd = memnew(RenderingDevice);
+		}
 #endif
 #endif
 		if (rcd != nullptr && rd != nullptr) {

@@ -49,6 +49,7 @@ void register_android_api() {
 #endif
 
 	GDREGISTER_CLASS(JavaClass);
+	GDREGISTER_CLASS(JavaObject);
 	GDREGISTER_CLASS(JavaClassWrapper);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("JavaClassWrapper", JavaClassWrapper::get_singleton()));
 }
@@ -57,6 +58,16 @@ void unregister_android_api() {
 #if !defined(ANDROID_ENABLED)
 	memdelete(java_class_wrapper);
 #endif
+}
+
+void JavaClass::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_java_class_name"), &JavaClass::get_java_class_name);
+	ClassDB::bind_method(D_METHOD("get_java_method_list"), &JavaClass::get_java_method_list);
+	ClassDB::bind_method(D_METHOD("get_java_parent_class"), &JavaClass::get_java_parent_class);
+}
+
+void JavaObject::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_java_class"), &JavaObject::get_java_class);
 }
 
 void JavaClassWrapper::_bind_methods() {
@@ -69,11 +80,30 @@ Variant JavaClass::callp(const StringName &, const Variant **, int, Callable::Ca
 	return Variant();
 }
 
+String JavaClass::get_java_class_name() const {
+	return "";
+}
+
+TypedArray<Dictionary> JavaClass::get_java_method_list() const {
+	return TypedArray<Dictionary>();
+}
+
+Ref<JavaClass> JavaClass::get_java_parent_class() const {
+	return Ref<JavaClass>();
+}
+
 JavaClass::JavaClass() {
+}
+
+JavaClass::~JavaClass() {
 }
 
 Variant JavaObject::callp(const StringName &, const Variant **, int, Callable::CallError &) {
 	return Variant();
+}
+
+Ref<JavaClass> JavaObject::get_java_class() const {
+	return Ref<JavaClass>();
 }
 
 JavaClassWrapper *JavaClassWrapper::singleton = nullptr;

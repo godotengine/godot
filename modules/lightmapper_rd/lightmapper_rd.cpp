@@ -44,6 +44,9 @@
 #if defined(VULKAN_ENABLED)
 #include "drivers/vulkan/rendering_context_driver_vulkan.h"
 #endif
+#if defined(METAL_ENABLED)
+#include "drivers/metal/rendering_context_driver_metal.h"
+#endif
 
 //uncomment this if you want to see textures from all the process saved
 //#define DEBUG_TEXTURES
@@ -1043,9 +1046,15 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	RenderingDevice *rd = RenderingServer::get_singleton()->create_local_rendering_device();
 	if (rd == nullptr) {
 #if defined(RD_ENABLED)
-#if defined(VULKAN_ENABLED)
-		rcd = memnew(RenderingContextDriverVulkan);
+#if defined(METAL_ENABLED)
+		rcd = memnew(RenderingContextDriverMetal);
 		rd = memnew(RenderingDevice);
+#endif
+#if defined(VULKAN_ENABLED)
+		if (rcd == nullptr) {
+			rcd = memnew(RenderingContextDriverVulkan);
+			rd = memnew(RenderingDevice);
+		}
 #endif
 #endif
 		if (rcd != nullptr && rd != nullptr) {

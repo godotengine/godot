@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  jni_utils.h                                                           */
+/*  editor_interface.compat.inc                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,30 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef JNI_UTILS_H
-#define JNI_UTILS_H
+#include "editor_interface.h"
 
-#include "string_android.h"
+#ifndef DISABLE_DEPRECATED
 
-#include "core/config/engine.h"
-#include "core/variant/variant.h"
+void EditorInterface::_popup_node_selector_bind_compat_94323(const Callable &p_callback, const TypedArray<StringName> &p_valid_types) {
+	popup_node_selector(p_callback, p_valid_types, nullptr);
+}
 
-#include <jni.h>
+void EditorInterface::_popup_property_selector_bind_compat_94323(Object *p_object, const Callable &p_callback, const PackedInt32Array &p_type_filter) {
+	popup_property_selector(p_object, p_callback, p_type_filter, String());
+}
 
-struct jvalret {
-	jobject obj;
-	jvalue val;
-	jvalret() { obj = nullptr; }
-};
+void EditorInterface::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("popup_node_selector", "callback", "valid_types"), &EditorInterface::_popup_node_selector_bind_compat_94323, DEFVAL(TypedArray<StringName>()));
+	ClassDB::bind_compatibility_method(D_METHOD("popup_property_selector", "object", "callback", "type_filter"), &EditorInterface::_popup_property_selector_bind_compat_94323, DEFVAL(PackedInt32Array()));
+}
 
-jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_arg, bool force_jobject = false);
-
-String _get_class_name(JNIEnv *env, jclass cls, bool *array);
-
-Variant _jobject_to_variant(JNIEnv *env, jobject obj);
-
-Variant::Type get_jni_type(const String &p_type);
-
-String get_jni_sig(const String &p_type);
-
-#endif // JNI_UTILS_H
+#endif

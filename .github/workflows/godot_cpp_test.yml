@@ -56,3 +56,13 @@ jobs:
           cd godot-cpp/test
           scons target=template_debug dev_build=yes
           cd ../..
+
+  gdextension-c-compile:
+    runs-on: "ubuntu-20.04"
+    name: "Check GDExtension header with a C compiler"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Run C compiler on gdextension_interface.h"
+        run: |
+          gcc -c core/extension/gdextension_interface.h
