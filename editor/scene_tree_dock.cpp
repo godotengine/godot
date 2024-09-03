@@ -50,6 +50,7 @@
 #include "editor/node_dock.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
+#include "editor/plugins/editor_context_menu_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/reparent_dialog.h"
@@ -213,6 +214,10 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 	} else if (ED_IS_SHORTCUT("scene_tree/delete", p_event)) {
 		_tool_selected(TOOL_ERASE);
 	} else {
+		int match_option = EditorNode::get_editor_data().match_context_menu_shortcut(EditorData::CONTEXT_SLOT_SCENE_TREE, p_event);
+		if (match_option) {
+			_tool_selected(match_option);
+		}
 		return;
 	}
 
@@ -1482,6 +1487,13 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		} break;
 
 		default: {
+			// Editor context plugin.
+			if (p_tool >= EditorData::CONTEXT_MENU_ITEM_ID_BASE) {
+				List<Node *> selection = editor_selection->get_selected_node_list();
+				EditorNode::get_editor_data().scene_tree_options_pressed(EditorData::CONTEXT_SLOT_SCENE_TREE, p_tool, selection);
+				break;
+			}
+
 			_filter_option_selected(p_tool);
 
 			if (p_tool >= EDIT_SUBRESOURCE_BASE) {
@@ -3729,6 +3741,15 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		menu->add_separator();
 		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Remove")), ED_GET_SHORTCUT("scene_tree/delete"), TOOL_ERASE);
 	}
+
+	Vector<String> p_paths;
+	Node *root = EditorNode::get_singleton()->get_edited_scene();
+	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
+		String node_path = root->get_path().rel_path_to(E->get()->get_path());
+		p_paths.push_back(node_path);
+	}
+	EditorNode::get_editor_data().add_options_from_plugins(menu, EditorData::CONTEXT_SLOT_SCENE_TREE, p_paths);
+
 	menu->reset_size();
 	menu->set_position(p_menu_pos);
 	menu->popup();
