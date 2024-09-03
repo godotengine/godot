@@ -167,6 +167,10 @@
 
 #include "modules/modules_enabled.gen.h" // For gdscript, mono.
 
+#if defined(GLES3_ENABLED)
+#include "drivers/gles3/rasterizer_gles3.h"
+#endif
+
 EditorNode *EditorNode::singleton = nullptr;
 
 static const String EDITOR_NODE_CONFIG_SECTION = "EditorNode";
@@ -5016,8 +5020,8 @@ String EditorNode::_get_system_info() const {
 #ifdef LINUXBSD_ENABLED
 	const String display_server = OS::get_singleton()->get_environment("XDG_SESSION_TYPE").capitalize().replace(" ", ""); // `replace` is necessary, because `capitalize` introduces a whitespace between "x" and "11".
 #endif // LINUXBSD_ENABLED
-	String driver_name = GLOBAL_GET("rendering/rendering_device/driver");
-	String rendering_method = GLOBAL_GET("rendering/renderer/rendering_method");
+	String driver_name = OS::get_singleton()->get_current_rendering_driver_name().to_lower();
+	String rendering_method = OS::get_singleton()->get_current_rendering_method().to_lower();
 
 	const String rendering_device_name = RenderingServer::get_singleton()->get_video_adapter_name();
 
@@ -5053,12 +5057,23 @@ String EditorNode::_get_system_info() const {
 		rendering_method = "Mobile";
 	} else if (rendering_method == "gl_compatibility") {
 		rendering_method = "Compatibility";
-		driver_name = GLOBAL_GET("rendering/gl_compatibility/driver");
 	}
 	if (driver_name == "vulkan") {
 		driver_name = "Vulkan";
-	} else if (driver_name.begins_with("opengl3")) {
-		driver_name = "GLES3";
+	} else if (driver_name == "d3d12") {
+		driver_name = "Direct3D 12";
+#if defined(GLES3_ENABLED)
+	} else if (driver_name == "opengl3_angle") {
+		driver_name = "OpenGL ES 3/ANGLE";
+	} else if (driver_name == "opengl3_es") {
+		driver_name = "OpenGL ES 3";
+	} else if (driver_name == "opengl3") {
+		if (RasterizerGLES3::is_gles_over_gl()) {
+			driver_name = "OpenGL 3";
+		} else {
+			driver_name = "OpenGL ES 3";
+		}
+#endif
 	} else if (driver_name == "metal") {
 		driver_name = "Metal";
 	}
