@@ -241,6 +241,8 @@ private:
 
 	void _queue(int p_to_clip_index, bool p_is_auto_advance);
 
+	TypedArray<AudioStream> _get_playing_streams() const;
+
 	int switch_request = -1;
 
 protected:
@@ -252,6 +254,7 @@ public:
 	virtual bool is_playing() const override;
 	virtual int get_loop_count() const override; // times it looped
 	virtual double get_playback_position() const override;
+	Vector<Ref<AudioStream>> get_playing_streams() const;
 	virtual void seek(double p_time) override;
 	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
 
