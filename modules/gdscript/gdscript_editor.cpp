@@ -860,7 +860,7 @@ static void _get_directory_contents(EditorFileSystemDirectory *p_dir, HashMap<St
 	}
 }
 
-static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_annotation, int p_argument, const String p_quote_style, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result) {
+static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_annotation, int p_argument, const String &p_quote_style, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result) {
 	if (p_annotation->name == SNAME("@export_range")) {
 		if (p_argument == 3 || p_argument == 4 || p_argument == 5) {
 			// Slider hint.

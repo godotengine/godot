@@ -334,7 +334,7 @@ Array ENetConnection::_service(int p_timeout) {
 	return out;
 }
 
-void ENetConnection::_broadcast(int p_channel, PackedByteArray p_packet, int p_flags) {
+void ENetConnection::_broadcast(int p_channel, const PackedByteArray &p_packet, int p_flags) {
 	ERR_FAIL_NULL_MSG(host, "The ENetConnection instance isn't currently active.");
 	ERR_FAIL_COND_MSG(p_channel < 0 || p_channel > (int)host->channelLimit, "Invalid channel");
 	ERR_FAIL_COND_MSG(p_flags & ~ENetPacketPeer::FLAG_ALLOWED, "Invalid flags");

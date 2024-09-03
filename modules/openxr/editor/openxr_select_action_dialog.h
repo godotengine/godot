@@ -58,7 +58,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void _on_select_action(const String p_action);
+	void _on_select_action(const String &p_action);
 	void open();
 	virtual void ok_pressed() override;
 

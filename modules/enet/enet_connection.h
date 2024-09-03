@@ -85,7 +85,7 @@ private:
 	EventType _parse_event(const ENetEvent &p_event, Event &r_event);
 	Error _create(ENetAddress *p_address, int p_max_peers, int p_max_channels, int p_in_bandwidth, int p_out_bandwidth);
 	Array _service(int p_timeout = 0);
-	void _broadcast(int p_channel, PackedByteArray p_packet, int p_flags);
+	void _broadcast(int p_channel, const PackedByteArray &p_packet, int p_flags);
 	TypedArray<ENetPacketPeer> _get_peers();
 
 	class Compressor {

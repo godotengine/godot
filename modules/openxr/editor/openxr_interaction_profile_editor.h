@@ -61,8 +61,8 @@ public:
 	virtual void _theme_changed() {}
 
 	void _do_update_interaction_profile();
-	void _add_binding(const String p_action, const String p_path);
-	void _remove_binding(const String p_action, const String p_path);
+	void _add_binding(const String &p_action, const String &p_path);
+	void _remove_binding(const String &p_action, const String &p_path);
 
 	void remove_all_bindings_for_action(Ref<OpenXRAction> p_action);
 
@@ -80,9 +80,9 @@ private:
 	void _add_io_path(VBoxContainer *p_container, const OpenXRInteractionProfileMetadata::IOPath *p_io_path);
 
 public:
-	void select_action_for(const String p_io_path);
-	void action_selected(const String p_action);
-	void _on_remove_pressed(const String p_action, const String p_for_io_path);
+	void select_action_for(const String &p_io_path);
+	void action_selected(const String &p_action);
+	void _on_remove_pressed(const String &p_action, const String &p_for_io_path);
 
 	virtual void _update_interaction_profile() override;
 	virtual void _theme_changed() override;

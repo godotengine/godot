@@ -220,19 +220,19 @@ private:
 			const float p_time,
 			const GLTFAnimation::Interpolation p_interp);
 	GLTFAccessorIndex _encode_accessor_as_quaternions(Ref<GLTFState> p_state,
-			const Vector<Quaternion> p_attribs,
+			const Vector<Quaternion> &p_attribs,
 			const bool p_for_vertex);
 	GLTFAccessorIndex _encode_accessor_as_weights(Ref<GLTFState> p_state,
-			const Vector<Color> p_attribs,
+			const Vector<Color> &p_attribs,
 			const bool p_for_vertex);
 	GLTFAccessorIndex _encode_accessor_as_joints(Ref<GLTFState> p_state,
-			const Vector<Color> p_attribs,
+			const Vector<Color> &p_attribs,
 			const bool p_for_vertex);
 	GLTFAccessorIndex _encode_accessor_as_floats(Ref<GLTFState> p_state,
-			const Vector<real_t> p_attribs,
+			const Vector<real_t> &p_attribs,
 			const bool p_for_vertex);
 	GLTFAccessorIndex _encode_accessor_as_vec2(Ref<GLTFState> p_state,
-			const Vector<Vector2> p_attribs,
+			const Vector<Vector2> &p_attribs,
 			const bool p_for_vertex);
 
 	void _calc_accessor_vec2_min_max(int p_i, const int p_element_count, Vector<double> &p_type_max, Vector2 p_attribs, Vector<double> &p_type_min) {
@@ -251,21 +251,21 @@ private:
 	}
 
 	GLTFAccessorIndex _encode_accessor_as_vec3(Ref<GLTFState> p_state,
-			const Vector<Vector3> p_attribs,
+			const Vector<Vector3> &p_attribs,
 			const bool p_for_vertex);
 	GLTFAccessorIndex _encode_sparse_accessor_as_vec3(Ref<GLTFState> p_state, const Vector<Vector3> p_attribs, const Vector<Vector3> p_reference_attribs, const float p_reference_multiplier, const bool p_for_vertex, const GLTFAccessorIndex p_reference_accessor);
 	GLTFAccessorIndex _encode_accessor_as_color(Ref<GLTFState> p_state,
-			const Vector<Color> p_attribs,
+			const Vector<Color> &p_attribs,
 			const bool p_for_vertex);
 
-	void _calc_accessor_min_max(int p_i, const int p_element_count, Vector<double> &p_type_max, Vector<double> p_attribs, Vector<double> &p_type_min);
+	void _calc_accessor_min_max(int p_i, const int p_element_count, Vector<double> &p_type_max, Vector<double> &p_attribs, Vector<double> &p_type_min);
 
 	GLTFAccessorIndex _encode_accessor_as_ints(Ref<GLTFState> p_state,
-			const Vector<int32_t> p_attribs,
+			const Vector<int32_t> &p_attribs,
 			const bool p_for_vertex,
 			const bool p_for_indices);
 	GLTFAccessorIndex _encode_accessor_as_xform(Ref<GLTFState> p_state,
-			const Vector<Transform3D> p_attribs,
+			const Vector<Transform3D> &p_attribs,
 			const bool p_for_vertex);
 	Error _encode_buffer_view(Ref<GLTFState> p_state, const double *p_src,
 			const int p_count, const GLTFAccessor::GLTFAccessorType p_accessor_type,
@@ -291,7 +291,7 @@ private:
 	Dictionary _serialize_texture_transform_uv1(Ref<BaseMaterial3D> p_material);
 	Dictionary _serialize_texture_transform_uv2(Ref<BaseMaterial3D> p_material);
 	Error _serialize_asset_header(Ref<GLTFState> p_state);
-	Error _serialize_file(Ref<GLTFState> p_state, const String p_path);
+	Error _serialize_file(Ref<GLTFState> p_state, const String &p_path);
 	Error _serialize_gltf_extensions(Ref<GLTFState> p_state) const;
 
 public:
@@ -311,8 +311,8 @@ private:
 	static float get_max_component(const Color &p_color);
 
 public:
-	virtual Error append_from_file(String p_path, Ref<GLTFState> p_state, uint32_t p_flags = 0, String p_base_path = String());
-	virtual Error append_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> p_state, uint32_t p_flags = 0);
+	virtual Error append_from_file(const String &p_path, Ref<GLTFState> p_state, uint32_t p_flags = 0, const String &p_base_path = String());
+	virtual Error append_from_buffer(const PackedByteArray &p_bytes, const String &p_base_path, Ref<GLTFState> p_state, uint32_t p_flags = 0);
 	virtual Error append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint32_t p_flags = 0);
 
 	virtual Node *generate_scene(Ref<GLTFState> p_state, float p_bake_fps = 30.0f, bool p_trimming = false, bool p_remove_immutable_tracks = true);
@@ -383,9 +383,9 @@ public:
 			Ref<GLTFNode> p_gltf_node);
 	GLTFMeshIndex _convert_mesh_to_gltf(Ref<GLTFState> p_state,
 			MeshInstance3D *p_mesh_instance);
-	void _convert_animation(Ref<GLTFState> p_state, AnimationPlayer *p_animation_player, String p_animation_track_name);
+	void _convert_animation(Ref<GLTFState> p_state, AnimationPlayer *p_animation_player, const String &p_animation_track_name);
 	Error _serialize(Ref<GLTFState> p_state);
-	Error _parse(Ref<GLTFState> p_state, String p_path, Ref<FileAccess> p_file);
+	Error _parse(Ref<GLTFState> p_state, const String &p_path, Ref<FileAccess> p_file);
 };
 
 VARIANT_ENUM_CAST(GLTFDocument::RootNodeMode);

@@ -44,7 +44,7 @@ private:
 	ENetPacket *last_packet = nullptr;
 
 	static void _bind_methods();
-	Error _send(int p_channel, PackedByteArray p_packet, int p_flags);
+	Error _send(int p_channel, const PackedByteArray &p_packet, int p_flags);
 
 protected:
 	friend class ENetConnection;

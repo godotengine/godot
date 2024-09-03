@@ -353,7 +353,7 @@ void OpenXRInterface::free_action_sets() {
 	action_sets.clear();
 }
 
-OpenXRInterface::Action *OpenXRInterface::create_action(ActionSet *p_action_set, const String &p_action_name, const String &p_localized_name, OpenXRAction::ActionType p_action_type, const Vector<Tracker *> p_trackers) {
+OpenXRInterface::Action *OpenXRInterface::create_action(ActionSet *p_action_set, const String &p_action_name, const String &p_localized_name, OpenXRAction::ActionType p_action_type, const Vector<Tracker *> &p_trackers) {
 	ERR_FAIL_NULL_V(openxr_api, nullptr);
 
 	for (int i = 0; i < p_action_set->actions.size(); i++) {

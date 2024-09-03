@@ -127,10 +127,10 @@ public:
 	void on_reset();
 	void on_peer_change(int p_id, bool p_connected);
 
-	Error on_spawn(Object *p_obj, Variant p_config);
-	Error on_despawn(Object *p_obj, Variant p_config);
-	Error on_replication_start(Object *p_obj, Variant p_config);
-	Error on_replication_stop(Object *p_obj, Variant p_config);
+	Error on_spawn(Object *p_obj, const Variant &p_config);
+	Error on_despawn(Object *p_obj, const Variant &p_config);
+	Error on_replication_start(Object *p_obj, const Variant &p_config);
+	Error on_replication_stop(Object *p_obj, const Variant &p_config);
 	void on_network_process();
 
 	Error on_spawn_receive(int p_from, const uint8_t *p_buffer, int p_buffer_len);

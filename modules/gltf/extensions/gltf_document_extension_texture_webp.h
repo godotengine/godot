@@ -38,7 +38,7 @@ class GLTFDocumentExtensionTextureWebP : public GLTFDocumentExtension {
 
 public:
 	// Import process.
-	Error import_preflight(Ref<GLTFState> p_state, Vector<String> p_extensions) override;
+	Error import_preflight(Ref<GLTFState> p_state, const Vector<String> &p_extensions) override;
 	Vector<String> get_supported_extensions() override;
 	Error parse_image_data(Ref<GLTFState> p_state, const PackedByteArray &p_image_data, const String &p_mime_type, Ref<Image> r_image) override;
 	String get_image_file_extension() override;
