@@ -183,7 +183,7 @@ Ref<EditorTheme> EditorThemeManager::_create_base_theme(const Ref<EditorTheme> &
 
 		// If settings are comparable to the old theme, then just copy existing icons over.
 		// Otherwise, regenerate them.
-		bool keep_old_icons = (p_old_theme != nullptr && theme->get_generated_icons_hash() == p_old_theme->get_generated_icons_hash());
+		bool keep_old_icons = (p_old_theme.is_valid() && theme->get_generated_icons_hash() == p_old_theme->get_generated_icons_hash());
 		if (keep_old_icons) {
 			print_verbose("EditorTheme: Can keep old icons, copying.");
 			editor_copy_icons(theme, p_old_theme);

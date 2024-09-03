@@ -232,7 +232,6 @@ private:
 	void compute_single_avoidance_step_2d(uint32_t index, NavAgent **agent);
 	void compute_single_avoidance_step_3d(uint32_t index, NavAgent **agent);
 
-	void clip_path(const LocalVector<gd::NavigationPoly> &p_navigation_polys, Vector<Vector3> &path, const gd::NavigationPoly *from_poly, const Vector3 &p_to_point, const gd::NavigationPoly *p_to_poly, Vector<int32_t> *r_path_types, TypedArray<RID> *r_path_rids, Vector<int64_t> *r_path_owners) const;
 	void _update_rvo_simulation();
 	void _update_rvo_obstacles_tree_2d();
 	void _update_rvo_agents_tree_2d();

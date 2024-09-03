@@ -32,6 +32,8 @@
 
 #include "nav_map.h"
 
+#include "3d/nav_mesh_queries_3d.h"
+
 void NavRegion::set_map(NavMap *p_map) {
 	if (map == p_map) {
 		return;
@@ -108,81 +110,7 @@ Vector3 NavRegion::get_random_point(uint32_t p_navigation_layers, bool p_uniform
 		return Vector3();
 	}
 
-	const LocalVector<gd::Polygon> &region_polygons = get_polygons();
-
-	if (region_polygons.is_empty()) {
-		return Vector3();
-	}
-
-	if (p_uniformly) {
-		real_t accumulated_area = 0;
-		RBMap<real_t, uint32_t> region_area_map;
-
-		for (uint32_t rp_index = 0; rp_index < region_polygons.size(); rp_index++) {
-			const gd::Polygon &region_polygon = region_polygons[rp_index];
-			real_t polyon_area = region_polygon.surface_area;
-
-			if (polyon_area == 0.0) {
-				continue;
-			}
-			region_area_map[accumulated_area] = rp_index;
-			accumulated_area += polyon_area;
-		}
-		if (region_area_map.is_empty() || accumulated_area == 0) {
-			// All polygons have no real surface / no area.
-			return Vector3();
-		}
-
-		real_t region_area_map_pos = Math::random(real_t(0), accumulated_area);
-
-		RBMap<real_t, uint32_t>::Iterator region_E = region_area_map.find_closest(region_area_map_pos);
-		ERR_FAIL_COND_V(!region_E, Vector3());
-		uint32_t rrp_polygon_index = region_E->value;
-		ERR_FAIL_UNSIGNED_INDEX_V(rrp_polygon_index, region_polygons.size(), Vector3());
-
-		const gd::Polygon &rr_polygon = region_polygons[rrp_polygon_index];
-
-		real_t accumulated_polygon_area = 0;
-		RBMap<real_t, uint32_t> polygon_area_map;
-
-		for (uint32_t rpp_index = 2; rpp_index < rr_polygon.points.size(); rpp_index++) {
-			real_t face_area = Face3(rr_polygon.points[0].pos, rr_polygon.points[rpp_index - 1].pos, rr_polygon.points[rpp_index].pos).get_area();
-
-			if (face_area == 0.0) {
-				continue;
-			}
-			polygon_area_map[accumulated_polygon_area] = rpp_index;
-			accumulated_polygon_area += face_area;
-		}
-		if (polygon_area_map.is_empty() || accumulated_polygon_area == 0) {
-			// All faces have no real surface / no area.
-			return Vector3();
-		}
-
-		real_t polygon_area_map_pos = Math::random(real_t(0), accumulated_polygon_area);
-
-		RBMap<real_t, uint32_t>::Iterator polygon_E = polygon_area_map.find_closest(polygon_area_map_pos);
-		ERR_FAIL_COND_V(!polygon_E, Vector3());
-		uint32_t rrp_face_index = polygon_E->value;
-		ERR_FAIL_UNSIGNED_INDEX_V(rrp_face_index, rr_polygon.points.size(), Vector3());
-
-		const Face3 face(rr_polygon.points[0].pos, rr_polygon.points[rrp_face_index - 1].pos, rr_polygon.points[rrp_face_index].pos);
-
-		Vector3 face_random_position = face.get_random_point_inside();
-		return face_random_position;
-
-	} else {
-		uint32_t rrp_polygon_index = Math::random(int(0), region_polygons.size() - 1);
-
-		const gd::Polygon &rr_polygon = region_polygons[rrp_polygon_index];
-
-		uint32_t rrp_face_index = Math::random(int(2), rr_polygon.points.size() - 1);
-
-		const Face3 face(rr_polygon.points[0].pos, rr_polygon.points[rrp_face_index - 1].pos, rr_polygon.points[rrp_face_index].pos);
-
-		Vector3 face_random_position = face.get_random_point_inside();
-		return face_random_position;
-	}
+	return NavMeshQueries3D::polygons_get_random_point(get_polygons(), p_navigation_layers, p_uniformly);
 }
 
 bool NavRegion::sync() {

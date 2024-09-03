@@ -47,6 +47,7 @@
 #include "editor/import/editor_import_plugin.h"
 #include "editor/inspector_dock.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
+#include "editor/plugins/editor_context_menu_plugin.h"
 #include "editor/plugins/editor_debugger_plugin.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
@@ -490,6 +491,16 @@ void EditorPlugin::remove_scene_post_import_plugin(const Ref<EditorScenePostImpo
 	ResourceImporterScene::remove_post_importer_plugin(p_plugin);
 }
 
+void EditorPlugin::add_context_menu_plugin(ContextMenuSlot p_slot, const Ref<EditorContextMenuPlugin> &p_plugin) {
+	ERR_FAIL_COND(p_plugin.is_null());
+	EditorNode::get_editor_data().add_context_menu_plugin(EditorData::ContextMenuSlot(p_slot), p_plugin);
+}
+
+void EditorPlugin::remove_context_menu_plugin(ContextMenuSlot p_slot, const Ref<EditorContextMenuPlugin> &p_plugin) {
+	ERR_FAIL_COND(p_plugin.is_null());
+	EditorNode::get_editor_data().remove_context_menu_plugin(EditorData::ContextMenuSlot(p_slot), p_plugin);
+}
+
 int find(const PackedStringArray &a, const String &v) {
 	const String *r = a.ptr();
 	for (int j = 0; j < a.size(); ++j) {
@@ -629,6 +640,8 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_resource_conversion_plugin", "plugin"), &EditorPlugin::remove_resource_conversion_plugin);
 	ClassDB::bind_method(D_METHOD("set_input_event_forwarding_always_enabled"), &EditorPlugin::set_input_event_forwarding_always_enabled);
 	ClassDB::bind_method(D_METHOD("set_force_draw_over_forwarding_enabled"), &EditorPlugin::set_force_draw_over_forwarding_enabled);
+	ClassDB::bind_method(D_METHOD("add_context_menu_plugin", "slot", "plugin"), &EditorPlugin::add_context_menu_plugin);
+	ClassDB::bind_method(D_METHOD("remove_context_menu_plugin", "slot", "plugin"), &EditorPlugin::remove_context_menu_plugin);
 
 	ClassDB::bind_method(D_METHOD("get_editor_interface"), &EditorPlugin::get_editor_interface);
 	ClassDB::bind_method(D_METHOD("get_script_create_dialog"), &EditorPlugin::get_script_create_dialog);
@@ -694,6 +707,11 @@ void EditorPlugin::_bind_methods() {
 	BIND_ENUM_CONSTANT(AFTER_GUI_INPUT_PASS);
 	BIND_ENUM_CONSTANT(AFTER_GUI_INPUT_STOP);
 	BIND_ENUM_CONSTANT(AFTER_GUI_INPUT_CUSTOM);
+
+	BIND_ENUM_CONSTANT(CONTEXT_SLOT_SCENE_TREE);
+	BIND_ENUM_CONSTANT(CONTEXT_SLOT_FILESYSTEM);
+	BIND_ENUM_CONSTANT(CONTEXT_SLOT_SCRIPT_EDITOR);
+	BIND_ENUM_CONSTANT(CONTEXT_SUBMENU_SLOT_FILESYSTEM_CREATE);
 }
 
 EditorUndoRedoManager *EditorPlugin::get_undo_redo() {

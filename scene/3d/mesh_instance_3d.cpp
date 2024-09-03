@@ -517,12 +517,12 @@ bool MeshInstance3D::_property_get_revert(const StringName &p_name, Variant &r_p
 
 Ref<ArrayMesh> MeshInstance3D::bake_mesh_from_current_blend_shape_mix(Ref<ArrayMesh> p_existing) {
 	Ref<ArrayMesh> source_mesh = get_mesh();
-	ERR_FAIL_NULL_V_MSG(source_mesh, Ref<ArrayMesh>(), "The source mesh must be a valid ArrayMesh.");
+	ERR_FAIL_COND_V_MSG(source_mesh.is_null(), Ref<ArrayMesh>(), "The source mesh must be a valid ArrayMesh.");
 
 	Ref<ArrayMesh> bake_mesh;
 
 	if (p_existing.is_valid()) {
-		ERR_FAIL_NULL_V_MSG(p_existing, Ref<ArrayMesh>(), "The existing mesh must be a valid ArrayMesh.");
+		ERR_FAIL_COND_V_MSG(p_existing.is_null(), Ref<ArrayMesh>(), "The existing mesh must be a valid ArrayMesh.");
 		ERR_FAIL_COND_V_MSG(source_mesh == p_existing, Ref<ArrayMesh>(), "The source mesh can not be the same mesh as the existing mesh.");
 
 		bake_mesh = p_existing;

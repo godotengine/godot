@@ -4506,8 +4506,8 @@ bool Node3DEditorViewport::_create_instance(Node *p_parent, const String &p_path
 
 	Node *instantiated_scene = nullptr;
 
-	if (mesh != nullptr || scene != nullptr) {
-		if (mesh != nullptr) {
+	if (mesh.is_valid() || scene.is_valid()) {
+		if (mesh.is_valid()) {
 			MeshInstance3D *mesh_instance = memnew(MeshInstance3D);
 			mesh_instance->set_mesh(mesh);
 
@@ -4538,7 +4538,7 @@ bool Node3DEditorViewport::_create_instance(Node *p_parent, const String &p_path
 		}
 	}
 
-	if (scene != nullptr) {
+	if (scene.is_valid()) {
 		instantiated_scene->set_scene_file_path(ProjectSettings::get_singleton()->localize_path(p_path));
 	}
 
@@ -5462,7 +5462,8 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 
 	preview_camera = memnew(CheckBox);
 	preview_camera->set_text(TTR("Preview"));
-	preview_camera->set_shortcut(ED_SHORTCUT("spatial_editor/toggle_camera_preview", TTR("Toggle Camera Preview"), KeyModifierMask::CMD_OR_CTRL | Key::P));
+	// Using Control even on macOS to avoid conflict with Quick Open shortcut.
+	preview_camera->set_shortcut(ED_SHORTCUT("spatial_editor/toggle_camera_preview", TTR("Toggle Camera Preview"), KeyModifierMask::CTRL | Key::P));
 	vbox->add_child(preview_camera);
 	preview_camera->set_h_size_flags(0);
 	preview_camera->hide();
@@ -9291,7 +9292,7 @@ struct _GizmoPluginNameComparator {
 };
 
 void Node3DEditor::add_gizmo_plugin(Ref<EditorNode3DGizmoPlugin> p_plugin) {
-	ERR_FAIL_NULL(p_plugin.ptr());
+	ERR_FAIL_COND(p_plugin.is_null());
 
 	gizmo_plugins_by_priority.push_back(p_plugin);
 	gizmo_plugins_by_priority.sort_custom<_GizmoPluginPriorityComparator>();

@@ -609,7 +609,7 @@ TEST_CASE("[SceneTree][Primitive][TubeTrail] TubeTrail Primitive") {
 		CHECK(tube->get_sections() >= 0);
 		CHECK(tube->get_section_length() > 0);
 		CHECK(tube->get_section_rings() >= 0);
-		CHECK(tube->get_curve() == nullptr);
+		CHECK(tube->get_curve().is_null());
 		CHECK(tube->get_builtin_bind_pose_count() >= 0);
 	}
 
@@ -669,7 +669,7 @@ TEST_CASE("[SceneTree][Primitive][RibbonTrail] RibbonTrail Primitive") {
 		CHECK(ribbon->get_section_length() > 0);
 		CHECK(ribbon->get_section_segments() >= 0);
 		CHECK(ribbon->get_builtin_bind_pose_count() >= 0);
-		CHECK(ribbon->get_curve() == nullptr);
+		CHECK(ribbon->get_curve().is_null());
 		CHECK((ribbon->get_shape() == RibbonTrailMesh::SHAPE_CROSS ||
 				ribbon->get_shape() == RibbonTrailMesh::SHAPE_FLAT));
 	}
@@ -731,7 +731,7 @@ TEST_CASE("[SceneTree][Primitive][Text] Text Primitive") {
 				text->get_vertical_alignment() == VERTICAL_ALIGNMENT_TOP ||
 				text->get_vertical_alignment() == VERTICAL_ALIGNMENT_CENTER ||
 				text->get_vertical_alignment() == VERTICAL_ALIGNMENT_FILL));
-		CHECK(text->get_font() == nullptr);
+		CHECK(text->get_font().is_null());
 		CHECK(text->get_font_size() > 0);
 		CHECK(text->get_line_spacing() >= 0);
 		CHECK((text->get_autowrap_mode() == TextServer::AUTOWRAP_OFF ||

@@ -408,7 +408,8 @@ class AnimationTrackEditor : public VBoxContainer {
 	HSlider *zoom = nullptr;
 	EditorSpinSlider *step = nullptr;
 	TextureRect *zoom_icon = nullptr;
-	Button *snap = nullptr;
+	Button *snap_keys = nullptr;
+	Button *snap_timeline = nullptr;
 	Button *bezier_edit_icon = nullptr;
 	OptionButton *snap_mode = nullptr;
 	Button *auto_fit = nullptr;
@@ -728,7 +729,8 @@ public:
 	bool is_selection_active() const;
 	bool is_key_clipboard_active() const;
 	bool is_moving_selection() const;
-	bool is_snap_enabled() const;
+	bool is_snap_timeline_enabled() const;
+	bool is_snap_keys_enabled() const;
 	bool is_bezier_editor_active() const;
 	bool can_add_reset_key() const;
 	float get_moving_selection_offset() const;

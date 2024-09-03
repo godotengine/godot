@@ -162,6 +162,9 @@ void PropertySelector::_update_search() {
 			if (!found && !search_box->get_text().is_empty() && E.name.containsn(search_text)) {
 				item->select(0);
 				found = true;
+			} else if (!found && search_box->get_text().is_empty() && E.name == selected) {
+				item->select(0);
+				found = true;
 			}
 
 			item->set_selectable(0, true);
@@ -173,6 +176,12 @@ void PropertySelector::_update_search() {
 		if (category && category->get_first_child() == nullptr) {
 			memdelete(category); //old category was unused
 		}
+
+		if (found) {
+			// As we call this while adding items, defer until list is completely populated.
+			callable_mp(search_options, &Tree::scroll_to_item).call_deferred(search_options->get_selected(), true);
+		}
+
 	} else {
 		List<MethodInfo> methods;
 
@@ -305,11 +314,19 @@ void PropertySelector::_update_search() {
 			if (!found && !search_box->get_text().is_empty() && name.containsn(search_text)) {
 				item->select(0);
 				found = true;
+			} else if (!found && search_box->get_text().is_empty() && name == selected) {
+				item->select(0);
+				found = true;
 			}
 		}
 
 		if (category && category->get_first_child() == nullptr) {
 			memdelete(category); //old category was unused
+		}
+
+		if (found) {
+			// As we call this while adding items, defer until list is completely populated.
+			callable_mp(search_options, &Tree::scroll_to_item).call_deferred(search_options->get_selected(), true);
 		}
 	}
 

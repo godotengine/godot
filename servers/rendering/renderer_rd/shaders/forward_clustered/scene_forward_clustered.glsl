@@ -2065,7 +2065,7 @@ void fragment_shader(in SceneData scene_data) {
 
 #ifdef LIGHT_TRANSMITTANCE_USED
 			float transmittance_z = transmittance_depth;
-
+#ifndef SHADOWS_DISABLED
 			if (directional_lights.data[i].shadow_opacity > 0.001) {
 				float depth_z = -vertex.z;
 
@@ -2112,7 +2112,8 @@ void fragment_shader(in SceneData scene_data) {
 					transmittance_z = z - shadow_z;
 				}
 			}
-#endif
+#endif // !SHADOWS_DISABLED
+#endif // LIGHT_TRANSMITTANCE_USED
 
 			float shadow = 1.0;
 #ifndef SHADOWS_DISABLED

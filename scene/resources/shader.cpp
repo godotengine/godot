@@ -158,7 +158,7 @@ void Shader::get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_gr
 #ifdef MODULE_REGEX_ENABLED
 				const RegEx pattern("/\\*\\*\\s([^*]|[\\r\\n]|(\\*+([^*/]|[\\r\\n])))*\\*+/\\s*uniform\\s+\\w+\\s+" + pi.name + "(?=[\\s:;=])");
 				Ref<RegExMatch> pattern_ref = pattern.search(code);
-				if (pattern_ref != nullptr) {
+				if (pattern_ref.is_valid()) {
 					RegExMatch *match = pattern_ref.ptr();
 					const RegEx pattern_tip("\\/\\*\\*([\\s\\S]*?)\\*/");
 					Ref<RegExMatch> pattern_tip_ref = pattern_tip.search(match->get_string(0));

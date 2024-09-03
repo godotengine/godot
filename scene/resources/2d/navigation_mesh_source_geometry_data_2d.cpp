@@ -176,7 +176,7 @@ void NavigationMeshSourceGeometryData2D::add_obstruction_outline(const PackedVec
 }
 
 void NavigationMeshSourceGeometryData2D::merge(const Ref<NavigationMeshSourceGeometryData2D> &p_other_geometry) {
-	ERR_FAIL_NULL(p_other_geometry);
+	ERR_FAIL_COND(p_other_geometry.is_null());
 
 	Vector<Vector<Vector2>> other_traversable_outlines;
 	Vector<Vector<Vector2>> other_obstruction_outlines;

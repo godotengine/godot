@@ -4225,7 +4225,7 @@ Dictionary Image::compute_image_metrics(const Ref<Image> p_compared_image, bool 
 	result["root_mean_squared"] = INFINITY;
 	result["peak_snr"] = 0.0f;
 
-	ERR_FAIL_NULL_V(p_compared_image, result);
+	ERR_FAIL_COND_V(p_compared_image.is_null(), result);
 	Error err = OK;
 	Ref<Image> compared_image = duplicate(true);
 	if (compared_image->is_compressed()) {

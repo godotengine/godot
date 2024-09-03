@@ -299,8 +299,8 @@ Error GLTFDocument::_parse_json(const String &p_path, Ref<GLTFState> p_state) {
 }
 
 Error GLTFDocument::_parse_glb(Ref<FileAccess> p_file, Ref<GLTFState> p_state) {
-	ERR_FAIL_NULL_V(p_file, ERR_INVALID_PARAMETER);
-	ERR_FAIL_NULL_V(p_state, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_file.is_null(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_file->get_position() != 0, ERR_FILE_CANT_READ);
 	uint32_t magic = p_file->get_32();
 	ERR_FAIL_COND_V(magic != 0x46546C67, ERR_FILE_UNRECOGNIZED); //glTF
@@ -3282,7 +3282,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 					const int material = p["material"];
 					ERR_FAIL_INDEX_V(material, p_state->materials.size(), ERR_FILE_CORRUPT);
 					Ref<Material> mat3d = p_state->materials[material];
-					ERR_FAIL_NULL_V(mat3d, ERR_FILE_CORRUPT);
+					ERR_FAIL_COND_V(mat3d.is_null(), ERR_FILE_CORRUPT);
 
 					Ref<BaseMaterial3D> base_material = mat3d;
 					if (has_vertex_color && base_material.is_valid()) {
@@ -3298,7 +3298,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 					}
 					mat = mat3d;
 				}
-				ERR_FAIL_NULL_V(mat, ERR_FILE_CORRUPT);
+				ERR_FAIL_COND_V(mat.is_null(), ERR_FILE_CORRUPT);
 				mat_name = mat->get_name();
 			}
 			import_mesh->add_surface(primitive, array, morphs,
@@ -3601,7 +3601,7 @@ void GLTFDocument::_parse_image_save_image(Ref<GLTFState> p_state, const Vector<
 }
 
 Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_path) {
-	ERR_FAIL_NULL_V(p_state, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
 	if (!p_state->json.has("images")) {
 		return OK;
 	}
@@ -6967,14 +6967,14 @@ Dictionary _serialize_texture_transform_uv(Vector2 p_offset, Vector2 p_scale) {
 }
 
 Dictionary GLTFDocument::_serialize_texture_transform_uv1(Ref<BaseMaterial3D> p_material) {
-	ERR_FAIL_NULL_V(p_material, Dictionary());
+	ERR_FAIL_COND_V(p_material.is_null(), Dictionary());
 	Vector3 offset = p_material->get_uv1_offset();
 	Vector3 scale = p_material->get_uv1_scale();
 	return _serialize_texture_transform_uv(Vector2(offset.x, offset.y), Vector2(scale.x, scale.y));
 }
 
 Dictionary GLTFDocument::_serialize_texture_transform_uv2(Ref<BaseMaterial3D> p_material) {
-	ERR_FAIL_NULL_V(p_material, Dictionary());
+	ERR_FAIL_COND_V(p_material.is_null(), Dictionary());
 	Vector3 offset = p_material->get_uv2_offset();
 	Vector3 scale = p_material->get_uv2_scale();
 	return _serialize_texture_transform_uv(Vector2(offset.x, offset.y), Vector2(scale.x, scale.y));
@@ -7345,7 +7345,7 @@ Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> p_state, const String &p_se
 
 PackedByteArray GLTFDocument::generate_buffer(Ref<GLTFState> p_state) {
 	Ref<GLTFState> state = p_state;
-	ERR_FAIL_NULL_V(state, PackedByteArray());
+	ERR_FAIL_COND_V(state.is_null(), PackedByteArray());
 	// For buffers, set the state filename to an empty string, but
 	// don't touch the base path, in case the user set it manually.
 	state->filename = "";
@@ -7357,7 +7357,7 @@ PackedByteArray GLTFDocument::generate_buffer(Ref<GLTFState> p_state) {
 
 Error GLTFDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_path) {
 	Ref<GLTFState> state = p_state;
-	ERR_FAIL_NULL_V(state, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(state.is_null(), ERR_INVALID_PARAMETER);
 	state->base_path = p_path.get_base_dir();
 	state->filename = p_path.get_file();
 	Error err = _serialize(state);
@@ -7373,7 +7373,7 @@ Error GLTFDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_
 
 Node *GLTFDocument::generate_scene(Ref<GLTFState> p_state, float p_bake_fps, bool p_trimming, bool p_remove_immutable_tracks) {
 	Ref<GLTFState> state = p_state;
-	ERR_FAIL_NULL_V(state, nullptr);
+	ERR_FAIL_COND_V(state.is_null(), nullptr);
 	ERR_FAIL_INDEX_V(0, state->root_nodes.size(), nullptr);
 	Error err = OK;
 	p_state->set_bake_fps(p_bake_fps);
@@ -7491,7 +7491,7 @@ Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> p_state, uint
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::READ, &err);
 	ERR_FAIL_COND_V(err != OK, ERR_FILE_CANT_OPEN);
-	ERR_FAIL_NULL_V(file, ERR_FILE_CANT_OPEN);
+	ERR_FAIL_COND_V(file.is_null(), ERR_FILE_CANT_OPEN);
 	String base_path = p_base_path;
 	if (base_path.is_empty()) {
 		base_path = p_path.get_base_dir();
@@ -7508,7 +7508,7 @@ Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> p_state, uint
 }
 
 Error GLTFDocument::_parse_gltf_extensions(Ref<GLTFState> p_state) {
-	ERR_FAIL_NULL_V(p_state, ERR_PARSE_ERROR);
+	ERR_FAIL_COND_V(p_state.is_null(), ERR_PARSE_ERROR);
 	if (p_state->json.has("extensionsUsed")) {
 		Vector<String> ext_array = p_state->json["extensionsUsed"];
 		p_state->extensions_used = ext_array;
