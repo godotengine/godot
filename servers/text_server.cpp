@@ -2071,8 +2071,8 @@ TypedArray<Vector3i> TextServer::parse_structured_text(StructuredTextParser p_pa
 					if (prev != i) {
 						ret.push_back(Vector3i(prev, i, TextServer::DIRECTION_AUTO));
 					}
-					prev = i + 1;
-					ret.push_back(Vector3i(i, i + 1, TextServer::DIRECTION_LTR));
+					prev = p_text.length();
+					ret.push_back(Vector3i(i, p_text.length(), TextServer::DIRECTION_AUTO));
 					break;
 				}
 			}
