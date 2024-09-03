@@ -3274,12 +3274,10 @@ void Tree::value_editor_changed(double p_value) {
 		return;
 	}
 
-	TreeItem::Cell &c = popup_edited_item->cells.write[popup_edited_item_col];
-	c.val = p_value;
+	const TreeItem::Cell &c = popup_edited_item->cells[popup_edited_item_col];
 
-	line_editor->set_text(String::num(c.val, Math::range_step_decimals(c.step)));
+	line_editor->set_text(String::num(p_value, Math::range_step_decimals(c.step)));
 
-	item_edited(popup_edited_item_col, popup_edited_item);
 	queue_redraw();
 }
 
