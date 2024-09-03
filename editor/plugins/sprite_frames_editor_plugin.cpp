@@ -659,6 +659,7 @@ void SpriteFramesEditor::_notification(int p_what) {
 			zoom_reset->set_icon(get_editor_theme_icon(SNAME("ZoomReset")));
 			zoom_in->set_icon(get_editor_theme_icon(SNAME("ZoomMore")));
 			add_anim->set_icon(get_editor_theme_icon(SNAME("New")));
+			duplicate_anim->set_icon(get_editor_theme_icon(SNAME("Duplicate")));
 			delete_anim->set_icon(get_editor_theme_icon(SNAME("Remove")));
 			anim_search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			split_sheet_zoom_out->set_icon(get_editor_theme_icon(SNAME("ZoomLess")));
@@ -1179,6 +1180,41 @@ void SpriteFramesEditor::_animation_add() {
 	animations->grab_focus();
 }
 
+void SpriteFramesEditor::_animation_duplicate() {
+	if (updating) {
+		return;
+	}
+
+	if (!frames->has_animation(edited_anim)) {
+		return;
+	}
+
+	int counter = 1;
+	String new_name = edited_anim;
+	PackedStringArray name_component = new_name.rsplit("_", true, 1);
+	String base_name = name_component[0];
+	if (name_component.size() > 1 && name_component[1].is_valid_int() && name_component[1].to_int() >= 0) {
+		counter = name_component[1].to_int();
+	}
+	new_name = base_name + "_" + itos(counter);
+	while (frames->has_animation(new_name)) {
+		counter++;
+		new_name = base_name + "_" + itos(counter);
+	}
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Duplicate Animation"), UndoRedo::MERGE_DISABLE, EditorNode::get_singleton()->get_edited_scene());
+	undo_redo->add_do_method(frames.ptr(), "duplicate_animation", edited_anim, new_name);
+	undo_redo->add_undo_method(frames.ptr(), "remove_animation", new_name);
+	undo_redo->add_do_method(this, "_select_animation", new_name);
+	undo_redo->add_undo_method(this, "_select_animation", edited_anim);
+	undo_redo->add_do_method(this, "_update_library");
+	undo_redo->add_undo_method(this, "_update_library");
+	undo_redo->commit_action();
+
+	animations->grab_focus();
+}
+
 void SpriteFramesEditor::_animation_remove() {
 	if (updating) {
 		return;
@@ -1541,6 +1577,7 @@ void SpriteFramesEditor::edit(Ref<SpriteFrames> p_frames) {
 	_zoom_reset();
 
 	add_anim->set_disabled(read_only);
+	duplicate_anim->set_disabled(read_only);
 	delete_anim->set_disabled(read_only);
 	anim_speed->set_editable(!read_only);
 	anim_loop->set_disabled(read_only);
@@ -1865,6 +1902,11 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	hbc_animlist->add_child(add_anim);
 	add_anim->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_animation_add));
 
+	duplicate_anim = memnew(Button);
+	duplicate_anim->set_flat(true);
+	hbc_animlist->add_child(duplicate_anim);
+	duplicate_anim->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_animation_duplicate));
+
 	delete_anim = memnew(Button);
 	delete_anim->set_theme_type_variation("FlatButton");
 	hbc_animlist->add_child(delete_anim);
@@ -1918,6 +1960,8 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	add_anim->set_shortcut_context(animations);
 	add_anim->set_shortcut(ED_SHORTCUT("sprite_frames/new_animation", TTR("Add Animation"), KeyModifierMask::CMD_OR_CTRL | Key::N));
+	duplicate_anim->set_shortcut_context(animations);
+	duplicate_anim->set_shortcut(ED_SHORTCUT("sprite_frames/duplicate_animation", TTR("Duplicate Animation"), KeyModifierMask::CMD_OR_CTRL | Key::D));
 	delete_anim->set_shortcut_context(animations);
 	delete_anim->set_shortcut(ED_SHORTCUT("sprite_frames/delete_animation", TTR("Delete Animation"), Key::KEY_DELETE));
 
