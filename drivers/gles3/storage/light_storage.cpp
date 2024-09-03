@@ -1521,6 +1521,11 @@ bool LightStorage::_shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas, int *p_i
 		uint64_t min_pass = 0; // Pass of the existing one, try to use the least recently used one (LRU fashion).
 
 		for (int j = 0; j < sc; j++) {
+			if (sarr[j].owner_is_omni != is_omni) {
+				// Existing light instance type doesn't match new light instance type skip.
+				continue;
+			}
+
 			LightInstance *sli = light_instance_owner.get_or_null(sarr[j].owner);
 			if (!sli) {
 				// Found a released light instance.
