@@ -103,7 +103,6 @@ void EditorObjectSelector::_show_popup() {
 	sub_objects_menu->set_position(gp);
 	sub_objects_menu->set_size(Size2(size.width, 1));
 
-	sub_objects_menu->take_mouse_focus();
 	sub_objects_menu->popup();
 }
 

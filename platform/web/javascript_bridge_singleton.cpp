@@ -304,7 +304,7 @@ Variant JavaScriptBridge::_create_object_bind(const Variant **p_args, int p_argc
 		r_error.expected = 1;
 		return Ref<JavaScriptObject>();
 	}
-	if (p_args[0]->get_type() != Variant::STRING) {
+	if (!p_args[0]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::STRING;
