@@ -3418,6 +3418,11 @@ void FileSystemDock::_file_list_empty_clicked(const Vector2 &p_pos, MouseButton 
 
 	current_path = current_path_line_edit->get_text();
 
+	// Favorites isn't a directory so don't show menu.
+	if (current_path == "Favorites") {
+		return;
+	}
+
 	file_list_popup->clear();
 	file_list_popup->reset_size();
 
