@@ -1349,23 +1349,39 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 	rendering_driver = p_rendering_driver;
 
+	bool driver_found = false;
+	String executable_name = OS::get_singleton()->get_executable_path().get_file();
+
 #ifdef RD_ENABLED
 #ifdef VULKAN_ENABLED
 	if (rendering_driver == "vulkan") {
 		rendering_context = memnew(RenderingContextDriverVulkanWayland);
 	}
-#endif
+#endif // VULKAN_ENABLED
 
 	if (rendering_context) {
 		if (rendering_context->initialize() != OK) {
-			ERR_PRINT(vformat("Could not initialize %s", rendering_driver));
 			memdelete(rendering_context);
 			rendering_context = nullptr;
 			r_error = ERR_CANT_CREATE;
-			return;
+
+			if (p_rendering_driver == "vulkan") {
+				OS::get_singleton()->alert(
+						vformat("Your video card drivers seem not to support the required Vulkan version.\n\n"
+								"If possible, consider updating your video card drivers or using the OpenGL 3 driver.\n\n"
+								"You can enable the OpenGL 3 driver by starting the engine from the\n"
+								"command line with the command:\n\n    \"%s\" --rendering-driver opengl3\n\n"
+								"If you recently updated your video card drivers, try rebooting.",
+								executable_name),
+						"Unable to initialize Vulkan video driver");
+			}
+
+			ERR_FAIL_MSG(vformat("Could not initialize %s", rendering_driver));
 		}
+
+		driver_found = true;
 	}
-#endif
+#endif // RD_ENABLED
 
 #ifdef GLES3_ENABLED
 	if (rendering_driver == "opengl3" || rendering_driver == "opengl3_es") {
@@ -1432,25 +1448,52 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 					OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
 				} else {
 					r_error = ERR_UNAVAILABLE;
+
+					OS::get_singleton()->alert(
+							vformat("Your video card drivers seem not to support the required OpenGL 3.3 version.\n\n"
+									"If possible, consider updating your video card drivers or using the Vulkan driver.\n\n"
+									"You can enable the Vulkan driver by starting the engine from the\n"
+									"command line with the command:\n\n    \"%s\" --rendering-driver vulkan\n\n"
+									"If you recently updated your video card drivers, try rebooting.",
+									executable_name),
+							"Unable to initialize OpenGL video driver");
+
 					ERR_FAIL_MSG("Could not initialize OpenGL.");
 				}
 			} else {
 				RasterizerGLES3::make_current(true);
+				driver_found = true;
 			}
 		}
 
 		if (rendering_driver == "opengl3_es") {
 			egl_manager = memnew(EGLManagerWaylandGLES);
 
-			if (egl_manager->initialize(wayland_thread.get_wl_display()) != OK) {
+			if (egl_manager->initialize(wayland_thread.get_wl_display()) != OK || egl_manager->open_display(wayland_thread.get_wl_display()) != OK) {
 				memdelete(egl_manager);
 				egl_manager = nullptr;
 				r_error = ERR_CANT_CREATE;
-				ERR_FAIL_MSG("Could not initialize GLES3.");
+
+				OS::get_singleton()->alert(
+						vformat("Your video card drivers seem not to support the required OpenGL ES 3.0 version.\n\n"
+								"If possible, consider updating your video card drivers or using the Vulkan driver.\n\n"
+								"You can enable the Vulkan driver by starting the engine from the\n"
+								"command line with the command:\n\n    \"%s\" --rendering-driver vulkan\n\n"
+								"If you recently updated your video card drivers, try rebooting.",
+								executable_name),
+						"Unable to initialize OpenGL ES video driver");
+
+				ERR_FAIL_MSG("Could not initialize OpenGL ES.");
 			}
 
 			RasterizerGLES3::make_current(false);
+			driver_found = true;
 		}
+	}
+
+	if (!driver_found) {
+		r_error = ERR_UNAVAILABLE;
+		ERR_FAIL_MSG("Video driver not found.");
 	}
 #endif // GLES3_ENABLED
 
@@ -1482,12 +1525,12 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 		RendererCompositorRD::make_current();
 	}
-#endif
+#endif // RD_ENABLED
 
 #ifdef DBUS_ENABLED
 	portal_desktop = memnew(FreeDesktopPortalDesktop);
 	screensaver = memnew(FreeDesktopScreenSaver);
-#endif
+#endif // DBUS_ENABLED
 
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
 
