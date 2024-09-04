@@ -174,7 +174,7 @@ void AnimationBezierTrackEdit::_draw_track(int p_track, const Color &p_color) {
 		}
 
 		if (lines.size() >= 2) {
-			draw_multiline(lines, p_color, Math::round(EDSCALE));
+			draw_multiline(lines, p_color, Math::round(EDSCALE), true);
 		}
 	}
 }
@@ -208,7 +208,7 @@ void AnimationBezierTrackEdit::_draw_line_clipped(const Vector2 &p_from, const V
 		from = from.lerp(to, c);
 	}
 
-	draw_line(from, to, p_color, Math::round(EDSCALE));
+	draw_line(from, to, p_color, Math::round(EDSCALE), true);
 }
 
 void AnimationBezierTrackEdit::_notification(int p_what) {
