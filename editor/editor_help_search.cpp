@@ -1248,7 +1248,7 @@ TreeItem *EditorHelpSearch::Runner::_create_property_item(TreeItem *p_parent, co
 TreeItem *EditorHelpSearch::Runner::_create_theme_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const MemberMatch<DocData::ThemeItemDoc> &p_match) {
 	String tooltip = p_match.doc->type + " " + p_class_doc->name + "." + p_match.doc->name;
 	tooltip += _build_keywords_tooltip(p_match.doc->keywords);
-	return _create_member_item(p_parent, p_class_doc->name, SNAME("MemberTheme"), p_match.doc->name, p_match.doc->name, TTRC("Theme Property"), "theme_item", p_match.doc->keywords, tooltip, false, false, p_match.name ? String() : p_match.keyword);
+	return _create_member_item(p_parent, p_class_doc->name, SNAME("MemberTheme"), p_match.doc->name, p_match.doc->name, TTRC("Theme Property"), "theme_item", p_match.doc->keywords, tooltip, p_match.doc->is_deprecated, p_match.doc->is_experimental, p_match.name ? String() : p_match.keyword);
 }
 
 TreeItem *EditorHelpSearch::Runner::_create_member_item(TreeItem *p_parent, const String &p_class_name, const StringName &p_icon, const String &p_name, const String &p_text, const String &p_type, const String &p_metatype, const String &p_tooltip, const String &p_keywords, bool p_is_deprecated, bool p_is_experimental, const String &p_matching_keyword) {
