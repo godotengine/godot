@@ -480,7 +480,7 @@ String DisplayServerWayland::clipboard_get_primary() const {
 	for (String mime : text_mimes) {
 		if (wayland_thread.primary_has_mime(mime)) {
 			print_verbose(vformat("Selecting media type \"%s\" from offered types.", mime));
-			wayland_thread.primary_get_mime(mime);
+			data = wayland_thread.primary_get_mime(mime);
 			break;
 		}
 	}
