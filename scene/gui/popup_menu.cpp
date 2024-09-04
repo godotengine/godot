@@ -646,6 +646,8 @@ void PopupMenu::_notification(int p_what) {
 		case NOTIFICATION_POST_POPUP: {
 			initial_button_mask = Input::get_singleton()->get_mouse_button_mask();
 			during_grabbed_click = (bool)initial_button_mask;
+		} break;
+		case NOTIFICATION_VISIBILITY_CHANGED: {
 			// Set margin on the margin container
 			Ref<StyleBox> panel_style = get_stylebox("panel");
 			margin_container->add_constant_override("margin_top", panel_style->get_margin(Margin::MARGIN_TOP));
