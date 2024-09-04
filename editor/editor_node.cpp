@@ -7165,6 +7165,7 @@ EditorNode::EditorNode() {
 	}
 
 	main_menu = memnew(MenuBar);
+	main_menu->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	title_bar->add_child(main_menu);
 	main_menu->set_theme_type_variation("MainMenuBar");
 	main_menu->set_start_index(0); // Main menu, add to the start of global menu.
@@ -7347,6 +7348,7 @@ EditorNode::EditorNode() {
 	}
 
 	main_editor_button_hb = memnew(HBoxContainer);
+	main_editor_button_hb->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	title_bar->add_child(main_editor_button_hb);
 
 	// Options are added and handled by DebuggerEditorPlugin.
@@ -7441,11 +7443,13 @@ EditorNode::EditorNode() {
 	title_bar->add_child(right_spacer);
 
 	project_run_bar = memnew(EditorRunBar);
+	project_run_bar->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	title_bar->add_child(project_run_bar);
 	project_run_bar->connect("play_pressed", callable_mp(this, &EditorNode::_project_run_started));
 	project_run_bar->connect("stop_pressed", callable_mp(this, &EditorNode::_project_run_stopped));
 
 	HBoxContainer *right_menu_hb = memnew(HBoxContainer);
+	right_menu_hb->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	title_bar->add_child(right_menu_hb);
 
 	renderer = memnew(OptionButton);
