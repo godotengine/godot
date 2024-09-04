@@ -2995,8 +2995,8 @@ void VisualShaderEditor::_frame_title_popup_show(const Point2 &p_position, int p
 	}
 	frame_title_change_edit->set_text(node->get_title());
 	frame_title_change_popup->set_meta("id", p_node_id);
-	frame_title_change_popup->popup();
 	frame_title_change_popup->set_position(p_position);
+	frame_title_change_popup->popup();
 
 	// Select current text.
 	frame_title_change_edit->grab_focus();

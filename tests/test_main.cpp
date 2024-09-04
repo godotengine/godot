@@ -320,7 +320,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			return;
 		}
 
-		if (name.contains("Audio")) {
+		if (name.contains("[Audio]")) {
 			// The last driver index should always be the dummy driver.
 			int dummy_idx = AudioDriverManager::get_driver_count() - 1;
 			AudioDriverManager::initialize(dummy_idx);
