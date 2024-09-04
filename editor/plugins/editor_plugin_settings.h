@@ -40,13 +40,13 @@ class EditorPluginSettings : public VBoxContainer {
 	GDCLASS(EditorPluginSettings, VBoxContainer);
 
 	enum {
-		BUTTON_PLUGIN_EDIT
+		BUTTON_PLUGIN_EDIT,
+		BUTTON_PLUGIN_UNINSTALL
 	};
 
 	enum {
-		COLUMN_PADDING_LEFT,
-		COLUMN_STATUS,
 		COLUMN_NAME,
+		COLUMN_STATUS,
 		COLUMN_VERSION,
 		COLUMN_AUTHOR,
 		COLUMN_EDIT,

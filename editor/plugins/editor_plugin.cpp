@@ -325,8 +325,16 @@ String EditorPlugin::get_plugin_version() const {
 	return plugin_version;
 }
 
+Dictionary EditorPlugin::get_plugin_settings() const {
+	return plugin_settings;
+}
+
 void EditorPlugin::set_plugin_version(const String &p_version) {
 	plugin_version = p_version;
+}
+
+void EditorPlugin::set_plugin_settings(const Dictionary &p_settings) {
+	plugin_settings = p_settings;
 }
 
 bool EditorPlugin::has_main_screen() const {
@@ -648,6 +656,7 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_debugger_plugin", "script"), &EditorPlugin::add_debugger_plugin);
 	ClassDB::bind_method(D_METHOD("remove_debugger_plugin", "script"), &EditorPlugin::remove_debugger_plugin);
 	ClassDB::bind_method(D_METHOD("get_plugin_version"), &EditorPlugin::get_plugin_version);
+	ClassDB::bind_method(D_METHOD("get_plugin_settings"), &EditorPlugin::get_plugin_settings);
 
 	GDVIRTUAL_BIND(_forward_canvas_gui_input, "event");
 	GDVIRTUAL_BIND(_forward_canvas_draw_over_viewport, "viewport_control");

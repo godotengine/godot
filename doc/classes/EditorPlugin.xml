@@ -593,6 +593,12 @@
 				Provide the version of the plugin declared in the [code]plugin.cfg[/code] config file.
 			</description>
 		</method>
+		<method name="get_plugin_settings" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Provide keys and their values from custom sections in the [code]plugin.cfg[/code] config file.
+			</description>
+		</method>
 		<method name="get_script_create_dialog">
 			<return type="ScriptCreateDialog" />
 			<description>
