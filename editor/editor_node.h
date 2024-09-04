@@ -462,6 +462,7 @@ private:
 
 	bool requested_first_scan = false;
 	bool waiting_for_first_scan = true;
+	bool load_editor_layout_done = false;
 
 	int current_menu_option = 0;
 
