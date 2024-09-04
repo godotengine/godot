@@ -1896,7 +1896,12 @@ void EditorFileSystem::_update_script_classes() {
 
 		EditorProgress *ep = nullptr;
 		if (update_script_paths.size() > 1) {
-			ep = memnew(EditorProgress("update_scripts_classes", TTR("Registering global classes..."), update_script_paths.size()));
+			if (MessageQueue::get_singleton()->is_flushing()) {
+				// Use background progress when message queue is flushing.
+				ep = memnew(EditorProgress("update_scripts_classes", TTR("Registering global classes..."), update_script_paths.size(), false, true));
+			} else {
+				ep = memnew(EditorProgress("update_scripts_classes", TTR("Registering global classes..."), update_script_paths.size()));
+			}
 		}
 
 		int step_count = 0;
@@ -1935,7 +1940,12 @@ void EditorFileSystem::_update_script_documentation() {
 
 	EditorProgress *ep = nullptr;
 	if (update_script_paths_documentation.size() > 1) {
-		ep = memnew(EditorProgress("update_script_paths_documentation", TTR("Updating scripts documentation"), update_script_paths_documentation.size()));
+		if (MessageQueue::get_singleton()->is_flushing()) {
+			// Use background progress when message queue is flushing.
+			ep = memnew(EditorProgress("update_script_paths_documentation", TTR("Updating scripts documentation"), update_script_paths_documentation.size(), false, true));
+		} else {
+			ep = memnew(EditorProgress("update_script_paths_documentation", TTR("Updating scripts documentation"), update_script_paths_documentation.size()));
+		}
 	}
 
 	int step_count = 0;
