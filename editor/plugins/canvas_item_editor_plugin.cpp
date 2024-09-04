@@ -4120,7 +4120,8 @@ void CanvasItemEditor::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
+		case NOTIFICATION_APPLICATION_FOCUS_OUT:
+		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
 			if (drag_type != DRAG_NONE) {
 				_reset_drag();
 				viewport->queue_redraw();
