@@ -48,7 +48,12 @@ enum class LaunchPolicy {
 	/**
 	 * Adjacent launches are enabled.
 	 */
-	ADJACENT
+	ADJACENT,
+
+	/**
+	 * Launches happen in the same window but start in PiP mode.
+	 */
+	SAME_AND_LAUNCH_IN_PIP_MODE
 }
 
 /**

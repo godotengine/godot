@@ -671,6 +671,172 @@ Ref<ArrayMesh> MeshInstance3D::bake_mesh_from_current_blend_shape_mix(Ref<ArrayM
 	return bake_mesh;
 }
 
+Ref<ArrayMesh> MeshInstance3D::bake_mesh_from_current_skeleton_pose(Ref<ArrayMesh> p_existing) {
+	Ref<ArrayMesh> source_mesh = get_mesh();
+	ERR_FAIL_COND_V_MSG(source_mesh.is_null(), Ref<ArrayMesh>(), "The source mesh must be a valid ArrayMesh.");
+
+	Ref<ArrayMesh> bake_mesh;
+
+	if (p_existing.is_valid()) {
+		ERR_FAIL_COND_V_MSG(source_mesh == p_existing, Ref<ArrayMesh>(), "The source mesh can not be the same mesh as the existing mesh.");
+
+		bake_mesh = p_existing;
+	} else {
+		bake_mesh.instantiate();
+	}
+
+	ERR_FAIL_COND_V_MSG(skin_ref.is_null(), Ref<ArrayMesh>(), "The source mesh must have a valid skin.");
+	ERR_FAIL_COND_V_MSG(skin_internal.is_null(), Ref<ArrayMesh>(), "The source mesh must have a valid skin.");
+	RID skeleton = skin_ref->get_skeleton();
+	ERR_FAIL_COND_V_MSG(!skeleton.is_valid(), Ref<ArrayMesh>(), "The source mesh must have its skin registered with a valid skeleton.");
+
+	const int bone_count = RenderingServer::get_singleton()->skeleton_get_bone_count(skeleton);
+	ERR_FAIL_COND_V(bone_count <= 0, Ref<ArrayMesh>());
+	ERR_FAIL_COND_V(bone_count < skin_internal->get_bind_count(), Ref<ArrayMesh>());
+
+	LocalVector<Transform3D> bone_transforms;
+	bone_transforms.resize(bone_count);
+	for (int bone_index = 0; bone_index < bone_count; bone_index++) {
+		bone_transforms[bone_index] = RenderingServer::get_singleton()->skeleton_bone_get_transform(skeleton, bone_index);
+	}
+
+	bake_mesh->clear_surfaces();
+
+	int mesh_surface_count = source_mesh->get_surface_count();
+
+	for (int surface_index = 0; surface_index < mesh_surface_count; surface_index++) {
+		ERR_CONTINUE(source_mesh->surface_get_primitive_type(surface_index) != Mesh::PRIMITIVE_TRIANGLES);
+
+		uint32_t surface_format = source_mesh->surface_get_format(surface_index);
+
+		ERR_CONTINUE(0 == (surface_format & Mesh::ARRAY_FORMAT_VERTEX));
+		ERR_CONTINUE(0 == (surface_format & Mesh::ARRAY_FORMAT_BONES));
+		ERR_CONTINUE(0 == (surface_format & Mesh::ARRAY_FORMAT_WEIGHTS));
+
+		unsigned int bones_per_vertex = surface_format & Mesh::ARRAY_FLAG_USE_8_BONE_WEIGHTS ? 8 : 4;
+
+		surface_format &= ~Mesh::ARRAY_FORMAT_BONES;
+		surface_format &= ~Mesh::ARRAY_FORMAT_WEIGHTS;
+
+		const Array &source_mesh_arrays = source_mesh->surface_get_arrays(surface_index);
+
+		ERR_FAIL_COND_V(source_mesh_arrays.size() != RS::ARRAY_MAX, Ref<ArrayMesh>());
+
+		const Vector<Vector3> &source_mesh_vertex_array = source_mesh_arrays[Mesh::ARRAY_VERTEX];
+		const Vector<Vector3> &source_mesh_normal_array = source_mesh_arrays[Mesh::ARRAY_NORMAL];
+		const Vector<float> &source_mesh_tangent_array = source_mesh_arrays[Mesh::ARRAY_TANGENT];
+		const Vector<int> &source_mesh_bones_array = source_mesh_arrays[Mesh::ARRAY_BONES];
+		const Vector<float> &source_mesh_weights_array = source_mesh_arrays[Mesh::ARRAY_WEIGHTS];
+
+		unsigned int vertex_count = source_mesh_vertex_array.size();
+		int expected_bone_array_size = vertex_count * bones_per_vertex;
+		ERR_CONTINUE(source_mesh_bones_array.size() != expected_bone_array_size);
+		ERR_CONTINUE(source_mesh_weights_array.size() != expected_bone_array_size);
+
+		Array new_mesh_arrays;
+		new_mesh_arrays.resize(Mesh::ARRAY_MAX);
+		for (int i = 0; i < source_mesh_arrays.size(); i++) {
+			if (i == Mesh::ARRAY_VERTEX || i == Mesh::ARRAY_NORMAL || i == Mesh::ARRAY_TANGENT || i == Mesh::ARRAY_BONES || i == Mesh::ARRAY_WEIGHTS) {
+				continue;
+			}
+			new_mesh_arrays[i] = source_mesh_arrays[i];
+		}
+
+		bool use_normal_array = source_mesh_normal_array.size() == source_mesh_vertex_array.size();
+		bool use_tangent_array = source_mesh_tangent_array.size() / 4 == source_mesh_vertex_array.size();
+
+		Vector<Vector3> lerped_vertex_array = source_mesh_vertex_array;
+		Vector<Vector3> lerped_normal_array = source_mesh_normal_array;
+		Vector<float> lerped_tangent_array = source_mesh_tangent_array;
+
+		const Vector3 *source_vertices_ptr = source_mesh_vertex_array.ptr();
+		const Vector3 *source_normals_ptr = source_mesh_normal_array.ptr();
+		const float *source_tangents_ptr = source_mesh_tangent_array.ptr();
+		const int *source_bones_ptr = source_mesh_bones_array.ptr();
+		const float *source_weights_ptr = source_mesh_weights_array.ptr();
+
+		Vector3 *lerped_vertices_ptrw = lerped_vertex_array.ptrw();
+		Vector3 *lerped_normals_ptrw = lerped_normal_array.ptrw();
+		float *lerped_tangents_ptrw = lerped_tangent_array.ptrw();
+
+		for (unsigned int vertex_index = 0; vertex_index < vertex_count; vertex_index++) {
+			Vector3 lerped_vertex;
+			Vector3 lerped_normal;
+			Vector3 lerped_tangent;
+
+			const Vector3 &source_vertex = source_vertices_ptr[vertex_index];
+
+			Vector3 source_normal;
+			if (use_normal_array) {
+				source_normal = source_normals_ptr[vertex_index];
+			}
+
+			int tangent_index = vertex_index * 4;
+			Vector4 source_tangent;
+			Vector3 source_tangent_vec3;
+			if (use_tangent_array) {
+				source_tangent = Vector4(
+						source_tangents_ptr[tangent_index],
+						source_tangents_ptr[tangent_index + 1],
+						source_tangents_ptr[tangent_index + 2],
+						source_tangents_ptr[tangent_index + 3]);
+
+				DEV_ASSERT(source_tangent.w == 1.0 || source_tangent.w == -1.0);
+
+				source_tangent_vec3 = Vector3(source_tangent.x, source_tangent.y, source_tangent.z);
+			}
+
+			for (unsigned int weight_index = 0; weight_index < bones_per_vertex; weight_index++) {
+				float bone_weight = source_weights_ptr[vertex_index * bones_per_vertex + weight_index];
+				if (bone_weight < FLT_EPSILON) {
+					continue;
+				}
+				int vertex_bone_index = source_bones_ptr[vertex_index * bones_per_vertex + weight_index];
+				const Transform3D &bone_transform = bone_transforms[vertex_bone_index];
+				const Basis bone_basis = bone_transform.basis.orthonormalized();
+
+				ERR_FAIL_INDEX_V(vertex_bone_index, static_cast<int>(bone_transforms.size()), Ref<ArrayMesh>());
+
+				lerped_vertex += source_vertex.lerp(bone_transform.xform(source_vertex), bone_weight) - source_vertex;
+				;
+
+				if (use_normal_array) {
+					lerped_normal += source_normal.lerp(bone_basis.xform(source_normal), bone_weight) - source_normal;
+				}
+
+				if (use_tangent_array) {
+					lerped_tangent += source_tangent_vec3.lerp(bone_basis.xform(source_tangent_vec3), bone_weight) - source_tangent_vec3;
+				}
+			}
+
+			lerped_vertices_ptrw[vertex_index] += lerped_vertex;
+
+			if (use_normal_array) {
+				lerped_normals_ptrw[vertex_index] = (source_normal + lerped_normal).normalized();
+			}
+
+			if (use_tangent_array) {
+				lerped_tangent = (source_tangent_vec3 + lerped_tangent).normalized();
+				lerped_tangents_ptrw[tangent_index] = lerped_tangent.x;
+				lerped_tangents_ptrw[tangent_index + 1] = lerped_tangent.y;
+				lerped_tangents_ptrw[tangent_index + 2] = lerped_tangent.z;
+			}
+		}
+
+		new_mesh_arrays[Mesh::ARRAY_VERTEX] = lerped_vertex_array;
+		if (use_normal_array) {
+			new_mesh_arrays[Mesh::ARRAY_NORMAL] = lerped_normal_array;
+		}
+		if (use_tangent_array) {
+			new_mesh_arrays[Mesh::ARRAY_TANGENT] = lerped_tangent_array;
+		}
+
+		bake_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, new_mesh_arrays, Array(), Dictionary(), surface_format);
+	}
+
+	return bake_mesh;
+}
+
 void MeshInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mesh", "mesh"), &MeshInstance3D::set_mesh);
 	ClassDB::bind_method(D_METHOD("get_mesh"), &MeshInstance3D::get_mesh);
@@ -700,6 +866,7 @@ void MeshInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_debug_tangents"), &MeshInstance3D::create_debug_tangents);
 
 	ClassDB::bind_method(D_METHOD("bake_mesh_from_current_blend_shape_mix", "existing"), &MeshInstance3D::bake_mesh_from_current_blend_shape_mix, DEFVAL(Ref<ArrayMesh>()));
+	ClassDB::bind_method(D_METHOD("bake_mesh_from_current_skeleton_pose", "existing"), &MeshInstance3D::bake_mesh_from_current_skeleton_pose, DEFVAL(Ref<ArrayMesh>()));
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
 	ADD_GROUP("Skeleton", "");

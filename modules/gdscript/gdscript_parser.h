@@ -1455,8 +1455,11 @@ private:
 	}
 	void apply_pending_warnings();
 #endif
-	void make_completion_context(CompletionType p_type, Node *p_node, int p_argument = -1);
-	void make_completion_context(CompletionType p_type, Variant::Type p_builtin_type);
+	// Setting p_force to false will prevent the completion context from being update if a context was already set before.
+	// This should only be done when we push context before we consumed any tokens for the corresponding structure.
+	// See parse_precedence for an example.
+	void make_completion_context(CompletionType p_type, Node *p_node, int p_argument = -1, bool p_force = true);
+	void make_completion_context(CompletionType p_type, Variant::Type p_builtin_type, bool p_force = true);
 	// In some cases it might become necessary to alter the completion context after parsing a subexpression.
 	// For example to not override COMPLETE_CALL_ARGUMENTS with COMPLETION_NONE from string literals.
 	void override_completion_context(const Node *p_for_node, CompletionType p_type, Node *p_node, int p_argument = -1);

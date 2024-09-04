@@ -125,6 +125,7 @@ Error _compress_betsy(BetsyFormat p_format, Image *r_img) {
 	}
 
 	if (err != OK) {
+		compute_shader->print_errors("Betsy compress shader");
 		memdelete(rd);
 		if (rcd != nullptr) {
 			memdelete(rcd);
