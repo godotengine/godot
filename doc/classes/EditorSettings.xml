@@ -194,6 +194,9 @@
 			The maximum number of script functions that can be displayed per frame in the profiler. If there are more script functions called in a given profiler frame, these functions will be discarded from the profiling results entirely.
 			[b]Note:[/b] This setting is only read when the profiler is first started, so changing it during profiling will have no effect.
 		</member>
+		<member name="debugger/profiler_target_fps" type="int" setter="" getter="">
+			The target frame rate shown in the visual profiler graph, in frames per second.
+		</member>
 		<member name="debugger/remote_inspect_refresh_interval" type="float" setter="" getter="">
 			The refresh interval for the remote inspector's properties (in seconds). Lower values are more reactive, but may cause stuttering while the project is running from the editor and the [b]Remote[/b] scene tree is selected in the Scene tree dock.
 		</member>

@@ -113,6 +113,7 @@ public:
 
 	static void make_current(bool p_gles_over_gl) {
 		gles_over_gl = p_gles_over_gl;
+		OS::get_singleton()->set_gles_over_gl(gles_over_gl);
 		_create_func = _create_current;
 		low_end = true;
 	}

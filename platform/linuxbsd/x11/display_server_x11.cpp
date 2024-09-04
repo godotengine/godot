@@ -5428,25 +5428,6 @@ Vector<String> DisplayServerX11::get_rendering_drivers_func() {
 
 DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
 	DisplayServer *ds = memnew(DisplayServerX11(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, r_error));
-	if (r_error != OK) {
-		if (p_rendering_driver == "vulkan") {
-			String executable_name = OS::get_singleton()->get_executable_path().get_file();
-			OS::get_singleton()->alert(
-					vformat("Your video card drivers seem not to support the required Vulkan version.\n\n"
-							"If possible, consider updating your video card drivers or using the OpenGL 3 driver.\n\n"
-							"You can enable the OpenGL 3 driver by starting the engine from the\n"
-							"command line with the command:\n\n    \"%s\" --rendering-driver opengl3\n\n"
-							"If you recently updated your video card drivers, try rebooting.",
-							executable_name),
-					"Unable to initialize Vulkan video driver");
-		} else {
-			OS::get_singleton()->alert(
-					"Your video card drivers seem not to support the required OpenGL 3.3 version.\n\n"
-					"If possible, consider updating your video card drivers.\n\n"
-					"If you recently updated your video card drivers, try rebooting.",
-					"Unable to initialize OpenGL video driver");
-		}
-	}
 	return ds;
 }
 
@@ -6160,25 +6141,40 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	rendering_driver = p_rendering_driver;
 
 	bool driver_found = false;
+	String executable_name = OS::get_singleton()->get_executable_path().get_file();
+
+	// Initialize context and rendering device.
+
 #if defined(RD_ENABLED)
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
 		rendering_context = memnew(RenderingContextDriverVulkanX11);
 	}
-#endif
+#endif // VULKAN_ENABLED
 
 	if (rendering_context) {
 		if (rendering_context->initialize() != OK) {
-			ERR_PRINT(vformat("Could not initialize %s", rendering_driver));
 			memdelete(rendering_context);
 			rendering_context = nullptr;
 			r_error = ERR_CANT_CREATE;
-			return;
+
+			if (p_rendering_driver == "vulkan") {
+				OS::get_singleton()->alert(
+						vformat("Your video card drivers seem not to support the required Vulkan version.\n\n"
+								"If possible, consider updating your video card drivers or using the OpenGL 3 driver.\n\n"
+								"You can enable the OpenGL 3 driver by starting the engine from the\n"
+								"command line with the command:\n\n    \"%s\" --rendering-driver opengl3\n\n"
+								"If you recently updated your video card drivers, try rebooting.",
+								executable_name),
+						"Unable to initialize Vulkan video driver");
+			}
+
+			ERR_FAIL_MSG(vformat("Could not initialize %s", rendering_driver));
 		}
 		driver_found = true;
 	}
-#endif
-	// Initialize context and rendering device.
+#endif // RD_ENABLED
+
 #if defined(GLES3_ENABLED)
 	if (rendering_driver == "opengl3" || rendering_driver == "opengl3_es") {
 		if (getenv("DRI_PRIME") == nullptr) {
@@ -6234,6 +6230,16 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
 			} else {
 				r_error = ERR_UNAVAILABLE;
+
+				OS::get_singleton()->alert(
+						vformat("Your video card drivers seem not to support the required OpenGL 3.3 version.\n\n"
+								"If possible, consider updating your video card drivers or using the Vulkan driver.\n\n"
+								"You can enable the Vulkan driver by starting the engine from the\n"
+								"command line with the command:\n\n    \"%s\" --rendering-driver vulkan\n\n"
+								"If you recently updated your video card drivers, try rebooting.",
+								executable_name),
+						"Unable to initialize OpenGL video driver");
+
 				ERR_FAIL_MSG("Could not initialize OpenGL.");
 			}
 		} else {
@@ -6244,20 +6250,28 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 	if (rendering_driver == "opengl3_es") {
 		gl_manager_egl = memnew(GLManagerEGL_X11);
-		if (gl_manager_egl->initialize() != OK) {
+		if (gl_manager_egl->initialize() != OK || gl_manager_egl->open_display(x11_display) != OK) {
 			memdelete(gl_manager_egl);
 			gl_manager_egl = nullptr;
 			r_error = ERR_UNAVAILABLE;
-			ERR_FAIL_MSG("Could not initialize OpenGLES.");
+
+			OS::get_singleton()->alert(
+					"Your video card drivers seem not to support the required OpenGL ES 3.0 version.\n\n"
+					"If possible, consider updating your video card drivers.\n\n"
+					"If you recently updated your video card drivers, try rebooting.",
+					"Unable to initialize OpenGL ES video driver");
+
+			ERR_FAIL_MSG("Could not initialize OpenGL ES.");
 		}
 		driver_found = true;
 		RasterizerGLES3::make_current(false);
 	}
 
-#endif
+#endif // GLES3_ENABLED
+
 	if (!driver_found) {
 		r_error = ERR_UNAVAILABLE;
-		ERR_FAIL_MSG("Video driver not found");
+		ERR_FAIL_MSG("Video driver not found.");
 	}
 
 	Point2i window_position;
@@ -6298,7 +6312,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 		RendererCompositorRD::make_current();
 	}
-#endif
+#endif // RD_ENABLED
 
 	{
 		//set all event master mask
@@ -6451,7 +6465,8 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
 
 	portal_desktop = memnew(FreeDesktopPortalDesktop);
-#endif
+#endif // DBUS_ENABLED
+
 	XSetErrorHandler(&default_window_error_handler);
 
 	r_error = OK;

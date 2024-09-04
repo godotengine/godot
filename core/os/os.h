@@ -75,6 +75,7 @@ class OS {
 	int _display_driver_id = -1;
 	String _current_rendering_driver_name;
 	String _current_rendering_method;
+	bool _is_gles_over_gl = false;
 
 	RemoteFilesystemClient default_rfs;
 
@@ -130,9 +131,11 @@ public:
 
 	void set_current_rendering_driver_name(const String &p_driver_name) { _current_rendering_driver_name = p_driver_name; }
 	void set_current_rendering_method(const String &p_name) { _current_rendering_method = p_name; }
+	void set_gles_over_gl(bool p_enabled) { _is_gles_over_gl = p_enabled; }
 
 	String get_current_rendering_driver_name() const { return _current_rendering_driver_name; }
 	String get_current_rendering_method() const { return _current_rendering_method; }
+	bool get_gles_over_gl() const { return _is_gles_over_gl; }
 
 	int get_display_driver_id() const { return _display_driver_id; }
 
