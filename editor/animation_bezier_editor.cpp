@@ -719,7 +719,7 @@ void AnimationBezierTrackEdit::set_root(Node *p_root) {
 
 void AnimationBezierTrackEdit::set_filtered(bool p_filtered) {
 	is_filtered = p_filtered;
-	if (animation == nullptr) {
+	if (animation.is_null()) {
 		return;
 	}
 	String base_path = animation->track_get_path(selected_track);

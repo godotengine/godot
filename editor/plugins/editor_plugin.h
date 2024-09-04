@@ -54,6 +54,7 @@ class EditorTranslationParserPlugin;
 class EditorUndoRedoManager;
 class ScriptCreateDialog;
 class Script;
+class EditorContextMenuPlugin;
 
 class EditorPlugin : public Node {
 	GDCLASS(EditorPlugin, Node);
@@ -101,6 +102,13 @@ public:
 		AFTER_GUI_INPUT_PASS,
 		AFTER_GUI_INPUT_STOP,
 		AFTER_GUI_INPUT_CUSTOM,
+	};
+
+	enum ContextMenuSlot {
+		CONTEXT_SLOT_SCENE_TREE,
+		CONTEXT_SLOT_FILESYSTEM,
+		CONTEXT_SLOT_SCRIPT_EDITOR,
+		CONTEXT_SUBMENU_SLOT_FILESYSTEM_CREATE,
 	};
 
 protected:
@@ -251,6 +259,9 @@ public:
 	void add_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin);
 	void remove_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin);
 
+	void add_context_menu_plugin(ContextMenuSlot p_slot, const Ref<EditorContextMenuPlugin> &p_plugin);
+	void remove_context_menu_plugin(ContextMenuSlot p_slot, const Ref<EditorContextMenuPlugin> &p_plugin);
+
 	virtual void enable_plugin();
 	virtual void disable_plugin();
 
@@ -261,6 +272,7 @@ public:
 VARIANT_ENUM_CAST(EditorPlugin::CustomControlContainer);
 VARIANT_ENUM_CAST(EditorPlugin::DockSlot);
 VARIANT_ENUM_CAST(EditorPlugin::AfterGUIInput);
+VARIANT_ENUM_CAST(EditorPlugin::ContextMenuSlot);
 
 typedef EditorPlugin *(*EditorPluginCreateFunc)();
 

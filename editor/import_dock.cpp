@@ -171,7 +171,7 @@ void ImportDock::_add_keep_import_option(const String &p_importer_name) {
 void ImportDock::_update_options(const String &p_path, const Ref<ConfigFile> &p_config) {
 	// Set the importer class to fetch the correct class in the XML class reference.
 	// This allows tooltips to display when hovering properties.
-	if (params->importer != nullptr) {
+	if (params->importer.is_valid()) {
 		// Null check to avoid crashing if the "Keep File (exported as is)" mode is selected.
 		import_opts->set_object_class(params->importer->get_class_name());
 	}

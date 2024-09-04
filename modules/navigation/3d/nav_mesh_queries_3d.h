@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  tile_set.compat.inc                                                   */
+/*  nav_mesh_queries_3d.h                                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,21 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DISABLE_DEPRECATED
+#ifndef NAV_MESH_QUERIES_3D_H
+#define NAV_MESH_QUERIES_3D_H
 
-#include "tile_set.h"
+#ifndef _3D_DISABLED
 
-Ref<NavigationPolygon> TileData::_get_navigation_polygon_bind_compat_84660(int p_layer_id) const {
-	return get_navigation_polygon(p_layer_id, false, false, false);
-}
+#include "../nav_map.h"
 
-Ref<OccluderPolygon2D> TileData::_get_occluder_bind_compat_84660(int p_layer_id) const {
-	return get_occluder_polygon(p_layer_id, 0, false, false, false);
-}
+class NavMeshQueries3D {
+public:
+	static Vector3 polygons_get_random_point(const LocalVector<gd::Polygon> &p_polygons, uint32_t p_navigation_layers, bool p_uniformly);
 
-void TileData::_bind_compatibility_methods() {
-	ClassDB::bind_compatibility_method(D_METHOD("get_navigation_polygon"), &TileData::_get_navigation_polygon_bind_compat_84660);
-	ClassDB::bind_compatibility_method(D_METHOD("get_occluder"), &TileData::_get_occluder_bind_compat_84660);
-}
+	static Vector<Vector3> polygons_get_path(const LocalVector<gd::Polygon> &p_polygons, Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers, Vector<int32_t> *r_path_types, TypedArray<RID> *r_path_rids, Vector<int64_t> *r_path_owners, const Vector3 &p_map_up, uint32_t p_link_polygons_size);
+	static Vector3 polygons_get_closest_point_to_segment(const LocalVector<gd::Polygon> &p_polygons, const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision);
+	static Vector3 polygons_get_closest_point(const LocalVector<gd::Polygon> &p_polygons, const Vector3 &p_point);
+	static Vector3 polygons_get_closest_point_normal(const LocalVector<gd::Polygon> &p_polygons, const Vector3 &p_point);
+	static gd::ClosestPointQueryResult polygons_get_closest_point_info(const LocalVector<gd::Polygon> &p_polygons, const Vector3 &p_point);
+	static RID polygons_get_closest_point_owner(const LocalVector<gd::Polygon> &p_polygons, const Vector3 &p_point);
 
-#endif
+	static void clip_path(const LocalVector<gd::NavigationPoly> &p_navigation_polys, Vector<Vector3> &path, const gd::NavigationPoly *from_poly, const Vector3 &p_to_point, const gd::NavigationPoly *p_to_poly, Vector<int32_t> *r_path_types, TypedArray<RID> *r_path_rids, Vector<int64_t> *r_path_owners, const Vector3 &p_map_up);
+};
+
+#endif // _3D_DISABLED
+
+#endif // NAV_MESH_QUERIES_3D_H

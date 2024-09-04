@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  tile_set.compat.inc                                                   */
+/*  editor_context_menu_plugin.h                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,21 +28,43 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DISABLE_DEPRECATED
+#ifndef EDITOR_CONTEXT_MENU_PLUGIN_H
+#define EDITOR_CONTEXT_MENU_PLUGIN_H
 
-#include "tile_set.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/ref_counted.h"
 
-Ref<NavigationPolygon> TileData::_get_navigation_polygon_bind_compat_84660(int p_layer_id) const {
-	return get_navigation_polygon(p_layer_id, false, false, false);
-}
+class Texture2D;
+class Shortcut;
 
-Ref<OccluderPolygon2D> TileData::_get_occluder_bind_compat_84660(int p_layer_id) const {
-	return get_occluder_polygon(p_layer_id, 0, false, false, false);
-}
+class EditorContextMenuPlugin : public RefCounted {
+	GDCLASS(EditorContextMenuPlugin, RefCounted);
 
-void TileData::_bind_compatibility_methods() {
-	ClassDB::bind_compatibility_method(D_METHOD("get_navigation_polygon"), &TileData::_get_navigation_polygon_bind_compat_84660);
-	ClassDB::bind_compatibility_method(D_METHOD("get_occluder"), &TileData::_get_occluder_bind_compat_84660);
-}
+public:
+	int start_idx;
 
-#endif
+	inline static constexpr int MAX_ITEMS = 100;
+
+	struct ContextMenuItem {
+		int idx = 0;
+		String item_name;
+		Callable callable;
+		Ref<Texture2D> icon;
+		Ref<Shortcut> shortcut;
+	};
+	HashMap<String, ContextMenuItem> context_menu_items;
+	HashMap<Ref<Shortcut>, Callable> context_menu_shortcuts;
+
+protected:
+	static void _bind_methods();
+
+	GDVIRTUAL1(_popup_menu, Vector<String>);
+
+public:
+	virtual void add_options(const Vector<String> &p_paths);
+	void add_menu_shortcut(const Ref<Shortcut> &p_shortcut, const Callable &p_callable);
+	void add_context_menu_item(const String &p_name, const Callable &p_callable, const Ref<Texture2D> &p_texture, const Ref<Shortcut> &p_shortcut);
+	void clear_context_menu_items();
+};
+
+#endif // EDITOR_CONTEXT_MENU_PLUGIN_H

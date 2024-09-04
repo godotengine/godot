@@ -35,24 +35,12 @@
 #include "nav_obstacle.h"
 #include "nav_region.h"
 
+#include "3d/nav_mesh_queries_3d.h"
+
 #include "core/config/project_settings.h"
 #include "core/object/worker_thread_pool.h"
 
 #include <Obstacle2d.h>
-
-#define THREE_POINTS_CROSS_PRODUCT(m_a, m_b, m_c) (((m_c) - (m_a)).cross((m_b) - (m_a)))
-
-// Helper macro
-#define APPEND_METADATA(poly)                                  \
-	if (r_path_types) {                                        \
-		r_path_types->push_back(poly->owner->get_type());      \
-	}                                                          \
-	if (r_path_rids) {                                         \
-		r_path_rids->push_back(poly->owner->get_self());       \
-	}                                                          \
-	if (r_path_owners) {                                       \
-		r_path_owners->push_back(poly->owner->get_owner_id()); \
-	}
 
 #ifdef DEBUG_ENABLED
 #define NAVMAP_ITERATION_ZERO_ERROR_MSG() \
@@ -142,455 +130,9 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 		return Vector<Vector3>();
 	}
 
-	// Clear metadata outputs.
-	if (r_path_types) {
-		r_path_types->clear();
-	}
-	if (r_path_rids) {
-		r_path_rids->clear();
-	}
-	if (r_path_owners) {
-		r_path_owners->clear();
-	}
-
-	// Find the start poly and the end poly on this map.
-	const gd::Polygon *begin_poly = nullptr;
-	const gd::Polygon *end_poly = nullptr;
-	Vector3 begin_point;
-	Vector3 end_point;
-	real_t begin_d = FLT_MAX;
-	real_t end_d = FLT_MAX;
-	// Find the initial poly and the end poly on this map.
-	for (const gd::Polygon &p : polygons) {
-		// Only consider the polygon if it in a region with compatible layers.
-		if ((p_navigation_layers & p.owner->get_navigation_layers()) == 0) {
-			continue;
-		}
-
-		// For each face check the distance between the origin/destination
-		for (size_t point_id = 2; point_id < p.points.size(); point_id++) {
-			const Face3 face(p.points[0].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
-
-			Vector3 point = face.get_closest_point_to(p_origin);
-			real_t distance_to_point = point.distance_to(p_origin);
-			if (distance_to_point < begin_d) {
-				begin_d = distance_to_point;
-				begin_poly = &p;
-				begin_point = point;
-			}
-
-			point = face.get_closest_point_to(p_destination);
-			distance_to_point = point.distance_to(p_destination);
-			if (distance_to_point < end_d) {
-				end_d = distance_to_point;
-				end_poly = &p;
-				end_point = point;
-			}
-		}
-	}
-
-	// Check for trivial cases
-	if (!begin_poly || !end_poly) {
-		return Vector<Vector3>();
-	}
-	if (begin_poly == end_poly) {
-		if (r_path_types) {
-			r_path_types->resize(2);
-			r_path_types->write[0] = begin_poly->owner->get_type();
-			r_path_types->write[1] = end_poly->owner->get_type();
-		}
-
-		if (r_path_rids) {
-			r_path_rids->resize(2);
-			(*r_path_rids)[0] = begin_poly->owner->get_self();
-			(*r_path_rids)[1] = end_poly->owner->get_self();
-		}
-
-		if (r_path_owners) {
-			r_path_owners->resize(2);
-			r_path_owners->write[0] = begin_poly->owner->get_owner_id();
-			r_path_owners->write[1] = end_poly->owner->get_owner_id();
-		}
-
-		Vector<Vector3> path;
-		path.resize(2);
-		path.write[0] = begin_point;
-		path.write[1] = end_point;
-		return path;
-	}
-
-	// List of all reachable navigation polys.
-	LocalVector<gd::NavigationPoly> navigation_polys;
-	navigation_polys.resize(polygons.size() + link_polygons.size());
-
-	// Initialize the matching navigation polygon.
-	gd::NavigationPoly &begin_navigation_poly = navigation_polys[begin_poly->id];
-	begin_navigation_poly.poly = begin_poly;
-	begin_navigation_poly.entry = begin_point;
-	begin_navigation_poly.back_navigation_edge_pathway_start = begin_point;
-	begin_navigation_poly.back_navigation_edge_pathway_end = begin_point;
-
-	// Heap of polygons to travel next.
-	gd::Heap<gd::NavigationPoly *, gd::NavPolyTravelCostGreaterThan, gd::NavPolyHeapIndexer>
-			traversable_polys;
-	traversable_polys.reserve(polygons.size() * 0.25);
-
-	// This is an implementation of the A* algorithm.
-	int least_cost_id = begin_poly->id;
-	int prev_least_cost_id = -1;
-	bool found_route = false;
-
-	const gd::Polygon *reachable_end = nullptr;
-	real_t distance_to_reachable_end = FLT_MAX;
-	bool is_reachable = true;
-
-	while (true) {
-		// Takes the current least_cost_poly neighbors (iterating over its edges) and compute the traveled_distance.
-		for (const gd::Edge &edge : navigation_polys[least_cost_id].poly->edges) {
-			// Iterate over connections in this edge, then compute the new optimized travel distance assigned to this polygon.
-			for (int connection_index = 0; connection_index < edge.connections.size(); connection_index++) {
-				const gd::Edge::Connection &connection = edge.connections[connection_index];
-
-				// Only consider the connection to another polygon if this polygon is in a region with compatible layers.
-				if ((p_navigation_layers & connection.polygon->owner->get_navigation_layers()) == 0) {
-					continue;
-				}
-
-				const gd::NavigationPoly &least_cost_poly = navigation_polys[least_cost_id];
-				real_t poly_enter_cost = 0.0;
-				real_t poly_travel_cost = least_cost_poly.poly->owner->get_travel_cost();
-
-				if (prev_least_cost_id != -1 && navigation_polys[prev_least_cost_id].poly->owner->get_self() != least_cost_poly.poly->owner->get_self()) {
-					poly_enter_cost = least_cost_poly.poly->owner->get_enter_cost();
-				}
-				prev_least_cost_id = least_cost_id;
-
-				Vector3 pathway[2] = { connection.pathway_start, connection.pathway_end };
-				const Vector3 new_entry = Geometry3D::get_closest_point_to_segment(least_cost_poly.entry, pathway);
-				const real_t new_traveled_distance = least_cost_poly.entry.distance_to(new_entry) * poly_travel_cost + poly_enter_cost + least_cost_poly.traveled_distance;
-
-				// Check if the neighbor polygon has already been processed.
-				gd::NavigationPoly &neighbor_poly = navigation_polys[connection.polygon->id];
-				if (neighbor_poly.poly != nullptr) {
-					// If the neighbor polygon hasn't been traversed yet and the new path leading to
-					// it is shorter, update the polygon.
-					if (neighbor_poly.traversable_poly_index < traversable_polys.size() &&
-							new_traveled_distance < neighbor_poly.traveled_distance) {
-						neighbor_poly.back_navigation_poly_id = least_cost_id;
-						neighbor_poly.back_navigation_edge = connection.edge;
-						neighbor_poly.back_navigation_edge_pathway_start = connection.pathway_start;
-						neighbor_poly.back_navigation_edge_pathway_end = connection.pathway_end;
-						neighbor_poly.traveled_distance = new_traveled_distance;
-						neighbor_poly.distance_to_destination =
-								new_entry.distance_to(end_point) *
-								neighbor_poly.poly->owner->get_travel_cost();
-						neighbor_poly.entry = new_entry;
-
-						// Update the priority of the polygon in the heap.
-						traversable_polys.shift(neighbor_poly.traversable_poly_index);
-					}
-				} else {
-					// Initialize the matching navigation polygon.
-					neighbor_poly.poly = connection.polygon;
-					neighbor_poly.back_navigation_poly_id = least_cost_id;
-					neighbor_poly.back_navigation_edge = connection.edge;
-					neighbor_poly.back_navigation_edge_pathway_start = connection.pathway_start;
-					neighbor_poly.back_navigation_edge_pathway_end = connection.pathway_end;
-					neighbor_poly.traveled_distance = new_traveled_distance;
-					neighbor_poly.distance_to_destination =
-							new_entry.distance_to(end_point) *
-							neighbor_poly.poly->owner->get_travel_cost();
-					neighbor_poly.entry = new_entry;
-
-					// Add the polygon to the heap of polygons to traverse next.
-					traversable_polys.push(&neighbor_poly);
-				}
-			}
-		}
-
-		// When the heap of traversable polygons is empty at this point it means the end polygon is
-		// unreachable.
-		if (traversable_polys.is_empty()) {
-			// Thus use the further reachable polygon
-			ERR_BREAK_MSG(is_reachable == false, "It's not expect to not find the most reachable polygons");
-			is_reachable = false;
-			if (reachable_end == nullptr) {
-				// The path is not found and there is not a way out.
-				break;
-			}
-
-			// Set as end point the furthest reachable point.
-			end_poly = reachable_end;
-			end_d = FLT_MAX;
-			for (size_t point_id = 2; point_id < end_poly->points.size(); point_id++) {
-				Face3 f(end_poly->points[0].pos, end_poly->points[point_id - 1].pos, end_poly->points[point_id].pos);
-				Vector3 spoint = f.get_closest_point_to(p_destination);
-				real_t dpoint = spoint.distance_to(p_destination);
-				if (dpoint < end_d) {
-					end_point = spoint;
-					end_d = dpoint;
-				}
-			}
-
-			// Search all faces of start polygon as well.
-			bool closest_point_on_start_poly = false;
-			for (size_t point_id = 2; point_id < begin_poly->points.size(); point_id++) {
-				Face3 f(begin_poly->points[0].pos, begin_poly->points[point_id - 1].pos, begin_poly->points[point_id].pos);
-				Vector3 spoint = f.get_closest_point_to(p_destination);
-				real_t dpoint = spoint.distance_to(p_destination);
-				if (dpoint < end_d) {
-					end_point = spoint;
-					end_d = dpoint;
-					closest_point_on_start_poly = true;
-				}
-			}
-
-			if (closest_point_on_start_poly) {
-				// No point to run PostProcessing when start and end convex polygon is the same.
-				if (r_path_types) {
-					r_path_types->resize(2);
-					r_path_types->write[0] = begin_poly->owner->get_type();
-					r_path_types->write[1] = begin_poly->owner->get_type();
-				}
-
-				if (r_path_rids) {
-					r_path_rids->resize(2);
-					(*r_path_rids)[0] = begin_poly->owner->get_self();
-					(*r_path_rids)[1] = begin_poly->owner->get_self();
-				}
-
-				if (r_path_owners) {
-					r_path_owners->resize(2);
-					r_path_owners->write[0] = begin_poly->owner->get_owner_id();
-					r_path_owners->write[1] = begin_poly->owner->get_owner_id();
-				}
-
-				Vector<Vector3> path;
-				path.resize(2);
-				path.write[0] = begin_point;
-				path.write[1] = end_point;
-				return path;
-			}
-
-			for (gd::NavigationPoly &nav_poly : navigation_polys) {
-				nav_poly.poly = nullptr;
-			}
-			navigation_polys[begin_poly->id].poly = begin_poly;
-
-			least_cost_id = begin_poly->id;
-			prev_least_cost_id = -1;
-
-			reachable_end = nullptr;
-
-			continue;
-		}
-
-		// Pop the polygon with the lowest travel cost from the heap of traversable polygons.
-		least_cost_id = traversable_polys.pop()->poly->id;
-
-		// Store the farthest reachable end polygon in case our goal is not reachable.
-		if (is_reachable) {
-			real_t distance = navigation_polys[least_cost_id].entry.distance_to(p_destination);
-			if (distance_to_reachable_end > distance) {
-				distance_to_reachable_end = distance;
-				reachable_end = navigation_polys[least_cost_id].poly;
-			}
-		}
-
-		// Check if we reached the end
-		if (navigation_polys[least_cost_id].poly == end_poly) {
-			found_route = true;
-			break;
-		}
-	}
-
-	// We did not find a route but we have both a start polygon and an end polygon at this point.
-	// Usually this happens because there was not a single external or internal connected edge, e.g. our start polygon is an isolated, single convex polygon.
-	if (!found_route) {
-		end_d = FLT_MAX;
-		// Search all faces of the start polygon for the closest point to our target position.
-		for (size_t point_id = 2; point_id < begin_poly->points.size(); point_id++) {
-			Face3 f(begin_poly->points[0].pos, begin_poly->points[point_id - 1].pos, begin_poly->points[point_id].pos);
-			Vector3 spoint = f.get_closest_point_to(p_destination);
-			real_t dpoint = spoint.distance_to(p_destination);
-			if (dpoint < end_d) {
-				end_point = spoint;
-				end_d = dpoint;
-			}
-		}
-
-		if (r_path_types) {
-			r_path_types->resize(2);
-			r_path_types->write[0] = begin_poly->owner->get_type();
-			r_path_types->write[1] = begin_poly->owner->get_type();
-		}
-
-		if (r_path_rids) {
-			r_path_rids->resize(2);
-			(*r_path_rids)[0] = begin_poly->owner->get_self();
-			(*r_path_rids)[1] = begin_poly->owner->get_self();
-		}
-
-		if (r_path_owners) {
-			r_path_owners->resize(2);
-			r_path_owners->write[0] = begin_poly->owner->get_owner_id();
-			r_path_owners->write[1] = begin_poly->owner->get_owner_id();
-		}
-
-		Vector<Vector3> path;
-		path.resize(2);
-		path.write[0] = begin_point;
-		path.write[1] = end_point;
-		return path;
-	}
-
-	Vector<Vector3> path;
-	// Optimize the path.
-	if (p_optimize) {
-		// Set the apex poly/point to the end point
-		gd::NavigationPoly *apex_poly = &navigation_polys[least_cost_id];
-
-		Vector3 back_pathway[2] = { apex_poly->back_navigation_edge_pathway_start, apex_poly->back_navigation_edge_pathway_end };
-		const Vector3 back_edge_closest_point = Geometry3D::get_closest_point_to_segment(end_point, back_pathway);
-		if (end_point.is_equal_approx(back_edge_closest_point)) {
-			// The end point is basically on top of the last crossed edge, funneling around the corners would at best do nothing.
-			// At worst it would add an unwanted path point before the last point due to precision issues so skip to the next polygon.
-			if (apex_poly->back_navigation_poly_id != -1) {
-				apex_poly = &navigation_polys[apex_poly->back_navigation_poly_id];
-			}
-		}
-
-		Vector3 apex_point = end_point;
-
-		gd::NavigationPoly *left_poly = apex_poly;
-		Vector3 left_portal = apex_point;
-		gd::NavigationPoly *right_poly = apex_poly;
-		Vector3 right_portal = apex_point;
-
-		gd::NavigationPoly *p = apex_poly;
-
-		path.push_back(end_point);
-		APPEND_METADATA(end_poly);
-
-		while (p) {
-			// Set left and right points of the pathway between polygons.
-			Vector3 left = p->back_navigation_edge_pathway_start;
-			Vector3 right = p->back_navigation_edge_pathway_end;
-			if (THREE_POINTS_CROSS_PRODUCT(apex_point, left, right).dot(up) < 0) {
-				SWAP(left, right);
-			}
-
-			bool skip = false;
-			if (THREE_POINTS_CROSS_PRODUCT(apex_point, left_portal, left).dot(up) >= 0) {
-				//process
-				if (left_portal == apex_point || THREE_POINTS_CROSS_PRODUCT(apex_point, left, right_portal).dot(up) > 0) {
-					left_poly = p;
-					left_portal = left;
-				} else {
-					clip_path(navigation_polys, path, apex_poly, right_portal, right_poly, r_path_types, r_path_rids, r_path_owners);
-
-					apex_point = right_portal;
-					p = right_poly;
-					left_poly = p;
-					apex_poly = p;
-					left_portal = apex_point;
-					right_portal = apex_point;
-
-					path.push_back(apex_point);
-					APPEND_METADATA(apex_poly->poly);
-					skip = true;
-				}
-			}
-
-			if (!skip && THREE_POINTS_CROSS_PRODUCT(apex_point, right_portal, right).dot(up) <= 0) {
-				//process
-				if (right_portal == apex_point || THREE_POINTS_CROSS_PRODUCT(apex_point, right, left_portal).dot(up) < 0) {
-					right_poly = p;
-					right_portal = right;
-				} else {
-					clip_path(navigation_polys, path, apex_poly, left_portal, left_poly, r_path_types, r_path_rids, r_path_owners);
-
-					apex_point = left_portal;
-					p = left_poly;
-					right_poly = p;
-					apex_poly = p;
-					right_portal = apex_point;
-					left_portal = apex_point;
-
-					path.push_back(apex_point);
-					APPEND_METADATA(apex_poly->poly);
-				}
-			}
-
-			// Go to the previous polygon.
-			if (p->back_navigation_poly_id != -1) {
-				p = &navigation_polys[p->back_navigation_poly_id];
-			} else {
-				// The end
-				p = nullptr;
-			}
-		}
-
-		// If the last point is not the begin point, add it to the list.
-		if (path[path.size() - 1] != begin_point) {
-			path.push_back(begin_point);
-			APPEND_METADATA(begin_poly);
-		}
-
-		path.reverse();
-		if (r_path_types) {
-			r_path_types->reverse();
-		}
-		if (r_path_rids) {
-			r_path_rids->reverse();
-		}
-		if (r_path_owners) {
-			r_path_owners->reverse();
-		}
-
-	} else {
-		path.push_back(end_point);
-		APPEND_METADATA(end_poly);
-
-		// Add mid points
-		int np_id = least_cost_id;
-		while (np_id != -1 && navigation_polys[np_id].back_navigation_poly_id != -1) {
-			if (navigation_polys[np_id].back_navigation_edge != -1) {
-				int prev = navigation_polys[np_id].back_navigation_edge;
-				int prev_n = (navigation_polys[np_id].back_navigation_edge + 1) % navigation_polys[np_id].poly->points.size();
-				Vector3 point = (navigation_polys[np_id].poly->points[prev].pos + navigation_polys[np_id].poly->points[prev_n].pos) * 0.5;
-
-				path.push_back(point);
-				APPEND_METADATA(navigation_polys[np_id].poly);
-			} else {
-				path.push_back(navigation_polys[np_id].entry);
-				APPEND_METADATA(navigation_polys[np_id].poly);
-			}
-
-			np_id = navigation_polys[np_id].back_navigation_poly_id;
-		}
-
-		path.push_back(begin_point);
-		APPEND_METADATA(begin_poly);
-
-		path.reverse();
-		if (r_path_types) {
-			r_path_types->reverse();
-		}
-		if (r_path_rids) {
-			r_path_rids->reverse();
-		}
-		if (r_path_owners) {
-			r_path_owners->reverse();
-		}
-	}
-
-	// Ensure post conditions (path arrays MUST match in size).
-	CRASH_COND(r_path_types && path.size() != r_path_types->size());
-	CRASH_COND(r_path_rids && path.size() != r_path_rids->size());
-	CRASH_COND(r_path_owners && path.size() != r_path_owners->size());
-
-	return path;
+	return NavMeshQueries3D::polygons_get_path(
+			polygons, p_origin, p_destination, p_optimize, p_navigation_layers,
+			r_path_types, r_path_rids, r_path_owners, up, link_polygons.size());
 }
 
 Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) const {
@@ -600,66 +142,7 @@ Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector
 		return Vector3();
 	}
 
-	bool use_collision = p_use_collision;
-	Vector3 closest_point;
-	real_t closest_point_d = FLT_MAX;
-
-	for (const gd::Polygon &p : polygons) {
-		// For each face check the distance to the segment
-		for (size_t point_id = 2; point_id < p.points.size(); point_id += 1) {
-			const Face3 f(p.points[0].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
-			Vector3 inters;
-			if (f.intersects_segment(p_from, p_to, &inters)) {
-				const real_t d = p_from.distance_to(inters);
-				if (use_collision == false) {
-					closest_point = inters;
-					use_collision = true;
-					closest_point_d = d;
-				} else if (closest_point_d > d) {
-					closest_point = inters;
-					closest_point_d = d;
-				}
-			}
-			// If segment does not itersect face, check the distance from segment's endpoints.
-			else if (!use_collision) {
-				const Vector3 p_from_closest = f.get_closest_point_to(p_from);
-				const real_t d_p_from = p_from.distance_to(p_from_closest);
-				if (closest_point_d > d_p_from) {
-					closest_point = p_from_closest;
-					closest_point_d = d_p_from;
-				}
-
-				const Vector3 p_to_closest = f.get_closest_point_to(p_to);
-				const real_t d_p_to = p_to.distance_to(p_to_closest);
-				if (closest_point_d > d_p_to) {
-					closest_point = p_to_closest;
-					closest_point_d = d_p_to;
-				}
-			}
-		}
-		// Finally, check for a case when shortest distance is between some point located on a face's edge and some point located on a line segment.
-		if (!use_collision) {
-			for (size_t point_id = 0; point_id < p.points.size(); point_id += 1) {
-				Vector3 a, b;
-
-				Geometry3D::get_closest_points_between_segments(
-						p_from,
-						p_to,
-						p.points[point_id].pos,
-						p.points[(point_id + 1) % p.points.size()].pos,
-						a,
-						b);
-
-				const real_t d = a.distance_to(b);
-				if (d < closest_point_d) {
-					closest_point_d = d;
-					closest_point = b;
-				}
-			}
-		}
-	}
-
-	return closest_point;
+	return NavMeshQueries3D::polygons_get_closest_point_to_segment(polygons, p_from, p_to, p_use_collision);
 }
 
 Vector3 NavMap::get_closest_point(const Vector3 &p_point) const {
@@ -668,8 +151,8 @@ Vector3 NavMap::get_closest_point(const Vector3 &p_point) const {
 		NAVMAP_ITERATION_ZERO_ERROR_MSG();
 		return Vector3();
 	}
-	gd::ClosestPointQueryResult cp = get_closest_point_info(p_point);
-	return cp.point;
+
+	return NavMeshQueries3D::polygons_get_closest_point(polygons, p_point);
 }
 
 Vector3 NavMap::get_closest_point_normal(const Vector3 &p_point) const {
@@ -678,8 +161,8 @@ Vector3 NavMap::get_closest_point_normal(const Vector3 &p_point) const {
 		NAVMAP_ITERATION_ZERO_ERROR_MSG();
 		return Vector3();
 	}
-	gd::ClosestPointQueryResult cp = get_closest_point_info(p_point);
-	return cp.normal;
+
+	return NavMeshQueries3D::polygons_get_closest_point_normal(polygons, p_point);
 }
 
 RID NavMap::get_closest_point_owner(const Vector3 &p_point) const {
@@ -688,32 +171,14 @@ RID NavMap::get_closest_point_owner(const Vector3 &p_point) const {
 		NAVMAP_ITERATION_ZERO_ERROR_MSG();
 		return RID();
 	}
-	gd::ClosestPointQueryResult cp = get_closest_point_info(p_point);
-	return cp.owner;
+
+	return NavMeshQueries3D::polygons_get_closest_point_owner(polygons, p_point);
 }
 
 gd::ClosestPointQueryResult NavMap::get_closest_point_info(const Vector3 &p_point) const {
 	RWLockRead read_lock(map_rwlock);
 
-	gd::ClosestPointQueryResult result;
-	real_t closest_point_ds = FLT_MAX;
-
-	for (const gd::Polygon &p : polygons) {
-		// For each face check the distance to the point
-		for (size_t point_id = 2; point_id < p.points.size(); point_id += 1) {
-			const Face3 f(p.points[0].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
-			const Vector3 inters = f.get_closest_point_to(p_point);
-			const real_t ds = inters.distance_squared_to(p_point);
-			if (ds < closest_point_ds) {
-				result.point = inters;
-				result.normal = f.get_plane().normal;
-				result.owner = p.owner->get_self();
-				closest_point_ds = ds;
-			}
-		}
-	}
-
-	return result;
+	return NavMeshQueries3D::polygons_get_closest_point_info(polygons, p_point);
 }
 
 void NavMap::add_region(NavRegion *p_region) {
@@ -1383,39 +848,6 @@ void NavMap::dispatch_callbacks() {
 
 	for (NavAgent *agent : active_3d_avoidance_agents) {
 		agent->dispatch_avoidance_callback();
-	}
-}
-
-void NavMap::clip_path(const LocalVector<gd::NavigationPoly> &p_navigation_polys, Vector<Vector3> &path, const gd::NavigationPoly *from_poly, const Vector3 &p_to_point, const gd::NavigationPoly *p_to_poly, Vector<int32_t> *r_path_types, TypedArray<RID> *r_path_rids, Vector<int64_t> *r_path_owners) const {
-	Vector3 from = path[path.size() - 1];
-
-	if (from.is_equal_approx(p_to_point)) {
-		return;
-	}
-	Plane cut_plane;
-	cut_plane.normal = (from - p_to_point).cross(up);
-	if (cut_plane.normal == Vector3()) {
-		return;
-	}
-	cut_plane.normal.normalize();
-	cut_plane.d = cut_plane.normal.dot(from);
-
-	while (from_poly != p_to_poly) {
-		Vector3 pathway_start = from_poly->back_navigation_edge_pathway_start;
-		Vector3 pathway_end = from_poly->back_navigation_edge_pathway_end;
-
-		ERR_FAIL_COND(from_poly->back_navigation_poly_id == -1);
-		from_poly = &p_navigation_polys[from_poly->back_navigation_poly_id];
-
-		if (!pathway_start.is_equal_approx(pathway_end)) {
-			Vector3 inters;
-			if (cut_plane.intersects_segment(pathway_start, pathway_end, &inters)) {
-				if (!inters.is_equal_approx(p_to_point) && !inters.is_equal_approx(path[path.size() - 1])) {
-					path.push_back(inters);
-					APPEND_METADATA(from_poly->poly);
-				}
-			}
-		}
 	}
 }
 

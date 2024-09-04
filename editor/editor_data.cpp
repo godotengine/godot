@@ -36,11 +36,14 @@
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/multi_node_edit.h"
+#include "editor/plugins/editor_context_menu_plugin.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/resources/packed_scene.h"
 
 void EditorSelectionHistory::cleanup_history() {
@@ -517,6 +520,138 @@ bool EditorData::has_extension_editor_plugin(const StringName &p_class_name) {
 EditorPlugin *EditorData::get_extension_editor_plugin(const StringName &p_class_name) {
 	EditorPlugin **plugin = extension_editor_plugins.getptr(p_class_name);
 	return plugin == nullptr ? nullptr : *plugin;
+}
+
+void EditorData::add_context_menu_plugin(ContextMenuSlot p_slot, const Ref<EditorContextMenuPlugin> &p_plugin) {
+	ContextMenu cm;
+	cm.p_slot = p_slot;
+	cm.plugin = p_plugin;
+	p_plugin->start_idx = context_menu_plugins.size() * EditorContextMenuPlugin::MAX_ITEMS;
+	context_menu_plugins.push_back(cm);
+}
+
+void EditorData::remove_context_menu_plugin(ContextMenuSlot p_slot, const Ref<EditorContextMenuPlugin> &p_plugin) {
+	for (int i = context_menu_plugins.size() - 1; i > -1; i--) {
+		if (context_menu_plugins[i].p_slot == p_slot && context_menu_plugins[i].plugin == p_plugin) {
+			context_menu_plugins.remove_at(i);
+		}
+	}
+}
+
+int EditorData::match_context_menu_shortcut(ContextMenuSlot p_slot, const Ref<InputEvent> &p_event) {
+	for (ContextMenu &cm : context_menu_plugins) {
+		if (cm.p_slot != p_slot) {
+			continue;
+		}
+		HashMap<Ref<Shortcut>, Callable> &cms = cm.plugin->context_menu_shortcuts;
+		int shortcut_idx = 0;
+		for (KeyValue<Ref<Shortcut>, Callable> &E : cms) {
+			const Ref<Shortcut> &p_shortcut = E.key;
+			if (p_shortcut->matches_event(p_event)) {
+				return EditorData::CONTEXT_MENU_ITEM_ID_BASE + cm.plugin->start_idx + shortcut_idx;
+			}
+			shortcut_idx++;
+		}
+	}
+	return 0;
+}
+
+void EditorData::add_options_from_plugins(PopupMenu *p_popup, ContextMenuSlot p_slot, const Vector<String> &p_paths) {
+	bool add_separator = false;
+
+	for (ContextMenu &cm : context_menu_plugins) {
+		if (cm.p_slot != p_slot) {
+			continue;
+		}
+		cm.plugin->clear_context_menu_items();
+		cm.plugin->add_options(p_paths);
+		HashMap<String, EditorContextMenuPlugin::ContextMenuItem> &items = cm.plugin->context_menu_items;
+		if (items.size() > 0 && !add_separator) {
+			add_separator = true;
+			p_popup->add_separator();
+		}
+		for (KeyValue<String, EditorContextMenuPlugin::ContextMenuItem> &E : items) {
+			EditorContextMenuPlugin::ContextMenuItem &item = E.value;
+
+			if (item.icon.is_valid()) {
+				p_popup->add_icon_item(item.icon, item.item_name, item.idx);
+				const int icon_size = p_popup->get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
+				p_popup->set_item_icon_max_width(-1, icon_size);
+			} else {
+				p_popup->add_item(item.item_name, item.idx);
+			}
+			if (item.shortcut.is_valid()) {
+				p_popup->set_item_shortcut(-1, item.shortcut, true);
+			}
+		}
+	}
+}
+
+template <typename T>
+void EditorData::invoke_plugin_callback(ContextMenuSlot p_slot, int p_option, const T &p_arg) {
+	Variant arg = p_arg;
+	Variant *argptr = &arg;
+
+	for (int i = 0; i < context_menu_plugins.size(); i++) {
+		if (context_menu_plugins[i].p_slot != p_slot || context_menu_plugins[i].plugin.is_null()) {
+			continue;
+		}
+		Ref<EditorContextMenuPlugin> plugin = context_menu_plugins[i].plugin;
+
+		// Shortcut callback.
+		int shortcut_idx = 0;
+		int shortcut_base_idx = EditorData::CONTEXT_MENU_ITEM_ID_BASE + plugin->start_idx;
+		for (KeyValue<Ref<Shortcut>, Callable> &E : plugin->context_menu_shortcuts) {
+			if (shortcut_base_idx + shortcut_idx == p_option) {
+				const Callable &callable = E.value;
+				Callable::CallError ce;
+				Variant result;
+				callable.callp((const Variant **)&argptr, 1, result, ce);
+			}
+			shortcut_idx++;
+		}
+		if (p_option < shortcut_base_idx + shortcut_idx) {
+			return;
+		}
+
+		HashMap<String, EditorContextMenuPlugin::ContextMenuItem> &items = plugin->context_menu_items;
+		for (KeyValue<String, EditorContextMenuPlugin::ContextMenuItem> &E : items) {
+			EditorContextMenuPlugin::ContextMenuItem &item = E.value;
+
+			if (p_option != item.idx || !item.callable.is_valid()) {
+				continue;
+			}
+
+			Callable::CallError ce;
+			Variant result;
+			item.callable.callp((const Variant **)&argptr, 1, result, ce);
+
+			if (ce.error != Callable::CallError::CALL_OK) {
+				String err = Variant::get_callable_error_text(item.callable, nullptr, 0, ce);
+				ERR_PRINT("Error calling function from context menu: " + err);
+			}
+		}
+	}
+	// Invoke submenu items.
+	if (p_slot == CONTEXT_SLOT_FILESYSTEM) {
+		invoke_plugin_callback(CONTEXT_SUBMENU_SLOT_FILESYSTEM_CREATE, p_option, p_arg);
+	}
+}
+
+void EditorData::filesystem_options_pressed(ContextMenuSlot p_slot, int p_option, const Vector<String> &p_selected) {
+	invoke_plugin_callback(p_slot, p_option, p_selected);
+}
+
+void EditorData::scene_tree_options_pressed(ContextMenuSlot p_slot, int p_option, const List<Node *> &p_selected) {
+	TypedArray<Node> nodes;
+	for (Node *selected : p_selected) {
+		nodes.append(selected);
+	}
+	invoke_plugin_callback(p_slot, p_option, nodes);
+}
+
+void EditorData::script_editor_options_pressed(ContextMenuSlot p_slot, int p_option, const Ref<Resource> &p_script) {
+	invoke_plugin_callback(p_slot, p_option, p_script);
 }
 
 void EditorData::add_custom_type(const String &p_type, const String &p_inherits, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon) {

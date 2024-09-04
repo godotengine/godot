@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  tile_set.compat.inc                                                   */
+/*  editor_context_menu_plugin.cpp                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,21 +28,38 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DISABLE_DEPRECATED
+#include "editor_context_menu_plugin.h"
 
-#include "tile_set.h"
+#include "core/input/shortcut.h"
+#include "editor/editor_node.h"
+#include "scene/resources/texture.h"
 
-Ref<NavigationPolygon> TileData::_get_navigation_polygon_bind_compat_84660(int p_layer_id) const {
-	return get_navigation_polygon(p_layer_id, false, false, false);
+void EditorContextMenuPlugin::add_options(const Vector<String> &p_paths) {
+	GDVIRTUAL_CALL(_popup_menu, p_paths);
 }
 
-Ref<OccluderPolygon2D> TileData::_get_occluder_bind_compat_84660(int p_layer_id) const {
-	return get_occluder_polygon(p_layer_id, 0, false, false, false);
+void EditorContextMenuPlugin::add_menu_shortcut(const Ref<Shortcut> &p_shortcut, const Callable &p_callable) {
+	context_menu_shortcuts.insert(p_shortcut, p_callable);
 }
 
-void TileData::_bind_compatibility_methods() {
-	ClassDB::bind_compatibility_method(D_METHOD("get_navigation_polygon"), &TileData::_get_navigation_polygon_bind_compat_84660);
-	ClassDB::bind_compatibility_method(D_METHOD("get_occluder"), &TileData::_get_occluder_bind_compat_84660);
+void EditorContextMenuPlugin::add_context_menu_item(const String &p_name, const Callable &p_callable, const Ref<Texture2D> &p_texture, const Ref<Shortcut> &p_shortcut) {
+	ERR_FAIL_COND_MSG(context_menu_items.has(p_name), "Context menu item already registered.");
+	ERR_FAIL_COND_MSG(context_menu_items.size() == MAX_ITEMS, "Maximum number of context menu items reached.");
+	ContextMenuItem item;
+	item.item_name = p_name;
+	item.callable = p_callable;
+	item.icon = p_texture;
+	item.shortcut = p_shortcut;
+	item.idx = EditorData::CONTEXT_MENU_ITEM_ID_BASE + start_idx + context_menu_shortcuts.size() + context_menu_items.size();
+	context_menu_items.insert(p_name, item);
 }
 
-#endif
+void EditorContextMenuPlugin::clear_context_menu_items() {
+	context_menu_items.clear();
+}
+
+void EditorContextMenuPlugin::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("add_menu_shortcut", "shortcut", "callback"), &EditorContextMenuPlugin::add_menu_shortcut);
+	ClassDB::bind_method(D_METHOD("add_context_menu_item", "name", "callback", "icon", "shortcut"), &EditorContextMenuPlugin::add_context_menu_item, DEFVAL(Ref<Texture2D>()), DEFVAL(Ref<Shortcut>()));
+	GDVIRTUAL_BIND(_popup_menu, "paths");
+}

@@ -5048,6 +5048,9 @@ Viewport::~Viewport() {
 	for (ViewportTexture *E : viewport_textures) {
 		E->vp = nullptr;
 	}
+	if (world_2d.is_valid()) {
+		world_2d->remove_viewport(this);
+	}
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RenderingServer::get_singleton()->free(viewport);
 }

@@ -841,8 +841,11 @@ private:
 	int z_index = 0;
 	int y_sort_origin = 0;
 	struct OcclusionLayerTileData {
-		Ref<OccluderPolygon2D> occluder;
-		mutable HashMap<int, Ref<OccluderPolygon2D>> transformed_occluders;
+		struct PolygonOccluderTileData {
+			Ref<OccluderPolygon2D> occluder_polygon;
+			mutable HashMap<int, Ref<OccluderPolygon2D>> transformed_polygon_occluders;
+		};
+		Vector<PolygonOccluderTileData> polygons;
 	};
 	Vector<OcclusionLayerTileData> occluders;
 
@@ -941,8 +944,17 @@ public:
 	void set_y_sort_origin(int p_y_sort_origin);
 	int get_y_sort_origin() const;
 
+#ifndef DISABLE_DEPRECATED
 	void set_occluder(int p_layer_id, Ref<OccluderPolygon2D> p_occluder_polygon);
 	Ref<OccluderPolygon2D> get_occluder(int p_layer_id, bool p_flip_h = false, bool p_flip_v = false, bool p_transpose = false) const;
+#endif // DISABLE_DEPRECATED
+
+	void set_occluder_polygons_count(int p_layer_id, int p_polygons_count);
+	int get_occluder_polygons_count(int p_layer_id) const;
+	void add_occluder_polygon(int p_layer_id);
+	void remove_occluder_polygon(int p_layer_id, int p_polygon_index);
+	void set_occluder_polygon(int p_layer_id, int p_polygon_index, const Ref<OccluderPolygon2D> &p_occluder_polygon);
+	Ref<OccluderPolygon2D> get_occluder_polygon(int p_layer_id, int p_polygon_index, bool p_flip_h = false, bool p_flip_v = false, bool p_transpose = false) const;
 
 	// Physics
 	void set_constant_linear_velocity(int p_layer_id, const Vector2 &p_velocity);
