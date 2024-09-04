@@ -372,13 +372,13 @@ void CharacterBodyMain::init()
     if(character_ai.is_null())
     {
 		character_ai.instantiate();
-		character_ai->init();
     }
+	character_ai->init();
     if(animator.is_null())
     {
         animator.instantiate();
-        animator->init();
     }
+    animator->init();
 }
 // 初始化身體
 void CharacterBodyMain::init_main_body(String p_skeleton_file_path,StringName p_animation_group)

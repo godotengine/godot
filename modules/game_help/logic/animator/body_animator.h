@@ -437,8 +437,11 @@ class CharacterAnimatorLayerConfigInstance : public RefCounted
 
         ClassDB::bind_method(D_METHOD("set_play_animation", "play_animation"), &CharacterAnimatorLayerConfigInstance::set_play_animation);
         ClassDB::bind_method(D_METHOD("get_play_animation"), &CharacterAnimatorLayerConfigInstance::get_play_animation);
+        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "play_animation", PROPERTY_HINT_RESOURCE_TYPE, "Animation"), "set_play_animation", "get_play_animation");
 
         ADD_MEMBER_BUTTON(editor_play_animation,L"播放动画",CharacterAnimatorLayerConfigInstance);
+
+        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "config", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimatorLayerConfig"), "set_config", "get_config");
     }
 public:
 	void set_body(class CharacterBodyMain* p_body);
@@ -540,8 +543,7 @@ public:
     void update_animation(float delta);
 
     void finish_update();
-    void change_state(const StringName& p_state_name)
-    {
+    void change_state(const StringName& p_state_name) {
         auto it = m_LayerConfigInstanceList.begin();
         while(it != m_LayerConfigInstanceList.end())
         {
@@ -550,8 +552,7 @@ public:
         }
     }
 
-    void on_layer_delete(CharacterAnimatorLayer *p_layer)
-    {
+    void on_layer_delete(CharacterAnimatorLayer *p_layer) {
         auto it = m_LayerConfigInstanceList.begin();
         while(it != m_LayerConfigInstanceList.end())
         {
@@ -567,14 +568,11 @@ public:
         }
     }
     Ref<CharacterAnimationLibrary::AnimationItem> get_animation_by_name(const StringName& p_name);
-    void set_animation_layer_arrays(TypedArray<CharacterAnimatorLayerConfigInstance> p_animation_layer_arrays)
-    {
+    void set_animation_layer_arrays(TypedArray<CharacterAnimatorLayerConfigInstance> p_animation_layer_arrays) {
 		m_LayerConfigInstanceList.clear();
-		for (int i = 0; i < p_animation_layer_arrays.size(); ++i)
-		{
+		for (int i = 0; i < p_animation_layer_arrays.size(); ++i) {
 			Ref< CharacterAnimatorLayerConfigInstance> ins = p_animation_layer_arrays[i];
-			if (ins.is_null())
-			{
+			if (ins.is_null()) {
 				ins.instantiate();
 			}
 			ins->set_body(m_Body);
@@ -584,24 +582,21 @@ public:
     TypedArray<CharacterAnimatorLayerConfigInstance> get_animation_layer_arrays() {
 		TypedArray<CharacterAnimatorLayerConfigInstance> rs;
 		auto it = m_LayerConfigInstanceList.begin();
-		while (it != m_LayerConfigInstanceList.end())
-		{
+		while (it != m_LayerConfigInstanceList.end()) {
 			rs.append(*it);
+			++it;
 		}
 		return rs;
 	}
-    void init()
-    {
-        if(m_LayerConfigInstanceList.size() == 0)
-        {
+    void init() {
+        if(m_LayerConfigInstanceList.size() == 0) {
             Ref<CharacterAnimatorLayerConfig> _mask;
             _mask.instantiate();
             add_layer(_mask);
         }
     }
 
-    ~CharacterAnimator()
-    {
+    ~CharacterAnimator() {
     }
 
 };

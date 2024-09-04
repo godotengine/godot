@@ -10,10 +10,21 @@ void CharacterManager::unregister_character(class CharacterBodyMain* character)
     update_finish();
     characters.erase(character);
 }
+void CharacterManager::pre_tick(float delta) {
+
+}
 void CharacterManager::tick(float delta)
 {
     update_ai();
     update_animator();
+}
+
+void CharacterManager::post_tick(float delta) {
+    update_finish();
+    for(CharacterBodyMain* character : characters)
+    {
+        _process_ik(character,0);
+    }
 }
 
 // 更新所有的角色ai
@@ -28,7 +39,7 @@ void CharacterManager::update_ai()
 // 更新所有的动画控制
 void CharacterManager::update_animator()
 {
-	return;
+    update_finish();
     TypedArray<TaskJobHandle> handles;
     handles.resize(characters.size());
     int index = 0;
@@ -38,7 +49,6 @@ void CharacterManager::update_animator()
         Ref<TaskJobHandle> h = handles[index];
         h = worker_task_pool->add_native_group_task(&_process_animator,character,1,1,h.ptr());
         h = worker_task_pool->add_native_group_task(&_process_animation,character,1,1,h.ptr());
-        h = worker_task_pool->add_native_group_task(&_process_ik,character,1,1,h.ptr());
         handles[index] = h;
         index++;
     }

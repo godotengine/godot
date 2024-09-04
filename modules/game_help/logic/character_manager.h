@@ -16,12 +16,15 @@ public:
     {
         return singleton;
     }
+public:
+    void pre_tick(float delta) override;
+    void tick(float delta) override;
 
+    void post_tick(float delta) override;
 public:
 
     void register_character(class CharacterBodyMain* character);
     void unregister_character(class CharacterBodyMain* character);
-    void tick(float delta);
 
     // 更新所有的角色ai
     void update_ai();

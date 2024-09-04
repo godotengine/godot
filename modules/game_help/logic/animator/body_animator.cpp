@@ -411,12 +411,9 @@ void CharacterAnimatorLayerConfigInstance::auto_init()
 		return;
 	}
 	layer = memnew(CharacterAnimatorLayer);
-	layer->set_config(config);
-	layer->set_name(config->get_layer_name());
-	layer->init(m_Body->get_animator().ptr(), config);
-
 	m_Body->add_child(layer);
 	layer->set_owner(m_Body);
+	layer->init(m_Body->get_animator().ptr(), config);
 }
 ///////////////
 
@@ -458,12 +455,10 @@ void CharacterAnimator::update_animator(float delta)
     }
 
 }
-void CharacterAnimator::update_animation(float delta)
-{
+void CharacterAnimator::update_animation(float delta) {
     auto it = m_LayerConfigInstanceList.begin();
     bool is_first = true;
-    while(it!= m_LayerConfigInstanceList.end())
-    {
+    while(it!= m_LayerConfigInstanceList.end()) {
 		Ref< CharacterAnimatorLayerConfigInstance> layer = *it;
         layer->_process_animation(m_Body->get_blackboard(),delta,is_first);
         is_first = false;

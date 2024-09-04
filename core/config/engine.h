@@ -45,9 +45,17 @@ class GlolaleTicker : public Object {
 
 	}
 public:
+	virtual void pre_tick(float delta)
+	{
+
+	}
 	virtual void tick(float delta)
 	{
 
+	}
+	virtual void post_tick(float delta)
+	{
+		
 	}
 };
 

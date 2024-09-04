@@ -1060,6 +1060,15 @@ void SceneTree::_process(bool p_physics) {
 		process_groups_dirty = false;
 	}
 	auto& global_tickers = Engine::get_singleton()->global_tickers;
+
+
+	
+	for(uint32_t i = 0; i < global_tickers.size(); i++) {	
+		if(global_tickers[i] != nullptr) {
+			global_tickers[i]->pre_tick(get_process_time());
+		}
+	}
+
 	for(uint32_t i = 0; i < global_tickers.size(); i++) {	
 		if(global_tickers[i] != nullptr) {
 			global_tickers[i]->tick(get_process_time());
@@ -1146,6 +1155,12 @@ void SceneTree::_process(bool p_physics) {
 		if (process_valid) {
 			pg->last_pass = process_last_pass; // Enable for processing
 			process_count++;
+		}
+	}
+	
+	for(uint32_t i = 0; i < global_tickers.size(); i++) {	
+		if(global_tickers[i] != nullptr) {
+			global_tickers[i]->post_tick(get_process_time());
 		}
 	}
 

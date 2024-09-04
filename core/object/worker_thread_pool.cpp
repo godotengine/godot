@@ -803,9 +803,12 @@ void TaskJobHandle::wait_completion()
 		// 已经标记完成了
 		return;
 	}		
-	// 如果完成，等待完成信号
+	if(is_job)
+	{
+		// 如果完成，等待完成信号
 		std::unique_lock<std::mutex> lock(done_mutex);
 		cv.wait(lock, [this] { return  WorkerTaskPool::get_singleton() == nullptr || completed.is_set(); });
+	}
 }
 void TaskJobHandle::_bind_methods()
 {
@@ -963,6 +966,7 @@ Ref<TaskJobHandle> WorkerTaskPool::add_native_group_task(void (*p_func)(void *, 
 {
 	Ref<TaskJobHandle> hand = Ref<TaskJobHandle>(memnew(TaskJobHandle));
 	hand->init();
+	hand->is_job = true;
 	if(p_elements <= 0)
 	{
 		// 增加依赖，保持依赖链条是正确的
@@ -982,6 +986,7 @@ Ref<TaskJobHandle> WorkerTaskPool::add_native_group_task(void (*p_func)(void *, 
 	for(int i = 0; i < p_elements; i += _batch_count)
 	{
 		ThreadTaskGroup* task = allocal_task();
+		task->handle = hand;
 		task->native_func_userdata = p_userdata;
 		task->native_group_func = p_func;
 		task->start = i;
@@ -1000,6 +1005,7 @@ Ref<TaskJobHandle> WorkerTaskPool::add_group_task(const Callable &p_action, int 
 {
 	Ref<TaskJobHandle> hand = Ref<TaskJobHandle>(memnew(TaskJobHandle));
 	hand->init();
+	hand->is_job = true;
 	if(p_elements <= 0)
 	{
 		// 增加依赖，保持依赖链条是正确的
@@ -1019,6 +1025,7 @@ Ref<TaskJobHandle> WorkerTaskPool::add_group_task(const Callable &p_action, int 
 	for(int i = 0; i < p_elements; i += _batch_count)
 	{
 		ThreadTaskGroup* task = allocal_task();
+		task->handle = hand;
 		task->callable = p_action;
 		task->native_func_userdata = nullptr;
 		task->native_group_func = nullptr;
@@ -1056,8 +1063,6 @@ Ref<TaskJobHandle> WorkerTaskPool::combined_job_handle(TypedArray<TaskJobHandle>
 			hand->dependJob.push_back(job);
 		}
 	}
-	// 因为不是一个任务，所以直接设置已经完成
-	hand->set_completed();
 	return hand;
 }
 void WorkerTaskPool::_bind_methods() {

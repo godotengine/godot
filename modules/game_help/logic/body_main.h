@@ -213,11 +213,6 @@ public:
 
     Ref<CharacterAnimator> get_animator()
     {
-        if(animator.is_valid())
-        {
-            animator.instantiate();
-            animator->set_body(this);
-        }
         return animator;
     }
     // 可编辑属性,必须初始类返回一个空对象

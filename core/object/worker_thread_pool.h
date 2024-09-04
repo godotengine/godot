@@ -301,6 +301,7 @@ class TaskJobHandle : public RefCounted
 	uint32_t taskMax = 0;
 	bool is_init = false;
 	bool is_error = false;
+	bool is_job = false;
 	String error_string;
 };
 // 多任务管理器
