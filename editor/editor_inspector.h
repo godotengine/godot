@@ -310,7 +310,6 @@ class EditorInspectorSection : public Container {
 	int level = 1;
 
 	Timer *dropping_unfold_timer = nullptr;
-	bool dropping = false;
 	bool dropping_for_unfold = false;
 
 	HashSet<StringName> revertable_properties;

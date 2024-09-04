@@ -59,8 +59,17 @@ class StringName {
 #ifdef DEBUG_ENABLED
 		uint32_t debug_references = 0;
 #endif
+<<<<<<< HEAD
 		//String get_name() const { return cname ? String(cname) : name; }
 		String get_name() const { return name; }
+=======
+		String get_name() const { return cname ? String(cname) : name; }
+		bool operator==(const String &p_name) const;
+		bool operator!=(const String &p_name) const;
+		bool operator==(const char *p_name) const;
+		bool operator!=(const char *p_name) const;
+
+>>>>>>> godotengine-master
 		int idx = 0;
 		uint32_t hash = 0;
 		_Data *prev = nullptr;
@@ -144,6 +153,10 @@ public:
 		return operator String();
 	}
 
+	char32_t operator[](int p_index) const;
+	int length() const;
+	bool is_empty() const;
+
 	_FORCE_INLINE_ bool is_node_unique_name() const {
 		if (!_data) {
 			return false;
@@ -220,7 +233,7 @@ public:
 		}
 	};
 
-	void operator=(const StringName &p_name);
+	StringName &operator=(const StringName &p_name);
 	StringName(const char *p_name, bool p_static = false);
 	StringName(const StringName &p_name);
 	StringName(const String &p_name, bool p_static = false);
