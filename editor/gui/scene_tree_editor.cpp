@@ -174,13 +174,38 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		EditorDockManager::get_singleton()->focus_dock(NodeDock::get_singleton());
 		NodeDock::get_singleton()->show_groups();
 	} else if (p_id == BUTTON_UNIQUE) {
-		undo_redo->create_action(TTR("Disable Scene Unique Name"));
-		undo_redo->add_do_method(n, "set_unique_name_in_owner", false);
-		undo_redo->add_undo_method(n, "set_unique_name_in_owner", true);
-		undo_redo->add_do_method(this, "_update_tree");
-		undo_redo->add_undo_method(this, "_update_tree");
-		undo_redo->commit_action();
+		bool ask_before_revoking_unique_name = EDITOR_GET("docks/scene_tree/ask_before_revoking_unique_name");
+		revoke_node = n;
+		if (ask_before_revoking_unique_name) {
+			String msg = vformat(TTR("Revoke unique name for node \"%s\"?"), n->get_name());
+			ask_before_revoke_checkbox->set_pressed(false);
+			revoke_dialog_label->set_text(msg);
+			revoke_dialog->reset_size();
+			revoke_dialog->popup_centered();
+		} else {
+			_revoke_unique_name();
+		}
 	}
+}
+
+void SceneTreeEditor::_update_ask_before_revoking_unique_name() {
+	if (ask_before_revoke_checkbox->is_pressed()) {
+		EditorSettings::get_singleton()->set("docks/scene_tree/ask_before_revoking_unique_name", false);
+		ask_before_revoke_checkbox->set_pressed(false);
+	}
+
+	_revoke_unique_name();
+}
+
+void SceneTreeEditor::_revoke_unique_name() {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+
+	undo_redo->create_action(TTR("Disable Scene Unique Name"));
+	undo_redo->add_do_method(revoke_node, "set_unique_name_in_owner", false);
+	undo_redo->add_undo_method(revoke_node, "set_unique_name_in_owner", true);
+	undo_redo->add_do_method(this, "_update_tree");
+	undo_redo->add_undo_method(this, "_update_tree");
+	undo_redo->commit_action();
 }
 
 void SceneTreeEditor::_toggle_visible(Node *p_node) {
@@ -1619,6 +1644,18 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	update_node_tooltip_delay->set_wait_time(0.5);
 	update_node_tooltip_delay->set_one_shot(true);
 	add_child(update_node_tooltip_delay);
+
+	revoke_dialog = memnew(ConfirmationDialog);
+	revoke_dialog->set_ok_button_text(TTR("Revoke"));
+	add_child(revoke_dialog);
+	revoke_dialog->connect(SceneStringName(confirmed), callable_mp(this, &SceneTreeEditor::_update_ask_before_revoking_unique_name));
+	VBoxContainer *vb = memnew(VBoxContainer);
+	revoke_dialog->add_child(vb);
+	revoke_dialog_label = memnew(Label);
+	vb->add_child(revoke_dialog_label);
+	ask_before_revoke_checkbox = memnew(CheckBox(TTR("Don't Ask Again")));
+	ask_before_revoke_checkbox->set_tooltip_text(TTR("This dialog can also be enabled/disabled in the Editor Settings: Docks > Scene Tree > Ask Before Revoking Unique Name."));
+	vb->add_child(ask_before_revoke_checkbox);
 
 	script_types = memnew(List<StringName>);
 	ClassDB::get_inheriters_from_class("Script", script_types);
