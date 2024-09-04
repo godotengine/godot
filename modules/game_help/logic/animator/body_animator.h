@@ -494,7 +494,7 @@ public:
 
 		if (layer->is_active())
 		{
-			layer->_process_animator(p_playback_info, p_delta, is_first);
+			layer->_process_animation(p_playback_info, p_delta, is_first);
 		}
 	}
 	void finish_update()
@@ -538,9 +538,9 @@ public:
 
     void add_layer(const Ref<CharacterAnimatorLayerConfig>& _mask);
 
-    void update_animator(float delta);
+    void _thread_update_animator(float delta);
 
-    void update_animation(float delta);
+    void _thread_update_animation(float delta);
 
     void finish_update();
     void change_state(const StringName& p_state_name) {

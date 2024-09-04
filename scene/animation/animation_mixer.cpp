@@ -1595,130 +1595,139 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					}
 				} break;
 				case Animation::TYPE_METHOD: {
-#ifdef TOOLS_ENABLED
-					if (!can_call) {
-						continue;
+					if(!is_thread)
+					{
+	#ifdef TOOLS_ENABLED
+						if (!can_call) {
+							continue;
+						}
+	#endif // TOOLS_ENABLED
+						if (p_update_only || Math::is_zero_approx(blend)) {
+							continue;
+						}
+						TrackCacheMethod *t = static_cast<TrackCacheMethod *>(track);
+						if (seeked) {
+							int idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT, true);
+							if (idx < 0) {
+								continue;
+							}
+							StringName method = a->method_track_get_name(i, idx);
+							Vector<Variant> params = a->method_track_get_params(i, idx);
+							_call_object(t->object_id, method, params, callback_mode_method == ANIMATION_CALLBACK_MODE_METHOD_DEFERRED);
+						} else {
+							List<int> indices;
+							a->track_get_key_indices_in_range(i, time, delta, &indices, looped_flag);
+							for (int &F : indices) {
+								StringName method = a->method_track_get_name(i, F);
+								Vector<Variant> params = a->method_track_get_params(i, F);
+								_call_object(t->object_id, method, params, callback_mode_method == ANIMATION_CALLBACK_MODE_METHOD_DEFERRED);
+							}
+						}
+					} break;
+
 					}
-#endif // TOOLS_ENABLED
-					if (p_update_only || Math::is_zero_approx(blend)) {
-						continue;
-					}
-					TrackCacheMethod *t = static_cast<TrackCacheMethod *>(track);
-					if (seeked) {
-						int idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT, true);
+				case Animation::TYPE_AUDIO: {
+					if(!is_thread)
+					{
+						// The end of audio should be observed even if the blend value is 0, build up the information and store to the cache for that.
+						TrackCacheAudio *t = static_cast<TrackCacheAudio *>(track);
+						Object *t_obj = ObjectDB::get_instance(t->object_id);
+						Node *asp = t_obj ? Object::cast_to<Node>(t_obj) : nullptr;
+						if (!t_obj || !asp) {
+							t->playing_streams.clear();
+							continue;
+						}
+						ObjectID oid = a->get_instance_id();
+						if (!t->playing_streams.has(oid)) {
+							t->playing_streams[oid] = PlayingAudioTrackInfo();
+						}
+
+						PlayingAudioTrackInfo &track_info = t->playing_streams[oid];
+						track_info.length = a_length;
+						track_info.time = time;
+						track_info.volume += blend;
+						track_info.loop = a->get_loop_mode() != Animation::LOOP_NONE;
+						track_info.backward = backward;
+						track_info.use_blend = a->audio_track_is_use_blend(i);
+						HashMap<int, PlayingAudioStreamInfo> &map = track_info.stream_info;
+
+						// Main process to fire key is started from here.
+						if (p_update_only) {
+							continue;
+						}
+						// Find stream.
+						int idx = -1;
+						if (seeked) {
+							// Audio key may be playbacked from the middle, should use FIND_MODE_NEAREST.
+							// Then, check the current playing stream to prevent to playback doubly.
+							idx = a->track_find_key(i, time, Animation::FIND_MODE_NEAREST, true);
+							// Discard previous stream when seeking.
+							if (map.has(idx)) {
+								t->audio_stream_playback->stop_stream(map[idx].index);
+								map.erase(idx);
+							}
+						} else {
+							List<int> to_play;
+							a->track_get_key_indices_in_range(i, time, delta, &to_play, looped_flag);
+							if (to_play.size()) {
+								idx = to_play.back()->get();
+							}
+						}
 						if (idx < 0) {
 							continue;
 						}
-						StringName method = a->method_track_get_name(i, idx);
-						Vector<Variant> params = a->method_track_get_params(i, idx);
-						_call_object(t->object_id, method, params, callback_mode_method == ANIMATION_CALLBACK_MODE_METHOD_DEFERRED);
-					} else {
-						List<int> indices;
-						a->track_get_key_indices_in_range(i, time, delta, &indices, looped_flag);
-						for (int &F : indices) {
-							StringName method = a->method_track_get_name(i, F);
-							Vector<Variant> params = a->method_track_get_params(i, F);
-							_call_object(t->object_id, method, params, callback_mode_method == ANIMATION_CALLBACK_MODE_METHOD_DEFERRED);
-						}
-					}
-				} break;
-				case Animation::TYPE_AUDIO: {
-					// The end of audio should be observed even if the blend value is 0, build up the information and store to the cache for that.
-					TrackCacheAudio *t = static_cast<TrackCacheAudio *>(track);
-					Object *t_obj = ObjectDB::get_instance(t->object_id);
-					Node *asp = t_obj ? Object::cast_to<Node>(t_obj) : nullptr;
-					if (!t_obj || !asp) {
-						t->playing_streams.clear();
-						continue;
-					}
-					ObjectID oid = a->get_instance_id();
-					if (!t->playing_streams.has(oid)) {
-						t->playing_streams[oid] = PlayingAudioTrackInfo();
-					}
 
-					PlayingAudioTrackInfo &track_info = t->playing_streams[oid];
-					track_info.length = a_length;
-					track_info.time = time;
-					track_info.volume += blend;
-					track_info.loop = a->get_loop_mode() != Animation::LOOP_NONE;
-					track_info.backward = backward;
-					track_info.use_blend = a->audio_track_is_use_blend(i);
-					HashMap<int, PlayingAudioStreamInfo> &map = track_info.stream_info;
-
-					// Main process to fire key is started from here.
-					if (p_update_only) {
-						continue;
-					}
-					// Find stream.
-					int idx = -1;
-					if (seeked) {
-						// Audio key may be playbacked from the middle, should use FIND_MODE_NEAREST.
-						// Then, check the current playing stream to prevent to playback doubly.
-						idx = a->track_find_key(i, time, Animation::FIND_MODE_NEAREST, true);
-						// Discard previous stream when seeking.
-						if (map.has(idx)) {
-							t->audio_stream_playback->stop_stream(map[idx].index);
-							map.erase(idx);
-						}
-					} else {
-						List<int> to_play;
-						a->track_get_key_indices_in_range(i, time, delta, &to_play, looped_flag);
-						if (to_play.size()) {
-							idx = to_play.back()->get();
-						}
-					}
-					if (idx < 0) {
-						continue;
-					}
-
-					// Play stream.
-					Ref<AudioStream> stream = a->audio_track_get_key_stream(i, idx);
-					if (stream.is_valid()) {
-						double start_ofs = a->audio_track_get_key_start_offset(i, idx);
-						double end_ofs = a->audio_track_get_key_end_offset(i, idx);
-						double len = stream->get_length();
-						if (seeked) {
-							start_ofs += time - a->track_get_key_time(i, idx);
-						}
-
-						if (t_obj->call(SNAME("get_stream")) != t->audio_stream) {
-							t_obj->call(SNAME("set_stream"), t->audio_stream);
-							t->audio_stream_playback.unref();
-							if (!playing_audio_stream_players.has(asp)) {
-								playing_audio_stream_players.push_back(asp);
+						// Play stream.
+						Ref<AudioStream> stream = a->audio_track_get_key_stream(i, idx);
+						if (stream.is_valid()) {
+							double start_ofs = a->audio_track_get_key_start_offset(i, idx);
+							double end_ofs = a->audio_track_get_key_end_offset(i, idx);
+							double len = stream->get_length();
+							if (seeked) {
+								start_ofs += time - a->track_get_key_time(i, idx);
 							}
-						}
-						if (!t_obj->call(SNAME("is_playing"))) {
-							t_obj->call(SNAME("play"));
-						}
-						if (!t_obj->call(SNAME("has_stream_playback"))) {
-							t->audio_stream_playback.unref();
-							continue;
-						}
-						if (t->audio_stream_playback.is_null()) {
-							t->audio_stream_playback = t_obj->call(SNAME("get_stream_playback"));
-						}
 
-						if (t_obj->call(SNAME("get_is_sample"))) {
-							Ref<AudioSamplePlayback> sample_playback;
-							sample_playback.instantiate();
-							sample_playback->stream = stream;
-							t->audio_stream_playback->set_sample_playback(sample_playback);
-							AudioServer::get_singleton()->start_sample_playback(sample_playback);
-							continue;
-						}
+							if (t_obj->call(SNAME("get_stream")) != t->audio_stream) {
+								t_obj->call(SNAME("set_stream"), t->audio_stream);
+								t->audio_stream_playback.unref();
+								if (!playing_audio_stream_players.has(asp)) {
+									playing_audio_stream_players.push_back(asp);
+								}
+							}
+							if (!t_obj->call(SNAME("is_playing"))) {
+								t_obj->call(SNAME("play"));
+							}
+							if (!t_obj->call(SNAME("has_stream_playback"))) {
+								t->audio_stream_playback.unref();
+								continue;
+							}
+							if (t->audio_stream_playback.is_null()) {
+								t->audio_stream_playback = t_obj->call(SNAME("get_stream_playback"));
+							}
 
-						PlayingAudioStreamInfo pasi;
-						pasi.index = t->audio_stream_playback->play_stream(stream, start_ofs, 0, 1.0, t->playback_type, t->bus);
-						pasi.start = time;
-						if (len && Animation::is_greater_approx(end_ofs, 0)) { // Force an end at a time.
-							pasi.len = len - start_ofs - end_ofs;
-						} else {
-							pasi.len = 0;
+							if (t_obj->call(SNAME("get_is_sample"))) {
+								Ref<AudioSamplePlayback> sample_playback;
+								sample_playback.instantiate();
+								sample_playback->stream = stream;
+								t->audio_stream_playback->set_sample_playback(sample_playback);
+								AudioServer::get_singleton()->start_sample_playback(sample_playback);
+								continue;
+							}
+
+							PlayingAudioStreamInfo pasi;
+							pasi.index = t->audio_stream_playback->play_stream(stream, start_ofs, 0, 1.0, t->playback_type, t->bus);
+							pasi.start = time;
+							if (len && Animation::is_greater_approx(end_ofs, 0)) { // Force an end at a time.
+								pasi.len = len - start_ofs - end_ofs;
+							} else {
+								pasi.len = 0;
+							}
+							map[idx] = pasi;
 						}
-						map[idx] = pasi;
+					
+
 					}
-				} break;
+					} break;
 				case Animation::TYPE_ANIMATION: {
 					if (Math::is_zero_approx(blend)) {
 						continue;
@@ -2004,7 +2013,7 @@ void AnimationMixer::make_animation_instance_anim(const Ref<Animation> &p_anim, 
 	ad.name = p_anim->get_name();
 	ad.animation = p_anim;
 	ad.bone_map = bone_map;
-	ad.animation_library = find_animation_library(ad.animation);
+	//ad.animation_library = find_animation_library(ad.animation);
 
 	AnimationInstance ai;
 	ai.animation_data = ad;

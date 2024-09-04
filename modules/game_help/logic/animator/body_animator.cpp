@@ -107,11 +107,11 @@ void CharacterAnimatorLayer::_process_animator(const Ref<Blackboard> &p_playback
 // 处理动画
 void CharacterAnimatorLayer::_process_animation(const Ref<Blackboard> &p_playback_info,double p_delta,bool is_first)
 {
-
-
+	is_thread = true;
+	// 重置一下手动处理线程安全标签
+	set_is_manual_thread(true);
 	_blend_init();
 
-	cb_begin_animation.call(this, p_delta, false);
 
 	if (_blend_pre_process(p_delta, track_count, track_map)) {
 		_blend_capture(p_delta);
@@ -121,9 +121,10 @@ void CharacterAnimatorLayer::_process_animation(const Ref<Blackboard> &p_playbac
 		layer_blend_apply();
 		_blend_post_process();
 
-		cb_end_animation.call(this, p_delta, false);
 	};
 
+	// 重置一下手动处理线程安全标签
+	set_is_manual_thread(false);
     
 	clear_animation_instances();
 }
@@ -244,88 +245,96 @@ void CharacterAnimatorLayer::layer_blend_apply() {
 #endif // _3D_DISABLED
 			} break;
 			case Animation::TYPE_VALUE: {
-				TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
+                // 多线程暂时不支持动画里面的变量
+                if(!is_thread)
+                {
+                    TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
 
-				if (!t->is_variant_interpolatable || (callback_mode_discrete == ANIMATION_CALLBACK_MODE_DISCRETE_DOMINANT && t->use_discrete)) {
-					break; // Don't overwrite the value set by UPDATE_DISCRETE.
-				}
+                    if (!t->is_variant_interpolatable || (callback_mode_discrete == ANIMATION_CALLBACK_MODE_DISCRETE_DOMINANT && t->use_discrete)) {
+                        break; // Don't overwrite the value set by UPDATE_DISCRETE.
+                    }
 
-				// Trim unused elements if init array/string is not blended.
-				if (t->value.is_array()) {
-					int actual_blended_size = (int)Math::round(Math::abs(t->element_size.operator real_t()));
-					if (actual_blended_size < (t->value.operator Array()).size()) {
-						real_t abs_weight = Math::abs(track->total_weight);
-						if (abs_weight >= 1.0) {
-							(t->value.operator Array()).resize(actual_blended_size);
-						} else if (t->init_value.is_string()) {
-							(t->value.operator Array()).resize(Animation::interpolate_variant((t->init_value.operator String()).length(), actual_blended_size, abs_weight));
-						}
-					}
-				}
+                    // Trim unused elements if init array/string is not blended.
+                    if (t->value.is_array()) {
+                        int actual_blended_size = (int)Math::round(Math::abs(t->element_size.operator real_t()));
+                        if (actual_blended_size < (t->value.operator Array()).size()) {
+                            real_t abs_weight = Math::abs(track->total_weight);
+                            if (abs_weight >= 1.0) {
+                                (t->value.operator Array()).resize(actual_blended_size);
+                            } else if (t->init_value.is_string()) {
+                                (t->value.operator Array()).resize(Animation::interpolate_variant((t->init_value.operator String()).length(), actual_blended_size, abs_weight));
+                            }
+                        }
+                    }
 
-				Object *t_obj = ObjectDB::get_instance(t->object_id);
-				if (t_obj) {
-					t_obj->set_indexed(t->subpath, Animation::cast_from_blendwise(t->value, t->init_value.get_type()));
-				}
+                    Object *t_obj = ObjectDB::get_instance(t->object_id);
+                    if (t_obj) {
+                        t_obj->set_indexed(t->subpath, Animation::cast_from_blendwise(t->value, t->init_value.get_type()));
+                    }
+
+                }
 
 			} break;
 			case Animation::TYPE_AUDIO: {
-				TrackCacheAudio *t = static_cast<TrackCacheAudio *>(track);
+                // 多线程暂时不支持动画里面的声音                
+                if(!is_thread){	
+                    TrackCacheAudio *t = static_cast<TrackCacheAudio *>(track);
 
-				// Audio ending process.
-				LocalVector<ObjectID> erase_maps;
-				for (KeyValue<ObjectID, PlayingAudioTrackInfo> &L : t->playing_streams) {
-					PlayingAudioTrackInfo &track_info = L.value;
-					float db = Math::linear_to_db(track_info.use_blend ? track_info.volume : 1.0);
-					LocalVector<int> erase_streams;
-					HashMap<int, PlayingAudioStreamInfo> &map = track_info.stream_info;
-					for (const KeyValue<int, PlayingAudioStreamInfo> &M : map) {
-						PlayingAudioStreamInfo pasi = M.value;
+                    // Audio ending process.
+                    LocalVector<ObjectID> erase_maps;
+                    for (KeyValue<ObjectID, PlayingAudioTrackInfo> &L : t->playing_streams) {
+                        PlayingAudioTrackInfo &track_info = L.value;
+                        float db = Math::linear_to_db(track_info.use_blend ? track_info.volume : 1.0);
+                        LocalVector<int> erase_streams;
+                        HashMap<int, PlayingAudioStreamInfo> &map = track_info.stream_info;
+                        for (const KeyValue<int, PlayingAudioStreamInfo> &M : map) {
+                            PlayingAudioStreamInfo pasi = M.value;
 
-						bool stop = false;
-						if (!t->audio_stream_playback->is_stream_playing(pasi.index)) {
-							stop = true;
-						}
-						if (!track_info.loop) {
-							if (!track_info.backward) {
-								if (track_info.time < pasi.start) {
-									stop = true;
-								}
-							} else if (track_info.backward) {
-								if (track_info.time > pasi.start) {
-									stop = true;
-								}
-							}
-						}
-						if (pasi.len > 0) {
-							double len = 0.0;
-							if (!track_info.backward) {
-								len = pasi.start > track_info.time ? (track_info.length - pasi.start) + track_info.time : track_info.time - pasi.start;
-							} else {
-								len = pasi.start < track_info.time ? (track_info.length - track_info.time) + pasi.start : pasi.start - track_info.time;
-							}
-							if (len > pasi.len) {
-								stop = true;
-							}
-						}
-						if (stop) {
-							// Time to stop.
-							t->audio_stream_playback->stop_stream(pasi.index);
-							erase_streams.push_back(M.key);
-						} else {
-							t->audio_stream_playback->set_stream_volume(pasi.index, db);
-						}
-					}
-					for (uint32_t erase_idx = 0; erase_idx < erase_streams.size(); erase_idx++) {
-						map.erase(erase_streams[erase_idx]);
-					}
-					if (map.size() == 0) {
-						erase_maps.push_back(L.key);
-					}
-				}
-				for (uint32_t erase_idx = 0; erase_idx < erase_maps.size(); erase_idx++) {
-					t->playing_streams.erase(erase_maps[erase_idx]);
-				}
+                            bool stop = false;
+                            if (!t->audio_stream_playback->is_stream_playing(pasi.index)) {
+                                stop = true;
+                            }
+                            if (!track_info.loop) {
+                                if (!track_info.backward) {
+                                    if (track_info.time < pasi.start) {
+                                        stop = true;
+                                    }
+                                } else if (track_info.backward) {
+                                    if (track_info.time > pasi.start) {
+                                        stop = true;
+                                    }
+                                }
+                            }
+                            if (pasi.len > 0) {
+                                double len = 0.0;
+                                if (!track_info.backward) {
+                                    len = pasi.start > track_info.time ? (track_info.length - pasi.start) + track_info.time : track_info.time - pasi.start;
+                                } else {
+                                    len = pasi.start < track_info.time ? (track_info.length - track_info.time) + pasi.start : pasi.start - track_info.time;
+                                }
+                                if (len > pasi.len) {
+                                    stop = true;
+                                }
+                            }
+                            if (stop) {
+                                // Time to stop.
+                                t->audio_stream_playback->stop_stream(pasi.index);
+                                erase_streams.push_back(M.key);
+                            } else {
+                                t->audio_stream_playback->set_stream_volume(pasi.index, db);
+                            }
+                        }
+                        for (uint32_t erase_idx = 0; erase_idx < erase_streams.size(); erase_idx++) {
+                            map.erase(erase_streams[erase_idx]);
+                        }
+                        if (map.size() == 0) {
+                            erase_maps.push_back(L.key);
+                        }
+                    }
+                    for (uint32_t erase_idx = 0; erase_idx < erase_maps.size(); erase_idx++) {
+                        t->playing_streams.erase(erase_maps[erase_idx]);
+                    }
+                }
 			} break;
 			default: {
 			} // The rest don't matter.
@@ -336,6 +345,8 @@ void CharacterAnimatorLayer::play_animation(const Ref<Animation>& p_anim, bool p
 {
 	Ref<CharacterAnimatorNode1D> anim_node;
 	anim_node.instantiate();
+	anim_node->add_animation(p_anim, 1);
+	play_animation(anim_node);
 }
 
 bool CharacterAnimatorLayer::play_animation(Ref<CharacterAnimatorNodeBase> p_node)
@@ -442,8 +453,12 @@ void CharacterAnimator::add_layer(const Ref<CharacterAnimatorLayerConfig>& _mask
 	ins->set_body(m_Body);
 	m_LayerConfigInstanceList.push_back(ins);
 }
-void CharacterAnimator::update_animator(float delta)
+void CharacterAnimator::_thread_update_animator(float delta)
 {
+    if(m_Body == nullptr)
+    {
+        return;
+    }
     auto it = m_LayerConfigInstanceList.begin();
     bool is_first = true;
     while(it!= m_LayerConfigInstanceList.end())
@@ -455,7 +470,11 @@ void CharacterAnimator::update_animator(float delta)
     }
 
 }
-void CharacterAnimator::update_animation(float delta) {
+void CharacterAnimator::_thread_update_animation(float delta) {
+    if(m_Body == nullptr)
+    {
+        return;
+    }
     auto it = m_LayerConfigInstanceList.begin();
     bool is_first = true;
     while(it!= m_LayerConfigInstanceList.end()) {

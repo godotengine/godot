@@ -203,9 +203,13 @@ public:
     }
     void set_animator(const Ref<CharacterAnimator> &p_animator)
     {
-        if(animator.is_valid() || p_animator.is_null())
+        if(p_animator.is_null())
         {
             return;
+        }
+        if(animator.is_valid())
+        {
+            animator->set_body(nullptr);
         }
         animator = p_animator;
 		animator->set_body(this);

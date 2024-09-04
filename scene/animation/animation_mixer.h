@@ -116,7 +116,7 @@ protected:
 		}
 		return ret;
 	}
-
+	bool is_thread = false;
 	// 动画分组信息
 	StringName animationGroup;
 	// 获取动画回调

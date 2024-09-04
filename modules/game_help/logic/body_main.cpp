@@ -286,11 +286,6 @@ void CharacterBodyMain::_update(double p_delta)
 {
         // 更新玩家位置
         GDVIRTUAL_CALL(_update_player_position);
-        // 更新動畫
-        if(animator.is_valid())
-        {
-            animator->update_animation(get_process_delta_time());
-        }
         for(uint32_t i = 0; i < check_area.size();++i)
         {
             if(check_area[i].is_valid())
@@ -319,14 +314,14 @@ void CharacterBodyMain::_process_animator()
 {
     if(animator.is_valid())
     {
-        animator->update_animator(get_process_delta_time());
+        animator->_thread_update_animator(get_process_delta_time());
     }
 }
 void CharacterBodyMain::_process_animation()
 {
     if(animator.is_valid())
     {
-        animator->update_animation(get_process_delta_time());
+        animator->_thread_update_animation(get_process_delta_time());
     }
 }
 void CharacterBodyMain::_process_ik()
@@ -378,6 +373,7 @@ void CharacterBodyMain::init()
     {
         animator.instantiate();
     }
+    animator->set_body(this);
     animator->init();
 }
 // 初始化身體

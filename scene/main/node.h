@@ -258,6 +258,7 @@ private:
 		AutoTranslateMode auto_translate_mode = AUTO_TRANSLATE_MODE_INHERIT;
 		mutable bool is_auto_translating = true;
 		mutable bool is_auto_translate_dirty = true;
+		mutable bool is_manual_thread = false;
 
 		mutable NodePath *path_cache = nullptr;
 
@@ -383,7 +384,6 @@ protected:
 	static String _get_name_num_separator();
 
 	friend class SceneState;
-
 	void _add_child_nocheck(Node *p_child, const StringName &p_name, InternalMode p_internal_mode = INTERNAL_MODE_DISABLED);
 	void _set_owner_nocheck(Node *p_owner);
 	void _set_name_nocheck(const StringName &p_name);
@@ -547,6 +547,11 @@ public:
 
 	void set_unique_name_in_owner(bool p_enabled);
 	bool is_unique_name_in_owner() const;
+
+
+	// 正常流程是不允许多线程调用这个方法,如果外部能够确保期间不会产生冲突,可以调用
+	void set_is_manual_thread(bool v) { data.is_manual_thread = v; }
+	bool get_is_manual_thread() { return data.is_manual_thread; }
 
 	_FORCE_INLINE_ int get_index(bool p_include_internal = true) const {
 		// p_include_internal = false doesn't make sense if the node is internal.

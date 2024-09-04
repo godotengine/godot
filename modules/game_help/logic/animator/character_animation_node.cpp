@@ -450,6 +450,12 @@ void CharacterAnimatorNodeBase::get_weights_freeform_directional(const Blend2dDa
     // Get constants
     const Vector2* positionArray = blendConstant.position_array.ptr();
     uint32_t count = blendConstant.position_count;
+    if (count < 2)
+    {
+        if (count == 1)
+            weightArray[0] = 1;
+        return;
+    }
     const float* constantMagnitudes = blendConstant.m_ChildMagnitudeArray.ptr();
     const MotionNeighborList* constantChildNeighborLists = blendConstant.m_ChildNeighborListArray.ptr();
 
@@ -553,6 +559,12 @@ void CharacterAnimatorNodeBase::get_weights_freeform_cartesian(const Blend2dData
     // Get constants
     const Vector2* positionArray = blendConstant.position_array.ptr();
     uint32_t count = blendConstant.position_count;
+    if (count < 2)
+    {
+        if (count == 1)
+            weightArray[0] = 1;
+        return;
+    }
     const MotionNeighborList* constantChildNeighborLists = blendConstant.m_ChildNeighborListArray.ptr();
 
     Vector2 blendPosition = Vector2(blendValueX, blendValueY);
@@ -623,6 +635,12 @@ void CharacterAnimatorNodeBase::get_weights_freeform_cartesian(const Blend2dData
 
 void CharacterAnimatorNodeBase::get_weights1d(const Blend1dDataConstant& blendConstant, float* weightArray, float blendValue)
 {
+    if (blendConstant.position_count < 2)
+    {
+        if (blendConstant.position_count == 1)
+            weightArray[0] = 1;
+        return;
+    }
     blendValue = CLAMP(blendValue, blendConstant.position_array[0], blendConstant.position_array[blendConstant.position_count - 1]);
     for (uint32_t j = 0; j < blendConstant.position_count; j++)
         weightArray[j] = weight_for_index(blendConstant.position_array.ptr(), blendConstant.position_count, j, blendValue);
