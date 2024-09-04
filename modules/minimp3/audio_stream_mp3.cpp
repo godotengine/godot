@@ -159,6 +159,9 @@ Ref<AudioSamplePlayback> AudioStreamPlaybackMP3::get_sample_playback() const {
 
 void AudioStreamPlaybackMP3::set_sample_playback(const Ref<AudioSamplePlayback> &p_playback) {
 	sample_playback = p_playback;
+	if (sample_playback.is_valid()) {
+		sample_playback->stream_playback = Ref<AudioStreamPlayback>(this);
+	}
 }
 
 void AudioStreamPlaybackMP3::set_parameter(const StringName &p_name, const Variant &p_value) {
