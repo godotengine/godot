@@ -249,7 +249,7 @@ void GDScriptParser::override_completion_context(const Node *p_for_node, Complet
 	if (!for_completion) {
 		return;
 	}
-	if (completion_context.node != p_for_node) {
+	if (p_for_node == nullptr || completion_context.node != p_for_node) {
 		return;
 	}
 	CompletionContext context;
@@ -264,8 +264,8 @@ void GDScriptParser::override_completion_context(const Node *p_for_node, Complet
 	completion_context = context;
 }
 
-void GDScriptParser::make_completion_context(CompletionType p_type, Node *p_node, int p_argument) {
-	if (!for_completion) {
+void GDScriptParser::make_completion_context(CompletionType p_type, Node *p_node, int p_argument, bool p_force) {
+	if (!for_completion || (!p_force && completion_context.type != COMPLETION_NONE)) {
 		return;
 	}
 	if (previous.cursor_place != GDScriptTokenizerText::CURSOR_MIDDLE && previous.cursor_place != GDScriptTokenizerText::CURSOR_END && current.cursor_place == GDScriptTokenizerText::CURSOR_NONE) {
@@ -283,8 +283,8 @@ void GDScriptParser::make_completion_context(CompletionType p_type, Node *p_node
 	completion_context = context;
 }
 
-void GDScriptParser::make_completion_context(CompletionType p_type, Variant::Type p_builtin_type) {
-	if (!for_completion) {
+void GDScriptParser::make_completion_context(CompletionType p_type, Variant::Type p_builtin_type, bool p_force) {
+	if (!for_completion || (!p_force && completion_context.type != COMPLETION_NONE)) {
 		return;
 	}
 	if (previous.cursor_place != GDScriptTokenizerText::CURSOR_MIDDLE && previous.cursor_place != GDScriptTokenizerText::CURSOR_END && current.cursor_place == GDScriptTokenizerText::CURSOR_NONE) {
@@ -2471,7 +2471,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_precedence(Precedence p_pr
 	}
 
 	// Completion can appear whenever an expression is expected.
-	make_completion_context(COMPLETION_IDENTIFIER, nullptr);
+	make_completion_context(COMPLETION_IDENTIFIER, nullptr, -1, false);
 
 	GDScriptTokenizer::Token token = current;
 	GDScriptTokenizer::Token::Type token_type = token.type;
@@ -2488,7 +2488,16 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_precedence(Precedence p_pr
 
 	advance(); // Only consume the token if there's a valid rule.
 
+	// After a token was consumed, update the completion context regardless of a previously set context.
+
 	ExpressionNode *previous_operand = (this->*prefix_rule)(nullptr, p_can_assign);
+
+#ifdef TOOLS_ENABLED
+	// HACK: We can't create a context in parse_identifier since it is used in places were we don't want completion.
+	if (previous_operand != nullptr && previous_operand->type == GDScriptParser::Node::IDENTIFIER && prefix_rule == static_cast<ParseFunction>(&GDScriptParser::parse_identifier)) {
+		make_completion_context(COMPLETION_IDENTIFIER, previous_operand);
+	}
+#endif
 
 	while (p_precedence <= get_rule(current.type)->precedence) {
 		if (previous_operand == nullptr || (p_stop_on_assign && current.type == GDScriptTokenizer::Token::EQUAL) || lambda_ended) {
@@ -2924,6 +2933,11 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 	}
 	assignment->assignee = p_previous_operand;
 	assignment->assigned_value = parse_expression(false);
+#ifdef TOOLS_ENABLED
+	if (assignment->assigned_value != nullptr && assignment->assigned_value->type == GDScriptParser::Node::IDENTIFIER) {
+		override_completion_context(assignment->assigned_value, COMPLETION_ASSIGN, assignment);
+	}
+#endif
 	if (assignment->assigned_value == nullptr) {
 		push_error(R"(Expected an expression after "=".)");
 	}
