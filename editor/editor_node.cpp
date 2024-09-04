@@ -179,7 +179,7 @@ static const String REMOVE_ANDROID_BUILD_TEMPLATE_MESSAGE = "The Android build t
 static const String INSTALL_ANDROID_BUILD_TEMPLATE_MESSAGE = "This will set up your project for gradle Android builds by installing the source template to \"%s\".\nNote that in order to make gradle builds instead of using pre-built APKs, the \"Use Gradle Build\" option should be enabled in the Android export preset.";
 
 bool EditorProgress::step(const String &p_state, int p_step, bool p_force_refresh) {
-	if (Thread::is_main_thread()) {
+	if (!force_background && Thread::is_main_thread()) {
 		return EditorNode::progress_task_step(task, p_state, p_step, p_force_refresh);
 	} else {
 		EditorNode::progress_task_step_bg(task, p_step);
@@ -187,17 +187,18 @@ bool EditorProgress::step(const String &p_state, int p_step, bool p_force_refres
 	}
 }
 
-EditorProgress::EditorProgress(const String &p_task, const String &p_label, int p_amount, bool p_can_cancel) {
-	if (Thread::is_main_thread()) {
+EditorProgress::EditorProgress(const String &p_task, const String &p_label, int p_amount, bool p_can_cancel, bool p_force_background) {
+	if (!p_force_background && Thread::is_main_thread()) {
 		EditorNode::progress_add_task(p_task, p_label, p_amount, p_can_cancel);
 	} else {
 		EditorNode::progress_add_task_bg(p_task, p_label, p_amount);
 	}
 	task = p_task;
+	force_background = p_force_background;
 }
 
 EditorProgress::~EditorProgress() {
-	if (Thread::is_main_thread()) {
+	if (!force_background && Thread::is_main_thread()) {
 		EditorNode::progress_end_task(task);
 	} else {
 		EditorNode::progress_end_task_bg(task);
