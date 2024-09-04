@@ -100,7 +100,7 @@ void CharacterAnimatorLayer::_process_animator(const Ref<Blackboard> &p_playback
     }
     for(auto& anim : m_AnimationInstances)
     {
-        anim.node->process_animation(this, &anim, it->get_weight() / total_weight, p_playback_info);
+        anim.node->process_animation(this, &anim, anim.get_weight() / total_weight, p_playback_info);
     }
 
 }

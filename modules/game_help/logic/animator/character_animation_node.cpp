@@ -666,10 +666,6 @@ void CharacterAnimatorNode1D::add_animation(const Ref<Animation> & p_anim,float 
 }
 void CharacterAnimatorNode1D::process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,const Ref<Blackboard> &p_blackboard)
 {
-    if(!p_blackboard->has_var(black_board_property))
-    {
-        return;
-    }
     float v = p_blackboard->get_var(black_board_property,0);
     if(p_playback_info->m_WeightArray.size() != blend_data.position_count)
     {
@@ -682,10 +678,6 @@ void CharacterAnimatorNode1D::process_animation(class CharacterAnimatorLayer *p_
 }
 void CharacterAnimatorNode2D::process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,const Ref<Blackboard> &p_blackboard)
 {
-    if(!p_blackboard->has_var(black_board_property))
-    {
-        return;
-    }
     Vector2 v = p_blackboard->get_var(black_board_property,0);
     if(p_playback_info->m_WeightArray.size() != blend_data.position_count)
     {

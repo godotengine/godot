@@ -66,8 +66,8 @@ public:
     void set_bone_map_path(const String& p_bone_map_path) { bone_map_path = p_bone_map_path; }
     String get_bone_map_path() { return bone_map_path; }
 
-    void set_speed(float p_speed) { speed = p_speed; }
-    float get_speed() { return speed; }
+    void set_speed(double p_speed) { speed = p_speed; }
+    double get_speed() { return speed; }
 
     void set_is_clip(bool p_is_clip) { is_clip = p_is_clip; }
     bool get_is_clip() { return is_clip; }
@@ -92,7 +92,7 @@ public:
     Ref<CharacterBoneMap> bone_map;
     Ref<class CharacterAnimatorNodeBase> child_node;
 
-    float speed = 1.0f;
+	double speed = 1.0f;
     float last_using_time = 0;
     bool is_clip = true;
     bool is_init = false;
@@ -159,7 +159,7 @@ public:
     }
     TypedArray<CharacterAnimationItem> get_animation_arrays() {
         TypedArray<CharacterAnimationItem> rs;
-        for(int i=0;i<animation_arrays.size();i++)
+        for(uint32_t i=0;i<animation_arrays.size();i++)
         {
             rs.push_back(animation_arrays[i]);
         }
@@ -298,8 +298,8 @@ struct CharacterAnimationInstance
 	Dictionary disable_path;
 	LocalVector<float> m_WeightArray;
 	LocalVector<AnimationMixer::PlaybackInfo> m_ChildAnimationPlaybackArray;
+	double delta = 0.0f;
 	float time = 0.0f;
-	float delta = 0.0f;
 	float fadeTotalTime = 0.0f;
 	float get_weight()
 	{

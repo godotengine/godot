@@ -59,17 +59,11 @@ class StringName {
 #ifdef DEBUG_ENABLED
 		uint32_t debug_references = 0;
 #endif
-<<<<<<< HEAD
-		//String get_name() const { return cname ? String(cname) : name; }
-		String get_name() const { return name; }
-=======
 		String get_name() const { return cname ? String(cname) : name; }
 		bool operator==(const String &p_name) const;
 		bool operator!=(const String &p_name) const;
 		bool operator==(const char *p_name) const;
 		bool operator!=(const char *p_name) const;
-
->>>>>>> godotengine-master
 		int idx = 0;
 		uint32_t hash = 0;
 		_Data *prev = nullptr;
@@ -128,10 +122,6 @@ public:
 	{
 		return operator String().replace(p_key, p_with);
 	}
-	_FORCE_INLINE_ int length() const 
-	{
-		return operator String().length();
-	}
 	String to_upper() const
 	{
 		return operator String().to_upper();
@@ -139,10 +129,6 @@ public:
 	String to_lower() const
 	{
 		return operator String().to_lower();
-	}
-	bool is_empty() const
-	{
-		return operator String().is_empty();
 	}
 	String get_slice(const String &p_splitter, int p_slice) const
 	{
