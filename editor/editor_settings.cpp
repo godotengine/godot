@@ -824,7 +824,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "run/window_placement/screen", -5, screen_hints)
 #endif
 	// Should match the ANDROID_WINDOW_* constants in 'platform/android/java/editor/src/main/java/org/godotengine/editor/GodotEditor.kt'
-	String android_window_hints = "Auto (based on screen size):0,Same as Editor:1,Side-by-side with Editor:2";
+	String android_window_hints = "Auto (based on screen size):0,Same as Editor:1,Side-by-side with Editor:2,Launch in PiP mode:3";
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "run/window_placement/android_window", 0, android_window_hints)
 
 	int default_play_window_pip_mode = 0;

@@ -970,6 +970,7 @@
 			- [b]Auto (based on screen size)[/b] (default) will automatically choose how to launch the Play window based on the device and screen metrics. Defaults to [b]Same as Editor[/b] on phones and [b]Side-by-side with Editor[/b] on tablets.
 			- [b]Same as Editor[/b] will launch the Play window in the same window as the Editor.
 			- [b]Side-by-side with Editor[/b] will launch the Play window side-by-side with the Editor window.
+			- [b]Launch in PiP mode[/b] will launch the Play window directly in picture-in-picture (PiP) mode if PiP mode is supported and enabled. When maximized, the Play window will occupy the same window as the Editor.
 			[b]Note:[/b] Only available in the Android editor.
 		</member>
 		<member name="run/window_placement/play_window_pip_mode" type="int" setter="" getter="">
