@@ -5980,7 +5980,7 @@ _FORCE_INLINE_ void TextServerAdvanced::_add_featuers(const Dictionary &p_source
 		int32_t value = values[i];
 		if (value >= 0) {
 			hb_feature_t feature;
-			if (keys[i].get_type() == Variant::STRING) {
+			if (keys[i].is_string()) {
 				feature.tag = _name_to_tag(keys[i]);
 			} else {
 				feature.tag = keys[i];

@@ -349,7 +349,6 @@ private:
 	Ref<Texture2D> vrs_texture;
 
 	struct GUI {
-		bool forced_mouse_focus = false; //used for menu buttons
 		bool mouse_in_viewport = false;
 		bool key_event_accepted = false;
 		HashMap<int, ObjectID> touch_focus;
@@ -661,8 +660,6 @@ public:
 
 	Viewport *get_parent_viewport() const;
 	Window *get_base_window() const;
-
-	void pass_mouse_focus_to(Viewport *p_viewport, Control *p_control);
 
 	void set_canvas_cull_mask(uint32_t p_layers);
 	uint32_t get_canvas_cull_mask() const;

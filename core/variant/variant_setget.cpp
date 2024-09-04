@@ -1288,8 +1288,8 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 		List<Variant> keys;
 		dic->get_key_list(&keys);
 		for (const Variant &E : keys) {
-			if (E.get_type() == Variant::STRING) {
-				p_list->push_back(PropertyInfo(Variant::STRING, E));
+			if (E.is_string()) {
+				p_list->push_back(PropertyInfo(dic->get_valid(E).get_type(), E));
 			}
 		}
 	} else if (type == OBJECT) {
