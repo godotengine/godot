@@ -410,11 +410,13 @@ void EditorFileSystem::_scan_filesystem() {
 	new_filesystem->parent = nullptr;
 
 	ScannedDirectory *sd;
+	HashSet<String> *processed_files = nullptr;
 	// On the first scan, the first_scan_root_dir is created in _first_scan_filesystem.
 	if (first_scan) {
 		sd = first_scan_root_dir;
 		// Will be updated on scan.
 		ResourceUID::get_singleton()->clear();
+		processed_files = memnew(HashSet<String>());
 	} else {
 		Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		sd = memnew(ScannedDirectory);
@@ -422,14 +424,18 @@ void EditorFileSystem::_scan_filesystem() {
 		nb_files_total = _scan_new_dir(sd, d);
 	}
 
-	_process_file_system(sd, new_filesystem, sp);
+	_process_file_system(sd, new_filesystem, sp, processed_files);
 
+	if (first_scan) {
+		_process_removed_files(*processed_files);
+	}
 	dep_update_list.clear();
 	file_cache.clear(); //clear caches, no longer needed
 
 	if (first_scan) {
 		memdelete(first_scan_root_dir);
 		first_scan_root_dir = nullptr;
+		memdelete(processed_files);
 	} else {
 		//on the first scan this is done from the main thread after re-importing
 		_save_filesystem_cache();
@@ -990,7 +996,7 @@ int EditorFileSystem::_scan_new_dir(ScannedDirectory *p_dir, Ref<DirAccess> &da)
 	return nb_files_total_scan;
 }
 
-void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, EditorFileSystemDirectory *p_dir, ScanProgress &p_progress) {
+void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, EditorFileSystemDirectory *p_dir, ScanProgress &p_progress, HashSet<String> *r_processed_files) {
 	p_dir->modified_time = FileAccess::get_modified_time(p_scan_dir->full_path);
 
 	for (ScannedDirectory *scan_sub_dir : p_scan_dir->subdirs) {
@@ -998,7 +1004,7 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 		sub_dir->parent = p_dir;
 		sub_dir->name = scan_sub_dir->name;
 		p_dir->subdirs.push_back(sub_dir);
-		_process_file_system(scan_sub_dir, sub_dir, p_progress);
+		_process_file_system(scan_sub_dir, sub_dir, p_progress, r_processed_files);
 	}
 
 	for (const String &scan_file : p_scan_dir->files) {
@@ -1013,6 +1019,10 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 		EditorFileSystemDirectory::FileInfo *fi = memnew(EditorFileSystemDirectory::FileInfo);
 		fi->file = scan_file;
 		p_dir->files.push_back(fi);
+
+		if (r_processed_files) {
+			r_processed_files->insert(path);
+		}
 
 		FileCache *fc = file_cache.getptr(path);
 		uint64_t mt = FileAccess::get_modified_time(path);
@@ -1139,6 +1149,20 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 	}
 }
 
+void EditorFileSystem::_process_removed_files(const HashSet<String> &p_processed_files) {
+	for (const KeyValue<String, EditorFileSystem::FileCache> &kv : file_cache) {
+		if (!p_processed_files.has(kv.key)) {
+			if (ClassDB::is_parent_class(kv.value.type, SNAME("Script"))) {
+				// A script has been removed from disk since the last startup. The documentation needs to be updated.
+				// There's no need to add the path in update_script_paths since that is exclusively for updating global class names,
+				// which is handled in _first_scan_filesystem before the full scan to ensure plugins and autoloads can be created.
+				MutexLock update_script_lock(update_script_mutex);
+				update_script_paths_documentation.insert(kv.key);
+			}
+		}
+	}
+}
+
 void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanProgress &p_progress) {
 	uint64_t current_mtime = FileAccess::get_modified_time(p_dir->get_path());
 
@@ -1206,7 +1230,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanPr
 					int nb_files_dir = _scan_new_dir(&sd, d);
 					p_progress.hi += nb_files_dir;
 					diff_nb_files += nb_files_dir;
-					_process_file_system(&sd, efd, p_progress);
+					_process_file_system(&sd, efd, p_progress, nullptr);
 
 					ItemAction ia;
 					ia.action = ItemAction::ACTION_DIR_ADD;
