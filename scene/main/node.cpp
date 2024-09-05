@@ -3223,7 +3223,9 @@ Array Node::_get_node_and_resource(const NodePath &p_path) {
 }
 
 Node *Node::get_node_and_resource(const NodePath &p_path, Ref<Resource> &r_res, Vector<StringName> &r_leftover_subpath, bool p_last_is_property) const {
-	ERR_THREAD_GUARD_V(nullptr);
+	if (!data.is_manual_thread) {
+		ERR_THREAD_GUARD_V(nullptr);
+	}
 	r_res = Ref<Resource>();
 	r_leftover_subpath = Vector<StringName>();
 	Node *node = get_node_or_null(p_path);

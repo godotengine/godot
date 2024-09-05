@@ -57,6 +57,7 @@ void CharacterAnimatorLayer::_process_logic(const Ref<Blackboard>& p_playback_in
 // 处理动画
 void CharacterAnimatorLayer::_process_animator(const Ref<Blackboard> &p_playback_info,double p_delta,bool is_first)
 {
+	clear_animation_instances();
     // 处理逻辑节点请求播放的动作
     if(logic_context.curr_animation.is_valid())
     {
@@ -110,6 +111,11 @@ void CharacterAnimatorLayer::_process_animation(const Ref<Blackboard> &p_playbac
 	is_thread = true;
 	// 重置一下手动处理线程安全标签
 	set_is_manual_thread(true);
+	Node* parent = get_node_or_null(root_node);
+	if (parent) {
+		cache_valid = false;
+		parent->set_is_manual_thread(get_is_manual_thread());
+	}
 	_blend_init();
 
 
@@ -123,8 +129,13 @@ void CharacterAnimatorLayer::_process_animation(const Ref<Blackboard> &p_playbac
 
 	};
 
+
 	// 重置一下手动处理线程安全标签
 	set_is_manual_thread(false);
+	if (parent) {
+		cache_valid = false;
+		parent->set_is_manual_thread(get_is_manual_thread());
+	}
     
 	clear_animation_instances();
 }

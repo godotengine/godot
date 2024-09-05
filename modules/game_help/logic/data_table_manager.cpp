@@ -228,7 +228,7 @@ void encode_dictionary(yml::NodeRef *node, const Dictionary &dict) {
 	}
 }
 
-Dictionary decode_dictionary(yml::ConstNodeRef const &node) {
+void decode_dictionary(yml::ConstNodeRef const &node,Variant &value){
 	Dictionary dict;
 	for (auto iterator = node.begin(); iterator != node.end(); ++iterator) {
 		auto child_node = *iterator;
@@ -238,7 +238,35 @@ Dictionary decode_dictionary(yml::ConstNodeRef const &node) {
 		node[child_node.key()] >> value;
 		dict[key] = value;
 	}
-	return dict;
+	if(dict.size() == 4) 
+	{
+		if(dict.has("r") && dict.has("g") && dict.has("b") && dict.has("a")) {
+			value = Color(dict["r"], dict["g"], dict["b"], dict["a"]);
+			return;
+		}
+		else if(dict.has("x") && dict.has("y") && dict.has("z") && dict.has("w")) {
+			value = Quaternion(dict["x"], dict["y"], dict["z"], dict["w"]);
+			return ;
+		}
+	}
+	else if(dict.size() == 3) {
+		if(dict.has("x") && dict.has("y") && dict.has("z")) {
+			value = Vector3(dict["x"], dict["y"], dict["z"]);
+			return;
+		}
+		else if(dict.has("r") && dict.has("g") && dict.has("b"))
+		{
+			value = Color(dict["r"], dict["g"], dict["b"]);
+			return ;
+		}
+	}
+	else if(dict.size() == 2) {
+		if(dict.has("x") && dict.has("y")) {
+			value = Vector2(dict["x"], dict["y"]);
+			return;
+		}
+	}
+	value = dict;
 }
 
 void encode_color(yml::NodeRef *node, const Color &color) {
@@ -542,13 +570,13 @@ void write(yml::NodeRef *node, const Variant &variant) {
 			}
 			if (node.is_map()) {
 //				Godot::print("Determined: Dictionary");
-				*variant = decode_dictionary(node);
+				decode_dictionary(node,*variant);
 				return true;
 			}
 			if (node.is_doc())
 			{
 				if(node.has_key())
-					*variant = decode_dictionary(node);
+					decode_dictionary(node,*variant);
 				else
 					*variant = decode_array(node);
 				return true;

@@ -277,14 +277,8 @@ class TaskJobHandle : public RefCounted
  	void init(){
  		is_init = true;
  	}
-	void set_completed(int count);
-	void set_completed()
-	{
-		completed.set();
-		std::lock_guard<std::mutex> lock(done_mutex);
-		// 通知等待的线程
-    	cv.notify_all();
-	}
+	void set_task_completed(int count);
+	void set_completed();
 	// 等待所有依赖信号完成
 	void wait_depend_completion();
  protected:

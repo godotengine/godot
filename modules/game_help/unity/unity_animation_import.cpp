@@ -1420,9 +1420,42 @@ namespace AnimationToolConst
 			// We could also have a setting to use cubic instead of linear for more smoothness but less accuracy.
 			// FIXME: Assuming linear interpolation
 			if (! (Math::is_equal_approx((float)next_key["time"], (float)prev_key["time"]) && timestamp >= (float)prev_key["time"] && timestamp <= (float)next_key["time"]))
-				return Math::lerp(fixup_strings((float)prev_key["value"]), fixup_strings((float)next_key["value"]), (timestamp - (float)prev_key["time"]) / ((float)next_key["time"] - (float)prev_key["time"]));
+			{
+				return variant_lerp(prev_key["value"], next_key["value"], (timestamp - (float)prev_key["time"]) / ((float)next_key["time"] - (float)prev_key["time"]));
+			}
 			return fixup_strings((float)next_key["value"]);
 
+		}
+		Variant variant_lerp(Variant& a,Variant& b, float p_weight) 
+		{
+			if(a.get_type() == Variant::STRING || b.get_type() == Variant::STRING)
+			{
+				String t = a;
+				float val_a = t.to_float();
+				t = b;
+				float val_b = t.to_float();
+				return Math::lerp(val_a, val_b, p_weight);
+
+			}
+			else if(a.get_type() == Variant::VECTOR3 || b.get_type() == Variant::VECTOR3)
+			{
+				Vector3 t = a;
+				Vector3 val_a = t;
+				t = b;
+				Vector3 val_b = t;
+				return val_a.lerp(val_b, p_weight);
+			}
+			else if(a.get_type() == Variant::QUATERNION || b.get_type() == Variant::QUATERNION)
+			{
+				Quaternion t = a;
+				Quaternion val_a = t;
+				t = b;
+				Quaternion val_b = t;
+				return val_a.slerp(val_b, p_weight);
+			}
+			float val_a = a;
+			float val_b = b;
+			return Math::lerp(val_a, val_b, p_weight);
 		}
 	};
 	class LockstepKeyframeiterator : public RefCounted
@@ -2181,7 +2214,7 @@ namespace AnimationToolConst
 				}
 				// This is more complicated than this...
 				// The keys need to be baked out and sampled using this mode.
-				anim->rotation_track_insert_key(rottrack, ts, flip_x_basis.inverse() * Basis::from_euler(value * PI / 180.0, godot_euler_mode) * flip_x_basis);
+				anim->rotation_track_insert_key(rottrack, ts, Basis::from_euler(value * PI / 180.0, godot_euler_mode));
 
 			}
 		}
@@ -2218,7 +2251,7 @@ namespace AnimationToolConst
 			{
 				Quaternion value = dict_to_quaternion(key_iter.next());
 				float ts = key_iter.timestamp;
-				anim->rotation_track_insert_key(rottrack, ts, flip_x_basis.inverse() * Basis(value) * flip_x_basis);
+				anim->rotation_track_insert_key(rottrack, ts, value);
 			}
 		}
 

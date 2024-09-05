@@ -53,6 +53,7 @@ void CharacterManager::update_animator()
         index++;
     }
     task_handle = worker_task_pool->combined_job_handle(handles);
+    update_finish();
 }
 void CharacterManager::_process_animator(void* p_user,uint32_t p_index)
 {

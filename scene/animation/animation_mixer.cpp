@@ -645,6 +645,7 @@ bool AnimationMixer::_update_caches() {
 		cache_valid = false;
 		return false;
 	}
+	parent->set_is_manual_thread(get_is_manual_thread());
 
 #ifdef TOOLS_ENABLED
 	String mixer_name = "AnimationMixer";
@@ -1140,6 +1141,10 @@ void AnimationMixer::blend_capture(double p_delta) {
 void AnimationMixer::_blend_calc_total_weight() {
 	for (const AnimationInstance &ai : animation_instances) {
 		Ref<Animation> a = ai.animation_data.animation;
+		if (a.is_null())
+		{
+			continue;
+		}
 		real_t weight = ai.playback_info.weight;
 		const real_t *track_weights_ptr = ai.playback_info.track_weights.ptr();
 		int track_weights_count = ai.playback_info.track_weights.size();

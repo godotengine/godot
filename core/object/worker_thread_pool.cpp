@@ -758,6 +758,42 @@ WorkerThreadPool::~WorkerThreadPool() {
 
 
 
+void TaskJobHandle::set_task_completed(int count)
+{	
+	uint32_t completed_amount = completed_index.add(count);
+	bool do_post = false;
+	if (completed_amount >= taskMax) {
+		do_post = true;
+	}
+	if(do_post)
+	{
+		set_completed();
+	}
+}
+void TaskJobHandle::set_completed()
+{
+	completed.set();
+	std::lock_guard<std::mutex> lock(done_mutex);
+	// 通知等待的线程
+	cv.notify_all();
+}
+bool TaskJobHandle::is_completed()  {	
+	
+	if(!is_job)
+	{
+		auto it = dependJob.begin();
+		while(it)
+		{
+			if(!(*it)->is_completed())
+			{
+				return false;
+			}
+			++it;
+		}
+
+	}
+	return completed.is_set();
+}
 
 	// 等待所有依赖信号完成
 void TaskJobHandle::wait_depend_completion()
@@ -774,21 +810,6 @@ void TaskJobHandle::wait_depend_completion()
 	dependJob.clear();
 	depend_mutex.unlock();
 
-}
-void TaskJobHandle::set_completed(int count)
-{	
-	uint32_t completed_amount = completed_index.add(count);
-	bool do_post = false;
-	if (completed_amount >= taskMax) {
-		do_post = true;
-	}
-	if(do_post)
-	{
-		set_completed();
-	}
-}
-bool TaskJobHandle::is_completed()  {	
-	return completed.is_set();
 }
 void TaskJobHandle::wait_completion()
 {
@@ -886,7 +907,7 @@ class ThreadTaskGroup {
 			return;
 		}
 		// 任务完成
-		handle->set_completed(end - start);
+		handle->set_task_completed(end - start);
 	}
 };
 
@@ -966,18 +987,16 @@ Ref<TaskJobHandle> WorkerTaskPool::add_native_group_task(void (*p_func)(void *, 
 {
 	Ref<TaskJobHandle> hand = Ref<TaskJobHandle>(memnew(TaskJobHandle));
 	hand->init();
-	hand->is_job = true;
+	// 增加依赖，保持依赖链条是正确的
+	if(depend_task != nullptr)
+	{
+		hand->dependJob.push_back(depend_task);
+	}
 	if(p_elements <= 0)
 	{
-		// 增加依赖，保持依赖链条是正确的
-		if(depend_task != nullptr)
-		{
-			hand->dependJob.push_back(depend_task);
-		}
-		// 标记完成
-		hand->set_completed();
 		return hand;
 	}
+	hand->is_job = true;
 	if(_batch_count	<= 0)
 	{
 		_batch_count = 1;
@@ -1005,18 +1024,16 @@ Ref<TaskJobHandle> WorkerTaskPool::add_group_task(const Callable &p_action, int 
 {
 	Ref<TaskJobHandle> hand = Ref<TaskJobHandle>(memnew(TaskJobHandle));
 	hand->init();
-	hand->is_job = true;
+	// 增加依赖，保持依赖链条是正确的
+	if (depend_task != nullptr)
+	{
+		hand->dependJob.push_back(depend_task);
+	}
 	if(p_elements <= 0)
 	{
-		// 增加依赖，保持依赖链条是正确的
-		if(depend_task != nullptr)
-		{
-			hand->dependJob.push_back(depend_task);
-		}
-		// 标记完成
-		hand->set_completed();
 		return hand;
 	}
+	hand->is_job = true;
 	if(_batch_count	<= 0)
 	{
 		_batch_count = 1;
