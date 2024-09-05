@@ -234,17 +234,22 @@ void ResourceLoader::LoadToken::clear() {
 		// User-facing tokens shouldn't be deleted until completely claimed.
 		DEV_ASSERT(user_rc == 0 && user_path.is_empty());
 
-		if (!local_path.is_empty()) { // Empty is used for the special case where the load task is not registered.
-			DEV_ASSERT(thread_load_tasks.has(local_path));
-			ThreadLoadTask &load_task = thread_load_tasks[local_path];
-			if (load_task.task_id && !load_task.awaited) {
-				task_to_await = load_task.task_id;
+		if (!local_path.is_empty()) {
+			if (task_if_unregistered) {
+				memdelete(task_if_unregistered);
+				task_if_unregistered = nullptr;
+			} else {
+				DEV_ASSERT(thread_load_tasks.has(local_path));
+				ThreadLoadTask &load_task = thread_load_tasks[local_path];
+				if (load_task.task_id && !load_task.awaited) {
+					task_to_await = load_task.task_id;
+				}
+				// Removing a task which is still in progress would be catastrophic.
+				// Tokens must be alive until the task thread function is done.
+				DEV_ASSERT(load_task.status == THREAD_LOAD_FAILED || load_task.status == THREAD_LOAD_LOADED);
+				thread_load_tasks.erase(local_path);
 			}
-			// Removing a task which is still in progress would be catastrophic.
-			// Tokens must be alive until the task thread function is done.
-			DEV_ASSERT(load_task.status == THREAD_LOAD_FAILED || load_task.status == THREAD_LOAD_LOADED);
-			thread_load_tasks.erase(local_path);
-			local_path.clear();
+			local_path.clear(); // Mark as already cleared.
 		}
 	}
 
@@ -521,9 +526,7 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 
 	Ref<LoadToken> load_token;
 	bool must_not_register = false;
-	ThreadLoadTask unregistered_load_task; // Once set, must be valid up to the call to do the load.
 	ThreadLoadTask *load_task_ptr = nullptr;
-	bool run_on_current_thread = false;
 	{
 		MutexLock thread_load_lock(thread_load_mutex);
 
@@ -578,12 +581,11 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 				}
 			}
 
-			// If we want to ignore cache, but there's another task loading it, we can't add this one to the map and we also have to finish within scope.
+			// If we want to ignore cache, but there's another task loading it, we can't add this one to the map.
 			must_not_register = ignoring_cache && thread_load_tasks.has(local_path);
 			if (must_not_register) {
-				load_token->local_path.clear();
-				unregistered_load_task = load_task;
-				load_task_ptr = &unregistered_load_task;
+				load_token->task_if_unregistered = memnew(ThreadLoadTask(load_task));
+				load_task_ptr = load_token->task_if_unregistered;
 			} else {
 				DEV_ASSERT(!thread_load_tasks.has(local_path));
 				HashMap<String, ResourceLoader::ThreadLoadTask>::Iterator E = thread_load_tasks.insert(local_path, load_task);
@@ -591,9 +593,7 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 			}
 		}
 
-		run_on_current_thread = must_not_register || p_thread_mode == LOAD_THREAD_FROM_CURRENT;
-
-		if (run_on_current_thread) {
+		if (p_thread_mode == LOAD_THREAD_FROM_CURRENT) {
 			// The current thread may happen to be a thread from the pool.
 			WorkerThreadPool::TaskID tid = WorkerThreadPool::get_singleton()->get_caller_task_id();
 			if (tid != WorkerThreadPool::INVALID_TASK_ID) {
@@ -606,11 +606,8 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 		}
 	} // MutexLock(thread_load_mutex).
 
-	if (run_on_current_thread) {
+	if (p_thread_mode == LOAD_THREAD_FROM_CURRENT) {
 		_run_load_task(load_task_ptr);
-		if (must_not_register) {
-			load_token->res_if_unregistered = load_task_ptr->resource;
-		}
 	}
 
 	return load_token;
@@ -738,7 +735,10 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 		*r_error = OK;
 	}
 
-	if (!p_load_token.local_path.is_empty()) {
+	ThreadLoadTask *load_task_ptr = nullptr;
+	if (p_load_token.task_if_unregistered) {
+		load_task_ptr = p_load_token.task_if_unregistered;
+	} else {
 		if (!thread_load_tasks.has(p_load_token.local_path)) {
 			if (r_error) {
 				*r_error = ERR_BUG;
@@ -809,22 +809,14 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 			load_task.error = FAILED;
 		}
 
-		Ref<Resource> resource = load_task.resource;
-		if (r_error) {
-			*r_error = load_task.error;
-		}
-		return resource;
-	} else {
-		// Special case of an unregistered task.
-		// The resource should have been loaded by now.
-		Ref<Resource> resource = p_load_token.res_if_unregistered;
-		if (!resource.is_valid()) {
-			if (r_error) {
-				*r_error = FAILED;
-			}
-		}
-		return resource;
+		load_task_ptr = &load_task;
 	}
+
+	Ref<Resource> resource = load_task_ptr->resource;
+	if (r_error) {
+		*r_error = load_task_ptr->error;
+	}
+	return resource;
 }
 
 bool ResourceLoader::_ensure_load_progress() {
