@@ -556,7 +556,7 @@ void DirAccess::_bind_methods() {
 	ClassDB::bind_static_method("DirAccess", D_METHOD("open", "path"), &DirAccess::_open);
 	ClassDB::bind_static_method("DirAccess", D_METHOD("get_open_error"), &DirAccess::get_open_error);
 
-	ClassDB::bind_method(D_METHOD("list_dir_begin"), &DirAccess::list_dir_begin, DEFVAL(false), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("list_dir_begin"), &DirAccess::list_dir_begin);
 	ClassDB::bind_method(D_METHOD("get_next"), &DirAccess::_get_next);
 	ClassDB::bind_method(D_METHOD("current_is_dir"), &DirAccess::current_is_dir);
 	ClassDB::bind_method(D_METHOD("list_dir_end"), &DirAccess::list_dir_end);
