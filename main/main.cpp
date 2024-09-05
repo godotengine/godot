@@ -3548,13 +3548,16 @@ int Main::start() {
 				gdscript_docs_path = E->next()->get();
 #endif
 			} else if (E->get() == "--export-release") {
+				ERR_FAIL_COND_V_MSG(!editor && !found_project, EXIT_FAILURE, "Please provide a valid project path when exporting, aborting.");
 				editor = true; //needs editor
 				_export_preset = E->next()->get();
 			} else if (E->get() == "--export-debug") {
+				ERR_FAIL_COND_V_MSG(!editor && !found_project, EXIT_FAILURE, "Please provide a valid project path when exporting, aborting.");
 				editor = true; //needs editor
 				_export_preset = E->next()->get();
 				export_debug = true;
 			} else if (E->get() == "--export-pack") {
+				ERR_FAIL_COND_V_MSG(!editor && !found_project, EXIT_FAILURE, "Please provide a valid project path when exporting, aborting.");
 				editor = true;
 				_export_preset = E->next()->get();
 				export_pack_only = true;
@@ -3566,6 +3569,8 @@ int Main::start() {
 			if (parsed_pair) {
 				E = E->next();
 			}
+		} else if (E->get().begins_with("--export-")) {
+			ERR_FAIL_V_MSG(EXIT_FAILURE, "Missing export preset name, aborting.");
 		}
 #ifdef TOOLS_ENABLED
 		// Handle case where no path is given to --doctool.
@@ -4409,7 +4414,7 @@ bool Main::iteration() {
 	}
 
 #ifdef TOOLS_ENABLED
-	if (wait_for_import && EditorFileSystem::get_singleton()->doing_first_scan()) {
+	if (wait_for_import && EditorFileSystem::get_singleton() && EditorFileSystem::get_singleton()->doing_first_scan()) {
 		exit = false;
 	}
 #endif
