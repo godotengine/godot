@@ -44,6 +44,9 @@
 		<member name="application/generate_simulator_library_if_missing" type="bool" setter="" getter="">
 			If [code]true[/code], and ARM64 simulator library is missing from the export template, it is automatically generated from ARM64 device library.
 		</member>
+		<member name="application/enable_cocoapods" type="bool" setter="" getter="">
+			If [code]true[/code], the project will be exported with CocoaPods enabled.
+		</member>
 		<member name="application/icon_interpolation" type="int" setter="" getter="">
 			Interpolation method used to resize application icon.
 		</member>
