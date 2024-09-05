@@ -1,2 +1,3 @@
-GDTEST_ANALYZER_ERROR
-Could not resolve class "Utils", because of a parser error.
+GDTEST_OK
+constructor with argument 10
+constructor with argument 500
