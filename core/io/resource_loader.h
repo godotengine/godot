@@ -106,6 +106,8 @@ class ResourceLoader {
 		MAX_LOADERS = 64
 	};
 
+	struct ThreadLoadTask;
+
 public:
 	enum ThreadLoadStatus {
 		THREAD_LOAD_INVALID_RESOURCE,
@@ -124,7 +126,7 @@ public:
 		String local_path;
 		String user_path;
 		uint32_t user_rc = 0; // Having user RC implies regular RC incremented in one, until the user RC reaches zero.
-		Ref<Resource> res_if_unregistered;
+		ThreadLoadTask *task_if_unregistered = nullptr;
 
 		void clear();
 
