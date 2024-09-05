@@ -528,6 +528,9 @@
 		<member name="debug/gdscript/warnings/integer_division" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when dividing an integer by another integer (the decimal part will be discarded).
 		</member>
+		<member name="debug/gdscript/warnings/missing_tool" type="int" setter="" getter="" default="1">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when the base class script has the [code]@tool[/code] annotation, but the current class script does not have it.
+		</member>
 		<member name="debug/gdscript/warnings/narrowing_conversion" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when passing a floating-point value to a function that expects an integer (it will be converted and lose precision).
 		</member>
@@ -624,6 +627,10 @@
 		</member>
 		<member name="debug/settings/gdscript/max_call_stack" type="int" setter="" getter="" default="1024">
 			Maximum call stack allowed for debugging GDScript.
+		</member>
+		<member name="debug/settings/physics_interpolation/enable_warnings" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], enables warnings which can help pinpoint where nodes are being incorrectly updated, which will result in incorrect interpolation and visual glitches.
+			When a node is being interpolated, it is essential that the transform is set during [method Node._physics_process] (during a physics tick) rather than [method Node._process] (during a frame).
 		</member>
 		<member name="debug/settings/profiler/max_functions" type="int" setter="" getter="" default="16384">
 			Maximum number of functions per frame allowed when profiling.
@@ -809,8 +816,6 @@
 		<member name="display/window/energy_saving/keep_screen_on" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], keeps the screen on (even in case of inactivity), so the screensaver does not take over. Works on desktop and mobile platforms.
 		</member>
-		<member name="display/window/energy_saving/keep_screen_on.editor_hint" type="bool" setter="" getter="" default="false">
-		</member>
 		<member name="display/window/handheld/orientation" type="int" setter="" getter="" default="0">
 			The default screen orientation to use on mobile devices. See [enum DisplayServer.ScreenOrientation] for possible values.
 			[b]Note:[/b] When set to a portrait orientation, this project setting does not flip the project resolution's width and height automatically. Instead, you have to set [member display/window/size/viewport_width] and [member display/window/size/viewport_height] accordingly.
@@ -994,7 +999,7 @@
 			prime-run %command%
 			[/codeblock]
 		</member>
-		<member name="editor/script/search_in_file_extensions" type="PackedStringArray" setter="" getter="" default="PackedStringArray(&quot;gd&quot;, &quot;gdshader&quot;)">
+		<member name="editor/script/search_in_file_extensions" type="PackedStringArray" setter="" getter="">
 			Text-based file extensions to include in the script editor's "Find in Files" feature. You can add e.g. [code]tscn[/code] if you wish to also parse your scene files, especially if you use built-in scripts which are serialized in the scene files.
 		</member>
 		<member name="editor/script/templates_search_path" type="String" setter="" getter="" default="&quot;res://script_templates&quot;">
@@ -1417,6 +1422,18 @@
 		</member>
 		<member name="input_devices/pointing/emulate_touch_from_mouse" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], sends touch input events when clicking or dragging the mouse.
+		</member>
+		<member name="input_devices/sensors/enable_accelerometer" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the accelerometer sensor is enabled and [method Input.get_accelerometer] returns valid data.
+		</member>
+		<member name="input_devices/sensors/enable_gravity" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the gravity sensor is enabled and [method Input.get_gravity] returns valid data.
+		</member>
+		<member name="input_devices/sensors/enable_gyroscope" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the gyroscope sensor is enabled and [method Input.get_gyroscope] returns valid data.
+		</member>
+		<member name="input_devices/sensors/enable_magnetometer" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the magnetometer sensor is enabled and [method Input.get_magnetometer] returns valid data.
 		</member>
 		<member name="internationalization/locale/fallback" type="String" setter="" getter="" default="&quot;en&quot;">
 			The locale to fall back to if a translation isn't available in a given language. If left empty, [code]en[/code] (English) will be used.
@@ -2581,6 +2598,10 @@
 			- Intel GPUs: SYCL libraries
 			If no GPU acceleration is configured on the system, multi-threaded CPU-based denoising will be performed instead. This CPU-based denoising is significantly slower than the JNLM denoiser in most cases.
 		</member>
+		<member name="rendering/lightmapping/lightmap_gi/use_bicubic_filter" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], applies a bicubic filter during lightmap sampling. This makes lightmaps look much smoother, at a moderate performance cost.
+			[b]Note:[/b] The bicubic filter exaggerates the 'bleeding' effect that occurs when a lightmap's resolution is low enough.
+		</member>
 		<member name="rendering/lightmapping/primitive_meshes/texel_size" type="float" setter="" getter="" default="0.2">
 			The texel_size that is used to calculate the [member Mesh.lightmap_size_hint] on [PrimitiveMesh] resources if [member PrimitiveMesh.add_uv2] is enabled.
 		</member>
@@ -2866,6 +2887,11 @@
 		<member name="rendering/textures/lossless_compression/force_png" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import lossless textures using the PNG format. Otherwise, it will default to using WebP.
 		</member>
+		<member name="rendering/textures/vram_compression/compress_with_gpu" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the texture importer will utilize the GPU for compressing textures, which makes large textures import significantly faster.
+			[b]Note:[/b] This setting requires either Vulkan or D3D12 available as a rendering backend.
+			[b]Note:[/b] Currently this only affects BC6H compression, which is used on Desktop and Console for HDR images.
+		</member>
 		<member name="rendering/textures/vram_compression/import_etc2_astc" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the Ericsson Texture Compression 2 algorithm for lower quality textures and normal maps and Adaptable Scalable Texture Compression algorithm for high quality textures (in 4×4 block size).
 			[b]Note:[/b] This setting is an override. The texture importer will always import the format the host platform needs, even if this is set to [code]false[/code].
@@ -2922,15 +2948,29 @@
 		<member name="xr/openxr/environment_blend_mode" type="int" setter="" getter="" default="&quot;0&quot;">
 			Specify how OpenXR should blend in the environment. This is specific to certain AR and passthrough devices where camera images are blended in by the XR compositor.
 		</member>
+		<member name="xr/openxr/extensions/debug_message_types" type="int" setter="" getter="" default="&quot;15&quot;">
+			Specifies the message types for which we request debug messages. Requires [member xr/openxr/extensions/debug_utils] to be set and the extension to be supported by the XR runtime.
+		</member>
+		<member name="xr/openxr/extensions/debug_utils" type="int" setter="" getter="" default="&quot;0&quot;">
+			Enables debug utilities on XR runtimes that supports the debug utils extension. Sets the maximum severity being reported (0 = disabled, 1 = error, 2 = warning, 3 = info, 4 = verbose).
+		</member>
 		<member name="xr/openxr/extensions/eye_gaze_interaction" type="bool" setter="" getter="" default="false">
 			Specify whether to enable eye tracking for this project. Depending on the platform, additional export configuration may be needed.
 		</member>
 		<member name="xr/openxr/extensions/hand_interaction_profile" type="bool" setter="" getter="" default="false">
 			If [code]true[/code] the hand interaction profile extension will be activated if supported by the platform.
 		</member>
-		<member name="xr/openxr/extensions/hand_tracking" type="bool" setter="" getter="" default="true">
+		<member name="xr/openxr/extensions/hand_tracking" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the hand tracking extension is enabled if available.
 			[b]Note:[/b] By default hand tracking will only work for data sources chosen by the XR runtime. For SteamVR this is the controller inferred data source, for most other runtimes this is the unobstructed data source. There is no way to query this. If a runtime supports the OpenXR data source extension you can use the [member xr/openxr/extensions/hand_tracking_controller_data_source] and/or [member xr/openxr/extensions/hand_tracking_unobstructed_data_source] to indicate you wish to enable these data sources. If neither is selected the data source extension is not enabled and the XR runtimes default behavior persists.
+		</member>
+		<member name="xr/openxr/extensions/hand_tracking_controller_data_source" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], support for the controller inferred data source is requested. If supported, you will receive hand tracking data even if the user has a controller in hand, with finger positions automatically inferred from controller input and/or sensors.
+			[b]Node:[/b] This requires the OpenXR data source extension and controller inferred handtracking to be supported by the XR runtime. If not supported this setting will be ignored. [member xr/openxr/extensions/hand_tracking] must be enabled for this setting to be used.
+		</member>
+		<member name="xr/openxr/extensions/hand_tracking_unobstructed_data_source" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], support for the unobstructed data source is requested. If supported, you will receive hand tracking data based on the actual finger positions of the user often determined by optical tracking.
+			[b]Node:[/b] This requires the OpenXR data source extension and unobstructed handtracking to be supported by the XR runtime. If not supported this setting will be ignored. [member xr/openxr/extensions/hand_tracking] must be enabled for this setting to be used.
 		</member>
 		<member name="xr/openxr/form_factor" type="int" setter="" getter="" default="&quot;0&quot;">
 			Specify whether OpenXR should be configured for an HMD or a hand held device.

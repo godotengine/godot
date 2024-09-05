@@ -206,7 +206,7 @@
 		</method>
 		<method name="get_support" qualifiers="const">
 			<return type="Vector3" />
-			<param index="0" name="dir" type="Vector3" />
+			<param index="0" name="direction" type="Vector3" />
 			<description>
 				Returns the vertex's position of this bounding box that's the farthest in the given direction. This point is commonly known as the support point in collision detection algorithms.
 			</description>
