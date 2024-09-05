@@ -79,16 +79,33 @@ void RendererCanvasCull::_render_canvas_item_tree(RID p_to_render_target, Canvas
 	}
 }
 
-void _collect_ysort_children(RendererCanvasCull::Item *p_canvas_item, const Transform2D &p_transform, RendererCanvasCull::Item *p_material_owner, const Color &p_modulate, RendererCanvasCull::Item **r_items, int &r_index, int p_z) {
+void RendererCanvasCull::_collect_ysort_children(RendererCanvasCull::Item *p_canvas_item, const Transform2D &p_transform, RendererCanvasCull::Item *p_material_owner, const Color &p_modulate, RendererCanvasCull::Item **r_items, int &r_index, int p_z) {
 	int child_item_count = p_canvas_item->child_items.size();
 	RendererCanvasCull::Item **child_items = p_canvas_item->child_items.ptrw();
 	for (int i = 0; i < child_item_count; i++) {
 		int abs_z = 0;
 		if (child_items[i]->visible) {
+			Transform2D child_xform;
+			if (r_items || child_items[i]->sort_y) {
+				// For Y-sorting to work according to the items' final transforms,
+				// `child_xform` needs to match `self_xform` used in `_cull_canvas_item()`.
+
+				if (!_interpolation_data.interpolation_enabled || !child_items[i]->interpolated) {
+					child_xform = child_items[i]->xform_curr;
+				} else {
+					real_t f = Engine::get_singleton()->get_physics_interpolation_fraction();
+					TransformInterpolator::interpolate_transform_2d(child_items[i]->xform_prev, child_items[i]->xform_curr, child_xform, f);
+				}
+
+				if (snapping_2d_transforms_to_pixel) {
+					child_xform.columns[2] = child_xform.columns[2].round();
+				}
+			}
+
 			if (r_items) {
 				r_items[r_index] = child_items[i];
 				child_items[i]->ysort_xform = p_transform;
-				child_items[i]->ysort_pos = p_transform.xform(child_items[i]->xform_curr.columns[2]);
+				child_items[i]->ysort_pos = p_transform.xform(child_xform.columns[2]);
 				child_items[i]->material_owner = child_items[i]->use_parent_material ? p_material_owner : nullptr;
 				child_items[i]->ysort_modulate = p_modulate;
 				child_items[i]->ysort_index = r_index;
@@ -111,7 +128,7 @@ void _collect_ysort_children(RendererCanvasCull::Item *p_canvas_item, const Tran
 			r_index++;
 
 			if (child_items[i]->sort_y) {
-				_collect_ysort_children(child_items[i], p_transform * child_items[i]->xform_curr, child_items[i]->use_parent_material ? p_material_owner : child_items[i], p_modulate * child_items[i]->modulate, r_items, r_index, abs_z);
+				_collect_ysort_children(child_items[i], p_transform * child_xform, child_items[i]->use_parent_material ? p_material_owner : child_items[i], p_modulate * child_items[i]->modulate, r_items, r_index, abs_z);
 			}
 		}
 	}
@@ -260,12 +277,12 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 		}
 	}
 
-	Transform2D final_xform;
+	Transform2D self_xform;
 	if (!_interpolation_data.interpolation_enabled || !ci->interpolated) {
-		final_xform = ci->xform_curr;
+		self_xform = ci->xform_curr;
 	} else {
 		real_t f = Engine::get_singleton()->get_physics_interpolation_fraction();
-		TransformInterpolator::interpolate_transform_2d(ci->xform_prev, ci->xform_curr, final_xform, f);
+		TransformInterpolator::interpolate_transform_2d(ci->xform_prev, ci->xform_curr, self_xform, f);
 	}
 
 	Transform2D parent_xform = p_parent_xform;
@@ -285,11 +302,11 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 	}
 
 	if (snapping_2d_transforms_to_pixel) {
-		final_xform.columns[2] = (final_xform.columns[2] + Point2(0.5, 0.5)).floor();
+		self_xform.columns[2] = (self_xform.columns[2] + Point2(0.5, 0.5)).floor();
 		parent_xform.columns[2] = (parent_xform.columns[2] + Point2(0.5, 0.5)).floor();
 	}
 
-	final_xform = parent_xform * final_xform;
+	Transform2D final_xform = parent_xform * self_xform;
 
 	Rect2 global_rect = final_xform.xform(rect);
 	if (repeat_source_item && (repeat_size.x || repeat_size.y)) {
@@ -364,7 +381,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 			child_item_count = ci->ysort_children_count + 1;
 			child_items = (Item **)alloca(child_item_count * sizeof(Item *));
 
-			ci->ysort_xform = ci->xform_curr.affine_inverse();
+			ci->ysort_xform = self_xform.affine_inverse();
 			ci->ysort_pos = Vector2();
 			ci->ysort_modulate = Color(1, 1, 1, 1);
 			ci->ysort_index = 0;
