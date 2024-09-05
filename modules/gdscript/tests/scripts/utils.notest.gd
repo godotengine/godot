@@ -1,13 +1,3 @@
-class_name Utils
-
-
-# `assert()` is not evaluated in non-debug builds. Do not use `assert()`
-# for anything other than testing the `assert()` itself.
-static func check(condition: Variant) -> void:
-	if not condition:
-		printerr("Check failed.")
-
-
 static func get_type(property: Dictionary, is_return: bool = false) -> String:
 	match property.type:
 		TYPE_NIL:
