@@ -348,10 +348,6 @@ protected:
 	void _notification(int p_notification);
 	static void _bind_methods();
 
-#ifndef DISABLE_DEPRECATED
-	static void _bind_compatibility_methods();
-#endif
-
 	// Exposed virtual methods.
 
 	GDVIRTUAL1RC(bool, _has_point, Vector2)
