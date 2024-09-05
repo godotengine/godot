@@ -191,4 +191,8 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="_data" type="Dictionary" setter="_set_data" getter="_get_data" default="{ &quot;surfaces&quot;: [] }">
+		</member>
+	</members>
 </class>
