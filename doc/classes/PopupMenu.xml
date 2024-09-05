@@ -135,8 +135,6 @@
 				Adds a new multistate item with text [param label].
 				Contrarily to normal binary items, multistate items can have more than two states, as defined by [param max_states]. The default value is defined by [param default_state].
 				An [param id] can optionally be provided, as well as an accelerator ([param accel]). If no [param id] is provided, one will be created from the index. If no [param accel] is provided, then the default value of 0 (corresponding to [constant @GlobalScope.KEY_NONE]) will be assigned to the item (which means it won't have any accelerator). See [method get_item_accelerator] for more info on accelerators.
-				[b]Note:[/b] Multistate items don't update their state automatically and must be done manually. See [method toggle_item_multistate], [method set_item_multistate] and [method get_item_multistate] for more info on how to control it.
-				Example usage:
 				[codeblock]
 				func _ready():
 				    add_multistate_item("Item", 3, 0)
@@ -152,6 +150,7 @@
 				                    print("Third state")
 				        )
 				[/codeblock]
+				[b]Note:[/b] Multistate items don't update their state automatically and must be done manually. See [method toggle_item_multistate], [method set_item_multistate] and [method get_item_multistate] for more info on how to control it.
 			</description>
 		</method>
 		<method name="add_radio_check_item">

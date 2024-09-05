@@ -333,7 +333,7 @@
 			<param index="9" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
 				Draws [param text] using the specified [param font] at the [param pos] (bottom-left corner using the baseline of the font). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
-				[b]Example using the default project font:[/b]
+				[b]Example:[/b] Draw "Hello world", using the project's default font:
 				[codeblocks]
 				[gdscript]
 				# If using this method in a script that redraws constantly, move the

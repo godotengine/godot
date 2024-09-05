@@ -225,8 +225,8 @@
 			<return type="void" />
 			<param index="0" name="effect" type="Variant" />
 			<description>
-				Installs a custom effect. This can also be done in the RichTextLabel inspector using the [member custom_effects] property. [param effect] should be a valid [RichTextEffect].
-				Example RichTextEffect:
+				Installs a custom effect. This can also be done in the Inspector through the [member custom_effects] property. [param effect] should be a valid [RichTextEffect].
+				[b]Example:[/b] With the following script extending from [RichTextEffect]:
 				[codeblock]
 				# effect.gd
 				class_name MyCustomEffect
@@ -236,7 +236,7 @@
 
 				# ...
 				[/codeblock]
-				Registering the above effect in RichTextLabel from script:
+				The above effect can be installed in [RichTextLabel] from a script:
 				[codeblock]
 				# rich_text_label.gd
 				extends RichTextLabel
