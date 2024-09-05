@@ -3245,6 +3245,26 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 					push_error(vformat(R"(No constructor of "%s" matches the signature "%s".)", Variant::get_type_name(builtin_type), signature), p_call);
 				}
 			}
+
+#ifdef DEBUG_ENABLED
+			// Consider `Signal(self, "my_signal")` as an implicit use of the signal.
+			if (builtin_type == Variant::SIGNAL && p_call->arguments.size() >= 2) {
+				const GDScriptParser::ExpressionNode *object_arg = p_call->arguments[0];
+				if (object_arg && object_arg->type == GDScriptParser::Node::SELF) {
+					const GDScriptParser::ExpressionNode *signal_arg = p_call->arguments[1];
+					if (signal_arg && signal_arg->is_constant) {
+						const StringName &signal_name = signal_arg->reduced_value;
+						if (parser->current_class->has_member(signal_name)) {
+							const GDScriptParser::ClassNode::Member &member = parser->current_class->get_member(signal_name);
+							if (member.type == GDScriptParser::ClassNode::Member::SIGNAL) {
+								member.signal->usages++;
+							}
+						}
+					}
+				}
+			}
+#endif
+
 			p_call->set_datatype(call_type);
 			return;
 		} else if (GDScriptUtilityFunctions::function_exists(function_name)) {
@@ -3478,6 +3498,20 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			String caller_type = base_type.to_string();
 
 			parser->push_warning(p_call, GDScriptWarning::STATIC_CALLED_ON_INSTANCE, p_call->function_name, caller_type);
+		}
+
+		// Consider `emit_signal()`, `connect()`, and `disconnect()` as implicit uses of the signal.
+		if (is_self && (p_call->function_name == SNAME("emit_signal") || p_call->function_name == SNAME("connect") || p_call->function_name == SNAME("disconnect")) && !p_call->arguments.is_empty()) {
+			const GDScriptParser::ExpressionNode *signal_arg = p_call->arguments[0];
+			if (signal_arg && signal_arg->is_constant) {
+				const StringName &signal_name = signal_arg->reduced_value;
+				if (parser->current_class->has_member(signal_name)) {
+					const GDScriptParser::ClassNode::Member &member = parser->current_class->get_member(signal_name);
+					if (member.type == GDScriptParser::ClassNode::Member::SIGNAL) {
+						member.signal->usages++;
+					}
+				}
+			}
 		}
 #endif // DEBUG_ENABLED
 
