@@ -1769,19 +1769,19 @@ Error EditorExportPlatformIOS::_export_cocoapods(const Ref<EditorExportPreset> &
 	if (p_dependencies.size() <= 0) {
 		return OK;
 	}
-	
+
 	if (!p_preset->get("application/enable_cocoapods").operator bool()) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Cocoapods must be enabled in the export settings")));
 		return FAILED;
 	}
-	
+
 	for (int i = 0; i < p_dependencies.size(); i++) {
 		const String &dependency = p_dependencies[i];
-		
+
 		IOSExportAsset export_asset = { dependency, false, false, true };
 		r_exported_assets.push_back(export_asset);
 	}
-	
+
 	return OK;
 }
 
@@ -1874,17 +1874,17 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 			added_linked_dependenciy_names.push_back(name);
 			plugin_linked_dependencies.push_back(dependency);
 		}
-		
+
 		for (int j = 0; j < plugin.pods_dependencies.size(); j++) {
 			String dependency = plugin.pods_dependencies[j];
-			
+
 			if (plugin_pods_dependencies.has(dependency)) {
 				continue;
 			}
 
 			plugin_pods_dependencies.push_back(dependency);
 		}
-		
+
 		for (int j = 0; j < plugin.system_dependencies.size(); j++) {
 			String dependency = plugin.system_dependencies[j];
 			String name = dependency.get_file();
@@ -2003,7 +2003,7 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 		// Export plugin files
 		err = _export_additional_assets(p_preset, dest_dir, plugin_files, false, false, r_exported_assets);
 		ERR_FAIL_COND_V(err != OK, err);
-		
+
 		// Export CocoaPods dependency
 		err = _export_cocoapods(p_preset, plugin_pods_dependencies, r_exported_assets);
 		ERR_FAIL_COND_V(err != OK, err);
@@ -2566,7 +2566,7 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 	if (ep.step("Making .xcarchive", 3)) {
 		return ERR_SKIP;
 	}
-	
+
 	if (p_preset->get("application/enable_cocoapods").operator bool()) {
 		// Gather CocoaPods dependencies
 		Dictionary dependencies;
@@ -2574,32 +2574,32 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 			const IOSExportAsset &asset = assets[i];
 			if (!asset.is_pod)
 				continue;
-			
+
 			Vector<String> parts = asset.exported_path.split(":");
 			String name = parts[0];
 			String version = parts[1];
-			
+
 			if (dependencies.has(name) && dependencies[name] != version) {
 				add_message(EXPORT_MESSAGE_ERROR, TTR("CocoaPods Setup"), vformat(TTR("Ambiguous CocoaPod dependency, %s wants version %s and %s"), name, version, dependencies[name]));
 				return err;
 			}
-			
+
 			dependencies[name] = version;
 			print_line("Added " + name + " : " + version + " to cocoapods dependencies");
 		}
-		
+
 		// Generate the podfile
 		err = _generate_podfile("ios", p_preset->get("application/min_ios_version").operator String(), binary_name, dependencies, dest_dir);
 		if (err != OK) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("CocoaPods Setup"), vformat(TTR("Failed to generate Podfile with code %d"), err));
 			return err;
 		}
-		
+
 		// Install the pods
 		List<String> pod_args;
 		pod_args.push_back("install");
 		pod_args.push_back("--project-directory=" + dest_dir);
-		
+
 		String pod_str;
 		OS::get_singleton()->set_environment("LANG", "en_US.UTF-8"); // Required for Cocoapods to function
 		err = OS::get_singleton()->execute("/usr/local/bin/pod", pod_args, &pod_str, nullptr, true);
@@ -2652,7 +2652,7 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 	} else {
 		print_line("xcodebuild (.xcodeproj):\n" + archive_str);
 	}
-	
+
 	if (!archive_str.contains("** ARCHIVE SUCCEEDED **")) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Xcode Build"), TTR("Xcode project build failed, see editor log for details."));
 		return FAILED;
@@ -2702,10 +2702,10 @@ Error EditorExportPlatformIOS::_generate_podfile(const String &platform, const S
 	}
 
 	file->store_string("platform :" + platform + ", '" + platform_version + "'\n\n");
-	
+
 	file->store_string("target '" + target_name + "' do\n");
 	file->store_string("\tuse_frameworks!\n\n");
-	
+
 	for (int i = 0; i < dependencies.size(); i++) {
 		String dependency = dependencies.get_key_at_index(i);
 		String version = dependencies.get_value_at_index(i);
