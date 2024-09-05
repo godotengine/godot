@@ -189,6 +189,13 @@ private:
 		Ref<Resource> resource;
 		bool use_sub_threads = false;
 		HashSet<String> sub_tasks;
+
+		struct ResourceChangedConnection {
+			Resource *source = nullptr;
+			Callable callable;
+			uint32_t flags = 0;
+		};
+		LocalVector<ResourceChangedConnection> resource_changed_connections;
 	};
 
 	static void _run_load_task(void *p_userdata);
@@ -196,6 +203,7 @@ private:
 	static thread_local int load_nesting;
 	static thread_local HashMap<int, HashMap<String, Ref<Resource>>> res_ref_overrides; // Outermost key is nesting level.
 	static thread_local Vector<String> load_paths_stack;
+	static thread_local ThreadLoadTask *curr_load_task;
 
 	static SafeBinaryMutex<BINARY_MUTEX_TAG> thread_load_mutex;
 	friend SafeBinaryMutex<BINARY_MUTEX_TAG> &_get_res_loader_mutex();
@@ -215,6 +223,10 @@ public:
 	static Ref<Resource> load_threaded_get(const String &p_path, Error *r_error = nullptr);
 
 	static bool is_within_load() { return load_nesting > 0; };
+
+	static void resource_changed_connect(Resource *p_source, const Callable &p_callable, uint32_t p_flags);
+	static void resource_changed_disconnect(Resource *p_source, const Callable &p_callable);
+	static void resource_changed_emit(Resource *p_source);
 
 	static Ref<Resource> load(const String &p_path, const String &p_type_hint = "", ResourceFormatLoader::CacheMode p_cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE, Error *r_error = nullptr);
 	static bool exists(const String &p_path, const String &p_type_hint = "");

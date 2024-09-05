@@ -31,6 +31,7 @@
 #include "resource_loader.h"
 
 #include "core/config/project_settings.h"
+#include "core/core_bind.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_importer.h"
 #include "core/object/script_language.h"
@@ -329,6 +330,9 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 		}
 	}
 
+	ThreadLoadTask *curr_load_task_backup = curr_load_task;
+	curr_load_task = &load_task;
+
 	// Thread-safe either if it's the current thread or a brand new one.
 	CallQueue *own_mq_override = nullptr;
 	if (load_nesting == 0) {
@@ -456,6 +460,8 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 		}
 		DEV_ASSERT(load_paths_stack.is_empty());
 	}
+
+	curr_load_task = curr_load_task_backup;
 }
 
 static String _validate_local_path(const String &p_path) {
@@ -816,6 +822,39 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 	if (r_error) {
 		*r_error = load_task_ptr->error;
 	}
+
+	if (resource.is_valid()) {
+		if (curr_load_task) {
+			// A task awaiting another => Let the awaiter accumulate the resource changed connections.
+			DEV_ASSERT(curr_load_task != load_task_ptr);
+			for (const ThreadLoadTask::ResourceChangedConnection &rcc : load_task_ptr->resource_changed_connections) {
+				curr_load_task->resource_changed_connections.push_back(rcc);
+			}
+		} else {
+			// A leaf task being awaited => Propagate the resource changed connections.
+			if (Thread::is_main_thread()) {
+				// On the main thread it's safe to migrate the connections to the standard signal mechanism.
+				for (const ThreadLoadTask::ResourceChangedConnection &rcc : load_task_ptr->resource_changed_connections) {
+					if (rcc.callable.is_valid()) {
+						rcc.source->connect_changed(rcc.callable, rcc.flags);
+					}
+				}
+			} else {
+				// On non-main threads, we have to queue and call it done when processed.
+				if (!load_task_ptr->resource_changed_connections.is_empty()) {
+					for (const ThreadLoadTask::ResourceChangedConnection &rcc : load_task_ptr->resource_changed_connections) {
+						if (rcc.callable.is_valid()) {
+							MessageQueue::get_main_singleton()->push_callable(callable_mp(rcc.source, &Resource::connect_changed).bind(rcc.callable, rcc.flags));
+						}
+					}
+					core_bind::Semaphore done;
+					MessageQueue::get_main_singleton()->push_callable(callable_mp(&done, &core_bind::Semaphore::post));
+					done.wait();
+				}
+			}
+		}
+	}
+
 	return resource;
 }
 
@@ -828,6 +867,50 @@ bool ResourceLoader::_ensure_load_progress() {
 	}
 	RenderingServer::get_singleton()->sync();
 	return true;
+}
+
+void ResourceLoader::resource_changed_connect(Resource *p_source, const Callable &p_callable, uint32_t p_flags) {
+	print_lt(vformat("%d\t%ud:%s\t" FUNCTION_STR "\t%d", Thread::get_caller_id(), p_source->get_instance_id(), p_source->get_class(), p_callable.get_object_id()));
+
+	MutexLock lock(thread_load_mutex);
+
+	for (const ThreadLoadTask::ResourceChangedConnection &rcc : curr_load_task->resource_changed_connections) {
+		if (unlikely(rcc.source == p_source && rcc.callable == p_callable)) {
+			return;
+		}
+	}
+
+	ThreadLoadTask::ResourceChangedConnection rcc;
+	rcc.source = p_source;
+	rcc.callable = p_callable;
+	rcc.flags = p_flags;
+	curr_load_task->resource_changed_connections.push_back(rcc);
+}
+
+void ResourceLoader::resource_changed_disconnect(Resource *p_source, const Callable &p_callable) {
+	print_lt(vformat("%d\t%ud:%s\t" FUNCTION_STR "t%d", Thread::get_caller_id(), p_source->get_instance_id(), p_source->get_class(), p_callable.get_object_id()));
+
+	MutexLock lock(thread_load_mutex);
+
+	for (uint32_t i = 0; i < curr_load_task->resource_changed_connections.size(); ++i) {
+		const ThreadLoadTask::ResourceChangedConnection &rcc = curr_load_task->resource_changed_connections[i];
+		if (unlikely(rcc.source == p_source && rcc.callable == p_callable)) {
+			curr_load_task->resource_changed_connections.remove_at_unordered(i);
+			return;
+		}
+	}
+}
+
+void ResourceLoader::resource_changed_emit(Resource *p_source) {
+	print_lt(vformat("%d\t%ud:%s\t" FUNCTION_STR, Thread::get_caller_id(), p_source->get_instance_id(), p_source->get_class()));
+
+	MutexLock lock(thread_load_mutex);
+
+	for (const ThreadLoadTask::ResourceChangedConnection &rcc : curr_load_task->resource_changed_connections) {
+		if (unlikely(rcc.source == p_source)) {
+			rcc.callable.call();
+		}
+	}
 }
 
 Ref<Resource> ResourceLoader::ensure_resource_ref_override_for_outer_load(const String &p_path, const String &p_res_type) {
@@ -1360,6 +1443,7 @@ bool ResourceLoader::timestamp_on_load = false;
 thread_local int ResourceLoader::load_nesting = 0;
 thread_local Vector<String> ResourceLoader::load_paths_stack;
 thread_local HashMap<int, HashMap<String, Ref<Resource>>> ResourceLoader::res_ref_overrides;
+thread_local ResourceLoader::ThreadLoadTask *ResourceLoader::curr_load_task = nullptr;
 
 SafeBinaryMutex<ResourceLoader::BINARY_MUTEX_TAG> &_get_res_loader_mutex() {
 	return ResourceLoader::thread_load_mutex;
