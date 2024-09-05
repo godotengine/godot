@@ -319,6 +319,7 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 }
 
 // This implementation must allow re-entrancy for a task that started awaiting in a deeper stack frame.
+// The load task token must be manually re-referenced before this is called, which includes threaded runs.
 void ResourceLoader::_run_load_task(void *p_userdata) {
 	ThreadLoadTask &load_task = *(ThreadLoadTask *)p_userdata;
 
@@ -448,6 +449,9 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 			}
 		}
 	}
+
+	// It's safe now to let the task go in case no one else was grabbing the token.
+	load_task.load_token->unreference();
 
 	if (unlock_pending) {
 		thread_load_mutex.unlock();
@@ -598,6 +602,11 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 				load_task_ptr = &E->value;
 			}
 		}
+
+		// It's important to keep the token alive because until the load completes,
+		// which includes before the thread start, it may happen that no one is grabbing
+		// the token anymore so it's released.
+		load_task_ptr->load_token->reference();
 
 		if (p_thread_mode == LOAD_THREAD_FROM_CURRENT) {
 			// The current thread may happen to be a thread from the pool.
@@ -783,6 +792,7 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 					// resource loading that means that the task to wait for can be restarted here to break the
 					// cycle, with as much recursion into this process as needed.
 					// When the stack is eventually unrolled, the original load will have been notified to go on.
+					load_task.load_token->reference();
 					_run_load_task(&load_task);
 				}
 
