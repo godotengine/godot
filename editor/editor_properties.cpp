@@ -2703,7 +2703,11 @@ void EditorPropertyNodePath::_update_menu() {
 void EditorPropertyNodePath::_menu_option(int p_idx) {
 	switch (p_idx) {
 		case ACTION_CLEAR: {
-			emit_changed(get_edited_property(), NodePath());
+			if (editing_node) {
+				emit_changed(get_edited_property(), Variant());
+			} else {
+				emit_changed(get_edited_property(), NodePath());
+			}
 			update_property();
 		} break;
 
