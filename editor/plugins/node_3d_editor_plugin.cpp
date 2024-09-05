@@ -3092,8 +3092,11 @@ void Node3DEditorViewport::_notification(int p_what) {
 			update_preview_node = false;
 		} break;
 
+		case NOTIFICATION_APPLICATION_FOCUS_OUT:
 		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
 			set_freelook_active(false);
+			cursor.region_select = false;
+			surface->queue_redraw();
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
