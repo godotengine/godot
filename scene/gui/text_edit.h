@@ -276,6 +276,7 @@ private:
 	bool setting_text = false;
 
 	bool alt_start = false;
+	bool alt_start_no_hold = false;
 	uint32_t alt_code = 0;
 
 	// Text properties.
