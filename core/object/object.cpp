@@ -1724,33 +1724,65 @@ void Object::_bind_methods() {
 #define BIND_OBJ_CORE_METHOD(m_method) \
 	::ClassDB::add_virtual_method(get_class_static(), m_method, true, Vector<String>(), true);
 
-	MethodInfo notification_mi("_notification", PropertyInfo(Variant::INT, "what"));
-	notification_mi.arguments_metadata.push_back(GodotTypeInfo::Metadata::METADATA_INT_IS_INT32);
-	BIND_OBJ_CORE_METHOD(notification_mi);
-	BIND_OBJ_CORE_METHOD(MethodInfo(Variant::BOOL, "_set", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::NIL, "value")));
-#ifdef TOOLS_ENABLED
-	MethodInfo miget("_get", PropertyInfo(Variant::STRING_NAME, "property"));
-	miget.return_val.name = "Variant";
-	miget.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
-	BIND_OBJ_CORE_METHOD(miget);
+	BIND_OBJ_CORE_METHOD(MethodInfo("_init"));
 
-	MethodInfo plget("_get_property_list");
-	plget.return_val.type = Variant::ARRAY;
-	plget.return_val.hint = PROPERTY_HINT_ARRAY_TYPE;
-	plget.return_val.hint_string = "Dictionary";
-	BIND_OBJ_CORE_METHOD(plget);
+	BIND_OBJ_CORE_METHOD(MethodInfo(Variant::STRING, "_to_string"));
+
+	{
+		MethodInfo mi("_notification");
+		mi.arguments.push_back(PropertyInfo(Variant::INT, "what"));
+		mi.arguments_metadata.push_back(GodotTypeInfo::Metadata::METADATA_INT_IS_INT32);
+		BIND_OBJ_CORE_METHOD(mi);
+	}
+
+	{
+		MethodInfo mi("_set");
+		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "property"));
+		mi.arguments.push_back(PropertyInfo(Variant::NIL, "value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT));
+		mi.return_val.type = Variant::BOOL;
+		BIND_OBJ_CORE_METHOD(mi);
+	}
+
+#ifdef TOOLS_ENABLED
+	{
+		MethodInfo mi("_get");
+		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "property"));
+		mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+		BIND_OBJ_CORE_METHOD(mi);
+	}
+
+	{
+		MethodInfo mi("_get_property_list");
+		mi.return_val.type = Variant::ARRAY;
+		mi.return_val.hint = PROPERTY_HINT_ARRAY_TYPE;
+		mi.return_val.hint_string = "Dictionary";
+		BIND_OBJ_CORE_METHOD(mi);
+	}
 
 	BIND_OBJ_CORE_METHOD(MethodInfo(Variant::NIL, "_validate_property", PropertyInfo(Variant::DICTIONARY, "property")));
 
 	BIND_OBJ_CORE_METHOD(MethodInfo(Variant::BOOL, "_property_can_revert", PropertyInfo(Variant::STRING_NAME, "property")));
-	MethodInfo mipgr("_property_get_revert", PropertyInfo(Variant::STRING_NAME, "property"));
-	mipgr.return_val.name = "Variant";
-	mipgr.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
-	BIND_OBJ_CORE_METHOD(mipgr);
 
+	{
+		MethodInfo mi("_property_get_revert");
+		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "property"));
+		mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+		BIND_OBJ_CORE_METHOD(mi);
+	}
+
+	// These are actually `Variant` methods, but that doesn't matter since scripts can't inherit built-in types.
+
+	BIND_OBJ_CORE_METHOD(MethodInfo(Variant::BOOL, "_iter_init", PropertyInfo(Variant::ARRAY, "iter")));
+
+	BIND_OBJ_CORE_METHOD(MethodInfo(Variant::BOOL, "_iter_next", PropertyInfo(Variant::ARRAY, "iter")));
+
+	{
+		MethodInfo mi("_iter_get");
+		mi.arguments.push_back(PropertyInfo(Variant::NIL, "iter", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT));
+		mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+		BIND_OBJ_CORE_METHOD(mi);
+	}
 #endif
-	BIND_OBJ_CORE_METHOD(MethodInfo("_init"));
-	BIND_OBJ_CORE_METHOD(MethodInfo(Variant::STRING, "_to_string"));
 
 	BIND_CONSTANT(NOTIFICATION_POSTINITIALIZE);
 	BIND_CONSTANT(NOTIFICATION_PREDELETE);
