@@ -44,17 +44,7 @@ SwFixed mathMean(SwFixed angle1, SwFixed angle2)
 }
 
 
-bool mathSmallCubic(const SwPoint* base)
-{
-    auto d1 = base[2] - base[3];
-    auto d2 = base[1] - base[2];
-    auto d3 = base[0] - base[1];
-
-    return d1.small() && d2.small() && d3.small();
-}
-
-
-bool mathFlatCubic(const SwPoint* base, SwFixed& angleIn, SwFixed& angleMid, SwFixed& angleOut)
+bool mathSmallCubic(const SwPoint* base, SwFixed& angleIn, SwFixed& angleMid, SwFixed& angleOut)
 {
     auto d1 = base[2] - base[3];
     auto d2 = base[1] - base[2];
@@ -62,7 +52,12 @@ bool mathFlatCubic(const SwPoint* base, SwFixed& angleIn, SwFixed& angleMid, SwF
 
     if (d1.small()) {
         if (d2.small()) {
-            angleIn = angleMid = angleOut = mathAtan(d3);
+            if (d3.small()) {
+                angleIn = angleMid = angleOut = 0;
+                return true;
+            } else {
+                angleIn = angleMid = angleOut = mathAtan(d3);
+            }
         } else {
             if (d3.small()) {
                 angleIn = angleMid = angleOut = mathAtan(d2);
