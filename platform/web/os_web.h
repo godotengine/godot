@@ -80,7 +80,7 @@ public:
 	bool main_loop_iterate();
 
 	Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false) override;
-	Dictionary execute_with_pipe(const String &p_path, const List<String> &p_arguments) override;
+	Dictionary execute_with_pipe(const String &p_path, const List<String> &p_arguments, bool p_blocking = true) override;
 	Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) override;
 	Error kill(const ProcessID &p_pid) override;
 	int get_process_id() const override;

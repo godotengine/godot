@@ -878,7 +878,7 @@ Dictionary OS_Windows::get_memory_info() const {
 	return meminfo;
 }
 
-Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String> &p_arguments) {
+Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String> &p_arguments, bool p_blocking) {
 #define CLEAN_PIPES               \
 	if (pipe_in[0] != 0) {        \
 		CloseHandle(pipe_in[0]);  \
@@ -977,11 +977,11 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 
 	Ref<FileAccessWindowsPipe> main_pipe;
 	main_pipe.instantiate();
-	main_pipe->open_existing(pipe_out[0], pipe_in[1]);
+	main_pipe->open_existing(pipe_out[0], pipe_in[1], p_blocking);
 
 	Ref<FileAccessWindowsPipe> err_pipe;
 	err_pipe.instantiate();
-	err_pipe->open_existing(pipe_err[0], 0);
+	err_pipe->open_existing(pipe_err[0], 0, p_blocking);
 
 	ret["stdio"] = main_pipe;
 	ret["stderr"] = err_pipe;

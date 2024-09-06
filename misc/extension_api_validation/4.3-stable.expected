@@ -73,3 +73,10 @@ Validate extension JSON: Error: Field 'classes/EditorInterface/methods/popup_nod
 Validate extension JSON: Error: Field 'classes/EditorInterface/methods/popup_property_selector/arguments': size changed value in new API, from 3 to 4.
 
 Added optional argument to popup_property_selector and popup_node_selector to specify the current value.
+
+
+GH-94434
+--------
+Validate extension JSON: Error: Field 'classes/OS/methods/execute_with_pipe/arguments': size changed value in new API, from 2 to 3.
+
+Optional argument added. Compatibility method registered.
