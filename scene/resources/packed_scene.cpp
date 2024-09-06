@@ -775,6 +775,14 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 			if (value.get_type() != Variant::NODE_PATH) {
 				continue; //was never set, ignore.
 			}
+		} else if (E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_INTERFACE) {
+			if (value.get_type() == Variant::OBJECT) {
+				if (Node *n = Object::cast_to<Node>(value)) {
+					value = p_node->get_path_to(n);
+					use_deferred_node_path_bit = true;
+				}
+			}
+			// Keep going if not set; value may be a Resource
 		} else if (E.type == Variant::OBJECT && missing_resource_properties.has(E.name)) {
 			// Was this missing resource overridden? If so do not save the old value.
 			Ref<Resource> ures = value;
@@ -793,7 +801,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 				}
 				Variant::Type subtype = Variant::Type(subtype_string.to_int());
 
-				if (subtype == Variant::OBJECT && subtype_hint == PROPERTY_HINT_NODE_TYPE) {
+				if (subtype == Variant::OBJECT && (subtype_hint == PROPERTY_HINT_NODE_TYPE || subtype_hint == PROPERTY_HINT_INTERFACE)) {
 					use_deferred_node_path_bit = true;
 					Array array = value;
 					Array new_array;

@@ -149,6 +149,7 @@ class SceneTreeEditor : public Control {
 	bool _is_script_type(const StringName &p_type) const;
 
 	Vector<StringName> valid_types;
+	String interface_hint_string; // hint_string for exports of hint PROPERTY_HINT_INTERFACE
 
 	void _update_ask_before_revoking_unique_name();
 	void _revoke_unique_name();
@@ -176,6 +177,7 @@ public:
 
 	void set_show_enabled_subscene(bool p_show) { show_enabled_subscene = p_show; }
 	void set_valid_types(const Vector<StringName> &p_valid);
+	void set_interface_hint_string(const String &p_hint_string);
 
 	void update_tree() { _update_tree(); }
 
@@ -213,6 +215,7 @@ protected:
 public:
 	void popup_scenetree_dialog(Node *p_selected_node = nullptr, Node *p_marked_node = nullptr, bool p_marked_node_selectable = true, bool p_marked_node_children_selectable = true);
 	void set_valid_types(const Vector<StringName> &p_valid);
+	void set_interface_hint_string(const String &p_valid);
 
 	SceneTreeEditor *get_scene_tree() { return tree; }
 	LineEdit *get_filter_line_edit() { return filter; }
