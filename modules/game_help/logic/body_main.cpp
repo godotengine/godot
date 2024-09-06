@@ -16,103 +16,6 @@ ObjectID& CharacterBodyMain::get_curr_editor_player()
     static ObjectID curr_editor_player;
     return curr_editor_player;
 }
-void CharacterBodyMain::_bind_methods()
-{
-    
-	ClassDB::bind_method(D_METHOD("restart"), &CharacterBodyMain::restart);
-	ClassDB::bind_method(D_METHOD("init_main_body","p_skeleton_file_path","p_animation_group"), &CharacterBodyMain::init_main_body);
-
-
-
-
-	ClassDB::bind_method(D_METHOD("set_blackboard_plan", "plan"), &CharacterBodyMain::set_blackboard_plan);
-	ClassDB::bind_method(D_METHOD("get_blackboard_plan"), &CharacterBodyMain::get_blackboard_plan);
-
-
-    ClassDB::bind_method(D_METHOD("set_navigation_agent", "navigation_agent"), &CharacterBodyMain::set_navigation_agent);
-    ClassDB::bind_method(D_METHOD("get_navigation_agent"), &CharacterBodyMain::get_navigation_agent);
-
-    ClassDB::bind_method(D_METHOD("set_animation_library", "animation_library"), &CharacterBodyMain::set_animation_library);
-    ClassDB::bind_method(D_METHOD("get_animation_library"), &CharacterBodyMain::get_animation_library);
-
-    ClassDB::bind_method(D_METHOD("set_animator", "animator"), &CharacterBodyMain::set_animator);
-    ClassDB::bind_method(D_METHOD("get_animator"), &CharacterBodyMain::get_animator);
-
-    ClassDB::bind_method(D_METHOD("set_ik", "ik"), &CharacterBodyMain::set_ik);
-    ClassDB::bind_method(D_METHOD("get_ik"), &CharacterBodyMain::get_ik);
-
-    ClassDB::bind_method(D_METHOD("set_main_shape", "shape"), &CharacterBodyMain::set_main_shape);
-    ClassDB::bind_method(D_METHOD("get_main_shape"), &CharacterBodyMain::get_main_shape);
-
-    ClassDB::bind_method(D_METHOD("set_check_area", "check_area"), &CharacterBodyMain::set_check_area);
-    ClassDB::bind_method(D_METHOD("get_check_area"), &CharacterBodyMain::get_check_area);
-    ClassDB::bind_method(D_METHOD("get_check_area_by_name", "name"), &CharacterBodyMain::get_check_area_by_name);
-
-
-    ClassDB::bind_method(D_METHOD("set_body_prefab", "body_prefab"), &CharacterBodyMain::set_body_prefab);
-    ClassDB::bind_method(D_METHOD("get_body_prefab"), &CharacterBodyMain::get_body_prefab);
-
-    ClassDB::bind_method(D_METHOD("init_body_part_array", "part_array"), &CharacterBodyMain::init_body_part_array);
-    ClassDB::bind_method(D_METHOD("set_body_part", "part"), &CharacterBodyMain::set_body_part);
-    ClassDB::bind_method(D_METHOD("get_body_part"), &CharacterBodyMain::get_body_part);
-
-    ClassDB::bind_method(D_METHOD("set_character_ai", "ai"), &CharacterBodyMain::set_character_ai);
-    ClassDB::bind_method(D_METHOD("get_character_ai"), &CharacterBodyMain::get_character_ai);
-
-    ClassDB::bind_method(D_METHOD("set_skeleton_resource", "skeleton"), &CharacterBodyMain::set_skeleton_resource);
-    ClassDB::bind_method(D_METHOD("get_skeleton_resource"), &CharacterBodyMain::get_skeleton_resource);
-
-    
-    ClassDB::bind_method(D_METHOD("set_editor_form_mesh_file_path", "editor_form_mesh_file_path"), &CharacterBodyMain::set_editor_form_mesh_file_path);
-    ClassDB::bind_method(D_METHOD("get_editor_form_mesh_file_path"), &CharacterBodyMain::get_editor_form_mesh_file_path);
-
-    ClassDB::bind_method(D_METHOD("set_editor_ref_bone_map", "editor_ref_bone_map"), &CharacterBodyMain::set_editor_ref_bone_map);
-    ClassDB::bind_method(D_METHOD("get_editor_ref_bone_map"), &CharacterBodyMain::get_editor_ref_bone_map);
-
-    ClassDB::bind_method(D_METHOD("set_editor_build_animation_form_file_path", "editor_build_animation_form_file_path"), &CharacterBodyMain::set_editor_build_animation_form_file_path);
-    ClassDB::bind_method(D_METHOD("get_editor_build_animation_form_file_path"), &CharacterBodyMain::get_editor_build_animation_form_file_path);
-
-
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan", PROPERTY_USAGE_DEFAULT ), "set_blackboard_plan", "get_blackboard_plan");
-    ADD_GROUP("editor", "editor_");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_form_mesh_file_path"), "set_editor_form_mesh_file_path", "get_editor_form_mesh_file_path");
-    ADD_MEMBER_BUTTON(editor_build_form_mesh_file_path,L"根据模型初始化",CharacterBodyMain);
-
-    ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_ref_bone_map"), "set_editor_ref_bone_map", "get_editor_ref_bone_map");
-    ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_build_animation_form_file_path"), "set_editor_build_animation_form_file_path", "get_editor_build_animation_form_file_path");
-    ADD_MEMBER_BUTTON(editor_build_animation_form_file_path,L"构建动画文件信息",CharacterBodyMain);
-
-
-
-
-    //ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "behavior_tree", PROPERTY_HINT_RESOURCE_TYPE, "BehaviorTree"), "set_behavior_tree", "get_behavior_tree");
-	//ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard", PROPERTY_HINT_RESOURCE_TYPE, "Blackboard",PROPERTY_USAGE_DEFAULT ), "set_blackboard", "get_blackboard");
-    ADD_GROUP("logic", "");
-    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "character_ai", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAI"), "set_character_ai", "get_character_ai");
-    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navigation_agent", PROPERTY_HINT_RESOURCE_TYPE, "CharacterNavigationAgent3D"), "set_navigation_agent", "get_navigation_agent");
-    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "main_shape", PROPERTY_HINT_RESOURCE_TYPE, "CollisionObject3DConnectionShape",PROPERTY_USAGE_DEFAULT), "set_main_shape", "get_main_shape");
-    ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "check_area", PROPERTY_HINT_RESOURCE_TYPE, RESOURCE_TYPE_HINT("CharacterCheckArea3D"),PROPERTY_USAGE_DEFAULT), "set_check_area", "get_check_area");
-    
-
-    ADD_GROUP("show", "");
-    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "body_prefab", PROPERTY_HINT_RESOURCE_TYPE, "CharacterBodyPrefab",PROPERTY_USAGE_DEFAULT ), "set_body_prefab", "get_body_prefab");
-    ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "body_part", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_DEFAULT), "set_body_part", "get_body_part");
-    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animator", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimator",PROPERTY_USAGE_DEFAULT ), "set_animator", "get_animator"); 
-    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animation_library", PROPERTY_HINT_RESOURCE_TYPE, "AnimationLibrary",PROPERTY_USAGE_DEFAULT ), "set_animation_library", "get_animation_library");
-    ADD_PROPERTY(PropertyInfo(Variant::STRING, "skeleton", PROPERTY_HINT_FILE, "*.tscn,*.scn",PROPERTY_USAGE_DEFAULT ), "set_skeleton_resource", "get_skeleton_resource");
-    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "ik", PROPERTY_HINT_RESOURCE_TYPE, "RenIK",PROPERTY_USAGE_DEFAULT ), "set_ik", "get_ik");
-
-
-	ADD_SIGNAL(MethodInfo("behavior_tree_finished", PropertyInfo(Variant::INT, "status")));
-	ADD_SIGNAL(MethodInfo("behavior_tree_updated", PropertyInfo(Variant::INT, "status")));
-    
-	ADD_SIGNAL(MethodInfo("skill_tree_finished", PropertyInfo(Variant::INT, "status")));
-	ADD_SIGNAL(MethodInfo("skill_tree_updated", PropertyInfo(Variant::INT, "status")));
-
-    
-
-}
-
 void CharacterBodyMain::clear_all()
 {
     Skeleton3D* skeleton = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(skeletonID));
@@ -122,7 +25,8 @@ void CharacterBodyMain::clear_all()
     }
     if(skeleton)
     {
-        memdelete(skeleton);
+        remove_child(skeleton);
+        skeleton->queue_free();
         skeleton = nullptr;
         
     }
@@ -285,7 +189,7 @@ void CharacterBodyMain::editor_build_form_mesh_file_path()
     
 }
 
-void CharacterBodyMain::editor_build_animation_form_file_path()
+void CharacterBodyMain::editor_build_animation()
 {
     if(editor_ref_bone_map.is_null()) {
         return;
@@ -516,7 +420,7 @@ void CharacterBodyMain::set_skeleton_resource(const String& p_skeleton_path)
     if(skeleton == nullptr)
     {
         ERR_FAIL_MSG("scene is not Skeleton3D:" + skeleton_res);
-        memdelete(ins);
+        skeleton->queue_free();
         skeleton_res = "";
         return ;
     }
@@ -880,6 +784,106 @@ CharacterBodyMain::~CharacterBodyMain()
         }
     }
     check_area.clear();
+}
+
+void CharacterBodyMain::_bind_methods()
+{
+    
+	ClassDB::bind_method(D_METHOD("restart"), &CharacterBodyMain::restart);
+	ClassDB::bind_method(D_METHOD("init_main_body","p_skeleton_file_path","p_animation_group"), &CharacterBodyMain::init_main_body);
+
+
+
+
+	ClassDB::bind_method(D_METHOD("set_blackboard_plan", "plan"), &CharacterBodyMain::set_blackboard_plan);
+	ClassDB::bind_method(D_METHOD("get_blackboard_plan"), &CharacterBodyMain::get_blackboard_plan);
+
+
+    ClassDB::bind_method(D_METHOD("set_navigation_agent", "navigation_agent"), &CharacterBodyMain::set_navigation_agent);
+    ClassDB::bind_method(D_METHOD("get_navigation_agent"), &CharacterBodyMain::get_navigation_agent);
+
+    ClassDB::bind_method(D_METHOD("set_animation_library", "animation_library"), &CharacterBodyMain::set_animation_library);
+    ClassDB::bind_method(D_METHOD("get_animation_library"), &CharacterBodyMain::get_animation_library);
+
+    ClassDB::bind_method(D_METHOD("set_animator", "animator"), &CharacterBodyMain::set_animator);
+    ClassDB::bind_method(D_METHOD("get_animator"), &CharacterBodyMain::get_animator);
+
+    ClassDB::bind_method(D_METHOD("set_ik", "ik"), &CharacterBodyMain::set_ik);
+    ClassDB::bind_method(D_METHOD("get_ik"), &CharacterBodyMain::get_ik);
+
+    ClassDB::bind_method(D_METHOD("set_main_shape", "shape"), &CharacterBodyMain::set_main_shape);
+    ClassDB::bind_method(D_METHOD("get_main_shape"), &CharacterBodyMain::get_main_shape);
+
+    ClassDB::bind_method(D_METHOD("set_check_area", "check_area"), &CharacterBodyMain::set_check_area);
+    ClassDB::bind_method(D_METHOD("get_check_area"), &CharacterBodyMain::get_check_area);
+    ClassDB::bind_method(D_METHOD("get_check_area_by_name", "name"), &CharacterBodyMain::get_check_area_by_name);
+
+
+    ClassDB::bind_method(D_METHOD("set_body_prefab", "body_prefab"), &CharacterBodyMain::set_body_prefab);
+    ClassDB::bind_method(D_METHOD("get_body_prefab"), &CharacterBodyMain::get_body_prefab);
+
+    ClassDB::bind_method(D_METHOD("init_body_part_array", "part_array"), &CharacterBodyMain::init_body_part_array);
+    ClassDB::bind_method(D_METHOD("set_body_part", "part"), &CharacterBodyMain::set_body_part);
+    ClassDB::bind_method(D_METHOD("get_body_part"), &CharacterBodyMain::get_body_part);
+
+    ClassDB::bind_method(D_METHOD("set_character_ai", "ai"), &CharacterBodyMain::set_character_ai);
+    ClassDB::bind_method(D_METHOD("get_character_ai"), &CharacterBodyMain::get_character_ai);
+
+    ClassDB::bind_method(D_METHOD("set_skeleton_resource", "skeleton"), &CharacterBodyMain::set_skeleton_resource);
+    ClassDB::bind_method(D_METHOD("get_skeleton_resource"), &CharacterBodyMain::get_skeleton_resource);
+
+    
+    ClassDB::bind_method(D_METHOD("set_editor_form_mesh_file_path", "editor_form_mesh_file_path"), &CharacterBodyMain::set_editor_form_mesh_file_path);
+    ClassDB::bind_method(D_METHOD("get_editor_form_mesh_file_path"), &CharacterBodyMain::get_editor_form_mesh_file_path);
+
+    ClassDB::bind_method(D_METHOD("set_editor_ref_bone_map", "editor_ref_bone_map"), &CharacterBodyMain::set_editor_ref_bone_map);
+    ClassDB::bind_method(D_METHOD("get_editor_ref_bone_map"), &CharacterBodyMain::get_editor_ref_bone_map);
+
+    ClassDB::bind_method(D_METHOD("set_editor_animation_file_path", "path"), &CharacterBodyMain::set_editor_animation_file_path);
+    ClassDB::bind_method(D_METHOD("get_editor_animation_file_path"), &CharacterBodyMain::get_editor_animation_file_path);
+
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan", PROPERTY_USAGE_DEFAULT ), "set_blackboard_plan", "get_blackboard_plan");
+    ADD_GROUP("editor", "editor_");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_form_mesh_file_path"), "set_editor_form_mesh_file_path", "get_editor_form_mesh_file_path");
+    ADD_MEMBER_BUTTON(editor_build_form_mesh_file_path,L"根据模型初始化",CharacterBodyMain);
+
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "editor_ref_bone_map", PROPERTY_HINT_RESOURCE_TYPE, "CharacterBoneMap", PROPERTY_USAGE_DEFAULT ), "set_editor_ref_bone_map", "get_editor_ref_bone_map");
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_animation_file_path",PROPERTY_HINT_FILE,"tres,*.tres"), "set_editor_animation_file_path", "get_editor_animation_file_path");
+
+    ADD_MEMBER_BUTTON(editor_build_animation,L"构建动画文件信息",CharacterBodyMain);
+
+
+
+
+
+    //ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "behavior_tree", PROPERTY_HINT_RESOURCE_TYPE, "BehaviorTree"), "set_behavior_tree", "get_behavior_tree");
+	//ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard", PROPERTY_HINT_RESOURCE_TYPE, "Blackboard",PROPERTY_USAGE_DEFAULT ), "set_blackboard", "get_blackboard");
+    ADD_GROUP("logic", "");
+
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "character_ai", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAI"), "set_character_ai", "get_character_ai");
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navigation_agent", PROPERTY_HINT_RESOURCE_TYPE, "CharacterNavigationAgent3D"), "set_navigation_agent", "get_navigation_agent");
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "main_shape", PROPERTY_HINT_RESOURCE_TYPE, "CollisionObject3DConnectionShape",PROPERTY_USAGE_DEFAULT), "set_main_shape", "get_main_shape");
+    ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "check_area", PROPERTY_HINT_RESOURCE_TYPE, RESOURCE_TYPE_HINT("CharacterCheckArea3D"),PROPERTY_USAGE_DEFAULT), "set_check_area", "get_check_area");
+    
+
+    ADD_GROUP("show", "");
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "body_prefab", PROPERTY_HINT_RESOURCE_TYPE, "CharacterBodyPrefab",PROPERTY_USAGE_DEFAULT ), "set_body_prefab", "get_body_prefab");
+    ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "body_part", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_DEFAULT), "set_body_part", "get_body_part");
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animator", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimator",PROPERTY_USAGE_DEFAULT ), "set_animator", "get_animator"); 
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animation_library", PROPERTY_HINT_RESOURCE_TYPE, "AnimationLibrary",PROPERTY_USAGE_DEFAULT ), "set_animation_library", "get_animation_library");
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "skeleton", PROPERTY_HINT_FILE, "*.tscn,*.scn",PROPERTY_USAGE_DEFAULT ), "set_skeleton_resource", "get_skeleton_resource");
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "ik", PROPERTY_HINT_RESOURCE_TYPE, "RenIK",PROPERTY_USAGE_DEFAULT ), "set_ik", "get_ik");
+
+
+	ADD_SIGNAL(MethodInfo("behavior_tree_finished", PropertyInfo(Variant::INT, "status")));
+	ADD_SIGNAL(MethodInfo("behavior_tree_updated", PropertyInfo(Variant::INT, "status")));
+    
+	ADD_SIGNAL(MethodInfo("skill_tree_finished", PropertyInfo(Variant::INT, "status")));
+	ADD_SIGNAL(MethodInfo("skill_tree_updated", PropertyInfo(Variant::INT, "status")));
+
+    
+
 }
 
 
