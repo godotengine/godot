@@ -2857,7 +2857,7 @@ void EditorPropertyNodePath::_node_assign() {
 	scene_tree->popup_scenetree_dialog(n, get_base_node());
 }
 
-void EditorPropertyNodePath::_select_node_in_scene_tree() const {
+void EditorPropertyNodePath::_select_node_in_scene_tree() {
 	Node *target_node = _get_node_in_scene_tree();
 	if (!target_node) {
 		return;
@@ -2964,7 +2964,7 @@ const NodePath EditorPropertyNodePath::_get_node_path() const {
 	}
 }
 
-Node *EditorPropertyNodePath::_get_node_in_scene_tree() const {
+Node *EditorPropertyNodePath::_get_node_in_scene_tree() {
 	const Node *edited_node = get_base_node();
 	if (!edited_node) {
 		return nullptr;
@@ -3103,7 +3103,7 @@ void EditorPropertyNodePath::_notification(int p_what) {
 	}
 }
 
-Node *EditorPropertyNodePath::get_base_node() const {
+Node *EditorPropertyNodePath::get_base_node() {
 	Node *base_node = Object::cast_to<Node>(get_edited_object());
 
 	if (!base_node) {
