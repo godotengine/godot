@@ -1367,12 +1367,14 @@ void ScriptEditor::_menu_option(int p_option) {
 				const HashMap<String, DocData::ClassDoc>::ConstIterator E = EditorHelp::get_doc_data()->class_list.find(eh->get_class());
 				native_class_doc = E && !E->value.is_script_doc;
 			}
+
+			String doc_url_base = EditorSettings::get_singleton()->get_online_docs_url();
 			if (native_class_doc) {
 				String name = eh->get_class().to_lower();
-				String doc_url = vformat(VERSION_DOCS_URL "/classes/class_%s.html", name);
+				String doc_url = vformat("%s/classes/class_%s.html", doc_url_base, name);
 				OS::get_singleton()->shell_open(doc_url);
 			} else {
-				OS::get_singleton()->shell_open(VERSION_DOCS_URL "/");
+				OS::get_singleton()->shell_open(doc_url_base);
 			}
 		} break;
 		case WINDOW_NEXT: {

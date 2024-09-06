@@ -702,6 +702,9 @@
 		<member name="interface/editor/mouse_extra_buttons_navigate_history" type="bool" setter="" getter="">
 			If [code]true[/code], the mouse's additional side buttons will be usable to navigate in the script editor's file history. Set this to [code]false[/code] if you're using the side buttons for other purposes (such as a push-to-talk button in a VoIP program).
 		</member>
+		<member name="interface/editor/online_docs_language" type="String" setter="" getter="">
+			If [code]auto[/code], then the online docs will open in the default editor language specified in [member interface/editor/editor_language], or the English docs if no translation is found.
+		</member>
 		<member name="interface/editor/project_manager_screen" type="int" setter="" getter="">
 			The preferred monitor to display the project manager.
 		</member>

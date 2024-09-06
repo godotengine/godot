@@ -189,7 +189,7 @@ def version_info_builder(target, source, env):
 #define VERSION_MODULE_CONFIG "{module_config}"
 #define VERSION_WEBSITE "{website}"
 #define VERSION_DOCS_BRANCH "{docs_branch}"
-#define VERSION_DOCS_URL "https://docs.godotengine.org/en/" VERSION_DOCS_BRANCH
+#define VERSION_DOCS_URL "https://docs.godotengine.org/"
 """.format(**env.version_info)
         )
 
