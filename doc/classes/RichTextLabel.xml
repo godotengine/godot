@@ -65,6 +65,11 @@
 				Clears the current selection.
 			</description>
 		</method>
+		<method name="get_bbcode" qualifiers="const">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
 		<method name="get_character_line">
 			<return type="int" />
 			<param index="0" name="character" type="int" />
