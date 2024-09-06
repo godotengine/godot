@@ -200,10 +200,7 @@ EditorPropertyVectorN::EditorPropertyVectorN(Variant::Type p_type, bool p_force_
 
 	BoxContainer *bc;
 
-	if (p_force_wide) {
-		bc = memnew(HBoxContainer);
-		hb->add_child(bc);
-	} else if (horizontal) {
+	if (horizontal) {
 		bc = memnew(HBoxContainer);
 		hb->add_child(bc);
 	} else {
