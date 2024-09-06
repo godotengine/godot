@@ -2112,7 +2112,7 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 	// Look in blocks first.
 	int last_assign_line = -1;
 	const GDScriptParser::ExpressionNode *last_assigned_expression = nullptr;
-	GDScriptParser::DataType id_type;
+	GDScriptCompletionIdentifier id_type;
 	GDScriptParser::SuiteNode *suite = p_context.current_suite;
 	bool is_function_parameter = false;
 
@@ -2134,7 +2134,7 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 	if (can_be_local && suite && suite->has_local(p_identifier->name)) {
 		const GDScriptParser::SuiteNode::Local &local = suite->get_local(p_identifier->name);
 
-		id_type = local.get_datatype();
+		id_type.type = local.get_datatype();
 
 		// Check initializer as the first assignment.
 		switch (local.type) {
@@ -2172,7 +2172,7 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 			base.type.is_meta_type = p_context.current_function && p_context.current_function->is_static;
 
 			if (_guess_identifier_type_from_base(p_context, base, p_identifier->name, base_identifier)) {
-				id_type = base_identifier.type;
+				id_type = base_identifier;
 			}
 		}
 	}
@@ -2212,7 +2212,7 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 				c.current_line = type_test->operand->start_line;
 				c.current_suite = suite;
 				if (type_test->test_datatype.is_hard_type()) {
-					id_type = type_test->test_datatype;
+					id_type.type = type_test->test_datatype;
 					if (last_assign_line < c.current_line) {
 						// Override last assignment.
 						last_assign_line = c.current_line;
@@ -2230,10 +2230,10 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 		c.current_line = last_assign_line;
 		GDScriptCompletionIdentifier assigned_type;
 		if (_guess_expression_type(c, last_assigned_expression, assigned_type)) {
-			if (id_type.is_set() && assigned_type.type.is_set() && !GDScriptAnalyzer::check_type_compatibility(id_type, assigned_type.type)) {
+			if (id_type.type.is_set() && assigned_type.type.is_set() && !GDScriptAnalyzer::check_type_compatibility(id_type.type, assigned_type.type)) {
 				// The assigned type is incompatible. The annotated type takes priority.
+				r_type = id_type;
 				r_type.assigned_expression = last_assigned_expression;
-				r_type.type = id_type;
 			} else {
 				r_type = assigned_type;
 			}
@@ -2251,8 +2251,8 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 						GDScriptParser::FunctionNode *parent_function = base_type.class_type->get_member(p_context.current_function->identifier->name).function;
 						if (parent_function->parameters_indices.has(p_identifier->name)) {
 							const GDScriptParser::ParameterNode *parameter = parent_function->parameters[parent_function->parameters_indices[p_identifier->name]];
-							if ((!id_type.is_set() || id_type.is_variant()) && parameter->get_datatype().is_hard_type()) {
-								id_type = parameter->get_datatype();
+							if ((!id_type.type.is_set() || id_type.type.is_variant()) && parameter->get_datatype().is_hard_type()) {
+								id_type.type = parameter->get_datatype();
 							}
 							if (parameter->initializer) {
 								GDScriptParser::CompletionContext c = p_context;
@@ -2268,7 +2268,7 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 					base_type = base_type.class_type->base_type;
 					break;
 				case GDScriptParser::DataType::NATIVE: {
-					if (id_type.is_set() && !id_type.is_variant()) {
+					if (id_type.type.is_set() && !id_type.type.is_variant()) {
 						base_type = GDScriptParser::DataType();
 						break;
 					}
@@ -2289,8 +2289,8 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 		}
 	}
 
-	if (id_type.is_set() && !id_type.is_variant()) {
-		r_type.type = id_type;
+	if (id_type.type.is_set() && !id_type.type.is_variant()) {
+		r_type = id_type;
 		return true;
 	}
 

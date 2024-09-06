@@ -665,6 +665,10 @@ bool EditorSpinSlider::is_grabbing() const {
 }
 
 void EditorSpinSlider::_focus_entered() {
+	if (is_read_only()) {
+		return;
+	}
+
 	_ensure_input_popup();
 	value_input->set_text(get_text_value());
 	value_input_popup->set_size(get_size());

@@ -522,7 +522,7 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 			if (!item.has("name") || !item.has("values") || !item.has("default")) {
 				continue;
 			}
-			event_handler->add_option(pfdc, item["name"], item["values"], item["default_idx"]);
+			event_handler->add_option(pfdc, item["name"], item["values"], item["default"]);
 		}
 		event_handler->set_root(fd->root);
 
@@ -625,62 +625,41 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 				}
 			}
 			if (fd->callback.is_valid()) {
-				if (fd->options_in_cb) {
-					Variant v_result = true;
-					Variant v_files = file_names;
-					Variant v_index = index;
-					Variant v_opt = options;
-					const Variant *cb_args[4] = { &v_result, &v_files, &v_index, &v_opt };
-
-					fd->callback.call_deferredp(cb_args, 4);
-				} else {
-					Variant v_result = true;
-					Variant v_files = file_names;
-					Variant v_index = index;
-					const Variant *cb_args[3] = { &v_result, &v_files, &v_index };
-
-					fd->callback.call_deferredp(cb_args, 3);
-				}
+				MutexLock lock(ds->file_dialog_mutex);
+				FileDialogCallback cb;
+				cb.callback = fd->callback;
+				cb.status = true;
+				cb.files = file_names;
+				cb.index = index;
+				cb.options = options;
+				cb.opt_in_cb = fd->options_in_cb;
+				ds->pending_cbs.push_back(cb);
 			}
 		} else {
 			if (fd->callback.is_valid()) {
-				if (fd->options_in_cb) {
-					Variant v_result = false;
-					Variant v_files = Vector<String>();
-					Variant v_index = 0;
-					Variant v_opt = Dictionary();
-					const Variant *cb_args[4] = { &v_result, &v_files, &v_index, &v_opt };
-
-					fd->callback.call_deferredp(cb_args, 4);
-				} else {
-					Variant v_result = false;
-					Variant v_files = Vector<String>();
-					Variant v_index = 0;
-					const Variant *cb_args[3] = { &v_result, &v_files, &v_index };
-
-					fd->callback.call_deferredp(cb_args, 3);
-				}
+				MutexLock lock(ds->file_dialog_mutex);
+				FileDialogCallback cb;
+				cb.callback = fd->callback;
+				cb.status = false;
+				cb.files = Vector<String>();
+				cb.index = index;
+				cb.options = options;
+				cb.opt_in_cb = fd->options_in_cb;
+				ds->pending_cbs.push_back(cb);
 			}
 		}
 		pfd->Release();
 	} else {
 		if (fd->callback.is_valid()) {
-			if (fd->options_in_cb) {
-				Variant v_result = false;
-				Variant v_files = Vector<String>();
-				Variant v_index = 0;
-				Variant v_opt = Dictionary();
-				const Variant *cb_args[4] = { &v_result, &v_files, &v_index, &v_opt };
-
-				fd->callback.call_deferredp(cb_args, 4);
-			} else {
-				Variant v_result = false;
-				Variant v_files = Vector<String>();
-				Variant v_index = 0;
-				const Variant *cb_args[3] = { &v_result, &v_files, &v_index };
-
-				fd->callback.call_deferredp(cb_args, 3);
-			}
+			MutexLock lock(ds->file_dialog_mutex);
+			FileDialogCallback cb;
+			cb.callback = fd->callback;
+			cb.status = false;
+			cb.files = Vector<String>();
+			cb.index = 0;
+			cb.options = Dictionary();
+			cb.opt_in_cb = fd->options_in_cb;
+			ds->pending_cbs.push_back(cb);
 		}
 	}
 	{
@@ -766,6 +745,34 @@ Error DisplayServerWindows::_file_dialog_with_options_show(const String &p_title
 	file_dialogs.push_back(fd);
 
 	return OK;
+}
+
+void DisplayServerWindows::process_file_dialog_callbacks() {
+	MutexLock lock(file_dialog_mutex);
+	while (!pending_cbs.is_empty()) {
+		FileDialogCallback cb = pending_cbs.front()->get();
+		pending_cbs.pop_front();
+
+		if (cb.opt_in_cb) {
+			Variant ret;
+			Callable::CallError ce;
+			const Variant *args[4] = { &cb.status, &cb.files, &cb.index, &cb.options };
+
+			cb.callback.callp(args, 4, ret, ce);
+			if (ce.error != Callable::CallError::CALL_OK) {
+				ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(cb.callback, args, 4, ce)));
+			}
+		} else {
+			Variant ret;
+			Callable::CallError ce;
+			const Variant *args[3] = { &cb.status, &cb.files, &cb.index };
+
+			cb.callback.callp(args, 3, ret, ce);
+			if (ce.error != Callable::CallError::CALL_OK) {
+				ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(cb.callback, args, 3, ce)));
+			}
+		}
+	}
 }
 
 void DisplayServerWindows::mouse_set_mode(MouseMode p_mode) {
@@ -3190,6 +3197,7 @@ void DisplayServerWindows::process_events() {
 		memdelete(E->get());
 		E->erase();
 	}
+	process_file_dialog_callbacks();
 }
 
 void DisplayServerWindows::force_process_and_drop_events() {

@@ -2393,7 +2393,7 @@ void TextEdit::_move_caret_left(bool p_select, bool p_move_by_word) {
 			} else {
 				PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(get_caret_line(i))->get_rid());
 				if (words.is_empty() || cc <= words[0]) {
-					// This solves the scenario where there are no words but glyfs that can be ignored.
+					// Move to the start when there are no more words.
 					cc = 0;
 				} else {
 					for (int j = words.size() - 2; j >= 0; j = j - 2) {
@@ -2450,7 +2450,7 @@ void TextEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
 			} else {
 				PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(get_caret_line(i))->get_rid());
 				if (words.is_empty() || cc >= words[words.size() - 1]) {
-					// This solves the scenario where there are no words but glyfs that can be ignored.
+					// Move to the end when there are no more words.
 					cc = text[get_caret_line(i)].length();
 				} else {
 					for (int j = 1; j < words.size(); j = j + 2) {
@@ -2666,7 +2666,7 @@ void TextEdit::_do_backspace(bool p_word, bool p_all_to_left) {
 			// Get a list with the indices of the word bounds of the given text line.
 			const PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(get_caret_line(caret_index))->get_rid());
 			if (words.is_empty() || column <= words[0]) {
-				// If "words" is empty, meaning no words are left, we can remove everything until the beginning of the line.
+				// Delete to the start when there are no more words.
 				column = 0;
 			} else {
 				// Otherwise search for the first word break that is smaller than the index from we're currently deleting.
@@ -2731,10 +2731,15 @@ void TextEdit::_delete(bool p_word, bool p_all_to_right) {
 			int column = get_caret_column(caret_index);
 
 			PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(line)->get_rid());
-			for (int j = 1; j < words.size(); j = j + 2) {
-				if (words[j] > column) {
-					column = words[j];
-					break;
+			if (words.is_empty() || column >= words[words.size() - 1]) {
+				// Delete to the end when there are no more words.
+				column = text[get_caret_line(i)].length();
+			} else {
+				for (int j = 1; j < words.size(); j = j + 2) {
+					if (words[j] > column) {
+						column = words[j];
+						break;
+					}
 				}
 			}
 

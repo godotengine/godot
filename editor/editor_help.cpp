@@ -1456,10 +1456,31 @@ void EditorHelp::_update_doc() {
 			_push_normal_font();
 			class_desc->push_color(theme_cache.comment_color);
 
+			bool has_prev_text = false;
+
+			if (theme_item.is_deprecated) {
+				has_prev_text = true;
+				DEPRECATED_DOC_MSG(HANDLE_DOC(theme_item.deprecated_message), TTR("This theme property may be changed or removed in future versions."));
+			}
+
+			if (theme_item.is_experimental) {
+				if (has_prev_text) {
+					class_desc->add_newline();
+					class_desc->add_newline();
+				}
+				has_prev_text = true;
+				EXPERIMENTAL_DOC_MSG(HANDLE_DOC(theme_item.experimental_message), TTR("This theme property may be changed or removed in future versions."));
+			}
+
 			const String descr = HANDLE_DOC(theme_item.description);
 			if (!descr.is_empty()) {
+				if (has_prev_text) {
+					class_desc->add_newline();
+					class_desc->add_newline();
+				}
+				has_prev_text = true;
 				_add_text(descr);
-			} else {
+			} else if (!has_prev_text) {
 				class_desc->add_image(get_editor_theme_icon(SNAME("Error")));
 				class_desc->add_text(" ");
 				class_desc->push_color(theme_cache.comment_color);
@@ -2220,12 +2241,6 @@ void EditorHelp::_update_doc() {
 				}
 				has_prev_text = true;
 				_add_text(descr);
-				// Add copy note to built-in properties returning Packed*Array.
-				if (!cd.is_script_doc && packed_array_types.has(prop.type)) {
-					class_desc->add_newline();
-					class_desc->add_newline();
-					_add_text(vformat(TTR("[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [%s] for more details."), prop.type));
-				}
 			} else if (!has_prev_text) {
 				class_desc->add_image(get_editor_theme_icon(SNAME("Error")));
 				class_desc->add_text(" ");
@@ -2236,6 +2251,13 @@ void EditorHelp::_update_doc() {
 					class_desc->append_text(TTR("There is currently no description for this property. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
 				}
 				class_desc->pop(); // color
+			}
+
+			// Add copy note to built-in properties returning `Packed*Array`.
+			if (!cd.is_script_doc && packed_array_types.has(prop.type)) {
+				class_desc->add_newline();
+				class_desc->add_newline();
+				_add_text(vformat(TTR("[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [%s] for more details."), prop.type));
 			}
 
 			class_desc->pop(); // color
@@ -3380,6 +3402,20 @@ EditorHelpBit::HelpData EditorHelpBit::_get_theme_item_help_data(const StringNam
 		for (const DocData::ThemeItemDoc &theme_item : E->value.theme_properties) {
 			HelpData current;
 			current.description = HANDLE_DOC(theme_item.description);
+			if (theme_item.is_deprecated) {
+				if (theme_item.deprecated_message.is_empty()) {
+					current.deprecated_message = TTR("This theme property may be changed or removed in future versions.");
+				} else {
+					current.deprecated_message = HANDLE_DOC(theme_item.deprecated_message);
+				}
+			}
+			if (theme_item.is_experimental) {
+				if (theme_item.experimental_message.is_empty()) {
+					current.experimental_message = TTR("This theme property may be changed or removed in future versions.");
+				} else {
+					current.experimental_message = HANDLE_DOC(theme_item.experimental_message);
+				}
+			}
 
 			if (theme_item.name == p_theme_item_name) {
 				result = current;

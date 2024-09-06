@@ -1614,16 +1614,7 @@ String OS_Windows::get_executable_path() const {
 }
 
 bool OS_Windows::has_environment(const String &p_var) const {
-#ifdef MINGW_ENABLED
-	return _wgetenv((LPCWSTR)(p_var.utf16().get_data())) != nullptr;
-#else
-	WCHAR *env;
-	size_t len;
-	_wdupenv_s(&env, &len, (LPCWSTR)(p_var.utf16().get_data()));
-	const bool has_env = env != nullptr;
-	free(env);
-	return has_env;
-#endif
+	return GetEnvironmentVariableW((LPCWSTR)(p_var.utf16().get_data()), nullptr, 0) > 0;
 }
 
 String OS_Windows::get_environment(const String &p_var) const {
