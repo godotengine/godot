@@ -21,12 +21,22 @@ class CharacterBodyPrefab : public Resource
 public:
     void set_parts(Dictionary p_parts)
     {
-        parts = p_parts;
+        parts.clear();
+        auto keys = p_parts.keys();
+        for(int i = 0;i < keys.size();i++)
+        {
+            parts[keys[i]] = true;
+        }
         emit_changed();
     }
     Dictionary get_parts()
     {
-        return parts;
+        Dictionary rs;
+        for(const KeyValue<String,bool> &E : parts)
+        {
+            rs[E.key] = E.value;
+        }
+        return rs;
     }
 
     void set_skeleton_path(String p_skeleton_path)
@@ -41,9 +51,13 @@ public:
     TypedArray<CharacterBodyPart> load_part()
     {
         TypedArray<CharacterBodyPart> rs;
-        for(int i=0;i<parts.size();i++)
+        for(const KeyValue<String,bool> &E : parts)
         {
-            Ref<CharacterBodyPart> part = ResourceLoader::load(parts[i]);
+            if(!E.value)
+            {
+                continue;
+            }
+            Ref<CharacterBodyPart> part = ResourceLoader::load(E.key);
             if(part.is_valid())
             {
                 rs.push_back(part);
@@ -52,7 +66,7 @@ public:
         return rs;
     }
 
-    Dictionary parts;
+    HashMap<String,bool> parts;
     String skeleton_path;
 };
 
