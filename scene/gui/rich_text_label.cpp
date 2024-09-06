@@ -912,84 +912,6 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 		double uth = TS->shaped_text_get_underline_thickness(rid);
 
 		off.y += l_ascent;
-		// Draw inlined objects.
-		Array objects = TS->shaped_text_get_objects(rid);
-		for (int i = 0; i < objects.size(); i++) {
-			Item *it = items.get_or_null(objects[i]);
-			if (it != nullptr) {
-				Vector2i obj_range = TS->shaped_text_get_object_range(rid, objects[i]);
-				if (trim_chars && l.char_offset + obj_range.y > visible_characters) {
-					continue;
-				}
-				if (trim_glyphs_ltr || trim_glyphs_rtl) {
-					int obj_glyph = r_processed_glyphs + TS->shaped_text_get_object_glyph(rid, objects[i]);
-					if ((trim_glyphs_ltr && (obj_glyph >= visible_glyphs)) || (trim_glyphs_rtl && (obj_glyph < total_glyphs - visible_glyphs))) {
-						continue;
-					}
-				}
-				Rect2 rect = TS->shaped_text_get_object_rect(rid, objects[i]);
-				switch (it->type) {
-					case ITEM_IMAGE: {
-						ItemImage *img = static_cast<ItemImage *>(it);
-						if (img->pad) {
-							Size2 pad_size = rect.size.min(img->image->get_size());
-							Vector2 pad_off = (rect.size - pad_size) / 2;
-							img->image->draw_rect(ci, Rect2(p_ofs + rect.position + off + pad_off, pad_size), false, img->color);
-						} else {
-							img->image->draw_rect(ci, Rect2(p_ofs + rect.position + off, rect.size), false, img->color);
-						}
-					} break;
-					case ITEM_TABLE: {
-						ItemTable *table = static_cast<ItemTable *>(it);
-						Color odd_row_bg = theme_cache.table_odd_row_bg;
-						Color even_row_bg = theme_cache.table_even_row_bg;
-						Color border = theme_cache.table_border;
-						float h_separation = theme_cache.table_h_separation;
-						float v_separation = theme_cache.table_v_separation;
-
-						int col_count = table->columns.size();
-						int row_count = table->rows.size();
-
-						int idx = 0;
-						for (Item *E : table->subitems) {
-							ItemFrame *frame = static_cast<ItemFrame *>(E);
-
-							int col = idx % col_count;
-							int row = idx / col_count;
-
-							if (frame->lines.size() != 0 && row < row_count) {
-								Vector2 coff = frame->lines[0].offset;
-								if (rtl) {
-									coff.x = rect.size.width - table->columns[col].width - coff.x;
-								}
-								if (row % 2 == 0) {
-									Color c = frame->odd_row_bg != Color(0, 0, 0, 0) ? frame->odd_row_bg : odd_row_bg;
-									if (c.a > 0.0) {
-										draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), c, true);
-									}
-								} else {
-									Color c = frame->even_row_bg != Color(0, 0, 0, 0) ? frame->even_row_bg : even_row_bg;
-									if (c.a > 0.0) {
-										draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), c, true);
-									}
-								}
-								Color bc = frame->border != Color(0, 0, 0, 0) ? frame->border : border;
-								if (bc.a > 0.0) {
-									draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), bc, false);
-								}
-							}
-
-							for (int j = 0; j < (int)frame->lines.size(); j++) {
-								_draw_line(frame, j, p_ofs + rect.position + off + Vector2(0, frame->lines[j].offset.y), rect.size.x, p_base_color, p_outline_size, p_outline_color, p_font_shadow_color, p_shadow_outline_size, p_shadow_ofs, r_processed_glyphs);
-							}
-							idx++;
-						}
-					} break;
-					default:
-						break;
-				}
-			}
-		}
 
 		const Glyph *glyphs = TS->shaped_text_get_glyphs(rid);
 		int gl_size = TS->shaped_text_get_glyph_count(rid);
@@ -1005,6 +927,86 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 
 		int processed_glyphs_step = 0;
 		for (int step = DRAW_STEP_BACKGROUND; step < DRAW_STEP_MAX; step++) {
+			if (step == DRAW_STEP_TEXT) {
+				// Draw inlined objects.
+				Array objects = TS->shaped_text_get_objects(rid);
+				for (int i = 0; i < objects.size(); i++) {
+					Item *it = items.get_or_null(objects[i]);
+					if (it != nullptr) {
+						Vector2i obj_range = TS->shaped_text_get_object_range(rid, objects[i]);
+						if (trim_chars && l.char_offset + obj_range.y > visible_characters) {
+							continue;
+						}
+						if (trim_glyphs_ltr || trim_glyphs_rtl) {
+							int obj_glyph = r_processed_glyphs + TS->shaped_text_get_object_glyph(rid, objects[i]);
+							if ((trim_glyphs_ltr && (obj_glyph >= visible_glyphs)) || (trim_glyphs_rtl && (obj_glyph < total_glyphs - visible_glyphs))) {
+								continue;
+							}
+						}
+						Rect2 rect = TS->shaped_text_get_object_rect(rid, objects[i]);
+						switch (it->type) {
+							case ITEM_IMAGE: {
+								ItemImage *img = static_cast<ItemImage *>(it);
+								if (img->pad) {
+									Size2 pad_size = rect.size.min(img->image->get_size());
+									Vector2 pad_off = (rect.size - pad_size) / 2;
+									img->image->draw_rect(ci, Rect2(p_ofs + rect.position + off + pad_off, pad_size), false, img->color);
+								} else {
+									img->image->draw_rect(ci, Rect2(p_ofs + rect.position + off, rect.size), false, img->color);
+								}
+							} break;
+							case ITEM_TABLE: {
+								ItemTable *table = static_cast<ItemTable *>(it);
+								Color odd_row_bg = theme_cache.table_odd_row_bg;
+								Color even_row_bg = theme_cache.table_even_row_bg;
+								Color border = theme_cache.table_border;
+								float h_separation = theme_cache.table_h_separation;
+								float v_separation = theme_cache.table_v_separation;
+
+								int col_count = table->columns.size();
+								int row_count = table->rows.size();
+
+								int idx = 0;
+								for (Item *E : table->subitems) {
+									ItemFrame *frame = static_cast<ItemFrame *>(E);
+
+									int col = idx % col_count;
+									int row = idx / col_count;
+
+									if (frame->lines.size() != 0 && row < row_count) {
+										Vector2 coff = frame->lines[0].offset;
+										if (rtl) {
+											coff.x = rect.size.width - table->columns[col].width - coff.x;
+										}
+										if (row % 2 == 0) {
+											Color c = frame->odd_row_bg != Color(0, 0, 0, 0) ? frame->odd_row_bg : odd_row_bg;
+											if (c.a > 0.0) {
+												draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), c, true);
+											}
+										} else {
+											Color c = frame->even_row_bg != Color(0, 0, 0, 0) ? frame->even_row_bg : even_row_bg;
+											if (c.a > 0.0) {
+												draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), c, true);
+											}
+										}
+										Color bc = frame->border != Color(0, 0, 0, 0) ? frame->border : border;
+										if (bc.a > 0.0) {
+											draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), bc, false);
+										}
+									}
+
+									for (int j = 0; j < (int)frame->lines.size(); j++) {
+										_draw_line(frame, j, p_ofs + rect.position + off + Vector2(0, frame->lines[j].offset.y), rect.size.x, p_base_color, p_outline_size, p_outline_color, p_font_shadow_color, p_shadow_outline_size, p_shadow_ofs, r_processed_glyphs);
+									}
+									idx++;
+								}
+							} break;
+							default:
+								break;
+						}
+					}
+				}
+			}
 			Vector2 off_step = off;
 			processed_glyphs_step = r_processed_glyphs;
 

@@ -235,6 +235,7 @@ class EditorFileSystem : public Node {
 	int _insert_actions_delete_files_directory(EditorFileSystemDirectory *p_dir);
 
 	HashSet<String> textfile_extensions;
+	HashSet<String> other_file_extensions;
 	HashSet<String> valid_extensions;
 	HashSet<String> import_extensions;
 

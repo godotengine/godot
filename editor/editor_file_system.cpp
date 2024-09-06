@@ -1075,7 +1075,7 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 				fi->script_class_name = _get_global_script_class(fi->type, path, &fi->script_class_extends, &fi->script_class_icon_path);
 				fi->modified_time = 0;
 				fi->import_modified_time = 0;
-				fi->import_valid = fi->type == "TextFile" ? true : ResourceLoader::is_import_valid(path);
+				fi->import_valid = (fi->type == "TextFile" || fi->type == "OtherFile") ? true : ResourceLoader::is_import_valid(path);
 
 				ItemAction ia;
 				ia.action = ItemAction::ACTION_FILE_TEST_REIMPORT;
@@ -1117,6 +1117,9 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 				fi->resource_script_class = ResourceLoader::get_resource_script_class(path);
 				if (fi->type == "" && textfile_extensions.has(ext)) {
 					fi->type = "TextFile";
+				}
+				if (fi->type == "" && other_file_extensions.has(ext)) {
+					fi->type = "OtherFile";
 				}
 				fi->uid = ResourceLoader::get_resource_uid(path);
 				fi->script_class_name = _get_global_script_class(fi->type, path, &fi->script_class_extends, &fi->script_class_icon_path);
@@ -1263,8 +1266,11 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanPr
 					if (fi->type == "" && textfile_extensions.has(ext)) {
 						fi->type = "TextFile";
 					}
+					if (fi->type == "" && other_file_extensions.has(ext)) {
+						fi->type = "OtherFile";
+					}
 					fi->script_class_name = _get_global_script_class(fi->type, path, &fi->script_class_extends, &fi->script_class_icon_path);
-					fi->import_valid = fi->type == "TextFile" ? true : ResourceLoader::is_import_valid(path);
+					fi->import_valid = (fi->type == "TextFile" || fi->type == "OtherFile") ? true : ResourceLoader::is_import_valid(path);
 					fi->import_group_file = ResourceLoader::get_import_group_file(path);
 
 					{
@@ -2118,6 +2124,9 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 			if (type.is_empty() && textfile_extensions.has(file.get_extension())) {
 				type = "TextFile";
 			}
+			if (type.is_empty() && other_file_extensions.has(file.get_extension())) {
+				type = "OtherFile";
+			}
 			String script_class = ResourceLoader::get_resource_script_class(file);
 
 			ResourceUID::ID uid = ResourceLoader::get_resource_uid(file);
@@ -2137,7 +2146,7 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 				EditorFileSystemDirectory::FileInfo *fi = memnew(EditorFileSystemDirectory::FileInfo);
 				fi->file = file_name;
 				fi->import_modified_time = 0;
-				fi->import_valid = type == "TextFile" ? true : ResourceLoader::is_import_valid(file);
+				fi->import_valid = (type == "TextFile" || type == "OtherFile") ? true : ResourceLoader::is_import_valid(file);
 
 				if (idx == fs->files.size()) {
 					fs->files.push_back(fi);
@@ -2161,7 +2170,7 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 			fs->files[cpos]->import_group_file = ResourceLoader::get_import_group_file(file);
 			fs->files[cpos]->modified_time = FileAccess::get_modified_time(file);
 			fs->files[cpos]->deps = _get_dependencies(file);
-			fs->files[cpos]->import_valid = type == "TextFile" ? true : ResourceLoader::is_import_valid(file);
+			fs->files[cpos]->import_valid = (type == "TextFile" || type == "OtherFile") ? true : ResourceLoader::is_import_valid(file);
 
 			if (uid != ResourceUID::INVALID_ID) {
 				if (ResourceUID::get_singleton()->has_id(uid)) {
@@ -2418,6 +2427,9 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		fs->files[cpos]->type = importer->get_resource_type();
 		if (fs->files[cpos]->type == "" && textfile_extensions.has(file.get_extension())) {
 			fs->files[cpos]->type = "TextFile";
+		}
+		if (fs->files[cpos]->type == "" && other_file_extensions.has(file.get_extension())) {
+			fs->files[cpos]->type = "OtherFile";
 		}
 		fs->files[cpos]->import_valid = err == OK;
 
@@ -3119,6 +3131,7 @@ void EditorFileSystem::_update_extensions() {
 	valid_extensions.clear();
 	import_extensions.clear();
 	textfile_extensions.clear();
+	other_file_extensions.clear();
 
 	List<String> extensionsl;
 	ResourceLoader::get_recognized_extensions_for_type("", &extensionsl);
@@ -3133,6 +3146,14 @@ void EditorFileSystem::_update_extensions() {
 		}
 		valid_extensions.insert(E);
 		textfile_extensions.insert(E);
+	}
+	const Vector<String> other_file_ext = ((String)(EDITOR_GET("docks/filesystem/other_file_extensions"))).split(",", false);
+	for (const String &E : other_file_ext) {
+		if (valid_extensions.has(E)) {
+			continue;
+		}
+		valid_extensions.insert(E);
+		other_file_extensions.insert(E);
 	}
 
 	extensionsl.clear();

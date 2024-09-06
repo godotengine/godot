@@ -98,12 +98,12 @@
 			Vertical separation between the up and down buttons.
 		</theme_item>
 		<theme_item name="buttons_width" data_type="constant" type="int" default="16">
-			Width of the up and down buttons. If smaller than any icon set on the buttons, the respective icon may overlap neighboring elements, unless [theme_item set_min_buttons_width_from_icons] is different than [code]0[/code].
+			Width of the up and down buttons. If smaller than any icon set on the buttons, the respective icon may overlap neighboring elements. If smaller than [code]0[/code], the width is automatically adjusted from the icon size.
 		</theme_item>
 		<theme_item name="field_and_buttons_separation" data_type="constant" type="int" default="2">
 			Width of the horizontal separation between the text input field ([LineEdit]) and the buttons.
 		</theme_item>
-		<theme_item name="set_min_buttons_width_from_icons" data_type="constant" type="int" default="1">
+		<theme_item name="set_min_buttons_width_from_icons" data_type="constant" type="int" default="1" deprecated="This property exists only for compatibility with older themes. Setting [theme_item buttons_width] to a negative value has the same effect.">
 			If not [code]0[/code], the minimum button width corresponds to the widest of all icons set on those buttons, even if [theme_item buttons_width] is smaller.
 		</theme_item>
 		<theme_item name="down" data_type="icon" type="Texture2D">
