@@ -856,10 +856,16 @@ void Curve2D::_bake() const {
 	{
 		Vector<RBMap<real_t, Vector2>> midpoints = _tessellate_even_length(10, bake_interval);
 
+		Vector<int> point_indexes_in_bake;
+		point_indexes_in_bake.resize(points.size());
+		point_indexes_in_bake.set(0, 0);
+		int *point_index_in_bake = point_indexes_in_bake.ptrw();
+
 		int pc = 1;
 		for (int i = 0; i < points.size() - 1; i++) {
 			pc++;
 			pc += midpoints[i].size();
+			point_index_in_bake[i + 1] = pc;
 		}
 
 		baked_point_cache.resize(pc);
@@ -888,11 +894,20 @@ void Curve2D::_bake() const {
 
 		// Recalculate the baked distances.
 		real_t *bdw = baked_dist_cache.ptrw();
+		baked_point_dist_cache.resize(points.size());
+		real_t *bpd = baked_point_dist_cache.ptrw();
 		bdw[0] = 0.0;
+		bpd[0] = 0.0;
+		int j = 0;
 		for (int i = 0; i < pc - 1; i++) {
 			bdw[i + 1] = bdw[i] + bpw[i].distance_to(bpw[i + 1]);
+			if (point_indexes_in_bake.has(i)) {
+				bpd[j] = bdw[i];
+				j++;
+			}
 		}
 		baked_max_ofs = bdw[pc - 1];
+		bpd[j] = baked_max_ofs;
 	}
 }
 
@@ -902,6 +917,12 @@ real_t Curve2D::get_baked_length() const {
 	}
 
 	return baked_max_ofs;
+}
+real_t Curve2D::get_baked_distance_at_point(int p_index) const {
+	if (baked_cache_dirty) {
+		_bake();
+	}
+	return baked_point_dist_cache[p_index];
 }
 
 Curve2D::Interval Curve2D::_find_interval(real_t p_offset) const {
@@ -1044,6 +1065,15 @@ void Curve2D::set_bake_interval(real_t p_tolerance) {
 
 real_t Curve2D::get_bake_interval() const {
 	return bake_interval;
+}
+
+void Curve2D::set_debug_preview_resolution(int p_resolution) {
+	debug_preview_resolution = p_resolution;
+	mark_dirty();
+}
+
+int Curve2D::get_debug_preview_resolution() const {
+	return debug_preview_resolution;
 }
 
 PackedVector2Array Curve2D::get_points() const {
@@ -1330,6 +1360,8 @@ void Curve2D::_bind_methods() {
 	//ClassDB::bind_method(D_METHOD("bake","subdivs"),&Curve2D::bake,DEFVAL(10));
 	ClassDB::bind_method(D_METHOD("set_bake_interval", "distance"), &Curve2D::set_bake_interval);
 	ClassDB::bind_method(D_METHOD("get_bake_interval"), &Curve2D::get_bake_interval);
+	ClassDB::bind_method(D_METHOD("set_debug_preview_resolution", "resolution"), &Curve2D::set_debug_preview_resolution);
+	ClassDB::bind_method(D_METHOD("get_debug_preview_resolution"), &Curve2D::get_debug_preview_resolution);
 
 	ClassDB::bind_method(D_METHOD("get_baked_length"), &Curve2D::get_baked_length);
 	ClassDB::bind_method(D_METHOD("sample_baked", "offset", "cubic"), &Curve2D::sample_baked, DEFVAL(0.0), DEFVAL(false));
@@ -1344,6 +1376,7 @@ void Curve2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &Curve2D::_set_data);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bake_interval", PROPERTY_HINT_RANGE, "0.01,512,0.01"), "set_bake_interval", "get_bake_interval");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "debug_preview_resolution", PROPERTY_HINT_RANGE, "0,64,1"), "set_debug_preview_resolution", "get_debug_preview_resolution");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 	ADD_ARRAY_COUNT("Points", "point_count", "set_point_count", "get_point_count", "point_");
 }
@@ -1601,15 +1634,21 @@ void Curve3D::_bake() const {
 		points_in_cache.set(0, 0);
 #endif
 
+		// To store the index of original points inside the tessellated baked array
+		Vector<int> point_indexes_in_bake;
+		point_indexes_in_bake.resize(points.size());
+		point_indexes_in_bake.set(0, 0);
+		int *point_index_in_bake = point_indexes_in_bake.ptrw();
+
 		int pc = 1;
 		for (int i = 0; i < points.size() - 1; i++) {
 			pc++;
 			pc += midpoints[i].size();
+			point_index_in_bake[i + 1] = pc;
 #ifdef TOOLS_ENABLED
 			points_in_cache.set(i + 1, pc - 1);
 #endif
 		}
-
 		baked_point_cache.resize(pc);
 		baked_tilt_cache.resize(pc);
 		baked_dist_cache.resize(pc);
@@ -1641,11 +1680,21 @@ void Curve3D::_bake() const {
 
 		// Recalculate the baked distances.
 		real_t *bdw = baked_dist_cache.ptrw();
+		baked_point_dist_cache.resize(points.size());
+		real_t *bpd = baked_point_dist_cache.ptrw();
 		bdw[0] = 0.0;
+		bpd[0] = 0.0;
+		int j = 0;
 		for (int i = 0; i < pc - 1; i++) {
 			bdw[i + 1] = bdw[i] + bpw[i].distance_to(bpw[i + 1]);
+			// Store baked distance at each original point
+			if (point_indexes_in_bake.has(i)) {
+				bpd[j] = bdw[i];
+				j++;
+			}
 		}
 		baked_max_ofs = bdw[pc - 1];
+		bpd[j] = baked_max_ofs;
 	}
 
 	if (!up_vector_enabled) {
@@ -1738,6 +1787,13 @@ real_t Curve3D::get_baked_length() const {
 	}
 
 	return baked_max_ofs;
+}
+
+real_t Curve3D::get_baked_distance_at_point(int p_index) const {
+	if (baked_cache_dirty) {
+		_bake();
+	}
+	return baked_point_dist_cache[p_index];
 }
 
 Curve3D::Interval Curve3D::_find_interval(real_t p_offset) const {
@@ -2084,6 +2140,15 @@ real_t Curve3D::get_bake_interval() const {
 	return bake_interval;
 }
 
+void Curve3D::set_debug_preview_resolution(int p_resolution) {
+	debug_preview_resolution = p_resolution;
+	mark_dirty();
+}
+
+int Curve3D::get_debug_preview_resolution() const {
+	return debug_preview_resolution;
+}
+
 void Curve3D::set_up_vector_enabled(bool p_enable) {
 	up_vector_enabled = p_enable;
 	mark_dirty();
@@ -2311,6 +2376,8 @@ void Curve3D::_bind_methods() {
 	//ClassDB::bind_method(D_METHOD("bake","subdivs"),&Curve3D::bake,DEFVAL(10));
 	ClassDB::bind_method(D_METHOD("set_bake_interval", "distance"), &Curve3D::set_bake_interval);
 	ClassDB::bind_method(D_METHOD("get_bake_interval"), &Curve3D::get_bake_interval);
+	ClassDB::bind_method(D_METHOD("set_debug_preview_resolution", "resolution"), &Curve3D::set_debug_preview_resolution);
+	ClassDB::bind_method(D_METHOD("get_debug_preview_resolution"), &Curve3D::get_debug_preview_resolution);
 	ClassDB::bind_method(D_METHOD("set_up_vector_enabled", "enable"), &Curve3D::set_up_vector_enabled);
 	ClassDB::bind_method(D_METHOD("is_up_vector_enabled"), &Curve3D::is_up_vector_enabled);
 
@@ -2330,6 +2397,7 @@ void Curve3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &Curve3D::_set_data);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bake_interval", PROPERTY_HINT_RANGE, "0.01,512,0.01"), "set_bake_interval", "get_bake_interval");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "debug_preview_resolution", PROPERTY_HINT_RANGE, "0,64,1"), "set_debug_preview_resolution", "get_debug_preview_resolution");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 	ADD_ARRAY_COUNT("Points", "point_count", "set_point_count", "get_point_count", "point_");
 

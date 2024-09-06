@@ -107,54 +107,61 @@ void Path2D::_notification(int p_what) {
 #else
 			const real_t line_width = get_tree()->get_debug_paths_width();
 #endif
-			real_t interval = 10;
 			const real_t length = curve->get_baked_length();
 
 			if (length > CMP_EPSILON) {
-				const int sample_count = int(length / interval) + 2;
-				interval = length / (sample_count - 1); // Recalculate real interval length.
+				const int point_count = curve->get_point_count();
+				const int sample_count = curve->get_debug_preview_resolution() + 2;
 
-				Vector<Transform2D> frames;
-				frames.resize(sample_count);
+				for (int point = 0; point < point_count - 1; point++) {
+					const real_t section_length = curve->get_baked_distance_at_point(point + 1) - curve->get_baked_distance_at_point(point);
+					real_t interval = section_length / (sample_count - 1); // Recalculate real interval length.
 
-				{
-					Transform2D *w = frames.ptrw();
+					Vector<Transform2D> frames;
+					frames.resize(sample_count);
+					real_t offset;
+					point == 0 ? offset = 0 : offset = curve->get_baked_distance_at_point(point);
 
-					for (int i = 0; i < sample_count; i++) {
-						w[i] = curve->sample_baked_with_rotation(i * interval, false);
+					// Get info at sample point
+					{
+						Transform2D *w = frames.ptrw();
+
+						for (int i = 0; i < sample_count; i++) {
+							w[i] = curve->sample_baked_with_rotation(offset + (i * interval), false);
+						}
 					}
-				}
 
-				const Transform2D *r = frames.ptr();
-				// Draw curve segments
-				{
-					PackedVector2Array v2p;
-					v2p.resize(sample_count);
-					Vector2 *w = v2p.ptrw();
+					const Transform2D *r = frames.ptr();
+					// Draw curve segments
+					{
+						PackedVector2Array v2p;
+						v2p.resize(sample_count);
+						Vector2 *w = v2p.ptrw();
 
-					for (int i = 0; i < sample_count; i++) {
-						w[i] = r[i].get_origin();
+						for (int i = 0; i < sample_count; i++) {
+							w[i] = r[i].get_origin();
+						}
+						draw_polyline(v2p, get_tree()->get_debug_paths_color(), line_width, false);
 					}
-					draw_polyline(v2p, get_tree()->get_debug_paths_color(), line_width, false);
-				}
 
-				// Draw fish bones
-				{
-					PackedVector2Array v2p;
-					v2p.resize(3);
-					Vector2 *w = v2p.ptrw();
+					// Draw fish bones
+					{
+						PackedVector2Array v2p;
+						v2p.resize(3);
+						Vector2 *w = v2p.ptrw();
 
-					for (int i = 0; i < sample_count; i++) {
-						const Vector2 p = r[i].get_origin();
-						const Vector2 side = r[i].columns[1];
-						const Vector2 forward = r[i].columns[0];
+						for (int i = 0; i < sample_count; i++) {
+							const Vector2 p = r[i].get_origin();
+							const Vector2 side = r[i].columns[1];
+							const Vector2 forward = r[i].columns[0];
 
-						// Fish Bone.
-						w[0] = p + (side - forward) * 5;
-						w[1] = p;
-						w[2] = p + (-side - forward) * 5;
+							// Fish Bone.
+							w[0] = p + (side - forward) * 5;
+							w[1] = p;
+							w[2] = p + (-side - forward) * 5;
 
-						draw_polyline(v2p, get_tree()->get_debug_paths_color(), line_width * 0.5, false);
+							draw_polyline(v2p, get_tree()->get_debug_paths_color(), line_width * 0.5, false);
+						}
 					}
 				}
 			}

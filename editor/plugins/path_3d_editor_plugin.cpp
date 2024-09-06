@@ -284,70 +284,74 @@ void Path3DGizmo::redraw() {
 		return;
 	}
 
-	real_t interval = 0.1;
 	const real_t length = c->get_baked_length();
-
 	// 1. Draw curve and bones.
 	if (length > CMP_EPSILON) {
-		const int sample_count = int(length / interval) + 2;
-		interval = length / (sample_count - 1); // Recalculate real interval length.
+		const int point_count = c->get_point_count();
+		const int sample_count = c->get_debug_preview_resolution() + 2;
+		for (int point = 0; point < point_count - 1; point++) {
+			const real_t section_length = c->get_baked_distance_at_point(point + 1) - c->get_baked_distance_at_point(point);
+			const real_t interval = section_length / (sample_count - 1); // Recalculate real interval length of section.
+			Vector<Transform3D> frames;
+			frames.resize(sample_count);
 
-		Vector<Transform3D> frames;
-		frames.resize(sample_count);
+			real_t offset;
+			point == 0 ? offset = 0 : offset = c->get_baked_distance_at_point(point);
 
-		{
-			Transform3D *w = frames.ptrw();
+			// Get info at sample point
+			{
+				Transform3D *w = frames.ptrw();
+
+				for (int i = 0; i < sample_count; i++) {
+					w[i] = c->sample_baked_with_rotation(offset + (i * interval), true, true);
+				}
+			}
+			const Transform3D *r = frames.ptr();
+
+			Vector<Vector3> _collision_segments;
+			_collision_segments.resize((sample_count - 1) * 2);
+			Vector3 *_collisions_ptr = _collision_segments.ptrw();
+
+			Vector<Vector3> bones;
+			bones.resize(sample_count * 4);
+			Vector3 *bones_ptr = bones.ptrw();
+
+			Vector<Vector3> ribbon;
+			ribbon.resize(sample_count);
+			Vector3 *ribbon_ptr = ribbon.ptrw();
 
 			for (int i = 0; i < sample_count; i++) {
-				w[i] = c->sample_baked_with_rotation(i * interval, true, true);
-			}
-		}
+				const Vector3 p1 = r[i].origin;
+				const Vector3 side = r[i].basis.get_column(0);
+				const Vector3 up = r[i].basis.get_column(1);
+				const Vector3 forward = r[i].basis.get_column(2);
 
-		const Transform3D *r = frames.ptr();
+				// Collision segments.
+				if (i != sample_count - 1) {
+					const Vector3 p2 = r[i + 1].origin;
+					_collisions_ptr[(i * 2)] = p1;
+					_collisions_ptr[(i * 2) + 1] = p2;
+				}
 
-		Vector<Vector3> _collision_segments;
-		_collision_segments.resize((sample_count - 1) * 2);
-		Vector3 *_collisions_ptr = _collision_segments.ptrw();
+				// Path3D as a ribbon.
+				ribbon_ptr[i] = p1;
 
-		Vector<Vector3> bones;
-		bones.resize(sample_count * 4);
-		Vector3 *bones_ptr = bones.ptrw();
+				// Fish Bone.
+				const Vector3 p_left = p1 + (side + forward - up * 0.3) * 0.06;
+				const Vector3 p_right = p1 + (-side + forward - up * 0.3) * 0.06;
 
-		Vector<Vector3> ribbon;
-		ribbon.resize(sample_count);
-		Vector3 *ribbon_ptr = ribbon.ptrw();
+				const int bone_idx = i * 4;
 
-		for (int i = 0; i < sample_count; i++) {
-			const Vector3 p1 = r[i].origin;
-			const Vector3 side = r[i].basis.get_column(0);
-			const Vector3 up = r[i].basis.get_column(1);
-			const Vector3 forward = r[i].basis.get_column(2);
-
-			// Collision segments.
-			if (i != sample_count - 1) {
-				const Vector3 p2 = r[i + 1].origin;
-				_collisions_ptr[(i * 2)] = p1;
-				_collisions_ptr[(i * 2) + 1] = p2;
+				bones_ptr[bone_idx] = p1;
+				bones_ptr[bone_idx + 1] = p_left;
+				bones_ptr[bone_idx + 2] = p1;
+				bones_ptr[bone_idx + 3] = p_right;
 			}
 
-			// Path3D as a ribbon.
-			ribbon_ptr[i] = p1;
-
-			// Fish Bone.
-			const Vector3 p_left = p1 + (side + forward - up * 0.3) * 0.06;
-			const Vector3 p_right = p1 + (-side + forward - up * 0.3) * 0.06;
-
-			const int bone_idx = i * 4;
-
-			bones_ptr[bone_idx] = p1;
-			bones_ptr[bone_idx + 1] = p_left;
-			bones_ptr[bone_idx + 2] = p1;
-			bones_ptr[bone_idx + 3] = p_right;
+			add_collision_segments(_collision_segments);
+			add_lines(bones, path_material);
+			add_vertices(ribbon, path_material, Mesh::PRIMITIVE_LINE_STRIP);
 		}
-
-		add_collision_segments(_collision_segments);
-		add_lines(bones, path_material);
-		add_vertices(ribbon, path_material, Mesh::PRIMITIVE_LINE_STRIP);
 	}
 
 	// 2. Draw handles when selected.
