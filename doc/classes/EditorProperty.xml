@@ -45,7 +45,7 @@
 				If one or several properties have changed, this must be called. [param field] is used in case your editor can modify fields separately (as an example, Vector3.x). The [param changing] argument avoids the editor requesting this property to be refreshed (leave as [code]false[/code] if unsure).
 			</description>
 		</method>
-		<method name="get_edited_object">
+		<method name="get_edited_object" qualifiers="const">
 			<return type="Object" />
 			<description>
 				Returns the edited object.
