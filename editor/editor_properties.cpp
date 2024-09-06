@@ -2857,6 +2857,40 @@ void EditorPropertyNodePath::_node_assign() {
 	scene_tree->popup_scenetree_dialog(n, get_base_node());
 }
 
+void EditorPropertyNodePath::_select_node_in_scene_tree(const Ref<InputEvent> &p_ev) {
+	Ref<InputEventMouseButton> mb = p_ev;
+
+	if (!mb.is_valid() || !mb->is_pressed() || mb->get_button_index() != MouseButton::MIDDLE) {
+		return;
+	}
+
+	Node *target_node = _get_node_in_scene_tree();
+	if (!target_node) {
+		return;
+	}
+
+	bool isEditableFromRoot = true;
+
+	Node *owner = target_node->get_owner();
+	if (owner != nullptr && owner != target_node->get_tree()->get_edited_scene_root()) {
+		// Node is within a scene instance, so we check that it's editable
+		Node *pt = owner;
+		owner = owner->get_owner();
+		while (owner) {
+			if (!owner->is_editable_instance(pt)) {
+				isEditableFromRoot = false;
+				break;
+			}
+			pt = owner;
+			owner = pt->get_owner();
+		}
+	}
+
+	if (isEditableFromRoot) {
+		SceneTreeDock::get_singleton()->set_selection({ target_node });
+	}
+}
+
 void EditorPropertyNodePath::_assign_draw() {
 	if (dropping) {
 		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
@@ -2900,11 +2934,7 @@ void EditorPropertyNodePath::_menu_option(int p_idx) {
 		} break;
 
 		case ACTION_SELECT: {
-			const Node *edited_node = get_base_node();
-			ERR_FAIL_NULL(edited_node);
-
-			const NodePath &np = _get_node_path();
-			Node *target_node = edited_node->get_node_or_null(np);
+			Node *target_node = _get_node_in_scene_tree();
 			ERR_FAIL_NULL(target_node);
 
 			SceneTreeDock::get_singleton()->set_selected(target_node);
@@ -2941,6 +2971,21 @@ const NodePath EditorPropertyNodePath::_get_node_path() const {
 	} else {
 		return val;
 	}
+}
+
+Node *EditorPropertyNodePath::_get_node_in_scene_tree() const {
+	const Node *edited_node = get_base_node();
+	if (!edited_node) {
+		return nullptr;
+	}
+
+	const NodePath &np = _get_node_path();
+	Node *target_node = edited_node->get_node_or_null(np);
+	if (!target_node) {
+		return nullptr;
+	}
+
+	return target_node;
 }
 
 bool EditorPropertyNodePath::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
@@ -3057,7 +3102,7 @@ void EditorPropertyNodePath::_notification(int p_what) {
 	}
 }
 
-Node *EditorPropertyNodePath::get_base_node() {
+Node *EditorPropertyNodePath::get_base_node() const {
 	Node *base_node = Object::cast_to<Node>(get_edited_object());
 
 	if (!base_node) {
@@ -3096,6 +3141,7 @@ EditorPropertyNodePath::EditorPropertyNodePath() {
 	assign->set_expand_icon(true);
 	assign->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyNodePath::_node_assign));
 	assign->connect(SceneStringName(draw), callable_mp(this, &EditorPropertyNodePath::_assign_draw));
+	assign->connect(SceneStringName(gui_input), callable_mp(this, &EditorPropertyNodePath::_select_node_in_scene_tree));
 	SET_DRAG_FORWARDING_CD(assign, EditorPropertyNodePath);
 	hbc->add_child(assign);
 
