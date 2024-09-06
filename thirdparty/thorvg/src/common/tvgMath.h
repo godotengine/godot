@@ -26,7 +26,7 @@
  #define _USE_MATH_DEFINES
 
 #include <float.h>
-#include <math.h>
+#include <cmath>
 #include "tvgCommon.h"
 
 #define MATH_PI  3.14159265358979323846f
@@ -67,6 +67,13 @@ static inline bool mathEqual(float a, float b)
     return mathZero(a - b);
 }
 
+
+template <typename T>
+static inline void mathClamp(T& v, const T& min, const T& max)
+{
+    if (v < min) v = min;
+    else if (v > max) v = max;
+}
 
 /************************************************************************/
 /* Matrix functions                                                     */
