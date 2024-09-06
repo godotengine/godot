@@ -62,8 +62,15 @@ void TreeItem::Cell::draw_icon(const RID &p_where, const Point2 &p_pos, const Si
 
 	if (icon_region == Rect2i()) {
 		icon->draw_rect_region(p_where, Rect2(p_pos, dsize), Rect2(Point2(), icon->get_size()), p_color);
+		if (icon_overlay.is_valid()) {
+			Vector2 offset = icon->get_size() - icon_overlay->get_size();
+			icon_overlay->draw_rect_region(p_where, Rect2(p_pos + offset, dsize), Rect2(Point2(), icon_overlay->get_size()), p_color);
+		}
 	} else {
 		icon->draw_rect_region(p_where, Rect2(p_pos, dsize), icon_region, p_color);
+		if (icon_overlay.is_valid()) {
+			icon_overlay->draw_rect_region(p_where, Rect2(p_pos, dsize), icon_region, p_color);
+		}
 	}
 }
 
@@ -475,6 +482,24 @@ void TreeItem::set_icon(int p_column, const Ref<Texture2D> &p_icon) {
 Ref<Texture2D> TreeItem::get_icon(int p_column) const {
 	ERR_FAIL_INDEX_V(p_column, cells.size(), Ref<Texture2D>());
 	return cells[p_column].icon;
+}
+
+void TreeItem::set_icon_overlay(int p_column, const Ref<Texture2D> &p_icon_overlay) {
+	ERR_FAIL_INDEX(p_column, cells.size());
+
+	if (cells[p_column].icon_overlay == p_icon_overlay) {
+		return;
+	}
+
+	cells.write[p_column].icon_overlay = p_icon_overlay;
+	cells.write[p_column].cached_minimum_size_dirty = true;
+
+	_changed_notify(p_column);
+}
+
+Ref<Texture2D> TreeItem::get_icon_overlay(int p_column) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), Ref<Texture2D>());
+	return cells[p_column].icon_overlay;
 }
 
 void TreeItem::set_icon_region(int p_column, const Rect2 &p_icon_region) {
@@ -1632,6 +1657,9 @@ void TreeItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_icon", "column", "texture"), &TreeItem::set_icon);
 	ClassDB::bind_method(D_METHOD("get_icon", "column"), &TreeItem::get_icon);
+
+	ClassDB::bind_method(D_METHOD("set_icon_overlay", "column", "texture"), &TreeItem::set_icon_overlay);
+	ClassDB::bind_method(D_METHOD("get_icon_overlay", "column"), &TreeItem::get_icon_overlay);
 
 	ClassDB::bind_method(D_METHOD("set_icon_region", "column", "region"), &TreeItem::set_icon_region);
 	ClassDB::bind_method(D_METHOD("get_icon_region", "column"), &TreeItem::get_icon_region);

@@ -397,12 +397,18 @@ Error DirAccessUnix::rename(String p_path, String p_new_path) {
 	}
 
 	p_path = fix_path(p_path);
+	if (p_path.ends_with("/")) {
+		p_path = p_path.left(-1);
+	}
 
 	if (p_new_path.is_relative_path()) {
 		p_new_path = get_current_dir().path_join(p_new_path);
 	}
 
 	p_new_path = fix_path(p_new_path);
+	if (p_new_path.ends_with("/")) {
+		p_new_path = p_new_path.left(-1);
+	}
 
 	return ::rename(p_path.utf8().get_data(), p_new_path.utf8().get_data()) == 0 ? OK : FAILED;
 }
@@ -413,6 +419,9 @@ Error DirAccessUnix::remove(String p_path) {
 	}
 
 	p_path = fix_path(p_path);
+	if (p_path.ends_with("/")) {
+		p_path = p_path.left(-1);
+	}
 
 	struct stat flags = {};
 	if ((stat(p_path.utf8().get_data(), &flags) != 0)) {
@@ -432,6 +441,9 @@ bool DirAccessUnix::is_link(String p_file) {
 	}
 
 	p_file = fix_path(p_file);
+	if (p_file.ends_with("/")) {
+		p_file = p_file.left(-1);
+	}
 
 	struct stat flags = {};
 	if ((lstat(p_file.utf8().get_data(), &flags) != 0)) {
@@ -447,6 +459,9 @@ String DirAccessUnix::read_link(String p_file) {
 	}
 
 	p_file = fix_path(p_file);
+	if (p_file.ends_with("/")) {
+		p_file = p_file.left(-1);
+	}
 
 	char buf[256];
 	memset(buf, 0, 256);
