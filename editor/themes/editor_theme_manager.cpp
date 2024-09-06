@@ -1507,7 +1507,9 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		p_theme->set_constant("buttons_vertical_separation", "SpinBox", 0);
 		p_theme->set_constant("field_and_buttons_separation", "SpinBox", 2);
 		p_theme->set_constant("buttons_width", "SpinBox", 16);
+#ifndef DISABLE_DEPRECATED
 		p_theme->set_constant("set_min_buttons_width_from_icons", "SpinBox", 1);
+#endif
 	}
 
 	// ProgressBar.
