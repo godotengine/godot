@@ -2247,8 +2247,7 @@ void SceneTreeDock::_node_reparent(NodePath p_path, bool p_keep_global_xform) {
 }
 
 void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, Vector<Node *> p_nodes, bool p_keep_global_xform) {
-	Node *new_parent = p_new_parent;
-	ERR_FAIL_NULL(new_parent);
+	ERR_FAIL_NULL(p_new_parent);
 
 	if (p_nodes.size() == 0) {
 		return; // Nothing to reparent.
@@ -2288,7 +2287,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 	// Prevent selecting the hovered node and keep the reparented node(s) selected instead.
 	hovered_but_reparenting = true;
 
-	Node *validate = new_parent;
+	Node *validate = p_new_parent;
 	while (validate) {
 		ERR_FAIL_COND_MSG(p_nodes.has(validate), "Selection changed at some point. Can't reparent.");
 		validate = validate->get_parent();
@@ -2310,7 +2309,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 		// No undo implemented for this yet.
 		Node *node = p_nodes[ni];
 
-		fill_path_renames(node, new_parent, &path_renames);
+		fill_path_renames(node, p_new_parent, &path_renames);
 		former_names.push_back(node->get_name());
 
 		List<Node *> owned;
@@ -2320,7 +2319,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 			owners.push_back(E);
 		}
 
-		bool same_parent = new_parent == node->get_parent();
+		bool same_parent = p_new_parent == node->get_parent();
 		if (same_parent && node->get_index(false) < p_position_in_parent + ni) {
 			inc--; // If the child will generate a gap when moved, adjust.
 		}
@@ -2331,17 +2330,17 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 			need_edit = select_node_hovered_at_end_of_drag;
 		} else {
 			undo_redo->add_do_method(node->get_parent(), "remove_child", node);
-			undo_redo->add_do_method(new_parent, "add_child", node, true);
+			undo_redo->add_do_method(p_new_parent, "add_child", node, true);
 		}
 
 		int new_position_in_parent = p_position_in_parent == -1 ? -1 : p_position_in_parent + inc;
 		if (new_position_in_parent >= 0 || same_parent) {
-			undo_redo->add_do_method(new_parent, "move_child", node, new_position_in_parent);
+			undo_redo->add_do_method(p_new_parent, "move_child", node, new_position_in_parent);
 		}
 
 		EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
 		String old_name = former_names[ni];
-		String new_name = new_parent->validate_child_name(node);
+		String new_name = p_new_parent->validate_child_name(node);
 
 		// Name was modified, fix the path renames.
 		if (old_name.casecmp_to(new_name) != 0) {
@@ -2366,8 +2365,12 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 			}
 		}
 
-		undo_redo->add_do_method(ed, "live_debug_reparent_node", edited_scene->get_path_to(node), edited_scene->get_path_to(new_parent), new_name, new_position_in_parent);
-		undo_redo->add_undo_method(ed, "live_debug_reparent_node", NodePath(String(edited_scene->get_path_to(new_parent)).path_join(new_name)), edited_scene->get_path_to(node->get_parent()), node->get_name(), node->get_index(false));
+		// FIXME: Live editing for "Reparent to New Node" option is broken.
+		// We must get the path to `p_new_parent` *after* it was added to the scene.
+		if (p_new_parent->is_inside_tree()) {
+			undo_redo->add_do_method(ed, "live_debug_reparent_node", edited_scene->get_path_to(node), edited_scene->get_path_to(p_new_parent), new_name, new_position_in_parent);
+			undo_redo->add_undo_method(ed, "live_debug_reparent_node", NodePath(String(edited_scene->get_path_to(p_new_parent)).path_join(new_name)), edited_scene->get_path_to(node->get_parent()), node->get_name(), node->get_index(false));
+		}
 
 		if (p_keep_global_xform) {
 			if (Object::cast_to<Node2D>(node)) {
@@ -2387,7 +2390,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 			undo_redo->add_do_method(AnimationPlayerEditor::get_singleton()->get_track_editor(), "set_root", node);
 		}
 
-		undo_redo->add_undo_method(new_parent, "remove_child", node);
+		undo_redo->add_undo_method(p_new_parent, "remove_child", node);
 		undo_redo->add_undo_method(node, "set_name", former_names[ni]);
 
 		inc++;
@@ -2405,7 +2408,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 		}
 
 		int child_pos = node->get_index(false);
-		bool reparented_to_container = Object::cast_to<Container>(new_parent) && Object::cast_to<Control>(node);
+		bool reparented_to_container = Object::cast_to<Container>(p_new_parent) && Object::cast_to<Control>(node);
 
 		undo_redo->add_undo_method(node->get_parent(), "add_child", node, true);
 		undo_redo->add_undo_method(node->get_parent(), "move_child", node, child_pos);
@@ -2785,10 +2788,10 @@ void SceneTreeDock::_selection_changed() {
 	_update_script_button();
 }
 
-void SceneTreeDock::_do_create(Node *p_parent) {
+Node *SceneTreeDock::_do_create(Node *p_parent) {
 	Variant c = create_dialog->instantiate_selected();
 	Node *child = Object::cast_to<Node>(c);
-	ERR_FAIL_NULL(child);
+	ERR_FAIL_NULL_V(child, nullptr);
 
 	String new_name = p_parent->validate_child_name(child);
 	if (GLOBAL_GET("editor/naming/node_name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
@@ -2802,8 +2805,6 @@ void SceneTreeDock::_do_create(Node *p_parent) {
 	if (edited_scene) {
 		undo_redo->add_do_method(p_parent, "add_child", child, true);
 		undo_redo->add_do_method(child, "set_owner", edited_scene);
-		undo_redo->add_do_method(editor_selection, "clear");
-		undo_redo->add_do_method(editor_selection, "add_node", child);
 		undo_redo->add_do_reference(child);
 		undo_redo->add_undo_method(p_parent, "remove_child", child);
 
@@ -2818,28 +2819,34 @@ void SceneTreeDock::_do_create(Node *p_parent) {
 		undo_redo->add_undo_method(EditorNode::get_singleton(), "set_edited_scene", (Object *)nullptr);
 	}
 
+	undo_redo->add_do_method(this, "_post_do_create", child);
 	undo_redo->commit_action();
-	_push_item(c);
-	editor_selection->clear();
-	editor_selection->add_node(child);
-	if (Object::cast_to<Control>(c)) {
-		//make editor more comfortable, so some controls don't appear super shrunk
-		Control *ct = Object::cast_to<Control>(c);
 
-		Size2 ms = ct->get_minimum_size();
+	return child;
+}
+
+void SceneTreeDock::_post_do_create(Node *p_child) {
+	editor_selection->clear();
+	editor_selection->add_node(p_child);
+	_push_item(p_child);
+
+	// Make editor more comfortable, so some controls don't appear super shrunk.
+	Control *control = Object::cast_to<Control>(p_child);
+	if (control) {
+		Size2 ms = control->get_minimum_size();
 		if (ms.width < 4) {
 			ms.width = 40;
 		}
 		if (ms.height < 4) {
 			ms.height = 40;
 		}
-		if (ct->is_layout_rtl()) {
-			ct->set_position(ct->get_position() - Vector2(ms.x, 0));
+		if (control->is_layout_rtl()) {
+			control->set_position(control->get_position() - Vector2(ms.x, 0));
 		}
-		ct->set_size(ms);
+		control->set_size(ms);
 	}
 
-	emit_signal(SNAME("node_created"), c);
+	emit_signal(SNAME("node_created"), p_child);
 }
 
 void SceneTreeDock::_create() {
@@ -2922,21 +2929,23 @@ void SceneTreeDock::_create() {
 		}
 
 		Node *parent = nullptr;
+		int original_position = -1;
 		if (only_one_top_node) {
 			parent = top_node->get_parent();
+			original_position = top_node->get_index();
 		} else {
 			parent = top_node->get_parent()->get_parent();
 		}
 
-		_do_create(parent);
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action_for_history(TTR("Reparent to New Node"), editor_data->get_current_edited_scene_history_id());
+
+		Node *last_created = _do_create(parent);
 
 		Vector<Node *> nodes;
 		for (Node *E : selection) {
 			nodes.push_back(E);
 		}
-
-		// This works because editor_selection was cleared and populated with last created node in _do_create()
-		Node *last_created = editor_selection->get_selected_node_list().front()->get();
 
 		if (center_parent) {
 			// Find parent type and only average positions of relevant nodes.
@@ -2976,6 +2985,11 @@ void SceneTreeDock::_create() {
 		}
 
 		_do_reparent(last_created, -1, nodes, true);
+
+		if (only_one_top_node) {
+			undo_redo->add_do_method(parent, "move_child", last_created, original_position);
+		}
+		undo_redo->commit_action();
 	}
 
 	scene_tree->get_scene_tree()->grab_focus();
@@ -4390,6 +4404,7 @@ void SceneTreeDock::_edit_subresource(int p_idx, const PopupMenu *p_from_menu) {
 }
 
 void SceneTreeDock::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_post_do_create"), &SceneTreeDock::_post_do_create);
 	ClassDB::bind_method(D_METHOD("_set_owners"), &SceneTreeDock::_set_owners);
 	ClassDB::bind_method(D_METHOD("_reparent_nodes_to_root"), &SceneTreeDock::_reparent_nodes_to_root);
 	ClassDB::bind_method(D_METHOD("_reparent_nodes_to_paths_with_transform_and_name"), &SceneTreeDock::_reparent_nodes_to_paths_with_transform_and_name);
