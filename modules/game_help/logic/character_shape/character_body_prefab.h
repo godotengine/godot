@@ -14,17 +14,17 @@ class CharacterBodyPrefab : public Resource
         ClassDB::bind_method(D_METHOD("set_skeleton_path","p_skeleton_path"), &CharacterBodyPrefab::set_skeleton_path);
         ClassDB::bind_method(D_METHOD("get_skeleton_path"), &CharacterBodyPrefab::get_skeleton_path);
 
-        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "parts", PROPERTY_HINT_ARRAY_TYPE,"String"), "set_parts", "get_parts");
+        ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "parts", PROPERTY_HINT_ARRAY_TYPE,"String"), "set_parts", "get_parts");
         ADD_PROPERTY(PropertyInfo(Variant::STRING, "skeleton_path", PROPERTY_HINT_FILE, "*.tscn,*.scn"), "set_skeleton_path", "get_skeleton_path");
     }
 
 public:
-    void set_parts(TypedArray<String> p_parts)
+    void set_parts(Dictionary p_parts)
     {
         parts = p_parts;
         emit_changed();
     }
-    TypedArray<String> get_parts()
+    Dictionary get_parts()
     {
         return parts;
     }
@@ -52,7 +52,7 @@ public:
         return rs;
     }
 
-    TypedArray<String> parts;
+    Dictionary parts;
     String skeleton_path;
 };
 

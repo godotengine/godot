@@ -1631,7 +1631,12 @@ namespace AnimationToolConst
 		return default_gameobject_component_path(unipath, unicomp);
 
 	}
-		
+	struct AnimationTrack
+	{
+		LocalVector<Pair<float, Quaternion>> rottation;
+		LocalVector<Pair<float, Vector3>> scale;
+		LocalVector<Pair<float, Vector3>> postion;
+	};
 		
 
 	static void create_animation_clip_at_node(Dictionary anima_dict, int mirror, Ref<Animation> anim) {
@@ -1666,7 +1671,7 @@ namespace AnimationToolConst
 
 		Dictionary resolved_to_default;
 		float max_ts = 0.0;
-		TypedArray<Array> humanoid_track_sets;
+		LocalVector<Array> humanoid_track_sets;
 		bool has_humanoid = false;
 		for(int i = 0;i < BoneCount() + 1;i++)
 		{
@@ -1674,18 +1679,18 @@ namespace AnimationToolConst
 			{
 				Array t;
 				t.append(0); t.append(0); t.append(0); t.append(0);
-				humanoid_track_sets.append(t);
+				humanoid_track_sets.push_back(t);
 			}
 			else
 			{
 				Array t;
 				t.append(0); t.append(0); t.append(0);
-				humanoid_track_sets.append(t);
+				humanoid_track_sets.push_back(t);
 			}
 
 		}
 		Array FloatCurves = anima_dict["m_FloatCurves"];
-		for (Dictionary track : FloatCurves)
+		if(false)for (Dictionary track : FloatCurves)
 		{
 			String attr = track["attribute"];
 			String path = "";
@@ -1734,7 +1739,7 @@ namespace AnimationToolConst
 				else if (attr.begins_with("RootQ."))
 				{
 					// hips rotation
-					Array t = humanoid_track_sets[0];
+					Array& t = humanoid_track_sets[0];
 					t[special_humanoid_transforms[attr]] = track_curve_dict;
 				}
 				has_humanoid = true;
@@ -1744,7 +1749,7 @@ namespace AnimationToolConst
 			{
 				// Humanoid muscle parameters
 				Vector2i bone_idx_axis = muscle_index_to_bone_and_axis[muscle_name_to_index[TraitMapping.get(attr, attr)]];
-				Array t = humanoid_track_sets[0];
+				Array& t = humanoid_track_sets[0];
 				t[bone_idx_axis.y] = track_curve_dict;
 				has_humanoid = true;
 
@@ -2142,12 +2147,15 @@ namespace AnimationToolConst
 				{
 					//log_debug("Spine " + str(ts) + " value " + str(value) + " -> " + str(Vector3(-1, 1, 1) * value))
 				}
-				anim->position_track_insert_key(postrack, ts, Vector3(-1, 1, 1) * value);
+				value.z = -value.z;
+				anim->position_track_insert_key(postrack, ts, value);
 			}
 
 		}
 
 		Basis flip_x_basis = Basis(-1, 0, 0, 0, 1, 0, 0, 0, 1);
+		Basis flip_y_basis = Basis(1, 0, 0, 0, -1, 0, 0, 0, 1);
+		Basis flip_z_basis = Basis(1, 0, 0, 0, 1, 0, 0, 0, -1);
 		// 处理常规旋转动画
 		Array curves_rot_euler = anima_dict.get("m_EulerCurves", Array());
 		for ( Dictionary track : curves_rot_euler)
@@ -2214,7 +2222,9 @@ namespace AnimationToolConst
 				}
 				// This is more complicated than this...
 				// The keys need to be baked out and sampled using this mode.
-				anim->rotation_track_insert_key(rottrack, ts, Basis::from_euler(value * PI / 180.0, godot_euler_mode));
+				Quaternion q = Basis::from_euler(value * PI / 180.0, godot_euler_mode);
+				q.z = -q.z;
+				anim->rotation_track_insert_key(rottrack, ts, q);
 
 			}
 		}
@@ -2250,6 +2260,7 @@ namespace AnimationToolConst
 			while(! key_iter.is_eof)
 			{
 				Quaternion value = dict_to_quaternion(key_iter.next());
+				value.z = -value.z;
 				float ts = key_iter.timestamp;
 				anim->rotation_track_insert_key(rottrack, ts, value);
 			}

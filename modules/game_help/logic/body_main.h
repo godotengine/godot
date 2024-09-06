@@ -378,6 +378,27 @@ public:
     }
 	static Ref<CharacterBodyPrefab> build_prefab(const String& mesh_path);
     DECL_MEMBER_BUTTON(editor_build_form_mesh_file_path);
+
+    // 生成动画资产帮助类
+    void set_editor_ref_bone_map(Ref<CharacterBoneMap> p_bone_map) {
+        editor_ref_bone_map = p_bone_map;
+    }
+
+    Ref<CharacterBoneMap> get_editor_ref_bone_map() {
+        return editor_ref_bone_map;
+    }
+    void set_editor_build_animation_form_file_path(const String& p_file_path)
+    {
+		editor_animation_file_path = p_file_path;
+    }
+
+    String get_editor_build_animation_form_file_path()
+    {
+        return editor_animation_file_path;
+    }
+    Ref<CharacterBoneMap> editor_ref_bone_map;
+    String editor_animation_file_path;
+    DECL_MEMBER_BUTTON(editor_build_animation_form_file_path);
     static ObjectID& get_curr_editor_player();
     // 获取当前编辑的角色
     static CharacterBodyMain* get_current_editor_player()

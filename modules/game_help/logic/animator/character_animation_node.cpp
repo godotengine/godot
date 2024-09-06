@@ -6,27 +6,6 @@
 #include "../../unity/unity_animation_import.h"
 
 
-void UnityAnimation::load_form_unity_asset()
-{
-	Error err;
-	Ref<FileAccess> f = FileAccess::open(unity_asset_path, FileAccess::READ, &err);
-	if(f.is_null())
-	{
-		return ;
-	}
-	clear();
-	String yaml_anim = f->get_as_text();
-
-	Ref<JSON> json = DataTableManager::get_singleton()->parse_yaml(yaml_anim);
-
-	Dictionary dict = json->get_data();
-	Callable on_load_animation =  DataTableManager::get_singleton()->get_animation_load_cb();
-	Dictionary clip = dict["AnimationClip"];
-	on_load_animation.call(clip,false,this);
-    Ref<UnityAnimation> anim = this;
-	UnityAnimationImport::ImportAnimation(clip,false,anim);
-	optimize();
-}
 void CharacterAnimationItem::bind_methods()
 {
     ClassDB::bind_method(D_METHOD("set_animation_name", "animation_name"), &CharacterAnimationItem::set_animation_name);

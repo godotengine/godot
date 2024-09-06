@@ -255,7 +255,7 @@ Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path
 		part->set_name(it->key);
 		String save_path;
 		save_fbx_res("meshs", p_group, part, save_path, true);
-		body_prefab->parts.push_back(save_path);
+		body_prefab->parts[save_path] = true;
 	}
 	// 保存预制体
 	body_prefab->skeleton_path = ske_save_path;
@@ -271,6 +271,95 @@ void CharacterBodyMain::editor_build_form_mesh_file_path()
     // 设置预制体
     set_body_prefab(prefab);
     
+}
+
+void CharacterBodyMain::editor_build_animation_form_file_path()
+{
+    if(editor_ref_bone_map.is_null()) {
+        return;
+    }
+    if(!FileAccess::exists(editor_animation_file_path))
+    {
+		print_line(L"CharacterBodyMain: 路径不存在 :" + editor_animation_file_path);
+        return;
+    }
+	Ref<PackedScene> scene = ResourceLoader::load(editor_animation_file_path);
+	if (scene.is_null())
+	{
+		print_line(L"CharacterBodyMain: 路径不存在 :" + editor_animation_file_path);
+        return;
+	}
+	Node* p_node = scene->instantiate(PackedScene::GEN_EDIT_STATE_DISABLED);
+
+	Node* node = p_node->find_child("AnimationPlayer");
+    if(node == nullptr)
+    {
+        print_line(L"CharacterBodyMain: 路径不存在动画信息:" + editor_animation_file_path);
+        return;
+    }
+
+    AnimationPlayer* player = Object::cast_to<AnimationPlayer>(node);
+    if(player == nullptr)
+    {
+        print_line(L"CharacterBodyMain: 路径不存在动画信息:" + editor_animation_file_path);
+        return;
+    }
+    List<StringName> p_animations;
+    player->get_animation_list(&p_animations);
+    for (const StringName &E : p_animations) {
+        Ref<Animation> animation = player->get_animation(E);
+        if(animation.is_valid())
+        {
+            // 保存动画
+            Ref<CharacterAnimation> character_animation;
+            character_animation.instantiate();
+            character_animation->set_bone_map(editor_ref_bone_map);
+
+            List<PropertyInfo> plist;
+            animation->get_property_list(&plist);
+
+            Ref<RefCounted> r = static_cast<RefCounted *>(ClassDB::instantiate(get_class()));
+            ERR_FAIL_COND(r.is_null());
+
+            for (const PropertyInfo &E : plist) {
+                if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
+                    continue;
+                }
+                Variant p = get(E.name);
+
+                switch (p.get_type()) {
+                    case Variant::Type::DICTIONARY:
+                    case Variant::Type::ARRAY:
+                    case Variant::Type::PACKED_BYTE_ARRAY:
+                    case Variant::Type::PACKED_COLOR_ARRAY:
+                    case Variant::Type::PACKED_INT32_ARRAY:
+                    case Variant::Type::PACKED_INT64_ARRAY:
+                    case Variant::Type::PACKED_FLOAT32_ARRAY:
+                    case Variant::Type::PACKED_FLOAT64_ARRAY:
+                    case Variant::Type::PACKED_STRING_ARRAY:
+                    case Variant::Type::PACKED_VECTOR2_ARRAY:
+                    case Variant::Type::PACKED_VECTOR3_ARRAY:
+                    case Variant::Type::PACKED_VECTOR4_ARRAY: {
+                       character_animation->set(E.name, p.duplicate(true));
+                    } break;
+
+                    case Variant::Type::OBJECT: {
+                        character_animation->set(E.name, p);
+                    } break;
+
+                    default: {
+                        character_animation->set(E.name, p);
+                    }
+                }
+            }
+            character_animation->set_name(E);
+        
+            
+            String save_path;
+            save_fbx_res("animation", editor_ref_bone_map->get_name(), character_animation, save_path, true);
+            
+        }
+    }
 }
 
 void CharacterBodyMain::init_ai_context()

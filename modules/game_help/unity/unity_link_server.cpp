@@ -330,7 +330,7 @@ static void process_fbx_mesh(const String &p_path,const String & p_group, Node *
 		String save_path = p_path + "_" + it->key + ".tres";
 		String temp;
 		save_fbx_res("mesh", p_group,part,temp,false);
-		prefab->parts.push_back(save_path);
+		prefab->parts[save_path] = true;
 		print_line("UnityLinkServer: save mesh node :" + save_path);	
 	}
 	prefab->skeleton_path = ske_save_path;
@@ -347,7 +347,7 @@ static void create_fbx_prefab(const String &p_path,const String& name, const Loc
 	Ref<CharacterBodyPrefab> prefab;
 	prefab->set_name("prefab_" + name);
 	for(int i=0; i<p_paths.size(); i++) {
-		prefab->parts.push_back(p_paths[i]);
+		prefab->parts[p_paths[i]] = true;
 	}
 	prefab->skeleton_path = p_skeleton_path;
 	String temp;
@@ -519,7 +519,7 @@ static bool poll_client(StreamPeerConstBuffer& msg_buffer) {
 				ERR_FAIL_V_MSG(false, "UnityLinkServer: create animation node error " + itos(ERR_OUT_OF_MEMORY) + " " + name);
 			}
 			String save_path = mesh_path + "_" + mesh_name + ".tres";
-			prefab->parts.push_back(mesh_path + "/" + mesh_name);
+			prefab->parts[mesh_path + "/" + mesh_name] = true;
 		}
 		String bone_map_save_path;
 		save_fbx_res("prefab",group,prefab,bone_map_save_path,true);

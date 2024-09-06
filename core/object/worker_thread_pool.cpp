@@ -773,24 +773,22 @@ void TaskJobHandle::set_task_completed(int count)
 void TaskJobHandle::set_completed()
 {
 	completed.set();
-	std::lock_guard<std::mutex> lock(done_mutex);
 	// 通知等待的线程
 	cv.notify_all();
 }
 bool TaskJobHandle::is_completed()  {	
-	
-	if(!is_job)
+	if(dependJob.size() > 0)
 	{
-		auto it = dependJob.begin();
-		while(it)
+		depend_mutex.lock();
+		for(int i = 0; i < dependJob.size(); ++i)
 		{
-			if(!(*it)->is_completed())
+			if(!dependJob[i]->is_completed())
 			{
 				return false;
 			}
-			++it;
 		}
-
+		dependJob.clear();
+		depend_mutex.unlock();
 	}
 	return completed.is_set();
 }
@@ -799,15 +797,16 @@ bool TaskJobHandle::is_completed()  {
 void TaskJobHandle::wait_depend_completion()
 {
 
-	depend_mutex.lock();
-	auto it = dependJob.begin();
-	while(it)
+	if(dependJob.size() > 0)
 	{
-		(*it)->wait_completion();
-		++it;
+		depend_mutex.lock();
+		for(int i = 0; i < dependJob.size(); ++i)
+		{
+			dependJob[i]->wait_completion();
+		}
+		// 都结束了，就把完成的句柄清除
+		dependJob.clear();
 	}
-	// 都结束了，就把完成的句柄清除
-	dependJob.clear();
 	depend_mutex.unlock();
 
 }
@@ -1066,6 +1065,7 @@ Ref<TaskJobHandle> WorkerTaskPool::combined_job_handle(TypedArray<TaskJobHandle>
 	}
 	Ref<TaskJobHandle> hand = Ref<TaskJobHandle>(memnew(TaskJobHandle));
 	hand->init();
+	hand->dependJob.resize(_handles.size());
 	for(int i = 0; i < _handles.size(); ++i)
 	{
 		if(_handles[i] != nullptr)
@@ -1077,7 +1077,7 @@ Ref<TaskJobHandle> WorkerTaskPool::combined_job_handle(TypedArray<TaskJobHandle>
 				//PRINT_STACK_TRACE(err_str);
 				continue;
 			}
-			hand->dependJob.push_back(job);
+			hand->dependJob[i] = job;
 		}
 	}
 	return hand;

@@ -106,6 +106,7 @@ class CharacterBodyPart : public Resource
     Ref<Skin>    skin;
     Ref<Mesh>    mesh;
     Ref<Material> material;
+    bool        enable;
 
 
 public:

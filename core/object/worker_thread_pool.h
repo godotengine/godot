@@ -284,7 +284,7 @@ class TaskJobHandle : public RefCounted
  protected:
 	Mutex depend_mutex;
 	// 依赖的句柄
-	List<Ref<TaskJobHandle>> dependJob;
+	LocalVector<Ref<TaskJobHandle>> dependJob;
 	// 完成标志
 	mutable THREADING_NAMESPACE::mutex done_mutex;
 	std::condition_variable cv;
