@@ -283,8 +283,10 @@ String GDScriptDocGen::_docvalue_from_variant(const Variant &p_variant, int p_re
 
 			return result;
 		} break;
-		default:
-			return p_variant.get_construct_string();
+		default: {
+			const int digits = 6; // Reduced precision is better for documentation, avoids unnecessary decimals.
+			return p_variant.get_construct_string(digits);
+		} break;
 	}
 }
 
