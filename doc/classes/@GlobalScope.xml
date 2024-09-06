@@ -621,13 +621,13 @@
 			<param index="1" name="to" type="Variant" />
 			<param index="2" name="weight" type="Variant" />
 			<description>
-				Linearly interpolates between two values by the factor defined in [param weight]. To perform interpolation, [param weight] should be between [code]0.0[/code] and [code]1.0[/code] (inclusive). However, values outside this range are allowed and can be used to perform [i]extrapolation[/i]. If this is not desired, use [method clamp] on the result of this function.
-				Both [param from] and [param to] must be the same type. Supported types: [int], [float], [Vector2], [Vector3], [Vector4], [Color], [Quaternion], [Basis].
+				Linearly interpolates between two values by the factor defined in [param weight]. To perform interpolation, [param weight] should be between [code]0.0[/code] and [code]1.0[/code] (inclusive). However, values outside this range are allowed and can be used to perform [i]extrapolation[/i]. If this is not desired, use [method clampf] to limit [param weight].
+				Both [param from] and [param to] must be the same type. Supported types: [int], [float], [Vector2], [Vector3], [Vector4], [Color], [Quaternion], [Basis], [Transform2D], [Transform3D].
 				[codeblock]
 				lerp(0, 4, 0.75) # Returns 3.0
 				[/codeblock]
 				See also [method inverse_lerp] which performs the reverse of this operation. To perform eased interpolation with [method lerp], combine it with [method ease] or [method smoothstep]. See also [method remap] to map a continuous series of values to another.
-				[b]Note:[/b] For better type safety, use [method lerpf], [method Vector2.lerp], [method Vector3.lerp], [method Vector4.lerp], [method Color.lerp], [method Quaternion.slerp] or [method Basis.slerp].
+				[b]Note:[/b] For better type safety, use [method lerpf], [method Vector2.lerp], [method Vector3.lerp], [method Vector4.lerp], [method Color.lerp], [method Quaternion.slerp], [method Basis.slerp], [method Transform2D.interpolate_with], or [method Transform3D.interpolate_with].
 			</description>
 		</method>
 		<method name="lerp_angle" keywords="interpolate">
