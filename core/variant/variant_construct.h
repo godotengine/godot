@@ -400,6 +400,84 @@ public:
 	}
 };
 
+class VariantConstructorDictionaryDuplicate {
+public:
+	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
+		if (p_args[0]->get_type() != Variant::ARRAY) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 0;
+			r_error.expected = Variant::DICTIONARY;
+			return;
+		}
+
+		const Dictionary &src_dict = *VariantGetInternalPtr<Dictionary>::get_ptr(p_args[0]);
+		r_ret = src_dict.duplicate();
+	}
+
+	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {
+		const Dictionary &src_dict = *VariantGetInternalPtr<Dictionary>::get_ptr(p_args[0]);
+		*r_ret = src_dict.duplicate();
+	}
+
+	static void ptr_construct(void *base, const void **p_args) {
+		const Dictionary &src_dict = PtrToArg<Dictionary>::convert(p_args[0]);
+		Dictionary dst_dict = src_dict.duplicate();
+
+		PtrConstruct<Dictionary>::construct(dst_dict, base);
+	}
+
+	static int get_argument_count() {
+		return 1;
+	}
+
+	static Variant::Type get_argument_type(int p_arg) {
+		return Variant::DICTIONARY;
+	}
+
+	static Variant::Type get_base_type() {
+		return Variant::DICTIONARY;
+	}
+};
+
+class VariantConstructorArrayDuplicate {
+public:
+	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
+		if (p_args[0]->get_type() != Variant::ARRAY) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 0;
+			r_error.expected = Variant::ARRAY;
+			return;
+		}
+
+		const Array &src_arr = *VariantGetInternalPtr<Array>::get_ptr(p_args[0]);
+		r_ret = src_arr.duplicate();
+	}
+
+	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {
+		const Array &src_arr = *VariantGetInternalPtr<Array>::get_ptr(p_args[0]);
+		*r_ret = src_arr.duplicate();
+	}
+
+	static void ptr_construct(void *base, const void **p_args) {
+		const Array &src_arr = PtrToArg<Array>::convert(p_args[0]);
+		Array dst_arr = src_arr.duplicate();
+
+		PtrConstruct<Array>::construct(dst_arr, base);
+	}
+
+	static int get_argument_count() {
+		return 1;
+	}
+
+	static Variant::Type get_argument_type(int p_arg) {
+		return Variant::ARRAY;
+	}
+
+	static Variant::Type get_base_type() {
+		return Variant::ARRAY;
+	}
+};
+
 class VariantConstructorTypedArray {
 public:
 	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
