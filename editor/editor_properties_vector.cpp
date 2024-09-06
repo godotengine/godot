@@ -206,7 +206,6 @@ EditorPropertyVectorN::EditorPropertyVectorN(Variant::Type p_type, bool p_force_
 	} else if (horizontal) {
 		bc = memnew(HBoxContainer);
 		hb->add_child(bc);
-		set_bottom_editor(hb);
 	} else {
 		bc = memnew(VBoxContainer);
 		hb->add_child(bc);
