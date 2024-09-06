@@ -141,7 +141,7 @@ public:
     void _blend_anmation(CharacterAnimatorLayer *p_layer,int child_count,struct CharacterAnimationInstance *p_playback_info,float total_weight,const LocalVector<float> &weight_array,const Ref<Blackboard> &p_blackboard);
     // 统一动画长度
     void _normal_animation_length();
-    float _get_animation_length();
+    virtual float _get_animation_length();
     void _set_animation_scale_by_length(float p_length);
 
     void set_animation_arrays(TypedArray<CharacterAnimationItem> p_animation_arrays) { 
@@ -233,6 +233,20 @@ public:
 public:
     Blend1dDataConstant   blend_data;
 };
+// 顺序播放前面节点,循环播放后面节点
+class CharacterAnimatorLoopLast : public CharacterAnimatorNode1D
+{
+    GDCLASS(CharacterAnimatorLoopLast, CharacterAnimatorNode1D);
+    static void bind_methods()
+    {
+
+    }
+public:
+    virtual void process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,const Ref<Blackboard> &p_blackboard) override;
+    virtual float _get_animation_length();
+
+};
+
 class CharacterAnimatorNode2D : public CharacterAnimatorNodeBase
 {
     GDCLASS(CharacterAnimatorNode2D, CharacterAnimatorNodeBase);
@@ -295,6 +309,7 @@ struct CharacterAnimationInstance
 	double delta = 0.0f;
 	float time = 0.0f;
 	float fadeTotalTime = 0.0f;
+    int play_index = 0;
 	float get_weight()
 	{
 		if (m_PlayState == PlayState::PS_FadeOut)

@@ -66,11 +66,23 @@ void CharacterBodyMain::_bind_methods()
     ClassDB::bind_method(D_METHOD("set_editor_form_mesh_file_path", "editor_form_mesh_file_path"), &CharacterBodyMain::set_editor_form_mesh_file_path);
     ClassDB::bind_method(D_METHOD("get_editor_form_mesh_file_path"), &CharacterBodyMain::get_editor_form_mesh_file_path);
 
+    ClassDB::bind_method(D_METHOD("set_editor_ref_bone_map", "editor_ref_bone_map"), &CharacterBodyMain::set_editor_ref_bone_map);
+    ClassDB::bind_method(D_METHOD("get_editor_ref_bone_map"), &CharacterBodyMain::get_editor_ref_bone_map);
+
+    ClassDB::bind_method(D_METHOD("set_editor_build_animation_form_file_path", "editor_build_animation_form_file_path"), &CharacterBodyMain::set_editor_build_animation_form_file_path);
+    ClassDB::bind_method(D_METHOD("get_editor_build_animation_form_file_path"), &CharacterBodyMain::get_editor_build_animation_form_file_path);
+
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan", PROPERTY_USAGE_DEFAULT ), "set_blackboard_plan", "get_blackboard_plan");
     ADD_GROUP("editor", "editor_");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_form_mesh_file_path"), "set_editor_form_mesh_file_path", "get_editor_form_mesh_file_path");
     ADD_MEMBER_BUTTON(editor_build_form_mesh_file_path,L"根据模型初始化",CharacterBodyMain);
+
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_ref_bone_map"), "set_editor_ref_bone_map", "get_editor_ref_bone_map");
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_build_animation_form_file_path"), "set_editor_build_animation_form_file_path", "get_editor_build_animation_form_file_path");
+    ADD_MEMBER_BUTTON(editor_build_animation_form_file_path,L"构建动画文件信息",CharacterBodyMain);
+
+
 
 
     //ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "behavior_tree", PROPERTY_HINT_RESOURCE_TYPE, "BehaviorTree"), "set_behavior_tree", "get_behavior_tree");

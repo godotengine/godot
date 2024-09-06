@@ -2011,7 +2011,7 @@ void AnimationMixer::make_animation_instance(const StringName &p_name, const Pla
 
 	animation_instances.push_back(ai);
 }
-void AnimationMixer::make_animation_instance_anim(const Ref<Animation> &p_anim, const PlaybackInfo p_playback_info,const Dictionary &bone_map)
+void AnimationMixer::make_animation_instance_anim(const Ref<Animation> &p_anim, const PlaybackInfo& p_playback_info,const Dictionary &bone_map)
 {
 	ERR_FAIL_COND(p_anim.is_null());
 	AnimationData ad;

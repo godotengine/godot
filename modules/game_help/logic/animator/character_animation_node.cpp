@@ -655,6 +655,68 @@ void CharacterAnimatorNode1D::process_animation(class CharacterAnimatorLayer *p_
     _blend_anmation(p_layer,blend_data.position_count, p_playback_info, total_weight,p_playback_info->m_WeightArray,p_blackboard);
 
 }
+void CharacterAnimatorLoopLast::process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,const Ref<Blackboard> &p_blackboard)
+{
+        float w = total_weight;
+        if(w > 0.01f)
+        {	  
+            Ref<CharacterAnimationItem> item = animation_arrays[p_playback_info->play_index];
+
+            
+            AnimationMixer::PlaybackInfo  playback_info;
+			playback_info.weight = w;
+			playback_info.delta = p_playback_info->delta * item->get_speed();
+			playback_info.time += playback_info.delta ;
+			playback_info.disable_path = p_playback_info->disable_path;
+            if(p_playback_info->play_index < blend_data.position_count - 1)
+            {
+                if(playback_info.time >= animation_arrays[p_playback_info->play_index]->_get_animation_length())
+                {
+					playback_info.time -= animation_arrays[p_playback_info->play_index]->_get_animation_length();
+					p_playback_info->play_index = p_playback_info->play_index + 1;
+                }
+            }
+            item = animation_arrays[p_playback_info->play_index];
+                
+            if(item->is_clip){
+                Ref<Animation> animation = item->get_animation();
+                if(animation.is_valid())
+                {
+                    Ref<CharacterBoneMap> bone_map = item->get_bone_map();
+                    Dictionary bp;
+                    if(bone_map.is_valid())
+                    {
+                        bp = bone_map->bone_map;
+                    }
+                    p_layer->make_animation_instance_anim(item->animation, playback_info,bp);
+                }
+                else
+                {
+                    p_layer->make_animation_instance(item->animation_name, playback_info);
+                }
+            }
+            else if(item->child_node.is_valid())
+            {
+                // 动画节点递归处理
+                item->child_node->process_animation(p_layer,p_playback_info,w,p_blackboard);
+            }
+        }
+
+}
+float CharacterAnimatorLoopLast::_get_animation_length()
+{
+    float length = 0.0f;
+    for(int i = 0; i < animation_arrays.size(); ++i)
+    {
+        Ref<CharacterAnimationItem> item = animation_arrays[i];
+        if(item.is_valid())
+        {
+            length += item->_get_animation_length();
+        }
+    }
+    return length;
+}
+
 void CharacterAnimatorNode2D::process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,const Ref<Blackboard> &p_blackboard)
 {
     Vector2 v = p_blackboard->get_var(black_board_property,0);
