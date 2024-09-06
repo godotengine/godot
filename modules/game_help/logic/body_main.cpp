@@ -616,6 +616,7 @@ void CharacterBodyMain::set_body_prefab(const Ref<CharacterBodyPrefab> &p_body_p
         body_prefab->disconnect_changed(callable_mp(this, &CharacterBodyMain::load_prefab));
     }
     body_prefab = p_body_prefab;
+    
     load_prefab();
 
 
@@ -630,7 +631,8 @@ void CharacterBodyMain::load_prefab()
         Skeleton3D* skeleton = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(skeletonID));
         // 
         TypedArray<CharacterBodyPart> part_array = body_prefab->load_part();
-        for(int i = 0;i<part_array.size();i++)
+        int size = part_array.size();
+        for(int i = 0; i < size; i++)
         {
             
             Ref<CharacterBodyPartInstane> p;

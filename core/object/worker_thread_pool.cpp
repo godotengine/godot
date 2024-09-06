@@ -774,6 +774,7 @@ void TaskJobHandle::set_completed()
 {
 	completed.set();
 	// 通知等待的线程
+	std::lock_guard<std::mutex> lock(done_mutex);
 	cv.notify_all();
 }
 bool TaskJobHandle::is_completed()  {	

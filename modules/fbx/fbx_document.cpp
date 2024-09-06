@@ -1077,13 +1077,22 @@ Error FBXDocument::_parse_images(Ref<FBXState> p_state, const String &p_base_pat
 			memcpy(data.ptrw(), fbx_texture_file.content.data, fbx_texture_file.content.size);
 		} else {
 			String base_dir = p_state->get_base_path();
-			Ref<Texture2D> texture = ResourceLoader::load(_get_texture_path(base_dir, path), "Texture2D");
-			if (texture.is_valid()) {
-				p_state->images.push_back(texture);
-				p_state->source_images.push_back(texture->get_image());
-				continue;
+			String image_path = _get_texture_path(base_dir, path);
+			if (FileAccess::exists(image_path))
+			{
+				Ref<Texture2D> texture = ResourceLoader::load(_get_texture_path(base_dir, path), "Texture2D");
+				if (texture.is_valid()) {
+					p_state->images.push_back(texture);
+					p_state->source_images.push_back(texture->get_image());
+					continue;
+				}
 			}
 			// Fallback to loading as byte array.
+			if (!FileAccess::exists(path))
+			{
+				WARN_PRINT(vformat("FBX: Image index '%d' couldn't be loaded from path: %s because there was no data to load. Skipping it.", texture_i, path));
+				continue;
+			}
 			data = FileAccess::get_file_as_bytes(path);
 			if (data.size() == 0) {
 				WARN_PRINT(vformat("FBX: Image index '%d' couldn't be loaded from path: %s because there was no data to load. Skipping it.", texture_i, path));

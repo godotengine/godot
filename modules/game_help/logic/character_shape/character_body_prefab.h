@@ -57,6 +57,10 @@ public:
             {
                 continue;
             }
+            if(!FileAccess::exists(E.key))
+            {
+                continue;
+            }
             Ref<CharacterBodyPart> part = ResourceLoader::load(E.key);
             if(part.is_valid())
             {
