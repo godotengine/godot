@@ -369,6 +369,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 								value = make_local_resource(value, n, resources_local_to_sub_scene, node, snames[nprops[j].name], resources_local_to_scene, i, ret_nodes, p_edit_state);
 							}
 						}
+
 						if (value.get_type() == Variant::ARRAY) {
 							Array set_array = value;
 							value = setup_resources_in_array(set_array, n, resources_local_to_sub_scene, node, snames[nprops[j].name], resources_local_to_scene, i, ret_nodes, p_edit_state);
@@ -383,25 +384,20 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 								}
 							}
 						}
+
 						if (value.get_type() == Variant::DICTIONARY) {
-							Dictionary dictionary = value;
-							const Array keys = dictionary.keys();
-							const Array values = dictionary.values();
+							Dictionary set_dict = value;
+							value = setup_resources_in_dictionary(set_dict, n, resources_local_to_sub_scene, node, snames[nprops[j].name], resources_local_to_scene, i, ret_nodes, p_edit_state);
 
-							if (has_local_resource(values) || has_local_resource(keys)) {
-								Array duplicated_keys = keys.duplicate(true);
-								Array duplicated_values = values.duplicate(true);
+							bool is_get_valid = false;
+							Variant get_value = node->get(snames[nprops[j].name], &is_get_valid);
 
-								duplicated_keys = setup_resources_in_array(duplicated_keys, n, resources_local_to_sub_scene, node, snames[nprops[j].name], resources_local_to_scene, i, ret_nodes, p_edit_state);
-								duplicated_values = setup_resources_in_array(duplicated_values, n, resources_local_to_sub_scene, node, snames[nprops[j].name], resources_local_to_scene, i, ret_nodes, p_edit_state);
-
-								dictionary.clear();
-
-								for (int dictionary_index = 0; dictionary_index < keys.size(); dictionary_index++) {
-									dictionary[duplicated_keys[dictionary_index]] = duplicated_values[dictionary_index];
+							if (is_get_valid && get_value.get_type() == Variant::DICTIONARY) {
+								Dictionary get_dict = get_value;
+								if (!set_dict.is_same_typed(get_dict)) {
+									value = Dictionary(set_dict, get_dict.get_typed_key_builtin(), get_dict.get_typed_key_class_name(), get_dict.get_typed_key_script(),
+											get_dict.get_typed_value_builtin(), get_dict.get_typed_value_class_name(), get_dict.get_typed_value_script());
 								}
-
-								value = dictionary;
 							}
 						}
 
@@ -539,6 +535,30 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 				array.set(i, dnp.base->get_node_or_null(paths[i]));
 			}
 			dnp.base->set(dnp.property, array);
+		} else if (dnp.value.get_type() == Variant::DICTIONARY) {
+			Dictionary paths = dnp.value;
+
+			bool valid;
+			Dictionary dict = dnp.base->get(dnp.property, &valid);
+			ERR_CONTINUE(!valid);
+			dict = dict.duplicate();
+			bool convert_key = dict.get_typed_key_builtin() == Variant::OBJECT &&
+					ClassDB::is_parent_class(dict.get_typed_key_class_name(), "Node");
+			bool convert_value = dict.get_typed_value_builtin() == Variant::OBJECT &&
+					ClassDB::is_parent_class(dict.get_typed_value_class_name(), "Node");
+
+			for (int i = 0; i < paths.size(); i++) {
+				Variant key = paths.get_key_at_index(i);
+				if (convert_key) {
+					key = dnp.base->get_node_or_null(key);
+				}
+				Variant value = paths.get_value_at_index(i);
+				if (convert_value) {
+					value = dnp.base->get_node_or_null(value);
+				}
+				dict[key] = value;
+			}
+			dnp.base->set(dnp.property, dict);
 		} else {
 			dnp.base->set(dnp.property, dnp.base->get_node_or_null(dnp.value));
 		}
@@ -639,6 +659,26 @@ Array SceneState::setup_resources_in_array(Array &p_array_to_scan, const SceneSt
 		}
 	}
 	return p_array_to_scan;
+}
+
+Dictionary SceneState::setup_resources_in_dictionary(Dictionary &p_dictionary_to_scan, const SceneState::NodeData &p_n, HashMap<Ref<Resource>, Ref<Resource>> &p_resources_local_to_sub_scene, Node *p_node, const StringName p_sname, HashMap<Ref<Resource>, Ref<Resource>> &p_resources_local_to_scene, int p_i, Node **p_ret_nodes, SceneState::GenEditState p_edit_state) const {
+	const Array keys = p_dictionary_to_scan.keys();
+	const Array values = p_dictionary_to_scan.values();
+
+	if (has_local_resource(values) || has_local_resource(keys)) {
+		Array duplicated_keys = keys.duplicate(true);
+		Array duplicated_values = values.duplicate(true);
+
+		duplicated_keys = setup_resources_in_array(duplicated_keys, p_n, p_resources_local_to_sub_scene, p_node, p_sname, p_resources_local_to_scene, p_i, p_ret_nodes, p_edit_state);
+		duplicated_values = setup_resources_in_array(duplicated_values, p_n, p_resources_local_to_sub_scene, p_node, p_sname, p_resources_local_to_scene, p_i, p_ret_nodes, p_edit_state);
+		p_dictionary_to_scan.clear();
+
+		for (int i = 0; i < keys.size(); i++) {
+			p_dictionary_to_scan[duplicated_keys[i]] = duplicated_values[i];
+		}
+	}
+
+	return p_dictionary_to_scan;
 }
 
 bool SceneState::has_local_resource(const Array &p_array) const {
@@ -808,6 +848,53 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 						new_array.push_back(elem);
 					}
 					value = new_array;
+				}
+			}
+		} else if (E.type == Variant::DICTIONARY && E.hint == PROPERTY_HINT_TYPE_STRING) {
+			int key_value_separator = E.hint_string.find(";");
+			if (key_value_separator >= 0) {
+				int key_subtype_separator = E.hint_string.find(":");
+				String key_subtype_string = E.hint_string.substr(0, key_subtype_separator);
+				int key_slash_pos = key_subtype_string.find("/");
+				PropertyHint key_subtype_hint = PropertyHint::PROPERTY_HINT_NONE;
+				if (key_slash_pos >= 0) {
+					key_subtype_hint = PropertyHint(key_subtype_string.get_slice("/", 1).to_int());
+					key_subtype_string = key_subtype_string.substr(0, key_slash_pos);
+				}
+				Variant::Type key_subtype = Variant::Type(key_subtype_string.to_int());
+				bool convert_key = key_subtype == Variant::OBJECT && key_subtype_hint == PROPERTY_HINT_NODE_TYPE;
+
+				int value_subtype_separator = E.hint_string.find(":", key_value_separator) - (key_value_separator + 1);
+				String value_subtype_string = E.hint_string.substr(key_value_separator + 1, value_subtype_separator);
+				int value_slash_pos = value_subtype_string.find("/");
+				PropertyHint value_subtype_hint = PropertyHint::PROPERTY_HINT_NONE;
+				if (value_slash_pos >= 0) {
+					value_subtype_hint = PropertyHint(value_subtype_string.get_slice("/", 1).to_int());
+					value_subtype_string = value_subtype_string.substr(0, value_slash_pos);
+				}
+				Variant::Type value_subtype = Variant::Type(value_subtype_string.to_int());
+				bool convert_value = value_subtype == Variant::OBJECT && value_subtype_hint == PROPERTY_HINT_NODE_TYPE;
+
+				if (convert_key || convert_value) {
+					use_deferred_node_path_bit = true;
+					Dictionary dict = value;
+					Dictionary new_dict;
+					for (int i = 0; i < dict.size(); i++) {
+						Variant new_key = dict.get_key_at_index(i);
+						if (convert_key && new_key.get_type() == Variant::OBJECT) {
+							if (Node *n = Object::cast_to<Node>(new_key)) {
+								new_key = p_node->get_path_to(n);
+							}
+						}
+						Variant new_value = dict.get_value_at_index(i);
+						if (convert_value && new_value.get_type() == Variant::OBJECT) {
+							if (Node *n = Object::cast_to<Node>(new_value)) {
+								new_value = p_node->get_path_to(n);
+							}
+						}
+						new_dict[new_key] = new_value;
+					}
+					value = new_dict;
 				}
 			}
 		}

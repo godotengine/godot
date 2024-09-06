@@ -3568,7 +3568,7 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 	type->type_chain.push_back(type_element);
 
 	if (match(GDScriptTokenizer::Token::BRACKET_OPEN)) {
-		// Typed collection (like Array[int]).
+		// Typed collection (like Array[int], Dictionary[String, int]).
 		bool first_pass = true;
 		do {
 			TypeNode *container_type = parse_type(false); // Don't allow void for element type.
@@ -4385,6 +4385,14 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 		export_type.type_source = variable->datatype.type_source;
 	}
 
+	bool is_dict = false;
+	if (export_type.builtin_type == Variant::DICTIONARY && export_type.has_container_element_types()) {
+		is_dict = true;
+		DataType inner_type = export_type.get_container_element_type_or_variant(1);
+		export_type = export_type.get_container_element_type_or_variant(0);
+		export_type.set_container_element_type(0, inner_type); // Store earlier extracted value within key to separately parse after.
+	}
+
 	bool use_default_variable_type_check = true;
 
 	if (p_annotation->name == SNAME("@export_range")) {
@@ -4412,8 +4420,13 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 		}
 
 		if (export_type.is_variant() || export_type.has_no_type()) {
-			push_error(R"(Cannot use simple "@export" annotation because the type of the initialized value can't be inferred.)", p_annotation);
-			return false;
+			if (is_dict) {
+				// Dictionary allowed to have a variant key/value.
+				export_type.kind = GDScriptParser::DataType::BUILTIN;
+			} else {
+				push_error(R"(Cannot use simple "@export" annotation because the type of the initialized value can't be inferred.)", p_annotation);
+				return false;
+			}
 		}
 
 		switch (export_type.kind) {
@@ -4472,6 +4485,90 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 		if (variable->export_info.hint == PROPERTY_HINT_NODE_TYPE && !ClassDB::is_parent_class(p_class->base_type.native_type, SNAME("Node"))) {
 			push_error(vformat(R"(Node export is only supported in Node-derived classes, but the current class inherits "%s".)", p_class->base_type.to_string()), p_annotation);
 			return false;
+		}
+
+		if (is_dict) {
+			String key_prefix = itos(variable->export_info.type);
+			if (variable->export_info.hint) {
+				key_prefix += "/" + itos(variable->export_info.hint);
+			}
+			key_prefix += ":" + variable->export_info.hint_string;
+
+			// Now parse value.
+			export_type = export_type.get_container_element_type(0);
+
+			if (export_type.is_variant() || export_type.has_no_type()) {
+				export_type.kind = GDScriptParser::DataType::BUILTIN;
+			}
+			switch (export_type.kind) {
+				case GDScriptParser::DataType::BUILTIN:
+					variable->export_info.type = export_type.builtin_type;
+					variable->export_info.hint = PROPERTY_HINT_NONE;
+					variable->export_info.hint_string = String();
+					break;
+				case GDScriptParser::DataType::NATIVE:
+				case GDScriptParser::DataType::SCRIPT:
+				case GDScriptParser::DataType::CLASS: {
+					const StringName class_name = _find_narrowest_native_or_global_class(export_type);
+					if (ClassDB::is_parent_class(export_type.native_type, SNAME("Resource"))) {
+						variable->export_info.type = Variant::OBJECT;
+						variable->export_info.hint = PROPERTY_HINT_RESOURCE_TYPE;
+						variable->export_info.hint_string = class_name;
+					} else if (ClassDB::is_parent_class(export_type.native_type, SNAME("Node"))) {
+						variable->export_info.type = Variant::OBJECT;
+						variable->export_info.hint = PROPERTY_HINT_NODE_TYPE;
+						variable->export_info.hint_string = class_name;
+					} else {
+						push_error(R"(Export type can only be built-in, a resource, a node, or an enum.)", p_annotation);
+						return false;
+					}
+				} break;
+				case GDScriptParser::DataType::ENUM: {
+					if (export_type.is_meta_type) {
+						variable->export_info.type = Variant::DICTIONARY;
+					} else {
+						variable->export_info.type = Variant::INT;
+						variable->export_info.hint = PROPERTY_HINT_ENUM;
+
+						String enum_hint_string;
+						bool first = true;
+						for (const KeyValue<StringName, int64_t> &E : export_type.enum_values) {
+							if (!first) {
+								enum_hint_string += ",";
+							} else {
+								first = false;
+							}
+							enum_hint_string += E.key.operator String().capitalize().xml_escape();
+							enum_hint_string += ":";
+							enum_hint_string += String::num_int64(E.value).xml_escape();
+						}
+
+						variable->export_info.hint_string = enum_hint_string;
+						variable->export_info.usage |= PROPERTY_USAGE_CLASS_IS_ENUM;
+						variable->export_info.class_name = String(export_type.native_type).replace("::", ".");
+					}
+				} break;
+				default:
+					push_error(R"(Export type can only be built-in, a resource, a node, or an enum.)", p_annotation);
+					return false;
+			}
+
+			if (variable->export_info.hint == PROPERTY_HINT_NODE_TYPE && !ClassDB::is_parent_class(p_class->base_type.native_type, SNAME("Node"))) {
+				push_error(vformat(R"(Node export is only supported in Node-derived classes, but the current class inherits "%s".)", p_class->base_type.to_string()), p_annotation);
+				return false;
+			}
+
+			String value_prefix = itos(variable->export_info.type);
+			if (variable->export_info.hint) {
+				value_prefix += "/" + itos(variable->export_info.hint);
+			}
+			value_prefix += ":" + variable->export_info.hint_string;
+
+			variable->export_info.type = Variant::DICTIONARY;
+			variable->export_info.hint = PROPERTY_HINT_TYPE_STRING;
+			variable->export_info.hint_string = key_prefix + ";" + value_prefix;
+			variable->export_info.usage = PROPERTY_USAGE_DEFAULT;
+			variable->export_info.class_name = StringName();
 		}
 	} else if (p_annotation->name == SNAME("@export_enum")) {
 		use_default_variable_type_check = false;
@@ -4794,7 +4891,10 @@ String GDScriptParser::DataType::to_string() const {
 				return "null";
 			}
 			if (builtin_type == Variant::ARRAY && has_container_element_type(0)) {
-				return vformat("Array[%s]", container_element_types[0].to_string());
+				return vformat("Array[%s]", get_container_element_type(0).to_string());
+			}
+			if (builtin_type == Variant::DICTIONARY && has_container_element_types()) {
+				return vformat("Dictionary[%s, %s]", get_container_element_type_or_variant(0).to_string(), get_container_element_type_or_variant(1).to_string());
 			}
 			return Variant::get_type_name(builtin_type);
 		case NATIVE:
@@ -4883,6 +4983,72 @@ PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) co
 					case UNRESOLVED:
 						break;
 				}
+			} else if (builtin_type == Variant::DICTIONARY && has_container_element_types()) {
+				const DataType key_type = get_container_element_type_or_variant(0);
+				const DataType value_type = get_container_element_type_or_variant(1);
+				if ((key_type.kind == VARIANT && value_type.kind == VARIANT) || key_type.kind == RESOLVING ||
+						key_type.kind == UNRESOLVED || value_type.kind == RESOLVING || value_type.kind == UNRESOLVED) {
+					break;
+				}
+				String key_hint, value_hint;
+				switch (key_type.kind) {
+					case BUILTIN:
+						key_hint = Variant::get_type_name(key_type.builtin_type);
+						break;
+					case NATIVE:
+						key_hint = key_type.native_type;
+						break;
+					case SCRIPT:
+						if (key_type.script_type.is_valid() && key_type.script_type->get_global_name() != StringName()) {
+							key_hint = key_type.script_type->get_global_name();
+						} else {
+							key_hint = key_type.native_type;
+						}
+						break;
+					case CLASS:
+						if (key_type.class_type != nullptr && key_type.class_type->get_global_name() != StringName()) {
+							key_hint = key_type.class_type->get_global_name();
+						} else {
+							key_hint = key_type.native_type;
+						}
+						break;
+					case ENUM:
+						key_hint = String(key_type.native_type).replace("::", ".");
+						break;
+					default:
+						key_hint = "Variant";
+						break;
+				}
+				switch (value_type.kind) {
+					case BUILTIN:
+						value_hint = Variant::get_type_name(value_type.builtin_type);
+						break;
+					case NATIVE:
+						value_hint = value_type.native_type;
+						break;
+					case SCRIPT:
+						if (value_type.script_type.is_valid() && value_type.script_type->get_global_name() != StringName()) {
+							value_hint = value_type.script_type->get_global_name();
+						} else {
+							value_hint = value_type.native_type;
+						}
+						break;
+					case CLASS:
+						if (value_type.class_type != nullptr && value_type.class_type->get_global_name() != StringName()) {
+							value_hint = value_type.class_type->get_global_name();
+						} else {
+							value_hint = value_type.native_type;
+						}
+						break;
+					case ENUM:
+						value_hint = String(value_type.native_type).replace("::", ".");
+						break;
+					default:
+						value_hint = "Variant";
+						break;
+				}
+				result.hint = PROPERTY_HINT_DICTIONARY_TYPE;
+				result.hint_string = key_hint + ";" + value_hint;
 			}
 			break;
 		case NATIVE:
@@ -4965,6 +5131,50 @@ GDScriptParser::DataType GDScriptParser::DataType::get_typed_container_type() co
 	type.kind = GDScriptParser::DataType::BUILTIN;
 	type.builtin_type = _variant_type_to_typed_array_element_type(builtin_type);
 	return type;
+}
+
+bool GDScriptParser::DataType::can_reference(const GDScriptParser::DataType &p_other) const {
+	if (p_other.is_meta_type) {
+		return false;
+	} else if (builtin_type != p_other.builtin_type) {
+		return false;
+	} else if (builtin_type != Variant::OBJECT) {
+		return true;
+	}
+
+	if (native_type == StringName()) {
+		return true;
+	} else if (p_other.native_type == StringName()) {
+		return false;
+	} else if (native_type != p_other.native_type && !ClassDB::is_parent_class(p_other.native_type, native_type)) {
+		return false;
+	}
+
+	Ref<Script> script = script_type;
+	if (kind == GDScriptParser::DataType::CLASS && script.is_null()) {
+		Error err = OK;
+		Ref<GDScript> scr = GDScriptCache::get_shallow_script(script_path, err);
+		ERR_FAIL_COND_V_MSG(err, false, vformat(R"(Error while getting cache for script "%s".)", script_path));
+		script.reference_ptr(scr->find_class(class_type->fqcn));
+	}
+
+	Ref<Script> script_other = p_other.script_type;
+	if (p_other.kind == GDScriptParser::DataType::CLASS && script_other.is_null()) {
+		Error err = OK;
+		Ref<GDScript> scr = GDScriptCache::get_shallow_script(p_other.script_path, err);
+		ERR_FAIL_COND_V_MSG(err, false, vformat(R"(Error while getting cache for script "%s".)", p_other.script_path));
+		script_other.reference_ptr(scr->find_class(p_other.class_type->fqcn));
+	}
+
+	if (script.is_null()) {
+		return true;
+	} else if (script_other.is_null()) {
+		return false;
+	} else if (script != script_other && !script_other->inherits_script(script)) {
+		return false;
+	}
+
+	return true;
 }
 
 void GDScriptParser::complete_extents(Node *p_node) {

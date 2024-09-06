@@ -1509,24 +1509,23 @@ def make_type(klass: str, state: State) -> str:
     if klass.find("*") != -1:  # Pointer, ignore
         return f"``{klass}``"
 
-    link_type = klass
-    is_array = False
+    def resolve_type(link_type: str) -> str:
+        if link_type in state.classes:
+            return f":ref:`{link_type}<class_{link_type}>`"
+        else:
+            print_error(f'{state.current_class}.xml: Unresolved type "{link_type}".', state)
+            return f"``{link_type}``"
 
-    if link_type.endswith("[]"):  # Typed array, strip [] to link to contained type.
-        link_type = link_type[:-2]
-        is_array = True
+    if klass.endswith("[]"):  # Typed array, strip [] to link to contained type.
+        return f":ref:`Array<class_Array>`\\[{resolve_type(klass[:-len('[]')])}\\]"
 
-    if link_type in state.classes:
-        type_rst = f":ref:`{link_type}<class_{link_type}>`"
-        if is_array:
-            type_rst = f":ref:`Array<class_Array>`\\[{type_rst}\\]"
-        return type_rst
+    if klass.startswith("Dictionary["):  # Typed dictionary, split elements to link contained types.
+        parts = klass[len("Dictionary[") : -len("]")].partition(", ")
+        key = parts[0]
+        value = parts[2]
+        return f":ref:`Dictionary<class_Dictionary>`\\[{resolve_type(key)}, {resolve_type(value)}\\]"
 
-    print_error(f'{state.current_class}.xml: Unresolved type "{link_type}".', state)
-    type_rst = f"``{link_type}``"
-    if is_array:
-        type_rst = f":ref:`Array<class_Array>`\\[{type_rst}\\]"
-    return type_rst
+    return resolve_type(klass)
 
 
 def make_enum(t: str, is_bitfield: bool, state: State) -> str:

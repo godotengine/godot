@@ -575,6 +575,8 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 							prop.type = retinfo.class_name;
 						} else if (retinfo.type == Variant::ARRAY && retinfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
 							prop.type = retinfo.hint_string + "[]";
+						} else if (retinfo.type == Variant::DICTIONARY && retinfo.hint == PROPERTY_HINT_DICTIONARY_TYPE) {
+							prop.type = "Dictionary[" + retinfo.hint_string.replace(";", ", ") + "]";
 						} else if (retinfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 							prop.type = retinfo.hint_string;
 						} else if (retinfo.type == Variant::NIL && retinfo.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
