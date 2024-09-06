@@ -826,6 +826,8 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 		load_task_ptr = &load_task;
 	}
 
+	thread_load_mutex.unlock();
+
 	Ref<Resource> resource = load_task_ptr->resource;
 	if (r_error) {
 		*r_error = load_task_ptr->error;
@@ -862,6 +864,8 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 			}
 		}
 	}
+
+	thread_load_mutex.lock();
 
 	return resource;
 }
