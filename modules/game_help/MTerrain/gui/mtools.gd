@@ -129,7 +129,7 @@ func on_node_modified(node):
 		update_edit_mode_options()
 		
 func update_edit_mode_options():	
-	var all_mterrain = get_all_mterrain()
+	var all_mterrain = MTerrain.get_all_terrain_nodes()
 	edit_mode_button.init_edit_mode_options(all_mterrain)
 
 func clear_current_popup_button():
@@ -178,45 +178,18 @@ func get_active_mterrain():
 			return object.get_parent()	
 	#This is only used for snapping to MTerrain in MPath:
 	if object is MPath or object is MCurveMesh:
-		var all_mterrain = get_all_mterrain()
+		var all_mterrain = MTerrain.get_all_terrain_nodes()
 		if all_mterrain.size()>0:
 			return all_mterrain[0]
-		
-func get_all_mterrain(parent=EditorInterface.get_edited_scene_root()):	
-	var result = []
-	if parent == null: 
-		push_warning("trying to get all mterrain, but root is null")
-		return []
-	for child in parent.get_children():
-		if child is MTerrain:
-			result.push_back(child)
-		for grandchild in child.get_children():
-			result.append_array(get_all_mterrain(child))
-	return result
 	
-func get_all_mgrass(root):
-	var result = []
-	for terrain in get_all_mterrain(root):
-		for child in terrain.get_children():
-			if child is MGrass:
-				result.push_back(child)		
-	return result
-
-func get_all_mnavigation(root):
-	var result = []
-	for terrain in get_all_mterrain(root):
-		for child in terrain.get_children():
-			if child is MNavigationRegion3D:
-				result.push_back(child)		
-	return result
-	
-func get_all_mpath(root):
-	var result = []
-	for terrain in get_all_mterrain(root):
-		for child in terrain.get_children():
-			if child is MPath:
-				result.push_back(child)		
-	return result
+#func get_all_mgrass():
+	#return MGrass.get_all_grass_nodes()
+#
+#func get_all_mnavigation(root):
+	#return MNavigationRegion3D.get_all_navigation_nodes()
+	#
+#func get_all_mpath(root):
+	#return MPath.get_all_path_nodes()
 
 #endregion
 
@@ -360,9 +333,10 @@ func on_handles(object):
 		return false
 	request_hide()		
 	if object is Node3D:
-		for mterrain:MTerrain in get_all_mterrain(EditorInterface.get_edited_scene_root()):
+		var all_terrain = MTerrain.get_all_terrain_nodes()
+		for mterrain:MTerrain in all_terrain:
 			if mterrain.is_grid_created():
-				active_snap_object = object				
+				active_snap_object = object
 				return false
 
 func forward_3d_gui_input(viewport_camera, event):
@@ -379,9 +353,9 @@ func forward_3d_gui_input(viewport_camera, event):
 		if process_input_terrain_walk(viewport_camera, event):
 			return true
 	
-	
-	for terrain in get_all_mterrain():
-		terrain.set_editor_camera(viewport_camera)	
+	### we don't need this any more as we grab editor camera in gdextension automaticly
+	#for terrain in get_all_mterrain():
+	#	terrain.set_editor_camera(viewport_camera)
 	######################## HANDLE CURVE GIZMO ##############################
 	if mpath_gizmo_gui.visible:				
 		return mpath_gizmo_gui.gizmo._forward_3d_gui_input(viewport_camera, event, ray_col)
@@ -512,7 +486,8 @@ func deactivate_editing():
 	brush_decal.visible = false
 	mask_decal.visible = false	
 	mask_popup_button.clear_mask()	
-	for mterrain in get_all_mterrain():
+	var all_terrain =MTerrain.get_all_terrain_nodes()
+	for mterrain in all_terrain:
 		mterrain.disable_brush_mask()
 	paint_panel.visible = false
 	mpath_gizmo_gui.visible = false
@@ -742,6 +717,7 @@ func _on_grass_merge_sublayer_pressed():
 		push_error("trying to merge grass sublayer, but grass doesn't have sublayer")
 		return
 	active_object.merge_sublayer() 
+	grass_merge_sublayer_button.visible = active_object.has_sublayer()
 
 
 
@@ -755,6 +731,3 @@ func _on_walk_terrain_toggled(toggled_on):
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	else:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-
-
-

@@ -3,14 +3,14 @@
 #include "core/variant/variant.h"
 #include "core/variant/variant_utility.h"
 #include "editor/editor_script.h"
+#include "scene/main/viewport.h"
+#include "scene/3d/camera_3d.h"
 
 
 #include "editor/editor_interface.h"
 
-Vector<Node3D*> MTool::editor_cameras;
-Vector<Vector3> MTool::editor_cameras_last_pos;
-int MTool::camera_index = -1;
 bool MTool::editor_plugin_active = false;
+Node3D* MTool::cached_editor_camera = nullptr;
 
 void MTool::_bind_methods() {
    ClassDB::bind_static_method("MTool", D_METHOD("get_r16_image","file_path","width","height","min_height","max_height","is_half"), &MTool::get_r16_image);
@@ -134,54 +134,18 @@ PackedByteArray MTool::normalize_rf_data(const PackedByteArray& data,double min_
 }
 
 Node3D* MTool::find_editor_camera(bool changed_camera){
+    if(cached_editor_camera!=nullptr){
+        return cached_editor_camera;
+    }
 	if (Engine::get_singleton()->is_editor_hint()) {
-        if(editor_cameras.size()==0){
-            EditorScript script;
-            EditorInterface *edit_interface = script.get_editor_interface();
-            Node* main_screen = (Node*)edit_interface->get_editor_main_screen();
-            Node* edit_scene_root = edit_interface->get_edited_scene_root();
-            TypedArray<Node> process_nodes;
-            process_nodes.push_back(main_screen);
-            while (process_nodes.size() > 0)
-            {
-                Node* current_node = Object::cast_to<Node>(process_nodes[process_nodes.size() - 1]);
-                process_nodes.remove_at(process_nodes.size() - 1);
-                if(current_node==edit_scene_root){
-                    continue;
-                }
-                if(current_node->is_class("Camera3D")){
-                    editor_cameras.push_back(Object::cast_to<Node3D>(current_node));
-                }
-                process_nodes.append_array(current_node->get_children());
-            }
-            for(int i=0; i < editor_cameras.size(); i++){
-                editor_cameras_last_pos.push_back(editor_cameras[i]->get_global_position());
-            }
-            if(editor_cameras.size()!=0){
-                return editor_cameras[editor_cameras.size() - 1]; // Return last element
-            } else {
-                return nullptr;
-            }
-        }
-        if(changed_camera){
-            for(int i=editor_cameras.size() - 1; i >= 0 ; i--){
-                if(editor_cameras[i]->get_global_position() != editor_cameras_last_pos[i]){
-                    camera_index = i; // updating to camera which changed
-                    break;
-                }
-            }
-            for(int i=0; i < editor_cameras.size(); i++){
-                editor_cameras_last_pos.set(i,editor_cameras[i]->get_global_position());
-            }
-            if(editor_cameras.size() - 1 >= camera_index && camera_index!=-1){
-                return editor_cameras[camera_index];
-            }
-        }
-        if(editor_cameras.size()!=0){
-            return editor_cameras[editor_cameras.size() - 1]; // Return last element
-        } else {
+        Ref<EditorScript> script;
+        script.instantiate();
+        SubViewport* sub_viewport = script->get_editor_interface()->get_editor_viewport_3d(0);
+        if(sub_viewport==nullptr){
             return nullptr;
         }
+        cached_editor_camera = sub_viewport->get_camera_3d();
+        return cached_editor_camera;
 	}
     return nullptr;
 }

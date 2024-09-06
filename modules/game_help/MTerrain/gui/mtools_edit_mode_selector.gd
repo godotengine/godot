@@ -10,6 +10,13 @@ var active_object
 
 var more_options_icon = preload("res://addons/m_terrain/icons/more_options_icon.svg")
 
+var sculpt_icon
+var paint_icon
+var grass_icon
+var path_icon
+var curve_mesh_icon
+var navigation_icon
+
 func _ready():
 	var panel = get_child(0)
 	panel.visible = false
@@ -22,6 +29,13 @@ func _ready():
 	if not edit_selected_button.pressed.is_connected(edit_selected):
 		edit_selected_button.pressed.connect(edit_selected)
 	edit_selected_button.visible = false
+	
+	sculpt_icon = load("res://addons/m_terrain/icons/foilage_icon.png")
+	paint_icon = load("res://addons/m_terrain/icons/brush_icon.png")
+	grass_icon = load("res://addons/m_terrain/icons/foilage_icon.png")
+	path_icon = load("res://addons/m_terrain/icons/MPath.svg")
+	curve_mesh_icon = load("res://addons/m_terrain/icons/MCurveMesh.svg")
+	navigation_icon = load("res://addons/m_terrain/icons/MNavigationRegion3D.png")
 	
 	if not exit_edit_mode_button.pressed.is_connected(exit_edit_mode_button_pressed):
 		exit_edit_mode_button.pressed.connect(exit_edit_mode_button_pressed)
@@ -39,32 +53,49 @@ func init_edit_mode_options(all_mterrain):
 	if all_mterrain.size() != 0:
 		for terrain in all_mterrain:
 			var button = button_template.duplicate()
+			button.icon = sculpt_icon
 			button.text = "Sculpt " + terrain.name
 			item_container.add_child(button)
 			biggest_button_size = max(biggest_button_size, button.size.x)
 			button.pressed.connect(edit_selected.bind(terrain))		
 			
 			button = button_template.duplicate()
-			button.text = "Paint " + terrain.name		
+			button.text = "Paint " + terrain.name
+			button.icon = paint_icon
 			item_container.add_child(button)
 			button.pressed.connect(edit_selected.bind(terrain, &"paint"))
-			for child in terrain.get_children():
-				if child is MGrass or child is MNavigationRegion3D:
-					button = button_template.duplicate()
-					button.text = "Paint " + child.name								
-					item_container.add_child(button)
-					biggest_button_size = max(biggest_button_size, button.size.x)
-					button.pressed.connect(edit_selected.bind(child))
-	
-	var all_nodes = EditorInterface.get_edited_scene_root().find_children("*")	
-	for child in all_nodes:
-		var button
-		if child is MPath or child is MCurveMesh:
-			button = button_template.duplicate()
-			button.text = "Edit " + child.name							
-			item_container.add_child(button)
-			biggest_button_size = max(biggest_button_size, button.size.x)
-			button.pressed.connect(edit_selected.bind(child))		
+	var all_grass = MGrass.get_all_grass_nodes()
+	for child in all_grass:
+		var button:Button = button_template.duplicate()
+		button.text = "Paint " + child.name
+		button.icon = grass_icon
+		item_container.add_child(button)
+		biggest_button_size = max(biggest_button_size, button.size.x)
+		button.pressed.connect(edit_selected.bind(child))
+	var all_navigation = MNavigationRegion3D.get_all_navigation_nodes()
+	for child in all_navigation:
+		var button = button_template.duplicate()
+		button.text = "Paint " + child.name
+		button.icon = navigation_icon
+		item_container.add_child(button)
+		biggest_button_size = max(biggest_button_size, button.size.x)
+		button.pressed.connect(edit_selected.bind(child))
+	var all_path = MPath.get_all_path_nodes()
+	var all_curve_mesh = MCurveMesh.get_all_curve_mesh_nodes()
+	for child in all_path:
+		var button = button_template.duplicate()
+		button.text = "Edit " + child.name
+		button.icon = path_icon
+		item_container.add_child(button)
+		biggest_button_size = max(biggest_button_size, button.size.x)
+		button.pressed.connect(edit_selected.bind(child))
+	for child in all_curve_mesh:
+		var button = button_template.duplicate()
+		button.text = "Edit " + child.name
+		button.icon = curve_mesh_icon
+		item_container.add_child(button)
+		biggest_button_size = max(biggest_button_size, button.size.x)
+		button.pressed.connect(edit_selected.bind(child))
 	button_template.queue_free()
 	get_child(0).size. x = biggest_button_size + 12	
 	

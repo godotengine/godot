@@ -20,6 +20,7 @@
 
 #define CHUNK_INFO grid->grid_update_info[grid_index]
 VSet<MObstacle*> MNavigationRegion3D::obstacles;
+Vector<MNavigationRegion3D*> MNavigationRegion3D::all_navigation_nodes;
 
 void MNavigationRegion3D::_bind_methods(){
     ClassDB::bind_method(D_METHOD("update_navmesh","cam_pos"), &MNavigationRegion3D::update_navmesh);
@@ -62,8 +63,19 @@ void MNavigationRegion3D::_bind_methods(){
     ClassDB::bind_method(D_METHOD("save_nav_data"), &MNavigationRegion3D::save_nav_data);
     ADD_SIGNAL(MethodInfo("navigation_region_is_ready"));
     ADD_SIGNAL(MethodInfo("update_navmesh"));
+
+    ClassDB::bind_static_method("MNavigationRegion3D",D_METHOD("get_all_navigation_nodes"), &MNavigationRegion3D::get_all_navigation_nodes);
 }
 
+TypedArray<MNavigationRegion3D> MNavigationRegion3D::get_all_navigation_nodes(){
+    TypedArray<MNavigationRegion3D> out;
+    for(MNavigationRegion3D* nav : all_navigation_nodes){
+        if(nav->is_inside_tree()){
+            out.push_back(nav);
+        }
+    }
+    return out;
+}
 
 MNavigationRegion3D::MNavigationRegion3D(){
     update_timer = memnew(Timer);
@@ -77,10 +89,16 @@ MNavigationRegion3D::MNavigationRegion3D(){
     add_child(debug_mesh_instance);
     debug_mesh.instantiate();
     debug_mesh_instance->set_mesh(debug_mesh);
+    all_navigation_nodes.push_back(this);
 }
 
 MNavigationRegion3D::~MNavigationRegion3D(){
-
+    for(int i=0; i < all_navigation_nodes.size(); i++){
+        if(this == all_navigation_nodes[i]){
+            all_navigation_nodes.remove_at(i);
+            break;
+        }
+    }
 }
 
 void MNavigationRegion3D::init(MTerrain* _terrain, MGrid* _grid){

@@ -77,9 +77,6 @@ MCurve* MCurveTerrain::get_curve(){
 }
 
 void MCurveTerrain::set_terrain(MTerrain* m_terrain){
-    if(!VariantUtilityFunctions::is_instance_valid(m_terrain)){
-        return;
-    }
     terrain = m_terrain;
     grid = m_terrain->grid;
 }

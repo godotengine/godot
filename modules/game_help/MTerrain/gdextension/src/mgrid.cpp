@@ -845,10 +845,10 @@ void MGrid::clear_region_bounds(){
 void MGrid::update_physics(const Vector3& cam_pos){
     MGridPos pos = get_region_pos_by_world_pos(cam_pos);
     MBound bound(pos);
-    bound.left -= physics_update_limit;
-    bound.right += physics_update_limit;
-    bound.top -= physics_update_limit;
-    bound.bottom += physics_update_limit;
+    bound.left -= regions_processing_physics;
+    bound.right += regions_processing_physics;
+    bound.top -= regions_processing_physics;
+    bound.bottom += regions_processing_physics;
     //Clear last physics if they are not in the current bound
     for(int32_t z=_last_physics_grid_bound.top; z<=_last_physics_grid_bound.bottom;z++){
         for(int32_t x=_last_physics_grid_bound.left; x<=_last_physics_grid_bound.right; x++){

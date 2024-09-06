@@ -105,15 +105,15 @@ func set_terrain(input:MTerrain):
 	active_terrain = input
 	active_terrain.save_all_dirty_images()
 	validate_settings.call_deferred()
-	if input.terrain_size.x % input.region_size !=0:
+	if input.terrain_quad_count.x % input.region_quad_count !=0:
 		printerr("Terrain size.x is not divisible by its region size")
 		return
-	if input.terrain_size.x % input.region_size !=0:
+	if input.terrain_quad_count.x % input.region_quad_count !=0:
 		printerr("Terrain size.y is not divisible by its region size")
 		return
-	region_grid_size.x = input.terrain_size.x/input.region_size
-	region_grid_size.y = input.terrain_size.x/input.region_size
-	image_width = ((input.region_size*input.get_base_size())/input.get_h_scale())
+	region_grid_size.x = input.terrain_quad_count.x/input.region_quad_count
+	region_grid_size.y = input.terrain_quad_count.x/input.region_quad_count
+	image_width = ((input.region_quad_count*input.get_base_size())/input.get_h_scale())
 	data_dir = input.dataDir
 	is_init = true	
 	## Setting image list

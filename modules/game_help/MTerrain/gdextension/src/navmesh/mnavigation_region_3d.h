@@ -1,6 +1,7 @@
 #ifndef MNAVIGATIONREGION3D
 #define MNAVIGATIONREGION3D
 
+#define BUFFER_STRID_FLOAT 12
 #include "servers/navigation_server_3d.h"
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/resources/navigation_mesh.h"
@@ -68,7 +69,7 @@ class MNavigationRegion3D : public NavigationRegion3D{
     bool is_npoints_visible = false;
     int max_shown_lod=2;
     static VSet<MObstacle*> obstacles;
-    
+    static Vector<MNavigationRegion3D*> all_navigation_nodes;
 
 
 
@@ -77,6 +78,7 @@ class MNavigationRegion3D : public NavigationRegion3D{
     static void _bind_methods();
 
     public:
+    static TypedArray<MNavigationRegion3D> get_all_navigation_nodes();
     struct ObstacleInfo
     {
         float width;

@@ -4,6 +4,7 @@
 #define RSS RenderingServer::get_singleton()
 
 
+Vector<MCurveMesh*> MCurveMesh::all_curve_mesh_nodes;
 void MCurveMesh::_bind_methods(){
     ClassDB::bind_method(D_METHOD("_update_visibilty"), &MCurveMesh::_update_visibilty);
     ClassDB::bind_method(D_METHOD("_on_connections_updated"), &MCurveMesh::_on_connections_updated);
@@ -39,6 +40,18 @@ void MCurveMesh::_bind_methods(){
 
     ClassDB::bind_method(D_METHOD("reload"), &MCurveMesh::reload);
     ClassDB::bind_method(D_METHOD("recreate"), &MCurveMesh::recreate);
+
+    ClassDB::bind_static_method("MCurveMesh",D_METHOD("get_all_curve_mesh_nodes"), &MCurveMesh::get_all_curve_mesh_nodes);
+}
+
+TypedArray<MCurveMesh> MCurveMesh::get_all_curve_mesh_nodes(){
+    TypedArray<MCurveMesh> out;
+    for(MCurveMesh* c : all_curve_mesh_nodes){
+        if(c->is_inside_tree()){
+            out.push_back(c);
+        }
+    }
+    return out;
 }
 
 // after calling this sliced_pos and slice_info are invalid and should be recalculate
@@ -169,13 +182,24 @@ void MeshSlicedInfo::get_index(int mesh_count,PackedInt32Array& input){
     }
 }
 
+MCurveMesh::MCurveMesh(){
+    connect("tree_exited", Callable(this, "_update_visibilty"));
+    connect("tree_entered", Callable(this, "_update_visibilty"));
+    all_curve_mesh_nodes.push_back(this);
+}
+
 MCurveMesh::~MCurveMesh(){
     clear();
+    for(int i=0; i < all_curve_mesh_nodes.size(); i++){
+        if(this == all_curve_mesh_nodes[i]){
+            all_curve_mesh_nodes.remove_at(i);
+            break;
+        }
+    }
 }
 
 void MCurveMesh::_on_connections_updated(){
     std::lock_guard<std::recursive_mutex> lock(update_mutex);
-    //ERR_FAIL_COND(!VariantUtilityFunctions::is_instance_valid(path));
     ERR_FAIL_COND(curve.is_null());
     //ERR_FAIL_COND(!path->is_inside_tree());
     thread_task_id = WorkerThreadPool::get_singleton()->add_native_task(&MCurveMesh::thread_update,(void*)this);
@@ -262,7 +286,7 @@ Ref<MeshSlicedInfo> MCurveMesh::_generate_mesh_sliced_info(Ref<Mesh> mesh){
         bool has_slice = false;
         for(int j=0; j < sliced_pos_indicies.size(); j++){
             Pair<float,int> pi = sliced_pos_indicies[j];
-            //VariantUtilityFunctions::print("checking-----", std::abs(pi.first - vec.x) < SLICE_EPSILONE);
+            //UtilityFunctions::print("checking-----", std::abs(pi.first - vec.x) < SLICE_EPSILONE);
             if(std::abs(pi.first - vec.x) < SLICE_EPSILONE){
                 Vector<int32_t>* s_ptrw = s->sliced_info.ptrw() + pi.second;
                 s_ptrw->push_back(i); // pushing back vertex index
@@ -294,10 +318,7 @@ Ref<MeshSlicedInfo> MCurveMesh::_generate_mesh_sliced_info(Ref<Mesh> mesh){
 }
 
 void MCurveMesh::_update_visibilty(){
-    bool v = false;
-    if(VariantUtilityFunctions::is_instance_valid(path)){
-        v = path->is_visible() && path->is_inside_tree();
-    }
+    bool v = path->is_visible() && path->is_inside_tree() && is_inside_tree();
     for(HashMap<int64_t,Instance>::Iterator it=curve_mesh_instances.begin();it!=curve_mesh_instances.end();++it){
         RSS->instance_set_visible(it->value.instance,v);
     }
@@ -956,13 +977,13 @@ Array MCurveMesh::get_materials(){
 void MCurveMesh::_on_curve_changed(){
     MPath* new_path = Object::cast_to<MPath>(get_parent());
     if(new_path!=path){
-        if(path!=nullptr && VariantUtilityFunctions::is_instance_valid(path)){
+        if(path!=nullptr){
             path->disconnect("curve_changed",Callable(this,"_on_curve_changed"));
             path->disconnect("visibility_changed",Callable(this,"_update_visibilty"));
             path->disconnect("tree_exited",Callable(this,"_update_visibilty"));
             path->disconnect("tree_entered",Callable(this,"_update_visibilty"));
         }
-        if(new_path!=nullptr && VariantUtilityFunctions::is_instance_valid(new_path)){
+        if(new_path!=nullptr){
             new_path->connect("curve_changed",Callable(this,"_on_curve_changed"));
             new_path->connect("visibility_changed",Callable(this,"_update_visibilty"));
             new_path->connect("tree_exited",Callable(this,"_update_visibilty"));
@@ -1022,8 +1043,8 @@ void MCurveMesh::_notification(int p_what){
             ov.instantiate();
         }
         _generate_all_mesh_sliced_info();
-        _on_curve_changed();
         _generate_all_intersections_info();
+        _on_curve_changed();
         break;
     case NOTIFICATION_PARENTED:
         _on_curve_changed();
@@ -1068,7 +1089,6 @@ bool MCurveMesh::_set(const StringName &p_name, const Variant &p_value){
         if(seg.is_valid()){
             seg->connect("meshes_changed",Callable(this,"_generate_all_mesh_sliced_info"));
         }
-        _generate_all_mesh_sliced_info();
         meshes[index] = p_value;
         return true;
     }

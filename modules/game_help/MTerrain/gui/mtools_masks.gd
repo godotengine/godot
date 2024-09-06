@@ -87,5 +87,3 @@ func _on_h_box_container_resized():
 	
 	#vbox.size.x = owner.size.x - (global_position.x - owner.global_position.x)
 	#vbox.global_position.x = global_position.x
-
-

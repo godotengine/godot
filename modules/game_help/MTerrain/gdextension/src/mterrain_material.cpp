@@ -124,7 +124,11 @@ void MTerrainMaterial::update_uniforms_list(){
             if(n.begins_with("mterrain_") && String(u["hint_string"]) == "Texture2D"){
                 PackedStringArray parts = n.split("_");
                 if(parts.size()>0){
-                    new_terrain_textures_names.push_back(parts[1]);
+                    String _n = parts[1];
+                    for(int i=2; i<parts.size(); i++){
+                        _n += "_" + parts[i];
+                    }
+                    new_terrain_textures_names.push_back(_n);
                     continue;
                 }
             }
@@ -372,7 +376,9 @@ void MTerrainMaterial::load_images(Array images_names,Ref<MResource> first_res){
     */
     ERR_FAIL_COND(!grid);
     ERR_FAIL_COND(!grid->is_created());
-    ERR_FAIL_COND(is_loaded);
+    if(is_loaded){
+        clear();
+    }
     update_uniforms_list();
     //Adding textures
     //Making sure images names are string not stringName

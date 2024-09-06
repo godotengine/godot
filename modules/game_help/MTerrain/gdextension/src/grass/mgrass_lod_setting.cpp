@@ -13,17 +13,17 @@ void MGrassLodSetting::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_seed","input"), &MGrassLodSetting::set_seed);
     ClassDB::bind_method(D_METHOD("get_seed"), &MGrassLodSetting::get_seed);
     ADD_PROPERTY(PropertyInfo(Variant::INT,"seed"),"set_seed","get_seed");
-    ClassDB::bind_method(D_METHOD("set_divide","input"), &MGrassLodSetting::set_divide);
-    ClassDB::bind_method(D_METHOD("get_divide"), &MGrassLodSetting::get_divide);
-    ADD_PROPERTY(PropertyInfo(Variant::INT,"divide"),"set_divide","get_divide");
+    ClassDB::bind_method(D_METHOD("set_grid_lod","input"), &MGrassLodSetting::set_grid_lod);
+    ClassDB::bind_method(D_METHOD("get_grid_lod"), &MGrassLodSetting::get_grid_lod);
+    ADD_PROPERTY(PropertyInfo(Variant::INT,"grid_lod"),"set_grid_lod","get_grid_lod");
+    ClassDB::bind_method(D_METHOD("set_multimesh_subdivisions","input"), &MGrassLodSetting::set_multimesh_subdivisions);
+    ClassDB::bind_method(D_METHOD("get_multimesh_subdivisions"), &MGrassLodSetting::get_multimesh_subdivisions);
+    ADD_PROPERTY(PropertyInfo(Variant::INT,"multimesh_subdivisions"),"set_multimesh_subdivisions","get_multimesh_subdivisions");
 
     ADD_GROUP("Grass Setting","");
-    ClassDB::bind_method(D_METHOD("set_grass_in_cell","input"), &MGrassLodSetting::set_grass_in_cell);
-    ClassDB::bind_method(D_METHOD("get_grass_in_cell"), &MGrassLodSetting::get_grass_in_cell);
-    ADD_PROPERTY(PropertyInfo(Variant::INT,"grass_in_cell"),"set_grass_in_cell","get_grass_in_cell");
-    ClassDB::bind_method(D_METHOD("set_force_lod_count","input"), &MGrassLodSetting::set_force_lod_count);
-    ClassDB::bind_method(D_METHOD("get_force_lod_count"), &MGrassLodSetting::get_force_lod_count);
-    ADD_PROPERTY(PropertyInfo(Variant::INT,"force_lod_count"),"set_force_lod_count","get_force_lod_count");
+    ClassDB::bind_method(D_METHOD("set_cell_instance_count","input"), &MGrassLodSetting::set_cell_instance_count);
+    ClassDB::bind_method(D_METHOD("get_cell_instance_count"), &MGrassLodSetting::get_cell_instance_count);
+    ADD_PROPERTY(PropertyInfo(Variant::INT,"cell_instance_count"),"set_cell_instance_count","get_cell_instance_count");
     ClassDB::bind_method(D_METHOD("set_offset","input"), &MGrassLodSetting::set_offset);
     ClassDB::bind_method(D_METHOD("get_offset"), &MGrassLodSetting::get_offset);
     ADD_PROPERTY(PropertyInfo(Variant::VECTOR3,"offset"),"set_offset","get_offset");
@@ -161,33 +161,33 @@ int MGrassLodSetting::get_seed(){
     return seed;
 }
 
-void MGrassLodSetting::set_divide(int input){
+void MGrassLodSetting::set_multimesh_subdivisions(int input){
     ERR_FAIL_COND(input<1);
-    divide = input;
+    multimesh_subdivisions = input;
     is_dirty = true;
     emit_signal("lod_setting_changed");
 }
-int MGrassLodSetting::get_divide(){
-    return divide;
+int MGrassLodSetting::get_multimesh_subdivisions(){
+    return multimesh_subdivisions;
 }
 
-void MGrassLodSetting::set_grass_in_cell(int input){
+void MGrassLodSetting::set_cell_instance_count(int input){
     ERR_FAIL_COND(input<1);
-    grass_in_cell = input;
+    cell_instance_count = input;
     is_dirty = true;
     emit_signal("lod_setting_changed");
 }
-int MGrassLodSetting::get_grass_in_cell(){
-    return grass_in_cell;
+int MGrassLodSetting::get_cell_instance_count(){
+    return cell_instance_count;
 }
 
-void MGrassLodSetting::set_force_lod_count(int input){
-    force_lod_count = input;
+void MGrassLodSetting::set_grid_lod(int input){
+    grid_lod = input;
     is_dirty = true;
     emit_signal("lod_setting_changed");
 }
-int MGrassLodSetting::get_force_lod_count(){
-    return force_lod_count;
+int MGrassLodSetting::get_grid_lod(){
+    return grid_lod;
 }
 
 void MGrassLodSetting::set_offset(Vector3 input){
@@ -281,10 +281,10 @@ Vector3 MGrassLodSetting::get_rand_scale_end(){
     return rand_scale_end;
 }
 
-double MGrassLodSetting::rand_float(double a,double b,int _seed){
+double MGrassLodSetting::rand_float(double a,double b,int seed){
    Ref<RandomNumberGenerator> rand;
    rand.instantiate();
-   rand->set_seed(_seed);
+   rand->set_seed(seed);
    return rand->randf_range(a,b);
 }
 
@@ -547,4 +547,21 @@ void MGrassLodSetting::set_custom_a(MGrassLodSetting::CUSTOM input){
 }
 MGrassLodSetting::CUSTOM MGrassLodSetting::get_custom_a(){
     return custom_a;
+}
+
+bool MGrassLodSetting::_set(const StringName &p_name, const Variant &p_value){
+    /// Old name compatibity stuff
+    if(p_name==String("grass_in_cell")){
+        cell_instance_count = p_value;
+        return true;
+    }
+    if (p_name==String("force_lod_count")){
+        grid_lod = p_value;
+        return true;
+    }
+    if (p_name==String("divide")){
+        multimesh_subdivisions = p_value;
+        return true;
+    }
+    return false;
 }

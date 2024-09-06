@@ -30,9 +30,9 @@ class MGrassLodSetting : public Resource {
     public:
     bool is_dirty=false;
     int seed=1001;
-    int divide=1;
-    int grass_in_cell=1;
-    int force_lod_count=-1;
+    int multimesh_subdivisions=1;
+    int cell_instance_count=1;
+    int grid_lod=-1;
     Vector3 offset = Vector3(0,0,0);
     Vector3 rot_offset = Vector3(0,0,0);
     Vector3 rand_pos_start = Vector3(0,0,0);
@@ -81,14 +81,14 @@ class MGrassLodSetting : public Resource {
     void set_seed(int input);
     int get_seed();
 
-    void set_divide(int input);
-    int get_divide();
+    void set_multimesh_subdivisions(int input);
+    int get_multimesh_subdivisions();
 
-    void set_grass_in_cell(int input);
-    int get_grass_in_cell();
+    void set_cell_instance_count(int input);
+    int get_cell_instance_count();
 
-    void set_force_lod_count(int input);
-    int get_force_lod_count();
+    void set_grid_lod(int input);
+    int get_grid_lod();
 
     void set_offset(Vector3 input);
     Vector3 get_offset();
@@ -162,6 +162,9 @@ class MGrassLodSetting : public Resource {
     CUSTOM get_custom_b();
     void set_custom_a(CUSTOM input);
     CUSTOM get_custom_a();
+
+
+    bool _set(const StringName &p_name, const Variant &p_value);
 };
 VARIANT_ENUM_CAST(MGrassLodSetting::CUSTOM);
 #endif

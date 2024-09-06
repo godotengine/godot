@@ -24,9 +24,7 @@ class MTool : public Object
 {
     GDCLASS(MTool, Object);
 private:
-    static Vector<Node3D*> editor_cameras;
-    static Vector<Vector3> editor_cameras_last_pos;
-    static int camera_index;
+    static Node3D* cached_editor_camera;
     static bool editor_plugin_active;
 
 protected:

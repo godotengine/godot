@@ -6,20 +6,39 @@
 
 #define RSS RenderingServer::get_singleton()
 
-
+Vector<MPath*> MPath::all_path_nodes;
 void MPath::_bind_methods(){
     ADD_SIGNAL(MethodInfo("curve_changed"));
 
     ClassDB::bind_method(D_METHOD("set_curve","input"), &MPath::set_curve);
     ClassDB::bind_method(D_METHOD("get_curve"), &MPath::get_curve);
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "MCurve"),"set_curve","get_curve");
+
+    ClassDB::bind_static_method("MPath",D_METHOD("get_all_path_nodes"), &MPath::get_all_path_nodes);
+}
+
+TypedArray<MPath> MPath::get_all_path_nodes(){
+    TypedArray<MPath> out;
+    for(MPath* p: all_path_nodes){
+        if(p->is_inside_tree()){
+            out.push_back(p);
+        }
+    }
+    return out;
 }
 
 MPath::MPath(){
     set_process(true);
     set_notify_transform(true);
+    all_path_nodes.push_back(this);
 }
 MPath::~MPath(){
+    for(int i=0; i < all_path_nodes.size(); i++){
+        if(this == all_path_nodes[i]){
+            all_path_nodes.remove_at(i);
+            break;
+        }
+    }
 }
 
 void MPath::set_curve(Ref<MCurve> input){

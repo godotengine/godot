@@ -121,11 +121,10 @@ struct MSaveConfig
     }
 };
 
-class MGrid : public Object {
-    GDCLASS(MGrid, Object);
+class MGrid {
     friend class MRegion;
     friend class MTerrain;
-    friend struct MImage;
+    friend class MImage;
     private:
     bool _is_opengl=false;
     uint8_t _update_id=0; // Only for mesh update not for physics
@@ -175,12 +174,6 @@ class MGrid : public Object {
     bool is_update_regions_future_valid = false;
 
 
-
-
-
-    protected:
-    static void _bind_methods(){};
-
     public:
     std::mutex update_chunks_mutex;
     MSaveConfig save_config;
@@ -200,7 +193,7 @@ class MGrid : public Object {
     PackedStringArray heightmap_layers;
     bool has_normals = false;
     Dictionary uniforms_id;
-    int32_t physics_update_limit = 1;
+    int32_t regions_processing_physics = 1;
     int32_t region_limit = 2;
     RID space;
     String dataDir;

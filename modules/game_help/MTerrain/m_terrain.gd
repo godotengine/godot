@@ -1,6 +1,6 @@
 @tool
 extends EditorPlugin
-var version:String="0.15.0"
+var version:String="0.16.0"
 
 var tools= null
 

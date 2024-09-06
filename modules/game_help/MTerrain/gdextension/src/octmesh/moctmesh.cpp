@@ -159,9 +159,6 @@ void MOctMesh::octree_thread_update(void* input){
             continue;
         }
         MOctMesh* oct_mesh = octpoint_to_octmesh.get(p.id);
-        if(oct_mesh==nullptr){
-            continue;
-        }
         oct_mesh->update_lod_mesh(p.lod);
     }
 }

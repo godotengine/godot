@@ -33,10 +33,7 @@ class MGrid;
 
 
 
-
-class MRegion : public Object{
-    GDCLASS(MRegion, Object);
-
+class MRegion{
     private:
     Vector<bool> _images_init_status; // Defently should protected by mutex
     bool _is_online=false;
@@ -54,10 +51,6 @@ class MRegion : public Object{
     _FORCE_INLINE_ void _calculate_min_max_height();
     std::mutex physics_mutex;
     std::atomic<bool> is_data_loaded;
-
-
-    protected:
-    static void _bind_methods(){}
 
     public:
     bool is_data_loaded_reg_thread = false; // Must use only in region update thread

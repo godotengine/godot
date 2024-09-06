@@ -45,27 +45,27 @@ func generate_info(_t:MTerrain,_version:String, keyboard_actions):
 		Terror.visible = true
 		return
 	var errstr:String=""
-	if terrain.terrain_size.x%terrain.region_size!=0 or terrain.terrain_size.x%terrain.region_size!=0:
+	if terrain.terrain_quad_count.x%terrain.region_quad_count!=0 or terrain.terrain_quad_count.x%terrain.region_quad_count!=0:
 		errstr="Terrain size in x or y direction must be divisible by region size\nfor example in this case as your region size %s your terain size can be (%d,%d) or (%d,%d) or (%d,%d)\nThese are in grid unit which currently is %d meter"
-		var ex1:=Vector2i(terrain.region_size*1,terrain.region_size*1)
-		var ex2:=Vector2i(terrain.region_size*2,terrain.region_size*2)
-		var ex3:=Vector2i(terrain.region_size*1,terrain.region_size*2)
-		errstr = errstr % [terrain.region_size,ex1.x,ex1.y,ex2.x,ex2.y,ex3.x,ex3.y,terrain.get_base_size()]
+		var ex1:=Vector2i(terrain.region_quad_count*1,terrain.region_quad_count*1)
+		var ex2:=Vector2i(terrain.region_quad_count*2,terrain.region_quad_count*2)
+		var ex3:=Vector2i(terrain.region_quad_count*1,terrain.region_quad_count*2)
+		errstr = errstr % [terrain.region_quad_count,ex1.x,ex1.y,ex2.x,ex2.y,ex3.x,ex3.y,terrain.get_base_size()]
 	if not errstr.is_empty():
 		errstr +="\n\nChange these and close and reopen this window"
 		Terror.text = errstr
 		Terror.visible = true
-	region_meter_size = (terrain.get_base_size()*terrain.region_size)
+	region_meter_size = (terrain.get_base_size()*terrain.region_quad_count)
 	region_pixel_size = (region_meter_size/terrain.get_h_scale()) + 1
-	terrain_meter_size = terrain.terrain_size*terrain.get_base_size()
+	terrain_meter_size = terrain.terrain_quad_count*terrain.get_base_size()
 	terrain_area = terrain_meter_size.x * terrain_meter_size.x
 	terrain_pixel_size = (terrain_meter_size/terrain.get_h_scale()) + Vector2(1,1)
-	region_grid_size = (terrain.terrain_size) / terrain.region_size
+	region_grid_size = (terrain.terrain_quad_count) / terrain.region_quad_count
 	region_count = region_grid_size.x * region_grid_size.y
 	var warnstr:String=""
 	warnstr = "Images in data directory should be width=height=%d one common edge pixel between regions will be created at load time."%(region_pixel_size-1)
 	Rwarning.text = warnstr
-	tsizeg.text += " %d X %d" % [terrain.terrain_size.x,terrain.terrain_size.y]
+	tsizeg.text += " %d X %d" % [terrain.terrain_quad_count.x,terrain.terrain_quad_count.y]
 	tsizem.text += " %dm X %dm" % [terrain_meter_size.x,terrain_meter_size.y]
 	takm.text += " %10.3f km2" % [float(terrain_area)/1000000.0]
 	tsizepx.text += " %d X %d" % [terrain_pixel_size.x,terrain_pixel_size.y]

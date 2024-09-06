@@ -34,7 +34,6 @@ struct MImageUndoData {
 };
 
 struct MImage {
-public:
     int index=-1;
     MRegion* region=nullptr;
     StringName name;

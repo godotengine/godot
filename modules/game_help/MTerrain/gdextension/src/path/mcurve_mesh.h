@@ -85,8 +85,10 @@ class MCurveMesh : public Node {
     Vector<Pair<int64_t,RID>> mesh_updated_list; // int64t -> connection ID, RID -> can be mesh or multimesh
     HashMap<int64_t,Pair<float,float>> conn_ratio_limits;
 
+    static Vector<MCurveMesh*> all_curve_mesh_nodes;
     public:
-    MCurveMesh()=default;
+    static TypedArray<MCurveMesh> get_all_curve_mesh_nodes();
+    MCurveMesh();
     ~MCurveMesh();
     std::recursive_mutex update_mutex;
     void _on_connections_updated();

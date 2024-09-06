@@ -150,4 +150,3 @@ func get_total_width():
 	total *= 1.01
 	return total
 #endregion
-

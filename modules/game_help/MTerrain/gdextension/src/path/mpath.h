@@ -21,9 +21,10 @@ class MPath : public Node3D{
     RID scenario;
     void _get_handle(PackedVector3Array& positions, PackedInt32Array& ids, const MCurve::Point* p,uint32_t p_id,bool secondary) const;
     bool mirror_control = true;
-    
+    static Vector<MPath*> all_path_nodes;
 
     public:
+    static TypedArray<MPath> get_all_path_nodes();
     MPath();
     ~MPath();
     Ref<MCurve> curve;

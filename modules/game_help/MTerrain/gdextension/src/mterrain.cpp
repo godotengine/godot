@@ -14,6 +14,7 @@
 #include "mbrush_layers.h"
 #include "mtool.h"
 
+Vector<MTerrain*> MTerrain::all_terrain_nodes;
 
 void MTerrain::_bind_methods() {
     ClassDB::bind_method(D_METHOD("_dummy_setter","input"), &MTerrain::_dummy_setter);
@@ -62,46 +63,51 @@ void MTerrain::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_heightmap_layers"), &MTerrain::get_heightmap_layers);
     ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "heightmap_layers",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_STORAGE), "set_heightmap_layers","get_heightmap_layers");
 
-    ClassDB::bind_method(D_METHOD("set_update_chunks_interval","interval"), &MTerrain::set_update_chunks_interval);
-    ClassDB::bind_method(D_METHOD("get_update_chunks_interval"), &MTerrain::get_update_chunks_interval);
-    ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "update_chunks_interval"), "set_update_chunks_interval", "get_update_chunks_interval");
+    ClassDB::bind_method(D_METHOD("set_chunks_update_interval","interval"), &MTerrain::set_chunks_update_interval);
+    ClassDB::bind_method(D_METHOD("get_chunks_update_interval"), &MTerrain::get_chunks_update_interval);
+    ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "chunks_update_interval"), "set_chunks_update_interval", "get_chunks_update_interval");
 
-    ClassDB::bind_method(D_METHOD("set_update_chunks_loop", "val"), &MTerrain::set_update_chunks_loop);
-    ClassDB::bind_method(D_METHOD("get_update_chunks_loop"), &MTerrain::get_update_chunks_loop);
-    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "update_chunks_loop"), "set_update_chunks_loop", "get_update_chunks_loop");
+    ClassDB::bind_method(D_METHOD("set_chunks_update_loop_enabled", "val"), &MTerrain::set_chunks_update_loop_enabled);
+    ClassDB::bind_method(D_METHOD("get_chunks_update_loop_enabled"), &MTerrain::get_chunks_update_loop_enabled);
+    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "chunks_update_loop_enabled"), "set_chunks_update_loop_enabled", "get_chunks_update_loop_enabled");
 
-    ClassDB::bind_method(D_METHOD("set_update_physics_interval", "val"), &MTerrain::set_update_physics_interval);
-    ClassDB::bind_method(D_METHOD("get_update_physics_interval"), &MTerrain::get_update_physics_interval);
-    ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "update_physics_interval"), "set_update_physics_interval", "get_update_physics_interval");
+    ClassDB::bind_method(D_METHOD("set_physics_update_interval", "val"), &MTerrain::set_physics_update_interval);
+    ClassDB::bind_method(D_METHOD("get_physics_update_interval"), &MTerrain::get_physics_update_interval);
+    ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "physics_update_interval"), "set_physics_update_interval", "get_physics_update_interval");
 
-    ClassDB::bind_method(D_METHOD("set_update_physics_loop", "val"), &MTerrain::set_update_physics_loop);
-    ClassDB::bind_method(D_METHOD("get_update_physics_loop"), &MTerrain::get_update_physics_loop);
-    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "update_physics_loop"), "set_update_physics_loop", "get_update_physics_loop");
+    ClassDB::bind_method(D_METHOD("set_physics_update_loop_enabled", "val"), &MTerrain::set_physics_update_loop_enabled);
+    ClassDB::bind_method(D_METHOD("get_physics_update_loop_enabled"), &MTerrain::get_physics_update_loop_enabled);
+    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "physics_update_loop_enabled"), "set_physics_update_loop_enabled", "get_physics_update_loop_enabled");
 
     ADD_PROPERTY(PropertyInfo(Variant::BOOL,"Region Unit",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_CATEGORY),"_dummy_setter","_dummy_getter");
 
     ClassDB::bind_method(D_METHOD("set_regions_limit","input"), &MTerrain::set_regions_limit);
     ClassDB::bind_method(D_METHOD("get_regions_limit"), &MTerrain::get_regions_limit);
-    ADD_PROPERTY(PropertyInfo(Variant::INT, "regions_limit"), "set_regions_limit", "get_regions_limit");
+    ADD_PROPERTY(PropertyInfo(Variant::INT, "regions_visible"), "set_regions_limit", "get_regions_limit");
 
-    ClassDB::bind_method(D_METHOD("set_physics_update_limit", "val"), &MTerrain::set_physics_update_limit);
-    ClassDB::bind_method(D_METHOD("get_physics_update_limit"), &MTerrain::get_physics_update_limit);
-    ADD_PROPERTY(PropertyInfo(Variant::INT, "physics_update_limit"), "set_physics_update_limit", "get_physics_update_limit");
+    ClassDB::bind_method(D_METHOD("set_regions_processing_physics", "val"), &MTerrain::set_regions_processing_physics);
+    ClassDB::bind_method(D_METHOD("get_regions_processing_physics"), &MTerrain::get_regions_processing_physics);
+    ADD_PROPERTY(PropertyInfo(Variant::INT, "regions_processing_physics"), "set_regions_processing_physics", "get_regions_processing_physics");
+
+    ClassDB::bind_method(D_METHOD("get_terrain_region_count"), &MTerrain::get_terrain_region_count);
+    ClassDB::bind_method(D_METHOD("set_terrain_region_count", "size"), &MTerrain::set_terrain_region_count);
+    ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I,"terrain_region_count",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR), "set_terrain_region_count", "get_terrain_region_count");
 
     ADD_PROPERTY(PropertyInfo(Variant::BOOL,"Grid unit (min_size)",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_CATEGORY),"_dummy_setter","_dummy_getter");
 
     ClassDB::bind_method(D_METHOD("get_terrain_size"), &MTerrain::get_terrain_size);
     ClassDB::bind_method(D_METHOD("set_terrain_size", "size"), &MTerrain::set_terrain_size);
-    ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I,"terrain_size"), "set_terrain_size", "get_terrain_size");
+    ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I,"terrain_quad_count"), "set_terrain_size", "get_terrain_size");
 
     ClassDB::bind_method(D_METHOD("set_region_size", "region_size"), &MTerrain::set_region_size);
     ClassDB::bind_method(D_METHOD("get_region_size"), &MTerrain::get_region_size);
-    ADD_PROPERTY(PropertyInfo(Variant::INT,"region_size"), "set_region_size", "get_region_size");
+    ADD_PROPERTY(PropertyInfo(Variant::INT,"region_quad_count"), "set_region_size", "get_region_size");
     
     
     ClassDB::bind_method(D_METHOD("set_max_range", "max_range"), &MTerrain::set_max_range);
     ClassDB::bind_method(D_METHOD("get_max_range"), &MTerrain::get_max_range);
-    ADD_PROPERTY(PropertyInfo(Variant::INT, "max_range"), "set_max_range", "get_max_range");
+    ADD_PROPERTY(PropertyInfo(Variant::INT, "max_quad_visible"), "set_max_range", "get_max_range");
+
     ClassDB::bind_method(D_METHOD("set_custom_camera", "camera"), &MTerrain::set_custom_camera);
     ClassDB::bind_method(D_METHOD("set_editor_camera", "camera"), &MTerrain::set_editor_camera);
 
@@ -117,11 +123,11 @@ void MTerrain::_bind_methods() {
 
     ClassDB::bind_method(D_METHOD("set_min_size","index"), &MTerrain::set_min_size);
     ClassDB::bind_method(D_METHOD("get_min_size"), &MTerrain::get_min_size);
-    ADD_PROPERTY(PropertyInfo(Variant::INT,"min_size",PROPERTY_HINT_ENUM, M_SIZE_LIST_STRING), "set_min_size", "get_min_size");
+    ADD_PROPERTY(PropertyInfo(Variant::INT,"quad_size_min",PROPERTY_HINT_ENUM, M_SIZE_LIST_STRING), "set_min_size", "get_min_size");
 
     ClassDB::bind_method(D_METHOD("set_max_size","index"), &MTerrain::set_max_size);
     ClassDB::bind_method(D_METHOD("get_max_size"), &MTerrain::get_max_size);
-    ADD_PROPERTY(PropertyInfo(Variant::INT,"max_size",PROPERTY_HINT_ENUM, M_SIZE_LIST_STRING), "set_max_size", "get_max_size");
+    ADD_PROPERTY(PropertyInfo(Variant::INT,"quad_size_max",PROPERTY_HINT_ENUM, M_SIZE_LIST_STRING), "set_max_size", "get_max_size");
     
     ClassDB::bind_method(D_METHOD("set_min_h_scale","index"), &MTerrain::set_min_h_scale);
     ClassDB::bind_method(D_METHOD("get_min_h_scale"), &MTerrain::get_min_h_scale);
@@ -207,6 +213,18 @@ void MTerrain::_bind_methods() {
     ClassDB::bind_method(D_METHOD("update_normals","left","right","top","bottom"), &MTerrain::update_normals);
 
     ClassDB::bind_method(D_METHOD("_update_visibility") , &MTerrain::_update_visibility);
+
+    ClassDB::bind_static_method("MTerrain",D_METHOD("get_all_terrain_nodes"), &MTerrain::get_all_terrain_nodes);
+}
+
+TypedArray<MTerrain> MTerrain::get_all_terrain_nodes(){
+    TypedArray<MTerrain> out;
+    for(int i=0; i < all_terrain_nodes.size();i++){
+        if(all_terrain_nodes[i]->is_inside_tree()){
+            out.push_back(all_terrain_nodes[i]);
+        }
+    }
+    return out;
 }
 
 MTerrain::MTerrain() {
@@ -220,13 +238,13 @@ MTerrain::MTerrain() {
     recalculate_terrain_config(true);
     grid = memnew(MGrid);
     update_chunks_timer = memnew(Timer);
-    update_chunks_timer->set_wait_time(update_chunks_interval);
+    update_chunks_timer->set_wait_time(chunks_update_interval);
     update_chunks_timer->set_one_shot(true);
     add_child(update_chunks_timer);
     update_chunks_timer->connect("timeout", Callable(this, "finish_update"));
 
     update_physics_timer = memnew(Timer);
-    update_physics_timer->set_wait_time(update_physics_interval);
+    update_physics_timer->set_wait_time(physics_update_interval);
     update_physics_timer->set_one_shot(true);
     add_child(update_physics_timer);
     update_physics_timer->connect("timeout", Callable(this, "finish_update_physics"));
@@ -235,11 +253,18 @@ MTerrain::MTerrain() {
     connect("ready",Callable(this,"_terrain_ready_signal"));
     connect("child_exiting_tree",Callable(this,"terrain_child_changed"));
     connect("child_entered_tree",Callable(this,"terrain_child_changed"));
+    all_terrain_nodes.push_back(this);
 }
 
 MTerrain::~MTerrain() {
     remove_grid();
     memdelete(grid);
+    for(int i=0; i < all_terrain_nodes.size(); i++){
+        if(this==all_terrain_nodes[i]){
+            all_terrain_nodes.remove_at(i);
+            break;
+        }
+    }
 }
 
 
@@ -254,6 +279,21 @@ void MTerrain::create_grid(){
     ERR_FAIL_COND(grid->is_created());
     ERR_FAIL_COND_EDMSG(terrain_size.x%region_size!=0,"Terrain size X component is not divisible by region size");
     ERR_FAIL_COND_EDMSG(terrain_size.y%region_size!=0,"Terrain size Y component is not divisible by region size");
+    if(Engine::get_singleton()->is_editor_hint()){
+        if(dataDir.is_empty() || dataDir == String("res://") || !dataDir.is_absolute_path()){
+            dataDir = "res://mterrain_data";
+        }
+        if(layersDataDir.is_empty() || layersDataDir == String("res://") || !layersDataDir.is_absolute_path()){
+            layersDataDir = dataDir.path_join("layers");
+        }
+
+        if(dataDir.is_absolute_path() && !DirAccess::dir_exists_absolute(dataDir)){
+            DirAccess::make_dir_recursive_absolute(dataDir);
+        }
+        if(layersDataDir.is_absolute_path() && !DirAccess::dir_exists_absolute(layersDataDir)){
+            DirAccess::make_dir_recursive_absolute(layersDataDir);
+        }
+    }
     _chunks = memnew(MChunks);
     grid->update_renderer_info();
     _chunks->create_chunks(size_list[min_size_index],size_list[max_size_index],h_scale_list[min_h_scale_index],h_scale_list[max_h_scale_index],size_info);
@@ -327,10 +367,10 @@ void MTerrain::create_grid(){
         }
     }
     total_update_count = confirm_grass_list.size() + confirm_nav.size();
-    if(update_physics_loop){
+    if(physics_update_loop_enabled){
         update_physics();
     }
-    if(update_chunks_loop){
+    if(chunks_update_loop_enabled){
         update();
     }
 }
@@ -475,7 +515,7 @@ void MTerrain::finish_update_physics(){
         if(update_stage_physics>=confirm_grass_col_list.size()){
             update_stage_physics = -1;
         }
-        if(update_physics_loop){
+        if(physics_update_loop_enabled){
             call_deferred("update_physics");
         }
     } else {
@@ -595,13 +635,17 @@ void MTerrain::get_cam_pos() {
             cam_pos = camera->get_global_position();
             return;
         }
-    }    
+    }
     ERR_FAIL_MSG("No camera is detected");
 }
 
 void MTerrain::set_dataDir(String input) {
     ERR_FAIL_COND_MSG(grid->is_created(),"Can not change dataDir after terrain is created!");
     dataDir = input;
+    if(Engine::get_singleton()->is_editor_hint() && !dataDir.is_empty() && dataDir != String("res://") && dataDir.is_absolute_path() && layersDataDir.is_empty() && is_inside_tree()){
+        // Setting automaticly layer data directory
+        layersDataDir = dataDir.path_join("layers");
+    }
 }
 
 String MTerrain::get_dataDir() {
@@ -644,15 +688,15 @@ int MTerrain::get_regions_limit(){
     return grid->region_limit;
 }
 
-float MTerrain::get_update_chunks_interval(){
-    return update_chunks_interval;
+float MTerrain::get_chunks_update_interval(){
+    return chunks_update_interval;
 }
-void MTerrain::set_update_chunks_interval(float input){
-    update_chunks_interval = input;
+void MTerrain::set_chunks_update_interval(float input){
+    chunks_update_interval = input;
     if(input < 0.001){
-        update_chunks_interval = 0.001;
+        chunks_update_interval = 0.001;
     }
-    update_chunks_timer->set_wait_time(update_chunks_interval);
+    update_chunks_timer->set_wait_time(chunks_update_interval);
 }
 
 float MTerrain::get_distance_update_threshold(){
@@ -662,46 +706,46 @@ void MTerrain::set_distance_update_threshold(float input){
     distance_update_threshold = input;
 }
 
-void MTerrain::set_update_chunks_loop(bool input) {
-    update_chunks_loop = input;
-    if(update_chunks_loop && finish_updating){
+void MTerrain::set_chunks_update_loop_enabled(bool input) {
+    chunks_update_loop_enabled = input;
+    if(chunks_update_loop_enabled && finish_updating){
         update();
     }
 }
 
-bool MTerrain::get_update_chunks_loop() {
-    return update_chunks_loop;
+bool MTerrain::get_chunks_update_loop_enabled() {
+    return chunks_update_loop_enabled;
 }
 
-float MTerrain::get_update_physics_interval(){
-    return update_physics_interval;
+float MTerrain::get_physics_update_interval(){
+    return physics_update_interval;
 }
-void MTerrain::set_update_physics_interval(float input){
-    update_physics_interval = input;
+void MTerrain::set_physics_update_interval(float input){
+    physics_update_interval = input;
     if(input < 0.001){
-        update_physics_interval = 0.001;
+        physics_update_interval = 0.001;
     }
-    update_physics_timer->set_wait_time(update_physics_interval);
+    update_physics_timer->set_wait_time(physics_update_interval);
 }
-bool MTerrain::get_update_physics_loop(){
-    return update_physics_loop;
+bool MTerrain::get_physics_update_loop_enabled(){
+    return physics_update_loop_enabled;
 }
-void MTerrain::set_update_physics_loop(bool input){
-    update_physics_loop = input;
-    if(update_physics_loop && finish_updating_physics){
+void MTerrain::set_physics_update_loop_enabled(bool input){
+    physics_update_loop_enabled = input;
+    if(physics_update_loop_enabled && finish_updating_physics){
         update_physics();
     }
 }
 
-void MTerrain::set_physics_update_limit(int32_t input){
+void MTerrain::set_regions_processing_physics(int32_t input){
     if(input<0){
-        grid->physics_update_limit = 0;
+        grid->regions_processing_physics = 0;
     } else {
-        grid->physics_update_limit = input;
+        grid->regions_processing_physics = input;
     }
 }
-int32_t MTerrain::get_physics_update_limit(){
-    return grid->physics_update_limit;
+int32_t MTerrain::get_regions_processing_physics(){
+    return grid->regions_processing_physics;
 }
 
 Vector2i MTerrain::get_terrain_size(){
@@ -714,6 +758,14 @@ void MTerrain::set_terrain_size(Vector2i size){
         return;
     }
     terrain_size = size;
+}
+
+Vector2i MTerrain::get_terrain_region_count(){
+    return terrain_size/region_size;
+}
+
+void MTerrain::set_terrain_region_count(Vector2i size){
+    terrain_size = size * region_size;
 }
 
 
@@ -981,6 +1033,31 @@ bool MTerrain::_set(const StringName &_name, const Variant &p_value) {
     if(p_name.begins_with("MBL_")){
         int64_t index = p_name.get_slicec('_',1).to_int();
         brush_layers[index] = p_value;
+        return true;
+    }
+    /// Compatibilty stuff
+    if(p_name==String("max_range")){
+        set_max_range(p_value);
+        return true;
+    }
+    if(p_name==String("terrain_size")){
+        set_terrain_size(p_value);
+        return true;
+    }
+    if(p_name==String("region_size")){
+        set_region_size(p_value);
+        return true;
+    }
+    if(p_name==String("regions_limit")){
+        set_regions_limit(p_value);
+        return true;
+    }
+    if(p_name==String("min_size")){
+        set_min_size(p_value);
+        return true;
+    }
+    if(p_name==String("max_size")){
+        set_max_size(p_value);
         return true;
     }
     return false;
