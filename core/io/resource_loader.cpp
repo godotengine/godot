@@ -818,6 +818,8 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 		load_task_ptr = &load_task;
 	}
 
+	p_thread_load_lock.temp_unlock();
+
 	Ref<Resource> resource = load_task_ptr->resource;
 	if (r_error) {
 		*r_error = load_task_ptr->error;
@@ -854,6 +856,8 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 			}
 		}
 	}
+
+	p_thread_load_lock.temp_relock();
 
 	return resource;
 }
