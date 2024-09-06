@@ -297,7 +297,7 @@ Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size) {
 
 	// Create the buffer for transcoded/decompressed data.
 	Vector<uint8_t> out_data;
-	out_data.resize(Image::get_image_data_size(basisu_info.m_width, basisu_info.m_height, image_format, basisu_info.m_total_levels > 1));
+	out_data.resize(Image::get_image_data_size(basisu_info.m_width, basisu_info.m_height, image_format, basisu_info.m_total_levels - 1));
 
 	uint8_t *dst = out_data.ptrw();
 	memset(dst, 0, out_data.size());
@@ -317,7 +317,7 @@ Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size) {
 		}
 	}
 
-	image = Image::create_from_data(basisu_info.m_width, basisu_info.m_height, basisu_info.m_total_levels > 1, image_format, out_data);
+	image = Image::create_from_data(basisu_info.m_width, basisu_info.m_height, basisu_info.m_total_levels - 1, image_format, out_data);
 
 	if (needs_ra_rg_swap) {
 		// Swap uncompressed RA-as-RG texture's color channels.

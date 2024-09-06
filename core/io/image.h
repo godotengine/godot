@@ -187,13 +187,13 @@ private:
 	Vector<uint8_t> data;
 	int width = 0;
 	int height = 0;
-	bool mipmaps = false;
+	int mipmap_count = 0; // The main image isn't considered a mipmap.
 
 	void _copy_internals_from(const Image &p_image) {
 		format = p_image.format;
 		width = p_image.width;
 		height = p_image.height;
-		mipmaps = p_image.mipmaps;
+		mipmap_count = p_image.mipmap_count;
 		data = p_image.data;
 	}
 
@@ -257,7 +257,7 @@ public:
 		VALIDATE_3D_ERR_IMAGE_HAS_MIPMAPS,
 	};
 
-	static Image3DValidateError validate_3d_image(Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_images);
+	static Image3DValidateError validate_3d_image(Format p_format, int p_width, int p_height, int p_depth, int p_mipmap_count, const Vector<Ref<Image>> &p_images);
 	static String get_3d_image_validation_error_text(Image3DValidateError p_error);
 
 	/**
@@ -282,7 +282,7 @@ public:
 	/**
 	 * Generate a mipmap to an image (creates an image 1/4 the size, with averaging of 4->1)
 	 */
-	Error generate_mipmaps(bool p_renormalize = false);
+	Error generate_mipmaps(bool p_renormalize = false, int p_limit = -1);
 
 	enum RoughnessChannel {
 		ROUGHNESS_CHANNEL_R,
@@ -300,8 +300,8 @@ public:
 	/**
 	 * Creates new internal image data of a given size and format. Current image will be lost.
 	 */
-	void initialize_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format);
-	void initialize_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data);
+	void initialize_data(int p_width, int p_height, int p_mipmap_count, Format p_format);
+	void initialize_data(int p_width, int p_height, int p_mipmap_count, Format p_format, const Vector<uint8_t> &p_data);
 	void initialize_data(const char **p_xpm);
 
 	/**
@@ -322,9 +322,9 @@ public:
 	Error save_webp(const String &p_path, const bool p_lossy = false, const float p_quality = 0.75f) const;
 	Vector<uint8_t> save_webp_to_buffer(const bool p_lossy = false, const float p_quality = 0.75f) const;
 
-	static Ref<Image> create_empty(int p_width, int p_height, bool p_use_mipmaps, Format p_format);
-	static Ref<Image> create_from_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data);
-	void set_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data);
+	static Ref<Image> create_empty(int p_width, int p_height, int p_mipmap_count, Format p_format);
+	static Ref<Image> create_from_data(int p_width, int p_height, int p_mipmap_count, Format p_format, const Vector<uint8_t> &p_data);
+	void set_data(int p_width, int p_height, int p_mipmap_count, Format p_format, const Vector<uint8_t> &p_data);
 
 	/**
 	 * create an empty image
@@ -333,11 +333,11 @@ public:
 	/**
 	 * create an empty image of a specific size and format
 	 */
-	Image(int p_width, int p_height, bool p_use_mipmaps, Format p_format);
+	Image(int p_width, int p_height, int p_mipmap_count, Format p_format);
 	/**
 	 * import an image of a specific size and format from a pointer
 	 */
-	Image(int p_width, int p_height, bool p_mipmaps, Format p_format, const Vector<uint8_t> &p_data);
+	Image(int p_width, int p_height, int p_mipmap_count, Format p_format, const Vector<uint8_t> &p_data);
 
 	~Image() {}
 
@@ -355,7 +355,7 @@ public:
 	static int get_format_block_size(Format p_format);
 	static void get_format_min_pixel_size(Format p_format, int &r_w, int &r_h);
 
-	static int64_t get_image_data_size(int p_width, int p_height, Format p_format, bool p_mipmaps = false);
+	static int64_t get_image_data_size(int p_width, int p_height, Format p_format, int p_mipmap_count = 0);
 	static int get_image_required_mipmaps(int p_width, int p_height, Format p_format);
 	static Size2i get_image_mipmap_size(int p_width, int p_height, Format p_format, int p_mipmap);
 	static int64_t get_image_mipmap_offset(int p_width, int p_height, Format p_format, int p_mipmap);
@@ -447,7 +447,7 @@ public:
 		format = p_image->format;
 		width = p_image->width;
 		height = p_image->height;
-		mipmaps = p_image->mipmaps;
+		mipmap_count = p_image->mipmap_count;
 		data = p_image->data;
 	}
 

@@ -94,7 +94,7 @@ void GradientTexture1D::_update() {
 
 	if (use_hdr) {
 		// High dynamic range.
-		Ref<Image> image = memnew(Image(width, 1, false, Image::FORMAT_RGBAF));
+		Ref<Image> image = memnew(Image(width, 1, 0, Image::FORMAT_RGBAF));
 		Gradient &g = **gradient;
 		// `create()` isn't available for non-uint8_t data, so fill in the data manually.
 		for (int i = 0; i < width; i++) {
@@ -127,7 +127,7 @@ void GradientTexture1D::_update() {
 			}
 		}
 
-		Ref<Image> image = memnew(Image(width, 1, false, Image::FORMAT_RGBA8, data));
+		Ref<Image> image = memnew(Image(width, 1, 0, Image::FORMAT_RGBA8, data));
 
 		if (texture.is_valid()) {
 			RID new_texture = RS::get_singleton()->texture_2d_create(image);

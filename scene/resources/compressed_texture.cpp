@@ -55,9 +55,8 @@ Error CompressedTexture2D::_load_data(const String &p_path, int &r_width, int &r
 	r_height = f->get_32();
 	uint32_t df = f->get_32(); //data format
 
-	//skip reserved
 	mipmap_limit = int(f->get_32());
-	//reserved
+	// skip reserved
 	f->get_32();
 	f->get_32();
 	f->get_32();
@@ -389,7 +388,7 @@ Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f, int p_si
 				}
 			}
 
-			image->set_data(w, h, true, mipmap_images[0]->get_format(), img_data);
+			image->set_data(w, h, mipmaps, mipmap_images[0]->get_format(), img_data);
 			return image;
 		}
 
@@ -397,19 +396,24 @@ Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f, int p_si
 		int sw = w;
 		int sh = h;
 		uint32_t size = f->get_32();
+
 		if (p_size_limit > 0 && (sw > p_size_limit || sh > p_size_limit)) {
 			//can't load this due to size limit
 			sw = MAX(sw >> 1, 1);
 			sh = MAX(sh >> 1, 1);
 			f->seek(f->get_position() + size);
+
 			return Ref<Image>();
 		}
+
 		Vector<uint8_t> pv;
+
 		pv.resize(size);
 		{
 			uint8_t *wr = pv.ptrw();
 			f->get_buffer(wr, size);
 		}
+
 		Ref<Image> img;
 		img = Image::basis_universal_unpacker(pv);
 		if (img.is_null() || img->is_empty()) {
@@ -418,19 +422,22 @@ Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f, int p_si
 		format = img->get_format();
 		sw = MAX(sw >> 1, 1);
 		sh = MAX(sh >> 1, 1);
+
 		return img;
+
 	} else if (data_format == DATA_FORMAT_IMAGE) {
-		int size = Image::get_image_data_size(w, h, format, mipmaps ? true : false);
+		int64_t size = Image::get_image_data_size(w, h, format, mipmaps);
 
 		for (uint32_t i = 0; i < mipmaps + 1; i++) {
 			int tw, th;
-			int ofs = Image::get_image_mipmap_offset_and_dimensions(w, h, format, i, tw, th);
+			int64_t ofs = Image::get_image_mipmap_offset_and_dimensions(w, h, format, i, tw, th);
 
 			if (p_size_limit > 0 && i < mipmaps && (p_size_limit > tw || p_size_limit > th)) {
 				if (ofs) {
 					f->seek(f->get_position() + ofs);
 				}
-				continue; //oops, size limit enforced, go to next
+
+				continue; // Oops, size limit enforced, go to next.
 			}
 
 			Vector<uint8_t> data;
@@ -441,7 +448,7 @@ Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f, int p_si
 				f->get_buffer(wr, data.size());
 			}
 
-			Ref<Image> image = Image::create_from_data(tw, th, mipmaps - i ? true : false, format, data);
+			Ref<Image> image = Image::create_from_data(tw, th, mipmaps, format, data);
 
 			return image;
 		}
@@ -759,7 +766,7 @@ Error CompressedTextureLayered::load(const String &p_path) {
 
 	w = images[0]->get_width();
 	h = images[0]->get_height();
-	mipmaps = images[0]->has_mipmaps();
+	mipmap_count = images[0]->get_mipmap_count();
 	format = images[0]->get_format();
 	layers = images.size();
 
@@ -792,7 +799,11 @@ int CompressedTextureLayered::get_layers() const {
 }
 
 bool CompressedTextureLayered::has_mipmaps() const {
-	return mipmaps;
+	return mipmap_count > 0;
+}
+
+int CompressedTextureLayered::get_mipmap_count() const {
+	return mipmap_count;
 }
 
 TextureLayered::LayeredType CompressedTextureLayered::get_layered_type() const {

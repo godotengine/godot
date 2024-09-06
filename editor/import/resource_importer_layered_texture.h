@@ -51,7 +51,7 @@ public:
 	int compress_mode = 0;
 	float lossy = 1.0;
 	int hdr_compression = 0;
-	bool mipmaps = true;
+	int mipmap_limit = 0;
 	bool high_quality = false;
 	Image::UsedChannels used_channels = Image::USED_CHANNELS_RGBA;
 	virtual ~LayeredTextureImport() {}
@@ -110,7 +110,7 @@ public:
 	virtual void get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset = 0) const override;
 	virtual bool get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const override;
 
-	void _save_tex(Vector<Ref<Image>> p_images, const String &p_to_path, int p_compress_mode, float p_lossy, Image::CompressMode p_vram_compression, Image::CompressSource p_csource, Image::UsedChannels used_channels, bool p_mipmaps, bool p_force_po2);
+	void _save_tex(Vector<Ref<Image>> p_images, const String &p_to_path, int p_compress_mode, float p_lossy, Image::CompressMode p_vram_compression, Image::CompressSource p_csource, Image::UsedChannels used_channels, int p_mipmap_limit, bool p_force_po2);
 
 	virtual Error import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
 

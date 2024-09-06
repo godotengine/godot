@@ -81,20 +81,7 @@ void TexturePreview::_update_metadata_label_text() {
 	const Ref<Image> image = texture->get_image();
 	if (image.is_valid()) {
 		const int mipmaps = image->get_mipmap_count();
-		// Avoid signed integer overflow that could occur with huge texture sizes by casting everything to uint64_t.
-		uint64_t memory = uint64_t(image->get_width()) * uint64_t(image->get_height()) * uint64_t(Image::get_format_pixel_size(image->get_format()));
-		// Handle VRAM-compressed formats that are stored with 4 bpp.
-		memory >>= Image::get_format_pixel_rshift(image->get_format());
-
-		float mipmaps_multiplier = 1.0;
-		float mipmap_increase = 0.25;
-		for (int i = 0; i < mipmaps; i++) {
-			// Each mip adds 25% memory usage of the previous one.
-			// With a complete mipmap chain, memory usage increases by ~33%.
-			mipmaps_multiplier += mipmap_increase;
-			mipmap_increase *= 0.25;
-		}
-		memory *= mipmaps_multiplier;
+		uint64_t memory = Image::get_image_data_size(image->get_width(), image->get_height(), image->get_format(), mipmaps);
 
 		if (mipmaps >= 1) {
 			metadata_label->set_text(

@@ -122,7 +122,7 @@ void CurveTexture::_update() {
 		}
 	}
 
-	Ref<Image> image = memnew(Image(_width, 1, false, texture_mode == TEXTURE_MODE_RGB ? Image::FORMAT_RGBF : Image::FORMAT_RF, data));
+	Ref<Image> image = memnew(Image(_width, 1, 0, texture_mode == TEXTURE_MODE_RGB ? Image::FORMAT_RGBF : Image::FORMAT_RF, data));
 
 	if (_texture.is_valid()) {
 		if (_current_texture_mode != texture_mode || _current_width != _width) {
@@ -324,7 +324,7 @@ void CurveXYZTexture::_update() {
 		}
 	}
 
-	Ref<Image> image = memnew(Image(_width, 1, false, Image::FORMAT_RGBF, data));
+	Ref<Image> image = memnew(Image(_width, 1, 0, Image::FORMAT_RGBF, data));
 
 	if (_texture.is_valid()) {
 		if (_current_width != _width) {

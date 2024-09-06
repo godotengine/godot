@@ -141,8 +141,8 @@ void TextureLayeredEditor::_update_gui() {
 	}
 
 	if (texture->has_mipmaps()) {
-		const int mip_count = Image::get_image_required_mipmaps(texture->get_width(), texture->get_height(), texture->get_format());
-		const int memory = Image::get_image_data_size(texture->get_width(), texture->get_height(), texture->get_format(), true) * texture->get_layers();
+		const int mip_count = texture->get_mipmap_count();
+		const int memory = Image::get_image_data_size(texture->get_width(), texture->get_height(), texture->get_format(), mip_count) * texture->get_layers();
 
 		texture_info += vformat(TTR("%s Mipmaps") + "\n" + TTR("Memory: %s"),
 				mip_count,

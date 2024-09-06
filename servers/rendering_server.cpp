@@ -140,7 +140,7 @@ RID RenderingServer::get_test_texture() {
 		}
 	}
 
-	Ref<Image> data = memnew(Image(TEST_TEXTURE_SIZE, TEST_TEXTURE_SIZE, false, Image::FORMAT_RGB8, test_data));
+	Ref<Image> data = memnew(Image(TEST_TEXTURE_SIZE, TEST_TEXTURE_SIZE, 0, Image::FORMAT_RGB8, test_data));
 
 	test_texture = texture_2d_create(data);
 

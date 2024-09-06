@@ -122,31 +122,31 @@
 			<return type="Image" />
 			<param index="0" name="width" type="int" />
 			<param index="1" name="height" type="int" />
-			<param index="2" name="use_mipmaps" type="bool" />
+			<param index="2" name="mipmap_count" type="int" />
 			<param index="3" name="format" type="int" enum="Image.Format" />
 			<description>
-				Creates an empty image of given size and format. See [enum Format] constants. If [param use_mipmaps] is [code]true[/code], then generate mipmaps for this image. See the [method generate_mipmaps].
+				Creates an empty image of given size and format. See [enum Format] constants. If [param mipmap_count] is greater than [code]0[/code], then generate mipmaps for this image. See the [method generate_mipmaps].
 			</description>
 		</method>
 		<method name="create_empty" qualifiers="static">
 			<return type="Image" />
 			<param index="0" name="width" type="int" />
 			<param index="1" name="height" type="int" />
-			<param index="2" name="use_mipmaps" type="bool" />
+			<param index="2" name="mipmap_count" type="int" />
 			<param index="3" name="format" type="int" enum="Image.Format" />
 			<description>
-				Creates an empty image of given size and format. See [enum Format] constants. If [param use_mipmaps] is [code]true[/code], then generate mipmaps for this image. See the [method generate_mipmaps].
+				Creates an empty image of given size and format. See [enum Format] constants. If [param mipmap_count] is greater than [code]0[/code], then generate mipmaps for this image. See the [method generate_mipmaps].
 			</description>
 		</method>
 		<method name="create_from_data" qualifiers="static">
 			<return type="Image" />
 			<param index="0" name="width" type="int" />
 			<param index="1" name="height" type="int" />
-			<param index="2" name="use_mipmaps" type="bool" />
+			<param index="2" name="mipmap_count" type="int" />
 			<param index="3" name="format" type="int" enum="Image.Format" />
 			<param index="4" name="data" type="PackedByteArray" />
 			<description>
-				Creates a new image of given size and format. See [enum Format] constants. Fills the image with the given raw data. If [param use_mipmaps] is [code]true[/code] then loads mipmaps for this image from [param data]. See [method generate_mipmaps].
+				Creates a new image of given size and format. See [enum Format] constants. Fills the image with the given raw data. If [param mipmap_count] is greater than [code]0[/code] then loads mipmaps for this image from [param data]. See [method generate_mipmaps].
 			</description>
 		</method>
 		<method name="crop">
@@ -213,9 +213,11 @@
 		<method name="generate_mipmaps">
 			<return type="int" enum="Error" />
 			<param index="0" name="renormalize" type="bool" default="false" />
+			<param index="1" name="limit" type="int" default="-1" />
 			<description>
 				Generates mipmaps for the image. Mipmaps are precalculated lower-resolution copies of the image that are automatically used if the image needs to be scaled down when rendered. They help improve image quality and performance when rendering. This method returns an error if the image is compressed, in a custom format, or if the image's width/height is [code]0[/code]. Enabling [param renormalize] when generating mipmaps for normal map textures will make sure all resulting vector values are normalized.
 				It is possible to check if the image has mipmaps by calling [method has_mipmaps] or [method get_mipmap_count]. Calling [method generate_mipmaps] on an image that already has mipmaps will replace existing mipmaps in the image.
+				[param limit] decides how many mipmaps will be generated. If set to -1, the full chain will be generated.
 			</description>
 		</method>
 		<method name="get_data" qualifiers="const">

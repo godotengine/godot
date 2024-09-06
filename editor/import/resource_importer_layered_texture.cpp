@@ -161,12 +161,11 @@ void ResourceImporterLayeredTexture::get_import_options(const String &p_path, Li
 	}
 }
 
-void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, const String &p_to_path, int p_compress_mode, float p_lossy, Image::CompressMode p_vram_compression, Image::CompressSource p_csource, Image::UsedChannels used_channels, bool p_mipmaps, bool p_force_po2) {
+void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, const String &p_to_path, int p_compress_mode, float p_lossy, Image::CompressMode p_vram_compression, Image::CompressSource p_csource, Image::UsedChannels used_channels, int p_mipmap_limit, bool p_force_po2) {
 	Vector<Ref<Image>> mipmap_images; //for 3D
 
 	if (mode == MODE_3D) {
 		//3D saves in its own way
-
 		for (int i = 0; i < p_images.size(); i++) {
 			if (p_images.write[i]->has_mipmaps()) {
 				p_images.write[i]->clear_mipmaps();
@@ -177,7 +176,7 @@ void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, cons
 			}
 		}
 
-		if (p_mipmaps) {
+		if (p_mipmap_limit != 0) {
 			Vector<Ref<Image>> parent_images = p_images;
 			//create 3D mipmaps, this is horrible, though not used very often
 			int w = p_images[0]->get_width();
@@ -191,7 +190,7 @@ void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, cons
 				int mm_d = MAX(1, d >> 1);
 
 				for (int i = 0; i < mm_d; i++) {
-					Ref<Image> mm = Image::create_empty(mm_w, mm_h, false, p_images[0]->get_format());
+					Ref<Image> mm = Image::create_empty(mm_w, mm_h, 0, p_images[0]->get_format());
 					Vector3 pos;
 					pos.z = float(i) * float(d) / float(mm_d) + 0.5;
 					for (int x = 0; x < mm_w; x++) {
@@ -252,8 +251,8 @@ void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, cons
 				p_images.write[i]->resize_to_po2();
 			}
 
-			if (p_mipmaps) {
-				p_images.write[i]->generate_mipmaps(p_csource == Image::COMPRESS_SOURCE_NORMAL);
+			if (p_mipmap_limit != 0) {
+				p_images.write[i]->generate_mipmaps(p_csource == Image::COMPRESS_SOURCE_NORMAL, p_mipmap_limit);
 			} else {
 				p_images.write[i]->clear_mipmaps();
 			}
@@ -291,6 +290,7 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 	bool high_quality = p_options["compress/high_quality"];
 	int hdr_compression = p_options["compress/hdr_compression"];
 	bool mipmaps = p_options["mipmaps/generate"];
+	int mipmap_limit = mipmaps ? int(p_options["mipmaps/limit"]) : 0;
 
 	int channel_pack = p_options["compress/channel_pack"];
 	int hslices = (p_options.has("slices/horizontal")) ? int(p_options["slices/horizontal"]) : 0;
@@ -392,7 +392,7 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 	texture_import->compress_mode = compress_mode;
 	texture_import->lossy = lossy;
 	texture_import->hdr_compression = hdr_compression;
-	texture_import->mipmaps = mipmaps;
+	texture_import->mipmap_limit = mipmap_limit;
 	texture_import->used_channels = used_channels;
 	texture_import->high_quality = high_quality;
 
@@ -492,7 +492,7 @@ void ResourceImporterLayeredTexture::_check_compress_ctex(const String &p_source
 	ERR_FAIL_NULL(r_texture_import->csource);
 	if (r_texture_import->compress_mode != COMPRESS_VRAM_COMPRESSED) {
 		// Import normally.
-		_save_tex(*r_texture_import->slices, r_texture_import->save_path + "." + extension, r_texture_import->compress_mode, r_texture_import->lossy, Image::COMPRESS_S3TC /* IGNORED */, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmaps, false);
+		_save_tex(*r_texture_import->slices, r_texture_import->save_path + "." + extension, r_texture_import->compress_mode, r_texture_import->lossy, Image::COMPRESS_S3TC /* IGNORED */, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmap_limit, false);
 		return;
 	}
 	// Must import in all formats, in order of priority (so platform choses the best supported one. IE, etc2 over etc).
@@ -547,7 +547,7 @@ void ResourceImporterLayeredTexture::_check_compress_ctex(const String &p_source
 	}
 
 	if (use_uncompressed) {
-		_save_tex(*r_texture_import->slices, r_texture_import->save_path + "." + extension, COMPRESS_VRAM_UNCOMPRESSED, r_texture_import->lossy, Image::COMPRESS_S3TC /* IGNORED */, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmaps, false);
+		_save_tex(*r_texture_import->slices, r_texture_import->save_path + "." + extension, COMPRESS_VRAM_UNCOMPRESSED, r_texture_import->lossy, Image::COMPRESS_S3TC /* IGNORED */, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmap_limit, false);
 	} else {
 		if (can_s3tc_bptc) {
 			Image::CompressMode image_compress_mode;
@@ -559,7 +559,7 @@ void ResourceImporterLayeredTexture::_check_compress_ctex(const String &p_source
 				image_compress_mode = Image::COMPRESS_S3TC;
 				image_compress_format = "s3tc";
 			}
-			_save_tex(*r_texture_import->slices, r_texture_import->save_path + "." + image_compress_format + "." + extension, r_texture_import->compress_mode, r_texture_import->lossy, image_compress_mode, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmaps, true);
+			_save_tex(*r_texture_import->slices, r_texture_import->save_path + "." + image_compress_format + "." + extension, r_texture_import->compress_mode, r_texture_import->lossy, image_compress_mode, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmap_limit, true);
 			r_texture_import->platform_variants->push_back(image_compress_format);
 		}
 
@@ -573,7 +573,7 @@ void ResourceImporterLayeredTexture::_check_compress_ctex(const String &p_source
 				image_compress_mode = Image::COMPRESS_ETC2;
 				image_compress_format = "etc2";
 			}
-			_save_tex(*r_texture_import->slices, r_texture_import->save_path + "." + image_compress_format + "." + extension, r_texture_import->compress_mode, r_texture_import->lossy, image_compress_mode, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmaps, true);
+			_save_tex(*r_texture_import->slices, r_texture_import->save_path + "." + image_compress_format + "." + extension, r_texture_import->compress_mode, r_texture_import->lossy, image_compress_mode, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmap_limit, true);
 			r_texture_import->platform_variants->push_back(image_compress_format);
 		}
 	}

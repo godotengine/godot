@@ -147,7 +147,7 @@ private:
 	int w = 0;
 	int h = 0;
 	int layers = 0;
-	bool mipmaps = false;
+	int mipmap_count = 0;
 	LayeredType layered_type = LayeredType::LAYERED_TYPE_2D_ARRAY;
 
 	virtual void reload_from_file() override;
@@ -166,6 +166,7 @@ public:
 	int get_height() const override;
 	int get_layers() const override;
 	virtual bool has_mipmaps() const override;
+	virtual int get_mipmap_count() const override;
 	virtual RID get_rid() const override;
 
 	virtual void set_path(const String &p_path, bool p_take_over) override;

@@ -161,6 +161,12 @@ bool Texture3D::has_mipmaps() const {
 	return ret;
 }
 
+int Texture3D::get_mipmap_count() const {
+	int ret = 0;
+	GDVIRTUAL_REQUIRED_CALL(_get_mipmap_count, ret);
+	return ret;
+}
+
 Vector<Ref<Image>> Texture3D::get_data() const {
 	TypedArray<Image> ret;
 	GDVIRTUAL_REQUIRED_CALL(_get_data, ret);
@@ -229,6 +235,12 @@ int TextureLayered::get_layers() const {
 bool TextureLayered::has_mipmaps() const {
 	bool ret = false;
 	GDVIRTUAL_REQUIRED_CALL(_has_mipmaps, ret);
+	return ret;
+}
+
+int TextureLayered::get_mipmap_count() const {
+	int ret = 0;
+	GDVIRTUAL_REQUIRED_CALL(_get_mipmap_count, ret);
 	return ret;
 }
 
