@@ -584,7 +584,7 @@ void EditorResourcePicker::_button_input(const Ref<InputEvent> &p_event) {
 				edit_menu->popup();
 			}
 		} else if (mb->get_button_index() == MouseButton::MIDDLE) {
-			if (edited_resource.is_valid()) {
+			if (edited_resource.is_valid() && edited_resource->get_path().is_resource_file()) {
 				FileSystemDock::get_singleton()->navigate_to_path(edited_resource->get_path());
 			}
 		}
