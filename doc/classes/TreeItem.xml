@@ -223,6 +223,13 @@
 				Returns the [Color] modulating the column's icon.
 			</description>
 		</method>
+		<method name="get_icon_overlay" qualifiers="const">
+			<return type="Texture2D" />
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns the given column's icon overlay [Texture2D].
+			</description>
+		</method>
 		<method name="get_icon_region" qualifiers="const">
 			<return type="Rect2" />
 			<param index="0" name="column" type="int" />
@@ -660,6 +667,14 @@
 			<param index="1" name="modulate" type="Color" />
 			<description>
 				Modulates the given column's icon with [param modulate].
+			</description>
+		</method>
+		<method name="set_icon_overlay">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="texture" type="Texture2D" />
+			<description>
+				Sets the given cell's icon overlay [Texture2D]. The cell has to be in [constant CELL_MODE_ICON] mode, and icon has to be set. Overlay is drawn on top of icon, in the bottom left corner.
 			</description>
 		</method>
 		<method name="set_icon_region">
