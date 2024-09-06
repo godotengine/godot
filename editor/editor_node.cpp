@@ -5240,8 +5240,8 @@ void EditorNode::_copy_warning(const String &p_str) {
 }
 
 void EditorNode::_save_editor_layout() {
-	if (waiting_for_first_scan) {
-		return; // Scanning, do not touch docks.
+	if (!load_editor_layout_done) {
+		return;
 	}
 	Ref<ConfigFile> config;
 	config.instantiate();
@@ -5297,22 +5297,22 @@ void EditorNode::_load_editor_layout() {
 		if (overridden_default_layout >= 0) {
 			_layout_menu_option(overridden_default_layout);
 		}
-		return;
+	} else {
+		ep.step(TTR("Loading docks..."), 1, true);
+		editor_dock_manager->load_docks_from_config(config, "docks");
+
+		ep.step(TTR("Reopening scenes..."), 2, true);
+		_load_open_scenes_from_config(config);
+
+		ep.step(TTR("Loading central editor layout..."), 3, true);
+		_load_central_editor_layout_from_config(config);
+
+		ep.step(TTR("Loading plugin window layout..."), 4, true);
+		editor_data.set_plugin_window_layout(config);
+
+		ep.step(TTR("Editor layout ready."), 5, true);
 	}
-
-	ep.step(TTR("Loading docks..."), 1, true);
-	editor_dock_manager->load_docks_from_config(config, "docks");
-
-	ep.step(TTR("Reopening scenes..."), 2, true);
-	_load_open_scenes_from_config(config);
-
-	ep.step(TTR("Loading central editor layout..."), 3, true);
-	_load_central_editor_layout_from_config(config);
-
-	ep.step(TTR("Loading plugin window layout..."), 4, true);
-	editor_data.set_plugin_window_layout(config);
-
-	ep.step(TTR("Editor layout ready."), 5, true);
+	load_editor_layout_done = true;
 }
 
 void EditorNode::_save_central_editor_layout_to_config(Ref<ConfigFile> p_config_file) {
