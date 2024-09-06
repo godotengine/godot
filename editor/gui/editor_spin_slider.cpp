@@ -38,7 +38,7 @@
 #include "scene/theme/theme_db.h"
 
 bool EditorSpinSlider::is_text_field() const {
-	return true;
+	return value_input_popup && value_input_popup->is_visible();
 }
 
 String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
