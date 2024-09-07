@@ -19,7 +19,7 @@
 			<param index="3" name="disabled" type="bool" default="false" />
 			<param index="4" name="tooltip_text" type="String" default="&quot;&quot;" />
 			<description>
-				Adds a button with [Texture2D] [param button] at column [param column]. The [param id] is used to identify the button in the according [signal Tree.button_clicked] signal and can be different from the buttons index. If not specified, the next available index is used, which may be retrieved by calling [method get_button_count] immediately before this method. Optionally, the button can be [param disabled] and have a [param tooltip_text].
+				Adds a button with [Texture2D] [param button] to the end of the cell at column [param column]. The [param id] is used to identify the button in the according [signal Tree.button_clicked] signal and can be different from the buttons index. If not specified, the next available index is used, which may be retrieved by calling [method get_button_count] immediately before this method. Optionally, the button can be [param disabled] and have a [param tooltip_text].
 			</description>
 		</method>
 		<method name="add_child">
@@ -643,7 +643,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="texture" type="Texture2D" />
 			<description>
-				Sets the given cell's icon [Texture2D]. The cell has to be in [constant CELL_MODE_ICON] mode.
+				Sets the given cell's icon [Texture2D]. If the cell is in [constant CELL_MODE_ICON] mode, the icon is displayed in the center of the cell. Otherwise, the icon is displayed before the cell's text. [constant CELL_MODE_RANGE] does not display an icon.
 			</description>
 		</method>
 		<method name="set_icon_max_width">
@@ -811,17 +811,17 @@
 	</members>
 	<constants>
 		<constant name="CELL_MODE_STRING" value="0" enum="TreeCellMode">
-			Cell shows a string label. When editable, the text can be edited using a [LineEdit], or a [TextEdit] popup if [method set_edit_multiline] is used.
+			Cell shows a string label, optionally with an icon. When editable, the text can be edited using a [LineEdit], or a [TextEdit] popup if [method set_edit_multiline] is used.
 		</constant>
 		<constant name="CELL_MODE_CHECK" value="1" enum="TreeCellMode">
-			Cell shows a checkbox, optionally with text. The checkbox can be pressed, released, or indeterminate (via [method set_indeterminate]). The checkbox can't be clicked unless the cell is editable.
+			Cell shows a checkbox, optionally with text and an icon. The checkbox can be pressed, released, or indeterminate (via [method set_indeterminate]). The checkbox can't be clicked unless the cell is editable.
 		</constant>
 		<constant name="CELL_MODE_RANGE" value="2" enum="TreeCellMode">
 			Cell shows a numeric range. When editable, it can be edited using a range slider. Use [method set_range] to set the value and [method set_range_config] to configure the range.
 			This cell can also be used in a text dropdown mode when you assign a text with [method set_text]. Separate options with a comma, e.g. [code]"Option1,Option2,Option3"[/code].
 		</constant>
 		<constant name="CELL_MODE_ICON" value="3" enum="TreeCellMode">
-			Cell shows an icon. It can't be edited nor display text.
+			Cell shows an icon. It can't be edited nor display text. The icon is always centered within the cell.
 		</constant>
 		<constant name="CELL_MODE_CUSTOM" value="4" enum="TreeCellMode">
 			Cell shows as a clickable button. It will display an arrow similar to [OptionButton], but doesn't feature a dropdown (for that you can use [constant CELL_MODE_RANGE]). Clicking the button emits the [signal Tree.item_edited] signal. The button is flat by default, you can use [method set_custom_as_button] to display it with a [StyleBox].
