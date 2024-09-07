@@ -31,7 +31,7 @@
 #ifndef TEST_DICTIONARY_H
 #define TEST_DICTIONARY_H
 
-#include "core/variant/dictionary.h"
+#include "core/variant/typed_dictionary.h"
 #include "tests/test_macros.h"
 
 namespace TestDictionary {
@@ -534,6 +534,43 @@ TEST_CASE("[Dictionary] Order and find") {
 	CHECK_EQ(d.keys(), keys);
 	CHECK_EQ(d.find_key("four"), Variant(4));
 	CHECK_EQ(d.find_key("does not exist"), Variant());
+}
+
+TEST_CASE("[Dictionary] Typed copying") {
+	TypedDictionary<int, int> d1;
+	d1[0] = 1;
+
+	TypedDictionary<double, double> d2;
+	d2[0] = 1.0;
+
+	Dictionary d3 = d1;
+	TypedDictionary<int, int> d4 = d3;
+
+	Dictionary d5 = d2;
+	TypedDictionary<int, int> d6 = d5;
+
+	d3[0] = 2;
+	d4[0] = 3;
+
+	// Same typed TypedDictionary should be shared.
+	CHECK_EQ(d1[0], Variant(3));
+	CHECK_EQ(d3[0], Variant(3));
+	CHECK_EQ(d4[0], Variant(3));
+
+	d5[0] = 2.0;
+	d6[0] = 3.0;
+
+	// Different typed TypedDictionary should not be shared.
+	CHECK_EQ(d2[0], Variant(2.0));
+	CHECK_EQ(d5[0], Variant(2.0));
+	CHECK_EQ(d6[0], Variant(3.0));
+
+	d1.clear();
+	d2.clear();
+	d3.clear();
+	d4.clear();
+	d5.clear();
+	d6.clear();
 }
 
 } // namespace TestDictionary

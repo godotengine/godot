@@ -793,6 +793,35 @@ LightmapperRD::BakeError LightmapperRD::_dilate(RenderingDevice *rd, Ref<RDShade
 	return BAKE_OK;
 }
 
+LightmapperRD::BakeError LightmapperRD::_pack_l1(RenderingDevice *rd, Ref<RDShaderFile> &compute_shader, RID &compute_base_uniform_set, PushConstant &push_constant, RID &source_light_tex, RID &dest_light_tex, const Size2i &atlas_size, int atlas_slices) {
+	Vector<RD::Uniform> uniforms = dilate_or_denoise_common_uniforms(source_light_tex, dest_light_tex);
+
+	RID compute_shader_pack = rd->shader_create_from_spirv(compute_shader->get_spirv_stages("pack_coeffs"));
+	ERR_FAIL_COND_V(compute_shader_pack.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES); //internal check, should not happen
+	RID compute_shader_pack_pipeline = rd->compute_pipeline_create(compute_shader_pack);
+
+	RID dilate_uniform_set = rd->uniform_set_create(uniforms, compute_shader_pack, 1);
+
+	RD::ComputeListID compute_list = rd->compute_list_begin();
+	rd->compute_list_bind_compute_pipeline(compute_list, compute_shader_pack_pipeline);
+	rd->compute_list_bind_uniform_set(compute_list, compute_base_uniform_set, 0);
+	rd->compute_list_bind_uniform_set(compute_list, dilate_uniform_set, 1);
+	push_constant.region_ofs[0] = 0;
+	push_constant.region_ofs[1] = 0;
+	Vector3i group_size(Math::division_round_up(atlas_size.x, 8), Math::division_round_up(atlas_size.y, 8), 1); //restore group size
+
+	for (int i = 0; i < atlas_slices; i++) {
+		push_constant.atlas_slice = i;
+		rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
+		rd->compute_list_dispatch(compute_list, group_size.x, group_size.y, group_size.z);
+		//no barrier, let them run all together
+	}
+	rd->compute_list_end();
+	rd->free(compute_shader_pack);
+
+	return BAKE_OK;
+}
+
 Error LightmapperRD::_store_pfm(RenderingDevice *p_rd, RID p_atlas_tex, int p_index, const Size2i &p_atlas_size, const String &p_name) {
 	Vector<uint8_t> data = p_rd->texture_get_data(p_atlas_tex, p_index);
 	Ref<Image> img = Image::create_from_data(p_atlas_size.width, p_atlas_size.height, false, Image::FORMAT_RGBAH, data);
@@ -1999,6 +2028,14 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			}
 			seam_offset += slice_seam_count[i];
 			triangle_offset += slice_triangle_count[i];
+		}
+	}
+
+	if (p_bake_sh) {
+		SWAP(light_accum_tex, light_accum_tex2);
+		BakeError error = _pack_l1(rd, compute_shader, compute_base_uniform_set, push_constant, light_accum_tex2, light_accum_tex, atlas_size, atlas_slices);
+		if (unlikely(error != BAKE_OK)) {
+			return error;
 		}
 	}
 

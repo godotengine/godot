@@ -27,3 +27,7 @@ Test RefCounted-keys dictionary.
 RefCounted RefCounted
 Resource Resource
 ConfigFile ConfigFile
+Test implicitly typed dictionary literal.
+&"x" &"x"
+&"y" &"y"
+&"z" &"z"

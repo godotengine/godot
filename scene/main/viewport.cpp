@@ -4695,6 +4695,7 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("warp_mouse", "position"), &Viewport::warp_mouse);
 	ClassDB::bind_method(D_METHOD("update_mouse_cursor_state"), &Viewport::update_mouse_cursor_state);
 
+	ClassDB::bind_method(D_METHOD("gui_cancel_drag"), &Viewport::gui_cancel_drag);
 	ClassDB::bind_method(D_METHOD("gui_get_drag_data"), &Viewport::gui_get_drag_data);
 	ClassDB::bind_method(D_METHOD("gui_is_dragging"), &Viewport::gui_is_dragging);
 	ClassDB::bind_method(D_METHOD("gui_is_drag_successful"), &Viewport::gui_is_drag_successful);

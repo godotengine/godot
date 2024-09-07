@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Cannot assign a value of type Dictionary[float, float] to variable "typed" with specified type Dictionary[int, int].

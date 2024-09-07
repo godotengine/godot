@@ -132,8 +132,10 @@
 			<return type="Dictionary" />
 			<param index="0" name="path" type="String" />
 			<param index="1" name="arguments" type="PackedStringArray" />
+			<param index="2" name="blocking" type="bool" default="true" />
 			<description>
 				Creates a new process that runs independently of Godot with redirected IO. It will not terminate when Godot terminates. The path specified in [param path] must exist and be an executable file or macOS [code].app[/code] bundle. The path is resolved based on the current platform. The [param arguments] are used in the given order and separated by a space.
+				If [param blocking] is [code]false[/code], created pipes work in non-blocking mode, i.e. read and write operations will return immediately. Use [method FileAccess.get_error] to check if the last read/write operation was successful.
 				If the process cannot be created, this method returns an empty [Dictionary]. Otherwise, this method returns a [Dictionary] with the following keys:
 				- [code]"stdio"[/code] - [FileAccess] to access the process stdin and stdout pipes (read/write).
 				- [code]"stderr"[/code] - [FileAccess] to access the process stderr pipe (read only).

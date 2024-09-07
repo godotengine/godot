@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  GodotEditor.kt                                                        */
+/*  BaseGodotEditor.kt                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -52,6 +52,8 @@ import org.godotengine.godot.GodotLib
 import org.godotengine.godot.error.Error
 import org.godotengine.godot.utils.PermissionsUtil
 import org.godotengine.godot.utils.ProcessPhoenix
+import org.godotengine.godot.utils.isHorizonOSDevice
+import org.godotengine.godot.utils.isNativeXRDevice
 import java.util.*
 import kotlin.math.min
 
@@ -61,13 +63,11 @@ import kotlin.math.min
  * This provides the basic templates for the activities making up this application.
  * Each derived activity runs in its own process, which enable up to have several instances of
  * the Godot engine up and running at the same time.
- *
- * It also plays the role of the primary editor window.
  */
-open class GodotEditor : GodotActivity() {
+abstract class BaseGodotEditor : GodotActivity() {
 
 	companion object {
-		private val TAG = GodotEditor::class.java.simpleName
+		private val TAG = BaseGodotEditor::class.java.simpleName
 
 		private const val WAIT_FOR_DEBUGGER = false
 
@@ -81,12 +81,13 @@ open class GodotEditor : GodotActivity() {
 		// Command line arguments
 		private const val FULLSCREEN_ARG = "--fullscreen"
 		private const val FULLSCREEN_ARG_SHORT = "-f"
-		private const val EDITOR_ARG = "--editor"
-		private const val EDITOR_ARG_SHORT = "-e"
-		private const val EDITOR_PROJECT_MANAGER_ARG = "--project-manager"
-		private const val EDITOR_PROJECT_MANAGER_ARG_SHORT = "-p"
-		private const val BREAKPOINTS_ARG = "--breakpoints"
-		private const val BREAKPOINTS_ARG_SHORT = "-b"
+		internal const val EDITOR_ARG = "--editor"
+		internal const val EDITOR_ARG_SHORT = "-e"
+		internal const val EDITOR_PROJECT_MANAGER_ARG = "--project-manager"
+		internal const val EDITOR_PROJECT_MANAGER_ARG_SHORT = "-p"
+		internal const val BREAKPOINTS_ARG = "--breakpoints"
+		internal const val BREAKPOINTS_ARG_SHORT = "-b"
+		internal const val XR_MODE_ARG = "--xr-mode"
 
 		// Info for the various classes used by the editor
 		internal val EDITOR_MAIN_INFO = EditorWindowInfo(GodotEditor::class.java, 777, "")
@@ -122,6 +123,20 @@ open class GodotEditor : GodotActivity() {
 
 	internal open fun getEditorWindowInfo() = EDITOR_MAIN_INFO
 
+	/**
+	 * Set of permissions to be excluded when requesting all permissions at startup.
+	 *
+	 * The permissions in this set will be requested on demand based on use cases.
+	 */
+	@CallSuper
+	protected open fun getExcludedPermissions(): MutableSet<String> {
+		return mutableSetOf(
+			// The RECORD_AUDIO permission is requested when the "audio/driver/enable_input" project
+			// setting is enabled.
+			Manifest.permission.RECORD_AUDIO
+		)
+	}
+
 	override fun onCreate(savedInstanceState: Bundle?) {
 		installSplashScreen()
 
@@ -131,8 +146,8 @@ open class GodotEditor : GodotActivity() {
 		}
 
 		// We exclude certain permissions from the set we request at startup, as they'll be
-		// requested on demand based on use-cases.
-		PermissionsUtil.requestManifestPermissions(this, setOf(Manifest.permission.RECORD_AUDIO))
+		// requested on demand based on use cases.
+		PermissionsUtil.requestManifestPermissions(this, getExcludedPermissions())
 
 		val params = intent.getStringArrayExtra(EXTRA_COMMAND_LINE_PARAMS)
 		Log.d(TAG, "Starting intent $intent with parameters ${params.contentToString()}")
@@ -152,8 +167,6 @@ open class GodotEditor : GodotActivity() {
 		val longPressEnabled = enableLongPressGestures()
 		val panScaleEnabled = enablePanAndScaleGestures()
 
-		checkForProjectPermissionsToEnable()
-
 		runOnUiThread {
 			// Enable long press, panning and scaling gestures
 			godotFragment?.godot?.renderView?.inputHandler?.apply {
@@ -171,17 +184,6 @@ open class GodotEditor : GodotActivity() {
 		}
 	}
 
-	/**
-	 * Check for project permissions to enable
-	 */
-	protected open fun checkForProjectPermissionsToEnable() {
-		// Check for RECORD_AUDIO permission
-		val audioInputEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("audio/driver/enable_input"))
-		if (audioInputEnabled) {
-			PermissionsUtil.requestPermission(Manifest.permission.RECORD_AUDIO, this)
-		}
-	}
-
 	@CallSuper
 	protected open fun updateCommandLineParams(args: List<String>) {
 		// Update the list of command line params with the new args
@@ -196,7 +198,7 @@ open class GodotEditor : GodotActivity() {
 
 	final override fun getCommandLine() = commandLineParams
 
-	protected open fun getEditorWindowInfo(args: Array<String>): EditorWindowInfo {
+	protected open fun retrieveEditorWindowInfo(args: Array<String>): EditorWindowInfo {
 		var hasEditor = false
 
 		var i = 0
@@ -273,7 +275,7 @@ open class GodotEditor : GodotActivity() {
 	}
 
 	override fun onNewGodotInstanceRequested(args: Array<String>): Int {
-		val editorWindowInfo = getEditorWindowInfo(args)
+		val editorWindowInfo = retrieveEditorWindowInfo(args)
 
 		// Launch a new activity
 		val sourceView = godotFragment?.view
@@ -405,20 +407,26 @@ open class GodotEditor : GodotActivity() {
 
 		return when (policy) {
 			LaunchPolicy.AUTO -> {
-				try {
-					when (Integer.parseInt(GodotLib.getEditorSetting("run/window_placement/android_window"))) {
-						ANDROID_WINDOW_SAME_AS_EDITOR -> LaunchPolicy.SAME
-						ANDROID_WINDOW_SIDE_BY_SIDE_WITH_EDITOR -> LaunchPolicy.ADJACENT
-						ANDROID_WINDOW_SAME_AS_EDITOR_AND_LAUNCH_IN_PIP_MODE -> LaunchPolicy.SAME_AND_LAUNCH_IN_PIP_MODE
-						else -> {
-							// ANDROID_WINDOW_AUTO
-							defaultLaunchPolicy
+				if (isHorizonOSDevice()) {
+					// Horizon OS UX is more desktop-like and has support for launching adjacent
+					// windows. So we always want to launch in adjacent mode when auto is selected.
+					LaunchPolicy.ADJACENT
+				} else {
+					try {
+						when (Integer.parseInt(GodotLib.getEditorSetting("run/window_placement/android_window"))) {
+							ANDROID_WINDOW_SAME_AS_EDITOR -> LaunchPolicy.SAME
+							ANDROID_WINDOW_SIDE_BY_SIDE_WITH_EDITOR -> LaunchPolicy.ADJACENT
+							ANDROID_WINDOW_SAME_AS_EDITOR_AND_LAUNCH_IN_PIP_MODE -> LaunchPolicy.SAME_AND_LAUNCH_IN_PIP_MODE
+							else -> {
+								// ANDROID_WINDOW_AUTO
+								defaultLaunchPolicy
+							}
 						}
+					} catch (e: NumberFormatException) {
+						Log.w(TAG, "Error parsing the Android window placement editor setting", e)
+						// Fall-back to the default launch policy
+						defaultLaunchPolicy
 					}
-				} catch (e: NumberFormatException) {
-					Log.w(TAG, "Error parsing the Android window placement editor setting", e)
-					// Fall-back to the default launch policy
-					defaultLaunchPolicy
 				}
 			}
 
@@ -431,8 +439,16 @@ open class GodotEditor : GodotActivity() {
 	/**
 	 * Returns true the if the device supports picture-in-picture (PiP)
 	 */
-	protected open fun hasPiPSystemFeature() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N &&
-		packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
+	protected open fun hasPiPSystemFeature(): Boolean {
+		if (isNativeXRDevice()) {
+			// Known native XR devices do not support PiP.
+			// Will need to revisit as they update their OS.
+			return false
+		}
+
+		return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N &&
+			packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
+	}
 
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 		super.onActivityResult(requestCode, resultCode, data)

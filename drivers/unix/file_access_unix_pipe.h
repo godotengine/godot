@@ -50,7 +50,7 @@ class FileAccessUnixPipe : public FileAccess {
 	void _close();
 
 public:
-	Error open_existing(int p_rfd, int p_wfd);
+	Error open_existing(int p_rfd, int p_wfd, bool p_blocking);
 	virtual Error open_internal(const String &p_path, int p_mode_flags) override; ///< open a file
 
 	virtual bool is_open() const override; ///< true when file is open

@@ -2932,7 +2932,7 @@ void SceneTreeDock::_create() {
 		int original_position = -1;
 		if (only_one_top_node) {
 			parent = top_node->get_parent();
-			original_position = top_node->get_index();
+			original_position = top_node->get_index(false);
 		} else {
 			parent = top_node->get_parent()->get_parent();
 		}

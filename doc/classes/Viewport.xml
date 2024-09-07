@@ -117,6 +117,12 @@
 				Returns the visible rectangle in global screen coordinates.
 			</description>
 		</method>
+		<method name="gui_cancel_drag">
+			<return type="void" />
+			<description>
+				Cancels the drag operation that was previously started through [method Control._get_drag_data] or forced with [method Control.force_drag].
+			</description>
+		</method>
 		<method name="gui_get_drag_data" qualifiers="const">
 			<return type="Variant" />
 			<description>
