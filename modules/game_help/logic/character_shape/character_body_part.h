@@ -196,7 +196,6 @@ class CharacterBodyPartInstane : public RefCounted
     }
 public:
     Ref<CharacterBodyPart> part;
-    Ref<Skin>    skin;
     MeshInstance3D *mesh_instance = nullptr;
     Skeleton3D *skeleton = nullptr;
 
@@ -239,7 +238,6 @@ public:
         }
         if(part.is_valid())
         {
-            skin = part->get_skin();
             if(mesh_instance != nullptr)
             {
                 mesh_instance->queue_free();
@@ -249,13 +247,9 @@ public:
             {
                 skeleton->add_child(mesh_instance, true);
                 mesh_instance->set_owner(skeleton->get_owner());
-                if(skin.is_valid())
-                {
-                    skin = skin->duplicate();
-                    mesh_instance->set_skeleton_path(NodePath(".."));
-                }
+                mesh_instance->set_skeleton_path(NodePath(".."));
                 mesh_instance->set_mesh(part->get_mesh());
-                mesh_instance->set_skin(skin);
+                mesh_instance->set_skin(part->get_skin());
                 mesh_instance->set_material_override(part->get_material());
                 // 这玩意特别卡,关闭它
                 mesh_instance->set_disable_gizmos(true);
@@ -272,7 +266,6 @@ public:
     void clear()
     {
         part.unref();
-        skin.unref();
         if(mesh_instance != nullptr)
         {
             mesh_instance->queue_free();

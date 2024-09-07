@@ -646,7 +646,7 @@ private:
 			type = TYPE_ANIMATION;
 		}
 	};
-
+	Ref<Resource> bone_map;
 	Vector<Track *> tracks;
 
 	template <typename T>
@@ -924,6 +924,10 @@ public:
 
 	void set_step(real_t p_step);
 	real_t get_step() const;
+
+
+	void set_bone_map(const Ref<Resource>& p_bone_map);
+	Ref<Resource> get_bone_map() const ;
 
 	void clear();
 

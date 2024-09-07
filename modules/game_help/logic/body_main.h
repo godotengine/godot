@@ -163,11 +163,6 @@ public:
     }
 
 public:
-    // 初始化身體分組信息
-    void init_body_part_array(const Array& p_part_array);
-    // 身體部位
-    void set_body_part(const Dictionary& part);
-    Dictionary get_body_part();
     
     void set_body_prefab(const Ref<CharacterBodyPrefab> &p_body_prefab);
     Ref<CharacterBodyPrefab> get_body_prefab();
@@ -310,8 +305,6 @@ public:
     {
 
     }
-protected:
-    void load_mesh(const StringName& part_name,String p_mesh_file_path);
     
 protected:
     void behavior_tree_finished(int last_status);
@@ -445,8 +438,6 @@ protected:
     Ref<CharacterBodyPrefab> body_prefab;
     // 身体部件信息
     HashMap<StringName,Ref<CharacterBodyPartInstane>> bodyPart;
-    // 身體部件列表
-    PackedStringArray   partList;
     // 插槽信息
     HashMap<StringName,BodySocket> socket;
 

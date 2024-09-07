@@ -156,7 +156,6 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 		ClassDB::register_class<CharacterAnimatorNodeBase>();
 		ClassDB::register_class<CharacterAnimatorMask>();
 		ClassDB::register_class<CharacterBoneMap>();
-		ClassDB::register_class<CharacterAnimation>();
 		ClassDB::register_class<CharacterAnimationItem>();
 		ClassDB::register_class<CharacterAnimatorNode1D>();
 		ClassDB::register_class<CharacterAnimatorNode2D>();

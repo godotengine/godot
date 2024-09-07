@@ -3800,6 +3800,14 @@ real_t Animation::get_step() const {
 	return step;
 }
 
+void Animation::set_bone_map(const Ref<Resource>& p_bone_map) {
+	bone_map = p_bone_map;
+}
+
+Ref<Resource> Animation::get_bone_map() const {
+	return bone_map;
+}
+
 void Animation::copy_track(int p_track, Ref<Animation> p_to_animation) {
 	ERR_FAIL_COND(p_to_animation.is_null());
 	ERR_FAIL_INDEX(p_track, get_track_count());
@@ -3948,6 +3956,9 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_step", "size_sec"), &Animation::set_step);
 	ClassDB::bind_method(D_METHOD("get_step"), &Animation::get_step);
 
+	ClassDB::bind_method(D_METHOD("set_bone_map", "bone_map"), &Animation::set_bone_map);
+	ClassDB::bind_method(D_METHOD("get_bone_map"), &Animation::get_bone_map);
+
 	ClassDB::bind_method(D_METHOD("clear"), &Animation::clear);
 	ClassDB::bind_method(D_METHOD("copy_track", "track_idx", "to_animation"), &Animation::copy_track);
 
@@ -3960,6 +3971,7 @@ void Animation::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "length", PROPERTY_HINT_RANGE, "0.001,99999,0.001,suffix:s"), "set_length", "get_length");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_mode", PROPERTY_HINT_ENUM, "None,Linear,Ping-Pong"), "set_loop_mode", "get_loop_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "step", PROPERTY_HINT_RANGE, "0,4096,0.001,suffix:s"), "set_step", "get_step");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "bone_map", PROPERTY_HINT_RESOURCE_TYPE, "Resource", PROPERTY_USAGE_NO_EDITOR), "set_bone_map", "get_bone_map");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "capture_included", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "", "is_capture_included");
 
 	BIND_ENUM_CONSTANT(TYPE_VALUE);

@@ -1,5 +1,6 @@
 #include "body_main_editor.h"
 #include "../logic/character_shape/character_body_prefab.h"
+#include "editor/plugins/mesh_editor_plugin.h"
 
 
 class CharacterPrefabSection : public LogicSectionBase {
