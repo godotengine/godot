@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  ios.h                                                                 */
+/*  godot_notifications.h                                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,39 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef IOS_H
-#define IOS_H
+#ifndef GODOT_NOTIFICATIONS_H
+#define GODOT_NOTIFICATIONS_H
 
-#include "core/object/class_db.h"
+#include "core/object/ref_counted.h"
 
-#import <CoreHaptics/CoreHaptics.h>
+class GodotNotifications : public RefCounted {
+	GDCLASS(GodotNotifications, RefCounted);
 
-class iOS : public Object {
-	GDCLASS(iOS, Object);
-
+protected:
 	static void _bind_methods();
 
-private:
-	String _apns_token;
-	CHHapticEngine *haptic_engine API_AVAILABLE(ios(13)) = nullptr;
-
-	CHHapticEngine *get_haptic_engine_instance() API_AVAILABLE(ios(13));
-	void start_haptic_engine();
-	void stop_haptic_engine();
+	static GodotNotifications *singleton;
 
 public:
-	static void alert(const char *p_alert, const char *p_title);
+	void request_notifications();
 
-	bool supports_haptic_engine();
-	void vibrate_haptic_engine(float p_duration_seconds, float p_amplitude);
-
-	String get_model() const;
-	String get_rate_url(int p_app_id) const;
-
-	void set_apns_token(const String &p_token);
-	String get_apns_token() const;
-
-	iOS();
+	GodotNotifications();
+	~GodotNotifications();
 };
 
-#endif // IOS_H
+#endif // GODOT_NOTIFICATIONS_H

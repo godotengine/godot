@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  ios.h                                                                 */
+/*  godot_notifications.mm                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,39 +28,45 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef IOS_H
-#define IOS_H
+#include "godot_notifications.h"
 
-#include "core/object/class_db.h"
+#include <TargetConditionals.h>
 
-#import <CoreHaptics/CoreHaptics.h>
+#if TARGET_OS_IPHONE
+#import <UIKit/UIKit.h>
+#endif
+#import <UserNotifications/UserNotifications.h>
 
-class iOS : public Object {
-	GDCLASS(iOS, Object);
+GodotNotifications *GodotNotifications::singleton = nullptr;
 
-	static void _bind_methods();
+GodotNotifications::GodotNotifications() {
+	ERR_FAIL_COND(singleton != nullptr);
+	singleton = this;
+}
 
-private:
-	String _apns_token;
-	CHHapticEngine *haptic_engine API_AVAILABLE(ios(13)) = nullptr;
+GodotNotifications::~GodotNotifications() {
+	singleton = nullptr;
+}
 
-	CHHapticEngine *get_haptic_engine_instance() API_AVAILABLE(ios(13));
-	void start_haptic_engine();
-	void stop_haptic_engine();
+void GodotNotifications::request_notifications() {
+#if TARGET_OS_IPHONE
+	UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+	[center requestAuthorizationWithOptions:(UNAuthorizationOptionAlert + UNAuthorizationOptionSound)
+						  completionHandler:^(BOOL granted, NSError *_Nullable error) {
+							  if (granted) {
+								  [center getNotificationSettingsWithCompletionHandler:^(UNNotificationSettings *_Nonnull settings) {
+									  if (settings.authorizationStatus == UNAuthorizationStatusAuthorized) {
+										  [[UIApplication sharedApplication] registerForRemoteNotifications]; // you can also set here for local notification.
+									  }
+								  }];
+							  }
+						  }];
+#elif TARGET_OS_OSX
+#endif
+}
 
-public:
-	static void alert(const char *p_alert, const char *p_title);
-
-	bool supports_haptic_engine();
-	void vibrate_haptic_engine(float p_duration_seconds, float p_amplitude);
-
-	String get_model() const;
-	String get_rate_url(int p_app_id) const;
-
-	void set_apns_token(const String &p_token);
-	String get_apns_token() const;
-
-	iOS();
-};
-
-#endif // IOS_H
+void GodotNotifications::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("request_notifications"), &GodotNotifications::request_notifications);
+	ADD_SIGNAL(MethodInfo("rate_success"));
+	ADD_SIGNAL(MethodInfo("rate_failed", PropertyInfo(Variant::STRING, "message")));
+}

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  ios.h                                                                 */
+/*  register_types.cpp                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,39 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef IOS_H
-#define IOS_H
+#include "register_types.h"
 
-#include "core/object/class_db.h"
+#include "core/config/engine.h"
 
-#import <CoreHaptics/CoreHaptics.h>
+#include "godot_notifications.h"
 
-class iOS : public Object {
-	GDCLASS(iOS, Object);
+void initialize_notifications_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+	Engine::get_singleton()->add_singleton(Engine::Singleton("GodotNotifications", memnew(GodotNotifications)));
+}
 
-	static void _bind_methods();
-
-private:
-	String _apns_token;
-	CHHapticEngine *haptic_engine API_AVAILABLE(ios(13)) = nullptr;
-
-	CHHapticEngine *get_haptic_engine_instance() API_AVAILABLE(ios(13));
-	void start_haptic_engine();
-	void stop_haptic_engine();
-
-public:
-	static void alert(const char *p_alert, const char *p_title);
-
-	bool supports_haptic_engine();
-	void vibrate_haptic_engine(float p_duration_seconds, float p_amplitude);
-
-	String get_model() const;
-	String get_rate_url(int p_app_id) const;
-
-	void set_apns_token(const String &p_token);
-	String get_apns_token() const;
-
-	iOS();
-};
-
-#endif // IOS_H
+void uninitialize_notifications_module(ModuleInitializationLevel p_level) {
+}
