@@ -647,4 +647,8 @@ void OS_IOS::on_exit_background() {
 	}
 }
 
+void OS_IOS::set_apns_token(const String &p_token) {
+	if (ios)
+		ios->set_apns_token(p_token);
+}
 #endif // IOS_ENABLED

@@ -127,6 +127,8 @@ public:
 
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
 
+	void set_apns_token(const String &p_token);
+
 	void on_focus_out();
 	void on_focus_in();
 

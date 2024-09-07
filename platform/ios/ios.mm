@@ -42,6 +42,8 @@ void iOS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("supports_haptic_engine"), &iOS::supports_haptic_engine);
 	ClassDB::bind_method(D_METHOD("start_haptic_engine"), &iOS::start_haptic_engine);
 	ClassDB::bind_method(D_METHOD("stop_haptic_engine"), &iOS::stop_haptic_engine);
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "apns_token"), "set_apns_token", "get_apns_token");
+	ADD_SIGNAL(MethodInfo("apns_token_changed", PropertyInfo(Variant::STRING, "token")));
 };
 
 bool iOS::supports_haptic_engine() {
@@ -175,6 +177,15 @@ String iOS::get_rate_url(int p_app_id) const {
 
 	print_verbose(vformat("Returning rate url %s", ret));
 	return ret;
+}
+
+void iOS::set_apns_token(const String &p_token) {
+	_apns_token = p_token;
+	emit_signal(SNAME("apns_token_changed"), p_token);
+}
+
+String iOS::get_apns_token() const {
+	return _apns_token;
 }
 
 iOS::iOS() {}

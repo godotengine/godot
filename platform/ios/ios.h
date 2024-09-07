@@ -41,6 +41,7 @@ class iOS : public Object {
 	static void _bind_methods();
 
 private:
+	String _apns_token;
 	CHHapticEngine *haptic_engine API_AVAILABLE(ios(13)) = nullptr;
 
 	CHHapticEngine *get_haptic_engine_instance() API_AVAILABLE(ios(13));
@@ -55,6 +56,9 @@ public:
 
 	String get_model() const;
 	String get_rate_url(int p_app_id) const;
+
+	void set_apns_token(const String &p_token);
+	String get_apns_token() const;
 
 	iOS();
 };
