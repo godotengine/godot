@@ -36,6 +36,7 @@
 		</member>
 		<member name="progress_ratio" type="float" setter="set_progress_ratio" getter="get_progress_ratio" default="0.0">
 			The distance from the first vertex, considering 0.0 as the first vertex and 1.0 as the last. This is just another way of expressing the progress within the path, as the progress supplied is multiplied internally by the path's length.
+			It can be set or get only if the [PathFollow3D] is the child of a [Path3D] which is part of the scene tree, and that this [Path3D] has a [Curve3D] with a non-zero length. Otherwise, trying to set this field will print an error, and getting this field will return [code]0.0[/code].
 		</member>
 		<member name="rotation_mode" type="int" setter="set_rotation_mode" getter="get_rotation_mode" enum="PathFollow3D.RotationMode" default="3">
 			Allows or forbids rotation on one or more axes, depending on the [enum RotationMode] constants being used.

@@ -194,6 +194,9 @@
 			The maximum number of script functions that can be displayed per frame in the profiler. If there are more script functions called in a given profiler frame, these functions will be discarded from the profiling results entirely.
 			[b]Note:[/b] This setting is only read when the profiler is first started, so changing it during profiling will have no effect.
 		</member>
+		<member name="debugger/profiler_target_fps" type="int" setter="" getter="">
+			The target frame rate shown in the visual profiler graph, in frames per second.
+		</member>
 		<member name="debugger/remote_inspect_refresh_interval" type="float" setter="" getter="">
 			The refresh interval for the remote inspector's properties (in seconds). Lower values are more reactive, but may cause stuttering while the project is running from the editor and the [b]Remote[/b] scene tree is selected in the Scene tree dock.
 		</member>
@@ -204,8 +207,11 @@
 			If [code]true[/code], displays folders in the FileSystem dock's bottom pane when split mode is enabled. If [code]false[/code], only files will be displayed in the bottom pane. Split mode can be toggled by pressing the icon next to the [code]res://[/code] folder path.
 			[b]Note:[/b] This setting has no effect when split mode is disabled (which is the default).
 		</member>
+		<member name="docks/filesystem/other_file_extensions" type="String" setter="" getter="">
+			A comma separated list of unsupported file extensions to show in the FileSystem dock, e.g. [code]"ico,icns"[/code].
+		</member>
 		<member name="docks/filesystem/textfile_extensions" type="String" setter="" getter="">
-			List of file extensions to consider as editable text files in the FileSystem dock (by double-clicking on the files).
+			A comma separated list of file extensions to consider as editable text files in the FileSystem dock (by double-clicking on the files), e.g. [code]"txt,md,cfg,ini,log,json,yml,yaml,toml,xml"[/code].
 		</member>
 		<member name="docks/filesystem/thumbnail_size" type="int" setter="" getter="">
 			The thumbnail size to use in the FileSystem dock (in pixels). See also [member filesystem/file_dialog/thumbnail_size].
@@ -967,6 +973,7 @@
 			- [b]Auto (based on screen size)[/b] (default) will automatically choose how to launch the Play window based on the device and screen metrics. Defaults to [b]Same as Editor[/b] on phones and [b]Side-by-side with Editor[/b] on tablets.
 			- [b]Same as Editor[/b] will launch the Play window in the same window as the Editor.
 			- [b]Side-by-side with Editor[/b] will launch the Play window side-by-side with the Editor window.
+			- [b]Launch in PiP mode[/b] will launch the Play window directly in picture-in-picture (PiP) mode if PiP mode is supported and enabled. When maximized, the Play window will occupy the same window as the Editor.
 			[b]Note:[/b] Only available in the Android editor.
 		</member>
 		<member name="run/window_placement/play_window_pip_mode" type="int" setter="" getter="">

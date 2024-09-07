@@ -431,12 +431,13 @@ void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<
 		colors.resize(p_handles.size());
 		Color *w = colors.ptrw();
 		for (int i = 0; i < p_handles.size(); i++) {
+			int id = p_ids.is_empty() ? i : p_ids[i];
+
 			Color col(1, 1, 1, 1);
-			if (is_handle_highlighted(i, p_secondary)) {
+			if (is_handle_highlighted(id, p_secondary)) {
 				col = Color(0, 0, 1, 0.9);
 			}
 
-			int id = p_ids.is_empty() ? i : p_ids[i];
 			if (!is_current_hover_gizmo || current_hover_handle != id || p_secondary != current_hover_handle_secondary) {
 				col.a = 0.8;
 			}
@@ -982,7 +983,7 @@ void EditorNode3DGizmoPlugin::create_handle_material(const String &p_name, bool 
 
 	handle_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 	handle_material->set_flag(StandardMaterial3D::FLAG_USE_POINT_SIZE, true);
-	Ref<Texture2D> handle_t = p_icon != nullptr ? p_icon : EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Editor3DHandle"), EditorStringName(EditorIcons));
+	Ref<Texture2D> handle_t = p_icon.is_valid() ? p_icon : EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Editor3DHandle"), EditorStringName(EditorIcons));
 	handle_material->set_point_size(handle_t->get_width());
 	handle_material->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, handle_t);
 	handle_material->set_albedo(Color(1, 1, 1));
@@ -1060,7 +1061,7 @@ Ref<EditorNode3DGizmo> EditorNode3DGizmoPlugin::get_gizmo(Node3D *p_spatial) {
 	ref->set_node_3d(p_spatial);
 	ref->set_hidden(current_state == HIDDEN);
 
-	current_gizmos.push_back(ref.ptr());
+	current_gizmos.insert(ref.ptr());
 	return ref;
 }
 

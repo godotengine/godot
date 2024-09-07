@@ -175,7 +175,7 @@ static const String REMOVE_ANDROID_BUILD_TEMPLATE_MESSAGE = "The Android build t
 static const String INSTALL_ANDROID_BUILD_TEMPLATE_MESSAGE = "This will set up your project for gradle Android builds by installing the source template to \"%s\".\nNote that in order to make gradle builds instead of using pre-built APKs, the \"Use Gradle Build\" option should be enabled in the Android export preset.";
 
 bool EditorProgress::step(const String &p_state, int p_step, bool p_force_refresh) {
-	if (Thread::is_main_thread()) {
+	if (!force_background && Thread::is_main_thread()) {
 		return EditorNode::progress_task_step(task, p_state, p_step, p_force_refresh);
 	} else {
 		EditorNode::progress_task_step_bg(task, p_step);
@@ -183,17 +183,18 @@ bool EditorProgress::step(const String &p_state, int p_step, bool p_force_refres
 	}
 }
 
-EditorProgress::EditorProgress(const String &p_task, const String &p_label, int p_amount, bool p_can_cancel) {
-	if (Thread::is_main_thread()) {
+EditorProgress::EditorProgress(const String &p_task, const String &p_label, int p_amount, bool p_can_cancel, bool p_force_background) {
+	if (!p_force_background && Thread::is_main_thread()) {
 		EditorNode::progress_add_task(p_task, p_label, p_amount, p_can_cancel);
 	} else {
 		EditorNode::progress_add_task_bg(p_task, p_label, p_amount);
 	}
 	task = p_task;
+	force_background = p_force_background;
 }
 
 EditorProgress::~EditorProgress() {
-	if (Thread::is_main_thread()) {
+	if (!force_background && Thread::is_main_thread()) {
 		EditorNode::progress_end_task(task);
 	} else {
 		EditorNode::progress_end_task_bg(task);
@@ -824,6 +825,7 @@ void EditorNode::_notification(int p_what) {
 
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("docks/filesystem")) {
 				HashSet<String> updated_textfile_extensions;
+				HashSet<String> updated_other_file_extensions;
 				bool extensions_match = true;
 				const Vector<String> textfile_ext = ((String)(EDITOR_GET("docks/filesystem/textfile_extensions"))).split(",", false);
 				for (const String &E : textfile_ext) {
@@ -832,9 +834,17 @@ void EditorNode::_notification(int p_what) {
 						extensions_match = false;
 					}
 				}
+				const Vector<String> other_file_ext = ((String)(EDITOR_GET("docks/filesystem/other_file_extensions"))).split(",", false);
+				for (const String &E : other_file_ext) {
+					updated_other_file_extensions.insert(E);
+					if (extensions_match && !other_file_extensions.has(E)) {
+						extensions_match = false;
+					}
+				}
 
-				if (!extensions_match || updated_textfile_extensions.size() < textfile_extensions.size()) {
+				if (!extensions_match || updated_textfile_extensions.size() < textfile_extensions.size() || updated_other_file_extensions.size() < other_file_extensions.size()) {
 					textfile_extensions = updated_textfile_extensions;
+					other_file_extensions = updated_other_file_extensions;
 					EditorFileSystem::get_singleton()->scan();
 				}
 			}
@@ -1325,6 +1335,9 @@ Error EditorNode::load_resource(const String &p_resource, bool p_ignore_broken_d
 		res = ResourceLoader::load(p_resource, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
 	} else if (textfile_extensions.has(p_resource.get_extension())) {
 		res = ScriptEditor::get_singleton()->open_file(p_resource);
+	} else if (other_file_extensions.has(p_resource.get_extension())) {
+		OS::get_singleton()->shell_open(ProjectSettings::get_singleton()->globalize_path(p_resource));
+		return OK;
 	}
 	ERR_FAIL_COND_V(!res.is_valid(), ERR_CANT_OPEN);
 
@@ -5016,8 +5029,8 @@ String EditorNode::_get_system_info() const {
 #ifdef LINUXBSD_ENABLED
 	const String display_server = OS::get_singleton()->get_environment("XDG_SESSION_TYPE").capitalize().replace(" ", ""); // `replace` is necessary, because `capitalize` introduces a whitespace between "x" and "11".
 #endif // LINUXBSD_ENABLED
-	String driver_name = GLOBAL_GET("rendering/rendering_device/driver");
-	String rendering_method = GLOBAL_GET("rendering/renderer/rendering_method");
+	String driver_name = OS::get_singleton()->get_current_rendering_driver_name().to_lower();
+	String rendering_method = OS::get_singleton()->get_current_rendering_method().to_lower();
 
 	const String rendering_device_name = RenderingServer::get_singleton()->get_video_adapter_name();
 
@@ -5053,12 +5066,21 @@ String EditorNode::_get_system_info() const {
 		rendering_method = "Mobile";
 	} else if (rendering_method == "gl_compatibility") {
 		rendering_method = "Compatibility";
-		driver_name = GLOBAL_GET("rendering/gl_compatibility/driver");
 	}
 	if (driver_name == "vulkan") {
 		driver_name = "Vulkan";
-	} else if (driver_name.begins_with("opengl3")) {
-		driver_name = "GLES3";
+	} else if (driver_name == "d3d12") {
+		driver_name = "Direct3D 12";
+	} else if (driver_name == "opengl3_angle") {
+		driver_name = "OpenGL ES 3/ANGLE";
+	} else if (driver_name == "opengl3_es") {
+		driver_name = "OpenGL ES 3";
+	} else if (driver_name == "opengl3") {
+		if (OS::get_singleton()->get_gles_over_gl()) {
+			driver_name = "OpenGL 3";
+		} else {
+			driver_name = "OpenGL ES 3";
+		}
 	} else if (driver_name == "metal") {
 		driver_name = "Metal";
 	}
@@ -5230,8 +5252,8 @@ void EditorNode::_copy_warning(const String &p_str) {
 }
 
 void EditorNode::_save_editor_layout() {
-	if (waiting_for_first_scan) {
-		return; // Scanning, do not touch docks.
+	if (!load_editor_layout_done) {
+		return;
 	}
 	Ref<ConfigFile> config;
 	config.instantiate();
@@ -5287,22 +5309,22 @@ void EditorNode::_load_editor_layout() {
 		if (overridden_default_layout >= 0) {
 			_layout_menu_option(overridden_default_layout);
 		}
-		return;
+	} else {
+		ep.step(TTR("Loading docks..."), 1, true);
+		editor_dock_manager->load_docks_from_config(config, "docks");
+
+		ep.step(TTR("Reopening scenes..."), 2, true);
+		_load_open_scenes_from_config(config);
+
+		ep.step(TTR("Loading central editor layout..."), 3, true);
+		_load_central_editor_layout_from_config(config);
+
+		ep.step(TTR("Loading plugin window layout..."), 4, true);
+		editor_data.set_plugin_window_layout(config);
+
+		ep.step(TTR("Editor layout ready."), 5, true);
 	}
-
-	ep.step(TTR("Loading docks..."), 1, true);
-	editor_dock_manager->load_docks_from_config(config, "docks");
-
-	ep.step(TTR("Reopening scenes..."), 2, true);
-	_load_open_scenes_from_config(config);
-
-	ep.step(TTR("Loading central editor layout..."), 3, true);
-	_load_central_editor_layout_from_config(config);
-
-	ep.step(TTR("Loading plugin window layout..."), 4, true);
-	editor_data.set_plugin_window_layout(config);
-
-	ep.step(TTR("Editor layout ready."), 5, true);
+	load_editor_layout_done = true;
 }
 
 void EditorNode::_save_central_editor_layout_to_config(Ref<ConfigFile> p_config_file) {
@@ -6144,7 +6166,7 @@ void EditorNode::reload_instances_with_path_in_edited_scenes() {
 						base_packed_scene = current_packed_scene;
 					}
 					if (!local_scene_cache.find(path)) {
-						current_packed_scene = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_REPLACE_DEEP, &err);
+						current_packed_scene = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_REPLACE, &err);
 						local_scene_cache[path] = current_packed_scene;
 					} else {
 						current_packed_scene = local_scene_cache[path];
@@ -6970,6 +6992,10 @@ EditorNode::EditorNode() {
 	for (const String &E : textfile_ext) {
 		textfile_extensions.insert(E);
 	}
+	const Vector<String> other_file_ext = ((String)(EDITOR_GET("docks/filesystem/other_file_extensions"))).split(",", false);
+	for (const String &E : other_file_ext) {
+		other_file_extensions.insert(E);
+	}
 
 	resource_preview = memnew(EditorResourcePreview);
 	add_child(resource_preview);
@@ -7150,6 +7176,7 @@ EditorNode::EditorNode() {
 	}
 
 	main_menu = memnew(MenuBar);
+	main_menu->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	title_bar->add_child(main_menu);
 	main_menu->set_theme_type_variation("MainMenuBar");
 	main_menu->set_start_index(0); // Main menu, add to the start of global menu.
@@ -7332,6 +7359,7 @@ EditorNode::EditorNode() {
 	}
 
 	main_editor_button_hb = memnew(HBoxContainer);
+	main_editor_button_hb->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	title_bar->add_child(main_editor_button_hb);
 
 	// Options are added and handled by DebuggerEditorPlugin.
@@ -7426,11 +7454,13 @@ EditorNode::EditorNode() {
 	title_bar->add_child(right_spacer);
 
 	project_run_bar = memnew(EditorRunBar);
+	project_run_bar->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	title_bar->add_child(project_run_bar);
 	project_run_bar->connect("play_pressed", callable_mp(this, &EditorNode::_project_run_started));
 	project_run_bar->connect("stop_pressed", callable_mp(this, &EditorNode::_project_run_stopped));
 
 	HBoxContainer *right_menu_hb = memnew(HBoxContainer);
+	right_menu_hb->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	title_bar->add_child(right_menu_hb);
 
 	renderer = memnew(OptionButton);

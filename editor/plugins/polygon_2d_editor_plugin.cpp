@@ -1482,7 +1482,7 @@ Polygon2DEditor::Polygon2DEditor() {
 
 	grid_settings = memnew(AcceptDialog);
 	grid_settings->set_title(TTR("Configure Grid:"));
-	add_child(grid_settings);
+	uv_edit->add_child(grid_settings);
 	VBoxContainer *grid_settings_vb = memnew(VBoxContainer);
 	grid_settings->add_child(grid_settings_vb);
 

@@ -101,7 +101,8 @@ struct FontLoader : LoadModule
 
     FontLoader(FileType type) : LoadModule(type) {}
 
-    virtual bool request(Shape* shape, char* text, bool italic = false) = 0;
+    virtual bool request(Shape* shape, char* text) = 0;
+    virtual bool transform(Paint* paint, float fontSize, bool italic) = 0;
 };
 
 #endif //_TVG_LOAD_MODULE_H_

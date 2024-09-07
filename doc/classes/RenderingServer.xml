@@ -329,6 +329,7 @@
 			<param index="4" name="texture" type="RID" default="RID()" />
 			<description>
 				Draws a 2D polygon on the [CanvasItem] pointed to by the [param item] [RID]. If you need more flexibility (such as being able to use bones), use [method canvas_item_add_triangle_array] instead. See also [method CanvasItem.draw_polygon].
+				[b]Note:[/b] If you frequently redraw the same polygon with a large number of vertices, consider pre-calculating the triangulation with [method Geometry2D.triangulate_polygon] and using [method CanvasItem.draw_mesh], [method CanvasItem.draw_multimesh], or [method canvas_item_add_triangle_array].
 			</description>
 		</method>
 		<method name="canvas_item_add_polyline">
@@ -410,6 +411,14 @@
 			<description>
 				Draws a triangle array on the [CanvasItem] pointed to by the [param item] [RID]. This is internally used by [Line2D] and [StyleBoxFlat] for rendering. [method canvas_item_add_triangle_array] is highly flexible, but more complex to use than [method canvas_item_add_polygon].
 				[b]Note:[/b] [param count] is unused and can be left unspecified.
+			</description>
+		</method>
+		<method name="canvas_item_attach_skeleton">
+			<return type="void" />
+			<param index="0" name="item" type="RID" />
+			<param index="1" name="skeleton" type="RID" />
+			<description>
+				Attaches a skeleton to the [CanvasItem]. Removes the previous skeleton.
 			</description>
 		</method>
 		<method name="canvas_item_clear">

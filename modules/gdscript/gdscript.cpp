@@ -138,7 +138,7 @@ void GDScript::_super_implicit_constructor(GDScript *p_script, GDScriptInstance 
 		}
 	}
 	ERR_FAIL_NULL(p_script->implicit_initializer);
-	if (likely(valid)) {
+	if (likely(p_script->valid)) {
 		p_script->implicit_initializer->call(p_instance, nullptr, 0, r_error);
 	} else {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;

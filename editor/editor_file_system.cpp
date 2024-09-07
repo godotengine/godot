@@ -33,8 +33,6 @@
 #include "core/config/project_settings.h"
 #include "core/extension/gdextension_manager.h"
 #include "core/io/file_access.h"
-#include "core/io/resource_importer.h"
-#include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/os.h"
@@ -412,11 +410,13 @@ void EditorFileSystem::_scan_filesystem() {
 	new_filesystem->parent = nullptr;
 
 	ScannedDirectory *sd;
+	HashSet<String> *processed_files = nullptr;
 	// On the first scan, the first_scan_root_dir is created in _first_scan_filesystem.
 	if (first_scan) {
 		sd = first_scan_root_dir;
 		// Will be updated on scan.
 		ResourceUID::get_singleton()->clear();
+		processed_files = memnew(HashSet<String>());
 	} else {
 		Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		sd = memnew(ScannedDirectory);
@@ -424,14 +424,18 @@ void EditorFileSystem::_scan_filesystem() {
 		nb_files_total = _scan_new_dir(sd, d);
 	}
 
-	_process_file_system(sd, new_filesystem, sp);
+	_process_file_system(sd, new_filesystem, sp, processed_files);
 
+	if (first_scan) {
+		_process_removed_files(*processed_files);
+	}
 	dep_update_list.clear();
 	file_cache.clear(); //clear caches, no longer needed
 
 	if (first_scan) {
 		memdelete(first_scan_root_dir);
 		first_scan_root_dir = nullptr;
+		memdelete(processed_files);
 	} else {
 		//on the first scan this is done from the main thread after re-importing
 		_save_filesystem_cache();
@@ -903,6 +907,7 @@ void EditorFileSystem::scan() {
 		// Set first_scan to false before the signals so the function doing_first_scan can return false
 		// in editor_node to start the export if needed.
 		first_scan = false;
+		ResourceImporter::load_on_startup = nullptr;
 		emit_signal(SNAME("filesystem_changed"));
 		emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
 	} else {
@@ -991,7 +996,7 @@ int EditorFileSystem::_scan_new_dir(ScannedDirectory *p_dir, Ref<DirAccess> &da)
 	return nb_files_total_scan;
 }
 
-void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, EditorFileSystemDirectory *p_dir, ScanProgress &p_progress) {
+void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, EditorFileSystemDirectory *p_dir, ScanProgress &p_progress, HashSet<String> *r_processed_files) {
 	p_dir->modified_time = FileAccess::get_modified_time(p_scan_dir->full_path);
 
 	for (ScannedDirectory *scan_sub_dir : p_scan_dir->subdirs) {
@@ -999,7 +1004,7 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 		sub_dir->parent = p_dir;
 		sub_dir->name = scan_sub_dir->name;
 		p_dir->subdirs.push_back(sub_dir);
-		_process_file_system(scan_sub_dir, sub_dir, p_progress);
+		_process_file_system(scan_sub_dir, sub_dir, p_progress, r_processed_files);
 	}
 
 	for (const String &scan_file : p_scan_dir->files) {
@@ -1014,6 +1019,10 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 		EditorFileSystemDirectory::FileInfo *fi = memnew(EditorFileSystemDirectory::FileInfo);
 		fi->file = scan_file;
 		p_dir->files.push_back(fi);
+
+		if (r_processed_files) {
+			r_processed_files->insert(path);
+		}
 
 		FileCache *fc = file_cache.getptr(path);
 		uint64_t mt = FileAccess::get_modified_time(path);
@@ -1066,7 +1075,7 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 				fi->script_class_name = _get_global_script_class(fi->type, path, &fi->script_class_extends, &fi->script_class_icon_path);
 				fi->modified_time = 0;
 				fi->import_modified_time = 0;
-				fi->import_valid = fi->type == "TextFile" ? true : ResourceLoader::is_import_valid(path);
+				fi->import_valid = (fi->type == "TextFile" || fi->type == "OtherFile") ? true : ResourceLoader::is_import_valid(path);
 
 				ItemAction ia;
 				ia.action = ItemAction::ACTION_FILE_TEST_REIMPORT;
@@ -1109,6 +1118,9 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 				if (fi->type == "" && textfile_extensions.has(ext)) {
 					fi->type = "TextFile";
 				}
+				if (fi->type == "" && other_file_extensions.has(ext)) {
+					fi->type = "OtherFile";
+				}
 				fi->uid = ResourceLoader::get_resource_uid(path);
 				fi->script_class_name = _get_global_script_class(fi->type, path, &fi->script_class_extends, &fi->script_class_icon_path);
 				fi->deps = _get_dependencies(path);
@@ -1137,6 +1149,20 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 		}
 
 		p_progress.increment();
+	}
+}
+
+void EditorFileSystem::_process_removed_files(const HashSet<String> &p_processed_files) {
+	for (const KeyValue<String, EditorFileSystem::FileCache> &kv : file_cache) {
+		if (!p_processed_files.has(kv.key)) {
+			if (ClassDB::is_parent_class(kv.value.type, SNAME("Script"))) {
+				// A script has been removed from disk since the last startup. The documentation needs to be updated.
+				// There's no need to add the path in update_script_paths since that is exclusively for updating global class names,
+				// which is handled in _first_scan_filesystem before the full scan to ensure plugins and autoloads can be created.
+				MutexLock update_script_lock(update_script_mutex);
+				update_script_paths_documentation.insert(kv.key);
+			}
+		}
 	}
 }
 
@@ -1207,7 +1233,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanPr
 					int nb_files_dir = _scan_new_dir(&sd, d);
 					p_progress.hi += nb_files_dir;
 					diff_nb_files += nb_files_dir;
-					_process_file_system(&sd, efd, p_progress);
+					_process_file_system(&sd, efd, p_progress, nullptr);
 
 					ItemAction ia;
 					ia.action = ItemAction::ACTION_DIR_ADD;
@@ -1240,8 +1266,11 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanPr
 					if (fi->type == "" && textfile_extensions.has(ext)) {
 						fi->type = "TextFile";
 					}
+					if (fi->type == "" && other_file_extensions.has(ext)) {
+						fi->type = "OtherFile";
+					}
 					fi->script_class_name = _get_global_script_class(fi->type, path, &fi->script_class_extends, &fi->script_class_icon_path);
-					fi->import_valid = fi->type == "TextFile" ? true : ResourceLoader::is_import_valid(path);
+					fi->import_valid = (fi->type == "TextFile" || fi->type == "OtherFile") ? true : ResourceLoader::is_import_valid(path);
 					fi->import_group_file = ResourceLoader::get_import_group_file(path);
 
 					{
@@ -1513,6 +1542,7 @@ void EditorFileSystem::_notification(int p_what) {
 						// Set first_scan to false before the signals so the function doing_first_scan can return false
 						// in editor_node to start the export if needed.
 						first_scan = false;
+						ResourceImporter::load_on_startup = nullptr;
 						if (changed) {
 							emit_signal(SNAME("filesystem_changed"));
 						}
@@ -1535,6 +1565,7 @@ void EditorFileSystem::_notification(int p_what) {
 					// Set first_scan to false before the signals so the function doing_first_scan can return false
 					// in editor_node to start the export if needed.
 					first_scan = false;
+					ResourceImporter::load_on_startup = nullptr;
 					emit_signal(SNAME("filesystem_changed"));
 					emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
 				}
@@ -1871,7 +1902,12 @@ void EditorFileSystem::_update_script_classes() {
 
 		EditorProgress *ep = nullptr;
 		if (update_script_paths.size() > 1) {
-			ep = memnew(EditorProgress("update_scripts_classes", TTR("Registering global classes..."), update_script_paths.size()));
+			if (MessageQueue::get_singleton()->is_flushing()) {
+				// Use background progress when message queue is flushing.
+				ep = memnew(EditorProgress("update_scripts_classes", TTR("Registering global classes..."), update_script_paths.size(), false, true));
+			} else {
+				ep = memnew(EditorProgress("update_scripts_classes", TTR("Registering global classes..."), update_script_paths.size()));
+			}
 		}
 
 		int step_count = 0;
@@ -1910,7 +1946,12 @@ void EditorFileSystem::_update_script_documentation() {
 
 	EditorProgress *ep = nullptr;
 	if (update_script_paths_documentation.size() > 1) {
-		ep = memnew(EditorProgress("update_script_paths_documentation", TTR("Updating scripts documentation"), update_script_paths_documentation.size()));
+		if (MessageQueue::get_singleton()->is_flushing()) {
+			// Use background progress when message queue is flushing.
+			ep = memnew(EditorProgress("update_script_paths_documentation", TTR("Updating scripts documentation"), update_script_paths_documentation.size(), false, true));
+		} else {
+			ep = memnew(EditorProgress("update_script_paths_documentation", TTR("Updating scripts documentation"), update_script_paths_documentation.size()));
+		}
 	}
 
 	int step_count = 0;
@@ -2083,6 +2124,9 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 			if (type.is_empty() && textfile_extensions.has(file.get_extension())) {
 				type = "TextFile";
 			}
+			if (type.is_empty() && other_file_extensions.has(file.get_extension())) {
+				type = "OtherFile";
+			}
 			String script_class = ResourceLoader::get_resource_script_class(file);
 
 			ResourceUID::ID uid = ResourceLoader::get_resource_uid(file);
@@ -2102,7 +2146,7 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 				EditorFileSystemDirectory::FileInfo *fi = memnew(EditorFileSystemDirectory::FileInfo);
 				fi->file = file_name;
 				fi->import_modified_time = 0;
-				fi->import_valid = type == "TextFile" ? true : ResourceLoader::is_import_valid(file);
+				fi->import_valid = (type == "TextFile" || type == "OtherFile") ? true : ResourceLoader::is_import_valid(file);
 
 				if (idx == fs->files.size()) {
 					fs->files.push_back(fi);
@@ -2126,7 +2170,7 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 			fs->files[cpos]->import_group_file = ResourceLoader::get_import_group_file(file);
 			fs->files[cpos]->modified_time = FileAccess::get_modified_time(file);
 			fs->files[cpos]->deps = _get_dependencies(file);
-			fs->files[cpos]->import_valid = type == "TextFile" ? true : ResourceLoader::is_import_valid(file);
+			fs->files[cpos]->import_valid = (type == "TextFile" || type == "OtherFile") ? true : ResourceLoader::is_import_valid(file);
 
 			if (uid != ResourceUID::INVALID_ID) {
 				if (ResourceUID::get_singleton()->has_id(uid)) {
@@ -2384,6 +2428,9 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		if (fs->files[cpos]->type == "" && textfile_extensions.has(file.get_extension())) {
 			fs->files[cpos]->type = "TextFile";
 		}
+		if (fs->files[cpos]->type == "" && other_file_extensions.has(file.get_extension())) {
+			fs->files[cpos]->type = "OtherFile";
+		}
 		fs->files[cpos]->import_valid = err == OK;
 
 		if (ResourceUID::get_singleton()->has_id(uid)) {
@@ -2410,14 +2457,16 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 	return err;
 }
 
-Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<StringName, Variant> &p_custom_options, const String &p_custom_importer, Variant *p_generator_parameters) {
+Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<StringName, Variant> &p_custom_options, const String &p_custom_importer, Variant *p_generator_parameters, bool p_update_file_system) {
 	print_verbose(vformat("EditorFileSystem: Importing file: %s", p_file));
 	uint64_t start_time = OS::get_singleton()->get_ticks_msec();
 
 	EditorFileSystemDirectory *fs = nullptr;
 	int cpos = -1;
-	bool found = _find_file(p_file, &fs, cpos);
-	ERR_FAIL_COND_V_MSG(!found, ERR_FILE_NOT_FOUND, "Can't find file '" + p_file + "'.");
+	if (p_update_file_system) {
+		bool found = _find_file(p_file, &fs, cpos);
+		ERR_FAIL_COND_V_MSG(!found, ERR_FILE_NOT_FOUND, "Can't find file '" + p_file + "'.");
+	}
 
 	//try to obtain existing params
 
@@ -2471,11 +2520,13 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 
 	if (importer_name == "keep" || importer_name == "skip") {
 		//keep files, do nothing.
-		fs->files[cpos]->modified_time = FileAccess::get_modified_time(p_file);
-		fs->files[cpos]->import_modified_time = FileAccess::get_modified_time(p_file + ".import");
-		fs->files[cpos]->deps.clear();
-		fs->files[cpos]->type = "";
-		fs->files[cpos]->import_valid = false;
+		if (p_update_file_system) {
+			fs->files[cpos]->modified_time = FileAccess::get_modified_time(p_file);
+			fs->files[cpos]->import_modified_time = FileAccess::get_modified_time(p_file + ".import");
+			fs->files[cpos]->deps.clear();
+			fs->files[cpos]->type = "";
+			fs->files[cpos]->import_valid = false;
+		}
 		EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
 		return OK;
 	}
@@ -2635,16 +2686,18 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		}
 	}
 
-	// Update cpos, newly created files could've changed the index of the reimported p_file.
-	_find_file(p_file, &fs, cpos);
+	if (p_update_file_system) {
+		// Update cpos, newly created files could've changed the index of the reimported p_file.
+		_find_file(p_file, &fs, cpos);
 
-	// Update modified times, to avoid reimport.
-	fs->files[cpos]->modified_time = FileAccess::get_modified_time(p_file);
-	fs->files[cpos]->import_modified_time = FileAccess::get_modified_time(p_file + ".import");
-	fs->files[cpos]->deps = _get_dependencies(p_file);
-	fs->files[cpos]->type = importer->get_resource_type();
-	fs->files[cpos]->uid = uid;
-	fs->files[cpos]->import_valid = fs->files[cpos]->type == "TextFile" ? true : ResourceLoader::is_import_valid(p_file);
+		// Update modified times, to avoid reimport.
+		fs->files[cpos]->modified_time = FileAccess::get_modified_time(p_file);
+		fs->files[cpos]->import_modified_time = FileAccess::get_modified_time(p_file + ".import");
+		fs->files[cpos]->deps = _get_dependencies(p_file);
+		fs->files[cpos]->type = importer->get_resource_type();
+		fs->files[cpos]->uid = uid;
+		fs->files[cpos]->import_valid = fs->files[cpos]->type == "TextFile" ? true : ResourceLoader::is_import_valid(p_file);
+	}
 
 	if (ResourceUID::get_singleton()->has_id(uid)) {
 		ResourceUID::get_singleton()->set_id(uid, p_file);
@@ -2904,6 +2957,33 @@ Error EditorFileSystem::_resource_import(const String &p_path) {
 	return OK;
 }
 
+Ref<Resource> EditorFileSystem::_load_resource_on_startup(ResourceFormatImporter *p_importer, const String &p_path, Error *r_error, bool p_use_sub_threads, float *r_progress, ResourceFormatLoader::CacheMode p_cache_mode) {
+	ERR_FAIL_NULL_V(p_importer, Ref<Resource>());
+
+	if (!FileAccess::exists(p_path)) {
+		ERR_FAIL_V_MSG(Ref<Resource>(), vformat("Failed loading resource: %s. The file doesn't seem to exist.", p_path));
+	}
+
+	Ref<Resource> res;
+	bool can_retry = true;
+	bool retry = true;
+	while (retry) {
+		retry = false;
+
+		res = p_importer->load_internal(p_path, r_error, p_use_sub_threads, r_progress, p_cache_mode, can_retry);
+
+		if (res.is_null() && can_retry) {
+			can_retry = false;
+			Error err = singleton->_reimport_file(p_path, HashMap<StringName, Variant>(), "", nullptr, false);
+			if (err == OK) {
+				retry = true;
+			}
+		}
+	}
+
+	return res;
+}
+
 bool EditorFileSystem::_should_skip_directory(const String &p_path) {
 	String project_data_path = ProjectSettings::get_singleton()->get_project_data_path();
 	if (p_path == project_data_path || p_path.begins_with(project_data_path + "/")) {
@@ -3051,6 +3131,7 @@ void EditorFileSystem::_update_extensions() {
 	valid_extensions.clear();
 	import_extensions.clear();
 	textfile_extensions.clear();
+	other_file_extensions.clear();
 
 	List<String> extensionsl;
 	ResourceLoader::get_recognized_extensions_for_type("", &extensionsl);
@@ -3065,6 +3146,14 @@ void EditorFileSystem::_update_extensions() {
 		}
 		valid_extensions.insert(E);
 		textfile_extensions.insert(E);
+	}
+	const Vector<String> other_file_ext = ((String)(EDITOR_GET("docks/filesystem/other_file_extensions"))).split(",", false);
+	for (const String &E : other_file_ext) {
+		if (valid_extensions.has(E)) {
+			continue;
+		}
+		valid_extensions.insert(E);
+		other_file_extensions.insert(E);
 	}
 
 	extensionsl.clear();
@@ -3101,6 +3190,10 @@ EditorFileSystem::EditorFileSystem() {
 
 	scan_total = 0;
 	ResourceSaver::set_get_resource_id_for_path(_resource_saver_get_resource_id_for_path);
+
+	// Set the callback method that the ResourceFormatImporter will use
+	// if resources are loaded during the first scan.
+	ResourceImporter::load_on_startup = _load_resource_on_startup;
 }
 
 EditorFileSystem::~EditorFileSystem() {

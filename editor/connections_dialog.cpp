@@ -576,6 +576,22 @@ String ConnectDialog::get_signature(const MethodInfo &p_method, PackedStringArra
 					type_name = "Array";
 				}
 				break;
+			case Variant::DICTIONARY:
+				type_name = "Dictionary";
+				if (pi.hint == PROPERTY_HINT_DICTIONARY_TYPE && !pi.hint_string.is_empty()) {
+					String key_hint = pi.hint_string.get_slice(";", 0);
+					String value_hint = pi.hint_string.get_slice(";", 1);
+					if (key_hint.is_empty() || key_hint.begins_with("res://")) {
+						key_hint = "Variant";
+					}
+					if (value_hint.is_empty() || value_hint.begins_with("res://")) {
+						value_hint = "Variant";
+					}
+					if (key_hint != "Variant" || value_hint != "Variant") {
+						type_name += "[" + key_hint + ", " + value_hint + "]";
+					}
+				}
+				break;
 			case Variant::OBJECT:
 				if (pi.class_name != StringName()) {
 					type_name = pi.class_name;

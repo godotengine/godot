@@ -6,6 +6,7 @@ dilate = "#define MODE_DILATE";
 unocclude = "#define MODE_UNOCCLUDE";
 light_probes = "#define MODE_LIGHT_PROBES";
 denoise = "#define MODE_DENOISE";
+pack_coeffs = "#define MODE_PACK_L1_COEFFS";
 
 #[compute]
 
@@ -63,7 +64,7 @@ layout(rgba16f, set = 1, binding = 4) uniform restrict image2DArray accum_light;
 layout(set = 1, binding = 5) uniform texture2D environment;
 #endif
 
-#if defined(MODE_DILATE) || defined(MODE_DENOISE)
+#if defined(MODE_DILATE) || defined(MODE_DENOISE) || defined(MODE_PACK_L1_COEFFS)
 layout(rgba16f, set = 1, binding = 0) uniform restrict writeonly image2DArray dest_light;
 layout(set = 1, binding = 1) uniform texture2DArray source_light;
 #endif
@@ -1035,6 +1036,30 @@ void main() {
 		}
 
 		imageStore(dest_light, ivec3(atlas_pos, lightmap_slice), vec4(denoised_rgb, input_light.a));
+	}
+#endif
+
+#ifdef MODE_PACK_L1_COEFFS
+	vec4 base_coeff = texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos, params.atlas_slice * 4), 0);
+
+	for (int i = 1; i < 4; i++) {
+		vec4 c = texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos, params.atlas_slice * 4 + i), 0);
+
+		if (abs(base_coeff.r) > 0.0) {
+			c.r /= (base_coeff.r * 8);
+		}
+
+		if (abs(base_coeff.g) > 0.0) {
+			c.g /= (base_coeff.g * 8);
+		}
+
+		if (abs(base_coeff.b) > 0.0) {
+			c.b /= (base_coeff.b * 8);
+		}
+
+		c.rgb += vec3(0.5);
+		c.rgb = clamp(c.rgb, vec3(0.0), vec3(1.0));
+		imageStore(dest_light, ivec3(atlas_pos, params.atlas_slice * 4 + i), c);
 	}
 #endif
 }

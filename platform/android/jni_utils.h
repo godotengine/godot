@@ -52,6 +52,6 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj);
 
 Variant::Type get_jni_type(const String &p_type);
 
-const char *get_jni_sig(const String &p_type);
+String get_jni_sig(const String &p_type);
 
 #endif // JNI_UTILS_H

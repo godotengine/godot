@@ -376,7 +376,19 @@
 		</constant>
 		<constant name="ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS" value="2" enum="AnimationCallbackModeDiscrete">
 			Always treat the [constant Animation.UPDATE_DISCRETE] track value as [constant Animation.UPDATE_CONTINUOUS] with [constant Animation.INTERPOLATION_NEAREST]. This is the default behavior for [AnimationTree].
-			If a value track has non-numeric type key values, it is internally converted to use [constant ANIMATION_CALLBACK_MODE_DISCRETE_RECESSIVE] with [constant Animation.UPDATE_DISCRETE].
+			If a value track has un-interpolatable type key values, it is internally converted to use [constant ANIMATION_CALLBACK_MODE_DISCRETE_RECESSIVE] with [constant Animation.UPDATE_DISCRETE].
+			Un-interpolatable type list:
+			- [constant @GlobalScope.TYPE_NIL]
+			- [constant @GlobalScope.TYPE_NODE_PATH]
+			- [constant @GlobalScope.TYPE_RID]
+			- [constant @GlobalScope.TYPE_OBJECT]
+			- [constant @GlobalScope.TYPE_CALLABLE]
+			- [constant @GlobalScope.TYPE_SIGNAL]
+			- [constant @GlobalScope.TYPE_DICTIONARY]
+			- [constant @GlobalScope.TYPE_PACKED_BYTE_ARRAY]
+			[constant @GlobalScope.TYPE_BOOL] and [constant @GlobalScope.TYPE_INT] are treated as [constant @GlobalScope.TYPE_FLOAT] during blending and rounded when the result is retrieved.
+			It is same for arrays and vectors with them such as [constant @GlobalScope.TYPE_PACKED_INT32_ARRAY] or [constant @GlobalScope.TYPE_VECTOR2I], they are treated as [constant @GlobalScope.TYPE_PACKED_FLOAT32_ARRAY] or [constant @GlobalScope.TYPE_VECTOR2]. Also note that for arrays, the size is also interpolated.
+			[constant @GlobalScope.TYPE_STRING] and [constant @GlobalScope.TYPE_STRING_NAME] are interpolated between character codes and lengths, but note that there is a difference in algorithm between interpolation between keys and interpolation by blending.
 		</constant>
 	</constants>
 </class>

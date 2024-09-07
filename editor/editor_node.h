@@ -124,9 +124,10 @@ class WindowWrapper;
 
 struct EditorProgress {
 	String task;
+	bool force_background = false;
 	bool step(const String &p_state, int p_step = -1, bool p_force_refresh = true);
 
-	EditorProgress(const String &p_task, const String &p_label, int p_amount, bool p_can_cancel = false);
+	EditorProgress(const String &p_task, const String &p_label, int p_amount, bool p_can_cancel = false, bool p_force_background = false);
 	~EditorProgress();
 };
 
@@ -461,6 +462,7 @@ private:
 
 	bool requested_first_scan = false;
 	bool waiting_for_first_scan = true;
+	bool load_editor_layout_done = false;
 
 	int current_menu_option = 0;
 
@@ -487,6 +489,7 @@ private:
 	String import_reload_fn;
 
 	HashSet<String> textfile_extensions;
+	HashSet<String> other_file_extensions;
 	HashSet<FileDialog *> file_dialogs;
 	HashSet<EditorFileDialog *> editor_file_dialogs;
 

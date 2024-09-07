@@ -232,7 +232,7 @@ template <typename T>
 class VariantConstructorFromString {
 public:
 	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
-		if (p_args[0]->get_type() != Variant::STRING) {
+		if (!p_args[0]->is_string()) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 0;
 			r_error.expected = Variant::STRING;
@@ -240,7 +240,7 @@ public:
 		}
 
 		VariantTypeChanger<T>::change(&r_ret);
-		const String &src_str = *VariantGetInternalPtr<String>::get_ptr(p_args[0]);
+		const String src_str = *p_args[0];
 
 		if (r_ret.get_type() == Variant::Type::INT) {
 			r_ret = src_str.to_int();
@@ -400,13 +400,13 @@ public:
 	}
 };
 
-class VariantConstructorTypedArray {
+class VariantConstructorTypedDictionary {
 public:
 	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
-		if (p_args[0]->get_type() != Variant::ARRAY) {
+		if (p_args[0]->get_type() != Variant::DICTIONARY) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 0;
-			r_error.expected = Variant::ARRAY;
+			r_error.expected = Variant::DICTIONARY;
 			return;
 		}
 
@@ -424,10 +424,115 @@ public:
 			return;
 		}
 
+		if (p_args[4]->get_type() != Variant::INT) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 4;
+			r_error.expected = Variant::INT;
+			return;
+		}
+
+		if (p_args[5]->get_type() != Variant::STRING_NAME) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 5;
+			r_error.expected = Variant::STRING_NAME;
+			return;
+		}
+
+		const Dictionary &base_dict = *VariantGetInternalPtr<Dictionary>::get_ptr(p_args[0]);
+		const uint32_t key_type = p_args[1]->operator uint32_t();
+		const StringName &key_class_name = *VariantGetInternalPtr<StringName>::get_ptr(p_args[2]);
+		const uint32_t value_type = p_args[4]->operator uint32_t();
+		const StringName &value_class_name = *VariantGetInternalPtr<StringName>::get_ptr(p_args[5]);
+		r_ret = Dictionary(base_dict, key_type, key_class_name, *p_args[3], value_type, value_class_name, *p_args[6]);
+	}
+
+	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {
+		const Dictionary &base_dict = *VariantGetInternalPtr<Dictionary>::get_ptr(p_args[0]);
+		const uint32_t key_type = p_args[1]->operator uint32_t();
+		const StringName &key_class_name = *VariantGetInternalPtr<StringName>::get_ptr(p_args[2]);
+		const uint32_t value_type = p_args[4]->operator uint32_t();
+		const StringName &value_class_name = *VariantGetInternalPtr<StringName>::get_ptr(p_args[5]);
+		*r_ret = Dictionary(base_dict, key_type, key_class_name, *p_args[3], value_type, value_class_name, *p_args[6]);
+	}
+
+	static void ptr_construct(void *base, const void **p_args) {
+		const Dictionary &base_dict = PtrToArg<Dictionary>::convert(p_args[0]);
+		const uint32_t key_type = PtrToArg<uint32_t>::convert(p_args[1]);
+		const StringName &key_class_name = PtrToArg<StringName>::convert(p_args[2]);
+		const Variant &key_script = PtrToArg<Variant>::convert(p_args[3]);
+		const uint32_t value_type = PtrToArg<uint32_t>::convert(p_args[4]);
+		const StringName &value_class_name = PtrToArg<StringName>::convert(p_args[5]);
+		const Variant &value_script = PtrToArg<Variant>::convert(p_args[6]);
+		Dictionary dst_arr = Dictionary(base_dict, key_type, key_class_name, key_script, value_type, value_class_name, value_script);
+
+		PtrConstruct<Dictionary>::construct(dst_arr, base);
+	}
+
+	static int get_argument_count() {
+		return 7;
+	}
+
+	static Variant::Type get_argument_type(int p_arg) {
+		switch (p_arg) {
+			case 0: {
+				return Variant::DICTIONARY;
+			} break;
+			case 1: {
+				return Variant::INT;
+			} break;
+			case 2: {
+				return Variant::STRING_NAME;
+			} break;
+			case 3: {
+				return Variant::NIL;
+			} break;
+			case 4: {
+				return Variant::INT;
+			} break;
+			case 5: {
+				return Variant::STRING_NAME;
+			} break;
+			case 6: {
+				return Variant::NIL;
+			} break;
+			default: {
+				return Variant::NIL;
+			} break;
+		}
+	}
+
+	static Variant::Type get_base_type() {
+		return Variant::DICTIONARY;
+	}
+};
+
+class VariantConstructorTypedArray {
+public:
+	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
+		if (p_args[0]->get_type() != Variant::ARRAY) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 0;
+			r_error.expected = Variant::ARRAY;
+			return;
+		}
+
+		if (p_args[1]->get_type() != Variant::INT) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 1;
+			r_error.expected = Variant::INT;
+			return;
+		}
+
+		if (!p_args[2]->is_string()) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 2;
+			r_error.expected = Variant::STRING_NAME;
+			return;
+		}
+
 		const Array &base_arr = *VariantGetInternalPtr<Array>::get_ptr(p_args[0]);
 		const uint32_t type = p_args[1]->operator uint32_t();
-		const StringName &class_name = *VariantGetInternalPtr<StringName>::get_ptr(p_args[2]);
-		r_ret = Array(base_arr, type, class_name, *p_args[3]);
+		r_ret = Array(base_arr, type, *p_args[2], *p_args[3]);
 	}
 
 	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {

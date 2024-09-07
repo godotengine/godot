@@ -43,9 +43,8 @@ bool mathInverse(const Matrix* m, Matrix* out)
                m->e12 * (m->e21 * m->e33 - m->e23 * m->e31) +
                m->e13 * (m->e21 * m->e32 - m->e22 * m->e31);
 
-    if (mathZero(det)) return false;
-
-    auto invDet = 1 / det;
+    auto invDet = 1.0f / det;
+    if (std::isinf(invDet)) return false;
 
     out->e11 = (m->e22 * m->e33 - m->e32 * m->e23) * invDet;
     out->e12 = (m->e13 * m->e32 - m->e12 * m->e33) * invDet;
@@ -132,4 +131,11 @@ Point operator*(const Point& pt, const Matrix& m)
     auto tx = pt.x * m.e11 + pt.y * m.e12 + m.e13;
     auto ty = pt.x * m.e21 + pt.y * m.e22 + m.e23;
     return {tx, ty};
+}
+
+uint8_t mathLerp(const uint8_t &start, const uint8_t &end, float t)
+{
+    auto result = static_cast<int>(start + (end - start) * t);
+    mathClamp(result, 0, 255);
+    return static_cast<uint8_t>(result);
 }

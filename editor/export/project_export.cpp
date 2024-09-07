@@ -903,7 +903,7 @@ bool ProjectExportDialog::_fill_tree(EditorFileSystemDirectory *p_dir, TreeItem 
 		if (p_export_filter == EditorExportPreset::EXPORT_SELECTED_SCENES && type != "PackedScene") {
 			continue;
 		}
-		if (type == "TextFile") {
+		if (type == "TextFile" || type == "OtherFile") {
 			continue;
 		}
 
