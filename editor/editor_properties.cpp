@@ -3825,7 +3825,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				return editor;
 			} else {
 				EditorPropertyDictionary *editor = memnew(EditorPropertyDictionary);
-				editor->setup(p_hint);
+				editor->setup(p_hint, p_hint_text);
 				return editor;
 			}
 		} break;

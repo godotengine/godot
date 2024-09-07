@@ -648,7 +648,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("buttons_vertical_separation", "SpinBox", 0);
 	theme->set_constant("field_and_buttons_separation", "SpinBox", 2);
 	theme->set_constant("buttons_width", "SpinBox", 16);
+#ifndef DISABLE_DEPRECATED
 	theme->set_constant("set_min_buttons_width_from_icons", "SpinBox", 1);
+#endif
 
 	// ScrollContainer
 

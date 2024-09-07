@@ -40,8 +40,18 @@ void CodeEdit::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			set_gutter_width(main_gutter, get_line_height());
-			set_gutter_width(line_number_gutter, (line_number_digits + 1) * theme_cache.font->get_char_size('0', theme_cache.font_size).width);
+			_update_line_number_gutter_width();
 			set_gutter_width(fold_gutter, get_line_height() / 1.2);
+			_clear_line_number_text_cache();
+		} break;
+
+		case NOTIFICATION_TRANSLATION_CHANGED:
+			[[fallthrough]];
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+			[[fallthrough]];
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			// Avoid having many hidden text editors with unused cache filling up memory.
+			_clear_line_number_text_cache();
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -1287,9 +1297,9 @@ bool CodeEdit::is_drawing_executing_lines_gutter() const {
 }
 
 void CodeEdit::_main_gutter_draw_callback(int p_line, int p_gutter, const Rect2 &p_region) {
+	bool hovering = get_hovered_gutter() == Vector2i(main_gutter, p_line);
 	if (draw_breakpoints && theme_cache.breakpoint_icon.is_valid()) {
 		bool breakpointed = is_line_breakpointed(p_line);
-		bool hovering = p_region.has_point(get_local_mouse_pos());
 		bool shift_pressed = Input::get_singleton()->is_key_pressed(Key::SHIFT);
 
 		if (breakpointed || (hovering && !is_dragging_cursor() && !shift_pressed)) {
@@ -1308,7 +1318,6 @@ void CodeEdit::_main_gutter_draw_callback(int p_line, int p_gutter, const Rect2 
 
 	if (draw_bookmarks && theme_cache.bookmark_icon.is_valid()) {
 		bool bookmarked = is_line_bookmarked(p_line);
-		bool hovering = p_region.has_point(get_local_mouse_pos());
 		bool shift_pressed = Input::get_singleton()->is_key_pressed(Key::SHIFT);
 
 		if (bookmarked || (hovering && !is_dragging_cursor() && shift_pressed)) {
@@ -1442,7 +1451,13 @@ bool CodeEdit::is_draw_line_numbers_enabled() const {
 }
 
 void CodeEdit::set_line_numbers_zero_padded(bool p_zero_padded) {
-	p_zero_padded ? line_number_padding = "0" : line_number_padding = " ";
+	String new_line_number_padding = p_zero_padded ? "0" : " ";
+	if (line_number_padding == new_line_number_padding) {
+		return;
+	}
+
+	line_number_padding = new_line_number_padding;
+	_clear_line_number_text_cache();
 	queue_redraw();
 }
 
@@ -1451,19 +1466,55 @@ bool CodeEdit::is_line_numbers_zero_padded() const {
 }
 
 void CodeEdit::_line_number_draw_callback(int p_line, int p_gutter, const Rect2 &p_region) {
-	String fc = String::num(p_line + 1).lpad(line_number_digits, line_number_padding);
-	if (is_localizing_numeral_system()) {
-		fc = TS->format_number(fc);
+	if (!Rect2(Vector2(0, 0), get_size()).intersects(p_region)) {
+		return;
 	}
-	Ref<TextLine> tl;
-	tl.instantiate();
-	tl->add_string(fc, theme_cache.font, theme_cache.font_size);
-	int yofs = p_region.position.y + (get_line_height() - tl->get_size().y) / 2;
+
+	bool rtl = is_layout_rtl();
+	HashMap<int, RID>::Iterator E = line_number_text_cache.find(p_line);
+	RID text_rid;
+	if (E) {
+		text_rid = E->value;
+	} else {
+		String fc = String::num(p_line + 1).lpad(line_number_digits, line_number_padding);
+		if (is_localizing_numeral_system()) {
+			fc = TS->format_number(fc);
+		}
+
+		text_rid = TS->create_shaped_text();
+		if (theme_cache.font.is_valid()) {
+			TS->shaped_text_add_string(text_rid, fc, theme_cache.font->get_rids(), theme_cache.font_size, theme_cache.font->get_opentype_features());
+		}
+		line_number_text_cache.insert(p_line, text_rid);
+	}
+
+	Size2 text_size = TS->shaped_text_get_size(text_rid);
+	Point2 ofs = p_region.get_center() - text_size / 2;
+	ofs.y += TS->shaped_text_get_ascent(text_rid);
+
+	if (rtl) {
+		ofs.x = p_region.position.x;
+	} else {
+		ofs.x = p_region.get_end().x - text_size.width;
+	}
+
 	Color number_color = get_line_gutter_item_color(p_line, line_number_gutter);
 	if (number_color == Color(1, 1, 1)) {
 		number_color = theme_cache.line_number_color;
 	}
-	tl->draw(get_canvas_item(), Point2(p_region.position.x, yofs), number_color);
+
+	TS->shaped_text_draw(text_rid, get_canvas_item(), ofs, -1, -1, number_color);
+}
+
+void CodeEdit::_clear_line_number_text_cache() {
+	for (const KeyValue<int, RID> &KV : line_number_text_cache) {
+		TS->free_rid(KV.value);
+	}
+	line_number_text_cache.clear();
+}
+
+void CodeEdit::_update_line_number_gutter_width() {
+	set_gutter_width(line_number_gutter, (line_number_digits + 1) * theme_cache.font->get_char_size('0', theme_cache.font_size).width);
 }
 
 /* Fold Gutter */
@@ -1983,12 +2034,18 @@ Point2 CodeEdit::get_delimiter_end_position(int p_line, int p_column) const {
 
 /* Code hint */
 void CodeEdit::set_code_hint(const String &p_hint) {
+	if (code_hint == p_hint) {
+		return;
+	}
 	code_hint = p_hint;
 	code_hint_xpos = -0xFFFF;
 	queue_redraw();
 }
 
 void CodeEdit::set_code_hint_draw_below(bool p_below) {
+	if (code_hint_draw_below == p_below) {
+		return;
+	}
 	code_hint_draw_below = p_below;
 	queue_redraw();
 }
@@ -3609,16 +3666,13 @@ void CodeEdit::_text_changed() {
 	}
 
 	int lc = get_line_count();
-	line_number_digits = 1;
-	while (lc /= 10) {
-		line_number_digits++;
+	int new_line_number_digits = log10l(lc) + 1;
+	if (line_number_digits != new_line_number_digits) {
+		_clear_line_number_text_cache();
 	}
+	line_number_digits = new_line_number_digits;
+	_update_line_number_gutter_width();
 
-	if (theme_cache.font.is_valid()) {
-		set_gutter_width(line_number_gutter, (line_number_digits + 1) * theme_cache.font->get_char_size('0', theme_cache.font_size).width);
-	}
-
-	lc = get_line_count();
 	List<int> breakpoints;
 	for (const KeyValue<int, bool> &E : breakpointed_lines) {
 		breakpoints.push_back(E.key);
@@ -3705,6 +3759,7 @@ CodeEdit::CodeEdit() {
 }
 
 CodeEdit::~CodeEdit() {
+	_clear_line_number_text_cache();
 }
 
 // Return true if l should come before r

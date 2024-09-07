@@ -93,6 +93,41 @@ public:
 					} else {
 						valid = false;
 					}
+				} else if (valid && builtin_type == Variant::DICTIONARY && has_container_element_types()) {
+					Dictionary dictionary = p_variant;
+					if (dictionary.is_typed()) {
+						if (dictionary.is_typed_key()) {
+							GDScriptDataType key = get_container_element_type_or_variant(0);
+							Variant::Type key_builtin_type = (Variant::Type)dictionary.get_typed_key_builtin();
+							StringName key_native_type = dictionary.get_typed_key_class_name();
+							Ref<Script> key_script_type_ref = dictionary.get_typed_key_script();
+
+							if (key_script_type_ref.is_valid()) {
+								valid = (key.kind == SCRIPT || key.kind == GDSCRIPT) && key.script_type == key_script_type_ref.ptr();
+							} else if (key_native_type != StringName()) {
+								valid = key.kind == NATIVE && key.native_type == key_native_type;
+							} else {
+								valid = key.kind == BUILTIN && key.builtin_type == key_builtin_type;
+							}
+						}
+
+						if (valid && dictionary.is_typed_value()) {
+							GDScriptDataType value = get_container_element_type_or_variant(1);
+							Variant::Type value_builtin_type = (Variant::Type)dictionary.get_typed_value_builtin();
+							StringName value_native_type = dictionary.get_typed_value_class_name();
+							Ref<Script> value_script_type_ref = dictionary.get_typed_value_script();
+
+							if (value_script_type_ref.is_valid()) {
+								valid = (value.kind == SCRIPT || value.kind == GDSCRIPT) && value.script_type == value_script_type_ref.ptr();
+							} else if (value_native_type != StringName()) {
+								valid = value.kind == NATIVE && value.native_type == value_native_type;
+							} else {
+								valid = value.kind == BUILTIN && value.builtin_type == value_builtin_type;
+							}
+						}
+					} else {
+						valid = false;
+					}
 				} else if (!valid && p_allow_implicit_conversion) {
 					valid = Variant::can_convert_strict(var_type, builtin_type);
 				}
@@ -156,6 +191,10 @@ public:
 					}
 					return true;
 				case Variant::DICTIONARY:
+					if (has_container_element_types()) {
+						return get_container_element_type_or_variant(0).can_contain_object() || get_container_element_type_or_variant(1).can_contain_object();
+					}
+					return true;
 				case Variant::NIL:
 				case Variant::OBJECT:
 					return true;
@@ -220,6 +259,7 @@ public:
 		OPCODE_OPERATOR_VALIDATED,
 		OPCODE_TYPE_TEST_BUILTIN,
 		OPCODE_TYPE_TEST_ARRAY,
+		OPCODE_TYPE_TEST_DICTIONARY,
 		OPCODE_TYPE_TEST_NATIVE,
 		OPCODE_TYPE_TEST_SCRIPT,
 		OPCODE_SET_KEYED,
@@ -242,6 +282,7 @@ public:
 		OPCODE_ASSIGN_FALSE,
 		OPCODE_ASSIGN_TYPED_BUILTIN,
 		OPCODE_ASSIGN_TYPED_ARRAY,
+		OPCODE_ASSIGN_TYPED_DICTIONARY,
 		OPCODE_ASSIGN_TYPED_NATIVE,
 		OPCODE_ASSIGN_TYPED_SCRIPT,
 		OPCODE_CAST_TO_BUILTIN,
@@ -252,6 +293,7 @@ public:
 		OPCODE_CONSTRUCT_ARRAY,
 		OPCODE_CONSTRUCT_TYPED_ARRAY,
 		OPCODE_CONSTRUCT_DICTIONARY,
+		OPCODE_CONSTRUCT_TYPED_DICTIONARY,
 		OPCODE_CALL,
 		OPCODE_CALL_RETURN,
 		OPCODE_CALL_ASYNC,
@@ -280,6 +322,7 @@ public:
 		OPCODE_RETURN,
 		OPCODE_RETURN_TYPED_BUILTIN,
 		OPCODE_RETURN_TYPED_ARRAY,
+		OPCODE_RETURN_TYPED_DICTIONARY,
 		OPCODE_RETURN_TYPED_NATIVE,
 		OPCODE_RETURN_TYPED_SCRIPT,
 		OPCODE_ITERATE_BEGIN,

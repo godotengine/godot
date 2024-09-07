@@ -35,7 +35,7 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 
-Error FileAccessWindowsPipe::open_existing(HANDLE p_rfd, HANDLE p_wfd) {
+Error FileAccessWindowsPipe::open_existing(HANDLE p_rfd, HANDLE p_wfd, bool p_blocking) {
 	// Open pipe using handles created by CreatePipe(rfd, wfd, NULL, 4096) call in the OS.execute_with_pipe.
 	_close();
 
@@ -43,6 +43,12 @@ Error FileAccessWindowsPipe::open_existing(HANDLE p_rfd, HANDLE p_wfd) {
 	ERR_FAIL_COND_V_MSG(fd[0] != 0 || fd[1] != 0, ERR_ALREADY_IN_USE, "Pipe is already in use.");
 	fd[0] = p_rfd;
 	fd[1] = p_wfd;
+
+	if (!p_blocking) {
+		DWORD mode = PIPE_READMODE_BYTE | PIPE_NOWAIT;
+		SetNamedPipeHandleState(fd[0], &mode, nullptr, nullptr);
+		SetNamedPipeHandleState(fd[1], &mode, nullptr, nullptr);
+	}
 
 	last_error = OK;
 	return OK;
@@ -58,7 +64,7 @@ Error FileAccessWindowsPipe::open_internal(const String &p_path, int p_mode_flag
 
 	HANDLE h = CreateFileW((LPCWSTR)path.utf16().get_data(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (h == INVALID_HANDLE_VALUE) {
-		h = CreateNamedPipeW((LPCWSTR)path.utf16().get_data(), PIPE_ACCESS_DUPLEX, PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT, 1, 4096, 4096, 0, nullptr);
+		h = CreateNamedPipeW((LPCWSTR)path.utf16().get_data(), PIPE_ACCESS_DUPLEX, PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_NOWAIT, 1, 4096, 4096, 0, nullptr);
 		if (h == INVALID_HANDLE_VALUE) {
 			last_error = ERR_FILE_CANT_OPEN;
 			return last_error;
@@ -100,7 +106,7 @@ uint64_t FileAccessWindowsPipe::get_buffer(uint8_t *p_dst, uint64_t p_length) co
 	ERR_FAIL_COND_V_MSG(fd[0] == 0, -1, "Pipe must be opened before use.");
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 
-	DWORD read = -1;
+	DWORD read = 0;
 	if (!ReadFile(fd[0], p_dst, p_length, &read, nullptr) || read != p_length) {
 		last_error = ERR_FILE_CANT_READ;
 	} else {

@@ -113,6 +113,8 @@ class Path3DEditorPlugin : public EditorPlugin {
 	Ref<Path3DGizmoPlugin> path_3d_gizmo_plugin;
 
 	HBoxContainer *topmenu_bar = nullptr;
+
+	HBoxContainer *toolbar = nullptr;
 	Button *curve_create = nullptr;
 	Button *curve_edit = nullptr;
 	Button *curve_edit_curve = nullptr;
@@ -122,6 +124,7 @@ class Path3DEditorPlugin : public EditorPlugin {
 	Button *curve_clear_points = nullptr;
 	MenuButton *handle_menu = nullptr;
 
+	Button *create_curve_button = nullptr;
 	ConfirmationDialog *clear_points_dialog = nullptr;
 
 	float disk_size = 0.8;
@@ -138,14 +141,16 @@ class Path3DEditorPlugin : public EditorPlugin {
 	Path3D *path = nullptr;
 
 	void _update_theme();
+	void _update_toolbar();
 
 	void _mode_changed(int p_mode);
 	void _close_curve();
 	void _handle_option_pressed(int p_option);
 	bool handle_clicked = false;
-	bool mirror_handle_angle;
-	bool mirror_handle_length;
+	bool mirror_handle_angle = true;
+	bool mirror_handle_length = true;
 
+	void _create_curve();
 	void _confirm_clear_points();
 	void _clear_points();
 	void _clear_curve_points();

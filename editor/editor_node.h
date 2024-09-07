@@ -462,6 +462,7 @@ private:
 
 	bool requested_first_scan = false;
 	bool waiting_for_first_scan = true;
+	bool load_editor_layout_done = false;
 
 	int current_menu_option = 0;
 
@@ -488,6 +489,7 @@ private:
 	String import_reload_fn;
 
 	HashSet<String> textfile_extensions;
+	HashSet<String> other_file_extensions;
 	HashSet<FileDialog *> file_dialogs;
 	HashSet<EditorFileDialog *> editor_file_dialogs;
 

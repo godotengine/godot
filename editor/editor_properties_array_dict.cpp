@@ -863,6 +863,26 @@ EditorPropertyArray::EditorPropertyArray() {
 
 ///////////////////// DICTIONARY ///////////////////////////
 
+void EditorPropertyDictionary::initialize_dictionary(Variant &p_dictionary) {
+	if (key_subtype != Variant::NIL || value_subtype != Variant::NIL) {
+		Dictionary dict;
+		StringName key_subtype_class;
+		Ref<Script> key_subtype_script;
+		if (key_subtype == Variant::OBJECT && !key_subtype_hint_string.is_empty() && ClassDB::class_exists(key_subtype_hint_string)) {
+			key_subtype_class = key_subtype_hint_string;
+		}
+		StringName value_subtype_class;
+		Ref<Script> value_subtype_script;
+		if (value_subtype == Variant::OBJECT && !value_subtype_hint_string.is_empty() && ClassDB::class_exists(value_subtype_hint_string)) {
+			value_subtype_class = value_subtype_hint_string;
+		}
+		dict.set_typed(key_subtype, key_subtype_class, key_subtype_script, value_subtype, value_subtype_class, value_subtype_script);
+		p_dictionary = dict;
+	} else {
+		VariantInternal::initialize(&p_dictionary, Variant::DICTIONARY);
+	}
+}
+
 void EditorPropertyDictionary::_property_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing) {
 	if (p_value.get_type() == Variant::OBJECT && p_value.is_null()) {
 		p_value = Variant(); // `EditorResourcePicker` resets to `Ref<Resource>()`. See GH-82716.
@@ -914,16 +934,29 @@ void EditorPropertyDictionary::_create_new_property_slot(int p_idx) {
 	EditorProperty *prop = memnew(EditorPropertyNil);
 	hbox->add_child(prop);
 
-	Button *edit_btn = memnew(Button);
-	edit_btn->set_icon(get_editor_theme_icon(SNAME("Edit")));
-	edit_btn->set_disabled(is_read_only());
-	edit_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyDictionary::_change_type).bind(edit_btn, slots.size()));
-	hbox->add_child(edit_btn);
+	bool use_key = p_idx == EditorPropertyDictionaryObject::NEW_KEY_INDEX;
+	bool is_untyped_dict = (use_key ? key_subtype : value_subtype) == Variant::NIL;
+
+	if (is_untyped_dict) {
+		Button *edit_btn = memnew(Button);
+		edit_btn->set_icon(get_editor_theme_icon(SNAME("Edit")));
+		edit_btn->set_disabled(is_read_only());
+		edit_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyDictionary::_change_type).bind(edit_btn, slots.size()));
+		hbox->add_child(edit_btn);
+	} else if (p_idx >= 0) {
+		Button *remove_btn = memnew(Button);
+		remove_btn->set_icon(get_editor_theme_icon(SNAME("Remove")));
+		remove_btn->set_disabled(is_read_only());
+		remove_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyDictionary::_remove_pressed).bind(slots.size()));
+		hbox->add_child(remove_btn);
+	}
+
 	if (add_panel) {
 		add_panel->get_child(0)->add_child(hbox);
 	} else {
 		property_vbox->add_child(hbox);
 	}
+
 	Slot slot;
 	slot.prop = prop;
 	slot.object = object;
@@ -969,15 +1002,70 @@ void EditorPropertyDictionary::_change_type_menu(int p_index) {
 	}
 }
 
-void EditorPropertyDictionary::setup(PropertyHint p_hint) {
-	property_hint = p_hint;
+void EditorPropertyDictionary::setup(PropertyHint p_hint, const String &p_hint_string) {
+	PackedStringArray types = p_hint_string.split(";");
+	if (types.size() > 0 && !types[0].is_empty()) {
+		String key = types[0];
+		int hint_key_subtype_separator = key.find(":");
+		if (hint_key_subtype_separator >= 0) {
+			String key_subtype_string = key.substr(0, hint_key_subtype_separator);
+			int slash_pos = key_subtype_string.find("/");
+			if (slash_pos >= 0) {
+				key_subtype_hint = PropertyHint(key_subtype_string.substr(slash_pos + 1, key_subtype_string.size() - slash_pos - 1).to_int());
+				key_subtype_string = key_subtype_string.substr(0, slash_pos);
+			}
+
+			key_subtype_hint_string = key.substr(hint_key_subtype_separator + 1, key.size() - hint_key_subtype_separator - 1);
+			key_subtype = Variant::Type(key_subtype_string.to_int());
+
+			Variant new_key = object->get_new_item_key();
+			VariantInternal::initialize(&new_key, key_subtype);
+			object->set_new_item_key(new_key);
+		}
+	}
+	if (types.size() > 1 && !types[1].is_empty()) {
+		String value = types[1];
+		int hint_value_subtype_separator = value.find(":");
+		if (hint_value_subtype_separator >= 0) {
+			String value_subtype_string = value.substr(0, hint_value_subtype_separator);
+			int slash_pos = value_subtype_string.find("/");
+			if (slash_pos >= 0) {
+				value_subtype_hint = PropertyHint(value_subtype_string.substr(slash_pos + 1, value_subtype_string.size() - slash_pos - 1).to_int());
+				value_subtype_string = value_subtype_string.substr(0, slash_pos);
+			}
+
+			value_subtype_hint_string = value.substr(hint_value_subtype_separator + 1, value.size() - hint_value_subtype_separator - 1);
+			value_subtype = Variant::Type(value_subtype_string.to_int());
+
+			Variant new_value = object->get_new_item_value();
+			VariantInternal::initialize(&new_value, value_subtype);
+			object->set_new_item_value(new_value);
+		}
+	}
 }
 
 void EditorPropertyDictionary::update_property() {
 	Variant updated_val = get_edited_property_value();
 
+	String dict_type_name = "Dictionary";
+	if (key_subtype != Variant::NIL || value_subtype != Variant::NIL) {
+		String key_subtype_name = "Variant";
+		if (key_subtype == Variant::OBJECT && (key_subtype_hint == PROPERTY_HINT_RESOURCE_TYPE || key_subtype_hint == PROPERTY_HINT_NODE_TYPE)) {
+			key_subtype_name = key_subtype_hint_string;
+		} else if (key_subtype != Variant::NIL) {
+			key_subtype_name = Variant::get_type_name(key_subtype);
+		}
+		String value_subtype_name = "Variant";
+		if (value_subtype == Variant::OBJECT && (value_subtype_hint == PROPERTY_HINT_RESOURCE_TYPE || value_subtype_hint == PROPERTY_HINT_NODE_TYPE)) {
+			value_subtype_name = value_subtype_hint_string;
+		} else if (value_subtype != Variant::NIL) {
+			value_subtype_name = Variant::get_type_name(value_subtype);
+		}
+		dict_type_name += vformat("[%s, %s]", key_subtype_name, value_subtype_name);
+	}
+
 	if (updated_val.get_type() != Variant::DICTIONARY) {
-		edit->set_text(TTR("Dictionary (Nil)")); // This provides symmetry with the array property.
+		edit->set_text(vformat(TTR("(Nil) %s"), dict_type_name)); // This provides symmetry with the array property.
 		edit->set_pressed(false);
 		if (container) {
 			set_bottom_editor(nullptr);
@@ -993,7 +1081,7 @@ void EditorPropertyDictionary::update_property() {
 	Dictionary dict = updated_val;
 	object->set_dict(updated_val);
 
-	edit->set_text(vformat(TTR("Dictionary (size %d)"), dict.size()));
+	edit->set_text(vformat(TTR("%s (size %d)"), dict_type_name, dict.size()));
 
 	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
 	if (edit->is_pressed() != unfolded) {
@@ -1074,7 +1162,9 @@ void EditorPropertyDictionary::update_property() {
 					editor->setup("Object");
 					new_prop = editor;
 				} else {
-					new_prop = EditorInspector::instantiate_property_editor(this, value_type, "", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE);
+					bool use_key = slot.index == EditorPropertyDictionaryObject::NEW_KEY_INDEX;
+					new_prop = EditorInspector::instantiate_property_editor(this, value_type, "", use_key ? key_subtype_hint : value_subtype_hint,
+							use_key ? key_subtype_hint_string : value_subtype_hint_string, PROPERTY_USAGE_NONE);
 				}
 				new_prop->set_selectable(false);
 				new_prop->set_use_folding(is_using_folding());
@@ -1106,6 +1196,13 @@ void EditorPropertyDictionary::update_property() {
 			slots.clear();
 		}
 	}
+}
+
+void EditorPropertyDictionary::_remove_pressed(int p_slot_index) {
+	Dictionary dict = object->get_dict().duplicate();
+	dict.erase(dict.get_key_at_index(p_slot_index));
+
+	emit_changed(get_edited_property(), dict);
 }
 
 void EditorPropertyDictionary::_object_id_selected(const StringName &p_property, ObjectID p_id) {
@@ -1140,7 +1237,7 @@ void EditorPropertyDictionary::_notification(int p_what) {
 void EditorPropertyDictionary::_edit_pressed() {
 	Variant prop_val = get_edited_property_value();
 	if (prop_val.get_type() == Variant::NIL && edit->is_pressed()) {
-		VariantInternal::initialize(&prop_val, Variant::DICTIONARY);
+		initialize_dictionary(prop_val);
 		emit_changed(get_edited_property(), prop_val);
 	}
 
@@ -1187,6 +1284,14 @@ EditorPropertyDictionary::EditorPropertyDictionary() {
 	change_type->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyDictionary::_change_type_menu));
 	changing_type_index = -1;
 	has_borders = true;
+
+	key_subtype = Variant::NIL;
+	key_subtype_hint = PROPERTY_HINT_NONE;
+	key_subtype_hint_string = "";
+
+	value_subtype = Variant::NIL;
+	value_subtype_hint = PROPERTY_HINT_NONE;
+	value_subtype_hint_string = "";
 }
 
 ///////////////////// LOCALIZABLE STRING ///////////////////////////
