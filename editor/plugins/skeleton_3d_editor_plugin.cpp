@@ -251,6 +251,11 @@ void Skeleton3DEditor::_bind_methods() {
 }
 
 void Skeleton3DEditor::_on_click_skeleton_option(int p_skeleton_option) {
+	Skeleton3D* skeleton = get_skeleton();
+	if (skeleton == nullptr)
+	{
+		return;
+	}
 	if (!skeleton) {
 		return;
 	}
@@ -284,6 +289,11 @@ void Skeleton3DEditor::_on_click_skeleton_option(int p_skeleton_option) {
 }
 
 void Skeleton3DEditor::reset_pose(const bool p_all_bones) {
+	Skeleton3D* skeleton = get_skeleton();
+	if (skeleton == nullptr)
+	{
+		return;
+	}
 	if (!skeleton) {
 		return;
 	}
@@ -320,6 +330,11 @@ void Skeleton3DEditor::reset_pose(const bool p_all_bones) {
 }
 
 void Skeleton3DEditor::insert_keys(const bool p_all_bones) {
+	Skeleton3D* skeleton = get_skeleton();
+	if (skeleton == nullptr)
+	{
+		return;
+	}
 	if (!skeleton) {
 		return;
 	}
@@ -355,6 +370,11 @@ void Skeleton3DEditor::insert_keys(const bool p_all_bones) {
 }
 
 void Skeleton3DEditor::pose_to_rest(const bool p_all_bones) {
+	Skeleton3D* skeleton = get_skeleton();
+	if (skeleton == nullptr)
+	{
+		return;
+	}
 	if (!skeleton) {
 		return;
 	}
@@ -391,6 +411,11 @@ void Skeleton3DEditor::create_physical_skeleton() {
 	ERR_FAIL_NULL(get_tree());
 	Node *owner = get_tree()->get_edited_scene_root();
 
+	Skeleton3D* skeleton = get_skeleton();
+	if (skeleton == nullptr)
+	{
+		return;
+	}
 	const int bone_count = skeleton->get_bone_count();
 
 	if (!bone_count) {
@@ -450,6 +475,11 @@ void Skeleton3DEditor::create_physical_skeleton() {
 }
 
 PhysicalBone3D *Skeleton3DEditor::create_physical_bone(int bone_id, int bone_child_id, const Vector<BoneInfo> &bones_infos) {
+	Skeleton3D* skeleton = get_skeleton();
+	if (skeleton == nullptr)
+	{
+		return nullptr;
+	}
 	const Transform3D child_rest = skeleton->get_bone_rest(bone_child_id);
 
 	const real_t half_height(child_rest.origin.length() * 0.5);
@@ -491,6 +521,11 @@ PhysicalBone3D *Skeleton3DEditor::create_physical_bone(int bone_id, int bone_chi
 }
 
 void Skeleton3DEditor::export_skeleton_profile() {
+	Skeleton3D* skeleton = get_skeleton();
+	if (skeleton == nullptr)
+	{
+		return;
+	}
 	if (!skeleton->get_bone_count()) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR("Cannot export a SkeletonProfile for a Skeleton3D node with no bones.")));
 		return;
@@ -510,6 +545,11 @@ void Skeleton3DEditor::export_skeleton_profile() {
 }
 
 void Skeleton3DEditor::_file_selected(const String &p_file) {
+	Skeleton3D* skeleton = get_skeleton();
+	if (skeleton == nullptr)
+	{
+		return;
+	}
 	// Export SkeletonProfile.
 	Ref<SkeletonProfile> sp(memnew(SkeletonProfile));
 
@@ -622,7 +662,11 @@ void Skeleton3DEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 	const BoneId target_boneidx = String(target->get_metadata(0)).get_slicec('/', 1).to_int();
 	const BoneId selected_boneidx = String(selected->get_metadata(0)).get_slicec('/', 1).to_int();
-
+	Skeleton3D* skeleton = get_skeleton();
+	if (skeleton == nullptr)
+	{
+		return;
+	}
 	move_skeleton_bone(skeleton->get_path(), selected_boneidx, target_boneidx);
 }
 
@@ -685,6 +729,11 @@ void Skeleton3DEditor::_joint_tree_rmb_select(const Vector2 &p_pos, MouseButton 
 }
 
 void Skeleton3DEditor::_joint_tree_button_clicked(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	Skeleton3D* skeleton = get_skeleton();
+	if (skeleton == nullptr)
+	{
+		return;
+	}
 	if (!skeleton) {
 		return;
 	}
@@ -794,6 +843,11 @@ void Skeleton3DEditor::_update_properties() {
 
 void Skeleton3DEditor::update_joint_tree() {
 	joint_tree->clear();
+	Skeleton3D* skeleton = get_skeleton();
+	if (skeleton == nullptr)
+	{
+		return;
+	}
 
 	if (!skeleton) {
 		return;
@@ -918,6 +972,11 @@ void Skeleton3DEditor::create_editors() {
 
 	edit_mode = false;
 
+	Skeleton3D* skeleton = get_skeleton();
+	if (skeleton == nullptr)
+	{
+		return;
+	}
 	if (skeleton) {
 		skeleton->add_child(handles_mesh_instance);
 		handles_mesh_instance->set_skeleton_path(NodePath(""));
@@ -1001,6 +1060,11 @@ void Skeleton3DEditor::create_editors() {
 }
 
 void Skeleton3DEditor::_notification(int p_what) {
+	Skeleton3D* skeleton = get_skeleton();
+	if (skeleton == nullptr)
+	{
+		return;
+	}
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			update_joint_tree();
@@ -1046,6 +1110,7 @@ void Skeleton3DEditor::_notification(int p_what) {
 				if (handles_mesh_instance->get_parent()) {
 					handles_mesh_instance->get_parent()->remove_child(handles_mesh_instance);
 				}
+				skeleton = nullptr;
 			}
 			edit_mode_toggled(false);
 		} break;
@@ -1053,6 +1118,11 @@ void Skeleton3DEditor::_notification(int p_what) {
 }
 
 void Skeleton3DEditor::_node_removed(Node *p_node) {
+	Skeleton3D* skeleton = get_skeleton();
+	if (skeleton == nullptr)
+	{
+		return;
+	}
 	if (skeleton && p_node == skeleton) {
 		skeleton = nullptr;
 		skeleton_options->hide();
@@ -1067,8 +1137,7 @@ void Skeleton3DEditor::edit_mode_toggled(const bool pressed) {
 }
 
 Skeleton3DEditor::Skeleton3DEditor(EditorInspectorPluginSkeleton *e_plugin, Skeleton3D *p_skeleton) :
-		editor_plugin(e_plugin),
-		skeleton(p_skeleton) {
+		editor_plugin(e_plugin) {
 	singleton = this;
 
 	// Handle.
@@ -1121,6 +1190,11 @@ void fragment() {
 }
 
 void Skeleton3DEditor::update_bone_original() {
+	Skeleton3D* skeleton = get_skeleton();
+	if (skeleton == nullptr)
+	{
+		return;
+	}
 	if (!skeleton) {
 		return;
 	}
@@ -1137,6 +1211,11 @@ void Skeleton3DEditor::_hide_handles() {
 }
 
 void Skeleton3DEditor::_draw_gizmo() {
+	Skeleton3D* skeleton = get_skeleton();
+	if (skeleton == nullptr)
+	{
+		return;
+	}
 	if (!skeleton) {
 		return;
 	}
@@ -1155,6 +1234,11 @@ void Skeleton3DEditor::_draw_gizmo() {
 }
 
 void Skeleton3DEditor::_draw_handles() {
+	Skeleton3D* skeleton = get_skeleton();
+	if (skeleton == nullptr)
+	{
+		return;
+	}
 	const int bone_count = skeleton->get_bone_count();
 
 	handles_mesh->clear_surfaces();
@@ -1205,6 +1289,11 @@ TreeItem *Skeleton3DEditor::_find(TreeItem *p_node, const NodePath &p_path) {
 }
 
 void Skeleton3DEditor::_subgizmo_selection_change() {
+	Skeleton3D* skeleton = get_skeleton();
+	if (skeleton == nullptr)
+	{
+		return;
+	}
 	if (!skeleton) {
 		return;
 	}
@@ -1322,6 +1411,11 @@ void Skeleton3DEditor::_bone_enabled_changed(const int p_bone_id) {
 
 void Skeleton3DEditor::_update_gizmo_visible() {
 	_subgizmo_selection_change();
+	Skeleton3D* skeleton = get_skeleton();
+	if (skeleton == nullptr)
+	{
+		return;
+	}
 	if (edit_mode) {
 		if (selected_bone == -1) {
 #ifdef TOOLS_ENABLED

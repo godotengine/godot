@@ -257,6 +257,8 @@ public:
                 mesh_instance->set_mesh(part->get_mesh());
                 mesh_instance->set_skin(skin);
                 mesh_instance->set_material_override(part->get_material());
+                // 这玩意特别卡,关闭它
+                mesh_instance->set_disable_gizmos(true);
             }
         }
 

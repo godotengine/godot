@@ -116,7 +116,7 @@ class Skeleton3DEditor : public VBoxContainer {
 
 	EditorInspectorPluginSkeleton *editor_plugin = nullptr;
 
-	Skeleton3D *skeleton = nullptr;
+	ObjectID skeletonID ;
 
 	enum {
 		JOINT_BUTTON_REVERT = 0,
@@ -216,7 +216,7 @@ public:
 
 	void move_skeleton_bone(NodePath p_skeleton_path, int32_t p_selected_boneidx, int32_t p_target_boneidx);
 
-	Skeleton3D *get_skeleton() const { return skeleton; };
+	Skeleton3D *get_skeleton() const { return Object::cast_to<Skeleton3D> (ObjectDB::get_instance(skeletonID)); };
 
 	bool is_edit_mode() const { return edit_mode; }
 

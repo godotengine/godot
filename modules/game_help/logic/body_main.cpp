@@ -77,6 +77,7 @@ static void save_fbx_res( const String& group_name,const String& sub_path,const 
 	save_path = export_root_path.path_join(p_resource->get_name() + (is_resource ? ".tres" :".tscn"));
 	ResourceSaver::save(p_resource, save_path);
 	print_line(L"CharacterBodyMain.save_fbx_res: 存储资源 :" + save_path);
+    save_path = sub_path.path_join(p_resource->get_name() + (is_resource ? ".tres" :".tscn"));
 }
 static void get_fbx_meshs(Node *p_node,HashMap<String,MeshInstance3D* > &meshs)
 {
@@ -168,6 +169,7 @@ Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path
 		part.instantiate();
 		MeshInstance3D* mesh = it->value;
 		part->init_form_mesh_instance(mesh, bone_map);
+        
 		part->set_name(it->key);
 		String save_path;
 		save_fbx_res("meshs", p_group, part, save_path, true);
@@ -234,9 +236,6 @@ void CharacterBodyMain::editor_build_animation()
             List<PropertyInfo> plist;
             animation->get_property_list(&plist);
 
-            Ref<RefCounted> r = static_cast<RefCounted *>(ClassDB::instantiate(get_class()));
-            ERR_FAIL_COND(r.is_null());
-
             for (const PropertyInfo &E : plist) {
                 if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
                     continue;
@@ -289,6 +288,7 @@ void CharacterBodyMain::init_ai_context()
 }
 void CharacterBodyMain::_update(double p_delta)
 {
+
         // 更新玩家位置
         GDVIRTUAL_CALL(_update_player_position);
         for(uint32_t i = 0; i < check_area.size();++i)
@@ -403,7 +403,11 @@ void CharacterBodyMain::set_skeleton_resource(const String& p_skeleton_path)
 {        
     skeleton_res = p_skeleton_path;
     clear_all();
-    Ref<PackedScene> scene = ResourceLoader::load(skeleton_res);
+    Ref<PackedScene> scene; 
+    if(skeleton_res.begins_with("res://"))
+        scene = ResourceLoader::load(skeleton_res);
+    else
+        scene = ResourceLoader::load(CharacterManager::get_singleton()->get_skeleton_root_path().path_join(skeleton_res));
     if(!scene.is_valid())
     {
         ERR_FAIL_MSG("load skeleton failed:" + skeleton_res);
@@ -539,6 +543,8 @@ void CharacterBodyMain::set_body_prefab(const Ref<CharacterBodyPrefab> &p_body_p
 }
 void CharacterBodyMain::load_prefab()
 {
+    // 存储一下引用,避免当前再次引用的资产不会立即释放
+    HashMap<StringName,Ref<CharacterBodyPartInstane>> old_part = bodyPart;
     bodyPart.clear();
     if(body_prefab.is_valid())
     {

@@ -40,6 +40,7 @@
 #include "../unity/unity_link_server.h"
 #include "beehave_graph_editor.h"
 #include "body_main_editor.h"
+#include "character_prefab.h"
 #endif
 class CharacterBodyMainLable : public HBoxContainer
 {
@@ -387,6 +388,20 @@ public:
 		return false;
 
 	}
+	static bool _parse_charater_prefab_property(EditorInspectorPlugin *p_plugin, CharacterBodyPrefab* object, Variant::Type type, const String& name, PropertyHint hint_type, const String& hint_string, BitField<PropertyUsageFlags> usage_flags, bool wide)
+	{
+		
+		if(name == "parts")
+		{
+			CharacterPrefabSection* prefab = memnew(CharacterPrefabSection);
+			prefab->init();
+			prefab->setup(object);
+			p_plugin->add_custom_control( prefab);
+			return true;
+		}
+		return false;
+
+	}
 
 };
 
@@ -429,6 +444,11 @@ class GameHelpInspectorPlugin : public EditorInspectorPlugin
 			body_main->init();
 			return true;
 		}
+		if(Object::cast_to<CharacterBodyPrefab>(p_object) != nullptr)
+		{
+			CharacterBodyPrefab* prefab = Object::cast_to<CharacterBodyPrefab>(p_object);
+			return true;
+		}
 
 		return false;
 	}
@@ -459,6 +479,12 @@ class GameHelpInspectorPlugin : public EditorInspectorPlugin
 		{
 			
 			return ConditionList_ED::_parse_charater_ai_property(this,body_main, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide);
+		}
+		CharacterBodyPrefab* prefab = Object::cast_to<CharacterBodyPrefab>(p_object);
+		if(prefab != nullptr)
+		{
+			
+			return ConditionList_ED::_parse_charater_prefab_property(this,prefab, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide);
 		}
 		return false;
 	}
