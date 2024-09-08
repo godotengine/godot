@@ -2356,6 +2356,24 @@ void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, cons
 		points[2] = xform.xform(c->get_size());
 		points[3] = xform.xform(Point2(0, c->get_size().y));
 
+		// Tie-breaking aims to address situations where a potential focus neighbor's bounding rect
+		// is right next to the currently focused control (e.g. in BoxContainer with
+		// separation overridden to 0). This needs specific handling so that the correct
+		// focus neighbor is selected.
+
+		// Calculate centers of the potential neighbor, currently focused, and closest controls.
+		Point2 center = xform.xform(0.5 * c->get_size());
+		// We only have the points, not an actual reference.
+		Point2 p_center = 0.25 * (p_points[0] + p_points[1] + p_points[2] + p_points[3]);
+		Point2 closest_center;
+		bool should_tiebreak = false;
+		if (*r_closest != nullptr) {
+			should_tiebreak = true;
+			Control *closest = *r_closest;
+			Transform2D closest_xform = closest->get_global_transform();
+			closest_center = closest_xform.xform(0.5 * closest->get_size());
+		}
+
 		real_t min = 1e7;
 
 		for (int i = 0; i < 4; i++) {
@@ -2376,10 +2394,15 @@ void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, cons
 
 					Vector2 pa, pb;
 					real_t d = Geometry2D::get_closest_points_between_segments(la, lb, fa, fb, pa, pb);
-					//real_t d = Geometry2D::get_closest_distance_between_segments(Vector3(la.x,la.y,0),Vector3(lb.x,lb.y,0),Vector3(fa.x,fa.y,0),Vector3(fb.x,fb.y,0));
 					if (d < r_closest_dist) {
 						r_closest_dist = d;
 						*r_closest = c;
+					} else if (should_tiebreak && d == r_closest_dist) {
+						// Tie-break in favor of the control most aligned with p_dir.
+						if (p_dir.dot((center - p_center).normalized()) > p_dir.dot((closest_center - p_center).normalized())) {
+							r_closest_dist = d;
+							*r_closest = c;
+						}
 					}
 				}
 			}
