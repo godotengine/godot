@@ -326,12 +326,6 @@ void Polygon2DEditor::_menu_option(int p_option) {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	switch (p_option) {
 		case MODE_EDIT_UV: {
-			if (node->get_texture().is_null()) {
-				error->set_text(TTR("No texture in this polygon.\nSet a texture to be able to edit UV."));
-				error->popup_centered();
-				return;
-			}
-
 			uv_edit_draw->set_texture_filter(node->get_texture_filter_in_tree());
 
 			Vector<Vector2> points = node->get_polygon();
@@ -1059,9 +1053,6 @@ void Polygon2DEditor::_uv_draw() {
 	}
 
 	Ref<Texture2D> base_tex = node->get_texture();
-	if (base_tex.is_null()) {
-		return;
-	}
 
 	String warning;
 
@@ -1071,12 +1062,14 @@ void Polygon2DEditor::_uv_draw() {
 
 	// Draw texture as a background if editing uvs or no uv mapping exist.
 	if (uv_edit_mode[0]->is_pressed() || uv_mode == UV_MODE_CREATE || node->get_polygon().is_empty() || node->get_uv().size() != node->get_polygon().size()) {
-		Transform2D texture_transform = Transform2D(node->get_texture_rotation(), node->get_texture_offset());
-		texture_transform.scale(node->get_texture_scale());
-		texture_transform.affine_invert();
-		RS::get_singleton()->canvas_item_add_set_transform(uv_edit_draw->get_canvas_item(), mtx * texture_transform);
-		uv_edit_draw->draw_texture(base_tex, Point2());
-		RS::get_singleton()->canvas_item_add_set_transform(uv_edit_draw->get_canvas_item(), Transform2D());
+		if (base_tex.is_valid()) {
+			Transform2D texture_transform = Transform2D(node->get_texture_rotation(), node->get_texture_offset());
+			texture_transform.scale(node->get_texture_scale());
+			texture_transform.affine_invert();
+			RS::get_singleton()->canvas_item_add_set_transform(uv_edit_draw->get_canvas_item(), mtx * texture_transform);
+			uv_edit_draw->draw_texture(base_tex, Point2());
+			RS::get_singleton()->canvas_item_add_set_transform(uv_edit_draw->get_canvas_item(), Transform2D());
+		}
 		preview_polygon->hide();
 	} else {
 		preview_polygon->set_transform(mtx);
