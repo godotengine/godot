@@ -7617,8 +7617,8 @@ EditorNode::EditorNode() {
 		default_layout->set_value(docks_section, "dock_split_" + itos(i + 1), 0);
 	}
 	default_layout->set_value(docks_section, "dock_hsplit_1", 0);
-	default_layout->set_value(docks_section, "dock_hsplit_2", 270 * EDSCALE);
-	default_layout->set_value(docks_section, "dock_hsplit_3", -270 * EDSCALE);
+	default_layout->set_value(docks_section, "dock_hsplit_2", 270);
+	default_layout->set_value(docks_section, "dock_hsplit_3", -270);
 	default_layout->set_value(docks_section, "dock_hsplit_4", 0);
 
 	_update_layouts_menu();
