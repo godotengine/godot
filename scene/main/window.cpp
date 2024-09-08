@@ -1224,6 +1224,7 @@ void Window::_update_viewport_size() {
 			TS->font_set_global_oversampling(font_oversampling);
 			if (!ci_updated) {
 				update_canvas_items();
+				emit_signal(SNAME("size_changed"));
 			}
 		}
 	}
