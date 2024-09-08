@@ -661,6 +661,7 @@ class EditorPropertyNodePath : public EditorProperty {
 	bool dropping = false;
 
 	Vector<StringName> valid_types;
+	void _on_click();
 	void _node_selected(const NodePath &p_path, bool p_absolute = true);
 	void _node_assign();
 	Node *get_base_node() const;
