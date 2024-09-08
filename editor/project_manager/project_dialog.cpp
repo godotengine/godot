@@ -162,7 +162,7 @@ void ProjectDialog::_validate_path() {
 		}
 	}
 
-	if (target_path.is_empty() || target_path.is_relative_path()) {
+	if (target_path.is_relative_path()) {
 		_set_message(TTR("The path specified is invalid."), MESSAGE_ERROR, target_path_input_type);
 		return;
 	}
@@ -352,7 +352,7 @@ void ProjectDialog::_install_path_changed() {
 
 void ProjectDialog::_browse_project_path() {
 	String path = project_path->get_text();
-	if (path.is_empty()) {
+	if (path.is_relative_path()) {
 		path = EDITOR_GET("filesystem/directories/default_project_path");
 	}
 	if (mode == MODE_IMPORT && install_path->is_visible_in_tree()) {
@@ -382,12 +382,16 @@ void ProjectDialog::_browse_project_path() {
 void ProjectDialog::_browse_install_path() {
 	ERR_FAIL_COND_MSG(mode != MODE_IMPORT, "Install path is only used for MODE_IMPORT.");
 
+	String path = install_path->get_text();
+	if (path.is_relative_path() || !DirAccess::dir_exists_absolute(path)) {
+		path = EDITOR_GET("filesystem/directories/default_project_path");
+	}
 	if (create_dir->is_pressed()) {
 		// Select parent directory of install path.
-		fdialog_install->set_current_dir(install_path->get_text().get_base_dir());
+		fdialog_install->set_current_dir(path.get_base_dir());
 	} else {
 		// Select install path.
-		fdialog_install->set_current_dir(install_path->get_text());
+		fdialog_install->set_current_dir(path);
 	}
 
 	fdialog_install->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
