@@ -153,6 +153,7 @@ private:
 		Color dc_ol_color;
 
 		Vector2 offset;
+		float indent = 0.0;
 		int char_offset = 0;
 		int char_count = 0;
 
@@ -205,6 +206,7 @@ private:
 		Size2 min_size_over = Size2(-1, -1);
 		Size2 max_size_over = Size2(-1, -1);
 		Rect2 padding;
+		int indent_level = 0;
 
 		ItemFrame() {
 			type = ITEM_FRAME;
