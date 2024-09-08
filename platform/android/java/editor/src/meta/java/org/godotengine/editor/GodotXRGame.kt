@@ -31,7 +31,6 @@
 package org.godotengine.editor
 
 import org.godotengine.godot.GodotLib
-import org.godotengine.godot.utils.PermissionsUtil
 import org.godotengine.godot.xr.XRMode
 
 /**
@@ -62,8 +61,16 @@ open class GodotXRGame: GodotGame() {
 
 		val openxrEnabled = GodotLib.getGlobal("xr/openxr/enabled").toBoolean()
 		if (openxrEnabled) {
-			permissionsToEnable.add(USE_ANCHOR_API_PERMISSION)
-			permissionsToEnable.add(USE_SCENE_PERMISSION)
+			// We only request permissions when the `automatically_request_runtime_permissions`
+			// project setting is enabled.
+			// If the project setting is not defined, we fall-back to the default behavior which is
+			// to automatically request permissions.
+			val automaticallyRequestPermissionsSetting = GodotLib.getGlobal("xr/openxr/extensions/automatically_request_runtime_permissions")
+			val automaticPermissionsRequestEnabled = automaticallyRequestPermissionsSetting.isNullOrEmpty() ||
+				automaticallyRequestPermissionsSetting.toBoolean()
+			if (automaticPermissionsRequestEnabled) {
+				permissionsToEnable.add(USE_SCENE_PERMISSION)
+			}
 		}
 
 		return permissionsToEnable
