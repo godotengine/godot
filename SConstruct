@@ -1053,7 +1053,7 @@ if env["ninja"]:
     SetOption("experimental", "ninja")
     env["NINJA_FILE_NAME"] = env["ninja_file"]
     env["NINJA_DISABLE_AUTO_RUN"] = not env["ninja_auto_run"]
-    env.Tool("ninja")
+    env.Tool("ninja", "build.ninja")
 
 # Threads
 if env["threads"]:
@@ -1116,7 +1116,7 @@ atexit.register(print_elapsed_time)
 
 
 def purge_flaky_files():
-    paths_to_keep = ["ninja.build"]
+    paths_to_keep = ["build.ninja"]
     for build_failure in GetBuildFailures():
         path = build_failure.node.path
         if os.path.isfile(path) and path not in paths_to_keep:
