@@ -36,9 +36,6 @@
 #include "core/templates/list.h"
 #include "core/templates/vector.h"
 
-template <typename T>
-class TypedArray;
-
 class Engine {
 public:
 	struct Singleton {

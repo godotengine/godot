@@ -33,9 +33,6 @@
 
 #include "core/object/class_db.h"
 
-template <typename T>
-class TypedArray;
-
 class ProjectSettings : public Object {
 	GDCLASS(ProjectSettings, Object);
 	_THREAD_SAFE_CLASS_

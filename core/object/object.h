@@ -44,9 +44,6 @@
 #include "core/variant/callable_bind.h"
 #include "core/variant/variant.h"
 
-template <typename T>
-class TypedArray;
-
 enum PropertyHint {
 	PROPERTY_HINT_NONE, ///< no hint provided.
 	PROPERTY_HINT_RANGE, ///< hint_text = "min,max[,step][,or_greater][,or_less][,hide_slider][,radians_as_degrees][,degrees][,exp][,suffix:<keyword>] range.

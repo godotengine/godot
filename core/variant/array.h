@@ -36,12 +36,15 @@
 #include <climits>
 
 class Variant;
-class ArrayPrivate;
 class Object;
 class StringName;
 class Callable;
 
+template <typename T>
+class TypedArray;
+
 class Array {
+	struct ArrayPrivate;
 	mutable ArrayPrivate *_p;
 	void _unref() const;
 

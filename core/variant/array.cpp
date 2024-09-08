@@ -41,8 +41,7 @@
 #include "core/variant/dictionary.h"
 #include "core/variant/variant.h"
 
-class ArrayPrivate {
-public:
+struct Array::ArrayPrivate {
 	SafeRefCount refcount;
 	Vector<Variant> array;
 	Variant *read_only = nullptr; // If enabled, a pointer is used to a temporary value that is used to return read-only values.

@@ -39,8 +39,6 @@
 #include "core/variant/native_ptr.h"
 
 class PhysicsDirectSpaceState3D;
-template <typename T>
-class TypedArray;
 
 class PhysicsDirectBodyState3D : public Object {
 	GDCLASS(PhysicsDirectBodyState3D, Object);

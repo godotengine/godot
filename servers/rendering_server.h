@@ -57,9 +57,6 @@
 #define ERR_NOT_ON_RENDER_THREAD_V(m_ret)
 #endif
 
-template <typename T>
-class TypedArray;
-
 class RenderingServer : public Object {
 	GDCLASS(RenderingServer, Object);
 
