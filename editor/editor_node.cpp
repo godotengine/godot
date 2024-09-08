@@ -4404,6 +4404,21 @@ bool EditorNode::is_additional_node_in_scene(Node *p_edited_scene, Node *p_reimp
 	return true;
 }
 
+void EditorNode::get_scene_editor_data_for_node(Node *p_root, Node *p_node, HashMap<NodePath, SceneEditorDataEntry> &p_table) {
+	SceneEditorDataEntry new_entry;
+	new_entry.is_display_folded = p_node->is_displayed_folded();
+
+	if (p_root != p_node) {
+		new_entry.is_editable = p_root->is_editable_instance(p_node);
+	}
+
+	p_table.insert(p_root->get_path_to(p_node), new_entry);
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		get_scene_editor_data_for_node(p_root, p_node->get_child(i), p_table);
+	}
+}
+
 void EditorNode::get_preload_scene_modification_table(
 		Node *p_edited_scene,
 		Node *p_reimported_root,
@@ -4510,7 +4525,7 @@ void EditorNode::get_preload_scene_modification_table(
 void EditorNode::get_preload_modifications_reference_to_nodes(
 		Node *p_root,
 		Node *p_node,
-		List<Node *> &p_excluded_nodes,
+		HashSet<Node *> &p_excluded_nodes,
 		List<Node *> &p_instance_list_with_children,
 		HashMap<NodePath, ModificationNodeEntry> &p_modification_table) {
 	if (!p_excluded_nodes.find(p_node)) {
@@ -5984,12 +5999,14 @@ void EditorNode::reload_scene(const String &p_path) {
 	scene_tabs->set_current_tab(current_tab);
 }
 
-void EditorNode::find_all_instances_inheriting_path_in_node(Node *p_root, Node *p_node, const String &p_instance_path, List<Node *> &p_instance_list) {
+void EditorNode::find_all_instances_inheriting_path_in_node(Node *p_root, Node *p_node, const String &p_instance_path, HashSet<Node *> &p_instance_list) {
 	String scene_file_path = p_node->get_scene_file_path();
 
-	// This is going to get messy...
+	bool valid_instance_found = false;
+
+	// Attempt to find all the instances matching path we're going to reload.
 	if (p_node->get_scene_file_path() == p_instance_path) {
-		p_instance_list.push_back(p_node);
+		valid_instance_found = true;
 	} else {
 		Node *current_node = p_node;
 
@@ -5997,11 +6014,24 @@ void EditorNode::find_all_instances_inheriting_path_in_node(Node *p_root, Node *
 		while (inherited_state.is_valid()) {
 			String inherited_path = inherited_state->get_path();
 			if (inherited_path == p_instance_path) {
-				p_instance_list.push_back(p_node);
+				valid_instance_found = true;
 				break;
 			}
 
 			inherited_state = inherited_state->get_base_scene_state();
+		}
+	}
+
+	// Instead of adding this instance directly, if its not owned by the scene, walk its ancestors
+	// and find the first node still owned by the scene. This is what we will reloading instead.
+	if (valid_instance_found) {
+		Node *current_node = p_node;
+		while (true) {
+			if (current_node->get_owner() == p_root || current_node->get_owner() == nullptr) {
+				p_instance_list.insert(current_node);
+				break;
+			}
+			current_node = current_node->get_parent();
 		}
 	}
 
@@ -6023,20 +6053,20 @@ void EditorNode::preload_reimporting_with_path_in_edited_scenes(const List<Strin
 		Node *edited_scene_root = editor_data.get_edited_scene_root(current_scene_idx);
 
 		if (edited_scene_root) {
-			SceneModificationsEntry scene_motifications;
+			SceneModificationsEntry scene_modifications;
 
 			for (const String &instance_path : p_scenes) {
 				if (editor_data.get_scene_path(current_scene_idx) == instance_path) {
 					continue;
 				}
 
-				List<Node *> instance_list;
-				find_all_instances_inheriting_path_in_node(edited_scene_root, edited_scene_root, instance_path, instance_list);
-				if (instance_list.size() > 0) {
+				HashSet<Node *> instances_to_reimport;
+				find_all_instances_inheriting_path_in_node(edited_scene_root, edited_scene_root, instance_path, instances_to_reimport);
+				if (instances_to_reimport.size() > 0) {
 					editor_data.set_edited_scene(current_scene_idx);
 
 					List<Node *> instance_list_with_children;
-					for (Node *original_node : instance_list) {
+					for (Node *original_node : instances_to_reimport) {
 						InstanceModificationsEntry instance_modifications;
 
 						// Fetching all the modified properties of the nodes reimported scene.
@@ -6044,19 +6074,19 @@ void EditorNode::preload_reimporting_with_path_in_edited_scenes(const List<Strin
 
 						instance_modifications.original_node = original_node;
 						instance_modifications.instance_path = instance_path;
-						scene_motifications.instance_list.push_back(instance_modifications);
+						scene_modifications.instance_list.push_back(instance_modifications);
 
 						instance_list_with_children.push_back(original_node);
 						get_children_nodes(original_node, instance_list_with_children);
 					}
 
 					// Search the scene to find nodes that references the nodes will be recreated.
-					get_preload_modifications_reference_to_nodes(edited_scene_root, edited_scene_root, instance_list, instance_list_with_children, scene_motifications.other_instances_modifications);
+					get_preload_modifications_reference_to_nodes(edited_scene_root, edited_scene_root, instances_to_reimport, instance_list_with_children, scene_modifications.other_instances_modifications);
 				}
 			}
 
-			if (scene_motifications.instance_list.size() > 0) {
-				scenes_modification_table[current_scene_idx] = scene_motifications;
+			if (scene_modifications.instance_list.size() > 0) {
+				scenes_modification_table[current_scene_idx] = scene_modifications;
 			}
 		}
 	}
@@ -6179,10 +6209,10 @@ void EditorNode::reload_instances_with_path_in_edited_scenes() {
 			// Instantiate early so that caches cleared on load in SceneState can be rebuilt early.
 			Node *instantiated_node = nullptr;
 
-			// If we are in a inherit scene, it's easier to create a new base scene and
+			// If we are in a inherited scene, it's easier to create a new base scene and
 			// grab the node from there.
 			// When scene_path_to_node is '.' and we have scene_inherited_state, it's because
-			// it's a muli-level inheritance scene. We should use
+			// it's a multi-level inheritance scene. We should use
 			NodePath scene_path_to_node = current_edited_scene->get_path_to(original_node);
 			Ref<SceneState> scene_state = current_edited_scene->get_scene_inherited_state();
 			if (scene_path_to_node != "." && scene_state.is_valid() && scene_state->get_path() != instance_modifications.instance_path && scene_state->find_node_by_path(scene_path_to_node) >= 0) {
@@ -6206,9 +6236,9 @@ void EditorNode::reload_instances_with_path_in_edited_scenes() {
 
 			if (!instantiated_node) {
 				// If no base scene was found to create the node, we will use the reimported packed scene directly.
-				// But, when the current edited scene is the reimported scene, it's because it's a inherited scene
-				// of the reimported scene. In that case, we will not instantiate current_packed_scene, because
-				// we would reinstanciate ourself. Using the base scene is better.
+				// But, when the current edited scene is the reimported scene, it's because it's an inherited scene
+				// derived from the reimported scene. In that case, we will not instantiate current_packed_scene, because
+				// we would reinstantiate ourself. Using the base scene is better.
 				if (current_edited_scene == original_node) {
 					if (base_packed_scene.is_valid()) {
 						instantiated_node = base_packed_scene->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
@@ -6264,6 +6294,17 @@ void EditorNode::reload_instances_with_path_in_edited_scenes() {
 			// crash when reimporting scenes with animations when "Editable children" was enabled.
 			replace_history_reimported_nodes(original_node, instantiated_node, original_node);
 
+			// Reset the editable instance state.
+			HashMap<NodePath, SceneEditorDataEntry> scene_editor_data_table;
+			Node *owner = original_node->get_owner();
+			if (!owner) {
+				owner = original_node;
+			}
+
+			get_scene_editor_data_for_node(owner, original_node, scene_editor_data_table);
+
+			bool original_node_scene_instance_load_placeholder = original_node->get_scene_instance_load_placeholder();
+
 			// Delete all the remaining node children.
 			while (original_node->get_child_count()) {
 				Node *child = original_node->get_child(0);
@@ -6271,16 +6312,6 @@ void EditorNode::reload_instances_with_path_in_edited_scenes() {
 				original_node->remove_child(child);
 				child->queue_free();
 			}
-
-			// Reset the editable instance state.
-			bool is_editable = true;
-			Node *owner = original_node->get_owner();
-			if (owner) {
-				is_editable = owner->is_editable_instance(original_node);
-			}
-
-			bool original_node_is_displayed_folded = original_node->is_displayed_folded();
-			bool original_node_scene_instance_load_placeholder = original_node->get_scene_instance_load_placeholder();
 
 			// Update the name to match
 			instantiated_node->set_name(original_node->get_name());
@@ -6312,18 +6343,8 @@ void EditorNode::reload_instances_with_path_in_edited_scenes() {
 			// Mark the old node for deletion.
 			original_node->queue_free();
 
-			// Restore the folded and placeholder state from the original node.
-			instantiated_node->set_display_folded(original_node_is_displayed_folded);
+			// Restore the placeholder state from the original node.
 			instantiated_node->set_scene_instance_load_placeholder(original_node_scene_instance_load_placeholder);
-
-			if (owner) {
-				Ref<SceneState> ss_inst = owner->get_scene_instance_state();
-				if (ss_inst.is_valid()) {
-					ss_inst->update_instance_resource(instance_modifications.instance_path, current_packed_scene);
-				}
-
-				owner->set_editable_instance(instantiated_node, is_editable);
-			}
 
 			// Attempt to re-add all the additional nodes.
 			for (AdditiveNodeEntry additive_node_entry : instance_modifications.addition_list) {
@@ -6353,6 +6374,17 @@ void EditorNode::reload_instances_with_path_in_edited_scenes() {
 					if (node_3d) {
 						node_3d->set_transform(additive_node_entry.transform_3d);
 					}
+				}
+			}
+
+			// Restore the scene's editable instance and folded states.
+			for (HashMap<NodePath, SceneEditorDataEntry>::Iterator I = scene_editor_data_table.begin(); I; ++I) {
+				Node *node = owner->get_node_or_null(I->key);
+				if (node) {
+					if (owner != node) {
+						owner->set_editable_instance(node, I->value.is_editable);
+					}
+					node->set_display_folded(I->value.is_display_folded);
 				}
 			}
 

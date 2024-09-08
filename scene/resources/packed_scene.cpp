@@ -1354,25 +1354,6 @@ Ref<SceneState> SceneState::get_base_scene_state() const {
 	return Ref<SceneState>();
 }
 
-void SceneState::update_instance_resource(String p_path, Ref<PackedScene> p_packed_scene) {
-	ERR_FAIL_COND(p_packed_scene.is_null());
-
-	for (const NodeData &nd : nodes) {
-		if (nd.instance >= 0) {
-			if (!(nd.instance & FLAG_INSTANCE_IS_PLACEHOLDER)) {
-				int instance_id = nd.instance & FLAG_MASK;
-				Ref<PackedScene> original_packed_scene = variants[instance_id];
-				if (original_packed_scene.is_valid()) {
-					if (original_packed_scene->get_path() == p_path) {
-						variants.remove_at(instance_id);
-						variants.insert(instance_id, p_packed_scene);
-					}
-				}
-			}
-		}
-	}
-}
-
 int SceneState::find_node_by_path(const NodePath &p_node) const {
 	ERR_FAIL_COND_V_MSG(node_path_cache.is_empty(), -1, "This operation requires the node cache to have been built.");
 
