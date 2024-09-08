@@ -169,12 +169,13 @@ Vector<uint8_t> WaylandThread::_wp_primary_selection_offer_read(struct wl_displa
 
 	int fds[2];
 	if (pipe(fds) == 0) {
-		// This function expects to return a string, so we can only ask for a MIME of
-		// "text/plain"
 		zwp_primary_selection_offer_v1_receive(p_offer, p_mime, fds[1]);
 
-		// Wait for the compositor to know about the pipe.
-		wl_display_roundtrip(p_display);
+		// NOTE: It's important to just flush and not roundtrip here as we would risk
+		// running some cleanup event, like for example `wl_data_device::leave`. We're
+		// going to wait for the message anyways as the read will probably block if
+		// the compositor doesn't read from the other end of the pipe.
+		wl_display_flush(p_display);
 
 		// Close the write end of the pipe, which we don't need and would otherwise
 		// just stall our next `read`s.
