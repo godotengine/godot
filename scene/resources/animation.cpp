@@ -446,6 +446,10 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 	String prop_name = p_name;
 
 	if (p_name == SNAME("_compression")) {
+		if (!compression.enabled)
+		{
+			return false;
+		}
 		ERR_FAIL_COND_V(!compression.enabled, false);
 		Dictionary comp;
 		comp["fps"] = compression.fps;
@@ -3806,6 +3810,27 @@ void Animation::set_bone_map(const Ref<Resource>& p_bone_map) {
 
 Ref<Resource> Animation::get_bone_map() const {
 	return bone_map;
+}
+void Animation::remap_node_to_bone_name(const Vector<String> &p_bone_names)
+{
+	HashSet<String> bone_names;
+	for (int i = 0; i < p_bone_names.size(); i++) {
+		bone_names.insert(p_bone_names[i]);
+	}
+
+	for (int i = 0; i < tracks.size(); i++) {
+		AnimationTrack *at = static_cast<AnimationTrack *>(tracks[i]);
+		if( at->type == TYPE_POSITION_3D || at->type == TYPE_ROTATION_3D || at->type == TYPE_SCALE_3D ) {
+			String path_name = at->path;
+			if (path_name.begins_with("Skeleton3D:")) {
+				continue;
+			}
+			auto sv = path_name.split("/");
+			if (bone_names.has(sv[sv.size()-1])) {
+				at->path = "Skeleton3D:" + String(sv[sv.size()-1]);					
+			}
+		}		
+	}
 }
 
 void Animation::copy_track(int p_track, Ref<Animation> p_to_animation) {

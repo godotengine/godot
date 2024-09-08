@@ -71,8 +71,6 @@ public:
 
 public:
     void init();
-    // 初始化身體
-    void init_main_body(String p_skeleton_file_path,StringName p_animation_group);
     void clear_all();
     void _notification( int p_notification );
     CharacterBodyMain();
@@ -88,13 +86,7 @@ public:
     }
 	Ref<BlackboardPlan> get_blackboard_plan() { return blackboard_plan; }
 
-
-    void set_skeleton_resource(const String& p_skeleton_path);
-
-    String get_skeleton_resource() { return skeleton_res; }
-
-    // 
-    // 可编辑属性,必须初始类返回一个空对象
+	// 可编辑属性,必须初始类返回一个空对象
 	Ref<Blackboard> _get_blackboard()  { return player_blackboard; }
 	Ref<Blackboard> get_blackboard() 
      {
@@ -316,6 +308,8 @@ protected:
 
     void _update(double p_delta);
 
+	void _init_body();
+
 protected:
 	virtual void update_world_transform(const Transform3D & trans) override
 	{
@@ -425,7 +419,6 @@ protected:
 
     
     // 骨架配置文件
-    String skeleton_res;
     ObjectID skeletonID;
     Ref<CharacterAnimationLibrary> animation_library;
     Ref<CharacterAnimator>    animator;

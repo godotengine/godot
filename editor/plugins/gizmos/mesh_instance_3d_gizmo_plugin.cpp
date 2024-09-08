@@ -58,14 +58,28 @@ void MeshInstance3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	p_gizmo->clear();
 
-	Ref<Mesh> m = mesh->get_mesh();
 
+	Ref<Mesh> m = mesh->get_mesh();
 	if (!m.is_valid()) {
 		return; //none
 	}
+	if(mesh->get_gizmo_show_box()) {
+		Vector<Vector3> lines;
+		AABB aabb = mesh->get_aabb();
 
-	Ref<TriangleMesh> tm = m->generate_triangle_mesh();
-	if (tm.is_valid()) {
-		p_gizmo->add_collision_triangles(tm);
+		for (int i = 0; i < 12; i++) {
+			Vector3 a, b;
+			aabb.get_edge(i, a, b);
+			lines.push_back(a);
+			lines.push_back(b);
+		}
+		p_gizmo->add_collision_segments(lines);
+	}
+	else
+	{
+		Ref<TriangleMesh> tm = m->generate_triangle_mesh();
+		if (tm.is_valid()) {
+			p_gizmo->add_collision_triangles(tm);
+		}
 	}
 }

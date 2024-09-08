@@ -929,6 +929,8 @@ public:
 	void set_bone_map(const Ref<Resource>& p_bone_map);
 	Ref<Resource> get_bone_map() const ;
 
+	void remap_node_to_bone_name(const Vector<String> &p_bone_names);
+
 	void clear();
 
 	void optimize(real_t p_allowed_velocity_err = 0.01, real_t p_allowed_angular_err = 0.01, int p_precision = 3);

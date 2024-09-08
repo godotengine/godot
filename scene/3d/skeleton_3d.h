@@ -228,6 +228,8 @@ public:
 	Dictionary get_human_bone_mapping();
 	void set_human_bone_mapping(const Dictionary &p_human_bone_mapping);
 
+	Vector<String> get_bone_names() const;
+
 	int get_bone_count() const;
 
 	void set_bone_rest(int p_bone, const Transform3D &p_rest);

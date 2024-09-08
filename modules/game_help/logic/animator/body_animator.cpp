@@ -72,13 +72,17 @@ void CharacterAnimatorLayer::_process_animator(const Ref<Blackboard> &p_playback
     
     for(auto& anim : m_AnimationInstances)
     {
-
-        anim.delta = p_delta;
-        anim.time += p_delta;
         if(anim.m_PlayState == CharacterAnimationInstance::PS_FadeOut)
         {
             anim.fadeTotalTime += p_delta;
         }
+		else
+		{
+			anim.delta = p_delta;
+			anim.time += p_delta;
+			// 非淡出的动画需要更新事件
+			anim.node->update_animation_time(&anim);
+		}
     }
     auto it = m_AnimationInstances.begin();
     float total_weight = 0.0f;

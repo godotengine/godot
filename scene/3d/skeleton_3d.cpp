@@ -1984,4 +1984,12 @@ void Skeleton3D::set_human_bone_mapping(const Dictionary &p_human_bone_mapping)
 		this->set_bone_name(bone_index, p_human_bone_mapping[E]);
 	}
 }
+Vector<String> Skeleton3D::get_bone_names() const
+{
+	Vector<String> bone_names;
+	for (int i = 0; i < bones.size(); i++) {
+		bone_names.push_back(get_bone_name(i));
+	}
+	return bone_names;
+}
 

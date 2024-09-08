@@ -158,6 +158,15 @@ void CharacterAnimatorNodeBase::_init()
         }
     }
 }
+void CharacterAnimatorNodeBase::update_animation_time(struct CharacterAnimationInstance* p_playback_info) {
+	p_playback_info->animation_time_pos += p_playback_info->delta;
+	while (p_playback_info->animation_time_pos > _get_animation_length())
+	{
+		p_playback_info->animation_time_pos -= _get_animation_length();
+		++p_playback_info->play_count;
+	}
+
+}
 
 void CharacterAnimatorNodeBase::_blend_anmation(CharacterAnimatorLayer *p_layer,int child_count,CharacterAnimationInstance *p_playback_info,float total_weight,const LocalVector<float> &weight_array,const Ref<Blackboard> &p_blackboard)
 {
@@ -171,13 +180,29 @@ void CharacterAnimatorNodeBase::_blend_anmation(CharacterAnimatorLayer *p_layer,
             Ref<CharacterAnimationItem> item = animation_arrays[i];
             if(item->is_clip){
                 p_playback_info_ptr[i].weight = w;
-                p_playback_info_ptr[i].delta = p_playback_info->delta * item->get_speed();
-                p_playback_info_ptr[i].time += p_playback_info_ptr[i].delta ;
+                p_playback_info_ptr[i].delta = p_playback_info->delta / ABS(item->get_speed());
+                p_playback_info_ptr[i].time = p_playback_info->animation_time_pos / ABS(item->get_speed());
                 p_playback_info_ptr[i].disable_path = p_playback_info->disable_path;
+
+				if (get_loop() == LOOP_Once)
+				{
+					double length = item->animation->get_length();
+					double time = p_playback_info_ptr[i].time;
+					while (p_playback_info_ptr[i].time > length)
+					{
+						p_playback_info_ptr[i].time -= length;
+					}
+				}
+				if (p_playback_info_ptr[i].invert)
+				{
+					p_playback_info_ptr[i].delta = -p_playback_info_ptr[i].delta;
+					p_playback_info_ptr[i].time = -p_playback_info_ptr[i].time;
+				}
+			
                 Ref<Animation> animation = item->get_animation();
                 if(animation.is_valid())
                 {
-                    Ref<CharacterBoneMap> bone_map = item->get_bone_map();
+                    Ref<CharacterBoneMap> bone_map = item->animation->get_bone_map();
                     Dictionary bp;
                     if(bone_map.is_valid())
                     {
@@ -662,27 +687,46 @@ void CharacterAnimatorLoopLast::process_animation(class CharacterAnimatorLayer *
         {	  
             Ref<CharacterAnimationItem> item = animation_arrays[p_playback_info->play_index];
 
-            
-            AnimationMixer::PlaybackInfo  playback_info;
+
+			AnimationMixer::PlaybackInfo* p_playback_info_ptr = p_playback_info->m_ChildAnimationPlaybackArray.ptr();
+            AnimationMixer::PlaybackInfo&  playback_info = p_playback_info_ptr[0];
+
+			playback_info.delta = ABS(playback_info.delta);
+			playback_info.time = ABS(playback_info.time);
 			playback_info.weight = w;
-			playback_info.delta = p_playback_info->delta * item->get_speed();
+			playback_info.delta = p_playback_info->delta * ABS(item->get_speed());
 			playback_info.time += playback_info.delta ;
 			playback_info.disable_path = p_playback_info->disable_path;
+			// 循环播放
+			double length = item->animation->get_length();
             if(p_playback_info->play_index < blend_data.position_count - 1)
             {
-                if(playback_info.time >= animation_arrays[p_playback_info->play_index]->_get_animation_length())
+                if(playback_info.time >= length)
                 {
-					playback_info.time -= animation_arrays[p_playback_info->play_index]->_get_animation_length();
+					playback_info.time -= length;
 					p_playback_info->play_index = p_playback_info->play_index + 1;
                 }
             }
+			else
+			{
+				double time = playback_info.time;
+				while (playback_info.time > length)
+				{
+					playback_info.time -= length;
+				}
+			}
+			if (playback_info.invert)
+			{
+				playback_info.delta = -playback_info.delta;
+				playback_info.time = -playback_info.time;
+			}
             item = animation_arrays[p_playback_info->play_index];
                 
             if(item->is_clip){
                 Ref<Animation> animation = item->get_animation();
                 if(animation.is_valid())
                 {
-                    Ref<CharacterBoneMap> bone_map = item->get_bone_map();
+                    Ref<CharacterBoneMap> bone_map = item->animation->get_bone_map();
                     Dictionary bp;
                     if(bone_map.is_valid())
                     {

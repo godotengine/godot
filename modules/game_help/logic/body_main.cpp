@@ -74,16 +74,16 @@ void CharacterBodyMain::init_ai_context()
 void CharacterBodyMain::_update(double p_delta)
 {
 
-        // 更新玩家位置
-        GDVIRTUAL_CALL(_update_player_position);
-        for(uint32_t i = 0; i < check_area.size();++i)
+    // 更新玩家位置
+    GDVIRTUAL_CALL(_update_player_position);
+    for(uint32_t i = 0; i < check_area.size();++i)
+    {
+        if(check_area[i].is_valid())
         {
-            if(check_area[i].is_valid())
-            {
-                check_area[i]->update_world_move(get_global_position());
-            }
+            check_area[i]->update_world_move(get_global_position());
         }
-        _process_move();
+    }
+    _process_move();
 
 }
 void CharacterBodyMain::_update_ai()
@@ -151,14 +151,6 @@ void CharacterBodyMain::_process_move()
     }
 
 }
-// 初始化身體
-void CharacterBodyMain::init_main_body(String p_skeleton_file_path,StringName p_animation_group)
-{
-    skeleton_res = p_skeleton_file_path;
-    animation_group = p_animation_group;
-
-}
-
 void CharacterBodyMain::set_character_ai(const Ref<CharacterAI> &p_ai)
 {
     character_ai = p_ai;
@@ -168,51 +160,6 @@ Ref<CharacterAI> CharacterBodyMain::get_character_ai()
     return character_ai;
 } 
 
-
-void CharacterBodyMain::set_skeleton_resource(const String& p_skeleton_path)
-{        
-    skeleton_res = p_skeleton_path;
-    clear_all();
-    Ref<PackedScene> scene; 
-    if(skeleton_res.begins_with("res://"))
-        scene = ResourceLoader::load(skeleton_res);
-    else
-        scene = ResourceLoader::load(CharacterManager::get_singleton()->get_skeleton_root_path().path_join(skeleton_res));
-    if(!scene.is_valid())
-    {
-        ERR_FAIL_MSG("load skeleton failed:" + skeleton_res);
-        skeleton_res = "";
-        return ;
-    }
-    Node* ins = scene->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
-    if (ins == nullptr) {
-        ERR_FAIL_MSG("init skeleton instantiate failed:" + skeleton_res);
-        skeleton_res = "";
-        return;
-    }
-    Skeleton3D* skeleton = Object::cast_to<Skeleton3D>(ins); 
-    if(skeleton == nullptr)
-    {
-        ERR_FAIL_MSG("scene is not Skeleton3D:" + skeleton_res);
-        skeleton->queue_free();
-        skeleton_res = "";
-        return ;
-    }
-    skeleton->set_name("Skeleton3D");
-
-    add_child(skeleton);
-    skeleton->set_owner(this);
-    skeleton->set_dont_save(true);
-
-    
-    if(skeleton && ik.is_valid())
-    {
-        ik->_initialize(skeleton);
-    }
-    skeletonID = skeleton->get_instance_id();
-    // 重新加载预制体
-    load_prefab();    
-}
 void CharacterBodyMain::behavior_tree_finished(int last_status)
 {
     emit_signal("behavior_tree_finished", last_status);
@@ -270,29 +217,70 @@ void CharacterBodyMain::set_body_prefab(const Ref<CharacterBodyPrefab> &p_body_p
 }
 void CharacterBodyMain::load_prefab()
 {
-    // 存储一下引用,避免当前再次引用的资产不会立即释放
-    HashMap<StringName,Ref<CharacterBodyPartInstane>> old_part = bodyPart;
-    bodyPart.clear();
-    if(body_prefab.is_valid())
-    {
-        body_prefab->connect_changed(callable_mp(this, &CharacterBodyMain::load_prefab));
-        set_skeleton_resource(body_prefab->get_skeleton_path());
-        Skeleton3D* skeleton = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(skeletonID));
-        // 
-        TypedArray<CharacterBodyPart> part_array = body_prefab->load_part();
-        int size = part_array.size();
-        for(int i = 0; i < size; i++)
-        {
-            
-            Ref<CharacterBodyPartInstane> p;
-            p.instantiate();
-            p->set_skeleton(skeleton);
-            p->set_part(part_array[i]);
+	_init_body();
+}
+void CharacterBodyMain::_init_body()
+{
+	// 存储一下引用,避免当前再次引用的资产不会立即释放
+	clear_all();
+	HashMap<StringName, Ref<CharacterBodyPartInstane>> old_part = bodyPart;
+	if (body_prefab.is_valid())
+	{
+		body_prefab->connect_changed(callable_mp(this, &CharacterBodyMain::load_prefab));
+
+		Ref<PackedScene> scene;
+		String skeleton_res = body_prefab->skeleton_path;
+		if (skeleton_res.begins_with("res://"))
+			scene = ResourceLoader::load(skeleton_res);
+		else
+			scene = ResourceLoader::load(CharacterManager::get_singleton()->get_skeleton_root_path().path_join(skeleton_res));
+		if (!scene.is_valid())
+		{
+			ERR_FAIL_MSG("load skeleton failed:" + skeleton_res);
+			skeleton_res = "";
+			return;
+		}
+		Node* ins = scene->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
+		if (ins == nullptr) {
+			ERR_FAIL_MSG("init skeleton instantiate failed:" + skeleton_res);
+			skeleton_res = "";
+			return;
+		}
+		Skeleton3D* skeleton = Object::cast_to<Skeleton3D>(ins);
+		if (skeleton == nullptr)
+		{
+			ERR_FAIL_MSG("scene is not Skeleton3D:" + skeleton_res);
+			skeleton->queue_free();
+			skeleton_res = "";
+			return;
+		}
+		skeleton->set_name("Skeleton3D");
+
+		add_child(skeleton);
+		skeleton->set_owner(this);
+		skeleton->set_dont_save(true);
+
+
+		if (skeleton && ik.is_valid())
+		{
+			ik->_initialize(skeleton);
+		}
+		skeletonID = skeleton->get_instance_id();
+		// 
+		TypedArray<CharacterBodyPart> part_array = body_prefab->load_part();
+		int size = part_array.size();
+		for (int i = 0; i < size; i++)
+		{
+
+			Ref<CharacterBodyPartInstane> p;
+			p.instantiate();
+			p->set_skeleton(skeleton);
+			p->set_part(part_array[i]);
 			Ref< CharacterBodyPart> part = part_array[i];
-            bodyPart[part->get_name()] = p;
-        }
-        notify_property_list_changed();
-    }
+			bodyPart[part->get_name()] = p;
+		}
+		notify_property_list_changed();
+	}
 
 }
 Ref<CharacterBodyPrefab> CharacterBodyMain::get_body_prefab()
@@ -323,10 +311,6 @@ void CharacterBodyMain::_bind_methods()
 {
     
 	ClassDB::bind_method(D_METHOD("restart"), &CharacterBodyMain::restart);
-	ClassDB::bind_method(D_METHOD("init_main_body","p_skeleton_file_path","p_animation_group"), &CharacterBodyMain::init_main_body);
-
-
-
 
 	ClassDB::bind_method(D_METHOD("set_blackboard_plan", "plan"), &CharacterBodyMain::set_blackboard_plan);
 	ClassDB::bind_method(D_METHOD("get_blackboard_plan"), &CharacterBodyMain::get_blackboard_plan);
@@ -359,9 +343,6 @@ void CharacterBodyMain::_bind_methods()
     ClassDB::bind_method(D_METHOD("set_character_ai", "ai"), &CharacterBodyMain::set_character_ai);
     ClassDB::bind_method(D_METHOD("get_character_ai"), &CharacterBodyMain::get_character_ai);
 
-    ClassDB::bind_method(D_METHOD("set_skeleton_resource", "skeleton"), &CharacterBodyMain::set_skeleton_resource);
-    ClassDB::bind_method(D_METHOD("get_skeleton_resource"), &CharacterBodyMain::get_skeleton_resource);
-
     
     ClassDB::bind_method(D_METHOD("set_editor_form_mesh_file_path", "editor_form_mesh_file_path"), &CharacterBodyMain::set_editor_form_mesh_file_path);
     ClassDB::bind_method(D_METHOD("get_editor_form_mesh_file_path"), &CharacterBodyMain::get_editor_form_mesh_file_path);
@@ -384,7 +365,6 @@ void CharacterBodyMain::_bind_methods()
     ADD_MEMBER_BUTTON(editor_build_animation,L"构建动画文件信息",CharacterBodyMain);
 
     ADD_GROUP("show", "");
-    ADD_PROPERTY(PropertyInfo(Variant::STRING, "skeleton", PROPERTY_HINT_FILE, "*.tscn,*.scn",PROPERTY_USAGE_DEFAULT ), "set_skeleton_resource", "get_skeleton_resource");
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "body_prefab", PROPERTY_HINT_RESOURCE_TYPE, "CharacterBodyPrefab",PROPERTY_USAGE_DEFAULT ), "set_body_prefab", "get_body_prefab");
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animator", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimator",PROPERTY_USAGE_DEFAULT ), "set_animator", "get_animator"); 
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animation_library", PROPERTY_HINT_RESOURCE_TYPE, "AnimationLibrary",PROPERTY_USAGE_DEFAULT ), "set_animation_library", "get_animation_library");
@@ -587,7 +567,7 @@ static void save_fbx_res( const String& group_name,const String& sub_path,const 
 	save_path = export_root_path.path_join(p_resource->get_name() + (is_resource ? ".res" :".scn"));
 	ResourceSaver::save(p_resource, save_path);
 	print_line(L"CharacterBodyMain.save_fbx_res: 存储资源 :" + save_path);
-    save_path = sub_path.path_join(p_resource->get_name() + (is_resource ? ".tres" :".scn"));
+    save_path = sub_path.path_join(p_resource->get_name() + (is_resource ? ".res" :".scn"));
 }
 static void get_fbx_meshs(Node *p_node,HashMap<String,MeshInstance3D* > &meshs)
 {
@@ -649,6 +629,7 @@ Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path
 	if (skeleton != nullptr)
 	{
 		bone_map = skeleton->get_human_bone_mapping();
+        Vector<String> bone_names = skeleton->get_bone_names();
 		skeleton->set_human_bone_mapping(bone_map);
 		skeleton->set_owner(nullptr);
 		reset_owenr(skeleton, skeleton);
@@ -665,6 +646,7 @@ Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path
 		bone_map_ref.instantiate();
 		bone_map_ref->set_name("bone_map");
 		bone_map_ref->set_bone_map(bone_map);
+        bone_map_ref->set_bone_names(bone_names);
 		save_fbx_res("bone_map", p_group, bone_map_ref, bone_map_save_path, true);
 	}
 	// 生成预制体
@@ -703,9 +685,6 @@ void CharacterBodyMain::editor_build_form_mesh_file_path()
 
 void CharacterBodyMain::editor_build_animation()
 {
-    if(editor_ref_bone_map.is_null()) {
-        return;
-    }
     if(!FileAccess::exists(editor_animation_file_path))
     {
 		print_line(L"CharacterBodyMain: 路径不存在 :" + editor_animation_file_path);
@@ -718,15 +697,38 @@ void CharacterBodyMain::editor_build_animation()
         return;
 	}
 	Node* p_node = scene->instantiate(PackedScene::GEN_EDIT_STATE_DISABLED);
+	Ref<CharacterBoneMap> bone_map;
+    Node* node = p_node->find_child("Skeleton3D");
+    Skeleton3D* skeleton = Object::cast_to<Skeleton3D>(node);
+	if (bone_map.is_null())
+	{
+	}
+	if (skeleton != nullptr)
+	{
+		bone_map.instantiate();
+		bone_map->set_bone_map(skeleton->get_human_bone_mapping());
+	}
+	else 
+	{
+		if (editor_ref_bone_map.is_null())
+		{
+			print_error(L"CharacterBodyMain: 路径不存在骨架信息,必须要设置骨骼映射:" + editor_animation_file_path);
+			return;
+		}
+		else
+		{
+			bone_map = editor_ref_bone_map;
+		}
+	}
 
-	Node* node = p_node->find_child("AnimationPlayer");
-    if(node == nullptr)
+	Node* anim_node = p_node->find_child("AnimationPlayer");
+    if(anim_node == nullptr)
     {
         print_line(L"CharacterBodyMain: 路径不存在动画信息:" + editor_animation_file_path);
         return;
     }
 
-    AnimationPlayer* player = Object::cast_to<AnimationPlayer>(node);
+    AnimationPlayer* player = Object::cast_to<AnimationPlayer>(anim_node);
     if(player == nullptr)
     {
         print_line(L"CharacterBodyMain: 路径不存在动画信息:" + editor_animation_file_path);
@@ -740,8 +742,31 @@ void CharacterBodyMain::editor_build_animation()
         if(animation.is_valid())
         {
             Ref<Animation> new_animation = animation->duplicate();
-            new_animation->set_bone_map(editor_ref_bone_map);
-            new_animation->set_name(E);
+            new_animation->set_bone_map(bone_map);
+            if(skeleton == nullptr)
+            {
+                new_animation->remap_node_to_bone_name(bone_map->get_bone_names());
+            }
+            new_animation->optimize();
+            new_animation->compress();
+			if (p_animations.size() == 1)
+			{
+				Vector<String> names = p_group.split("@");
+				String name;
+				if (names.size() > 0)
+				{
+					name = names[names.size() - 1];
+				}
+				else
+				{
+					name = E;
+				}
+				new_animation->set_name(name);
+			}
+			else
+			{
+				new_animation->set_name(E);
+			}
             String save_path;
 			save_fbx_res("animation", p_group, new_animation, save_path, true);
             

@@ -88,6 +88,7 @@ public:
 		double time = 0.0;
 		double delta = 0.0;
 		bool seeked = false;
+		bool invert = false;
 		bool is_external_seeking = false;
 		Animation::LoopedFlag looped_flag = Animation::LOOPED_FLAG_NONE;
 		real_t weight = 0.0;

@@ -252,7 +252,7 @@ public:
                 mesh_instance->set_skin(part->get_skin());
                 mesh_instance->set_material_override(part->get_material());
                 // 这玩意特别卡,关闭它
-                mesh_instance->set_disable_gizmos(true);
+                mesh_instance->set_gizmo_show_box(true);
             }
         }
 

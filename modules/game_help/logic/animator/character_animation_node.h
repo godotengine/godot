@@ -16,15 +16,23 @@ class CharacterBoneMap : public Resource
         ClassDB::bind_method(D_METHOD("set_bone_map", "bone_map"), &CharacterBoneMap::set_bone_map);
         ClassDB::bind_method(D_METHOD("get_bone_map"), &CharacterBoneMap::get_bone_map);
 
+        ClassDB::bind_method(D_METHOD("set_bone_names", "bone_names"), &CharacterBoneMap::set_bone_names);
+        ClassDB::bind_method(D_METHOD("get_bone_names"), &CharacterBoneMap::get_bone_names);
+
         ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "bone_map"), "set_bone_map", "get_bone_map");
+        ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "bone_names"), "set_bone_names", "get_bone_names");
 
     }
 
 public:
     void set_bone_map(const Dictionary& p_bone_map) { bone_map = p_bone_map; }
     Dictionary get_bone_map() { return bone_map; }
+    void set_bone_names(const Vector<String>& p_bone_names) { bone_names = p_bone_names; }
+    Vector<String> get_bone_names() { return bone_names; }
 
 	Dictionary bone_map;
+    // 动画名称列表,用来处理非人形动画的情况这类动画原始文件没有模型,会被识别成节点,需要靠这个动画节点名称重新映射成骨骼
+    Vector<String> bone_names;
 };
 
 
@@ -129,6 +137,7 @@ public:
     void _normal_animation_length();
     virtual float _get_animation_length();
     void _set_animation_scale_by_length(float p_length);
+	virtual void update_animation_time(struct CharacterAnimationInstance* p_playback_info);
 
     void set_animation_arrays(TypedArray<CharacterAnimationItem> p_animation_arrays) { 
         animation_arrays.clear();
@@ -294,8 +303,10 @@ struct CharacterAnimationInstance
 	LocalVector<AnimationMixer::PlaybackInfo> m_ChildAnimationPlaybackArray;
 	double delta = 0.0f;
 	float time = 0.0f;
+	double animation_time_pos = 0.0f;
 	float fadeTotalTime = 0.0f;
     int play_index = 0;
+	int play_count = 1;
 	float get_weight()
 	{
 		if (m_PlayState == PlayState::PS_FadeOut)

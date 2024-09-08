@@ -49,6 +49,7 @@ protected:
 	LocalVector<float> blend_shape_tracks;
 	HashMap<StringName, int> blend_shape_properties;
 	Vector<Ref<Material>> surface_override_materials;
+	bool gizmo_show_box = false;
 
 	void _mesh_changed();
 	void _resolve_skeleton_path();
@@ -74,6 +75,13 @@ public:
 
 	void set_skeleton_path(const NodePath &p_skeleton);
 	NodePath get_skeleton_path();
+
+	void set_gizmo_show_box(bool p_show) {
+		gizmo_show_box = p_show;
+	}
+	bool get_gizmo_show_box() const {
+		return gizmo_show_box;
+	}
 
 	Ref<SkinReference> get_skin_reference() const;
 
