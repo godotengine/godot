@@ -260,11 +260,15 @@ public:
 class Skeleton3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(Skeleton3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
-	Ref<StandardMaterial3D> unselected_mat;
-	Ref<ShaderMaterial> selected_mat;
-	Ref<Shader> selected_sh;
+	struct SelectionMaterials {
+		Ref<StandardMaterial3D> unselected_mat;
+		Ref<ShaderMaterial> selected_mat;
+	};
+	static SelectionMaterials selection_materials;
 
 public:
+	static Ref<ArrayMesh> get_bones_mesh(Skeleton3D *p_skeleton, int p_selected, bool p_is_selected);
+
 	bool has_gizmo(Node3D *p_spatial) override;
 	String get_gizmo_name() const override;
 	int get_priority() const override;
@@ -277,6 +281,7 @@ public:
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
 
 	Skeleton3DGizmoPlugin();
+	~Skeleton3DGizmoPlugin();
 };
 
 #endif // SKELETON_3D_EDITOR_PLUGIN_H
