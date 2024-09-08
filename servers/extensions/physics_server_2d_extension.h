@@ -34,7 +34,6 @@
 #include "core/extension/ext_wrappers.gen.inc"
 #include "core/object/gdvirtual.gen.inc"
 #include "core/variant/native_ptr.h"
-#include "core/variant/typed_array.h"
 #include "servers/physics_server_2d.h"
 
 class PhysicsDirectBodyState2DExtension : public PhysicsDirectBodyState2D {

@@ -32,7 +32,6 @@
 #include "rendering_server.compat.inc"
 
 #include "core/config/project_settings.h"
-#include "core/variant/typed_array.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/shader_warnings.h"
 

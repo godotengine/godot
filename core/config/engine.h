@@ -35,9 +35,6 @@
 #include "core/string/ustring.h"
 #include "core/templates/list.h"
 
-template <typename T>
-class TypedArray;
-
 class Engine {
 public:
 	struct Singleton {

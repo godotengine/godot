@@ -33,7 +33,6 @@
 
 #include "core/object/gdvirtual.gen.inc"
 #include "core/string/ustring.h"
-#include "core/variant/typed_array.h"
 
 class EditorVCSInterface : public Object {
 	GDCLASS(EditorVCSInterface, Object)

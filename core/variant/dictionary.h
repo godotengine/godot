@@ -31,17 +31,16 @@
 #ifndef DICTIONARY_H
 #define DICTIONARY_H
 
-#include "core/string/ustring.h"
 #include "core/templates/list.h"
 #include "core/templates/pair.h"
-#include "core/variant/array.h"
 
+class Array;
 class Variant;
 
 struct ContainerType;
-struct DictionaryPrivate;
 
 class Dictionary {
+	struct DictionaryPrivate;
 	mutable DictionaryPrivate *_p;
 
 	void _ref(const Dictionary &p_from) const;
@@ -122,6 +121,16 @@ public:
 	Dictionary(std::initializer_list<KeyValue<Variant, Variant>> p_init);
 	Dictionary();
 	~Dictionary();
+};
+
+template <typename K, typename V>
+class TypedDictionary : public Dictionary {
+public:
+	_FORCE_INLINE_ void operator=(const Dictionary &p_dictionary);
+	_FORCE_INLINE_ TypedDictionary(const Variant &p_variant);
+	_FORCE_INLINE_ TypedDictionary(const Dictionary &p_dictionary);
+	_FORCE_INLINE_ TypedDictionary();
+	_FORCE_INLINE_ TypedDictionary(std::initializer_list<KeyValue<K, V>> p_init);
 };
 
 #endif // DICTIONARY_H

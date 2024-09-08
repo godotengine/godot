@@ -37,7 +37,6 @@
 #include "core/object/object.h"
 #include "core/templates/oa_hash_map.h"
 #include "core/templates/vector.h"
-#include "core/variant/typed_array.h"
 
 #ifdef DEBUG_ENABLED
 

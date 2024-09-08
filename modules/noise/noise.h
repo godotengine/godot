@@ -32,7 +32,6 @@
 #define NOISE_H
 
 #include "core/io/image.h"
-#include "core/variant/typed_array.h"
 
 class Noise : public Resource {
 	GDCLASS(Noise, Resource);

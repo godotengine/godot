@@ -831,11 +831,15 @@ struct VariantInternalAccessor<bool> {
 	static _FORCE_INLINE_ void set(Variant *v, bool p_value) { *VariantInternal::get_bool(v) = p_value; }
 };
 
-#define VARIANT_ACCESSOR_NUMBER(m_type)                                                                        \
+#define VARIANT_ACCESSOR_NUMBER(m_type) /********************************************************************/ \
 	template <>                                                                                                \
 	struct VariantInternalAccessor<m_type> {                                                                   \
-		static _FORCE_INLINE_ m_type get(const Variant *v) { return (m_type) * VariantInternal::get_int(v); }  \
-		static _FORCE_INLINE_ void set(Variant *v, m_type p_value) { *VariantInternal::get_int(v) = p_value; } \
+		static _FORCE_INLINE_ m_type get(const Variant *v) {                                                   \
+			return (m_type) * VariantInternal::get_int(v);                                                     \
+		}                                                                                                      \
+		static _FORCE_INLINE_ void set(Variant *v, m_type p_value) {                                           \
+			*VariantInternal::get_int(v) = p_value;                                                            \
+		}                                                                                                      \
 	};
 
 VARIANT_ACCESSOR_NUMBER(int8_t)
@@ -1021,10 +1025,22 @@ struct VariantInternalAccessor<Dictionary> {
 	static _FORCE_INLINE_ void set(Variant *v, const Dictionary &p_value) { *VariantInternal::get_dictionary(v) = p_value; }
 };
 
+template <typename K, typename V>
+struct VariantInternalAccessor<TypedDictionary<K, V>> {
+	static _FORCE_INLINE_ TypedDictionary<K, V> get(const Variant *v) { return *VariantInternal::get_dictionary(v); }
+	static _FORCE_INLINE_ void set(Variant *v, const TypedDictionary<K, V> &p_dictionary) { *VariantInternal::get_dictionary(v) = p_dictionary; }
+};
+
 template <>
 struct VariantInternalAccessor<Array> {
 	static _FORCE_INLINE_ const Array &get(const Variant *v) { return *VariantInternal::get_array(v); }
 	static _FORCE_INLINE_ void set(Variant *v, const Array &p_value) { *VariantInternal::get_array(v) = p_value; }
+};
+
+template <typename T>
+struct VariantInternalAccessor<TypedArray<T>> {
+	static _FORCE_INLINE_ TypedArray<T> get(const Variant *v) { return *VariantInternal::get_array(v); }
+	static _FORCE_INLINE_ void set(Variant *v, const TypedArray<T> &p_array) { *VariantInternal::get_array(v) = p_array; }
 };
 
 template <>
@@ -1130,10 +1146,12 @@ struct VariantInitializer<bool> {
 	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<bool>(v); }
 };
 
-#define INITIALIZER_INT(m_type)                                                                    \
-	template <>                                                                                    \
-	struct VariantInitializer<m_type> {                                                            \
-		static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<int64_t>(v); } \
+#define INITIALIZER_INT(m_type)                        \
+	template <>                                        \
+	struct VariantInitializer<m_type> {                \
+		static _FORCE_INLINE_ void init(Variant *v) {  \
+			VariantInternal::init_generic<int64_t>(v); \
+		}                                              \
 	};
 
 INITIALIZER_INT(uint8_t)

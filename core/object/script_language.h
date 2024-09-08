@@ -36,11 +36,8 @@
 #include "core/object/script_instance.h"
 #include "core/templates/pair.h"
 #include "core/templates/safe_refcount.h"
-#include "core/variant/typed_array.h"
 
 class ScriptLanguage;
-template <typename T>
-class TypedArray;
 
 typedef void (*ScriptEditRequestFunction)(const String &p_path);
 

@@ -44,9 +44,6 @@
 #include "core/variant/callable_bind.h"
 #include "core/variant/variant.h"
 
-template <typename T>
-class TypedArray;
-
 enum PropertyHint {
 	PROPERTY_HINT_NONE, ///< no hint provided.
 	PROPERTY_HINT_RANGE, ///< hint_text = "min,max[,step][,or_greater][,or_less][,hide_slider][,radians_as_degrees][,degrees][,exp][,suffix:<keyword>] range.
@@ -389,7 +386,7 @@ struct ObjectGDExtension {
  * much alone defines the object model.
  */
 
-#define GDCLASS(m_class, m_inherits)                                                                                                             \
+#define GDCLASS(m_class, m_inherits) /*********************************************************************************************************/ \
 private:                                                                                                                                         \
 	void operator=(const m_class &p_rval) {}                                                                                                     \
 	friend class ::ClassDB;                                                                                                                      \
@@ -430,7 +427,9 @@ public:                                                                         
 		}                                                                                                                                        \
 		return (p_class == (#m_class)) ? true : m_inherits::is_class(p_class);                                                                   \
 	}                                                                                                                                            \
-	virtual bool is_class_ptr(void *p_ptr) const override { return (p_ptr == get_class_ptr_static()) ? true : m_inherits::is_class_ptr(p_ptr); } \
+	virtual bool is_class_ptr(void *p_ptr) const override {                                                                                      \
+		return (p_ptr == get_class_ptr_static()) ? true : m_inherits::is_class_ptr(p_ptr);                                                       \
+	}                                                                                                                                            \
                                                                                                                                                  \
 	static void get_valid_parents_static(List<String> *p_parents) {                                                                              \
 		if (m_class::_get_valid_parents_static != m_inherits::_get_valid_parents_static) {                                                       \
@@ -556,9 +555,11 @@ protected:                                                                      
                                                                                                                                                  \
 private:
 
-#define OBJ_SAVE_TYPE(m_class)                                          \
+#define OBJ_SAVE_TYPE(m_class) /**************************************/ \
 public:                                                                 \
-	virtual String get_save_class() const override { return #m_class; } \
+	virtual String get_save_class() const override {                    \
+		return #m_class;                                                \
+	}                                                                   \
                                                                         \
 private:
 

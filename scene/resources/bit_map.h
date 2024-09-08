@@ -34,9 +34,6 @@
 #include "core/io/image.h"
 #include "core/io/resource.h"
 
-template <typename T>
-class TypedArray;
-
 class BitMap : public Resource {
 	GDCLASS(BitMap, Resource);
 	OBJ_SAVE_TYPE(BitMap);

@@ -37,8 +37,6 @@
 #include "core/object/gdvirtual.gen.inc"
 
 class PhysicsDirectSpaceState3D;
-template <typename T>
-class TypedArray;
 
 class PhysicsDirectBodyState3D : public Object {
 	GDCLASS(PhysicsDirectBodyState3D, Object);

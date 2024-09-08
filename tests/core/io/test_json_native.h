@@ -33,8 +33,6 @@
 
 #include "core/io/json.h"
 
-#include "core/variant/typed_array.h"
-#include "core/variant/typed_dictionary.h"
 #include "tests/test_macros.h"
 
 namespace TestJSONNative {

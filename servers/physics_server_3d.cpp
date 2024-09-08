@@ -33,7 +33,6 @@
 #include "physics_server_3d.h"
 
 #include "core/config/project_settings.h"
-#include "core/variant/typed_array.h"
 
 void PhysicsServer3DRenderingServerHandler::set_vertex(int p_vertex_id, const Vector3 &p_vertex) {
 	GDVIRTUAL_CALL(_set_vertex, p_vertex_id, p_vertex);
