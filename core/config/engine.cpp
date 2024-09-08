@@ -34,7 +34,6 @@
 #include "core/config/project_settings.h"
 #include "core/donors.gen.h"
 #include "core/license.gen.h"
-#include "core/variant/typed_array.h"
 #include "core/version.h"
 
 void Engine::set_physics_ticks_per_second(int p_ips) {

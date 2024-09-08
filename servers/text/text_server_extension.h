@@ -34,7 +34,6 @@
 #include "core/object/gdvirtual.gen.inc"
 #include "core/os/thread_safe.h"
 #include "core/variant/native_ptr.h"
-#include "core/variant/typed_array.h"
 #include "servers/text_server.h"
 
 class TextServerExtension : public TextServer {

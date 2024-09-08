@@ -38,7 +38,6 @@
 #include "core/os/os.h"
 #include "core/os/thread_safe.h"
 #include "core/variant/native_ptr.h"
-#include "core/variant/typed_array.h"
 
 class OpenXRExtensionWrapperExtension : public Object, public OpenXRExtensionWrapper, public OpenXRCompositionLayerProvider {
 	GDCLASS(OpenXRExtensionWrapperExtension, Object);

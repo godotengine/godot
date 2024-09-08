@@ -35,7 +35,6 @@
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
-#include "core/variant/typed_array.h"
 
 InputMap *InputMap::singleton = nullptr;
 

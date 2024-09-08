@@ -32,7 +32,6 @@
 
 #include "../gltf_template_convert.h"
 
-#include "core/variant/typed_array.h"
 #include "scene/resources/3d/skin.h"
 
 void GLTFSkin::_bind_methods() {

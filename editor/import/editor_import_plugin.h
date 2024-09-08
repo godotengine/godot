@@ -32,7 +32,6 @@
 #define EDITOR_IMPORT_PLUGIN_H
 
 #include "core/io/resource_importer.h"
-#include "core/variant/typed_array.h"
 
 class EditorImportPlugin : public ResourceImporter {
 	GDCLASS(EditorImportPlugin, ResourceImporter);
