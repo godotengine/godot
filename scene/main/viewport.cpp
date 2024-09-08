@@ -1931,21 +1931,19 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					}
 				}
 
-				// If the tooltip timer isn't running, start it.
-				// Otherwise, only reset the timer if the mouse has moved more than 5 pixels.
-				if (!is_tooltip_shown && over->can_process() &&
-						(gui.tooltip_timer.is_null() ||
-								Math::is_zero_approx(gui.tooltip_timer->get_time_left()) ||
-								mm->get_relative().length() > 5.0)) {
-					if (gui.tooltip_timer.is_valid()) {
-						gui.tooltip_timer->release_connections();
-						gui.tooltip_timer = Ref<SceneTreeTimer>();
+				// Reset the timer if the mouse has moved more than 5 pixels or has entered a new control.
+				if (!is_tooltip_shown && over->can_process()) {
+					Vector2 new_tooltip_pos = over->get_screen_transform().xform(pos);
+					if (over != gui.tooltip_control || gui.tooltip_pos.distance_squared_to(new_tooltip_pos) > 25) {
+						if (gui.tooltip_timer.is_valid()) {
+							gui.tooltip_timer->release_connections();
+						}
+						gui.tooltip_control = over;
+						gui.tooltip_pos = new_tooltip_pos;
+						gui.tooltip_timer = get_tree()->create_timer(gui.tooltip_delay);
+						gui.tooltip_timer->set_ignore_time_scale(true);
+						gui.tooltip_timer->connect("timeout", callable_mp(this, &Viewport::_gui_show_tooltip));
 					}
-					gui.tooltip_control = over;
-					gui.tooltip_pos = over->get_screen_transform().xform(pos);
-					gui.tooltip_timer = get_tree()->create_timer(gui.tooltip_delay);
-					gui.tooltip_timer->set_ignore_time_scale(true);
-					gui.tooltip_timer->connect("timeout", callable_mp(this, &Viewport::_gui_show_tooltip));
 				}
 			}
 
