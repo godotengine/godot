@@ -11,11 +11,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 #### 2D
 
-- Add option in VisibilityEnabler2D to hide the parent for better performance ([GH-63193](https://github.com/godotengine/godot/pull/63193)).
+- 2D physics interpolation ([GH-76252](https://github.com/godotengine/godot/pull/76252)).
+- 2D hierarchical culling ([GH-68738](https://github.com/godotengine/godot/pull/68738)).
 - Add Gradient resource preview generator ([GH-68990](https://github.com/godotengine/godot/pull/68990)).
 
 #### 3D
 
+- Tighter shadow culling ([GH-84745](https://github.com/godotengine/godot/pull/84745)).
+- Mesh merging ([GH-61568](https://github.com/godotengine/godot/pull/61568)).
+- Discrete level of detail ([GH-85437](https://github.com/godotengine/godot/pull/85437)).
+- ORM materials ([GH-76023](https://github.com/godotengine/godot/pull/76023)).
+- Vertex cache optimization ([GH-86339](https://github.com/godotengine/godot/pull/86339)).
 - Add rotation ability to material editor preview ([GH-49466](https://github.com/godotengine/godot/pull/49466)).
 - Automatically add root node when drag-and-dropping in 3D editor ([GH-55626](https://github.com/godotengine/godot/pull/55626)).
 - Add `TorusMesh` ([GH-64044](https://github.com/godotengine/godot/pull/64044)).
@@ -34,10 +40,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Add ability to pick random value from array ([GH-67444](https://github.com/godotengine/godot/pull/67444)).
 - Expose `OS.read_string_from_stdin()` to the scripting API ([GH-70378](https://github.com/godotengine/godot/pull/70378)).
 - Add Color + alpha constructor for Color ([GH-74973](https://github.com/godotengine/godot/pull/74973)).
+- Backport some multi-threading goodies ([GH-72251](https://github.com/godotengine/godot/pull/72251)).
 - Expose `determinant` in Transform2D ([GH-76323](https://github.com/godotengine/godot/pull/76323)).
 
 #### Editor
 
+- View selected mesh stats ([GH-88207](https://github.com/godotengine/godot/pull/88207)).
 - Add support for documenting most editor settings in the class reference ([GH-48548](https://github.com/godotengine/godot/pull/48548)).
 - Add vector value linking ([GH-59125](https://github.com/godotengine/godot/pull/59125)).
 - Backport locale selection improvements ([GH-61878](https://github.com/godotengine/godot/pull/61878)).
@@ -57,10 +65,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 #### GUI
 
 - Support multiline strings in buttons ([GH-41464](https://github.com/godotengine/godot/pull/41464)).
-- Add dumb theme item cache to `Control` ([GH-64314](https://github.com/godotengine/godot/pull/64314)).
 - Support AtlasTexture in radial modes of TextureProgress ([GH-68246](https://github.com/godotengine/godot/pull/68246)).
 - Add alignment options to flow container ([GH-68556](https://github.com/godotengine/godot/pull/68556)).
 - Add `allow_search` property to ItemList and Tree ([GH-76753](https://github.com/godotengine/godot/pull/76753)).
+- Add dumb theme item cache to `Control` ([GH-64314](https://github.com/godotengine/godot/pull/64314)).
+- Add tab Metadata to Tabs & TabContainer ([GH-75959](https://github.com/godotengine/godot/pull/75959)).
+- Backport video loop property and fix for initial black frame ([GH-77979](https://github.com/godotengine/godot/pull/77979)).
 
 #### Import
 
@@ -70,6 +80,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Expose more compression formats in Image ([GH-76016](https://github.com/godotengine/godot/pull/76016)).
 - Implement physics support in the GLTF module ([GH-76453](https://github.com/godotengine/godot/pull/76453)).
 - Add vertex color support to OBJ importer ([GH-76671](https://github.com/godotengine/godot/pull/76671)).
+- Implement loading DDS textures at run-time ([GH-69101](https://github.com/godotengine/godot/pull/69101)).
 
 #### Input
 
@@ -101,11 +112,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 #### Porting
 
 - Add benchmark logic ([GH-71875](https://github.com/godotengine/godot/pull/71875)).
+- Add `audio/general/text_to_speech` project setting to enable/disable TTS ([GH-77352](https://github.com/godotengine/godot/pull/77352)).
 - Android: Add cursor shape support ([GH-66945](https://github.com/godotengine/godot/pull/66945)).
 - Android: Implement file provider capabilities ([GH-72496](https://github.com/godotengine/godot/pull/72496)).
 - Android: Enable granular control of touchscreen related settings ([GH-73692](https://github.com/godotengine/godot/pull/73692)).
 - Android: Update the gradle build tasks to generate play store builds ([GH-74583](https://github.com/godotengine/godot/pull/74583)).
+- Android: Allow concurrent buffering and dispatch of input events ([GH-76400](https://github.com/godotengine/godot/pull/76400)).
 - iOS: Swift runtime support for iOS Plugins ([GH-49828](https://github.com/godotengine/godot/pull/49828)).
+- Android: Add Android editor setting to control the window used to run the project ([GH-77677](https://github.com/godotengine/godot/pull/77677)).
 - iOS: Add iOS UI Options ([GH-68189](https://github.com/godotengine/godot/pull/68189)).
 - iOS: Add ProMotion/High Refresh Rate support ([GH-68190](https://github.com/godotengine/godot/pull/68190)).
 - macOS: Simplify code signing options, add support for rcodesign tool for signing and notarization ([GH-66093](https://github.com/godotengine/godot/pull/66093)).
@@ -115,6 +129,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 #### Rendering
 
 - Batching: Add MultiRect command ([GH-68960](https://github.com/godotengine/godot/pull/68960)).
+- Backport additional spatial shader built-ins ([GH-63971](https://github.com/godotengine/godot/pull/63971)).
 
 #### Shaders
 
@@ -126,6 +141,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 #### 2D
 
 - Remove error condition from `get_global_transform()` ([GH-67710](https://github.com/godotengine/godot/pull/67710)).
+- Make autotiles fall back to the most similar bitmask ([GH-71533](https://github.com/godotengine/godot/pull/71533)).
 
 #### 3D
 
@@ -140,6 +156,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Optimize `AudioServer::_driver_process()` ([GH-63430](https://github.com/godotengine/godot/pull/63430)).
 - Fix MIDI note-on events being converted to note-off events ([GH-66003](https://github.com/godotengine/godot/pull/66003)).
+- PulseAudio: Remove `get_latency()` caching ([GH-80294](https://github.com/godotengine/godot/pull/80294)).
 
 #### Buildsystem
 
@@ -160,10 +177,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Rework scene creation dialog ([GH-62746](https://github.com/godotengine/godot/pull/62746)).
 - Use `FlowContainer` to handle toolbar overflow more gracefully ([GH-63250](https://github.com/godotengine/godot/pull/63250)).
 - Overhaul CLI argument forwarding to processes started by the editor ([GH-64375](https://github.com/godotengine/godot/pull/64375)).
+- Scene tree dock filter improvements ([GH-67347](https://github.com/godotengine/godot/pull/67347)).
+- Faster editor grid ([GH-92725](https://github.com/godotengine/godot/pull/92725)).
+
+#### GDScript
+
+- Improve parser speed for very long scripts ([GH-74782](https://github.com/godotengine/godot/pull/74782), [GH-74794](https://github.com/godotengine/godot/pull/74794)).
+
+#### GUI
+
+- GUI: RichTextLabel: Cache text property when toggling BBCode ([GH-77403](https://github.com/godotengine/godot/pull/77403)).
 
 #### Mono (C#)
 
 - Deprecate string extensions that will be removed in 4.x ([GH-69304](https://github.com/godotengine/godot/pull/69304)).
+- Print error when MethodBind call fails ([GH-79433](https://github.com/godotengine/godot/pull/79433)).
 
 #### Networking
 
@@ -200,11 +228,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+#### 2D
+
+- Fix AnimatedSprite normal map loading ([GH-80406](https://github.com/godotengine/godot/pull/80406)).
+- Fix viewport behaviour with physics interpolation ([GH-92152](https://github.com/godotengine/godot/pull/92152)).
+
+#### 3D
+
+- Fix OccluderPolyShape handles disappear after release click ([GH-79947](https://github.com/godotengine/godot/pull/79947)).
+- Fix `merge_meshes()` functionality ([GH-92105](https://github.com/godotengine/godot/pull/92105)).
+
 #### Animation
 
 - Create reset tracks with the right update mode ([GH-63119](https://github.com/godotengine/godot/pull/63119)).
 - Don't store frame of playing AnimatedSprite ([GH-66155](https://github.com/godotengine/godot/pull/66155)).
 - Fix animation signal `caches_cleared` firing timing ([GH-69474](https://github.com/godotengine/godot/pull/69474)).
+
+#### Audio
+
+- Audio: Fix trim when importing WAV ([GH-78048](https://github.com/godotengine/godot/pull/78048)).
 
 #### Core
 
@@ -215,6 +257,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix size error in `BitMap.opaque_to_polygons` ([GH-76544](https://github.com/godotengine/godot/pull/76544)).
 - Fix rendering tiles using nested AtlasTextures ([GH-76703](https://github.com/godotengine/godot/pull/76703)).
 - Make acos and asin safe ([GH-76902](https://github.com/godotengine/godot/pull/76902)).
+- Fix overwriting of Spatial's local transform ([GH-78439](https://github.com/godotengine/godot/pull/78439)).
+- Fix physics tick counter ([GH-92941](https://github.com/godotengine/godot/pull/92941)).
+- Fix pausing behaviour with physics interpolation ([GH-93382](https://github.com/godotengine/godot/pull/93382))
 
 #### GDScript
 
@@ -235,15 +280,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Improve font glyph cache packing and texture update ([GH-67626](https://github.com/godotengine/godot/pull/67626)).
 - Fix `GridContainer` max row/column calculations not skipping hidden children ([GH-76833](https://github.com/godotengine/godot/pull/76833)).
 - Stop dragging when Slider changes editability ([GH-77245](https://github.com/godotengine/godot/pull/77245)).
+- Fix `PopupMenu`'s automatic max height ([GH-77691](https://github.com/godotengine/godot/pull/77691)).
 
 #### Import
 
 - glTF import external images correctly ([GH-66889](https://github.com/godotengine/godot/pull/66889)).
+- Bounds fixes in `TextureAtlas` import ([GH-77428](https://github.com/godotengine/godot/pull/77428)).
 
 #### Input
 
 - Fix mouse speed not changing fast enough ([GH-56765](https://github.com/godotengine/godot/pull/56765)).
 - Fix `InputEventAction`'s `is_match` method ignoring `exact_match` parameter ([GH-63109](https://github.com/godotengine/godot/pull/63109)).
+- Fix just pressed and released with short presses ([GH-77040](https://github.com/godotengine/godot/pull/77040)).
+- Prevent double input events on gamepad when running through steam input ([GH-79706](https://github.com/godotengine/godot/pull/79706)).
 
 #### Mono (C#)
 
@@ -263,6 +312,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Android: Fix input ANR in the Godot Android editor ([GH-76981](https://github.com/godotengine/godot/pull/76981)).
 - Linux: Fix MIDI input with ALSA ([GH-54309](https://github.com/godotengine/godot/pull/54309)).
 - Linux: Don't use udev for joypad hotloading when running in a sandbox ([GH-76961](https://github.com/godotengine/godot/pull/76961)).
+- Windows: Fix `ProjectSettings::localize_path` for Windows paths ([GH-80072](https://github.com/godotengine/godot/pull/80072)).
 
 #### Physics
 
@@ -281,6 +331,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix shadows when using 2 directional lights ([GH-74539](https://github.com/godotengine/godot/pull/74539)).
 - Fixed whitescreen issue in GLES2 glow setting ([GH-74953](https://github.com/godotengine/godot/pull/74953)).
 - Fix Polygon2D skinned bounds (for culling) ([GH-75612](https://github.com/godotengine/godot/pull/75612)).
+- Fix scene shader regression ([GH-92070](https://github.com/godotengine/godot/pull/92070))
+- Fix 2D skinning with physics interpolation ([GH-93309](https://github.com/godotengine/godot/pull/93309))
+- Fix `NODE_POSITION_VIEW` shader built-in ([GH-76226](https://github.com/godotengine/godot/pull/76226)).
 
 #### XR
 
