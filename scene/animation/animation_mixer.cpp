@@ -1635,17 +1635,16 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 							t->audio_stream_playback = t_obj->call(SNAME("get_stream_playback"));
 						}
 
-						if (t_obj->call(SNAME("get_is_sample"))) {
-							Ref<AudioSamplePlayback> sample_playback;
-							sample_playback.instantiate();
-							sample_playback->stream = stream;
-							t->audio_stream_playback->set_sample_playback(sample_playback);
-							AudioServer::get_singleton()->start_sample_playback(sample_playback);
-							continue;
-						}
-
 						PlayingAudioStreamInfo pasi;
-						pasi.index = t->audio_stream_playback->play_stream(stream, start_ofs, 0, 1.0, t->playback_type, t->bus);
+						float volume_db = 0.0f;
+						if (t_obj->call("get_volume_db").is_num()) {
+							volume_db = t_obj->call("get_volume_db");
+						}
+						float pitch_scale = 1.0f;
+						if (t_obj->call("get_pitch_scale").is_num()) {
+							pitch_scale = t_obj->call("get_pitch_scale");
+						}
+						pasi.index = t->audio_stream_playback->play_stream(stream, start_ofs, volume_db, pitch_scale, t->playback_type, t->bus);
 						pasi.start = time;
 						if (len && Animation::is_greater_approx(end_ofs, 0)) { // Force an end at a time.
 							pasi.len = len - start_ofs - end_ofs;
