@@ -5384,7 +5384,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	main_menu_hbox->add_child(pivot_button);
 	pivot_button->set_toggle_mode(true);
 	pivot_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_EDIT_PIVOT));
-	pivot_button->set_tooltip_text(TTR("Click to change object's rotation pivot.") + "\n" + TTR("Shift: Set temporary rotation pivot.") + "\n" + TTR("Click this button while holding Shift to put the rotation pivot in the center of the selected nodes."));
+	pivot_button->set_tooltip_text(TTR("Click to change object's rotation pivot.") + "\n" + TTR("Shift: Set temporary rotation pivot.") + "\n" + TTR("Click this button while holding Shift to put the temporary rotation pivot in the center of the selected nodes."));
 
 	pan_button = memnew(Button);
 	pan_button->set_theme_type_variation("FlatButton");
