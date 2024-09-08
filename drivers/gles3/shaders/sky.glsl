@@ -69,6 +69,8 @@ layout(std140) uniform DirectionalLights { //ubo:4
 }
 directional_lights;
 
+#STRUCTS
+
 /* clang-format off */
 
 #ifdef MATERIAL_UNIFORMS_USED

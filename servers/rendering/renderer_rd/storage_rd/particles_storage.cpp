@@ -1695,7 +1695,7 @@ void ParticlesStorage::ParticlesShaderData::set_code(const String &p_code) {
 		}
 	}
 
-	particles_storage->particles_shader.shader.version_set_compute_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_COMPUTE], gen_code.defines);
+	particles_storage->particles_shader.shader.version_set_compute_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_structs[ShaderCompiler::STAGE_COMPUTE], gen_code.stage_globals[ShaderCompiler::STAGE_COMPUTE], gen_code.defines);
 	ERR_FAIL_COND(!particles_storage->particles_shader.shader.version_is_valid(version));
 
 	ubo_size = gen_code.uniform_total_size;

@@ -106,6 +106,8 @@ layout(location = 5) mediump out vec3 tangent_interp;
 layout(location = 6) mediump out vec3 binormal_interp;
 #endif
 
+#STRUCTS
+
 #ifdef MATERIAL_UNIFORMS_USED
 layout(set = MATERIAL_UNIFORM_SET, binding = 0, std140) uniform MaterialUniforms{
 
@@ -669,6 +671,8 @@ ivec2 multiview_uv(ivec2 uv) {
 //both required for transmittance to be enabled
 #define LIGHT_TRANSMITTANCE_USED
 #endif
+
+#STRUCTS
 
 #ifdef MATERIAL_UNIFORMS_USED
 layout(set = MATERIAL_UNIFORM_SET, binding = 0, std140) uniform MaterialUniforms{
