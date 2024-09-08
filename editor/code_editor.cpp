@@ -1126,9 +1126,15 @@ void CodeTextEditor::remove_find_replace_bar() {
 
 void CodeTextEditor::trim_trailing_whitespace() {
 	bool trimmed_whitespace = false;
+	Vector<int> lines_with_carets;
+
+	for (int j = 0; j < text_editor->get_caret_count(); j++) {
+		lines_with_carets.push_back(text_editor->get_caret_line(j));
+	}
+
 	for (int i = 0; i < text_editor->get_line_count(); i++) {
 		String line = text_editor->get_line(i);
-		if (line.ends_with(" ") || line.ends_with("\t")) {
+		if ((line.ends_with(" ") || line.ends_with("\t")) && !lines_with_carets.has(i)) {
 			if (!trimmed_whitespace) {
 				text_editor->begin_complex_operation();
 				trimmed_whitespace = true;
