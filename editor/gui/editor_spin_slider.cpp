@@ -636,7 +636,7 @@ void EditorSpinSlider::_grabber_mouse_exited() {
 
 void EditorSpinSlider::set_read_only(bool p_enable) {
 	read_only = p_enable;
-	if (read_only && value_input) {
+	if (read_only && value_input && value_input->is_inside_tree()) {
 		value_input->release_focus();
 	}
 
