@@ -681,7 +681,7 @@ uint64_t AnimationTree::get_last_process_pass() const {
 }
 
 PackedStringArray AnimationTree::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = AnimationMixer::get_configuration_warnings();
 	if (!root_animation_node.is_valid()) {
 		warnings.push_back(RTR("No root AnimationNode for the graph is set."));
 	}

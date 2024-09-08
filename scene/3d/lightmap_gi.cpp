@@ -1600,7 +1600,7 @@ Ref<CameraAttributes> LightmapGI::get_camera_attributes() const {
 }
 
 PackedStringArray LightmapGI::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
 
 	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
 		warnings.push_back(RTR("Lightmap can only be baked from a device that supports the RD backends. Lightmap baking may fail."));
