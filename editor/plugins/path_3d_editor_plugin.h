@@ -162,13 +162,12 @@ class Path3DEditorPlugin : public EditorPlugin {
 	};
 
 protected:
-	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
 	Path3D *get_edited_path() { return path; }
 
-	static Path3DEditorPlugin *singleton;
+	inline static Path3DEditorPlugin *singleton = nullptr;
 	virtual EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override;
 
 	virtual String get_name() const override { return "Path3D"; }
@@ -183,7 +182,6 @@ public:
 	void set_handle_clicked(bool clicked) { handle_clicked = clicked; }
 
 	Path3DEditorPlugin();
-	~Path3DEditorPlugin();
 };
 
 #endif // PATH_3D_EDITOR_PLUGIN_H

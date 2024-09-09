@@ -992,6 +992,10 @@ class Godot(private val context: Context) {
 	 */
 	@Keep
 	private fun hasFeature(feature: String): Boolean {
+		if (primaryHost?.supportsFeature(feature) ?: false) {
+			return true;
+		}
+
 		for (plugin in pluginRegistry.allPlugins) {
 			if (plugin.supportsFeature(feature)) {
 				return true

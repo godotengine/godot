@@ -173,12 +173,12 @@ int AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale, 
 		}
 
 		float mu2 = mu * mu;
-		AudioFrame a0 = 3 * y1 - 3 * y2 + y3 - y0;
-		AudioFrame a1 = 2 * y0 - 5 * y1 + 4 * y2 - y3;
-		AudioFrame a2 = y2 - y0;
-		AudioFrame a3 = 2 * y1;
+		float h11 = mu2 * (mu - 1);
+		float z = mu2 - h11;
+		float h01 = z - h11;
+		float h10 = mu - z;
 
-		p_buffer[i] = (a0 * mu * mu2 + a1 * mu2 + a2 * mu + a3) / 2;
+		p_buffer[i] = y1 + (y2 - y1) * h01 + ((y2 - y0) * h10 + (y3 - y1) * h11) * 0.5;
 
 		mix_offset += mix_increment;
 

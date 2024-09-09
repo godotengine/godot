@@ -288,7 +288,7 @@ void PathFollow2D::_validate_property(PropertyInfo &p_property) const {
 }
 
 PackedStringArray PathFollow2D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
 
 	if (is_visible_in_tree() && is_inside_tree()) {
 		if (!Object::cast_to<Path2D>(get_parent())) {

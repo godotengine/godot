@@ -48,6 +48,7 @@ class AudioSamplePlayback : public RefCounted {
 
 public:
 	Ref<AudioStream> stream;
+	Ref<AudioStreamPlayback> stream_playback;
 
 	float offset = 0.0f;
 	float pitch_scale = 1.0;
