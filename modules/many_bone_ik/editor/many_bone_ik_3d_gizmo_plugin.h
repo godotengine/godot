@@ -33,18 +33,11 @@
 
 #include "../src/ik_bone_3d.h"
 #include "../src/many_bone_ik_3d.h"
-#include "many_bone_ik_shader.h"
 
-#include "core/templates/hash_map.h"
-#include "core/templates/local_vector.h"
 #include "editor/editor_inspector.h"
-#include "editor/editor_node.h"
-#include "editor/editor_properties.h"
 #include "editor/editor_settings.h"
-#include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/plugins/skeleton_3d_editor_plugin.h"
 #include "scene/3d/camera_3d.h"
-#include "scene/3d/label_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
@@ -82,7 +75,6 @@ public:
 	bool has_gizmo(Node3D *p_spatial) override;
 	String get_gizmo_name() const override;
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
-	ManyBoneIK3DGizmoPlugin();
 	int32_t get_priority() const override;
 	void create_gizmo_mesh(BoneId current_bone_idx, Ref<IKBone3D> ik_bone, EditorNode3DGizmo *p_gizmo, Color current_bone_color, Skeleton3D *many_bone_ik_skeleton, ManyBoneIK3D *p_many_bone_ik);
 	int subgizmos_intersect_ray(const EditorNode3DGizmo *p_gizmo, Camera3D *p_camera, const Vector2 &p_point) const override;

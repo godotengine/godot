@@ -28,26 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "core/io/resource_saver.h"
 #include "core/math/transform_3d.h"
 #include "core/templates/local_vector.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
-#include "editor/editor_properties.h"
-#include "editor/plugins/animation_player_editor_plugin.h"
+#include "editor/many_bone_ik_shader.h"
 #include "editor/plugins/node_3d_editor_gizmos.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
-#include "scene/3d/label_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/physics/collision_shape_3d.h"
-#include "scene/3d/physics/joints/joint_3d.h"
-#include "scene/3d/physics/physics_body_3d.h"
 #include "scene/3d/skeleton_3d.h"
-#include "scene/resources/3d/capsule_shape_3d.h"
-#include "scene/resources/3d/primitive_meshes.h"
-#include "scene/resources/3d/sphere_shape_3d.h"
 #include "scene/resources/surface_tool.h"
-#include "scene/scene_string_names.h"
 
 #include "../src/ik_bone_3d.h"
 #include "../src/ik_kusudama_3d.h"
@@ -269,10 +259,6 @@ void ManyBoneIK3DGizmoPlugin::create_gizmo_mesh(BoneId current_bone_idx, Ref<IKB
 	p_gizmo->add_mesh(
 			surface_tool->commit(Ref<Mesh>(), RS::ARRAY_CUSTOM_RGBA_HALF << RS::ARRAY_FORMAT_CUSTOM0_SHIFT),
 			kusudama_material, constraint_relative_to_the_skeleton);
-}
-
-ManyBoneIK3DGizmoPlugin::ManyBoneIK3DGizmoPlugin() {
-	kusudama_shader->set_code(MANY_BONE_IKKUSUDAMA_SHADER);
 }
 
 int32_t ManyBoneIK3DGizmoPlugin::get_priority() const {
@@ -525,6 +511,7 @@ void ManyBoneIK3DGizmoPlugin::_hide_handles() {
 void ManyBoneIK3DGizmoPlugin::_notifications(int32_t p_what) {
 	switch (p_what) {
 		case EditorNode3DGizmoPlugin::NOTIFICATION_POSTINITIALIZE: {
+			kusudama_shader->set_code(MANY_BONE_IKKUSUDAMA_SHADER);
 			handle_material = Ref<ShaderMaterial>(memnew(ShaderMaterial));
 			handle_shader = Ref<Shader>(memnew(Shader));
 			handle_shader->set_code(R"(
