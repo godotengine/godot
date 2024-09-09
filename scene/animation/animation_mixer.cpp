@@ -1636,6 +1636,9 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						}
 
 						if (t_obj->call(SNAME("get_is_sample"))) {
+							if (t->audio_stream_playback->get_sample_playback().is_valid()) {
+								AudioServer::get_singleton()->stop_sample_playback(t->audio_stream_playback->get_sample_playback());
+							}
 							Ref<AudioSamplePlayback> sample_playback;
 							sample_playback.instantiate();
 							sample_playback->stream = stream;

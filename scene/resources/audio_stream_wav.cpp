@@ -475,6 +475,9 @@ Ref<AudioSamplePlayback> AudioStreamPlaybackWAV::get_sample_playback() const {
 
 void AudioStreamPlaybackWAV::set_sample_playback(const Ref<AudioSamplePlayback> &p_playback) {
 	sample_playback = p_playback;
+	if (sample_playback.is_valid()) {
+		sample_playback->stream_playback = Ref<AudioStreamPlayback>(this);
+	}
 }
 
 AudioStreamPlaybackWAV::AudioStreamPlaybackWAV() {}
