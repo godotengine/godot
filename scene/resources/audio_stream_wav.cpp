@@ -297,7 +297,7 @@ int AudioStreamPlaybackWAV::mix(AudioFrame *p_buffer, float p_rate_scale, int p_
 	int64_t loop_end_fp = ((int64_t)base->loop_end << MIX_FRAC_BITS);
 	int64_t length_fp = ((int64_t)len << MIX_FRAC_BITS);
 	int64_t begin_limit = (base->loop_mode != AudioStreamWAV::LOOP_DISABLED) ? loop_begin_fp : 0;
-	int64_t end_limit = (base->loop_mode != AudioStreamWAV::LOOP_DISABLED) ? loop_end_fp : length_fp;
+	int64_t end_limit = (base->loop_mode != AudioStreamWAV::LOOP_DISABLED) ? loop_end_fp : length_fp - MIX_FRAC_LEN;
 	bool is_stereo = base->stereo;
 
 	int32_t todo = p_frames;
