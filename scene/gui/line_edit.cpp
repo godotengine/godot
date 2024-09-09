@@ -943,6 +943,8 @@ void LineEdit::_notification(int p_what) {
 			const Glyph *glyphs = TS->shaped_text_get_glyphs(text_rid);
 			int gl_size = TS->shaped_text_get_glyph_count(text_rid);
 
+			Dictionary color_map = handle_color_map();
+
 			// Draw text.
 			ofs.y += TS->shaped_text_get_ascent(text_rid);
 			Color font_outline_color = theme_cache.font_outline_color;
@@ -963,14 +965,16 @@ void LineEdit::_notification(int p_what) {
 					}
 				}
 			}
+			Color curr_color = font_color;
 			for (int i = 0; i < gl_size; i++) {
+				if (color_map.has(i)) curr_color = color_map[i];
 				bool selected = selection.enabled && glyphs[i].start >= selection.begin && glyphs[i].end <= selection.end;
 				for (int j = 0; j < glyphs[i].repeat; j++) {
 					if (ceil(ofs.x) >= x_ofs && (ofs.x + glyphs[i].advance) <= ofs_max) {
 						if (glyphs[i].font_rid != RID()) {
-							TS->font_draw_glyph(glyphs[i].font_rid, ci, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, selected ? font_selected_color : font_color);
+							TS->font_draw_glyph(glyphs[i].font_rid, ci, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, selected ? font_selected_color : curr_color);
 						} else if (((glyphs[i].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) && ((glyphs[i].flags & TextServer::GRAPHEME_IS_EMBEDDED_OBJECT) != TextServer::GRAPHEME_IS_EMBEDDED_OBJECT)) {
-							TS->draw_hex_code_box(ci, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, selected ? font_selected_color : font_color);
+							TS->draw_hex_code_box(ci, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, selected ? font_selected_color : curr_color);
 						}
 					}
 					ofs.x += glyphs[i].advance;
@@ -2538,6 +2542,46 @@ void LineEdit::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
+Dictionary LineEdit::handle_color_map() {
+	Dictionary color_map;
+
+	if (!GDVIRTUAL_CALL(_handle_color_map,  color_map)) {
+		color_map = _handle_color_map_impl();
+	}
+
+	return color_map;
+}
+
+void LineEdit::remove_undo_stack(int amount){
+	if (!editable) {
+		return;
+	}
+	// deselect();
+
+	for (int i = 0;i < amount;i++){
+		if (undo_stack_pos == nullptr) {
+			if (undo_stack.size() <= 1) {
+				return;
+			}
+			undo_stack_pos = undo_stack.back();
+		} else if (undo_stack_pos == undo_stack.front()) {
+			return;
+		}
+
+		undo_stack_pos = undo_stack_pos->prev();
+	}
+
+
+// 	TextOperation op = undo_stack_pos->get();
+// 	text = op.text;
+// 	scroll_offset = op.scroll_offset;
+//
+// 	_shape();
+// 	set_caret_column(op.caret_column);
+//
+// 	_emit_text_change();
+}
+
 void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_horizontal_alignment", "alignment"), &LineEdit::set_horizontal_alignment);
 	ClassDB::bind_method(D_METHOD("get_horizontal_alignment"), &LineEdit::get_horizontal_alignment);
@@ -2618,6 +2662,10 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_flat"), &LineEdit::is_flat);
 	ClassDB::bind_method(D_METHOD("set_select_all_on_focus", "enabled"), &LineEdit::set_select_all_on_focus);
 	ClassDB::bind_method(D_METHOD("is_select_all_on_focus"), &LineEdit::is_select_all_on_focus);
+
+	ClassDB::bind_method(D_METHOD("handle_color_map"), &LineEdit::handle_color_map);
+	ClassDB::bind_method(D_METHOD("remove_undo_stack"), &LineEdit::remove_undo_stack);
+	GDVIRTUAL_BIND(_handle_color_map)
 
 	ADD_SIGNAL(MethodInfo("text_changed", PropertyInfo(Variant::STRING, "new_text")));
 	ADD_SIGNAL(MethodInfo("text_change_rejected", PropertyInfo(Variant::STRING, "rejected_substring")));

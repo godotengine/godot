@@ -498,7 +498,10 @@ private:
 
 	int wrap_at_column = 0;
 	int wrap_right_offset = 10;
-
+	
+	//custom version was using 0 base, but probably best not change this
+	//int wrap_right_offset = 0;
+	
 	void _update_wrap_at_column(bool p_force = false);
 
 	/* Viewport. */
@@ -965,6 +968,10 @@ public:
 
 	/* Viewport. */
 	// Scrolling.
+
+	void set_wrap_right_offset(const int value);
+	int get_wrap_right_offset() const;
+
 	void set_smooth_scroll_enabled(const bool p_enabled);
 	bool is_smooth_scroll_enabled() const;
 

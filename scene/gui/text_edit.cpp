@@ -6841,6 +6841,9 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_menu_visible"), &TextEdit::is_menu_visible);
 	ClassDB::bind_method(D_METHOD("menu_option", "option"), &TextEdit::menu_option);
 
+	ClassDB::bind_method(D_METHOD("set_wrap_right_offset", "wrap_right_offset"), &TextEdit::set_wrap_right_offset);
+	ClassDB::bind_method(D_METHOD("get_wrap_right_offset"), &TextEdit::get_wrap_right_offset);
+
 	/* Deprecated */
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("adjust_carets_after_edit", "caret", "from_line", "from_col", "to_line", "to_col"), &TextEdit::adjust_carets_after_edit);
@@ -6850,6 +6853,8 @@ void TextEdit::_bind_methods() {
 #endif
 
 	/* Inspector */
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "wrap_right_offset"), "set_wrap_right_offset", "get_wrap_right_offset");
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "placeholder_text", PROPERTY_HINT_MULTILINE_TEXT), "set_placeholder", "get_placeholder");
 
