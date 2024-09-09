@@ -666,7 +666,7 @@ def get_ar_version(env):
         print_warning("Couldn't check version of `ar`.")
         return ret
 
-    match = re.search(r"GNU ar \(GNU Binutils\) (\d+)\.(\d+)(:?\.(\d+))?", output)
+    match = re.search(r"GNU ar \(GNU Binutils\) (\d+)\.(\d+)(?:\.(\d+))?", output)
     if match:
         ret["major"] = int(match[1])
         ret["minor"] = int(match[2])
