@@ -602,7 +602,6 @@ DBusHandlerResult FreeDesktopPortalDesktop::_handle_message(DBusConnection *conn
 
 			if (name_space == "org.freedesktop.appearance" && key == "color-scheme") {
 				callable_mp(portal, &FreeDesktopPortalDesktop::_system_theme_changed_callback).call_deferred();
-				dbus_message_unref(message);
 				return DBUS_HANDLER_RESULT_HANDLED;
 			}
 		}
@@ -647,8 +646,6 @@ DBusHandlerResult FreeDesktopPortalDesktop::_handle_message(DBusConnection *conn
 				break;
 			}
 		}
-
-		dbus_message_unref(message);
 		return DBUS_HANDLER_RESULT_HANDLED;
 	}
 
