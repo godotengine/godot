@@ -207,6 +207,7 @@ bool DisplayServerWayland::has_feature(Feature p_feature) const {
 		case FEATURE_WINDOW_TRANSPARENCY:
 		case FEATURE_HIDPI:
 		case FEATURE_SWAP_BUFFERS:
+		case FEATURE_STATUS_INDICATOR:
 		case FEATURE_KEEP_SCREEN_ON:
 		case FEATURE_IME:
 		case FEATURE_CLIPBOARD_PRIMARY: {

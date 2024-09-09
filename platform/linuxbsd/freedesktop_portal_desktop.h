@@ -33,9 +33,9 @@
 
 #ifdef DBUS_ENABLED
 
-#include "core/io/image.h"
 #include "core/os/thread.h"
 #include "core/os/thread_safe.h"
+#include "scene/resources/texture.h"
 #include "servers/display_server.h"
 
 #ifdef SOWRAP_ENABLED
@@ -68,7 +68,6 @@ private:
 		bool opt_in_cb = false;
 	};
 
-	
 	struct FileDialogCallback {
 		Callable callback;
 		Variant status;
@@ -156,8 +155,8 @@ public:
 	}
 
 	bool indicator_register(DisplayServer::IndicatorID p_id);
-	bool indicator_create(DisplayServer::IndicatorID p_id, const Ref<Image> &p_icon);
-	Error indicator_set_icon(DisplayServer::IndicatorID p_id, const Ref<Image> &p_icon);
+	bool indicator_create(DisplayServer::IndicatorID p_id, const Ref<Texture2D> &p_icon);
+	Error indicator_set_icon(DisplayServer::IndicatorID p_id, const Ref<Texture2D> &p_icon);
 	void indicator_set_tooltip(DisplayServer::IndicatorID p_id, const String &p_tooltip);
 	void indicator_set_callback(DisplayServer::IndicatorID p_id, const Callable &p_callback);
 	void indicator_destroy(DisplayServer::IndicatorID p_id);

@@ -948,7 +948,7 @@ bool FreeDesktopPortalDesktop::indicator_register(DisplayServer::IndicatorID p_i
 	return true;
 }
 
-bool FreeDesktopPortalDesktop::indicator_create(DisplayServer::IndicatorID p_id, const Ref<Image> &p_icon) {
+bool FreeDesktopPortalDesktop::indicator_create(DisplayServer::IndicatorID p_id, const Ref<Texture2D> &p_icon) {
 	MutexLock mutex_lock(dbus_mutex);
 
 	ERR_FAIL_COND_V(indicators.has(p_id), false);
@@ -992,7 +992,7 @@ bool FreeDesktopPortalDesktop::indicator_create(DisplayServer::IndicatorID p_id,
 	return true;
 }
 
-Error FreeDesktopPortalDesktop::indicator_set_icon(DisplayServer::IndicatorID p_id, const Ref<Image> &p_icon) {
+Error FreeDesktopPortalDesktop::indicator_set_icon(DisplayServer::IndicatorID p_id, const Ref<Texture2D> &p_icon) {
 	MutexLock mutex_lock(dbus_mutex);
 
 	ERR_FAIL_COND_V(!indicators.has(p_id), ERR_UNCONFIGURED);
@@ -1001,9 +1001,9 @@ Error FreeDesktopPortalDesktop::indicator_set_icon(DisplayServer::IndicatorID p_
 	ERR_FAIL_COND_V(p_icon.is_null(), FAILED);
 
 	// We'll have to manipulate the icon a bit.
-	Ref<Image> image = p_icon->duplicate(true);
+	Ref<Image> image = p_icon->get_image();
 
-	if (p_icon->is_compressed()) {
+	if (image->is_compressed()) {
 		Error err = image->decompress();
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Couldn't decompress VRAM-compressed status-icon. Switch to a lossless compression mode in the Import dock.");
 	}
