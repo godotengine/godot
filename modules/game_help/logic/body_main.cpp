@@ -1,6 +1,7 @@
 #include "body_main.h"
 #include "data_table_manager.h"
 #include "scene/3d/path_3d.h"
+#include "scene/resources/3d/capsule_shape_3d.h"
 #include "character_ai/character_ai.h"
 #include "character_manager.h"
 #include "core/io/file_access.h"
@@ -24,6 +25,20 @@ void CharacterBodyMain::init()
     }
     animator->set_body(this);
     animator->init();
+
+    // 创建外形
+    if(mainShape.is_null())
+    {
+        mainShape.instantiate();
+        Ref<CapsuleShape3D> shape;
+        shape.instantiate();
+        shape->set_radius(0.5f);
+        shape->set_height(2.0f);
+
+        mainShape->set_shape(shape);
+		mainShape->set_position(Vector3(0, 1, 0));
+        mainShape->set_link_target(this);        
+    }
 }
 void CharacterBodyMain::clear_all()
 {

@@ -8,14 +8,6 @@
 
 void CharacterAnimationItem::bind_methods()
 {
-    ClassDB::bind_method(D_METHOD("set_animation_name", "animation_name"), &CharacterAnimationItem::set_animation_name);
-    ClassDB::bind_method(D_METHOD("get_animation_name"), &CharacterAnimationItem::get_animation_name);
-
-    ClassDB::bind_method(D_METHOD("set_animation_path", "animation_path"), &CharacterAnimationItem::set_animation_path);
-    ClassDB::bind_method(D_METHOD("get_animation_path"), &CharacterAnimationItem::get_animation_path);
-
-    ClassDB::bind_method(D_METHOD("set_bone_map_path", "bone_map_path"), &CharacterAnimationItem::set_bone_map_path);
-    ClassDB::bind_method(D_METHOD("get_bone_map_path"), &CharacterAnimationItem::get_bone_map_path);
 
     ClassDB::bind_method(D_METHOD("set_speed", "speed"), &CharacterAnimationItem::set_speed);
     ClassDB::bind_method(D_METHOD("get_speed"), &CharacterAnimationItem::get_speed);
@@ -27,9 +19,6 @@ void CharacterAnimationItem::bind_methods()
     ClassDB::bind_method(D_METHOD("get_child_node"), &CharacterAnimationItem::get_child_node);
 
 
-    ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "animation_name"), "set_animation_name", "get_animation_name");
-    ADD_PROPERTY(PropertyInfo(Variant::STRING, "animation_path"), "set_animation_path", "get_animation_path");
-    ADD_PROPERTY(PropertyInfo(Variant::STRING, "bone_map_path"), "set_bone_map_path", "get_bone_map_path");
     ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed"), "set_speed", "get_speed");
     ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_clip"), "set_is_clip", "get_is_clip");
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "child_node"), "set_child_node", "get_child_node");
@@ -43,28 +32,6 @@ Ref<CharacterAnimatorNodeBase> CharacterAnimationItem::get_child_node()
 {
         return child_node; 
 }
-Ref<Animation> CharacterAnimationItem::get_animation()
-{
-    if(animation.is_null())
-    {
-        if(FileAccess::exists(animation_path))
-        {
-            animation = ResourceLoader::load(animation_path);
-        }
-    }
-    return animation;
-}
-Ref<CharacterBoneMap> CharacterAnimationItem::get_bone_map()
-{
-    if(bone_map.is_null())
-    {
-        if(FileAccess::exists(bone_map_path))
-        {
-            bone_map = ResourceLoader::load(bone_map_path);
-        }
-    }
-    return bone_map;
-}
 
 void CharacterAnimationItem::_init()
 {
@@ -72,17 +39,9 @@ void CharacterAnimationItem::_init()
     {
         return;
     }
-    if(is_clip)
-    {
-        if(FileAccess::exists(animation_path))
-        {
-        animation = ResourceLoader::load(animation_path);
-        }
-        if(FileAccess::exists(bone_map_path))
-        {
-            bone_map = ResourceLoader::load(bone_map_path);
-        }
-    }
+	if (is_clip)
+	{
+	}
     else
     {
         if(child_node.is_valid())
@@ -200,20 +159,13 @@ void CharacterAnimatorNodeBase::_blend_anmation(CharacterAnimatorLayer *p_layer,
 				}
 			
                 Ref<Animation> animation = item->get_animation();
-                if(animation.is_valid())
+                Ref<CharacterBoneMap> bone_map = item->animation->get_bone_map();
+                Dictionary bp;
+                if(bone_map.is_valid())
                 {
-                    Ref<CharacterBoneMap> bone_map = item->animation->get_bone_map();
-                    Dictionary bp;
-                    if(bone_map.is_valid())
-                    {
-                        bp = bone_map->bone_map;
-                    }
-                    p_layer->make_animation_instance_anim(item->animation, p_playback_info_ptr[i],bp);
+                    bp = bone_map->bone_map;
                 }
-                else
-                {
-                    p_layer->make_animation_instance(item->animation_name, p_playback_info_ptr[i]);                    
-                }
+                p_layer->make_animation_instance_anim(item->animation, p_playback_info_ptr[i],bp);
             }
             else if(item->child_node.is_valid())
             {
@@ -724,20 +676,13 @@ void CharacterAnimatorLoopLast::process_animation(class CharacterAnimatorLayer *
                 
             if(item->is_clip){
                 Ref<Animation> animation = item->get_animation();
-                if(animation.is_valid())
+                Ref<CharacterBoneMap> bone_map = item->animation->get_bone_map();
+                Dictionary bp;
+                if(bone_map.is_valid())
                 {
-                    Ref<CharacterBoneMap> bone_map = item->animation->get_bone_map();
-                    Dictionary bp;
-                    if(bone_map.is_valid())
-                    {
-                        bp = bone_map->bone_map;
-                    }
-                    p_layer->make_animation_instance_anim(item->animation, playback_info,bp);
+                    bp = bone_map->bone_map;
                 }
-                else
-                {
-                    p_layer->make_animation_instance(item->animation_name, playback_info);
-                }
+                p_layer->make_animation_instance_anim(item->animation, playback_info,bp);
             }
             else if(item->child_node.is_valid())
             {

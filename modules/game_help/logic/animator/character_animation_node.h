@@ -42,17 +42,6 @@ class CharacterAnimationItem : public Resource
     static void bind_methods();
 
 public:
-    void set_animation_name(const String& p_animation_name) { animation_name = p_animation_name; }
-    String get_animation_name() { return animation_name; }
-
-
-
-    void set_animation_path(const String& p_animation_path) { animation_path = p_animation_path; }
-    String get_animation_path() { return animation_path; }
-
-
-    void set_bone_map_path(const String& p_bone_map_path) { bone_map_path = p_bone_map_path; }
-    String get_bone_map_path() { return bone_map_path; }
 
     void set_speed(double p_speed) { speed = p_speed; }
     double get_speed() { return speed; }
@@ -64,20 +53,16 @@ public:
     Ref<class CharacterAnimatorNodeBase> get_child_node();
 
     void set_animation(Ref<Animation> p_animation) { animation = p_animation; }
-    Ref<Animation> get_animation();
-    Ref<CharacterBoneMap> get_bone_map();
+    Ref<Animation> get_animation()
+    {
+        return animation;
+    }
 
     void _init();
     float _get_animation_length();
     void _set_animation_scale_by_length(float p_length);
 public:
-    StringName animation_name;
-    // 动画资源路径
-    String animation_path;
-    // 骨骼映射名称
-    String bone_map_path;
     Ref<Animation> animation;
-    Ref<CharacterBoneMap> bone_map;
     Ref<class CharacterAnimatorNodeBase> child_node;
 
 	double speed = 1.0f;
@@ -125,6 +110,40 @@ public:
     void touch() { lastUsingTime = OS::get_singleton()->get_unix_time(); }
 
     bool is_need_remove(float remove_time) { return OS::get_singleton()->get_unix_time() - lastUsingTime > remove_time; }
+
+    virtual void add_item()
+    {
+        Ref<CharacterAnimationItem> item;
+        item.instantiate();
+        animation_arrays.push_back(item);
+    }
+
+    virtual void remove_item(int index)
+    {
+        animation_arrays.remove_at(index);
+    }
+    virtual void move_up_item(int index)
+    {
+        if(index > 0)
+        {
+            animation_arrays.swap(index, index-1);
+        }
+    }
+    virtual void move_down_item(int index)
+    {
+        if(index < animation_arrays.size()-1)
+        {
+            animation_arrays.swap(index, index+1);
+        }
+    }
+
+    void set_item_animation(int index,Ref<Animation> p_animation) { animation_arrays[index]->animation = p_animation; }
+    Ref<Animation> get_item_animation(int index) { return animation_arrays[index]->animation; }
+
+    void set_item_animator_node(int index,Ref<CharacterAnimatorNodeBase> p_animator_node) { animation_arrays[index]->child_node = p_animator_node; }
+    Ref<CharacterAnimatorNodeBase> get_item_animator_node(int index) { return animation_arrays[index]->child_node; }
+
+
 
 public:
     virtual void process_animation(class CharacterAnimatorLayer *p_layer,struct CharacterAnimationInstance *p_playback_info,float total_weight,const Ref<Blackboard> &p_blackboard)
@@ -225,6 +244,45 @@ public:
 
     void set_position_array(Vector<float> p_array) { blend_data.position_array = p_array; }
     Vector<float> get_position_array() { return blend_data.position_array; }
+
+    void set_position(uint32_t p_index, float p_value) { blend_data.position_array[p_index] = p_value; }
+    float get_position(uint32_t p_index) { return blend_data.position_array[p_index]; }
+
+    
+    virtual void add_item()
+    {
+        Ref<CharacterAnimationItem> item;
+        item.instantiate();
+        animation_arrays.push_back(item);
+        blend_data.position_array.push_back(0.0f);
+        blend_data.position_count += 1;
+    }
+
+    virtual void remove_item(int index)
+    {
+        animation_arrays.remove_at(index);
+        blend_data.position_array.remove_at(index);
+        blend_data.position_count -= 1;
+    }
+    virtual void move_up_item(int index)
+    {
+        if(index > 0)
+        {
+            animation_arrays.swap(index, index-1);
+
+            blend_data.position_array.swap(index, index-1);
+        }
+    }
+    virtual void move_down_item(int index)
+    {
+        if(index < animation_arrays.size()-1)
+        {
+            animation_arrays.swap(index, index + 1);
+
+            blend_data.position_array.swap(index, index + 1);
+        }
+    }
+
 public:
     Blend1dDataConstant   blend_data;
 };
@@ -278,6 +336,44 @@ public:
     void set_position_array(Vector<Vector2> p_array) { blend_data.position_array = p_array; }
     Vector<Vector2> get_position_array() { return blend_data.position_array; }
 
+    void set_position_x(uint32_t p_index, float p_value) { blend_data.position_array[p_index].x = p_value; }
+    float get_position_x(uint32_t p_index) { return blend_data.position_array[p_index].x; }
+    void set_position_y(uint32_t p_index, float p_value) { blend_data.position_array[p_index].y = p_value; }
+    float get_position_y(uint32_t p_index) { return blend_data.position_array[p_index].y; }
+
+    virtual void add_item()
+    {
+        Ref<CharacterAnimationItem> item;
+        item.instantiate();
+        animation_arrays.push_back(item);
+        blend_data.position_array.push_back(Vector2(0,0));
+        blend_data.position_count += 1;
+    }
+
+    virtual void remove_item(int index)
+    {
+        animation_arrays.remove_at(index);
+        blend_data.position_array.remove_at(index);
+        blend_data.position_count -= 1;
+    }
+    virtual void move_up_item(int index)
+    {
+        if(index > 0)
+        {
+            animation_arrays.swap(index, index-1);
+
+            blend_data.position_array.swap(index, index-1);
+        }
+    }
+    virtual void move_down_item(int index)
+    {
+        if(index < animation_arrays.size()-1)
+        {
+            animation_arrays.swap(index, index + 1);
+
+            blend_data.position_array.swap(index, index + 1);
+        }
+    }
 
 public:
     BlendType blend_type;

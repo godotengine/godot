@@ -16,6 +16,7 @@ void CharacterManager::pre_tick(float delta) {
 void CharacterManager::tick(float delta)
 {
     update_ai();
+
     update_animator();
 }
 

@@ -30,6 +30,7 @@ public:
     void update_ai();
     // 更新所有的动画控制
     void update_animator();
+
    const String& get_mesh_root_path(){
         return mesh_root_path;
     }

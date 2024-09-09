@@ -41,6 +41,7 @@
 #include "beehave_graph_editor.h"
 #include "body_main_editor.h"
 #include "character_prefab.h"
+#include "animator_node_editor.h"
 #endif
 class CharacterBodyMainLable : public HBoxContainer
 {
