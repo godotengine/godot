@@ -1,0 +1,21 @@
+
+import os
+Import('env')
+
+print(os.name)
+if os.name == 'nt':
+	env.add_source_files(env.modules_sources, "process_win.cpp") # Add all cpp files to the build
+	env.add_source_files(env.modules_sources, "process.cpp") # Add all cpp files to the build
+else:
+    env.add_source_files(env.modules_sources, "process.cpp") # Add all cpp files to the build
+    env.add_source_files(env.modules_sources, "process_unix.cpp") # Add all cpp files to the build
+
+src_list = ["register_types.cpp", "std_io.cpp"]
+
+#src_list = ["register_types.cpp", "std_io.cpp", "process.cpp"]
+env.add_source_files(env.modules_sources, src_list)
+
+#env.Append(CPPPATH=["mylib/include"]) # this is a relative path
+#env.Append(CPPPATH=["#myotherlib/include"]) # this is an 'absolute' path
+
+
