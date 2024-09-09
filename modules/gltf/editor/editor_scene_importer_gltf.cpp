@@ -43,26 +43,30 @@ void EditorSceneFormatImporterGLTF::get_extensions(List<String> *r_extensions) c
 Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t p_flags,
 		const HashMap<StringName, Variant> &p_options,
 		List<String> *r_missing_deps, Error *r_err) {
-	Ref<GLTFDocument> gltf;
-	gltf.instantiate();
-	Ref<GLTFState> state;
-	state.instantiate();
+	Ref<GLTFDocument> gltf_doc;
+	gltf_doc.instantiate();
+	Ref<GLTFState> gltf_state;
+	gltf_state.instantiate();
 	if (p_options.has("gltf/naming_version")) {
 		int naming_version = p_options["gltf/naming_version"];
-		gltf->set_naming_version(naming_version);
+		gltf_doc->set_naming_version(naming_version);
 	}
 	if (p_options.has("gltf/embedded_image_handling")) {
 		int32_t enum_option = p_options["gltf/embedded_image_handling"];
-		state->set_handle_binary_image_mode((GLTFState::HandleBinaryImageMode)enum_option);
+		gltf_state->set_handle_binary_image_mode((GLTFState::HandleBinaryImageMode)enum_option);
+	}
+	if (p_options.has("gltf/texture_map_mode")) {
+		int32_t enum_option = p_options["gltf/texture_map_mode"];
+		gltf_doc->set_texture_map_mode((GLTFDocument::TextureMapMode)enum_option);
 	}
 	if (p_options.has(SNAME("nodes/import_as_skeleton_bones")) ? (bool)p_options[SNAME("nodes/import_as_skeleton_bones")] : false) {
-		state->set_import_as_skeleton_bones(true);
+		gltf_state->set_import_as_skeleton_bones(true);
 	}
 	if (p_options.has(SNAME("extract_path"))) {
-		state->set_extract_path(p_options["extract_path"]);
+		gltf_state->set_extract_path(p_options["extract_path"]);
 	}
-	state->set_bake_fps(p_options["animation/fps"]);
-	Error err = gltf->append_from_file(p_path, state, p_flags);
+	gltf_state->set_bake_fps(p_options["animation/fps"]);
+	Error err = gltf_doc->append_from_file(p_path, gltf_state, p_flags);
 	if (err != OK) {
 		if (r_err) {
 			*r_err = err;
@@ -70,12 +74,12 @@ Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t
 		return nullptr;
 	}
 	if (p_options.has("animation/import")) {
-		state->set_create_animations(bool(p_options["animation/import"]));
+		gltf_state->set_create_animations(bool(p_options["animation/import"]));
 	}
 
 #ifndef DISABLE_DEPRECATED
 	bool trimming = p_options.has("animation/trimming") ? (bool)p_options["animation/trimming"] : false;
-	return gltf->generate_scene(state, state->get_bake_fps(), trimming, false);
+	return gltf_doc->generate_scene(gltf_state, gltf_state->get_bake_fps(), trimming, false);
 #else
 	return gltf->generate_scene(state, state->get_bake_fps(), (bool)p_options["animation/trimming"], false);
 #endif
@@ -88,6 +92,15 @@ void EditorSceneFormatImporterGLTF::get_import_options(const String &p_path,
 	if (p_path.is_empty() || file_extension == "gltf" || file_extension == "glb") {
 		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/naming_version", PROPERTY_HINT_ENUM, "Godot 4.0 or 4.1,Godot 4.2 to 4.4,Godot 4.5 or later"), 2));
 		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/embedded_image_handling", PROPERTY_HINT_ENUM, "Discard All Textures,Extract Textures,Embed as Basis Universal,Embed as Uncompressed", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), GLTFState::HANDLE_BINARY_IMAGE_MODE_EXTRACT_TEXTURES));
+		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/texture_map_mode", PROPERTY_HINT_ENUM, "Do Not Remap,Remap to StandardMaterial3D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), GLTFDocument::TEXTURE_MAP_MODE_REMAP_TO_STANDARD_MATERIAL));
+	}
+}
+
+void EditorSceneFormatImporterGLTF::handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const {
+	if (!p_import_params.has("gltf/texture_map_mode")) {
+		// If an existing import file is missing the glTF
+		// texture map mode, we need to use "Do Not Remap".
+		p_import_params["gltf/naming_version"] = (int64_t)GLTFDocument::TEXTURE_MAP_MODE_DO_NOT_REMAP;
 	}
 }
 
