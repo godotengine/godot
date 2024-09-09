@@ -95,8 +95,6 @@ void CharacterAnimatorNodeBase::bind_methods()
 
 
     ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "animation_arrays"), "set_animation_arrays", "get_animation_arrays");
-    ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "black_board_property"), "set_black_board_property", "get_black_board_property");
-    ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "black_board_property_y"), "set_black_board_property_y", "get_black_board_property_y");
     ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fade_out_time"), "set_fade_out_time", "get_fade_out_time");
     ADD_PROPERTY(PropertyInfo(Variant::INT, "loop", PROPERTY_HINT_ENUM, "Once,Clamp Count,PingPong Once,PingPong Count"), "set_loop", "get_loop");
     ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_count"), "set_loop_count", "get_loop_count");
@@ -651,7 +649,7 @@ void CharacterAnimatorLoopLast::process_animation(class CharacterAnimatorLayer *
 			playback_info.disable_path = p_playback_info->disable_path;
 			// 循环播放
 			double length = item->animation->get_length();
-            if(p_playback_info->play_index < blend_data.position_count - 1)
+            if(p_playback_info->play_index < animation_arrays.size() - 1)
             {
                 if(playback_info.time >= length)
                 {

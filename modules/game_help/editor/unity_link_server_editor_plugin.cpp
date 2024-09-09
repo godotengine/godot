@@ -403,6 +403,41 @@ public:
 		return false;
 
 	}
+	static bool _parse_charater_animator_node_property(EditorInspectorPlugin *p_plugin, Ref<CharacterAnimatorNodeBase> object, Variant::Type type, const String& name, PropertyHint hint_type, const String& hint_string, BitField<PropertyUsageFlags> usage_flags, bool wide)
+	{
+		
+		if(name == "animation_arrays")
+		{
+			Ref<CharacterAnimatorNode1D> node_1d = Object::cast_to<CharacterAnimatorNode1D>(object.ptr());
+			if(node_1d.is_valid())
+			{
+				AnimationNode1D* section = memnew(AnimationNode1D);
+				section->init();
+				section->setup(node_1d.ptr());
+				p_plugin->add_custom_control( section);
+				return true;
+			}
+
+			Ref<CharacterAnimatorNode2D> node_2d = Object::cast_to<CharacterAnimatorNode2D>(object.ptr());
+			if(node_2d.is_valid())
+			{
+				AnimationNode2D* section = memnew(AnimationNode2D);
+				section->init();
+				section->setup(node_2d.ptr());
+				p_plugin->add_custom_control( section);
+				return true;
+			}
+
+			AnimationNodeSectionBase* section = memnew(AnimationNodeSectionBase);
+			section->init();
+			section->setup(object.ptr());
+			p_plugin->add_custom_control( section);
+
+			return true;
+		}
+		return false;
+
+	}
 
 };
 
@@ -487,85 +522,16 @@ class GameHelpInspectorPlugin : public EditorInspectorPlugin
 			
 			return ConditionList_ED::_parse_charater_prefab_property(this,prefab, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide);
 		}
-		return false;
-	}
 
-};
-class ResourceImporterUnityAnimation : public ResourceImporter {
-public:
-
-	virtual String get_importer_name() const override
-	{
-		return "anim";
-
-	}
-	virtual String get_visible_name() const override{		
-			return "anim";
-	}
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override {
-		p_extensions->push_back("anim");
-	}
-	virtual String get_save_extension() const override
-	{
-		return "res";
-	}
-	virtual String get_resource_type() const override {
-		return "Animation";
-	}
-
-	virtual int get_preset_count() const override {
-		return 0;
-	}
-	virtual String get_preset_name(int p_idx) const override {
-		return String();
-	}
-
-	virtual void get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset = 0) const override {
-		r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "is_human_mirrored"), false));
-
-	}
-	virtual bool get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const override
-	{
-
-		return true;
-	}
-
-#ifdef TOOLS_ENABLED
-	virtual bool has_advanced_options() const override
-	{
-		return false;
-	}
-	virtual void show_advanced_options(const String &p_path) override
-	{
-	}
-#endif
-
-	virtual Error import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override
-	{
-		int is_mirrored = p_options["is_human_mirrored"];
-		Error err;
-		Ref<FileAccess> f = FileAccess::open(p_source_file, FileAccess::READ, &err);
-		if (err != OK) {
-			return err;
+		Ref<CharacterAnimatorNodeBase> animator_node = Object::cast_to<CharacterAnimatorNodeBase>(p_object);
+		if(animator_node != nullptr)
+		{
+			return ConditionList_ED::_parse_charater_animator_node_property(this,animator_node, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide);
 		}
-		String yaml_anim = f->get_as_text();
-
-		Ref<Animation> anim;
-		anim.instantiate();
-		Ref<JSON> json = DataTableManager::get_singleton()->parse_yaml(yaml_anim);
-
-		Dictionary dict = json->get_data();
-		Callable on_load_animation =  DataTableManager::get_singleton()->get_animation_load_cb();
-		Dictionary clip = dict["AnimationClip"];
-		UnityAnimationImport::ImportAnimation(clip,is_mirrored,anim);
-		anim->optimize();
-		return ResourceSaver::save(anim, p_save_path + ".res");
-
+		return false;
 	}
 
-	virtual ~ResourceImporterUnityAnimation() {}
 };
-
 class UnityLinkServerEditorPlugin : public EditorPlugin {
 	GDCLASS(UnityLinkServerEditorPlugin, EditorPlugin);
 
@@ -581,7 +547,6 @@ public:
 	void start();
 	void stop();
 	
-	Ref<ResourceImporterUnityAnimation> resource_loader_unity_animation;
 };
 void UnityLinkServerEditorPluginRegister::initialize()
 {
@@ -621,8 +586,6 @@ void UnityLinkServerEditorPlugin::_notification(int p_what) {
 }
 
 void UnityLinkServerEditorPlugin::start() {
-	resource_loader_unity_animation.instantiate();
-	ResourceFormatImporter::get_singleton()->add_importer(resource_loader_unity_animation);
 	server.start() ;
 	{
 		EditorNode::get_log()->add_message("--- unity link server started port 9010---", EditorLog::MSG_TYPE_EDITOR);
@@ -637,7 +600,5 @@ void UnityLinkServerEditorPlugin::stop() {
 	server.stop();
 	started = false;
 	EditorNode::get_log()->add_message("--- unity link server stopped ---", EditorLog::MSG_TYPE_EDITOR);
-	ResourceFormatImporter::get_singleton()->remove_importer(resource_loader_unity_animation);
-	resource_loader_unity_animation.unref();
 }
 #endif

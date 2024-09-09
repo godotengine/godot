@@ -232,8 +232,9 @@ class CharacterAnimatorNode1D : public CharacterAnimatorNodeBase
         ClassDB::bind_method(D_METHOD("set_position_array", "array"), &CharacterAnimatorNode1D::set_position_array);
         ClassDB::bind_method(D_METHOD("get_position_array"), &CharacterAnimatorNode1D::get_position_array);
 
-        ADD_PROPERTY(PropertyInfo(Variant::INT, "position_count"), "set_position_count", "get_position_count");
-        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "position_array"), "set_position_array", "get_position_array");
+        ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "black_board_property"), "set_black_board_property", "get_black_board_property");
+        ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "black_board_property_y"), "set_black_board_property_y", "get_black_board_property_y");
+        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "position_array", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("float"), PROPERTY_USAGE_STORAGE), "set_position_array", "get_position_array");
     }
 public:
     void add_animation(const Ref<Animation> & p_anim,float p_pos);
@@ -287,9 +288,9 @@ public:
     Blend1dDataConstant   blend_data;
 };
 // 顺序播放前面节点,循环播放后面节点
-class CharacterAnimatorLoopLast : public CharacterAnimatorNode1D
+class CharacterAnimatorLoopLast : public CharacterAnimatorNodeBase
 {
-    GDCLASS(CharacterAnimatorLoopLast, CharacterAnimatorNode1D);
+    GDCLASS(CharacterAnimatorLoopLast, CharacterAnimatorNodeBase);
     static void bind_methods()
     {
 
@@ -310,8 +311,9 @@ class CharacterAnimatorNode2D : public CharacterAnimatorNodeBase
         ClassDB::bind_method(D_METHOD("set_position_array", "array"), &CharacterAnimatorNode1D::set_position_array);
         ClassDB::bind_method(D_METHOD("get_position_array"), &CharacterAnimatorNode1D::get_position_array);
 
-        ADD_PROPERTY(PropertyInfo(Variant::INT, "position_count"), "set_position_count", "get_position_count");
-        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "position_array"), "set_position_array", "get_position_array");
+        ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "black_board_property"), "set_black_board_property", "get_black_board_property");
+        ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "black_board_property_y"), "set_black_board_property_y", "get_black_board_property_y");
+        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "position_array", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Vector2"), PROPERTY_USAGE_STORAGE), "set_position_array", "get_position_array");
 
         BIND_ENUM_CONSTANT(SimpleDirectionnal2D);
         BIND_ENUM_CONSTANT(FreeformDirectionnal2D);
