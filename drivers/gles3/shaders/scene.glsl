@@ -275,6 +275,10 @@ struct DirectionalLightData {
 layout(std140) uniform DirectionalLights { // ubo:7
 	DirectionalLightData directional_lights[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 };
+
+#define LIGHT_BAKE_DISABLED 0u
+#define LIGHT_BAKE_STATIC 1u
+#define LIGHT_BAKE_DYNAMIC 2u
 #endif // !DISABLE_LIGHT_DIRECTIONAL
 
 // Omni and spot light data.
@@ -723,6 +727,11 @@ void main() {
 #ifdef BASE_PASS
 #ifndef DISABLE_LIGHT_DIRECTIONAL
 	for (uint i = uint(0); i < scene_data.directional_light_count; i++) {
+#if defined(USE_LIGHTMAP) && !defined(DISABLE_LIGHTMAP)
+		if (directional_lights[i].bake_mode == LIGHT_BAKE_STATIC) {
+			continue;
+		}
+#endif
 		light_compute(normal_interp, normalize(directional_lights[i].direction), normalize(view), directional_lights[i].color * directional_lights[i].energy, true, roughness,
 				diffuse_light_interp.rgb,
 				specular_light_interp.rgb);
@@ -2138,11 +2147,7 @@ void main() {
 		if (i >= omni_light_count) {
 			break;
 		}
-#if defined(USE_LIGHTMAP) && !defined(DISABLE_LIGHTMAP)
-		if (omni_lights[omni_light_indices[i]].bake_mode == LIGHT_BAKE_STATIC) {
-			continue;
-		}
-#endif
+
 		light_process_omni(omni_light_indices[i], vertex, view, normal, f0, roughness, metallic, 1.0, albedo, alpha, screen_uv,
 #ifdef LIGHT_BACKLIGHT_USED
 				backlight,
@@ -2166,11 +2171,7 @@ void main() {
 		if (i >= spot_light_count) {
 			break;
 		}
-#if defined(USE_LIGHTMAP) && !defined(DISABLE_LIGHTMAP)
-		if (spot_lights[spot_light_indices[i]].bake_mode == LIGHT_BAKE_STATIC) {
-			continue;
-		}
-#endif
+
 		light_process_spot(spot_light_indices[i], vertex, view, normal, f0, roughness, metallic, 1.0, albedo, alpha, screen_uv,
 #ifdef LIGHT_BACKLIGHT_USED
 				backlight,
