@@ -383,7 +383,7 @@ void SoftBody3D::_bind_methods() {
 }
 
 PackedStringArray SoftBody3D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = MeshInstance3D::get_configuration_warnings();
 
 	if (mesh.is_null()) {
 		warnings.push_back(RTR("This body will be ignored until you set a mesh."));

@@ -3412,6 +3412,21 @@ bool RichTextLabel::remove_paragraph(int p_paragraph, bool p_no_invalidate) {
 	selection.click_item = nullptr;
 	selection.active = false;
 
+	if (is_processing_internal()) {
+		bool process_enabled = false;
+		Item *it = main;
+		while (it) {
+			Vector<ItemFX *> fx_stack;
+			_fetch_item_fx_stack(it, fx_stack);
+			if (fx_stack.size()) {
+				process_enabled = true;
+				break;
+			}
+			it = _get_next_item(it, true);
+		}
+		set_process_internal(process_enabled);
+	}
+
 	if (p_no_invalidate) {
 		// Do not invalidate cache, only update vertical offsets of the paragraphs after deleted one and scrollbar.
 		int to_line = main->first_invalid_line.load() - 1;
@@ -3985,6 +4000,7 @@ void RichTextLabel::pop_all() {
 
 void RichTextLabel::clear() {
 	_stop_thread();
+	set_process_internal(false);
 	MutexLock data_lock(data_mutex);
 
 	main->_clear_children();
@@ -4176,8 +4192,6 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 	bool in_italics = false;
 	bool after_list_open_tag = false;
 	bool after_list_close_tag = false;
-
-	set_process_internal(false);
 
 	while (pos <= p_bbcode.length()) {
 		int brk_pos = p_bbcode.find_char('[', pos);
@@ -5251,17 +5265,6 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 					pos = brk_pos + 1;
 				}
 			}
-		}
-	}
-
-	Vector<ItemFX *> fx_items;
-	for (Item *E : main->subitems) {
-		Item *subitem = static_cast<Item *>(E);
-		_fetch_item_fx_stack(subitem, fx_items);
-
-		if (fx_items.size()) {
-			set_process_internal(true);
-			break;
 		}
 	}
 }

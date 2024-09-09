@@ -62,7 +62,7 @@ class AudioStreamPlaybackWAV : public AudioStreamPlayback {
 		qoa_desc desc = {};
 		uint32_t data_ofs = 0;
 		uint32_t frame_len = 0;
-		int16_t *dec = nullptr;
+		LocalVector<int16_t> dec;
 		uint32_t dec_len = 0;
 		int64_t cache_pos = -1;
 		int16_t cache[2] = { 0, 0 };
@@ -137,7 +137,7 @@ private:
 	int loop_begin = 0;
 	int loop_end = 0;
 	int mix_rate = 44100;
-	void *data = nullptr;
+	LocalVector<uint8_t> data;
 	uint32_t data_bytes = 0;
 
 protected:

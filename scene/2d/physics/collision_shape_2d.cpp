@@ -174,7 +174,7 @@ bool CollisionShape2D::_edit_is_selected_on_click(const Point2 &p_point, double 
 }
 
 PackedStringArray CollisionShape2D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
 
 	CollisionObject2D *col_object = Object::cast_to<CollisionObject2D>(get_parent());
 	if (col_object == nullptr) {

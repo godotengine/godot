@@ -123,10 +123,8 @@ void AudioStreamPlaybackWAV::do_resample(const Depth *p_src, AudioFrame *p_dst, 
 					int16_t nibble, diff, step;
 
 					p_ima_adpcm[i].last_nibble++;
-					const uint8_t *src_ptr = (const uint8_t *)base->data;
-					src_ptr += AudioStreamWAV::DATA_PAD;
 
-					uint8_t nbb = src_ptr[(p_ima_adpcm[i].last_nibble >> 1) * (is_stereo ? 2 : 1) + i];
+					uint8_t nbb = p_src[(p_ima_adpcm[i].last_nibble >> 1) * (is_stereo ? 2 : 1) + i];
 					nibble = (p_ima_adpcm[i].last_nibble & 1) ? (nbb >> 4) : (nbb & 0xF);
 					step = _ima_adpcm_step_table[p_ima_adpcm[i].step_index];
 
@@ -184,9 +182,8 @@ void AudioStreamPlaybackWAV::do_resample(const Depth *p_src, AudioFrame *p_dst, 
 
 						if (p_qoa->data_ofs != new_data_ofs) {
 							p_qoa->data_ofs = new_data_ofs;
-							const uint8_t *src_ptr = (const uint8_t *)base->data;
-							src_ptr += p_qoa->data_ofs + AudioStreamWAV::DATA_PAD;
-							qoa_decode_frame(src_ptr, p_qoa->frame_len, &p_qoa->desc, p_qoa->dec, &p_qoa->dec_len);
+							const uint8_t *ofs_src = (uint8_t *)p_src + p_qoa->data_ofs;
+							qoa_decode_frame(ofs_src, p_qoa->frame_len, &p_qoa->desc, p_qoa->dec.ptr(), &p_qoa->dec_len);
 						}
 
 						uint32_t dec_idx = (interp_pos % QOA_FRAME_LEN) * p_qoa->desc.channels;
@@ -267,7 +264,7 @@ void AudioStreamPlaybackWAV::do_resample(const Depth *p_src, AudioFrame *p_dst, 
 }
 
 int AudioStreamPlaybackWAV::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
-	if (!base->data || !active) {
+	if (base->data.is_empty() || !active) {
 		for (int i = 0; i < p_frames; i++) {
 			p_buffer[i] = AudioFrame(0, 0);
 		}
@@ -324,8 +321,7 @@ int AudioStreamPlaybackWAV::mix(AudioFrame *p_buffer, float p_rate_scale, int p_
 
 	/* audio data */
 
-	uint8_t *dataptr = (uint8_t *)base->data;
-	const void *data = dataptr + AudioStreamWAV::DATA_PAD;
+	const uint8_t *data = base->data.ptr() + AudioStreamWAV::DATA_PAD;
 	AudioFrame *dst_buff = p_buffer;
 
 	if (format == AudioStreamWAV::FORMAT_IMA_ADPCM) {
@@ -483,11 +479,7 @@ void AudioStreamPlaybackWAV::set_sample_playback(const Ref<AudioSamplePlayback> 
 
 AudioStreamPlaybackWAV::AudioStreamPlaybackWAV() {}
 
-AudioStreamPlaybackWAV::~AudioStreamPlaybackWAV() {
-	if (qoa.dec) {
-		memfree(qoa.dec);
-	}
-}
+AudioStreamPlaybackWAV::~AudioStreamPlaybackWAV() {}
 
 /////////////////////
 
@@ -554,7 +546,7 @@ double AudioStreamWAV::get_length() const {
 			break;
 		case AudioStreamWAV::FORMAT_QOA:
 			qoa_desc desc = {};
-			qoa_decode_header((uint8_t *)data + DATA_PAD, data_bytes, &desc);
+			qoa_decode_header(data.ptr() + DATA_PAD, data_bytes, &desc);
 			len = desc.samples * desc.channels;
 			break;
 	}
@@ -572,22 +564,16 @@ bool AudioStreamWAV::is_monophonic() const {
 
 void AudioStreamWAV::set_data(const Vector<uint8_t> &p_data) {
 	AudioServer::get_singleton()->lock();
-	if (data) {
-		memfree(data);
-		data = nullptr;
-		data_bytes = 0;
-	}
 
-	int datalen = p_data.size();
-	if (datalen) {
-		const uint8_t *r = p_data.ptr();
-		int alloc_len = datalen + DATA_PAD * 2;
-		data = memalloc(alloc_len); //alloc with some padding for interpolation
-		memset(data, 0, alloc_len);
-		uint8_t *dataptr = (uint8_t *)data;
-		memcpy(dataptr + DATA_PAD, r, datalen);
-		data_bytes = datalen;
-	}
+	int src_data_len = p_data.size();
+
+	data.clear();
+
+	int alloc_len = src_data_len + DATA_PAD * 2;
+	data.resize(alloc_len);
+	memset(data.ptr(), 0, alloc_len);
+	memcpy(data.ptr() + DATA_PAD, p_data.ptr(), src_data_len);
+	data_bytes = src_data_len;
 
 	AudioServer::get_singleton()->unlock();
 }
@@ -595,13 +581,9 @@ void AudioStreamWAV::set_data(const Vector<uint8_t> &p_data) {
 Vector<uint8_t> AudioStreamWAV::get_data() const {
 	Vector<uint8_t> pv;
 
-	if (data) {
+	if (!data.is_empty()) {
 		pv.resize(data_bytes);
-		{
-			uint8_t *w = pv.ptrw();
-			uint8_t *dataptr = (uint8_t *)data;
-			memcpy(w, dataptr + DATA_PAD, data_bytes);
-		}
+		memcpy(pv.ptrw(), data.ptr() + DATA_PAD, data_bytes);
 	}
 
 	return pv;
@@ -693,12 +675,12 @@ Ref<AudioStreamPlayback> AudioStreamWAV::instantiate_playback() {
 	sample->base = Ref<AudioStreamWAV>(this);
 
 	if (format == AudioStreamWAV::FORMAT_QOA) {
-		uint32_t ffp = qoa_decode_header((uint8_t *)data + DATA_PAD, data_bytes, &sample->qoa.desc);
+		uint32_t ffp = qoa_decode_header(data.ptr() + DATA_PAD, data_bytes, &sample->qoa.desc);
 		ERR_FAIL_COND_V(ffp != 8, Ref<AudioStreamPlaybackWAV>());
 		sample->qoa.frame_len = qoa_max_frame_size(&sample->qoa.desc);
 		int samples_len = (sample->qoa.desc.samples > QOA_FRAME_LEN ? QOA_FRAME_LEN : sample->qoa.desc.samples);
-		int alloc_len = sample->qoa.desc.channels * samples_len * sizeof(int16_t);
-		sample->qoa.dec = (int16_t *)memalloc(alloc_len);
+		int dec_len = sample->qoa.desc.channels * samples_len;
+		sample->qoa.dec.resize(dec_len);
 	}
 
 	return sample;
@@ -780,10 +762,4 @@ void AudioStreamWAV::_bind_methods() {
 
 AudioStreamWAV::AudioStreamWAV() {}
 
-AudioStreamWAV::~AudioStreamWAV() {
-	if (data) {
-		memfree(data);
-		data = nullptr;
-		data_bytes = 0;
-	}
-}
+AudioStreamWAV::~AudioStreamWAV() {}
