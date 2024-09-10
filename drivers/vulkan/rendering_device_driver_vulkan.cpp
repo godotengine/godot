@@ -1778,9 +1778,6 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_from_extension(uint64
 
 RDD::TextureID RenderingDeviceDriverVulkan::texture_create_shared(TextureID p_original_texture, const TextureView &p_view) {
 	const TextureInfo *owner_tex_info = (const TextureInfo *)p_original_texture.id;
-#ifdef DEBUG_ENABLED
-	ERR_FAIL_COND_V(!owner_tex_info->allocation.handle, TextureID());
-#endif
 
 	VkImageViewCreateInfo image_view_create_info = owner_tex_info->vk_view_create_info;
 	image_view_create_info.format = RD_TO_VK_FORMAT[p_view.format];
