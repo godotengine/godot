@@ -1772,16 +1772,17 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_from_extension(uint64
 	tex_info->vk_view = vk_image_view;
 	tex_info->rd_format = p_format;
 	tex_info->vk_view_create_info = image_view_create_info;
-
+#ifdef DEBUG_ENABLED
+	tex_info->created_from_extension = true;
+#endif
 	return TextureID(tex_info);
 }
 
 RDD::TextureID RenderingDeviceDriverVulkan::texture_create_shared(TextureID p_original_texture, const TextureView &p_view) {
 	const TextureInfo *owner_tex_info = (const TextureInfo *)p_original_texture.id;
 #ifdef DEBUG_ENABLED
-	ERR_FAIL_COND_V(!owner_tex_info->allocation.handle, TextureID());
+	ERR_FAIL_COND_V(!owner_tex_info->allocation.handle && !owner_tex_info->created_from_extension, TextureID());
 #endif
-
 	VkImageViewCreateInfo image_view_create_info = owner_tex_info->vk_view_create_info;
 	image_view_create_info.format = RD_TO_VK_FORMAT[p_view.format];
 	image_view_create_info.components.r = (VkComponentSwizzle)p_view.swizzle_r;
@@ -1837,7 +1838,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_shared(TextureID p_or
 RDD::TextureID RenderingDeviceDriverVulkan::texture_create_shared_from_slice(TextureID p_original_texture, const TextureView &p_view, TextureSliceType p_slice_type, uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps) {
 	const TextureInfo *owner_tex_info = (const TextureInfo *)p_original_texture.id;
 #ifdef DEBUG_ENABLED
-	ERR_FAIL_COND_V(!owner_tex_info->allocation.handle, TextureID());
+	ERR_FAIL_COND_V(!owner_tex_info->allocation.handle && !owner_tex_info->created_from_extension, TextureID());
 #endif
 
 	VkImageViewCreateInfo image_view_create_info = owner_tex_info->vk_view_create_info;
