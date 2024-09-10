@@ -16,6 +16,73 @@
 class CharacterAnimatorNodeBase;
 class CharacterAnimatorLayer;
 class CharacterAnimator;
+class CharacterAnimationLibraryItem : public RefCounted
+{
+    GDCLASS(CharacterAnimationLibraryItem, RefCounted);
+    static void _bind_methods()
+    {
+        ClassDB::bind_method(D_METHOD("set_path", "path"), &CharacterAnimationLibraryItem::set_path);
+        ClassDB::bind_method(D_METHOD("get_path"), &CharacterAnimationLibraryItem::get_path);
+
+        ClassDB::bind_method(D_METHOD("set_name", "name"), &CharacterAnimationLibraryItem::set_name);
+        ClassDB::bind_method(D_METHOD("get_name"), &CharacterAnimationLibraryItem::get_name);
+
+        ADD_PROPERTY(PropertyInfo(Variant::STRING, "path", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_STORAGE), "set_path", "get_path");
+        ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_STORAGE), "set_name", "get_name");
+
+#if TOOLS_ENABLED
+        ClassDB::bind_method(D_METHOD("_set_node", "node"), &CharacterAnimationLibraryItem::_set_node);
+        ClassDB::bind_method(D_METHOD("_get_node"), &CharacterAnimationLibraryItem::_get_node);
+        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimatorNodeBase", PROPERTY_USAGE_EDITOR), "_set_node", "_get_node");
+#endif
+
+    }
+public:
+    void load()
+    {
+        if (is_loaded == 0)
+        {
+            ResourceLoader::load_threaded_request(path);
+            is_loaded = 1;
+        }
+    }
+    Ref<CharacterAnimatorNodeBase> get_node()
+    {
+        if(is_loaded == 1)
+        {
+            node = ResourceLoader::load_threaded_get(path);
+            is_loaded = 2;
+        }
+        return node;
+    }
+    void set_path(String p_path) { path = p_path; }
+    String get_path() { return path; }
+
+    void set_name(StringName p_name) {
+        name = p_name;
+    }
+    StringName get_name() { return name; }
+
+    void _set_node(Ref<CharacterAnimatorNodeBase> p_node)  {
+        if(p_node.is_null())
+        {
+            return;
+        }
+        if(p_node->get_path() == "")
+        {
+            return;
+        }
+        node = p_node; 
+        path = p_node->get_path();
+        name = path.get_file().get_basename();
+    }
+    Ref<CharacterAnimatorNodeBase> _get_node() { return node; }
+public:
+    Ref<CharacterAnimatorNodeBase> node;
+    StringName name;
+    String path;
+    int is_loaded = 0;
+};
 // 动画库
 class CharacterAnimationLibrary : public Resource
 {
@@ -27,38 +94,40 @@ class CharacterAnimationLibrary : public Resource
         ClassDB::bind_method(D_METHOD("get_animation_library"), &CharacterAnimationLibrary::get_animation_library);
 
         ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animation_library",PROPERTY_HINT_ARRAY_TYPE,"String"), "set_animation_library", "get_animation_library");
+
+        #if TOOLS_ENABLED
+
+
+        ADD_GROUP(L"创建动画节点", "editor_");
+
+
+        ClassDB::bind_method(D_METHOD("set_animator_node_name", "animator_node_name"), &CharacterAnimationLibrary::set_animator_node_name);
+        ClassDB::bind_method(D_METHOD("get_animator_node_name"), &CharacterAnimationLibrary::get_animator_node_name);
+
+        ClassDB::bind_method(D_METHOD("set_animator_node_type", "animator_node_type"), &CharacterAnimationLibrary::set_animator_node_type);
+        ClassDB::bind_method(D_METHOD("get_animator_node_type"), &CharacterAnimationLibrary::get_animator_node_type);
+
+
+        ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "editor_animator_node_name"), "set_animator_node_name", "get_animator_node_name");
+        ADD_PROPERTY(PropertyInfo(Variant::INT, "editor_animator_node_type", PROPERTY_HINT_ENUM, L"1D,2D,循环最后一个"), "set_animator_node_type", "get_animator_node_type");
+        ADD_MEMBER_BUTTON(editor_create_animation_node,L"创建动画节点", CharacterAnimationLibrary);
+
+        #endif
     }
 
 public:
-    class AnimationItem : public Resource
-    {
-	public:
-        String path;
-        Ref<CharacterAnimatorNodeBase> node;
-		void load()
-		{
-			if (is_loaded == 0)
-			{
-                ResourceLoader::load_threaded_request(path);
-                is_loaded = 1;
-			}
-		}
-        Ref<CharacterAnimatorNodeBase> get_node()
-        {
-            if(is_loaded == 1)
-            {
-               node = ResourceLoader::load_threaded_get(path);
-               is_loaded = 2;
-            }
-            return node;
-        }
-        int is_loaded = 0;
-    };
 
 public:
-    void set_animation_library(const TypedArray<String>& p_animation_library) { animation_library = p_animation_library; init_animation_library();}
-    TypedArray<String> get_animation_library() { return animation_library; }
-    Ref<CharacterAnimationLibrary::AnimationItem> get_animation_by_name(StringName p_name)
+    void set_animation_library(const TypedArray<CharacterAnimationLibraryItem>& p_animation_library) { 
+        if(animation_library.size() > 0) {
+            return;
+        }
+        animation_library = p_animation_library;
+    }
+    TypedArray<CharacterAnimationLibraryItem> get_animation_library() { return animation_library; }
+
+
+    Ref<CharacterAnimationLibraryItem> get_animation_by_name(StringName p_name)
     {
         if(animations.has(p_name))
         {
@@ -68,7 +137,7 @@ public:
         {
             ERR_PRINT(String("not find animation ") +  p_name.operator String().utf8().get_data());
         }
-        return Ref<CharacterAnimationLibrary::AnimationItem>();
+        return Ref<CharacterAnimationLibraryItem>();
     }
     void init_animation_library()
     {
@@ -78,21 +147,33 @@ public:
         }
         for (int i = 0; i < animation_library.size(); i++)
         {
-			Ref<AnimationItem> item;
-			item.instantiate();
-            item->path = animation_library[i];
-            String nm = item->path.get_file().get_basename();
-            if(nm.size() > 0)
+			Ref<CharacterAnimationLibraryItem> item = animation_library[i];
+            if(item->get_name()  != StringName())
             {
-                animations.insert(nm, item);
+                animations[item->get_name()] =  item;
             }
         }
         is_init = true;
     }
 public:
+    enum AnimationNodeType{
+        T_CharacterAnimatorNode1D,
+        T_CharacterAnimatorNode2D,
+        T_CharacterAnimatorLoopLast,
+    };
+    void set_animator_node_name(String p_animator_node_name) { animator_node_name = p_animator_node_name; }
+    String get_animator_node_name() { return animator_node_name; }
+
+    void set_animator_node_type(int p_animator_node_type) { animator_node_type = p_animator_node_type; }
+    int get_animator_node_type() { return animator_node_type; }
+
+    String animator_node_name;
+    int animator_node_type = T_CharacterAnimatorNode1D;
+    DECL_MEMBER_BUTTON(editor_create_animation_node);
+public:
+    TypedArray<CharacterAnimationLibraryItem> animation_library;
+    HashMap<StringName, Ref<CharacterAnimationLibraryItem>> animations;
     bool is_init = false;
-    TypedArray<String> animation_library;
-    HashMap<StringName, Ref<AnimationItem>> animations;
 };
 
 // 动画遮罩
@@ -190,7 +271,7 @@ struct CharacterAnimationLogicContext
     Ref<CharacterAnimationLogicRoot> curr_state_root;
     // 当前处理的逻辑节点
     Ref<CharacterAnimationLogicNode>   curr_logic;
-    Ref<CharacterAnimationLibrary::AnimationItem> curr_animation;
+    Ref<CharacterAnimationLibraryItem> curr_animation;
     // 执行时长
     float time = 0.0f;
     bool is_start = false;
@@ -567,7 +648,7 @@ public:
             }
         }
     }
-    Ref<CharacterAnimationLibrary::AnimationItem> get_animation_by_name(const StringName& p_name);
+    Ref<CharacterAnimationLibraryItem> get_animation_by_name(const StringName& p_name);
     void set_animation_layer_arrays(TypedArray<CharacterAnimatorLayerConfigInstance> p_animation_layer_arrays) {
 		m_LayerConfigInstanceList.clear();
 		for (int i = 0; i < p_animation_layer_arrays.size(); ++i) {
@@ -603,4 +684,5 @@ public:
 VARIANT_ENUM_CAST(CharacterAnimatorNodeBase::LoopType)
 VARIANT_ENUM_CAST(CharacterAnimationLogicNode::AnimatorAIStopCheckType)
 VARIANT_ENUM_CAST(CharacterAnimatorLayerConfig::BlendType)
+VARIANT_ENUM_CAST(CharacterAnimationLibrary::AnimationNodeType)
 #endif

@@ -7,7 +7,48 @@
 #include "../../unity/unity_animation_import.h"
 
 
+void CharacterAnimationLibrary::editor_create_animation_node() {
+    if(get_path().is_empty()) {      
+        print_line(L"创建动画节点失败: 动画库必须存在路径,请先保存本动画库到磁盘");  
+        return;
+    }
+    if(animator_node_name.size() == 0) {
+        print_line(L"创建动画节点失败: 动画节点名称不能为空");
+        return;
+    }
+    String path = get_path().get_base_dir().path_join(animator_node_name + ".res");
+    if(FileAccess::exists(path)) {
+        for(int i = 0;i < animation_library.size();i++) {
+            Ref<CharacterAnimationLibraryItem> item = animation_library[i];
+            if(item->get_name() == animator_node_name) {
+                print_line(L"创建动画节点失败: 动画节点已经存在");
+                return;
+            }
+        }
+    }
+    Ref<CharacterAnimatorNodeBase> anima_node;
+    switch (animator_node_type)
+    {
+    case T_CharacterAnimatorNode1D:
+        anima_node = memnew(CharacterAnimatorNode1D);
+        break;
+    case T_CharacterAnimatorNode2D:
+        anima_node = memnew(CharacterAnimatorNode2D);
+        break;
+    case T_CharacterAnimatorLoopLast:
+        anima_node = memnew(CharacterAnimatorLoopLast);
+        break;
+    }
 
+    anima_node->set_name(animator_node_name);    
+    anima_node->set_path(path);
+    ResourceSaver::save(anima_node,path);
+
+    Ref<CharacterAnimationLibraryItem> item = memnew(CharacterAnimationLibraryItem);
+    item->_set_node(anima_node);
+    item->set_path(path);
+    animation_library.push_back(item);
+}
 
 
 void CharacterAnimatorLayer::_process_logic(const Ref<Blackboard>& p_playback_info, double p_delta, bool is_first)
@@ -512,11 +553,11 @@ void CharacterAnimator::finish_update()
     }
 
 }
-Ref<CharacterAnimationLibrary::AnimationItem> CharacterAnimator::get_animation_by_name(const StringName& p_name)
+Ref<CharacterAnimationLibraryItem> CharacterAnimator::get_animation_by_name(const StringName& p_name)
 {
     if(m_Body == nullptr)
     {
-        return Ref<CharacterAnimationLibrary::AnimationItem>();
+        return Ref<CharacterAnimationLibraryItem>();
     }
     auto anim_lib = m_Body->get_animation_library();
     if(anim_lib.is_valid())
@@ -524,7 +565,7 @@ Ref<CharacterAnimationLibrary::AnimationItem> CharacterAnimator::get_animation_b
         return anim_lib->get_animation_by_name(p_name);
     }
 
-    return Ref<CharacterAnimationLibrary::AnimationItem>();
+    return Ref<CharacterAnimationLibraryItem>();
 }
 
 

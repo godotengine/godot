@@ -482,7 +482,10 @@ class GameHelpInspectorPlugin : public EditorInspectorPlugin
 		}
 		if(Object::cast_to<CharacterBodyPrefab>(p_object) != nullptr)
 		{
-			CharacterBodyPrefab* prefab = Object::cast_to<CharacterBodyPrefab>(p_object);
+			return true;
+		}
+		if (Object::cast_to<CharacterAnimatorNodeBase>(p_object) != nullptr)
+		{
 			return true;
 		}
 
