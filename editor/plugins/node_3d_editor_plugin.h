@@ -460,7 +460,7 @@ private:
 
 	bool previewing_camera = false;
 	bool previewing_cinema = false;
-	bool _is_node_locked(const Node *p_node);
+	bool _is_node_locked(const Node *p_node) const;
 	void _preview_exited_scene();
 	void _toggle_camera_preview(bool);
 	void _toggle_cinema_preview(bool);
