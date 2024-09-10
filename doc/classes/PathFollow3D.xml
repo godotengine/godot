@@ -18,6 +18,13 @@
 				Correct the [param transform]. [param rotation_mode] implicitly specifies how posture (forward, up and sideway direction) is calculated.
 			</description>
 		</method>
+		<method name="update_transform">
+			<return type="void" />
+			<description>
+				Updates the [member Node3D.transform] of the node based on the [member progress]. Use this if you updated the progress and you need to access the new properties right after when doing physics operations.
+				[b]Note:[/b] Despite it's name, this method is not related to [method Node3D.force_update_transform], as the later forces the update of the actual [member Node3D.transform] property. Calling [method Node3D.force_update_transform] doesn't actually call this method.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="cubic_interp" type="bool" setter="set_cubic_interpolation" getter="get_cubic_interpolation" default="true">
@@ -33,6 +40,7 @@
 		</member>
 		<member name="progress" type="float" setter="set_progress" getter="get_progress" default="0.0">
 			The distance from the first vertex, measured in 3D units along the path. Changing this value sets this node's position to a point within the path.
+			[b]Note:[/b] Any change to this value will trigger a deferred update. In order to update immediately, call [method update_transform].
 		</member>
 		<member name="progress_ratio" type="float" setter="set_progress_ratio" getter="get_progress_ratio" default="0.0">
 			The distance from the first vertex, considering 0.0 as the first vertex and 1.0 as the last. This is just another way of expressing the progress within the path, as the progress supplied is multiplied internally by the path's length.
