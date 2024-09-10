@@ -338,6 +338,7 @@ private:
 
 	RichTextLabel *load_errors = nullptr;
 	AcceptDialog *load_error_dialog = nullptr;
+	bool load_errors_queued_to_display = false;
 
 	RichTextLabel *execute_outputs = nullptr;
 	AcceptDialog *execute_output_dialog = nullptr;
@@ -657,6 +658,8 @@ private:
 	void _notify_nodes_scene_reimported(Node *p_node, Array p_reimported_nodes);
 
 	void _remove_all_not_owned_children(Node *p_node, Node *p_owner);
+
+	void _progress_dialog_visibility_changed();
 
 protected:
 	friend class FileSystemDock;
