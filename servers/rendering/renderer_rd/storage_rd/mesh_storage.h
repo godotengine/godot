@@ -652,7 +652,7 @@ public:
 	virtual void _multimesh_set_custom_aabb(RID p_multimesh, const AABB &p_aabb) override;
 	virtual AABB _multimesh_get_custom_aabb(RID p_multimesh) const override;
 
-	virtual AABB _multimesh_get_aabb(RID p_multimesh) const override;
+	virtual AABB _multimesh_get_aabb(RID p_multimesh) override;
 
 	virtual MultiMeshInterpolator *_multimesh_get_interpolator(RID p_multimesh) const override;
 

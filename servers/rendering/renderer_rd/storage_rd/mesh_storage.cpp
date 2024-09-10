@@ -2041,7 +2041,7 @@ AABB MeshStorage::_multimesh_get_custom_aabb(RID p_multimesh) const {
 	return multimesh->custom_aabb;
 }
 
-AABB MeshStorage::_multimesh_get_aabb(RID p_multimesh) const {
+AABB MeshStorage::_multimesh_get_aabb(RID p_multimesh) {
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_NULL_V(multimesh, AABB());
 	if (multimesh->custom_aabb != AABB()) {
@@ -2049,7 +2049,7 @@ AABB MeshStorage::_multimesh_get_aabb(RID p_multimesh) const {
 	}
 
 	if (multimesh->aabb_dirty) {
-		const_cast<MeshStorage *>(this)->_update_dirty_multimeshes();
+		_update_dirty_multimeshes();
 	}
 	return multimesh->aabb;
 }
