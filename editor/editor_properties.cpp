@@ -81,7 +81,6 @@ void EditorPropertyText::_text_submitted(const String &p_string) {
 	}
 
 	if (text->has_focus()) {
-		text->release_focus();
 		_text_changed(p_string);
 	}
 }

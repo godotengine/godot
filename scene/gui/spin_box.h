@@ -86,8 +86,7 @@ class SpinBox : public Range {
 		bool down_button_disabled = false;
 	} state_cache;
 
-	void _line_edit_focus_enter();
-	void _line_edit_focus_exit();
+	void _line_edit_editing_toggled(bool p_toggled_on);
 
 	inline void _compute_sizes();
 	inline int _get_widest_button_icon_width();
