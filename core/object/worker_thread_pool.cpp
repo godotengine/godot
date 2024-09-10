@@ -63,17 +63,14 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 		// Tasks must start with these at default values. They are free to set-and-forget otherwise.
 		set_current_thread_safe_for_nodes(false);
 		MessageQueue::set_thread_singleton_override(nullptr);
+
 		// Since the WorkerThreadPool is started before the script server,
 		// its pre-created threads can't have ScriptServer::thread_enter() called on them early.
 		// Therefore, we do it late at the first opportunity, so in case the task
 		// about to be run uses scripting, guarantees are held.
+		ScriptServer::thread_enter();
+
 		task_mutex.lock();
-		if (!curr_thread.ready_for_scripting && ScriptServer::are_languages_initialized()) {
-			task_mutex.unlock();
-			ScriptServer::thread_enter();
-			task_mutex.lock();
-			curr_thread.ready_for_scripting = true;
-		}
 		p_task->pool_thread_index = pool_thread_index;
 		prev_task = curr_thread.current_task;
 		curr_thread.current_task = p_task;
@@ -516,6 +513,12 @@ void WorkerThreadPool::yield() {
 	int th_index = get_thread_index();
 	ERR_FAIL_COND_MSG(th_index == -1, "This function can only be called from a worker thread.");
 	_wait_collaboratively(&threads[th_index], ThreadData::YIELDING);
+
+	// If this long-lived task started before the scripting server was initialized,
+	// now is a good time to have scripting languages ready for the current thread.
+	// Otherwise, such a piece of setup won't happen unless another task has been
+	// run during the collaborative wait.
+	ScriptServer::thread_enter();
 }
 
 void WorkerThreadPool::notify_yield_over(TaskID p_task_id) {
