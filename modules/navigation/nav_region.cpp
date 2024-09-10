@@ -105,7 +105,22 @@ void NavRegion::set_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) {
 	polygons_dirty = true;
 }
 
+Vector3 NavRegion::get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, bool p_use_collision) const {
+	RWLockRead read_lock(region_rwlock);
+
+	return NavMeshQueries3D::polygons_get_closest_point_to_segment(
+			get_polygons(), p_from, p_to, p_use_collision);
+}
+
+gd::ClosestPointQueryResult NavRegion::get_closest_point_info(const Vector3 &p_point) const {
+	RWLockRead read_lock(region_rwlock);
+
+	return NavMeshQueries3D::polygons_get_closest_point_info(get_polygons(), p_point);
+}
+
 Vector3 NavRegion::get_random_point(uint32_t p_navigation_layers, bool p_uniformly) const {
+	RWLockRead read_lock(region_rwlock);
+
 	if (!get_enabled()) {
 		return Vector3();
 	}
@@ -114,6 +129,8 @@ Vector3 NavRegion::get_random_point(uint32_t p_navigation_layers, bool p_uniform
 }
 
 bool NavRegion::sync() {
+	RWLockWrite write_lock(region_rwlock);
+
 	bool something_changed = polygons_dirty /* || something_dirty? */;
 
 	update_polygons();
