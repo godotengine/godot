@@ -39,7 +39,7 @@ public:
 class CharacterAnimationItem : public Resource
 {
     GDCLASS(CharacterAnimationItem, Resource);
-    static void bind_methods();
+    static void _bind_methods();
 
 public:
 
@@ -73,7 +73,7 @@ public:
 class CharacterAnimatorNodeBase : public Resource
 {
     GDCLASS(CharacterAnimatorNodeBase, Resource);
-    static void bind_methods();
+    static void _bind_methods();
 
 public:
     enum LoopType
@@ -209,6 +209,7 @@ public:
 	{
 		animation_arrays.push_back(p_anim);
 	}
+    Ref<CharacterAnimationItem> get_animation_item(int index) { return animation_arrays[index]; }
 protected:
     
     LocalVector<Ref<CharacterAnimationItem>>		animation_arrays;
@@ -225,7 +226,7 @@ class CharacterAnimatorNode1D : public CharacterAnimatorNodeBase
 {
     GDCLASS(CharacterAnimatorNode1D, CharacterAnimatorNodeBase);
     
-    static void bind_methods()
+    static void _bind_methods()
     {
         ClassDB::bind_method(D_METHOD("set_position_count", "count"), &CharacterAnimatorNode1D::set_position_count);
         ClassDB::bind_method(D_METHOD("get_position_count"), &CharacterAnimatorNode1D::get_position_count);
@@ -291,7 +292,7 @@ public:
 class CharacterAnimatorLoopLast : public CharacterAnimatorNodeBase
 {
     GDCLASS(CharacterAnimatorLoopLast, CharacterAnimatorNodeBase);
-    static void bind_methods()
+    static void _bind_methods()
     {
 
     }
@@ -304,7 +305,7 @@ public:
 class CharacterAnimatorNode2D : public CharacterAnimatorNodeBase
 {
     GDCLASS(CharacterAnimatorNode2D, CharacterAnimatorNodeBase);
-    static void bind_methods()
+    static void _bind_methods()
     {
         ClassDB::bind_method(D_METHOD("set_position_count", "count"), &CharacterAnimatorNode1D::set_position_count);
         ClassDB::bind_method(D_METHOD("get_position_count"), &CharacterAnimatorNode1D::get_position_count);

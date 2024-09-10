@@ -284,7 +284,7 @@ struct CharacterAnimationLogicContext
 class CharacterAnimatorLayer: public AnimationMixer
 {
     GDCLASS(CharacterAnimatorLayer, AnimationMixer);
-    static void bind_methods()
+    static void _bind_methods()
     {
     }
 public:

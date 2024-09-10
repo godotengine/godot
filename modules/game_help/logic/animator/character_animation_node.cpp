@@ -6,7 +6,7 @@
 #include "../../unity/unity_animation_import.h"
 
 
-void CharacterAnimationItem::bind_methods()
+void CharacterAnimationItem::_bind_methods()
 {
 
     ClassDB::bind_method(D_METHOD("set_speed", "speed"), &CharacterAnimationItem::set_speed);
@@ -70,7 +70,7 @@ void CharacterAnimationItem::_set_animation_scale_by_length(float p_length)
 
 }
 
-void CharacterAnimatorNodeBase::bind_methods()
+void CharacterAnimatorNodeBase::_bind_methods()
 {
     ClassDB::bind_method(D_METHOD("set_animation_arrays", "animation_arrays"), &CharacterAnimatorNodeBase::set_animation_arrays);
     ClassDB::bind_method(D_METHOD("get_animation_arrays"), &CharacterAnimatorNodeBase::get_animation_arrays);
@@ -94,7 +94,7 @@ void CharacterAnimatorNodeBase::bind_methods()
 
 
 
-    ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "animation_arrays"), "set_animation_arrays", "get_animation_arrays");
+    ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animation_arrays", PROPERTY_HINT_ARRAY_TYPE, "CharacterAnimationItem"), "set_animation_arrays", "get_animation_arrays");
     ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fade_out_time"), "set_fade_out_time", "get_fade_out_time");
     ADD_PROPERTY(PropertyInfo(Variant::INT, "loop", PROPERTY_HINT_ENUM, "Once,Clamp Count,PingPong Once,PingPong Count"), "set_loop", "get_loop");
     ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_count"), "set_loop_count", "get_loop_count");

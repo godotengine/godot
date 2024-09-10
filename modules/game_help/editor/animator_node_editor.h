@@ -181,24 +181,40 @@ public:
         move_down_button->connect(SceneStringName(pressed), callable_mp(this, &AnimatorNodeItemEditor::_on_move_down_button_pressed));
         add_child(move_down_button);
 
+        is_cilp = memnew(CheckBox);
+        is_cilp->set_text(L"动画");
+        is_cilp->connect(SceneStringName(toggled), callable_mp(this, &AnimatorNodeItemEditor::_on_is_cilp_toggled));
+        is_cilp->set_modulate(Color(0, 0.92549, 0.964706, 1));
+        add_child(is_cilp);
+
         select_animation_picker = memnew(EditorResourcePicker);
         select_animation_picker->set_h_size_flags(SIZE_EXPAND_FILL);
         select_animation_picker->connect("resource_changed", callable_mp(this, &AnimatorNodeItemEditor::_on_animator_item_changed));
+		select_animation_picker->set_modulate(Color(1,0.7,0.7));
+        select_animation_picker->set_base_type("Animation");
         add_child(select_animation_picker);
 
         select_animator_node_picker = memnew(EditorResourcePicker);
         select_animator_node_picker->set_h_size_flags(SIZE_EXPAND_FILL);
         select_animator_node_picker->connect("resource_changed", callable_mp(this, &AnimatorNodeItemEditor::_on_animator_node_changed));
+		select_animator_node_picker->set_modulate(Color(0.7, 1, 0.7));
+	    select_animator_node_picker->set_base_type("CharacterAnimatorNodeBase");
         add_child(select_animator_node_picker);
 
+		int value_size = 100;
+		if (is_show_y_input())
+		{
+			value_size = 50;
+		}
+
         x_velue_editor = memnew(LineEdit);
-        x_velue_editor->set_h_size_flags(SIZE_EXPAND_FILL);
+		x_velue_editor->set_custom_minimum_size(Size2(value_size, 0));
         x_velue_editor->set_visible(is_show_x_input());
         x_velue_editor->connect(SceneStringName(text_changed), callable_mp(this, &AnimatorNodeItemEditor::_on_x_input_changed));
         add_child(x_velue_editor);
 
         y_velue_editor = memnew(LineEdit);
-        y_velue_editor->set_h_size_flags(SIZE_EXPAND_FILL);
+		y_velue_editor->set_custom_minimum_size(Size2(value_size, 0));
         y_velue_editor->set_visible(is_show_y_input());
         y_velue_editor->connect(SceneStringName(text_changed), callable_mp(this, &AnimatorNodeItemEditor::_on_y_input_changed));
         add_child(y_velue_editor);
@@ -207,6 +223,8 @@ public:
         delete_button->set_icon(p_control->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
         delete_button->connect(SceneStringName(pressed), callable_mp(this, &AnimatorNodeItemEditor::_on_delete_button_pressed));
         add_child(delete_button);
+
+        update_item_state();
     }
 public:
     virtual bool is_show_x_input() { return is_show_x; }
@@ -223,7 +241,9 @@ public:
     void set_y_input_value(float value) {
         y_velue_editor->set_text(String::num(value));
     }
+    void update_item_state();
 protected:
+    void _on_is_cilp_toggled(bool p_pressed);
     void _on_animator_item_changed(const Ref<Resource>& p_resource);
     void _on_animator_node_changed(const Ref<Resource>& p_resource);
     void _on_move_up_button_pressed();
@@ -256,6 +276,7 @@ public:
         add_button = memnew(Button);
         add_button->set_text(L" + ");
         add_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeSectionBase::_on_add_node_pressed));
+        add_button->set_modulate(Color(0.92549,0, 0.964706, 1));
         hb->add_child(add_button);
 
     }
@@ -280,8 +301,9 @@ public:
     }
     void update_child_item() {
         while(item_parent->get_child_count()) {
-            item_parent->remove_child(item_parent->get_child(0));
-            item_parent->get_child(0)->queue_free();
+			Node* child = item_parent->get_child(0);
+            item_parent->remove_child(child);
+			child->queue_free();
         }
         item_container.clear();
         TypedArray items = node->get_animation_arrays();
@@ -389,7 +411,21 @@ public:
 
 
 
+void AnimatorNodeItemEditor::update_item_state() {
+    bool is_clip = node_editor->node->get_animation_item(index)->get_is_clip();
+    select_animation_picker->set_visible(is_clip);
+    select_animator_node_picker->set_visible(!is_clip);
+    
+    select_animation_picker->set_edited_resource(node_editor->node->get_animation_item(index)->get_animation());    
+    select_animator_node_picker->set_edited_resource(node_editor->node->get_animation_item(index)->get_child_node());
 
+}
+
+void AnimatorNodeItemEditor::_on_is_cilp_toggled(bool p_pressed)
+{
+    node_editor->node->get_animation_item(index)->set_is_clip(p_pressed);
+    update_item_state();
+}
 void AnimatorNodeItemEditor::_on_animator_item_changed(const Ref<Resource>& p_resource) {
     node_editor->item_set_animation(index, p_resource);
 }
