@@ -4749,16 +4749,22 @@ Error WaylandThread::init() {
 #ifdef LIBDECOR_ENABLED
 	bool libdecor_found = true;
 
+	bool skip_libdecor = OS::get_singleton()->get_environment("GODOT_WAYLAND_DISABLE_LIBDECOR") == "1";
+
 #ifdef SOWRAP_ENABLED
-	if (initialize_libdecor(dylibloader_verbose) != 0) {
+	if (!skip_libdecor && initialize_libdecor(dylibloader_verbose) != 0) {
 		libdecor_found = false;
 	}
 #endif // SOWRAP_ENABLED
 
-	if (libdecor_found) {
-		libdecor_context = libdecor_new(wl_display, (struct libdecor_interface *)&libdecor_interface);
+	if (skip_libdecor) {
+		print_verbose("Skipping libdecor check because GODOT_WAYLAND_DISABLE_LIBDECOR is set to 1.");
 	} else {
-		print_verbose("libdecor not found. Client-side decorations disabled.");
+		if (libdecor_found) {
+			libdecor_context = libdecor_new(wl_display, (struct libdecor_interface *)&libdecor_interface);
+		} else {
+			print_verbose("libdecor not found. Client-side decorations disabled.");
+		}
 	}
 #endif // LIBDECOR_ENABLED
 
