@@ -1004,7 +1004,7 @@ void ProjectExportDialog::_tree_popup_edited(bool p_arrow_clicked) {
 	Rect2 bounds = include_files->get_custom_popup_rect();
 	bounds.position += get_global_canvas_transform().get_origin();
 	bounds.size *= get_global_canvas_transform().get_scale();
-	if (!is_embedding_subwindows()) {
+	if (!has_subwindows()) {
 		bounds.position += get_position();
 	}
 	file_mode_popup->popup(bounds);
