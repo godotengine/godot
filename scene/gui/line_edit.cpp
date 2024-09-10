@@ -103,7 +103,7 @@ void LineEdit::_close_ime_window() {
 
 void LineEdit::_update_ime_window_position() {
 	DisplayServer::WindowID wid = get_window() ? get_window()->get_window_id() : DisplayServer::INVALID_WINDOW_ID;
-	if (wid == DisplayServer::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
+	if (wid == DisplayServer::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME) || !DisplayServer::get_singleton()->window_is_focused(wid)) {
 		return;
 	}
 	DisplayServer::get_singleton()->window_set_ime_active(true, wid);
