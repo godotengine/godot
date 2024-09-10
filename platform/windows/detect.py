@@ -620,18 +620,16 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
                 print("ThinLTO is only compatible with LLVM, use `use_llvm=yes` or `lto=full`.")
                 sys.exit(255)
 
-            env.Append(CCFLAGS=["-flto=thin"])
-            env.Append(LINKFLAGS=["-flto=thin"])
+            env.AppendUnique(CCFLAGS=["-flto=thin"])
         elif env["use_llvm"]:
-            env.Append(CCFLAGS=["-flto"])
-            env.Append(LINKFLAGS=["-flto"])
+            env.AppendUnique(CCFLAGS=["-flto"])
         else:
             env.AppendUnique(CCFLAGS=["/GL"])
-            env.AppendUnique(ARFLAGS=["/LTCG"])
-            if env["progress"]:
-                env.AppendUnique(LINKFLAGS=["/LTCG:STATUS"])
-            else:
-                env.AppendUnique(LINKFLAGS=["/LTCG"])
+        if env["progress"]:
+            env.AppendUnique(LINKFLAGS=["/LTCG:STATUS"])
+        else:
+            env.AppendUnique(LINKFLAGS=["/LTCG"])
+        env.AppendUnique(ARFLAGS=["/LTCG"])
 
     if vcvars_msvc_config:
         env.Prepend(CPPPATH=[p for p in str(os.getenv("INCLUDE")).split(";")])
