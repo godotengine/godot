@@ -1567,9 +1567,9 @@ void SceneTreeDock::_notification(int p_what) {
 			Label *l = memnew(Label(TTR("Create Root Node:")));
 			l->set_theme_type_variation("HeaderSmall");
 			top_row->add_child(l);
-			top_row->add_spacer();
 
 			node_shortcuts_toggle = memnew(Button);
+			node_shortcuts_toggle->set_h_size_flags(SIZE_EXPAND | SIZE_SHRINK_END);
 			node_shortcuts_toggle->set_flat(true);
 			node_shortcuts_toggle->set_icon(get_editor_theme_icon(SNAME("Favorites")));
 			node_shortcuts_toggle->set_toggle_mode(true);

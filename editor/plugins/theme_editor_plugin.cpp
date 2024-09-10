@@ -1187,9 +1187,8 @@ ThemeItemImportTree::ThemeItemImportTree() {
 	import_buttons->add_child(import_deselect_all_button);
 	import_deselect_all_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemImportTree::_deselect_all_items_pressed));
 
-	import_buttons->add_spacer();
-
 	Button *import_add_selected_button = memnew(Button);
+	import_add_selected_button->set_h_size_flags(Control::SIZE_EXPAND | Control::SIZE_SHRINK_END);
 	import_add_selected_button->set_text(TTR("Import Selected"));
 	import_buttons->add_child(import_add_selected_button);
 	import_add_selected_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemImportTree::_import_selected));

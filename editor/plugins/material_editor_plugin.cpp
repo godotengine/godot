@@ -280,9 +280,8 @@ MaterialEditor::MaterialEditor() {
 	vb_shape->add_child(box_switch);
 	box_switch->connect(SceneStringName(pressed), callable_mp(this, &MaterialEditor::_on_box_switch_pressed));
 
-	layout_3d->add_spacer();
-
 	VBoxContainer *vb_light = memnew(VBoxContainer);
+	vb_light->set_h_size_flags(Control::SIZE_EXPAND | Control::SIZE_SHRINK_END);
 	layout_3d->add_child(vb_light);
 
 	light_1_switch = memnew(Button);

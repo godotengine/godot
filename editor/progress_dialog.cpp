@@ -186,11 +186,11 @@ void ProgressDialog::add_task(const String &p_task, const String &p_label, int p
 
 	tasks[p_task] = t;
 	if (p_can_cancel) {
-		cancel_hb->show();
+		cancel->show();
 	} else {
-		cancel_hb->hide();
+		cancel->hide();
 	}
-	cancel_hb->move_to_front();
+	cancel->move_to_front();
 	canceled = false;
 	_popup();
 	if (p_can_cancel) {
@@ -252,13 +252,10 @@ ProgressDialog::ProgressDialog() {
 	set_exclusive(true);
 	set_flag(Window::FLAG_POPUP, false);
 	singleton = this;
-	cancel_hb = memnew(HBoxContainer);
-	main->add_child(cancel_hb);
-	cancel_hb->hide();
 	cancel = memnew(Button);
-	cancel_hb->add_spacer();
-	cancel_hb->add_child(cancel);
+	cancel->set_h_size_flags(Control::SIZE_EXPAND | Control::SIZE_SHRINK_CENTER);
+	main->add_child(cancel);
+	cancel->hide();
 	cancel->set_text(TTR("Cancel"));
-	cancel_hb->add_spacer();
 	cancel->connect(SceneStringName(pressed), callable_mp(this, &ProgressDialog::_cancel_pressed));
 }
