@@ -101,7 +101,7 @@ static String fix_path(const String &p_path) {
 	}
 	path = path.simplify_path();
 	path = path.replace("/", "\\");
-	if (!path.is_network_share_path() && !path.begins_with(R"(\\?\)")) {
+	if (path.size() >= MAX_PATH && !path.is_network_share_path() && !path.begins_with(R"(\\?\)")) {
 		path = R"(\\?\)" + path;
 	}
 	return path;
