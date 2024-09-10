@@ -117,8 +117,8 @@ def configure(env: "SConsEnvironment"):
 
     # LTO
 
-    if env["lto"] == "auto":  # Full LTO for production.
-        env["lto"] = "full"
+    if env["lto"] == "auto":  # Enable LTO for production.
+        env["lto"] = "thin"
 
     if env["lto"] != "none":
         if env["lto"] == "thin":
