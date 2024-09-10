@@ -3309,6 +3309,20 @@ void EditorInspector::update_tree() {
 						}
 					}
 				}
+			} else if (!ClassDB::class_exists(classname) && !EditorHelp::get_doc_data()->has_doc(classname)) {
+				// Actively add docs to EditorHelp if not registered yet, because the docs of a script class is not available
+				// in EditorHelp until it's reloaded (open & re-save) in the internal ScriptEditor (or modified externally).
+				// Then, the help tooltip for classes (and exported properties) will be correctly loaded even if it's not opened (reloaded) in ScriptEditor.
+				const Resource *res = Object::cast_to<Resource>(object);
+				if (res) {
+					const Ref<Script> scr = res->get_script();
+					if (scr.is_valid()) {
+						const Vector<DocData::ClassDoc> docs = scr->get_documentation();
+						for (Vector<DocData::ClassDoc>::ConstIterator it = docs.begin(); it != docs.end(); ++it) {
+							EditorHelp::get_doc_data()->add_doc(*it);
+						}
+					}
+				}
 			}
 
 			StringName propname = property_prefix + p.name;
