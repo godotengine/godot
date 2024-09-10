@@ -969,11 +969,16 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 
 #ifdef DEBUG_ENABLED
 			if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_UV2_TEXEL_DENSITY)) {
-				if (inst->data->base_type == RS::INSTANCE_MESH && inst->data->use_baked_light) {
-					Size2 lightmap_size = mesh_storage->mesh_get_lightmap_size_hint(inst->data->base) * inst->data->lightmap_scale;
+				if (inst->data->base_type == RS::INSTANCE_MESH && inst->data->use_baked_light && inst->lightmap_instance.is_valid()) {
+					RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
+
+					RID lightmap = light_storage->lightmap_instance_get_lightmap(inst->lightmap_instance);
+					Vector2i lightmap_atlas_size = light_storage->lightmap_get_light_texture_size(lightmap);
+
+					Size2 lightmap_size = inst->lightmap_uv_scale.size * Size2(lightmap_atlas_size);
 
 					if (inst->data->lightmap_size_global_uniform_pos == -2) {
-						//not allocated, try to allocate
+						// Not allocated, try to allocate.
 						inst->data->lightmap_size_global_uniform_pos = RSG::material_storage->global_shader_parameters_unit_variable_allocate();
 					}
 
@@ -4179,11 +4184,6 @@ void RenderForwardClustered::GeometryInstanceForwardClustered::set_use_lightmap(
 	lightmap_uv_scale = p_lightmap_uv_scale;
 	lightmap_slice_index = p_lightmap_slice_index;
 
-	_mark_dirty();
-}
-
-void RenderForwardClustered::GeometryInstanceForwardClustered::set_lightmap_scale(float p_lightmap_scale) {
-	data->lightmap_scale = p_lightmap_scale;
 	_mark_dirty();
 }
 

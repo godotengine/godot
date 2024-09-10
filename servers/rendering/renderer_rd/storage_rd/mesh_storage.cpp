@@ -802,12 +802,6 @@ void MeshStorage::mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) {
 	mesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
 }
 
-void MeshStorage::mesh_set_lightmap_size_hint(RID p_mesh, const Size2 &p_size) {
-	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
-	ERR_FAIL_COND(!mesh);
-	mesh->lightmap_size_hint = p_size;
-}
-
 void MeshStorage::mesh_clear(RID p_mesh) {
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_NULL(mesh);

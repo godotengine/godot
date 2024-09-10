@@ -743,17 +743,21 @@ instance uniform vec2 lightmap_size : instance_index(0);
 
 void fragment() {
 	vec2 lightmap_pos = UV2 * lightmap_size;
-	vec2 p = lightmap_pos / 10.0;
 
 	vec2 ddx = dFdx(UV2);
 	vec2 ddy = dFdy(UV2);
 
 	vec2 w = max(abs(ddx), abs(ddy)) + 0.01;
 
-	vec2 s = 2.0 * (abs(fract((p - 0.5 * w) / 2.0) - 0.5) - abs(fract((p + 0.5 * w) / 2.0) - 0.5)) / w;
-	float t = 0.5 - 0.5 * s.x * s.y;
+	vec2 s = 2.0 * (abs(fract((lightmap_pos - 0.5 * w) / 2.0) - 0.5) - abs(fract((lightmap_pos + 0.5 * w) / 2.0) - 0.5)) / w;
 
-	float checkerboard_pattern = mix(0.75, 1.25, t);
+	// Do a larger scale checkerboard as well.
+	lightmap_pos /= 10.0;
+	vec2 s2 = 2.0 * (abs(fract((lightmap_pos - 0.5 * w) / 2.0) - 0.5) - abs(fract((lightmap_pos + 0.5 * w) / 2.0) - 0.5)) / w;
+
+	float checkerboard_pattern = mix(0.85, 1.15, 0.5 - 0.5 * s2.x * s2.y);
+	checkerboard_pattern = checkerboard_pattern - mix(0.25, 0.5, 0.5 - 0.5 * s.x * s.y * sign(s2.x * s2.y)) ;
+
 	ALBEDO *= checkerboard_pattern;
 }
 )");

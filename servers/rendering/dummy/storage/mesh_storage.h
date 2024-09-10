@@ -131,8 +131,6 @@ public:
 	virtual void mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) override {}
 	virtual void mesh_clear(RID p_mesh) override;
 
-	virtual void mesh_set_lightmap_size_hint(RID p_mesh, const Size2 &p_size) override {}
-
 	/* MESH INSTANCE */
 
 	virtual RID mesh_instance_create(RID p_base) override { return RID(); }

@@ -315,8 +315,6 @@ public:
 
 	FUNC2(mesh_set_shadow_mesh, RID, RID)
 
-	FUNC2(mesh_set_lightmap_size_hint, RID, const Size2 &)
-
 	FUNC1(mesh_clear, RID)
 
 	/* MULTIMESH API */
@@ -839,7 +837,6 @@ public:
 
 	FUNC6(instance_geometry_set_visibility_range, RID, float, float, float, float, VisibilityRangeFadeMode)
 	FUNC4(instance_geometry_set_lightmap, RID, RID, const Rect2 &, int)
-	FUNC2(instance_geometry_set_lightmap_scale, RID, float)
 	FUNC2(instance_geometry_set_lod_bias, RID, float)
 	FUNC2(instance_geometry_set_transparency, RID, float)
 	FUNC3(instance_geometry_set_shader_parameter, RID, const StringName &, const Variant &)
