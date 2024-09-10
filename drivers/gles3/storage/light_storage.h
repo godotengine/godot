@@ -734,6 +734,11 @@ public:
 	virtual void lightmap_set_probe_capture_update_speed(float p_speed) override;
 	virtual float lightmap_get_probe_capture_update_speed() const override;
 
+	_FORCE_INLINE_ Vector2i lightmap_get_light_texture_size(RID p_lightmap) const {
+		const Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
+		return lm->light_texture_size;
+	}
+
 	/* LIGHTMAP INSTANCE */
 
 	LightmapInstance *get_lightmap_instance(RID p_rid) { return lightmap_instance_owner.get_or_null(p_rid); };
@@ -742,6 +747,11 @@ public:
 	virtual RID lightmap_instance_create(RID p_lightmap) override;
 	virtual void lightmap_instance_free(RID p_lightmap) override;
 	virtual void lightmap_instance_set_transform(RID p_lightmap, const Transform3D &p_transform) override;
+
+	_FORCE_INLINE_ RID lightmap_instance_get_lightmap(RID p_lightmap_instance) {
+		LightmapInstance *li = lightmap_instance_owner.get_or_null(p_lightmap_instance);
+		return li->lightmap;
+	}
 
 	/* SHADOW ATLAS API */
 	bool owns_shadow_atlas(RID p_rid) { return shadow_atlas_owner.owns(p_rid); };
