@@ -118,11 +118,12 @@ Error FileAccessWindows::open_internal(const String &p_path, int p_mode_flags) {
 		return ERR_INVALID_PARAMETER;
 	}
 
-	struct _stat st;
-	if (_wstat((LPCWSTR)(path.utf16().get_data()), &st) == 0) {
-		if (!S_ISREG(st.st_mode)) {
-			return ERR_FILE_CANT_OPEN;
-		}
+	if (path.ends_with(":\\") || path.ends_with(":")) {
+		return ERR_FILE_CANT_OPEN;
+	}
+	DWORD file_attr = GetFileAttributesW((LPCWSTR)(path.utf16().get_data()));
+	if (file_attr != INVALID_FILE_ATTRIBUTES && (file_attr & FILE_ATTRIBUTE_DIRECTORY)) {
+		return ERR_FILE_CANT_OPEN;
 	}
 
 #ifdef TOOLS_ENABLED
