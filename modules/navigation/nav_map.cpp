@@ -354,8 +354,6 @@ Vector3 NavMap::get_random_point(uint32_t p_navigation_layers, bool p_uniformly)
 }
 
 void NavMap::sync() {
-	RWLockWrite write_lock(map_rwlock);
-
 	// Performance Monitor
 	int _new_pm_region_count = regions.size();
 	int _new_pm_agent_count = agents.size();
@@ -367,304 +365,331 @@ void NavMap::sync() {
 	int _new_pm_edge_free_count = pm_edge_free_count;
 	int _new_pm_obstacle_count = obstacles.size();
 
-	// Check if we need to update the links.
-	if (regenerate_polygons) {
-		for (NavRegion *region : regions) {
-			region->scratch_polygons();
-		}
-		regenerate_links = true;
-	}
-
+	// Check if lock is necessary
+	bool region_dirty = false;
 	for (NavRegion *region : regions) {
-		if (region->sync()) {
-			regenerate_links = true;
+		if (region->is_dirty()) {
+			region_dirty = true;
 		}
 	}
-
 	for (NavLink *link : links) {
 		if (link->check_dirty()) {
 			regenerate_links = true;
 		}
 	}
-
-	if (regenerate_links) {
-		_new_pm_polygon_count = 0;
-		_new_pm_edge_count = 0;
-		_new_pm_edge_merge_count = 0;
-		_new_pm_edge_connection_count = 0;
-		_new_pm_edge_free_count = 0;
-
-		// Remove regions connections.
-		region_external_connections.clear();
-		for (NavRegion *region : regions) {
-			region_external_connections[region] = LocalVector<gd::Edge::Connection>();
-		}
-
-		// Resize the polygon count.
-		int polygon_count = 0;
-		for (const NavRegion *region : regions) {
-			if (!region->get_enabled()) {
-				continue;
-			}
-			polygon_count += region->get_polygons().size();
-		}
-		polygons.resize(polygon_count);
-
-		// Copy all region polygons in the map.
-		polygon_count = 0;
-		for (const NavRegion *region : regions) {
-			if (!region->get_enabled()) {
-				continue;
-			}
-			const LocalVector<gd::Polygon> &polygons_source = region->get_polygons();
-			for (uint32_t n = 0; n < polygons_source.size(); n++) {
-				polygons[polygon_count] = polygons_source[n];
-				polygons[polygon_count].id = polygon_count;
-				polygon_count++;
-			}
-		}
-
-		_new_pm_polygon_count = polygon_count;
-
-		// Group all edges per key.
-		HashMap<gd::EdgeKey, Vector<gd::Edge::Connection>, gd::EdgeKey> connections;
-		for (gd::Polygon &poly : polygons) {
-			for (uint32_t p = 0; p < poly.points.size(); p++) {
-				int next_point = (p + 1) % poly.points.size();
-				gd::EdgeKey ek(poly.points[p].key, poly.points[next_point].key);
-
-				HashMap<gd::EdgeKey, Vector<gd::Edge::Connection>, gd::EdgeKey>::Iterator connection = connections.find(ek);
-				if (!connection) {
-					connections[ek] = Vector<gd::Edge::Connection>();
-					_new_pm_edge_count += 1;
-				}
-				if (connections[ek].size() <= 1) {
-					// Add the polygon/edge tuple to this key.
-					gd::Edge::Connection new_connection;
-					new_connection.polygon = &poly;
-					new_connection.edge = p;
-					new_connection.pathway_start = poly.points[p].pos;
-					new_connection.pathway_end = poly.points[next_point].pos;
-					connections[ek].push_back(new_connection);
-				} else {
-					// The edge is already connected with another edge, skip.
-					ERR_PRINT_ONCE("Navigation map synchronization error. Attempted to merge a navigation mesh polygon edge with another already-merged edge. This is usually caused by crossing edges, overlapping polygons, or a mismatch of the NavigationMesh / NavigationPolygon baked 'cell_size' and navigation map 'cell_size'. If you're certain none of above is the case, change 'navigation/3d/merge_rasterizer_cell_scale' to 0.001.");
-				}
-			}
-		}
-
-		Vector<gd::Edge::Connection> free_edges;
-		for (KeyValue<gd::EdgeKey, Vector<gd::Edge::Connection>> &E : connections) {
-			if (E.value.size() == 2) {
-				// Connect edge that are shared in different polygons.
-				gd::Edge::Connection &c1 = E.value.write[0];
-				gd::Edge::Connection &c2 = E.value.write[1];
-				c1.polygon->edges[c1.edge].connections.push_back(c2);
-				c2.polygon->edges[c2.edge].connections.push_back(c1);
-				// Note: The pathway_start/end are full for those connection and do not need to be modified.
-				_new_pm_edge_merge_count += 1;
-			} else {
-				CRASH_COND_MSG(E.value.size() != 1, vformat("Number of connection != 1. Found: %d", E.value.size()));
-				if (use_edge_connections && E.value[0].polygon->owner->get_use_edge_connections()) {
-					free_edges.push_back(E.value[0]);
-				}
-			}
-		}
-
-		// Find the compatible near edges.
-		//
-		// Note:
-		// Considering that the edges must be compatible (for obvious reasons)
-		// to be connected, create new polygons to remove that small gap is
-		// not really useful and would result in wasteful computation during
-		// connection, integration and path finding.
-		_new_pm_edge_free_count = free_edges.size();
-
-		for (int i = 0; i < free_edges.size(); i++) {
-			const gd::Edge::Connection &free_edge = free_edges[i];
-			Vector3 edge_p1 = free_edge.polygon->points[free_edge.edge].pos;
-			Vector3 edge_p2 = free_edge.polygon->points[(free_edge.edge + 1) % free_edge.polygon->points.size()].pos;
-
-			for (int j = 0; j < free_edges.size(); j++) {
-				const gd::Edge::Connection &other_edge = free_edges[j];
-				if (i == j || free_edge.polygon->owner == other_edge.polygon->owner) {
-					continue;
-				}
-
-				Vector3 other_edge_p1 = other_edge.polygon->points[other_edge.edge].pos;
-				Vector3 other_edge_p2 = other_edge.polygon->points[(other_edge.edge + 1) % other_edge.polygon->points.size()].pos;
-
-				// Compute the projection of the opposite edge on the current one
-				Vector3 edge_vector = edge_p2 - edge_p1;
-				real_t projected_p1_ratio = edge_vector.dot(other_edge_p1 - edge_p1) / (edge_vector.length_squared());
-				real_t projected_p2_ratio = edge_vector.dot(other_edge_p2 - edge_p1) / (edge_vector.length_squared());
-				if ((projected_p1_ratio < 0.0 && projected_p2_ratio < 0.0) || (projected_p1_ratio > 1.0 && projected_p2_ratio > 1.0)) {
-					continue;
-				}
-
-				// Check if the two edges are close to each other enough and compute a pathway between the two regions.
-				Vector3 self1 = edge_vector * CLAMP(projected_p1_ratio, 0.0, 1.0) + edge_p1;
-				Vector3 other1;
-				if (projected_p1_ratio >= 0.0 && projected_p1_ratio <= 1.0) {
-					other1 = other_edge_p1;
-				} else {
-					other1 = other_edge_p1.lerp(other_edge_p2, (1.0 - projected_p1_ratio) / (projected_p2_ratio - projected_p1_ratio));
-				}
-				if (other1.distance_to(self1) > edge_connection_margin) {
-					continue;
-				}
-
-				Vector3 self2 = edge_vector * CLAMP(projected_p2_ratio, 0.0, 1.0) + edge_p1;
-				Vector3 other2;
-				if (projected_p2_ratio >= 0.0 && projected_p2_ratio <= 1.0) {
-					other2 = other_edge_p2;
-				} else {
-					other2 = other_edge_p1.lerp(other_edge_p2, (0.0 - projected_p1_ratio) / (projected_p2_ratio - projected_p1_ratio));
-				}
-				if (other2.distance_to(self2) > edge_connection_margin) {
-					continue;
-				}
-
-				// The edges can now be connected.
-				gd::Edge::Connection new_connection = other_edge;
-				new_connection.pathway_start = (self1 + other1) / 2.0;
-				new_connection.pathway_end = (self2 + other2) / 2.0;
-				free_edge.polygon->edges[free_edge.edge].connections.push_back(new_connection);
-
-				// Add the connection to the region_connection map.
-				region_external_connections[(NavRegion *)free_edge.polygon->owner].push_back(new_connection);
-				_new_pm_edge_connection_count += 1;
-			}
-		}
-
-		uint32_t link_poly_idx = 0;
-		link_polygons.resize(links.size());
-
-		// Search for polygons within range of a nav link.
-		for (const NavLink *link : links) {
-			if (!link->get_enabled()) {
-				continue;
-			}
-			const Vector3 start = link->get_start_position();
-			const Vector3 end = link->get_end_position();
-
-			gd::Polygon *closest_start_polygon = nullptr;
-			real_t closest_start_distance = link_connection_radius;
-			Vector3 closest_start_point;
-
-			gd::Polygon *closest_end_polygon = nullptr;
-			real_t closest_end_distance = link_connection_radius;
-			Vector3 closest_end_point;
-
-			// Create link to any polygons within the search radius of the start point.
-			for (uint32_t start_index = 0; start_index < polygons.size(); start_index++) {
-				gd::Polygon &start_poly = polygons[start_index];
-
-				// For each face check the distance to the start
-				for (uint32_t start_point_id = 2; start_point_id < start_poly.points.size(); start_point_id += 1) {
-					const Face3 start_face(start_poly.points[0].pos, start_poly.points[start_point_id - 1].pos, start_poly.points[start_point_id].pos);
-					const Vector3 start_point = start_face.get_closest_point_to(start);
-					const real_t start_distance = start_point.distance_to(start);
-
-					// Pick the polygon that is within our radius and is closer than anything we've seen yet.
-					if (start_distance <= link_connection_radius && start_distance < closest_start_distance) {
-						closest_start_distance = start_distance;
-						closest_start_point = start_point;
-						closest_start_polygon = &start_poly;
-					}
-				}
-			}
-
-			// Find any polygons within the search radius of the end point.
-			for (gd::Polygon &end_poly : polygons) {
-				// For each face check the distance to the end
-				for (uint32_t end_point_id = 2; end_point_id < end_poly.points.size(); end_point_id += 1) {
-					const Face3 end_face(end_poly.points[0].pos, end_poly.points[end_point_id - 1].pos, end_poly.points[end_point_id].pos);
-					const Vector3 end_point = end_face.get_closest_point_to(end);
-					const real_t end_distance = end_point.distance_to(end);
-
-					// Pick the polygon that is within our radius and is closer than anything we've seen yet.
-					if (end_distance <= link_connection_radius && end_distance < closest_end_distance) {
-						closest_end_distance = end_distance;
-						closest_end_point = end_point;
-						closest_end_polygon = &end_poly;
-					}
-				}
-			}
-
-			// If we have both a start and end point, then create a synthetic polygon to route through.
-			if (closest_start_polygon && closest_end_polygon) {
-				gd::Polygon &new_polygon = link_polygons[link_poly_idx++];
-				new_polygon.id = polygon_count++;
-				new_polygon.owner = link;
-
-				new_polygon.edges.clear();
-				new_polygon.edges.resize(4);
-				new_polygon.points.clear();
-				new_polygon.points.reserve(4);
-
-				// Build a set of vertices that create a thin polygon going from the start to the end point.
-				new_polygon.points.push_back({ closest_start_point, get_point_key(closest_start_point) });
-				new_polygon.points.push_back({ closest_start_point, get_point_key(closest_start_point) });
-				new_polygon.points.push_back({ closest_end_point, get_point_key(closest_end_point) });
-				new_polygon.points.push_back({ closest_end_point, get_point_key(closest_end_point) });
-
-				// Setup connections to go forward in the link.
-				{
-					gd::Edge::Connection entry_connection;
-					entry_connection.polygon = &new_polygon;
-					entry_connection.edge = -1;
-					entry_connection.pathway_start = new_polygon.points[0].pos;
-					entry_connection.pathway_end = new_polygon.points[1].pos;
-					closest_start_polygon->edges[0].connections.push_back(entry_connection);
-
-					gd::Edge::Connection exit_connection;
-					exit_connection.polygon = closest_end_polygon;
-					exit_connection.edge = -1;
-					exit_connection.pathway_start = new_polygon.points[2].pos;
-					exit_connection.pathway_end = new_polygon.points[3].pos;
-					new_polygon.edges[2].connections.push_back(exit_connection);
-				}
-
-				// If the link is bi-directional, create connections from the end to the start.
-				if (link->is_bidirectional()) {
-					gd::Edge::Connection entry_connection;
-					entry_connection.polygon = &new_polygon;
-					entry_connection.edge = -1;
-					entry_connection.pathway_start = new_polygon.points[2].pos;
-					entry_connection.pathway_end = new_polygon.points[3].pos;
-					closest_end_polygon->edges[0].connections.push_back(entry_connection);
-
-					gd::Edge::Connection exit_connection;
-					exit_connection.polygon = closest_start_polygon;
-					exit_connection.edge = -1;
-					exit_connection.pathway_start = new_polygon.points[0].pos;
-					exit_connection.pathway_end = new_polygon.points[1].pos;
-					new_polygon.edges[0].connections.push_back(exit_connection);
-				}
-			}
-		}
-
-		// Some code treats 0 as a failure case, so we avoid returning 0 and modulo wrap UINT32_MAX manually.
-		iteration_id = iteration_id % UINT32_MAX + 1;
-	}
-
-	// Do we have modified obstacle positions?
 	for (NavObstacle *obstacle : obstacles) {
 		if (obstacle->check_dirty()) {
 			obstacles_dirty = true;
 		}
 	}
-	// Do we have modified agent arrays?
 	for (NavAgent *agent : agents) {
 		if (agent->check_dirty()) {
 			agents_dirty = true;
 		}
 	}
+	bool need_write = regenerate_polygons || region_dirty || regenerate_links || obstacles_dirty || agents_dirty;
+	if (need_write) {
+		RWLockWrite write_lock(map_rwlock);
 
-	// Update avoidance worlds.
-	if (obstacles_dirty || agents_dirty) {
-		_update_rvo_simulation();
+		// Check if we need to update the links.
+		if (regenerate_polygons) {
+			for (NavRegion *region : regions) {
+				region->scratch_polygons();
+			}
+			regenerate_links = true;
+		}
+
+		for (NavRegion *region : regions) {
+			if (region->sync()) {
+				regenerate_links = true;
+			}
+		}
+
+		for (NavLink *link : links) {
+			if (link->check_dirty()) {
+				regenerate_links = true;
+			}
+		}
+
+		if (regenerate_links) {
+			_new_pm_polygon_count = 0;
+			_new_pm_edge_count = 0;
+			_new_pm_edge_merge_count = 0;
+			_new_pm_edge_connection_count = 0;
+			_new_pm_edge_free_count = 0;
+
+			// Remove regions connections.
+			region_external_connections.clear();
+			for (NavRegion *region : regions) {
+				region_external_connections[region] = LocalVector<gd::Edge::Connection>();
+			}
+
+			// Resize the polygon count.
+			int polygon_count = 0;
+			for (const NavRegion *region : regions) {
+				if (!region->get_enabled()) {
+					continue;
+				}
+				polygon_count += region->get_polygons().size();
+			}
+			polygons.resize(polygon_count);
+
+			// Copy all region polygons in the map.
+			polygon_count = 0;
+			for (const NavRegion *region : regions) {
+				if (!region->get_enabled()) {
+					continue;
+				}
+				const LocalVector<gd::Polygon> &polygons_source = region->get_polygons();
+				for (uint32_t n = 0; n < polygons_source.size(); n++) {
+					polygons[polygon_count] = polygons_source[n];
+					polygons[polygon_count].id = polygon_count;
+					polygon_count++;
+				}
+			}
+
+			_new_pm_polygon_count = polygon_count;
+
+			// Group all edges per key.
+			HashMap<gd::EdgeKey, Vector<gd::Edge::Connection>, gd::EdgeKey> connections;
+			for (gd::Polygon &poly : polygons) {
+				for (uint32_t p = 0; p < poly.points.size(); p++) {
+					int next_point = (p + 1) % poly.points.size();
+					gd::EdgeKey ek(poly.points[p].key, poly.points[next_point].key);
+
+					HashMap<gd::EdgeKey, Vector<gd::Edge::Connection>, gd::EdgeKey>::Iterator connection = connections.find(ek);
+					if (!connection) {
+						connections[ek] = Vector<gd::Edge::Connection>();
+						_new_pm_edge_count += 1;
+					}
+					if (connections[ek].size() <= 1) {
+						// Add the polygon/edge tuple to this key.
+						gd::Edge::Connection new_connection;
+						new_connection.polygon = &poly;
+						new_connection.edge = p;
+						new_connection.pathway_start = poly.points[p].pos;
+						new_connection.pathway_end = poly.points[next_point].pos;
+						connections[ek].push_back(new_connection);
+					} else {
+						// The edge is already connected with another edge, skip.
+						ERR_PRINT_ONCE("Navigation map synchronization error. Attempted to merge a navigation mesh polygon edge with another already-merged edge. This is usually caused by crossing edges, overlapping polygons, or a mismatch of the NavigationMesh / NavigationPolygon baked 'cell_size' and navigation map 'cell_size'. If you're certain none of above is the case, change 'navigation/3d/merge_rasterizer_cell_scale' to 0.001.");
+					}
+				}
+			}
+
+			Vector<gd::Edge::Connection> free_edges;
+			for (KeyValue<gd::EdgeKey, Vector<gd::Edge::Connection>> &E : connections) {
+				if (E.value.size() == 2) {
+					// Connect edge that are shared in different polygons.
+					gd::Edge::Connection &c1 = E.value.write[0];
+					gd::Edge::Connection &c2 = E.value.write[1];
+					c1.polygon->edges[c1.edge].connections.push_back(c2);
+					c2.polygon->edges[c2.edge].connections.push_back(c1);
+					// Note: The pathway_start/end are full for those connection and do not need to be modified.
+					_new_pm_edge_merge_count += 1;
+				} else {
+					CRASH_COND_MSG(E.value.size() != 1, vformat("Number of connection != 1. Found: %d", E.value.size()));
+					if (use_edge_connections && E.value[0].polygon->owner->get_use_edge_connections()) {
+						free_edges.push_back(E.value[0]);
+					}
+				}
+			}
+
+			// Find the compatible near edges.
+			//
+			// Note:
+			// Considering that the edges must be compatible (for obvious reasons)
+			// to be connected, create new polygons to remove that small gap is
+			// not really useful and would result in wasteful computation during
+			// connection, integration and path finding.
+			_new_pm_edge_free_count = free_edges.size();
+
+			for (int i = 0; i < free_edges.size(); i++) {
+				const gd::Edge::Connection &free_edge = free_edges[i];
+				Vector3 edge_p1 = free_edge.polygon->points[free_edge.edge].pos;
+				Vector3 edge_p2 = free_edge.polygon->points[(free_edge.edge + 1) % free_edge.polygon->points.size()].pos;
+
+				for (int j = 0; j < free_edges.size(); j++) {
+					const gd::Edge::Connection &other_edge = free_edges[j];
+					if (i == j || free_edge.polygon->owner == other_edge.polygon->owner) {
+						continue;
+					}
+
+					Vector3 other_edge_p1 = other_edge.polygon->points[other_edge.edge].pos;
+					Vector3 other_edge_p2 = other_edge.polygon->points[(other_edge.edge + 1) % other_edge.polygon->points.size()].pos;
+
+					// Compute the projection of the opposite edge on the current one
+					Vector3 edge_vector = edge_p2 - edge_p1;
+					real_t projected_p1_ratio = edge_vector.dot(other_edge_p1 - edge_p1) / (edge_vector.length_squared());
+					real_t projected_p2_ratio = edge_vector.dot(other_edge_p2 - edge_p1) / (edge_vector.length_squared());
+					if ((projected_p1_ratio < 0.0 && projected_p2_ratio < 0.0) || (projected_p1_ratio > 1.0 && projected_p2_ratio > 1.0)) {
+						continue;
+					}
+
+					// Check if the two edges are close to each other enough and compute a pathway between the two regions.
+					Vector3 self1 = edge_vector * CLAMP(projected_p1_ratio, 0.0, 1.0) + edge_p1;
+					Vector3 other1;
+					if (projected_p1_ratio >= 0.0 && projected_p1_ratio <= 1.0) {
+						other1 = other_edge_p1;
+					} else {
+						other1 = other_edge_p1.lerp(other_edge_p2, (1.0 - projected_p1_ratio) / (projected_p2_ratio - projected_p1_ratio));
+					}
+					if (other1.distance_to(self1) > edge_connection_margin) {
+						continue;
+					}
+
+					Vector3 self2 = edge_vector * CLAMP(projected_p2_ratio, 0.0, 1.0) + edge_p1;
+					Vector3 other2;
+					if (projected_p2_ratio >= 0.0 && projected_p2_ratio <= 1.0) {
+						other2 = other_edge_p2;
+					} else {
+						other2 = other_edge_p1.lerp(other_edge_p2, (0.0 - projected_p1_ratio) / (projected_p2_ratio - projected_p1_ratio));
+					}
+					if (other2.distance_to(self2) > edge_connection_margin) {
+						continue;
+					}
+
+					// The edges can now be connected.
+					gd::Edge::Connection new_connection = other_edge;
+					new_connection.pathway_start = (self1 + other1) / 2.0;
+					new_connection.pathway_end = (self2 + other2) / 2.0;
+					free_edge.polygon->edges[free_edge.edge].connections.push_back(new_connection);
+
+					// Add the connection to the region_connection map.
+					region_external_connections[(NavRegion *)free_edge.polygon->owner].push_back(new_connection);
+					_new_pm_edge_connection_count += 1;
+				}
+			}
+
+			uint32_t link_poly_idx = 0;
+			link_polygons.resize(links.size());
+
+			// Search for polygons within range of a nav link.
+			for (const NavLink *link : links) {
+				if (!link->get_enabled()) {
+					continue;
+				}
+				const Vector3 start = link->get_start_position();
+				const Vector3 end = link->get_end_position();
+
+				gd::Polygon *closest_start_polygon = nullptr;
+				real_t closest_start_distance = link_connection_radius;
+				Vector3 closest_start_point;
+
+				gd::Polygon *closest_end_polygon = nullptr;
+				real_t closest_end_distance = link_connection_radius;
+				Vector3 closest_end_point;
+
+				// Create link to any polygons within the search radius of the start point.
+				for (uint32_t start_index = 0; start_index < polygons.size(); start_index++) {
+					gd::Polygon &start_poly = polygons[start_index];
+
+					// For each face check the distance to the start
+					for (uint32_t start_point_id = 2; start_point_id < start_poly.points.size(); start_point_id += 1) {
+						const Face3 start_face(start_poly.points[0].pos, start_poly.points[start_point_id - 1].pos, start_poly.points[start_point_id].pos);
+						const Vector3 start_point = start_face.get_closest_point_to(start);
+						const real_t start_distance = start_point.distance_to(start);
+
+						// Pick the polygon that is within our radius and is closer than anything we've seen yet.
+						if (start_distance <= link_connection_radius && start_distance < closest_start_distance) {
+							closest_start_distance = start_distance;
+							closest_start_point = start_point;
+							closest_start_polygon = &start_poly;
+						}
+					}
+				}
+
+				// Find any polygons within the search radius of the end point.
+				for (gd::Polygon &end_poly : polygons) {
+					// For each face check the distance to the end
+					for (uint32_t end_point_id = 2; end_point_id < end_poly.points.size(); end_point_id += 1) {
+						const Face3 end_face(end_poly.points[0].pos, end_poly.points[end_point_id - 1].pos, end_poly.points[end_point_id].pos);
+						const Vector3 end_point = end_face.get_closest_point_to(end);
+						const real_t end_distance = end_point.distance_to(end);
+
+						// Pick the polygon that is within our radius and is closer than anything we've seen yet.
+						if (end_distance <= link_connection_radius && end_distance < closest_end_distance) {
+							closest_end_distance = end_distance;
+							closest_end_point = end_point;
+							closest_end_polygon = &end_poly;
+						}
+					}
+				}
+
+				// If we have both a start and end point, then create a synthetic polygon to route through.
+				if (closest_start_polygon && closest_end_polygon) {
+					gd::Polygon &new_polygon = link_polygons[link_poly_idx++];
+					new_polygon.id = polygon_count++;
+					new_polygon.owner = link;
+
+					new_polygon.edges.clear();
+					new_polygon.edges.resize(4);
+					new_polygon.points.clear();
+					new_polygon.points.reserve(4);
+
+					// Build a set of vertices that create a thin polygon going from the start to the end point.
+					new_polygon.points.push_back({ closest_start_point, get_point_key(closest_start_point) });
+					new_polygon.points.push_back({ closest_start_point, get_point_key(closest_start_point) });
+					new_polygon.points.push_back({ closest_end_point, get_point_key(closest_end_point) });
+					new_polygon.points.push_back({ closest_end_point, get_point_key(closest_end_point) });
+
+					// Setup connections to go forward in the link.
+					{
+						gd::Edge::Connection entry_connection;
+						entry_connection.polygon = &new_polygon;
+						entry_connection.edge = -1;
+						entry_connection.pathway_start = new_polygon.points[0].pos;
+						entry_connection.pathway_end = new_polygon.points[1].pos;
+						closest_start_polygon->edges[0].connections.push_back(entry_connection);
+
+						gd::Edge::Connection exit_connection;
+						exit_connection.polygon = closest_end_polygon;
+						exit_connection.edge = -1;
+						exit_connection.pathway_start = new_polygon.points[2].pos;
+						exit_connection.pathway_end = new_polygon.points[3].pos;
+						new_polygon.edges[2].connections.push_back(exit_connection);
+					}
+
+					// If the link is bi-directional, create connections from the end to the start.
+					if (link->is_bidirectional()) {
+						gd::Edge::Connection entry_connection;
+						entry_connection.polygon = &new_polygon;
+						entry_connection.edge = -1;
+						entry_connection.pathway_start = new_polygon.points[2].pos;
+						entry_connection.pathway_end = new_polygon.points[3].pos;
+						closest_end_polygon->edges[0].connections.push_back(entry_connection);
+
+						gd::Edge::Connection exit_connection;
+						exit_connection.polygon = closest_start_polygon;
+						exit_connection.edge = -1;
+						exit_connection.pathway_start = new_polygon.points[0].pos;
+						exit_connection.pathway_end = new_polygon.points[1].pos;
+						new_polygon.edges[0].connections.push_back(exit_connection);
+					}
+				}
+			}
+
+			// Some code treats 0 as a failure case, so we avoid returning 0 and modulo wrap UINT32_MAX manually.
+			iteration_id = iteration_id % UINT32_MAX + 1;
+		}
+
+		// Do we have modified obstacle positions?
+		for (NavObstacle *obstacle : obstacles) {
+			if (obstacle->check_dirty()) {
+				obstacles_dirty = true;
+			}
+		}
+		// Do we have modified agent arrays?
+		for (NavAgent *agent : agents) {
+			if (agent->check_dirty()) {
+				agents_dirty = true;
+			}
+		}
+
+		// Update avoidance worlds.
+		if (obstacles_dirty || agents_dirty) {
+			_update_rvo_simulation();
+		}
 	}
 
 	regenerate_polygons = false;

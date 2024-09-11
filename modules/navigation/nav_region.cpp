@@ -128,6 +128,10 @@ Vector3 NavRegion::get_random_point(uint32_t p_navigation_layers, bool p_uniform
 	return NavMeshQueries3D::polygons_get_random_point(get_polygons(), p_navigation_layers, p_uniformly);
 }
 
+bool NavRegion::is_dirty() {
+	return polygons_dirty;
+}
+
 bool NavRegion::sync() {
 	RWLockWrite write_lock(region_rwlock);
 

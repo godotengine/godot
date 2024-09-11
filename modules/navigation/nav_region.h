@@ -96,6 +96,7 @@ public:
 
 	real_t get_surface_area() const { return surface_area; };
 
+	bool is_dirty();
 	bool sync();
 
 private:
