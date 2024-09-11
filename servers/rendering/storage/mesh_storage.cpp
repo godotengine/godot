@@ -285,7 +285,7 @@ int RendererMeshStorage::multimesh_get_visible_instances(RID p_multimesh) const 
 	return _multimesh_get_visible_instances(p_multimesh);
 }
 
-AABB RendererMeshStorage::multimesh_get_aabb(RID p_multimesh) const {
+AABB RendererMeshStorage::multimesh_get_aabb(RID p_multimesh) {
 	return _multimesh_get_aabb(p_multimesh);
 }
 

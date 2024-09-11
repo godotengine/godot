@@ -1395,6 +1395,8 @@ void WaylandThread::_wl_pointer_on_leave(void *data, struct wl_pointer *wl_point
 
 	ss->pointed_surface = nullptr;
 
+	ss->pointer_data_buffer.pressed_button_mask.clear();
+
 	Ref<WindowEventMessage> msg;
 	msg.instantiate();
 	msg->event = DisplayServer::WINDOW_EVENT_MOUSE_EXIT;

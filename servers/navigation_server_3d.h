@@ -168,6 +168,9 @@ public:
 	virtual Vector3 region_get_connection_pathway_start(RID p_region, int p_connection_id) const = 0;
 	virtual Vector3 region_get_connection_pathway_end(RID p_region, int p_connection_id) const = 0;
 
+	virtual Vector3 region_get_closest_point_to_segment(RID p_region, const Vector3 &p_from, const Vector3 &p_to, bool p_use_collision = false) const = 0;
+	virtual Vector3 region_get_closest_point(RID p_region, const Vector3 &p_point) const = 0;
+	virtual Vector3 region_get_closest_point_normal(RID p_region, const Vector3 &p_point) const = 0;
 	virtual Vector3 region_get_random_point(RID p_region, uint32_t p_navigation_layers, bool p_uniformly) const = 0;
 
 	/// Creates a new link between positions in the nav map.

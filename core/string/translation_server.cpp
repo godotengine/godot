@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "translation_server.h"
-#include "translation_server.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"

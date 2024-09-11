@@ -37,7 +37,6 @@
 class ConfigFile;
 class EditorPlugin;
 class EditorUndoRedoManager;
-class EditorContextMenuPlugin;
 class PopupMenu;
 
 /**
@@ -125,22 +124,6 @@ public:
 		uint64_t last_checked_version = 0;
 	};
 
-	enum ContextMenuSlot {
-		CONTEXT_SLOT_SCENE_TREE,
-		CONTEXT_SLOT_FILESYSTEM,
-		CONTEXT_SLOT_SCRIPT_EDITOR,
-		CONTEXT_SUBMENU_SLOT_FILESYSTEM_CREATE,
-	};
-
-	inline static constexpr int CONTEXT_MENU_ITEM_ID_BASE = 1000;
-
-	struct ContextMenu {
-		int p_slot;
-		Ref<EditorContextMenuPlugin> plugin;
-	};
-
-	Vector<ContextMenu> context_menu_plugins;
-
 private:
 	Vector<EditorPlugin *> editor_plugins;
 	HashMap<StringName, EditorPlugin *> extension_editor_plugins;
@@ -194,18 +177,6 @@ public:
 	void remove_extension_editor_plugin(const StringName &p_class_name);
 	bool has_extension_editor_plugin(const StringName &p_class_name);
 	EditorPlugin *get_extension_editor_plugin(const StringName &p_class_name);
-
-	// Context menu plugin.
-	void add_context_menu_plugin(ContextMenuSlot p_slot, const Ref<EditorContextMenuPlugin> &p_plugin);
-	void remove_context_menu_plugin(ContextMenuSlot p_slot, const Ref<EditorContextMenuPlugin> &p_plugin);
-	int match_context_menu_shortcut(ContextMenuSlot p_slot, const Ref<InputEvent> &p_event);
-
-	void add_options_from_plugins(PopupMenu *p_popup, ContextMenuSlot p_slot, const Vector<String> &p_paths);
-	void filesystem_options_pressed(ContextMenuSlot p_slot, int p_option, const Vector<String> &p_selected);
-	void scene_tree_options_pressed(ContextMenuSlot p_slot, int p_option, const List<Node *> &p_selected);
-	void script_editor_options_pressed(ContextMenuSlot p_slot, int p_option, const Ref<Resource> &p_script);
-	template <typename T>
-	void invoke_plugin_callback(ContextMenuSlot p_slot, int p_option, const T &p_arg);
 
 	void add_undo_redo_inspector_hook_callback(Callable p_callable); // Callbacks should have this signature: void (Object* undo_redo, Object *modified_object, String property, Variant new_value)
 	void remove_undo_redo_inspector_hook_callback(Callable p_callable);

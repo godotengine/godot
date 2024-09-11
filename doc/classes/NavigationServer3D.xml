@@ -532,7 +532,7 @@
 			<param index="0" name="map" type="RID" />
 			<param index="1" name="to_point" type="Vector3" />
 			<description>
-				Returns the point closest to the provided [param to_point] on the navigation mesh surface.
+				Returns the navigation mesh surface point closest to the provided [param to_point] on the navigation [param map].
 			</description>
 		</method>
 		<method name="map_get_closest_point_normal" qualifiers="const">
@@ -540,7 +540,7 @@
 			<param index="0" name="map" type="RID" />
 			<param index="1" name="to_point" type="Vector3" />
 			<description>
-				Returns the normal for the point returned by [method map_get_closest_point].
+				Returns the navigation mesh surface normal closest to the provided [param to_point] on the navigation [param map].
 			</description>
 		</method>
 		<method name="map_get_closest_point_owner" qualifiers="const">
@@ -548,7 +548,7 @@
 			<param index="0" name="map" type="RID" />
 			<param index="1" name="to_point" type="Vector3" />
 			<description>
-				Returns the owner region RID for the point returned by [method map_get_closest_point].
+				Returns the owner region RID for the navigation mesh surface point closest to the provided [param to_point] on the navigation [param map].
 			</description>
 		</method>
 		<method name="map_get_closest_point_to_segment" qualifiers="const">
@@ -558,7 +558,8 @@
 			<param index="2" name="end" type="Vector3" />
 			<param index="3" name="use_collision" type="bool" default="false" />
 			<description>
-				Returns the closest point between the navigation surface and the segment.
+				Returns the navigation mesh surface point closest to the provided [param start] and [param end] segment on the navigation [param map].
+				If [param use_collision] is [code]true[/code], a closest point test is only done when the segment intersects with the navigation mesh surface.
 			</description>
 		</method>
 		<method name="map_get_edge_connection_margin" qualifiers="const">
@@ -906,6 +907,33 @@
 			<return type="RID" />
 			<description>
 				Creates a new region.
+			</description>
+		</method>
+		<method name="region_get_closest_point" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="to_point" type="Vector3" />
+			<description>
+				Returns the navigation mesh surface point closest to the provided [param to_point] on the navigation [param region].
+			</description>
+		</method>
+		<method name="region_get_closest_point_normal" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="to_point" type="Vector3" />
+			<description>
+				Returns the navigation mesh surface normal closest to the provided [param to_point] on the navigation [param region].
+			</description>
+		</method>
+		<method name="region_get_closest_point_to_segment" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="start" type="Vector3" />
+			<param index="2" name="end" type="Vector3" />
+			<param index="3" name="use_collision" type="bool" default="false" />
+			<description>
+				Returns the navigation mesh surface point closest to the provided [param start] and [param end] segment on the navigation [param region].
+				If [param use_collision] is [code]true[/code], a closest point test is only done when the segment intersects with the navigation mesh surface.
 			</description>
 		</method>
 		<method name="region_get_connection_pathway_end" qualifiers="const">

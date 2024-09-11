@@ -83,6 +83,7 @@ class StringName {
 	static inline Mutex mutex;
 	static void setup();
 	static void cleanup();
+	static uint32_t get_empty_hash();
 	static inline bool configured = false;
 #ifdef DEBUG_ENABLED
 	struct DebugSortReferences {
@@ -139,7 +140,7 @@ public:
 		if (_data) {
 			return _data->hash;
 		} else {
-			return 0;
+			return get_empty_hash();
 		}
 	}
 	_FORCE_INLINE_ const void *data_unique_pointer() const {

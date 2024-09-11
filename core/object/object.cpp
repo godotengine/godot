@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "object.h"
-#include "object.compat.inc"
 
 #include "core/extension/gdextension_manager.h"
 #include "core/io/resource.h"

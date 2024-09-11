@@ -30,6 +30,7 @@
 
 #include "inspector_dock.h"
 
+#include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
@@ -97,7 +98,7 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 		case OBJECT_REQUEST_HELP: {
 			if (current) {
-				EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
+				EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
 				emit_signal(SNAME("request_help"), current->get_class());
 			}
 		} break;

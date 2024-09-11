@@ -37,6 +37,7 @@
 #include "core/math/projection.h"
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
+#include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
@@ -810,7 +811,7 @@ ObjectID Node3DEditorViewport::_select_ray(const Point2 &p_pos) const {
 	Vector<Node3D *> nodes_with_gizmos = Node3DEditor::get_singleton()->gizmo_bvh_ray_query(pos, pos + ray * camera->get_far());
 
 	for (Node3D *spat : nodes_with_gizmos) {
-		if (!spat) {
+		if (!spat || _is_node_locked(spat)) {
 			continue;
 		}
 
@@ -1557,7 +1558,7 @@ void Node3DEditorViewport::_surface_focus_exit() {
 	view_menu->set_disable_shortcuts(true);
 }
 
-bool Node3DEditorViewport ::_is_node_locked(const Node *p_node) {
+bool Node3DEditorViewport::_is_node_locked(const Node *p_node) const {
 	return p_node->get_meta("_edit_lock_", false);
 }
 
@@ -1935,11 +1936,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 					if (after != EditorPlugin::AFTER_GUI_INPUT_CUSTOM) {
 						// Single item selection.
-						Vector<_RayResult> selection;
-						_find_items_at_pos(b->get_position(), selection, false);
-						if (!selection.is_empty()) {
-							clicked = selection[0].item->get_instance_id();
-						}
+						clicked = _select_ray(b->get_position());
 
 						selection_in_progress = true;
 
@@ -9376,7 +9373,7 @@ Vector<Node3D *> Node3DEditor::gizmo_bvh_frustum_query(const Vector<Plane> &p_fr
 Node3DEditorPlugin::Node3DEditorPlugin() {
 	spatial_editor = memnew(Node3DEditor);
 	spatial_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	EditorNode::get_singleton()->get_main_screen_control()->add_child(spatial_editor);
+	EditorNode::get_singleton()->get_editor_main_screen()->get_control()->add_child(spatial_editor);
 
 	spatial_editor->hide();
 }

@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "control.h"
-#include "control.compat.inc"
 
 #include "container.h"
 #include "core/config/project_settings.h"
