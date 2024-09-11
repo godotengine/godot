@@ -2,7 +2,7 @@
 
 #include "scene/main/node.h"
 #include "core/io/resource.h"
-#include "modules/limboai/bt/bt_player.h"
+#include "../blackboard/blackboard_plan.h"
 
 struct BeehaveRunState
 {

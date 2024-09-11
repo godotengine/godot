@@ -1,6 +1,6 @@
 #pragma once
 #include "scene/3d/node_3d.h"
-#include "modules/limboai/bt/bt_player.h"
+#include "../blackboard/blackboard_plan.h"
 
 // 继承Resource目的主要是为了编辑时方便显示名称
 class AnimatorAIStateConditionBase : public RefCounted

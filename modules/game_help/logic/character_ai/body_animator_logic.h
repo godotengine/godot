@@ -1,6 +1,7 @@
 #pragma once
 #include "scene/3d/node_3d.h"
-#include "modules/limboai/bt/bt_player.h"
+#include "../blackboard/blackboard.h"
+#include "../blackboard/blackboard_plan.h"
 
 class CharacterAnimatorLayer;
 // 动画逻辑执行的任务

@@ -22,6 +22,8 @@ env_game_help.add_source_files(env.modules_sources, "logic/character_shape/*.cpp
 env_game_help.add_source_files(env.modules_sources, "csv/*.cpp")
 env_game_help.add_source_files(env.modules_sources, "unity/*.cpp")
 env_game_help.add_source_files(env.modules_sources, "logic/navigation/*.cpp")
+env_game_help.add_source_files(env.modules_sources, "logic/blackboard/*.cpp")
+env_game_help.add_source_files(env.modules_sources, "logic/blackboard/bb_param/*.cpp")
 # mterrain
 env_game_help.add_source_files(env.modules_sources, "MTerrain/gdextension/src/*.cpp")
 env_game_help.add_source_files(env.modules_sources, "MTerrain/gdextension/src/height_brushes/*.cpp")

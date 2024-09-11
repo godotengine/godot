@@ -82,7 +82,7 @@ void CharacterAnimatorCondition::_bind_methods()
     ClassDB::bind_method(D_METHOD("set_exclude_condition", "exclude_condition"), &CharacterAnimatorCondition::set_exclude_condition);
     ClassDB::bind_method(D_METHOD("get_exclude_condition"), &CharacterAnimatorCondition::get_exclude_condition);
 
-    ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "include_condition", PROPERTY_HINT_ARRAY_TYPE,RESOURCE_TYPE_HINT("AnimatorAIStateConditionBase")), "set_include_condition", "get_include_condition");
-    ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude_condition",PROPERTY_HINT_ARRAY_TYPE, RESOURCE_TYPE_HINT("AnimatorAIStateConditionBase")), "set_exclude_condition", "get_exclude_condition");
+    ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "include_condition", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("AnimatorAIStateConditionBase")), "set_include_condition", "get_include_condition");
+    ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude_condition",PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("AnimatorAIStateConditionBase")), "set_exclude_condition", "get_exclude_condition");
 
 }

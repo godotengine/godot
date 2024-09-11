@@ -2,7 +2,7 @@
 #define _CHARACTER_AI_H_
 #include "scene/3d/node_3d.h"
 #include "core/object/ref_counted.h"
-#include "modules/limboai/bt/bt_player.h"
+#include "../blackboard/blackboard_plan.h"
 #include "scene/3d/physics/character_body_3d.h"
 #include "animator_condition.h"
 #include "../body_main.h"

@@ -1,6 +1,6 @@
 #pragma once
 #include "core/object/ref_counted.h"
-#include "modules/limboai/bt/bt_player.h"
+#include "../blackboard/blackboard_plan.h"
 
 
 // 继承Resource目的主要是为了编辑时方便显示名称
@@ -117,7 +117,7 @@ class AnimatorBlackboardSet : public RefCounted
         ClassDB::bind_method(D_METHOD("set_blackboard_plan", "blackboard_plan"), &AnimatorBlackboardSet::set_blackboard_plan);
         ClassDB::bind_method(D_METHOD("get_blackboard_plan"), &AnimatorBlackboardSet::get_blackboard_plan);
 
-        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "change_list", PROPERTY_HINT_ARRAY_TYPE,RESOURCE_TYPE_HINT("AnimatorBlackboardSetItemBase")), "set_change_list", "get_change_list");
+        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "change_list", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("AnimatorBlackboardSetItemBase")), "set_change_list", "get_change_list");
     }
 public:
     void set_change_list(TypedArray<Ref<AnimatorBlackboardSetItemBase>> p_list) 

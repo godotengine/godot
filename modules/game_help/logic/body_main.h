@@ -19,8 +19,7 @@
 #include "beehave/beehave_tree.h"
 
 
-#include "modules/limboai/bt/bt_player.h"
-#include "modules/limboai/bt/tasks/decorators/bt_new_scope.h"
+#include "./blackboard/blackboard_plan.h"
 
 class CharacterAI;
 // 身体的插槽信息

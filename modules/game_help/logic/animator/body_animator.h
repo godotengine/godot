@@ -387,12 +387,12 @@ public:
         }
         if(blackboard_plan.is_valid())
         {
-            blackboard_plan->disconnect(LW_NAME(changed), callable_mp(this, &CharacterAnimationLogicNode::_blackboard_changed));
+            blackboard_plan->disconnect("changed", callable_mp(this, &CharacterAnimationLogicNode::_blackboard_changed));
         }
          blackboard_plan = p_blackboard_plan; 
          if(blackboard_plan.is_valid())
          {
-             blackboard_plan->connect(LW_NAME(changed), callable_mp(this, &CharacterAnimationLogicNode::_blackboard_changed));
+             blackboard_plan->connect("changed", callable_mp(this, &CharacterAnimationLogicNode::_blackboard_changed));
          }
          init_blackboard(blackboard_plan);
 		 update_blackboard_plan();
@@ -479,7 +479,7 @@ public:
     {
         if(blackboard_plan.is_valid())
         {
-            blackboard_plan->disconnect(LW_NAME(changed), callable_mp(this, &CharacterAnimationLogicNode::_blackboard_changed));
+            blackboard_plan->disconnect("changed", callable_mp(this, &CharacterAnimationLogicNode::_blackboard_changed));
         }
     }
 

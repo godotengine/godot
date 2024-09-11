@@ -6,7 +6,7 @@
 #include "scene/animation/animation_player.h"
 #include "scene/animation/animation_tree.h"
 
-#include "modules/limboai/bt/bt_player.h"
+#include "../blackboard/blackboard_plan.h"
 class CharacterBoneMap : public Resource
 {
     GDCLASS(CharacterBoneMap, Resource);

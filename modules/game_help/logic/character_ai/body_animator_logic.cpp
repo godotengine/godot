@@ -15,7 +15,7 @@ void CharacterAnimationLogicRoot::_bind_methods()
     ClassDB::bind_method(D_METHOD("get_node_list"),&CharacterAnimationLogicRoot::get_node_list);
 
 
-    ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "node_list", PROPERTY_HINT_ARRAY_TYPE,RESOURCE_TYPE_HINT("CharacterAnimationLogicNode")), "set_node_list", "get_node_list");
+    ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "node_list", PROPERTY_HINT_ARRAY_TYPE,MAKE_RESOURCE_TYPE_HINT("CharacterAnimationLogicNode")), "set_node_list", "get_node_list");
     ADD_MEMBER_BUTTON(sort, "Sort", CharacterAnimationLogicRoot);
 
 }
