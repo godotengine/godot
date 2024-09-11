@@ -838,7 +838,7 @@ void ImporterMesh::create_shadow_mesh() {
 				index_wptr[j] = vertex_remap[index];
 			}
 
-			if (SurfaceTool::optimize_vertex_cache_func) {
+			if (SurfaceTool::optimize_vertex_cache_func && surfaces[i].primitive == Mesh::PRIMITIVE_TRIANGLES) {
 				SurfaceTool::optimize_vertex_cache_func((unsigned int *)index_wptr, (const unsigned int *)index_wptr, index_count, new_vertices.size());
 			}
 
@@ -860,7 +860,7 @@ void ImporterMesh::create_shadow_mesh() {
 					index_wptr[k] = vertex_remap[index];
 				}
 
-				if (SurfaceTool::optimize_vertex_cache_func) {
+				if (SurfaceTool::optimize_vertex_cache_func && surfaces[i].primitive == Mesh::PRIMITIVE_TRIANGLES) {
 					SurfaceTool::optimize_vertex_cache_func((unsigned int *)index_wptr, (const unsigned int *)index_wptr, index_count, new_vertices.size());
 				}
 
