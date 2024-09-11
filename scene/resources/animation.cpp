@@ -3902,6 +3902,7 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &Animation::clear);
 	ClassDB::bind_method(D_METHOD("copy_track", "track_idx", "to_animation"), &Animation::copy_track);
 
+	ClassDB::bind_method(D_METHOD("optimize", "allowed_velocity_err", "allowed_angular_err", "precision"), &Animation::optimize, DEFVAL(0.01), DEFVAL(0.01), DEFVAL(3));
 	ClassDB::bind_method(D_METHOD("compress", "page_size", "fps", "split_tolerance"), &Animation::compress, DEFVAL(8192), DEFVAL(120), DEFVAL(4.0));
 
 	ClassDB::bind_method(D_METHOD("is_capture_included"), &Animation::is_capture_included);
