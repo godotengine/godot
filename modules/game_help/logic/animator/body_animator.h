@@ -324,6 +324,11 @@ public:
     void set_config(const Ref<CharacterAnimatorLayerConfig>& _config) { config = _config; }
     Ref<CharacterAnimatorLayerConfig> get_config() { return config; }
 public:
+    void editor_stop_animation()
+    {
+        editor_stop = true;
+    }
+public:
     Vector<Vector2> m_ChildInputVectorArray;
 	Vector<int> m_TempCropArray;
 protected:
@@ -338,6 +343,7 @@ protected:
     List<CharacterAnimationInstance> m_AnimationInstances;
     class CharacterAnimator* m_Animator = nullptr;
     float blend_weight = 1.0f;
+    bool editor_stop = false;
 };
 
 // 动画逻辑节点
@@ -520,7 +526,7 @@ class CharacterAnimatorLayerConfigInstance : public RefCounted
         ClassDB::bind_method(D_METHOD("get_play_animation"), &CharacterAnimatorLayerConfigInstance::get_play_animation);
         ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "play_animation", PROPERTY_HINT_RESOURCE_TYPE, "Animation"), "set_play_animation", "get_play_animation");
 
-        ADD_MEMBER_BUTTON(editor_play_animation,L"播放动画",CharacterAnimatorLayerConfigInstance);
+        ADD_MEMBER_BUTTON(editor_play_select_animation,L"播放动画",CharacterAnimatorLayerConfigInstance);
 
         ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "config", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimatorLayerConfig"), "set_config", "get_config");
     }
@@ -591,13 +597,22 @@ public:
 		}
 
 	}
+public:
+
+    void editor_play_animation(Ref<CharacterAnimatorNodeBase> p_node) {
+        layer->play_animation(p_node);
+    }
+
+    void editor_stop_animation() {
+        layer->editor_stop_animation();
+    }
 
 protected:
 	void auto_init();
 
 protected:
     Ref<Animation> play_animation;
-    DECL_MEMBER_BUTTON(editor_play_animation);
+    DECL_MEMBER_BUTTON(editor_play_select_animation);
 protected:
     Ref<CharacterAnimatorLayerConfig> config;
     CharacterAnimatorLayer* layer = nullptr;
@@ -679,7 +694,21 @@ public:
 
     ~CharacterAnimator() {
     }
+public:
 
+    void editor_play_animation(Ref<CharacterAnimatorNodeBase> p_node) {
+        if(m_LayerConfigInstanceList.size() == 0) {
+            return;
+        }
+		m_LayerConfigInstanceList.front()->get()->editor_play_animation(p_node);
+    }
+
+    void editor_stop_animation() {
+        if(m_LayerConfigInstanceList.size() == 0) {
+            return;
+        }
+		m_LayerConfigInstanceList.front()->get()->editor_stop_animation();
+    }
 };
 VARIANT_ENUM_CAST(CharacterAnimatorNodeBase::LoopType)
 VARIANT_ENUM_CAST(CharacterAnimationLogicNode::AnimatorAIStopCheckType)

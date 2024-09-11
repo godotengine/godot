@@ -8,9 +8,14 @@ class AnimationNodePreview : public SubViewportContainer
 {
 	float rot_x;
 	float rot_y;
+    enum Play_State {
+        PS_Play,
+        PS_Pause,
+        PS_Stop
+    };
+    Play_State play_state = PS_Stop;
 
 	SubViewport *viewport = nullptr;
-	CharacterBodyMain *preview_character = nullptr;
 	Node3D *rotation = nullptr;
 	DirectionalLight3D *light1 = nullptr;
 	DirectionalLight3D *light2 = nullptr;
@@ -19,6 +24,12 @@ class AnimationNodePreview : public SubViewportContainer
 
 	Button *light_1_switch = nullptr;
 	Button *light_2_switch = nullptr;
+    Button *play_button = nullptr;
+    Button *pause_button = nullptr;
+    Button *stop_button = nullptr;
+
+	Ref<CharacterAnimatorNodeBase> node;
+	CharacterBodyMain *preview_character = nullptr;
 
 	struct ThemeCache {
 		Ref<Texture2D> light_1_icon;
@@ -32,6 +43,19 @@ class AnimationNodePreview : public SubViewportContainer
     void _on_light_2_switch_pressed() {
         light2->set_visible(light_2_switch->is_pressed());
     }
+
+    void _on_play_button_pressed() {
+        play();
+    }
+
+    void _on_pause_button_pressed() {
+        pause();
+    }
+
+    void _on_stop_button_pressed() {
+        stop();
+    }
+
 	void _update_rotation(){
         Transform3D t;
         t.basis.rotate(Vector3(0, 1, 0), -rot_y);
@@ -39,21 +63,105 @@ class AnimationNodePreview : public SubViewportContainer
         rotation->set_transform(t);
     }
 
+    void play() {
+        play_state = PS_Play;
+        preview_character->set_editor_pause_animation(false);
+        if(node.is_valid()) {
+            preview_character->get_animator()->editor_play_animation(node);
+        }
+        update_play_state();
+    }
+
+    void pause() {
+        play_state = PS_Pause;
+        preview_character->set_editor_pause_animation(!preview_character->get_editor_pause_animation());
+        if(preview_character->get_editor_pause_animation()) {
+            pause_button->set_text(L"继续");
+            pause_button->set_modulate(Color(1, 0.5, 0.5, 1));
+        }
+        else
+        {
+            pause_button->set_text(L"暂停");
+            pause_button->set_modulate(Color(1, 1, 1, 1));
+        }
+        update_play_state();
+    }
+
+    void stop() {
+        play_state = PS_Stop;
+        preview_character->set_editor_pause_animation(false);
+        preview_character->get_animator()->editor_stop_animation();
+        update_play_state();
+    }
+
+    void update_play_state() {
+        switch (play_state)
+        {
+        case PS_Play:
+            play_button->set_disabled(false);
+            pause_button->set_disabled(true);
+            stop_button->set_disabled(true);
+            break;
+        case PS_Pause:
+            play_button->set_disabled(true);
+            pause_button->set_disabled(false);
+            stop_button->set_disabled(false);
+            break;
+        case PS_Stop:
+            play_button->set_disabled(false);
+            pause_button->set_disabled(true);
+            stop_button->set_disabled(true);
+            break;
+        }
+    }
+
+
 protected:
 	virtual void _update_theme_item_cache() override {
         SubViewportContainer::_update_theme_item_cache();
 
-        theme_cache.light_1_icon = get_editor_theme_icon(SNAME("MaterialPreviewLight1"));
-        theme_cache.light_2_icon = get_editor_theme_icon(SNAME("MaterialPreviewLight2"));
+
+		EditorBottomPanel* p_control = EditorNode::get_bottom_panel();
+        theme_cache.light_1_icon = p_control->get_editor_theme_icon(SNAME("MaterialPreviewLight1"));
+        theme_cache.light_2_icon = p_control->get_editor_theme_icon(SNAME("MaterialPreviewLight2"));
+		light_1_switch->set_icon(theme_cache.light_1_icon);
+		light_2_switch->set_icon(theme_cache.light_2_icon);
     }
 	void _notification(int p_what) {
         switch (p_what) {
-            case NOTIFICATION_THEME_CHANGED: {
-                light_1_switch->set_icon(theme_cache.light_1_icon);
-                light_2_switch->set_icon(theme_cache.light_2_icon);
-            } break;
+            case NOTIFICATION_ENTER_TREE: {
+                Ref<CharacterBodyPrefab> prefab = get_preview_prefab();
+                if (prefab.is_valid()) {
+                    preview_character->set_body_prefab(prefab);
+                }
+            }
+            break;
         }
     }
+    void process(double delta) override {
+        Ref<CharacterBodyPrefab> prefab = get_preview_prefab();
+        if(preview_character->get_body_prefab() != prefab) {
+            edit(prefab);            
+        }
+        
+    }
+	Ref<CharacterBodyPrefab>& get_globle_preview_prefab() {
+        
+		static Ref<CharacterBodyPrefab> prefab;
+        return prefab;
+    }
+	Ref<CharacterBodyPrefab> get_preview_prefab() {
+		CharacterBodyMain* body_main = CharacterBodyMain::get_current_editor_player();
+		if (body_main != nullptr)
+		{
+			Ref<CharacterBodyPrefab> body_prefab = body_main->get_body_prefab();
+			if (body_prefab.is_valid())
+			{
+				return body_prefab;
+			}
+		}
+		return get_globle_preview_prefab();
+	}
 	void gui_input(const Ref<InputEvent> &p_event) override{
         ERR_FAIL_COND(p_event.is_null());
 
@@ -69,6 +177,8 @@ protected:
 
 public:
 	void edit(Ref<CharacterBodyPrefab> p_prefab){
+        play_state = PS_Stop;
+        update_play_state();
         preview_character->set_body_prefab(p_prefab);
 
         rot_x = Math::deg_to_rad(-15.0);
@@ -117,6 +227,7 @@ public:
         rotation = memnew(Node3D);
         viewport->add_child(rotation);
         preview_character = memnew(CharacterBodyMain);
+        preview_character->init();
         rotation->add_child(preview_character);
 
         set_custom_minimum_size(Size2(1, 150) * EDSCALE);
@@ -139,6 +250,7 @@ public:
         light_1_switch->set_theme_type_variation("PreviewLightButton");
         light_1_switch->set_toggle_mode(true);
         light_1_switch->set_pressed(true);
+        light_1_switch->set_modulate(Color(0.9, 0.9, 1, 1.0));
         vb_light->add_child(light_1_switch);
         light_1_switch->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodePreview::_on_light_1_switch_pressed));
 
@@ -146,11 +258,31 @@ public:
         light_2_switch->set_theme_type_variation("PreviewLightButton");
         light_2_switch->set_toggle_mode(true);
         light_2_switch->set_pressed(true);
+        light_2_switch->set_modulate(Color(0.9, 0.9, 1, 1.0));
         vb_light->add_child(light_2_switch);
         light_2_switch->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodePreview::_on_light_2_switch_pressed));
 
+        play_button = memnew(Button);
+        vb_light->add_child(play_button);
+        play_button->set_text(L"播放");
+        play_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodePreview::_on_play_button_pressed));
+
+        pause_button = memnew(Button);
+        vb_light->add_child(pause_button);
+        pause_button->set_text(L"暂停");
+        pause_button->set_disabled(true);
+        pause_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodePreview::_on_pause_button_pressed));
+
+        stop_button = memnew(Button);
+        vb_light->add_child(stop_button);
+        stop_button->set_text(L"停止");
+        stop_button->set_disabled(true);
+        stop_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodePreview::_on_stop_button_pressed));
+
         rot_x = 0;
         rot_y = 0;
+
+        set_process(true);
     }
 
 };
@@ -260,7 +392,7 @@ protected:
     EditorResourcePicker* select_animation_picker = nullptr;
     EditorResourcePicker* select_animator_node_picker = nullptr;
     Button* delete_button = nullptr;
-    
+
     class AnimationNodeSectionBase* node_editor = nullptr;
     int index = 0;
     bool is_show_x = false;
@@ -293,6 +425,34 @@ public:
 
 
         // 创建预览窗口
+        preview_resource_vb = memnew(VBoxContainer);
+        preview_resource_vb->set_h_size_flags(SIZE_EXPAND_FILL);
+        tasks_container->add_child(preview_resource_vb);
+        {
+            prefab_lable = memnew(Label);
+            preview_resource_vb->add_child(prefab_lable);
+            prefab_lable->set_text(L"預覽*预制体:");
+
+
+            select_prefab_picker = memnew(EditorResourcePicker);
+            preview_resource_vb->add_child(select_prefab_picker);
+            select_prefab_picker->set_base_type("CharacterPrefabSection");
+            select_prefab_picker->set_h_size_flags(SIZE_EXPAND_FILL);
+            select_prefab_picker->connect("resource_changed", callable_mp(this, &AnimationNodeSectionBase::_on_prefab_picker_changed));
+
+            blackbord_lable = memnew(Label);
+            preview_resource_vb->add_child(blackbord_lable);
+            blackbord_lable->set_text(L"預覽*黑板:");
+
+
+			select_blackbaord_picker = memnew(EditorResourcePicker);
+            preview_resource_vb->add_child(select_blackbaord_picker);
+			select_blackbaord_picker->set_base_type("BlackboardPlan");
+			select_blackbaord_picker->set_h_size_flags(SIZE_EXPAND_FILL);
+			select_blackbaord_picker->connect("resource_changed", callable_mp(this, &AnimationNodeSectionBase::_on_blackbord_picker_changed));
+
+        }
+
         preview = memnew(AnimationNodePreview);
         preview->set_custom_minimum_size(Size2(1, 300) * EDSCALE);
         tasks_container->add_child(preview);
@@ -327,6 +487,14 @@ public:
     }
     virtual bool is_show_x_input() { return false; }
     virtual bool is_show_y_input() { return false; }
+    void _on_prefab_picker_changed(Ref<Resource> p_resource) {
+        if(p_resource.is_valid()) {
+        }
+    }
+    void _on_blackbord_picker_changed(Ref<Resource> p_resource) {
+        if(p_resource.is_valid()) {
+        }
+    }
 
 public:
     void item_node_move_up(int p_index) {
@@ -360,9 +528,19 @@ public:
         update_child_item();
     }
 public:
+	CheckBox* is_cilp = nullptr;
+
+	VBoxContainer* preview_resource_vb = nullptr;
+	Label* prefab_lable = nullptr;
+	EditorResourcePicker* select_prefab_picker = nullptr;
+	Label* blackbord_lable = nullptr;
+	EditorResourcePicker* select_blackbaord_picker = nullptr;
+
+
     Button* add_button = nullptr;
     VBoxContainer* item_parent = nullptr;
     List<AnimatorNodeItemEditor*> item_container;
+	EditorResourcePicker* select_animation_picker = nullptr;
     AnimationNodePreview* preview = nullptr;
     Ref<CharacterAnimatorNodeBase> node;
 };
@@ -412,9 +590,10 @@ public:
 
 
 void AnimatorNodeItemEditor::update_item_state() {
-    bool is_clip = node_editor->node->get_animation_item(index)->get_is_clip();
-    select_animation_picker->set_visible(is_clip);
-    select_animator_node_picker->set_visible(!is_clip);
+    bool is_anim_clip = node_editor->node->get_animation_item(index)->get_is_clip();
+	is_cilp->set_pressed(is_anim_clip);
+    select_animation_picker->set_visible(is_anim_clip);
+    select_animator_node_picker->set_visible(!is_anim_clip);
     
     select_animation_picker->set_edited_resource(node_editor->node->get_animation_item(index)->get_animation());    
     select_animator_node_picker->set_edited_resource(node_editor->node->get_animation_item(index)->get_child_node());

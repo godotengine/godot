@@ -55,6 +55,7 @@ void EditorResourcePicker::_update_resource() {
 		resource_path = resource->get_path() + "\n";
 	}
 	String class_name = _get_resource_type(edited_resource);
+	assign_button->set_modulate(Color(1, 1, 1));
 
 	if (preview_rect) {
 		preview_rect->set_texture(Ref<Texture2D>());
@@ -63,8 +64,9 @@ void EditorResourcePicker::_update_resource() {
 
 		if (edited_resource.is_null()) {
 			assign_button->set_icon(Ref<Texture2D>());
-			assign_button->set_text(TTR("<empty>"));
+			assign_button->set_text(String("(") + base_type + "):" + TTR("<empty>"));
 			assign_button->set_tooltip_text("");
+			assign_button->set_modulate(Color(1, 0.5, 0.5));
 		} else {
 			assign_button->set_icon(EditorNode::get_singleton()->get_object_icon(edited_resource.operator->(), SNAME("Object")));
 			if(resource.is_valid()) {

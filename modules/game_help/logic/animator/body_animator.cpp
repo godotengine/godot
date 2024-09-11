@@ -98,6 +98,10 @@ void CharacterAnimatorLayer::_process_logic(const Ref<Blackboard>& p_playback_in
 // 处理动画
 void CharacterAnimatorLayer::_process_animator(const Ref<Blackboard> &p_playback_info,double p_delta,bool is_first)
 {
+    if(editor_stop) {
+        m_AnimationInstances.clear();
+        editor_stop = false;
+    }
 	clear_animation_instances();
     // 处理逻辑节点请求播放的动作
     if(logic_context.curr_animation.is_valid())
@@ -447,7 +451,7 @@ CharacterAnimatorLayer::~CharacterAnimatorLayer()
         m_Animator->on_layer_delete(this);
 }
 
-void CharacterAnimatorLayerConfigInstance::editor_play_animation()
+void CharacterAnimatorLayerConfigInstance::editor_play_select_animation()
 {
     if(layer == nullptr)
     {

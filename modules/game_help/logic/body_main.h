@@ -387,6 +387,21 @@ public:
     String editor_animation_file_path;
     DECL_MEMBER_BUTTON(editor_build_animation);
 
+    void set_editor_animation_speed(float p_speed) {
+        editor_animation_speed = p_speed;
+    }
+
+    float get_editor_animation_speed() {
+        return editor_animation_speed;
+    }
+
+    void set_editor_pause_animation(bool p_pause) {
+        editor_pause_animation = p_pause;
+    }
+
+    bool get_editor_pause_animation() {
+        return editor_pause_animation;
+    }
 
 public:
     static ObjectID& get_curr_editor_player();
@@ -435,6 +450,8 @@ protected:
     HashMap<StringName,BodySocket> socket;
 
     bool run_ai = true;
+    bool editor_pause_animation = false;
+    float editor_animation_speed = 1.0;
 };
 
 #endif

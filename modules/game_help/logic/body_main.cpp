@@ -117,9 +117,12 @@ void CharacterBodyMain::_update_ai()
 }
 void CharacterBodyMain::_process_animator()
 {
+    if(editor_pause_animation) {
+        return ;
+    }
     if(animator.is_valid())
     {
-        animator->_thread_update_animator(get_process_delta_time());
+        animator->_thread_update_animator(get_process_delta_time() * editor_animation_speed);
     }
 }
 void CharacterBodyMain::_process_animation()
