@@ -355,7 +355,7 @@ void GDExtension::_register_extension_class_internal(GDExtensionClassLibraryPtr 
 
 	StringName class_name = *reinterpret_cast<const StringName *>(p_class_name);
 	StringName parent_class_name = *reinterpret_cast<const StringName *>(p_parent_class_name);
-	ERR_FAIL_COND_MSG(!String(class_name).is_valid_ascii_identifier(), "Attempt to register extension class '" + class_name + "', which is not a valid class identifier.");
+	ERR_FAIL_COND_MSG(!String(class_name).is_valid_unicode_identifier(), "Attempt to register extension class '" + class_name + "', which is not a valid class identifier.");
 	ERR_FAIL_COND_MSG(ClassDB::class_exists(class_name), "Attempt to register extension class '" + class_name + "', which appears to be already registered.");
 
 	Extension *parent_extension = nullptr;
