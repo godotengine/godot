@@ -37,7 +37,7 @@
 #include "scene/main/scene_tree.h"
 
 void Material::set_next_pass(const Ref<Material> &p_pass) {
-	for (Ref<Material> pass_child = p_pass; pass_child != nullptr; pass_child = pass_child->get_next_pass()) {
+	for (Ref<Material> pass_child = p_pass; pass_child.is_valid(); pass_child = pass_child->get_next_pass()) {
 		ERR_FAIL_COND_MSG(pass_child == this, "Can't set as next_pass one of its parents to prevent crashes due to recursive loop.");
 	}
 

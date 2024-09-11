@@ -1803,22 +1803,22 @@ void main() {
 
 #ifdef LIGHTMAP_BICUBIC_FILTER
 		vec3 lm_light_l0 = textureArray_bicubic(lightmap_textures, uvw + vec3(0.0, 0.0, 0.0), lightmap_texture_size).rgb;
-		vec3 lm_light_l1n1 = textureArray_bicubic(lightmap_textures, uvw + vec3(0.0, 0.0, 1.0), lightmap_texture_size).rgb;
-		vec3 lm_light_l1_0 = textureArray_bicubic(lightmap_textures, uvw + vec3(0.0, 0.0, 2.0), lightmap_texture_size).rgb;
-		vec3 lm_light_l1p1 = textureArray_bicubic(lightmap_textures, uvw + vec3(0.0, 0.0, 3.0), lightmap_texture_size).rgb;
+		vec3 lm_light_l1n1 = (textureArray_bicubic(lightmap_textures, uvw + vec3(0.0, 0.0, 1.0), lightmap_texture_size).rgb - vec3(0.5)) * 2.0;
+		vec3 lm_light_l1_0 = (textureArray_bicubic(lightmap_textures, uvw + vec3(0.0, 0.0, 2.0), lightmap_texture_size).rgb - vec3(0.5)) * 2.0;
+		vec3 lm_light_l1p1 = (textureArray_bicubic(lightmap_textures, uvw + vec3(0.0, 0.0, 3.0), lightmap_texture_size).rgb - vec3(0.5)) * 2.0;
 #else
 		vec3 lm_light_l0 = textureLod(lightmap_textures, uvw + vec3(0.0, 0.0, 0.0), 0.0).rgb;
-		vec3 lm_light_l1n1 = textureLod(lightmap_textures, uvw + vec3(0.0, 0.0, 1.0), 0.0).rgb;
-		vec3 lm_light_l1_0 = textureLod(lightmap_textures, uvw + vec3(0.0, 0.0, 2.0), 0.0).rgb;
-		vec3 lm_light_l1p1 = textureLod(lightmap_textures, uvw + vec3(0.0, 0.0, 3.0), 0.0).rgb;
+		vec3 lm_light_l1n1 = (textureLod(lightmap_textures, uvw + vec3(0.0, 0.0, 1.0), 0.0).rgb - vec3(0.5)) * 2.0;
+		vec3 lm_light_l1_0 = (textureLod(lightmap_textures, uvw + vec3(0.0, 0.0, 2.0), 0.0).rgb - vec3(0.5)) * 2.0;
+		vec3 lm_light_l1p1 = (textureLod(lightmap_textures, uvw + vec3(0.0, 0.0, 3.0), 0.0).rgb - vec3(0.5)) * 2.0;
 #endif
 
 		vec3 n = normalize(lightmap_normal_xform * normal);
 
 		ambient_light += lm_light_l0 * lightmap_exposure_normalization;
-		ambient_light += lm_light_l1n1 * n.y * lightmap_exposure_normalization;
-		ambient_light += lm_light_l1_0 * n.z * lightmap_exposure_normalization;
-		ambient_light += lm_light_l1p1 * n.x * lightmap_exposure_normalization;
+		ambient_light += lm_light_l1n1 * n.y * (lm_light_l0 * lightmap_exposure_normalization * 4.0);
+		ambient_light += lm_light_l1_0 * n.z * (lm_light_l0 * lightmap_exposure_normalization * 4.0);
+		ambient_light += lm_light_l1p1 * n.x * (lm_light_l0 * lightmap_exposure_normalization * 4.0);
 #else
 #ifdef LIGHTMAP_BICUBIC_FILTER
 		ambient_light += textureArray_bicubic(lightmap_textures, uvw, lightmap_texture_size).rgb * lightmap_exposure_normalization;

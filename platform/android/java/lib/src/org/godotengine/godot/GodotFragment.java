@@ -501,4 +501,12 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 		}
 		return Error.ERR_UNAVAILABLE;
 	}
+
+	@Override
+	public boolean supportsFeature(String featureTag) {
+		if (parentHost != null) {
+			return parentHost.supportsFeature(featureTag);
+		}
+		return false;
+	}
 }

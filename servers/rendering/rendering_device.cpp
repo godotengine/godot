@@ -1641,8 +1641,8 @@ Vector<uint8_t> RenderingDevice::texture_get_data(RID p_texture, uint32_t p_laye
 			copy_region.texture_region_size.z = d;
 			command_buffer_texture_copy_regions_vector.push_back(copy_region);
 
-			w = (w >> 1);
-			h = (h >> 1);
+			w = MAX(1u, w >> 1);
+			h = MAX(1u, h >> 1);
 			d = MAX(1u, d >> 1);
 		}
 

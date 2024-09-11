@@ -268,7 +268,7 @@ typedef void (*GDExtensionClassReference)(GDExtensionClassInstancePtr p_instance
 typedef void (*GDExtensionClassUnreference)(GDExtensionClassInstancePtr p_instance);
 typedef void (*GDExtensionClassCallVirtual)(GDExtensionClassInstancePtr p_instance, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr r_ret);
 typedef GDExtensionObjectPtr (*GDExtensionClassCreateInstance)(void *p_class_userdata);
-typedef GDExtensionObjectPtr (*GDExtensionClassCreateInstance2)(void *p_class_userdata, bool p_notify_postinitialize);
+typedef GDExtensionObjectPtr (*GDExtensionClassCreateInstance2)(void *p_class_userdata, GDExtensionBool p_notify_postinitialize);
 typedef void (*GDExtensionClassFreeInstance)(void *p_class_userdata, GDExtensionClassInstancePtr p_instance);
 typedef GDExtensionClassInstancePtr (*GDExtensionClassRecreateInstance)(void *p_class_userdata, GDExtensionObjectPtr p_object);
 typedef GDExtensionClassCallVirtual (*GDExtensionClassGetVirtual)(void *p_class_userdata, GDExtensionConstStringNamePtr p_name);
@@ -2371,6 +2371,22 @@ typedef GDExtensionVariantPtr (*GDExtensionInterfaceDictionaryOperatorIndex)(GDE
  * @return A const pointer to a Variant representing the value at the given key.
  */
 typedef GDExtensionVariantPtr (*GDExtensionInterfaceDictionaryOperatorIndexConst)(GDExtensionConstTypePtr p_self, GDExtensionConstVariantPtr p_key);
+
+/**
+ * @name dictionary_set_typed
+ * @since 4.4
+ *
+ * Makes a Dictionary into a typed Dictionary.
+ *
+ * @param p_self A pointer to the Dictionary.
+ * @param p_key_type The type of Variant the Dictionary key will store.
+ * @param p_key_class_name A pointer to a StringName with the name of the object (if p_key_type is GDEXTENSION_VARIANT_TYPE_OBJECT).
+ * @param p_key_script A pointer to a Script object (if p_key_type is GDEXTENSION_VARIANT_TYPE_OBJECT and the base class is extended by a script).
+ * @param p_value_type The type of Variant the Dictionary value will store.
+ * @param p_value_class_name A pointer to a StringName with the name of the object (if p_value_type is GDEXTENSION_VARIANT_TYPE_OBJECT).
+ * @param p_value_script A pointer to a Script object (if p_value_type is GDEXTENSION_VARIANT_TYPE_OBJECT and the base class is extended by a script).
+ */
+typedef void (*GDExtensionInterfaceDictionarySetTyped)(GDExtensionTypePtr p_self, GDExtensionVariantType p_key_type, GDExtensionConstStringNamePtr p_key_class_name, GDExtensionConstVariantPtr p_key_script, GDExtensionVariantType p_value_type, GDExtensionConstStringNamePtr p_value_class_name, GDExtensionConstVariantPtr p_value_script);
 
 /* INTERFACE: Object */
 

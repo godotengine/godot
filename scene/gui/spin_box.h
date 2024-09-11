@@ -127,8 +127,9 @@ class SpinBox : public Range {
 		int buttons_vertical_separation = 0;
 		int field_and_buttons_separation = 0;
 		int buttons_width = 0;
-		int set_min_buttons_width_from_icons = 0;
-
+#ifndef DISABLE_DEPRECATED
+		bool set_min_buttons_width_from_icons = false;
+#endif
 	} theme_cache;
 
 	void _mouse_exited();

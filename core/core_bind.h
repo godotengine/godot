@@ -128,6 +128,12 @@ protected:
 	static void _bind_methods();
 	static OS *singleton;
 
+#ifndef DISABLE_DEPRECATED
+	Dictionary _execute_with_pipe_bind_compat_94434(const String &p_path, const Vector<String> &p_arguments);
+
+	static void _bind_compatibility_methods();
+#endif
+
 public:
 	enum RenderingDriver {
 		RENDERING_DRIVER_VULKAN,
@@ -161,7 +167,7 @@ public:
 	String get_executable_path() const;
 	String read_string_from_stdin();
 	int execute(const String &p_path, const Vector<String> &p_arguments, Array r_output = Array(), bool p_read_stderr = false, bool p_open_console = false);
-	Dictionary execute_with_pipe(const String &p_path, const Vector<String> &p_arguments);
+	Dictionary execute_with_pipe(const String &p_path, const Vector<String> &p_arguments, bool p_blocking = true);
 	int create_process(const String &p_path, const Vector<String> &p_arguments, bool p_open_console = false);
 	int create_instance(const Vector<String> &p_arguments);
 	Error kill(int p_pid);

@@ -486,11 +486,6 @@ void ConnectDialog::_notification(int p_what) {
 				type_list->set_item_icon(i, get_editor_theme_icon(type_name));
 			}
 
-			Ref<StyleBox> style = get_theme_stylebox(CoreStringName(normal), "LineEdit")->duplicate();
-			if (style.is_valid()) {
-				style->set_content_margin(SIDE_TOP, style->get_content_margin(SIDE_TOP) + 1.0);
-				from_signal->add_theme_style_override(CoreStringName(normal), style);
-			}
 			method_search->set_right_icon(get_editor_theme_icon("Search"));
 			open_method_tree->set_icon(get_editor_theme_icon("Edit"));
 		} break;
@@ -574,6 +569,22 @@ String ConnectDialog::get_signature(const MethodInfo &p_method, PackedStringArra
 					type_name = "Array[" + pi.hint_string + "]";
 				} else {
 					type_name = "Array";
+				}
+				break;
+			case Variant::DICTIONARY:
+				type_name = "Dictionary";
+				if (pi.hint == PROPERTY_HINT_DICTIONARY_TYPE && !pi.hint_string.is_empty()) {
+					String key_hint = pi.hint_string.get_slice(";", 0);
+					String value_hint = pi.hint_string.get_slice(";", 1);
+					if (key_hint.is_empty() || key_hint.begins_with("res://")) {
+						key_hint = "Variant";
+					}
+					if (value_hint.is_empty() || value_hint.begins_with("res://")) {
+						value_hint = "Variant";
+					}
+					if (key_hint != "Variant" || value_hint != "Variant") {
+						type_name += "[" + key_hint + ", " + value_hint + "]";
+					}
 				}
 				break;
 			case Variant::OBJECT:

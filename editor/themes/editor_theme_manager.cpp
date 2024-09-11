@@ -183,7 +183,7 @@ Ref<EditorTheme> EditorThemeManager::_create_base_theme(const Ref<EditorTheme> &
 
 		// If settings are comparable to the old theme, then just copy existing icons over.
 		// Otherwise, regenerate them.
-		bool keep_old_icons = (p_old_theme != nullptr && theme->get_generated_icons_hash() == p_old_theme->get_generated_icons_hash());
+		bool keep_old_icons = (p_old_theme.is_valid() && theme->get_generated_icons_hash() == p_old_theme->get_generated_icons_hash());
 		if (keep_old_icons) {
 			print_verbose("EditorTheme: Can keep old icons, copying.");
 			editor_copy_icons(theme, p_old_theme);
@@ -865,7 +865,6 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		// CheckBox.
 		{
 			Ref<StyleBoxFlat> checkbox_style = p_config.panel_container_style->duplicate();
-			checkbox_style->set_content_margin_individual((p_config.increased_margin + 2) * EDSCALE, p_config.base_margin * EDSCALE, (p_config.increased_margin + 2) * EDSCALE, p_config.base_margin * EDSCALE);
 
 			p_theme->set_stylebox(CoreStringName(normal), "CheckBox", checkbox_style);
 			p_theme->set_stylebox(SceneStringName(pressed), "CheckBox", checkbox_style);
@@ -1165,9 +1164,6 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 	// LineEdit & TextEdit.
 	{
 		Ref<StyleBoxFlat> text_editor_style = p_config.button_style->duplicate();
-		// The original button_style style has an extra 1 pixel offset that makes LineEdits not align with Buttons,
-		// so this compensates for that.
-		text_editor_style->set_content_margin(SIDE_TOP, text_editor_style->get_content_margin(SIDE_TOP) - 1 * EDSCALE);
 
 		// Don't round the bottom corners to make the line look sharper.
 		text_editor_style->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
@@ -1507,7 +1503,9 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		p_theme->set_constant("buttons_vertical_separation", "SpinBox", 0);
 		p_theme->set_constant("field_and_buttons_separation", "SpinBox", 2);
 		p_theme->set_constant("buttons_width", "SpinBox", 16);
+#ifndef DISABLE_DEPRECATED
 		p_theme->set_constant("set_min_buttons_width_from_icons", "SpinBox", 1);
+#endif
 	}
 
 	// ProgressBar.

@@ -52,6 +52,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	AnimationPlayerEditorPlugin *plugin = nullptr;
 	AnimationMixer *original_node = nullptr; // For pinned mark in SceneTree.
 	AnimationPlayer *player = nullptr; // For AnimationPlayerEditor, could be dummy.
+	ObjectID cached_root_node_id;
 	bool is_dummy = false;
 
 	enum {
@@ -178,6 +179,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 	void _select_anim_by_name(const String &p_anim);
 	float _get_editor_step() const;
+	void _go_to_nearest_keyframe(bool p_backward);
 	void _play_pressed();
 	void _play_from_pressed();
 	void _play_bw_pressed();
@@ -252,6 +254,7 @@ public:
 	AnimationMixer *get_editing_node() const;
 	AnimationPlayer *get_player() const;
 	AnimationMixer *fetch_mixer_for_library() const;
+	Node *get_cached_root_node() const;
 
 	static AnimationPlayerEditor *get_singleton() { return singleton; }
 

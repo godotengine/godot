@@ -571,7 +571,7 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 	unzClose(pkg);
 
 	_update_template_status();
-	EditorSettings::get_singleton()->set_meta("export_template_download_directory", p_file.get_base_dir());
+	EditorSettings::get_singleton()->set("_export_template_download_directory", p_file.get_base_dir());
 	return true;
 }
 
@@ -1102,7 +1102,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	install_file_dialog->set_title(TTR("Select Template File"));
 	install_file_dialog->set_access(FileDialog::ACCESS_FILESYSTEM);
 	install_file_dialog->set_file_mode(FileDialog::FILE_MODE_OPEN_FILE);
-	install_file_dialog->set_current_dir(EditorSettings::get_singleton()->get_meta("export_template_download_directory", ""));
+	install_file_dialog->set_current_dir(EDITOR_DEF("_export_template_download_directory", ""));
 	install_file_dialog->add_filter("*.tpz", TTR("Godot Export Templates"));
 	install_file_dialog->connect("file_selected", callable_mp(this, &ExportTemplateManager::_install_file_selected).bind(false));
 	add_child(install_file_dialog);

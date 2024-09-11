@@ -1348,16 +1348,18 @@ int Skeleton3DEditor::get_selected_bone() const {
 	return selected_bone;
 }
 
-Skeleton3DGizmoPlugin::Skeleton3DGizmoPlugin() {
-	unselected_mat = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
-	unselected_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
-	unselected_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
-	unselected_mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-	unselected_mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
-	unselected_mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
+Skeleton3DGizmoPlugin::SelectionMaterials Skeleton3DGizmoPlugin::selection_materials;
 
-	selected_mat = Ref<ShaderMaterial>(memnew(ShaderMaterial));
-	selected_sh = Ref<Shader>(memnew(Shader));
+Skeleton3DGizmoPlugin::Skeleton3DGizmoPlugin() {
+	selection_materials.unselected_mat.instantiate();
+	selection_materials.unselected_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	selection_materials.unselected_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+	selection_materials.unselected_mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	selection_materials.unselected_mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+	selection_materials.unselected_mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
+
+	selection_materials.selected_mat.instantiate();
+	Ref<Shader> selected_sh = Ref<Shader>(memnew(Shader));
 	selected_sh->set_code(R"(
 // Skeleton 3D gizmo bones shader.
 
@@ -1376,7 +1378,7 @@ void fragment() {
 	ALPHA = COLOR.a;
 }
 )");
-	selected_mat->set_shader(selected_sh);
+	selection_materials.selected_mat->set_shader(selected_sh);
 
 	// Register properties in editor settings.
 	EDITOR_DEF_RST("editors/3d_gizmos/gizmo_colors/skeleton", Color(1, 0.8, 0.4));
@@ -1384,6 +1386,11 @@ void fragment() {
 	EDITOR_DEF("editors/3d_gizmos/gizmo_settings/bone_axis_length", (float)0.1);
 	EDITOR_DEF("editors/3d_gizmos/gizmo_settings/bone_shape", 1);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "editors/3d_gizmos/gizmo_settings/bone_shape", PROPERTY_HINT_ENUM, "Wire,Octahedron"));
+}
+
+Skeleton3DGizmoPlugin::~Skeleton3DGizmoPlugin() {
+	selection_materials.unselected_mat.unref();
+	selection_materials.selected_mat.unref();
 }
 
 bool Skeleton3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
@@ -1526,6 +1533,11 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		selected = se->get_selected_bone();
 	}
 
+	Ref<ArrayMesh> m = get_bones_mesh(skeleton, selected, p_gizmo->is_selected());
+	p_gizmo->add_mesh(m, Ref<Material>(), Transform3D(), skeleton->register_skin(skeleton->create_skin_from_rest_transforms()));
+}
+
+Ref<ArrayMesh> Skeleton3DGizmoPlugin::get_bones_mesh(Skeleton3D *p_skeleton, int p_selected, bool p_is_selected) {
 	Color bone_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/skeleton");
 	Color selected_bone_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/selected_bone");
 	real_t bone_axis_length = EDITOR_GET("editors/3d_gizmos/gizmo_settings/bone_axis_length");
@@ -1539,11 +1551,11 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	Ref<SurfaceTool> surface_tool(memnew(SurfaceTool));
 	surface_tool->begin(Mesh::PRIMITIVE_LINES);
 
-	if (p_gizmo->is_selected()) {
-		surface_tool->set_material(selected_mat);
+	if (p_is_selected) {
+		surface_tool->set_material(selection_materials.selected_mat);
 	} else {
-		unselected_mat->set_albedo(bone_color);
-		surface_tool->set_material(unselected_mat);
+		selection_materials.unselected_mat->set_albedo(bone_color);
+		surface_tool->set_material(selection_materials.unselected_mat);
 	}
 
 	LocalVector<int> bones;
@@ -1557,16 +1569,16 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	weights[0] = 1;
 
 	int current_bone_index = 0;
-	Vector<int> bones_to_process = skeleton->get_parentless_bones();
+	Vector<int> bones_to_process = p_skeleton->get_parentless_bones();
 
 	while (bones_to_process.size() > current_bone_index) {
 		int current_bone_idx = bones_to_process[current_bone_index];
 		current_bone_index++;
 
-		Color current_bone_color = (current_bone_idx == selected) ? selected_bone_color : bone_color;
+		Color current_bone_color = (current_bone_idx == p_selected) ? selected_bone_color : bone_color;
 
 		Vector<int> child_bones_vector;
-		child_bones_vector = skeleton->get_bone_children(current_bone_idx);
+		child_bones_vector = p_skeleton->get_bone_children(current_bone_idx);
 		int child_bones_size = child_bones_vector.size();
 
 		for (int i = 0; i < child_bones_size; i++) {
@@ -1577,8 +1589,8 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 			int child_bone_idx = child_bones_vector[i];
 
-			Vector3 v0 = skeleton->get_bone_global_rest(current_bone_idx).origin;
-			Vector3 v1 = skeleton->get_bone_global_rest(child_bone_idx).origin;
+			Vector3 v0 = p_skeleton->get_bone_global_rest(current_bone_idx).origin;
+			Vector3 v1 = p_skeleton->get_bone_global_rest(child_bone_idx).origin;
 			Vector3 d = (v1 - v0).normalized();
 			real_t dist = v0.distance_to(v1);
 
@@ -1586,7 +1598,7 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			int closest = -1;
 			real_t closest_d = 0.0;
 			for (int j = 0; j < 3; j++) {
-				real_t dp = Math::abs(skeleton->get_bone_global_rest(current_bone_idx).basis[j].normalized().dot(d));
+				real_t dp = Math::abs(p_skeleton->get_bone_global_rest(current_bone_idx).basis[j].normalized().dot(d));
 				if (j == 0 || dp > closest_d) {
 					closest = j;
 				}
@@ -1613,7 +1625,7 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 					for (int j = 0; j < 3; j++) {
 						Vector3 axis;
 						if (first == Vector3()) {
-							axis = d.cross(d.cross(skeleton->get_bone_global_rest(current_bone_idx).basis[j])).normalized();
+							axis = d.cross(d.cross(p_skeleton->get_bone_global_rest(current_bone_idx).basis[j])).normalized();
 							first = axis;
 						} else {
 							axis = d.cross(first).normalized();
@@ -1668,7 +1680,7 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 				surface_tool->add_vertex(v0);
 				surface_tool->set_bones(bones);
 				surface_tool->set_weights(weights);
-				surface_tool->add_vertex(v0 + (skeleton->get_bone_global_rest(current_bone_idx).basis.inverse())[j].normalized() * dist * bone_axis_length);
+				surface_tool->add_vertex(v0 + (p_skeleton->get_bone_global_rest(current_bone_idx).basis.inverse())[j].normalized() * dist * bone_axis_length);
 
 				if (j == closest) {
 					continue;
@@ -1685,7 +1697,7 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 					surface_tool->add_vertex(v1);
 					surface_tool->set_bones(bones);
 					surface_tool->set_weights(weights);
-					surface_tool->add_vertex(v1 + (skeleton->get_bone_global_rest(child_bone_idx).basis.inverse())[j].normalized() * dist * bone_axis_length);
+					surface_tool->add_vertex(v1 + (p_skeleton->get_bone_global_rest(child_bone_idx).basis.inverse())[j].normalized() * dist * bone_axis_length);
 
 					if (j == closest) {
 						continue;
@@ -1698,6 +1710,5 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		}
 	}
 
-	Ref<ArrayMesh> m = surface_tool->commit();
-	p_gizmo->add_mesh(m, Ref<Material>(), Transform3D(), skeleton->register_skin(skeleton->create_skin_from_rest_transforms()));
+	return surface_tool->commit();
 }

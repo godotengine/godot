@@ -43,6 +43,10 @@ void mbedtls_x509write_csr_init(mbedtls_x509write_csr *ctx)
 
 void mbedtls_x509write_csr_free(mbedtls_x509write_csr *ctx)
 {
+    if (ctx == NULL) {
+        return;
+    }
+
     mbedtls_asn1_free_named_data_list(&ctx->subject);
     mbedtls_asn1_free_named_data_list(&ctx->extensions);
 

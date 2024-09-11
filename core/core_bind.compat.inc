@@ -32,6 +32,8 @@
 
 namespace core_bind {
 
+// Semaphore
+
 void Semaphore::_post_bind_compat_93605() {
 	post(1);
 }
@@ -40,6 +42,16 @@ void Semaphore::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("post"), &Semaphore::_post_bind_compat_93605);
 }
 
-}; // namespace core_bind
+// OS
 
-#endif
+Dictionary OS::_execute_with_pipe_bind_compat_94434(const String &p_path, const Vector<String> &p_arguments) {
+	return execute_with_pipe(p_path, p_arguments, true);
+}
+
+void OS::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("execute_with_pipe", "path", "arguments"), &OS::_execute_with_pipe_bind_compat_94434);
+}
+
+} // namespace core_bind
+
+#endif // DISABLE_DEPRECATED

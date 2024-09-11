@@ -527,14 +527,17 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Touchscreen
 	bool has_touchscreen_ui = DisplayServer::get_singleton()->is_touchscreen_available();
-	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/touchscreen/increase_scrollbar_touch_area", has_touchscreen_ui, "")
-	set_restart_if_changed("interface/touchscreen/increase_scrollbar_touch_area", true);
-	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/touchscreen/enable_long_press_as_right_click", has_touchscreen_ui, "")
-	set_restart_if_changed("interface/touchscreen/enable_long_press_as_right_click", true);
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/touchscreen/enable_pan_and_scale_gestures", has_touchscreen_ui, "")
 	set_restart_if_changed("interface/touchscreen/enable_pan_and_scale_gestures", true);
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/touchscreen/scale_gizmo_handles", has_touchscreen_ui ? 3 : 1, "1,5,1")
 	set_restart_if_changed("interface/touchscreen/scale_gizmo_handles", true);
+
+	// Disable some touchscreen settings by default for the XR Editor.
+	bool is_native_touchscreen = has_touchscreen_ui && !OS::get_singleton()->has_feature("xr_editor");
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/touchscreen/enable_long_press_as_right_click", is_native_touchscreen, "")
+	set_restart_if_changed("interface/touchscreen/enable_long_press_as_right_click", true);
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/touchscreen/increase_scrollbar_touch_area", is_native_touchscreen, "")
+	set_restart_if_changed("interface/touchscreen/increase_scrollbar_touch_area", true);
 
 	// Scene tabs
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/scene_tabs/display_close_button", 1, "Never,If Tab Active,Always"); // TabBar::CloseButtonDisplayPolicy
@@ -593,6 +596,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "docks/filesystem/thumbnail_size", 64, "32,128,16")
 	_initial_set("docks/filesystem/always_show_folders", true);
 	_initial_set("docks/filesystem/textfile_extensions", "txt,md,cfg,ini,log,json,yml,yaml,toml,xml");
+	_initial_set("docks/filesystem/other_file_extensions", "ico,icns");
 
 	// Property editor
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "docks/property_editor/auto_refresh_interval", 0.2, "0.01,1,0.001"); // Update 5 times per second by default.
@@ -824,7 +828,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "run/window_placement/screen", -5, screen_hints)
 #endif
 	// Should match the ANDROID_WINDOW_* constants in 'platform/android/java/editor/src/main/java/org/godotengine/editor/GodotEditor.kt'
-	String android_window_hints = "Auto (based on screen size):0,Same as Editor:1,Side-by-side with Editor:2";
+	String android_window_hints = "Auto (based on screen size):0,Same as Editor:1,Side-by-side with Editor:2,Launch in PiP mode:3";
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "run/window_placement/android_window", 0, android_window_hints)
 
 	int default_play_window_pip_mode = 0;
@@ -871,6 +875,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "debugger/auto_switch_to_remote_scene_tree", false, "")
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "debugger/profiler_frame_history_size", 3600, "60,10000,1")
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "debugger/profiler_frame_max_functions", 64, "16,512,1")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "debugger/profiler_target_fps", 60, "1,1000,1")
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "debugger/remote_scene_tree_refresh_interval", 1.0, "0.1,10,0.01,or_greater")
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "debugger/remote_inspect_refresh_interval", 0.2, "0.02,10,0.01,or_greater")
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "debugger/profile_native_calls", false, "")

@@ -1199,6 +1199,15 @@ static GDExtensionVariantPtr gdextension_dictionary_operator_index_const(GDExten
 	return (GDExtensionVariantPtr)&self->operator[](*(const Variant *)p_key);
 }
 
+void gdextension_dictionary_set_typed(GDExtensionTypePtr p_self, GDExtensionVariantType p_key_type, GDExtensionConstStringNamePtr p_key_class_name, GDExtensionConstVariantPtr p_key_script, GDExtensionVariantType p_value_type, GDExtensionConstStringNamePtr p_value_class_name, GDExtensionConstVariantPtr p_value_script) {
+	Dictionary *self = reinterpret_cast<Dictionary *>(p_self);
+	const StringName *key_class_name = reinterpret_cast<const StringName *>(p_key_class_name);
+	const Variant *key_script = reinterpret_cast<const Variant *>(p_key_script);
+	const StringName *value_class_name = reinterpret_cast<const StringName *>(p_value_class_name);
+	const Variant *value_script = reinterpret_cast<const Variant *>(p_value_script);
+	self->set_typed((uint32_t)p_key_type, *key_class_name, *key_script, (uint32_t)p_value_type, *value_class_name, *value_script);
+}
+
 /* OBJECT API */
 
 static void gdextension_object_method_bind_call(GDExtensionMethodBindPtr p_method_bind, GDExtensionObjectPtr p_instance, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_arg_count, GDExtensionUninitializedVariantPtr r_return, GDExtensionCallError *r_error) {
@@ -1679,6 +1688,7 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(array_set_typed);
 	REGISTER_INTERFACE_FUNC(dictionary_operator_index);
 	REGISTER_INTERFACE_FUNC(dictionary_operator_index_const);
+	REGISTER_INTERFACE_FUNC(dictionary_set_typed);
 	REGISTER_INTERFACE_FUNC(object_method_bind_call);
 	REGISTER_INTERFACE_FUNC(object_method_bind_ptrcall);
 	REGISTER_INTERFACE_FUNC(object_destroy);

@@ -15,5 +15,5 @@ GDTEST_OK
 >> Line: 16
 >> CONFUSABLE_CAPTURE_REASSIGNMENT
 >> Reassigning lambda capture does not modify the outer local variable "array_assign".
-lambda 2 2 12 (2, 0) [2] [2] { "x": 2 }
-outer 2 1 1 (1, 0) [1] [2] { "x": 2 }
+lambda 2 2 12 (2, 0) [2] [2] { &"x": 2 }
+outer 2 1 1 (1, 0) [1] [2] { &"x": 2 }

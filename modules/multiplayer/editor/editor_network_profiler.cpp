@@ -227,10 +227,10 @@ void EditorNetworkProfiler::add_sync_frame_data(const SyncInfo &p_frame) {
 		sync_data[p_frame.synchronizer].outgoing_syncs += p_frame.outgoing_syncs;
 	}
 	SyncInfo &info = sync_data[p_frame.synchronizer];
-	if (info.incoming_syncs) {
+	if (p_frame.incoming_syncs) {
 		info.incoming_size = p_frame.incoming_size / p_frame.incoming_syncs;
 	}
-	if (info.outgoing_syncs) {
+	if (p_frame.outgoing_syncs) {
 		info.outgoing_size = p_frame.outgoing_size / p_frame.outgoing_syncs;
 	}
 }

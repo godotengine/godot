@@ -285,10 +285,10 @@ void _pb_start_simulation(const PhysicalBoneSimulator3D *p_simulator, Node *p_no
 }
 
 void PhysicalBoneSimulator3D::physical_bones_start_simulation_on(const TypedArray<StringName> &p_bones) {
+	_pose_updated();
+
 	simulating = true;
 	_reset_physical_bones_state();
-
-	_pose_updated();
 
 	Vector<int> sim_bones;
 	if (p_bones.size() > 0) {
@@ -357,47 +357,16 @@ void PhysicalBoneSimulator3D::_process_modification() {
 	if (!skeleton) {
 		return;
 	}
-	if (!enabled) {
-		for (int i = 0; i < bones.size(); i++) {
-			if (bones[i].physical_bone) {
-				if (bones[i].physical_bone->is_simulating_physics() == false) {
-					bones[i].physical_bone->reset_to_rest_position();
-				}
-			}
+	ERR_FAIL_COND(skeleton->get_bone_count() != bones.size());
+	for (int i = 0; i < skeleton->get_bone_count(); i++) {
+		if (!bones[i].physical_bone) {
+			continue;
 		}
-	} else {
-		ERR_FAIL_COND(skeleton->get_bone_count() != bones.size());
-		for (int i = 0; i < skeleton->get_bone_count(); i++) {
-			if (!bones[i].physical_bone) {
-				continue;
-			}
+		if (bones[i].physical_bone->is_simulating_physics() == false) {
+			bones[i].physical_bone->reset_to_rest_position();
+		} else if (simulating) {
 			skeleton->set_bone_global_pose(i, bones[i].global_pose);
 		}
-
-		// TODO:
-		// The above method is performance heavy and needs to be improved.
-		// Ideally, the processing of set_bone_global_pose within Skeleton3D should be improved,
-		// but the workaround available now is to convert the global pose to a local pose on the SkeletonModifier side.
-		// However, the follow method needs recursive processing for deformations within PhysicalBoneSimulator3D to account for update order.
-		/*
-		ERR_FAIL_COND(skeleton->get_bone_count() != bones.size());
-		LocalVector<Transform3D> local_poses;
-		for (int i = 0; i < skeleton->get_bone_count(); i++) {
-			Transform3D pt;
-			if (skeleton->get_bone_parent(i) >= 0) {
-				pt = get_bone_global_pose(skeleton->get_bone_parent(i));
-			}
-			local_poses.push_back(pt.affine_inverse() * bones[i].global_pose);
-		}
-		for (int i = 0; i < skeleton->get_bone_count(); i++) {
-			if (!bones[i].physical_bone) {
-				continue;
-			}
-			skeleton->set_bone_pose_position(i, local_poses[i].origin);
-			skeleton->set_bone_pose_rotation(i, local_poses[i].basis.get_rotation_quaternion());
-			skeleton->set_bone_pose_scale(i, local_poses[i].basis.get_scale());
-		}
-		*/
 	}
 }
 

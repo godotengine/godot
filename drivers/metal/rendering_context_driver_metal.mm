@@ -30,6 +30,8 @@
 
 #import "rendering_context_driver_metal.h"
 
+#import "rendering_device_driver_metal.h"
+
 @protocol MTLDeviceEx <MTLDevice>
 #if TARGET_OS_OSX && __MAC_OS_X_VERSION_MAX_ALLOWED < 130300
 - (void)setShouldMaximizeConcurrentCompilation:(BOOL)v;
@@ -76,6 +78,103 @@ RenderingDeviceDriver *RenderingContextDriverMetal::driver_create() {
 void RenderingContextDriverMetal::driver_free(RenderingDeviceDriver *p_driver) {
 	memdelete(p_driver);
 }
+
+class API_AVAILABLE(macos(11.0), ios(14.0)) SurfaceLayer : public RenderingContextDriverMetal::Surface {
+	CAMetalLayer *__unsafe_unretained layer = nil;
+	LocalVector<MDFrameBuffer> frame_buffers;
+	LocalVector<id<MTLDrawable>> drawables;
+	uint32_t rear = -1;
+	uint32_t front = 0;
+	uint32_t count = 0;
+
+public:
+	SurfaceLayer(CAMetalLayer *p_layer, id<MTLDevice> p_device) :
+			Surface(p_device), layer(p_layer) {
+		layer.allowsNextDrawableTimeout = YES;
+		layer.framebufferOnly = YES;
+		layer.opaque = OS::get_singleton()->is_layered_allowed() ? NO : YES;
+		layer.pixelFormat = get_pixel_format();
+		layer.device = p_device;
+	}
+
+	~SurfaceLayer() override {
+		layer = nil;
+	}
+
+	Error resize(uint32_t p_desired_framebuffer_count) override final {
+		if (width == 0 || height == 0) {
+			// Very likely the window is minimized, don't create a swap chain.
+			return ERR_SKIP;
+		}
+
+		CGSize drawableSize = CGSizeMake(width, height);
+		CGSize current = layer.drawableSize;
+		if (!CGSizeEqualToSize(current, drawableSize)) {
+			layer.drawableSize = drawableSize;
+		}
+
+		// Metal supports a maximum of 3 drawables.
+		p_desired_framebuffer_count = MIN(3U, p_desired_framebuffer_count);
+		layer.maximumDrawableCount = p_desired_framebuffer_count;
+
+#if TARGET_OS_OSX
+		// Display sync is only supported on macOS.
+		switch (vsync_mode) {
+			case DisplayServer::VSYNC_MAILBOX:
+			case DisplayServer::VSYNC_ADAPTIVE:
+			case DisplayServer::VSYNC_ENABLED:
+				layer.displaySyncEnabled = YES;
+				break;
+			case DisplayServer::VSYNC_DISABLED:
+				layer.displaySyncEnabled = NO;
+				break;
+		}
+#endif
+		drawables.resize(p_desired_framebuffer_count);
+		frame_buffers.resize(p_desired_framebuffer_count);
+		for (uint32_t i = 0; i < p_desired_framebuffer_count; i++) {
+			// Reserve space for the drawable texture.
+			frame_buffers[i].textures.resize(1);
+		}
+
+		return OK;
+	}
+
+	RDD::FramebufferID acquire_next_frame_buffer() override final {
+		if (count == frame_buffers.size()) {
+			return RDD::FramebufferID();
+		}
+
+		rear = (rear + 1) % frame_buffers.size();
+		count++;
+
+		MDFrameBuffer &frame_buffer = frame_buffers[rear];
+		frame_buffer.size = Size2i(width, height);
+
+		id<CAMetalDrawable> drawable = layer.nextDrawable;
+		ERR_FAIL_NULL_V_MSG(drawable, RDD::FramebufferID(), "no drawable available");
+		drawables[rear] = drawable;
+		frame_buffer.textures.write[0] = drawable.texture;
+
+		return RDD::FramebufferID(&frame_buffer);
+	}
+
+	void present(MDCommandBuffer *p_cmd_buffer) override final {
+		if (count == 0) {
+			return;
+		}
+
+		// Release texture and drawable.
+		frame_buffers[front].textures.write[0] = nil;
+		id<MTLDrawable> drawable = drawables[front];
+		drawables[front] = nil;
+
+		count--;
+		front = (front + 1) % frame_buffers.size();
+
+		[p_cmd_buffer->get_command_buffer() presentDrawable:drawable];
+	}
+};
 
 RenderingContextDriver::SurfaceID RenderingContextDriverMetal::surface_create(const void *p_platform_data) {
 	const WindowPlatformData *wpd = (const WindowPlatformData *)(p_platform_data);

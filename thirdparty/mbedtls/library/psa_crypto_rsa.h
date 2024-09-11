@@ -105,17 +105,11 @@ psa_status_t mbedtls_psa_rsa_export_public_key(
 /**
  * \brief Generate an RSA key.
  *
- * \note The signature of the function is that of a PSA driver generate_key
- *       entry point.
- *
  * \param[in]  attributes         The attributes for the RSA key to generate.
- * \param[in]  params             Production parameters for the key
- *                                generation. This function only uses
- *                                `params->data`,
- *                                which contains the public exponent.
+ * \param[in]  custom_data        The public exponent to use.
  *                                This can be a null pointer if
  *                                \c params_data_length is 0.
- * \param params_data_length      Length of `params->data` in bytes.
+ * \param custom_data_length      Length of \p custom_data in bytes.
  *                                This can be 0, in which case the
  *                                public exponent will be 65537.
  * \param[out] key_buffer         Buffer where the key data is to be written.
@@ -130,12 +124,10 @@ psa_status_t mbedtls_psa_rsa_export_public_key(
  * \retval #PSA_ERROR_BUFFER_TOO_SMALL
  *         The size of \p key_buffer is too small.
  */
-#ifndef __cplusplus
 psa_status_t mbedtls_psa_rsa_generate_key(
     const psa_key_attributes_t *attributes,
-    const psa_key_production_parameters_t *params, size_t params_data_length,
+    const uint8_t *custom_data, size_t custom_data_length,
     uint8_t *key_buffer, size_t key_buffer_size, size_t *key_buffer_length);
-#endif
 
 /** Sign an already-calculated hash with an RSA private key.
  *

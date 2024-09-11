@@ -4011,6 +4011,8 @@ void CanvasItemEditor::_project_settings_changed() {
 void CanvasItemEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
+			_update_lock_and_group_button();
+
 			EditorRunBar::get_singleton()->connect("play_pressed", callable_mp(this, &CanvasItemEditor::_update_override_camera_button).bind(true));
 			EditorRunBar::get_singleton()->connect("stop_pressed", callable_mp(this, &CanvasItemEditor::_update_override_camera_button).bind(false));
 			ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &CanvasItemEditor::_project_settings_changed));
@@ -4120,7 +4122,8 @@ void CanvasItemEditor::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
+		case NOTIFICATION_APPLICATION_FOCUS_OUT:
+		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
 			if (drag_type != DRAG_NONE) {
 				_reset_drag();
 				viewport->queue_redraw();
@@ -5383,7 +5386,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	main_menu_hbox->add_child(pivot_button);
 	pivot_button->set_toggle_mode(true);
 	pivot_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_EDIT_PIVOT));
-	pivot_button->set_tooltip_text(TTR("Click to change object's rotation pivot.") + "\n" + TTR("Shift: Set temporary rotation pivot.") + "\n" + TTR("Click this button while holding Shift to put the rotation pivot in the center of the selected nodes."));
+	pivot_button->set_tooltip_text(TTR("Click to change object's rotation pivot.") + "\n" + TTR("Shift: Set temporary rotation pivot.") + "\n" + TTR("Click this button while holding Shift to put the temporary rotation pivot in the center of the selected nodes."));
 
 	pan_button = memnew(Button);
 	pan_button->set_theme_type_variation("FlatButton");

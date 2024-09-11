@@ -1843,7 +1843,8 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	const String &line = te->get_line(drop_at_line);
 	const bool is_empty_line = line_will_be_empty || line.is_empty() || te->get_first_non_whitespace_column(drop_at_line) == line.length();
 
-	if (d.has("type") && String(d["type"]) == "resource") {
+	const String type = d.get("type", "");
+	if (type == "resource") {
 		Ref<Resource> resource = d["resource"];
 		if (resource.is_null()) {
 			return;
@@ -1868,11 +1869,11 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		}
 	}
 
-	if (d.has("type") && (String(d["type"]) == "files" || String(d["type"]) == "files_and_dirs")) {
-		Array files = d["files"];
-		for (int i = 0; i < files.size(); i++) {
-			const String &path = String(files[i]);
+	if (type == "files" || type == "files_and_dirs") {
+		const PackedStringArray files = d["files"];
+		PackedStringArray parts;
 
+		for (const String &path : files) {
 			if (drop_modifier_pressed && ResourceLoader::exists(path)) {
 				Ref<Resource> resource = ResourceLoader::load(path);
 				if (resource.is_null()) {
@@ -1880,18 +1881,15 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 					resource.instantiate();
 					resource->set_path_cache(path);
 				}
-				text_to_drop += _get_dropped_resource_line(resource, is_empty_line);
+				parts.append(_get_dropped_resource_line(resource, is_empty_line));
 			} else {
-				text_to_drop += _quote_drop_data(path);
-			}
-
-			if (i < files.size() - 1) {
-				text_to_drop += is_empty_line ? "\n" : ", ";
+				parts.append(_quote_drop_data(path));
 			}
 		}
+		text_to_drop = String(is_empty_line ? "\n" : ", ").join(parts);
 	}
 
-	if (d.has("type") && String(d["type"]) == "nodes") {
+	if (type == "nodes") {
 		Node *scene_root = get_tree()->get_edited_scene_root();
 		if (!scene_root) {
 			EditorNode::get_singleton()->show_warning(TTR("Can't drop nodes without an open scene."));
@@ -1982,7 +1980,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		}
 	}
 
-	if (d.has("type") && String(d["type"]) == "obj_property") {
+	if (type == "obj_property") {
 		bool add_literal = EDITOR_GET("text_editor/completion/add_node_path_literals");
 		text_to_drop = add_literal ? "^" : "";
 		// It is unclear whether properties may contain single or double quotes.
@@ -2543,8 +2541,9 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT_OVERRIDE("script_text_editor/toggle_breakpoint", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::B);
 
 	ED_SHORTCUT("script_text_editor/remove_all_breakpoints", TTR("Remove All Breakpoints"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::F9);
-	ED_SHORTCUT("script_text_editor/goto_next_breakpoint", TTR("Go to Next Breakpoint"), KeyModifierMask::CMD_OR_CTRL | Key::PERIOD);
-	ED_SHORTCUT("script_text_editor/goto_previous_breakpoint", TTR("Go to Previous Breakpoint"), KeyModifierMask::CMD_OR_CTRL | Key::COMMA);
+	// Using Control for these shortcuts even on macOS because Command+Comma is taken for opening Editor Settings.
+	ED_SHORTCUT("script_text_editor/goto_next_breakpoint", TTR("Go to Next Breakpoint"), KeyModifierMask::CTRL | Key::PERIOD);
+	ED_SHORTCUT("script_text_editor/goto_previous_breakpoint", TTR("Go to Previous Breakpoint"), KeyModifierMask::CTRL | Key::COMMA);
 
 	ScriptEditor::register_create_script_editor_function(create_editor);
 }

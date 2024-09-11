@@ -2276,6 +2276,11 @@ String EditorExportPlatformAndroid::get_apksigner_path(int p_target_sdk, bool p_
 	bool failed = false;
 	String version_to_use;
 
+	String java_sdk_path = EDITOR_GET("export/android/java_sdk_path");
+	if (!java_sdk_path.is_empty()) {
+		OS::get_singleton()->set_environment("JAVA_HOME", java_sdk_path);
+	}
+
 	List<String> args;
 	args.push_back("--version");
 	String output;

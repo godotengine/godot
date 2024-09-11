@@ -99,6 +99,9 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("region_get_connections_count", "region"), &NavigationServer3D::region_get_connections_count);
 	ClassDB::bind_method(D_METHOD("region_get_connection_pathway_start", "region", "connection"), &NavigationServer3D::region_get_connection_pathway_start);
 	ClassDB::bind_method(D_METHOD("region_get_connection_pathway_end", "region", "connection"), &NavigationServer3D::region_get_connection_pathway_end);
+	ClassDB::bind_method(D_METHOD("region_get_closest_point_to_segment", "region", "start", "end", "use_collision"), &NavigationServer3D::region_get_closest_point_to_segment, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("region_get_closest_point", "region", "to_point"), &NavigationServer3D::region_get_closest_point);
+	ClassDB::bind_method(D_METHOD("region_get_closest_point_normal", "region", "to_point"), &NavigationServer3D::region_get_closest_point_normal);
 	ClassDB::bind_method(D_METHOD("region_get_random_point", "region", "navigation_layers", "uniformly"), &NavigationServer3D::region_get_random_point);
 
 	ClassDB::bind_method(D_METHOD("link_create"), &NavigationServer3D::link_create);

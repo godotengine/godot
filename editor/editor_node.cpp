@@ -175,7 +175,7 @@ static const String REMOVE_ANDROID_BUILD_TEMPLATE_MESSAGE = "The Android build t
 static const String INSTALL_ANDROID_BUILD_TEMPLATE_MESSAGE = "This will set up your project for gradle Android builds by installing the source template to \"%s\".\nNote that in order to make gradle builds instead of using pre-built APKs, the \"Use Gradle Build\" option should be enabled in the Android export preset.";
 
 bool EditorProgress::step(const String &p_state, int p_step, bool p_force_refresh) {
-	if (Thread::is_main_thread()) {
+	if (!force_background && Thread::is_main_thread()) {
 		return EditorNode::progress_task_step(task, p_state, p_step, p_force_refresh);
 	} else {
 		EditorNode::progress_task_step_bg(task, p_step);
@@ -183,17 +183,18 @@ bool EditorProgress::step(const String &p_state, int p_step, bool p_force_refres
 	}
 }
 
-EditorProgress::EditorProgress(const String &p_task, const String &p_label, int p_amount, bool p_can_cancel) {
-	if (Thread::is_main_thread()) {
+EditorProgress::EditorProgress(const String &p_task, const String &p_label, int p_amount, bool p_can_cancel, bool p_force_background) {
+	if (!p_force_background && Thread::is_main_thread()) {
 		EditorNode::progress_add_task(p_task, p_label, p_amount, p_can_cancel);
 	} else {
 		EditorNode::progress_add_task_bg(p_task, p_label, p_amount);
 	}
 	task = p_task;
+	force_background = p_force_background;
 }
 
 EditorProgress::~EditorProgress() {
-	if (Thread::is_main_thread()) {
+	if (!force_background && Thread::is_main_thread()) {
 		EditorNode::progress_end_task(task);
 	} else {
 		EditorNode::progress_end_task_bg(task);
@@ -824,6 +825,7 @@ void EditorNode::_notification(int p_what) {
 
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("docks/filesystem")) {
 				HashSet<String> updated_textfile_extensions;
+				HashSet<String> updated_other_file_extensions;
 				bool extensions_match = true;
 				const Vector<String> textfile_ext = ((String)(EDITOR_GET("docks/filesystem/textfile_extensions"))).split(",", false);
 				for (const String &E : textfile_ext) {
@@ -832,9 +834,17 @@ void EditorNode::_notification(int p_what) {
 						extensions_match = false;
 					}
 				}
+				const Vector<String> other_file_ext = ((String)(EDITOR_GET("docks/filesystem/other_file_extensions"))).split(",", false);
+				for (const String &E : other_file_ext) {
+					updated_other_file_extensions.insert(E);
+					if (extensions_match && !other_file_extensions.has(E)) {
+						extensions_match = false;
+					}
+				}
 
-				if (!extensions_match || updated_textfile_extensions.size() < textfile_extensions.size()) {
+				if (!extensions_match || updated_textfile_extensions.size() < textfile_extensions.size() || updated_other_file_extensions.size() < other_file_extensions.size()) {
 					textfile_extensions = updated_textfile_extensions;
+					other_file_extensions = updated_other_file_extensions;
 					EditorFileSystem::get_singleton()->scan();
 				}
 			}
@@ -1325,6 +1335,9 @@ Error EditorNode::load_resource(const String &p_resource, bool p_ignore_broken_d
 		res = ResourceLoader::load(p_resource, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
 	} else if (textfile_extensions.has(p_resource.get_extension())) {
 		res = ScriptEditor::get_singleton()->open_file(p_resource);
+	} else if (other_file_extensions.has(p_resource.get_extension())) {
+		OS::get_singleton()->shell_open(ProjectSettings::get_singleton()->globalize_path(p_resource));
+		return OK;
 	}
 	ERR_FAIL_COND_V(!res.is_valid(), ERR_CANT_OPEN);
 
@@ -4391,6 +4404,21 @@ bool EditorNode::is_additional_node_in_scene(Node *p_edited_scene, Node *p_reimp
 	return true;
 }
 
+void EditorNode::get_scene_editor_data_for_node(Node *p_root, Node *p_node, HashMap<NodePath, SceneEditorDataEntry> &p_table) {
+	SceneEditorDataEntry new_entry;
+	new_entry.is_display_folded = p_node->is_displayed_folded();
+
+	if (p_root != p_node) {
+		new_entry.is_editable = p_root->is_editable_instance(p_node);
+	}
+
+	p_table.insert(p_root->get_path_to(p_node), new_entry);
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		get_scene_editor_data_for_node(p_root, p_node->get_child(i), p_table);
+	}
+}
+
 void EditorNode::get_preload_scene_modification_table(
 		Node *p_edited_scene,
 		Node *p_reimported_root,
@@ -4497,7 +4525,7 @@ void EditorNode::get_preload_scene_modification_table(
 void EditorNode::get_preload_modifications_reference_to_nodes(
 		Node *p_root,
 		Node *p_node,
-		List<Node *> &p_excluded_nodes,
+		HashSet<Node *> &p_excluded_nodes,
 		List<Node *> &p_instance_list_with_children,
 		HashMap<NodePath, ModificationNodeEntry> &p_modification_table) {
 	if (!p_excluded_nodes.find(p_node)) {
@@ -5016,8 +5044,8 @@ String EditorNode::_get_system_info() const {
 #ifdef LINUXBSD_ENABLED
 	const String display_server = OS::get_singleton()->get_environment("XDG_SESSION_TYPE").capitalize().replace(" ", ""); // `replace` is necessary, because `capitalize` introduces a whitespace between "x" and "11".
 #endif // LINUXBSD_ENABLED
-	String driver_name = GLOBAL_GET("rendering/rendering_device/driver");
-	String rendering_method = GLOBAL_GET("rendering/renderer/rendering_method");
+	String driver_name = OS::get_singleton()->get_current_rendering_driver_name().to_lower();
+	String rendering_method = OS::get_singleton()->get_current_rendering_method().to_lower();
 
 	const String rendering_device_name = RenderingServer::get_singleton()->get_video_adapter_name();
 
@@ -5053,12 +5081,21 @@ String EditorNode::_get_system_info() const {
 		rendering_method = "Mobile";
 	} else if (rendering_method == "gl_compatibility") {
 		rendering_method = "Compatibility";
-		driver_name = GLOBAL_GET("rendering/gl_compatibility/driver");
 	}
 	if (driver_name == "vulkan") {
 		driver_name = "Vulkan";
-	} else if (driver_name.begins_with("opengl3")) {
-		driver_name = "GLES3";
+	} else if (driver_name == "d3d12") {
+		driver_name = "Direct3D 12";
+	} else if (driver_name == "opengl3_angle") {
+		driver_name = "OpenGL ES 3/ANGLE";
+	} else if (driver_name == "opengl3_es") {
+		driver_name = "OpenGL ES 3";
+	} else if (driver_name == "opengl3") {
+		if (OS::get_singleton()->get_gles_over_gl()) {
+			driver_name = "OpenGL 3";
+		} else {
+			driver_name = "OpenGL ES 3";
+		}
 	} else if (driver_name == "metal") {
 		driver_name = "Metal";
 	}
@@ -5230,8 +5267,8 @@ void EditorNode::_copy_warning(const String &p_str) {
 }
 
 void EditorNode::_save_editor_layout() {
-	if (waiting_for_first_scan) {
-		return; // Scanning, do not touch docks.
+	if (!load_editor_layout_done) {
+		return;
 	}
 	Ref<ConfigFile> config;
 	config.instantiate();
@@ -5287,22 +5324,22 @@ void EditorNode::_load_editor_layout() {
 		if (overridden_default_layout >= 0) {
 			_layout_menu_option(overridden_default_layout);
 		}
-		return;
+	} else {
+		ep.step(TTR("Loading docks..."), 1, true);
+		editor_dock_manager->load_docks_from_config(config, "docks");
+
+		ep.step(TTR("Reopening scenes..."), 2, true);
+		_load_open_scenes_from_config(config);
+
+		ep.step(TTR("Loading central editor layout..."), 3, true);
+		_load_central_editor_layout_from_config(config);
+
+		ep.step(TTR("Loading plugin window layout..."), 4, true);
+		editor_data.set_plugin_window_layout(config);
+
+		ep.step(TTR("Editor layout ready."), 5, true);
 	}
-
-	ep.step(TTR("Loading docks..."), 1, true);
-	editor_dock_manager->load_docks_from_config(config, "docks");
-
-	ep.step(TTR("Reopening scenes..."), 2, true);
-	_load_open_scenes_from_config(config);
-
-	ep.step(TTR("Loading central editor layout..."), 3, true);
-	_load_central_editor_layout_from_config(config);
-
-	ep.step(TTR("Loading plugin window layout..."), 4, true);
-	editor_data.set_plugin_window_layout(config);
-
-	ep.step(TTR("Editor layout ready."), 5, true);
+	load_editor_layout_done = true;
 }
 
 void EditorNode::_save_central_editor_layout_to_config(Ref<ConfigFile> p_config_file) {
@@ -5962,12 +5999,14 @@ void EditorNode::reload_scene(const String &p_path) {
 	scene_tabs->set_current_tab(current_tab);
 }
 
-void EditorNode::find_all_instances_inheriting_path_in_node(Node *p_root, Node *p_node, const String &p_instance_path, List<Node *> &p_instance_list) {
+void EditorNode::find_all_instances_inheriting_path_in_node(Node *p_root, Node *p_node, const String &p_instance_path, HashSet<Node *> &p_instance_list) {
 	String scene_file_path = p_node->get_scene_file_path();
 
-	// This is going to get messy...
+	bool valid_instance_found = false;
+
+	// Attempt to find all the instances matching path we're going to reload.
 	if (p_node->get_scene_file_path() == p_instance_path) {
-		p_instance_list.push_back(p_node);
+		valid_instance_found = true;
 	} else {
 		Node *current_node = p_node;
 
@@ -5975,11 +6014,24 @@ void EditorNode::find_all_instances_inheriting_path_in_node(Node *p_root, Node *
 		while (inherited_state.is_valid()) {
 			String inherited_path = inherited_state->get_path();
 			if (inherited_path == p_instance_path) {
-				p_instance_list.push_back(p_node);
+				valid_instance_found = true;
 				break;
 			}
 
 			inherited_state = inherited_state->get_base_scene_state();
+		}
+	}
+
+	// Instead of adding this instance directly, if its not owned by the scene, walk its ancestors
+	// and find the first node still owned by the scene. This is what we will reloading instead.
+	if (valid_instance_found) {
+		Node *current_node = p_node;
+		while (true) {
+			if (current_node->get_owner() == p_root || current_node->get_owner() == nullptr) {
+				p_instance_list.insert(current_node);
+				break;
+			}
+			current_node = current_node->get_parent();
 		}
 	}
 
@@ -6001,20 +6053,20 @@ void EditorNode::preload_reimporting_with_path_in_edited_scenes(const List<Strin
 		Node *edited_scene_root = editor_data.get_edited_scene_root(current_scene_idx);
 
 		if (edited_scene_root) {
-			SceneModificationsEntry scene_motifications;
+			SceneModificationsEntry scene_modifications;
 
 			for (const String &instance_path : p_scenes) {
 				if (editor_data.get_scene_path(current_scene_idx) == instance_path) {
 					continue;
 				}
 
-				List<Node *> instance_list;
-				find_all_instances_inheriting_path_in_node(edited_scene_root, edited_scene_root, instance_path, instance_list);
-				if (instance_list.size() > 0) {
+				HashSet<Node *> instances_to_reimport;
+				find_all_instances_inheriting_path_in_node(edited_scene_root, edited_scene_root, instance_path, instances_to_reimport);
+				if (instances_to_reimport.size() > 0) {
 					editor_data.set_edited_scene(current_scene_idx);
 
 					List<Node *> instance_list_with_children;
-					for (Node *original_node : instance_list) {
+					for (Node *original_node : instances_to_reimport) {
 						InstanceModificationsEntry instance_modifications;
 
 						// Fetching all the modified properties of the nodes reimported scene.
@@ -6022,19 +6074,19 @@ void EditorNode::preload_reimporting_with_path_in_edited_scenes(const List<Strin
 
 						instance_modifications.original_node = original_node;
 						instance_modifications.instance_path = instance_path;
-						scene_motifications.instance_list.push_back(instance_modifications);
+						scene_modifications.instance_list.push_back(instance_modifications);
 
 						instance_list_with_children.push_back(original_node);
 						get_children_nodes(original_node, instance_list_with_children);
 					}
 
 					// Search the scene to find nodes that references the nodes will be recreated.
-					get_preload_modifications_reference_to_nodes(edited_scene_root, edited_scene_root, instance_list, instance_list_with_children, scene_motifications.other_instances_modifications);
+					get_preload_modifications_reference_to_nodes(edited_scene_root, edited_scene_root, instances_to_reimport, instance_list_with_children, scene_modifications.other_instances_modifications);
 				}
 			}
 
-			if (scene_motifications.instance_list.size() > 0) {
-				scenes_modification_table[current_scene_idx] = scene_motifications;
+			if (scene_modifications.instance_list.size() > 0) {
+				scenes_modification_table[current_scene_idx] = scene_modifications;
 			}
 		}
 	}
@@ -6144,7 +6196,7 @@ void EditorNode::reload_instances_with_path_in_edited_scenes() {
 						base_packed_scene = current_packed_scene;
 					}
 					if (!local_scene_cache.find(path)) {
-						current_packed_scene = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_REPLACE_DEEP, &err);
+						current_packed_scene = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_REPLACE, &err);
 						local_scene_cache[path] = current_packed_scene;
 					} else {
 						current_packed_scene = local_scene_cache[path];
@@ -6157,10 +6209,10 @@ void EditorNode::reload_instances_with_path_in_edited_scenes() {
 			// Instantiate early so that caches cleared on load in SceneState can be rebuilt early.
 			Node *instantiated_node = nullptr;
 
-			// If we are in a inherit scene, it's easier to create a new base scene and
+			// If we are in a inherited scene, it's easier to create a new base scene and
 			// grab the node from there.
 			// When scene_path_to_node is '.' and we have scene_inherited_state, it's because
-			// it's a muli-level inheritance scene. We should use
+			// it's a multi-level inheritance scene. We should use
 			NodePath scene_path_to_node = current_edited_scene->get_path_to(original_node);
 			Ref<SceneState> scene_state = current_edited_scene->get_scene_inherited_state();
 			if (scene_path_to_node != "." && scene_state.is_valid() && scene_state->get_path() != instance_modifications.instance_path && scene_state->find_node_by_path(scene_path_to_node) >= 0) {
@@ -6184,9 +6236,9 @@ void EditorNode::reload_instances_with_path_in_edited_scenes() {
 
 			if (!instantiated_node) {
 				// If no base scene was found to create the node, we will use the reimported packed scene directly.
-				// But, when the current edited scene is the reimported scene, it's because it's a inherited scene
-				// of the reimported scene. In that case, we will not instantiate current_packed_scene, because
-				// we would reinstanciate ourself. Using the base scene is better.
+				// But, when the current edited scene is the reimported scene, it's because it's an inherited scene
+				// derived from the reimported scene. In that case, we will not instantiate current_packed_scene, because
+				// we would reinstantiate ourself. Using the base scene is better.
 				if (current_edited_scene == original_node) {
 					if (base_packed_scene.is_valid()) {
 						instantiated_node = base_packed_scene->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
@@ -6242,6 +6294,17 @@ void EditorNode::reload_instances_with_path_in_edited_scenes() {
 			// crash when reimporting scenes with animations when "Editable children" was enabled.
 			replace_history_reimported_nodes(original_node, instantiated_node, original_node);
 
+			// Reset the editable instance state.
+			HashMap<NodePath, SceneEditorDataEntry> scene_editor_data_table;
+			Node *owner = original_node->get_owner();
+			if (!owner) {
+				owner = original_node;
+			}
+
+			get_scene_editor_data_for_node(owner, original_node, scene_editor_data_table);
+
+			bool original_node_scene_instance_load_placeholder = original_node->get_scene_instance_load_placeholder();
+
 			// Delete all the remaining node children.
 			while (original_node->get_child_count()) {
 				Node *child = original_node->get_child(0);
@@ -6249,16 +6312,6 @@ void EditorNode::reload_instances_with_path_in_edited_scenes() {
 				original_node->remove_child(child);
 				child->queue_free();
 			}
-
-			// Reset the editable instance state.
-			bool is_editable = true;
-			Node *owner = original_node->get_owner();
-			if (owner) {
-				is_editable = owner->is_editable_instance(original_node);
-			}
-
-			bool original_node_is_displayed_folded = original_node->is_displayed_folded();
-			bool original_node_scene_instance_load_placeholder = original_node->get_scene_instance_load_placeholder();
 
 			// Update the name to match
 			instantiated_node->set_name(original_node->get_name());
@@ -6290,18 +6343,8 @@ void EditorNode::reload_instances_with_path_in_edited_scenes() {
 			// Mark the old node for deletion.
 			original_node->queue_free();
 
-			// Restore the folded and placeholder state from the original node.
-			instantiated_node->set_display_folded(original_node_is_displayed_folded);
+			// Restore the placeholder state from the original node.
 			instantiated_node->set_scene_instance_load_placeholder(original_node_scene_instance_load_placeholder);
-
-			if (owner) {
-				Ref<SceneState> ss_inst = owner->get_scene_instance_state();
-				if (ss_inst.is_valid()) {
-					ss_inst->update_instance_resource(instance_modifications.instance_path, current_packed_scene);
-				}
-
-				owner->set_editable_instance(instantiated_node, is_editable);
-			}
 
 			// Attempt to re-add all the additional nodes.
 			for (AdditiveNodeEntry additive_node_entry : instance_modifications.addition_list) {
@@ -6331,6 +6374,17 @@ void EditorNode::reload_instances_with_path_in_edited_scenes() {
 					if (node_3d) {
 						node_3d->set_transform(additive_node_entry.transform_3d);
 					}
+				}
+			}
+
+			// Restore the scene's editable instance and folded states.
+			for (HashMap<NodePath, SceneEditorDataEntry>::Iterator I = scene_editor_data_table.begin(); I; ++I) {
+				Node *node = owner->get_node_or_null(I->key);
+				if (node) {
+					if (owner != node) {
+						owner->set_editable_instance(node, I->value.is_editable);
+					}
+					node->set_display_folded(I->value.is_display_folded);
 				}
 			}
 
@@ -6970,6 +7024,10 @@ EditorNode::EditorNode() {
 	for (const String &E : textfile_ext) {
 		textfile_extensions.insert(E);
 	}
+	const Vector<String> other_file_ext = ((String)(EDITOR_GET("docks/filesystem/other_file_extensions"))).split(",", false);
+	for (const String &E : other_file_ext) {
+		other_file_extensions.insert(E);
+	}
 
 	resource_preview = memnew(EditorResourcePreview);
 	add_child(resource_preview);
@@ -7150,6 +7208,7 @@ EditorNode::EditorNode() {
 	}
 
 	main_menu = memnew(MenuBar);
+	main_menu->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	title_bar->add_child(main_menu);
 	main_menu->set_theme_type_variation("MainMenuBar");
 	main_menu->set_start_index(0); // Main menu, add to the start of global menu.
@@ -7332,6 +7391,7 @@ EditorNode::EditorNode() {
 	}
 
 	main_editor_button_hb = memnew(HBoxContainer);
+	main_editor_button_hb->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	title_bar->add_child(main_editor_button_hb);
 
 	// Options are added and handled by DebuggerEditorPlugin.
@@ -7426,11 +7486,13 @@ EditorNode::EditorNode() {
 	title_bar->add_child(right_spacer);
 
 	project_run_bar = memnew(EditorRunBar);
+	project_run_bar->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	title_bar->add_child(project_run_bar);
 	project_run_bar->connect("play_pressed", callable_mp(this, &EditorNode::_project_run_started));
 	project_run_bar->connect("stop_pressed", callable_mp(this, &EditorNode::_project_run_stopped));
 
 	HBoxContainer *right_menu_hb = memnew(HBoxContainer);
+	right_menu_hb->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	title_bar->add_child(right_menu_hb);
 
 	renderer = memnew(OptionButton);
@@ -7555,8 +7617,8 @@ EditorNode::EditorNode() {
 		default_layout->set_value(docks_section, "dock_split_" + itos(i + 1), 0);
 	}
 	default_layout->set_value(docks_section, "dock_hsplit_1", 0);
-	default_layout->set_value(docks_section, "dock_hsplit_2", 270 * EDSCALE);
-	default_layout->set_value(docks_section, "dock_hsplit_3", -270 * EDSCALE);
+	default_layout->set_value(docks_section, "dock_hsplit_2", 270);
+	default_layout->set_value(docks_section, "dock_hsplit_3", -270);
 	default_layout->set_value(docks_section, "dock_hsplit_4", 0);
 
 	_update_layouts_menu();

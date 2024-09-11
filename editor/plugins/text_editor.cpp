@@ -104,12 +104,12 @@ void TextEditor::set_edited_resource(const Ref<Resource> &p_res) {
 	edited_res = p_res;
 
 	Ref<TextFile> text_file = edited_res;
-	if (text_file != nullptr) {
+	if (text_file.is_valid()) {
 		code_editor->get_text_editor()->set_text(text_file->get_text());
 	}
 
 	Ref<JSON> json_file = edited_res;
-	if (json_file != nullptr) {
+	if (json_file.is_valid()) {
 		code_editor->get_text_editor()->set_text(json_file->get_parsed_text());
 	}
 
@@ -169,12 +169,12 @@ void TextEditor::reload_text() {
 	int v = te->get_v_scroll();
 
 	Ref<TextFile> text_file = edited_res;
-	if (text_file != nullptr) {
+	if (text_file.is_valid()) {
 		te->set_text(text_file->get_text());
 	}
 
 	Ref<JSON> json_file = edited_res;
-	if (json_file != nullptr) {
+	if (json_file.is_valid()) {
 		te->set_text(json_file->get_parsed_text());
 	}
 
@@ -194,7 +194,7 @@ void TextEditor::_validate_script() {
 	emit_signal(SNAME("edited_script_changed"));
 
 	Ref<JSON> json_file = edited_res;
-	if (json_file != nullptr) {
+	if (json_file.is_valid()) {
 		CodeEdit *te = code_editor->get_text_editor();
 
 		te->set_line_background_color(code_editor->get_error_pos().x, Color(0, 0, 0, 0));
@@ -245,12 +245,12 @@ void TextEditor::_bookmark_item_pressed(int p_idx) {
 
 void TextEditor::apply_code() {
 	Ref<TextFile> text_file = edited_res;
-	if (text_file != nullptr) {
+	if (text_file.is_valid()) {
 		text_file->set_text(code_editor->get_text_editor()->get_text());
 	}
 
 	Ref<JSON> json_file = edited_res;
-	if (json_file != nullptr) {
+	if (json_file.is_valid()) {
 		json_file->parse(code_editor->get_text_editor()->get_text(), true);
 	}
 	code_editor->get_text_editor()->get_syntax_highlighter()->update_cache();

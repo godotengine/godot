@@ -401,6 +401,15 @@
 				Adds a script at [param path] to the Autoload list as [param name].
 			</description>
 		</method>
+		<method name="add_context_menu_plugin">
+			<return type="void" />
+			<param index="0" name="slot" type="int" enum="EditorPlugin.ContextMenuSlot" />
+			<param index="1" name="plugin" type="EditorContextMenuPlugin" />
+			<description>
+				Adds a plugin to the context menu. [param slot] is the position in the context menu where the plugin will be added.
+				Context menus are supported for three commonly used areas: the file system, scene tree, and editor script list panel.
+			</description>
+		</method>
 		<method name="add_control_to_bottom_panel">
 			<return type="Button" />
 			<param index="0" name="control" type="Control" />
@@ -622,6 +631,14 @@
 			<param index="0" name="name" type="String" />
 			<description>
 				Removes an Autoload [param name] from the list.
+			</description>
+		</method>
+		<method name="remove_context_menu_plugin">
+			<return type="void" />
+			<param index="0" name="slot" type="int" enum="EditorPlugin.ContextMenuSlot" />
+			<param index="1" name="plugin" type="EditorContextMenuPlugin" />
+			<description>
+				Removes a context menu plugin from the specified slot.
 			</description>
 		</method>
 		<method name="remove_control_from_bottom_panel">
@@ -873,6 +890,18 @@
 		</constant>
 		<constant name="AFTER_GUI_INPUT_CUSTOM" value="2" enum="AfterGUIInput">
 			Pass the [InputEvent] to other editor plugins except the main [Node3D] one. This can be used to prevent node selection changes and work with sub-gizmos instead.
+		</constant>
+		<constant name="CONTEXT_SLOT_SCENE_TREE" value="0" enum="ContextMenuSlot">
+			Context menu slot for the SceneTree.
+		</constant>
+		<constant name="CONTEXT_SLOT_FILESYSTEM" value="1" enum="ContextMenuSlot">
+			Context menu slot for the FileSystem.
+		</constant>
+		<constant name="CONTEXT_SLOT_SCRIPT_EDITOR" value="2" enum="ContextMenuSlot">
+			Context menu slot for the ScriptEditor file list.
+		</constant>
+		<constant name="CONTEXT_SUBMENU_SLOT_FILESYSTEM_CREATE" value="3" enum="ContextMenuSlot">
+			Context menu slot for the FileSystem create submenu.
 		</constant>
 	</constants>
 </class>

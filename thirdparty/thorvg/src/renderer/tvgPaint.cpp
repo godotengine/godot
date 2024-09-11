@@ -225,8 +225,6 @@ bool Paint::Impl::render(RenderMethod* renderer)
 
     if (cmp) renderer->beginComposite(cmp, compData->method, compData->target->pImpl->opacity);
 
-    renderer->blend(blendMethod);
-
     bool ret;
     PAINT_METHOD(ret, render(renderer));
 

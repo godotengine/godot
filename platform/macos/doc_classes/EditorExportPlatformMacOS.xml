@@ -38,8 +38,11 @@
 		<member name="application/icon_interpolation" type="int" setter="" getter="">
 			Interpolation method used to resize application icon.
 		</member>
-		<member name="application/min_macos_version" type="String" setter="" getter="">
-			Minimum version of macOS required for this application to run in the [code]major.minor.patch[/code] or [code]major.minor[/code] format, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]).
+		<member name="application/min_macos_version_arm64" type="String" setter="" getter="">
+			Minimum version of macOS required for this application to run on Apple Silicon Macs, in the [code]major.minor.patch[/code] or [code]major.minor[/code] format, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]).
+		</member>
+		<member name="application/min_macos_version_x86_64" type="String" setter="" getter="">
+			Minimum version of macOS required for this application to run on Intel Macs, in the [code]major.minor.patch[/code] or [code]major.minor[/code] format, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]).
 		</member>
 		<member name="application/short_version" type="String" setter="" getter="">
 			Application version visible to the user, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]). Falls back to [member ProjectSettings.application/config/version] if left empty.

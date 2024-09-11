@@ -157,7 +157,7 @@ public:
 
 protected:
 	int current_state;
-	List<EditorNode3DGizmo *> current_gizmos;
+	HashSet<EditorNode3DGizmo *> current_gizmos;
 	HashMap<String, Vector<Ref<StandardMaterial3D>>> materials;
 
 	static void _bind_methods();

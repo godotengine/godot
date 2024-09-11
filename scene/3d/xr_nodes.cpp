@@ -77,7 +77,7 @@ void XRCamera3D::_pose_changed(const Ref<XRPose> &p_pose) {
 }
 
 PackedStringArray XRCamera3D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Camera3D::get_configuration_warnings();
 
 	if (is_visible() && is_inside_tree()) {
 		// Warn if the node has a parent which isn't an XROrigin3D!
@@ -461,7 +461,7 @@ XRNode3D::~XRNode3D() {
 }
 
 PackedStringArray XRNode3D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node3D::get_configuration_warnings();
 
 	if (is_visible() && is_inside_tree()) {
 		// Warn if the node has a parent which isn't an XROrigin3D!
@@ -644,7 +644,7 @@ Plane XRAnchor3D::get_plane() const {
 Vector<XROrigin3D *> XROrigin3D::origin_nodes;
 
 PackedStringArray XROrigin3D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node3D::get_configuration_warnings();
 
 	if (is_visible() && is_inside_tree()) {
 		bool has_camera = false;

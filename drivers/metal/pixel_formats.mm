@@ -1200,7 +1200,7 @@ void PixelFormats::modifyMTLFormatCapabilities(id<MTLDevice> p_device) {
 
 // Disable for iOS simulator last.
 #if TARGET_OS_SIMULATOR
-	if (![mtlDevice supportsFamily:MTLGPUFamilyApple5]) {
+	if (![p_device supportsFamily:MTLGPUFamilyApple5]) {
 		disableAllMTLPixFmtCaps(R8Unorm_sRGB);
 		disableAllMTLPixFmtCaps(RG8Unorm_sRGB);
 		disableAllMTLPixFmtCaps(B5G6R5Unorm);

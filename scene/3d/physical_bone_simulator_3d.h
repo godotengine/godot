@@ -41,7 +41,6 @@ class PhysicalBoneSimulator3D : public SkeletonModifier3D {
 	GDCLASS(PhysicalBoneSimulator3D, SkeletonModifier3D);
 
 	bool simulating = false;
-	bool enabled = true;
 
 	struct SimulatedBone {
 		int parent;

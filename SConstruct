@@ -791,6 +791,8 @@ else:
     # Note that this is still not complete conformance, as certain Windows-related headers
     # don't compile under complete conformance.
     env.Prepend(CCFLAGS=["/permissive-"])
+    # Allow use of `__cplusplus` macro to determine C++ standard universally.
+    env.Prepend(CXXFLAGS=["/Zc:__cplusplus"])
 
 # Disable exception handling. Godot doesn't use exceptions anywhere, and this
 # saves around 20% of binary size and very significant build time (GH-80513).
@@ -1051,7 +1053,7 @@ if env["ninja"]:
     SetOption("experimental", "ninja")
     env["NINJA_FILE_NAME"] = env["ninja_file"]
     env["NINJA_DISABLE_AUTO_RUN"] = not env["ninja_auto_run"]
-    env.Tool("ninja")
+    env.Tool("ninja", "build.ninja")
 
 # Threads
 if env["threads"]:
@@ -1114,7 +1116,7 @@ atexit.register(print_elapsed_time)
 
 
 def purge_flaky_files():
-    paths_to_keep = ["ninja.build"]
+    paths_to_keep = ["build.ninja"]
     for build_failure in GetBuildFailures():
         path = build_failure.node.path
         if os.path.isfile(path) and path not in paths_to_keep:

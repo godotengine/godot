@@ -219,7 +219,6 @@ class EditorPropertyDictionary : public EditorProperty {
 	EditorSpinSlider *size_sliderv = nullptr;
 	Button *button_add_item = nullptr;
 	EditorPaginator *paginator = nullptr;
-	PropertyHint property_hint;
 	LocalVector<Slot> slots;
 	void _create_new_property_slot(int p_idx);
 
@@ -231,12 +230,21 @@ class EditorPropertyDictionary : public EditorProperty {
 
 	void _add_key_value();
 	void _object_id_selected(const StringName &p_property, ObjectID p_id);
+	void _remove_pressed(int p_slot_index);
+
+	Variant::Type key_subtype;
+	PropertyHint key_subtype_hint;
+	String key_subtype_hint_string;
+	Variant::Type value_subtype;
+	PropertyHint value_subtype_hint;
+	String value_subtype_hint_string;
+	void initialize_dictionary(Variant &p_dictionary);
 
 protected:
 	void _notification(int p_what);
 
 public:
-	void setup(PropertyHint p_hint);
+	void setup(PropertyHint p_hint, const String &p_hint_string = "");
 	virtual void update_property() override;
 	virtual bool is_colored(ColorationMode p_mode) override;
 	EditorPropertyDictionary();

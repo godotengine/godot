@@ -543,7 +543,7 @@ in the MSVC debugger.
 ## mbedtls
 
 - Upstream: https://github.com/Mbed-TLS/mbedtls
-- Version: 3.6.0 (2ca6c285a0dd3f33982dd57299012dacab1ff206, 2024)
+- Version: 3.6.1 (71c569d44bf3a8bd53d874c81ee8ac644dd6e9e3, 2024)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:
@@ -553,8 +553,6 @@ File extracted from upstream release tarball:
 - All `.c` and `.h` from `library/` to `thirdparty/mbedtls/library/` except
   for the `psa_*.c` source files
 - The `LICENSE` file (edited to keep only the Apache 2.0 variant)
-- Applied the patch `no-flexible-arrays.diff` to fix Windows build (see
-  upstream GH-9020)
 - Applied the patch `msvc-redeclaration-bug.diff` to fix a compilation error
   with some MSVC versions
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
@@ -909,7 +907,7 @@ instead of `miniz.h` as an external dependency.
 ## thorvg
 
 - Upstream: https://github.com/thorvg/thorvg
-- Version: 0.14.7 (e3a6bf5229a9671c385ee78bc33e6e6b611a9729, 2024)
+- Version: 0.14.9 (81a0fbfd590873b21e53c3af77969c71d3d9b586, 2024)
 - License: MIT
 
 Files extracted from upstream source:

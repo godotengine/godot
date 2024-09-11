@@ -1564,7 +1564,7 @@ void TreeItem::_call_recursive_bind(const Variant **p_args, int p_argcount, Call
 		return;
 	}
 
-	if (p_args[0]->get_type() != Variant::STRING && p_args[0]->get_type() != Variant::STRING_NAME) {
+	if (!p_args[0]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::STRING_NAME;
@@ -3274,12 +3274,10 @@ void Tree::value_editor_changed(double p_value) {
 		return;
 	}
 
-	TreeItem::Cell &c = popup_edited_item->cells.write[popup_edited_item_col];
-	c.val = p_value;
+	const TreeItem::Cell &c = popup_edited_item->cells[popup_edited_item_col];
 
-	line_editor->set_text(String::num(c.val, Math::range_step_decimals(c.step)));
+	line_editor->set_text(String::num(p_value, Math::range_step_decimals(c.step)));
 
-	item_edited(popup_edited_item_col, popup_edited_item);
 	queue_redraw();
 }
 
@@ -3468,29 +3466,37 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			accept_event();
 		}
 
-		if (!selected_item || select_mode == SELECT_ROW || selected_col > (columns.size() - 1)) {
+		if (!selected_item || selected_col > (columns.size() - 1)) {
 			return;
 		}
+
 		if (k.is_valid() && k->is_shift_pressed()) {
 			selected_item->set_collapsed_recursive(false);
-		} else {
+		} else if (select_mode != SELECT_ROW) {
 			_go_right();
+		} else if (selected_item->get_first_child() != nullptr && selected_item->is_collapsed()) {
+			selected_item->set_collapsed(false);
+		} else {
+			_go_down();
 		}
 	} else if (p_event->is_action("ui_left") && p_event->is_pressed()) {
 		if (!cursor_can_exit_tree) {
 			accept_event();
 		}
 
-		if (!selected_item || select_mode == SELECT_ROW || selected_col < 0) {
+		if (!selected_item || selected_col < 0) {
 			return;
 		}
 
 		if (k.is_valid() && k->is_shift_pressed()) {
 			selected_item->set_collapsed_recursive(true);
-		} else {
+		} else if (select_mode != SELECT_ROW) {
 			_go_left();
+		} else if (selected_item->get_first_child() != nullptr && !selected_item->is_collapsed()) {
+			selected_item->set_collapsed(true);
+		} else {
+			_go_up();
 		}
-
 	} else if (p_event->is_action("ui_up") && p_event->is_pressed() && !is_command) {
 		if (!cursor_can_exit_tree) {
 			accept_event();
@@ -4490,9 +4496,16 @@ void Tree::item_edited(int p_column, TreeItem *p_item, MouseButton p_custom_mous
 }
 
 void Tree::item_changed(int p_column, TreeItem *p_item) {
-	if (p_item != nullptr && p_column >= 0 && p_column < p_item->cells.size()) {
-		p_item->cells.write[p_column].dirty = true;
-		columns.write[p_column].cached_minimum_width_dirty = true;
+	if (p_item != nullptr) {
+		if (p_column >= 0 && p_column < p_item->cells.size()) {
+			p_item->cells.write[p_column].dirty = true;
+			columns.write[p_column].cached_minimum_width_dirty = true;
+		} else if (p_column == -1) {
+			for (int i = 0; i < p_item->cells.size(); i++) {
+				p_item->cells.write[i].dirty = true;
+				columns.write[i].cached_minimum_width_dirty = true;
+			}
+		}
 	}
 	queue_redraw();
 }

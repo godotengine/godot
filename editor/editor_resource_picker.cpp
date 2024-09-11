@@ -175,6 +175,13 @@ void EditorResourcePicker::_file_quick_selected() {
 	_file_selected(quick_open->get_selected());
 }
 
+void EditorResourcePicker::_resource_saved(Object *p_resource) {
+	if (edited_resource.is_valid() && p_resource == edited_resource.ptr()) {
+		emit_signal(SNAME("resource_changed"), edited_resource);
+		_update_resource();
+	}
+}
+
 void EditorResourcePicker::_update_menu() {
 	_update_menu_items();
 
@@ -407,6 +414,10 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 		case OBJ_MENU_SAVE_AS: {
 			if (edited_resource.is_null()) {
 				return;
+			}
+			Callable resource_saved = callable_mp(this, &EditorResourcePicker::_resource_saved);
+			if (!EditorNode::get_singleton()->is_connected("resource_saved", resource_saved)) {
+				EditorNode::get_singleton()->connect("resource_saved", resource_saved);
 			}
 			EditorNode::get_singleton()->save_resource_as(edited_resource);
 		} break;
@@ -831,6 +842,13 @@ void EditorResourcePicker::_notification(int p_what) {
 			if (dropping) {
 				dropping = false;
 				assign_button->queue_redraw();
+			}
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			Callable resource_saved = callable_mp(this, &EditorResourcePicker::_resource_saved);
+			if (EditorNode::get_singleton()->is_connected("resource_saved", resource_saved)) {
+				EditorNode::get_singleton()->disconnect("resource_saved", resource_saved);
 			}
 		} break;
 	}

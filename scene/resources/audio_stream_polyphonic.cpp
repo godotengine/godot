@@ -247,6 +247,11 @@ AudioStreamPlaybackPolyphonic::ID AudioStreamPlaybackPolyphonic::play_stream(con
 				sp->volume_vector.write[2] = AudioFrame(linear_volume, linear_volume);
 				sp->volume_vector.write[3] = AudioFrame(linear_volume, linear_volume);
 				sp->bus = p_bus;
+
+				if (streams[i].stream_playback->get_sample_playback().is_valid()) {
+					AudioServer::get_singleton()->stop_playback_stream(sp);
+				}
+
 				streams[i].stream_playback->set_sample_playback(sp);
 				AudioServer::get_singleton()->start_sample_playback(sp);
 			}
@@ -315,6 +320,9 @@ Ref<AudioSamplePlayback> AudioStreamPlaybackPolyphonic::get_sample_playback() co
 
 void AudioStreamPlaybackPolyphonic::set_sample_playback(const Ref<AudioSamplePlayback> &p_playback) {
 	sample_playback = p_playback;
+	if (sample_playback.is_valid()) {
+		sample_playback->stream_playback = Ref<AudioStreamPlayback>(this);
+	}
 }
 
 void AudioStreamPlaybackPolyphonic::_bind_methods() {

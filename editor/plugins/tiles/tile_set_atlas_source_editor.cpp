@@ -2768,15 +2768,7 @@ void EditorPropertyTilePolygon::_add_focusable_children(Node *p_node) {
 
 void EditorPropertyTilePolygon::_polygons_changed() {
 	if (String(count_property).is_empty()) {
-		if (base_type == "OccluderPolygon2D") {
-			// Single OccluderPolygon2D.
-			Ref<OccluderPolygon2D> occluder;
-			if (generic_tile_polygon_editor->get_polygon_count() >= 1) {
-				occluder.instantiate();
-				occluder->set_polygon(generic_tile_polygon_editor->get_polygon(0));
-			}
-			emit_changed(get_edited_property(), occluder);
-		} else if (base_type == "NavigationPolygon") {
+		if (base_type == "NavigationPolygon") {
 			Ref<NavigationPolygon> navigation_polygon;
 			if (generic_tile_polygon_editor->get_polygon_count() >= 1) {
 				navigation_polygon.instantiate();
@@ -2798,19 +2790,24 @@ void EditorPropertyTilePolygon::_polygons_changed() {
 			emit_changed(get_edited_property(), navigation_polygon);
 		}
 	} else {
-		if (base_type.is_empty()) {
-			// Multiple array of vertices.
-			Vector<String> changed_properties;
-			Array values;
-			int count = generic_tile_polygon_editor->get_polygon_count();
-			changed_properties.push_back(count_property);
-			values.push_back(count);
-			for (int i = 0; i < count; i++) {
-				changed_properties.push_back(vformat(element_pattern, i));
+		// Multiple array of vertices or OccluderPolygon2D.
+		Vector<String> changed_properties;
+		Array values;
+		int count = generic_tile_polygon_editor->get_polygon_count();
+		changed_properties.push_back(count_property);
+		values.push_back(count);
+		for (int i = 0; i < count; i++) {
+			changed_properties.push_back(vformat(element_pattern, i));
+			if (base_type.is_empty()) {
 				values.push_back(generic_tile_polygon_editor->get_polygon(i));
+			} else if (base_type == "OccluderPolygon2D") {
+				Ref<OccluderPolygon2D> occluder;
+				occluder.instantiate();
+				occluder->set_polygon(generic_tile_polygon_editor->get_polygon(i));
+				values.push_back(occluder);
 			}
-			emit_signal(SNAME("multiple_properties_changed"), changed_properties, values, false);
 		}
+		emit_signal(SNAME("multiple_properties_changed"), changed_properties, values, false);
 	}
 }
 
@@ -2834,15 +2831,8 @@ void EditorPropertyTilePolygon::update_property() {
 	generic_tile_polygon_editor->clear_polygons();
 
 	if (String(count_property).is_empty()) {
-		if (base_type == "OccluderPolygon2D") {
-			// Single OccluderPolygon2D.
-			Ref<OccluderPolygon2D> occluder = get_edited_property_value();
-			generic_tile_polygon_editor->clear_polygons();
-			if (occluder.is_valid()) {
-				generic_tile_polygon_editor->add_polygon(occluder->get_polygon());
-			}
-		} else if (base_type == "NavigationPolygon") {
-			// Single OccluderPolygon2D.
+		if (base_type == "NavigationPolygon") {
+			// Single NavigationPolygon.
 			Ref<NavigationPolygon> navigation_polygon = get_edited_property_value();
 			generic_tile_polygon_editor->clear_polygons();
 			if (navigation_polygon.is_valid()) {
@@ -2858,6 +2848,15 @@ void EditorPropertyTilePolygon::update_property() {
 			generic_tile_polygon_editor->clear_polygons();
 			for (int i = 0; i < count; i++) {
 				generic_tile_polygon_editor->add_polygon(get_edited_object()->get(vformat(element_pattern, i)));
+			}
+		} else if (base_type == "OccluderPolygon2D") {
+			// Multiple OccluderPolygon2D.
+			generic_tile_polygon_editor->clear_polygons();
+			for (int i = 0; i < count; i++) {
+				Ref<OccluderPolygon2D> occluder = get_edited_object()->get(vformat(element_pattern, i));
+				if (occluder.is_valid()) {
+					generic_tile_polygon_editor->add_polygon(occluder->get_polygon());
+				}
 			}
 		}
 	}
@@ -2899,16 +2898,30 @@ bool EditorInspectorPluginTileData::can_handle(Object *p_object) {
 
 bool EditorInspectorPluginTileData::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
 	Vector<String> components = String(p_path).split("/", true, 2);
-	if (components.size() == 2 && components[0].begins_with("occlusion_layer_") && components[0].trim_prefix("occlusion_layer_").is_valid_int()) {
+	if (components.size() >= 2 && components[0].begins_with("occlusion_layer_") && components[0].trim_prefix("occlusion_layer_").is_valid_int()) {
 		// Occlusion layers.
 		int layer_index = components[0].trim_prefix("occlusion_layer_").to_int();
 		ERR_FAIL_COND_V(layer_index < 0, false);
-		if (components[1] == "polygon") {
+		if (components[1] == "polygons_count") {
 			EditorPropertyTilePolygon *ep = memnew(EditorPropertyTilePolygon);
-			ep->setup_single_mode(p_path, "OccluderPolygon2D");
-			add_property_editor(p_path, ep);
+			ep->setup_multiple_mode(vformat("occlusion_layer_%d/polygons", layer_index), vformat("occlusion_layer_%d/polygons_count", layer_index), vformat("occlusion_layer_%d/polygon_%%d/polygon", layer_index), "OccluderPolygon2D");
+			Vector<String> properties;
+			properties.push_back(p_path);
+			int count = p_object->get(vformat("occlusion_layer_%d/polygons_count", layer_index));
+			for (int i = 0; i < count; i++) {
+				properties.push_back(vformat("occlusion_layer_%d/polygon_%d/polygon", layer_index, i));
+			}
+			add_property_editor_for_multiple_properties("Polygons", properties, ep);
 			return true;
 		}
+		// We keep the original editor for now, but here is the code that could be used if we need a custom editor for each polygon:
+		/*else if (components.size() == 3 && components[1].begins_with("polygon_") && components[1].trim_prefix("polygon_").is_valid_int()) {
+			int polygon_index = components[1].trim_prefix("polygon_").to_int();
+			ERR_FAIL_COND_V(polygon_index < 0, false);
+			if (components[2] == "polygon") {
+				return true;
+			}
+		}*/
 	} else if (components.size() >= 2 && components[0].begins_with("physics_layer_") && components[0].trim_prefix("physics_layer_").is_valid_int()) {
 		// Physics layers.
 		int layer_index = components[0].trim_prefix("physics_layer_").to_int();

@@ -31,6 +31,7 @@
 #ifndef SCENE_TREE_EDITOR_H
 #define SCENE_TREE_EDITOR_H
 
+#include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
@@ -67,6 +68,11 @@ class SceneTreeEditor : public Control {
 
 	AcceptDialog *error = nullptr;
 	AcceptDialog *warning = nullptr;
+
+	ConfirmationDialog *revoke_dialog = nullptr;
+	Label *revoke_dialog_label = nullptr;
+	CheckBox *ask_before_revoke_checkbox = nullptr;
+	Node *revoke_node = nullptr;
 
 	bool auto_expand_selected = true;
 	bool connect_to_script_mode = false;
@@ -143,6 +149,9 @@ class SceneTreeEditor : public Control {
 	bool _is_script_type(const StringName &p_type) const;
 
 	Vector<StringName> valid_types;
+
+	void _update_ask_before_revoking_unique_name();
+	void _revoke_unique_name();
 
 public:
 	// Public for use with callable_mp.

@@ -16,6 +16,13 @@
 				Adds a collision polygon to the tile on the given TileSet physics layer.
 			</description>
 		</method>
+		<method name="add_occluder_polygon">
+			<return type="void" />
+			<param index="0" name="layer_id" type="int" />
+			<description>
+				Adds an occlusion polygon to the tile on the TileSet occlusion layer with index [param layer_id].
+			</description>
+		</method>
 		<method name="get_collision_polygon_one_way_margin" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="layer_id" type="int" />
@@ -78,7 +85,7 @@
 				[param flip_h], [param flip_v], and [param transpose] allow transforming the returned polygon.
 			</description>
 		</method>
-		<method name="get_occluder" qualifiers="const">
+		<method name="get_occluder" qualifiers="const" deprecated="Use [method get_occluder_polygon] instead.">
 			<return type="OccluderPolygon2D" />
 			<param index="0" name="layer_id" type="int" />
 			<param index="1" name="flip_h" type="bool" default="false" />
@@ -87,6 +94,25 @@
 			<description>
 				Returns the occluder polygon of the tile for the TileSet occlusion layer with index [param layer_id].
 				[param flip_h], [param flip_v], and [param transpose] allow transforming the returned polygon.
+			</description>
+		</method>
+		<method name="get_occluder_polygon" qualifiers="const">
+			<return type="OccluderPolygon2D" />
+			<param index="0" name="layer_id" type="int" />
+			<param index="1" name="polygon_index" type="int" />
+			<param index="2" name="flip_h" type="bool" default="false" />
+			<param index="3" name="flip_v" type="bool" default="false" />
+			<param index="4" name="transpose" type="bool" default="false" />
+			<description>
+				Returns the occluder polygon at index [param polygon_index] from the TileSet occlusion layer with index [param layer_id].
+				The [param flip_h], [param flip_v], and [param transpose] parameters can be [code]true[/code] to transform the returned polygon.
+			</description>
+		</method>
+		<method name="get_occluder_polygons_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="layer_id" type="int" />
+			<description>
+				Returns the number of occluder polygons of the tile in the TileSet occlusion layer with index [param layer_id].
 			</description>
 		</method>
 		<method name="get_terrain_peering_bit" qualifiers="const">
@@ -117,6 +143,14 @@
 			<param index="1" name="polygon_index" type="int" />
 			<description>
 				Removes the polygon at index [param polygon_index] for TileSet physics layer with index [param layer_id].
+			</description>
+		</method>
+		<method name="remove_occluder_polygon">
+			<return type="void" />
+			<param index="0" name="layer_id" type="int" />
+			<param index="1" name="polygon_index" type="int" />
+			<description>
+				Removes the polygon at index [param polygon_index] for TileSet occlusion layer with index [param layer_id].
 			</description>
 		</method>
 		<method name="set_collision_polygon_one_way">
@@ -194,12 +228,29 @@
 				Sets the navigation polygon for the TileSet navigation layer with index [param layer_id].
 			</description>
 		</method>
-		<method name="set_occluder">
+		<method name="set_occluder" deprecated="Use [method set_occluder_polygon] instead.">
 			<return type="void" />
 			<param index="0" name="layer_id" type="int" />
 			<param index="1" name="occluder_polygon" type="OccluderPolygon2D" />
 			<description>
 				Sets the occluder for the TileSet occlusion layer with index [param layer_id].
+			</description>
+		</method>
+		<method name="set_occluder_polygon">
+			<return type="void" />
+			<param index="0" name="layer_id" type="int" />
+			<param index="1" name="polygon_index" type="int" />
+			<param index="2" name="polygon" type="OccluderPolygon2D" />
+			<description>
+				Sets the occluder for polygon with index [param polygon_index] in the TileSet occlusion layer with index [param layer_id].
+			</description>
+		</method>
+		<method name="set_occluder_polygons_count">
+			<return type="void" />
+			<param index="0" name="layer_id" type="int" />
+			<param index="1" name="polygons_count" type="int" />
+			<description>
+				Sets the occluder polygon count in the TileSet occlusion layer with index [param layer_id].
 			</description>
 		</method>
 		<method name="set_terrain_peering_bit">
