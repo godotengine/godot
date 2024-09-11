@@ -261,7 +261,7 @@ void Dictionary::merge(const Dictionary &p_dictionary, bool p_overwrite) {
 		Variant key = E.key;
 		Variant value = E.value;
 		ERR_FAIL_COND(!_p->typed_key.validate(key, "merge"));
-		ERR_FAIL_COND(!_p->typed_key.validate(value, "merge"));
+		ERR_FAIL_COND(!_p->typed_value.validate(value, "merge"));
 		if (p_overwrite || !has(key)) {
 			operator[](key) = value;
 		}
