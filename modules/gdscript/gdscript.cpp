@@ -59,6 +59,7 @@
 #ifdef TOOLS_ENABLED
 #include "core/extension/gdextension_manager.h"
 #include "editor/editor_paths.h"
+#include "editor/editor_settings.h"
 #endif
 
 #include <stdint.h>
@@ -3056,6 +3057,13 @@ Error ResourceFormatSaverGDScript::save(const Ref<Resource> &p_resource, const S
 
 		ERR_FAIL_COND_V_MSG(err, err, "Cannot save GDScript file '" + p_path + "'.");
 
+#ifdef TOOLS_ENABLED
+		if (Engine::get_singleton()->is_editor_hint() && EDITOR_GET("text_editor/behavior/files/save_with_bom").operator bool()) {
+			file->store_8(0xef); // Store UTF-8 BOM.
+			file->store_8(0xbb);
+			file->store_8(0xbf);
+		}
+#endif
 		file->store_string(source);
 		if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
 			return ERR_CANT_CREATE;

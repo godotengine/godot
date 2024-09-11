@@ -2870,6 +2870,13 @@ Error ResourceFormatSaverCSharpScript::save(const Ref<Resource> &p_resource, con
 		Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save C# script file '" + p_path + "'.");
 
+#ifdef TOOLS_ENABLED
+		if (Engine::get_singleton()->is_editor_hint() && EDITOR_GET("text_editor/behavior/files/save_with_bom").operator bool()) {
+			file->store_8(0xef); // Store UTF-8 BOM.
+			file->store_8(0xbb);
+			file->store_8(0xbf);
+		}
+#endif
 		file->store_string(source);
 
 		if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {

@@ -2401,6 +2401,11 @@ Error ScriptEditor::_save_text_file(Ref<TextFile> p_text_file, const String &p_p
 
 		ERR_FAIL_COND_V_MSG(err, err, "Cannot save text file '" + p_path + "'.");
 
+		if (EDITOR_GET("text_editor/behavior/files/save_with_bom").operator bool()) {
+			file->store_8(0xef); // Store UTF-8 BOM.
+			file->store_8(0xbb);
+			file->store_8(0xbf);
+		}
 		file->store_string(source);
 		if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
 			return ERR_CANT_CREATE;

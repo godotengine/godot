@@ -39,6 +39,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_help.h"
+#include "editor/editor_settings.h"
 
 #include "modules/modules_enabled.gen.h" // For regex.
 #ifdef MODULE_REGEX_ENABLED
@@ -323,6 +324,13 @@ Error ResourceFormatSaverShader::save(const Ref<Resource> &p_resource, const Str
 
 	ERR_FAIL_COND_V_MSG(err, err, "Cannot save shader '" + p_path + "'.");
 
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint() && EDITOR_GET("text_editor/behavior/files/save_with_bom").operator bool()) {
+		file->store_8(0xef); // Store UTF-8 BOM.
+		file->store_8(0xbb);
+		file->store_8(0xbf);
+	}
+#endif
 	file->store_string(source);
 	if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
 		return ERR_CANT_CREATE;

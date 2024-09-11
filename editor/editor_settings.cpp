@@ -669,6 +669,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/behavior/files/restore_scripts_on_load", true);
 	_initial_set("text_editor/behavior/files/convert_indent_on_save", true);
 	_initial_set("text_editor/behavior/files/auto_reload_scripts_on_external_change", false);
+	_initial_set("text_editor/behavior/files/save_with_bom", true);
 
 	// Script list
 	_initial_set("text_editor/script_list/show_members_overview", true);
