@@ -34,19 +34,33 @@
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/ref_counted.h"
 
-class Texture2D;
+class InputEvent;
+class PopupMenu;
 class Shortcut;
+class Texture2D;
 
 class EditorContextMenuPlugin : public RefCounted {
 	GDCLASS(EditorContextMenuPlugin, RefCounted);
 
-public:
-	int start_idx;
+	friend class EditorContextMenuPluginManager;
 
 	inline static constexpr int MAX_ITEMS = 100;
 
+public:
+	enum ContextMenuSlot {
+		CONTEXT_SLOT_SCENE_TREE,
+		CONTEXT_SLOT_FILESYSTEM,
+		CONTEXT_SLOT_SCRIPT_EDITOR,
+		CONTEXT_SLOT_FILESYSTEM_CREATE,
+	};
+	inline static constexpr int BASE_ID = 2000;
+
+private:
+	int slot = -1;
+
+public:
 	struct ContextMenuItem {
-		int idx = 0;
+		int id = 0;
 		String item_name;
 		Callable callable;
 		Ref<Texture2D> icon;
@@ -61,10 +75,37 @@ protected:
 	GDVIRTUAL1(_popup_menu, Vector<String>);
 
 public:
-	virtual void add_options(const Vector<String> &p_paths);
+	virtual void get_options(const Vector<String> &p_paths);
+
 	void add_menu_shortcut(const Ref<Shortcut> &p_shortcut, const Callable &p_callable);
-	void add_context_menu_item(const String &p_name, const Callable &p_callable, const Ref<Texture2D> &p_texture, const Ref<Shortcut> &p_shortcut);
-	void clear_context_menu_items();
+	void add_context_menu_item(const String &p_name, const Callable &p_callable, const Ref<Texture2D> &p_texture);
+	void add_context_menu_item_from_shortcut(const String &p_name, const Ref<Shortcut> &p_shortcut, const Ref<Texture2D> &p_texture);
+};
+
+VARIANT_ENUM_CAST(EditorContextMenuPlugin::ContextMenuSlot);
+
+class EditorContextMenuPluginManager : public Object {
+	GDCLASS(EditorContextMenuPluginManager, Object);
+
+	using ContextMenuSlot = EditorContextMenuPlugin::ContextMenuSlot;
+	static inline EditorContextMenuPluginManager *singleton = nullptr;
+
+	LocalVector<Ref<EditorContextMenuPlugin>> plugin_list;
+
+public:
+	static EditorContextMenuPluginManager *get_singleton() { return singleton; }
+
+	void add_plugin(ContextMenuSlot p_slot, const Ref<EditorContextMenuPlugin> &p_plugin);
+	void remove_plugin(const Ref<EditorContextMenuPlugin> &p_plugin);
+
+	void add_options_from_plugins(PopupMenu *p_popup, ContextMenuSlot p_slot, const Vector<String> &p_paths);
+	Callable match_custom_shortcut(ContextMenuSlot p_slot, const Ref<InputEvent> &p_event);
+	bool activate_custom_option(ContextMenuSlot p_slot, int p_option, const Variant &p_arg);
+
+	void invoke_callback(const Callable &p_callback, const Variant &p_arg);
+
+	static void create();
+	static void cleanup();
 };
 
 #endif // EDITOR_CONTEXT_MENU_PLUGIN_H
