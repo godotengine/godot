@@ -42,6 +42,9 @@
 #include "body_main_editor.h"
 #include "character_prefab.h"
 #include "animator_node_editor.h"
+#include "editor_property_bb_param.h"
+#include "editor_property_variable_name.h"
+#include "blackboard_plan_editor.h"
 #endif
 class CharacterBodyMainLable : public HBoxContainer
 {
@@ -562,6 +565,14 @@ UnityLinkServerEditorPlugin::UnityLinkServerEditorPlugin() {
 	plugin.instantiate();
 	
 	EditorInspector::add_inspector_plugin(plugin);
+
+
+	add_inspector_plugin(memnew(EditorInspectorPluginBBPlan));
+	EditorInspectorPluginVariableName *var_plugin = memnew(EditorInspectorPluginVariableName);
+	EditorInspectorPluginBBParam *param_plugin = memnew(EditorInspectorPluginBBParam);
+	add_inspector_plugin(param_plugin);
+	add_inspector_plugin(var_plugin);
+
 	EditorNode::get_log()->add_message("register:GameHelpInspectorPlugin");
 }
 

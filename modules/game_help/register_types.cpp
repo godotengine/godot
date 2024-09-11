@@ -85,6 +85,44 @@
 
 #include "modules/game_help/MTerrain/gdextension/src/register_types.h"
 
+#include "logic/blackboard/blackboard.h"
+#include "logic/blackboard/blackboard_plan.h"
+#include "logic/blackboard/bb_param/bb_aabb.h"
+#include "logic/blackboard/bb_param/bb_array.h"
+#include "logic/blackboard/bb_param/bb_basis.h"
+#include "logic/blackboard/bb_param/bb_bool.h"
+#include "logic/blackboard/bb_param/bb_byte_array.h"
+#include "logic/blackboard/bb_param/bb_color.h"
+#include "logic/blackboard/bb_param/bb_color_array.h"
+#include "logic/blackboard/bb_param/bb_dictionary.h"
+#include "logic/blackboard/bb_param/bb_float.h"
+#include "logic/blackboard/bb_param/bb_float32_array.h"
+#include "logic/blackboard/bb_param/bb_float64_array.h"
+#include "logic/blackboard/bb_param/bb_int.h"
+#include "logic/blackboard/bb_param/bb_int32_array.h"
+#include "logic/blackboard/bb_param/bb_int64_array.h"
+#include "logic/blackboard/bb_param/bb_node.h"
+#include "logic/blackboard/bb_param/bb_param.h"
+#include "logic/blackboard/bb_param/bb_plane.h"
+#include "logic/blackboard/bb_param/bb_projection.h"
+#include "logic/blackboard/bb_param/bb_quaternion.h"
+#include "logic/blackboard/bb_param/bb_rect2.h"
+#include "logic/blackboard/bb_param/bb_rect2i.h"
+#include "logic/blackboard/bb_param/bb_string.h"
+#include "logic/blackboard/bb_param/bb_string_array.h"
+#include "logic/blackboard/bb_param/bb_string_name.h"
+#include "logic/blackboard/bb_param/bb_transform2d.h"
+#include "logic/blackboard/bb_param/bb_transform3d.h"
+#include "logic/blackboard/bb_param/bb_variant.h"
+#include "logic/blackboard/bb_param/bb_vector2.h"
+#include "logic/blackboard/bb_param/bb_vector2_array.h"
+#include "logic/blackboard/bb_param/bb_vector2i.h"
+#include "logic/blackboard/bb_param/bb_vector3.h"
+#include "logic/blackboard/bb_param/bb_vector3_array.h"
+#include "logic/blackboard/bb_param/bb_vector3i.h"
+#include "logic/blackboard/bb_param/bb_vector4.h"
+#include "logic/blackboard/bb_param/bb_vector4i.h"
+
 
 
 
@@ -208,6 +246,46 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 		ClassDB::register_class<CharacterAI_Inductor>();
 		ClassDB::register_class<CharacterAI_Brain>();
 		ClassDB::register_class<CharacterAI>();
+
+
+		ClassDB::register_class<Blackboard>();
+		ClassDB::register_class<BlackboardPlan>();
+		
+		ClassDB::register_abstract_class<BBParam>();
+		ClassDB::register_class<BBAabb>();
+		ClassDB::register_class<BBArray>();
+		ClassDB::register_class<BBBasis>();
+		ClassDB::register_class<BBBool>();
+		ClassDB::register_class<BBByteArray>();
+		ClassDB::register_class<BBColor>();
+		ClassDB::register_class<BBColorArray>();
+		ClassDB::register_class<BBDictionary>();
+		ClassDB::register_class<BBFloat>();
+		ClassDB::register_class<BBFloat32Array>();
+		ClassDB::register_class<BBFloat64Array>();
+		ClassDB::register_class<BBInt>();
+		ClassDB::register_class<BBInt32Array>();
+		ClassDB::register_class<BBInt64Array>();
+		ClassDB::register_class<BBNode>();
+		ClassDB::register_class<BBPlane>();
+		ClassDB::register_class<BBProjection>();
+		ClassDB::register_class<BBQuaternion>();
+		ClassDB::register_class<BBRect2>();
+		ClassDB::register_class<BBRect2i>();
+		ClassDB::register_class<BBString>();
+		ClassDB::register_class<BBStringArray>();
+		ClassDB::register_class<BBStringName>();
+		ClassDB::register_class<BBTransform2D>();
+		ClassDB::register_class<BBTransform3D>();
+		ClassDB::register_class<BBVariant>();
+		ClassDB::register_class<BBVector2>();
+		ClassDB::register_class<BBVector2Array>();
+		ClassDB::register_class<BBVector2i>();
+		ClassDB::register_class<BBVector3>();
+		ClassDB::register_class<BBVector3Array>();
+		ClassDB::register_class<BBVector3i>();
+		ClassDB::register_class<BBVector4>();
+		ClassDB::register_class<BBVector4i>();
 
 		animation_help = memnew(AnimationManager);
 
