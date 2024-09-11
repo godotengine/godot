@@ -273,7 +273,9 @@ Vector<OpenXRExtensionWrapper *> OpenXRAPI::registered_extension_wrappers;
 bool OpenXRAPI::openxr_is_enabled(bool p_check_run_in_editor) {
 	if (XRServer::get_xr_mode() == XRServer::XRMODE_DEFAULT) {
 		if (Engine::get_singleton()->is_editor_hint() && p_check_run_in_editor) {
-			return GLOBAL_GET("xr/openxr/enabled.editor");
+			// For now, don't start OpenXR when the editor starts up. In the future, this may change
+			// if we want to integrate more XR features into the editor experience.
+			return false;
 		} else {
 			return GLOBAL_GET("xr/openxr/enabled");
 		}
