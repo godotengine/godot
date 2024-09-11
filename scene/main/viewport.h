@@ -350,7 +350,6 @@ private:
 
 	struct GUI {
 		bool mouse_in_viewport = false;
-		bool key_event_accepted = false;
 		HashMap<int, ObjectID> touch_focus;
 		Control *mouse_focus = nullptr;
 		Control *mouse_click_grabber = nullptr;
@@ -402,7 +401,7 @@ private:
 
 	bool disable_input = false;
 
-	bool _gui_call_input(Control *p_control, const Ref<InputEvent> &p_input);
+	void _gui_call_input(Control *p_control, const Ref<InputEvent> &p_input);
 	void _gui_call_notification(Control *p_control, int p_what);
 
 	void _gui_sort_roots();
