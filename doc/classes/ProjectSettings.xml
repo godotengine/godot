@@ -818,17 +818,6 @@
 		<member name="display/window/energy_saving/keep_screen_on" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], keeps the screen on (even in case of inactivity), so the screensaver does not take over. Works on desktop and mobile platforms.
 		</member>
-		<member name="display/window/frame_pacing/android/enable_frame_pacing" type="bool" setter="" getter="" default="true">
-			Enable Swappy for stable frame pacing on Android. Highly recommended.
-			[b]Note:[/b] This option will be forced off when using OpenXR.
-		</member>
-		<member name="display/window/frame_pacing/android/swappy_mode" type="int" setter="" getter="" default="2">
-			Swappy mode to use. The options are:
-			- pipeline_forced_on: Try to honor [member Engine.max_fps]. Pipelining is always on. This is the same behavior as Desktop PC.
-			- auto_fps_pipeline_forced_on: Autocalculate max fps. Actual max_fps will be between 0 and [member Engine.max_fps]. While this sounds convenient, beware that Swappy will often downgrade max fps until it finds something that can be met and sustained. That means if your game runs between 40fps and 60fps on a 60hz screen, after some time Swappy will downgrade max fps so that the game renders at perfect 30fps.
-			- auto_fps_auto_pipeline: Same as auto_fps_pipeline_forced_on, but if Swappy detects that rendering is very fast (e.g. it takes &lt; 8ms to render on a 60hz screen) Swappy will disable pipelining to minimize input latency. This is the default.
-			[b]Note:[/b] If [member Engine.max_fps] is 0, actual max_fps will considered as to be the screen's refresh rate (often 60hz, 90hz or 120hz depending on device model and OS settings).
-		</member>
 		<member name="display/window/handheld/orientation" type="int" setter="" getter="" default="0">
 			The default screen orientation to use on mobile devices. See [enum DisplayServer.ScreenOrientation] for possible values.
 			[b]Note:[/b] When set to a portrait orientation, this project setting does not flip the project resolution's width and height automatically. Instead, you have to set [member display/window/size/viewport_width] and [member display/window/size/viewport_height] accordingly.
@@ -887,10 +876,6 @@
 			[b]Note:[/b] This property is only read when the project starts. To change whether the window is resizable at runtime, set [member Window.unresizable] instead on the root Window, which can be retrieved using [code]get_viewport().get_window()[/code]. [member Window.unresizable] takes the opposite value of this setting.
 			[b]Note:[/b] Certain window managers can be configured to ignore the non-resizable status of a window. Do not rely on this setting as a guarantee that the window will [i]never[/i] be resizable.
 			[b]Note:[/b] This setting is ignored on iOS.
-		</member>
-		<member name="display/window/size/sharp_corners" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], the main window uses sharp corners by default.
-			[b]Note:[/b] This property is implemented only on Windows (11).
 		</member>
 		<member name="display/window/size/transparent" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], enables a window manager hint that the main window background [i]can[/i] be transparent. This does not make the background actually transparent. For the background to be transparent, the root viewport must also be made transparent by enabling [member rendering/viewport/transparent_background].
@@ -1401,10 +1386,6 @@
 		</member>
 		<member name="input/ui_undo" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to undo the most recent action.
-			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
-		</member>
-		<member name="input/ui_unicode_start" type="Dictionary" setter="" getter="">
-			Default [InputEventAction] to start Unicode character hexadecimal code input in a text field.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_up" type="Dictionary" setter="" getter="">
@@ -2364,13 +2345,6 @@
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_ticks_per_second] instead.
 			[b]Note:[/b] Only [member physics/common/max_physics_steps_per_frame] physics ticks may be simulated per rendered frame at most. If more physics ticks have to be simulated per rendered frame to keep up with rendering, the project will appear to slow down (even if [code]delta[/code] is used consistently in physics calculations). Therefore, it is recommended to also increase [member physics/common/max_physics_steps_per_frame] if increasing [member physics/common/physics_ticks_per_second] significantly above its default value.
 		</member>
-		<member name="rendering/2d/batching/item_buffer_size" type="int" setter="" getter="" default="16384">
-			Maximum number of canvas item commands that can be batched into a single draw call.
-		</member>
-		<member name="rendering/2d/batching/uniform_set_cache_size" type="int" setter="" getter="" default="256">
-			Maximum number of uniform sets that will be cached by the 2D renderer when batching draw calls.
-			[b]Note:[/b] A project that uses a large number of unique sprite textures per frame may benefit from increasing this value.
-		</member>
 		<member name="rendering/2d/sdf/oversize" type="int" setter="" getter="" default="1">
 			Controls how much of the original viewport size should be covered by the 2D signed distance field. This SDF can be sampled in [CanvasItem] shaders and is used for [GPUParticles2D] collision. Higher values allow portions of occluders located outside the viewport to still be taken into account in the generated signed distance field, at the cost of performance. If you notice particles falling through [LightOccluder2D]s as the occluders leave the viewport, increase this setting.
 			The percentage specified is added on each axis and on both sides. For example, with the default setting of 120%, the signed distance field will cover 20% of the viewport's size outside the viewport on each side (top, right, bottom, left).
@@ -2822,10 +2796,6 @@
 			If [code]true[/code], the forward renderer will fall back to Direct3D 12 if Vulkan is not supported.
 			[b]Note:[/b] This setting is implemented only on Windows.
 		</member>
-		<member name="rendering/rendering_device/fallback_to_opengl3" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], the forward renderer will fall back to OpenGL 3 if both Direct3D 12, Metal and Vulkan are not supported.
-			[b]Note:[/b] This setting is implemented only on Windows, Android, macOS, iOS, and Linux/X11.
-		</member>
 		<member name="rendering/rendering_device/fallback_to_vulkan" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the forward renderer will fall back to Vulkan if Direct3D 12 is not supported.
 			[b]Note:[/b] This setting is implemented only on Windows.
@@ -2889,6 +2859,8 @@
 		<member name="rendering/shading/overrides/force_vertex_shading" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], forces vertex shading for all rendering. This can increase performance a lot, but also reduces quality immensely. Can be used to optimize performance on low-end mobile devices.
 		</member>
+		<member name="rendering/shading/overrides/force_vertex_shading.mobile" type="bool" setter="" getter="" default="true">
+		</member>
 		<member name="rendering/textures/canvas_textures/default_texture_filter" type="int" setter="" getter="" default="1">
 			The default texture filtering mode to use on [CanvasItem]s.
 			[b]Note:[/b] For pixel art aesthetics, see also [member rendering/2d/snap/snap_2d_vertices_to_pixel] and [member rendering/2d/snap/snap_2d_transforms_to_pixel].
@@ -2919,9 +2891,6 @@
 		</member>
 		<member name="rendering/textures/lossless_compression/force_png" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import lossless textures using the PNG format. Otherwise, it will default to using WebP.
-		</member>
-		<member name="rendering/textures/vram_compression/cache_gpu_compressor" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], the GPU texture compressor will cache the local RenderingDevice and its resources (shaders and pipelines), allowing for faster subsequent imports at a memory cost.
 		</member>
 		<member name="rendering/textures/vram_compression/compress_with_gpu" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the texture importer will utilize the GPU for compressing textures, improving the import time of large images.
@@ -2982,6 +2951,8 @@
 		</member>
 		<member name="xr/openxr/enabled" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], Godot will setup and initialize OpenXR on startup.
+		</member>
+		<member name="xr/openxr/enabled.editor" type="bool" setter="" getter="" default="false">
 		</member>
 		<member name="xr/openxr/environment_blend_mode" type="int" setter="" getter="" default="&quot;0&quot;">
 			Specify how OpenXR should blend in the environment. This is specific to certain AR and passthrough devices where camera images are blended in by the XR compositor.

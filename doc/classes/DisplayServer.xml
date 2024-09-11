@@ -893,13 +893,6 @@
 				Returns [code]true[/code] if the specified [param feature] is supported by the current [DisplayServer], [code]false[/code] otherwise.
 			</description>
 		</method>
-		<method name="has_hardware_keyboard" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns [code]true[/code] if hardware keyboard is connected.
-				[b]Note:[/b] This method is implemented on Android and iOS, on other platforms this method always returns [code]true[/code].
-			</description>
-		</method>
 		<method name="help_set_search_callbacks">
 			<return type="void" />
 			<param index="0" name="search_callback" type="Callable" />
@@ -2102,11 +2095,7 @@
 		<constant name="WINDOW_FLAG_MOUSE_PASSTHROUGH" value="7" enum="WindowFlags">
 			All mouse events are passed to the underlying window of the same application.
 		</constant>
-		<constant name="WINDOW_FLAG_SHARP_CORNERS" value="8" enum="WindowFlags">
-			Window style is overridden, forcing sharp corners.
-			[b]Note:[/b] This flag is implemented only on Windows (11).
-		</constant>
-		<constant name="WINDOW_FLAG_MAX" value="9" enum="WindowFlags">
+		<constant name="WINDOW_FLAG_MAX" value="8" enum="WindowFlags">
 			Max value of the [enum WindowFlags].
 		</constant>
 		<constant name="WINDOW_EVENT_MOUSE_ENTER" value="0" enum="WindowEvent">
@@ -2177,16 +2166,6 @@
 			- Linux (Wayland): [code]EGLContext[/code] for the window.
 			- macOS: [code]NSOpenGLContext*[/code] for the window (native GL), or [code]EGLContext[/code] for the window (ANGLE).
 			- Android: [code]EGLContext[/code] for the window.
-		</constant>
-		<constant name="EGL_DISPLAY" value="4" enum="HandleType">
-			- Windows: [code]EGLDisplay[/code] for the window (ANGLE).
-			- macOS: [code]EGLDisplay[/code] for the window (ANGLE).
-			- Linux (Wayland): [code]EGLDisplay[/code] for the window.
-		</constant>
-		<constant name="EGL_CONFIG" value="5" enum="HandleType">
-			- Windows: [code]EGLConfig[/code] for the window (ANGLE).
-			- macOS: [code]EGLConfig[/code] for the window (ANGLE).
-			- Linux (Wayland): [code]EGLConfig[/code] for the window.
 		</constant>
 		<constant name="TTS_UTTERANCE_STARTED" value="0" enum="TTSUtteranceEvent">
 			Utterance has begun to be spoken.

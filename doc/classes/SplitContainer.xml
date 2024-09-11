@@ -16,39 +16,13 @@
 				Clamps the [member split_offset] value to not go outside the currently possible minimal and maximum values.
 			</description>
 		</method>
-		<method name="get_drag_area_control">
-			<return type="Control" />
-			<description>
-				Returns the drag area [Control]. For example, you can move a pre-configured button into the drag area [Control] so that it rides along with the split bar. Try setting the [Button] anchors to [code]center[/code] prior to the [code]reparent()[/code] call.
-				[codeblock]
-				$BarnacleButton.reparent($SplitContainer.get_drag_area_control())
-				[/codeblock]
-				[b]Note:[/b] The drag area [Control] is drawn over the [SplitContainer]'s children, so [CanvasItem] draw objects called from the [Control] and children added to the [Control] will also appear over the [SplitContainer]'s children. Try setting [member Control.mouse_filter] of custom children to [constant Control.MOUSE_FILTER_IGNORE] to prevent blocking the mouse from dragging if desired.
-				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash.
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="collapsed" type="bool" setter="set_collapsed" getter="is_collapsed" default="false">
 			If [code]true[/code], the area of the first [Control] will be collapsed and the dragger will be disabled.
 		</member>
-		<member name="drag_area_highlight_in_editor" type="bool" setter="set_drag_area_highlight_in_editor" getter="is_drag_area_highlight_in_editor_enabled" default="false">
-			Highlights the drag area [Rect2] so you can see where it is during development. The drag area is gold if [member dragging_enabled] is [code]true[/code], and red if [code]false[/code].
-		</member>
-		<member name="drag_area_margin_begin" type="int" setter="set_drag_area_margin_begin" getter="get_drag_area_margin_begin" default="0">
-			Reduces the size of the drag area and split bar [theme_item split_bar_background] at the beginning of the container.
-		</member>
-		<member name="drag_area_margin_end" type="int" setter="set_drag_area_margin_end" getter="get_drag_area_margin_end" default="0">
-			Reduces the size of the drag area and split bar [theme_item split_bar_background] at the end of the container.
-		</member>
-		<member name="drag_area_offset" type="int" setter="set_drag_area_offset" getter="get_drag_area_offset" default="0">
-			Shifts the drag area in the axis of the container to prevent the drag area from overlapping the [ScrollBar] or other selectable [Control] of a child node.
-		</member>
 		<member name="dragger_visibility" type="int" setter="set_dragger_visibility" getter="get_dragger_visibility" enum="SplitContainer.DraggerVisibility" default="0">
 			Determines the dragger's visibility. See [enum DraggerVisibility] for details. This property does not determine whether dragging is enabled or not. Use [member dragging_enabled] for that.
-		</member>
-		<member name="dragging_enabled" type="bool" setter="set_dragging_enabled" getter="is_dragging_enabled" default="true">
-			Enables or disables split dragging.
 		</member>
 		<member name="split_offset" type="int" setter="set_split_offset" getter="get_split_offset" default="0">
 			The initial offset of the splitting between the two [Control]s, with [code]0[/code] being at the end of the first [Control].
@@ -59,16 +33,6 @@
 		</member>
 	</members>
 	<signals>
-		<signal name="drag_ended">
-			<description>
-				Emitted when the user ends dragging.
-			</description>
-		</signal>
-		<signal name="drag_started">
-			<description>
-				Emitted when the user starts dragging.
-			</description>
-		</signal>
 		<signal name="dragged">
 			<param index="0" name="offset" type="int" />
 			<description>
@@ -109,9 +73,6 @@
 		</theme_item>
 		<theme_item name="v_grabber" data_type="icon" type="Texture2D">
 			The icon used for the grabber drawn in the middle area when [member vertical] is [code]true[/code].
-		</theme_item>
-		<theme_item name="split_bar_background" data_type="style" type="StyleBox">
-			Determines the background of the split bar if its thickness is greater than zero.
 		</theme_item>
 	</theme_items>
 </class>

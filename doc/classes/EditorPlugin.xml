@@ -403,7 +403,7 @@
 		</method>
 		<method name="add_context_menu_plugin">
 			<return type="void" />
-			<param index="0" name="slot" type="int" enum="EditorContextMenuPlugin.ContextMenuSlot" />
+			<param index="0" name="slot" type="int" enum="EditorPlugin.ContextMenuSlot" />
 			<param index="1" name="plugin" type="EditorContextMenuPlugin" />
 			<description>
 				Adds a plugin to the context menu. [param slot] is the context menu where the plugin will be added.
@@ -635,7 +635,8 @@
 		</method>
 		<method name="remove_context_menu_plugin">
 			<return type="void" />
-			<param index="0" name="plugin" type="EditorContextMenuPlugin" />
+			<param index="0" name="slot" type="int" enum="EditorPlugin.ContextMenuSlot" />
+			<param index="1" name="plugin" type="EditorContextMenuPlugin" />
 			<description>
 				Removes the specified context menu plugin.
 			</description>
@@ -889,6 +890,14 @@
 		</constant>
 		<constant name="AFTER_GUI_INPUT_CUSTOM" value="2" enum="AfterGUIInput">
 			Pass the [InputEvent] to other editor plugins except the main [Node3D] one. This can be used to prevent node selection changes and work with sub-gizmos instead.
+		</constant>
+		<constant name="CONTEXT_SLOT_SCENE_TREE" value="0" enum="ContextMenuSlot">
+		</constant>
+		<constant name="CONTEXT_SLOT_FILESYSTEM" value="1" enum="ContextMenuSlot">
+		</constant>
+		<constant name="CONTEXT_SLOT_SCRIPT_EDITOR" value="2" enum="ContextMenuSlot">
+		</constant>
+		<constant name="CONTEXT_SUBMENU_SLOT_FILESYSTEM_CREATE" value="3" enum="ContextMenuSlot">
 		</constant>
 	</constants>
 </class>

@@ -42,6 +42,11 @@
 				Removes all surfaces and blend shapes from this [ImporterMesh].
 			</description>
 		</method>
+		<method name="create_shadow_mesh">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
 		<method name="generate_lods">
 			<return type="void" />
 			<param index="0" name="normal_merge_angle" type="float" />
@@ -86,6 +91,11 @@
 				Returns the mesh data represented by this [ImporterMesh] as a usable [ArrayMesh].
 				This method caches the returned mesh, and subsequent calls will return the cached data until [method clear] is called.
 				If not yet cached and [param base_mesh] is provided, [param base_mesh] will be used and mutated.
+			</description>
+		</method>
+		<method name="get_shadow_mesh" qualifiers="const">
+			<return type="ImporterMesh" />
+			<description>
 			</description>
 		</method>
 		<method name="get_surface_arrays" qualifiers="const">

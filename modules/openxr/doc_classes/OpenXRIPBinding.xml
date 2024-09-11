@@ -41,11 +41,7 @@
 		<member name="action" type="OpenXRAction" setter="set_action" getter="get_action">
 			[OpenXRAction] that is bound to [member binding_path].
 		</member>
-		<member name="binding_path" type="String" setter="set_binding_path" getter="get_binding_path" default="&quot;&quot;">
-			Binding path that defines the input or output bound to [member action].
-			[b]Note:[/b] Binding paths are suggestions, an XR runtime may choose to bind the action to a different input or output emulating this input or output.
-		</member>
-		<member name="paths" type="PackedStringArray" setter="set_paths" getter="get_paths" deprecated="Use [member binding_path] instead.">
+		<member name="paths" type="PackedStringArray" setter="set_paths" getter="get_paths" default="PackedStringArray()" deprecated="Use [member binding_path] instead.">
 			Paths that define the inputs or outputs bound on the device.
 		</member>
 	</members>

@@ -85,13 +85,6 @@
 				Returns a locale's language and its variant (e.g. [code]"en_US"[/code] would return [code]"English (United States)"[/code]).
 			</description>
 		</method>
-		<method name="get_or_add_domain">
-			<return type="TranslationDomain" />
-			<param index="0" name="domain" type="StringName" />
-			<description>
-				Returns the translation domain with the specified name. An empty translation domain will be created and added if it does not exist.
-			</description>
-		</method>
 		<method name="get_script_name" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="script" type="String" />
@@ -113,13 +106,6 @@
 				Returns the [Translation] instance that best matches [param locale] in the main translation domain. Returns [code]null[/code] if there are no matches.
 			</description>
 		</method>
-		<method name="has_domain" qualifiers="const">
-			<return type="bool" />
-			<param index="0" name="domain" type="StringName" />
-			<description>
-				Returns [code]true[/code] if a translation domain with the specified name exists.
-			</description>
-		</method>
 		<method name="pseudolocalize" qualifiers="const">
 			<return type="StringName" />
 			<param index="0" name="message" type="StringName" />
@@ -132,14 +118,6 @@
 			<return type="void" />
 			<description>
 				Reparses the pseudolocalization options and reloads the translation for the main translation domain.
-			</description>
-		</method>
-		<method name="remove_domain">
-			<return type="void" />
-			<param index="0" name="domain" type="StringName" />
-			<description>
-				Removes the translation domain with the specified name.
-				[b]Note:[/b] Trying to remove the main translation domain is an error.
 			</description>
 		</method>
 		<method name="remove_translation">

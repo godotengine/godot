@@ -73,13 +73,6 @@
 				Removes the button at index [param button_index] in column [param column].
 			</description>
 		</method>
-		<method name="get_auto_translate_mode" qualifiers="const">
-			<return type="int" enum="Node.AutoTranslateMode" />
-			<param index="0" name="column" type="int" />
-			<description>
-				Returns the column's auto translate mode.
-			</description>
-		</method>
 		<method name="get_autowrap_mode" qualifiers="const">
 			<return type="int" enum="TextServer.AutowrapMode" />
 			<param index="0" name="column" type="int" />
@@ -228,13 +221,6 @@
 			<param index="0" name="column" type="int" />
 			<description>
 				Returns the [Color] modulating the column's icon.
-			</description>
-		</method>
-		<method name="get_icon_overlay" qualifiers="const">
-			<return type="Texture2D" />
-			<param index="0" name="column" type="int" />
-			<description>
-				Returns the given column's icon overlay [Texture2D].
 			</description>
 		</method>
 		<method name="get_icon_region" qualifiers="const">
@@ -500,15 +486,6 @@
 				Selects the given [param column].
 			</description>
 		</method>
-		<method name="set_auto_translate_mode">
-			<return type="void" />
-			<param index="0" name="column" type="int" />
-			<param index="1" name="mode" type="int" enum="Node.AutoTranslateMode" />
-			<description>
-				Sets the given column's auto translate mode to [param mode].
-				All columns use [constant Node.AUTO_TRANSLATE_MODE_INHERIT] by default, which uses the same auto translate mode as the [Tree] itself.
-			</description>
-		</method>
 		<method name="set_autowrap_mode">
 			<return type="void" />
 			<param index="0" name="column" type="int" />
@@ -683,14 +660,6 @@
 			<param index="1" name="modulate" type="Color" />
 			<description>
 				Modulates the given column's icon with [param modulate].
-			</description>
-		</method>
-		<method name="set_icon_overlay">
-			<return type="void" />
-			<param index="0" name="column" type="int" />
-			<param index="1" name="texture" type="Texture2D" />
-			<description>
-				Sets the given cell's icon overlay [Texture2D]. The cell has to be in [constant CELL_MODE_ICON] mode, and icon has to be set. Overlay is drawn on top of icon, in the bottom left corner.
 			</description>
 		</method>
 		<method name="set_icon_region">

@@ -41,15 +41,6 @@
 				This method can be used to modify the final JSON of the generated glTF file.
 			</description>
 		</method>
-		<method name="_export_post_convert" qualifiers="virtual">
-			<return type="int" enum="Error" />
-			<param index="0" name="state" type="GLTFState" />
-			<param index="1" name="root" type="Node" />
-			<description>
-				Part of the export process. This method is run after [method _convert_scene_node] and before [method _export_preserialize].
-				This method can be used to modify the converted node data structures before serialization with any additional data from the scene tree.
-			</description>
-		</method>
 		<method name="_export_preflight" qualifiers="virtual">
 			<return type="int" enum="Error" />
 			<param index="0" name="state" type="GLTFState" />
@@ -124,14 +115,6 @@
 			<description>
 				Part of the import process. This method is run after [method _parse_node_extensions] and before [method _import_pre_generate].
 				This method can be used to modify any of the data imported so far after parsing each node, but before generating the scene or any of its nodes.
-			</description>
-		</method>
-		<method name="_import_pre_generate" qualifiers="virtual">
-			<return type="int" enum="Error" />
-			<param index="0" name="state" type="GLTFState" />
-			<description>
-				Part of the import process. This method is run after [method _import_post_parse] and before [method _generate_scene_node].
-				This method can be used to modify or read from any of the processed data structures, before generating the nodes and then running the final per-node import step.
 			</description>
 		</method>
 		<method name="_import_preflight" qualifiers="virtual">
