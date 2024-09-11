@@ -41,6 +41,7 @@ ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES];
 int ScriptServer::_language_count = 0;
 bool ScriptServer::languages_ready = false;
 Mutex ScriptServer::languages_mutex;
+thread_local bool ScriptServer::thread_entered = false;
 
 bool ScriptServer::scripting_enabled = true;
 bool ScriptServer::reload_scripts_on_save = false;
@@ -326,6 +327,10 @@ bool ScriptServer::are_languages_initialized() {
 	return languages_ready;
 }
 
+bool ScriptServer::thread_is_entered() {
+	return thread_entered;
+}
+
 void ScriptServer::set_reload_scripts_on_save(bool p_enable) {
 	reload_scripts_on_save = p_enable;
 }
@@ -335,6 +340,10 @@ bool ScriptServer::is_reload_scripts_on_save_enabled() {
 }
 
 void ScriptServer::thread_enter() {
+	if (thread_entered) {
+		return;
+	}
+
 	MutexLock lock(languages_mutex);
 	if (!languages_ready) {
 		return;
@@ -342,9 +351,15 @@ void ScriptServer::thread_enter() {
 	for (int i = 0; i < _language_count; i++) {
 		_languages[i]->thread_enter();
 	}
+
+	thread_entered = true;
 }
 
 void ScriptServer::thread_exit() {
+	if (!thread_entered) {
+		return;
+	}
+
 	MutexLock lock(languages_mutex);
 	if (!languages_ready) {
 		return;
@@ -352,6 +367,8 @@ void ScriptServer::thread_exit() {
 	for (int i = 0; i < _language_count; i++) {
 		_languages[i]->thread_exit();
 	}
+
+	thread_entered = false;
 }
 
 HashMap<StringName, ScriptServer::GlobalScriptClass> ScriptServer::global_classes;

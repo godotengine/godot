@@ -140,6 +140,7 @@ static Engine *engine = nullptr;
 static ProjectSettings *globals = nullptr;
 static Input *input = nullptr;
 static InputMap *input_map = nullptr;
+static WorkerThreadPool *worker_thread_pool = nullptr;
 static TranslationServer *translation_server = nullptr;
 static Performance *performance = nullptr;
 static PackedData *packed_data = nullptr;
@@ -690,6 +691,8 @@ Error Main::test_setup() {
 
 	register_core_settings(); // Here globals are present.
 
+	worker_thread_pool = memnew(WorkerThreadPool);
+
 	translation_server = memnew(TranslationServer);
 	tsman = memnew(TextServerManager);
 
@@ -800,6 +803,8 @@ void Main::test_cleanup() {
 	ResourceSaver::remove_custom_savers();
 	PropertyListHelper::clear_base_helpers();
 
+	WorkerThreadPool::get_singleton()->finish();
+
 #ifdef TOOLS_ENABLED
 	GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_EDITOR);
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_EDITOR);
@@ -840,6 +845,9 @@ void Main::test_cleanup() {
 #endif // _3D_DISABLED
 	if (physics_server_2d_manager) {
 		memdelete(physics_server_2d_manager);
+	}
+	if (worker_thread_pool) {
+		memdelete(worker_thread_pool);
 	}
 	if (globals) {
 		memdelete(globals);
@@ -931,6 +939,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	register_core_settings(); //here globals are present
 
+	worker_thread_pool = memnew(WorkerThreadPool);
 	translation_server = memnew(TranslationServer);
 	performance = memnew(Performance);
 	GDREGISTER_CLASS(Performance);
@@ -2620,6 +2629,10 @@ error:
 	}
 	if (translation_server) {
 		memdelete(translation_server);
+	}
+	if (worker_thread_pool) {
+		worker_thread_pool->finish();
+		memdelete(worker_thread_pool);
 	}
 	if (globals) {
 		memdelete(globals);
@@ -4502,6 +4515,8 @@ void Main::cleanup(bool p_force) {
 	ResourceLoader::clear_translation_remaps();
 	ResourceLoader::clear_path_remaps();
 
+	WorkerThreadPool::get_singleton()->finish();
+
 	ScriptServer::finish_languages();
 
 	// Sync pending commands that may have been queued from a different thread during ScriptServer finalization
@@ -4591,6 +4606,9 @@ void Main::cleanup(bool p_force) {
 #endif // _3D_DISABLED
 	if (physics_server_2d_manager) {
 		memdelete(physics_server_2d_manager);
+	}
+	if (worker_thread_pool) {
+		memdelete(worker_thread_pool);
 	}
 	if (globals) {
 		memdelete(globals);

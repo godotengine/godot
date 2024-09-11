@@ -63,17 +63,14 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 		// Tasks must start with these at default values. They are free to set-and-forget otherwise.
 		set_current_thread_safe_for_nodes(false);
 		MessageQueue::set_thread_singleton_override(nullptr);
+
 		// Since the WorkerThreadPool is started before the script server,
 		// its pre-created threads can't have ScriptServer::thread_enter() called on them early.
 		// Therefore, we do it late at the first opportunity, so in case the task
 		// about to be run uses scripting, guarantees are held.
+		ScriptServer::thread_enter();
+
 		task_mutex.lock();
-		if (!curr_thread.ready_for_scripting && ScriptServer::are_languages_initialized()) {
-			task_mutex.unlock();
-			ScriptServer::thread_enter();
-			task_mutex.lock();
-			curr_thread.ready_for_scripting = true;
-		}
 		p_task->pool_thread_index = pool_thread_index;
 		prev_task = curr_thread.current_task;
 		curr_thread.current_task = p_task;
@@ -326,6 +323,8 @@ WorkerThreadPool::TaskID WorkerThreadPool::add_native_task(void (*p_func)(void *
 }
 
 WorkerThreadPool::TaskID WorkerThreadPool::_add_task(const Callable &p_callable, void (*p_func)(void *), void *p_userdata, BaseTemplateUserdata *p_template_userdata, bool p_high_priority, const String &p_description) {
+	ERR_FAIL_COND_V_MSG(threads.is_empty(), INVALID_TASK_ID, "Can't add a task because the WorkerThreadPool is either not initialized yet or already terminated.");
+
 	task_mutex.lock();
 	// Get a free task
 	Task *task = task_allocator.alloc();
@@ -514,6 +513,12 @@ void WorkerThreadPool::yield() {
 	int th_index = get_thread_index();
 	ERR_FAIL_COND_MSG(th_index == -1, "This function can only be called from a worker thread.");
 	_wait_collaboratively(&threads[th_index], ThreadData::YIELDING);
+
+	// If this long-lived task started before the scripting server was initialized,
+	// now is a good time to have scripting languages ready for the current thread.
+	// Otherwise, such a piece of setup won't happen unless another task has been
+	// run during the collaborative wait.
+	ScriptServer::thread_enter();
 }
 
 void WorkerThreadPool::notify_yield_over(TaskID p_task_id) {
@@ -538,6 +543,7 @@ void WorkerThreadPool::notify_yield_over(TaskID p_task_id) {
 }
 
 WorkerThreadPool::GroupID WorkerThreadPool::_add_group_task(const Callable &p_callable, void (*p_func)(void *, uint32_t), void *p_userdata, BaseTemplateUserdata *p_template_userdata, int p_elements, int p_tasks, bool p_high_priority, const String &p_description) {
+	ERR_FAIL_COND_V_MSG(threads.is_empty(), INVALID_TASK_ID, "Can't add a group task because the WorkerThreadPool is either not initialized yet or already terminated.");
 	ERR_FAIL_COND_V(p_elements < 0, INVALID_TASK_ID);
 	if (p_tasks < 0) {
 		p_tasks = MAX(1u, threads.size());
@@ -749,5 +755,5 @@ WorkerThreadPool::WorkerThreadPool() {
 }
 
 WorkerThreadPool::~WorkerThreadPool() {
-	finish();
+	DEV_ASSERT(threads.size() == 0 && "finish() hasn't been called!");
 }
