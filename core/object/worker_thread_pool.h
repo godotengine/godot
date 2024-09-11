@@ -112,7 +112,6 @@ private:
 
 		uint32_t index = 0;
 		Thread thread;
-		bool ready_for_scripting : 1;
 		bool signaled : 1;
 		bool yield_is_over : 1;
 		Task *current_task = nullptr;
@@ -120,7 +119,6 @@ private:
 		ConditionVariable cond_var;
 
 		ThreadData() :
-				ready_for_scripting(false),
 				signaled(false),
 				yield_is_over(false) {}
 	};

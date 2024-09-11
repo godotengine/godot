@@ -54,6 +54,7 @@ class ScriptServer {
 	static int _language_count;
 	static bool languages_ready;
 	static Mutex languages_mutex;
+	static thread_local bool thread_entered;
 
 	static bool scripting_enabled;
 	static bool reload_scripts_on_save;
@@ -100,12 +101,13 @@ public:
 
 	static void init_languages();
 	static void finish_languages();
-	static bool are_languages_initialized(); 
 	static  String get_global_name(const Ref<Script>& p_script);
     static PackedStringArray get_class_hierarchy(const StringName& p_class_name, bool p_include_native_classes);    
     static bool is_parent_class(const StringName& p_source_class_name, const StringName& p_target_class_name);
 	static GlobalScriptClass get_global_class(const StringName& p_class_name);
 
+	static bool are_languages_initialized();
+	static bool thread_is_entered();
 };
 
 class PlaceHolderScriptInstance;

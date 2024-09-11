@@ -541,7 +541,7 @@ EditorPluginCSG::EditorPluginCSG() {
 	Node3DEditor::get_singleton()->add_gizmo_plugin(gizmo_plugin);
 
 	csg_shape_editor = memnew(CSGShapeEditor);
-	EditorNode::get_singleton()->get_main_screen_control()->add_child(csg_shape_editor);
+	EditorNode::get_singleton()->get_gui_base()->add_child(csg_shape_editor);
 }
 
 #endif // TOOLS_ENABLED
