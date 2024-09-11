@@ -5,7 +5,7 @@ on:
 # Global Settings
 env:
   # Only used for the cache key. Increment version to force clean build.
-  GODOT_BASE_BRANCH: 3.x
+  GODOT_BASE_BRANCH: 3.6
   SCONSFLAGS: verbose=yes warnings=all werror=yes
 
 concurrency:
