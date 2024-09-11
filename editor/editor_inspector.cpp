@@ -2246,7 +2246,7 @@ void EditorInspectorArray::_setup() {
 			}
 			move_vbox->add_child(ae.move_texture_rect);
 
-			if (element_position < _get_array_count() - 1) {
+			if (element_position < count - 1) {
 				ae.move_down = memnew(Button);
 				ae.move_down->set_icon(get_editor_theme_icon(SNAME("MoveDown")));
 				ae.move_down->connect(SceneStringName(pressed), callable_mp(this, &EditorInspectorArray::_move_element).bind(element_position, element_position + 2));
