@@ -54,7 +54,7 @@
 			Source font size used to generate MSDF textures. Higher values allow for more precision, but are slower to render and require more memory. Only increase this value if you notice a visible lack of precision in glyph rendering. Only effective if [member multichannel_signed_distance_field] is [code]true[/code].
 		</member>
 		<member name="multichannel_signed_distance_field" type="bool" setter="" getter="" default="false">
-			If set to [code]true[/code], the default font will use multichannel signed distance field (MSDF) for crisp rendering at any size. Since this approach does not rely on rasterizing the font every time its size changes, this allows for resizing the font in real-time without any performance penalty. Text will also not look grainy for [Control]s that are scaled down (or for [Label3D]s viewed from a long distance).
+			If set to [code]true[/code], the font will use multichannel signed distance field (MSDF) for crisp rendering at any size. Since this approach does not rely on rasterizing the font every time its size changes, this allows for resizing the font in real-time without any performance penalty. Text will also not look grainy for [Control]s that are scaled down (or for [Label3D]s viewed from a long distance).
 			MSDF font rendering can be combined with [member generate_mipmaps] to further improve font rendering quality when scaled down.
 		</member>
 		<member name="opentype_features" type="Dictionary" setter="" getter="" default="{}">
