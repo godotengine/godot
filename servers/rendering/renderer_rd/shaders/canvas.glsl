@@ -24,6 +24,12 @@ layout(location = 11) in vec4 weight_attrib;
 
 #include "canvas_uniforms_inc.glsl"
 
+#ifndef USE_ATTRIBUTES
+
+layout(location = 4) out flat uint instance_index_interp;
+
+#endif // USE_ATTRIBUTES
+
 layout(location = 0) out vec2 uv_interp;
 layout(location = 1) out vec4 color_interp;
 layout(location = 2) out vec2 vertex_interp;
@@ -58,6 +64,14 @@ void main() {
 #if defined(CUSTOM1_USED)
 	vec4 custom1 = vec4(0.0);
 #endif
+
+#ifdef USE_ATTRIBUTES
+	uint instance_index = params.base_instance_index;
+#else
+	uint instance_index = gl_InstanceIndex + params.base_instance_index;
+	instance_index_interp = instance_index;
+#endif // USE_ATTRIBUTES
+	const InstanceData draw_data = instances.data[instance_index];
 
 #ifdef USE_PRIMITIVE
 
@@ -117,13 +131,10 @@ void main() {
 
 	mat4 model_matrix = mat4(vec4(draw_data.world_x, 0.0, 0.0), vec4(draw_data.world_y, 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(draw_data.world_ofs, 0.0, 1.0));
 
-#define FLAGS_INSTANCING_MASK 0x7F
-#define FLAGS_INSTANCING_HAS_COLORS (1 << 7)
-#define FLAGS_INSTANCING_HAS_CUSTOM_DATA (1 << 8)
+#ifdef USE_ATTRIBUTES
 
 	uint instancing = draw_data.flags & FLAGS_INSTANCING_MASK;
 
-#ifdef USE_ATTRIBUTES
 	if (instancing > 1) {
 		// trails
 
@@ -160,38 +171,27 @@ void main() {
 
 		vertex = new_vertex;
 		color *= pcolor;
-	} else
-#endif // USE_ATTRIBUTES
-	{
-		if (instancing == 1) {
-			uint stride = 2;
-			{
-				if (bool(draw_data.flags & FLAGS_INSTANCING_HAS_COLORS)) {
-					stride += 1;
-				}
-				if (bool(draw_data.flags & FLAGS_INSTANCING_HAS_CUSTOM_DATA)) {
-					stride += 1;
-				}
-			}
+	} else if (instancing == 1) {
+		uint stride = 2 + bitfieldExtract(draw_data.flags, FLAGS_INSTANCING_HAS_COLORS_SHIFT, 1) + bitfieldExtract(draw_data.flags, FLAGS_INSTANCING_HAS_CUSTOM_DATA_SHIFT, 1);
 
-			uint offset = stride * gl_InstanceIndex;
+		uint offset = stride * gl_InstanceIndex;
 
-			mat4 matrix = mat4(transforms.data[offset + 0], transforms.data[offset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));
-			offset += 2;
+		mat4 matrix = mat4(transforms.data[offset + 0], transforms.data[offset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));
+		offset += 2;
 
-			if (bool(draw_data.flags & FLAGS_INSTANCING_HAS_COLORS)) {
-				color *= transforms.data[offset];
-				offset += 1;
-			}
-
-			if (bool(draw_data.flags & FLAGS_INSTANCING_HAS_CUSTOM_DATA)) {
-				instance_custom = transforms.data[offset];
-			}
-
-			matrix = transpose(matrix);
-			model_matrix = model_matrix * matrix;
+		if (bool(draw_data.flags & FLAGS_INSTANCING_HAS_COLORS)) {
+			color *= transforms.data[offset];
+			offset += 1;
 		}
+
+		if (bool(draw_data.flags & FLAGS_INSTANCING_HAS_CUSTOM_DATA)) {
+			instance_custom = transforms.data[offset];
+		}
+
+		matrix = transpose(matrix);
+		model_matrix = model_matrix * matrix;
 	}
+#endif // USE_ATTRIBUTES
 
 #ifdef USE_POINT_SIZE
 	float point_size = 1.0;
@@ -240,6 +240,10 @@ void main() {
 #VERSION_DEFINES
 
 #include "canvas_uniforms_inc.glsl"
+
+#ifndef USE_ATTRIBUTES
+layout(location = 4) in flat uint instance_index;
+#endif // USE_ATTRIBUTES
 
 layout(location = 0) in vec2 uv_interp;
 layout(location = 1) in vec4 color_interp;
@@ -320,6 +324,12 @@ vec4 light_compute(
 #ifdef USE_NINEPATCH
 
 float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, float margin_begin, float margin_end, int np_repeat, inout int draw_center) {
+#ifdef USE_ATTRIBUTES
+	const InstanceData draw_data = instances.data[params.base_instance_index];
+#else
+	const InstanceData draw_data = instances.data[instance_index];
+#endif // USE_ATTRIBUTES
+
 	float tex_size = 1.0 / tex_pixel_size;
 
 	if (pixel < margin_begin) {
@@ -327,9 +337,7 @@ float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, flo
 	} else if (pixel >= draw_size - margin_end) {
 		return (tex_size - (draw_size - pixel)) * tex_pixel_size;
 	} else {
-		if (!bool(draw_data.flags & FLAGS_NINEPACH_DRAW_CENTER)) {
-			draw_center--;
-		}
+		draw_center -= 1 - int(bitfieldExtract(draw_data.flags, FLAGS_NINEPACH_DRAW_CENTER_SHIFT, 1));
 
 		// np_repeat is passed as uniform using NinePatchRect::AxisStretchMode enum.
 		if (np_repeat == 0) { // Stretch.
@@ -462,14 +470,20 @@ void main() {
 	vec2 uv = uv_interp;
 	vec2 vertex = vertex_interp;
 
+#ifdef USE_ATTRIBUTES
+	const InstanceData draw_data = instances.data[params.base_instance_index];
+#else
+	const InstanceData draw_data = instances.data[instance_index];
+#endif // USE_ATTRIBUTES
+
 #if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
 
 #ifdef USE_NINEPATCH
 
 	int draw_center = 2;
 	uv = vec2(
-			map_ninepatch_axis(pixel_size_interp.x, abs(draw_data.dst_rect.z), draw_data.color_texture_pixel_size.x, draw_data.ninepatch_margins.x, draw_data.ninepatch_margins.z, int(draw_data.flags >> FLAGS_NINEPATCH_H_MODE_SHIFT) & 0x3, draw_center),
-			map_ninepatch_axis(pixel_size_interp.y, abs(draw_data.dst_rect.w), draw_data.color_texture_pixel_size.y, draw_data.ninepatch_margins.y, draw_data.ninepatch_margins.w, int(draw_data.flags >> FLAGS_NINEPATCH_V_MODE_SHIFT) & 0x3, draw_center));
+			map_ninepatch_axis(pixel_size_interp.x, abs(draw_data.dst_rect.z), draw_data.color_texture_pixel_size.x, draw_data.ninepatch_margins.x, draw_data.ninepatch_margins.z, int(bitfieldExtract(draw_data.flags, FLAGS_NINEPATCH_H_MODE_SHIFT, 2)), draw_center),
+			map_ninepatch_axis(pixel_size_interp.y, abs(draw_data.dst_rect.w), draw_data.color_texture_pixel_size.y, draw_data.ninepatch_margins.y, draw_data.ninepatch_margins.w, int(bitfieldExtract(draw_data.flags, FLAGS_NINEPATCH_V_MODE_SHIFT, 2)), draw_center));
 
 	if (draw_center == 0) {
 		color.a = 0.0;
@@ -519,8 +533,8 @@ void main() {
 		color *= texture(sampler2D(color_texture, texture_sampler), uv);
 	}
 
-	uint light_count = (draw_data.flags >> FLAGS_LIGHT_COUNT_SHIFT) & 0xF; //max 16 lights
-	bool using_light = light_count > 0 || canvas_data.directional_light_count > 0;
+	uint light_count = bitfieldExtract(draw_data.flags, FLAGS_LIGHT_COUNT_SHIFT, 4); //max 16 lights
+	bool using_light = (light_count + canvas_data.directional_light_count) > 0;
 
 	vec3 normal;
 
@@ -652,9 +666,7 @@ void main() {
 		if (i >= light_count) {
 			break;
 		}
-		uint light_base = draw_data.lights[i >> 2];
-		light_base >>= (i & 3) * 8;
-		light_base &= 0xFF;
+		uint light_base = bitfieldExtract(draw_data.lights[i >> 2], (int(i) & 0x3) * 8, 8);
 
 		vec2 tex_uv = (vec4(vertex, 0.0, 1.0) * mat4(light_array.data[light_base].texture_matrix[0], light_array.data[light_base].texture_matrix[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
 		vec2 tex_uv_atlas = tex_uv * light_array.data[light_base].atlas_rect.zw + light_array.data[light_base].atlas_rect.xy;
