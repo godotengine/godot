@@ -51,10 +51,6 @@ class Translation : public Resource {
 protected:
 	static void _bind_methods();
 
-#ifndef DISABLE_DEPRECATED
-	static void _bind_compatibility_methods();
-#endif
-
 	GDVIRTUAL2RC(StringName, _get_message, StringName, StringName);
 	GDVIRTUAL4RC(StringName, _get_plural_message, StringName, StringName, int, StringName);
 

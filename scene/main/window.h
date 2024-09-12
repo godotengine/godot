@@ -247,10 +247,6 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-#ifndef DISABLE_DEPRECATED
-	static void _bind_compatibility_methods();
-#endif
-
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;

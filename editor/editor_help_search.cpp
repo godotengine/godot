@@ -32,6 +32,7 @@
 
 #include "core/os/keyboard.h"
 #include "editor/editor_feature_profile.h"
+#include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
@@ -201,7 +202,7 @@ void EditorHelpSearch::_confirmed() {
 	}
 
 	// Activate the script editor and emit the signal with the documentation link to display.
-	EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
+	EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
 
 	emit_signal(SNAME("go_to_help"), item->get_metadata(0));
 

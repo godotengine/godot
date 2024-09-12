@@ -2557,9 +2557,12 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			String dir = ProjectSettings::get_singleton()->globalize_path(fpath);
 			ScriptEditor::get_singleton()->open_text_file_create_dialog(dir);
 		} break;
-		default:
-			EditorNode::get_editor_data().filesystem_options_pressed(EditorData::CONTEXT_SLOT_FILESYSTEM, p_option, p_selected);
-			break;
+
+		default: {
+			if (!EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM, p_option, p_selected)) {
+				EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, p_option, p_selected);
+			}
+		}
 	}
 }
 
@@ -3183,7 +3186,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		new_menu->add_icon_item(get_editor_theme_icon(SNAME("Object")), TTR("Resource..."), FILE_NEW_RESOURCE);
 		new_menu->add_icon_item(get_editor_theme_icon(SNAME("TextFile")), TTR("TextFile..."), FILE_NEW_TEXTFILE);
 
-		EditorNode::get_editor_data().add_options_from_plugins(new_menu, EditorData::CONTEXT_SUBMENU_SLOT_FILESYSTEM_CREATE, p_paths);
+		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(new_menu, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, p_paths);
 		p_popup->add_separator();
 	}
 
@@ -3323,8 +3326,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 
 		current_path = fpath;
 	}
-
-	EditorNode::get_editor_data().add_options_from_plugins(p_popup, EditorData::CONTEXT_SLOT_FILESYSTEM, p_paths);
+	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(p_popup, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM, p_paths);
 }
 
 void FileSystemDock::_tree_rmb_select(const Vector2 &p_pos, MouseButton p_button) {
@@ -3559,11 +3561,16 @@ void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
 		} else if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
 			focus_on_filter();
 		} else {
-			int match_option = EditorNode::get_editor_data().match_context_menu_shortcut(EditorData::CONTEXT_SLOT_FILESYSTEM, p_event);
-			if (match_option) {
-				_tree_rmb_option(match_option);
+			Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM, p_event);
+			if (!custom_callback.is_valid()) {
+				custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, p_event);
 			}
-			return;
+
+			if (custom_callback.is_valid()) {
+				EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, _tree_get_selected(false));
+			} else {
+				return;
+			}
 		}
 
 		accept_event();
@@ -3631,7 +3638,16 @@ void FileSystemDock::_file_list_gui_input(Ref<InputEvent> p_event) {
 		} else if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
 			focus_on_filter();
 		} else {
-			return;
+			Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM, p_event);
+			if (!custom_callback.is_valid()) {
+				custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, p_event);
+			}
+
+			if (custom_callback.is_valid()) {
+				EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, files->get_selected_items());
+			} else {
+				return;
+			}
 		}
 
 		accept_event();

@@ -3486,10 +3486,10 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 						opt = opt.substr(1);
 					}
 
-					// The path needs quotes if at least one of its components (excluding `/` separations)
+					// The path needs quotes if at least one of its components (excluding `%` prefix and `/` separations)
 					// is not a valid identifier.
 					bool path_needs_quote = false;
-					for (const String &part : opt.split("/")) {
+					for (const String &part : opt.trim_prefix("%").split("/")) {
 						if (!part.is_valid_ascii_identifier()) {
 							path_needs_quote = true;
 							break;

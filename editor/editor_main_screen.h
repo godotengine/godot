@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  window.compat.inc                                                     */
+/*  editor_main_screen.h                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,21 +28,64 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DISABLE_DEPRECATED
+#ifndef EDITOR_MAIN_SCREEN_H
+#define EDITOR_MAIN_SCREEN_H
 
-void Window::_bind_compatibility_methods() {
-	ClassDB::bind_compatibility_method(D_METHOD("get_theme_icon", "name", "theme_type"), &Window::get_theme_icon, DEFVAL(""));
-	ClassDB::bind_compatibility_method(D_METHOD("get_theme_stylebox", "name", "theme_type"), &Window::get_theme_stylebox, DEFVAL(""));
-	ClassDB::bind_compatibility_method(D_METHOD("get_theme_font", "name", "theme_type"), &Window::get_theme_font, DEFVAL(""));
-	ClassDB::bind_compatibility_method(D_METHOD("get_theme_font_size", "name", "theme_type"), &Window::get_theme_font_size, DEFVAL(""));
-	ClassDB::bind_compatibility_method(D_METHOD("get_theme_color", "name", "theme_type"), &Window::get_theme_color, DEFVAL(""));
-	ClassDB::bind_compatibility_method(D_METHOD("get_theme_constant", "name", "theme_type"), &Window::get_theme_constant, DEFVAL(""));
-	ClassDB::bind_compatibility_method(D_METHOD("has_theme_icon", "name", "theme_type"), &Window::has_theme_icon, DEFVAL(""));
-	ClassDB::bind_compatibility_method(D_METHOD("has_theme_stylebox", "name", "theme_type"), &Window::has_theme_stylebox, DEFVAL(""));
-	ClassDB::bind_compatibility_method(D_METHOD("has_theme_font", "name", "theme_type"), &Window::has_theme_font, DEFVAL(""));
-	ClassDB::bind_compatibility_method(D_METHOD("has_theme_font_size", "name", "theme_type"), &Window::has_theme_font_size, DEFVAL(""));
-	ClassDB::bind_compatibility_method(D_METHOD("has_theme_color", "name", "theme_type"), &Window::has_theme_color, DEFVAL(""));
-	ClassDB::bind_compatibility_method(D_METHOD("has_theme_constant", "name", "theme_type"), &Window::has_theme_constant, DEFVAL(""));
-}
+#include "scene/gui/panel_container.h"
 
-#endif
+class Button;
+class ConfigFile;
+class EditorPlugin;
+class HBoxContainer;
+class VBoxContainer;
+
+class EditorMainScreen : public PanelContainer {
+	GDCLASS(EditorMainScreen, PanelContainer);
+
+public:
+	enum EditorTable {
+		EDITOR_2D = 0,
+		EDITOR_3D,
+		EDITOR_SCRIPT,
+		EDITOR_ASSETLIB,
+	};
+
+private:
+	VBoxContainer *main_screen_vbox = nullptr;
+	EditorPlugin *selected_plugin = nullptr;
+
+	HBoxContainer *button_hb = nullptr;
+	Vector<Button *> buttons;
+	Vector<EditorPlugin *> editor_table;
+
+	int _get_current_main_editor() const;
+
+protected:
+	void _notification(int p_what);
+
+public:
+	void set_button_container(HBoxContainer *p_button_hb);
+
+	void save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const;
+	void load_layout_from_config(Ref<ConfigFile> p_config_file, const String &p_section);
+
+	void set_button_enabled(int p_index, bool p_enabled);
+	bool is_button_enabled(int p_index) const;
+
+	void select_next();
+	void select_prev();
+	void select_by_name(const String &p_name);
+	void select(int p_index);
+	int get_selected_index() const;
+	int get_plugin_index(EditorPlugin *p_editor) const;
+	EditorPlugin *get_selected_plugin() const;
+
+	VBoxContainer *get_control() const;
+
+	void add_main_plugin(EditorPlugin *p_editor);
+	void remove_main_plugin(EditorPlugin *p_editor);
+
+	EditorMainScreen();
+};
+
+#endif // EDITOR_MAIN_SCREEN_H

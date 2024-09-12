@@ -118,11 +118,12 @@ Error FileAccessWindows::open_internal(const String &p_path, int p_mode_flags) {
 		return ERR_INVALID_PARAMETER;
 	}
 
-	struct _stat st;
-	if (_wstat((LPCWSTR)(path.utf16().get_data()), &st) == 0) {
-		if (!S_ISREG(st.st_mode)) {
-			return ERR_FILE_CANT_OPEN;
-		}
+	if (path.ends_with(":\\") || path.ends_with(":")) {
+		return ERR_FILE_CANT_OPEN;
+	}
+	DWORD file_attr = GetFileAttributesW((LPCWSTR)(path.utf16().get_data()));
+	if (file_attr != INVALID_FILE_ATTRIBUTES && (file_attr & FILE_ATTRIBUTE_DIRECTORY)) {
+		return ERR_FILE_CANT_OPEN;
 	}
 
 #ifdef TOOLS_ENABLED
@@ -412,15 +413,40 @@ uint64_t FileAccessWindows::_get_modified_time(const String &p_file) {
 		file = file.substr(0, file.length() - 1);
 	}
 
-	struct _stat st;
-	int rv = _wstat((LPCWSTR)(file.utf16().get_data()), &st);
+	HANDLE handle = CreateFileW((LPCWSTR)(file.utf16().get_data()), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
 
-	if (rv == 0) {
-		return st.st_mtime;
-	} else {
-		print_verbose("Failed to get modified time for: " + p_file + "");
-		return 0;
+	if (handle != INVALID_HANDLE_VALUE) {
+		FILETIME ft_create, ft_write;
+
+		bool status = GetFileTime(handle, &ft_create, nullptr, &ft_write);
+
+		CloseHandle(handle);
+
+		if (status) {
+			uint64_t ret = 0;
+
+			// If write time is invalid, fallback to creation time.
+			if (ft_write.dwHighDateTime == 0 && ft_write.dwLowDateTime == 0) {
+				ret = ft_create.dwHighDateTime;
+				ret <<= 32;
+				ret |= ft_create.dwLowDateTime;
+			} else {
+				ret = ft_write.dwHighDateTime;
+				ret <<= 32;
+				ret |= ft_write.dwLowDateTime;
+			}
+
+			const uint64_t WINDOWS_TICKS_PER_SECOND = 10000000;
+			const uint64_t TICKS_TO_UNIX_EPOCH = 116444736000000000LL;
+
+			if (ret >= TICKS_TO_UNIX_EPOCH) {
+				return (ret - TICKS_TO_UNIX_EPOCH) / WINDOWS_TICKS_PER_SECOND;
+			}
+		}
 	}
+
+	print_verbose("Failed to get modified time for: " + p_file);
+	return 0;
 }
 
 BitField<FileAccess::UnixPermissionFlags> FileAccessWindows::_get_unix_permissions(const String &p_file) {

@@ -71,6 +71,7 @@ class GDExtension : public Resource {
 		GDExtensionClassNotification notification_func = nullptr;
 		GDExtensionClassFreePropertyList free_property_list_func = nullptr;
 		GDExtensionClassCreateInstance create_instance_func = nullptr;
+		GDExtensionClassGetRID get_rid_func = nullptr;
 #endif // DISABLE_DEPRECATED
 	};
 

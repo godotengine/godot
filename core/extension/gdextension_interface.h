@@ -392,7 +392,6 @@ typedef struct {
 	GDExtensionClassGetVirtualCallData get_virtual_call_data_func;
 	// Used to call virtual functions when `get_virtual_call_data_func` is not null.
 	GDExtensionClassCallVirtualWithData call_virtual_with_data_func;
-	GDExtensionClassGetRID get_rid_func;
 	void *class_userdata; // Per-class user data, later accessible in instance bindings.
 } GDExtensionClassCreationInfo4;
 

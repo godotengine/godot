@@ -384,7 +384,7 @@ void MultiMeshEditorPlugin::make_visible(bool p_visible) {
 
 MultiMeshEditorPlugin::MultiMeshEditorPlugin() {
 	multimesh_editor = memnew(MultiMeshEditor);
-	EditorNode::get_singleton()->get_main_screen_control()->add_child(multimesh_editor);
+	EditorNode::get_singleton()->get_gui_base()->add_child(multimesh_editor);
 
 	multimesh_editor->options->hide();
 }
