@@ -273,6 +273,13 @@ public:
         }
         skeleton = nullptr;
     }
+    AABB get_mesh_aabb() {
+        if(mesh_instance == nullptr) {
+            return AABB();
+        }
+        return mesh_instance->get_aabb();
+    }
+
     
 
     

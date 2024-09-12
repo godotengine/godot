@@ -19,6 +19,8 @@
 #include "beehave/beehave_tree.h"
 
 
+#include "core/object/worker_thread_pool.h"
+
 #include "./blackboard/blackboard_plan.h"
 
 class CharacterAI;
@@ -400,6 +402,13 @@ public:
 
     bool get_editor_pause_animation() {
         return editor_pause_animation;
+    }
+    AABB get_mesh_aabb() {
+        AABB aabb;
+        for(auto& part : bodyPart){
+			aabb = aabb.merge(part.value->get_mesh_aabb());
+        }
+        return aabb;      
     }
 
 public:

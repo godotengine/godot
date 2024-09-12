@@ -72,6 +72,9 @@ void CharacterAnimationItem::_set_animation_scale_by_length(float p_length)
 
 void CharacterAnimatorNodeBase::_bind_methods()
 {
+    ClassDB::bind_method(D_METHOD("_get_blackbord_propertys"), &CharacterAnimatorNodeBase::_get_blackbord_propertys);
+
+    
     ClassDB::bind_method(D_METHOD("set_animation_arrays", "animation_arrays"), &CharacterAnimatorNodeBase::set_animation_arrays);
     ClassDB::bind_method(D_METHOD("get_animation_arrays"), &CharacterAnimatorNodeBase::get_animation_arrays);
 

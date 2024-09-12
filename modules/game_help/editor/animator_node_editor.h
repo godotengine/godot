@@ -28,6 +28,11 @@ class AnimationNodePreview : public SubViewportContainer
     Button *pause_button = nullptr;
     Button *stop_button = nullptr;
 
+    Label* time_scale_lablel = nullptr;
+    HSlider* time_scale_slider = nullptr;
+    Label* animation_time_position_label = nullptr;
+    Label* animator_time_label = nullptr;
+
 	Ref<CharacterAnimatorNodeBase> node;
 	CharacterBodyMain *preview_character = nullptr;
 
@@ -62,7 +67,7 @@ class AnimationNodePreview : public SubViewportContainer
         t.basis.rotate(Vector3(1, 0, 0), -rot_x);
         rotation->set_transform(t);
     }
-
+public:
     void play() {
         play_state = PS_Play;
         preview_character->set_editor_pause_animation(false);
@@ -94,6 +99,29 @@ class AnimationNodePreview : public SubViewportContainer
         update_play_state();
     }
 
+public:
+	static Ref<CharacterBodyPrefab>& get_globle_preview_prefab() {
+
+		static Ref<CharacterBodyPrefab> prefab;
+		return prefab;
+	}
+	static Ref<BlackboardPlan>& get_globle_preview_blackboard() {
+
+		static Ref<BlackboardPlan> blackboard;
+		return blackboard;
+	}
+	void set_globle_preview_prefab(const Ref<CharacterBodyPrefab>& p_prefab) {
+
+		get_globle_preview_prefab() = p_prefab;
+	}
+	void set_globle_preview_blackboard(const Ref<BlackboardPlan>& p_blackboard) {
+        get_globle_preview_blackboard() = p_blackboard;
+        if(node.is_valid()) {
+            node->set_blackboard_plan(p_blackboard);
+        }
+	}
+
+protected:
     void update_play_state() {
         switch (play_state)
         {
@@ -114,9 +142,6 @@ class AnimationNodePreview : public SubViewportContainer
             break;
         }
     }
-
-
-protected:
 	virtual void _update_theme_item_cache() override {
         SubViewportContainer::_update_theme_item_cache();
 
@@ -143,13 +168,26 @@ protected:
         if(preview_character->get_body_prefab() != prefab) {
             edit(prefab);            
         }
+
+		Ref<BlackboardPlan> blackboard = get_preview_blackboard();
+		if (preview_character->get_blackboard_plan() != blackboard)
+		{
+			preview_character->set_blackboard_plan(blackboard);
+		}
         
     }
-	Ref<CharacterBodyPrefab>& get_globle_preview_prefab() {
-        
-		static Ref<CharacterBodyPrefab> prefab;
-        return prefab;
-    }
+	Ref<BlackboardPlan> get_preview_blackboard() {
+		CharacterBodyMain* body_main = CharacterBodyMain::get_current_editor_player();
+		if (body_main != nullptr)
+		{
+			Ref<BlackboardPlan> body_prefab = body_main->get_blackboard_plan();
+			if (body_prefab.is_valid())
+			{
+				return body_prefab;
+			}
+		}
+		return get_globle_preview_blackboard();
+	}
 	Ref<CharacterBodyPrefab> get_preview_prefab() {
 		CharacterBodyMain* body_main = CharacterBodyMain::get_current_editor_player();
 		if (body_main != nullptr)
@@ -174,8 +212,6 @@ protected:
             _update_rotation();
         }
     }
-
-public:
 	void edit(Ref<CharacterBodyPrefab> p_prefab){
         play_state = PS_Stop;
         update_play_state();
@@ -184,9 +220,9 @@ public:
         rot_x = Math::deg_to_rad(-15.0);
         rot_y = Math::deg_to_rad(30.0);
         _update_rotation();
-
-        Vector3 ofs = Vector3(0,0,0);
-        float m = 1;
+        AABB aabb = preview_character->get_mesh_aabb();
+        Vector3 ofs = aabb.get_center();
+	    float m = aabb.get_longest_axis_size() * 1.2f;
         if (m != 0) {
             m = 1.0 / m;
             m *= 0.5;
@@ -196,6 +232,14 @@ public:
             //xform.origin.z -= aabb.get_longest_axis_size() * 2;
             preview_character->set_transform(xform);
         }
+    }
+public:
+    void set_animator_node(Ref<CharacterAnimatorNodeBase> p_node) {
+        node = p_node;
+        if(node.is_valid()) {
+            node->set_blackboard_plan(get_preview_blackboard());
+        }
+        stop();
     }
 	AnimationNodePreview()
     {
@@ -231,53 +275,89 @@ public:
         rotation->add_child(preview_character);
 
         set_custom_minimum_size(Size2(1, 150) * EDSCALE);
+        HBoxContainer *root_hb = memnew(HBoxContainer);
+        add_child(root_hb);
+        root_hb->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 2);
 
-        VBoxContainer *vb = memnew(VBoxContainer);
-        vb->set_h_size_flags(SIZE_EXPAND_FILL);
-        add_child(vb);
+        {
+            VBoxContainer *vb = memnew(VBoxContainer);
+            root_hb->add_child(vb);
 
+            VBoxContainer *vb_light = memnew(VBoxContainer);
+            vb->add_child(vb_light);
 
-        HBoxContainer *hb = memnew(HBoxContainer);
-        add_child(hb);
-        vb->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 2);
+            light_1_switch = memnew(Button);
+            light_1_switch->set_theme_type_variation("PreviewLightButton");
+            light_1_switch->set_toggle_mode(true);
+            light_1_switch->set_pressed(true);
+            light_1_switch->set_modulate(Color(0.9, 0.9, 1, 1.0));
+            vb_light->add_child(light_1_switch);
+            light_1_switch->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodePreview::_on_light_1_switch_pressed));
 
-        hb->add_spacer();
+            light_2_switch = memnew(Button);
+            light_2_switch->set_theme_type_variation("PreviewLightButton");
+            light_2_switch->set_toggle_mode(true);
+            light_2_switch->set_pressed(true);
+            light_2_switch->set_modulate(Color(0.9, 0.9, 1, 1.0));
+            vb_light->add_child(light_2_switch);
+            light_2_switch->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodePreview::_on_light_2_switch_pressed));
 
-        VBoxContainer *vb_light = memnew(VBoxContainer);
-        hb->add_child(vb_light);
+            play_button = memnew(Button);
+            vb_light->add_child(play_button);
+            play_button->set_text(L"播放");
+            play_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodePreview::_on_play_button_pressed));
 
-        light_1_switch = memnew(Button);
-        light_1_switch->set_theme_type_variation("PreviewLightButton");
-        light_1_switch->set_toggle_mode(true);
-        light_1_switch->set_pressed(true);
-        light_1_switch->set_modulate(Color(0.9, 0.9, 1, 1.0));
-        vb_light->add_child(light_1_switch);
-        light_1_switch->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodePreview::_on_light_1_switch_pressed));
+            pause_button = memnew(Button);
+            vb_light->add_child(pause_button);
+            pause_button->set_text(L"暂停");
+            pause_button->set_disabled(true);
+            pause_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodePreview::_on_pause_button_pressed));
 
-        light_2_switch = memnew(Button);
-        light_2_switch->set_theme_type_variation("PreviewLightButton");
-        light_2_switch->set_toggle_mode(true);
-        light_2_switch->set_pressed(true);
-        light_2_switch->set_modulate(Color(0.9, 0.9, 1, 1.0));
-        vb_light->add_child(light_2_switch);
-        light_2_switch->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodePreview::_on_light_2_switch_pressed));
+            stop_button = memnew(Button);
+            vb_light->add_child(stop_button);
+            stop_button->set_text(L"停止");
+            stop_button->set_disabled(true);
+            stop_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodePreview::_on_stop_button_pressed));
 
-        play_button = memnew(Button);
-        vb_light->add_child(play_button);
-        play_button->set_text(L"播放");
-        play_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodePreview::_on_play_button_pressed));
+        }
 
-        pause_button = memnew(Button);
-        vb_light->add_child(pause_button);
-        pause_button->set_text(L"暂停");
-        pause_button->set_disabled(true);
-        pause_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodePreview::_on_pause_button_pressed));
+        {
+            VBoxContainer *vb = memnew(VBoxContainer);
+            root_hb->add_child(vb);
+            vb->set_h_size_flags(SIZE_EXPAND_FILL);
 
-        stop_button = memnew(Button);
-        vb_light->add_child(stop_button);
-        stop_button->set_text(L"停止");
-        stop_button->set_disabled(true);
-        stop_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodePreview::_on_stop_button_pressed));
+            HBoxContainer* hb = memnew(HBoxContainer);
+            vb->add_child(hb);
+            hb->set_h_size_flags(SIZE_EXPAND_FILL);
+
+            time_scale_lablel = memnew(Label);
+            time_scale_lablel->set_text(L"时间缩放:");
+            hb->add_child(time_scale_lablel);
+
+            time_scale_slider = memnew(HSlider);
+            time_scale_slider->set_h_size_flags(SIZE_EXPAND_FILL);
+            hb->add_child(time_scale_slider);
+            time_scale_slider->set_min(0);
+            time_scale_slider->set_max(5);
+            time_scale_slider->set_step(0.01);
+            time_scale_slider->set_value(1);
+            time_scale_slider->set_allow_greater(true);
+            time_scale_slider->set_allow_lesser(true);
+            time_scale_slider->set_ticks(10);
+            time_scale_slider->set_ticks_on_borders(true);
+
+            hb = memnew(HBoxContainer);
+            vb->add_child(hb);
+            hb->set_h_size_flags(SIZE_EXPAND_FILL);
+            animation_time_position_label = memnew(Label);
+            animation_time_position_label->set_text(L"动画时间:");
+            hb->add_child(animation_time_position_label);
+
+            animator_time_label = memnew(Label);
+            animator_time_label->set_text(L"播放时间:");
+            hb->add_child(animator_time_label);
+
+        }
 
         rot_x = 0;
         rot_y = 0;
@@ -425,28 +505,28 @@ public:
 
 
         // 创建预览窗口
-        preview_resource_vb = memnew(VBoxContainer);
-        preview_resource_vb->set_h_size_flags(SIZE_EXPAND_FILL);
-        tasks_container->add_child(preview_resource_vb);
+        preview_resource_hb = memnew(HBoxContainer);
+        preview_resource_hb->set_h_size_flags(SIZE_EXPAND_FILL);
+        tasks_container->add_child(preview_resource_hb);
         {
             prefab_lable = memnew(Label);
-            preview_resource_vb->add_child(prefab_lable);
+            preview_resource_hb->add_child(prefab_lable);
             prefab_lable->set_text(L"預覽*预制体:");
 
 
             select_prefab_picker = memnew(EditorResourcePicker);
-            preview_resource_vb->add_child(select_prefab_picker);
-            select_prefab_picker->set_base_type("CharacterPrefabSection");
+            preview_resource_hb->add_child(select_prefab_picker);
+            select_prefab_picker->set_base_type("CharacterBodyPrefab");
             select_prefab_picker->set_h_size_flags(SIZE_EXPAND_FILL);
             select_prefab_picker->connect("resource_changed", callable_mp(this, &AnimationNodeSectionBase::_on_prefab_picker_changed));
 
             blackbord_lable = memnew(Label);
-            preview_resource_vb->add_child(blackbord_lable);
+            preview_resource_hb->add_child(blackbord_lable);
             blackbord_lable->set_text(L"預覽*黑板:");
 
 
 			select_blackbaord_picker = memnew(EditorResourcePicker);
-            preview_resource_vb->add_child(select_blackbaord_picker);
+            preview_resource_hb->add_child(select_blackbaord_picker);
 			select_blackbaord_picker->set_base_type("BlackboardPlan");
 			select_blackbaord_picker->set_h_size_flags(SIZE_EXPAND_FILL);
 			select_blackbaord_picker->connect("resource_changed", callable_mp(this, &AnimationNodeSectionBase::_on_blackbord_picker_changed));
@@ -475,10 +555,16 @@ public:
             item_parent->add_child(item);
             item_container.push_back(item);
         }
+        preview->stop();
+        preview->set_animator_node(node);
     }
+
     virtual String get_section_unfolded() const override{ return "Animation Item Condition Section"; }
 public:
-
+    void stop_animator() {
+        preview->stop();
+        
+    }
     virtual void init_node_item(int p_index,AnimatorNodeItemEditor* item) {
 
     }
@@ -489,10 +575,14 @@ public:
     virtual bool is_show_y_input() { return false; }
     void _on_prefab_picker_changed(Ref<Resource> p_resource) {
         if(p_resource.is_valid()) {
+			Ref< CharacterBodyPrefab> prefab = Object::cast_to< CharacterBodyPrefab>(p_resource.ptr());
+			preview->set_globle_preview_prefab(prefab);
         }
     }
     void _on_blackbord_picker_changed(Ref<Resource> p_resource) {
         if(p_resource.is_valid()) {
+			Ref<BlackboardPlan> blackboard = Object::cast_to< BlackboardPlan>(p_resource.ptr());
+			preview->set_globle_preview_blackboard(blackboard);
         }
     }
 
@@ -530,7 +620,7 @@ public:
 public:
 	CheckBox* is_cilp = nullptr;
 
-	VBoxContainer* preview_resource_vb = nullptr;
+	HBoxContainer* preview_resource_hb = nullptr;
 	Label* prefab_lable = nullptr;
 	EditorResourcePicker* select_prefab_picker = nullptr;
 	Label* blackbord_lable = nullptr;
@@ -597,6 +687,7 @@ void AnimatorNodeItemEditor::update_item_state() {
     
     select_animation_picker->set_edited_resource(node_editor->node->get_animation_item(index)->get_animation());    
     select_animator_node_picker->set_edited_resource(node_editor->node->get_animation_item(index)->get_child_node());
+    node_editor->stop_animator();
 
 }
 
