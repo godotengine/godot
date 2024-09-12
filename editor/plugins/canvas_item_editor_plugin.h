@@ -335,6 +335,7 @@ private:
 	MenuButton *view_menu = nullptr;
 	PopupMenu *grid_menu = nullptr;
 	PopupMenu *theme_menu = nullptr;
+	PopupMenu *translation_menu = nullptr;
 	PopupMenu *gizmos_menu = nullptr;
 	HBoxContainer *animation_hb = nullptr;
 	MenuButton *animation_menu = nullptr;
@@ -428,6 +429,10 @@ private:
 	ThemePreviewMode theme_preview = THEME_PREVIEW_PROJECT;
 	void _switch_theme_preview(int p_mode);
 
+	void _prepare_translation_menu();
+	void _switch_translation_preview(int p_index);
+	void _translation_preview_changed();
+
 	List<CanvasItem *> _get_edited_canvas_items(bool p_retrieve_locked = false, bool p_remove_canvas_item_if_parent_in_selection = true, bool *r_has_locked_items = nullptr) const;
 	Rect2 _get_encompassing_rect_from_list(const List<CanvasItem *> &p_list);
 	void _expand_encompassing_rect_using_children(Rect2 &r_rect, const Node *p_node, bool &r_first, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D(), bool include_locked_nodes = true);
@@ -509,6 +514,7 @@ private:
 	VBoxContainer *controls_vb = nullptr;
 	Button *button_center_view = nullptr;
 	EditorZoomWidget *zoom_widget = nullptr;
+	Button *translation_preview_button = nullptr;
 	void _update_zoom(real_t p_zoom);
 	void _shortcut_zoom_set(real_t p_zoom);
 	void _zoom_on_position(real_t p_zoom, Point2 p_position = Point2());

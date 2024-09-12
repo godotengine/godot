@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
+#include "core/string/translation_server.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
@@ -1104,6 +1105,53 @@ void CanvasItemEditor::_switch_theme_preview(int p_mode) {
 	}
 
 	EditorNode::get_singleton()->update_preview_themes(theme_preview);
+}
+
+void CanvasItemEditor::_prepare_translation_menu() {
+	const String current_preview_locale = EditorNode::get_singleton()->get_preview_locale();
+
+	translation_menu->clear();
+	translation_menu->reset_size();
+
+	translation_menu->add_radio_check_item(TTRC("None"));
+	translation_menu->set_item_metadata(-1, "");
+	if (current_preview_locale.is_empty()) {
+		translation_menu->set_item_checked(-1, true);
+	}
+
+	const Vector<String> locales = TranslationServer::get_singleton()->get_loaded_locales();
+	if (!locales.is_empty()) {
+		translation_menu->add_separator();
+	}
+	for (const String &locale : locales) {
+		const String name = TranslationServer::get_singleton()->get_locale_name(locale);
+		translation_menu->add_radio_check_item(name == locale ? name : name + " [" + locale + "]");
+		translation_menu->set_item_auto_translate_mode(-1, AUTO_TRANSLATE_MODE_DISABLED);
+		translation_menu->set_item_metadata(-1, locale);
+		if (locale == current_preview_locale) {
+			translation_menu->set_item_checked(-1, true);
+		}
+	}
+}
+
+void CanvasItemEditor::_switch_translation_preview(int p_index) {
+	for (int i = 0; i < translation_menu->get_item_count(); i++) {
+		translation_menu->set_item_checked(i, i == p_index);
+	}
+	EditorNode::get_singleton()->set_preview_locale(translation_menu->get_item_metadata(p_index));
+}
+
+void CanvasItemEditor::_translation_preview_changed() {
+	const String &locale = EditorNode::get_singleton()->get_preview_locale();
+
+	if (locale.is_empty()) {
+		translation_preview_button->hide();
+		return;
+	}
+
+	const String name = TranslationServer::get_singleton()->get_locale_name(locale);
+	translation_preview_button->set_text(vformat(TTR("Previewing: %s"), name == locale ? locale : name + " [" + locale + "]"));
+	translation_preview_button->show();
 }
 
 bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_event) {
@@ -4138,11 +4186,16 @@ void CanvasItemEditor::_project_settings_changed() {
 
 void CanvasItemEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			translation_preview_button->set_button_icon(get_editor_theme_icon(SNAME("Translation")));
+		} break;
+
 		case NOTIFICATION_READY: {
 			_update_lock_and_group_button();
 
 			SceneTreeDock::get_singleton()->get_tree_editor()->connect("node_changed", callable_mp(this, &CanvasItemEditor::_update_lock_and_group_button));
 			ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &CanvasItemEditor::_project_settings_changed));
+			EditorNode::get_singleton()->connect("preview_locale_changed", callable_mp(this, &CanvasItemEditor::_translation_preview_changed));
 		} break;
 
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
@@ -5395,6 +5448,20 @@ CanvasItemEditor::CanvasItemEditor() {
 	controls_hb->add_child(zoom_widget);
 	zoom_widget->connect("zoom_changed", callable_mp(this, &CanvasItemEditor::_update_zoom));
 
+	translation_preview_button = memnew(Button);
+	translation_preview_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	translation_preview_button->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
+	translation_preview_button->set_accessibility_name(TTRC("Disable Translation Preview"));
+	translation_preview_button->set_tooltip_text(TTRC("Previewing translation. Click to disable."));
+	translation_preview_button->set_focus_mode(FOCUS_NONE);
+	translation_preview_button->set_visible(false);
+	translation_preview_button->set_flat(true);
+	translation_preview_button->add_theme_constant_override("outline_size", Math::ceil(2 * EDSCALE));
+	translation_preview_button->add_theme_color_override("font_outline_color", Color(0, 0, 0));
+	translation_preview_button->add_theme_color_override(SceneStringName(font_color), Color(1, 1, 1));
+	controls_hb->add_child(translation_preview_button);
+	translation_preview_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_switch_translation_preview).bind(0));
+
 	panner.instantiate();
 	panner->set_callbacks(callable_mp(this, &CanvasItemEditor::_pan_callback), callable_mp(this, &CanvasItemEditor::_zoom_callback));
 
@@ -5674,6 +5741,12 @@ CanvasItemEditor::CanvasItemEditor() {
 	for (int i = 0; i < THEME_PREVIEW_MAX; i++) {
 		theme_menu->set_item_checked(i, i == theme_preview);
 	}
+
+	translation_menu = memnew(PopupMenu);
+	translation_menu->set_hide_on_checkable_item_selection(false);
+	translation_menu->connect("about_to_popup", callable_mp(this, &CanvasItemEditor::_prepare_translation_menu));
+	translation_menu->connect("index_pressed", callable_mp(this, &CanvasItemEditor::_switch_translation_preview));
+	p->add_submenu_node_item(TTRC("Preview Translation"), translation_menu);
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
