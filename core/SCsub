@@ -25,6 +25,7 @@ thirdparty_misc_sources = [
     "fastlz.c",
     "r128.c",
     "smaz.c",
+    "stb_sprintf.c",
     # C++ sources
     "pcg.cpp",
     "polypartition.cpp",

@@ -45,6 +45,8 @@
 #include <stdlib.h>
 #include <cstdint>
 
+#include "thirdparty/misc/stb_sprintf.h"
+
 #ifdef _MSC_VER
 #define _CRT_SECURE_NO_WARNINGS // to disable build-time warning which suggested to use strcpy_s instead strcpy
 #endif
@@ -1773,16 +1775,7 @@ String String::num(double p_num, int p_decimals) {
 	// DBL_MAX_10_EXP + 10 incrementing one by one and DBL_MAX_10_EXP + 17 (325)
 	// was the first buffer size not to throw an exception
 	char buf[325];
-
-#if defined(__GNUC__) || defined(_MSC_VER)
-	// PLEASE NOTE that, albeit vcrt online reference states that snprintf
-	// should safely truncate the output to the given buffer size, we have
-	// found a case where this is not true, so we should create a buffer
-	// as big as needed
-	snprintf(buf, 325, fmt, p_num);
-#else
-	sprintf(buf, fmt, p_num);
-#endif
+	stbsp_snprintf(buf, 325, fmt, p_num);
 
 	buf[324] = 0;
 	//destroy trailing zeroes
@@ -1926,7 +1919,7 @@ String String::num_scientific(double p_num) {
 	// MinGW requires _set_output_format() to conform to C99 output for printf
 	unsigned int old_exponent_format = _set_output_format(_TWO_DIGIT_EXPONENT);
 #endif
-	snprintf(buf, 256, "%lg", p_num);
+	stbsp_snprintf(buf, 256, "%lg", p_num);
 
 #if defined(__MINGW32__) && defined(_TWO_DIGIT_EXPONENT) && !defined(_UCRT)
 	_set_output_format(old_exponent_format);

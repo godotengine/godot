@@ -701,6 +701,10 @@ Collection of single-file libraries used in Godot components.
   * Upstream: https://github.com/nothings/stb
   * Version: 1.01 (af1a5bc352164740c1cc1354942b1c6b72eacb8a, 2021)
   * License: Public Domain or Unlicense or MIT
+- `stb_sprintf.h`
+  * Upstream: https://github.com/nothings/stb
+  * Version: 1.10 (f75e8d1cad7d90d72ef7a4661f1b994ef78b4e31, 2024)
+  * License: Public Domain or Unlicense or MIT
 - `yuv2rgb.h`
   * Upstream: http://wss.co.uk/pinknoise/yuv2rgb/ (to check)
   * Version: ?
