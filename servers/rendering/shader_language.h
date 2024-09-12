@@ -544,6 +544,9 @@ public:
 		bool use_comma_between_statements = false;
 		bool use_op_eval = true;
 
+		DataType expected_type = TYPE_VOID;
+		HashSet<int> constants;
+
 		BlockNode() :
 				Node(NODE_TYPE_BLOCK) {}
 	};

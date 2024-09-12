@@ -34,6 +34,7 @@
 #include "core/math/convex_hull.h"
 #include "core/math/random_pcg.h"
 #include "core/math/static_raycaster.h"
+#include "scene/resources/animation_library.h"
 #include "scene/resources/surface_tool.h"
 
 #include <cstdint>
@@ -134,9 +135,18 @@ void ImporterMesh::Surface::_split_normals(Array &r_arrays, const LocalVector<in
 	}
 }
 
+String ImporterMesh::validate_blend_shape_name(const String &p_name) {
+	String name = p_name;
+	const char *characters = ":";
+	for (const char *p = characters; *p; p++) {
+		name = name.replace(String::chr(*p), "_");
+	}
+	return name;
+}
+
 void ImporterMesh::add_blend_shape(const String &p_name) {
 	ERR_FAIL_COND(surfaces.size() > 0);
-	blend_shapes.push_back(p_name);
+	blend_shapes.push_back(validate_blend_shape_name(p_name));
 }
 
 int ImporterMesh::get_blend_shape_count() const {
@@ -849,7 +859,7 @@ void ImporterMesh::create_shadow_mesh() {
 				index_wptr[j] = vertex_remap[index];
 			}
 
-			if (SurfaceTool::optimize_vertex_cache_func) {
+			if (SurfaceTool::optimize_vertex_cache_func && surfaces[i].primitive == Mesh::PRIMITIVE_TRIANGLES) {
 				SurfaceTool::optimize_vertex_cache_func((unsigned int *)index_wptr, (const unsigned int *)index_wptr, index_count, new_vertices.size());
 			}
 
@@ -871,7 +881,7 @@ void ImporterMesh::create_shadow_mesh() {
 					index_wptr[k] = vertex_remap[index];
 				}
 
-				if (SurfaceTool::optimize_vertex_cache_func) {
+				if (SurfaceTool::optimize_vertex_cache_func && surfaces[i].primitive == Mesh::PRIMITIVE_TRIANGLES) {
 					SurfaceTool::optimize_vertex_cache_func((unsigned int *)index_wptr, (const unsigned int *)index_wptr, index_count, new_vertices.size());
 				}
 

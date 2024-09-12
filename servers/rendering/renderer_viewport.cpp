@@ -818,8 +818,9 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 					blit.dst_rect.size = vp->size;
 				}
 
-				if (!blit_to_screen_list.has(vp->viewport_to_screen)) {
-					blit_to_screen_list[vp->viewport_to_screen] = Vector<BlitToScreen>();
+				Vector<BlitToScreen> *blits = blit_to_screen_list.getptr(vp->viewport_to_screen);
+				if (blits == nullptr) {
+					blits = &blit_to_screen_list.insert(vp->viewport_to_screen, Vector<BlitToScreen>())->value;
 				}
 
 				if (OS::get_singleton()->get_current_rendering_driver_name().begins_with("opengl3")) {
@@ -828,7 +829,7 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 					RSG::rasterizer->blit_render_targets_to_screen(vp->viewport_to_screen, blit_to_screen_vec.ptr(), 1);
 					RSG::rasterizer->gl_end_frame(p_swap_buffers);
 				} else {
-					blit_to_screen_list[vp->viewport_to_screen].push_back(blit);
+					blits->push_back(blit);
 				}
 			}
 		}

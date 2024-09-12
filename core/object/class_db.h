@@ -43,6 +43,7 @@
 #include <type_traits>
 
 #define DEFVAL(m_defval) (m_defval)
+#define DEFVAL_ARRAY DEFVAL(ClassDB::default_array_arg)
 
 #ifdef DEBUG_METHODS_ENABLED
 
@@ -180,6 +181,9 @@ public:
 		uint64_t struct_size; // local size of struct, for comparison
 	};
 	static HashMap<StringName, NativeStruct> native_structs;
+
+	static Array default_array_arg;
+	static bool is_default_array_arg(const Array &p_array);
 
 private:
 	// Non-locking variants of get_parent_class and is_parent_class.

@@ -150,12 +150,10 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 
 			double time = frame_profile[i + 1].gpu_msec - frame_profile[i].gpu_msec;
 
-			if (name[0] != '<' && name[0] != '>') {
-				if (print_gpu_profile_task_time.has(name)) {
-					print_gpu_profile_task_time[name] += time;
-				} else {
-					print_gpu_profile_task_time[name] = time;
-				}
+			if (print_gpu_profile_task_time.has(name)) {
+				print_gpu_profile_task_time[name] += time;
+			} else {
+				print_gpu_profile_task_time[name] = time;
 			}
 		}
 

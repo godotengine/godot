@@ -76,6 +76,7 @@ void FileDialog::popup(const Rect2i &p_rect) {
 #ifdef TOOLS_ENABLED
 	if (is_part_of_edited_scene()) {
 		ConfirmationDialog::popup(p_rect);
+		return;
 	}
 #endif
 
@@ -1380,7 +1381,7 @@ void FileDialog::set_use_native_dialog(bool p_native) {
 #endif
 
 	// Replace the built-in dialog with the native one if it's currently visible.
-	if (is_visible() && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE) && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
+	if (is_inside_tree() && is_visible() && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE) && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
 		ConfirmationDialog::set_visible(false);
 		_native_popup();
 	}
