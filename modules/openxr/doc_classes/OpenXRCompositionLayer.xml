@@ -10,6 +10,13 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_android_surface">
+			<return type="JavaObject" />
+			<description>
+				Returns a [JavaObject] representing an [code]android.view.Surface[/code] if [member use_android_surface] is enabled and OpenXR has created the surface. Otherwise, this will return [code]null[/code].
+				[b]Note:[/b] The surface can only be created during an active OpenXR session. So, if [member use_android_surface] is enabled outside of an OpenXR session, it won't be created until a new session fully starts.
+			</description>
+		</method>
 		<method name="intersects_ray" qualifiers="const">
 			<return type="Vector2" />
 			<param index="0" name="origin" type="Vector3" />
@@ -32,6 +39,9 @@
 			Enables the blending the layer using its alpha channel.
 			Can be combined with [member Viewport.transparent_bg] to give the layer a transparent background.
 		</member>
+		<member name="android_surface_size" type="Vector2i" setter="set_android_surface_size" getter="get_android_surface_size" default="Vector2i(1024, 1024)">
+			The size of the Android surface to create if [member use_android_surface] is enabled.
+		</member>
 		<member name="enable_hole_punch" type="bool" setter="set_enable_hole_punch" getter="get_enable_hole_punch" default="false">
 			Enables a technique called "hole punching", which allows putting the composition layer behind the main projection layer (i.e. setting [member sort_order] to a negative value) while "punching a hole" through everything rendered by Godot so that the layer is still visible.
 			This can be used to create the illusion that the composition layer exists in the same 3D space as everything rendered by Godot, allowing objects to appear to pass both behind or in front of the composition layer.
@@ -42,6 +52,11 @@
 		<member name="sort_order" type="int" setter="set_sort_order" getter="get_sort_order" default="1">
 			The sort order for this composition layer. Higher numbers will be shown in front of lower numbers.
 			[b]Note:[/b] This will have no effect if a fallback mesh is being used.
+		</member>
+		<member name="use_android_surface" type="bool" setter="set_use_android_surface" getter="get_use_android_surface" default="false">
+			If enabled, an Android surface will be created (with the dimensions from [member android_surface_size]) which will provide the 2D content for the composition layer, rather than using [member layer_viewport].
+			See [method get_android_surface] for information about how to get the surface so that your application can draw to it.
+			[b]Note:[/b] This will only work in Android builds.
 		</member>
 	</members>
 </class>
