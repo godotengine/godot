@@ -3583,6 +3583,21 @@
 				[b]Note:[/b] The [param texture] must have the same width, height, depth and format as the current texture data. Otherwise, an error will be printed and the original texture won't be modified. If you need to use different width, height, depth or format, use [method texture_replace] instead.
 			</description>
 		</method>
+		<method name="texture_create_from_native_handle">
+			<return type="RID" />
+			<param index="0" name="type" type="int" enum="RenderingServer.TextureType" />
+			<param index="1" name="format" type="int" enum="Image.Format" />
+			<param index="2" name="native_handle" type="int" />
+			<param index="3" name="width" type="int" />
+			<param index="4" name="height" type="int" />
+			<param index="5" name="depth" type="int" />
+			<param index="6" name="layers" type="int" default="1" />
+			<param index="7" name="layered_type" type="int" enum="RenderingServer.TextureLayeredType" default="0" />
+			<description>
+				Creates a texture based on a native handle that was created outside of Godot's renderer.
+				[b]Note:[/b] If using the rendering device renderer, using [method RenderingDevice.texture_create_from_extension] rather than this method is recommended. It will give you much more control over the texture's format and usage.
+			</description>
+		</method>
 		<method name="texture_get_format" qualifiers="const">
 			<return type="int" enum="Image.Format" />
 			<param index="0" name="texture" type="RID" />
@@ -4310,6 +4325,15 @@
 		</constant>
 		<constant name="MAX_MESH_SURFACES" value="256">
 			The maximum number of surfaces a mesh can have.
+		</constant>
+		<constant name="TEXTURE_TYPE_2D" value="0" enum="TextureType">
+			2D texture.
+		</constant>
+		<constant name="TEXTURE_TYPE_LAYERED" value="1" enum="TextureType">
+			Layered texture.
+		</constant>
+		<constant name="TEXTURE_TYPE_3D" value="2" enum="TextureType">
+			3D texture.
 		</constant>
 		<constant name="TEXTURE_LAYERED_2D_ARRAY" value="0" enum="TextureLayeredType">
 			Array of 2-dimensional textures (see [Texture2DArray]).
