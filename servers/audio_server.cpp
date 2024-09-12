@@ -1487,7 +1487,7 @@ void AudioServer::init() {
 
 void AudioServer::update() {
 #ifdef DEBUG_ENABLED
-	if (EngineDebugger::is_profiling("servers")) {
+	if (EngineDebugger::is_profiling(SNAME("servers"))) {
 		// Driver time includes server time + effects times
 		// Server time includes effects times
 		uint64_t driver_time = AudioDriver::get_singleton()->get_profiling_time();
