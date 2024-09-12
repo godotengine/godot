@@ -60,6 +60,7 @@ private:
 		TreeCellMode mode = TreeItem::CELL_MODE_STRING;
 
 		Ref<Texture2D> icon;
+		Ref<Texture2D> icon_overlay;
 		Rect2i icon_region;
 		String text;
 		String xl_text;
@@ -256,6 +257,9 @@ public:
 
 	void set_icon(int p_column, const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_icon(int p_column) const;
+
+	void set_icon_overlay(int p_column, const Ref<Texture2D> &p_icon_overlay);
+	Ref<Texture2D> get_icon_overlay(int p_column) const;
 
 	void set_icon_region(int p_column, const Rect2 &p_icon_region);
 	Rect2 get_icon_region(int p_column) const;
