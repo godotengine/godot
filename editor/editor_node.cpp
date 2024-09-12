@@ -509,6 +509,8 @@ void EditorNode::_update_from_settings() {
 
 	ResourceImporterTexture::get_singleton()->update_imports();
 
+	_update_translations();
+
 #ifdef DEBUG_ENABLED
 	NavigationServer2D::get_singleton()->set_debug_navigation_edge_connection_color(GLOBAL_GET("debug/shapes/navigation/2d/edge_connection_color"));
 	NavigationServer2D::get_singleton()->set_debug_navigation_geometry_edge_color(GLOBAL_GET("debug/shapes/navigation/2d/geometry_edge_color"));
@@ -542,6 +544,23 @@ void EditorNode::_gdextensions_reloaded() {
 	// Regenerate documentation without using script documentation cache since that would
 	// revert doc changes during this session.
 	EditorHelp::generate_doc(true, false);
+}
+
+void EditorNode::_update_translations() {
+	Ref<TranslationDomain> main = TranslationServer::get_singleton()->get_main_domain();
+
+	main->clear();
+	TranslationServer::get_singleton()->load_translations();
+
+	if (main->is_enabled() && !main->get_loaded_locales().has(main->get_locale_override())) {
+		// Translations for the current preview locale is removed.
+		main->set_enabled(false);
+		main->set_locale_override(String());
+		scene_root->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+		emit_signal(SNAME("preview_locale_changed"));
+	} else {
+		scene_root->propagate_notification(NOTIFICATION_TRANSLATION_CHANGED);
+	}
 }
 
 void EditorNode::_update_theme(bool p_skip_creation) {
@@ -4025,6 +4044,33 @@ void EditorNode::set_edited_scene_root(Node *p_scene, bool p_auto_add) {
 	}
 }
 
+String EditorNode::get_preview_locale() const {
+	const Ref<TranslationDomain> &main_domain = TranslationServer::get_singleton()->get_main_domain();
+	return main_domain->is_enabled() ? main_domain->get_locale_override() : String();
+}
+
+void EditorNode::set_preview_locale(const String &p_locale) {
+	const String &prev_locale = get_preview_locale();
+	if (prev_locale == p_locale) {
+		return;
+	}
+
+	// Texts set in the editor could be identifiers that should never be translated.
+	// So we need to disable translation entirely.
+	Ref<TranslationDomain> main_domain = TranslationServer::get_singleton()->get_main_domain();
+	main_domain->set_enabled(!p_locale.is_empty());
+	main_domain->set_locale_override(p_locale);
+
+	if (prev_locale.is_empty() == p_locale.is_empty()) {
+		// Switching between different locales.
+		scene_root->propagate_notification(NOTIFICATION_TRANSLATION_CHANGED);
+	} else {
+		// Switching between on/off.
+		scene_root->set_auto_translate_mode(p_locale.is_empty() ? AUTO_TRANSLATE_MODE_DISABLED : AUTO_TRANSLATE_MODE_ALWAYS);
+	}
+	emit_signal(SNAME("preview_locale_changed"));
+}
+
 Dictionary EditorNode::_get_main_scene_state() {
 	Dictionary state;
 	state["scene_tree_offset"] = SceneTreeDock::get_singleton()->get_tree_editor()->get_scene_tree()->get_vscroll_bar()->get_value();
@@ -7060,6 +7106,7 @@ void EditorNode::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("scene_saved", PropertyInfo(Variant::STRING, "path")));
 	ADD_SIGNAL(MethodInfo("scene_changed"));
 	ADD_SIGNAL(MethodInfo("scene_closed", PropertyInfo(Variant::STRING, "path")));
+	ADD_SIGNAL(MethodInfo("preview_locale_changed"));
 }
 
 static Node *_resource_get_edited_scene() {
@@ -7354,7 +7401,7 @@ EditorNode::EditorNode() {
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorNode::_update_from_settings));
 	GDExtensionManager::get_singleton()->connect("extensions_reloaded", callable_mp(this, &EditorNode::_gdextensions_reloaded));
 
-	TranslationServer::get_singleton()->set_enabled(false);
+	TranslationServer::get_singleton()->get_main_domain()->set_enabled(false);
 	// Load settings.
 	if (!EditorSettings::get_singleton()) {
 		EditorSettings::create();
@@ -7767,6 +7814,8 @@ EditorNode::EditorNode() {
 	editor_main_screen->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	scene_root = memnew(SubViewport);
+	scene_root->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	scene_root->set_translation_domain(StringName());
 	scene_root->set_embedding_subwindows(true);
 	scene_root->set_disable_3d(true);
 	scene_root->set_disable_input(true);

@@ -287,7 +287,11 @@ void TranslationDomain::clear() {
 }
 
 StringName TranslationDomain::translate(const StringName &p_message, const StringName &p_context) const {
-	const String &locale = TranslationServer::get_singleton()->get_locale();
+	if (!enabled) {
+		return p_message;
+	}
+
+	const String &locale = locale_override.is_empty() ? TranslationServer::get_singleton()->get_locale() : locale_override;
 	StringName res = get_message_from_translations(locale, p_message, p_context);
 
 	const String &fallback = TranslationServer::get_singleton()->get_fallback_locale();
@@ -302,7 +306,11 @@ StringName TranslationDomain::translate(const StringName &p_message, const Strin
 }
 
 StringName TranslationDomain::translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
-	const String &locale = TranslationServer::get_singleton()->get_locale();
+	if (!enabled) {
+		return p_n == 1 ? p_message : p_message_plural;
+	}
+
+	const String &locale = locale_override.is_empty() ? TranslationServer::get_singleton()->get_locale() : locale_override;
 	StringName res = get_message_from_translations(locale, p_message, p_message_plural, p_n, p_context);
 
 	const String &fallback = TranslationServer::get_singleton()->get_fallback_locale();
@@ -317,6 +325,22 @@ StringName TranslationDomain::translate_plural(const StringName &p_message, cons
 		return p_message_plural;
 	}
 	return res;
+}
+
+String TranslationDomain::get_locale_override() const {
+	return locale_override;
+}
+
+void TranslationDomain::set_locale_override(const String &p_locale) {
+	locale_override = p_locale.is_empty() ? p_locale : TranslationServer::get_singleton()->standardize_locale(p_locale);
+}
+
+bool TranslationDomain::is_enabled() const {
+	return enabled;
+}
+
+void TranslationDomain::set_enabled(bool p_enabled) {
+	enabled = p_enabled;
 }
 
 bool TranslationDomain::is_pseudolocalization_enabled() const {
@@ -424,6 +448,10 @@ void TranslationDomain::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &TranslationDomain::clear);
 	ClassDB::bind_method(D_METHOD("translate", "message", "context"), &TranslationDomain::translate, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("translate_plural", "message", "message_plural", "n", "context"), &TranslationDomain::translate_plural, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("get_locale_override"), &TranslationDomain::get_locale_override);
+	ClassDB::bind_method(D_METHOD("set_locale_override", "locale"), &TranslationDomain::set_locale_override);
+	ClassDB::bind_method(D_METHOD("is_enabled"), &TranslationDomain::is_enabled);
+	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &TranslationDomain::set_enabled);
 
 	ClassDB::bind_method(D_METHOD("is_pseudolocalization_enabled"), &TranslationDomain::is_pseudolocalization_enabled);
 	ClassDB::bind_method(D_METHOD("set_pseudolocalization_enabled", "enabled"), &TranslationDomain::set_pseudolocalization_enabled);
@@ -445,6 +473,7 @@ void TranslationDomain::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pseudolocalization_suffix", "suffix"), &TranslationDomain::set_pseudolocalization_suffix);
 	ClassDB::bind_method(D_METHOD("pseudolocalize", "message"), &TranslationDomain::pseudolocalize);
 
+	ADD_PROPERTY(PropertyInfo(Variant::Type::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::Type::BOOL, "pseudolocalization_enabled"), "set_pseudolocalization_enabled", "is_pseudolocalization_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::Type::BOOL, "pseudolocalization_accents_enabled"), "set_pseudolocalization_accents_enabled", "is_pseudolocalization_accents_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::Type::BOOL, "pseudolocalization_double_vowels_enabled"), "set_pseudolocalization_double_vowels_enabled", "is_pseudolocalization_double_vowels_enabled");
