@@ -469,7 +469,7 @@ void OptionButton::show_popup() {
 	if (!get_viewport()) {
 		return;
 	}
-
+	cb_popup_pressed.call(this);
 	Rect2 rect = get_screen_rect();
 	rect.position.y += rect.size.height;
 	rect.size.height = 0;

@@ -67,6 +67,7 @@ class OptionButton : public Button {
 
 	static inline PropertyListHelper base_property_helper;
 	PropertyListHelper property_helper;
+	Callable cb_popup_pressed;
 
 	void _focused(int p_which);
 	void _selected(int p_which);
@@ -142,6 +143,8 @@ public:
 	void show_popup();
 
 	void set_disable_shortcuts(bool p_disabled);
+
+	void set_popup_pressed_cb(const Callable& p_cb) { cb_popup_pressed = p_cb; }
 
 	OptionButton(const String &p_text = String());
 	~OptionButton();

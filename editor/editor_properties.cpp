@@ -330,9 +330,31 @@ void EditorPropertyTextEnum::setup(const Vector<String> &p_options, bool p_strin
 		options.append(p_options[i]);
 		option_button->add_item(p_options[i], i);
 	}
+	option_button->set_popup_pressed_cb(callable_mp(this, &EditorPropertyTextEnum::cb_update_options));
 
 	if (loose_mode) {
 		edit_button->show();
+	}
+}
+void EditorPropertyTextEnum::cb_update_options(OptionButton* p_ob)
+{
+	if (is_dynamic_options) {
+		Object* obj = get_edited_object();
+		if (obj == nullptr) {
+			return;
+		}
+		if (!obj->has_method(dyn_options_method)) {
+			return;
+		}
+
+		p_ob->clear();
+		options.clear();
+		Array options_array = obj->call(dyn_options_method);
+		for (int i = 0; i < options_array.size(); i++) {
+			String opt = options_array[i];
+			options.append(options_array[i]);
+			p_ob->add_item(options_array[i], i);
+		}
 	}
 }
 
@@ -3630,6 +3652,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 					}
 				}
 				editor->setup(options, false, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
+				editor->set_dynamic(true, p_hint_text);
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_MULTILINE_TEXT) {
 				EditorPropertyMultilineText *editor = memnew(EditorPropertyMultilineText);
@@ -3795,6 +3818,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 					}
 				}
 				editor->setup(options, true, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
+				editor->set_dynamic(true, p_hint_text);
 				return editor;
 			} else {
 				EditorPropertyText *editor = memnew(EditorPropertyText);

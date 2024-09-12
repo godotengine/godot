@@ -111,9 +111,13 @@ class EditorPropertyTextEnum : public EditorProperty {
 	Button *accept_button = nullptr;
 	Button *cancel_button = nullptr;
 
+	String dyn_options_method;
+
 	Vector<String> options;
 	bool string_name = false;
 	bool loose_mode = false;
+
+	bool is_dynamic_options = false;
 
 	void _emit_changed_value(const String &p_string);
 	void _option_selected(int p_which);
@@ -126,10 +130,15 @@ class EditorPropertyTextEnum : public EditorProperty {
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
+	void cb_update_options(OptionButton* p_ob);
 
 public:
 	void setup(const Vector<String> &p_options, bool p_string_name = false, bool p_loose_mode = false);
 	virtual void update_property() override;
+	void set_dynamic(bool p_is_dynamic, const String & p_method) {
+		is_dynamic_options = p_is_dynamic;
+		dyn_options_method = p_method;
+	}
 	EditorPropertyTextEnum();
 };
 
