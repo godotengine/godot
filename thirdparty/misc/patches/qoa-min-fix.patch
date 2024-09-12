@@ -1,5 +1,5 @@
 diff --git a/qoa.h b/qoa.h
-index 592082933a..c890b88bd6 100644
+index cfed266bef..23612bb0bf 100644
 --- a/qoa.h
 +++ b/qoa.h
 @@ -140,14 +140,14 @@ typedef struct {
@@ -24,19 +24,15 @@ index 592082933a..c890b88bd6 100644
  
  #ifndef QOA_NO_STDIO
  
-@@ -394,9 +394,9 @@ unsigned int qoa_encode_frame(const short *sample_data, qoa_desc *qoa, unsigned
- 			#ifdef QOA_RECORD_TOTAL_ERROR
+@@ -395,7 +395,7 @@ unsigned int qoa_encode_frame(const short *sample_data, qoa_desc *qoa, unsigned
  				qoa_uint64_t best_error = -1;
  			#endif
--			qoa_uint64_t best_slice;
+ 			qoa_uint64_t best_slice = 0;
 -			qoa_lms_t best_lms;
--			int best_scalefactor;
-+			qoa_uint64_t best_slice = -1;
-+			qoa_lms_t best_lms = {{-1, -1, -1, -1}, {-1, -1, -1, -1}};
-+			int best_scalefactor = -1;
++			qoa_lms_t best_lms = {};
+ 			int best_scalefactor = 0;
  
  			for (int sfi = 0; sfi < 16; sfi++) {
- 				/* There is a strong correlation between the scalefactors of
 @@ -500,7 +500,7 @@ void *qoa_encode(const short *sample_data, qoa_desc *qoa, unsigned int *out_len)
  		num_frames * QOA_LMS_LEN * 4 * qoa->channels + /* 4 * 4 bytes lms state per channel */
  		num_slices * 8 * qoa->channels;                /* 8 byte slices */

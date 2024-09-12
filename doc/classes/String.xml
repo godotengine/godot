@@ -324,7 +324,6 @@
 			<description>
 				Splits the string using a [param delimiter] and returns the substring at index [param slice]. Returns the original string if [param delimiter] does not occur in the string. Returns an empty string if the [param slice] does not exist.
 				This is faster than [method split], if you only need one substring.
-				[b]Example:[/b]
 				[codeblock]
 				print("i/am/example/hi".get_slice("/", 2)) # Prints "example"
 				[/codeblock]
@@ -452,6 +451,19 @@
 				Returns [code]true[/code] if all characters of this string can be found in [param text] in their original order, [b]ignoring case[/b].
 			</description>
 		</method>
+		<method name="is_valid_ascii_identifier" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this string is a valid ASCII identifier. A valid ASCII identifier may contain only letters, digits, and underscores ([code]_[/code]), and the first character may not be a digit.
+				[codeblock]
+				print("node_2d".is_valid_ascii_identifier())    # Prints true
+				print("TYPE_FLOAT".is_valid_ascii_identifier()) # Prints true
+				print("1st_method".is_valid_ascii_identifier()) # Prints false
+				print("MyMethod#2".is_valid_ascii_identifier()) # Prints false
+				[/codeblock]
+				See also [method is_valid_unicode_identifier].
+			</description>
+		</method>
 		<method name="is_valid_filename" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -491,7 +503,7 @@
 				Returns [code]true[/code] if this string is a valid color in hexadecimal HTML notation. The string must be a hexadecimal value (see [method is_valid_hex_number]) of either 3, 4, 6 or 8 digits, and may be prefixed by a hash sign ([code]#[/code]). Other HTML notations for colors, such as names or [code]hsl()[/code], are not considered valid. See also [method Color.html].
 			</description>
 		</method>
-		<method name="is_valid_identifier" qualifiers="const">
+		<method name="is_valid_identifier" qualifiers="const" deprecated="Use [method is_valid_ascii_identifier] instead.">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this string is a valid identifier. A valid identifier may contain only letters, digits and underscores ([code]_[/code]), and the first character may not be a digit.
@@ -522,12 +534,28 @@
 				Returns [code]true[/code] if this string represents a well-formatted IPv4 or IPv6 address. This method considers [url=https://en.wikipedia.org/wiki/Reserved_IP_addresses]reserved IP addresses[/url] such as [code]"0.0.0.0"[/code] and [code]"ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"[/code] as valid.
 			</description>
 		</method>
+		<method name="is_valid_unicode_identifier" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this string is a valid Unicode identifier.
+				A valid Unicode identifier must begin with a Unicode character of class [code]XID_Start[/code] or [code]"_"[/code], and may contain Unicode characters of class [code]XID_Continue[/code] in the other positions.
+				[codeblock]
+				print("node_2d".is_valid_unicode_identifier())      # Prints true
+				print("1st_method".is_valid_unicode_identifier())   # Prints false
+				print("MyMethod#2".is_valid_unicode_identifier())   # Prints false
+				print("állóképesség".is_valid_unicode_identifier()) # Prints true
+				print("выносливость".is_valid_unicode_identifier()) # Prints true
+				print("体力".is_valid_unicode_identifier())         # Prints true
+				[/codeblock]
+				See also [method is_valid_ascii_identifier].
+				[b]Note:[/b] This method checks identifiers the same way as GDScript. See [method TextServer.is_valid_identifier] for more advanced checks.
+			</description>
+		</method>
 		<method name="join" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="parts" type="PackedStringArray" />
 			<description>
 				Returns the concatenation of [param parts]' elements, with each element separated by the string calling this method. This method is the opposite of [method split].
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var fruits = ["Apple", "Orange", "Pear", "Kiwi"]
@@ -647,7 +675,6 @@
 				Converts a [float] to a string representation of a decimal number, with the number of decimal places specified in [param decimals].
 				If [param decimals] is [code]-1[/code] as by default, the string representation may only have up to 14 significant digits, with digits before the decimal point having priority over digits after.
 				Trailing zeros are not included in the string. The last digit is rounded, not truncated.
-				[b]Example:[/b]
 				[codeblock]
 				String.num(3.141593)     # Returns "3.141593"
 				String.num(3.141593, 3)  # Returns "3.142"
@@ -802,7 +829,6 @@
 				Splits the string using a [param delimiter] and returns an array of the substrings, starting from the end of the string. The splits in the returned array appear in the same order as the original string. If [param delimiter] is an empty string, each substring will be a single character.
 				If [param allow_empty] is [code]false[/code], empty strings between adjacent delimiters are excluded from the array.
 				If [param maxsplit] is greater than [code]0[/code], the number of splits may not exceed [param maxsplit]. By default, the entire string is split, which is mostly identical to [method split].
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var some_string = "One,Two,Three,Four"
@@ -882,7 +908,6 @@
 				Splits the string using a [param delimiter] and returns an array of the substrings. If [param delimiter] is an empty string, each substring will be a single character. This method is the opposite of [method join].
 				If [param allow_empty] is [code]false[/code], empty strings between adjacent delimiters are excluded from the array.
 				If [param maxsplit] is greater than [code]0[/code], the number of splits may not exceed [param maxsplit]. By default, the entire string is split.
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var some_array = "One,Two,Three,Four".split(",", true, 2)

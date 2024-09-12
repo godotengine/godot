@@ -1072,13 +1072,6 @@ bool Variant::is_null() const {
 	}
 }
 
-bool Variant::initialize_ref(Object *p_object) {
-	RefCounted *ref_counted = const_cast<RefCounted *>(static_cast<const RefCounted *>(p_object));
-	if (!ref_counted->init_ref()) {
-		return false;
-	}
-	return true;
-}
 void Variant::reference(const Variant &p_variant) {
 	switch (type) {
 		case NIL:
@@ -2120,7 +2113,7 @@ Variant::operator ::RID() const {
 		}
 #endif
 		Callable::CallError ce;
-		Variant ret = _get_obj().obj->callp(CoreStringName(get_rid), nullptr, 0, ce);
+		const Variant ret = _get_obj().obj->callp(CoreStringName(get_rid), nullptr, 0, ce);
 		if (ce.error == Callable::CallError::CALL_OK && ret.get_type() == Variant::RID) {
 			return ret;
 		}

@@ -151,7 +151,7 @@ public:
 	virtual void multimesh_set_visible_instances(RID p_multimesh, int p_visible);
 	virtual int multimesh_get_visible_instances(RID p_multimesh) const;
 
-	virtual AABB multimesh_get_aabb(RID p_multimesh) const;
+	virtual AABB multimesh_get_aabb(RID p_multimesh);
 
 	virtual RID _multimesh_allocate() = 0;
 	virtual void _multimesh_initialize(RID p_rid) = 0;
@@ -183,7 +183,7 @@ public:
 	virtual void _multimesh_set_visible_instances(RID p_multimesh, int p_visible) = 0;
 	virtual int _multimesh_get_visible_instances(RID p_multimesh) const = 0;
 
-	virtual AABB _multimesh_get_aabb(RID p_multimesh) const = 0;
+	virtual AABB _multimesh_get_aabb(RID p_multimesh) = 0;
 
 	// Multimesh is responsible for allocating / destroying a MultiMeshInterpolator object.
 	// This allows shared functionality for interpolation across backends.

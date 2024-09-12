@@ -903,7 +903,7 @@ bool ProjectExportDialog::_fill_tree(EditorFileSystemDirectory *p_dir, TreeItem 
 		if (p_export_filter == EditorExportPreset::EXPORT_SELECTED_SCENES && type != "PackedScene") {
 			continue;
 		}
-		if (type == "TextFile") {
+		if (type == "TextFile" || type == "OtherFile") {
 			continue;
 		}
 
@@ -1147,10 +1147,8 @@ void ProjectExportDialog::_export_project_to_path(const String &p_path) {
 }
 
 void ProjectExportDialog::_export_all_dialog() {
-#ifndef ANDROID_ENABLED
 	export_all_dialog->show();
 	export_all_dialog->popup_centered(Size2(300, 80));
-#endif
 }
 
 void ProjectExportDialog::_export_all_dialog_action(const String &p_str) {
@@ -1412,12 +1410,12 @@ ProjectExportDialog::ProjectExportDialog() {
 	sec_scroll_container->add_child(sec_vb);
 
 	enc_pck = memnew(CheckButton);
-	enc_pck->connect("toggled", callable_mp(this, &ProjectExportDialog::_enc_pck_changed));
+	enc_pck->connect(SceneStringName(toggled), callable_mp(this, &ProjectExportDialog::_enc_pck_changed));
 	enc_pck->set_text(TTR("Encrypt Exported PCK"));
 	sec_vb->add_child(enc_pck);
 
 	enc_directory = memnew(CheckButton);
-	enc_directory->connect("toggled", callable_mp(this, &ProjectExportDialog::_enc_directory_changed));
+	enc_directory->connect(SceneStringName(toggled), callable_mp(this, &ProjectExportDialog::_enc_directory_changed));
 	enc_directory->set_text(TTR("Encrypt Index (File Names and Info)"));
 	sec_vb->add_child(enc_directory);
 
@@ -1491,13 +1489,9 @@ ProjectExportDialog::ProjectExportDialog() {
 	set_ok_button_text(TTR("Export PCK/ZIP..."));
 	get_ok_button()->set_tooltip_text(TTR("Export the project resources as a PCK or ZIP package. This is not a playable build, only the project data without a Godot executable."));
 	get_ok_button()->set_disabled(true);
-#ifdef ANDROID_ENABLED
-	export_button = memnew(Button);
-	export_button->hide();
-#else
+
 	export_button = add_button(TTR("Export Project..."), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "export");
 	export_button->set_tooltip_text(TTR("Export the project as a playable build (Godot executable and project data) for the selected preset."));
-#endif
 	export_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_export_project));
 	// Disable initially before we select a valid preset
 	export_button->set_disabled(true);
@@ -1510,14 +1504,8 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_all_dialog->add_button(TTR("Debug"), true, "debug");
 	export_all_dialog->add_button(TTR("Release"), true, "release");
 	export_all_dialog->connect("custom_action", callable_mp(this, &ProjectExportDialog::_export_all_dialog_action));
-#ifdef ANDROID_ENABLED
-	export_all_dialog->hide();
 
-	export_all_button = memnew(Button);
-	export_all_button->hide();
-#else
 	export_all_button = add_button(TTR("Export All..."), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "export");
-#endif
 	export_all_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_export_all_dialog));
 	export_all_button->set_disabled(true);
 

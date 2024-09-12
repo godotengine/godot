@@ -560,10 +560,10 @@ void MDCommandBuffer::_render_clear_render_area() {
 		}
 	}
 	uint32_t ds_index = subpass.depth_stencil_reference.attachment;
-	MDAttachment const &attachment = pass.attachments[ds_index];
-	bool shouldClearDepth = (ds_index != RDD::AttachmentReference::UNUSED && attachment.shouldClear(subpass, false));
-	bool shouldClearStencil = (ds_index != RDD::AttachmentReference::UNUSED && attachment.shouldClear(subpass, true));
+	bool shouldClearDepth = (ds_index != RDD::AttachmentReference::UNUSED && pass.attachments[ds_index].shouldClear(subpass, false));
+	bool shouldClearStencil = (ds_index != RDD::AttachmentReference::UNUSED && pass.attachments[ds_index].shouldClear(subpass, true));
 	if (shouldClearDepth || shouldClearStencil) {
+		MDAttachment const &attachment = pass.attachments[ds_index];
 		BitField<RDD::TextureAspectBits> bits;
 		if (shouldClearDepth && attachment.type & MDAttachmentType::Depth) {
 			bits.set_flag(RDD::TEXTURE_ASPECT_DEPTH_BIT);
@@ -717,6 +717,7 @@ void MDCommandBuffer::render_bind_index_buffer(RDD::BufferID p_buffer, RDD::Inde
 
 	render.index_buffer = rid::get(p_buffer);
 	render.index_type = p_format == RDD::IndexBufferFormat::INDEX_BUFFER_FORMAT_UINT16 ? MTLIndexTypeUInt16 : MTLIndexTypeUInt32;
+	render.index_offset = p_offset;
 }
 
 void MDCommandBuffer::render_draw_indexed(uint32_t p_index_count,
@@ -729,13 +730,16 @@ void MDCommandBuffer::render_draw_indexed(uint32_t p_index_count,
 
 	id<MTLRenderCommandEncoder> enc = render.encoder;
 
+	uint32_t index_offset = render.index_offset;
+	index_offset += p_first_index * (render.index_type == MTLIndexTypeUInt16 ? sizeof(uint16_t) : sizeof(uint32_t));
+
 	[enc drawIndexedPrimitives:render.pipeline->raster_state.render_primitive
 					indexCount:p_index_count
 					 indexType:render.index_type
 				   indexBuffer:render.index_buffer
-			 indexBufferOffset:p_vertex_offset
+			 indexBufferOffset:index_offset
 				 instanceCount:p_instance_count
-					baseVertex:p_first_index
+					baseVertex:p_vertex_offset
 				  baseInstance:p_first_instance];
 }
 
@@ -1396,9 +1400,9 @@ void ShaderCacheEntry::notify_free() const {
 
 @interface MDLibrary ()
 - (instancetype)initWithCacheEntry:(ShaderCacheEntry *)entry;
-- (ShaderCacheEntry *)entry;
 @end
 
+/// Loads the MTLLibrary when the library is first accessed.
 @interface MDLazyLibrary : MDLibrary {
 	id<MTLLibrary> _library;
 	NSError *_error;
@@ -1414,6 +1418,7 @@ void ShaderCacheEntry::notify_free() const {
 						   options:(MTLCompileOptions *)options;
 @end
 
+/// Loads the MTLLibrary immediately on initialization, using an asynchronous API.
 @interface MDImmediateLibrary : MDLibrary {
 	id<MTLLibrary> _library;
 	NSError *_error;
@@ -1428,9 +1433,7 @@ void ShaderCacheEntry::notify_free() const {
 						   options:(MTLCompileOptions *)options;
 @end
 
-@implementation MDLibrary {
-	ShaderCacheEntry *_entry;
-}
+@implementation MDLibrary
 
 + (instancetype)newLibraryWithCacheEntry:(ShaderCacheEntry *)entry
 								  device:(id<MTLDevice>)device
@@ -1445,10 +1448,6 @@ void ShaderCacheEntry::notify_free() const {
 		case ShaderLoadStrategy::LAZY:
 			return [[MDLazyLibrary alloc] initWithCacheEntry:entry device:device source:source options:options];
 	}
-}
-
-- (ShaderCacheEntry *)entry {
-	return _entry;
 }
 
 - (id<MTLLibrary>)library {
@@ -1489,8 +1488,8 @@ void ShaderCacheEntry::notify_free() const {
 
 	__block os_signpost_id_t compile_id = (os_signpost_id_t)(uintptr_t)self;
 	os_signpost_interval_begin(LOG_INTERVALS, compile_id, "shader_compile",
-			"shader_name=%{public}s stage=%{public}s hash=%{public}s",
-			entry->name.get_data(), SHADER_STAGE_NAMES[entry->stage], entry->short_sha.get_data());
+			"shader_name=%{public}s stage=%{public}s hash=%X",
+			entry->name.get_data(), SHADER_STAGE_NAMES[entry->stage], entry->key.short_sha());
 
 	[device newLibraryWithSource:source
 						 options:options
@@ -1556,12 +1555,10 @@ void ShaderCacheEntry::notify_free() const {
 		return;
 	}
 
-	ShaderCacheEntry *entry = [self entry];
-
 	__block os_signpost_id_t compile_id = (os_signpost_id_t)(uintptr_t)self;
 	os_signpost_interval_begin(LOG_INTERVALS, compile_id, "shader_compile",
-			"shader_name=%{public}s stage=%{public}s hash=%{public}s",
-			entry->name.get_data(), SHADER_STAGE_NAMES[entry->stage], entry->short_sha.get_data());
+			"shader_name=%{public}s stage=%{public}s hash=%X",
+			_entry->name.get_data(), SHADER_STAGE_NAMES[_entry->stage], _entry->key.short_sha());
 	NSError *error;
 	_library = [_device newLibraryWithSource:_source options:_options error:&error];
 	os_signpost_interval_end(LOG_INTERVALS, compile_id, "shader_compile");

@@ -48,6 +48,14 @@ Ref<EditorExportPreset> EditorExportPlugin::get_export_preset() const {
 	return export_preset;
 }
 
+Ref<EditorExportPlatform> EditorExportPlugin::get_export_platform() const {
+	if (export_preset.is_valid()) {
+		return export_preset->get_platform();
+	} else {
+		return Ref<EditorExportPlatform>();
+	}
+}
+
 void EditorExportPlugin::add_file(const String &p_path, const Vector<uint8_t> &p_file, bool p_remap) {
 	ExtraFile ef;
 	ef.data = p_file;
@@ -132,7 +140,7 @@ Vector<String> EditorExportPlugin::get_ios_project_static_libs() const {
 }
 
 Variant EditorExportPlugin::get_option(const StringName &p_name) const {
-	ERR_FAIL_NULL_V(export_preset, Variant());
+	ERR_FAIL_COND_V(export_preset.is_null(), Variant());
 	return export_preset->get(p_name);
 }
 
@@ -320,6 +328,9 @@ void EditorExportPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_macos_plugin_file", "path"), &EditorExportPlugin::add_macos_plugin_file);
 	ClassDB::bind_method(D_METHOD("skip"), &EditorExportPlugin::skip);
 	ClassDB::bind_method(D_METHOD("get_option", "name"), &EditorExportPlugin::get_option);
+
+	ClassDB::bind_method(D_METHOD("get_export_preset"), &EditorExportPlugin::get_export_preset);
+	ClassDB::bind_method(D_METHOD("get_export_platform"), &EditorExportPlugin::get_export_platform);
 
 	GDVIRTUAL_BIND(_export_file, "path", "type", "features");
 	GDVIRTUAL_BIND(_export_begin, "features", "is_debug", "path", "flags");

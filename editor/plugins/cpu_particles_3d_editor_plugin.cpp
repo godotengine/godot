@@ -208,7 +208,7 @@ void CPUParticles3DEditorPlugin::make_visible(bool p_visible) {
 
 CPUParticles3DEditorPlugin::CPUParticles3DEditorPlugin() {
 	particles_editor = memnew(CPUParticles3DEditor);
-	EditorNode::get_singleton()->get_main_screen_control()->add_child(particles_editor);
+	EditorNode::get_singleton()->get_gui_base()->add_child(particles_editor);
 
 	particles_editor->hide();
 }

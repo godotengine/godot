@@ -336,6 +336,7 @@ private:
 		XrTime predicted_display_time = 0;
 		XrSpace play_space = XR_NULL_HANDLE;
 		double render_target_size_multiplier = 1.0;
+		uint64_t frame = 0;
 
 		uint32_t view_count = 0;
 		XrView *views = nullptr;
@@ -422,6 +423,10 @@ public:
 	XrResult get_instance_proc_addr(const char *p_name, PFN_xrVoidFunction *p_addr);
 	String get_error_string(XrResult result) const;
 	String get_swapchain_format_name(int64_t p_swapchain_format) const;
+	void set_object_name(XrObjectType p_object_type, uint64_t p_object_handle, const String &p_object_name);
+	void begin_debug_label_region(const String &p_label_name);
+	void end_debug_label_region();
+	void insert_debug_label(const String &p_label_name);
 
 	OpenXRInterface *get_xr_interface() const { return xr_interface; }
 	void set_xr_interface(OpenXRInterface *p_xr_interface);

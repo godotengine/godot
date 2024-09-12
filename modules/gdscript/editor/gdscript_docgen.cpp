@@ -84,6 +84,15 @@ void GDScriptDocGen::_doctype_from_gdtype(const GDType &p_gdtype, String &r_type
 					return;
 				}
 			}
+			if (p_gdtype.builtin_type == Variant::DICTIONARY && p_gdtype.has_container_element_types()) {
+				String key, value;
+				_doctype_from_gdtype(p_gdtype.get_container_element_type_or_variant(0), key, r_enum);
+				_doctype_from_gdtype(p_gdtype.get_container_element_type_or_variant(1), value, r_enum);
+				if (key != "Variant" || value != "Variant") {
+					r_type = "Dictionary[" + key + ", " + value + "]";
+					return;
+				}
+			}
 			r_type = Variant::get_type_name(p_gdtype.builtin_type);
 			return;
 		case GDType::NATIVE:
@@ -155,34 +164,82 @@ String GDScriptDocGen::_docvalue_from_variant(const Variant &p_variant, int p_re
 			return "<Object>";
 		case Variant::DICTIONARY: {
 			const Dictionary dict = p_variant;
+			String result;
+
+			if (dict.is_typed()) {
+				result += "Dictionary[";
+
+				Ref<Script> key_script = dict.get_typed_key_script();
+				if (key_script.is_valid()) {
+					if (key_script->get_global_name() != StringName()) {
+						result += key_script->get_global_name();
+					} else if (!key_script->get_path().get_file().is_empty()) {
+						result += key_script->get_path().get_file();
+					} else {
+						result += dict.get_typed_key_class_name();
+					}
+				} else if (dict.get_typed_key_class_name() != StringName()) {
+					result += dict.get_typed_key_class_name();
+				} else if (dict.is_typed_key()) {
+					result += Variant::get_type_name((Variant::Type)dict.get_typed_key_builtin());
+				} else {
+					result += "Variant";
+				}
+
+				result += ", ";
+
+				Ref<Script> value_script = dict.get_typed_value_script();
+				if (value_script.is_valid()) {
+					if (value_script->get_global_name() != StringName()) {
+						result += value_script->get_global_name();
+					} else if (!value_script->get_path().get_file().is_empty()) {
+						result += value_script->get_path().get_file();
+					} else {
+						result += dict.get_typed_value_class_name();
+					}
+				} else if (dict.get_typed_value_class_name() != StringName()) {
+					result += dict.get_typed_value_class_name();
+				} else if (dict.is_typed_value()) {
+					result += Variant::get_type_name((Variant::Type)dict.get_typed_value_builtin());
+				} else {
+					result += "Variant";
+				}
+
+				result += "](";
+			}
 
 			if (dict.is_empty()) {
-				return "{}";
-			}
+				result += "{}";
+			} else if (p_recursion_level > MAX_RECURSION_LEVEL) {
+				result += "{...}";
+			} else {
+				result += "{";
 
-			if (p_recursion_level > MAX_RECURSION_LEVEL) {
-				return "{...}";
-			}
+				List<Variant> keys;
+				dict.get_key_list(&keys);
+				keys.sort();
 
-			List<Variant> keys;
-			dict.get_key_list(&keys);
-			keys.sort();
-
-			String data;
-			for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-				if (E->prev()) {
-					data += ", ";
+				for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
+					if (E->prev()) {
+						result += ", ";
+					}
+					result += _docvalue_from_variant(E->get(), p_recursion_level + 1) + ": " + _docvalue_from_variant(dict[E->get()], p_recursion_level + 1);
 				}
-				data += _docvalue_from_variant(E->get(), p_recursion_level + 1) + ": " + _docvalue_from_variant(dict[E->get()], p_recursion_level + 1);
+
+				result += "}";
 			}
 
-			return "{" + data + "}";
+			if (dict.is_typed()) {
+				result += ")";
+			}
+
+			return result;
 		} break;
 		case Variant::ARRAY: {
 			const Array array = p_variant;
 			String result;
 
-			if (array.get_typed_builtin() != Variant::NIL) {
+			if (array.is_typed()) {
 				result += "Array[";
 
 				Ref<Script> script = array.get_typed_script();
@@ -209,16 +266,18 @@ String GDScriptDocGen::_docvalue_from_variant(const Variant &p_variant, int p_re
 				result += "[...]";
 			} else {
 				result += "[";
+
 				for (int i = 0; i < array.size(); i++) {
 					if (i > 0) {
 						result += ", ";
 					}
 					result += _docvalue_from_variant(array[i], p_recursion_level + 1);
 				}
+
 				result += "]";
 			}
 
-			if (array.get_typed_builtin() != Variant::NIL) {
+			if (array.is_typed()) {
 				result += ")";
 			}
 

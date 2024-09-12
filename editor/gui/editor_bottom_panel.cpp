@@ -158,7 +158,7 @@ void EditorBottomPanel::load_layout_from_config(Ref<ConfigFile> p_config_file, c
 Button *EditorBottomPanel::add_item(String p_text, Control *p_item, const Ref<Shortcut> &p_shortcut, bool p_at_front) {
 	Button *tb = memnew(Button);
 	tb->set_theme_type_variation("BottomPanelButton");
-	tb->connect("toggled", callable_mp(this, &EditorBottomPanel::_switch_by_control).bind(p_item));
+	tb->connect(SceneStringName(toggled), callable_mp(this, &EditorBottomPanel::_switch_by_control).bind(p_item));
 	tb->set_drag_forwarding(Callable(), callable_mp(this, &EditorBottomPanel::_button_drag_hover).bind(tb, p_item), Callable());
 	tb->set_text(p_text);
 	tb->set_shortcut(p_shortcut);
@@ -295,5 +295,5 @@ EditorBottomPanel::EditorBottomPanel() {
 	expand_button->set_theme_type_variation("FlatMenuButton");
 	expand_button->set_toggle_mode(true);
 	expand_button->set_shortcut(ED_SHORTCUT_AND_COMMAND("editor/bottom_panel_expand", TTR("Expand Bottom Panel"), KeyModifierMask::SHIFT | Key::F12));
-	expand_button->connect("toggled", callable_mp(this, &EditorBottomPanel::_expand_button_toggled));
+	expand_button->connect(SceneStringName(toggled), callable_mp(this, &EditorBottomPanel::_expand_button_toggled));
 }

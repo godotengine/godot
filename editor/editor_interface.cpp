@@ -29,9 +29,11 @@
 /**************************************************************************/
 
 #include "editor_interface.h"
+#include "editor_interface.compat.inc"
 
 #include "editor/editor_command_palette.h"
 #include "editor/editor_feature_profile.h"
+#include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_resource_preview.h"
@@ -84,6 +86,10 @@ EditorSelection *EditorInterface::get_selection() const {
 
 Ref<EditorSettings> EditorInterface::get_editor_settings() const {
 	return EditorSettings::get_singleton();
+}
+
+EditorUndoRedoManager *EditorInterface::get_editor_undo_redo() const {
+	return EditorUndoRedoManager::get_singleton();
 }
 
 TypedArray<Texture2D> EditorInterface::_make_mesh_previews(const TypedArray<Mesh> &p_meshes, int p_preview_size) {
@@ -210,7 +216,7 @@ Control *EditorInterface::get_base_control() const {
 }
 
 VBoxContainer *EditorInterface::get_editor_main_screen() const {
-	return EditorNode::get_singleton()->get_main_screen_control();
+	return EditorNode::get_singleton()->get_editor_main_screen()->get_control();
 }
 
 ScriptEditor *EditorInterface::get_script_editor() const {
@@ -227,7 +233,7 @@ SubViewport *EditorInterface::get_editor_viewport_3d(int p_idx) const {
 }
 
 void EditorInterface::set_main_screen_editor(const String &p_name) {
-	EditorNode::get_singleton()->select_editor_by_name(p_name);
+	EditorNode::get_singleton()->get_editor_main_screen()->select_by_name(p_name);
 }
 
 void EditorInterface::set_distraction_free_mode(bool p_enter) {
@@ -272,7 +278,7 @@ void EditorInterface::set_current_feature_profile(const String &p_profile_name) 
 
 // Editor dialogs.
 
-void EditorInterface::popup_node_selector(const Callable &p_callback, const TypedArray<StringName> &p_valid_types) {
+void EditorInterface::popup_node_selector(const Callable &p_callback, const TypedArray<StringName> &p_valid_types, Node *p_current_value) {
 	// TODO: Should reuse dialog instance instead of creating a fresh one, but need to rework set_valid_types first.
 	if (node_selector) {
 		node_selector->disconnect(SNAME("selected"), callable_mp(this, &EditorInterface::_node_selected).bind(p_callback));
@@ -292,7 +298,7 @@ void EditorInterface::popup_node_selector(const Callable &p_callback, const Type
 
 	get_base_control()->add_child(node_selector);
 
-	node_selector->popup_scenetree_dialog();
+	node_selector->popup_scenetree_dialog(p_current_value);
 
 	const Callable selected_callback = callable_mp(this, &EditorInterface::_node_selected).bind(p_callback);
 	node_selector->connect(SNAME("selected"), selected_callback, CONNECT_DEFERRED);
@@ -301,7 +307,7 @@ void EditorInterface::popup_node_selector(const Callable &p_callback, const Type
 	node_selector->connect(SNAME("canceled"), canceled_callback, CONNECT_DEFERRED);
 }
 
-void EditorInterface::popup_property_selector(Object *p_object, const Callable &p_callback, const PackedInt32Array &p_type_filter) {
+void EditorInterface::popup_property_selector(Object *p_object, const Callable &p_callback, const PackedInt32Array &p_type_filter, const String &p_current_value) {
 	// TODO: Should reuse dialog instance instead of creating a fresh one, but need to rework set_type_filter first.
 	if (property_selector) {
 		property_selector->disconnect(SNAME("selected"), callable_mp(this, &EditorInterface::_property_selected).bind(p_callback));
@@ -321,7 +327,7 @@ void EditorInterface::popup_property_selector(Object *p_object, const Callable &
 
 	get_base_control()->add_child(property_selector);
 
-	property_selector->select_property_from_instance(p_object);
+	property_selector->select_property_from_instance(p_object, p_current_value);
 
 	const Callable selected_callback = callable_mp(this, &EditorInterface::_property_selected).bind(p_callback);
 	property_selector->connect(SNAME("selected"), selected_callback, CONNECT_DEFERRED);
@@ -525,6 +531,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_resource_previewer"), &EditorInterface::get_resource_previewer);
 	ClassDB::bind_method(D_METHOD("get_selection"), &EditorInterface::get_selection);
 	ClassDB::bind_method(D_METHOD("get_editor_settings"), &EditorInterface::get_editor_settings);
+	ClassDB::bind_method(D_METHOD("get_editor_undo_redo"), &EditorInterface::get_editor_undo_redo);
 
 	ClassDB::bind_method(D_METHOD("make_mesh_previews", "meshes", "preview_size"), &EditorInterface::_make_mesh_previews);
 
@@ -559,8 +566,8 @@ void EditorInterface::_bind_methods() {
 
 	// Editor dialogs.
 
-	ClassDB::bind_method(D_METHOD("popup_node_selector", "callback", "valid_types"), &EditorInterface::popup_node_selector, DEFVAL(TypedArray<StringName>()));
-	ClassDB::bind_method(D_METHOD("popup_property_selector", "object", "callback", "type_filter"), &EditorInterface::popup_property_selector, DEFVAL(PackedInt32Array()));
+	ClassDB::bind_method(D_METHOD("popup_node_selector", "callback", "valid_types", "current_value"), &EditorInterface::popup_node_selector, DEFVAL(TypedArray<StringName>()), DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("popup_property_selector", "object", "callback", "type_filter", "current_value"), &EditorInterface::popup_property_selector, DEFVAL(PackedInt32Array()), DEFVAL(String()));
 
 	// Editor docks.
 

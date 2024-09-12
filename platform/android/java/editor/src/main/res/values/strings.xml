@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+	<string name="godot_game_activity_name">Godot Play window</string>
 	<string name="denied_storage_permission_error_msg">Missing storage access permission!</string>
+    <string name="pip_button_description">Button used to toggle picture-in-picture mode for the Play window</string>
 </resources>

@@ -121,7 +121,7 @@ Config::Config() {
 #ifdef WEB_ENABLED
 	msaa_supported = (msaa_max_samples > 0);
 #else
-	msaa_supported = extensions.has("GL_EXT_framebuffer_multisample");
+	msaa_supported = true;
 #endif
 #ifndef IOS_ENABLED
 #ifdef WEB_ENABLED

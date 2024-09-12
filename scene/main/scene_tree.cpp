@@ -1315,8 +1315,8 @@ void SceneTree::_call_group_flags(const Variant **p_args, int p_argcount, Callab
 
 	ERR_FAIL_COND(p_argcount < 3);
 	ERR_FAIL_COND(!p_args[0]->is_num());
-	ERR_FAIL_COND(p_args[1]->get_type() != Variant::STRING_NAME && p_args[1]->get_type() != Variant::STRING);
-	ERR_FAIL_COND(p_args[2]->get_type() != Variant::STRING_NAME && p_args[2]->get_type() != Variant::STRING);
+	ERR_FAIL_COND(!p_args[1]->is_string());
+	ERR_FAIL_COND(!p_args[2]->is_string());
 
 	int flags = *p_args[0];
 	StringName group = *p_args[1];
@@ -1329,8 +1329,8 @@ void SceneTree::_call_group(const Variant **p_args, int p_argcount, Callable::Ca
 	r_error.error = Callable::CallError::CALL_OK;
 
 	ERR_FAIL_COND(p_argcount < 2);
-	ERR_FAIL_COND(p_args[0]->get_type() != Variant::STRING_NAME && p_args[0]->get_type() != Variant::STRING);
-	ERR_FAIL_COND(p_args[1]->get_type() != Variant::STRING_NAME && p_args[1]->get_type() != Variant::STRING);
+	ERR_FAIL_COND(!p_args[0]->is_string());
+	ERR_FAIL_COND(!p_args[1]->is_string());
 
 	StringName group = *p_args[0];
 	StringName method = *p_args[1];

@@ -108,6 +108,16 @@ public:
 	~MutexLock() {
 		mutex.unlock();
 	}
+
+	_ALWAYS_INLINE_ void temp_relock() const {
+		mutex.lock();
+	}
+
+	_ALWAYS_INLINE_ void temp_unlock() const {
+		mutex.unlock();
+	}
+
+	// TODO: Implement a `try_temp_relock` if needed (will also need a dummy method below).
 };
 
 #ifdef __clang__
@@ -126,6 +136,16 @@ class SafeBinaryMutex {
 public:
 	void lock() const {}
 	void unlock() const {}
+};
+
+template <int Tag>
+class MutexLock<SafeBinaryMutex<Tag>> {
+public:
+	MutexLock(const SafeBinaryMutex<Tag> &p_mutex) {}
+	~MutexLock() {}
+
+	void temp_relock() const {}
+	void temp_unlock() const {}
 };
 
 #endif // THREADS_ENABLED

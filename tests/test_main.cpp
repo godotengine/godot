@@ -48,6 +48,7 @@
 #include "tests/core/io/test_image.h"
 #include "tests/core/io/test_ip.h"
 #include "tests/core/io/test_json.h"
+#include "tests/core/io/test_json_native.h"
 #include "tests/core/io/test_marshalls.h"
 #include "tests/core/io/test_pck_packer.h"
 #include "tests/core/io/test_resource.h"
@@ -104,21 +105,25 @@
 #include "tests/scene/test_animation.h"
 #include "tests/scene/test_audio_stream_wav.h"
 #include "tests/scene/test_bit_map.h"
+#include "tests/scene/test_button.h"
 #include "tests/scene/test_camera_2d.h"
 #include "tests/scene/test_control.h"
 #include "tests/scene/test_curve.h"
 #include "tests/scene/test_curve_2d.h"
 #include "tests/scene/test_curve_3d.h"
 #include "tests/scene/test_gradient.h"
+#include "tests/scene/test_gradient_texture.h"
 #include "tests/scene/test_image_texture.h"
 #include "tests/scene/test_image_texture_3d.h"
 #include "tests/scene/test_instance_placeholder.h"
 #include "tests/scene/test_node.h"
 #include "tests/scene/test_node_2d.h"
 #include "tests/scene/test_packed_scene.h"
+#include "tests/scene/test_parallax_2d.h"
 #include "tests/scene/test_path_2d.h"
 #include "tests/scene/test_path_follow_2d.h"
 #include "tests/scene/test_sprite_frames.h"
+#include "tests/scene/test_style_box_texture.h"
 #include "tests/scene/test_theme.h"
 #include "tests/scene/test_timer.h"
 #include "tests/scene/test_viewport.h"
@@ -132,7 +137,9 @@
 #include "tests/scene/test_code_edit.h"
 #include "tests/scene/test_color_picker.h"
 #include "tests/scene/test_graph_node.h"
+#include "tests/scene/test_option_button.h"
 #include "tests/scene/test_text_edit.h"
+#include "tests/scene/test_tree.h"
 #endif // ADVANCED_GUI_DISABLED
 
 #ifndef _3D_DISABLED
@@ -149,6 +156,7 @@
 
 #include "tests/scene/test_arraymesh.h"
 #include "tests/scene/test_camera_3d.h"
+#include "tests/scene/test_height_map_shape_3d.h"
 #include "tests/scene/test_path_3d.h"
 #include "tests/scene/test_path_follow_3d.h"
 #include "tests/scene/test_primitives.h"
@@ -314,7 +322,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			return;
 		}
 
-		if (name.contains("Audio")) {
+		if (name.contains("[Audio]")) {
 			// The last driver index should always be the dummy driver.
 			int dummy_idx = AudioDriverManager::get_driver_count() - 1;
 			AudioDriverManager::initialize(dummy_idx);

@@ -44,7 +44,7 @@ struct BlitToScreen;
 	The idea is that we subclass this class, implement the logic, and then instantiate a singleton of each interface
 	when Godot starts. These instances do not initialize themselves but register themselves with the AR/VR server.
 
-	If the user wants to enable AR/VR the choose the interface they want to use and initialize it.
+	If the user wants to enable AR/VR, they can choose the interface they want to use and initialize it.
 
 	Note that we may make this into a fully instantiable class for GDExtension support.
 */

@@ -1039,7 +1039,7 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 		data.resize(data_size);
 
 		ERR_FAIL_COND_V(data.is_empty(), Ref<Image>());
-		image = Image::create_from_data(texture->width, texture->height, texture->mipmaps > 1, texture->real_format, data);
+		image = Image::create_from_data(texture->alloc_width, texture->alloc_height, texture->mipmaps > 1, texture->real_format, data);
 		ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
 		if (texture->format != texture->real_format) {
 			image->convert(texture->format);
@@ -1095,7 +1095,7 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 		data.resize(data_size);
 
 		ERR_FAIL_COND_V(data.is_empty(), Ref<Image>());
-		image = Image::create_from_data(texture->width, texture->height, false, Image::FORMAT_RGBA8, data);
+		image = Image::create_from_data(texture->alloc_width, texture->alloc_height, false, Image::FORMAT_RGBA8, data);
 		ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
 
 		if (texture->format != Image::FORMAT_RGBA8) {
@@ -1389,8 +1389,22 @@ void TextureStorage::texture_debug_usage(List<RS::TextureInfo> *r_info) {
 		tinfo.format = t->format;
 		tinfo.width = t->alloc_width;
 		tinfo.height = t->alloc_height;
-		tinfo.depth = t->depth;
 		tinfo.bytes = t->total_data_size;
+
+		switch (t->type) {
+			case Texture::TYPE_3D:
+				tinfo.depth = t->depth;
+				break;
+
+			case Texture::TYPE_LAYERED:
+				tinfo.depth = t->layers;
+				break;
+
+			default:
+				tinfo.depth = 0;
+				break;
+		}
+
 		r_info->push_back(tinfo);
 	}
 }
@@ -1521,7 +1535,11 @@ void TextureStorage::_texture_set_data(RID p_texture, const Ref<Image> &p_image,
 		h = MAX(1, h >> 1);
 	}
 
-	texture->total_data_size = tsize;
+	if (texture->target == GL_TEXTURE_CUBE_MAP || texture->target == GL_TEXTURE_2D_ARRAY) {
+		texture->total_data_size = tsize * texture->layers;
+	} else {
+		texture->total_data_size = tsize;
+	}
 
 	texture->stored_cube_sides |= (1 << p_layer);
 

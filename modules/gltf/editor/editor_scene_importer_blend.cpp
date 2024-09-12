@@ -336,7 +336,7 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 #endif
 }
 
-Variant EditorSceneFormatImporterBlend::get_option_visibility(const String &p_path, bool p_for_animation, const String &p_option,
+Variant EditorSceneFormatImporterBlend::get_option_visibility(const String &p_path, const String &p_scene_import_type, const String &p_option,
 		const HashMap<StringName, Variant> &p_options) {
 	if (p_path.get_extension().to_lower() != "blend") {
 		return true;

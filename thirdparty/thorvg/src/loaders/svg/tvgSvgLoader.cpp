@@ -588,6 +588,11 @@ static bool _hslToRgb(float hue, float saturation, float brightness, uint8_t* re
     float _red = 0, _green = 0, _blue = 0;
     uint32_t i = 0;
 
+    while (hue < 0) hue += 360.0f;
+    hue = fmod(hue, 360.0f);
+    saturation = saturation > 0 ? std::min(saturation, 1.0f) : 0.0f;
+    brightness = brightness > 0 ? std::min(brightness, 1.0f) : 0.0f;
+
     if (mathZero(saturation))  _red = _green = _blue = brightness;
     else {
         if (mathEqual(hue, 360.0)) hue = 0.0f;
@@ -710,15 +715,15 @@ static bool _toColor(const char* str, uint8_t* r, uint8_t* g, uint8_t* b, char**
         return true;
     } else if (len >= 10 && (str[0] == 'h' || str[0] == 'H') && (str[1] == 's' || str[1] == 'S') && (str[2] == 'l' || str[2] == 'L') && str[3] == '(' && str[len - 1] == ')') {
         float th, ts, tb;
-        const char *content, *hue, *saturation, *brightness;
-        content = str + 4;
-        content = _skipSpace(content, nullptr);
+        const char* content = _skipSpace(str + 4, nullptr);
+        const char* hue = nullptr;
         if (_parseNumber(&content, &hue, &th) && hue) {
-            th = float(uint32_t(th) % 360);
+            const char* saturation = nullptr;
             hue = _skipSpace(hue, nullptr);
             hue = (char*)_skipComma(hue);
             hue = _skipSpace(hue, nullptr);
             if (_parseNumber(&hue, &saturation, &ts) && saturation && *saturation == '%') {
+                const char* brightness = nullptr;
                 ts /= 100.0f;
                 saturation = _skipSpace(saturation + 1, nullptr);
                 saturation = (char*)_skipComma(saturation);
@@ -3283,6 +3288,7 @@ static void _svgLoaderParserXmlClose(SvgLoaderData* loader, const char* content,
     for (unsigned int i = 0; i < sizeof(graphicsTags) / sizeof(graphicsTags[0]); i++) {
         if (!strncmp(tagName, graphicsTags[i].tag, sz)) {
             loader->currentGraphicsNode = nullptr;
+            if (!strncmp(tagName, "text", 4)) loader->openedTag = OpenedTagType::Other;
             loader->stack.pop();
             break;
         }
@@ -3356,11 +3362,9 @@ static void _svgLoaderParserXmlOpen(SvgLoaderData* loader, const char* content, 
         node = method(loader, parent, attrs, attrsLength, simpleXmlParseAttributes);
         if (node && !empty) {
             if (!strcmp(tagName, "text")) loader->openedTag = OpenedTagType::Text;
-            else {
-                auto defs = _createDefsNode(loader, nullptr, nullptr, 0, nullptr);
-                loader->stack.push(defs);
-                loader->currentGraphicsNode = node;
-            }
+            auto defs = _createDefsNode(loader, nullptr, nullptr, 0, nullptr);
+            loader->stack.push(defs);
+            loader->currentGraphicsNode = node;
         }
     } else if ((gradientMethod = _findGradientFactory(tagName))) {
         SvgStyleGradient* gradient;
@@ -3398,7 +3402,6 @@ static void _svgLoaderParserText(SvgLoaderData* loader, const char* content, uns
     auto text = &loader->svgParse->node->node.text;
     if (text->text) free(text->text);
     text->text = strDuplicate(content, length);
-    loader->openedTag = OpenedTagType::Other;
 }
 
 

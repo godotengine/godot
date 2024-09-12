@@ -180,6 +180,11 @@ public:
 				env->DeleteLocalRef(obj);
 
 			} break;
+			case Variant::OBJECT: {
+				jobject obj = env->CallObjectMethodA(instance, E->get().method, v);
+				ret = _jobject_to_variant(env, obj);
+				env->DeleteLocalRef(obj);
+			} break;
 			default: {
 				env->PopLocalFrame(nullptr);
 				ERR_FAIL_V(Variant());

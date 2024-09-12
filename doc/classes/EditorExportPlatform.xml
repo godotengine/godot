@@ -11,11 +11,217 @@
 		<link title="Console support in Godot">$DOCS_URL/tutorials/platform/consoles.html</link>
 	</tutorials>
 	<methods>
+		<method name="add_message">
+			<return type="void" />
+			<param index="0" name="type" type="int" enum="EditorExportPlatform.ExportMessageType" />
+			<param index="1" name="category" type="String" />
+			<param index="2" name="message" type="String" />
+			<description>
+				Adds a message to the export log that will be displayed when exporting ends.
+			</description>
+		</method>
+		<method name="clear_messages">
+			<return type="void" />
+			<description>
+				Clears the export log.
+			</description>
+		</method>
+		<method name="create_preset">
+			<return type="EditorExportPreset" />
+			<description>
+				Create a new preset for this platform.
+			</description>
+		</method>
+		<method name="export_pack">
+			<return type="int" enum="Error" />
+			<param index="0" name="preset" type="EditorExportPreset" />
+			<param index="1" name="debug" type="bool" />
+			<param index="2" name="path" type="String" />
+			<param index="3" name="flags" type="int" enum="EditorExportPlatform.DebugFlags" is_bitfield="true" default="0" />
+			<description>
+				Creates a PCK archive at [param path] for the specified [param preset].
+			</description>
+		</method>
+		<method name="export_project">
+			<return type="int" enum="Error" />
+			<param index="0" name="preset" type="EditorExportPreset" />
+			<param index="1" name="debug" type="bool" />
+			<param index="2" name="path" type="String" />
+			<param index="3" name="flags" type="int" enum="EditorExportPlatform.DebugFlags" is_bitfield="true" default="0" />
+			<description>
+				Creates a full project at [param path] for the specified [param preset].
+			</description>
+		</method>
+		<method name="export_project_files">
+			<return type="int" enum="Error" />
+			<param index="0" name="preset" type="EditorExportPreset" />
+			<param index="1" name="debug" type="bool" />
+			<param index="2" name="save_cb" type="Callable" />
+			<param index="3" name="shared_cb" type="Callable" default="Callable()" />
+			<description>
+				Exports project files for the specified preset. This method can be used to implement custom export format, other than PCK and ZIP. One of the callbacks is called for each exported file.
+				[param save_cb] is called for all exported files and have the following arguments: [code]file_path: String[/code], [code]file_data: PackedByteArray[/code], [code]file_index: int[/code], [code]file_count: int[/code], [code]encryption_include_filters: PackedStringArray[/code], [code]encryption_exclude_filters: PackedStringArray[/code], [code]encryption_key: PackedByteArray[/code].
+				[param shared_cb] is called for exported native shared/static libraries and have the following arguments: [code]file_path: String[/code], [code]tags: PackedStringArray[/code], [code]target_folder: String[/code].
+				[b]Note:[/b] [code]file_index[/code] and [code]file_count[/code] are intended for progress tracking only and aren't necesserely unique and precise.
+			</description>
+		</method>
+		<method name="export_zip">
+			<return type="int" enum="Error" />
+			<param index="0" name="preset" type="EditorExportPreset" />
+			<param index="1" name="debug" type="bool" />
+			<param index="2" name="path" type="String" />
+			<param index="3" name="flags" type="int" enum="EditorExportPlatform.DebugFlags" is_bitfield="true" default="0" />
+			<description>
+				Create a ZIP archive at [param path] for the specified [param preset].
+			</description>
+		</method>
+		<method name="find_export_template" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="template_file_name" type="String" />
+			<description>
+				Locates export template for the platform, and returns [Dictionary] with the following keys: [code]path: String[/code] and [code]error: String[/code]. This method is provided for convenience and custom export platforms aren't required to use it or keep export templates stored in the same way official templates are.
+			</description>
+		</method>
+		<method name="gen_export_flags">
+			<return type="PackedStringArray" />
+			<param index="0" name="flags" type="int" enum="EditorExportPlatform.DebugFlags" is_bitfield="true" />
+			<description>
+				Generates array of command line arguments for the default export templates for the debug flags and editor settings.
+			</description>
+		</method>
+		<method name="get_current_presets" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Returns array of [EditorExportPreset]s for this platform.
+			</description>
+		</method>
+		<method name="get_forced_export_files" qualifiers="static">
+			<return type="PackedStringArray" />
+			<description>
+				Returns array of core file names that always should be exported regardless of preset config.
+			</description>
+		</method>
+		<method name="get_message_category" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns message category, for the message with [param index].
+			</description>
+		</method>
+		<method name="get_message_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns number of messages in the export log.
+			</description>
+		</method>
+		<method name="get_message_text" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns message text, for the message with [param index].
+			</description>
+		</method>
+		<method name="get_message_type" qualifiers="const">
+			<return type="int" enum="EditorExportPlatform.ExportMessageType" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns message type, for the message with [param index].
+			</description>
+		</method>
 		<method name="get_os_name" qualifiers="const">
 			<return type="String" />
 			<description>
 				Returns the name of the export operating system handled by this [EditorExportPlatform] class, as a friendly string. Possible return values are [code]Windows[/code], [code]Linux[/code], [code]macOS[/code], [code]Android[/code], [code]iOS[/code], and [code]Web[/code].
 			</description>
 		</method>
+		<method name="get_worst_message_type" qualifiers="const">
+			<return type="int" enum="EditorExportPlatform.ExportMessageType" />
+			<description>
+				Returns most severe message type currently present in the export log.
+			</description>
+		</method>
+		<method name="save_pack">
+			<return type="Dictionary" />
+			<param index="0" name="preset" type="EditorExportPreset" />
+			<param index="1" name="debug" type="bool" />
+			<param index="2" name="path" type="String" />
+			<param index="3" name="embed" type="bool" default="false" />
+			<description>
+				Saves PCK archive and returns [Dictionary] with the following keys: [code]result: Error[/code], [code]so_files: Array[/code] (array of the shared/static objects which contains dictionaries with the following keys: [code]path: String[/code], [code]tags: PackedStringArray[/code], and [code]target_folder: String[/code]).
+				If [param embed] is [code]true[/code], PCK content is appended to the end of [param path] file and return [Dictionary] additionally include following keys: [code]embedded_start: int[/code] (embedded PCK offset) and [code]embedded_size: int[/code] (embedded PCK size).
+			</description>
+		</method>
+		<method name="save_zip">
+			<return type="Dictionary" />
+			<param index="0" name="preset" type="EditorExportPreset" />
+			<param index="1" name="debug" type="bool" />
+			<param index="2" name="path" type="String" />
+			<description>
+				Saves ZIP archive and returns [Dictionary] with the following keys: [code]result: Error[/code], [code]so_files: Array[/code] (array of the shared/static objects which contains dictionaries with the following keys: [code]path: String[/code], [code]tags: PackedStringArray[/code], and [code]target_folder: String[/code]).
+			</description>
+		</method>
+		<method name="ssh_push_to_remote" qualifiers="const">
+			<return type="int" enum="Error" />
+			<param index="0" name="host" type="String" />
+			<param index="1" name="port" type="String" />
+			<param index="2" name="scp_args" type="PackedStringArray" />
+			<param index="3" name="src_file" type="String" />
+			<param index="4" name="dst_file" type="String" />
+			<description>
+				Uploads specified file over SCP protocol to the remote host.
+			</description>
+		</method>
+		<method name="ssh_run_on_remote" qualifiers="const">
+			<return type="int" enum="Error" />
+			<param index="0" name="host" type="String" />
+			<param index="1" name="port" type="String" />
+			<param index="2" name="ssh_arg" type="PackedStringArray" />
+			<param index="3" name="cmd_args" type="String" />
+			<param index="4" name="output" type="Array" default="[]" />
+			<param index="5" name="port_fwd" type="int" default="-1" />
+			<description>
+				Executes specified command on the remote host via SSH protocol and returns command output in the [param output].
+			</description>
+		</method>
+		<method name="ssh_run_on_remote_no_wait" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="host" type="String" />
+			<param index="1" name="port" type="String" />
+			<param index="2" name="ssh_args" type="PackedStringArray" />
+			<param index="3" name="cmd_args" type="String" />
+			<param index="4" name="port_fwd" type="int" default="-1" />
+			<description>
+				Executes specified command on the remote host via SSH protocol and returns process ID (on the remote host) without waiting for command to finish.
+			</description>
+		</method>
 	</methods>
+	<constants>
+		<constant name="EXPORT_MESSAGE_NONE" value="0" enum="ExportMessageType">
+			Invalid message type used as the default value when no type is specified.
+		</constant>
+		<constant name="EXPORT_MESSAGE_INFO" value="1" enum="ExportMessageType">
+			Message type for informational messages that have no effect on the export.
+		</constant>
+		<constant name="EXPORT_MESSAGE_WARNING" value="2" enum="ExportMessageType">
+			Message type for warning messages that should be addressed but still allow to complete the export.
+		</constant>
+		<constant name="EXPORT_MESSAGE_ERROR" value="3" enum="ExportMessageType">
+			Message type for error messages that must be addressed and fail the export.
+		</constant>
+		<constant name="DEBUG_FLAG_DUMB_CLIENT" value="1" enum="DebugFlags" is_bitfield="true">
+			Flag is set if remotely debugged project is expected to use remote file system. If set, [method gen_export_flags] will add [code]--remove-fs[/code] and [code]--remote-fs-password[/code] (if password is set in the editor settings) command line arguments to the list.
+		</constant>
+		<constant name="DEBUG_FLAG_REMOTE_DEBUG" value="2" enum="DebugFlags" is_bitfield="true">
+			Flag is set if remote debug is enabled. If set, [method gen_export_flags] will add [code]--remote-debug[/code] and [code]--breakpoints[/code] (if breakpoints are selected in the script editor or added by the plugin) command line arguments to the list.
+		</constant>
+		<constant name="DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST" value="4" enum="DebugFlags" is_bitfield="true">
+			Flag is set if remotely debugged project is running on the localhost. If set, [method gen_export_flags] will use [code]localhost[/code] instead of [member EditorSettings.network/debug/remote_host] as remote debugger host.
+		</constant>
+		<constant name="DEBUG_FLAG_VIEW_COLLISIONS" value="8" enum="DebugFlags" is_bitfield="true">
+			Flag is set if "Visible Collision Shapes" remote debug option is enabled. If set, [method gen_export_flags] will add [code]--debug-collisions[/code] command line arguments to the list.
+		</constant>
+		<constant name="DEBUG_FLAG_VIEW_NAVIGATION" value="16" enum="DebugFlags" is_bitfield="true">
+			Flag is set if Visible Navigation" remote debug option is enabled. If set, [method gen_export_flags] will add [code]--debug-navigation[/code] command line arguments to the list.
+		</constant>
+	</constants>
 </class>

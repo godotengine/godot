@@ -34,6 +34,7 @@
 #include "core/templates/hash_set.h"
 #include "editor/editor_help.h"
 #include "editor/editor_inspector.h"
+#include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
@@ -486,11 +487,6 @@ void ConnectDialog::_notification(int p_what) {
 				type_list->set_item_icon(i, get_editor_theme_icon(type_name));
 			}
 
-			Ref<StyleBox> style = get_theme_stylebox(CoreStringName(normal), "LineEdit")->duplicate();
-			if (style.is_valid()) {
-				style->set_content_margin(SIDE_TOP, style->get_content_margin(SIDE_TOP) + 1.0);
-				from_signal->add_theme_style_override(CoreStringName(normal), style);
-			}
 			method_search->set_right_icon(get_editor_theme_icon("Search"));
 			open_method_tree->set_icon(get_editor_theme_icon("Edit"));
 		} break;
@@ -574,6 +570,22 @@ String ConnectDialog::get_signature(const MethodInfo &p_method, PackedStringArra
 					type_name = "Array[" + pi.hint_string + "]";
 				} else {
 					type_name = "Array";
+				}
+				break;
+			case Variant::DICTIONARY:
+				type_name = "Dictionary";
+				if (pi.hint == PROPERTY_HINT_DICTIONARY_TYPE && !pi.hint_string.is_empty()) {
+					String key_hint = pi.hint_string.get_slice(";", 0);
+					String value_hint = pi.hint_string.get_slice(";", 1);
+					if (key_hint.is_empty() || key_hint.begins_with("res://")) {
+						key_hint = "Variant";
+					}
+					if (value_hint.is_empty() || value_hint.begins_with("res://")) {
+						value_hint = "Variant";
+					}
+					if (key_hint != "Variant" || value_hint != "Variant") {
+						type_name += "[" + key_hint + ", " + value_hint + "]";
+					}
 				}
 				break;
 			case Variant::OBJECT:
@@ -1180,7 +1192,7 @@ void ConnectionsDock::_go_to_method(TreeItem &p_item) {
 	}
 
 	if (scr.is_valid() && ScriptEditor::get_singleton()->script_goto_method(scr, cd.method)) {
-		EditorNode::get_singleton()->editor_select(EditorNode::EDITOR_SCRIPT);
+		EditorNode::get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
 	}
 }
 
@@ -1188,7 +1200,7 @@ void ConnectionsDock::_handle_class_menu_option(int p_option) {
 	switch (p_option) {
 		case CLASS_MENU_OPEN_DOCS:
 			ScriptEditor::get_singleton()->goto_help("class:" + class_menu_doc_class_name);
-			EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
+			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
 			break;
 	}
 }
@@ -1218,7 +1230,7 @@ void ConnectionsDock::_handle_signal_menu_option(int p_option) {
 		} break;
 		case SIGNAL_MENU_OPEN_DOCS: {
 			ScriptEditor::get_singleton()->goto_help("class_signal:" + String(meta["class"]) + ":" + String(meta["name"]));
-			EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
+			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
 		} break;
 	}
 }

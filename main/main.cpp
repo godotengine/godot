@@ -140,6 +140,7 @@ static Engine *engine = nullptr;
 static ProjectSettings *globals = nullptr;
 static Input *input = nullptr;
 static InputMap *input_map = nullptr;
+static WorkerThreadPool *worker_thread_pool = nullptr;
 static TranslationServer *translation_server = nullptr;
 static Performance *performance = nullptr;
 static PackedData *packed_data = nullptr;
@@ -197,6 +198,7 @@ static bool found_project = false;
 static bool auto_build_solutions = false;
 static String debug_server_uri;
 static bool wait_for_import = false;
+static bool restore_editor_window_layout = true;
 #ifndef DISABLE_DEPRECATED
 static int converter_max_kb_file = 4 * 1024; // 4MB
 static int converter_max_line_length = 100000;
@@ -689,6 +691,8 @@ Error Main::test_setup() {
 
 	register_core_settings(); // Here globals are present.
 
+	worker_thread_pool = memnew(WorkerThreadPool);
+
 	translation_server = memnew(TranslationServer);
 	tsman = memnew(TextServerManager);
 
@@ -799,6 +803,8 @@ void Main::test_cleanup() {
 	ResourceSaver::remove_custom_savers();
 	PropertyListHelper::clear_base_helpers();
 
+	WorkerThreadPool::get_singleton()->finish();
+
 #ifdef TOOLS_ENABLED
 	GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_EDITOR);
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_EDITOR);
@@ -839,6 +845,9 @@ void Main::test_cleanup() {
 #endif // _3D_DISABLED
 	if (physics_server_2d_manager) {
 		memdelete(physics_server_2d_manager);
+	}
+	if (worker_thread_pool) {
+		memdelete(worker_thread_pool);
 	}
 	if (globals) {
 		memdelete(globals);
@@ -930,6 +939,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	register_core_settings(); //here globals are present
 
+	worker_thread_pool = memnew(WorkerThreadPool);
 	translation_server = memnew(TranslationServer);
 	performance = memnew(Performance);
 	GDREGISTER_CLASS(Performance);
@@ -1036,7 +1046,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		if (arg == "--audio-driver" ||
 				arg == "--display-driver" ||
 				arg == "--rendering-method" ||
-				arg == "--rendering-driver") {
+				arg == "--rendering-driver" ||
+				arg == "--xr-mode") {
 			if (N) {
 				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(arg);
 				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(N->get());
@@ -2326,14 +2337,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 	}
 
-	// note this is the desired rendering driver, it doesn't mean we will get it.
-	// TODO - make sure this is updated in the case of fallbacks, so that the user interface
-	// shows the correct driver string.
-	OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
-	OS::get_singleton()->set_current_rendering_method(rendering_method);
-
 	// always convert to lower case for consistency in the code
 	rendering_driver = rendering_driver.to_lower();
+
+	OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+	OS::get_singleton()->set_current_rendering_method(rendering_method);
 
 	if (use_custom_res) {
 		if (!force_res) {
@@ -2554,6 +2562,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF_BASIC("xr/openxr/startup_alert", true);
 
 	// OpenXR project extensions settings.
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/extensions/debug_utils", PROPERTY_HINT_ENUM, "Disabled,Error,Warning,Info,Verbose"), "0");
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/extensions/debug_message_types", PROPERTY_HINT_FLAGS, "General,Validation,Performance,Conformance"), "15");
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/hand_tracking", false);
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/hand_tracking_unobstructed_data_source", false); // XR_HAND_TRACKING_DATA_SOURCE_UNOBSTRUCTED_EXT
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/hand_tracking_controller_data_source", false); // XR_HAND_TRACKING_DATA_SOURCE_CONTROLLER_EXT
@@ -2618,6 +2628,10 @@ error:
 	}
 	if (translation_server) {
 		memdelete(translation_server);
+	}
+	if (worker_thread_pool) {
+		worker_thread_pool->finish();
+		memdelete(worker_thread_pool);
 	}
 	if (globals) {
 		memdelete(globals);
@@ -2718,6 +2732,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 					bool prefer_wayland_found = false;
 					bool prefer_wayland = false;
+					bool remember_window_size_and_position_found = false;
 
 					if (editor) {
 						screen_property = "interface/editor/editor_screen";
@@ -2733,7 +2748,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 						prefer_wayland_found = true;
 					}
 
-					while (!screen_found || !prefer_wayland_found) {
+					while (!screen_found || !prefer_wayland_found || !remember_window_size_and_position_found) {
 						assign = Variant();
 						next_tag.fields.clear();
 						next_tag.name = String();
@@ -2752,6 +2767,11 @@ Error Main::setup2(bool p_show_boot_logo) {
 							if (!prefer_wayland_found && assign == "run/platforms/linuxbsd/prefer_wayland") {
 								prefer_wayland = value;
 								prefer_wayland_found = true;
+							}
+
+							if (!remember_window_size_and_position_found && assign == "interface/editor/remember_window_size_and_position") {
+								restore_editor_window_layout = value;
+								remember_window_size_and_position_found = true;
 							}
 						}
 					}
@@ -2772,6 +2792,34 @@ Error Main::setup2(bool p_show_boot_logo) {
 				ERR_PRINT("You are trying to run a self-contained editor at the same location as a project. This is not allowed, since editor files will mix with project files.");
 				OS::get_singleton()->set_exit_code(EXIT_FAILURE);
 				return FAILED;
+			}
+		}
+
+		bool has_command_line_window_override = init_use_custom_pos || init_use_custom_screen || init_windowed;
+		if (editor && !has_command_line_window_override && restore_editor_window_layout) {
+			Ref<ConfigFile> config;
+			config.instantiate();
+			// Load and amend existing config if it exists.
+			Error err = config->load(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
+			if (err == OK) {
+				init_screen = config->get_value("EditorWindow", "screen", init_screen);
+				String mode = config->get_value("EditorWindow", "mode", "maximized");
+				window_size = config->get_value("EditorWindow", "size", window_size);
+				if (mode == "windowed") {
+					window_mode = DisplayServer::WINDOW_MODE_WINDOWED;
+					init_windowed = true;
+				} else if (mode == "fullscreen") {
+					window_mode = DisplayServer::WINDOW_MODE_FULLSCREEN;
+					init_fullscreen = true;
+				} else {
+					window_mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
+					init_maximized = true;
+				}
+
+				if (init_windowed) {
+					init_use_custom_pos = true;
+					init_custom_pos = config->get_value("EditorWindow", "position", Vector2i(0, 0));
+				}
 			}
 		}
 
@@ -2869,6 +2917,8 @@ Error Main::setup2(bool p_show_boot_logo) {
 		Error err;
 		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, init_screen, context, err);
 		if (err != OK || display_server == nullptr) {
+			String last_name = DisplayServer::get_create_function_name(display_driver_idx);
+
 			// We can't use this display server, try other ones as fallback.
 			// Skip headless (always last registered) because that's not what users
 			// would expect if they didn't request it explicitly.
@@ -2876,6 +2926,9 @@ Error Main::setup2(bool p_show_boot_logo) {
 				if (i == display_driver_idx) {
 					continue; // Don't try the same twice.
 				}
+				String name = DisplayServer::get_create_function_name(i);
+				WARN_PRINT(vformat("Display driver %s failed, falling back to %s.", last_name, name));
+
 				display_server = DisplayServer::create(i, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, init_screen, context, err);
 				if (err == OK && display_server != nullptr) {
 					break;
@@ -2918,6 +2971,30 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 		OS::get_singleton()->benchmark_end_measure("Servers", "Display");
 	}
+
+#ifdef TOOLS_ENABLED
+	// If the editor is running in windowed mode, ensure the window rect fits
+	// the screen in case screen count or position has changed.
+	if (editor && init_windowed) {
+		// We still need to check we are actually in windowed mode, because
+		// certain platform might only support one fullscreen window.
+		if (DisplayServer::get_singleton()->window_get_mode() == DisplayServer::WINDOW_MODE_WINDOWED) {
+			Vector2i current_size = DisplayServer::get_singleton()->window_get_size();
+			Vector2i current_pos = DisplayServer::get_singleton()->window_get_position();
+			int screen = DisplayServer::get_singleton()->window_get_current_screen();
+			Rect2i screen_rect = DisplayServer::get_singleton()->screen_get_usable_rect(screen);
+
+			Vector2i adjusted_end = screen_rect.get_end().min(current_pos + current_size);
+			Vector2i adjusted_pos = screen_rect.get_position().max(adjusted_end - current_size);
+			Vector2i adjusted_size = DisplayServer::get_singleton()->window_get_min_size().max(adjusted_end - adjusted_pos);
+
+			if (current_pos != adjusted_end || current_size != adjusted_size) {
+				DisplayServer::get_singleton()->window_set_position(adjusted_pos);
+				DisplayServer::get_singleton()->window_set_size(adjusted_size);
+			}
+		}
+	}
+#endif
 
 	if (GLOBAL_GET("debug/settings/stdout/print_fps") || print_fps) {
 		// Print requested V-Sync mode at startup to diagnose the printed FPS not going above the monitor refresh rate.
@@ -3071,7 +3148,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 		DisplayServer::set_early_window_clear_color_override(false);
 
-		GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/config/icon", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), String());
+		GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/config/icon", PROPERTY_HINT_FILE, "*.png,*.bmp,*.hdr,*.jpg,*.jpeg,*.svg,*.tga,*.exr,*.webp"), String());
 		GLOBAL_DEF(PropertyInfo(Variant::STRING, "application/config/macos_native_icon", PROPERTY_HINT_FILE, "*.icns"), String());
 		GLOBAL_DEF(PropertyInfo(Variant::STRING, "application/config/windows_native_icon", PROPERTY_HINT_FILE, "*.ico"), String());
 
@@ -3240,7 +3317,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 	OS::get_singleton()->benchmark_end_measure("Startup", "Platforms");
 
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "display/mouse_cursor/custom_image", PROPERTY_HINT_FILE, "*.png,*.webp"), String());
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "display/mouse_cursor/custom_image", PROPERTY_HINT_FILE, "*.png,*.bmp,*.hdr,*.jpg,*.jpeg,*.svg,*.tga,*.exr,*.webp"), String());
 	GLOBAL_DEF_BASIC("display/mouse_cursor/custom_image_hotspot", Vector2());
 	GLOBAL_DEF_BASIC("display/mouse_cursor/tooltip_position_offset", Point2(10, 10));
 
@@ -3333,7 +3410,8 @@ void Main::setup_boot_logo() {
 				boot_logo.instantiate();
 				Error load_err = ImageLoader::load_image(boot_logo_path, boot_logo);
 				if (load_err) {
-					ERR_PRINT("Non-existing or invalid boot splash at '" + boot_logo_path + "'. Loading default splash.");
+					String msg = (boot_logo_path.ends_with(".png") ? "" : "The only supported format is PNG.");
+					ERR_PRINT("Non-existing or invalid boot splash at '" + boot_logo_path + +"'. " + msg + " Loading default splash.");
 				}
 			}
 		} else {
@@ -3484,13 +3562,16 @@ int Main::start() {
 				gdscript_docs_path = E->next()->get();
 #endif
 			} else if (E->get() == "--export-release") {
+				ERR_FAIL_COND_V_MSG(!editor && !found_project, EXIT_FAILURE, "Please provide a valid project path when exporting, aborting.");
 				editor = true; //needs editor
 				_export_preset = E->next()->get();
 			} else if (E->get() == "--export-debug") {
+				ERR_FAIL_COND_V_MSG(!editor && !found_project, EXIT_FAILURE, "Please provide a valid project path when exporting, aborting.");
 				editor = true; //needs editor
 				_export_preset = E->next()->get();
 				export_debug = true;
 			} else if (E->get() == "--export-pack") {
+				ERR_FAIL_COND_V_MSG(!editor && !found_project, EXIT_FAILURE, "Please provide a valid project path when exporting, aborting.");
 				editor = true;
 				_export_preset = E->next()->get();
 				export_pack_only = true;
@@ -3502,6 +3583,8 @@ int Main::start() {
 			if (parsed_pair) {
 				E = E->next();
 			}
+		} else if (E->get().begins_with("--export-")) {
+			ERR_FAIL_V_MSG(EXIT_FAILURE, "Missing export preset name, aborting.");
 		}
 #ifdef TOOLS_ENABLED
 		// Handle case where no path is given to --doctool.
@@ -3979,6 +4062,8 @@ int Main::start() {
 			if (editor_embed_subwindows) {
 				sml->get_root()->set_embedding_subwindows(true);
 			}
+			restore_editor_window_layout = EditorSettings::get_singleton()->get_setting(
+					"interface/editor/remember_window_size_and_position");
 		}
 #endif
 
@@ -4343,7 +4428,7 @@ bool Main::iteration() {
 	}
 
 #ifdef TOOLS_ENABLED
-	if (wait_for_import && EditorFileSystem::get_singleton()->doing_first_scan()) {
+	if (wait_for_import && EditorFileSystem::get_singleton() && EditorFileSystem::get_singleton()->doing_first_scan()) {
 		exit = false;
 	}
 #endif
@@ -4428,6 +4513,8 @@ void Main::cleanup(bool p_force) {
 
 	ResourceLoader::clear_translation_remaps();
 	ResourceLoader::clear_path_remaps();
+
+	WorkerThreadPool::get_singleton()->finish();
 
 	ScriptServer::finish_languages();
 
@@ -4518,6 +4605,9 @@ void Main::cleanup(bool p_force) {
 #endif // _3D_DISABLED
 	if (physics_server_2d_manager) {
 		memdelete(physics_server_2d_manager);
+	}
+	if (worker_thread_pool) {
+		memdelete(worker_thread_pool);
 	}
 	if (globals) {
 		memdelete(globals);

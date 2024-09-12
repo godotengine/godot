@@ -32,6 +32,8 @@
 #define EDITOR_FILE_SYSTEM_H
 
 #include "core/io/dir_access.h"
+#include "core/io/resource_importer.h"
+#include "core/io/resource_loader.h"
 #include "core/os/thread.h"
 #include "core/os/thread_safe.h"
 #include "core/templates/hash_set.h"
@@ -187,7 +189,7 @@ class EditorFileSystem : public Node {
 
 	void _scan_filesystem();
 	void _first_scan_filesystem();
-	void _first_scan_process_scripts(const ScannedDirectory *p_scan_dir, HashSet<String> &p_existing_class_names);
+	void _first_scan_process_scripts(const ScannedDirectory *p_scan_dir, HashSet<String> &p_existing_class_names, HashSet<String> &p_extensions);
 
 	HashSet<String> late_update_files;
 
@@ -233,11 +235,12 @@ class EditorFileSystem : public Node {
 	int _insert_actions_delete_files_directory(EditorFileSystemDirectory *p_dir);
 
 	HashSet<String> textfile_extensions;
+	HashSet<String> other_file_extensions;
 	HashSet<String> valid_extensions;
 	HashSet<String> import_extensions;
 
 	int _scan_new_dir(ScannedDirectory *p_dir, Ref<DirAccess> &da);
-	void _process_file_system(const ScannedDirectory *p_scan_dir, EditorFileSystemDirectory *p_dir, ScanProgress &p_progress);
+	void _process_file_system(const ScannedDirectory *p_scan_dir, EditorFileSystemDirectory *p_dir, ScanProgress &p_progress, HashSet<String> *p_processed_files);
 
 	Thread thread_sources;
 	bool scanning_changes = false;
@@ -252,7 +255,7 @@ class EditorFileSystem : public Node {
 
 	void _update_extensions();
 
-	Error _reimport_file(const String &p_file, const HashMap<StringName, Variant> &p_custom_options = HashMap<StringName, Variant>(), const String &p_custom_importer = String(), Variant *generator_parameters = nullptr);
+	Error _reimport_file(const String &p_file, const HashMap<StringName, Variant> &p_custom_options = HashMap<StringName, Variant>(), const String &p_custom_importer = String(), Variant *generator_parameters = nullptr, bool p_update_file_system = true);
 	Error _reimport_group(const String &p_group_file, const Vector<String> &p_files);
 
 	bool _test_for_reimport(const String &p_path, bool p_only_imported_files);
@@ -285,6 +288,7 @@ class EditorFileSystem : public Node {
 	void _update_script_classes();
 	void _update_script_documentation();
 	void _process_update_pending();
+	void _process_removed_files(const HashSet<String> &p_processed_files);
 
 	Mutex update_scene_mutex;
 	HashSet<String> update_scene_paths;
@@ -296,6 +300,7 @@ class EditorFileSystem : public Node {
 	String _get_global_script_class(const String &p_type, const String &p_path, String *r_extends, String *r_icon_path) const;
 
 	static Error _resource_import(const String &p_path);
+	static Ref<Resource> _load_resource_on_startup(ResourceFormatImporter *p_importer, const String &p_path, Error *r_error, bool p_use_sub_threads, float *r_progress, ResourceFormatLoader::CacheMode p_cache_mode);
 
 	bool using_fat32_or_exfat; // Workaround for projects in FAT32 or exFAT filesystem (pendrives, most of the time)
 

@@ -36,6 +36,9 @@
 #if defined(VULKAN_ENABLED)
 #include "drivers/vulkan/rendering_context_driver_vulkan.h"
 #endif
+#if defined(METAL_ENABLED)
+#include "drivers/metal/rendering_context_driver_metal.h"
+#endif
 
 #include "bc6h.glsl.gen.h"
 
@@ -47,31 +50,6 @@ struct BC6PushConstant {
 
 static int get_next_multiple(int n, int m) {
 	return n + (m - (n % m));
-}
-
-static bool is_image_signed(const Image *r_img) {
-	if (r_img->get_format() >= Image::FORMAT_RH && r_img->get_format() <= Image::FORMAT_RGBAH) {
-		const uint16_t *img_data = reinterpret_cast<const uint16_t *>(r_img->ptr());
-		const uint64_t img_size = r_img->get_data_size() / 2;
-
-		for (uint64_t i = 0; i < img_size; i++) {
-			if ((img_data[i] & 0x8000) != 0 && (img_data[i] & 0x7fff) != 0) {
-				return true;
-			}
-		}
-
-	} else if (r_img->get_format() >= Image::FORMAT_RF && r_img->get_format() <= Image::FORMAT_RGBAF) {
-		const uint32_t *img_data = reinterpret_cast<const uint32_t *>(r_img->ptr());
-		const uint64_t img_size = r_img->get_data_size() / 4;
-
-		for (uint64_t i = 0; i < img_size; i++) {
-			if ((img_data[i] & 0x80000000) != 0 && (img_data[i] & 0x7fffffff) != 0) {
-				return true;
-			}
-		}
-	}
-
-	return false;
 }
 
 Error _compress_betsy(BetsyFormat p_format, Image *r_img) {
@@ -91,9 +69,15 @@ Error _compress_betsy(BetsyFormat p_format, Image *r_img) {
 
 	if (rd == nullptr) {
 #if defined(RD_ENABLED)
-#if defined(VULKAN_ENABLED)
-		rcd = memnew(RenderingContextDriverVulkan);
+#if defined(METAL_ENABLED)
+		rcd = memnew(RenderingContextDriverMetal);
 		rd = memnew(RenderingDevice);
+#endif
+#if defined(VULKAN_ENABLED)
+		if (rcd == nullptr) {
+			rcd = memnew(RenderingContextDriverVulkan);
+			rd = memnew(RenderingDevice);
+		}
 #endif
 #endif
 		if (rcd != nullptr && rd != nullptr) {
@@ -125,7 +109,7 @@ Error _compress_betsy(BetsyFormat p_format, Image *r_img) {
 		case BETSY_FORMAT_BC6: {
 			err = compute_shader->parse_versions_from_text(bc6h_shader_glsl);
 
-			if (is_image_signed(r_img)) {
+			if (r_img->detect_signed(true)) {
 				dest_format = Image::FORMAT_BPTC_RGBF;
 				version = "signed";
 			} else {
@@ -141,6 +125,7 @@ Error _compress_betsy(BetsyFormat p_format, Image *r_img) {
 	}
 
 	if (err != OK) {
+		compute_shader->print_errors("Betsy compress shader");
 		memdelete(rd);
 		if (rcd != nullptr) {
 			memdelete(rcd);

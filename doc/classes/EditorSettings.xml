@@ -38,7 +38,6 @@
 				- [code]name[/code]: [String] (the name of the property)
 				- [code]type[/code]: [int] (see [enum Variant.Type])
 				- optionally [code]hint[/code]: [int] (see [enum PropertyHint]) and [code]hint_string[/code]: [String]
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var settings = EditorInterface.get_editor_settings()
@@ -195,6 +194,9 @@
 			The maximum number of script functions that can be displayed per frame in the profiler. If there are more script functions called in a given profiler frame, these functions will be discarded from the profiling results entirely.
 			[b]Note:[/b] This setting is only read when the profiler is first started, so changing it during profiling will have no effect.
 		</member>
+		<member name="debugger/profiler_target_fps" type="int" setter="" getter="">
+			The target frame rate shown in the visual profiler graph, in frames per second.
+		</member>
 		<member name="debugger/remote_inspect_refresh_interval" type="float" setter="" getter="">
 			The refresh interval for the remote inspector's properties (in seconds). Lower values are more reactive, but may cause stuttering while the project is running from the editor and the [b]Remote[/b] scene tree is selected in the Scene tree dock.
 		</member>
@@ -205,8 +207,11 @@
 			If [code]true[/code], displays folders in the FileSystem dock's bottom pane when split mode is enabled. If [code]false[/code], only files will be displayed in the bottom pane. Split mode can be toggled by pressing the icon next to the [code]res://[/code] folder path.
 			[b]Note:[/b] This setting has no effect when split mode is disabled (which is the default).
 		</member>
+		<member name="docks/filesystem/other_file_extensions" type="String" setter="" getter="">
+			A comma separated list of unsupported file extensions to show in the FileSystem dock, e.g. [code]"ico,icns"[/code].
+		</member>
 		<member name="docks/filesystem/textfile_extensions" type="String" setter="" getter="">
-			List of file extensions to consider as editable text files in the FileSystem dock (by double-clicking on the files).
+			A comma separated list of file extensions to consider as editable text files in the FileSystem dock (by double-clicking on the files), e.g. [code]"txt,md,cfg,ini,log,json,yml,yaml,toml,xml"[/code].
 		</member>
 		<member name="docks/filesystem/thumbnail_size" type="int" setter="" getter="">
 			The thumbnail size to use in the FileSystem dock (in pixels). See also [member filesystem/file_dialog/thumbnail_size].
@@ -259,10 +264,13 @@
 			The color to use when drawing smart snapping lines in the 2D editor. The smart snapping lines will automatically display when moving 2D nodes if smart snapping is enabled in the Snapping Options menu at the top of the 2D editor viewport.
 		</member>
 		<member name="editors/2d/use_integer_zoom_by_default" type="bool" setter="" getter="">
-			If [code]true[/code], the 2D editor will snap to integer zoom values while not holding the [kbd]Alt[/kbd] key and powers of two while holding it. If [code]false[/code], this behavior is swapped.
+			If [code]true[/code], the 2D editor will snap to integer zoom values when not holding the [kbd]Alt[/kbd] key. If [code]false[/code], this behavior is swapped.
 		</member>
 		<member name="editors/2d/viewport_border_color" type="Color" setter="" getter="">
 			The color of the viewport border in the 2D editor. This border represents the viewport's size at the base resolution defined in the Project Settings. Objects placed outside this border will not be visible unless a [Camera2D] node is used, or unless the window is resized and the stretch mode is set to [code]disabled[/code].
+		</member>
+		<member name="editors/2d/zoom_speed_factor" type="float" setter="" getter="">
+			The factor to use when zooming in or out in the 2D editor. For example, [code]1.1[/code] will zoom in by 10% with every step. If set to [code]2.0[/code], zooming will only cycle through powers of two.
 		</member>
 		<member name="editors/3d/default_fov" type="float" setter="" getter="">
 			The default camera vertical field of view to use in the 3D editor (in degrees). The camera field of view can be adjusted on a per-scene basis using the [b]View[/b] menu at the top of the 3D editor. If a scene had its camera field of view adjusted using the [b]View[/b] menu, this setting is ignored in the scene in question. This setting is also ignored while a [Camera3D] node is being previewed in the editor.
@@ -322,7 +330,6 @@
 		<member name="editors/3d/navigation/emulate_3_button_mouse" type="bool" setter="" getter="">
 			If [code]true[/code], enables 3-button mouse emulation mode. This is useful on laptops when using a trackpad.
 			When 3-button mouse emulation mode is enabled, the pan, zoom and orbit modifiers can always be used in the 3D editor viewport, even when not holding down any mouse button.
-			[b]Note:[/b] No matter the orbit modifier configured in [member editors/3d/navigation/orbit_modifier], [kbd]Alt[/kbd] will always remain usable for orbiting in this mode to improve usability with graphics tablets.
 		</member>
 		<member name="editors/3d/navigation/emulate_numpad" type="bool" setter="" getter="">
 			If [code]true[/code], allows using the top row [kbd]0[/kbd]-[kbd]9[/kbd] keys to function as their equivalent numpad keys for 3D editor navigation. This should be enabled on keyboards that have no numeric keypad available.
@@ -334,28 +341,25 @@
 			If [code]true[/code], invert the vertical mouse axis when panning, orbiting, or using freelook mode in the 3D editor.
 		</member>
 		<member name="editors/3d/navigation/navigation_scheme" type="int" setter="" getter="">
-			The navigation scheme to use in the 3D editor. Changing this setting will affect the mouse buttons that must be held down to perform certain operations in the 3D editor viewport.
-			- [b]Godot[/b] Middle mouse button to orbit, [kbd]Shift + Middle mouse button[/kbd] to pan. [kbd]Mouse wheel[/kbd] to zoom.
-			- [b]Maya:[/b] [kbd]Alt + Left mouse button[/kbd] to orbit. [kbd]Middle mouse button[/kbd] to pan, [kbd]Shift + Middle mouse button[/kbd] to pan 10 times faster. [kbd]Mouse wheel[/kbd] to zoom.
+			The navigation scheme preset to use in the 3D editor. Changing this setting will affect the mouse button and modifier controls used to navigate the 3D editor viewport.
+			All schemes can use [kbd]Mouse wheel[/kbd] to zoom.
+			- [b]Godot:[/b] [kbd]Middle mouse button[/kbd] to orbit. [kbd]Shift + Middle mouse button[/kbd] to pan. [kbd]Ctrl + Shift + Middle mouse button[/kbd] to zoom.
+			- [b]Maya:[/b] [kbd]Alt + Left mouse button[/kbd] to orbit. [kbd]Middle mouse button[/kbd] to pan, [kbd]Shift + Middle mouse button[/kbd] to pan 10 times faster. [kbd]Alt + Right mouse button[/kbd] to zoom.
 			- [b]Modo:[/b] [kbd]Alt + Left mouse button[/kbd] to orbit. [kbd]Alt + Shift + Left mouse button[/kbd] to pan. [kbd]Ctrl + Alt + Left mouse button[/kbd] to zoom.
-			See also [member editors/3d/freelook/freelook_navigation_scheme].
+			See also [member editors/3d/navigation/orbit_mouse_button], [member editors/3d/navigation/pan_mouse_button], [member editors/3d/navigation/zoom_mouse_button], and [member editors/3d/freelook/freelook_navigation_scheme].
 			[b]Note:[/b] On certain window managers on Linux, the [kbd]Alt[/kbd] key will be intercepted by the window manager when clicking a mouse button at the same time. This means Godot will not see the modifier key as being pressed.
 		</member>
-		<member name="editors/3d/navigation/orbit_modifier" type="int" setter="" getter="">
-			The modifier key that must be held to orbit in the 3D editor.
-			[b]Note:[/b] If [member editors/3d/navigation/emulate_3_button_mouse] is [code]true[/code], [kbd]Alt[/kbd] will always remain usable for orbiting to improve usability with graphics tablets.
-			[b]Note:[/b] On certain window managers on Linux, the [kbd]Alt[/kbd] key will be intercepted by the window manager when clicking a mouse button at the same time. This means Godot will not see the modifier key as being pressed.
+		<member name="editors/3d/navigation/orbit_mouse_button" type="int" setter="" getter="">
+			The mouse button that needs to be held down to orbit in the 3D editor viewport.
 		</member>
-		<member name="editors/3d/navigation/pan_modifier" type="int" setter="" getter="">
-			The modifier key that must be held to pan in the 3D editor.
-			[b]Note:[/b] On certain window managers on Linux, the [kbd]Alt[/kbd] key will be intercepted by the window manager when clicking a mouse button at the same time. This means Godot will not see the modifier key as being pressed.
+		<member name="editors/3d/navigation/pan_mouse_button" type="int" setter="" getter="">
+			The mouse button that needs to be held down to pan in the 3D editor viewport.
 		</member>
 		<member name="editors/3d/navigation/warped_mouse_panning" type="bool" setter="" getter="">
 			If [code]true[/code], warps the mouse around the 3D viewport while panning in the 3D editor. This makes it possible to pan over a large area without having to exit panning and adjust the mouse cursor.
 		</member>
-		<member name="editors/3d/navigation/zoom_modifier" type="int" setter="" getter="">
-			The modifier key that must be held to zoom in the 3D editor.
-			[b]Note:[/b] On certain window managers on Linux, the [kbd]Alt[/kbd] key will be intercepted by the window manager when clicking a mouse button at the same time. This means Godot will not see the modifier key as being pressed.
+		<member name="editors/3d/navigation/zoom_mouse_button" type="int" setter="" getter="">
+			The mouse button that needs to be held down to zoom in the 3D editor viewport.
 		</member>
 		<member name="editors/3d/navigation/zoom_style" type="int" setter="" getter="">
 			The mouse cursor movement direction to use when zooming by moving the mouse. This does not affect zooming with the mouse wheel.
@@ -678,6 +682,9 @@
 		<member name="interface/editor/import_resources_when_unfocused" type="bool" setter="" getter="">
 			If [code]true[/code], (re)imports resources even if the editor window is unfocused or minimized. If [code]false[/code], resources are only (re)imported when the editor window is focused. This can be set to [code]true[/code] to speed up iteration by starting the import process earlier when saving files in the project folder. This also allows getting visual feedback on changes without having to click the editor window, which is useful with multi-monitor setups. The downside of setting this to [code]true[/code] is that it increases idle CPU usage and may steal CPU time from other applications when importing resources.
 		</member>
+		<member name="interface/editor/keep_screen_on" type="bool" setter="" getter="">
+			If [code]true[/code], keeps the screen on (even in case of inactivity), so the screensaver does not take over. Works on desktop and mobile platforms.
+		</member>
 		<member name="interface/editor/localize_settings" type="bool" setter="" getter="">
 			If [code]true[/code], setting names in the editor are localized when possible.
 			[b]Note:[/b] This setting affects most [EditorInspector]s in the editor UI, primarily Project Settings and Editor Settings. To control names displayed in the Inspector dock, use [member interface/inspector/default_property_name_style] instead.
@@ -700,6 +707,9 @@
 		</member>
 		<member name="interface/editor/project_manager_screen" type="int" setter="" getter="">
 			The preferred monitor to display the project manager.
+		</member>
+		<member name="interface/editor/remember_window_size_and_position" type="bool" setter="" getter="">
+			If [code]true[/code], the editor window will remember its size, position, and which screen it was displayed on across restarts.
 		</member>
 		<member name="interface/editor/save_each_scene_on_quit" type="bool" setter="" getter="">
 			If [code]false[/code], the editor will save all scenes when confirming the [b]Save[/b] action when quitting the editor or quitting to the project list. If [code]true[/code], the editor will ask to save each scene individually.
@@ -959,7 +969,18 @@
 			If [code]true[/code], on Linux/BSD, the editor will check for Wayland first instead of X11 (if available).
 		</member>
 		<member name="run/window_placement/android_window" type="int" setter="" getter="">
-			The Android window to display the project on when starting the project from the editor.
+			Specifies how the Play window is launched relative to the Android editor.
+			- [b]Auto (based on screen size)[/b] (default) will automatically choose how to launch the Play window based on the device and screen metrics. Defaults to [b]Same as Editor[/b] on phones and [b]Side-by-side with Editor[/b] on tablets.
+			- [b]Same as Editor[/b] will launch the Play window in the same window as the Editor.
+			- [b]Side-by-side with Editor[/b] will launch the Play window side-by-side with the Editor window.
+			- [b]Launch in PiP mode[/b] will launch the Play window directly in picture-in-picture (PiP) mode if PiP mode is supported and enabled. When maximized, the Play window will occupy the same window as the Editor.
+			[b]Note:[/b] Only available in the Android editor.
+		</member>
+		<member name="run/window_placement/play_window_pip_mode" type="int" setter="" getter="">
+			Specifies the picture-in-picture (PiP) mode for the Play window.
+			- [b]Disabled:[/b] PiP is disabled for the Play window.
+			- [b]Enabled:[/b] If the device supports it, PiP is always enabled for the Play window. The Play window will contain a button to enter PiP mode.
+			- [b]Enabled when Play window is same as Editor[/b] (default for Android editor): If the device supports it, PiP is enabled when the Play window is the same as the Editor. The Play window will contain a button to enter PiP mode.
 			[b]Note:[/b] Only available in the Android editor.
 		</member>
 		<member name="run/window_placement/rect" type="int" setter="" getter="">

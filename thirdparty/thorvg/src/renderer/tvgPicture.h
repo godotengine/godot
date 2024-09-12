@@ -63,12 +63,10 @@ struct Picture::Impl
     Surface* surface = nullptr;       //bitmap picture uses
     RenderData rd = nullptr;          //engine data
     float w = 0, h = 0;
-    RenderMesh rm;                    //mesh data
     Picture* picture = nullptr;
     bool resizing = false;
     bool needComp = false;            //need composition
 
-    RenderTransform resizeTransform(const RenderTransform* pTransform);
     bool needComposition(uint8_t opacity);
     bool render(RenderMethod* renderer);
     bool size(float w, float h);
@@ -90,58 +88,37 @@ struct Picture::Impl
         delete(paint);
     }
 
-    RenderData update(RenderMethod* renderer, const RenderTransform* pTransform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag pFlag, bool clipper)
+    RenderData update(RenderMethod* renderer, const Matrix& transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag pFlag, TVG_UNUSED bool clipper)
     {
         auto flag = static_cast<RenderUpdateFlag>(pFlag | load());
 
         if (surface) {
             if (flag == RenderUpdateFlag::None) return rd;
-            auto transform = resizeTransform(pTransform);
-            rd = renderer->prepare(surface, &rm, rd, &transform, clips, opacity, flag);
+
+            //Overriding Transformation by the desired image size
+            auto sx = w / loader->w;
+            auto sy = h / loader->h;
+            auto scale = sx < sy ? sx : sy;
+            auto m = transform * Matrix{scale, 0, 0, 0, scale, 0, 0, 0, 1};
+
+            rd = renderer->prepare(surface, rd, m, clips, opacity, flag);
         } else if (paint) {
             if (resizing) {
                 loader->resize(paint, w, h);
                 resizing = false;
             }
             needComp = needComposition(opacity) ? true : false;
-            rd = paint->pImpl->update(renderer, pTransform, clips, opacity, flag, clipper);
+            rd = paint->pImpl->update(renderer, transform, clips, opacity, flag, false);
         }
         return rd;
     }
 
     bool bounds(float* x, float* y, float* w, float* h, bool stroking)
     {
-        if (rm.triangleCnt > 0) {
-            auto triangles = rm.triangles;
-            auto min = triangles[0].vertex[0].pt;
-            auto max = triangles[0].vertex[0].pt;
-
-            for (uint32_t i = 0; i < rm.triangleCnt; ++i) {
-                if (triangles[i].vertex[0].pt.x < min.x) min.x = triangles[i].vertex[0].pt.x;
-                else if (triangles[i].vertex[0].pt.x > max.x) max.x = triangles[i].vertex[0].pt.x;
-                if (triangles[i].vertex[0].pt.y < min.y) min.y = triangles[i].vertex[0].pt.y;
-                else if (triangles[i].vertex[0].pt.y > max.y) max.y = triangles[i].vertex[0].pt.y;
-
-                if (triangles[i].vertex[1].pt.x < min.x) min.x = triangles[i].vertex[1].pt.x;
-                else if (triangles[i].vertex[1].pt.x > max.x) max.x = triangles[i].vertex[1].pt.x;
-                if (triangles[i].vertex[1].pt.y < min.y) min.y = triangles[i].vertex[1].pt.y;
-                else if (triangles[i].vertex[1].pt.y > max.y) max.y = triangles[i].vertex[1].pt.y;
-
-                if (triangles[i].vertex[2].pt.x < min.x) min.x = triangles[i].vertex[2].pt.x;
-                else if (triangles[i].vertex[2].pt.x > max.x) max.x = triangles[i].vertex[2].pt.x;
-                if (triangles[i].vertex[2].pt.y < min.y) min.y = triangles[i].vertex[2].pt.y;
-                else if (triangles[i].vertex[2].pt.y > max.y) max.y = triangles[i].vertex[2].pt.y;
-            }
-            if (x) *x = min.x;
-            if (y) *y = min.y;
-            if (w) *w = max.x - min.x;
-            if (h) *h = max.y - min.y;
-        } else {
-            if (x) *x = 0;
-            if (y) *y = 0;
-            if (w) *w = this->w;
-            if (h) *h = this->h;
-        }
+        if (x) *x = 0;
+        if (y) *y = 0;
+        if (w) *w = this->w;
+        if (h) *h = this->h;
         return true;
     }
 
@@ -176,32 +153,21 @@ struct Picture::Impl
         return load(loader);
     }
 
-    void mesh(const Polygon* triangles, const uint32_t triangleCnt)
+    Paint* duplicate(Paint* ret)
     {
-        if (triangles && triangleCnt > 0) {
-            this->rm.triangleCnt = triangleCnt;
-            this->rm.triangles = (Polygon*)malloc(sizeof(Polygon) * triangleCnt);
-            memcpy(this->rm.triangles, triangles, sizeof(Polygon) * triangleCnt);
-        } else {
-            free(this->rm.triangles);
-            this->rm.triangles = nullptr;
-            this->rm.triangleCnt = 0;
-        }
-    }
+        if (ret) TVGERR("RENDERER", "TODO: duplicate()");
 
-    Paint* duplicate()
-    {
         load();
 
-        auto ret = Picture::gen().release();
-        auto dup = ret->pImpl;
+        auto picture = Picture::gen().release();
+        auto dup = picture->pImpl;
 
         if (paint) dup->paint = paint->duplicate();
 
         if (loader) {
             dup->loader = loader;
             ++dup->loader->sharing;
-            PP(ret)->renderFlag |= RenderUpdateFlag::Image;
+            PP(picture)->renderFlag |= RenderUpdateFlag::Image;
         }
 
         dup->surface = surface;
@@ -209,13 +175,7 @@ struct Picture::Impl
         dup->h = h;
         dup->resizing = resizing;
 
-        if (rm.triangleCnt > 0) {
-            dup->rm.triangleCnt = rm.triangleCnt;
-            dup->rm.triangles = (Polygon*)malloc(sizeof(Polygon) * rm.triangleCnt);
-            memcpy(dup->rm.triangles, rm.triangles, sizeof(Polygon) * rm.triangleCnt);
-        }
-
-        return ret;
+        return picture;
     }
 
     Iterator* iterator()

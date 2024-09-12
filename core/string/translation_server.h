@@ -74,10 +74,6 @@ class TranslationServer : public Object {
 
 	static void _bind_methods();
 
-#ifndef DISABLE_DEPRECATED
-	static void _bind_compatibility_methods();
-#endif
-
 	struct LocaleScriptInfo {
 		String name;
 		String script;

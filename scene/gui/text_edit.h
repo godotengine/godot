@@ -153,6 +153,7 @@ private:
 
 			Color background_color = Color(0, 0, 0, 0);
 			bool hidden = false;
+			int line_count = 0;
 			int height = 0;
 			int width = 0;
 
@@ -178,16 +179,19 @@ private:
 		bool use_default_word_separators = true;
 		bool use_custom_word_separators = false;
 
-		int line_height = -1;
-		int max_width = -1;
+		mutable bool max_line_width_dirty = true;
+		mutable bool max_line_height_dirty = true;
+		mutable int max_line_width = 0;
+		mutable int max_line_height = 0;
+		mutable int total_visible_line_count = 0;
 		int width = -1;
 
 		int tab_size = 4;
 		int gutter_count = 0;
 		bool indent_wrapped_lines = false;
 
-		void _calculate_line_height();
-		void _calculate_max_line_width();
+		void _calculate_line_height() const;
+		void _calculate_max_line_width() const;
 
 	public:
 		void set_tab_size(int p_tab_size);
@@ -203,6 +207,7 @@ private:
 		int get_line_height() const;
 		int get_line_width(int p_line, int p_wrap_index = -1) const;
 		int get_max_width() const;
+		int get_total_visible_line_count() const;
 
 		void set_use_default_word_separators(bool p_enabled);
 		bool is_default_word_separators_enabled() const;
@@ -226,18 +231,8 @@ private:
 		const Ref<TextParagraph> get_line_data(int p_line) const;
 
 		void set(int p_line, const String &p_text, const Array &p_bidi_override);
-		void set_hidden(int p_line, bool p_hidden) {
-			if (text[p_line].hidden == p_hidden) {
-				return;
-			}
-			text.write[p_line].hidden = p_hidden;
-			if (!p_hidden && text[p_line].width > max_width) {
-				max_width = text[p_line].width;
-			} else if (p_hidden && text[p_line].width == max_width) {
-				_calculate_max_line_width();
-			}
-		}
-		bool is_hidden(int p_line) const { return text[p_line].hidden; }
+		void set_hidden(int p_line, bool p_hidden);
+		bool is_hidden(int p_line) const;
 		void insert(int p_at, const Vector<String> &p_text, const Vector<Array> &p_bidi_override);
 		void remove_range(int p_from_line, int p_to_line);
 		int size() const { return text.size(); }
@@ -248,7 +243,7 @@ private:
 		void invalidate_all();
 		void invalidate_all_lines();
 
-		_FORCE_INLINE_ const String &operator[](int p_line) const;
+		_FORCE_INLINE_ String operator[](int p_line) const;
 
 		/* Gutters. */
 		void add_gutter(int p_at);
@@ -453,6 +448,7 @@ private:
 	void _caret_changed(int p_caret = -1);
 	void _emit_caret_changed();
 
+	void _show_virtual_keyboard();
 	void _reset_caret_blink_timer();
 	void _toggle_draw_caret();
 
@@ -505,8 +501,9 @@ private:
 	HScrollBar *h_scroll = nullptr;
 	VScrollBar *v_scroll = nullptr;
 
-	float content_height_cache = 0.0;
+	Vector2i content_size_cache;
 	bool fit_content_height = false;
+	bool fit_content_width = false;
 	bool scroll_past_end_of_file_enabled = false;
 
 	// Smooth scrolling.
@@ -567,8 +564,10 @@ private:
 
 	/* Syntax highlighting. */
 	Ref<SyntaxHighlighter> syntax_highlighter;
+	HashMap<int, Vector<Pair<int64_t, Color>>> syntax_highlighting_cache;
 
-	Dictionary _get_line_syntax_highlighting(int p_line);
+	Vector<Pair<int64_t, Color>> _get_line_syntax_highlighting(int p_line);
+	void _clear_syntax_highlighting_cache();
 
 	/* Visual. */
 	struct ThemeCache {
@@ -734,7 +733,7 @@ public:
 	void cancel_ime();
 	void apply_ime();
 
-	void set_editable(const bool p_editable);
+	void set_editable(bool p_editable);
 	bool is_editable() const;
 
 	void set_text_direction(TextDirection p_text_direction);
@@ -755,7 +754,7 @@ public:
 	bool is_indent_wrapped_lines() const;
 
 	// User controls
-	void set_overtype_mode_enabled(const bool p_enabled);
+	void set_overtype_mode_enabled(bool p_enabled);
 	bool is_overtype_mode_enabled() const;
 
 	void set_context_menu_enabled(bool p_enabled);
@@ -862,7 +861,7 @@ public:
 	void set_caret_type(CaretType p_type);
 	CaretType get_caret_type() const;
 
-	void set_caret_blink_enabled(const bool p_enabled);
+	void set_caret_blink_enabled(bool p_enabled);
 	bool is_caret_blink_enabled() const;
 
 	void set_caret_blink_interval(const float p_interval);
@@ -871,10 +870,10 @@ public:
 	void set_draw_caret_when_editable_disabled(bool p_enable);
 	bool is_drawing_caret_when_editable_disabled() const;
 
-	void set_move_caret_on_right_click_enabled(const bool p_enabled);
+	void set_move_caret_on_right_click_enabled(bool p_enabled);
 	bool is_move_caret_on_right_click_enabled() const;
 
-	void set_caret_mid_grapheme_enabled(const bool p_enabled);
+	void set_caret_mid_grapheme_enabled(bool p_enabled);
 	bool is_caret_mid_grapheme_enabled() const;
 
 	void set_multiple_carets_enabled(bool p_enabled);
@@ -910,13 +909,13 @@ public:
 	String get_word_under_caret(int p_caret = -1) const;
 
 	/* Selection. */
-	void set_selecting_enabled(const bool p_enabled);
+	void set_selecting_enabled(bool p_enabled);
 	bool is_selecting_enabled() const;
 
-	void set_deselect_on_focus_loss_enabled(const bool p_enabled);
+	void set_deselect_on_focus_loss_enabled(bool p_enabled);
 	bool is_deselect_on_focus_loss_enabled() const;
 
-	void set_drag_and_drop_selection_enabled(const bool p_enabled);
+	void set_drag_and_drop_selection_enabled(bool p_enabled);
 	bool is_drag_and_drop_selection_enabled() const;
 
 	void set_selection_mode(SelectionMode p_mode);
@@ -965,10 +964,10 @@ public:
 
 	/* Viewport. */
 	// Scrolling.
-	void set_smooth_scroll_enabled(const bool p_enabled);
+	void set_smooth_scroll_enabled(bool p_enabled);
 	bool is_smooth_scroll_enabled() const;
 
-	void set_scroll_past_end_of_file_enabled(const bool p_enabled);
+	void set_scroll_past_end_of_file_enabled(bool p_enabled);
 	bool is_scroll_past_end_of_file_enabled() const;
 
 	VScrollBar *get_v_scroll_bar() const;
@@ -983,8 +982,11 @@ public:
 	void set_v_scroll_speed(float p_speed);
 	float get_v_scroll_speed() const;
 
-	void set_fit_content_height_enabled(const bool p_enabled);
+	void set_fit_content_height_enabled(bool p_enabled);
 	bool is_fit_content_height_enabled() const;
+
+	void set_fit_content_width_enabled(bool p_enabled);
+	bool is_fit_content_width_enabled() const;
 
 	double get_scroll_pos_for_line(int p_line, int p_wrap_index = 0) const;
 
@@ -1019,6 +1021,7 @@ public:
 	void add_gutter(int p_at = -1);
 	void remove_gutter(int p_gutter);
 	int get_gutter_count() const;
+	Vector2i get_hovered_gutter() const { return hovered_gutter; }
 
 	void set_gutter_name(int p_gutter, const String &p_name);
 	String get_gutter_name(int p_gutter) const;
@@ -1071,7 +1074,7 @@ public:
 	void set_highlight_current_line(bool p_enabled);
 	bool is_highlight_current_line_enabled() const;
 
-	void set_highlight_all_occurrences(const bool p_enabled);
+	void set_highlight_all_occurrences(bool p_enabled);
 	bool is_highlight_all_occurrences_enabled() const;
 
 	void set_draw_control_chars(bool p_enabled);

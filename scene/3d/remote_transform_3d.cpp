@@ -113,6 +113,16 @@ void RemoteTransform3D::_notification(int p_what) {
 			_update_cache();
 		} break;
 
+		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
+			if (cache.is_valid()) {
+				_update_remote();
+				Node3D *n = Object::cast_to<Node3D>(ObjectDB::get_instance(cache));
+				if (n) {
+					n->reset_physics_interpolation();
+				}
+			}
+		} break;
+
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED:
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			if (!is_inside_tree()) {
@@ -201,7 +211,7 @@ void RemoteTransform3D::force_update_cache() {
 }
 
 PackedStringArray RemoteTransform3D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node3D::get_configuration_warnings();
 
 	if (!has_node(remote_node) || !Object::cast_to<Node3D>(get_node(remote_node))) {
 		warnings.push_back(RTR("The \"Remote Path\" property must point to a valid Node3D or Node3D-derived node to work."));

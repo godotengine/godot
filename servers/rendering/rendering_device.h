@@ -377,7 +377,9 @@ public:
 	// used for the render pipelines.
 
 	struct AttachmentFormat {
-		enum { UNUSED_ATTACHMENT = 0xFFFFFFFF };
+		enum : uint32_t {
+			UNUSED_ATTACHMENT = 0xFFFFFFFF
+		};
 		DataFormat format;
 		TextureSamples samples;
 		uint32_t usage_flags;

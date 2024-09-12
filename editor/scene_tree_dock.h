@@ -179,7 +179,8 @@ class SceneTreeDock : public VBoxContainer {
 	bool first_enter = true;
 
 	void _create();
-	void _do_create(Node *p_parent);
+	Node *_do_create(Node *p_parent);
+	void _post_do_create(Node *p_child);
 	Node *scene_root = nullptr;
 	Node *edited_scene = nullptr;
 	Node *pending_click_select = nullptr;
@@ -261,6 +262,7 @@ class SceneTreeDock : public VBoxContainer {
 	bool _has_tracks_to_delete(Node *p_node, List<Node *> &p_to_delete) const;
 
 	void _normalize_drop(Node *&to_node, int &to_pos, int p_type);
+	Array _get_selection_array();
 
 	void _nodes_dragged(const Array &p_nodes, NodePath p_to, int p_type);
 	void _files_dropped(const Vector<String> &p_files, NodePath p_to, int p_type);

@@ -30,7 +30,7 @@
 
 #include "label_3d.h"
 
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 #include "scene/resources/theme.h"
 #include "scene/theme/theme_db.h"
 
@@ -197,14 +197,14 @@ void Label3D::_notification(int p_what) {
 			if (!pending_update) {
 				_im_update();
 			}
-			Viewport *viewport = get_viewport();
-			ERR_FAIL_NULL(viewport);
-			viewport->connect("size_changed", callable_mp(this, &Label3D::_font_changed));
+			Window *window = get_window();
+			ERR_FAIL_NULL(window);
+			window->connect("size_changed", callable_mp(this, &Label3D::_font_changed));
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			Viewport *viewport = get_viewport();
-			ERR_FAIL_NULL(viewport);
-			viewport->disconnect("size_changed", callable_mp(this, &Label3D::_font_changed));
+			Window *window = get_window();
+			ERR_FAIL_NULL(window);
+			window->disconnect("size_changed", callable_mp(this, &Label3D::_font_changed));
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			String new_text = atr(text);

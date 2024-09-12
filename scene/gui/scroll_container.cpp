@@ -35,8 +35,6 @@
 #include "scene/theme/theme_db.h"
 
 Size2 ScrollContainer::get_minimum_size() const {
-	Size2 min_size;
-
 	// Calculated in this function, as it needs to traverse all child controls once to calculate;
 	// and needs to be calculated before being used by update_scrollbars().
 	largest_child_min_size = Size2();
@@ -55,21 +53,23 @@ Size2 ScrollContainer::get_minimum_size() const {
 		largest_child_min_size = largest_child_min_size.max(child_min_size);
 	}
 
+	Size2 min_size;
+	const Size2 size = get_size();
+
 	if (horizontal_scroll_mode == SCROLL_MODE_DISABLED) {
-		min_size.x = MAX(min_size.x, largest_child_min_size.x);
+		min_size.x = largest_child_min_size.x;
+		bool v_scroll_show = vertical_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || (vertical_scroll_mode == SCROLL_MODE_AUTO && largest_child_min_size.y > size.y);
+		if (v_scroll_show && v_scroll->get_parent() == this) {
+			min_size.x += v_scroll->get_minimum_size().x;
+		}
 	}
+
 	if (vertical_scroll_mode == SCROLL_MODE_DISABLED) {
-		min_size.y = MAX(min_size.y, largest_child_min_size.y);
-	}
-
-	bool h_scroll_show = horizontal_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || (horizontal_scroll_mode == SCROLL_MODE_AUTO && largest_child_min_size.x > min_size.x);
-	bool v_scroll_show = vertical_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || (vertical_scroll_mode == SCROLL_MODE_AUTO && largest_child_min_size.y > min_size.y);
-
-	if (h_scroll_show && h_scroll->get_parent() == this) {
-		min_size.y += h_scroll->get_minimum_size().y;
-	}
-	if (v_scroll_show && v_scroll->get_parent() == this) {
-		min_size.x += v_scroll->get_minimum_size().x;
+		min_size.y = largest_child_min_size.y;
+		bool h_scroll_show = horizontal_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || (horizontal_scroll_mode == SCROLL_MODE_AUTO && largest_child_min_size.x > size.x);
+		if (h_scroll_show && h_scroll->get_parent() == this) {
+			min_size.y += h_scroll->get_minimum_size().y;
+		}
 	}
 
 	min_size += theme_cache.panel_style->get_minimum_size();

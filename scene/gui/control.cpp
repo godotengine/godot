@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "control.h"
-#include "control.compat.inc"
 
 #include "container.h"
 #include "core/config/project_settings.h"
@@ -248,7 +247,7 @@ void Control::get_argument_options(const StringName &p_function, int p_idx, List
 
 PackedStringArray Control::get_configuration_warnings() const {
 	ERR_READ_THREAD_GUARD_V(PackedStringArray());
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = CanvasItem::get_configuration_warnings();
 
 	if (data.mouse_filter == MOUSE_FILTER_IGNORE && !data.tooltip.is_empty()) {
 		warnings.push_back(RTR("The Hint Tooltip won't be displayed as the control's Mouse Filter is set to \"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."));
@@ -682,12 +681,10 @@ Size2 Control::get_parent_area_size() const {
 // Positioning and sizing.
 
 Transform2D Control::_get_internal_transform() const {
-	Transform2D rot_scale;
-	rot_scale.set_rotation_and_scale(data.rotation, data.scale);
-	Transform2D offset;
-	offset.set_origin(-data.pivot_offset);
-
-	return offset.affine_inverse() * (rot_scale * offset);
+	// T(pivot_offset) * R(rotation) * S(scale) * T(-pivot_offset)
+	Transform2D xform(data.rotation, data.scale, 0.0f, data.pivot_offset);
+	xform.translate_local(-data.pivot_offset);
+	return xform;
 }
 
 void Control::_update_canvas_item_transform() {
@@ -1748,10 +1745,10 @@ void Control::_size_changed() {
 			// so an up to date global transform could be obtained when handling these.
 			_notify_transform();
 
+			item_rect_changed(size_changed);
 			if (size_changed) {
 				notification(NOTIFICATION_RESIZED);
 			}
-			item_rect_changed(size_changed);
 		}
 
 		if (pos_changed && !size_changed) {
@@ -2358,6 +2355,24 @@ void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, cons
 		points[2] = xform.xform(c->get_size());
 		points[3] = xform.xform(Point2(0, c->get_size().y));
 
+		// Tie-breaking aims to address situations where a potential focus neighbor's bounding rect
+		// is right next to the currently focused control (e.g. in BoxContainer with
+		// separation overridden to 0). This needs specific handling so that the correct
+		// focus neighbor is selected.
+
+		// Calculate centers of the potential neighbor, currently focused, and closest controls.
+		Point2 center = xform.xform(0.5 * c->get_size());
+		// We only have the points, not an actual reference.
+		Point2 p_center = 0.25 * (p_points[0] + p_points[1] + p_points[2] + p_points[3]);
+		Point2 closest_center;
+		bool should_tiebreak = false;
+		if (*r_closest != nullptr) {
+			should_tiebreak = true;
+			Control *closest = *r_closest;
+			Transform2D closest_xform = closest->get_global_transform();
+			closest_center = closest_xform.xform(0.5 * closest->get_size());
+		}
+
 		real_t min = 1e7;
 
 		for (int i = 0; i < 4; i++) {
@@ -2378,10 +2393,15 @@ void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, cons
 
 					Vector2 pa, pb;
 					real_t d = Geometry2D::get_closest_points_between_segments(la, lb, fa, fb, pa, pb);
-					//real_t d = Geometry2D::get_closest_distance_between_segments(Vector3(la.x,la.y,0),Vector3(lb.x,lb.y,0),Vector3(fa.x,fa.y,0),Vector3(fb.x,fb.y,0));
 					if (d < r_closest_dist) {
 						r_closest_dist = d;
 						*r_closest = c;
+					} else if (should_tiebreak && d == r_closest_dist) {
+						// Tie-break in favor of the control most aligned with p_dir.
+						if (p_dir.dot((center - p_center).normalized()) > p_dir.dot((closest_center - p_center).normalized())) {
+							r_closest_dist = d;
+							*r_closest = c;
+						}
 					}
 				}
 			}
@@ -3608,7 +3628,7 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "focus_mode", PROPERTY_HINT_ENUM, "None,Click,All"), "set_focus_mode", "get_focus_mode");
 
 	ADD_GROUP("Mouse", "mouse_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_filter", PROPERTY_HINT_ENUM, "Stop,Pass,Ignore"), "set_mouse_filter", "get_mouse_filter");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_filter", PROPERTY_HINT_ENUM, "Stop,Pass (Propagate Up),Ignore"), "set_mouse_filter", "get_mouse_filter");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mouse_force_pass_scroll_events"), "set_force_pass_scroll_events", "is_force_pass_scroll_events");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_default_cursor_shape", PROPERTY_HINT_ENUM, "Arrow,I-Beam,Pointing Hand,Cross,Wait,Busy,Drag,Can Drop,Forbidden,Vertical Resize,Horizontal Resize,Secondary Diagonal Resize,Main Diagonal Resize,Move,Vertical Split,Horizontal Split,Help"), "set_default_cursor_shape", "get_default_cursor_shape");
 

@@ -43,6 +43,7 @@
 #include <type_traits>
 
 #define DEFVAL(m_defval) (m_defval)
+#define DEFVAL_ARRAY DEFVAL(ClassDB::default_array_arg)
 
 #ifdef DEBUG_METHODS_ENABLED
 
@@ -181,6 +182,9 @@ public:
 	};
 	static HashMap<StringName, NativeStruct> native_structs;
 
+	static Array default_array_arg;
+	static bool is_default_array_arg(const Array &p_array);
+
 private:
 	// Non-locking variants of get_parent_class and is_parent_class.
 	static StringName _get_parent_class(const StringName &p_class);
@@ -285,6 +289,7 @@ public:
 	static void get_class_list(List<StringName> *p_classes);
 #ifdef TOOLS_ENABLED
 	static void get_extensions_class_list(List<StringName> *p_classes);
+	static void get_extension_class_list(const Ref<GDExtension> &p_extension, List<StringName> *p_classes);
 	static ObjectGDExtension *get_placeholder_extension(const StringName &p_class);
 #endif
 	static void get_inheriters_from_class(const StringName &p_class, List<StringName> *p_classes);

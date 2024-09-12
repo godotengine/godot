@@ -655,9 +655,7 @@ void Viewport::_notification(int p_what) {
 		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
 			_gui_cancel_tooltip();
 			_drop_physics_mouseover();
-			if (gui.mouse_focus && !gui.forced_mouse_focus) {
-				_drop_mouse_focus();
-			}
+			_drop_mouse_focus();
 			// When the window focus changes, we want to end mouse_focus, but
 			// not the mouse_over. Note: The OS will trigger a separate mouse
 			// exit event if the change in focus results in the mouse exiting
@@ -884,6 +882,10 @@ void Viewport::_process_picking() {
 		}
 
 #ifndef _3D_DISABLED
+		if (physics_object_picking_first_only && is_input_handled()) {
+			continue;
+		}
+
 		CollisionObject3D *capture_object = nullptr;
 		if (physics_object_capture.is_valid()) {
 			capture_object = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(physics_object_capture));
@@ -1831,7 +1833,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			// as the release will never be received otherwise.
 			if (gui.mouse_focus_mask.is_empty()) {
 				gui.mouse_focus = nullptr;
-				gui.forced_mouse_focus = false;
 			}
 
 			bool stopped = mouse_focus && mouse_focus->can_process() && _gui_call_input(mouse_focus, mb);
@@ -1860,7 +1861,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 							gui.drag_data = control->get_drag_data(control->get_global_transform_with_canvas().affine_inverse().xform(mpos - gui.drag_accum));
 							if (gui.drag_data.get_type() != Variant::NIL) {
 								gui.mouse_focus = nullptr;
-								gui.forced_mouse_focus = false;
 								gui.mouse_focus_mask.clear();
 								break;
 							} else {
@@ -1933,7 +1933,12 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					}
 				}
 
-				if (!is_tooltip_shown && over->can_process()) {
+				// If the tooltip timer isn't running, start it.
+				// Otherwise, only reset the timer if the mouse has moved more than 5 pixels.
+				if (!is_tooltip_shown && over->can_process() &&
+						(gui.tooltip_timer.is_null() ||
+								Math::is_zero_approx(gui.tooltip_timer->get_time_left()) ||
+								mm->get_relative().length() > 5.0)) {
 					if (gui.tooltip_timer.is_valid()) {
 						gui.tooltip_timer->release_connections();
 						gui.tooltip_timer = Ref<SceneTreeTimer>();
@@ -2398,7 +2403,6 @@ void Viewport::_gui_hide_control(Control *p_control) {
 void Viewport::_gui_remove_control(Control *p_control) {
 	if (gui.mouse_focus == p_control) {
 		gui.mouse_focus = nullptr;
-		gui.forced_mouse_focus = false;
 		gui.mouse_focus_mask.clear();
 	}
 	if (gui.key_focus == p_control) {
@@ -2564,8 +2568,11 @@ void Viewport::_drop_mouse_focus() {
 	Control *c = gui.mouse_focus;
 	BitField<MouseButtonMask> mask = gui.mouse_focus_mask;
 	gui.mouse_focus = nullptr;
-	gui.forced_mouse_focus = false;
 	gui.mouse_focus_mask.clear();
+
+	if (!c) {
+		return;
+	}
 
 	for (int i = 0; i < 3; i++) {
 		if ((int)mask & (1 << i)) {
@@ -3893,23 +3900,6 @@ Rect2i Viewport::subwindow_get_popup_safe_rect(Window *p_window) const {
 	return gui.sub_windows[index].parent_safe_rect;
 }
 
-void Viewport::pass_mouse_focus_to(Viewport *p_viewport, Control *p_control) {
-	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_NULL(p_viewport);
-	ERR_FAIL_NULL(p_control);
-
-	if (gui.mouse_focus) {
-		p_viewport->gui.mouse_focus = p_control;
-		p_viewport->gui.mouse_focus_mask = gui.mouse_focus_mask;
-		p_viewport->gui.key_focus = p_control;
-		p_viewport->gui.forced_mouse_focus = true;
-
-		gui.mouse_focus = nullptr;
-		gui.forced_mouse_focus = false;
-		gui.mouse_focus_mask.clear();
-	}
-}
-
 void Viewport::set_sdf_oversize(SDFOversize p_sdf_oversize) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_INDEX(p_sdf_oversize, SDF_OVERSIZE_MAX);
@@ -4705,6 +4695,7 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("warp_mouse", "position"), &Viewport::warp_mouse);
 	ClassDB::bind_method(D_METHOD("update_mouse_cursor_state"), &Viewport::update_mouse_cursor_state);
 
+	ClassDB::bind_method(D_METHOD("gui_cancel_drag"), &Viewport::gui_cancel_drag);
 	ClassDB::bind_method(D_METHOD("gui_get_drag_data"), &Viewport::gui_get_drag_data);
 	ClassDB::bind_method(D_METHOD("gui_is_dragging"), &Viewport::gui_is_dragging);
 	ClassDB::bind_method(D_METHOD("gui_is_drag_successful"), &Viewport::gui_is_drag_successful);
@@ -5038,6 +5029,9 @@ Viewport::~Viewport() {
 	// Erase itself from viewport textures.
 	for (ViewportTexture *E : viewport_textures) {
 		E->vp = nullptr;
+	}
+	if (world_2d.is_valid()) {
+		world_2d->remove_viewport(this);
 	}
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RenderingServer::get_singleton()->free(viewport);

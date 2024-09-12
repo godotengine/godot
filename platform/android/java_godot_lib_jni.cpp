@@ -51,7 +51,10 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "main/main.h"
+
+#ifndef _3D_DISABLED
 #include "servers/xr_server.h"
+#endif // _3D_DISABLED
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
@@ -271,14 +274,16 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env,
 	}
 
 	if (step.get() == STEP_SHOW_LOGO) {
-		bool xr_enabled;
+		bool xr_enabled = false;
+#ifndef _3D_DISABLED
+		// Unlike PCVR, there's no additional 2D screen onto which to render the boot logo,
+		// so we skip this step if xr is enabled.
 		if (XRServer::get_xr_mode() == XRServer::XRMODE_DEFAULT) {
 			xr_enabled = GLOBAL_GET("xr/shaders/enabled");
 		} else {
 			xr_enabled = XRServer::get_xr_mode() == XRServer::XRMODE_ON;
 		}
-		// Unlike PCVR, there's no additional 2D screen onto which to render the boot logo,
-		// so we skip this step if xr is enabled.
+#endif // _3D_DISABLED
 		if (!xr_enabled) {
 			Main::setup_boot_logo();
 		}
@@ -467,19 +472,22 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_focusout(JNIEnv *env,
 JNIEXPORT jstring JNICALL Java_org_godotengine_godot_GodotLib_getGlobal(JNIEnv *env, jclass clazz, jstring path) {
 	String js = jstring_to_string(path, env);
 
-	return env->NewStringUTF(GLOBAL_GET(js).operator String().utf8().get_data());
+	Variant setting_with_override = GLOBAL_GET(js);
+	String setting_value = (setting_with_override.get_type() == Variant::NIL) ? "" : setting_with_override;
+	return env->NewStringUTF(setting_value.utf8().get_data());
 }
 
 JNIEXPORT jstring JNICALL Java_org_godotengine_godot_GodotLib_getEditorSetting(JNIEnv *env, jclass clazz, jstring p_setting_key) {
-	String editor_setting = "";
+	String editor_setting_value = "";
 #ifdef TOOLS_ENABLED
 	String godot_setting_key = jstring_to_string(p_setting_key, env);
-	editor_setting = EDITOR_GET(godot_setting_key).operator String();
+	Variant editor_setting = EDITOR_GET(godot_setting_key);
+	editor_setting_value = (editor_setting.get_type() == Variant::NIL) ? "" : editor_setting;
 #else
 	WARN_PRINT("Access to the Editor Settings in only available on Editor builds");
 #endif
 
-	return env->NewStringUTF(editor_setting.utf8().get_data());
+	return env->NewStringUTF(editor_setting_value.utf8().get_data());
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_callobject(JNIEnv *env, jclass clazz, jlong ID, jstring method, jobjectArray params) {
@@ -573,5 +581,10 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_shouldDispatchInp
 		return !input->is_agile_input_event_flushing();
 	}
 	return false;
+}
+
+JNIEXPORT jstring JNICALL Java_org_godotengine_godot_GodotLib_getProjectResourceDir(JNIEnv *env, jclass clazz) {
+	const String resource_dir = OS::get_singleton()->get_resource_dir();
+	return env->NewStringUTF(resource_dir.utf8().get_data());
 }
 }

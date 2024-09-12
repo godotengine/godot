@@ -193,8 +193,8 @@ public:
 
 	// Remote inspector/edit.
 	void request_remote_tree();
-	static void _method_changeds(void *p_ud, Object *p_base, const StringName &p_name, const Variant **p_args, int p_argcount);
-	static void _property_changeds(void *p_ud, Object *p_base, const StringName &p_property, const Variant &p_value);
+	static void _methods_changed(void *p_ud, Object *p_base, const StringName &p_name, const Variant **p_args, int p_argcount);
+	static void _properties_changed(void *p_ud, Object *p_base, const StringName &p_property, const Variant &p_value);
 
 	// LiveDebug
 	void set_live_debugging(bool p_enabled);

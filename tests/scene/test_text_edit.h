@@ -4232,6 +4232,18 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line(0) == 0);
 			CHECK(text_edit->get_caret_column(0) == 4);
 			text_edit->remove_secondary_carets();
+
+			// Remove when there are no words, only symbols.
+			text_edit->set_text("#{}");
+			text_edit->set_caret_line(0);
+			text_edit->set_caret_column(3);
+
+			SEND_GUI_ACTION("ui_text_backspace_word");
+			CHECK(text_edit->get_viewport()->is_input_handled());
+			CHECK_FALSE(text_edit->has_selection());
+			CHECK(text_edit->get_text() == "");
+			CHECK(text_edit->get_caret_line(0) == 0);
+			CHECK(text_edit->get_caret_column(0) == 0);
 		}
 
 		SUBCASE("[TextEdit] ui_text_backspace_word same line") {
@@ -4891,6 +4903,18 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line(0) == 0);
 			CHECK(text_edit->get_caret_column(0) == 2);
 			text_edit->remove_secondary_carets();
+
+			// Remove when there are no words, only symbols.
+			text_edit->set_text("#{}");
+			text_edit->set_caret_line(0);
+			text_edit->set_caret_column(0);
+
+			SEND_GUI_ACTION("ui_text_delete_word");
+			CHECK(text_edit->get_viewport()->is_input_handled());
+			CHECK_FALSE(text_edit->has_selection());
+			CHECK(text_edit->get_text() == "");
+			CHECK(text_edit->get_caret_line(0) == 0);
+			CHECK(text_edit->get_caret_column(0) == 0);
 		}
 
 		SUBCASE("[TextEdit] ui_text_delete_word same line") {
@@ -5301,6 +5325,16 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
+
+			// Move when there are no words, only symbols.
+			text_edit->set_text("#{}");
+			text_edit->set_caret_line(0);
+			text_edit->set_caret_column(3);
+
+			SEND_GUI_ACTION("ui_text_caret_word_left");
+			CHECK(text_edit->get_viewport()->is_input_handled());
+			CHECK(text_edit->get_caret_line(0) == 0);
+			CHECK(text_edit->get_caret_column(0) == 0);
 		}
 
 		SUBCASE("[TextEdit] ui_text_caret_left") {
@@ -5563,6 +5597,16 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
+
+			// Move when there are no words, only symbols.
+			text_edit->set_text("#{}");
+			text_edit->set_caret_line(0);
+			text_edit->set_caret_column(0);
+
+			SEND_GUI_ACTION("ui_text_caret_word_right");
+			CHECK(text_edit->get_viewport()->is_input_handled());
+			CHECK(text_edit->get_caret_line(0) == 0);
+			CHECK(text_edit->get_caret_column(0) == 3);
 		}
 
 		SUBCASE("[TextEdit] ui_text_caret_right") {

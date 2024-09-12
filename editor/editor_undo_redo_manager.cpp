@@ -177,7 +177,7 @@ void EditorUndoRedoManager::_add_do_method(const Variant **p_args, int p_argcoun
 		return;
 	}
 
-	if (p_args[1]->get_type() != Variant::STRING_NAME && p_args[1]->get_type() != Variant::STRING) {
+	if (!p_args[1]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 1;
 		r_error.expected = Variant::STRING_NAME;
@@ -206,7 +206,7 @@ void EditorUndoRedoManager::_add_undo_method(const Variant **p_args, int p_argco
 		return;
 	}
 
-	if (p_args[1]->get_type() != Variant::STRING_NAME && p_args[1]->get_type() != Variant::STRING) {
+	if (!p_args[1]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 1;
 		r_error.expected = Variant::STRING_NAME;
@@ -390,7 +390,7 @@ bool EditorUndoRedoManager::has_history(int p_idx) const {
 	return history_map.has(p_idx);
 }
 
-void EditorUndoRedoManager::clear_history(bool p_increase_version, int p_idx) {
+void EditorUndoRedoManager::clear_history(int p_idx, bool p_increase_version) {
 	if (p_idx != INVALID_HISTORY) {
 		History &history = get_or_create_history(p_idx);
 		history.undo_redo->clear_history(p_increase_version);
@@ -507,6 +507,7 @@ void EditorUndoRedoManager::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_object_history_id", "object"), &EditorUndoRedoManager::get_history_id_for_object);
 	ClassDB::bind_method(D_METHOD("get_history_undo_redo", "id"), &EditorUndoRedoManager::get_history_undo_redo);
+	ClassDB::bind_method(D_METHOD("clear_history", "id", "increase_version"), &EditorUndoRedoManager::clear_history, DEFVAL(INVALID_HISTORY), DEFVAL(true));
 
 	ADD_SIGNAL(MethodInfo("history_changed"));
 	ADD_SIGNAL(MethodInfo("version_changed"));

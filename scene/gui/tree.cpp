@@ -62,8 +62,15 @@ void TreeItem::Cell::draw_icon(const RID &p_where, const Point2 &p_pos, const Si
 
 	if (icon_region == Rect2i()) {
 		icon->draw_rect_region(p_where, Rect2(p_pos, dsize), Rect2(Point2(), icon->get_size()), p_color);
+		if (icon_overlay.is_valid()) {
+			Vector2 offset = icon->get_size() - icon_overlay->get_size();
+			icon_overlay->draw_rect_region(p_where, Rect2(p_pos + offset, dsize), Rect2(Point2(), icon_overlay->get_size()), p_color);
+		}
 	} else {
 		icon->draw_rect_region(p_where, Rect2(p_pos, dsize), icon_region, p_color);
+		if (icon_overlay.is_valid()) {
+			icon_overlay->draw_rect_region(p_where, Rect2(p_pos, dsize), icon_region, p_color);
+		}
 	}
 }
 
@@ -477,6 +484,24 @@ Ref<Texture2D> TreeItem::get_icon(int p_column) const {
 	return cells[p_column].icon;
 }
 
+void TreeItem::set_icon_overlay(int p_column, const Ref<Texture2D> &p_icon_overlay) {
+	ERR_FAIL_INDEX(p_column, cells.size());
+
+	if (cells[p_column].icon_overlay == p_icon_overlay) {
+		return;
+	}
+
+	cells.write[p_column].icon_overlay = p_icon_overlay;
+	cells.write[p_column].cached_minimum_size_dirty = true;
+
+	_changed_notify(p_column);
+}
+
+Ref<Texture2D> TreeItem::get_icon_overlay(int p_column) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), Ref<Texture2D>());
+	return cells[p_column].icon_overlay;
+}
+
 void TreeItem::set_icon_region(int p_column, const Rect2 &p_icon_region) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 
@@ -773,17 +798,21 @@ TreeItem *TreeItem::create_child(int p_index) {
 	TreeItem *item_prev = nullptr;
 	TreeItem *item_next = first_child;
 
-	int idx = 0;
-	while (item_next) {
-		if (idx == p_index) {
-			item_next->prev = ti;
-			ti->next = item_next;
-			break;
-		}
+	if (p_index < 0 && last_child) {
+		item_prev = last_child;
+	} else {
+		int idx = 0;
+		while (item_next) {
+			if (idx == p_index) {
+				item_next->prev = ti;
+				ti->next = item_next;
+				break;
+			}
 
-		item_prev = item_next;
-		item_next = item_next->next;
-		idx++;
+			item_prev = item_next;
+			item_next = item_next->next;
+			idx++;
+		}
 	}
 
 	if (item_prev) {
@@ -804,6 +833,10 @@ TreeItem *TreeItem::create_child(int p_index) {
 		}
 	}
 
+	if (item_prev == last_child) {
+		last_child = ti;
+	}
+
 	ti->parent = this;
 	ti->parent_visible_in_tree = is_visible_in_tree();
 
@@ -820,17 +853,13 @@ void TreeItem::add_child(TreeItem *p_item) {
 	p_item->parent_visible_in_tree = is_visible_in_tree();
 	p_item->_handle_visibility_changed(p_item->parent_visible_in_tree);
 
-	TreeItem *item_prev = first_child;
-	while (item_prev && item_prev->next) {
-		item_prev = item_prev->next;
-	}
-
-	if (item_prev) {
-		item_prev->next = p_item;
-		p_item->prev = item_prev;
+	if (last_child) {
+		last_child->next = p_item;
+		p_item->prev = last_child;
 	} else {
 		first_child = p_item;
 	}
+	last_child = p_item;
 
 	if (!children_cache.is_empty()) {
 		children_cache.append(p_item);
@@ -910,13 +939,8 @@ TreeItem *TreeItem::_get_prev_in_tree(bool p_wrap, bool p_include_invisible) {
 		}
 	} else {
 		current = prev_item;
-		while ((!current->collapsed || p_include_invisible) && current->first_child) {
-			//go to the very end
-
-			current = current->first_child;
-			while (current->next) {
-				current = current->next;
-			}
+		while ((!current->collapsed || p_include_invisible) && current->last_child) {
+			current = current->last_child;
 		}
 	}
 
@@ -1037,6 +1061,8 @@ void TreeItem::clear_children() {
 	}
 
 	first_child = nullptr;
+	last_child = nullptr;
+	children_cache.clear();
 };
 
 int TreeItem::get_index() {
@@ -1141,6 +1167,7 @@ void TreeItem::move_after(TreeItem *p_item) {
 	if (next) {
 		parent->children_cache.clear();
 	} else {
+		parent->last_child = this;
 		// If the cache is empty, it has not been built but there
 		// are items in the tree (note p_item != nullptr,) so we cannot update it.
 		if (!parent->children_cache.is_empty()) {
@@ -1562,7 +1589,7 @@ void TreeItem::_call_recursive_bind(const Variant **p_args, int p_argcount, Call
 		return;
 	}
 
-	if (p_args[0]->get_type() != Variant::STRING && p_args[0]->get_type() != Variant::STRING_NAME) {
+	if (!p_args[0]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::STRING_NAME;
@@ -1630,6 +1657,9 @@ void TreeItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_icon", "column", "texture"), &TreeItem::set_icon);
 	ClassDB::bind_method(D_METHOD("get_icon", "column"), &TreeItem::get_icon);
+
+	ClassDB::bind_method(D_METHOD("set_icon_overlay", "column", "texture"), &TreeItem::set_icon_overlay);
+	ClassDB::bind_method(D_METHOD("get_icon_overlay", "column"), &TreeItem::get_icon_overlay);
 
 	ClassDB::bind_method(D_METHOD("set_icon_region", "column", "region"), &TreeItem::set_icon_region);
 	ClassDB::bind_method(D_METHOD("get_icon_region", "column"), &TreeItem::get_icon_region);
@@ -3272,12 +3302,10 @@ void Tree::value_editor_changed(double p_value) {
 		return;
 	}
 
-	TreeItem::Cell &c = popup_edited_item->cells.write[popup_edited_item_col];
-	c.val = p_value;
+	const TreeItem::Cell &c = popup_edited_item->cells[popup_edited_item_col];
 
-	line_editor->set_text(String::num(c.val, Math::range_step_decimals(c.step)));
+	line_editor->set_text(String::num(p_value, Math::range_step_decimals(c.step)));
 
-	item_edited(popup_edited_item_col, popup_edited_item);
 	queue_redraw();
 }
 
@@ -3466,29 +3494,37 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			accept_event();
 		}
 
-		if (!selected_item || select_mode == SELECT_ROW || selected_col > (columns.size() - 1)) {
+		if (!selected_item || selected_col > (columns.size() - 1)) {
 			return;
 		}
+
 		if (k.is_valid() && k->is_shift_pressed()) {
 			selected_item->set_collapsed_recursive(false);
-		} else {
+		} else if (select_mode != SELECT_ROW) {
 			_go_right();
+		} else if (selected_item->get_first_child() != nullptr && selected_item->is_collapsed()) {
+			selected_item->set_collapsed(false);
+		} else {
+			_go_down();
 		}
 	} else if (p_event->is_action("ui_left") && p_event->is_pressed()) {
 		if (!cursor_can_exit_tree) {
 			accept_event();
 		}
 
-		if (!selected_item || select_mode == SELECT_ROW || selected_col < 0) {
+		if (!selected_item || selected_col < 0) {
 			return;
 		}
 
 		if (k.is_valid() && k->is_shift_pressed()) {
 			selected_item->set_collapsed_recursive(true);
-		} else {
+		} else if (select_mode != SELECT_ROW) {
 			_go_left();
+		} else if (selected_item->get_first_child() != nullptr && !selected_item->is_collapsed()) {
+			selected_item->set_collapsed(true);
+		} else {
+			_go_up();
 		}
-
 	} else if (p_event->is_action("ui_up") && p_event->is_pressed() && !is_command) {
 		if (!cursor_can_exit_tree) {
 			accept_event();
@@ -4468,15 +4504,8 @@ TreeItem *Tree::get_root() const {
 
 TreeItem *Tree::get_last_item() const {
 	TreeItem *last = root;
-
-	while (last) {
-		if (last->next) {
-			last = last->next;
-		} else if (last->first_child && !last->collapsed) {
-			last = last->first_child;
-		} else {
-			break;
-		}
+	while (last && last->last_child && !last->collapsed) {
+		last = last->last_child;
 	}
 
 	return last;
@@ -4495,9 +4524,16 @@ void Tree::item_edited(int p_column, TreeItem *p_item, MouseButton p_custom_mous
 }
 
 void Tree::item_changed(int p_column, TreeItem *p_item) {
-	if (p_item != nullptr && p_column >= 0 && p_column < p_item->cells.size()) {
-		p_item->cells.write[p_column].dirty = true;
-		columns.write[p_column].cached_minimum_width_dirty = true;
+	if (p_item != nullptr) {
+		if (p_column >= 0 && p_column < p_item->cells.size()) {
+			p_item->cells.write[p_column].dirty = true;
+			columns.write[p_column].cached_minimum_width_dirty = true;
+		} else if (p_column == -1) {
+			for (int i = 0; i < p_item->cells.size(); i++) {
+				p_item->cells.write[i].dirty = true;
+				columns.write[i].cached_minimum_width_dirty = true;
+			}
+		}
 	}
 	queue_redraw();
 }

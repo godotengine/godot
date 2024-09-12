@@ -82,11 +82,12 @@ static String _get_device_type_name(const RenderingContextDriver::Device &p_devi
 }
 
 static uint32_t _get_device_type_score(const RenderingContextDriver::Device &p_device) {
+	static const bool prefer_integrated = OS::get_singleton()->get_user_prefers_integrated_gpu();
 	switch (p_device.type) {
 		case RenderingContextDriver::DEVICE_TYPE_INTEGRATED_GPU:
-			return 4;
+			return prefer_integrated ? 5 : 4;
 		case RenderingContextDriver::DEVICE_TYPE_DISCRETE_GPU:
-			return 5;
+			return prefer_integrated ? 4 : 5;
 		case RenderingContextDriver::DEVICE_TYPE_VIRTUAL_GPU:
 			return 3;
 		case RenderingContextDriver::DEVICE_TYPE_CPU:
@@ -137,17 +138,17 @@ RenderingDevice::ShaderSPIRVGetCacheKeyFunction RenderingDevice::get_spirv_cache
 /***************************/
 
 void RenderingDevice::_add_dependency(RID p_id, RID p_depends_on) {
-	if (!dependency_map.has(p_depends_on)) {
-		dependency_map[p_depends_on] = HashSet<RID>();
+	HashSet<RID> *set = dependency_map.getptr(p_depends_on);
+	if (set == nullptr) {
+		set = &dependency_map.insert(p_depends_on, HashSet<RID>())->value;
 	}
+	set->insert(p_id);
 
-	dependency_map[p_depends_on].insert(p_id);
-
-	if (!reverse_dependency_map.has(p_id)) {
-		reverse_dependency_map[p_id] = HashSet<RID>();
+	set = reverse_dependency_map.getptr(p_id);
+	if (set == nullptr) {
+		set = &reverse_dependency_map.insert(p_id, HashSet<RID>())->value;
 	}
-
-	reverse_dependency_map[p_id].insert(p_depends_on);
+	set->insert(p_depends_on);
 }
 
 void RenderingDevice::_free_dependencies(RID p_id) {
@@ -1640,8 +1641,8 @@ Vector<uint8_t> RenderingDevice::texture_get_data(RID p_texture, uint32_t p_laye
 			copy_region.texture_region_size.z = d;
 			command_buffer_texture_copy_regions_vector.push_back(copy_region);
 
-			w = (w >> 1);
-			h = (h >> 1);
+			w = MAX(1u, w >> 1);
+			h = MAX(1u, h >> 1);
 			d = MAX(1u, d >> 1);
 		}
 
@@ -3083,7 +3084,7 @@ RID RenderingDevice::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p
 				ERR_FAIL_NULL_V_MSG(buffer, RID(), "Uniform buffer supplied (binding: " + itos(uniform.binding) + ") is invalid.");
 
 				ERR_FAIL_COND_V_MSG(buffer->size < (uint32_t)set_uniform.length, RID(),
-						"Uniform buffer supplied (binding: " + itos(uniform.binding) + ") size (" + itos(buffer->size) + " is smaller than size of shader uniform: (" + itos(set_uniform.length) + ").");
+						"Uniform buffer supplied (binding: " + itos(uniform.binding) + ") size (" + itos(buffer->size) + ") is smaller than size of shader uniform: (" + itos(set_uniform.length) + ").");
 
 				if (buffer->draw_tracker != nullptr) {
 					draw_trackers.push_back(buffer->draw_tracker);
@@ -3112,7 +3113,7 @@ RID RenderingDevice::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p
 
 				// If 0, then it's sized on link time.
 				ERR_FAIL_COND_V_MSG(set_uniform.length > 0 && buffer->size != (uint32_t)set_uniform.length, RID(),
-						"Storage buffer supplied (binding: " + itos(uniform.binding) + ") size (" + itos(buffer->size) + " does not match size of shader uniform: (" + itos(set_uniform.length) + ").");
+						"Storage buffer supplied (binding: " + itos(uniform.binding) + ") size (" + itos(buffer->size) + ") does not match size of shader uniform: (" + itos(set_uniform.length) + ").");
 
 				if (set_uniform.writable && _buffer_make_mutable(buffer, buffer_id)) {
 					// The buffer must be mutable if it's used for writing.

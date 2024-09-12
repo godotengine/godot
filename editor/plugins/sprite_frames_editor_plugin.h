@@ -121,6 +121,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	Vector<int> selection;
 
 	Button *add_anim = nullptr;
+	Button *duplicate_anim = nullptr;
 	Button *delete_anim = nullptr;
 	SpinBox *anim_speed = nullptr;
 	Button *anim_loop = nullptr;
@@ -210,6 +211,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _animation_selected();
 	void _animation_name_edited();
 	void _animation_add();
+	void _animation_duplicate();
 	void _animation_remove();
 	void _animation_remove_confirmed();
 	void _animation_search_text_changed(const String &p_text);
@@ -234,6 +236,9 @@ class SpriteFramesEditor : public HSplitContainer {
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 	void _open_sprite_sheet();
+	void _auto_slice_sprite_sheet();
+	bool _matches_background_color(const Color &p_background_color, const Color &p_pixel_color);
+	Size2i _estimate_sprite_sheet_size(const Ref<Texture2D> p_texture);
 	void _prepare_sprite_sheet(const String &p_file);
 	int _sheet_preview_position_to_frame_index(const Vector2 &p_position);
 	void _sheet_preview_draw();
