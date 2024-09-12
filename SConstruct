@@ -1093,7 +1093,6 @@ if "check_c_headers" in env:
             env.AppendUnique(CPPDEFINES=[headers[header]])
 
 
-# FIXME: This method mixes both cosmetic progress stuff and cache handling...
 methods.show_progress(env)
 # TODO: replace this with `env.Dump(format="json")`
 # once we start requiring SCons 4.0 as min version.
@@ -1125,3 +1124,5 @@ def purge_flaky_files():
 
 
 atexit.register(purge_flaky_files)
+
+methods.clean_cache(env)

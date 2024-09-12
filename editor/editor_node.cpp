@@ -3866,7 +3866,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		}
 	}
 
-	if (p_clear_errors) {
+	if (p_clear_errors && !load_errors_queued_to_display) {
 		load_errors->clear();
 	}
 
@@ -4547,14 +4547,26 @@ void EditorNode::add_io_error(const String &p_error) {
 	DEV_ASSERT(Thread::get_caller_id() == Thread::get_main_id());
 	singleton->load_errors->add_image(singleton->theme->get_icon(SNAME("Error"), EditorStringName(EditorIcons)));
 	singleton->load_errors->add_text(p_error + "\n");
-	EditorInterface::get_singleton()->popup_dialog_centered_ratio(singleton->load_error_dialog, 0.5);
+	// When a progress dialog is displayed, we will wait for it ot close before displaying
+	// the io errors to prevent the io popup to set it's parent to the progress dialog.
+	if (singleton->progress_dialog->is_visible()) {
+		singleton->load_errors_queued_to_display = true;
+	} else {
+		EditorInterface::get_singleton()->popup_dialog_centered_ratio(singleton->load_error_dialog, 0.5);
+	}
 }
 
 void EditorNode::add_io_warning(const String &p_warning) {
 	DEV_ASSERT(Thread::get_caller_id() == Thread::get_main_id());
 	singleton->load_errors->add_image(singleton->theme->get_icon(SNAME("Warning"), EditorStringName(EditorIcons)));
 	singleton->load_errors->add_text(p_warning + "\n");
-	EditorInterface::get_singleton()->popup_dialog_centered_ratio(singleton->load_error_dialog, 0.5);
+	// When a progress dialog is displayed, we will wait for it ot close before displaying
+	// the io errors to prevent the io popup to set it's parent to the progress dialog.
+	if (singleton->progress_dialog->is_visible()) {
+		singleton->load_errors_queued_to_display = true;
+	} else {
+		EditorInterface::get_singleton()->popup_dialog_centered_ratio(singleton->load_error_dialog, 0.5);
+	}
 }
 
 bool EditorNode::_find_scene_in_use(Node *p_node, const String &p_path) const {
@@ -4823,6 +4835,14 @@ void EditorNode::progress_task_step_bg(const String &p_task, int p_step) {
 
 void EditorNode::progress_end_task_bg(const String &p_task) {
 	singleton->progress_hb->end_task(p_task);
+}
+
+void EditorNode::_progress_dialog_visibility_changed() {
+	// Open the io errors after the progress dialog is closed.
+	if (load_errors_queued_to_display && !progress_dialog->is_visible()) {
+		EditorInterface::get_singleton()->popup_dialog_centered_ratio(singleton->load_error_dialog, 0.5);
+		load_errors_queued_to_display = false;
+	}
 }
 
 String EditorNode::_get_system_info() const {
@@ -6821,6 +6841,7 @@ EditorNode::EditorNode() {
 	add_child(resource_preview);
 	progress_dialog = memnew(ProgressDialog);
 	progress_dialog->set_unparent_when_invisible(true);
+	progress_dialog->connect(SceneStringName(visibility_changed), callable_mp(this, &EditorNode::_progress_dialog_visibility_changed));
 
 	gui_base = memnew(Panel);
 	add_child(gui_base);

@@ -3448,6 +3448,12 @@ StringName BindingsGenerator::_get_int_type_name_from_meta(GodotTypeInfo::Metada
 		case GodotTypeInfo::METADATA_INT_IS_UINT64:
 			return "ulong";
 			break;
+		case GodotTypeInfo::METADATA_INT_IS_CHAR16:
+			return "char";
+			break;
+		case GodotTypeInfo::METADATA_INT_IS_CHAR32:
+			// To prevent breaking compatibility, C# bindings need to keep using `long`.
+			return "long";
 		default:
 			// Assume INT64
 			return "long";

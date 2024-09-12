@@ -45,15 +45,13 @@ open class GodotEditor : BaseGodotEditor() {
 
 		internal val XR_RUN_GAME_INFO = EditorWindowInfo(GodotXRGame::class.java, 1667, ":GodotXRGame")
 
-		internal const val USE_ANCHOR_API_PERMISSION = "com.oculus.permission.USE_ANCHOR_API"
 		internal const val USE_SCENE_PERMISSION = "com.oculus.permission.USE_SCENE"
 	}
 
 	override fun getExcludedPermissions(): MutableSet<String> {
 		val excludedPermissions = super.getExcludedPermissions()
-		// The USE_ANCHOR_API and USE_SCENE permissions are requested when the "xr/openxr/enabled"
-		// project setting is enabled.
-		excludedPermissions.add(USE_ANCHOR_API_PERMISSION)
+		// The USE_SCENE permission is requested when the "xr/openxr/enabled" project setting
+		// is enabled.
 		excludedPermissions.add(USE_SCENE_PERMISSION)
 		return excludedPermissions
 	}

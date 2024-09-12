@@ -429,10 +429,10 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 		loop_end = p_options["edit/loop_end"];
 		// Wrap around to max frames, so `-1` can be used to select the end, etc.
 		if (loop_begin < 0) {
-			loop_begin = CLAMP(loop_begin + frames + 1, 0, frames);
+			loop_begin = CLAMP(loop_begin + frames, 0, frames - 1);
 		}
 		if (loop_end < 0) {
-			loop_end = CLAMP(loop_end + frames + 1, 0, frames);
+			loop_end = CLAMP(loop_end + frames, 0, frames - 1);
 		}
 	}
 
