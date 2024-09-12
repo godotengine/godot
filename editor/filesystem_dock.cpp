@@ -216,7 +216,6 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 	// Set custom folder color (if applicable).
 	bool has_custom_color = assigned_folder_colors.has(lpath);
 	Color custom_color = has_custom_color ? folder_colors[assigned_folder_colors[lpath]] : Color();
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 
 	if (has_custom_color) {
 		subdirectory_item->set_icon_modulate(0, editor_is_dark_theme ? custom_color : custom_color * ITEM_COLOR_SCALE);
@@ -238,9 +237,9 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 	subdirectory_item->set_text(0, dname);
 	subdirectory_item->set_structured_text_bidi_override(0, TextServer::STRUCTURED_TEXT_FILE);
 	subdirectory_item->set_icon(0, get_editor_theme_icon(SNAME("Folder")));
-	if (da->is_link(lpath)) {
+	if (p_dir->is_link()) {
 		subdirectory_item->set_icon_overlay(0, get_editor_theme_icon(SNAME("LinkOverlay")));
-		subdirectory_item->set_tooltip_text(0, vformat(TTR("Link to: %s"), da->read_link(lpath)));
+		subdirectory_item->set_tooltip_text(0, vformat(TTR("Link to: %s"), p_dir->get_link()));
 	}
 	subdirectory_item->set_selectable(0, true);
 	subdirectory_item->set_metadata(0, lpath);
@@ -294,6 +293,8 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 
 			FileInfo fi;
 			fi.name = p_dir->get_file(i);
+			fi.link = p_dir->is_file_link(i);
+			fi.link_path = p_dir->get_file_link(i);
 			fi.type = p_dir->get_file_type(i);
 			fi.icon_path = p_dir->get_file_icon_path(i);
 			fi.import_broken = !p_dir->get_file_import_is_valid(i);
@@ -314,9 +315,9 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 			file_item->set_text(0, fi.name);
 			file_item->set_structured_text_bidi_override(0, TextServer::STRUCTURED_TEXT_FILE);
 			file_item->set_icon(0, _get_tree_item_icon(!fi.import_broken, fi.type, fi.icon_path));
-			if (da->is_link(file_metadata)) {
+			if (fi.link) {
 				file_item->set_icon_overlay(0, get_editor_theme_icon(SNAME("LinkOverlay")));
-				file_item->set_tooltip_text(0, vformat(TTR("Link to: %s"), da->read_link(file_metadata)));
+				file_item->set_tooltip_text(0, vformat(TTR("Link to: %s"), fi.link_path));
 			}
 			file_item->set_icon_max_width(0, icon_size);
 			Color parent_bg_color = subdirectory_item->get_custom_bg_color(0);
@@ -861,6 +862,8 @@ void FileSystemDock::_search(EditorFileSystemDirectory *p_path, List<FileInfo> *
 		if (_matches_all_search_tokens(file)) {
 			FileInfo fi;
 			fi.name = file;
+			fi.link = p_path->is_file_link(i);
+			fi.link_path = p_path->get_file_link(i);
 			fi.type = p_path->get_file_type(i);
 			fi.path = p_path->get_file_path(i);
 			fi.import_broken = !p_path->get_file_import_is_valid(i);
@@ -1100,6 +1103,8 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 			for (int i = 0; i < efd->get_file_count(); i++) {
 				FileInfo fi;
 				fi.name = efd->get_file(i);
+				fi.link = efd->is_file_link(i);
+				fi.link_path = efd->get_file_link(i);
 				fi.path = directory.path_join(fi.name);
 				fi.type = efd->get_file_type(i);
 				fi.icon_path = efd->get_file_icon_path(i);

@@ -120,6 +120,18 @@ String EditorFileSystemDirectory::get_path() const {
 	return String("/").join(path_bits);
 }
 
+bool EditorFileSystemDirectory::is_file_link(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, files.size(), false);
+
+	return files[p_idx]->link;
+}
+
+String EditorFileSystemDirectory::get_file_link(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, files.size(), String());
+
+	return files[p_idx]->link_path;
+}
+
 String EditorFileSystemDirectory::get_file_path(int p_idx) const {
 	return get_path().path_join(get_file(p_idx));
 }
@@ -193,6 +205,14 @@ String EditorFileSystemDirectory::get_name() {
 	return name;
 }
 
+bool EditorFileSystemDirectory::is_link() const {
+	return link;
+}
+
+String EditorFileSystemDirectory::get_link() const {
+	return link_path;
+}
+
 EditorFileSystemDirectory *EditorFileSystemDirectory::get_parent() {
 	return parent;
 }
@@ -216,6 +236,7 @@ void EditorFileSystemDirectory::_bind_methods() {
 
 EditorFileSystemDirectory::EditorFileSystemDirectory() {
 	modified_time = 0;
+	link = false;
 	parent = nullptr;
 }
 
@@ -1007,6 +1028,11 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 		_process_file_system(scan_sub_dir, sub_dir, p_progress, r_processed_files);
 	}
 
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	p_dir->link = da->is_link(p_dir->get_path());
+	if (p_dir->link) {
+		p_dir->link_path = da->read_link(p_dir->get_path());
+	}
 	for (const String &scan_file : p_scan_dir->files) {
 		String ext = scan_file.get_extension().to_lower();
 		if (!valid_extensions.has(ext)) {
@@ -1018,6 +1044,10 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 
 		EditorFileSystemDirectory::FileInfo *fi = memnew(EditorFileSystemDirectory::FileInfo);
 		fi->file = scan_file;
+		fi->link = da->is_link(path);
+		if (fi->link) {
+			fi->link_path = da->read_link(path);
+		}
 		p_dir->files.push_back(fi);
 
 		if (r_processed_files) {
@@ -1259,6 +1289,10 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanPr
 					fi->file = f;
 
 					String path = cd.path_join(fi->file);
+					fi->link = da->is_link(path);
+					if (fi->link) {
+						fi->link_path = da->read_link(path);
+					}
 					fi->modified_time = FileAccess::get_modified_time(path);
 					fi->import_modified_time = 0;
 					fi->type = ResourceLoader::get_resource_type(path);
@@ -2085,6 +2119,7 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 	bool updated = false;
 	bool update_files_icon_cache = false;
 	Vector<EditorFileSystemDirectory::FileInfo *> files_to_update_icon_path;
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	for (const String &file : p_script_paths) {
 		ERR_CONTINUE(file.is_empty());
 		EditorFileSystemDirectory *fs = nullptr;
@@ -2145,6 +2180,10 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 
 				EditorFileSystemDirectory::FileInfo *fi = memnew(EditorFileSystemDirectory::FileInfo);
 				fi->file = file_name;
+				fi->link = da->is_link(file);
+				if (fi->link) {
+					fi->link_path = da->read_link(file);
+				}
 				fi->import_modified_time = 0;
 				fi->import_valid = (type == "TextFile" || type == "OtherFile") ? true : ResourceLoader::is_import_valid(file);
 

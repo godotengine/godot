@@ -332,6 +332,8 @@ private:
 		Vector<String> sources;
 		bool import_broken = false;
 		uint64_t modified_time = 0;
+		bool link = false;
+		String link_path;
 
 		bool operator<(const FileInfo &fi) const {
 			return FileNoCaseComparator()(name, fi.name);
