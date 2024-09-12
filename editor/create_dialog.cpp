@@ -422,7 +422,12 @@ void CreateDialog::_confirmed() {
 }
 
 void CreateDialog::_text_changed(const String &p_newtext) {
-	_update_search();
+	float search_delay_msec = (float)EDITOR_GET("interface/editor/create_dialog/search_delay_msec") / 1000.0f;
+	if (Math::is_zero_approx(search_delay_msec)) {
+		_update_search();
+		return;
+	}
+	search_debounce->start(search_delay_msec);
 }
 
 void CreateDialog::_sbox_input(const Ref<InputEvent> &p_ie) {
@@ -441,6 +446,19 @@ void CreateDialog::_sbox_input(const Ref<InputEvent> &p_ie) {
 				if (ti) {
 					ti->set_collapsed(!ti->is_collapsed());
 				}
+				search_box->accept_event();
+			} break;
+			case Key::ENTER: {
+				if (!search_debounce->is_stopped()) {
+					// Stop the debounce and update the search.
+					search_box->accept_event();
+					search_debounce->stop();
+					_update_search();
+					return;
+				}
+
+				// Let's select the current node
+				search_options->gui_input(k);
 				search_box->accept_event();
 			} break;
 			default:
@@ -821,4 +839,10 @@ CreateDialog::CreateDialog() {
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
 	set_clamp_to_embedder(true);
+
+	search_debounce = memnew(Timer);
+	search_debounce->set_autostart(false);
+	search_debounce->set_one_shot(true);
+	search_debounce->connect("timeout", callable_mp(this, &CreateDialog::_update_search));
+	add_child(search_debounce);
 }
