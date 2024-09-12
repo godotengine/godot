@@ -247,6 +247,7 @@ class CharacterAnimatorNode1D : public CharacterAnimatorNodeBase
         ClassDB::bind_method(D_METHOD("get_position_array"), &CharacterAnimatorNode1D::get_position_array);
 
         ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "black_board_property",PROPERTY_HINT_ENUM_DYNAMIC_LIST, "_get_blackbord_propertys"), "set_black_board_property", "get_black_board_property");
+        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "position_array", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Vector2"), PROPERTY_USAGE_STORAGE), "set_position_array", "get_position_array");
     }
 public:
     void add_animation(const Ref<Animation> & p_anim,float p_pos);
@@ -258,8 +259,18 @@ public:
     void set_position_array(Vector<float> p_array) { blend_data.position_array = p_array; }
     Vector<float> get_position_array() { return blend_data.position_array; }
 
-    void set_position(uint32_t p_index, float p_value) { blend_data.position_array[p_index] = p_value; }
-    float get_position(uint32_t p_index) { return blend_data.position_array[p_index]; }
+    void set_position(uint32_t p_index, float p_value) {
+		if (p_index >= blend_data.position_array.size()) {
+			blend_data.position_array.resize(p_index + 1);
+		}
+		blend_data.position_array[p_index] = p_value;
+	}
+    float get_position(uint32_t p_index) {
+        if(p_index >= blend_data.position_array.size()) {
+            return 0;
+        }
+        return blend_data.position_array[p_index]; 
+    }
 
     
     virtual void add_item()

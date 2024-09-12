@@ -18,10 +18,14 @@ void CharacterAnimationItem::_bind_methods()
     ClassDB::bind_method(D_METHOD("set_child_node", "child_node"), &CharacterAnimationItem::set_child_node);
     ClassDB::bind_method(D_METHOD("get_child_node"), &CharacterAnimationItem::get_child_node);
 
+    ClassDB::bind_method(D_METHOD("set_animation", "animation"), &CharacterAnimationItem::set_animation);
+    ClassDB::bind_method(D_METHOD("get_animation"), &CharacterAnimationItem::get_animation);
+
 
     ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed"), "set_speed", "get_speed");
     ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_clip"), "set_is_clip", "get_is_clip");
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "child_node"), "set_child_node", "get_child_node");
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animation"), "set_animation", "get_animation");
 
 }
 void CharacterAnimationItem::set_child_node(const Ref<CharacterAnimatorNodeBase>& p_child_node) 
