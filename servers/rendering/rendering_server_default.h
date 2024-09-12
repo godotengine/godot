@@ -179,6 +179,11 @@ public:
 	FUNCRIDTEX6(texture_3d, Image::Format, int, int, int, bool, const Vector<Ref<Image>> &)
 	FUNCRIDTEX1(texture_proxy, RID)
 
+	// Called directly, not through the command queue.
+	virtual RID texture_create_from_native_handle(TextureType p_type, Image::Format p_format, uint64_t p_native_handle, int p_width, int p_height, int p_depth, int p_layers = 1, TextureLayeredType p_layered_type = TEXTURE_LAYERED_2D_ARRAY) override {
+		return RSG::texture_storage->texture_create_from_native_handle(p_type, p_format, p_native_handle, p_width, p_height, p_depth, p_layers, p_layered_type);
+	}
+
 	//these go through command queue if they are in another thread
 	FUNC3(texture_2d_update, RID, const Ref<Image> &, int)
 	FUNC2(texture_3d_update, RID, const Vector<Ref<Image>> &)
