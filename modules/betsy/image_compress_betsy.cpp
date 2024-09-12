@@ -31,40 +31,122 @@
 #include "image_compress_betsy.h"
 
 #include "core/config/project_settings.h"
-#include "servers/rendering/rendering_device_binds.h"
-#include "servers/rendering/rendering_server_default.h"
-
-#if defined(VULKAN_ENABLED)
-#include "drivers/vulkan/rendering_context_driver_vulkan.h"
-#endif
-#if defined(METAL_ENABLED)
-#include "drivers/metal/rendering_context_driver_metal.h"
-#endif
 
 #include "betsy_bc1.h"
 
 #include "bc1.glsl.gen.h"
 #include "bc6h.glsl.gen.h"
 
-// Static variables (for caching).
+static Mutex betsy_mutex;
+static BetsyCompressor *betsy = nullptr;
 
-static RenderingDevice *compress_rd = nullptr;
-static RenderingContextDriver *compress_rcd = nullptr;
+void BetsyCompressor::_init() {
+	// Create local RD.
+	RenderingContextDriver *rcd = nullptr;
+	RenderingDevice *rd = RenderingServer::get_singleton()->create_local_rendering_device();
 
-static Mutex rd_mutex;
-static Mutex shader_mutex;
+	if (rd == nullptr) {
+#if defined(RD_ENABLED)
+#if defined(METAL_ENABLED)
+		rcd = memnew(RenderingContextDriverMetal);
+		rd = memnew(RenderingDevice);
+#endif
+#if defined(VULKAN_ENABLED)
+		if (rcd == nullptr) {
+			rcd = memnew(RenderingContextDriverVulkan);
+			rd = memnew(RenderingDevice);
+		}
+#endif
+#endif
+		if (rcd != nullptr && rd != nullptr) {
+			Error err = rcd->initialize();
+			if (err == OK) {
+				err = rd->initialize(rcd);
+			}
 
-static HashMap<String, Ref<BetsyShader>> cached_shaders;
+			if (err != OK) {
+				memdelete(rd);
+				memdelete(rcd);
+				rd = nullptr;
+				rcd = nullptr;
+			}
+		}
+	}
 
-// Betsy shader (for caching).
+	ERR_FAIL_NULL_MSG(rd, "Unable to create a local RenderingDevice.");
 
-BetsyShader::BetsyShader() {
+	compress_rd = rd;
+	compress_rcd = rcd;
+
+	// Create the sampler state.
+	RD::SamplerState src_sampler_state;
+	{
+		src_sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+		src_sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+		src_sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
+		src_sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
+		src_sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
+	}
+
+	src_sampler = compress_rd->sampler_create(src_sampler_state);
 }
 
-BetsyShader::~BetsyShader() {
-	// Free just the shader, the pipelines will be cleared automatically.
-	if (compress_rd && compiled.is_valid()) {
-		compress_rd->free(compiled);
+void BetsyCompressor::init() {
+	WorkerThreadPool::TaskID tid = WorkerThreadPool::get_singleton()->add_task(callable_mp(this, &BetsyCompressor::_thread_loop), true);
+	command_queue.set_pump_task_id(tid);
+	command_queue.push(this, &BetsyCompressor::_assign_mt_ids, tid);
+	command_queue.push_and_sync(this, &BetsyCompressor::_init);
+	DEV_ASSERT(task_id == tid);
+}
+
+void BetsyCompressor::_assign_mt_ids(WorkerThreadPool::TaskID p_pump_task_id) {
+	task_id = p_pump_task_id;
+}
+
+// Yield thread to WTP so other tasks can be done on it.
+// Automatically regains control as soon a task is pushed to the command queue.
+void BetsyCompressor::_thread_loop() {
+	while (!exit) {
+		WorkerThreadPool::get_singleton()->yield();
+		command_queue.flush_all();
+	}
+}
+
+void BetsyCompressor::_thread_exit() {
+	exit = true;
+
+	if (compress_rd != nullptr) {
+		if (dxt1_encoding_table_buffer.is_valid()) {
+			compress_rd->free(dxt1_encoding_table_buffer);
+		}
+
+		compress_rd->free(src_sampler);
+
+		// Clear the shader cache, pipelines will be unreferenced automatically.
+		for (KeyValue<String, BetsyShader> &E : cached_shaders) {
+			if (E.value.compiled.is_valid()) {
+				compress_rd->free(E.value.compiled);
+			}
+		}
+		cached_shaders.clear();
+	}
+}
+
+void BetsyCompressor::finish() {
+	command_queue.push(this, &BetsyCompressor::_thread_exit);
+	if (task_id != WorkerThreadPool::INVALID_TASK_ID) {
+		WorkerThreadPool::get_singleton()->wait_for_task_completion(task_id);
+		task_id = WorkerThreadPool::INVALID_TASK_ID;
+	}
+
+	if (compress_rd != nullptr) {
+		// Free the RD (and RCD if necessary).
+		memdelete(compress_rd);
+		compress_rd = nullptr;
+		if (compress_rcd != nullptr) {
+			memdelete(compress_rcd);
+			compress_rcd = nullptr;
+		}
 	}
 }
 
@@ -92,7 +174,7 @@ static String get_shader_name(BetsyFormat p_format) {
 	}
 }
 
-Error compress_betsy(BetsyFormat p_format, Image *r_img) {
+Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 	uint64_t start_time = OS::get_singleton()->get_ticks_msec();
 
 	if (r_img->is_compressed()) {
@@ -100,47 +182,6 @@ Error compress_betsy(BetsyFormat p_format, Image *r_img) {
 	}
 
 	Error err = OK;
-
-	rd_mutex.lock();
-	if (!compress_rd) {
-		// Create local RD.
-		RenderingContextDriver *rcd = nullptr;
-		RenderingDevice *rd = RenderingServer::get_singleton()->create_local_rendering_device();
-
-		if (rd == nullptr) {
-#if defined(RD_ENABLED)
-#if defined(METAL_ENABLED)
-			rcd = memnew(RenderingContextDriverMetal);
-			rd = memnew(RenderingDevice);
-#endif
-#if defined(VULKAN_ENABLED)
-			if (rcd == nullptr) {
-				rcd = memnew(RenderingContextDriverVulkan);
-				rd = memnew(RenderingDevice);
-			}
-#endif
-#endif
-			if (rcd != nullptr && rd != nullptr) {
-				err = rcd->initialize();
-				if (err == OK) {
-					err = rd->initialize(rcd);
-				}
-
-				if (err != OK) {
-					memdelete(rd);
-					memdelete(rcd);
-					rd = nullptr;
-					rcd = nullptr;
-				}
-			}
-		}
-
-		ERR_FAIL_NULL_V_MSG(rd, err, "Unable to create a local RenderingDevice.");
-
-		compress_rd = rd;
-		compress_rcd = rcd;
-	}
-	rd_mutex.unlock();
 
 	// Destination format.
 	Image::Format dest_format = Image::FORMAT_MAX;
@@ -179,16 +220,12 @@ Error compress_betsy(BetsyFormat p_format, Image *r_img) {
 	}
 
 	const String shader_name = get_shader_name(p_format) + "-" + version;
-	const BetsyShader *shader_ptr;
+	BetsyShader shader;
 
-	shader_mutex.lock();
 	if (cached_shaders.has(shader_name)) {
-		shader_ptr = cached_shaders[shader_name].ptr();
+		shader = cached_shaders[shader_name];
 
 	} else {
-		Ref<BetsyShader> shader;
-		shader.instantiate();
-
 		Ref<RDShaderFile> source;
 		source.instantiate();
 
@@ -214,23 +251,21 @@ Error compress_betsy(BetsyFormat p_format, Image *r_img) {
 		}
 
 		// Compile the shader, return early if invalid.
-		shader->compiled = compress_rd->shader_create_from_spirv(source->get_spirv_stages(version));
-		if (shader->compiled.is_null()) {
+		shader.compiled = compress_rd->shader_create_from_spirv(source->get_spirv_stages(version));
+		if (shader.compiled.is_null()) {
 			return ERR_CANT_CREATE;
 		}
 
 		// Compile the pipeline, return early if invalid.
-		shader->pipeline = compress_rd->compute_pipeline_create(shader->compiled);
-		if (shader->pipeline.is_null()) {
+		shader.pipeline = compress_rd->compute_pipeline_create(shader.compiled);
+		if (shader.pipeline.is_null()) {
 			return ERR_CANT_CREATE;
 		}
 
 		cached_shaders[shader_name] = shader;
-		shader_ptr = cached_shaders[shader_name].ptr();
 	}
-	shader_mutex.unlock();
 
-	if (shader_ptr->compiled.is_null() || shader_ptr->pipeline.is_null()) {
+	if (shader.compiled.is_null() || shader.pipeline.is_null()) {
 		return ERR_INVALID_DATA;
 	}
 
@@ -315,34 +350,18 @@ Error compress_betsy(BetsyFormat p_format, Image *r_img) {
 		}
 	}
 
-	// Create the sampler state.
-	RD::SamplerState src_sampler_state;
-	{
-		src_sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
-		src_sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
-		src_sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
-		src_sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
-		src_sampler_state.mip_filter = RD::SAMPLER_FILTER_NEAREST;
-	}
-
-	RID src_sampler = compress_rd->sampler_create(src_sampler_state);
-
 	// For the destination format just copy the source format and change the usage bits.
 	RD::TextureFormat dst_texture_format = src_texture_format;
 	dst_texture_format.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
 	dst_texture_format.format = dst_rd_format;
 
-	RID encoding_table_buffer;
-	bool uses_encoding_table = false;
-
 	// Encoding table setup.
-	if (dest_format == Image::FORMAT_DXT1) {
+	if (dest_format == Image::FORMAT_DXT1 && dxt1_encoding_table_buffer.is_null()) {
 		Vector<uint8_t> data;
 		data.resize(1024 * 4);
 		memcpy(data.ptrw(), dxt1_encoding_table, 1024 * 4);
 
-		encoding_table_buffer = compress_rd->storage_buffer_create(1024 * 4, data);
-		uses_encoding_table = true;
+		dxt1_encoding_table_buffer = compress_rd->storage_buffer_create(1024 * 4, data);
 	}
 
 	const int mip_count = r_img->get_mipmap_count() + 1;
@@ -396,19 +415,19 @@ Error compress_betsy(BetsyFormat p_format, Image *r_img) {
 				uniforms.push_back(u);
 			}
 
-			if (uses_encoding_table) {
+			if (dest_format == Image::FORMAT_DXT1) {
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 				u.binding = 2;
-				u.append_id(encoding_table_buffer);
+				u.append_id(dxt1_encoding_table_buffer);
 				uniforms.push_back(u);
 			}
 		}
 
-		RID uniform_set = compress_rd->uniform_set_create(uniforms, shader_ptr->compiled, 0);
+		RID uniform_set = compress_rd->uniform_set_create(uniforms, shader.compiled, 0);
 		RD::ComputeListID compute_list = compress_rd->compute_list_begin();
 
-		compress_rd->compute_list_bind_compute_pipeline(compute_list, shader_ptr->pipeline);
+		compress_rd->compute_list_bind_compute_pipeline(compute_list, shader.pipeline);
 		compress_rd->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
 
 		if (dest_format == Image::FORMAT_BPTC_RGBFU || dest_format == Image::FORMAT_BPTC_RGBF) {
@@ -452,26 +471,30 @@ Error compress_betsy(BetsyFormat p_format, Image *r_img) {
 	// Set the compressed data to the image.
 	r_img->set_data(r_img->get_width(), r_img->get_height(), r_img->has_mipmaps(), dest_format, dst_data);
 
-	// Free the shader (dependencies will be cleared automatically).
-	if (uses_encoding_table) {
-		compress_rd->free(encoding_table_buffer);
-	}
-
-	compress_rd->free(src_sampler);
 	print_verbose(vformat("Betsy: Encoding took %d ms.", OS::get_singleton()->get_ticks_msec() - start_time));
 
 	return OK;
 }
 
+void ensure_betsy_exists() {
+	betsy_mutex.lock();
+	if (betsy == nullptr) {
+		betsy = memnew(BetsyCompressor);
+		betsy->init();
+	}
+	betsy_mutex.unlock();
+}
+
 Error _betsy_compress_bptc(Image *r_img, Image::UsedChannels p_channels) {
+	ensure_betsy_exists();
 	Image::Format format = r_img->get_format();
 	Error result = ERR_UNAVAILABLE;
 
 	if (format >= Image::FORMAT_RF && format <= Image::FORMAT_RGBE9995) {
 		if (r_img->detect_signed()) {
-			result = compress_betsy(BETSY_FORMAT_BC6_SIGNED, r_img);
+			result = betsy->compress(BETSY_FORMAT_BC6_SIGNED, r_img);
 		} else {
-			result = compress_betsy(BETSY_FORMAT_BC6_UNSIGNED, r_img);
+			result = betsy->compress(BETSY_FORMAT_BC6_UNSIGNED, r_img);
 		}
 	}
 
@@ -483,15 +506,16 @@ Error _betsy_compress_bptc(Image *r_img, Image::UsedChannels p_channels) {
 }
 
 Error _betsy_compress_s3tc(Image *r_img, Image::UsedChannels p_channels) {
+	ensure_betsy_exists();
 	Error result = ERR_UNAVAILABLE;
 
 	switch (p_channels) {
 		case Image::USED_CHANNELS_RGB:
-			result = compress_betsy(BETSY_FORMAT_BC1_DITHER, r_img);
+			result = betsy->compress(BETSY_FORMAT_BC1_DITHER, r_img);
 			break;
 
 		case Image::USED_CHANNELS_L:
-			result = compress_betsy(BETSY_FORMAT_BC1, r_img);
+			result = betsy->compress(BETSY_FORMAT_BC1, r_img);
 			break;
 
 		default:
@@ -506,20 +530,8 @@ Error _betsy_compress_s3tc(Image *r_img, Image::UsedChannels p_channels) {
 }
 
 void free_device() {
-	if (compress_rd != nullptr) {
-		// Clear the shader cache, shaders will be unreferenced automatically.
-		shader_mutex.lock();
-		cached_shaders.clear();
-		shader_mutex.unlock();
-
-		// Free the RD (and RCD if necessary).
-		rd_mutex.lock();
-		memdelete(compress_rd);
-		compress_rd = nullptr;
-		if (compress_rcd != nullptr) {
-			memdelete(compress_rcd);
-			compress_rcd = nullptr;
-		}
-		rd_mutex.unlock();
+	if (betsy != nullptr) {
+		betsy->finish();
+		memdelete(betsy);
 	}
 }
