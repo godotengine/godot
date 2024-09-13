@@ -186,7 +186,8 @@ void WorkerThreadPool::_thread_function(void *p_user) {
 		{
 			MutexLock lock(singleton->task_mutex);
 
-			if (unlikely(singleton->exit_threads)) {
+			bool exit = singleton->_handle_runlevel();
+			if (unlikely(exit)) {
 				break;
 			}
 
@@ -453,7 +454,8 @@ void WorkerThreadPool::_wait_collaboratively(ThreadData *p_caller_pool_thread, T
 			bool was_signaled = p_caller_pool_thread->signaled;
 			p_caller_pool_thread->signaled = false;
 
-			if (unlikely(exit_threads)) {
+			bool exit = _handle_runlevel();
+			if (unlikely(exit)) {
 				break;
 			}
 
@@ -516,6 +518,20 @@ void WorkerThreadPool::_wait_collaboratively(ThreadData *p_caller_pool_thread, T
 			_process_task(task_to_process);
 		}
 	}
+}
+
+void WorkerThreadPool::_switch_runlevel(Runlevel p_runlevel) {
+	DEV_ASSERT(p_runlevel > runlevel);
+	runlevel = p_runlevel;
+	for (uint32_t i = 0; i < threads.size(); i++) {
+		threads[i].cond_var.notify_one();
+		threads[i].signaled = true;
+	}
+}
+
+// Returns whether threads have to exit. This may perform the check about handling needed.
+bool WorkerThreadPool::_handle_runlevel() {
+	return runlevel == RUNLEVEL_EXIT;
 }
 
 void WorkerThreadPool::yield() {
@@ -695,6 +711,9 @@ void WorkerThreadPool::thread_exit_unlock_allowance_zone(uint32_t p_zone_id) {
 
 void WorkerThreadPool::init(int p_thread_count, float p_low_priority_task_ratio) {
 	ERR_FAIL_COND(threads.size() > 0);
+
+	runlevel = RUNLEVEL_NORMAL;
+
 	if (p_thread_count < 0) {
 		p_thread_count = OS::get_singleton()->get_default_thread_pool_size();
 	}
@@ -724,15 +743,10 @@ void WorkerThreadPool::finish() {
 			print_error("Task waiting was never re-claimed: " + E->self()->description);
 			E = E->next();
 		}
+
+		_switch_runlevel(RUNLEVEL_EXIT);
 	}
 
-	{
-		MutexLock lock(task_mutex);
-		exit_threads = true;
-	}
-	for (ThreadData &data : threads) {
-		data.cond_var.notify_one();
-	}
 	for (ThreadData &data : threads) {
 		data.thread.wait_to_finish();
 	}
