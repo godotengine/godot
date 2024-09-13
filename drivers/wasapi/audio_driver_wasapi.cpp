@@ -850,6 +850,26 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 								r = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j * 2 + 1);
 							} else if (ad->audio_input.channels == 1) {
 								l = r = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j);
+							} else if (ad->audio_input.channels >= 2) {
+								int channels = ad->audio_input.channels;
+								for (int ch = 0; ch < channels - 1; ch++) {
+									int32_t sample = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j * channels + ch);
+									if (ch % 2 == 0) {
+										r += sample;
+									} else {
+										l += sample;
+									}
+								}
+								int32_t last_sample = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j * channels + (channels - 1));
+								r += last_sample;
+								if (channels % 2 != 0) {
+									l += last_sample;
+									l /= ((channels + 1) / 2);
+									r /= ((channels + 1) / 2);
+								} else {
+									l /= (channels / 2);
+									r /= (channels / 2);
+								}
 							} else {
 								l = r = 0;
 								ERR_PRINT("WASAPI: unsupported channel count in microphone!");
