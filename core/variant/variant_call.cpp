@@ -734,6 +734,14 @@ struct _VariantCall {
 		return s;
 	}
 
+	static String func_PackedByteArray_get_string_from_multibyte_char(PackedByteArray *p_instance, const String &p_encoding) {
+		String s;
+		if (p_instance->size() > 0) {
+			s = OS::get_singleton()->multibyte_to_string(p_encoding, *p_instance);
+		}
+		return s;
+	}
+
 	static PackedByteArray func_PackedByteArray_compress(PackedByteArray *p_instance, int p_mode) {
 		PackedByteArray compressed;
 
@@ -1815,8 +1823,9 @@ static void _register_variant_builtin_methods_string() {
 	bind_string_method(to_utf8_buffer, sarray(), varray());
 	bind_string_method(to_utf16_buffer, sarray(), varray());
 	bind_string_method(to_utf32_buffer, sarray(), varray());
-	bind_string_method(hex_decode, sarray(), varray());
 	bind_string_method(to_wchar_buffer, sarray(), varray());
+	bind_string_method(to_multibyte_char_buffer, sarray("encoding"), varray(String()));
+	bind_string_method(hex_decode, sarray(), varray());
 
 	bind_static_method(String, num_scientific, sarray("number"), varray());
 	bind_static_method(String, num, sarray("number", "decimals"), varray(-1));
@@ -2458,6 +2467,7 @@ static void _register_variant_builtin_methods_array() {
 	bind_function(PackedByteArray, get_string_from_utf16, _VariantCall::func_PackedByteArray_get_string_from_utf16, sarray(), varray());
 	bind_function(PackedByteArray, get_string_from_utf32, _VariantCall::func_PackedByteArray_get_string_from_utf32, sarray(), varray());
 	bind_function(PackedByteArray, get_string_from_wchar, _VariantCall::func_PackedByteArray_get_string_from_wchar, sarray(), varray());
+	bind_function(PackedByteArray, get_string_from_multibyte_char, _VariantCall::func_PackedByteArray_get_string_from_multibyte_char, sarray("encoding"), varray(String()));
 	bind_function(PackedByteArray, hex_encode, _VariantCall::func_PackedByteArray_hex_encode, sarray(), varray());
 	bind_function(PackedByteArray, compress, _VariantCall::func_PackedByteArray_compress, sarray("compression_mode"), varray(0));
 	bind_function(PackedByteArray, decompress, _VariantCall::func_PackedByteArray_decompress, sarray("buffer_size", "compression_mode"), varray(0));
