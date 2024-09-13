@@ -124,7 +124,10 @@ private:
 	};
 
 	TightLocalVector<ThreadData> threads;
-	bool exit_threads = false;
+	enum Runlevel {
+		RUNLEVEL_NORMAL,
+		RUNLEVEL_EXIT,
+	} runlevel = RUNLEVEL_NORMAL;
 
 	HashMap<Thread::ID, int> thread_ids;
 	HashMap<
@@ -192,6 +195,9 @@ private:
 	};
 
 	void _wait_collaboratively(ThreadData *p_caller_pool_thread, Task *p_task);
+
+	void _switch_runlevel(Runlevel p_runlevel);
+	bool _handle_runlevel();
 
 #ifdef THREADS_ENABLED
 	static uint32_t _thread_enter_unlock_allowance_zone(THREADING_NAMESPACE::unique_lock<THREADING_NAMESPACE::mutex> &p_ulock);
