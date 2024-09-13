@@ -83,9 +83,14 @@ public:
         LOOP_PingPongOnce,
         LOOP_PingPongCount,
     };
+	enum BlendType
+	{
+		SimpleDirectionnal2D = 1,
+		FreeformDirectionnal2D = 2,
+		FreeformCartesian2D = 3,
+	};
 	struct Blend1dDataConstant
 	{
-		uint32_t            position_count = 0;
 		LocalVector<float>       position_array;
 	};
 	struct MotionNeighborList
@@ -95,17 +100,24 @@ public:
 	};
 	struct Blend2dDataConstant
 	{
-		uint32_t                    position_count = 0;
 		LocalVector<Vector2>             position_array;
 
-		uint32_t                    m_ChildMagnitudeCount = 0;
 		LocalVector<float>               m_ChildMagnitudeArray; // Used by type 2
-		uint32_t                    m_ChildPairVectorCount = 0;
 		LocalVector<Vector2>             m_ChildPairVectorArray; // Used by type 2, (3 TODO)
-		uint32_t                    m_ChildPairAvgMagInvCount = 0;
 		LocalVector<float>               m_ChildPairAvgMagInvArray; // Used by type 2
-		uint32_t                    m_ChildNeighborListCount = 0;
 		LocalVector<MotionNeighborList>  m_ChildNeighborListArray; // Used by type 2, (3 TODO)
+		bool is_init_precompute = false;
+
+        void reset() {
+            int count = position_array.size() * position_array.size();
+            m_ChildMagnitudeArray.resize(count);
+            m_ChildPairVectorArray.resize(count);
+            m_ChildPairAvgMagInvArray.resize(count);
+            m_ChildNeighborListArray.resize(count);
+
+        }
+		void precompute_freeform(BlendType type);
+
 	};
     void touch() { lastUsingTime = OS::get_singleton()->get_unix_time(); }
 
@@ -204,6 +216,7 @@ public:
         float* weightArray, int* cropArray, Vector2* workspaceBlendVectors,
         float blendValueX, float blendValueY, bool preCompute = false);
     static void get_weights1d(const Blend1dDataConstant& blendConstant, float* weightArray, float blendValue);
+	
 
 	void _add_animation_item(const Ref<CharacterAnimationItem>& p_anim)
 	{
@@ -241,8 +254,6 @@ class CharacterAnimatorNode1D : public CharacterAnimatorNodeBase
     
     static void _bind_methods()
     {
-        ClassDB::bind_method(D_METHOD("set_position_count", "count"), &CharacterAnimatorNode1D::set_position_count);
-        ClassDB::bind_method(D_METHOD("get_position_count"), &CharacterAnimatorNode1D::get_position_count);
         ClassDB::bind_method(D_METHOD("set_position_array", "array"), &CharacterAnimatorNode1D::set_position_array);
         ClassDB::bind_method(D_METHOD("get_position_array"), &CharacterAnimatorNode1D::get_position_array);
 
@@ -252,9 +263,6 @@ class CharacterAnimatorNode1D : public CharacterAnimatorNodeBase
 public:
     void add_animation(const Ref<Animation> & p_anim,float p_pos);
     virtual void process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,const Ref<Blackboard> &p_blackboard) override;
-
-    void set_position_count(uint32_t p_count) { blend_data.position_count = p_count; }
-    uint32_t get_position_count() { return blend_data.position_count; }
 
     void set_position_array(Vector<float> p_array) { blend_data.position_array = p_array; }
     Vector<float> get_position_array() { return blend_data.position_array; }
@@ -279,14 +287,12 @@ public:
         item.instantiate();
         animation_arrays.push_back(item);
         blend_data.position_array.push_back(0.0f);
-        blend_data.position_count += 1;
     }
 
     virtual void remove_item(int index)
     {
         animation_arrays.remove_at(index);
         blend_data.position_array.remove_at(index);
-        blend_data.position_count -= 1;
     }
     virtual void move_up_item(int index)
     {
@@ -329,8 +335,6 @@ class CharacterAnimatorNode2D : public CharacterAnimatorNodeBase
     GDCLASS(CharacterAnimatorNode2D, CharacterAnimatorNodeBase);
     static void _bind_methods()
     {
-        ClassDB::bind_method(D_METHOD("set_position_count", "count"), &CharacterAnimatorNode1D::set_position_count);
-        ClassDB::bind_method(D_METHOD("get_position_count"), &CharacterAnimatorNode1D::get_position_count);
         ClassDB::bind_method(D_METHOD("set_position_array", "array"), &CharacterAnimatorNode1D::set_position_array);
         ClassDB::bind_method(D_METHOD("get_position_array"), &CharacterAnimatorNode1D::get_position_array);
 
@@ -343,27 +347,21 @@ class CharacterAnimatorNode2D : public CharacterAnimatorNodeBase
         BIND_ENUM_CONSTANT(FreeformCartesian2D);
     }
 public:
-	enum BlendType
-	{
-		SimpleDirectionnal2D = 1,
-		FreeformDirectionnal2D = 2,
-		FreeformCartesian2D = 3,
-	};
 public:
     virtual void process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,const Ref<Blackboard> &p_blackboard) override;
 
-    void set_blend_type(BlendType p_blend_type) { blend_type = (BlendType)p_blend_type; }
+    void set_blend_type(BlendType p_blend_type) { blend_type = (BlendType)p_blend_type; blend_data.is_init_precompute = false;}
     BlendType get_blend_type() { return blend_type; }
 
-    void set_position_count(uint32_t p_count) { blend_data.position_count = p_count; }
-    uint32_t get_position_count() { return blend_data.position_count; }
-
-    void set_position_array(Vector<Vector2> p_array) { blend_data.position_array = p_array; }
+    void set_position_array(Vector<Vector2> p_array) {
+		blend_data.position_array = p_array;
+		blend_data.is_init_precompute = false;
+	}
     Vector<Vector2> get_position_array() { return blend_data.position_array; }
 
-    void set_position_x(uint32_t p_index, float p_value) { blend_data.position_array[p_index].x = p_value; }
+	void set_position_x(uint32_t p_index, float p_value) { blend_data.position_array[p_index].x = p_value; blend_data.is_init_precompute = false; }
     float get_position_x(uint32_t p_index) { return blend_data.position_array[p_index].x; }
-    void set_position_y(uint32_t p_index, float p_value) { blend_data.position_array[p_index].y = p_value; }
+    void set_position_y(uint32_t p_index, float p_value) { blend_data.position_array[p_index].y = p_value; blend_data.is_init_precompute = false;}
     float get_position_y(uint32_t p_index) { return blend_data.position_array[p_index].y; }
 
     virtual void add_item()
@@ -372,14 +370,14 @@ public:
         item.instantiate();
         animation_arrays.push_back(item);
         blend_data.position_array.push_back(Vector2(0,0));
-        blend_data.position_count += 1;
+		blend_data.is_init_precompute = false;
     }
 
     virtual void remove_item(int index)
     {
         animation_arrays.remove_at(index);
         blend_data.position_array.remove_at(index);
-        blend_data.position_count -= 1;
+		blend_data.is_init_precompute = false;
     }
     virtual void move_up_item(int index)
     {
@@ -388,6 +386,7 @@ public:
             animation_arrays.swap(index, index-1);
 
             blend_data.position_array.swap(index, index-1);
+			blend_data.is_init_precompute = false;
         }
     }
     virtual void move_down_item(int index)
@@ -397,6 +396,7 @@ public:
             animation_arrays.swap(index, index + 1);
 
             blend_data.position_array.swap(index, index + 1);
+			blend_data.is_init_precompute = false;
         }
     }
 
@@ -430,7 +430,7 @@ struct CharacterAnimationInstance
 	int play_count = 1;
 	float get_weight()
 	{
-		if (m_PlayState == PlayState::PS_FadeOut)
+		if (m_PlayState == PS_FadeOut)
 		{
 			if (node->get_fade_out_time() <= 0.0f)
 				return 0;

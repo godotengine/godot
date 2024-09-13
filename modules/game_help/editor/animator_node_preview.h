@@ -130,19 +130,34 @@ protected:
         switch (play_state)
         {
         case PS_Play:
-            play_button->set_disabled(false);
-            pause_button->set_disabled(true);
-            stop_button->set_disabled(true);
+            play_button->set_disabled(true);
+            play_button->set_focus_mode(Control::FOCUS_NONE);
+
+            pause_button->set_disabled(false);
+            pause_button->set_focus_mode(Control::FOCUS_CLICK);
+
+            stop_button->set_disabled(false);
+            stop_button->set_focus_mode(Control::FOCUS_CLICK);
             break;
         case PS_Pause:
             play_button->set_disabled(true);
+            play_button->set_focus_mode(Control::FOCUS_NONE);
+
             pause_button->set_disabled(false);
+            pause_button->set_focus_mode(Control::FOCUS_CLICK);
+
             stop_button->set_disabled(false);
+            stop_button->set_focus_mode(Control::FOCUS_CLICK);
             break;
         case PS_Stop:
             play_button->set_disabled(false);
+            play_button->set_focus_mode(Control::FOCUS_CLICK);
+
             pause_button->set_disabled(true);
+            pause_button->set_focus_mode(Control::FOCUS_NONE);
+
             stop_button->set_disabled(true);
+            stop_button->set_focus_mode(Control::FOCUS_NONE);
             break;
         }
     }
