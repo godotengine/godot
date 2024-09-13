@@ -469,7 +469,6 @@ public:
 		uint32_t *buffer_data = nullptr;
 		uint32_t buffer_data_size = 0;
 
-		RID rid;
 		Point2i hotspot;
 	};
 
@@ -506,10 +505,8 @@ private:
 
 	HashMap<DisplayServer::CursorShape, CustomCursor> custom_cursors;
 
-	struct wl_cursor *current_wl_cursor = nullptr;
-	struct CustomCursor *current_custom_cursor = nullptr;
-
-	DisplayServer::CursorShape last_cursor_shape = DisplayServer::CURSOR_ARROW;
+	DisplayServer::CursorShape cursor_shape = DisplayServer::CURSOR_ARROW;
+	bool cursor_visible = true;
 
 	PointerConstraint pointer_constraint = PointerConstraint::NONE;
 
@@ -962,7 +959,7 @@ public:
 	DisplayServer::WindowID pointer_get_pointed_window_id() const;
 	BitField<MouseButtonMask> pointer_get_button_mask() const;
 
-	void cursor_hide();
+	void cursor_set_visible(bool p_visible);
 	void cursor_set_shape(DisplayServer::CursorShape p_cursor_shape);
 
 	void cursor_set_custom_shape(DisplayServer::CursorShape p_cursor_shape);
