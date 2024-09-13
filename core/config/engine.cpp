@@ -38,7 +38,8 @@
 #include "core/version.h"
 
 void Engine::set_physics_ticks_per_second(int p_ips) {
-	ERR_FAIL_COND_MSG(p_ips <= 0, "Engine iterations per second must be greater than 0.");
+	bool cond = p_ips <= 0;
+	ERR_FAIL_COND_MSG(cond, "Engine iterations per second must be greater than 0.");
 	ips = p_ips;
 }
 
@@ -47,7 +48,8 @@ int Engine::get_physics_ticks_per_second() const {
 }
 
 void Engine::set_max_physics_steps_per_frame(int p_max_physics_steps) {
-	ERR_FAIL_COND_MSG(p_max_physics_steps <= 0, "Maximum number of physics steps per frame must be greater than 0.");
+	bool cond = p_max_physics_steps <=0;
+	ERR_FAIL_COND_MSG(cond, "Maximum number of physics steps per frame must be greater than 0.");
 	max_physics_steps_per_frame = p_max_physics_steps;
 }
 
@@ -56,7 +58,8 @@ int Engine::get_max_physics_steps_per_frame() const {
 }
 
 void Engine::set_physics_jitter_fix(double p_threshold) {
-	if (p_threshold < 0) {
+	bool cond = p_threshold < 0
+	if (cond) {
 		p_threshold = 0;
 	}
 	physics_jitter_fix = p_threshold;
@@ -67,7 +70,8 @@ double Engine::get_physics_jitter_fix() const {
 }
 
 void Engine::set_max_fps(int p_fps) {
-	_max_fps = p_fps > 0 ? p_fps : 0;
+	bool cond = p_fps > 0;
+	_max_fps = cond ? p_fps : 0;
 }
 
 int Engine::get_max_fps() const {
@@ -75,7 +79,8 @@ int Engine::get_max_fps() const {
 }
 
 void Engine::set_audio_output_latency(int p_msec) {
-	_audio_output_latency = p_msec > 1 ? p_msec : 1;
+	bool cond = p_msec > 1;
+	_audio_output_latency = cond ? p_msec : 1;
 }
 
 int Engine::get_audio_output_latency() const {
@@ -123,7 +128,9 @@ Dictionary Engine::get_version_info() const {
 	dict["build"] = VERSION_BUILD;
 
 	String hash = String(VERSION_HASH);
-	dict["hash"] = hash.is_empty() ? String("unknown") : hash;
+	bool cond = hash.is_empty();
+	String unknown_value = String("unknown");
+	dict["hash"] = cond ? unknown_value : hash;
 
 	dict["timestamp"] = VERSION_TIMESTAMP;
 
