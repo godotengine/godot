@@ -840,7 +840,7 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 
 					// fixme: Only works for floating point atm
 					for (UINT32 j = 0; j < num_frames_available; j++) {
-						int32_t l, r;
+						int32_t l = 0, r = 0;
 
 						if (flags & AUDCLNT_BUFFERFLAGS_SILENT) {
 							l = r = 0;
