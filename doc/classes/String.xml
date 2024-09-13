@@ -1030,6 +1030,16 @@
 				Returns the string converted to [code]lowercase[/code].
 			</description>
 		</method>
+		<method name="to_multibyte_char_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<param index="0" name="encoding" type="String" default="&quot;&quot;" />
+			<description>
+				Converts the string to system multibyte code page encoded [PackedByteArray]. If conversion fails, empty array is returned.
+				The values permitted for [param encoding] are system dependent. If [param encoding] is empty string, system default encoding is used.
+				- For Windows, see [url=https://learn.microsoft.com/en-us/windows/win32/Intl/code-page-identifiers]Code Page Identifiers[/url] .NET names.
+				- For macOS and Linux/BSD, see [code]libiconv[/code] library documentation and [code]iconv --list[/code] for a list of supported encodings.
+			</description>
+		</method>
 		<method name="to_pascal_case" qualifiers="const">
 			<return type="String" />
 			<description>
