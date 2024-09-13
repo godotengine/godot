@@ -850,7 +850,8 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 								r = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j * 2 + 1);
 							} else if (ad->audio_input.channels == 1) {
 								l = r = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j);
-							} else if (ad->audio_input.channels >= 2) {
+							} else if (ad->audio_input.channels > 2) {
+								l = r = 0;
 								int channels = ad->audio_input.channels;
 								for (int ch = 0; ch < channels - 1; ch++) {
 									int32_t sample = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j * channels + ch);
