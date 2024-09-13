@@ -327,15 +327,7 @@ void DisplayServerWayland::mouse_set_mode(MouseMode p_mode) {
 
 	bool show_cursor = (p_mode == MOUSE_MODE_VISIBLE || p_mode == MOUSE_MODE_CONFINED);
 
-	if (show_cursor) {
-		if (custom_cursors.has(cursor_shape)) {
-			wayland_thread.cursor_set_custom_shape(cursor_shape);
-		} else {
-			wayland_thread.cursor_set_shape(cursor_shape);
-		}
-	} else {
-		wayland_thread.cursor_hide();
-	}
+	wayland_thread.cursor_set_visible(show_cursor);
 
 	WaylandThread::PointerConstraint constraint = WaylandThread::PointerConstraint::NONE;
 
@@ -993,11 +985,7 @@ void DisplayServerWayland::cursor_set_shape(CursorShape p_shape) {
 		return;
 	}
 
-	if (custom_cursors.has(p_shape)) {
-		wayland_thread.cursor_set_custom_shape(p_shape);
-	} else {
-		wayland_thread.cursor_set_shape(p_shape);
-	}
+	wayland_thread.cursor_set_shape(p_shape);
 }
 
 DisplayServerWayland::CursorShape DisplayServerWayland::cursor_get_shape() const {
@@ -1009,18 +997,13 @@ DisplayServerWayland::CursorShape DisplayServerWayland::cursor_get_shape() const
 void DisplayServerWayland::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	bool visible = (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED);
-
 	if (p_cursor.is_valid()) {
 		HashMap<CursorShape, CustomCursor>::Iterator cursor_c = custom_cursors.find(p_shape);
 
 		if (cursor_c) {
 			if (cursor_c->value.rid == p_cursor->get_rid() && cursor_c->value.hotspot == p_hotspot) {
 				// We have a cached cursor. Nice.
-				if (visible) {
-					wayland_thread.cursor_set_custom_shape(p_shape);
-				}
-
+				wayland_thread.cursor_set_shape(p_shape);
 				return;
 			}
 
@@ -1039,20 +1022,18 @@ void DisplayServerWayland::cursor_set_custom_image(const Ref<Resource> &p_cursor
 
 		wayland_thread.cursor_shape_set_custom_image(p_shape, image, p_hotspot);
 
-		if (visible) {
-			wayland_thread.cursor_set_custom_shape(p_shape);
-		}
+		wayland_thread.cursor_set_shape(p_shape);
 	} else {
 		// Clear cache and reset to default system cursor.
-		if (cursor_shape == p_shape && visible) {
+		wayland_thread.cursor_shape_clear_custom_image(p_shape);
+
+		if (cursor_shape == p_shape) {
 			wayland_thread.cursor_set_shape(p_shape);
 		}
 
 		if (custom_cursors.has(p_shape)) {
 			custom_cursors.erase(p_shape);
 		}
-
-		wayland_thread.cursor_shape_clear_custom_image(p_shape);
 	}
 }
 
