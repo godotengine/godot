@@ -841,6 +841,35 @@ static void _append_to_pipe(char *p_bytes, int p_size, String *r_pipe, Mutex *p_
 	}
 }
 
+String OS_Windows::multibyte_to_string(int p_encoding, const PackedByteArray &p_array) const {
+	LocalVector<wchar_t> wchars;
+	int total_wchars = MultiByteToWideChar(p_encoding, 0, (const char *)p_array.ptr(), p_array.size(), nullptr, 0);
+	if (total_wchars > 0) {
+		wchars.resize(total_wchars);
+		if (MultiByteToWideChar(p_encoding, 0, (const char *)p_array.ptr(), p_array.size(), wchars.ptr(), total_wchars) == 0) {
+			wchars.clear();
+		}
+	}
+	return String::utf16((const char16_t *)wchars.ptr(), wchars.size());
+}
+
+PackedByteArray OS_Windows::string_to_multibyte(int p_encoding, const String &p_string) const {
+	if (p_string.is_empty()) {
+		return PackedByteArray();
+	}
+	Char16String charstr = p_string.utf16();
+
+	PackedByteArray ret;
+	int total_mbchars = WideCharToMultiByte(p_encoding, 0, (const wchar_t *)charstr.ptr(), charstr.size(), nullptr, 0, nullptr, nullptr);
+	if (total_mbchars) {
+		ret.resize(total_mbchars);
+		if (WideCharToMultiByte(p_encoding, 0, (const wchar_t *)charstr.ptr(), charstr.size(), (char *)ret.ptrw(), ret.size(), nullptr, nullptr) == 0) {
+			ret.clear();
+		}
+	}
+	return ret;
+}
+
 Dictionary OS_Windows::get_memory_info() const {
 	Dictionary meminfo;
 
