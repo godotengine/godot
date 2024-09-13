@@ -871,8 +871,8 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 									ltemp /= (channels / 2);
 									rtemp /= (channels / 2);
 								}
-								l = static_cast<int32_t>(ltemp)
-								r = static_cast<int32_t>(rtemp)
+								l = static_cast<int32_t>(ltemp);
+								r = static_cast<int32_t>(rtemp);
 							} else {
 								l = r = 0;
 								ERR_PRINT("WASAPI: unsupported channel count in microphone!");
