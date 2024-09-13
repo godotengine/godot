@@ -351,8 +351,9 @@ TEST_CASE("[BitMap] Grow and shrink mask") {
 
 TEST_CASE("[BitMap] Grow and shrink very large mask") {
 	const Size2i dim{ 2040, 2040 };
-	BitMap bit_map{};
-	bit_map.create(dim);
+	Ref<BitMap> bit_map;
+	bit_map.instantiate();
+	bit_map->create(dim);
 
 	// Create sparse bit map that is a repetition of the given 3x3 pattern:
 	// | | | |
@@ -360,36 +361,34 @@ TEST_CASE("[BitMap] Grow and shrink very large mask") {
 	// | | | |
 	for (int x = 1; x < dim.x; x += 3) {
 		for (int y = 1; y < dim.y; y += 3) {
-			bit_map.set_bit(x, y, true);
+			bit_map->set_bit(x, y, true);
 		}
 	}
 
-	CHECK_MESSAGE(bit_map.get_true_bit_count() == 462400, "Creating a spaced grid of 3x3 cells with the center cell set in a 2040x2040 bit map should be (2040 / 3)^2=462400 bits");
-	bit_map.grow_mask(20, Rect2i(0, 0, 2040, 2040));
-	CHECK_MESSAGE(bit_map.get_true_bit_count() == 4161600, "Growing with size of 20 should set all bits surrounding all patterns (2040x2040=4161600) to true");
+	CHECK_MESSAGE(bit_map->get_true_bit_count() == 462400, "Creating a spaced grid of 3x3 cells with the center cell set in a 2040x2040 bit map should be (2040 / 3)^2=462400 bits");
+	bit_map->grow_mask(20, Rect2i(Point2i(), dim));
+	CHECK_MESSAGE(bit_map->get_true_bit_count() == 4161600, "Growing with size of 20 should set all bits surrounding all patterns (2040x2040=4161600) to true");
 
-	reset_bit_map(bit_map);
-
+	bit_map->set_bit_rect(Rect2i(Point2i(), dim), false);
 	for (int x = 1; x < dim.x; x += 3) {
 		for (int y = 1; y < dim.y; y += 3) {
-			bit_map.set_bit(x, y, true);
+			bit_map->set_bit(x, y, true);
 		}
 	}
 
-	bit_map.grow_mask(-1, Rect2i(0, 0, 2040, 2040));
-	CHECK_MESSAGE(bit_map.get_true_bit_count() == 0, "Shrinking with size of 1 should set all bits to false");
+	bit_map->grow_mask(-1, Rect2i(Point2i(), dim));
+	CHECK_MESSAGE(bit_map->get_true_bit_count() == 0, "Shrinking with size of 1 should set all bits to false");
 
-	reset_bit_map(bit_map);
-	bit_map.set_bit(1020, 1020, true); // single bit on at the center of large bitmap
+	bit_map->set_bit_rect(Rect2i(Point2i(), dim), false);
+	bit_map->set_bit(1020, 1020, true); // single bit on at the center of large bitmap
 
-	bit_map.grow_mask(2040, Rect2i(0, 0, 2040, 2040));
-	CHECK_MESSAGE(bit_map.get_true_bit_count() == 4161600, "Growing single bit with size of 2040 on a bitmap of 2040x2040 should set all bits to true");
+	bit_map->grow_mask(dim.x, Rect2i(Point2i(), dim));
+	CHECK_MESSAGE(bit_map->get_true_bit_count() == 4161600, "Growing single bit with size of 2040 on a bitmap of 2040x2040 should set all bits to true");
 
-	reset_bit_map(bit_map);
-	bit_map.set_bit_rect(Rect2i(0, 0, 2040, 2040), true); // full bitmap
+	bit_map->set_bit_rect(Rect2i(Point2i(), dim), true); // full bitmap
 
-	bit_map.grow_mask(-2040, Rect2i(0, 0, 2040, 2040));
-	CHECK_MESSAGE(bit_map.get_true_bit_count() == 0, "Shrinking full bitmap with size of 2040 on a bitmap of 2040x2040 should set all bits to true");
+	bit_map->grow_mask(-dim.x, Rect2i(Point2i(), dim));
+	CHECK_MESSAGE(bit_map->get_true_bit_count() == 0, "Shrinking full bitmap with size of 2040 on a bitmap of 2040x2040 should set all bits to true");
 }
 
 TEST_CASE("[BitMap] Blit") {
