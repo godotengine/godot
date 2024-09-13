@@ -725,7 +725,7 @@ void Skeleton3D::set_human_bone(int p_bone, bool p_is_human_bone) {
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX(p_bone, bone_size);
 
-	bones.write[p_bone].is_human_bone = p_is_human_bone;
+	bones.write[p_bone].is_human_bone = true;
 	bones.write[p_bone].pose_cache_dirty = true;
 	if (is_inside_tree()) {
 		_make_dirty();
@@ -751,7 +751,7 @@ Vector3 Skeleton3D::get_bone_pose_scale(int p_bone) const {
 }
 bool Skeleton3D::is_human_bone(int p_bone) const {
 	const int bone_size = bones.size();
-	ERR_FAIL_INDEX_V(p_bone, bone_size, Vector3());
+	ERR_FAIL_INDEX_V(p_bone, bone_size, false);
 	return bones[p_bone].is_human_bone;
 }
 
@@ -2055,7 +2055,6 @@ const HashSet<String>& get_human_bones() {
 	static bool is_init = false;
 	if(!is_init) {
 		is_init = true;
-		absolute_transform_targets.resize(30);
 		human_bones.insert("LeftThumbMetacarpal");
 		human_bones.insert("LeftThumbProximal");
 		human_bones.insert("LeftThumbDistal");
