@@ -271,9 +271,6 @@ void EditorFileServer::stop() {
 
 EditorFileServer::EditorFileServer() {
 	server.instantiate();
-
-	EDITOR_DEF("filesystem/file_server/port", 6010);
-	EDITOR_DEF("filesystem/file_server/password", "");
 }
 
 EditorFileServer::~EditorFileServer() {

@@ -1199,7 +1199,7 @@ GridMapEditor::GridMapEditor() {
 	ED_SHORTCUT("grid_map/clear_selection", TTR("Clear Selection"), Key::KEY_DELETE);
 	ED_SHORTCUT("grid_map/fill_selection", TTR("Fill Selection"), KeyModifierMask::CTRL + Key::F);
 
-	int mw = EDITOR_DEF("editors/grid_map/palette_min_width", 230);
+	int mw = EDITOR_GET("editors/grid_map/palette_min_width");
 	Control *ec = memnew(Control);
 	ec->set_custom_minimum_size(Size2(mw, 0) * EDSCALE);
 	add_child(ec);
@@ -1308,8 +1308,6 @@ GridMapEditor::GridMapEditor() {
 	size_slider->set_value(1.0f);
 	size_slider->connect(SceneStringName(value_changed), callable_mp(this, &GridMapEditor::_icon_size_changed));
 	add_child(size_slider);
-
-	EDITOR_DEF("editors/grid_map/preview_size", 64);
 
 	mesh_library_palette = memnew(ItemList);
 	mesh_library_palette->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
@@ -1533,9 +1531,6 @@ void GridMapEditorPlugin::make_visible(bool p_visible) {
 }
 
 GridMapEditorPlugin::GridMapEditorPlugin() {
-	EDITOR_DEF("editors/grid_map/editor_side", 1);
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "editors/grid_map/editor_side", PROPERTY_HINT_ENUM, "Left,Right"));
-
 	grid_map_editor = memnew(GridMapEditor);
 	switch ((int)EDITOR_GET("editors/grid_map/editor_side")) {
 		case 0: { // Left.
