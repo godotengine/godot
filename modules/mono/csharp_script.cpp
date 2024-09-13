@@ -1524,9 +1524,10 @@ void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 		}
 	}
 
+	props.reverse();
 	for (PropertyInfo &prop : props) {
 		validate_property(prop);
-		p_properties->push_back(prop);
+		p_properties->push_front(prop);
 	}
 }
 

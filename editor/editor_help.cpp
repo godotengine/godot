@@ -3134,8 +3134,6 @@ void EditorHelp::init_gdext_pointers() {
 EditorHelp::EditorHelp() {
 	set_custom_minimum_size(Size2(150 * EDSCALE, 0));
 
-	EDITOR_DEF("text_editor/help/sort_functions_alphabetically", true);
-
 	class_desc = memnew(RichTextLabel);
 	class_desc->set_tab_size(8);
 	add_child(class_desc);

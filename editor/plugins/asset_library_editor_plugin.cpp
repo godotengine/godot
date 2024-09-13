@@ -47,7 +47,7 @@
 #include "scene/resources/image_texture.h"
 
 static inline void setup_http_request(HTTPRequest *request) {
-	request->set_use_threads(EDITOR_DEF("asset_library/use_threads", true));
+	request->set_use_threads(EDITOR_GET("asset_library/use_threads"));
 
 	const String proxy_host = EDITOR_GET("network/http_proxy/host");
 	const int proxy_port = EDITOR_GET("network/http_proxy/port");
@@ -703,6 +703,7 @@ void EditorAssetLibrary::_notification(int p_what) {
 }
 
 void EditorAssetLibrary::_update_repository_options() {
+	// TODO: Move to editor_settings.cpp
 	Dictionary default_urls;
 	default_urls["godotengine.org (Official)"] = "https://godotengine.org/asset-library/api";
 	Dictionary available_urls = _EDITOR_DEF("asset_library/available_urls", default_urls, true);
