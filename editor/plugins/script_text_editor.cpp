@@ -502,7 +502,11 @@ String ScriptTextEditor::get_name() {
 }
 
 Ref<Texture2D> ScriptTextEditor::get_theme_icon() {
-	if (get_parent_control()) {
+	Ref<Texture2D> icon = EditorNode::get_editor_data().get_script_icon(script);
+	if (icon.is_null()) {
+		icon = EditorNode::get_singleton()->get_class_icon(script->get_instance_base_type());
+	}
+	if (icon.is_null() && get_parent_control()) {
 		String icon_name = script->get_class();
 		if (script->is_built_in()) {
 			icon_name += "Internal";
@@ -514,8 +518,7 @@ Ref<Texture2D> ScriptTextEditor::get_theme_icon() {
 			return get_parent_control()->get_editor_theme_icon(script->get_class());
 		}
 	}
-
-	return Ref<Texture2D>();
+	return icon;
 }
 
 void ScriptTextEditor::_validate_script() {

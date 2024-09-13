@@ -288,8 +288,13 @@ class ScriptEditor : public PanelContainer {
 	bool is_floating = false;
 	EditorHelpSearch *help_search_dialog = nullptr;
 
+	PanelContainer *script_list_container = nullptr;
 	ItemList *script_list = nullptr;
 	HSplitContainer *script_split = nullptr;
+	PanelContainer *help_header_container = nullptr;
+	TextureRect *help_icon = nullptr;
+	Label *help_header_label = nullptr;
+	ItemList *help_list = nullptr;
 	ItemList *members_overview = nullptr;
 	LineEdit *filter_scripts = nullptr;
 	LineEdit *filter_methods = nullptr;
@@ -447,7 +452,7 @@ class ScriptEditor : public PanelContainer {
 	bool _sort_list_on_update;
 
 	void _members_overview_selected(int p_idx);
-	void _script_selected(int p_idx);
+	void _script_selected(int p_idx, ItemList *p_list);
 
 	void _update_help_overview_visibility();
 	void _update_help_overview();
@@ -468,7 +473,7 @@ class ScriptEditor : public PanelContainer {
 	virtual void input(const Ref<InputEvent> &p_event) override;
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
-	void _script_list_clicked(int p_item, Vector2 p_local_mouse_pos, MouseButton p_mouse_button_index);
+	void _script_list_clicked(int p_item, Vector2 p_local_mouse_pos, MouseButton p_mouse_button_index, ItemList *p_list);
 	void _make_script_list_context_menu();
 
 	void _help_search(const String &p_text);

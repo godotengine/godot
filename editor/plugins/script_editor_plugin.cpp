@@ -1731,6 +1731,14 @@ void ScriptEditor::_notification(int p_what) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
 			tab_container->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("ScriptEditor"), EditorStringName(EditorStyles)));
+			script_list->set_fixed_icon_size(EditorNode::get_singleton()->get_class_icon("Node")->get_size());
+
+			script_list_container->add_theme_style_override(SNAME("panel"), get_theme_stylebox(SNAME("panel"), SNAME("ItemList")));
+
+			help_header_container->add_theme_style_override(SNAME("panel"), get_theme_stylebox(SNAME("bg"), SNAME("EditorInspectorCategory")));
+			help_icon->set_texture(get_editor_theme_icon(SNAME("Help")));
+			help_header_label->add_theme_font_override(SNAME("font"), get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
+			help_header_label->add_theme_font_size_override(SNAME("font_size"), get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts")));
 
 			help_search->set_icon(get_editor_theme_icon(SNAME("HelpSearch")));
 			site_search->set_icon(get_editor_theme_icon(SNAME("ExternalLink")));
@@ -1770,7 +1778,8 @@ void ScriptEditor::_notification(int p_what) {
 			EditorNode::get_singleton()->connect("scene_saved", callable_mp(this, &ScriptEditor::_scene_saved_callback));
 			FileSystemDock::get_singleton()->connect("files_moved", callable_mp(this, &ScriptEditor::_files_moved));
 			FileSystemDock::get_singleton()->connect("file_removed", callable_mp(this, &ScriptEditor::_file_removed));
-			script_list->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditor::_script_selected));
+			script_list->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditor::_script_selected).bind(script_list));
+			help_list->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditor::_script_selected).bind(help_list));
 
 			members_overview->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditor::_members_overview_selected));
 			help_overview->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditor::_help_overview_selected));
@@ -1932,10 +1941,16 @@ void ScriptEditor::_help_overview_selected(int p_idx) {
 	se->scroll_to_section(help_overview->get_item_metadata(p_idx));
 }
 
-void ScriptEditor::_script_selected(int p_idx) {
+void ScriptEditor::_script_selected(int p_idx, ItemList *p_list) {
 	grab_focus_block = !Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT); //amazing hack, simply amazing
 
-	_go_to_tab(script_list->get_item_metadata(p_idx));
+	if (p_list != script_list) {
+		script_list->deselect_all();
+	}
+	if (p_list != help_list) {
+		help_list->deselect_all();
+	}
+	_go_to_tab(p_list->get_item_metadata(p_idx));
 	grab_focus_block = false;
 }
 
@@ -2137,7 +2152,7 @@ void ScriptEditor::_update_script_colors() {
 			continue;
 		}
 
-		script_list->set_item_custom_bg_color(i, Color(0, 0, 0, 0));
+		//script_list->set_item_custom_bg_color(i, Color(0, 0, 0, 0));
 
 		if (script_temperature_enabled) {
 			int pass = n->get_meta("__editor_pass", -1);
@@ -2169,6 +2184,7 @@ void ScriptEditor::_update_script_names() {
 	}
 
 	script_list->clear();
+	help_list->clear();
 	bool split_script_help = EDITOR_GET("text_editor/script_list/group_help_pages");
 	ScriptSortBy sort_by = (ScriptSortBy)(int)EDITOR_GET("text_editor/script_list/sort_scripts_by");
 	ScriptListName display_as = (ScriptListName)(int)EDITOR_GET("text_editor/script_list/list_script_names_as");
@@ -2179,6 +2195,7 @@ void ScriptEditor::_update_script_names() {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
 		if (se) {
 			Ref<Texture2D> icon = se->get_theme_icon();
+
 			String path = se->get_edited_resource()->get_path();
 			bool saved = !path.is_empty();
 			if (saved) {
@@ -2268,7 +2285,7 @@ void ScriptEditor::_update_script_names() {
 		EditorHelp *eh = Object::cast_to<EditorHelp>(tab_container->get_tab_control(i));
 		if (eh) {
 			String name = eh->get_class();
-			Ref<Texture2D> icon = get_editor_theme_icon(SNAME("Help"));
+			Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(name);
 			String tooltip = vformat(TTR("%s Class Reference"), name);
 
 			_ScriptEditorItemData sd;
@@ -2322,22 +2339,25 @@ void ScriptEditor::_update_script_names() {
 		}
 	}
 
-	Color tool_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
-	tool_color.set_s(tool_color.get_s() * 1.5);
+	ItemList *current_list = script_list;
 	for (int i = 0; i < sedata_filtered.size(); i++) {
-		script_list->add_item(sedata_filtered[i].name, sedata_filtered[i].icon);
-		if (sedata_filtered[i].tool) {
-			script_list->set_item_icon_modulate(-1, tool_color);
+		if (current_list == script_list && sedata_filtered[i].category == 1) {
+			current_list = help_list;
 		}
 
-		int index = script_list->get_item_count() - 1;
-		script_list->set_item_tooltip(index, sedata_filtered[i].tooltip);
-		script_list->set_item_metadata(index, sedata_filtered[i].index); /* Saving as metadata the script's index in the tab container and not the filtered one */
+		current_list->add_item(sedata_filtered[i].name, sedata_filtered[i].icon);
+		if (sedata_filtered[i].tool) {
+			current_list->set_item_tag_icon(-1, get_editor_theme_icon(SNAME("ToolScript")));
+		}
+
+		int index = current_list->get_item_count() - 1;
+		current_list->set_item_tooltip(index, sedata_filtered[i].tooltip);
+		current_list->set_item_metadata(index, sedata_filtered[i].index); /* Saving as metadata the script's index in the tab container and not the filtered one */
 		if (sedata_filtered[i].used) {
-			script_list->set_item_custom_bg_color(index, Color(88 / 255.0, 88 / 255.0, 60 / 255.0));
+			current_list->set_item_custom_bg_color(index, Color(88 / 255.0, 88 / 255.0, 60 / 255.0));
 		}
 		if (tab_container->get_current_tab() == sedata_filtered[i].index) {
-			script_list->select(index);
+			current_list->select(index);
 
 			script_name_label->set_text(sedata_filtered[i].name);
 			script_icon->set_texture(sedata_filtered[i].icon);
@@ -3328,10 +3348,10 @@ void ScriptEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void ScriptEditor::_script_list_clicked(int p_item, Vector2 p_local_mouse_pos, MouseButton p_mouse_button_index) {
+void ScriptEditor::_script_list_clicked(int p_item, Vector2 p_local_mouse_pos, MouseButton p_mouse_button_index, ItemList *p_list) {
 	if (p_mouse_button_index == MouseButton::MIDDLE) {
-		script_list->select(p_item);
-		_script_selected(p_item);
+		p_list->select(p_item);
+		_script_selected(p_item, p_list);
 		_menu_option(FILE_CLOSE);
 	}
 
@@ -4087,12 +4107,13 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	main_container->add_child(menu_hb);
 
 	script_split = memnew(HSplitContainer);
-	main_container->add_child(script_split);
+	script_split->set_split_offset(70 * EDSCALE);
 	script_split->set_v_size_flags(SIZE_EXPAND_FILL);
+	main_container->add_child(script_split);
 
 	list_split = memnew(VSplitContainer);
-	script_split->add_child(list_split);
 	list_split->set_v_size_flags(SIZE_EXPAND_FILL);
+	script_split->add_child(list_split);
 
 	scripts_vbox = memnew(VBoxContainer);
 	scripts_vbox->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -4104,16 +4125,53 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	filter_scripts->connect(SceneStringName(text_changed), callable_mp(this, &ScriptEditor::_filter_scripts_text_changed));
 	scripts_vbox->add_child(filter_scripts);
 
+	script_list_container = memnew(PanelContainer);
+	script_list_container->set_custom_minimum_size(Size2(100, 70) * EDSCALE);
+	script_list_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	scripts_vbox->add_child(script_list_container);
+
+	ScrollContainer *script_list_scroll = memnew(ScrollContainer);
+	script_list_container->add_child(script_list_scroll);
+
+	VBoxContainer *script_help_list_vbox = memnew(VBoxContainer);
+	script_help_list_vbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	script_list_scroll->add_child(script_help_list_vbox);
+
 	script_list = memnew(ItemList);
 	script_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	scripts_vbox->add_child(script_list);
-	script_list->set_custom_minimum_size(Size2(150, 60) * EDSCALE); //need to give a bit of limit to avoid it from disappearing
-	script_list->set_v_size_flags(SIZE_EXPAND_FILL);
-	script_split->set_split_offset(70 * EDSCALE);
+	script_list->set_auto_height(true);
+	script_list->set_h_size_flags(Control::SIZE_FILL);
 	_sort_list_on_update = true;
-	script_list->connect("item_clicked", callable_mp(this, &ScriptEditor::_script_list_clicked), CONNECT_DEFERRED);
+	script_list->connect("item_clicked", callable_mp(this, &ScriptEditor::_script_list_clicked).bind(script_list), CONNECT_DEFERRED);
 	script_list->set_allow_rmb_select(true);
+	script_list->add_theme_style_override("panel", memnew(StyleBoxEmpty));
 	SET_DRAG_FORWARDING_GCD(script_list, ScriptEditor);
+	script_help_list_vbox->add_child(script_list);
+
+	help_header_container = memnew(PanelContainer);
+	script_help_list_vbox->add_child(help_header_container);
+
+	HBoxContainer *help_header_hbox = memnew(HBoxContainer);
+	help_header_hbox->set_alignment(BoxContainer::ALIGNMENT_CENTER);
+	help_header_container->add_child(help_header_hbox);
+
+	help_icon = memnew(TextureRect);
+	help_icon->set_stretch_mode(TextureRect::STRETCH_KEEP);
+	help_icon->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
+	help_header_hbox->add_child(help_icon);
+
+	help_header_label = memnew(Label);
+	help_header_label->set_text("Documentation");
+	help_header_hbox->add_child(help_header_label);
+
+	help_list = memnew(ItemList);
+	help_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	help_list->set_auto_height(true);
+	help_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	help_list->connect("item_clicked", callable_mp(this, &ScriptEditor::_script_list_clicked).bind(help_list), CONNECT_DEFERRED);
+	help_list->set_allow_rmb_select(true);
+	help_list->add_theme_style_override("panel", memnew(StyleBoxEmpty));
+	script_help_list_vbox->add_child(help_list);
 
 	context_menu = memnew(PopupMenu);
 	add_child(context_menu);
