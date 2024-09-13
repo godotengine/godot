@@ -1361,7 +1361,8 @@
 			Set additional options for BiDi override.
 		</member>
 		<member name="syntax_highlighter" type="SyntaxHighlighter" setter="set_syntax_highlighter" getter="get_syntax_highlighter">
-			Sets the [SyntaxHighlighter] to use.
+			The syntax highlighter to use.
+			[b]Note:[/b] A [SyntaxHighlighter] instance should not be used across multiple [TextEdit] nodes.
 		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			String value of the [TextEdit].
