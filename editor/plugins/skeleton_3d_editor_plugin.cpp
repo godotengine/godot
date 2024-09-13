@@ -1139,7 +1139,7 @@ void Skeleton3DEditor::edit_mode_toggled(const bool pressed) {
 Skeleton3DEditor::Skeleton3DEditor(EditorInspectorPluginSkeleton *e_plugin, Skeleton3D *p_skeleton) :
 		editor_plugin(e_plugin) {
 	singleton = this;
-
+	skeletonID = p_skeleton->get_instance_id();
 	// Handle.
 	handle_material = Ref<ShaderMaterial>(memnew(ShaderMaterial));
 	handle_shader = Ref<Shader>(memnew(Shader));

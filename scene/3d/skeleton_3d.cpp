@@ -1343,6 +1343,12 @@ static void auto_mapping_process(Skeleton3D *skeleton, Dictionary &p_bone_map) {
 	picklist.push_back("spine");
 	int hips = search_bone_by_name(skeleton, picklist);
 	if (hips == -1) {
+		Vector<int> root = skeleton->get_root_bones();
+		if (root.size() == 1) {
+			hips = root[0];
+		}
+	}
+	if (hips == -1) {
 		WARN_PRINT("Auto Mapping couldn't guess Hips. Abort auto mapping.");
 		return; // If there is no Hips, we cannot guess bone after then.
 	} else {
@@ -1820,7 +1826,7 @@ static void auto_mapping_process(Skeleton3D *skeleton, Dictionary &p_bone_map) {
 				children.erase(ls_idx);
 				children.erase(rs_idx);
 				String word = "spine"; // It would be better to limit the search with "spine" because it could be mistaken with breast, wing and etc...
-				for (int i = 0; children.size(); i++) {
+				for (int i = 0; i < children.size(); i++) {
 					bone_idx = children[i];
 					if (is_match_with_bone_name(skeleton->get_bone_name(bone_idx), word)) {
 						neck = bone_idx;
@@ -1837,9 +1843,12 @@ static void auto_mapping_process(Skeleton3D *skeleton, Dictionary &p_bone_map) {
 	picklist.push_back("face");
 	int head = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_NONE, neck);
 	if (head == -1) {
-		search_path = skeleton->get_bone_children(neck);
-		if (search_path.size() == 1) {
-			head = search_path[0]; // Maybe only one child of the Neck is Head.
+		if (neck != -1) {
+			search_path = skeleton->get_bone_children(neck);
+			if (search_path.size() == 1) {
+				head = search_path[0]; // Maybe only one child of the Neck is Head.
+			}
+
 		}
 	}
 	if (head == -1) {

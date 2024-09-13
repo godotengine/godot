@@ -82,11 +82,6 @@ void CharacterAnimatorNodeBase::_bind_methods()
     ClassDB::bind_method(D_METHOD("set_animation_arrays", "animation_arrays"), &CharacterAnimatorNodeBase::set_animation_arrays);
     ClassDB::bind_method(D_METHOD("get_animation_arrays"), &CharacterAnimatorNodeBase::get_animation_arrays);
 
-    ClassDB::bind_method(D_METHOD("set_black_board_property", "black_board_property"), &CharacterAnimatorNodeBase::set_black_board_property);
-    ClassDB::bind_method(D_METHOD("get_black_board_property"), &CharacterAnimatorNodeBase::get_black_board_property);
-
-    ClassDB::bind_method(D_METHOD("set_black_board_property_y", "black_board_property"), &CharacterAnimatorNodeBase::set_black_board_property_y);
-    ClassDB::bind_method(D_METHOD("get_black_board_property_y"), &CharacterAnimatorNodeBase::get_black_board_property_y);
 
     ClassDB::bind_method(D_METHOD("set_fade_out_time", "fade_out_time"), &CharacterAnimatorNodeBase::set_fade_out_time);
     ClassDB::bind_method(D_METHOD("get_fade_out_time"), &CharacterAnimatorNodeBase::get_fade_out_time);
@@ -723,14 +718,13 @@ void CharacterAnimatorNode1D::add_animation(const Ref<Animation> & p_anim,float 
     Ref<CharacterAnimationItem> item;
     item.instantiate();
     item->set_animation(p_anim);
+	int count = blend_data.position_array.size() + 1;
+    animation_arrays.resize(count);
 
-    if(blend_data.position_array.size() >= animation_arrays.size())
-        animation_arrays.resize(blend_data.position_array.size());
+	blend_data.position_array.resize(count);
 
-	blend_data.position_array.resize(animation_arrays.size());
-
-    blend_data.position_array[animation_arrays.size() - 1] = p_pos;
-    animation_arrays[animation_arrays.size() - 1] = item;
+    blend_data.position_array[count - 1] = p_pos;
+    animation_arrays[count - 1] = item;
 
 }
 void CharacterAnimatorNode1D::process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,const Ref<Blackboard> &p_blackboard)
