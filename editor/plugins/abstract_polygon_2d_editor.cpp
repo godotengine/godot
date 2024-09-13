@@ -748,7 +748,9 @@ AbstractPolygon2DEditor::AbstractPolygon2DEditor(bool p_wip_destructive) {
 }
 
 void AbstractPolygon2DEditorPlugin::edit(Object *p_object) {
-	polygon_editor->edit(Object::cast_to<Node>(p_object));
+	Node *polygon_node = Object::cast_to<Node>(p_object);
+	polygon_editor->edit(polygon_node);
+	make_visible(polygon_node != nullptr);
 }
 
 bool AbstractPolygon2DEditorPlugin::handles(Object *p_object) const {
