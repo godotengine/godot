@@ -102,6 +102,8 @@ private:
 
 		bool enabled = true;
 		bool pose_cache_dirty = true;
+		// 是否为人形骨骼
+		bool is_human_bone = false;
 		Transform3D pose_cache;
 		Vector3 pose_position;
 		Quaternion pose_rotation;
@@ -251,13 +253,16 @@ public:
 	Vector3 get_bone_pose_position(int p_bone) const;
 	Quaternion get_bone_pose_rotation(int p_bone) const;
 	Vector3 get_bone_pose_scale(int p_bone) const;
+	bool is_human_bone(int p_bone) const;
 	void set_bone_pose(int p_bone, const Transform3D &p_pose);
 	void set_bone_pose_position(int p_bone, const Vector3 &p_position);
 	void set_bone_pose_rotation(int p_bone, const Quaternion &p_rotation);
 	void set_bone_pose_scale(int p_bone, const Vector3 &p_scale);
+	void set_human_bone(int p_bone, bool p_is_human_bone) ;
 
 	Transform3D get_bone_global_pose(int p_bone) const;
 	void set_bone_global_pose(int p_bone, const Transform3D &p_pose);
+	void change_to_human_bone(int p_bone) ;
 
 	void reset_bone_pose(int p_bone);
 	void reset_bone_poses();

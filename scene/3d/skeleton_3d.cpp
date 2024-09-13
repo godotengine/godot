@@ -103,8 +103,10 @@ bool Skeleton3D::_set(const StringName &p_path, const Variant &p_value) {
 		set_bone_pose_rotation(which, p_value);
 	} else if (what == "scale") {
 		set_bone_pose_scale(which, p_value);
+	} else if (what == "is_human_bone") {
+		set_human_bone(which, p_value);
 #ifndef DISABLE_DEPRECATED
-	} else if (what == "pose" || what == "bound_children") {
+	}else if (what == "pose" || what == "bound_children") {
 		// Kept for compatibility from 3.x to 4.x.
 		WARN_DEPRECATED_MSG("Skeleton uses old pose format, which is deprecated (and loads slower). Consider re-importing or re-saving the scene." +
 				(is_inside_tree() ? vformat(" Path: \"%s\"", get_path()) : String()));
@@ -170,6 +172,8 @@ bool Skeleton3D::_get(const StringName &p_path, Variant &r_ret) const {
 		r_ret = get_bone_pose_rotation(which);
 	} else if (what == "scale") {
 		r_ret = get_bone_pose_scale(which);
+	}  else if (what == "is_human_bone") {
+		r_ret = is_human_bone(which);
 	} else {
 		return false;
 	}
@@ -187,6 +191,7 @@ void Skeleton3D::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::VECTOR3, prep + PNAME("position"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::QUATERNION, prep + PNAME("rotation"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::VECTOR3, prep + PNAME("scale"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::VECTOR3, prep + PNAME("is_human_bone"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	}
 
 	for (PropertyInfo &E : *p_list) {
@@ -716,6 +721,16 @@ void Skeleton3D::set_bone_pose_scale(int p_bone, const Vector3 &p_scale) {
 		_make_dirty();
 	}
 }
+void Skeleton3D::set_human_bone(int p_bone, bool p_is_human_bone) {
+	const int bone_size = bones.size();
+	ERR_FAIL_INDEX(p_bone, bone_size);
+
+	bones.write[p_bone].is_human_bone = p_is_human_bone;
+	bones.write[p_bone].pose_cache_dirty = true;
+	if (is_inside_tree()) {
+		_make_dirty();
+	}
+}
 
 Vector3 Skeleton3D::get_bone_pose_position(int p_bone) const {
 	const int bone_size = bones.size();
@@ -733,6 +748,11 @@ Vector3 Skeleton3D::get_bone_pose_scale(int p_bone) const {
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX_V(p_bone, bone_size, Vector3());
 	return bones[p_bone].pose_scale;
+}
+bool Skeleton3D::is_human_bone(int p_bone) const {
+	const int bone_size = bones.size();
+	ERR_FAIL_INDEX_V(p_bone, bone_size, Vector3());
+	return bones[p_bone].is_human_bone;
 }
 
 void Skeleton3D::reset_bone_pose(int p_bone) {
@@ -1327,7 +1347,63 @@ static int search_bone_by_name(Skeleton3D *p_skeleton, const Vector<String> &p_p
 
 	return skeleton->find_bone(shortest);
 }
-
+/**
+ * 骨骼层次结构如下,一共54根骨头,这些层次包含的骨头只能有旋转缩放,不能存在偏移
+ "Root\n"
+"└─ Hips\n"
+"    ├─ LeftUpperLeg\n"
+"    │  └─ LeftLowerLeg\n"
+"    │     └─ LeftFoot\n"
+"    │        └─ LeftToes\n"
+"    ├─ RightUpperLeg\n"
+"    │  └─ RightLowerLeg\n"
+"    │     └─ RightFoot\n"
+"    │        └─ RightToes\n"
+"    └─ Spine\n"
+"        └─ Chest\n"
+"            └─ UpperChest\n"
+"                ├─ Neck\n"
+"                │   └─ Head\n"
+"                │       ├─ Jaw\n"
+"                │       ├─ LeftEye\n"
+"                │       └─ RightEye\n"
+"                ├─ LeftShoulder\n"
+"                │  └─ LeftUpperArm\n"
+"                │     └─ LeftLowerArm\n"
+"                │        └─ LeftHand\n"
+"                │           ├─ LeftThumbMetacarpal\n"
+"                │           │  └─ LeftThumbProximal\n"
+"                │           ├─ LeftIndexProximal\n"
+"                │           │  └─ LeftIndexIntermediate\n"
+"                │           │    └─ LeftIndexDistal\n"
+"                │           ├─ LeftMiddleProximal\n"
+"                │           │  └─ LeftMiddleIntermediate\n"
+"                │           │    └─ LeftMiddleDistal\n"
+"                │           ├─ LeftRingProximal\n"
+"                │           │  └─ LeftRingIntermediate\n"
+"                │           │    └─ LeftRingDistal\n"
+"                │           └─ LeftLittleProximal\n"
+"                │              └─ LeftLittleIntermediate\n"
+"                │                └─ LeftLittleDistal\n"
+"                └─ RightShoulder\n"
+"                   └─ RightUpperArm\n"
+"                      └─ RightLowerArm\n"
+"                         └─ RightHand\n"
+"                            ├─ RightThumbMetacarpal\n"
+"                            │  └─ RightThumbProximal\n"
+"                            ├─ RightIndexProximal\n"
+"                            │  └─ RightIndexIntermediate\n"
+"                            │     └─ RightIndexDistal\n"
+"                            ├─ RightMiddleProximal\n"
+"                            │  └─ RightMiddleIntermediate\n"
+"                            │     └─ RightMiddleDistal\n"
+"                            ├─ RightRingProximal\n"
+"                            │  └─ RightRingIntermediate\n"
+"                            │     └─ RightRingDistal\n"
+"                            └─ RightLittleProximal\n"
+"                               └─ RightLittleIntermediate\n"
+"                                 └─ RightLittleDistal\n"
+ **/
 static void auto_mapping_process(Skeleton3D *skeleton, Dictionary &p_bone_map) {
 	
 
@@ -1968,7 +2044,76 @@ static void auto_mapping_process(Skeleton3D *skeleton, Dictionary &p_bone_map) {
 	WARN_PRINT("Finish auto mapping.");
 }
 
+void Skeleton3D::change_to_human_bone(int p_bone) {	
+	while(p_bone != -1) {
+		bones.write[p_bone].is_human_bone = true;
+		p_bone = bones[p_bone].parent;
+	}
+}
+const HashSet<String>& get_human_bones() {
+	static HashSet<String> human_bones;
+	static bool is_init = false;
+	if(!is_init) {
+		is_init = true;
+		absolute_transform_targets.resize(30);
+		human_bones.insert("LeftThumbMetacarpal");
+		human_bones.insert("LeftThumbProximal");
+		human_bones.insert("LeftThumbDistal");
+		human_bones.insert("LeftIndexProximal");
+		human_bones.insert("LeftIndexIntermediate");
+		human_bones.insert("LeftIndexDistal");
+		human_bones.insert("LeftMiddleProximal");
+		human_bones.insert("LeftMiddleIntermediate");
+		human_bones.insert("LeftMiddleDistal");
+		human_bones.insert("LeftRingProximal");
+		human_bones.insert("LeftRingIntermediate");
+		human_bones.insert("LeftRingDistal");
+		human_bones.insert("LeftLittleProximal");
+		human_bones.insert("LeftLittleIntermediate");
+		human_bones.insert("LeftLittleDistal");
+		human_bones.insert("RightThumbMetacarpal");
+		human_bones.insert("RightThumbProximal");
+		human_bones.insert("RightThumbDistal");
+		human_bones.insert("RightIndexProximal");
+		human_bones.insert("RightIndexIntermediate");
+		human_bones.insert("RightIndexDistal");
+		human_bones.insert("RightMiddleProximal");
+		human_bones.insert("RightMiddleIntermediate");
+		human_bones.insert("RightMiddleDistal");
+		human_bones.insert("RightRingProximal");
+		human_bones.insert("RightRingIntermediate");
+		human_bones.insert("RightRingDistal");
+		human_bones.insert("RightLittleProximal");
+		human_bones.insert("RightLittleIntermediate");
+		human_bones.insert("RightLittleDistal");
 
+		human_bones.insert("Spine");
+		human_bones.insert("Chest");
+		human_bones.insert("UpperChest");
+		human_bones.insert("Neck");
+		human_bones.insert("Head");
+		human_bones.insert("LeftEye");
+		human_bones.insert("RightEye");
+		human_bones.insert("Jaw");
+		human_bones.insert("LeftShoulder");
+		human_bones.insert("LeftUpperArm");
+		human_bones.insert("LeftLowerArm");
+		human_bones.insert("LeftHand");
+		human_bones.insert("RightShoulder");
+		human_bones.insert("RightUpperArm");
+		human_bones.insert("RightLowerArm");
+		human_bones.insert("RightHand");
+		human_bones.insert("LeftUpperLeg");
+		human_bones.insert("LeftLowerLeg");
+		human_bones.insert("LeftFoot");
+		human_bones.insert("LeftToes");
+		human_bones.insert("RightUpperLeg");
+		human_bones.insert("RightLowerLeg");
+		human_bones.insert("RightFoot");
+		human_bones.insert("RightToes");
+	}
+	return human_bones;
+}
 Dictionary Skeleton3D::get_human_bone_mapping()
 {
 	Dictionary human_bone_mapping;
@@ -1987,10 +2132,14 @@ void Skeleton3D::set_human_bone_mapping(const Dictionary &p_human_bone_mapping)
 {
 	List<Variant> keys;
 	p_human_bone_mapping.get_key_list(&keys);
-	
+	const HashSet<String>& human_bones = get_human_bones();
 	for (const Variant &E : keys) {
 		int bone_index = this->find_bone(E);
-		this->set_bone_name(bone_index, p_human_bone_mapping[E]);
+		auto& bone = p_human_bone_mapping[E];
+		this->set_bone_name(bone_index, bone);
+		if(human_bones.has(bone)) {
+			change_to_human_bone(bone_index);
+		}
 	}
 }
 Vector<String> Skeleton3D::get_bone_names() const
