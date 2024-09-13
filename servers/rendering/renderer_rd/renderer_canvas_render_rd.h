@@ -559,7 +559,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	};
 
 	void _render_batch_items(RenderTarget p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool &r_sdf_used, bool p_to_backbuffer = false, RenderingMethod::RenderInfo *r_render_info = nullptr);
-	void _record_item_commands(const Item *p_item, RenderTarget p_render_target, const Transform2D &p_base_transform, Item *&r_current_clip, Light *p_lights, uint32_t &r_index, bool &r_batch_broken, bool &r_sdf_used);
+	void _record_item_commands(const Item *p_item, RenderTarget p_render_target, const Transform2D &p_base_transform, Item *&r_current_clip, Light *p_lights, uint32_t &r_index, bool &r_batch_broken, bool &r_sdf_used, Batch *&r_current_batch);
 	void _render_batch(RD::DrawListID p_draw_list, PipelineVariants *p_pipeline_variants, RenderingDevice::FramebufferFormatID p_framebuffer_format, Light *p_lights, Batch const *p_batch, RenderingMethod::RenderInfo *r_render_info = nullptr);
 	void _prepare_batch_texture(Batch *p_current_batch, RID p_texture) const;
 	void _bind_canvas_texture(RD::DrawListID p_draw_list, RID p_uniform_set);
