@@ -581,6 +581,7 @@ void BitMap::grow_mask(int p_pixels, const Rect2i &p_rect) {
 	copy->bitmask = bitmask;
 
 	// Pre-compute distances to avoid re-computations on every pixel
+	// Resulting bitmap looks like a circle
 	Ref<BitMap> distance_mask;
 	distance_mask.instantiate();
 	distance_mask->create(Size2i(p_pixels * 2 + 1, p_pixels * 2 + 1));
@@ -607,7 +608,15 @@ void BitMap::grow_mask(int p_pixels, const Rect2i &p_rect) {
 			const int x1 = j + p_pixels;
 
 			for (int y = y0; y <= y1; y++) {
-				for (int x = x0; x <= x1; x++) {
+				int x = x0;
+
+				// Skip until we find the circle in the distance mask
+				while (x <= x1 && !distance_mask->get_bit(x - x0, y - y0)) {
+					x++;
+					continue;
+				}
+
+				for (; x <= x1; x++) {
 					bool outside = false;
 
 					if ((x < p_rect.position.x) || (x >= p_rect.position.x + p_rect.size.x) || (y < p_rect.position.y) || (y >= p_rect.position.y + p_rect.size.y)) {
@@ -622,7 +631,8 @@ void BitMap::grow_mask(int p_pixels, const Rect2i &p_rect) {
 					const int mask_y = y - y0;
 					const int mask_x = x - x0;
 					if (!distance_mask->get_bit(mask_x, mask_y)) {
-						continue;
+						// Safe to break- we are now stepping outside the distance bitmask circle
+						break;
 					}
 
 					if (outside || (bit_value == copy->get_bit(x, y))) {
