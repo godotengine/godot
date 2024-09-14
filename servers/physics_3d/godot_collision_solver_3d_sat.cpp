@@ -1473,7 +1473,6 @@ static void _collision_box_cone(const GodotShape3D *p_a, const Transform3D &p_tr
 
 	// 3. Test the cone's side surfaces
 	for (int i = 0; i < 3; i++) {
-		Vector3 e1 = p_transform_a.basis.get_column(i);
 		Vector3 e2 = p_transform_b.basis.xform(Vector3(cone_radius, 0, 0)).normalized();
 		Vector3 cone_surface_axis = (cone_apex - cone_base_center).cross(e2).normalized();
 		if (!separator.test_axis(cone_surface_axis)) {
@@ -1487,9 +1486,6 @@ static void _collision_box_cone(const GodotShape3D *p_a, const Transform3D &p_tr
 					(v & 1) ? box_A->get_half_extents().x : -box_A->get_half_extents().x,
 					(v & 2) ? box_A->get_half_extents().y : -box_A->get_half_extents().y,
 					(v & 4) ? box_A->get_half_extents().z : -box_A->get_half_extents().z);
-
-			Vector3 corner_world = p_transform_a.xform(corner);
-			Vector3 axis_apex = (corner_world - cone_apex).normalized();
 		}
 
 		// Check the box edges against the cone base edge

@@ -67,7 +67,6 @@ const double cylinder_face_support_threshold = 0.999;
 
 const double cone_edge_support_threshold = 0.999998;
 const double cone_edge_support_threshold_lower = Math::sqrt(1.0 - cone_edge_support_threshold * cone_edge_support_threshold);
-const double cone_face_support_threshold = 0.999;
 
 void GodotShape3D::configure(const AABB &p_aabb) {
 	aabb = p_aabb;
