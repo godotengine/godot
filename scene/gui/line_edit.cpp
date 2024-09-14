@@ -61,16 +61,6 @@ void LineEdit::_edit() {
 	editing = true;
 	_validate_caret_can_draw();
 
-	DisplayServer::WindowID wid = get_window() ? get_window()->get_window_id() : DisplayServer::INVALID_WINDOW_ID;
-	if (wid != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
-		DisplayServer::get_singleton()->window_set_ime_active(true, wid);
-		Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + theme_cache.font->get_height(theme_cache.font_size)) / 2) + get_global_position();
-		if (get_window()->get_embedder()) {
-			pos += get_viewport()->get_popup_base_transform().get_origin();
-		}
-		DisplayServer::get_singleton()->window_set_ime_position(pos, wid);
-	}
-
 	show_virtual_keyboard();
 	queue_redraw();
 	emit_signal(SNAME("editing_toggled"), true);
@@ -84,14 +74,7 @@ void LineEdit::_unedit() {
 	editing = false;
 	_validate_caret_can_draw();
 
-	DisplayServer::WindowID wid = get_window() ? get_window()->get_window_id() : DisplayServer::INVALID_WINDOW_ID;
-	if (wid != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
-		DisplayServer::get_singleton()->window_set_ime_position(Point2(), wid);
-		DisplayServer::get_singleton()->window_set_ime_active(false, wid);
-	}
-	ime_text = "";
-	ime_selection = Point2();
-	_shape();
+	apply_ime();
 	set_caret_column(caret_column); // Update scroll_offset.
 
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
@@ -107,6 +90,64 @@ void LineEdit::_unedit() {
 
 bool LineEdit::is_editing() const {
 	return editing;
+}
+
+void LineEdit::_close_ime_window() {
+	DisplayServer::WindowID wid = get_window() ? get_window()->get_window_id() : DisplayServer::INVALID_WINDOW_ID;
+	if (wid == DisplayServer::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
+		return;
+	}
+	DisplayServer::get_singleton()->window_set_ime_position(Point2(), wid);
+	DisplayServer::get_singleton()->window_set_ime_active(false, wid);
+}
+
+void LineEdit::_update_ime_window_position() {
+	DisplayServer::WindowID wid = get_window() ? get_window()->get_window_id() : DisplayServer::INVALID_WINDOW_ID;
+	if (wid == DisplayServer::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
+		return;
+	}
+	DisplayServer::get_singleton()->window_set_ime_active(true, wid);
+	Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + theme_cache.font->get_height(theme_cache.font_size)) / 2) + get_global_position();
+	if (get_window()->get_embedder()) {
+		pos += get_viewport()->get_popup_base_transform().get_origin();
+	}
+	// The window will move to the updated position the next time the IME is updated, not immediately.
+	DisplayServer::get_singleton()->window_set_ime_position(pos, wid);
+}
+
+bool LineEdit::has_ime_text() const {
+	return !ime_text.is_empty();
+}
+
+void LineEdit::cancel_ime() {
+	if (!has_ime_text()) {
+		return;
+	}
+	ime_text = String();
+	ime_selection = Vector2i();
+	alt_start = false;
+	alt_start_no_hold = false;
+	_close_ime_window();
+	_shape();
+}
+
+void LineEdit::apply_ime() {
+	if (!has_ime_text()) {
+		return;
+	}
+
+	// Force apply the current IME text.
+	if (alt_start || alt_start_no_hold) {
+		cancel_ime();
+		if ((alt_code > 0x31 && alt_code < 0xd800) || (alt_code > 0xdfff && alt_code <= 0x10ffff)) {
+			char32_t ucodestr[2] = { (char32_t)alt_code, 0 };
+			insert_text_at_caret(ucodestr);
+		}
+	} else {
+		String insert_ime_text = ime_text;
+		cancel_ime();
+		insert_text_at_caret(insert_ime_text);
+	}
 }
 
 void LineEdit::_swap_current_input_direction() {
@@ -333,9 +374,10 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> b = p_event;
 
-	// Ignore mouse clicks in IME input mode.
-	if (b.is_valid() && ime_text.is_empty()) {
+	if (b.is_valid()) {
 		if (b->is_pressed() && b->get_button_index() == MouseButton::RIGHT) {
+			apply_ime();
+
 			if (editable && !selection.enabled) {
 				set_caret_at_pixel_pos(b->get_position().x);
 			}
@@ -356,6 +398,8 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (editable && is_middle_mouse_paste_enabled() && b->is_pressed() && b->get_button_index() == MouseButton::MIDDLE && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
+			apply_ime();
+
 			String paste_buffer = DisplayServer::get_singleton()->clipboard_get_primary().strip_escapes();
 
 			deselect();
@@ -388,6 +432,8 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (b->is_pressed()) {
+			apply_ime();
+
 			accept_event(); // Don't pass event further when clicked on text field.
 			if (editable && !text.is_empty() && _is_over_clear_button(b->get_position())) {
 				clear_button_status.press_attempt = true;
@@ -561,46 +607,111 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	if (!k->is_pressed()) {
-		if (alt_start && k->get_keycode() == Key::ALT) {
-			alt_start = false;
-			if ((alt_code > 0x31 && alt_code < 0xd800) || (alt_code > 0xdfff && alt_code <= 0x10ffff)) {
-				char32_t ucodestr[2] = { (char32_t)alt_code, 0 };
-				insert_text_at_caret(ucodestr);
-			}
-			accept_event();
-			return;
+	// Start Unicode input (hold).
+	if (k->is_alt_pressed() && k->get_keycode() == Key::KP_ADD && !alt_start && !alt_start_no_hold) {
+		if (selection.enabled) {
+			selection_delete();
 		}
+		alt_start = true;
+		alt_code = 0;
+		ime_text = "u";
+		ime_selection = Vector2i(0, -1);
+		_shape();
+		queue_redraw();
+		accept_event();
 		return;
 	}
 
-	// Alt + Unicode input:
-	if (k->is_alt_pressed()) {
-		if (!alt_start) {
-			if (k->get_keycode() == Key::KP_ADD) {
-				alt_start = true;
-				alt_code = 0;
-				accept_event();
-				return;
-			}
-		} else {
-			if (k->get_keycode() >= Key::KEY_0 && k->get_keycode() <= Key::KEY_9) {
-				alt_code = alt_code << 4;
-				alt_code += (uint32_t)(k->get_keycode() - Key::KEY_0);
-			}
-			if (k->get_keycode() >= Key::KP_0 && k->get_keycode() <= Key::KP_9) {
-				alt_code = alt_code << 4;
-				alt_code += (uint32_t)(k->get_keycode() - Key::KP_0);
-			}
-			if (k->get_keycode() >= Key::A && k->get_keycode() <= Key::F) {
-				alt_code = alt_code << 4;
-				alt_code += (uint32_t)(k->get_keycode() - Key::A) + 10;
-			}
-			accept_event();
-			return;
+	// Start Unicode input (press).
+	if (k->is_action("ui_unicode_start", true) && !alt_start && !alt_start_no_hold) {
+		if (selection.enabled) {
+			selection_delete();
 		}
+		alt_start_no_hold = true;
+		alt_code = 0;
+		ime_text = "u";
+		ime_selection = Vector2i(0, -1);
+		_shape();
+		queue_redraw();
+		accept_event();
+		return;
 	}
 
+	// Update Unicode input.
+	if (k->is_pressed() && ((k->is_alt_pressed() && alt_start) || alt_start_no_hold)) {
+		if (k->get_keycode() >= Key::KEY_0 && k->get_keycode() <= Key::KEY_9) {
+			alt_code = alt_code << 4;
+			alt_code += (uint32_t)(k->get_keycode() - Key::KEY_0);
+		} else if (k->get_keycode() >= Key::KP_0 && k->get_keycode() <= Key::KP_9) {
+			alt_code = alt_code << 4;
+			alt_code += (uint32_t)(k->get_keycode() - Key::KP_0);
+		} else if (k->get_keycode() >= Key::A && k->get_keycode() <= Key::F) {
+			alt_code = alt_code << 4;
+			alt_code += (uint32_t)(k->get_keycode() - Key::A) + 10;
+		} else if ((Key)k->get_unicode() >= Key::KEY_0 && (Key)k->get_unicode() <= Key::KEY_9) {
+			alt_code = alt_code << 4;
+			alt_code += (uint32_t)((Key)k->get_unicode() - Key::KEY_0);
+		} else if ((Key)k->get_unicode() >= Key::A && (Key)k->get_unicode() <= Key::F) {
+			alt_code = alt_code << 4;
+			alt_code += (uint32_t)((Key)k->get_unicode() - Key::A) + 10;
+		} else if (k->get_physical_keycode() >= Key::KEY_0 && k->get_physical_keycode() <= Key::KEY_9) {
+			alt_code = alt_code << 4;
+			alt_code += (uint32_t)(k->get_physical_keycode() - Key::KEY_0);
+		}
+		if (k->get_keycode() == Key::BACKSPACE) {
+			alt_code = alt_code >> 4;
+		}
+		if (alt_code > 0x10ffff) {
+			alt_code = 0x10ffff;
+		}
+		if (alt_code > 0) {
+			ime_text = vformat("u%s", String::num_int64(alt_code, 16, true));
+		} else {
+			ime_text = "u";
+		}
+		ime_selection = Vector2i(0, -1);
+		_shape();
+		queue_redraw();
+		accept_event();
+		return;
+	}
+
+	// Submit Unicode input.
+	if ((!k->is_pressed() && alt_start && k->get_keycode() == Key::ALT) || (alt_start_no_hold && (k->is_action("ui_text_submit", true) || k->is_action("ui_accept", true)))) {
+		alt_start = false;
+		alt_start_no_hold = false;
+		if ((alt_code > 0x31 && alt_code < 0xd800) || (alt_code > 0xdfff && alt_code <= 0x10ffff)) {
+			ime_text = String();
+			ime_selection = Vector2i();
+			char32_t ucodestr[2] = { (char32_t)alt_code, 0 };
+			insert_text_at_caret(ucodestr);
+		} else {
+			ime_text = String();
+			ime_selection = Vector2i();
+			_shape();
+		}
+		queue_redraw();
+		accept_event();
+		return;
+	}
+
+	// Cancel Unicode input.
+	if (alt_start_no_hold && k->is_action("ui_cancel", true)) {
+		alt_start = false;
+		alt_start_no_hold = false;
+		ime_text = String();
+		ime_selection = Vector2i();
+		_shape();
+		queue_redraw();
+		accept_event();
+		return;
+	}
+
+	if (!k->is_pressed()) {
+		return;
+	}
+
+	// Open context menu.
 	if (context_menu_enabled) {
 		if (k->is_action("ui_menu", true)) {
 			_update_context_menu();
@@ -830,6 +941,8 @@ void LineEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 	Control::drop_data(p_point, p_data);
 
 	if (p_data.is_string() && is_editable()) {
+		apply_ime();
+
 		set_caret_at_pixel_pos(p_point.x);
 		int caret_column_tmp = caret_column;
 		bool is_inside_sel = selection.enabled && caret_column >= selection.begin && caret_column <= selection.end;
@@ -1213,15 +1326,7 @@ void LineEdit::_notification(int p_what) {
 			}
 
 			if (editing) {
-				DisplayServer::WindowID wid = get_window() ? get_window()->get_window_id() : DisplayServer::INVALID_WINDOW_ID;
-				if (wid != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
-					DisplayServer::get_singleton()->window_set_ime_active(true, wid);
-					Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + theme_cache.font->get_height(theme_cache.font_size)) / 2) + get_global_position();
-					if (get_window()->get_embedder()) {
-						pos += get_viewport()->get_popup_base_transform().get_origin();
-					}
-					DisplayServer::get_singleton()->window_set_ime_position(pos, wid);
-				}
+				_update_ime_window_position();
 			}
 		} break;
 
@@ -1745,6 +1850,8 @@ void LineEdit::clear() {
 }
 
 void LineEdit::show_virtual_keyboard() {
+	_update_ime_window_position();
+
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
 		if (selection.enabled) {
 			DisplayServer::get_singleton()->virtual_keyboard_show(text, get_global_rect(), DisplayServer::VirtualKeyboardType(virtual_keyboard_type), max_length, selection.begin, selection.end);
@@ -2644,6 +2751,10 @@ void LineEdit::_validate_property(PropertyInfo &p_property) const {
 }
 
 void LineEdit::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("has_ime_text"), &LineEdit::has_ime_text);
+	ClassDB::bind_method(D_METHOD("cancel_ime"), &LineEdit::cancel_ime);
+	ClassDB::bind_method(D_METHOD("apply_ime"), &LineEdit::apply_ime);
+
 	ClassDB::bind_method(D_METHOD("set_horizontal_alignment", "alignment"), &LineEdit::set_horizontal_alignment);
 	ClassDB::bind_method(D_METHOD("get_horizontal_alignment"), &LineEdit::get_horizontal_alignment);
 

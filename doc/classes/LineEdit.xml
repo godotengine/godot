@@ -37,6 +37,18 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="apply_ime">
+			<return type="void" />
+			<description>
+				Applies text from the [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url] (IME) and closes the IME if it is open.
+			</description>
+		</method>
+		<method name="cancel_ime">
+			<return type="void" />
+			<description>
+				Closes the [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url] (IME) if it is open. Any text in the IME will be lost.
+			</description>
+		</method>
 		<method name="clear">
 			<return type="void" />
 			<description>
@@ -131,6 +143,12 @@
 			<return type="int" />
 			<description>
 				Returns the selection end column.
+			</description>
+		</method>
+		<method name="has_ime_text" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the user has text in the [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url] (IME).
 			</description>
 		</method>
 		<method name="has_selection" qualifiers="const">
