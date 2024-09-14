@@ -381,6 +381,7 @@ public:
 		WINDOW_FLAG_POPUP,
 		WINDOW_FLAG_EXTEND_TO_TITLE,
 		WINDOW_FLAG_MOUSE_PASSTHROUGH,
+		WINDOW_FLAG_SHARP_CORNERS,
 		WINDOW_FLAG_MAX,
 	};
 
@@ -394,6 +395,7 @@ public:
 		WINDOW_FLAG_POPUP_BIT = (1 << WINDOW_FLAG_POPUP),
 		WINDOW_FLAG_EXTEND_TO_TITLE_BIT = (1 << WINDOW_FLAG_EXTEND_TO_TITLE),
 		WINDOW_FLAG_MOUSE_PASSTHROUGH_BIT = (1 << WINDOW_FLAG_MOUSE_PASSTHROUGH),
+		WINDOW_FLAG_SHARP_CORNERS_BIT = (1 << WINDOW_FLAG_SHARP_CORNERS),
 	};
 
 	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i(), bool p_exclusive = false, WindowID p_transient_parent = INVALID_WINDOW_ID);
