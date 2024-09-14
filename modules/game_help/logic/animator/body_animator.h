@@ -302,23 +302,7 @@ public:
 			}
 		}
 	};
-    class AnimationChache : public RefCounted
-    {
-    public:
-        void set_using() {
-            is_using = true;
-            last_using_time = OS::get_singleton()->get_unix_time();
-        }
-        void clear() {
-        }
-        ~AnimationChache() {
-            clear();
-        }
-    protected:
-        bool is_using = false;
-        float last_using_time = 0.0f;
-    };
-    class CharacterAnimationUpdateTool
+    class CharacterAnimationUpdateTool : public RefCounted
     {
     public:
         void add_animation_cache(Ref<Animation> p_anim,NodePath p_path,TrackCache* p_cache) {
