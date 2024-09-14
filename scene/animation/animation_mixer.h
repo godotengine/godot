@@ -179,6 +179,7 @@ protected:
 		bool loc_used = false;
 		bool rot_used = false;
 		bool scale_used = false;
+		bool is_human_bone = false;
 		Vector3 init_loc = Vector3(0, 0, 0);
 		Quaternion init_rot = Quaternion(0, 0, 0, 1);
 		Vector3 init_scale = Vector3(1, 1, 1);
@@ -201,6 +202,11 @@ protected:
 				loc(p_other.loc),
 				rot(p_other.rot),
 				scale(p_other.scale) {
+		}
+		void reset() {
+			loc = init_loc;
+			rot = init_rot;
+			scale = init_scale;
 		}
 
 		TrackCacheTransform() {
@@ -227,6 +233,9 @@ protected:
 				shape_index(p_other.shape_index) {}
 
 		TrackCacheBlendShape() { type = Animation::TYPE_BLEND_SHAPE; }
+		void reset() {
+			value = init_value;
+		}
 		~TrackCacheBlendShape() {}
 	};
 

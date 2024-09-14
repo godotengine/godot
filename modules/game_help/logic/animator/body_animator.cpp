@@ -51,6 +51,8 @@ void CharacterAnimationLibrary::editor_create_animation_node() {
 }
 
 
+
+
 void CharacterAnimatorLayer::_process_logic(const Ref<Blackboard>& p_playback_info, double p_delta, bool is_first)
 {
     if(logic_context.animation_logic.is_null())
@@ -219,13 +221,18 @@ void CharacterAnimatorLayer::layer_blend_apply() {
 						return;
 					}
 					if (t->loc_used) {
-                        if(config->get_blend_type() == CharacterAnimatorLayerConfig::BT_Blend)
-                        {
-						    t_skeleton->set_bone_pose_position(t->bone_idx, t_skeleton->get_bone_pose_position(t->bone_idx).lerp(t->loc,blend_weight));
-                        }
-                        else
-                        {
-                            t_skeleton->set_bone_pose_position(t->bone_idx, t->loc);
+                        if(t_skeleton->is_human_bone(t->bone_idx)) {
+                            t_skeleton->set_bone_pose_position(t->bone_idx, t_skeleton->get_bone_rest(t->bone_idx).origin);
+                        } else {
+                            if(config->get_blend_type() == CharacterAnimatorLayerConfig::BT_Blend)
+                            {
+                                t_skeleton->set_bone_pose_position(t->bone_idx, t_skeleton->get_bone_pose_position(t->bone_idx).lerp(t->loc,blend_weight));
+                            }
+                            else
+                            {
+                                t_skeleton->set_bone_pose_position(t->bone_idx, t->loc);
+                            }
+
                         }
 					}
 					if (t->rot_used) {
