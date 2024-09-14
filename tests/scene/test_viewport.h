@@ -95,6 +95,7 @@ public:
 	MouseButton last_mouse_button;
 	Point2i last_mouse_move_position;
 	StringName drag_data_name = SNAME("Drag Data");
+	bool force_drag_on_mouse_press = false;
 
 	virtual Variant get_drag_data(const Point2 &p_point) override {
 		return drag_data_name;
@@ -104,6 +105,9 @@ public:
 		Ref<InputEventMouseButton> mb = p_event;
 		if (mb.is_valid()) {
 			last_mouse_button = mb->get_button_index();
+			if (force_drag_on_mouse_press && mb->is_pressed()) {
+				force_drag(drag_data_name, nullptr);
+			}
 			return;
 		}
 
@@ -1337,6 +1341,20 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 				CHECK(root->gui_is_drag_successful());
 
 				SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(on_d, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
+
+				// Force drag from the mouse pressed event.
+				CHECK_FALSE(root->gui_is_dragging());
+				node_a->force_drag_on_mouse_press = true;
+				SEND_GUI_MOUSE_BUTTON_EVENT(on_a, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+				CHECK(root->gui_is_dragging());
+
+				SEND_GUI_MOUSE_MOTION_EVENT(on_d, MouseButtonMask::LEFT, Key::NONE);
+
+				// Drop with LMB-Up.
+				SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(on_d, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
+				CHECK_FALSE(root->gui_is_dragging());
+				CHECK(root->gui_is_drag_successful());
+				node_a->force_drag_on_mouse_press = false;
 			}
 		}
 	}

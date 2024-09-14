@@ -1799,13 +1799,15 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				}
 			}
 
+			bool was_dragging = gui.dragging;
+
 			bool stopped = gui.mouse_focus && gui.mouse_focus->can_process() && _gui_call_input(gui.mouse_focus, mb);
 			if (stopped) {
 				set_input_as_handled();
 			}
 
-			if (gui.dragging && mb->get_button_index() == MouseButton::LEFT) {
-				// Alternate drop use (when using force_drag(), as proposed by #5342).
+			if (was_dragging && gui.dragging && mb->get_button_index() == MouseButton::LEFT) {
+				// Alternate drop use (when using force_drag(), as proposed by #5351).
 				_perform_drop(gui.mouse_focus, pos);
 			}
 
