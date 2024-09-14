@@ -299,16 +299,27 @@ public:
 				it->value->reset();
 			}
 			for (auto it = blend_shape_cache.begin(); it != blend_shape_cache.end(); ++it) {
+				it->value->reset();
 			}
+            root_motion_cache.loc = Vector3(0,0,0);
+            root_motion_cache.rot = Quaternion(0,0,0,1);
+            root_motion_cache.scale = Vector3(1,1,1);
 		}
+        void clear() {
+            for (auto it = bone_cache.begin(); it != bone_cache.end(); ++it) {
+                memdelete(it->value);
+            }
+            for (auto it = blend_shape_cache.begin(); it != blend_shape_cache.end(); ++it) {
+                memdelete(it->value);
+            }
+            bone_cache.clear();
+            blend_shape_cache.clear();
+        }
 	};
     class CharacterAnimationUpdateTool : public RefCounted
     {
     public:
-        void add_animation_cache(Ref<Animation> p_anim,NodePath p_path,TrackCache* p_cache) {
-            ObjectID id = p_anim->get_instance_id();
-        }
-		void init(const Dictionary& bone_map, Node* parent, Skeleton3D* skeleton, const Ref<Animation>& p_anim) {
+		void add_animation_cache(const Dictionary& bone_map, Node* parent, Skeleton3D* skeleton, const Ref<Animation>& p_anim) {
 
 			if (animation_cache.has(p_anim->get_instance_id())) {
 				return;
@@ -385,8 +396,16 @@ public:
 
 			}
 		}
-		void process_anim(const AnimationInstance& ai) {
+    protected:
+        void clear_cache() {
+            context.clear();
+        }
+        void reset() {
+            context.reset();
+        }
+        void process_anim(const AnimationInstance& ai,const Dictionary& bone_map, Node* parent, Skeleton3D* skeleton) {
 			Ref<Animation> a = ai.animation_data.animation;
+            add_animation_cache(bone_map, parent, skeleton, a);
 			double time = ai.playback_info.time;
 			double delta = ai.playback_info.delta;
 			bool seeked = ai.playback_info.seeked;
@@ -772,6 +791,22 @@ public:
             
             }
 
+
+            for(auto it = context.blend_shape_cache.begin(); it != context.blend_shape_cache.end(); ++it) {
+				TrackCacheBlendShape *t = it->value;
+
+				MeshInstance3D *t_mesh_3d = Object::cast_to<MeshInstance3D>(ObjectDB::get_instance(t->object_id));
+				if (t_mesh_3d) {
+                    if(config->get_blend_type() == CharacterAnimatorLayerConfig::BT_Blend)
+                    {
+                        t_mesh_3d->set_blend_shape_value(t->shape_index, Math::lerp( t_mesh_3d->get_blend_shape_value(t->shape_index),t->value,blend_weight));
+                    }
+                    else
+                    {
+                        t_mesh_3d->set_blend_shape_value(t->shape_index, t->value);
+                    }
+				}
+            }
 		}
     protected:
         HashSet<ObjectID> animation_cache;
@@ -817,6 +852,7 @@ public:
             logic_context.curr_name = p_state_name;
         }
     }
+    CharacterAnimatorLayer();
     ~CharacterAnimatorLayer();
 public:
     void set_config(const Ref<CharacterAnimatorLayerConfig>& _config) { config = _config; }

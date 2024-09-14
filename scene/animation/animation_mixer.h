@@ -207,6 +207,9 @@ protected:
 			loc = init_loc;
 			rot = init_rot;
 			scale = init_scale;
+			loc_used = false;
+			rot_used = false;
+			scale_used = false;
 		}
 
 		TrackCacheTransform() {

@@ -451,6 +451,10 @@ void CharacterAnimatorLayer::play_animation(const StringName& p_node_name)
     }
     logic_context.curr_animation = m_Animator->get_animation_by_name(p_node_name);
 }
+CharacterAnimatorLayer::CharacterAnimatorLayer()
+{
+    update_tool.instantiate();
+}
 
 CharacterAnimatorLayer::~CharacterAnimatorLayer()
 {
