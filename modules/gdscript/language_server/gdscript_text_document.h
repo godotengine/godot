@@ -58,6 +58,7 @@ private:
 	Array find_symbols(const lsp::TextDocumentPositionParams &p_location, List<const lsp::DocumentSymbol *> &r_list);
 	lsp::TextDocumentItem load_document_item(const Variant &p_param);
 	void notify_client_show_symbol(const lsp::DocumentSymbol *symbol);
+	void notify_client_unsafe_lines(const String &p_path);
 
 public:
 	Variant nativeSymbol(const Dictionary &p_params);
