@@ -1202,7 +1202,7 @@ void EditorNode::_reload_modified_scenes() {
 			editor_data.set_edited_scene(i);
 			_remove_edited_scene(false);
 
-			Error err = load_scene(filename, false, false, true, false, true);
+			Error err = load_scene(filename, false, false, false, true);
 			if (err != OK) {
 				ERR_PRINT(vformat("Failed to load scene: %s", filename));
 			}
@@ -3931,7 +3931,7 @@ int EditorNode::new_scene() {
 	return idx;
 }
 
-Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, bool p_set_inherited, bool p_clear_errors, bool p_force_open_imported, bool p_silent_change_tab) {
+Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, bool p_set_inherited, bool p_force_open_imported, bool p_silent_change_tab) {
 	if (!is_inside_tree()) {
 		defer_load_scene = p_scene;
 		return OK;
@@ -3952,10 +3952,6 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 			open_import_request = p_scene;
 			return OK;
 		}
-	}
-
-	if (p_clear_errors && !load_errors_queued_to_display) {
-		load_errors->clear();
 	}
 
 	String lpath = ProjectSettings::get_singleton()->localize_path(p_scene);
@@ -4932,6 +4928,12 @@ void EditorNode::_progress_dialog_visibility_changed() {
 	if (load_errors_queued_to_display && !progress_dialog->is_visible()) {
 		EditorInterface::get_singleton()->popup_dialog_centered_ratio(singleton->load_error_dialog, 0.5);
 		load_errors_queued_to_display = false;
+	}
+}
+
+void EditorNode::_load_error_dialog_visibility_changed() {
+	if (!load_error_dialog->is_visible()) {
+		load_errors->clear();
 	}
 }
 
@@ -5915,7 +5917,7 @@ void EditorNode::reload_scene(const String &p_path) {
 
 	// Reload scene.
 	_remove_scene(scene_idx, false);
-	load_scene(p_path, true, false, true, true);
+	load_scene(p_path, true, false, true);
 
 	// Adjust index so tab is back a the previous position.
 	editor_data.move_edited_scene_to_index(scene_idx);
@@ -6441,7 +6443,7 @@ void EditorNode::_inherit_imported(const String &p_action) {
 }
 
 void EditorNode::_open_imported() {
-	load_scene(open_import_request, true, false, true, true);
+	load_scene(open_import_request, true, false, true);
 }
 
 void EditorNode::dim_editor(bool p_dimming) {
@@ -7848,6 +7850,7 @@ EditorNode::EditorNode() {
 	load_error_dialog->set_unparent_when_invisible(true);
 	load_error_dialog->add_child(load_errors);
 	load_error_dialog->set_title(TTR("Load Errors"));
+	load_error_dialog->connect(SceneStringName(visibility_changed), callable_mp(this, &EditorNode::_load_error_dialog_visibility_changed));
 
 	execute_outputs = memnew(RichTextLabel);
 	execute_outputs->set_selection_enabled(true);
