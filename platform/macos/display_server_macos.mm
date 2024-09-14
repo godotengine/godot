@@ -3180,6 +3180,10 @@ void DisplayServerMacOS::show_emoji_and_symbol_picker() const {
 void DisplayServerMacOS::process_events() {
 	ERR_FAIL_COND(!Thread::is_main_thread());
 
+	if (rendering_device) {
+		rendering_device->pre_input_hook(Engine::get_singleton()->get_max_fps());
+	}
+
 	while (true) {
 		NSEvent *event = [NSApp
 				nextEventMatchingMask:NSEventMaskAny
