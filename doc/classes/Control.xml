@@ -121,6 +121,8 @@
 			<param index="0" name="event" type="InputEvent" />
 			<description>
 				Virtual method to be implemented by the user. Use this method to process and accept inputs on UI elements. See [method accept_event].
+				The [Control] node first calls the virtual function [method Control._gui_input], allowing you to manually handle the input event before it's processed internally.
+				[b]Note:[/b] Calling [method Viewport.set_input_as_handled] may disable internal input processing for [Control] nodes derived from [Button], [LineEdit], [HSlider], [Tree], and others.
 				[b]Example usage for clicking a control:[/b]
 				[codeblocks]
 				[gdscript]
