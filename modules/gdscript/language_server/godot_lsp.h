@@ -1035,6 +1035,9 @@ struct CompletionItem {
 		dict["kind"] = kind;
 		dict["data"] = data;
 		dict["insertText"] = insertText;
+		if (insertTextFormat) {
+			dict["insertTextFormat"] = insertTextFormat;
+		}
 		if (resolved) {
 			dict["detail"] = detail;
 			dict["documentation"] = documentation.to_json();
@@ -1085,6 +1088,9 @@ struct CompletionItem {
 		}
 		if (p_dict.has("insertText")) {
 			insertText = p_dict["insertText"];
+		}
+		if (p_dict.has("insertTextFormat")) {
+			insertTextFormat = p_dict["insertTextFormat"];
 		}
 		if (p_dict.has("data")) {
 			data = p_dict["data"];

@@ -191,6 +191,12 @@ Array GDScriptTextDocument::completion(const Dictionary &p_params) {
 			item.data = request_data;
 			item.insertText = option.insert_text;
 
+			// LSP clients won't autoclose brackets. We can make it work using the snippet insert format.
+			if (item.insertText.ends_with("(")) {
+				item.insertText += "$1)";
+				item.insertTextFormat = lsp::InsertTextFormat::Snippet;
+			}
+
 			switch (option.kind) {
 				case ScriptLanguage::CODE_COMPLETION_KIND_ENUM:
 					item.kind = lsp::CompletionItemKind::Enum;
