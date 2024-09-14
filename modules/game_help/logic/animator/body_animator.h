@@ -836,6 +836,7 @@ protected:
     CharacterAnimationLogicContext logic_context;
     // 动画掩码
     Ref<CharacterAnimatorLayerConfig> config;
+    Ref<CharacterAnimationUpdateTool> update_tool;
     List<Ref<CharacterAnimatorNodeBase>> play_list;
     Vector<float> m_TotalAnimationWeight;
     List<CharacterAnimationInstance> m_AnimationInstances;
