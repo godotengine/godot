@@ -35,6 +35,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
+#include "scene/gui/check_box.h"
 #include "scene/resources/image_texture.h"
 
 void EditorProfiler::_make_metric_ptrs(Metric &m) {
@@ -177,8 +178,8 @@ void EditorProfiler::_item_edited() {
 }
 
 void EditorProfiler::_update_plot() {
-	const int w = graph->get_size().width;
-	const int h = graph->get_size().height;
+	const int w = MAX(1, graph->get_size().width); // Clamp to 1 to prevent from crashing when profiler is autostarted.
+	const int h = MAX(1, graph->get_size().height);
 	bool reset_texture = false;
 	const int desired_len = w * h * 4;
 
@@ -416,6 +417,10 @@ void EditorProfiler::_internal_profiles_pressed() {
 	_combo_changed(0);
 }
 
+void EditorProfiler::_autostart_toggled(bool p_toggled_on) {
+	EditorSettings::get_singleton()->set_project_metadata("debug_options", "autostart_profiler", p_toggled_on);
+}
+
 void EditorProfiler::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
@@ -539,9 +544,10 @@ void EditorProfiler::set_enabled(bool p_enable, bool p_clear) {
 	}
 }
 
-void EditorProfiler::set_pressed(bool p_pressed) {
+void EditorProfiler::set_profiling(bool p_pressed) {
 	activate->set_pressed(p_pressed);
 	_update_button_text();
+	emit_signal(SNAME("enable_profiling"), activate->is_pressed());
 }
 
 bool EditorProfiler::is_profiling() {
@@ -632,6 +638,12 @@ EditorProfiler::EditorProfiler() {
 	clear_button->connect(SceneStringName(pressed), callable_mp(this, &EditorProfiler::_clear_pressed));
 	clear_button->set_disabled(true);
 	hb->add_child(clear_button);
+
+	CheckBox *autostart_checkbox = memnew(CheckBox);
+	autostart_checkbox->set_text(TTR("Autostart"));
+	autostart_checkbox->set_pressed(EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_profiler", false));
+	autostart_checkbox->connect(SceneStringName(toggled), callable_mp(this, &EditorProfiler::_autostart_toggled));
+	hb->add_child(autostart_checkbox);
 
 	hb->add_child(memnew(Label(TTR("Measure:"))));
 
