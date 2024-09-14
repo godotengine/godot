@@ -1497,11 +1497,23 @@ bool CSharpInstance::get(const StringName &p_name, Variant &r_ret) const {
 
 void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 	List<PropertyInfo> props;
-	script->get_script_property_list(&props);
+	ERR_FAIL_COND(!script.is_valid());
+#ifdef TOOLS_ENABLED
+	for (const PropertyInfo &prop : script->exported_members_cache) {
+		props.push_back(prop);
+	}
+#else
+	for (const KeyValue<StringName, PropertyInfo> &E : script->member_info) {
+		props.push_front(E.value);
+	}
+#endif
+
+	for (PropertyInfo &prop : props) {
+		validate_property(prop);
+		p_properties->push_back(prop);
+	}
 
 	// Call _get_property_list
-
-	ERR_FAIL_COND(!script.is_valid());
 
 	StringName method = SNAME("_get_property_list");
 
@@ -1524,10 +1536,25 @@ void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 		}
 	}
 
-	props.reverse();
-	for (PropertyInfo &prop : props) {
-		validate_property(prop);
-		p_properties->push_front(prop);
+	CSharpScript *top = script.ptr()->base_script.ptr();
+	while (top != nullptr) {
+		props.clear();
+#ifdef TOOLS_ENABLED
+		for (const PropertyInfo &prop : top->exported_members_cache) {
+			props.push_back(prop);
+		}
+#else
+		for (const KeyValue<StringName, PropertyInfo> &E : top->member_info) {
+			props.push_front(E.value);
+		}
+#endif
+
+		for (PropertyInfo &prop : props) {
+			validate_property(prop);
+			p_properties->push_back(prop);
+		}
+
+		top = top->base_script.ptr();
 	}
 }
 
