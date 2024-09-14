@@ -95,6 +95,12 @@ Size2 TextureProgressBar::get_minimum_size() const {
 }
 
 void TextureProgressBar::set_progress_texture(const Ref<Texture2D> &p_texture) {
+#ifdef TOOLS_ENABLED
+	// Change the reference cross visibility depending on fill mode and progress texture validity.
+	if (Engine::get_singleton()->is_editor_hint() && reference_cross_marker && reference_cross_marker->is_inside_tree()) {
+		reference_cross_marker->set_visible(((mode == FILL_CLOCKWISE) || (mode == FILL_COUNTER_CLOCKWISE) || (mode == FILL_CLOCKWISE_AND_COUNTER_CLOCKWISE)) && p_texture.is_valid());
+	}
+#endif
 	_set_texture(&progress, p_texture);
 }
 
@@ -534,9 +540,9 @@ void TextureProgressBar::_notification(int p_what) {
 									draw_polygon(points, colors, uvs, progress);
 								}
 							}
-
-							// Draw a reference cross.
-							if (Engine::get_singleton()->is_editor_hint()) {
+#ifdef TOOLS_ENABLED
+							// Change position of the reference cross node.
+							if (Engine::get_singleton()->is_editor_hint() && reference_cross_marker && reference_cross_marker->is_inside_tree() && reference_cross_marker->is_visible()) {
 								Point2 p;
 
 								if (nine_patch_stretch) {
@@ -547,10 +553,10 @@ void TextureProgressBar::_notification(int p_what) {
 
 								p *= get_relative_center();
 								p += progress_offset;
-								p = p.floor();
-								draw_line(p - Point2(8, 0), p + Point2(8, 0), Color(0.9, 0.5, 0.5), 2);
-								draw_line(p - Point2(0, 8), p + Point2(0, 8), Color(0.9, 0.5, 0.5), 2);
+
+								reference_cross_marker->set_position(p);
 							}
+#endif
 						} break;
 						case FILL_BILINEAR_LEFT_AND_RIGHT: {
 							Rect2 region = Rect2(progress_offset + Point2(s.x / 2 - s.x * get_as_ratio() / 2, 0), Size2(s.x * get_as_ratio(), s.y));
@@ -599,6 +605,14 @@ void TextureProgressBar::set_fill_mode(int p_fill) {
 	}
 
 	mode = (FillMode)p_fill;
+
+#ifdef TOOLS_ENABLED
+	// Change the reference cross visibility depending on fill mode and progress texture validity.
+	if (Engine::get_singleton()->is_editor_hint() && reference_cross_marker && reference_cross_marker->is_inside_tree()) {
+		reference_cross_marker->set_visible(((mode == FILL_CLOCKWISE) || (mode == FILL_COUNTER_CLOCKWISE) || (mode == FILL_CLOCKWISE_AND_COUNTER_CLOCKWISE)) && progress.is_valid());
+	}
+#endif
+
 	queue_redraw();
 	notify_property_list_changed();
 }
@@ -742,4 +756,12 @@ void TextureProgressBar::_bind_methods() {
 
 TextureProgressBar::TextureProgressBar() {
 	set_mouse_filter(MOUSE_FILTER_PASS);
+
+#ifdef TOOLS_ENABLED
+	// Add `Marker2D` node as the reference cross for radial modes.
+	if (Engine::get_singleton()->is_editor_hint()) {
+		reference_cross_marker = memnew(Marker2D);
+		add_child(reference_cross_marker, false, INTERNAL_MODE_FRONT);
+	}
+#endif
 }

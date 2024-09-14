@@ -33,6 +33,10 @@
 
 #include "scene/gui/range.h"
 
+#ifdef TOOLS_ENABLED
+#include "scene/2d/marker_2d.h"
+#endif
+
 class TextureProgressBar : public Range {
 	GDCLASS(TextureProgressBar, Range);
 
@@ -113,6 +117,10 @@ private:
 	Color tint_under = Color(1, 1, 1);
 	Color tint_progress = Color(1, 1, 1);
 	Color tint_over = Color(1, 1, 1);
+
+#ifdef TOOLS_ENABLED
+	Marker2D *reference_cross_marker = nullptr;
+#endif
 
 	void _set_texture(Ref<Texture2D> *p_destination, const Ref<Texture2D> &p_texture);
 	void _texture_changed();

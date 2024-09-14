@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		TextureProgressBar works like [ProgressBar], but uses up to 3 textures instead of Godot's [Theme] resource. It can be used to create horizontal, vertical and radial progress bars.
+		[b]Note:[/b] When added in the editor, the internal [Marker2D] child node is added as the radial center cross marker. This [Marker2D] node is visible only if the [member texture_progress] is valid and the [member fill_mode] is [constant FILL_CLOCKWISE], [constant FILL_COUNTER_CLOCKWISE], or [constant FILL_CLOCKWISE_AND_COUNTER_CLOCKWISE]. To remove the radial center cross marker (for example, in a plugin or in a tool script) this [Marker2D] node could be accessed as the first internal child node and then freed.
 	</description>
 	<tutorials>
 	</tutorials>
