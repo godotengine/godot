@@ -6428,6 +6428,13 @@ Color TextEdit::get_font_color() const {
 	return theme_cache.font_color;
 }
 
+void TextEdit::set_wrap_right_offset(const int value){
+	wrap_right_offset = value;
+	_update_wrap_at_column(false);
+}
+
+int TextEdit::get_wrap_right_offset() const { return wrap_right_offset;}
+
 void TextEdit::_bind_methods() {
 	/* Text */
 	// Text properties
