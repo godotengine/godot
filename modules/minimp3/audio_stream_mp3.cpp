@@ -221,10 +221,9 @@ void AudioStreamMP3::clear_data() {
 
 void AudioStreamMP3::set_data(const Vector<uint8_t> &p_data) {
 	int src_data_len = p_data.size();
-	const uint8_t *src_datar = p_data.ptr();
 
 	mp3dec_ex_t *mp3d = memnew(mp3dec_ex_t);
-	int err = mp3dec_ex_open_buf(mp3d, src_datar, src_data_len, MP3D_SEEK_TO_SAMPLE);
+	int err = mp3dec_ex_open_buf(mp3d, p_data.ptr(), src_data_len, MP3D_SEEK_TO_SAMPLE);
 	if (err || mp3d->info.hz == 0) {
 		memdelete(mp3d);
 		ERR_FAIL_MSG("Failed to decode mp3 file. Make sure it is a valid mp3 audio file.");
@@ -237,10 +236,7 @@ void AudioStreamMP3::set_data(const Vector<uint8_t> &p_data) {
 	mp3dec_ex_close(mp3d);
 	memdelete(mp3d);
 
-	clear_data();
-
-	data.resize(src_data_len);
-	memcpy(data.ptrw(), src_datar, src_data_len);
+	data = p_data;
 	data_len = src_data_len;
 }
 
