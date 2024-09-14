@@ -1499,6 +1499,10 @@ void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 	List<PropertyInfo> props;
 	script->get_script_property_list(&props);
 
+	for (PropertyInfo &prop : props) {
+		p_properties->push_back(prop);
+	}
+
 	// Call _get_property_list
 
 	ERR_FAIL_COND(!script.is_valid());
@@ -1522,12 +1526,6 @@ void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 				p_properties->push_back(PropertyInfo::from_dict(array.get(i)));
 			}
 		}
-	}
-
-	props.reverse();
-	for (PropertyInfo &prop : props) {
-		validate_property(prop);
-		p_properties->push_front(prop);
 	}
 }
 
