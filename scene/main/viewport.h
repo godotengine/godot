@@ -63,6 +63,7 @@ class ViewportTexture : public Texture2D {
 	bool vp_changed = false;
 
 	void _setup_local_to_scene(const Node *p_loc_scene);
+	void _err_print_viewport_not_set() const;
 
 	mutable RID proxy_ph;
 	mutable RID proxy;
