@@ -914,6 +914,36 @@ String DisplayServerWindows::clipboard_get() const {
 				GlobalUnlock(mem);
 			}
 		}
+
+	} else if (IsClipboardFormatAvailable(CF_HDROP)) {
+		HGLOBAL mem = GetClipboardData(CF_HDROP);
+		if (mem != nullptr) {
+			HDROP hDropInfo = (HDROP)GlobalLock(mem);
+			if (hDropInfo != nullptr) {
+
+				int fcount = DragQueryFileW(hDropInfo, 0xFFFFFFFF, nullptr, 0);
+
+				Vector<String> files;
+
+				for (int i = 0; i < fcount; i++) {
+					LocalVector<wchar_t> buf;
+					int size = DragQueryFileW(hDropInfo, i, nullptr, 0);
+					if (size == 0) {
+						continue;
+					}
+					buf.resize(size);
+					DragQueryFileW(hDropInfo, i, buf.ptr(), buf.size());
+
+					// since we return a string, there's no easy way to understand what is intended to be just a string, or a file path.
+					// so we use the 'file://' URI to make it clear.
+					// technically two slashes is invalid yet supported, and linux returns two, so we use two for consistency.
+					String file = "file://" + String::utf16((const char16_t *)buf.ptr());
+					files.push_back(file);
+				}
+				ret = String("\n").join(files);
+				GlobalUnlock(mem);
+			}
+		}
 	}
 
 	CloseClipboard();
@@ -1000,6 +1030,24 @@ bool DisplayServerWindows::clipboard_has() const {
 	return (IsClipboardFormatAvailable(CF_TEXT) ||
 			IsClipboardFormatAvailable(CF_UNICODETEXT) ||
 			IsClipboardFormatAvailable(CF_OEMTEXT));
+}
+
+bool DisplayServerWindows::clipboard_has_file() const {
+	return (IsClipboardFormatAvailable(CF_HDROP));
+}
+
+int DisplayServerWindows::clipboard_get_file_count() const {
+	int fcount = 0;
+	if (IsClipboardFormatAvailable(CF_HDROP)) {
+		HGLOBAL mem = GetClipboardData(CF_HDROP);
+		if (mem != nullptr) {
+			HDROP hDropInfo = (HDROP)GlobalLock(mem);
+			if (hDropInfo != nullptr) {
+				fcount = DragQueryFileW(hDropInfo, 0xFFFFFFFF, nullptr, 0);
+			}
+		}
+	}
+	return fcount;
 }
 
 bool DisplayServerWindows::clipboard_has_image() const {

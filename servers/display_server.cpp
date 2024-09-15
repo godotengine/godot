@@ -532,6 +532,14 @@ bool DisplayServer::clipboard_has_image() const {
 	return clipboard_get_image().is_valid();
 }
 
+int DisplayServer::clipboard_get_file_count() const {
+	ERR_FAIL_V_MSG(0, "Clipboard is not supported by this display server.");
+}
+
+bool DisplayServer::clipboard_has_file() const {
+	return clipboard_get_file_count() > 0;
+}
+
 void DisplayServer::clipboard_set_primary(const String &p_text) {
 	WARN_PRINT("Primary clipboard is not supported by this display server.");
 }
