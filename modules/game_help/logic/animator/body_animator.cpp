@@ -104,7 +104,16 @@ void CharacterAnimatorLayer::_process_animator(const Ref<Blackboard> &p_playback
         m_AnimationInstances.clear();
         editor_stop = false;
     }
-	clear_animation_instances();
+	//clear_animation_instances();
+    
+	// 重置一下手动处理线程安全标签
+	set_is_manual_thread(true);
+	Node* parent = get_node_or_null(root_node);
+	if (parent) {
+		parent->set_is_manual_thread(get_is_manual_thread());
+	}
+    Skeleton3D* skeleton = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(skeleton_id));
+    update_tool->clear_cache(skeleton,parent);
     // 处理逻辑节点请求播放的动作
     if(logic_context.curr_animation.is_valid())
     {
@@ -159,10 +168,20 @@ void CharacterAnimatorLayer::_process_animator(const Ref<Blackboard> &p_playback
 // 处理动画
 void CharacterAnimatorLayer::_process_animation(const Ref<Blackboard> &p_playback_info,double p_delta,bool is_first)
 {
+	update_tool->process_animations();
+    update_tool->layer_blend_apply(config, blend_weight);
+
+
+	Node* parent = get_node_or_null(root_node);
+	if (parent) {
+		cache_valid = false;
+		parent->set_is_manual_thread(get_is_manual_thread());
+	}
+	set_is_manual_thread(false);
+    return;
 	is_thread = true;
 	// 重置一下手动处理线程安全标签
 	set_is_manual_thread(true);
-	Node* parent = get_node_or_null(root_node);
 	if (parent) {
 		cache_valid = false;
 		parent->set_is_manual_thread(get_is_manual_thread());
@@ -495,7 +514,7 @@ void CharacterAnimatorLayerConfigInstance::auto_init()
 	layer = memnew(CharacterAnimatorLayer);
 	m_Body->add_child(layer);
 	layer->set_owner(m_Body);
-	layer->init(m_Body->get_animator().ptr(), config);
+	layer->init(m_Body->get_skeleton(), m_Body->get_animator().ptr(), config);
 }
 ///////////////
 

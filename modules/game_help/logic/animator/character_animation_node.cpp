@@ -165,7 +165,7 @@ void CharacterAnimatorNodeBase::_blend_anmation(CharacterAnimatorLayer *p_layer,
                 {
                     bp = bone_map->bone_map;
                 }
-                p_layer->make_animation_instance_anim(item->animation, p_playback_info_ptr[i],bp);
+                p_layer->play_animationm(item->animation, p_playback_info_ptr[i],bp);
             }
             else if(item->child_node.is_valid())
             {
