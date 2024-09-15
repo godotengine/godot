@@ -624,6 +624,8 @@ bool SceneTree::process(double p_time) {
 #endif // _3D_DISABLED
 #endif // TOOLS_ENABLED
 
+	emit_signal(SNAME("post_process_frame"));
+
 	if (_physics_interpolation_enabled) {
 		RenderingServer::get_singleton()->pre_draw(true);
 	}
@@ -1735,6 +1737,7 @@ void SceneTree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("node_configuration_warning_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 
 	ADD_SIGNAL(MethodInfo("process_frame"));
+	ADD_SIGNAL(MethodInfo("post_process_frame"));
 	ADD_SIGNAL(MethodInfo("physics_frame"));
 
 	BIND_ENUM_CONSTANT(GROUP_CALL_DEFAULT);

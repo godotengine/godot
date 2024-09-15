@@ -307,6 +307,11 @@
 				Emitted immediately before [method Node._physics_process] is called on every node in this tree.
 			</description>
 		</signal>
+		<signal name="post_process_frame">
+			<description>
+				Emitted immediately before rendering happens, after [method Node._process] is called on every node in this tree, and after all timers, tweens, and more are updated for the frame.
+			</description>
+		</signal>
 		<signal name="process_frame">
 			<description>
 				Emitted immediately before [method Node._process] is called on every node in this tree.
