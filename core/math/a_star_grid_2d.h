@@ -78,7 +78,6 @@ private:
 	struct Point {
 		Vector2i id;
 
-		bool solid = false;
 		Vector2 pos;
 		real_t weight_scale = 1.0;
 
@@ -111,6 +110,7 @@ private:
 		}
 	};
 
+	LocalVector<bool> solid_mask;
 	LocalVector<LocalVector<Point>> points;
 	Point *end = nullptr;
 	Point *last_closest_point = nullptr;
@@ -118,11 +118,12 @@ private:
 	uint64_t pass = 1;
 
 private: // Internal routines.
+	_FORCE_INLINE_ size_t _to_mask_index(int32_t p_x, int32_t p_y) const {
+		return ((p_y - region.position.y + 1) * (region.size.x + 2)) + p_x - region.position.x + 1;
+	}
+
 	_FORCE_INLINE_ bool _is_walkable(int32_t p_x, int32_t p_y) const {
-		if (region.has_point(Vector2i(p_x, p_y))) {
-			return !points[p_y - region.position.y][p_x - region.position.x].solid;
-		}
-		return false;
+		return !solid_mask[_to_mask_index(p_x, p_y)];
 	}
 
 	_FORCE_INLINE_ Point *_get_point(int32_t p_x, int32_t p_y) {
@@ -130,6 +131,18 @@ private: // Internal routines.
 			return &points[p_y - region.position.y][p_x - region.position.x];
 		}
 		return nullptr;
+	}
+
+	_FORCE_INLINE_ void _set_solid_unchecked(int32_t p_x, int32_t p_y, bool p_solid) {
+		solid_mask[_to_mask_index(p_x, p_y)] = p_solid;
+	}
+
+	_FORCE_INLINE_ void _set_solid_unchecked(const Vector2i &p_id, bool p_solid) {
+		solid_mask[_to_mask_index(p_id.x, p_id.y)] = p_solid;
+	}
+
+	_FORCE_INLINE_ bool _get_solid_unchecked(const Vector2i &p_id) const {
+		return solid_mask[_to_mask_index(p_id.x, p_id.y)];
 	}
 
 	_FORCE_INLINE_ Point *_get_point_unchecked(int32_t p_x, int32_t p_y) {
@@ -146,12 +159,13 @@ private: // Internal routines.
 
 	void _get_nbors(Point *p_point, LocalVector<Point *> &r_nbors);
 	Point *_jump(Point *p_from, Point *p_to);
+	Point *_forced_successor(int32_t p_x, int32_t p_y, int32_t p_dx, int32_t p_dy, bool p_inclusive = false);
 	bool _solve(Point *p_begin_point, Point *p_end_point);
 
 protected:
 	static void _bind_methods();
 
-	virtual real_t _estimate_cost(const Vector2i &p_from_id, const Vector2i &p_to_id);
+	virtual real_t _estimate_cost(const Vector2i &p_from_id, const Vector2i &p_end_id);
 	virtual real_t _compute_cost(const Vector2i &p_from_id, const Vector2i &p_to_id);
 
 	GDVIRTUAL2RC(real_t, _estimate_cost, Vector2i, Vector2i)
@@ -209,6 +223,7 @@ public:
 	void clear();
 
 	Vector2 get_point_position(const Vector2i &p_id) const;
+	TypedArray<Dictionary> get_point_data_in_region(const Rect2i &p_region) const;
 	Vector<Vector2> get_point_path(const Vector2i &p_from, const Vector2i &p_to, bool p_allow_partial_path = false);
 	TypedArray<Vector2i> get_id_path(const Vector2i &p_from, const Vector2i &p_to, bool p_allow_partial_path = false);
 };

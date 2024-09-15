@@ -31,7 +31,7 @@
 #ifndef SPRITE_2D_EDITOR_PLUGIN_H
 #define SPRITE_2D_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/2d/sprite_2d.h"
 #include "scene/gui/spin_box.h"
 

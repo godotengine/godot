@@ -47,11 +47,12 @@ private:
 		VRS_MAX,
 	};
 
-	/* we have no push constant here (yet)
 	struct VRSPushConstant {
-
+		float max_texel_factor; // 4x8, 8x4 and 8x8 are only available on some GPUs.
+		float res1;
+		float res2;
+		float res3;
 	};
-	*/
 
 	struct VRSShader {
 		// VRSPushConstant push_constant;

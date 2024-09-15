@@ -1,13 +1,15 @@
 /* clang-format off */
 #[modes]
-mode_default = #define MODE_DEFAULT
-// mode_glow = #define MODE_GLOW
+mode_default =
 
 #[specializations]
 
 USE_MULTIVIEW = false
 USE_GLOW = false
 USE_LUMINANCE_MULTIPLIER = false
+USE_BCS = false
+USE_COLOR_CORRECTION = false
+USE_1D_LUT = false
 
 #[vertex]
 layout(location = 0) in vec2 vertex_attrib;
@@ -24,6 +26,9 @@ void main() {
 /* clang-format off */
 #[fragment]
 /* clang-format on */
+
+// If we reach this code, we always tonemap.
+#define APPLY_TONEMAPPING
 
 #include "../tonemap_inc.glsl"
 
@@ -57,6 +62,35 @@ vec4 get_glow_color(vec2 uv) {
 }
 #endif // USE_GLOW
 
+#ifdef USE_COLOR_CORRECTION
+#ifdef USE_1D_LUT
+uniform sampler2D source_color_correction; //texunit:2
+
+vec3 apply_color_correction(vec3 color) {
+	color.r = texture(source_color_correction, vec2(color.r, 0.0f)).r;
+	color.g = texture(source_color_correction, vec2(color.g, 0.0f)).g;
+	color.b = texture(source_color_correction, vec2(color.b, 0.0f)).b;
+	return color;
+}
+#else
+uniform sampler3D source_color_correction; //texunit:2
+
+vec3 apply_color_correction(vec3 color) {
+	return textureLod(source_color_correction, color, 0.0).rgb;
+}
+#endif // USE_1D_LUT
+#endif // USE_COLOR_CORRECTION
+
+#ifdef USE_BCS
+vec3 apply_bcs(vec3 color) {
+	color = mix(vec3(0.0), color, brightness);
+	color = mix(vec3(0.5), color, contrast);
+	color = mix(vec3(dot(vec3(1.0), color) * 0.33333), color, saturation);
+
+	return color;
+}
+#endif
+
 in vec2 uv_interp;
 
 layout(location = 0) out vec4 frag_color;
@@ -85,11 +119,11 @@ void main() {
 	color.rgb = linear_to_srgb(color.rgb);
 
 #ifdef USE_BCS
-	color.rgb = apply_bcs(color.rgb, bcs);
+	color.rgb = apply_bcs(color.rgb);
 #endif
 
 #ifdef USE_COLOR_CORRECTION
-	color.rgb = apply_color_correction(color.rgb, color_correction);
+	color.rgb = apply_color_correction(color.rgb);
 #endif
 
 	frag_color = color;

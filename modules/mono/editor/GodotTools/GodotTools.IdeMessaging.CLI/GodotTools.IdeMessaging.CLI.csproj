@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <ProjectGuid>{B06C2951-C8E3-4F28-80B2-717CF327EB19}</ProjectGuid>
     <OutputType>Exe</OutputType>

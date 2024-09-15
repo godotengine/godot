@@ -35,7 +35,7 @@
 
 class Variant;
 
-struct _NO_DISCARD_ Plane {
+struct [[nodiscard]] Plane {
 	Vector3 normal;
 	real_t d = 0;
 

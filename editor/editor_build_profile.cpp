@@ -73,7 +73,7 @@ const bool EditorBuildProfile::build_option_disabled_by_default[BUILD_OPTION_MAX
 	false, // TEXT_SERVER_COMPLEX
 	false, // DYNAMIC_FONTS
 	false, // WOFF2_FONTS
-	false, // GRPAHITE_FONTS
+	false, // GRAPHITE_FONTS
 	false, // MSDFGEN
 };
 
@@ -91,7 +91,7 @@ const bool EditorBuildProfile::build_option_disable_values[BUILD_OPTION_MAX] = {
 	false, // TEXT_SERVER_COMPLEX
 	false, // DYNAMIC_FONTS
 	false, // WOFF2_FONTS
-	false, // GRPAHITE_FONTS
+	false, // GRAPHITE_FONTS
 	false, // MSDFGEN
 };
 
@@ -108,7 +108,7 @@ const EditorBuildProfile::BuildOptionCategory EditorBuildProfile::build_option_c
 	BUILD_OPTION_CATEGORY_TEXT_SERVER, // TEXT_SERVER_COMPLEX
 	BUILD_OPTION_CATEGORY_TEXT_SERVER, // DYNAMIC_FONTS
 	BUILD_OPTION_CATEGORY_TEXT_SERVER, // WOFF2_FONTS
-	BUILD_OPTION_CATEGORY_TEXT_SERVER, // GRPAHITE_FONTS
+	BUILD_OPTION_CATEGORY_TEXT_SERVER, // GRAPHITE_FONTS
 	BUILD_OPTION_CATEGORY_TEXT_SERVER, // MSDFGEN
 };
 
@@ -345,7 +345,7 @@ void EditorBuildProfile::_bind_methods() {
 	BIND_ENUM_CONSTANT(BUILD_OPTION_TEXT_SERVER_ADVANCED);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_DYNAMIC_FONTS);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_WOFF2_FONTS);
-	BIND_ENUM_CONSTANT(BUILD_OPTION_GRPAHITE_FONTS);
+	BIND_ENUM_CONSTANT(BUILD_OPTION_GRAPHITE_FONTS);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_MSDFGEN);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_MAX);
 
@@ -593,6 +593,10 @@ void EditorBuildProfileManager::_action_confirm() {
 	}
 }
 
+void EditorBuildProfileManager::_hide_requested() {
+	_cancel_pressed(); // From AcceptDialog.
+}
+
 void EditorBuildProfileManager::_fill_classes_from(TreeItem *p_parent, const String &p_class, const String &p_selected) {
 	TreeItem *class_item = class_list->create_item(p_parent);
 	class_item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
@@ -645,22 +649,11 @@ void EditorBuildProfileManager::_class_list_item_selected() {
 	}
 
 	Variant md = item->get_metadata(0);
-	if (md.get_type() == Variant::STRING || md.get_type() == Variant::STRING_NAME) {
-		String text = description_bit->get_class_description(md);
-		if (!text.is_empty()) {
-			// Display both class name and description, since the help bit may be displayed
-			// far away from the location (especially if the dialog was resized to be taller).
-			description_bit->set_text(vformat("[b]%s[/b]: %s", md, text));
-			description_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 1));
-		} else {
-			// Use nested `vformat()` as translators shouldn't interfere with BBCode tags.
-			description_bit->set_text(vformat(TTR("No description available for %s."), vformat("[b]%s[/b]", md)));
-			description_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 0.5));
-		}
+	if (md.is_string()) {
+		description_bit->parse_symbol("class|" + md.operator String() + "|");
 	} else if (md.get_type() == Variant::INT) {
 		String build_option_description = EditorBuildProfile::get_build_option_description(EditorBuildProfile::BuildOption((int)md));
-		description_bit->set_text(vformat("[b]%s[/b]: %s", TTR(item->get_text(0)), TTRGET(build_option_description)));
-		description_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 1));
+		description_bit->set_custom_text(TTR(item->get_text(0)), String(), TTRGET(build_option_description));
 	}
 }
 
@@ -677,7 +670,7 @@ void EditorBuildProfileManager::_class_list_item_edited() {
 	bool checked = item->is_checked(0);
 
 	Variant md = item->get_metadata(0);
-	if (md.get_type() == Variant::STRING || md.get_type() == Variant::STRING_NAME) {
+	if (md.is_string()) {
 		String class_selected = md;
 		edited->set_disable_class(class_selected, !checked);
 		_update_edited_profile();
@@ -698,7 +691,7 @@ void EditorBuildProfileManager::_class_list_item_collapsed(Object *p_item) {
 	}
 
 	Variant md = item->get_metadata(0);
-	if (md.get_type() != Variant::STRING && md.get_type() != Variant::STRING_NAME) {
+	if (!md.is_string()) {
 		return;
 	}
 
@@ -713,7 +706,7 @@ void EditorBuildProfileManager::_update_edited_profile() {
 
 	if (class_list->get_selected()) {
 		Variant md = class_list->get_selected()->get_metadata(0);
-		if (md.get_type() == Variant::STRING || md.get_type() == Variant::STRING_NAME) {
+		if (md.is_string()) {
 			class_selected = md;
 		} else if (md.get_type() == Variant::INT) {
 			build_option_selected = md;
@@ -823,19 +816,19 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 
 	profile_actions[ACTION_NEW] = memnew(Button(TTR("New")));
 	path_hbc->add_child(profile_actions[ACTION_NEW]);
-	profile_actions[ACTION_NEW]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_NEW));
+	profile_actions[ACTION_NEW]->connect(SceneStringName(pressed), callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_NEW));
 
 	profile_actions[ACTION_LOAD] = memnew(Button(TTR("Load")));
 	path_hbc->add_child(profile_actions[ACTION_LOAD]);
-	profile_actions[ACTION_LOAD]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_LOAD));
+	profile_actions[ACTION_LOAD]->connect(SceneStringName(pressed), callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_LOAD));
 
 	profile_actions[ACTION_SAVE] = memnew(Button(TTR("Save")));
 	path_hbc->add_child(profile_actions[ACTION_SAVE]);
-	profile_actions[ACTION_SAVE]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_SAVE));
+	profile_actions[ACTION_SAVE]->connect(SceneStringName(pressed), callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_SAVE));
 
 	profile_actions[ACTION_SAVE_AS] = memnew(Button(TTR("Save As")));
 	path_hbc->add_child(profile_actions[ACTION_SAVE_AS]);
-	profile_actions[ACTION_SAVE_AS]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_SAVE_AS));
+	profile_actions[ACTION_SAVE_AS]->connect(SceneStringName(pressed), callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_SAVE_AS));
 
 	main_vbc->add_margin_child(TTR("Profile:"), path_hbc);
 
@@ -845,11 +838,11 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 
 	profile_actions[ACTION_RESET] = memnew(Button(TTR("Reset to Defaults")));
 	profiles_hbc->add_child(profile_actions[ACTION_RESET]);
-	profile_actions[ACTION_RESET]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_RESET));
+	profile_actions[ACTION_RESET]->connect(SceneStringName(pressed), callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_RESET));
 
 	profile_actions[ACTION_DETECT] = memnew(Button(TTR("Detect from Project")));
 	profiles_hbc->add_child(profile_actions[ACTION_DETECT]);
-	profile_actions[ACTION_DETECT]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_DETECT));
+	profile_actions[ACTION_DETECT]->connect(SceneStringName(pressed), callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_DETECT));
 
 	main_vbc->add_margin_child(TTR("Actions:"), profiles_hbc);
 
@@ -864,13 +857,14 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 	main_vbc->add_margin_child(TTR("Configure Engine Compilation Profile:"), class_list, true);
 
 	description_bit = memnew(EditorHelpBit);
-	description_bit->set_custom_minimum_size(Size2(0, 80) * EDSCALE);
+	description_bit->set_content_height_limits(80 * EDSCALE, 80 * EDSCALE);
+	description_bit->connect("request_hide", callable_mp(this, &EditorBuildProfileManager::_hide_requested));
 	main_vbc->add_margin_child(TTR("Description:"), description_bit, false);
 
 	confirm_dialog = memnew(ConfirmationDialog);
 	add_child(confirm_dialog);
 	confirm_dialog->set_title(TTR("Please Confirm:"));
-	confirm_dialog->connect("confirmed", callable_mp(this, &EditorBuildProfileManager::_action_confirm));
+	confirm_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorBuildProfileManager::_action_confirm));
 
 	import_profile = memnew(EditorFileDialog);
 	add_child(import_profile);
@@ -890,7 +884,7 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 
 	force_detect_classes = memnew(LineEdit);
 	main_vbc->add_margin_child(TTR("Forced Classes on Detect:"), force_detect_classes);
-	force_detect_classes->connect("text_changed", callable_mp(this, &EditorBuildProfileManager::_force_detect_classes_changed));
+	force_detect_classes->connect(SceneStringName(text_changed), callable_mp(this, &EditorBuildProfileManager::_force_detect_classes_changed));
 
 	set_title(TTR("Edit Compilation Configuration Profile"));
 

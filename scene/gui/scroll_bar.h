@@ -111,6 +111,9 @@ protected:
 	static void _bind_methods();
 
 public:
+	void scroll(double p_amount);
+	void scroll_to(double p_position);
+
 	void set_custom_step(float p_custom_step);
 	float get_custom_step() const;
 

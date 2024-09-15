@@ -671,8 +671,6 @@ void NavigationAgent2D::_update_navigation() {
 		return;
 	}
 
-	update_frame_id = Engine::get_singleton()->get_physics_frames();
-
 	Vector2 origin = agent_parent->get_global_position();
 
 	bool reload_path = false;
@@ -767,7 +765,6 @@ void NavigationAgent2D::_request_repath() {
 	target_reached = false;
 	navigation_finished = false;
 	last_waypoint_reached = false;
-	update_frame_id = 0;
 }
 
 bool NavigationAgent2D::_is_last_waypoint() const {
@@ -796,7 +793,7 @@ void NavigationAgent2D::_trigger_waypoint_reached() {
 	Dictionary details;
 
 	const Vector2 waypoint = navigation_path[navigation_path_index];
-	details[SNAME("position")] = waypoint;
+	details[CoreStringName(position)] = waypoint;
 
 	int waypoint_type = -1;
 	if (path_metadata_flags.has_flag(NavigationPathQueryParameters2D::PathMetadataFlags::PATH_METADATA_INCLUDE_TYPES)) {

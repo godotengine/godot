@@ -1,23 +1,9 @@
 """Functions used to generate source files during build time"""
 
 import os.path
-from typing import Optional, Iterable
+from typing import Optional
 
-
-def generate_inline_code(input_lines: Iterable[str], insert_newline: bool = True):
-    """Take header data and generate inline code
-
-    :param: input_lines: values for shared inline code
-    :return: str - generated inline value
-    """
-    output = []
-    for line in input_lines:
-        if line:
-            output.append(",".join(str(ord(c)) for c in line))
-        if insert_newline:
-            output.append("%s" % ord("\n"))
-    output.append("0")
-    return ",".join(output)
+from methods import print_error, to_raw_cstring
 
 
 class RDHeaderStruct:
@@ -76,18 +62,18 @@ def include_file_in_rd_header(filename: str, header_data: RDHeaderStruct, depth:
                 else:
                     included_file = os.path.relpath(os.path.dirname(filename) + "/" + includeline)
 
-                if not included_file in header_data.vertex_included_files and header_data.reading == "vertex":
+                if included_file not in header_data.vertex_included_files and header_data.reading == "vertex":
                     header_data.vertex_included_files += [included_file]
                     if include_file_in_rd_header(included_file, header_data, depth + 1) is None:
-                        print("Error in file '" + filename + "': #include " + includeline + "could not be found!")
-                elif not included_file in header_data.fragment_included_files and header_data.reading == "fragment":
+                        print_error(f'In file "{filename}": #include "{includeline}" could not be found!"')
+                elif included_file not in header_data.fragment_included_files and header_data.reading == "fragment":
                     header_data.fragment_included_files += [included_file]
                     if include_file_in_rd_header(included_file, header_data, depth + 1) is None:
-                        print("Error in file '" + filename + "': #include " + includeline + "could not be found!")
-                elif not included_file in header_data.compute_included_files and header_data.reading == "compute":
+                        print_error(f'In file "{filename}": #include "{includeline}" could not be found!"')
+                elif included_file not in header_data.compute_included_files and header_data.reading == "compute":
                     header_data.compute_included_files += [included_file]
                     if include_file_in_rd_header(included_file, header_data, depth + 1) is None:
-                        print("Error in file '" + filename + "': #include " + includeline + "could not be found!")
+                        print_error(f'In file "{filename}": #include "{includeline}" could not be found!"')
 
                 line = fs.readline()
 
@@ -125,13 +111,13 @@ def build_rd_header(
 
     if header_data.compute_lines:
         body_parts = [
-            "static const char _compute_code[] = {\n%s\n\t\t};" % generate_inline_code(header_data.compute_lines),
+            "static const char _compute_code[] = {\n%s\n\t\t};" % to_raw_cstring(header_data.compute_lines),
             f'setup(nullptr, nullptr, _compute_code, "{out_file_class}");',
         ]
     else:
         body_parts = [
-            "static const char _vertex_code[] = {\n%s\n\t\t};" % generate_inline_code(header_data.vertex_lines),
-            "static const char _fragment_code[] = {\n%s\n\t\t};" % generate_inline_code(header_data.fragment_lines),
+            "static const char _vertex_code[] = {\n%s\n\t\t};" % to_raw_cstring(header_data.vertex_lines),
+            "static const char _fragment_code[] = {\n%s\n\t\t};" % to_raw_cstring(header_data.fragment_lines),
             f'setup(_vertex_code, _fragment_code, nullptr, "{out_file_class}");',
         ]
 
@@ -209,7 +195,7 @@ def build_raw_header(
 #define {out_file_ifdef}_RAW_H
 
 static const char {out_file_base}[] = {{
-    {generate_inline_code(header_data.code, insert_newline=False)}
+{to_raw_cstring(header_data.code)}
 }};
 #endif
 """

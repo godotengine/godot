@@ -118,7 +118,7 @@ void GraphFrame::_notification(int p_what) {
 					sb_panel_flat->set_border_color(selected ? original_border_color : tint_color.lightened(0.3));
 					draw_style_box(sb_panel_flat, body_rect);
 				} else if (sb_panel_texture.is_valid()) {
-					sb_panel_texture = sb_panel_flat->duplicate();
+					sb_panel_texture = sb_panel_texture->duplicate();
 					sb_panel_texture->set_modulate(tint_color);
 					draw_style_box(sb_panel_texture, body_rect);
 				}
@@ -160,14 +160,10 @@ void GraphFrame::_resort() {
 	Point2 offset = Point2(sb_panel->get_margin(SIDE_LEFT), sb_panel->get_margin(SIDE_TOP) + titlebar_min_size.height + sb_titlebar->get_minimum_size().height);
 
 	for (int i = 0; i < get_child_count(false); i++) {
-		Control *child = Object::cast_to<Control>(get_child(i, false));
-		if (!child || !child->is_visible_in_tree()) {
+		Control *child = as_sortable_control(get_child(i, false));
+		if (!child) {
 			continue;
 		}
-		if (child->is_set_as_top_level()) {
-			continue;
-		}
-
 		fit_child_in_rect(child, Rect2(offset, size));
 	}
 }
@@ -266,6 +262,10 @@ HBoxContainer *GraphFrame::get_titlebar_hbox() {
 	return titlebar_hbox;
 }
 
+Size2 GraphFrame::get_titlebar_size() const {
+	return titlebar_hbox->get_size() + theme_cache.titlebar->get_minimum_size();
+}
+
 void GraphFrame::set_drag_margin(int p_margin) {
 	drag_margin = p_margin;
 }
@@ -325,8 +325,8 @@ Size2 GraphFrame::get_minimum_size() const {
 	Size2 minsize = titlebar_hbox->get_minimum_size() + sb_titlebar->get_minimum_size();
 
 	for (int i = 0; i < get_child_count(false); i++) {
-		Control *child = Object::cast_to<Control>(get_child(i, false));
-		if (!child || !child->is_visible() || child->is_set_as_top_level()) {
+		Control *child = as_sortable_control(get_child(i, false));
+		if (!child) {
 			continue;
 		}
 

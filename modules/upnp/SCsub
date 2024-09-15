@@ -30,7 +30,8 @@ if env["builtin_miniupnpc"]:
 
     env_upnp.Prepend(CPPPATH=[thirdparty_dir + "include"])
     env_upnp.Append(CPPDEFINES=["MINIUPNP_STATICLIB"])
-    env_upnp.Append(CPPDEFINES=["MINIUPNPC_SET_SOCKET_TIMEOUT"])
+    if env["platform"] != "windows":
+        env_upnp.Append(CPPDEFINES=["MINIUPNPC_SET_SOCKET_TIMEOUT"])
 
     env_thirdparty = env_upnp.Clone()
     env_thirdparty.disable_warnings()

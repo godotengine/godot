@@ -101,10 +101,10 @@ class GodotArea2D : public GodotCollisionObject2D {
 
 public:
 	void set_monitor_callback(const Callable &p_callback);
-	_FORCE_INLINE_ bool has_monitor_callback() const { return !monitor_callback.is_null(); }
+	_FORCE_INLINE_ bool has_monitor_callback() const { return monitor_callback.is_valid(); }
 
 	void set_area_monitor_callback(const Callable &p_callback);
-	_FORCE_INLINE_ bool has_area_monitor_callback() const { return !area_monitor_callback.is_null(); }
+	_FORCE_INLINE_ bool has_area_monitor_callback() const { return area_monitor_callback.is_valid(); }
 
 	_FORCE_INLINE_ void add_body_to_query(GodotBody2D *p_body, uint32_t p_body_shape, uint32_t p_area_shape);
 	_FORCE_INLINE_ void remove_body_from_query(GodotBody2D *p_body, uint32_t p_body_shape, uint32_t p_area_shape);

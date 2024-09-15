@@ -272,7 +272,7 @@ struct OS2
     Triple *axis_range;
     if (c->plan->user_axes_location.has (HB_TAG ('w','g','h','t'), &axis_range))
     {
-      unsigned weight_class = static_cast<unsigned> (roundf (hb_clamp (axis_range->middle, 1.0f, 1000.0f)));
+      unsigned weight_class = static_cast<unsigned> (roundf (hb_clamp (axis_range->middle, 1.0, 1000.0)));
       if (os2_prime->usWeightClass != weight_class)
         os2_prime->usWeightClass = weight_class;
     }

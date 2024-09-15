@@ -1133,7 +1133,7 @@ void GodotConvexPolygonShape3D::_setup(const Vector<Vector3> &p_vertices) {
 							max_support = s;
 						}
 					}
-					if (extreme_vertices.find(best_vertex) == -1)
+					if (!extreme_vertices.has(best_vertex))
 						extreme_vertices.push_back(best_vertex);
 				}
 			}

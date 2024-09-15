@@ -89,6 +89,12 @@
 				If [param msaa] is [b]true[/b] and MSAA is enabled, this returns the MSAA variant of the buffer.
 			</description>
 		</method>
+		<method name="get_fsr_sharpness" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the FSR sharpness value used while rendering the 3D content (if [method get_scaling_3d_mode] is an FSR mode).
+			</description>
+		</method>
 		<method name="get_internal_size" qualifiers="const">
 			<return type="Vector2i" />
 			<description>
@@ -107,6 +113,24 @@
 				Returns the render target associated with this buffers object.
 			</description>
 		</method>
+		<method name="get_scaling_3d_mode" qualifiers="const">
+			<return type="int" enum="RenderingServer.ViewportScaling3DMode" />
+			<description>
+				Returns the scaling mode used for upscaling.
+			</description>
+		</method>
+		<method name="get_screen_space_aa" qualifiers="const">
+			<return type="int" enum="RenderingServer.ViewportScreenSpaceAA" />
+			<description>
+				Returns the screen-space antialiasing method applied.
+			</description>
+		</method>
+		<method name="get_target_size" qualifiers="const">
+			<return type="Vector2i" />
+			<description>
+				Returns the target size of the render buffer (size after upscaling).
+			</description>
+		</method>
 		<method name="get_texture" qualifiers="const">
 			<return type="RID" />
 			<param index="0" name="context" type="StringName" />
@@ -121,6 +145,12 @@
 			<param index="1" name="name" type="StringName" />
 			<description>
 				Returns the texture format information with which a cached texture was created.
+			</description>
+		</method>
+		<method name="get_texture_samples" qualifiers="const">
+			<return type="int" enum="RenderingDevice.TextureSamples" />
+			<description>
+				Returns the number of MSAA samples used.
 			</description>
 		</method>
 		<method name="get_texture_slice">
@@ -155,6 +185,12 @@
 			<param index="6" name="view" type="RDTextureView" />
 			<description>
 				Returns a specific view of a slice (layer or mipmap) for a cached texture.
+			</description>
+		</method>
+		<method name="get_use_debanding" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if debanding is enabled.
 			</description>
 		</method>
 		<method name="get_use_taa" qualifiers="const">

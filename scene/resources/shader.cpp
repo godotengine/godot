@@ -29,13 +29,22 @@
 /**************************************************************************/
 
 #include "shader.h"
+#include "shader.compat.inc"
 
 #include "core/io/file_access.h"
-#include "scene/scene_string_names.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/shader_preprocessor.h"
 #include "servers/rendering_server.h"
 #include "texture.h"
+
+#ifdef TOOLS_ENABLED
+#include "editor/editor_help.h"
+
+#include "modules/modules_enabled.gen.h" // For regex.
+#ifdef MODULE_REGEX_ENABLED
+#include "modules/regex/regex.h"
+#endif
+#endif
 
 Shader::Mode Shader::get_mode() const {
 	return mode;
@@ -121,6 +130,12 @@ void Shader::get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_gr
 	List<PropertyInfo> local;
 	RenderingServer::get_singleton()->get_shader_parameter_list(shader, &local);
 
+#ifdef TOOLS_ENABLED
+	DocData::ClassDoc class_doc;
+	class_doc.name = get_path();
+	class_doc.is_script_doc = true;
+#endif
+
 	for (PropertyInfo &pi : local) {
 		bool is_group = pi.usage == PROPERTY_USAGE_GROUP || pi.usage == PROPERTY_USAGE_SUBGROUP;
 		if (!p_get_groups && is_group) {
@@ -136,9 +151,33 @@ void Shader::get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_gr
 			if (pi.type == Variant::RID) {
 				pi.type = Variant::OBJECT;
 			}
+#ifdef TOOLS_ENABLED
+			if (Engine::get_singleton()->is_editor_hint()) {
+				DocData::PropertyDoc prop_doc;
+				prop_doc.name = "shader_parameter/" + pi.name;
+#ifdef MODULE_REGEX_ENABLED
+				const RegEx pattern("/\\*\\*\\s([^*]|[\\r\\n]|(\\*+([^*/]|[\\r\\n])))*\\*+/\\s*uniform\\s+\\w+\\s+" + pi.name + "(?=[\\s:;=])");
+				Ref<RegExMatch> pattern_ref = pattern.search(code);
+				if (pattern_ref.is_valid()) {
+					RegExMatch *match = pattern_ref.ptr();
+					const RegEx pattern_tip("\\/\\*\\*([\\s\\S]*?)\\*/");
+					Ref<RegExMatch> pattern_tip_ref = pattern_tip.search(match->get_string(0));
+					RegExMatch *match_tip = pattern_tip_ref.ptr();
+					const RegEx pattern_stripped("\\n\\s*\\*\\s*");
+					prop_doc.description = pattern_stripped.sub(match_tip->get_string(1), "\n", true);
+				}
+#endif
+				class_doc.properties.push_back(prop_doc);
+			}
+#endif
 			p_params->push_back(pi);
 		}
 	}
+#ifdef TOOLS_ENABLED
+	if (EditorHelp::get_doc_data() != nullptr && Engine::get_singleton()->is_editor_hint() && !class_doc.name.is_empty() && p_params) {
+		EditorHelp::get_doc_data()->add_doc(class_doc);
+	}
+#endif
 }
 
 RID Shader::get_rid() const {
@@ -147,10 +186,10 @@ RID Shader::get_rid() const {
 	return shader;
 }
 
-void Shader::set_default_texture_parameter(const StringName &p_name, const Ref<Texture2D> &p_texture, int p_index) {
+void Shader::set_default_texture_parameter(const StringName &p_name, const Ref<Texture> &p_texture, int p_index) {
 	if (p_texture.is_valid()) {
 		if (!default_textures.has(p_name)) {
-			default_textures[p_name] = HashMap<int, Ref<Texture2D>>();
+			default_textures[p_name] = HashMap<int, Ref<Texture>>();
 		}
 		default_textures[p_name][p_index] = p_texture;
 		RS::get_singleton()->shader_set_default_texture_parameter(shader, p_name, p_texture->get_rid(), p_index);
@@ -168,7 +207,7 @@ void Shader::set_default_texture_parameter(const StringName &p_name, const Ref<T
 	emit_changed();
 }
 
-Ref<Texture2D> Shader::get_default_texture_parameter(const StringName &p_name, int p_index) const {
+Ref<Texture> Shader::get_default_texture_parameter(const StringName &p_name, int p_index) const {
 	if (default_textures.has(p_name) && default_textures[p_name].has(p_index)) {
 		return default_textures[p_name][p_index];
 	}
@@ -176,7 +215,7 @@ Ref<Texture2D> Shader::get_default_texture_parameter(const StringName &p_name, i
 }
 
 void Shader::get_default_texture_parameter_list(List<StringName> *r_textures) const {
-	for (const KeyValue<StringName, HashMap<int, Ref<Texture2D>>> &E : default_textures) {
+	for (const KeyValue<StringName, HashMap<int, Ref<Texture>>> &E : default_textures) {
 		r_textures->push_back(E.key);
 	}
 }

@@ -41,8 +41,6 @@
 #include "core/templates/rid.h"
 #include "core/templates/safe_refcount.h"
 
-class CommandQueueMT;
-
 class WorkerThreadPool : public Object {
 	GDCLASS(WorkerThreadPool, Object)
 public:
@@ -114,7 +112,6 @@ private:
 
 		uint32_t index = 0;
 		Thread thread;
-		bool ready_for_scripting : 1;
 		bool signaled : 1;
 		bool yield_is_over : 1;
 		Task *current_task = nullptr;
@@ -122,7 +119,6 @@ private:
 		ConditionVariable cond_var;
 
 		ThreadData() :
-				ready_for_scripting(false),
 				signaled(false),
 				yield_is_over(false) {}
 	};
@@ -163,7 +159,14 @@ private:
 
 	static WorkerThreadPool *singleton;
 
-	static thread_local CommandQueueMT *flushing_cmd_queue;
+#ifdef THREADS_ENABLED
+	static const uint32_t MAX_UNLOCKABLE_LOCKS = 2;
+	struct UnlockableLocks {
+		THREADING_NAMESPACE::unique_lock<THREADING_NAMESPACE::mutex> *ulock = nullptr;
+		uint32_t rc = 0;
+	};
+	static thread_local UnlockableLocks unlockable_locks[MAX_UNLOCKABLE_LOCKS];
+#endif
 
 	TaskID _add_task(const Callable &p_callable, void (*p_func)(void *), void *p_userdata, BaseTemplateUserdata *p_template_userdata, bool p_high_priority, const String &p_description);
 	GroupID _add_group_task(const Callable &p_callable, void (*p_func)(void *, uint32_t), void *p_userdata, BaseTemplateUserdata *p_template_userdata, int p_elements, int p_tasks, bool p_high_priority, const String &p_description);
@@ -189,6 +192,13 @@ private:
 	};
 
 	void _wait_collaboratively(ThreadData *p_caller_pool_thread, Task *p_task);
+
+#ifdef THREADS_ENABLED
+	static uint32_t _thread_enter_unlock_allowance_zone(THREADING_NAMESPACE::unique_lock<THREADING_NAMESPACE::mutex> &p_ulock);
+#endif
+
+	void _lock_unlockable_mutexes();
+	void _unlock_unlockable_mutexes();
 
 protected:
 	static void _bind_methods();
@@ -231,9 +241,19 @@ public:
 
 	static WorkerThreadPool *get_singleton() { return singleton; }
 	static int get_thread_index();
+	static TaskID get_caller_task_id();
 
-	static void thread_enter_command_queue_mt_flush(CommandQueueMT *p_queue);
-	static void thread_exit_command_queue_mt_flush();
+#ifdef THREADS_ENABLED
+	_ALWAYS_INLINE_ static uint32_t thread_enter_unlock_allowance_zone(const MutexLock<BinaryMutex> &p_lock) { return _thread_enter_unlock_allowance_zone(p_lock._get_lock()); }
+	template <int Tag>
+	_ALWAYS_INLINE_ static uint32_t thread_enter_unlock_allowance_zone(const SafeBinaryMutex<Tag> &p_mutex) { return _thread_enter_unlock_allowance_zone(p_mutex._get_lock()); }
+	static void thread_exit_unlock_allowance_zone(uint32_t p_zone_id);
+#else
+	static uint32_t thread_enter_unlock_allowance_zone(const MutexLock<BinaryMutex> &p_lock) { return UINT32_MAX; }
+	template <int Tag>
+	static uint32_t thread_enter_unlock_allowance_zone(const SafeBinaryMutex<Tag> &p_mutex) { return UINT32_MAX; }
+	static void thread_exit_unlock_allowance_zone(uint32_t p_zone_id) {}
+#endif
 
 	void init(int p_thread_count = -1, float p_low_priority_task_ratio = 0.3);
 	void finish();

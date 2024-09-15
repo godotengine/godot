@@ -32,8 +32,8 @@
 
 #include "core/object/script_language.h"
 #include "core/os/os.h"
+#include "core/os/safe_binary_mutex.h"
 #include "core/os/thread_safe.h"
-#include "core/templates/command_queue_mt.h"
 
 WorkerThreadPool::Task *const WorkerThreadPool::ThreadData::YIELDING = (Task *)1;
 
@@ -46,29 +46,31 @@ void WorkerThreadPool::Task::free_template_userdata() {
 
 WorkerThreadPool *WorkerThreadPool::singleton = nullptr;
 
-thread_local CommandQueueMT *WorkerThreadPool::flushing_cmd_queue = nullptr;
+#ifdef THREADS_ENABLED
+thread_local WorkerThreadPool::UnlockableLocks WorkerThreadPool::unlockable_locks[MAX_UNLOCKABLE_LOCKS];
+#endif
 
 void WorkerThreadPool::_process_task(Task *p_task) {
 #ifdef THREADS_ENABLED
 	int pool_thread_index = thread_ids[Thread::get_caller_id()];
 	ThreadData &curr_thread = threads[pool_thread_index];
 	Task *prev_task = nullptr; // In case this is recursively called.
+
 	bool safe_for_nodes_backup = is_current_thread_safe_for_nodes();
+	CallQueue *call_queue_backup = MessageQueue::get_singleton() != MessageQueue::get_main_singleton() ? MessageQueue::get_singleton() : nullptr;
 
 	{
-		// Tasks must start with this unset. They are free to set-and-forget otherwise.
+		// Tasks must start with these at default values. They are free to set-and-forget otherwise.
 		set_current_thread_safe_for_nodes(false);
+		MessageQueue::set_thread_singleton_override(nullptr);
+
 		// Since the WorkerThreadPool is started before the script server,
 		// its pre-created threads can't have ScriptServer::thread_enter() called on them early.
 		// Therefore, we do it late at the first opportunity, so in case the task
 		// about to be run uses scripting, guarantees are held.
+		ScriptServer::thread_enter();
+
 		task_mutex.lock();
-		if (!curr_thread.ready_for_scripting && ScriptServer::are_languages_initialized()) {
-			task_mutex.unlock();
-			ScriptServer::thread_enter();
-			task_mutex.lock();
-			curr_thread.ready_for_scripting = true;
-		}
 		p_task->pool_thread_index = pool_thread_index;
 		prev_task = curr_thread.current_task;
 		curr_thread.current_task = p_task;
@@ -77,6 +79,10 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 		}
 		task_mutex.unlock();
 	}
+#endif
+
+#ifdef THREADS_ENABLED
+	bool low_priority = p_task->low_priority;
 #endif
 
 	if (p_task->group) {
@@ -118,9 +124,8 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 
 		if (finished_users == max_users) {
 			// Get rid of the group, because nobody else is using it.
-			task_mutex.lock();
+			MutexLock task_lock(task_mutex);
 			group_allocator.free(p_task->group);
-			task_mutex.unlock();
 		}
 
 		// For groups, tasks get rid of themselves.
@@ -155,7 +160,7 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 #ifdef THREADS_ENABLED
 	{
 		curr_thread.current_task = prev_task;
-		if (p_task->low_priority) {
+		if (low_priority) {
 			low_priority_threads_used--;
 
 			if (_try_promote_low_priority_task()) {
@@ -169,6 +174,7 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 	}
 
 	set_current_thread_safe_for_nodes(safe_for_nodes_backup);
+	MessageQueue::set_thread_singleton_override(call_queue_backup);
 #endif
 }
 
@@ -317,6 +323,8 @@ WorkerThreadPool::TaskID WorkerThreadPool::add_native_task(void (*p_func)(void *
 }
 
 WorkerThreadPool::TaskID WorkerThreadPool::_add_task(const Callable &p_callable, void (*p_func)(void *), void *p_userdata, BaseTemplateUserdata *p_template_userdata, bool p_high_priority, const String &p_description) {
+	ERR_FAIL_COND_V_MSG(threads.is_empty(), INVALID_TASK_ID, "Can't add a task because the WorkerThreadPool is either not initialized yet or already terminated.");
+
 	task_mutex.lock();
 	// Get a free task
 	Task *task = task_allocator.alloc();
@@ -339,17 +347,13 @@ WorkerThreadPool::TaskID WorkerThreadPool::add_task(const Callable &p_action, bo
 }
 
 bool WorkerThreadPool::is_task_completed(TaskID p_task_id) const {
-	task_mutex.lock();
+	MutexLock task_lock(task_mutex);
 	const Task *const *taskp = tasks.getptr(p_task_id);
 	if (!taskp) {
-		task_mutex.unlock();
 		ERR_FAIL_V_MSG(false, "Invalid Task ID"); // Invalid task
 	}
 
-	bool completed = (*taskp)->completed;
-	task_mutex.unlock();
-
-	return completed;
+	return (*taskp)->completed;
 }
 
 Error WorkerThreadPool::wait_for_task_completion(TaskID p_task_id) {
@@ -393,16 +397,17 @@ Error WorkerThreadPool::wait_for_task_completion(TaskID p_task_id) {
 		task->waiting_user++;
 	}
 
-	task_mutex.unlock();
-
 	if (caller_pool_thread) {
+		task_mutex.unlock();
 		_wait_collaboratively(caller_pool_thread, task);
+		task_mutex.lock();
 		task->waiting_pool--;
 		if (task->waiting_pool == 0 && task->waiting_user == 0) {
 			tasks.erase(p_task_id);
 			task_allocator.free(task);
 		}
 	} else {
+		task_mutex.unlock();
 		task->done_semaphore.wait();
 		task_mutex.lock();
 		task->waiting_user--;
@@ -410,10 +415,30 @@ Error WorkerThreadPool::wait_for_task_completion(TaskID p_task_id) {
 			tasks.erase(p_task_id);
 			task_allocator.free(task);
 		}
-		task_mutex.unlock();
 	}
 
+	task_mutex.unlock();
 	return OK;
+}
+
+void WorkerThreadPool::_lock_unlockable_mutexes() {
+#ifdef THREADS_ENABLED
+	for (uint32_t i = 0; i < MAX_UNLOCKABLE_LOCKS; i++) {
+		if (unlockable_locks[i].ulock) {
+			unlockable_locks[i].ulock->lock();
+		}
+	}
+#endif
+}
+
+void WorkerThreadPool::_unlock_unlockable_mutexes() {
+#ifdef THREADS_ENABLED
+	for (uint32_t i = 0; i < MAX_UNLOCKABLE_LOCKS; i++) {
+		if (unlockable_locks[i].ulock) {
+			unlockable_locks[i].ulock->unlock();
+		}
+	}
+#endif
 }
 
 void WorkerThreadPool::_wait_collaboratively(ThreadData *p_caller_pool_thread, Task *p_task) {
@@ -423,13 +448,17 @@ void WorkerThreadPool::_wait_collaboratively(ThreadData *p_caller_pool_thread, T
 
 	while (true) {
 		Task *task_to_process = nullptr;
+		bool relock_unlockables = false;
 		{
 			MutexLock lock(task_mutex);
 			bool was_signaled = p_caller_pool_thread->signaled;
 			p_caller_pool_thread->signaled = false;
 
 			if (IS_WAIT_OVER) {
-				p_caller_pool_thread->yield_is_over = false;
+				if (unlikely(p_task == ThreadData::YIELDING)) {
+					p_caller_pool_thread->yield_is_over = false;
+				}
+
 				if (!exit_threads && was_signaled) {
 					// This thread was awaken for some additional reason, but it's about to exit.
 					// Let's find out what may be pending and forward the requests.
@@ -460,18 +489,18 @@ void WorkerThreadPool::_wait_collaboratively(ThreadData *p_caller_pool_thread, T
 				if (!task_to_process) {
 					p_caller_pool_thread->awaited_task = p_task;
 
-					if (flushing_cmd_queue) {
-						flushing_cmd_queue->unlock();
-					}
+					_unlock_unlockable_mutexes();
+					relock_unlockables = true;
 					p_caller_pool_thread->cond_var.wait(lock);
-					if (flushing_cmd_queue) {
-						flushing_cmd_queue->lock();
-					}
 
 					DEV_ASSERT(exit_threads || p_caller_pool_thread->signaled || IS_WAIT_OVER);
 					p_caller_pool_thread->awaited_task = nullptr;
 				}
 			}
+		}
+
+		if (relock_unlockables) {
+			_lock_unlockable_mutexes();
 		}
 
 		if (task_to_process) {
@@ -484,13 +513,18 @@ void WorkerThreadPool::yield() {
 	int th_index = get_thread_index();
 	ERR_FAIL_COND_MSG(th_index == -1, "This function can only be called from a worker thread.");
 	_wait_collaboratively(&threads[th_index], ThreadData::YIELDING);
+
+	// If this long-lived task started before the scripting server was initialized,
+	// now is a good time to have scripting languages ready for the current thread.
+	// Otherwise, such a piece of setup won't happen unless another task has been
+	// run during the collaborative wait.
+	ScriptServer::thread_enter();
 }
 
 void WorkerThreadPool::notify_yield_over(TaskID p_task_id) {
-	task_mutex.lock();
+	MutexLock task_lock(task_mutex);
 	Task **taskp = tasks.getptr(p_task_id);
 	if (!taskp) {
-		task_mutex.unlock();
 		ERR_FAIL_MSG("Invalid Task ID.");
 	}
 	Task *task = *taskp;
@@ -499,7 +533,6 @@ void WorkerThreadPool::notify_yield_over(TaskID p_task_id) {
 			// This avoids a race condition where a task is created and yield-over called before it's processed.
 			task->pending_notify_yield_over = true;
 		}
-		task_mutex.unlock();
 		return;
 	}
 
@@ -507,11 +540,10 @@ void WorkerThreadPool::notify_yield_over(TaskID p_task_id) {
 	td.yield_is_over = true;
 	td.signaled = true;
 	td.cond_var.notify_one();
-
-	task_mutex.unlock();
 }
 
 WorkerThreadPool::GroupID WorkerThreadPool::_add_group_task(const Callable &p_callable, void (*p_func)(void *, uint32_t), void *p_userdata, BaseTemplateUserdata *p_template_userdata, int p_elements, int p_tasks, bool p_high_priority, const String &p_description) {
+	ERR_FAIL_COND_V_MSG(threads.is_empty(), INVALID_TASK_ID, "Can't add a group task because the WorkerThreadPool is either not initialized yet or already terminated.");
 	ERR_FAIL_COND_V(p_elements < 0, INVALID_TASK_ID);
 	if (p_tasks < 0) {
 		p_tasks = MAX(1u, threads.size());
@@ -566,26 +598,20 @@ WorkerThreadPool::GroupID WorkerThreadPool::add_group_task(const Callable &p_act
 }
 
 uint32_t WorkerThreadPool::get_group_processed_element_count(GroupID p_group) const {
-	task_mutex.lock();
+	MutexLock task_lock(task_mutex);
 	const Group *const *groupp = groups.getptr(p_group);
 	if (!groupp) {
-		task_mutex.unlock();
 		ERR_FAIL_V_MSG(0, "Invalid Group ID");
 	}
-	uint32_t elements = (*groupp)->completed_index.get();
-	task_mutex.unlock();
-	return elements;
+	return (*groupp)->completed_index.get();
 }
 bool WorkerThreadPool::is_group_task_completed(GroupID p_group) const {
-	task_mutex.lock();
+	MutexLock task_lock(task_mutex);
 	const Group *const *groupp = groups.getptr(p_group);
 	if (!groupp) {
-		task_mutex.unlock();
 		ERR_FAIL_V_MSG(false, "Invalid Group ID");
 	}
-	bool completed = (*groupp)->completed.is_set();
-	task_mutex.unlock();
-	return completed;
+	return (*groupp)->completed.is_set();
 }
 
 void WorkerThreadPool::wait_for_group_task_completion(GroupID p_group) {
@@ -600,28 +626,22 @@ void WorkerThreadPool::wait_for_group_task_completion(GroupID p_group) {
 	{
 		Group *group = *groupp;
 
-		if (flushing_cmd_queue) {
-			flushing_cmd_queue->unlock();
-		}
+		_unlock_unlockable_mutexes();
 		group->done_semaphore.wait();
-		if (flushing_cmd_queue) {
-			flushing_cmd_queue->lock();
-		}
+		_lock_unlockable_mutexes();
 
 		uint32_t max_users = group->tasks_used + 1; // Add 1 because the thread waiting for it is also user. Read before to avoid another thread freeing task after increment.
 		uint32_t finished_users = group->finished.increment(); // fetch happens before inc, so increment later.
 
 		if (finished_users == max_users) {
 			// All tasks using this group are gone (finished before the group), so clear the group too.
-			task_mutex.lock();
+			MutexLock task_lock(task_mutex);
 			group_allocator.free(group);
-			task_mutex.unlock();
 		}
 	}
 
-	task_mutex.lock(); // This mutex is needed when Physics 2D and/or 3D is selected to run on a separate thread.
+	MutexLock task_lock(task_mutex); // This mutex is needed when Physics 2D and/or 3D is selected to run on a separate thread.
 	groups.erase(p_group);
-	task_mutex.unlock();
 #endif
 }
 
@@ -630,15 +650,40 @@ int WorkerThreadPool::get_thread_index() {
 	return singleton->thread_ids.has(tid) ? singleton->thread_ids[tid] : -1;
 }
 
-void WorkerThreadPool::thread_enter_command_queue_mt_flush(CommandQueueMT *p_queue) {
-	ERR_FAIL_COND(flushing_cmd_queue != nullptr);
-	flushing_cmd_queue = p_queue;
+WorkerThreadPool::TaskID WorkerThreadPool::get_caller_task_id() {
+	int th_index = get_thread_index();
+	if (th_index != -1 && singleton->threads[th_index].current_task) {
+		return singleton->threads[th_index].current_task->self;
+	} else {
+		return INVALID_TASK_ID;
+	}
 }
 
-void WorkerThreadPool::thread_exit_command_queue_mt_flush() {
-	ERR_FAIL_NULL(flushing_cmd_queue);
-	flushing_cmd_queue = nullptr;
+#ifdef THREADS_ENABLED
+uint32_t WorkerThreadPool::_thread_enter_unlock_allowance_zone(THREADING_NAMESPACE::unique_lock<THREADING_NAMESPACE::mutex> &p_ulock) {
+	for (uint32_t i = 0; i < MAX_UNLOCKABLE_LOCKS; i++) {
+		DEV_ASSERT((bool)unlockable_locks[i].ulock == (bool)unlockable_locks[i].rc);
+		if (unlockable_locks[i].ulock == &p_ulock) {
+			// Already registered in the current thread.
+			unlockable_locks[i].rc++;
+			return i;
+		} else if (!unlockable_locks[i].ulock) {
+			unlockable_locks[i].ulock = &p_ulock;
+			unlockable_locks[i].rc = 1;
+			return i;
+		}
+	}
+	ERR_FAIL_V_MSG(UINT32_MAX, "No more unlockable lock slots available. Engine bug.");
 }
+
+void WorkerThreadPool::thread_exit_unlock_allowance_zone(uint32_t p_zone_id) {
+	DEV_ASSERT(unlockable_locks[p_zone_id].ulock && unlockable_locks[p_zone_id].rc);
+	unlockable_locks[p_zone_id].rc--;
+	if (unlockable_locks[p_zone_id].rc == 0) {
+		unlockable_locks[p_zone_id].ulock = nullptr;
+	}
+}
+#endif
 
 void WorkerThreadPool::init(int p_thread_count, float p_low_priority_task_ratio) {
 	ERR_FAIL_COND(threads.size() > 0);
@@ -647,6 +692,8 @@ void WorkerThreadPool::init(int p_thread_count, float p_low_priority_task_ratio)
 	}
 
 	max_low_priority_threads = CLAMP(p_thread_count * p_low_priority_task_ratio, 1, p_thread_count - 1);
+
+	print_verbose(vformat("WorkerThreadPool: %d threads, %d max low-priority.", p_thread_count, max_low_priority_threads));
 
 	threads.resize(p_thread_count);
 
@@ -708,5 +755,5 @@ WorkerThreadPool::WorkerThreadPool() {
 }
 
 WorkerThreadPool::~WorkerThreadPool() {
-	finish();
+	DEV_ASSERT(threads.size() == 0 && "finish() hasn't been called!");
 }

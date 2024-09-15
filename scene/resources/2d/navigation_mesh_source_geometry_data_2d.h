@@ -42,6 +42,9 @@ class NavigationMeshSourceGeometryData2D : public Resource {
 	Vector<Vector<Vector2>> traversable_outlines;
 	Vector<Vector<Vector2>> obstruction_outlines;
 
+	Rect2 bounds;
+	bool bounds_dirty = true;
+
 public:
 	struct ProjectedObstruction;
 
@@ -62,10 +65,10 @@ public:
 	};
 
 	void _set_traversable_outlines(const Vector<Vector<Vector2>> &p_traversable_outlines);
-	const Vector<Vector<Vector2>> &_get_traversable_outlines() const { return traversable_outlines; }
+	const Vector<Vector<Vector2>> &_get_traversable_outlines() const;
 
 	void _set_obstruction_outlines(const Vector<Vector<Vector2>> &p_obstruction_outlines);
-	const Vector<Vector<Vector2>> &_get_obstruction_outlines() const { return obstruction_outlines; }
+	const Vector<Vector<Vector2>> &_get_obstruction_outlines() const;
 
 	void _add_traversable_outline(const Vector<Vector2> &p_shape_outline);
 	void _add_obstruction_outline(const Vector<Vector2> &p_shape_outline);
@@ -82,10 +85,13 @@ public:
 	void set_obstruction_outlines(const TypedArray<Vector<Vector2>> &p_obstruction_outlines);
 	TypedArray<Vector<Vector2>> get_obstruction_outlines() const;
 
+	void append_traversable_outlines(const TypedArray<Vector<Vector2>> &p_traversable_outlines);
+	void append_obstruction_outlines(const TypedArray<Vector<Vector2>> &p_obstruction_outlines);
+
 	void add_traversable_outline(const PackedVector2Array &p_shape_outline);
 	void add_obstruction_outline(const PackedVector2Array &p_shape_outline);
 
-	bool has_data() { return traversable_outlines.size(); };
+	bool has_data();
 	void clear();
 	void clear_projected_obstructions();
 
@@ -96,6 +102,11 @@ public:
 	Array get_projected_obstructions() const;
 
 	void merge(const Ref<NavigationMeshSourceGeometryData2D> &p_other_geometry);
+
+	void set_data(const Vector<Vector<Vector2>> &p_traversable_outlines, const Vector<Vector<Vector2>> &p_obstruction_outlines, Vector<ProjectedObstruction> &p_projected_obstructions);
+	void get_data(Vector<Vector<Vector2>> &r_traversable_outlines, Vector<Vector<Vector2>> &r_obstruction_outlines, Vector<ProjectedObstruction> &r_projected_obstructions);
+
+	Rect2 get_bounds();
 
 	NavigationMeshSourceGeometryData2D() {}
 	~NavigationMeshSourceGeometryData2D() { clear(); }

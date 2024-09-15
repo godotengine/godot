@@ -42,10 +42,10 @@ class CryptoKey : public Resource {
 
 protected:
 	static void _bind_methods();
-	static CryptoKey *(*_create)();
+	static CryptoKey *(*_create)(bool p_notify_postinitialize);
 
 public:
-	static CryptoKey *create();
+	static CryptoKey *create(bool p_notify_postinitialize = true);
 	virtual Error load(const String &p_path, bool p_public_only = false) = 0;
 	virtual Error save(const String &p_path, bool p_public_only = false) = 0;
 	virtual String save_to_string(bool p_public_only = false) = 0;
@@ -58,10 +58,10 @@ class X509Certificate : public Resource {
 
 protected:
 	static void _bind_methods();
-	static X509Certificate *(*_create)();
+	static X509Certificate *(*_create)(bool p_notify_postinitialize);
 
 public:
-	static X509Certificate *create();
+	static X509Certificate *create(bool p_notify_postinitialize = true);
 	virtual Error load(const String &p_path) = 0;
 	virtual Error load_from_memory(const uint8_t *p_buffer, int p_len) = 0;
 	virtual Error save(const String &p_path) = 0;
@@ -72,17 +72,15 @@ public:
 class TLSOptions : public RefCounted {
 	GDCLASS(TLSOptions, RefCounted);
 
-public:
-	enum TLSVerifyMode {
-		TLS_VERIFY_NONE = 0,
-		TLS_VERIFY_CERT = 1,
-		TLS_VERIFY_FULL = 2,
+private:
+	enum Mode {
+		MODE_CLIENT = 0,
+		MODE_CLIENT_UNSAFE = 1,
+		MODE_SERVER = 2,
 	};
 
-private:
-	bool server_mode = false;
+	Mode mode = MODE_CLIENT;
 	String common_name;
-	TLSVerifyMode verify_mode = TLS_VERIFY_FULL;
 	Ref<X509Certificate> trusted_ca_chain;
 	Ref<X509Certificate> own_certificate;
 	Ref<CryptoKey> private_key;
@@ -95,12 +93,12 @@ public:
 	static Ref<TLSOptions> client_unsafe(Ref<X509Certificate> p_trusted_chain);
 	static Ref<TLSOptions> server(Ref<CryptoKey> p_own_key, Ref<X509Certificate> p_own_certificate);
 
-	TLSVerifyMode get_verify_mode() const { return verify_mode; }
-	String get_common_name() const { return common_name; }
+	String get_common_name_override() const { return common_name; }
 	Ref<X509Certificate> get_trusted_ca_chain() const { return trusted_ca_chain; }
 	Ref<X509Certificate> get_own_certificate() const { return own_certificate; }
 	Ref<CryptoKey> get_private_key() const { return private_key; }
-	bool is_server() const { return server_mode; }
+	bool is_server() const { return mode == MODE_SERVER; }
+	bool is_unsafe_client() const { return mode == MODE_CLIENT_UNSAFE; }
 };
 
 class HMACContext : public RefCounted {
@@ -108,10 +106,10 @@ class HMACContext : public RefCounted {
 
 protected:
 	static void _bind_methods();
-	static HMACContext *(*_create)();
+	static HMACContext *(*_create)(bool p_notify_postinitialize);
 
 public:
-	static HMACContext *create();
+	static HMACContext *create(bool p_notify_postinitialize = true);
 
 	virtual Error start(HashingContext::HashType p_hash_type, const PackedByteArray &p_key) = 0;
 	virtual Error update(const PackedByteArray &p_data) = 0;
@@ -126,11 +124,11 @@ class Crypto : public RefCounted {
 
 protected:
 	static void _bind_methods();
-	static Crypto *(*_create)();
+	static Crypto *(*_create)(bool p_notify_postinitialize);
 	static void (*_load_default_certificates)(const String &p_path);
 
 public:
-	static Crypto *create();
+	static Crypto *create(bool p_notify_postinitialize = true);
 	static void load_default_certificates(const String &p_path);
 
 	virtual PackedByteArray generate_random_bytes(int p_bytes) = 0;

@@ -227,7 +227,7 @@ Vector<InlineTestData> read_tests(const String &p_path) {
 		if (InlineTestData::try_parse(lines, i, d)) {
 			if (!d.name.is_empty()) {
 				// Safety check: names must be unique.
-				if (names.find(d.name) != -1) {
+				if (names.has(d.name)) {
 					FAIL(vformat("Duplicated name '%s' in '%s'. Names must be unique!", d.name, p_path));
 				}
 				names.append(d.name);

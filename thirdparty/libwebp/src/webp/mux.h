@@ -16,12 +16,13 @@
 #define WEBP_WEBP_MUX_H_
 
 #include "./mux_types.h"
+#include "./types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define WEBP_MUX_ABI_VERSION 0x0108        // MAJOR(8b) + MINOR(8b)
+#define WEBP_MUX_ABI_VERSION 0x0109        // MAJOR(8b) + MINOR(8b)
 
 //------------------------------------------------------------------------------
 // Mux API
@@ -70,7 +71,7 @@ typedef struct WebPMuxAnimParams WebPMuxAnimParams;
 typedef struct WebPAnimEncoderOptions WebPAnimEncoderOptions;
 
 // Error codes
-typedef enum WebPMuxError {
+typedef enum WEBP_NODISCARD WebPMuxError {
   WEBP_MUX_OK                 =  1,
   WEBP_MUX_NOT_FOUND          =  0,
   WEBP_MUX_INVALID_ARGUMENT   = -1,
@@ -104,13 +105,13 @@ WEBP_EXTERN int WebPGetMuxVersion(void);
 // Life of a Mux object
 
 // Internal, version-checked, entry point
-WEBP_EXTERN WebPMux* WebPNewInternal(int);
+WEBP_NODISCARD WEBP_EXTERN WebPMux* WebPNewInternal(int);
 
 // Creates an empty mux object.
 // Returns:
 //   A pointer to the newly created empty mux object.
 //   Or NULL in case of memory error.
-static WEBP_INLINE WebPMux* WebPMuxNew(void) {
+WEBP_NODISCARD static WEBP_INLINE WebPMux* WebPMuxNew(void) {
   return WebPNewInternal(WEBP_MUX_ABI_VERSION);
 }
 
@@ -123,18 +124,21 @@ WEBP_EXTERN void WebPMuxDelete(WebPMux* mux);
 // Mux creation.
 
 // Internal, version-checked, entry point
-WEBP_EXTERN WebPMux* WebPMuxCreateInternal(const WebPData*, int, int);
+WEBP_NODISCARD WEBP_EXTERN WebPMux* WebPMuxCreateInternal(const WebPData*, int,
+                                                          int);
 
 // Creates a mux object from raw data given in WebP RIFF format.
 // Parameters:
 //   bitstream - (in) the bitstream data in WebP RIFF format
 //   copy_data - (in) value 1 indicates given data WILL be copied to the mux
-//               object and value 0 indicates data will NOT be copied.
+//               object and value 0 indicates data will NOT be copied. If the
+//               data is not copied, it must exist for the lifetime of the
+//               mux object.
 // Returns:
 //   A pointer to the mux object created from given data - on success.
 //   NULL - In case of invalid data or memory error.
-static WEBP_INLINE WebPMux* WebPMuxCreate(const WebPData* bitstream,
-                                          int copy_data) {
+WEBP_NODISCARD static WEBP_INLINE WebPMux* WebPMuxCreate(
+    const WebPData* bitstream, int copy_data) {
   return WebPMuxCreateInternal(bitstream, copy_data, WEBP_MUX_ABI_VERSION);
 }
 
@@ -154,7 +158,9 @@ static WEBP_INLINE WebPMux* WebPMuxCreate(const WebPData* bitstream,
 //                 e.g., "ICCP", "XMP ", "EXIF" etc.
 //   chunk_data - (in) the chunk data to be added
 //   copy_data - (in) value 1 indicates given data WILL be copied to the mux
-//               object and value 0 indicates data will NOT be copied.
+//               object and value 0 indicates data will NOT be copied. If the
+//               data is not copied, it must exist until a call to
+//               WebPMuxAssemble() is made.
 // Returns:
 //   WEBP_MUX_INVALID_ARGUMENT - if mux, fourcc or chunk_data is NULL
 //                               or if fourcc corresponds to an image chunk.
@@ -217,7 +223,9 @@ struct WebPMuxFrameInfo {
 //   bitstream - (in) can be a raw VP8/VP8L bitstream or a single-image
 //               WebP file (non-animated)
 //   copy_data - (in) value 1 indicates given data WILL be copied to the mux
-//               object and value 0 indicates data will NOT be copied.
+//               object and value 0 indicates data will NOT be copied. If the
+//               data is not copied, it must exist until a call to
+//               WebPMuxAssemble() is made.
 // Returns:
 //   WEBP_MUX_INVALID_ARGUMENT - if mux is NULL or bitstream is NULL.
 //   WEBP_MUX_MEMORY_ERROR - on memory allocation error.
@@ -235,7 +243,9 @@ WEBP_EXTERN WebPMuxError WebPMuxSetImage(
 //   mux - (in/out) object to which the frame is to be added
 //   frame - (in) frame data.
 //   copy_data - (in) value 1 indicates given data WILL be copied to the mux
-//               object and value 0 indicates data will NOT be copied.
+//               object and value 0 indicates data will NOT be copied. If the
+//               data is not copied, it must exist until a call to
+//               WebPMuxAssemble() is made.
 // Returns:
 //   WEBP_MUX_INVALID_ARGUMENT - if mux or frame is NULL
 //                               or if content of 'frame' is invalid.
@@ -449,7 +459,7 @@ WEBP_EXTERN int WebPAnimEncoderOptionsInitInternal(
 // structure before modification. Returns false in case of version mismatch.
 // WebPAnimEncoderOptionsInit() must have succeeded before using the
 // 'enc_options' object.
-static WEBP_INLINE int WebPAnimEncoderOptionsInit(
+WEBP_NODISCARD static WEBP_INLINE int WebPAnimEncoderOptionsInit(
     WebPAnimEncoderOptions* enc_options) {
   return WebPAnimEncoderOptionsInitInternal(enc_options, WEBP_MUX_ABI_VERSION);
 }
@@ -490,7 +500,7 @@ static WEBP_INLINE WebPAnimEncoder* WebPAnimEncoderNew(
 // Returns:
 //   On error, returns false and frame->error_code is set appropriately.
 //   Otherwise, returns true.
-WEBP_EXTERN int WebPAnimEncoderAdd(
+WEBP_NODISCARD WEBP_EXTERN int WebPAnimEncoderAdd(
     WebPAnimEncoder* enc, struct WebPPicture* frame, int timestamp_ms,
     const struct WebPConfig* config);
 
@@ -503,8 +513,8 @@ WEBP_EXTERN int WebPAnimEncoderAdd(
 //   webp_data - (out) generated WebP bitstream.
 // Returns:
 //   True on success.
-WEBP_EXTERN int WebPAnimEncoderAssemble(WebPAnimEncoder* enc,
-                                        WebPData* webp_data);
+WEBP_NODISCARD WEBP_EXTERN int WebPAnimEncoderAssemble(WebPAnimEncoder* enc,
+                                                       WebPData* webp_data);
 
 // Get error string corresponding to the most recent call using 'enc'. The
 // returned string is owned by 'enc' and is valid only until the next call to
@@ -520,6 +530,57 @@ WEBP_EXTERN const char* WebPAnimEncoderGetError(WebPAnimEncoder* enc);
 // Parameters:
 //   enc - (in/out) object to be deleted
 WEBP_EXTERN void WebPAnimEncoderDelete(WebPAnimEncoder* enc);
+
+//------------------------------------------------------------------------------
+// Non-image chunks.
+
+// Note: Only non-image related chunks should be managed through chunk APIs.
+// (Image related chunks are: "ANMF", "VP8 ", "VP8L" and "ALPH").
+
+// Adds a chunk with id 'fourcc' and data 'chunk_data' in the enc object.
+// Any existing chunk(s) with the same id will be removed.
+// Parameters:
+//   enc - (in/out) object to which the chunk is to be added
+//   fourcc - (in) a character array containing the fourcc of the given chunk;
+//                 e.g., "ICCP", "XMP ", "EXIF", etc.
+//   chunk_data - (in) the chunk data to be added
+//   copy_data - (in) value 1 indicates given data WILL be copied to the enc
+//               object and value 0 indicates data will NOT be copied. If the
+//               data is not copied, it must exist until a call to
+//               WebPAnimEncoderAssemble() is made.
+// Returns:
+//   WEBP_MUX_INVALID_ARGUMENT - if enc, fourcc or chunk_data is NULL.
+//   WEBP_MUX_MEMORY_ERROR - on memory allocation error.
+//   WEBP_MUX_OK - on success.
+WEBP_EXTERN WebPMuxError WebPAnimEncoderSetChunk(
+    WebPAnimEncoder* enc, const char fourcc[4], const WebPData* chunk_data,
+    int copy_data);
+
+// Gets a reference to the data of the chunk with id 'fourcc' in the enc object.
+// The caller should NOT free the returned data.
+// Parameters:
+//   enc - (in) object from which the chunk data is to be fetched
+//   fourcc - (in) a character array containing the fourcc of the chunk;
+//                 e.g., "ICCP", "XMP ", "EXIF", etc.
+//   chunk_data - (out) returned chunk data
+// Returns:
+//   WEBP_MUX_INVALID_ARGUMENT - if enc, fourcc or chunk_data is NULL.
+//   WEBP_MUX_NOT_FOUND - If enc does not contain a chunk with the given id.
+//   WEBP_MUX_OK - on success.
+WEBP_EXTERN WebPMuxError WebPAnimEncoderGetChunk(
+    const WebPAnimEncoder* enc, const char fourcc[4], WebPData* chunk_data);
+
+// Deletes the chunk with the given 'fourcc' from the enc object.
+// Parameters:
+//   enc - (in/out) object from which the chunk is to be deleted
+//   fourcc - (in) a character array containing the fourcc of the chunk;
+//                 e.g., "ICCP", "XMP ", "EXIF", etc.
+// Returns:
+//   WEBP_MUX_INVALID_ARGUMENT - if enc or fourcc is NULL.
+//   WEBP_MUX_NOT_FOUND - If enc does not contain a chunk with the given fourcc.
+//   WEBP_MUX_OK - on success.
+WEBP_EXTERN WebPMuxError WebPAnimEncoderDeleteChunk(
+    WebPAnimEncoder* enc, const char fourcc[4]);
 
 //------------------------------------------------------------------------------
 

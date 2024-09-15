@@ -169,7 +169,7 @@ struct Texture {
 		TYPE_3D
 	};
 
-	Type type;
+	Type type = TYPE_2D;
 	RS::TextureLayeredType layered_type = RS::TEXTURE_LAYERED_2D_ARRAY;
 
 	GLenum target = GL_TEXTURE_2D;
@@ -553,6 +553,7 @@ public:
 	void texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_layer = 0);
 	virtual Image::Format texture_get_format(RID p_texture) const override;
 	uint32_t texture_get_texid(RID p_texture) const;
+	Vector3i texture_get_size(RID p_texture) const;
 	uint32_t texture_get_width(RID p_texture) const;
 	uint32_t texture_get_height(RID p_texture) const;
 	uint32_t texture_get_depth(RID p_texture) const;
@@ -672,6 +673,8 @@ public:
 
 	virtual void render_target_set_vrs_mode(RID p_render_target, RS::ViewportVRSMode p_mode) override {}
 	virtual RS::ViewportVRSMode render_target_get_vrs_mode(RID p_render_target) const override { return RS::VIEWPORT_VRS_DISABLED; }
+	virtual void render_target_set_vrs_update_mode(RID p_render_target, RS::ViewportVRSUpdateMode p_mode) override {}
+	virtual RS::ViewportVRSUpdateMode render_target_get_vrs_update_mode(RID p_render_target) const override { return RS::VIEWPORT_VRS_UPDATE_DISABLED; }
 	virtual void render_target_set_vrs_texture(RID p_render_target, RID p_texture) override {}
 	virtual RID render_target_get_vrs_texture(RID p_render_target) const override { return RID(); }
 

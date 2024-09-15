@@ -55,6 +55,8 @@ public:
 	void set_bone_update(BoneUpdate p_bone_update);
 	BoneUpdate get_bone_update() const;
 
+	PackedStringArray get_configuration_warnings() const override;
+
 	void _notification(int p_what);
 
 protected:
@@ -69,12 +71,15 @@ private:
 		int parent_joint = -1;
 	};
 
-	StringName tracker_name = "/user/left";
+	StringName tracker_name = "/user/hand_tracker/left";
 	BoneUpdate bone_update = BONE_UPDATE_FULL;
 	JointData joints[XRHandTracker::HAND_JOINT_MAX];
 
+	bool has_stored_previous_transforms = false;
+	Vector<Transform3D> previous_relative_transforms;
+
 	void _get_joint_data();
-	void _tracker_changed(StringName p_tracker_name, const Ref<XRHandTracker> &p_tracker);
+	void _tracker_changed(StringName p_tracker_name, XRServer::TrackerType p_tracker_type);
 };
 
 VARIANT_ENUM_CAST(XRHandModifier3D::BoneUpdate)

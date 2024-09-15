@@ -31,7 +31,7 @@
 #ifndef THEME_EDITOR_PLUGIN_H
 #define THEME_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/theme_editor_preview.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/margin_container.h"
@@ -303,6 +303,7 @@ class ThemeTypeDialog : public ConfirmationDialog {
 	void _update_add_type_options(const String &p_filter = "");
 
 	void _add_type_filter_cbk(const String &p_value);
+	void _type_filter_input(const Ref<InputEvent> &p_ie);
 	void _add_type_options_cbk(int p_index);
 	void _add_type_dialog_entered(const String &p_value);
 	void _add_type_dialog_activated(int p_index);
@@ -321,7 +322,7 @@ public:
 	ThemeTypeDialog();
 };
 
-// Custom `Label` needed to use `EditorHelpTooltip` to display theme item documentation.
+// Custom `Label` needed to use `EditorHelpBit` to display theme item documentation.
 class ThemeItemLabel : public Label {
 	virtual Control *make_custom_tooltip(const String &p_text) const;
 };

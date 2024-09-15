@@ -212,8 +212,8 @@ PluginConfigIOS PluginConfigIOS::load_plugin_config(Ref<ConfigFile> config_file,
 		List<String> keys;
 		config_file->get_section_keys(PluginConfigIOS::PLIST_SECTION, &keys);
 
-		for (int i = 0; i < keys.size(); i++) {
-			Vector<String> key_components = keys[i].split(":");
+		for (const String &key : keys) {
+			Vector<String> key_components = key.split(":");
 
 			String key_value = "";
 			PluginConfigIOS::PlistItemType key_type = PluginConfigIOS::PlistItemType::UNKNOWN;
@@ -245,29 +245,29 @@ PluginConfigIOS PluginConfigIOS::load_plugin_config(Ref<ConfigFile> config_file,
 
 			switch (key_type) {
 				case PluginConfigIOS::PlistItemType::STRING: {
-					String raw_value = config_file->get_value(PluginConfigIOS::PLIST_SECTION, keys[i], String());
+					String raw_value = config_file->get_value(PluginConfigIOS::PLIST_SECTION, key, String());
 					value = "<string>" + raw_value + "</string>";
 				} break;
 				case PluginConfigIOS::PlistItemType::INTEGER: {
-					int raw_value = config_file->get_value(PluginConfigIOS::PLIST_SECTION, keys[i], 0);
+					int raw_value = config_file->get_value(PluginConfigIOS::PLIST_SECTION, key, 0);
 					Dictionary value_dictionary;
 					String value_format = "<integer>$value</integer>";
 					value_dictionary["value"] = raw_value;
 					value = value_format.format(value_dictionary, "$_");
 				} break;
 				case PluginConfigIOS::PlistItemType::BOOLEAN:
-					if (config_file->get_value(PluginConfigIOS::PLIST_SECTION, keys[i], false)) {
+					if (config_file->get_value(PluginConfigIOS::PLIST_SECTION, key, false)) {
 						value = "<true/>";
 					} else {
 						value = "<false/>";
 					}
 					break;
 				case PluginConfigIOS::PlistItemType::RAW: {
-					String raw_value = config_file->get_value(PluginConfigIOS::PLIST_SECTION, keys[i], String());
+					String raw_value = config_file->get_value(PluginConfigIOS::PLIST_SECTION, key, String());
 					value = raw_value;
 				} break;
 				case PluginConfigIOS::PlistItemType::STRING_INPUT: {
-					String raw_value = config_file->get_value(PluginConfigIOS::PLIST_SECTION, keys[i], String());
+					String raw_value = config_file->get_value(PluginConfigIOS::PLIST_SECTION, key, String());
 					value = raw_value;
 				} break;
 				default:

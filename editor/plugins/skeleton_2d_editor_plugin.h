@@ -31,7 +31,7 @@
 #ifndef SKELETON_2D_EDITOR_PLUGIN_H
 #define SKELETON_2D_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/2d/skeleton_2d.h"
 
 class AcceptDialog;
@@ -57,7 +57,6 @@ class Skeleton2DEditor : public Control {
 
 protected:
 	void _node_removed(Node *p_node);
-	static void _bind_methods();
 
 public:
 	void edit(Skeleton2D *p_sprite);

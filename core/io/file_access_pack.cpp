@@ -119,6 +119,10 @@ void PackedData::_free_packed_dirs(PackedDir *p_dir) {
 }
 
 PackedData::~PackedData() {
+	if (singleton == this) {
+		singleton = nullptr;
+	}
+
 	for (int i = 0; i < sources.size(); i++) {
 		memdelete(sources[i]);
 	}
@@ -309,17 +313,6 @@ bool FileAccessPack::eof_reached() const {
 	return eof;
 }
 
-uint8_t FileAccessPack::get_8() const {
-	ERR_FAIL_COND_V_MSG(f.is_null(), 0, "File must be opened before use.");
-	if (pos >= pf.size) {
-		eof = true;
-		return 0;
-	}
-
-	pos++;
-	return f->get_8();
-}
-
 uint64_t FileAccessPack::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_COND_V_MSG(f.is_null(), -1, "File must be opened before use.");
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
@@ -359,10 +352,6 @@ Error FileAccessPack::get_error() const {
 }
 
 void FileAccessPack::flush() {
-	ERR_FAIL();
-}
-
-void FileAccessPack::store_8(uint8_t p_dest) {
 	ERR_FAIL();
 }
 

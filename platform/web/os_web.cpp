@@ -105,7 +105,7 @@ Error OS_Web::execute(const String &p_path, const List<String> &p_arguments, Str
 	return create_process(p_path, p_arguments);
 }
 
-Dictionary OS_Web::execute_with_pipe(const String &p_path, const List<String> &p_arguments) {
+Dictionary OS_Web::execute_with_pipe(const String &p_path, const List<String> &p_arguments, bool p_blocking) {
 	ERR_FAIL_V_MSG(Dictionary(), "OS::execute_with_pipe is not available on the Web platform.");
 }
 
@@ -174,7 +174,7 @@ void OS_Web::add_frame_delay(bool p_can_draw) {
 #endif
 }
 
-void OS_Web::vibrate_handheld(int p_duration_ms) {
+void OS_Web::vibrate_handheld(int p_duration_ms, float p_amplitude) {
 	godot_js_input_vibrate_handheld(p_duration_ms);
 }
 
@@ -247,13 +247,13 @@ bool OS_Web::is_userfs_persistent() const {
 	return idb_available;
 }
 
-Error OS_Web::open_dynamic_library(const String &p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path, bool p_generate_temp_files) {
+Error OS_Web::open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data) {
 	String path = p_path.get_file();
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
 	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));
 
-	if (r_resolved_path != nullptr) {
-		*r_resolved_path = path;
+	if (p_data != nullptr && p_data->r_resolved_path != nullptr) {
+		*p_data->r_resolved_path = path;
 	}
 
 	return OK;
@@ -276,8 +276,8 @@ OS_Web::OS_Web() {
 	if (AudioDriverWeb::is_available()) {
 		audio_drivers.push_back(memnew(AudioDriverWorklet));
 	}
-	for (int i = 0; i < audio_drivers.size(); i++) {
-		AudioDriverManager::add_driver(audio_drivers[i]);
+	for (AudioDriverWeb *audio_driver : audio_drivers) {
+		AudioDriverManager::add_driver(audio_driver);
 	}
 
 	idb_available = godot_js_os_fs_is_persistent();

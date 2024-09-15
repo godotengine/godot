@@ -78,7 +78,7 @@ const GodotConfig = {
 		},
 
 		locate_file: function (file) {
-			return Module['locateFile'](file); // eslint-disable-line no-undef
+			return Module['locateFile'](file);
 		},
 		clear: function () {
 			GodotConfig.canvas = null;

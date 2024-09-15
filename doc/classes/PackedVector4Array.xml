@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PackedVector4Array" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A packed array of [Vector4]s.
+	</brief_description>
+	<description>
+		An array specifically designed to hold [Vector4]. Packs data tightly, so it saves memory for large array sizes.
+		[b]Note:[/b] Packed arrays are always passed by reference. To get a copy of an array that can be modified independently of the original array, use [method duplicate]. This is [i]not[/i] the case for built-in properties and methods. The returned packed array of these are a copies, and changing it will [i]not[/i] affect the original value. To update a built-in property you need to modify the returned array, and then assign it to the property again.
+	</description>
+	<tutorials>
+	</tutorials>
+	<constructors>
+		<constructor name="PackedVector4Array">
+			<return type="PackedVector4Array" />
+			<description>
+				Constructs an empty [PackedVector4Array].
+			</description>
+		</constructor>
+		<constructor name="PackedVector4Array">
+			<return type="PackedVector4Array" />
+			<param index="0" name="from" type="PackedVector4Array" />
+			<description>
+				Constructs a [PackedVector4Array] as a copy of the given [PackedVector4Array].
+			</description>
+		</constructor>
+		<constructor name="PackedVector4Array">
+			<return type="PackedVector4Array" />
+			<param index="0" name="from" type="Array" />
+			<description>
+				Constructs a new [PackedVector4Array]. Optionally, you can pass in a generic [Array] that will be converted.
+				[b]Note:[/b] When initializing a [PackedVector4Array] with elements, it must be initialized with an [Array] of [Vector4] values:
+				[codeblock]
+				var array = PackedVector4Array([Vector4(12, 34, 56, 78), Vector4(90, 12, 34, 56)])
+				[/codeblock]
+			</description>
+		</constructor>
+	</constructors>
+	<methods>
+		<method name="append">
+			<return type="bool" />
+			<param index="0" name="value" type="Vector4" />
+			<description>
+				Appends an element at the end of the array (alias of [method push_back]).
+			</description>
+		</method>
+		<method name="append_array">
+			<return type="void" />
+			<param index="0" name="array" type="PackedVector4Array" />
+			<description>
+				Appends a [PackedVector4Array] at the end of this array.
+			</description>
+		</method>
+		<method name="bsearch">
+			<return type="int" />
+			<param index="0" name="value" type="Vector4" />
+			<param index="1" name="before" type="bool" default="true" />
+			<description>
+				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search. Optionally, a [param before] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array.
+				[b]Note:[/b] Calling [method bsearch] on an unsorted array results in unexpected behavior.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this method may not be accurate if NaNs are included.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Clears the array. This is equivalent to using [method resize] with a size of [code]0[/code].
+			</description>
+		</method>
+		<method name="count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="value" type="Vector4" />
+			<description>
+				Returns the number of times an element is in the array.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this method may not be accurate if NaNs are included.
+			</description>
+		</method>
+		<method name="duplicate">
+			<return type="PackedVector4Array" />
+			<description>
+				Creates a copy of the array, and returns it.
+			</description>
+		</method>
+		<method name="fill">
+			<return type="void" />
+			<param index="0" name="value" type="Vector4" />
+			<description>
+				Assigns the given value to all elements in the array. This can typically be used together with [method resize] to create an array with a given size and initialized elements.
+			</description>
+		</method>
+		<method name="find" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="value" type="Vector4" />
+			<param index="1" name="from" type="int" default="0" />
+			<description>
+				Searches the array for a value and returns its index or [code]-1[/code] if not found. Optionally, the initial search index can be passed.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this method may not be accurate if NaNs are included.
+			</description>
+		</method>
+		<method name="has" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="value" type="Vector4" />
+			<description>
+				Returns [code]true[/code] if the array contains [param value].
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this method may not be accurate if NaNs are included.
+			</description>
+		</method>
+		<method name="insert">
+			<return type="int" />
+			<param index="0" name="at_index" type="int" />
+			<param index="1" name="value" type="Vector4" />
+			<description>
+				Inserts a new element at a given position in the array. The position must be valid, or at the end of the array ([code]idx == size()[/code]).
+			</description>
+		</method>
+		<method name="is_empty" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the array is empty.
+			</description>
+		</method>
+		<method name="push_back">
+			<return type="bool" />
+			<param index="0" name="value" type="Vector4" />
+			<description>
+				Inserts a [Vector4] at the end.
+			</description>
+		</method>
+		<method name="remove_at">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Removes an element from the array by index.
+			</description>
+		</method>
+		<method name="resize">
+			<return type="int" />
+			<param index="0" name="new_size" type="int" />
+			<description>
+				Sets the size of the array. If the array is grown, reserves elements at the end of the array. If the array is shrunk, truncates the array to the new size.
+			</description>
+		</method>
+		<method name="reverse">
+			<return type="void" />
+			<description>
+				Reverses the order of the elements in the array.
+			</description>
+		</method>
+		<method name="rfind" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="value" type="Vector4" />
+			<param index="1" name="from" type="int" default="-1" />
+			<description>
+				Searches the array in reverse order. Optionally, a start search index can be passed. If negative, the start index is considered relative to the end of the array.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this method may not be accurate if NaNs are included.
+			</description>
+		</method>
+		<method name="set">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="value" type="Vector4" />
+			<description>
+				Changes the [Vector4] at the given index.
+			</description>
+		</method>
+		<method name="size" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of elements in the array.
+			</description>
+		</method>
+		<method name="slice" qualifiers="const">
+			<return type="PackedVector4Array" />
+			<param index="0" name="begin" type="int" />
+			<param index="1" name="end" type="int" default="2147483647" />
+			<description>
+				Returns the slice of the [PackedVector4Array], from [param begin] (inclusive) to [param end] (exclusive), as a new [PackedVector4Array].
+				The absolute value of [param begin] and [param end] will be clamped to the array size, so the default value for [param end] makes it slice to the size of the array by default (i.e. [code]arr.slice(1)[/code] is a shorthand for [code]arr.slice(1, arr.size())[/code]).
+				If either [param begin] or [param end] are negative, they will be relative to the end of the array (i.e. [code]arr.slice(0, -2)[/code] is a shorthand for [code]arr.slice(0, arr.size() - 2)[/code]).
+			</description>
+		</method>
+		<method name="sort">
+			<return type="void" />
+			<description>
+				Sorts the elements of the array in ascending order.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this method may not be accurate if NaNs are included.
+			</description>
+		</method>
+		<method name="to_byte_array" qualifiers="const">
+			<return type="PackedByteArray" />
+			<description>
+				Returns a [PackedByteArray] with each vector encoded as bytes.
+			</description>
+		</method>
+	</methods>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<param index="0" name="right" type="PackedVector4Array" />
+			<description>
+				Returns [code]true[/code] if contents of the arrays differ.
+			</description>
+		</operator>
+		<operator name="operator +">
+			<return type="PackedVector4Array" />
+			<param index="0" name="right" type="PackedVector4Array" />
+			<description>
+				Returns a new [PackedVector4Array] with contents of [param right] added at the end of this array. For better performance, consider using [method append_array] instead.
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<param index="0" name="right" type="PackedVector4Array" />
+			<description>
+				Returns [code]true[/code] if contents of both arrays are the same, i.e. they have all equal [Vector4]s at the corresponding indices.
+			</description>
+		</operator>
+		<operator name="operator []">
+			<return type="Vector4" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the [Vector4] at index [param index]. Negative indices can be used to access the elements starting from the end. Using index out of array's bounds will result in an error.
+			</description>
+		</operator>
+	</operators>
+</class>

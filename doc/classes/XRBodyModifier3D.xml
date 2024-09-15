@@ -4,15 +4,15 @@
 		A node for driving body meshes from [XRBodyTracker] data.
 	</brief_description>
 	<description>
-		This node uses body tracking data from a [XRBodyTracker] to animate the skeleton of a body mesh.
-		This node positions itself at the [constant XRBodyTracker.JOINT_ROOT] position and scales itself to [member XRServer.world_scale]. Adding the body model as a child of this node will result in the model being positioned and scaled correctly for XR experiences.
+		This node uses body tracking data from an [XRBodyTracker] to pose the skeleton of a body mesh.
+		Positioning of the body is performed by creating an [XRNode3D] ancestor of the body mesh driven by the same [XRBodyTracker].
 		The body tracking position-data is scaled by [member Skeleton3D.motion_scale] when applied to the skeleton, which can be used to adjust the tracked body to match the scale of the body model.
 	</description>
 	<tutorials>
 		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
 	</tutorials>
 	<members>
-		<member name="body_tracker" type="StringName" setter="set_body_tracker" getter="get_body_tracker" default="&amp;&quot;/user/body&quot;">
+		<member name="body_tracker" type="StringName" setter="set_body_tracker" getter="get_body_tracker" default="&amp;&quot;/user/body_tracker&quot;">
 			The name of the [XRBodyTracker] registered with [XRServer] to obtain the body tracking data from.
 		</member>
 		<member name="body_update" type="int" setter="set_body_update" getter="get_body_update" enum="XRBodyModifier3D.BodyUpdate" is_bitfield="true" default="7">
@@ -20,9 +20,6 @@
 		</member>
 		<member name="bone_update" type="int" setter="set_bone_update" getter="get_bone_update" enum="XRBodyModifier3D.BoneUpdate" default="0">
 			Specifies the type of updates to perform on the bones.
-		</member>
-		<member name="show_when_tracked" type="bool" setter="set_show_when_tracked" getter="get_show_when_tracked" default="true">
-			If true then the nodes visibility is determined by whether tracking data is available.
 		</member>
 	</members>
 	<constants>

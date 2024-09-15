@@ -13,7 +13,7 @@ partial class ExportDiagnostics_GD0106_OK
     {
         var values = new global::System.Collections.Generic.Dictionary<global::Godot.StringName, global::Godot.Variant>(1);
         int __MyProperty_default_value = default;
-        values.Add(PropertyName.MyProperty, global::Godot.Variant.From<int>(__MyProperty_default_value));
+        values.Add(PropertyName.@MyProperty, global::Godot.Variant.From<int>(__MyProperty_default_value));
         return values;
     }
 #endif // TOOLS

@@ -1000,8 +1000,9 @@ static void HFilter8i_NEON(uint8_t* u, uint8_t* v, int stride,
 // libwebp adds 1 << 16 to cospi8sqrt2minus1 (kC1). However, this causes the
 // same issue with kC1 and vqdmulh that we work around by down shifting kC2
 
-static const int16_t kC1 = 20091;
-static const int16_t kC2 = 17734;  // half of kC2, actually. See comment above.
+static const int16_t kC1 = WEBP_TRANSFORM_AC3_C1;
+static const int16_t kC2 =
+    WEBP_TRANSFORM_AC3_C2 / 2;  // half of kC2, actually. See comment above.
 
 #if defined(WEBP_USE_INTRINSICS)
 static WEBP_INLINE void Transpose8x2_NEON(const int16x8_t in0,
@@ -1255,15 +1256,12 @@ static void TransformWHT_NEON(const int16_t* in, int16_t* out) {
 
 //------------------------------------------------------------------------------
 
-#define MUL(a, b) (((a) * (b)) >> 16)
 static void TransformAC3_NEON(const int16_t* in, uint8_t* dst) {
-  static const int kC1_full = 20091 + (1 << 16);
-  static const int kC2_full = 35468;
   const int16x4_t A = vld1_dup_s16(in);
-  const int16x4_t c4 = vdup_n_s16(MUL(in[4], kC2_full));
-  const int16x4_t d4 = vdup_n_s16(MUL(in[4], kC1_full));
-  const int c1 = MUL(in[1], kC2_full);
-  const int d1 = MUL(in[1], kC1_full);
+  const int16x4_t c4 = vdup_n_s16(WEBP_TRANSFORM_AC3_MUL2(in[4]));
+  const int16x4_t d4 = vdup_n_s16(WEBP_TRANSFORM_AC3_MUL1(in[4]));
+  const int c1 = WEBP_TRANSFORM_AC3_MUL2(in[1]);
+  const int d1 = WEBP_TRANSFORM_AC3_MUL1(in[1]);
   const uint64_t cd = (uint64_t)( d1 & 0xffff) <<  0 |
                       (uint64_t)( c1 & 0xffff) << 16 |
                       (uint64_t)(-c1 & 0xffff) << 32 |
@@ -1274,7 +1272,6 @@ static void TransformAC3_NEON(const int16_t* in, uint8_t* dst) {
   const int16x8_t m2_m3 = vcombine_s16(vqsub_s16(B, c4), vqsub_s16(B, d4));
   Add4x4_NEON(m0_m1, m2_m3, dst);
 }
-#undef MUL
 
 //------------------------------------------------------------------------------
 // 4x4

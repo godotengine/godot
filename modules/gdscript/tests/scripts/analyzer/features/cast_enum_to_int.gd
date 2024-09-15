@@ -6,4 +6,3 @@ func test():
 	var a := Foo.A
 	var b := a as int + 1
 	print(b)
-	

@@ -214,6 +214,8 @@ private:
 		int resize_margin = 0;
 	} theme_cache;
 
+	void _settings_changed();
+
 	Viewport *embedder = nullptr;
 
 	Transform2D window_transform;
@@ -244,10 +246,6 @@ protected:
 
 	void _notification(int p_what);
 	static void _bind_methods();
-
-#ifndef DISABLE_DEPRECATED
-	static void _bind_compatibility_methods();
-#endif
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;

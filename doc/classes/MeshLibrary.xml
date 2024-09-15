@@ -29,7 +29,7 @@
 			<return type="int" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Returns the first item with the given name.
+				Returns the first item with the given name, or [code]-1[/code] if no item is found.
 			</description>
 		</method>
 		<method name="get_item_list" qualifiers="const">

@@ -7,11 +7,12 @@ ext.versions = [
     targetSdk          : 34,
     buildTools         : '34.0.0',
     kotlinVersion      : '1.9.20',
-    fragmentVersion    : '1.6.2',
+    fragmentVersion    : '1.7.1',
     nexusPublishVersion: '1.3.0',
     javaVersion        : JavaVersion.VERSION_17,
     // Also update 'platform/android/detect.py#get_ndk_version()' when this is updated.
-    ndkVersion         : '23.2.8568313'
+    ndkVersion         : '23.2.8568313',
+    splashscreenVersion: '1.0.1'
 
 ]
 
@@ -223,6 +224,22 @@ ext.getExportFilename = {
     return exportFilename
 }
 
+ext.getExportBuildType = {
+    String exportBuildType = project.hasProperty("export_build_type") ? project.property("export_build_type") : ""
+    if (exportBuildType == null || exportBuildType.isEmpty()) {
+        exportBuildType = "debug"
+    }
+    return exportBuildType
+}
+
+ext.getExportFormat = {
+    String exportFormat = project.hasProperty("export_format") ? project.property("export_format") : ""
+    if (exportFormat == null || exportFormat.isEmpty()) {
+        exportFormat = "apk"
+    }
+    return exportFormat
+}
+
 /**
  * Parse the project properties for the 'plugins_maven_repos' property and return the list
  * of maven repos.
@@ -330,8 +347,7 @@ ext.getReleaseKeyAlias = { ->
 }
 
 ext.isAndroidStudio = { ->
-    def sysProps = System.getProperties()
-    return sysProps != null && sysProps['idea.platform.prefix'] != null
+    return project.hasProperty('android.injected.invoked.from.ide')
 }
 
 ext.shouldZipAlign = { ->

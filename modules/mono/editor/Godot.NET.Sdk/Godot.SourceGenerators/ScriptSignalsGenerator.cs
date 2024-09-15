@@ -212,7 +212,7 @@ namespace Godot.SourceGenerators
                     .Append("' signal.\n")
                     .Append("        /// </summary>\n");
 
-                source.Append("        public new static readonly global::Godot.StringName ");
+                source.Append("        public new static readonly global::Godot.StringName @");
                 source.Append(signalName);
                 source.Append(" = \"");
                 source.Append(signalName);
@@ -278,7 +278,7 @@ namespace Godot.SourceGenerators
 
                 source.Append("    public event ")
                     .Append(signalDelegate.DelegateSymbol.FullQualifiedNameIncludeGlobal())
-                    .Append(" ")
+                    .Append(" @")
                     .Append(signalName)
                     .Append(" {\n")
                     .Append("        add => backing_")
@@ -319,11 +319,9 @@ namespace Godot.SourceGenerators
                 source.Append(
                     "    protected override bool HasGodotClassSignal(in godot_string_name signal)\n    {\n");
 
-                bool isFirstEntry = true;
                 foreach (var signal in godotSignalDelegates)
                 {
-                    GenerateHasSignalEntry(signal.Name, source, isFirstEntry);
-                    isFirstEntry = false;
+                    GenerateHasSignalEntry(signal.Name, source);
                 }
 
                 source.Append("        return base.HasGodotClassSignal(signal);\n");
@@ -355,7 +353,7 @@ namespace Godot.SourceGenerators
 
         private static void AppendMethodInfo(StringBuilder source, MethodInfo methodInfo)
         {
-            source.Append("        signals.Add(new(name: SignalName.")
+            source.Append("        signals.Add(new(name: SignalName.@")
                 .Append(methodInfo.Name)
                 .Append(", returnVal: ");
 
@@ -473,14 +471,11 @@ namespace Godot.SourceGenerators
 
         private static void GenerateHasSignalEntry(
             string signalName,
-            StringBuilder source,
-            bool isFirstEntry
+            StringBuilder source
         )
         {
             source.Append("        ");
-            if (!isFirstEntry)
-                source.Append("else ");
-            source.Append("if (signal == SignalName.");
+            source.Append("if (signal == SignalName.@");
             source.Append(signalName);
             source.Append(") {\n           return true;\n        }\n");
         }
@@ -493,7 +488,7 @@ namespace Godot.SourceGenerators
             string signalName = signal.Name;
             var invokeMethodData = signal.InvokeMethodData;
 
-            source.Append("        if (signal == SignalName.");
+            source.Append("        if (signal == SignalName.@");
             source.Append(signalName);
             source.Append(" && args.Count == ");
             source.Append(invokeMethodData.ParamTypes.Length);

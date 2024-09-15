@@ -31,7 +31,6 @@
 #include "collision_object_3d.h"
 
 #include "scene/resources/3d/shape_3d.h"
-#include "scene/scene_string_names.h"
 
 void CollisionObject3D::_notification(int p_what) {
 	switch (p_what) {
@@ -291,17 +290,17 @@ void CollisionObject3D::_apply_enabled() {
 
 void CollisionObject3D::_input_event_call(Camera3D *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape) {
 	GDVIRTUAL_CALL(_input_event, p_camera, p_input_event, p_pos, p_normal, p_shape);
-	emit_signal(SceneStringNames::get_singleton()->input_event, p_camera, p_input_event, p_pos, p_normal, p_shape);
+	emit_signal(SceneStringName(input_event), p_camera, p_input_event, p_pos, p_normal, p_shape);
 }
 
 void CollisionObject3D::_mouse_enter() {
 	GDVIRTUAL_CALL(_mouse_enter);
-	emit_signal(SceneStringNames::get_singleton()->mouse_entered);
+	emit_signal(SceneStringName(mouse_entered));
 }
 
 void CollisionObject3D::_mouse_exit() {
 	GDVIRTUAL_CALL(_mouse_exit);
-	emit_signal(SceneStringNames::get_singleton()->mouse_exited);
+	emit_signal(SceneStringName(mouse_exited));
 }
 
 void CollisionObject3D::set_body_mode(PhysicsServer3D::BodyMode p_mode) {
@@ -440,6 +439,9 @@ void CollisionObject3D::_on_transform_changed() {
 			}
 			const ShapeData::ShapeBase *shape_bases = shapedata.shapes.ptr();
 			for (int i = 0; i < shapedata.shapes.size(); i++) {
+				if (shape_bases[i].debug_shape.is_null()) {
+					continue;
+				}
 				RS::get_singleton()->instance_set_transform(shape_bases[i].debug_shape, debug_shape_old_transform * shapedata.xform);
 			}
 		}
@@ -729,7 +731,7 @@ bool CollisionObject3D::get_capture_input_on_drag() const {
 }
 
 PackedStringArray CollisionObject3D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node3D::get_configuration_warnings();
 
 	if (shapes.is_empty()) {
 		warnings.push_back(RTR("This node has no shape, so it can't collide or interact with other objects.\nConsider adding a CollisionShape3D or CollisionPolygon3D as a child to define its shape."));

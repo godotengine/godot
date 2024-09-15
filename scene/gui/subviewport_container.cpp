@@ -259,7 +259,7 @@ void SubViewportContainer::remove_child_notify(Node *p_child) {
 }
 
 PackedStringArray SubViewportContainer::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Container::get_configuration_warnings();
 
 	bool has_viewport = false;
 	for (int i = 0; i < get_child_count(); i++) {
@@ -287,7 +287,7 @@ void SubViewportContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_stretch_shrink"), &SubViewportContainer::get_stretch_shrink);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stretch"), "set_stretch", "is_stretch_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "stretch_shrink"), "set_stretch_shrink", "get_stretch_shrink");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "stretch_shrink", PROPERTY_HINT_RANGE, "1,32,1,or_greater"), "set_stretch_shrink", "get_stretch_shrink");
 
 	GDVIRTUAL_BIND(_propagate_input_event, "event");
 }

@@ -263,6 +263,10 @@ bool Engine::is_generate_spirv_debug_info_enabled() const {
 	return generate_spirv_debug_info;
 }
 
+bool Engine::is_extra_gpu_memory_tracking_enabled() const {
+	return extra_gpu_memory_tracking;
+}
+
 void Engine::set_print_error_messages(bool p_enabled) {
 	CoreGlobals::print_error_enabled = p_enabled;
 }
@@ -382,6 +386,12 @@ bool Engine::notify_frame_server_synced() {
 
 Engine::Engine() {
 	singleton = this;
+}
+
+Engine::~Engine() {
+	if (singleton == this) {
+		singleton = nullptr;
+	}
 }
 
 Engine::Singleton::Singleton(const StringName &p_name, Object *p_ptr, const StringName &p_class_name) :

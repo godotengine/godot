@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from gles3_builders import build_gles3_header, GLES3HeaderStruct
+from gles3_builders import GLES3HeaderStruct, build_gles3_header
 
 
 @pytest.mark.parametrize(

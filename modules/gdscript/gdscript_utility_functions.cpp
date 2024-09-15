@@ -232,7 +232,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 
 	static inline void load(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(1);
-		if (p_args[0]->get_type() != Variant::STRING) {
+		if (!p_args[0]->is_string()) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 0;
 			r_error.expected = Variant::STRING;
@@ -519,6 +519,10 @@ struct GDScriptUtilityFunctionsDefinitions {
 				Vector<Color> d = *p_args[0];
 				*r_ret = d.size();
 			} break;
+			case Variant::PACKED_VECTOR4_ARRAY: {
+				Vector<Vector4> d = *p_args[0];
+				*r_ret = d.size();
+			} break;
 			default: {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
@@ -756,7 +760,7 @@ Variant::Type GDScriptUtilityFunctions::get_function_argument_type(const StringN
 	GDScriptUtilityFunctionInfo *info = utility_function_table.lookup_ptr(p_function);
 	ERR_FAIL_NULL_V(info, Variant::NIL);
 	ERR_FAIL_COND_V(p_arg >= info->info.arguments.size(), Variant::NIL);
-	return info->info.arguments[p_arg].type;
+	return info->info.arguments.get(p_arg).type;
 }
 
 int GDScriptUtilityFunctions::get_function_argument_count(const StringName &p_function) {

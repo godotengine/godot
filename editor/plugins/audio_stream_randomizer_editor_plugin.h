@@ -31,7 +31,7 @@
 #ifndef AUDIO_STREAM_RANDOMIZER_EDITOR_PLUGIN_H
 #define AUDIO_STREAM_RANDOMIZER_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "servers/audio/audio_stream.h"
 
 class AudioStreamRandomizerEditorPlugin : public EditorPlugin {

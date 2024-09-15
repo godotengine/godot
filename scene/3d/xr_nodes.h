@@ -79,6 +79,7 @@ private:
 	StringName tracker_name;
 	StringName pose_name = "default";
 	bool has_tracking_data = false;
+	bool show_when_tracked = false;
 
 protected:
 	Ref<XRPositionalTracker> tracker;
@@ -94,6 +95,8 @@ protected:
 	void _pose_lost_tracking(const Ref<XRPose> &p_pose);
 	void _set_has_tracking_data(bool p_has_tracking_data);
 
+	void _update_visibility();
+
 public:
 	void _validate_property(PropertyInfo &p_property) const;
 	void set_tracker(const StringName &p_tracker_name);
@@ -104,6 +107,9 @@ public:
 
 	bool get_is_active() const;
 	bool get_has_tracking_data() const;
+
+	void set_show_when_tracked(bool p_show);
+	bool get_show_when_tracked() const;
 
 	void trigger_haptic_pulse(const String &p_action_name, double p_frequency, double p_amplitude, double p_duration_sec, double p_delay_sec = 0);
 

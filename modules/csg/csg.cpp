@@ -852,7 +852,7 @@ int CSGBrushOperation::Build2DFaces::_add_vertex(const Vertex2D &p_vertex) {
 }
 
 void CSGBrushOperation::Build2DFaces::_add_vertex_idx_sorted(Vector<int> &r_vertex_indices, int p_new_vertex_index) {
-	if (p_new_vertex_index >= 0 && r_vertex_indices.find(p_new_vertex_index) == -1) {
+	if (p_new_vertex_index >= 0 && !r_vertex_indices.has(p_new_vertex_index)) {
 		ERR_FAIL_COND_MSG(p_new_vertex_index >= vertices.size(), "Invalid vertex index.");
 
 		// The first vertex.
@@ -1098,7 +1098,7 @@ void CSGBrushOperation::Build2DFaces::_find_edge_intersections(const Vector2 p_s
 			};
 
 			// Check if edge has already been processed.
-			if (processed_edges.find(edge_points_and_uvs) != -1) {
+			if (processed_edges.has(edge_points_and_uvs)) {
 				continue;
 			}
 

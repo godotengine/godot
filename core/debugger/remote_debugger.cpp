@@ -39,6 +39,7 @@
 #include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
 #include "core/os/os.h"
+#include "servers/display_server.h"
 
 class RemoteDebugger::PerformanceProfiler : public EngineProfiler {
 	Object *performance = nullptr;
@@ -206,8 +207,7 @@ void RemoteDebugger::flush_output() {
 		Vector<String> joined_log_strings;
 		Vector<String> strings;
 		Vector<int> types;
-		for (int i = 0; i < output_strings.size(); i++) {
-			const OutputString &output_string = output_strings[i];
+		for (const OutputString &output_string : output_strings) {
 			if (output_string.type == MESSAGE_TYPE_ERROR) {
 				if (!joined_log_strings.is_empty()) {
 					strings.push_back(String("\n").join(joined_log_strings));
@@ -540,7 +540,7 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			OS::get_singleton()->delay_usec(10000);
 			if (Thread::get_caller_id() == Thread::get_main_id()) {
 				// If this is a busy loop on the main thread, events still need to be processed.
-				OS::get_singleton()->process_and_drop_events();
+				DisplayServer::get_singleton()->force_process_and_drop_events();
 			}
 		}
 	}

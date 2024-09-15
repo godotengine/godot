@@ -13,8 +13,8 @@
 		<method name="get_rect" qualifiers="const">
 			<return type="Rect2" />
 			<description>
-				Returns a [Rect2] representing the Sprite2D's boundary in local coordinates. Can be used to detect if the Sprite2D was clicked.
-				[b]Example:[/b]
+				Returns a [Rect2] representing the Sprite2D's boundary in local coordinates.
+				[b]Example:[/b] Detect if the Sprite2D was clicked:
 				[codeblocks]
 				[gdscript]
 				func _input(event):

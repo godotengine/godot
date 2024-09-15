@@ -30,9 +30,8 @@
 
 #include "label_3d.h"
 
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 #include "scene/resources/theme.h"
-#include "scene/scene_string_names.h"
 #include "scene/theme/theme_db.h"
 
 void Label3D::_bind_methods() {
@@ -198,14 +197,14 @@ void Label3D::_notification(int p_what) {
 			if (!pending_update) {
 				_im_update();
 			}
-			Viewport *viewport = get_viewport();
-			ERR_FAIL_NULL(viewport);
-			viewport->connect("size_changed", callable_mp(this, &Label3D::_font_changed));
+			Window *window = get_window();
+			ERR_FAIL_NULL(window);
+			window->connect("size_changed", callable_mp(this, &Label3D::_font_changed));
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			Viewport *viewport = get_viewport();
-			ERR_FAIL_NULL(viewport);
-			viewport->disconnect("size_changed", callable_mp(this, &Label3D::_font_changed));
+			Window *window = get_window();
+			ERR_FAIL_NULL(window);
+			window->disconnect("size_changed", callable_mp(this, &Label3D::_font_changed));
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			String new_text = atr(text);
@@ -636,6 +635,10 @@ void Label3D::_shape() {
 }
 
 void Label3D::set_text(const String &p_string) {
+	if (text == p_string) {
+		return;
+	}
+
 	text = p_string;
 	xl_text = atr(p_string);
 	dirty_text = true;
@@ -793,14 +796,14 @@ Ref<Font> Label3D::_get_font_or_default() const {
 		return font_override;
 	}
 
-	const StringName theme_name = "font";
-	List<StringName> theme_types;
-	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), &theme_types);
+	const StringName theme_name = SceneStringName(font);
+	Vector<StringName> theme_types;
+	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), theme_types);
 
 	ThemeContext *global_context = ThemeDB::get_singleton()->get_default_theme_context();
-	List<Ref<Theme>> themes = global_context->get_themes();
+	Vector<Ref<Theme>> themes = global_context->get_themes();
 	if (Engine::get_singleton()->is_editor_hint()) {
-		themes.push_front(ThemeDB::get_singleton()->get_project_theme());
+		themes.insert(0, ThemeDB::get_singleton()->get_project_theme());
 	}
 
 	for (const Ref<Theme> &theme : themes) {

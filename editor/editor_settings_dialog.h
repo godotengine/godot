@@ -32,13 +32,14 @@
 #define EDITOR_SETTINGS_DIALOG_H
 
 #include "editor/action_map_editor.h"
-#include "editor/editor_inspector.h"
-#include "editor/editor_sectioned_inspector.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/panel_container.h"
-#include "scene/gui/rich_text_label.h"
-#include "scene/gui/tab_container.h"
-#include "scene/gui/texture_rect.h"
+
+class PanelContainer;
+class SectionedInspector;
+class TabContainer;
+class TextureRect;
+class Tree;
+class TreeItem;
 
 class EditorSettingsDialog : public AcceptDialog {
 	GDCLASS(EditorSettingsDialog, AcceptDialog);
@@ -53,6 +54,7 @@ class EditorSettingsDialog : public AcceptDialog {
 	LineEdit *shortcut_search_box = nullptr;
 	EventListenerLineEdit *shortcut_search_by_event = nullptr;
 	SectionedInspector *inspector = nullptr;
+	Button *clear_all_search = nullptr;
 
 	// Shortcuts
 	enum ShortcutButton {
@@ -98,6 +100,10 @@ class EditorSettingsDialog : public AcceptDialog {
 	void _tabs_tab_changed(int p_tab);
 	void _focus_current_search_box();
 
+	void _update_dynamic_property_hints();
+	PropertyInfo _create_mouse_shortcut_property_info(const String &p_property_name, const String &p_shortcut_1_name, const String &p_shortcut_2_name);
+	String _get_shortcut_button_string(const String &p_shortcut_name);
+
 	void _filter_shortcuts(const String &p_filter);
 	void _filter_shortcuts_by_event(const Ref<InputEvent> &p_event);
 	bool _should_display_shortcut(const String &p_name, const Array &p_events) const;
@@ -105,6 +111,7 @@ class EditorSettingsDialog : public AcceptDialog {
 	void _update_shortcuts();
 	void _shortcut_button_pressed(Object *p_item, int p_column, int p_idx, MouseButton p_button = MouseButton::LEFT);
 	void _shortcut_cell_double_clicked();
+	static void _set_shortcut_input(const String &p_name, Ref<InputEventKey> &p_event);
 
 	static void _undo_redo_callback(void *p_self, const String &p_name);
 
@@ -122,6 +129,7 @@ protected:
 
 public:
 	void popup_edit_settings();
+	static void update_navigation_preset();
 
 	EditorSettingsDialog();
 	~EditorSettingsDialog();

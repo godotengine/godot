@@ -144,7 +144,7 @@ void CollisionPolygon2D::_notification(int p_what) {
 				}
 #endif
 
-				const Color stroke_color = Color(0.9, 0.2, 0.0);
+				const Color stroke_color = get_tree()->get_debug_collisions_color();
 				draw_polyline(polygon, stroke_color);
 				// Draw the last segment.
 				draw_line(polygon[polygon.size() - 1], polygon[0], stroke_color);
@@ -232,7 +232,7 @@ bool CollisionPolygon2D::_edit_is_selected_on_click(const Point2 &p_point, doubl
 #endif
 
 PackedStringArray CollisionPolygon2D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
 
 	if (!Object::cast_to<CollisionObject2D>(get_parent())) {
 		warnings.push_back(RTR("CollisionPolygon2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, CharacterBody2D, etc. to give them a shape."));

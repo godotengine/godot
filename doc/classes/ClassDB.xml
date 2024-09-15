@@ -16,6 +16,14 @@
 				Returns [code]true[/code] if objects can be instantiated from the specified [param class], otherwise returns [code]false[/code].
 			</description>
 		</method>
+		<method name="class_call_static_method" qualifiers="vararg">
+			<return type="Variant" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="method" type="StringName" />
+			<description>
+				Calls a static method on a class.
+			</description>
+		</method>
 		<method name="class_exists" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="class" type="StringName" />
@@ -91,12 +99,36 @@
 				Returns the value of [param property] of [param object] or its ancestry.
 			</description>
 		</method>
+		<method name="class_get_property_default_value" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="property" type="StringName" />
+			<description>
+				Returns the default value of [param property] of [param class] or its ancestor classes.
+			</description>
+		</method>
+		<method name="class_get_property_getter">
+			<return type="StringName" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="property" type="StringName" />
+			<description>
+				Returns the getter method name of [param property] of [param class].
+			</description>
+		</method>
 		<method name="class_get_property_list" qualifiers="const">
 			<return type="Dictionary[]" />
 			<param index="0" name="class" type="StringName" />
 			<param index="1" name="no_inheritance" type="bool" default="false" />
 			<description>
 				Returns an array with all the properties of [param class] or its ancestry if [param no_inheritance] is [code]false[/code].
+			</description>
+		</method>
+		<method name="class_get_property_setter">
+			<return type="StringName" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="property" type="StringName" />
+			<description>
+				Returns the setter method name of [param property] of [param class].
 			</description>
 		</method>
 		<method name="class_get_signal" qualifiers="const">
@@ -190,6 +222,15 @@
 			<param index="0" name="class" type="StringName" />
 			<description>
 				Returns whether this [param class] is enabled or not.
+			</description>
+		</method>
+		<method name="is_class_enum_bitfield" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="enum" type="StringName" />
+			<param index="2" name="no_inheritance" type="bool" default="false" />
+			<description>
+				Returns whether [param class] (or its ancestor classes if [param no_inheritance] is [code]false[/code]) has an enum called [param enum] that is a bitfield.
 			</description>
 		</method>
 		<method name="is_parent_class" qualifiers="const">

@@ -175,7 +175,7 @@ void JoypadLinux::enumerate_joypads(udev *p_udev) {
 
 		if (devnode) {
 			String devnode_str = devnode;
-			if (devnode_str.find(ignore_str) == -1) {
+			if (!devnode_str.contains(ignore_str)) {
 				open_joypad(devnode);
 			}
 		}
@@ -214,7 +214,7 @@ void JoypadLinux::monitor_joypads(udev *p_udev) {
 				const char *devnode = udev_device_get_devnode(dev);
 				if (devnode) {
 					String devnode_str = devnode;
-					if (devnode_str.find(ignore_str) == -1) {
+					if (!devnode_str.contains(ignore_str)) {
 						if (action == "add") {
 							open_joypad(devnode);
 						} else if (String(action) == "remove") {
@@ -225,7 +225,7 @@ void JoypadLinux::monitor_joypads(udev *p_udev) {
 				udev_device_unref(dev);
 			}
 		}
-		usleep(50000);
+		OS::get_singleton()->delay_usec(50'000);
 	}
 	udev_monitor_unref(mon);
 }
@@ -244,13 +244,13 @@ void JoypadLinux::monitor_joypads() {
 					continue;
 				}
 				sprintf(fname, "/dev/input/%.*s", 16, current->d_name);
-				if (attached_devices.find(fname) == -1) {
+				if (!attached_devices.has(fname)) {
 					open_joypad(fname);
 				}
 			}
 		}
 		closedir(input_directory);
-		usleep(1000000); // 1s
+		OS::get_singleton()->delay_usec(1'000'000);
 	}
 }
 
@@ -372,6 +372,12 @@ void JoypadLinux::open_joypad(const char *p_path) {
 		input_id inpid;
 		if (ioctl(fd, EVIOCGNAME(sizeof(namebuf)), namebuf) >= 0) {
 			name = namebuf;
+		}
+
+		for (const String &word : name.to_lower().split(" ")) {
+			if (banned_words.has(word)) {
+				return;
+			}
 		}
 
 		if (ioctl(fd, EVIOCGID, &inpid) < 0) {
@@ -508,7 +514,7 @@ void JoypadLinux::joypad_events_thread_run() {
 			}
 		}
 		if (no_events) {
-			usleep(10000); // 10ms
+			OS::get_singleton()->delay_usec(10'000);
 		}
 	}
 }

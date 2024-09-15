@@ -96,9 +96,10 @@ void EditorSceneFormatImporter::get_import_options(const String &p_path, List<Re
 	GDVIRTUAL_CALL(_get_import_options, p_path);
 }
 
-Variant EditorSceneFormatImporter::get_option_visibility(const String &p_path, bool p_for_animation, const String &p_option, const HashMap<StringName, Variant> &p_options) {
+Variant EditorSceneFormatImporter::get_option_visibility(const String &p_path, const String &p_scene_import_type, const String &p_option, const HashMap<StringName, Variant> &p_options) {
 	Variant ret;
-	GDVIRTUAL_CALL(_get_option_visibility, p_path, p_for_animation, p_option, ret);
+	// For compatibility with the old API, pass the import type as a boolean.
+	GDVIRTUAL_CALL(_get_option_visibility, p_path, p_scene_import_type == "AnimationLibrary", p_option, ret);
 	return ret;
 }
 
@@ -172,13 +173,16 @@ void EditorScenePostImportPlugin::get_internal_import_options(InternalImportCate
 	GDVIRTUAL_CALL(_get_internal_import_options, p_category);
 	current_option_list = nullptr;
 }
-Variant EditorScenePostImportPlugin::get_internal_option_visibility(InternalImportCategory p_category, bool p_for_animation, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
+
+Variant EditorScenePostImportPlugin::get_internal_option_visibility(InternalImportCategory p_category, const String &p_scene_import_type, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
 	current_options = &p_options;
 	Variant ret;
-	GDVIRTUAL_CALL(_get_internal_option_visibility, p_category, p_for_animation, p_option, ret);
+	// For compatibility with the old API, pass the import type as a boolean.
+	GDVIRTUAL_CALL(_get_internal_option_visibility, p_category, p_scene_import_type == "AnimationLibrary", p_option, ret);
 	current_options = nullptr;
 	return ret;
 }
+
 Variant EditorScenePostImportPlugin::get_internal_option_update_view_required(InternalImportCategory p_category, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
 	current_options = &p_options;
 	Variant ret;
@@ -198,10 +202,10 @@ void EditorScenePostImportPlugin::get_import_options(const String &p_path, List<
 	GDVIRTUAL_CALL(_get_import_options, p_path);
 	current_option_list = nullptr;
 }
-Variant EditorScenePostImportPlugin::get_option_visibility(const String &p_path, bool p_for_animation, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
+Variant EditorScenePostImportPlugin::get_option_visibility(const String &p_path, const String &p_scene_import_type, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
 	current_options = &p_options;
 	Variant ret;
-	GDVIRTUAL_CALL(_get_option_visibility, p_path, p_for_animation, p_option, ret);
+	GDVIRTUAL_CALL(_get_option_visibility, p_path, p_scene_import_type == "AnimationLibrary", p_option, ret);
 	current_options = nullptr;
 	return ret;
 }
@@ -245,11 +249,22 @@ void EditorScenePostImportPlugin::_bind_methods() {
 /////////////////////////////////////////////////////////
 
 String ResourceImporterScene::get_importer_name() const {
-	return animation_importer ? "animation_library" : "scene";
+	// For compatibility with 4.2 and earlier we need to keep the "scene" and "animation_library" names.
+	// However this is arbitrary so for new import types we can use any string.
+	if (_scene_import_type == "PackedScene") {
+		return "scene";
+	} else if (_scene_import_type == "AnimationLibrary") {
+		return "animation_library";
+	}
+	return _scene_import_type;
 }
 
 String ResourceImporterScene::get_visible_name() const {
-	return animation_importer ? "Animation Library" : "Scene";
+	// This is displayed on the UI. Friendly names here are nice but not vital, so fall back to the type.
+	if (_scene_import_type == "PackedScene") {
+		return "Scene";
+	}
+	return _scene_import_type.capitalize();
 }
 
 void ResourceImporterScene::get_recognized_extensions(List<String> *p_extensions) const {
@@ -257,11 +272,14 @@ void ResourceImporterScene::get_recognized_extensions(List<String> *p_extensions
 }
 
 String ResourceImporterScene::get_save_extension() const {
-	return animation_importer ? "res" : "scn";
+	if (_scene_import_type == "PackedScene") {
+		return "scn";
+	}
+	return "res";
 }
 
 String ResourceImporterScene::get_resource_type() const {
-	return animation_importer ? "AnimationLibrary" : "PackedScene";
+	return _scene_import_type;
 }
 
 int ResourceImporterScene::get_format_version() const {
@@ -269,18 +287,19 @@ int ResourceImporterScene::get_format_version() const {
 }
 
 bool ResourceImporterScene::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
-	if (animation_importer) {
+	if (_scene_import_type == "PackedScene") {
+		if (p_option.begins_with("animation/")) {
+			if (p_option != "animation/import" && !bool(p_options["animation/import"])) {
+				return false;
+			}
+		}
+	} else if (_scene_import_type == "AnimationLibrary") {
 		if (p_option == "animation/import") { // Option ignored, animation always imported.
 			return false;
 		}
-	} else if (p_option.begins_with("animation/")) {
-		if (p_option != "animation/import" && !bool(p_options["animation/import"])) {
-			return false;
+		if (p_option == "nodes/root_type" || p_option == "nodes/root_name" || p_option.begins_with("meshes/") || p_option.begins_with("skins/")) {
+			return false; // Nothing to do here for animations.
 		}
-	}
-
-	if (animation_importer && (p_option.begins_with("nodes/") || p_option.begins_with("meshes/") || p_option.begins_with("skins/"))) {
-		return false; // Nothing to do here for animations.
 	}
 
 	if (p_option == "meshes/lightmap_texel_size" && int(p_options["meshes/light_baking"]) != 2) {
@@ -289,16 +308,20 @@ bool ResourceImporterScene::get_option_visibility(const String &p_path, const St
 	}
 
 	for (int i = 0; i < post_importer_plugins.size(); i++) {
-		Variant ret = post_importer_plugins.write[i]->get_option_visibility(p_path, animation_importer, p_option, p_options);
+		Variant ret = post_importer_plugins.write[i]->get_option_visibility(p_path, _scene_import_type, p_option, p_options);
 		if (ret.get_type() == Variant::BOOL) {
-			return ret;
+			if (!ret) {
+				return false;
+			}
 		}
 	}
 
 	for (Ref<EditorSceneFormatImporter> importer : scene_importers) {
-		Variant ret = importer->get_option_visibility(p_path, animation_importer, p_option, p_options);
+		Variant ret = importer->get_option_visibility(p_path, _scene_import_type, p_option, p_options);
 		if (ret.get_type() == Variant::BOOL) {
-			return ret;
+			if (!ret) {
+				return false;
+			}
 		}
 	}
 
@@ -326,8 +349,8 @@ void ResourceImporterScene::_pre_fix_global(Node *p_scene, const HashMap<StringN
 		Ref<Animation> reset_anim;
 		for (int i = 0; i < anim_players.size(); i++) {
 			AnimationPlayer *player = cast_to<AnimationPlayer>(anim_players[i]);
-			if (player->has_animation(SNAME("RESET"))) {
-				reset_anim = player->get_animation(SNAME("RESET"));
+			if (player->has_animation(SceneStringName(RESET))) {
+				reset_anim = player->get_animation(SceneStringName(RESET));
 				break;
 			}
 		}
@@ -341,7 +364,7 @@ void ResourceImporterScene::_pre_fix_global(Node *p_scene, const HashMap<StringN
 				anim_library.instantiate();
 				anim_player->add_animation_library(StringName(), anim_library);
 			}
-			anim_library->add_animation(SNAME("RESET"), reset_anim);
+			anim_library->add_animation(SceneStringName(RESET), reset_anim);
 		}
 		TypedArray<Node> skeletons = p_scene->find_children("*", "Skeleton3D");
 		for (int i = 0; i < skeletons.size(); i++) {
@@ -387,7 +410,7 @@ static bool _teststr(const String &p_what, const String &p_str) {
 		what = what.substr(0, what.length() - 1);
 	}
 
-	if (what.findn("$" + p_str) != -1) { //blender and other stuff
+	if (what.containsn("$" + p_str)) { // Blender and other stuff.
 		return true;
 	}
 	if (what.to_lower().ends_with("-" + p_str)) { //collada only supports "_" and "-" besides letters
@@ -410,7 +433,7 @@ static String _fixstr(const String &p_what, const String &p_str) {
 
 	String end = p_what.substr(what.length(), p_what.length() - what.length());
 
-	if (what.findn("$" + p_str) != -1) { //blender and other stuff
+	if (what.containsn("$" + p_str)) { // Blender and other stuff.
 		return what.replace("$" + p_str, "") + end;
 	}
 	if (what.to_lower().ends_with("-" + p_str)) { //collada only supports "_" and "-" besides letters
@@ -423,7 +446,7 @@ static String _fixstr(const String &p_what, const String &p_str) {
 }
 
 static void _pre_gen_shape_list(Ref<ImporterMesh> &mesh, Vector<Ref<Shape3D>> &r_shape_list, bool p_convex) {
-	ERR_FAIL_NULL_MSG(mesh, "Cannot generate shape list with null mesh value.");
+	ERR_FAIL_COND_MSG(mesh.is_null(), "Cannot generate shape list with null mesh value.");
 	if (!p_convex) {
 		Ref<ConcavePolygonShape3D> shape = mesh->create_trimesh_shape();
 		r_shape_list.push_back(shape);
@@ -614,10 +637,10 @@ void _apply_permanent_scale_to_descendants(Node *p_root_node, Vector3 p_scale) {
 	_apply_scale_to_scalable_node_collection(scalable_node_collection, p_scale);
 }
 
-Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &r_collision_map, Pair<PackedVector3Array, PackedInt32Array> *r_occluder_arrays, List<Pair<NodePath, Node *>> &r_node_renames) {
+Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &r_collision_map, Pair<PackedVector3Array, PackedInt32Array> *r_occluder_arrays, List<Pair<NodePath, Node *>> &r_node_renames, const HashMap<StringName, Variant> &p_options) {
 	// Children first.
 	for (int i = 0; i < p_node->get_child_count(); i++) {
-		Node *r = _pre_fix_node(p_node->get_child(i), p_root, r_collision_map, r_occluder_arrays, r_node_renames);
+		Node *r = _pre_fix_node(p_node->get_child(i), p_root, r_collision_map, r_occluder_arrays, r_node_renames, p_options);
 		if (!r) {
 			i--; // Was erased.
 		}
@@ -625,6 +648,9 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 
 	String name = p_node->get_name();
 	NodePath original_path = p_root->get_path_to(p_node); // Used to detect renames due to import hints.
+
+	Ref<Resource> original_meta = memnew(Resource); // Create temp resource to hold original meta
+	original_meta->merge_meta_from(p_node);
 
 	bool isroot = p_node == p_root;
 
@@ -724,6 +750,14 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 		}
 	}
 
+	bool use_node_type_suffixes = true;
+	if (p_options.has("nodes/use_node_type_suffixes")) {
+		use_node_type_suffixes = p_options["nodes/use_node_type_suffixes"];
+	}
+	if (!use_node_type_suffixes) {
+		return p_node;
+	}
+
 	if (_teststr(name, "colonly") || _teststr(name, "convcolonly")) {
 		if (isroot) {
 			return p_node;
@@ -762,6 +796,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 					StaticBody3D *col = memnew(StaticBody3D);
 					col->set_transform(mi->get_transform());
 					col->set_name(fixed_name);
+					_copy_meta(p_node, col);
 					p_node->replace_by(col);
 					p_node->set_owner(nullptr);
 					memdelete(p_node);
@@ -776,6 +811,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 			StaticBody3D *sb = memnew(StaticBody3D);
 			sb->set_name(fixed_name);
 			Object::cast_to<Node3D>(sb)->set_transform(Object::cast_to<Node3D>(p_node)->get_transform());
+			_copy_meta(p_node, sb);
 			p_node->replace_by(sb);
 			p_node->set_owner(nullptr);
 			memdelete(p_node);
@@ -820,6 +856,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 
 			RigidBody3D *rigid_body = memnew(RigidBody3D);
 			rigid_body->set_name(_fixstr(name, "rigid_body"));
+			_copy_meta(p_node, rigid_body);
 			p_node->replace_by(rigid_body);
 			rigid_body->set_transform(mi->get_transform());
 			p_node = rigid_body;
@@ -884,6 +921,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 		Ref<NavigationMesh> nmesh = mesh->create_navigation_mesh();
 		nmi->set_navigation_mesh(nmesh);
 		Object::cast_to<Node3D>(nmi)->set_transform(mi->get_transform());
+		_copy_meta(p_node, nmi);
 		p_node->replace_by(nmi);
 		p_node->set_owner(nullptr);
 		memdelete(p_node);
@@ -924,6 +962,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 		VehicleBody3D *bv = memnew(VehicleBody3D);
 		String n = _fixstr(p_node->get_name(), "vehicle");
 		bv->set_name(n);
+		_copy_meta(p_node, bv);
 		p_node->replace_by(bv);
 		p_node->set_name(n);
 		bv->add_child(p_node);
@@ -943,6 +982,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 		VehicleWheel3D *bv = memnew(VehicleWheel3D);
 		String n = _fixstr(p_node->get_name(), "wheel");
 		bv->set_name(n);
+		_copy_meta(p_node, bv);
 		p_node->replace_by(bv);
 		p_node->set_name(n);
 		bv->add_child(p_node);
@@ -993,6 +1033,8 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 			print_verbose(vformat("Fix: Renamed %s to %s", original_path, new_path));
 			r_node_renames.push_back({ original_path, p_node });
 		}
+		// If we created new node instead, merge meta values from the original node.
+		p_node->merge_meta_from(*original_meta);
 	}
 
 	return p_node;
@@ -1392,7 +1434,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 					List<StringName> anim_list;
 					anim_player->get_animation_list(&anim_list);
 					if (anim_list.size() == 1) {
-						selected_animation_name = anim_list[0];
+						selected_animation_name = anim_list.front()->get();
 					}
 					rest_animation = anim_player->get_animation(selected_animation_name);
 					if (rest_animation.is_valid()) {
@@ -1408,7 +1450,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 						List<StringName> anim_list;
 						library->get_animation_list(&anim_list);
 						if (anim_list.size() == 1) {
-							selected_animation_name = String(anim_list[0]);
+							selected_animation_name = String(anim_list.front()->get());
 						}
 						rest_animation = library->get_animation(selected_animation_name);
 					}
@@ -1550,6 +1592,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 							case MESH_PHYSICS_RIGID_BODY_AND_MESH: {
 								RigidBody3D *rigid_body = memnew(RigidBody3D);
 								rigid_body->set_name(p_node->get_name());
+								_copy_meta(p_node, rigid_body);
 								p_node->replace_by(rigid_body);
 								rigid_body->set_transform(mi->get_transform() * get_collision_shapes_transform(node_settings));
 								rigid_body->set_position(p_applied_root_scale * rigid_body->get_position());
@@ -1568,6 +1611,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 								col->set_transform(mi->get_transform() * get_collision_shapes_transform(node_settings));
 								col->set_position(p_applied_root_scale * col->get_position());
 								col->set_name(p_node->get_name());
+								_copy_meta(p_node, col);
 								p_node->replace_by(col);
 								p_node->set_owner(nullptr);
 								memdelete(p_node);
@@ -1583,6 +1627,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 								area->set_transform(mi->get_transform() * get_collision_shapes_transform(node_settings));
 								area->set_position(p_applied_root_scale * area->get_position());
 								area->set_name(p_node->get_name());
+								_copy_meta(p_node, area);
 								p_node->replace_by(area);
 								p_node->set_owner(nullptr);
 								memdelete(p_node);
@@ -1626,6 +1671,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 
 					if (navmesh_mode == NAVMESH_NAVMESH_ONLY) {
 						nmi->set_transform(mi->get_transform());
+						_copy_meta(p_node, nmi);
 						p_node->replace_by(nmi);
 						p_node->set_owner(nullptr);
 						memdelete(p_node);
@@ -1908,6 +1954,7 @@ void ResourceImporterScene::_create_slices(AnimationPlayer *ap, Ref<Animation> a
 
 		new_anim->set_loop_mode(loop_mode);
 		new_anim->set_length(to - from);
+		new_anim->set_step(anim->get_step());
 
 		al->add_animation(name, new_anim);
 
@@ -1948,7 +1995,7 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "generate/physics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/navmesh", PROPERTY_HINT_ENUM, "Disabled,Mesh + NavMesh,NavMesh Only"), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/body_type", PROPERTY_HINT_ENUM, "Static,Dynamic,Area"), 0));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/shape_type", PROPERTY_HINT_ENUM, "Decompose Convex,Simple Convex,Trimesh,Box,Sphere,Cylinder,Capsule", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/shape_type", PROPERTY_HINT_ENUM, "Decompose Convex,Simple Convex,Trimesh,Box,Sphere,Cylinder,Capsule,Automatic", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 7));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "physics/physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), Variant()));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), 1));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), 1));
@@ -1998,6 +2045,7 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/lods", PROPERTY_HINT_ENUM, "Default,Enable,Disable"), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "lods/normal_split_angle", PROPERTY_HINT_RANGE, "0,180,0.1,degrees"), 25.0f));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "lods/normal_merge_angle", PROPERTY_HINT_RANGE, "0,180,0.1,degrees"), 60.0f));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "lods/raycast_normals", PROPERTY_HINT_NONE, ""), false));
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_MATERIAL: {
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "use_external/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
@@ -2085,12 +2133,12 @@ bool ResourceImporterScene::get_internal_option_visibility(InternalImportCategor
 					p_options.has("generate/physics") &&
 					p_options["generate/physics"].operator bool();
 
-			if (p_option.find("physics/") >= 0) {
+			if (p_option.contains("physics/")) {
 				// Show if need to generate collisions.
 				return generate_physics;
 			}
 
-			if (p_option.find("decomposition/") >= 0) {
+			if (p_option.contains("decomposition/")) {
 				// Show if need to generate collisions.
 				if (generate_physics &&
 						// Show if convex is enabled.
@@ -2202,7 +2250,7 @@ bool ResourceImporterScene::get_internal_option_visibility(InternalImportCategor
 						List<StringName> anim_list;
 						library->get_animation_list(&anim_list);
 						if (anim_list.size() == 1) {
-							selected_animation_name = String(anim_list[0]);
+							selected_animation_name = String(anim_list.front()->get());
 						}
 						if (library->has_animation(selected_animation_name)) {
 							anim = library->get_animation(selected_animation_name);
@@ -2267,7 +2315,7 @@ bool ResourceImporterScene::get_internal_option_visibility(InternalImportCategor
 	}
 
 	for (int i = 0; i < post_importer_plugins.size(); i++) {
-		Variant ret = post_importer_plugins.write[i]->get_internal_option_visibility(EditorScenePostImportPlugin::InternalImportCategory(p_category), animation_importer, p_option, p_options);
+		Variant ret = post_importer_plugins.write[i]->get_internal_option_visibility(EditorScenePostImportPlugin::InternalImportCategory(p_category), _scene_import_type, p_option, p_options);
 		if (ret.get_type() == Variant::BOOL) {
 			return ret;
 		}
@@ -2284,8 +2332,8 @@ bool ResourceImporterScene::get_internal_option_update_view_required(InternalImp
 			if (
 					p_option == "generate/physics" ||
 					p_option == "physics/shape_type" ||
-					p_option.find("decomposition/") >= 0 ||
-					p_option.find("primitive/") >= 0) {
+					p_option.contains("decomposition/") ||
+					p_option.contains("primitive/")) {
 				return true;
 			}
 		} break;
@@ -2328,10 +2376,12 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 		}
 		script_ext_hint += "*." + E;
 	}
+	bool trimming_defaults_on = p_path.get_extension().to_lower() == "fbx";
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "nodes/apply_root_scale"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "nodes/root_scale", PROPERTY_HINT_RANGE, "0.001,1000,0.001"), 1.0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "nodes/import_as_skeleton_bones"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "nodes/use_node_type_suffixes"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/ensure_tangents"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/generate_lods"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/create_shadow_meshes"), true));
@@ -2341,7 +2391,7 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "skins/use_named_skins"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/import"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "animation/fps", PROPERTY_HINT_RANGE, "1,120,1"), 30));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/trimming"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/trimming"), trimming_defaults_on));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/remove_immutable_tracks"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/import_rest_as_RESET"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "import_script/path", PROPERTY_HINT_FILE, script_ext_hint), ""));
@@ -2416,6 +2466,8 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 		mesh_node->set_transform(src_mesh_node->get_transform());
 		mesh_node->set_skin(src_mesh_node->get_skin());
 		mesh_node->set_skeleton_path(src_mesh_node->get_skeleton_path());
+		mesh_node->merge_meta_from(src_mesh_node);
+
 		if (src_mesh_node->get_mesh().is_valid()) {
 			Ref<ArrayMesh> mesh;
 			if (!src_mesh_node->get_mesh()->has_mesh()) {
@@ -2424,6 +2476,7 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 				bool generate_lods = p_generate_lods;
 				float split_angle = 25.0f;
 				float merge_angle = 60.0f;
+				bool raycast_normals = false;
 				bool create_shadow_meshes = p_create_shadow_meshes;
 				bool bake_lightmaps = p_light_bake_mode == LIGHT_BAKE_STATIC_LIGHTMAPS;
 				String save_to_file;
@@ -2478,6 +2531,10 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 						merge_angle = mesh_settings["lods/normal_merge_angle"];
 					}
 
+					if (mesh_settings.has("lods/raycast_normals")) {
+						raycast_normals = mesh_settings["lods/raycast_normals"];
+					}
+
 					if (bool(mesh_settings.get("save_to_file/enabled", false))) {
 						save_to_file = mesh_settings.get("save_to_file/path", String());
 						if (!save_to_file.is_resource_file()) {
@@ -2522,9 +2579,11 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 					}
 				}
 
+				src_mesh_node->get_mesh()->optimize_indices_for_cache();
+
 				if (generate_lods) {
 					Array skin_pose_transform_array = _get_skinned_pose_transforms(src_mesh_node);
-					src_mesh_node->get_mesh()->generate_lods(merge_angle, split_angle, skin_pose_transform_array);
+					src_mesh_node->get_mesh()->generate_lods(merge_angle, split_angle, skin_pose_transform_array, raycast_normals);
 				}
 
 				if (create_shadow_meshes) {
@@ -2551,10 +2610,12 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 			}
 
 			if (mesh.is_valid()) {
+				_copy_meta(src_mesh_node->get_mesh().ptr(), mesh.ptr());
 				mesh_node->set_mesh(mesh);
 				for (int i = 0; i < mesh->get_surface_count(); i++) {
 					mesh_node->set_surface_override_material(i, src_mesh_node->get_surface_material(i));
 				}
+				mesh->merge_meta_from(*src_mesh_node->get_mesh());
 			}
 		}
 
@@ -2579,6 +2640,8 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 		mesh_node->set_visibility_range_end_margin(src_mesh_node->get_visibility_range_end_margin());
 		mesh_node->set_visibility_range_fade_mode(src_mesh_node->get_visibility_range_fade_mode());
 
+		_copy_meta(p_node, mesh_node);
+
 		p_node->replace_by(mesh_node);
 		p_node->set_owner(nullptr);
 		memdelete(p_node);
@@ -2599,6 +2662,15 @@ void ResourceImporterScene::_add_shapes(Node *p_node, const Vector<Ref<Shape3D>>
 		p_node->add_child(cshape, true);
 
 		cshape->set_owner(p_node->get_owner());
+	}
+}
+
+void ResourceImporterScene::_copy_meta(Object *p_src_object, Object *p_dst_object) {
+	List<StringName> meta_list;
+	p_src_object->get_meta_list(&meta_list);
+	for (const StringName &meta_key : meta_list) {
+		Variant meta_value = p_src_object->get_meta(meta_key);
+		p_dst_object->set_meta(meta_key, meta_value);
 	}
 }
 
@@ -2778,6 +2850,7 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file, const HashM
 	}
 
 	ERR_FAIL_COND_V(!importer.is_valid(), nullptr);
+	ERR_FAIL_COND_V(p_options.is_empty(), nullptr);
 
 	Error err = OK;
 
@@ -2790,7 +2863,7 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file, const HashM
 
 	HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> collision_map;
 	List<Pair<NodePath, Node *>> node_renames;
-	_pre_fix_node(scene, scene, collision_map, nullptr, node_renames);
+	_pre_fix_node(scene, scene, collision_map, nullptr, node_renames, p_options);
 
 	return scene;
 }
@@ -2836,16 +2909,15 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	}
 
 	ERR_FAIL_COND_V(!importer.is_valid(), ERR_FILE_UNRECOGNIZED);
+	ERR_FAIL_COND_V(p_options.is_empty(), ERR_BUG);
 
 	int import_flags = 0;
 
-	if (animation_importer) {
+	if (_scene_import_type == "AnimationLibrary") {
 		import_flags |= EditorSceneFormatImporter::IMPORT_ANIMATION;
 		import_flags |= EditorSceneFormatImporter::IMPORT_DISCARD_MESHES_AND_MATERIALS;
-	} else {
-		if (bool(p_options["animation/import"])) {
-			import_flags |= EditorSceneFormatImporter::IMPORT_ANIMATION;
-		}
+	} else if (bool(p_options["animation/import"])) {
+		import_flags |= EditorSceneFormatImporter::IMPORT_ANIMATION;
 	}
 
 	if (bool(p_options["skins/use_named_skins"])) {
@@ -2929,7 +3001,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	Pair<PackedVector3Array, PackedInt32Array> occluder_arrays;
 	List<Pair<NodePath, Node *>> node_renames;
 
-	_pre_fix_node(scene, scene, collision_map, &occluder_arrays, node_renames);
+	_pre_fix_node(scene, scene, collision_map, &occluder_arrays, node_renames, p_options);
 
 	for (int i = 0; i < post_importer_plugins.size(); i++) {
 		post_importer_plugins.write[i]->pre_process(scene, p_options);
@@ -3020,9 +3092,13 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	progress.step(TTR("Running Custom Script..."), 2);
 
 	String post_import_script_path = p_options["import_script/path"];
+
 	Ref<EditorScenePostImport> post_import_script;
 
 	if (!post_import_script_path.is_empty()) {
+		if (post_import_script_path.is_relative_path()) {
+			post_import_script_path = p_source_file.get_base_dir().path_join(post_import_script_path);
+		}
 		Ref<Script> scr = ResourceLoader::load(post_import_script_path);
 		if (!scr.is_valid()) {
 			EditorNode::add_io_error(TTR("Couldn't load post-import script:") + " " + post_import_script_path);
@@ -3033,6 +3109,19 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 				EditorNode::add_io_error(TTR("Invalid/broken script for post-import (check console):") + " " + post_import_script_path);
 				post_import_script.unref();
 				return ERR_CANT_CREATE;
+			}
+		}
+	}
+
+	// Apply RESET animation before serializing.
+	if (_scene_import_type == "PackedScene") {
+		int scene_child_count = scene->get_child_count();
+		for (int i = 0; i < scene_child_count; i++) {
+			AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(scene->get_child(i));
+			if (ap) {
+				if (ap->can_apply_reset()) {
+					ap->apply_reset();
+				}
 			}
 		}
 	}
@@ -3055,11 +3144,11 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	progress.step(TTR("Saving..."), 104);
 
 	int flags = 0;
-	if (EDITOR_GET("filesystem/on_save/compress_binary_resources")) {
+	if (EditorSettings::get_singleton() && EDITOR_GET("filesystem/on_save/compress_binary_resources")) {
 		flags |= ResourceSaver::FLAG_COMPRESS;
 	}
 
-	if (animation_importer) {
+	if (_scene_import_type == "AnimationLibrary") {
 		Ref<AnimationLibrary> library;
 		for (int i = 0; i < scene->get_child_count(); i++) {
 			AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(scene->get_child(i));
@@ -3080,13 +3169,14 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		print_verbose("Saving animation to: " + p_save_path + ".res");
 		err = ResourceSaver::save(library, p_save_path + ".res", flags); //do not take over, let the changed files reload themselves
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save animation to file '" + p_save_path + ".res'.");
-
-	} else {
+	} else if (_scene_import_type == "PackedScene") {
 		Ref<PackedScene> packer = memnew(PackedScene);
 		packer->pack(scene);
 		print_verbose("Saving scene to: " + p_save_path + ".scn");
 		err = ResourceSaver::save(packer, p_save_path + ".scn", flags); //do not take over, let the changed files reload themselves
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save scene to file '" + p_save_path + ".scn'.");
+	} else {
+		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Unknown scene import type: " + _scene_import_type);
 	}
 
 	memdelete(scene);
@@ -3108,20 +3198,20 @@ bool ResourceImporterScene::has_advanced_options() const {
 }
 
 void ResourceImporterScene::show_advanced_options(const String &p_path) {
-	SceneImportSettingsDialog::get_singleton()->open_settings(p_path, animation_importer);
+	SceneImportSettingsDialog::get_singleton()->open_settings(p_path, _scene_import_type);
 }
 
-ResourceImporterScene::ResourceImporterScene(bool p_animation_import, bool p_singleton) {
+ResourceImporterScene::ResourceImporterScene(const String &p_scene_import_type, bool p_singleton) {
 	// This should only be set through the EditorNode.
 	if (p_singleton) {
-		if (p_animation_import) {
+		if (p_scene_import_type == "AnimationLibrary") {
 			animation_singleton = this;
-		} else {
+		} else if (p_scene_import_type == "PackedScene") {
 			scene_singleton = this;
 		}
 	}
 
-	animation_importer = p_animation_import;
+	_scene_import_type = p_scene_import_type;
 }
 
 ResourceImporterScene::~ResourceImporterScene() {

@@ -175,9 +175,6 @@ void GPUParticlesCollisionSDF3DEditorPlugin::_sdf_save_path_and_bake(const Strin
 	}
 }
 
-void GPUParticlesCollisionSDF3DEditorPlugin::_bind_methods() {
-}
-
 GPUParticlesCollisionSDF3DEditorPlugin::GPUParticlesCollisionSDF3DEditorPlugin() {
 	bake_hb = memnew(HBoxContainer);
 	bake_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -186,7 +183,7 @@ GPUParticlesCollisionSDF3DEditorPlugin::GPUParticlesCollisionSDF3DEditorPlugin()
 	bake->set_theme_type_variation("FlatButton");
 	bake->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Bake"), EditorStringName(EditorIcons)));
 	bake->set_text(TTR("Bake SDF"));
-	bake->connect("pressed", callable_mp(this, &GPUParticlesCollisionSDF3DEditorPlugin::_bake));
+	bake->connect(SceneStringName(pressed), callable_mp(this, &GPUParticlesCollisionSDF3DEditorPlugin::_bake));
 	bake_hb->add_child(bake);
 
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, bake_hb);

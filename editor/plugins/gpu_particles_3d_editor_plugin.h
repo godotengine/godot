@@ -31,7 +31,7 @@
 #ifndef GPU_PARTICLES_3D_EDITOR_PLUGIN_H
 #define GPU_PARTICLES_3D_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/gui/spin_box.h"
 
@@ -61,8 +61,6 @@ protected:
 	bool _generate(Vector<Vector3> &points, Vector<Vector3> &normals);
 	virtual void _generate_emission_points(){};
 	void _node_selected(const NodePath &p_path);
-
-	static void _bind_methods();
 
 public:
 	GPUParticles3DEditorBase();
@@ -95,7 +93,6 @@ class GPUParticles3DEditor : public GPUParticles3DEditorBase {
 protected:
 	void _notification(int p_notification);
 	void _node_removed(Node *p_node);
-	static void _bind_methods();
 
 public:
 	void edit(GPUParticles3D *p_particles);

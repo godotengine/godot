@@ -489,11 +489,11 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 						r_token.value = num.as_int();
 					}
 					return OK;
-				} else if (is_ascii_char(cchar) || is_underscore(cchar)) {
+				} else if (is_ascii_alphabet_char(cchar) || is_underscore(cchar)) {
 					StringBuffer<> id;
 					bool first = true;
 
-					while (is_ascii_char(cchar) || is_underscore(cchar) || (!first && is_digit(cchar))) {
+					while (is_ascii_alphabet_char(cchar) || is_underscore(cchar) || (!first && is_digit(cchar))) {
 						id += cchar;
 						cchar = p_stream->get_char();
 						first = false;
@@ -1140,6 +1140,146 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					return ERR_PARSE_ERROR;
 				}
 			}
+		} else if (id == "Dictionary") {
+			Error err = OK;
+
+			get_token(p_stream, token, line, r_err_str);
+			if (token.type != TK_BRACKET_OPEN) {
+				r_err_str = "Expected '['";
+				return ERR_PARSE_ERROR;
+			}
+
+			get_token(p_stream, token, line, r_err_str);
+			if (token.type != TK_IDENTIFIER) {
+				r_err_str = "Expected type identifier for key";
+				return ERR_PARSE_ERROR;
+			}
+
+			static HashMap<StringName, Variant::Type> builtin_types;
+			if (builtin_types.is_empty()) {
+				for (int i = 1; i < Variant::VARIANT_MAX; i++) {
+					builtin_types[Variant::get_type_name((Variant::Type)i)] = (Variant::Type)i;
+				}
+			}
+
+			Dictionary dict;
+			Variant::Type key_type = Variant::NIL;
+			StringName key_class_name;
+			Variant key_script;
+			bool got_comma_token = false;
+			if (builtin_types.has(token.value)) {
+				key_type = builtin_types.get(token.value);
+			} else if (token.value == "Resource" || token.value == "SubResource" || token.value == "ExtResource") {
+				Variant resource;
+				err = parse_value(token, resource, p_stream, line, r_err_str, p_res_parser);
+				if (err) {
+					if (token.value == "Resource" && err == ERR_PARSE_ERROR && r_err_str == "Expected '('" && token.type == TK_COMMA) {
+						err = OK;
+						r_err_str = String();
+						key_type = Variant::OBJECT;
+						key_class_name = token.value;
+						got_comma_token = true;
+					} else {
+						return err;
+					}
+				} else {
+					Ref<Script> script = resource;
+					if (script.is_valid() && script->is_valid()) {
+						key_type = Variant::OBJECT;
+						key_class_name = script->get_instance_base_type();
+						key_script = script;
+					}
+				}
+			} else if (ClassDB::class_exists(token.value)) {
+				key_type = Variant::OBJECT;
+				key_class_name = token.value;
+			}
+
+			if (!got_comma_token) {
+				get_token(p_stream, token, line, r_err_str);
+				if (token.type != TK_COMMA) {
+					r_err_str = "Expected ',' after key type";
+					return ERR_PARSE_ERROR;
+				}
+			}
+
+			get_token(p_stream, token, line, r_err_str);
+			if (token.type != TK_IDENTIFIER) {
+				r_err_str = "Expected type identifier for value";
+				return ERR_PARSE_ERROR;
+			}
+
+			Variant::Type value_type = Variant::NIL;
+			StringName value_class_name;
+			Variant value_script;
+			bool got_bracket_token = false;
+			if (builtin_types.has(token.value)) {
+				value_type = builtin_types.get(token.value);
+			} else if (token.value == "Resource" || token.value == "SubResource" || token.value == "ExtResource") {
+				Variant resource;
+				err = parse_value(token, resource, p_stream, line, r_err_str, p_res_parser);
+				if (err) {
+					if (token.value == "Resource" && err == ERR_PARSE_ERROR && r_err_str == "Expected '('" && token.type == TK_BRACKET_CLOSE) {
+						err = OK;
+						r_err_str = String();
+						value_type = Variant::OBJECT;
+						value_class_name = token.value;
+						got_comma_token = true;
+					} else {
+						return err;
+					}
+				} else {
+					Ref<Script> script = resource;
+					if (script.is_valid() && script->is_valid()) {
+						value_type = Variant::OBJECT;
+						value_class_name = script->get_instance_base_type();
+						value_script = script;
+					}
+				}
+			} else if (ClassDB::class_exists(token.value)) {
+				value_type = Variant::OBJECT;
+				value_class_name = token.value;
+			}
+
+			if (key_type != Variant::NIL || value_type != Variant::NIL) {
+				dict.set_typed(key_type, key_class_name, key_script, value_type, value_class_name, value_script);
+			}
+
+			if (!got_bracket_token) {
+				get_token(p_stream, token, line, r_err_str);
+				if (token.type != TK_BRACKET_CLOSE) {
+					r_err_str = "Expected ']'";
+					return ERR_PARSE_ERROR;
+				}
+			}
+
+			get_token(p_stream, token, line, r_err_str);
+			if (token.type != TK_PARENTHESIS_OPEN) {
+				r_err_str = "Expected '('";
+				return ERR_PARSE_ERROR;
+			}
+
+			get_token(p_stream, token, line, r_err_str);
+			if (token.type != TK_CURLY_BRACKET_OPEN) {
+				r_err_str = "Expected '{'";
+				return ERR_PARSE_ERROR;
+			}
+
+			Dictionary values;
+			err = _parse_dictionary(values, p_stream, line, r_err_str, p_res_parser);
+			if (err) {
+				return err;
+			}
+
+			get_token(p_stream, token, line, r_err_str);
+			if (token.type != TK_PARENTHESIS_CLOSE) {
+				r_err_str = "Expected ')'";
+				return ERR_PARSE_ERROR;
+			}
+
+			dict.assign(values);
+
+			value = dict;
 		} else if (id == "Array") {
 			Error err = OK;
 
@@ -1391,6 +1531,24 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				Vector3 *w = arr.ptrw();
 				for (int i = 0; i < len; i++) {
 					w[i] = Vector3(args[i * 3 + 0], args[i * 3 + 1], args[i * 3 + 2]);
+				}
+			}
+
+			value = arr;
+		} else if (id == "PackedVector4Array" || id == "PoolVector4Array" || id == "Vector4Array") {
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
+			if (err) {
+				return err;
+			}
+
+			Vector<Vector4> arr;
+			{
+				int len = args.size() / 4;
+				arr.resize(len);
+				Vector4 *w = arr.ptrw();
+				for (int i = 0; i < len; i++) {
+					w[i] = Vector4(args[i * 4 + 0], args[i * 4 + 1], args[i * 4 + 2], args[i * 4 + 3]);
 				}
 			}
 
@@ -1789,7 +1947,7 @@ static String rtos_fix(double p_value) {
 	}
 }
 
-Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_string_func, void *p_store_string_ud, EncodeResourceFunc p_encode_res_func, void *p_encode_res_ud, int p_recursion_count) {
+Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_string_func, void *p_store_string_ud, EncodeResourceFunc p_encode_res_func, void *p_encode_res_ud, int p_recursion_count, bool p_compat) {
 	switch (p_variant.get_type()) {
 		case Variant::NIL: {
 			p_store_string_func(p_store_string_ud, "null");
@@ -2009,7 +2167,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					}
 
 					p_store_string_func(p_store_string_ud, "\"" + E.name + "\":");
-					write(obj->get(E.name), p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count);
+					write(obj->get(E.name), p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
 				}
 			}
 
@@ -2018,40 +2176,109 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 
 		case Variant::DICTIONARY: {
 			Dictionary dict = p_variant;
+
+			if (dict.is_typed()) {
+				p_store_string_func(p_store_string_ud, "Dictionary[");
+
+				Variant::Type key_builtin_type = (Variant::Type)dict.get_typed_key_builtin();
+				StringName key_class_name = dict.get_typed_key_class_name();
+				Ref<Script> key_script = dict.get_typed_key_script();
+
+				if (key_script.is_valid()) {
+					String resource_text;
+					if (p_encode_res_func) {
+						resource_text = p_encode_res_func(p_encode_res_ud, key_script);
+					}
+					if (resource_text.is_empty() && key_script->get_path().is_resource_file()) {
+						resource_text = "Resource(\"" + key_script->get_path() + "\")";
+					}
+
+					if (!resource_text.is_empty()) {
+						p_store_string_func(p_store_string_ud, resource_text);
+					} else {
+						ERR_PRINT("Failed to encode a path to a custom script for a dictionary key type.");
+						p_store_string_func(p_store_string_ud, key_class_name);
+					}
+				} else if (key_class_name != StringName()) {
+					p_store_string_func(p_store_string_ud, key_class_name);
+				} else if (key_builtin_type == Variant::NIL) {
+					p_store_string_func(p_store_string_ud, "Variant");
+				} else {
+					p_store_string_func(p_store_string_ud, Variant::get_type_name(key_builtin_type));
+				}
+
+				p_store_string_func(p_store_string_ud, ", ");
+
+				Variant::Type value_builtin_type = (Variant::Type)dict.get_typed_value_builtin();
+				StringName value_class_name = dict.get_typed_value_class_name();
+				Ref<Script> value_script = dict.get_typed_value_script();
+
+				if (value_script.is_valid()) {
+					String resource_text;
+					if (p_encode_res_func) {
+						resource_text = p_encode_res_func(p_encode_res_ud, value_script);
+					}
+					if (resource_text.is_empty() && value_script->get_path().is_resource_file()) {
+						resource_text = "Resource(\"" + value_script->get_path() + "\")";
+					}
+
+					if (!resource_text.is_empty()) {
+						p_store_string_func(p_store_string_ud, resource_text);
+					} else {
+						ERR_PRINT("Failed to encode a path to a custom script for a dictionary value type.");
+						p_store_string_func(p_store_string_ud, value_class_name);
+					}
+				} else if (value_class_name != StringName()) {
+					p_store_string_func(p_store_string_ud, value_class_name);
+				} else if (value_builtin_type == Variant::NIL) {
+					p_store_string_func(p_store_string_ud, "Variant");
+				} else {
+					p_store_string_func(p_store_string_ud, Variant::get_type_name(value_builtin_type));
+				}
+
+				p_store_string_func(p_store_string_ud, "](");
+			}
+
 			if (unlikely(p_recursion_count > MAX_RECURSION)) {
 				ERR_PRINT("Max recursion reached");
 				p_store_string_func(p_store_string_ud, "{}");
 			} else {
-				p_recursion_count++;
-
 				List<Variant> keys;
 				dict.get_key_list(&keys);
 				keys.sort();
 
-				if (keys.is_empty()) { // Avoid unnecessary line break.
+				if (keys.is_empty()) {
+					// Avoid unnecessary line break.
 					p_store_string_func(p_store_string_ud, "{}");
-					break;
-				}
+				} else {
+					p_recursion_count++;
 
-				p_store_string_func(p_store_string_ud, "{\n");
-				for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-					write(E->get(), p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count);
-					p_store_string_func(p_store_string_ud, ": ");
-					write(dict[E->get()], p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count);
-					if (E->next()) {
-						p_store_string_func(p_store_string_ud, ",\n");
-					} else {
-						p_store_string_func(p_store_string_ud, "\n");
+					p_store_string_func(p_store_string_ud, "{\n");
+
+					for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
+						write(E->get(), p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
+						p_store_string_func(p_store_string_ud, ": ");
+						write(dict[E->get()], p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
+						if (E->next()) {
+							p_store_string_func(p_store_string_ud, ",\n");
+						} else {
+							p_store_string_func(p_store_string_ud, "\n");
+						}
 					}
-				}
 
-				p_store_string_func(p_store_string_ud, "}");
+					p_store_string_func(p_store_string_ud, "}");
+				}
+			}
+
+			if (dict.is_typed()) {
+				p_store_string_func(p_store_string_ud, ")");
 			}
 		} break;
 
 		case Variant::ARRAY: {
 			Array array = p_variant;
-			if (array.get_typed_builtin() != Variant::NIL) {
+
+			if (array.is_typed()) {
 				p_store_string_func(p_store_string_ud, "Array[");
 
 				Variant::Type builtin_type = (Variant::Type)array.get_typed_builtin();
@@ -2089,6 +2316,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				p_recursion_count++;
 
 				p_store_string_func(p_store_string_ud, "[");
+
 				bool first = true;
 				for (const Variant &var : array) {
 					if (first) {
@@ -2096,13 +2324,13 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					} else {
 						p_store_string_func(p_store_string_ud, ", ");
 					}
-					write(var, p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count);
+					write(var, p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
 				}
 
 				p_store_string_func(p_store_string_ud, "]");
 			}
 
-			if (array.get_typed_builtin() != Variant::NIL) {
+			if (array.is_typed()) {
 				p_store_string_func(p_store_string_ud, ")");
 			}
 		} break;
@@ -2110,7 +2338,16 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		case Variant::PACKED_BYTE_ARRAY: {
 			p_store_string_func(p_store_string_ud, "PackedByteArray(");
 			Vector<uint8_t> data = p_variant;
-			if (data.size() > 0) {
+			if (p_compat) {
+				int len = data.size();
+				const uint8_t *ptr = data.ptr();
+				for (int i = 0; i < len; i++) {
+					if (i > 0) {
+						p_store_string_func(p_store_string_ud, ", ");
+					}
+					p_store_string_func(p_store_string_ud, itos(ptr[i]));
+				}
+			} else if (data.size() > 0) {
 				p_store_string_func(p_store_string_ud, "\"");
 				p_store_string_func(p_store_string_ud, CryptoCore::b64_encode_str(data.ptr(), data.size()));
 				p_store_string_func(p_store_string_ud, "\"");
@@ -2239,6 +2476,21 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 
 			p_store_string_func(p_store_string_ud, ")");
 		} break;
+		case Variant::PACKED_VECTOR4_ARRAY: {
+			p_store_string_func(p_store_string_ud, "PackedVector4Array(");
+			Vector<Vector4> data = p_variant;
+			int len = data.size();
+			const Vector4 *ptr = data.ptr();
+
+			for (int i = 0; i < len; i++) {
+				if (i > 0) {
+					p_store_string_func(p_store_string_ud, ", ");
+				}
+				p_store_string_func(p_store_string_ud, rtos_fix(ptr[i].x) + ", " + rtos_fix(ptr[i].y) + ", " + rtos_fix(ptr[i].z) + ", " + rtos_fix(ptr[i].w));
+			}
+
+			p_store_string_func(p_store_string_ud, ")");
+		} break;
 
 		default: {
 			ERR_PRINT("Unknown variant type");
@@ -2255,8 +2507,8 @@ static Error _write_to_str(void *ud, const String &p_string) {
 	return OK;
 }
 
-Error VariantWriter::write_to_string(const Variant &p_variant, String &r_string, EncodeResourceFunc p_encode_res_func, void *p_encode_res_ud) {
+Error VariantWriter::write_to_string(const Variant &p_variant, String &r_string, EncodeResourceFunc p_encode_res_func, void *p_encode_res_ud, bool p_compat) {
 	r_string = String();
 
-	return write(p_variant, _write_to_str, &r_string, p_encode_res_func, p_encode_res_ud);
+	return write(p_variant, _write_to_str, &r_string, p_encode_res_func, p_encode_res_ud, 0, p_compat);
 }

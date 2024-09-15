@@ -8,9 +8,21 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="get_rect" qualifiers="const">
+			<return type="Rect2" />
+			<description>
+				Returns the status indicator rectangle in screen coordinates. If this status indicator is not visible, returns an empty [Rect2].
+			</description>
+		</method>
+	</methods>
 	<members>
-		<member name="icon" type="Image" setter="set_icon" getter="get_icon">
+		<member name="icon" type="Texture2D" setter="set_icon" getter="get_icon">
 			Status indicator icon.
+		</member>
+		<member name="menu" type="NodePath" setter="set_menu" getter="get_menu" default="NodePath(&quot;&quot;)">
+			Status indicator native popup menu. If this is set, the [signal pressed] signal is not emitted.
+			[b]Note:[/b] Native popup is only supported if [NativeMenu] supports [constant NativeMenu.FEATURE_POPUP_MENU] feature.
 		</member>
 		<member name="tooltip" type="String" setter="set_tooltip" getter="get_tooltip" default="&quot;&quot;">
 			Status indicator tooltip.

@@ -1,8 +1,9 @@
 """Functions used to generate source files during build time"""
 
 import os.path
-
 from typing import Optional
+
+from methods import print_error, to_raw_cstring
 
 
 class GLES3HeaderStruct:
@@ -91,14 +92,14 @@ def include_file_in_gles3_header(filename: str, header_data: GLES3HeaderStruct, 
                 includeline = line.replace("#include ", "").strip()[1:-1]
 
                 included_file = os.path.relpath(os.path.dirname(filename) + "/" + includeline)
-                if not included_file in header_data.vertex_included_files and header_data.reading == "vertex":
+                if included_file not in header_data.vertex_included_files and header_data.reading == "vertex":
                     header_data.vertex_included_files += [included_file]
                     if include_file_in_gles3_header(included_file, header_data, depth + 1) is None:
-                        print("Error in file '" + filename + "': #include " + includeline + "could not be found!")
-                elif not included_file in header_data.fragment_included_files and header_data.reading == "fragment":
+                        print_error(f'In file "{filename}": #include "{includeline}" could not be found!"')
+                elif included_file not in header_data.fragment_included_files and header_data.reading == "fragment":
                     header_data.fragment_included_files += [included_file]
                     if include_file_in_gles3_header(included_file, header_data, depth + 1) is None:
-                        print("Error in file '" + filename + "': #include " + includeline + "could not be found!")
+                        print_error(f'In file "{filename}": #include "{includeline}" could not be found!"')
 
                 line = fs.readline()
 
@@ -121,7 +122,7 @@ def include_file_in_gles3_header(filename: str, header_data: GLES3HeaderStruct, 
                         # unfiorm array
                         x = x[: x.find("[")]
 
-                    if not x in header_data.texunit_names:
+                    if x not in header_data.texunit_names:
                         header_data.texunits += [(x, texunit)]
                         header_data.texunit_names += [x]
 
@@ -142,7 +143,7 @@ def include_file_in_gles3_header(filename: str, header_data: GLES3HeaderStruct, 
                         # unfiorm array
                         x = x[: x.find("[")]
 
-                    if not x in header_data.ubo_names:
+                    if x not in header_data.ubo_names:
                         header_data.ubos += [(x, ubo)]
                         header_data.ubo_names += [x]
 
@@ -157,7 +158,7 @@ def include_file_in_gles3_header(filename: str, header_data: GLES3HeaderStruct, 
                         # unfiorm array
                         x = x[: x.find("[")]
 
-                    if not x in header_data.uniforms:
+                    if x not in header_data.uniforms:
                         header_data.uniforms += [x]
 
             if (line.strip().find("out ") == 0 or line.strip().find("flat ") == 0) and line.find("tfb:") != -1:
@@ -552,20 +553,12 @@ def build_gles3_header(
             fd.write("\t\tstatic const Feedback* _feedbacks=nullptr;\n")
 
         fd.write("\t\tstatic const char _vertex_code[]={\n")
-        for x in header_data.vertex_lines:
-            for c in x:
-                fd.write(str(ord(c)) + ",")
-
-            fd.write(str(ord("\n")) + ",")
-        fd.write("\t\t0};\n\n")
+        fd.write(to_raw_cstring(header_data.vertex_lines))
+        fd.write("\n\t\t};\n\n")
 
         fd.write("\t\tstatic const char _fragment_code[]={\n")
-        for x in header_data.fragment_lines:
-            for c in x:
-                fd.write(str(ord(c)) + ",")
-
-            fd.write(str(ord("\n")) + ",")
-        fd.write("\t\t0};\n\n")
+        fd.write(to_raw_cstring(header_data.fragment_lines))
+        fd.write("\n\t\t};\n\n")
 
         fd.write(
             '\t\t_setup(_vertex_code,_fragment_code,"'
@@ -588,7 +581,7 @@ def build_gles3_header(
         fd.write("\t}\n\n")
 
         fd.write("};\n\n")
-        fd.write("#endif\n\n")
+        fd.write("#endif\n")
 
 
 def build_gles3_headers(target, source, env):

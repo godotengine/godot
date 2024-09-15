@@ -89,6 +89,7 @@ public:
 	int get_autoshrink_margin() const;
 
 	HBoxContainer *get_titlebar_hbox();
+	Size2 get_titlebar_size() const;
 
 	void set_drag_margin(int p_margin);
 	int get_drag_margin() const;

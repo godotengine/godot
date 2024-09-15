@@ -37,7 +37,7 @@
 class String;
 struct Rect2;
 
-struct _NO_DISCARD_ Rect2i {
+struct [[nodiscard]] Rect2i {
 	Point2i position;
 	Size2i size;
 
@@ -213,7 +213,7 @@ struct _NO_DISCARD_ Rect2i {
 	}
 
 	_FORCE_INLINE_ Rect2i abs() const {
-		return Rect2i(position + size.min(Point2i()), size.abs());
+		return Rect2i(position + size.mini(0), size.abs());
 	}
 
 	_FORCE_INLINE_ void set_end(const Vector2i &p_end) {

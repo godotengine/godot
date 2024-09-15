@@ -56,7 +56,7 @@ private:
 	float delta = 0;
 
 	double time_total = 0.0;
-	bool flip_xy_bugfix = false;
+	bool flip_xy_workaround = false;
 
 	static bool gles_over_gl;
 
@@ -99,7 +99,7 @@ public:
 
 	void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount);
 
-	void end_viewport(bool p_swap_buffers);
+	void gl_end_frame(bool p_swap_buffers);
 	void end_frame(bool p_swap_buffers);
 
 	void finalize();
@@ -113,6 +113,7 @@ public:
 
 	static void make_current(bool p_gles_over_gl) {
 		gles_over_gl = p_gles_over_gl;
+		OS::get_singleton()->set_gles_over_gl(gles_over_gl);
 		_create_func = _create_current;
 		low_end = true;
 	}

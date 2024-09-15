@@ -81,7 +81,7 @@ private:
 	static void _parse_headers(int p_len, const char **p_headers, void *p_ref);
 
 public:
-	static HTTPClient *_create_func();
+	static HTTPClient *_create_func(bool p_notify_postinitialize);
 
 	Error request(Method p_method, const String &p_url, const Vector<String> &p_headers, const uint8_t *p_body, int p_body_size) override;
 

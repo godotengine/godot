@@ -64,6 +64,12 @@ class CodeTextEditor;
 class FindReplaceBar : public HBoxContainer {
 	GDCLASS(FindReplaceBar, HBoxContainer);
 
+	enum SearchMode {
+		SEARCH_CURRENT,
+		SEARCH_NEXT,
+		SEARCH_PREV,
+	};
+
 	LineEdit *search_text = nullptr;
 	Label *matches_label = nullptr;
 	Button *find_prev = nullptr;
@@ -94,7 +100,7 @@ class FindReplaceBar : public HBoxContainer {
 	bool replace_all_mode = false;
 	bool preserve_cursor = false;
 
-	void _get_search_from(int &r_line, int &r_col, bool p_is_searching_next = false);
+	void _get_search_from(int &r_line, int &r_col, SearchMode p_search_mode);
 	void _update_results_count();
 	void _update_matches_display();
 
@@ -155,6 +161,7 @@ class CodeTextEditor : public VBoxContainer {
 	HBoxContainer *status_bar = nullptr;
 
 	Button *toggle_scripts_button = nullptr;
+	Control *toggle_scripts_list = nullptr;
 	Button *error_button = nullptr;
 	Button *warning_button = nullptr;
 
@@ -173,6 +180,8 @@ class CodeTextEditor : public VBoxContainer {
 	Label *error = nullptr;
 	int error_line;
 	int error_column;
+
+	Dictionary previous_state;
 
 	void _update_text_editor_theme();
 	void _update_font_ligatures();
@@ -205,9 +214,6 @@ class CodeTextEditor : public VBoxContainer {
 
 	void _toggle_scripts_pressed();
 
-	int _get_affected_lines_from(int p_caret);
-	int _get_affected_lines_to(int p_caret);
-
 protected:
 	virtual void _load_theme_settings() {}
 	virtual void _validate_script() {}
@@ -225,6 +231,7 @@ protected:
 
 public:
 	void trim_trailing_whitespace();
+	void trim_final_newlines();
 	void insert_final_newline();
 
 	enum CaseStyle {
@@ -236,24 +243,21 @@ public:
 
 	void set_indent_using_spaces(bool p_use_spaces);
 
-	void move_lines_up();
-	void move_lines_down();
-	void delete_lines();
-	void duplicate_selection();
-
 	/// Toggle inline comment on currently selected lines, or on current line if nothing is selected,
 	/// by adding or removing comment delimiter
 	void toggle_inline_comment(const String &delimiter);
 
-	void goto_line(int p_line);
+	void goto_line(int p_line, int p_column = 0);
 	void goto_line_selection(int p_line, int p_begin, int p_end);
-	void goto_line_centered(int p_line);
+	void goto_line_centered(int p_line, int p_column = 0);
 	void set_executing_line(int p_line);
 	void clear_executing_line();
 
 	Variant get_edit_state();
 	void set_edit_state(const Variant &p_state);
 	Variant get_navigation_state();
+	Variant get_previous_state();
+	void store_previous_state();
 
 	void set_error_count(int p_error_count);
 	void set_warning_count(int p_warning_count);
@@ -282,6 +286,7 @@ public:
 
 	void validate_script();
 
+	void set_toggle_list_control(Control *p_control);
 	void show_toggle_scripts_button();
 	void update_toggle_scripts_button();
 

@@ -19,15 +19,6 @@ msgstr ""
 "19) ? 0 : ((n % 10 == 1 && n % 100 != 11) ? 1 : 2);\n"
 "X-Generator: Weblate 5.2\n"
 
-msgid "Example: %s"
-msgstr "Piemērs: %s"
-
-msgid "%d item"
-msgid_plural "%d items"
-msgstr[0] "%d lietas"
-msgstr[1] "%d lieta"
-msgstr[2] "%d lietas"
-
 msgid "Add current color as a preset."
 msgstr "Pievienot pašreizējo krāsu kā iepriekšnoteiktu krāsu."
 

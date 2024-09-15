@@ -153,14 +153,14 @@ void PortableCompressedTexture2D::create_from_image(const Ref<Image> &p_image, C
 			for (int i = 0; i < p_image->get_mipmap_count() + 1; i++) {
 				Vector<uint8_t> data;
 				if (p_compression_mode == COMPRESSION_MODE_LOSSY) {
-					data = Image::webp_lossy_packer(p_image->get_image_from_mipmap(i), p_lossy_quality);
+					data = Image::webp_lossy_packer(i ? p_image->get_image_from_mipmap(i) : p_image, p_lossy_quality);
 					encode_uint16(DATA_FORMAT_WEBP, buffer.ptrw() + 2);
 				} else {
 					if (use_webp) {
-						data = Image::webp_lossless_packer(p_image->get_image_from_mipmap(i));
+						data = Image::webp_lossless_packer(i ? p_image->get_image_from_mipmap(i) : p_image);
 						encode_uint16(DATA_FORMAT_WEBP, buffer.ptrw() + 2);
 					} else {
-						data = Image::png_packer(p_image->get_image_from_mipmap(i));
+						data = Image::png_packer(i ? p_image->get_image_from_mipmap(i) : p_image);
 						encode_uint16(DATA_FORMAT_PNG, buffer.ptrw() + 2);
 					}
 				}
@@ -345,7 +345,7 @@ void PortableCompressedTexture2D::_bind_methods() {
 	ClassDB::bind_static_method("PortableCompressedTexture2D", D_METHOD("set_keep_all_compressed_buffers", "keep"), &PortableCompressedTexture2D::set_keep_all_compressed_buffers);
 	ClassDB::bind_static_method("PortableCompressedTexture2D", D_METHOD("is_keeping_all_compressed_buffers"), &PortableCompressedTexture2D::is_keeping_all_compressed_buffers);
 
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "_set_data", "_get_data");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size_override", PROPERTY_HINT_NONE, "suffix:px"), "set_size_override", "get_size_override");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_compressed_buffer"), "set_keep_compressed_buffer", "is_keeping_compressed_buffer");
 

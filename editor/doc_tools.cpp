@@ -38,7 +38,7 @@
 #include "core/io/marshalls.h"
 #include "core/io/resource_importer.h"
 #include "core/object/script_language.h"
-#include "core/string/translation.h"
+#include "core/string/translation_server.h"
 #include "editor/editor_settings.h"
 #include "editor/export/editor_export.h"
 #include "scene/resources/theme.h"
@@ -277,6 +277,10 @@ static void merge_theme_properties(Vector<DocData::ThemeItemDoc> &p_to, const Ve
 		// Check found entry on name and data type.
 		if (to.name == from.name && to.data_type == from.data_type) {
 			to.description = from.description;
+			to.is_deprecated = from.is_deprecated;
+			to.deprecated_message = from.deprecated_message;
+			to.is_experimental = from.is_experimental;
+			to.experimental_message = from.experimental_message;
 			to.keywords = from.keywords;
 		}
 	}
@@ -344,25 +348,6 @@ void DocTools::merge_from(const DocTools &p_data) {
 		merge_theme_properties(c.theme_properties, cf.theme_properties);
 
 		merge_operators(c.operators, cf.operators);
-
-#ifndef MODULE_MONO_ENABLED
-		// The Mono module defines some properties that we want to keep when
-		// re-generating docs with a non-Mono build, to prevent pointless diffs
-		// (and loss of descriptions) depending on the config of the doc writer.
-		// We use a horrible hack to force keeping the relevant properties,
-		// hardcoded below. At least it's an ad hoc hack... ¯\_(ツ)_/¯
-		// Don't show this to your kids.
-		if (c.name == "@GlobalScope") {
-			// Retrieve GodotSharp singleton.
-			for (int j = 0; j < cf.properties.size(); j++) {
-				if (cf.properties[j].name == "GodotSharp") {
-					c.properties.push_back(cf.properties[j]);
-					c.properties.sort();
-					break;
-				}
-			}
-		}
-#endif
 	}
 }
 
@@ -476,10 +461,10 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 				ResourceImporter *resimp = Object::cast_to<ResourceImporter>(ClassDB::instantiate(name));
 				List<ResourceImporter::ImportOption> options;
 				resimp->get_import_options("", &options);
-				for (int i = 0; i < options.size(); i++) {
-					const PropertyInfo &prop = options[i].option;
+				for (const ResourceImporter::ImportOption &option : options) {
+					const PropertyInfo &prop = option.option;
 					properties.push_back(prop);
-					import_options_default[prop.name] = options[i].default_value;
+					import_options_default[prop.name] = option.default_value;
 				}
 				own_properties = properties;
 				memdelete(resimp);
@@ -590,6 +575,8 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 							prop.type = retinfo.class_name;
 						} else if (retinfo.type == Variant::ARRAY && retinfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
 							prop.type = retinfo.hint_string + "[]";
+						} else if (retinfo.type == Variant::DICTIONARY && retinfo.hint == PROPERTY_HINT_DICTIONARY_TYPE) {
+							prop.type = "Dictionary[" + retinfo.hint_string.replace(";", ", ") + "]";
 						} else if (retinfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 							prop.type = retinfo.hint_string;
 						} else if (retinfo.type == Variant::NIL && retinfo.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
@@ -665,8 +652,8 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 				for (List<MethodInfo>::Element *EV = signal_list.front(); EV; EV = EV->next()) {
 					DocData::MethodDoc signal;
 					signal.name = EV->get().name;
-					for (int i = 0; i < EV->get().arguments.size(); i++) {
-						const PropertyInfo &arginfo = EV->get().arguments[i];
+					for (List<PropertyInfo>::Element *EA = EV->get().arguments.front(); EA; EA = EA->next()) {
+						const PropertyInfo &arginfo = EA->get();
 						DocData::ArgumentDoc argument;
 						DocData::argument_doc_from_arginfo(argument, arginfo);
 
@@ -857,10 +844,11 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 
 			method.name = mi.name;
 
-			for (int j = 0; j < mi.arguments.size(); j++) {
-				PropertyInfo arginfo = mi.arguments[j];
+			int j = 0;
+			for (List<PropertyInfo>::ConstIterator itr = mi.arguments.begin(); itr != mi.arguments.end(); ++itr, ++j) {
+				PropertyInfo arginfo = *itr;
 				DocData::ArgumentDoc ad;
-				DocData::argument_doc_from_arginfo(ad, mi.arguments[j]);
+				DocData::argument_doc_from_arginfo(ad, arginfo);
 				ad.name = arginfo.name;
 
 				int darg_idx = mi.default_arguments.size() - mi.arguments.size() + j;
@@ -1047,9 +1035,10 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 
 				DocData::return_doc_from_retinfo(md, mi.return_val);
 
-				for (int j = 0; j < mi.arguments.size(); j++) {
+				int j = 0;
+				for (List<PropertyInfo>::ConstIterator itr = mi.arguments.begin(); itr != mi.arguments.end(); ++itr, ++j) {
 					DocData::ArgumentDoc ad;
-					DocData::argument_doc_from_arginfo(ad, mi.arguments[j]);
+					DocData::argument_doc_from_arginfo(ad, *itr);
 
 					int darg_idx = j - (mi.arguments.size() - mi.default_arguments.size());
 					if (darg_idx >= 0) {
@@ -1091,9 +1080,10 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 
 				DocData::return_doc_from_retinfo(atd, ai.return_val);
 
-				for (int j = 0; j < ai.arguments.size(); j++) {
+				int j = 0;
+				for (List<PropertyInfo>::ConstIterator itr = ai.arguments.begin(); itr != ai.arguments.end(); ++itr, ++j) {
 					DocData::ArgumentDoc ad;
-					DocData::argument_doc_from_arginfo(ad, ai.arguments[j]);
+					DocData::argument_doc_from_arginfo(ad, *itr);
 
 					int darg_idx = j - (ai.arguments.size() - ai.default_arguments.size());
 					if (darg_idx >= 0) {
@@ -1436,6 +1426,14 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 								prop2.type = parser->get_named_attribute_value("type");
 								ERR_FAIL_COND_V(!parser->has_attribute("data_type"), ERR_FILE_CORRUPT);
 								prop2.data_type = parser->get_named_attribute_value("data_type");
+								if (parser->has_attribute("deprecated")) {
+									prop2.is_deprecated = true;
+									prop2.deprecated_message = parser->get_named_attribute_value("deprecated");
+								}
+								if (parser->has_attribute("experimental")) {
+									prop2.is_experimental = true;
+									prop2.experimental_message = parser->get_named_attribute_value("experimental");
+								}
 								if (parser->has_attribute("keywords")) {
 									prop2.keywords = parser->get_named_attribute_value("keywords");
 								}
@@ -1599,7 +1597,7 @@ static void _write_method_doc(Ref<FileAccess> f, const String &p_name, Vector<Do
 	}
 }
 
-Error DocTools::save_classes(const String &p_default_path, const HashMap<String, String> &p_class_path, bool p_include_xml_schema) {
+Error DocTools::save_classes(const String &p_default_path, const HashMap<String, String> &p_class_path, bool p_use_relative_schema) {
 	for (KeyValue<String, DocData::ClassDoc> &E : class_list) {
 		DocData::ClassDoc &c = E.value;
 
@@ -1631,15 +1629,17 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 		if (!c.keywords.is_empty()) {
 			header += String(" keywords=\"") + c.keywords.xml_escape(true) + "\"";
 		}
-		if (p_include_xml_schema) {
-			// Reference the XML schema so editors can provide error checking.
+		// Reference the XML schema so editors can provide error checking.
+		String schema_path;
+		if (p_use_relative_schema) {
 			// Modules are nested deep, so change the path to reference the same schema everywhere.
-			const String schema_path = save_path.find("modules/") != -1 ? "../../../doc/class.xsd" : "../class.xsd";
-			header += vformat(
-					R"( xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="%s")",
-					schema_path);
+			schema_path = save_path.contains("modules/") ? "../../../doc/class.xsd" : "../class.xsd";
+		} else {
+			schema_path = "https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd";
 		}
-		header += ">";
+		header += vformat(
+				R"( xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="%s">)",
+				schema_path);
 		_write_string(f, 0, header);
 
 		_write_string(f, 1, "<brief_description>");
@@ -1751,6 +1751,12 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 				String additional_attributes;
 				if (!ti.default_value.is_empty()) {
 					additional_attributes += String(" default=\"") + ti.default_value.xml_escape(true) + "\"";
+				}
+				if (ti.is_deprecated) {
+					additional_attributes += " deprecated=\"" + ti.deprecated_message.xml_escape(true) + "\"";
+				}
+				if (ti.is_experimental) {
+					additional_attributes += " experimental=\"" + ti.experimental_message.xml_escape(true) + "\"";
 				}
 				if (!ti.keywords.is_empty()) {
 					additional_attributes += String(" keywords=\"") + ti.keywords.xml_escape(true) + "\"";

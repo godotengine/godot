@@ -75,7 +75,19 @@ namespace GodotTools.Export
             };
         }
 
-        private string? _maybeLastExportError;
+        private void AddExceptionMessage(EditorExportPlatform platform, Exception exception)
+        {
+            string? exceptionMessage = exception.Message;
+            if (string.IsNullOrEmpty(exceptionMessage))
+            {
+                exceptionMessage = $"Exception thrown: {exception.GetType().Name}";
+            }
+
+            platform.AddMessage(EditorExportPlatform.ExportMessageType.Error, "Export .NET Project", exceptionMessage);
+
+            // We also print exceptions as we receive them to stderr.
+            Console.Error.WriteLine(exception);
+        }
 
         // With this method we can override how a file is exported in the PCK
         public override void _ExportFile(string path, string type, string[] features)
@@ -92,8 +104,8 @@ namespace GodotTools.Export
 
             if (!ProjectContainsDotNet())
             {
-                _maybeLastExportError = $"This project contains C# files but no solution file was found at the following path: {GodotSharpDirs.ProjectSlnPath}\n" +
-                    "A solution file is required for projects with C# files. Please ensure that the solution file exists in the specified location and try again.";
+                GetExportPlatform().AddMessage(EditorExportPlatform.ExportMessageType.Error, "Export .NET Project", $"This project contains C# files but no solution file was found at the following path: {GodotSharpDirs.ProjectSlnPath}\n" +
+                    "A solution file is required for projects with C# files. Please ensure that the solution file exists in the specified location and try again.");
                 throw new InvalidOperationException($"{path} is a C# file but no solution file exists.");
             }
 
@@ -124,16 +136,7 @@ namespace GodotTools.Export
             }
             catch (Exception e)
             {
-                _maybeLastExportError = e.Message;
-
-                // 'maybeLastExportError' cannot be null or empty if there was an error, so we
-                // must consider the possibility of exceptions being thrown without a message.
-                if (string.IsNullOrEmpty(_maybeLastExportError))
-                    _maybeLastExportError = $"Exception thrown: {e.GetType().Name}";
-
-                GD.PushError($"Failed to export project: {_maybeLastExportError}");
-                Console.Error.WriteLine(e);
-                // TODO: Do something on error once _ExportBegin supports failing.
+                AddExceptionMessage(GetExportPlatform(), e);
             }
         }
 
@@ -144,7 +147,9 @@ namespace GodotTools.Export
             if (!ProjectContainsDotNet())
                 return;
 
-            if (!DeterminePlatformFromFeatures(features, out string? platform))
+            string osName = GetExportPlatform().GetOsName();
+
+            if (!TryDeterminePlatformFromOSName(osName, out string? platform))
                 throw new NotSupportedException("Target platform not supported.");
 
             if (!new[] { OS.Platforms.Windows, OS.Platforms.LinuxBSD, OS.Platforms.MacOS, OS.Platforms.Android, OS.Platforms.iOS }
@@ -355,24 +360,23 @@ namespace GodotTools.Export
                 if (outputPaths.Count > 2)
                 {
                     // lipo the simulator binaries together
-                    // TODO: Move this to the native lipo implementation we have in the macos export plugin.
-                    var lipoArgs = new List<string>();
-                    lipoArgs.Add("-create");
-                    lipoArgs.AddRange(outputPaths.Skip(1).Select(x => Path.Combine(x, $"{GodotSharpDirs.ProjectAssemblyName}.dylib")));
-                    lipoArgs.Add("-output");
-                    lipoArgs.Add(Path.Combine(outputPaths[1], $"{GodotSharpDirs.ProjectAssemblyName}.dylib"));
 
-                    int lipoExitCode = OS.ExecuteCommand(XcodeHelper.FindXcodeTool("lipo"), lipoArgs);
-                    if (lipoExitCode != 0)
-                        throw new InvalidOperationException($"Command 'lipo' exited with code: {lipoExitCode}.");
+                    string outputPath = Path.Combine(outputPaths[1], $"{GodotSharpDirs.ProjectAssemblyName}.dylib");
+                    string[] files = outputPaths
+                        .Skip(1)
+                        .Select(path => Path.Combine(path, $"{GodotSharpDirs.ProjectAssemblyName}.dylib"))
+                        .ToArray();
+
+                    if (!Internal.LipOCreateFile(outputPath, files))
+                    {
+                        throw new InvalidOperationException($"Failed to 'lipo' simulator binaries.");
+                    }
 
                     outputPaths.RemoveRange(2, outputPaths.Count - 2);
                 }
 
-                var xcFrameworkPath = Path.Combine(GodotSharpDirs.ProjectBaseOutputPath, publishConfig.BuildConfig,
-                    $"{GodotSharpDirs.ProjectAssemblyName}_aot.xcframework");
-                if (!BuildManager.GenerateXCFrameworkBlocking(outputPaths,
-                        Path.Combine(GodotSharpDirs.ProjectBaseOutputPath, publishConfig.BuildConfig, xcFrameworkPath)))
+                string xcFrameworkPath = Path.Combine(GodotSharpDirs.ProjectBaseOutputPath, publishConfig.BuildConfig, $"{GodotSharpDirs.ProjectAssemblyName}_aot.xcframework");
+                if (!BuildManager.GenerateXCFrameworkBlocking(outputPaths, xcFrameworkPath))
                 {
                     throw new InvalidOperationException("Failed to generate xcframework.");
                 }
@@ -446,25 +450,22 @@ namespace GodotTools.Export
                 Directory.Delete(folder, recursive: true);
             }
             _tempFolders.Clear();
-
-            // TODO: The following is just a workaround until the export plugins can be made to abort with errors
-
-            // We check for empty as well, because it's set to empty after hot-reloading
-            if (!string.IsNullOrEmpty(_maybeLastExportError))
-            {
-                string lastExportError = _maybeLastExportError;
-                _maybeLastExportError = null;
-
-                GodotSharpEditor.Instance.ShowErrorDialog(lastExportError, "Failed to export C# project");
-            }
         }
 
-        private static bool DeterminePlatformFromFeatures(IEnumerable<string> features, [NotNullWhen(true)] out string? platform)
+        /// <summary>
+        /// Tries to determine the platform from the export preset's platform OS name.
+        /// </summary>
+        /// <param name="osName">Name of the export operating system.</param>
+        /// <param name="platform">Platform name for the recognized supported platform.</param>
+        /// <returns>
+        /// <see langword="true"/> when the platform OS name is recognized as a supported platform,
+        /// <see langword="false"/> otherwise.
+        /// </returns>
+        private static bool TryDeterminePlatformFromOSName(string osName, [NotNullWhen(true)] out string? platform)
         {
-            foreach (var feature in features)
+            if (OS.PlatformFeatureMap.TryGetValue(osName, out platform))
             {
-                if (OS.PlatformFeatureMap.TryGetValue(feature, out platform))
-                    return true;
+                return true;
             }
 
             platform = null;

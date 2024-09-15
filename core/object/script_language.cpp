@@ -31,7 +31,6 @@
 #include "script_language.h"
 
 #include "core/config/project_settings.h"
-#include "core/core_string_names.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/io/resource_loader.h"
@@ -42,6 +41,7 @@ ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES];
 int ScriptServer::_language_count = 0;
 bool ScriptServer::languages_ready = false;
 Mutex ScriptServer::languages_mutex;
+thread_local bool ScriptServer::thread_entered = false;
 
 bool ScriptServer::scripting_enabled = true;
 bool ScriptServer::reload_scripts_on_save = false;
@@ -51,7 +51,7 @@ void Script::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
 			if (EngineDebugger::is_active()) {
-				EngineDebugger::get_script_debugger()->set_break_language(get_language());
+				callable_mp(this, &Script::_set_debugger_break_language).call_deferred();
 			}
 		} break;
 	}
@@ -101,6 +101,12 @@ Dictionary Script::_get_script_constant_map() {
 		ret[E.key] = E.value;
 	}
 	return ret;
+}
+
+void Script::_set_debugger_break_language() {
+	if (EngineDebugger::is_active()) {
+		EngineDebugger::get_script_debugger()->set_break_language(get_language());
+	}
 }
 
 int Script::get_script_method_argument_count(const StringName &p_method, bool *r_is_valid) const {
@@ -321,6 +327,10 @@ bool ScriptServer::are_languages_initialized() {
 	return languages_ready;
 }
 
+bool ScriptServer::thread_is_entered() {
+	return thread_entered;
+}
+
 void ScriptServer::set_reload_scripts_on_save(bool p_enable) {
 	reload_scripts_on_save = p_enable;
 }
@@ -330,6 +340,10 @@ bool ScriptServer::is_reload_scripts_on_save_enabled() {
 }
 
 void ScriptServer::thread_enter() {
+	if (thread_entered) {
+		return;
+	}
+
 	MutexLock lock(languages_mutex);
 	if (!languages_ready) {
 		return;
@@ -337,9 +351,15 @@ void ScriptServer::thread_enter() {
 	for (int i = 0; i < _language_count; i++) {
 		_languages[i]->thread_enter();
 	}
+
+	thread_entered = true;
 }
 
 void ScriptServer::thread_exit() {
+	if (!thread_entered) {
+		return;
+	}
+
 	MutexLock lock(languages_mutex);
 	if (!languages_ready) {
 		return;
@@ -347,6 +367,8 @@ void ScriptServer::thread_exit() {
 	for (int i = 0; i < _language_count; i++) {
 		_languages[i]->thread_exit();
 	}
+
+	thread_entered = false;
 }
 
 HashMap<StringName, ScriptServer::GlobalScriptClass> ScriptServer::global_classes;
@@ -486,10 +508,6 @@ void ScriptServer::save_global_classes() {
 	ProjectSettings::get_singleton()->store_global_class_list(gcarr);
 }
 
-String ScriptServer::get_global_class_cache_file_path() {
-	return ProjectSettings::get_singleton()->get_global_class_list_path();
-}
-
 ////////////////////
 
 ScriptCodeCompletionCache *ScriptCodeCompletionCache::singleton = nullptr;
@@ -531,6 +549,7 @@ void ScriptLanguage::get_core_type_words(List<String> *p_core_type_words) const 
 	p_core_type_words->push_back("PackedVector2Array");
 	p_core_type_words->push_back("PackedVector3Array");
 	p_core_type_words->push_back("PackedColorArray");
+	p_core_type_words->push_back("PackedVector4Array");
 }
 
 void ScriptLanguage::frame() {
@@ -691,9 +710,28 @@ bool PlaceHolderScriptInstance::has_method(const StringName &p_method) const {
 	}
 
 	if (script.is_valid()) {
-		return script->has_method(p_method);
+		Ref<Script> scr = script;
+		while (scr.is_valid()) {
+			if (scr->has_method(p_method)) {
+				return true;
+			}
+			scr = scr->get_base_script();
+		}
 	}
 	return false;
+}
+
+Variant PlaceHolderScriptInstance::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+	r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		return String("Attempt to call a method on a placeholder instance. Check if the script is in tool mode.");
+	} else {
+		return String("Attempt to call a method on a placeholder instance. Probably a bug, please report.");
+	}
+#else
+	return Variant();
+#endif // TOOLS_ENABLED
 }
 
 void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, const HashMap<StringName, Variant> &p_values) {

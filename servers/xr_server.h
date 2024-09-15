@@ -36,12 +36,11 @@
 #include "core/os/thread_safe.h"
 #include "core/templates/rid.h"
 #include "core/variant/variant.h"
+#include "rendering_server.h"
 
 class XRInterface;
+class XRTracker;
 class XRPositionalTracker;
-class XRHandTracker;
-class XRFaceTracker;
-class XRBodyTracker;
 
 /**
 	The XR server is a singleton object that gives access to the various
@@ -71,6 +70,9 @@ public:
 		TRACKER_CONTROLLER = 0x02, /* tracks a controller */
 		TRACKER_BASESTATION = 0x04, /* tracks location of a base station */
 		TRACKER_ANCHOR = 0x08, /* tracks an anchor point, used in AR to track a real live location */
+		TRACKER_HAND = 0x10, /* tracks a hand */
+		TRACKER_BODY = 0x20, /* tracks a body */
+		TRACKER_FACE = 0x40, /* tracks a face */
 		TRACKER_UNKNOWN = 0x80, /* unknown tracker */
 
 		TRACKER_ANY_KNOWN = 0x7f, /* all except unknown */
@@ -88,20 +90,60 @@ private:
 
 	Vector<Ref<XRInterface>> interfaces;
 	Dictionary trackers;
-	Dictionary hand_trackers;
-	Dictionary face_trackers;
-	Dictionary body_trackers;
 
 	Ref<XRInterface> primary_interface; /* we'll identify one interface as primary, this will be used by our viewports */
 
-	double world_scale; /* scale by which we multiply our tracker positions */
+	double world_scale = 1.0; /* scale by which we multiply our tracker positions */
 	Transform3D world_origin; /* our world origin point, maps a location in our virtual world to the origin point in our real world tracking volume */
 	Transform3D reference_frame; /* our reference frame */
+
+	// As we may be updating our main state for our next frame while we're still rendering our previous frame,
+	// we need to keep copies around.
+	struct RenderState {
+		double world_scale = 1.0; /* scale by which we multiply our tracker positions */
+		Transform3D world_origin; /* our world origin point, maps a location in our virtual world to the origin point in our real world tracking volume */
+		Transform3D reference_frame; /* our reference frame */
+	} render_state;
+
+	static void _set_render_world_scale(double p_world_scale);
+	static void _set_render_world_origin(const Transform3D &p_world_origin);
+	static void _set_render_reference_frame(const Transform3D &p_reference_frame);
+
+	_FORCE_INLINE_ void set_render_world_scale(double p_world_scale) {
+		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
+		RenderingServer *rendering_server = RenderingServer::get_singleton();
+		ERR_FAIL_NULL(rendering_server);
+
+		rendering_server->call_on_render_thread(callable_mp_static(&XRServer::_set_render_world_scale).bind(p_world_scale));
+	}
+
+	_FORCE_INLINE_ void set_render_world_origin(const Transform3D &p_world_origin) {
+		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
+		RenderingServer *rendering_server = RenderingServer::get_singleton();
+		ERR_FAIL_NULL(rendering_server);
+
+		rendering_server->call_on_render_thread(callable_mp_static(&XRServer::_set_render_world_origin).bind(p_world_origin));
+	}
+
+	_FORCE_INLINE_ void set_render_reference_frame(const Transform3D &p_reference_frame) {
+		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
+		RenderingServer *rendering_server = RenderingServer::get_singleton();
+		ERR_FAIL_NULL(rendering_server);
+
+		rendering_server->call_on_render_thread(callable_mp_static(&XRServer::_set_render_reference_frame).bind(p_reference_frame));
+	}
 
 protected:
 	static XRServer *singleton;
 
 	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	static void _bind_compatibility_methods();
+	void _add_tracker_bind_compat_90645(const Ref<XRPositionalTracker> &p_tracker);
+	void _remove_tracker_bind_compat_90645(const Ref<XRPositionalTracker> &p_tracker);
+	Ref<XRPositionalTracker> _get_tracker_bind_compat_90645(const StringName &p_name) const;
+#endif
 
 public:
 	static XRMode get_xr_mode();
@@ -174,13 +216,13 @@ public:
 	void set_primary_interface(const Ref<XRInterface> &p_primary_interface);
 
 	/*
-		Our trackers are objects that expose the orientation and position of physical devices such as controller, anchor points, etc.
+		Our trackers are objects that expose tracked information about physical objects such as controller, anchor points, faces, hands etc.
 		They are created and managed by our active AR/VR interfaces.
 	*/
-	void add_tracker(Ref<XRPositionalTracker> p_tracker);
-	void remove_tracker(Ref<XRPositionalTracker> p_tracker);
+	void add_tracker(const Ref<XRTracker> &p_tracker);
+	void remove_tracker(const Ref<XRTracker> &p_tracker);
 	Dictionary get_trackers(int p_tracker_types);
-	Ref<XRPositionalTracker> get_tracker(const StringName &p_name) const;
+	Ref<XRTracker> get_tracker(const StringName &p_name) const;
 
 	/*
 		We don't know which trackers and actions will existing during runtime but we can request suggested names from our interfaces to help our IDE UI.
@@ -188,30 +230,6 @@ public:
 	PackedStringArray get_suggested_tracker_names() const;
 	PackedStringArray get_suggested_pose_names(const StringName &p_tracker_name) const;
 	// Q: Should we add get_suggested_input_names and get_suggested_haptic_names even though we don't use them for the IDE?
-
-	/*
-		Hand trackers are objects that expose the tracked joints of a hand.
-	*/
-	void add_hand_tracker(const StringName &p_tracker_name, Ref<XRHandTracker> p_hand_tracker);
-	void remove_hand_tracker(const StringName &p_tracker_name);
-	Dictionary get_hand_trackers() const;
-	Ref<XRHandTracker> get_hand_tracker(const StringName &p_tracker_name) const;
-
-	/*
-		Face trackers are objects that expose the tracked blend shapes of a face.
-	 */
-	void add_face_tracker(const StringName &p_tracker_name, Ref<XRFaceTracker> p_face_tracker);
-	void remove_face_tracker(const StringName &p_tracker_name);
-	Dictionary get_face_trackers() const;
-	Ref<XRFaceTracker> get_face_tracker(const StringName &p_tracker_name) const;
-
-	/*
-		Body trackers are objects that expose the tracked joints of a body.
-	 */
-	void add_body_tracker(const StringName &p_tracker_name, Ref<XRBodyTracker> p_face_tracker);
-	void remove_body_tracker(const StringName &p_tracker_name);
-	Dictionary get_body_trackers() const;
-	Ref<XRBodyTracker> get_body_tracker(const StringName &p_tracker_name) const;
 
 	// Process is called before we handle our physics process and game process. This is where our interfaces will update controller data and such.
 	void _process();

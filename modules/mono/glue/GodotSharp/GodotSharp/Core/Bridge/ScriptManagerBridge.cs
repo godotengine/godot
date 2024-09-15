@@ -241,11 +241,17 @@ namespace Godot.Bridge
 
             if (outIconPath != null)
             {
-                var iconAttr = scriptType.GetCustomAttributes(inherit: false)
+                IconAttribute? iconAttr = scriptType.GetCustomAttributes(inherit: false)
                     .OfType<IconAttribute>()
                     .FirstOrDefault();
 
-                *outIconPath = Marshaling.ConvertStringToNative(iconAttr?.Path);
+                if (!string.IsNullOrEmpty(iconAttr?.Path))
+                {
+                    string iconPath = iconAttr.Path.IsAbsolutePath()
+                        ? iconAttr.Path.SimplifyPath()
+                        : scriptPathStr.GetBaseDir().PathJoin(iconAttr.Path).SimplifyPath();
+                    *outIconPath = Marshaling.ConvertStringToNative(iconPath);
+                }
             }
 
             if (outBaseType != null)
@@ -427,10 +433,11 @@ namespace Godot.Bridge
             // This method may be called before initialization.
             if (NativeFuncs.godotsharp_dotnet_module_is_initialized().ToBool() && Engine.IsEditorHint())
             {
-                foreach (var scriptPath in _pathTypeBiMap.Paths)
+                if (_pathTypeBiMap.Paths.Count > 0)
                 {
-                    using godot_string nativeScriptPath = Marshaling.ConvertStringToNative(scriptPath);
-                    NativeFuncs.godotsharp_internal_editor_file_system_update_file(nativeScriptPath);
+                    string[] scriptPaths = _pathTypeBiMap.Paths.ToArray();
+                    using godot_packed_string_array scriptPathsNative = Marshaling.ConvertSystemArrayToNativePackedStringArray(scriptPaths);
+                    NativeFuncs.godotsharp_internal_editor_file_system_update_files(scriptPathsNative);
                 }
             }
         }
@@ -798,17 +805,17 @@ namespace Godot.Bridge
 
                 GetScriptTypeInfo(scriptType, outTypeInfo);
 
+                Type native = GodotObject.InternalGetClassNativeBase(scriptType);
+
                 // Methods
 
                 // Performance is not critical here as this will be replaced with source generators.
                 using var methods = new Collections.Array();
 
                 Type? top = scriptType;
-                Type native = GodotObject.InternalGetClassNativeBase(top);
-
-                while (top != null && top != native)
+                if (scriptType != native)
                 {
-                    var methodList = GetMethodListForType(top);
+                    var methodList = GetMethodListForType(scriptType);
 
                     if (methodList != null)
                     {
@@ -859,8 +866,6 @@ namespace Godot.Bridge
                             methods.Add(methodInfo);
                         }
                     }
-
-                    top = top.BaseType;
                 }
 
                 *outMethodsDest = NativeFuncs.godotsharp_array_new_copy(
@@ -912,11 +917,9 @@ namespace Godot.Bridge
                 // Performance is not critical here as this will be replaced with source generators.
                 using var signals = new Collections.Dictionary();
 
-                top = scriptType;
-
-                while (top != null && top != native)
+                if (scriptType != native)
                 {
-                    var signalList = GetSignalListForType(top);
+                    var signalList = GetSignalListForType(scriptType);
 
                     if (signalList != null)
                     {
@@ -951,8 +954,6 @@ namespace Godot.Bridge
                             signals.Add(signalName, signalParams);
                         }
                     }
-
-                    top = top.BaseType;
                 }
 
                 *outEventSignalsDest = NativeFuncs.godotsharp_dictionary_new_copy(

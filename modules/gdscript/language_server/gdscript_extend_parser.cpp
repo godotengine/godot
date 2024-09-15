@@ -510,7 +510,7 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 	node_stack.push_back(p_func->body);
 
 	while (!node_stack.is_empty()) {
-		GDScriptParser::Node *node = node_stack[0];
+		GDScriptParser::Node *node = node_stack.front()->get();
 		node_stack.pop_front();
 
 		switch (node->type) {

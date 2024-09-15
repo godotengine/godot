@@ -133,7 +133,7 @@ void TriangleMesh::create(const Vector<Vector3> &p_faces, const Vector<int32_t> 
 
 			for (int j = 0; j < 3; j++) {
 				int vidx = -1;
-				Vector3 vs = v[j].snapped(Vector3(0.0001, 0.0001, 0.0001));
+				Vector3 vs = v[j].snappedf(0.0001);
 				HashMap<Vector3, int>::Iterator E = db.find(vs);
 				if (E) {
 					vidx = E->value;

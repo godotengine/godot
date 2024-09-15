@@ -63,8 +63,9 @@ static bool axis_value_is_outside_axis_range (hb_tag_t axis_tag, float axis_valu
   if (!user_axes_location->has (axis_tag))
     return false;
 
+  double axis_value_double = static_cast<double>(axis_value);
   Triple axis_range = user_axes_location->get (axis_tag);
-  return (axis_value < axis_range.minimum || axis_value > axis_range.maximum);
+  return (axis_value_double < axis_range.minimum || axis_value_double > axis_range.maximum);
 }
 
 struct StatAxisRecord

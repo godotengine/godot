@@ -30,7 +30,6 @@
 
 #include "gradient_texture.h"
 
-#include "core/core_string_names.h"
 #include "core/math/geometry_2d.h"
 
 GradientTexture1D::GradientTexture1D() {
@@ -137,6 +136,7 @@ void GradientTexture1D::_update() {
 			texture = RS::get_singleton()->texture_2d_create(image);
 		}
 	}
+	RS::get_singleton()->texture_set_path(texture, get_path());
 }
 
 void GradientTexture1D::set_width(int p_width) {
@@ -276,6 +276,7 @@ void GradientTexture2D::_update() {
 	} else {
 		texture = RS::get_singleton()->texture_2d_create(image);
 	}
+	RS::get_singleton()->texture_set_path(texture, get_path());
 }
 
 float GradientTexture2D::_get_gradient_offset_at(int x, int y) const {

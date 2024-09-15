@@ -47,6 +47,10 @@ class ThemeContext;
 class Control : public CanvasItem {
 	GDCLASS(Control, CanvasItem);
 
+#ifdef TOOLS_ENABLED
+	bool saving = false;
+#endif
+
 public:
 	enum Anchor {
 		ANCHOR_BEGIN = 0,
@@ -343,10 +347,6 @@ protected:
 
 	void _notification(int p_notification);
 	static void _bind_methods();
-
-#ifndef DISABLE_DEPRECATED
-	static void _bind_compatibility_methods();
-#endif
 
 	// Exposed virtual methods.
 

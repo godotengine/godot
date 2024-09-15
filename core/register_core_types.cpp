@@ -33,7 +33,6 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/core_bind.h"
-#include "core/core_string_names.h"
 #include "core/crypto/aes_context.h"
 #include "core/crypto/crypto.h"
 #include "core/crypto/hashing_context.h"
@@ -80,6 +79,7 @@
 #include "core/os/time.h"
 #include "core/string/optimized_translation.h"
 #include "core/string/translation.h"
+#include "core/string/translation_server.h"
 
 static Ref<ResourceFormatSaverBinary> resource_saver_binary;
 static Ref<ResourceFormatLoaderBinary> resource_loader_binary;
@@ -106,8 +106,6 @@ static Time *_time = nullptr;
 
 static core_bind::Geometry2D *_geometry_2d = nullptr;
 static core_bind::Geometry3D *_geometry_3d = nullptr;
-
-static WorkerThreadPool *worker_thread_pool = nullptr;
 
 extern Mutex _global_mutex;
 
@@ -297,8 +295,6 @@ void register_core_types() {
 	GDREGISTER_NATIVE_STRUCT(AudioFrame, "float left;float right");
 	GDREGISTER_NATIVE_STRUCT(ScriptLanguageExtensionProfilingInfo, "StringName signature;uint64_t call_count;uint64_t total_time;uint64_t self_time");
 
-	worker_thread_pool = memnew(WorkerThreadPool);
-
 	OS::get_singleton()->benchmark_end_measure("Core", "Register Types");
 }
 
@@ -349,7 +345,7 @@ void register_core_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Time", Time::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("GDExtensionManager", GDExtensionManager::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceUID", ResourceUID::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("WorkerThreadPool", worker_thread_pool));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("WorkerThreadPool", WorkerThreadPool::get_singleton()));
 
 	OS::get_singleton()->benchmark_end_measure("Core", "Register Singletons");
 }
@@ -381,8 +377,6 @@ void unregister_core_types() {
 	OS::get_singleton()->benchmark_begin_measure("Core", "Unregister Types");
 
 	// Destroy singletons in reverse order to ensure dependencies are not broken.
-
-	memdelete(worker_thread_pool);
 
 	memdelete(_engine_debugger);
 	memdelete(_marshalls);
@@ -445,8 +439,8 @@ void unregister_core_types() {
 
 	unregister_global_constants();
 
-	ClassDB::cleanup();
 	ResourceCache::clear();
+	ClassDB::cleanup();
 	CoreStringNames::free();
 	StringName::cleanup();
 

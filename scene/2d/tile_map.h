@@ -63,8 +63,6 @@ private:
 	// A compatibility enum to specify how is the data if formatted.
 	mutable TileMapDataFormat format = TileMapDataFormat::TILE_MAP_DATA_FORMAT_3;
 
-	static constexpr float FP_ADJUST = 0.00001;
-
 	// Properties.
 	Ref<TileSet> tile_set;
 	int rendering_quadrant_size = 16;
@@ -123,8 +121,6 @@ public:
 	void set_rendering_quadrant_size(int p_size);
 	int get_rendering_quadrant_size() const;
 
-	static void draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame = -1, Color p_modulation = Color(1.0, 1.0, 1.0, 1.0), const TileData *p_tile_data_override = nullptr, real_t p_normalized_animation_offset = 0.0);
-
 	// Accessors.
 	void set_tileset(const Ref<TileSet> &p_tileset);
 	Ref<TileSet> get_tileset() const;
@@ -170,6 +166,10 @@ public:
 	int get_cell_alternative_tile(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
 	// Helper method to make accessing the data easier.
 	TileData *get_cell_tile_data(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
+
+	bool is_cell_flipped_h(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
+	bool is_cell_flipped_v(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
+	bool is_cell_transposed(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
 
 	// Patterns.
 	Ref<TileMapPattern> get_pattern(int p_layer, TypedArray<Vector2i> p_coords_array);

@@ -521,8 +521,7 @@ void SSEffects::downsample_depth(Ref<RenderSceneBuffersRD> p_render_buffers, uin
 	RD::get_singleton()->compute_list_set_push_constant(compute_list, &ss_effects.downsample_push_constant, sizeof(SSEffectsDownsamplePushConstant));
 
 	if (use_half_size) {
-		size.x = MAX(1, size.x >> 1);
-		size.y = MAX(1, size.y >> 1);
+		size = Size2i(size.x >> 1, size.y >> 1).maxi(1);
 	}
 
 	RD::get_singleton()->compute_list_dispatch_threads(compute_list, size.x, size.y, 1);

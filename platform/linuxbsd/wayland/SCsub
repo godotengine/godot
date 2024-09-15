@@ -152,6 +152,16 @@ env.WAYLAND_API_CODE(
 )
 
 env.WAYLAND_API_HEADER(
+    target="protocol/text_input.gen.h",
+    source="#thirdparty/wayland-protocols/unstable/text-input/text-input-unstable-v3.xml",
+)
+
+env.WAYLAND_API_CODE(
+    target="protocol/text_input.gen.c",
+    source="#thirdparty/wayland-protocols/unstable/text-input/text-input-unstable-v3.xml",
+)
+
+env.WAYLAND_API_HEADER(
     target="protocol/xdg_foreign.gen.h",
     source="#thirdparty/wayland-protocols/unstable/xdg-foreign/xdg-foreign-unstable-v1.xml",
 )
@@ -175,6 +185,7 @@ source_files = [
     "protocol/primary_selection.gen.c",
     "protocol/idle_inhibit.gen.c",
     "protocol/tablet.gen.c",
+    "protocol/text_input.gen.c",
     "display_server_wayland.cpp",
     "wayland_thread.cpp",
     "key_mapping_xkb.cpp",
@@ -199,6 +210,7 @@ if env["vulkan"]:
 
 if env["opengl3"]:
     source_files.append("egl_manager_wayland.cpp")
+    source_files.append("egl_manager_wayland_gles.cpp")
 
 objects = []
 

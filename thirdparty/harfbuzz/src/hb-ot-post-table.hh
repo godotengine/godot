@@ -116,7 +116,7 @@ struct post
     Triple *axis_range;
     if (c->plan->user_axes_location.has (HB_TAG ('s','l','n','t'), &axis_range))
     {
-      float italic_angle = hb_max (-90.f, hb_min (axis_range->middle, 90.f));
+      float italic_angle = hb_max (-90.0, hb_min (axis_range->middle, 90.0));
       if (post_prime->italicAngle.to_float () != italic_angle)
         post_prime->italicAngle.set_float (italic_angle);
     }

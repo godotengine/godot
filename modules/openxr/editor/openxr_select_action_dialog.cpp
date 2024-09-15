@@ -38,7 +38,7 @@ void OpenXRSelectActionDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			scroll->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
+			scroll->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 		} break;
 	}
 }
@@ -97,7 +97,7 @@ void OpenXRSelectActionDialog::open() {
 			String action_name = action->get_name_with_set();
 			action_button->set_flat(true);
 			action_button->set_text(action->get_name() + ": " + action->get_localized_name());
-			action_button->connect("pressed", callable_mp(this, &OpenXRSelectActionDialog::_on_select_action).bind(action_name));
+			action_button->connect(SceneStringName(pressed), callable_mp(this, &OpenXRSelectActionDialog::_on_select_action).bind(action_name));
 			action_hb->add_child(action_button);
 
 			action_buttons[action_name] = action_button->get_path();

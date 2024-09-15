@@ -77,10 +77,11 @@
 				Returns [code]true[/code] if this input event has been canceled.
 			</description>
 		</method>
-		<method name="is_echo" qualifiers="const">
+		<method name="is_echo" qualifiers="const" keywords="is_repeat">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if this input event is an echo event (only for events of type [InputEventKey]). Any other event type returns [code]false[/code].
+				Returns [code]true[/code] if this input event is an echo event (only for events of type [InputEventKey]). An echo event is a repeated key event sent when the user is holding down the key. Any other event type returns [code]false[/code].
+				[b]Note:[/b] The rate at which echo events are sent is typically around 20 events per second (after holding down the key for roughly half a second). However, the key repeat delay/speed can be changed by the user or disabled entirely in the operating system settings. To ensure your project works correctly on all configurations, do not assume the user has a specific key repeat configuration in your project's behavior.
 			</description>
 		</method>
 		<method name="is_match" qualifiers="const">

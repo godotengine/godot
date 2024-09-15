@@ -48,6 +48,7 @@ class AnimationMixer : public Node {
 #endif // TOOLS_ENABLED
 
 	bool reset_on_save = true;
+	bool is_GDVIRTUAL_CALL_post_process_key_value = true;
 
 public:
 	enum AnimationCallbackModeProcess {
@@ -126,7 +127,7 @@ protected:
 	/* ---- General settings for animation ---- */
 	AnimationCallbackModeProcess callback_mode_process = ANIMATION_CALLBACK_MODE_PROCESS_IDLE;
 	AnimationCallbackModeMethod callback_mode_method = ANIMATION_CALLBACK_MODE_METHOD_DEFERRED;
-	AnimationCallbackModeDiscrete callback_mode_discrete = ANIMATION_CALLBACK_MODE_DISCRETE_DOMINANT;
+	AnimationCallbackModeDiscrete callback_mode_discrete = ANIMATION_CALLBACK_MODE_DISCRETE_RECESSIVE;
 	int audio_max_polyphony = 32;
 	NodePath root_node;
 
@@ -224,7 +225,7 @@ protected:
 		Vector<StringName> subpath;
 
 		// TODO: There are many boolean, can be packed into one integer.
-		bool init_use_continuous = false;
+		bool is_init = false;
 		bool use_continuous = false;
 		bool use_discrete = false;
 		bool is_using_angle = false;
@@ -237,7 +238,7 @@ protected:
 				init_value(p_other.init_value),
 				value(p_other.value),
 				subpath(p_other.subpath),
-				init_use_continuous(p_other.init_use_continuous),
+				is_init(p_other.is_init),
 				use_continuous(p_other.use_continuous),
 				use_discrete(p_other.use_discrete),
 				is_using_angle(p_other.is_using_angle),
@@ -279,12 +280,15 @@ protected:
 		Ref<AudioStreamPolyphonic> audio_stream;
 		Ref<AudioStreamPlaybackPolyphonic> audio_stream_playback;
 		HashMap<ObjectID, PlayingAudioTrackInfo> playing_streams; // Key is Animation resource ObjectID.
+		AudioServer::PlaybackType playback_type;
+		StringName bus;
 
 		TrackCacheAudio(const TrackCacheAudio &p_other) :
 				TrackCache(p_other),
 				audio_stream(p_other.audio_stream),
 				audio_stream_playback(p_other.audio_stream_playback),
-				playing_streams(p_other.playing_streams) {}
+				playing_streams(p_other.playing_streams),
+				playback_type(p_other.playback_type) {}
 
 		TrackCacheAudio() {
 			type = Animation::TYPE_AUDIO;
@@ -312,6 +316,9 @@ protected:
 	void _clear_playing_caches();
 	void _init_root_motion_cache();
 	bool _update_caches();
+
+	/* ---- Audio ---- */
+	AudioServer::PlaybackType playback_type;
 
 	/* ---- Blending processor ---- */
 	LocalVector<AnimationInstance> animation_instances;
@@ -425,6 +432,7 @@ public:
 	void set_callback_mode_discrete(AnimationCallbackModeDiscrete p_mode);
 	AnimationCallbackModeDiscrete get_callback_mode_discrete() const;
 
+	/* ---- Audio ---- */
 	void set_audio_max_polyphony(int p_audio_max_polyphony);
 	int get_audio_max_polyphony() const;
 

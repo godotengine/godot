@@ -1,0 +1,4 @@
+GDTEST_OK
+setting vec from (0, 0) to (2, 0)
+setting vec from (0, 0) to (0, 2)
+vec is (0, 0)

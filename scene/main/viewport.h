@@ -213,6 +213,13 @@ public:
 		VRS_MAX
 	};
 
+	enum VRSUpdateMode {
+		VRS_UPDATE_DISABLED,
+		VRS_UPDATE_ONCE,
+		VRS_UPDATE_ALWAYS,
+		VRS_UPDATE_MAX
+	};
+
 private:
 	friend class ViewportTexture;
 
@@ -333,19 +340,19 @@ private:
 		Window *window = nullptr;
 		RID canvas_item;
 		Rect2i parent_safe_rect;
+		bool pending_window_update = false;
 	};
 
 	// VRS
 	VRSMode vrs_mode = VRS_DISABLED;
+	VRSUpdateMode vrs_update_mode = VRS_UPDATE_ONCE;
 	Ref<Texture2D> vrs_texture;
 
 	struct GUI {
-		bool forced_mouse_focus = false; //used for menu buttons
 		bool mouse_in_viewport = false;
 		bool key_event_accepted = false;
 		HashMap<int, ObjectID> touch_focus;
 		Control *mouse_focus = nullptr;
-		Control *last_mouse_focus = nullptr;
 		Control *mouse_click_grabber = nullptr;
 		BitField<MouseButtonMask> mouse_focus_mask;
 		Control *key_focus = nullptr;
@@ -468,7 +475,7 @@ private:
 	void _propagate_world_2d_changed(Node *p_node);
 
 protected:
-	void _set_size(const Size2i &p_size, const Size2i &p_size_2d_override, bool p_allocated);
+	bool _set_size(const Size2i &p_size, const Size2i &p_size_2d_override, bool p_allocated);
 
 	Size2i _get_size() const;
 	Size2i _get_size_2d_override() const;
@@ -616,6 +623,7 @@ public:
 
 	bool gui_is_dragging() const;
 	bool gui_is_drag_successful() const;
+	void gui_cancel_drag();
 
 	Control *gui_find_control(const Point2 &p_global);
 
@@ -636,6 +644,9 @@ public:
 	void set_vrs_mode(VRSMode p_vrs_mode);
 	VRSMode get_vrs_mode() const;
 
+	void set_vrs_update_mode(VRSUpdateMode p_vrs_update_mode);
+	VRSUpdateMode get_vrs_update_mode() const;
+
 	void set_vrs_texture(Ref<Texture2D> p_texture);
 	Ref<Texture2D> get_vrs_texture() const;
 
@@ -649,8 +660,6 @@ public:
 
 	Viewport *get_parent_viewport() const;
 	Window *get_base_window() const;
-
-	void pass_mouse_focus_to(Viewport *p_viewport, Control *p_control);
 
 	void set_canvas_cull_mask(uint32_t p_layers);
 	uint32_t get_canvas_cull_mask() const;
@@ -844,6 +853,7 @@ VARIANT_ENUM_CAST(Viewport::DebugDraw);
 VARIANT_ENUM_CAST(Viewport::SDFScale);
 VARIANT_ENUM_CAST(Viewport::SDFOversize);
 VARIANT_ENUM_CAST(Viewport::VRSMode);
+VARIANT_ENUM_CAST(Viewport::VRSUpdateMode);
 VARIANT_ENUM_CAST(SubViewport::ClearMode);
 VARIANT_ENUM_CAST(Viewport::RenderInfo);
 VARIANT_ENUM_CAST(Viewport::RenderInfoType);

@@ -104,6 +104,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	void init_autoloads();
 	void update_autoload();
 	bool autoload_add(const String &p_name, const String &p_path);
 	void autoload_remove(const String &p_name);

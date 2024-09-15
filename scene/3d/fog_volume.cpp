@@ -73,7 +73,7 @@ bool FogVolume::_get(const StringName &p_name, Variant &r_property) const {
 
 void FogVolume::set_size(const Vector3 &p_size) {
 	size = p_size;
-	size = size.max(Vector3());
+	size = size.maxf(0);
 	RS::get_singleton()->fog_volume_set_size(_get_volume(), size);
 	update_gizmos();
 }
@@ -116,7 +116,7 @@ AABB FogVolume::get_aabb() const {
 }
 
 PackedStringArray FogVolume::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
 
 	Ref<Environment> environment = get_viewport()->find_world_3d()->get_environment();
 

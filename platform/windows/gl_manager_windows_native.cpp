@@ -76,6 +76,8 @@ static String format_error_message(DWORD id) {
 const int OGL_THREAD_CONTROL_ID = 0x20C1221E;
 const int OGL_THREAD_CONTROL_DISABLE = 0x00000002;
 const int OGL_THREAD_CONTROL_ENABLE = 0x00000001;
+const int VRR_MODE_ID = 0x1194F158;
+const int VRR_MODE_FULLSCREEN_ONLY = 0x1;
 
 typedef int(__cdecl *NvAPI_Initialize_t)();
 typedef int(__cdecl *NvAPI_Unload_t)();
@@ -88,7 +90,8 @@ typedef int(__cdecl *NvAPI_DRS_CreateApplication_t)(NvDRSSessionHandle, NvDRSPro
 typedef int(__cdecl *NvAPI_DRS_SaveSettings_t)(NvDRSSessionHandle);
 typedef int(__cdecl *NvAPI_DRS_SetSetting_t)(NvDRSSessionHandle, NvDRSProfileHandle, NVDRS_SETTING *);
 typedef int(__cdecl *NvAPI_DRS_FindProfileByName_t)(NvDRSSessionHandle, NvAPI_UnicodeString, NvDRSProfileHandle *);
-typedef int(__cdecl *NvAPI_DRS_FindApplicationByName_t)(NvDRSSessionHandle, NvAPI_UnicodeString, NvDRSProfileHandle *, NVDRS_APPLICATION *);
+typedef int(__cdecl *NvAPI_DRS_GetApplicationInfo_t)(NvDRSSessionHandle, NvDRSProfileHandle, NvAPI_UnicodeString, NVDRS_APPLICATION *);
+typedef int(__cdecl *NvAPI_DRS_DeleteProfile_t)(NvDRSSessionHandle, NvDRSProfileHandle);
 NvAPI_GetErrorMessage_t NvAPI_GetErrorMessage__;
 
 static bool nvapi_err_check(const char *msg, int status) {
@@ -103,10 +106,12 @@ static bool nvapi_err_check(const char *msg, int status) {
 	return true;
 }
 
-// On windows we have to disable threaded optimization when using NVIDIA graphics cards
-// to avoid stuttering, see https://stackoverflow.com/questions/36959508/nvidia-graphics-driver-causing-noticeable-frame-stuttering/37632948
-// also see https://github.com/Ryujinx/Ryujinx/blob/master/src/Ryujinx.Common/GraphicsDriver/NVThreadedOptimization.cs
-void GLManagerNative_Windows::_nvapi_disable_threaded_optimization() {
+// On windows we have to customize the NVIDIA application profile:
+// * disable threaded optimization when using NVIDIA cards to avoid stuttering, see
+//   https://stackoverflow.com/questions/36959508/nvidia-graphics-driver-causing-noticeable-frame-stuttering/37632948
+//   https://github.com/Ryujinx/Ryujinx/blob/master/src/Ryujinx.Common/GraphicsDriver/NVThreadedOptimization.cs
+// * disable G-SYNC in windowed mode, as it results in unstable editor refresh rates
+void GLManagerNative_Windows::_nvapi_setup_profile() {
 	HMODULE nvapi = nullptr;
 #ifdef _WIN64
 	nvapi = LoadLibraryA("nvapi64.dll");
@@ -139,7 +144,8 @@ void GLManagerNative_Windows::_nvapi_disable_threaded_optimization() {
 	NvAPI_DRS_SaveSettings_t NvAPI_DRS_SaveSettings = (NvAPI_DRS_SaveSettings_t)NvAPI_QueryInterface(0xFCBC7E14);
 	NvAPI_DRS_SetSetting_t NvAPI_DRS_SetSetting = (NvAPI_DRS_SetSetting_t)NvAPI_QueryInterface(0x577DD202);
 	NvAPI_DRS_FindProfileByName_t NvAPI_DRS_FindProfileByName = (NvAPI_DRS_FindProfileByName_t)NvAPI_QueryInterface(0x7E4A9A0B);
-	NvAPI_DRS_FindApplicationByName_t NvAPI_DRS_FindApplicationByName = (NvAPI_DRS_FindApplicationByName_t)NvAPI_QueryInterface(0xEEE566B2);
+	NvAPI_DRS_GetApplicationInfo_t NvAPI_DRS_GetApplicationInfo = (NvAPI_DRS_GetApplicationInfo_t)NvAPI_QueryInterface(0xED1F8C69);
+	NvAPI_DRS_DeleteProfile_t NvAPI_DRS_DeleteProfile = (NvAPI_DRS_DeleteProfile_t)NvAPI_QueryInterface(0x17093206);
 
 	if (!nvapi_err_check("NVAPI: Init failed", NvAPI_Initialize())) {
 		return;
@@ -165,23 +171,45 @@ void GLManagerNative_Windows::_nvapi_disable_threaded_optimization() {
 	}
 
 	String app_executable_name = OS::get_singleton()->get_executable_path().get_file();
-	String app_friendly_name = GLOBAL_GET("application/config/name");
+	String app_profile_name = GLOBAL_GET("application/config/name");
 	// We need a name anyways, so let's use the engine name if an application name is not available
 	// (this is used mostly by the Project Manager)
-	if (app_friendly_name.is_empty()) {
-		app_friendly_name = VERSION_NAME;
+	if (app_profile_name.is_empty()) {
+		app_profile_name = VERSION_NAME;
 	}
-	String app_profile_name = app_friendly_name + " Nvidia Profile";
+	String old_profile_name = app_profile_name + " Nvidia Profile";
 	Char16String app_profile_name_u16 = app_profile_name.utf16();
+	Char16String old_profile_name_u16 = old_profile_name.utf16();
 	Char16String app_executable_name_u16 = app_executable_name.utf16();
-	Char16String app_friendly_name_u16 = app_friendly_name.utf16();
+
+	// A previous error in app creation logic could result in invalid profiles,
+	// clean these if they exist before proceeding.
+	NvDRSProfileHandle old_profile_handle;
+
+	int old_status = NvAPI_DRS_FindProfileByName(session_handle, (NvU16 *)(old_profile_name_u16.ptrw()), &old_profile_handle);
+
+	if (old_status == 0) {
+		print_verbose("NVAPI: Deleting old profile...");
+
+		if (!nvapi_err_check("NVAPI: Error deleting old profile", NvAPI_DRS_DeleteProfile(session_handle, old_profile_handle))) {
+			NvAPI_DRS_DestroySession(session_handle);
+			NvAPI_Unload();
+			return;
+		}
+
+		if (!nvapi_err_check("NVAPI: Error deleting old profile", NvAPI_DRS_SaveSettings(session_handle))) {
+			NvAPI_DRS_DestroySession(session_handle);
+			NvAPI_Unload();
+			return;
+		}
+	}
 
 	NvDRSProfileHandle profile_handle = nullptr;
 
 	int profile_status = NvAPI_DRS_FindProfileByName(session_handle, (NvU16 *)(app_profile_name_u16.ptrw()), &profile_handle);
 
 	if (profile_status != 0) {
-		print_verbose("NVAPI: Profile not found, creating....");
+		print_verbose("NVAPI: Profile not found, creating...");
 
 		NVDRS_PROFILE profile_info;
 		profile_info.version = NVDRS_PROFILE_VER;
@@ -195,22 +223,18 @@ void GLManagerNative_Windows::_nvapi_disable_threaded_optimization() {
 		}
 	}
 
-	NvDRSProfileHandle app_profile_handle = nullptr;
 	NVDRS_APPLICATION_V4 app;
 	app.version = NVDRS_APPLICATION_VER_V4;
 
-	int app_status = NvAPI_DRS_FindApplicationByName(session_handle, (NvU16 *)(app_executable_name_u16.ptrw()), &app_profile_handle, &app);
+	int app_status = NvAPI_DRS_GetApplicationInfo(session_handle, profile_handle, (NvU16 *)(app_executable_name_u16.ptrw()), &app);
 
 	if (app_status != 0) {
-		print_verbose("NVAPI: Application not found, adding to profile...");
+		print_verbose("NVAPI: Application not found in profile, creating...");
 
 		app.isPredefined = 0;
-		app.isMetro = 1;
-		app.isCommandLine = 1;
 		memcpy(app.appName, app_executable_name_u16.get_data(), sizeof(char16_t) * app_executable_name_u16.size());
-		memcpy(app.userFriendlyName, app_friendly_name_u16.get_data(), sizeof(char16_t) * app_friendly_name_u16.size());
-		memcpy(app.launcher, L"", 1);
-		memcpy(app.fileInFolder, L"", 1);
+		memcpy(app.launcher, L"", sizeof(wchar_t));
+		memcpy(app.fileInFolder, L"", sizeof(wchar_t));
 
 		if (!nvapi_err_check("NVAPI: Error creating application", NvAPI_DRS_CreateApplication(session_handle, profile_handle, &app))) {
 			NvAPI_DRS_DestroySession(session_handle);
@@ -219,21 +243,29 @@ void GLManagerNative_Windows::_nvapi_disable_threaded_optimization() {
 		}
 	}
 
-	NVDRS_SETTING setting;
-	setting.version = NVDRS_SETTING_VER;
-	setting.settingId = OGL_THREAD_CONTROL_ID;
-	setting.settingType = NVDRS_DWORD_TYPE;
-	setting.settingLocation = NVDRS_CURRENT_PROFILE_LOCATION;
-	setting.isCurrentPredefined = 0;
-	setting.isPredefinedValid = 0;
+	NVDRS_SETTING ogl_thread_control_setting = {};
+	ogl_thread_control_setting.version = NVDRS_SETTING_VER;
+	ogl_thread_control_setting.settingId = OGL_THREAD_CONTROL_ID;
+	ogl_thread_control_setting.settingType = NVDRS_DWORD_TYPE;
 	int thread_control_val = OGL_THREAD_CONTROL_DISABLE;
 	if (!GLOBAL_GET("rendering/gl_compatibility/nvidia_disable_threaded_optimization")) {
 		thread_control_val = OGL_THREAD_CONTROL_ENABLE;
 	}
-	setting.u32CurrentValue = thread_control_val;
-	setting.u32PredefinedValue = thread_control_val;
+	ogl_thread_control_setting.u32CurrentValue = thread_control_val;
 
-	if (!nvapi_err_check("NVAPI: Error calling NvAPI_DRS_SetSetting", NvAPI_DRS_SetSetting(session_handle, profile_handle, &setting))) {
+	if (!nvapi_err_check("NVAPI: Error calling NvAPI_DRS_SetSetting", NvAPI_DRS_SetSetting(session_handle, profile_handle, &ogl_thread_control_setting))) {
+		NvAPI_DRS_DestroySession(session_handle);
+		NvAPI_Unload();
+		return;
+	}
+
+	NVDRS_SETTING vrr_mode_setting = {};
+	vrr_mode_setting.version = NVDRS_SETTING_VER;
+	vrr_mode_setting.settingId = VRR_MODE_ID;
+	vrr_mode_setting.settingType = NVDRS_DWORD_TYPE;
+	vrr_mode_setting.u32CurrentValue = VRR_MODE_FULLSCREEN_ONLY;
+
+	if (!nvapi_err_check("NVAPI: Error calling NvAPI_DRS_SetSetting", NvAPI_DRS_SetSetting(session_handle, profile_handle, &vrr_mode_setting))) {
 		NvAPI_DRS_DestroySession(session_handle);
 		NvAPI_Unload();
 		return;
@@ -244,11 +276,14 @@ void GLManagerNative_Windows::_nvapi_disable_threaded_optimization() {
 		NvAPI_Unload();
 		return;
 	}
+
 	if (thread_control_val == OGL_THREAD_CONTROL_DISABLE) {
 		print_verbose("NVAPI: Disabled OpenGL threaded optimization successfully");
 	} else {
 		print_verbose("NVAPI: Enabled OpenGL threaded optimization successfully");
 	}
+	print_verbose("NVAPI: Disabled G-SYNC for windowed mode successfully");
+
 	NvAPI_DRS_DestroySession(session_handle);
 }
 
@@ -473,7 +508,7 @@ void GLManagerNative_Windows::swap_buffers() {
 }
 
 Error GLManagerNative_Windows::initialize() {
-	_nvapi_disable_threaded_optimization();
+	_nvapi_setup_profile();
 	return OK;
 }
 
@@ -488,10 +523,10 @@ void GLManagerNative_Windows::set_use_vsync(DisplayServer::WindowID p_window_id,
 		win.use_vsync = p_use;
 
 		if (!wglSwapIntervalEXT(p_use ? 1 : 0)) {
-			WARN_PRINT("Could not set V-Sync mode.");
+			WARN_PRINT_ONCE("Could not set V-Sync mode, as changing V-Sync mode is not supported by the graphics driver.");
 		}
 	} else {
-		WARN_PRINT("Could not set V-Sync mode. V-Sync is not supported.");
+		WARN_PRINT_ONCE("Could not set V-Sync mode, as changing V-Sync mode is not supported by the graphics driver.");
 	}
 }
 

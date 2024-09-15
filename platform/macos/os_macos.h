@@ -85,7 +85,7 @@ public:
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 
-	virtual Error open_dynamic_library(const String &p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr, bool p_generate_temp_files = false) override;
+	virtual Error open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data = nullptr) override;
 
 	virtual MainLoop *get_main_loop() const override;
 
@@ -109,6 +109,7 @@ public:
 	virtual String get_executable_path() const override;
 	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) override;
 	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) override;
+	virtual bool is_process_running(const ProcessID &p_pid) const override;
 
 	virtual String get_unique_id() const override;
 	virtual String get_processor_name() const override;

@@ -309,7 +309,7 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 		params.load(p_params["data"]);
 		symbol = GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_symbol(params, item.label, item.kind == lsp::CompletionItemKind::Method || item.kind == lsp::CompletionItemKind::Function);
 
-	} else if (data.get_type() == Variant::STRING) {
+	} else if (data.is_string()) {
 		String query = data;
 
 		Vector<String> param_symbols = query.split(SYMBOL_SEPERATOR, false);
@@ -490,7 +490,7 @@ void GDScriptTextDocument::sync_script_content(const String &p_path, const Strin
 }
 
 void GDScriptTextDocument::show_native_symbol_in_editor(const String &p_symbol_id) {
-	ScriptEditor::get_singleton()->call_deferred(SNAME("_help_class_goto"), p_symbol_id);
+	callable_mp(ScriptEditor::get_singleton(), &ScriptEditor::goto_help).call_deferred(p_symbol_id);
 
 	DisplayServer::get_singleton()->window_move_to_foreground();
 }

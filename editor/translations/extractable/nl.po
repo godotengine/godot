@@ -19,14 +19,6 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.5-dev\n"
 
-msgid "Example: %s"
-msgstr "Voorbeeld: %s"
-
-msgid "%d item"
-msgid_plural "%d items"
-msgstr[0] "%d item"
-msgstr[1] "%d items"
-
 msgid "Add current color as a preset."
 msgstr "Huidige kleur als voorkeuze toevoegen."
 

@@ -86,6 +86,17 @@ static Quaternion _as_quaternion(const ufbx_quat &p_quat) {
 	return Quaternion(real_t(p_quat.x), real_t(p_quat.y), real_t(p_quat.z), real_t(p_quat.w));
 }
 
+static Transform3D _as_transform(const ufbx_transform &p_xform) {
+	Transform3D result;
+	result.origin = FBXDocument::_as_vec3(p_xform.translation);
+	result.basis.set_quaternion_scale(_as_quaternion(p_xform.rotation), FBXDocument::_as_vec3(p_xform.scale));
+	return result;
+}
+
+static real_t _relative_error(const Vector3 &p_a, const Vector3 &p_b) {
+	return p_a.distance_to(p_b) / MAX(p_a.length(), p_b.length());
+}
+
 static Color _material_color(const ufbx_material_map &p_map) {
 	if (p_map.value_components == 1) {
 		float r = float(p_map.value_real);
@@ -196,6 +207,26 @@ static uint32_t _decode_vertex_index(const Vector3 &p_vertex) {
 	return uint32_t(p_vertex.x) | uint32_t(p_vertex.y) << 16;
 }
 
+static ufbx_skin_deformer *_find_skin_deformer(ufbx_skin_cluster *p_cluster) {
+	for (const ufbx_connection &conn : p_cluster->element.connections_src) {
+		ufbx_skin_deformer *deformer = ufbx_as_skin_deformer(conn.dst);
+		if (deformer) {
+			return deformer;
+		}
+	}
+	return nullptr;
+}
+
+static String _find_element_name(ufbx_element *p_element) {
+	if (p_element->name.length > 0) {
+		return FBXDocument::_as_string(p_element->name);
+	} else if (p_element->instances.count > 0) {
+		return _find_element_name(&p_element->instances[0]->element);
+	} else {
+		return "";
+	}
+}
+
 struct ThreadPoolFBX {
 	struct Group {
 		ufbx_thread_pool_context ctx = {};
@@ -257,14 +288,8 @@ String FBXDocument::_gen_unique_name(HashSet<String> &unique_names, const String
 }
 
 String FBXDocument::_sanitize_animation_name(const String &p_name) {
-	// Animations disallow the normal node invalid characters as well as  "," and "["
-	// (See animation/animation_player.cpp::add_animation)
-
-	// TODO: Consider adding invalid_characters or a validate_animation_name to animation_player to mirror Node.
 	String anim_name = p_name.validate_node_name();
-	anim_name = anim_name.replace(",", "");
-	anim_name = anim_name.replace("[", "");
-	return anim_name;
+	return AnimationLibrary::validate_library_name(anim_name);
 }
 
 String FBXDocument::_gen_unique_animation_name(Ref<FBXState> p_state, const String &p_name) {
@@ -320,7 +345,7 @@ Error FBXDocument::_parse_nodes(Ref<FBXState> p_state) {
 			node->set_name(_as_string(fbx_node->name));
 			node->set_original_name(node->get_name());
 		} else if (fbx_node->is_root) {
-			node->set_name("Root");
+			node->set_name("RootNode");
 		}
 		if (fbx_node->camera) {
 			node->camera = fbx_node->camera->typed_id;
@@ -333,23 +358,67 @@ Error FBXDocument::_parse_nodes(Ref<FBXState> p_state) {
 		}
 
 		{
-			node->transform.origin = _as_vec3(fbx_node->local_transform.translation);
-			node->transform.basis.set_quaternion_scale(_as_quaternion(fbx_node->local_transform.rotation), _as_vec3(fbx_node->local_transform.scale));
+			node->transform = _as_transform(fbx_node->local_transform);
 
-			if (fbx_node->bind_pose) {
-				ufbx_bone_pose *pose = ufbx_get_bone_pose(fbx_node->bind_pose, fbx_node);
-				ufbx_transform rest_transform = ufbx_matrix_to_transform(&pose->bone_to_parent);
+			bool found_rest_xform = false;
+			bool bad_rest_xform = false;
+			Transform3D candidate_rest_xform;
 
-				Vector3 rest_position = _as_vec3(rest_transform.translation);
-				Quaternion rest_rotation = _as_quaternion(rest_transform.rotation);
-				Vector3 rest_scale = _as_vec3(rest_transform.scale);
-				Transform3D godot_rest_xform;
-				godot_rest_xform.basis.set_quaternion_scale(rest_rotation, rest_scale);
-				godot_rest_xform.origin = rest_position;
-				node->set_additional_data("GODOT_rest_transform", godot_rest_xform);
-			} else {
-				node->set_additional_data("GODOT_rest_transform", node->transform);
+			if (fbx_node->parent) {
+				// Attempt to resolve a rest pose for bones: This uses internal FBX connections to find
+				// all skin clusters connected to the bone.
+				for (const ufbx_connection &child_conn : fbx_node->element.connections_src) {
+					ufbx_skin_cluster *child_cluster = ufbx_as_skin_cluster(child_conn.dst);
+					if (!child_cluster)
+						continue;
+					ufbx_skin_deformer *child_deformer = _find_skin_deformer(child_cluster);
+					if (!child_deformer)
+						continue;
+
+					// Found a skin cluster: Now iterate through all the skin clusters of the parent and
+					// try to find one that used by the same deformer.
+					for (const ufbx_connection &parent_conn : fbx_node->parent->element.connections_src) {
+						ufbx_skin_cluster *parent_cluster = ufbx_as_skin_cluster(parent_conn.dst);
+						if (!parent_cluster)
+							continue;
+						ufbx_skin_deformer *parent_deformer = _find_skin_deformer(parent_cluster);
+						if (parent_deformer != child_deformer)
+							continue;
+
+						// Success: Found two skin clusters from the same deformer, now we can resolve the
+						// local bind pose from the difference between the two world-space bind poses.
+						ufbx_matrix child_to_world = child_cluster->bind_to_world;
+						ufbx_matrix world_to_parent = ufbx_matrix_invert(&parent_cluster->bind_to_world);
+						ufbx_matrix child_to_parent = ufbx_matrix_mul(&world_to_parent, &child_to_world);
+						Transform3D xform = _as_transform(ufbx_matrix_to_transform(&child_to_parent));
+
+						if (!found_rest_xform) {
+							// Found the first bind pose for the node, assume that this one is good
+							found_rest_xform = true;
+							candidate_rest_xform = xform;
+						} else if (!bad_rest_xform) {
+							// Found another: Let's hope it's similar to the previous one, if not warn and
+							// use the initial pose, which is used by default if rest pose is not found.
+							real_t error = 0.0f;
+							error += _relative_error(candidate_rest_xform.origin, xform.origin);
+							for (int i = 0; i < 3; i++) {
+								error += _relative_error(candidate_rest_xform.basis.rows[i], xform.basis.rows[i]);
+							}
+							const real_t max_error = 0.01f;
+							if (error >= max_error) {
+								WARN_PRINT(vformat("FBX: Node '%s' has multiple bind poses, using initial pose as rest pose.", node->get_name()));
+								bad_rest_xform = true;
+							}
+						}
+					}
+				}
 			}
+
+			Transform3D godot_rest_xform = node->transform;
+			if (found_rest_xform && !bad_rest_xform) {
+				godot_rest_xform = candidate_rest_xform;
+			}
+			node->set_additional_data("GODOT_rest_transform", godot_rest_xform);
 		}
 
 		for (const ufbx_node *child : fbx_node->children) {
@@ -628,10 +697,7 @@ Error FBXDocument::_parse_meshes(Ref<FBXState> p_state) {
 
 				// Find the first imported skin deformer
 				for (ufbx_skin_deformer *fbx_skin : fbx_mesh->skin_deformers) {
-					if (!p_state->skin_indices.has(fbx_skin->typed_id)) {
-						continue;
-					}
-					GLTFSkinIndex skin_i = p_state->skin_indices[fbx_skin->typed_id];
+					GLTFSkinIndex skin_i = p_state->original_skin_indices[fbx_skin->typed_id];
 					if (skin_i < 0) {
 						continue;
 					}
@@ -803,7 +869,7 @@ Error FBXDocument::_parse_meshes(Ref<FBXState> p_state) {
 						const int material = int(fbx_material->typed_id);
 						ERR_FAIL_INDEX_V(material, p_state->materials.size(), ERR_FILE_CORRUPT);
 						Ref<Material> mat3d = p_state->materials[material];
-						ERR_FAIL_NULL_V(mat3d, ERR_FILE_CORRUPT);
+						ERR_FAIL_COND_V(mat3d.is_null(), ERR_FILE_CORRUPT);
 
 						Ref<BaseMaterial3D> base_material = mat3d;
 						if (has_vertex_color && base_material.is_valid()) {
@@ -819,7 +885,7 @@ Error FBXDocument::_parse_meshes(Ref<FBXState> p_state) {
 						}
 						mat = mat3d;
 					}
-					ERR_FAIL_NULL_V(mat, ERR_FILE_CORRUPT);
+					ERR_FAIL_COND_V(mat.is_null(), ERR_FILE_CORRUPT);
 					mat_name = mat->get_name();
 				}
 				import_mesh->add_surface(primitive, array, morphs,
@@ -984,7 +1050,7 @@ GLTFImageIndex FBXDocument::_parse_image_save_image(Ref<FBXState> p_state, const
 }
 
 Error FBXDocument::_parse_images(Ref<FBXState> p_state, const String &p_base_path) {
-	ERR_FAIL_NULL_V(p_state, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
 
 	const ufbx_scene *fbx_scene = p_state->scene.get();
 	for (int texture_i = 0; texture_i < static_cast<int>(fbx_scene->texture_files.count); texture_i++) {
@@ -1309,6 +1375,10 @@ Error FBXDocument::_parse_animations(Ref<FBXState> p_state) {
 		additional_data["time_end"] = fbx_anim_stack->time_end;
 		animation->set_additional_data("GODOT_animation_time_begin_time_end", additional_data);
 		ufbx_bake_opts opts = {};
+		opts.resample_rate = p_state->get_bake_fps();
+		opts.minimum_sample_rate = p_state->get_bake_fps();
+		opts.max_keyframe_segments = 1024;
+
 		ufbx_error error;
 		ufbx_unique_ptr<ufbx_baked_anim> fbx_baked_anim{ ufbx_bake_anim(fbx_scene, fbx_anim_stack->anim, &opts, &error) };
 		if (!fbx_baked_anim) {
@@ -1687,7 +1757,7 @@ void FBXDocument::_generate_skeleton_bone_node(Ref<FBXState> p_state, const GLTF
 	}
 }
 
-void FBXDocument::_import_animation(Ref<FBXState> p_state, AnimationPlayer *p_animation_player, const GLTFAnimationIndex p_index, const float p_bake_fps, const bool p_trimming, const bool p_remove_immutable_tracks) {
+void FBXDocument::_import_animation(Ref<FBXState> p_state, AnimationPlayer *p_animation_player, const GLTFAnimationIndex p_index, const bool p_trimming, const bool p_remove_immutable_tracks) {
 	Ref<GLTFAnimation> anim = p_state->animations[p_index];
 
 	String anim_name = anim->get_name();
@@ -1699,6 +1769,7 @@ void FBXDocument::_import_animation(Ref<FBXState> p_state, AnimationPlayer *p_an
 	Ref<Animation> animation;
 	animation.instantiate();
 	animation->set_name(anim_name);
+	animation->set_step(1.0 / p_state->get_bake_fps());
 
 	if (anim->get_loop()) {
 		animation->set_loop_mode(Animation::LOOP_LINEAR);
@@ -1940,6 +2011,7 @@ void FBXDocument::_process_mesh_instances(Ref<FBXState> p_state, Node *p_scene_r
 		ERR_CONTINUE_MSG(skeleton == nullptr, vformat("Unable to find Skeleton for node %d skin %d", node_i, skin_i));
 
 		mi->get_parent()->remove_child(mi);
+		mi->set_owner(nullptr);
 		skeleton->add_child(mi, true);
 		mi->set_owner(skeleton->get_owner());
 
@@ -1963,7 +2035,7 @@ Error FBXDocument::_parse(Ref<FBXState> p_state, String p_path, Ref<FileAccess> 
 	opts.space_conversion = UFBX_SPACE_CONVERSION_MODIFY_GEOMETRY;
 	if (!p_state->get_allow_geometry_helper_nodes()) {
 		opts.geometry_transform_handling = UFBX_GEOMETRY_TRANSFORM_HANDLING_MODIFY_GEOMETRY_NO_FALLBACK;
-		opts.inherit_mode_handling = UFBX_INHERIT_MODE_HANDLING_IGNORE;
+		opts.inherit_mode_handling = UFBX_INHERIT_MODE_HANDLING_COMPENSATE_NO_FALLBACK;
 	} else {
 		opts.geometry_transform_handling = UFBX_GEOMETRY_TRANSFORM_HANDLING_HELPER_NODES;
 		opts.inherit_mode_handling = UFBX_INHERIT_MODE_HANDLING_COMPENSATE;
@@ -2005,20 +2077,43 @@ Error FBXDocument::_parse(Ref<FBXState> p_state, String p_path, Ref<FileAccess> 
 		ERR_FAIL_V_MSG(ERR_PARSE_ERROR, err_buf);
 	}
 
+	const int max_warning_count = 10;
+	int warning_count[UFBX_WARNING_TYPE_COUNT] = {};
+	int ignored_warning_count = 0;
+	for (const ufbx_warning &warning : p_state->scene->metadata.warnings) {
+		if (warning_count[warning.type]++ < max_warning_count) {
+			if (warning.count > 1) {
+				WARN_PRINT(vformat("FBX: ufbx warning: %s (x%d)", _as_string(warning.description), (int)warning.count));
+			} else {
+				String element_name;
+				if (warning.element_id != UFBX_NO_INDEX) {
+					element_name = _find_element_name(p_state->scene->elements[warning.element_id]);
+				}
+				if (!element_name.is_empty()) {
+					WARN_PRINT(vformat("FBX: ufbx warning in '%s': %s", element_name, _as_string(warning.description)));
+				} else {
+					WARN_PRINT(vformat("FBX: ufbx warning: %s", _as_string(warning.description)));
+				}
+			}
+		} else {
+			ignored_warning_count++;
+		}
+	}
+	if (ignored_warning_count > 0) {
+		WARN_PRINT(vformat("FBX: ignored %d further ufbx warnings", ignored_warning_count));
+	}
+
 	err = _parse_fbx_state(p_state, p_path);
 	ERR_FAIL_COND_V(err != OK, err);
 
 	return OK;
 }
 
-void FBXDocument::_bind_methods() {
-}
-
 Node *FBXDocument::generate_scene(Ref<GLTFState> p_state, float p_bake_fps, bool p_trimming, bool p_remove_immutable_tracks) {
 	Ref<FBXState> state = p_state;
 	ERR_FAIL_COND_V(state.is_null(), nullptr);
-	ERR_FAIL_NULL_V(state, nullptr);
 	ERR_FAIL_INDEX_V(0, state->root_nodes.size(), nullptr);
+	p_state->set_bake_fps(p_bake_fps);
 	GLTFNodeIndex fbx_root = state->root_nodes.write[0];
 	Node *fbx_root_node = state->get_scene_node(fbx_root);
 	Node *root = fbx_root_node;
@@ -2032,7 +2127,7 @@ Node *FBXDocument::generate_scene(Ref<GLTFState> p_state, float p_bake_fps, bool
 		root->add_child(ap, true);
 		ap->set_owner(root);
 		for (int i = 0; i < state->animations.size(); i++) {
-			_import_animation(state, ap, i, p_bake_fps, p_trimming, p_remove_immutable_tracks);
+			_import_animation(state, ap, i, p_trimming, p_remove_immutable_tracks);
 		}
 	}
 	ERR_FAIL_NULL_V(root, nullptr);
@@ -2144,7 +2239,7 @@ Error FBXDocument::append_from_file(String p_path, Ref<GLTFState> p_state, uint3
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::READ, &err);
 	ERR_FAIL_COND_V(err != OK, ERR_FILE_CANT_OPEN);
-	ERR_FAIL_NULL_V(file, ERR_FILE_CANT_OPEN);
+	ERR_FAIL_COND_V(file.is_null(), ERR_FILE_CANT_OPEN);
 	String base_path = p_base_path;
 	if (base_path.is_empty()) {
 		base_path = p_path.get_base_dir();
@@ -2275,7 +2370,7 @@ Error FBXDocument::_parse_skins(Ref<FBXState> p_state) {
 	HashMap<GLTFNodeIndex, bool> joint_mapping;
 
 	for (const ufbx_skin_deformer *fbx_skin : fbx_scene->skin_deformers) {
-		if (fbx_skin->clusters.count == 0) {
+		if (fbx_skin->clusters.count == 0 || fbx_skin->weights.count == 0) {
 			p_state->skin_indices.push_back(-1);
 			continue;
 		}
@@ -2321,8 +2416,9 @@ Error FBXDocument::_parse_skins(Ref<FBXState> p_state) {
 			}
 		}
 	}
+	p_state->original_skin_indices = p_state->skin_indices.duplicate();
 	Error err = SkinTool::_asset_parse_skins(
-			p_state->skin_indices.duplicate(),
+			p_state->original_skin_indices,
 			p_state->skins.duplicate(),
 			p_state->nodes.duplicate(),
 			p_state->skin_indices,

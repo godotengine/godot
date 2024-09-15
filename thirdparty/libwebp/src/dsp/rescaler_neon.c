@@ -32,7 +32,7 @@
 #define STORE_32x8(SRC0, SRC1, DST) do {                              \
     vst1q_u32((DST) + 0, SRC0);                                       \
     vst1q_u32((DST) + 4, SRC1);                                       \
-} while (0);
+} while (0)
 
 #if (WEBP_RESCALER_RFIX == 32)
 #define MAKE_HALF_CST(C) vdupq_n_s32((int32_t)((C) >> 1))

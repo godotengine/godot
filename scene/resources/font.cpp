@@ -149,6 +149,25 @@ bool Font::_is_cyclic(const Ref<Font> &p_f, int p_depth) const {
 	return false;
 }
 
+bool Font::_is_base_cyclic(const Ref<Font> &p_f, int p_depth) const {
+	ERR_FAIL_COND_V(p_depth > MAX_FALLBACK_DEPTH, true);
+	if (p_f.is_null()) {
+		return false;
+	}
+	if (p_f == this) {
+		return true;
+	}
+	Ref<FontVariation> fv = p_f;
+	if (fv.is_valid()) {
+		return _is_base_cyclic(fv->get_base_font(), p_depth + 1);
+	}
+	Ref<SystemFont> fs = p_f;
+	if (fs.is_valid()) {
+		return _is_base_cyclic(fs->get_base_font(), p_depth + 1);
+	}
+	return false;
+}
+
 void Font::reset_state() {
 	_invalidate_rids();
 }
@@ -1463,8 +1482,8 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 			switch (block_type) {
 				case 1: /* info */ {
 					ERR_FAIL_COND_V_MSG(block_size < 15, ERR_CANT_CREATE, "Invalid BMFont info block size.");
-					base_size = f->get_16();
-					if (base_size <= 0) {
+					base_size = ABS(static_cast<int16_t>(f->get_16()));
+					if (base_size == 0) {
 						base_size = 16;
 					}
 					uint8_t flags = f->get_8();
@@ -1757,7 +1776,10 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 
 			if (type == "info") {
 				if (keys.has("size")) {
-					base_size = keys["size"].to_int();
+					base_size = ABS(keys["size"].to_int());
+					if (base_size == 0) {
+						base_size = 16;
+					}
 				}
 				if (keys.has("outline")) {
 					outline = keys["outline"].to_int();
@@ -2890,13 +2912,13 @@ Ref<Font> FontVariation::_get_base_font_or_default() const {
 	}
 
 	StringName theme_name = "font";
-	List<StringName> theme_types;
-	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), &theme_types);
+	Vector<StringName> theme_types;
+	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), theme_types);
 
 	ThemeContext *global_context = ThemeDB::get_singleton()->get_default_theme_context();
-	List<Ref<Theme>> themes = global_context->get_themes();
+	Vector<Ref<Theme>> themes = global_context->get_themes();
 	if (Engine::get_singleton()->is_editor_hint()) {
-		themes.push_front(ThemeDB::get_singleton()->get_project_theme());
+		themes.insert(0, ThemeDB::get_singleton()->get_project_theme());
 	}
 
 	for (const Ref<Theme> &theme : themes) {
@@ -2910,7 +2932,7 @@ Ref<Font> FontVariation::_get_base_font_or_default() const {
 			}
 
 			Ref<Font> f = theme->get_font(theme_name, E);
-			if (f == this) {
+			if (_is_base_cyclic(f, 0)) {
 				continue;
 			}
 			if (f.is_valid()) {
@@ -2922,7 +2944,7 @@ Ref<Font> FontVariation::_get_base_font_or_default() const {
 	}
 
 	Ref<Font> f = global_context->get_fallback_theme()->get_font(theme_name, StringName());
-	if (f != this) {
+	if (!_is_base_cyclic(f, 0)) {
 		if (f.is_valid()) {
 			theme_font = f;
 			theme_font->connect_changed(callable_mp(reinterpret_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
@@ -3213,7 +3235,6 @@ void SystemFont::_update_base_font() {
 	}
 
 	_invalidate_rids();
-	notify_property_list_changed();
 }
 
 void SystemFont::reset_state() {
@@ -3259,8 +3280,8 @@ Ref<Font> SystemFont::_get_base_font_or_default() const {
 	}
 
 	StringName theme_name = "font";
-	List<StringName> theme_types;
-	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), &theme_types);
+	Vector<StringName> theme_types;
+	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), theme_types);
 
 	ThemeContext *global_context = ThemeDB::get_singleton()->get_default_theme_context();
 	for (const Ref<Theme> &theme : global_context->get_themes()) {
@@ -3274,7 +3295,7 @@ Ref<Font> SystemFont::_get_base_font_or_default() const {
 			}
 
 			Ref<Font> f = theme->get_font(theme_name, E);
-			if (f == this) {
+			if (_is_base_cyclic(f, 0)) {
 				continue;
 			}
 			if (f.is_valid()) {
@@ -3286,7 +3307,7 @@ Ref<Font> SystemFont::_get_base_font_or_default() const {
 	}
 
 	Ref<Font> f = global_context->get_fallback_theme()->get_font(theme_name, StringName());
-	if (f != this) {
+	if (!_is_base_cyclic(f, 0)) {
 		if (f.is_valid()) {
 			theme_font = f;
 			theme_font->connect_changed(callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);

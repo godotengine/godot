@@ -57,6 +57,7 @@ class TTS_Android {
 
 public:
 	static void setup(jobject p_tts);
+	static void terminate();
 	static void _java_utterance_callback(int p_event, int p_id, int p_pos);
 
 	static bool is_speaking();

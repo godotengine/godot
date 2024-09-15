@@ -548,8 +548,8 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 		}
 
 		SUBCASE("[Viewport][GuiInputEvent] Mouse Enter/Exit notification propagation when moving into child.") {
-			SIGNAL_WATCH(node_i, SNAME("mouse_entered"));
-			SIGNAL_WATCH(node_i, SNAME("mouse_exited"));
+			SIGNAL_WATCH(node_i, SceneStringName(mouse_entered));
+			SIGNAL_WATCH(node_i, SceneStringName(mouse_exited));
 			Array signal_args;
 			signal_args.push_back(Array());
 
@@ -568,8 +568,8 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			CHECK(node_i->mouse_over_self);
 			CHECK_FALSE(node_j->mouse_over);
 			CHECK_FALSE(node_j->mouse_over_self);
-			SIGNAL_CHECK(SNAME("mouse_entered"), signal_args);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
+			SIGNAL_CHECK(SceneStringName(mouse_entered), signal_args);
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_exited));
 
 			// Move to child Control node_j. node_i should not receive any new Mouse Enter signals.
 			SEND_GUI_MOUSE_MOTION_EVENT(on_j, MouseButtonMask::NONE, Key::NONE);
@@ -577,8 +577,8 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			CHECK_FALSE(node_i->mouse_over_self);
 			CHECK(node_j->mouse_over);
 			CHECK(node_j->mouse_over_self);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_entered));
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_exited));
 
 			// Move to parent Control node_i. node_i should not receive any new Mouse Enter signals.
 			SEND_GUI_MOUSE_MOTION_EVENT(on_i, MouseButtonMask::NONE, Key::NONE);
@@ -586,8 +586,8 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			CHECK(node_i->mouse_over_self);
 			CHECK_FALSE(node_j->mouse_over);
 			CHECK_FALSE(node_j->mouse_over_self);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_entered));
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_exited));
 
 			// Move to background.
 			SEND_GUI_MOUSE_MOTION_EVENT(on_background, MouseButtonMask::NONE, Key::NONE);
@@ -595,16 +595,16 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			CHECK_FALSE(node_i->mouse_over_self);
 			CHECK_FALSE(node_j->mouse_over);
 			CHECK_FALSE(node_j->mouse_over_self);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
-			SIGNAL_CHECK(SNAME("mouse_exited"), signal_args);
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_entered));
+			SIGNAL_CHECK(SceneStringName(mouse_exited), signal_args);
 
 			CHECK_FALSE(node_i->invalid_order);
 			CHECK_FALSE(node_j->invalid_order);
 
 			node_j->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 
-			SIGNAL_UNWATCH(node_i, SNAME("mouse_entered"));
-			SIGNAL_UNWATCH(node_i, SNAME("mouse_exited"));
+			SIGNAL_UNWATCH(node_i, SceneStringName(mouse_entered));
+			SIGNAL_UNWATCH(node_i, SceneStringName(mouse_exited));
 		}
 
 		SUBCASE("[Viewport][GuiInputEvent] Mouse Enter/Exit notification propagation with top level.") {
@@ -756,8 +756,8 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 		}
 
 		SUBCASE("[Viewport][GuiInputEvent] Mouse Enter/Exit notification when changing top level.") {
-			SIGNAL_WATCH(node_i, SNAME("mouse_entered"));
-			SIGNAL_WATCH(node_i, SNAME("mouse_exited"));
+			SIGNAL_WATCH(node_i, SceneStringName(mouse_entered));
+			SIGNAL_WATCH(node_i, SceneStringName(mouse_exited));
 			Array signal_args;
 			signal_args.push_back(Array());
 
@@ -794,8 +794,8 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			CHECK_FALSE(node_i->mouse_over_self);
 			CHECK(node_j->mouse_over);
 			CHECK(node_j->mouse_over_self);
-			SIGNAL_CHECK(SNAME("mouse_entered"), signal_args);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
+			SIGNAL_CHECK(SceneStringName(mouse_entered), signal_args);
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_exited));
 
 			// Change node_i to top level. node_h should receive Mouse Exit. node_i should not receive any new signals.
 			node_i->set_as_top_level(true);
@@ -805,8 +805,8 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			CHECK_FALSE(node_i->mouse_over_self);
 			CHECK(node_j->mouse_over);
 			CHECK(node_j->mouse_over_self);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_entered));
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_exited));
 
 			// Change node_i to not top level. node_h should receive Mouse Enter. node_i should not receive any new signals.
 			node_i->set_as_top_level(false);
@@ -816,8 +816,8 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			CHECK_FALSE(node_i->mouse_over_self);
 			CHECK(node_j->mouse_over);
 			CHECK(node_j->mouse_over_self);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_entered));
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_exited));
 
 			CHECK_FALSE(node_b->invalid_order);
 			CHECK_FALSE(node_d->invalid_order);
@@ -830,13 +830,13 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			node_i->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 			node_j->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 
-			SIGNAL_UNWATCH(node_i, SNAME("mouse_entered"));
-			SIGNAL_UNWATCH(node_i, SNAME("mouse_exited"));
+			SIGNAL_UNWATCH(node_i, SceneStringName(mouse_entered));
+			SIGNAL_UNWATCH(node_i, SceneStringName(mouse_exited));
 		}
 
 		SUBCASE("[Viewport][GuiInputEvent] Mouse Enter/Exit notification when changing the mouse filter to stop.") {
-			SIGNAL_WATCH(node_i, SNAME("mouse_entered"));
-			SIGNAL_WATCH(node_i, SNAME("mouse_exited"));
+			SIGNAL_WATCH(node_i, SceneStringName(mouse_entered));
+			SIGNAL_WATCH(node_i, SceneStringName(mouse_exited));
 			Array signal_args;
 			signal_args.push_back(Array());
 
@@ -851,8 +851,8 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			CHECK_FALSE(node_i->mouse_over_self);
 			CHECK(node_j->mouse_over);
 			CHECK(node_j->mouse_over_self);
-			SIGNAL_CHECK(SNAME("mouse_entered"), signal_args);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
+			SIGNAL_CHECK(SceneStringName(mouse_entered), signal_args);
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_exited));
 
 			// Change node_i to MOUSE_FILTER_STOP. node_h should receive Mouse Exit. node_i should not receive any new signals.
 			node_i->set_mouse_filter(Control::MOUSE_FILTER_STOP);
@@ -862,8 +862,8 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			CHECK_FALSE(node_i->mouse_over_self);
 			CHECK(node_j->mouse_over);
 			CHECK(node_j->mouse_over_self);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_entered));
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_exited));
 
 			// Change node_i to MOUSE_FILTER_PASS. node_h should receive Mouse Enter. node_i should not receive any new signals.
 			node_i->set_mouse_filter(Control::MOUSE_FILTER_PASS);
@@ -873,8 +873,8 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			CHECK_FALSE(node_i->mouse_over_self);
 			CHECK(node_j->mouse_over);
 			CHECK(node_j->mouse_over_self);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_entered));
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_exited));
 
 			CHECK_FALSE(node_h->invalid_order);
 			CHECK_FALSE(node_i->invalid_order);
@@ -883,13 +883,13 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			node_i->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 			node_j->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 
-			SIGNAL_UNWATCH(node_i, SNAME("mouse_entered"));
-			SIGNAL_UNWATCH(node_i, SNAME("mouse_exited"));
+			SIGNAL_UNWATCH(node_i, SceneStringName(mouse_entered));
+			SIGNAL_UNWATCH(node_i, SceneStringName(mouse_exited));
 		}
 
 		SUBCASE("[Viewport][GuiInputEvent] Mouse Enter/Exit notification when changing the mouse filter to ignore.") {
-			SIGNAL_WATCH(node_i, SNAME("mouse_entered"));
-			SIGNAL_WATCH(node_i, SNAME("mouse_exited"));
+			SIGNAL_WATCH(node_i, SceneStringName(mouse_entered));
+			SIGNAL_WATCH(node_i, SceneStringName(mouse_exited));
 			Array signal_args;
 			signal_args.push_back(Array());
 
@@ -904,8 +904,8 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			CHECK_FALSE(node_i->mouse_over_self);
 			CHECK(node_j->mouse_over);
 			CHECK(node_j->mouse_over_self);
-			SIGNAL_CHECK(SNAME("mouse_entered"), signal_args);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
+			SIGNAL_CHECK(SceneStringName(mouse_entered), signal_args);
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_exited));
 
 			// Change node_i to MOUSE_FILTER_IGNORE. node_i should receive Mouse Exit.
 			node_i->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
@@ -915,8 +915,8 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			CHECK_FALSE(node_i->mouse_over_self);
 			CHECK(node_j->mouse_over);
 			CHECK(node_j->mouse_over_self);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
-			SIGNAL_CHECK(SNAME("mouse_exited"), signal_args);
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_entered));
+			SIGNAL_CHECK(SceneStringName(mouse_exited), signal_args);
 
 			// Change node_i to MOUSE_FILTER_PASS. node_i should receive Mouse Enter.
 			node_i->set_mouse_filter(Control::MOUSE_FILTER_PASS);
@@ -926,8 +926,8 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			CHECK_FALSE(node_i->mouse_over_self);
 			CHECK(node_j->mouse_over);
 			CHECK(node_j->mouse_over_self);
-			SIGNAL_CHECK(SNAME("mouse_entered"), signal_args);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
+			SIGNAL_CHECK(SceneStringName(mouse_entered), signal_args);
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_exited));
 
 			// Change node_j to MOUSE_FILTER_IGNORE. After updating the mouse motion, node_i should now have mouse_over_self.
 			node_j->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
@@ -938,8 +938,8 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			CHECK(node_i->mouse_over_self);
 			CHECK_FALSE(node_j->mouse_over);
 			CHECK_FALSE(node_j->mouse_over_self);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_entered));
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_exited));
 
 			// Change node_j to MOUSE_FILTER_PASS. After updating the mouse motion, node_j should now have mouse_over_self.
 			node_j->set_mouse_filter(Control::MOUSE_FILTER_PASS);
@@ -950,8 +950,8 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			CHECK_FALSE(node_i->mouse_over_self);
 			CHECK(node_j->mouse_over);
 			CHECK(node_j->mouse_over_self);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_entered));
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_exited));
 
 			CHECK_FALSE(node_h->invalid_order);
 			CHECK_FALSE(node_i->invalid_order);
@@ -960,13 +960,13 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			node_i->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 			node_j->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 
-			SIGNAL_UNWATCH(node_i, SNAME("mouse_entered"));
-			SIGNAL_UNWATCH(node_i, SNAME("mouse_exited"));
+			SIGNAL_UNWATCH(node_i, SceneStringName(mouse_entered));
+			SIGNAL_UNWATCH(node_i, SceneStringName(mouse_exited));
 		}
 
 		SUBCASE("[Viewport][GuiInputEvent] Mouse Enter/Exit notification when removing the hovered Control.") {
-			SIGNAL_WATCH(node_h, SNAME("mouse_entered"));
-			SIGNAL_WATCH(node_h, SNAME("mouse_exited"));
+			SIGNAL_WATCH(node_h, SceneStringName(mouse_entered));
+			SIGNAL_WATCH(node_h, SceneStringName(mouse_exited));
 			Array signal_args;
 			signal_args.push_back(Array());
 
@@ -981,8 +981,8 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			CHECK_FALSE(node_i->mouse_over_self);
 			CHECK(node_j->mouse_over);
 			CHECK(node_j->mouse_over_self);
-			SIGNAL_CHECK(SNAME("mouse_entered"), signal_args);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
+			SIGNAL_CHECK(SceneStringName(mouse_entered), signal_args);
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_exited));
 
 			// Remove node_i from the tree. node_i and node_j should receive Mouse Exit. node_h should not receive any new signals.
 			node_h->remove_child(node_i);
@@ -992,8 +992,8 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			CHECK_FALSE(node_i->mouse_over_self);
 			CHECK_FALSE(node_j->mouse_over);
 			CHECK_FALSE(node_j->mouse_over_self);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_entered));
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_exited));
 
 			// Add node_i to the tree and update the mouse. node_i and node_j should receive Mouse Enter. node_h should not receive any new signals.
 			node_h->add_child(node_i);
@@ -1004,8 +1004,8 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			CHECK_FALSE(node_i->mouse_over_self);
 			CHECK(node_j->mouse_over);
 			CHECK(node_j->mouse_over_self);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_entered));
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_exited));
 
 			CHECK_FALSE(node_h->invalid_order);
 			CHECK_FALSE(node_i->invalid_order);
@@ -1014,13 +1014,13 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			node_i->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 			node_j->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 
-			SIGNAL_UNWATCH(node_h, SNAME("mouse_entered"));
-			SIGNAL_UNWATCH(node_h, SNAME("mouse_exited"));
+			SIGNAL_UNWATCH(node_h, SceneStringName(mouse_entered));
+			SIGNAL_UNWATCH(node_h, SceneStringName(mouse_exited));
 		}
 
 		SUBCASE("[Viewport][GuiInputEvent] Mouse Enter/Exit notification when hiding the hovered Control.") {
-			SIGNAL_WATCH(node_h, SNAME("mouse_entered"));
-			SIGNAL_WATCH(node_h, SNAME("mouse_exited"));
+			SIGNAL_WATCH(node_h, SceneStringName(mouse_entered));
+			SIGNAL_WATCH(node_h, SceneStringName(mouse_exited));
 			Array signal_args;
 			signal_args.push_back(Array());
 
@@ -1035,8 +1035,8 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			CHECK_FALSE(node_i->mouse_over_self);
 			CHECK(node_j->mouse_over);
 			CHECK(node_j->mouse_over_self);
-			SIGNAL_CHECK(SNAME("mouse_entered"), signal_args);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
+			SIGNAL_CHECK(SceneStringName(mouse_entered), signal_args);
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_exited));
 
 			// Hide node_i. node_i and node_j should receive Mouse Exit. node_h should not receive any new signals.
 			node_i->hide();
@@ -1046,8 +1046,8 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			CHECK_FALSE(node_i->mouse_over_self);
 			CHECK_FALSE(node_j->mouse_over);
 			CHECK_FALSE(node_j->mouse_over_self);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_entered));
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_exited));
 
 			// Show node_i and update the mouse. node_i and node_j should receive Mouse Enter. node_h should not receive any new signals.
 			node_i->show();
@@ -1058,8 +1058,8 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			CHECK_FALSE(node_i->mouse_over_self);
 			CHECK(node_j->mouse_over);
 			CHECK(node_j->mouse_over_self);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_entered));
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_exited));
 
 			CHECK_FALSE(node_h->invalid_order);
 			CHECK_FALSE(node_i->invalid_order);
@@ -1068,26 +1068,26 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			node_i->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 			node_j->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 
-			SIGNAL_UNWATCH(node_h, SNAME("mouse_entered"));
-			SIGNAL_UNWATCH(node_h, SNAME("mouse_exited"));
+			SIGNAL_UNWATCH(node_h, SceneStringName(mouse_entered));
+			SIGNAL_UNWATCH(node_h, SceneStringName(mouse_exited));
 		}
 
 		SUBCASE("[Viewport][GuiInputEvent] Window Mouse Enter/Exit signals.") {
-			SIGNAL_WATCH(root, SNAME("mouse_entered"));
-			SIGNAL_WATCH(root, SNAME("mouse_exited"));
+			SIGNAL_WATCH(root, SceneStringName(mouse_entered));
+			SIGNAL_WATCH(root, SceneStringName(mouse_exited));
 			Array signal_args;
 			signal_args.push_back(Array());
 
 			SEND_GUI_MOUSE_MOTION_EVENT(on_outside, MouseButtonMask::NONE, Key::NONE);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
-			SIGNAL_CHECK(SNAME("mouse_exited"), signal_args);
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_entered));
+			SIGNAL_CHECK(SceneStringName(mouse_exited), signal_args);
 
 			SEND_GUI_MOUSE_MOTION_EVENT(on_a, MouseButtonMask::NONE, Key::NONE);
-			SIGNAL_CHECK(SNAME("mouse_entered"), signal_args);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
+			SIGNAL_CHECK(SceneStringName(mouse_entered), signal_args);
+			SIGNAL_CHECK_FALSE(SceneStringName(mouse_exited));
 
-			SIGNAL_UNWATCH(root, SNAME("mouse_entered"));
-			SIGNAL_UNWATCH(root, SNAME("mouse_exited"));
+			SIGNAL_UNWATCH(root, SceneStringName(mouse_entered));
+			SIGNAL_UNWATCH(root, SceneStringName(mouse_exited));
 		}
 
 		SUBCASE("[Viewport][GuiInputEvent] Process-Mode affects, if GUI Mouse Motion Events are processed.") {
@@ -1415,9 +1415,9 @@ public:
 	Ref<InputEvent> last_input_event;
 
 	void init_signals() {
-		connect(SNAME("mouse_entered"), callable_mp(this, &TestArea2D::_on_mouse_entered));
-		connect(SNAME("mouse_exited"), callable_mp(this, &TestArea2D::_on_mouse_exited));
-		connect(SNAME("input_event"), callable_mp(this, &TestArea2D::_on_input_event));
+		connect(SceneStringName(mouse_entered), callable_mp(this, &TestArea2D::_on_mouse_entered));
+		connect(SceneStringName(mouse_exited), callable_mp(this, &TestArea2D::_on_mouse_exited));
+		connect(SceneStringName(input_event), callable_mp(this, &TestArea2D::_on_input_event));
 	}
 
 	void test_reset() {
@@ -1459,8 +1459,8 @@ TEST_CASE("[SceneTree][Viewport] Physics Picking 2D") {
 		pc.a->set_name("A" + itos(i));
 		pc.c->set_name("C" + itos(i));
 		v.push_back(pc);
-		SIGNAL_WATCH(pc.a, SNAME("mouse_entered"));
-		SIGNAL_WATCH(pc.a, SNAME("mouse_exited"));
+		SIGNAL_WATCH(pc.a, SceneStringName(mouse_entered));
+		SIGNAL_WATCH(pc.a, SceneStringName(mouse_exited));
 	}
 
 	Node2D *node_a = memnew(Node2D);
@@ -1499,8 +1499,8 @@ TEST_CASE("[SceneTree][Viewport] Physics Picking 2D") {
 	SUBCASE("[Viewport][Picking2D] Mouse Motion") {
 		SEND_GUI_MOUSE_MOTION_EVENT(on_all, MouseButtonMask::NONE, Key::NONE);
 		tree->physics_process(1);
-		SIGNAL_CHECK(SNAME("mouse_entered"), empty_signal_args_4);
-		SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
+		SIGNAL_CHECK(SceneStringName(mouse_entered), empty_signal_args_4);
+		SIGNAL_CHECK_FALSE(SceneStringName(mouse_exited));
 		for (PickingCollider E : v) {
 			CHECK(E.a->enter_id);
 			CHECK_FALSE(E.a->exit_id);
@@ -1509,8 +1509,8 @@ TEST_CASE("[SceneTree][Viewport] Physics Picking 2D") {
 
 		SEND_GUI_MOUSE_MOTION_EVENT(on_01, MouseButtonMask::NONE, Key::NONE);
 		tree->physics_process(1);
-		SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
-		SIGNAL_CHECK(SNAME("mouse_exited"), empty_signal_args_2);
+		SIGNAL_CHECK_FALSE(SceneStringName(mouse_entered));
+		SIGNAL_CHECK(SceneStringName(mouse_exited), empty_signal_args_2);
 
 		for (int i = 0; i < v.size(); i++) {
 			CHECK_FALSE(v[i].a->enter_id);
@@ -1524,8 +1524,8 @@ TEST_CASE("[SceneTree][Viewport] Physics Picking 2D") {
 
 		SEND_GUI_MOUSE_MOTION_EVENT(on_outside, MouseButtonMask::NONE, Key::NONE);
 		tree->physics_process(1);
-		SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
-		SIGNAL_CHECK(SNAME("mouse_exited"), empty_signal_args_2);
+		SIGNAL_CHECK_FALSE(SceneStringName(mouse_entered));
+		SIGNAL_CHECK(SceneStringName(mouse_exited), empty_signal_args_2);
 		for (int i = 0; i < v.size(); i++) {
 			CHECK_FALSE(v[i].a->enter_id);
 			if (i < 2) {
@@ -1788,8 +1788,8 @@ TEST_CASE("[SceneTree][Viewport] Physics Picking 2D") {
 	}
 
 	for (PickingCollider E : v) {
-		SIGNAL_UNWATCH(E.a, SNAME("mouse_entered"));
-		SIGNAL_UNWATCH(E.a, SNAME("mouse_exited"));
+		SIGNAL_UNWATCH(E.a, SceneStringName(mouse_entered));
+		SIGNAL_UNWATCH(E.a, SceneStringName(mouse_exited));
 		memdelete(E.c);
 		memdelete(E.a);
 	}

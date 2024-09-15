@@ -35,7 +35,6 @@
 #include "scene/3d/visible_on_screen_notifier_3d.h"
 #include "scene/resources/camera_attributes.h"
 #include "scene/resources/environment.h"
-#include "scene/scene_string_names.h"
 #include "servers/navigation_server_3d.h"
 
 void World3D::_register_camera(Camera3D *p_camera) {

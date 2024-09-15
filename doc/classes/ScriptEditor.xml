@@ -10,6 +10,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_breakpoints">
+			<return type="PackedStringArray" />
+			<description>
+				Returns array of breakpoints.
+			</description>
+		</method>
 		<method name="get_current_editor" qualifiers="const">
 			<return type="ScriptEditorBase" />
 			<description>
@@ -40,7 +46,6 @@
 			<description>
 				Opens help for the given topic. The [param topic] is an encoded string that controls which class, method, constant, signal, annotation, property, or theme item should be focused.
 				The supported [param topic] formats include [code]class_name:class[/code], [code]class_method:class:method[/code], [code]class_constant:class:constant[/code], [code]class_signal:class:signal[/code], [code]class_annotation:class:@annotation[/code], [code]class_property:class:property[/code], and [code]class_theme_item:class:item[/code], where [code]class[/code] is the class name, [code]method[/code] is the method name, [code]constant[/code] is the constant name, [code]signal[/code] is the signal name, [code]annotation[/code] is the annotation name, [code]property[/code] is the property name, and [code]item[/code] is the theme item.
-				[b]Examples:[/b]
 				[codeblock]
 				# Shows help for the Node class.
 				class_name:Node
@@ -92,6 +97,14 @@
 			<description>
 				Unregisters the [EditorSyntaxHighlighter] from the editor.
 				[b]Note:[/b] The [EditorSyntaxHighlighter] will still be applied to scripts that are already opened.
+			</description>
+		</method>
+		<method name="update_docs_from_script">
+			<return type="void" />
+			<param index="0" name="script" type="Script" />
+			<description>
+				Updates the documentation for the given [param script] if the script's documentation is currently open.
+				[b]Note:[/b] This should be called whenever the script is changed to keep the open documentation state up to date.
 			</description>
 		</method>
 	</methods>

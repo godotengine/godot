@@ -59,6 +59,8 @@ typedef enum {
  * and metadata for one key.
  */
 typedef struct {
+    /* This field is accessed in a lot of places. Putting it first
+     * reduces the code size. */
     psa_key_attributes_t attr;
 
     /*
@@ -78,35 +80,77 @@ typedef struct {
      * slots that are in a suitable state for the function.
      * For example, psa_get_and_lock_key_slot_in_memory, which finds a slot
      * containing a given key ID, will only check slots whose state variable is
-     * PSA_SLOT_FULL. */
+     * PSA_SLOT_FULL.
+     */
     psa_key_slot_state_t state;
 
-    /*
-     * Number of functions registered as reading the material in the key slot.
+#if defined(MBEDTLS_PSA_KEY_STORE_DYNAMIC)
+    /* The index of the slice containing this slot.
+     * This field must be filled if the slot contains a key
+     * (including keys being created or destroyed), and can be either
+     * filled or 0 when the slot is free.
      *
-     * Library functions must not write directly to registered_readers
-     *
-     * A function must call psa_register_read(slot) before reading the current
-     * contents of the slot for an operation.
-     * They then must call psa_unregister_read(slot) once they have finished
-     * reading the current contents of the slot. If the key slot mutex is not
-     * held (when mutexes are enabled), this call must be done via a call to
-     * psa_unregister_read_under_mutex(slot).
-     * A function must call psa_key_slot_has_readers(slot) to check if
-     * the slot is in use for reading.
-     *
-     * This counter is used to prevent resetting the key slot while the library
-     * may access it. For example, such control is needed in the following
-     * scenarios:
-     * . In case of key slot starvation, all key slots contain the description
-     *   of a key, and the library asks for the description of a persistent
-     *   key not present in the key slots, the key slots currently accessed by
-     *   the library cannot be reclaimed to free a key slot to load the
-     *   persistent key.
-     * . In case of a multi-threaded application where one thread asks to close
-     *   or purge or destroy a key while it is in use by the library through
-     *   another thread. */
-    size_t registered_readers;
+     * In most cases, the slice index can be deduced from the key identifer.
+     * We keep it in a separate field for robustness (it reduces the chance
+     * that a coding mistake in the key store will result in accessing the
+     * wrong slice), and also so that it's available even on code paths
+     * during creation or destruction where the key identifier might not be
+     * filled in.
+     * */
+    uint8_t slice_index;
+#endif /* MBEDTLS_PSA_KEY_STORE_DYNAMIC */
+
+    union {
+        struct {
+            /* The index of the next slot in the free list for this
+             * slice, relative * to the next array element.
+             *
+             * That is, 0 means the next slot, 1 means the next slot
+             * but one, etc. -1 would mean the slot itself. -2 means
+             * the previous slot, etc.
+             *
+             * If this is beyond the array length, the free list ends with the
+             * current element.
+             *
+             * The reason for this strange encoding is that 0 means the next
+             * element. This way, when we allocate a slice and initialize it
+             * to all-zero, the slice is ready for use, with a free list that
+             * consists of all the slots in order.
+             */
+            int32_t next_free_relative_to_next;
+        } free;
+
+        struct {
+            /*
+             * Number of functions registered as reading the material in the key slot.
+             *
+             * Library functions must not write directly to registered_readers
+             *
+             * A function must call psa_register_read(slot) before reading
+             * the current contents of the slot for an operation.
+             * They then must call psa_unregister_read(slot) once they have
+             * finished reading the current contents of the slot. If the key
+             * slot mutex is not held (when mutexes are enabled), this call
+             * must be done via a call to
+             * psa_unregister_read_under_mutex(slot).
+             * A function must call psa_key_slot_has_readers(slot) to check if
+             * the slot is in use for reading.
+             *
+             * This counter is used to prevent resetting the key slot while
+             * the library may access it. For example, such control is needed
+             * in the following scenarios:
+             * . In case of key slot starvation, all key slots contain the
+             *   description of a key, and the library asks for the
+             *   description of a persistent key not present in the
+             *   key slots, the key slots currently accessed by the
+             *   library cannot be reclaimed to free a key slot to load
+             *   the persistent key.
+             * . In case of a multi-threaded application where one thread
+             *   asks to close or purge or destroy a key while it is in use
+             *   by the library through another thread. */
+            size_t registered_readers;
+        } occupied;
+    } var;
 
     /* Dynamically allocated key data buffer.
      * Format as specified in psa_export_key(). */
@@ -169,7 +213,7 @@ typedef struct {
  */
 static inline int psa_key_slot_has_readers(const psa_key_slot_t *slot)
 {
-    return slot->registered_readers > 0;
+    return slot->var.occupied.registered_readers > 0;
 }
 
 #if defined(MBEDTLS_PSA_CRYPTO_SE_C)
@@ -343,19 +387,18 @@ psa_status_t psa_export_public_key_internal(
     const uint8_t *key_buffer, size_t key_buffer_size,
     uint8_t *data, size_t data_size, size_t *data_length);
 
-/** Whether a key production parameters structure is the default.
+/** Whether a key custom production parameters structure is the default.
  *
- * Calls to a key generation driver with non-default production parameters
+ * Calls to a key generation driver with non-default custom production parameters
  * require a driver supporting custom production parameters.
  *
- * \param[in] params            The key production parameters to check.
- * \param params_data_length    Size of `params->data` in bytes.
+ * \param[in] custom            The key custom production parameters to check.
+ * \param custom_data_length    Size of the associated variable-length data
+ *                              in bytes.
  */
-#ifndef __cplusplus
-int psa_key_production_parameters_are_default(
-    const psa_key_production_parameters_t *params,
-    size_t params_data_length);
-#endif
+int psa_custom_key_parameters_are_default(
+    const psa_custom_key_parameters_t *custom,
+    size_t custom_data_length);
 
 /**
  * \brief Generate a key.
@@ -364,9 +407,9 @@ int psa_key_production_parameters_are_default(
  *       entry point.
  *
  * \param[in]  attributes         The attributes for the key to generate.
- * \param[in]  params             The production parameters from
- *                                psa_generate_key_ext().
- * \param      params_data_length The size of `params->data` in bytes.
+ * \param[in] custom              Custom parameters for the key generation.
+ * \param[in] custom_data         Variable-length data associated with \c custom.
+ * \param custom_data_length      Length of `custom_data` in bytes.
  * \param[out] key_buffer         Buffer where the key data is to be written.
  * \param[in]  key_buffer_size    Size of \p key_buffer in bytes.
  * \param[out] key_buffer_length  On success, the number of bytes written in
@@ -380,14 +423,13 @@ int psa_key_production_parameters_are_default(
  * \retval #PSA_ERROR_BUFFER_TOO_SMALL
  *         The size of \p key_buffer is too small.
  */
-#ifndef __cplusplus
 psa_status_t psa_generate_key_internal(const psa_key_attributes_t *attributes,
-                                       const psa_key_production_parameters_t *params,
-                                       size_t params_data_length,
+                                       const psa_custom_key_parameters_t *custom,
+                                       const uint8_t *custom_data,
+                                       size_t custom_data_length,
                                        uint8_t *key_buffer,
                                        size_t key_buffer_size,
                                        size_t *key_buffer_length);
-#endif
 
 /** Sign a message with a private key. For hash-and-sign algorithms,
  *  this includes the hashing step.

@@ -354,7 +354,9 @@ void DebugEffects::draw_motion_vectors(RID p_velocity, RID p_depth, RID p_dest_f
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_fb, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD);
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, motion_vectors.pipeline.get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_fb), false, RD::get_singleton()->draw_list_get_current_pass()));
 
-	Projection reprojection = p_previous_projection.flipped_y() * p_previous_transform.affine_inverse() * p_current_transform * p_current_projection.flipped_y().inverse();
+	Projection correction;
+	correction.set_depth_correction(true, true, false);
+	Projection reprojection = (correction * p_previous_projection) * p_previous_transform.affine_inverse() * p_current_transform * (correction * p_current_projection).inverse();
 	RendererRD::MaterialStorage::store_camera(reprojection, motion_vectors.push_constant.reprojection_matrix);
 
 	motion_vectors.push_constant.resolution[0] = p_resolution.width;

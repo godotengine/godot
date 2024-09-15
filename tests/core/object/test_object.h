@@ -31,7 +31,6 @@
 #ifndef TEST_OBJECT_H
 #define TEST_OBJECT_H
 
-#include "core/core_string_names.h"
 #include "core/object/class_db.h"
 #include "core/object/object.h"
 #include "core/object/script_language.h"
@@ -142,7 +141,7 @@ TEST_CASE("[Object] Core getters") {
 			inheritance_list.size() == 1,
 			"The inheritance list should consist of Object only");
 	CHECK_MESSAGE(
-			inheritance_list[0] == "Object",
+			inheritance_list.front()->get() == "Object",
 			"The inheritance list should consist of Object only");
 }
 
@@ -175,6 +174,31 @@ TEST_CASE("[Object] Metadata") {
 	CHECK_MESSAGE(
 			meta_list2.size() == 0,
 			"The metadata list should contain 0 items after removing all metadata items.");
+
+	Object other;
+	object.set_meta("conflicting_meta", "string");
+	object.set_meta("not_conflicting_meta", 123);
+	other.set_meta("conflicting_meta", Color(0, 1, 0));
+	other.set_meta("other_meta", "other");
+	object.merge_meta_from(&other);
+
+	CHECK_MESSAGE(
+			Color(object.get_meta("conflicting_meta")).is_equal_approx(Color(0, 1, 0)),
+			"String meta should be overwritten with Color after merging.");
+
+	CHECK_MESSAGE(
+			int(object.get_meta("not_conflicting_meta")) == 123,
+			"Not conflicting meta on destination should be kept intact.");
+
+	CHECK_MESSAGE(
+			object.get_meta("other_meta", String()) == "other",
+			"Not conflicting meta name on source should merged.");
+
+	List<StringName> meta_list3;
+	object.get_meta_list(&meta_list3);
+	CHECK_MESSAGE(
+			meta_list3.size() == 3,
+			"The metadata list should contain 3 items after merging meta from two objects.");
 }
 
 TEST_CASE("[Object] Construction") {
@@ -251,7 +275,7 @@ TEST_CASE("[Object] Script property setter") {
 	Variant script;
 
 	bool valid = false;
-	object.set(CoreStringNames::get_singleton()->_script, script, &valid);
+	object.set(CoreStringName(script), script, &valid);
 	CHECK(valid);
 	CHECK_MESSAGE(
 			object.get_script() == script,
@@ -264,7 +288,7 @@ TEST_CASE("[Object] Script property getter") {
 	object.set_script(script);
 
 	bool valid = false;
-	const Variant &actual_value = object.get(CoreStringNames::get_singleton()->_script, &valid);
+	const Variant &actual_value = object.get(CoreStringName(script), &valid);
 	CHECK(valid);
 	CHECK_MESSAGE(
 			actual_value == script,

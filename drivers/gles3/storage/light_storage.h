@@ -180,6 +180,7 @@ struct Lightmap {
 	bool interior = false;
 	AABB bounds = AABB(Vector3(), Vector3(1, 1, 1));
 	float baked_exposure = 1.0;
+	Vector2i light_texture_size;
 	int32_t array_index = -1; //unassigned
 	PackedVector3Array points;
 	PackedColorArray point_sh;
@@ -202,7 +203,7 @@ struct LightmapInstance {
 
 class LightStorage : public RendererLightStorage {
 public:
-	enum ShadowAtlastQuadrant {
+	enum ShadowAtlastQuadrant : uint32_t {
 		QUADRANT_SHIFT = 27,
 		OMNI_LIGHT_FLAG = 1 << 26,
 		SHADOW_INDEX_MASK = OMNI_LIGHT_FLAG - 1,

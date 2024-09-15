@@ -30,7 +30,6 @@
 
 #include "variant_utility.h"
 
-#include "core/core_string_names.h"
 #include "core/io/marshalls.h"
 #include "core/object/ref_counted.h"
 #include "core/os/os.h"
@@ -453,12 +452,14 @@ Variant VariantUtilityFunctions::lerp(const Variant &from, const Variant &to, do
 		case Variant::QUATERNION:
 		case Variant::BASIS:
 		case Variant::COLOR:
+		case Variant::TRANSFORM2D:
+		case Variant::TRANSFORM3D:
 			break;
 		default:
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 0;
 			r_error.expected = Variant::NIL;
-			return R"(Argument "from" must be "int", "float", "Vector2", "Vector3", "Vector4", "Quaternion", "Basis, or "Color".)";
+			return R"(Argument "from" must be "int", "float", "Vector2", "Vector3", "Vector4", "Color", "Quaternion", "Basis", "Transform2D", or "Transform3D".)";
 	}
 
 	if (from.get_type() != to.get_type()) {
@@ -490,6 +491,12 @@ Variant VariantUtilityFunctions::lerp(const Variant &from, const Variant &to, do
 		} break;
 		case Variant::BASIS: {
 			return VariantInternalAccessor<Basis>::get(&from).slerp(VariantInternalAccessor<Basis>::get(&to), weight);
+		} break;
+		case Variant::TRANSFORM2D: {
+			return VariantInternalAccessor<Transform2D>::get(&from).interpolate_with(VariantInternalAccessor<Transform2D>::get(&to), weight);
+		} break;
+		case Variant::TRANSFORM3D: {
+			return VariantInternalAccessor<Transform3D>::get(&from).interpolate_with(VariantInternalAccessor<Transform3D>::get(&to), weight);
 		} break;
 		case Variant::COLOR: {
 			return VariantInternalAccessor<Color>::get(&from).lerp(VariantInternalAccessor<Color>::get(&to), weight);
@@ -917,6 +924,8 @@ Variant VariantUtilityFunctions::type_convert(const Variant &p_variant, const Va
 			return p_variant.operator PackedVector3Array();
 		case Variant::Type::PACKED_COLOR_ARRAY:
 			return p_variant.operator PackedColorArray();
+		case Variant::Type::PACKED_VECTOR4_ARRAY:
+			return p_variant.operator PackedVector4Array();
 		case Variant::Type::VARIANT_MAX:
 			ERR_PRINT("Invalid type argument to type_convert(), use the TYPE_* constants. Returning the unconverted Variant.");
 	}

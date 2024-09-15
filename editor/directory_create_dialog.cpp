@@ -159,5 +159,5 @@ DirectoryCreateDialog::DirectoryCreateDialog() {
 	validation_panel->set_update_callback(callable_mp(this, &DirectoryCreateDialog::_on_dir_path_changed));
 	validation_panel->set_accept_button(get_ok_button());
 
-	dir_path->connect("text_changed", callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
+	dir_path->connect(SceneStringName(text_changed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
 }

@@ -35,10 +35,9 @@
 #include "core/error/error_macros.h"
 #include "core/version.h"
 #include "scene/main/scene_tree.h"
-#include "scene/scene_string_names.h"
 
 void Material::set_next_pass(const Ref<Material> &p_pass) {
-	for (Ref<Material> pass_child = p_pass; pass_child != nullptr; pass_child = pass_child->get_next_pass()) {
+	for (Ref<Material> pass_child = p_pass; pass_child.is_valid(); pass_child = pass_child->get_next_pass()) {
 		ERR_FAIL_COND_MSG(pass_child == this, "Can't set as next_pass one of its parents to prevent crashes due to recursive loop.");
 	}
 
@@ -82,24 +81,25 @@ void Material::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
-void Material::_mark_initialized(const Callable &p_queue_shader_change_callable) {
+void Material::_mark_ready() {
+	init_state = INIT_STATE_READY;
+}
+
+void Material::_mark_initialized(const Callable &p_add_to_dirty_list, const Callable &p_update_shader) {
 	// If this is happening as part of resource loading, it is not safe to queue the update
-	// as an addition to the dirty list, unless the load is happening on the main thread.
-	if (ResourceLoader::is_within_load() && Thread::get_caller_id() != Thread::get_main_id()) {
+	// as an addition to the dirty list. It would be if the load is happening on the main thread,
+	// but even so we'd rather perform the update directly instead of using the dirty list.
+	if (ResourceLoader::is_within_load()) {
 		DEV_ASSERT(init_state != INIT_STATE_READY);
 		if (init_state == INIT_STATE_UNINITIALIZED) { // Prevent queueing twice.
-			// Let's mark this material as being initialized.
 			init_state = INIT_STATE_INITIALIZING;
-			// Knowing that the ResourceLoader will eventually feed deferred calls into the main message queue, let's do these:
-			// 1. Queue setting the init state to INIT_STATE_READY finally.
-			callable_mp(this, &Material::_mark_initialized).bind(p_queue_shader_change_callable).call_deferred();
-			// 2. Queue an individual update of this material.
-			p_queue_shader_change_callable.call_deferred();
+			callable_mp(this, &Material::_mark_ready).call_deferred();
+			p_update_shader.call_deferred();
 		}
 	} else {
 		// Straightforward conditions.
 		init_state = INIT_STATE_READY;
-		p_queue_shader_change_callable.callv(Array());
+		p_add_to_dirty_list.call();
 	}
 }
 
@@ -324,6 +324,21 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 					is_uniform_type_compatible = E->get().type == cached.get_type();
 				}
 
+#ifndef DISABLE_DEPRECATED
+				// PackedFloat32Array -> PackedVector4Array conversion.
+				if (!is_uniform_type_compatible && E->get().type == Variant::PACKED_VECTOR4_ARRAY && cached.get_type() == Variant::PACKED_FLOAT32_ARRAY) {
+					PackedVector4Array varray;
+					PackedFloat32Array array = (PackedFloat32Array)cached;
+
+					for (int i = 0; i + 3 < array.size(); i += 4) {
+						varray.push_back(Vector4(array[i], array[i + 1], array[i + 2], array[i + 3]));
+					}
+
+					param_cache.insert(E->get().name, varray);
+					is_uniform_type_compatible = true;
+				}
+#endif
+
 				if (is_uniform_type_compatible && E->get().type == Variant::OBJECT && cached.get_type() == Variant::OBJECT) {
 					// Check if the Object class (hint string) changed, for example Texture2D sampler to Texture3D.
 					// Allow inheritance, Texture2D type sampler should also accept CompressedTexture2D.
@@ -364,6 +379,8 @@ bool ShaderMaterial::_property_can_revert(const StringName &p_name) const {
 			Variant default_value = RenderingServer::get_singleton()->shader_get_parameter_default(shader->get_rid(), *pr);
 			Variant current_value = get_shader_parameter(*pr);
 			return default_value.get_type() != Variant::NIL && default_value != current_value;
+		} else if (p_name == "render_priority" || p_name == "next_pass") {
+			return true;
 		}
 	}
 	return false;
@@ -374,6 +391,12 @@ bool ShaderMaterial::_property_get_revert(const StringName &p_name, Variant &r_p
 		const StringName *pr = remap_cache.getptr(p_name);
 		if (pr) {
 			r_property = RenderingServer::get_singleton()->shader_get_parameter_default(shader->get_rid(), *pr);
+			return true;
+		} else if (p_name == "render_priority") {
+			r_property = 0;
+			return true;
+		} else if (p_name == "next_pass") {
+			r_property = Variant();
 			return true;
 		}
 	}
@@ -603,8 +626,6 @@ void BaseMaterial3D::finish_shaders() {
 }
 
 void BaseMaterial3D::_update_shader() {
-	dirty_materials.remove(&element);
-
 	MaterialKey mk = _compute_key();
 	if (mk == current_key) {
 		return; //no update required in the end
@@ -687,6 +708,9 @@ void BaseMaterial3D::_update_shader() {
 			break;
 		case BLEND_MODE_MUL:
 			code += "blend_mul";
+			break;
+		case BLEND_MODE_PREMULT_ALPHA:
+			code += "blend_premul_alpha";
 			break;
 		case BLEND_MODE_MAX:
 			break; // Internal value, skip.
@@ -821,7 +845,18 @@ uniform float distance_fade_max : hint_range(0.0, 4096.0, 0.01);
 )";
 	}
 
-	if (flags[FLAG_ALBEDO_TEXTURE_MSDF]) {
+	if (flags[FLAG_ALBEDO_TEXTURE_MSDF] && flags[FLAG_UV1_USE_TRIPLANAR]) {
+		String msg = "MSDF is not supported on triplanar materials. Ignoring MSDF in favor of triplanar mapping.";
+		if (textures[TEXTURE_ALBEDO].is_valid()) {
+			WARN_PRINT(vformat("%s (albedo %s): " + msg, get_path(), textures[TEXTURE_ALBEDO]->get_path()));
+		} else if (!get_path().is_empty()) {
+			WARN_PRINT(vformat("%s: " + msg, get_path()));
+		} else {
+			WARN_PRINT(msg);
+		}
+	}
+
+	if (flags[FLAG_ALBEDO_TEXTURE_MSDF] && !flags[FLAG_UV1_USE_TRIPLANAR]) {
 		code += R"(
 uniform float msdf_pixel_range : hint_range(1.0, 100.0, 1.0);
 uniform float msdf_outline_size : hint_range(0.0, 250.0, 1.0);
@@ -1270,7 +1305,7 @@ void vertex() {)";
 
 	code += "}\n";
 
-	if (flags[FLAG_ALBEDO_TEXTURE_MSDF]) {
+	if (flags[FLAG_ALBEDO_TEXTURE_MSDF] && !flags[FLAG_UV1_USE_TRIPLANAR]) {
 		code += R"(
 float msdf_median(float r, float g, float b, float a) {
 	return min(max(min(r, g), min(max(r, g), b)), a);
@@ -1325,7 +1360,7 @@ void fragment() {)";
 	}
 
 	// Heightmapping isn't supported at the same time as triplanar mapping.
-	if (!RenderingServer::get_singleton()->is_low_end() && features[FEATURE_HEIGHT_MAPPING] && !flags[FLAG_UV1_USE_TRIPLANAR]) {
+	if (features[FEATURE_HEIGHT_MAPPING] && !flags[FLAG_UV1_USE_TRIPLANAR]) {
 		// Binormal is negative due to mikktspace. Flipping it "unflips" it.
 		code += R"(
 	{
@@ -1413,7 +1448,7 @@ void fragment() {)";
 		}
 	}
 
-	if (flags[FLAG_ALBEDO_TEXTURE_MSDF]) {
+	if (flags[FLAG_ALBEDO_TEXTURE_MSDF] && !flags[FLAG_UV1_USE_TRIPLANAR]) {
 		code += R"(
 	{
 		// Albedo Texture MSDF: Enabled
@@ -1426,11 +1461,7 @@ void fragment() {)";
 		if (flags[FLAG_USE_POINT_SIZE]) {
 			code += "		vec2 dest_size = vec2(1.0) / fwidth(POINT_COORD);\n";
 		} else {
-			if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-				code += "		vec2 dest_size = vec2(1.0) / fwidth(uv1_triplanar_pos);\n";
-			} else {
-				code += "		vec2 dest_size = vec2(1.0) / fwidth(base_uv);\n";
-			}
+			code += "		vec2 dest_size = vec2(1.0) / fwidth(base_uv);\n";
 		}
 		code += R"(
 		float px_size = max(0.5 * dot(msdf_size, dest_size), 1.0);
@@ -1629,21 +1660,20 @@ void fragment() {)";
 		// Use the slightly more expensive circular fade (distance to the object) instead of linear
 		// (Z distance), so that the fade is always the same regardless of the camera angle.
 		if ((distance_fade == DISTANCE_FADE_OBJECT_DITHER || distance_fade == DISTANCE_FADE_PIXEL_DITHER)) {
-			if (!RenderingServer::get_singleton()->is_low_end()) {
-				code += "\n	{";
+			code += "\n	{";
 
-				if (distance_fade == DISTANCE_FADE_OBJECT_DITHER) {
-					code += R"(
+			if (distance_fade == DISTANCE_FADE_OBJECT_DITHER) {
+				code += R"(
 		// Distance Fade: Object Dither
 		float fade_distance = length((VIEW_MATRIX * MODEL_MATRIX[3]));
 )";
-				} else {
-					code += R"(
+			} else {
+				code += R"(
 		// Distance Fade: Pixel Dither
 		float fade_distance = length(VERTEX);
 )";
-				}
-				code += R"(
+			}
+			code += R"(
 		// Use interleaved gradient noise, which is fast but still looks good.
 		const vec3 magic = vec3(0.06711056, 0.00583715, 52.9829189);
 		float fade = clamp(smoothstep(distance_fade_min, distance_fade_max, fade_distance), 0.0, 1.0);
@@ -1653,7 +1683,6 @@ void fragment() {)";
 		}
 	}
 )";
-			}
 		} else {
 			code += R"(
 	// Distance Fade: Pixel Alpha
@@ -1819,6 +1848,11 @@ void fragment() {)";
 	vec3 detail = mix(ALBEDO.rgb, ALBEDO.rgb * detail_tex.rgb, detail_tex.a);
 )";
 			} break;
+			case BLEND_MODE_PREMULT_ALPHA: {
+				// This is unlikely to ever be used for detail textures, and in order for it to function in the editor, another bit must be used in MaterialKey,
+				// but there are only 5 bits left, so I'm going to leave this disabled unless it's actually requested.
+				//code += "\tvec3 detail = (1.0-detail_tex.a)*ALBEDO.rgb+detail_tex.rgb;\n";
+			} break;
 			case BLEND_MODE_MAX:
 				break; // Internal value, skip.
 		}
@@ -1847,6 +1881,7 @@ void BaseMaterial3D::flush_changes() {
 
 	while (dirty_materials.first()) {
 		dirty_materials.first()->self()->_update_shader();
+		dirty_materials.first()->remove_from_list();
 	}
 }
 
@@ -1856,12 +1891,6 @@ void BaseMaterial3D::_queue_shader_change() {
 	if (_is_initialized() && !element.in_list()) {
 		dirty_materials.add(&element);
 	}
-}
-
-bool BaseMaterial3D::_is_shader_dirty() const {
-	MutexLock lock(material_mutex);
-
-	return element.in_list();
 }
 
 void BaseMaterial3D::set_albedo(const Color &p_albedo) {
@@ -2816,7 +2845,7 @@ BaseMaterial3D::EmissionOperator BaseMaterial3D::get_emission_operator() const {
 
 RID BaseMaterial3D::get_shader_rid() const {
 	MutexLock lock(material_mutex);
-	if (element.in_list()) { // _is_shader_dirty() would create anoder mutex lock
+	if (element.in_list()) {
 		((BaseMaterial3D *)this)->_update_shader();
 	}
 	ERR_FAIL_COND_V(!shader_map.has(current_key), RID());
@@ -3040,7 +3069,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "alpha_hash_scale", PROPERTY_HINT_RANGE, "0,2,0.01"), "set_alpha_hash_scale", "get_alpha_hash_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alpha_antialiasing_mode", PROPERTY_HINT_ENUM, "Disabled,Alpha Edge Blend,Alpha Edge Clip"), "set_alpha_antialiasing", "get_alpha_antialiasing");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "alpha_antialiasing_edge", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_alpha_antialiasing_edge", "get_alpha_antialiasing_edge");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_mode", PROPERTY_HINT_ENUM, "Mix,Add,Subtract,Multiply"), "set_blend_mode", "get_blend_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_mode", PROPERTY_HINT_ENUM, "Mix,Add,Subtract,Multiply,Premultiplied Alpha"), "set_blend_mode", "get_blend_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mode", PROPERTY_HINT_ENUM, "Back,Front,Disabled"), "set_cull_mode", "get_cull_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "depth_draw_mode", PROPERTY_HINT_ENUM, "Opaque Only,Always,Never"), "set_depth_draw_mode", "get_depth_draw_mode");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "no_depth_test"), "set_flag", "get_flag", FLAG_DISABLE_DEPTH_TEST);
@@ -3269,6 +3298,7 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(BLEND_MODE_ADD);
 	BIND_ENUM_CONSTANT(BLEND_MODE_SUB);
 	BIND_ENUM_CONSTANT(BLEND_MODE_MUL);
+	BIND_ENUM_CONSTANT(BLEND_MODE_PREMULT_ALPHA);
 
 	BIND_ENUM_CONSTANT(ALPHA_ANTIALIASING_OFF);
 	BIND_ENUM_CONSTANT(ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE);
@@ -3403,7 +3433,7 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 
 	current_key.invalid_key = 1;
 
-	_mark_initialized(callable_mp(this, &BaseMaterial3D::_queue_shader_change));
+	_mark_initialized(callable_mp(this, &BaseMaterial3D::_queue_shader_change), callable_mp(this, &BaseMaterial3D::_update_shader));
 }
 
 BaseMaterial3D::~BaseMaterial3D() {

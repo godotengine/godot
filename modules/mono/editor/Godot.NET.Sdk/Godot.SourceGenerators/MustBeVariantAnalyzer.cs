@@ -50,8 +50,18 @@ namespace Godot.SourceGenerators
                 var typeSymbol = sm.GetSymbolInfo(typeSyntax).Symbol as ITypeSymbol;
                 Helper.ThrowIfNull(typeSymbol);
 
-                var parentSymbol = sm.GetSymbolInfo(parentSyntax).Symbol;
-                Helper.ThrowIfNull(parentSymbol);
+                var parentSymbolInfo = sm.GetSymbolInfo(parentSyntax);
+                var parentSymbol = parentSymbolInfo.Symbol;
+                if (parentSymbol == null)
+                {
+                    if (parentSymbolInfo.CandidateReason == CandidateReason.LateBound)
+                    {
+                        // Invocations on dynamic are late bound so we can't retrieve the symbol.
+                        continue;
+                    }
+
+                    Helper.ThrowIfNull(parentSymbol);
+                }
 
                 if (!ShouldCheckTypeArgument(context, parentSyntax, parentSymbol, typeSyntax, typeSymbol, i))
                 {

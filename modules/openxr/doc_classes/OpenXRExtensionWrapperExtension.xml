@@ -84,6 +84,12 @@
 				Called right before the OpenXR instance is destroyed.
 			</description>
 		</method>
+		<method name="_on_main_swapchains_created" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called right after the main swapchains are (re)created.
+			</description>
+		</method>
 		<method name="_on_pre_render" qualifiers="virtual">
 			<return type="void" />
 			<description>

@@ -267,6 +267,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="ignore_invalid_connection_type" type="bool" setter="set_ignore_invalid_connection_type" getter="is_ignoring_valid_connection_type" default="false">
+			If [code]true[/code], you can connect ports with different types, even if the connection was not explicitly allowed in the parent [GraphEdit].
+		</member>
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="0" />
 		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;&quot;">
 			The text displayed in the GraphNode's title bar.

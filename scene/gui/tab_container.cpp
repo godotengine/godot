@@ -30,9 +30,6 @@
 
 #include "tab_container.h"
 
-#include "scene/gui/box_container.h"
-#include "scene/gui/label.h"
-#include "scene/gui/texture_rect.h"
 #include "scene/theme/theme_db.h"
 
 int TabContainer::_get_tab_height() const {
@@ -150,9 +147,7 @@ void TabContainer::_notification(int p_what) {
 			if (get_tab_count() > 0) {
 				_refresh_tab_names();
 			}
-		} break;
 
-		case NOTIFICATION_POST_ENTER_TREE: {
 			if (setup_current_tab >= -1) {
 				set_current_tab(setup_current_tab);
 				setup_current_tab = -2;
@@ -194,6 +189,25 @@ void TabContainer::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_visible() || setup_current_tab > -2) {
+				return;
+			}
+
+			updating_visibility = true;
+
+			// As the visibility change notification will be triggered for all children soon after,
+			// beat it to the punch and make sure that the correct node is the only one visible first.
+			// Otherwise, it can prevent a tab change done right before this container was made visible.
+			Vector<Control *> controls = _get_tab_controls();
+			int current = get_current_tab();
+			for (int i = 0; i < controls.size(); i++) {
+				controls[i]->set_visible(i == current);
+			}
+
+			updating_visibility = false;
+		} break;
+
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
@@ -229,8 +243,8 @@ void TabContainer::_on_theme_changed() {
 	tab_bar->add_theme_color_override(SNAME("font_disabled_color"), theme_cache.font_disabled_color);
 	tab_bar->add_theme_color_override(SNAME("font_outline_color"), theme_cache.font_outline_color);
 
-	tab_bar->add_theme_font_override(SNAME("font"), theme_cache.tab_font);
-	tab_bar->add_theme_font_size_override(SNAME("font_size"), theme_cache.tab_font_size);
+	tab_bar->add_theme_font_override(SceneStringName(font), theme_cache.tab_font);
+	tab_bar->add_theme_font_size_override(SceneStringName(font_size), theme_cache.tab_font_size);
 
 	tab_bar->add_theme_constant_override(SNAME("h_separation"), theme_cache.icon_separation);
 	tab_bar->add_theme_constant_override(SNAME("icon_max_width"), theme_cache.icon_max_width);
@@ -348,8 +362,8 @@ void TabContainer::_on_mouse_exited() {
 Vector<Control *> TabContainer::_get_tab_controls() const {
 	Vector<Control *> controls;
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *control = Object::cast_to<Control>(get_child(i));
-		if (!control || control->is_set_as_top_level() || control == tab_bar || children_removing.has(control)) {
+		Control *control = as_sortable_control(get_child(i), SortableVisbilityMode::IGNORE);
+		if (!control || control == tab_bar || children_removing.has(control)) {
 			continue;
 		}
 
@@ -403,6 +417,7 @@ void TabContainer::move_tab_from_tab_container(TabContainer *p_from, int p_from_
 
 	// Get the tab properties before they get erased by the child removal.
 	String tab_title = p_from->get_tab_title(p_from_index);
+	String tab_tooltip = p_from->get_tab_tooltip(p_from_index);
 	Ref<Texture2D> tab_icon = p_from->get_tab_icon(p_from_index);
 	Ref<Texture2D> tab_button_icon = p_from->get_tab_button_icon(p_from_index);
 	bool tab_disabled = p_from->is_tab_disabled(p_from_index);
@@ -420,6 +435,7 @@ void TabContainer::move_tab_from_tab_container(TabContainer *p_from, int p_from_
 	move_child(moving_tabc, get_tab_control(p_to_index)->get_index(false));
 
 	set_tab_title(p_to_index, tab_title);
+	set_tab_tooltip(p_to_index, tab_tooltip);
 	set_tab_icon(p_to_index, tab_icon);
 	set_tab_button_icon(p_to_index, tab_button_icon);
 	set_tab_disabled(p_to_index, tab_disabled);
@@ -523,8 +539,8 @@ void TabContainer::add_child_notify(Node *p_child) {
 		return;
 	}
 
-	Control *c = Object::cast_to<Control>(p_child);
-	if (!c || c->is_set_as_top_level()) {
+	Control *c = as_sortable_control(p_child, SortableVisbilityMode::IGNORE);
+	if (!c) {
 		return;
 	}
 	c->hide();
@@ -538,7 +554,7 @@ void TabContainer::add_child_notify(Node *p_child) {
 	}
 
 	p_child->connect("renamed", callable_mp(this, &TabContainer::_refresh_tab_names));
-	p_child->connect(SNAME("visibility_changed"), callable_mp(this, &TabContainer::_on_tab_visibility_changed).bind(c));
+	p_child->connect(SceneStringName(visibility_changed), callable_mp(this, &TabContainer::_on_tab_visibility_changed).bind(c));
 
 	// TabBar won't emit the "tab_changed" signal when not inside the tree.
 	if (!is_inside_tree()) {
@@ -553,8 +569,8 @@ void TabContainer::move_child_notify(Node *p_child) {
 		return;
 	}
 
-	Control *c = Object::cast_to<Control>(p_child);
-	if (c && !c->is_set_as_top_level()) {
+	Control *c = as_sortable_control(p_child, SortableVisbilityMode::IGNORE);
+	if (c) {
 		tab_bar->move_tab(c->get_meta("_tab_index"), get_tab_idx_from_control(c));
 	}
 
@@ -568,8 +584,8 @@ void TabContainer::remove_child_notify(Node *p_child) {
 		return;
 	}
 
-	Control *c = Object::cast_to<Control>(p_child);
-	if (!c || c->is_set_as_top_level()) {
+	Control *c = as_sortable_control(p_child, SortableVisbilityMode::IGNORE);
+	if (!c) {
 		return;
 	}
 
@@ -591,7 +607,7 @@ void TabContainer::remove_child_notify(Node *p_child) {
 	p_child->remove_meta("_tab_index");
 	p_child->remove_meta("_tab_name");
 	p_child->disconnect("renamed", callable_mp(this, &TabContainer::_refresh_tab_names));
-	p_child->disconnect(SNAME("visibility_changed"), callable_mp(this, &TabContainer::_on_tab_visibility_changed));
+	p_child->disconnect(SceneStringName(visibility_changed), callable_mp(this, &TabContainer::_on_tab_visibility_changed));
 
 	// TabBar won't emit the "tab_changed" signal when not inside the tree.
 	if (!is_inside_tree()) {
@@ -612,6 +628,7 @@ void TabContainer::set_current_tab(int p_current) {
 		setup_current_tab = p_current;
 		return;
 	}
+
 	tab_bar->set_current_tab(p_current);
 }
 
@@ -763,14 +780,20 @@ void TabContainer::set_tab_title(int p_tab, const String &p_title) {
 		child->set_meta("_tab_name", p_title);
 	}
 
-	_update_margins();
-	if (!get_clip_tabs()) {
-		update_minimum_size();
-	}
+	_repaint();
+	queue_redraw();
 }
 
 String TabContainer::get_tab_title(int p_tab) const {
 	return tab_bar->get_tab_title(p_tab);
+}
+
+void TabContainer::set_tab_tooltip(int p_tab, const String &p_tooltip) {
+	tab_bar->set_tab_tooltip(p_tab, p_tooltip);
+}
+
+String TabContainer::get_tab_tooltip(int p_tab) const {
+	return tab_bar->get_tab_tooltip(p_tab);
 }
 
 void TabContainer::set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon) {
@@ -782,10 +805,27 @@ void TabContainer::set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon) {
 
 	_update_margins();
 	_repaint();
+	queue_redraw();
 }
 
 Ref<Texture2D> TabContainer::get_tab_icon(int p_tab) const {
 	return tab_bar->get_tab_icon(p_tab);
+}
+
+void TabContainer::set_tab_icon_max_width(int p_tab, int p_width) {
+	if (tab_bar->get_tab_icon_max_width(p_tab) == p_width) {
+		return;
+	}
+
+	tab_bar->set_tab_icon_max_width(p_tab, p_width);
+
+	_update_margins();
+	_repaint();
+	queue_redraw();
+}
+
+int TabContainer::get_tab_icon_max_width(int p_tab) const {
+	return tab_bar->get_tab_icon_max_width(p_tab);
 }
 
 void TabContainer::set_tab_disabled(int p_tab, bool p_disabled) {
@@ -980,8 +1020,12 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_all_tabs_in_front"), &TabContainer::is_all_tabs_in_front);
 	ClassDB::bind_method(D_METHOD("set_tab_title", "tab_idx", "title"), &TabContainer::set_tab_title);
 	ClassDB::bind_method(D_METHOD("get_tab_title", "tab_idx"), &TabContainer::get_tab_title);
+	ClassDB::bind_method(D_METHOD("set_tab_tooltip", "tab_idx", "tooltip"), &TabContainer::set_tab_tooltip);
+	ClassDB::bind_method(D_METHOD("get_tab_tooltip", "tab_idx"), &TabContainer::get_tab_tooltip);
 	ClassDB::bind_method(D_METHOD("set_tab_icon", "tab_idx", "icon"), &TabContainer::set_tab_icon);
 	ClassDB::bind_method(D_METHOD("get_tab_icon", "tab_idx"), &TabContainer::get_tab_icon);
+	ClassDB::bind_method(D_METHOD("set_tab_icon_max_width", "tab_idx", "width"), &TabContainer::set_tab_icon_max_width);
+	ClassDB::bind_method(D_METHOD("get_tab_icon_max_width", "tab_idx"), &TabContainer::get_tab_icon_max_width);
 	ClassDB::bind_method(D_METHOD("set_tab_disabled", "tab_idx", "disabled"), &TabContainer::set_tab_disabled);
 	ClassDB::bind_method(D_METHOD("is_tab_disabled", "tab_idx"), &TabContainer::is_tab_disabled);
 	ClassDB::bind_method(D_METHOD("set_tab_hidden", "tab_idx", "hidden"), &TabContainer::set_tab_hidden);
@@ -1077,5 +1121,5 @@ TabContainer::TabContainer() {
 	tab_bar->connect("tab_button_pressed", callable_mp(this, &TabContainer::_on_tab_button_pressed));
 	tab_bar->connect("active_tab_rearranged", callable_mp(this, &TabContainer::_on_active_tab_rearranged));
 
-	connect("mouse_exited", callable_mp(this, &TabContainer::_on_mouse_exited));
+	connect(SceneStringName(mouse_exited), callable_mp(this, &TabContainer::_on_mouse_exited));
 }

@@ -90,9 +90,6 @@ void Skeleton2DEditor::_menu_option(int p_option) {
 	}
 }
 
-void Skeleton2DEditor::_bind_methods() {
-}
-
 Skeleton2DEditor::Skeleton2DEditor() {
 	options = memnew(MenuButton);
 
@@ -107,7 +104,7 @@ Skeleton2DEditor::Skeleton2DEditor() {
 	options->get_popup()->add_item(TTR("Overwrite Rest Pose"), MENU_OPTION_MAKE_REST);
 	options->set_switch_on_hover(true);
 
-	options->get_popup()->connect("id_pressed", callable_mp(this, &Skeleton2DEditor::_menu_option));
+	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &Skeleton2DEditor::_menu_option));
 
 	err_dialog = memnew(AcceptDialog);
 	add_child(err_dialog);
@@ -132,7 +129,7 @@ void Skeleton2DEditorPlugin::make_visible(bool p_visible) {
 
 Skeleton2DEditorPlugin::Skeleton2DEditorPlugin() {
 	sprite_editor = memnew(Skeleton2DEditor);
-	EditorNode::get_singleton()->get_main_screen_control()->add_child(sprite_editor);
+	EditorNode::get_singleton()->get_gui_base()->add_child(sprite_editor);
 	make_visible(false);
 
 	//sprite_editor->options->hide();
