@@ -647,6 +647,7 @@ public:
 							continue;
 						}
 						t->loc = loc.lerp(t->loc, blend);
+						t->loc_used = true;
 					}
 				} break;
 				case Animation::TYPE_ROTATION_3D: {
@@ -729,6 +730,7 @@ public:
 							continue;
 						}
 						t->rot = rot.slerp(t->rot, blend).normalized();
+						t->rot_used = true;
 					}
 
 				} break;
@@ -812,6 +814,7 @@ public:
 							continue;
 						}
 						t->scale = scale.lerp(t->scale, blend);
+						t->scale_used = true;
 					}
 				} break;
 				case Animation::TYPE_BLEND_SHAPE: {
