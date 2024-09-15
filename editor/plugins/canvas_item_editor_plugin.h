@@ -467,6 +467,7 @@ private:
 
 	void _draw_viewport();
 
+	void _is_hovering_guide(const Point2 &p_pos, bool p_is_pressed = false);
 	bool _gui_input_anchors(const Ref<InputEvent> &p_event);
 	bool _gui_input_move(const Ref<InputEvent> &p_event);
 	bool _gui_input_open_scene_on_double_click(const Ref<InputEvent> &p_event);
