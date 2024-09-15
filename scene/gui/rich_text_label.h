@@ -626,6 +626,9 @@ private:
 	String text;
 	void _apply_translation();
 
+	bool internal_stack_editing = false;
+	bool stack_externally_modified = false;
+
 	bool fit_content = false;
 
 	struct ThemeCache {
