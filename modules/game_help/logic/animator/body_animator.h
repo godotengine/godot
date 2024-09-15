@@ -320,10 +320,19 @@ public:
     {
     public:
         void clear_cache(Skeleton3D* t_skeleton,Node* p_parent) {
-            if(t_skeleton->get_instance_id() != skeleton_id) {
-                skeleton_id = t_skeleton->get_instance_id();
-                context.clear();                
-            }
+			if (t_skeleton != nullptr)
+			{
+				if(t_skeleton->get_instance_id() != skeleton_id) {
+					skeleton_id = t_skeleton->get_instance_id();
+					context.clear();                
+				}
+
+			}
+			else
+			{
+				skeleton_id = ObjectID();
+				context.clear();
+			}
             skeleton = t_skeleton;
 			parent = p_parent;
             animation_instances.clear();
@@ -354,7 +363,7 @@ public:
                             root_motion_position_accumulator = t->loc;
                             root_motion_rotation_accumulator = t->rot;
                             root_motion_scale_accumulator = t->scale;
-                        } else if (t->skeleton_id.is_valid() && t->bone_idx >= 0) {
+                        } else if ( t->bone_idx >= 0) {
                             if (!t_skeleton) {
                                 return;
                             }
@@ -394,41 +403,7 @@ public:
                                 }
                             }
 
-                        } else if (!t->skeleton_id.is_valid()) {
-                            Node3D *t_node_3d = Object::cast_to<Node3D>(ObjectDB::get_instance(t->object_id));
-                            if (!t_node_3d) {
-                                return;
-                            }
-                            if (t->loc_used) {
-                                if(config->get_blend_type() == CharacterAnimatorLayerConfig::BT_Blend)
-                                {
-                                    t_node_3d->set_position(t_node_3d->get_position().lerp(t->loc,blend_weight));
-                                }
-                                else
-                                {
-                                    t_node_3d->set_position(t->loc);
-                                }
-                            }
-                            if (t->rot_used) {
-                                if(config->get_blend_type() == CharacterAnimatorLayerConfig::BT_Blend)
-                                {
-                                    t_node_3d->set_rotation(t_node_3d->get_rotation().slerp(t->rot.get_euler(),blend_weight));
-                                }
-                                else
-                                {
-                                    t_node_3d->set_rotation(t->rot.get_euler());
-                                }
-                            }
-                            if (t->scale_used) {
-                                if(config->get_blend_type() == CharacterAnimatorLayerConfig::BT_Blend)
-                                {
-                                    t_node_3d->set_scale(t_node_3d->get_scale().lerp(t->scale,blend_weight));
-                                }
-                                else
-                                {                            
-                                    t_node_3d->set_scale(t->scale);
-                                }
-                            }
+                        
                         }
                     } break;
                     default: {
@@ -646,7 +621,7 @@ public:
 						if (err != OK) {
 							continue;
 						}
-						t->loc = loc.lerp(t->loc, blend);
+						t->loc = t->loc.lerp(loc, blend);
 						t->loc_used = true;
 					}
 				} break;
@@ -729,7 +704,7 @@ public:
 						if (err != OK) {
 							continue;
 						}
-						t->rot = rot.slerp(t->rot, blend).normalized();
+						t->rot = t->rot.slerp(rot, blend).normalized();
 						t->rot_used = true;
 					}
 
@@ -813,7 +788,7 @@ public:
 						if (err != OK) {
 							continue;
 						}
-						t->scale = scale.lerp(t->scale, blend);
+						t->scale = t->scale.lerp(scale, blend);
 						t->scale_used = true;
 					}
 				} break;
@@ -828,7 +803,7 @@ public:
 					if (err != OK) {
 						continue;
 					}
-					t->value = Math::lerp((double)value, (double)t->value,blend);
+					t->value = Math::lerp( (double)t->value, (double)value, blend);
 				} break;
 				}
 

@@ -55,6 +55,9 @@ void CharacterBodyMain::clear_all()
         
     }
     bodyPart.clear();
+    if(animator.is_valid()) {
+        animator->set_body(nullptr);
+    }
 }
 void CharacterBodyMain::_notification( int p_notification )
 {
@@ -245,7 +248,6 @@ void CharacterBodyMain::_init_body()
 	if (body_prefab.is_valid())
 	{
 		body_prefab->connect_changed(callable_mp(this, &CharacterBodyMain::load_prefab));
-
 		Ref<PackedScene> scene;
 		String skeleton_res = body_prefab->skeleton_path;
 		if (skeleton_res.begins_with("res://"))
@@ -297,6 +299,9 @@ void CharacterBodyMain::_init_body()
 			Ref< CharacterBodyPart> part = part_array[i];
 			bodyPart[part->get_name()] = p;
 		}
+        if(animator.is_valid()) {
+            animator->set_body(this);
+        }
 		notify_property_list_changed();
 	}
 
@@ -718,13 +723,11 @@ void CharacterBodyMain::editor_build_animation()
 	Ref<CharacterBoneMap> bone_map;
     Node* node = p_node->find_child("Skeleton3D");
     Skeleton3D* skeleton = Object::cast_to<Skeleton3D>(node);
-	if (bone_map.is_null())
-	{
-	}
 	if (skeleton != nullptr)
 	{
 		bone_map.instantiate();
 		bone_map->set_bone_map(skeleton->get_human_bone_mapping());
+		bone_map->set_bone_names(skeleton->get_bone_names());
 	}
 	else 
 	{

@@ -168,6 +168,10 @@ void CharacterAnimatorLayer::_process_animator(const Ref<Blackboard> &p_playback
 // 处理动画
 void CharacterAnimatorLayer::_process_animation(const Ref<Blackboard> &p_playback_info,double p_delta,bool is_first)
 {
+	Skeleton3D* skeleton = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(skeleton_id));
+	if (skeleton == nullptr) {
+		return;
+	}
 	update_tool->process_animations();
     update_tool->layer_blend_apply(config, blend_weight);
 
