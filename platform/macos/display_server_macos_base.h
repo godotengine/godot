@@ -64,7 +64,9 @@ public:
 	virtual void clipboard_set(const String &p_text) override;
 	virtual String clipboard_get() const override;
 	virtual Ref<Image> clipboard_get_image() const override;
+	virtual int clipboard_get_file_count() const override;
 	virtual bool clipboard_has() const override;
+	virtual bool clipboard_has_file() const override;
 	virtual bool clipboard_has_image() const override;
 
 	virtual int keyboard_get_layout_count() const override;
