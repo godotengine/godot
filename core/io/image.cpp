@@ -866,12 +866,10 @@ static void _scale_cubic(const uint8_t *__restrict p_src, uint8_t *__restrict p_
 
 template <int CC, typename T>
 static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height) {
-	enum {
-		FRAC_BITS = 8,
-		FRAC_LEN = (1 << FRAC_BITS),
-		FRAC_HALF = (FRAC_LEN >> 1),
-		FRAC_MASK = FRAC_LEN - 1
-	};
+	constexpr uint32_t FRAC_BITS = 8;
+	constexpr uint32_t FRAC_LEN = (1 << FRAC_BITS);
+	constexpr uint32_t FRAC_HALF = (FRAC_LEN >> 1);
+	constexpr uint32_t FRAC_MASK = FRAC_LEN - 1;
 
 	for (uint32_t i = 0; i < p_dst_height; i++) {
 		// Add 0.5 in order to interpolate based on pixel center
