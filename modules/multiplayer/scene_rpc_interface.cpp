@@ -118,7 +118,7 @@ const SceneRPCInterface::RPCConfigCache &SceneRPCInterface::_get_node_config(con
 		return rpc_cache[oid];
 	}
 	RPCConfigCache cache;
-	_parse_rpc_config(p_node->get_node_rpc_config(), true, cache);
+	_parse_rpc_config(p_node->get_rpc_config(), true, cache);
 	if (p_node->get_script_instance()) {
 		_parse_rpc_config(p_node->get_script_instance()->get_rpc_config(), false, cache);
 	}

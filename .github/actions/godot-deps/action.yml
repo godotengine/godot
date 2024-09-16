@@ -1,17 +1,19 @@
 name: Setup Python and SCons
 description: Setup Python, install the pip version of SCons.
+
 inputs:
   python-version:
     description: The Python version to use.
-    default: "3.x"
+    default: 3.x
   python-arch:
     description: The Python architecture.
-    default: "x64"
+    default: x64
   scons-version:
     description: The SCons version to use.
-    default: "4.8.0"
+    default: 4.8.0
+
 runs:
-  using: "composite"
+  using: composite
   steps:
     - name: Set up Python 3.x
       uses: actions/setup-python@v5

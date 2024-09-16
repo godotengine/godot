@@ -2717,7 +2717,7 @@ int CSharpScript::get_member_line(const StringName &p_member) const {
 	return -1;
 }
 
-const Variant CSharpScript::get_rpc_config() const {
+Variant CSharpScript::get_rpc_config() const {
 	return rpc_config;
 }
 

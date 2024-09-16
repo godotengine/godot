@@ -151,7 +151,7 @@
 		<method name="gui_is_dragging" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the viewport is currently performing a drag operation.
+				Returns [code]true[/code] if a drag operation is currently ongoing and where the drop action could happen in this viewport.
 				Alternative to [constant Node.NOTIFICATION_DRAG_BEGIN] and [constant Node.NOTIFICATION_DRAG_END] when you prefer polling the value.
 			</description>
 		</method>

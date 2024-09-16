@@ -224,6 +224,12 @@ class EditorFileSystem : public Node {
 		void increment();
 	};
 
+	struct DirectoryComparator {
+		bool operator()(const EditorFileSystemDirectory *p_a, const EditorFileSystemDirectory *p_b) const {
+			return p_a->name.filenocasecmp_to(p_b->name) < 0;
+		}
+	};
+
 	void _save_filesystem_cache();
 	void _save_filesystem_cache(EditorFileSystemDirectory *p_dir, Ref<FileAccess> p_file);
 
@@ -363,6 +369,8 @@ public:
 
 	bool is_group_file(const String &p_path) const;
 	void move_group_file(const String &p_path, const String &p_new_path);
+
+	void add_new_directory(const String &p_path);
 
 	static bool _should_skip_directory(const String &p_path);
 

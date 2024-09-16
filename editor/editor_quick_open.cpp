@@ -202,36 +202,30 @@ void EditorQuickOpen::_text_changed(const String &p_newtext) {
 	_update_search();
 }
 
-void EditorQuickOpen::_sbox_input(const Ref<InputEvent> &p_ie) {
-	Ref<InputEventKey> k = p_ie;
-	if (k.is_valid()) {
-		switch (k->get_keycode()) {
-			case Key::UP:
-			case Key::DOWN:
-			case Key::PAGEUP:
-			case Key::PAGEDOWN: {
-				search_options->gui_input(k);
-				search_box->accept_event();
+void EditorQuickOpen::_sbox_input(const Ref<InputEvent> &p_event) {
+	// Redirect navigational key events to the tree.
+	Ref<InputEventKey> key = p_event;
+	if (key.is_valid()) {
+		if (key->is_action("ui_up", true) || key->is_action("ui_down", true) || key->is_action("ui_page_up") || key->is_action("ui_page_down")) {
+			search_options->gui_input(key);
+			search_box->accept_event();
 
-				if (allow_multi_select) {
-					TreeItem *root = search_options->get_root();
-					if (!root->get_first_child()) {
-						break;
-					}
-
-					TreeItem *current = search_options->get_selected();
-					TreeItem *item = search_options->get_next_selected(root);
-					while (item) {
-						item->deselect(0);
-						item = search_options->get_next_selected(item);
-					}
-
-					current->select(0);
-					current->set_as_cursor(0);
+			if (allow_multi_select) {
+				TreeItem *root = search_options->get_root();
+				if (!root->get_first_child()) {
+					return;
 				}
-			} break;
-			default:
-				break;
+
+				TreeItem *current = search_options->get_selected();
+				TreeItem *item = search_options->get_next_selected(root);
+				while (item) {
+					item->deselect(0);
+					item = search_options->get_next_selected(item);
+				}
+
+				current->select(0);
+				current->set_as_cursor(0);
+			}
 		}
 	}
 }

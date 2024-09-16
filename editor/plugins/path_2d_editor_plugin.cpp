@@ -486,6 +486,8 @@ void Path2DEditor::edit(Node *p_path2d) {
 		}
 		node = nullptr;
 	}
+
+	canvas_item_editor->update_viewport();
 }
 
 void Path2DEditor::_bind_methods() {
@@ -763,7 +765,6 @@ bool Path2DEditorPlugin::handles(Object *p_object) const {
 void Path2DEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		path2d_editor->show();
-
 	} else {
 		path2d_editor->hide();
 		path2d_editor->edit(nullptr);

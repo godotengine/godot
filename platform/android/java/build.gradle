@@ -25,7 +25,7 @@ allprojects {
 ext {
     supportedAbis = ["arm32", "arm64", "x86_32", "x86_64"]
     supportedFlavors = ["editor", "template"]
-    supportedEditorVendors = ["google", "meta"]
+    supportedAndroidDistributions = ["android", "horizonos"]
     supportedFlavorsBuildTypes = [
         "editor": ["dev", "debug", "release"],
         "template": ["dev", "debug", "release"]
@@ -94,17 +94,17 @@ def templateExcludedBuildTask() {
 /**
  * Generates the build tasks for the given flavor
  * @param flavor Must be one of the supported flavors ('template' / 'editor')
- * @param editorVendor Must be one of the supported editor vendors ('google' / 'meta')
+ * @param androidDistro Must be one of the supported Android distributions ('android' / 'horizonos')
  */
-def generateBuildTasks(String flavor = "template", String editorVendor = "google") {
+def generateBuildTasks(String flavor = "template", String androidDistro = "android") {
     if (!supportedFlavors.contains(flavor)) {
         throw new GradleException("Invalid build flavor: $flavor")
     }
-    if (!supportedEditorVendors.contains(editorVendor)) {
-        throw new GradleException("Invalid editor vendor: $editorVendor")
+    if (!supportedAndroidDistributions.contains(androidDistro)) {
+        throw new GradleException("Invalid Android distribution: $androidDistro")
     }
 
-    String capitalizedEditorVendor = editorVendor.capitalize()
+    String capitalizedAndroidDistro = androidDistro.capitalize()
     def buildTasks = []
 
     // Only build the binary files for which we have native shared libraries unless we intend
@@ -170,28 +170,28 @@ def generateBuildTasks(String flavor = "template", String editorVendor = "google
                 }
             } else {
                 // Copy the generated editor apk to the bin directory.
-                String copyEditorApkTaskName = "copyEditor${capitalizedEditorVendor}${capitalizedTarget}ApkToBin"
+                String copyEditorApkTaskName = "copyEditor${capitalizedAndroidDistro}${capitalizedTarget}ApkToBin"
                 if (tasks.findByName(copyEditorApkTaskName) != null) {
                     buildTasks += tasks.getByName(copyEditorApkTaskName)
                 } else {
                     buildTasks += tasks.create(name: copyEditorApkTaskName, type: Copy) {
-                        dependsOn ":editor:assemble${capitalizedEditorVendor}${capitalizedTarget}"
-                        from("editor/build/outputs/apk/${editorVendor}/${target}")
+                        dependsOn ":editor:assemble${capitalizedAndroidDistro}${capitalizedTarget}"
+                        from("editor/build/outputs/apk/${androidDistro}/${target}")
                         into(androidEditorBuildsDir)
-                        include("android_editor-${editorVendor}-${target}*.apk")
+                        include("android_editor-${androidDistro}-${target}*.apk")
                     }
                 }
 
                 // Copy the generated editor aab to the bin directory.
-                String copyEditorAabTaskName = "copyEditor${capitalizedEditorVendor}${capitalizedTarget}AabToBin"
+                String copyEditorAabTaskName = "copyEditor${capitalizedAndroidDistro}${capitalizedTarget}AabToBin"
                 if (tasks.findByName(copyEditorAabTaskName) != null) {
                     buildTasks += tasks.getByName(copyEditorAabTaskName)
                 } else {
                     buildTasks += tasks.create(name: copyEditorAabTaskName, type: Copy) {
-                        dependsOn ":editor:bundle${capitalizedEditorVendor}${capitalizedTarget}"
-                        from("editor/build/outputs/bundle/${editorVendor}${capitalizedTarget}")
+                        dependsOn ":editor:bundle${capitalizedAndroidDistro}${capitalizedTarget}"
+                        from("editor/build/outputs/bundle/${androidDistro}${capitalizedTarget}")
                         into(androidEditorBuildsDir)
-                        include("android_editor-${editorVendor}-${target}*.aab")
+                        include("android_editor-${androidDistro}-${target}*.aab")
                     }
                 }
             }
@@ -204,7 +204,7 @@ def generateBuildTasks(String flavor = "template", String editorVendor = "google
 }
 
 /**
- * Generate the Godot Editor Android binaries.
+ * Generate the Godot Editor binaries for Android devices.
  *
  * Note: Unless the 'generateNativeLibs` argument is specified, the Godot 'tools' shared libraries
  * must have been generated (via scons) prior to running this gradle task.
@@ -212,19 +212,19 @@ def generateBuildTasks(String flavor = "template", String editorVendor = "google
  */
 task generateGodotEditor {
     gradle.startParameter.excludedTaskNames += templateExcludedBuildTask()
-    dependsOn = generateBuildTasks("editor", "google")
+    dependsOn = generateBuildTasks("editor", "android")
 }
 
 /**
- * Generate the Godot Editor Android binaries for Meta devices.
+ * Generate the Godot Editor binaries for HorizonOS devices.
  *
  * Note: Unless the 'generateNativeLibs` argument is specified, the Godot 'tools' shared libraries
  * must have been generated (via scons) prior to running this gradle task.
  * The task will only build the binaries for which the shared libraries is available.
  */
-task generateGodotMetaEditor {
+task generateGodotHorizonOSEditor {
     gradle.startParameter.excludedTaskNames += templateExcludedBuildTask()
-    dependsOn = generateBuildTasks("editor", "meta")
+    dependsOn = generateBuildTasks("editor", "horizonos")
 }
 
 /**
