@@ -81,7 +81,8 @@ class ImportDock : public VBoxContainer {
 	void _reimport_and_cleanup();
 	void _reimport();
 
-	void _replace_resource_in_object(Object *p_object, const Ref<Resource> &old_resource, const Ref<Resource> &new_resource);
+	void _replace_resource_in_object(Object *p_object, const Ref<Resource> &p_old_resource, const Ref<Resource> &p_new_resource);
+	bool _check_property_for_resource(Variant &p_property, const Ref<Resource> &p_old_resource, const Ref<Resource> &p_new_resource);
 
 	void _advanced_options();
 	enum {

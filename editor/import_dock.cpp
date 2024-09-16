@@ -594,6 +594,7 @@ void ImportDock::_reimport_and_cleanup() {
 
 	EditorResourcePreview::get_singleton()->stop(); // Don't try to re-create previews after import.
 	_reimport();
+	EditorFileSystem::get_singleton()->scan(); // In case reimport created new resources.
 
 	if (need_cleanup.is_empty()) {
 		return;
@@ -693,35 +694,81 @@ void ImportDock::_reimport() {
 	_set_dirty(false);
 }
 
-void ImportDock::_replace_resource_in_object(Object *p_object, const Ref<Resource> &old_resource, const Ref<Resource> &new_resource) {
+void ImportDock::_replace_resource_in_object(Object *p_object, const Ref<Resource> &p_old_resource, const Ref<Resource> &p_new_resource) {
 	ERR_FAIL_NULL(p_object);
 
 	List<PropertyInfo> props;
 	p_object->get_property_list(&props);
 
 	for (const PropertyInfo &p : props) {
-		if (p.type != Variant::OBJECT || p.hint != PROPERTY_HINT_RESOURCE_TYPE) {
+		if (p.type != Variant::OBJECT && p.type != Variant::ARRAY && p.type != Variant::DICTIONARY) {
 			continue;
 		}
 
-		Ref<Resource> res = p_object->get(p.name);
-		if (res.is_null()) {
+		if (p.type == Variant::OBJECT && p.hint != PROPERTY_HINT_RESOURCE_TYPE) {
 			continue;
 		}
 
-		if (res == old_resource) {
-			p_object->set(p.name, new_resource);
-		} else {
-			_replace_resource_in_object(res.ptr(), old_resource, new_resource);
+		Variant &value = p_object->get(p.name);
+		if (_check_property_for_resource(value, p_old_resource, p_new_resource)) {
+			p_object->set(p.name, p_new_resource);
 		}
 	}
 
 	Node *n = Object::cast_to<Node>(p_object);
 	if (n) {
 		for (int i = 0; i < n->get_child_count(); i++) {
-			_replace_resource_in_object(n->get_child(i), old_resource, new_resource);
+			_replace_resource_in_object(n->get_child(i), p_old_resource, p_new_resource);
 		}
 	}
+}
+
+bool ImportDock::_check_property_for_resource(Variant &p_property, const Ref<Resource> &p_old_resource, const Ref<Resource> &p_new_resource) {
+	switch (p_property.get_type()) {
+		case Variant::ARRAY: {
+			Array array = p_property;
+			for (int i = 0; i < array.size(); i++) {
+				if (_check_property_for_resource(array[i], p_old_resource, p_new_resource)) {
+					array[i] = p_new_resource;
+				}
+			}
+		} break;
+
+		case Variant::DICTIONARY: {
+			Dictionary dict = p_property;
+
+			Array array = dict.keys();
+			for (int i = 0; i < array.size(); i++) {
+				Variant &v = array[i];
+
+				if (_check_property_for_resource(dict[v], p_old_resource, p_new_resource)) {
+					dict[v] = p_new_resource;
+				}
+
+				if (_check_property_for_resource(v, p_old_resource, p_new_resource)) {
+					dict[p_new_resource] = dict[v];
+					dict.erase(v);
+				}
+			}
+		} break;
+
+		case Variant::OBJECT: {
+			Ref<Resource> res = p_property;
+			if (res.is_null()) {
+				return false;
+			}
+
+			if (res == p_old_resource) {
+				return true;
+			} else {
+				_replace_resource_in_object(res.ptr(), p_old_resource, p_new_resource);
+			}
+		} break;
+
+		default: {
+		}
+	}
+	return false;
 }
 
 void ImportDock::_notification(int p_what) {
