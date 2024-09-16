@@ -1088,7 +1088,7 @@ void InputEventMouseMotion::_bind_methods() {
 ///////////////////////////////////
 
 void InputEventJoypadMotion::set_axis(JoyAxis p_axis) {
-	ERR_FAIL_COND(p_axis < JoyAxis::LEFT_X || p_axis > JoyAxis::MAX);
+	ERR_FAIL_COND(p_axis < JoyAxis::INVALID || p_axis > JoyAxis::MAX);
 
 	axis = p_axis;
 	emit_changed();
