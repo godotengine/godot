@@ -370,7 +370,7 @@ public:
 	bool is_group_file(const String &p_path) const;
 	void move_group_file(const String &p_path, const String &p_new_path);
 
-	void add_new_directory(const String &p_path);
+	Error make_dir_recursive(const String &p_path, const String &p_base_path = String());
 
 	static bool _should_skip_directory(const String &p_path);
 
