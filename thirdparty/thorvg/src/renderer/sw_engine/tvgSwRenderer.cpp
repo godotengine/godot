@@ -446,7 +446,7 @@ bool SwRenderer::renderShape(RenderData data)
 }
 
 
-bool SwRenderer::blend(BlendMethod method, bool direct)
+bool SwRenderer::blend(BlendMethod method)
 {
     if (surface->blendMethod == method) return true;
     surface->blendMethod = method;
@@ -459,7 +459,7 @@ bool SwRenderer::blend(BlendMethod method, bool direct)
             surface->blender = opBlendScreen;
             break;
         case BlendMethod::Multiply:
-            surface->blender = direct ? opBlendDirectMultiply : opBlendMultiply;
+            surface->blender = opBlendMultiply;
             break;
         case BlendMethod::Overlay:
             surface->blender = opBlendOverlay;
@@ -606,7 +606,10 @@ Compositor* SwRenderer::target(const RenderRegion& region, ColorSpace cs)
     cmp->w = cmp->compositor->image.w;
     cmp->h = cmp->compositor->image.h;
 
-    rasterClear(cmp, x, y, w, h);
+    /* TODO: Currently, only blending might work.
+       Blending and composition must be handled together. */
+    auto color = (surface->blender && !surface->compositor) ? 0x00ffffff : 0x00000000;
+    rasterClear(cmp, x, y, w, h, color);
 
     //Switch render target
     surface = cmp;
