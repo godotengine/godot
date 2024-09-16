@@ -114,20 +114,35 @@ private:
 		Thread thread;
 		bool signaled : 1;
 		bool yield_is_over : 1;
+		bool pre_exited_languages : 1;
+		bool exited_languages : 1;
 		Task *current_task = nullptr;
 		Task *awaited_task = nullptr; // Null if not awaiting the condition variable, or special value (YIELDING).
 		ConditionVariable cond_var;
 
 		ThreadData() :
 				signaled(false),
-				yield_is_over(false) {}
+				yield_is_over(false),
+				pre_exited_languages(false),
+				exited_languages(false) {}
 	};
 
 	TightLocalVector<ThreadData> threads;
 	enum Runlevel {
 		RUNLEVEL_NORMAL,
+		RUNLEVEL_PRE_EXIT_LANGUAGES, // Block adding new tasks
+		RUNLEVEL_EXIT_LANGUAGES, // All threads detach from scripting threads.
 		RUNLEVEL_EXIT,
 	} runlevel = RUNLEVEL_NORMAL;
+	union { // Cleared on every runlevel change.
+		struct {
+			uint32_t num_idle_threads;
+		} pre_exit_languages;
+		struct {
+			uint32_t num_exited_threads;
+		} exit_languages;
+	} runlevel_data;
+	ConditionVariable control_cond_var;
 
 	HashMap<Thread::ID, int> thread_ids;
 	HashMap<
@@ -155,7 +170,7 @@ private:
 
 	void _process_task(Task *task);
 
-	void _post_tasks_and_unlock(Task **p_tasks, uint32_t p_count, bool p_high_priority);
+	void _post_tasks(Task **p_tasks, uint32_t p_count, bool p_high_priority, MutexLock<BinaryMutex> &p_lock);
 	void _notify_threads(const ThreadData *p_current_thread_data, uint32_t p_process_count, uint32_t p_promote_count);
 
 	bool _try_promote_low_priority_task();
@@ -197,7 +212,7 @@ private:
 	void _wait_collaboratively(ThreadData *p_caller_pool_thread, Task *p_task);
 
 	void _switch_runlevel(Runlevel p_runlevel);
-	bool _handle_runlevel();
+	bool _handle_runlevel(ThreadData *p_thread_data, MutexLock<BinaryMutex> &p_lock);
 
 #ifdef THREADS_ENABLED
 	static uint32_t _thread_enter_unlock_allowance_zone(THREADING_NAMESPACE::unique_lock<THREADING_NAMESPACE::mutex> &p_ulock);
@@ -262,6 +277,7 @@ public:
 #endif
 
 	void init(int p_thread_count = -1, float p_low_priority_task_ratio = 0.3);
+	void exit_languages_threads();
 	void finish();
 	WorkerThreadPool();
 	~WorkerThreadPool();
