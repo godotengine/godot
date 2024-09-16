@@ -7,17 +7,17 @@ on:
 env:
   # Used for the cache key. Add version suffix to force clean build.
   GODOT_BASE_BRANCH: master
-  SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes d3d12=yes strict_checks=yes "angle_libs=${{github.workspace}}/"
+  SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes d3d12=yes strict_checks=yes "angle_libs=${{ github.workspace }}/"
   SCONS_CACHE_MSVC_CONFIG: true
 
 concurrency:
-  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-windows
+  group: ci-${{ github.actor }}-${{ github.head_ref || github.run_number }}-${{ github.ref }}-windows
   cancel-in-progress: true
 
 jobs:
   build-windows:
     # Windows 10 with latest image
-    runs-on: "windows-latest"
+    runs-on: windows-latest
     name: ${{ matrix.name }}
     strategy:
       fail-fast: false
@@ -29,7 +29,7 @@ jobs:
             tests: true
             # Skip debug symbols, they're way too big with MSVC.
             sconsflags: debug_symbols=no vsproj=yes vsproj_gen_only=no windows_subsystem=console
-            bin: "./bin/godot.windows.editor.x86_64.exe"
+            bin: ./bin/godot.windows.editor.x86_64.exe
             artifact: true
 
           - name: Editor w/ clang-cl (target=editor, tests=yes, use_llvm=yes)
@@ -39,16 +39,17 @@ jobs:
             sconsflags: debug_symbols=no windows_subsystem=console use_llvm=yes
             bin: ./bin/godot.windows.editor.x86_64.llvm.exe
 
-          - name: Template (target=template_release)
+          - name: Template (target=template_release, tests=yes)
             cache-name: windows-template
             target: template_release
             tests: true
-            sconsflags: debug_symbols=no tests=yes
-            bin: "./bin/godot.windows.template_release.x86_64.console.exe"
+            sconsflags: debug_symbols=no
+            bin: ./bin/godot.windows.template_release.x86_64.console.exe
             artifact: true
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
@@ -73,7 +74,7 @@ jobs:
           target: angle/angle.zip
 
       - name: Extract pre-built ANGLE static libraries
-        run: Expand-Archive -Force angle/angle.zip ${{github.workspace}}/
+        run: Expand-Archive -Force angle/angle.zip ${{ github.workspace }}/
 
       - name: Setup MSVC problem matcher
         uses: ammaraskar/msvc-problem-matcher@master
@@ -104,7 +105,7 @@ jobs:
           name: ${{ matrix.cache-name }}
 
       - name: Unit tests
-        if: ${{ matrix.tests }}
+        if: matrix.tests
         run: |
           ${{ matrix.bin }} --version
           ${{ matrix.bin }} --help

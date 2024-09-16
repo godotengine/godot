@@ -1,11 +1,13 @@
 name: Dump Godot API
 description: Dump Godot API for GDExtension
+
 inputs:
   bin:
     description: The path to the Godot executable
     required: true
+
 runs:
-  using: "composite"
+  using: composite
   steps:
     # Dump GDExtension interface and API
     - name: Dump GDExtension interface and API for godot-cpp build
@@ -19,5 +21,5 @@ runs:
     - name: Upload API dump
       uses: ./.github/actions/upload-artifact
       with:
-        name: 'godot-api-dump'
-        path: './godot-api/*'
+        name: godot-api-dump
+        path: ./godot-api/*
