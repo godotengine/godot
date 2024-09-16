@@ -279,6 +279,12 @@ public:
         }
         return mesh_instance->get_aabb();
     }
+    void set_show_mesh(bool p_show) {
+        if(mesh_instance == nullptr) {
+            return;
+        }
+        mesh_instance->set_visible(p_show);
+    }
 
     
 

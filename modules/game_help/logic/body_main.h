@@ -84,8 +84,9 @@ public:
             label->set_dont_save(true);
             label->set_global_position(skeleton->get_bone_global_pose(bone_index).origin);
             label->set_text(get_bone_label(value));
+			label->set_scale(Vector3(0.1, 0.1, 0.1));
             add_child(label);
-            label->set_owner(get_tree()->get_edited_scene_root());
+            //label->set_owner(get_tree()->get_edited_scene_root());
             bone_label[bone_index] = label;
         }
 
@@ -180,6 +181,7 @@ public:
             remove_child(E.value);
             E.value->queue_free();
         }
+		bone_label.clear();
         skeleton = nullptr;
     }
 
@@ -188,13 +190,13 @@ public:
             return;
         }
         for(auto E : bone_label) {
-            E.value->set_global_position(skeleton->get_bone_global_pose(E.key).origin);
+            E.value->set_position(skeleton->get_bone_global_pose(E.key).origin);
         }
     }
 
 protected:
     Skeleton3D* skeleton = nullptr;
-    Ref<BoneMap> bone_map;
+    Ref<CharacterBoneMap> bone_map;
     HashMap<int, Label3D*> bone_label;
 };
 
@@ -411,6 +413,13 @@ public:
             ik->_initialize(skeleton);
         }
     }
+	AABB get_mesh_aabb() {
+		AABB aabb;
+		for (auto& part : bodyPart) {
+			aabb = aabb.merge(part.value->get_mesh_aabb());
+		}
+		return aabb;
+	}
     Ref<RenIK> get_ik()
     {
         return ik;
@@ -421,6 +430,7 @@ public:
         return skeleton;
     }
 	GDVIRTUAL0(_update_player_position)
+
 public:
     
 	virtual void input(const Ref<InputEvent> &p_event) override
@@ -450,7 +460,6 @@ protected:
     void _update(double p_delta);
 
 	void _init_body();
-
 protected:
 	virtual void update_world_transform(const Transform3D & trans) override
 	{
@@ -543,13 +552,6 @@ public:
     bool get_editor_pause_animation() {
         return editor_pause_animation;
     }
-    AABB get_mesh_aabb() {
-        AABB aabb;
-        for(auto& part : bodyPart){
-			aabb = aabb.merge(part.value->get_mesh_aabb());
-        }
-        return aabb;      
-    }
 
     void set_play_animation(const Ref<Animation>& p_play_animation)
     {
@@ -561,6 +563,21 @@ public:
     {
         return play_animation;
     }
+
+	bool editor_show_mesh = true;
+
+    void set_editor_show_mesh(bool p_show) {
+        editor_show_mesh = p_show;
+        for(auto& part : bodyPart) {
+            part.value->set_show_mesh(p_show);
+        }
+    }
+
+    bool get_editor_show_mesh() {
+        return editor_show_mesh;
+    }
+
+
     Ref<Animation> play_animation;
     DECL_MEMBER_BUTTON(editor_play_select_animation);
     void update_bone_visble();

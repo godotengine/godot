@@ -301,6 +301,7 @@ void CharacterBodyMain::_init_body()
 			p.instantiate();
 			p->set_skeleton(skeleton);
 			p->set_part(part_array[i]);
+            p->set_show_mesh(editor_show_mesh);
 			Ref< CharacterBodyPart> part = part_array[i];
 			bodyPart[part->get_name()] = p;
 		}
@@ -383,7 +384,15 @@ void CharacterBodyMain::_bind_methods()
 
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan", PROPERTY_USAGE_DEFAULT ), "set_blackboard_plan", "get_blackboard_plan");
+
+
+
     ADD_GROUP("editor", "editor_");
+
+    ClassDB::bind_method(D_METHOD("set_editor_show_mesh", "editor_show_mesh"), &CharacterBodyMain::set_editor_show_mesh);
+    ClassDB::bind_method(D_METHOD("get_editor_show_mesh"), &CharacterBodyMain::get_editor_show_mesh);
+    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_show_mesh", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_editor_show_mesh", "get_editor_show_mesh");
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_form_mesh_file_path"), "set_editor_form_mesh_file_path", "get_editor_form_mesh_file_path");
     ADD_MEMBER_BUTTON(editor_build_form_mesh_file_path,L"根据模型初始化",CharacterBodyMain);
 
@@ -397,6 +406,8 @@ void CharacterBodyMain::_bind_methods()
     ClassDB::bind_method(D_METHOD("get_play_animation"), &CharacterBodyMain::get_play_animation);
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "editor_play_animation", PROPERTY_HINT_RESOURCE_TYPE, "Animation"), "set_play_animation", "get_play_animation");
     ADD_MEMBER_BUTTON(editor_play_select_animation,L"播放动画",CharacterBodyMain);
+
+
 
     ADD_GROUP("show", "");
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "body_prefab", PROPERTY_HINT_RESOURCE_TYPE, "CharacterBodyPrefab",PROPERTY_USAGE_DEFAULT ), "set_body_prefab", "get_body_prefab");
