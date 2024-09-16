@@ -3057,6 +3057,35 @@ void EditorFileSystem::move_group_file(const String &p_path, const String &p_new
 	}
 }
 
+void EditorFileSystem::add_new_directory(const String &p_path) {
+	String path = p_path.get_base_dir();
+	EditorFileSystemDirectory *parent = filesystem;
+	int base = p_path.count("/");
+	int max_bit = base + 1;
+
+	while (path != "res://") {
+		EditorFileSystemDirectory *dir = get_filesystem_path(path);
+		if (dir) {
+			parent = dir;
+			break;
+		}
+		path = path.get_base_dir();
+		base--;
+	}
+
+	for (int i = base; i < max_bit; i++) {
+		EditorFileSystemDirectory *efd = memnew(EditorFileSystemDirectory);
+		efd->parent = parent;
+		efd->name = p_path.get_slice("/", i);
+		parent->subdirs.push_back(efd);
+
+		if (i == base) {
+			parent->subdirs.sort_custom<DirectoryComparator>();
+		}
+		parent = efd;
+	}
+}
+
 ResourceUID::ID EditorFileSystem::_resource_saver_get_resource_id_for_path(const String &p_path, bool p_generate) {
 	if (!p_path.is_resource_file() || p_path.begins_with(ProjectSettings::get_singleton()->get_project_data_path())) {
 		// Saved externally (configuration file) or internal file, do not assign an ID.

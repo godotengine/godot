@@ -260,6 +260,7 @@ private:
 	void _toggle_file_display();
 	void _set_file_display(bool p_active);
 	void _fs_changed();
+	void _directory_created(const String &p_path);
 
 	void _select_file(const String &p_path, bool p_select_in_favorites = false);
 	void _tree_activate_file();
