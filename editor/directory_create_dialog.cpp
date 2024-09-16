@@ -31,6 +31,7 @@
 #include "directory_create_dialog.h"
 
 #include "core/io/dir_access.h"
+#include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/themes/editor_scale.h"
@@ -100,15 +101,7 @@ void DirectoryCreateDialog::ok_pressed() {
 	const String error = _validate_path(path);
 	ERR_FAIL_COND_MSG(!error.is_empty(), error);
 
-	Error err;
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-
-	err = da->change_dir(base_dir);
-	ERR_FAIL_COND_MSG(err != OK, "Cannot open directory '" + base_dir + "'.");
-
-	print_verbose("Making folder " + path + " in " + base_dir);
-	err = da->make_dir_recursive(path);
-
+	Error err = EditorFileSystem::get_singleton()->make_dir_recursive(path, base_dir);
 	if (err == OK) {
 		emit_signal(SNAME("dir_created"), base_dir.path_join(path));
 	} else {

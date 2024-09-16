@@ -191,7 +191,6 @@ void EditorDirDialog::_make_dir_confirm(const String &p_path) {
 	}
 
 	new_dir_path = p_path + "/";
-	EditorFileSystem::get_singleton()->scan_changes(); // We created a dir, so rescan changes.
 }
 
 void EditorDirDialog::_bind_methods() {
