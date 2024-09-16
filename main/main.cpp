@@ -4501,6 +4501,8 @@ void Main::cleanup(bool p_force) {
 	ResourceLoader::clear_translation_remaps();
 	ResourceLoader::clear_path_remaps();
 
+	WorkerThreadPool::get_singleton()->exit_languages_threads();
+
 	ScriptServer::finish_languages();
 
 	// Sync pending commands that may have been queued from a different thread during ScriptServer finalization
