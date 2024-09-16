@@ -757,7 +757,7 @@ void Node::rpc_config(const StringName &p_method, const Variant &p_config) {
 	}
 }
 
-const Variant Node::get_node_rpc_config() const {
+Variant Node::get_rpc_config() const {
 	return data.rpc_config;
 }
 
@@ -3638,6 +3638,7 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_multiplayer"), &Node::get_multiplayer);
 	ClassDB::bind_method(D_METHOD("rpc_config", "method", "config"), &Node::rpc_config);
+	ClassDB::bind_method(D_METHOD("get_rpc_config"), &Node::get_rpc_config);
 
 	ClassDB::bind_method(D_METHOD("set_editor_description", "editor_description"), &Node::set_editor_description);
 	ClassDB::bind_method(D_METHOD("get_editor_description"), &Node::get_editor_description);
