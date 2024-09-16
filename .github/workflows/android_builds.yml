@@ -86,7 +86,7 @@ jobs:
         run: |
           cd platform/android/java
           ./gradlew generateGodotEditor
-          ./gradlew generateGodotMetaEditor
+          ./gradlew generateGodotHorizonOSEditor
           cd ../../..
           ls -l bin/android_editor_builds/
 
