@@ -97,11 +97,11 @@ repos:
         entry: eslint
         files: ^(platform/web/js/|modules/|misc/dist/html/).*\.(js|html)$
         args:
-          - --fix,
-          - --no-warn-ignored,
-          - --no-config-lookup,
-          - --config,
-          - platform/web/eslint.config.cjs,
+          - --fix
+          - --no-warn-ignored
+          - --no-config-lookup
+          - --config
+          - platform/web/eslint.config.cjs
         additional_dependencies:
           - '@eslint/js@^9.3.0'
           - '@html-eslint/eslint-plugin@^0.24.1'
