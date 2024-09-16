@@ -81,7 +81,6 @@ private:
 
 	void _pick_node_filter_text_changed(const String &p_newtext);
 	void _pick_node_select_recursive(TreeItem *p_item, const String &p_filter, Vector<Node *> &p_select_candidates);
-	void _pick_node_filter_input(const Ref<InputEvent> &p_ie);
 	void _pick_node_selected(NodePath p_path);
 
 	void _pick_new_property();

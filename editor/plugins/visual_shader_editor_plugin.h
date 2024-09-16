@@ -230,7 +230,7 @@ class VisualShaderEditor : public ShaderEditor {
 
 	bool pending_update_preview = false;
 	bool shader_error = false;
-	Window *code_preview_window = nullptr;
+	AcceptDialog *code_preview_window = nullptr;
 	VBoxContainer *code_preview_vbox = nullptr;
 	CodeEdit *preview_text = nullptr;
 	Ref<CodeHighlighter> syntax_highlighter = nullptr;
@@ -576,9 +576,8 @@ class VisualShaderEditor : public ShaderEditor {
 	void _graph_gui_input(const Ref<InputEvent> &p_event);
 
 	void _member_filter_changed(const String &p_text);
-	void _sbox_input(const Ref<InputEvent> &p_ie);
+	void _sbox_input(const Ref<InputEvent> &p_event);
 	void _member_selected();
-	void _member_unselected();
 	void _member_create();
 	void _member_cancel();
 

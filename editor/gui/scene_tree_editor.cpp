@@ -1785,6 +1785,17 @@ void SceneTreeDialog::_filter_changed(const String &p_filter) {
 	tree->set_filter(p_filter);
 }
 
+void SceneTreeDialog::_on_filter_gui_input(const Ref<InputEvent> &p_event) {
+	// Redirect navigational key events to the tree.
+	Ref<InputEventKey> key = p_event;
+	if (key.is_valid()) {
+		if (key->is_action("ui_up", true) || key->is_action("ui_down", true) || key->is_action("ui_page_up") || key->is_action("ui_page_down")) {
+			tree->get_scene_tree()->gui_input(key);
+			filter->accept_event();
+		}
+	}
+}
+
 void SceneTreeDialog::_bind_methods() {
 	ClassDB::bind_method("_cancel", &SceneTreeDialog::_cancel);
 
@@ -1805,6 +1816,10 @@ SceneTreeDialog::SceneTreeDialog() {
 	filter->set_clear_button_enabled(true);
 	filter->add_theme_constant_override("minimum_character_width", 0);
 	filter->connect(SceneStringName(text_changed), callable_mp(this, &SceneTreeDialog::_filter_changed));
+	filter->connect(SceneStringName(gui_input), callable_mp(this, &SceneTreeDialog::_on_filter_gui_input));
+
+	register_text_enter(filter);
+
 	filter_hbc->add_child(filter);
 
 	// Add 'Show All' button to HBoxContainer next to the filter, visible only when valid_types is defined.
