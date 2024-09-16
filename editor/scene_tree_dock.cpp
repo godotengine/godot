@@ -744,6 +744,14 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				if (existing != empty) {
 					undo_redo->add_do_method(n, "set_script", empty);
 					undo_redo->add_undo_method(n, "set_script", existing);
+
+					List<PropertyInfo> properties;
+					n->get_property_list(&properties);
+					for (const PropertyInfo &property : properties) {
+						if (property.usage & (PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR)) {
+							undo_redo->add_undo_property(n, property.name, n->get(property.name));
+						}
+					}
 				}
 			}
 
