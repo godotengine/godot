@@ -25,7 +25,7 @@ name is available.
 
 ## Developers
 
-(in alphabetical order, with over 10 commits excluding merges)
+(in alphabetical order, with 11 or more commits excluding merges)
 
     Aaron Franke (aaronfranke)
     Aaron Pagano (aaronp64)
