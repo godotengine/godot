@@ -1,0 +1,9 @@
+[gd_resource type="Resource" load_steps=2 format=3 uid="uid://cqd4xsl30rr7b"]
+
+[ext_resource type="Script" path="./bar.notest.gd" id="1_bar"]
+[ext_resource type="Script" path="./qux.tres" id="1_qux"]
+
+[resource]
+script = ExtResource("1_bar")
+text = "lorem ipsum"
+qux = ExtResource("1_qux")

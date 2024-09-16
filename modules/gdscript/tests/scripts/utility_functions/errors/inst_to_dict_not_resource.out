@@ -1,0 +1,6 @@
+GDTEST_RUNTIME_ERROR
+>> SCRIPT ERROR
+>> on function: test()
+>> utility_functions/errors/inst_to_dict_not_resource.gd
+>> 9
+>> Error calling GDScript utility function "inst_to_dict()": Not based on a resource file.

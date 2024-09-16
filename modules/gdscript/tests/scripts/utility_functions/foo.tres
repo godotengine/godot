@@ -1,0 +1,9 @@
+[gd_resource type="Resource" load_steps=2 format=3 uid="uid://cqd4xsl30rr7a"]
+
+[ext_resource type="Script" path="./foo.notest.gd" id="1_foo"]
+[ext_resource type="Script" path="./bar.tres" id="1_bar"]
+
+[resource]
+script = ExtResource("1_foo")
+number = 42
+bar = ExtResource("1_bar")

@@ -224,16 +224,15 @@ struct GDScriptUtilityFunctionsDefinitions {
 		*r_ret = ResourceLoader::load(*p_args[0]);
 	}
 
-	static inline void inst_to_dict(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		DEBUG_VALIDATE_ARG_COUNT(1, 1);
-		DEBUG_VALIDATE_ARG_TYPE(0, Variant::OBJECT);
-
-		if (p_args[0]->get_type() == Variant::NIL) {
+	static inline void _inst_to_dict(Variant *r_ret, const Variant *p_var, bool p_deep, int p_recursion_count, Callable::CallError &r_error) {
+		if (p_var->get_type() == Variant::NIL) {
 			*r_ret = Variant();
 			return;
 		}
 
-		Object *obj = *p_args[0];
+		VALIDATE_ARG_CUSTOM(0, Variant::OBJECT, !Variant::can_convert_strict(p_var->get_type(), Variant::OBJECT), Variant());
+
+		Object *obj = *p_var;
 		if (!obj) {
 			*r_ret = Variant();
 			return;
@@ -268,19 +267,46 @@ struct GDScriptUtilityFunctionsDefinitions {
 
 		for (const KeyValue<StringName, GDScript::MemberInfo> &E : base->member_indices) {
 			if (!d.has(E.key)) {
-				d[E.key] = inst->members[E.value.index];
+				Variant member = inst->members[E.value.index];
+				if (p_deep && member.get_type() == Variant::OBJECT) {
+					Variant inner_dict;
+					_inst_to_dict(&inner_dict, &member, p_deep, p_recursion_count + 1, r_error);
+					if (r_error.error != Callable::CallError::CALL_OK) {
+						return;
+					} else {
+						member = inner_dict;
+					}
+				}
+				d[E.key] = member;
 			}
 		}
 
 		*r_ret = d;
+		return;
 	}
 
-	static inline void dict_to_inst(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		DEBUG_VALIDATE_ARG_COUNT(1, 1);
-		DEBUG_VALIDATE_ARG_TYPE(0, Variant::DICTIONARY);
+	static inline void inst_to_dict(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+		DEBUG_VALIDATE_ARG_COUNT(1, 2);
 
-		Dictionary d = *p_args[0];
+		bool deep = false;
+		if (p_arg_count > 1) {
+			DEBUG_VALIDATE_ARG_TYPE(1, Variant::BOOL);
+			deep = *p_args[1];
+		}
 
+		_inst_to_dict(r_ret, p_args[0], deep, 1, r_error);
+	}
+
+	static inline void _dict_to_inst(Variant *r_ret, const Variant *p_var, bool p_deep, int p_recursion_count, Callable::CallError &r_error) {
+		if (p_recursion_count > MAX_RECURSION) {
+			ERR_PRINT("Max recursion reached");
+			*r_ret = Variant();
+			return;
+		}
+
+		VALIDATE_ARG_CUSTOM(0, Variant::DICTIONARY, !Variant::can_convert_strict(p_var->get_type(), Variant::DICTIONARY), Variant());
+
+		Dictionary d = *p_var;
 		VALIDATE_ARG_CUSTOM(0, Variant::DICTIONARY, !d.has("@path"), RTR("Invalid instance dictionary format (missing @path)."));
 
 		Ref<Script> scr = ResourceLoader::load(d["@path"]);
@@ -299,20 +325,45 @@ struct GDScriptUtilityFunctionsDefinitions {
 			VALIDATE_ARG_CUSTOM(0, Variant::DICTIONARY, !gdscr.is_valid(), RTR("Invalid instance dictionary (invalid subclasses)."));
 		}
 
-		*r_ret = gdscr->_new(nullptr, -1 /* skip initializer */, r_error);
+		Variant ret = gdscr->_new(nullptr, -1 /* skip initializer */, r_error);
 		if (r_error.error != Callable::CallError::CALL_OK) {
 			*r_ret = RTR("Cannot instantiate GDScript class.");
 			return;
 		}
 
-		GDScriptInstance *inst = static_cast<GDScriptInstance *>(static_cast<Object *>(*r_ret)->get_script_instance());
+		GDScriptInstance *inst = static_cast<GDScriptInstance *>(static_cast<Object *>(ret)->get_script_instance());
 		Ref<GDScript> gd_ref = inst->get_script();
 
 		for (KeyValue<StringName, GDScript::MemberInfo> &E : gd_ref->member_indices) {
 			if (d.has(E.key)) {
-				inst->members.write[E.value.index] = d[E.key];
+				Variant member = d[E.key];
+				if (p_deep && member.get_type() == Variant::DICTIONARY) {
+					Variant inner_instance;
+					_dict_to_inst(&inner_instance, &member, p_deep, p_recursion_count + 1, r_error);
+					if (r_error.error != Callable::CallError::CALL_OK) {
+						return;
+					} else {
+						member = inner_instance;
+					}
+				}
+				inst->members.write[E.value.index] = member;
 			}
 		}
+
+		*r_ret = ret;
+		return;
+	}
+
+	static inline void dict_to_inst(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+		DEBUG_VALIDATE_ARG_COUNT(1, 2);
+
+		bool deep = false;
+		if (p_arg_count > 1) {
+			DEBUG_VALIDATE_ARG_TYPE(1, Variant::BOOL);
+			deep = *p_args[1];
+		}
+
+		_dict_to_inst(r_ret, p_args[0], deep, 1, r_error);
 	}
 
 	static inline void Color8(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
@@ -575,8 +626,8 @@ void GDScriptUtilityFunctions::register_functions() {
 	REGISTER_FUNC( _char,          true,  RET(STRING),        ARGS( ARG("char", INT)                ), false, varray(     ));
 	REGISTER_FUNC( range,          false, RET(ARRAY),         NOARGS,                                  true,  varray(     ));
 	REGISTER_FUNC( load,           false, RETCLS("Resource"), ARGS( ARG("path", STRING)             ), false, varray(     ));
-	REGISTER_FUNC( inst_to_dict,   false, RET(DICTIONARY),    ARGS( ARG("instance", OBJECT)         ), false, varray(     ));
-	REGISTER_FUNC( dict_to_inst,   false, RET(OBJECT),        ARGS( ARG("dictionary", DICTIONARY)   ), false, varray(     ));
+	REGISTER_FUNC( inst_to_dict,   false, RET(DICTIONARY),    ARGS( ARG("instance", OBJECT), ARG("deep", BOOL)       ), false, varray( false ));
+	REGISTER_FUNC( dict_to_inst,   false, RET(OBJECT),        ARGS( ARG("dictionary", DICTIONARY), ARG("deep", BOOL) ), false, varray( false ));
 	REGISTER_FUNC( Color8,         true,  RET(COLOR),         ARGS( ARG("r8", INT), ARG("g8", INT),
 																	ARG("b8", INT), ARG("a8", INT)  ), false, varray( 255 ));
 	REGISTER_FUNC( print_debug,    false, RET(NIL),           NOARGS,                                  true,  varray(     ));
