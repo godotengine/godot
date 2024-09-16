@@ -143,6 +143,11 @@ void CharacterBodyMain::_process_ik()
         ik->update_ik();
         ik->update_placement(delta);
     }
+
+    if(bone_label != nullptr) 
+    {
+        bone_label->update();
+    }
 }
 void CharacterBodyMain::_process_move()
 {
@@ -386,6 +391,12 @@ void CharacterBodyMain::_bind_methods()
     ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_animation_file_path",PROPERTY_HINT_FILE,"tres,*.tres"), "set_editor_animation_file_path", "get_editor_animation_file_path");
 
     ADD_MEMBER_BUTTON(editor_build_animation,L"构建动画文件信息",CharacterBodyMain);
+
+    
+    ClassDB::bind_method(D_METHOD("set_play_animation", "play_animation"), &CharacterBodyMain::set_play_animation);
+    ClassDB::bind_method(D_METHOD("get_play_animation"), &CharacterBodyMain::get_play_animation);
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "editor_play_animation", PROPERTY_HINT_RESOURCE_TYPE, "Animation"), "set_play_animation", "get_play_animation");
+    ADD_MEMBER_BUTTON(editor_play_select_animation,L"播放动画",CharacterBodyMain);
 
     ADD_GROUP("show", "");
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "body_prefab", PROPERTY_HINT_RESOURCE_TYPE, "CharacterBodyPrefab",PROPERTY_USAGE_DEFAULT ), "set_body_prefab", "get_body_prefab");
@@ -705,7 +716,37 @@ void CharacterBodyMain::editor_build_form_mesh_file_path()
     set_body_prefab(prefab);
     
 }
-
+void CharacterBodyMain::editor_play_select_animation() {
+    init();
+    if(play_animation.is_null()) {
+        return;
+    }
+    if(animator.is_null()) {
+        return;
+    }
+    animator->editor_play_animation(play_animation);
+}
+void CharacterBodyMain::update_bone_visble()
+{
+    if(bone_label != nullptr) {
+        bone_label->clear();
+    }
+    Skeleton3D* skeleton = get_skeleton();
+    if (skeleton == nullptr)
+    {
+        return;
+    }
+    if(play_animation.is_null()) {
+        return;
+    }
+    if(bone_label == nullptr) {
+        bone_label = memnew(HumanBoneVisble);
+        add_child(bone_label);
+        bone_label->set_owner(this);
+    }
+	bone_label->init(get_skeleton(), play_animation->get_bone_map());
+    
+}
 void CharacterBodyMain::editor_build_animation()
 {
     if(!FileAccess::exists(editor_animation_file_path))

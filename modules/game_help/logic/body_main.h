@@ -8,6 +8,8 @@
 #include "scene/3d/skeleton_3d.h"
 #include "scene/3d/physics/character_body_3d.h"
 #include "scene/3d/physics/collision_shape_3d.h"
+#include "scene/3d/label_3d.h"
+
 #include "animator/animation_help.h"
 #include "animator/body_animator.h"
 #include "character_movement.h"
@@ -56,6 +58,144 @@ public:
     // 行为树运行上下文,只有逻辑节点使用,每个逻辑节点执行结束后悔进行重置
     Ref<BeehaveRuncontext> beehave_run_context;
     
+};
+// 人形骨骼显示
+class HumanBoneVisble  : public Node3D
+{
+    GDCLASS(HumanBoneVisble,Node3D);
+
+public:
+    void init(Skeleton3D* p_skeleton, Ref<CharacterBoneMap> p_bone_map) {
+        clear();
+        skeleton = p_skeleton;
+        bone_map = p_bone_map;
+        if(skeleton == nullptr || bone_map.is_null()) {
+            return;
+        }
+		Dictionary bm = p_bone_map->get_bone_map();
+		Array keys = bm.keys();
+        for(auto E : keys) {
+			String value = bm[E];
+			int bone_index = skeleton->find_bone(value);
+            if(bone_index  == -1) {
+                continue;
+            }
+            Label3D* label = memnew(Label3D);
+            label->set_dont_save(true);
+            label->set_global_position(skeleton->get_bone_global_pose(bone_index).origin);
+            label->set_text(get_bone_label(value));
+            add_child(label);
+            label->set_owner(get_tree()->get_edited_scene_root());
+            bone_label[bone_index] = label;
+        }
+
+    }
+    String get_bone_label(StringName p_bone) {
+        static HashMap<String,String> label_map = {
+            {"Hips",L"臀部"},
+            {"Spine",L"脊柱"},
+            {"Chest",L"颈部"},
+            {"UpperChest",L"上颈部"},
+            {"Neck",L"颈部"},
+            {"Head",L"头部"},
+            {"Jaw",L"下巴"},
+
+            {"LeftShoulder",L"左肩"},
+            {"RightShoulder",L"右肩"},
+
+            {"LeftUpperArm",L"左上臂"},
+            {"RightUpperArm",L"右上臂"},
+
+            {"LeftLowerArm",L"左下臂"},
+            {"RightLowerArm",L"右下臂"},
+
+            {"LeftHand",L"左手"},
+            {"RightHand",L"右手"},
+
+            {"LeftUpperLeg",L"左上腿"},
+            {"RightUpperLeg",L"右上腿"},
+
+            {"LeftLowerLeg",L"左下腿"},
+            {"RightLowerLeg",L"右下腿"},
+
+            {"LeftFoot",L"左脚"},
+            {"RightFoot",L"右脚"},
+
+            {"LeftEye",L"左眼"},
+            {"RightEye",L"右眼"},
+
+            {"LeftToes",L"左足"},
+            {"RightToes",L"右足"},
+
+            {"LeftThumbMetacarpal",L"左拇指"},
+            {"LeftThumbProximal",L"左拇指近端"},
+            {"LeftThumbDistal",L"左拇指远端"},
+
+            {"LeftIndexProximal",L"左食指近端"},
+            {"LeftIndexIntermediate",L"左食指中间"},
+            {"LeftIndexDistal",L"左食指远端"},
+
+            {"LeftMiddleProximal",L"左中指近端"},
+            {"LeftMiddleIntermediate",L"左中指中间"},
+            {"LeftMiddleDistal",L"左中指远端"},
+
+            {"LeftRingProximal",L"左无名指近端"},
+            {"LeftRingIntermediate",L"左无名指中间"},
+            {"LeftRingDistal",L"左无名指远端"},
+
+            {"LeftLittleProximal",L"左小拇指近端"},
+            {"LeftLittleIntermediate",L"左小拇指中间"},
+            {"LeftLittleDistal",L"左小拇指远端"},
+
+
+            {"RightThumbMetacarpal",L"右拇指"},
+            {"RightThumbProximal",L"右拇指近端"},
+            {"RightThumbDistal",L"右拇指远端"},
+
+            {"RightIndexProximal",L"右食指近端"},
+            {"RightIndexIntermediate",L"右食指中间"},
+            {"RightIndexDistal",L"右食指远端"},
+
+            {"RightMiddleProximal",L"右中指近端"},
+            {"RightMiddleIntermediate",L"右中指中间"},
+            {"RightMiddleDistal",L"右中指远端"},
+
+            {"RightRingProximal",L"右无名指近端"},
+            {"RightRingIntermediate",L"右无名指中间"},
+            {"RightRingDistal",L"右无名指远端"},
+
+            {"RightLittleProximal",L"右小拇指近端"},
+            {"RightLittleIntermediate",L"右小拇指中间"},
+            {"RightLittleDistal",L"右小拇指远端"},
+
+        };
+        if(label_map.has(p_bone)) {
+            return label_map[p_bone];
+        }
+        return p_bone;
+    }
+    void clear() {
+        
+        for(auto E : bone_label) {
+            remove_child(E.value);
+            E.value->queue_free();
+        }
+        skeleton = nullptr;
+    }
+
+    void update() {
+        if(skeleton == nullptr) {
+            return;
+        }
+        for(auto E : bone_label) {
+            E.value->set_global_position(skeleton->get_bone_global_pose(E.key).origin);
+        }
+    }
+
+protected:
+    Skeleton3D* skeleton = nullptr;
+    Ref<BoneMap> bone_map;
+    HashMap<int, Label3D*> bone_label;
 };
 
 // 身体主要部件部分
@@ -411,6 +551,20 @@ public:
         return aabb;      
     }
 
+    void set_play_animation(const Ref<Animation>& p_play_animation)
+    {
+        play_animation = p_play_animation;
+        update_bone_visble();
+    }
+
+    Ref<Animation> get_play_animation()
+    {
+        return play_animation;
+    }
+    Ref<Animation> play_animation;
+    DECL_MEMBER_BUTTON(editor_play_select_animation);
+    void update_bone_visble();
+
 public:
     static ObjectID& get_curr_editor_player();
     // 获取当前编辑的角色
@@ -456,6 +610,8 @@ protected:
     HashMap<StringName,Ref<CharacterBodyPartInstane>> bodyPart;
     // 插槽信息
     HashMap<StringName,BodySocket> socket;
+
+    HumanBoneVisble* bone_label = nullptr;
 
     bool run_ai = true;
     bool editor_pause_animation = false;

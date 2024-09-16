@@ -1159,6 +1159,9 @@ public:
     void editor_play_animation(Ref<CharacterAnimatorNodeBase> p_node) {
         layer->play_animation(p_node);
     }
+    void editor_play_animation(Ref<Animation> p_node) {
+        layer->play_animation(p_node,true);
+    }
 
     void editor_stop_animation() {
         layer->editor_stop_animation();
@@ -1253,6 +1256,12 @@ public:
     }
 public:
 
+    void editor_play_animation(Ref<Animation> p_node) {
+        if(m_LayerConfigInstanceList.size() == 0) {
+            return;
+        }
+		m_LayerConfigInstanceList.front()->get()->editor_play_animation(p_node);
+    }
     void editor_play_animation(Ref<CharacterAnimatorNodeBase> p_node) {
         if(m_LayerConfigInstanceList.size() == 0) {
             return;
