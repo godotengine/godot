@@ -252,20 +252,7 @@ void Variant::set_named(const StringName &p_member, const Variant &p_value, bool
 		}
 	} else if (type == Variant::DICTIONARY) {
 		Dictionary &dict = *VariantGetInternalPtr<Dictionary>::get_ptr(this);
-
-		if (dict.is_read_only()) {
-			r_valid = false;
-			return;
-		}
-
-		Variant *v = dict.getptr(p_member);
-		if (v) {
-			*v = p_value;
-		} else {
-			dict[p_member] = p_value;
-		}
-
-		r_valid = true;
+		r_valid = dict.set(p_member, p_value);
 	} else {
 		r_valid = false;
 	}
@@ -721,26 +708,16 @@ struct VariantIndexedSetGet_Dictionary {
 		PtrToArg<Variant>::encode(*ptr, member);
 	}
 	static void set(Variant *base, int64_t index, const Variant *value, bool *valid, bool *oob) {
-		if (VariantGetInternalPtr<Dictionary>::get_ptr(base)->is_read_only()) {
-			*valid = false;
-			*oob = true;
-			return;
-		}
-		(*VariantGetInternalPtr<Dictionary>::get_ptr(base))[index] = *value;
-		*oob = false;
-		*valid = true;
+		*valid = VariantGetInternalPtr<Dictionary>::get_ptr(base)->set(index, *value);
+		*oob = VariantGetInternalPtr<Dictionary>::get_ptr(base)->is_read_only();
 	}
 	static void validated_set(Variant *base, int64_t index, const Variant *value, bool *oob) {
-		if (VariantGetInternalPtr<Dictionary>::get_ptr(base)->is_read_only()) {
-			*oob = true;
-			return;
-		}
-		(*VariantGetInternalPtr<Dictionary>::get_ptr(base))[index] = *value;
-		*oob = false;
+		VariantGetInternalPtr<Dictionary>::get_ptr(base)->set(index, *value);
+		*oob = VariantGetInternalPtr<Dictionary>::get_ptr(base)->is_read_only();
 	}
 	static void ptr_set(void *base, int64_t index, const void *member) {
 		Dictionary &v = *reinterpret_cast<Dictionary *>(base);
-		v[index] = PtrToArg<Variant>::convert(member);
+		v.set(index, PtrToArg<Variant>::convert(member));
 	}
 	static Variant::Type get_index_type() { return Variant::NIL; }
 	static uint32_t get_index_usage() { return PROPERTY_USAGE_DEFAULT; }
@@ -1010,16 +987,11 @@ struct VariantKeyedSetGetDictionary {
 		PtrToArg<Variant>::encode(*ptr, value);
 	}
 	static void set(Variant *base, const Variant *key, const Variant *value, bool *r_valid) {
-		if (VariantGetInternalPtr<Dictionary>::get_ptr(base)->is_read_only()) {
-			*r_valid = false;
-			return;
-		}
-		(*VariantGetInternalPtr<Dictionary>::get_ptr(base))[*key] = *value;
-		*r_valid = true;
+		*r_valid = VariantGetInternalPtr<Dictionary>::get_ptr(base)->set(*key, *value);
 	}
 	static void ptr_set(void *base, const void *key, const void *value) {
 		Dictionary &v = *reinterpret_cast<Dictionary *>(base);
-		v[PtrToArg<Variant>::convert(key)] = PtrToArg<Variant>::convert(value);
+		v.set(PtrToArg<Variant>::convert(key), PtrToArg<Variant>::convert(value));
 	}
 
 	static bool has(const Variant *base, const Variant *key, bool *r_valid) {
