@@ -186,6 +186,7 @@
 		</member>
 		<member name="debugger/auto_switch_to_remote_scene_tree" type="bool" setter="" getter="">
 			If [code]true[/code], automatically switches to the [b]Remote[/b] scene tree when running the project from the editor. If [code]false[/code], stays on the [b]Local[/b] scene tree when running the project from the editor.
+			[b]Warning:[/b] Enabling this setting can cause stuttering when running a project with a large amount of nodes (typically a few thousands of nodes or more), even if the editor window isn't focused. This is due to the remote scene tree being updated every second regardless of whether the editor is focused.
 		</member>
 		<member name="debugger/profile_native_calls" type="bool" setter="" getter="">
 			If [code]true[/code], enables collection of profiling data from non-GDScript Godot functions, such as engine class methods. Enabling this slows execution while profiling further.
