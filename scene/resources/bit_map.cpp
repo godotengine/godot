@@ -613,7 +613,6 @@ void BitMap::grow_mask(int p_pixels, const Rect2i &p_rect) {
 				// Skip until we find the circle in the distance mask
 				while (x <= x1 && !distance_mask->get_bit(x - x0, y - y0)) {
 					x++;
-					continue;
 				}
 
 				for (; x <= x1; x++) {
