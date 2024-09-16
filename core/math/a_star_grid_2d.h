@@ -159,8 +159,8 @@ private: // Internal routines.
 
 	void _get_nbors(Point *p_point, LocalVector<Point *> &r_nbors);
 	Point *_jump(Point *p_from, Point *p_to);
+	bool _solve(Point *p_begin_point, Point *p_end_point, bool p_allow_partial_path);
 	Point *_forced_successor(int32_t p_x, int32_t p_y, int32_t p_dx, int32_t p_dy, bool p_inclusive = false);
-	bool _solve(Point *p_begin_point, Point *p_end_point);
 
 protected:
 	static void _bind_methods();
