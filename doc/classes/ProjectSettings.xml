@@ -2894,10 +2894,13 @@
 		<member name="rendering/textures/lossless_compression/force_png" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import lossless textures using the PNG format. Otherwise, it will default to using WebP.
 		</member>
+		<member name="rendering/textures/vram_compression/cache_gpu_compressor" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the GPU texture compressor will cache the local RenderingDevice and its resources (shaders and pipelines), allowing for faster subsequent imports at a memory cost.
+		</member>
 		<member name="rendering/textures/vram_compression/compress_with_gpu" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], the texture importer will utilize the GPU for compressing textures, which makes large textures import significantly faster.
+			If [code]true[/code], the texture importer will utilize the GPU for compressing textures, improving the import time of large images.
 			[b]Note:[/b] This setting requires either Vulkan or D3D12 available as a rendering backend.
-			[b]Note:[/b] Currently this only affects BC6H compression, which is used on Desktop and Console for HDR images.
+			[b]Note:[/b] Currently this only affects BC1 and BC6H compression, which are used on Desktop and Console for fully opaque and HDR images respectively.
 		</member>
 		<member name="rendering/textures/vram_compression/import_etc2_astc" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the Ericsson Texture Compression 2 algorithm for lower quality textures and normal maps and Adaptable Scalable Texture Compression algorithm for high quality textures (in 4×4 block size).

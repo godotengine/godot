@@ -2751,6 +2751,19 @@ Error Image::compress_from_channels(CompressMode p_mode, UsedChannels p_channels
 
 			} break;
 
+			case COMPRESS_S3TC: {
+				// BC3 is unsupported currently.
+				if ((p_channels == USED_CHANNELS_RGB || p_channels == USED_CHANNELS_L) && _image_compress_bc_rd_func) {
+					Error result = _image_compress_bc_rd_func(this, p_channels);
+
+					// If the image was compressed successfully, we return here. If not, we fall back to the default compression scheme.
+					if (result == OK) {
+						return OK;
+					}
+				}
+
+			} break;
+
 			default: {
 			}
 		}
@@ -3138,6 +3151,7 @@ void (*Image::_image_compress_etc1_func)(Image *) = nullptr;
 void (*Image::_image_compress_etc2_func)(Image *, Image::UsedChannels) = nullptr;
 void (*Image::_image_compress_astc_func)(Image *, Image::ASTCFormat) = nullptr;
 Error (*Image::_image_compress_bptc_rd_func)(Image *, Image::UsedChannels) = nullptr;
+Error (*Image::_image_compress_bc_rd_func)(Image *, Image::UsedChannels) = nullptr;
 void (*Image::_image_decompress_bc)(Image *) = nullptr;
 void (*Image::_image_decompress_bptc)(Image *) = nullptr;
 void (*Image::_image_decompress_etc1)(Image *) = nullptr;
