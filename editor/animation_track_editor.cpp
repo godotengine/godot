@@ -5705,9 +5705,11 @@ void AnimationTrackEditor::_box_selection_draw() {
 }
 
 void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
-	if (panner->gui_input(p_event)) {
-		scroll->accept_event();
-		return;
+	if (!box_selecting) {
+		if (panner->gui_input(p_event)) {
+			scroll->accept_event();
+			return;
+		}
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
@@ -5758,6 +5760,8 @@ void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
 		Vector2 from = box_selecting_from;
 		Vector2 to = scroll->get_global_transform().xform(mm->get_position());
 
+		box_selecting_to = to;
+
 		if (from.x > to.x) {
 			SWAP(from.x, to.x);
 		}
@@ -5767,11 +5771,7 @@ void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
 		}
 
 		Rect2 rect(from, to - from);
-		Rect2 scroll_rect = Rect2(scroll->get_global_position(), scroll->get_size());
-		rect = scroll_rect.intersection(rect);
-		box_selection->set_position(rect.position);
-		box_selection->set_size(rect.size);
-
+		box_selection->set_rect(Rect2(from - scroll->get_global_position(), rect.get_size()));
 		box_select_rect = rect;
 	}
 }
@@ -5788,6 +5788,39 @@ void AnimationTrackEditor::_toggle_bezier_edit() {
 			}
 		}
 	}
+}
+
+void AnimationTrackEditor::_scroll_changed(const Vector2 &p_val) {
+	if (box_selecting) {
+		const Vector2 scroll_difference = p_val - prev_scroll_position;
+
+		Vector2 from = box_selecting_from - scroll_difference;
+		Vector2 to = box_selecting_to;
+
+		box_selecting_from = from;
+
+		if (from.x > to.x) {
+			SWAP(from.x, to.x);
+		}
+
+		if (from.y > to.y) {
+			SWAP(from.y, to.y);
+		}
+
+		Rect2 rect(from, to - from);
+		box_selection->set_rect(Rect2(from - scroll->get_global_position(), rect.get_size()));
+		box_select_rect = rect;
+	}
+
+	prev_scroll_position = p_val;
+}
+
+void AnimationTrackEditor::_v_scroll_changed(float p_val) {
+	_scroll_changed(Vector2(prev_scroll_position.x, p_val));
+}
+
+void AnimationTrackEditor::_h_scroll_changed(float p_val) {
+	_scroll_changed(Vector2(p_val, prev_scroll_position.y));
 }
 
 void AnimationTrackEditor::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event) {
@@ -7272,15 +7305,24 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	panner->set_scroll_zoom_factor(AnimationTimelineEdit::SCROLL_ZOOM_FACTOR_IN);
 	panner->set_callbacks(callable_mp(this, &AnimationTrackEditor::_pan_callback), callable_mp(this, &AnimationTrackEditor::_zoom_callback));
 
+	box_selection_container = memnew(Control);
+	box_selection_container->set_v_size_flags(SIZE_EXPAND_FILL);
+	box_selection_container->set_clip_contents(true);
+	timeline_vbox->add_child(box_selection_container);
+
 	scroll = memnew(ScrollContainer);
-	timeline_vbox->add_child(scroll);
-	scroll->set_v_size_flags(SIZE_EXPAND_FILL);
+	box_selection_container->add_child(scroll);
+	scroll->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+
 	VScrollBar *sb = scroll->get_v_scroll_bar();
 	scroll->remove_child(sb);
 	timeline_scroll->add_child(sb); // Move here so timeline and tracks are always aligned.
 	scroll->set_focus_mode(FOCUS_CLICK);
 	scroll->connect(SceneStringName(gui_input), callable_mp(this, &AnimationTrackEditor::_scroll_input));
 	scroll->connect(SceneStringName(focus_exited), callable_mp(panner.ptr(), &ViewPanner::release_pan_key));
+
+	scroll->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTrackEditor::_v_scroll_changed));
+	scroll->get_h_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTrackEditor::_h_scroll_changed));
 
 	bezier_edit = memnew(AnimationBezierTrackEdit);
 	timeline_vbox->add_child(bezier_edit);
@@ -7493,8 +7535,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	ichb->add_child(insert_confirm_reset);
 
 	box_selection = memnew(Control);
-	add_child(box_selection);
-	box_selection->set_as_top_level(true);
+	box_selection_container->add_child(box_selection);
 	box_selection->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	box_selection->hide();
 	box_selection->connect(SceneStringName(draw), callable_mp(this, &AnimationTrackEditor::_box_selection_draw));

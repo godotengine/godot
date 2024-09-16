@@ -498,6 +498,10 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	PropertyInfo _find_hint_for_track(int p_idx, NodePath &r_base_path, Variant *r_current_val = nullptr);
 
+	void _scroll_changed(const Vector2 &p_val);
+	void _v_scroll_changed(float p_val);
+	void _h_scroll_changed(float p_val);
+
 	Ref<ViewPanner> panner;
 	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
 	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
@@ -540,11 +544,15 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _update_key_edit();
 	void _clear_key_edit();
 
+	Control *box_selection_container = nullptr;
+
 	Control *box_selection = nullptr;
 	void _box_selection_draw();
 	bool box_selecting = false;
 	Vector2 box_selecting_from;
+	Vector2 box_selecting_to;
 	Rect2 box_select_rect;
+	Vector2 prev_scroll_position;
 	void _scroll_input(const Ref<InputEvent> &p_event);
 
 	Vector<Ref<AnimationTrackEditPlugin>> track_edit_plugins;
