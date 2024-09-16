@@ -80,3 +80,10 @@ GH-94434
 Validate extension JSON: Error: Field 'classes/OS/methods/execute_with_pipe/arguments': size changed value in new API, from 2 to 3.
 
 Optional argument added. Compatibility method registered.
+
+
+GH-94684
+--------
+Validate extension JSON: Error: Field 'classes/SoftBody3D/methods/set_point_pinned/arguments': size changed value in new API, from 3 to 4.
+
+Optional argument added to allow for adding pin point at specific index. Compatibility method registered.
