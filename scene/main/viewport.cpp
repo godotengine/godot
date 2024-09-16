@@ -2086,13 +2086,13 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 	}
 
 	if (mm.is_null() && mb.is_null() && p_event->is_action_type()) {
-		if (gui.dragging && p_event->is_action_pressed("ui_cancel") && Input::get_singleton()->is_action_just_pressed("ui_cancel")) {
+		if (gui.dragging && p_event->is_action_pressed(SNAME("ui_cancel")) && Input::get_singleton()->is_action_just_pressed(SNAME("ui_cancel"))) {
 			_perform_drop();
 			set_input_as_handled();
 			return;
 		}
 
-		if (p_event->is_action_pressed("ui_cancel")) {
+		if (p_event->is_action_pressed(SNAME("ui_cancel"))) {
 			// Cancel tooltip timer or hide tooltip when pressing Escape (this is standard behavior in most applications).
 			_gui_cancel_tooltip();
 			if (gui.tooltip_popup) {
@@ -2127,51 +2127,51 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			if (joypadmotion_event.is_valid()) {
 				Input *input = Input::get_singleton();
 
-				if (p_event->is_action_pressed("ui_focus_next") && input->is_action_just_pressed("ui_focus_next")) {
+				if (p_event->is_action_pressed(SNAME("ui_focus_next")) && input->is_action_just_pressed(SNAME("ui_focus_next"))) {
 					next = from->find_next_valid_focus();
 				}
 
-				if (p_event->is_action_pressed("ui_focus_prev") && input->is_action_just_pressed("ui_focus_prev")) {
+				if (p_event->is_action_pressed(SNAME("ui_focus_prev")) && input->is_action_just_pressed(SNAME("ui_focus_prev"))) {
 					next = from->find_prev_valid_focus();
 				}
 
-				if (p_event->is_action_pressed("ui_up") && input->is_action_just_pressed("ui_up")) {
+				if (p_event->is_action_pressed(SNAME("ui_up")) && input->is_action_just_pressed(SNAME("ui_up"))) {
 					next = from->_get_focus_neighbor(SIDE_TOP);
 				}
 
-				if (p_event->is_action_pressed("ui_left") && input->is_action_just_pressed("ui_left")) {
+				if (p_event->is_action_pressed(SNAME("ui_left")) && input->is_action_just_pressed(SNAME("ui_left"))) {
 					next = from->_get_focus_neighbor(SIDE_LEFT);
 				}
 
-				if (p_event->is_action_pressed("ui_right") && input->is_action_just_pressed("ui_right")) {
+				if (p_event->is_action_pressed(SNAME("ui_right")) && input->is_action_just_pressed(SNAME("ui_right"))) {
 					next = from->_get_focus_neighbor(SIDE_RIGHT);
 				}
 
-				if (p_event->is_action_pressed("ui_down") && input->is_action_just_pressed("ui_down")) {
+				if (p_event->is_action_pressed(SNAME("ui_down")) && input->is_action_just_pressed(SNAME("ui_down"))) {
 					next = from->_get_focus_neighbor(SIDE_BOTTOM);
 				}
 			} else {
-				if (p_event->is_action_pressed("ui_focus_next", true, true)) {
+				if (p_event->is_action_pressed(SNAME("ui_focus_next"), true, true)) {
 					next = from->find_next_valid_focus();
 				}
 
-				if (p_event->is_action_pressed("ui_focus_prev", true, true)) {
+				if (p_event->is_action_pressed(SNAME("ui_focus_prev"), true, true)) {
 					next = from->find_prev_valid_focus();
 				}
 
-				if (p_event->is_action_pressed("ui_up", true, true)) {
+				if (p_event->is_action_pressed(SNAME("ui_up"), true, true)) {
 					next = from->_get_focus_neighbor(SIDE_TOP);
 				}
 
-				if (p_event->is_action_pressed("ui_left", true, true)) {
+				if (p_event->is_action_pressed(SNAME("ui_left"), true, true)) {
 					next = from->_get_focus_neighbor(SIDE_LEFT);
 				}
 
-				if (p_event->is_action_pressed("ui_right", true, true)) {
+				if (p_event->is_action_pressed(SNAME("ui_right"), true, true)) {
 					next = from->_get_focus_neighbor(SIDE_RIGHT);
 				}
 
-				if (p_event->is_action_pressed("ui_down", true, true)) {
+				if (p_event->is_action_pressed(SNAME("ui_down"), true, true)) {
 					next = from->_get_focus_neighbor(SIDE_BOTTOM);
 				}
 			}
