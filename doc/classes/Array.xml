@@ -714,7 +714,7 @@
 			<param index="0" name="func" type="Callable" />
 			<description>
 				Sorts the array using a custom [Callable].
-				[param func] is called as many times as necessary, receiving two array elements as arguments. The function should return [code]true[/code] if the first element should be moved [i]behind[/i] the second one, otherwise it should return [code]false[/code].
+				[param func] is called as many times as necessary, receiving two array elements as arguments. The function should return [code]true[/code] if the first element should be moved [i]before[/i] the second one, otherwise it should return [code]false[/code].
 				[codeblock]
 				func sort_ascending(a, b):
 				    if a[1] &lt; b[1]:
