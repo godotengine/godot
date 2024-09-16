@@ -1550,8 +1550,7 @@ void Viewport::_gui_show_tooltip() {
 	gui.tooltip_popup->child_controls_changed();
 }
 
-bool Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_input) {
-	bool stopped = false;
+void Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_input) {
 	Ref<InputEvent> ev = p_input;
 
 	// Returns true if an event should be impacted by a control's mouse filter.
@@ -1575,19 +1574,15 @@ bool Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_inpu
 			if (!control->is_inside_tree() || control->is_set_as_top_level()) {
 				break;
 			}
-			if (gui.key_event_accepted) {
-				stopped = true;
-				break;
-			}
 			if (control->data.mouse_filter == Control::MOUSE_FILTER_STOP && is_pointer_event && !(is_scroll_event && control->data.force_pass_scroll_events)) {
 				// Mouse, ScreenDrag and ScreenTouch events are stopped by default with MOUSE_FILTER_STOP, unless we have a scroll event and force_pass_scroll_events set to true
-				stopped = true;
+				set_input_as_handled();
 				break;
 			}
 		}
 
 		if (is_input_handled()) {
-			// Break after Physics Picking in SubViewport.
+			// Break when the event is set to handled in a child Control node or after physics picking in SubViewport.
 			break;
 		}
 
@@ -1598,7 +1593,6 @@ bool Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_inpu
 		ev = ev->xformed_by(ci->get_transform()); // Transform event upwards.
 		ci = ci->get_parent_item();
 	}
-	return stopped;
 }
 
 void Viewport::_gui_call_notification(Control *p_control, int p_what) {
@@ -1739,8 +1733,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
-		gui.key_event_accepted = false;
-
 		Point2 mpos = mb->get_position();
 		if (mb->is_pressed()) {
 			MouseButtonMask button_mask = mouse_button_to_mask(mb->get_button_index());
@@ -1804,9 +1796,8 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				}
 			}
 
-			bool stopped = gui.mouse_focus && gui.mouse_focus->can_process() && _gui_call_input(gui.mouse_focus, mb);
-			if (stopped) {
-				set_input_as_handled();
+			if (gui.mouse_focus && gui.mouse_focus->can_process()) {
+				_gui_call_input(gui.mouse_focus, mb);
 			}
 
 			if (gui.dragging && mb->get_button_index() == MouseButton::LEFT) {
@@ -1840,16 +1831,14 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				gui.mouse_focus = nullptr;
 			}
 
-			bool stopped = mouse_focus && mouse_focus->can_process() && _gui_call_input(mouse_focus, mb);
-			if (stopped) {
-				set_input_as_handled();
+			if (mouse_focus && mouse_focus->can_process()) {
+				_gui_call_input(mouse_focus, mb);
 			}
 		}
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
-		gui.key_event_accepted = false;
 		Point2 mpos = mm->get_position();
 
 		// Drag & drop.
@@ -1986,9 +1975,8 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 			ds_cursor_shape = (DisplayServer::CursorShape)cursor_shape;
 
-			bool stopped = over->can_process() && _gui_call_input(over, mm);
-			if (stopped) {
-				set_input_as_handled();
+			if (over->can_process()) {
+				_gui_call_input(over, mm);
 			}
 		}
 
@@ -2028,20 +2016,15 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			Control *over = gui_find_control(pos);
 			if (over) {
 				gui.touch_focus[touch_index] = over->get_instance_id();
-				bool stopped = false;
 				if (over->can_process()) {
 					touch_event = touch_event->xformed_by(Transform2D()); // Make a copy.
 					pos = over->get_global_transform_with_canvas().affine_inverse().xform(pos);
 					touch_event->set_position(pos);
-					stopped = _gui_call_input(over, touch_event);
-				}
-				if (stopped) {
-					set_input_as_handled();
+					_gui_call_input(over, touch_event);
 				}
 				return;
 			}
 		} else {
-			bool stopped = false;
 			ObjectID control_id = gui.touch_focus[touch_index];
 			Control *over = control_id.is_valid() ? Object::cast_to<Control>(ObjectDB::get_instance(control_id)) : nullptr;
 			if (over && over->can_process()) {
@@ -2049,10 +2032,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				pos = over->get_global_transform_with_canvas().affine_inverse().xform(pos);
 				touch_event->set_position(pos);
 
-				stopped = _gui_call_input(over, touch_event);
-			}
-			if (stopped) {
-				set_input_as_handled();
+				_gui_call_input(over, touch_event);
 			}
 			gui.touch_focus.erase(touch_index);
 			return;
@@ -2061,23 +2041,17 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 	Ref<InputEventGesture> gesture_event = p_event;
 	if (gesture_event.is_valid()) {
-		gui.key_event_accepted = false;
-
 		_gui_cancel_tooltip();
 
 		Size2 pos = gesture_event->get_position();
 
 		Control *over = gui_find_control(pos);
 		if (over) {
-			bool stopped = false;
 			if (over->can_process()) {
 				gesture_event = gesture_event->xformed_by(Transform2D()); // Make a copy.
 				pos = over->get_global_transform_with_canvas().affine_inverse().xform(pos);
 				gesture_event->set_position(pos);
-				stopped = _gui_call_input(over, gesture_event);
-			}
-			if (stopped) {
-				set_input_as_handled();
+				_gui_call_input(over, gesture_event);
 			}
 			return;
 		}
@@ -2092,7 +2066,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			over = gui_find_control(drag_event->get_position());
 		}
 		if (over) {
-			bool stopped = false;
 			if (over->can_process()) {
 				Transform2D localizer = over->get_global_transform_with_canvas().affine_inverse();
 				Size2 pos = localizer.xform(drag_event->get_position());
@@ -2105,12 +2078,9 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				drag_event->set_relative(rel);
 				drag_event->set_position(pos);
 
-				stopped = _gui_call_input(over, drag_event);
+				_gui_call_input(over, drag_event);
 			}
 
-			if (stopped) {
-				set_input_as_handled();
-			}
 			return;
 		}
 	}
@@ -2139,13 +2109,11 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		}
 
 		if (gui.key_focus) {
-			gui.key_event_accepted = false;
 			if (gui.key_focus->can_process()) {
 				gui.key_focus->_call_gui_input(p_event);
 			}
 
-			if (gui.key_event_accepted) {
-				set_input_as_handled();
+			if (is_input_handled()) {
 				return;
 			}
 		}
@@ -2493,7 +2461,6 @@ void Viewport::_gui_control_grab_focus(Control *p_control) {
 }
 
 void Viewport::_gui_accept_event() {
-	gui.key_event_accepted = true;
 	if (is_inside_tree()) {
 		set_input_as_handled();
 	}
