@@ -113,16 +113,13 @@ union TileMapCell {
 
 class TileMapPattern : public Resource {
 	GDCLASS(TileMapPattern, Resource);
-	bool is_single_layer = true;
-	int pattern_set_index;
-	Size2i size;
-	int number_of_layers; // neccessary for saving/loading multi-layer patterns correctly.
 	
+	int pattern_set_index = 0; 
+	Size2i size;
+	HashMap<Vector2i, TileMapCell> pattern;
 
-	void _set_tile_data(const Vector<int> &p_data, int p_layer = -1);
-	Vector<int> _get_tile_data(int p_layer = -1) const;
-	HashMap<Vector2i, TileMapCell> pattern_layer;
-	Vector<HashMap<Vector2i, TileMapCell>> pattern;
+	void _set_tile_data(const Vector<int> &p_data);
+	Vector<int> _get_tile_data() const;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -132,38 +129,24 @@ protected:
 	static void _bind_methods();
 
 public:
+	void set_cell(const Vector2i &p_coords, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile = 0);
+	bool has_cell(const Vector2i &p_coords) const;
+	void remove_cell(const Vector2i &p_coords, bool p_update_size = true);
+	int get_cell_source_id(const Vector2i &p_coords) const;
+	Vector2i get_cell_atlas_coords(const Vector2i &p_coords) const;
+	int get_cell_alternative_tile(const Vector2i &p_coords) const;
 
-	void set_cell(const Vector2i &p_coords, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile = 0, int p_layer = -1);
-	bool has_cell(const Vector2i &p_coords, int p_layer = -1) const;
-	void remove_cell(const Vector2i &p_coords, bool p_update_size = true, int p_layer = -1);
-	int get_cell_source_id(const Vector2i &p_coords, int p_layer = -1) const;
-	Vector2i get_cell_atlas_coords(const Vector2i &p_coords, int p_layer = -1) const;
-	int get_cell_alternative_tile( const Vector2i &p_coords, int p_layer = -1) const;
-
-	Vector<HashMap<Vector2i, TileMapCell>> &get_pattern_multi_layer();
-	HashMap<Vector2i, TileMapCell>& get_pattern_single_layer(int p_layer = -1);
-
+	const HashMap<Vector2i, TileMapCell> &get_pattern() const { return pattern; }
 	TypedArray<Vector2i> get_used_cells() const;
-	TypedArray<Vector2i> get_used_cells_on_layer(int p_layer = -1) const;
 
 	Size2i get_size() const;
 	void set_size(const Size2i &p_size);
 	bool is_empty() const;
 
-	bool get_is_single_layer() const;
-	void set_is_single_layer(bool p_is_single_layer);
-	int get_number_of_layers() const;
-	void set_number_of_layers(int p_number_of_layers);
+	void clear();
+
 	int get_pattern_set_index() const;
 	void set_pattern_set_index(int p_pattern_set_index);
-
-	void clear();
-	void clear_layer(int p_layer = -1);
-
-	TileMapPattern() :
-		Resource() {
-		pattern.resize(1);
-	}
 };
 
 class TileSet : public Resource {

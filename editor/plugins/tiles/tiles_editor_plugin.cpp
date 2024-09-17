@@ -87,7 +87,7 @@ void TilesEditorUtils::_thread() {
 			thumbnail_size *= EDSCALE;
 			Vector2 thumbnail_size2 = Vector2(thumbnail_size, thumbnail_size);
 
-			if (item.pattern.is_valid() && !item.pattern->is_empty()) {
+			
 				// Generate the pattern preview
 				SubViewport *viewport = memnew(SubViewport);
 				viewport->set_size(thumbnail_size2);
@@ -97,9 +97,6 @@ void TilesEditorUtils::_thread() {
 
 				TileMap *tile_map = memnew(TileMap);
 				tile_map->set_tileset(item.tile_set);
-				for (int pattern_layer = 1; pattern_layer < item.pattern->get_number_of_layers(); pattern_layer++) {
-					tile_map->add_layer(pattern_layer);
-				} 
 				tile_map->set_pattern(0, Vector2(), item.pattern);
 				viewport->add_child(tile_map);
 
@@ -143,7 +140,6 @@ void TilesEditorUtils::_thread() {
 				item.callback.call(item.pattern, ImageTexture::create_from_image(image));
 
 				viewport->queue_free();
-			}
 		}
 	}
 	pattern_thread_exited.set();

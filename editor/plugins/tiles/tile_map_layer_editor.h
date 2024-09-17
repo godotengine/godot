@@ -92,7 +92,6 @@ private:
 	Button *line_tool_button = nullptr;
 	Button *rect_tool_button = nullptr;
 	Button *bucket_tool_button = nullptr;
-	Button *multi_layer_mode_button = nullptr;
 	HBoxContainer *tools_settings = nullptr;
 
 	VSeparator *tools_settings_vsep = nullptr;
@@ -117,14 +116,12 @@ private:
 	void _on_scattering_spinbox_changed(double p_value);
 
 	void _update_toolbar();
-	void _multi_layer_mode_pressed();
 	void _update_transform_buttons();
 	void _set_transform_buttons_state(const Vector<Button *> &p_enabled_buttons, const Vector<Button *> &p_disabled_buttons, const String &p_why_disabled);
 
 	///// Tilemap editing. /////
 	bool has_mouse = false;
 	void _mouse_exited_viewport();
-	bool multi_layer_selection_mode = false;
 
 	enum DragType {
 		DRAG_TYPE_NONE = 0,
@@ -142,11 +139,9 @@ private:
 	Vector2 drag_start_mouse_pos;
 	Vector2 drag_last_mouse_pos;
 	HashMap<Vector2i, TileMapCell> drag_modified;
-	Vector<HashMap<Vector2i, TileMapCell>> drag_modified_layers;
 
 	TileMapCell _pick_random_tile(Ref<TileMapPattern> p_pattern);
 	HashMap<Vector2i, TileMapCell> _draw_line(Vector2 p_start_drag_mouse_pos, Vector2 p_from_mouse_pos, Vector2 p_to_mouse_pos, bool p_erase);
-	Vector<HashMap<Vector2i, TileMapCell>> _draw_line_multilayer(Vector2 p_start_drag_mouse_pos, Vector2 p_from_mouse_pos, Vector2 p_to_mouse_pos, bool p_erase);
 	HashMap<Vector2i, TileMapCell> _draw_rect(Vector2i p_start_cell, Vector2i p_end_cell, bool p_erase);
 	HashMap<Vector2i, TileMapCell> _draw_bucket_fill(Vector2i p_coords, bool p_contiguous, bool p_erase);
 	void _stop_dragging();
@@ -156,6 +151,7 @@ private:
 
 	///// Selection system. /////
 	RBSet<Vector2i> tile_map_selection;
+	// Could this be made into a resource, then carried as a Ref<TileMapPattern>?
 	Ref<TileMapPattern> tile_map_clipboard;
 	Ref<TileMapPattern> selection_pattern;
 	Ref<TileMapPattern> erase_pattern;
