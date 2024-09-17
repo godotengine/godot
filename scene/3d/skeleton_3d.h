@@ -161,7 +161,7 @@ private:
 
 	mutable StringName concatenated_bone_names = StringName();
 	void _update_bone_names() const;
-
+public:
 	void _make_dirty();
 	bool dirty = false;
 	bool rest_dirty = false;
@@ -272,9 +272,9 @@ public:
 	Ref<Skin> create_skin_from_rest_transforms();
 
 	Ref<SkinReference> register_skin(const Ref<Skin> &p_skin);
-
-	void force_update_all_dirty_bones();
-	void force_update_all_bone_transforms();
+	void force_update_all_dirty_bones(bool p_notify = true);
+	void force_update_all_bone_transforms(bool p_notify = true);
+	void process_pose_updated();
 	void force_update_bone_children_transforms(int bone_idx);
 
 	void set_modifier_callback_mode_process(ModifierCallbackModeProcess p_mode);

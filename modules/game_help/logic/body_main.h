@@ -96,7 +96,7 @@ public:
             {"Hips",L"臀部"},
             {"Spine",L"脊柱"},
             {"Chest",L"颈部"},
-            {"UpperChest",L"上颈部"},
+            {"UpperChest",L"上胸部"},
             {"Neck",L"颈部"},
             {"Head",L"头部"},
             {"Jaw",L"下巴"},
@@ -580,7 +580,101 @@ public:
 
     Ref<Animation> play_animation;
     DECL_MEMBER_BUTTON(editor_play_select_animation);
+
+    // 跟踪的角色
+    CharacterBodyMain* track_target = nullptr;
+    void update_track_target();
+
+    // 重定向的动画存储名称
+    String editor_retarget_save_animation_name;
+    // 重定向的来源骨骼
+    String editor_retarget_source_seketon_path;
+	DECL_MEMBER_BUTTON(editor_to_human_animation);
+
     void update_bone_visble();
+    LocalVector<String> get_human_bones() {
+        static LocalVector<String> bone_array = {
+            "Hips",
+            "Spine",
+            "Chest",
+            "UpperChest",
+            "Neck",
+            "Head",
+            "LeftEye",
+            "RightEye",
+            "Jaw",
+
+            "LeftShoulder",
+            "RightShoulder",
+
+            "LeftUpperArm",
+            "RightUpperArm",
+
+            "LeftLowerArm",
+            "RightLowerArm",
+
+            "LeftHand",
+            "RightHand",
+
+            "LeftUpperLeg",
+            "RightUpperLeg",
+
+            "LeftLowerLeg",
+            "RightLowerLeg",
+
+            "LeftFoot",
+            "RightFoot",
+
+
+            "LeftToes",
+            "RightToes",
+
+            "LeftThumbMetacarpal",
+            "LeftThumbProximal",
+            "LeftThumbDistal",
+
+            "LeftIndexProximal",
+            "LeftIndexIntermediate",
+            "LeftIndexDistal",
+
+            "LeftMiddleProximal",
+            "LeftMiddleIntermediate",
+            "LeftMiddleDistal",
+
+            "LeftRingProximal",
+            "LeftRingIntermediate",
+            "LeftRingDistal",
+
+            "LeftLittleProximal",
+            "LeftLittleIntermediate",
+            "LeftLittleDistal",
+
+
+            "RightThumbMetacarpal",
+            "RightThumbProximal",
+            "RightThumbDistal",
+
+            "RightIndexProximal",
+            "RightIndexIntermediate",
+            "RightIndexDistal",
+
+            "RightMiddleProximal",
+            "RightMiddleIntermediate",
+            "RightMiddleDistal",
+
+            "RightRingProximal",
+            "RightRingIntermediate",
+            "RightRingDistal",
+
+            "RightLittleProximal",
+            "RightLittleIntermediate",
+            "RightLittleDistal",
+
+
+        };
+        return bone_array;
+    }
+    
 
 public:
     static ObjectID& get_curr_editor_player();

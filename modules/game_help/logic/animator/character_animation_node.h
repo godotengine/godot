@@ -252,19 +252,10 @@ class CharacterAnimatorNode1D : public CharacterAnimatorNodeBase
 {
     GDCLASS(CharacterAnimatorNode1D, CharacterAnimatorNodeBase);
     
-    static void _bind_methods()
-    {
-        ClassDB::bind_method(D_METHOD("set_position_array", "array"), &CharacterAnimatorNode1D::set_position_array);
-        ClassDB::bind_method(D_METHOD("get_position_array"), &CharacterAnimatorNode1D::get_position_array);
-
-
-		ClassDB::bind_method(D_METHOD("set_black_board_property", "black_board_property"), &CharacterAnimatorNodeBase::set_black_board_property);
-		ClassDB::bind_method(D_METHOD("get_black_board_property"), &CharacterAnimatorNodeBase::get_black_board_property);
-
-        ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "black_board_property",PROPERTY_HINT_ENUM_DYNAMIC_LIST, "_get_blackbord_propertys"), "set_black_board_property", "get_black_board_property");
-        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "position_array", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Vector2"), PROPERTY_USAGE_STORAGE), "set_position_array", "get_position_array");
-    }
+    static void _bind_methods();
 public:
+	void _set_black_board_property(const StringName& p_black_board_property) { black_board_property = p_black_board_property; }
+	StringName _get_black_board_property() { return black_board_property; }
     void add_animation(const Ref<Animation> & p_anim,float p_pos);
     virtual void process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,const Ref<Blackboard> &p_blackboard) override;
 
@@ -337,25 +328,7 @@ public:
 class CharacterAnimatorNode2D : public CharacterAnimatorNodeBase
 {
     GDCLASS(CharacterAnimatorNode2D, CharacterAnimatorNodeBase);
-    static void _bind_methods()
-    {
-        ClassDB::bind_method(D_METHOD("set_position_array", "array"), &CharacterAnimatorNode2D::set_position_array);
-        ClassDB::bind_method(D_METHOD("get_position_array"), &CharacterAnimatorNode2D::get_position_array);
-
-		ClassDB::bind_method(D_METHOD("set_black_board_property", "black_board_property"), &CharacterAnimatorNode2D::_set_black_board_property);
-		ClassDB::bind_method(D_METHOD("get_black_board_property"), &CharacterAnimatorNode2D::_get_black_board_property);
-
-		ClassDB::bind_method(D_METHOD("set_black_board_property_y", "black_board_property"), &CharacterAnimatorNode2D::_set_black_board_property_y);
-		ClassDB::bind_method(D_METHOD("get_black_board_property_y"), &CharacterAnimatorNode2D::_get_black_board_property_y);
-
-        ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "black_board_property",PROPERTY_HINT_ENUM_DYNAMIC_LIST, "_get_blackbord_propertys"), "set_black_board_property", "get_black_board_property");
-        ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "black_board_property_y",PROPERTY_HINT_ENUM_DYNAMIC_LIST, "_get_blackbord_propertys"), "set_black_board_property_y", "get_black_board_property_y");
-        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "position_array", PROPERTY_HINT_ARRAY_TYPE, "Vector2", PROPERTY_USAGE_STORAGE), "set_position_array", "get_position_array");
-
-        BIND_ENUM_CONSTANT(SimpleDirectionnal2D);
-        BIND_ENUM_CONSTANT(FreeformDirectionnal2D);
-        BIND_ENUM_CONSTANT(FreeformCartesian2D);
-    }
+    static void _bind_methods();
 public:
 	void _set_black_board_property(const StringName& p_black_board_property) { black_board_property = p_black_board_property; }
 	StringName _get_black_board_property() { return black_board_property; }

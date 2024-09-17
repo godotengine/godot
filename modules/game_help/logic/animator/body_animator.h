@@ -715,6 +715,9 @@ public:
 						continue;
 					}
 					TrackCacheTransform* t = context.bone_cache[bone_idx];
+					if (t->is_human_bone) {
+						continue;
+					}
 					if (t->root_motion && calc_root) {
 						double prev_time = time - delta;
 						if (!backward) {
@@ -809,7 +812,17 @@ public:
 
 			}
 		}
-	
+
+        void process_human_anim() {
+            skeleton->force_update_all_dirty_bones(false);
+            int count = 0;
+            for(int i=0;i<animation_instances.size();++i) {
+                AnimationInstance &ai = animation_instances[i];
+            }
+            if(count > 0) {
+                skeleton->_make_dirty();
+            }
+        }
     protected:
         HashSet<ObjectID> animation_cache;
         LocalVector<AnimationInstance> animation_instances;
@@ -834,13 +847,12 @@ public:
     void _process_animation(const Ref<Blackboard> &p_playback_info,double p_delta,bool is_first = true);
 
     void finish_update();
-    void layer_blend_apply() ;
 
     void init(Skeleton3D* p_skeleton, CharacterAnimator* p_animator,const Ref<CharacterAnimatorLayerConfig>& _config)
     {
          m_Animator = p_animator; 
          config = _config;
-         skeleton_id = p_skeleton->get_instance_id();
+		 skeleton_id = ObjectID();
     }
     CharacterAnimationLogicContext* _get_logic_context()
     {

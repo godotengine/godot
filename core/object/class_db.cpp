@@ -1925,7 +1925,6 @@ MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_
 	p_bind->set_name(mdname);
 
 	String instance_type = p_bind->get_instance_class();
-
 #ifdef DEBUG_ENABLED
 
 	ERR_FAIL_COND_V_MSG(!p_compatibility && has_method(instance_type, mdname), nullptr, "Class " + String(instance_type) + " already has a method " + String(mdname) + ".");

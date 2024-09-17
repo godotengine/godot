@@ -74,6 +74,7 @@ void CharacterAnimationItem::_set_animation_scale_by_length(float p_length)
 
 }
 
+/************************************************************************************************************************************************************************************************************************/
 void CharacterAnimatorNodeBase::_bind_methods()
 {
     ClassDB::bind_method(D_METHOD("_get_blackbord_propertys"), &CharacterAnimatorNodeBase::_get_blackbord_propertys);
@@ -459,7 +460,7 @@ void CharacterAnimatorNodeBase::Blend2dDataConstant::precompute_freeform(BlendTy
 
 	Vector2* workspaceBlendVectors = (Vector2*)alloca(sizeof(Vector2) * count);
 
-	bool* neighborArray; (bool*)alloca(sizeof(Vector2) * count * count);
+	bool* neighborArray = (bool*)alloca(sizeof(Vector2) * count * count);
 	for (uint32_t c = 0; c < count * count; c++)
 		neighborArray[c] = false;
 
@@ -713,6 +714,7 @@ void CharacterAnimatorNodeBase::get_weights1d(const Blend1dDataConstant& blendCo
         weightArray[j] = weight_for_index(blendConstant.position_array.ptr(), blendConstant.position_array.size(), j, blendValue);
 }
 
+/************************************************************************************************************************************************************************************************************************/
 void CharacterAnimatorNode1D::add_animation(const Ref<Animation> & p_anim,float p_pos)
 {
     Ref<CharacterAnimationItem> item;
@@ -739,6 +741,20 @@ void CharacterAnimatorNode1D::process_animation(class CharacterAnimatorLayer *p_
     _blend_anmation(p_layer,blend_data.position_array.size(), p_playback_info, total_weight,p_playback_info->m_WeightArray,p_blackboard);
 
 }
+
+void CharacterAnimatorNode1D::_bind_methods()
+{
+    ClassDB::bind_method(D_METHOD("set_position_array", "array"), &CharacterAnimatorNode1D::set_position_array);
+    ClassDB::bind_method(D_METHOD("get_position_array"), &CharacterAnimatorNode1D::get_position_array);
+
+
+    ClassDB::bind_method(D_METHOD("set_black_board_property", "black_board_property"), &CharacterAnimatorNode1D::_set_black_board_property);
+    ClassDB::bind_method(D_METHOD("get_black_board_property"), &CharacterAnimatorNode1D::_get_black_board_property);
+
+    ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "black_board_property",PROPERTY_HINT_ENUM_DYNAMIC_LIST, "_get_blackbord_propertys"), "set_black_board_property", "get_black_board_property");
+    ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "position_array", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Vector2"), PROPERTY_USAGE_STORAGE), "set_position_array", "get_position_array");
+}
+/************************************************************************************************************************************************************************************************************************/
 void CharacterAnimatorLoopLast::process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,const Ref<Blackboard> &p_blackboard)
 {
         float w = total_weight;
@@ -812,6 +828,7 @@ float CharacterAnimatorLoopLast::_get_animation_length()
     }
     return length;
 }
+/************************************************************************************************************************************************************************************************************************/
 
 void CharacterAnimatorNode2D::process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,const Ref<Blackboard> &p_blackboard)
 {
@@ -840,4 +857,23 @@ void CharacterAnimatorNode2D::process_animation(class CharacterAnimatorLayer *p_
 
     _blend_anmation(p_layer, blend_data.position_array.size(),p_playback_info, total_weight,p_playback_info->m_WeightArray,p_blackboard);
 
+}
+void CharacterAnimatorNode2D::_bind_methods()
+{
+    ClassDB::bind_method(D_METHOD("set_position_array", "array"), &CharacterAnimatorNode2D::set_position_array);
+    ClassDB::bind_method(D_METHOD("get_position_array"), &CharacterAnimatorNode2D::get_position_array);
+
+    ClassDB::bind_method(D_METHOD("set_black_board_property", "black_board_property"), &CharacterAnimatorNode2D::_set_black_board_property);
+    ClassDB::bind_method(D_METHOD("get_black_board_property"), &CharacterAnimatorNode2D::_get_black_board_property);
+
+    ClassDB::bind_method(D_METHOD("set_black_board_property_y", "black_board_property"), &CharacterAnimatorNode2D::_set_black_board_property_y);
+    ClassDB::bind_method(D_METHOD("get_black_board_property_y"), &CharacterAnimatorNode2D::_get_black_board_property_y);
+
+    ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "black_board_property",PROPERTY_HINT_ENUM_DYNAMIC_LIST, "_get_blackbord_propertys"), "set_black_board_property", "get_black_board_property");
+    ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "black_board_property_y",PROPERTY_HINT_ENUM_DYNAMIC_LIST, "_get_blackbord_propertys"), "set_black_board_property_y", "get_black_board_property_y");
+    ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "position_array", PROPERTY_HINT_ARRAY_TYPE, "Vector2", PROPERTY_USAGE_STORAGE), "set_position_array", "get_position_array");
+
+    BIND_ENUM_CONSTANT(SimpleDirectionnal2D);
+    BIND_ENUM_CONSTANT(FreeformDirectionnal2D);
+    BIND_ENUM_CONSTANT(FreeformCartesian2D);
 }

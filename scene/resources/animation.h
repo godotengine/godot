@@ -648,6 +648,7 @@ private:
 	};
 	Ref<Resource> bone_map;
 	Vector<Track *> tracks;
+	bool is_human_animation = false;
 
 	template <typename T>
 	void _clear(T &p_keys);
@@ -928,6 +929,9 @@ public:
 
 	void set_bone_map(const Ref<Resource>& p_bone_map);
 	Ref<Resource> get_bone_map() const ;
+	
+	void set_is_human_animation(bool p_is_human_animation);
+	bool get_is_human_animation() const;
 
 	void remap_node_to_bone_name(const Vector<String> &p_bone_names);
 

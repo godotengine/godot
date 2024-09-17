@@ -42,6 +42,9 @@ void CharacterBodyMain::init()
 }
 void CharacterBodyMain::clear_all()
 {
+    if(bone_label != nullptr) {
+        bone_label->clear();
+    }
     Skeleton3D* skeleton = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(skeletonID));
     if(skeleton == nullptr)
     {
@@ -138,6 +141,7 @@ void CharacterBodyMain::_process_animation()
 void CharacterBodyMain::_process_ik()
 {
     float delta = get_process_delta_time();
+    update_track_target();
     if(ik.is_valid())
     {
         ik->update_ik();
@@ -147,6 +151,28 @@ void CharacterBodyMain::_process_ik()
     if(bone_label != nullptr) 
     {
         bone_label->update();
+    }
+}
+
+void CharacterBodyMain::update_track_target() {
+    if(track_target == nullptr) {
+        return;
+    }
+    LocalVector<String> human_bones = get_human_bones();
+    Skeleton3D * skeleton = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(skeletonID));
+    Skeleton3D * src_skeleton = track_target->get_skeleton();
+    if(skeleton == nullptr || src_skeleton == nullptr) {
+        return;
+    }
+    for (int i = 0; i < human_bones.size(); i++) {
+        int bone_index = skeleton->find_bone(human_bones[i]);
+        int src_bone_index = src_skeleton->find_bone(human_bones[i]);
+        if(bone_index == -1 || src_bone_index == -1) {
+            continue;
+        }
+        Transform3D pose = skeleton->get_bone_global_pose(bone_index);
+        pose.basis = src_skeleton->get_bone_global_pose(src_bone_index).basis;
+        skeleton->set_bone_global_pose(bone_index, pose);
     }
 }
 void CharacterBodyMain::_process_move()
@@ -308,6 +334,7 @@ void CharacterBodyMain::_init_body()
         if(animator.is_valid()) {
             animator->set_body(this);
         }
+		update_bone_visble();
 		notify_property_list_changed();
 	}
 
@@ -736,6 +763,9 @@ void CharacterBodyMain::editor_play_select_animation() {
         return;
     }
     animator->editor_play_animation(play_animation);
+}
+void CharacterBodyMain::editor_to_human_animation() {
+
 }
 void CharacterBodyMain::update_bone_visble()
 {
