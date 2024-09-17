@@ -397,7 +397,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 			best = "en";
 		}
 
+		// These are the languages with a translation for the online docs
+		String docs_lang_hint = "auto,en,cs,de,es,fr,it,ja,ko,pl,pt-br,ru,uk,zh-cn,zh-tw";
+
 		EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_ENUM, "interface/editor/editor_language", best, lang_hint, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+		EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_ENUM, "interface/editor/online_docs_language", "auto", docs_lang_hint);
 	}
 
 	// Asset library
@@ -1222,6 +1226,40 @@ void EditorSettings::setup_language() {
 
 	// Load extractable translation for projects.
 	load_extractable_translations(lang);
+}
+
+String EditorSettings::get_online_docs_url() {
+	String default_language = EditorSettings::get_singleton()->get_setting("interface/editor/editor_language");
+	String override_language = EditorSettings::get_singleton()->get_setting("interface/editor/online_docs_language");
+
+	Vector<String> doc_languages;
+	doc_languages.push_back("en");
+	doc_languages.push_back("cs");
+	doc_languages.push_back("de");
+	doc_languages.push_back("es");
+	doc_languages.push_back("fr");
+	doc_languages.push_back("it");
+	doc_languages.push_back("ja");
+	doc_languages.push_back("ko");
+	doc_languages.push_back("pl");
+	doc_languages.push_back("pt-br");
+	doc_languages.push_back("ru");
+	doc_languages.push_back("uk");
+	doc_languages.push_back("zh-cn");
+	doc_languages.push_back("zh-tw");
+
+	String language = "en";
+	if ((doc_languages.find(default_language) >= 0)) {
+		language = default_language;
+	}
+	if ((doc_languages.find(override_language) >= 0)) {
+		language = override_language;
+	}
+
+	// For versioning, the English online docs use "latest", "stable", "4.3", "4.4", etc, and the translated online docs use "3.x", "4.x", etc.
+	// While "stable" or "latest" will redirect to "4.x" on the translated docs, "4.3" will not redirect.
+	String version = (language == "en") ? VERSION_DOCS_BRANCH : vformat("%s.x", VERSION_MAJOR);
+	return vformat(VERSION_DOCS_URL "%s/%s/", language, version);
 }
 
 void EditorSettings::setup_network() {

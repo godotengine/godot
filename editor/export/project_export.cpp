@@ -553,7 +553,8 @@ void ProjectExportDialog::_enc_filters_changed(const String &p_filters) {
 }
 
 void ProjectExportDialog::_open_key_help_link() {
-	OS::get_singleton()->shell_open(vformat("%s/contributing/development/compiling/compiling_with_script_encryption_key.html", VERSION_DOCS_URL));
+	String doc_url = EditorSettings::get_singleton()->get_online_docs_url();
+	OS::get_singleton()->shell_open(vformat("%s/contributing/development/compiling/compiling_with_script_encryption_key.html", doc_url));
 }
 
 void ProjectExportDialog::_enc_pck_changed(bool p_pressed) {

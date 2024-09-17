@@ -727,7 +727,8 @@ void TextShaderEditor::_menu_option(int p_option) {
 			code_editor->remove_all_bookmarks();
 		} break;
 		case HELP_DOCS: {
-			OS::get_singleton()->shell_open(vformat("%s/tutorials/shaders/shader_reference/index.html", VERSION_DOCS_URL));
+			String doc_url = EditorSettings::get_singleton()->get_online_docs_url();
+			OS::get_singleton()->shell_open(vformat("%s/tutorials/shaders/shader_reference/index.html", doc_url));
 		} break;
 	}
 	if (p_option != SEARCH_FIND && p_option != SEARCH_REPLACE && p_option != SEARCH_GOTO_LINE) {

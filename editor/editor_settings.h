@@ -134,6 +134,7 @@ public:
 
 	static void create();
 	void setup_language();
+	String get_online_docs_url();
 	void setup_network();
 	static void save();
 	static void destroy();
