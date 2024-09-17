@@ -219,6 +219,9 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 				panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 				panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
 			}
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/animation")) {
+				editor->bezier_key_mode->select((int)EDITOR_GET("editors/animation/default_bezier_key_behavior"));
+			}
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -1239,6 +1242,14 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action(TTR("Add Bezier Point"));
 			undo_redo->add_do_method(animation.ptr(), "bezier_track_insert_key", selected_track, time, new_point[0], Vector2(new_point[1], new_point[2]), Vector2(new_point[3], new_point[4]));
+			int k_idx = animation->track_find_key(selected_track, time) + 1;
+			undo_redo->add_do_method(editor,
+					"_bezier_track_set_key_handle_mode",
+					animation.ptr(),
+					selected_track,
+					k_idx,
+					(Animation::HandleMode)editor->bezier_key_mode->get_selected_id(),
+					Animation::HANDLE_SET_MODE_AUTO);
 			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", selected_track, time);
 			undo_redo->commit_action();
 
@@ -1249,6 +1260,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			_select_at_anim(animation, selected_track, animation->track_get_key_time(selected_track, index), true);
 
 			moving_selection_attempt = true;
+			moving_inserted_key = true;
 			moving_selection = false;
 			moving_selection_mouse_begin_x = mb->get_position().x;
 			moving_selection_from_key = index;
@@ -1377,6 +1389,14 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 					real_t h = key[0];
 					h += moving_selection_offset.y;
 					key[0] = h;
+
+					Animation::HandleMode handle_mode = animation->bezier_track_get_key_handle_mode(E->get().first, E->get().second);
+					Animation::HandleSetMode handle_set_mode = Animation::HANDLE_SET_MODE_NONE;
+					if (moving_inserted_key) {
+						handle_mode = (Animation::HandleMode)editor->bezier_key_mode->get_selected_id();
+						handle_set_mode = Animation::HANDLE_SET_MODE_AUTO;
+					}
+
 					undo_redo->add_do_method(
 							this,
 							"_bezier_track_insert_key_at_anim",
@@ -1386,7 +1406,8 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 							key[0],
 							Vector2(key[1], key[2]),
 							Vector2(key[3], key[4]),
-							animation->bezier_track_get_key_handle_mode(E->get().first, E->get().second));
+							handle_mode,
+							handle_set_mode);
 				}
 
 				// 4 - (undo) Remove inserted keys.
@@ -1459,6 +1480,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 			moving_selection = false;
 			moving_selection_attempt = false;
+			moving_inserted_key = false;
 			moving_selection_mouse_begin_x = 0.0;
 			queue_redraw();
 		}
@@ -1683,6 +1705,14 @@ void AnimationBezierTrackEdit::_menu_selected(int p_index) {
 				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 				undo_redo->create_action(TTR("Add Bezier Point"));
 				undo_redo->add_do_method(animation.ptr(), "track_insert_key", selected_track, time, new_point);
+				int k_idx = animation->track_find_key(selected_track, time) + 1;
+				undo_redo->add_do_method(editor,
+						"_bezier_track_set_key_handle_mode",
+						animation.ptr(),
+						selected_track,
+						k_idx,
+						(Animation::HandleMode)editor->bezier_key_mode->get_selected_id(),
+						Animation::HANDLE_SET_MODE_AUTO);
 				undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
 				undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", selected_track, time);
 				AnimationPlayerEditor *ape = AnimationPlayerEditor::get_singleton();
@@ -1965,9 +1995,9 @@ void AnimationBezierTrackEdit::delete_selection() {
 	}
 }
 
-void AnimationBezierTrackEdit::_bezier_track_insert_key_at_anim(const Ref<Animation> &p_anim, int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle, const Animation::HandleMode p_handle_mode) {
+void AnimationBezierTrackEdit::_bezier_track_insert_key_at_anim(const Ref<Animation> &p_anim, int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle, const Animation::HandleMode p_handle_mode, Animation::HandleSetMode p_handle_set_mode) {
 	int idx = p_anim->bezier_track_insert_key(p_track, p_time, p_value, p_in_handle, p_out_handle);
-	p_anim->bezier_track_set_key_handle_mode(p_track, idx, p_handle_mode);
+	p_anim->bezier_track_set_key_handle_mode(p_track, idx, p_handle_mode, p_handle_set_mode);
 }
 
 void AnimationBezierTrackEdit::_bind_methods() {
@@ -1976,7 +2006,7 @@ void AnimationBezierTrackEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_select_at_anim"), &AnimationBezierTrackEdit::_select_at_anim);
 	ClassDB::bind_method(D_METHOD("_update_hidden_tracks_after"), &AnimationBezierTrackEdit::_update_hidden_tracks_after);
 	ClassDB::bind_method(D_METHOD("_update_locked_tracks_after"), &AnimationBezierTrackEdit::_update_locked_tracks_after);
-	ClassDB::bind_method(D_METHOD("_bezier_track_insert_key_at_anim"), &AnimationBezierTrackEdit::_bezier_track_insert_key_at_anim);
+	ClassDB::bind_method(D_METHOD("_bezier_track_insert_key_at_anim"), &AnimationBezierTrackEdit::_bezier_track_insert_key_at_anim, DEFVAL(Animation::HANDLE_SET_MODE_NONE));
 
 	ADD_SIGNAL(MethodInfo("select_key", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "single"), PropertyInfo(Variant::INT, "track")));
 	ADD_SIGNAL(MethodInfo("deselect_key", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::INT, "track")));

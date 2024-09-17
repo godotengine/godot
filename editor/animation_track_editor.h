@@ -609,6 +609,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	OptionButton *snap_mode = nullptr;
 	Button *auto_fit = nullptr;
 	Button *auto_fit_bezier = nullptr;
+	OptionButton *bezier_key_mode = nullptr;
 
 	Button *imported_anim_warning = nullptr;
 	void _show_imported_anim_warning();
