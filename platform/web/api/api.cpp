@@ -66,6 +66,8 @@ void JavaScriptBridge::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("eval", "code", "use_global_execution_context"), &JavaScriptBridge::eval, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_interface", "interface"), &JavaScriptBridge::get_interface);
 	ClassDB::bind_method(D_METHOD("create_callback", "callable"), &JavaScriptBridge::create_callback);
+	ClassDB::bind_method(D_METHOD("is_js_buffer", "javascript_object"), &JavaScriptBridge::is_js_buffer);
+	ClassDB::bind_method(D_METHOD("js_buffer_to_packed_byte_array", "javascript_buffer"), &JavaScriptBridge::js_buffer_to_packed_byte_array);
 	{
 		MethodInfo mi;
 		mi.name = "create_object";
@@ -91,6 +93,14 @@ Ref<JavaScriptObject> JavaScriptBridge::get_interface(const String &p_interface)
 
 Ref<JavaScriptObject> JavaScriptBridge::create_callback(const Callable &p_callable) {
 	return Ref<JavaScriptObject>();
+}
+
+bool JavaScriptBridge::is_js_buffer(Ref<JavaScriptObject> p_js_obj) {
+	return false;
+}
+
+PackedByteArray JavaScriptBridge::js_buffer_to_packed_byte_array(Ref<JavaScriptObject> p_js_obj) {
+	return PackedByteArray();
 }
 
 Variant JavaScriptBridge::_create_object_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {

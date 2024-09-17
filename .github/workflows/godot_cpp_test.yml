@@ -7,18 +7,19 @@ env:
   # Used for the cache key. Add version suffix to force clean build.
   GODOT_BASE_BRANCH: master
   # Used for the godot-cpp checkout.
-  GODOT_CPP_BRANCH: '4.3'
+  GODOT_CPP_BRANCH: 4.3
 
 concurrency:
-  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-cpp-tests
+  group: ci-${{ github.actor }}-${{ github.head_ref || github.run_number }}-${{ github.ref }}-cpp-tests
   cancel-in-progress: true
 
 jobs:
   godot-cpp-tests:
-    runs-on: "ubuntu-20.04"
-    name: "Build and test Godot CPP"
+    runs-on: ubuntu-20.04
+    name: Build and test Godot CPP
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
@@ -31,15 +32,15 @@ jobs:
         with:
           repository: godotengine/godot-cpp
           ref: ${{ env.GODOT_CPP_BRANCH }}
-          submodules: 'recursive'
-          path: 'godot-cpp'
+          submodules: recursive
+          path: godot-cpp
 
       # Download generated API dump
       - name: Download GDExtension interface and API dump
         uses: ./.github/actions/download-artifact
         with:
-          name: 'godot-api-dump'
-          path: './godot-api'
+          name: godot-api-dump
+          path: ./godot-api
 
       # Extract and override existing files with generated files
       - name: Extract GDExtension interface and API dump
@@ -58,11 +59,11 @@ jobs:
           cd ../..
 
   gdextension-c-compile:
-    runs-on: "ubuntu-20.04"
-    name: "Check GDExtension header with a C compiler"
+    runs-on: 'ubuntu-20.04'
+    name: 'Check GDExtension header with a C compiler'
     steps:
       - uses: actions/checkout@v4
 
-      - name: "Run C compiler on gdextension_interface.h"
+      - name: 'Run C compiler on gdextension_interface.h'
         run: |
           gcc -c core/extension/gdextension_interface.h

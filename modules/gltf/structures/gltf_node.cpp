@@ -55,6 +55,7 @@ void GLTFNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_scale", "scale"), &GLTFNode::set_scale);
 	ClassDB::bind_method(D_METHOD("get_children"), &GLTFNode::get_children);
 	ClassDB::bind_method(D_METHOD("set_children", "children"), &GLTFNode::set_children);
+	ClassDB::bind_method(D_METHOD("append_child_index", "child_index"), &GLTFNode::append_child_index);
 	ClassDB::bind_method(D_METHOD("get_light"), &GLTFNode::get_light);
 	ClassDB::bind_method(D_METHOD("set_light", "light"), &GLTFNode::set_light);
 	ClassDB::bind_method(D_METHOD("get_additional_data", "extension_name"), &GLTFNode::get_additional_data);
@@ -168,6 +169,10 @@ Vector<int> GLTFNode::get_children() {
 
 void GLTFNode::set_children(Vector<int> p_children) {
 	children = p_children;
+}
+
+void GLTFNode::append_child_index(int p_child_index) {
+	children.append(p_child_index);
 }
 
 GLTFLightIndex GLTFNode::get_light() {

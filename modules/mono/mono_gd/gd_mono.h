@@ -64,7 +64,7 @@ class GDMono {
 	bool finalizing_scripts_domain = false;
 
 	void *hostfxr_dll_handle = nullptr;
-	bool is_native_aot = false;
+	void *coreclr_dll_handle = nullptr;
 
 	String project_assembly_path;
 	uint64_t project_assembly_modified_time = 0;

@@ -28,6 +28,17 @@
 				Appends the given byte array data to the buffers and creates a [GLTFBufferView] for it. The index of the destination [GLTFBufferView] is returned. If [param deduplication] is true, the buffers will first be searched for duplicate data, otherwise new bytes will always be appended.
 			</description>
 		</method>
+		<method name="append_gltf_node">
+			<return type="int" />
+			<param index="0" name="gltf_node" type="GLTFNode" />
+			<param index="1" name="godot_scene_node" type="Node" />
+			<param index="2" name="parent_node_index" type="int" />
+			<description>
+				Append the given [GLTFNode] to the state, and return its new index. This can be used to export one Godot node as multiple glTF nodes, or inject new glTF nodes at import time. On import, this must be called before [method GLTFDocumentExtension._generate_scene_node] finishes for the parent node. On export, this must be called before [method GLTFDocumentExtension._export_node] runs for the parent node.
+				The [param godot_scene_node] parameter is the Godot scene node that corresponds to this glTF node. This is highly recommended to be set to a valid node, but may be null if there is no corresponding Godot scene node. One Godot scene node may be used for multiple glTF nodes, so if exporting multiple glTF nodes for one Godot scene node, use the same Godot scene node for each.
+				The [param parent_node_index] parameter is the index of the parent [GLTFNode] in the state. If [code]-1[/code], the node will be a root node, otherwise the new node will be added to the parent's list of children. The index will also be written to the [member GLTFNode.parent] property of the new node.
+			</description>
+		</method>
 		<method name="get_accessors">
 			<return type="GLTFAccessor[]" />
 			<description>

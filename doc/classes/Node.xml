@@ -498,6 +498,12 @@
 				Returns the time elapsed (in seconds) since the last process callback. This value is identical to [method _process]'s [code]delta[/code] parameter, and may vary from frame to frame. See also [constant NOTIFICATION_PROCESS].
 			</description>
 		</method>
+		<method name="get_rpc_config" qualifiers="const">
+			<return type="Variant" />
+			<description>
+				Returns a [Dictionary] mapping method names to their RPC configuration defined for this node using [method rpc_config].
+			</description>
+		</method>
 		<method name="get_scene_instance_load_placeholder" qualifiers="const">
 			<return type="bool" />
 			<description>

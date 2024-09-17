@@ -1,0 +1,6 @@
+GDTEST_RUNTIME_ERROR
+>> SCRIPT ERROR
+>> on function: test()
+>> runtime/errors/typed_dictionary_assign_differently_typed_key.gd
+>> 6
+>> Invalid assignment of property or key 'key' with value of type 'int' on a base object of type 'Dictionary[int, int]'.

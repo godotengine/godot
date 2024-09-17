@@ -29,6 +29,8 @@ allprojects {
 configurations {
     // Initializes a placeholder for the devImplementation dependency configuration.
     devImplementation {}
+    // Initializes a placeholder for the monoImplementation dependency configuration.
+    monoImplementation {}
 }
 
 dependencies {
@@ -42,9 +44,9 @@ dependencies {
     } else {
         // Godot gradle build mode. In this scenario this project is the only one around and the Godot
         // library is available through the pre-generated godot-lib.*.aar android archive files.
-        debugImplementation fileTree(dir: 'libs/debug', include: ['*.jar', '*.aar'])
-        devImplementation fileTree(dir: 'libs/dev', include: ['*.jar', '*.aar'])
-        releaseImplementation fileTree(dir: 'libs/release', include: ['*.jar', '*.aar'])
+        debugImplementation fileTree(dir: 'libs/debug', include: ['**/*.jar', '*.aar'])
+        devImplementation fileTree(dir: 'libs/dev', include: ['**/*.jar', '*.aar'])
+        releaseImplementation fileTree(dir: 'libs/release', include: ['**/*.jar', '*.aar'])
     }
 
     // Godot user plugins remote dependencies
@@ -59,6 +61,12 @@ dependencies {
     String[] pluginsBinaries = getGodotPluginsLocalBinaries()
     if (pluginsBinaries != null && pluginsBinaries.size() > 0) {
         implementation files(pluginsBinaries)
+    }
+
+    // .NET dependencies
+    String jar = '../../../../modules/mono/thirdparty/libSystem.Security.Cryptography.Native.Android.jar'
+    if (file(jar).exists()) {
+        monoImplementation files(jar)
     }
 }
 
@@ -155,6 +163,10 @@ android {
         }
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     buildTypes {
 
         debug {
@@ -192,6 +204,13 @@ android {
         }
     }
 
+    flavorDimensions 'edition'
+
+    productFlavors {
+        standard {}
+        mono {}
+    }
+
     sourceSets {
         main {
             manifest.srcFile 'AndroidManifest.xml'
@@ -207,7 +226,8 @@ android {
 
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
-            output.outputFileName = "android_${variant.name}.apk"
+            String filenameSuffix = variant.flavorName == "mono" ? variant.name : variant.buildType.name
+            output.outputFileName = "android_${filenameSuffix}.apk"
         }
     }
 }
@@ -220,12 +240,20 @@ task copyAndRenameBinary(type: Copy) {
 
     String exportPath = getExportPath()
     String exportFilename = getExportFilename()
+    String exportEdition = getExportEdition()
     String exportBuildType = getExportBuildType()
+    String exportBuildTypeCapitalized = exportBuildType.capitalize()
     String exportFormat = getExportFormat()
 
     boolean isAab = exportFormat == "aab"
-    String sourceFilepath = isAab ? "$buildDir/outputs/bundle/$exportBuildType/build-${exportBuildType}.aab" : "$buildDir/outputs/apk/$exportBuildType/android_${exportBuildType}.apk"
-    String sourceFilename = isAab ? "build-${exportBuildType}.aab" : "android_${exportBuildType}.apk"
+    boolean isMono = exportEdition == "mono"
+    String filenameSuffix = exportBuildType
+    if (isMono) {
+        filenameSuffix = isAab ? "${exportEdition}-${exportBuildType}" : "${exportEdition}${exportBuildTypeCapitalized}"
+    }
+
+    String sourceFilename = isAab ? "build-${filenameSuffix}.aab" : "android_${filenameSuffix}.apk"
+    String sourceFilepath = isAab ? "$buildDir/outputs/bundle/${exportEdition}${exportBuildTypeCapitalized}/$sourceFilename" : "$buildDir/outputs/apk/$exportEdition/$exportBuildType/$sourceFilename"
 
     from sourceFilepath
     into exportPath

@@ -44,14 +44,17 @@
 #ifdef DEBUG_ENABLED
 
 struct _ObjectDebugLock {
-	Object *obj;
+	ObjectID obj_id;
 
 	_ObjectDebugLock(Object *p_obj) {
-		obj = p_obj;
-		obj->_lock_index.ref();
+		obj_id = p_obj->get_instance_id();
+		p_obj->_lock_index.ref();
 	}
 	~_ObjectDebugLock() {
-		obj->_lock_index.unref();
+		Object *obj_ptr = ObjectDB::get_instance(obj_id);
+		if (likely(obj_ptr)) {
+			obj_ptr->_lock_index.unref();
+		}
 	}
 };
 
