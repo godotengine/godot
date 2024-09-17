@@ -919,6 +919,7 @@ ProjectDialog::ProjectDialog() {
 	l->set_text(TTR("Renderer:"));
 	renderer_container->add_child(l);
 	HBoxContainer *rshc = memnew(HBoxContainer);
+	rshc->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
 	renderer_container->add_child(rshc);
 	renderer_button_group.instantiate();
 
@@ -1005,6 +1006,7 @@ ProjectDialog::ProjectDialog() {
 	renderer_container->add_child(l);
 
 	default_files_container = memnew(HBoxContainer);
+	default_files_container->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
 	vb->add_child(default_files_container);
 	l = memnew(Label);
 	l->set_text(TTR("Version Control Metadata:"));
