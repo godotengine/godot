@@ -1939,10 +1939,10 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 	}
 
 	{ //primitive
-		primitive_arrays.index_array[0] = shader.quad_index_array = RD::get_singleton()->index_array_create(shader.quad_index_buffer, 0, 1);
-		primitive_arrays.index_array[1] = shader.quad_index_array = RD::get_singleton()->index_array_create(shader.quad_index_buffer, 0, 2);
-		primitive_arrays.index_array[2] = shader.quad_index_array = RD::get_singleton()->index_array_create(shader.quad_index_buffer, 0, 3);
-		primitive_arrays.index_array[3] = shader.quad_index_array = RD::get_singleton()->index_array_create(shader.quad_index_buffer, 0, 6);
+		primitive_arrays.index_array[0] = RD::get_singleton()->index_array_create(shader.quad_index_buffer, 0, 1);
+		primitive_arrays.index_array[1] = RD::get_singleton()->index_array_create(shader.quad_index_buffer, 0, 2);
+		primitive_arrays.index_array[2] = RD::get_singleton()->index_array_create(shader.quad_index_buffer, 0, 3);
+		primitive_arrays.index_array[3] = RD::get_singleton()->index_array_create(shader.quad_index_buffer, 0, 6);
 	}
 
 	{
