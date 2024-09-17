@@ -65,13 +65,16 @@
 # 신윤섭 <a97968765@gmail.com>, 2024.
 # Lee Dogeon <dev.moreal@gmail.com>, 2024.
 # Koo Youngmin <youngminz.kr@gmail.com>, 2024.
+# 호엑 <sgas201156@gmail.com>, 2024.
+# 김철수 <jojomin0412@gmail.com>, 2024.
+# rethinking21 <rethinking21@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-08-09 17:09+0000\n"
-"Last-Translator: Koo Youngmin <youngminz.kr@gmail.com>\n"
+"PO-Revision-Date: 2024-09-16 08:50+0000\n"
+"Last-Translator: rethinking21 <rethinking21@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ko/>\n"
 "Language: ko\n"
@@ -79,7 +82,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.7-dev\n"
+"X-Generator: Weblate 5.8-dev\n"
 
 msgid "Main Thread"
 msgstr "메인 스레드"
@@ -230,6 +233,12 @@ msgstr "조이패드 버튼 %d"
 
 msgid "Pressure:"
 msgstr "압력:"
+
+msgid "canceled"
+msgstr "취소됨"
+
+msgid "touched"
+msgstr "터치됨"
 
 msgid "released"
 msgstr "놓음"
@@ -496,6 +505,9 @@ msgstr "작업 복원"
 
 msgid "Add Event"
 msgstr "이벤트 추가"
+
+msgid "Remove Action"
+msgstr "액션 제거"
 
 msgid "Cannot Remove Action"
 msgstr "액션을 제거할 수 없음"
@@ -1298,6 +1310,9 @@ msgid "%d of %d match"
 msgid_plural "%d of %d matches"
 msgstr[0] "%d 중 %d 일치"
 
+msgid "Find"
+msgstr "찾기"
+
 msgid "Match Case"
 msgstr "대소문자 구분"
 
@@ -1675,6 +1690,9 @@ msgstr "실행이 재개되었습니다."
 
 msgid "Bytes:"
 msgstr "바이트:"
+
+msgid "Warning:"
+msgstr "경고:"
 
 msgid "Error:"
 msgstr "오류:"
@@ -2235,6 +2253,9 @@ msgstr "새로운 버스 레이아웃을 만듭니다."
 msgid "Audio Bus Layout"
 msgstr "오디오 버스 레이아웃"
 
+msgid "Invalid name."
+msgstr "올바르지 않은 이름입니다."
+
 msgid "Must not collide with an existing engine class name."
 msgstr "기존 엔진 클래스 이름과 충돌해서는 안 됩니다."
 
@@ -2407,8 +2428,14 @@ msgstr "주요 기능:"
 msgid "Text Rendering and Font Options:"
 msgstr "텍스트 렌더링 및 글꼴 옵션:"
 
+msgid "Reset the edited profile?"
+msgstr "편집된 프로필을 재설정하시겠습니까?"
+
 msgid "File saving failed."
 msgstr "파일 저장 실패."
+
+msgid "Create a new profile?"
+msgstr "새 프로필을 만드시겠습니까?"
 
 msgid "This will scan all files in the current project to detect used classes."
 msgstr "현재 프로젝트의 모든 파일을 스캔하여 사용된 클래스를 감지합니다."
@@ -2497,6 +2524,9 @@ msgstr "아래로 이동"
 
 msgid "Move this dock to the bottom panel."
 msgstr "이 독을 하단 패널로 옮깁니다."
+
+msgid "Close this dock."
+msgstr "이 독을 닫습니다."
 
 msgid "3D Editor"
 msgstr "3D 에디터"
@@ -2646,6 +2676,12 @@ msgstr "저장 & 다시 시작"
 
 msgid "ScanSources"
 msgstr "소스 스캔중"
+
+msgid "Update Scene Groups"
+msgstr "씬 그룹 업데이트"
+
+msgid "Updating Scene Groups..."
+msgstr "씬 그룹 업데이트 중..."
 
 msgid ""
 "There are multiple importers for different types pointing to file %s, import "
@@ -2916,8 +2952,14 @@ msgstr "사용 가능한 설명이 없습니다."
 msgid "Metadata:"
 msgstr "메타데이터:"
 
+msgid "Setting:"
+msgstr "설정:"
+
 msgid "Property:"
 msgstr "속성:"
+
+msgid "Internal Property:"
+msgstr "내부 속성:"
 
 msgid "This property can only be set in the Inspector."
 msgstr "이 속성은 인스펙터에서만 설정할 수 있습니다."
@@ -2930,6 +2972,9 @@ msgstr "시그널:"
 
 msgid "Theme Property:"
 msgstr "테마 속성:"
+
+msgid "%d match."
+msgstr "%d개 일치."
 
 msgid "%d matches."
 msgstr "%d개 일치."
@@ -3088,6 +3133,9 @@ msgstr "다수 변경: %s"
 
 msgid "Remove metadata %s"
 msgstr "메타데이터 %s 제거"
+
+msgid "Pinned %s"
+msgstr "%s 고정됨"
 
 msgid "Unpinned %s"
 msgstr "%s 고정 해제됨"
@@ -3254,6 +3302,16 @@ msgstr ""
 msgid "Save Resource As..."
 msgstr "리소스를 다른 이름으로 저장..."
 
+msgid "Scene file '%s' appears to be invalid/corrupt."
+msgstr "씬 파일 '%s'이 잘못되었거나 손상되었습니다."
+
+msgid ""
+"File '%s' is saved in a format that is newer than the formats supported by "
+"this version of Godot, so it can't be opened."
+msgstr ""
+"파일 '%s'은(는) 이 버전의 Godot에서 지원하는 형식보다 새로운 형식으로 저장되"
+"어 있으므로 열 수 없습니다."
+
 msgid "Saving Scene"
 msgstr "씬 저장 중"
 
@@ -3266,6 +3324,9 @@ msgstr "썸네일 만드는 중"
 msgid "Save scene before running..."
 msgstr "씬을 실행하기 전에 저장..."
 
+msgid "Could not save one or more scenes!"
+msgstr "하나 이상의 씬을 저장할 수 없습니다!"
+
 msgid "Save All Scenes"
 msgstr "모든 씬 저장"
 
@@ -3277,6 +3338,12 @@ msgstr "기존의 것과 병합하기"
 
 msgid "Apply MeshInstance Transforms"
 msgstr "MeshInstance 변형 적용"
+
+msgid "Can't load MeshLibrary for merging!"
+msgstr "병합을 위해 메쉬 라이브러리 를 로드할 수 없습니다!"
+
+msgid "Error saving MeshLibrary!"
+msgstr "메쉬 라이브러리를 저장하는 중 오류가 발생했습니다!"
 
 msgid ""
 "An error occurred while trying to save the editor layout.\n"
@@ -3352,6 +3419,9 @@ msgstr "빠른 씬 열기..."
 msgid "Quick Open Script..."
 msgstr "빠른 스크립트 열기..."
 
+msgid "%s no longer exists! Please specify a new save location."
+msgstr "%s가 더 이상 존재하지 않습니다! 새로운 저장 위치를 지정해 주세요."
+
 msgid ""
 "A root node is required to save the scene. You can add a root node using the "
 "Scene tree dock."
@@ -3426,6 +3496,13 @@ msgstr "새로고침하기 전에 해당 씬의 변경사항을 저장하시겠�
 msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr "프로젝트 매니저를 열기 전에 해당 씬의 변경사항을 저장하시겠습니까?"
 
+msgid ""
+"This option is deprecated. Situations where refresh must be forced are now "
+"considered a bug. Please report."
+msgstr ""
+"이 옵션은 더 이상 사용되지 않습니다. 새로 고침을 강제로 해야 하는 상황은 버그"
+"로 간주됩니다. 신고해 주세요."
+
 msgid "Pick a Main Scene"
 msgstr "메인 씬 선택"
 
@@ -3470,6 +3547,13 @@ msgid ""
 msgstr ""
 "씬 '%s'을(를) 자동으로 가져왔으므로 수정할 수 없습니다.\n"
 "이 씬을 편집하려면 새로운 상속 씬을 만들어야 합니다."
+
+msgid ""
+"Error loading scene, it must be inside the project path. Use 'Import' to open "
+"the scene, then save it inside the project path."
+msgstr ""
+"씬을 불러오던 중 오류가 발생했습니다. 프로젝트 경로 안에 있어야 합니다. '가져"
+"오기'를 사용하여 씬을 열고 프로젝트 경로 안에 저장해주세요."
 
 msgid "Scene '%s' has broken dependencies:"
 msgstr "씬 '%s'의 종속 항목이 망가짐:"
@@ -3583,6 +3667,9 @@ msgid ""
 "Unable to write to file '%s', file in use, locked or lacking permissions."
 msgstr ""
 "파일 '%s'에 쓸 수 없습니다. 파일이 사용 중이거나 잠겨 있거나 권한이 없습니다."
+
+msgid "Preparing scenes for reload"
+msgstr "새로고침을 위해 씬 준비중"
 
 msgid ""
 "Changing the renderer requires restarting the editor.\n"
@@ -3755,6 +3842,9 @@ msgstr "도움말 검색..."
 msgid "Online Documentation"
 msgstr "온라인 문서"
 
+msgid "Forum"
+msgstr "포럼"
+
 msgid "Community"
 msgstr "커뮤니티"
 
@@ -3841,12 +3931,18 @@ msgstr "라이브러리 내보내기"
 msgid "Open & Run a Script"
 msgstr "스크립트 열기 & 실행"
 
+msgid "Files have been modified on disk"
+msgstr "파일이 디스크에서 변경됨"
+
 msgid ""
 "The following files are newer on disk.\n"
 "What action should be taken?"
 msgstr ""
 "다음 파일은 디스크에 있는 게 더 최신입니다.\n"
 "어떻게 할까요?"
+
+msgid "Keep local changes and overwrite"
+msgstr "로컬 변경사항을 유지하고 덮어쓰기"
 
 msgid "Create/Override Version Control Metadata..."
 msgstr "버전 관리 메타데이터 (재)생성..."
@@ -3880,6 +3976,9 @@ msgstr "다음 에디터 열기"
 
 msgid "Open the previous Editor"
 msgstr "이전 에디터 열기"
+
+msgid "Ok"
+msgstr "예"
 
 msgid "Warning!"
 msgstr "경고!"
@@ -4102,6 +4201,9 @@ msgstr "프로젝트 실행"
 msgid "Write your logic in the _run() method."
 msgstr "_run() 메서드에 당신의 논리를 작성하세요."
 
+msgid "The current scene already has a root node."
+msgstr "현재 씬은 이미 루트 노드가 있습니다."
+
 msgid "Edit Built-in Action: %s"
 msgstr "내장 액션 편집: %s"
 
@@ -4128,6 +4230,21 @@ msgstr "단축키"
 
 msgid "Binding"
 msgstr "바인딩"
+
+msgid "Failed to check for updates. Error: %d."
+msgstr "업데이트 확인에 실패했습니다. 에러: %d."
+
+msgid "Failed to check for updates. Response code: %d."
+msgstr "업데이트 확인에 실패했습니다. 응답 코드: %d."
+
+msgid "Received JSON data is not a valid version array."
+msgstr "받은 JSON 데이터가 유효하지 않은 버전 배열입니다."
+
+msgid "Offline mode, update checks disabled."
+msgstr "오프라인 모드, 업데이트 확인이 비활성화 되었습니다."
+
+msgid "An error has occurred. Click to try again."
+msgstr "에러가 발생했습니다. 클릭하여 다시 시도합니다."
 
 msgid "Left Stick Left, Joystick 0 Left"
 msgstr "왼쪽 스틱 왼쪽, 조이스틱 0 왼쪽"
@@ -6880,8 +6997,17 @@ msgctxt "Pagination"
 msgid "Last"
 msgstr "마지막"
 
+msgid ""
+"The Asset Library requires an online connection and involves sending data "
+"over the internet."
+msgstr ""
+"에셋 라이브러리는 인터넷으로 데이터 전송이 가능한 온라인 연결이 필요합니다."
+
 msgid "Go Online"
 msgstr "온라인으로"
+
+msgid "Failed to get repository configuration."
+msgstr "저장소 환경 설정을 가져오는 데 실패했습니다."
 
 msgid "All"
 msgstr "모두"
@@ -7125,6 +7251,12 @@ msgstr "중앙 보기"
 msgid "Select Mode"
 msgstr "선택 모드"
 
+msgid "Alt+Drag: Move selected node."
+msgstr "Alt+드래그: 선택한 노드 이동."
+
+msgid "Alt+Drag: Scale selected node."
+msgstr "Alt+드래그: 선택한 노드 크기조정."
+
 msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
 msgstr ""
 "Alt+우클릭: 클릭된 위치에 있는 잠금을 포함한 모든 노드의 목록을 보여줍니다."
@@ -7146,6 +7278,19 @@ msgstr "Shift: 비례적으로 조정합니다."
 
 msgid "Show list of selectable nodes at position clicked."
 msgstr "클릭한 위치의 선택할 수 있는 노드 목록을 보여줍니다."
+
+msgid "Click to change object's rotation pivot."
+msgstr "클릭하여 오브젝트의 회전 피벗을 변경합니다."
+
+msgid "Shift: Set temporary rotation pivot."
+msgstr "쉬프트: 임시 회전 피벗을 설정합니다."
+
+msgid ""
+"Click this button while holding Shift to put the rotation pivot in the center "
+"of the selected nodes."
+msgstr ""
+"쉬프트를 누른 상태로 이 버튼을 클릭하면 회전 피벗을 선택한 노드들의 중심에 둡"
+"니다."
 
 msgid "Pan Mode"
 msgstr "팬 모드"
@@ -7215,6 +7360,20 @@ msgstr "선택된 노드를 잠그어 선택하거나 이동하지 못하게 합
 
 msgid "Unlock selected node, allowing selection and movement."
 msgstr "선택된 노드를 잠금 해제하여 선택하거나 이동할 수 있게 합니다."
+
+msgid ""
+"Groups the selected node with its children. This causes the parent to be "
+"selected when any child node is clicked in 2D and 3D view."
+msgstr ""
+"선택한 노드를 자식들과 그룹화합니다. 그러면 2D와 3D 뷰에서 어떤 자식 노드를 클"
+"릭해도 부모가 선택되게 만듭니다."
+
+msgid ""
+"Ungroups the selected node from its children. Child nodes will be individual "
+"items in 2D and 3D view."
+msgstr ""
+"선택한 노드의 자식들과의 그룹화를 해제합니다. 자식 노드들은 이제 2D와 3D 뷰에"
+"서 개별 요소가 됩니다."
 
 msgid "Skeleton Options"
 msgstr "스켈레톤 설정"
@@ -7340,6 +7499,9 @@ msgstr "%s 추가하는 중..."
 
 msgid "Create Node"
 msgstr "노드 만들기"
+
+msgid "Circular dependency found at %s."
+msgstr "순환 참조가 %s에서 발견됨."
 
 msgid "Hold Alt when dropping to add as child of root node."
 msgstr "Alt를 누른 채 드롭하면 루트 노드의 자식으로 추가합니다."
@@ -7736,6 +7898,15 @@ msgstr "타입: %s"
 msgid "Dimensions: %d × %d"
 msgstr "화면 크기: %d × %d"
 
+msgid "Length: %0dm %0ds"
+msgstr "길이: %0d분 %0d초"
+
+msgid "Length: %0.1fs"
+msgstr "길이: %0.1f초"
+
+msgid "Length: %0.3fs"
+msgstr "길이: %0.3f초"
+
 msgid "Overrides (%d)"
 msgstr "오버라이드 (%d)"
 
@@ -7757,6 +7928,9 @@ msgstr "기능 (%d개, %d개 중)"
 
 msgid "Add Feature"
 msgstr "기능 추가"
+
+msgid "East Asian Language"
+msgstr "동아시아 언어"
 
 msgid " - Variation"
 msgstr " - 바리에이션"
@@ -7967,6 +8141,24 @@ msgstr "에디터 씬의 루트를 찾을 수 없습니다."
 
 msgid "Lightmap data is not local to the scene."
 msgstr "라이트맵 데이터가 씬에 로컬이 아닙니다."
+
+msgid ""
+"Maximum texture size is too small for the lightmap images.\n"
+"While this can be fixed by increasing the maximum texture size, it is "
+"recommended you split the scene into more objects instead."
+msgstr ""
+"최대 텍스처 크기가 라이트맵 이미지에 비해 너무 작습니다.\n"
+"최대 텍스처 크기를 늘려 해결할 수 있지만, 대신 씬을 더 많은 오브젝트로 분할하"
+"는 것이 좋습니다."
+
+msgid ""
+"Failed creating lightmap images. Make sure all meshes selected to bake have "
+"`lightmap_size_hint` value set high enough, and `texel_scale` value of "
+"LightmapGI is not too low."
+msgstr ""
+"라이트맵 이미지 생성에 실패했습니다. 베이크하기 위해 선택한 모든 메쉬가 충분"
+"히 높은 `lightmap_size_hint` 값을 지니고 있는지, 라이트맵GI의 `texel_scale` 값"
+"이 너무 낮진 않은지 확인하세요."
 
 msgid "Bake Lightmaps"
 msgstr "라이트맵 굽기"
@@ -8937,14 +9129,14 @@ msgstr "곡선의 아웃-컨트롤 제거"
 msgid "Remove In-Control from Curve"
 msgstr "곡선의 인-컨트롤 제거"
 
-msgid "Split Curve"
-msgstr "곡선 가르기"
-
 msgid "Move Point in Curve"
 msgstr "곡선의 점 이동"
 
 msgid "Add Point to Curve"
 msgstr "곡선에 점 추가"
+
+msgid "Split Curve"
+msgstr "곡선 가르기"
 
 msgid "Move In-Control in Curve"
 msgstr "곡선의 인-컨트롤 이동"
