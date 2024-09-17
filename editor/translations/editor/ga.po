@@ -9796,14 +9796,14 @@ msgstr "Bain Eis-Rialú ó Chuar"
 msgid "Remove In-Control from Curve"
 msgstr "Bain In-Rialú ó Chuar"
 
-msgid "Split Curve"
-msgstr "Cuar Scoilte"
-
 msgid "Move Point in Curve"
 msgstr "Bog Pointe sa Chuar"
 
 msgid "Add Point to Curve"
 msgstr "Cuir Pointe le Cuar"
+
+msgid "Split Curve"
+msgstr "Cuar Scoilte"
 
 msgid "Move In-Control in Curve"
 msgstr "Bog In-Rialú i gCuar"
@@ -17910,13 +17910,6 @@ msgid ""
 msgstr ""
 "Ní mór don mhaoin \"Conair Chianda\" nód bailí Node3D nó Node3D-díorthaithe a "
 "chur in iúl chun oibriú."
-
-msgid ""
-"Skeleton3D node not set! SkeletonModifier3D must be child of Skeleton3D or "
-"set a path to an external skeleton."
-msgstr ""
-"Níl nód cnámharlaigh3D socraithe! Ní mór cnámharlachModifier3D a bheith ina "
-"leanbh de Skeleton3D nó cosán a shocrú chuig cnámharlach seachtrach."
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "Déanfar neamhaird den chorp seo go dtí go socraíonn tú mogalra."

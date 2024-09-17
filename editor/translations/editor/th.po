@@ -4332,14 +4332,14 @@ msgstr "ลบจุดควบคุมขาออกของเส้นโ
 msgid "Remove In-Control from Curve"
 msgstr "ลบจุดควบคุมขาเข้าของเส้นโค้ง"
 
-msgid "Split Curve"
-msgstr "แยกเส้นโค้ง"
-
 msgid "Move Point in Curve"
 msgstr "ย้ายจุดในเส้นโค้ง"
 
 msgid "Add Point to Curve"
 msgstr "เพิ่มจุดในเส้นโค้ง"
+
+msgid "Split Curve"
+msgstr "แยกเส้นโค้ง"
 
 msgid "Move In-Control in Curve"
 msgstr "ย้ายจุดควบคุมขาเข้าของเส้นโค้ง"
