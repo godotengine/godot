@@ -148,6 +148,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	// https://github.com/godotengine/godot-editor-l10n/blob/main/scripts/common.py
 	capitalize_string_remaps["2d"] = "2D";
 	capitalize_string_remaps["3d"] = "3D";
+	capitalize_string_remaps["4d"] = "4D";
 	capitalize_string_remaps["aa"] = "AA";
 	capitalize_string_remaps["aabb"] = "AABB";
 	capitalize_string_remaps["adb"] = "ADB";

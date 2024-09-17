@@ -97,25 +97,25 @@ void GDScriptLambdaCallable::call(const Variant **p_arguments, int p_argcount, V
 	}
 
 	if (captures_amount > 0) {
-		Vector<const Variant *> args;
-		args.resize(p_argcount + captures_amount);
+		const int total_argcount = p_argcount + captures_amount;
+		const Variant **args = (const Variant **)alloca(sizeof(Variant *) * total_argcount);
 		for (int i = 0; i < captures_amount; i++) {
-			args.write[i] = &captures[i];
+			args[i] = &captures[i];
 			if (captures[i].get_type() == Variant::OBJECT) {
 				bool was_freed = false;
 				captures[i].get_validated_object_with_check(was_freed);
 				if (was_freed) {
 					ERR_PRINT(vformat(R"(Lambda capture at index %d was freed. Passed "null" instead.)", i));
 					static Variant nil;
-					args.write[i] = &nil;
+					args[i] = &nil;
 				}
 			}
 		}
 		for (int i = 0; i < p_argcount; i++) {
-			args.write[i + captures_amount] = p_arguments[i];
+			args[i + captures_amount] = p_arguments[i];
 		}
 
-		r_return_value = function->call(nullptr, args.ptrw(), args.size(), r_call_error);
+		r_return_value = function->call(nullptr, args, total_argcount, r_call_error);
 		switch (r_call_error.error) {
 			case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT:
 				r_call_error.argument -= captures_amount;
@@ -229,25 +229,25 @@ void GDScriptLambdaSelfCallable::call(const Variant **p_arguments, int p_argcoun
 	}
 
 	if (captures_amount > 0) {
-		Vector<const Variant *> args;
-		args.resize(p_argcount + captures_amount);
+		const int total_argcount = p_argcount + captures_amount;
+		const Variant **args = (const Variant **)alloca(sizeof(Variant *) * total_argcount);
 		for (int i = 0; i < captures_amount; i++) {
-			args.write[i] = &captures[i];
+			args[i] = &captures[i];
 			if (captures[i].get_type() == Variant::OBJECT) {
 				bool was_freed = false;
 				captures[i].get_validated_object_with_check(was_freed);
 				if (was_freed) {
 					ERR_PRINT(vformat(R"(Lambda capture at index %d was freed. Passed "null" instead.)", i));
 					static Variant nil;
-					args.write[i] = &nil;
+					args[i] = &nil;
 				}
 			}
 		}
 		for (int i = 0; i < p_argcount; i++) {
-			args.write[i + captures_amount] = p_arguments[i];
+			args[i + captures_amount] = p_arguments[i];
 		}
 
-		r_return_value = function->call(static_cast<GDScriptInstance *>(object->get_script_instance()), args.ptrw(), args.size(), r_call_error);
+		r_return_value = function->call(static_cast<GDScriptInstance *>(object->get_script_instance()), args, total_argcount, r_call_error);
 		switch (r_call_error.error) {
 			case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT:
 				r_call_error.argument -= captures_amount;

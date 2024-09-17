@@ -97,6 +97,7 @@ public:
 
 	Vector<int> get_children();
 	void set_children(Vector<int> p_children);
+	void append_child_index(int p_child_index);
 
 	GLTFLightIndex get_light();
 	void set_light(GLTFLightIndex p_light);

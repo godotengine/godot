@@ -773,6 +773,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	window_wrapper->set_margins_enabled(true);
 
 	main_split = memnew(HSplitContainer);
+	main_split->set_split_offset(200 * EDSCALE);
 	Ref<Shortcut> make_floating_shortcut = ED_SHORTCUT_AND_COMMAND("shader_editor/make_floating", TTR("Make Floating"));
 	window_wrapper->set_wrapped_control(main_split, make_floating_shortcut);
 
@@ -818,7 +819,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	SET_DRAG_FORWARDING_GCD(shader_list, ShaderEditorPlugin);
 
 	main_split->add_child(left_panel);
-	left_panel->set_custom_minimum_size(Size2(200, 300) * EDSCALE);
+	left_panel->set_custom_minimum_size(Size2(100, 300) * EDSCALE);
 
 	shader_tabs = memnew(TabContainer);
 	shader_tabs->set_tabs_visible(false);

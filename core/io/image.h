@@ -160,6 +160,7 @@ public:
 	static void (*_image_compress_astc_func)(Image *, ASTCFormat p_format);
 
 	static Error (*_image_compress_bptc_rd_func)(Image *, UsedChannels p_channels);
+	static Error (*_image_compress_bc_rd_func)(Image *, UsedChannels p_channels);
 
 	static void (*_image_decompress_bc)(Image *);
 	static void (*_image_decompress_bptc)(Image *);

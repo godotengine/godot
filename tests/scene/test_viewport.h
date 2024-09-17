@@ -119,8 +119,23 @@ public:
 class DragTarget : public NotificationControlViewport {
 	GDCLASS(DragTarget, NotificationControlViewport);
 
+protected:
+	void _notification(int p_what) {
+		switch (p_what) {
+			case NOTIFICATION_DRAG_BEGIN: {
+				during_drag = true;
+			} break;
+
+			case NOTIFICATION_DRAG_END: {
+				during_drag = false;
+			} break;
+		}
+	}
+
 public:
 	Variant drag_data;
+	bool valid_drop = false;
+	bool during_drag = false;
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override {
 		StringName string_data = p_data;
 		// Verify drag data is compatible.
@@ -136,6 +151,7 @@ public:
 
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override {
 		drag_data = p_data;
+		valid_drop = true;
 	}
 };
 
@@ -1107,12 +1123,10 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 	SUBCASE("[Viewport][GuiInputEvent] Drag and Drop") {
 		// FIXME: Drag-Preview will likely change. Tests for this part would have to be rewritten anyway.
 		// See https://github.com/godotengine/godot/pull/67531#issuecomment-1385353430 for details.
-		// FIXME: Testing Drag and Drop with non-embedded windows would require DisplayServerMock additions
-		// FIXME: Drag and Drop currently doesn't work with embedded Windows and SubViewports - not testing.
-		// See https://github.com/godotengine/godot/issues/28522 for example.
+		// Note: Testing Drag and Drop with non-embedded windows would require DisplayServerMock additions.
 		int min_grab_movement = 11;
-		SUBCASE("[Viewport][GuiInputEvent] Drag from one Control to another in the same viewport.") {
-			SUBCASE("[Viewport][GuiInputEvent] Perform successful Drag and Drop on a different Control.") {
+		SUBCASE("[Viewport][GuiInputEvent][DnD] Drag from one Control to another in the same viewport.") {
+			SUBCASE("[Viewport][GuiInputEvent][DnD] Perform successful Drag and Drop on a different Control.") {
 				SEND_GUI_MOUSE_BUTTON_EVENT(on_a, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 				CHECK_FALSE(root->gui_is_dragging());
 
@@ -1131,7 +1145,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 				CHECK((StringName)node_d->drag_data == SNAME("Drag Data"));
 			}
 
-			SUBCASE("[Viewport][GuiInputEvent] Perform unsuccessful drop on Control.") {
+			SUBCASE("[Viewport][GuiInputEvent][DnD] Perform unsuccessful drop on Control.") {
 				SEND_GUI_MOUSE_BUTTON_EVENT(on_a, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 				CHECK_FALSE(root->gui_is_dragging());
 
@@ -1157,7 +1171,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 				CHECK_FALSE(root->gui_is_drag_successful());
 			}
 
-			SUBCASE("[Viewport][GuiInputEvent] Perform unsuccessful drop on No-Control.") {
+			SUBCASE("[Viewport][GuiInputEvent][DnD] Perform unsuccessful drop on No-Control.") {
 				SEND_GUI_MOUSE_BUTTON_EVENT(on_a, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 				CHECK_FALSE(root->gui_is_dragging());
 
@@ -1171,7 +1185,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 
 				// Move away from Controls.
 				SEND_GUI_MOUSE_MOTION_EVENT(on_background, MouseButtonMask::LEFT, Key::NONE);
-				CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_ARROW); // This could also be CURSOR_FORBIDDEN.
+				CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_ARROW);
 
 				CHECK(root->gui_is_dragging());
 				SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(on_background, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
@@ -1179,7 +1193,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 				CHECK_FALSE(root->gui_is_drag_successful());
 			}
 
-			SUBCASE("[Viewport][GuiInputEvent] Perform unsuccessful drop outside of window.") {
+			SUBCASE("[Viewport][GuiInputEvent][DnD] Perform unsuccessful drop outside of window.") {
 				SEND_GUI_MOUSE_BUTTON_EVENT(on_a, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 				CHECK_FALSE(root->gui_is_dragging());
 
@@ -1192,7 +1206,6 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 
 				// Move outside of window.
 				SEND_GUI_MOUSE_MOTION_EVENT(on_outside, MouseButtonMask::LEFT, Key::NONE);
-				CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_ARROW);
 				CHECK(root->gui_is_dragging());
 
 				SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(on_outside, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
@@ -1200,7 +1213,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 				CHECK_FALSE(root->gui_is_drag_successful());
 			}
 
-			SUBCASE("[Viewport][GuiInputEvent] Drag and Drop doesn't work with other Mouse Buttons than LMB.") {
+			SUBCASE("[Viewport][GuiInputEvent][DnD] Drag and Drop doesn't work with other Mouse Buttons than LMB.") {
 				SEND_GUI_MOUSE_BUTTON_EVENT(on_a, MouseButton::MIDDLE, MouseButtonMask::MIDDLE, Key::NONE);
 				CHECK_FALSE(root->gui_is_dragging());
 
@@ -1209,7 +1222,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 				SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(on_a, MouseButton::MIDDLE, MouseButtonMask::NONE, Key::NONE);
 			}
 
-			SUBCASE("[Viewport][GuiInputEvent] Drag and Drop parent propagation.") {
+			SUBCASE("[Viewport][GuiInputEvent][DnD] Drag and Drop parent propagation.") {
 				Node2D *node_aa = memnew(Node2D);
 				Control *node_aaa = memnew(Control);
 				Node2D *node_dd = memnew(Node2D);
@@ -1318,7 +1331,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 				memdelete(node_aa);
 			}
 
-			SUBCASE("[Viewport][GuiInputEvent] Force Drag and Drop.") {
+			SUBCASE("[Viewport][GuiInputEvent][DnD] Force Drag and Drop.") {
 				SEND_GUI_MOUSE_MOTION_EVENT(on_background, MouseButtonMask::NONE, Key::NONE);
 				CHECK_FALSE(root->gui_is_dragging());
 				node_a->force_drag(SNAME("Drag Data"), nullptr);
@@ -1338,6 +1351,111 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 
 				SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(on_d, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
 			}
+		}
+
+		SUBCASE("[Viewport][GuiInputEvent][DnD] Drag to a different Viewport.") {
+			SubViewportContainer *svc = memnew(SubViewportContainer);
+			svc->set_size(Size2(100, 100));
+			svc->set_position(Point2(200, 50));
+			root->add_child(svc);
+
+			SubViewport *sv = memnew(SubViewport);
+			sv->set_embedding_subwindows(true);
+			sv->set_size(Size2i(100, 100));
+			svc->add_child(sv);
+
+			DragStart *sv_a = memnew(DragStart);
+			sv_a->set_position(Point2(10, 10));
+			sv_a->set_size(Size2(10, 10));
+			sv->add_child(sv_a);
+			Point2i on_sva = Point2i(215, 65);
+
+			DragTarget *sv_b = memnew(DragTarget);
+			sv_b->set_position(Point2(30, 30));
+			sv_b->set_size(Size2(20, 20));
+			sv->add_child(sv_b);
+			Point2i on_svb = Point2i(235, 85);
+
+			Window *ew = memnew(Window);
+			ew->set_position(Point2(50, 200));
+			ew->set_size(Size2(100, 100));
+			root->add_child(ew);
+
+			DragStart *ew_a = memnew(DragStart);
+			ew_a->set_position(Point2(10, 10));
+			ew_a->set_size(Size2(10, 10));
+			ew->add_child(ew_a);
+			Point2i on_ewa = Point2i(65, 215);
+
+			DragTarget *ew_b = memnew(DragTarget);
+			ew_b->set_position(Point2(30, 30));
+			ew_b->set_size(Size2(20, 20));
+			ew->add_child(ew_b);
+			Point2i on_ewb = Point2i(85, 235);
+
+			SUBCASE("[Viewport][GuiInputEvent][DnD] Drag to SubViewport") {
+				sv_b->valid_drop = false;
+				SEND_GUI_MOUSE_BUTTON_EVENT(on_a, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+				SEND_GUI_MOUSE_MOTION_EVENT(on_a + Point2i(min_grab_movement, 0), MouseButtonMask::LEFT, Key::NONE);
+				CHECK(root->gui_is_dragging());
+				CHECK(sv_b->during_drag);
+				SEND_GUI_MOUSE_MOTION_EVENT(on_svb, MouseButtonMask::LEFT, Key::NONE);
+				CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_CAN_DROP);
+
+				SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(on_svb, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
+				CHECK(sv_b->valid_drop);
+				CHECK(!sv_b->during_drag);
+			}
+
+			SUBCASE("[Viewport][GuiInputEvent][DnD] Drag from SubViewport") {
+				node_d->valid_drop = false;
+				SEND_GUI_MOUSE_BUTTON_EVENT(on_sva, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+				SEND_GUI_MOUSE_MOTION_EVENT(on_sva + Point2i(min_grab_movement, 0), MouseButtonMask::LEFT, Key::NONE);
+				CHECK(sv->gui_is_dragging());
+				CHECK(node_d->during_drag);
+				SEND_GUI_MOUSE_MOTION_EVENT(on_d, MouseButtonMask::LEFT, Key::NONE);
+				CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_CAN_DROP);
+
+				SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(on_d, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
+				CHECK(node_d->valid_drop);
+				CHECK(!node_d->during_drag);
+			}
+
+			SUBCASE("[Viewport][GuiInputEvent][DnD] Drag to embedded Window") {
+				ew_b->valid_drop = false;
+				SEND_GUI_MOUSE_BUTTON_EVENT(on_a, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+				SEND_GUI_MOUSE_MOTION_EVENT(on_a + Point2i(min_grab_movement, 0), MouseButtonMask::LEFT, Key::NONE);
+				CHECK(root->gui_is_dragging());
+				CHECK(ew_b->during_drag);
+				SEND_GUI_MOUSE_MOTION_EVENT(on_ewb, MouseButtonMask::LEFT, Key::NONE);
+				CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_CAN_DROP);
+
+				SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(on_ewb, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
+				CHECK(ew_b->valid_drop);
+				CHECK(!ew_b->during_drag);
+			}
+
+			SUBCASE("[Viewport][GuiInputEvent][DnD] Drag from embedded Window") {
+				node_d->valid_drop = false;
+				SEND_GUI_MOUSE_BUTTON_EVENT(on_ewa, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+				SEND_GUI_MOUSE_MOTION_EVENT(on_ewa + Point2i(min_grab_movement, 0), MouseButtonMask::LEFT, Key::NONE);
+				CHECK(ew->gui_is_dragging());
+				CHECK(node_d->during_drag);
+				SEND_GUI_MOUSE_MOTION_EVENT(on_d, MouseButtonMask::LEFT, Key::NONE);
+				CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_CAN_DROP);
+
+				SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(on_d, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
+				CHECK(node_d->valid_drop);
+				CHECK(!node_d->during_drag);
+			}
+
+			memdelete(ew_a);
+			memdelete(ew_b);
+			memdelete(ew);
+			memdelete(sv_a);
+			memdelete(sv_b);
+			memdelete(sv);
+			memdelete(svc);
 		}
 	}
 

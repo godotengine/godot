@@ -258,7 +258,6 @@ float DisplayServerAndroid::screen_get_scale(int p_screen) const {
 		screen_scale = MIN(screen_scale, MIN(width_scale, height_scale));
 	}
 
-	print_line("Selected screen scale: ", screen_scale);
 	return screen_scale;
 }
 

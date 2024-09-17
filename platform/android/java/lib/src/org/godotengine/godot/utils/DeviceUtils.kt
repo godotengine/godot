@@ -38,7 +38,7 @@ package org.godotengine.godot.utils
 import android.os.Build
 
 /**
- * Returns true if running on Meta's Horizon OS.
+ * Returns true if running on Meta Horizon OS.
  */
 fun isHorizonOSDevice(): Boolean {
 	return "Oculus".equals(Build.BRAND, true)

@@ -145,14 +145,14 @@ android {
         }
     }
 
-    flavorDimensions = ["vendor"]
+    flavorDimensions = ["android_distribution"]
     productFlavors {
-        google {
-            dimension "vendor"
+        android {
+            dimension "android_distribution"
             missingDimensionStrategy 'products', 'editor'
         }
-        meta {
-            dimension "vendor"
+        horizonos {
+            dimension "android_distribution"
             missingDimensionStrategy 'products', 'editor'
             ndk {
                 //noinspection ChromeOsAbiSupport
@@ -176,5 +176,5 @@ dependencies {
     implementation "org.bouncycastle:bcprov-jdk15to18:1.77"
 
     // Meta dependencies
-    metaImplementation "org.godotengine:godot-openxr-vendors-meta:3.0.0-stable"
+    horizonosImplementation "org.godotengine:godot-openxr-vendors-meta:3.0.0-stable"
 }

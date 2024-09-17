@@ -62,6 +62,7 @@ public:
 	Variant get(const Variant &p_key, const Variant &p_default) const;
 	Variant get_or_add(const Variant &p_key, const Variant &p_default);
 	void* get_raw_hash();
+	bool set(const Variant &p_key, const Variant &p_value);
 
 	int size() const;
 	bool is_empty() const;

@@ -2148,6 +2148,7 @@ String VisualShaderEditor::_get_description(int p_idx) {
 
 void VisualShaderEditor::_update_options_menu() {
 	node_desc->set_text("");
+	highend_label->set_visible(false);
 	members_dialog->get_ok_button()->set_disabled(true);
 
 	members->clear();
@@ -2312,6 +2313,8 @@ void VisualShaderEditor::_update_options_menu() {
 			item->select(0);
 			node_desc->set_text(options[i].description);
 			is_first_item = false;
+
+			members_dialog->get_ok_button()->set_disabled(false);
 		}
 		switch (options[i].return_type) {
 			case VisualShaderNode::PORT_TYPE_SCALAR:
@@ -4924,7 +4927,7 @@ void VisualShaderEditor::_show_members_dialog(bool at_mouse_pos, VisualShaderNod
 	Vector2 difference = (dialog_rect.get_end() - window_rect.get_end()).maxf(0);
 	members_dialog->set_position(members_dialog->get_position() - difference);
 
-	callable_mp((Control *)node_filter, &Control::grab_focus).call_deferred(); // Still not visible.
+	node_filter->grab_focus();
 	node_filter->select_all();
 }
 
@@ -4947,6 +4950,8 @@ void VisualShaderEditor::_show_add_varying_dialog() {
 	add_varying_dialog->set_position(graph->get_screen_position() + varying_button->get_position() + Point2(5 * EDSCALE, 65 * EDSCALE));
 	add_varying_dialog->popup();
 
+	varying_name->grab_focus();
+
 	// Keep dialog within window bounds.
 	Rect2 window_rect = Rect2(DisplayServer::get_singleton()->window_get_position(), DisplayServer::get_singleton()->window_get_size());
 	Rect2 dialog_rect = Rect2(add_varying_dialog->get_position(), add_varying_dialog->get_size());
@@ -4958,6 +4963,8 @@ void VisualShaderEditor::_show_remove_varying_dialog() {
 	remove_varying_dialog->set_position(graph->get_screen_position() + varying_button->get_position() + Point2(5 * EDSCALE, 65 * EDSCALE));
 	remove_varying_dialog->popup();
 
+	varyings->grab_focus();
+
 	// Keep dialog within window bounds.
 	Rect2 window_rect = Rect2(DisplayServer::get_singleton()->window_get_position(), DisplayServer::get_singleton()->window_get_size());
 	Rect2 dialog_rect = Rect2(remove_varying_dialog->get_position(), remove_varying_dialog->get_size());
@@ -4965,11 +4972,14 @@ void VisualShaderEditor::_show_remove_varying_dialog() {
 	remove_varying_dialog->set_position(remove_varying_dialog->get_position() - difference);
 }
 
-void VisualShaderEditor::_sbox_input(const Ref<InputEvent> &p_ie) {
-	Ref<InputEventKey> ie = p_ie;
-	if (ie.is_valid() && (ie->get_keycode() == Key::UP || ie->get_keycode() == Key::DOWN || ie->get_keycode() == Key::ENTER || ie->get_keycode() == Key::KP_ENTER)) {
-		members->gui_input(ie);
-		node_filter->accept_event();
+void VisualShaderEditor::_sbox_input(const Ref<InputEvent> &p_event) {
+	// Redirect navigational key events to the tree.
+	Ref<InputEventKey> key = p_event;
+	if (key.is_valid()) {
+		if (key->is_action("ui_up", true) || key->is_action("ui_down", true) || key->is_action("ui_page_up") || key->is_action("ui_page_down")) {
+			members->gui_input(key);
+			node_filter->accept_event();
+		}
 	}
 }
 
@@ -5700,9 +5710,6 @@ void VisualShaderEditor::_member_selected() {
 	}
 }
 
-void VisualShaderEditor::_member_unselected() {
-}
-
 void VisualShaderEditor::_member_create() {
 	TreeItem *item = members->get_selected();
 	if (item != nullptr && item->has_meta("id")) {
@@ -6092,7 +6099,6 @@ void VisualShaderEditor::_show_preview_text() {
 		} else {
 			code_preview_window->popup();
 		}
-		_preview_size_changed();
 
 		if (pending_update_preview) {
 			_update_preview();
@@ -6105,12 +6111,7 @@ void VisualShaderEditor::_show_preview_text() {
 
 void VisualShaderEditor::_preview_close_requested() {
 	code_preview_showed = false;
-	code_preview_window->hide();
 	code_preview_button->set_pressed(false);
-}
-
-void VisualShaderEditor::_preview_size_changed() {
-	code_preview_vbox->set_custom_minimum_size(code_preview_window->get_size());
 }
 
 static ShaderLanguage::DataType _visual_shader_editor_get_global_shader_uniform_type(const StringName &p_variable) {
@@ -6460,12 +6461,12 @@ VisualShaderEditor::VisualShaderEditor() {
 	// CODE PREVIEW
 	///////////////////////////////////////
 
-	code_preview_window = memnew(Window);
+	code_preview_window = memnew(AcceptDialog);
 	code_preview_window->set_title(TTR("Generated Shader Code"));
 	code_preview_window->set_visible(code_preview_showed);
-	code_preview_window->set_exclusive(true);
-	code_preview_window->connect("close_requested", callable_mp(this, &VisualShaderEditor::_preview_close_requested));
-	code_preview_window->connect("size_changed", callable_mp(this, &VisualShaderEditor::_preview_size_changed));
+	code_preview_window->set_ok_button_text(TTR("Close"));
+	code_preview_window->connect(SceneStringName(confirmed), callable_mp(this, &VisualShaderEditor::_preview_close_requested));
+	code_preview_window->connect("canceled", callable_mp(this, &VisualShaderEditor::_preview_close_requested));
 	add_child(code_preview_window);
 
 	code_preview_vbox = memnew(VBoxContainer);
@@ -6612,7 +6613,6 @@ VisualShaderEditor::VisualShaderEditor() {
 	members->set_custom_minimum_size(Size2(180 * EDSCALE, 200 * EDSCALE));
 	members->connect("item_activated", callable_mp(this, &VisualShaderEditor::_member_create));
 	members->connect(SceneStringName(item_selected), callable_mp(this, &VisualShaderEditor::_member_selected));
-	members->connect("nothing_selected", callable_mp(this, &VisualShaderEditor::_member_unselected));
 
 	HBoxContainer *desc_hbox = memnew(HBoxContainer);
 	members_vb->add_child(desc_hbox);
@@ -6638,21 +6638,20 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	members_dialog = memnew(ConfirmationDialog);
 	members_dialog->set_title(TTR("Create Shader Node"));
-	members_dialog->set_exclusive(true);
 	members_dialog->add_child(members_vb);
 	members_dialog->set_ok_button_text(TTR("Create"));
-	members_dialog->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &VisualShaderEditor::_member_create));
+	members_dialog->connect(SceneStringName(confirmed), callable_mp(this, &VisualShaderEditor::_member_create));
 	members_dialog->get_ok_button()->set_disabled(true);
 	members_dialog->connect("canceled", callable_mp(this, &VisualShaderEditor::_member_cancel));
+	members_dialog->register_text_enter(node_filter);
 	add_child(members_dialog);
 
 	// add varyings dialog
 	{
 		add_varying_dialog = memnew(ConfirmationDialog);
 		add_varying_dialog->set_title(TTR("Create Shader Varying"));
-		add_varying_dialog->set_exclusive(true);
 		add_varying_dialog->set_ok_button_text(TTR("Create"));
-		add_varying_dialog->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &VisualShaderEditor::_varying_create));
+		add_varying_dialog->connect(SceneStringName(confirmed), callable_mp(this, &VisualShaderEditor::_varying_create));
 		add_varying_dialog->get_ok_button()->set_disabled(true);
 		add_child(add_varying_dialog);
 
@@ -6679,6 +6678,7 @@ VisualShaderEditor::VisualShaderEditor() {
 		varying_name->set_custom_minimum_size(Size2(150 * EDSCALE, 0));
 		varying_name->set_h_size_flags(SIZE_EXPAND_FILL);
 		varying_name->connect(SceneStringName(text_changed), callable_mp(this, &VisualShaderEditor::_varying_name_changed));
+		add_varying_dialog->register_text_enter(varying_name);
 
 		varying_mode = memnew(OptionButton);
 		hb->add_child(varying_mode);
@@ -6696,9 +6696,8 @@ VisualShaderEditor::VisualShaderEditor() {
 	{
 		remove_varying_dialog = memnew(ConfirmationDialog);
 		remove_varying_dialog->set_title(TTR("Delete Shader Varying"));
-		remove_varying_dialog->set_exclusive(true);
 		remove_varying_dialog->set_ok_button_text(TTR("Delete"));
-		remove_varying_dialog->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &VisualShaderEditor::_varying_deleted));
+		remove_varying_dialog->connect(SceneStringName(confirmed), callable_mp(this, &VisualShaderEditor::_varying_deleted));
 		add_child(remove_varying_dialog);
 
 		VBoxContainer *vb = memnew(VBoxContainer);

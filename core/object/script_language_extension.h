@@ -205,7 +205,7 @@ public:
 
 	GDVIRTUAL0RC(Variant, _get_rpc_config)
 
-	virtual const Variant get_rpc_config() const override {
+	virtual Variant get_rpc_config() const override {
 		Variant ret;
 		GDVIRTUAL_REQUIRED_CALL(_get_rpc_config, ret);
 		return ret;

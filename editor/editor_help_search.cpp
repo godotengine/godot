@@ -170,19 +170,12 @@ void EditorHelpSearch::_update_results() {
 }
 
 void EditorHelpSearch::_search_box_gui_input(const Ref<InputEvent> &p_event) {
-	// Redirect up and down navigational key events to the results list.
+	// Redirect navigational key events to the tree.
 	Ref<InputEventKey> key = p_event;
 	if (key.is_valid()) {
-		switch (key->get_keycode()) {
-			case Key::UP:
-			case Key::DOWN:
-			case Key::PAGEUP:
-			case Key::PAGEDOWN: {
-				results_tree->gui_input(key);
-				search_box->accept_event();
-			} break;
-			default:
-				break;
+		if (key->is_action("ui_up", true) || key->is_action("ui_down", true) || key->is_action("ui_page_up") || key->is_action("ui_page_down")) {
+			results_tree->gui_input(key);
+			search_box->accept_event();
 		}
 	}
 }

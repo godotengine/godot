@@ -602,6 +602,11 @@ Error SkinTool::_create_skeletons(
 			skeleton->set_bone_pose_rotation(bone_index, node->transform.basis.get_rotation_quaternion());
 			skeleton->set_bone_pose_scale(bone_index, node->transform.basis.get_scale());
 
+			// Store bone-level GLTF extras in skeleton per bone meta.
+			if (node->has_meta("extras")) {
+				skeleton->set_bone_meta(bone_index, "extras", node->get_meta("extras"));
+			}
+
 			if (node->parent >= 0 && nodes[node->parent]->skeleton == skel_i) {
 				const int bone_parent = skeleton->find_bone(nodes[node->parent]->get_name());
 				ERR_FAIL_COND_V(bone_parent < 0, FAILED);

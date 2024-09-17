@@ -9,12 +9,12 @@ env:
   SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes strict_checks=yes
 
 concurrency:
-  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-macos
+  group: ci-${{ github.actor }}-${{ github.head_ref || github.run_number }}-${{ github.ref }}-macos
   cancel-in-progress: true
 
 jobs:
   build-macos:
-    runs-on: "macos-latest"
+    runs-on: macos-latest
     name: ${{ matrix.name }}
     strategy:
       fail-fast: false
@@ -24,17 +24,18 @@ jobs:
             cache-name: macos-editor
             target: editor
             tests: true
-            bin: "./bin/godot.macos.editor.universal"
+            bin: ./bin/godot.macos.editor.universal
 
-          - name: Template (target=template_release)
+          - name: Template (target=template_release, tests=yes)
             cache-name: macos-template
             target: template_release
             tests: true
-            sconsflags: debug_symbols=no tests=yes
-            bin: "./bin/godot.macos.template_release.universal"
+            sconsflags: debug_symbols=no
+            bin: ./bin/godot.macos.template_release.universal
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
@@ -86,7 +87,7 @@ jobs:
           name: ${{ matrix.cache-name }}
 
       - name: Unit tests
-        if: ${{ matrix.tests }}
+        if: matrix.tests
         run: |
           ${{ matrix.bin }} --version
           ${{ matrix.bin }} --help
