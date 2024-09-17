@@ -45,6 +45,7 @@
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
+#include "scene/gui/check_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
@@ -803,6 +804,11 @@ void EditorSettingsDialog::_focus_current_search_box() {
 	}
 }
 
+void EditorSettingsDialog::_advanced_toggled(bool p_button_pressed) {
+	EditorSettings::get_singleton()->set("_editor_settings_advanced_mode", p_button_pressed);
+	inspector->set_restrict_to_basic_settings(!p_button_pressed);
+}
+
 void EditorSettingsDialog::_editor_restart() {
 	EditorNode::get_singleton()->save_all_scenes();
 	EditorNode::get_singleton()->restart_editor();
@@ -845,8 +851,16 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hbc->add_child(search_box);
 
+	advanced_switch = memnew(CheckButton(TTR("Advanced Settings")));
+	hbc->add_child(advanced_switch);
+
+	bool use_advanced = EDITOR_DEF("_editor_settings_advanced_mode", false);
+	advanced_switch->set_pressed(use_advanced);
+	advanced_switch->connect(SceneStringName(toggled), callable_mp(this, &EditorSettingsDialog::_advanced_toggled));
+
 	inspector = memnew(SectionedInspector);
 	inspector->get_inspector()->set_use_filter(true);
+	inspector->set_restrict_to_basic_settings(!use_advanced);
 	inspector->register_search_box(search_box);
 	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tab_general->add_child(inspector);
