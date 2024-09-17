@@ -5843,7 +5843,7 @@ void AnimationTrackEditor::_zoom_callback(float p_zoom_factor, Vector2 p_origin,
 
 void AnimationTrackEditor::_cancel_bezier_edit() {
 	bezier_edit->hide();
-	scroll->show();
+	box_selection_container->show();
 	bezier_edit_icon->set_pressed(false);
 	auto_fit->show();
 	auto_fit_bezier->hide();
@@ -5853,7 +5853,7 @@ void AnimationTrackEditor::_bezier_edit(int p_for_track) {
 	_clear_selection(); // Bezier probably wants to use a separate selection mode.
 	bezier_edit->set_root(root);
 	bezier_edit->set_animation_and_track(animation, p_for_track, read_only);
-	scroll->hide();
+	box_selection_container->hide();
 	bezier_edit->show();
 	auto_fit->hide();
 	auto_fit_bezier->show();
