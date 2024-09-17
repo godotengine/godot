@@ -2012,9 +2012,9 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 	int orbit_mod_input_count = _get_shortcut_input_count("spatial_editor/viewport_orbit_modifier_1") + _get_shortcut_input_count("spatial_editor/viewport_orbit_modifier_2");
 	int pan_mod_input_count = _get_shortcut_input_count("spatial_editor/viewport_pan_modifier_1") + _get_shortcut_input_count("spatial_editor/viewport_pan_modifier_2");
 	int zoom_mod_input_count = _get_shortcut_input_count("spatial_editor/viewport_zoom_modifier_1") + _get_shortcut_input_count("spatial_editor/viewport_zoom_modifier_2");
-	bool orbit_not_empty = !_is_shortcut_empty("spatial_editor/viewport_zoom_modifier_1") || !_is_shortcut_empty("spatial_editor/viewport_zoom_modifier_2");
+	bool orbit_not_empty = !_is_shortcut_empty("spatial_editor/viewport_orbit_modifier_1") || !_is_shortcut_empty("spatial_editor/viewport_orbit_modifier_2");
 	bool pan_not_empty = !_is_shortcut_empty("spatial_editor/viewport_pan_modifier_1") || !_is_shortcut_empty("spatial_editor/viewport_pan_modifier_2");
-	bool zoom_not_empty = !_is_shortcut_empty("spatial_editor/viewport_orbit_modifier_1") || !_is_shortcut_empty("spatial_editor/viewport_orbit_modifier_2");
+	bool zoom_not_empty = !_is_shortcut_empty("spatial_editor/viewport_zoom_modifier_1") || !_is_shortcut_empty("spatial_editor/viewport_zoom_modifier_2");
 	Vector<ShortcutCheckSet> shortcut_check_sets;
 	shortcut_check_sets.push_back(ShortcutCheckSet(orbit_mod_pressed, orbit_not_empty, orbit_mod_input_count, orbit_mouse_preference, NAVIGATION_ORBIT));
 	shortcut_check_sets.push_back(ShortcutCheckSet(pan_mod_pressed, pan_not_empty, pan_mod_input_count, pan_mouse_preference, NAVIGATION_PAN));
@@ -2169,9 +2169,11 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 	if (pan_gesture.is_valid()) {
 		NavigationMode nav_mode = NAVIGATION_NONE;
 
-		NavigationMode change_nav_from_shortcut = _get_nav_mode_from_shortcut_check(NAVIGATION_LEFT_MOUSE, shortcut_check_sets, true);
-		if (change_nav_from_shortcut != NAVIGATION_NONE) {
-			nav_mode = change_nav_from_shortcut;
+		for (const ShortcutCheckSet &shortcut_check_set : shortcut_check_sets) {
+			if (shortcut_check_set.mod_pressed) {
+				nav_mode = shortcut_check_set.result_nav_mode;
+				break;
+			}
 		}
 
 		switch (nav_mode) {
