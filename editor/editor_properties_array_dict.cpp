@@ -971,6 +971,7 @@ void EditorPropertyDictionary::_change_type_menu(int p_index) {
 			changing_type_index == EditorPropertyDictionaryObject::NOT_CHANGING_TYPE,
 			"Tried to change the type of a dict key or value, but nothing was selected.");
 
+	is_changing_type = true;
 	Variant value;
 	switch (changing_type_index) {
 		case EditorPropertyDictionaryObject::NEW_KEY_INDEX:
@@ -1000,6 +1001,7 @@ void EditorPropertyDictionary::_change_type_menu(int p_index) {
 
 			emit_changed(get_edited_property(), dict);
 	}
+	is_changing_type = false;
 }
 
 void EditorPropertyDictionary::setup(PropertyHint p_hint, const String &p_hint_string) {
@@ -1175,9 +1177,7 @@ void EditorPropertyDictionary::update_property() {
 				slot.set_prop(new_prop);
 			}
 
-			// We need to grab the focus of the property that is being changed, even if the type didn't actually changed.
-			// Otherwise, focus will stay on the change type button, which is not very user friendly.
-			if (changing_type_index == slot.index) {
+			if ((changing_type_index == slot.index && slot.index > -1) || is_changing_type) {
 				callable_mp(slot.prop, &EditorProperty::grab_focus).call_deferred(0);
 				changing_type_index = EditorPropertyDictionaryObject::NOT_CHANGING_TYPE; // Reset to avoid grabbing focus again.
 			}
