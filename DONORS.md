@@ -12,12 +12,12 @@ generous deed immortalized in the next stable release of Godot Engine.
 
 ## Patrons
 
+    Khronos® Group <https://www.khronos.org/>
     OSS Capital <https://oss.capital/>
-    Re-Logic <https://re-logic.com/>
 
 ## Platinum sponsors
 
-    Google Play <https://play.google.com/>
+    Google Play <https://play.google.com>
     Ramatak <https://ramatak.com/>
     V-Sekai <https://github.com/V-Sekai>
     W4 Games <https://w4games.com/>
@@ -25,53 +25,56 @@ generous deed immortalized in the next stable release of Godot Engine.
 ## Gold sponsors
 
     Mega Crit <https://www.megacrit.com/>
-    Pirate Software <https://gopiratesoftware.com/>
-    Prehensile Tales <https://prehensile-tales.com/>
+    Pirate Software <https://gopiratesoftware.com>
+    Prehensile Tales <https://prehensile-tales.com>
     Robot Gentleman <http://robotgentleman.com/>
 
 ## Silver sponsors
 
-    Broken Rules <https://brokenrul.es/>
-    Chasing Carrots <https://www.chasing-carrots.com/>
+    Broken Rules <https://brokenrul.es>
+    Chasing Carrots <https://www.chasing-carrots.com>
     Copia Wealth Studios <https://copiawealthstudios.com/>
     Indoor Astronaut <https://indoorastronaut.ch/>
-    Load Complete <https://loadcomplete.com/>
+    LoadComplete <https://loadcomplete.com/>
     Null <https://null.com/>
     Orbital Knight <https://www.orbitalknight.com/>
     Playful Studios <https://playfulstudios.com/>
+    Re-Logic <https://re-logic.com/>
 
 ## Diamond members
 
     Bippinbits <http://domekeepergame.com/>
-    Sealow
-    And 5 anonymous donors
+    Sylv <https://rankith.itch.io/unnamed-space-idle-prototype>
+    And 3 anonymous donors
 
 ## Titanium members
 
-    Adriaan de Jongh <https://adriaan.games/>
-    Anitya Space <https://www.anitya.space/>
+    Adriaan de Jongh <https://adriaan.games>
+    Anitya Space <https://www.anitya.space>
     Basically Games
-    FDG Entertainment <https://www.fdg-entertainment.com/>
-    Game Dev Artisan <https://gamedevartisan.com/>
+    FDG Entertainment <https://www.fdg-entertainment.com>
+    Game Dev Artisan <https://gamedevartisan.com>
     Garry Newman
-    Isaiah Smith <https://www.isaiahsmith.dev/>
-    Libretrend <https://libretrend.com/>
+    Kenney <https://kenney.nl/>
+    Libretrend <https://libretrend.com>
     Life Art Studios <https://lifeartstudios.net/>
     Lucid Silence Games
     Matthew Campbell
     PolyMars <https://polymars.dev/>
-    RPG in a Box <https://www.rpginabox.com/>
     Razenpok <https://www.youtube.com/watch?v=-QxI-RP6-HM>
-    Smirk Software <https://smirk.gg/>
+    RPG in a Box <https://www.rpginabox.com>
+    Smirk Software <https://smirk.gg>
+    Studio Sunshower <https://www.studiosunshower.com/>
+    TrampolineTales <https://TrampolineTales.com/>
     粟二华 (Su Erhua)
-    And 6 anonymous donors
+    And 4 anonymous donors
 
 ## Platinum members
 
     Andy Touch
     BlockImperiumGames (BIG)
-    Christoph Woinke
     Christopher Shifflett
+    Christoph Woinke
     Cody Bentley
     Darrin Massena
     Edward Flick
@@ -79,8 +82,8 @@ generous deed immortalized in the next stable release of Godot Engine.
     HP van Braam
     iCommitGames
     Jonah Stich
+    Justo Delgado Baudí
     katnamag
-    Marek Belski
     Matthew Ekenstedt
     Memories in 8Bit
     Mike King
@@ -97,12 +100,13 @@ generous deed immortalized in the next stable release of Godot Engine.
     TigerJ
     Violin Iliev
     Vladimír Chvátil
-    And 16 anonymous donors
+    And 13 anonymous donors
 
 ## Gold members
 
     80px
     afreytes
+    alMoo Games
     alMoo Games
     Alva Majo
     Antti Vesanen
@@ -119,6 +123,8 @@ generous deed immortalized in the next stable release of Godot Engine.
     Bryce Dixon
     c64cosmin
     Carlo del Mundo
+    Carl van der Geest
+    Chocolate Software
     Cindy Trieu
     ClarkThyLord
     Codex404
@@ -135,17 +141,21 @@ generous deed immortalized in the next stable release of Godot Engine.
     dgehrig
     dhanielk
     Distorted Realities
+    Donkung
     Dono
     Don't You Know Who I Am? Inc.
     Dustuu
+    Dylan P.
     Edelweiss
     Ends
     Eren Ogrul
     Eric Brand
     Eric Phy
     Faisal Al-Kubaisi (QatariGameDev)
+    Felix Adam
     FeralBytes
     Festzeltgaming.de
+    Frozen Fractal
     Gaudipern
     GlassBrick
     Grau
@@ -153,6 +163,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     Hayden Oliver
     hiulit
     Illyan
+    Immaculate Lift Studio
     Ivan Tabashki
     Jacob (HACKhalo2 Studios)
     Jam
@@ -160,13 +171,12 @@ generous deed immortalized in the next stable release of Godot Engine.
     Javier Roman
     Jeff Hungerford
     Jeronimo Schreyer
-    Joel Martinez
     Johannes Wuensch
     John Gabriel
     Jonas Yamazaki
+    Jonathan
     José Canepa
     Joshua Stelly
-    Justin Sasso
     Kalydi Balázs
     KAR Games
     Kiri "ExpiredPopsicle" Artemis
@@ -181,7 +191,9 @@ generous deed immortalized in the next stable release of Godot Engine.
     m1n1ster
     Manuel Requena
     Mara Huldra
+    Marek Belski
     Martin Šenkeřík
+    MHDante
     Michael Gooch
     Modus Ponens
     Moshe Harris
@@ -190,6 +202,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     Nassor Paulino da Silva
     nezticle
     Niklas Wahrman
+    Nitzan Bueno
     Niwl Games
     NotNet
     Oathbringer
@@ -207,6 +220,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     re:thinc
     Richard Ivánek
     Rudi P
+    Sam Leathers
     Samuel Judd
     ScoreSpace
     Shiny Shinken
@@ -238,12 +252,12 @@ generous deed immortalized in the next stable release of Godot Engine.
     Zhu Li
     zikes
     嗯大爷
+    潘彦圣
 
     Alex Khayrullin
     Algebrute
     Andriy
     Antanas Paskauskas
-    anti666
     Ari
     Arisaka Mayuki
     Arthur S. Muszynski
@@ -269,13 +283,11 @@ generous deed immortalized in the next stable release of Godot Engine.
     Liam Smyth
     LoparPanda
     Martin Gulliksson
-    Martin Soucek
     Michael Dürwald
     Michael Policastro
     n00sh
     Nicolás Monner Sans
     Nikita Rotskov
-    Nikola Whallon
     Oliver Dick
     Patrick Wuttke
     Pete Goodwin
@@ -298,7 +310,6 @@ generous deed immortalized in the next stable release of Godot Engine.
     VoidPointer
     Yifan Lai
 
-    Aaron Mayfield
     Adam Carr
     Adam Smeltzer
     Adisibio
@@ -315,7 +326,6 @@ generous deed immortalized in the next stable release of Godot Engine.
     Ano Nim
     Arch Toasty
     Arda Erol
-    A Really Tall Horse
     Arturo Rosales
     Ash K
     Aubrey Falconer
@@ -343,6 +353,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     Dakota Watkins
     Daniele Tolomelli
     Daniel Ramos
+    Daren Scot Wilson
     Dave Jansen
     Davesnothere
     David Baker
@@ -361,12 +372,11 @@ generous deed immortalized in the next stable release of Godot Engine.
     Eric Stokes
     Eric Williams
     Erkki Seppälä
-    Ewan Holmes
-    Felix Adam
     Frank
     Frying☆Pan
     Game Endeavor
     gamerminstrel
+    Garrett S
     Gary Thomas
     gebba
     Greyson Richey
@@ -385,7 +395,6 @@ generous deed immortalized in the next stable release of Godot Engine.
     Jamie Massey
     JARKKO PARVIAINEN
     Jason Evans
-    Joakim Askenbäck
     Jonas
     Jonas Arndt
     Jonas Yamazaki
@@ -421,7 +430,6 @@ generous deed immortalized in the next stable release of Godot Engine.
     Martin Holas
     Martin Liška
     Martin Trbola
-    Matěj Drábek
     Mathieu
     Matt Edwards
     Maverick
@@ -441,7 +449,6 @@ generous deed immortalized in the next stable release of Godot Engine.
     Neofytos Chimonas
     Nerdforge
     Nerdyninja
-    Nick Eldrenkamp
     Nik Rudenko
     Noel Billig
     ozrk
@@ -450,7 +457,6 @@ generous deed immortalized in the next stable release of Godot Engine.
     Patrick Nafarrete
     Paul Black
     Paul Gieske
-    Paul Mozet
     Pete
     Phoenix Jauregui
     Pierre Caye
@@ -462,7 +468,6 @@ generous deed immortalized in the next stable release of Godot Engine.
     Raghava Kovvali
     Ragnar Pettersson
     Rammeow
-    Rebecca H
     Richard Hayes
     Riley
     RobotCritter
@@ -508,7 +513,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     ケルベロス
     貴宏 小松
 
-    And 181 anonymous donors
+    And 176 anonymous donors
 
 ## Silver and bronze donors
 
