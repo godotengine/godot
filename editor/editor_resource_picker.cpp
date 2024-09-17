@@ -297,7 +297,7 @@ void EditorResourcePicker::_update_menu_items() {
 			if (has_theme_icon(what, EditorStringName(EditorIcons))) {
 				icon = get_editor_theme_icon(what);
 			} else {
-				icon = get_theme_icon(what, SNAME("Resource"));
+				icon = get_editor_theme_icon(SNAME("Object"));
 			}
 
 			edit_menu->add_icon_item(icon, vformat(TTR("Convert to %s"), what), CONVERT_BASE_ID + relative_id);

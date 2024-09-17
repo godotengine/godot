@@ -3414,7 +3414,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 					if (has_theme_icon(E, SNAME("EditorIcons"))) {
 						icon = get_editor_theme_icon(E);
 					} else {
-						icon = get_editor_theme_icon(SNAME("Resource"));
+						icon = get_editor_theme_icon(SNAME("Object"));
 					}
 
 					container_menu->add_icon_item(icon, vformat(TTR(conversion_string_template), E), CONVERT_BASE_ID + relative_id);
