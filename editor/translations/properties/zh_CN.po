@@ -97,7 +97,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2024-08-12 20:09+0000\n"
+"PO-Revision-Date: 2024-08-23 10:34+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-properties/zh_Hans/>\n"
@@ -106,7 +106,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.7-dev\n"
+"X-Generator: Weblate 5.7.1-dev\n"
 
 msgid "Application"
 msgstr "应用"
@@ -266,15 +266,6 @@ msgstr "会话类别"
 
 msgid "Mix With Others"
 msgstr "与其他混合"
-
-msgid "Editor"
-msgstr "编辑器"
-
-msgid "Script"
-msgstr "脚本"
-
-msgid "Search in File Extensions"
-msgstr "搜索文件扩展名"
 
 msgid "Subwindows"
 msgstr "子窗口"
@@ -927,6 +918,9 @@ msgstr "切换模式"
 msgid "Interface"
 msgstr "界面"
 
+msgid "Editor"
+msgstr "编辑器"
+
 msgid "Editor Language"
 msgstr "编辑器语言"
 
@@ -1105,13 +1099,13 @@ msgid "Icon and Font Color"
 msgstr "图标与字体颜色"
 
 msgid "Base Color"
-msgstr "基础颜色"
+msgstr "基础色"
 
 msgid "Accent Color"
-msgstr "强调颜色"
+msgstr "主题色"
 
 msgid "Use System Accent Color"
-msgstr "使用系统强调颜色"
+msgstr "使用系统主题色"
 
 msgid "Contrast"
 msgstr "对比度"
@@ -2815,6 +2809,9 @@ msgstr "SSH 私钥路径"
 msgid "Main Run Args"
 msgstr "主运行参数"
 
+msgid "Script"
+msgstr "脚本"
+
 msgid "Templates Search Path"
 msgstr "模板搜索路径"
 
@@ -3069,6 +3066,9 @@ msgstr "旋钮输入滚动轴"
 
 msgid "Text Driver"
 msgstr "文本驱动"
+
+msgid "Search in File Extensions"
+msgstr "搜索文件扩展名"
 
 msgid "Mouse Cursor"
 msgstr "鼠标光标"
@@ -7877,7 +7877,7 @@ msgid "Threshold Pixels"
 msgstr "阈值像素"
 
 msgid "Snap 2D Transforms to Pixel"
-msgstr "将 2D 变换捕捉到像素"
+msgstr "将 2D 变换吸附到像素"
 
 msgid "Snap 2D Vertices to Pixel"
 msgstr "将 2D 顶点吸附到像素"

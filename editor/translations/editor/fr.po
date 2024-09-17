@@ -9987,14 +9987,14 @@ msgstr "Supprimer Out-Control d'une courbe"
 msgid "Remove In-Control from Curve"
 msgstr "Supprimer In-Control d'une courbe"
 
-msgid "Split Curve"
-msgstr "Scinder la courbe"
-
 msgid "Move Point in Curve"
 msgstr "Déplacer le point dans la courbe"
 
 msgid "Add Point to Curve"
 msgstr "Ajouter un point à la courbe"
+
+msgid "Split Curve"
+msgstr "Scinder la courbe"
 
 msgid "Move In-Control in Curve"
 msgstr "Déplacer In-Control dans courbe"
@@ -18199,13 +18199,6 @@ msgid ""
 msgstr ""
 "La propriété \"Remote Path\" doit pointer vers un nœud 3D valide ou un nœud "
 "3D dérivé d'un nœud pour fonctionner."
-
-msgid ""
-"Skeleton3D node not set! SkeletonModifier3D must be child of Skeleton3D or "
-"set a path to an external skeleton."
-msgstr ""
-"Un nœud Skeleton3D n'est pas défini ! Un SkeletonModifier3D doit être "
-"l'enfant d'un Skeleton3D ou défini un chemin vers un squelette externe."
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "Ce corps sera ignoré jusqu'à ce que vous définissiez un maillage."
