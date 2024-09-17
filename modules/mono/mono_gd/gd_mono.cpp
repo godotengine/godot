@@ -61,6 +61,14 @@ hostfxr_initialize_for_runtime_config_fn hostfxr_initialize_for_runtime_config =
 hostfxr_get_runtime_delegate_fn hostfxr_get_runtime_delegate = nullptr;
 hostfxr_close_fn hostfxr_close = nullptr;
 
+#ifndef TOOLS_ENABLED
+typedef int(CORECLR_DELEGATE_CALLTYPE *coreclr_create_delegate_fn)(void *hostHandle, unsigned int domainId, const char *entryPointAssemblyName, const char *entryPointTypeName, const char *entryPointMethodName, void **delegate);
+typedef int(CORECLR_DELEGATE_CALLTYPE *coreclr_initialize_fn)(const char *exePath, const char *appDomainFriendlyName, int propertyCount, const char **propertyKeys, const char **propertyValues, void **hostHandle, unsigned int *domainId);
+
+coreclr_create_delegate_fn coreclr_create_delegate = nullptr;
+coreclr_initialize_fn coreclr_initialize = nullptr;
+#endif
+
 #ifdef _WIN32
 static_assert(sizeof(char_t) == sizeof(char16_t));
 using HostFxrCharString = Char16String;
@@ -142,6 +150,56 @@ String find_hostfxr() {
 #endif
 }
 
+#ifndef TOOLS_ENABLED
+String find_monosgen() {
+#if defined(ANDROID_ENABLED)
+	// Android includes all native libraries in the libs directory of the APK
+	// so we assume it exists and use only the name to dlopen it.
+	return "libmonosgen-2.0.so";
+#else
+#if defined(WINDOWS_ENABLED)
+	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
+								.path_join("monosgen-2.0.dll");
+#elif defined(MACOS_ENABLED)
+	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
+								.path_join("libmonosgen-2.0.dylib");
+#elif defined(UNIX_ENABLED)
+	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
+								.path_join("libmonosgen-2.0.so");
+#else
+#error "Platform not supported (yet?)"
+#endif
+
+	if (FileAccess::exists(probe_path)) {
+		return probe_path;
+	}
+
+	return String();
+#endif
+}
+
+String find_coreclr() {
+#if defined(WINDOWS_ENABLED)
+	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
+								.path_join("coreclr.dll");
+#elif defined(MACOS_ENABLED)
+	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
+								.path_join("libcoreclr.dylib");
+#elif defined(UNIX_ENABLED)
+	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
+								.path_join("libcoreclr.so");
+#else
+#error "Platform not supported (yet?)"
+#endif
+
+	if (FileAccess::exists(probe_path)) {
+		return probe_path;
+	}
+
+	return String();
+}
+#endif
+
 bool load_hostfxr(void *&r_hostfxr_dll_handle) {
 	String hostfxr_path = find_hostfxr();
 
@@ -181,6 +239,47 @@ bool load_hostfxr(void *&r_hostfxr_dll_handle) {
 			hostfxr_get_runtime_delegate &&
 			hostfxr_close);
 }
+
+#ifndef TOOLS_ENABLED
+bool load_coreclr(void *&r_coreclr_dll_handle) {
+	String coreclr_path = find_coreclr();
+
+	bool is_monovm = false;
+	if (coreclr_path.is_empty()) {
+		// Fallback to MonoVM (should have the same API as CoreCLR).
+		coreclr_path = find_monosgen();
+		is_monovm = true;
+	}
+
+	if (coreclr_path.is_empty()) {
+		return false;
+	}
+
+	const String coreclr_name = is_monovm ? "monosgen" : "coreclr";
+	print_verbose("Found " + coreclr_name + ": " + coreclr_path);
+
+	Error err = OS::get_singleton()->open_dynamic_library(coreclr_path, r_coreclr_dll_handle);
+
+	if (err != OK) {
+		return false;
+	}
+
+	void *lib = r_coreclr_dll_handle;
+
+	void *symbol = nullptr;
+
+	err = OS::get_singleton()->get_dynamic_library_symbol_handle(lib, "coreclr_initialize", symbol);
+	ERR_FAIL_COND_V(err != OK, false);
+	coreclr_initialize = (coreclr_initialize_fn)symbol;
+
+	err = OS::get_singleton()->get_dynamic_library_symbol_handle(lib, "coreclr_create_delegate", symbol);
+	ERR_FAIL_COND_V(err != OK, false);
+	coreclr_create_delegate = (coreclr_create_delegate_fn)symbol;
+
+	return (coreclr_initialize &&
+			coreclr_create_delegate);
+}
+#endif
 
 #ifdef TOOLS_ENABLED
 load_assembly_and_get_function_pointer_fn initialize_hostfxr_for_config(const char_t *p_config_path) {
@@ -339,6 +438,56 @@ godot_plugins_initialize_fn try_load_native_aot_library(void *&r_aot_dll_handle)
 }
 #endif
 
+#ifndef TOOLS_ENABLED
+String make_tpa_list() {
+	String tpa_list;
+
+#if defined(WINDOWS_ENABLED)
+	String separator = ";";
+#else
+	String separator = ":";
+#endif
+
+	String assemblies_dir = GodotSharpDirs::get_api_assemblies_dir();
+	PackedStringArray files = DirAccess::get_files_at(assemblies_dir);
+	for (const String &file : files) {
+		tpa_list += assemblies_dir.path_join(file);
+		tpa_list += separator;
+	}
+
+	return tpa_list;
+}
+
+godot_plugins_initialize_fn initialize_coreclr_and_godot_plugins(bool &r_runtime_initialized) {
+	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
+
+	String assembly_name = path::get_csharp_project_name();
+
+	String tpa_list = make_tpa_list();
+	const char *prop_keys[] = { HOSTFXR_STR("TRUSTED_PLATFORM_ASSEMBLIES") };
+	const char *prop_values[] = { get_data(str_to_hostfxr(tpa_list)) };
+	int nprops = sizeof(prop_keys) / sizeof(prop_keys[0]);
+
+	void *coreclr_handle = nullptr;
+	unsigned int domain_id = 0;
+	int rc = coreclr_initialize(nullptr, nullptr, nprops, (const char **)&prop_keys, (const char **)&prop_values, &coreclr_handle, &domain_id);
+	ERR_FAIL_COND_V_MSG(rc != 0, nullptr, ".NET: Failed to initialize CoreCLR.");
+
+	r_runtime_initialized = true;
+
+	print_verbose(".NET: CoreCLR initialized");
+
+	coreclr_create_delegate(coreclr_handle, domain_id,
+			get_data(str_to_hostfxr(assembly_name)),
+			HOSTFXR_STR("GodotPlugins.Game.Main"),
+			HOSTFXR_STR("InitializeFromGameProject"),
+			(void **)&godot_plugins_initialize);
+	ERR_FAIL_NULL_V_MSG(godot_plugins_initialize, nullptr, ".NET: Failed to get GodotPlugins initialization function pointer");
+
+	return godot_plugins_initialize;
+}
+#endif
+
 } // namespace
 
 bool GDMono::should_initialize() {
@@ -382,14 +531,21 @@ void GDMono::initialize() {
 	}
 #endif
 
-	if (!load_hostfxr(hostfxr_dll_handle)) {
+	if (load_hostfxr(hostfxr_dll_handle)) {
+		godot_plugins_initialize = initialize_hostfxr_and_godot_plugins(runtime_initialized);
+		ERR_FAIL_NULL(godot_plugins_initialize);
+	} else {
 #if !defined(TOOLS_ENABLED)
-		godot_plugins_initialize = try_load_native_aot_library(hostfxr_dll_handle);
-
-		if (godot_plugins_initialize != nullptr) {
-			is_native_aot = true;
-			runtime_initialized = true;
+		if (load_coreclr(coreclr_dll_handle)) {
+			godot_plugins_initialize = initialize_coreclr_and_godot_plugins(runtime_initialized);
 		} else {
+			godot_plugins_initialize = try_load_native_aot_library(hostfxr_dll_handle);
+			if (godot_plugins_initialize != nullptr) {
+				runtime_initialized = true;
+			}
+		}
+
+		if (godot_plugins_initialize == nullptr) {
 			ERR_FAIL_MSG(".NET: Failed to load hostfxr");
 		}
 #else
@@ -398,11 +554,6 @@ void GDMono::initialize() {
 		OS::get_singleton()->alert(TTR("Unable to load .NET runtime, specifically hostfxr.\nAttempting to create/edit a project will lead to a crash.\n\nPlease install the .NET SDK 6.0 or later from https://dotnet.microsoft.com/en-us/download and restart Godot."), TTR("Failed to load .NET runtime"));
 		ERR_FAIL_MSG(".NET: Failed to load hostfxr");
 #endif
-	}
-
-	if (!is_native_aot) {
-		godot_plugins_initialize = initialize_hostfxr_and_godot_plugins(runtime_initialized);
-		ERR_FAIL_NULL(godot_plugins_initialize);
 	}
 
 	int32_t interop_funcs_size = 0;
@@ -552,6 +703,9 @@ GDMono::~GDMono() {
 
 	if (hostfxr_dll_handle) {
 		OS::get_singleton()->close_dynamic_library(hostfxr_dll_handle);
+	}
+	if (coreclr_dll_handle) {
+		OS::get_singleton()->close_dynamic_library(coreclr_dll_handle);
 	}
 
 	finalizing_scripts_domain = false;
