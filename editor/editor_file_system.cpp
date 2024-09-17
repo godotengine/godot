@@ -386,6 +386,8 @@ void EditorFileSystem::_scan_filesystem() {
 	// On the first scan, the first_scan_root_dir is created in _first_scan_filesystem.
 	if (first_scan) {
 		sd = first_scan_root_dir;
+		// Will be updated on scan.
+		ResourceUID::get_singleton()->clear();
 	} else {
 		Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		sd = memnew(ScannedDirectory);
@@ -1779,7 +1781,9 @@ String EditorFileSystem::_get_global_script_class(const String &p_type, const St
 
 void EditorFileSystem::_update_file_icon_path(EditorFileSystemDirectory::FileInfo *file_info) {
 	String icon_path;
-	if (file_info->script_class_icon_path.is_empty() && !file_info->deps.is_empty()) {
+	if (file_info->resource_script_class != StringName()) {
+		icon_path = EditorNode::get_editor_data().script_class_get_icon_path(file_info->resource_script_class);
+	} else if (file_info->script_class_icon_path.is_empty() && !file_info->deps.is_empty()) {
 		const String &script_dep = file_info->deps[0]; // Assuming the first dependency is a script.
 		const String &script_path = script_dep.contains("::") ? script_dep.get_slice("::", 2) : script_dep;
 		if (!script_path.is_empty()) {
@@ -3059,7 +3063,6 @@ EditorFileSystem::EditorFileSystem() {
 	using_fat32_or_exfat = (da->get_filesystem_type() == "FAT32" || da->get_filesystem_type() == "exFAT");
 
 	scan_total = 0;
-	callable_mp(ResourceUID::get_singleton(), &ResourceUID::clear).call_deferred(); // Will be updated on scan.
 	ResourceSaver::set_get_resource_id_for_path(_resource_saver_get_resource_id_for_path);
 }
 

@@ -115,8 +115,8 @@ void VSGraphNode::_draw_port(int p_slot_index, Point2i p_pos, bool p_left, const
 	icon_offset = -port_icon->get_size() * 0.5;
 
 	// Draw "shadow"/outline in the connection rim color.
-	draw_texture_rect(port_icon, Rect2(p_pos + icon_offset - Size2(2, 2), port_icon->get_size() + Size2(4, 4)), false, p_rim_color);
-	draw_texture(port_icon, p_pos + icon_offset, p_color);
+	draw_texture_rect(port_icon, Rect2(p_pos + (icon_offset - Size2(2, 2)) * EDSCALE, (port_icon->get_size() + Size2(4, 4)) * EDSCALE), false, p_rim_color);
+	draw_texture_rect(port_icon, Rect2(p_pos + icon_offset * EDSCALE, port_icon->get_size() * EDSCALE), false, p_color);
 }
 
 void VSGraphNode::draw_port(int p_slot_index, Point2i p_pos, bool p_left, const Color &p_color) {
@@ -154,7 +154,6 @@ VSRerouteNode::VSRerouteNode() {
 	title_lbl->hide();
 
 	const Size2 size = Size2(32, 32) * EDSCALE;
-	print_line("VSRerouteNode size: " + size);
 
 	Control *slot_area = memnew(Control);
 	slot_area->set_custom_minimum_size(size);
@@ -2888,8 +2887,8 @@ void VisualShaderEditor::_frame_title_popup_show(const Point2 &p_position, int p
 	}
 	frame_title_change_edit->set_text(node->get_title());
 	frame_title_change_popup->set_meta("id", p_node_id);
-	frame_title_change_popup->popup();
 	frame_title_change_popup->set_position(p_position);
+	frame_title_change_popup->popup();
 
 	// Select current text.
 	frame_title_change_edit->grab_focus();

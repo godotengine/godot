@@ -614,13 +614,13 @@ void EditorSpinSlider::_value_focus_exited() {
 	// -> TAB was pressed
 	// -> modal_close was not called
 	// -> need to close/hide manually
-	if (value_input_closed_frame != Engine::get_singleton()->get_frames_drawn()) {
+	if (!is_visible_in_tree() || value_input_closed_frame != Engine::get_singleton()->get_frames_drawn()) {
+		// Hidden or something else took focus.
 		if (value_input_popup) {
 			value_input_popup->hide();
 		}
-		//tab was pressed
 	} else {
-		//enter, click, esc
+		// Enter or Esc was pressed.
 		grab_focus();
 	}
 
@@ -664,6 +664,10 @@ bool EditorSpinSlider::is_grabbing() const {
 }
 
 void EditorSpinSlider::_focus_entered() {
+	if (is_read_only()) {
+		return;
+	}
+
 	_ensure_input_popup();
 	value_input->set_text(get_text_value());
 	value_input_popup->set_size(get_size());

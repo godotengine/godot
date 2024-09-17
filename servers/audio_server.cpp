@@ -486,21 +486,22 @@ void AudioServer::_mix_step() {
 		}
 
 		// Copy the bus details we mixed with to the previous bus details to maintain volume ramps.
-		std::copy(std::begin(bus_details.bus_active), std::end(bus_details.bus_active), std::begin(playback->prev_bus_details->bus_active));
-		std::copy(std::begin(bus_details.bus), std::end(bus_details.bus), std::begin(playback->prev_bus_details->bus));
-		for (int bus_idx = 0; bus_idx < MAX_BUSES_PER_PLAYBACK; bus_idx++) {
-			std::copy(std::begin(bus_details.volume[bus_idx]), std::end(bus_details.volume[bus_idx]), std::begin(playback->prev_bus_details->volume[bus_idx]));
+		for (int i = 0; i < MAX_BUSES_PER_PLAYBACK; i++) {
+			playback->prev_bus_details->bus_active[i] = bus_details.bus_active[i];
+		}
+		for (int i = 0; i < MAX_BUSES_PER_PLAYBACK; i++) {
+			playback->prev_bus_details->bus[i] = bus_details.bus[i];
+		}
+		for (int i = 0; i < MAX_BUSES_PER_PLAYBACK; i++) {
+			for (int j = 0; j < MAX_CHANNELS_PER_BUS; j++) {
+				playback->prev_bus_details->volume[i][j] = bus_details.volume[i][j];
+			}
 		}
 
 		switch (playback->state.load()) {
 			case AudioStreamPlaybackListNode::AWAITING_DELETION:
 			case AudioStreamPlaybackListNode::FADE_OUT_TO_DELETION:
-				playback_list.erase(playback, [](AudioStreamPlaybackListNode *p) {
-					delete p->prev_bus_details;
-					delete p->bus_details;
-					p->stream_playback.unref();
-					delete p;
-				});
+				_delete_stream_playback_list_node(playback);
 				break;
 			case AudioStreamPlaybackListNode::FADE_OUT_TO_PAUSE: {
 				// Pause the stream.
@@ -689,6 +690,23 @@ AudioServer::AudioStreamPlaybackListNode *AudioServer::_find_playback_list_node(
 		}
 	}
 	return nullptr;
+}
+
+void AudioServer::_delete_stream_playback(Ref<AudioStreamPlayback> p_playback) {
+	ERR_FAIL_COND(p_playback.is_null());
+	AudioStreamPlaybackListNode *playback_node = _find_playback_list_node(p_playback);
+	if (playback_node) {
+		_delete_stream_playback_list_node(playback_node);
+	}
+}
+
+void AudioServer::_delete_stream_playback_list_node(AudioStreamPlaybackListNode *p_playback_node) {
+	playback_list.erase(p_playback_node, [](AudioStreamPlaybackListNode *p) {
+		delete p->prev_bus_details;
+		delete p->bus_details.load();
+		p->stream_playback.unref();
+		delete p;
+	});
 }
 
 bool AudioServer::thread_has_channel_mix_buffer(int p_bus, int p_buffer) const {
@@ -1199,7 +1217,7 @@ void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, con
 		}
 		idx++;
 	}
-	playback_node->bus_details = new_bus_details;
+	playback_node->bus_details.store(new_bus_details);
 	playback_node->prev_bus_details = new AudioStreamPlaybackBusDetails();
 
 	playback_node->pitch_scale.set(p_pitch_scale);
@@ -1221,8 +1239,12 @@ void AudioServer::stop_playback_stream(Ref<AudioStreamPlayback> p_playback) {
 	ERR_FAIL_COND(p_playback.is_null());
 
 	// Handle sample playback.
-	if (p_playback->get_is_sample() && p_playback->get_sample_playback().is_valid()) {
-		AudioServer::get_singleton()->stop_sample_playback(p_playback->get_sample_playback());
+	if (p_playback->get_is_sample()) {
+		if (p_playback->get_sample_playback().is_valid()) {
+			AudioServer::get_singleton()->stop_sample_playback(p_playback->get_sample_playback());
+		} else {
+			_delete_stream_playback(p_playback);
+		}
 		return;
 	}
 
@@ -1364,8 +1386,12 @@ void AudioServer::set_playback_highshelf_params(Ref<AudioStreamPlayback> p_playb
 bool AudioServer::is_playback_active(Ref<AudioStreamPlayback> p_playback) {
 	ERR_FAIL_COND_V(p_playback.is_null(), false);
 
-	if (p_playback->get_is_sample() && p_playback->get_sample_playback().is_valid()) {
-		return sample_playback_list.has(p_playback->get_sample_playback());
+	if (p_playback->get_is_sample()) {
+		if (p_playback->get_sample_playback().is_valid()) {
+			return sample_playback_list.has(p_playback->get_sample_playback());
+		} else {
+			return false;
+		}
 	}
 
 	AudioStreamPlaybackListNode *playback_node = _find_playback_list_node(p_playback);
@@ -1378,6 +1404,12 @@ bool AudioServer::is_playback_active(Ref<AudioStreamPlayback> p_playback) {
 
 float AudioServer::get_playback_position(Ref<AudioStreamPlayback> p_playback) {
 	ERR_FAIL_COND_V(p_playback.is_null(), 0);
+
+	// Samples.
+	if (p_playback->get_is_sample() && p_playback->get_sample_playback().is_valid()) {
+		Ref<AudioSamplePlayback> sample_playback = p_playback->get_sample_playback();
+		return AudioServer::get_singleton()->get_sample_playback_position(sample_playback);
+	}
 
 	AudioStreamPlaybackListNode *playback_node = _find_playback_list_node(p_playback);
 	if (!playback_node) {
@@ -1833,8 +1865,12 @@ void AudioServer::start_sample_playback(const Ref<AudioSamplePlayback> &p_playba
 
 void AudioServer::stop_sample_playback(const Ref<AudioSamplePlayback> &p_playback) {
 	ERR_FAIL_COND_MSG(p_playback.is_null(), "Parameter p_playback is null.");
-	AudioDriver::get_singleton()->stop_sample_playback(p_playback);
-	sample_playback_list.erase(p_playback);
+	if (sample_playback_list.has(p_playback)) {
+		sample_playback_list.erase(p_playback);
+		AudioDriver::get_singleton()->stop_sample_playback(p_playback);
+		p_playback->stream_playback->set_sample_playback(nullptr);
+		stop_playback_stream(p_playback->stream_playback);
+	}
 }
 
 void AudioServer::set_sample_playback_pause(const Ref<AudioSamplePlayback> &p_playback, bool p_paused) {
@@ -1845,6 +1881,11 @@ void AudioServer::set_sample_playback_pause(const Ref<AudioSamplePlayback> &p_pl
 bool AudioServer::is_sample_playback_active(const Ref<AudioSamplePlayback> &p_playback) {
 	ERR_FAIL_COND_V_MSG(p_playback.is_null(), false, "Parameter p_playback is null.");
 	return AudioDriver::get_singleton()->is_sample_playback_active(p_playback);
+}
+
+double AudioServer::get_sample_playback_position(const Ref<AudioSamplePlayback> &p_playback) {
+	ERR_FAIL_COND_V_MSG(p_playback.is_null(), false, "Parameter p_playback is null.");
+	return AudioDriver::get_singleton()->get_sample_playback_position(p_playback);
 }
 
 void AudioServer::update_sample_playback_pitch_scale(const Ref<AudioSamplePlayback> &p_playback, float p_pitch_scale) {

@@ -638,64 +638,90 @@ TEST_CASE("[String] Ends with") {
 }
 
 TEST_CASE("[String] Splitting") {
-	String s = "Mars,Jupiter,Saturn,Uranus";
-	const char *slices_l[3] = { "Mars", "Jupiter", "Saturn,Uranus" };
-	MULTICHECK_SPLIT(s, split, ",", true, 2, slices_l, 3);
+	{
+		const String s = "Mars,Jupiter,Saturn,Uranus";
 
-	const char *slices_r[3] = { "Mars,Jupiter", "Saturn", "Uranus" };
-	MULTICHECK_SPLIT(s, rsplit, ",", true, 2, slices_r, 3);
+		const char *slices_l[3] = { "Mars", "Jupiter", "Saturn,Uranus" };
+		MULTICHECK_SPLIT(s, split, ",", true, 2, slices_l, 3);
 
-	s = "test";
-	const char *slices_3[4] = { "t", "e", "s", "t" };
-	MULTICHECK_SPLIT(s, split, "", true, 0, slices_3, 4);
-
-	s = "";
-	const char *slices_4[1] = { "" };
-	MULTICHECK_SPLIT(s, split, "", true, 0, slices_4, 1);
-	MULTICHECK_SPLIT(s, split, "", false, 0, slices_4, 0);
-
-	s = "Mars Jupiter Saturn Uranus";
-	const char *slices_s[4] = { "Mars", "Jupiter", "Saturn", "Uranus" };
-	Vector<String> l = s.split_spaces();
-	for (int i = 0; i < l.size(); i++) {
-		CHECK(l[i] == slices_s[i]);
+		const char *slices_r[3] = { "Mars,Jupiter", "Saturn", "Uranus" };
+		MULTICHECK_SPLIT(s, rsplit, ",", true, 2, slices_r, 3);
 	}
 
-	s = "1.2;2.3 4.5";
-	const double slices_d[3] = { 1.2, 2.3, 4.5 };
-
-	Vector<double> d_arr;
-	d_arr = s.split_floats(";");
-	CHECK(d_arr.size() == 2);
-	for (int i = 0; i < d_arr.size(); i++) {
-		CHECK(ABS(d_arr[i] - slices_d[i]) <= 0.00001);
+	{
+		const String s = "test";
+		const char *slices[4] = { "t", "e", "s", "t" };
+		MULTICHECK_SPLIT(s, split, "", true, 0, slices, 4);
 	}
 
-	Vector<String> keys;
-	keys.push_back(";");
-	keys.push_back(" ");
-
-	Vector<float> f_arr;
-	f_arr = s.split_floats_mk(keys);
-	CHECK(f_arr.size() == 3);
-	for (int i = 0; i < f_arr.size(); i++) {
-		CHECK(ABS(f_arr[i] - slices_d[i]) <= 0.00001);
+	{
+		const String s = "";
+		const char *slices[1] = { "" };
+		MULTICHECK_SPLIT(s, split, "", true, 0, slices, 1);
+		MULTICHECK_SPLIT(s, split, "", false, 0, slices, 0);
 	}
 
-	s = "1;2 4";
-	const int slices_i[3] = { 1, 2, 4 };
-
-	Vector<int> ii;
-	ii = s.split_ints(";");
-	CHECK(ii.size() == 2);
-	for (int i = 0; i < ii.size(); i++) {
-		CHECK(ii[i] == slices_i[i]);
+	{
+		const String s = "Mars Jupiter Saturn Uranus";
+		const char *slices[4] = { "Mars", "Jupiter", "Saturn", "Uranus" };
+		Vector<String> l = s.split_spaces();
+		for (int i = 0; i < l.size(); i++) {
+			CHECK(l[i] == slices[i]);
+		}
 	}
 
-	ii = s.split_ints_mk(keys);
-	CHECK(ii.size() == 3);
-	for (int i = 0; i < ii.size(); i++) {
-		CHECK(ii[i] == slices_i[i]);
+	{
+		const String s = "1.2;2.3 4.5";
+		const double slices[3] = { 1.2, 2.3, 4.5 };
+
+		const Vector<double> d_arr = s.split_floats(";");
+		CHECK(d_arr.size() == 2);
+		for (int i = 0; i < d_arr.size(); i++) {
+			CHECK(ABS(d_arr[i] - slices[i]) <= 0.00001);
+		}
+
+		const Vector<String> keys = { ";", " " };
+		const Vector<float> f_arr = s.split_floats_mk(keys);
+		CHECK(f_arr.size() == 3);
+		for (int i = 0; i < f_arr.size(); i++) {
+			CHECK(ABS(f_arr[i] - slices[i]) <= 0.00001);
+		}
+	}
+
+	{
+		const String s = " -2.0        5";
+		const double slices[10] = { 0, -2, 0, 0, 0, 0, 0, 0, 0, 5 };
+
+		const Vector<double> arr = s.split_floats(" ");
+		CHECK(arr.size() == 10);
+		for (int i = 0; i < arr.size(); i++) {
+			CHECK(ABS(arr[i] - slices[i]) <= 0.00001);
+		}
+
+		const Vector<String> keys = { ";", " " };
+		const Vector<float> mk = s.split_floats_mk(keys);
+		CHECK(mk.size() == 10);
+		for (int i = 0; i < mk.size(); i++) {
+			CHECK(mk[i] == slices[i]);
+		}
+	}
+
+	{
+		const String s = "1;2 4";
+		const int slices[3] = { 1, 2, 4 };
+
+		const Vector<int> arr = s.split_ints(";");
+		CHECK(arr.size() == 2);
+		for (int i = 0; i < arr.size(); i++) {
+			CHECK(arr[i] == slices[i]);
+		}
+
+		const Vector<String> keys = { ";", " " };
+		const Vector<int> mk = s.split_ints_mk(keys);
+		CHECK(mk.size() == 3);
+		for (int i = 0; i < mk.size(); i++) {
+			CHECK(mk[i] == slices[i]);
+		}
 	}
 }
 

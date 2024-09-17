@@ -583,6 +583,8 @@ void main() {
 
 #define SHADER_IS_SRGB true
 
+#define FLAGS_NON_UNIFORM_SCALE (1 << 4)
+
 /* Varyings */
 
 #if defined(COLOR_USED)
@@ -955,6 +957,7 @@ ivec2 multiview_uv(ivec2 uv) {
 
 uniform highp mat4 world_transform;
 uniform mediump float opaque_prepass_threshold;
+uniform highp uint model_flags;
 
 #if defined(RENDER_MATERIAL)
 layout(location = 0) out vec4 albedo_output_buffer;
@@ -1521,6 +1524,13 @@ void main() {
 	vec3 light_vertex = vertex;
 #endif //LIGHT_VERTEX_USED
 
+	highp mat3 model_normal_matrix;
+	if (bool(model_flags & uint(FLAGS_NON_UNIFORM_SCALE))) {
+		model_normal_matrix = transpose(inverse(mat3(model_matrix)));
+	} else {
+		model_normal_matrix = mat3(model_matrix);
+	}
+
 	{
 #CODE : FRAGMENT
 	}
@@ -1728,16 +1738,10 @@ void main() {
 
 		vec3 n = normalize(lightmap_normal_xform * normal);
 
-		ambient_light += lm_light_l0 * 0.282095f;
-		ambient_light += lm_light_l1n1 * 0.32573 * n.y * lightmap_exposure_normalization;
-		ambient_light += lm_light_l1_0 * 0.32573 * n.z * lightmap_exposure_normalization;
-		ambient_light += lm_light_l1p1 * 0.32573 * n.x * lightmap_exposure_normalization;
-		if (metallic > 0.01) { // Since the more direct bounced light is lost, we can kind of fake it with this trick.
-			vec3 r = reflect(normalize(-vertex), normal);
-			specular_light += lm_light_l1n1 * 0.32573 * r.y * lightmap_exposure_normalization;
-			specular_light += lm_light_l1_0 * 0.32573 * r.z * lightmap_exposure_normalization;
-			specular_light += lm_light_l1p1 * 0.32573 * r.x * lightmap_exposure_normalization;
-		}
+		ambient_light += lm_light_l0 * lightmap_exposure_normalization;
+		ambient_light += lm_light_l1n1 * n.y * lightmap_exposure_normalization;
+		ambient_light += lm_light_l1_0 * n.z * lightmap_exposure_normalization;
+		ambient_light += lm_light_l1p1 * n.x * lightmap_exposure_normalization;
 #else
 		ambient_light += textureLod(lightmap_textures, uvw, 0.0).rgb * lightmap_exposure_normalization;
 #endif
@@ -1871,7 +1875,7 @@ void main() {
 	alpha = min(alpha, clamp(length(ambient_light), 0.0, 1.0));
 
 #if defined(ALPHA_SCISSOR_USED)
-	if (alpha < alpha_scissor) {
+	if (alpha < alpha_scissor_threshold) {
 		discard;
 	}
 #endif // !ALPHA_SCISSOR_USED

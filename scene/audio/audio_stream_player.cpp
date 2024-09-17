@@ -112,7 +112,7 @@ void AudioStreamPlayer::seek(float p_seconds) {
 }
 
 void AudioStreamPlayer::stop() {
-	internal->stop();
+	internal->stop_basic();
 }
 
 bool AudioStreamPlayer::is_playing() const {
@@ -283,7 +283,7 @@ void AudioStreamPlayer::_bind_methods() {
 }
 
 AudioStreamPlayer::AudioStreamPlayer() {
-	internal = memnew(AudioStreamPlayerInternal(this, callable_mp(this, &AudioStreamPlayer::play), false));
+	internal = memnew(AudioStreamPlayerInternal(this, callable_mp(this, &AudioStreamPlayer::play), callable_mp(this, &AudioStreamPlayer::stop), false));
 }
 
 AudioStreamPlayer::~AudioStreamPlayer() {

@@ -1030,6 +1030,13 @@ void fragment_shader(in SceneData scene_data) {
 	vec3 light_vertex = vertex;
 #endif //LIGHT_VERTEX_USED
 
+	mat3 model_normal_matrix;
+	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_NON_UNIFORM_SCALE)) {
+		model_normal_matrix = transpose(inverse(mat3(read_model_matrix)));
+	} else {
+		model_normal_matrix = mat3(read_model_matrix);
+	}
+
 	mat4 read_view_matrix = scene_data.view_matrix;
 	vec2 read_viewport_size = scene_data.viewport_size;
 	{
@@ -1447,16 +1454,10 @@ void fragment_shader(in SceneData scene_data) {
 			vec3 n = normalize(lightmaps.data[ofs].normal_xform * normal);
 			float en = lightmaps.data[ofs].exposure_normalization;
 
-			ambient_light += lm_light_l0 * 0.282095f * en;
-			ambient_light += lm_light_l1n1 * 0.32573 * n.y * en;
-			ambient_light += lm_light_l1_0 * 0.32573 * n.z * en;
-			ambient_light += lm_light_l1p1 * 0.32573 * n.x * en;
-			if (metallic > 0.01) { // since the more direct bounced light is lost, we can kind of fake it with this trick
-				vec3 r = reflect(normalize(-vertex), normal);
-				specular_light += lm_light_l1n1 * 0.32573 * r.y * en;
-				specular_light += lm_light_l1_0 * 0.32573 * r.z * en;
-				specular_light += lm_light_l1p1 * 0.32573 * r.x * en;
-			}
+			ambient_light += lm_light_l0 * en;
+			ambient_light += lm_light_l1n1 * n.y * en;
+			ambient_light += lm_light_l1_0 * n.z * en;
+			ambient_light += lm_light_l1p1 * n.x * en;
 
 		} else {
 			ambient_light += textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw, 0.0).rgb * lightmaps.data[ofs].exposure_normalization;
@@ -1983,7 +1984,7 @@ void fragment_shader(in SceneData scene_data) {
 
 #ifdef LIGHT_TRANSMITTANCE_USED
 			float transmittance_z = transmittance_depth;
-
+#ifndef SHADOWS_DISABLED
 			if (directional_lights.data[i].shadow_opacity > 0.001) {
 				float depth_z = -vertex.z;
 
@@ -2030,7 +2031,8 @@ void fragment_shader(in SceneData scene_data) {
 					transmittance_z = z - shadow_z;
 				}
 			}
-#endif
+#endif // !SHADOWS_DISABLED
+#endif // LIGHT_TRANSMITTANCE_USED
 
 			float shadow = 1.0;
 #ifndef SHADOWS_DISABLED
@@ -2242,7 +2244,7 @@ void fragment_shader(in SceneData scene_data) {
 	alpha = min(alpha, clamp(length(ambient_light), 0.0, 1.0));
 
 #if defined(ALPHA_SCISSOR_USED)
-	if (alpha < alpha_scissor) {
+	if (alpha < alpha_scissor_threshold) {
 		discard;
 	}
 #endif // ALPHA_SCISSOR_USED

@@ -141,6 +141,7 @@ public:
 	virtual void stop_sample_playback(const Ref<AudioSamplePlayback> &p_playback) {}
 	virtual void set_sample_playback_pause(const Ref<AudioSamplePlayback> &p_playback, bool p_paused) {}
 	virtual bool is_sample_playback_active(const Ref<AudioSamplePlayback> &p_playback) { return false; }
+	virtual double get_sample_playback_position(const Ref<AudioSamplePlayback> &p_playback) { return false; }
 	virtual void update_sample_playback_pitch_scale(const Ref<AudioSamplePlayback> &p_playback, float p_pitch_scale = 0.0f) {}
 	virtual void set_sample_playback_bus_volumes_linear(const Ref<AudioSamplePlayback> &p_playback, const HashMap<StringName, Vector<AudioFrame>> &p_bus_volumes) {}
 
@@ -296,6 +297,8 @@ private:
 
 	SafeList<AudioStreamPlaybackListNode *> playback_list;
 	SafeList<AudioStreamPlaybackBusDetails *> bus_details_graveyard;
+	void _delete_stream_playback(Ref<AudioStreamPlayback> p_playback);
+	void _delete_stream_playback_list_node(AudioStreamPlaybackListNode *p_node);
 
 	// TODO document if this is necessary.
 	SafeList<AudioStreamPlaybackBusDetails *> bus_details_graveyard_frame_old;
@@ -484,6 +487,7 @@ public:
 	void stop_sample_playback(const Ref<AudioSamplePlayback> &p_playback);
 	void set_sample_playback_pause(const Ref<AudioSamplePlayback> &p_playback, bool p_paused);
 	bool is_sample_playback_active(const Ref<AudioSamplePlayback> &p_playback);
+	double get_sample_playback_position(const Ref<AudioSamplePlayback> &p_playback);
 	void update_sample_playback_pitch_scale(const Ref<AudioSamplePlayback> &p_playback, float p_pitch_scale = 0.0f);
 
 	AudioServer();

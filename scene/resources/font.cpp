@@ -1482,8 +1482,8 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 			switch (block_type) {
 				case 1: /* info */ {
 					ERR_FAIL_COND_V_MSG(block_size < 15, ERR_CANT_CREATE, "Invalid BMFont info block size.");
-					base_size = f->get_16();
-					if (base_size <= 0) {
+					base_size = ABS(static_cast<int16_t>(f->get_16()));
+					if (base_size == 0) {
 						base_size = 16;
 					}
 					uint8_t flags = f->get_8();
@@ -1776,7 +1776,10 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 
 			if (type == "info") {
 				if (keys.has("size")) {
-					base_size = keys["size"].to_int();
+					base_size = ABS(keys["size"].to_int());
+					if (base_size == 0) {
+						base_size = 16;
+					}
 				}
 				if (keys.has("outline")) {
 					outline = keys["outline"].to_int();

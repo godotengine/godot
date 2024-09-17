@@ -781,22 +781,13 @@ Error GDExtension::open_library(const String &p_path, const String &p_entry_symb
 		}
 	}
 
-	String actual_lib_path;
 	OS::GDExtensionData data = {
 		true, // also_set_library_path
-		&actual_lib_path, // r_resolved_path
+		&library_path, // r_resolved_path
 		Engine::get_singleton()->is_editor_hint(), // generate_temp_files
 		&abs_dependencies_paths, // library_dependencies
 	};
 	Error err = OS::get_singleton()->open_dynamic_library(abs_path, library, &data);
-
-	if (actual_lib_path.get_file() != abs_path.get_file()) {
-		// If temporary files are generated, let's change the library path to point at the original,
-		// because that's what we want to check to see if it's changed.
-		library_path = actual_lib_path.get_base_dir().path_join(p_path.get_file());
-	} else {
-		library_path = actual_lib_path;
-	}
 
 	ERR_FAIL_COND_V_MSG(err == ERR_FILE_NOT_FOUND, err, "GDExtension dynamic library not found: " + abs_path);
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Can't open GDExtension dynamic library: " + abs_path);

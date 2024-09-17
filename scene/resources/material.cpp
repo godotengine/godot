@@ -379,6 +379,8 @@ bool ShaderMaterial::_property_can_revert(const StringName &p_name) const {
 			Variant default_value = RenderingServer::get_singleton()->shader_get_parameter_default(shader->get_rid(), *pr);
 			Variant current_value = get_shader_parameter(*pr);
 			return default_value.get_type() != Variant::NIL && default_value != current_value;
+		} else if (p_name == "render_priority" || p_name == "next_pass") {
+			return true;
 		}
 	}
 	return false;
@@ -389,6 +391,12 @@ bool ShaderMaterial::_property_get_revert(const StringName &p_name, Variant &r_p
 		const StringName *pr = remap_cache.getptr(p_name);
 		if (pr) {
 			r_property = RenderingServer::get_singleton()->shader_get_parameter_default(shader->get_rid(), *pr);
+			return true;
+		} else if (p_name == "render_priority") {
+			r_property = 0;
+			return true;
+		} else if (p_name == "next_pass") {
+			r_property = Variant();
 			return true;
 		}
 	}

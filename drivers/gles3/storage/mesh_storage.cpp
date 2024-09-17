@@ -301,7 +301,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 			Vector<uint8_t> ir = new_surface.index_data;
 			wr = wf_indices.ptrw();
 
-			if (new_surface.vertex_count < (1 << 16)) {
+			if (new_surface.vertex_count <= 65536) {
 				// Read 16 bit indices.
 				const uint16_t *src_idx = (const uint16_t *)ir.ptr();
 				for (uint32_t i = 0; i + 5 < wf_index_count; i += 6) {
@@ -743,6 +743,7 @@ String MeshStorage::mesh_get_path(RID p_mesh) const {
 }
 
 void MeshStorage::mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) {
+	ERR_FAIL_COND_MSG(p_mesh == p_shadow_mesh, "Cannot set a mesh as its own shadow mesh.");
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_NULL(mesh);
 

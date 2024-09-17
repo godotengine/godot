@@ -709,7 +709,7 @@ void LightmapGI::_gen_new_positions_from_octree(const GenProbesOctree *p_cell, f
 			const Vector3 *pp = probe_positions.ptr();
 			bool exists = false;
 			for (int j = 0; j < ppcount; j++) {
-				if (pp[j].is_equal_approx(real_pos)) {
+				if (pp[j].distance_to(real_pos) < (p_cell_size * 0.5f)) {
 					exists = true;
 					break;
 				}
@@ -1072,6 +1072,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 					if (env.is_valid()) {
 						environment_image = RS::get_singleton()->environment_bake_panorama(env->get_rid(), true, Size2i(128, 64));
+						environment_transform = Basis::from_euler(env->get_sky_rotation()).inverse();
 					}
 				}
 			} break;
@@ -1580,7 +1581,7 @@ Ref<CameraAttributes> LightmapGI::get_camera_attributes() const {
 }
 
 PackedStringArray LightmapGI::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
 
 	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
 		warnings.push_back(RTR("Lightmap can only be baked from a device that supports the RD backends. Lightmap baking may fail."));

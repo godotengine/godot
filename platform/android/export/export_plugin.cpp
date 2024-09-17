@@ -290,7 +290,9 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 
 		// Check for devices updates
 		String adb = get_adb_path();
-		if (ea->has_runnable_preset.is_set() && FileAccess::exists(adb)) {
+		// adb.exe was locking the editor_doc_cache file on startup. Adding a check for is_editor_ready provides just enough time
+		// to regenerate the doc cache.
+		if (ea->has_runnable_preset.is_set() && FileAccess::exists(adb) && EditorNode::get_singleton()->is_editor_ready()) {
 			String devices;
 			List<String> args;
 			args.push_back("devices");
@@ -2271,6 +2273,11 @@ String EditorExportPlatformAndroid::get_apksigner_path(int p_target_sdk, bool p_
 	int i;
 	bool failed = false;
 	String version_to_use;
+
+	String java_sdk_path = EDITOR_GET("export/android/java_sdk_path");
+	if (!java_sdk_path.is_empty()) {
+		OS::get_singleton()->set_environment("JAVA_HOME", java_sdk_path);
+	}
 
 	List<String> args;
 	args.push_back("--version");

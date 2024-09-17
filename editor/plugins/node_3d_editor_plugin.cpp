@@ -770,7 +770,7 @@ void Node3DEditorViewport::_select_clicked(bool p_allow_locked) {
 		}
 	}
 
-	if (p_allow_locked || !_is_node_locked(selected)) {
+	if (p_allow_locked || (selected != nullptr && !_is_node_locked(selected))) {
 		if (clicked_wants_append) {
 			if (editor_selection->is_selected(selected)) {
 				editor_selection->remove_node(selected);
@@ -800,7 +800,6 @@ ObjectID Node3DEditorViewport::_select_ray(const Point2 &p_pos) const {
 		RS::get_singleton()->sdfgi_set_debug_probe_select(pos, ray);
 	}
 
-	Vector<ObjectID> instances = RenderingServer::get_singleton()->instances_cull_ray(pos, pos + ray * camera->get_far(), get_tree()->get_root()->get_world_3d()->get_scenario());
 	HashSet<Ref<EditorNode3DGizmo>> found_gizmos;
 
 	Node *edited_scene = get_tree()->get_edited_scene_root();
@@ -808,9 +807,9 @@ ObjectID Node3DEditorViewport::_select_ray(const Point2 &p_pos) const {
 	Node *item = nullptr;
 	float closest_dist = 1e20;
 
-	for (int i = 0; i < instances.size(); i++) {
-		Node3D *spat = Object::cast_to<Node3D>(ObjectDB::get_instance(instances[i]));
+	Vector<Node3D *> nodes_with_gizmos = Node3DEditor::get_singleton()->gizmo_bvh_ray_query(pos, pos + ray * camera->get_far());
 
+	for (Node3D *spat : nodes_with_gizmos) {
 		if (!spat) {
 			continue;
 		}
@@ -863,12 +862,11 @@ void Node3DEditorViewport::_find_items_at_pos(const Point2 &p_pos, Vector<_RayRe
 	Vector3 ray = get_ray(p_pos);
 	Vector3 pos = get_ray_pos(p_pos);
 
-	Vector<ObjectID> instances = RenderingServer::get_singleton()->instances_cull_ray(pos, pos + ray * camera->get_far(), get_tree()->get_root()->get_world_3d()->get_scenario());
+	Vector<Node3D *> nodes_with_gizmos = Node3DEditor::get_singleton()->gizmo_bvh_ray_query(pos, pos + ray * camera->get_far());
+
 	HashSet<Node3D *> found_nodes;
 
-	for (int i = 0; i < instances.size(); i++) {
-		Node3D *spat = Object::cast_to<Node3D>(ObjectDB::get_instance(instances[i]));
-
+	for (Node3D *spat : nodes_with_gizmos) {
 		if (!spat) {
 			continue;
 		}
@@ -1046,7 +1044,7 @@ void Node3DEditorViewport::_select_region() {
 		_clear_selected();
 	}
 
-	Vector<ObjectID> instances = RenderingServer::get_singleton()->instances_cull_convex(frustum, get_tree()->get_root()->get_world_3d()->get_scenario());
+	Vector<Node3D *> nodes_with_gizmos = Node3DEditor::get_singleton()->gizmo_bvh_frustum_query(frustum);
 	HashSet<Node3D *> found_nodes;
 	Vector<Node *> selected;
 
@@ -1055,8 +1053,7 @@ void Node3DEditorViewport::_select_region() {
 		return;
 	}
 
-	for (int i = 0; i < instances.size(); i++) {
-		Node3D *sp = Object::cast_to<Node3D>(ObjectDB::get_instance(instances[i]));
+	for (Node3D *sp : nodes_with_gizmos) {
 		if (!sp || _is_node_locked(sp)) {
 			continue;
 		}
@@ -1064,21 +1061,23 @@ void Node3DEditorViewport::_select_region() {
 		if (found_nodes.has(sp)) {
 			continue;
 		}
-
 		found_nodes.insert(sp);
 
 		Node *node = Object::cast_to<Node>(sp);
-		if (node != edited_scene) {
-			node = edited_scene->get_deepest_editable_node(node);
-		}
 
-		// Prevent selection of nodes not owned by the edited scene.
-		while (node && node != edited_scene->get_parent()) {
-			Node *node_owner = node->get_owner();
-			if (node_owner == edited_scene || node == edited_scene || (node_owner != nullptr && edited_scene->is_editable_instance(node_owner))) {
-				break;
+		// Selection requires that the node is the edited scene or its descendant, and has an owner.
+		if (node != edited_scene) {
+			if (!node->get_owner() || !edited_scene->is_ancestor_of(node)) {
+				continue;
 			}
-			node = node->get_parent();
+			node = edited_scene->get_deepest_editable_node(node);
+			while (node != edited_scene) {
+				Node *node_owner = node->get_owner();
+				if (node_owner == edited_scene || (node_owner != nullptr && edited_scene->is_editable_instance(node_owner))) {
+					break;
+				}
+				node = node->get_parent();
+			}
 		}
 
 		// Replace the node by the group if grouped
@@ -1952,7 +1951,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						}
 					}
 
-					if (_edit.mode != TRANSFORM_NONE) {
+					if (!_edit.instant && _edit.mode != TRANSFORM_NONE) {
 						Node3D *selected = spatial_editor->get_single_selected_node();
 						Node3DEditorSelectedItem *se = selected ? editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(selected) : nullptr;
 
@@ -2252,6 +2251,11 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		}
 
 		if (_edit.mode == TRANSFORM_NONE) {
+			if (_edit.gizmo.is_null() && is_freelook_active() && k->get_keycode() == Key::ESCAPE) {
+				set_freelook_active(false);
+				return;
+			}
+
 			if (_edit.gizmo.is_valid() && (k->get_keycode() == Key::ESCAPE || k->get_keycode() == Key::BACKSPACE)) {
 				// Restore.
 				_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, _edit.gizmo_initial_value, true);
@@ -2390,15 +2394,30 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		if (ED_IS_SHORTCUT("spatial_editor/cancel_transform", p_event) && _edit.mode != TRANSFORM_NONE) {
 			cancel_transform();
 		}
-		if (!is_freelook_active()) {
-			if (ED_IS_SHORTCUT("spatial_editor/instant_translate", p_event)) {
-				begin_transform(TRANSFORM_TRANSLATE, true);
+		if (!is_freelook_active() && !k->is_echo()) {
+			if (ED_IS_SHORTCUT("spatial_editor/instant_translate", p_event) && _edit.mode != TRANSFORM_TRANSLATE) {
+				if (_edit.mode == TRANSFORM_NONE) {
+					begin_transform(TRANSFORM_TRANSLATE, true);
+				} else if (_edit.instant) {
+					commit_transform();
+					begin_transform(TRANSFORM_TRANSLATE, true);
+				}
 			}
-			if (ED_IS_SHORTCUT("spatial_editor/instant_rotate", p_event)) {
-				begin_transform(TRANSFORM_ROTATE, true);
+			if (ED_IS_SHORTCUT("spatial_editor/instant_rotate", p_event) && _edit.mode != TRANSFORM_ROTATE) {
+				if (_edit.mode == TRANSFORM_NONE) {
+					begin_transform(TRANSFORM_ROTATE, true);
+				} else if (_edit.instant) {
+					commit_transform();
+					begin_transform(TRANSFORM_ROTATE, true);
+				}
 			}
-			if (ED_IS_SHORTCUT("spatial_editor/instant_scale", p_event)) {
-				begin_transform(TRANSFORM_SCALE, true);
+			if (ED_IS_SHORTCUT("spatial_editor/instant_scale", p_event) && _edit.mode != TRANSFORM_SCALE) {
+				if (_edit.mode == TRANSFORM_NONE) {
+					begin_transform(TRANSFORM_SCALE, true);
+				} else if (_edit.instant) {
+					commit_transform();
+					begin_transform(TRANSFORM_SCALE, true);
+				}
 			}
 		}
 
@@ -3030,8 +3049,11 @@ void Node3DEditorViewport::_notification(int p_what) {
 			update_preview_node = false;
 		} break;
 
+		case NOTIFICATION_APPLICATION_FOCUS_OUT:
 		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
 			set_freelook_active(false);
+			cursor.region_select = false;
+			surface->queue_redraw();
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -3107,6 +3129,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 		case NOTIFICATION_DRAG_END: {
 			// Clear preview material when dropped outside applicable object.
 			if (spatial_editor->get_preview_material().is_valid() && !is_drag_successful()) {
+				_reset_preview_material();
 				_remove_preview_material();
 			} else {
 				_remove_preview_node();
@@ -4001,6 +4024,14 @@ void Node3DEditorViewport::set_state(const Dictionary &p_state) {
 			_menu_option(VIEW_GIZMOS);
 		}
 	}
+	if (p_state.has("grid")) {
+		bool grid = p_state["grid"];
+
+		int idx = view_menu->get_popup()->get_item_index(VIEW_GRID);
+		if (view_menu->get_popup()->is_item_checked(idx) != grid) {
+			_menu_option(VIEW_GRID);
+		}
+	}
 	if (p_state.has("information")) {
 		bool information = p_state["information"];
 
@@ -4079,6 +4110,7 @@ Dictionary Node3DEditorViewport::get_state() const {
 	d["listener"] = viewport->is_audio_listener_3d();
 	d["doppler"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_AUDIO_DOPPLER));
 	d["gizmos"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_GIZMOS));
+	d["grid"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_GRID));
 	d["information"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_INFORMATION));
 	d["frame_time"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_FRAME_TIME));
 	d["half_res"] = subviewport_container->get_stretch_shrink() > 1;
@@ -5001,14 +5033,24 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 		} break;
 
 		case TRANSFORM_ROTATE: {
-			Plane plane = Plane(_get_camera_normal(), _edit.center);
+			Plane plane;
+			if (camera->get_projection() == Camera3D::PROJECTION_PERSPECTIVE) {
+				Vector3 cam_to_obj = _edit.center - _get_camera_position();
+				if (!cam_to_obj.is_zero_approx()) {
+					plane = Plane(cam_to_obj.normalized(), _edit.center);
+				} else {
+					plane = Plane(_get_camera_normal(), _edit.center);
+				}
+			} else {
+				plane = Plane(_get_camera_normal(), _edit.center);
+			}
 
 			Vector3 local_axis;
 			Vector3 global_axis;
 			switch (_edit.plane) {
 				case TRANSFORM_VIEW:
 					// local_axis unused
-					global_axis = _get_camera_normal();
+					global_axis = plane.normal;
 					break;
 				case TRANSFORM_X_AXIS:
 					local_axis = Vector3(1, 0, 0);
@@ -5039,7 +5081,7 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 				break;
 			}
 
-			static const float orthogonal_threshold = Math::cos(Math::deg_to_rad(87.0f));
+			static const float orthogonal_threshold = Math::cos(Math::deg_to_rad(85.0f));
 			bool axis_is_orthogonal = ABS(plane.normal.dot(global_axis)) < orthogonal_threshold;
 
 			double angle = 0.0f;
@@ -7746,6 +7788,9 @@ void Node3DEditor::_sun_environ_settings_pressed() {
 	sun_environ_popup->set_position(pos - Vector2(sun_environ_popup->get_contents_minimum_size().width / 2, 0));
 	sun_environ_popup->reset_size();
 	sun_environ_popup->popup();
+	// Grabbing the focus is required for Shift modifier checking to be functional
+	// (when the Add sun/environment buttons are pressed).
+	sun_environ_popup->grab_focus();
 }
 
 void Node3DEditor::_add_sun_to_scene(bool p_already_added_environment) {
@@ -9206,6 +9251,49 @@ void Node3DEditor::remove_gizmo_plugin(Ref<EditorNode3DGizmoPlugin> p_plugin) {
 	gizmo_plugins_by_priority.erase(p_plugin);
 	gizmo_plugins_by_name.erase(p_plugin);
 	_update_gizmos_menu();
+}
+
+DynamicBVH::ID Node3DEditor::insert_gizmo_bvh_node(Node3D *p_node, const AABB &p_aabb) {
+	return gizmo_bvh.insert(p_aabb, p_node);
+}
+
+void Node3DEditor::update_gizmo_bvh_node(DynamicBVH::ID p_id, const AABB &p_aabb) {
+	gizmo_bvh.update(p_id, p_aabb);
+	gizmo_bvh.optimize_incremental(1);
+}
+
+void Node3DEditor::remove_gizmo_bvh_node(DynamicBVH::ID p_id) {
+	gizmo_bvh.remove(p_id);
+}
+
+Vector<Node3D *> Node3DEditor::gizmo_bvh_ray_query(const Vector3 &p_ray_start, const Vector3 &p_ray_end) {
+	struct Result {
+		Vector<Node3D *> nodes;
+		bool operator()(void *p_data) {
+			nodes.append((Node3D *)p_data);
+			return false;
+		}
+	} result;
+
+	gizmo_bvh.ray_query(p_ray_start, p_ray_end, result);
+
+	return result.nodes;
+}
+
+Vector<Node3D *> Node3DEditor::gizmo_bvh_frustum_query(const Vector<Plane> &p_frustum) {
+	Vector<Vector3> points = Geometry3D::compute_convex_mesh_points(&p_frustum[0], p_frustum.size());
+
+	struct Result {
+		Vector<Node3D *> nodes;
+		bool operator()(void *p_data) {
+			nodes.append((Node3D *)p_data);
+			return false;
+		}
+	} result;
+
+	gizmo_bvh.convex_query(p_frustum.ptr(), p_frustum.size(), points.ptr(), points.size(), result);
+
+	return result.nodes;
 }
 
 Node3DEditorPlugin::Node3DEditorPlugin() {

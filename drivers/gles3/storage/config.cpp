@@ -121,7 +121,7 @@ Config::Config() {
 #ifdef WEB_ENABLED
 	msaa_supported = (msaa_max_samples > 0);
 #else
-	msaa_supported = extensions.has("GL_EXT_framebuffer_multisample");
+	msaa_supported = true;
 #endif
 #ifndef IOS_ENABLED
 #ifdef WEB_ENABLED
@@ -218,6 +218,8 @@ Config::Config() {
 			//https://github.com/godotengine/godot/issues/92662#issuecomment-2161199477
 			//disable_particles_workaround = false;
 		}
+	} else if (rendering_device_name == "PowerVR Rogue GE8320") {
+		disable_transform_feedback_shader_cache = true;
 	}
 }
 

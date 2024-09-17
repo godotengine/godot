@@ -436,6 +436,7 @@ class ScriptEditor : public PanelContainer {
 	void _file_removed(const String &p_file);
 	void _autosave_scripts();
 	void _update_autosave_timer();
+	void _reload_scripts(bool p_refresh_only = false);
 
 	void _update_members_overview_visibility();
 	void _update_members_overview();

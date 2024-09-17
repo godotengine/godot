@@ -218,7 +218,13 @@ bool SoftBody3D::_set_property_pinned_points_attachment(int p_item, const String
 
 	if ("spatial_attachment_path" == p_what) {
 		PinnedPoint *w = pinned_points.ptrw();
-		callable_mp(this, &SoftBody3D::_pin_point_deferred).call_deferred(Variant(w[p_item].point_index), true, p_value);
+
+		if (is_inside_tree()) {
+			callable_mp(this, &SoftBody3D::_pin_point_deferred).call_deferred(Variant(w[p_item].point_index), true, p_value);
+		} else {
+			pin_point(w[p_item].point_index, true, p_value);
+			_make_cache_dirty();
+		}
 	} else if ("offset" == p_what) {
 		PinnedPoint *w = pinned_points.ptrw();
 		w[p_item].offset = p_value;
@@ -377,7 +383,7 @@ void SoftBody3D::_bind_methods() {
 }
 
 PackedStringArray SoftBody3D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = MeshInstance3D::get_configuration_warnings();
 
 	if (mesh.is_null()) {
 		warnings.push_back(RTR("This body will be ignored until you set a mesh."));
