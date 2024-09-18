@@ -287,6 +287,16 @@ void OpenXRInterface::_load_action_map() {
 			if (ip.is_valid()) {
 				openxr_api->interaction_profile_clear_bindings(ip);
 
+				Array xr_binding_modifiers = xr_interaction_profile->get_binding_modifiers();
+				for (int j = 0; j < xr_binding_modifiers.size(); j++) {
+					Ref<OpenXRBindingModifier> xr_binding_modifier = xr_binding_modifiers[j];
+
+					const XrBindingModificationBaseHeaderKHR *bm = xr_binding_modifier->get_binding_modification();
+					if (bm != nullptr) {
+						openxr_api->interaction_profile_add_modifier(ip, bm, xr_binding_modifier->get_binding_modification_struct_size());
+					}
+				}
+
 				Array xr_bindings = xr_interaction_profile->get_bindings();
 				for (int j = 0; j < xr_bindings.size(); j++) {
 					Ref<OpenXRIPBinding> xr_binding = xr_bindings[j];

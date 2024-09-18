@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRBindingModifier" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Binding modifier base class.
+	</brief_description>
+	<description>
+		Binding modifier base class. Subclasses implement various modifiers that alter how an OpenXR runtime processes inputs.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_binding_modifier_type" qualifiers="const">
+			<return type="int" enum="OpenXRBindingModifier.BindingModifierType" />
+			<description>
+				Returns the scope of this binding modifier.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="action" type="OpenXRAction" setter="set_action" getter="get_action">
+			Action related to this binding modifier. Only applicable if [method get_binding_modifier_type] returns [constant BINDING_MODIFIER_IO_ACTION].
+		</member>
+		<member name="input_path" type="String" setter="set_input_path" getter="get_input_path" default="&quot;&quot;">
+			Input path related to this binding modifier. Only applicable if [method get_binding_modifier_type] returns [constant BINDING_MODIFIER_IO_PATH] or [constant BINDING_MODIFIER_IO_ACTION].
+		</member>
+	</members>
+	<constants>
+		<constant name="BINDING_MODIFIER_GLOBAL" value="0" enum="BindingModifierType">
+			This binding modifier applies to the entire suggested interaction binding.
+		</constant>
+		<constant name="BINDING_MODIFIER_IO_PATH" value="1" enum="BindingModifierType">
+			This binding modifier applies to a specific input path for the suggested interaction binding.
+		</constant>
+		<constant name="BINDING_MODIFIER_IO_ACTION" value="2" enum="BindingModifierType">
+			This binding modifier applies to an action bound to a specific input path for the suggested interaction binding.
+		</constant>
+	</constants>
+</class>
