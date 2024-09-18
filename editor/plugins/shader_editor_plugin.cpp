@@ -405,7 +405,7 @@ void ShaderEditorPlugin::_setup_popup_menu(PopupMenuType p_type, PopupMenu *p_me
 		if (p_type == CONTEXT_VALID_ITEM) {
 			p_menu->add_separator();
 			p_menu->add_item(TTR("Copy Script Path"), COPY_PATH);
-			p_menu->add_item(TTR("Show in File System"), SHOW_IN_FILE_SYSTEM);
+			p_menu->add_item(TTR("Show in FileSystem"), SHOW_IN_FILE_SYSTEM);
 		}
 	}
 }
