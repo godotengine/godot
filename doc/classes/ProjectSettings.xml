@@ -3129,6 +3129,12 @@
 		<member name="threading/worker_pool/max_threads" type="int" setter="" getter="" default="-1">
 			Maximum number of threads to be used by [WorkerThreadPool]. Value of [code]-1[/code] means no limit.
 		</member>
+		<member name="xr/openxr/binding_modifiers/analog_threshold" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], enables the analog threshold binding modifier if supported by the XR runtime.
+		</member>
+		<member name="xr/openxr/binding_modifiers/dpad_binding" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], enables the D-pad binding modifier if supported by the XR runtime.
+		</member>
 		<member name="xr/openxr/default_action_map" type="String" setter="" getter="" default="&quot;res://openxr_action_map.tres&quot;">
 			Action map configuration to load by default.
 		</member>

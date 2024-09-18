@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  openxr_editor_plugin.h                                                */
+/*  openxr_valve_analog_threshold_extension.h                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,33 +28,61 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_EDITOR_PLUGIN_H
-#define OPENXR_EDITOR_PLUGIN_H
+#ifndef OPENXR_VALVE_ANALOG_THRESHOLD_EXTENSION_H
+#define OPENXR_VALVE_ANALOG_THRESHOLD_EXTENSION_H
 
-#include "openxr_action_map_editor.h"
-#include "openxr_binding_modifier_editor.h"
-#include "openxr_select_runtime.h"
+#include "../action_map/openxr_binding_modifier.h"
+#include "../action_map/openxr_haptic_feedback.h"
+#include "../util.h"
+#include "core/io/resource.h"
+#include "openxr_extension_wrapper.h"
 
-#include "editor/plugins/editor_plugin.h"
-
-class OpenXREditorPlugin : public EditorPlugin {
-	GDCLASS(OpenXREditorPlugin, EditorPlugin);
-
-	OpenXRActionMapEditor *action_map_editor = nullptr;
-	Ref<EditorInspectorPluginBindingModifier> binding_modifier_inspector_plugin = nullptr;
-#ifndef ANDROID_ENABLED
-	OpenXRSelectRuntime *select_runtime = nullptr;
-#endif
-
+class OpenXRValveAnalogThresholdExtension : public OpenXRExtensionWrapper {
 public:
-	virtual String get_name() const override { return "OpenXRPlugin"; }
-	bool has_main_screen() const override { return false; }
-	virtual void edit(Object *p_node) override;
-	virtual bool handles(Object *p_node) const override;
-	virtual void make_visible(bool p_visible) override;
+	static OpenXRValveAnalogThresholdExtension *get_singleton();
 
-	OpenXREditorPlugin();
-	~OpenXREditorPlugin();
+	OpenXRValveAnalogThresholdExtension();
+	virtual ~OpenXRValveAnalogThresholdExtension() override;
+
+	virtual HashMap<String, bool *> get_requested_extensions() override;
+
+	bool is_available();
+
+private:
+	static OpenXRValveAnalogThresholdExtension *singleton;
+
+	bool binding_modifier_ext = false;
+	bool threshold_ext = false;
 };
 
-#endif // OPENXR_EDITOR_PLUGIN_H
+class OpenXRAnalogThresholdModifier : public OpenXRActionBindingModifier {
+	GDCLASS(OpenXRAnalogThresholdModifier, OpenXRActionBindingModifier);
+
+private:
+	XrInteractionProfileAnalogThresholdVALVE analog_threshold;
+	Ref<OpenXRHapticBase> on_haptic;
+	Ref<OpenXRHapticBase> off_haptic;
+
+protected:
+	static void _bind_methods();
+
+public:
+	OpenXRAnalogThresholdModifier();
+
+	void set_on_threshold(float p_threshold);
+	float get_on_threshold() const;
+
+	void set_off_threshold(float p_threshold);
+	float get_off_threshold() const;
+
+	void set_on_haptic(const Ref<OpenXRHapticBase> &p_haptic);
+	Ref<OpenXRHapticBase> get_on_haptic() const;
+
+	void set_off_haptic(const Ref<OpenXRHapticBase> &p_haptic);
+	Ref<OpenXRHapticBase> get_off_haptic() const;
+
+	virtual String get_description() const override { return "Analog threshold modifier"; }
+	virtual PackedByteArray get_ip_modification() override;
+};
+
+#endif // OPENXR_VALVE_ANALOG_THRESHOLD_EXTENSION_H
