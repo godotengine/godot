@@ -1584,6 +1584,10 @@ RDD::TextureID RenderingDeviceDriverD3D12::_texture_create_shared_from_slice(Tex
 	return TextureID(tex_info);
 }
 
+RDD::TextureID RenderingDeviceDriverD3D12::texture_create_external(int p_width, int p_height, uint64_t p_external_buffer, uint64_t p_external_buffer_type) {
+	ERR_FAIL_V_MSG(RDD::TextureID(), "Not implemented.");
+}
+
 void RenderingDeviceDriverD3D12::texture_free(TextureID p_texture) {
 	TextureInfo *tex_info = (TextureInfo *)p_texture.id;
 	VersatileResource::free(resources_allocator, tex_info);
