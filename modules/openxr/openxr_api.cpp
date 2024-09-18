@@ -513,40 +513,66 @@ void OpenXRAPI::copy_string_to_char_buffer(const String p_string, char *p_buffer
 	}
 }
 
-bool OpenXRAPI::create_instance() {
-	// Create our OpenXR instance, this will query any registered extension wrappers for extensions we need to enable.
+PackedStringArray OpenXRAPI::get_all_requested_extensions() {
+	// This returns all extensions we will request regardless of whether they are available.
+	// This is mostly used by the editor to filter features not enabled through project settings.
 
-	// Append the extensions requested by the registered extension wrappers.
-	HashMap<String, bool *> requested_extensions;
+	PackedStringArray requested_extensions;
 	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
 		const HashMap<String, bool *> &wrapper_request_extensions = wrapper->get_requested_extensions();
 
 		for (const KeyValue<String, bool *> &requested_extension : wrapper_request_extensions) {
-			requested_extensions[requested_extension.key] = requested_extension.value;
+			if (!requested_extensions.has(requested_extension.key)) {
+				requested_extensions.push_back(requested_extension.key);
+			}
+		}
+	}
+
+	return requested_extensions;
+}
+
+bool OpenXRAPI::create_instance() {
+	// Create our OpenXR instance, this will query any registered extension wrappers for extensions we need to enable.
+
+	// We can request an extension multiple times if there are dependencies
+	struct RequestExtension {
+		String name;
+		bool *enabled;
+	};
+
+	// Find all extensions we wish to enable.
+	Vector<RequestExtension> requested_extensions;
+	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
+		const HashMap<String, bool *> &wrapper_request_extensions = wrapper->get_requested_extensions();
+
+		for (const KeyValue<String, bool *> &requested_extension : wrapper_request_extensions) {
+			requested_extensions.push_back({ requested_extension.key, requested_extension.value });
 		}
 	}
 
 	// Check which extensions are supported.
 	enabled_extensions.clear();
 
-	for (KeyValue<String, bool *> &requested_extension : requested_extensions) {
-		if (!is_extension_supported(requested_extension.key)) {
-			if (requested_extension.value == nullptr) {
+	for (RequestExtension &requested_extension : requested_extensions) {
+		if (!is_extension_supported(requested_extension.name)) {
+			if (requested_extension.enabled == nullptr) {
 				// Null means this is a mandatory extension so we fail.
-				ERR_FAIL_V_MSG(false, String("OpenXR: OpenXR Runtime does not support ") + requested_extension.key + String(" extension!"));
+				ERR_FAIL_V_MSG(false, String("OpenXR: OpenXR Runtime does not support ") + requested_extension.name + String(" extension!"));
 			} else {
 				// Set this extension as not supported.
-				*requested_extension.value = false;
+				*requested_extension.enabled = false;
 			}
-		} else if (requested_extension.value != nullptr) {
-			// Set this extension as supported.
-			*requested_extension.value = true;
-
-			// And record that we want to enable it.
-			enabled_extensions.push_back(requested_extension.key.ascii());
 		} else {
-			// Record that we want to enable this.
-			enabled_extensions.push_back(requested_extension.key.ascii());
+			if (requested_extension.enabled != nullptr) {
+				// Set this extension as supported.
+				*requested_extension.enabled = true;
+			}
+
+			// And record that we want to enable it (dependent extensions may be requested multiple times).
+			CharString ext_name = requested_extension.name.ascii();
+			if (!enabled_extensions.has(ext_name)) {
+				enabled_extensions.push_back(ext_name);
+			}
 		}
 	}
 
@@ -2765,6 +2791,25 @@ bool OpenXRAPI::xr_result(XrResult result, const char *format, Array args) const
 	return false;
 }
 
+XrPath OpenXRAPI::get_xr_path(const String &p_path) {
+	ERR_FAIL_COND_V(instance == XR_NULL_HANDLE, XR_NULL_PATH);
+
+	if (p_path.is_empty()) {
+		// This isn't necesairily an issue, so silently return a null path.
+		return XR_NULL_PATH;
+	}
+
+	XrPath path = XR_NULL_PATH;
+
+	XrResult result = xrStringToPath(instance, p_path.utf8().get_data(), &path);
+	if (XR_FAILED(result)) {
+		print_line("OpenXR: failed to get path for ", p_path, "! [", get_error_string(result), "]");
+		return XR_NULL_PATH;
+	}
+
+	return path;
+}
+
 RID OpenXRAPI::get_tracker_rid(XrPath p_path) {
 	List<RID> current;
 	tracker_owner.get_owned_list(&current);
@@ -2799,11 +2844,8 @@ RID OpenXRAPI::tracker_create(const String p_name) {
 	new_tracker.toplevel_path = XR_NULL_PATH;
 	new_tracker.active_profile_rid = RID();
 
-	XrResult result = xrStringToPath(instance, p_name.utf8().get_data(), &new_tracker.toplevel_path);
-	if (XR_FAILED(result)) {
-		print_line("OpenXR: failed to get path for ", p_name, "! [", get_error_string(result), "]");
-		return RID();
-	}
+	new_tracker.toplevel_path = get_xr_path(p_name);
+	ERR_FAIL_COND_V(new_tracker.toplevel_path == XR_NULL_PATH, RID());
 
 	return tracker_owner.make_rid(new_tracker);
 }
@@ -2894,6 +2936,19 @@ RID OpenXRAPI::action_set_create(const String p_name, const String p_localized_n
 	return action_set_owner.make_rid(action_set);
 }
 
+RID OpenXRAPI::find_action_set(const String p_name) {
+	List<RID> current;
+	action_set_owner.get_owned_list(&current);
+	for (const RID &E : current) {
+		ActionSet *action_set = action_set_owner.get_or_null(E);
+		if (action_set && action_set->name == p_name) {
+			return E;
+		}
+	}
+
+	return RID();
+}
+
 String OpenXRAPI::action_set_get_name(RID p_action_set) {
 	if (p_action_set.is_null()) {
 		return String("None");
@@ -2903,6 +2958,17 @@ String OpenXRAPI::action_set_get_name(RID p_action_set) {
 	ERR_FAIL_NULL_V(action_set, String());
 
 	return action_set->name;
+}
+
+XrActionSet OpenXRAPI::action_set_get_handle(RID p_action_set) {
+	if (p_action_set.is_null()) {
+		return XR_NULL_HANDLE;
+	}
+
+	ActionSet *action_set = action_set_owner.get_or_null(p_action_set);
+	ERR_FAIL_NULL_V(action_set, XR_NULL_HANDLE);
+
+	return action_set->handle;
 }
 
 bool OpenXRAPI::attach_action_sets(const Vector<RID> &p_action_sets) {
@@ -2987,12 +3053,12 @@ RID OpenXRAPI::get_action_rid(XrAction p_action) {
 	return RID();
 }
 
-RID OpenXRAPI::find_action(const String &p_name) {
+RID OpenXRAPI::find_action(const String &p_name, const RID &p_action_set) {
 	List<RID> current;
 	action_owner.get_owned_list(&current);
 	for (const RID &E : current) {
 		Action *action = action_owner.get_or_null(E);
-		if (action && action->name == p_name) {
+		if (action && action->name == p_name && (p_action_set.is_null() || action->action_set_rid == p_action_set)) {
 			return E;
 		}
 	}
@@ -3082,6 +3148,17 @@ String OpenXRAPI::action_get_name(RID p_action) {
 	return action->name;
 }
 
+XrAction OpenXRAPI::action_get_handle(RID p_action) {
+	if (p_action.is_null()) {
+		return XR_NULL_HANDLE;
+	}
+
+	Action *action = action_owner.get_or_null(p_action);
+	ERR_FAIL_NULL_V(action, XR_NULL_HANDLE);
+
+	return action->handle;
+}
+
 void OpenXRAPI::action_free(RID p_action) {
 	Action *action = action_owner.get_or_null(p_action);
 	ERR_FAIL_NULL(action);
@@ -3158,28 +3235,40 @@ void OpenXRAPI::interaction_profile_clear_bindings(RID p_interaction_profile) {
 	ip->bindings.clear();
 }
 
-bool OpenXRAPI::interaction_profile_add_binding(RID p_interaction_profile, RID p_action, const String p_path) {
+int OpenXRAPI::interaction_profile_add_binding(RID p_interaction_profile, RID p_action, const String p_path) {
 	InteractionProfile *ip = interaction_profile_owner.get_or_null(p_interaction_profile);
-	ERR_FAIL_NULL_V(ip, false);
+	ERR_FAIL_NULL_V(ip, -1);
 
 	if (!interaction_profile_supports_io_path(ip->name, p_path)) {
-		return false;
+		return -1;
 	}
 
 	XrActionSuggestedBinding binding;
 
 	Action *action = action_owner.get_or_null(p_action);
-	ERR_FAIL_COND_V(action == nullptr || action->handle == XR_NULL_HANDLE, false);
+	ERR_FAIL_COND_V(action == nullptr || action->handle == XR_NULL_HANDLE, -1);
 
 	binding.action = action->handle;
 
 	XrResult result = xrStringToPath(instance, p_path.utf8().get_data(), &binding.binding);
 	if (XR_FAILED(result)) {
 		print_line("OpenXR: failed to get path for ", p_path, "! [", get_error_string(result), "]");
-		return false;
+		return -1;
 	}
 
 	ip->bindings.push_back(binding);
+
+	return ip->bindings.size() - 1;
+}
+
+bool OpenXRAPI::interaction_profile_add_modifier(RID p_interaction_profile, const PackedByteArray &p_modifier) {
+	InteractionProfile *ip = interaction_profile_owner.get_or_null(p_interaction_profile);
+	ERR_FAIL_NULL_V(ip, false);
+
+	if (!p_modifier.is_empty()) {
+		// Add it to our stack.
+		ip->modifiers.push_back(p_modifier);
+	}
 
 	return true;
 }
@@ -3190,9 +3279,27 @@ bool OpenXRAPI::interaction_profile_suggest_bindings(RID p_interaction_profile) 
 	InteractionProfile *ip = interaction_profile_owner.get_or_null(p_interaction_profile);
 	ERR_FAIL_NULL_V(ip, false);
 
+	void *next = nullptr;
+
+	// Note, extensions should only add binding modifiers if they are supported, else this may fail.
+	XrBindingModificationsKHR binding_modifiers;
+	Vector<const XrBindingModificationBaseHeaderKHR *> modifiers;
+	if (!ip->modifiers.is_empty()) {
+		for (const PackedByteArray &modifier : ip->modifiers) {
+			const XrBindingModificationBaseHeaderKHR *ptr = (const XrBindingModificationBaseHeaderKHR *)modifier.ptr();
+			modifiers.push_back(ptr);
+		}
+
+		binding_modifiers.type = XR_TYPE_BINDING_MODIFICATIONS_KHR;
+		binding_modifiers.next = next;
+		binding_modifiers.bindingModificationCount = modifiers.size();
+		binding_modifiers.bindingModifications = modifiers.ptr();
+		next = &binding_modifiers;
+	}
+
 	const XrInteractionProfileSuggestedBinding suggested_bindings = {
 		XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING, // type
-		nullptr, // next
+		next, // next
 		ip->path, // interactionProfile
 		uint32_t(ip->bindings.size()), // countSuggestedBindings
 		ip->bindings.ptr() // suggestedBindings
@@ -3231,6 +3338,7 @@ void OpenXRAPI::interaction_profile_free(RID p_interaction_profile) {
 	ERR_FAIL_NULL(ip);
 
 	ip->bindings.clear();
+	ip->modifiers.clear();
 
 	interaction_profile_owner.free(p_interaction_profile);
 }
