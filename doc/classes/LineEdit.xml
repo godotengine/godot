@@ -151,10 +151,22 @@
 				Returns [code]true[/code] if the user has text in the [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url] (IME).
 			</description>
 		</method>
+		<method name="has_redo" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if a "redo" action is available.
+			</description>
+		</method>
 		<method name="has_selection" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the user has selected text.
+			</description>
+		</method>
+		<method name="has_undo" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if an "undo" action is available.
 			</description>
 		</method>
 		<method name="insert_text_at_caret">
