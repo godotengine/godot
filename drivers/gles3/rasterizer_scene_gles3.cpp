@@ -2552,6 +2552,9 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		glBindTexture(rt->view_count > 1 ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D, rt->color);
 
 		copy_effects->copy_screen(render_data.luminance_multiplier);
+
+		scene_state.enable_gl_depth_test(true);
+		scene_state.enable_gl_depth_draw(true);
 	}
 
 	RENDER_TIMESTAMP("Render Opaque Pass");

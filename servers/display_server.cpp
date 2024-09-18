@@ -1224,6 +1224,11 @@ void DisplayServer::_input_set_custom_mouse_cursor_func(const Ref<Resource> &p_i
 
 bool DisplayServer::can_create_rendering_device() {
 #if defined(RD_ENABLED)
+	RenderingDevice *device = RenderingDevice::get_singleton();
+	if (device) {
+		return true;
+	}
+
 	Error err;
 	RenderingContextDriver *rcd = nullptr;
 
