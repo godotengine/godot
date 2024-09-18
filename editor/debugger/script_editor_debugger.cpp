@@ -806,6 +806,10 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 	} else if (p_msg == "request_quit") {
 		emit_signal(SNAME("stop_requested"));
 		_stop_and_notify();
+	} else if (p_msg == "remote_node_clicked") {
+		if (!p_data.is_empty()) {
+			emit_signal(SNAME("remote_tree_select_requested"), p_data[0]);
+		}
 	} else if (p_msg == "performance:profile_names") {
 		Vector<StringName> monitors;
 		monitors.resize(p_data.size());
@@ -905,37 +909,42 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			if (is_session_active()) {
 				peer->poll();
 
-				if (camera_override == CameraOverride::OVERRIDE_2D) {
-					Dictionary state = CanvasItemEditor::get_singleton()->get_state();
-					float zoom = state["zoom"];
-					Point2 offset = state["ofs"];
-					Transform2D transform;
+				if (camera_override == CameraOverride::OVERRIDE_EDITORS) {
+					// CanvasItem Editor
+					{
+						Dictionary state = CanvasItemEditor::get_singleton()->get_state();
+						float zoom = state["zoom"];
+						Point2 offset = state["ofs"];
+						Transform2D transform;
 
-					transform.scale_basis(Size2(zoom, zoom));
-					transform.columns[2] = -offset * zoom;
+						transform.scale_basis(Size2(zoom, zoom));
+						transform.columns[2] = -offset * zoom;
 
-					Array msg;
-					msg.push_back(transform);
-					_put_msg("scene:override_camera_2D:transform", msg);
-
-				} else if (camera_override >= CameraOverride::OVERRIDE_3D_1) {
-					int viewport_idx = camera_override - CameraOverride::OVERRIDE_3D_1;
-					Node3DEditorViewport *viewport = Node3DEditor::get_singleton()->get_editor_viewport(viewport_idx);
-					Camera3D *const cam = viewport->get_camera_3d();
-
-					Array msg;
-					msg.push_back(cam->get_camera_transform());
-					if (cam->get_projection() == Camera3D::PROJECTION_ORTHOGONAL) {
-						msg.push_back(false);
-						msg.push_back(cam->get_size());
-					} else {
-						msg.push_back(true);
-						msg.push_back(cam->get_fov());
+						Array msg;
+						msg.push_back(transform);
+						_put_msg("scene:transform_camera_2d", msg);
 					}
-					msg.push_back(cam->get_near());
-					msg.push_back(cam->get_far());
-					_put_msg("scene:override_camera_3D:transform", msg);
+
+					// Node3D Editor
+					{
+						Node3DEditorViewport *viewport = Node3DEditor::get_singleton()->get_last_used_viewport();
+						const Camera3D *cam = viewport->get_camera_3d();
+
+						Array msg;
+						msg.push_back(cam->get_camera_transform());
+						if (cam->get_projection() == Camera3D::PROJECTION_ORTHOGONAL) {
+							msg.push_back(false);
+							msg.push_back(cam->get_size());
+						} else {
+							msg.push_back(true);
+							msg.push_back(cam->get_fov());
+						}
+						msg.push_back(cam->get_near());
+						msg.push_back(cam->get_far());
+						_put_msg("scene:transform_camera_3d", msg);
+					}
 				}
+
 				if (is_breaked() && can_request_idle_draw) {
 					_put_msg("servers:draw", Array());
 					can_request_idle_draw = false;
@@ -1469,23 +1478,10 @@ CameraOverride ScriptEditorDebugger::get_camera_override() const {
 }
 
 void ScriptEditorDebugger::set_camera_override(CameraOverride p_override) {
-	if (p_override == CameraOverride::OVERRIDE_2D && camera_override != CameraOverride::OVERRIDE_2D) {
-		Array msg;
-		msg.push_back(true);
-		_put_msg("scene:override_camera_2D:set", msg);
-	} else if (p_override != CameraOverride::OVERRIDE_2D && camera_override == CameraOverride::OVERRIDE_2D) {
-		Array msg;
-		msg.push_back(false);
-		_put_msg("scene:override_camera_2D:set", msg);
-	} else if (p_override >= CameraOverride::OVERRIDE_3D_1 && camera_override < CameraOverride::OVERRIDE_3D_1) {
-		Array msg;
-		msg.push_back(true);
-		_put_msg("scene:override_camera_3D:set", msg);
-	} else if (p_override < CameraOverride::OVERRIDE_3D_1 && camera_override >= CameraOverride::OVERRIDE_3D_1) {
-		Array msg;
-		msg.push_back(false);
-		_put_msg("scene:override_camera_3D:set", msg);
-	}
+	Array msg;
+	msg.push_back(p_override != CameraOverride::OVERRIDE_NONE);
+	msg.push_back(p_override == CameraOverride::OVERRIDE_EDITORS);
+	_put_msg("scene:override_cameras", msg);
 
 	camera_override = p_override;
 }
@@ -1776,6 +1772,7 @@ void ScriptEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("remote_object_updated", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("remote_object_property_updated", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::STRING, "property")));
 	ADD_SIGNAL(MethodInfo("remote_tree_updated"));
+	ADD_SIGNAL(MethodInfo("remote_tree_select_requested", PropertyInfo(Variant::NODE_PATH, "path")));
 	ADD_SIGNAL(MethodInfo("output", PropertyInfo(Variant::STRING, "msg"), PropertyInfo(Variant::INT, "level")));
 	ADD_SIGNAL(MethodInfo("stack_dump", PropertyInfo(Variant::ARRAY, "stack_dump")));
 	ADD_SIGNAL(MethodInfo("stack_frame_vars", PropertyInfo(Variant::INT, "num_vars")));
