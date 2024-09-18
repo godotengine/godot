@@ -221,7 +221,7 @@ private:
 	PopupMenu *pattern_set_tree_menu = nullptr;
 	PopupMenu *delete_pattern_set_menu = nullptr;
 	Label *pattern_sets_help_label = nullptr;
-	
+
 	ItemList *patterns_item_list = nullptr;
 	PopupMenu *delete_pattern_menu = nullptr;
 	Label *patterns_help_label = nullptr;
@@ -231,7 +231,7 @@ private:
 	void _update_patterns_list();
 	void _pattern_preview_done(Ref<TileMapPattern> p_pattern, Ref<Texture2D> p_texture);
 	void _patterns_item_list_gui_input(const Ref<InputEvent> &p_event);
-	
+
 	void _pattern_sets_display_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index);
 	void _pattern_set_menu_id_pressed(int p_id);
 
@@ -245,7 +245,7 @@ private:
 	Variant _get_drag_data_fw(const Point2 &p_point, Control *p_from_control);
 	bool _can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from_control) const;
 	void _drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from_control);
-	
+
 	void _pattern_clicked(int p_item_index, const Vector2 &p_pos, MouseButton p_mouse_button_index);
 	void _delete_pattern_menu_id_pressed(int p_id);
 	void _rename_pattern(int p_item_index);
@@ -378,11 +378,11 @@ private:
 
 	ObjectID edited_tile_map_layer_id;
 	bool is_multi_node_edit = false;
-	
+
 	bool layers_in_scene_list_cache_needs_update = false;
 	TileMapLayer *_get_edited_layer() const;
 	void _find_tile_map_layers_in_scene(Node *p_current, const Node *p_owner, Vector<TileMapLayer *> &r_list) const;
-	
+
 	void _node_change(Node *p_node);
 
 	// Vector to keep plugins.
@@ -448,7 +448,7 @@ public:
 	// Determine the amount of TileMapLayers in the scene tree.
 	inline static Vector<TileMapLayer *> tile_map_layers_in_scene_cache;
 	void _update_tile_map_layers_in_scene_list_cache();
-	Vector<TileMapLayer *> get_tile_map_layers_in_scene() const; 
+	Vector<TileMapLayer *> get_tile_map_layers_in_scene() const;
 	bool forward_canvas_gui_input(const Ref<InputEvent> &p_event);
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
 

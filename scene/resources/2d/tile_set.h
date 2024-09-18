@@ -113,8 +113,8 @@ union TileMapCell {
 
 class TileMapPattern : public Resource {
 	GDCLASS(TileMapPattern, Resource);
-	
-	int pattern_set_index = 0; 
+
+	int pattern_set_index = 0;
 	Size2i size;
 	HashMap<Vector2i, TileMapCell> pattern;
 
@@ -366,7 +366,7 @@ private:
 		Vector<Ref<TileMapPattern>> pattern_set;
 	};
 	Vector<PatternSet> pattern_sets;
-	
+
 	// CustomData
 	struct CustomDataLayer {
 		String name;
@@ -487,7 +487,7 @@ public:
 	void set_pattern_set_name(int p_pattern_set_index, String new_name);
 
 	int get_pattern_sets_count() const;
-	void add_pattern_set (int p_index = -1);
+	void add_pattern_set(int p_index = -1);
 	void remove_pattern_set(int p_index);
 	void move_pattern_set(int p_from_index, int p_to_pos);
 
@@ -543,8 +543,6 @@ public:
 
 	void cleanup_invalid_tile_proxies();
 	void clear_tile_proxies();
-
-
 
 	// Terrains.
 	RBSet<TerrainsPattern> get_terrains_pattern_set(int p_terrain_set);

@@ -404,7 +404,7 @@ public:
 	const HashMap<Vector2i, CellData> &get_tile_map_layer_data() const {
 		return tile_map_layer_data;
 	}
-	
+
 	// Rect caching.
 	Rect2 get_rect(bool &r_changed) const;
 
@@ -442,7 +442,7 @@ public:
 	bool is_cell_transposed(const Vector2i &p_coords) const;
 
 	// Patterns.
-	
+
 	Ref<TileMapPattern> get_pattern(TypedArray<Vector2i> p_coords_array);
 	void set_pattern(const Vector2i &p_position, const Ref<TileMapPattern> p_pattern);
 

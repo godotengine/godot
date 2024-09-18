@@ -29,9 +29,9 @@
 /**************************************************************************/
 
 #include "tile_map_layer.h"
-#include "editor/editor_node.h"
 #include "core/core_string_names.h"
 #include "core/io/marshalls.h"
+#include "editor/editor_node.h"
 #include "scene/2d/tile_map.h"
 #include "scene/gui/control.h"
 #include "scene/resources/world_2d.h"

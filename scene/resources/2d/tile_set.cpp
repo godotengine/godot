@@ -978,7 +978,7 @@ void TileSet::set_pattern_set_name(int p_pattern_set_index, String new_name) {
 	pattern_sets.write[p_pattern_set_index].name = new_name;
 }
 
-void TileSet::set_pattern_set(int p_pattern_set_index, Vector<Ref<TileMapPattern>> p_pattern_set) { 
+void TileSet::set_pattern_set(int p_pattern_set_index, Vector<Ref<TileMapPattern>> p_pattern_set) {
 	pattern_sets.write[p_pattern_set_index].pattern_set = p_pattern_set;
 }
 
@@ -991,7 +991,7 @@ void TileSet::add_pattern_set(int p_index) {
 
 	// Create a pattern set, set the default display name seen by the end user (e.g. Pattern Set 1), add to pattern_sets vector.
 	PatternSet newpatternset;
-	newpatternset.name = vformat( "Pattern Set %d", p_index);
+	newpatternset.name = vformat("Pattern Set %d", p_index);
 	pattern_sets.insert(p_index, newpatternset);
 	notify_property_list_changed();
 	emit_changed();
@@ -1017,7 +1017,7 @@ void TileSet::move_pattern_set(int p_from_index, int p_to_pos) {
 	emit_changed();
 }
 
-void TileSet::remove_pattern_set(int p_index){
+void TileSet::remove_pattern_set(int p_index) {
 	ERR_FAIL_INDEX(p_index, pattern_sets.size());
 	pattern_sets.remove_at(p_index);
 
@@ -1039,11 +1039,11 @@ int TileSet::get_patterns_count(int p_pattern_set_index) const {
 }
 
 int TileSet::add_pattern(Ref<TileMapPattern> p_pattern, int p_pattern_set_index, int p_pattern_index) {
-	// Check for valid pointer, non-empty pattern, and appropriate index. 
+	// Check for valid pointer, non-empty pattern, and appropriate index.
 	ERR_FAIL_COND_V(!p_pattern.is_valid(), -1);
 	ERR_FAIL_COND_V_MSG(p_pattern->is_empty(), -1, "Cannot add an empty pattern to the TileSet.");
 	ERR_FAIL_COND_V(p_pattern_set_index > get_pattern_sets_count(), -1);
-	
+
 	// Make a reference to the pattern set we passed in. If no pattern index was passed in, set the index to the position at the end of the pattern set array.
 	Vector<Ref<TileMapPattern>> &patterns = pattern_sets.write[p_pattern_set_index].pattern_set;
 	if (p_pattern_index < 0) {
@@ -1084,7 +1084,7 @@ void TileSet::_move_pattern(int p_from_index, int p_to_pos, int p_pattern_set_in
 	}
 	// Going forwards, the user is trying to swap with a higher indexed pattern.
 	else if (p_to_pos > p_from_index) {
-		patterns.insert(p_to_pos+1, patterns[p_from_index]);
+		patterns.insert(p_to_pos + 1, patterns[p_from_index]);
 		patterns.remove_at(p_from_index);
 	}
 	notify_property_list_changed();
@@ -4157,10 +4157,9 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 				   }
 
 			   }*/
-	
 
 #ifndef DISABLE_DEPRECATED
-}
+	}
 #endif // DISABLE_DEPRECATED
 
 	return false;
@@ -4289,18 +4288,15 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 		if (components[1] == "name") {
 			r_ret = get_pattern_set_name(pattern_set_index);
 			return true;
-		}
-		else if (components[1] == "pattern_set") {
+		} else if (components[1] == "pattern_set") {
 			Vector<Ref<TileMapPattern>> vector_to_convert = pattern_sets[pattern_set_index].pattern_set;
 			Array converted_array = to_array(vector_to_convert);
 
 			r_ret = converted_array;
 			return true;
 		}
-
 	}
 	return false;
-	
 }
 
 void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
@@ -4384,7 +4380,7 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int pattern_set_index = 0; pattern_set_index < pattern_sets.size(); pattern_set_index++) {
 		p_list->push_back(PropertyInfo(Variant::STRING, vformat("pattern_set_%d/name", pattern_set_index))), PROPERTY_HINT_TYPE_STRING, "", PROPERTY_USAGE_NO_EDITOR;
 		p_list->push_back(PropertyInfo(Variant::ARRAY, vformat("pattern_set_%d/pattern_set", pattern_set_index), PROPERTY_HINT_ARRAY_TYPE, "TileMapPattern"));
-	} 
+	}
 }
 
 void TileSet::_validate_property(PropertyInfo &p_property) const {
@@ -4516,7 +4512,7 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_pattern_set", "pattern_set_index"), &TileSet::remove_pattern_set);
 	ClassDB::bind_method(D_METHOD("move_pattern_set", "from_index", "to_index"), &TileSet::move_pattern_set);
 	ClassDB::bind_method(D_METHOD("get_patterns_count", "pattern_set_index"), &TileSet::get_patterns_count);
-	
+
 	ADD_GROUP("Rendering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uv_clipping"), "set_uv_clipping", "is_uv_clipping");
 	ADD_ARRAY("occlusion_layers", "occlusion_layer_");
@@ -5091,7 +5087,7 @@ void TileSetAtlasSource::_get_property_list(List<PropertyInfo> *p_list) const {
 			}
 			tile_property_list.push_back(property_info);
 		}
-		
+
 		for (const KeyValue<int, TileData *> &E_alternative : E_tile.value.alternatives) {
 			// Add a dummy property to show the alternative exists.
 			tile_property_list.push_back(PropertyInfo(Variant::INT, vformat("%d", E_alternative.key), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
@@ -5109,7 +5105,7 @@ void TileSetAtlasSource::_get_property_list(List<PropertyInfo> *p_list) const {
 				tile_property_list.push_back(alternative_property_info);
 			}
 		}
-		
+
 		// Add all alternative.
 		for (PropertyInfo &tile_property_info : tile_property_list) {
 			tile_property_info.name = vformat("%s/%s", vformat("%d:%d", E_tile.key.x, E_tile.key.y), tile_property_info.name);
