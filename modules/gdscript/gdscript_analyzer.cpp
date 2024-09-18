@@ -2602,7 +2602,7 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 					for (int i = 0; i < vec_size; i++) {
 						List<Pair<GDScriptParser::DataType, GDScriptParser::DataType>>::Element *j = match_vector.find(pattern_to_match->get());
 
-						if (j != nullptr ) {
+						if (j != nullptr) {
 							j->erase();
 							List<Pair<GDScriptParser::DataType, GDScriptParser::DataType>>::Element *temp = pattern_to_match->next();
 							pattern_to_match->erase();
