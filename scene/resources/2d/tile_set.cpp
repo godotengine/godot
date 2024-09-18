@@ -1045,47 +1045,47 @@ int TileSet::add_pattern(Ref<TileMapPattern> p_pattern, int p_pattern_set_index,
 	ERR_FAIL_COND_V(p_pattern_set_index > get_pattern_sets_count(), -1);
 
 	// Make a reference to the pattern set we passed in. If no pattern index was passed in, set the index to the position at the end of the pattern set array.
-	Vector<Ref<TileMapPattern>> &patterns = pattern_sets.write[p_pattern_set_index].pattern_set;
+	Vector<Ref<TileMapPattern>> &patterns_list = pattern_sets.write[p_pattern_set_index].pattern_set;
 	if (p_pattern_index < 0) {
-		p_pattern_index = patterns.size();
+		p_pattern_index = patterns_list.size();
 	}
-	ERR_FAIL_COND_V(p_pattern_index > patterns.size(), -1);
+	ERR_FAIL_COND_V(p_pattern_index > patterns_list.size(), -1);
 	p_pattern->set_pattern_set_index(p_pattern_set_index);
-	patterns.insert(p_pattern_index, p_pattern);
+	patterns_list.insert(p_pattern_index, p_pattern);
 	emit_changed();
 	return p_pattern_index;
 }
 
 Ref<TileMapPattern> TileSet::get_pattern(int p_pattern_set_index, int p_index) const {
-	const Vector<Ref<TileMapPattern>> &patterns = pattern_sets[p_pattern_set_index].pattern_set;
-	ERR_FAIL_INDEX_V(p_index, (int)patterns.size(), Ref<TileMapPattern>());
-	patterns[p_index]->set_pattern_set_index(p_pattern_set_index);
-	return patterns[p_index];
+	const Vector<Ref<TileMapPattern>> &patterns_list = pattern_sets[p_pattern_set_index].pattern_set;
+	ERR_FAIL_INDEX_V(p_index, (int)patterns_list.size(), Ref<TileMapPattern>());
+	patterns_list[p_index]->set_pattern_set_index(p_pattern_set_index);
+	return patterns_list[p_index];
 }
 
 void TileSet::remove_pattern(int p_pattern_set_index, int p_index) {
-	Vector<Ref<TileMapPattern>> &patterns = pattern_sets.write[p_pattern_set_index].pattern_set;
-	ERR_FAIL_INDEX(p_index, (int)patterns.size());
-	patterns.remove_at(p_index);
+	Vector<Ref<TileMapPattern>> &patterns_list = pattern_sets.write[p_pattern_set_index].pattern_set;
+	ERR_FAIL_INDEX(p_index, (int)patterns_list.size());
+	patterns_list.remove_at(p_index);
 	emit_changed();
 }
 
 void TileSet::_move_pattern(int p_from_index, int p_to_pos, int p_pattern_set_index) {
 	ERR_FAIL_INDEX(p_pattern_set_index, pattern_sets.size());
-	Vector<Ref<TileMapPattern>> &patterns = pattern_sets.write[p_pattern_set_index].pattern_set;
+	Vector<Ref<TileMapPattern>> &patterns_list = pattern_sets.write[p_pattern_set_index].pattern_set;
 
-	ERR_FAIL_INDEX(p_from_index, patterns.size());
-	ERR_FAIL_INDEX(p_to_pos, patterns.size() + 1);
+	ERR_FAIL_INDEX(p_from_index, patterns_list.size());
+	ERR_FAIL_INDEX(p_to_pos, patterns_list.size() + 1);
 
 	// Going backwards, the user is trying to swap to a lower index.
 	if (p_to_pos < p_from_index) {
-		patterns.insert(p_to_pos, patterns[p_from_index]);
-		patterns.remove_at(p_from_index + 1);
+		patterns_list.insert(p_to_pos, patterns_list[p_from_index]);
+		patterns_list.remove_at(p_from_index + 1);
 	}
 	// Going forwards, the user is trying to swap with a higher indexed pattern.
 	else if (p_to_pos > p_from_index) {
-		patterns.insert(p_to_pos + 1, patterns[p_from_index]);
-		patterns.remove_at(p_from_index);
+		patterns_list.insert(p_to_pos + 1, patterns_list[p_from_index]);
+		patterns_list.remove_at(p_from_index);
 	}
 	notify_property_list_changed();
 	emit_changed();
@@ -4118,6 +4118,13 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 
 		} else if (components.size() >= 2 && components[0].begins_with("pattern_set_") && components[0].trim_prefix("pattern_set_").is_valid_int()) {
 			// Patterns
+			if (!patterns.is_empty()) { // Special if statement for importing old TileMapPatterns for backwards compatability. Notice the clear() at the end. 
+				add_pattern_set();
+				for (unsigned int i = 0; i < patterns.size(); i++) {
+					add_pattern(patterns[i], 0, i);
+					//patterns.clear();
+				}
+			}
 			int pattern_set_index = components[0].trim_prefix("pattern_set_").to_int();
 			ERR_FAIL_COND_V(pattern_set_index < 0, false);
 			if (components[1] == "name") {
@@ -4302,6 +4309,7 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
+	
 	PropertyInfo property_info;
 	// Rendering.
 	p_list->push_back(PropertyInfo(Variant::NIL, GNAME("Rendering", ""), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));

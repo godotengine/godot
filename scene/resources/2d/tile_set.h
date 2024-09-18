@@ -366,7 +366,8 @@ private:
 		Vector<Ref<TileMapPattern>> pattern_set;
 	};
 	Vector<PatternSet> pattern_sets;
-
+	
+	LocalVector<Ref<TileMapPattern>> patterns; // (Added in 4.4) Kept for backwards compatability/importing old TileMapPatterns. Should be removed in version 5 along with associated code in TileSet::set()
 	// CustomData
 	struct CustomDataLayer {
 		String name;
