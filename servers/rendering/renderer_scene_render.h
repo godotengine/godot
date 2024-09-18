@@ -338,6 +338,7 @@ public:
 
 	virtual void decals_set_filter(RS::DecalFilter p_filter) = 0;
 	virtual void light_projectors_set_filter(RS::LightProjectorFilter p_filter) = 0;
+	virtual void lightmaps_set_bicubic_filter(bool p_enable) = 0;
 
 	virtual void update() = 0;
 	virtual ~RendererSceneRender() {}

@@ -176,7 +176,7 @@ public:
 		uint32_t height;
 		uint32_t depth;
 		Image::Format format;
-		int bytes;
+		int64_t bytes;
 		String path;
 	};
 
@@ -426,6 +426,11 @@ public:
 		MULTIMESH_TRANSFORM_3D,
 	};
 
+	enum MultimeshPhysicsInterpolationQuality {
+		MULTIMESH_INTERP_QUALITY_FAST,
+		MULTIMESH_INTERP_QUALITY_HIGH,
+	};
+
 	virtual void multimesh_allocate_data(RID p_multimesh, int p_instances, MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false) = 0;
 	virtual int multimesh_get_instance_count(RID p_multimesh) const = 0;
 
@@ -448,6 +453,12 @@ public:
 
 	virtual void multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_buffer) = 0;
 	virtual Vector<float> multimesh_get_buffer(RID p_multimesh) const = 0;
+
+	// Interpolation.
+	virtual void multimesh_set_buffer_interpolated(RID p_multimesh, const Vector<float> &p_buffer_curr, const Vector<float> &p_buffer_prev) = 0;
+	virtual void multimesh_set_physics_interpolated(RID p_multimesh, bool p_interpolated) = 0;
+	virtual void multimesh_set_physics_interpolation_quality(RID p_multimesh, MultimeshPhysicsInterpolationQuality p_quality) = 0;
+	virtual void multimesh_instance_reset_physics_interpolation(RID p_multimesh, int p_index) = 0;
 
 	virtual void multimesh_set_visible_instances(RID p_multimesh, int p_visible) = 0;
 	virtual int multimesh_get_visible_instances(RID p_multimesh) const = 0;
@@ -686,6 +697,8 @@ public:
 	virtual PackedInt32Array lightmap_get_probe_capture_bsp_tree(RID p_lightmap) const = 0;
 
 	virtual void lightmap_set_probe_capture_update_speed(float p_speed) = 0;
+
+	virtual void lightmaps_set_bicubic_filter(bool p_enable) = 0;
 
 	/* PARTICLES API */
 
@@ -1789,6 +1802,7 @@ VARIANT_ENUM_CAST(RenderingServer::ArrayCustomFormat);
 VARIANT_ENUM_CAST(RenderingServer::PrimitiveType);
 VARIANT_ENUM_CAST(RenderingServer::BlendShapeMode);
 VARIANT_ENUM_CAST(RenderingServer::MultimeshTransformFormat);
+VARIANT_ENUM_CAST(RenderingServer::MultimeshPhysicsInterpolationQuality);
 VARIANT_ENUM_CAST(RenderingServer::LightType);
 VARIANT_ENUM_CAST(RenderingServer::LightParam);
 VARIANT_ENUM_CAST(RenderingServer::LightBakeMode);

@@ -563,9 +563,17 @@ void RenderForwardMobile::_setup_lightmaps(const RenderDataRD *p_render_data, co
 
 		RID lightmap = light_storage->lightmap_instance_get_lightmap(p_lightmaps[i]);
 
+		// Transform (for directional lightmaps).
 		Basis to_lm = light_storage->lightmap_instance_get_transform(p_lightmaps[i]).basis.inverse() * p_cam_transform.basis;
 		to_lm = to_lm.inverse().transposed(); //will transform normals
 		RendererRD::MaterialStorage::store_transform_3x3(to_lm, scene_state.lightmaps[i].normal_xform);
+
+		// Light texture size.
+		Vector2i lightmap_size = light_storage->lightmap_get_light_texture_size(lightmap);
+		scene_state.lightmaps[i].texture_size[0] = lightmap_size[0];
+		scene_state.lightmaps[i].texture_size[1] = lightmap_size[1];
+
+		// Exposure.
 		scene_state.lightmaps[i].exposure_normalization = 1.0;
 		if (p_render_data->camera_attributes.is_valid()) {
 			float baked_exposure = light_storage->lightmap_get_baked_exposure_normalization(lightmap);
@@ -939,10 +947,13 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	}
 
 	{
+		RDD::BreadcrumbMarker breadcrumb;
 		if (rb_data.is_valid()) {
 			RD::get_singleton()->draw_command_begin_label("Render 3D Pass");
+			breadcrumb = RDD::BreadcrumbMarker::OPAQUE_PASS;
 		} else {
 			RD::get_singleton()->draw_command_begin_label("Render Reflection Probe Pass");
+			breadcrumb = RDD::BreadcrumbMarker::REFLECTION_PROBES;
 		}
 
 		// opaque pass
@@ -984,7 +995,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			}
 		}
 
-		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, load_color ? RD::INITIAL_ACTION_LOAD : RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, c, 0.0, 0);
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, load_color ? RD::INITIAL_ACTION_LOAD : RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, c, 0.0, 0, Rect2(), breadcrumb);
 		RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(framebuffer);
 
 		if (copy_canvas) {
@@ -1081,7 +1092,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				render_list_params.framebuffer_format = fb_format;
 				render_list_params.subpass = RD::get_singleton()->draw_list_get_current_pass(); // Should now always be 0.
 
-				draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE);
+				draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, Vector<Color>(), 0, 0, Rect2(), breadcrumb);
 				_render_list(draw_list, fb_format, &render_list_params, 0, render_list_params.element_count);
 				RD::get_singleton()->draw_list_end();
 
@@ -1873,39 +1884,27 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 
 		GeometryInstanceSurfaceDataCache *surf = inst->surface_caches;
 
+		float lod_distance = 0.0;
+
+		if (p_render_data->scene_data->cam_orthogonal) {
+			lod_distance = 1.0;
+		} else {
+			Vector3 aabb_min = inst->transformed_aabb.position;
+			Vector3 aabb_max = inst->transformed_aabb.position + inst->transformed_aabb.size;
+			Vector3 camera_position = p_render_data->scene_data->main_cam_transform.origin;
+			Vector3 surface_distance = Vector3(0.0, 0.0, 0.0).max(aabb_min - camera_position).max(camera_position - aabb_max);
+
+			lod_distance = surface_distance.length();
+		}
+
 		while (surf) {
 			surf->sort.uses_lightmap = 0;
 
 			// LOD
 
 			if (p_render_data->scene_data->screen_mesh_lod_threshold > 0.0 && mesh_storage->mesh_surface_has_lod(surf->surface)) {
-				float distance = 0.0;
-
-				// Check if camera is NOT inside the mesh AABB.
-				if (!inst->transformed_aabb.has_point(p_render_data->scene_data->main_cam_transform.origin)) {
-					// Get the LOD support points on the mesh AABB.
-					Vector3 lod_support_min = inst->transformed_aabb.get_support(p_render_data->scene_data->main_cam_transform.basis.get_column(Vector3::AXIS_Z));
-					Vector3 lod_support_max = inst->transformed_aabb.get_support(-p_render_data->scene_data->main_cam_transform.basis.get_column(Vector3::AXIS_Z));
-
-					// Get the distances to those points on the AABB from the camera origin.
-					float distance_min = (float)p_render_data->scene_data->main_cam_transform.origin.distance_to(lod_support_min);
-					float distance_max = (float)p_render_data->scene_data->main_cam_transform.origin.distance_to(lod_support_max);
-
-					if (distance_min * distance_max < 0.0) {
-						//crossing plane
-						distance = 0.0;
-					} else if (distance_min >= 0.0) {
-						distance = distance_min;
-					} else if (distance_max <= 0.0) {
-						distance = -distance_max;
-					}
-				}
-				if (p_render_data->scene_data->cam_orthogonal) {
-					distance = 1.0;
-				}
-
 				uint32_t indices = 0;
-				surf->lod_index = mesh_storage->mesh_surface_get_lod(surf->surface, inst->lod_model_scale * inst->lod_bias, distance * p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, indices);
+				surf->lod_index = mesh_storage->mesh_surface_get_lod(surf->surface, inst->lod_model_scale * inst->lod_bias, lod_distance * p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, indices);
 				if (p_render_data->render_info) {
 					indices = _indices_to_primitives(surf->primitive, indices);
 					if (p_render_list == RENDER_LIST_OPAQUE) { //opaque
@@ -2173,9 +2172,7 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 			} break;
 		}
 
-		PipelineCacheRD *pipeline = nullptr;
-
-		pipeline = &shader->pipelines[cull_variant][primitive][shader_version];
+		PipelineCacheRD *pipeline = &shader->pipelines[cull_variant][primitive][shader_version];
 
 		RD::VertexFormatID vertex_format = -1;
 		RID vertex_array_rd;
@@ -2205,8 +2202,6 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 		RID pipeline_rd = pipeline->get_render_pipeline(vertex_format, framebuffer_format, p_params->force_wireframe, p_params->subpass, base_spec_constants);
 
 		if (pipeline_rd != prev_pipeline_rd) {
-			// checking with prev shader does not make so much sense, as
-			// the pipeline may still be different.
 			RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, pipeline_rd);
 			prev_pipeline_rd = pipeline_rd;
 		}
@@ -2778,6 +2773,11 @@ void RenderForwardMobile::_update_shader_quality_settings() {
 			light_projectors_get_filter() == RS::LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS ||
 			light_projectors_get_filter() == RS::LIGHT_PROJECTOR_FILTER_NEAREST_MIPMAPS_ANISOTROPIC ||
 			light_projectors_get_filter() == RS::LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS_ANISOTROPIC;
+
+	spec_constants.push_back(sc);
+
+	sc.constant_id = SPEC_CONSTANT_USE_LIGHTMAP_BICUBIC_FILTER;
+	sc.bool_value = lightmap_filter_bicubic_get();
 
 	spec_constants.push_back(sc);
 

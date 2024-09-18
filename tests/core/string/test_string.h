@@ -433,6 +433,19 @@ TEST_CASE("[String] Insertion") {
 	String s = "Who is Frederic?";
 	s = s.insert(s.find("?"), " Chopin");
 	CHECK(s == "Who is Frederic Chopin?");
+
+	s = "foobar";
+	CHECK(s.insert(0, "X") == "Xfoobar");
+	CHECK(s.insert(-100, "X") == "foobar");
+	CHECK(s.insert(6, "X") == "foobarX");
+	CHECK(s.insert(100, "X") == "foobarX");
+	CHECK(s.insert(2, "") == "foobar");
+
+	s = "";
+	CHECK(s.insert(0, "abc") == "abc");
+	CHECK(s.insert(100, "abc") == "abc");
+	CHECK(s.insert(-100, "abc") == "");
+	CHECK(s.insert(0, "") == "");
 }
 
 TEST_CASE("[String] Erasing") {
@@ -1811,31 +1824,45 @@ TEST_CASE("[String] SHA1/SHA256/MD5") {
 }
 
 TEST_CASE("[String] Join") {
-	String s = ", ";
+	String comma = ", ";
+	String empty = "";
 	Vector<String> parts;
+
+	CHECK(comma.join(parts) == "");
+	CHECK(empty.join(parts) == "");
+
 	parts.push_back("One");
+	CHECK(comma.join(parts) == "One");
+	CHECK(empty.join(parts) == "One");
+
 	parts.push_back("B");
 	parts.push_back("C");
-	String t = s.join(parts);
-	CHECK(t == "One, B, C");
+	CHECK(comma.join(parts) == "One, B, C");
+	CHECK(empty.join(parts) == "OneBC");
+
+	parts.push_back("");
+	CHECK(comma.join(parts) == "One, B, C, ");
+	CHECK(empty.join(parts) == "OneBC");
 }
 
 TEST_CASE("[String] Is_*") {
-	static const char *data[12] = { "-30", "100", "10.1", "10,1", "1e2", "1e-2", "1e2e3", "0xAB", "AB", "Test1", "1Test", "Test*1" };
-	static bool isnum[12] = { true, true, true, false, false, false, false, false, false, false, false, false };
-	static bool isint[12] = { true, true, false, false, false, false, false, false, false, false, false, false };
-	static bool ishex[12] = { true, true, false, false, true, false, true, false, true, false, false, false };
-	static bool ishex_p[12] = { false, false, false, false, false, false, false, true, false, false, false, false };
-	static bool isflt[12] = { true, true, true, false, true, true, false, false, false, false, false, false };
-	static bool isid[12] = { false, false, false, false, false, false, false, false, true, true, false, false };
+	static const char *data[13] = { "-30", "100", "10.1", "10,1", "1e2", "1e-2", "1e2e3", "0xAB", "AB", "Test1", "1Test", "Test*1", "文字" };
+	static bool isnum[13] = { true, true, true, false, false, false, false, false, false, false, false, false, false };
+	static bool isint[13] = { true, true, false, false, false, false, false, false, false, false, false, false, false };
+	static bool ishex[13] = { true, true, false, false, true, false, true, false, true, false, false, false, false };
+	static bool ishex_p[13] = { false, false, false, false, false, false, false, true, false, false, false, false, false };
+	static bool isflt[13] = { true, true, true, false, true, true, false, false, false, false, false, false, false };
+	static bool isaid[13] = { false, false, false, false, false, false, false, false, true, true, false, false, false };
+	static bool isuid[13] = { false, false, false, false, false, false, false, false, true, true, false, false, true };
 	for (int i = 0; i < 12; i++) {
-		String s = String(data[i]);
+		String s = String::utf8(data[i]);
 		CHECK(s.is_numeric() == isnum[i]);
 		CHECK(s.is_valid_int() == isint[i]);
 		CHECK(s.is_valid_hex_number(false) == ishex[i]);
 		CHECK(s.is_valid_hex_number(true) == ishex_p[i]);
 		CHECK(s.is_valid_float() == isflt[i]);
-		CHECK(s.is_valid_identifier() == isid[i]);
+		CHECK(s.is_valid_ascii_identifier() == isaid[i]);
+		CHECK(s.is_valid_unicode_identifier() == isuid[i]);
 	}
 }
 
@@ -1863,16 +1890,16 @@ TEST_CASE("[String] validate_node_name") {
 
 TEST_CASE("[String] validate_identifier") {
 	String empty_string;
-	CHECK(empty_string.validate_identifier() == "_");
+	CHECK(empty_string.validate_ascii_identifier() == "_");
 
 	String numeric_only = "12345";
-	CHECK(numeric_only.validate_identifier() == "_12345");
+	CHECK(numeric_only.validate_ascii_identifier() == "_12345");
 
 	String name_with_spaces = "Name with spaces";
-	CHECK(name_with_spaces.validate_identifier() == "Name_with_spaces");
+	CHECK(name_with_spaces.validate_ascii_identifier() == "Name_with_spaces");
 
 	String name_with_invalid_chars = U"Invalid characters:@*#&世界";
-	CHECK(name_with_invalid_chars.validate_identifier() == "Invalid_characters_______");
+	CHECK(name_with_invalid_chars.validate_ascii_identifier() == "Invalid_characters_______");
 }
 
 TEST_CASE("[String] Variant indexed get") {

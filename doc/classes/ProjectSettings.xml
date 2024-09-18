@@ -23,7 +23,6 @@
 				- [code]"name"[/code]: [String] (the property's name)
 				- [code]"type"[/code]: [int] (see [enum Variant.Type])
 				- optionally [code]"hint"[/code]: [int] (see [enum PropertyHint]) and [code]"hint_string"[/code]: [String]
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				ProjectSettings.set("category/property_name", 0)
@@ -85,7 +84,6 @@
 			<param index="1" name="default_value" type="Variant" default="null" />
 			<description>
 				Returns the value of the setting identified by [param name]. If the setting doesn't exist and [param default_value] is specified, the value of [param default_value] is returned. Otherwise, [code]null[/code] is returned.
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				print(ProjectSettings.get_setting("application/config/name"))
@@ -104,8 +102,7 @@
 			<param index="0" name="name" type="StringName" />
 			<description>
 				Similar to [method get_setting], but applies feature tag overrides if any exists and is valid.
-				[b]Example:[/b]
-				If the following setting override exists "application/config/name.windows", and the following code is executed:
+				[b]Example:[/b]	If the setting override [code]"application/config/name.windows"[/code] exists, and the following code is executed on a [i]Windows[/i] operating system, the overridden setting is printed instead:
 				[codeblocks]
 				[gdscript]
 				print(ProjectSettings.get_setting_with_override("application/config/name"))
@@ -114,7 +111,6 @@
 				GD.Print(ProjectSettings.GetSettingWithOverride("application/config/name"));
 				[/csharp]
 				[/codeblocks]
-				Then the overridden setting will be returned instead if the project is running on the [i]Windows[/i] operating system.
 			</description>
 		</method>
 		<method name="globalize_path" qualifiers="const">
@@ -224,7 +220,6 @@
 			<param index="1" name="value" type="Variant" />
 			<description>
 				Sets the value of a setting.
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				ProjectSettings.set_setting("application/config/name", "Example")
@@ -533,6 +528,9 @@
 		<member name="debug/gdscript/warnings/integer_division" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when dividing an integer by another integer (the decimal part will be discarded).
 		</member>
+		<member name="debug/gdscript/warnings/missing_tool" type="int" setter="" getter="" default="1">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when the base class script has the [code]@tool[/code] annotation, but the current class script does not have it.
+		</member>
 		<member name="debug/gdscript/warnings/narrowing_conversion" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when passing a floating-point value to a function that expects an integer (it will be converted and lose precision).
 		</member>
@@ -817,9 +815,6 @@
 		</member>
 		<member name="display/window/energy_saving/keep_screen_on" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], keeps the screen on (even in case of inactivity), so the screensaver does not take over. Works on desktop and mobile platforms.
-		</member>
-		<member name="display/window/energy_saving/keep_screen_on.editor_hint" type="bool" setter="" getter="" default="false">
-			Editor-only override for [member display/window/energy_saving/keep_screen_on]. Does not affect running project.
 		</member>
 		<member name="display/window/handheld/orientation" type="int" setter="" getter="" default="0">
 			The default screen orientation to use on mobile devices. See [enum DisplayServer.ScreenOrientation] for possible values.
@@ -1389,6 +1384,10 @@
 		</member>
 		<member name="input/ui_undo" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to undo the most recent action.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_unicode_start" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to start Unicode character hexadecimal code input in a text field.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_up" type="Dictionary" setter="" getter="">
@@ -2334,7 +2333,6 @@
 			If [code]true[/code], the renderer will interpolate the transforms of physics objects between the last two transforms, so that smooth motion is seen even when physics ticks do not coincide with rendered frames. See also [member Node.physics_interpolation_mode] and [method Node.reset_physics_interpolation].
 			[b]Note:[/b] If [code]true[/code], the physics jitter fix should be disabled by setting [member physics/common/physics_jitter_fix] to [code]0.0[/code].
 			[b]Note:[/b] This property is only read when the project starts. To toggle physics interpolation at runtime, set [member SceneTree.physics_interpolation] instead.
-			[b]Note:[/b] This feature is currently only implemented in the 2D renderer.
 		</member>
 		<member name="physics/common/physics_jitter_fix" type="float" setter="" getter="" default="0.5">
 			Controls how much physics ticks are synchronized with real time. For 0 or less, the ticks are synchronized. Such values are recommended for network games, where clock synchronization matters. Higher values cause higher deviation of in-game clock and real clock, but allows smoothing out framerate jitters. The default value of 0.5 should be good enough for most; values above 2 could cause the game to react to dropped frames with a noticeable delay and are not recommended.
@@ -2346,6 +2344,9 @@
 			The number of fixed iterations per second. This controls how often physics simulation and [method Node._physics_process] methods are run. See also [member application/run/max_fps].
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_ticks_per_second] instead.
 			[b]Note:[/b] Only [member physics/common/max_physics_steps_per_frame] physics ticks may be simulated per rendered frame at most. If more physics ticks have to be simulated per rendered frame to keep up with rendering, the project will appear to slow down (even if [code]delta[/code] is used consistently in physics calculations). Therefore, it is recommended to also increase [member physics/common/max_physics_steps_per_frame] if increasing [member physics/common/physics_ticks_per_second] significantly above its default value.
+		</member>
+		<member name="rendering/2d/batching/item_buffer_size" type="int" setter="" getter="" default="16384">
+			Maximum number of canvas item commands that can be batched into a single draw call.
 		</member>
 		<member name="rendering/2d/sdf/oversize" type="int" setter="" getter="" default="1">
 			Controls how much of the original viewport size should be covered by the 2D signed distance field. This SDF can be sampled in [CanvasItem] shaders and is used for [GPUParticles2D] collision. Higher values allow portions of occluders located outside the viewport to still be taken into account in the generated signed distance field, at the cost of performance. If you notice particles falling through [LightOccluder2D]s as the occluders leave the viewport, increase this setting.
@@ -2526,8 +2527,8 @@
 			[b]Note:[/b] This setting is implemented only on Linux/X11.
 		</member>
 		<member name="rendering/gl_compatibility/fallback_to_native" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], the compatibility renderer will fall back to native OpenGL if ANGLE over Metal is not supported.
-			[b]Note:[/b] This setting is implemented only on macOS.
+			If [code]true[/code], the compatibility renderer will fall back to native OpenGL if ANGLE is not supported, or ANGLE dynamic libraries aren't found.
+			[b]Note:[/b] This setting is implemented on macOS and Windows.
 		</member>
 		<member name="rendering/gl_compatibility/force_angle_on_devices" type="Array" setter="" getter="">
 			An [Array] of devices which should always use the ANGLE renderer.
@@ -2603,6 +2604,10 @@
 			- AMD GPUs: HIP libraries
 			- Intel GPUs: SYCL libraries
 			If no GPU acceleration is configured on the system, multi-threaded CPU-based denoising will be performed instead. This CPU-based denoising is significantly slower than the JNLM denoiser in most cases.
+		</member>
+		<member name="rendering/lightmapping/lightmap_gi/use_bicubic_filter" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], applies a bicubic filter during lightmap sampling. This makes lightmaps look much smoother, at a moderate performance cost.
+			[b]Note:[/b] The bicubic filter exaggerates the 'bleeding' effect that occurs when a lightmap's resolution is low enough.
 		</member>
 		<member name="rendering/lightmapping/primitive_meshes/texel_size" type="float" setter="" getter="" default="0.2">
 			The texel_size that is used to calculate the [member Mesh.lightmap_size_hint] on [PrimitiveMesh] resources if [member PrimitiveMesh.add_uv2] is enabled.
@@ -2690,6 +2695,8 @@
 		<member name="rendering/limits/spatial_indexer/update_iterations_per_frame" type="int" setter="" getter="" default="10">
 		</member>
 		<member name="rendering/limits/time/time_rollover_secs" type="float" setter="" getter="" default="3600">
+			Maximum time (in seconds) before the [code]TIME[/code] shader built-in variable rolls over. The [code]TIME[/code] variable increments by [code]delta[/code] each frame, and when it exceeds this value, it rolls over to [code]0.0[/code]. Since large floating-point values are less precise than small floating-point values, this should be set as low as possible to maximize the precision of the [code]TIME[/code] built-in variable in shaders. This is especially important on mobile platforms where precision in shaders is significantly reduced. However, if this is set too low, shader animations may appear to restart from the beginning while the project is running.
+			On desktop platforms, values below [code]4096[/code] are recommended, ideally below [code]2048[/code]. On mobile platforms, values below [code]64[/code] are recommended, ideally below [code]32[/code].
 		</member>
 		<member name="rendering/mesh_lod/lod_change/threshold_pixels" type="float" setter="" getter="" default="1.0">
 			The automatic LOD bias to use for meshes rendered within the [ReflectionProbe]. Higher values will use less detailed versions of meshes that have LOD variations generated. If set to [code]0.0[/code], automatic LOD is disabled. Increase [member rendering/mesh_lod/lod_change/threshold_pixels] to improve performance at the cost of geometry detail.
@@ -2887,6 +2894,14 @@
 		<member name="rendering/textures/lossless_compression/force_png" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import lossless textures using the PNG format. Otherwise, it will default to using WebP.
 		</member>
+		<member name="rendering/textures/vram_compression/cache_gpu_compressor" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the GPU texture compressor will cache the local RenderingDevice and its resources (shaders and pipelines), allowing for faster subsequent imports at a memory cost.
+		</member>
+		<member name="rendering/textures/vram_compression/compress_with_gpu" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the texture importer will utilize the GPU for compressing textures, improving the import time of large images.
+			[b]Note:[/b] This setting requires either Vulkan or D3D12 available as a rendering backend.
+			[b]Note:[/b] Currently this only affects BC1 and BC6H compression, which are used on Desktop and Console for fully opaque and HDR images respectively.
+		</member>
 		<member name="rendering/textures/vram_compression/import_etc2_astc" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the Ericsson Texture Compression 2 algorithm for lower quality textures and normal maps and Adaptable Scalable Texture Compression algorithm for high quality textures (in 4×4 block size).
 			[b]Note:[/b] This setting is an override. The texture importer will always import the format the host platform needs, even if this is set to [code]false[/code].
@@ -2904,7 +2919,9 @@
 			The default compression factor for lossless WebP. Decompression speed is mostly unaffected by the compression factor. Supported values are 0 to 100.
 		</member>
 		<member name="rendering/viewport/hdr_2d" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], enables [member Viewport.use_hdr_2d] on the root viewport. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow).
+			If [code]true[/code], enables [member Viewport.use_hdr_2d] on the root viewport. 2D rendering will use an high dynamic range (HDR) format framebuffer matching the bit depth of the 3D framebuffer. When using the Forward+ renderer this will be an [code]RGBA16[/code] framebuffer, while when using the Mobile renderer it will be an [code]RGB10_A2[/code] framebuffer. Additionally, 2D rendering will take place in linear color space and will be converted to sRGB space immediately before blitting to the screen. Practically speaking, this means that the end result of the Viewport will not be clamped into the [code]0-1[/code] range and can be used in 3D rendering without color space adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients.
+			[b]Note:[/b] This setting will have no effect when using the GL Compatibility renderer as the GL Compatibility renderer always renders in low dynamic range for performance reasons.
+			[b]Note:[/b] This property is only read when the project starts. To toggle HDR 2D at runtime, set [member Viewport.use_hdr_2d] on the root [Viewport].
 		</member>
 		<member name="rendering/viewport/transparent_background" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], enables [member Viewport.transparent_bg] on the root viewport. This allows per-pixel transparency to be effective after also enabling [member display/window/size/transparent] and [member display/window/per_pixel_transparency/allowed].
@@ -2943,14 +2960,29 @@
 		<member name="xr/openxr/environment_blend_mode" type="int" setter="" getter="" default="&quot;0&quot;">
 			Specify how OpenXR should blend in the environment. This is specific to certain AR and passthrough devices where camera images are blended in by the XR compositor.
 		</member>
+		<member name="xr/openxr/extensions/debug_message_types" type="int" setter="" getter="" default="&quot;15&quot;">
+			Specifies the message types for which we request debug messages. Requires [member xr/openxr/extensions/debug_utils] to be set and the extension to be supported by the XR runtime.
+		</member>
+		<member name="xr/openxr/extensions/debug_utils" type="int" setter="" getter="" default="&quot;0&quot;">
+			Enables debug utilities on XR runtimes that supports the debug utils extension. Sets the maximum severity being reported (0 = disabled, 1 = error, 2 = warning, 3 = info, 4 = verbose).
+		</member>
 		<member name="xr/openxr/extensions/eye_gaze_interaction" type="bool" setter="" getter="" default="false">
 			Specify whether to enable eye tracking for this project. Depending on the platform, additional export configuration may be needed.
 		</member>
 		<member name="xr/openxr/extensions/hand_interaction_profile" type="bool" setter="" getter="" default="false">
-			If true the hand interaction profile extension will be activated if supported by the platform.
+			If [code]true[/code] the hand interaction profile extension will be activated if supported by the platform.
 		</member>
-		<member name="xr/openxr/extensions/hand_tracking" type="bool" setter="" getter="" default="true">
-			If true we enable the hand tracking extension if available.
+		<member name="xr/openxr/extensions/hand_tracking" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the hand tracking extension is enabled if available.
+			[b]Note:[/b] By default hand tracking will only work for data sources chosen by the XR runtime. For SteamVR this is the controller inferred data source, for most other runtimes this is the unobstructed data source. There is no way to query this. If a runtime supports the OpenXR data source extension you can use the [member xr/openxr/extensions/hand_tracking_controller_data_source] and/or [member xr/openxr/extensions/hand_tracking_unobstructed_data_source] to indicate you wish to enable these data sources. If neither is selected the data source extension is not enabled and the XR runtimes default behavior persists.
+		</member>
+		<member name="xr/openxr/extensions/hand_tracking_controller_data_source" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], support for the controller inferred data source is requested. If supported, you will receive hand tracking data even if the user has a controller in hand, with finger positions automatically inferred from controller input and/or sensors.
+			[b]Node:[/b] This requires the OpenXR data source extension and controller inferred handtracking to be supported by the XR runtime. If not supported this setting will be ignored. [member xr/openxr/extensions/hand_tracking] must be enabled for this setting to be used.
+		</member>
+		<member name="xr/openxr/extensions/hand_tracking_unobstructed_data_source" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], support for the unobstructed data source is requested. If supported, you will receive hand tracking data based on the actual finger positions of the user often determined by optical tracking.
+			[b]Node:[/b] This requires the OpenXR data source extension and unobstructed handtracking to be supported by the XR runtime. If not supported this setting will be ignored. [member xr/openxr/extensions/hand_tracking] must be enabled for this setting to be used.
 		</member>
 		<member name="xr/openxr/form_factor" type="int" setter="" getter="" default="&quot;0&quot;">
 			Specify whether OpenXR should be configured for an HMD or a hand held device.

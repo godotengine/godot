@@ -48,7 +48,7 @@ Error ZIPReader::close() {
 
 	Error err = unzClose(uzf) == UNZ_OK ? OK : FAILED;
 	if (err == OK) {
-		DEV_ASSERT(fa == nullptr);
+		DEV_ASSERT(fa.is_null());
 		uzf = nullptr;
 	}
 

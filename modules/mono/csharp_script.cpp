@@ -1524,9 +1524,10 @@ void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 		}
 	}
 
+	props.reverse();
 	for (PropertyInfo &prop : props) {
 		validate_property(prop);
-		p_properties->push_back(prop);
+		p_properties->push_front(prop);
 	}
 }
 
@@ -2716,7 +2717,7 @@ int CSharpScript::get_member_line(const StringName &p_member) const {
 	return -1;
 }
 
-const Variant CSharpScript::get_rpc_config() const {
+Variant CSharpScript::get_rpc_config() const {
 	return rpc_config;
 }
 
@@ -2796,7 +2797,7 @@ Ref<Resource> ResourceFormatLoaderCSharpScript::load(const String &p_path, const
 
 	if (GDMonoCache::godot_api_cache_updated) {
 		GDMonoCache::managed_callbacks.ScriptManagerBridge_GetOrCreateScriptBridgeForPath(&p_path, &scr);
-		ERR_FAIL_NULL_V_MSG(scr, Ref<Resource>(), "Could not create C# script '" + real_path + "'.");
+		ERR_FAIL_COND_V_MSG(scr.is_null(), Ref<Resource>(), "Could not create C# script '" + real_path + "'.");
 	} else {
 		scr = Ref<CSharpScript>(memnew(CSharpScript));
 	}

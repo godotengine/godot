@@ -69,6 +69,24 @@
 #include <stdlib.h>
 #include <cstdint>
 
+static void _attach_extras_to_meta(const Dictionary &p_extras, Ref<Resource> p_node) {
+	if (!p_extras.is_empty()) {
+		p_node->set_meta("extras", p_extras);
+	}
+}
+
+static void _attach_meta_to_extras(Ref<Resource> p_node, Dictionary &p_json) {
+	if (p_node->has_meta("extras")) {
+		Dictionary node_extras = p_node->get_meta("extras");
+		if (p_json.has("extras")) {
+			Dictionary extras = p_json["extras"];
+			extras.merge(node_extras);
+		} else {
+			p_json["extras"] = node_extras;
+		}
+	}
+}
+
 static Ref<ImporterMesh> _mesh_to_importer_mesh(Ref<Mesh> p_mesh) {
 	Ref<ImporterMesh> importer_mesh;
 	importer_mesh.instantiate();
@@ -101,6 +119,7 @@ static Ref<ImporterMesh> _mesh_to_importer_mesh(Ref<Mesh> p_mesh) {
 				array, p_mesh->surface_get_blend_shape_arrays(surface_i), p_mesh->surface_get_lods(surface_i), mat,
 				mat_name, p_mesh->surface_get_format(surface_i));
 	}
+	importer_mesh->merge_meta_from(*p_mesh);
 	return importer_mesh;
 }
 
@@ -280,8 +299,8 @@ Error GLTFDocument::_parse_json(const String &p_path, Ref<GLTFState> p_state) {
 }
 
 Error GLTFDocument::_parse_glb(Ref<FileAccess> p_file, Ref<GLTFState> p_state) {
-	ERR_FAIL_NULL_V(p_file, ERR_INVALID_PARAMETER);
-	ERR_FAIL_NULL_V(p_state, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_file.is_null(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_file->get_position() != 0, ERR_FILE_CANT_READ);
 	uint32_t magic = p_file->get_32();
 	ERR_FAIL_COND_V(magic != 0x46546C67, ERR_FILE_UNRECOGNIZED); //glTF
@@ -395,7 +414,6 @@ static Vector<real_t> _xform_to_array(const Transform3D p_transform) {
 
 Error GLTFDocument::_serialize_nodes(Ref<GLTFState> p_state) {
 	Array nodes;
-	const int scene_node_count = p_state->scene_nodes.size();
 	for (int i = 0; i < p_state->nodes.size(); i++) {
 		Dictionary node;
 		Ref<GLTFNode> gltf_node = p_state->nodes[i];
@@ -446,7 +464,7 @@ Error GLTFDocument::_serialize_nodes(Ref<GLTFState> p_state) {
 		}
 
 		Node *scene_node = nullptr;
-		if (i < scene_node_count) {
+		if (i < (int)p_state->scene_nodes.size()) {
 			scene_node = p_state->scene_nodes[i];
 		}
 		for (Ref<GLTFDocumentExtension> ext : document_extensions) {
@@ -458,7 +476,7 @@ Error GLTFDocument::_serialize_nodes(Ref<GLTFState> p_state) {
 		if (extensions.is_empty()) {
 			node.erase("extensions");
 		}
-
+		_attach_meta_to_extras(gltf_node, node);
 		nodes.push_back(node);
 	}
 	if (!nodes.is_empty()) {
@@ -472,14 +490,8 @@ String GLTFDocument::_gen_unique_name(Ref<GLTFState> p_state, const String &p_na
 }
 
 String GLTFDocument::_sanitize_animation_name(const String &p_name) {
-	// Animations disallow the normal node invalid characters as well as  "," and "["
-	// (See animation/animation_player.cpp::add_animation)
-
-	// TODO: Consider adding invalid_characters or a validate_animation_name to animation_player to mirror Node.
 	String anim_name = p_name.validate_node_name();
-	anim_name = anim_name.replace(",", "");
-	anim_name = anim_name.replace("[", "");
-	return anim_name;
+	return AnimationLibrary::validate_library_name(anim_name);
 }
 
 String GLTFDocument::_gen_unique_animation_name(Ref<GLTFState> p_state, const String &p_name) {
@@ -622,6 +634,10 @@ Error GLTFDocument::_parse_nodes(Ref<GLTFState> p_state) {
 				Error err = ext->parse_node_extensions(p_state, node, extensions);
 				ERR_CONTINUE_MSG(err != OK, "glTF: Encountered error " + itos(err) + " when parsing node extensions for node " + node->get_name() + " in file " + p_state->filename + ". Continuing.");
 			}
+		}
+
+		if (n.has("extras")) {
+			_attach_extras_to_meta(n["extras"], node);
 		}
 
 		if (n.has("children")) {
@@ -2727,6 +2743,8 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 
 		Dictionary e;
 		e["targetNames"] = target_names;
+		gltf_mesh["extras"] = e;
+		_attach_meta_to_extras(import_mesh, gltf_mesh);
 
 		weights.resize(target_names.size());
 		for (int name_i = 0; name_i < target_names.size(); name_i++) {
@@ -2741,8 +2759,6 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 		}
 
 		ERR_FAIL_COND_V(target_names.size() != weights.size(), FAILED);
-
-		gltf_mesh["extras"] = e;
 
 		gltf_mesh["primitives"] = primitives;
 
@@ -2776,6 +2792,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 
 		Array primitives = d["primitives"];
 		const Dictionary &extras = d.has("extras") ? (Dictionary)d["extras"] : Dictionary();
+		_attach_extras_to_meta(extras, mesh);
 		Ref<ImporterMesh> import_mesh;
 		import_mesh.instantiate();
 		String mesh_name = "mesh";
@@ -3258,7 +3275,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 					const int material = p["material"];
 					ERR_FAIL_INDEX_V(material, p_state->materials.size(), ERR_FILE_CORRUPT);
 					Ref<Material> mat3d = p_state->materials[material];
-					ERR_FAIL_NULL_V(mat3d, ERR_FILE_CORRUPT);
+					ERR_FAIL_COND_V(mat3d.is_null(), ERR_FILE_CORRUPT);
 
 					Ref<BaseMaterial3D> base_material = mat3d;
 					if (has_vertex_color && base_material.is_valid()) {
@@ -3274,7 +3291,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 					}
 					mat = mat3d;
 				}
-				ERR_FAIL_NULL_V(mat, ERR_FILE_CORRUPT);
+				ERR_FAIL_COND_V(mat.is_null(), ERR_FILE_CORRUPT);
 				mat_name = mat->get_name();
 			}
 			import_mesh->add_surface(primitive, array, morphs,
@@ -3577,7 +3594,7 @@ void GLTFDocument::_parse_image_save_image(Ref<GLTFState> p_state, const Vector<
 }
 
 Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_path) {
-	ERR_FAIL_NULL_V(p_state, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
 	if (!p_state->json.has("images")) {
 		return OK;
 	}
@@ -4170,6 +4187,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 		}
 		d["extensions"] = extensions;
 
+		_attach_meta_to_extras(material, d);
 		materials.push_back(d);
 	}
 	if (!materials.size()) {
@@ -4371,6 +4389,10 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 					material->set_alpha_scissor_threshold(0.5f);
 				}
 			}
+		}
+
+		if (material_dict.has("extras")) {
+			_attach_extras_to_meta(material_dict["extras"], material);
 		}
 		p_state->materials.push_back(material);
 	}
@@ -5161,6 +5183,7 @@ ImporterMeshInstance3D *GLTFDocument::_generate_mesh_instance(Ref<GLTFState> p_s
 		return mi;
 	}
 	mi->set_mesh(import_mesh);
+	import_mesh->merge_meta_from(*mesh);
 	return mi;
 }
 
@@ -5234,6 +5257,7 @@ void GLTFDocument::_convert_scene_node(Ref<GLTFState> p_state, Node *p_current, 
 	gltf_node.instantiate();
 	gltf_node->set_original_name(p_current->get_name());
 	gltf_node->set_name(_gen_unique_name(p_state, p_current->get_name()));
+	gltf_node->merge_meta_from(p_current);
 	if (cast_to<Node3D>(p_current)) {
 		Node3D *spatial = cast_to<Node3D>(p_current);
 		_convert_spatial(p_state, spatial, gltf_node);
@@ -5279,13 +5303,18 @@ void GLTFDocument::_convert_scene_node(Ref<GLTFState> p_state, Node *p_current, 
 		ERR_CONTINUE(ext.is_null());
 		ext->convert_scene_node(p_state, gltf_node, p_current);
 	}
-	GLTFNodeIndex current_node_i = p_state->nodes.size();
-	GLTFNodeIndex gltf_root = p_gltf_root;
-	if (gltf_root == -1) {
-		gltf_root = current_node_i;
-		p_state->root_nodes.push_back(gltf_root);
+	GLTFNodeIndex current_node_i;
+	if (gltf_node->get_parent() == -1) {
+		current_node_i = p_state->append_gltf_node(gltf_node, p_current, p_gltf_parent);
+	} else if (gltf_node->get_parent() < -1) {
+		return;
+	} else {
+		current_node_i = p_state->nodes.size() - 1;
+		while (gltf_node != p_state->nodes[current_node_i]) {
+			current_node_i--;
+		}
 	}
-	_create_gltf_node(p_state, p_current, current_node_i, p_gltf_parent, gltf_root, gltf_node);
+	const GLTFNodeIndex gltf_root = (p_gltf_root == -1) ? current_node_i : p_gltf_root;
 	for (int node_i = 0; node_i < p_current->get_child_count(); node_i++) {
 		_convert_scene_node(p_state, p_current->get_child(node_i), current_node_i, gltf_root);
 	}
@@ -5345,18 +5374,6 @@ void GLTFDocument::_convert_csg_shape_to_gltf(CSGShape3D *p_current, GLTFNodeInd
 	p_gltf_node->set_name(_gen_unique_name(p_state, csg->get_name()));
 }
 #endif // MODULE_CSG_ENABLED
-
-void GLTFDocument::_create_gltf_node(Ref<GLTFState> p_state, Node *p_scene_parent, GLTFNodeIndex p_current_node_i,
-		GLTFNodeIndex p_parent_node_index, GLTFNodeIndex p_root_gltf_node, Ref<GLTFNode> p_gltf_node) {
-	p_state->scene_nodes.insert(p_current_node_i, p_scene_parent);
-	p_state->nodes.push_back(p_gltf_node);
-	ERR_FAIL_COND(p_current_node_i == p_parent_node_index);
-	p_state->nodes.write[p_current_node_i]->parent = p_parent_node_index;
-	if (p_parent_node_index == -1) {
-		return;
-	}
-	p_state->nodes.write[p_parent_node_index]->children.push_back(p_current_node_i);
-}
 
 void GLTFDocument::_convert_animation_player_to_gltf(AnimationPlayer *p_animation_player, Ref<GLTFState> p_state, GLTFNodeIndex p_gltf_current, GLTFNodeIndex p_gltf_root_index, Ref<GLTFNode> p_gltf_node, Node *p_scene_parent) {
 	ERR_FAIL_NULL(p_animation_player);
@@ -5517,6 +5534,10 @@ void GLTFDocument::_convert_skeleton_to_gltf(Skeleton3D *p_skeleton3d, Ref<GLTFS
 		joint_node->set_name(_gen_unique_name(p_state, skeleton->get_bone_name(bone_i)));
 		joint_node->transform = skeleton->get_bone_pose(bone_i);
 		joint_node->joint = true;
+
+		if (p_skeleton3d->has_bone_meta(bone_i, "extras")) {
+			joint_node->set_meta("extras", p_skeleton3d->get_bone_meta(bone_i, "extras"));
+		}
 		GLTFNodeIndex current_node_i = p_state->nodes.size();
 		p_state->scene_nodes.insert(current_node_i, skeleton);
 		p_state->nodes.push_back(joint_node);
@@ -5675,6 +5696,8 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIn
 		current_node->propagate_call(StringName("set_owner"), args);
 		current_node->set_transform(gltf_node->transform);
 	}
+
+	current_node->merge_meta_from(*gltf_node);
 
 	p_state->scene_nodes.insert(p_node_index, current_node);
 	for (int i = 0; i < gltf_node->children.size(); ++i) {
@@ -6934,14 +6957,14 @@ Dictionary _serialize_texture_transform_uv(Vector2 p_offset, Vector2 p_scale) {
 }
 
 Dictionary GLTFDocument::_serialize_texture_transform_uv1(Ref<BaseMaterial3D> p_material) {
-	ERR_FAIL_NULL_V(p_material, Dictionary());
+	ERR_FAIL_COND_V(p_material.is_null(), Dictionary());
 	Vector3 offset = p_material->get_uv1_offset();
 	Vector3 scale = p_material->get_uv1_scale();
 	return _serialize_texture_transform_uv(Vector2(offset.x, offset.y), Vector2(scale.x, scale.y));
 }
 
 Dictionary GLTFDocument::_serialize_texture_transform_uv2(Ref<BaseMaterial3D> p_material) {
-	ERR_FAIL_NULL_V(p_material, Dictionary());
+	ERR_FAIL_COND_V(p_material.is_null(), Dictionary());
 	Vector3 offset = p_material->get_uv2_offset();
 	Vector3 scale = p_material->get_uv2_scale();
 	return _serialize_texture_transform_uv(Vector2(offset.x, offset.y), Vector2(scale.x, scale.y));
@@ -7060,6 +7083,8 @@ void GLTFDocument::_bind_methods() {
 			&GLTFDocument::register_gltf_document_extension, DEFVAL(false));
 	ClassDB::bind_static_method("GLTFDocument", D_METHOD("unregister_gltf_document_extension", "extension"),
 			&GLTFDocument::unregister_gltf_document_extension);
+	ClassDB::bind_static_method("GLTFDocument", D_METHOD("get_supported_gltf_extensions"),
+			&GLTFDocument::get_supported_gltf_extensions);
 }
 
 void GLTFDocument::_build_parent_hierachy(Ref<GLTFState> p_state) {
@@ -7098,6 +7123,36 @@ void GLTFDocument::unregister_all_gltf_document_extensions() {
 
 Vector<Ref<GLTFDocumentExtension>> GLTFDocument::get_all_gltf_document_extensions() {
 	return all_document_extensions;
+}
+
+Vector<String> GLTFDocument::get_supported_gltf_extensions() {
+	HashSet<String> set = get_supported_gltf_extensions_hashset();
+	Vector<String> vec;
+	for (const String &s : set) {
+		vec.append(s);
+	}
+	vec.sort();
+	return vec;
+}
+
+HashSet<String> GLTFDocument::get_supported_gltf_extensions_hashset() {
+	HashSet<String> supported_extensions;
+	// If the extension is supported directly in GLTFDocument, list it here.
+	// Other built-in extensions are supported by GLTFDocumentExtension classes.
+	supported_extensions.insert("GODOT_single_root");
+	supported_extensions.insert("KHR_lights_punctual");
+	supported_extensions.insert("KHR_materials_emissive_strength");
+	supported_extensions.insert("KHR_materials_pbrSpecularGlossiness");
+	supported_extensions.insert("KHR_materials_unlit");
+	supported_extensions.insert("KHR_texture_transform");
+	for (Ref<GLTFDocumentExtension> ext : all_document_extensions) {
+		ERR_CONTINUE(ext.is_null());
+		Vector<String> ext_supported_extensions = ext->get_supported_extensions();
+		for (int i = 0; i < ext_supported_extensions.size(); ++i) {
+			supported_extensions.insert(ext_supported_extensions[i]);
+		}
+	}
+	return supported_extensions;
 }
 
 PackedByteArray GLTFDocument::_serialize_glb_buffer(Ref<GLTFState> p_state, Error *r_err) {
@@ -7150,6 +7205,12 @@ Node *GLTFDocument::_generate_scene_node_tree(Ref<GLTFState> p_state) {
 	ERR_FAIL_COND_V_MSG(err != OK, nullptr, "glTF: Failed to create skeletons.");
 	err = _create_skins(p_state);
 	ERR_FAIL_COND_V_MSG(err != OK, nullptr, "glTF: Failed to create skins.");
+	// Run pre-generate for each extension, in case an extension needs to do something before generating the scene.
+	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
+		ERR_CONTINUE(ext.is_null());
+		err = ext->import_pre_generate(p_state);
+		ERR_CONTINUE(err != OK);
+	}
 	// Generate the node tree.
 	Node *single_root;
 	if (p_state->extensions_used.has("GODOT_single_root")) {
@@ -7280,7 +7341,7 @@ Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> p_state, const String &p_se
 
 PackedByteArray GLTFDocument::generate_buffer(Ref<GLTFState> p_state) {
 	Ref<GLTFState> state = p_state;
-	ERR_FAIL_NULL_V(state, PackedByteArray());
+	ERR_FAIL_COND_V(state.is_null(), PackedByteArray());
 	// For buffers, set the state filename to an empty string, but
 	// don't touch the base path, in case the user set it manually.
 	state->filename = "";
@@ -7292,7 +7353,7 @@ PackedByteArray GLTFDocument::generate_buffer(Ref<GLTFState> p_state) {
 
 Error GLTFDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_path) {
 	Ref<GLTFState> state = p_state;
-	ERR_FAIL_NULL_V(state, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(state.is_null(), ERR_INVALID_PARAMETER);
 	state->base_path = p_path.get_base_dir();
 	state->filename = p_path.get_file();
 	Error err = _serialize(state);
@@ -7308,7 +7369,7 @@ Error GLTFDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_
 
 Node *GLTFDocument::generate_scene(Ref<GLTFState> p_state, float p_bake_fps, bool p_trimming, bool p_remove_immutable_tracks) {
 	Ref<GLTFState> state = p_state;
-	ERR_FAIL_NULL_V(state, nullptr);
+	ERR_FAIL_COND_V(state.is_null(), nullptr);
 	ERR_FAIL_INDEX_V(0, state->root_nodes.size(), nullptr);
 	Error err = OK;
 	p_state->set_bake_fps(p_bake_fps);
@@ -7384,6 +7445,12 @@ Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint
 		state->extensions_used.append("GODOT_single_root");
 	}
 	_convert_scene_node(state, p_node, -1, -1);
+	// Run post-convert for each extension, in case an extension needs to do something after converting the scene.
+	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
+		ERR_CONTINUE(ext.is_null());
+		Error err = ext->export_post_convert(p_state, p_node);
+		ERR_CONTINUE(err != OK);
+	}
 	return OK;
 }
 
@@ -7426,7 +7493,7 @@ Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> p_state, uint
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::READ, &err);
 	ERR_FAIL_COND_V(err != OK, ERR_FILE_CANT_OPEN);
-	ERR_FAIL_NULL_V(file, ERR_FILE_CANT_OPEN);
+	ERR_FAIL_COND_V(file.is_null(), ERR_FILE_CANT_OPEN);
 	String base_path = p_base_path;
 	if (base_path.is_empty()) {
 		base_path = p_path.get_base_dir();
@@ -7443,7 +7510,7 @@ Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> p_state, uint
 }
 
 Error GLTFDocument::_parse_gltf_extensions(Ref<GLTFState> p_state) {
-	ERR_FAIL_NULL_V(p_state, ERR_PARSE_ERROR);
+	ERR_FAIL_COND_V(p_state.is_null(), ERR_PARSE_ERROR);
 	if (p_state->json.has("extensionsUsed")) {
 		Vector<String> ext_array = p_state->json["extensionsUsed"];
 		p_state->extensions_used = ext_array;
@@ -7452,19 +7519,7 @@ Error GLTFDocument::_parse_gltf_extensions(Ref<GLTFState> p_state) {
 		Vector<String> ext_array = p_state->json["extensionsRequired"];
 		p_state->extensions_required = ext_array;
 	}
-	HashSet<String> supported_extensions;
-	supported_extensions.insert("KHR_lights_punctual");
-	supported_extensions.insert("KHR_materials_pbrSpecularGlossiness");
-	supported_extensions.insert("KHR_texture_transform");
-	supported_extensions.insert("KHR_materials_unlit");
-	supported_extensions.insert("KHR_materials_emissive_strength");
-	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
-		ERR_CONTINUE(ext.is_null());
-		Vector<String> ext_supported_extensions = ext->get_supported_extensions();
-		for (int i = 0; i < ext_supported_extensions.size(); ++i) {
-			supported_extensions.insert(ext_supported_extensions[i]);
-		}
-	}
+	HashSet<String> supported_extensions = get_supported_gltf_extensions_hashset();
 	Error ret = OK;
 	for (int i = 0; i < p_state->extensions_required.size(); i++) {
 		if (!supported_extensions.has(p_state->extensions_required[i])) {

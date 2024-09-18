@@ -125,7 +125,7 @@ public:
 	bool undo_history(int p_id);
 	bool redo();
 	bool redo_history(int p_id);
-	void clear_history(bool p_increase_version = true, int p_idx = INVALID_HISTORY);
+	void clear_history(int p_idx = INVALID_HISTORY, bool p_increase_version = true);
 
 	void set_history_as_saved(int p_idx);
 	void set_history_as_unsaved(int p_idx);

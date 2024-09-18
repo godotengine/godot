@@ -25,8 +25,6 @@
 
 #ifdef THORVG_THREAD_SUPPORT
 
-#define _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR
-
 #include <mutex>
 #include "tvgTaskScheduler.h"
 

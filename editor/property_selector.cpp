@@ -30,49 +30,38 @@
 
 #include "property_selector.h"
 
-#include "core/os/keyboard.h"
-#include "editor/doc_tools.h"
 #include "editor/editor_help.h"
 #include "editor/editor_node.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/rich_text_label.h"
 #include "scene/gui/tree.h"
 
 void PropertySelector::_text_changed(const String &p_newtext) {
 	_update_search();
 }
 
-void PropertySelector::_sbox_input(const Ref<InputEvent> &p_ie) {
-	Ref<InputEventKey> k = p_ie;
+void PropertySelector::_sbox_input(const Ref<InputEvent> &p_event) {
+	// Redirect navigational key events to the tree.
+	Ref<InputEventKey> key = p_event;
+	if (key.is_valid()) {
+		if (key->is_action("ui_up", true) || key->is_action("ui_down", true) || key->is_action("ui_page_up") || key->is_action("ui_page_down")) {
+			search_options->gui_input(key);
+			search_box->accept_event();
 
-	if (k.is_valid()) {
-		switch (k->get_keycode()) {
-			case Key::UP:
-			case Key::DOWN:
-			case Key::PAGEUP:
-			case Key::PAGEDOWN: {
-				search_options->gui_input(k);
-				search_box->accept_event();
+			TreeItem *root = search_options->get_root();
+			if (!root->get_first_child()) {
+				return;
+			}
 
-				TreeItem *root = search_options->get_root();
-				if (!root->get_first_child()) {
-					break;
-				}
+			TreeItem *current = search_options->get_selected();
 
-				TreeItem *current = search_options->get_selected();
+			TreeItem *item = search_options->get_next_selected(root);
+			while (item) {
+				item->deselect(0);
+				item = search_options->get_next_selected(item);
+			}
 
-				TreeItem *item = search_options->get_next_selected(root);
-				while (item) {
-					item->deselect(0);
-					item = search_options->get_next_selected(item);
-				}
-
-				current->select(0);
-
-			} break;
-			default:
-				break;
+			current->select(0);
 		}
 	}
 }
@@ -162,6 +151,9 @@ void PropertySelector::_update_search() {
 			if (!found && !search_box->get_text().is_empty() && E.name.containsn(search_text)) {
 				item->select(0);
 				found = true;
+			} else if (!found && search_box->get_text().is_empty() && E.name == selected) {
+				item->select(0);
+				found = true;
 			}
 
 			item->set_selectable(0, true);
@@ -173,6 +165,12 @@ void PropertySelector::_update_search() {
 		if (category && category->get_first_child() == nullptr) {
 			memdelete(category); //old category was unused
 		}
+
+		if (found) {
+			// As we call this while adding items, defer until list is completely populated.
+			callable_mp(search_options, &Tree::scroll_to_item).call_deferred(search_options->get_selected(), true);
+		}
+
 	} else {
 		List<MethodInfo> methods;
 
@@ -305,15 +303,23 @@ void PropertySelector::_update_search() {
 			if (!found && !search_box->get_text().is_empty() && name.containsn(search_text)) {
 				item->select(0);
 				found = true;
+			} else if (!found && search_box->get_text().is_empty() && name == selected) {
+				item->select(0);
+				found = true;
 			}
 		}
 
 		if (category && category->get_first_child() == nullptr) {
 			memdelete(category); //old category was unused
 		}
+
+		if (found) {
+			// As we call this while adding items, defer until list is completely populated.
+			callable_mp(search_options, &Tree::scroll_to_item).call_deferred(search_options->get_selected(), true);
+		}
 	}
 
-	get_ok_button()->set_disabled(root->get_first_child() == nullptr);
+	get_ok_button()->set_disabled(search_options->get_selected() == nullptr);
 }
 
 void PropertySelector::_confirmed() {
@@ -329,6 +335,8 @@ void PropertySelector::_item_selected() {
 	help_bit->set_custom_text(String(), String(), String());
 
 	TreeItem *item = search_options->get_selected();
+	get_ok_button()->set_disabled(item == nullptr);
+
 	if (!item) {
 		return;
 	}

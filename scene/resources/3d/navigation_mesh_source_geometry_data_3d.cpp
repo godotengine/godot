@@ -223,7 +223,7 @@ void NavigationMeshSourceGeometryData3D::add_faces(const PackedVector3Array &p_f
 }
 
 void NavigationMeshSourceGeometryData3D::merge(const Ref<NavigationMeshSourceGeometryData3D> &p_other_geometry) {
-	ERR_FAIL_NULL(p_other_geometry);
+	ERR_FAIL_COND(p_other_geometry.is_null());
 
 	Vector<float> other_vertices;
 	Vector<int> other_indices;

@@ -70,7 +70,8 @@ Copyright: 2020, Manuel Prandini
  2007-2014, Juan Linietsky, Ariel Manzur
 License: Expat
 
-Files: ./platform/android/java/lib/aidl/com/android/*
+Files: ./platform/android/java/editor/src/main/java/com/android/*
+ ./platform/android/java/lib/aidl/com/android/*
  ./platform/android/java/lib/res/layout/status_bar_ongoing_event_progress_bar.xml
  ./platform/android/java/lib/src/com/google/android/*
  ./platform/android/java/lib/src/org/godotengine/godot/input/InputManagerCompat.java
@@ -474,6 +475,11 @@ Files: ./thirdparty/rvo2/
 Comment: RVO2
 Copyright: 2016, University of North Carolina at Chapel Hill
 License: Apache-2.0
+
+Files: ./thirdparty/spirv-cross/
+Comment: SPIRV-Cross
+Copyright: 2015-2021, Arm Limited
+License: Apache-2.0 or Expat
 
 Files: ./thirdparty/spirv-reflect/
 Comment: SPIRV-Reflect

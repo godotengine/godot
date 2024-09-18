@@ -680,6 +680,8 @@ protected:
 	bool glow_bicubic_upscale = false;
 	RS::EnvironmentSSRRoughnessQuality ssr_roughness_quality = RS::ENV_SSR_ROUGHNESS_QUALITY_LOW;
 
+	bool lightmap_bicubic_upscale = false;
+
 	/* Sky */
 
 	struct SkyGlobals {
@@ -863,6 +865,7 @@ public:
 
 	void decals_set_filter(RS::DecalFilter p_filter) override;
 	void light_projectors_set_filter(RS::LightProjectorFilter p_filter) override;
+	virtual void lightmaps_set_bicubic_filter(bool p_enable) override;
 
 	RasterizerSceneGLES3();
 	~RasterizerSceneGLES3();

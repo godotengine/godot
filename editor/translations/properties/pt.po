@@ -44,13 +44,14 @@
 # Jeyson Hilario da SIlva <jeysonhilario@gmail.com>, 2024.
 # Marcia Perez <cristianemarcia50@gmail.com>, 2024.
 # Rick and Morty <7777rickandmorty@gmail.com>, 2024.
+# JulianoV <ventolajuliano@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-08-09 17:09+0000\n"
-"Last-Translator: Rick and Morty <7777rickandmorty@gmail.com>\n"
+"PO-Revision-Date: 2024-08-30 21:09+0000\n"
+"Last-Translator: JulianoV <ventolajuliano@gmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/pt/>\n"
 "Language: pt\n"
@@ -58,7 +59,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.7-dev\n"
+"X-Generator: Weblate 5.7.1-dev\n"
 
 msgid "Application"
 msgstr "Aplicação"
@@ -198,6 +199,9 @@ msgstr "Esquema Padrão de Bus"
 msgid "General"
 msgstr "Geral"
 
+msgid "Default Playback Type"
+msgstr "Tipo de reprodução padrão"
+
 msgid "Text to Speech"
 msgstr "Texto para Fala"
 
@@ -215,15 +219,6 @@ msgstr "Categoria da Sessão"
 
 msgid "Mix With Others"
 msgstr "Misturar Com Outros"
-
-msgid "Editor"
-msgstr "Editor"
-
-msgid "Script"
-msgstr "Script"
-
-msgid "Search in File Extensions"
-msgstr "Pesquisar em Extensões de Arquivo"
 
 msgid "Subwindows"
 msgstr "Subjanelas"
@@ -266,6 +261,9 @@ msgstr "Analisador"
 
 msgid "Max Functions"
 msgstr "Máximo de Funções"
+
+msgid "Max Timestamp Query Elements"
+msgstr "Máximo de elementos de busca de data/hora"
 
 msgid "Compression"
 msgstr "Compressão"
@@ -866,6 +864,9 @@ msgstr "Alternar Modo"
 
 msgid "Interface"
 msgstr "Interface"
+
+msgid "Editor"
+msgstr "Editor"
 
 msgid "Editor Language"
 msgstr "Linguagem do Editor"
@@ -2412,6 +2413,9 @@ msgstr "Caminho da Chave Privada SSH"
 msgid "Main Run Args"
 msgstr "Argumentos da Execução Principal"
 
+msgid "Script"
+msgstr "Script"
+
 msgid "Templates Search Path"
 msgstr "Caminho de Pesquisa de Templates"
 
@@ -2597,6 +2601,9 @@ msgstr "Eixo de Rolagem de Entrada Rotativa"
 
 msgid "Text Driver"
 msgstr "Driver de Texto"
+
+msgid "Search in File Extensions"
+msgstr "Pesquisar em Extensões de Arquivo"
 
 msgid "Mouse Cursor"
 msgstr "Cursor do Rato"

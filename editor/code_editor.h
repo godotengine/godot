@@ -161,6 +161,7 @@ class CodeTextEditor : public VBoxContainer {
 	HBoxContainer *status_bar = nullptr;
 
 	Button *toggle_scripts_button = nullptr;
+	Control *toggle_scripts_list = nullptr;
 	Button *error_button = nullptr;
 	Button *warning_button = nullptr;
 
@@ -246,9 +247,9 @@ public:
 	/// by adding or removing comment delimiter
 	void toggle_inline_comment(const String &delimiter);
 
-	void goto_line(int p_line);
+	void goto_line(int p_line, int p_column = 0);
 	void goto_line_selection(int p_line, int p_begin, int p_end);
-	void goto_line_centered(int p_line);
+	void goto_line_centered(int p_line, int p_column = 0);
 	void set_executing_line(int p_line);
 	void clear_executing_line();
 
@@ -285,6 +286,7 @@ public:
 
 	void validate_script();
 
+	void set_toggle_list_control(Control *p_control);
 	void show_toggle_scripts_button();
 	void update_toggle_scripts_button();
 

@@ -341,8 +341,6 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 	}
 
 	if (compress_mode == COMPRESS_VRAM_COMPRESSED) {
-		mipmaps = true;
-
 		//if using video ram, optimize
 		if (channel_pack == 0) {
 			//remove alpha if not needed, so compression is more efficient
@@ -512,7 +510,7 @@ void ResourceImporterLayeredTexture::_check_compress_ctex(const String &p_source
 	}
 
 	bool can_compress_hdr = r_texture_import->hdr_compression > 0;
-	ERR_FAIL_NULL(r_texture_import->image);
+	ERR_FAIL_COND(r_texture_import->image.is_null());
 	bool is_hdr = (r_texture_import->image->get_format() >= Image::FORMAT_RF && r_texture_import->image->get_format() <= Image::FORMAT_RGBE9995);
 	ERR_FAIL_NULL(r_texture_import->slices);
 	// Can compress hdr, but hdr with alpha is not compressible.

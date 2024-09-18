@@ -755,13 +755,13 @@ FindReplaceBar::FindReplaceBar() {
 	hbc_option_search->add_child(case_sensitive);
 	case_sensitive->set_text(TTR("Match Case"));
 	case_sensitive->set_focus_mode(FOCUS_NONE);
-	case_sensitive->connect("toggled", callable_mp(this, &FindReplaceBar::_search_options_changed));
+	case_sensitive->connect(SceneStringName(toggled), callable_mp(this, &FindReplaceBar::_search_options_changed));
 
 	whole_words = memnew(CheckBox);
 	hbc_option_search->add_child(whole_words);
 	whole_words->set_text(TTR("Whole Words"));
 	whole_words->set_focus_mode(FOCUS_NONE);
-	whole_words->connect("toggled", callable_mp(this, &FindReplaceBar::_search_options_changed));
+	whole_words->connect(SceneStringName(toggled), callable_mp(this, &FindReplaceBar::_search_options_changed));
 
 	// Replace toolbar
 	replace_text = memnew(LineEdit);
@@ -786,7 +786,7 @@ FindReplaceBar::FindReplaceBar() {
 	hbc_option_replace->add_child(selection_only);
 	selection_only->set_text(TTR("Selection Only"));
 	selection_only->set_focus_mode(FOCUS_NONE);
-	selection_only->connect("toggled", callable_mp(this, &FindReplaceBar::_search_options_changed));
+	selection_only->connect(SceneStringName(toggled), callable_mp(this, &FindReplaceBar::_search_options_changed));
 
 	hide_button = memnew(TextureButton);
 	add_child(hide_button);
@@ -994,6 +994,9 @@ Ref<Texture2D> CodeTextEditor::_get_completion_icon(const ScriptLanguage::CodeCo
 				tex = get_editor_theme_icon(p_option.display);
 			} else {
 				tex = EditorNode::get_singleton()->get_class_icon(p_option.display);
+				if (!tex.is_valid()) {
+					tex = get_editor_theme_icon(SNAME("Object"));
+				}
 			}
 		} break;
 		case ScriptLanguage::CODE_COMPLETION_KIND_ENUM:
@@ -1296,23 +1299,29 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 	text_editor->end_complex_operation();
 }
 
-void CodeTextEditor::goto_line(int p_line) {
+void CodeTextEditor::goto_line(int p_line, int p_column) {
 	text_editor->remove_secondary_carets();
 	text_editor->deselect();
-	text_editor->unfold_line(p_line);
-	callable_mp((TextEdit *)text_editor, &TextEdit::set_caret_line).call_deferred(p_line, true, true, 0, 0);
+	text_editor->unfold_line(CLAMP(p_line, 0, text_editor->get_line_count() - 1));
+	text_editor->set_caret_line(p_line, false);
+	text_editor->set_caret_column(p_column, false);
+	// Defer in case the CodeEdit was just created and needs to be resized.
+	callable_mp((TextEdit *)text_editor, &TextEdit::adjust_viewport_to_caret).call_deferred(0);
 }
 
 void CodeTextEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
 	text_editor->remove_secondary_carets();
-	text_editor->unfold_line(p_line);
-	callable_mp((TextEdit *)text_editor, &TextEdit::set_caret_line).call_deferred(p_line, true, true, 0, 0);
-	callable_mp((TextEdit *)text_editor, &TextEdit::set_caret_column).call_deferred(p_begin, true, 0);
+	text_editor->unfold_line(CLAMP(p_line, 0, text_editor->get_line_count() - 1));
 	text_editor->select(p_line, p_begin, p_line, p_end);
+	callable_mp((TextEdit *)text_editor, &TextEdit::adjust_viewport_to_caret).call_deferred(0);
 }
 
-void CodeTextEditor::goto_line_centered(int p_line) {
-	goto_line(p_line);
+void CodeTextEditor::goto_line_centered(int p_line, int p_column) {
+	text_editor->remove_secondary_carets();
+	text_editor->deselect();
+	text_editor->unfold_line(CLAMP(p_line, 0, text_editor->get_line_count() - 1));
+	text_editor->set_caret_line(p_line, false);
+	text_editor->set_caret_column(p_column, false);
 	callable_mp((TextEdit *)text_editor, &TextEdit::center_viewport_to_caret).call_deferred(0);
 }
 
@@ -1440,13 +1449,7 @@ void CodeTextEditor::goto_error() {
 			corrected_column -= tab_count * (indent_size - 1);
 		}
 
-		if (text_editor->get_line_count() != error_line) {
-			text_editor->unfold_line(error_line);
-		}
-		text_editor->remove_secondary_carets();
-		text_editor->set_caret_line(error_line);
-		text_editor->set_caret_column(corrected_column);
-		text_editor->center_viewport_to_caret();
+		goto_line_centered(error_line, corrected_column);
 	}
 }
 
@@ -1545,7 +1548,8 @@ void CodeTextEditor::_set_show_warnings_panel(bool p_show) {
 }
 
 void CodeTextEditor::_toggle_scripts_pressed() {
-	ScriptEditor::get_singleton()->toggle_scripts_panel();
+	ERR_FAIL_NULL(toggle_scripts_list);
+	toggle_scripts_list->set_visible(!toggle_scripts_list->is_visible());
 	update_toggle_scripts_button();
 }
 
@@ -1720,16 +1724,18 @@ void CodeTextEditor::set_code_complete_func(CodeTextEditorCodeCompleteFunc p_cod
 	code_complete_ud = p_ud;
 }
 
+void CodeTextEditor::set_toggle_list_control(Control *p_control) {
+	toggle_scripts_list = p_control;
+}
+
 void CodeTextEditor::show_toggle_scripts_button() {
 	toggle_scripts_button->show();
 }
 
 void CodeTextEditor::update_toggle_scripts_button() {
-	if (is_layout_rtl()) {
-		toggle_scripts_button->set_icon(get_editor_theme_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? SNAME("Forward") : SNAME("Back")));
-	} else {
-		toggle_scripts_button->set_icon(get_editor_theme_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? SNAME("Back") : SNAME("Forward")));
-	}
+	ERR_FAIL_NULL(toggle_scripts_list);
+	bool forward = toggle_scripts_list->is_visible() == is_layout_rtl();
+	toggle_scripts_button->set_icon(get_editor_theme_icon(forward ? SNAME("Forward") : SNAME("Back")));
 	toggle_scripts_button->set_tooltip_text(vformat("%s (%s)", TTR("Toggle Scripts Panel"), ED_GET_SHORTCUT("script_editor/toggle_scripts_panel")->get_as_text()));
 }
 

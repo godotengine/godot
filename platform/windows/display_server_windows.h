@@ -537,7 +537,7 @@ class DisplayServerWindows : public DisplayServer {
 	RBMap<WindowID, WindowData> windows;
 
 	WindowID last_focused_window = INVALID_WINDOW_ID;
-
+	WindowID last_mouse_button_down_window = INVALID_WINDOW_ID;
 	HCURSOR hCursor;
 
 	WNDPROC user_proc = nullptr;
@@ -572,6 +572,16 @@ class DisplayServerWindows : public DisplayServer {
 	Mutex file_dialog_mutex;
 	List<FileDialogData *> file_dialogs;
 	HashMap<HWND, FileDialogData *> file_dialog_wnd;
+	struct FileDialogCallback {
+		Callable callback;
+		Variant status;
+		Variant files;
+		Variant index;
+		Variant options;
+		bool opt_in_cb = false;
+	};
+	List<FileDialogCallback> pending_cbs;
+	void process_file_dialog_callbacks();
 
 	static void _thread_fd_monitor(void *p_ud);
 

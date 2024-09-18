@@ -59,6 +59,7 @@ public:
 		TK_FLOAT_CONSTANT,
 		TK_INT_CONSTANT,
 		TK_UINT_CONSTANT,
+		TK_STRING_CONSTANT,
 		TK_TYPE_VOID,
 		TK_TYPE_BOOL,
 		TK_TYPE_BVEC2,
@@ -175,6 +176,7 @@ public:
 		TK_HINT_ANISOTROPY_TEXTURE,
 		TK_HINT_SOURCE_COLOR,
 		TK_HINT_RANGE,
+		TK_HINT_ENUM,
 		TK_HINT_INSTANCE_INDEX,
 		TK_HINT_SCREEN_TEXTURE,
 		TK_HINT_NORMAL_ROUGHNESS_TEXTURE,
@@ -353,6 +355,13 @@ public:
 		}
 	};
 
+	union Scalar {
+		bool boolean = false;
+		float real;
+		int32_t sint;
+		uint32_t uint;
+	};
+
 	struct Node {
 		Node *next = nullptr;
 
@@ -377,6 +386,7 @@ public:
 		virtual String get_datatype_name() const { return ""; }
 		virtual int get_array_size() const { return 0; }
 		virtual bool is_indexed() const { return false; }
+		virtual Vector<Scalar> get_values() const { return Vector<Scalar>(); }
 
 		Node(Type t) :
 				type(t) {}
@@ -400,11 +410,13 @@ public:
 		Operator op = OP_EQUAL;
 		StringName struct_name;
 		Vector<Node *> arguments;
+		Vector<Scalar> values;
 
 		virtual DataType get_datatype() const override { return return_cache; }
 		virtual String get_datatype_name() const override { return String(struct_name); }
 		virtual int get_array_size() const override { return return_array_size; }
 		virtual bool is_indexed() const override { return op == OP_INDEX; }
+		virtual Vector<Scalar> get_values() const override { return values; }
 
 		OperatorNode() :
 				Node(NODE_TYPE_OPERATOR) {}
@@ -483,19 +495,15 @@ public:
 		String struct_name = "";
 		int array_size = 0;
 
-		union Value {
-			bool boolean = false;
-			float real;
-			int32_t sint;
-			uint32_t uint;
-		};
-
-		Vector<Value> values;
+		Vector<Scalar> values;
 		Vector<VariableDeclarationNode::Declaration> array_declarations;
 
 		virtual DataType get_datatype() const override { return datatype; }
 		virtual String get_datatype_name() const override { return struct_name; }
 		virtual int get_array_size() const override { return array_size; }
+		virtual Vector<Scalar> get_values() const override {
+			return values;
+		}
 
 		ConstantNode() :
 				Node(NODE_TYPE_CONSTANT) {}
@@ -527,13 +535,17 @@ public:
 			int line; //for completion
 			int array_size;
 			bool is_const;
-			ConstantNode::Value value;
+			Vector<Scalar> values;
 		};
 
 		HashMap<StringName, Variable> variables;
 		List<Node *> statements;
 		bool single_statement = false;
 		bool use_comma_between_statements = false;
+		bool use_op_eval = true;
+
+		DataType expected_type = TYPE_VOID;
+		HashSet<int> constants;
 
 		BlockNode() :
 				Node(NODE_TYPE_BLOCK) {}
@@ -623,6 +635,7 @@ public:
 			enum Hint {
 				HINT_NONE,
 				HINT_RANGE,
+				HINT_ENUM,
 				HINT_SOURCE_COLOR,
 				HINT_NORMAL,
 				HINT_ROUGHNESS_NORMAL,
@@ -654,13 +667,14 @@ public:
 			DataType type = TYPE_VOID;
 			DataPrecision precision = PRECISION_DEFAULT;
 			int array_size = 0;
-			Vector<ConstantNode::Value> default_value;
+			Vector<Scalar> default_value;
 			Scope scope = SCOPE_LOCAL;
 			Hint hint = HINT_NONE;
 			bool use_color = false;
 			TextureFilter filter = FILTER_DEFAULT;
 			TextureRepeat repeat = REPEAT_DEFAULT;
 			float hint_range[3];
+			PackedStringArray hint_enum_names;
 			int instance_index = 0;
 			String group;
 			String subgroup;
@@ -743,6 +757,12 @@ public:
 		};
 	};
 
+	struct ExpressionInfo {
+		Vector<Expression> *expression = nullptr;
+		TokenType tt_break = TK_EMPTY;
+		bool is_last_expr = false;
+	};
+
 	struct VarInfo {
 		StringName name;
 		DataType type;
@@ -793,15 +813,16 @@ public:
 	static bool is_token_operator_assign(TokenType p_type);
 	static bool is_token_hint(TokenType p_type);
 
-	static bool convert_constant(ConstantNode *p_constant, DataType p_to_type, ConstantNode::Value *p_value = nullptr);
+	static bool convert_constant(ConstantNode *p_constant, DataType p_to_type, Scalar *p_value = nullptr);
 	static DataType get_scalar_type(DataType p_type);
 	static int get_cardinality(DataType p_type);
 	static bool is_scalar_type(DataType p_type);
 	static bool is_float_type(DataType p_type);
 	static bool is_sampler_type(DataType p_type);
-	static Variant constant_value_to_variant(const Vector<ShaderLanguage::ConstantNode::Value> &p_value, DataType p_type, int p_array_size, ShaderLanguage::ShaderNode::Uniform::Hint p_hint = ShaderLanguage::ShaderNode::Uniform::HINT_NONE);
+	static Variant constant_value_to_variant(const Vector<Scalar> &p_value, DataType p_type, int p_array_size, ShaderLanguage::ShaderNode::Uniform::Hint p_hint = ShaderLanguage::ShaderNode::Uniform::HINT_NONE);
 	static PropertyInfo uniform_to_property_info(const ShaderNode::Uniform &p_uniform);
 	static uint32_t get_datatype_size(DataType p_type);
+	static uint32_t get_datatype_component_count(DataType p_type);
 
 	static void get_keyword_list(List<String> *r_keywords);
 	static bool is_control_flow_keyword(String p_keyword);
@@ -1060,13 +1081,21 @@ private:
 
 	IdentifierType last_type = IDENTIFIER_MAX;
 
-	bool _find_identifier(const BlockNode *p_block, bool p_allow_reassign, const FunctionInfo &p_function_info, const StringName &p_identifier, DataType *r_data_type = nullptr, IdentifierType *r_type = nullptr, bool *r_is_const = nullptr, int *r_array_size = nullptr, StringName *r_struct_name = nullptr, ConstantNode::Value *r_constant_value = nullptr);
+	bool _find_identifier(const BlockNode *p_block, bool p_allow_reassign, const FunctionInfo &p_function_info, const StringName &p_identifier, DataType *r_data_type = nullptr, IdentifierType *r_type = nullptr, bool *r_is_const = nullptr, int *r_array_size = nullptr, StringName *r_struct_name = nullptr, Vector<Scalar> *r_constant_values = nullptr);
 #ifdef DEBUG_ENABLED
 	void _parse_used_identifier(const StringName &p_identifier, IdentifierType p_type, const StringName &p_function);
 #endif // DEBUG_ENABLED
 	bool _is_operator_assign(Operator p_op) const;
 	bool _validate_assign(Node *p_node, const FunctionInfo &p_function_info, String *r_message = nullptr);
-	bool _validate_operator(OperatorNode *p_op, DataType *r_ret_type = nullptr, int *r_ret_size = nullptr);
+	bool _validate_operator(const BlockNode *p_block, OperatorNode *p_op, DataType *r_ret_type = nullptr, int *r_ret_size = nullptr);
+
+	Vector<Scalar> _get_node_values(const BlockNode *p_block, Node *p_node);
+	bool _eval_operator(const BlockNode *p_block, OperatorNode *p_op);
+	Scalar _eval_unary_scalar(const Scalar &p_a, Operator p_op, DataType p_ret_type);
+	Scalar _eval_scalar(const Scalar &p_a, const Scalar &p_b, Operator p_op, DataType p_ret_type, bool &r_is_valid);
+	Vector<Scalar> _eval_unary_vector(const Vector<Scalar> &p_va, DataType p_ret_type, Operator p_op);
+	Vector<Scalar> _eval_vector(const Vector<Scalar> &p_va, const Vector<Scalar> &p_vb, DataType p_left_type, DataType p_right_type, DataType p_ret_type, Operator p_op, bool &r_is_valid);
+	Vector<Scalar> _eval_vector_transform(const Vector<Scalar> &p_va, const Vector<Scalar> &p_vb, DataType p_left_type, DataType p_right_type, DataType p_ret_type);
 
 	struct BuiltinEntry {
 		const char *name;
@@ -1139,13 +1168,13 @@ private:
 	bool _check_restricted_func(const StringName &p_name, const StringName &p_current_function) const;
 	bool _validate_restricted_func(const StringName &p_call_name, const CallInfo *p_func_info, bool p_is_builtin_hint = false);
 
-	Node *_parse_expression(BlockNode *p_block, const FunctionInfo &p_function_info);
+	Node *_parse_expression(BlockNode *p_block, const FunctionInfo &p_function_info, const ExpressionInfo *p_previous_expression_info = nullptr);
 	Error _parse_array_size(BlockNode *p_block, const FunctionInfo &p_function_info, bool p_forbid_unknown_size, Node **r_size_expression, int *r_array_size, bool *r_unknown_size);
 	Node *_parse_array_constructor(BlockNode *p_block, const FunctionInfo &p_function_info);
 	Node *_parse_array_constructor(BlockNode *p_block, const FunctionInfo &p_function_info, DataType p_type, const StringName &p_struct_name, int p_array_size);
 	ShaderLanguage::Node *_reduce_expression(BlockNode *p_block, ShaderLanguage::Node *p_node);
 
-	Node *_parse_and_reduce_expression(BlockNode *p_block, const FunctionInfo &p_function_info);
+	Node *_parse_and_reduce_expression(BlockNode *p_block, const FunctionInfo &p_function_info, const ExpressionInfo *p_previous_expression_info = nullptr);
 	Error _parse_block(BlockNode *p_block, const FunctionInfo &p_function_info, bool p_just_one = false, bool p_can_break = false, bool p_can_continue = false);
 	String _get_shader_type_list(const HashSet<String> &p_shader_types) const;
 	String _get_qualifier_str(ArgumentQualifier p_qualifier) const;

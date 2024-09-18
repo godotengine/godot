@@ -173,10 +173,7 @@ bool MenuButton::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void MenuButton::_bind_methods() {
-	// TODO: Properly handle popups when advanced GUI is disabled.
-#ifndef ADVANCED_GUI_DISABLED
 	ClassDB::bind_method(D_METHOD("get_popup"), &MenuButton::get_popup);
-#endif // ADVANCED_GUI_DISABLED
 	ClassDB::bind_method(D_METHOD("show_popup"), &MenuButton::show_popup);
 	ClassDB::bind_method(D_METHOD("set_switch_on_hover", "enable"), &MenuButton::set_switch_on_hover);
 	ClassDB::bind_method(D_METHOD("is_switch_on_hover"), &MenuButton::is_switch_on_hover);
@@ -198,7 +195,7 @@ void MenuButton::_bind_methods() {
 	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), defaults.icon);
 	base_property_helper.register_property(PropertyInfo(Variant::INT, "checkable", PROPERTY_HINT_ENUM, "No,As Checkbox,As Radio Button"), defaults.checkable_type);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "checked"), defaults.checked);
-	base_property_helper.register_property(PropertyInfo(Variant::INT, "id", PROPERTY_HINT_RANGE, "0,10,1,or_greater"), defaults.id);
+	base_property_helper.register_property(PropertyInfo(Variant::INT, "id", PROPERTY_HINT_RANGE, "0,10,1,or_greater", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL), defaults.id);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "separator"), defaults.separator);
 	PropertyListHelper::register_base_helper(&base_property_helper);

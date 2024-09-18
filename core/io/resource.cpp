@@ -40,12 +40,12 @@
 #include <stdio.h>
 
 void Resource::emit_changed() {
-	if (ResourceLoader::is_within_load() && MessageQueue::get_main_singleton() != MessageQueue::get_singleton() && !MessageQueue::get_singleton()->is_flushing()) {
-		// Let the connection happen on the call queue, later, since signals are not thread-safe.
-		call_deferred("emit_signal", CoreStringName(changed));
-	} else {
-		emit_signal(CoreStringName(changed));
+	if (ResourceLoader::is_within_load() && !Thread::is_main_thread()) {
+		ResourceLoader::resource_changed_emit(this);
+		return;
 	}
+
+	emit_signal(CoreStringName(changed));
 }
 
 void Resource::_resource_path_changed() {
@@ -60,32 +60,32 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 		p_take_over = false; // Can't take over an empty path
 	}
 
-	ResourceCache::lock.lock();
+	{
+		MutexLock lock(ResourceCache::lock);
 
-	if (!path_cache.is_empty()) {
-		ResourceCache::resources.erase(path_cache);
-	}
+		if (!path_cache.is_empty()) {
+			ResourceCache::resources.erase(path_cache);
+		}
 
-	path_cache = "";
+		path_cache = "";
 
-	Ref<Resource> existing = ResourceCache::get_ref(p_path);
+		Ref<Resource> existing = ResourceCache::get_ref(p_path);
 
-	if (existing.is_valid()) {
-		if (p_take_over) {
-			existing->path_cache = String();
-			ResourceCache::resources.erase(p_path);
-		} else {
-			ResourceCache::lock.unlock();
-			ERR_FAIL_MSG("Another resource is loaded from path '" + p_path + "' (possible cyclic resource inclusion).");
+		if (existing.is_valid()) {
+			if (p_take_over) {
+				existing->path_cache = String();
+				ResourceCache::resources.erase(p_path);
+			} else {
+				ERR_FAIL_MSG("Another resource is loaded from path '" + p_path + "' (possible cyclic resource inclusion).");
+			}
+		}
+
+		path_cache = p_path;
+
+		if (!path_cache.is_empty()) {
+			ResourceCache::resources[path_cache] = this;
 		}
 	}
-
-	path_cache = p_path;
-
-	if (!path_cache.is_empty()) {
-		ResourceCache::resources[path_cache] = this;
-	}
-	ResourceCache::lock.unlock();
 
 	_resource_path_changed();
 }
@@ -166,22 +166,22 @@ bool Resource::editor_can_reload_from_file() {
 }
 
 void Resource::connect_changed(const Callable &p_callable, uint32_t p_flags) {
-	if (ResourceLoader::is_within_load() && MessageQueue::get_main_singleton() != MessageQueue::get_singleton() && !MessageQueue::get_singleton()->is_flushing()) {
-		// Let the check and connection happen on the call queue, later, since signals are not thread-safe.
-		callable_mp(this, &Resource::connect_changed).call_deferred(p_callable, p_flags);
+	if (ResourceLoader::is_within_load() && !Thread::is_main_thread()) {
+		ResourceLoader::resource_changed_connect(this, p_callable, p_flags);
 		return;
 	}
+
 	if (!is_connected(CoreStringName(changed), p_callable) || p_flags & CONNECT_REFERENCE_COUNTED) {
 		connect(CoreStringName(changed), p_callable, p_flags);
 	}
 }
 
 void Resource::disconnect_changed(const Callable &p_callable) {
-	if (ResourceLoader::is_within_load() && MessageQueue::get_main_singleton() != MessageQueue::get_singleton() && !MessageQueue::get_singleton()->is_flushing()) {
-		// Let the check and disconnection happen on the call queue, later, since signals are not thread-safe.
-		callable_mp(this, &Resource::disconnect_changed).call_deferred(p_callable);
+	if (ResourceLoader::is_within_load() && !Thread::is_main_thread()) {
+		ResourceLoader::resource_changed_disconnect(this, p_callable);
 		return;
 	}
+
 	if (is_connected(CoreStringName(changed), p_callable)) {
 		disconnect(CoreStringName(changed), p_callable);
 	}
@@ -416,21 +416,15 @@ void Resource::_take_over_path(const String &p_path) {
 }
 
 RID Resource::get_rid() const {
-	if (get_script_instance()) {
-		Callable::CallError ce;
-		RID ret = get_script_instance()->callp(SNAME("_get_rid"), nullptr, 0, ce);
-		if (ce.error == Callable::CallError::CALL_OK && ret.is_valid()) {
-			return ret;
+	RID ret;
+	if (!GDVIRTUAL_CALL(_get_rid, ret)) {
+#ifndef DISABLE_DEPRECATED
+		if (_get_extension() && _get_extension()->get_rid) {
+			ret = RID::from_uint64(_get_extension()->get_rid(_get_extension_instance()));
 		}
+#endif
 	}
-	if (_get_extension() && _get_extension()->get_rid) {
-		RID ret = RID::from_uint64(_get_extension()->get_rid(_get_extension_instance()));
-		if (ret.is_valid()) {
-			return ret;
-		}
-	}
-
-	return RID();
+	return ret;
 }
 
 #ifdef TOOLS_ENABLED
@@ -492,15 +486,13 @@ void Resource::set_as_translation_remapped(bool p_remapped) {
 		return;
 	}
 
-	ResourceCache::lock.lock();
+	MutexLock lock(ResourceCache::lock);
 
 	if (p_remapped) {
 		ResourceLoader::remapped_list.add(&remapped_list);
 	} else {
 		ResourceLoader::remapped_list.remove(&remapped_list);
 	}
-
-	ResourceCache::lock.unlock();
 }
 
 #ifdef TOOLS_ENABLED
@@ -558,11 +550,8 @@ void Resource::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_name"), "set_name", "get_name");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_scene_unique_id", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_scene_unique_id", "get_scene_unique_id");
 
-	MethodInfo get_rid_bind("_get_rid");
-	get_rid_bind.return_val.type = Variant::RID;
-
-	::ClassDB::add_virtual_method(get_class_static(), get_rid_bind, true, Vector<String>(), true);
 	GDVIRTUAL_BIND(_setup_local_to_scene);
+	GDVIRTUAL_BIND(_get_rid);
 }
 
 Resource::Resource() :
@@ -573,14 +562,13 @@ Resource::~Resource() {
 		return;
 	}
 
-	ResourceCache::lock.lock();
+	MutexLock lock(ResourceCache::lock);
 	// Only unregister from the cache if this is the actual resource listed there.
 	// (Other resources can have the same value in `path_cache` if loaded with `CACHE_IGNORE`.)
 	HashMap<String, Resource *>::Iterator E = ResourceCache::resources.find(path_cache);
 	if (likely(E && E->value == this)) {
 		ResourceCache::resources.remove(E);
 	}
-	ResourceCache::lock.unlock();
 }
 
 HashMap<String, Resource *> ResourceCache::resources;
@@ -609,18 +597,20 @@ void ResourceCache::clear() {
 }
 
 bool ResourceCache::has(const String &p_path) {
-	lock.lock();
+	Resource **res = nullptr;
 
-	Resource **res = resources.getptr(p_path);
+	{
+		MutexLock mutex_lock(lock);
 
-	if (res && (*res)->get_reference_count() == 0) {
-		// This resource is in the process of being deleted, ignore its existence.
-		(*res)->path_cache = String();
-		resources.erase(p_path);
-		res = nullptr;
+		res = resources.getptr(p_path);
+
+		if (res && (*res)->get_reference_count() == 0) {
+			// This resource is in the process of being deleted, ignore its existence.
+			(*res)->path_cache = String();
+			resources.erase(p_path);
+			res = nullptr;
+		}
 	}
-
-	lock.unlock();
 
 	if (!res) {
 		return false;
@@ -631,28 +621,27 @@ bool ResourceCache::has(const String &p_path) {
 
 Ref<Resource> ResourceCache::get_ref(const String &p_path) {
 	Ref<Resource> ref;
-	lock.lock();
+	{
+		MutexLock mutex_lock(lock);
+		Resource **res = resources.getptr(p_path);
 
-	Resource **res = resources.getptr(p_path);
+		if (res) {
+			ref = Ref<Resource>(*res);
+		}
 
-	if (res) {
-		ref = Ref<Resource>(*res);
+		if (res && !ref.is_valid()) {
+			// This resource is in the process of being deleted, ignore its existence
+			(*res)->path_cache = String();
+			resources.erase(p_path);
+			res = nullptr;
+		}
 	}
-
-	if (res && !ref.is_valid()) {
-		// This resource is in the process of being deleted, ignore its existence
-		(*res)->path_cache = String();
-		resources.erase(p_path);
-		res = nullptr;
-	}
-
-	lock.unlock();
 
 	return ref;
 }
 
 void ResourceCache::get_cached_resources(List<Ref<Resource>> *p_resources) {
-	lock.lock();
+	MutexLock mutex_lock(lock);
 
 	LocalVector<String> to_remove;
 
@@ -672,14 +661,9 @@ void ResourceCache::get_cached_resources(List<Ref<Resource>> *p_resources) {
 	for (const String &E : to_remove) {
 		resources.erase(E);
 	}
-
-	lock.unlock();
 }
 
 int ResourceCache::get_cached_resource_count() {
-	lock.lock();
-	int rc = resources.size();
-	lock.unlock();
-
-	return rc;
+	MutexLock mutex_lock(lock);
+	return resources.size();
 }

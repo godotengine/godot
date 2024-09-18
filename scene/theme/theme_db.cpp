@@ -198,21 +198,21 @@ Ref<StyleBox> ThemeDB::get_fallback_stylebox() {
 	return fallback_stylebox;
 }
 
-void ThemeDB::get_native_type_dependencies(const StringName &p_base_type, List<StringName> *p_list) {
-	ERR_FAIL_NULL(p_list);
+void ThemeDB::get_native_type_dependencies(const StringName &p_base_type, Vector<StringName> &r_result) {
+	if (p_base_type == StringName()) {
+		return;
+	}
 
 	// TODO: It may make sense to stop at Control/Window, because their parent classes cannot be used in
 	// a meaningful way.
-	StringName class_name = p_base_type;
-	while (class_name != StringName()) {
-		p_list->push_back(class_name);
-		class_name = ClassDB::get_parent_class_nocheck(class_name);
+	if (!ClassDB::get_inheritance_chain_nocheck(p_base_type, r_result)) {
+		r_result.push_back(p_base_type);
 	}
 }
 
 // Global theme contexts.
 
-ThemeContext *ThemeDB::create_theme_context(Node *p_node, List<Ref<Theme>> &p_themes) {
+ThemeContext *ThemeDB::create_theme_context(Node *p_node, Vector<Ref<Theme>> &p_themes) {
 	ERR_FAIL_COND_V(!p_node->is_inside_tree(), nullptr);
 	ERR_FAIL_COND_V(theme_contexts.has(p_node), nullptr);
 	ERR_FAIL_COND_V(p_themes.is_empty(), nullptr);
@@ -270,7 +270,7 @@ void ThemeDB::_propagate_theme_context(Node *p_from_node, ThemeContext *p_contex
 void ThemeDB::_init_default_theme_context() {
 	default_theme_context = memnew(ThemeContext);
 
-	List<Ref<Theme>> themes;
+	Vector<Ref<Theme>> themes;
 
 	// Only add the project theme to the default context when running projects.
 
@@ -365,7 +365,7 @@ void ThemeDB::update_class_instance_items(Node *p_instance) {
 		HashMap<StringName, HashMap<StringName, ThemeItemBind>>::Iterator E = theme_item_binds.find(class_name);
 		if (E) {
 			for (const KeyValue<StringName, ThemeItemBind> &F : E->value) {
-				F.value.setter(p_instance);
+				F.value.setter(p_instance, F.value.item_name, F.value.type_name);
 			}
 		}
 
@@ -475,7 +475,7 @@ void ThemeContext::_emit_changed() {
 	emit_signal(CoreStringName(changed));
 }
 
-void ThemeContext::set_themes(List<Ref<Theme>> &p_themes) {
+void ThemeContext::set_themes(Vector<Ref<Theme>> &p_themes) {
 	for (const Ref<Theme> &theme : themes) {
 		theme->disconnect_changed(callable_mp(this, &ThemeContext::_emit_changed));
 	}
@@ -494,7 +494,7 @@ void ThemeContext::set_themes(List<Ref<Theme>> &p_themes) {
 	_emit_changed();
 }
 
-List<Ref<Theme>> ThemeContext::get_themes() const {
+const Vector<Ref<Theme>> ThemeContext::get_themes() const {
 	return themes;
 }
 
@@ -504,7 +504,7 @@ Ref<Theme> ThemeContext::get_fallback_theme() const {
 		return ThemeDB::get_singleton()->get_default_theme();
 	}
 
-	return themes.back()->get();
+	return themes[themes.size() - 1];
 }
 
 void ThemeContext::_bind_methods() {

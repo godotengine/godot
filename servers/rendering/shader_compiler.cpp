@@ -185,7 +185,7 @@ static String f2sp0(float p_float) {
 	return num;
 }
 
-static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNode::Value> &p_values) {
+static String get_constant_text(SL::DataType p_type, const Vector<SL::Scalar> &p_values) {
 	switch (p_type) {
 		case SL::TYPE_BOOL:
 			return p_values[0].boolean ? "true" : "false";
@@ -1134,9 +1134,16 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				case SL::OP_NEGATE:
 				case SL::OP_NOT:
 				case SL::OP_DECREMENT:
-				case SL::OP_INCREMENT:
-					code = _opstr(onode->op) + _dump_node_code(onode->arguments[0], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
-					break;
+				case SL::OP_INCREMENT: {
+					const String node_code = _dump_node_code(onode->arguments[0], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+
+					if (onode->op == SL::OP_NEGATE && node_code.begins_with("-")) { // To prevent writing unary minus twice.
+						code = node_code;
+					} else {
+						code = _opstr(onode->op) + node_code;
+					}
+
+				} break;
 				case SL::OP_POST_DECREMENT:
 				case SL::OP_POST_INCREMENT:
 					code = _dump_node_code(onode->arguments[0], p_level, r_gen_code, p_actions, p_default_actions, p_assigning) + _opstr(onode->op);

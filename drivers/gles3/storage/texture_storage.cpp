@@ -1039,7 +1039,7 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 		data.resize(data_size);
 
 		ERR_FAIL_COND_V(data.is_empty(), Ref<Image>());
-		image = Image::create_from_data(texture->width, texture->height, texture->mipmaps > 1, texture->real_format, data);
+		image = Image::create_from_data(texture->alloc_width, texture->alloc_height, texture->mipmaps > 1, texture->real_format, data);
 		ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
 		if (texture->format != texture->real_format) {
 			image->convert(texture->format);
@@ -1095,7 +1095,7 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 		data.resize(data_size);
 
 		ERR_FAIL_COND_V(data.is_empty(), Ref<Image>());
-		image = Image::create_from_data(texture->width, texture->height, false, Image::FORMAT_RGBA8, data);
+		image = Image::create_from_data(texture->alloc_width, texture->alloc_height, false, Image::FORMAT_RGBA8, data);
 		ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
 
 		if (texture->format != Image::FORMAT_RGBA8) {
@@ -1389,8 +1389,22 @@ void TextureStorage::texture_debug_usage(List<RS::TextureInfo> *r_info) {
 		tinfo.format = t->format;
 		tinfo.width = t->alloc_width;
 		tinfo.height = t->alloc_height;
-		tinfo.depth = t->depth;
 		tinfo.bytes = t->total_data_size;
+
+		switch (t->type) {
+			case Texture::TYPE_3D:
+				tinfo.depth = t->depth;
+				break;
+
+			case Texture::TYPE_LAYERED:
+				tinfo.depth = t->layers;
+				break;
+
+			default:
+				tinfo.depth = 0;
+				break;
+		}
+
 		r_info->push_back(tinfo);
 	}
 }
@@ -1497,11 +1511,9 @@ void TextureStorage::_texture_set_data(RID p_texture, const Ref<Image> &p_image,
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 			if (texture->target == GL_TEXTURE_2D_ARRAY) {
 				if (p_initialize) {
-					glCompressedTexImage3D(GL_TEXTURE_2D_ARRAY, i, internal_format, w, h, texture->layers, 0,
-							size * texture->layers, &read[ofs]);
-				} else {
-					glCompressedTexSubImage3D(GL_TEXTURE_2D_ARRAY, i, 0, 0, p_layer, w, h, 1, internal_format, size, &read[ofs]);
+					glCompressedTexImage3D(GL_TEXTURE_2D_ARRAY, i, internal_format, w, h, texture->layers, 0, size * texture->layers, nullptr);
 				}
+				glCompressedTexSubImage3D(GL_TEXTURE_2D_ARRAY, i, 0, 0, p_layer, w, h, 1, internal_format, size, &read[ofs]);
 			} else {
 				glCompressedTexImage2D(blit_target, i, internal_format, w, h, 0, size, &read[ofs]);
 			}
@@ -1523,7 +1535,11 @@ void TextureStorage::_texture_set_data(RID p_texture, const Ref<Image> &p_image,
 		h = MAX(1, h >> 1);
 	}
 
-	texture->total_data_size = tsize;
+	if (texture->target == GL_TEXTURE_CUBE_MAP || texture->target == GL_TEXTURE_2D_ARRAY) {
+		texture->total_data_size = tsize * texture->layers;
+	} else {
+		texture->total_data_size = tsize;
+	}
 
 	texture->stored_cube_sides |= (1 << p_layer);
 
@@ -1678,6 +1694,14 @@ uint32_t TextureStorage::texture_get_texid(RID p_texture) const {
 	ERR_FAIL_NULL_V(texture, 0);
 
 	return texture->tex_id;
+}
+
+Vector3i TextureStorage::texture_get_size(RID p_texture) const {
+	Texture *texture = texture_owner.get_or_null(p_texture);
+
+	ERR_FAIL_NULL_V(texture, Vector3i(0, 0, 0));
+
+	return Vector3i(texture->width, texture->height, texture->depth);
 }
 
 uint32_t TextureStorage::texture_get_width(RID p_texture) const {

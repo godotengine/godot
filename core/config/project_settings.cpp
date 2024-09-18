@@ -1016,7 +1016,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 		}
 	}
 	// Check for the existence of a csproj file.
-	if (_csproj_exists(p_path.get_base_dir())) {
+	if (_csproj_exists(get_resource_path())) {
 		// If there is a csproj file, add the C# feature if it doesn't already exist.
 		if (!project_features.has("C#")) {
 			project_features.append("C#");
@@ -1472,10 +1472,6 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_height_override", PROPERTY_HINT_RANGE, "0,4320,1,or_greater"), 0); // 8K resolution
 
 	GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true);
-#ifdef TOOLS_ENABLED
-	GLOBAL_DEF("display/window/energy_saving/keep_screen_on.editor_hint", false);
-#endif
-
 	GLOBAL_DEF("animation/warnings/check_invalid_track_paths", true);
 	GLOBAL_DEF("animation/warnings/check_angle_interpolation_type_conflicting", true);
 
@@ -1578,6 +1574,7 @@ ProjectSettings::ProjectSettings() {
 
 ProjectSettings::ProjectSettings(const String &p_path) {
 	if (load_custom(p_path) == OK) {
+		resource_path = p_path.get_base_dir();
 		project_loaded = true;
 	}
 }

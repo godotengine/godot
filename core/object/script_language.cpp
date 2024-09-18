@@ -41,6 +41,7 @@ ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES];
 int ScriptServer::_language_count = 0;
 bool ScriptServer::languages_ready = false;
 Mutex ScriptServer::languages_mutex;
+thread_local bool ScriptServer::thread_entered = false;
 
 bool ScriptServer::scripting_enabled = true;
 bool ScriptServer::reload_scripts_on_save = false;
@@ -172,6 +173,8 @@ void Script::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_tool"), &Script::is_tool);
 	ClassDB::bind_method(D_METHOD("is_abstract"), &Script::is_abstract);
+
+	ClassDB::bind_method(D_METHOD("get_rpc_config"), &Script::get_rpc_config);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "source_code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_source_code", "get_source_code");
 }
@@ -326,6 +329,10 @@ bool ScriptServer::are_languages_initialized() {
 	return languages_ready;
 }
 
+bool ScriptServer::thread_is_entered() {
+	return thread_entered;
+}
+
 void ScriptServer::set_reload_scripts_on_save(bool p_enable) {
 	reload_scripts_on_save = p_enable;
 }
@@ -335,6 +342,10 @@ bool ScriptServer::is_reload_scripts_on_save_enabled() {
 }
 
 void ScriptServer::thread_enter() {
+	if (thread_entered) {
+		return;
+	}
+
 	MutexLock lock(languages_mutex);
 	if (!languages_ready) {
 		return;
@@ -342,9 +353,15 @@ void ScriptServer::thread_enter() {
 	for (int i = 0; i < _language_count; i++) {
 		_languages[i]->thread_enter();
 	}
+
+	thread_entered = true;
 }
 
 void ScriptServer::thread_exit() {
+	if (!thread_entered) {
+		return;
+	}
+
 	MutexLock lock(languages_mutex);
 	if (!languages_ready) {
 		return;
@@ -352,6 +369,8 @@ void ScriptServer::thread_exit() {
 	for (int i = 0; i < _language_count; i++) {
 		_languages[i]->thread_exit();
 	}
+
+	thread_entered = false;
 }
 
 HashMap<StringName, ScriptServer::GlobalScriptClass> ScriptServer::global_classes;
@@ -702,6 +721,19 @@ bool PlaceHolderScriptInstance::has_method(const StringName &p_method) const {
 		}
 	}
 	return false;
+}
+
+Variant PlaceHolderScriptInstance::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+	r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+#if TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		return String("Attempt to call a method on a placeholder instance. Check if the script is in tool mode.");
+	} else {
+		return String("Attempt to call a method on a placeholder instance. Probably a bug, please report.");
+	}
+#else
+	return Variant();
+#endif // TOOLS_ENABLED
 }
 
 void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, const HashMap<StringName, Variant> &p_values) {

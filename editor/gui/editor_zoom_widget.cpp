@@ -141,22 +141,15 @@ void EditorZoomWidget::set_zoom_by_increments(int p_increment_count, bool p_inte
 			}
 		}
 	} else {
-		// Base increment factor defined as the twelveth root of two.
-		// This allows for a smooth geometric evolution of the zoom, with the advantage of
-		// visiting all integer power of two scale factors.
-		// Note: this is analogous to the 'semitone' interval in the music world
-		// In order to avoid numerical imprecisions, we compute and edit a zoom index
-		// with the following relation: zoom = 2 ^ (index / 12)
-
 		if (zoom < CMP_EPSILON || p_increment_count == 0) {
 			return;
 		}
 
-		// zoom = 2**(index/12) => log2(zoom) = index/12
-		float closest_zoom_index = Math::round(Math::log(zoom_noscale) * 12.f / Math::log(2.f));
-
-		float new_zoom_index = closest_zoom_index + p_increment_count;
-		float new_zoom = Math::pow(2.f, new_zoom_index / 12.f);
+		// Zoom is calculated as pow(zoom_factor, zoom_step).
+		// This ensures the zoom will always equal 100% when zoom_step is 0.
+		float zoom_factor = EDITOR_GET("editors/2d/zoom_speed_factor");
+		float current_zoom_step = Math::round(Math::log(zoom_noscale) / Math::log(zoom_factor));
+		float new_zoom = Math::pow(zoom_factor, current_zoom_step + p_increment_count);
 
 		// Restore Editor scale transformation.
 		new_zoom *= MAX(1, EDSCALE);

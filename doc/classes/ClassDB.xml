@@ -16,6 +16,14 @@
 				Returns [code]true[/code] if objects can be instantiated from the specified [param class], otherwise returns [code]false[/code].
 			</description>
 		</method>
+		<method name="class_call_static_method" qualifiers="vararg">
+			<return type="Variant" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="method" type="StringName" />
+			<description>
+				Calls a static method on a class.
+			</description>
+		</method>
 		<method name="class_exists" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="class" type="StringName" />

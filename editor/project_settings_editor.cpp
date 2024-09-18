@@ -221,7 +221,7 @@ void ProjectSettingsEditor::_update_property_box() {
 
 		const Vector<String> names = name.split("/");
 		for (int i = 0; i < names.size(); i++) {
-			if (!names[i].is_valid_identifier()) {
+			if (!names[i].is_valid_ascii_identifier()) {
 				return;
 			}
 		}
@@ -652,7 +652,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	advanced = memnew(CheckButton);
 	advanced->set_text(TTR("Advanced Settings"));
-	advanced->connect("toggled", callable_mp(this, &ProjectSettingsEditor::_advanced_toggled));
+	advanced->connect(SceneStringName(toggled), callable_mp(this, &ProjectSettingsEditor::_advanced_toggled));
 	search_bar->add_child(advanced);
 
 	custom_properties = memnew(HBoxContainer);

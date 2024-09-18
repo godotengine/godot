@@ -18,8 +18,8 @@ func test():
 	test_instance.number = 42
 
 	var test_sub = TestSub.new()
-	assert(test_sub.number == 25)  # From Test.
-	assert(test_sub.other_string == "bye")  # From TestSub.
+	Utils.check(test_sub.number == 25)  # From Test.
+	Utils.check(test_sub.other_string == "bye")  # From TestSub.
 
 	var _test_constructor = TestConstructor.new()
 	_test_constructor = TestConstructor.new(500)

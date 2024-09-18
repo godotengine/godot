@@ -297,6 +297,8 @@ private:
 
 	SafeList<AudioStreamPlaybackListNode *> playback_list;
 	SafeList<AudioStreamPlaybackBusDetails *> bus_details_graveyard;
+	void _delete_stream_playback(Ref<AudioStreamPlayback> p_playback);
+	void _delete_stream_playback_list_node(AudioStreamPlaybackListNode *p_node);
 
 	// TODO document if this is necessary.
 	SafeList<AudioStreamPlaybackBusDetails *> bus_details_graveyard_frame_old;

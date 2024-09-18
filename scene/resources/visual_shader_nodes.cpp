@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "visual_shader_nodes.h"
+#include "visual_shader_nodes.compat.inc"
 
 #include "scene/resources/image_texture.h"
 
@@ -1353,12 +1354,12 @@ String VisualShaderNodeTexture2DArray::generate_global(Shader::Mode p_mode, Visu
 	return String();
 }
 
-void VisualShaderNodeTexture2DArray::set_texture_array(Ref<Texture2DArray> p_texture_array) {
+void VisualShaderNodeTexture2DArray::set_texture_array(Ref<TextureLayered> p_texture_array) {
 	texture_array = p_texture_array;
 	emit_changed();
 }
 
-Ref<Texture2DArray> VisualShaderNodeTexture2DArray::get_texture_array() const {
+Ref<TextureLayered> VisualShaderNodeTexture2DArray::get_texture_array() const {
 	return texture_array;
 }
 
@@ -1375,7 +1376,7 @@ void VisualShaderNodeTexture2DArray::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture_array", "value"), &VisualShaderNodeTexture2DArray::set_texture_array);
 	ClassDB::bind_method(D_METHOD("get_texture_array"), &VisualShaderNodeTexture2DArray::get_texture_array);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_array", PROPERTY_HINT_RESOURCE_TYPE, "Texture2DArray"), "set_texture_array", "get_texture_array");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_array", PROPERTY_HINT_RESOURCE_TYPE, "Texture2DArray,CompressedTexture2DArray,PlaceholderTexture2DArray,Texture2DArrayRD"), "set_texture_array", "get_texture_array");
 }
 
 VisualShaderNodeTexture2DArray::VisualShaderNodeTexture2DArray() {
@@ -1568,12 +1569,12 @@ VisualShaderNodeCubemap::Source VisualShaderNodeCubemap::get_source() const {
 	return source;
 }
 
-void VisualShaderNodeCubemap::set_cube_map(Ref<Cubemap> p_cube_map) {
+void VisualShaderNodeCubemap::set_cube_map(Ref<TextureLayered> p_cube_map) {
 	cube_map = p_cube_map;
 	emit_changed();
 }
 
-Ref<Cubemap> VisualShaderNodeCubemap::get_cube_map() const {
+Ref<TextureLayered> VisualShaderNodeCubemap::get_cube_map() const {
 	return cube_map;
 }
 
@@ -1618,7 +1619,7 @@ void VisualShaderNodeCubemap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_texture_type"), &VisualShaderNodeCubemap::get_texture_type);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "source", PROPERTY_HINT_ENUM, "Texture,SamplerPort"), "set_source", "get_source");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "cube_map", PROPERTY_HINT_RESOURCE_TYPE, "Cubemap"), "set_cube_map", "get_cube_map");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "cube_map", PROPERTY_HINT_RESOURCE_TYPE, "Cubemap,CompressedCubemap,PlaceholderCubemap,TextureCubemapRD"), "set_cube_map", "get_cube_map");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_type", PROPERTY_HINT_ENUM, "Data,Color,Normal Map"), "set_texture_type", "get_texture_type");
 
 	BIND_ENUM_CONSTANT(SOURCE_TEXTURE);
@@ -5368,6 +5369,20 @@ String VisualShaderNodeIntParameter::generate_global(Shader::Mode p_mode, Visual
 		code += _get_qual_str() + "uniform int " + get_parameter_name() + " : hint_range(" + itos(hint_range_min) + ", " + itos(hint_range_max) + ")";
 	} else if (hint == HINT_RANGE_STEP) {
 		code += _get_qual_str() + "uniform int " + get_parameter_name() + " : hint_range(" + itos(hint_range_min) + ", " + itos(hint_range_max) + ", " + itos(hint_range_step) + ")";
+	} else if (hint == HINT_ENUM) {
+		code += _get_qual_str() + "uniform int " + get_parameter_name() + " : hint_enum(";
+
+		bool first = true;
+		for (const String &_name : hint_enum_names) {
+			if (first) {
+				first = false;
+			} else {
+				code += ", ";
+			}
+			code += "\"" + _name.c_escape() + "\"";
+		}
+
+		code += ")";
 	} else {
 		code += _get_qual_str() + "uniform int " + get_parameter_name();
 	}
@@ -5439,6 +5454,18 @@ int VisualShaderNodeIntParameter::get_step() const {
 	return hint_range_step;
 }
 
+void VisualShaderNodeIntParameter::set_enum_names(const PackedStringArray &p_names) {
+	if (hint_enum_names == p_names) {
+		return;
+	}
+	hint_enum_names = p_names;
+	emit_changed();
+}
+
+PackedStringArray VisualShaderNodeIntParameter::get_enum_names() const {
+	return hint_enum_names;
+}
+
 void VisualShaderNodeIntParameter::set_default_value_enabled(bool p_default_value_enabled) {
 	if (default_value_enabled == p_default_value_enabled) {
 		return;
@@ -5476,22 +5503,27 @@ void VisualShaderNodeIntParameter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_step", "value"), &VisualShaderNodeIntParameter::set_step);
 	ClassDB::bind_method(D_METHOD("get_step"), &VisualShaderNodeIntParameter::get_step);
 
+	ClassDB::bind_method(D_METHOD("set_enum_names", "names"), &VisualShaderNodeIntParameter::set_enum_names);
+	ClassDB::bind_method(D_METHOD("get_enum_names"), &VisualShaderNodeIntParameter::get_enum_names);
+
 	ClassDB::bind_method(D_METHOD("set_default_value_enabled", "enabled"), &VisualShaderNodeIntParameter::set_default_value_enabled);
 	ClassDB::bind_method(D_METHOD("is_default_value_enabled"), &VisualShaderNodeIntParameter::is_default_value_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_default_value", "value"), &VisualShaderNodeIntParameter::set_default_value);
 	ClassDB::bind_method(D_METHOD("get_default_value"), &VisualShaderNodeIntParameter::get_default_value);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "hint", PROPERTY_HINT_ENUM, "None,Range,Range + Step"), "set_hint", "get_hint");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "hint", PROPERTY_HINT_ENUM, "None,Range,Range + Step,Enum"), "set_hint", "get_hint");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "min"), "set_min", "get_min");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max"), "set_max", "get_max");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "step"), "set_step", "get_step");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "enum_names"), "set_enum_names", "get_enum_names");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "default_value_enabled"), "set_default_value_enabled", "is_default_value_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "default_value"), "set_default_value", "get_default_value");
 
 	BIND_ENUM_CONSTANT(HINT_NONE);
 	BIND_ENUM_CONSTANT(HINT_RANGE);
 	BIND_ENUM_CONSTANT(HINT_RANGE_STEP);
+	BIND_ENUM_CONSTANT(HINT_ENUM);
 	BIND_ENUM_CONSTANT(HINT_MAX);
 }
 
@@ -5512,6 +5544,9 @@ Vector<StringName> VisualShaderNodeIntParameter::get_editable_properties() const
 	}
 	if (hint == HINT_RANGE_STEP) {
 		props.push_back("step");
+	}
+	if (hint == HINT_ENUM) {
+		props.push_back("enum_names");
 	}
 	props.push_back("default_value_enabled");
 	if (default_value_enabled) {

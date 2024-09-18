@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "translation_server.h"
-#include "translation_server.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
@@ -284,6 +283,11 @@ String TranslationServer::_standardize_locale(const String &p_locale, bool p_add
 }
 
 int TranslationServer::compare_locales(const String &p_locale_a, const String &p_locale_b) const {
+	if (p_locale_a == p_locale_b) {
+		// Exact match.
+		return 10;
+	}
+
 	String locale_a = _standardize_locale(p_locale_a, true);
 	String locale_b = _standardize_locale(p_locale_b, true);
 

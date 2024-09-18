@@ -325,7 +325,7 @@ int mbedtls_ecdh_read_params(mbedtls_ecdh_context *ctx,
  * \brief           This function sets up an ECDH context from an EC key.
  *
  *                  It is used by clients and servers in place of the
- *                  ServerKeyEchange for static ECDH, and imports ECDH
+ *                  ServerKeyExchange for static ECDH, and imports ECDH
  *                  parameters from the EC key information of a certificate.
  *
  * \see             ecp.h

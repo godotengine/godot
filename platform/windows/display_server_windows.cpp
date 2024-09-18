@@ -133,9 +133,17 @@ String DisplayServerWindows::get_name() const {
 }
 
 void DisplayServerWindows::_set_mouse_mode_impl(MouseMode p_mode) {
+	if (p_mode == MOUSE_MODE_HIDDEN || p_mode == MOUSE_MODE_CAPTURED || p_mode == MOUSE_MODE_CONFINED_HIDDEN) {
+		// Hide cursor before moving.
+		if (hCursor == nullptr) {
+			hCursor = SetCursor(nullptr);
+		} else {
+			SetCursor(nullptr);
+		}
+	}
+
 	if (windows.has(MAIN_WINDOW_ID) && (p_mode == MOUSE_MODE_CAPTURED || p_mode == MOUSE_MODE_CONFINED || p_mode == MOUSE_MODE_CONFINED_HIDDEN)) {
 		// Mouse is grabbed (captured or confined).
-
 		WindowID window_id = _get_focused_window_or_popup();
 		if (!windows.has(window_id)) {
 			window_id = MAIN_WINDOW_ID;
@@ -165,13 +173,8 @@ void DisplayServerWindows::_set_mouse_mode_impl(MouseMode p_mode) {
 		_register_raw_input_devices(INVALID_WINDOW_ID);
 	}
 
-	if (p_mode == MOUSE_MODE_HIDDEN || p_mode == MOUSE_MODE_CAPTURED || p_mode == MOUSE_MODE_CONFINED_HIDDEN) {
-		if (hCursor == nullptr) {
-			hCursor = SetCursor(nullptr);
-		} else {
-			SetCursor(nullptr);
-		}
-	} else {
+	if (p_mode == MOUSE_MODE_VISIBLE || p_mode == MOUSE_MODE_CONFINED) {
+		// Show cursor.
 		CursorShape c = cursor_shape;
 		cursor_shape = CURSOR_MAX;
 		cursor_set_shape(c);
@@ -314,7 +317,7 @@ public:
 		if (!lpw_path) {
 			return S_FALSE;
 		}
-		String path = String::utf16((const char16_t *)lpw_path).simplify_path();
+		String path = String::utf16((const char16_t *)lpw_path).replace("\\", "/").trim_prefix(R"(\\?\)").simplify_path();
 		if (!path.begins_with(root.simplify_path())) {
 			return S_FALSE;
 		}
@@ -519,7 +522,7 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 			if (!item.has("name") || !item.has("values") || !item.has("default")) {
 				continue;
 			}
-			event_handler->add_option(pfdc, item["name"], item["values"], item["default_idx"]);
+			event_handler->add_option(pfdc, item["name"], item["values"], item["default"]);
 		}
 		event_handler->set_root(fd->root);
 
@@ -539,7 +542,26 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 		pfd->SetOptions(flags | FOS_FORCEFILESYSTEM);
 		pfd->SetTitle((LPCWSTR)fd->title.utf16().ptr());
 
-		String dir = fd->current_directory.replace("/", "\\");
+		String dir = ProjectSettings::get_singleton()->globalize_path(fd->current_directory);
+		if (dir == ".") {
+			dir = OS::get_singleton()->get_executable_path().get_base_dir();
+		}
+		if (dir.is_relative_path() || dir == ".") {
+			Char16String current_dir_name;
+			size_t str_len = GetCurrentDirectoryW(0, nullptr);
+			current_dir_name.resize(str_len + 1);
+			GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
+			if (dir == ".") {
+				dir = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace("\\", "/");
+			} else {
+				dir = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace("\\", "/").path_join(dir);
+			}
+		}
+		dir = dir.simplify_path();
+		dir = dir.replace("/", "\\");
+		if (!dir.is_network_share_path() && !dir.begins_with(R"(\\?\)")) {
+			dir = R"(\\?\)" + dir;
+		}
 
 		IShellItem *shellitem = nullptr;
 		hr = SHCreateItemFromParsingName((LPCWSTR)dir.utf16().ptr(), nullptr, IID_IShellItem, (void **)&shellitem);
@@ -582,7 +604,7 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 						PWSTR file_path = nullptr;
 						hr = result->GetDisplayName(SIGDN_FILESYSPATH, &file_path);
 						if (SUCCEEDED(hr)) {
-							file_names.push_back(String::utf16((const char16_t *)file_path));
+							file_names.push_back(String::utf16((const char16_t *)file_path).replace("\\", "/").trim_prefix(R"(\\?\)"));
 							CoTaskMemFree(file_path);
 						}
 						result->Release();
@@ -596,69 +618,48 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 					PWSTR file_path = nullptr;
 					hr = result->GetDisplayName(SIGDN_FILESYSPATH, &file_path);
 					if (SUCCEEDED(hr)) {
-						file_names.push_back(String::utf16((const char16_t *)file_path));
+						file_names.push_back(String::utf16((const char16_t *)file_path).replace("\\", "/").trim_prefix(R"(\\?\)"));
 						CoTaskMemFree(file_path);
 					}
 					result->Release();
 				}
 			}
 			if (fd->callback.is_valid()) {
-				if (fd->options_in_cb) {
-					Variant v_result = true;
-					Variant v_files = file_names;
-					Variant v_index = index;
-					Variant v_opt = options;
-					const Variant *cb_args[4] = { &v_result, &v_files, &v_index, &v_opt };
-
-					fd->callback.call_deferredp(cb_args, 4);
-				} else {
-					Variant v_result = true;
-					Variant v_files = file_names;
-					Variant v_index = index;
-					const Variant *cb_args[3] = { &v_result, &v_files, &v_index };
-
-					fd->callback.call_deferredp(cb_args, 3);
-				}
+				MutexLock lock(ds->file_dialog_mutex);
+				FileDialogCallback cb;
+				cb.callback = fd->callback;
+				cb.status = true;
+				cb.files = file_names;
+				cb.index = index;
+				cb.options = options;
+				cb.opt_in_cb = fd->options_in_cb;
+				ds->pending_cbs.push_back(cb);
 			}
 		} else {
 			if (fd->callback.is_valid()) {
-				if (fd->options_in_cb) {
-					Variant v_result = false;
-					Variant v_files = Vector<String>();
-					Variant v_index = 0;
-					Variant v_opt = Dictionary();
-					const Variant *cb_args[4] = { &v_result, &v_files, &v_index, &v_opt };
-
-					fd->callback.call_deferredp(cb_args, 4);
-				} else {
-					Variant v_result = false;
-					Variant v_files = Vector<String>();
-					Variant v_index = 0;
-					const Variant *cb_args[3] = { &v_result, &v_files, &v_index };
-
-					fd->callback.call_deferredp(cb_args, 3);
-				}
+				MutexLock lock(ds->file_dialog_mutex);
+				FileDialogCallback cb;
+				cb.callback = fd->callback;
+				cb.status = false;
+				cb.files = Vector<String>();
+				cb.index = index;
+				cb.options = options;
+				cb.opt_in_cb = fd->options_in_cb;
+				ds->pending_cbs.push_back(cb);
 			}
 		}
 		pfd->Release();
 	} else {
 		if (fd->callback.is_valid()) {
-			if (fd->options_in_cb) {
-				Variant v_result = false;
-				Variant v_files = Vector<String>();
-				Variant v_index = 0;
-				Variant v_opt = Dictionary();
-				const Variant *cb_args[4] = { &v_result, &v_files, &v_index, &v_opt };
-
-				fd->callback.call_deferredp(cb_args, 4);
-			} else {
-				Variant v_result = false;
-				Variant v_files = Vector<String>();
-				Variant v_index = 0;
-				const Variant *cb_args[3] = { &v_result, &v_files, &v_index };
-
-				fd->callback.call_deferredp(cb_args, 3);
-			}
+			MutexLock lock(ds->file_dialog_mutex);
+			FileDialogCallback cb;
+			cb.callback = fd->callback;
+			cb.status = false;
+			cb.files = Vector<String>();
+			cb.index = 0;
+			cb.options = Dictionary();
+			cb.opt_in_cb = fd->options_in_cb;
+			ds->pending_cbs.push_back(cb);
 		}
 	}
 	{
@@ -744,6 +745,34 @@ Error DisplayServerWindows::_file_dialog_with_options_show(const String &p_title
 	file_dialogs.push_back(fd);
 
 	return OK;
+}
+
+void DisplayServerWindows::process_file_dialog_callbacks() {
+	MutexLock lock(file_dialog_mutex);
+	while (!pending_cbs.is_empty()) {
+		FileDialogCallback cb = pending_cbs.front()->get();
+		pending_cbs.pop_front();
+
+		if (cb.opt_in_cb) {
+			Variant ret;
+			Callable::CallError ce;
+			const Variant *args[4] = { &cb.status, &cb.files, &cb.index, &cb.options };
+
+			cb.callback.callp(args, 4, ret, ce);
+			if (ce.error != Callable::CallError::CALL_OK) {
+				ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(cb.callback, args, 4, ce)));
+			}
+		} else {
+			Variant ret;
+			Callable::CallError ce;
+			const Variant *args[3] = { &cb.status, &cb.files, &cb.index };
+
+			cb.callback.callp(args, 3, ret, ce);
+			if (ce.error != Callable::CallError::CALL_OK) {
+				ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(cb.callback, args, 3, ce)));
+			}
+		}
+	}
 }
 
 void DisplayServerWindows::mouse_set_mode(MouseMode p_mode) {
@@ -3168,6 +3197,7 @@ void DisplayServerWindows::process_events() {
 		memdelete(E->get());
 		E->erase();
 	}
+	process_file_dialog_callbacks();
 }
 
 void DisplayServerWindows::force_process_and_drop_events() {
@@ -4951,6 +4981,16 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				Input::get_singleton()->parse_input_event(mbd);
 			}
 
+			// Propagate the button up event to the window on which the button down
+			// event was triggered. This is needed for drag & drop to work between windows,
+			// because the engine expects events to keep being processed
+			// on the same window dragging started.
+			if (mb->is_pressed()) {
+				last_mouse_button_down_window = window_id;
+			} else if (last_mouse_button_down_window != INVALID_WINDOW_ID) {
+				mb->set_window_id(last_mouse_button_down_window);
+				last_mouse_button_down_window = INVALID_WINDOW_ID;
+			}
 		} break;
 
 		case WM_WINDOWPOSCHANGED: {
@@ -6118,6 +6158,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 				if (rendering_context->initialize() == OK) {
 					WARN_PRINT("Your video card drivers seem not to support Direct3D 12, switching to Vulkan.");
 					rendering_driver = "vulkan";
+					OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
 					failed = false;
 				}
 			}
@@ -6131,6 +6172,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 				if (rendering_context->initialize() == OK) {
 					WARN_PRINT("Your video card drivers seem not to support Vulkan, switching to Direct3D 12.");
 					rendering_driver = "d3d12";
+					OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
 					failed = false;
 				}
 			}
@@ -6173,10 +6215,12 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 #endif
 	}
 
+	bool gl_supported = true;
 	if (fallback && (rendering_driver == "opengl3")) {
 		Dictionary gl_info = detect_wgl();
 
 		bool force_angle = false;
+		gl_supported = gl_info["version"].operator int() >= 30003;
 
 		Vector2i device_id = _get_device_ids(gl_info["name"]);
 		Array device_list = GLOBAL_GET("rendering/gl_compatibility/force_angle_on_devices");
@@ -6200,12 +6244,38 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		if (force_angle || (gl_info["version"].operator int() < 30003)) {
 			tested_drivers.set_flag(DRIVER_ID_COMPAT_OPENGL3);
 			if (show_warning) {
-				WARN_PRINT("Your video card drivers seem not to support the required OpenGL 3.3 version, switching to ANGLE.");
+				if (gl_info["version"].operator int() < 30003) {
+					WARN_PRINT("Your video card drivers seem not to support the required OpenGL 3.3 version, switching to ANGLE.");
+				} else {
+					WARN_PRINT("Your video card drivers are known to have low quality OpenGL 3.3 support, switching to ANGLE.");
+				}
 			}
 			rendering_driver = "opengl3_angle";
+			OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
 		}
 	}
 
+	if (rendering_driver == "opengl3_angle") {
+		gl_manager_angle = memnew(GLManagerANGLE_Windows);
+		tested_drivers.set_flag(DRIVER_ID_COMPAT_ANGLE_D3D11);
+
+		if (gl_manager_angle->initialize() != OK) {
+			memdelete(gl_manager_angle);
+			gl_manager_angle = nullptr;
+			bool fallback_to_native = GLOBAL_GET("rendering/gl_compatibility/fallback_to_native");
+			if (fallback_to_native && gl_supported) {
+#ifdef EGL_STATIC
+				WARN_PRINT("Your video card drivers seem not to support GLES3 / ANGLE, switching to native OpenGL.");
+#else
+				WARN_PRINT("Your video card drivers seem not to support GLES3 / ANGLE or ANGLE dynamic libraries (libEGL.dll and libGLESv2.dll) are missing, switching to native OpenGL.");
+#endif
+				rendering_driver = "opengl3";
+			} else {
+				r_error = ERR_UNAVAILABLE;
+				ERR_FAIL_MSG("Could not initialize ANGLE OpenGL.");
+			}
+		}
+	}
 	if (rendering_driver == "opengl3") {
 		gl_manager_native = memnew(GLManagerNative_Windows);
 		tested_drivers.set_flag(DRIVER_ID_COMPAT_OPENGL3);
@@ -6214,26 +6284,17 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 			memdelete(gl_manager_native);
 			gl_manager_native = nullptr;
 			r_error = ERR_UNAVAILABLE;
-			return;
+			ERR_FAIL_MSG("Could not initialize native OpenGL.");
 		}
+	}
 
+	if (rendering_driver == "opengl3") {
 		RasterizerGLES3::make_current(true);
 	}
 	if (rendering_driver == "opengl3_angle") {
-		gl_manager_angle = memnew(GLManagerANGLE_Windows);
-		tested_drivers.set_flag(DRIVER_ID_COMPAT_ANGLE_D3D11);
-
-		if (gl_manager_angle->initialize() != OK) {
-			memdelete(gl_manager_angle);
-			gl_manager_angle = nullptr;
-			r_error = ERR_UNAVAILABLE;
-			return;
-		}
-
 		RasterizerGLES3::make_current(false);
 	}
 #endif
-
 	String appname;
 	if (Engine::get_singleton()->is_editor_hint()) {
 		appname = "Godot.GodotEditor." + String(VERSION_FULL_CONFIG);

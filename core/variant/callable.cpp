@@ -112,7 +112,7 @@ Error Callable::rpcp(int p_id, const Variant **p_arguments, int p_argcount, Call
 			argptrs[i + 2] = p_arguments[i];
 		}
 
-		CallError tmp;
+		CallError tmp; // TODO: Check `tmp`?
 		Error err = (Error)obj->callp(SNAME("rpc_id"), argptrs, argcount, tmp).operator int64_t();
 
 		r_call_error.error = Callable::CallError::CALL_OK;

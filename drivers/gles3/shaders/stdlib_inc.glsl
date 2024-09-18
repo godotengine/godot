@@ -9,19 +9,17 @@
 
 // Floating point pack/unpack functions are part of the GLSL ES 300 specification used by web and mobile.
 uint float2half(uint f) {
-	uint e = f & uint(0x7f800000);
-	if (e <= uint(0x38000000)) {
-		return uint(0);
-	} else {
-		return ((f >> uint(16)) & uint(0x8000)) |
-				(((e - uint(0x38000000)) >> uint(13)) & uint(0x7c00)) |
-				((f >> uint(13)) & uint(0x03ff));
-	}
+	uint b = f + uint(0x00001000);
+	uint e = (b & uint(0x7F800000)) >> 23;
+	uint m = b & uint(0x007FFFFF);
+	return (b & uint(0x80000000)) >> uint(16) | uint(e > uint(112)) * ((((e - uint(112)) << uint(10)) & uint(0x7C00)) | m >> uint(13)) | (uint(e < uint(113)) & uint(e > uint(101))) * ((((uint(0x007FF000) + m) >> (uint(125) - e)) + uint(1)) >> uint(1)) | uint(e > uint(143)) * uint(0x7FFF);
 }
 
 uint half2float(uint h) {
-	uint h_e = h & uint(0x7c00);
-	return ((h & uint(0x8000)) << uint(16)) | uint((h_e >> uint(10)) != uint(0)) * (((h_e + uint(0x1c000)) << uint(13)) | ((h & uint(0x03ff)) << uint(13)));
+	uint e = (h & uint(0x7C00)) >> uint(10);
+	uint m = (h & uint(0x03FF)) << uint(13);
+	uint v = m >> uint(23);
+	return (h & uint(0x8000)) << uint(16) | uint(e != uint(0)) * ((e + uint(112)) << uint(23) | m) | (uint(e == uint(0)) & uint(m != uint(0))) * ((v - uint(37)) << uint(23) | ((m << (uint(150) - v)) & uint(0x007FE000)));
 }
 
 uint godot_packHalf2x16(vec2 v) {

@@ -221,7 +221,9 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 			r_small_texture->set_image(small_image);
 		}
 
-		break;
+		if (generated.is_valid()) {
+			break;
+		}
 	}
 
 	if (!p_item.resource.is_valid()) {
@@ -531,8 +533,10 @@ void EditorResourcePreview::stop() {
 			}
 
 			while (!exited.is_set()) {
+				// Sync pending work.
 				OS::get_singleton()->delay_usec(10000);
-				RenderingServer::get_singleton()->sync(); //sync pending stuff, as thread may be blocked on rendering server
+				RenderingServer::get_singleton()->sync();
+				MessageQueue::get_singleton()->flush();
 			}
 
 			thread.wait_to_finish();

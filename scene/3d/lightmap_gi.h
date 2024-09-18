@@ -49,6 +49,8 @@ class LightmapGIData : public Resource {
 	bool uses_spherical_harmonics = false;
 	bool interior = false;
 
+	bool _uses_packed_directional = false;
+
 	RID lightmap;
 	AABB bounds;
 	float baked_exposure = 1.0;
@@ -91,6 +93,9 @@ public:
 
 	void set_uses_spherical_harmonics(bool p_enable);
 	bool is_using_spherical_harmonics() const;
+
+	void _set_uses_packed_directional(bool p_enable);
+	bool _is_using_packed_directional() const;
 
 	bool is_interior() const;
 	float get_baked_exposure() const;

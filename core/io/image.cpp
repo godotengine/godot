@@ -30,6 +30,7 @@
 
 #include "image.h"
 
+#include "core/config/project_settings.h"
 #include "core/error/error_list.h"
 #include "core/error/error_macros.h"
 #include "core/io/image_loader.h"
@@ -865,12 +866,10 @@ static void _scale_cubic(const uint8_t *__restrict p_src, uint8_t *__restrict p_
 
 template <int CC, typename T>
 static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height) {
-	enum {
-		FRAC_BITS = 8,
-		FRAC_LEN = (1 << FRAC_BITS),
-		FRAC_HALF = (FRAC_LEN >> 1),
-		FRAC_MASK = FRAC_LEN - 1
-	};
+	constexpr uint32_t FRAC_BITS = 8;
+	constexpr uint32_t FRAC_LEN = (1 << FRAC_BITS);
+	constexpr uint32_t FRAC_HALF = (FRAC_LEN >> 1);
+	constexpr uint32_t FRAC_MASK = FRAC_LEN - 1;
 
 	for (uint32_t i = 0; i < p_dst_height; i++) {
 		// Add 0.5 in order to interpolate based on pixel center
@@ -2734,6 +2733,40 @@ Error Image::compress(CompressMode p_mode, CompressSource p_source, ASTCFormat p
 Error Image::compress_from_channels(CompressMode p_mode, UsedChannels p_channels, ASTCFormat p_astc_format) {
 	ERR_FAIL_COND_V(data.is_empty(), ERR_INVALID_DATA);
 
+	// RenderingDevice only.
+	if (GLOBAL_GET("rendering/textures/vram_compression/compress_with_gpu")) {
+		switch (p_mode) {
+			case COMPRESS_BPTC: {
+				// BC7 is unsupported currently.
+				if ((format >= FORMAT_RF && format <= FORMAT_RGBE9995) && _image_compress_bptc_rd_func) {
+					Error result = _image_compress_bptc_rd_func(this, p_channels);
+
+					// If the image was compressed successfully, we return here. If not, we fall back to the default compression scheme.
+					if (result == OK) {
+						return OK;
+					}
+				}
+
+			} break;
+
+			case COMPRESS_S3TC: {
+				// BC3 is unsupported currently.
+				if ((p_channels == USED_CHANNELS_RGB || p_channels == USED_CHANNELS_L) && _image_compress_bc_rd_func) {
+					Error result = _image_compress_bc_rd_func(this, p_channels);
+
+					// If the image was compressed successfully, we return here. If not, we fall back to the default compression scheme.
+					if (result == OK) {
+						return OK;
+					}
+				}
+
+			} break;
+
+			default: {
+			}
+		}
+	}
+
 	switch (p_mode) {
 		case COMPRESS_S3TC: {
 			ERR_FAIL_NULL_V(_image_compress_bc_func, ERR_UNAVAILABLE);
@@ -3115,6 +3148,8 @@ void (*Image::_image_compress_bptc_func)(Image *, Image::UsedChannels) = nullptr
 void (*Image::_image_compress_etc1_func)(Image *) = nullptr;
 void (*Image::_image_compress_etc2_func)(Image *, Image::UsedChannels) = nullptr;
 void (*Image::_image_compress_astc_func)(Image *, Image::ASTCFormat) = nullptr;
+Error (*Image::_image_compress_bptc_rd_func)(Image *, Image::UsedChannels) = nullptr;
+Error (*Image::_image_compress_bc_rd_func)(Image *, Image::UsedChannels) = nullptr;
 void (*Image::_image_decompress_bc)(Image *) = nullptr;
 void (*Image::_image_decompress_bptc)(Image *) = nullptr;
 void (*Image::_image_decompress_etc1)(Image *) = nullptr;
@@ -3801,6 +3836,33 @@ void Image::bump_map_to_normal_map(float bump_scale) {
 	data = result_image;
 }
 
+bool Image::detect_signed(bool p_include_mips) const {
+	ERR_FAIL_COND_V(is_compressed(), false);
+
+	if (format >= Image::FORMAT_RH && format <= Image::FORMAT_RGBAH) {
+		const uint16_t *img_data = reinterpret_cast<const uint16_t *>(data.ptr());
+		const uint64_t img_size = p_include_mips ? (data.size() / 2) : (width * height * get_format_pixel_size(format) / 2);
+
+		for (uint64_t i = 0; i < img_size; i++) {
+			if ((img_data[i] & 0x8000) != 0 && (img_data[i] & 0x7fff) != 0) {
+				return true;
+			}
+		}
+
+	} else if (format >= Image::FORMAT_RF && format <= Image::FORMAT_RGBAF) {
+		const uint32_t *img_data = reinterpret_cast<const uint32_t *>(data.ptr());
+		const uint64_t img_size = p_include_mips ? (data.size() / 4) : (width * height * get_format_pixel_size(format) / 4);
+
+		for (uint64_t i = 0; i < img_size; i++) {
+			if ((img_data[i] & 0x80000000) != 0 && (img_data[i] & 0x7fffffff) != 0) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 void Image::srgb_to_linear() {
 	if (data.size() == 0) {
 		return;
@@ -4175,7 +4237,7 @@ Dictionary Image::compute_image_metrics(const Ref<Image> p_compared_image, bool 
 	result["root_mean_squared"] = INFINITY;
 	result["peak_snr"] = 0.0f;
 
-	ERR_FAIL_NULL_V(p_compared_image, result);
+	ERR_FAIL_COND_V(p_compared_image.is_null(), result);
 	Error err = OK;
 	Ref<Image> compared_image = duplicate(true);
 	if (compared_image->is_compressed()) {

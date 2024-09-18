@@ -175,6 +175,13 @@ void EditorResourcePicker::_file_quick_selected() {
 	_file_selected(quick_open->get_selected());
 }
 
+void EditorResourcePicker::_resource_saved(Object *p_resource) {
+	if (edited_resource.is_valid() && p_resource == edited_resource.ptr()) {
+		emit_signal(SNAME("resource_changed"), edited_resource);
+		_update_resource();
+	}
+}
+
 void EditorResourcePicker::_update_menu() {
 	_update_menu_items();
 
@@ -279,20 +286,22 @@ void EditorResourcePicker::_update_menu_items() {
 
 	// Add options to convert existing resource to another type of resource.
 	if (is_editable() && edited_resource.is_valid()) {
-		Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin(edited_resource);
-		if (conversions.size()) {
+		Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin_for_resource(edited_resource);
+		if (!conversions.is_empty()) {
 			edit_menu->add_separator();
 		}
-		for (int i = 0; i < conversions.size(); i++) {
-			String what = conversions[i]->converts_to();
+		int relative_id = 0;
+		for (const Ref<EditorResourceConversionPlugin> &conversion : conversions) {
+			String what = conversion->converts_to();
 			Ref<Texture2D> icon;
 			if (has_theme_icon(what, EditorStringName(EditorIcons))) {
 				icon = get_editor_theme_icon(what);
 			} else {
-				icon = get_theme_icon(what, SNAME("Resource"));
+				icon = get_editor_theme_icon(SNAME("Object"));
 			}
 
-			edit_menu->add_icon_item(icon, vformat(TTR("Convert to %s"), what), CONVERT_BASE_ID + i);
+			edit_menu->add_icon_item(icon, vformat(TTR("Convert to %s"), what), CONVERT_BASE_ID + relative_id);
+			relative_id++;
 		}
 	}
 }
@@ -408,6 +417,10 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			if (edited_resource.is_null()) {
 				return;
 			}
+			Callable resource_saved = callable_mp(this, &EditorResourcePicker::_resource_saved);
+			if (!EditorNode::get_singleton()->is_connected("resource_saved", resource_saved)) {
+				EditorNode::get_singleton()->connect("resource_saved", resource_saved);
+			}
 			EditorNode::get_singleton()->save_resource_as(edited_resource);
 		} break;
 
@@ -440,7 +453,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 
 			if (p_which >= CONVERT_BASE_ID) {
 				int to_type = p_which - CONVERT_BASE_ID;
-				Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin(edited_resource);
+				Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin_for_resource(edited_resource);
 				ERR_FAIL_INDEX(to_type, conversions.size());
 
 				edited_resource = conversions[to_type]->convert(edited_resource);
@@ -618,9 +631,9 @@ void EditorResourcePicker::_ensure_allowed_types() const {
 		const String base = allowed_types[i].strip_edges();
 		if (base == "BaseMaterial3D") {
 			allowed_types_with_convert.insert("Texture2D");
-		} else if (base == "ShaderMaterial") {
+		} else if (ClassDB::is_parent_class("ShaderMaterial", base)) {
 			allowed_types_with_convert.insert("Shader");
-		} else if (base == "Texture2D") {
+		} else if (ClassDB::is_parent_class("ImageTexture", base)) {
 			allowed_types_with_convert.insert("Image");
 		}
 	}
@@ -831,6 +844,13 @@ void EditorResourcePicker::_notification(int p_what) {
 			if (dropping) {
 				dropping = false;
 				assign_button->queue_redraw();
+			}
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			Callable resource_saved = callable_mp(this, &EditorResourcePicker::_resource_saved);
+			if (EditorNode::get_singleton()->is_connected("resource_saved", resource_saved)) {
+				EditorNode::get_singleton()->disconnect("resource_saved", resource_saved);
 			}
 		} break;
 	}

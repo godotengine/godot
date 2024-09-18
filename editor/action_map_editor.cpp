@@ -584,7 +584,7 @@ ActionMapEditor::ActionMapEditor() {
 
 	show_builtin_actions_checkbutton = memnew(CheckButton);
 	show_builtin_actions_checkbutton->set_text(TTR("Show Built-in Actions"));
-	show_builtin_actions_checkbutton->connect("toggled", callable_mp(this, &ActionMapEditor::set_show_builtin_actions));
+	show_builtin_actions_checkbutton->connect(SceneStringName(toggled), callable_mp(this, &ActionMapEditor::set_show_builtin_actions));
 	add_hbox->add_child(show_builtin_actions_checkbutton);
 
 	show_builtin_actions = EditorSettings::get_singleton()->get_project_metadata("project_settings", "show_builtin_actions", false);

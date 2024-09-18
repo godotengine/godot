@@ -38,6 +38,8 @@
 #include "scene/resources/navigation_mesh.h"
 
 class NavRegion : public NavBase {
+	RWLock region_rwlock;
+
 	NavMap *map = nullptr;
 	Transform3D transform;
 	bool enabled = true;
@@ -88,6 +90,8 @@ public:
 		return polygons;
 	}
 
+	Vector3 get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, bool p_use_collision) const;
+	gd::ClosestPointQueryResult get_closest_point_info(const Vector3 &p_point) const;
 	Vector3 get_random_point(uint32_t p_navigation_layers, bool p_uniformly) const;
 
 	real_t get_surface_area() const { return surface_area; };

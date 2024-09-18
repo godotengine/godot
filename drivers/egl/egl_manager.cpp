@@ -357,7 +357,7 @@ Error EGLManager::initialize(void *p_native_display) {
 	// have to temporarily get a proper display and reload EGL once again to
 	// initialize everything else.
 	if (!gladLoaderLoadEGL(EGL_NO_DISPLAY)) {
-		ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "Can't load EGL.");
+		ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "Can't load EGL dynamic library.");
 	}
 
 	EGLDisplay tmp_display = EGL_NO_DISPLAY;
@@ -387,7 +387,7 @@ Error EGLManager::initialize(void *p_native_display) {
 	int version = gladLoaderLoadEGL(tmp_display);
 	if (!version) {
 		eglTerminate(tmp_display);
-		ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "Can't load EGL.");
+		ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "Can't load EGL dynamic library.");
 	}
 
 	int major = GLAD_VERSION_MAJOR(version);

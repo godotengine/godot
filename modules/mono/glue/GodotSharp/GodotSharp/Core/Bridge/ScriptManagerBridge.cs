@@ -241,11 +241,17 @@ namespace Godot.Bridge
 
             if (outIconPath != null)
             {
-                var iconAttr = scriptType.GetCustomAttributes(inherit: false)
+                IconAttribute? iconAttr = scriptType.GetCustomAttributes(inherit: false)
                     .OfType<IconAttribute>()
                     .FirstOrDefault();
 
-                *outIconPath = Marshaling.ConvertStringToNative(iconAttr?.Path);
+                if (!string.IsNullOrEmpty(iconAttr?.Path))
+                {
+                    string iconPath = iconAttr.Path.IsAbsolutePath()
+                        ? iconAttr.Path.SimplifyPath()
+                        : scriptPathStr.GetBaseDir().PathJoin(iconAttr.Path).SimplifyPath();
+                    *outIconPath = Marshaling.ConvertStringToNative(iconPath);
+                }
             }
 
             if (outBaseType != null)

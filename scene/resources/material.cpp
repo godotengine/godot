@@ -37,7 +37,7 @@
 #include "scene/main/scene_tree.h"
 
 void Material::set_next_pass(const Ref<Material> &p_pass) {
-	for (Ref<Material> pass_child = p_pass; pass_child != nullptr; pass_child = pass_child->get_next_pass()) {
+	for (Ref<Material> pass_child = p_pass; pass_child.is_valid(); pass_child = pass_child->get_next_pass()) {
 		ERR_FAIL_COND_MSG(pass_child == this, "Can't set as next_pass one of its parents to prevent crashes due to recursive loop.");
 	}
 
@@ -379,6 +379,8 @@ bool ShaderMaterial::_property_can_revert(const StringName &p_name) const {
 			Variant default_value = RenderingServer::get_singleton()->shader_get_parameter_default(shader->get_rid(), *pr);
 			Variant current_value = get_shader_parameter(*pr);
 			return default_value.get_type() != Variant::NIL && default_value != current_value;
+		} else if (p_name == "render_priority" || p_name == "next_pass") {
+			return true;
 		}
 	}
 	return false;
@@ -389,6 +391,12 @@ bool ShaderMaterial::_property_get_revert(const StringName &p_name, Variant &r_p
 		const StringName *pr = remap_cache.getptr(p_name);
 		if (pr) {
 			r_property = RenderingServer::get_singleton()->shader_get_parameter_default(shader->get_rid(), *pr);
+			return true;
+		} else if (p_name == "render_priority") {
+			r_property = 0;
+			return true;
+		} else if (p_name == "next_pass") {
+			r_property = Variant();
 			return true;
 		}
 	}

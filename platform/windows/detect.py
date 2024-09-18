@@ -13,40 +13,33 @@ if TYPE_CHECKING:
 
 # To match other platforms
 STACK_SIZE = 8388608
+STACK_SIZE_SANITIZERS = 30 * 1024 * 1024
 
 
 def get_name():
     return "Windows"
 
 
-def try_cmd(test, prefix, arch):
+def try_cmd(test, prefix, arch, check_clang=False):
+    archs = ["x86_64", "x86_32", "arm64", "arm32"]
     if arch:
+        archs = [arch]
+
+    for a in archs:
         try:
             out = subprocess.Popen(
-                get_mingw_bin_prefix(prefix, arch) + test,
+                get_mingw_bin_prefix(prefix, a) + test,
                 shell=True,
                 stderr=subprocess.PIPE,
                 stdout=subprocess.PIPE,
             )
-            out.communicate()
+            outs, errs = out.communicate()
             if out.returncode == 0:
+                if check_clang and not outs.startswith(b"clang"):
+                    return False
                 return True
         except Exception:
             pass
-    else:
-        for a in ["x86_64", "x86_32", "arm64", "arm32"]:
-            try:
-                out = subprocess.Popen(
-                    get_mingw_bin_prefix(prefix, a) + test,
-                    shell=True,
-                    stderr=subprocess.PIPE,
-                    stdout=subprocess.PIPE,
-                )
-                out.communicate()
-                if out.returncode == 0:
-                    return True
-            except Exception:
-                pass
 
     return False
 
@@ -203,6 +196,7 @@ def get_opts():
         BoolVariable("use_llvm", "Use the LLVM compiler", False),
         BoolVariable("use_static_cpp", "Link MinGW/MSVC C++ runtime libraries statically", True),
         BoolVariable("use_asan", "Use address sanitizer (ASAN)", False),
+        BoolVariable("use_ubsan", "Use LLVM compiler undefined behavior sanitizer (UBSAN)", False),
         BoolVariable("debug_crt", "Compile with MSVC's debug CRT (/MDd)", False),
         BoolVariable("incremental_link", "Use MSVC incremental linking. May increase or decrease build times.", False),
         BoolVariable("silence_msvc", "Silence MSVC's cl/link stdout bloat, redirecting any errors to stderr.", True),
@@ -247,7 +241,7 @@ def get_flags():
 
     return {
         "arch": arch,
-        "supported": ["mono"],
+        "supported": ["d3d12", "mono", "xaudio2"],
     }
 
 
@@ -387,6 +381,15 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
 
     ## Compile/link flags
 
+    if env["use_llvm"]:
+        env["CC"] = "clang-cl"
+        env["CXX"] = "clang-cl"
+        env["LINK"] = "lld-link"
+        env["AR"] = "llvm-lib"
+
+        env.AppendUnique(CPPDEFINES=["R128_STDC_ONLY"])
+        env.extra_suffix = ".llvm" + env.extra_suffix
+
     env["MAXLINELENGTH"] = 8192  # Windows Vista and beyond, so always applicable.
 
     if env["silence_msvc"] and not env.GetOption("clean"):
@@ -471,7 +474,6 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
 
     env.AppendUnique(CCFLAGS=["/Gd", "/GR", "/nologo"])
     env.AppendUnique(CCFLAGS=["/utf-8"])  # Force to use Unicode encoding.
-    env.AppendUnique(CXXFLAGS=["/TP"])  # assume all sources are C++
     # Once it was thought that only debug builds would be too large,
     # but this has recently stopped being true. See the mingw function
     # for notes on why this shouldn't be enabled for gcc
@@ -507,6 +509,7 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
     if env["use_asan"]:
         env.extra_suffix += ".san"
         prebuilt_lib_extra_suffix = ".san"
+        env.AppendUnique(CPPDEFINES=["SANITIZERS_ENABLED"])
         env.Append(CCFLAGS=["/fsanitize=address"])
         env.Append(LINKFLAGS=["/INFERASANLIBS"])
 
@@ -595,6 +598,9 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
     if env["target"] in ["editor", "template_debug"]:
         LIBS += ["psapi", "dbghelp"]
 
+    if env["use_llvm"]:
+        LIBS += [f"clang_rt.builtins-{env['arch']}"]
+
     env.Append(LINKFLAGS=[p + env["LIBSUFFIX"] for p in LIBS])
 
     if vcvars_msvc_config:
@@ -610,14 +616,22 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
 
     if env["lto"] != "none":
         if env["lto"] == "thin":
-            print_error("ThinLTO is only compatible with LLVM, use `use_llvm=yes` or `lto=full`.")
-            sys.exit(255)
-        env.AppendUnique(CCFLAGS=["/GL"])
-        env.AppendUnique(ARFLAGS=["/LTCG"])
-        if env["progress"]:
-            env.AppendUnique(LINKFLAGS=["/LTCG:STATUS"])
+            if not env["use_llvm"]:
+                print("ThinLTO is only compatible with LLVM, use `use_llvm=yes` or `lto=full`.")
+                sys.exit(255)
+
+            env.Append(CCFLAGS=["-flto=thin"])
+            env.Append(LINKFLAGS=["-flto=thin"])
+        elif env["use_llvm"]:
+            env.Append(CCFLAGS=["-flto"])
+            env.Append(LINKFLAGS=["-flto"])
         else:
-            env.AppendUnique(LINKFLAGS=["/LTCG"])
+            env.AppendUnique(CCFLAGS=["/GL"])
+            env.AppendUnique(ARFLAGS=["/LTCG"])
+            if env["progress"]:
+                env.AppendUnique(LINKFLAGS=["/LTCG:STATUS"])
+            else:
+                env.AppendUnique(LINKFLAGS=["/LTCG"])
 
     if vcvars_msvc_config:
         env.Prepend(CPPPATH=[p for p in str(os.getenv("INCLUDE")).split(";")])
@@ -628,7 +642,66 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
     env["BUILDERS"]["Program"] = methods.precious_program
 
     env.Append(LINKFLAGS=["/NATVIS:platform\\windows\\godot.natvis"])
-    env.AppendUnique(LINKFLAGS=["/STACK:" + str(STACK_SIZE)])
+
+    if env["use_asan"]:
+        env.AppendUnique(LINKFLAGS=["/STACK:" + str(STACK_SIZE_SANITIZERS)])
+    else:
+        env.AppendUnique(LINKFLAGS=["/STACK:" + str(STACK_SIZE)])
+
+
+def get_ar_version(env):
+    ret = {
+        "major": -1,
+        "minor": -1,
+        "patch": -1,
+        "is_llvm": False,
+    }
+    try:
+        output = (
+            subprocess.check_output([env.subst(env["AR"]), "--version"], shell=(os.name == "nt"))
+            .strip()
+            .decode("utf-8")
+        )
+    except (subprocess.CalledProcessError, OSError):
+        print_warning("Couldn't check version of `ar`.")
+        return ret
+
+    match = re.search(r"GNU ar \(GNU Binutils\) (\d+)\.(\d+)(?:\.(\d+))?", output)
+    if match:
+        ret["major"] = int(match[1])
+        ret["minor"] = int(match[2])
+        if match[3]:
+            ret["patch"] = int(match[3])
+        else:
+            ret["patch"] = 0
+        return ret
+
+    match = re.search(r"LLVM version (\d+)\.(\d+)\.(\d+)", output)
+    if match:
+        ret["major"] = int(match[1])
+        ret["minor"] = int(match[2])
+        ret["patch"] = int(match[3])
+        ret["is_llvm"] = True
+        return ret
+
+    print_warning("Couldn't parse version of `ar`.")
+    return ret
+
+
+def get_is_ar_thin_supported(env):
+    """Check whether `ar --thin` is supported. It is only supported since Binutils 2.38 or LLVM 14."""
+    ar_version = get_ar_version(env)
+    if ar_version["major"] == -1:
+        return False
+
+    if ar_version["is_llvm"]:
+        return ar_version["major"] >= 14
+
+    if ar_version["major"] == 2:
+        return ar_version["minor"] >= 38
+
+    print_warning("Unknown Binutils `ar` version.")
+    return False
 
 
 def configure_mingw(env: "SConsEnvironment"):
@@ -643,6 +716,10 @@ def configure_mingw(env: "SConsEnvironment"):
 
     if env["use_llvm"] and not try_cmd("clang --version", env["mingw_prefix"], env["arch"]):
         env["use_llvm"] = False
+
+    if not env["use_llvm"] and try_cmd("gcc --version", env["mingw_prefix"], env["arch"], True):
+        print("Detected GCC to be a wrapper for Clang.")
+        env["use_llvm"] = True
 
     # TODO: Re-evaluate the need for this / streamline with common config.
     if env["target"] == "template_release":
@@ -721,7 +798,10 @@ def configure_mingw(env: "SConsEnvironment"):
             env.Append(CCFLAGS=["-flto"])
             env.Append(LINKFLAGS=["-flto"])
 
-    env.Append(LINKFLAGS=["-Wl,--stack," + str(STACK_SIZE)])
+    if env["use_asan"]:
+        env.Append(LINKFLAGS=["-Wl,--stack," + str(STACK_SIZE_SANITIZERS)])
+    else:
+        env.Append(LINKFLAGS=["-Wl,--stack," + str(STACK_SIZE)])
 
     ## Compile flags
 
@@ -731,6 +811,33 @@ def configure_mingw(env: "SConsEnvironment"):
 
     if not env["use_llvm"]:
         env.Append(CCFLAGS=["-mwindows"])
+
+    if env["use_asan"] or env["use_ubsan"]:
+        if not env["use_llvm"]:
+            print("GCC does not support sanitizers on Windows.")
+            sys.exit(255)
+        if env["arch"] not in ["x86_32", "x86_64"]:
+            print("Sanitizers are only supported for x86_32 and x86_64.")
+            sys.exit(255)
+
+        env.extra_suffix += ".san"
+        env.AppendUnique(CPPDEFINES=["SANITIZERS_ENABLED"])
+        san_flags = []
+        if env["use_asan"]:
+            san_flags.append("-fsanitize=address")
+        if env["use_ubsan"]:
+            san_flags.append("-fsanitize=undefined")
+            # Disable the vptr check since it gets triggered on any COM interface calls.
+            san_flags.append("-fno-sanitize=vptr")
+        env.Append(CFLAGS=san_flags)
+        env.Append(CCFLAGS=san_flags)
+        env.Append(LINKFLAGS=san_flags)
+
+    if env["use_llvm"] and os.name == "nt" and methods._colorize:
+        env.Append(CCFLAGS=["$(-fansi-escape-codes$)", "$(-fcolor-diagnostics$)"])
+
+    if get_is_ar_thin_supported(env):
+        env.Append(ARFLAGS=["--thin"])
 
     env.Append(CPPDEFINES=["WINDOWS_ENABLED", "WASAPI_ENABLED", "WINMIDI_ENABLED"])
     env.Append(

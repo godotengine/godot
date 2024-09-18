@@ -81,7 +81,6 @@ void EditorPropertyText::_text_submitted(const String &p_string) {
 	}
 
 	if (text->has_focus()) {
-		text->release_focus();
 		_text_changed(p_string);
 	}
 }
@@ -688,15 +687,20 @@ void EditorPropertyEnum::update_property() {
 
 void EditorPropertyEnum::setup(const Vector<String> &p_options) {
 	options->clear();
+	HashMap<int64_t, Vector<String>> items;
 	int64_t current_val = 0;
-	for (int i = 0; i < p_options.size(); i++) {
-		Vector<String> text_split = p_options[i].split(":");
+	for (const String &option : p_options) {
+		Vector<String> text_split = option.split(":");
 		if (text_split.size() != 1) {
 			current_val = text_split[1].to_int();
 		}
-		options->add_item(text_split[0]);
-		options->set_item_metadata(i, current_val);
+		items[current_val].push_back(text_split[0]);
 		current_val += 1;
+	}
+
+	for (const KeyValue<int64_t, Vector<String>> &K : items) {
+		options->add_item(String(", ").join(K.value));
+		options->set_item_metadata(-1, K.key);
 	}
 }
 
@@ -2703,7 +2707,11 @@ void EditorPropertyNodePath::_update_menu() {
 void EditorPropertyNodePath::_menu_option(int p_idx) {
 	switch (p_idx) {
 		case ACTION_CLEAR: {
-			emit_changed(get_edited_property(), NodePath());
+			if (editing_node) {
+				emit_changed(get_edited_property(), Variant());
+			} else {
+				emit_changed(get_edited_property(), NodePath());
+			}
 			update_property();
 		} break;
 
@@ -3771,7 +3779,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				return editor;
 			} else {
 				EditorPropertyDictionary *editor = memnew(EditorPropertyDictionary);
-				editor->setup(p_hint);
+				editor->setup(p_hint, p_hint_text);
 				return editor;
 			}
 		} break;

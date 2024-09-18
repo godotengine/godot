@@ -95,43 +95,44 @@
 	</methods>
 	<members>
 		<member name="global_position" type="Vector2" setter="set_global_position" getter="get_global_position">
-			Global position.
+			Global position. See also [member position].
 		</member>
 		<member name="global_rotation" type="float" setter="set_global_rotation" getter="get_global_rotation">
-			Global rotation in radians.
+			Global rotation in radians. See also [member rotation].
 		</member>
 		<member name="global_rotation_degrees" type="float" setter="set_global_rotation_degrees" getter="get_global_rotation_degrees">
-			Helper property to access [member global_rotation] in degrees instead of radians.
+			Helper property to access [member global_rotation] in degrees instead of radians. See also [member rotation_degrees].
 		</member>
 		<member name="global_scale" type="Vector2" setter="set_global_scale" getter="get_global_scale">
-			Global scale.
+			Global scale. See also [member scale].
 		</member>
 		<member name="global_skew" type="float" setter="set_global_skew" getter="get_global_skew">
-			Global skew in radians.
+			Global skew in radians. See also [member skew].
 		</member>
 		<member name="global_transform" type="Transform2D" setter="set_global_transform" getter="get_global_transform">
-			Global [Transform2D].
+			Global [Transform2D]. See also [member transform].
 		</member>
 		<member name="position" type="Vector2" setter="set_position" getter="get_position" default="Vector2(0, 0)">
-			Position, relative to the node's parent.
+			Position, relative to the node's parent. See also [member global_position].
 		</member>
 		<member name="rotation" type="float" setter="set_rotation" getter="get_rotation" default="0.0">
-			Rotation in radians, relative to the node's parent.
+			Rotation in radians, relative to the node's parent. See also [member global_rotation].
 			[b]Note:[/b] This property is edited in the inspector in degrees. If you want to use degrees in a script, use [member rotation_degrees].
 		</member>
 		<member name="rotation_degrees" type="float" setter="set_rotation_degrees" getter="get_rotation_degrees">
-			Helper property to access [member rotation] in degrees instead of radians.
+			Helper property to access [member rotation] in degrees instead of radians. See also [member global_rotation_degrees].
 		</member>
 		<member name="scale" type="Vector2" setter="set_scale" getter="get_scale" default="Vector2(1, 1)">
-			The node's scale. Unscaled value: [code](1, 1)[/code].
+			The node's scale, relative to the node's parent. Unscaled value: [code](1, 1)[/code]. See also [member global_scale].
 			[b]Note:[/b] Negative X scales in 2D are not decomposable from the transformation matrix. Due to the way scale is represented with transformation matrices in Godot, negative scales on the X axis will be changed to negative scales on the Y axis and a rotation of 180 degrees when decomposed.
 		</member>
 		<member name="skew" type="float" setter="set_skew" getter="get_skew" default="0.0">
-			Slants the node.
-			[b]Note:[/b] Skew is X axis only.
+			If set to a non-zero value, slants the node in one direction or another. This can be used for pseudo-3D effects. See also [member global_skew].
+			[b]Note:[/b] Skew is performed on the X axis only, and [i]between[/i] rotation and scaling.
+			[b]Note:[/b] This property is edited in the inspector in degrees. If you want to use degrees in a script, use [code]skew = deg_to_rad(value_in_degrees)[/code].
 		</member>
 		<member name="transform" type="Transform2D" setter="set_transform" getter="get_transform">
-			Local [Transform2D].
+			The node's [Transform2D], relative to the node's parent. See also [member global_transform].
 		</member>
 	</members>
 </class>
