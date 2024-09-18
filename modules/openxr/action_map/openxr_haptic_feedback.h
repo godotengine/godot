@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  openxr_editor_plugin.h                                                */
+/*  openxr_haptic_feedback.h                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,33 +28,45 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_EDITOR_PLUGIN_H
-#define OPENXR_EDITOR_PLUGIN_H
+#ifndef OPENXR_HAPTIC_FEEDBACK_H
+#define OPENXR_HAPTIC_FEEDBACK_H
 
-#include "openxr_action_map_editor.h"
-#include "openxr_binding_modifier_editor.h"
-#include "openxr_select_runtime.h"
+#include "core/io/resource.h"
+#include <openxr/openxr.h>
 
-#include "editor/plugins/editor_plugin.h"
+class OpenXRHapticBase : public Resource {
+	GDCLASS(OpenXRHapticBase, Resource);
 
-class OpenXREditorPlugin : public EditorPlugin {
-	GDCLASS(OpenXREditorPlugin, EditorPlugin);
-
-	OpenXRActionMapEditor *action_map_editor = nullptr;
-	Ref<EditorInspectorPluginBindingModifier> binding_modifier_inspector_plugin = nullptr;
-#ifndef ANDROID_ENABLED
-	OpenXRSelectRuntime *select_runtime = nullptr;
-#endif
+private:
+protected:
+	static void _bind_methods();
 
 public:
-	virtual String get_name() const override { return "OpenXRPlugin"; }
-	bool has_main_screen() const override { return false; }
-	virtual void edit(Object *p_node) override;
-	virtual bool handles(Object *p_node) const override;
-	virtual void make_visible(bool p_visible) override;
-
-	OpenXREditorPlugin();
-	~OpenXREditorPlugin();
+	virtual const XrHapticBaseHeader *get_xr_structure() = 0;
 };
 
-#endif // OPENXR_EDITOR_PLUGIN_H
+class OpenXRHapticVibration : public OpenXRHapticBase {
+	GDCLASS(OpenXRHapticVibration, OpenXRHapticBase);
+
+private:
+	XrHapticVibration haptic_vibration;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_duration(int64_t p_duration);
+	int64_t get_duration() const;
+
+	void set_frequency(float p_frequency);
+	float get_frequency() const;
+
+	void set_amplitude(float p_amplitude);
+	float get_amplitude() const;
+
+	virtual const XrHapticBaseHeader *get_xr_structure() override;
+
+	OpenXRHapticVibration();
+};
+
+#endif // OPENXR_HAPTIC_FEEDBACK_H
