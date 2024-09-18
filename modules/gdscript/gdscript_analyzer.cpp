@@ -2423,6 +2423,9 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 	if (p_match_test != nullptr && p_match_test->get_datatype().kind == GDScriptParser::DataType::BUILTIN) {
 		switch (p_match_test->get_datatype().builtin_type) {
 			case Variant::NIL:
+			case Variant::VARIANT_MAX:
+				break;
+
 			case Variant::BOOL:
 			case Variant::INT:
 			case Variant::FLOAT:
@@ -2539,7 +2542,7 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 
 							if (p_match_pattern->dictionary[i].value_pattern) {
 								// Test key and value type, key and value given
-								if (p_match_pattern->dictionary[i].key->datatype != correct_type_key || has_value && p_match_pattern->dictionary[i].value_pattern->datatype != correct_type_value) {
+								if (p_match_pattern->dictionary[i].key->datatype != correct_type_key || (has_value && p_match_pattern->dictionary[i].value_pattern->datatype != correct_type_value)) {
 									incorrect_type_present = true;
 									other_type_found = Pair(p_match_pattern->dictionary[i].key->datatype, p_match_pattern->dictionary[i].value_pattern->datatype);
 									break;
@@ -2585,7 +2588,7 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 					}
 
 					// Check sizes
-					if (!open_ended && dict_node_match->elements.size() != p_match_pattern->dictionary.size() || open_ended && dict_node_match->elements.size() < p_match_pattern->dictionary.size() - 1) {
+					if (!open_ended && dict_node_match->elements.size() != p_match_pattern->dictionary.size() || (open_ended && dict_node_match->elements.size() < p_match_pattern->dictionary.size() - 1)) {
 						parser->push_warning(p_match_pattern, GDScriptWarning::MISMATCHED_TYPE, Variant::get_type_name(Variant::DICTIONARY), p_match_test->get_datatype().to_string(), "size", String::num(p_match_pattern->dictionary.size() - (open_ended ? 1 : 0)), String::num(dict_node_match->elements.size()));
 						break;
 					}
@@ -2751,7 +2754,7 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 						}
 
 						// Check sizes
-						if (!open_ended && arr_node_match->elements.size() != p_match_pattern->array.size() || open_ended && arr_node_match->elements.size() < p_match_pattern->array.size() - 1) {
+						if (!open_ended && arr_node_match->elements.size() != p_match_pattern->array.size() || (open_ended && arr_node_match->elements.size() < p_match_pattern->array.size() - 1)) {
 							parser->push_warning(p_match_pattern, GDScriptWarning::MISMATCHED_TYPE, p_match_pattern->get_datatype().to_string(), p_match_test->get_datatype().to_string(), "size", String::num(p_match_pattern->array.size() - (open_ended ? 1 : 0)), String::num(arr_node_match->elements.size()));
 							break;
 						}
