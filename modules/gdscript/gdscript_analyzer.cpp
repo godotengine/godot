@@ -2420,7 +2420,7 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 	p_match_pattern->set_datatype(result);
 
 #ifdef DEBUG_ENABLED
-	if (p_match_test != nullptr && p_match_test->get_datatype().kind == GDScriptParser::DataType::BUILTIN) {
+	if (p_match_test != nullptr && (p_match_test->datatype.type_source == GDScriptParser::DataType::TypeSource::ANNOTATED_EXPLICIT || p_match_test->datatype.type_source == GDScriptParser::DataType::TypeSource::ANNOTATED_INFERRED) && (p_match_test->datatype.type_source == GDScriptParser::DataType::TypeSource::ANNOTATED_EXPLICIT || p_match_pattern->datatype.type_source == GDScriptParser::DataType::TypeSource::ANNOTATED_INFERRED) && p_match_pattern->pattern_type != GDScriptParser::PatternNode::PT_REST && p_match_pattern->pattern_type != GDScriptParser::PatternNode::PT_BIND && p_match_pattern->pattern_type != GDScriptParser::PatternNode::PT_WILDCARD) {
 		switch (p_match_test->get_datatype().builtin_type) {
 			case Variant::NIL:
 			case Variant::VARIANT_MAX:
@@ -2469,7 +2469,7 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 				break;
 			case Variant::STRING:
 			case Variant::STRING_NAME:
-				if (p_match_pattern->get_datatype().builtin_type != Variant::STRING || p_match_pattern->get_datatype().builtin_type != Variant::STRING_NAME) {
+				if (p_match_pattern->get_datatype().builtin_type != Variant::STRING && p_match_pattern->get_datatype().builtin_type != Variant::STRING_NAME) {
 					parser->push_warning(p_match_pattern, GDScriptWarning::MISMATCHED_TYPE, p_match_pattern->get_datatype().to_string(), p_match_test->get_datatype().to_string(), "", "", "");
 				}
 				break;
@@ -2714,6 +2714,9 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 				if (p_match_pattern->pattern_type == GDScriptParser::PatternNode::PT_ARRAY) {
 					bool mismatched_types = false;
 					if (p_match_test->type == GDScriptParser::Node::Type::IDENTIFIER) {
+						if (p_match_test->get_datatype().container_element_types.size() == 0) {
+							break;
+						}
 						GDScriptParser::DataType pattern_array_type = p_match_test->get_datatype().container_element_types[0];
 						for (int i = 0; i < p_match_pattern->array.size(); i++) {
 							if (pattern_array_type != p_match_pattern->array[i]->get_datatype()) {
