@@ -909,7 +909,7 @@ Size2 TabContainer::get_minimum_size() const {
 	for (int i = 0; i < controls.size(); i++) {
 		Control *c = controls[i];
 
-		if (!c->is_visible_in_tree() && !use_hidden_tabs_for_min_size) {
+		if (!c->is_visible() && !use_hidden_tabs_for_min_size) {
 			continue;
 		}
 
