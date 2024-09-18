@@ -96,6 +96,8 @@ private:
 	int server_syncs = 0;
 	bool frame_server_synced = false;
 
+	bool suspended = false;
+
 public:
 	static Engine *get_singleton();
 
@@ -190,6 +192,8 @@ public:
 
 	void increment_frames_drawn();
 	bool notify_frame_server_synced();
+
+	void set_suspend(bool p_enabled);
 
 	Engine();
 	virtual ~Engine();

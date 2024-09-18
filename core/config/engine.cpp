@@ -110,7 +110,7 @@ void Engine::set_time_scale(double p_scale) {
 }
 
 double Engine::get_time_scale() const {
-	return _time_scale;
+	return suspended ? 0 : _time_scale;
 }
 
 Dictionary Engine::get_version_info() const {
@@ -390,6 +390,10 @@ Engine *Engine::get_singleton() {
 bool Engine::notify_frame_server_synced() {
 	frame_server_synced = true;
 	return server_syncs > SERVER_SYNC_FRAME_COUNT_WARNING;
+}
+
+void Engine::set_suspend(bool p_enabled) {
+	suspended = p_enabled;
 }
 
 Engine::Engine() {

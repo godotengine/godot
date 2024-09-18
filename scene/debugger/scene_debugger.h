@@ -31,17 +31,18 @@
 #ifndef SCENE_DEBUGGER_H
 #define SCENE_DEBUGGER_H
 
+#include "core/input/input_event.h"
 #include "core/object/class_db.h"
 #include "core/object/ref_counted.h"
 #include "core/string/ustring.h"
 #include "core/templates/pair.h"
 #include "core/variant/array.h"
+#include "scene/gui/popup_menu.h"
 
 class Script;
 class Node;
 
 class SceneDebugger {
-public:
 private:
 	static SceneDebugger *singleton;
 
@@ -59,6 +60,7 @@ private:
 	static void _set_node_owner_recursive(Node *p_node, Node *p_owner);
 	static void _set_object_property(ObjectID p_id, const String &p_property, const Variant &p_value);
 	static void _send_object_id(ObjectID p_id, int p_max_size = 1 << 20);
+	static void _next_frame();
 
 public:
 	static Error parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured);
@@ -164,6 +166,80 @@ private:
 
 public:
 	static LiveEditor *get_singleton();
+};
+
+class RuntimeNodeSelect : public Object {
+	GDCLASS(RuntimeNodeSelect, Object);
+
+public:
+	enum NodeType {
+		NODE_TYPE_2D,
+		NODE_TYPE_3D,
+		NODE_TYPE_MAX
+	};
+
+	enum SelectMode {
+		SELECT_MODE_SINGLE,
+		SELECT_MODE_LIST,
+		SELECT_MODE_MAX
+	};
+
+private:
+	friend class SceneDebugger;
+
+	const int SELECTION_2D_LAYER = 1024;
+	const int SELECTION_3D_LAYER = 20;
+
+	struct SelectResult {
+		Node *item = nullptr;
+		real_t order = 0;
+		_FORCE_INLINE_ bool operator<(const SelectResult &p_rr) const { return p_rr.order < order; }
+	};
+
+	Node *selected = nullptr;
+	PopupMenu *selection_list = nullptr;
+
+	RID sbox_2d_canvas;
+	RID sbox_2d_ci;
+
+#ifndef _3D_DISABLED
+	Ref<ArrayMesh> sbox_3d_mesh;
+	Ref<ArrayMesh> sbox_3d_mesh_xray;
+	RID sbox_3d_instance;
+	RID sbox_3d_instance_ofs;
+	RID sbox_3d_instance_xray;
+	RID sbox_3d_instance_xray_ofs;
+#endif
+
+	NodeType node_select_type = NODE_TYPE_2D;
+	SelectMode node_select_mode = SELECT_MODE_SINGLE;
+
+	void _setup();
+
+	void _node_set_type(NodeType p_type);
+	void _select_set_mode(SelectMode p_mode);
+
+	void _root_window_input(const Ref<InputEvent> &p_event);
+	void _select_node(Node *p_node);
+	void _update_selection();
+	void _clear_selection();
+	void _selection_set_visible(bool p_visible);
+
+	void _find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<SelectResult> &r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
+#ifndef _3D_DISABLED
+	void _find_3d_items_at_pos(const Point2 &p_pos, Vector<SelectResult> &r_items);
+#endif
+
+	void _items_popup_index_pressed(int p_index, PopupMenu *p_popup);
+
+	RuntimeNodeSelect() { singleton = this; }
+
+	static RuntimeNodeSelect *singleton;
+
+public:
+	static RuntimeNodeSelect *get_singleton();
+
+	~RuntimeNodeSelect();
 };
 #endif
 
