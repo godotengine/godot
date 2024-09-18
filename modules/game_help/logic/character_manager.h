@@ -58,6 +58,8 @@ protected:
     String animation_root_path = "res://Assets/public/animation";
     String bone_map_root_path = "res://Assets/public/bone_map";
     String prefab_root_path = "res://Assets/public/prefab";
+
+	double last_time = 0;
     
 
 };

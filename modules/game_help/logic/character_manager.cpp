@@ -1,6 +1,7 @@
 #include "body_main.h"
 #include "character_manager.h"
 CharacterManager* CharacterManager::singleton = nullptr;
+static float time_delta = 0.0f;
 void CharacterManager::register_character(class CharacterBodyMain* character)
 {
     characters.insert(character);
@@ -11,6 +12,11 @@ void CharacterManager::unregister_character(class CharacterBodyMain* character)
     characters.erase(character);
 }
 void CharacterManager::pre_tick(float delta) {
+
+	double curr_time = OS::get_singleton()->get_unix_time();
+	time_delta = MIN(0.1, curr_time - last_time);
+	last_time = curr_time;
+	
 
 }
 void CharacterManager::tick(float delta)
@@ -58,7 +64,7 @@ void CharacterManager::update_animator()
 void CharacterManager::_process_animator(void* p_user,uint32_t p_index)
 {
     CharacterBodyMain* body_main = (CharacterBodyMain*)p_user;
-    body_main->_process_animator();
+    body_main->_process_animator(time_delta);
 }
 void CharacterManager::_process_animation(void* p_user,uint32_t p_index)
 {

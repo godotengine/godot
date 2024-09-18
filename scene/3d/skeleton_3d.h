@@ -170,6 +170,15 @@ public:
 
 	bool show_rest_only = false;
 	float motion_scale = 1.0;
+	bool _notification_bone_pose = true;
+
+	void set_notification_bone_pose(bool p_enable) {
+		_notification_bone_pose = p_enable;
+	}
+
+	bool get_notification_bone_pose() const {
+		return _notification_bone_pose;
+	}
 
 	uint64_t version = 1;
 

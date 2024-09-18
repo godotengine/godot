@@ -960,7 +960,7 @@ void Skeleton3D::force_update_all_bone_transforms(bool p_notify) {
 	if (updating) {
 		return;
 	}
-	if(p_notify)
+	if(p_notify && _notification_bone_pose)
 	{
 		emit_signal(SceneStringName(pose_updated));
 	}

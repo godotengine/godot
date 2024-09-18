@@ -208,7 +208,7 @@ public:
 
     void _update_ai();
     void _process_move();
-    void _process_animator();
+    void _process_animator(double time_delta);
     void _process_animation();
     void _process_ik();
 
@@ -581,8 +581,15 @@ public:
     Ref<Animation> play_animation;
     DECL_MEMBER_BUTTON(editor_play_select_animation);
 
+    void set_track_target(String p_track_target) {
+        track_target = p_track_target;
+    }
+    String get_track_target() {
+        return track_target;
+    }
     // 跟踪的角色
-    CharacterBodyMain* track_target = nullptr;
+    String track_target;
+	LocalVector<Quaternion> temp_last_bone_pose;
     void update_track_target();
 
     // 重定向的动画存储名称
@@ -592,88 +599,105 @@ public:
 	DECL_MEMBER_BUTTON(editor_to_human_animation);
 
     void update_bone_visble();
-    LocalVector<String> get_human_bones() {
-        static LocalVector<String> bone_array = {
-            "Hips",
-            "Spine",
-            "Chest",
-            "UpperChest",
-            "Neck",
-            "Head",
-            "LeftEye",
-            "RightEye",
-            "Jaw",
+    struct SkeletonHumanBoneTanRot {
+        Quaternion tan_rot;
+        Quaternion inv_tan_rot;
+    };
+    struct HumanBoneInfo {
+        String name;
+        Vector3 orgin_dir;
+        Vector3 updir;        
+        SkeletonHumanBoneTanRot get_bone_tan_rot(const Quaternion& p_bone_rest) {
+            Vector3 new_dir = p_bone_rest.xform(orgin_dir);
+            SkeletonHumanBoneTanRot rot;
+            rot.tan_rot = Quaternion(new_dir, updir);
+            rot.inv_tan_rot = rot.tan_rot.inverse();
+            return rot;
+        }
+    };
+    LocalVector<HumanBoneInfo> get_human_bones() {
+        static LocalVector<HumanBoneInfo> bone_array = {
+            {"Hips",Vector3(0,1,1),Vector3(0,1,0)},
+            {"Spine",Vector3(0,1,1),Vector3(0,1,0)},
+            {"Chest",Vector3(0,1,1),Vector3(0,1,0)},
+            {"UpperChest",Vector3(0,1,1),Vector3(0,1,0)},
+            {"Neck",Vector3(0,1,1),Vector3(0,1,0)},
+            {"Head",Vector3(0,1,1),Vector3(0,1,0)},
+            {"LeftEye",Vector3(0,1,1),Vector3(0,1,0)},
+            {"RightEye",Vector3(0,1,1),Vector3(0,1,0)},
+            {"Jaw",Vector3(0,1,1),Vector3(0,1,0)},
 
-            "LeftShoulder",
-            "RightShoulder",
+            {"LeftShoulder",Vector3(0,1,1),Vector3(0,1,0)},
+            {"RightShoulder",Vector3(0,1,1),Vector3(0,1,0)},
 
-            "LeftUpperArm",
-            "RightUpperArm",
+            {"LeftUpperArm",Vector3(0,1,1),Vector3(0,1,0)},
+            {"RightUpperArm",Vector3(0,1,1),Vector3(0,1,0)},
 
-            "LeftLowerArm",
-            "RightLowerArm",
+            {"LeftLowerArm",Vector3(0,1,1),Vector3(0,1,0)},
+            {"RightLowerArm",Vector3(0,1,1),Vector3(0,1,0)},
 
-            "LeftHand",
-            "RightHand",
+            {"LeftHand",Vector3(0,1,1),Vector3(0,1,0)},
+            {"RightHand",Vector3(0,1,1),Vector3(0,1,0)},
 
-            "LeftUpperLeg",
-            "RightUpperLeg",
+            {"LeftUpperLeg",Vector3(0,-1,1),Vector3(0,1,0)},
+            {"RightUpperLeg",Vector3(0,-1,1),Vector3(0,1,0)},
 
-            "LeftLowerLeg",
-            "RightLowerLeg",
+            {"LeftLowerLeg",Vector3(0,-1,1),Vector3(0,1,0)},
+            {"RightLowerLeg",Vector3(0,-1,1),Vector3(0,1,0)},
 
-            "LeftFoot",
-            "RightFoot",
-
-
-            "LeftToes",
-            "RightToes",
-
-            "LeftThumbMetacarpal",
-            "LeftThumbProximal",
-            "LeftThumbDistal",
-
-            "LeftIndexProximal",
-            "LeftIndexIntermediate",
-            "LeftIndexDistal",
-
-            "LeftMiddleProximal",
-            "LeftMiddleIntermediate",
-            "LeftMiddleDistal",
-
-            "LeftRingProximal",
-            "LeftRingIntermediate",
-            "LeftRingDistal",
-
-            "LeftLittleProximal",
-            "LeftLittleIntermediate",
-            "LeftLittleDistal",
+            {"LeftFoot",Vector3(0,1,1),Vector3(0,1,0)},
+            {"RightFoot",Vector3(0,1,1),Vector3(0,1,0)},
 
 
-            "RightThumbMetacarpal",
-            "RightThumbProximal",
-            "RightThumbDistal",
+            {"LeftToes",Vector3(0,1,1),Vector3(0,1,0)},
+            {"RightToes",Vector3(0,1,1),Vector3(0,1,0)},
 
-            "RightIndexProximal",
-            "RightIndexIntermediate",
-            "RightIndexDistal",
+            {"LeftThumbMetacarpal",Vector3(0,1,1),Vector3(0,1,0)},
+            {"LeftThumbProximal",Vector3(0,1,1),Vector3(0,1,0)},
+            {"LeftThumbDistal",Vector3(0,1,1),Vector3(0,1,0)},
 
-            "RightMiddleProximal",
-            "RightMiddleIntermediate",
-            "RightMiddleDistal",
+            {"LeftIndexProximal",Vector3(0,1,1),Vector3(0,1,0)},
+            {"LeftIndexIntermediate",Vector3(0,1,1),Vector3(0,1,0)},
+            {"LeftIndexDistal",Vector3(0,1,1),Vector3(0,1,0)},
 
-            "RightRingProximal",
-            "RightRingIntermediate",
-            "RightRingDistal",
+            {"LeftMiddleProximal",Vector3(0,1,1),Vector3(0,1,0)},
+            {"LeftMiddleIntermediate",Vector3(0,1,1),Vector3(0,1,0)},
+            {"LeftMiddleDistal",Vector3(0,1,1),Vector3(0,1,0)},
 
-            "RightLittleProximal",
-            "RightLittleIntermediate",
-            "RightLittleDistal",
+            {"LeftRingProximal",Vector3(0,1,1),Vector3(0,1,0)},
+            {"LeftRingIntermediate",Vector3(0,1,1),Vector3(0,1,0)},
+            {"LeftRingDistal",Vector3(0,1,1),Vector3(0,1,0)},
+
+            {"LeftLittleProximal",Vector3(0,1,1),Vector3(0,1,0)},
+            {"LeftLittleIntermediate",Vector3(0,1,1),Vector3(0,1,0)},
+            {"LeftLittleDistal",Vector3(0,1,1),Vector3(0,1,0)},
+
+
+            {"RightThumbMetacarpal",Vector3(0,1,1),Vector3(0,1,0)},
+            {"RightThumbProximal",Vector3(0,1,1),Vector3(0,1,0)},
+            {"RightThumbDistal",Vector3(0,1,1),Vector3(0,1,0)},
+
+            {"RightIndexProximal",Vector3(0,1,1),Vector3(0,1,0)},
+            {"RightIndexIntermediate",Vector3(0,1,1),Vector3(0,1,0)},
+            {"RightIndexDistal",Vector3(0,1,1),Vector3(0,1,0)},
+
+            {"RightMiddleProximal",Vector3(0,1,1),Vector3(0,1,0)},
+            {"RightMiddleIntermediate",Vector3(0,1,1),Vector3(0,1,0)},
+            {"RightMiddleDistal",Vector3(0,1,1),Vector3(0,1,0)},
+
+            {"RightRingProximal",Vector3(0,1,1),Vector3(0,1,0)},
+            {"RightRingIntermediate",Vector3(0,1,1),Vector3(0,1,0)},
+            {"RightRingDistal",Vector3(0,1,1),Vector3(0,1,0)},
+
+            {"RightLittleProximal",Vector3(0,1,1),Vector3(0,1,0)},
+            {"RightLittleIntermediate",Vector3(0,1,1),Vector3(0,1,0)},
+            {"RightLittleDistal",Vector3(0,1,1),Vector3(0,1,0)},
 
 
         };
         return bone_array;
     }
+    
     
 
 public:

@@ -121,14 +121,14 @@ void CharacterBodyMain::_update_ai()
         character_ai->execute(this,ai_context.ptr());
     }
 }
-void CharacterBodyMain::_process_animator()
+void CharacterBodyMain::_process_animator(double time_delta)
 {
     if(editor_pause_animation) {
         return ;
     }
     if(animator.is_valid())
     {
-        animator->_thread_update_animator(get_process_delta_time() * editor_animation_speed);
+        animator->_thread_update_animator(time_delta * editor_animation_speed);
     }
 }
 void CharacterBodyMain::_process_animation()
@@ -155,24 +155,48 @@ void CharacterBodyMain::_process_ik()
 }
 
 void CharacterBodyMain::update_track_target() {
-    if(track_target == nullptr) {
+
+    if(track_target.is_empty()) {
+        return;
+    }
+    
+    CharacterBodyMain* src_track_target = Object::cast_to<CharacterBodyMain>(get_parent()->find_child(track_target));
+    if(src_track_target == nullptr) {
         return;
     }
     LocalVector<String> human_bones = get_human_bones();
     Skeleton3D * skeleton = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(skeletonID));
-    Skeleton3D * src_skeleton = track_target->get_skeleton();
+    
+    Skeleton3D * src_skeleton = src_track_target->get_skeleton();
     if(skeleton == nullptr || src_skeleton == nullptr) {
         return;
     }
+	temp_last_bone_pose.resize(human_bones.size());
+    LocalVector<Vector3> temp_src_bone_pose_angle;
+    LocalVector<Vector3> temp_src_bone_rest_angle;
+    LocalVector<Vector3> temp_bone_rest_angle;
+    temp_src_bone_pose_angle.resize(human_bones.size());
+    temp_src_bone_rest_angle.resize(human_bones.size());
+    temp_bone_rest_angle.resize(human_bones.size());
+	for (int i = 0; i < human_bones.size(); i++) {
+		int bone_index = skeleton->find_bone(human_bones[i]);
+		int src_bone_index = src_skeleton->find_bone(human_bones[i]);
+		if (bone_index == -1) {
+			continue;
+		}
+        temp_src_bone_pose_angle[i] = src_skeleton->get_bone_pose(src_bone_index).basis.get_euler() * (float)(180.0 / Math_PI);
+        temp_src_bone_rest_angle[i] = src_skeleton->get_bone_rest(src_bone_index).basis.get_euler() * (float)(180.0 / Math_PI);
+        temp_bone_rest_angle[i] = skeleton->get_bone_rest(bone_index).basis.get_euler() * (float)(180.0 / Math_PI);
+		temp_last_bone_pose[i] = src_skeleton->get_bone_pose(src_bone_index).basis.get_rotation_quaternion() * src_skeleton->get_bone_rest(src_bone_index).basis.get_rotation_quaternion().inverse();
+        temp_last_bone_pose[i] = temp_last_bone_pose[i] * skeleton->get_bone_rest(bone_index).basis.get_rotation_quaternion();
+	}
     for (int i = 0; i < human_bones.size(); i++) {
         int bone_index = skeleton->find_bone(human_bones[i]);
         int src_bone_index = src_skeleton->find_bone(human_bones[i]);
         if(bone_index == -1 || src_bone_index == -1) {
             continue;
         }
-        Transform3D pose = skeleton->get_bone_global_pose(bone_index);
-        pose.basis = src_skeleton->get_bone_global_pose(src_bone_index).basis;
-        skeleton->set_bone_global_pose(bone_index, pose);
+        skeleton->set_bone_pose_rotation(bone_index, temp_last_bone_pose[i]);
     }
 }
 void CharacterBodyMain::_process_move()
@@ -433,6 +457,11 @@ void CharacterBodyMain::_bind_methods()
     ClassDB::bind_method(D_METHOD("get_play_animation"), &CharacterBodyMain::get_play_animation);
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "editor_play_animation", PROPERTY_HINT_RESOURCE_TYPE, "Animation"), "set_play_animation", "get_play_animation");
     ADD_MEMBER_BUTTON(editor_play_select_animation,L"播放动画",CharacterBodyMain);
+
+
+    ClassDB::bind_method(D_METHOD("set_track_target", "track_target"), &CharacterBodyMain::set_track_target);
+    ClassDB::bind_method(D_METHOD("get_track_target"), &CharacterBodyMain::get_track_target);
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_track_target", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_EDITOR), "set_track_target", "get_track_target");
 
 
 

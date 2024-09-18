@@ -853,6 +853,10 @@ public:
          m_Animator = p_animator; 
          config = _config;
 		 skeleton_id = ObjectID();
+		 if (p_skeleton != nullptr)
+		 {
+			 skeleton_id = p_skeleton->get_instance_id();
+		 }
     }
     CharacterAnimationLogicContext* _get_logic_context()
     {
