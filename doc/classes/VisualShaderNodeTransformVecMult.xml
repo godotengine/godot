@@ -4,7 +4,7 @@
 		Multiplies a [Transform3D] and a [Vector3] within the visual shader graph.
 	</brief_description>
 	<description>
-		A multiplication operation on a transform (4×4 matrix) and a vector, with support for different multiplication operators.
+		A multiplication operation on a transform (4×4 matrix) and a vector, with support for different multiplication operators. See also [VisualShaderNodeCoordinateSpaceHelper].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,18 +15,24 @@
 	</members>
 	<constants>
 		<constant name="OP_AxB" value="0" enum="Operator">
-			Multiplies transform [code]a[/code] by the vector [code]b[/code].
+			Multiplies transform [code]a[/code] by the [Vector3] [code]b[/code].
 		</constant>
 		<constant name="OP_BxA" value="1" enum="Operator">
-			Multiplies vector [code]b[/code] by the transform [code]a[/code].
+			Multiplies [Vector3] [code]b[/code] by the transform [code]a[/code].
 		</constant>
 		<constant name="OP_3x3_AxB" value="2" enum="Operator">
-			Multiplies transform [code]a[/code] by the vector [code]b[/code], skipping the last row and column of the transform.
+			Multiplies transform [code]a[/code] by the [Vector3] [code]b[/code], skipping the last row and column of the transform.
 		</constant>
 		<constant name="OP_3x3_BxA" value="3" enum="Operator">
-			Multiplies vector [code]b[/code] by the transform [code]a[/code], skipping the last row and column of the transform.
+			Multiplies [Vector3] [code]b[/code] by the transform [code]a[/code], skipping the last row and column of the transform.
 		</constant>
-		<constant name="OP_MAX" value="4" enum="Operator">
+		<constant name="OP_VEC4_AxB" value="4" enum="Operator">
+			Multiplies transform [code]a[/code] by the vector [code]b[/code]. Accepts [Vector4] input.
+		</constant>
+		<constant name="OP_VEC4_BxA" value="5" enum="Operator">
+			Multiplies vector [code]b[/code] by the transform [code]a[/code]. Accepts [Vector4] input.
+		</constant>
+		<constant name="OP_MAX" value="6" enum="Operator">
 			Represents the size of the [enum Operator] enum.
 		</constant>
 	</constants>

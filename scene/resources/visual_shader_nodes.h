@@ -1068,6 +1068,8 @@ public:
 		OP_BxA,
 		OP_3x3_AxB,
 		OP_3x3_BxA,
+		OP_VEC4_AxB,
+		OP_VEC4_BxA,
 		OP_MAX,
 	};
 
@@ -1100,6 +1102,66 @@ public:
 };
 
 VARIANT_ENUM_CAST(VisualShaderNodeTransformVecMult::Operator)
+
+///////////////////////////////////////
+/// VECTOR TRANSFORMATION
+///////////////////////////////////////
+
+class VisualShaderNodeCoordinateSpaceHelper : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeCoordinateSpaceHelper, VisualShaderNode);
+
+public:
+	enum Space {
+		SPACE_MODEL,
+		SPACE_WORLD,
+		SPACE_VIEW,
+		SPACE_CLIP,
+		SPACE_MAX,
+	};
+
+	enum VectorType {
+		VECTOR_POSITION,
+		VECTOR_DIRECTION,
+		VECTOR_MAX,
+	};
+
+protected:
+	Space from_space = SPACE_MODEL;
+	Space to_space = SPACE_MODEL;
+	VectorType vector_type = VECTOR_POSITION;
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const override;
+
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
+
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
+
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	void set_from_space(Space p_from_space);
+	Space get_from_space() const;
+
+	void set_to_space(Space p_to_space);
+	Space get_to_space() const;
+
+	void set_vector_type(VectorType p_from_space);
+	VectorType get_vector_type() const;
+
+	virtual Vector<StringName> get_editable_properties() const override;
+
+	virtual Category get_category() const override { return CATEGORY_TRANSFORM; }
+
+	VisualShaderNodeCoordinateSpaceHelper();
+};
+
+VARIANT_ENUM_CAST(VisualShaderNodeCoordinateSpaceHelper::Space)
+VARIANT_ENUM_CAST(VisualShaderNodeCoordinateSpaceHelper::VectorType)
 
 ///////////////////////////////////////
 /// FLOAT FUNC
