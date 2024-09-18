@@ -6177,6 +6177,17 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 				}
 			}
 #endif
+			bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
+			if (failed && fallback_to_opengl3 && rendering_driver != "opengl3") {
+				memdelete(rendering_context);
+				rendering_context = nullptr;
+				tested_drivers.set_flag(DRIVER_ID_COMPAT_OPENGL3);
+				WARN_PRINT("Your video card drivers seem not to support Direct3D 12 or Vulkan, switching to OpenGL 3.");
+				rendering_driver = "opengl3";
+				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+				failed = false;
+			}
 			if (failed) {
 				memdelete(rendering_context);
 				rendering_context = nullptr;

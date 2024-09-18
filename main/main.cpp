@@ -1977,6 +1977,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 		GLOBAL_DEF_RST("rendering/rendering_device/fallback_to_vulkan", true);
 		GLOBAL_DEF_RST("rendering/rendering_device/fallback_to_d3d12", true);
+		GLOBAL_DEF_RST("rendering/rendering_device/fallback_to_opengl3", true);
 	}
 
 	{
