@@ -2586,7 +2586,7 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 					}
 
 					// Check sizes
-					if (!open_ended && dict_node_match->elements.size() != p_match_pattern->dictionary.size() || (open_ended && dict_node_match->elements.size() < p_match_pattern->dictionary.size() - 1)) {
+					if ((!open_ended && dict_node_match->elements.size() != p_match_pattern->dictionary.size()) || (open_ended && dict_node_match->elements.size() < p_match_pattern->dictionary.size() - 1)) {
 						parser->push_warning(p_match_pattern, GDScriptWarning::MISMATCHED_TYPE, Variant::get_type_name(Variant::DICTIONARY), p_match_test->get_datatype().to_string(), "size", String::num(p_match_pattern->dictionary.size() - (open_ended ? 1 : 0)), String::num(dict_node_match->elements.size()));
 						break;
 					}
@@ -2602,7 +2602,7 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 					for (int i = 0; i < vec_size; i++) {
 						List<Pair<GDScriptParser::DataType, GDScriptParser::DataType>>::Element *j = match_vector.find(pattern_to_match->get());
 
-						if (j != nullptr) {
+						if (j != nullptr ) {
 							j->erase();
 							List<Pair<GDScriptParser::DataType, GDScriptParser::DataType>>::Element *temp = pattern_to_match->next();
 							pattern_to_match->erase();
@@ -2750,7 +2750,7 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 						}
 
 						// Check sizes
-						if (!open_ended && arr_node_match->elements.size() != p_match_pattern->array.size() || (open_ended && arr_node_match->elements.size() < p_match_pattern->array.size() - 1)) {
+						if ((!open_ended && arr_node_match->elements.size() != p_match_pattern->array.size()) || (open_ended && arr_node_match->elements.size() < p_match_pattern->array.size() - 1)) {
 							parser->push_warning(p_match_pattern, GDScriptWarning::MISMATCHED_TYPE, p_match_pattern->get_datatype().to_string(), p_match_test->get_datatype().to_string(), "size", String::num(p_match_pattern->array.size() - (open_ended ? 1 : 0)), String::num(arr_node_match->elements.size()));
 							break;
 						}
