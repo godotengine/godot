@@ -188,7 +188,7 @@ void GodotArea3D::add_soft_body_to_query(GodotSoftBody3D *p_soft_body, uint32_t 
 void GodotArea3D::remove_soft_body_from_query(GodotSoftBody3D *p_soft_body, uint32_t p_soft_body_shape, uint32_t p_area_shape) {
 	BodyKey bk(p_soft_body, p_soft_body_shape, p_area_shape);
 	monitored_soft_bodies[bk].dec();
-	if (!monitor_query_list.in_list()) {
+	if (get_space() && !monitor_query_list.in_list()) {
 		_queue_monitor_update();
 	}
 }
