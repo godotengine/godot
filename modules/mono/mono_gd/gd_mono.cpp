@@ -464,8 +464,8 @@ godot_plugins_initialize_fn initialize_coreclr_and_godot_plugins(bool &r_runtime
 	String assembly_name = path::get_csharp_project_name();
 
 	String tpa_list = make_tpa_list();
-	const char *prop_keys[] = { HOSTFXR_STR("TRUSTED_PLATFORM_ASSEMBLIES") };
-	const char *prop_values[] = { get_data(str_to_hostfxr(tpa_list)) };
+	const char *prop_keys[] = { "TRUSTED_PLATFORM_ASSEMBLIES" };
+	const char *prop_values[] = { tpa_list.utf8().get_data() };
 	int nprops = sizeof(prop_keys) / sizeof(prop_keys[0]);
 
 	void *coreclr_handle = nullptr;
@@ -478,9 +478,9 @@ godot_plugins_initialize_fn initialize_coreclr_and_godot_plugins(bool &r_runtime
 	print_verbose(".NET: CoreCLR initialized");
 
 	coreclr_create_delegate(coreclr_handle, domain_id,
-			get_data(str_to_hostfxr(assembly_name)),
-			HOSTFXR_STR("GodotPlugins.Game.Main"),
-			HOSTFXR_STR("InitializeFromGameProject"),
+			assembly_name.utf8().get_data(),
+			"GodotPlugins.Game.Main",
+			"InitializeFromGameProject",
 			(void **)&godot_plugins_initialize);
 	ERR_FAIL_NULL_V_MSG(godot_plugins_initialize, nullptr, ".NET: Failed to get GodotPlugins initialization function pointer");
 

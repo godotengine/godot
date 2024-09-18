@@ -7205,6 +7205,12 @@ Node *GLTFDocument::_generate_scene_node_tree(Ref<GLTFState> p_state) {
 	ERR_FAIL_COND_V_MSG(err != OK, nullptr, "glTF: Failed to create skeletons.");
 	err = _create_skins(p_state);
 	ERR_FAIL_COND_V_MSG(err != OK, nullptr, "glTF: Failed to create skins.");
+	// Run pre-generate for each extension, in case an extension needs to do something before generating the scene.
+	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
+		ERR_CONTINUE(ext.is_null());
+		err = ext->import_pre_generate(p_state);
+		ERR_CONTINUE(err != OK);
+	}
 	// Generate the node tree.
 	Node *single_root;
 	if (p_state->extensions_used.has("GODOT_single_root")) {
@@ -7439,6 +7445,12 @@ Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint
 		state->extensions_used.append("GODOT_single_root");
 	}
 	_convert_scene_node(state, p_node, -1, -1);
+	// Run post-convert for each extension, in case an extension needs to do something after converting the scene.
+	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
+		ERR_CONTINUE(ext.is_null());
+		Error err = ext->export_post_convert(p_state, p_node);
+		ERR_CONTINUE(err != OK);
+	}
 	return OK;
 }
 

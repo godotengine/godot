@@ -62,13 +62,15 @@
 # Hajir Asyafi <hajirasyafi@gmail.com>, 2024.
 # Azizkhasyi 11 <azizkhasyi11@gmail.com>, 2024.
 # "@andiDermawan" <andidermawan2004@gmail.com>, 2024.
+# Bintang AP <prep77070@gmail.com>, 2024.
+# "Achmad Izzuddin (Adin)" <achmadizzuddin999@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-08-14 12:59+0000\n"
-"Last-Translator: Septian Ganendra Savero Kurniawan <mail@init.id>\n"
+"PO-Revision-Date: 2024-08-28 12:59+0000\n"
+"Last-Translator: \"Achmad Izzuddin (Adin)\" <achmadizzuddin999@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -76,7 +78,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.7-dev\n"
+"X-Generator: Weblate 5.7.1-dev\n"
 
 msgid "Main Thread"
 msgstr "Utas Utama"
@@ -493,6 +495,9 @@ msgstr ""
 msgid "An action with the name '%s' already exists."
 msgstr "Sudah ada aksi dengan nama '%s'."
 
+msgid "Cannot Revert - Action is same as initial"
+msgstr "Tidak Bisa Mengembalikan - Aksi sama dengan nilai awal"
+
 msgid "Revert Action"
 msgstr "Kembalikan Tindakan"
 
@@ -511,8 +516,14 @@ msgstr "Sunting Acara"
 msgid "Remove Event"
 msgstr "Menghapus Event"
 
+msgid "Filter by Name"
+msgstr "Filter Nama"
+
 msgid "Clear All"
 msgstr "Hapus Semua"
+
+msgid "Clear all search filters."
+msgstr "Hapus semua filter pencarian."
 
 msgid "Add New Action"
 msgstr "Tambahkan Tindakan Baru"
@@ -543,6 +554,9 @@ msgstr "Sisipkan Key Disini"
 
 msgid "Duplicate Selected Key(s)"
 msgstr "Duplikat Kunci Terpilih"
+
+msgid "Cut Selected Key(s)"
+msgstr "Potong Kunci Terpilih"
 
 msgid "Copy Selected Key(s)"
 msgstr "Salin Kunci Yang Dipilih"
@@ -3438,6 +3452,9 @@ msgstr ""
 "Tidak dapat menulis ke file '%s', file sedang digunakan, terkunci atau tidak "
 "memiliki izin."
 
+msgid "Preparing scenes for reload"
+msgstr "Menyiapkan scene untuk memuat ulang"
+
 msgid ""
 "Changing the renderer requires restarting the editor.\n"
 "\n"
@@ -3948,6 +3965,9 @@ msgstr "Jalankan Proyek"
 msgid "Write your logic in the _run() method."
 msgstr "Tulis logika di dalam fungsi _run()."
 
+msgid "The current scene already has a root node."
+msgstr "Scene ini sudah mempunyai root node."
+
 msgid "Edit Built-in Action: %s"
 msgstr "Edit Tindakan Bawaan:%s"
 
@@ -4053,11 +4073,29 @@ msgstr "Semua Perangkat"
 msgid "Device"
 msgstr "Perangkat"
 
+msgid "Failed to get Info.plist hash."
+msgstr "Gagal untuk mendapatkan info.plist hash."
+
+msgid "Invalid Info.plist, no bundle id."
+msgstr "Tidak valid Info.plist, tidak ada id bundle."
+
+msgid "Invalid Info.plist, can't load."
+msgstr "Info.plist tidak valid, tidak bisa memuat."
+
 msgid "Failed to create \"%s\" subfolder."
 msgstr "Tidak dapat membuat sub folder \"%s\"."
 
+msgid "Failed to extract thin binary."
+msgstr "Gagal untuk ekstrak biner tipis."
+
 msgid "Invalid binary format."
 msgstr "Format biner tidak valid."
+
+msgid "Failed to create _CodeSignature subfolder."
+msgstr "Gagal membuat subfolder _CodeSignature."
+
+msgid "Failed to create fat binary."
+msgstr "Gagal membuat biner tebal."
 
 msgid "Unknown object type."
 msgstr "Jenis objek tidak diketahui."
@@ -8411,14 +8449,14 @@ msgstr "Hapus Kontrol-Luar dari Kurva"
 msgid "Remove In-Control from Curve"
 msgstr "Hapus Kontrol-Dalam dari Kurva"
 
-msgid "Split Curve"
-msgstr "Pisahkan Kurva"
-
 msgid "Move Point in Curve"
 msgstr "Geser Titik dalam Kurva"
 
 msgid "Add Point to Curve"
 msgstr "Tambah Titik ke Kurva"
+
+msgid "Split Curve"
+msgstr "Pisahkan Kurva"
 
 msgid "Move In-Control in Curve"
 msgstr "Geser Kontrol-Dalam dalam Kurva"
