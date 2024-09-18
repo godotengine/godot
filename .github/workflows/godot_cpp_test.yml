@@ -21,49 +21,44 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          sparse-checkout: .github
+
+      - name: Checkout godot-cpp
+        uses: actions/checkout@v4
+        with:
           submodules: recursive
+          repository: godotengine/godot-cpp
+          ref: ${{ env.GODOT_CPP_BRANCH }}
+          path: godot-cpp
 
       - name: Setup Python and SCons
         uses: ./.github/actions/godot-deps
 
-      # Checkout godot-cpp
-      - name: Checkout godot-cpp
-        uses: actions/checkout@v4
-        with:
-          repository: godotengine/godot-cpp
-          ref: ${{ env.GODOT_CPP_BRANCH }}
-          submodules: recursive
-          path: godot-cpp
+      - name: Setup GCC problem matcher
+        uses: ammaraskar/gcc-problem-matcher@master
 
-      # Download generated API dump
       - name: Download GDExtension interface and API dump
         uses: ./.github/actions/download-artifact
         with:
           name: godot-api-dump
-          path: ./godot-api
+          path: ./godot-cpp/gdextension
 
-      # Extract and override existing files with generated files
-      - name: Extract GDExtension interface and API dump
-        run: |
-          cp -f godot-api/gdextension_interface.h godot-cpp/gdextension/
-          cp -f godot-api/extension_api.json godot-cpp/gdextension/
+      # TODO: Enable caching when godot-cpp has proper cache limiting.
 
-      # TODO: Add caching to the SCons build and store it for CI via the godot-cache
-      # action.
+      # - name: Restore Godot build cache
+      #   uses: ./.github/actions/godot-cache-restore
+      #   with:
+      #     cache-name: godot-cpp
+      #   continue-on-error: true
 
-      # Build godot-cpp test extension
       - name: Build godot-cpp test extension
-        run: |
-          cd godot-cpp/test
-          scons target=template_debug dev_build=yes
-          cd ../..
+        env: # Keep synced with godot-build.
+          SCONS_CACHE: ${{ github.workspace }}/.scons-cache/
+          SCONS_CACHE_LIMIT: 7168
+        run: scons --directory=./godot-cpp/test target=template_debug dev_build=yes verbose=yes
 
-  gdextension-c-compile:
-    runs-on: 'ubuntu-20.04'
-    name: 'Check GDExtension header with a C compiler'
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: 'Run C compiler on gdextension_interface.h'
-        run: |
-          gcc -c core/extension/gdextension_interface.h
+      # - name: Save Godot build cache
+      #   uses: ./.github/actions/godot-cache-save
+      #   with:
+      #     cache-name: godot-cpp
+      #   continue-on-error: true
