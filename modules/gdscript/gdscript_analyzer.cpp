@@ -2478,13 +2478,11 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 					parser->push_warning(p_match_pattern, GDScriptWarning::MISMATCHED_TYPE, p_match_pattern->get_datatype().to_string(), p_match_test->get_datatype().to_string(), "", "", "");
 					break;
 				}
-				if(p_match_pattern->pattern_type == GDScriptParser::PatternNode::Type::PT_ARRAY) {
+				if (p_match_pattern->pattern_type == GDScriptParser::PatternNode::Type::PT_ARRAY) {
 					parser->push_warning(p_match_pattern, GDScriptWarning::MISMATCHED_TYPE, Variant::get_type_name(Variant::ARRAY), p_match_test->get_datatype().to_string(), "", "", "");
 					break;
 				}
-				if (p_match_test->type != GDScriptParser::Node::DICTIONARY
-					&& p_match_test->datatype.type_source != GDScriptParser::DataType::TypeSource::ANNOTATED_EXPLICIT && p_match_test->datatype.type_source != GDScriptParser::DataType::TypeSource::ANNOTATED_INFERRED
-					&& p_match_pattern->datatype.type_source != GDScriptParser::DataType::TypeSource::ANNOTATED_EXPLICIT && p_match_pattern->datatype.type_source != GDScriptParser::DataType::TypeSource::ANNOTATED_INFERRED) {
+				if (p_match_test->type != GDScriptParser::Node::DICTIONARY && p_match_test->datatype.type_source != GDScriptParser::DataType::TypeSource::ANNOTATED_EXPLICIT && p_match_test->datatype.type_source != GDScriptParser::DataType::TypeSource::ANNOTATED_INFERRED && p_match_pattern->datatype.type_source != GDScriptParser::DataType::TypeSource::ANNOTATED_EXPLICIT && p_match_pattern->datatype.type_source != GDScriptParser::DataType::TypeSource::ANNOTATED_INFERRED) {
 					break; // Types must be provided
 				}
 
@@ -2506,7 +2504,7 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 					} else if (p_match_test->get_datatype().container_element_types.size() == 1) {
 						// Only dict key specified
 						correct_type_key = p_match_test->get_datatype().container_element_types[0];
-					}else if(p_match_test->type == GDScriptParser::Node::Type::DICTIONARY){
+					} else if (p_match_test->type == GDScriptParser::Node::Type::DICTIONARY) {
 						GDScriptParser::DictionaryNode *dict_node_match = dynamic_cast<GDScriptParser::DictionaryNode *>(p_match_test);
 						if (dict_node_match->elements.size() == 0) {
 							break;
@@ -2517,23 +2515,23 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 
 						bool dict_mismatch_found = false;
 						for (int i = 1; i < dict_node_match->elements.size(); i++) {
-							if(correct_type_key != dict_node_match->elements[i].key->get_datatype() || (has_value && correct_type_value != dict_node_match->elements[i].value->get_datatype())) {
+							if (correct_type_key != dict_node_match->elements[i].key->get_datatype() || (has_value && correct_type_value != dict_node_match->elements[i].value->get_datatype())) {
 								parser->push_warning(p_match_pattern, GDScriptWarning::MISMATCHED_TYPE, p_match_pattern->get_datatype().to_string(), p_match_test->get_datatype().to_string(), "array_typed_match", "", "");
 								dict_mismatch_found = true;
 								break;
 							}
 						}
-						if(dict_mismatch_found) {
+						if (dict_mismatch_found) {
 							break;
 						}
 					}
 
-					if(p_match_pattern->get_datatype().container_element_types.size() == 2) {
+					if (p_match_pattern->get_datatype().container_element_types.size() == 2) {
 						if (p_match_pattern->get_datatype().container_element_types[0] != correct_type_key || (has_value && correct_type_value != p_match_pattern->get_datatype().container_element_types[1])) {
 							parser->push_warning(p_match_pattern, GDScriptWarning::MISMATCHED_TYPE, p_match_pattern->get_datatype().to_string(), p_match_test->get_datatype().to_string() + "[" + correct_type_key.to_string() + ", " + correct_type_value.to_string() + "]", "", "", "");
 							break;
 						}
-					}else if (p_match_pattern->type != GDScriptParser::Node::DICTIONARY){
+					} else if (p_match_pattern->type != GDScriptParser::Node::DICTIONARY) {
 						for (int i = 0; i < p_match_pattern->dictionary.size(); i++) {
 							// Don't count the ".." symbol
 							if (p_match_pattern->dictionary[i].value_pattern && p_match_pattern->dictionary[i].value_pattern->pattern_type == GDScriptParser::PatternNode::PT_REST) {
@@ -2557,7 +2555,7 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 						}
 					}
 					if (incorrect_type_present || incorrect_key_present) {
-						parser->push_warning(p_match_pattern, GDScriptWarning::MISMATCHED_TYPE, Variant::get_type_name(Variant::Type::DICTIONARY), p_match_test->get_datatype().to_string() , "dict_typed",  "[" + other_type_found.first.to_string() + (incorrect_key_present ? "" : ", " + other_type_found.second.to_string()) + "]", "");
+						parser->push_warning(p_match_pattern, GDScriptWarning::MISMATCHED_TYPE, Variant::get_type_name(Variant::Type::DICTIONARY), p_match_test->get_datatype().to_string(), "dict_typed", "[" + other_type_found.first.to_string() + (incorrect_key_present ? "" : ", " + other_type_found.second.to_string()) + "]", "");
 					}
 					break;
 				}
@@ -2665,28 +2663,26 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 					parser->push_warning(p_match_pattern, GDScriptWarning::MISMATCHED_TYPE, p_match_pattern->get_datatype().to_string(), p_match_test->get_datatype().to_string(), "", "", "");
 					break;
 				}
-				if(p_match_pattern->pattern_type == GDScriptParser::PatternNode::Type::PT_DICTIONARY || p_match_pattern->get_datatype().builtin_type == Variant::Type::DICTIONARY) {
+				if (p_match_pattern->pattern_type == GDScriptParser::PatternNode::Type::PT_DICTIONARY || p_match_pattern->get_datatype().builtin_type == Variant::Type::DICTIONARY) {
 					parser->push_warning(p_match_pattern, GDScriptWarning::MISMATCHED_TYPE, Variant::get_type_name(Variant::DICTIONARY), p_match_test->get_datatype().to_string(), "", "", "");
 					break;
 				}
-				if(p_match_pattern->pattern_type == GDScriptParser::PatternNode::Type::PT_BIND || p_match_pattern->pattern_type == GDScriptParser::PatternNode::Type::PT_REST || p_match_pattern->pattern_type == GDScriptParser::PatternNode::Type::PT_WILDCARD) {
+				if (p_match_pattern->pattern_type == GDScriptParser::PatternNode::Type::PT_BIND || p_match_pattern->pattern_type == GDScriptParser::PatternNode::Type::PT_REST || p_match_pattern->pattern_type == GDScriptParser::PatternNode::Type::PT_WILDCARD) {
 					break;
 				}
-				if (p_match_test->type != GDScriptParser::Node::ARRAY
-					&& p_match_test->datatype.type_source != GDScriptParser::DataType::TypeSource::ANNOTATED_EXPLICIT && p_match_test->datatype.type_source != GDScriptParser::DataType::TypeSource::ANNOTATED_INFERRED
-					&& p_match_pattern->datatype.type_source != GDScriptParser::DataType::TypeSource::ANNOTATED_EXPLICIT && p_match_pattern->datatype.type_source != GDScriptParser::DataType::TypeSource::ANNOTATED_INFERRED) {
+				if (p_match_test->type != GDScriptParser::Node::ARRAY && p_match_test->datatype.type_source != GDScriptParser::DataType::TypeSource::ANNOTATED_EXPLICIT && p_match_test->datatype.type_source != GDScriptParser::DataType::TypeSource::ANNOTATED_INFERRED && p_match_pattern->datatype.type_source != GDScriptParser::DataType::TypeSource::ANNOTATED_EXPLICIT && p_match_pattern->datatype.type_source != GDScriptParser::DataType::TypeSource::ANNOTATED_INFERRED) {
 					break; // Types must be provided
 				}
 
-			// If array type is provided, check all elements of pattern are that type
+				// If array type is provided, check all elements of pattern are that type
 				if (p_match_pattern->pattern_type != GDScriptParser::PatternNode::PT_ARRAY && (p_match_test->datatype.type_source == GDScriptParser::DataType::TypeSource::ANNOTATED_EXPLICIT || p_match_test->datatype.type_source == GDScriptParser::DataType::TypeSource::ANNOTATED_INFERRED)) {
-					if(p_match_pattern->get_datatype().container_element_types.size() == 0) {
+					if (p_match_pattern->get_datatype().container_element_types.size() == 0) {
 						break;
 					}
 					GDScriptParser::DataType array_type;
-					if(p_match_test->datatype.container_element_types.size() > 0) {
+					if (p_match_test->datatype.container_element_types.size() > 0) {
 						array_type = p_match_test->datatype.container_element_types[0];
-					}else if(p_match_test->type == GDScriptParser::Node::Type::ARRAY) {
+					} else if (p_match_test->type == GDScriptParser::Node::Type::ARRAY) {
 						GDScriptParser::ArrayNode *arr_node_match = dynamic_cast<GDScriptParser::ArrayNode *>(p_match_test);
 						if (arr_node_match->elements.size() == 0) {
 							break;
@@ -2701,15 +2697,15 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 								break;
 							}
 						}
-						if(array_mismatch_found) {
+						if (array_mismatch_found) {
 							break;
 						}
 					}
-					if(p_match_pattern->get_datatype().container_element_types.size() == 0) {
+					if (p_match_pattern->get_datatype().container_element_types.size() == 0) {
 						break;
 					}
 					GDScriptParser::DataType incorrect_type;
-					if(p_match_pattern->get_datatype().container_element_types[0] != array_type) {
+					if (p_match_pattern->get_datatype().container_element_types[0] != array_type) {
 						parser->push_warning(p_match_pattern, GDScriptWarning::MISMATCHED_TYPE, Variant::get_type_name(Variant::Type::ARRAY) + "[" + p_match_pattern->get_datatype().container_element_types[0].to_string() + "]", Variant::get_type_name(Variant::Type::ARRAY) + "[" + array_type.to_string() + "]", "", "", "");
 					}
 					break;
@@ -2717,9 +2713,9 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 
 				if (p_match_pattern->pattern_type == GDScriptParser::PatternNode::PT_ARRAY) {
 					bool mismatched_types = false;
-					if(p_match_test->type == GDScriptParser::Node::Type::IDENTIFIER) {
+					if (p_match_test->type == GDScriptParser::Node::Type::IDENTIFIER) {
 						GDScriptParser::DataType pattern_array_type = p_match_test->get_datatype().container_element_types[0];
-						for (int i = 0; i < p_match_pattern->array.size(); i++){
+						for (int i = 0; i < p_match_pattern->array.size(); i++) {
 							if (pattern_array_type != p_match_pattern->array[i]->get_datatype()) {
 								mismatched_types = true;
 								break;
@@ -2728,7 +2724,7 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 						if (mismatched_types) {
 							parser->push_warning(p_match_pattern, GDScriptWarning::MISMATCHED_TYPE, Variant::get_type_name(Variant::ARRAY) + "[" + p_match_pattern->get_datatype().to_string() + "]", p_match_test->get_datatype().to_string(), "", "", "");
 						}
-					}else if (p_match_test->type == GDScriptParser::Node::Type::ARRAY) {
+					} else if (p_match_test->type == GDScriptParser::Node::Type::ARRAY) {
 						GDScriptParser::ArrayNode *arr_node_match = dynamic_cast<GDScriptParser::ArrayNode *>(p_match_test);
 						String all_container_types_match;
 						String all_container_types_pattern;
@@ -2761,7 +2757,7 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 
 						// Check all pattern types are within the match array, in the same order
 						first_element = true;
-						for (int i = 0; i < p_match_pattern->array.size(); i++){
+						for (int i = 0; i < p_match_pattern->array.size(); i++) {
 							if (arr_node_match->elements[i]->get_datatype() != pattern_vector[i]) {
 								mismatched_types = true;
 							}
