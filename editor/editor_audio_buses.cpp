@@ -127,7 +127,7 @@ void EditorAudioBus::_notification(int p_what) {
 			} else if (has_focus()) {
 				draw_style_box(get_theme_stylebox(SNAME("focus"), SNAME("Button")), Rect2(Vector2(), get_size()));
 			} else {
-				draw_style_box(get_theme_stylebox(SceneStringName(panel), SNAME("TabContainer")), Rect2(Vector2(), get_size()));
+				draw_style_box(get_theme_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)), Rect2(Vector2(), get_size()));
 			}
 
 			if (get_index() != 0 && hovering_drop) {
