@@ -74,7 +74,7 @@ struct VariantInternalAccessor<const TypedArray<T> &> {
 
 //specialization for the rest of variant types
 
-#define MAKE_TYPED_ARRAY(m_type, m_variant_type)                                                                 \
+#define MAKE_TYPED_ARRAY_WITH_META(m_type, m_variant_type, m_meta)                                               \
 	template <>                                                                                                  \
 	class TypedArray<m_type> : public Array {                                                                    \
 	public:                                                                                                      \
@@ -86,7 +86,7 @@ struct VariantInternalAccessor<const TypedArray<T> &> {
 				TypedArray(Array(p_variant)) {                                                                   \
 		}                                                                                                        \
 		_FORCE_INLINE_ TypedArray(const Array &p_array) {                                                        \
-			set_typed(m_variant_type, StringName(), Variant());                                                  \
+			_set_typed(m_variant_type, StringName(), Variant(), m_meta);                                         \
 			if (is_same_typed(p_array)) {                                                                        \
 				_ref(p_array);                                                                                   \
 			} else {                                                                                             \
@@ -94,23 +94,25 @@ struct VariantInternalAccessor<const TypedArray<T> &> {
 			}                                                                                                    \
 		}                                                                                                        \
 		_FORCE_INLINE_ TypedArray() {                                                                            \
-			set_typed(m_variant_type, StringName(), Variant());                                                  \
+			_set_typed(m_variant_type, StringName(), Variant(), m_meta);                                         \
 		}                                                                                                        \
 	};
+
+#define MAKE_TYPED_ARRAY(m_type, m_variant_type) MAKE_TYPED_ARRAY_WITH_META(m_type, m_variant_type, GodotTypeInfo::METADATA_NONE);
 
 // All Variant::OBJECT types are intentionally omitted from this list because they are handled by
 // the unspecialized TypedArray definition.
 MAKE_TYPED_ARRAY(bool, Variant::BOOL)
-MAKE_TYPED_ARRAY(uint8_t, Variant::INT)
-MAKE_TYPED_ARRAY(int8_t, Variant::INT)
-MAKE_TYPED_ARRAY(uint16_t, Variant::INT)
-MAKE_TYPED_ARRAY(int16_t, Variant::INT)
-MAKE_TYPED_ARRAY(uint32_t, Variant::INT)
-MAKE_TYPED_ARRAY(int32_t, Variant::INT)
-MAKE_TYPED_ARRAY(uint64_t, Variant::INT)
-MAKE_TYPED_ARRAY(int64_t, Variant::INT)
-MAKE_TYPED_ARRAY(float, Variant::FLOAT)
-MAKE_TYPED_ARRAY(double, Variant::FLOAT)
+MAKE_TYPED_ARRAY_WITH_META(uint8_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_UINT8)
+MAKE_TYPED_ARRAY_WITH_META(int8_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_INT8)
+MAKE_TYPED_ARRAY_WITH_META(uint16_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_UINT16)
+MAKE_TYPED_ARRAY_WITH_META(int16_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_INT16)
+MAKE_TYPED_ARRAY_WITH_META(uint32_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_UINT32)
+MAKE_TYPED_ARRAY_WITH_META(int32_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_INT32)
+MAKE_TYPED_ARRAY_WITH_META(uint64_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_UINT64)
+MAKE_TYPED_ARRAY_WITH_META(int64_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_INT64)
+MAKE_TYPED_ARRAY_WITH_META(float, Variant::FLOAT, GodotTypeInfo::METADATA_REAL_IS_FLOAT)
+MAKE_TYPED_ARRAY_WITH_META(double, Variant::FLOAT, GodotTypeInfo::METADATA_REAL_IS_DOUBLE)
 MAKE_TYPED_ARRAY(String, Variant::STRING)
 MAKE_TYPED_ARRAY(Vector2, Variant::VECTOR2)
 MAKE_TYPED_ARRAY(Vector2i, Variant::VECTOR2I)
@@ -184,11 +186,11 @@ struct GetTypeInfo<const TypedArray<T> &> {
 	}
 };
 
-#define MAKE_TYPED_ARRAY_INFO(m_type, m_variant_type)                                                                        \
+#define MAKE_TYPED_ARRAY_INFO_WITH_META(m_type, m_variant_type, m_metadata)                                                  \
 	template <>                                                                                                              \
 	struct GetTypeInfo<TypedArray<m_type>> {                                                                                 \
 		static const Variant::Type VARIANT_TYPE = Variant::ARRAY;                                                            \
-		static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;                                        \
+		static const GodotTypeInfo::Metadata METADATA = m_metadata;                                                          \
 		static inline PropertyInfo get_class_info() {                                                                        \
 			return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, Variant::get_type_name(m_variant_type)); \
 		}                                                                                                                    \
@@ -196,23 +198,25 @@ struct GetTypeInfo<const TypedArray<T> &> {
 	template <>                                                                                                              \
 	struct GetTypeInfo<const TypedArray<m_type> &> {                                                                         \
 		static const Variant::Type VARIANT_TYPE = Variant::ARRAY;                                                            \
-		static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;                                        \
+		static const GodotTypeInfo::Metadata METADATA = m_metadata;                                                          \
 		static inline PropertyInfo get_class_info() {                                                                        \
 			return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, Variant::get_type_name(m_variant_type)); \
 		}                                                                                                                    \
 	};
 
+#define MAKE_TYPED_ARRAY_INFO(m_type, m_variant_type) MAKE_TYPED_ARRAY_INFO_WITH_META(m_type, m_variant_type, GodotTypeInfo::METADATA_NONE)
+
 MAKE_TYPED_ARRAY_INFO(bool, Variant::BOOL)
-MAKE_TYPED_ARRAY_INFO(uint8_t, Variant::INT)
-MAKE_TYPED_ARRAY_INFO(int8_t, Variant::INT)
-MAKE_TYPED_ARRAY_INFO(uint16_t, Variant::INT)
-MAKE_TYPED_ARRAY_INFO(int16_t, Variant::INT)
-MAKE_TYPED_ARRAY_INFO(uint32_t, Variant::INT)
-MAKE_TYPED_ARRAY_INFO(int32_t, Variant::INT)
-MAKE_TYPED_ARRAY_INFO(uint64_t, Variant::INT)
-MAKE_TYPED_ARRAY_INFO(int64_t, Variant::INT)
-MAKE_TYPED_ARRAY_INFO(float, Variant::FLOAT)
-MAKE_TYPED_ARRAY_INFO(double, Variant::FLOAT)
+MAKE_TYPED_ARRAY_INFO_WITH_META(uint8_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_UINT8)
+MAKE_TYPED_ARRAY_INFO_WITH_META(int8_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_INT8)
+MAKE_TYPED_ARRAY_INFO_WITH_META(uint16_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_UINT16)
+MAKE_TYPED_ARRAY_INFO_WITH_META(int16_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_INT16)
+MAKE_TYPED_ARRAY_INFO_WITH_META(uint32_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_UINT32)
+MAKE_TYPED_ARRAY_INFO_WITH_META(int32_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_INT32)
+MAKE_TYPED_ARRAY_INFO_WITH_META(uint64_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_UINT64)
+MAKE_TYPED_ARRAY_INFO_WITH_META(int64_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_INT64)
+MAKE_TYPED_ARRAY_INFO_WITH_META(float, Variant::FLOAT, GodotTypeInfo::METADATA_REAL_IS_FLOAT)
+MAKE_TYPED_ARRAY_INFO_WITH_META(double, Variant::FLOAT, GodotTypeInfo::METADATA_REAL_IS_DOUBLE)
 MAKE_TYPED_ARRAY_INFO(String, Variant::STRING)
 MAKE_TYPED_ARRAY_INFO(Vector2, Variant::VECTOR2)
 MAKE_TYPED_ARRAY_INFO(Vector2i, Variant::VECTOR2I)

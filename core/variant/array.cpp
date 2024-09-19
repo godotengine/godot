@@ -780,7 +780,7 @@ Array::Array(const Array &p_from, uint32_t p_type, const StringName &p_class_nam
 	assign(p_from);
 }
 
-void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script) {
+void Array::_set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script, uint32_t p_meta) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	ERR_FAIL_COND_MSG(_p->array.size() > 0, "Type can only be set when array is empty.");
 	ERR_FAIL_COND_MSG(_p->refcount.get() > 1, "Type can only be set when array has no more than one user.");
@@ -790,9 +790,14 @@ void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Var
 	ERR_FAIL_COND_MSG(script.is_valid() && p_class_name == StringName(), "Script class can only be set together with base class name");
 
 	_p->typed.type = Variant::Type(p_type);
+	_p->typed.meta = GodotTypeInfo::Metadata(p_meta);
 	_p->typed.class_name = p_class_name;
 	_p->typed.script = script;
 	_p->typed.where = "TypedArray";
+}
+
+void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script) {
+	_set_typed(p_type, p_class_name, p_script, GodotTypeInfo::METADATA_NONE);
 }
 
 bool Array::is_typed() const {

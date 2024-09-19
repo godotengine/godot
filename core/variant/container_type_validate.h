@@ -36,6 +36,7 @@
 
 struct ContainerTypeValidate {
 	Variant::Type type = Variant::NIL;
+	GodotTypeInfo::Metadata meta = GodotTypeInfo::METADATA_NONE;
 	StringName class_name;
 	Ref<Script> script;
 	const char *where = "container";
@@ -97,11 +98,60 @@ struct ContainerTypeValidate {
 			ERR_FAIL_V_MSG(false, "Attempted to " + String(p_operation) + " a variable of type '" + Variant::get_type_name(inout_variant.get_type()) + "' into a " + where + " of type '" + Variant::get_type_name(type) + "'.");
 		}
 
+		if (type == Variant::INT) {
+			return validate_int(inout_variant, p_operation);
+		}
+
+		if (type == Variant::FLOAT) {
+			return validate_float(inout_variant, p_operation);
+		}
+
 		if (type != Variant::OBJECT) {
 			return true;
 		}
 
 		return validate_object(inout_variant, p_operation);
+	}
+
+	_FORCE_INLINE_ bool validate_int(const Variant &p_variant, const char *p_operation = "use") const {
+		ERR_FAIL_COND_V(p_variant.get_type() != Variant::INT, false);
+
+		int64_t value = p_variant;
+
+#define CHECK_INT_BOUNDS(min, max, meta_name)                                                                                                                                               \
+	{                                                                                                                                                                                       \
+		if (value < min || value > max) {                                                                                                                                                   \
+			ERR_FAIL_V_MSG(false, "Attempted to " + String(p_operation) + " a variable of type 'int' into a " + String(where) + ", that does not match the metadata '" + meta_name + "'."); \
+		}                                                                                                                                                                                   \
+	}
+
+		if (meta == GodotTypeInfo::METADATA_INT_IS_UINT8) {
+			CHECK_INT_BOUNDS(0, UINT8_MAX, "uint8");
+		} else if (meta == GodotTypeInfo::METADATA_INT_IS_INT8) {
+			CHECK_INT_BOUNDS(INT8_MIN, INT8_MAX, "int8");
+		} else if (meta == GodotTypeInfo::METADATA_INT_IS_UINT16) {
+			CHECK_INT_BOUNDS(0, UINT16_MAX, "uint16");
+		} else if (meta == GodotTypeInfo::METADATA_INT_IS_INT16) {
+			CHECK_INT_BOUNDS(INT16_MIN, INT16_MAX, "int16");
+		} else if (meta == GodotTypeInfo::METADATA_INT_IS_UINT32) {
+			CHECK_INT_BOUNDS(0, UINT32_MAX, "uint32");
+		} else if (meta == GodotTypeInfo::METADATA_INT_IS_INT32) {
+			CHECK_INT_BOUNDS(INT32_MIN, INT32_MAX, "int32");
+		}
+
+		return true;
+
+#undef CHECK_INT_BOUNDS
+	}
+
+	_FORCE_INLINE_ bool validate_float(const Variant &p_variant, const char *p_operation = "use") const {
+		ERR_FAIL_COND_V(p_variant.get_type() != Variant::FLOAT, false);
+
+		if (meta == GodotTypeInfo::METADATA_REAL_IS_FLOAT) {
+			// TODO: Check if p_variant fits in a 32-bit float.
+		}
+
+		return true;
 	}
 
 	_FORCE_INLINE_ bool validate_object(const Variant &p_variant, const char *p_operation = "use") const {
