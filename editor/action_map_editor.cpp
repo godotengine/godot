@@ -254,6 +254,7 @@ Variant ActionMapEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 	Label *label = memnew(Label(name));
 	label->set_theme_type_variation("HeaderSmall");
 	label->set_modulate(Color(1, 1, 1, 1.0f));
+	label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	action_tree->set_drag_preview(label);
 
 	Dictionary drag_data;

@@ -3101,6 +3101,7 @@ Variant ScriptEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 		drag_preview->add_child(tf);
 	}
 	Label *label = memnew(Label(preview_name));
+	label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Don't translate script names and class names.
 	drag_preview->add_child(label);
 	set_drag_preview(drag_preview);
 
