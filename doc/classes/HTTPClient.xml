@@ -59,11 +59,11 @@
 		<method name="get_response_headers_as_dictionary">
 			<return type="Dictionary" />
 			<description>
-				Returns all response headers as a [Dictionary]. Each entry is composed by the header name, and a [String] containing the values separated by [code]"; "[/code]. The casing is kept the same as the headers were received.
+				Returns all response headers as a [Dictionary] of structure [code]{ "key": "value1; value2" }[/code] where the case-sensitivity is ignored and converted to lower-case keys. A value is a simple [String], this string can have more than one value where "; " is used as separator.
 				[codeblock]
 				{
 				    "content-length": 12,
-				    "Content-Type": "application/json; charset=UTF-8",
+				    "content-type": "application/json; charset=UTF-8",
 				}
 				[/codeblock]
 			</description>
