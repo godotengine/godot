@@ -2662,8 +2662,11 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		} break;
 
 		default: {
-			// Resource conversion commands:
-			if (p_option >= CONVERT_BASE_ID) {
+			if (p_option >= EditorContextMenuPlugin::BASE_ID) {
+				if (!EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM, p_option, p_selected)) {
+					EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, p_option, p_selected);
+				}
+			} else if (p_option >= CONVERT_BASE_ID) {
 				selected_conversion_id = p_option - CONVERT_BASE_ID;
 				ERR_FAIL_INDEX(selected_conversion_id, (int)cached_valid_conversion_targets.size());
 
@@ -2680,10 +2683,6 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 						break;
 					}
 					conversion_id++;
-				}
-			} else {
-				if (!EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM, p_option, p_selected)) {
-					EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, p_option, p_selected);
 				}
 			}
 			break;
