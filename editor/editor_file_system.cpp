@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/extension/gdextension_manager.h"
+#include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
 #include "core/object/worker_thread_pool.h"
@@ -3075,33 +3076,51 @@ void EditorFileSystem::move_group_file(const String &p_path, const String &p_new
 	}
 }
 
-void EditorFileSystem::add_new_directory(const String &p_path) {
-	String path = p_path.get_base_dir();
-	EditorFileSystemDirectory *parent = filesystem;
-	int base = p_path.count("/");
-	int max_bit = base + 1;
-
-	while (path != "res://") {
-		EditorFileSystemDirectory *dir = get_filesystem_path(path);
-		if (dir) {
-			parent = dir;
-			break;
-		}
-		path = path.get_base_dir();
-		base--;
+Error EditorFileSystem::make_dir_recursive(const String &p_path, const String &p_base_path) {
+	Error err;
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	if (!p_base_path.is_empty()) {
+		err = da->change_dir(p_base_path);
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot open base directory '" + p_base_path + "'.");
 	}
 
-	for (int i = base; i < max_bit; i++) {
+	if (da->dir_exists(p_path)) {
+		return ERR_ALREADY_EXISTS;
+	}
+
+	err = da->make_dir_recursive(p_path);
+	if (err != OK) {
+		return err;
+	}
+
+	const String path = da->get_current_dir();
+	EditorFileSystemDirectory *parent = get_filesystem_path(path);
+	ERR_FAIL_NULL_V(parent, ERR_FILE_NOT_FOUND);
+
+	const PackedStringArray folders = p_path.trim_prefix(path).trim_suffix("/").split("/");
+	bool first = true;
+
+	for (const String &folder : folders) {
+		const int current = parent->find_dir_index(folder);
+		if (current > -1) {
+			parent = parent->get_subdir(current);
+			continue;
+		}
+
 		EditorFileSystemDirectory *efd = memnew(EditorFileSystemDirectory);
 		efd->parent = parent;
-		efd->name = p_path.get_slice("/", i);
+		efd->name = folder;
 		parent->subdirs.push_back(efd);
 
-		if (i == base) {
+		if (first) {
 			parent->subdirs.sort_custom<DirectoryComparator>();
+			first = false;
 		}
 		parent = efd;
 	}
+
+	emit_signal(SNAME("filesystem_changed"));
+	return OK;
 }
 
 ResourceUID::ID EditorFileSystem::_resource_saver_get_resource_id_for_path(const String &p_path, bool p_generate) {
