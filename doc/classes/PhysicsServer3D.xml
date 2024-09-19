@@ -708,12 +708,12 @@
 			<description>
 			</description>
 		</method>
-		<method name="cone_shape_create">
+		<method name="concave_polygon_shape_create">
 			<return type="RID" />
 			<description>
 			</description>
 		</method>
-		<method name="concave_polygon_shape_create">
+		<method name="cone_shape_create">
 			<return type="RID" />
 			<description>
 			</description>

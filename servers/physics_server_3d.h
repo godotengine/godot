@@ -249,13 +249,13 @@ public:
 		SHAPE_SPHERE, ///< float:"radius"
 		SHAPE_BOX, ///< vec3:"extents"
 		SHAPE_CAPSULE, ///< dict( float:"radius", float:"height"):capsule
-		SHAPE_CONE, ///< dict( float: "radius", float:"height"):cone
 		SHAPE_CYLINDER, ///< dict( float:"radius", float:"height"):cylinder
 		SHAPE_CONVEX_POLYGON, ///< array of planes:"planes"
 		SHAPE_CONCAVE_POLYGON, ///< vector3 array:"triangles" , or Dictionary with "indices" (int array) and "triangles" (Vector3 array)
 		SHAPE_HEIGHTMAP, ///< dict( int:"width", int:"depth",float:"cell_size", float_array:"heights"
 		SHAPE_SOFT_BODY, ///< Used internally, can't be created from the physics server.
 		SHAPE_CUSTOM, ///< Server-Implementation based custom shape, calling shape_create() with this value will result in an error
+		SHAPE_CONE, ///< dict( float: "radius", float:"height"):cone
 	};
 
 	RID shape_create(ShapeType p_shape);
@@ -265,12 +265,12 @@ public:
 	virtual RID sphere_shape_create() = 0;
 	virtual RID box_shape_create() = 0;
 	virtual RID capsule_shape_create() = 0;
-	virtual RID cone_shape_create() = 0;
 	virtual RID cylinder_shape_create() = 0;
 	virtual RID convex_polygon_shape_create() = 0;
 	virtual RID concave_polygon_shape_create() = 0;
 	virtual RID heightmap_shape_create() = 0;
 	virtual RID custom_shape_create() = 0;
+	virtual RID cone_shape_create() = 0;
 
 	virtual void shape_set_data(RID p_shape, const Variant &p_data) = 0;
 	virtual void shape_set_custom_solver_bias(RID p_shape, real_t p_bias) = 0;
