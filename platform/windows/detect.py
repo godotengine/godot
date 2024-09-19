@@ -709,6 +709,11 @@ def configure_mingw(env: "SConsEnvironment"):
     # https://www.scons.org/wiki/LongCmdLinesOnWin32
     env.use_windows_spawn_fix()
 
+    # In case the command line to AR is too long, use a response file.
+    env["ARCOM_ORIG"] = env["ARCOM"]
+    env["ARCOM"] = "${TEMPFILE('$ARCOM_ORIG', '$ARCOMSTR')}"
+    env["TEMPFILESUFFIX"] = ".rsp"
+
     ## Build type
 
     if not env["use_llvm"] and not try_cmd("gcc --version", env["mingw_prefix"], env["arch"]):

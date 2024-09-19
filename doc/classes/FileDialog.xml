@@ -151,6 +151,7 @@
 			If [code]true[/code], the dialog will show hidden files.
 			[b]Note:[/b] This property is ignored by native file dialogs on Linux.
 		</member>
+		<member name="size" type="Vector2i" setter="set_size" getter="get_size" overrides="Window" default="Vector2i(640, 360)" />
 		<member name="title" type="String" setter="set_title" getter="get_title" overrides="Window" default="&quot;Save a File&quot;" />
 		<member name="use_native_dialog" type="bool" setter="set_use_native_dialog" getter="get_use_native_dialog" default="false">
 			If [code]true[/code], [member access] is set to [constant ACCESS_FILESYSTEM], and it is supported by the current [DisplayServer], OS native dialog will be used instead of custom one.
