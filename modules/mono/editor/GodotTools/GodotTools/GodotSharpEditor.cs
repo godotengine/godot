@@ -259,11 +259,12 @@ namespace GodotTools
 
                     var args = new List<string>
                     {
+                        Path.Combine(GodotSharpDirs.DataEditorToolsDir, "GodotTools.OpenVisualStudio.dll"),
                         GodotSharpDirs.ProjectSlnPath,
                         line >= 0 ? $"{scriptPath};{line + 1};{col + 1}" : scriptPath
                     };
 
-                    string command = Path.Combine(GodotSharpDirs.DataEditorToolsDir, "GodotTools.OpenVisualStudio.exe");
+                    string command = DotNetFinder.FindDotNetExe() ?? "dotnet";
 
                     try
                     {
