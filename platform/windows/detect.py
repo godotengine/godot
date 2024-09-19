@@ -631,6 +631,17 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
     env.AppendUnique(LINKFLAGS=["/STACK:" + str(STACK_SIZE)])
 
 
+WINPATHSEP_RE = re.compile(r"\\([^\"'\\]|$)")
+
+
+def tempfile_arg_esc_func(arg):
+    from SCons.Subst import quote_spaces
+
+    arg = quote_spaces(arg)
+    # GCC requires double Windows slashes, let's use UNIX separator
+    return WINPATHSEP_RE.sub(r"/\1", arg)
+
+
 def configure_mingw(env: "SConsEnvironment"):
     # Workaround for MinGW. See:
     # https://www.scons.org/wiki/LongCmdLinesOnWin32
@@ -640,6 +651,8 @@ def configure_mingw(env: "SConsEnvironment"):
     env["ARCOM_ORIG"] = env["ARCOM"]
     env["ARCOM"] = "${TEMPFILE('$ARCOM_ORIG', '$ARCOMSTR')}"
     env["TEMPFILESUFFIX"] = ".rsp"
+    if os.name == "nt":
+        env["TEMPFILEARGESCFUNC"] = tempfile_arg_esc_func
 
     ## Build type
 
