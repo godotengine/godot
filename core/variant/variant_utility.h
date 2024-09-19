@@ -130,7 +130,9 @@ struct VariantUtilityFunctions {
 	static Variant type_convert(const Variant &p_variant, const Variant::Type p_type);
 	static String str(const Variant **p_args, int p_arg_count, Callable::CallError &r_error);
 	static String error_string(Error error);
+#ifndef DISABLE_DEPRECATED
 	static String type_string(Variant::Type p_type);
+#endif
 	static String type_to_string(Variant::Type p_type);
 	static void print(const Variant **p_args, int p_arg_count, Callable::CallError &r_error);
 	static void print_rich(const Variant **p_args, int p_arg_count, Callable::CallError &r_error);
