@@ -1813,7 +1813,9 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(type_convert, sarray("variant", "type"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGS(str, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDR(error_string, sarray("error"), Variant::UTILITY_FUNC_TYPE_GENERAL);
+#ifndef DISABLE_DEPRECATED
 	FUNCBINDR(type_string, sarray("type"), Variant::UTILITY_FUNC_TYPE_GENERAL);
+#ifndef DISABLE_DEPRECATED
 	FUNCBINDR(type_to_string, sarray("type"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(print, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(print_rich, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
