@@ -4118,13 +4118,6 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 
 		} else if (components.size() >= 2 && components[0].begins_with("pattern_set_") && components[0].trim_prefix("pattern_set_").is_valid_int()) {
 			// Patterns
-			if (!patterns.is_empty()) { // Special if statement for importing old TileMapPatterns for backwards compatability. Notice the clear() at the end. 
-				add_pattern_set();
-				for (unsigned int i = 0; i < patterns.size(); i++) {
-					add_pattern(patterns[i], 0, i);
-					//patterns.clear();
-				}
-			}
 			int pattern_set_index = components[0].trim_prefix("pattern_set_").to_int();
 			ERR_FAIL_COND_V(pattern_set_index < 0, false);
 			if (components[1] == "name") {
@@ -4153,19 +4146,25 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 				return true;
 			}
 		}
-
-		/*else if (components.size() >= 2 && components[1].begins_with("pattern_") && components[1].trim_prefix("pattern_").is_valid_int()) {
-				   int pattern_index = components[1].trim_prefix("pattern_").to_int();
-				   ERR_FAIL_COND_V(pattern_index < 0, false);
-				   while (pattern_set_index >= pattern_sets.size()) {
-					   add_pattern_set();
-				   }
-				   //CHECK ME: ERR_FAIL_COND_V(p_value.get_type() != TileMapPattern, false);
-				   while (pattern_index >= pattern_sets[pattern_set_index].pattern_set.size()) {
-					   add_pattern(p_value, pattern_set_index);
-				   }
-
-			   }*/
+		else if (components.size() == 1 && components[0].begins_with("pattern_") && components[0].trim_prefix("pattern_").is_valid_int()) {
+			// Used for importing old TileMapPatterns for backwards compatability.
+			int pattern_index = components[0].trim_prefix("pattern_").to_int();
+			if (pattern_sets.size() == 0) {
+				WARN_PRINT(vformat("add pattern set as pattern set = 0 is called"));
+				add_pattern_set(0);
+			}
+			//Vector<Ref<TileMapPattern>> &patterns_list = pattern_sets.write[0].pattern_set;
+			//patterns_list.clear();
+			//pattern_set_to_write.clear();
+			for (int i = patterns.size(); i <= pattern_index; i++) {
+				WARN_PRINT(vformat("patterns index is %s", pattern_index));
+				WARN_PRINT(vformat("patterns size is %s", patterns.size()));
+				add_pattern(p_value, 0);
+			}
+			// Clears the old TileMapPatterns and prevents them from being re-imported every time Godot starts.
+			//patterns.clear();
+			return true;
+		}
 
 #ifndef DISABLE_DEPRECATED
 	}
@@ -4303,13 +4302,19 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 
 			r_ret = converted_array;
 			return true;
+		} else if (components.size() == 1 && components[0].begins_with("pattern_") && components[0].trim_prefix("pattern_").is_valid_int()) {
+			int pattern_index = components[0].trim_prefix("pattern_").to_int();
+			if (pattern_index < 0 || pattern_index >= (int)patterns.size()) {
+				return false;
+			}
+			r_ret = patterns[pattern_index];
+			return true;
 		}
 	}
 	return false;
 }
 
 void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
-	
 	PropertyInfo property_info;
 	// Rendering.
 	p_list->push_back(PropertyInfo(Variant::NIL, GNAME("Rendering", ""), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
