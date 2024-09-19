@@ -611,6 +611,7 @@ public:
 
 	virtual void frame() override;
 
+	virtual void get_public_keywords(List<MethodInfo> *p_keywords) const override;
 	virtual void get_public_functions(List<MethodInfo> *p_functions) const override;
 	virtual void get_public_constants(List<Pair<String, Variant>> *p_constants) const override;
 	virtual void get_public_annotations(List<MethodInfo> *p_annotations) const override;

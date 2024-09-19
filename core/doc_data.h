@@ -712,6 +712,7 @@ public:
 		Vector<ConstantDoc> constants;
 		HashMap<String, EnumDoc> enums;
 		Vector<PropertyDoc> properties;
+		Vector<MethodDoc> builtins;
 		Vector<MethodDoc> annotations;
 		Vector<ThemeItemDoc> theme_properties;
 		bool is_deprecated = false;
@@ -808,6 +809,14 @@ public:
 			}
 			for (int i = 0; i < properties.size(); i++) {
 				doc.properties.push_back(PropertyDoc::from_dict(properties[i]));
+			}
+
+			Array builtins;
+			if (p_dict.has("builtins")) {
+				builtins = p_dict["builtins"];
+			}
+			for (int i = 0; i < builtins.size(); i++) {
+				doc.builtins.push_back(MethodDoc::from_dict(builtins[i]));
 			}
 
 			Array annotations;
@@ -937,6 +946,14 @@ public:
 					properties.push_back(PropertyDoc::to_dict(p_doc.properties[i]));
 				}
 				dict["properties"] = properties;
+			}
+
+			if (!p_doc.builtins.is_empty()) {
+				Array builtins;
+				for (int i = 0; i < p_doc.builtins.size(); i++) {
+					builtins.push_back(MethodDoc::to_dict(p_doc.builtins[i]));
+				}
+				dict["builtins"] = builtins;
 			}
 
 			if (!p_doc.annotations.is_empty()) {

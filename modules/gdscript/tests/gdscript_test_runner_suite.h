@@ -89,6 +89,20 @@ TEST_CASE("[Modules][GDScript] Validate built-in API") {
 		}
 	}
 
+	// Validate builtins.
+	List<MethodInfo> builtins;
+	lang->get_public_keywords(&builtins);
+
+	SUBCASE("[Modules][GDScript] Validate built-in keywords") {
+		for (const MethodInfo &bi : builtins) {
+			int i = 0;
+			for (List<PropertyInfo>::ConstIterator itr = bi.arguments.begin(); itr != bi.arguments.end(); ++itr, ++i) {
+				TEST_COND((itr->name.is_empty() || itr->name.begins_with("_unnamed_arg")),
+						vformat("Unnamed argument in position %d of built-in keyword '%s'.", i, bi.name));
+			}
+		}
+	}
+
 	// Validate annotations.
 	List<MethodInfo> builtin_annotations;
 	lang->get_public_annotations(&builtin_annotations);

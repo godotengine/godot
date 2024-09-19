@@ -45,6 +45,7 @@ BASE_STRINGS = [
     "Signals",
     "Enumerations",
     "Constants",
+    "Built-ins",
     "Annotations",
     "Property Descriptions",
     "Constructor Descriptions",
@@ -603,6 +604,7 @@ class ClassDef(DefinitionBase):
         self.methods: OrderedDict[str, List[MethodDef]] = OrderedDict()
         self.operators: OrderedDict[str, List[MethodDef]] = OrderedDict()
         self.signals: OrderedDict[str, SignalDef] = OrderedDict()
+        self.builtins: OrderedDict[str, List[AnnotationDef]] = OrderedDict()
         self.annotations: OrderedDict[str, List[AnnotationDef]] = OrderedDict()
         self.theme_items: OrderedDict[str, ThemeItemDef] = OrderedDict()
         self.inherits: Optional[str] = None
@@ -1218,6 +1220,46 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                     )
 
                 f.write("\n\n")
+
+        # Built-in keyword descriptions
+        if len(class_def.builtins) > 0:
+            f.write(make_separator(True))
+            f.write(make_heading("Built-in keywords", "-"))
+
+            index = 0
+
+            for method_list in class_def.builtins.values():  # type: ignore
+                for i, m in enumerate(method_list):
+                    if index != 0:
+                        f.write(make_separator())
+
+                    # Create builtin signature and anchor point.
+
+                    self_link = ""
+                    if i == 0:
+                        builtin_anchor = f"class_{class_name}_builtin_{m.name}"
+                        f.write(f".. _{builtin_anchor}:\n\n")
+                        self_link = f" :ref:`🔗<{builtin_anchor}>`"
+
+                    f.write(".. rst-class:: classref-builtin\n\n")
+
+                    _, signature = make_method_signature(class_def, m, "", state)
+                    f.write(f"{signature}{self_link}\n\n")
+
+                    # Add builtin description, or a call to action if it's missing.
+
+                    if m.description is not None and m.description.strip() != "":
+                        f.write(f"{format_text_block(m.description.strip(), m, state)}\n\n")
+                    else:
+                        f.write(".. container:: contribute\n\n\t")
+                        f.write(
+                            translate(
+                                "There is currently no description for this built-in keyword. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                            )
+                            + "\n\n"
+                        )
+
+                    index += 1
 
         # Annotation descriptions
         if len(class_def.annotations) > 0:

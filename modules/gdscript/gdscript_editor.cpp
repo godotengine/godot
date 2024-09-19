@@ -434,6 +434,65 @@ void GDScriptLanguage::get_recognized_extensions(List<String> *p_extensions) con
 	p_extensions->push_back("gd");
 }
 
+void GDScriptLanguage::get_public_keywords(List<MethodInfo> *p_keywords) const {
+	// Keep in sync with `GDScriptLanguage::get_reserved_words()`, but exclude
+	// function-like and constant-like keywords from this list.
+	Vector<String> keywords = {
+		// Control flow.
+		"break",
+		"continue",
+		"elif",
+		"else",
+		"for",
+		"if",
+		"match",
+		"pass",
+		"return",
+		"when",
+		"while",
+		// Declarations.
+		"class",
+		"class_name",
+		"const",
+		"enum",
+		"extends",
+		"func",
+		"namespace", // Reserved for potential future use.
+		"signal",
+		"static",
+		"trait", // Reserved for potential future use.
+		"var",
+		// Other keywords.
+		"await",
+		"breakpoint",
+		"self",
+		"super",
+		"yield", // Reserved for potential future use.
+		// Operators.
+		"and",
+		"as",
+		"in",
+		"is",
+		"not",
+		"or",
+		// Special values (tokenizer treats them as literals, not as tokens).
+		"false",
+		"null",
+		"true",
+		// Types (highlighter uses type color instead).
+		"void",
+	};
+
+	for (const String &keyword : keywords) {
+		MethodInfo mi;
+		mi.name = keyword;
+		// PropertyInfo pi;
+		// pi.type = Variant::NIL;
+		// mi.return_val = pi;
+		p_keywords->push_back(mi);
+	}
+}
+
 void GDScriptLanguage::get_public_functions(List<MethodInfo> *p_functions) const {
 	List<StringName> functions;
 	GDScriptUtilityFunctions::get_function_list(&functions);
@@ -3840,6 +3899,18 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 			r_result.class_name = "@GDScript";
 			r_result.class_member = p_symbol;
 			return OK;
+		}
+
+		// Lookup keywords after constants, as some reserved words are constants (like `PI`).
+		List<String> keywords;
+		get_reserved_words(&keywords);
+		for (const String &keyword : keywords) {
+			if (keyword == p_symbol) {
+				r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_BUILTIN;
+				r_result.class_name = "@GDScript";
+				r_result.class_member = p_symbol;
+				return OK;
+			}
 		}
 	}
 

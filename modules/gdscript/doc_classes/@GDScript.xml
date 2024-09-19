@@ -280,6 +280,205 @@
 			[b]Warning:[/b] "Not a Number" is only a concept with floating-point numbers, and has no equivalent for integers. Dividing an integer [code]0[/code] by [code]0[/code] will not result in [constant NAN] and will result in a run-time error instead.
 		</constant>
 	</constants>
+	<builtins>
+		<builtin name="and">
+			<return type="void" />
+			<description>
+				AND boolean operator. This evaluates to [code]true[/code] if [b]both[/b] operands evaluate to [code]true[/code]. Otherwise, this evaluates to [code]false[/code]. See also [builtin or].
+				[code]&amp;&amp;[/code] can be used as an alternative syntax with the same operator precedence.
+				[codeblock]
+				var bucket_full = true
+				var glass_full = false
+
+				var both_containers_full = bucket_full and glass_full  # Evaluates to `false`.
+				both_containers_full = bucket_full &amp;&amp; glass_full  # Alternative syntax, also evaluates to `false`.
+				[/codeblock]
+			</description>
+		</builtin>
+		<builtin name="as">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="await">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="break">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="breakpoint">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="class">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="class_name">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="const">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="continue">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="elif">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="else">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="enum">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="extends">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="false">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="for">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="func">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="if">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="in">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="is">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="match">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="namespace">
+			<return type="void" />
+			<description>
+				Reserved. This keyword causes a script error when used.
+			</description>
+		</builtin>
+		<builtin name="not">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="null">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="or">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="pass">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="return">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="self">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="signal">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="static">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="super">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="trait">
+			<return type="void" />
+			<description>
+				Reserved. This keyword causes a script error when used.
+			</description>
+		</builtin>
+		<builtin name="true">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="var">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="void">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="when">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="while">
+			<return type="void" />
+			<description>
+			</description>
+		</builtin>
+		<builtin name="yield">
+			<return type="void" />
+			<description>
+				Reserved. This keyword causes a script error when used.
+			</description>
+		</builtin>
+	</builtins>
 	<annotations>
 		<annotation name="@export">
 			<return type="void" />

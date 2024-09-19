@@ -341,6 +341,8 @@ void DocTools::merge_from(const DocTools &p_data) {
 
 		merge_constants(c.constants, cf.constants);
 
+		merge_methods(c.builtins, cf.builtins);
+
 		merge_methods(c.annotations, cf.annotations);
 
 		merge_properties(c.properties, cf.properties);
@@ -1009,7 +1011,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 	// Add scripting language built-ins.
 	{
 		// We only add a doc entry for languages which actually define any built-in
-		// methods, constants, or annotations.
+		// keywords (builtins), methods, constants, or annotations.
 		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 			ScriptLanguage *lang = ScriptServer::get_language(i);
 			String cname = "@" + lang->get_name();
@@ -1063,6 +1065,39 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 				c.constants.push_back(cd);
 			}
 
+			// Get keywords.
+			List<MethodInfo> binfo;
+			lang->get_public_keywords(&binfo);
+
+			for (const MethodInfo &bi : binfo) {
+				DocData::MethodDoc btd;
+				btd.name = bi.name;
+
+				if (bi.flags & METHOD_FLAG_VARARG) {
+					if (!btd.qualifiers.is_empty()) {
+						btd.qualifiers += " ";
+					}
+					btd.qualifiers += "vararg";
+				}
+
+				DocData::return_doc_from_retinfo(btd, bi.return_val);
+
+				int j = 0;
+				for (List<PropertyInfo>::ConstIterator itr = bi.arguments.begin(); itr != bi.arguments.end(); ++itr, ++j) {
+					DocData::ArgumentDoc ad;
+					DocData::argument_doc_from_arginfo(ad, *itr);
+
+					int darg_idx = j - (bi.arguments.size() - bi.default_arguments.size());
+					if (darg_idx >= 0) {
+						ad.default_value = DocData::get_default_value_string(bi.default_arguments[darg_idx]);
+					}
+
+					btd.arguments.push_back(ad);
+				}
+
+				c.builtins.push_back(btd);
+			}
+
 			// Get annotations.
 			List<MethodInfo> ainfo;
 			lang->get_public_annotations(&ainfo);
@@ -1097,11 +1132,12 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			}
 
 			// Skip adding the lang if it doesn't expose anything (e.g. C#).
-			if (c.methods.is_empty() && c.constants.is_empty() && c.annotations.is_empty()) {
+			if (c.methods.is_empty() && c.constants.is_empty() && c.builtins.is_empty() && c.annotations.is_empty()) {
 				continue;
 			}
 
 			c.methods.sort_custom<MethodCompare>();
+			c.builtins.sort_custom<MethodCompare>();
 			c.annotations.sort_custom<MethodCompare>();
 
 			class_list[cname] = c;
@@ -1349,6 +1385,9 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 					ERR_FAIL_COND_V(err2, err2);
 				} else if (name2 == "signals") {
 					Error err2 = _parse_methods(parser, c.signals);
+					ERR_FAIL_COND_V(err2, err2);
+				} else if (name2 == "builtins") {
+					Error err2 = _parse_methods(parser, c.builtins);
 					ERR_FAIL_COND_V(err2, err2);
 				} else if (name2 == "annotations") {
 					Error err2 = _parse_methods(parser, c.annotations);
@@ -1740,6 +1779,8 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 
 			_write_string(f, 1, "</constants>");
 		}
+
+		_write_method_doc(f, "builtin", c.builtins);
 
 		_write_method_doc(f, "annotation", c.annotations);
 
