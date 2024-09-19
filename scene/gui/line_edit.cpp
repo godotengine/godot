@@ -921,6 +921,7 @@ Variant LineEdit::get_drag_data(const Point2 &p_point) {
 		String t = get_selected_text();
 		Label *l = memnew(Label);
 		l->set_text(t);
+		l->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Don't translate user input.
 		set_drag_preview(l);
 		return t;
 	}

@@ -644,6 +644,7 @@ Variant EditorAutoloadSettings::get_drag_data_fw(const Point2 &p_point, Control 
 	for (int i = 0; i < max_size; i++) {
 		Label *label = memnew(Label(autoloads[i]));
 		label->set_self_modulate(Color(1, 1, 1, Math::lerp(1, 0, float(i) / PREVIEW_LIST_MAX_SIZE)));
+		label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 
 		preview->add_child(label);
 	}

@@ -657,6 +657,7 @@ Variant EditorAudioBus::get_drag_data_fw(const Point2 &p_point, Control *p_from)
 
 		Label *l = memnew(Label);
 		l->set_text(item->get_text(0));
+		l->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 		effects->set_drag_preview(l);
 
 		return fxd;
@@ -929,6 +930,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	hb->add_child(scale);
 
 	effects = memnew(Tree);
+	effects->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	effects->set_hide_root(true);
 	effects->set_custom_minimum_size(Size2(0, 80) * EDSCALE);
 	effects->set_hide_folding(true);
@@ -954,6 +956,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	set_focus_mode(FOCUS_CLICK);
 
 	effect_options = memnew(PopupMenu);
+	effect_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Don't translate class names.
 	effect_options->connect("index_pressed", callable_mp(this, &EditorAudioBus::_effect_add));
 	add_child(effect_options);
 	List<StringName> effect_list;

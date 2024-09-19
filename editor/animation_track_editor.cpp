@@ -3241,6 +3241,7 @@ Variant AnimationTrackEdit::get_drag_data(const Point2 &p_point) {
 	tb->set_flat(true);
 	tb->set_text(path_cache);
 	tb->set_icon(icon_cache);
+	tb->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tb->add_theme_constant_override("icon_max_width", get_theme_constant("class_icon_size", EditorStringName(Editor)));
 	set_drag_preview(tb);
 

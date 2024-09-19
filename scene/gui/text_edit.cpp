@@ -3034,6 +3034,7 @@ Variant TextEdit::get_drag_data(const Point2 &p_point) {
 	if (has_selection() && selection_drag_attempt) {
 		String t = get_selected_text();
 		Label *l = memnew(Label);
+		l->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Don't translate user input.
 		l->set_text(t);
 		set_drag_preview(l);
 		return t;

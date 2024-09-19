@@ -713,6 +713,7 @@ Variant ProjectExportDialog::get_drag_data_fw(const Point2 &p_point, Control *p_
 			drag->add_child(tr);
 			Label *label = memnew(Label);
 			label->set_text(presets->get_item_text(pos));
+			label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Don't translate user input.
 			drag->add_child(label);
 
 			presets->set_drag_preview(drag);
