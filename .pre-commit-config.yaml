@@ -9,7 +9,7 @@ exclude: |
 
 repos:
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v17.0.6
+    rev: v18.1.8
     hooks:
       - id: clang-format
         files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc|java|glsl)$
@@ -39,7 +39,7 @@ repos:
         stages: [manual] # Not automatically triggered, invoked via `pre-commit run --hook-stage manual clang-tidy`
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.4
+    rev: v0.6.5
     hooks:
       - id: ruff
         args: [--fix]
