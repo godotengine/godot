@@ -1452,7 +1452,7 @@ Error BindingsGenerator::_populate_method_icalls_table(const TypeInterface &p_it
 		}
 
 		const TypeInterface *return_type = _get_type_or_null(imethod.return_type);
-		ERR_FAIL_NULL_V(return_type, ERR_BUG); // Return type not found
+		ERR_FAIL_NULL_V_MSG(return_type, ERR_BUG, "Return type '" + imethod.return_type.cname + "' was not found.");
 
 		String im_unique_sig = get_ret_unique_sig(return_type) + ",CallMethodBind";
 
@@ -1463,7 +1463,7 @@ Error BindingsGenerator::_populate_method_icalls_table(const TypeInterface &p_it
 		// Get arguments information
 		for (const ArgumentInterface &iarg : imethod.arguments) {
 			const TypeInterface *arg_type = _get_type_or_null(iarg.type);
-			ERR_FAIL_NULL_V(arg_type, ERR_BUG); // Argument type not found
+			ERR_FAIL_NULL_V_MSG(arg_type, ERR_BUG, "Argument type '" + iarg.type.cname + "' was not found.");
 
 			im_unique_sig += ",";
 			im_unique_sig += get_arg_unique_sig(*arg_type);
@@ -2313,7 +2313,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				const ArgumentInterface &iarg = *itr;
 
 				const TypeInterface *arg_type = _get_type_or_null(iarg.type);
-				ERR_FAIL_NULL_V(arg_type, ERR_BUG); // Argument type not found
+				ERR_FAIL_NULL_V_MSG(arg_type, ERR_BUG, "Argument type '" + iarg.type.cname + "' was not found.");
 
 				if (i != 0) {
 					output << ", ";
@@ -2333,7 +2333,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 			if (imethod.return_type.cname != name_cache.type_void) {
 				const TypeInterface *return_type = _get_type_or_null(imethod.return_type);
-				ERR_FAIL_NULL_V(return_type, ERR_BUG); // Return type not found
+				ERR_FAIL_NULL_V_MSG(return_type, ERR_BUG, "Return type '" + imethod.return_type.cname + "' was not found.");
 
 				output << INDENT3 "ret = "
 					   << sformat(return_type->cs_managed_to_variant, "callRet", return_type->cs_type, return_type->name)
@@ -2552,7 +2552,7 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 	const TypeReference &proptype_name = getter ? getter->return_type : setter->arguments.back()->get().type;
 
 	const TypeInterface *prop_itype = _get_type_or_singleton_or_null(proptype_name);
-	ERR_FAIL_NULL_V(prop_itype, ERR_BUG); // Property type not found
+	ERR_FAIL_NULL_V_MSG(prop_itype, ERR_BUG, "Property type '" + proptype_name.cname + "' was not found.");
 
 	ERR_FAIL_COND_V_MSG(prop_itype->is_singleton, ERR_BUG,
 			"Property type is a singleton: '" + p_itype.name + "." + String(p_iprop.cname) + "'.");
@@ -2651,7 +2651,7 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 
 Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterface &p_itype, const BindingsGenerator::MethodInterface &p_imethod, int &p_method_bind_count, StringBuilder &p_output) {
 	const TypeInterface *return_type = _get_type_or_singleton_or_null(p_imethod.return_type);
-	ERR_FAIL_NULL_V(return_type, ERR_BUG); // Return type not found
+	ERR_FAIL_NULL_V_MSG(return_type, ERR_BUG, "Return type '" + p_imethod.return_type.cname + "' was not found.");
 
 	ERR_FAIL_COND_V_MSG(return_type->is_singleton, ERR_BUG,
 			"Method return type is a singleton: '" + p_itype.name + "." + p_imethod.name + "'.");
@@ -2690,7 +2690,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 	const ArgumentInterface &first = p_imethod.arguments.front()->get();
 	for (const ArgumentInterface &iarg : p_imethod.arguments) {
 		const TypeInterface *arg_type = _get_type_or_singleton_or_null(iarg.type);
-		ERR_FAIL_NULL_V(arg_type, ERR_BUG); // Argument type not found
+		ERR_FAIL_NULL_V_MSG(arg_type, ERR_BUG, "Argument type '" + iarg.type.cname + "' was not found.");
 
 		ERR_FAIL_COND_V_MSG(arg_type->is_singleton, ERR_BUG,
 				"Argument type is a singleton: '" + iarg.name + "' of method '" + p_itype.name + "." + p_imethod.name + "'.");
@@ -2944,7 +2944,7 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 	const ArgumentInterface &first = p_isignal.arguments.front()->get();
 	for (const ArgumentInterface &iarg : p_isignal.arguments) {
 		const TypeInterface *arg_type = _get_type_or_singleton_or_null(iarg.type);
-		ERR_FAIL_NULL_V(arg_type, ERR_BUG); // Argument type not found
+		ERR_FAIL_NULL_V_MSG(arg_type, ERR_BUG, "Argument type '" + iarg.type.cname + "' was not found.");
 
 		ERR_FAIL_COND_V_MSG(arg_type->is_singleton, ERR_BUG,
 				"Argument type is a singleton: '" + iarg.name + "' of signal '" + p_itype.name + "." + p_isignal.name + "'.");
@@ -3013,7 +3013,7 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 			int idx = 0;
 			for (const ArgumentInterface &iarg : p_isignal.arguments) {
 				const TypeInterface *arg_type = _get_type_or_null(iarg.type);
-				ERR_FAIL_NULL_V(arg_type, ERR_BUG); // Argument type not found
+				ERR_FAIL_NULL_V_MSG(arg_type, ERR_BUG, "Argument type '" + iarg.type.cname + "' was not found.");
 
 				if (idx != 0) {
 					p_output << ", ";
@@ -3113,7 +3113,7 @@ Error BindingsGenerator::_generate_cs_native_calls(const InternalCall &p_icall, 
 	bool ret_void = p_icall.return_type.cname == name_cache.type_void;
 
 	const TypeInterface *return_type = _get_type_or_null(p_icall.return_type);
-	ERR_FAIL_NULL_V(return_type, ERR_BUG); // Return type not found
+	ERR_FAIL_NULL_V_MSG(return_type, ERR_BUG, "Return type '" + p_icall.return_type.cname + "' was not found.");
 
 	StringBuilder c_func_sig;
 	StringBuilder c_in_statements;
@@ -3129,7 +3129,7 @@ Error BindingsGenerator::_generate_cs_native_calls(const InternalCall &p_icall, 
 	int i = 0;
 	for (const TypeReference &arg_type_ref : p_icall.argument_types) {
 		const TypeInterface *arg_type = _get_type_or_null(arg_type_ref);
-		ERR_FAIL_NULL_V(arg_type, ERR_BUG); // Return type not found
+		ERR_FAIL_NULL_V_MSG(arg_type, ERR_BUG, "Argument type '" + arg_type_ref.cname + "' was not found.");
 
 		String c_param_name = "arg" + itos(i + 1);
 
@@ -3389,7 +3389,7 @@ const String BindingsGenerator::_get_generic_type_parameters(const TypeInterface
 	String params = "<";
 	for (const TypeReference &param_type : p_generic_type_parameters) {
 		const TypeInterface *param_itype = _get_type_or_singleton_or_null(param_type);
-		ERR_FAIL_NULL_V(param_itype, ""); // Parameter type not found
+		ERR_FAIL_NULL_V_MSG(param_itype, "", "Parameter type '" + param_type.cname + "' was not found.");
 
 		ERR_FAIL_COND_V_MSG(param_itype->is_singleton, "",
 				"Generic type parameter is a singleton: '" + param_itype->name + "'.");
