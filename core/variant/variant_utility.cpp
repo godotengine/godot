@@ -962,8 +962,8 @@ String VariantUtilityFunctions::error_string(Error error) {
 	return String(error_names[error]);
 }
 
-String VariantUtilityFunctions::type_string(Variant::Type p_type) {
-	ERR_FAIL_INDEX_V_MSG((int)p_type, (int)Variant::VARIANT_MAX, "<invalid type>", "Invalid type argument to type_string(), use the TYPE_* constants.");
+String VariantUtilityFunctions::type_to_string(Variant::Type p_type) {
+	ERR_FAIL_INDEX_V_MSG((int)p_type, (int)Variant::VARIANT_MAX, "<invalid type>", "Invalid type argument to type_to_string(), use the TYPE_* constants.");
 	return Variant::get_type_name(p_type);
 }
 
@@ -1805,7 +1805,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(type_convert, sarray("variant", "type"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGS(str, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDR(error_string, sarray("error"), Variant::UTILITY_FUNC_TYPE_GENERAL);
-	FUNCBINDR(type_string, sarray("type"), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDR(type_to_string, sarray("type"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(print, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(print_rich, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(printerr, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
