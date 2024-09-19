@@ -267,10 +267,14 @@ void TabContainer::_repaint() {
 	Vector<Control *> controls = _get_tab_controls();
 	int current = get_current_tab();
 
+	// Move the TabBar to the top or bottom.
+	// Don't change the left and right offsets since the TabBar will resize and may change tab offset.
 	if (tabs_position == POSITION_BOTTOM) {
-		tab_bar->set_anchors_and_offsets_preset(PRESET_BOTTOM_WIDE);
+		tab_bar->set_anchor_and_offset(SIDE_BOTTOM, 1.0, 0.0);
+		tab_bar->set_anchor_and_offset(SIDE_TOP, 1.0, -_get_tab_height());
 	} else {
-		tab_bar->set_anchors_and_offsets_preset(PRESET_TOP_WIDE);
+		tab_bar->set_anchor_and_offset(SIDE_BOTTOM, 0.0, _get_tab_height());
+		tab_bar->set_anchor_and_offset(SIDE_TOP, 0.0, 0.0);
 	}
 
 	updating_visibility = true;
@@ -299,7 +303,6 @@ void TabContainer::_repaint() {
 	}
 	updating_visibility = false;
 
-	_update_margins();
 	update_minimum_size();
 }
 
