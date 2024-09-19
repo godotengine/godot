@@ -851,10 +851,10 @@ def show_progress(env):
 
     class cache_progress:
         # The default is 1 GB cache
-        def __init__(self, path=None, limit=pow(1024, 3)):
+        def __init__(self, path="", limit=pow(1024, 3)):
             self.path = path
             self.limit = limit
-            if env["verbose"] and path is not None:
+            if env["verbose"] and path != "":
                 screen.write(
                     "Current cache limit is {} (used: {})\n".format(
                         self.convert_size(limit), self.convert_size(self.get_size(path))
@@ -907,10 +907,10 @@ def show_progress(env):
     except Exception:
         pass
 
-    cache_directory = os.environ.get("SCONS_CACHE")
+    cache_directory = env["cache_path"]
     # Simple cache pruning, attached to SCons' progress callback. Trim the
     # cache directory to a size not larger than cache_limit.
-    cache_limit = float(os.getenv("SCONS_CACHE_LIMIT", 1024)) * 1024 * 1024
+    cache_limit = float(env["cache_limit"]) * 1024 * 1024
     progressor = cache_progress(cache_directory, cache_limit)
     Progress(progressor, interval=node_count_interval)
 
@@ -923,7 +923,7 @@ def clean_cache(env):
     import time
 
     class cache_clean:
-        def __init__(self, path=None, limit=pow(1024, 3)):
+        def __init__(self, path="", limit=pow(1024, 3)):
             self.path = path
             self.limit = limit
 
@@ -939,7 +939,7 @@ def clean_cache(env):
             [os.remove(f) for f in files]
 
         def file_list(self):
-            if self.path is None:
+            if self.path == "":
                 # Nothing to do
                 return []
             # Gather a list of (filename, (size, atime)) within the
@@ -976,10 +976,10 @@ def clean_cache(env):
         except Exception:
             pass
 
-    cache_directory = os.environ.get("SCONS_CACHE")
+    cache_directory = env["cache_path"]
     # Simple cache pruning, attached to SCons' progress callback. Trim the
     # cache directory to a size not larger than cache_limit.
-    cache_limit = float(os.getenv("SCONS_CACHE_LIMIT", 1024)) * 1024 * 1024
+    cache_limit = float(env["cache_limit"]) * 1024 * 1024
     cleaner = cache_clean(cache_directory, cache_limit)
 
     atexit.register(cache_finally)
