@@ -3034,6 +3034,16 @@ bool EditorPropertyNodePath::is_drop_valid(const Dictionary &p_drag_data) const 
 	return false;
 }
 
+void EditorPropertyNodePath::gui_input(const Ref<InputEvent> &p_ev) {
+	Ref<InputEventMouseButton> mb = p_ev;
+
+	if (!mb.is_valid() || !mb->is_pressed() || mb->get_button_index() != MouseButton::MIDDLE) {
+		return;
+	}
+
+	_select_node_in_scene_tree();
+}
+
 void EditorPropertyNodePath::update_property() {
 	const Node *base_node = get_base_node();
 	const NodePath &p = _get_node_path();
@@ -3140,6 +3150,7 @@ EditorPropertyNodePath::EditorPropertyNodePath() {
 	assign->connect(SceneStringName(draw), callable_mp(this, &EditorPropertyNodePath::_assign_draw));
 	assign->connect(SceneStringName(gui_input), callable_mp(this, &EditorPropertyNodePath::_select_node_in_scene_tree));
 	assign->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyNodePath::_on_click));
+	assign->connect(SceneStringName(gui_input), callable_mp(this, &EditorPropertyNodePath::gui_input));
 	SET_DRAG_FORWARDING_CD(assign, EditorPropertyNodePath);
 	hbc->add_child(assign);
 
