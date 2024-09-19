@@ -1108,6 +1108,195 @@ void TextureStorage::texture_proxy_initialize(RID p_texture, RID p_base) {
 	tex->proxies.push_back(p_texture);
 }
 
+// Note: We make some big assumptions about format and usage. If developers need more control,
+// they should use RD::texture_create_from_extension() instead.
+RID TextureStorage::texture_create_from_native_handle(RS::TextureType p_type, Image::Format p_format, uint64_t p_native_handle, int p_width, int p_height, int p_depth, int p_layers, RS::TextureLayeredType p_layered_type) {
+	RD::TextureType type;
+	switch (p_type) {
+		case RS::TEXTURE_TYPE_2D:
+			type = RD::TEXTURE_TYPE_2D;
+			break;
+
+		case RS::TEXTURE_TYPE_3D:
+			type = RD::TEXTURE_TYPE_3D;
+			break;
+
+		case RS::TEXTURE_TYPE_LAYERED:
+			if (p_layered_type == RS::TEXTURE_LAYERED_2D_ARRAY) {
+				type = RD::TEXTURE_TYPE_2D_ARRAY;
+			} else if (p_layered_type == RS::TEXTURE_LAYERED_CUBEMAP) {
+				type = RD::TEXTURE_TYPE_CUBE;
+			} else if (p_layered_type == RS::TEXTURE_LAYERED_CUBEMAP_ARRAY) {
+				type = RD::TEXTURE_TYPE_CUBE_ARRAY;
+			} else {
+				// Arbitrary fallback.
+				type = RD::TEXTURE_TYPE_2D_ARRAY;
+			}
+			break;
+
+		default:
+			// Arbitrary fallback.
+			type = RD::TEXTURE_TYPE_2D;
+	}
+
+	// Only a rough conversion - see note above.
+	RD::DataFormat format;
+	switch (p_format) {
+		case Image::FORMAT_L8:
+		case Image::FORMAT_R8:
+			format = RD::DATA_FORMAT_R8_UNORM;
+			break;
+
+		case Image::FORMAT_LA8:
+		case Image::FORMAT_RG8:
+			format = RD::DATA_FORMAT_R8G8_UNORM;
+			break;
+
+		case Image::FORMAT_RGB8:
+			format = RD::DATA_FORMAT_R8G8B8_UNORM;
+			break;
+
+		case Image::FORMAT_RGBA8:
+			format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+			break;
+
+		case Image::FORMAT_RGBA4444:
+			format = RD::DATA_FORMAT_B4G4R4A4_UNORM_PACK16;
+			break;
+
+		case Image::FORMAT_RGB565:
+			format = RD::DATA_FORMAT_B5G6R5_UNORM_PACK16;
+			break;
+
+		case Image::FORMAT_RF:
+			format = RD::DATA_FORMAT_R32_SFLOAT;
+			break;
+
+		case Image::FORMAT_RGF:
+			format = RD::DATA_FORMAT_R32G32_SFLOAT;
+			break;
+
+		case Image::FORMAT_RGBF:
+			format = RD::DATA_FORMAT_R32G32B32_SFLOAT;
+			break;
+
+		case Image::FORMAT_RGBAF:
+			format = RD::DATA_FORMAT_R32G32B32_SFLOAT;
+			break;
+
+		case Image::FORMAT_RH:
+			format = RD::DATA_FORMAT_R16_SFLOAT;
+			break;
+
+		case Image::FORMAT_RGH:
+			format = RD::DATA_FORMAT_R16G16_SFLOAT;
+			break;
+
+		case Image::FORMAT_RGBH:
+			format = RD::DATA_FORMAT_R16G16B16_SFLOAT;
+			break;
+
+		case Image::FORMAT_RGBAH:
+			format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+			break;
+
+		case Image::FORMAT_RGBE9995:
+			format = RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32;
+			break;
+
+		case Image::FORMAT_DXT1:
+			format = RD::DATA_FORMAT_BC1_RGB_UNORM_BLOCK;
+			break;
+
+		case Image::FORMAT_DXT3:
+			format = RD::DATA_FORMAT_BC2_UNORM_BLOCK;
+			break;
+
+		case Image::FORMAT_DXT5:
+			format = RD::DATA_FORMAT_BC3_UNORM_BLOCK;
+			break;
+
+		case Image::FORMAT_RGTC_R:
+			format = RD::DATA_FORMAT_BC4_UNORM_BLOCK;
+			break;
+
+		case Image::FORMAT_RGTC_RG:
+			format = RD::DATA_FORMAT_BC5_UNORM_BLOCK;
+			break;
+
+		case Image::FORMAT_BPTC_RGBA:
+			format = RD::DATA_FORMAT_BC7_UNORM_BLOCK;
+			break;
+
+		case Image::FORMAT_BPTC_RGBF:
+			format = RD::DATA_FORMAT_BC6H_SFLOAT_BLOCK;
+			break;
+
+		case Image::FORMAT_BPTC_RGBFU:
+			format = RD::DATA_FORMAT_BC6H_UFLOAT_BLOCK;
+			break;
+
+		case Image::FORMAT_ETC:
+			format = RD::DATA_FORMAT_ETC2_R8G8B8_UNORM_BLOCK;
+			break;
+
+		case Image::FORMAT_ETC2_R11:
+			format = RD::DATA_FORMAT_EAC_R11_UNORM_BLOCK;
+			break;
+
+		case Image::FORMAT_ETC2_R11S:
+			format = RD::DATA_FORMAT_EAC_R11_SNORM_BLOCK;
+			break;
+
+		case Image::FORMAT_ETC2_RG11:
+			format = RD::DATA_FORMAT_EAC_R11G11_UNORM_BLOCK;
+			break;
+
+		case Image::FORMAT_ETC2_RG11S:
+			format = RD::DATA_FORMAT_EAC_R11G11_SNORM_BLOCK;
+			break;
+
+		case Image::FORMAT_ETC2_RGB8:
+			format = RD::DATA_FORMAT_ETC2_R8G8B8_UNORM_BLOCK;
+			break;
+
+		case Image::FORMAT_ETC2_RGBA8:
+			format = RD::DATA_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK;
+			break;
+
+		case Image::FORMAT_ETC2_RGB8A1:
+			format = RD::DATA_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK;
+			break;
+
+		case Image::FORMAT_ETC2_RA_AS_RG:
+			format = RD::DATA_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK;
+			break;
+
+		case Image::FORMAT_DXT5_RA_AS_RG:
+			format = RD::DATA_FORMAT_BC3_UNORM_BLOCK;
+			break;
+
+		case Image::FORMAT_ASTC_4x4:
+		case Image::FORMAT_ASTC_4x4_HDR:
+			format = RD::DATA_FORMAT_ASTC_4x4_UNORM_BLOCK;
+			break;
+
+		case Image::FORMAT_ASTC_8x8:
+		case Image::FORMAT_ASTC_8x8_HDR:
+			format = RD::DATA_FORMAT_ASTC_8x8_UNORM_BLOCK;
+			break;
+
+		default:
+			// Arbitrary fallback.
+			format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+	}
+
+	// Assumed to be a color attachment - see note above.
+	uint64_t usage_flags = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+
+	return RD::get_singleton()->texture_create_from_extension(type, format, RD::TEXTURE_SAMPLES_1, usage_flags, p_native_handle, p_width, p_height, p_depth, p_layers);
+}
+
 void TextureStorage::_texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer, bool p_immediate) {
 	ERR_FAIL_COND(p_image.is_null() || p_image->is_empty());
 

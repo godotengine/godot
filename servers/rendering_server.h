@@ -113,6 +113,12 @@ public:
 
 	/* TEXTURE API */
 
+	enum TextureType {
+		TEXTURE_TYPE_2D,
+		TEXTURE_TYPE_LAYERED,
+		TEXTURE_TYPE_3D,
+	};
+
 	enum TextureLayeredType {
 		TEXTURE_LAYERED_2D_ARRAY,
 		TEXTURE_LAYERED_CUBEMAP,
@@ -132,6 +138,8 @@ public:
 	virtual RID texture_2d_layered_create(const Vector<Ref<Image>> &p_layers, TextureLayeredType p_layered_type) = 0;
 	virtual RID texture_3d_create(Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) = 0; //all slices, then all the mipmaps, must be coherent
 	virtual RID texture_proxy_create(RID p_base) = 0;
+
+	virtual RID texture_create_from_native_handle(TextureType p_type, Image::Format p_format, uint64_t p_native_handle, int p_width, int p_height, int p_depth, int p_layers = 1, TextureLayeredType p_layered_type = TEXTURE_LAYERED_2D_ARRAY) = 0;
 
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) = 0;
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) = 0;
@@ -1793,6 +1801,7 @@ private:
 };
 
 // Make variant understand the enums.
+VARIANT_ENUM_CAST(RenderingServer::TextureType);
 VARIANT_ENUM_CAST(RenderingServer::TextureLayeredType);
 VARIANT_ENUM_CAST(RenderingServer::CubeMapLayer);
 VARIANT_ENUM_CAST(RenderingServer::ShaderMode);
