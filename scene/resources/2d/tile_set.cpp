@@ -4391,7 +4391,10 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::ARRAY, PNAME("tile_proxies/alternative_level"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 
 	// Patterns
-	p_list->push_back(PropertyInfo(Variant::NIL, GNAME("Patterns", ""), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
+	for (unsigned int pattern_index = 0; pattern_index < patterns.size(); pattern_index++) {
+		p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("pattern_%d", pattern_index), PROPERTY_HINT_RESOURCE_TYPE, "TileMapPattern", PROPERTY_USAGE_NO_EDITOR));
+	}
+	//p_list->push_back(PropertyInfo(Variant::NIL, GNAME("Patterns", ""), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
 	for (int pattern_set_index = 0; pattern_set_index < pattern_sets.size(); pattern_set_index++) {
 		p_list->push_back(PropertyInfo(Variant::STRING, vformat("pattern_set_%d/name", pattern_set_index))), PROPERTY_HINT_TYPE_STRING, "", PROPERTY_USAGE_NO_EDITOR;
 		p_list->push_back(PropertyInfo(Variant::ARRAY, vformat("pattern_set_%d/pattern_set", pattern_set_index), PROPERTY_HINT_ARRAY_TYPE, "TileMapPattern"));
