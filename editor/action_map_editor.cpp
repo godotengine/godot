@@ -589,7 +589,7 @@ ActionMapEditor::ActionMapEditor() {
 	add_hbox->add_child(show_builtin_actions_checkbutton);
 
 	show_builtin_actions = EditorSettings::get_singleton()->get_project_metadata("project_settings", "show_builtin_actions", false);
-	show_builtin_actions_checkbutton->set_pressed(show_builtin_actions);
+	show_builtin_actions_checkbutton->set_pressed_no_signal(show_builtin_actions);
 
 	main_vbox->add_child(add_hbox);
 

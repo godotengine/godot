@@ -771,7 +771,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	bool use_advanced = EditorSettings::get_singleton()->get_project_metadata("project_settings", "advanced_mode", false);
 
 	if (use_advanced) {
-		advanced->set_pressed(true);
+		advanced->set_pressed_no_signal(true);
 	}
 
 	_update_advanced(use_advanced);
