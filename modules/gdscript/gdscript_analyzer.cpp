@@ -1687,8 +1687,15 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 	for (int i = 0; i < p_function->parameters.size(); i++) {
 		resolve_parameter(p_function->parameters[i]);
 #ifdef DEBUG_ENABLED
-		if (p_function->parameters[i]->usages == 0 && !String(p_function->parameters[i]->identifier->name).begins_with("_")) {
-			parser->push_warning(p_function->parameters[i]->identifier, GDScriptWarning::UNUSED_PARAMETER, function_visible_name, p_function->parameters[i]->identifier->name);
+		GDScriptParser::ParameterNode *parameter = p_function->parameters[i];
+		StringName parameter_name = parameter->identifier->name;
+		if (parameter->usages == 0 && !String(parameter_name).begins_with("_")) {
+			bool is_process_function = function_name == "_process" || function_name == "_physics_process";
+			bool only_has_delta_parameter = p_function->parameters.size() == 1 && parameter_name == "delta";
+			bool should_ignore = is_process_function && only_has_delta_parameter;
+			if (!should_ignore) {
+				parser->push_warning(p_function->parameters[i]->identifier, GDScriptWarning::UNUSED_PARAMETER, function_visible_name, p_function->parameters[i]->identifier->name);
+			}
 		}
 		is_shadowing(p_function->parameters[i]->identifier, "function parameter", true);
 #endif // DEBUG_ENABLED
