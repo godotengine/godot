@@ -52,7 +52,6 @@ class EditorPropertyRootMotion : public EditorProperty {
 	void _node_clear();
 
 protected:
-	static void _bind_methods();
 	void _notification(int p_what);
 
 public:

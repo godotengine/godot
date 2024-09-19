@@ -37,10 +37,11 @@
 class StatusIndicator : public Node {
 	GDCLASS(StatusIndicator, Node);
 
-	Ref<Image> icon;
+	Ref<Texture2D> icon;
 	String tooltip;
 	bool visible = true;
 	DisplayServer::IndicatorID iid = DisplayServer::INVALID_INDICATOR_ID;
+	NodePath menu;
 
 protected:
 	void _notification(int p_what);
@@ -49,14 +50,19 @@ protected:
 	void _callback(MouseButton p_index, const Point2i &p_pos);
 
 public:
-	void set_icon(const Ref<Image> &p_icon);
-	Ref<Image> get_icon() const;
+	void set_icon(const Ref<Texture2D> &p_icon);
+	Ref<Texture2D> get_icon() const;
 
 	void set_tooltip(const String &p_tooltip);
 	String get_tooltip() const;
 
+	void set_menu(const NodePath &p_menu);
+	NodePath get_menu() const;
+
 	void set_visible(bool p_visible);
 	bool is_visible() const;
+
+	Rect2 get_rect() const;
 };
 
 #endif // STATUS_INDICATOR_H

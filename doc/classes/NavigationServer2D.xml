@@ -486,7 +486,7 @@
 			<param index="0" name="map" type="RID" />
 			<param index="1" name="to_point" type="Vector2" />
 			<description>
-				Returns the point closest to the provided [param to_point] on the navigation mesh surface.
+				Returns the navigation mesh surface point closest to the provided [param to_point] on the navigation [param map].
 			</description>
 		</method>
 		<method name="map_get_closest_point_owner" qualifiers="const">
@@ -494,7 +494,7 @@
 			<param index="0" name="map" type="RID" />
 			<param index="1" name="to_point" type="Vector2" />
 			<description>
-				Returns the owner region RID for the point returned by [method map_get_closest_point].
+				Returns the owner region RID for the navigation mesh surface point closest to the provided [param to_point] on the navigation [param map].
 			</description>
 		</method>
 		<method name="map_get_edge_connection_margin" qualifiers="const">
@@ -768,6 +768,14 @@
 				Creates a new region.
 			</description>
 		</method>
+		<method name="region_get_closest_point" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="to_point" type="Vector2" />
+			<description>
+				Returns the navigation mesh surface point closest to the provided [param to_point] on the navigation [param region].
+			</description>
+		</method>
 		<method name="region_get_connection_pathway_end" qualifiers="const">
 			<return type="Vector2" />
 			<param index="0" name="region" type="RID" />
@@ -954,6 +962,23 @@
 			<description>
 				Returns a simplified version of [param path] with less critical path points removed. The simplification amount is in worlds units and controlled by [param epsilon]. The simplification uses a variant of Ramer-Douglas-Peucker algorithm for curve point decimation.
 				Path simplification can be helpful to mitigate various path following issues that can arise with certain agent types and script behaviors. E.g. "steering" agents or avoidance in "open fields".
+			</description>
+		</method>
+		<method name="source_geometry_parser_create">
+			<return type="RID" />
+			<description>
+				Creates a new source geometry parser. If a [Callable] is set for the parser with [method source_geometry_parser_set_callback] the callback will be called for every single node that gets parsed whenever [method parse_source_geometry_data] is used.
+			</description>
+		</method>
+		<method name="source_geometry_parser_set_callback">
+			<return type="void" />
+			<param index="0" name="parser" type="RID" />
+			<param index="1" name="callback" type="Callable" />
+			<description>
+				Sets the [param callback] [Callable] for the specific source geometry [param parser]. The [Callable] will receive a call with the following parameters:
+				- [code]navigation_mesh[/code] - The [NavigationPolygon] reference used to define the parse settings. Do NOT edit or add directly to the navigation mesh.
+				- [code]source_geometry_data[/code] - The [NavigationMeshSourceGeometryData2D] reference. Add custom source geometry for navigation mesh baking to this object.
+				- [code]node[/code] - The [Node] that is parsed.
 			</description>
 		</method>
 	</methods>

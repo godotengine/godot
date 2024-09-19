@@ -35,16 +35,16 @@ void PhysicalBoneSimulator3D::_skeleton_changed(Skeleton3D *p_old, Skeleton3D *p
 		if (p_old->is_connected(SNAME("bone_list_changed"), callable_mp(this, &PhysicalBoneSimulator3D::_bone_list_changed))) {
 			p_old->disconnect(SNAME("bone_list_changed"), callable_mp(this, &PhysicalBoneSimulator3D::_bone_list_changed));
 		}
-		if (p_old->is_connected(SNAME("pose_updated"), callable_mp(this, &PhysicalBoneSimulator3D::_pose_updated))) {
-			p_old->disconnect(SNAME("pose_updated"), callable_mp(this, &PhysicalBoneSimulator3D::_pose_updated));
+		if (p_old->is_connected(SceneStringName(pose_updated), callable_mp(this, &PhysicalBoneSimulator3D::_pose_updated))) {
+			p_old->disconnect(SceneStringName(pose_updated), callable_mp(this, &PhysicalBoneSimulator3D::_pose_updated));
 		}
 	}
 	if (p_new) {
 		if (!p_new->is_connected(SNAME("bone_list_changed"), callable_mp(this, &PhysicalBoneSimulator3D::_bone_list_changed))) {
 			p_new->connect(SNAME("bone_list_changed"), callable_mp(this, &PhysicalBoneSimulator3D::_bone_list_changed));
 		}
-		if (!p_new->is_connected(SNAME("pose_updated"), callable_mp(this, &PhysicalBoneSimulator3D::_pose_updated))) {
-			p_new->connect(SNAME("pose_updated"), callable_mp(this, &PhysicalBoneSimulator3D::_pose_updated));
+		if (!p_new->is_connected(SceneStringName(pose_updated), callable_mp(this, &PhysicalBoneSimulator3D::_pose_updated))) {
+			p_new->connect(SceneStringName(pose_updated), callable_mp(this, &PhysicalBoneSimulator3D::_pose_updated));
 		}
 	}
 	_bone_list_changed();
@@ -73,8 +73,13 @@ void PhysicalBoneSimulator3D::_pose_updated() {
 	}
 	ERR_FAIL_COND(skeleton->get_bone_count() != bones.size());
 	for (int i = 0; i < skeleton->get_bone_count(); i++) {
-		bones.write[i].global_pose = skeleton->get_bone_global_pose(i);
+		_bone_pose_updated(skeleton, i);
 	}
+}
+
+void PhysicalBoneSimulator3D::_bone_pose_updated(Skeleton3D *p_skeleton, int p_bone_id) {
+	ERR_FAIL_INDEX(p_bone_id, bones.size());
+	bones.write[p_bone_id].global_pose = p_skeleton->get_bone_global_pose(p_bone_id);
 }
 
 void PhysicalBoneSimulator3D::_set_active(bool p_active) {
@@ -285,10 +290,10 @@ void _pb_start_simulation(const PhysicalBoneSimulator3D *p_simulator, Node *p_no
 }
 
 void PhysicalBoneSimulator3D::physical_bones_start_simulation_on(const TypedArray<StringName> &p_bones) {
+	_pose_updated();
+
 	simulating = true;
 	_reset_physical_bones_state();
-
-	_pose_updated();
 
 	Vector<int> sim_bones;
 	if (p_bones.size() > 0) {
@@ -357,28 +362,16 @@ void PhysicalBoneSimulator3D::_process_modification() {
 	if (!skeleton) {
 		return;
 	}
-	if (!enabled) {
-		for (int i = 0; i < bones.size(); i++) {
-			if (bones[i].physical_bone) {
-				if (bones[i].physical_bone->is_simulating_physics() == false) {
-					bones[i].physical_bone->reset_to_rest_position();
-				}
-			}
+	ERR_FAIL_COND(skeleton->get_bone_count() != bones.size());
+	for (int i = 0; i < skeleton->get_bone_count(); i++) {
+		if (!bones[i].physical_bone) {
+			continue;
 		}
-	} else {
-		ERR_FAIL_COND(skeleton->get_bone_count() != bones.size());
-		LocalVector<Transform3D> local_poses;
-		for (int i = 0; i < skeleton->get_bone_count(); i++) {
-			Transform3D pt;
-			if (skeleton->get_bone_parent(i) >= 0) {
-				pt = get_bone_global_pose(skeleton->get_bone_parent(i));
-			}
-			local_poses.push_back(pt.affine_inverse() * bones[i].global_pose);
-		}
-		for (int i = 0; i < skeleton->get_bone_count(); i++) {
-			skeleton->set_bone_pose_position(i, local_poses[i].origin);
-			skeleton->set_bone_pose_rotation(i, local_poses[i].basis.get_rotation_quaternion());
-			skeleton->set_bone_pose_scale(i, local_poses[i].basis.get_scale());
+		if (bones[i].physical_bone->is_simulating_physics() == false) {
+			_bone_pose_updated(skeleton, i);
+			bones[i].physical_bone->reset_to_rest_position();
+		} else if (simulating) {
+			skeleton->set_bone_global_pose(i, bones[i].global_pose);
 		}
 	}
 }

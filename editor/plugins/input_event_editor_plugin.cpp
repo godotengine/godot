@@ -33,9 +33,6 @@
 #include "editor/event_listener_line_edit.h"
 #include "editor/input_event_configuration_dialog.h"
 
-void InputEventConfigContainer::_bind_methods() {
-}
-
 void InputEventConfigContainer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
@@ -88,13 +85,13 @@ InputEventConfigContainer::InputEventConfigContainer() {
 	add_child(input_event_text);
 
 	open_config_button = EditorInspector::create_inspector_action_button(TTR("Configure"));
-	open_config_button->connect("pressed", callable_mp(this, &InputEventConfigContainer::_configure_pressed));
+	open_config_button->connect(SceneStringName(pressed), callable_mp(this, &InputEventConfigContainer::_configure_pressed));
 	add_child(open_config_button);
 
 	add_child(memnew(Control));
 
 	config_dialog = memnew(InputEventConfigurationDialog);
-	config_dialog->connect("confirmed", callable_mp(this, &InputEventConfigContainer::_config_dialog_confirmed));
+	config_dialog->connect(SceneStringName(confirmed), callable_mp(this, &InputEventConfigContainer::_config_dialog_confirmed));
 	add_child(config_dialog);
 }
 

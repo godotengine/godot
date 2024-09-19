@@ -183,7 +183,7 @@ void TilesEditorUtils::synchronize_sources_list(Object *p_current_list, Object *
 		} else {
 			item_list->set_current(atlas_sources_lists_current);
 			item_list->ensure_current_is_visible();
-			item_list->emit_signal(SNAME("item_selected"), atlas_sources_lists_current);
+			item_list->emit_signal(SceneStringName(item_selected), atlas_sources_lists_current);
 		}
 	}
 }
@@ -303,6 +303,19 @@ TilesEditorUtils::TilesEditorUtils() {
 	singleton = this;
 	// Pattern preview generation thread.
 	pattern_preview_thread.start(_thread_func, this);
+
+	ED_SHORTCUT("tiles_editor/cut", TTR("Cut"), KeyModifierMask::CMD_OR_CTRL | Key::X);
+	ED_SHORTCUT("tiles_editor/copy", TTR("Copy"), KeyModifierMask::CMD_OR_CTRL | Key::C);
+	ED_SHORTCUT("tiles_editor/paste", TTR("Paste"), KeyModifierMask::CMD_OR_CTRL | Key::V);
+	ED_SHORTCUT("tiles_editor/cancel", TTR("Cancel"), Key::ESCAPE);
+	ED_SHORTCUT("tiles_editor/delete", TTR("Delete"), Key::KEY_DELETE);
+
+	ED_SHORTCUT("tiles_editor/paint_tool", TTR("Paint"), Key::D);
+	ED_SHORTCUT("tiles_editor/line_tool", TTR("Line", "Tool"), Key::L);
+	ED_SHORTCUT("tiles_editor/rect_tool", TTR("Rect"), Key::R);
+	ED_SHORTCUT("tiles_editor/bucket_tool", TTR("Bucket"), Key::B);
+	ED_SHORTCUT("tiles_editor/eraser", TTR("Eraser"), Key::E);
+	ED_SHORTCUT("tiles_editor/picker", TTR("Picker"), Key::P);
 }
 
 TilesEditorUtils::~TilesEditorUtils() {
@@ -370,8 +383,8 @@ void TileMapEditorPlugin::_edit_tile_map_layer(TileMapLayer *p_tile_map_layer, b
 
 	// Update the object IDs.
 	tile_map_layer_id = p_tile_map_layer->get_instance_id();
-	p_tile_map_layer->connect("changed", callable_mp(this, &TileMapEditorPlugin::_tile_map_layer_changed));
-	p_tile_map_layer->connect("tree_exited", callable_mp(this, &TileMapEditorPlugin::_tile_map_layer_removed));
+	p_tile_map_layer->connect(CoreStringName(changed), callable_mp(this, &TileMapEditorPlugin::_tile_map_layer_changed));
+	p_tile_map_layer->connect(SceneStringName(tree_exited), callable_mp(this, &TileMapEditorPlugin::_tile_map_layer_removed));
 
 	// Update the edited tileset.
 	Ref<TileSet> tile_set = p_tile_map_layer->get_tile_set();
@@ -406,8 +419,8 @@ void TileMapEditorPlugin::_notification(int p_notification) {
 void TileMapEditorPlugin::edit(Object *p_object) {
 	TileMapLayer *edited_layer = Object::cast_to<TileMapLayer>(ObjectDB::get_instance(tile_map_layer_id));
 	if (edited_layer) {
-		edited_layer->disconnect("changed", callable_mp(this, &TileMapEditorPlugin::_tile_map_layer_changed));
-		edited_layer->disconnect("tree_exited", callable_mp(this, &TileMapEditorPlugin::_tile_map_layer_removed));
+		edited_layer->disconnect(CoreStringName(changed), callable_mp(this, &TileMapEditorPlugin::_tile_map_layer_changed));
+		edited_layer->disconnect(SceneStringName(tree_exited), callable_mp(this, &TileMapEditorPlugin::_tile_map_layer_removed));
 	}
 
 	tile_map_group_id = ObjectID();

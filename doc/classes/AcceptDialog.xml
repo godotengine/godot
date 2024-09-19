@@ -100,6 +100,12 @@
 		</signal>
 	</signals>
 	<theme_items>
+		<theme_item name="buttons_min_height" data_type="constant" type="int" default="0">
+			The minimum height of each button in the bottom row (such as OK/Cancel) in pixels. This can be increased to make buttons with short texts easier to click/tap.
+		</theme_item>
+		<theme_item name="buttons_min_width" data_type="constant" type="int" default="0">
+			The minimum width of each button in the bottom row (such as OK/Cancel) in pixels. This can be increased to make buttons with short texts easier to click/tap.
+		</theme_item>
 		<theme_item name="buttons_separation" data_type="constant" type="int" default="10">
 			The size of the vertical space between the dialog's content and the button row.
 		</theme_item>

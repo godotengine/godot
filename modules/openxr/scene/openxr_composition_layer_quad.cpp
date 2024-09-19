@@ -38,18 +38,9 @@
 #include "scene/main/viewport.h"
 #include "scene/resources/3d/primitive_meshes.h"
 
-OpenXRCompositionLayerQuad::OpenXRCompositionLayerQuad() {
-	composition_layer = {
-		XR_TYPE_COMPOSITION_LAYER_QUAD, // type
-		nullptr, // next
-		0, // layerFlags
-		XR_NULL_HANDLE, // space
-		XR_EYE_VISIBILITY_BOTH, // eyeVisibility
-		{}, // subImage
-		{ { 0, 0, 0, 0 }, { 0, 0, 0 } }, // pose
-		{ (float)quad_size.x, (float)quad_size.y }, // size
-	};
-	openxr_layer_provider = memnew(OpenXRViewportCompositionLayerProvider((XrCompositionLayerBaseHeader *)&composition_layer));
+OpenXRCompositionLayerQuad::OpenXRCompositionLayerQuad() :
+		OpenXRCompositionLayer((XrCompositionLayerBaseHeader *)&composition_layer) {
+	XRServer::get_singleton()->connect("reference_frame_changed", callable_mp(this, &OpenXRCompositionLayerQuad::update_transform));
 }
 
 OpenXRCompositionLayerQuad::~OpenXRCompositionLayerQuad() {
@@ -62,13 +53,6 @@ void OpenXRCompositionLayerQuad::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "quad_size", PROPERTY_HINT_NONE, ""), "set_quad_size", "get_quad_size");
 }
 
-void OpenXRCompositionLayerQuad::_on_openxr_session_begun() {
-	OpenXRCompositionLayer::_on_openxr_session_begun();
-	if (openxr_api) {
-		composition_layer.space = openxr_api->get_play_space();
-	}
-}
-
 Ref<Mesh> OpenXRCompositionLayerQuad::_create_fallback_mesh() {
 	Ref<QuadMesh> mesh;
 	mesh.instantiate();
@@ -79,12 +63,13 @@ Ref<Mesh> OpenXRCompositionLayerQuad::_create_fallback_mesh() {
 void OpenXRCompositionLayerQuad::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
-			Transform3D transform = get_transform();
-			Quaternion quat(transform.basis.orthonormalized());
-			composition_layer.pose.orientation = { (float)quat.x, (float)quat.y, (float)quat.z, (float)quat.w };
-			composition_layer.pose.position = { (float)transform.origin.x, (float)transform.origin.y, (float)transform.origin.z };
+			update_transform();
 		} break;
 	}
+}
+
+void OpenXRCompositionLayerQuad::update_transform() {
+	composition_layer.pose = get_openxr_pose();
 }
 
 void OpenXRCompositionLayerQuad::set_quad_size(const Size2 &p_size) {

@@ -76,7 +76,7 @@ public:
 	virtual void on_before_instance_created() {} // `on_before_instance_created` is called before we create our OpenXR instance.
 	virtual void on_instance_created(const XrInstance p_instance) {} // `on_instance_created` is called right after we've successfully created our OpenXR instance.
 	virtual void on_instance_destroyed() {} // `on_instance_destroyed` is called right before we destroy our OpenXR instance.
-	virtual void on_session_created(const XrSession p_instance) {} // `on_session_created` is called right after we've successfully created our OpenXR session.
+	virtual void on_session_created(const XrSession p_session) {} // `on_session_created` is called right after we've successfully created our OpenXR session.
 	virtual void on_session_destroyed() {} // `on_session_destroyed` is called right before we destroy our OpenXR session.
 
 	// `on_process` is called as part of our OpenXR process handling,
@@ -84,6 +84,7 @@ public:
 	// This is when controller data is queried and made available to game logic.
 	virtual void on_process() {}
 	virtual void on_pre_render() {} // `on_pre_render` is called right before we start rendering our XR viewports.
+	virtual void on_main_swapchains_created() {} // `on_main_swapchains_created` is called right after our main swapchains are (re)created.
 	virtual void on_pre_draw_viewport(RID p_render_target) {} // `on_pre_draw_viewport` is called right before we start rendering this viewport
 	virtual void on_post_draw_viewport(RID p_render_target) {} // `on_port_draw_viewport` is called right after we start rendering this viewport (note that on Vulkan draw commands may only be queued)
 

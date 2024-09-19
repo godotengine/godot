@@ -1046,6 +1046,9 @@ void LightStorage::lightmap_set_textures(RID p_lightmap, RID p_light, bool p_use
 	lightmap->light_texture = p_light;
 	lightmap->uses_spherical_harmonics = p_uses_spherical_haromics;
 
+	Vector3i light_texture_size = GLES3::TextureStorage::get_singleton()->texture_get_size(lightmap->light_texture);
+	lightmap->light_texture_size = Vector2i(light_texture_size.x, light_texture_size.y);
+
 	GLuint tex = GLES3::TextureStorage::get_singleton()->texture_get_texid(lightmap->light_texture);
 	glBindTexture(GL_TEXTURE_2D_ARRAY, tex);
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -1518,6 +1521,11 @@ bool LightStorage::_shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas, int *p_i
 		uint64_t min_pass = 0; // Pass of the existing one, try to use the least recently used one (LRU fashion).
 
 		for (int j = 0; j < sc; j++) {
+			if (sarr[j].owner_is_omni != is_omni) {
+				// Existing light instance type doesn't match new light instance type skip.
+				continue;
+			}
+
 			LightInstance *sli = light_instance_owner.get_or_null(sarr[j].owner);
 			if (!sli) {
 				// Found a released light instance.

@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Cannot access non-static function "non_static" from a static variable initializer.

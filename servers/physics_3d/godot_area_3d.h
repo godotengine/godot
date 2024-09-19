@@ -107,10 +107,10 @@ class GodotArea3D : public GodotCollisionObject3D {
 
 public:
 	void set_monitor_callback(const Callable &p_callback);
-	_FORCE_INLINE_ bool has_monitor_callback() const { return !monitor_callback.is_null(); }
+	_FORCE_INLINE_ bool has_monitor_callback() const { return monitor_callback.is_valid(); }
 
 	void set_area_monitor_callback(const Callable &p_callback);
-	_FORCE_INLINE_ bool has_area_monitor_callback() const { return !area_monitor_callback.is_null(); }
+	_FORCE_INLINE_ bool has_area_monitor_callback() const { return area_monitor_callback.is_valid(); }
 
 	_FORCE_INLINE_ void add_body_to_query(GodotBody3D *p_body, uint32_t p_body_shape, uint32_t p_area_shape);
 	_FORCE_INLINE_ void remove_body_from_query(GodotBody3D *p_body, uint32_t p_body_shape, uint32_t p_area_shape);
@@ -188,7 +188,7 @@ void GodotArea3D::add_soft_body_to_query(GodotSoftBody3D *p_soft_body, uint32_t 
 void GodotArea3D::remove_soft_body_from_query(GodotSoftBody3D *p_soft_body, uint32_t p_soft_body_shape, uint32_t p_area_shape) {
 	BodyKey bk(p_soft_body, p_soft_body_shape, p_area_shape);
 	monitored_soft_bodies[bk].dec();
-	if (!monitor_query_list.in_list()) {
+	if (get_space() && !monitor_query_list.in_list()) {
 		_queue_monitor_update();
 	}
 }

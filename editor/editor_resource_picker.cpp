@@ -31,6 +31,7 @@
 #include "editor_resource_picker.h"
 
 #include "editor/audio_stream_preview.h"
+#include "editor/editor_help.h"
 #include "editor/editor_node.h"
 #include "editor/editor_quick_open.h"
 #include "editor/editor_resource_preview.h"
@@ -102,7 +103,7 @@ void EditorResourcePicker::_update_resource_preview(const String &p_path, const 
 		}
 
 		if (p_preview.is_valid()) {
-			preview_rect->set_offset(SIDE_LEFT, assign_button->get_icon()->get_width() + assign_button->get_theme_stylebox(SNAME("normal"))->get_content_margin(SIDE_LEFT) + get_theme_constant(SNAME("h_separation"), SNAME("Button")));
+			preview_rect->set_offset(SIDE_LEFT, assign_button->get_icon()->get_width() + assign_button->get_theme_stylebox(CoreStringName(normal))->get_content_margin(SIDE_LEFT) + get_theme_constant(SNAME("h_separation"), SNAME("Button")));
 
 			// Resource-specific stretching.
 			if (Ref<GradientTexture1D>(edited_resource).is_valid() || Ref<Gradient>(edited_resource).is_valid()) {
@@ -172,6 +173,13 @@ void EditorResourcePicker::_file_selected(const String &p_path) {
 
 void EditorResourcePicker::_file_quick_selected() {
 	_file_selected(quick_open->get_selected());
+}
+
+void EditorResourcePicker::_resource_saved(Object *p_resource) {
+	if (edited_resource.is_valid() && p_resource == edited_resource.ptr()) {
+		emit_signal(SNAME("resource_changed"), edited_resource);
+		_update_resource();
+	}
 }
 
 void EditorResourcePicker::_update_menu() {
@@ -278,20 +286,22 @@ void EditorResourcePicker::_update_menu_items() {
 
 	// Add options to convert existing resource to another type of resource.
 	if (is_editable() && edited_resource.is_valid()) {
-		Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin(edited_resource);
-		if (conversions.size()) {
+		Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin_for_resource(edited_resource);
+		if (!conversions.is_empty()) {
 			edit_menu->add_separator();
 		}
-		for (int i = 0; i < conversions.size(); i++) {
-			String what = conversions[i]->converts_to();
+		int relative_id = 0;
+		for (const Ref<EditorResourceConversionPlugin> &conversion : conversions) {
+			String what = conversion->converts_to();
 			Ref<Texture2D> icon;
 			if (has_theme_icon(what, EditorStringName(EditorIcons))) {
 				icon = get_editor_theme_icon(what);
 			} else {
-				icon = get_theme_icon(what, SNAME("Resource"));
+				icon = get_editor_theme_icon(SNAME("Object"));
 			}
 
-			edit_menu->add_icon_item(icon, vformat(TTR("Convert to %s"), what), CONVERT_BASE_ID + i);
+			edit_menu->add_icon_item(icon, vformat(TTR("Convert to %s"), what), CONVERT_BASE_ID + relative_id);
+			relative_id++;
 		}
 	}
 }
@@ -373,7 +383,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				duplicate_resources_dialog = memnew(ConfirmationDialog);
 				add_child(duplicate_resources_dialog);
 				duplicate_resources_dialog->set_title(TTR("Make Unique (Recursive)"));
-				duplicate_resources_dialog->connect("confirmed", callable_mp(this, &EditorResourcePicker::_duplicate_selected_resources));
+				duplicate_resources_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorResourcePicker::_duplicate_selected_resources));
 
 				VBoxContainer *vb = memnew(VBoxContainer);
 				duplicate_resources_dialog->add_child(vb);
@@ -407,6 +417,10 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			if (edited_resource.is_null()) {
 				return;
 			}
+			Callable resource_saved = callable_mp(this, &EditorResourcePicker::_resource_saved);
+			if (!EditorNode::get_singleton()->is_connected("resource_saved", resource_saved)) {
+				EditorNode::get_singleton()->connect("resource_saved", resource_saved);
+			}
 			EditorNode::get_singleton()->save_resource_as(edited_resource);
 		} break;
 
@@ -439,7 +453,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 
 			if (p_which >= CONVERT_BASE_ID) {
 				int to_type = p_which - CONVERT_BASE_ID;
-				Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin(edited_resource);
+				Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin_for_resource(edited_resource);
 				ERR_FAIL_INDEX(to_type, conversions.size());
 
 				edited_resource = conversions[to_type]->convert(edited_resource);
@@ -488,8 +502,8 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 	if (!base_type.is_empty()) {
 		int idx = 0;
 
-		HashSet<StringName> allowed_types;
-		_get_allowed_types(false, &allowed_types);
+		_ensure_allowed_types();
+		HashSet<StringName> allowed_types = allowed_types_without_convert;
 
 		for (const StringName &E : allowed_types) {
 			const String &t = E;
@@ -503,6 +517,11 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 			Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(t, "Object");
 			int id = TYPE_BASE_ID + idx;
 			edit_menu->add_icon_item(icon, vformat(TTR("New %s"), t), id);
+
+			HashMap<String, DocData::ClassDoc>::Iterator class_doc = EditorHelp::get_doc_data()->class_list.find(t);
+			if (class_doc) {
+				edit_menu->set_item_tooltip(-1, DTR(class_doc->value.brief_description));
+			}
 
 			idx++;
 		}
@@ -593,23 +612,29 @@ static void _add_allowed_type(const StringName &p_type, HashSet<StringName> *p_v
 	}
 }
 
-void EditorResourcePicker::_get_allowed_types(bool p_with_convert, HashSet<StringName> *p_vector) const {
+void EditorResourcePicker::_ensure_allowed_types() const {
+	if (!allowed_types_without_convert.is_empty()) {
+		return;
+	}
+
 	Vector<String> allowed_types = base_type.split(",");
 	int size = allowed_types.size();
 
 	for (int i = 0; i < size; i++) {
-		String base = allowed_types[i].strip_edges();
+		const String base = allowed_types[i].strip_edges();
+		_add_allowed_type(base, &allowed_types_without_convert);
+	}
 
-		_add_allowed_type(base, p_vector);
+	allowed_types_with_convert = HashSet<StringName>(allowed_types_without_convert);
 
-		if (p_with_convert) {
-			if (base == "BaseMaterial3D") {
-				p_vector->insert("Texture2D");
-			} else if (base == "ShaderMaterial") {
-				p_vector->insert("Shader");
-			} else if (base == "Texture2D") {
-				p_vector->insert("Image");
-			}
+	for (int i = 0; i < size; i++) {
+		const String base = allowed_types[i].strip_edges();
+		if (base == "BaseMaterial3D") {
+			allowed_types_with_convert.insert("Texture2D");
+		} else if (ClassDB::is_parent_class("ShaderMaterial", base)) {
+			allowed_types_with_convert.insert("Shader");
+		} else if (ClassDB::is_parent_class("ImageTexture", base)) {
+			allowed_types_with_convert.insert("Image");
 		}
 	}
 }
@@ -645,8 +670,8 @@ bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
 		}
 	}
 
-	HashSet<StringName> allowed_types;
-	_get_allowed_types(true, &allowed_types);
+	_ensure_allowed_types();
+	HashSet<StringName> allowed_types = allowed_types_with_convert;
 
 	if (res.is_valid()) {
 		String res_type = _get_resource_type(res);
@@ -713,8 +738,8 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 	}
 
 	if (dropped_resource.is_valid()) {
-		HashSet<StringName> allowed_types;
-		_get_allowed_types(false, &allowed_types);
+		_ensure_allowed_types();
+		HashSet<StringName> allowed_types = allowed_types_without_convert;
 
 		String res_type = _get_resource_type(dropped_resource);
 
@@ -805,7 +830,7 @@ void EditorResourcePicker::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			draw_style_box(get_theme_stylebox(SNAME("panel"), SNAME("Tree")), Rect2(Point2(), get_size()));
+			draw_style_box(get_theme_stylebox(SceneStringName(panel), SNAME("Tree")), Rect2(Point2(), get_size()));
 		} break;
 
 		case NOTIFICATION_DRAG_BEGIN: {
@@ -819,6 +844,13 @@ void EditorResourcePicker::_notification(int p_what) {
 			if (dropping) {
 				dropping = false;
 				assign_button->queue_redraw();
+			}
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			Callable resource_saved = callable_mp(this, &EditorResourcePicker::_resource_saved);
+			if (EditorNode::get_singleton()->is_connected("resource_saved", resource_saved)) {
+				EditorNode::get_singleton()->disconnect("resource_saved", resource_saved);
 			}
 		} break;
 	}
@@ -835,8 +867,8 @@ void EditorResourcePicker::set_base_type(const String &p_base_type) {
 	// There is a possibility that the new base type is conflicting with the existing value.
 	// Keep the value, but warn the user that there is a potential mistake.
 	if (!base_type.is_empty() && edited_resource.is_valid()) {
-		HashSet<StringName> allowed_types;
-		_get_allowed_types(true, &allowed_types);
+		_ensure_allowed_types();
+		HashSet<StringName> allowed_types = allowed_types_with_convert;
 
 		StringName custom_class;
 		bool is_custom = false;
@@ -857,8 +889,8 @@ String EditorResourcePicker::get_base_type() const {
 }
 
 Vector<String> EditorResourcePicker::get_allowed_types() const {
-	HashSet<StringName> allowed_types;
-	_get_allowed_types(false, &allowed_types);
+	_ensure_allowed_types();
+	HashSet<StringName> allowed_types = allowed_types_without_convert;
 
 	Vector<String> types;
 	types.resize(allowed_types.size());
@@ -881,8 +913,8 @@ void EditorResourcePicker::set_edited_resource(Ref<Resource> p_resource) {
 	}
 
 	if (!base_type.is_empty()) {
-		HashSet<StringName> allowed_types;
-		_get_allowed_types(true, &allowed_types);
+		_ensure_allowed_types();
+		HashSet<StringName> allowed_types = allowed_types_with_convert;
 
 		StringName custom_class;
 		bool is_custom = false;
@@ -896,7 +928,10 @@ void EditorResourcePicker::set_edited_resource(Ref<Resource> p_resource) {
 			ERR_FAIL_MSG(vformat("Failed to set a resource of the type '%s' because this EditorResourcePicker only accepts '%s' and its derivatives.", class_str, base_type));
 		}
 	}
+	set_edited_resource_no_check(p_resource);
+}
 
+void EditorResourcePicker::set_edited_resource_no_check(Ref<Resource> p_resource) {
 	edited_resource = p_resource;
 	_update_resource();
 }
@@ -938,7 +973,7 @@ void EditorResourcePicker::_ensure_resource_menu() {
 	edit_menu = memnew(PopupMenu);
 	edit_menu->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
 	add_child(edit_menu);
-	edit_menu->connect("id_pressed", callable_mp(this, &EditorResourcePicker::_edit_menu_cbk));
+	edit_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorResourcePicker::_edit_menu_cbk));
 	edit_menu->connect("popup_hide", callable_mp((BaseButton *)edit_button, &BaseButton::set_pressed).bind(false));
 }
 
@@ -1034,9 +1069,9 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	assign_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	SET_DRAG_FORWARDING_GCD(assign_button, EditorResourcePicker);
 	add_child(assign_button);
-	assign_button->connect("pressed", callable_mp(this, &EditorResourcePicker::_resource_selected));
-	assign_button->connect("draw", callable_mp(this, &EditorResourcePicker::_button_draw));
-	assign_button->connect("gui_input", callable_mp(this, &EditorResourcePicker::_button_input));
+	assign_button->connect(SceneStringName(pressed), callable_mp(this, &EditorResourcePicker::_resource_selected));
+	assign_button->connect(SceneStringName(draw), callable_mp(this, &EditorResourcePicker::_button_draw));
+	assign_button->connect(SceneStringName(gui_input), callable_mp(this, &EditorResourcePicker::_button_input));
 
 	if (!p_hide_assign_button_controls) {
 		preview_rect = memnew(TextureRect);
@@ -1050,11 +1085,11 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	}
 
 	edit_button = memnew(Button);
-	edit_button->set_flat(true);
+	edit_button->set_flat(false);
 	edit_button->set_toggle_mode(true);
-	edit_button->connect("pressed", callable_mp(this, &EditorResourcePicker::_update_menu));
+	edit_button->connect(SceneStringName(pressed), callable_mp(this, &EditorResourcePicker::_update_menu));
 	add_child(edit_button);
-	edit_button->connect("gui_input", callable_mp(this, &EditorResourcePicker::_button_input));
+	edit_button->connect(SceneStringName(gui_input), callable_mp(this, &EditorResourcePicker::_button_input));
 
 	add_theme_constant_override("separation", 0);
 }
@@ -1222,8 +1257,8 @@ void EditorAudioStreamPicker::_notification(int p_what) {
 void EditorAudioStreamPicker::_update_resource() {
 	EditorResourcePicker::_update_resource();
 
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 	Ref<AudioStream> audio_stream = get_edited_resource();
 	if (audio_stream.is_valid() && audio_stream->get_length() > 0.0) {
 		set_assign_button_min_size(Size2(1, font->get_height(font_size) * 3));
@@ -1241,19 +1276,17 @@ void EditorAudioStreamPicker::_preview_draw() {
 		return;
 	}
 
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 
 	get_assign_button()->set_text("");
 
 	Size2i size = stream_preview_rect->get_size();
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 
 	Rect2 rect(Point2(), size);
 
 	if (audio_stream->get_length() > 0 && size.width > 0) {
 		rect.size.height *= 0.5;
-
-		stream_preview_rect->draw_rect(rect, Color(0, 0, 0, 1));
 
 		Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(audio_stream);
 		float preview_len = preview->get_length();
@@ -1310,8 +1343,8 @@ void EditorAudioStreamPicker::_preview_draw() {
 		text = audio_stream->get_class().replace_first("AudioStream", "");
 	}
 
-	stream_preview_rect->draw_texture(icon, Point2i(EDSCALE * 2, rect.position.y + (rect.size.height - icon->get_height()) / 2), icon_modulate);
-	stream_preview_rect->draw_string(font, Point2i(EDSCALE * 2 + icon->get_width(), rect.position.y + font->get_ascent(font_size) + (rect.size.height - font->get_height(font_size)) / 2), text, HORIZONTAL_ALIGNMENT_CENTER, size.width - 4 * EDSCALE - icon->get_width());
+	stream_preview_rect->draw_texture(icon, Point2i(EDSCALE * 4, rect.position.y + (rect.size.height - icon->get_height()) / 2), icon_modulate);
+	stream_preview_rect->draw_string(font, Point2i(EDSCALE * 4 + icon->get_width(), rect.position.y + font->get_ascent(font_size) + (rect.size.height - font->get_height(font_size)) / 2), text, HORIZONTAL_ALIGNMENT_CENTER, size.width - 4 * EDSCALE - icon->get_width(), font_size, get_theme_color(SNAME("font_color"), EditorStringName(Editor)));
 }
 
 EditorAudioStreamPicker::EditorAudioStreamPicker() :
@@ -1323,7 +1356,7 @@ EditorAudioStreamPicker::EditorAudioStreamPicker() :
 	stream_preview_rect->set_offset(SIDE_BOTTOM, -1);
 	stream_preview_rect->set_offset(SIDE_RIGHT, -1);
 	stream_preview_rect->set_mouse_filter(MOUSE_FILTER_IGNORE);
-	stream_preview_rect->connect("draw", callable_mp(this, &EditorAudioStreamPicker::_preview_draw));
+	stream_preview_rect->connect(SceneStringName(draw), callable_mp(this, &EditorAudioStreamPicker::_preview_draw));
 
 	get_assign_button()->add_child(stream_preview_rect);
 	get_assign_button()->move_child(stream_preview_rect, 0);

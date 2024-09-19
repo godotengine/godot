@@ -70,6 +70,7 @@ public:
 		UNSAFE_VOID_RETURN, // Function returns void but returned a call to a function that can't be type checked.
 		RETURN_VALUE_DISCARDED, // Function call returns something but the value isn't used.
 		STATIC_CALLED_ON_INSTANCE, // A static method was called on an instance of a class instead of on the class itself.
+		MISSING_TOOL, // The base class script has the "@tool" annotation, but this script does not have it.
 		REDUNDANT_STATIC_UNLOAD, // The `@static_unload` annotation is used but the class does not have static data.
 		REDUNDANT_AWAIT, // await is used but expression is synchronous (not a signal nor a coroutine).
 		ASSERT_ALWAYS_TRUE, // Expression for assert argument is always true.
@@ -78,12 +79,14 @@ public:
 		NARROWING_CONVERSION, // Float value into an integer slot, precision is lost.
 		INT_AS_ENUM_WITHOUT_CAST, // An integer value was used as an enum value without casting.
 		INT_AS_ENUM_WITHOUT_MATCH, // An integer value was used as an enum value without matching enum member.
+		ENUM_VARIABLE_WITHOUT_DEFAULT, // A variable with an enum type does not have a default value. The default will be set to `0` instead of the first enum value.
 		EMPTY_FILE, // A script file is empty.
 		DEPRECATED_KEYWORD, // The keyword is deprecated and should be replaced.
 		RENAMED_IN_GODOT_4_HINT, // A variable or function that could not be found has been renamed in Godot 4.
 		CONFUSABLE_IDENTIFIER, // The identifier contains misleading characters that can be confused. E.g. "usеr" (has Cyrillic "е" instead of Latin "e").
 		CONFUSABLE_LOCAL_DECLARATION, // The parent block declares an identifier with the same name below.
 		CONFUSABLE_LOCAL_USAGE, // The identifier will be shadowed below in the block.
+		CONFUSABLE_CAPTURE_REASSIGNMENT, // Reassigning lambda capture does not modify the outer local variable.
 		INFERENCE_ON_VARIANT, // The declaration uses type inference but the value is typed as Variant.
 		NATIVE_METHOD_OVERRIDE, // The script method overrides a native one, this may not work as intended.
 		GET_NODE_DEFAULT_WITHOUT_ONREADY, // A class variable uses `get_node()` (or the `$` notation) as its default value, but does not use the @onready annotation.
@@ -121,6 +124,7 @@ public:
 		WARN, // UNSAFE_VOID_RETURN
 		IGNORE, // RETURN_VALUE_DISCARDED // Too spammy by default on common cases (connect, Tween, etc.).
 		WARN, // STATIC_CALLED_ON_INSTANCE
+		WARN, // MISSING_TOOL
 		WARN, // REDUNDANT_STATIC_UNLOAD
 		WARN, // REDUNDANT_AWAIT
 		WARN, // ASSERT_ALWAYS_TRUE
@@ -129,12 +133,14 @@ public:
 		WARN, // NARROWING_CONVERSION
 		WARN, // INT_AS_ENUM_WITHOUT_CAST
 		WARN, // INT_AS_ENUM_WITHOUT_MATCH
+		WARN, // ENUM_VARIABLE_WITHOUT_DEFAULT
 		WARN, // EMPTY_FILE
 		WARN, // DEPRECATED_KEYWORD
 		WARN, // RENAMED_IN_GODOT_4_HINT
 		WARN, // CONFUSABLE_IDENTIFIER
 		WARN, // CONFUSABLE_LOCAL_DECLARATION
 		WARN, // CONFUSABLE_LOCAL_USAGE
+		WARN, // CONFUSABLE_CAPTURE_REASSIGNMENT
 		ERROR, // INFERENCE_ON_VARIANT // Most likely done by accident, usually inference is trying for a particular type.
 		ERROR, // NATIVE_METHOD_OVERRIDE // May not work as expected.
 		ERROR, // GET_NODE_DEFAULT_WITHOUT_ONREADY // May not work as expected.

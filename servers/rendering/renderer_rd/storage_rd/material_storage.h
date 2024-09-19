@@ -100,8 +100,8 @@ public:
 		HashMap<StringName, uint64_t> used_global_textures;
 
 		//internally by update_parameters_uniform_set
-		Vector<uint8_t> ubo_data;
-		RID uniform_buffer;
+		Vector<uint8_t> ubo_data[2]; // 0: linear buffer; 1: sRGB buffer.
+		RID uniform_buffer[2]; // 0: linear buffer; 1: sRGB buffer.
 		Vector<RID> texture_cache;
 	};
 

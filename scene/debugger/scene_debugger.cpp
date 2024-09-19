@@ -421,9 +421,9 @@ void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInsta
 
 void SceneDebuggerObject::serialize(Array &r_arr, int p_max_size) {
 	Array send_props;
-	for (int i = 0; i < properties.size(); i++) {
-		const PropertyInfo &pi = properties[i].first;
-		Variant &var = properties[i].second;
+	for (SceneDebuggerObject::SceneDebuggerProperty &property : properties) {
+		const PropertyInfo &pi = property.first;
+		Variant &var = property.second;
 
 		Ref<Resource> res = var;
 
@@ -510,7 +510,7 @@ SceneDebuggerTree::SceneDebuggerTree(Node *p_root) {
 	const StringName &is_visible_sn = SNAME("is_visible");
 	const StringName &is_visible_in_tree_sn = SNAME("is_visible_in_tree");
 	while (stack.size()) {
-		Node *n = stack[0];
+		Node *n = stack.front()->get();
 		stack.pop_front();
 
 		int count = n->get_child_count();

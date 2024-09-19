@@ -67,9 +67,9 @@ class Skeleton3D : public Node3D {
 	GDCLASS(Skeleton3D, Node3D);
 
 #ifndef DISABLE_DEPRECATED
+	bool animate_physical_bones = true;
 	Node *simulator = nullptr;
 	void setup_simulator();
-	void remove_simulator();
 #endif // _DISABLE_DEPRECATED
 
 public:
@@ -81,22 +81,28 @@ public:
 private:
 	friend class SkinReference;
 
-	void _update_deferred();
-	bool is_update_needed = false; // Is updating reserved?
+	enum UpdateFlag {
+		UPDATE_FLAG_NONE = 1,
+		UPDATE_FLAG_MODIFIER = 2,
+		UPDATE_FLAG_POSE = 4,
+	};
+
+	void _update_deferred(UpdateFlag p_update_flag = UPDATE_FLAG_POSE);
+	uint8_t update_flags = UPDATE_FLAG_NONE;
 	bool updating = false; // Is updating now?
 
 	struct Bone {
 		String name;
 
-		int parent;
+		int parent = -1;
 		Vector<int> child_bones;
 
 		Transform3D rest;
 		Transform3D global_rest;
 
-		bool enabled;
-		Transform3D pose_cache;
+		bool enabled = true;
 		bool pose_cache_dirty = true;
+		Transform3D pose_cache;
 		Vector3 pose_position;
 		Quaternion pose_rotation;
 		Vector3 pose_scale = Vector3(1, 1, 1);
@@ -110,21 +116,37 @@ private:
 			}
 		}
 
+		HashMap<StringName, Variant> metadata;
+
 #ifndef DISABLE_DEPRECATED
 		Transform3D pose_global_no_override;
 		real_t global_pose_override_amount = 0.0;
 		bool global_pose_override_reset = false;
 		Transform3D global_pose_override;
 #endif // _DISABLE_DEPRECATED
+	};
 
-		Bone() {
-			parent = -1;
-			child_bones = Vector<int>();
-			enabled = true;
-#ifndef DISABLE_DEPRECATED
-			global_pose_override_amount = 0;
-			global_pose_override_reset = false;
-#endif // _DISABLE_DEPRECATED
+	struct BonePoseBackup {
+		Transform3D pose_cache;
+		Vector3 pose_position;
+		Quaternion pose_rotation;
+		Vector3 pose_scale = Vector3(1, 1, 1);
+		Transform3D global_pose;
+
+		void save(const Bone &p_bone) {
+			pose_cache = p_bone.pose_cache;
+			pose_position = p_bone.pose_position;
+			pose_rotation = p_bone.pose_rotation;
+			pose_scale = p_bone.pose_scale;
+			global_pose = p_bone.global_pose;
+		}
+
+		void restore(Bone &r_bone) {
+			r_bone.pose_cache = pose_cache;
+			r_bone.pose_position = pose_position;
+			r_bone.pose_rotation = pose_rotation;
+			r_bone.pose_scale = pose_scale;
+			r_bone.global_pose = global_pose;
 		}
 	};
 
@@ -136,6 +158,9 @@ private:
 
 	Vector<int> parentless_bones;
 	HashMap<String, int> name_to_bone_index;
+
+	mutable StringName concatenated_bone_names = StringName();
+	void _update_bone_names() const;
 
 	void _make_dirty();
 	bool dirty = false;
@@ -156,6 +181,7 @@ private:
 	void _process_modifiers();
 	void _process_changed();
 	void _make_modifiers_dirty();
+	LocalVector<BonePoseBackup> bones_backup;
 
 #ifndef DISABLE_DEPRECATED
 	void _add_bone_bind_compat_88791(const String &p_name);
@@ -169,6 +195,7 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
+	TypedArray<StringName> _get_bone_meta_list_bind(int p_bone) const;
 	static void _bind_methods();
 
 	virtual void add_child_notify(Node *p_child) override;
@@ -186,6 +213,7 @@ public:
 	int find_bone(const String &p_name) const;
 	String get_bone_name(int p_bone) const;
 	void set_bone_name(int p_bone, const String &p_name);
+	StringName get_concatenated_bone_names() const;
 
 	bool is_bone_parent_of(int p_bone_id, int p_parent_bone_id) const;
 
@@ -212,6 +240,12 @@ public:
 
 	void set_motion_scale(float p_motion_scale);
 	float get_motion_scale() const;
+
+	// bone metadata
+	Variant get_bone_meta(int p_bone, const StringName &p_key) const;
+	void get_bone_meta_list(int p_bone, List<StringName> *p_list) const;
+	bool has_bone_meta(int p_bone, const StringName &p_key) const;
+	void set_bone_meta(int p_bone, const StringName &p_key, const Variant &p_value);
 
 	// Posing API
 	Transform3D get_bone_pose(int p_bone) const;

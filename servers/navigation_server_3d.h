@@ -34,8 +34,8 @@
 #include "core/object/class_db.h"
 #include "core/templates/rid.h"
 
+#include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_mesh.h"
-#include "scene/resources/navigation_mesh_source_geometry_data_3d.h"
 #include "servers/navigation/navigation_path_query_parameters_3d.h"
 #include "servers/navigation/navigation_path_query_result_3d.h"
 
@@ -168,6 +168,9 @@ public:
 	virtual Vector3 region_get_connection_pathway_start(RID p_region, int p_connection_id) const = 0;
 	virtual Vector3 region_get_connection_pathway_end(RID p_region, int p_connection_id) const = 0;
 
+	virtual Vector3 region_get_closest_point_to_segment(RID p_region, const Vector3 &p_from, const Vector3 &p_to, bool p_use_collision = false) const = 0;
+	virtual Vector3 region_get_closest_point(RID p_region, const Vector3 &p_point) const = 0;
+	virtual Vector3 region_get_closest_point_normal(RID p_region, const Vector3 &p_point) const = 0;
 	virtual Vector3 region_get_random_point(RID p_region, uint32_t p_navigation_layers, bool p_uniformly) const = 0;
 
 	/// Creates a new link between positions in the nav map.
@@ -344,10 +347,15 @@ public:
 
 	virtual NavigationUtilities::PathQueryResult _query_path(const NavigationUtilities::PathQueryParameters &p_parameters) const = 0;
 
+#ifndef _3D_DISABLED
 	virtual void parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable()) = 0;
 	virtual void bake_from_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) = 0;
 	virtual void bake_from_source_geometry_data_async(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) = 0;
 	virtual bool is_baking_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) const = 0;
+#endif // _3D_DISABLED
+
+	virtual RID source_geometry_parser_create() = 0;
+	virtual void source_geometry_parser_set_callback(RID p_parser, const Callable &p_callback) = 0;
 
 	virtual Vector<Vector3> simplify_path(const Vector<Vector3> &p_path, real_t p_epsilon) = 0;
 
@@ -364,6 +372,7 @@ public:
 		INFO_EDGE_MERGE_COUNT,
 		INFO_EDGE_CONNECTION_COUNT,
 		INFO_EDGE_FREE_COUNT,
+		INFO_OBSTACLE_COUNT,
 	};
 
 	virtual int get_process_info(ProcessInfo p_info) const = 0;

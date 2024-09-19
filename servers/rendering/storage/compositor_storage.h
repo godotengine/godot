@@ -37,6 +37,7 @@
 class RendererCompositorStorage {
 private:
 	static RendererCompositorStorage *singleton;
+	int num_compositor_effects_with_motion_vectors = 0;
 
 	// Compositor effect
 	struct CompositorEffect {
@@ -59,6 +60,7 @@ private:
 
 public:
 	static RendererCompositorStorage *get_singleton() { return singleton; }
+	int get_num_compositor_effects_with_motion_vectors() const { return num_compositor_effects_with_motion_vectors; }
 
 	RendererCompositorStorage();
 	virtual ~RendererCompositorStorage();

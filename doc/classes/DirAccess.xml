@@ -94,6 +94,16 @@
 				Static version of [method copy]. Supports only absolute paths.
 			</description>
 		</method>
+		<method name="create_link">
+			<return type="int" enum="Error" />
+			<param index="0" name="source" type="String" />
+			<param index="1" name="target" type="String" />
+			<description>
+				Creates symbolic link between files or folders.
+				[b]Note:[/b] On Windows, this method works only if the application is running with elevated privileges or Developer Mode is enabled.
+				[b]Note:[/b] This method is implemented on macOS, Linux, and Windows.
+			</description>
+		</method>
 		<method name="current_is_dir" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -212,6 +222,14 @@
 				[b]Note:[/b] This method is implemented on macOS, Linux (for EXT4 and F2FS filesystems only) and Windows. On other platforms, it always returns [code]true[/code].
 			</description>
 		</method>
+		<method name="is_link">
+			<return type="bool" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns [code]true[/code] if the file or directory is a symbolic link, directory junction, or other reparse point.
+				[b]Note:[/b] This method is implemented on macOS, Linux, and Windows.
+			</description>
+		</method>
 		<method name="list_dir_begin">
 			<return type="int" enum="Error" />
 			<description>
@@ -262,6 +280,14 @@
 			<description>
 				Creates a new [DirAccess] object and opens an existing directory of the filesystem. The [param path] argument can be within the project tree ([code]res://folder[/code]), the user directory ([code]user://folder[/code]) or an absolute path of the user filesystem (e.g. [code]/tmp/folder[/code] or [code]C:\tmp\folder[/code]).
 				Returns [code]null[/code] if opening the directory failed. You can use [method get_open_error] to check the error that occurred.
+			</description>
+		</method>
+		<method name="read_link">
+			<return type="String" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns target of the symbolic link.
+				[b]Note:[/b] This method is implemented on macOS, Linux, and Windows.
 			</description>
 		</method>
 		<method name="remove">

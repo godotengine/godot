@@ -180,7 +180,7 @@ def make_license_header(target, source, env):
             return line
 
         def next_tag(self):
-            if not ":" in self.current:
+            if ":" not in self.current:
                 return ("", [])
             tag, line = self.current.split(":", 1)
             lines = [line.strip()]
@@ -206,7 +206,7 @@ def make_license_header(target, source, env):
 
             if not tag or not reader.current:
                 # end of a paragraph start a new part
-                if "License" in part and not "Files" in part:
+                if "License" in part and "Files" not in part:
                     # no Files tag in this one, so assume standalone license
                     license_list.append(part["License"])
                 part = {}
@@ -298,13 +298,13 @@ def make_license_header(target, source, env):
         f.write("const int LICENSE_COUNT = " + str(len(license_list)) + ";\n")
 
         f.write("const char *const LICENSE_NAMES[] = {\n")
-        for l in license_list:
-            f.write('\t"' + escape_string(l[0]) + '",\n')
+        for license in license_list:
+            f.write('\t"' + escape_string(license[0]) + '",\n')
         f.write("};\n\n")
 
         f.write("const char *const LICENSE_BODIES[] = {\n\n")
-        for l in license_list:
-            for line in l[1:]:
+        for license in license_list:
+            for line in license[1:]:
                 if line == ".":
                     f.write('\t"\\n"\n')
                 else:

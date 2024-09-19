@@ -142,14 +142,17 @@ static void _digest_job_queue(void *p_job_queue, uint32_t p_index) {
 }
 
 void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
-	if (p_image->get_format() >= Image::FORMAT_BPTC_RGBA) {
+	uint64_t start_time = OS::get_singleton()->get_ticks_msec();
+
+	if (p_image->is_compressed()) {
 		return; //do not compress, already compressed
 	}
+
 	int w = p_image->get_width();
 	int h = p_image->get_height();
 
 	bool is_ldr = (p_image->get_format() <= Image::FORMAT_RGBA8);
-	bool is_hdr = (p_image->get_format() >= Image::FORMAT_RH) && (p_image->get_format() <= Image::FORMAT_RGBE9995);
+	bool is_hdr = (p_image->get_format() >= Image::FORMAT_RF) && (p_image->get_format() <= Image::FORMAT_RGBE9995);
 
 	if (!is_ldr && !is_hdr) {
 		return; // Not a usable source format
@@ -171,17 +174,7 @@ void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
 			p_image->convert(Image::FORMAT_RGBH);
 		}
 
-		const uint8_t *rb = p_image->get_data().ptr();
-
-		const uint16_t *source_data = reinterpret_cast<const uint16_t *>(&rb[0]);
-		int pixel_element_count = w * h * 3;
-		for (int i = 0; i < pixel_element_count; i++) {
-			if ((source_data[i] & 0x8000) != 0 && (source_data[i] & 0x7fff) != 0) {
-				is_signed = true;
-				break;
-			}
-		}
-
+		is_signed = p_image->detect_signed();
 		target_format = is_signed ? Image::FORMAT_BPTC_RGBF : Image::FORMAT_BPTC_RGBFU;
 	} else {
 		p_image->convert(Image::FORMAT_RGBA8); //still uses RGBA to convert
@@ -190,14 +183,14 @@ void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
 	const uint8_t *rb = p_image->get_data().ptr();
 
 	Vector<uint8_t> data;
-	int target_size = Image::get_image_data_size(w, h, target_format, p_image->has_mipmaps());
+	int64_t target_size = Image::get_image_data_size(w, h, target_format, p_image->has_mipmaps());
 	int mm_count = p_image->has_mipmaps() ? Image::get_image_required_mipmaps(w, h, target_format) : 0;
 	data.resize(target_size);
 	int shift = Image::get_format_pixel_rshift(target_format);
 
 	uint8_t *wb = data.ptrw();
 
-	int dst_ofs = 0;
+	int64_t dst_ofs = 0;
 
 	CVTTCompressionJobQueue job_queue;
 	job_queue.job_params.is_hdr = is_hdr;
@@ -219,7 +212,7 @@ void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
 		int bw = w % 4 != 0 ? w + (4 - w % 4) : w;
 		int bh = h % 4 != 0 ? h + (4 - h % 4) : h;
 
-		int src_ofs = p_image->get_mipmap_offset(i);
+		int64_t src_ofs = p_image->get_mipmap_offset(i);
 
 		const uint8_t *in_bytes = &rb[src_ofs];
 		uint8_t *out_bytes = &wb[dst_ofs];
@@ -250,6 +243,8 @@ void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
 	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 
 	p_image->set_data(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
+
+	print_verbose(vformat("CVTT: Encoding took %d ms.", OS::get_singleton()->get_ticks_msec() - start_time));
 }
 
 void image_decompress_cvtt(Image *p_image) {
@@ -279,7 +274,7 @@ void image_decompress_cvtt(Image *p_image) {
 	const uint8_t *rb = p_image->get_data().ptr();
 
 	Vector<uint8_t> data;
-	int target_size = Image::get_image_data_size(w, h, target_format, p_image->has_mipmaps());
+	int64_t target_size = Image::get_image_data_size(w, h, target_format, p_image->has_mipmaps());
 	int mm_count = p_image->get_mipmap_count();
 	data.resize(target_size);
 
@@ -287,10 +282,10 @@ void image_decompress_cvtt(Image *p_image) {
 
 	int bytes_per_pixel = is_hdr ? 6 : 4;
 
-	int dst_ofs = 0;
+	int64_t dst_ofs = 0;
 
 	for (int i = 0; i <= mm_count; i++) {
-		int src_ofs = p_image->get_mipmap_offset(i);
+		int64_t src_ofs = p_image->get_mipmap_offset(i);
 
 		const uint8_t *in_bytes = &rb[src_ofs];
 		uint8_t *out_bytes = &wb[dst_ofs];
@@ -302,8 +297,6 @@ void image_decompress_cvtt(Image *p_image) {
 			int y_end = y_start + 4;
 
 			for (int x_start = 0; x_start < w; x_start += 4 * cvtt::NumParallelBlocks) {
-				int x_end = x_start + 4 * cvtt::NumParallelBlocks;
-
 				uint8_t input_blocks[16 * cvtt::NumParallelBlocks];
 				memset(input_blocks, 0, sizeof(input_blocks));
 
@@ -314,6 +307,8 @@ void image_decompress_cvtt(Image *p_image) {
 
 				memcpy(input_blocks, in_bytes, 16 * num_real_blocks);
 				in_bytes += 16 * num_real_blocks;
+
+				int x_end = x_start + 4 * num_real_blocks;
 
 				if (is_hdr) {
 					if (is_signed) {

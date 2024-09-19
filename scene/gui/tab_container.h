@@ -155,8 +155,14 @@ public:
 	void set_tab_title(int p_tab, const String &p_title);
 	String get_tab_title(int p_tab) const;
 
+	void set_tab_tooltip(int p_tab, const String &p_tooltip);
+	String get_tab_tooltip(int p_tab) const;
+
 	void set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_tab_icon(int p_tab) const;
+
+	void set_tab_icon_max_width(int p_tab, int p_width);
+	int get_tab_icon_max_width(int p_tab) const;
 
 	void set_tab_disabled(int p_tab, bool p_disabled);
 	bool is_tab_disabled(int p_tab) const;

@@ -84,7 +84,7 @@ static Error _erase_recursive(DirAccess *da) {
 	String n = da->get_next();
 	while (!n.is_empty()) {
 		if (n != "." && n != "..") {
-			if (da->current_is_dir()) {
+			if (da->current_is_dir() && !da->is_link(n)) {
 				dirs.push_back(n);
 			} else {
 				files.push_back(n);
@@ -339,6 +339,8 @@ String DirAccess::get_full_path(const String &p_path, AccessType p_access) {
 }
 
 Error DirAccess::copy(const String &p_from, const String &p_to, int p_chmod_flags) {
+	ERR_FAIL_COND_V_MSG(p_from == p_to, ERR_INVALID_PARAMETER, "Source and destination path are equal.");
+
 	//printf("copy %s -> %s\n",p_from.ascii().get_data(),p_to.ascii().get_data());
 	Error err;
 	{
@@ -581,6 +583,10 @@ void DirAccess::_bind_methods() {
 	ClassDB::bind_static_method("DirAccess", D_METHOD("rename_absolute", "from", "to"), &DirAccess::rename_absolute);
 	ClassDB::bind_method(D_METHOD("remove", "path"), &DirAccess::remove);
 	ClassDB::bind_static_method("DirAccess", D_METHOD("remove_absolute", "path"), &DirAccess::remove_absolute);
+
+	ClassDB::bind_method(D_METHOD("is_link", "path"), &DirAccess::is_link);
+	ClassDB::bind_method(D_METHOD("read_link", "path"), &DirAccess::read_link);
+	ClassDB::bind_method(D_METHOD("create_link", "source", "target"), &DirAccess::create_link);
 
 	ClassDB::bind_method(D_METHOD("set_include_navigational", "enable"), &DirAccess::set_include_navigational);
 	ClassDB::bind_method(D_METHOD("get_include_navigational"), &DirAccess::get_include_navigational);

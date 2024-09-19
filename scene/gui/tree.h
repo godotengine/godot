@@ -60,6 +60,7 @@ private:
 		TreeCellMode mode = TreeItem::CELL_MODE_STRING;
 
 		Ref<Texture2D> icon;
+		Ref<Texture2D> icon_overlay;
 		Rect2i icon_region;
 		String text;
 		String xl_text;
@@ -108,7 +109,6 @@ private:
 			Ref<Texture2D> texture;
 			Color color = Color(1, 1, 1, 1);
 			String tooltip;
-			Rect2i rect;
 		};
 
 		Vector<Button> buttons;
@@ -137,6 +137,7 @@ private:
 	TreeItem *prev = nullptr; // previous in list
 	TreeItem *next = nullptr; // next in list
 	TreeItem *first_child = nullptr;
+	TreeItem *last_child = nullptr;
 
 	Vector<TreeItem *> children_cache;
 	bool is_root = false; // for tree root
@@ -177,6 +178,9 @@ private:
 			}
 			if (parent->first_child == this) {
 				parent->first_child = next;
+			}
+			if (parent->last_child == this) {
+				parent->last_child = prev;
 			}
 		}
 	}
@@ -253,6 +257,9 @@ public:
 
 	void set_icon(int p_column, const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_icon(int p_column) const;
+
+	void set_icon_overlay(int p_column, const Ref<Texture2D> &p_icon_overlay);
+	Ref<Texture2D> get_icon_overlay(int p_column) const;
 
 	void set_icon_region(int p_column, const Rect2 &p_icon_region);
 	Rect2 get_icon_region(int p_column) const;
@@ -480,6 +487,7 @@ private:
 
 	VBoxContainer *popup_editor_vb = nullptr;
 
+	bool popup_edit_commited = true;
 	Popup *popup_editor = nullptr;
 	LineEdit *line_editor = nullptr;
 	TextEdit *text_editor = nullptr;
@@ -646,6 +654,8 @@ private:
 
 	TreeItem *_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_column, int &h, int &section) const;
 
+	void _find_button_at_pos(const Point2 &p_pos, TreeItem *&r_item, int &r_column, int &r_index) const;
+
 	/*	float drag_speed;
 	float drag_accum;
 
@@ -696,6 +706,8 @@ public:
 
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 
+	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
+	virtual Variant get_drag_data(const Point2 &p_point) override;
 	TreeItem *get_item_at_position(const Point2 &p_pos) const;
 	int get_column_at_position(const Point2 &p_pos) const;
 	int get_drop_section_at_position(const Point2 &p_pos) const;

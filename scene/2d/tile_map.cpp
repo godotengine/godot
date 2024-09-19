@@ -31,7 +31,6 @@
 #include "tile_map.h"
 #include "tile_map.compat.inc"
 
-#include "core/core_string_names.h"
 #include "core/io/marshalls.h"
 #include "scene/gui/control.h"
 
@@ -54,7 +53,7 @@ void TileMap::_tile_set_changed() {
 }
 
 void TileMap::_emit_changed() {
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(CoreStringName(changed));
 }
 
 void TileMap::_set_tile_map_data_using_compatibility_format(int p_layer, TileMapDataFormat p_format, const Vector<int> &p_data) {
@@ -161,6 +160,10 @@ Vector<int> TileMap::_get_tile_map_data_using_compatibility_format(int p_layer) 
 	return tile_data;
 }
 
+void TileMap::_set_layer_tile_data(int p_layer, const PackedInt32Array &p_data) {
+	_set_tile_map_data_using_compatibility_format(p_layer, format, p_data);
+}
+
 void TileMap::_notification(int p_what) {
 	switch (p_what) {
 		case TileMap::NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
@@ -222,91 +225,6 @@ int TileMap::get_rendering_quadrant_size() const {
 	return rendering_quadrant_size;
 }
 
-void TileMap::draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame, Color p_modulation, const TileData *p_tile_data_override, real_t p_normalized_animation_offset) {
-	ERR_FAIL_COND(!p_tile_set.is_valid());
-	ERR_FAIL_COND(!p_tile_set->has_source(p_atlas_source_id));
-	ERR_FAIL_COND(!p_tile_set->get_source(p_atlas_source_id)->has_tile(p_atlas_coords));
-	ERR_FAIL_COND(!p_tile_set->get_source(p_atlas_source_id)->has_alternative_tile(p_atlas_coords, p_alternative_tile));
-	TileSetSource *source = *p_tile_set->get_source(p_atlas_source_id);
-	TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
-	if (atlas_source) {
-		// Check for the frame.
-		if (p_frame >= 0) {
-			ERR_FAIL_INDEX(p_frame, atlas_source->get_tile_animation_frames_count(p_atlas_coords));
-		}
-
-		// Get the texture.
-		Ref<Texture2D> tex = atlas_source->get_runtime_texture();
-		if (!tex.is_valid()) {
-			return;
-		}
-
-		// Check if we are in the texture, return otherwise.
-		Vector2i grid_size = atlas_source->get_atlas_grid_size();
-		if (p_atlas_coords.x >= grid_size.x || p_atlas_coords.y >= grid_size.y) {
-			return;
-		}
-
-		// Get tile data.
-		const TileData *tile_data = p_tile_data_override ? p_tile_data_override : atlas_source->get_tile_data(p_atlas_coords, p_alternative_tile);
-
-		// Get the tile modulation.
-		Color modulate = tile_data->get_modulate() * p_modulation;
-
-		// Compute the offset.
-		Vector2 tile_offset = tile_data->get_texture_origin();
-
-		// Get destination rect.
-		Rect2 dest_rect;
-		dest_rect.size = atlas_source->get_runtime_tile_texture_region(p_atlas_coords).size;
-		dest_rect.size.x += FP_ADJUST;
-		dest_rect.size.y += FP_ADJUST;
-
-		bool transpose = tile_data->get_transpose() ^ bool(p_alternative_tile & TileSetAtlasSource::TRANSFORM_TRANSPOSE);
-		if (transpose) {
-			dest_rect.position = (p_position - Vector2(dest_rect.size.y, dest_rect.size.x) / 2 - tile_offset);
-		} else {
-			dest_rect.position = (p_position - dest_rect.size / 2 - tile_offset);
-		}
-
-		if (tile_data->get_flip_h() ^ bool(p_alternative_tile & TileSetAtlasSource::TRANSFORM_FLIP_H)) {
-			dest_rect.size.x = -dest_rect.size.x;
-		}
-
-		if (tile_data->get_flip_v() ^ bool(p_alternative_tile & TileSetAtlasSource::TRANSFORM_FLIP_V)) {
-			dest_rect.size.y = -dest_rect.size.y;
-		}
-
-		// Draw the tile.
-		if (p_frame >= 0) {
-			Rect2i source_rect = atlas_source->get_runtime_tile_texture_region(p_atlas_coords, p_frame);
-			tex->draw_rect_region(p_canvas_item, dest_rect, source_rect, modulate, transpose, p_tile_set->is_uv_clipping());
-		} else if (atlas_source->get_tile_animation_frames_count(p_atlas_coords) == 1) {
-			Rect2i source_rect = atlas_source->get_runtime_tile_texture_region(p_atlas_coords, 0);
-			tex->draw_rect_region(p_canvas_item, dest_rect, source_rect, modulate, transpose, p_tile_set->is_uv_clipping());
-		} else {
-			real_t speed = atlas_source->get_tile_animation_speed(p_atlas_coords);
-			real_t animation_duration = atlas_source->get_tile_animation_total_duration(p_atlas_coords) / speed;
-			real_t animation_offset = p_normalized_animation_offset * animation_duration;
-			// Accumulate durations unaffected by the speed to avoid accumulating floating point division errors.
-			// Aka do `sum(duration[i]) / speed` instead of `sum(duration[i] / speed)`.
-			real_t time_unscaled = 0.0;
-			for (int frame = 0; frame < atlas_source->get_tile_animation_frames_count(p_atlas_coords); frame++) {
-				real_t frame_duration_unscaled = atlas_source->get_tile_animation_frame_duration(p_atlas_coords, frame);
-				real_t slice_start = time_unscaled / speed;
-				real_t slice_end = (time_unscaled + frame_duration_unscaled) / speed;
-				RenderingServer::get_singleton()->canvas_item_add_animation_slice(p_canvas_item, animation_duration, slice_start, slice_end, animation_offset);
-
-				Rect2i source_rect = atlas_source->get_runtime_tile_texture_region(p_atlas_coords, frame);
-				tex->draw_rect_region(p_canvas_item, dest_rect, source_rect, modulate, transpose, p_tile_set->is_uv_clipping());
-
-				time_unscaled += frame_duration_unscaled;
-			}
-			RenderingServer::get_singleton()->canvas_item_add_animation_slice(p_canvas_item, 1.0, 0.0, 1.0, 0.0);
-		}
-	}
-}
-
 void TileMap::set_tileset(const Ref<TileSet> &p_tileset) {
 	if (p_tileset == tile_set) {
 		return;
@@ -356,7 +274,7 @@ void TileMap::add_layer(int p_to_pos) {
 	for (uint32_t i = 0; i < layers.size(); i++) {
 		layers[i]->set_as_tile_map_internal_node(i);
 	}
-	new_layer->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &TileMap::_emit_changed));
+	new_layer->connect(CoreStringName(changed), callable_mp(this, &TileMap::_emit_changed));
 
 	notify_property_list_changed();
 
@@ -429,6 +347,7 @@ Color TileMap::get_layer_modulate(int p_layer) const {
 
 void TileMap::set_layer_y_sort_enabled(int p_layer, bool p_y_sort_enabled) {
 	TILEMAP_CALL_FOR_LAYER(p_layer, set_y_sort_enabled, p_y_sort_enabled);
+	update_configuration_warnings();
 }
 
 bool TileMap::is_layer_y_sort_enabled(int p_layer) const {
@@ -437,6 +356,7 @@ bool TileMap::is_layer_y_sort_enabled(int p_layer) const {
 
 void TileMap::set_layer_y_sort_origin(int p_layer, int p_y_sort_origin) {
 	TILEMAP_CALL_FOR_LAYER(p_layer, set_y_sort_origin, p_y_sort_origin);
+	update_configuration_warnings();
 }
 
 int TileMap::get_layer_y_sort_origin(int p_layer) const {
@@ -518,9 +438,6 @@ void TileMap::set_y_sort_enabled(bool p_enable) {
 		return;
 	}
 	Node2D::set_y_sort_enabled(p_enable);
-	for (TileMapLayer *layer : layers) {
-		layer->set_y_sort_enabled(p_enable);
-	}
 	_emit_changed();
 	update_configuration_warnings();
 }
@@ -613,6 +530,18 @@ TileData *TileMap::get_cell_tile_data(int p_layer, const Vector2i &p_coords, boo
 	} else {
 		TILEMAP_CALL_FOR_LAYER_V(p_layer, nullptr, get_cell_tile_data, p_coords);
 	}
+}
+
+bool TileMap::is_cell_flipped_h(int p_layer, const Vector2i &p_coords, bool p_use_proxies) const {
+	return get_cell_alternative_tile(p_layer, p_coords, p_use_proxies) & TileSetAtlasSource::TRANSFORM_FLIP_H;
+}
+
+bool TileMap::is_cell_flipped_v(int p_layer, const Vector2i &p_coords, bool p_use_proxies) const {
+	return get_cell_alternative_tile(p_layer, p_coords, p_use_proxies) & TileSetAtlasSource::TRANSFORM_FLIP_V;
+}
+
+bool TileMap::is_cell_transposed(int p_layer, const Vector2i &p_coords, bool p_use_proxies) const {
+	return get_cell_alternative_tile(p_layer, p_coords, p_use_proxies) & TileSetAtlasSource::TRANSFORM_TRANSPOSE;
 }
 
 Ref<TileMapPattern> TileMap::get_pattern(int p_layer, TypedArray<Vector2i> p_coords_array) {
@@ -741,41 +670,23 @@ Rect2 TileMap::_edit_get_rect() const {
 #endif
 
 bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
+	int index;
+	const String sname = p_name;
+
 	Vector<String> components = String(p_name).split("/", true, 2);
-	if (p_name == "format") {
+	if (sname == "format") {
 		if (p_value.get_type() == Variant::INT) {
 			format = (TileMapDataFormat)(p_value.operator int64_t()); // Set format used for loading.
 			return true;
 		}
 	}
 #ifndef DISABLE_DEPRECATED
-	else if (p_name == "tile_data") { // Kept for compatibility reasons.
-		if (p_value.is_array()) {
-			if (layers.size() == 0) {
-				TileMapLayer *new_layer = memnew(TileMapLayer);
-				add_child(new_layer, false, INTERNAL_MODE_FRONT);
-				new_layer->set_as_tile_map_internal_node(0);
-				new_layer->set_name("Layer0");
-				new_layer->set_tile_set(tile_set);
-				new_layer->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &TileMap::_emit_changed));
-				layers.push_back(new_layer);
-			}
-			_set_tile_map_data_using_compatibility_format(0, format, p_value);
-			_emit_changed();
-			return true;
-		}
-		return false;
-	} else if (p_name == "cell_quadrant_size") {
+	else if (sname == "cell_quadrant_size") {
 		set_rendering_quadrant_size(p_value);
 		return true;
 	}
 #endif // DISABLE_DEPRECATED
-	else if (components.size() == 2 && components[0].begins_with("layer_") && components[0].trim_prefix("layer_").is_valid_int()) {
-		int index = components[0].trim_prefix("layer_").to_int();
-		if (index < 0) {
-			return false;
-		}
-
+	else if (property_helper.is_property_valid(sname, &index)) {
 		if (index >= (int)layers.size()) {
 			while (index >= (int)layers.size()) {
 				TileMapLayer *new_layer = memnew(TileMapLayer);
@@ -783,7 +694,7 @@ bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 				new_layer->set_as_tile_map_internal_node(index);
 				new_layer->set_name(vformat("Layer%d", index));
 				new_layer->set_tile_set(tile_set);
-				new_layer->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &TileMap::_emit_changed));
+				new_layer->connect(CoreStringName(changed), callable_mp(this, &TileMap::_emit_changed));
 				layers.push_back(new_layer);
 			}
 
@@ -792,172 +703,38 @@ bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 			update_configuration_warnings();
 		}
 
-		if (components[1] == "name") {
-			set_layer_name(index, p_value);
+		if (property_helper.property_set_value(sname, p_value)) {
+			if (components[1] == "tile_data") {
+				_emit_changed();
+			}
 			return true;
-		} else if (components[1] == "enabled") {
-			set_layer_enabled(index, p_value);
-			return true;
-		} else if (components[1] == "modulate") {
-			set_layer_modulate(index, p_value);
-			return true;
-		} else if (components[1] == "y_sort_enabled") {
-			set_layer_y_sort_enabled(index, p_value);
-			return true;
-		} else if (components[1] == "y_sort_origin") {
-			set_layer_y_sort_origin(index, p_value);
-			return true;
-		} else if (components[1] == "z_index") {
-			set_layer_z_index(index, p_value);
-			return true;
-		} else if (components[1] == "navigation_enabled") {
-			set_layer_navigation_enabled(index, p_value);
-			return true;
-		} else if (components[1] == "tile_data") {
-			_set_tile_map_data_using_compatibility_format(index, format, p_value);
-			_emit_changed();
-			return true;
-		} else {
-			return false;
 		}
 	}
 	return false;
 }
 
 bool TileMap::_get(const StringName &p_name, Variant &r_ret) const {
+	const String sname = p_name;
+
 	Vector<String> components = String(p_name).split("/", true, 2);
 	if (p_name == "format") {
 		r_ret = TileMapDataFormat::TILE_MAP_DATA_FORMAT_MAX - 1; // When saving, always save highest format.
 		return true;
 	}
 #ifndef DISABLE_DEPRECATED
-	else if (p_name == "cell_quadrant_size") { // Kept for compatibility reasons.
+	else if (sname == "cell_quadrant_size") { // Kept for compatibility reasons.
 		r_ret = get_rendering_quadrant_size();
 		return true;
 	}
 #endif
-	else if (components.size() == 2 && components[0].begins_with("layer_") && components[0].trim_prefix("layer_").is_valid_int()) {
-		int index = components[0].trim_prefix("layer_").to_int();
-		if (index < 0 || index >= (int)layers.size()) {
-			return false;
-		}
-
-		if (components[1] == "name") {
-			r_ret = get_layer_name(index);
-			return true;
-		} else if (components[1] == "enabled") {
-			r_ret = is_layer_enabled(index);
-			return true;
-		} else if (components[1] == "modulate") {
-			r_ret = get_layer_modulate(index);
-			return true;
-		} else if (components[1] == "y_sort_enabled") {
-			r_ret = is_layer_y_sort_enabled(index);
-			return true;
-		} else if (components[1] == "y_sort_origin") {
-			r_ret = get_layer_y_sort_origin(index);
-			return true;
-		} else if (components[1] == "z_index") {
-			r_ret = get_layer_z_index(index);
-			return true;
-		} else if (components[1] == "navigation_enabled") {
-			r_ret = is_layer_navigation_enabled(index);
-			return true;
-		} else if (components[1] == "tile_data") {
-			r_ret = _get_tile_map_data_using_compatibility_format(index);
-			return true;
-		} else {
-			return false;
-		}
+	else {
+		return property_helper.property_get_value(sname, r_ret);
 	}
-	return false;
 }
 
 void TileMap::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::INT, "format", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
-	p_list->push_back(PropertyInfo(Variant::NIL, "Layers", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
-
-#define MAKE_LAYER_PROPERTY(m_type, m_name, m_hint)                                                                                                                                                      \
-	{                                                                                                                                                                                                    \
-		const String property_name = vformat("layer_%d/" m_name, i);                                                                                                                                     \
-		p_list->push_back(PropertyInfo(m_type, property_name, PROPERTY_HINT_NONE, m_hint, (get(property_name) == property_get_revert(property_name)) ? PROPERTY_USAGE_EDITOR : PROPERTY_USAGE_DEFAULT)); \
-	}
-
-	for (uint32_t i = 0; i < layers.size(); i++) {
-		MAKE_LAYER_PROPERTY(Variant::STRING, "name", "");
-		MAKE_LAYER_PROPERTY(Variant::BOOL, "enabled", "");
-		MAKE_LAYER_PROPERTY(Variant::COLOR, "modulate", "");
-		MAKE_LAYER_PROPERTY(Variant::BOOL, "y_sort_enabled", "");
-		MAKE_LAYER_PROPERTY(Variant::INT, "y_sort_origin", "suffix:px");
-		MAKE_LAYER_PROPERTY(Variant::INT, "z_index", "");
-		MAKE_LAYER_PROPERTY(Variant::BOOL, "navigation_enabled", "");
-		p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("layer_%d/tile_data", i), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
-	}
-
-#undef MAKE_LAYER_PROPERTY
-}
-
-bool TileMap::_property_can_revert(const StringName &p_name) const {
-	Vector<String> components = String(p_name).split("/", true, 2);
-	if (components.size() == 2 && components[0].begins_with("layer_")) {
-		int index = components[0].trim_prefix("layer_").to_int();
-		if (index <= 0 || index >= (int)layers.size()) {
-			return false;
-		}
-
-		if (components[1] == "name") {
-			return layers[index]->get_name() != default_layer->get_name();
-		} else if (components[1] == "enabled") {
-			return layers[index]->is_enabled() != default_layer->is_enabled();
-		} else if (components[1] == "modulate") {
-			return layers[index]->get_modulate() != default_layer->get_modulate();
-		} else if (components[1] == "y_sort_enabled") {
-			return layers[index]->is_y_sort_enabled() != default_layer->is_y_sort_enabled();
-		} else if (components[1] == "y_sort_origin") {
-			return layers[index]->get_y_sort_origin() != default_layer->get_y_sort_origin();
-		} else if (components[1] == "z_index") {
-			return layers[index]->get_z_index() != default_layer->get_z_index();
-		} else if (components[1] == "navigation_enabled") {
-			return layers[index]->is_navigation_enabled() != default_layer->is_navigation_enabled();
-		}
-	}
-
-	return false;
-}
-
-bool TileMap::_property_get_revert(const StringName &p_name, Variant &r_property) const {
-	Vector<String> components = String(p_name).split("/", true, 2);
-	if (components.size() == 2 && components[0].begins_with("layer_")) {
-		int index = components[0].trim_prefix("layer_").to_int();
-		if (index <= 0 || index >= (int)layers.size()) {
-			return false;
-		}
-
-		if (components[1] == "name") {
-			r_property = default_layer->get_name();
-			return true;
-		} else if (components[1] == "enabled") {
-			r_property = default_layer->is_enabled();
-			return true;
-		} else if (components[1] == "modulate") {
-			r_property = default_layer->get_modulate();
-			return true;
-		} else if (components[1] == "y_sort_enabled") {
-			r_property = default_layer->is_y_sort_enabled();
-			return true;
-		} else if (components[1] == "y_sort_origin") {
-			r_property = default_layer->get_y_sort_origin();
-			return true;
-		} else if (components[1] == "z_index") {
-			r_property = default_layer->get_z_index();
-			return true;
-		} else if (components[1] == "navigation_enabled") {
-			r_property = default_layer->is_navigation_enabled();
-			return true;
-		}
-	}
-
-	return false;
+	property_helper.get_property_list(p_list);
 }
 
 Vector2 TileMap::map_to_local(const Vector2i &p_pos) const {
@@ -1050,7 +827,9 @@ TypedArray<Vector2i> TileMap::get_surrounding_cells(const Vector2i &p_coords) {
 }
 
 PackedStringArray TileMap::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
+
+	warnings.push_back(RTR("The TileMap node is deprecated as it is superseded by the use of multiple TileMapLayer nodes.\nTo convert a TileMap to a set of TileMapLayer nodes, open the TileMap bottom panel with this node selected, click the toolbox icon in the top-right corner and choose \"Extract TileMap layers as individual TileMapLayer nodes\"."));
 
 	// Retrieve the set of Z index values with a Y-sorted layer.
 	RBSet<int> y_sorted_z_index;
@@ -1159,6 +938,10 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_cell_alternative_tile", "layer", "coords", "use_proxies"), &TileMap::get_cell_alternative_tile, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_cell_tile_data", "layer", "coords", "use_proxies"), &TileMap::get_cell_tile_data, DEFVAL(false));
 
+	ClassDB::bind_method(D_METHOD("is_cell_flipped_h", "layer", "coords", "use_proxies"), &TileMap::is_cell_flipped_h, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("is_cell_flipped_v", "layer", "coords", "use_proxies"), &TileMap::is_cell_flipped_v, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("is_cell_transposed", "layer", "coords", "use_proxies"), &TileMap::is_cell_transposed, DEFVAL(false));
+
 	ClassDB::bind_method(D_METHOD("get_coords_for_body_rid", "body"), &TileMap::get_coords_for_body_rid);
 	ClassDB::bind_method(D_METHOD("get_layer_for_body_rid", "body"), &TileMap::get_layer_for_body_rid);
 
@@ -1200,7 +983,7 @@ void TileMap::_bind_methods() {
 
 	ADD_PROPERTY_DEFAULT("format", TileMapDataFormat::TILE_MAP_DATA_FORMAT_1);
 
-	ADD_SIGNAL(MethodInfo(CoreStringNames::get_singleton()->changed));
+	ADD_SIGNAL(MethodInfo(CoreStringName(changed)));
 
 	BIND_ENUM_CONSTANT(VISIBILITY_MODE_DEFAULT);
 	BIND_ENUM_CONSTANT(VISIBILITY_MODE_FORCE_HIDE);
@@ -1213,13 +996,30 @@ TileMap::TileMap() {
 	new_layer->set_as_tile_map_internal_node(0);
 	new_layer->set_name("Layer0");
 	new_layer->set_tile_set(tile_set);
-	new_layer->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &TileMap::_emit_changed));
+	new_layer->connect(CoreStringName(changed), callable_mp(this, &TileMap::_emit_changed));
 	layers.push_back(new_layer);
-	default_layer = memnew(TileMapLayer);
-}
 
-TileMap::~TileMap() {
-	memdelete(default_layer);
+	if (!base_property_helper.is_initialized()) {
+		// Initialize static PropertyListHelper if it wasn't yet. This has to be done here,
+		// because creating TileMapLayer in a static context is not always safe.
+		TileMapLayer *defaults = memnew(TileMapLayer);
+
+		base_property_helper.set_prefix("layer_");
+		base_property_helper.set_array_length_getter(&TileMap::get_layers_count);
+		base_property_helper.register_property(PropertyInfo(Variant::STRING, "name"), defaults->get_name(), &TileMap::set_layer_name, &TileMap::get_layer_name);
+		base_property_helper.register_property(PropertyInfo(Variant::BOOL, "enabled"), defaults->is_enabled(), &TileMap::set_layer_enabled, &TileMap::is_layer_enabled);
+		base_property_helper.register_property(PropertyInfo(Variant::COLOR, "modulate"), defaults->get_modulate(), &TileMap::set_layer_modulate, &TileMap::get_layer_modulate);
+		base_property_helper.register_property(PropertyInfo(Variant::BOOL, "y_sort_enabled"), defaults->is_y_sort_enabled(), &TileMap::set_layer_y_sort_enabled, &TileMap::is_layer_y_sort_enabled);
+		base_property_helper.register_property(PropertyInfo(Variant::INT, "y_sort_origin", PROPERTY_HINT_NONE, "suffix:px"), defaults->get_y_sort_origin(), &TileMap::set_layer_y_sort_origin, &TileMap::get_layer_y_sort_origin);
+		base_property_helper.register_property(PropertyInfo(Variant::INT, "z_index"), defaults->get_z_index(), &TileMap::set_layer_z_index, &TileMap::get_layer_z_index);
+		base_property_helper.register_property(PropertyInfo(Variant::BOOL, "navigation_enabled"), defaults->is_navigation_enabled(), &TileMap::set_layer_navigation_enabled, &TileMap::is_layer_navigation_enabled);
+		base_property_helper.register_property(PropertyInfo(Variant::PACKED_INT32_ARRAY, "tile_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), Vector<int>(), &TileMap::_set_layer_tile_data, &TileMap::_get_tile_map_data_using_compatibility_format);
+		PropertyListHelper::register_base_helper(&base_property_helper);
+
+		memdelete(defaults);
+	}
+
+	property_helper.setup_for_instance(base_property_helper, this);
 }
 
 #undef TILEMAP_CALL_FOR_LAYER

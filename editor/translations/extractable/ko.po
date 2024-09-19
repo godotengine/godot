@@ -18,15 +18,14 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 5.5-dev\n"
 
-msgid "Example: %s"
-msgstr "예: %s"
-
-msgid "%d item"
-msgid_plural "%d items"
-msgstr[0] "%d개 항목"
-
 msgid "New Code Region"
 msgstr "새 코드 구역"
+
+msgid "Pick a color from the screen."
+msgstr "화면에서 색상을 고르세요."
+
+msgid "Pick a color from the application window."
+msgstr "프로그램 창에서 색상을 고르세요."
 
 msgid ""
 "Color: #%s\n"
@@ -46,12 +45,6 @@ msgstr ""
 
 msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
 msgstr "헥스 코드(\"#ff0000\") 또는 영어 색상 이름(\"red\")을 넣어 주세요."
-
-msgid "Pick a color from the screen."
-msgstr "화면에서 색상을 고르세요."
-
-msgid "Pick a color from the application window."
-msgstr "프로그램 창에서 색상을 고르세요."
 
 msgid "Select a picker shape."
 msgstr "피커 모양을 고르세요."

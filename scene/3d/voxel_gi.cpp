@@ -31,7 +31,6 @@
 #include "voxel_gi.h"
 
 #include "core/config/project_settings.h"
-#include "core/core_string_names.h"
 #include "mesh_instance_3d.h"
 #include "multimesh_instance_3d.h"
 #include "scene/resources/camera_attributes.h"
@@ -294,7 +293,7 @@ VoxelGI::Subdiv VoxelGI::get_subdiv() const {
 
 void VoxelGI::set_size(const Vector3 &p_size) {
 	// Prevent very small size dimensions as these breaks baking if other size dimensions are set very high.
-	size = p_size.max(Vector3(1.0, 1.0, 1.0));
+	size = p_size.maxf(1.0);
 	update_gizmos();
 }
 
@@ -519,7 +518,7 @@ AABB VoxelGI::get_aabb() const {
 }
 
 PackedStringArray VoxelGI::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
 
 	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
 		warnings.push_back(RTR("VoxelGI nodes are not supported when using the GL Compatibility backend yet. Support will be added in a future release."));

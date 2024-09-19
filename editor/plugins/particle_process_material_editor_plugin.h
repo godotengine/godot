@@ -31,8 +31,8 @@
 #ifndef PARTICLE_PROCESS_MATERIAL_EDITOR_PLUGIN_H
 #define PARTICLE_PROCESS_MATERIAL_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
 #include "editor/editor_properties.h"
+#include "editor/plugins/editor_plugin.h"
 
 class Button;
 class EditorSpinSlider;

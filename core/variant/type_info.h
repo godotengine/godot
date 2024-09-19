@@ -33,31 +33,7 @@
 
 #include "core/typedefs.h"
 
-template <bool C, typename T = void>
-struct EnableIf {
-	typedef T type;
-};
-
-template <typename T>
-struct EnableIf<false, T> {
-};
-
-template <typename, typename>
-inline constexpr bool types_are_same_v = false;
-
-template <typename T>
-inline constexpr bool types_are_same_v<T, T> = true;
-
-template <typename B, typename D>
-struct TypeInherits {
-	static D *get_d();
-
-	static char (&test(B *))[1];
-	static char (&test(...))[2];
-
-	static bool const value = sizeof(test(get_d())) == sizeof(char) &&
-			!types_are_same_v<B volatile const, void volatile const>;
-};
+#include <type_traits>
 
 namespace GodotTypeInfo {
 enum Metadata {
@@ -71,7 +47,9 @@ enum Metadata {
 	METADATA_INT_IS_UINT32,
 	METADATA_INT_IS_UINT64,
 	METADATA_REAL_IS_FLOAT,
-	METADATA_REAL_IS_DOUBLE
+	METADATA_REAL_IS_DOUBLE,
+	METADATA_INT_IS_CHAR16,
+	METADATA_INT_IS_CHAR32,
 };
 }
 
@@ -128,8 +106,8 @@ MAKE_TYPE_INFO_WITH_META(uint32_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_
 MAKE_TYPE_INFO_WITH_META(int32_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_INT32)
 MAKE_TYPE_INFO_WITH_META(uint64_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_UINT64)
 MAKE_TYPE_INFO_WITH_META(int64_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_INT64)
-MAKE_TYPE_INFO(char16_t, Variant::INT)
-MAKE_TYPE_INFO(char32_t, Variant::INT)
+MAKE_TYPE_INFO_WITH_META(char16_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_CHAR16)
+MAKE_TYPE_INFO_WITH_META(char32_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_CHAR32)
 MAKE_TYPE_INFO_WITH_META(float, Variant::FLOAT, GodotTypeInfo::METADATA_REAL_IS_FLOAT)
 MAKE_TYPE_INFO_WITH_META(double, Variant::FLOAT, GodotTypeInfo::METADATA_REAL_IS_DOUBLE)
 
@@ -166,6 +144,7 @@ MAKE_TYPE_INFO(PackedStringArray, Variant::PACKED_STRING_ARRAY)
 MAKE_TYPE_INFO(PackedVector2Array, Variant::PACKED_VECTOR2_ARRAY)
 MAKE_TYPE_INFO(PackedVector3Array, Variant::PACKED_VECTOR3_ARRAY)
 MAKE_TYPE_INFO(PackedColorArray, Variant::PACKED_COLOR_ARRAY)
+MAKE_TYPE_INFO(PackedVector4Array, Variant::PACKED_VECTOR4_ARRAY)
 
 MAKE_TYPE_INFO(IPAddress, Variant::STRING)
 
@@ -223,16 +202,7 @@ MAKE_TEMPLATE_TYPE_INFO(Vector, Face3, Variant::PACKED_VECTOR3_ARRAY)
 MAKE_TEMPLATE_TYPE_INFO(Vector, StringName, Variant::PACKED_STRING_ARRAY)
 
 template <typename T>
-struct GetTypeInfo<T *, typename EnableIf<TypeInherits<Object, T>::value>::type> {
-	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
-	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
-	static inline PropertyInfo get_class_info() {
-		return PropertyInfo(StringName(T::get_class_static()));
-	}
-};
-
-template <typename T>
-struct GetTypeInfo<const T *, typename EnableIf<TypeInherits<Object, T>::value>::type> {
+struct GetTypeInfo<T *, std::enable_if_t<std::is_base_of_v<Object, T>>> {
 	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
 	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
 	static inline PropertyInfo get_class_info() {

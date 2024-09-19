@@ -108,6 +108,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="_debug_get_stack_level_source" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="level" type="int" />
+			<description>
+				Returns the source associated with a given debug stack position.
+			</description>
+		</method>
 		<method name="_debug_parse_stack_level_expression" qualifiers="virtual">
 			<return type="String" />
 			<param index="0" name="level" type="int" />
@@ -304,6 +311,13 @@
 		</method>
 		<method name="_reload_all_scripts" qualifiers="virtual">
 			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="_reload_scripts" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="scripts" type="Array" />
+			<param index="1" name="soft_reload" type="bool" />
 			<description>
 			</description>
 		</method>

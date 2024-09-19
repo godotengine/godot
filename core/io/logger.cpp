@@ -37,6 +37,8 @@
 #include "core/os/time.h"
 #include "core/string/print_string.h"
 
+#include "modules/modules_enabled.gen.h" // For regex.
+
 #if defined(MINGW_ENABLED) || defined(_MSC_VER)
 #define sprintf sprintf_s
 #endif
@@ -82,11 +84,7 @@ void Logger::log_error(const char *p_function, const char *p_file, int p_line, c
 		err_details = p_code;
 	}
 
-	if (p_editor_notify) {
-		logf_error("%s: %s\n", err_type, err_details);
-	} else {
-		logf_error("USER %s: %s\n", err_type, err_details);
-	}
+	logf_error("%s: %s\n", err_type, err_details);
 	logf_error("   at: %s (%s:%i)\n", p_function, p_file, p_line);
 }
 
@@ -180,6 +178,12 @@ RotatedFileLogger::RotatedFileLogger(const String &p_base_path, int p_max_files)
 		base_path(p_base_path.simplify_path()),
 		max_files(p_max_files > 0 ? p_max_files : 1) {
 	rotate_file();
+
+#ifdef MODULE_REGEX_ENABLED
+	strip_ansi_regex.instantiate();
+	strip_ansi_regex->detach_from_objectdb(); // Note: This RegEx instance will exist longer than ObjectDB, therefore can't be registered in ObjectDB.
+	strip_ansi_regex->compile("\u001b\\[((?:\\d|;)*)([a-zA-Z])");
+#endif // MODULE_REGEX_ENABLED
 }
 
 void RotatedFileLogger::logv(const char *p_format, va_list p_list, bool p_err) {
@@ -199,7 +203,15 @@ void RotatedFileLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 			vsnprintf(buf, len + 1, p_format, list_copy);
 		}
 		va_end(list_copy);
+
+#ifdef MODULE_REGEX_ENABLED
+		// Strip ANSI escape codes (such as those inserted by `print_rich()`)
+		// before writing to file, as text editors cannot display those
+		// correctly.
+		file->store_string(strip_ansi_regex->sub(String::utf8(buf), "", true));
+#else
 		file->store_buffer((uint8_t *)buf, len);
+#endif // MODULE_REGEX_ENABLED
 
 		if (len >= static_buf_size) {
 			Memory::free_static(buf);

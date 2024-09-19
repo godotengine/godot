@@ -34,7 +34,6 @@
 #include "animation_blend_tree.h"
 #include "core/config/engine.h"
 #include "scene/animation/animation_player.h"
-#include "scene/scene_string_names.h"
 
 void AnimationNode::get_parameter_list(List<PropertyInfo> *r_list) const {
 	Array parameters;
@@ -47,9 +46,9 @@ void AnimationNode::get_parameter_list(List<PropertyInfo> *r_list) const {
 		}
 	}
 
-	r_list->push_back(PropertyInfo(Variant::FLOAT, current_length, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_READ_ONLY));
-	r_list->push_back(PropertyInfo(Variant::FLOAT, current_position, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_READ_ONLY));
-	r_list->push_back(PropertyInfo(Variant::FLOAT, current_delta, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_READ_ONLY));
+	r_list->push_back(PropertyInfo(Variant::FLOAT, current_length, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY));
+	r_list->push_back(PropertyInfo(Variant::FLOAT, current_position, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY));
+	r_list->push_back(PropertyInfo(Variant::FLOAT, current_delta, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY));
 }
 
 Variant AnimationNode::get_parameter_default_value(const StringName &p_parameter) const {
@@ -204,10 +203,11 @@ AnimationNode::NodeTimeInfo AnimationNode::_blend_node(Ref<AnimationNode> p_node
 		}
 
 		for (const KeyValue<NodePath, bool> &E : filter) {
-			if (!process_state->track_map.has(E.key)) {
+			const HashMap<NodePath, int> &map = *process_state->track_map;
+			if (!map.has(E.key)) {
 				continue;
 			}
-			int idx = process_state->track_map[E.key];
+			int idx = map[E.key];
 			blendw[idx] = 1.0; // Filtered goes to one.
 		}
 
@@ -619,7 +619,7 @@ bool AnimationTree::_blend_pre_process(double p_delta, int p_track_count, const 
 		process_state.valid = true;
 		process_state.invalid_reasons = "";
 		process_state.last_pass = process_pass;
-		process_state.track_map = p_track_map;
+		process_state.track_map = &p_track_map;
 
 		// Init node state for root AnimationNode.
 		root_animation_node->node_state.track_weights.resize(p_track_count);
@@ -627,7 +627,7 @@ bool AnimationTree::_blend_pre_process(double p_delta, int p_track_count, const 
 		for (int i = 0; i < p_track_count; i++) {
 			src_blendsw[i] = 1.0; // By default all go to 1 for the root input.
 		}
-		root_animation_node->node_state.base_path = SceneStringNames::get_singleton()->parameters_base_path;
+		root_animation_node->node_state.base_path = SNAME(Animation::PARAMETERS_BASE_PATH.ascii().get_data());
 		root_animation_node->node_state.parent = nullptr;
 	}
 
@@ -681,7 +681,7 @@ uint64_t AnimationTree::get_last_process_pass() const {
 }
 
 PackedStringArray AnimationTree::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = AnimationMixer::get_configuration_warnings();
 	if (!root_animation_node.is_valid()) {
 		warnings.push_back(RTR("No root AnimationNode for the graph is set."));
 	}
@@ -788,7 +788,7 @@ void AnimationTree::_update_properties() {
 	input_activity_map_get.clear();
 
 	if (root_animation_node.is_valid()) {
-		_update_properties_for_node(SceneStringNames::get_singleton()->parameters_base_path, root_animation_node);
+		_update_properties_for_node(Animation::PARAMETERS_BASE_PATH, root_animation_node);
 	}
 
 	properties_dirty = false;
@@ -810,7 +810,7 @@ void AnimationTree::_notification(int p_what) {
 void AnimationTree::set_animation_player(const NodePath &p_path) {
 	animation_player = p_path;
 	if (p_path.is_empty()) {
-		set_root_node(SceneStringNames::get_singleton()->path_pp);
+		set_root_node(SceneStringName(path_pp));
 		while (animation_libraries.size()) {
 			remove_animation_library(animation_libraries[0].name);
 		}
@@ -854,10 +854,10 @@ void AnimationTree::_setup_animation_player() {
 		}
 		List<StringName> list;
 		player->get_animation_library_list(&list);
-		for (int i = 0; i < list.size(); i++) {
-			Ref<AnimationLibrary> lib = player->get_animation_library(list[i]);
+		for (const StringName &E : list) {
+			Ref<AnimationLibrary> lib = player->get_animation_library(E);
 			if (lib.is_valid()) {
-				add_animation_library(list[i], lib);
+				add_animation_library(E, lib);
 			}
 		}
 	}

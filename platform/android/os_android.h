@@ -91,6 +91,11 @@ public:
 	static const int DEFAULT_WINDOW_WIDTH = 800;
 	static const int DEFAULT_WINDOW_HEIGHT = 600;
 
+#ifdef TOOLS_ENABLED
+	Error sign_apk(const String &p_input_path, const String &p_output_path, const String &p_keystore_path, const String &p_keystore_user, const String &p_keystore_password);
+	Error verify_apk(const String &p_apk_path);
+#endif
+
 	virtual void initialize_core() override;
 	virtual void initialize() override;
 
@@ -113,7 +118,7 @@ public:
 
 	virtual void alert(const String &p_alert, const String &p_title) override;
 
-	virtual Error open_dynamic_library(const String &p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr, bool p_generate_temp_files = false) override;
+	virtual Error open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data = nullptr) override;
 
 	virtual String get_name() const override;
 	virtual String get_distribution_name() const override;
@@ -153,7 +158,7 @@ public:
 
 	virtual Error move_to_trash(const String &p_path) override;
 
-	void vibrate_handheld(int p_duration_ms) override;
+	void vibrate_handheld(int p_duration_ms, float p_amplitude = -1.0) override;
 
 	virtual String get_config_path() const override;
 
@@ -178,6 +183,8 @@ public:
 private:
 	// Location where we relocate external dynamic libraries to make them accessible.
 	String get_dynamic_libraries_path() const;
+	// Copy a dynamic library to the given location to make it accessible for loading.
+	bool copy_dynamic_library(const String &p_library_path, const String &p_target_dir, String *r_copy_path = nullptr);
 };
 
 #endif // OS_ANDROID_H

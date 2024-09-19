@@ -49,7 +49,6 @@ protected:
 	void _update();
 	virtual void _update_arrays(PackedVector3Array &r_vertices, PackedInt32Array &r_indices) = 0;
 
-	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
@@ -161,7 +160,7 @@ public:
 };
 
 class OccluderInstance3D : public VisualInstance3D {
-	GDCLASS(OccluderInstance3D, Node3D);
+	GDCLASS(OccluderInstance3D, VisualInstance3D);
 
 private:
 	Ref<Occluder3D> occluder;

@@ -32,9 +32,9 @@
 #define EDITOR_EXPORT_PLUGIN_H
 
 #include "core/extension/gdextension.h"
+#include "core/os/shared_object.h"
 #include "editor_export_platform.h"
 #include "editor_export_preset.h"
-#include "editor_export_shared_object.h"
 #include "scene/main/node.h"
 
 class EditorExportPlugin : public RefCounted {
@@ -91,9 +91,11 @@ class EditorExportPlugin : public RefCounted {
 protected:
 	void set_export_preset(const Ref<EditorExportPreset> &p_preset);
 	Ref<EditorExportPreset> get_export_preset() const;
+	Ref<EditorExportPlatform> get_export_platform() const;
 
 	void add_file(const String &p_path, const Vector<uint8_t> &p_file, bool p_remap);
 	void add_shared_object(const String &p_path, const Vector<String> &tags, const String &p_target = String());
+	void _add_shared_object(const SharedObject &p_shared_object);
 
 	void add_ios_framework(const String &p_path);
 	void add_ios_embedded_framework(const String &p_path);
@@ -164,6 +166,7 @@ public:
 	virtual String get_name() const;
 
 	virtual bool supports_platform(const Ref<EditorExportPlatform> &p_export_platform) const;
+	PackedStringArray get_export_features(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;
 
 	virtual PackedStringArray get_android_dependencies(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;
 	virtual PackedStringArray get_android_dependencies_maven_repos(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;
@@ -181,8 +184,6 @@ public:
 	String get_ios_cpp_code() const;
 	const Vector<String> &get_macos_plugin_files() const;
 	Variant get_option(const StringName &p_name) const;
-
-	EditorExportPlugin();
 };
 
 #endif // EDITOR_EXPORT_PLUGIN_H

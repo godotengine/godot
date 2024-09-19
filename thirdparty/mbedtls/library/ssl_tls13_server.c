@@ -92,8 +92,9 @@ static void ssl_tls13_select_ciphersuite(
         return;
     }
 
-    MBEDTLS_SSL_DEBUG_MSG(2, ("No matched ciphersuite, psk_ciphersuite_id=%x, psk_hash_alg=%x",
-                              (unsigned) psk_ciphersuite_id, psk_hash_alg));
+    MBEDTLS_SSL_DEBUG_MSG(2, ("No matched ciphersuite, psk_ciphersuite_id=%x, psk_hash_alg=%lx",
+                              (unsigned) psk_ciphersuite_id,
+                              (unsigned long) psk_hash_alg));
 }
 
 #if defined(MBEDTLS_SSL_TLS1_3_KEY_EXCHANGE_MODE_SOME_PSK_ENABLED)
@@ -172,12 +173,12 @@ static int ssl_tls13_parse_key_exchange_modes_ext(mbedtls_ssl_context *ssl,
 #define SSL_TLS1_3_PSK_IDENTITY_MATCH_BUT_PSK_NOT_USABLE 1
 #define SSL_TLS1_3_PSK_IDENTITY_MATCH 0
 
-#if defined(MBEDTLS_SSL_SESSION_TICKETS)
 MBEDTLS_CHECK_RETURN_CRITICAL
 static int ssl_tls13_key_exchange_is_psk_available(mbedtls_ssl_context *ssl);
 MBEDTLS_CHECK_RETURN_CRITICAL
 static int ssl_tls13_key_exchange_is_psk_ephemeral_available(mbedtls_ssl_context *ssl);
 
+#if defined(MBEDTLS_SSL_SESSION_TICKETS)
 MBEDTLS_CHECK_RETURN_CRITICAL
 static int ssl_tls13_offered_psks_check_identity_match_ticket(
     mbedtls_ssl_context *ssl,
@@ -575,10 +576,8 @@ static int ssl_tls13_parse_pre_shared_key_ext(
         psa_algorithm_t psk_hash_alg;
         int allowed_key_exchange_modes;
 
-#if defined(MBEDTLS_SSL_SESSION_TICKETS)
         mbedtls_ssl_session session;
         mbedtls_ssl_session_init(&session);
-#endif
 
         MBEDTLS_SSL_CHK_BUF_READ_PTR(p_identity_len, identities_end, 2 + 1 + 4);
         identity_len = MBEDTLS_GET_UINT16_BE(p_identity_len, 0);
@@ -1356,19 +1355,23 @@ static int ssl_tls13_parse_client_hello(mbedtls_ssl_context *ssl,
      * compression methods and the length of the extensions.
      *
      * cipher_suites                cipher_suites_len bytes
-     * legacy_compression_methods                   2 bytes
-     * extensions_len                               2 bytes
+     * legacy_compression_methods length            1 byte
      */
-    MBEDTLS_SSL_CHK_BUF_READ_PTR(p, end, cipher_suites_len + 2 + 2);
+    MBEDTLS_SSL_CHK_BUF_READ_PTR(p, end, cipher_suites_len + 1);
     p += cipher_suites_len;
     cipher_suites_end = p;
+
+    /* Check if we have enough data for legacy_compression_methods
+     * and the length of the extensions (2 bytes).
+     */
+    MBEDTLS_SSL_CHK_BUF_READ_PTR(p + 1, end, p[0] + 2);
 
     /*
      * Search for the supported versions extension and parse it to determine
      * if the client supports TLS 1.3.
      */
     ret = mbedtls_ssl_tls13_is_supported_versions_ext_present_in_exts(
-        ssl, p + 2, end,
+        ssl, p + 1 + p[0], end,
         &supported_versions_data, &supported_versions_data_end);
     if (ret < 0) {
         MBEDTLS_SSL_DEBUG_RET(1,
@@ -1408,6 +1411,12 @@ static int ssl_tls13_parse_client_hello(mbedtls_ssl_context *ssl,
     ssl->tls_version = MBEDTLS_SSL_VERSION_TLS1_3;
     ssl->session_negotiate->tls_version = MBEDTLS_SSL_VERSION_TLS1_3;
     ssl->session_negotiate->endpoint = ssl->conf->endpoint;
+
+    /* Before doing any crypto, make sure we can. */
+    ret = mbedtls_ssl_tls13_crypto_init(ssl);
+    if (ret != 0) {
+        return ret;
+    }
 
     /*
      * We are negotiating the version 1.3 of the protocol. Do what we have
@@ -3109,6 +3118,7 @@ static int ssl_tls13_handshake_wrapup(mbedtls_ssl_context *ssl)
     return 0;
 }
 
+#if defined(MBEDTLS_SSL_SESSION_TICKETS)
 /*
  * Handler for MBEDTLS_SSL_TLS1_3_NEW_SESSION_TICKET
  */
@@ -3138,7 +3148,6 @@ static int ssl_tls13_write_new_session_ticket_coordinate(mbedtls_ssl_context *ss
     return SSL_NEW_SESSION_TICKET_WRITE;
 }
 
-#if defined(MBEDTLS_SSL_SESSION_TICKETS)
 MBEDTLS_CHECK_RETURN_CRITICAL
 static int ssl_tls13_prepare_new_session_ticket(mbedtls_ssl_context *ssl,
                                                 unsigned char *ticket_nonce,

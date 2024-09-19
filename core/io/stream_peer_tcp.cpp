@@ -51,6 +51,7 @@ Error StreamPeerTCP::poll() {
 			status = STATUS_ERROR;
 			return err;
 		}
+		return OK;
 	} else if (status != STATUS_CONNECTING) {
 		return OK;
 	}

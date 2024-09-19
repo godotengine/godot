@@ -57,7 +57,7 @@ public:
 		BUILD_OPTION_TEXT_SERVER_ADVANCED,
 		BUILD_OPTION_DYNAMIC_FONTS,
 		BUILD_OPTION_WOFF2_FONTS,
-		BUILD_OPTION_GRPAHITE_FONTS,
+		BUILD_OPTION_GRAPHITE_FONTS,
 		BUILD_OPTION_MSDFGEN,
 		BUILD_OPTION_MAX,
 	};
@@ -150,6 +150,7 @@ class EditorBuildProfileManager : public AcceptDialog {
 
 	void _profile_action(int p_action);
 	void _action_confirm();
+	void _hide_requested();
 
 	void _update_edited_profile();
 	void _fill_classes_from(TreeItem *p_parent, const String &p_class, const String &p_selected);

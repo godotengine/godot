@@ -358,15 +358,17 @@ static WEBP_INLINE float GetCombinedEntropy(const uint32_t* const X,
 
 // Estimates the Entropy + Huffman + other block overhead size cost.
 float VP8LHistogramEstimateBits(VP8LHistogram* const p) {
-  return
-      PopulationCost(p->literal_, VP8LHistogramNumCodes(p->palette_code_bits_),
-                     NULL, &p->is_used_[0])
-      + PopulationCost(p->red_, NUM_LITERAL_CODES, NULL, &p->is_used_[1])
-      + PopulationCost(p->blue_, NUM_LITERAL_CODES, NULL, &p->is_used_[2])
-      + PopulationCost(p->alpha_, NUM_LITERAL_CODES, NULL, &p->is_used_[3])
-      + PopulationCost(p->distance_, NUM_DISTANCE_CODES, NULL, &p->is_used_[4])
-      + VP8LExtraCost(p->literal_ + NUM_LITERAL_CODES, NUM_LENGTH_CODES)
-      + VP8LExtraCost(p->distance_, NUM_DISTANCE_CODES);
+  return PopulationCost(p->literal_,
+                        VP8LHistogramNumCodes(p->palette_code_bits_), NULL,
+                        &p->is_used_[0]) +
+         PopulationCost(p->red_, NUM_LITERAL_CODES, NULL, &p->is_used_[1]) +
+         PopulationCost(p->blue_, NUM_LITERAL_CODES, NULL, &p->is_used_[2]) +
+         PopulationCost(p->alpha_, NUM_LITERAL_CODES, NULL, &p->is_used_[3]) +
+         PopulationCost(p->distance_, NUM_DISTANCE_CODES, NULL,
+                        &p->is_used_[4]) +
+         (float)VP8LExtraCost(p->literal_ + NUM_LITERAL_CODES,
+                              NUM_LENGTH_CODES) +
+         (float)VP8LExtraCost(p->distance_, NUM_DISTANCE_CODES);
 }
 
 // -----------------------------------------------------------------------------
@@ -381,9 +383,9 @@ static int GetCombinedHistogramEntropy(const VP8LHistogram* const a,
   *cost += GetCombinedEntropy(a->literal_, b->literal_,
                               VP8LHistogramNumCodes(palette_code_bits),
                               a->is_used_[0], b->is_used_[0], 0);
-  *cost += VP8LExtraCostCombined(a->literal_ + NUM_LITERAL_CODES,
-                                 b->literal_ + NUM_LITERAL_CODES,
-                                 NUM_LENGTH_CODES);
+  *cost += (float)VP8LExtraCostCombined(a->literal_ + NUM_LITERAL_CODES,
+                                        b->literal_ + NUM_LITERAL_CODES,
+                                        NUM_LENGTH_CODES);
   if (*cost > cost_threshold) return 0;
 
   if (a->trivial_symbol_ != VP8L_NON_TRIVIAL_SYM &&
@@ -417,8 +419,8 @@ static int GetCombinedHistogramEntropy(const VP8LHistogram* const a,
   *cost +=
       GetCombinedEntropy(a->distance_, b->distance_, NUM_DISTANCE_CODES,
                          a->is_used_[4], b->is_used_[4], 0);
-  *cost +=
-      VP8LExtraCostCombined(a->distance_, b->distance_, NUM_DISTANCE_CODES);
+  *cost += (float)VP8LExtraCostCombined(a->distance_, b->distance_,
+                                        NUM_DISTANCE_CODES);
   if (*cost > cost_threshold) return 0;
 
   return 1;
@@ -506,11 +508,11 @@ static void UpdateHistogramCost(VP8LHistogram* const h) {
       PopulationCost(h->alpha_, NUM_LITERAL_CODES, &alpha_sym, &h->is_used_[3]);
   const float distance_cost =
       PopulationCost(h->distance_, NUM_DISTANCE_CODES, NULL, &h->is_used_[4]) +
-      VP8LExtraCost(h->distance_, NUM_DISTANCE_CODES);
+      (float)VP8LExtraCost(h->distance_, NUM_DISTANCE_CODES);
   const int num_codes = VP8LHistogramNumCodes(h->palette_code_bits_);
   h->literal_cost_ =
       PopulationCost(h->literal_, num_codes, NULL, &h->is_used_[0]) +
-          VP8LExtraCost(h->literal_ + NUM_LITERAL_CODES, NUM_LENGTH_CODES);
+      (float)VP8LExtraCost(h->literal_ + NUM_LITERAL_CODES, NUM_LENGTH_CODES);
   h->red_cost_ =
       PopulationCost(h->red_, NUM_LITERAL_CODES, &red_sym, &h->is_used_[1]);
   h->blue_cost_ =
@@ -1179,7 +1181,7 @@ int VP8LGetHistoImageSymbols(int xsize, int ysize,
   const int entropy_combine_num_bins = low_effort ? NUM_PARTITIONS : BIN_SIZE;
   int entropy_combine;
   uint16_t* const map_tmp =
-      WebPSafeMalloc(2 * image_histo_raw_size, sizeof(map_tmp));
+      WebPSafeMalloc(2 * image_histo_raw_size, sizeof(*map_tmp));
   uint16_t* const cluster_mappings = map_tmp + image_histo_raw_size;
   int num_used = image_histo_raw_size;
   if (orig_histo == NULL || map_tmp == NULL) {

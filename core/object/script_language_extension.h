@@ -205,7 +205,7 @@ public:
 
 	GDVIRTUAL0RC(Variant, _get_rpc_config)
 
-	virtual const Variant get_rpc_config() const override {
+	virtual Variant get_rpc_config() const override {
 		Variant ret;
 		GDVIRTUAL_REQUIRED_CALL(_get_rpc_config, ret);
 		return ret;
@@ -389,7 +389,16 @@ public:
 	EXBIND0RC(bool, can_make_function)
 	EXBIND3R(Error, open_in_external_editor, const Ref<Script> &, int, int)
 	EXBIND0R(bool, overrides_external_editor)
-	EXBIND0RC(ScriptNameCasing, preferred_file_name_casing)
+
+	GDVIRTUAL0RC(ScriptNameCasing, _preferred_file_name_casing);
+
+	virtual ScriptNameCasing preferred_file_name_casing() const override {
+		ScriptNameCasing ret;
+		if (GDVIRTUAL_CALL(_preferred_file_name_casing, ret)) {
+			return ret;
+		}
+		return ScriptNameCasing::SCRIPT_NAME_CASING_SNAKE_CASE;
+	}
 
 	GDVIRTUAL3RC(Dictionary, _complete_code, const String &, const String &, Object *)
 
@@ -637,7 +646,7 @@ public:
 
 	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) override {
 		int ret = 0;
-		GDVIRTUAL_REQUIRED_CALL(_profiling_get_accumulated_data, p_info_arr, p_info_max, ret);
+		GDVIRTUAL_REQUIRED_CALL(_profiling_get_frame_data, p_info_arr, p_info_max, ret);
 		return ret;
 	}
 

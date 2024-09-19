@@ -119,6 +119,7 @@ void NoiseTexture2D::_set_texture_image(const Ref<Image> &p_image) {
 		} else {
 			texture = RS::get_singleton()->texture_2d_create(p_image);
 		}
+		RS::get_singleton()->texture_set_path(texture, get_path());
 	}
 	emit_changed();
 }
@@ -193,6 +194,9 @@ Ref<Image> NoiseTexture2D::_modulate_with_gradient(Ref<Image> p_image, Ref<Gradi
 
 void NoiseTexture2D::_update_texture() {
 	bool use_thread = true;
+#ifndef THREADS_ENABLED
+	use_thread = false;
+#endif
 	if (first_time) {
 		use_thread = false;
 		first_time = false;

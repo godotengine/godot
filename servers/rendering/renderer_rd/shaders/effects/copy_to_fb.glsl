@@ -21,6 +21,7 @@
 #define FLAG_ALPHA_TO_ONE (1 << 5)
 #define FLAG_LINEAR (1 << 6)
 #define FLAG_NORMAL (1 << 7)
+#define FLAG_USE_SRC_SECTION (1 << 8)
 
 #ifdef USE_MULTIVIEW
 layout(location = 0) out vec3 uv_interp;
@@ -53,6 +54,10 @@ void main() {
 
 	if (bool(params.flags & FLAG_FLIP_Y)) {
 		uv_interp.y = 1.0 - uv_interp.y;
+	}
+
+	if (bool(params.flags & FLAG_USE_SRC_SECTION)) {
+		uv_interp.xy = params.section.xy + uv_interp.xy * params.section.zw;
 	}
 }
 

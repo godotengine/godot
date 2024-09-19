@@ -446,7 +446,7 @@ hb_subset_input_pin_all_axes_to_default (hb_subset_input_t  *input,
   for (unsigned i = 0; i < axis_count; i++)
   {
     hb_tag_t axis_tag = axis_infos[i].tag;
-    float default_val = axis_infos[i].default_value;
+    double default_val = (double) axis_infos[i].default_value;
     if (!input->axes_location.set (axis_tag, Triple (default_val, default_val, default_val)))
     {
       hb_free (axis_infos);
@@ -481,7 +481,7 @@ hb_subset_input_pin_axis_to_default (hb_subset_input_t  *input,
   if (!hb_ot_var_find_axis_info (face, axis_tag, &axis_info))
     return false;
 
-  float default_val = axis_info.default_value;
+  double default_val = (double) axis_info.default_value;
   return input->axes_location.set (axis_tag, Triple (default_val, default_val, default_val));
 }
 
@@ -511,11 +511,10 @@ hb_subset_input_pin_axis_location (hb_subset_input_t  *input,
   if (!hb_ot_var_find_axis_info (face, axis_tag, &axis_info))
     return false;
 
-  float val = hb_clamp(axis_value, axis_info.min_value, axis_info.max_value);
+  double val = hb_clamp((double) axis_value, (double) axis_info.min_value, (double) axis_info.max_value);
   return input->axes_location.set (axis_tag, Triple (val, val, val));
 }
 
-#ifdef HB_EXPERIMENTAL_API
 /**
  * hb_subset_input_set_axis_range: (skip)
  * @input: a #hb_subset_input_t object.
@@ -538,7 +537,7 @@ hb_subset_input_pin_axis_location (hb_subset_input_t  *input,
  *
  * Return value: `true` if success, `false` otherwise
  *
- * XSince: EXPERIMENTAL
+ * Since: 8.5.0
  **/
 HB_EXTERN hb_bool_t
 hb_subset_input_set_axis_range (hb_subset_input_t  *input,
@@ -562,7 +561,7 @@ hb_subset_input_set_axis_range (hb_subset_input_t  *input,
   float new_min_val = hb_clamp(min, axis_info.min_value, axis_info.max_value);
   float new_max_val = hb_clamp(max, axis_info.min_value, axis_info.max_value);
   float new_default_val = hb_clamp(def, new_min_val, new_max_val);
-  return input->axes_location.set (axis_tag, Triple (new_min_val, new_default_val, new_max_val));
+  return input->axes_location.set (axis_tag, Triple ((double) new_min_val, (double) new_default_val, (double) new_max_val));
 }
 
 /**
@@ -577,7 +576,7 @@ hb_subset_input_set_axis_range (hb_subset_input_t  *input,
  *
  * Return value: `true` if a range has been set for this axis tag, `false` otherwise.
  *
- * XSince: EXPERIMENTAL
+ * Since: 8.5.0
  **/
 HB_EXTERN hb_bool_t
 hb_subset_input_get_axis_range (hb_subset_input_t  *input,
@@ -597,7 +596,6 @@ hb_subset_input_get_axis_range (hb_subset_input_t  *input,
   *axis_max_value = triple->maximum;
   return true;
 }
-#endif
 #endif
 
 /**
@@ -746,5 +744,4 @@ hb_subset_input_override_name_table (hb_subset_input_t  *input,
   input->name_table_overrides.set (hb_ot_name_record_ids_t (platform_id, encoding_id, language_id, name_id), name_bytes);
   return true;
 }
-
 #endif

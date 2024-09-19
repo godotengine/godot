@@ -31,7 +31,7 @@
 #ifndef GPU_PARTICLES_2D_EDITOR_PLUGIN_H
 #define GPU_PARTICLES_2D_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/2d/gpu_particles_2d.h"
 #include "scene/2d/physics/collision_polygon_2d.h"
 #include "scene/gui/box_container.h"
@@ -86,7 +86,6 @@ class GPUParticles2DEditorPlugin : public EditorPlugin {
 
 protected:
 	void _notification(int p_what);
-	static void _bind_methods();
 
 public:
 	virtual String get_name() const override { return "GPUParticles2D"; }

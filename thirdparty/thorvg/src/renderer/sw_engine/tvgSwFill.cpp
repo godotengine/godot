@@ -58,13 +58,75 @@ static void _calculateCoefficients(const SwFill* fill, uint32_t x, uint32_t y, f
     auto deltaDeltaRr = 2.0f * (radial->a11 * radial->a11 + radial->a21 * radial->a21) * radial->invA;
 
     det = b * b + (rr - radial->fr * radial->fr) * radial->invA;
-    deltaDet = 2.0f * b * deltaB + deltaB * deltaB + deltaRr + deltaDeltaRr;
+    deltaDet = 2.0f * b * deltaB + deltaB * deltaB + deltaRr + deltaDeltaRr * 0.5f;
     deltaDeltaDet = 2.0f * deltaB * deltaB + deltaDeltaRr;
+}
+
+
+static uint32_t _estimateAAMargin(const Fill* fdata)
+{
+    constexpr float marginScalingFactor = 800.0f;
+    if (fdata->identifier() == TVG_CLASS_ID_RADIAL) {
+        auto radius = P(static_cast<const RadialGradient*>(fdata))->r;
+        return mathZero(radius) ? 0 : static_cast<uint32_t>(marginScalingFactor / radius);
+    }
+    auto grad = P(static_cast<const LinearGradient*>(fdata));
+    Point p1 {grad->x1, grad->y1};
+    Point p2 {grad->x2, grad->y2};
+    auto length = mathLength(&p1, &p2);
+    return mathZero(length) ? 0 : static_cast<uint32_t>(marginScalingFactor / length);
+}
+
+
+static void _adjustAAMargin(uint32_t& iMargin, uint32_t index)
+{
+    constexpr float threshold = 0.1f;
+    constexpr uint32_t iMarginMax = 40;
+
+    auto iThreshold = static_cast<uint32_t>(index * threshold);
+    if (iMargin > iThreshold) iMargin = iThreshold;
+    if (iMargin > iMarginMax) iMargin = iMarginMax;
+}
+
+
+static inline uint32_t _alphaUnblend(uint32_t c)
+{
+    auto a = (c >> 24);
+    if (a == 255 || a == 0) return c;
+    auto invA = 255.0f / static_cast<float>(a);
+    auto c0 = static_cast<uint8_t>(static_cast<float>((c >> 16) & 0xFF) * invA);
+    auto c1 = static_cast<uint8_t>(static_cast<float>((c >> 8) & 0xFF) * invA);
+    auto c2 = static_cast<uint8_t>(static_cast<float>(c & 0xFF) * invA);
+
+    return (a << 24) | (c0 << 16) | (c1 << 8) | c2;
+}
+
+
+static void _applyAA(const SwFill* fill, uint32_t begin, uint32_t end)
+{
+    if (begin == 0 || end == 0) return;
+
+    auto i = GRADIENT_STOP_SIZE - end;
+    auto rgbaEnd = _alphaUnblend(fill->ctable[i]);
+    auto rgbaBegin = _alphaUnblend(fill->ctable[begin]);
+
+    auto dt = 1.0f / (begin + end + 1.0f);
+    float t = dt;
+    while (i != begin) {
+        auto dist = 255 - static_cast<int32_t>(255 * t);
+        auto color = INTERPOLATE(rgbaEnd, rgbaBegin, dist);
+        fill->ctable[i++] = ALPHA_BLEND((color | 0xff000000), (color >> 24));
+
+        if (i == GRADIENT_STOP_SIZE) i = 0;
+        t += dt;
+    }
 }
 
 
 static bool _updateColorTable(SwFill* fill, const Fill* fdata, const SwSurface* surface, uint8_t opacity)
 {
+    if (fill->solid) return true;
+
     if (!fill->ctable) {
         fill->ctable = static_cast<uint32_t*>(malloc(GRADIENT_STOP_SIZE * sizeof(uint32_t)));
         if (!fill->ctable) return false;
@@ -88,6 +150,11 @@ static bool _updateColorTable(SwFill* fill, const Fill* fdata, const SwSurface* 
     auto pos = 1.5f * inc;
     uint32_t i = 0;
 
+    //If repeat is true, anti-aliasing must be applied between the last and the first colors.
+    auto repeat = fill->spread == FillSpread::Repeat;
+    uint32_t iAABegin = repeat ? _estimateAAMargin(fdata) : 0;
+    uint32_t iAAEnd = 0;
+
     fill->ctable[i++] = ALPHA_BLEND(rgba | 0xff000000, a);
 
     while (pos <= pColors->offset) {
@@ -97,6 +164,11 @@ static bool _updateColorTable(SwFill* fill, const Fill* fdata, const SwSurface* 
     }
 
     for (uint32_t j = 0; j < cnt - 1; ++j) {
+        if (repeat && j == cnt - 2 && iAAEnd == 0) {
+            iAAEnd = iAABegin;
+            _adjustAAMargin(iAAEnd, GRADIENT_STOP_SIZE - i);
+        }
+
         auto curr = colors + j;
         auto next = curr + 1;
         auto delta = 1.0f / (next->offset - curr->offset);
@@ -118,41 +190,50 @@ static bool _updateColorTable(SwFill* fill, const Fill* fdata, const SwSurface* 
         }
         rgba = rgba2;
         a = a2;
+
+        if (repeat && j == 0) _adjustAAMargin(iAABegin, i - 1);
     }
     rgba = ALPHA_BLEND((rgba | 0xff000000), a);
 
     for (; i < GRADIENT_STOP_SIZE; ++i)
         fill->ctable[i] = rgba;
 
-    //Make sure the last color stop is represented at the end of the table
-    fill->ctable[GRADIENT_STOP_SIZE - 1] = rgba;
+    //For repeat fill spread apply anti-aliasing between the last and first colors,
+    //othewise make sure the last color stop is represented at the end of the table.
+    if (repeat) _applyAA(fill, iAABegin, iAAEnd);
+    else fill->ctable[GRADIENT_STOP_SIZE - 1] = rgba;
 
     return true;
 }
 
 
-bool _prepareLinear(SwFill* fill, const LinearGradient* linear, const Matrix* transform)
+bool _prepareLinear(SwFill* fill, const LinearGradient* linear, const Matrix& transform)
 {
     float x1, x2, y1, y2;
     if (linear->linear(&x1, &y1, &x2, &y2) != Result::Success) return false;
 
     fill->linear.dx = x2 - x1;
     fill->linear.dy = y2 - y1;
-    fill->linear.len = fill->linear.dx * fill->linear.dx + fill->linear.dy * fill->linear.dy;
+    auto len = fill->linear.dx * fill->linear.dx + fill->linear.dy * fill->linear.dy;
 
-    if (fill->linear.len < FLT_EPSILON) return true;
+    if (len < FLOAT_EPSILON) {
+        if (mathZero(fill->linear.dx) && mathZero(fill->linear.dy)) {
+            fill->solid = true;
+        }
+        return true;
+    }
 
-    fill->linear.dx /= fill->linear.len;
-    fill->linear.dy /= fill->linear.len;
+    fill->linear.dx /= len;
+    fill->linear.dy /= len;
     fill->linear.offset = -fill->linear.dx * x1 - fill->linear.dy * y1;
 
     auto gradTransform = linear->transform();
     bool isTransformation = !mathIdentity((const Matrix*)(&gradTransform));
 
     if (isTransformation) {
-        if (transform) gradTransform = mathMultiply(transform, &gradTransform);
-    } else if (transform) {
-        gradTransform = *transform;
+        gradTransform = transform * gradTransform;
+    } else {
+        gradTransform = transform;
         isTransformation = true;
     }
 
@@ -165,15 +246,13 @@ bool _prepareLinear(SwFill* fill, const LinearGradient* linear, const Matrix* tr
         auto dx = fill->linear.dx;
         fill->linear.dx = dx * invTransform.e11 + fill->linear.dy * invTransform.e21;
         fill->linear.dy = dx * invTransform.e12 + fill->linear.dy * invTransform.e22;
-
-        fill->linear.len = fill->linear.dx * fill->linear.dx + fill->linear.dy * fill->linear.dy;
     }
 
     return true;
 }
 
 
-bool _prepareRadial(SwFill* fill, const RadialGradient* radial, const Matrix* transform)
+bool _prepareRadial(SwFill* fill, const RadialGradient* radial, const Matrix& transform)
 {
     auto cx = P(radial)->cx;
     auto cy = P(radial)->cy;
@@ -182,7 +261,10 @@ bool _prepareRadial(SwFill* fill, const RadialGradient* radial, const Matrix* tr
     auto fy = P(radial)->fy;
     auto fr = P(radial)->fr;
 
-    if (r < FLT_EPSILON) return true;
+    if (mathZero(r)) {
+        fill->solid = true;
+        return true;
+    }
 
     fill->radial.dr = r - fr;
     fill->radial.dx = cx - fx;
@@ -215,12 +297,10 @@ bool _prepareRadial(SwFill* fill, const RadialGradient* radial, const Matrix* tr
     auto gradTransform = radial->transform();
     bool isTransformation = !mathIdentity((const Matrix*)(&gradTransform));
 
-    if (transform) {
-        if (isTransformation) gradTransform = mathMultiply(transform, &gradTransform);
-        else {
-            gradTransform = *transform;
-            isTransformation = true;
-        }
+    if (isTransformation) gradTransform = transform * gradTransform;
+    else {
+        gradTransform = transform;
+        isTransformation = true;
     }
 
     if (isTransformation) {
@@ -742,25 +822,32 @@ void fillLinear(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint3
 }
 
 
-bool fillGenColorTable(SwFill* fill, const Fill* fdata, const Matrix* transform, SwSurface* surface, uint8_t opacity, bool ctable)
+bool fillGenColorTable(SwFill* fill, const Fill* fdata, const Matrix& transform, SwSurface* surface, uint8_t opacity, bool ctable)
 {
     if (!fill) return false;
 
     fill->spread = fdata->spread();
 
-    if (ctable) {
-        if (!_updateColorTable(fill, fdata, surface, opacity)) return false;
-    }
-
     if (fdata->identifier() == TVG_CLASS_ID_LINEAR) {
-        return _prepareLinear(fill, static_cast<const LinearGradient*>(fdata), transform);
+        if (!_prepareLinear(fill, static_cast<const LinearGradient*>(fdata), transform)) return false;
     } else if (fdata->identifier() == TVG_CLASS_ID_RADIAL) {
-        return _prepareRadial(fill, static_cast<const RadialGradient*>(fdata), transform);
+        if (!_prepareRadial(fill, static_cast<const RadialGradient*>(fdata), transform)) return false;
     }
 
-    //LOG: What type of gradient?!
+    if (ctable) return _updateColorTable(fill, fdata, surface, opacity);
+    return true;
+}
 
-    return false;
+
+const Fill::ColorStop* fillFetchSolid(const SwFill* fill, const Fill* fdata)
+{
+    if (!fill->solid) return nullptr;
+
+    const Fill::ColorStop* colors;
+    auto cnt = fdata->colorStops(&colors);
+    if (cnt == 0 || !colors) return nullptr;
+
+    return colors + cnt - 1;
 }
 
 
@@ -771,6 +858,7 @@ void fillReset(SwFill* fill)
         fill->ctable = nullptr;
     }
     fill->translucent = false;
+    fill->solid = false;
 }
 
 

@@ -35,7 +35,7 @@
 #include "core/math/vector3.h"
 #include "core/string/ustring.h"
 
-struct _NO_DISCARD_ Quaternion {
+struct [[nodiscard]] Quaternion {
 	union {
 		struct {
 			real_t x;

@@ -62,6 +62,7 @@ class EditorThemeManager {
 
 		int base_spacing = 4;
 		int extra_spacing = 0;
+		Size2 dialogs_buttons_min_size = Size2(105, 34);
 		int border_width = 0;
 		int corner_radius = 3;
 

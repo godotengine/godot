@@ -83,6 +83,7 @@ public:
 	int region_get_connections_count(RID p_region) const override { return 0; }
 	Vector2 region_get_connection_pathway_start(RID p_region, int p_connection_id) const override { return Vector2(); }
 	Vector2 region_get_connection_pathway_end(RID p_region, int p_connection_id) const override { return Vector2(); }
+	Vector2 region_get_closest_point(RID p_region, const Vector2 &p_point) const override { return Vector2(); }
 	Vector2 region_get_random_point(RID p_region, uint32_t p_navigation_layers, bool p_uniformly) const override { return Vector2(); };
 
 	RID link_create() override { return RID(); }
@@ -169,6 +170,9 @@ public:
 	void bake_from_source_geometry_data(const Ref<NavigationPolygon> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData2D> &p_source_geometry_data, const Callable &p_callback = Callable()) override {}
 	void bake_from_source_geometry_data_async(const Ref<NavigationPolygon> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData2D> &p_source_geometry_data, const Callable &p_callback = Callable()) override {}
 	bool is_baking_navigation_polygon(Ref<NavigationPolygon> p_navigation_polygon) const override { return false; }
+
+	RID source_geometry_parser_create() override { return RID(); }
+	void source_geometry_parser_set_callback(RID p_parser, const Callable &p_callback) override {}
 
 	Vector<Vector2> simplify_path(const Vector<Vector2> &p_path, real_t p_epsilon) override { return Vector<Vector2>(); }
 

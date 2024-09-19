@@ -74,7 +74,7 @@ String GDScriptWarning::get_message() const {
 		case UNREACHABLE_PATTERN:
 			return "Unreachable pattern (pattern after wildcard or bind).";
 		case STANDALONE_EXPRESSION:
-			return "Standalone expression (the line has no effect).";
+			return "Standalone expression (the line may have no effect).";
 		case STANDALONE_TERNARY:
 			return "Standalone ternary operator: the return value is being discarded.";
 		case INCOMPATIBLE_TERNARY:
@@ -109,6 +109,8 @@ String GDScriptWarning::get_message() const {
 		case STATIC_CALLED_ON_INSTANCE:
 			CHECK_SYMBOLS(2);
 			return vformat(R"*(The function "%s()" is a static function but was called from an instance. Instead, it should be directly called from the type: "%s.%s()".)*", symbols[0], symbols[1], symbols[0]);
+		case MISSING_TOOL:
+			return R"(The base class script has the "@tool" annotation, but this script does not have it.)";
 		case REDUNDANT_STATIC_UNLOAD:
 			return R"(The "@static_unload" annotation is redundant because the file does not have a class with static variables.)";
 		case REDUNDANT_AWAIT:
@@ -126,6 +128,9 @@ String GDScriptWarning::get_message() const {
 		case INT_AS_ENUM_WITHOUT_MATCH:
 			CHECK_SYMBOLS(3);
 			return vformat(R"(Cannot %s %s as Enum "%s": no enum member has matching value.)", symbols[0], symbols[1], symbols[2]);
+		case ENUM_VARIABLE_WITHOUT_DEFAULT:
+			CHECK_SYMBOLS(1);
+			return vformat(R"(The variable "%s" has an enum type and does not set an explicit default value. The default will be set to "0".)", symbols[0]);
 		case EMPTY_FILE:
 			return "Empty script file.";
 		case DEPRECATED_KEYWORD:
@@ -142,6 +147,9 @@ String GDScriptWarning::get_message() const {
 		case CONFUSABLE_LOCAL_USAGE:
 			CHECK_SYMBOLS(1);
 			return vformat(R"(The identifier "%s" will be shadowed below in the block.)", symbols[0]);
+		case CONFUSABLE_CAPTURE_REASSIGNMENT:
+			CHECK_SYMBOLS(1);
+			return vformat(R"(Reassigning lambda capture does not modify the outer local variable "%s".)", symbols[0]);
 		case INFERENCE_ON_VARIANT:
 			CHECK_SYMBOLS(1);
 			return vformat("The %s type is being inferred from a Variant value, so it will be typed as Variant.", symbols[0]);
@@ -213,6 +221,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"UNSAFE_VOID_RETURN",
 		"RETURN_VALUE_DISCARDED",
 		"STATIC_CALLED_ON_INSTANCE",
+		"MISSING_TOOL",
 		"REDUNDANT_STATIC_UNLOAD",
 		"REDUNDANT_AWAIT",
 		"ASSERT_ALWAYS_TRUE",
@@ -221,12 +230,14 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"NARROWING_CONVERSION",
 		"INT_AS_ENUM_WITHOUT_CAST",
 		"INT_AS_ENUM_WITHOUT_MATCH",
+		"ENUM_VARIABLE_WITHOUT_DEFAULT",
 		"EMPTY_FILE",
 		"DEPRECATED_KEYWORD",
 		"RENAMED_IN_GODOT_4_HINT",
 		"CONFUSABLE_IDENTIFIER",
 		"CONFUSABLE_LOCAL_DECLARATION",
 		"CONFUSABLE_LOCAL_USAGE",
+		"CONFUSABLE_CAPTURE_REASSIGNMENT",
 		"INFERENCE_ON_VARIANT",
 		"NATIVE_METHOD_OVERRIDE",
 		"GET_NODE_DEFAULT_WITHOUT_ONREADY",

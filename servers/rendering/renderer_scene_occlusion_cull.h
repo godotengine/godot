@@ -98,8 +98,8 @@ public:
 				rect_max = rect_max.max(normalized);
 			}
 
-			rect_max = rect_max.min(Vector2(1, 1));
-			rect_min = rect_min.max(Vector2(0, 0));
+			rect_max = rect_max.minf(1);
+			rect_min = rect_min.maxf(0);
 
 			int mip_count = mips.size();
 

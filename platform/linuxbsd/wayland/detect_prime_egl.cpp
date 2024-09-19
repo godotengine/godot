@@ -38,15 +38,6 @@
 
 #include <stdlib.h>
 
-#ifdef GLAD_ENABLED
-#include "thirdparty/glad/glad/egl.h"
-#include "thirdparty/glad/glad/gl.h"
-#else
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-#include <GL/glcorearb.h>
-#endif // GLAD_ENABLED
-
 #include <cstring>
 
 #include <sys/types.h>
@@ -57,7 +48,7 @@
 #undef glGetString
 
 // Runs inside a child. Exiting will not quit the engine.
-void DetectPrimeEGL::create_context() {
+void DetectPrimeEGL::create_context(EGLenum p_platform_enum) {
 #if defined(GLAD_ENABLED)
 	if (!gladLoaderLoadEGL(nullptr)) {
 		print_verbose("Unable to load EGL, GPU detection skipped.");
@@ -65,7 +56,18 @@ void DetectPrimeEGL::create_context() {
 	}
 #endif
 
-	EGLDisplay egl_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+	EGLDisplay egl_display = EGL_NO_DISPLAY;
+
+	if (GLAD_EGL_VERSION_1_5) {
+		egl_display = eglGetPlatformDisplay(p_platform_enum, nullptr, nullptr);
+	} else if (GLAD_EGL_EXT_platform_base) {
+#ifdef EGL_EXT_platform_base
+		egl_display = eglGetPlatformDisplayEXT(p_platform_enum, nullptr, nullptr);
+#endif
+	} else {
+		egl_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+	}
+
 	EGLConfig egl_config;
 	EGLContext egl_context = EGL_NO_CONTEXT;
 
@@ -110,7 +112,7 @@ void DetectPrimeEGL::create_context() {
 	eglMakeCurrent(egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, egl_context);
 }
 
-int DetectPrimeEGL::detect_prime() {
+int DetectPrimeEGL::detect_prime(EGLenum p_platform_enum) {
 	pid_t p;
 	int priorities[4] = {};
 	String vendors[4];
@@ -168,7 +170,7 @@ int DetectPrimeEGL::detect_prime() {
 
 			setenv("DRI_PRIME", itos(i).utf8().ptr(), 1);
 
-			create_context();
+			create_context(p_platform_enum);
 
 			PFNGLGETSTRINGPROC glGetString = (PFNGLGETSTRINGPROC)eglGetProcAddress("glGetString");
 			const char *vendor = (const char *)glGetString(GL_VENDOR);

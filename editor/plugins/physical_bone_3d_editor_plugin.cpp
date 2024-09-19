@@ -36,9 +36,6 @@
 #include "scene/3d/physics/physical_bone_3d.h"
 #include "scene/gui/separator.h"
 
-void PhysicalBone3DEditor::_bind_methods() {
-}
-
 void PhysicalBone3DEditor::_on_toggle_button_transform_joint(bool p_is_pressed) {
 	_set_move_joint();
 }
@@ -65,7 +62,7 @@ PhysicalBone3DEditor::PhysicalBone3DEditor() {
 	// when the editor theme updates.
 	button_transform_joint->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("PhysicalBone3D"), EditorStringName(EditorIcons)));
 	button_transform_joint->set_toggle_mode(true);
-	button_transform_joint->connect("toggled", callable_mp(this, &PhysicalBone3DEditor::_on_toggle_button_transform_joint));
+	button_transform_joint->connect(SceneStringName(toggled), callable_mp(this, &PhysicalBone3DEditor::_on_toggle_button_transform_joint));
 
 	hide();
 }

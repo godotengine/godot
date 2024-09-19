@@ -31,7 +31,7 @@
 #include "decal.h"
 
 void Decal::set_size(const Vector3 &p_size) {
-	size = p_size.max(Vector3(0.001, 0.001, 0.001));
+	size = p_size.maxf(0.001);
 	RS::get_singleton()->decal_set_size(decal, size);
 	update_gizmos();
 }
@@ -163,7 +163,7 @@ void Decal::_validate_property(PropertyInfo &p_property) const {
 }
 
 PackedStringArray Decal::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
 
 	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
 		warnings.push_back(RTR("Decals are only available when using the Forward+ or Mobile rendering backends."));

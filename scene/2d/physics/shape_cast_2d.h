@@ -60,7 +60,6 @@ class ShapeCast2D : public Node2D {
 	real_t collision_safe_fraction = 1.0;
 	real_t collision_unsafe_fraction = 1.0;
 
-	Array _get_collision_result() const;
 	void _shape_changed();
 
 protected:
@@ -102,6 +101,7 @@ public:
 	void force_shapecast_update();
 	bool is_colliding() const;
 
+	Array get_collision_result() const;
 	int get_collision_count() const;
 	Object *get_collider(int p_idx) const;
 	RID get_collider_rid(int p_idx) const;

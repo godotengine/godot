@@ -132,6 +132,7 @@ void ScriptLanguageExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_debug_get_stack_level_line, "level");
 	GDVIRTUAL_BIND(_debug_get_stack_level_function, "level");
+	GDVIRTUAL_BIND(_debug_get_stack_level_source, "level");
 	GDVIRTUAL_BIND(_debug_get_stack_level_locals, "level", "max_subitems", "max_depth");
 	GDVIRTUAL_BIND(_debug_get_stack_level_members, "level", "max_subitems", "max_depth");
 	GDVIRTUAL_BIND(_debug_get_stack_level_instance, "level");
@@ -141,6 +142,7 @@ void ScriptLanguageExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_debug_get_current_stack_info);
 
 	GDVIRTUAL_BIND(_reload_all_scripts);
+	GDVIRTUAL_BIND(_reload_scripts, "scripts", "soft_reload");
 	GDVIRTUAL_BIND(_reload_tool_script, "script", "soft_reload");
 
 	GDVIRTUAL_BIND(_get_recognized_extensions);

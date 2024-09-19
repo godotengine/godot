@@ -152,7 +152,7 @@ Vector3 GodotWorldBoundaryShape3D::get_moment_of_inertia(real_t p_mass) const {
 
 void GodotWorldBoundaryShape3D::_setup(const Plane &p_plane) {
 	plane = p_plane;
-	configure(AABB(Vector3(-1e4, -1e4, -1e4), Vector3(1e4 * 2, 1e4 * 2, 1e4 * 2)));
+	configure(AABB(Vector3(-1e15, -1e15, -1e15), Vector3(1e15 * 2, 1e15 * 2, 1e15 * 2)));
 }
 
 void GodotWorldBoundaryShape3D::set_data(const Variant &p_data) {
@@ -1133,7 +1133,7 @@ void GodotConvexPolygonShape3D::_setup(const Vector<Vector3> &p_vertices) {
 							max_support = s;
 						}
 					}
-					if (extreme_vertices.find(best_vertex) == -1)
+					if (!extreme_vertices.has(best_vertex))
 						extreme_vertices.push_back(best_vertex);
 				}
 			}

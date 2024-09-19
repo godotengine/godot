@@ -58,6 +58,12 @@
 				Returns the default value of the specified property.
 			</description>
 		</method>
+		<method name="get_rpc_config" qualifiers="const">
+			<return type="Variant" />
+			<description>
+				Returns a [Dictionary] mapping method names to their RPC configuration defined by this script.
+			</description>
+		</method>
 		<method name="get_script_constant_map">
 			<return type="Dictionary" />
 			<description>
@@ -93,6 +99,7 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the script contains non-empty source code.
+				[b]Note:[/b] If a script does not have source code, this does not mean that it is invalid or unusable. For example, a [GDScript] that was exported with binary tokenization has no source code, but still behaves as expected and could be instantiated. This can be checked with [method can_instantiate].
 			</description>
 		</method>
 		<method name="instance_has" qualifiers="const">

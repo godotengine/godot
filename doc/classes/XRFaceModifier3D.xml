@@ -12,7 +12,7 @@
 		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
 	</tutorials>
 	<members>
-		<member name="face_tracker" type="StringName" setter="set_face_tracker" getter="get_face_tracker" default="&amp;&quot;/user/head&quot;">
+		<member name="face_tracker" type="StringName" setter="set_face_tracker" getter="get_face_tracker" default="&amp;&quot;/user/face_tracker&quot;">
 			The [XRFaceTracker] path.
 		</member>
 		<member name="target" type="NodePath" setter="set_target" getter="get_target" default="NodePath(&quot;&quot;)">

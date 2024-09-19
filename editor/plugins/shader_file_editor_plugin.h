@@ -32,7 +32,7 @@
 #define SHADER_FILE_EDITOR_PLUGIN_H
 
 #include "editor/code_editor.h"
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
@@ -62,7 +62,6 @@ class ShaderFileEditor : public PanelContainer {
 
 protected:
 	void _notification(int p_what);
-	static void _bind_methods();
 
 public:
 	static ShaderFileEditor *singleton;

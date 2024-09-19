@@ -15,17 +15,22 @@
 				Returns the [NodePath] to the external [Skeleton3D] node, if one has been set.
 			</description>
 		</method>
+		<method name="get_skeleton">
+			<return type="Skeleton3D" />
+			<description>
+				Get parent or external [Skeleton3D] node if found.
+			</description>
+		</method>
 		<method name="get_use_external_skeleton" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns whether the BoneAttachment3D node is using an external [Skeleton3D] rather than attempting to use its parent node as the [Skeleton3D].
 			</description>
 		</method>
-		<method name="on_bone_pose_update">
+		<method name="on_skeleton_update">
 			<return type="void" />
-			<param index="0" name="bone_index" type="int" />
 			<description>
-				A function that is called automatically when the [Skeleton3D] the BoneAttachment3D node is using has a bone that has changed its pose. This function is where the BoneAttachment3D node updates its position so it is correctly bound when it is [i]not[/i] set to override the bone pose.
+				A function that is called automatically when the [Skeleton3D] is updated. This function is where the [BoneAttachment3D] node updates its position so it is correctly bound when it is [i]not[/i] set to override the bone pose.
 			</description>
 		</method>
 		<method name="set_external_skeleton">

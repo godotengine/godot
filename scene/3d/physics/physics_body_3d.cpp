@@ -30,8 +30,6 @@
 
 #include "physics_body_3d.h"
 
-#include "scene/scene_string_names.h"
-
 void PhysicsBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_and_collide", "motion", "test_only", "safe_margin", "recovery_as_collision", "max_collisions"), &PhysicsBody3D::_move, DEFVAL(false), DEFVAL(0.001), DEFVAL(false), DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("test_move", "from", "motion", "collision", "safe_margin", "recovery_as_collision", "max_collisions"), &PhysicsBody3D::test_move, DEFVAL(Variant()), DEFVAL(0.001), DEFVAL(false), DEFVAL(1));
@@ -56,12 +54,6 @@ void PhysicsBody3D::_bind_methods() {
 PhysicsBody3D::PhysicsBody3D(PhysicsServer3D::BodyMode p_mode) :
 		CollisionObject3D(PhysicsServer3D::get_singleton()->body_create(), false) {
 	set_body_mode(p_mode);
-}
-
-PhysicsBody3D::~PhysicsBody3D() {
-	if (motion_cache.is_valid()) {
-		motion_cache->owner = nullptr;
-	}
 }
 
 TypedArray<PhysicsBody3D> PhysicsBody3D::get_collision_exceptions() {
@@ -102,7 +94,7 @@ Ref<KinematicCollision3D> PhysicsBody3D::_move(const Vector3 &p_motion, bool p_t
 		// Create a new instance when the cached reference is invalid or still in use in script.
 		if (motion_cache.is_null() || motion_cache->get_reference_count() > 1) {
 			motion_cache.instantiate();
-			motion_cache->owner = this;
+			motion_cache->owner_id = get_instance_id();
 		}
 
 		motion_cache->result = result;

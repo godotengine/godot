@@ -35,7 +35,6 @@
 #include "scene/resources/curve_texture.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/particle_process_material.h"
-#include "scene/scene_string_names.h"
 
 #ifdef TOOLS_ENABLED
 #include "core/config/engine.h"
@@ -689,6 +688,7 @@ void GPUParticles2D::_notification(int p_what) {
 				RS::get_singleton()->particles_set_speed_scale(particles, 0);
 			}
 			set_process_internal(true);
+			set_physics_process_internal(true);
 			previous_position = get_global_position();
 		} break;
 
@@ -712,15 +712,6 @@ void GPUParticles2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			const Vector3 velocity = Vector3((get_global_position() - previous_position).x, (get_global_position() - previous_position).y, 0.0) /
-					get_process_delta_time();
-
-			if (velocity != previous_velocity) {
-				RS::get_singleton()->particles_set_emitter_velocity(particles, velocity);
-				previous_velocity = velocity;
-			}
-			previous_position = get_global_position();
-
 			if (one_shot) {
 				time += get_process_delta_time();
 				if (time > emission_time) {
@@ -731,7 +722,7 @@ void GPUParticles2D::_notification(int p_what) {
 				}
 				if (time > active_time) {
 					if (active && !signal_canceled) {
-						emit_signal(SceneStringNames::get_singleton()->finished);
+						emit_signal(SceneStringName(finished));
 					}
 					active = false;
 					if (!emitting) {
@@ -739,6 +730,19 @@ void GPUParticles2D::_notification(int p_what) {
 					}
 				}
 			}
+		} break;
+
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			// Update velocity in physics process, so that velocity calculations remain correct
+			// if the physics tick rate is lower than the rendered framerate (especially without physics interpolation).
+			const Vector3 velocity = Vector3((get_global_position() - previous_position).x, (get_global_position() - previous_position).y, 0.0) /
+					get_physics_process_delta_time();
+
+			if (velocity != previous_velocity) {
+				RS::get_singleton()->particles_set_emitter_velocity(particles, velocity);
+				previous_velocity = velocity;
+			}
+			previous_position = get_global_position();
 		} break;
 	}
 }

@@ -90,7 +90,7 @@ void main() {
 	if (sc_multiview) {
 		view_dir = normalize(vertex + scene_data.eye_offset[params.view_index].xyz);
 	} else {
-		view_dir = normalize(vertex);
+		view_dir = params.orthogonal ? vec3(0.0, 0.0, -1.0) : normalize(vertex);
 	}
 	vec3 ray_dir = normalize(reflect(view_dir, normal));
 
@@ -237,7 +237,7 @@ void main() {
 
 		// This is an ad-hoc term to fade out the SSR as roughness increases. Values used
 		// are meant to match the visual appearance of a ReflectionProbe.
-		float roughness_fade = smoothstep(0.4, 0.7, 1.0 - normal_roughness.w);
+		float roughness_fade = smoothstep(0.4, 0.7, 1.0 - roughness);
 
 		// Schlick term.
 		float metallic = texelFetch(source_metallic, ssC << 1, 0).w;

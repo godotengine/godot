@@ -165,7 +165,7 @@ void NavigationLink3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, i
 
 	if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 		double snap = Node3DEditor::get_singleton()->get_translate_snap();
-		intersection.snap(Vector3(snap, snap, snap));
+		intersection.snapf(snap);
 	}
 
 	position = gi.xform(intersection);

@@ -473,6 +473,14 @@
 				[b]Note:[/b] This method is implemented on macOS and Windows.
 			</description>
 		</method>
+		<method name="is_opened" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="rid" type="RID" />
+			<description>
+				Returns [code]true[/code] if the menu is currently opened.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
 		<method name="is_system_menu" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="rid" type="RID" />
@@ -699,6 +707,7 @@
 			<param index="1" name="callback" type="Callable" />
 			<description>
 				Registers callable to emit when the menu is about to show.
+				[b]Note:[/b] The OS can simulate menu opening to track menu item changes and global shortcuts, in which case the corresponding close callback is not triggered. Use [method is_opened] to check if the menu is currently opened.
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
@@ -707,7 +716,7 @@
 			<param index="0" name="rid" type="RID" />
 			<param index="1" name="callback" type="Callable" />
 			<description>
-				Registers callable to emit when the menu is about to closed.
+				Registers callable to emit after the menu is closed.
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>

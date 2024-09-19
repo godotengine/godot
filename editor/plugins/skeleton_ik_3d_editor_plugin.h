@@ -31,7 +31,7 @@
 #ifndef SKELETON_IK_3D_EDITOR_PLUGIN_H
 #define SKELETON_IK_3D_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 
 class Button;
 class SkeletonIK3D;
@@ -44,9 +44,6 @@ class SkeletonIK3DEditorPlugin : public EditorPlugin {
 	Button *play_btn = nullptr;
 
 	void _play();
-
-protected:
-	static void _bind_methods();
 
 public:
 	virtual String get_name() const override { return "SkeletonIK3D"; }

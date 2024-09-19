@@ -59,6 +59,7 @@ class FileSystemTree : public Tree {
 class FileSystemList : public ItemList {
 	GDCLASS(FileSystemList, ItemList);
 
+	bool popup_edit_commited = true;
 	VBoxContainer *popup_editor_vb = nullptr;
 	Popup *popup_editor = nullptr;
 	LineEdit *line_editor = nullptr;
@@ -116,6 +117,7 @@ private:
 		FILE_INSTANTIATE,
 		FILE_ADD_FAVORITE,
 		FILE_REMOVE_FAVORITE,
+		FILE_SHOW_IN_FILESYSTEM,
 		FILE_DEPENDENCIES,
 		FILE_OWNERS,
 		FILE_MOVE,
@@ -138,9 +140,9 @@ private:
 		FILE_NEW_FOLDER,
 		FILE_NEW_SCRIPT,
 		FILE_NEW_SCENE,
+		CONVERT_BASE_ID = 1000,
 	};
 
-	HashMap<String, String> icon_cache;
 	HashMap<String, Color> folder_colors;
 	Dictionary assigned_folder_colors;
 
@@ -172,7 +174,7 @@ private:
 	LineEdit *file_list_search_box = nullptr;
 	MenuButton *file_list_button_sort = nullptr;
 
-	String searched_string;
+	PackedStringArray searched_tokens;
 	Vector<String> uncollapsed_paths_before_search;
 
 	TextureRect *search_icon = nullptr;
@@ -200,6 +202,8 @@ private:
 	Label *overwrite_dialog_footer = nullptr;
 	Label *overwrite_dialog_file_list = nullptr;
 
+	ConfirmationDialog *conversion_dialog = nullptr;
+
 	SceneCreateDialog *make_scene_dialog = nullptr;
 	ScriptCreateDialog *make_script_dialog = nullptr;
 	ShaderCreateDialog *make_shader_dialog = nullptr;
@@ -225,6 +229,9 @@ private:
 	String to_move_path;
 	bool to_move_or_copy = false;
 
+	Vector<String> to_convert;
+	int selected_conversion_id = 0;
+
 	Vector<String> history;
 	int history_pos;
 	int history_max_size;
@@ -244,11 +251,12 @@ private:
 
 	LocalVector<Ref<EditorResourceTooltipPlugin>> tooltip_plugins;
 
+	HashSet<String> cached_valid_conversion_targets;
+
 	void _tree_mouse_exited();
 	void _reselect_items_selected_on_drag_begin(bool reset = false);
 
 	Ref<Texture2D> _get_tree_item_icon(bool p_is_valid, const String &p_file_type, const String &p_icon_path);
-	String _get_entry_script_icon(const EditorFileSystemDirectory *p_dir, int p_file);
 	bool _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths, bool p_select_in_favorites, bool p_unfold_path = false);
 	void _update_tree(const Vector<String> &p_uncollapsed_paths = Vector<String>(), bool p_uncollapse_root = false, bool p_select_in_favorites = false, bool p_unfold_path = false);
 	void _navigate_to_path(const String &p_path, bool p_select_in_favorites = false);
@@ -256,10 +264,13 @@ private:
 	void _file_list_gui_input(Ref<InputEvent> p_event);
 	void _tree_gui_input(Ref<InputEvent> p_event);
 
+	HashSet<String> _get_valid_conversions_for_file_paths(const Vector<String> &p_paths);
+
 	void _update_file_list(bool p_keep_selection);
 	void _toggle_file_display();
 	void _set_file_display(bool p_active);
 	void _fs_changed();
+	void _directory_created(const String &p_path);
 
 	void _select_file(const String &p_path, bool p_select_in_favorites = false);
 	void _tree_activate_file();
@@ -292,11 +303,13 @@ private:
 	void _rename_operation_confirm();
 	void _duplicate_operation_confirm();
 	void _overwrite_dialog_action(bool p_overwrite);
+	void _convert_dialog_action();
 	Vector<String> _check_existing();
 	void _move_operation_confirm(const String &p_to_path, bool p_copy = false, Overwrite p_overwrite = OVERWRITE_UNDECIDED);
 
 	void _tree_rmb_option(int p_option);
 	void _file_list_rmb_option(int p_option);
+	void _generic_rmb_option_selected(int p_option);
 	void _file_option(int p_option, const Vector<String> &p_selected);
 
 	void _fw_history();
@@ -311,6 +324,7 @@ private:
 	void _split_dragged(int p_offset);
 
 	void _search_changed(const String &p_text, const Control *p_from);
+	bool _matches_all_search_tokens(const String &p_text);
 
 	MenuButton *_create_file_menu_button();
 	void _file_sort_popup(int p_id);
@@ -358,6 +372,7 @@ private:
 	void _update_display_mode(bool p_force = false);
 
 	Vector<String> _tree_get_selected(bool remove_self_inclusion = true, bool p_include_unselected_cursor = false) const;
+	Vector<String> _file_list_get_selected() const;
 
 	bool _is_file_type_disabled_by_feature_profile(const StringName &p_class);
 
@@ -381,6 +396,11 @@ protected:
 	static void _bind_methods();
 
 public:
+	static constexpr double ITEM_COLOR_SCALE = 1.75;
+	static constexpr double ITEM_ALPHA_MIN = 0.1;
+	static constexpr double ITEM_ALPHA_MAX = 0.15;
+	static constexpr double ITEM_BG_DARK_SCALE = 0.3;
+
 	const HashMap<String, Color> &get_folder_colors() const;
 	Dictionary get_assigned_folder_colors() const;
 

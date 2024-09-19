@@ -20,9 +20,7 @@
 #endif
 
 #include <assert.h>
-#include <limits.h>
 
-#include "src/dsp/dsp.h"
 #include "src/webp/types.h"
 
 #ifdef __cplusplus
@@ -198,6 +196,7 @@ WEBP_EXTERN void WebPCopyPixels(const struct WebPPicture* const src,
 // MAX_PALETTE_SIZE, also outputs the actual unique colors into 'palette'.
 // Note: 'palette' is assumed to be an array already allocated with at least
 // MAX_PALETTE_SIZE elements.
+// TODO(vrabaud) remove whenever we can break the ABI.
 WEBP_EXTERN int WebPGetColorPalette(const struct WebPPicture* const pic,
                                     uint32_t* const palette);
 

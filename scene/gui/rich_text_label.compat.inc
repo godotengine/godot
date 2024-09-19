@@ -38,9 +38,14 @@ void RichTextLabel::_add_image_bind_compat_80410(const Ref<Texture2D> &p_image, 
 	add_image(p_image, p_width, p_height, p_color, p_alignment, p_region, Variant(), false, String(), false);
 }
 
+bool RichTextLabel::_remove_paragraph_bind_compat_91098(int p_paragraph) {
+	return remove_paragraph(p_paragraph, false);
+}
+
 void RichTextLabel::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("push_meta", "data"), &RichTextLabel::_push_meta_bind_compat_89024);
 	ClassDB::bind_compatibility_method(D_METHOD("add_image", "image", "width", "height", "color", "inline_align", "region"), &RichTextLabel::_add_image_bind_compat_80410, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(Rect2()));
+	ClassDB::bind_compatibility_method(D_METHOD("remove_paragraph", "paragraph"), &RichTextLabel::_remove_paragraph_bind_compat_91098);
 }
 
 #endif // DISABLE_DEPRECATED

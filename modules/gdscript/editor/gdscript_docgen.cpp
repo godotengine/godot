@@ -84,6 +84,15 @@ void GDScriptDocGen::_doctype_from_gdtype(const GDType &p_gdtype, String &r_type
 					return;
 				}
 			}
+			if (p_gdtype.builtin_type == Variant::DICTIONARY && p_gdtype.has_container_element_types()) {
+				String key, value;
+				_doctype_from_gdtype(p_gdtype.get_container_element_type_or_variant(0), key, r_enum);
+				_doctype_from_gdtype(p_gdtype.get_container_element_type_or_variant(1), value, r_enum);
+				if (key != "Variant" || value != "Variant") {
+					r_type = "Dictionary[" + key + ", " + value + "]";
+					return;
+				}
+			}
 			r_type = Variant::get_type_name(p_gdtype.builtin_type);
 			return;
 		case GDType::NATIVE:
@@ -155,34 +164,82 @@ String GDScriptDocGen::_docvalue_from_variant(const Variant &p_variant, int p_re
 			return "<Object>";
 		case Variant::DICTIONARY: {
 			const Dictionary dict = p_variant;
+			String result;
+
+			if (dict.is_typed()) {
+				result += "Dictionary[";
+
+				Ref<Script> key_script = dict.get_typed_key_script();
+				if (key_script.is_valid()) {
+					if (key_script->get_global_name() != StringName()) {
+						result += key_script->get_global_name();
+					} else if (!key_script->get_path().get_file().is_empty()) {
+						result += key_script->get_path().get_file();
+					} else {
+						result += dict.get_typed_key_class_name();
+					}
+				} else if (dict.get_typed_key_class_name() != StringName()) {
+					result += dict.get_typed_key_class_name();
+				} else if (dict.is_typed_key()) {
+					result += Variant::get_type_name((Variant::Type)dict.get_typed_key_builtin());
+				} else {
+					result += "Variant";
+				}
+
+				result += ", ";
+
+				Ref<Script> value_script = dict.get_typed_value_script();
+				if (value_script.is_valid()) {
+					if (value_script->get_global_name() != StringName()) {
+						result += value_script->get_global_name();
+					} else if (!value_script->get_path().get_file().is_empty()) {
+						result += value_script->get_path().get_file();
+					} else {
+						result += dict.get_typed_value_class_name();
+					}
+				} else if (dict.get_typed_value_class_name() != StringName()) {
+					result += dict.get_typed_value_class_name();
+				} else if (dict.is_typed_value()) {
+					result += Variant::get_type_name((Variant::Type)dict.get_typed_value_builtin());
+				} else {
+					result += "Variant";
+				}
+
+				result += "](";
+			}
 
 			if (dict.is_empty()) {
-				return "{}";
-			}
+				result += "{}";
+			} else if (p_recursion_level > MAX_RECURSION_LEVEL) {
+				result += "{...}";
+			} else {
+				result += "{";
 
-			if (p_recursion_level > MAX_RECURSION_LEVEL) {
-				return "{...}";
-			}
+				List<Variant> keys;
+				dict.get_key_list(&keys);
+				keys.sort();
 
-			List<Variant> keys;
-			dict.get_key_list(&keys);
-			keys.sort();
-
-			String data;
-			for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-				if (E->prev()) {
-					data += ", ";
+				for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
+					if (E->prev()) {
+						result += ", ";
+					}
+					result += _docvalue_from_variant(E->get(), p_recursion_level + 1) + ": " + _docvalue_from_variant(dict[E->get()], p_recursion_level + 1);
 				}
-				data += _docvalue_from_variant(E->get(), p_recursion_level + 1) + ": " + _docvalue_from_variant(dict[E->get()], p_recursion_level + 1);
+
+				result += "}";
 			}
 
-			return "{" + data + "}";
+			if (dict.is_typed()) {
+				result += ")";
+			}
+
+			return result;
 		} break;
 		case Variant::ARRAY: {
 			const Array array = p_variant;
 			String result;
 
-			if (array.get_typed_builtin() != Variant::NIL) {
+			if (array.is_typed()) {
 				result += "Array[";
 
 				Ref<Script> script = array.get_typed_script();
@@ -209,16 +266,18 @@ String GDScriptDocGen::_docvalue_from_variant(const Variant &p_variant, int p_re
 				result += "[...]";
 			} else {
 				result += "[";
+
 				for (int i = 0; i < array.size(); i++) {
 					if (i > 0) {
 						result += ", ";
 					}
 					result += _docvalue_from_variant(array[i], p_recursion_level + 1);
 				}
+
 				result += "]";
 			}
 
-			if (array.get_typed_builtin() != Variant::NIL) {
+			if (array.is_typed()) {
 				result += ")";
 			}
 
@@ -226,6 +285,36 @@ String GDScriptDocGen::_docvalue_from_variant(const Variant &p_variant, int p_re
 		} break;
 		default:
 			return p_variant.get_construct_string();
+	}
+}
+
+String GDScriptDocGen::_docvalue_from_expression(const GDP::ExpressionNode *p_expression) {
+	ERR_FAIL_NULL_V(p_expression, String());
+
+	if (p_expression->is_constant) {
+		return _docvalue_from_variant(p_expression->reduced_value);
+	}
+
+	switch (p_expression->type) {
+		case GDP::Node::ARRAY: {
+			const GDP::ArrayNode *array = static_cast<const GDP::ArrayNode *>(p_expression);
+			return array->elements.is_empty() ? "[]" : "[...]";
+		} break;
+		case GDP::Node::CALL: {
+			const GDP::CallNode *call = static_cast<const GDP::CallNode *>(p_expression);
+			return call->function_name.operator String() + (call->arguments.is_empty() ? "()" : "(...)");
+		} break;
+		case GDP::Node::DICTIONARY: {
+			const GDP::DictionaryNode *dict = static_cast<const GDP::DictionaryNode *>(p_expression);
+			return dict->elements.is_empty() ? "{}" : "{...}";
+		} break;
+		case GDP::Node::IDENTIFIER: {
+			const GDP::IdentifierNode *id = static_cast<const GDP::IdentifierNode *>(p_expression);
+			return id->name;
+		} break;
+		default: {
+			return "<unknown>";
+		} break;
 	}
 }
 
@@ -328,16 +417,12 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 					method_doc.return_type = "Variant";
 				}
 
-				for (const GDScriptParser::ParameterNode *p : m_func->parameters) {
+				for (const GDP::ParameterNode *p : m_func->parameters) {
 					DocData::ArgumentDoc arg_doc;
 					arg_doc.name = p->identifier->name;
 					_doctype_from_gdtype(p->get_datatype(), arg_doc.type, arg_doc.enumeration);
 					if (p->initializer != nullptr) {
-						if (p->initializer->is_constant) {
-							arg_doc.default_value = _docvalue_from_variant(p->initializer->reduced_value);
-						} else {
-							arg_doc.default_value = "<unknown>";
-						}
+						arg_doc.default_value = _docvalue_from_expression(p->initializer);
 					}
 					method_doc.arguments.push_back(arg_doc);
 				}
@@ -359,7 +444,7 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				signal_doc.is_experimental = m_signal->doc_data.is_experimental;
 				signal_doc.experimental_message = m_signal->doc_data.experimental_message;
 
-				for (const GDScriptParser::ParameterNode *p : m_signal->parameters) {
+				for (const GDP::ParameterNode *p : m_signal->parameters) {
 					DocData::ArgumentDoc arg_doc;
 					arg_doc.name = p->identifier->name;
 					_doctype_from_gdtype(p->get_datatype(), arg_doc.type, arg_doc.enumeration);
@@ -405,12 +490,8 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 						break;
 				}
 
-				if (m_var->initializer) {
-					if (m_var->initializer->is_constant) {
-						prop_doc.default_value = _docvalue_from_variant(m_var->initializer->reduced_value);
-					} else {
-						prop_doc.default_value = "<unknown>";
-					}
+				if (m_var->initializer != nullptr) {
+					prop_doc.default_value = _docvalue_from_expression(m_var->initializer);
 				}
 
 				prop_doc.overridden = false;

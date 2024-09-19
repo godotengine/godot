@@ -72,7 +72,7 @@ void SceneCreateDialog::config(const String &p_dir) {
 void SceneCreateDialog::accept_create() {
 	if (!get_ok_button()->is_disabled()) {
 		hide();
-		emit_signal(SNAME("confirmed"));
+		emit_signal(SceneStringName(confirmed));
 	}
 }
 
@@ -241,7 +241,7 @@ SceneCreateDialog::SceneCreateDialog() {
 
 		select_node_button = memnew(Button);
 		hb->add_child(select_node_button);
-		select_node_button->connect("pressed", callable_mp(this, &SceneCreateDialog::browse_types));
+		select_node_button->connect(SceneStringName(pressed), callable_mp(this, &SceneCreateDialog::browse_types));
 	}
 
 	{
@@ -291,9 +291,9 @@ SceneCreateDialog::SceneCreateDialog() {
 	validation_panel->set_update_callback(callable_mp(this, &SceneCreateDialog::update_dialog));
 	validation_panel->set_accept_button(get_ok_button());
 
-	node_type_group->connect("pressed", callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
-	scene_name_edit->connect("text_changed", callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
-	root_name_edit->connect("text_changed", callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
+	node_type_group->connect(SceneStringName(pressed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
+	scene_name_edit->connect(SceneStringName(text_changed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
+	root_name_edit->connect(SceneStringName(text_changed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
 
 	set_title(TTR("Create New Scene"));
 	set_min_size(Size2i(400 * EDSCALE, 0));

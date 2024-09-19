@@ -41,7 +41,7 @@ TEST_CASE("[Animation] Empty animation getters") {
 	const Ref<Animation> animation = memnew(Animation);
 
 	CHECK(animation->get_length() == doctest::Approx(real_t(1.0)));
-	CHECK(animation->get_step() == doctest::Approx(real_t(0.1)));
+	CHECK(animation->get_step() == doctest::Approx(real_t(1.0 / 30)));
 }
 
 TEST_CASE("[Animation] Create value track") {

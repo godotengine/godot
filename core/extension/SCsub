@@ -2,8 +2,8 @@
 
 Import("env")
 
-import make_wrappers
 import make_interface_dumper
+import make_wrappers
 
 env.CommandNoCache(["ext_wrappers.gen.inc"], "make_wrappers.py", env.Run(make_wrappers.run))
 env.CommandNoCache(

@@ -92,7 +92,7 @@ Error WindowsUtils::copy_and_rename_pdb(const String &p_dll_path) {
 			DWORD Offset;
 		};
 
-		const DWORD nb10_magic = '01BN';
+		const DWORD nb10_magic = 0x3031424e; // "01BN" (little-endian)
 		struct CV_INFO_PDB20 {
 			CV_HEADER CvHeader; // CvHeader.Signature = "NB10"
 			DWORD Signature;
@@ -100,7 +100,7 @@ Error WindowsUtils::copy_and_rename_pdb(const String &p_dll_path) {
 			BYTE PdbFileName[1];
 		};
 
-		const DWORD rsds_magic = 'SDSR';
+		const DWORD rsds_magic = 0x53445352; // "SDSR" (little-endian)
 		struct CV_INFO_PDB70 {
 			DWORD Signature; // "RSDS"
 			BYTE Guid[16];
@@ -155,7 +155,11 @@ Error WindowsUtils::copy_and_rename_pdb(const String &p_dll_path) {
 	} else if (!FileAccess::exists(copy_pdb_path)) {
 		copy_pdb_path = dll_base_dir.path_join(copy_pdb_path.get_file());
 	}
-	ERR_FAIL_COND_V_MSG(!FileAccess::exists(copy_pdb_path), FAILED, vformat("File '%s' does not exist.", copy_pdb_path));
+	if (!FileAccess::exists(copy_pdb_path)) {
+		// The PDB file may be distributed separately on purpose, so we don't consider this an error.
+		WARN_VERBOSE(vformat("PDB file '%s' for library '%s' was not found, skipping copy/rename.", copy_pdb_path, p_dll_path));
+		return ERR_SKIP;
+	}
 
 	String new_pdb_base_name = p_dll_path.get_file().get_basename() + "_";
 
@@ -220,7 +224,7 @@ Error WindowsUtils::copy_and_rename_pdb(const String &p_dll_path) {
 
 		int original_path_size = pdb_info.path.utf8().length();
 		// Double-check file bounds.
-		ERR_FAIL_INDEX_V_MSG(pdb_info.address + original_path_size, file->get_length(), FAILED, vformat("Failed to write a new PDB path. Probably '%s' has been changed.", p_dll_path));
+		ERR_FAIL_UNSIGNED_INDEX_V_MSG(pdb_info.address + original_path_size, file->get_length(), FAILED, vformat("Failed to write a new PDB path. Probably '%s' has been changed.", p_dll_path));
 
 		Vector<uint8_t> u8 = new_pdb_name.to_utf8_buffer();
 		file->seek(pdb_info.address);

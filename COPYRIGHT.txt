@@ -70,7 +70,8 @@ Copyright: 2020, Manuel Prandini
  2007-2014, Juan Linietsky, Ariel Manzur
 License: Expat
 
-Files: ./platform/android/java/lib/aidl/com/android/*
+Files: ./platform/android/java/editor/src/main/java/com/android/*
+ ./platform/android/java/lib/aidl/com/android/*
  ./platform/android/java/lib/res/layout/status_bar_ongoing_event_progress_bar.xml
  ./platform/android/java/lib/src/com/google/android/*
  ./platform/android/java/lib/src/org/godotengine/godot/input/InputManagerCompat.java
@@ -216,7 +217,7 @@ License: Apache-2.0
 
 Files: ./thirdparty/enet/
 Comment: ENet
-Copyright: 2002-2020, Lee Salzman
+Copyright: 2002-2024, Lee Salzman
 License: Expat
 
 Files: ./thirdparty/etcpak/
@@ -285,13 +286,18 @@ License: HarfBuzz
 
 Files: ./thirdparty/icu4c/
 Comment: International Components for Unicode
-Copyright: 1991-2021, Unicode
+Copyright: 2016-2024, Unicode, Inc.
 License: Unicode
 
 Files: ./thirdparty/jpeg-compressor/
 Comment: jpeg-compressor
 Copyright: 2012, Rich Geldreich
 License: public-domain or Apache-2.0
+
+Files: ./thirdparty/libbacktrace/
+Comment: libbacktrace
+Copyright: 2012-2021, Free Software Foundation, Inc.
+License: BSD-3-clause
 
 Files: ./thirdparty/libktx/
 Comment: KTX
@@ -360,12 +366,6 @@ Copyright: 1998-2010, Gilles Vollant
  2009-2010, Mathias Svensson
 License: Zlib
 
-Files: ./thirdparty/misc/clipper.cpp
- ./thirdparty/misc/clipper.hpp
-Comment: Clipper
-Copyright: 2010-2017, Angus Johnson
-License: BSL-1.0
-
 Files: ./thirdparty/misc/cubemap_coeffs.h
 Comment: Fast Filtering of Reflection Probes
 Copyright: 2016, Activision Publishing, Inc.
@@ -410,6 +410,11 @@ Files: ./thirdparty/misc/polypartition.cpp
  ./thirdparty/misc/polypartition.h
 Comment: PolyPartition / Triangulator
 Copyright: 2011-2021, Ivan Fratric and contributors
+License: Expat
+
+Files: ./thirdparty/misc/qoa.h
+Comment: Quite OK Audio Format
+Copyright: 2023, Dominic Szablewski
 License: Expat
 
 Files: ./thirdparty/misc/r128.c
@@ -471,6 +476,11 @@ Comment: RVO2
 Copyright: 2016, University of North Carolina at Chapel Hill
 License: Apache-2.0
 
+Files: ./thirdparty/spirv-cross/
+Comment: SPIRV-Cross
+Copyright: 2015-2021, Arm Limited
+License: Apache-2.0 or Expat
+
 Files: ./thirdparty/spirv-reflect/
 Comment: SPIRV-Reflect
 Copyright: 2017-2022, Google Inc.
@@ -511,8 +521,8 @@ License: Expat
 Files: ./thirdparty/vulkan/
 Comment: Vulkan Headers
 Copyright: 2014-2024, The Khronos Group Inc.
-  2014-2023, Valve Corporation
-  2014-2023, LunarG, Inc.
+  2014-2024, Valve Corporation
+  2014-2024, LunarG, Inc.
 License: Apache-2.0
 
 Files: ./thirdparty/vulkan/vk_mem_alloc.h
@@ -576,48 +586,6 @@ License: Apache-2.0
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  See the License for the specific language governing permissions and
  limitations under the License.
-
-License: Bitstream Vera Fonts Copyright
- Copyright (c) 2003 by Bitstream, Inc. All Rights Reserved. Bitstream Vera is a
- trademark of Bitstream, Inc.
- .
- Permission is hereby granted, free of charge, to any person obtaining a copy of
- the fonts accompanying this license ("Fonts") and associated documentation
- files (the "Font Software"), to reproduce and distribute the Font Software,
- including without limitation the rights to use, copy, merge, publish,
- distribute, and/or sell copies of the Font Software, and to permit persons to
- whom the Font Software is furnished to do so, subject to the following
- conditions:
- .
- The above copyright and trademark notices and this permission notice shall be
- included in all copies of one or more of the Font Software typefaces.
- .
- The Font Software may be modified, altered, or added to, and in particular the
- designs of glyphs or characters in the Fonts may be modified and additional
- glyphs or characters may be added to the Fonts, only if the fonts are renamed
- to names not containing either the words "Bitstream" or the word "Vera".
- .
- This License becomes null and void to the extent applicable to Fonts or Font
- Software that has been modified and is distributed under the "Bitstream Vera"
- names.
- .
- The Font Software may be sold as part of a larger software package but no copy
- of one or more of the Font Software typefaces may be sold by itself.
- .
- THE FONT SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF COPYRIGHT, PATENT,
- TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL BITSTREAM OR THE GNOME FOUNDATION
- BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, INCLUDING ANY GENERAL,
- SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, WHETHER IN AN ACTION
- OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF THE USE OR INABILITY TO
- USE THE FONT SOFTWARE OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.
- .
- Except as contained in this notice, the names of GNOME, the GNOME Foundation,
- and Bitstream Inc., shall not be used in advertising or otherwise to promote
- the sale, use or other dealings in this Font Software without prior written
- authorization from the GNOME Foundation or Bitstream Inc., respectively. For
- further information, contact: fonts at gnome dot org.
 
 License: BSD-2-clause
  Redistribution and use in source and binary forms, with or without

@@ -264,6 +264,10 @@ public:
 		return -1;
 	}
 
+	bool has(const T &p_val) const {
+		return find(p_val) != -1;
+	}
+
 	template <typename C>
 	void sort_custom() {
 		U len = count;

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -144,7 +145,7 @@ namespace Godot.SourceGenerators
                     .Append("' property.\n")
                     .Append("        /// </summary>\n");
 
-                source.Append("        public new static readonly global::Godot.StringName ");
+                source.Append("        public new static readonly global::Godot.StringName @");
                 source.Append(propertyName);
                 source.Append(" = \"");
                 source.Append(propertyName);
@@ -161,7 +162,7 @@ namespace Godot.SourceGenerators
                     .Append("' field.\n")
                     .Append("        /// </summary>\n");
 
-                source.Append("        public new static readonly global::Godot.StringName ");
+                source.Append("        public new static readonly global::Godot.StringName @");
                 source.Append(fieldName);
                 source.Append(" = \"");
                 source.Append(fieldName);
@@ -172,7 +173,6 @@ namespace Godot.SourceGenerators
 
             if (godotClassProperties.Length > 0 || godotClassFields.Length > 0)
             {
-                bool isFirstEntry;
 
                 // Generate SetGodotClassPropertyValue
 
@@ -186,15 +186,13 @@ namespace Godot.SourceGenerators
                     source.Append("    protected override bool SetGodotClassPropertyValue(in godot_string_name name, ");
                     source.Append("in godot_variant value)\n    {\n");
 
-                    isFirstEntry = true;
                     foreach (var property in godotClassProperties)
                     {
                         if (property.PropertySymbol.IsReadOnly || property.PropertySymbol.SetMethod!.IsInitOnly)
                             continue;
 
                         GeneratePropertySetter(property.PropertySymbol.Name,
-                            property.PropertySymbol.Type, property.Type, source, isFirstEntry);
-                        isFirstEntry = false;
+                            property.PropertySymbol.Type, property.Type, source);
                     }
 
                     foreach (var field in godotClassFields)
@@ -203,8 +201,7 @@ namespace Godot.SourceGenerators
                             continue;
 
                         GeneratePropertySetter(field.FieldSymbol.Name,
-                            field.FieldSymbol.Type, field.Type, source, isFirstEntry);
-                        isFirstEntry = false;
+                            field.FieldSymbol.Type, field.Type, source);
                     }
 
                     source.Append("        return base.SetGodotClassPropertyValue(name, value);\n");
@@ -222,22 +219,19 @@ namespace Godot.SourceGenerators
                     source.Append("    protected override bool GetGodotClassPropertyValue(in godot_string_name name, ");
                     source.Append("out godot_variant value)\n    {\n");
 
-                    isFirstEntry = true;
                     foreach (var property in godotClassProperties)
                     {
                         if (property.PropertySymbol.IsWriteOnly)
                             continue;
 
                         GeneratePropertyGetter(property.PropertySymbol.Name,
-                            property.PropertySymbol.Type, property.Type, source, isFirstEntry);
-                        isFirstEntry = false;
+                            property.PropertySymbol.Type, property.Type, source);
                     }
 
                     foreach (var field in godotClassFields)
                     {
                         GeneratePropertyGetter(field.FieldSymbol.Name,
-                            field.FieldSymbol.Type, field.Type, source, isFirstEntry);
-                        isFirstEntry = false;
+                            field.FieldSymbol.Type, field.Type, source);
                     }
 
                     source.Append("        return base.GetGodotClassPropertyValue(name, out value);\n");
@@ -318,19 +312,15 @@ namespace Godot.SourceGenerators
             string propertyMemberName,
             ITypeSymbol propertyTypeSymbol,
             MarshalType propertyMarshalType,
-            StringBuilder source,
-            bool isFirstEntry
+            StringBuilder source
         )
         {
             source.Append("        ");
 
-            if (!isFirstEntry)
-                source.Append("else ");
-
-            source.Append("if (name == PropertyName.")
+            source.Append("if (name == PropertyName.@")
                 .Append(propertyMemberName)
                 .Append(") {\n")
-                .Append("            this.")
+                .Append("            this.@")
                 .Append(propertyMemberName)
                 .Append(" = ")
                 .AppendNativeVariantToManagedExpr("value", propertyTypeSymbol, propertyMarshalType)
@@ -343,20 +333,16 @@ namespace Godot.SourceGenerators
             string propertyMemberName,
             ITypeSymbol propertyTypeSymbol,
             MarshalType propertyMarshalType,
-            StringBuilder source,
-            bool isFirstEntry
+            StringBuilder source
         )
         {
             source.Append("        ");
 
-            if (!isFirstEntry)
-                source.Append("else ");
-
-            source.Append("if (name == PropertyName.")
+            source.Append("if (name == PropertyName.@")
                 .Append(propertyMemberName)
                 .Append(") {\n")
                 .Append("            value = ")
-                .AppendManagedToNativeVariantExpr("this." + propertyMemberName,
+                .AppendManagedToNativeVariantExpr("this.@" + propertyMemberName,
                     propertyTypeSymbol, propertyMarshalType)
                 .Append(";\n")
                 .Append("            return true;\n")
@@ -382,7 +368,7 @@ namespace Godot.SourceGenerators
         {
             source.Append("        properties.Add(new(type: (global::Godot.Variant.Type)")
                 .Append((int)propertyInfo.Type)
-                .Append(", name: PropertyName.")
+                .Append(", name: PropertyName.@")
                 .Append(propertyInfo.Name)
                 .Append(", hint: (global::Godot.PropertyHint)")
                 .Append((int)propertyInfo.Hint)
@@ -590,6 +576,11 @@ namespace Godot.SourceGenerators
 
             if (variantType == VariantType.Object && type is INamedTypeSymbol memberNamedType)
             {
+                if (TryGetNodeOrResourceType(exportAttr, out hint, out hintString))
+                {
+                    return true;
+                }
+
                 if (memberNamedType.InheritsFrom("GodotSharp", "Godot.Resource"))
                 {
                     hint = PropertyHint.ResourceType;
@@ -605,6 +596,37 @@ namespace Godot.SourceGenerators
 
                     return true;
                 }
+            }
+
+            static bool TryGetNodeOrResourceType(AttributeData exportAttr, out PropertyHint hint, out string? hintString)
+            {
+                hint = PropertyHint.None;
+                hintString = null;
+
+                if (exportAttr.ConstructorArguments.Length <= 1) return false;
+
+                var hintValue = exportAttr.ConstructorArguments[0].Value;
+
+                var hintEnum = hintValue switch
+                {
+                    null => PropertyHint.None,
+                    int intValue => (PropertyHint)intValue,
+                    _ => (PropertyHint)(long)hintValue
+                };
+
+                if (!hintEnum.HasFlag(PropertyHint.NodeType) && !hintEnum.HasFlag(PropertyHint.ResourceType))
+                    return false;
+
+                var hintStringValue = exportAttr.ConstructorArguments[1].Value?.ToString();
+                if (string.IsNullOrWhiteSpace(hintStringValue))
+                {
+                    return false;
+                }
+
+                hint = hintEnum;
+                hintString = hintStringValue;
+
+                return true;
             }
 
             static string GetTypeName(INamedTypeSymbol memberSymbol)
@@ -658,7 +680,10 @@ namespace Godot.SourceGenerators
                 var elementType = MarshalUtils.GetArrayElementType(type);
 
                 if (elementType == null)
-                    return false; // Non-generic Array, so there's no hint to add
+                    return false; // Non-generic Array, so there's no hint to add.
+
+                if (elementType.TypeKind == TypeKind.TypeParameter)
+                    return false; // The generic is not constructed, we can't really hint anything.
 
                 var elementMarshalType = MarshalUtils.ConvertManagedTypeToMarshalType(elementType, typeCache)!.Value;
                 var elementVariantType = MarshalUtils.ConvertMarshalTypeToVariantType(elementMarshalType)!.Value;
@@ -704,8 +729,72 @@ namespace Godot.SourceGenerators
 
             if (!isTypeArgument && variantType == VariantType.Dictionary)
             {
-                // TODO: Dictionaries are not supported in the inspector
-                return false;
+                var elementTypes = MarshalUtils.GetGenericElementTypes(type);
+
+                if (elementTypes == null)
+                    return false; // Non-generic Dictionary, so there's no hint to add
+                Debug.Assert(elementTypes.Length == 2);
+
+                var keyElementMarshalType = MarshalUtils.ConvertManagedTypeToMarshalType(elementTypes[0], typeCache)!.Value;
+                var keyElementVariantType = MarshalUtils.ConvertMarshalTypeToVariantType(keyElementMarshalType)!.Value;
+                var keyIsPresetHint = false;
+                var keyHintString = (string?)null;
+
+                if (keyElementVariantType == VariantType.String || keyElementVariantType == VariantType.StringName)
+                    keyIsPresetHint = GetStringArrayEnumHint(keyElementVariantType, exportAttr, out keyHintString);
+
+                if (!keyIsPresetHint)
+                {
+                    bool hintRes = TryGetMemberExportHint(typeCache, elementTypes[0],
+                        exportAttr, keyElementVariantType, isTypeArgument: true,
+                        out var keyElementHint, out var keyElementHintString);
+
+                    // Format: type/hint:hint_string
+                    if (hintRes)
+                    {
+                        keyHintString = (int)keyElementVariantType + "/" + (int)keyElementHint + ":";
+
+                        if (keyElementHintString != null)
+                            keyHintString += keyElementHintString;
+                    }
+                    else
+                    {
+                        keyHintString = (int)keyElementVariantType + "/" + (int)PropertyHint.None + ":";
+                    }
+                }
+
+                var valueElementMarshalType = MarshalUtils.ConvertManagedTypeToMarshalType(elementTypes[1], typeCache)!.Value;
+                var valueElementVariantType = MarshalUtils.ConvertMarshalTypeToVariantType(valueElementMarshalType)!.Value;
+                var valueIsPresetHint = false;
+                var valueHintString = (string?)null;
+
+                if (valueElementVariantType == VariantType.String || valueElementVariantType == VariantType.StringName)
+                    valueIsPresetHint = GetStringArrayEnumHint(valueElementVariantType, exportAttr, out valueHintString);
+
+                if (!valueIsPresetHint)
+                {
+                    bool hintRes = TryGetMemberExportHint(typeCache, elementTypes[1],
+                        exportAttr, valueElementVariantType, isTypeArgument: true,
+                        out var valueElementHint, out var valueElementHintString);
+
+                    // Format: type/hint:hint_string
+                    if (hintRes)
+                    {
+                        valueHintString = (int)valueElementVariantType + "/" + (int)valueElementHint + ":";
+
+                        if (valueElementHintString != null)
+                            valueHintString += valueElementHintString;
+                    }
+                    else
+                    {
+                        valueHintString = (int)valueElementVariantType + "/" + (int)PropertyHint.None + ":";
+                    }
+                }
+
+                hint = PropertyHint.DictionaryType;
+
+                hintString = keyHintString != null && valueHintString != null ? $"{keyHintString};{valueHintString}" : null;
+                return hintString != null;
             }
 
             return false;

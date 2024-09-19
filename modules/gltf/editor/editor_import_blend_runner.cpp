@@ -43,6 +43,7 @@ from xmlrpc.server import SimpleXMLRPCServer
 req = threading.Condition()
 res = threading.Condition()
 info = None
+export_err = None
 def xmlrpc_server():
   server = SimpleXMLRPCServer(('127.0.0.1', %d))
   server.register_function(export_gltf)
@@ -54,6 +55,10 @@ def export_gltf(opts):
     req.notify()
   with res:
     res.wait()
+  if export_err:
+    raise export_err
+  # Important to return a value to prevent the error 'cannot marshal None unless allow_none is enabled'.
+  return 'BLENDER_GODOT_EXPORT_SUCCESSFUL'
 if bpy.app.version < (3, 0, 0):
   print('Blender 3.0 or higher is required.', file=sys.stderr)
 threading.Thread(target=xmlrpc_server).start()
@@ -64,12 +69,13 @@ while True:
   method, opts = info
   if method == 'export_gltf':
     try:
+      export_err = None
       bpy.ops.wm.open_mainfile(filepath=opts['path'])
       if opts['unpack_all']:
         bpy.ops.file.unpack_all(method='USE_LOCAL')
       bpy.ops.export_scene.gltf(**opts['gltf_options'])
-    except:
-      pass
+    except Exception as e:
+      export_err = e
   info = None
   with res:
     res.notify()
@@ -184,7 +190,9 @@ Error EditorImportBlendRunner::do_import(const Dictionary &p_options) {
 				EditorSettings::get_singleton()->set_manually("filesystem/import/blender/rpc_port", 0);
 				rpc_port = 0;
 			}
-			err = do_import_direct(p_options);
+			if (err != ERR_QUERY_FAILED) {
+				err = do_import_direct(p_options);
+			}
 		}
 		return err;
 	} else {
@@ -259,6 +267,7 @@ Error EditorImportBlendRunner::do_import_rpc(const Dictionary &p_options) {
 
 	// Wait for response.
 	bool done = false;
+	PackedByteArray response;
 	while (!done) {
 		status = client->get_status();
 		switch (status) {
@@ -268,7 +277,10 @@ Error EditorImportBlendRunner::do_import_rpc(const Dictionary &p_options) {
 			}
 			case HTTPClient::STATUS_BODY: {
 				client->poll();
-				// Parse response here if needed. For now we can just ignore it.
+				response.append_array(client->read_response_body_chunk());
+				break;
+			}
+			case HTTPClient::STATUS_CONNECTED: {
 				done = true;
 				break;
 			}
@@ -278,7 +290,54 @@ Error EditorImportBlendRunner::do_import_rpc(const Dictionary &p_options) {
 		}
 	}
 
+	String response_text = "No response from Blender.";
+	if (response.size() > 0) {
+		response_text = String::utf8((const char *)response.ptr(), response.size());
+	}
+
+	if (client->get_response_code() != HTTPClient::RESPONSE_OK) {
+		ERR_FAIL_V_MSG(ERR_QUERY_FAILED, vformat("Error received from Blender - status code: %s, error: %s", client->get_response_code(), response_text));
+	} else if (response_text.find("BLENDER_GODOT_EXPORT_SUCCESSFUL") < 0) {
+		// Previous versions of Godot used a Python script where the RPC function did not return
+		// a value, causing the error 'cannot marshal None unless allow_none is enabled'.
+		// If an older version of Godot is running and has started Blender with this script,
+		// we will receive the error, but there's a good chance that the import was successful.
+		// We are discarding this error to maintain backward compatibility and prevent situations
+		// where the user needs to close the older version of Godot or kill Blender.
+		if (response_text.find("cannot marshal None unless allow_none is enabled") < 0) {
+			String error_message;
+			if (_extract_error_message_xml(response, error_message)) {
+				ERR_FAIL_V_MSG(ERR_QUERY_FAILED, vformat("Blender exportation failed: %s", error_message));
+			} else {
+				ERR_FAIL_V_MSG(ERR_QUERY_FAILED, vformat("Blender exportation failed: %s", response_text));
+			}
+		}
+	}
+
 	return OK;
+}
+
+bool EditorImportBlendRunner::_extract_error_message_xml(const Vector<uint8_t> &p_response_data, String &r_error_message) {
+	// Based on RPC Xml spec from: https://xmlrpc.com/spec.md
+	Ref<XMLParser> parser = memnew(XMLParser);
+	Error err = parser->open_buffer(p_response_data);
+	if (err) {
+		return false;
+	}
+
+	r_error_message = String();
+	while (parser->read() == OK) {
+		if (parser->get_node_type() == XMLParser::NODE_TEXT) {
+			if (parser->get_node_data().size()) {
+				if (r_error_message.size()) {
+					r_error_message += " ";
+				}
+				r_error_message += parser->get_node_data().trim_suffix("\n");
+			}
+		}
+	}
+
+	return r_error_message.size();
 }
 
 Error EditorImportBlendRunner::do_import_direct(const Dictionary &p_options) {

@@ -40,10 +40,17 @@
 - (void)doNothing:(id)sender {
 }
 
-- (void)menuNeedsUpdate:(NSMenu *)menu {
+- (void)menuWillOpen:(NSMenu *)menu {
 	if (NativeMenu::get_singleton()) {
 		NativeMenuMacOS *nmenu = (NativeMenuMacOS *)NativeMenu::get_singleton();
 		nmenu->_menu_open(menu);
+	}
+}
+
+- (void)menuNeedsUpdate:(NSMenu *)menu {
+	if (NativeMenu::get_singleton()) {
+		NativeMenuMacOS *nmenu = (NativeMenuMacOS *)NativeMenu::get_singleton();
+		nmenu->_menu_need_update(menu);
 	}
 }
 

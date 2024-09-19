@@ -32,9 +32,9 @@
 #define FONT_CONFIG_PLUGIN_H
 
 #include "core/io/marshalls.h"
-#include "editor/editor_plugin.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_properties_array_dict.h"
+#include "editor/plugins/editor_plugin.h"
 
 /*************************************************************************/
 
@@ -46,7 +46,6 @@ class EditorPropertyFontMetaObject : public RefCounted {
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
-	static void _bind_methods();
 
 public:
 	void set_dict(const Dictionary &p_dict);
@@ -224,6 +223,8 @@ protected:
 	static void _bind_methods();
 
 	Ref<Font> prev_font;
+
+	void _preview_changed();
 
 public:
 	virtual Size2 get_minimum_size() const override;

@@ -134,6 +134,11 @@ class SkeletonIK3D : public SkeletonModifier3D {
 	Variant target_node_override_ref = Variant();
 	FabrikInverseKinematic::Task *task = nullptr;
 
+#ifndef DISABLE_DEPRECATED
+	void _set_interpolation(real_t p_interpolation);
+	real_t _get_interpolation() const;
+#endif // DISABLE_DEPRECATED
+
 protected:
 	void _validate_property(PropertyInfo &p_property) const;
 

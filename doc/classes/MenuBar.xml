@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="MenuBar" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A horizontal menu bar that creates a [MenuButton] for each [PopupMenu] child.
+		A horizontal menu bar that creates a menu for each [PopupMenu] child.
 	</brief_description>
 	<description>
-		A horizontal menu bar that creates a [MenuButton] for each [PopupMenu] child. New items are created by adding [PopupMenu]s to this node.
+		A horizontal menu bar that creates a menu for each [PopupMenu] child. New items are created by adding [PopupMenu]s to this node.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -105,9 +105,11 @@
 		</member>
 		<member name="prefer_global_menu" type="bool" setter="set_prefer_global_menu" getter="is_prefer_global_menu" default="true">
 			If [code]true[/code], [MenuBar] will use system global menu when supported.
+			[b]Note:[/b] If [code]true[/code] and global menu is supported, this node is not displayed, has zero size, and all its child nodes except [PopupMenu]s are inaccessible.
+			[b]Note:[/b] This property overrides the value of the [member PopupMenu.prefer_native_menu] property of the child nodes.
 		</member>
 		<member name="start_index" type="int" setter="set_start_index" getter="get_start_index" default="-1">
-			Position in the global menu to insert first [MenuBar] item at.
+			Position order in the global menu to insert [MenuBar] items at. All menu items in the [MenuBar] are always inserted as a continuous range. Menus with lower [member start_index] are inserted first. Menus with [member start_index] equal to [code]-1[/code] are inserted last.
 		</member>
 		<member name="switch_on_hover" type="bool" setter="set_switch_on_hover" getter="is_switch_on_hover" default="true">
 			If [code]true[/code], when the cursor hovers above menu item, it will close the current [PopupMenu] and open the other one.

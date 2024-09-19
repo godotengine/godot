@@ -1,8 +1,8 @@
 import os
 import sys
-from methods import detect_darwin_sdk_path
-
 from typing import TYPE_CHECKING
+
+from methods import detect_darwin_sdk_path, print_error
 
 if TYPE_CHECKING:
     from SCons.Script.SConscript import SConsEnvironment
@@ -47,24 +47,25 @@ def get_doc_path():
 
 
 def get_flags():
-    return [
-        ("arch", "arm64"),  # Default for convenience.
-        ("target", "template_debug"),
-        ("use_volk", False),
-        ("supported", ["mono"]),
-        ("builtin_pcre2_with_jit", False),
-    ]
+    return {
+        "arch": "arm64",
+        "target": "template_debug",
+        "use_volk": False,
+        "metal": True,
+        "supported": ["metal", "mono"],
+        "builtin_pcre2_with_jit": False,
+    }
 
 
 def configure(env: "SConsEnvironment"):
     # Validate arch.
     supported_arches = ["x86_64", "arm64"]
     if env["arch"] not in supported_arches:
-        print(
+        print_error(
             'Unsupported CPU architecture "%s" for iOS. Supported architectures are: %s.'
             % (env["arch"], ", ".join(supported_arches))
         )
-        sys.exit()
+        sys.exit(255)
 
     ## LTO
 
@@ -118,7 +119,7 @@ def configure(env: "SConsEnvironment"):
 
     if env["arch"] == "x86_64":
         if not env["ios_simulator"]:
-            print("ERROR: Building for iOS with 'arch=x86_64' requires 'ios_simulator=yes'.")
+            print_error("Building for iOS with 'arch=x86_64' requires 'ios_simulator=yes'.")
             sys.exit(255)
 
         env["ENV"]["MACOSX_DEPLOYMENT_TARGET"] = "10.9"
@@ -154,8 +155,22 @@ def configure(env: "SConsEnvironment"):
     env.Prepend(CPPPATH=["#platform/ios"])
     env.Append(CPPDEFINES=["IOS_ENABLED", "UNIX_ENABLED", "COREAUDIO_ENABLED"])
 
+    if env["metal"] and env["arch"] != "arm64":
+        # Only supported on arm64, so skip it for x86_64 builds.
+        env["metal"] = False
+
+    if env["metal"]:
+        env.AppendUnique(CPPDEFINES=["METAL_ENABLED", "RD_ENABLED"])
+        env.Prepend(
+            CPPPATH=[
+                "$IOS_SDK_PATH/System/Library/Frameworks/Metal.framework/Headers",
+                "$IOS_SDK_PATH/System/Library/Frameworks/QuartzCore.framework/Headers",
+            ]
+        )
+        env.Prepend(CPPPATH=["#thirdparty/spirv-cross"])
+
     if env["vulkan"]:
-        env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
+        env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
 
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES3_ENABLED", "GLES_SILENCE_DEPRECATION"])

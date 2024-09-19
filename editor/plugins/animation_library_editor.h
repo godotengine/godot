@@ -32,7 +32,7 @@
 #define ANIMATION_LIBRARY_EDITOR_H
 
 #include "editor/animation_track_editor.h"
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/animation/animation_mixer.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
@@ -113,6 +113,7 @@ class AnimationLibraryEditor : public AcceptDialog {
 protected:
 	void _notification(int p_what);
 	void _update_editor(Object *p_mixer);
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 	static void _bind_methods();
 
 public:

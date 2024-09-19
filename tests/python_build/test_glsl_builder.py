@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from glsl_builders import build_raw_header, RAWHeaderStruct, build_rd_header, RDHeaderStruct
+from glsl_builders import RAWHeaderStruct, RDHeaderStruct, build_raw_header, build_rd_header
 
 
 @pytest.mark.parametrize(

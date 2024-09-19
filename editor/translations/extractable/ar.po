@@ -19,20 +19,14 @@ msgstr ""
 "n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
 "X-Generator: Weblate 5.5-dev\n"
 
-msgid "Example: %s"
-msgstr "مثال: %s"
-
-msgid "%d item"
-msgid_plural "%d items"
-msgstr[0] "%d عنصر"
-msgstr[1] "%d عنصر"
-msgstr[2] "%d عنصران"
-msgstr[3] "%d عناصر"
-msgstr[4] "%d عناصر"
-msgstr[5] "%d عناصر"
-
 msgid "New Code Region"
 msgstr "منطقة الكود الجديدة"
+
+msgid "Pick a color from the screen."
+msgstr "اختر لونًا من الشاشة."
+
+msgid "Pick a color from the application window."
+msgstr "اختر لونًا من نافذة التطبيق."
 
 msgid ""
 "Color: #%s\n"
@@ -49,12 +43,6 @@ msgid ""
 msgstr ""
 "اللون: #%s\n"
 "الزر الأيسر للفأرة (LMB): تطبيق اللون"
-
-msgid "Pick a color from the screen."
-msgstr "اختر لونًا من الشاشة."
-
-msgid "Pick a color from the application window."
-msgstr "اختر لونًا من نافذة التطبيق."
 
 msgid "Select a picker shape."
 msgstr "اختر شكل الملقاط."

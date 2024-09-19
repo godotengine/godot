@@ -185,7 +185,14 @@ private:
 	};
 
 	uint32_t cluster_size = 32;
+#if defined(MACOS_ENABLED) || defined(IOS_ENABLED)
+	// Results in visual artifacts on macOS and iOS when using MSAA and subgroups.
+	// Using subgroups and disabling MSAA is the optimal solution for now and also works
+	// with MoltenVK.
+	bool use_msaa = false;
+#else
 	bool use_msaa = true;
+#endif
 	Divisor divisor = DIVISOR_4;
 
 	Size2i screen_size;

@@ -1,0 +1,89 @@
+This file contains the expected output of --validate-extension-api when run against the extension_api.json of the
+4.3-stable tag (the basename of this file).
+
+Only lines that start with "Validate extension JSON:" matter, everything else is considered a comment and ignored. They
+should instead be used to justify these changes and describe how users should work around these changes.
+
+Add new entries at the end of the file.
+
+## Changes between 4.3-stable and 4.4-stable
+
+GH-95374
+--------
+Validate extension JSON: Error: Field 'classes/ShapeCast2D/properties/collision_result': getter changed value in new API, from "_get_collision_result" to &"get_collision_result".
+Validate extension JSON: Error: Field 'classes/ShapeCast3D/properties/collision_result': getter changed value in new API, from "_get_collision_result" to &"get_collision_result".
+
+These getters have been renamed to expose them. GDExtension language bindings couldn't have exposed these properties before.
+
+
+GH-90993
+--------
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/draw_list_begin/arguments': size changed value in new API, from 9 to 10.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/draw_list_begin/arguments/9': type changed value in new API, from "Array" to "int".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/draw_list_begin/arguments/9': default_value changed value in new API, from "Array[RID]([])" to "0".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/draw_list_begin/arguments/9': type changed value in new API, from "typedarray::RID" to "int".
+
+draw_list_begin added a new optional debug argument called breadcrumb.
+There used to be an Array argument as arg #9 initially, then changed to typedarray::RID in 4.1, and finally removed in 4.3.
+Since we're adding a new one at the same location, we need to silence those warnings for 4.1 and 4.3.
+
+
+GH-95126
+--------
+Validate extension JSON: Error: Field 'classes/Shader/methods/get_default_texture_parameter/return_value': type changed value in new API, from "Texture2D" to "Texture".
+Validate extension JSON: Error: Field 'classes/Shader/methods/set_default_texture_parameter/arguments/1': type changed value in new API, from "Texture2D" to "Texture".
+Validate extension JSON: Error: Field 'classes/VisualShaderNodeCubemap/methods/get_cube_map/return_value': type changed value in new API, from "Cubemap" to "TextureLayered".
+Validate extension JSON: Error: Field 'classes/VisualShaderNodeCubemap/methods/set_cube_map/arguments/0': type changed value in new API, from "Cubemap" to "TextureLayered".
+Validate extension JSON: Error: Field 'classes/VisualShaderNodeCubemap/properties/cube_map': type changed value in new API, from "Cubemap" to "Cubemap,CompressedCubemap,PlaceholderCubemap,TextureCubemapRD".
+Validate extension JSON: Error: Field 'classes/VisualShaderNodeTexture2DArray/methods/get_texture_array/return_value': type changed value in new API, from "Texture2DArray" to "TextureLayered".
+Validate extension JSON: Error: Field 'classes/VisualShaderNodeTexture2DArray/methods/set_texture_array/arguments/0': type changed value in new API, from "Texture2DArray" to "TextureLayered".
+Validate extension JSON: Error: Field 'classes/VisualShaderNodeTexture2DArray/properties/texture_array': type changed value in new API, from "Texture2DArray" to "Texture2DArray,CompressedTexture2DArray,PlaceholderTexture2DArray,Texture2DArrayRD".
+
+Allow setting a cubemap as default parameter to shader.
+Compatibility methods registered.
+
+
+GH-93605
+--------
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/Semaphore/methods/post': arguments
+
+Optional arguments added. Compatibility methods registered.
+
+
+GH-95212
+--------
+Validate extension JSON: Error: Field 'classes/RegEx/methods/compile/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/RegEx/methods/create_from_string/arguments': size changed value in new API, from 1 to 2.
+
+Add optional argument to control error printing on compilation fail. Compatibility methods registered.
+
+
+GH-95375
+--------
+Validate extension JSON: Error: Field 'classes/AudioStreamPlayer/properties/playing': setter changed value in new API, from "_set_playing" to &"set_playing".
+Validate extension JSON: Error: Field 'classes/AudioStreamPlayer2D/properties/playing': setter changed value in new API, from "_set_playing" to &"set_playing".
+Validate extension JSON: Error: Field 'classes/AudioStreamPlayer3D/properties/playing': setter changed value in new API, from "_set_playing" to &"set_playing".
+
+These setters have been renamed to expose them. GDExtension language bindings couldn't have exposed these properties before.
+
+
+GH-94322
+--------
+Validate extension JSON: Error: Field 'classes/EditorInterface/methods/popup_node_selector/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/EditorInterface/methods/popup_property_selector/arguments': size changed value in new API, from 3 to 4.
+
+Added optional argument to popup_property_selector and popup_node_selector to specify the current value.
+
+
+GH-94434
+--------
+Validate extension JSON: Error: Field 'classes/OS/methods/execute_with_pipe/arguments': size changed value in new API, from 2 to 3.
+
+Optional argument added. Compatibility method registered.
+
+
+GH-94684
+--------
+Validate extension JSON: Error: Field 'classes/SoftBody3D/methods/set_point_pinned/arguments': size changed value in new API, from 3 to 4.
+
+Optional argument added to allow for adding pin point at specific index. Compatibility method registered.

@@ -76,7 +76,8 @@ public:
 class EditorResourcePreview : public Node {
 	GDCLASS(EditorResourcePreview, Node);
 
-	static EditorResourcePreview *singleton;
+	inline static constexpr int CURRENT_METADATA_VERSION = 1; // Increment this number to invalidate all previews.
+	inline static EditorResourcePreview *singleton = nullptr;
 
 	struct QueueItem {
 		Ref<Resource> resource;
@@ -98,12 +99,9 @@ class EditorResourcePreview : public Node {
 		Ref<Texture2D> preview;
 		Ref<Texture2D> small_preview;
 		Dictionary preview_metadata;
-		int order = 0;
 		uint32_t last_hash = 0;
 		uint64_t modified_time = 0;
 	};
-
-	int order;
 
 	HashMap<String, Item> cache;
 
@@ -118,7 +116,7 @@ class EditorResourcePreview : public Node {
 	void _iterate();
 
 	void _write_preview_cache(Ref<FileAccess> p_file, int p_thumbnail_size, bool p_has_small_texture, uint64_t p_modified_time, const String &p_hash, const Dictionary &p_metadata);
-	void _read_preview_cache(Ref<FileAccess> p_file, int *r_thumbnail_size, bool *r_has_small_texture, uint64_t *r_modified_time, String *r_hash, Dictionary *r_metadata);
+	void _read_preview_cache(Ref<FileAccess> p_file, int *r_thumbnail_size, bool *r_has_small_texture, uint64_t *r_modified_time, String *r_hash, Dictionary *r_metadata, bool *r_outdated);
 
 	Vector<Ref<EditorResourcePreviewGenerator>> preview_generators;
 

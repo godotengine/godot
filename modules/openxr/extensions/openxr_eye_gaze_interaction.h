@@ -50,11 +50,17 @@ public:
 
 	virtual void on_register_metadata() override;
 
+	bool get_eye_gaze_pose(double p_dist, Vector3 &r_eye_pose);
+
 private:
 	static OpenXREyeGazeInteractionExtension *singleton;
 
 	bool available = false;
 	XrSystemEyeGazeInteractionPropertiesEXT properties;
+
+	bool init_eye_gaze_pose = false;
+	RID eye_tracker;
+	RID eye_action;
 };
 
 #endif // OPENXR_EYE_GAZE_INTERACTION_H

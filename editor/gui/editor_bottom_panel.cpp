@@ -37,6 +37,7 @@
 #include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/engine_update_label.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
@@ -80,9 +81,9 @@ void EditorBottomPanel::_switch_to_item(bool p_visible, int p_idx) {
 		}
 		if (EditorDebuggerNode::get_singleton() == items[p_idx].control) {
 			// This is the debug panel which uses tabs, so the top section should be smaller.
-			add_theme_style_override("panel", get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles)));
+			add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles)));
 		} else {
-			add_theme_style_override("panel", get_theme_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
+			add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
 		}
 		center_split->set_dragger_visibility(SplitContainer::DRAGGER_VISIBLE);
 		center_split->set_collapsed(false);
@@ -91,7 +92,7 @@ void EditorBottomPanel::_switch_to_item(bool p_visible, int p_idx) {
 		}
 		expand_button->show();
 	} else {
-		add_theme_style_override("panel", get_theme_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
+		add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
 		items[p_idx].button->set_pressed_no_signal(false);
 		items[p_idx].control->set_visible(false);
 		center_split->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN);
@@ -157,7 +158,7 @@ void EditorBottomPanel::load_layout_from_config(Ref<ConfigFile> p_config_file, c
 Button *EditorBottomPanel::add_item(String p_text, Control *p_item, const Ref<Shortcut> &p_shortcut, bool p_at_front) {
 	Button *tb = memnew(Button);
 	tb->set_theme_type_variation("BottomPanelButton");
-	tb->connect("toggled", callable_mp(this, &EditorBottomPanel::_switch_by_control).bind(p_item));
+	tb->connect(SceneStringName(toggled), callable_mp(this, &EditorBottomPanel::_switch_by_control).bind(p_item));
 	tb->set_drag_forwarding(Callable(), callable_mp(this, &EditorBottomPanel::_button_drag_hover).bind(tb, p_item), Callable());
 	tb->set_text(p_text);
 	tb->set_shortcut(p_shortcut);
@@ -177,16 +178,21 @@ Button *EditorBottomPanel::add_item(String p_text, Control *p_item, const Ref<Sh
 	bpi.button = tb;
 	bpi.control = p_item;
 	bpi.name = p_text;
-	items.push_back(bpi);
+	if (p_at_front) {
+		items.insert(0, bpi);
+	} else {
+		items.push_back(bpi);
+	}
 
 	return tb;
 }
 
 void EditorBottomPanel::remove_item(Control *p_item) {
+	bool was_visible = false;
 	for (int i = 0; i < items.size(); i++) {
 		if (items[i].control == p_item) {
 			if (p_item->is_visible_in_tree()) {
-				_switch_to_item(false, i);
+				was_visible = true;
 			}
 			item_vbox->remove_child(items[i].control);
 			button_hbox->remove_child(items[i].button);
@@ -194,6 +200,16 @@ void EditorBottomPanel::remove_item(Control *p_item) {
 			items.remove_at(i);
 			break;
 		}
+	}
+
+	if (was_visible) {
+		// Open the first panel to ensure that if the removed dock was visible, the bottom
+		// panel will not collapse.
+		_switch_to_item(true, 0);
+	} else if (last_opened_control == p_item) {
+		// When a dock is removed by plugins, it might not have been visible, and it
+		// might have been the last_opened_control. We need to make sure to reset the last opened control.
+		last_opened_control = items[0].control;
 	}
 }
 
@@ -264,7 +280,7 @@ EditorBottomPanel::EditorBottomPanel() {
 		build_date = TTR("(unknown)");
 	}
 	version_btn->set_tooltip_text(vformat(TTR("Git commit date: %s\nClick to copy the version information."), build_date));
-	version_btn->connect("pressed", callable_mp(this, &EditorBottomPanel::_version_button_pressed));
+	version_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorBottomPanel::_version_button_pressed));
 	version_btn->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	bottom_hbox->add_child(version_btn);
 
@@ -279,5 +295,5 @@ EditorBottomPanel::EditorBottomPanel() {
 	expand_button->set_theme_type_variation("FlatMenuButton");
 	expand_button->set_toggle_mode(true);
 	expand_button->set_shortcut(ED_SHORTCUT_AND_COMMAND("editor/bottom_panel_expand", TTR("Expand Bottom Panel"), KeyModifierMask::SHIFT | Key::F12));
-	expand_button->connect("toggled", callable_mp(this, &EditorBottomPanel::_expand_button_toggled));
+	expand_button->connect(SceneStringName(toggled), callable_mp(this, &EditorBottomPanel::_expand_button_toggled));
 }

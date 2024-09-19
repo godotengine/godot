@@ -16,7 +16,7 @@ var prop3 := 42:
 		#<^^^ -> prop3
 var prop4: int:
 #   ^^^^^ prop4 -> prop4
-	get: 
+	get:
 		return 42
 var prop5 := 42:
 #   ^^^^^ prop5 -> prop5

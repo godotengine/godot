@@ -3,4 +3,4 @@ GDTEST_RUNTIME_ERROR
 >> on function: test()
 >> runtime/errors/constant_dictionary_is_deep.gd
 >> 6
->> Invalid assignment of index '0' (on base: 'Array') with value of type 'int'.
+>> Invalid assignment on read-only value (on base: 'Array').

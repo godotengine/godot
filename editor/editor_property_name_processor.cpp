@@ -30,7 +30,7 @@
 
 #include "editor_property_name_processor.h"
 
-#include "core/string/translation.h"
+#include "core/string/translation_server.h"
 #include "editor_settings.h"
 
 EditorPropertyNameProcessor *EditorPropertyNameProcessor::singleton = nullptr;
@@ -63,7 +63,7 @@ bool EditorPropertyNameProcessor::is_localization_available() {
 		return false;
 	}
 	const Vector<String> forbidden = String("en").split(",");
-	return forbidden.find(EDITOR_GET("interface/editor/editor_language")) == -1;
+	return !forbidden.has(EDITOR_GET("interface/editor/editor_language"));
 }
 
 String EditorPropertyNameProcessor::_capitalize_name(const String &p_name) const {
@@ -75,7 +75,7 @@ String EditorPropertyNameProcessor::_capitalize_name(const String &p_name) const
 	Vector<String> parts = p_name.split("_", false);
 	for (int i = 0; i < parts.size(); i++) {
 		// Articles/conjunctions/prepositions which should only be capitalized when not at beginning and end.
-		if (i > 0 && i + 1 < parts.size() && stop_words.find(parts[i]) != -1) {
+		if (i > 0 && i + 1 < parts.size() && stop_words.has(parts[i])) {
 			continue;
 		}
 		HashMap<String, String>::ConstIterator remap = capitalize_string_remaps.find(parts[i]);
@@ -148,6 +148,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	// https://github.com/godotengine/godot-editor-l10n/blob/main/scripts/common.py
 	capitalize_string_remaps["2d"] = "2D";
 	capitalize_string_remaps["3d"] = "3D";
+	capitalize_string_remaps["4d"] = "4D";
 	capitalize_string_remaps["aa"] = "AA";
 	capitalize_string_remaps["aabb"] = "AABB";
 	capitalize_string_remaps["adb"] = "ADB";

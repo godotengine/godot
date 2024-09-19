@@ -31,7 +31,7 @@ class SvgLoader : public ImageLoader, public Task
 public:
     string filePath;
     string svgPath = "";
-    const char* content = nullptr;
+    char* content = nullptr;
     uint32_t size = 0;
 
     SvgLoaderData loaderData;

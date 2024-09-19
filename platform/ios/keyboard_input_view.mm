@@ -149,23 +149,18 @@
 		return;
 	}
 
+	NSString *substringToDelete = nil;
 	if (self.previousSelectedRange.length == 0) {
-		// We are deleting all text before cursor if no range was selected.
-		// This way any inserted or changed text will be updated.
-		NSString *substringToDelete = [self.previousText substringToIndex:self.previousSelectedRange.location];
-		[self deleteText:substringToDelete.length];
+		// Get previous text to delete.
+		substringToDelete = [self.previousText substringToIndex:self.previousSelectedRange.location];
 	} else {
-		// If text was previously selected
-		// we are sending only one `backspace`.
-		// It will remove all text from text input.
+		// If text was previously selected we are sending only one `backspace`. It will remove all text from text input.
 		[self deleteText:1];
 	}
 
-	NSString *substringToEnter;
-
+	NSString *substringToEnter = nil;
 	if (self.selectedRange.length == 0) {
-		// If previous cursor had a selection
-		// we have to calculate an inserted text.
+		// If previous cursor had a selection we have to calculate an inserted text.
 		if (self.previousSelectedRange.length != 0) {
 			NSInteger rangeEnd = self.selectedRange.location + self.selectedRange.length;
 			NSInteger rangeStart = MIN(self.previousSelectedRange.location, self.selectedRange.location);
@@ -187,7 +182,18 @@
 		substringToEnter = [self.text substringWithRange:self.selectedRange];
 	}
 
-	[self enterText:substringToEnter];
+	NSInteger skip = 0;
+	if (substringToDelete != nil) {
+		for (NSInteger i = 0; i < MIN([substringToDelete length], [substringToEnter length]); i++) {
+			if ([substringToDelete characterAtIndex:i] == [substringToEnter characterAtIndex:i]) {
+				skip++;
+			} else {
+				break;
+			}
+		}
+		[self deleteText:[substringToDelete length] - skip]; // Delete changed part of previous text.
+	}
+	[self enterText:[substringToEnter substringFromIndex:skip]]; // Enter changed part of new text.
 
 	self.previousText = self.text;
 	self.previousSelectedRange = self.selectedRange;

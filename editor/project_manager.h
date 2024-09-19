@@ -141,6 +141,7 @@ class ProjectManager : public Control {
 	void _update_list_placeholder();
 
 	ProjectList *project_list = nullptr;
+	bool initialized = false;
 
 	LineEdit *search_box = nullptr;
 	Label *loading_label = nullptr;
@@ -175,6 +176,7 @@ class ProjectManager : public Control {
 	void _run_project_confirm();
 	void _open_selected_projects();
 	void _open_selected_projects_ask();
+	void _open_selected_projects_with_migration();
 
 	void _install_project(const String &p_zip_path, const String &p_title);
 	void _import_project();
@@ -222,6 +224,11 @@ class ProjectManager : public Control {
 	ConfirmationDialog *ask_update_settings = nullptr;
 	Button *full_convert_button = nullptr;
 
+	String version_convert_feature;
+
+#ifndef DISABLE_DEPRECATED
+	void _minor_project_migrate();
+#endif
 	void _full_convert_button_pressed();
 	void _perform_full_project_conversion();
 
@@ -239,6 +246,7 @@ public:
 
 	// Project list.
 
+	bool is_initialized() const { return initialized; }
 	LineEdit *get_search_box();
 
 	// Project tag management.

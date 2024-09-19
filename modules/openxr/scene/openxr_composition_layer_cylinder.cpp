@@ -38,20 +38,9 @@
 #include "scene/main/viewport.h"
 #include "scene/resources/mesh.h"
 
-OpenXRCompositionLayerCylinder::OpenXRCompositionLayerCylinder() {
-	composition_layer = {
-		XR_TYPE_COMPOSITION_LAYER_CYLINDER_KHR, // type
-		nullptr, // next
-		0, // layerFlags
-		XR_NULL_HANDLE, // space
-		XR_EYE_VISIBILITY_BOTH, // eyeVisibility
-		{}, // subImage
-		{ { 0, 0, 0, 0 }, { 0, 0, 0 } }, // pose
-		radius, // radius
-		central_angle, // centralAngle
-		aspect_ratio, // aspectRatio
-	};
-	openxr_layer_provider = memnew(OpenXRViewportCompositionLayerProvider((XrCompositionLayerBaseHeader *)&composition_layer));
+OpenXRCompositionLayerCylinder::OpenXRCompositionLayerCylinder() :
+		OpenXRCompositionLayer((XrCompositionLayerBaseHeader *)&composition_layer) {
+	XRServer::get_singleton()->connect("reference_frame_changed", callable_mp(this, &OpenXRCompositionLayerCylinder::update_transform));
 }
 
 OpenXRCompositionLayerCylinder::~OpenXRCompositionLayerCylinder() {
@@ -74,13 +63,6 @@ void OpenXRCompositionLayerCylinder::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "aspect_ratio", PROPERTY_HINT_RANGE, "0,100"), "set_aspect_ratio", "get_aspect_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "central_angle", PROPERTY_HINT_RANGE, "0,360,0.1,or_less,or_greater,radians_as_degrees"), "set_central_angle", "get_central_angle");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fallback_segments", PROPERTY_HINT_NONE, ""), "set_fallback_segments", "get_fallback_segments");
-}
-
-void OpenXRCompositionLayerCylinder::_on_openxr_session_begun() {
-	OpenXRCompositionLayer::_on_openxr_session_begun();
-	if (openxr_api) {
-		composition_layer.space = openxr_api->get_play_space();
-	}
 }
 
 Ref<Mesh> OpenXRCompositionLayerCylinder::_create_fallback_mesh() {
@@ -138,12 +120,13 @@ Ref<Mesh> OpenXRCompositionLayerCylinder::_create_fallback_mesh() {
 void OpenXRCompositionLayerCylinder::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
-			Transform3D transform = get_transform();
-			Quaternion quat(transform.basis.orthonormalized());
-			composition_layer.pose.orientation = { (float)quat.x, (float)quat.y, (float)quat.z, (float)quat.w };
-			composition_layer.pose.position = { (float)transform.origin.x, (float)transform.origin.y, (float)transform.origin.z };
+			update_transform();
 		} break;
 	}
+}
+
+void OpenXRCompositionLayerCylinder::update_transform() {
+	composition_layer.pose = get_openxr_pose();
 }
 
 void OpenXRCompositionLayerCylinder::set_radius(float p_radius) {

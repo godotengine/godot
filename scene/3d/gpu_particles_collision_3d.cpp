@@ -382,7 +382,7 @@ Vector3i GPUParticlesCollisionSDF3D::get_estimated_cell_size() const {
 	float cell_size = aabb.get_longest_axis_size() / float(subdiv);
 
 	Vector3i sdf_size = Vector3i(aabb.size / cell_size);
-	sdf_size = sdf_size.max(Vector3i(1, 1, 1));
+	sdf_size = sdf_size.maxi(1);
 	return sdf_size;
 }
 
@@ -395,7 +395,7 @@ Ref<Image> GPUParticlesCollisionSDF3D::bake() {
 	float cell_size = aabb.get_longest_axis_size() / float(subdiv);
 
 	Vector3i sdf_size = Vector3i(aabb.size / cell_size);
-	sdf_size = sdf_size.max(Vector3i(1, 1, 1));
+	sdf_size = sdf_size.maxi(1);
 
 	if (bake_begin_function) {
 		bake_begin_function(100);
@@ -524,7 +524,7 @@ Ref<Image> GPUParticlesCollisionSDF3D::bake() {
 }
 
 PackedStringArray GPUParticlesCollisionSDF3D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = GPUParticlesCollision3D::get_configuration_warnings();
 
 	if (bake_mask == 0) {
 		warnings.push_back(RTR("The Bake Mask has no bits enabled, which means baking will not produce any collision for this GPUParticlesCollisionSDF3D.\nTo resolve this, enable at least one bit in the Bake Mask property."));

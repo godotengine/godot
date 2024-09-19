@@ -15,20 +15,26 @@
 
 /** Range of volatile key identifiers.
  *
- *  The last #MBEDTLS_PSA_KEY_SLOT_COUNT identifiers of the implementation
+ *  The first #MBEDTLS_PSA_KEY_SLOT_COUNT identifiers of the implementation
  *  range of key identifiers are reserved for volatile key identifiers.
- *  A volatile key identifier is equal to #PSA_KEY_ID_VOLATILE_MIN plus the
- *  index of the key slot containing the volatile key definition.
+ *
+ *  If \c id is a a volatile key identifier, #PSA_KEY_ID_VOLATILE_MIN - \c id
+ *  indicates the key slot containing the volatile key definition. See
+ *  psa_crypto_slot_management.c for details.
  */
 
 /** The minimum value for a volatile key identifier.
  */
-#define PSA_KEY_ID_VOLATILE_MIN  (PSA_KEY_ID_VENDOR_MAX - \
-                                  MBEDTLS_PSA_KEY_SLOT_COUNT + 1)
+#define PSA_KEY_ID_VOLATILE_MIN  PSA_KEY_ID_VENDOR_MIN
 
 /** The maximum value for a volatile key identifier.
  */
-#define PSA_KEY_ID_VOLATILE_MAX  PSA_KEY_ID_VENDOR_MAX
+#if defined(MBEDTLS_PSA_KEY_STORE_DYNAMIC)
+#define PSA_KEY_ID_VOLATILE_MAX (MBEDTLS_PSA_KEY_ID_BUILTIN_MIN - 1)
+#else /* MBEDTLS_PSA_KEY_STORE_DYNAMIC */
+#define PSA_KEY_ID_VOLATILE_MAX                                 \
+    (PSA_KEY_ID_VOLATILE_MIN + MBEDTLS_PSA_KEY_SLOT_COUNT - 1)
+#endif /* MBEDTLS_PSA_KEY_STORE_DYNAMIC */
 
 /** Test whether a key identifier is a volatile key identifier.
  *
@@ -57,6 +63,9 @@ static inline int psa_key_id_is_volatile(psa_key_id_t key_id)
  * On success, the returned key slot has been registered for reading.
  * It is the responsibility of the caller to call psa_unregister_read(slot)
  * when they have finished reading the contents of the slot.
+ *
+ * On failure, `*p_slot` is set to NULL. This ensures that it is always valid
+ * to call psa_unregister_read on the returned slot.
  *
  * \param key           Key identifier to query.
  * \param[out] p_slot   On success, `*p_slot` contains a pointer to the
@@ -91,6 +100,24 @@ psa_status_t psa_get_and_lock_key_slot(mbedtls_svc_key_id_t key,
  */
 psa_status_t psa_initialize_key_slots(void);
 
+#if defined(MBEDTLS_TEST_HOOKS) && defined(MBEDTLS_PSA_KEY_STORE_DYNAMIC)
+/* Allow test code to customize the key slice length. We use this in tests
+ * that exhaust the key store to reach a full key store in reasonable time
+ * and memory.
+ *
+ * The length of each slice must be between 1 and
+ * (1 << KEY_ID_SLOT_INDEX_WIDTH) inclusive.
+ *
+ * The length for a given slice index must not change while
+ * the key store is initialized.
+ */
+extern size_t (*mbedtls_test_hook_psa_volatile_key_slice_length)(
+    size_t slice_idx);
+
+/* The number of volatile key slices. */
+size_t psa_key_slot_volatile_slice_count(void);
+#endif
+
 /** Delete all data from key slots in memory.
  * This function is not thread safe, it wipes every key slot regardless of
  * state and reader count. It should only be called when no slot is in use.
@@ -110,13 +137,22 @@ void psa_wipe_all_key_slots(void);
  * If multi-threading is enabled, the caller must hold the
  * global key slot mutex.
  *
- * \param[out] volatile_key_id   On success, volatile key identifier
- *                               associated to the returned slot.
+ * \param[out] volatile_key_id   - If null, reserve a cache slot for
+ *                                 a persistent or built-in key.
+ *                               - If non-null, allocate a slot for
+ *                                 a volatile key. On success,
+ *                                 \p *volatile_key_id is the
+ *                                 identifier corresponding to the
+ *                                 returned slot. It is the caller's
+ *                                 responsibility to set this key identifier
+ *                                 in the attributes.
  * \param[out] p_slot            On success, a pointer to the slot.
  *
  * \retval #PSA_SUCCESS \emptydescription
  * \retval #PSA_ERROR_INSUFFICIENT_MEMORY
  *         There were no free key slots.
+ *         When #MBEDTLS_PSA_KEY_STORE_DYNAMIC is enabled, there was not
+ *         enough memory to allocate more slots.
  * \retval #PSA_ERROR_BAD_STATE \emptydescription
  * \retval #PSA_ERROR_CORRUPTION_DETECTED
  *         This function attempted to operate on a key slot which was in an
@@ -124,6 +160,29 @@ void psa_wipe_all_key_slots(void);
  */
 psa_status_t psa_reserve_free_key_slot(psa_key_id_t *volatile_key_id,
                                        psa_key_slot_t **p_slot);
+
+#if defined(MBEDTLS_PSA_KEY_STORE_DYNAMIC)
+/** Return a key slot to the free list.
+ *
+ * Call this function when a slot obtained from psa_reserve_free_key_slot()
+ * is no longer in use.
+ *
+ * If multi-threading is enabled, the caller must hold the
+ * global key slot mutex.
+ *
+ * \param slice_idx             The slice containing the slot.
+ *                              This is `slot->slice_index` when the slot
+ *                              is obtained from psa_reserve_free_key_slot().
+ * \param slot                  The key slot.
+ *
+ * \retval #PSA_SUCCESS \emptydescription
+ * \retval #PSA_ERROR_CORRUPTION_DETECTED
+ *         This function attempted to operate on a key slot which was in an
+ *         unexpected state.
+ */
+psa_status_t psa_free_key_slot(size_t slice_idx,
+                               psa_key_slot_t *slot);
+#endif /* MBEDTLS_PSA_KEY_STORE_DYNAMIC */
 
 /** Change the state of a key slot.
  *
@@ -171,10 +230,10 @@ static inline psa_status_t psa_key_slot_state_transition(
 static inline psa_status_t psa_register_read(psa_key_slot_t *slot)
 {
     if ((slot->state != PSA_SLOT_FULL) ||
-        (slot->registered_readers >= SIZE_MAX)) {
+        (slot->var.occupied.registered_readers >= SIZE_MAX)) {
         return PSA_ERROR_CORRUPTION_DETECTED;
     }
-    slot->registered_readers++;
+    slot->var.occupied.registered_readers++;
 
     return PSA_SUCCESS;
 }

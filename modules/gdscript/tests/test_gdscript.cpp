@@ -188,11 +188,11 @@ static void recursively_disassemble_functions(const Ref<GDScript> script, const 
 
 		const MethodInfo &mi = func->get_method_info();
 		String signature = "Disassembling " + mi.name + "(";
-		for (int i = 0; i < mi.arguments.size(); i++) {
-			if (i > 0) {
+		for (List<PropertyInfo>::ConstIterator arg_itr = mi.arguments.begin(); arg_itr != mi.arguments.end(); ++arg_itr) {
+			if (arg_itr != mi.arguments.begin()) {
 				signature += ", ";
 			}
-			signature += mi.arguments[i].name;
+			signature += arg_itr->name;
 		}
 		print_line(signature + ")");
 #ifdef TOOLS_ENABLED

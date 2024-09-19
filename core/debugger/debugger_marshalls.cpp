@@ -38,10 +38,10 @@
 Array DebuggerMarshalls::ScriptStackDump::serialize() {
 	Array arr;
 	arr.push_back(frames.size() * 3);
-	for (int i = 0; i < frames.size(); i++) {
-		arr.push_back(frames[i].file);
-		arr.push_back(frames[i].line);
-		arr.push_back(frames[i].func);
+	for (const ScriptLanguage::StackInfo &frame : frames) {
+		arr.push_back(frame.file);
+		arr.push_back(frame.line);
+		arr.push_back(frame.func);
 	}
 	return arr;
 }

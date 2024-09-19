@@ -350,6 +350,8 @@ public:
 		return triangles;
 	}
 
+	// Assumes cartesian coordinate system with +x to the right, +y up.
+	// If using screen coordinates (+x to the right, +y down) the result will need to be flipped.
 	static bool is_polygon_clockwise(const Vector<Vector2> &p_polygon) {
 		int c = p_polygon.size();
 		if (c < 3) {

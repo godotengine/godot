@@ -52,7 +52,7 @@ void CanvasLayer::set_visible(bool p_visible) {
 	}
 
 	visible = p_visible;
-	emit_signal(SNAME("visibility_changed"));
+	emit_signal(SceneStringName(visibility_changed));
 
 	for (int i = 0; i < get_child_count(); i++) {
 		CanvasItem *c = Object::cast_to<CanvasItem>(get_child(i));

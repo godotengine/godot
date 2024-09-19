@@ -33,13 +33,11 @@
 #include "core/version.h"
 
 Mutex CanvasItemMaterial::material_mutex;
-SelfList<CanvasItemMaterial>::List *CanvasItemMaterial::dirty_materials = nullptr;
+SelfList<CanvasItemMaterial>::List CanvasItemMaterial::dirty_materials;
 HashMap<CanvasItemMaterial::MaterialKey, CanvasItemMaterial::ShaderData, CanvasItemMaterial::MaterialKey> CanvasItemMaterial::shader_map;
 CanvasItemMaterial::ShaderNames *CanvasItemMaterial::shader_names = nullptr;
 
 void CanvasItemMaterial::init_shaders() {
-	dirty_materials = memnew(SelfList<CanvasItemMaterial>::List);
-
 	shader_names = memnew(ShaderNames);
 
 	shader_names->particles_anim_h_frames = "particles_anim_h_frames";
@@ -48,14 +46,13 @@ void CanvasItemMaterial::init_shaders() {
 }
 
 void CanvasItemMaterial::finish_shaders() {
-	memdelete(dirty_materials);
+	dirty_materials.clear();
+
 	memdelete(shader_names);
-	dirty_materials = nullptr;
+	shader_names = nullptr;
 }
 
 void CanvasItemMaterial::_update_shader() {
-	dirty_materials->remove(&element);
-
 	MaterialKey mk = _compute_key();
 	if (mk.key == current_key.key) {
 		return; //no update required in the end
@@ -153,8 +150,9 @@ void CanvasItemMaterial::_update_shader() {
 void CanvasItemMaterial::flush_changes() {
 	MutexLock lock(material_mutex);
 
-	while (dirty_materials->first()) {
-		dirty_materials->first()->self()->_update_shader();
+	while (dirty_materials.first()) {
+		dirty_materials.first()->self()->_update_shader();
+		dirty_materials.first()->remove_from_list();
 	}
 }
 
@@ -162,14 +160,8 @@ void CanvasItemMaterial::_queue_shader_change() {
 	MutexLock lock(material_mutex);
 
 	if (_is_initialized() && !element.in_list()) {
-		dirty_materials->add(&element);
+		dirty_materials.add(&element);
 	}
-}
-
-bool CanvasItemMaterial::_is_shader_dirty() const {
-	MutexLock lock(material_mutex);
-
-	return element.in_list();
 }
 
 void CanvasItemMaterial::set_blend_mode(BlendMode p_blend_mode) {
@@ -288,7 +280,7 @@ CanvasItemMaterial::CanvasItemMaterial() :
 
 	current_key.invalid_key = 1;
 
-	_mark_initialized(callable_mp(this, &CanvasItemMaterial::_queue_shader_change));
+	_mark_initialized(callable_mp(this, &CanvasItemMaterial::_queue_shader_change), callable_mp(this, &CanvasItemMaterial::_update_shader));
 }
 
 CanvasItemMaterial::~CanvasItemMaterial() {

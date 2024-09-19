@@ -85,7 +85,18 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	bool first_aabb = false;
 	AABB contents_aabb;
 
-	DirectionalLight3D *light = nullptr;
+	Button *light_1_switch = nullptr;
+	Button *light_2_switch = nullptr;
+	Button *light_rotate_switch = nullptr;
+
+	struct ThemeCache {
+		Ref<Texture2D> light_1_icon;
+		Ref<Texture2D> light_2_icon;
+		Ref<Texture2D> rotate_icon;
+	} theme_cache;
+
+	DirectionalLight3D *light1 = nullptr;
+	DirectionalLight3D *light2 = nullptr;
 	Ref<ArrayMesh> selection_mesh;
 	MeshInstance3D *node_selected = nullptr;
 
@@ -98,10 +109,12 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	HSlider *animation_slider = nullptr;
 	Button *animation_play_button = nullptr;
 	Button *animation_stop_button = nullptr;
+	Button *animation_toggle_skeleton_visibility = nullptr;
 	Animation::LoopMode animation_loop_mode = Animation::LOOP_NONE;
 	bool animation_pingpong = false;
 	bool previous_import_as_skeleton = false;
 	bool previous_rest_as_reset = false;
+	MeshInstance3D *bones_mesh_preview = nullptr;
 
 	Ref<StandardMaterial3D> collider_mat;
 
@@ -176,10 +189,15 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	void _reset_animation(const String &p_animation_name = "");
 	void _animation_slider_value_changed(double p_value);
 	void _animation_finished(const StringName &p_name);
+	void _animation_update_skeleton_visibility();
 	void _material_tree_selected();
 	void _mesh_tree_selected();
 	void _scene_tree_selected();
+	void _skeleton_tree_entered(Skeleton3D *p_skeleton);
 	void _cleanup();
+	void _on_light_1_switch_pressed();
+	void _on_light_2_switch_pressed();
+	void _on_light_rotate_switch_pressed();
 
 	void _viewport_input(const Ref<InputEvent> &p_input);
 
@@ -222,13 +240,14 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	Timer *update_view_timer = nullptr;
 
 protected:
+	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
 
 public:
 	bool is_editing_animation() const { return editing_animation; }
 	void request_generate_collider();
 	void update_view();
-	void open_settings(const String &p_path, bool p_for_animation = false);
+	void open_settings(const String &p_path, const String &p_scene_import_type = "PackedScene");
 	static SceneImportSettingsDialog *get_singleton();
 	Node *get_selected_node();
 	SceneImportSettingsDialog();
