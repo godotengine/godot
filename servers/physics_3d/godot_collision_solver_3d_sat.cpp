@@ -2043,7 +2043,7 @@ static void _collision_cone_cone(const GodotShape3D *p_a, const Transform3D &p_t
 }
 
 template <bool withMargin>
-static void _collision_cone_cylinder(const GodotShape3D *p_a, const Transform3D &p_transform_a, const GodotShape3D *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+static void _collision_cylinder_cone(const GodotShape3D *p_a, const Transform3D &p_transform_a, const GodotShape3D *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const GodotConeShape3D *cone_A = static_cast<const GodotConeShape3D *>(p_a);
 	const GodotCylinderShape3D *cylinder_B = static_cast<const GodotCylinderShape3D *>(p_b);
 
@@ -2104,7 +2104,7 @@ static void _collision_cone_cylinder(const GodotShape3D *p_a, const Transform3D 
 }
 
 template <bool withMargin>
-static void _collision_cone_convex_polygon(const GodotShape3D *p_a, const Transform3D &p_transform_a, const GodotShape3D *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+static void _collision_convex_polygon_cone(const GodotShape3D *p_a, const Transform3D &p_transform_a, const GodotShape3D *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const GodotConeShape3D *cone_A = static_cast<const GodotConeShape3D *>(p_a);
 	const GodotConvexPolygonShape3D *convex_polygon_B = static_cast<const GodotConvexPolygonShape3D *>(p_b);
 
@@ -2125,7 +2125,6 @@ static void _collision_cone_face(const GodotShape3D *p_a, const Transform3D &p_t
 	const GodotConeShape3D *cone_A = static_cast<const GodotConeShape3D *>(p_a);
 	const GodotFaceShape3D *face_B = static_cast<const GodotFaceShape3D *>(p_b);
 
-	print_line("Here");
 	SeparatorAxisTest<GodotConeShape3D, GodotFaceShape3D, withMargin> separator(cone_A, p_transform_a, face_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
 
 	if (!separator.test_previous_axis()) {
@@ -2675,104 +2674,104 @@ bool sat_calculate_penetration(const GodotShape3D *p_shape_A, const Transform3D 
 		{ _collision_sphere_sphere<false>,
 				_collision_sphere_box<false>,
 				_collision_sphere_capsule<false>,
-				_collision_sphere_cone<false>,
 				_collision_sphere_cylinder<false>,
 				_collision_sphere_convex_polygon<false>,
-				_collision_sphere_face<false> },
+				_collision_sphere_face<false>,
+				_collision_sphere_cone<false> },
 		{ nullptr,
 				_collision_box_box<false>,
 				_collision_box_capsule<false>,
-				_collision_box_cone<false>,
 				_collision_box_cylinder<false>,
 				_collision_box_convex_polygon<false>,
-				_collision_box_face<false> },
+				_collision_box_face<false>,
+				_collision_box_cone<false> },
 		{ nullptr,
 				nullptr,
 				_collision_capsule_capsule<false>,
 				_collision_capsule_cylinder<false>,
-				_collision_capsule_cone<false>,
 				_collision_capsule_convex_polygon<false>,
-				_collision_capsule_face<false> },
+				_collision_capsule_face<false>,
+				_collision_capsule_cone<false> },
 		{ nullptr,
-				nullptr,
-				nullptr,
-				_collision_cone_cone<false>,
-				_collision_cone_cylinder<false>,
-				_collision_cone_convex_polygon<false>,
-				_collision_cone_face<false> },
-		{ nullptr,
-				nullptr,
 				nullptr,
 				nullptr,
 				_collision_cylinder_cylinder<false>,
 				_collision_cylinder_convex_polygon<false>,
-				_collision_cylinder_face<false> },
+				_collision_cylinder_face<false>,
+				_collision_cylinder_cone<false> },
 		{ nullptr,
-				nullptr,
 				nullptr,
 				nullptr,
 				nullptr,
 				_collision_convex_polygon_convex_polygon<false>,
-				_collision_convex_polygon_face<false> },
+				_collision_convex_polygon_face<false>,
+				_collision_convex_polygon_cone<false> },
+		{ nullptr,
+				nullptr,
+				nullptr,
+				nullptr,
+				nullptr,
+				_collision_cone_face<false>,
+				nullptr },
 		{ nullptr,
 				nullptr,
 				nullptr,
 				nullptr,
 				nullptr,
 				nullptr,
-				nullptr },
+				_collision_cone_cone<false> },
 	};
 
 	static const CollisionFunc collision_table_margin[7][7] = {
 		{ _collision_sphere_sphere<true>,
 				_collision_sphere_box<true>,
 				_collision_sphere_capsule<true>,
-				_collision_sphere_cone<true>,
 				_collision_sphere_cylinder<true>,
 				_collision_sphere_convex_polygon<true>,
-				_collision_sphere_face<true> },
+				_collision_sphere_face<true>,
+				_collision_sphere_cone<true> },
 		{ nullptr,
 				_collision_box_box<true>,
 				_collision_box_capsule<true>,
-				_collision_box_cone<true>,
 				_collision_box_cylinder<true>,
 				_collision_box_convex_polygon<true>,
-				_collision_box_face<true> },
+				_collision_box_face<true>,
+				_collision_box_cone<true> },
 		{ nullptr,
 				nullptr,
 				_collision_capsule_capsule<true>,
-				_collision_capsule_cone<true>,
 				_collision_capsule_cylinder<true>,
 				_collision_capsule_convex_polygon<true>,
-				_collision_capsule_face<true> },
+				_collision_capsule_face<true>,
+				_collision_capsule_cone<true> },
 		{ nullptr,
-				nullptr,
-				nullptr,
-				_collision_cone_cone<true>,
-				_collision_cone_cylinder<true>,
-				_collision_cone_convex_polygon<true>,
-				_collision_cone_face<true> },
-		{ nullptr,
-				nullptr,
 				nullptr,
 				nullptr,
 				_collision_cylinder_cylinder<true>,
 				_collision_cylinder_convex_polygon<true>,
-				_collision_cylinder_face<true> },
+				_collision_cylinder_face<true>,
+				_collision_cylinder_cone<true> },
 		{ nullptr,
-				nullptr,
 				nullptr,
 				nullptr,
 				nullptr,
 				_collision_convex_polygon_convex_polygon<true>,
-				_collision_convex_polygon_face<true> },
+				_collision_convex_polygon_face<true>,
+				_collision_convex_polygon_cone<true> },
+		{ nullptr,
+				nullptr,
+				nullptr,
+				nullptr,
+				nullptr,
+				_collision_cone_face<true>,
+				nullptr },
 		{ nullptr,
 				nullptr,
 				nullptr,
 				nullptr,
 				nullptr,
 				nullptr,
-				nullptr },
+				_collision_cone_cone<true> },
 	};
 
 	_CollectorCallback callback;
@@ -2788,6 +2787,12 @@ bool sat_calculate_penetration(const GodotShape3D *p_shape_A, const Transform3D 
 	const Transform3D *transform_B = &p_transform_B;
 	real_t margin_A = p_margin_a;
 	real_t margin_B = p_margin_b;
+
+	//Changing enum value to match collision table (cone enum at the end for compatibility)
+	if (type_A == PhysicsServer3D::SHAPE_CONE)
+		type_A = PhysicsServer3D::SHAPE_HEIGHTMAP;
+	if (type_B == PhysicsServer3D::SHAPE_CONE)
+		type_B = PhysicsServer3D::SHAPE_HEIGHTMAP;
 
 	if (type_A > type_B) {
 		SWAP(A, B);
