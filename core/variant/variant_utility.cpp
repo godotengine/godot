@@ -974,7 +974,6 @@ String VariantUtilityFunctions::type_to_string(Variant::Type p_type) {
 	return Variant::get_type_name(p_type);
 }
 
-
 void VariantUtilityFunctions::print(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 	String s;
 	for (int i = 0; i < p_arg_count; i++) {
@@ -1815,7 +1814,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(error_string, sarray("error"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 #ifndef DISABLE_DEPRECATED
 	FUNCBINDR(type_string, sarray("type"), Variant::UTILITY_FUNC_TYPE_GENERAL);
-#ifndef DISABLE_DEPRECATED
+#endif // DISABLE_DEPRECATED
 	FUNCBINDR(type_to_string, sarray("type"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(print, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(print_rich, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
