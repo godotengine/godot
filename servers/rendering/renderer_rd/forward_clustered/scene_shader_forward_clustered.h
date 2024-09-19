@@ -142,6 +142,7 @@ public:
 		};
 
 		bool valid = false;
+		RID shader_template;
 		RID version;
 		uint64_t vertex_input_mask = 0;
 		PipelineCacheRD pipelines[CULL_VARIANT_MAX][RS::PRIMITIVE_MAX][PIPELINE_VERSION_MAX];
@@ -188,7 +189,7 @@ public:
 		uint64_t last_pass = 0;
 		uint32_t index = 0;
 
-		virtual void set_code(const String &p_Code);
+		virtual void set_code(const String &p_Code, RID p_shader_template = RID());
 
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
@@ -224,9 +225,10 @@ public:
 		return static_cast<SceneShaderForwardClustered *>(singleton)->_create_material_func(static_cast<ShaderData *>(p_shader));
 	}
 
-	SceneForwardClusteredShaderRD shader;
+	String default_defines;
 	ShaderCompiler compiler;
 
+	RID default_shader_template;
 	RID default_shader;
 	RID default_material;
 	RID overdraw_material_shader;
