@@ -112,7 +112,10 @@ class Script : public Resource {
 	OBJ_SAVE_TYPE(Script);
 
 protected:
-	virtual bool editor_can_reload_from_file() override { return false; } // this is handled by editor better
+	// Scripts are reloaded via the Script Editor when edited in Godot,
+	// the LSP server when edited in a connected external editor, or
+	// through EditorFileSystem::_update_script_documentation when updated directly on disk.
+	virtual bool editor_can_reload_from_file() override { return false; }
 	void _notification(int p_what);
 	static void _bind_methods();
 
