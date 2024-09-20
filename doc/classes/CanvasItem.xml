@@ -528,6 +528,7 @@
 			<description>
 				Returns [code]true[/code] if the node is present in the [SceneTree], its [member visible] property is [code]true[/code] and all its ancestors are also visible. If any ancestor is hidden, this node will not be visible in the scene tree, and is therefore not drawn (see [method _draw]).
 				Visibility is checked only in parent nodes that inherit from [CanvasItem], [CanvasLayer], and [Window]. If the parent is of any other type (such as [Node], [AnimationPlayer], or [Node3D]), it is assumed to be visible.
+				[b]Note:[/b] This method does not take [member visibility_layer] into account, so even if this method returns [code]true[/code] the node might end up not being rendered.
 			</description>
 		</method>
 		<method name="make_canvas_position_local" qualifiers="const">
@@ -622,7 +623,7 @@
 			The rendering layer in which this [CanvasItem] is rendered by [Viewport] nodes. A [Viewport] will render a [CanvasItem] if it and all its parents share a layer with the [Viewport]'s canvas cull mask.
 		</member>
 		<member name="visible" type="bool" setter="set_visible" getter="is_visible" default="true">
-			If [code]true[/code], this [CanvasItem] is drawn. The node is only visible if all of its ancestors are visible as well (in other words, [method is_visible_in_tree] must return [code]true[/code]).
+			If [code]true[/code], this [CanvasItem] may be drawn. Whether this [CanvasItem] is actually drawn depends on the visibility of all of its [CanvasItem] ancestors. In other words: this [CanvasItem] will be drawn when [method is_visible_in_tree] returns [code]true[/code] and all [CanvasItem] ancestors share at least one [member visibility_layer] with this [CanvasItem].
 			[b]Note:[/b] For controls that inherit [Popup], the correct way to make them visible is to call one of the multiple [code]popup*()[/code] functions instead.
 		</member>
 		<member name="y_sort_enabled" type="bool" setter="set_y_sort_enabled" getter="is_y_sort_enabled" default="false">
@@ -647,17 +648,17 @@
 		</signal>
 		<signal name="hidden">
 			<description>
-				Emitted when becoming hidden.
+				Emitted when the [CanvasItem] becomes hidden, either because its own [member visible] property was set to [code]false[/code] or the [member visible] property of one of its [CanvasItem] ancestors was set to [code]false[/code].
 			</description>
 		</signal>
 		<signal name="item_rect_changed">
 			<description>
-				Emitted when the item's [Rect2] boundaries (position or size) have changed, or when an action is taking place that may have impacted these boundaries (e.g. changing [member Sprite2D.texture]).
+				Emitted when the [CanvasItem]'s boundaries (position or size) change, or when an action took place that may have affected these boundaries (e.g. changing [member Sprite2D.texture]).
 			</description>
 		</signal>
 		<signal name="visibility_changed">
 			<description>
-				Emitted when the visibility (hidden/visible) changes.
+				Emitted when the [CanvasItem]'s visibility changes, either because its own [member visible] property changed or because the visility of one of its [CanvasItem] ancestors changed (equivalent to a change in [method is_visible_in_tree]).
 			</description>
 		</signal>
 	</signals>
