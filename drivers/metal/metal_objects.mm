@@ -143,6 +143,9 @@ void MDCommandBuffer::bind_pipeline(RDD::PipelineID p_pipeline) {
 			if (render.pipeline != nullptr && render.pipeline->depth_stencil != rp->depth_stencil) {
 				render.dirty.set_flag(RenderState::DIRTY_DEPTH);
 			}
+			if (rp->raster_state.blend.enabled) {
+				render.dirty.set_flag(RenderState::DIRTY_BLEND);
+			}
 			render.pipeline = rp;
 		}
 	} else if (p->type == MDPipelineType::Compute) {
@@ -301,6 +304,7 @@ void MDCommandBuffer::render_clear_attachments(VectorView<RDD::AttachmentClear> 
 	render.mark_viewport_dirty();
 	render.mark_scissors_dirty();
 	render.mark_vertex_dirty();
+	render.mark_blend_dirty();
 }
 
 void MDCommandBuffer::_render_set_dirty_state() {
