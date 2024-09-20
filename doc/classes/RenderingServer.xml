@@ -3532,7 +3532,7 @@
 		<method name="texture_2d_placeholder_create">
 			<return type="RID" />
 			<description>
-				Creates a placeholder for a 2-dimensional layered texture and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]texture_2d_layered_*[/code] RenderingServer functions, although it does nothing when used. See also [method texture_2d_layered_placeholder_create]
+				Creates a placeholder for a 2-dimensional layered texture and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]texture_2d_layered_*[/code] RenderingServer functions, although it does nothing when used. See also [method texture_2d_layered_placeholder_create].
 				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
 				[b]Note:[/b] The equivalent resource is [PlaceholderTexture2D].
 			</description>
