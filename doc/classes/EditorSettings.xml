@@ -904,7 +904,7 @@
 		</member>
 		<member name="interface/inspector/delimitate_all_container_and_resources" type="bool" setter="" getter="">
 			If [code]true[/code], add a margin around Array, Dictionary, and Resource Editors that are not already colored.
-			[b]Note:[/b] If [member interface/inspector/nested_color_mode] is set to [b]Containers &amp; Resources[/b] this parameter will have no effect since those editors will already be colored
+			[b]Note:[/b] If [member interface/inspector/nested_color_mode] is set to [b]Containers &amp; Resources[/b] this parameter will have no effect since those editors will already be colored.
 		</member>
 		<member name="interface/inspector/disable_folding" type="bool" setter="" getter="">
 			If [code]true[/code], forces all property groups to be expanded in the Inspector dock and prevents collapsing them.
