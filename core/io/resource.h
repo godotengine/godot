@@ -48,7 +48,7 @@ public:                                                                         
 private:
 
 class Resource : public RefCounted {
-	GDCLASS(Resource, RefCounted);
+	GDCLASS(Resource, RefCounted)
 
 public:
 	static void register_custom_data_to_otdb() { ClassDB::add_resource_base_extension("res", get_class_static()); }
@@ -85,9 +85,9 @@ protected:
 	void _take_over_path(const String &p_path);
 
 	virtual void reset_local_to_scene();
-	GDVIRTUAL0(_setup_local_to_scene);
+	GDVIRTUAL0(_setup_local_to_scene)
 
-	GDVIRTUAL0RC(RID, _get_rid);
+	GDVIRTUAL0RC(RID, _get_rid)
 
 public:
 	static Node *(*_get_local_scene_func)(); //used by editor

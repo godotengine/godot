@@ -41,7 +41,7 @@ class ThemeOwner;
 class ThemeContext;
 
 class Window : public Viewport {
-	GDCLASS(Window, Viewport);
+	GDCLASS(Window, Viewport)
 
 public:
 	// Keep synced with enum hint for `mode` property.
@@ -368,7 +368,7 @@ public:
 	bool is_wrapping_controls() const;
 	void child_controls_changed();
 
-	Window *get_exclusive_child() const { return exclusive_child; };
+	Window *get_exclusive_child() const { return exclusive_child; }
 	Window *get_parent_visible_window() const;
 	Viewport *get_parent_viewport() const;
 

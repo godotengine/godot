@@ -103,7 +103,7 @@ public:
 };
 
 class ResourceImporter : public RefCounted {
-	GDCLASS(ResourceImporter, RefCounted);
+	GDCLASS(ResourceImporter, RefCounted)
 
 protected:
 	static void _bind_methods();

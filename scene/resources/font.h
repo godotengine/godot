@@ -45,7 +45,7 @@ class TextParagraph;
 /*************************************************************************/
 
 class Font : public Resource {
-	GDCLASS(Font, Resource);
+	GDCLASS(Font, Resource)
 
 	struct ShapedTextKey {
 		String text;
@@ -177,8 +177,8 @@ public:
 /*************************************************************************/
 
 class FontFile : public Font {
-	GDCLASS(FontFile, Font);
-	RES_BASE_EXTENSION("fontdata");
+	GDCLASS(FontFile, Font)
+	RES_BASE_EXTENSION("fontdata")
 
 	// Font source data.
 	const uint8_t *data_ptr = nullptr;
@@ -394,7 +394,7 @@ public:
 /*************************************************************************/
 
 class FontVariation : public Font {
-	GDCLASS(FontVariation, Font);
+	GDCLASS(FontVariation, Font)
 
 	struct Variation {
 		Dictionary opentype;
@@ -458,7 +458,7 @@ public:
 /*************************************************************************/
 
 class SystemFont : public Font {
-	GDCLASS(SystemFont, Font);
+	GDCLASS(SystemFont, Font)
 
 	PackedStringArray names;
 	bool italic = false;

@@ -41,7 +41,7 @@
 */
 
 class XMLParser : public RefCounted {
-	GDCLASS(XMLParser, RefCounted);
+	GDCLASS(XMLParser, RefCounted)
 
 public:
 	//! Enumeration of all supported source text file formats

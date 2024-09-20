@@ -43,7 +43,7 @@ class VisibleOnScreenNotifier3D;
 struct SpatialIndexer;
 
 class World3D : public Resource {
-	GDCLASS(World3D, Resource);
+	GDCLASS(World3D, Resource)
 
 private:
 	RID scenario;

@@ -36,7 +36,7 @@
 #include "scene/gui/tab_bar.h"
 
 class TabContainer : public Container {
-	GDCLASS(TabContainer, Container);
+	GDCLASS(TabContainer, Container)
 
 public:
 	enum TabPosition {

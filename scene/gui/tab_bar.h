@@ -36,7 +36,7 @@
 #include "scene/resources/text_line.h"
 
 class TabBar : public Control {
-	GDCLASS(TabBar, Control);
+	GDCLASS(TabBar, Control)
 
 public:
 	enum AlignmentMode {

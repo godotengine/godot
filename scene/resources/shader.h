@@ -38,8 +38,8 @@
 #include "shader_include.h"
 
 class Shader : public Resource {
-	GDCLASS(Shader, Resource);
-	OBJ_SAVE_TYPE(Shader);
+	GDCLASS(Shader, Resource)
+	OBJ_SAVE_TYPE(Shader)
 
 public:
 	enum Mode {

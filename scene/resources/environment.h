@@ -36,7 +36,7 @@
 #include "scene/resources/texture.h"
 
 class Environment : public Resource {
-	GDCLASS(Environment, Resource);
+	GDCLASS(Environment, Resource)
 
 public:
 	enum BGMode {

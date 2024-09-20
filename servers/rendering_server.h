@@ -61,7 +61,7 @@ template <typename T>
 class TypedArray;
 
 class RenderingServer : public Object {
-	GDCLASS(RenderingServer, Object);
+	GDCLASS(RenderingServer, Object)
 
 	static RenderingServer *singleton;
 

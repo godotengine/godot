@@ -71,7 +71,7 @@ class ThemeContext;
 			})
 
 class ThemeDB : public Object {
-	GDCLASS(ThemeDB, Object);
+	GDCLASS(ThemeDB, Object)
 
 	static ThemeDB *singleton;
 
@@ -184,7 +184,7 @@ public:
 };
 
 class ThemeContext : public Object {
-	GDCLASS(ThemeContext, Object);
+	GDCLASS(ThemeContext, Object)
 
 	friend class ThemeDB;
 

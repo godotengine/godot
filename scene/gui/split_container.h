@@ -34,7 +34,7 @@
 #include "scene/gui/container.h"
 
 class SplitContainerDragger : public Control {
-	GDCLASS(SplitContainerDragger, Control);
+	GDCLASS(SplitContainerDragger, Control)
 	friend class SplitContainer;
 	Rect2 split_bar_rect;
 
@@ -53,7 +53,7 @@ public:
 };
 
 class SplitContainer : public Container {
-	GDCLASS(SplitContainer, Container);
+	GDCLASS(SplitContainer, Container)
 	friend class SplitContainerDragger;
 
 public:
@@ -143,7 +143,7 @@ public:
 VARIANT_ENUM_CAST(SplitContainer::DraggerVisibility);
 
 class HSplitContainer : public SplitContainer {
-	GDCLASS(HSplitContainer, SplitContainer);
+	GDCLASS(HSplitContainer, SplitContainer)
 
 public:
 	HSplitContainer() :
@@ -151,7 +151,7 @@ public:
 };
 
 class VSplitContainer : public SplitContainer {
-	GDCLASS(VSplitContainer, SplitContainer);
+	GDCLASS(VSplitContainer, SplitContainer)
 
 public:
 	VSplitContainer() :

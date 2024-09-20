@@ -53,7 +53,7 @@ class Tween;
 class Viewport;
 
 class SceneTreeTimer : public RefCounted {
-	GDCLASS(SceneTreeTimer, RefCounted);
+	GDCLASS(SceneTreeTimer, RefCounted)
 
 	double time_left = 0.0;
 	bool process_always = true;
@@ -84,7 +84,7 @@ public:
 class SceneTree : public MainLoop {
 	_THREAD_SAFE_CLASS_
 
-	GDCLASS(SceneTree, MainLoop);
+	GDCLASS(SceneTree, MainLoop)
 
 public:
 	typedef void (*IdleCallback)();

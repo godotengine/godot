@@ -122,9 +122,9 @@ bool Face3::intersects_aabb2(const AABB &p_aabb) const {
 			return false;                                          \
 	}
 
-	TEST_AXIS(x);
-	TEST_AXIS(y);
-	TEST_AXIS(z);
+	TEST_AXIS(x)
+	TEST_AXIS(y)
+	TEST_AXIS(z)
 
 #undef TEST_AXIS
 

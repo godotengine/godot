@@ -42,7 +42,7 @@
 #include "core/templates/rb_set.h"
 
 class GDScriptNativeClass : public RefCounted {
-	GDCLASS(GDScriptNativeClass, RefCounted);
+	GDCLASS(GDScriptNativeClass, RefCounted)
 
 	StringName name;
 
@@ -59,7 +59,7 @@ public:
 };
 
 class GDScript : public Script {
-	GDCLASS(GDScript, Script);
+	GDCLASS(GDScript, Script)
 	bool tool = false;
 	bool valid = false;
 	bool reloading = false;

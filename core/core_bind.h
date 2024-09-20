@@ -48,7 +48,7 @@ class TypedArray;
 namespace core_bind {
 
 class ResourceLoader : public Object {
-	GDCLASS(ResourceLoader, Object);
+	GDCLASS(ResourceLoader, Object)
 
 protected:
 	static void _bind_methods();
@@ -91,7 +91,7 @@ public:
 };
 
 class ResourceSaver : public Object {
-	GDCLASS(ResourceSaver, Object);
+	GDCLASS(ResourceSaver, Object)
 
 protected:
 	static void _bind_methods();
@@ -120,7 +120,7 @@ public:
 };
 
 class OS : public Object {
-	GDCLASS(OS, Object);
+	GDCLASS(OS, Object)
 
 	mutable HashMap<String, bool> feature_cache;
 
@@ -263,7 +263,7 @@ public:
 };
 
 class Geometry2D : public Object {
-	GDCLASS(Geometry2D, Object);
+	GDCLASS(Geometry2D, Object)
 
 	static Geometry2D *singleton;
 
@@ -327,7 +327,7 @@ public:
 };
 
 class Geometry3D : public Object {
-	GDCLASS(Geometry3D, Object);
+	GDCLASS(Geometry3D, Object)
 
 	static Geometry3D *singleton;
 
@@ -358,7 +358,7 @@ public:
 };
 
 class Marshalls : public Object {
-	GDCLASS(Marshalls, Object);
+	GDCLASS(Marshalls, Object)
 
 	static Marshalls *singleton;
 
@@ -382,7 +382,7 @@ public:
 };
 
 class Mutex : public RefCounted {
-	GDCLASS(Mutex, RefCounted);
+	GDCLASS(Mutex, RefCounted)
 	::Mutex mutex;
 
 	static void _bind_methods();
@@ -394,7 +394,7 @@ public:
 };
 
 class Semaphore : public RefCounted {
-	GDCLASS(Semaphore, RefCounted);
+	GDCLASS(Semaphore, RefCounted)
 	::Semaphore semaphore;
 
 protected:
@@ -411,7 +411,7 @@ public:
 };
 
 class Thread : public RefCounted {
-	GDCLASS(Thread, RefCounted);
+	GDCLASS(Thread, RefCounted)
 
 protected:
 	Variant ret;
@@ -441,7 +441,7 @@ public:
 namespace special {
 
 class ClassDB : public Object {
-	GDCLASS(ClassDB, Object);
+	GDCLASS(ClassDB, Object)
 
 protected:
 	static void _bind_methods();
@@ -507,7 +507,7 @@ public:
 } // namespace special
 
 class Engine : public Object {
-	GDCLASS(Engine, Object);
+	GDCLASS(Engine, Object)
 
 protected:
 	static void _bind_methods();
@@ -578,7 +578,7 @@ public:
 };
 
 class EngineDebugger : public Object {
-	GDCLASS(EngineDebugger, Object);
+	GDCLASS(EngineDebugger, Object)
 
 	HashMap<StringName, Callable> captures;
 	HashMap<StringName, Ref<EngineProfiler>> profilers;

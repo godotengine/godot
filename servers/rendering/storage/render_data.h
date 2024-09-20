@@ -36,7 +36,7 @@
 #include "render_scene_data.h"
 
 class RenderData : public Object {
-	GDCLASS(RenderData, Object);
+	GDCLASS(RenderData, Object)
 
 protected:
 	static void _bind_methods();
@@ -50,7 +50,7 @@ public:
 };
 
 class RenderDataExtension : public RenderData {
-	GDCLASS(RenderDataExtension, RenderData);
+	GDCLASS(RenderDataExtension, RenderData)
 
 protected:
 	static void _bind_methods();

@@ -43,7 +43,7 @@
 class ImageLoader;
 
 class ImageFormatLoader : public RefCounted {
-	GDCLASS(ImageFormatLoader, RefCounted);
+	GDCLASS(ImageFormatLoader, RefCounted)
 
 	friend class ImageLoader;
 	friend class ResourceFormatLoaderImage;
@@ -69,7 +69,7 @@ public:
 VARIANT_BITFIELD_CAST(ImageFormatLoader::LoaderFlags);
 
 class ImageFormatLoaderExtension : public ImageFormatLoader {
-	GDCLASS(ImageFormatLoaderExtension, ImageFormatLoader);
+	GDCLASS(ImageFormatLoaderExtension, ImageFormatLoader)
 
 protected:
 	static void _bind_methods();
@@ -81,8 +81,8 @@ public:
 	void add_format_loader();
 	void remove_format_loader();
 
-	GDVIRTUAL0RC(PackedStringArray, _get_recognized_extensions);
-	GDVIRTUAL4R(Error, _load_image, Ref<Image>, Ref<FileAccess>, BitField<ImageFormatLoader::LoaderFlags>, float);
+	GDVIRTUAL0RC(PackedStringArray, _get_recognized_extensions)
+	GDVIRTUAL4R(Error, _load_image, Ref<Image>, Ref<FileAccess>, BitField<ImageFormatLoader::LoaderFlags>, float)
 };
 
 class ImageLoader {

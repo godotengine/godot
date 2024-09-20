@@ -36,7 +36,7 @@
 #include "scroll_bar.h"
 
 class ScrollContainer : public Container {
-	GDCLASS(ScrollContainer, Container);
+	GDCLASS(ScrollContainer, Container)
 
 public:
 	enum ScrollMode {

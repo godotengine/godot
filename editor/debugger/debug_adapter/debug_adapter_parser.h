@@ -40,7 +40,7 @@ struct DAPeer;
 class DebugAdapterProtocol;
 
 class DebugAdapterParser : public Object {
-	GDCLASS(DebugAdapterParser, Object);
+	GDCLASS(DebugAdapterParser, Object)
 
 private:
 	friend DebugAdapterProtocol;

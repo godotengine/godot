@@ -44,7 +44,7 @@ class FileAccess;
 
 struct EditorProgressBG;
 class EditorFileSystemDirectory : public Object {
-	GDCLASS(EditorFileSystemDirectory, Object);
+	GDCLASS(EditorFileSystemDirectory, Object)
 
 	String name;
 	uint64_t modified_time;
@@ -109,16 +109,16 @@ public:
 };
 
 class EditorFileSystemImportFormatSupportQuery : public RefCounted {
-	GDCLASS(EditorFileSystemImportFormatSupportQuery, RefCounted);
+	GDCLASS(EditorFileSystemImportFormatSupportQuery, RefCounted)
 
 protected:
 	GDVIRTUAL0RC(bool, _is_active)
 	GDVIRTUAL0RC(Vector<String>, _get_file_extensions)
 	GDVIRTUAL0RC(bool, _query)
 	static void _bind_methods() {
-		GDVIRTUAL_BIND(_is_active);
-		GDVIRTUAL_BIND(_get_file_extensions);
-		GDVIRTUAL_BIND(_query);
+		GDVIRTUAL_BIND(_is_active)
+		GDVIRTUAL_BIND(_get_file_extensions)
+		GDVIRTUAL_BIND(_query)
 	}
 
 public:
@@ -140,7 +140,7 @@ public:
 };
 
 class EditorFileSystem : public Node {
-	GDCLASS(EditorFileSystem, Node);
+	GDCLASS(EditorFileSystem, Node)
 
 	_THREAD_SAFE_CLASS_
 

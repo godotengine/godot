@@ -34,7 +34,7 @@
 #include "servers/navigation_server_3d.h"
 
 class NavigationServer3DDummy : public NavigationServer3D {
-	GDCLASS(NavigationServer3DDummy, NavigationServer3D);
+	GDCLASS(NavigationServer3DDummy, NavigationServer3D)
 
 public:
 	TypedArray<RID> get_maps() const override { return TypedArray<RID>(); }

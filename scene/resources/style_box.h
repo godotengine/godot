@@ -38,9 +38,9 @@
 class CanvasItem;
 
 class StyleBox : public Resource {
-	GDCLASS(StyleBox, Resource);
-	RES_BASE_EXTENSION("stylebox");
-	OBJ_SAVE_TYPE(StyleBox);
+	GDCLASS(StyleBox, Resource)
+	RES_BASE_EXTENSION("stylebox")
+	OBJ_SAVE_TYPE(StyleBox)
 
 	float content_margin[4];
 
@@ -75,7 +75,7 @@ public:
 };
 
 class StyleBoxEmpty : public StyleBox {
-	GDCLASS(StyleBoxEmpty, StyleBox);
+	GDCLASS(StyleBoxEmpty, StyleBox)
 	virtual float get_style_margin(Side p_side) const override { return 0; }
 
 public:

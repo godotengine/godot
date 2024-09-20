@@ -35,7 +35,7 @@
 #include "core/object/ref_counted.h"
 
 class TriangleMesh : public RefCounted {
-	GDCLASS(TriangleMesh, RefCounted);
+	GDCLASS(TriangleMesh, RefCounted)
 
 public:
 	struct Triangle {

@@ -51,7 +51,7 @@ class Shortcut;
  */
 
 class InputEvent : public Resource {
-	GDCLASS(InputEvent, Resource);
+	GDCLASS(InputEvent, Resource)
 
 	int device = 0;
 
@@ -94,7 +94,7 @@ public:
 };
 
 class InputEventFromWindow : public InputEvent {
-	GDCLASS(InputEventFromWindow, InputEvent);
+	GDCLASS(InputEventFromWindow, InputEvent)
 
 	int64_t window_id = 0;
 
@@ -109,7 +109,7 @@ public:
 };
 
 class InputEventWithModifiers : public InputEventFromWindow {
-	GDCLASS(InputEventWithModifiers, InputEventFromWindow);
+	GDCLASS(InputEventWithModifiers, InputEventFromWindow)
 
 	bool command_or_control_autoremap = false;
 
@@ -151,7 +151,7 @@ public:
 };
 
 class InputEventKey : public InputEventWithModifiers {
-	GDCLASS(InputEventKey, InputEventWithModifiers);
+	GDCLASS(InputEventKey, InputEventWithModifiers)
 
 	Key keycode = Key::NONE; // Key enum, without modifier masks.
 	Key physical_keycode = Key::NONE;
@@ -207,7 +207,7 @@ public:
 };
 
 class InputEventMouse : public InputEventWithModifiers {
-	GDCLASS(InputEventMouse, InputEventWithModifiers);
+	GDCLASS(InputEventMouse, InputEventWithModifiers)
 
 	BitField<MouseButtonMask> button_mask;
 
@@ -231,7 +231,7 @@ public:
 };
 
 class InputEventMouseButton : public InputEventMouse {
-	GDCLASS(InputEventMouseButton, InputEventMouse);
+	GDCLASS(InputEventMouseButton, InputEventMouse)
 
 	float factor = 1;
 	MouseButton button_index = MouseButton::NONE;
@@ -266,7 +266,7 @@ public:
 };
 
 class InputEventMouseMotion : public InputEventMouse {
-	GDCLASS(InputEventMouseMotion, InputEventMouse);
+	GDCLASS(InputEventMouseMotion, InputEventMouse)
 
 	Vector2 tilt;
 	float pressure = 0;
@@ -311,7 +311,7 @@ public:
 };
 
 class InputEventJoypadMotion : public InputEvent {
-	GDCLASS(InputEventJoypadMotion, InputEvent);
+	GDCLASS(InputEventJoypadMotion, InputEvent)
 	JoyAxis axis = (JoyAxis)0; ///< Joypad axis
 	float axis_value = 0; ///< -1 to 1
 
@@ -338,7 +338,7 @@ public:
 };
 
 class InputEventJoypadButton : public InputEvent {
-	GDCLASS(InputEventJoypadButton, InputEvent);
+	GDCLASS(InputEventJoypadButton, InputEvent)
 
 	JoyButton button_index = (JoyButton)0;
 	float pressure = 0; //0 to 1
@@ -368,7 +368,7 @@ public:
 };
 
 class InputEventScreenTouch : public InputEventFromWindow {
-	GDCLASS(InputEventScreenTouch, InputEventFromWindow);
+	GDCLASS(InputEventScreenTouch, InputEventFromWindow)
 	int index = 0;
 	Vector2 pos;
 	bool double_tap = false;
@@ -397,7 +397,7 @@ public:
 };
 
 class InputEventScreenDrag : public InputEventFromWindow {
-	GDCLASS(InputEventScreenDrag, InputEventFromWindow);
+	GDCLASS(InputEventScreenDrag, InputEventFromWindow)
 	int index = 0;
 	Vector2 pos;
 	Vector2 relative;
@@ -449,7 +449,7 @@ public:
 };
 
 class InputEventAction : public InputEvent {
-	GDCLASS(InputEventAction, InputEvent);
+	GDCLASS(InputEventAction, InputEvent)
 
 	StringName action;
 	float strength = 1.0f;
@@ -484,7 +484,7 @@ public:
 };
 
 class InputEventGesture : public InputEventWithModifiers {
-	GDCLASS(InputEventGesture, InputEventWithModifiers);
+	GDCLASS(InputEventGesture, InputEventWithModifiers)
 
 	Vector2 pos;
 
@@ -497,7 +497,7 @@ public:
 };
 
 class InputEventMagnifyGesture : public InputEventGesture {
-	GDCLASS(InputEventMagnifyGesture, InputEventGesture);
+	GDCLASS(InputEventMagnifyGesture, InputEventGesture)
 	real_t factor = 1.0;
 
 protected:
@@ -515,7 +515,7 @@ public:
 };
 
 class InputEventPanGesture : public InputEventGesture {
-	GDCLASS(InputEventPanGesture, InputEventGesture);
+	GDCLASS(InputEventPanGesture, InputEventGesture)
 	Vector2 delta;
 
 protected:
@@ -533,7 +533,7 @@ public:
 };
 
 class InputEventMIDI : public InputEvent {
-	GDCLASS(InputEventMIDI, InputEvent);
+	GDCLASS(InputEventMIDI, InputEvent)
 
 	int channel = 0;
 	MIDIMessage message = MIDIMessage::NONE;
@@ -579,7 +579,7 @@ public:
 };
 
 class InputEventShortcut : public InputEvent {
-	GDCLASS(InputEventShortcut, InputEvent);
+	GDCLASS(InputEventShortcut, InputEvent)
 
 	Ref<Shortcut> shortcut;
 

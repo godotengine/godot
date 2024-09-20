@@ -37,7 +37,7 @@
 #include "core/variant/native_ptr.h"
 
 class AudioEffectInstance : public RefCounted {
-	GDCLASS(AudioEffectInstance, RefCounted);
+	GDCLASS(AudioEffectInstance, RefCounted)
 
 protected:
 	GDVIRTUAL3(_process, GDExtensionConstPtr<AudioFrame>, GDExtensionPtr<AudioFrame>, int)
@@ -50,7 +50,7 @@ public:
 };
 
 class AudioEffect : public Resource {
-	GDCLASS(AudioEffect, Resource);
+	GDCLASS(AudioEffect, Resource)
 
 protected:
 	GDVIRTUAL0R(Ref<AudioEffectInstance>, _instantiate)

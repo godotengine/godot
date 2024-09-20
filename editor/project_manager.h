@@ -53,7 +53,7 @@ class TabContainer;
 class VBoxContainer;
 
 class ProjectManager : public Control {
-	GDCLASS(ProjectManager, Control);
+	GDCLASS(ProjectManager, Control)
 
 	static ProjectManager *singleton;
 

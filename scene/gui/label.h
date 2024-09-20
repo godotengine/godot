@@ -35,7 +35,7 @@
 #include "scene/resources/label_settings.h"
 
 class Label : public Control {
-	GDCLASS(Label, Control);
+	GDCLASS(Label, Control)
 
 private:
 	enum LabelDrawStep {

@@ -35,7 +35,7 @@
 #include "core/templates/rid.h"
 
 class CameraAttributes : public Resource {
-	GDCLASS(CameraAttributes, Resource);
+	GDCLASS(CameraAttributes, Resource)
 
 private:
 	RID camera_attributes;
@@ -76,7 +76,7 @@ public:
 };
 
 class CameraAttributesPractical : public CameraAttributes {
-	GDCLASS(CameraAttributesPractical, CameraAttributes);
+	GDCLASS(CameraAttributesPractical, CameraAttributes)
 
 private:
 	// DOF blur
@@ -127,7 +127,7 @@ public:
 };
 
 class CameraAttributesPhysical : public CameraAttributes {
-	GDCLASS(CameraAttributesPhysical, CameraAttributes);
+	GDCLASS(CameraAttributesPhysical, CameraAttributes)
 
 private:
 	// Exposure

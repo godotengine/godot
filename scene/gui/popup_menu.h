@@ -38,7 +38,7 @@
 #include "scene/resources/text_line.h"
 
 class PopupMenu : public Popup {
-	GDCLASS(PopupMenu, Popup);
+	GDCLASS(PopupMenu, Popup)
 
 	static HashMap<NativeMenu::SystemMenus, PopupMenu *> system_menus;
 

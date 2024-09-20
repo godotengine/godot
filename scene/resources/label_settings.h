@@ -37,7 +37,7 @@
 /*************************************************************************/
 
 class LabelSettings : public Resource {
-	GDCLASS(LabelSettings, Resource);
+	GDCLASS(LabelSettings, Resource)
 
 	real_t line_spacing = 3;
 

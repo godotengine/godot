@@ -599,7 +599,7 @@ public:
 };
 
 class GDScriptFunctionState : public RefCounted {
-	GDCLASS(GDScriptFunctionState, RefCounted);
+	GDCLASS(GDScriptFunctionState, RefCounted)
 	friend class GDScriptFunction;
 	GDScriptFunction *function = nullptr;
 	GDScriptFunction::CallState state;

@@ -35,9 +35,9 @@
 #include "core/object/gdvirtual.gen.inc"
 
 class Translation : public Resource {
-	GDCLASS(Translation, Resource);
-	OBJ_SAVE_TYPE(Translation);
-	RES_BASE_EXTENSION("translation");
+	GDCLASS(Translation, Resource)
+	OBJ_SAVE_TYPE(Translation)
+	RES_BASE_EXTENSION("translation")
 
 	String locale = "en";
 	HashMap<StringName, StringName> translation_map;
@@ -51,8 +51,8 @@ class Translation : public Resource {
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL2RC(StringName, _get_message, StringName, StringName);
-	GDVIRTUAL4RC(StringName, _get_plural_message, StringName, StringName, int, StringName);
+	GDVIRTUAL2RC(StringName, _get_message, StringName, StringName)
+	GDVIRTUAL4RC(StringName, _get_plural_message, StringName, StringName, int, StringName)
 
 public:
 	void set_locale(const String &p_locale);

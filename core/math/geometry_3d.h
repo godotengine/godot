@@ -736,23 +736,23 @@ public:
 		fex = Math::abs(e0.x);
 		fey = Math::abs(e0.y);
 		fez = Math::abs(e0.z);
-		AXISTEST_X01(e0.z, e0.y, fez, fey);
-		AXISTEST_Y02(e0.z, e0.x, fez, fex);
-		AXISTEST_Z12(e0.y, e0.x, fey, fex);
+		AXISTEST_X01(e0.z, e0.y, fez, fey)
+		AXISTEST_Y02(e0.z, e0.x, fez, fex)
+		AXISTEST_Z12(e0.y, e0.x, fey, fex)
 
 		fex = Math::abs(e1.x);
 		fey = Math::abs(e1.y);
 		fez = Math::abs(e1.z);
-		AXISTEST_X01(e1.z, e1.y, fez, fey);
-		AXISTEST_Y02(e1.z, e1.x, fez, fex);
-		AXISTEST_Z0(e1.y, e1.x, fey, fex);
+		AXISTEST_X01(e1.z, e1.y, fez, fey)
+		AXISTEST_Y02(e1.z, e1.x, fez, fex)
+		AXISTEST_Z0(e1.y, e1.x, fey, fex)
 
 		fex = Math::abs(e2.x);
 		fey = Math::abs(e2.y);
 		fez = Math::abs(e2.z);
-		AXISTEST_X2(e2.z, e2.y, fez, fey);
-		AXISTEST_Y1(e2.z, e2.x, fez, fex);
-		AXISTEST_Z12(e2.y, e2.x, fey, fex);
+		AXISTEST_X2(e2.z, e2.y, fez, fey)
+		AXISTEST_Y1(e2.z, e2.x, fez, fex)
+		AXISTEST_Z12(e2.y, e2.x, fey, fex)
 
 		/* Bullet 1: */
 		/*  first test overlap in the {x,y,z}-directions */
@@ -761,19 +761,19 @@ public:
 		/*  the triangle against the AABB */
 
 		/* test in X-direction */
-		FINDMINMAX(v0.x, v1.x, v2.x, min, max);
+		FINDMINMAX(v0.x, v1.x, v2.x, min, max)
 		if (min > boxhalfsize.x || max < -boxhalfsize.x) {
 			return false;
 		}
 
 		/* test in Y-direction */
-		FINDMINMAX(v0.y, v1.y, v2.y, min, max);
+		FINDMINMAX(v0.y, v1.y, v2.y, min, max)
 		if (min > boxhalfsize.y || max < -boxhalfsize.y) {
 			return false;
 		}
 
 		/* test in Z-direction */
-		FINDMINMAX(v0.z, v1.z, v2.z, min, max);
+		FINDMINMAX(v0.z, v1.z, v2.z, min, max)
 		if (min > boxhalfsize.z || max < -boxhalfsize.z) {
 			return false;
 		}

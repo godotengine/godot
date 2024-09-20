@@ -46,7 +46,7 @@ class MeshConvexDecompositionSettings;
 class Shape3D;
 
 class Mesh : public Resource {
-	GDCLASS(Mesh, Resource);
+	GDCLASS(Mesh, Resource)
 
 	mutable Ref<TriangleMesh> triangle_mesh; //cached
 	mutable Vector<Ref<TriangleMesh>> surface_triangle_meshes; //cached
@@ -211,7 +211,7 @@ public:
 };
 
 class MeshConvexDecompositionSettings : public RefCounted {
-	GDCLASS(MeshConvexDecompositionSettings, RefCounted);
+	GDCLASS(MeshConvexDecompositionSettings, RefCounted)
 
 public:
 	enum Mode : int {
@@ -294,8 +294,8 @@ public:
 VARIANT_ENUM_CAST(MeshConvexDecompositionSettings::Mode);
 
 class ArrayMesh : public Mesh {
-	GDCLASS(ArrayMesh, Mesh);
-	RES_BASE_EXTENSION("mesh");
+	GDCLASS(ArrayMesh, Mesh)
+	RES_BASE_EXTENSION("mesh")
 
 	PackedStringArray _get_blend_shape_names() const;
 	void _set_blend_shape_names(const PackedStringArray &p_names);
@@ -406,7 +406,7 @@ VARIANT_ENUM_CAST(Mesh::PrimitiveType);
 VARIANT_ENUM_CAST(Mesh::BlendShapeMode);
 
 class PlaceholderMesh : public Mesh {
-	GDCLASS(PlaceholderMesh, Mesh);
+	GDCLASS(PlaceholderMesh, Mesh)
 
 	RID rid;
 	AABB aabb;

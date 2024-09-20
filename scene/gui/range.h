@@ -34,7 +34,7 @@
 #include "scene/gui/control.h"
 
 class Range : public Control {
-	GDCLASS(Range, Control);
+	GDCLASS(Range, Control)
 
 	struct Shared {
 		double val = 0.0;
@@ -64,7 +64,7 @@ class Range : public Control {
 
 protected:
 	virtual void _value_changed(double p_value);
-	void _notify_shared_value_changed() { shared->emit_value_changed(); };
+	void _notify_shared_value_changed() { shared->emit_value_changed(); }
 
 	static void _bind_methods();
 

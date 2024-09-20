@@ -38,9 +38,9 @@
 #include "servers/rendering_server.h"
 
 class Material : public Resource {
-	GDCLASS(Material, Resource);
+	GDCLASS(Material, Resource)
 	RES_BASE_EXTENSION("material")
-	OBJ_SAVE_TYPE(Material);
+	OBJ_SAVE_TYPE(Material)
 
 	RID material;
 	Ref<Material> next_pass;
@@ -92,7 +92,7 @@ public:
 };
 
 class ShaderMaterial : public Material {
-	GDCLASS(ShaderMaterial, Material);
+	GDCLASS(ShaderMaterial, Material)
 	Ref<Shader> shader;
 
 	mutable HashMap<StringName, StringName> remap_cache;
@@ -134,7 +134,7 @@ public:
 class StandardMaterial3D;
 
 class BaseMaterial3D : public Material {
-	GDCLASS(BaseMaterial3D, Material);
+	GDCLASS(BaseMaterial3D, Material)
 
 public:
 	enum TextureParam {
