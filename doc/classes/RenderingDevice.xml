@@ -324,6 +324,18 @@
 				Submits [param draw_list] for rendering on the GPU. This is the raster equivalent to [method compute_list_dispatch].
 			</description>
 		</method>
+		<method name="draw_list_draw_indirect">
+			<return type="void" />
+			<param index="0" name="draw_list" type="int" />
+			<param index="1" name="use_indices" type="bool" />
+			<param index="2" name="buffer" type="RID" />
+			<param index="3" name="offset" type="int" default="0" />
+			<param index="4" name="draw_count" type="int" default="1" />
+			<param index="5" name="stride" type="int" default="0" />
+			<description>
+				Submits [param draw_list] for rendering on the GPU with the given parameters stored in the [param buffer] at [param offset]. Parameters being integers: vertex count, instance count, first vertex, first instance. And when using indices: index count, instance count, first index, vertex offset, first instance. Buffer must have been created with [constant STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT] flag.
+			</description>
+		</method>
 		<method name="draw_list_enable_scissor">
 			<return type="void" />
 			<param index="0" name="draw_list" type="int" />
