@@ -1495,7 +1495,15 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 	Vector<String> forced_export = get_forced_export_files();
 	for (int i = 0; i < forced_export.size(); i++) {
-		Vector<uint8_t> array = FileAccess::get_file_as_bytes(forced_export[i]);
+		Vector<uint8_t> array;
+		if (GDExtension::get_extension_list_config_file() == forced_export[i]) {
+			array = _filter_extension_list_config_file(forced_export[i], paths);
+			if (array.size() == 0) {
+				continue;
+			}
+		} else {
+			array = FileAccess::get_file_as_bytes(forced_export[i]);
+		}
 		err = p_save_func(p_udata, forced_export[i], array, idx, total, enc_in_filters, enc_ex_filters, key, seed);
 		if (err != OK) {
 			return err;
@@ -1532,6 +1540,22 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	}
 
 	return OK;
+}
+
+Vector<uint8_t> EditorExportPlatform::_filter_extension_list_config_file(const String &p_config_path, const HashSet<String> &p_paths) {
+	Ref<FileAccess> f = FileAccess::open(p_config_path, FileAccess::READ);
+	if (f.is_null()) {
+		ERR_FAIL_V_MSG(Vector<uint8_t>(), "Can't open file from path '" + String(p_config_path) + "'.");
+	}
+	Vector<uint8_t> data;
+	while (!f->eof_reached()) {
+		String l = f->get_line().strip_edges();
+		if (p_paths.has(l)) {
+			data.append_array(l.to_utf8_buffer());
+			data.append('\n');
+		}
+	}
+	return data;
 }
 
 Error EditorExportPlatform::_pack_add_shared_object(void *p_userdata, const SharedObject &p_so) {
