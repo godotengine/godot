@@ -10,6 +10,7 @@ warn_unreachable = true
 namespace_packages = true
 explicit_package_bases = true
 exclude = ["thirdparty/"]
+python_version = "3.8"
 
 [tool.ruff]
 extend-exclude = ["thirdparty"]
