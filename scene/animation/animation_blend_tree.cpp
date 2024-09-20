@@ -1139,7 +1139,11 @@ void AnimationNodeTransition::remove_input(int p_index) {
 
 bool AnimationNodeTransition::set_input_name(int p_input, const String &p_name) {
 	pending_update = true;
-	return AnimationNode::set_input_name(p_input, p_name);
+	if (!AnimationNode::set_input_name(p_input, p_name)) {
+		return false;
+	}
+	emit_signal(SNAME("tree_changed")); // For updating enum options.
+	return true;
 }
 
 void AnimationNodeTransition::set_input_as_auto_advance(int p_input, bool p_enable) {
