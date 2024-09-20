@@ -2,13 +2,13 @@
 #include "UnityPrefix.h"
 #include "ImportAnimationUtility.h"
 
-#include "Modules/Animation/mecanim/animation/animationset.h"
+#include "Modules/Animation/human_anim/animation/animationset.h"
 #include "Modules/Animation/AnimationUtility.h"
 #include "Modules/Animation/Animation.h"
 #include "Modules/Animation/Animator.h"
 #include "Modules/Animation/AnimatorGenericBindings.h"
 #include "Runtime/Math/AnimationCurveUtility.h"
-#include "Modules/Animation/mecanim/math/axes.h"
+#include "Modules/Animation/human_anim/math/axes.h"
 #include "Runtime/Utilities/CRC32.h"
 #include "Modules/Animation/MecanimClipBuilder.h"
 #include "Runtime/Jobs/Jobs.h"
@@ -77,11 +77,11 @@ void RemovedMaskedCurve(AnimationClip& clip, const ClipAnimationInfo& clipInfo, 
     PROFILER_AUTO(gRemovedMaskedCurve);
 
     // - Clear muscle curves not in mask
-    mecanim::human::HumanPoseMask humanMask = HumanPoseMaskFromBodyMask(clipInfo.bodyMask);
+    human_anim::human::HumanPoseMask humanMask = HumanPoseMaskFromBodyMask(clipInfo.bodyMask);
 
-    for (int muscleIter = 0; muscleIter < mecanim::animation::s_ClipMuscleCurveCount; muscleIter++)
+    for (int muscleIter = 0; muscleIter < human_anim::animation::s_ClipMuscleCurveCount; muscleIter++)
     {
-        if (!mecanim::animation::GetMuscleCurveInMask(humanMask, muscleIter))
+        if (!human_anim::animation::GetMuscleCurveInMask(humanMask, muscleIter))
         {
             AnimationClip::FloatCurves &floatCurves = clip.GetFloatCurves();
 
@@ -93,7 +93,7 @@ void RemovedMaskedCurve(AnimationClip& clip, const ClipAnimationInfo& clipInfo, 
 
                 if (floatCurve.type == TypeOf<Animator>())
                 {
-                    if (floatCurve.attribute == mecanim::animation::GetMuscleCurveName(muscleIter).c_str())
+                    if (floatCurve.attribute == human_anim::animation::GetMuscleCurveName(muscleIter).c_str())
                     {
                         floatCurves.erase(curveIter);
                         curveFound = true;
@@ -201,7 +201,7 @@ bool ShouldAddCurve(AnimationCurve& curve, int curveIndex)
 {
     bool ret = true;
 
-    if (curveIndex >= mecanim::animation::s_ClipMuscleCurveTDoFBegin && curveIndex < mecanim::animation::s_ClipMuscleCurveTDoFEnd)
+    if (curveIndex >= human_anim::animation::s_ClipMuscleCurveTDoFBegin && curveIndex < human_anim::animation::s_ClipMuscleCurveTDoFEnd)
     {
         ret = !IsZeroCurve(curve);
     }
@@ -209,16 +209,16 @@ bool ShouldAddCurve(AnimationCurve& curve, int curveIndex)
     return ret;
 }
 
-void UnrollMuscles(AnimationCurve& curve, int curveIndex, const mecanim::animation::AvatarConstant& avatarConstant)
+void UnrollMuscles(AnimationCurve& curve, int curveIndex, const human_anim::animation::AvatarConstant& avatarConstant)
 {
     PROFILER_AUTO(gUnrollMuscles);
 
-    if (curveIndex >= mecanim::animation::s_ClipMuscleCurveBodyDoFBegin && curveIndex < mecanim::animation::s_ClipMuscleCurveBodyDoFEnd)
+    if (curveIndex >= human_anim::animation::s_ClipMuscleCurveBodyDoFBegin && curveIndex < human_anim::animation::s_ClipMuscleCurveBodyDoFEnd)
     {
-        mecanim::int32_t muscleIndex = curveIndex - mecanim::animation::s_ClipMuscleCurveBodyDoFBegin;
+        human_anim::int32_t muscleIndex = curveIndex - human_anim::animation::s_ClipMuscleCurveBodyDoFBegin;
         float min = math::radians(-180.0f);
         float max = math::radians(+180.0f);
-        mecanim::human::GetMuscleRange(avatarConstant.m_Human.Get(), muscleIndex, min, max);
+        human_anim::human::GetMuscleRange(avatarConstant.m_Human.Get(), muscleIndex, min, max);
 
         int keyCount = curve.GetKeyCount();
 
@@ -278,7 +278,7 @@ void UnrollMuscles(AnimationCurve& curve, int curveIndex, const mecanim::animati
     }
 }
 
-void OffsetMuscles(AnimationClip& clip, const mecanim::animation::AvatarConstant& avatarConstant)
+void OffsetMuscles(AnimationClip& clip, const human_anim::animation::AvatarConstant& avatarConstant)
 {
     PROFILER_AUTO(gOffsetMuscles);
 
@@ -290,15 +290,15 @@ void OffsetMuscles(AnimationClip& clip, const mecanim::animation::AvatarConstant
     {
         if (curves[curveIter].type == TypeOf<Animator>())
         {
-            mecanim::uint32_t muscleId = ComputeCRC32(curves[curveIter].attribute.c_str());
-            mecanim::int32_t curveIndex = mecanim::animation::FindMuscleIndex(muscleId);
+            human_anim::uint32_t muscleId = ComputeCRC32(curves[curveIter].attribute.c_str());
+            human_anim::int32_t curveIndex = human_anim::animation::FindMuscleIndex(muscleId);
 
-            if (curveIndex >= mecanim::animation::s_ClipMuscleCurveBodyDoFBegin && curveIndex < mecanim::animation::s_ClipMuscleCurveBodyDoFEnd)
+            if (curveIndex >= human_anim::animation::s_ClipMuscleCurveBodyDoFBegin && curveIndex < human_anim::animation::s_ClipMuscleCurveBodyDoFEnd)
             {
-                mecanim::int32_t muscleIndex = curveIndex - mecanim::animation::s_ClipMuscleCurveBodyDoFBegin;
+                human_anim::int32_t muscleIndex = curveIndex - human_anim::animation::s_ClipMuscleCurveBodyDoFBegin;
                 float min = math::radians(-180.0f);
                 float max = math::radians(+180.0f);
-                mecanim::human::GetMuscleRange(avatarConstant.m_Human.Get(), muscleIndex, min, max);
+                human_anim::human::GetMuscleRange(avatarConstant.m_Human.Get(), muscleIndex, min, max);
 
                 AnimationCurve &curve = curves[curveIter].curve;
 
@@ -337,13 +337,13 @@ void OffsetMuscles(AnimationClip& clip, const mecanim::animation::AvatarConstant
     }
 }
 
-static int positionBoneList[] = { mecanim::human::kLeftLowerLeg, mecanim::human::kLeftFoot, mecanim::human::kRightLowerLeg, mecanim::human::kRightFoot, mecanim::human::kLeftUpperArm, mecanim::human::kLeftLowerArm, mecanim::human::kLeftHand, mecanim::human::kRightUpperArm, mecanim::human::kRightLowerArm, mecanim::human::kRightHand, mecanim::human::kHead };
-static int orientationBoneList[] = { mecanim::human::kLeftFoot, mecanim::human::kRightFoot, mecanim::human::kLeftHand, mecanim::human::kRightHand, mecanim::human::kHead };
+static int positionBoneList[] = { human_anim::human::kLeftLowerLeg, human_anim::human::kLeftFoot, human_anim::human::kRightLowerLeg, human_anim::human::kRightFoot, human_anim::human::kLeftUpperArm, human_anim::human::kLeftLowerArm, human_anim::human::kLeftHand, human_anim::human::kRightUpperArm, human_anim::human::kRightLowerArm, human_anim::human::kRightHand, human_anim::human::kHead };
+static int orientationBoneList[] = { human_anim::human::kLeftFoot, human_anim::human::kRightFoot, human_anim::human::kLeftHand, human_anim::human::kRightHand, human_anim::human::kHead };
 
 const int positionBoneCount = sizeof(positionBoneList) / sizeof(int);
 const int orientationBoneCount = sizeof(orientationBoneList) / sizeof(int);
 
-math::float1 RetargetPositionError(const mecanim::human::Human &human, int humanIndex, mecanim::skeleton::SkeletonPose const &poseA, const mecanim::skeleton::SkeletonPose &poseB) // in normalized meter
+math::float1 RetargetPositionError(const human_anim::human::Human &human, int humanIndex, human_anim::skeleton::SkeletonPose const &poseA, const human_anim::skeleton::SkeletonPose &poseB) // in normalized meter
 {
     math::trsX xa = poseA.m_X[human.m_HumanBoneIndex[humanIndex]];
     math::trsX xb = poseB.m_X[human.m_HumanBoneIndex[humanIndex]];
@@ -351,7 +351,7 @@ math::float1 RetargetPositionError(const mecanim::human::Human &human, int human
     return math::length(xb.t - xa.t) / math::float1(human.m_Scale);
 }
 
-math::float1 RetargetOrientationError(const mecanim::human::Human &human, int humanIndex, mecanim::skeleton::SkeletonPose const &poseA, const mecanim::skeleton::SkeletonPose &poseB) // in degrees
+math::float1 RetargetOrientationError(const human_anim::human::Human &human, int humanIndex, human_anim::skeleton::SkeletonPose const &poseA, const human_anim::skeleton::SkeletonPose &poseB) // in degrees
 {
     math::trsX xa = poseA.m_X[human.m_HumanBoneIndex[humanIndex]];
     math::trsX xb = poseB.m_X[human.m_HumanBoneIndex[humanIndex]];
@@ -369,13 +369,13 @@ namespace
     {
         GenerateMecanimClipsCurvesJobData(
             AnimationClips const& clips,
-            mecanim::animation::AvatarConstant const& avatarConstant,
+            human_anim::animation::AvatarConstant const& avatarConstant,
             bool isHuman,
             HumanDescription const& humanDescription,
             AvatarBuilder::NamedTransforms const& namedTransform,
             bool doRetargetingQuality,
             int humanoidOversampling,
-            mecanim::int32_t motionTransformIndex)
+            human_anim::int32_t motionTransformIndex)
             : alloc(kMemTempJobAlloc)
             , clips(clips)
             , avatarConstant(avatarConstant)
@@ -404,20 +404,20 @@ namespace
         BlockRange blocks[kMaximumBlockRangeCount];
 
         AnimationClips const& clips;
-        mecanim::animation::AvatarConstant const& avatarConstant;
+        human_anim::animation::AvatarConstant const& avatarConstant;
         HumanDescription const& humanDescription;
         AvatarBuilder::NamedTransforms const& namedTransform;
         int humanoidOversampling;
         bool isHuman;
         bool doRetargetingQuality;
 
-        mecanim::memory::HeapAllocator alloc;
-        mecanim::int32_t motionTransformIndex;
+        human_anim::memory::HeapAllocator alloc;
+        human_anim::int32_t motionTransformIndex;
 
         UnityEngine::Animation::AnimationSetBindings* clipBindings;
-        mecanim::animation::SkeletonTQSMap* tqsMap;
+        human_anim::animation::SkeletonTQSMap* tqsMap;
 
-        math::float3 tDoFBaseArray[mecanim::human::kLastTDoF];
+        math::float3 tDoFBaseArray[human_anim::human::kLastTDoF];
 
         dynamic_array<core::string> invalidAnimationWarning;
         dynamic_array<core::string> retargetingQualityMessages;
@@ -434,34 +434,34 @@ namespace
         int end = begin + jobData->blocks[blockIndex].rangeSize;
 
         math::trsX motionX(math::trsIdentity());
-        mecanim::human::HumanPose pose;
+        human_anim::human::HumanPose pose;
 
-        mecanim::ValueArray*     valuesDefault = CreateValueArray(jobData->clipBindings->animationSet->m_DynamicFullValuesConstant, jobData->alloc);
-        mecanim::ValueArray*     values = CreateValueArray(jobData->clipBindings->animationSet->m_DynamicFullValuesConstant, jobData->alloc);
-        mecanim::ValueArrayMask* valuesMask = CreateValueArrayMask(jobData->clipBindings->animationSet->m_DynamicFullValuesConstant, jobData->alloc);
+        human_anim::ValueArray*     valuesDefault = CreateValueArray(jobData->clipBindings->animationSet->m_DynamicFullValuesConstant, jobData->alloc);
+        human_anim::ValueArray*     values = CreateValueArray(jobData->clipBindings->animationSet->m_DynamicFullValuesConstant, jobData->alloc);
+        human_anim::ValueArrayMask* valuesMask = CreateValueArrayMask(jobData->clipBindings->animationSet->m_DynamicFullValuesConstant, jobData->alloc);
 
-        mecanim::skeleton::SkeletonPose* humanLclPose = NULL;
-        mecanim::skeleton::SkeletonPose* humanPoseA = NULL;
-        mecanim::skeleton::SkeletonPose* humanPoseB = NULL;
-        mecanim::skeleton::SkeletonPose* humanPoseC = NULL;
-        mecanim::skeleton::SkeletonPose* humanPoseD = NULL;
+        human_anim::skeleton::SkeletonPose* humanLclPose = NULL;
+        human_anim::skeleton::SkeletonPose* humanPoseA = NULL;
+        human_anim::skeleton::SkeletonPose* humanPoseB = NULL;
+        human_anim::skeleton::SkeletonPose* humanPoseC = NULL;
+        human_anim::skeleton::SkeletonPose* humanPoseD = NULL;
 
-        mecanim::skeleton::SkeletonPose* avatarLclPose = mecanim::skeleton::CreateSkeletonPose<math::trsX>(jobData->avatarConstant.m_AvatarSkeleton.Get(), jobData->alloc);
-        mecanim::skeleton::SkeletonPose* avatarGblPose = mecanim::skeleton::CreateSkeletonPose<math::trsX>(jobData->avatarConstant.m_AvatarSkeleton.Get(), jobData->alloc);
+        human_anim::skeleton::SkeletonPose* avatarLclPose = human_anim::skeleton::CreateSkeletonPose<math::trsX>(jobData->avatarConstant.m_AvatarSkeleton.Get(), jobData->alloc);
+        human_anim::skeleton::SkeletonPose* avatarGblPose = human_anim::skeleton::CreateSkeletonPose<math::trsX>(jobData->avatarConstant.m_AvatarSkeleton.Get(), jobData->alloc);
 
         ValueFromSkeletonPose(*jobData->avatarConstant.m_AvatarSkeleton, *jobData->avatarConstant.m_DefaultPose, jobData->tqsMap, *valuesDefault);
 
         if (jobData->isHuman)
         {
-            humanLclPose = mecanim::skeleton::CreateSkeletonPose<math::trsX>(jobData->avatarConstant.m_Human->m_Skeleton.Get(), jobData->alloc);
-            humanPoseA = mecanim::skeleton::CreateSkeletonPose<math::trsX>(jobData->avatarConstant.m_Human->m_Skeleton.Get(), jobData->alloc);
-            humanPoseB = mecanim::skeleton::CreateSkeletonPose<math::trsX>(jobData->avatarConstant.m_Human->m_Skeleton.Get(), jobData->alloc);
-            humanPoseC = mecanim::skeleton::CreateSkeletonPose<math::trsX>(jobData->avatarConstant.m_Human->m_Skeleton.Get(), jobData->alloc);
-            humanPoseD = mecanim::skeleton::CreateSkeletonPose<math::trsX>(jobData->avatarConstant.m_Human->m_Skeleton.Get(), jobData->alloc);
+            humanLclPose = human_anim::skeleton::CreateSkeletonPose<math::trsX>(jobData->avatarConstant.m_Human->m_Skeleton.Get(), jobData->alloc);
+            humanPoseA = human_anim::skeleton::CreateSkeletonPose<math::trsX>(jobData->avatarConstant.m_Human->m_Skeleton.Get(), jobData->alloc);
+            humanPoseB = human_anim::skeleton::CreateSkeletonPose<math::trsX>(jobData->avatarConstant.m_Human->m_Skeleton.Get(), jobData->alloc);
+            humanPoseC = human_anim::skeleton::CreateSkeletonPose<math::trsX>(jobData->avatarConstant.m_Human->m_Skeleton.Get(), jobData->alloc);
+            humanPoseD = human_anim::skeleton::CreateSkeletonPose<math::trsX>(jobData->avatarConstant.m_Human->m_Skeleton.Get(), jobData->alloc);
 
             if (jobData->avatarConstant.m_Human->m_HasTDoF)
             {
-                mecanim::human::RetargetFromTDoFBase(jobData->avatarConstant.m_Human.Get(), humanPoseA, &jobData->tDoFBaseArray[0]);
+                human_anim::human::RetargetFromTDoFBase(jobData->avatarConstant.m_Human.Get(), humanPoseA, &jobData->tDoFBaseArray[0]);
             }
         }
 
@@ -474,11 +474,11 @@ namespace
             core::string clipWarning = "";
             core::string clipRetargetWarning = "";
 
-            mecanim::animation::ClipMuscleConstant *muscleClip = animationClip->GetRuntimeAsset();
+            human_anim::animation::ClipMuscleConstant *muscleClip = animationClip->GetRuntimeAsset();
 
-            mecanim::animation::ClipInput in;
-            mecanim::animation::ClipOutput *out = mecanim::animation::CreateClipOutput(muscleClip->m_Clip.Get(), jobData->alloc);
-            mecanim::animation::ClipMemory *mem = mecanim::animation::CreateClipMemory(muscleClip->m_Clip.Get(), jobData->alloc);
+            human_anim::animation::ClipInput in;
+            human_anim::animation::ClipOutput *out = human_anim::animation::CreateClipOutput(muscleClip->m_Clip.Get(), jobData->alloc);
+            human_anim::animation::ClipMemory *mem = human_anim::animation::CreateClipMemory(muscleClip->m_Clip.Get(), jobData->alloc);
 
             // compute frame count
             float period = 1.0f / animationClip->GetSampleRate() / float(jobData->humanoidOversampling);
@@ -488,23 +488,23 @@ namespace
 
             if (stopTime > startTime)
             {
-                AnimationCurve curveArray[mecanim::animation::s_ClipMuscleCurveCount];
+                AnimationCurve curveArray[human_anim::animation::s_ClipMuscleCurveCount];
 
-                int curveStart = jobData->motionTransformIndex != -1 ? mecanim::animation::s_ClipMuscleCurveMotionBegin : mecanim::animation::s_ClipMuscleCurveRootBegin;
+                int curveStart = jobData->motionTransformIndex != -1 ? human_anim::animation::s_ClipMuscleCurveMotionBegin : human_anim::animation::s_ClipMuscleCurveRootBegin;
 
                 int curveCount = 0;
 
                 if (jobData->isHuman)
                 {
-                    curveCount = jobData->avatarConstant.m_Human.Get()->m_HasTDoF ? mecanim::animation::s_ClipMuscleCurveCount : mecanim::animation::s_ClipMuscleCurveCount - mecanim::animation::s_ClipMuscleCurveTDoFCount;
+                    curveCount = jobData->avatarConstant.m_Human.Get()->m_HasTDoF ? human_anim::animation::s_ClipMuscleCurveCount : human_anim::animation::s_ClipMuscleCurveCount - human_anim::animation::s_ClipMuscleCurveTDoFCount;
                 }
                 else
                 {
-                    curveCount += mecanim::animation::s_ClipMuscleCurveMotionCount;
+                    curveCount += human_anim::animation::s_ClipMuscleCurveMotionCount;
 
                     if (rootNodeIndex != -1)
                     {
-                        curveCount += mecanim::animation::s_ClipMuscleCurveRootCount;
+                        curveCount += human_anim::animation::s_ClipMuscleCurveRootCount;
                     }
                 }
 
@@ -547,13 +547,13 @@ namespace
                     in.m_Time = time;
                     EvaluateClip(muscleClip->m_Clip.Get(), &in, mem, out);
 
-                    mecanim::SetValueMask<false>(valuesMask, false);
-                    mecanim::animation::ValuesFromClip<false>(*valuesDefault, *out, jobData->clipBindings->animationSet->m_ClipConstant[i].m_Bindings, jobData->clipBindings->animationSet->m_IntegerRemapStride, *values, *valuesMask);
+                    human_anim::SetValueMask<false>(valuesMask, false);
+                    human_anim::animation::ValuesFromClip<false>(*valuesDefault, *out, jobData->clipBindings->animationSet->m_ClipConstant[i].m_Bindings, jobData->clipBindings->animationSet->m_IntegerRemapStride, *values, *valuesMask);
                     SkeletonPoseFromValue(*jobData->avatarConstant.m_AvatarSkeleton, *jobData->avatarConstant.m_DefaultPose, *values, jobData->tqsMap, *avatarLclPose, 0, false);
 
                     if (jobData->motionTransformIndex != -1)
                     {
-                        mecanim::skeleton::SkeletonPoseComputeGlobal(jobData->avatarConstant.m_AvatarSkeleton.Get(), avatarLclPose, avatarGblPose, jobData->motionTransformIndex, 0);
+                        human_anim::skeleton::SkeletonPoseComputeGlobal(jobData->avatarConstant.m_AvatarSkeleton.Get(), avatarLclPose, avatarGblPose, jobData->motionTransformIndex, 0);
                         motionX = avatarGblPose->m_X[jobData->motionTransformIndex];
                     }
 
@@ -565,23 +565,23 @@ namespace
                         }
 
                         // [case 493451] Attached scene does not play animation correctly, must bake all animation for node between root and hips transform
-                        mecanim::int32_t rootIndex = jobData->avatarConstant.m_HumanSkeletonIndexArray[0];
+                        human_anim::int32_t rootIndex = jobData->avatarConstant.m_HumanSkeletonIndexArray[0];
 
-                        mecanim::skeleton::SkeletonPoseComputeGlobal(jobData->avatarConstant.m_AvatarSkeleton.Get(), avatarLclPose, avatarGblPose, rootIndex, 0);
-                        mecanim::skeleton::SkeletonPoseCopy(jobData->avatarConstant.m_AvatarSkeleton.Get(), avatarLclPose, jobData->avatarConstant.m_Human->m_Skeleton.Get(), humanLclPose);
+                        human_anim::skeleton::SkeletonPoseComputeGlobal(jobData->avatarConstant.m_AvatarSkeleton.Get(), avatarLclPose, avatarGblPose, rootIndex, 0);
+                        human_anim::skeleton::SkeletonPoseCopy(jobData->avatarConstant.m_AvatarSkeleton.Get(), avatarLclPose, jobData->avatarConstant.m_Human->m_Skeleton.Get(), humanLclPose);
 
                         humanLclPose->m_X[0] = avatarGblPose->m_X[rootIndex];
 
-                        mecanim::human::RetargetFrom(jobData->avatarConstant.m_Human.Get(), humanLclPose, &pose, humanPoseA, humanPoseB, humanPoseC, humanPoseD, &jobData->tDoFBaseArray[0]);
+                        human_anim::human::RetargetFrom(jobData->avatarConstant.m_Human.Get(), humanLclPose, &pose, humanPoseA, humanPoseB, humanPoseC, humanPoseD, &jobData->tDoFBaseArray[0]);
 
                         if (jobData->doRetargetingQuality)
                         {
-                            mecanim::skeleton::SkeletonPoseComputeGlobal(jobData->avatarConstant.m_AvatarSkeleton.Get(), avatarLclPose, avatarGblPose);
-                            mecanim::skeleton::SkeletonPoseCopy(jobData->avatarConstant.m_AvatarSkeleton.Get(), avatarGblPose, jobData->avatarConstant.m_Human->m_Skeleton.Get(), humanPoseA);
+                            human_anim::skeleton::SkeletonPoseComputeGlobal(jobData->avatarConstant.m_AvatarSkeleton.Get(), avatarLclPose, avatarGblPose);
+                            human_anim::skeleton::SkeletonPoseCopy(jobData->avatarConstant.m_AvatarSkeleton.Get(), avatarGblPose, jobData->avatarConstant.m_Human->m_Skeleton.Get(), humanPoseA);
 
-                            mecanim::human::HumanPose poseOut;
-                            mecanim::human::RetargetTo(jobData->avatarConstant.m_Human.Get(), &pose, 0, math::trsIdentity(), &poseOut, humanLclPose, humanPoseB);
-                            mecanim::skeleton::SkeletonPoseComputeGlobal(jobData->avatarConstant.m_Human->m_Skeleton.Get(), humanLclPose, humanPoseB);
+                            human_anim::human::HumanPose poseOut;
+                            human_anim::human::RetargetTo(jobData->avatarConstant.m_Human.Get(), &pose, 0, math::trsIdentity(), &poseOut, humanLclPose, humanPoseB);
+                            human_anim::skeleton::SkeletonPoseComputeGlobal(jobData->avatarConstant.m_Human->m_Skeleton.Get(), humanLclPose, humanPoseB);
 
                             for (int boneIter = 0; boneIter < positionBoneCount; boneIter++)
                             {
@@ -612,7 +612,7 @@ namespace
                     }
                     else if (rootNodeIndex != -1)
                     {
-                        mecanim::skeleton::SkeletonPoseComputeGlobal(jobData->avatarConstant.m_AvatarSkeleton.Get(), avatarLclPose, avatarGblPose);
+                        human_anim::skeleton::SkeletonPoseComputeGlobal(jobData->avatarConstant.m_AvatarSkeleton.Get(), avatarLclPose, avatarGblPose);
 
                         pose.m_RootX = avatarGblPose->m_X[rootNodeIndex];
                         pose.m_RootX.q = math::quatMul(pose.m_RootX.q, math::quatConj(jobData->avatarConstant.m_RootMotionBoneX.q));
@@ -622,7 +622,7 @@ namespace
                     {
                         AnimationCurve::Keyframe* keyFrame = &curveArray[curveIter].GetKey(keyIter);
 
-                        keyFrame->value = mecanim::animation::GetMuscleCurveValue(pose, motionX, curveIter);
+                        keyFrame->value = human_anim::animation::GetMuscleCurveValue(pose, motionX, curveIter);
                         keyFrame->time = time;
                         keyFrame->inSlope = 0;
                         keyFrame->outSlope = 0;
@@ -634,7 +634,7 @@ namespace
                         // unroll quaternions
                         if (keyIter > 0)
                         {
-                            int tqIndex = mecanim::animation::GetMuscleCurveTQIndex(curveIter);
+                            int tqIndex = human_anim::animation::GetMuscleCurveTQIndex(curveIter);
                             if (tqIndex == 6)
                             {
                                 math::float4 qprev, q;
@@ -699,7 +699,7 @@ namespace
                                 int fullFrame = int(float(seconds) * animationClip->GetSampleRate()) + frame;
                                 float percent = 100 * (time - startTime) / (stopTime - startTime);
 
-                                clipRetargetWarning += Format("\t%s average position error %.1f mm and maximum position error %.1f mm at time %i:%2i (%3.1f%%) Frame %i\n", mecanim::human::BoneName(positionBoneList[boneIter]), positionAverageError[boneIter] * 1000, positionMaximumError[boneIter] * 1000, seconds, frame, percent, fullFrame).c_str();
+                                clipRetargetWarning += Format("\t%s average position error %.1f mm and maximum position error %.1f mm at time %i:%2i (%3.1f%%) Frame %i\n", human_anim::human::BoneName(positionBoneList[boneIter]), positionAverageError[boneIter] * 1000, positionMaximumError[boneIter] * 1000, seconds, frame, percent, fullFrame).c_str();
                             }
                         }
 
@@ -713,7 +713,7 @@ namespace
                                 int fullFrame = int(float(seconds) * animationClip->GetSampleRate()) + frame;
                                 float percent = 100 * (time - startTime) / (stopTime - startTime);
 
-                                clipRetargetWarning += Format("\t%s average orientation error %.1f deg and maximum orientation error %.1f deg at time %i:%2i (%3.1f%%) Frame %i\n", mecanim::human::BoneName(orientationBoneList[boneIter]), orientationAverageError[boneIter], orientationMaximumError[boneIter], seconds, frame, percent, fullFrame).c_str();
+                                clipRetargetWarning += Format("\t%s average orientation error %.1f deg and maximum orientation error %.1f deg at time %i:%2i (%3.1f%%) Frame %i\n", human_anim::human::BoneName(orientationBoneList[boneIter]), orientationAverageError[boneIter], orientationMaximumError[boneIter], seconds, frame, percent, fullFrame).c_str();
                             }
                         }
                     }
@@ -721,7 +721,7 @@ namespace
 
                 if (jobData->isHuman)
                 {
-                    mecanim::int32_t rootIndex = jobData->avatarConstant.m_HumanSkeletonIndexArray[0];
+                    human_anim::int32_t rootIndex = jobData->avatarConstant.m_HumanSkeletonIndexArray[0];
 
                     bool startConversionWarning = false;
 
@@ -731,16 +731,16 @@ namespace
                         core::string transformPath = jobData->namedTransform[j].path;
                         core::string transformName = jobData->namedTransform[j].name;
 
-                        mecanim::uint32_t pathHash = ComputeCRC32(transformPath.c_str());
+                        human_anim::uint32_t pathHash = ComputeCRC32(transformPath.c_str());
 
                         AnimationClip::Vector3Curves& positionCurves = animationClip->GetPositionCurves();
                         AnimationClip::QuaternionCurves& quaternionCurves = animationClip->GetQuaternionCurves();
                         AnimationClip::Vector3Curves& eulerCurves = animationClip->GetEulerCurves();
                         AnimationClip::Vector3Curves& scaleCurves = animationClip->GetScaleCurves();
 
-                        int nodeIndex = mecanim::skeleton::SkeletonFindNode(jobData->avatarConstant.m_Human->m_Skeleton.Get(), pathHash);
+                        int nodeIndex = human_anim::skeleton::SkeletonFindNode(jobData->avatarConstant.m_Human->m_Skeleton.Get(), pathHash);
 
-                        if (nodeIndex != -1 || mecanim::skeleton::SkeletonFindNodeUp(jobData->avatarConstant.m_AvatarSkeleton.Get(), rootIndex, pathHash) != -1)
+                        if (nodeIndex != -1 || human_anim::skeleton::SkeletonFindNodeUp(jobData->avatarConstant.m_AvatarSkeleton.Get(), rootIndex, pathHash) != -1)
                         {
                             HumanBoneList::const_iterator boneIt = std::find_if(jobData->humanDescription.m_Human.begin(), jobData->humanDescription.m_Human.end(), FindBoneName(jobData->namedTransform[j].name));
 
@@ -760,9 +760,9 @@ namespace
                                     {
                                         bool hasTDOF = false;
 
-                                        for (int dofIter = 0; !hasTDOF && dofIter < mecanim::human::kLastTDoF; dofIter++)
+                                        for (int dofIter = 0; !hasTDOF && dofIter < human_anim::human::kLastTDoF; dofIter++)
                                         {
-                                            int boneIndex = jobData->avatarConstant.m_Human->m_HumanBoneIndex[mecanim::human::BoneFromTDoF(dofIter)];
+                                            int boneIndex = jobData->avatarConstant.m_Human->m_HumanBoneIndex[human_anim::human::BoneFromTDoF(dofIter)];
                                             if (boneIndex != -1)
                                             {
                                                 hasTDOF = (boneIndex == nodeIndex);
@@ -817,7 +817,7 @@ namespace
                     {
                         curves.push_back(AnimationClip::FloatCurve());
                         curves.back().type = TypeOf<Animator>();
-                        curves.back().attribute = mecanim::animation::GetMuscleCurveName(curveIter).c_str();
+                        curves.back().attribute = human_anim::animation::GetMuscleCurveName(curveIter).c_str();
                         curves.back().curve = curveArray[curveIter];
                     }
                 }
@@ -852,20 +852,20 @@ namespace
                 }
             }
 
-            mecanim::animation::DestroyClipOutput(out, jobData->alloc);
-            mecanim::animation::DestroyClipMemory(mem, jobData->alloc);
+            human_anim::animation::DestroyClipOutput(out, jobData->alloc);
+            human_anim::animation::DestroyClipMemory(mem, jobData->alloc);
         }
 
-        mecanim::skeleton::DestroySkeletonPose(avatarLclPose, jobData->alloc);
-        mecanim::skeleton::DestroySkeletonPose(avatarGblPose, jobData->alloc);
+        human_anim::skeleton::DestroySkeletonPose(avatarLclPose, jobData->alloc);
+        human_anim::skeleton::DestroySkeletonPose(avatarGblPose, jobData->alloc);
 
         if (jobData->isHuman)
         {
-            mecanim::skeleton::DestroySkeletonPose(humanLclPose, jobData->alloc);
-            mecanim::skeleton::DestroySkeletonPose(humanPoseA, jobData->alloc);
-            mecanim::skeleton::DestroySkeletonPose(humanPoseB, jobData->alloc);
-            mecanim::skeleton::DestroySkeletonPose(humanPoseC, jobData->alloc);
-            mecanim::skeleton::DestroySkeletonPose(humanPoseD, jobData->alloc);
+            human_anim::skeleton::DestroySkeletonPose(humanLclPose, jobData->alloc);
+            human_anim::skeleton::DestroySkeletonPose(humanPoseA, jobData->alloc);
+            human_anim::skeleton::DestroySkeletonPose(humanPoseB, jobData->alloc);
+            human_anim::skeleton::DestroySkeletonPose(humanPoseC, jobData->alloc);
+            human_anim::skeleton::DestroySkeletonPose(humanPoseD, jobData->alloc);
         }
 
         DestroyValueArray(valuesDefault, jobData->alloc);
@@ -890,7 +890,7 @@ namespace
 } // namespace
 
 core::string GenerateMecanimClipsCurves(AnimationClips const& clips,
-    mecanim::animation::AvatarConstant const& avatarConstant,
+    human_anim::animation::AvatarConstant const& avatarConstant,
     bool isHuman,
     HumanDescription const& humanDescription,
     GameObject& rootGameObject,
@@ -907,7 +907,7 @@ core::string GenerateMecanimClipsCurves(AnimationClips const& clips,
         return "";
     }
 
-    mecanim::int32_t motionTransformIndex = motionNodeName != "" ? motionNodeName == "<Root Transform>" ? 0 : mecanim::skeleton::SkeletonFindNode(avatarConstant.m_AvatarSkeleton.Get(), ComputeCRC32(motionNodeName.c_str())) : -1;
+    human_anim::int32_t motionTransformIndex = motionNodeName != "" ? motionNodeName == "<Root Transform>" ? 0 : human_anim::skeleton::SkeletonFindNode(avatarConstant.m_AvatarSkeleton.Get(), ComputeCRC32(motionNodeName.c_str())) : -1;
 
     GenerateMecanimClipsCurvesJobData jobData(clips, avatarConstant, isHuman, humanDescription, namedTransform, doRetargetingQuality, humanoidOversampling, motionTransformIndex);
     JobFence fence;

@@ -12,7 +12,7 @@ namespace math
     struct Axes;
 }
 
-namespace mecanim
+namespace human_anim
 {
 namespace skeleton
 {

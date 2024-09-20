@@ -12,10 +12,10 @@ void AddAdditionalCurves(AnimationClip& clip, const ClipAnimationInfo& clipInfo)
 
 AvatarType AnimationTypeToAvatarType(ModelImporter::AnimationType type);
 
-core::string GenerateMecanimClipsCurves(AnimationClips const& clips, mecanim::animation::AvatarConstant const& avatarConstant, bool isHuman, HumanDescription const& humanDescription, GameObject& rootGameObject, AvatarBuilder::NamedTransforms const& namedTransform,
+core::string GenerateMecanimClipsCurves(AnimationClips const& clips, human_anim::animation::AvatarConstant const& avatarConstant, bool isHuman, HumanDescription const& humanDescription, GameObject& rootGameObject, AvatarBuilder::NamedTransforms const& namedTransform,
     core::string const& motionNodeName, bool doRetargetingQuality, core::string &retargetingQualityMessages, int humanoidOversampling);
 
-void OffsetMuscles(AnimationClip& clip, mecanim::animation::AvatarConstant const& avatarConstant);
+void OffsetMuscles(AnimationClip& clip, human_anim::animation::AvatarConstant const& avatarConstant);
 
 void OptimizeCurves(const AnimationClips& clips, int animationCompression, float animationRotationError, float animationPositionError, float animationScaleError);
 #endif

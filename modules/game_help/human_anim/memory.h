@@ -10,7 +10,7 @@
 
 template<typename TYPE> class OffsetPtr;
 
-namespace mecanim
+namespace human_anim
 {
 namespace memory
 {

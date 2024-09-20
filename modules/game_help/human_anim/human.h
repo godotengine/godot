@@ -14,7 +14,7 @@ namespace math
     struct SetupAxesInfo;
 }
 
-namespace mecanim
+namespace human_anim
 {
 namespace skeleton
 {
@@ -184,11 +184,11 @@ namespace human
     enum HumanDoF
     {
         kHumanDoFStart = 0,
-        kHumanDoFStop = kHumanDoFStart + mecanim::human::kLastDoF,							// 55
+        kHumanDoFStop = kHumanDoFStart + human_anim::human::kLastDoF,							// 55
         kHumanLeftHandDoFStart = kHumanDoFStop,												// 55 // 左手DOF開始
-        kHumanLeftHandDoFStop = kHumanLeftHandDoFStart + mecanim::hand::s_DoFCount,			// 55+20 = 75 // 左手DOF結束
+        kHumanLeftHandDoFStop = kHumanLeftHandDoFStart + human_anim::hand::s_DoFCount,			// 55+20 = 75 // 左手DOF結束
         kHumanRightHandDoFStart = kHumanLeftHandDoFStop,									// 75 // 右手DOF開始
-        kHumanRightHandDoFStop = kHumanRightHandDoFStart + mecanim::hand::s_DoFCount,		// 75+20 =95 // 右手DOF結束
+        kHumanRightHandDoFStop = kHumanRightHandDoFStart + human_anim::hand::s_DoFCount,		// 75+20 =95 // 右手DOF結束
         kHumanLastDoF = kHumanRightHandDoFStop												// 95 // 身體所有DOF的結束
     };
 
@@ -272,7 +272,7 @@ namespace human
         kLastMaskIndex = kMaskTDoFStartIndex + kLastTDoF
     };
 
-    typedef mecanim::bitset<kLastMaskIndex> HumanPoseMask;
+    typedef human_anim::bitset<kLastMaskIndex> HumanPoseMask;
 
     bool MaskHasLeftFootGoal(const HumanPoseMask& mask);
     bool MaskHasRightFootGoal(const HumanPoseMask& mask);
@@ -486,7 +486,7 @@ namespace human
 }
 
 template<>
-class SerializeTraits<mecanim::human::HumanPoseMask> : public SerializeTraitsBase<mecanim::human::HumanPoseMask>
+class SerializeTraits<human_anim::human::HumanPoseMask> : public SerializeTraitsBase<human_anim::human::HumanPoseMask>
 {
 public:
 
@@ -494,7 +494,7 @@ public:
     inline static bool MightContainPPtr()  { return false; }
     inline static bool AllowTransferOptimization() { return true; }
 
-    typedef mecanim::human::HumanPoseMask value_type;
+    typedef human_anim::human::HumanPoseMask value_type;
 
     template<class TransferFunction> inline
     static void Transfer(value_type& data, TransferFunction& transfer)

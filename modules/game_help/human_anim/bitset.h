@@ -4,7 +4,7 @@
 #include "./defs.h"
 #include "./types.h"
 
-namespace mecanim
+namespace human_anim
 {
     template<uint32_t Bits> class bitset
     {

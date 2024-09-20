@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Modules/Animation/mecanim/defs.h"
-#include "Modules/Animation/mecanim/memory.h"
-#include "Modules/Animation/mecanim/types.h"
+#include "Modules/Animation/human_anim/defs.h"
+#include "Modules/Animation/human_anim/memory.h"
+#include "Modules/Animation/human_anim/types.h"
 #include "Runtime/Math/Simd/vec-trs.h"
 
 #include "Runtime/Scripting/BindingsDefs.h"
@@ -15,7 +15,7 @@ namespace math
     struct SetupAxesInfo;
 }
 
-namespace mecanim
+namespace human_anim
 {
 namespace skeleton
 {
@@ -114,4 +114,4 @@ namespace hand
 }// namespace hand
 }
 
-BIND_MANAGED_TYPE_NAME(mecanim::hand::FingerDoF, UnityEngine_FingerDof);
+BIND_MANAGED_TYPE_NAME(human_anim::hand::FingerDoF, UnityEngine_FingerDof);

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Modules/Animation/mecanim/defs.h"
-#include "Modules/Animation/mecanim/types.h"
+#include "Modules/Animation/human_anim/defs.h"
+#include "Modules/Animation/human_anim/types.h"
 #include "Runtime/Math/Simd/vec-math.h"
 #include "Runtime/Math/Simd/vec-quat.h"
 
@@ -38,7 +38,7 @@ namespace math
         float m_Max[4];
         float m_Sgn[4];
         AxesType m_Type;
-        mecanim::int32_t m_ForceAxis;
+        human_anim::int32_t m_ForceAxis;
     };
 
     struct Axes
@@ -49,7 +49,7 @@ namespace math
         float3 m_Sgn;
         Limit m_Limit;
         float m_Length;
-        mecanim::uint32_t m_Type; // AxesType
+        human_anim::uint32_t m_Type; // AxesType
 
         inline Axes() : m_PreQ(quatIdentity()), m_PostQ(quatIdentity()), m_Sgn(1.f), m_Length(1.f), m_Type(kEulerXYZ) {}
         inline Axes(float4 const& aPreQ, float4 const& aPostQ, float3 const& aSgn, float const &aLength, AxesType const& aType) { m_PreQ = aPreQ; m_PostQ = aPostQ; m_Sgn = aSgn; m_Length = aLength; m_Type = aType; }

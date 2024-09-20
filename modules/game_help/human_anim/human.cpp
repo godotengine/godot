@@ -3,7 +3,7 @@
 #include "./human.h"
 #include "./axes.h"
 
-namespace mecanim
+namespace human_anim
 {
     // anonymous namespace to hide data in local file scope
 namespace
@@ -479,12 +479,12 @@ namespace human
 
     bool MaskHasLeftFootGoal(const HumanPoseMask& mask)
     {
-        return mask.test(mecanim::human::kMaskGoalStartIndex + mecanim::human::kLeftFootGoal);
+        return mask.test(human_anim::human::kMaskGoalStartIndex + human_anim::human::kLeftFootGoal);
     }
 
     bool MaskHasRightFootGoal(const HumanPoseMask& mask)
     {
-        return mask.test(mecanim::human::kMaskGoalStartIndex + mecanim::human::kRightFootGoal);
+        return mask.test(human_anim::human::kMaskGoalStartIndex + human_anim::human::kRightFootGoal);
     }
 
     int32_t MuscleFromBone(int32_t aBoneIndex, int32_t aDoFIndex)
@@ -627,11 +627,11 @@ namespace human
     {
         if (apHuman)
         {
-            mecanim::skeleton::DestroySkeleton(apHuman->m_Skeleton.Get(), arAlloc);
-            mecanim::skeleton::DestroySkeletonPose(apHuman->m_SkeletonPose.Get(), arAlloc);
+            human_anim::skeleton::DestroySkeleton(apHuman->m_Skeleton.Get(), arAlloc);
+            human_anim::skeleton::DestroySkeletonPose(apHuman->m_SkeletonPose.Get(), arAlloc);
 
-            mecanim::hand::DestroyHand(apHuman->m_LeftHand.Get(), arAlloc);
-            mecanim::hand::DestroyHand(apHuman->m_RightHand.Get(), arAlloc);
+            human_anim::hand::DestroyHand(apHuman->m_LeftHand.Get(), arAlloc);
+            human_anim::hand::DestroyHand(apHuman->m_RightHand.Get(), arAlloc);
 
             arAlloc.Deallocate(apHuman);
         }

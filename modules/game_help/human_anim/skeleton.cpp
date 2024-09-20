@@ -1,7 +1,7 @@
 #include "./skeleton.h"
 #include "./axes.h"
 
-namespace mecanim
+namespace human_anim
 {
 namespace skeleton
 {
@@ -770,7 +770,7 @@ namespace skeleton
         }
     }
 
-    static int GetSkeletonNodeDepth(mecanim::skeleton::Skeleton const& skeleton, uint32_t boneIndex)
+    static int GetSkeletonNodeDepth(human_anim::skeleton::Skeleton const& skeleton, uint32_t boneIndex)
     {
         uint32_t parentIndex = skeleton.m_Node[boneIndex].m_ParentId;
         int depth = 0;

@@ -9,7 +9,7 @@
 #include <cfloat>
 #include <climits>
 
-namespace mecanim
+namespace human_anim
 {
     //  8-bit types  -----------------------------------------------------------//
 # if UCHAR_MAX == 0xff
@@ -79,7 +79,7 @@ namespace mecanim
 #include <cfloat>
 #include <climits>
 #include <cstdint.h>
-namespace mecanim
+namespace human_anim
 {
     using std::int8_t;
     using std::uint8_t;
@@ -121,7 +121,7 @@ namespace mecanim
 
 #endif
 
-namespace mecanim
+namespace human_anim
 {
     template<typename _Ty> struct BindValue
     {

@@ -144,7 +144,7 @@ OffsetPtr<*> {
 	)
 }
 
-OffsetPtr<mecanim::skeleton::Skeleton> {
+OffsetPtr<human_anim::skeleton::Skeleton> {
 	preview
 	( 
 		#if($e.m_Offset==0) 
@@ -173,7 +173,7 @@ OffsetPtr<mecanim::skeleton::Skeleton> {
 	)
 }
 
-OffsetPtr<mecanim::skeleton::SkeletonPose> {
+OffsetPtr<human_anim::skeleton::SkeletonPose> {
 	preview
 	( 
 		#if($e.m_Offset==0) 
@@ -202,7 +202,7 @@ OffsetPtr<mecanim::skeleton::SkeletonPose> {
 	)
 }
 
-OffsetPtr<mecanim::human::Human> {
+OffsetPtr<human_anim::human::Human> {
 	preview
 	( 
 		#if($e.m_Offset==0) 

@@ -3,7 +3,7 @@
 #include "./hand.h"
 #include "./axes.h"
 
-namespace mecanim
+namespace human_anim
 {
 namespace hand
 {
