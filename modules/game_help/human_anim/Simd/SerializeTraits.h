@@ -2,8 +2,8 @@
 
 #include "Runtime/Serialize/SerializeTraitsBase.h"
 
-#include "Runtime/Math/Simd/vec-types.h"
-#include "Runtime/Math/Simd/vec-trs.h"
+#include "./vec-types.h"
+#include "./vec-trs.h"
 
 template<>
 class SerializeTraits<math::float3> : public SerializeTraitsBase<math::float3>

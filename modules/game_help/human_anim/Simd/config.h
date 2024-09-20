@@ -1,29 +1,17 @@
 #pragma once
 
-#include "Runtime/Utilities/Annotations.h"
+
 
 #ifndef PP_CAT
 #define _PP_CAT(a, b)    a##b
 #define PP_CAT(a, b)     _PP_CAT(a, b)
 #endif
 
-// MSVC is really, really slow at forced inlining, especially for deep call chains, even if they are really simple.
-// Currently our mathlib is all about deep call chains that end up inlined, which makes MSVC be really slow to compile when
-// inlining is on. Ideally we should not use forced inlining everywhere this liberally, but removing that causes
-// some (mostly quaternion & particle system shape module) performance tests get a bit slower. So let's keep it
-// on, but at least in Debug builds don't use forced inlining that much.
-//
-// Note: on Android, always use force inline (even in Debug build); the NDK/clang version we use crashes
-// while compiling some mathlib files without forced inlining.
-#if !UNITY_RELEASE && !UNITY_ANDROID
 #define MATH_FORCEINLINE        inline
-#else
-#define MATH_FORCEINLINE        inline
-#endif
 
-#define MATH_NOINLINE           UNITY_NOINLINE
-#define MATH_INLINE             UNITY_INLINE
-#define MATH_EMPTYINLINE        UNITY_EMPTYINLINE
+#define MATH_NOINLINE           inline
+#define MATH_INLINE             inline
+#define MATH_EMPTYINLINE        inline
 
 
 #if defined(_MSC_VER)

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Runtime/Scripting/BindingsDefs.h"
 
 namespace math
 {
@@ -20,4 +19,3 @@ namespace math
     const int kRotationOrderCount = kRotationOrderLast + 1;
 }
 
-BIND_MANAGED_TYPE_NAME(math::RotationOrder, UnityEngine_RotationOrder);

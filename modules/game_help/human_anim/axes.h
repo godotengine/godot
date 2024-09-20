@@ -1,11 +1,10 @@
 #pragma once
 
-#include "Modules/Animation/human_anim/defs.h"
-#include "Modules/Animation/human_anim/types.h"
-#include "Runtime/Math/Simd/vec-math.h"
-#include "Runtime/Math/Simd/vec-quat.h"
+#include "./defs.h"
+#include "./types.h"
+#include "./Simd/vec-math.h"
+#include "./Simd/vec-quat.h"
 
-#include "Runtime/Serialize/SerializeUtility.h"
 
 namespace math
 {

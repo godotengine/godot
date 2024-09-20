@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Runtime/Math/Simd/vec-types.h"
-#include "Runtime/Math/Simd/vec-math.h"
+#include "./vec-types.h"
+#include "./vec-math.h"
 
 namespace math
 {

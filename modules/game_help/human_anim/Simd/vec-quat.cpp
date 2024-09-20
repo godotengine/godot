@@ -1,4 +1,4 @@
-#include "UnityPrefix.h"
+
 #include "vec-quat.h"
 
 namespace math
@@ -21,7 +21,6 @@ namespace math
                 return euler.zyx;
         }
 
-        AssertString("invalid rotationOrder");
         return euler;
     }
 
@@ -43,7 +42,6 @@ namespace math
                 return euler.zyx;
         }
 
-        AssertString("invalid rotationOrder");
         return euler;
     }
 

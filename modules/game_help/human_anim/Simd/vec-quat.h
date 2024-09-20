@@ -1,5 +1,5 @@
 #pragma once
-
+#include "config.h"
 #ifndef _MATH_SIMD2_VEC_TYPES_H_
 #   include "vec-types.h"
 #endif
@@ -229,7 +229,6 @@ namespace math
 
     static MATH_FORCEINLINE float4 axisAngleToQuat(const float3& axis, const float1& angle, const float1& axisLength = 1.0f)
     {
-        DebugAssert((axisLength <= epsilon()) || (abs(dot(axis / axisLength) - 1.0f) <= epsilon()));
 
         float1 s, c;
         float1 halfLen = 0.5f * axisLength;

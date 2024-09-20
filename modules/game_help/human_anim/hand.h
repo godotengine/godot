@@ -1,13 +1,10 @@
 #pragma once
 
-#include "Modules/Animation/human_anim/defs.h"
-#include "Modules/Animation/human_anim/memory.h"
-#include "Modules/Animation/human_anim/types.h"
-#include "Runtime/Math/Simd/vec-trs.h"
+#include "./defs.h"
+#include "./memory.h"
+#include "./types.h"
+#include "./Simd/vec-trs.h"
 
-#include "Runtime/Scripting/BindingsDefs.h"
-#include "Runtime/Serialize/TransferFunctions/SerializeTransfer.h"
-#include "Modules/Animation/MecanimArraySerialization.h"
 
 
 namespace math
@@ -113,5 +110,3 @@ namespace hand
     math::SetupAxesInfo const& GetAxeInfo(uint32_t index);
 }// namespace hand
 }
-
-BIND_MANAGED_TYPE_NAME(human_anim::hand::FingerDoF, UnityEngine_FingerDof);

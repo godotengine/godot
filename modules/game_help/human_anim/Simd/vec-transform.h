@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Runtime/Math/Simd/vec-matrix.h"
-#include "Runtime/Math/Simd/vec-svd.h"
-#include "Runtime/Math/Simd/vec-trs.h"
-#include "Runtime/Math/Simd/vec-rigid.h"
-#include "Runtime/Math/Simd/vec-affine.h"
+#include "./vec-matrix.h"
+#include "./vec-svd.h"
+#include "./vec-trs.h"
+#include "./vec-rigid.h"
+#include "./vec-affine.h"
 
 namespace math
 {

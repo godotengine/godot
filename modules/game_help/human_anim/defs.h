@@ -153,7 +153,6 @@ public:
 
     void ValidatePointer() const
     {
-        AssertMsg(!IsNull(), "Invalid OffsetPtr access! Pointer is NULL");
     }
 
     OffsetPtr& operator=(const ptr_type ptr)
@@ -200,7 +199,6 @@ public:
 
     value_type& operator[](std::size_t i)
     {
-        assert(i != std::numeric_limits<std::size_t>::max());
         ValidatePointer();
 
         ptr_type ptr = reinterpret_cast<ptr_type>(reinterpret_cast<std::size_t>(this) + m_Offset);
@@ -212,7 +210,6 @@ public:
 
     value_type const& operator[](std::size_t i) const
     {
-        assert(i != std::numeric_limits<std::size_t>::max());
         ValidatePointer();
 
         const_ptr_type ptr = reinterpret_cast<const_ptr_type>(reinterpret_cast<std::size_t>(this) + m_Offset);
@@ -258,7 +255,6 @@ protected:
 #endif
 
     // Those accessor are needed by the serialization system to write value
-    friend struct OffsetPtrArrayTransfer<TYPE>;
     ptr_type Get_Unsafe()
     {
         return reinterpret_cast<ptr_type>(reinterpret_cast<std::size_t>(this) + m_Offset);

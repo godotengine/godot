@@ -1,5 +1,5 @@
 #pragma once
-
+#include <limits>
 #   if !defined(M_EPS)
 #       define M_EPS        1e-6f
 #   endif

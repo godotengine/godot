@@ -1,10 +1,10 @@
 #pragma once
 
-#include "../defs.h"
-#include "../memory.h"
-#include "../types.h"
-#include "../bitset.h"
-#include "../Simd/vec-trs.h"
+#include "./defs.h"
+#include "./memory.h"
+#include "./types.h"
+#include "./bitset.h"
+#include "./Simd/vec-trs.h"
 
 #include "./hand.h"
 
@@ -355,10 +355,6 @@ namespace human
 		{
 			Reset();
 		}
-		FORCE_INLINE HumanWeight(MemLabelId label)
-		{
-			Reset();
-		}
 		HumanWeight* CopyHumanWeight(HumanWeight const * const src)
 		{
 			if (src == nullptr)
@@ -485,26 +481,3 @@ namespace human
 }// namespace human
 }
 
-template<>
-class SerializeTraits<human_anim::human::HumanPoseMask> : public SerializeTraitsBase<human_anim::human::HumanPoseMask>
-{
-public:
-
-    inline static const char* GetTypeString(value_type*)   { return "HumanPoseMask"; }
-    inline static bool MightContainPPtr()  { return false; }
-    inline static bool AllowTransferOptimization() { return true; }
-
-    typedef human_anim::human::HumanPoseMask value_type;
-
-    template<class TransferFunction> inline
-    static void Transfer(value_type& data, TransferFunction& transfer)
-    {
-        transfer.Transfer(data.word(0), "word0");
-        if (1 < value_type::Words + 1)
-            transfer.Transfer(data.word(1), "word1");
-        if (2 < value_type::Words + 1)
-            transfer.Transfer(data.word(2), "word2");
-        if (3 < value_type::Words + 1)
-            transfer.Transfer(data.word(3), "word3");
-    }
-};

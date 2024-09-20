@@ -1,6 +1,7 @@
 #pragma once
 
 #include "config.h"
+#include "core/math/math_funcs.h"
 
 namespace math
 {
@@ -35,11 +36,7 @@ namespace math
 
     static MATH_FORCEINLINE float abs(float x)
     {
-#if defined(__GNUC__)
-        return __builtin_fabsf(x);
-#else
-        return ::fabsf(x);
-#endif
+        return Math::abs(x);
     }
 
     static MATH_FORCEINLINE int min(int x, int y)

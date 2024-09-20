@@ -1,4 +1,4 @@
-#include "UnityPrefix.h"
+
 #include "vec-svd.h"
 #include "vec-quat.h"
 
