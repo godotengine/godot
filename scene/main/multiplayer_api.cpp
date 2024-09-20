@@ -33,8 +33,6 @@
 #include "core/debugger/engine_debugger.h"
 #include "core/io/marshalls.h"
 
-#include <stdint.h>
-
 #ifdef DEBUG_ENABLED
 #include "core/os/os.h"
 #endif

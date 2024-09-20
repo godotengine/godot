@@ -43,8 +43,6 @@
 #include "scene/resources/packed_scene.h"
 #include "viewport.h"
 
-#include <stdint.h>
-
 int Node::orphan_node_count = 0;
 
 thread_local Node *Node::current_process_thread_group = nullptr;
