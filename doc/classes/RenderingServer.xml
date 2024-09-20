@@ -3536,7 +3536,7 @@
 		<method name="texture_2d_placeholder_create">
 			<return type="RID" />
 			<description>
-				Creates a placeholder for a 2-dimensional layered texture and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]texture_2d_layered_*[/code] RenderingServer functions, although it does nothing when used. See also [method texture_2d_layered_placeholder_create]
+				Creates a placeholder for a 2-dimensional layered texture and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]texture_2d_layered_*[/code] RenderingServer functions, although it does nothing when used. See also [method texture_2d_layered_placeholder_create].
 				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
 				[b]Note:[/b] The equivalent resource is [PlaceholderTexture2D].
 			</description>
@@ -5152,7 +5152,7 @@
 			The callback is called before our transparent rendering pass, but after our sky is rendered and we've created our back buffers.
 		</constant>
 		<constant name="COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_TRANSPARENT" value="4" enum="CompositorEffectCallbackType">
-			The callback is called after our transparent rendering pass, but before any build in post effects and output to our render target.
+			The callback is called after our transparent rendering pass, but before any built-in post-processing effects and output to our render target.
 		</constant>
 		<constant name="COMPOSITOR_EFFECT_CALLBACK_TYPE_ANY" value="-1" enum="CompositorEffectCallbackType">
 		</constant>

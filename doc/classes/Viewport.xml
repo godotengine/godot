@@ -33,6 +33,18 @@
 				Returns the first valid [World3D] for this viewport, searching the [member world_3d] property of itself and any Viewport ancestor.
 			</description>
 		</method>
+		<method name="get_audio_listener_2d" qualifiers="const">
+			<return type="AudioListener2D" />
+			<description>
+				Returns the currently active 2D audio listener. Returns [code]null[/code] if there are no active 2D audio listeners, in which case the active 2D camera will be treated as listener.
+			</description>
+		</method>
+		<method name="get_audio_listener_3d" qualifiers="const">
+			<return type="AudioListener3D" />
+			<description>
+				Returns the currently active 3D audio listener. Returns [code]null[/code] if there are no active 3D audio listeners, in which case the active 3D camera will be treated as listener.
+			</description>
+		</method>
 		<method name="get_camera_2d" qualifiers="const">
 			<return type="Camera2D" />
 			<description>
