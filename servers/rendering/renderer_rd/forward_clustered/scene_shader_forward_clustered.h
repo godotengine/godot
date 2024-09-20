@@ -32,7 +32,8 @@
 #define SCENE_SHADER_FORWARD_CLUSTERED_H
 
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
-#include "servers/rendering/renderer_rd/shaders/forward_clustered/scene_forward_clustered.glsl.gen.h"
+
+class SceneForwardClusteredShaderRD;
 
 namespace RendererSceneRenderImplementation {
 
@@ -224,7 +225,7 @@ public:
 		return static_cast<SceneShaderForwardClustered *>(singleton)->_create_material_func(static_cast<ShaderData *>(p_shader));
 	}
 
-	SceneForwardClusteredShaderRD shader;
+	SceneForwardClusteredShaderRD *shader;
 	ShaderCompiler compiler;
 
 	RID default_shader;

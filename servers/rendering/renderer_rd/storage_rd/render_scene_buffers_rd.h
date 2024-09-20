@@ -31,7 +31,6 @@
 #ifndef RENDER_SCENE_BUFFERS_RD_H
 #define RENDER_SCENE_BUFFERS_RD_H
 
-#include "../effects/fsr2.h"
 #include "../effects/vrs.h"
 #include "../framebuffer_cache_rd.h"
 #include "core/templates/hash_map.h"

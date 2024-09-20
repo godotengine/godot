@@ -34,11 +34,12 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/paged_array.h"
 #include "core/templates/rid_owner.h"
-#include "servers/rendering/renderer_rd/shaders/canvas_sdf.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/forward_id_storage.h"
 #include "servers/rendering/rendering_server_default.h"
 #include "servers/rendering/storage/texture_storage.h"
 #include "servers/rendering/storage/utilities.h"
+
+class CanvasSdfShaderRD;
 
 namespace RendererRD {
 
@@ -446,7 +447,7 @@ private:
 			int32_t pad[2];
 		};
 
-		CanvasSdfShaderRD shader;
+		CanvasSdfShaderRD *shader = nullptr;
 		RID shader_version;
 		RID pipelines[SHADER_MAX];
 	} rt_sdf;

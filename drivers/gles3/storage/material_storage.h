@@ -44,8 +44,9 @@
 
 #include "drivers/gles3/shaders/canvas.glsl.gen.h"
 #include "drivers/gles3/shaders/particles.glsl.gen.h"
-#include "drivers/gles3/shaders/scene.glsl.gen.h"
 #include "drivers/gles3/shaders/sky.glsl.gen.h"
+
+class SceneShaderGLES3;
 
 namespace GLES3 {
 
@@ -542,7 +543,7 @@ public:
 	struct Shaders {
 		CanvasShaderGLES3 canvas_shader;
 		SkyShaderGLES3 sky_shader;
-		SceneShaderGLES3 scene_shader;
+		SceneShaderGLES3 *scene_shader;
 		ParticlesShaderGLES3 particles_process_shader;
 
 		ShaderCompiler compiler_canvas;

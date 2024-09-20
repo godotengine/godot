@@ -36,6 +36,7 @@
 #include "core/math/math_funcs.h"
 #include "core/math/transform_interpolator.h"
 #include "renderer_compositor_rd.h"
+#include "servers/rendering/renderer_rd/shaders/canvas.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/particles_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
@@ -1401,7 +1402,7 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 	uses_screen_texture = gen_code.uses_screen_texture;
 
 	if (version.is_null()) {
-		version = canvas_singleton->shader.canvas_shader.version_create();
+		version = canvas_singleton->shader.canvas_shader->version_create();
 	}
 
 #if 0
@@ -1421,8 +1422,8 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 	print_line("\n**vertex_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX]);
 	print_line("\n**fragment_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT]);
 #endif
-	canvas_singleton->shader.canvas_shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX], gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT], gen_code.defines);
-	ERR_FAIL_COND(!canvas_singleton->shader.canvas_shader.version_is_valid(version));
+	canvas_singleton->shader.canvas_shader->version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX], gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT], gen_code.defines);
+	ERR_FAIL_COND(!canvas_singleton->shader.canvas_shader->version_is_valid(version));
 
 	ubo_size = gen_code.uniform_total_size;
 	ubo_offsets = gen_code.uniform_offsets;
@@ -1554,7 +1555,7 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 				},
 			};
 
-			RID shader_variant = canvas_singleton->shader.canvas_shader.version_get_shader(version, shader_variants[i][j]);
+			RID shader_variant = canvas_singleton->shader.canvas_shader->version_get_shader(version, shader_variants[i][j]);
 			if (j == PIPELINE_VARIANT_QUAD_LCD_BLEND) {
 				pipeline_variants.variants[i][j].setup(shader_variant, primitive[j], RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), blend_state_lcd, RD::DYNAMIC_STATE_BLEND_CONSTANTS);
 			} else {
@@ -1576,7 +1577,7 @@ bool RendererCanvasRenderRD::CanvasShaderData::casts_shadows() const {
 
 RS::ShaderNativeSourceCode RendererCanvasRenderRD::CanvasShaderData::get_native_source_code() const {
 	RendererCanvasRenderRD *canvas_singleton = static_cast<RendererCanvasRenderRD *>(RendererCanvasRender::singleton);
-	return canvas_singleton->shader.canvas_shader.version_get_native_source_code(version);
+	return canvas_singleton->shader.canvas_shader->version_get_native_source_code(version);
 }
 
 RendererCanvasRenderRD::CanvasShaderData::~CanvasShaderData() {
@@ -1584,7 +1585,7 @@ RendererCanvasRenderRD::CanvasShaderData::~CanvasShaderData() {
 	ERR_FAIL_NULL(canvas_singleton);
 	//pipeline variants will clear themselves if shader is gone
 	if (version.is_valid()) {
-		canvas_singleton->shader.canvas_shader.version_free(version);
+		canvas_singleton->shader.canvas_shader->version_free(version);
 	}
 }
 
@@ -1595,8 +1596,8 @@ RendererRD::MaterialStorage::ShaderData *RendererCanvasRenderRD::_create_shader_
 
 bool RendererCanvasRenderRD::CanvasMaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
 	RendererCanvasRenderRD *canvas_singleton = static_cast<RendererCanvasRenderRD *>(RendererCanvasRender::singleton);
-	bool uniform_set_changed = update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, canvas_singleton->shader.canvas_shader.version_get_shader(shader_data->version, 0), MATERIAL_UNIFORM_SET, true, false);
-	bool uniform_set_srgb_changed = update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set_srgb, canvas_singleton->shader.canvas_shader.version_get_shader(shader_data->version, 0), MATERIAL_UNIFORM_SET, false, false);
+	bool uniform_set_changed = update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, canvas_singleton->shader.canvas_shader->version_get_shader(shader_data->version, 0), MATERIAL_UNIFORM_SET, true, false);
+	bool uniform_set_srgb_changed = update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set_srgb, canvas_singleton->shader.canvas_shader->version_get_shader(shader_data->version, 0), MATERIAL_UNIFORM_SET, false, false);
 	return uniform_set_changed || uniform_set_srgb_changed;
 }
 
@@ -1661,11 +1662,11 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		variants.push_back("#define USE_LIGHTING\n#define USE_PRIMITIVE\n#define USE_POINT_SIZE\n"); //points need point size
 		variants.push_back("#define USE_LIGHTING\n#define USE_ATTRIBUTES\n"); // attributes for vertex arrays
 		variants.push_back("#define USE_LIGHTING\n#define USE_ATTRIBUTES\n#define USE_POINT_SIZE\n"); //attributes with point size
+		shader.canvas_shader = memnew(CanvasShaderRD);
+		shader.canvas_shader->initialize(variants, global_defines);
 
-		shader.canvas_shader.initialize(variants, global_defines);
-
-		shader.default_version = shader.canvas_shader.version_create();
-		shader.default_version_rd_shader = shader.canvas_shader.version_get_shader(shader.default_version, SHADER_VARIANT_QUAD);
+		shader.default_version = shader.canvas_shader->version_create();
+		shader.default_version_rd_shader = shader.canvas_shader->version_get_shader(shader.default_version, SHADER_VARIANT_QUAD);
 
 		RD::PipelineColorBlendState blend_state;
 		RD::PipelineColorBlendState::Attachment blend_attachment;
@@ -1740,7 +1741,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 					},
 				};
 
-				RID shader_variant = shader.canvas_shader.version_get_shader(shader.default_version, shader_variants[i][j]);
+				RID shader_variant = shader.canvas_shader->version_get_shader(shader.default_version, shader_variants[i][j]);
 				if (j == PIPELINE_VARIANT_QUAD_LCD_BLEND) {
 					shader.pipeline_variants.variants[i][j].setup(shader_variant, primitive[j], RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), blend_state_lcd, RD::DYNAMIC_STATE_BLEND_CONSTANTS);
 				} else {
@@ -3126,7 +3127,8 @@ RendererCanvasRenderRD::~RendererCanvasRenderRD() {
 
 	//shaders
 
-	shader.canvas_shader.version_free(shader.default_version);
+	shader.canvas_shader->version_free(shader.default_version);
+	memdelete(shader.canvas_shader);
 
 	//buffers
 	{
