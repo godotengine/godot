@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <!-- VC 2015 -->
+  <Type Name="math::_float4">
+      <DisplayString>[{p.m128_f32[0]}, {p.m128_f32[1]}, {p.m128_f32[2]}, {p.m128_f32[3]}]</DisplayString>
+      <Expand>
+          <Item Name="x">p.m128_f32[0]</Item>
+          <Item Name="y">p.m128_f32[1]</Item>
+          <Item Name="z">p.m128_f32[2]</Item>
+          <Item Name="w">p.m128_f32[3]</Item>
+      </Expand>
+  </Type>
+  <Type Name="math::_float3">
+    <DisplayString>[{p.m128_f32[0]}, {p.m128_f32[1]}, {p.m128_f32[2]}]</DisplayString>
+    <Expand>
+      <Item Name="x">p.m128_f32[0]</Item>
+      <Item Name="y">p.m128_f32[1]</Item>
+      <Item Name="z">p.m128_f32[2]</Item>
+    </Expand>
+  </Type>
+  <Type Name="math::_float2">
+    <DisplayString>[{p.m128_f32[0]}, {p.m128_f32[1]}]</DisplayString>
+    <Expand>
+      <Item Name="x">p.m128_f32[0]</Item>
+      <Item Name="y">p.m128_f32[1]</Item>
+    </Expand>
+  </Type>
+  <Type Name="math::_float1">
+    <DisplayString>{p.m128_f32[0]}</DisplayString>
+  </Type>
+
+  <Type Name="math::_int4">
+    <DisplayString>[{p.m128i_i32[0]}, {p.m128i_i32[1]}, {p.m128i_i32[2]}, {p.m128i_i32[3]}]</DisplayString>
+    <Expand>
+      <Item Name="x">p.m128i_i32[0]</Item>
+      <Item Name="y">p.m128i_i32[1]</Item>
+      <Item Name="z">p.m128i_i32[2]</Item>
+      <Item Name="w">p.m128i_i32[3]</Item>
+    </Expand>
+  </Type>
+  <Type Name="math::_int3">
+    <DisplayString>[{p.m128i_i32[0]}, {p.m128i_i32[1]}, {p.m128i_i32[2]}]</DisplayString>
+    <Expand>
+      <Item Name="x">p.m128i_i32[0]</Item>
+      <Item Name="y">p.m128i_i32[1]</Item>
+      <Item Name="z">p.m128i_i32[2]</Item>
+    </Expand>
+  </Type>
+  <Type Name="math::_int2">
+    <DisplayString>[{p.m128i_i32[0]}, {p.m128i_i32[1]}]</DisplayString>
+    <Expand>
+      <Item Name="x">p.m128i_i32[0]</Item>
+      <Item Name="y">p.m128i_i32[1]</Item>
+    </Expand>
+  </Type>
+  <Type Name="math::_int1">
+    <DisplayString>{p.m128i_i32[0]}</DisplayString>
+  </Type>
+
+  <Type Name="math::affineX">
+    <DisplayString>[t={t} rs={rs}}</DisplayString>
+    <Expand>
+      <Item Name="t">t</Item>
+      <Item Name="rs">rs</Item>
+    </Expand>
+  </Type>
+  <Type Name="math::rigidX">
+    <DisplayString>[t=[{ts.p.m128_f32[0]}, {ts.p.m128_f32[1]}, {ts.p.m128_f32[2]}] q=[{q}] s={ts.p.m128_f32[3]}]</DisplayString>
+    <Expand>
+      <Item Name="t">[{ts.p.m128_f32[0]}, {ts.p.m128_f32[1]}, {ts.p.m128_f32[2]} ]</Item>
+      <Item Name="q">[{q}]</Item>
+      <Item Name="s">[{ts.p.m128_f32[3]}]</Item>
+    </Expand>
+  </Type>
+  <Type Name="math::pix4">
+    <DisplayString>RGBA={{{(i.p.m128i_i32[0]>>0) &amp; 0xff}, {(i.p.m128i_i32[0]>>8) &amp; 0xff}, {(i.p.m128i_i32[0]>>16) &amp; 0xff}, {(i.p.m128i_i32[0]>>24) &amp; 0xff}}}, {{{(i.p.m128i_i32[1]>>0) &amp; 0xff}, {(i.p.m128i_i32[1]>>8) &amp; 0xff}, {(i.p.m128i_i32[1]>>16) &amp; 0xff}, {(i.p.m128i_i32[1]>>24) &amp; 0xff}}}, {{{(i.p.m128i_i32[2]>>0) &amp; 0xff}, {(i.p.m128i_i32[2]>>8) &amp; 0xff}, {(i.p.m128i_i32[2]>>16) &amp; 0xff}, {(i.p.m128i_i32[2]>>24) &amp; 0xff}}}, {{{(i.p.m128i_i32[3]>>0) &amp; 0xff}, {(i.p.m128i_i32[3]>>8) &amp; 0xff}, {(i.p.m128i_i32[3]>>16) &amp; 0xff}, {(i.p.m128i_i32[3]>>24) &amp; 0xff}}}
+    </DisplayString>
+    <Expand>
+      <Item Name="xRGBA">i.p.m128i_i32[0],H</Item>
+      <Item Name="yRGBA">i.p.m128i_i32[1],H</Item>
+      <Item Name="zRGBA">i.p.m128i_i32[2],H</Item>
+      <Item Name="wRGBA">i.p.m128i_i32[3],H</Item>
+    </Expand>
+  </Type>
+
+</AutoVisualizer>

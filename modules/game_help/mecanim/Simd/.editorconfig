@@ -1,0 +1,5 @@
+# this blocks editorconfig from finding the repo root .editorconfig. This folder is ignored in .repoconfig
+# and no formatting is run on it, so we want to ignore the root editorconfig as well.
+# Ignore reason: too hard to parse due to macros that confuse uncrustify. either hack at uncrustify with config file, or fix simd library to look normal (prefer the latter).
+
+root = true

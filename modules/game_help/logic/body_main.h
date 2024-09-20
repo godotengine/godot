@@ -602,6 +602,14 @@ public:
     struct SkeletonHumanBoneTanRot {
         Quaternion tan_rot;
         Quaternion inv_tan_rot;
+		// 转换到人形空间
+		void to_human_space(Quaternion& p_bone_pose) {
+			p_bone_pose *= tan_rot;
+		}
+		// 转换到骨骼空间
+		void to_bone_space(Quaternion& p_human_pose) {
+			p_human_pose *= inv_tan_rot;
+		}
     };
     struct HumanBoneInfo {
         String name;
@@ -610,95 +618,106 @@ public:
         SkeletonHumanBoneTanRot get_bone_tan_rot(const Quaternion& p_bone_rest) {
             Vector3 new_dir = p_bone_rest.xform(orgin_dir);
             SkeletonHumanBoneTanRot rot;
-            rot.tan_rot = Quaternion(new_dir, updir);
+            rot.tan_rot = Quaternion(new_dir, orgin_dir);
             rot.inv_tan_rot = rot.tan_rot.inverse();
             return rot;
         }
     };
     LocalVector<HumanBoneInfo> get_human_bones() {
         static LocalVector<HumanBoneInfo> bone_array = {
-            {"Hips",Vector3(0,1,1),Vector3(0,1,0)},
-            {"Spine",Vector3(0,1,1),Vector3(0,1,0)},
-            {"Chest",Vector3(0,1,1),Vector3(0,1,0)},
-            {"UpperChest",Vector3(0,1,1),Vector3(0,1,0)},
-            {"Neck",Vector3(0,1,1),Vector3(0,1,0)},
-            {"Head",Vector3(0,1,1),Vector3(0,1,0)},
-            {"LeftEye",Vector3(0,1,1),Vector3(0,1,0)},
-            {"RightEye",Vector3(0,1,1),Vector3(0,1,0)},
-            {"Jaw",Vector3(0,1,1),Vector3(0,1,0)},
+            {"Hips",Vector3(0,1,0).normalized(),Vector3(0,1,0)},
 
-            {"LeftShoulder",Vector3(0,1,1),Vector3(0,1,0)},
-            {"RightShoulder",Vector3(0,1,1),Vector3(0,1,0)},
+            {"LeftUpperLeg",Vector3(0,-1,0).normalized(),Vector3(0,1,0)},
+            {"RightUpperLeg",Vector3(0,-1,0).normalized(),Vector3(0,1,0)},
 
-            {"LeftUpperArm",Vector3(0,1,1),Vector3(0,1,0)},
-            {"RightUpperArm",Vector3(0,1,1),Vector3(0,1,0)},
+            {"LeftLowerLeg",Vector3(0,-1,0).normalized(),Vector3(0,1,0)},
+            {"RightLowerLeg",Vector3(0,-1,0).normalized(),Vector3(0,1,0)},
 
-            {"LeftLowerArm",Vector3(0,1,1),Vector3(0,1,0)},
-            {"RightLowerArm",Vector3(0,1,1),Vector3(0,1,0)},
+            {"LeftFoot",Vector3(0,0,1).normalized(),Vector3(0,1,0)},
+            {"RightFoot",Vector3(0,0,1).normalized(),Vector3(0,1,0)},
 
-            {"LeftHand",Vector3(0,1,1),Vector3(0,1,0)},
-            {"RightHand",Vector3(0,1,1),Vector3(0,1,0)},
-
-            {"LeftUpperLeg",Vector3(0,-1,1),Vector3(0,1,0)},
-            {"RightUpperLeg",Vector3(0,-1,1),Vector3(0,1,0)},
-
-            {"LeftLowerLeg",Vector3(0,-1,1),Vector3(0,1,0)},
-            {"RightLowerLeg",Vector3(0,-1,1),Vector3(0,1,0)},
-
-            {"LeftFoot",Vector3(0,1,1),Vector3(0,1,0)},
-            {"RightFoot",Vector3(0,1,1),Vector3(0,1,0)},
+            {"Spine",Vector3(0,1,0).normalized(),Vector3(0,1,0)},
+            {"Chest",Vector3(0,1,0).normalized(),Vector3(0,1,0)},
+            {"UpperChest",Vector3(0,1,0).normalized(),Vector3(0,1,0)},
+            {"Neck",Vector3(0,1,0).normalized(),Vector3(0,1,0)},
+            {"Head",Vector3(0,1,0).normalized(),Vector3(0,1,0)},
 
 
-            {"LeftToes",Vector3(0,1,1),Vector3(0,1,0)},
-            {"RightToes",Vector3(0,1,1),Vector3(0,1,0)},
-
-            {"LeftThumbMetacarpal",Vector3(0,1,1),Vector3(0,1,0)},
-            {"LeftThumbProximal",Vector3(0,1,1),Vector3(0,1,0)},
-            {"LeftThumbDistal",Vector3(0,1,1),Vector3(0,1,0)},
-
-            {"LeftIndexProximal",Vector3(0,1,1),Vector3(0,1,0)},
-            {"LeftIndexIntermediate",Vector3(0,1,1),Vector3(0,1,0)},
-            {"LeftIndexDistal",Vector3(0,1,1),Vector3(0,1,0)},
-
-            {"LeftMiddleProximal",Vector3(0,1,1),Vector3(0,1,0)},
-            {"LeftMiddleIntermediate",Vector3(0,1,1),Vector3(0,1,0)},
-            {"LeftMiddleDistal",Vector3(0,1,1),Vector3(0,1,0)},
-
-            {"LeftRingProximal",Vector3(0,1,1),Vector3(0,1,0)},
-            {"LeftRingIntermediate",Vector3(0,1,1),Vector3(0,1,0)},
-            {"LeftRingDistal",Vector3(0,1,1),Vector3(0,1,0)},
-
-            {"LeftLittleProximal",Vector3(0,1,1),Vector3(0,1,0)},
-            {"LeftLittleIntermediate",Vector3(0,1,1),Vector3(0,1,0)},
-            {"LeftLittleDistal",Vector3(0,1,1),Vector3(0,1,0)},
+            {"LeftShoulder",Vector3(-1,0,0).normalized(),Vector3(0,1,0)},
+            {"RightShoulder",Vector3(1,0,0).normalized(),Vector3(0,1,0)},
 
 
-            {"RightThumbMetacarpal",Vector3(0,1,1),Vector3(0,1,0)},
-            {"RightThumbProximal",Vector3(0,1,1),Vector3(0,1,0)},
-            {"RightThumbDistal",Vector3(0,1,1),Vector3(0,1,0)},
+            {"LeftUpperArm",Vector3(-1,0,0).normalized(),Vector3(0,1,0)},
+            {"RightUpperArm",Vector3(1,0,0).normalized(),Vector3(0,1,0)},
 
-            {"RightIndexProximal",Vector3(0,1,1),Vector3(0,1,0)},
-            {"RightIndexIntermediate",Vector3(0,1,1),Vector3(0,1,0)},
-            {"RightIndexDistal",Vector3(0,1,1),Vector3(0,1,0)},
+            {"LeftLowerArm",Vector3(-1,0,0).normalized(),Vector3(0,1,0)},
+            {"RightLowerArm",Vector3(1,0,0).normalized(),Vector3(0,1,0)},
 
-            {"RightMiddleProximal",Vector3(0,1,1),Vector3(0,1,0)},
-            {"RightMiddleIntermediate",Vector3(0,1,1),Vector3(0,1,0)},
-            {"RightMiddleDistal",Vector3(0,1,1),Vector3(0,1,0)},
+            {"LeftEye",Vector3(1,0,0).normalized(),Vector3(0,1,0)},
+            {"RightEye",Vector3(1,0,0).normalized(),Vector3(0,1,0)},
+            
+            {"Jaw",Vector3(0,0,1).normalized(),Vector3(0,1,0)},
 
-            {"RightRingProximal",Vector3(0,1,1),Vector3(0,1,0)},
-            {"RightRingIntermediate",Vector3(0,1,1),Vector3(0,1,0)},
-            {"RightRingDistal",Vector3(0,1,1),Vector3(0,1,0)},
 
-            {"RightLittleProximal",Vector3(0,1,1),Vector3(0,1,0)},
-            {"RightLittleIntermediate",Vector3(0,1,1),Vector3(0,1,0)},
-            {"RightLittleDistal",Vector3(0,1,1),Vector3(0,1,0)},
+
+            {"LeftHand",Vector3(-1,0,0).normalized(),Vector3(0,1,0)},
+            {"RightHand",Vector3(1,0,0).normalized(),Vector3(0,1,0)},
+
+
+
+
+            {"LeftToes",Vector3(0,1,1).normalized(),Vector3(0,1,0)},
+            {"RightToes",Vector3(0,1,1).normalized(),Vector3(0,1,0)},
+
+            {"LeftThumbMetacarpal",Vector3(1,1,0).normalized(),Vector3(0,1,0)},
+            {"LeftThumbProximal",Vector3(1,1,0).normalized(),Vector3(0,1,0)},
+            {"LeftThumbDistal",Vector3(1,1,0).normalized(),Vector3(0,1,0)},
+
+            {"LeftIndexProximal",Vector3(1,1,0).normalized(),Vector3(0,1,0)},
+            {"LeftIndexIntermediate",Vector3(1,1,0).normalized(),Vector3(0,1,0)},
+            {"LeftIndexDistal",Vector3(1,1,0).normalized(),Vector3(0,1,0)},
+
+            {"LeftMiddleProximal",Vector3(1,1,0).normalized(),Vector3(0,1,0)},
+            {"LeftMiddleIntermediate",Vector3(1,1,0).normalized(),Vector3(0,1,0)},
+            {"LeftMiddleDistal",Vector3(1,1,0).normalized(),Vector3(0,1,0)},
+
+            {"LeftRingProximal",Vector3(1,1,0).normalized(),Vector3(0,1,0)},
+            {"LeftRingIntermediate",Vector3(1,1,0).normalized(),Vector3(0,1,0)},
+            {"LeftRingDistal",Vector3(1,1,0).normalized(),Vector3(0,1,0)},
+
+            {"LeftLittleProximal",Vector3(1,1,0).normalized(),Vector3(0,1,0)},
+            {"LeftLittleIntermediate",Vector3(1,1,0).normalized(),Vector3(0,1,0)},
+            {"LeftLittleDistal",Vector3(1,1,0).normalized(),Vector3(0,1,0)},
+
+
+            {"RightThumbMetacarpal",Vector3(1,1,0).normalized(),Vector3(0,1,0)},
+            {"RightThumbProximal",Vector3(1,1,0).normalized(),Vector3(0,1,0)},
+            {"RightThumbDistal",Vector3(1,1,0).normalized(),Vector3(0,1,0)},
+
+            {"RightIndexProximal",Vector3(1,1,0).normalized(),Vector3(0,1,0)},
+            {"RightIndexIntermediate",Vector3(1,1,0).normalized(),Vector3(0,1,0)},
+            {"RightIndexDistal",Vector3(1,1,0).normalized(),Vector3(0,1,0)},
+
+            {"RightMiddleProximal",Vector3(1,1,1).normalized(),Vector3(0,1,0)},
+            {"RightMiddleIntermediate",Vector3(1,1,0).normalized(),Vector3(0,1,0)},
+            {"RightMiddleDistal",Vector3(1,1,0).normalized(),Vector3(0,1,0)},
+
+            {"RightRingProximal",Vector3(1,1,0).normalized(),Vector3(0,1,0)},
+            {"RightRingIntermediate",Vector3(1,1,0).normalized(),Vector3(0,1,0)},
+            {"RightRingDistal",Vector3(1,1,0).normalized(),Vector3(0,1,0)},
+
+            {"RightLittleProximal",Vector3(1,1,0).normalized(),Vector3(0,1,0)},
+            {"RightLittleIntermediate",Vector3(1,1,0).normalized(),Vector3(0,1,0)},
+            {"RightLittleDistal",Vector3(1,1,0).normalized(),Vector3(0,1,0)},
 
 
         };
         return bone_array;
     }
     
-    
+    const LocalVector<SkeletonHumanBoneTanRot>& get_human_bone_tan_rot() {
+        return human_bone_tan_rot;
+    }
 
 public:
     static ObjectID& get_curr_editor_player();
@@ -709,6 +728,7 @@ public:
     }
     static void init_blackboard_plan(Ref<BlackboardPlan> p_plan);
 protected:
+    LocalVector<SkeletonHumanBoneTanRot> human_bone_tan_rot;
     LocalVector<Ref<CharacterCheckArea3D>> check_area;
     Ref<CollisionObject3DConnectionShape> mainShape;
     // 初始化数据

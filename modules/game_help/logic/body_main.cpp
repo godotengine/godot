@@ -164,7 +164,7 @@ void CharacterBodyMain::update_track_target() {
     if(src_track_target == nullptr) {
         return;
     }
-    LocalVector<String> human_bones = get_human_bones();
+    LocalVector<HumanBoneInfo> human_bones = get_human_bones();
     Skeleton3D * skeleton = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(skeletonID));
     
     Skeleton3D * src_skeleton = src_track_target->get_skeleton();
@@ -172,32 +172,18 @@ void CharacterBodyMain::update_track_target() {
         return;
     }
 	temp_last_bone_pose.resize(human_bones.size());
-    LocalVector<Vector3> temp_src_bone_pose_angle;
-    LocalVector<Vector3> temp_src_bone_rest_angle;
-    LocalVector<Vector3> temp_bone_rest_angle;
-    temp_src_bone_pose_angle.resize(human_bones.size());
-    temp_src_bone_rest_angle.resize(human_bones.size());
-    temp_bone_rest_angle.resize(human_bones.size());
+    const LocalVector<SkeletonHumanBoneTanRot>& src_tan_rot = src_track_target->get_human_bone_tan_rot();
+    const LocalVector<SkeletonHumanBoneTanRot>& tan_rot = get_human_bone_tan_rot();
 	for (int i = 0; i < human_bones.size(); i++) {
-		int bone_index = skeleton->find_bone(human_bones[i]);
-		int src_bone_index = src_skeleton->find_bone(human_bones[i]);
+		int bone_index = skeleton->find_bone(human_bones[i].name);
+		int src_bone_index = src_skeleton->find_bone(human_bones[i].name);
 		if (bone_index == -1) {
 			continue;
 		}
-        temp_src_bone_pose_angle[i] = src_skeleton->get_bone_pose(src_bone_index).basis.get_euler() * (float)(180.0 / Math_PI);
-        temp_src_bone_rest_angle[i] = src_skeleton->get_bone_rest(src_bone_index).basis.get_euler() * (float)(180.0 / Math_PI);
-        temp_bone_rest_angle[i] = skeleton->get_bone_rest(bone_index).basis.get_euler() * (float)(180.0 / Math_PI);
-		temp_last_bone_pose[i] = src_skeleton->get_bone_pose(src_bone_index).basis.get_rotation_quaternion() * src_skeleton->get_bone_rest(src_bone_index).basis.get_rotation_quaternion().inverse();
-        temp_last_bone_pose[i] = temp_last_bone_pose[i] * skeleton->get_bone_rest(bone_index).basis.get_rotation_quaternion();
-	}
-    for (int i = 0; i < human_bones.size(); i++) {
-        int bone_index = skeleton->find_bone(human_bones[i]);
-        int src_bone_index = src_skeleton->find_bone(human_bones[i]);
-        if(bone_index == -1 || src_bone_index == -1) {
-            continue;
-        }
+		temp_last_bone_pose[i] = src_skeleton->get_bone_pose(src_bone_index).basis.get_rotation_quaternion() * src_tan_rot[i].tan_rot;
+        temp_last_bone_pose[i] = temp_last_bone_pose[i] * tan_rot[i].inv_tan_rot;
         skeleton->set_bone_pose_rotation(bone_index, temp_last_bone_pose[i]);
-    }
+	}
 }
 void CharacterBodyMain::_process_move()
 {
@@ -334,6 +320,17 @@ void CharacterBodyMain::_init_body()
 		add_child(skeleton);
 		skeleton->set_owner(this);
 		skeleton->set_dont_save(true);
+
+        // 获取人形骨骼的切线旋转
+        LocalVector<HumanBoneInfo> human_bone = get_human_bones();
+        human_bone_tan_rot.resize(human_bone.size());
+        for(int i=0;i<human_bone.size();i++) {
+            int bone_index = skeleton->find_bone(human_bone[i].name);
+            if(bone_index == -1) {
+                continue;
+            }
+            human_bone_tan_rot[i] = human_bone[i].get_bone_tan_rot(skeleton->get_bone_rest(bone_index).basis.get_rotation_quaternion());
+        }
 
 
 		if (skeleton && ik.is_valid())

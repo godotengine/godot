@@ -1,0 +1,259 @@
+; Copy the text below to the end of your existing AutoExp.dat file
+
+PPtr<*>= name=<m_DEBUGPtr->m_Name.m_Buffer,s> id=<m_InstanceID>
+Transform= name=<m_GameObject.m_Ptr->m_Name.m_Buffer,s> pos=<m_LocalPosition.x,f> <m_LocalPosition.y,f> <m_LocalPosition.z,f>
+AnimationClip= name=<m_Name.m_Buffer,s> type=<m_AnimationType>
+NamedObject= name=<m_Name.m_Buffer,s>
+Unity::Component= <,t>
+
+; math::float4= <p.m128_f32[0],f> <p.m128_f32[1],f> <p.m128_f32[2],f> <p.m128_f32[3],f>
+; math::float1= <p.m128_f32[0],f> <p.m128_f32[1],f> <p.m128_f32[2],f> <p.m128_f32[3],f>
+; math::int4= <p.m128i_i32[0],i> <p.m128i_i32[1],i> <p.m128i_i32[2],i> <p.m128i_i32[3],i>
+; math::int1= <p.m128i_i32[0],i> <p.m128i_i32[1],i> <p.m128i_i32[2],i> <p.m128i_i32[3],i>
+
+math::_float4= [<p.m128_f32[0],f> <p.m128_f32[1],f> <p.m128_f32[2],f> <p.m128_f32[3],f>] [<p.m128_f32[0],e> <p.m128_f32[1],e> <p.m128_f32[2],e> <p.m128_f32[3],e>]
+math::_float3= [<p.m128_f32[0],f> <p.m128_f32[1],f> <p.m128_f32[2],f>] [<p.m128_f32[0],e> <p.m128_f32[1],e> <p.m128_f32[2],e>]
+math::_float2= [<p.m128_f32[0],f> <p.m128_f32[1],f>] [<p.m128_f32[0],e> <p.m128_f32[1],e>]
+math::_float1= [<p.m128_f32[0],f>] [<p.m128_f32[0],e>]
+math::_int4= [<p.m128i_i32[0],i> <p.m128i_i32[1],i> <p.m128i_i32[2],i> <p.m128i_i32[3],i>] [<p.m128i_i32[0],X> <p.m128i_i32[1],X> <p.m128i_i32[2],X> <p.m128i_i32[3],X>]
+math::_int3= [<p.m128i_i32[0],i> <p.m128i_i32[1],i> <p.m128i_i32[2],i>] [<p.m128i_i32[0],X> <p.m128i_i32[1],X> <p.m128i_i32[2],X>]
+math::_int2= [<p.m128i_i32[0],i> <p.m128i_i32[1],i>] [<p.m128i_i32[0],X> <p.m128i_i32[1],X>]
+math::_int1= [<p.m128i_i32[0],i>] [<p.m128i_i32[0],X>]
+
+[Visualizer]
+ConstantString {
+  preview (
+      #if ( ((int)$e.m_Buffer & 0x1) != 0 )
+        ( [(char*)((int)$e.m_Buffer & ~0x1), s] )
+      #else
+        ( [(char*)($e.m_Buffer), s] )
+  )
+ 
+  stringview (
+      #if ( ((int)$e.m_Buffer & 0x1) != 0 )
+        ( [(char*)((int)$e.m_Buffer & ~0x1), s] )
+      #else
+        ( [(char*)($e.m_Buffer), s] )
+  )
+}
+
+UnityStr {
+	preview		( #if (($e._Myres) < ($e._BUF_SIZE)) ( [$e._Bx._Buf,s] ) #else ( [$e._Bx._Ptr,s] ))
+	stringview	( #if (($e._Myres) < ($e._BUF_SIZE)) ( [$e._Bx._Buf,sb] ) #else ( [$e._Bx._Ptr,sb] ))
+
+	children (
+		#(
+			#([size] : $e._Mysize),
+			#([capacity] : $e._Myres),
+			#if (($e._Myres) < ($e._BUF_SIZE)) (
+				#array(expr: $e._Bx._Buf[$i], size: $e._Mysize)
+			) #else (
+				#array(expr: $e._Bx._Ptr[$i], size: $e._Mysize)
+			)
+		)
+	)
+}
+
+PPtr<*> {
+	preview
+	( 
+		#if($e.m_DEBUGPtr==0) 
+		(
+			#("null", " { id=", $e.m_InstanceID, " }")
+		) 
+		#else 
+		(
+			#( 
+				[$e.m_DEBUGPtr->m_Name.m_Buffer-1,s], " { id=", $e.m_InstanceID, " }"
+			) 
+		)
+	)
+	children
+	(
+		#(
+			#array
+			(
+				expr: (($T1*)($e.m_DEBUGPtr))[$i],
+				size: #if($c.m_DEBUGPtr==0) ( 0 ) #else (1)
+			) : $e
+		)
+	)
+}
+
+
+;#if($e.m_DEBUGPtr == 0)
+;(
+;#("null", " { id=", $e.m_InstanceID, " }")
+;)
+;#else
+;(
+;	#( (($T1*)($e.m_DEBUGPtr)), " { id=", $e.m_InstanceID, " }")
+;)
+
+ImmediatePtr<*> {
+	preview
+	( 
+		#if($e.m_Ptr==0) 
+		(
+			#("null")
+		) 
+		#else 
+		(
+			#( 
+			    [(($T1*)($e.m_Ptr))->m_Name.m_Buffer-1,s]
+			) 
+		)
+	)
+	children
+	(
+		#(
+			#array
+			(
+				expr: (($T1*)($e.m_Ptr))[$i],
+				size: #if($c.m_Ptr==0) ( 0 ) #else (1)
+			) : $e
+		)
+	)
+}
+OffsetPtr<*> {
+	preview
+	( 
+		#if($e.m_Offset==0) 
+		(
+			#("null")
+		) 
+		#else 
+		(
+			#( 
+				(void*)(((char*)&$e)+$e.m_Offset),
+				" {offset=", 
+				$e.m_Offset, 
+				" }" 
+			) 
+		)
+	)
+	children
+	(
+		#(
+			#array
+			(
+				expr: (($T1*)(((char*)(void*)&$c)+$c.m_Offset))[$i],
+				size: #if($c.m_Offset==0) ( 0 ) #else (50)
+			) : $e
+		)
+	)
+}
+
+OffsetPtr<mecanim::skeleton::Skeleton> {
+	preview
+	( 
+		#if($e.m_Offset==0) 
+		(
+			#("null")
+		) 
+		#else 
+		(
+			#( 
+				(void*)(((char*)&$e)+$e.m_Offset),
+				" {offset=", 
+				$e.m_Offset, 
+				" }" 
+			) 
+		)
+	)
+	children
+	(
+		#(
+			#array
+			(
+				expr: (($T1*)(((char*)(void*)&$c)+$c.m_Offset))[$i],
+				size: #if($c.m_Offset==0) ( 0 ) #else (1)
+			) : $e
+		)
+	)
+}
+
+OffsetPtr<mecanim::skeleton::SkeletonPose> {
+	preview
+	( 
+		#if($e.m_Offset==0) 
+		(
+			#("null")
+		) 
+		#else 
+		(
+			#( 
+				(void*)(((char*)&$e)+$e.m_Offset),
+				" {offset=", 
+				$e.m_Offset, 
+				" }" 
+			) 
+		)
+	)
+	children
+	(
+		#(
+			#array
+			(
+				expr: (($T1*)(((char*)(void*)&$c)+$c.m_Offset))[$i],
+				size: #if($c.m_Offset==0) ( 0 ) #else (1)
+			) : $e
+		)
+	)
+}
+
+OffsetPtr<mecanim::human::Human> {
+	preview
+	( 
+		#if($e.m_Offset==0) 
+		(
+			#("null")
+		) 
+		#else 
+		(
+			#( 
+				(void*)(((char*)&$e)+$e.m_Offset),
+				" {offset=", 
+				$e.m_Offset, 
+				" }" 
+			) 
+		)
+	)
+	children
+	(
+		#(
+			#array
+			(
+				expr: (($T1*)(((char*)(void*)&$c)+$c.m_Offset))[$i],
+				size: #if($c.m_Offset==0) ( 0 ) #else (1)
+			) : $e
+		)
+	)
+}
+
+dynamic_array<*>{
+	preview (
+		#(
+			"[",
+			$e.m_size,
+			"](",
+			#array(
+				expr: $e.m_data[$i],
+				size: $e.m_size
+			),
+			")"
+		)
+	)
+
+	children (
+		#(
+			#([size] : $e.m_size),
+			#([capacity] : $e.m_capacity),
+			#array(
+				expr: $e.m_data[$i],
+				size: $e.m_size
+			)
+		)
+	)
+}
+
