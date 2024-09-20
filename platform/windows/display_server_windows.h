@@ -359,6 +359,8 @@ typedef enum _SHC_PROCESS_DPI_AWARENESS {
 class DisplayServerWindows : public DisplayServer {
 	// No need to register with GDCLASS, it's platform-specific and nothing is added.
 
+	friend class DropTargetWindows;
+
 	_THREAD_SAFE_CLASS_
 
 	// UXTheme API
@@ -518,6 +520,9 @@ class DisplayServerWindows : public DisplayServer {
 		Callable input_event_callback;
 		Callable input_text_callback;
 		Callable drop_files_callback;
+
+		// OLE API
+		DropTargetWindows *drop_target = nullptr;
 
 		WindowID transient_parent = INVALID_WINDOW_ID;
 		HashSet<WindowID> transient_children;
