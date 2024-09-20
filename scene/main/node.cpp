@@ -111,6 +111,7 @@ void Node::_notification(int p_notification) {
 				data.auto_translate_mode = AUTO_TRANSLATE_MODE_ALWAYS;
 			}
 			data.is_auto_translate_dirty = true;
+			data.is_translation_domain_dirty = true;
 
 #ifdef TOOLS_ENABLED
 			// Don't translate UI elements when they're being edited.
@@ -1318,6 +1319,51 @@ bool Node::can_auto_translate() const {
 	}
 
 	return data.is_auto_translating;
+}
+
+StringName Node::get_translation_domain() const {
+	ERR_READ_THREAD_GUARD_V(StringName());
+
+	if (data.is_translation_domain_inherited && data.is_translation_domain_dirty) {
+		const_cast<Node *>(this)->_translation_domain = data.parent ? data.parent->get_translation_domain() : StringName();
+		data.is_translation_domain_dirty = false;
+	}
+	return _translation_domain;
+}
+
+void Node::set_translation_domain(const StringName &p_domain) {
+	ERR_THREAD_GUARD
+
+	if (!data.is_translation_domain_inherited && _translation_domain == p_domain) {
+		return;
+	}
+
+	_translation_domain = p_domain;
+	data.is_translation_domain_inherited = false;
+	data.is_translation_domain_dirty = false;
+	_propagate_translation_domain_dirty();
+}
+
+void Node::set_translation_domain_inherited() {
+	ERR_THREAD_GUARD
+
+	if (data.is_translation_domain_inherited) {
+		return;
+	}
+	data.is_translation_domain_inherited = true;
+	data.is_translation_domain_dirty = true;
+	_propagate_translation_domain_dirty();
+}
+
+void Node::_propagate_translation_domain_dirty() {
+	for (KeyValue<StringName, Node *> &K : data.children) {
+		Node *child = K.value;
+		if (child->data.is_translation_domain_inherited) {
+			child->data.is_translation_domain_dirty = true;
+			child->_propagate_translation_domain_dirty();
+		}
+	}
+	notification(NOTIFICATION_TRANSLATION_CHANGED);
 }
 
 StringName Node::get_name() const {
@@ -3610,6 +3656,7 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_auto_translate_mode", "mode"), &Node::set_auto_translate_mode);
 	ClassDB::bind_method(D_METHOD("get_auto_translate_mode"), &Node::get_auto_translate_mode);
+	ClassDB::bind_method(D_METHOD("set_translation_domain_inherited"), &Node::set_translation_domain_inherited);
 
 	ClassDB::bind_method(D_METHOD("get_window"), &Node::get_window);
 	ClassDB::bind_method(D_METHOD("get_last_exclusive_window"), &Node::get_last_exclusive_window);
