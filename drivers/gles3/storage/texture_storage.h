@@ -146,7 +146,7 @@ struct Texture {
 	RID self;
 
 	bool is_proxy = false;
-	bool is_external = false;
+	bool is_from_native_handle = false;
 	bool is_render_target = false;
 
 	RID proxy_to;
@@ -209,7 +209,7 @@ struct Texture {
 	void copy_from(const Texture &o) {
 		proxy_to = o.proxy_to;
 		is_proxy = o.is_proxy;
-		is_external = o.is_external;
+		is_from_native_handle = o.is_from_native_handle;
 		width = o.width;
 		height = o.height;
 		alloc_width = o.alloc_width;
@@ -514,7 +514,7 @@ public:
 	virtual void texture_3d_initialize(RID p_texture, Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) override;
 	virtual void texture_proxy_initialize(RID p_texture, RID p_base) override; //all slices, then all the mipmaps, must be coherent
 
-	RID texture_create_external(Texture::Type p_type, Image::Format p_format, unsigned int p_image, int p_width, int p_height, int p_depth, int p_layers, RS::TextureLayeredType p_layered_type = RS::TEXTURE_LAYERED_2D_ARRAY);
+	virtual RID texture_create_from_native_handle(RS::TextureType p_type, Image::Format p_format, uint64_t p_native_handle, int p_width, int p_height, int p_depth, int p_layers = 1, RS::TextureLayeredType p_layered_type = RS::TEXTURE_LAYERED_2D_ARRAY) override;
 
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) override;
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) override;

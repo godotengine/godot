@@ -57,3 +57,7 @@ jobs:
       - name: Class reference schema checks
         run: |
           xmllint --noout --schema doc/class.xsd doc/classes/*.xml modules/*/doc_classes/*.xml platform/*/doc_classes/*.xml
+
+      - name: Run C compiler on `gdextension_interface.h`
+        run: |
+          gcc -c core/extension/gdextension_interface.h

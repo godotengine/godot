@@ -4116,7 +4116,9 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 
 	_update_title();
 	scene_tabs->update_scene_tabs();
-	_add_to_recent_scenes(lpath);
+	if (!restoring_scenes) {
+		_add_to_recent_scenes(lpath);
+	}
 
 	return OK;
 }
@@ -5666,6 +5668,7 @@ Dictionary EditorNode::drag_resource(const Ref<Resource> &p_res, Control *p_from
 	Control *drag_control = memnew(Control);
 	TextureRect *drag_preview = memnew(TextureRect);
 	Label *label = memnew(Label);
+	label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 
 	Ref<Texture2D> preview;
 
@@ -5718,6 +5721,7 @@ Dictionary EditorNode::drag_files_and_dirs(const Vector<String> &p_paths, Contro
 		HBoxContainer *hbox = memnew(HBoxContainer);
 		TextureRect *icon = memnew(TextureRect);
 		Label *label = memnew(Label);
+		label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 
 		if (p_paths[i].ends_with("/")) {
 			label->set_text(p_paths[i].substr(0, p_paths[i].length() - 1).get_file());
@@ -7909,9 +7913,14 @@ EditorNode::EditorNode() {
 		title_bar->set_can_move_window(true);
 	}
 
-	String exec = OS::get_singleton()->get_executable_path();
-	// Save editor executable path for third-party tools.
-	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "executable_path", exec);
+	{
+		const String exec = OS::get_singleton()->get_executable_path();
+		const String old_exec = EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "executable_path", "");
+		// Save editor executable path for third-party tools.
+		if (exec != old_exec) {
+			EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "executable_path", exec);
+		}
+	}
 
 	follow_system_theme = EDITOR_GET("interface/theme/follow_system_theme");
 	use_system_accent_color = EDITOR_GET("interface/theme/use_system_accent_color");

@@ -649,8 +649,7 @@ void FileSystemDock::_notification(int p_what) {
 			}
 
 			if (do_redraw) {
-				_update_file_list(true);
-				_update_tree(get_uncollapsed_paths());
+				update_all();
 			}
 
 			if (EditorThemeManager::is_generated_theme_outdated()) {
@@ -1351,13 +1350,7 @@ void FileSystemDock::_fs_changed() {
 	scanning_vb->hide();
 	split_box->show();
 
-	if (tree->is_visible()) {
-		_update_tree(get_uncollapsed_paths());
-	}
-
-	if (file_list_vb->is_visible()) {
-		_update_file_list(true);
-	}
+	update_all();
 
 	if (!select_after_scan.is_empty()) {
 		_navigate_to_path(select_after_scan);
@@ -1367,15 +1360,6 @@ void FileSystemDock::_fs_changed() {
 	}
 
 	set_process(false);
-}
-
-void FileSystemDock::_directory_created(const String &p_path) {
-	if (!DirAccess::exists(p_path)) {
-		return;
-	}
-	EditorFileSystem::get_singleton()->add_new_directory(p_path);
-	_update_tree(get_uncollapsed_paths());
-	_update_file_list(true);
 }
 
 void FileSystemDock::_set_scanning_mode() {
@@ -2686,8 +2670,11 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		} break;
 
 		default: {
-			// Resource conversion commands:
-			if (p_option >= CONVERT_BASE_ID) {
+			if (p_option >= EditorContextMenuPlugin::BASE_ID) {
+				if (!EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM, p_option, p_selected)) {
+					EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, p_option, p_selected);
+				}
+			} else if (p_option >= CONVERT_BASE_ID) {
 				selected_conversion_id = p_option - CONVERT_BASE_ID;
 				ERR_FAIL_INDEX(selected_conversion_id, (int)cached_valid_conversion_targets.size());
 
@@ -2704,10 +2691,6 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 						break;
 					}
 					conversion_id++;
-				}
-			} else {
-				if (!EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM, p_option, p_selected)) {
-					EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, p_option, p_selected);
 				}
 			}
 			break;
@@ -2826,6 +2809,16 @@ void FileSystemDock::_split_dragged(int p_offset) {
 
 void FileSystemDock::fix_dependencies(const String &p_for_file) {
 	deps_editor->edit(p_for_file);
+}
+
+void FileSystemDock::update_all() {
+	if (tree->is_visible()) {
+		_update_tree(get_uncollapsed_paths());
+	}
+
+	if (file_list_vb->is_visible()) {
+		_update_file_list(true);
+	}
 }
 
 void FileSystemDock::focus_on_path() {
@@ -3249,9 +3242,7 @@ void FileSystemDock::_folder_color_index_pressed(int p_index, PopupMenu *p_menu)
 	}
 
 	_update_folder_colors_setting();
-
-	_update_tree(get_uncollapsed_paths());
-	_update_file_list(true);
+	update_all();
 
 	emit_signal(SNAME("folder_color_changed"));
 }
@@ -3959,8 +3950,7 @@ void FileSystemDock::set_file_sort(FileSortOption p_file_sort) {
 	file_sort = p_file_sort;
 
 	// Update everything needed.
-	_update_tree(get_uncollapsed_paths());
-	_update_file_list(true);
+	update_all();
 }
 
 void FileSystemDock::_file_sort_popup(int p_id) {
@@ -4350,7 +4340,6 @@ FileSystemDock::FileSystemDock() {
 
 	make_dir_dialog = memnew(DirectoryCreateDialog);
 	add_child(make_dir_dialog);
-	make_dir_dialog->connect("dir_created", callable_mp(this, &FileSystemDock::_directory_created));
 
 	make_scene_dialog = memnew(SceneCreateDialog);
 	add_child(make_scene_dialog);
