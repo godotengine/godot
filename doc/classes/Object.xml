@@ -1134,7 +1134,7 @@
 			Notification received when the object is initialized, before its script is attached. Used internally.
 		</constant>
 		<constant name="NOTIFICATION_PREDELETE" value="1">
-			Notification received when the object is about to be deleted. Can act as the deconstructor of some programming languages.
+			Notification received when the object is about to be deleted. Can be used like destructors in object-oriented programming languages.
 		</constant>
 		<constant name="NOTIFICATION_EXTENSION_RELOADED" value="2">
 			Notification received when the object finishes hot reloading. This notification is only sent for extensions classes and derived.
