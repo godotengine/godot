@@ -832,6 +832,8 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 					viewport_set_force_motion_vectors(vp->self, false);
 				}
 
+				RSG::texture_storage->render_target_set_render_region(vp->render_target, xr_interface->get_render_region());
+
 				// render...
 				RSG::scene->set_debug_draw_mode(vp->debug_draw);
 

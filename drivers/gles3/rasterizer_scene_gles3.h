@@ -98,6 +98,7 @@ enum SkyUniformLocation {
 struct RenderDataGLES3 {
 	Ref<RenderSceneBuffersGLES3> render_buffers;
 	bool transparent_bg = false;
+	Rect2i render_region;
 
 	Transform3D cam_transform;
 	Transform3D inv_cam_transform;
