@@ -77,7 +77,7 @@ protected:
 
 	Vector2 get_uv2_scale(Vector2 p_margin_scale = Vector2(1.0, 1.0)) const;
 	float get_lightmap_texel_size() const;
-	virtual void _update_lightmap_size(){};
+	virtual void _update_lightmap_size() {}
 
 	void _on_settings_changed();
 
@@ -541,7 +541,7 @@ private:
 		Vector2 point;
 		bool sharp = false;
 
-		ContourPoint(){};
+		ContourPoint() {}
 		ContourPoint(const Vector2 &p_pt, bool p_sharp) {
 			point = p_pt;
 			sharp = p_sharp;
@@ -551,7 +551,7 @@ private:
 	struct ContourInfo {
 		real_t length = 0.0;
 		bool ccw = true;
-		ContourInfo(){};
+		ContourInfo() {}
 		ContourInfo(real_t p_len, bool p_ccw) {
 			length = p_len;
 			ccw = p_ccw;
