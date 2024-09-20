@@ -1999,6 +1999,9 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 		} else if (p_ev->is_action("ui_copy", true)) {
 			emit_signal(SNAME("copy_nodes_request"));
 			accept_event();
+		} else if (p_ev->is_action("ui_cut", true)) {
+			emit_signal(SNAME("cut_nodes_request"));
+			accept_event();
 		} else if (p_ev->is_action("ui_paste", true)) {
 			emit_signal(SNAME("paste_nodes_request"));
 			accept_event();
@@ -2735,6 +2738,7 @@ void GraphEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("connection_drag_ended"));
 
 	ADD_SIGNAL(MethodInfo("copy_nodes_request"));
+	ADD_SIGNAL(MethodInfo("cut_nodes_request"));
 	ADD_SIGNAL(MethodInfo("paste_nodes_request"));
 	ADD_SIGNAL(MethodInfo("duplicate_nodes_request"));
 	ADD_SIGNAL(MethodInfo("delete_nodes_request", PropertyInfo(Variant::ARRAY, "nodes", PROPERTY_HINT_ARRAY_TYPE, "StringName")));
