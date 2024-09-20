@@ -2978,7 +2978,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 		CloseHandle(pipe[0]); // Cleanup pipe handles.
 		CloseHandle(pipe[1]);
 	}
-	ERR_FAIL_COND_V(ret == 0, ERR_CANT_FORK);
+	ERR_FAIL_COND_V_MSG(ret == 0, ERR_CANT_FORK, "Could not create child process: " + String(modstr.ptr()));
 
 	if (p_blocking) {
 		if (r_pipe) {
