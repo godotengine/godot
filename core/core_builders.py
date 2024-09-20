@@ -190,7 +190,7 @@ def make_license_header(target, source, env):
 
     from collections import OrderedDict
 
-    projects: dict = OrderedDict()
+    projects = OrderedDict()
     license_list = []
 
     with open(src_copyright, "r", encoding="utf-8") as copyright_file:
@@ -212,7 +212,7 @@ def make_license_header(target, source, env):
                 part = {}
                 reader.next_line()
 
-    data_list: list = []
+    data_list = []
     for project in iter(projects.values()):
         for part in project:
             part["file_index"] = len(data_list)
