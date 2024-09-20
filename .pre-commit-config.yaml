@@ -39,14 +39,14 @@ repos:
         stages: [manual] # Not automatically triggered, invoked via `pre-commit run --hook-stage manual clang-tidy`
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.4
+    rev: v0.6.6
     hooks:
       - id: ruff
         args: [--fix]
       - id: ruff-format
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.971
+    rev: v1.11.2
     hooks:
       - id: mypy
         files: \.py$
