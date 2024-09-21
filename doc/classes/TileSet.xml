@@ -207,17 +207,17 @@
 				Returns the [TileMapPattern] that is at the pattern_set_index and pattern_index.
 			</description>
 		</method>
-		<method name="get_pattern_sets_count" qualifiers="const">
-			<return type="int" />
-			<description>
-				Get the number of pattern sets stored in this [TileSet].
-			</description>
-		</method>
 		<method name="get_patterns_count" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="pattern_set_index" type="int" />
 			<description>
 				Returns the number of [TileMapPattern] inside of the pattern set at the index.
+			</description>
+		</method>
+		<method name="get_pattern_sets_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Get the number of pattern sets stored in this [TileSet].
 			</description>
 		</method>
 		<method name="get_physics_layer_collision_layer" qualifiers="const">
@@ -377,14 +377,6 @@
 				Moves the occlusion layer at index [param layer_index] to the given position [param to_position] in the array. Also updates the atlas tiles accordingly.
 			</description>
 		</method>
-		<method name="move_pattern_set">
-			<return type="void" />
-			<param index="0" name="from_index" type="int" />
-			<param index="1" name="to_index" type="int" />
-			<description>
-				Move the pattern set from one pattern set index to another. You should probably use the TileMap GUI for this instead.
-			</description>
-		</method>
 		<method name="move_physics_layer">
 			<return type="void" />
 			<param index="0" name="layer_index" type="int" />
@@ -461,6 +453,14 @@
 			<param index="0" name="pattern_set_index" type="int" />
 			<description>
 				Removes the pattern set at the provided index. You should probably use the TileMap GUI for this instead.
+			</description>
+		</method>
+		<method name="move_pattern_set">
+			<return type="void" />
+			<param index="0" name="from_index" type="int" />
+			<param index="1" name="to_index" type="int" />
+			<description>
+				Move the pattern set from one pattern set index to another. You should probably use the TileMap GUI for this instead.
 			</description>
 		</method>
 		<method name="remove_physics_layer">
