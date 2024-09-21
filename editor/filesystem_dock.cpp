@@ -4142,22 +4142,25 @@ FileSystemDock::FileSystemDock() {
 	add_child(top_vbc);
 
 	HBoxContainer *toolbar_hbc = memnew(HBoxContainer);
-	toolbar_hbc->add_theme_constant_override("separation", 0);
 	top_vbc->add_child(toolbar_hbc);
+
+	HBoxContainer *nav_hbc = memnew(HBoxContainer);
+	nav_hbc->add_theme_constant_override("separation", 0);
+	toolbar_hbc->add_child(nav_hbc);
 
 	button_hist_prev = memnew(Button);
 	button_hist_prev->set_flat(true);
 	button_hist_prev->set_disabled(true);
 	button_hist_prev->set_focus_mode(FOCUS_NONE);
 	button_hist_prev->set_tooltip_text(TTR("Go to previous selected folder/file."));
-	toolbar_hbc->add_child(button_hist_prev);
+	nav_hbc->add_child(button_hist_prev);
 
 	button_hist_next = memnew(Button);
 	button_hist_next->set_flat(true);
 	button_hist_next->set_disabled(true);
 	button_hist_next->set_focus_mode(FOCUS_NONE);
 	button_hist_next->set_tooltip_text(TTR("Go to next selected folder/file."));
-	toolbar_hbc->add_child(button_hist_next);
+	nav_hbc->add_child(button_hist_next);
 
 	current_path_line_edit = memnew(LineEdit);
 	current_path_line_edit->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
@@ -4180,13 +4183,12 @@ FileSystemDock::FileSystemDock() {
 	toolbar_hbc->add_child(button_toggle_display_mode);
 
 	button_dock_placement = memnew(Button);
-	button_dock_placement->set_flat(true);
+	button_dock_placement->set_theme_type_variation("FlatMenuButton");
 	button_dock_placement->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_change_bottom_dock_placement));
 	button_dock_placement->hide();
 	toolbar_hbc->add_child(button_dock_placement);
 
 	toolbar2_hbc = memnew(HBoxContainer);
-	toolbar2_hbc->add_theme_constant_override("separation", 0);
 	top_vbc->add_child(toolbar2_hbc);
 
 	tree_search_box = memnew(LineEdit);
@@ -4252,7 +4254,7 @@ FileSystemDock::FileSystemDock() {
 	path_hb->add_child(file_list_button_sort);
 
 	button_file_list_display_mode = memnew(Button);
-	button_file_list_display_mode->set_flat(true);
+	button_file_list_display_mode->set_theme_type_variation("FlatMenuButton");
 	path_hb->add_child(button_file_list_display_mode);
 
 	files = memnew(FileSystemList);
