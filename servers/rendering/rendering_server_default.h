@@ -162,6 +162,17 @@ public:
 		return ret;                                                                                              \
 	}
 
+#define FUNCRIDTEX3(m_type, m_type1, m_type2, m_type3)                                                               \
+	virtual RID m_type##_create(m_type1 p1, m_type2 p2, m_type3 p3) override {                                       \
+		RID ret = RSG::texture_storage->texture_allocate();                                                          \
+		if (Thread::get_caller_id() == server_thread || RSG::texture_storage->can_create_resources_async()) {        \
+			RSG::texture_storage->m_type##_initialize(ret, p1, p2, p3);                                              \
+		} else {                                                                                                     \
+			command_queue.push(RSG::texture_storage, &RendererTextureStorage::m_type##_initialize, ret, p1, p2, p3); \
+		}                                                                                                            \
+		return ret;                                                                                                  \
+	}
+
 #define FUNCRIDTEX6(m_type, m_type1, m_type2, m_type3, m_type4, m_type5, m_type6)                                                \
 	virtual RID m_type##_create(m_type1 p1, m_type2 p2, m_type3 p3, m_type4 p4, m_type5 p5, m_type6 p6) override {               \
 		RID ret = RSG::texture_storage->texture_allocate();                                                                      \
@@ -177,6 +188,7 @@ public:
 	FUNCRIDTEX1(texture_2d, const Ref<Image> &)
 	FUNCRIDTEX2(texture_2d_layered, const Vector<Ref<Image>> &, TextureLayeredType)
 	FUNCRIDTEX6(texture_3d, Image::Format, int, int, int, bool, const Vector<Ref<Image>> &)
+	FUNCRIDTEX3(texture_external, int, int, uint64_t)
 	FUNCRIDTEX1(texture_proxy, RID)
 
 	// Called directly, not through the command queue.
@@ -187,6 +199,7 @@ public:
 	//these go through command queue if they are in another thread
 	FUNC3(texture_2d_update, RID, const Ref<Image> &, int)
 	FUNC2(texture_3d_update, RID, const Vector<Ref<Image>> &)
+	FUNC4(texture_external_update, RID, int, int, uint64_t)
 	FUNC2(texture_proxy_update, RID, RID)
 
 	//these also go pass-through
