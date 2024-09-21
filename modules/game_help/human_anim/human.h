@@ -286,7 +286,7 @@ namespace human
 
         math::trsX              m_RootX;
 
-        skeleton::HumanSkeleton*       m_Skeleton;
+        skeleton::HumanSkeleton   m_Skeleton;
         LocalVector<math::trsX>   m_SkeletonLocalPose;
         hand::Hand*               m_LeftHand;
         hand::Hand*               m_RightHand;
