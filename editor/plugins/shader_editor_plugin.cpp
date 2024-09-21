@@ -405,7 +405,7 @@ void ShaderEditorPlugin::_setup_popup_menu(PopupMenuType p_type, PopupMenu *p_me
 		if (p_type == CONTEXT_VALID_ITEM) {
 			p_menu->add_separator();
 			p_menu->add_item(TTR("Copy Script Path"), COPY_PATH);
-			p_menu->add_item(TTR("Show in FileSystem"), SHOW_IN_FILE_SYSTEM);
+			p_menu->add_item(TTR("Show in File System"), SHOW_IN_FILE_SYSTEM);
 		}
 	}
 }
@@ -614,7 +614,6 @@ Variant ShaderEditorPlugin::get_drag_data_fw(const Point2 &p_point, Control *p_f
 		drag_preview->add_child(tf);
 	}
 	Label *label = memnew(Label(preview_name));
-	label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Don't translate script names.
 	drag_preview->add_child(label);
 	main_split->set_drag_preview(drag_preview);
 

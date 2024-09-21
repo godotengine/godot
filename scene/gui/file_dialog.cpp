@@ -1526,7 +1526,6 @@ FileDialog::FileDialog() {
 	update_dir();
 
 	set_hide_on_ok(false);
-	set_size(Size2(640, 360));
 
 	if (register_func) {
 		register_func(this);

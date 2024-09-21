@@ -54,8 +54,6 @@ Vector<String> get_editor_locales() {
 }
 
 void load_editor_translations(const String &p_locale) {
-	const Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain("godot.editor");
-
 	EditorTranslationList *etl = _editor_translations;
 	while (etl->data) {
 		if (etl->lang == p_locale) {
@@ -72,7 +70,7 @@ void load_editor_translations(const String &p_locale) {
 
 			if (tr.is_valid()) {
 				tr->set_locale(etl->lang);
-				domain->add_translation(tr);
+				TranslationServer::get_singleton()->set_tool_translation(tr);
 				break;
 			}
 		}
@@ -82,8 +80,6 @@ void load_editor_translations(const String &p_locale) {
 }
 
 void load_property_translations(const String &p_locale) {
-	const Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain("godot.properties");
-
 	PropertyTranslationList *etl = _property_translations;
 	while (etl->data) {
 		if (etl->lang == p_locale) {
@@ -100,7 +96,7 @@ void load_property_translations(const String &p_locale) {
 
 			if (tr.is_valid()) {
 				tr->set_locale(etl->lang);
-				domain->add_translation(tr);
+				TranslationServer::get_singleton()->set_property_translation(tr);
 				break;
 			}
 		}
@@ -110,8 +106,6 @@ void load_property_translations(const String &p_locale) {
 }
 
 void load_doc_translations(const String &p_locale) {
-	const Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain("godot.documentation");
-
 	DocTranslationList *dtl = _doc_translations;
 	while (dtl->data) {
 		if (dtl->lang == p_locale) {
@@ -128,7 +122,7 @@ void load_doc_translations(const String &p_locale) {
 
 			if (tr.is_valid()) {
 				tr->set_locale(dtl->lang);
-				domain->add_translation(tr);
+				TranslationServer::get_singleton()->set_doc_translation(tr);
 				break;
 			}
 		}
@@ -138,8 +132,6 @@ void load_doc_translations(const String &p_locale) {
 }
 
 void load_extractable_translations(const String &p_locale) {
-	const Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain("godot.editor");
-
 	ExtractableTranslationList *etl = _extractable_translations;
 	while (etl->data) {
 		if (etl->lang == p_locale) {
@@ -156,7 +148,7 @@ void load_extractable_translations(const String &p_locale) {
 
 			if (tr.is_valid()) {
 				tr->set_locale(etl->lang);
-				domain->add_translation(tr);
+				TranslationServer::get_singleton()->set_extractable_translation(tr);
 				break;
 			}
 		}

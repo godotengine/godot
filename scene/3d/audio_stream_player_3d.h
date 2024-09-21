@@ -105,7 +105,6 @@ private:
 	float linear_attenuation = 0;
 
 	float max_distance = 0.0;
-	bool was_further_than_max_distance_last_frame = false;
 
 	Ref<VelocityTracker3D> velocity_tracker;
 

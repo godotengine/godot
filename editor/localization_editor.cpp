@@ -37,6 +37,7 @@
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/pot_generator.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/control.h"
 
 void LocalizationEditor::_notification(int p_what) {
@@ -48,7 +49,6 @@ void LocalizationEditor::_notification(int p_what) {
 
 			List<String> tfn;
 			ResourceLoader::get_recognized_extensions_for_type("Translation", &tfn);
-			tfn.erase("csv"); // CSV is recognized by the resource importer to generate translation files, but it's not a translation file itself.
 			for (const String &E : tfn) {
 				translation_file_open->add_filter("*." + E);
 			}

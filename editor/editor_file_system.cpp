@@ -32,7 +32,6 @@
 
 #include "core/config/project_settings.h"
 #include "core/extension/gdextension_manager.h"
-#include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
 #include "core/object/worker_thread_pool.h"
@@ -1142,14 +1141,6 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 
 		if (fi->uid != ResourceUID::INVALID_ID) {
 			if (ResourceUID::get_singleton()->has_id(fi->uid)) {
-				// Restrict UID dupe warning to first-scan since we know there are no file moves going on yet.
-				if (first_scan) {
-					// Warn if we detect files with duplicate UIDs.
-					const String other_path = ResourceUID::get_singleton()->get_id_path(fi->uid);
-					if (other_path != path) {
-						WARN_PRINT(vformat("UID duplicate detected between %s and %s.", path, other_path));
-					}
-				}
 				ResourceUID::get_singleton()->set_id(fi->uid, path);
 			} else {
 				ResourceUID::get_singleton()->add_id(fi->uid, path);
@@ -1974,15 +1965,17 @@ void EditorFileSystem::_update_script_documentation() {
 		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 			ScriptLanguage *lang = ScriptServer::get_language(i);
 			if (lang->supports_documentation() && efd->files[index]->type == lang->get_type()) {
-				bool should_reload_script = _should_reload_script(path);
+				// Reloading the script from disk if resource already in memory. Otherwise, the
+				// ResourceLoader::load will return the last loaded version of the script (without the modifications).
+				// The only have the script already loaded here is to edit the script outside the
+				// editor without being connected to the LSP server.
+				Ref<Resource> res = ResourceCache::get_ref(path);
+				if (res.is_valid()) {
+					res->reload_from_file();
+				}
 				Ref<Script> scr = ResourceLoader::load(path);
 				if (scr.is_null()) {
 					continue;
-				}
-				if (should_reload_script) {
-					// Reloading the script from disk. Otherwise, the ResourceLoader::load will
-					// return the last loaded version of the script (without the modifications).
-					scr->reload_from_file();
 				}
 				Vector<DocData::ClassDoc> docs = scr->get_documentation();
 				for (int j = 0; j < docs.size(); j++) {
@@ -2003,25 +1996,6 @@ void EditorFileSystem::_update_script_documentation() {
 	memdelete_notnull(ep);
 
 	update_script_paths_documentation.clear();
-}
-
-bool EditorFileSystem::_should_reload_script(const String &p_path) {
-	if (first_scan) {
-		return false;
-	}
-
-	Ref<Script> scr = ResourceCache::get_ref(p_path);
-	if (scr.is_null()) {
-		// Not a script or not already loaded.
-		return false;
-	}
-
-	// Scripts are reloaded via the script editor if they are currently opened.
-	if (ScriptEditor::get_singleton()->get_open_scripts().has(scr)) {
-		return false;
-	}
-
-	return true;
 }
 
 void EditorFileSystem::_process_update_pending() {
@@ -3093,51 +3067,33 @@ void EditorFileSystem::move_group_file(const String &p_path, const String &p_new
 	}
 }
 
-Error EditorFileSystem::make_dir_recursive(const String &p_path, const String &p_base_path) {
-	Error err;
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	if (!p_base_path.is_empty()) {
-		err = da->change_dir(p_base_path);
-		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot open base directory '" + p_base_path + "'.");
-	}
+void EditorFileSystem::add_new_directory(const String &p_path) {
+	String path = p_path.get_base_dir();
+	EditorFileSystemDirectory *parent = filesystem;
+	int base = p_path.count("/");
+	int max_bit = base + 1;
 
-	if (da->dir_exists(p_path)) {
-		return ERR_ALREADY_EXISTS;
-	}
-
-	err = da->make_dir_recursive(p_path);
-	if (err != OK) {
-		return err;
-	}
-
-	const String path = da->get_current_dir();
-	EditorFileSystemDirectory *parent = get_filesystem_path(path);
-	ERR_FAIL_NULL_V(parent, ERR_FILE_NOT_FOUND);
-
-	const PackedStringArray folders = p_path.trim_prefix(path).trim_suffix("/").split("/");
-	bool first = true;
-
-	for (const String &folder : folders) {
-		const int current = parent->find_dir_index(folder);
-		if (current > -1) {
-			parent = parent->get_subdir(current);
-			continue;
+	while (path != "res://") {
+		EditorFileSystemDirectory *dir = get_filesystem_path(path);
+		if (dir) {
+			parent = dir;
+			break;
 		}
+		path = path.get_base_dir();
+		base--;
+	}
 
+	for (int i = base; i < max_bit; i++) {
 		EditorFileSystemDirectory *efd = memnew(EditorFileSystemDirectory);
 		efd->parent = parent;
-		efd->name = folder;
+		efd->name = p_path.get_slice("/", i);
 		parent->subdirs.push_back(efd);
 
-		if (first) {
+		if (i == base) {
 			parent->subdirs.sort_custom<DirectoryComparator>();
-			first = false;
 		}
 		parent = efd;
 	}
-
-	emit_signal(SNAME("filesystem_changed"));
-	return OK;
 }
 
 ResourceUID::ID EditorFileSystem::_resource_saver_get_resource_id_for_path(const String &p_path, bool p_generate) {

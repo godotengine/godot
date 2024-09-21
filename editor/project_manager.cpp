@@ -1081,8 +1081,6 @@ void ProjectManager::_titlebar_resized() {
 ProjectManager::ProjectManager() {
 	singleton = this;
 
-	set_translation_domain("godot.editor");
-
 	// Turn off some servers we aren't going to be using in the Project Manager.
 	NavigationServer3D::get_singleton()->set_active(false);
 	PhysicsServer3D::get_singleton()->set_active(false);
