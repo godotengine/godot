@@ -175,7 +175,7 @@ namespace hand
         apHandPoseDst->m_GrabX = apHandPoseDst->m_GrabX;
     }
 
-    void HandSetupAxes(Hand const *apHand, skeleton::SkeletonPose const *apSkeletonPose, skeleton::Skeleton *apSkeleton, bool aLeft)
+    void HandSetupAxes(Hand const *apHand, skeleton::SkeletonPose const *apSkeletonPose, skeleton::HumanSkeleton *apSkeleton, bool aLeft)
     {
         int32_t f, p, b;
 
@@ -207,7 +207,7 @@ namespace hand
         }
     }
 
-    void HandCopyAxes(Hand const *apSrcHand, skeleton::Skeleton const *apSrcSkeleton, Hand const *apHand, skeleton::Skeleton *apSkeleton)
+    void HandCopyAxes(Hand const *apSrcHand, skeleton::HumanSkeleton const *apSrcSkeleton, Hand const *apHand, skeleton::HumanSkeleton *apSkeleton)
     {
         int32_t i;
 
@@ -237,7 +237,7 @@ namespace hand
         }
     }
 
-    void Hand2SkeletonPose(Hand const *apHand, skeleton::Skeleton const *apSkeleton, HandPose const *apHandPose, skeleton::SkeletonPose *apSkeletonPose)
+    void Hand2SkeletonPose(Hand const *apHand, skeleton::HumanSkeleton const *apSkeleton, HandPose const *apHandPose, skeleton::SkeletonPose *apSkeletonPose)
     {
         int32_t f, p;
 
@@ -260,7 +260,7 @@ namespace hand
         }
     }
 
-    void Skeleton2HandPose(Hand const *apHand, skeleton::Skeleton const *apSkeleton, skeleton::SkeletonPose const *apSkeletonPose, HandPose *apHandPose, float aOffset)
+    void Skeleton2HandPose(Hand const *apHand, skeleton::HumanSkeleton const *apSkeleton, skeleton::SkeletonPose const *apSkeletonPose, HandPose *apHandPose, float aOffset)
     {
         int32_t f, p;
 
@@ -285,7 +285,7 @@ namespace hand
         }
     }
 
-    void FingerLengths(Hand const *apHand, skeleton::Skeleton const *apSkeleton, float *apLengthArray)
+    void FingerLengths(Hand const *apHand, skeleton::HumanSkeleton const *apSkeleton, float *apLengthArray)
     {
         int32_t f, p;
 
@@ -321,7 +321,7 @@ namespace hand
         }
     }
 
-    void FingerTipsFromPose(Hand const *apHand,skeleton::Skeleton const *apSkeleton, skeleton::SkeletonPose const *apSkeletonPose,math::float4 *apPositionArray)
+    void FingerTipsFromPose(Hand const *apHand,skeleton::HumanSkeleton const *apSkeleton, skeleton::SkeletonPose const *apSkeletonPose,math::float4 *apPositionArray)
     {
         int32_t f;
 
@@ -336,7 +336,7 @@ namespace hand
         }
     }
 
-    void FingersIKSolve(Hand const *apHand, skeleton::Skeleton const *apSkeleton,math::float4 const *apPositionArray, float *apWeightArray, skeleton::SkeletonPose *apSkeletonPose, skeleton::SkeletonPose *apSkeletonPoseWorkspace)
+    void FingersIKSolve(Hand const *apHand, skeleton::HumanSkeleton const *apSkeleton,math::float4 const *apPositionArray, float *apWeightArray, skeleton::SkeletonPose *apSkeletonPose, skeleton::SkeletonPose *apSkeletonPoseWorkspace)
     {
         int32_t f;
 

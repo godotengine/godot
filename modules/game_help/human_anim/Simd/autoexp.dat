@@ -4,7 +4,7 @@ PPtr<*>= name=<m_DEBUGPtr->m_Name.m_Buffer,s> id=<m_InstanceID>
 Transform= name=<m_GameObject.m_Ptr->m_Name.m_Buffer,s> pos=<m_LocalPosition.x,f> <m_LocalPosition.y,f> <m_LocalPosition.z,f>
 AnimationClip= name=<m_Name.m_Buffer,s> type=<m_AnimationType>
 NamedObject= name=<m_Name.m_Buffer,s>
-Unity::Component= <,t>
+Godot::Component= <,t>
 
 ; math::float4= <p.m128_f32[0],f> <p.m128_f32[1],f> <p.m128_f32[2],f> <p.m128_f32[3],f>
 ; math::float1= <p.m128_f32[0],f> <p.m128_f32[1],f> <p.m128_f32[2],f> <p.m128_f32[3],f>

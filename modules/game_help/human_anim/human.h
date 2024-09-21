@@ -18,7 +18,7 @@ namespace human_anim
 {
 namespace skeleton
 {
-    struct Skeleton;
+    struct HumanSkeleton;
 
     template<typename transformType> struct SkeletonPoseT;
     typedef SkeletonPoseT<math::trsX> SkeletonPose;
@@ -286,10 +286,10 @@ namespace human
 
         math::trsX              m_RootX;
 
-        OffsetPtr<skeleton::Skeleton>       m_Skeleton;
-        OffsetPtr<skeleton::SkeletonPose>   m_SkeletonPose;
-        OffsetPtr<hand::Hand>               m_LeftHand;
-        OffsetPtr<hand::Hand>               m_RightHand;
+        skeleton::HumanSkeleton*       m_Skeleton;
+        skeleton::SkeletonPose*   m_SkeletonPose;
+        hand::Hand*               m_LeftHand;
+        hand::Hand*               m_RightHand;
 
         int32_t                 m_HumanBoneIndex[kLastBone];
         float                   m_HumanBoneMass[kLastBone];
@@ -410,7 +410,7 @@ namespace human
     const char* BoneName(uint32_t boneIndex);
     const char* MuscleName(uint32_t boneIndex);
 
-    Human* CreateHuman(skeleton::Skeleton *skeleton, skeleton::SkeletonPose *skeletonPose, RuntimeBaseAllocator& alloc);
+    Human* CreateHuman(skeleton::HumanSkeleton *skeleton, skeleton::SkeletonPose *skeletonPose, RuntimeBaseAllocator& alloc);
     void DestroyHuman(Human *human, RuntimeBaseAllocator& alloc);
 
     void HumanAdjustMass(Human *human);

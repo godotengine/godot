@@ -5,9 +5,9 @@ namespace human_anim
 {
 namespace skeleton
 {
-    Skeleton*     CreateSkeleton(int32_t aNodeCount, int32_t aAxesCount, RuntimeBaseAllocator& arAlloc)
+    HumanSkeleton*     CreateSkeleton(int32_t aNodeCount, int32_t aAxesCount, RuntimeBaseAllocator& arAlloc)
     {
-        Skeleton* skeleton = memnew(Skeleton);
+        HumanSkeleton* skeleton = memnew(HumanSkeleton);
 
         skeleton->m_Count = aNodeCount;
         skeleton->m_Node.resize(aNodeCount);
@@ -38,7 +38,7 @@ namespace skeleton
 
 
     template<typename transformType>
-    SkeletonPoseT<transformType> *CreateSkeletonPose(Skeleton const* apSkeleton, RuntimeBaseAllocator& arAlloc)
+    SkeletonPoseT<transformType> *CreateSkeletonPose(HumanSkeleton const* apSkeleton, RuntimeBaseAllocator& arAlloc)
     {
         SkeletonPoseT<transformType>* skeletonPose = memnew(SkeletonPoseT<transformType>);
 
@@ -48,7 +48,7 @@ namespace skeleton
         return skeletonPose;
     }
 
-    void DestroySkeleton(Skeleton* apSkeleton, RuntimeBaseAllocator& arAlloc)
+    void DestroySkeleton(HumanSkeleton* apSkeleton, RuntimeBaseAllocator& arAlloc)
     {
         if (apSkeleton)
         {
@@ -85,7 +85,7 @@ namespace skeleton
         }
     }
 
-    void SkeletonCopy(Skeleton const* apSrc, Skeleton* apDst)
+    void SkeletonCopy(HumanSkeleton const* apSrc, HumanSkeleton* apDst)
     {
         apDst->m_Count = apSrc->m_Count;
         for (uint32_t nodeIter = 0; nodeIter < apDst->m_Count; nodeIter++)
@@ -132,7 +132,7 @@ namespace skeleton
     }
 
     template<typename transformTypeFrom, typename transformTypeTo>
-    void SkeletonPoseCopy(Skeleton const* apFromSkeleton, SkeletonPoseT<transformTypeFrom> const* apFromPose, Skeleton const* apToSkeleton, SkeletonPoseT<transformTypeTo>* apToPose)
+    void SkeletonPoseCopy(HumanSkeleton const* apFromSkeleton, SkeletonPoseT<transformTypeFrom> const* apFromPose, HumanSkeleton const* apToSkeleton, SkeletonPoseT<transformTypeTo>* apToPose)
     {
         uint32_t fromCount = apFromSkeleton->m_Count;
         uint32_t toCount = apToSkeleton->m_Count;
@@ -156,7 +156,7 @@ namespace skeleton
         }
     }
 
-    int32_t SkeletonFindNodeUp(Skeleton const *apSkeleton, int32_t aIndex, uint32_t aID)
+    int32_t SkeletonFindNodeUp(HumanSkeleton const *apSkeleton, int32_t aIndex, uint32_t aID)
     {
         if (apSkeleton->m_ID[aIndex] == aID)
         {
@@ -170,7 +170,7 @@ namespace skeleton
         return -1;
     }
 
-    int32_t SkeletonFindNode(Skeleton const* apSkeleton, uint32_t aID)
+    int32_t SkeletonFindNode(HumanSkeleton const* apSkeleton, uint32_t aID)
     {
         int32_t ret = -1;
 
@@ -186,7 +186,7 @@ namespace skeleton
         return ret;
     }
 
-    void SkeletonBuildIndexArray(int32_t *indexArray, Skeleton const* apSrcSkeleton, Skeleton const* apDstSkeleton)
+    void SkeletonBuildIndexArray(int32_t *indexArray, HumanSkeleton const* apSrcSkeleton, HumanSkeleton const* apDstSkeleton)
     {
         for (uint32_t i = 0; i < apSrcSkeleton->m_Count; i++)
         {
@@ -194,7 +194,7 @@ namespace skeleton
         }
     }
 
-    void SkeletonBuildReverseIndexArray(int32_t *reverseIndexArray, int32_t const*indexArray, Skeleton const* apSrcSkeleton, Skeleton const* apDstSkeleton)
+    void SkeletonBuildReverseIndexArray(int32_t *reverseIndexArray, int32_t const*indexArray, HumanSkeleton const* apSrcSkeleton, HumanSkeleton const* apDstSkeleton)
     {
         for (uint32_t dstIter = 0; dstIter < apDstSkeleton->m_Count; dstIter++)
         {
@@ -210,7 +210,7 @@ namespace skeleton
         }
     }
 
-    void SkeletonPoseSetDirty(Skeleton const* apSkeleton, uint32_t* apSkeletonPoseMask, int aIndex, int aStopIndex, uint32_t aMask)
+    void SkeletonPoseSetDirty(HumanSkeleton const* apSkeleton, uint32_t* apSkeletonPoseMask, int aIndex, int aStopIndex, uint32_t aMask)
     {
         int parentIndex = apSkeleton->m_Node[aIndex].m_ParentId;
 
@@ -226,7 +226,7 @@ namespace skeleton
     }
 
     template<typename transformType>
-    void SkeletonPoseComputeGlobal(Skeleton const* apSkeleton, SkeletonPoseT<transformType> const* apLocalPose, SkeletonPoseT<transformType>* apGlobalPose)
+    void SkeletonPoseComputeGlobal(HumanSkeleton const* apSkeleton, SkeletonPoseT<transformType> const* apLocalPose, SkeletonPoseT<transformType>* apGlobalPose)
     {
         uint32_t nodeCount = apSkeleton->m_Count;
         Node const *node = apSkeleton->m_Node.ptr();
@@ -243,7 +243,7 @@ namespace skeleton
 
     // computes a global pose from a local pose for part of the skeleton starting at aIndex (child) to aStopIndex (ancestor)
     template<typename transformType>
-    void SkeletonPoseComputeGlobal(Skeleton const* apSkeleton, SkeletonPoseT<transformType> const* apLocalPose, SkeletonPoseT<transformType>* apGlobalPose, int aIndex, int aStopIndex)
+    void SkeletonPoseComputeGlobal(HumanSkeleton const* apSkeleton, SkeletonPoseT<transformType> const* apLocalPose, SkeletonPoseT<transformType>* apGlobalPose, int aIndex, int aStopIndex)
     {
         transformType const *local = apLocalPose->m_X.ptr();
         transformType *global = apGlobalPose->m_X.ptr();
@@ -265,7 +265,7 @@ namespace skeleton
         }
     }
 
-    void SkeletonPoseComputeGlobalQ(Skeleton const* apSkeleton, SkeletonPose const* apSkeletonPoseLocal, SkeletonPose* apSkeletonPoseGlobal)
+    void SkeletonPoseComputeGlobalQ(HumanSkeleton const* apSkeleton, SkeletonPose const* apSkeletonPoseLocal, SkeletonPose* apSkeletonPoseGlobal)
     {
         apSkeletonPoseGlobal->m_X[0].q = apSkeletonPoseLocal->m_X[0].q;
 
@@ -276,7 +276,7 @@ namespace skeleton
         }
     }
 
-    void SkeletonPoseComputeGlobalQ(Skeleton const* apSkeleton, SkeletonPose const* apSkeletonPoseLocal, SkeletonPose* apSkeletonPoseGlobal, int aIndex, int aStopIndex)
+    void SkeletonPoseComputeGlobalQ(HumanSkeleton const* apSkeleton, SkeletonPose const* apSkeletonPoseLocal, SkeletonPose* apSkeletonPoseGlobal, int aIndex, int aStopIndex)
     {
         int parentIndex = apSkeleton->m_Node[aIndex].m_ParentId;
 
@@ -296,7 +296,7 @@ namespace skeleton
     }
 
     template<typename transformType>
-    void SkeletonPoseComputeLocal(Skeleton const* apSkeleton, SkeletonPoseT<transformType> const* apGlobalPose, SkeletonPoseT<transformType>* apLocalPose)
+    void SkeletonPoseComputeLocal(HumanSkeleton const* apSkeleton, SkeletonPoseT<transformType> const* apGlobalPose, SkeletonPoseT<transformType>* apLocalPose)
     {
         uint32_t nodeCount = apSkeleton->m_Count;
         Node const *node = apSkeleton->m_Node.ptr();
@@ -312,7 +312,7 @@ namespace skeleton
     }
 
     template<typename transformType>
-    void SkeletonPoseComputeLocal(Skeleton const* apSkeleton, SkeletonPoseT<transformType> const* apGlobalPose, SkeletonPoseT<transformType>* apLocalPose, int aIndex, int aStopIndex)
+    void SkeletonPoseComputeLocal(HumanSkeleton const* apSkeleton, SkeletonPoseT<transformType> const* apGlobalPose, SkeletonPoseT<transformType>* apLocalPose, int aIndex, int aStopIndex)
     {
         transformType const *global = apGlobalPose->m_X.ptr();
         transformType *local = apLocalPose->m_X.ptr();
@@ -334,7 +334,7 @@ namespace skeleton
         }
     }
 
-    void SkeletonPoseComputeLocalQ(Skeleton const* apSkeleton, SkeletonPose const* apSkeletonPoseGlobal, SkeletonPose* apSkeletonPoseLocal)
+    void SkeletonPoseComputeLocalQ(HumanSkeleton const* apSkeleton, SkeletonPose const* apSkeletonPoseGlobal, SkeletonPose* apSkeletonPoseLocal)
     {
         uint32_t i;
         for (i = apSkeleton->m_Count - 1; i > 0; i--)
@@ -345,7 +345,7 @@ namespace skeleton
         apSkeletonPoseLocal->m_X[0].q = apSkeletonPoseGlobal->m_X[0].q;
     }
 
-    void SkeletonPoseComputeLocalQ(Skeleton const* apSkeleton, SkeletonPose const* apSkeletonPoseGlobal, SkeletonPose* apSkeletonPoseLocal, int aIndex, int aStopIndex)
+    void SkeletonPoseComputeLocalQ(HumanSkeleton const* apSkeleton, SkeletonPose const* apSkeletonPoseGlobal, SkeletonPose* apSkeletonPoseLocal, int aIndex, int aStopIndex)
     {
         int parentIndex = apSkeleton->m_Node[aIndex].m_ParentId;
 
@@ -364,7 +364,7 @@ namespace skeleton
         }
     }
 
-    math::trsX SkeletonGetGlobalX(Skeleton const* apSkeleton, SkeletonPose const *apSkeletonPose, int32_t aIndex)
+    math::trsX SkeletonGetGlobalX(HumanSkeleton const* apSkeleton, SkeletonPose const *apSkeletonPose, int32_t aIndex)
     {
         math::trsX globalX = apSkeletonPose->m_X[aIndex];
         int parentIndex = apSkeleton->m_Node[aIndex].m_ParentId;
@@ -378,7 +378,7 @@ namespace skeleton
         return globalX;
     }
 
-    math::float3 SkeletonGetGlobalPosition(Skeleton const* apSkeleton, SkeletonPose const *apSkeletonPose, int32_t aIndex)
+    math::float3 SkeletonGetGlobalPosition(HumanSkeleton const* apSkeleton, SkeletonPose const *apSkeletonPose, int32_t aIndex)
     {
         math::float3 globalT = apSkeletonPose->m_X[aIndex].t;
         int parentIndex = apSkeleton->m_Node[aIndex].m_ParentId;
@@ -392,7 +392,7 @@ namespace skeleton
         return globalT;
     }
 
-    math::float4 SkeletonGetGlobalRotation(Skeleton const* apSkeleton, SkeletonPose const *apSkeletonPose, int32_t aIndex)
+    math::float4 SkeletonGetGlobalRotation(HumanSkeleton const* apSkeleton, SkeletonPose const *apSkeletonPose, int32_t aIndex)
     {
         math::float4 globalR = apSkeletonPose->m_X[aIndex].q;
         int parentIndex = apSkeleton->m_Node[aIndex].m_ParentId;
@@ -408,7 +408,7 @@ namespace skeleton
         return globalR;
     }
 
-    void SkeletonGetGlobalPositionAndRotation(Skeleton const* apSkeleton, SkeletonPose const *apSkeletonPose, int32_t aIndex, math::float3 &position, math::float4 &rotation)
+    void SkeletonGetGlobalPositionAndRotation(HumanSkeleton const* apSkeleton, SkeletonPose const *apSkeletonPose, int32_t aIndex, math::float3 &position, math::float4 &rotation)
     {
         position = apSkeletonPose->m_X[aIndex].t;
         rotation = apSkeletonPose->m_X[aIndex].q;
@@ -424,7 +424,7 @@ namespace skeleton
         }
     }
 
-    void SkeletonInverseTransformPosition(Skeleton const* apSkeleton, SkeletonPose const *apSkeletonPose, int32_t aIndex, math::float3& p)
+    void SkeletonInverseTransformPosition(HumanSkeleton const* apSkeleton, SkeletonPose const *apSkeletonPose, int32_t aIndex, math::float3& p)
     {
         if (aIndex > 0)
         {
@@ -434,7 +434,7 @@ namespace skeleton
         p = math::invMul(apSkeletonPose->m_X[aIndex], p);
     }
 
-    void SkeletonSetGlobalPosition(Skeleton const* apSkeleton, SkeletonPose *apSkeletonPose, int32_t aIndex, const math::float3& gt)
+    void SkeletonSetGlobalPosition(HumanSkeleton const* apSkeleton, SkeletonPose *apSkeletonPose, int32_t aIndex, const math::float3& gt)
     {
         math::float3 lt = gt;
 
@@ -446,7 +446,7 @@ namespace skeleton
         apSkeletonPose->m_X[aIndex].t = lt;
     }
 
-    void SkeletonInverseTransformRotation(Skeleton const* apSkeleton, SkeletonPose const *apSkeletonPose, int32_t aIndex, math::float4& r)
+    void SkeletonInverseTransformRotation(HumanSkeleton const* apSkeleton, SkeletonPose const *apSkeletonPose, int32_t aIndex, math::float4& r)
     {
         if (aIndex > 0)
         {
@@ -457,7 +457,7 @@ namespace skeleton
         r = math::scaleMulQuat(apSkeletonPose->m_X[aIndex].s, r);
     }
 
-    void SkeletonSetGlobalRotation(Skeleton const* apSkeleton, SkeletonPose *apSkeletonPose, int32_t aIndex, const math::float4& gr)
+    void SkeletonSetGlobalRotation(HumanSkeleton const* apSkeleton, SkeletonPose *apSkeletonPose, int32_t aIndex, const math::float4& gr)
     {
         math::float4 lr = gr;
 
@@ -469,7 +469,7 @@ namespace skeleton
         apSkeletonPose->m_X[aIndex].q = lr;
     }
 
-    void SkeletonInverseTransformScale(Skeleton const* apSkeleton, SkeletonPose const *apSkeletonPose, int32_t aIndex, math::float3& s)
+    void SkeletonInverseTransformScale(HumanSkeleton const* apSkeleton, SkeletonPose const *apSkeletonPose, int32_t aIndex, math::float3& s)
     {
         if (aIndex > 0)
         {
@@ -479,7 +479,7 @@ namespace skeleton
         s *= math::inverseScale(apSkeletonPose->m_X[aIndex].s);
     }
 
-    void SkeletonSetGlobalScale(Skeleton const* apSkeleton, SkeletonPose *apSkeletonPose, int32_t aIndex, const math::float3& gs)
+    void SkeletonSetGlobalScale(HumanSkeleton const* apSkeleton, SkeletonPose *apSkeletonPose, int32_t aIndex, const math::float3& gs)
     {
         math::float3 ls = gs;
 
@@ -491,25 +491,25 @@ namespace skeleton
         apSkeletonPose->m_X[aIndex].s = ls;
     }
 
-    math::float3 SkeletonGetDoF(Skeleton const* apSkeleton, SkeletonPose const *apSkeletonPose, int32_t aIndex)
+    math::float3 SkeletonGetDoF(HumanSkeleton const* apSkeleton, SkeletonPose const *apSkeletonPose, int32_t aIndex)
     {
         const int32_t axesIndex = apSkeleton->m_Node[aIndex].m_AxesId;
 
         return math::select(math::quat2Qtan(apSkeletonPose->m_X[aIndex].q), math::ToAxes(apSkeleton->m_AxesArray[axesIndex], apSkeletonPose->m_X[aIndex].q), math::int3(-(axesIndex != -1)));
     }
 
-    void SkeletonSetDoF(Skeleton const* apSkeleton, SkeletonPose * apSkeletonPose, math::float3 const& aDoF, int32_t aIndex)
+    void SkeletonSetDoF(HumanSkeleton const* apSkeleton, SkeletonPose * apSkeletonPose, math::float3 const& aDoF, int32_t aIndex)
     {
         const int32_t axesIndex = apSkeleton->m_Node[aIndex].m_AxesId;
         apSkeletonPose->m_X[aIndex].q = math::select(math::qtan2Quat(aDoF), math::FromAxes(apSkeleton->m_AxesArray[axesIndex], aDoF), math::int4(-(axesIndex != -1)));
     }
 
-    math::float3 SkeletonNodeEndPoint(Skeleton const *apSkeleton, int32_t aIndex, SkeletonPose const *apSkeletonPose)
+    math::float3 SkeletonNodeEndPoint(HumanSkeleton const *apSkeleton, int32_t aIndex, SkeletonPose const *apSkeletonPose)
     {
         return math::mul(apSkeletonPose->m_X[aIndex], math::quatXcos(apSkeleton->m_AxesArray[aIndex].m_PostQ) * math::float1(apSkeleton->m_AxesArray[aIndex].m_Length));
     }
 
-    void SkeletonAlign(skeleton::Skeleton const *apSkeleton, math::float4 const &arRefQ, math::float4 & arQ, int32_t aIndex)
+    void SkeletonAlign(skeleton::HumanSkeleton const *apSkeleton, math::float4 const &arRefQ, math::float4 & arQ, int32_t aIndex)
     {
         const int32_t axesIndex = apSkeleton->m_Node[aIndex].m_AxesId;
 
@@ -525,12 +525,12 @@ namespace skeleton
         }
     }
 
-    void SkeletonAlign(skeleton::Skeleton const *apSkeleton, skeleton::SkeletonPose const*apSkeletonPoseRef, skeleton::SkeletonPose *apSkeletonPose, int32_t aIndex)
+    void SkeletonAlign(skeleton::HumanSkeleton const *apSkeleton, skeleton::SkeletonPose const*apSkeletonPoseRef, skeleton::SkeletonPose *apSkeletonPose, int32_t aIndex)
     {
         SkeletonAlign(apSkeleton, apSkeletonPoseRef->m_X[aIndex].q, apSkeletonPose->m_X[aIndex].q, aIndex);
     }
 
-    void Skeleton2BoneAdjustLength(Skeleton const *apSkeleton, int32_t aIndexA, int32_t aIndexB, int32_t aIndexC, math::float3 const &aTarget, math::float1 const& aRatio, SkeletonPose *apSkeletonPose, SkeletonPose *apSkeletonPoseWorkspace)
+    void Skeleton2BoneAdjustLength(HumanSkeleton const *apSkeleton, int32_t aIndexA, int32_t aIndexB, int32_t aIndexC, math::float3 const &aTarget, math::float1 const& aRatio, SkeletonPose *apSkeletonPose, SkeletonPose *apSkeletonPoseWorkspace)
     {
         math::float3 vAB = apSkeletonPoseWorkspace->m_X[aIndexB].t - apSkeletonPoseWorkspace->m_X[aIndexA].t;
         math::float3 vBC = apSkeletonPoseWorkspace->m_X[aIndexC].t - apSkeletonPoseWorkspace->m_X[aIndexB].t;
@@ -558,7 +558,7 @@ namespace skeleton
         return math::acos(c);
     }
 
-    void Skeleton2BoneIK(Skeleton const *apSkeleton, int32_t aIndexA, int32_t aIndexB, int32_t aIndexC, math::float3 const &aTarget, float aWeight, SkeletonPose *apSkeletonPose, SkeletonPose *apSkeletonPoseWorkspace)
+    void Skeleton2BoneIK(HumanSkeleton const *apSkeleton, int32_t aIndexA, int32_t aIndexB, int32_t aIndexC, math::float3 const &aTarget, float aWeight, SkeletonPose *apSkeletonPose, SkeletonPose *apSkeletonPoseWorkspace)
     {
         math::float4 qA0 = apSkeletonPose->m_X[aIndexA].q;
         math::float4 qB0 = apSkeletonPose->m_X[aIndexB].q;
@@ -598,7 +598,7 @@ namespace skeleton
         apSkeletonPose->m_X[aIndexA].q = math::quatLerp(apSkeletonPose->m_X[aIndexA].q, qA0, math::powr(math::float1(1.f - aWeight), math::float1(4.f)));
     }
 
-    void Skeleton3BoneIK(Skeleton const *apSkeleton, int32_t aIndexA, int32_t aIndexB, int32_t aIndexC, math::float3 const &aTarget, float weight, SkeletonPose *apSkeletonPose, SkeletonPose *apSkeletonPoseWorkspace)
+    void Skeleton3BoneIK(HumanSkeleton const *apSkeleton, int32_t aIndexA, int32_t aIndexB, int32_t aIndexC, math::float3 const &aTarget, float weight, SkeletonPose *apSkeletonPose, SkeletonPose *apSkeletonPoseWorkspace)
     {
         if (weight > 0)
         {
@@ -631,7 +631,7 @@ namespace skeleton
         }
     }
 
-    void Skeleton2BoneAdjustHint(Skeleton const *apSkeleton, int32_t aIndexA, int32_t aIndexB, int32_t aIndexC, math::float3 const &aHint, float weight, SkeletonPose *apSkeletonPose, SkeletonPose *apSkeletonPoseWorkspace, float minLenRatio)
+    void Skeleton2BoneAdjustHint(HumanSkeleton const *apSkeleton, int32_t aIndexA, int32_t aIndexB, int32_t aIndexC, math::float3 const &aHint, float weight, SkeletonPose *apSkeletonPose, SkeletonPose *apSkeletonPoseWorkspace, float minLenRatio)
     {
         math::float3 A = apSkeletonPoseWorkspace->m_X[aIndexA].t;
         math::float3 B = apSkeletonPoseWorkspace->m_X[aIndexB].t;
@@ -679,7 +679,7 @@ namespace skeleton
         }
     }
 
-    void SetupAxes(skeleton::Skeleton *apSkeleton, skeleton::SkeletonPose const *apSkeletonPoseGlobal, math::SetupAxesInfo const& apSetupAxesInfo, int32_t aIndex, int32_t aAxisIndex, bool aLeft, float aLen)
+    void SetupAxes(skeleton::HumanSkeleton *apSkeleton, skeleton::SkeletonPose const *apSkeletonPoseGlobal, math::SetupAxesInfo const& apSetupAxesInfo, int32_t aIndex, int32_t aAxisIndex, bool aLeft, float aLen)
     {
         skeleton::Node &node = apSkeleton->m_Node[aIndex];
         int32_t parentIndex = node.m_ParentId;
@@ -759,7 +759,7 @@ namespace skeleton
         }
     }
 
-    static int GetSkeletonNodeDepth(human_anim::skeleton::Skeleton const& skeleton, uint32_t boneIndex)
+    static int GetSkeletonNodeDepth(human_anim::skeleton::HumanSkeleton const& skeleton, uint32_t boneIndex)
     {
         uint32_t parentIndex = skeleton.m_Node[boneIndex].m_ParentId;
         int depth = 0;
@@ -774,8 +774,8 @@ namespace skeleton
     // explicit template instantiations...
 
 
-    template SkeletonPoseT<math::affineX> *CreateSkeletonPose<math::affineX>(Skeleton const* apSkeleton, RuntimeBaseAllocator& arAlloc);
-    template SkeletonPoseT<math::trsX> *CreateSkeletonPose<math::trsX>(Skeleton const* apSkeleton, RuntimeBaseAllocator& arAlloc);
+    template SkeletonPoseT<math::affineX> *CreateSkeletonPose<math::affineX>(HumanSkeleton const* apSkeleton, RuntimeBaseAllocator& arAlloc);
+    template SkeletonPoseT<math::trsX> *CreateSkeletonPose<math::trsX>(HumanSkeleton const* apSkeleton, RuntimeBaseAllocator& arAlloc);
 
     template void DestroySkeletonPose<math::affineX>(SkeletonPoseT<math::affineX>* apSkeletonPose, RuntimeBaseAllocator& arAlloc);
     template void DestroySkeletonPose<math::trsX>(SkeletonPoseT<math::trsX>* apSkeletonPose, RuntimeBaseAllocator& arAlloc);
@@ -786,17 +786,17 @@ namespace skeleton
     template void SkeletonPoseCopy<math::trsX, math::trsX>(SkeletonPoseT<math::trsX> const* apFromPose, SkeletonPoseT<math::trsX>* apToPose, uint32_t aIndexCount, int32_t const *apIndexArray);
     template void SkeletonPoseCopy<math::trsX, math::affineX>(SkeletonPoseT<math::trsX> const* apFromPose, SkeletonPoseT<math::affineX>* apToPose, uint32_t aIndexCount, int32_t const *apIndexArray);
 
-    template void SkeletonPoseCopy<math::trsX, math::trsX>(Skeleton const* apFromSkeleton, SkeletonPoseT<math::trsX> const* apFromPose, Skeleton const* apToSkeleton, SkeletonPoseT<math::trsX>* apToPose);
-    template void SkeletonPoseCopy<math::trsX, math::affineX>(Skeleton const* apFromSkeleton, SkeletonPoseT<math::trsX> const* apFromPose, Skeleton const* apToSkeleton, SkeletonPoseT<math::affineX>* apToPose);
+    template void SkeletonPoseCopy<math::trsX, math::trsX>(HumanSkeleton const* apFromSkeleton, SkeletonPoseT<math::trsX> const* apFromPose, HumanSkeleton const* apToSkeleton, SkeletonPoseT<math::trsX>* apToPose);
+    template void SkeletonPoseCopy<math::trsX, math::affineX>(HumanSkeleton const* apFromSkeleton, SkeletonPoseT<math::trsX> const* apFromPose, HumanSkeleton const* apToSkeleton, SkeletonPoseT<math::affineX>* apToPose);
 
-    template void SkeletonPoseComputeGlobal<math::trsX>(Skeleton const* apSkeleton, SkeletonPoseT<math::trsX> const* apLocalPose, SkeletonPoseT<math::trsX>* apGlobalPose);
-    template void SkeletonPoseComputeGlobal<math::affineX>(Skeleton const* apSkeleton, SkeletonPoseT<math::affineX> const* apLocalPose, SkeletonPoseT<math::affineX>* apGlobalPose);
+    template void SkeletonPoseComputeGlobal<math::trsX>(HumanSkeleton const* apSkeleton, SkeletonPoseT<math::trsX> const* apLocalPose, SkeletonPoseT<math::trsX>* apGlobalPose);
+    template void SkeletonPoseComputeGlobal<math::affineX>(HumanSkeleton const* apSkeleton, SkeletonPoseT<math::affineX> const* apLocalPose, SkeletonPoseT<math::affineX>* apGlobalPose);
 
-    template void SkeletonPoseComputeGlobal<math::trsX>(Skeleton const* apSkeleton, SkeletonPoseT<math::trsX> const* apLocalPose, SkeletonPoseT<math::trsX>* apGlobalPose, int aIndex, int aStopIndex);
-    template void SkeletonPoseComputeGlobal<math::affineX>(Skeleton const* apSkeleton, SkeletonPoseT<math::affineX> const* apLocalPose, SkeletonPoseT<math::affineX>* apGlobalPose, int aIndex, int aStopIndex);
+    template void SkeletonPoseComputeGlobal<math::trsX>(HumanSkeleton const* apSkeleton, SkeletonPoseT<math::trsX> const* apLocalPose, SkeletonPoseT<math::trsX>* apGlobalPose, int aIndex, int aStopIndex);
+    template void SkeletonPoseComputeGlobal<math::affineX>(HumanSkeleton const* apSkeleton, SkeletonPoseT<math::affineX> const* apLocalPose, SkeletonPoseT<math::affineX>* apGlobalPose, int aIndex, int aStopIndex);
 
-    template void SkeletonPoseComputeLocal<math::trsX>(Skeleton const* apSkeleton, SkeletonPoseT<math::trsX> const* apGlobalPose, SkeletonPoseT<math::trsX>* apLocalPose);
+    template void SkeletonPoseComputeLocal<math::trsX>(HumanSkeleton const* apSkeleton, SkeletonPoseT<math::trsX> const* apGlobalPose, SkeletonPoseT<math::trsX>* apLocalPose);
 
-    template void SkeletonPoseComputeLocal<math::trsX>(Skeleton const* apSkeleton, SkeletonPoseT<math::trsX> const* apGlobalPose, SkeletonPoseT<math::trsX>* apLocalPose, int aIndex, int aStopIndex);
+    template void SkeletonPoseComputeLocal<math::trsX>(HumanSkeleton const* apSkeleton, SkeletonPoseT<math::trsX> const* apGlobalPose, SkeletonPoseT<math::trsX>* apLocalPose, int aIndex, int aStopIndex);
 }
 }

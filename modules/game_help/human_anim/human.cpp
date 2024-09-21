@@ -604,7 +604,7 @@ namespace human
         }
     }
 
-    Human* CreateHuman(skeleton::Skeleton *apSkeleton, skeleton::SkeletonPose *apSkeletonPose, RuntimeBaseAllocator& arAlloc)
+    Human* CreateHuman(skeleton::HumanSkeleton *apSkeleton, skeleton::SkeletonPose *apSkeletonPose, RuntimeBaseAllocator& arAlloc)
     {
         Human* human = memnew(Human);
 
@@ -627,11 +627,11 @@ namespace human
     {
         if (apHuman)
         {
-            human_anim::skeleton::DestroySkeleton(apHuman->m_Skeleton.Get(), arAlloc);
-            human_anim::skeleton::DestroySkeletonPose(apHuman->m_SkeletonPose.Get(), arAlloc);
+            human_anim::skeleton::DestroySkeleton(apHuman->m_Skeleton, arAlloc);
+            human_anim::skeleton::DestroySkeletonPose(apHuman->m_SkeletonPose, arAlloc);
 
-            human_anim::hand::DestroyHand(apHuman->m_LeftHand.Get(), arAlloc);
-            human_anim::hand::DestroyHand(apHuman->m_RightHand.Get(), arAlloc);
+            human_anim::hand::DestroyHand(apHuman->m_LeftHand, arAlloc);
+            human_anim::hand::DestroyHand(apHuman->m_RightHand, arAlloc);
 
             memdelete(apHuman);
         }
@@ -725,7 +725,7 @@ namespace human
         apHuman->m_RootX = HumanComputeRootXform(apHuman, apSkeletonPoseGlobal);
         apHuman->m_Scale = apHuman->m_RootX.t.y;
 
-        skeleton::SkeletonPoseComputeLocal(apHuman->m_Skeleton.Get(), apSkeletonPoseGlobal, apHuman->m_SkeletonPose.Get());
+        skeleton::SkeletonPoseComputeLocal(apHuman->m_Skeleton, apSkeletonPoseGlobal, apHuman->m_SkeletonPose);
 
         int32_t i;
 
@@ -886,7 +886,7 @@ namespace human
 
             if (skBoneIndex >= 0)
             {
-                skeleton::SetupAxes(apHuman->m_Skeleton.Get(), apSkeletonPoseGlobal, GetAxeInfo(i), skBoneIndex, skAxisBoneId, true, len);
+                skeleton::SetupAxes(apHuman->m_Skeleton, apSkeletonPoseGlobal, GetAxeInfo(i), skBoneIndex, skAxisBoneId, true, len);
             }
         }
     }
@@ -997,7 +997,7 @@ namespace human
                 math::float3(apHumanPose->m_DoFArray[Bone2DoF[i][2]], apHumanPose->m_DoFArray[Bone2DoF[i][1]], apHumanPose->m_DoFArray[Bone2DoF[i][0]]),
                 mask);
 
-            skeleton::SkeletonSetDoF(apHuman->m_Skeleton.Get(), apSkeletonPose, xyz, apHuman->m_HumanBoneIndex[i]);
+            skeleton::SkeletonSetDoF(apHuman->m_Skeleton, apSkeletonPose, xyz, apHuman->m_HumanBoneIndex[i]);
         }
     }
 
@@ -1011,12 +1011,12 @@ namespace human
 
         if (apHuman->m_HasLeftHand)
         {
-            hand::Hand2SkeletonPose(apHuman->m_LeftHand.Get(), apHuman->m_Skeleton.Get(), &apHumanPose->m_LeftHandPose, apSkeletonPose);
+            hand::Hand2SkeletonPose(apHuman->m_LeftHand, apHuman->m_Skeleton, &apHumanPose->m_LeftHandPose, apSkeletonPose);
         }
 
         if (apHuman->m_HasRightHand)
         {
-            hand::Hand2SkeletonPose(apHuman->m_RightHand.Get(), apHuman->m_Skeleton.Get(), &apHumanPose->m_RightHandPose, apSkeletonPose);
+            hand::Hand2SkeletonPose(apHuman->m_RightHand, apHuman->m_Skeleton, &apHumanPose->m_RightHandPose, apSkeletonPose);
         }
     }
 
@@ -1024,7 +1024,7 @@ namespace human
     {
         if (apHuman->m_HumanBoneIndex[i] != -1)
         {
-            const math::float3 xyz = skeleton::SkeletonGetDoF(apHuman->m_Skeleton.Get(), apSkeletonPose, apHuman->m_HumanBoneIndex[i]);
+            const math::float3 xyz = skeleton::SkeletonGetDoF(apHuman->m_Skeleton, apSkeletonPose, apHuman->m_HumanBoneIndex[i]);
 
             if (Bone2DoF[i][2] != -1)
                 apHumanPose->m_DoFArray[Bone2DoF[i][2]] = xyz.x;
@@ -1046,12 +1046,12 @@ namespace human
 
         if (apHuman->m_HasLeftHand)
         {
-            hand::Skeleton2HandPose(apHuman->m_LeftHand.Get(), apHuman->m_Skeleton.Get(), apSkeletonPose, &apHumanPose->m_LeftHandPose);
+            hand::Skeleton2HandPose(apHuman->m_LeftHand, apHuman->m_Skeleton, apSkeletonPose, &apHumanPose->m_LeftHandPose);
         }
 
         if (apHuman->m_HasRightHand)
         {
-            hand::Skeleton2HandPose(apHuman->m_RightHand.Get(), apHuman->m_Skeleton.Get(), apSkeletonPose, &apHumanPose->m_RightHandPose);
+            hand::Skeleton2HandPose(apHuman->m_RightHand, apHuman->m_Skeleton, apSkeletonPose, &apHumanPose->m_RightHandPose);
         }
     }
 
@@ -1278,7 +1278,7 @@ namespace human
     {
         int32_t index = apHuman->m_HumanBoneIndex[s_HumanGoalInfo[goalIndex].m_Index];
 
-        math::trsX goalX = skeleton::SkeletonGetGlobalX(apHuman->m_Skeleton.Get(), apSkeletonPoseLocal, index);
+        math::trsX goalX = skeleton::SkeletonGetGlobalX(apHuman->m_Skeleton, apSkeletonPoseLocal, index);
         goalX.q = AddAxis(apHuman, index, goalX.q);
         goalX.s = math::float3(1.f);
 
@@ -1288,7 +1288,7 @@ namespace human
     math::float4 HumanGetGoalRotation(Human const *apHuman, skeleton::SkeletonPose const *apSkeletonPoseLocal, Goal goalIndex)
     {
         int32_t index = apHuman->m_HumanBoneIndex[s_HumanGoalInfo[goalIndex].m_Index];
-        return AddAxis(apHuman, index, skeleton::SkeletonGetGlobalRotation(apHuman->m_Skeleton.Get(), apSkeletonPoseLocal, index));
+        return AddAxis(apHuman, index, skeleton::SkeletonGetGlobalRotation(apHuman->m_Skeleton, apSkeletonPoseLocal, index));
     }
 
     void HumanPoseClear(HumanPose& arPose)
@@ -1740,7 +1740,7 @@ namespace human
         math::Axes pAxes = apHuman->m_Skeleton->m_AxesArray[apHuman->m_Skeleton->m_Node[pNodeIndex].m_AxesId];
 
         apSkeletonPoseWs->m_X[aNodeIndex].q = math::quatIdentity();
-        skeleton::SkeletonPoseComputeGlobalQ(apHuman->m_Skeleton.Get(), apSkeletonPose, apSkeletonPoseWs, cNodeIndex, pNodeIndex);
+        skeleton::SkeletonPoseComputeGlobalQ(apHuman->m_Skeleton, apSkeletonPose, apSkeletonPoseWs, cNodeIndex, pNodeIndex);
 
         math::float4 pq = apSkeletonPose->m_X[pNodeIndex].q;
         math::float4 cqg = apSkeletonPoseWs->m_X[cNodeIndex].q;
@@ -1750,19 +1750,19 @@ namespace human
 
         apSkeletonPose->m_X[pNodeIndex].q = math::FromAxes(pAxes, pxyz);
 
-        skeleton::SkeletonAlign(apHuman->m_Skeleton.Get(), pq, apSkeletonPose->m_X[pNodeIndex].q, pNodeIndex);
+        skeleton::SkeletonAlign(apHuman->m_Skeleton, pq, apSkeletonPose->m_X[pNodeIndex].q, pNodeIndex);
 
-        skeleton::SkeletonPoseComputeGlobalQ(apHuman->m_Skeleton.Get(), apSkeletonPose, apSkeletonPoseWs, cNodeIndex, pNodeIndex);
+        skeleton::SkeletonPoseComputeGlobalQ(apHuman->m_Skeleton, apSkeletonPose, apSkeletonPoseWs, cNodeIndex, pNodeIndex);
 
         apSkeletonPoseWs->m_X[cNodeIndex].q = cqg;
 
-        skeleton::SkeletonPoseComputeLocalQ(apHuman->m_Skeleton.Get(), apSkeletonPoseWs, apSkeletonPose, cNodeIndex, cNodeIndex);
+        skeleton::SkeletonPoseComputeLocalQ(apHuman->m_Skeleton, apSkeletonPoseWs, apSkeletonPose, cNodeIndex, cNodeIndex);
     }
 
     void HumanFixEndPointsSkeletonPose(Human const *apHuman, skeleton::SkeletonPose const*apSkeletonPoseRef, HumanPose *apHumanPose, skeleton::SkeletonPose *apSkeletonPoseGbl, skeleton::SkeletonPose *apSkeletonPoseLcl, skeleton::SkeletonPose *apSkeletonPoseWs, int32_t cIndex)
     {
         apSkeletonPoseGbl->m_X[apHuman->m_HumanBoneIndex[cIndex]].q = apSkeletonPoseRef->m_X[apHuman->m_HumanBoneIndex[cIndex]].q;
-        skeleton::SkeletonPoseComputeLocalQ(apHuman->m_Skeleton.Get(), apSkeletonPoseGbl, apSkeletonPoseLcl, apHuman->m_HumanBoneIndex[cIndex], apHuman->m_HumanBoneIndex[cIndex]);
+        skeleton::SkeletonPoseComputeLocalQ(apHuman->m_Skeleton, apSkeletonPoseGbl, apSkeletonPoseLcl, apHuman->m_HumanBoneIndex[cIndex], apHuman->m_HumanBoneIndex[cIndex]);
     }
 
     void HumanAlignSkeletonPose(Human const *apHuman, skeleton::SkeletonPose const*apSkeletonPoseRef, HumanPose *apHumanPose, skeleton::SkeletonPose *apSkeletonPoseGbl, skeleton::SkeletonPose *apSkeletonPoseLcl, int32_t cIndex, int32_t pIndex)
@@ -1770,9 +1770,9 @@ namespace human
         Skeleton2HumanPose(apHuman, apSkeletonPoseLcl, apHumanPose, cIndex);
         Human2SkeletonPose(apHuman, apHumanPose, apSkeletonPoseLcl, cIndex);
 
-        skeleton::SkeletonPoseComputeGlobalQ(apHuman->m_Skeleton.Get(), apSkeletonPoseLcl, apSkeletonPoseGbl, apHuman->m_HumanBoneIndex[cIndex], apHuman->m_HumanBoneIndex[pIndex]);
-        skeleton::SkeletonAlign(apHuman->m_Skeleton.Get(), apSkeletonPoseRef, apSkeletonPoseGbl, apHuman->m_HumanBoneIndex[cIndex]);
-        skeleton::SkeletonPoseComputeLocalQ(apHuman->m_Skeleton.Get(), apSkeletonPoseGbl, apSkeletonPoseLcl, apHuman->m_HumanBoneIndex[cIndex], apHuman->m_HumanBoneIndex[pIndex]);
+        skeleton::SkeletonPoseComputeGlobalQ(apHuman->m_Skeleton, apSkeletonPoseLcl, apSkeletonPoseGbl, apHuman->m_HumanBoneIndex[cIndex], apHuman->m_HumanBoneIndex[pIndex]);
+        skeleton::SkeletonAlign(apHuman->m_Skeleton, apSkeletonPoseRef, apSkeletonPoseGbl, apHuman->m_HumanBoneIndex[cIndex]);
+        skeleton::SkeletonPoseComputeLocalQ(apHuman->m_Skeleton, apSkeletonPoseGbl, apSkeletonPoseLcl, apHuman->m_HumanBoneIndex[cIndex], apHuman->m_HumanBoneIndex[pIndex]);
     }
 
     void Human2LimbAlign(Human const *apHuman, skeleton::SkeletonPose const*apSkeletonPoseRef, skeleton::SkeletonPose *apSkeletonPoseGbl, skeleton::SkeletonPose *apSkeletonPoseLcl, int32_t eIndex, int32_t pIndex)
@@ -1783,8 +1783,8 @@ namespace human
         math::float4 q = math::quatArcRotate(end - src, goal - src);
 
         apSkeletonPoseGbl->m_X[apHuman->m_HumanBoneIndex[pIndex]].q = math::quatMul(q, apSkeletonPoseGbl->m_X[apHuman->m_HumanBoneIndex[pIndex]].q);
-        skeleton::SkeletonPoseComputeLocal(apHuman->m_Skeleton.Get(), apSkeletonPoseGbl, apSkeletonPoseLcl, apHuman->m_HumanBoneIndex[pIndex], apHuman->m_HumanBoneIndex[pIndex]);
-        skeleton::SkeletonPoseComputeGlobal(apHuman->m_Skeleton.Get(), apSkeletonPoseLcl, apSkeletonPoseGbl, apHuman->m_HumanBoneIndex[eIndex], apHuman->m_HumanBoneIndex[pIndex]);
+        skeleton::SkeletonPoseComputeLocal(apHuman->m_Skeleton, apSkeletonPoseGbl, apSkeletonPoseLcl, apHuman->m_HumanBoneIndex[pIndex], apHuman->m_HumanBoneIndex[pIndex]);
+        skeleton::SkeletonPoseComputeGlobal(apHuman->m_Skeleton, apSkeletonPoseLcl, apSkeletonPoseGbl, apHuman->m_HumanBoneIndex[eIndex], apHuman->m_HumanBoneIndex[pIndex]);
     }
 
     void HumanFixMidDoF(Human const *apHuman, 
@@ -1809,7 +1809,7 @@ namespace human
         apSkeletonPoseWs->m_X[aNodeIndex].q = math::quatIdentity();
 
         // 计算子骨骼节点的全局旋转四元数（从局部姿态到全局姿态）
-        skeleton::SkeletonPoseComputeGlobalQ(apHuman->m_Skeleton.Get(), apSkeletonPose, apSkeletonPoseWs, cNodeIndex, pNodeIndex);
+        skeleton::SkeletonPoseComputeGlobalQ(apHuman->m_Skeleton, apSkeletonPose, apSkeletonPoseWs, cNodeIndex, pNodeIndex);
 
         // 获取父骨骼的当前局部旋转四元数和子骨骼的全局旋转四元数
         math::float4 pq = apSkeletonPose->m_X[pNodeIndex].q;
@@ -1850,21 +1850,21 @@ namespace human
                 apSkeletonPose->m_X[cNodeIndex].q = math::AxesUnproject(cAxes, cql);
 
                 // 重新计算子骨骼和父骨骼的全局旋转四元数
-                skeleton::SkeletonPoseComputeGlobalQ(apHuman->m_Skeleton.Get(), apSkeletonPose, apSkeletonPoseWs, cNodeIndex, cNodeIndex);
+                skeleton::SkeletonPoseComputeGlobalQ(apHuman->m_Skeleton, apSkeletonPose, apSkeletonPoseWs, cNodeIndex, cNodeIndex);
 
                 // 计算旋转差异并应用于父骨骼，使父骨骼对齐子骨骼
                 math::float4 qdiff = math::quatMul(cqg, math::quatConj(apSkeletonPoseWs->m_X[cNodeIndex].q));
                 apSkeletonPose->m_X[pNodeIndex].q = math::normalize(math::quatMul(qdiff, apSkeletonPose->m_X[pNodeIndex].q));
 
                 // 确保父骨骼的旋转四元数与初始旋转对齐
-                skeleton::SkeletonAlign(apHuman->m_Skeleton.Get(), pq, apSkeletonPose->m_X[pNodeIndex].q, pNodeIndex);
+                skeleton::SkeletonAlign(apHuman->m_Skeleton, pq, apSkeletonPose->m_X[pNodeIndex].q, pNodeIndex);
 
                 // 再次计算全局姿态并保持子骨骼的全局旋转不变
-                skeleton::SkeletonPoseComputeGlobalQ(apHuman->m_Skeleton.Get(), apSkeletonPose, apSkeletonPoseWs, cNodeIndex, pNodeIndex);
+                skeleton::SkeletonPoseComputeGlobalQ(apHuman->m_Skeleton, apSkeletonPose, apSkeletonPoseWs, cNodeIndex, pNodeIndex);
                 apSkeletonPoseWs->m_X[cNodeIndex].q = cqg;
 
                 // 计算子骨骼和父骨骼的局部旋转
-                skeleton::SkeletonPoseComputeLocalQ(apHuman->m_Skeleton.Get(), apSkeletonPoseWs, apSkeletonPose, cNodeIndex, cNodeIndex);
+                skeleton::SkeletonPoseComputeLocalQ(apHuman->m_Skeleton, apSkeletonPoseWs, apSkeletonPose, cNodeIndex, cNodeIndex);
 
                 // 记录当前误差并进入下一次迭代
                 prevError = localError;
@@ -1897,7 +1897,7 @@ namespace human
         apSkeletonPoseWs->m_X[aNodeIndex].q = math::quatIdentity();
 
         // 计算子骨骼节点的全局旋转四元数（从局部姿态到全局姿态）
-        skeleton::SkeletonPoseComputeGlobalQ(apHuman->m_Skeleton.Get(), apSkeletonPose, apSkeletonPoseWs, cNodeIndex, pNodeIndex);
+        skeleton::SkeletonPoseComputeGlobalQ(apHuman->m_Skeleton, apSkeletonPose, apSkeletonPoseWs, cNodeIndex, pNodeIndex);
 
         // 获取父骨骼的当前局部旋转四元数和子骨骼的全局旋转四元数
         math::float4 pq = apSkeletonPose->m_X[pNodeIndex].q;
@@ -1937,7 +1937,7 @@ namespace human
                     apSkeletonPose->m_X[cNodeIndex].q = cql0;
 
                     // 重新计算子骨骼的全局旋转
-                    skeleton::SkeletonPoseComputeGlobalQ(apHuman->m_Skeleton.Get(), apSkeletonPose, apSkeletonPoseWs, cNodeIndex, pNodeIndex);
+                    skeleton::SkeletonPoseComputeGlobalQ(apHuman->m_Skeleton, apSkeletonPose, apSkeletonPoseWs, cNodeIndex, pNodeIndex);
                 }
                 else
                 {
@@ -1951,7 +1951,7 @@ namespace human
                     apSkeletonPose->m_X[cNodeIndex].q = math::AxesUnproject(cAxes, cql);
 
                     // 重新计算子骨骼的全局旋转
-                    skeleton::SkeletonPoseComputeGlobalQ(apHuman->m_Skeleton.Get(), apSkeletonPose, apSkeletonPoseWs, cNodeIndex, cNodeIndex);
+                    skeleton::SkeletonPoseComputeGlobalQ(apHuman->m_Skeleton, apSkeletonPose, apSkeletonPoseWs, cNodeIndex, cNodeIndex);
                 }
 
                 // 计算旋转差异并应用于父骨骼，使父骨骼对齐子骨骼
@@ -1959,14 +1959,14 @@ namespace human
                 apSkeletonPose->m_X[pNodeIndex].q = math::normalize(math::quatMul(qdiff, apSkeletonPose->m_X[pNodeIndex].q));
 
                 // 确保父骨骼的旋转四元数与初始旋转对齐
-                skeleton::SkeletonAlign(apHuman->m_Skeleton.Get(), pq, apSkeletonPose->m_X[pNodeIndex].q, pNodeIndex);
+                skeleton::SkeletonAlign(apHuman->m_Skeleton, pq, apSkeletonPose->m_X[pNodeIndex].q, pNodeIndex);
 
                 // 再次计算全局姿态并保持子骨骼的全局旋转不变
-                skeleton::SkeletonPoseComputeGlobalQ(apHuman->m_Skeleton.Get(), apSkeletonPose, apSkeletonPoseWs, cNodeIndex, pNodeIndex);
+                skeleton::SkeletonPoseComputeGlobalQ(apHuman->m_Skeleton, apSkeletonPose, apSkeletonPoseWs, cNodeIndex, pNodeIndex);
                 apSkeletonPoseWs->m_X[cNodeIndex].q = cqg;
 
                 // 计算子骨骼的局部旋转
-                skeleton::SkeletonPoseComputeLocalQ(apHuman->m_Skeleton.Get(), apSkeletonPoseWs, apSkeletonPose, cNodeIndex, cNodeIndex);
+                skeleton::SkeletonPoseComputeLocalQ(apHuman->m_Skeleton, apSkeletonPoseWs, apSkeletonPose, cNodeIndex, cNodeIndex);
 
                 // 记录当前误差并进入下一次迭代
                 prevError = localError;
@@ -1990,10 +1990,10 @@ namespace human
         math::float3 *apTDoFBase)
     {
         // 获取 Human 的骨架结构
-        skeleton::Skeleton const *skeleton = apHuman->m_Skeleton.Get();
+        skeleton::HumanSkeleton const *skeleton = apHuman->m_Skeleton;
 
         // 计算全局骨架姿态，基于 Human 中的局部姿态，存储在 apSkeletonPoseGbl
-        skeleton::SkeletonPoseComputeGlobal(skeleton, apHuman->m_SkeletonPose.Get(), apSkeletonPoseGbl);
+        skeleton::SkeletonPoseComputeGlobal(skeleton, apHuman->m_SkeletonPose, apSkeletonPoseGbl);
 
         // 遍历每一个 TDoF（自由度），初始化 apTDoFBase
         for (int tDoFIter = 0; tDoFIter < kLastTDoF; tDoFIter++)
@@ -2047,7 +2047,7 @@ namespace human
         if (skBoneIndex != -1 && skBoneParentIndex != -1)
         {
             // 获取骨架
-            skeleton::Skeleton const *skeleton = apHuman->m_Skeleton.Get();
+            skeleton::HumanSkeleton const *skeleton = apHuman->m_Skeleton;
 
             // 计算父骨骼的全局姿态
             int skParentIndex = skeleton->m_Node[skBoneIndex].m_ParentId;
@@ -2085,7 +2085,7 @@ namespace human
             // 确认骨骼和父骨骼存在
             if (skIndex != -1 && skParentIndex != -1)
             {
-                skeleton::Skeleton const *skeleton = apHuman->m_Skeleton.Get();
+                skeleton::HumanSkeleton const *skeleton = apHuman->m_Skeleton;
 
                 // 将父骨骼的全局姿态初始化为单位矩阵
                 apSkeletonPoseWs->m_X[skeleton->m_Node[skParentIndex].m_ParentId] = math::trsIdentity();
@@ -2125,7 +2125,7 @@ namespace human
         const math::float1 scale(apHuman->m_Scale);
 
         // 计算全局骨骼姿态
-        skeleton::SkeletonPoseComputeGlobal(apHuman->m_Skeleton.Get(), apSkeletonPose, apSkeletonPoseRef);
+        skeleton::SkeletonPoseComputeGlobal(apHuman->m_Skeleton, apSkeletonPose, apSkeletonPoseRef);
         // 拷贝骨骼姿态
         skeleton::SkeletonPoseCopy(apSkeletonPoseRef, apSkeletonPoseGbl);
         skeleton::SkeletonPoseCopy(apSkeletonPose, apSkeletonPoseLcl);
@@ -2141,7 +2141,7 @@ namespace human
         }
 
         // 计算局部旋转
-        skeleton::SkeletonPoseComputeLocalQ(apHuman->m_Skeleton.Get(), apSkeletonPoseGbl, apSkeletonPoseLcl);
+        skeleton::SkeletonPoseComputeLocalQ(apHuman->m_Skeleton, apSkeletonPoseGbl, apSkeletonPoseLcl);
 
         // 如果有额外的自由度（DoF），处理自由度调整
         if (apHuman->m_HasTDoF && tDoFBase)
@@ -2268,7 +2268,7 @@ namespace human
         //
         // 转换肌肉空间到基础姿态
         //
-        skeleton::SkeletonPoseCopy(apHuman->m_SkeletonPose.Get(), apSkeletonPose);
+        skeleton::SkeletonPoseCopy(apHuman->m_SkeletonPose, apSkeletonPose);
         if (adjustMissingBones)
             HumanPoseAdjustForMissingBones(apHuman, apHumanPoseOut);
         Human2SkeletonPose(apHuman, apHumanPoseOut, apSkeletonPose);
@@ -2276,11 +2276,11 @@ namespace human
         // 如果有额外的自由度（TDoF），处理这些自由度
         if (apHuman->m_HasTDoF)
         {
-            RetargetToTDoF(apHuman, apHumanPoseOut, apHuman->m_SkeletonPose.Get(), apSkeletonPose, apSkeletonPoseWs);
+            RetargetToTDoF(apHuman, apHumanPoseOut, apHuman->m_SkeletonPose, apSkeletonPose, apSkeletonPoseWs);
         }
 
         // 计算全局骨骼姿态
-        skeleton::SkeletonPoseComputeGlobal(apHuman->m_Skeleton.Get(), apSkeletonPose, apSkeletonPoseWs);
+        skeleton::SkeletonPoseComputeGlobal(apHuman->m_Skeleton, apSkeletonPose, apSkeletonPoseWs);
 
         ///////////////////////////////////////////////////////
         //
@@ -2305,7 +2305,7 @@ namespace human
             // 处理额外的自由度
             if (apHuman->m_HasTDoF)
             {
-                RetargetToTDoF(apHuman, apHumanPoseOut, apHuman->m_SkeletonPose.Get(), apSkeletonPose, apSkeletonPoseWs);
+                RetargetToTDoF(apHuman, apHumanPoseOut, apHuman->m_SkeletonPose, apSkeletonPose, apSkeletonPoseWs);
             }
         }
 

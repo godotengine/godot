@@ -16,7 +16,7 @@ namespace human_anim
 {
 namespace skeleton
 {
-    struct Skeleton;
+    struct HumanSkeleton;
     struct SetupAxesInfo;
 
     template<typename transformType> struct SkeletonPoseT;
@@ -92,20 +92,20 @@ namespace hand
     Hand* CreateHand(RuntimeBaseAllocator& alloc);
     void DestroyHand(Hand *hand, RuntimeBaseAllocator& alloc);
 
-    void HandSetupAxes(Hand const *hand, skeleton::SkeletonPose const *skeletonPose, skeleton::Skeleton *skeleton, bool aLeft);
-    void HandCopyAxes(Hand const *srcHand, skeleton::Skeleton const *srcSkeleton, Hand const *hand, skeleton::Skeleton *skeleton);
+    void HandSetupAxes(Hand const *hand, skeleton::SkeletonPose const *skeletonPose, skeleton::HumanSkeleton *skeleton, bool aLeft);
+    void HandCopyAxes(Hand const *srcHand, skeleton::HumanSkeleton const *srcSkeleton, Hand const *hand, skeleton::HumanSkeleton *skeleton);
     void HandPoseCopy(HandPose const *handPoseSrc, HandPose *handPoseDst);
 
     // Retargeting function set
     void HandPoseSolve(HandPose const* handPose, HandPose* handPoseOut);
-    void Hand2SkeletonPose(Hand const *hand, skeleton::Skeleton const *skeleton, HandPose const *handPose, skeleton::SkeletonPose *skeletonPose);
-    void Skeleton2HandPose(Hand const *hand, skeleton::Skeleton const *skeleton, skeleton::SkeletonPose const *skeletonPose, HandPose *handPose, float offset = 0.0f);
+    void Hand2SkeletonPose(Hand const *hand, skeleton::HumanSkeleton const *skeleton, HandPose const *handPose, skeleton::SkeletonPose *skeletonPose);
+    void Skeleton2HandPose(Hand const *hand, skeleton::HumanSkeleton const *skeleton, skeleton::SkeletonPose const *skeletonPose, HandPose *handPose, float offset = 0.0f);
     // IK
     void FingerLengths(Hand const *hand, float *lengthArray);
     //  Fingers IK related functions will be re-activated soon (early 2016) for work done on real-time mocap
     //  void FingerBaseFromPose(Hand const *hand,skeleton::SkeletonPose const *skeletonPose,math::float4 *positionArray);
-    //  void FingerTipsFromPose(Hand const *hand,skeleton::Skeleton const *skeleton, skeleton::SkeletonPose const *skeletonPose,math::float4 *positionArray);
-    //  void FingersIKSolve(Hand const *hand, skeleton::Skeleton const *skeleton,math::float4 const *positionArray, float *apWeightArray, skeleton::SkeletonPose *skeletonPose, skeleton::SkeletonPose *skeletonPoseWorkspace);
+    //  void FingerTipsFromPose(Hand const *hand,skeleton::HumanSkeleton const *skeleton, skeleton::SkeletonPose const *skeletonPose,math::float4 *positionArray);
+    //  void FingersIKSolve(Hand const *hand, skeleton::HumanSkeleton const *skeleton,math::float4 const *positionArray, float *apWeightArray, skeleton::SkeletonPose *skeletonPose, skeleton::SkeletonPose *skeletonPoseWorkspace);
 
     math::SetupAxesInfo const& GetAxeInfo(uint32_t index);
 }// namespace hand
