@@ -675,6 +675,7 @@ static const GLenum target_from_type[ShaderLanguage::TYPE_MAX] = {
 	GL_TEXTURE_3D, // TYPE_USAMPLER3D,
 	GL_TEXTURE_CUBE_MAP, // TYPE_SAMPLERCUBE,
 	GL_TEXTURE_CUBE_MAP, // TYPE_SAMPLERCUBEARRAY,
+	_GL_TEXTURE_EXTERNAL_OES, // TYPE_SAMPLEREXT
 	GL_TEXTURE_2D, // TYPE_STRUCT
 };
 
@@ -945,6 +946,9 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 				} break;
 				case ShaderLanguage::TYPE_SAMPLERCUBEARRAY: {
 					ERR_PRINT_ONCE("Type: SamplerCubeArray not supported in GL Compatibility rendering backend, please use another type.");
+				} break;
+				case ShaderLanguage::TYPE_SAMPLEREXT: {
+					gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_EXT);
 				} break;
 
 				case ShaderLanguage::TYPE_ISAMPLER3D:
@@ -1949,6 +1953,7 @@ void MaterialStorage::global_shader_parameters_load_settings(bool p_load_texture
 				"sampler2DArray",
 				"sampler3D",
 				"samplerCube",
+				"samplerExternalOES"
 			};
 
 			RS::GlobalShaderParameterType gvtype = RS::GLOBAL_VAR_TYPE_MAX;
@@ -2661,7 +2666,11 @@ static void bind_uniforms_generic(const Vector<RID> &p_textures, const Vector<Sh
 		const ShaderCompiler::GeneratedCode::Texture &texture_uniform = texture_uniforms[texture_uniform_index];
 		if (texture) {
 			glActiveTexture(GL_TEXTURE0 + texture_offset + ti);
-			glBindTexture(target_from_type[texture_uniform.type], texture->tex_id);
+			GLenum target = target_from_type[texture_uniform.type];
+			if (target == _GL_TEXTURE_EXTERNAL_OES && !GLES3::Config::get_singleton()->external_texture_supported) {
+				target = GL_TEXTURE_2D;
+			}
+			glBindTexture(target, texture->tex_id);
 			if (texture->render_target) {
 				texture->render_target->used_in_frame = true;
 			}

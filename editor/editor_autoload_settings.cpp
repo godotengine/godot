@@ -88,14 +88,9 @@ void EditorAutoloadSettings::_notification(int p_what) {
 }
 
 bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, String *r_error) {
-	if (!p_name.is_valid_ascii_identifier()) {
+	if (!p_name.is_valid_unicode_identifier()) {
 		if (r_error) {
-			*r_error = TTR("Invalid name.") + " ";
-			if (p_name.size() > 0 && p_name.left(1).is_numeric()) {
-				*r_error += TTR("Cannot begin with a digit.");
-			} else {
-				*r_error += TTR("Valid characters:") + " a-z, A-Z, 0-9 or _";
-			}
+			*r_error = TTR("Invalid name.") + " " + TTR("Must be a valid Unicode identifier.");
 		}
 
 		return false;

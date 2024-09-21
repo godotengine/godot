@@ -1087,6 +1087,9 @@ void TextureStorage::texture_3d_initialize(RID p_texture, Image::Format p_format
 	texture_owner.initialize_rid(p_texture, texture);
 }
 
+void TextureStorage::texture_external_initialize(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) {
+}
+
 void TextureStorage::texture_proxy_initialize(RID p_texture, RID p_base) {
 	Texture *tex = texture_owner.get_or_null(p_base);
 	ERR_FAIL_NULL(tex);
@@ -1359,6 +1362,9 @@ void TextureStorage::texture_3d_update(RID p_texture, const Vector<Ref<Image>> &
 	}
 
 	RD::get_singleton()->texture_update(tex->rd_texture, 0, all_data);
+}
+
+void TextureStorage::texture_external_update(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) {
 }
 
 void TextureStorage::texture_proxy_update(RID p_texture, RID p_proxy_to) {

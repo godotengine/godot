@@ -530,7 +530,7 @@ bool EditorHelpSearch::Runner::_phase_fill_member_items_init() {
 	return true;
 }
 
-TreeItem *EditorHelpSearch::Runner::_create_category_item(TreeItem *p_parent, const String &p_class, const StringName &p_icon, const String &p_metatype, const String &p_text) {
+TreeItem *EditorHelpSearch::Runner::_create_category_item(TreeItem *p_parent, const String &p_class, const StringName &p_icon, const String &p_text, const String &p_metatype) {
 	const String item_meta = "class_" + p_metatype + ":" + p_class;
 
 	TreeItem *item = nullptr;
@@ -620,7 +620,7 @@ bool EditorHelpSearch::Runner::_phase_fill_member_items() {
 		if ((search_flags & SEARCH_PROPERTIES) && !class_doc->properties.is_empty()) {
 			TreeItem *parent_item = item;
 			if (search_all) {
-				parent_item = _create_category_item(parent_item, class_doc->name, SNAME("MemberProperty"), TTRC("Prtoperties"), "propertiess");
+				parent_item = _create_category_item(parent_item, class_doc->name, SNAME("MemberProperty"), TTRC("Properties"), "properties");
 			}
 			for (const DocData::PropertyDoc &property_doc : class_doc->properties) {
 				_create_property_item(parent_item, class_doc, &property_doc);
