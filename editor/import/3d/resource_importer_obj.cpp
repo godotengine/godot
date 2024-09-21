@@ -246,6 +246,8 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 	bool smoothing = true;
 	const uint32_t no_smoothing_smooth_group = (uint32_t)-1;
 
+	bool uses_uvs = false;
+
 	while (true) {
 		String l = f->get_line().strip_edges();
 		while (l.length() && l[l.length() - 1] == '\\') {
@@ -320,26 +322,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 						idx = 1 ^ idx;
 					}
 
-					if (face[idx].size() == 3) {
-						int norm = face[idx][2].to_int() - 1;
-						if (norm < 0) {
-							norm += normals.size() + 1;
-						}
-						ERR_FAIL_INDEX_V(norm, normals.size(), ERR_FILE_CORRUPT);
-						surf_tool->set_normal(normals[norm]);
-						if (generate_tangents && uvs.is_empty()) {
-							// We can't generate tangents without UVs, so create dummy tangents.
-							Vector3 tan = Vector3(normals[norm].z, -normals[norm].x, normals[norm].y).cross(normals[norm].normalized()).normalized();
-							surf_tool->set_tangent(Plane(tan.x, tan.y, tan.z, 1.0));
-						}
-					} else {
-						// No normals, use a dummy tangent since normals and tangents will be generated.
-						if (generate_tangents && uvs.is_empty()) {
-							// We can't generate tangents without UVs, so create dummy tangents.
-							surf_tool->set_tangent(Plane(1.0, 0.0, 0.0, 1.0));
-						}
-					}
-
+					// Check UVs before faces as we may need to generate dummy tangents if there are no UVs.
 					if (face[idx].size() >= 2 && !face[idx][1].is_empty()) {
 						int uv = face[idx][1].to_int() - 1;
 						if (uv < 0) {
@@ -347,6 +330,27 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 						}
 						ERR_FAIL_INDEX_V(uv, uvs.size(), ERR_FILE_CORRUPT);
 						surf_tool->set_uv(uvs[uv]);
+						uses_uvs = true;
+					}
+
+					if (face[idx].size() == 3) {
+						int norm = face[idx][2].to_int() - 1;
+						if (norm < 0) {
+							norm += normals.size() + 1;
+						}
+						ERR_FAIL_INDEX_V(norm, normals.size(), ERR_FILE_CORRUPT);
+						surf_tool->set_normal(normals[norm]);
+						if (generate_tangents && !uses_uvs) {
+							// We can't generate tangents without UVs, so create dummy tangents.
+							Vector3 tan = Vector3(normals[norm].z, -normals[norm].x, normals[norm].y).cross(normals[norm].normalized()).normalized();
+							surf_tool->set_tangent(Plane(tan.x, tan.y, tan.z, 1.0));
+						}
+					} else {
+						// No normals, use a dummy tangent since normals and tangents will be generated.
+						if (generate_tangents && !uses_uvs) {
+							// We can't generate tangents without UVs, so create dummy tangents.
+							surf_tool->set_tangent(Plane(1.0, 0.0, 0.0, 1.0));
+						}
 					}
 
 					int vtx = face[idx][0].to_int() - 1;
@@ -407,7 +411,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 					surf_tool->generate_normals();
 				}
 
-				if (generate_tangents && uvs.size()) {
+				if (generate_tangents && uses_uvs) {
 					surf_tool->generate_tangents();
 				}
 
@@ -426,10 +430,11 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 
 				Array array = surf_tool->commit_to_arrays();
 
-				if (mesh_flags & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES && generate_tangents) {
-					// Compression is enabled, so let's validate that the normals and tangents are correct.
+				if (mesh_flags & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES && generate_tangents && uses_uvs) {
+					// Compression is enabled, so let's validate that the normals and generated tangents are correct.
 					Vector<Vector3> norms = array[Mesh::ARRAY_NORMAL];
 					Vector<float> tangents = array[Mesh::ARRAY_TANGENT];
+					ERR_FAIL_COND_V(tangents.is_empty(), ERR_FILE_CORRUPT);
 					for (int vert = 0; vert < norms.size(); vert++) {
 						Vector3 tan = Vector3(tangents[vert * 4 + 0], tangents[vert * 4 + 1], tangents[vert * 4 + 2]);
 						if (abs(tan.dot(norms[vert])) > 0.0001) {
@@ -454,6 +459,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 
 				surf_tool->clear();
 				surf_tool->begin(Mesh::PRIMITIVE_TRIANGLES);
+				uses_uvs = false;
 			}
 
 			if (l.begins_with("o ") || f->eof_reached()) {

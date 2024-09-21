@@ -58,7 +58,7 @@ Size2 ScrollContainer::get_minimum_size() const {
 
 	if (horizontal_scroll_mode == SCROLL_MODE_DISABLED) {
 		min_size.x = largest_child_min_size.x;
-		bool v_scroll_show = vertical_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || (vertical_scroll_mode == SCROLL_MODE_AUTO && largest_child_min_size.y > size.y);
+		bool v_scroll_show = vertical_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || vertical_scroll_mode == SCROLL_MODE_RESERVE || (vertical_scroll_mode == SCROLL_MODE_AUTO && largest_child_min_size.y > size.y);
 		if (v_scroll_show && v_scroll->get_parent() == this) {
 			min_size.x += v_scroll->get_minimum_size().x;
 		}
@@ -66,7 +66,7 @@ Size2 ScrollContainer::get_minimum_size() const {
 
 	if (vertical_scroll_mode == SCROLL_MODE_DISABLED) {
 		min_size.y = largest_child_min_size.y;
-		bool h_scroll_show = horizontal_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || (horizontal_scroll_mode == SCROLL_MODE_AUTO && largest_child_min_size.x > size.x);
+		bool h_scroll_show = horizontal_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || horizontal_scroll_mode == SCROLL_MODE_RESERVE || (horizontal_scroll_mode == SCROLL_MODE_AUTO && largest_child_min_size.x > size.x);
 		if (h_scroll_show && h_scroll->get_parent() == this) {
 			min_size.y += h_scroll->get_minimum_size().y;
 		}
@@ -90,6 +90,15 @@ void ScrollContainer::_cancel_drag() {
 		propagate_notification(NOTIFICATION_SCROLL_END);
 		beyond_deadzone = false;
 	}
+}
+
+bool ScrollContainer::_is_h_scroll_visible() const {
+	// Scrolls may have been moved out for reasons.
+	return h_scroll->is_visible() && h_scroll->get_parent() == this;
+}
+
+bool ScrollContainer::_is_v_scroll_visible() const {
+	return v_scroll->is_visible() && v_scroll->get_parent() == this;
 }
 
 void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
@@ -298,11 +307,11 @@ void ScrollContainer::_reposition_children() {
 	ofs += theme_cache.panel_style->get_offset();
 	bool rtl = is_layout_rtl();
 
-	if (h_scroll->is_visible_in_tree() && h_scroll->get_parent() == this) { //scrolls may have been moved out for reasons
+	if (_is_h_scroll_visible() || horizontal_scroll_mode == SCROLL_MODE_RESERVE) {
 		size.y -= h_scroll->get_minimum_size().y;
 	}
 
-	if (v_scroll->is_visible_in_tree() && v_scroll->get_parent() == this) { //scrolls may have been moved out for reasons
+	if (_is_v_scroll_visible() || vertical_scroll_mode == SCROLL_MODE_RESERVE) {
 		size.x -= v_scroll->get_minimum_size().x;
 	}
 
@@ -324,7 +333,7 @@ void ScrollContainer::_reposition_children() {
 			r.size.height = MAX(size.height, minsize.height);
 		}
 		r.position += ofs;
-		if (rtl && v_scroll->is_visible_in_tree() && v_scroll->get_parent() == this) {
+		if (rtl && _is_v_scroll_visible()) {
 			r.position.x += v_scroll->get_minimum_size().x;
 		}
 		r.position = r.position.floor();
@@ -436,14 +445,14 @@ void ScrollContainer::update_scrollbars() {
 	Size2 hmin = h_scroll->get_combined_minimum_size();
 	Size2 vmin = v_scroll->get_combined_minimum_size();
 
-	h_scroll->set_visible(horizontal_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || (horizontal_scroll_mode == SCROLL_MODE_AUTO && largest_child_min_size.width > size.width));
-	v_scroll->set_visible(vertical_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || (vertical_scroll_mode == SCROLL_MODE_AUTO && largest_child_min_size.height > size.height));
+	h_scroll->set_visible(horizontal_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || ((horizontal_scroll_mode == SCROLL_MODE_AUTO || horizontal_scroll_mode == SCROLL_MODE_RESERVE) && largest_child_min_size.width > size.width));
+	v_scroll->set_visible(vertical_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || ((vertical_scroll_mode == SCROLL_MODE_AUTO || vertical_scroll_mode == SCROLL_MODE_RESERVE) && largest_child_min_size.height > size.height));
 
 	h_scroll->set_max(largest_child_min_size.width);
-	h_scroll->set_page((v_scroll->is_visible() && v_scroll->get_parent() == this) ? size.width - vmin.width : size.width);
+	h_scroll->set_page(_is_v_scroll_visible() ? size.width - vmin.width : size.width);
 
 	v_scroll->set_max(largest_child_min_size.height);
-	v_scroll->set_page((h_scroll->is_visible() && h_scroll->get_parent() == this) ? size.height - hmin.height : size.height);
+	v_scroll->set_page(_is_h_scroll_visible() ? size.height - hmin.height : size.height);
 
 	// Avoid scrollbar overlapping.
 	_updating_scrollbars = true;
@@ -603,14 +612,15 @@ void ScrollContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_vertical", PROPERTY_HINT_NONE, "suffix:px"), "set_v_scroll", "get_v_scroll");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_horizontal_custom_step", PROPERTY_HINT_RANGE, "-1,4096,suffix:px"), "set_horizontal_custom_step", "get_horizontal_custom_step");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_vertical_custom_step", PROPERTY_HINT_RANGE, "-1,4096,suffix:px"), "set_vertical_custom_step", "get_vertical_custom_step");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_scroll_mode", PROPERTY_HINT_ENUM, "Disabled,Auto,Always Show,Never Show"), "set_horizontal_scroll_mode", "get_horizontal_scroll_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_scroll_mode", PROPERTY_HINT_ENUM, "Disabled,Auto,Always Show,Never Show"), "set_vertical_scroll_mode", "get_vertical_scroll_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_scroll_mode", PROPERTY_HINT_ENUM, "Disabled,Auto,Always Show,Never Show,Reserve"), "set_horizontal_scroll_mode", "get_horizontal_scroll_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_scroll_mode", PROPERTY_HINT_ENUM, "Disabled,Auto,Always Show,Never Show,Reserve"), "set_vertical_scroll_mode", "get_vertical_scroll_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_deadzone"), "set_deadzone", "get_deadzone");
 
 	BIND_ENUM_CONSTANT(SCROLL_MODE_DISABLED);
 	BIND_ENUM_CONSTANT(SCROLL_MODE_AUTO);
 	BIND_ENUM_CONSTANT(SCROLL_MODE_SHOW_ALWAYS);
 	BIND_ENUM_CONSTANT(SCROLL_MODE_SHOW_NEVER);
+	BIND_ENUM_CONSTANT(SCROLL_MODE_RESERVE);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ScrollContainer, panel_style, "panel");
 

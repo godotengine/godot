@@ -1483,7 +1483,7 @@ void ScriptEditor::_menu_option(int p_option) {
 
 				current->apply_code();
 
-				Error err = scr->reload(false); // Always hard reload the script before running.
+				Error err = scr->reload(true); // Always hard reload the script before running.
 				if (err != OK || !scr->is_valid()) {
 					EditorToaster::get_singleton()->popup_str(TTR("Cannot run the script because it contains errors, check the output log."), EditorToaster::SEVERITY_WARNING);
 					return;

@@ -824,6 +824,14 @@
 				Returns the name of the translation domain used by [method tr] and [method tr_n]. See also [TranslationServer].
 			</description>
 		</method>
+		<method name="has_connections" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="signal" type="StringName" />
+			<description>
+				Returns [code]true[/code] if any connection exists on the given [param signal] name.
+				[b]Note:[/b] In C#, [param signal] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]SignalName[/code] class to avoid allocating a new [StringName] on each call.
+			</description>
+		</method>
 		<method name="has_meta" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />

@@ -189,6 +189,14 @@ void ShaderGLES3::_build_variant_code(StringBuilder &builder, uint32_t p_variant
 	}
 	builder.append("\n"); //make sure defines begin at newline
 
+	// Optional support for external textures.
+	if (GLES3::Config::get_singleton()->external_texture_supported) {
+		builder.append("#extension GL_OES_EGL_image_external : enable\n");
+		builder.append("#extension GL_OES_EGL_image_external_essl3 : enable\n");
+	} else {
+		builder.append("#define samplerExternalOES sampler2D\n");
+	}
+
 	// Insert multiview extension loading, because it needs to appear before
 	// any non-preprocessor code (like the "precision highp..." lines below).
 	builder.append("#ifdef USE_MULTIVIEW\n");
