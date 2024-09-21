@@ -4,6 +4,7 @@
 #include "./types.h"
 //@TODO: Remove vec-transform.h
 #include "./Simd/vec-transform.h"
+#include "core/templates/local_vector.h"
 
 
 namespace math
@@ -31,11 +32,11 @@ namespace skeleton
         Skeleton() : m_Count(0), m_AxesCount(0) {}
 
         uint32_t            m_Count;
-        OffsetPtr<Node>     m_Node;
-        OffsetPtr<uint32_t> m_ID;       // CRC(path)
+        LocalVector<Node>     m_Node;
+        LocalVector<uint32_t> m_ID;       // CRC(path)
 
         uint32_t                m_AxesCount;
-        OffsetPtr<math::Axes>   m_AxesArray;
+        LocalVector<math::Axes>   m_AxesArray;
 
     };
 
@@ -46,7 +47,7 @@ namespace skeleton
         SkeletonPoseT() : m_Count(0) {}
 
         uint32_t                    m_Count;
-        OffsetPtr<transformType>    m_X;
+        LocalVector<transformType>    m_X;
 
     };
 
@@ -67,7 +68,7 @@ namespace skeleton
         SkeletonMask() : m_Count(0) {}
 
         uint32_t                        m_Count;
-        OffsetPtr<SkeletonMaskElement>  m_Data;
+        LocalVector<SkeletonMaskElement>  m_Data;
     };
 
     Skeleton* CreateSkeleton(int32_t aNodeCount, int32_t aAxesCount, RuntimeBaseAllocator& arAlloc);

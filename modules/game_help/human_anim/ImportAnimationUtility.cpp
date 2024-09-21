@@ -440,14 +440,14 @@ namespace
         human_anim::ValueArray*     values = CreateValueArray(jobData->clipBindings->animationSet->m_DynamicFullValuesConstant, jobData->alloc);
         human_anim::ValueArrayMask* valuesMask = CreateValueArrayMask(jobData->clipBindings->animationSet->m_DynamicFullValuesConstant, jobData->alloc);
 
-        human_anim::skeleton::SkeletonPose* humanLclPose = NULL;
-        human_anim::skeleton::SkeletonPose* humanPoseA = NULL;
-        human_anim::skeleton::SkeletonPose* humanPoseB = NULL;
-        human_anim::skeleton::SkeletonPose* humanPoseC = NULL;
-        human_anim::skeleton::SkeletonPose* humanPoseD = NULL;
+        human_anim::skeleton::Ref<SkeletonPose> humanLclPose = NULL;
+        human_anim::skeleton::Ref<SkeletonPose> humanPoseA = NULL;
+        human_anim::skeleton::Ref<SkeletonPose> humanPoseB = NULL;
+        human_anim::skeleton::Ref<SkeletonPose> humanPoseC = NULL;
+        human_anim::skeleton::Ref<SkeletonPose> humanPoseD = NULL;
 
-        human_anim::skeleton::SkeletonPose* avatarLclPose = human_anim::skeleton::CreateSkeletonPose<math::trsX>(jobData->avatarConstant.m_AvatarSkeleton.Get(), jobData->alloc);
-        human_anim::skeleton::SkeletonPose* avatarGblPose = human_anim::skeleton::CreateSkeletonPose<math::trsX>(jobData->avatarConstant.m_AvatarSkeleton.Get(), jobData->alloc);
+        human_anim::skeleton::Ref<SkeletonPose> avatarLclPose = human_anim::skeleton::CreateSkeletonPose<math::trsX>(jobData->avatarConstant.m_AvatarSkeleton.Get(), jobData->alloc);
+        human_anim::skeleton::Ref<SkeletonPose> avatarGblPose = human_anim::skeleton::CreateSkeletonPose<math::trsX>(jobData->avatarConstant.m_AvatarSkeleton.Get(), jobData->alloc);
 
         ValueFromSkeletonPose(*jobData->avatarConstant.m_AvatarSkeleton, *jobData->avatarConstant.m_DefaultPose, jobData->tqsMap, *valuesDefault);
 

@@ -10,13 +10,13 @@ namespace skeleton
         Skeleton* skeleton = arAlloc.Construct<Skeleton>();
 
         skeleton->m_Count = aNodeCount;
-        skeleton->m_Node = arAlloc.ConstructArray<Node>(aNodeCount);
-        skeleton->m_ID = arAlloc.ConstructArray<uint32_t>(aNodeCount);
+        skeleton->m_Node.resize(aNodeCount);
+        skeleton->m_ID.resize(aNodeCount);
 
         skeleton->m_AxesCount = aAxesCount;
         if (skeleton->m_AxesCount)
         {
-            skeleton->m_AxesArray = arAlloc.ConstructArray<math::Axes>(aAxesCount);
+            skeleton->m_AxesArray.resize(aAxesCount);
         }
 
         return skeleton;
@@ -48,7 +48,7 @@ namespace skeleton
         SkeletonPoseT<transformType>* skeletonPose = arAlloc.Construct<SkeletonPoseT<transformType> >();
 
         skeletonPose->m_Count = apSkeleton->m_Count;
-        skeletonPose->m_X = arAlloc.ConstructArray<transformType>(apSkeleton->m_Count, Identity<transformType>());
+        skeletonPose->m_X.resize(apSkeleton->m_Count);
 
         return skeletonPose;
     }
@@ -57,11 +57,7 @@ namespace skeleton
     {
         if (apSkeleton)
         {
-            arAlloc.Deallocate(apSkeleton->m_Node);
-            arAlloc.Deallocate(apSkeleton->m_ID);
-            arAlloc.Deallocate(apSkeleton->m_AxesArray);
-
-            arAlloc.Deallocate(apSkeleton);
+			memdelete(apSkeleton);
         }
     }
 
@@ -70,8 +66,7 @@ namespace skeleton
     {
         if (apSkeletonPose)
         {
-            arAlloc.Deallocate(apSkeletonPose->m_X);
-            arAlloc.Deallocate(apSkeletonPose);
+			memdelete(apSkeletonPose);
         }
     }
 
@@ -80,9 +75,9 @@ namespace skeleton
         SkeletonMask* skeletonMask = arAlloc.Construct<SkeletonMask>();
 
         skeletonMask->m_Count = aNodeCount;
-        skeletonMask->m_Data = arAlloc.ConstructArray<SkeletonMaskElement>(aNodeCount);
+        skeletonMask->m_Data.resize(aNodeCount);
 
-        memcpy(skeletonMask->m_Data.Get(), elements, sizeof(SkeletonMaskElement) * aNodeCount);
+        memcpy(skeletonMask->m_Data.ptr(), elements, sizeof(SkeletonMaskElement) * aNodeCount);
 
         return skeletonMask;
     }
@@ -91,8 +86,7 @@ namespace skeleton
     {
         if (skeletonMask)
         {
-            arAlloc.Deallocate(skeletonMask->m_Data);
-            arAlloc.Deallocate(skeletonMask);
+			memdelete(skeletonMask);
         }
     }
 
@@ -116,8 +110,8 @@ namespace skeleton
     void SkeletonPoseCopy(SkeletonPoseT<transformTypeFrom> const* apFromPose, SkeletonPoseT<transformTypeTo>* apToPose)
     {
         uint32_t nodeCount = std::min(apFromPose->m_Count, apToPose->m_Count);
-        transformTypeFrom const *from = apFromPose->m_X.Get();
-        transformTypeTo *to = apToPose->m_X.Get();
+        transformTypeFrom const *from = apFromPose->m_X.ptr();
+        transformTypeTo *to = apToPose->m_X.ptr();
 
         for (uint32_t nodeIter = 0; nodeIter < nodeCount; nodeIter++)
         {
@@ -128,8 +122,8 @@ namespace skeleton
     template<typename transformTypeFrom, typename transformTypeTo>
     void SkeletonPoseCopy(SkeletonPoseT<transformTypeFrom> const* apFromPose, SkeletonPoseT<transformTypeTo>* apToPose, uint32_t aIndexCount, int32_t const *apIndexArray)
     {
-        transformTypeFrom const *from = apFromPose->m_X.Get();
-        transformTypeTo *to = apToPose->m_X.Get();
+        transformTypeFrom const *from = apFromPose->m_X.ptr();
+        transformTypeTo *to = apToPose->m_X.ptr();
 
         for (uint32_t fromIter = 0; fromIter < aIndexCount; fromIter++)
         {
@@ -148,11 +142,11 @@ namespace skeleton
         uint32_t fromCount = apFromSkeleton->m_Count;
         uint32_t toCount = apToSkeleton->m_Count;
 
-        uint32_t const* fromID = apFromSkeleton->m_ID.Get();
-        uint32_t const* toID = apToSkeleton->m_ID.Get();
+        uint32_t const* fromID = apFromSkeleton->m_ID.ptr();
+        uint32_t const* toID = apToSkeleton->m_ID.ptr();
 
-        transformTypeFrom const *fromX = apFromPose->m_X.Get();
-        transformTypeTo *toX = apToPose->m_X.Get();
+        transformTypeFrom const *fromX = apFromPose->m_X.ptr();
+        transformTypeTo *toX = apToPose->m_X.ptr();
 
         for (uint32_t fromIter = 0; fromIter < fromCount; fromIter++)
         {
@@ -240,9 +234,9 @@ namespace skeleton
     void SkeletonPoseComputeGlobal(Skeleton const* apSkeleton, SkeletonPoseT<transformType> const* apLocalPose, SkeletonPoseT<transformType>* apGlobalPose)
     {
         uint32_t nodeCount = apSkeleton->m_Count;
-        Node const *node = apSkeleton->m_Node.Get();
-        transformType const *local = apLocalPose->m_X.Get();
-        transformType *global = apGlobalPose->m_X.Get();
+        Node const *node = apSkeleton->m_Node.ptr();
+        transformType const *local = apLocalPose->m_X.ptr();
+        transformType *global = apGlobalPose->m_X.ptr();
 
         global[0] = local[0];
 
@@ -256,8 +250,8 @@ namespace skeleton
     template<typename transformType>
     void SkeletonPoseComputeGlobal(Skeleton const* apSkeleton, SkeletonPoseT<transformType> const* apLocalPose, SkeletonPoseT<transformType>* apGlobalPose, int aIndex, int aStopIndex)
     {
-        transformType const *local = apLocalPose->m_X.Get();
-        transformType *global = apGlobalPose->m_X.Get();
+        transformType const *local = apLocalPose->m_X.ptr();
+        transformType *global = apGlobalPose->m_X.ptr();
 
         int parentIndex = apSkeleton->m_Node[aIndex].m_ParentId;
 
@@ -310,9 +304,9 @@ namespace skeleton
     void SkeletonPoseComputeLocal(Skeleton const* apSkeleton, SkeletonPoseT<transformType> const* apGlobalPose, SkeletonPoseT<transformType>* apLocalPose)
     {
         uint32_t nodeCount = apSkeleton->m_Count;
-        Node const *node = apSkeleton->m_Node.Get();
-        transformType const *global = apGlobalPose->m_X.Get();
-        transformType *local = apLocalPose->m_X.Get();
+        Node const *node = apSkeleton->m_Node.ptr();
+        transformType const *global = apGlobalPose->m_X.ptr();
+        transformType *local = apLocalPose->m_X.ptr();
 
         for (uint32_t nodeIter = 1; nodeIter < nodeCount; nodeIter++)
         {
@@ -325,8 +319,8 @@ namespace skeleton
     template<typename transformType>
     void SkeletonPoseComputeLocal(Skeleton const* apSkeleton, SkeletonPoseT<transformType> const* apGlobalPose, SkeletonPoseT<transformType>* apLocalPose, int aIndex, int aStopIndex)
     {
-        transformType const *global = apGlobalPose->m_X.Get();
-        transformType *local = apLocalPose->m_X.Get();
+        transformType const *global = apGlobalPose->m_X.ptr();
+        transformType *local = apLocalPose->m_X.ptr();
 
         int parentIndex = apSkeleton->m_Node[aIndex].m_ParentId;
 
