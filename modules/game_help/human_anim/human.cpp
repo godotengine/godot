@@ -606,7 +606,7 @@ namespace human
 
     Human* CreateHuman(skeleton::Skeleton *apSkeleton, skeleton::SkeletonPose *apSkeletonPose, RuntimeBaseAllocator& arAlloc)
     {
-        Human* human = arAlloc.Construct<Human>();
+        Human* human = memnew(Human);
 
         human->m_Skeleton = apSkeleton;
         human->m_SkeletonPose = apSkeletonPose;
@@ -633,7 +633,7 @@ namespace human
             human_anim::hand::DestroyHand(apHuman->m_LeftHand.Get(), arAlloc);
             human_anim::hand::DestroyHand(apHuman->m_RightHand.Get(), arAlloc);
 
-            arAlloc.Deallocate(apHuman);
+            memdelete(apHuman);
         }
     }
 

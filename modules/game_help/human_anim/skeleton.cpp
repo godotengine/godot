@@ -7,7 +7,7 @@ namespace skeleton
 {
     Skeleton*     CreateSkeleton(int32_t aNodeCount, int32_t aAxesCount, RuntimeBaseAllocator& arAlloc)
     {
-        Skeleton* skeleton = arAlloc.Construct<Skeleton>();
+        Skeleton* skeleton = memnew(Skeleton);
 
         skeleton->m_Count = aNodeCount;
         skeleton->m_Node.resize(aNodeCount);
@@ -34,18 +34,13 @@ namespace skeleton
         return math::affineIdentity();
     }
 
-    template<typename transformType>
-    size_t CalculateSkeletonPoseSize(Skeleton const* apSkeleton, size_t baseAddress, RuntimeBaseAllocator& arAlloc)
-    {
-        size_t size = arAlloc.AlignForAllocate<SkeletonPoseT<transformType> >(baseAddress);
-        size = arAlloc.AlignForAllocate<transformType>(size, apSkeleton ? apSkeleton->m_Count : 0);
-        return size - baseAddress;
-    }
+
+
 
     template<typename transformType>
     SkeletonPoseT<transformType> *CreateSkeletonPose(Skeleton const* apSkeleton, RuntimeBaseAllocator& arAlloc)
     {
-        SkeletonPoseT<transformType>* skeletonPose = arAlloc.Construct<SkeletonPoseT<transformType> >();
+        SkeletonPoseT<transformType>* skeletonPose = memnew(SkeletonPoseT<transformType>);
 
         skeletonPose->m_Count = apSkeleton->m_Count;
         skeletonPose->m_X.resize(apSkeleton->m_Count);
@@ -72,7 +67,7 @@ namespace skeleton
 
     SkeletonMask* CreateSkeletonMask(uint32_t aNodeCount, SkeletonMaskElement const* elements, RuntimeBaseAllocator& arAlloc)
     {
-        SkeletonMask* skeletonMask = arAlloc.Construct<SkeletonMask>();
+        SkeletonMask* skeletonMask = memnew(SkeletonMask);
 
         skeletonMask->m_Count = aNodeCount;
         skeletonMask->m_Data.resize(aNodeCount);
@@ -779,7 +774,6 @@ namespace skeleton
     // explicit template instantiations...
 
 
-    template size_t CalculateSkeletonPoseSize<math::trsX>(Skeleton const* apSkeleton, size_t baseAddress, RuntimeBaseAllocator& arAlloc);
     template SkeletonPoseT<math::affineX> *CreateSkeletonPose<math::affineX>(Skeleton const* apSkeleton, RuntimeBaseAllocator& arAlloc);
     template SkeletonPoseT<math::trsX> *CreateSkeletonPose<math::trsX>(Skeleton const* apSkeleton, RuntimeBaseAllocator& arAlloc);
 

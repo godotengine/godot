@@ -75,11 +75,9 @@ namespace skeleton
     void DestroySkeleton(Skeleton* apSkeleton, RuntimeBaseAllocator& arAlloc);
 
 
-    template<typename transformType>
-    size_t CalculateSkeletonPoseSize(Skeleton const* apSkeleton, size_t baseAddress, RuntimeBaseAllocator& arAlloc);
 
     template<typename transformType>
-    SkeletonPoseT<transformType> *CreateSkeletonPose(Skeleton const* apSkeleton, RuntimeBaseAllocator& arAlloc);
+    SkeletonPoseT<math::affineX> *CreateSkeletonPose(Skeleton const* apSkeleton, RuntimeBaseAllocator& arAlloc);
 
     template<typename transformType>
     void DestroySkeletonPose(SkeletonPoseT<transformType>* apSkeletonPose, RuntimeBaseAllocator& arAlloc);

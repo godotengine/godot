@@ -130,7 +130,7 @@ namespace hand
 
     Hand* CreateHand(RuntimeBaseAllocator& arAlloc)
     {
-        Hand* hand = arAlloc.Construct<Hand>();
+        Hand* hand = memnew(Hand);
         memset(hand->m_HandBoneIndex, -1, sizeof(int32_t) * kLastFinger * kLastPhalange);
 
         return hand;
@@ -140,7 +140,7 @@ namespace hand
     {
         if (apHand)
         {
-            arAlloc.Deallocate(apHand);
+            memdelete(apHand);
         }
     }
 
