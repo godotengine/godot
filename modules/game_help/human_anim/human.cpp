@@ -628,8 +628,6 @@ namespace human
         if (apHuman)
         {
 
-            human_anim::hand::DestroyHand(apHuman->m_LeftHand, arAlloc);
-            human_anim::hand::DestroyHand(apHuman->m_RightHand, arAlloc);
 
             memdelete(apHuman);
         }
@@ -1083,12 +1081,12 @@ namespace human
 
         if (apHuman->m_HasLeftHand)
         {
-            hand::Hand2SkeletonPose(apHuman->m_LeftHand, &apHuman->m_Skeleton, &apHumanPose->m_LeftHandPose, apSkeletonPose);
+            hand::Hand2SkeletonPose(&apHuman->m_LeftHand, &apHuman->m_Skeleton, &apHumanPose->m_LeftHandPose, apSkeletonPose);
         }
 
         if (apHuman->m_HasRightHand)
         {
-            hand::Hand2SkeletonPose(apHuman->m_RightHand, &apHuman->m_Skeleton, &apHumanPose->m_RightHandPose, apSkeletonPose);
+            hand::Hand2SkeletonPose(&apHuman->m_RightHand, &apHuman->m_Skeleton, &apHumanPose->m_RightHandPose, apSkeletonPose);
         }
     }
 
@@ -1118,12 +1116,12 @@ namespace human
 
         if (apHuman->m_HasLeftHand)
         {
-            hand::Skeleton2HandPose(apHuman->m_LeftHand, &apHuman->m_Skeleton, apSkeletonPose, &apHumanPose->m_LeftHandPose);
+            hand::Skeleton2HandPose(&apHuman->m_LeftHand, &apHuman->m_Skeleton, apSkeletonPose, &apHumanPose->m_LeftHandPose);
         }
 
         if (apHuman->m_HasRightHand)
         {
-            hand::Skeleton2HandPose(apHuman->m_RightHand, &apHuman->m_Skeleton, apSkeletonPose, &apHumanPose->m_RightHandPose);
+            hand::Skeleton2HandPose(&apHuman->m_RightHand, &apHuman->m_Skeleton, apSkeletonPose, &apHumanPose->m_RightHandPose);
         }
     }
 

@@ -288,8 +288,8 @@ namespace human
 
         skeleton::HumanSkeleton   m_Skeleton;
         LocalVector<math::trsX>   m_SkeletonLocalPose;
-        hand::Hand*               m_LeftHand;
-        hand::Hand*               m_RightHand;
+        hand::Hand               m_LeftHand;
+        hand::Hand               m_RightHand;
 
         int32_t                 m_HumanBoneIndex[kLastBone];
         float                   m_HumanBoneMass[kLastBone];
