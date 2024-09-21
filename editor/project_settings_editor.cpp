@@ -389,7 +389,7 @@ void ProjectSettingsEditor::_action_added(const String &p_name) {
 
 	Dictionary action;
 	action["events"] = Array();
-	action["deadzone"] = 0.5f;
+	action["deadzone"] = 0.2f;
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add Input Action"));
