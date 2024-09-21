@@ -4145,24 +4145,14 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 				set_pattern_set(pattern_set_index, reconverted_vector);
 				return true;
 			}
-		}
-		else if (components.size() == 1 && components[0].begins_with("pattern_") && components[0].trim_prefix("pattern_").is_valid_int()) {
+		} else if (components.size() == 1 && components[0].begins_with("pattern_") && components[0].trim_prefix("pattern_").is_valid_int()) {
 			// Used for importing old TileMapPatterns for backwards compatability.
 			int pattern_index = components[0].trim_prefix("pattern_").to_int();
 			if (pattern_sets.size() == 0) {
-				WARN_PRINT(vformat("add pattern set as pattern set = 0 is called"));
+				WARN_PRINT(vformat("Old Patterns Have Been Imported into the new Pattern Set 0, check the Tilemap Patterns tab"));
 				add_pattern_set(0);
 			}
-			//Vector<Ref<TileMapPattern>> &patterns_list = pattern_sets.write[0].pattern_set;
-			//patterns_list.clear();
-			//pattern_set_to_write.clear();
-			for (int i = patterns.size(); i <= pattern_index; i++) {
-				WARN_PRINT(vformat("patterns index is %s", pattern_index));
-				WARN_PRINT(vformat("patterns size is %s", patterns.size()));
-				add_pattern(p_value, 0);
-			}
-			// Clears the old TileMapPatterns and prevents them from being re-imported every time Godot starts.
-			//patterns.clear();
+			add_pattern(p_value, 0, pattern_index);
 			return true;
 		}
 
@@ -4302,14 +4292,14 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 
 			r_ret = converted_array;
 			return true;
-		} else if (components.size() == 1 && components[0].begins_with("pattern_") && components[0].trim_prefix("pattern_").is_valid_int()) {
-			int pattern_index = components[0].trim_prefix("pattern_").to_int();
-			if (pattern_index < 0 || pattern_index >= (int)patterns.size()) {
-				return false;
-			}
-			r_ret = patterns[pattern_index];
-			return true;
 		}
+	} else if (components.size() == 1 && components[0].begins_with("pattern_") && components[0].trim_prefix("pattern_").is_valid_int()) {
+		int pattern_index = components[0].trim_prefix("pattern_").to_int();
+		if (pattern_index < 0 || pattern_index >= (int)patterns.size()) {
+			return false;
+		}
+		r_ret = patterns[pattern_index];
+		return true;
 	}
 	return false;
 }
