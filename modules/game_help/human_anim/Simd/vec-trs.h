@@ -3,6 +3,7 @@
 #include "./vec-types.h"
 #include "./vec-quat.h"
 #include "./vec-matrix.h"
+#include "core/math/transform_3d.h"
 
 namespace math
 {
@@ -21,6 +22,22 @@ namespace math
         float3 t;
         float4 q;
         float3 s;
+        MATH_FORCEINLINE Transform3D toTransform() const {
+            Basis basis = Basis(Quaternion(q.x, q.y, q.z, q.w), Vector3(s.x, s.y, s.z));
+            return Transform3D(basis, Vector3(t.x,t.y,t.z));
+        }
+
+        static MATH_FORCEINLINE trsX fromTransform(Transform3D const& t)
+        {
+            trsX r;
+            Vector3 origin = t.origin;
+            r.t = float3(origin.x, origin.y, origin.z);
+            Quaternion q = t.basis.get_rotation_quaternion();
+            r.q = float4(q.x, q.y, q.z, q.w);
+            Vector3 s = t.basis.get_scale();
+            r.s = float3(s.x, s.y, s.z);
+            return r;
+        }
     };
 
     static MATH_FORCEINLINE bool operator==(trsX const& l, trsX const& r)

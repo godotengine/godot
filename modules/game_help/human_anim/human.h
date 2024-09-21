@@ -287,7 +287,7 @@ namespace human
         math::trsX              m_RootX;
 
         skeleton::HumanSkeleton*       m_Skeleton;
-        skeleton::SkeletonPose*   m_SkeletonPose;
+        LocalVector<math::trsX>   m_SkeletonPose;
         hand::Hand*               m_LeftHand;
         hand::Hand*               m_RightHand;
 
@@ -452,7 +452,7 @@ namespace human
         skeleton::SkeletonPose *apSkeletonPoseGbl,
         math::float3 *apTDoFBase);
 
-    void            RetargetFrom(Human const *human,
+    void            RetargetFrom(Human *human,
         skeleton::SkeletonPose const *skeletonPose,
         HumanPose *humanPose,
         skeleton::SkeletonPose *skeletonPoseWsRef,
@@ -461,7 +461,7 @@ namespace human
         skeleton::SkeletonPose *skeletonPoseWsWs,
         math::float3 const *tDoFBase);
 
-    void            RetargetTo(Human const *human,
+    void            RetargetTo(Human *human,
         HumanPose const *humanPoseBase,
         HumanPose const *humanPose,
         const math::trsX &x,

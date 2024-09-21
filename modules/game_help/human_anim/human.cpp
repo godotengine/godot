@@ -609,7 +609,7 @@ namespace human
         Human* human = memnew(Human);
 
         human->m_Skeleton = apSkeleton;
-        human->m_SkeletonPose = apSkeletonPose;
+        human->m_SkeletonPose = apSkeletonPose->m_X;
 
         memset(human->m_HumanBoneIndex, -1, sizeof(int32_t) * kLastBone);
 
@@ -628,7 +628,6 @@ namespace human
         if (apHuman)
         {
             human_anim::skeleton::DestroySkeleton(apHuman->m_Skeleton, arAlloc);
-            human_anim::skeleton::DestroySkeletonPose(apHuman->m_SkeletonPose, arAlloc);
 
             human_anim::hand::DestroyHand(apHuman->m_LeftHand, arAlloc);
             human_anim::hand::DestroyHand(apHuman->m_RightHand, arAlloc);
@@ -719,13 +718,87 @@ namespace human
         return ret;
     }
 
+	void SkeletonPoseComputeGlobal(skeleton::HumanSkeleton const* apSkeleton, math::trsX* apLocalPose, skeleton::SkeletonPoseT<math::trsX>* apGlobalPose, int aIndex, int aStopIndex)
+	{
+		math::trsX const* local = apLocalPose;
+		math::trsX* global = apGlobalPose->m_X.ptr();
+
+		int parentIndex = apSkeleton->m_Node[aIndex].m_ParentId;
+
+		if (parentIndex != -1)
+		{
+			if (aIndex != aStopIndex)
+			{
+				SkeletonPoseComputeGlobal(apSkeleton, apLocalPose, apGlobalPose, parentIndex, aStopIndex);
+			}
+
+			global[aIndex] = math::mul(global[parentIndex], local[aIndex]);
+		}
+		else
+		{
+			global[aIndex] = local[aIndex];
+		}
+	}
+	void SkeletonPoseComputeLocal(skeleton::HumanSkeleton const* apSkeleton, skeleton::SkeletonPoseT<math::trsX> const* apGlobalPose, math::trsX* apLocalPose)
+	{
+		uint32_t nodeCount = apSkeleton->m_Count;
+		skeleton::Node const* node = apSkeleton->m_Node.ptr();
+		math::trsX const* global = apGlobalPose->m_X.ptr();
+		math::trsX* local = apLocalPose;
+
+		for (uint32_t nodeIter = 1; nodeIter < nodeCount; nodeIter++)
+		{
+			local[nodeIter] = math::invMul(global[node[nodeIter].m_ParentId], global[nodeIter]);
+		}
+
+		local[0] = global[0];
+	}
+
+	void SkeletonPoseComputeLocal(skeleton::HumanSkeleton const* apSkeleton, skeleton::SkeletonPoseT<math::trsX> const* apGlobalPose, math::trsX* apLocalPose, int aIndex, int aStopIndex)
+	{
+		math::trsX const* global = apGlobalPose->m_X.ptr();
+		math::trsX* local = apLocalPose;
+
+		int parentIndex = apSkeleton->m_Node[aIndex].m_ParentId;
+
+		if (parentIndex != -1)
+		{
+			local[aIndex] = math::invMul(global[parentIndex], global[aIndex]);
+
+			if (aIndex != aStopIndex)
+			{
+				SkeletonPoseComputeLocal(apSkeleton, apGlobalPose, apLocalPose, parentIndex, aStopIndex);
+			}
+		}
+		else
+		{
+			local[aIndex] = global[aIndex];
+		}
+	}
+
+
+	void SkeletonPoseComputeGlobal(skeleton::HumanSkeleton const* apSkeleton, math::trsX const* apLocalPose, skeleton::SkeletonPoseT<math::trsX>* apGlobalPose)
+	{
+		uint32_t nodeCount = apSkeleton->m_Count;
+		skeleton::Node const* node = apSkeleton->m_Node.ptr();
+		math::trsX const* local = apLocalPose;
+		math::trsX* global = apGlobalPose->m_X.ptr();
+
+		global[0] = local[0];
+
+		for (uint32_t nodeIter = 1; nodeIter < nodeCount; nodeIter++)
+		{
+			global[nodeIter] = math::mul(global[node[nodeIter].m_ParentId], local[nodeIter]);
+		}
+	}
+
     void HumanSetupAxes(Human *apHuman, skeleton::SkeletonPose const *apSkeletonPoseGlobal)
     {
         apHuman->m_RootX = math::trsIdentity();
         apHuman->m_RootX = HumanComputeRootXform(apHuman, apSkeletonPoseGlobal);
         apHuman->m_Scale = apHuman->m_RootX.t.y;
 
-        skeleton::SkeletonPoseComputeLocal(apHuman->m_Skeleton, apSkeletonPoseGlobal, apHuman->m_SkeletonPose);
+        SkeletonPoseComputeLocal(apHuman->m_Skeleton, apSkeletonPoseGlobal, apHuman->m_SkeletonPose.ptr());
 
         int32_t i;
 
@@ -1993,7 +2066,7 @@ namespace human
         skeleton::HumanSkeleton const *skeleton = apHuman->m_Skeleton;
 
         // 计算全局骨架姿态，基于 Human 中的局部姿态，存储在 apSkeletonPoseGbl
-        skeleton::SkeletonPoseComputeGlobal(skeleton, apHuman->m_SkeletonPose, apSkeletonPoseGbl);
+		SkeletonPoseComputeGlobal(skeleton, apHuman->m_SkeletonPose.ptr(), apSkeletonPoseGbl);
 
         // 遍历每一个 TDoF（自由度），初始化 apTDoFBase
         for (int tDoFIter = 0; tDoFIter < kLastTDoF; tDoFIter++)
@@ -2069,7 +2142,7 @@ namespace human
 
     void RetargetToTDoF(Human const *apHuman,
         HumanPose *apHumanPoseOut,                  // 输出的人体姿态
-        skeleton::SkeletonPose const *apSkeletonPoseRef, // 参考骨骼姿态（全局）
+        const LocalVector< math::trsX>& apSkeletonPoseRef, // 参考骨骼姿态（全局）
         skeleton::SkeletonPose *apSkeletonPose,     // 输出的局部骨骼姿态
         skeleton::SkeletonPose *apSkeletonPoseWs)   // 输出的全局骨骼姿态
     {
@@ -2091,7 +2164,7 @@ namespace human
                 apSkeletonPoseWs->m_X[skeleton->m_Node[skParentIndex].m_ParentId] = math::trsIdentity();
                 
                 // 将当前骨骼的位移设置为参考骨骼姿态
-                apSkeletonPose->m_X[skIndex].t = apSkeletonPoseRef->m_X[skIndex].t;
+                apSkeletonPose->m_X[skIndex].t = apSkeletonPoseRef[skIndex].t;
 
                 // 计算全局姿态
                 skeleton::SkeletonPoseComputeGlobal(skeleton, apSkeletonPose, apSkeletonPoseWs, skIndex, skParentIndex);
@@ -2111,7 +2184,7 @@ namespace human
     }
 
 
-    void RetargetFrom(Human const *apHuman,
+    void RetargetFrom(Human *apHuman,
         skeleton::SkeletonPose const *apSkeletonPose,
         HumanPose *apHumanPose,
         skeleton::SkeletonPose *apSkeletonPoseRef,
@@ -2136,7 +2209,7 @@ namespace human
         {
             if (apHuman->m_Skeleton->m_Node[nodeIter].m_AxesId == -1)
             {
-                apSkeletonPoseGbl->m_X[nodeIter].q = math::quatMul(apSkeletonPoseGbl->m_X[apHuman->m_Skeleton->m_Node[nodeIter].m_ParentId].q, apHuman->m_SkeletonPose->m_X[nodeIter].q);
+                apSkeletonPoseGbl->m_X[nodeIter].q = math::quatMul(apSkeletonPoseGbl->m_X[apHuman->m_Skeleton->m_Node[nodeIter].m_ParentId].q, apHuman->m_SkeletonPose[nodeIter].q);
             }
         }
 
@@ -2229,7 +2302,7 @@ namespace human
     }
 
 
-    void RetargetTo(Human const *apHuman,
+    void RetargetTo(Human *apHuman,
         HumanPose const *apHumanPoseBase,     // 基础的人体姿态
         HumanPose const *apHumanPose,         // 输入的人体姿态（可选）
         const math::trsX &arX,                // 变换矩阵（平移、旋转和缩放）
@@ -2268,7 +2341,7 @@ namespace human
         //
         // 转换肌肉空间到基础姿态
         //
-        skeleton::SkeletonPoseCopy(apHuman->m_SkeletonPose, apSkeletonPose);
+		apHuman->m_SkeletonPose = apSkeletonPose->m_X;
         if (adjustMissingBones)
             HumanPoseAdjustForMissingBones(apHuman, apHumanPoseOut);
         Human2SkeletonPose(apHuman, apHumanPoseOut, apSkeletonPose);
