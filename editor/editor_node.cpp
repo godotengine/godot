@@ -4952,8 +4952,10 @@ String EditorNode::_get_system_info() const {
 		godot_version += " " + hash;
 	}
 
+	String display_session_type;
 #ifdef LINUXBSD_ENABLED
-	const String display_server = OS::get_singleton()->get_environment("XDG_SESSION_TYPE").capitalize().replace(" ", ""); // `replace` is necessary, because `capitalize` introduces a whitespace between "x" and "11".
+	// `replace` is necessary, because `capitalize` introduces a whitespace between "x" and "11".
+	display_session_type = OS::get_singleton()->get_environment("XDG_SESSION_TYPE").capitalize().replace(" ", "");
 #endif // LINUXBSD_ENABLED
 	String driver_name = OS::get_singleton()->get_current_rendering_driver_name().to_lower();
 	String rendering_method = OS::get_singleton()->get_current_rendering_method().to_lower();
@@ -5014,16 +5016,33 @@ String EditorNode::_get_system_info() const {
 	// Join info.
 	Vector<String> info;
 	info.push_back(godot_version);
+	String distribution_display_session_type = distribution_name;
 	if (!distribution_version.is_empty()) {
-		info.push_back(distribution_name + " " + distribution_version);
-	} else {
-		info.push_back(distribution_name);
+		distribution_display_session_type += " " + distribution_version;
 	}
+	if (!display_session_type.is_empty()) {
+		distribution_display_session_type += " on " + display_session_type;
+	}
+	info.push_back(distribution_display_session_type);
+
+	String display_driver_window_mode;
 #ifdef LINUXBSD_ENABLED
-	if (!display_server.is_empty()) {
-		info.push_back(display_server);
-	}
+	// `replace` is necessary, because `capitalize` introduces a whitespace between "x" and "11".
+	display_driver_window_mode = DisplayServer::get_singleton()->get_name().capitalize().replace(" ", "") + " display driver";
 #endif // LINUXBSD_ENABLED
+	if (!display_driver_window_mode.is_empty()) {
+		display_driver_window_mode += ", ";
+	}
+	display_driver_window_mode += get_viewport()->is_embedding_subwindows() ? "Single-window" : "Multi-window";
+
+	if (DisplayServer::get_singleton()->get_screen_count() == 1) {
+		display_driver_window_mode += ", " + itos(DisplayServer::get_singleton()->get_screen_count()) + " monitor";
+	} else {
+		display_driver_window_mode += ", " + itos(DisplayServer::get_singleton()->get_screen_count()) + " monitors";
+	}
+
+	info.push_back(display_driver_window_mode);
+
 	info.push_back(vformat("%s (%s)", driver_name, rendering_method));
 
 	String graphics;
@@ -5042,7 +5061,7 @@ String EditorNode::_get_system_info() const {
 	}
 	info.push_back(graphics);
 
-	info.push_back(vformat("%s (%d Threads)", processor_name, processor_count));
+	info.push_back(vformat("%s (%d threads)", processor_name, processor_count));
 
 	return String(" - ").join(info);
 }
