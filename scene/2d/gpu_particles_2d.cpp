@@ -67,6 +67,10 @@ void GPUParticles2D::set_emitting(bool p_emitting) {
 	RS::get_singleton()->particles_set_emitting(particles, p_emitting);
 }
 
+void GPUParticles2D::set_auto_start(bool p_auto_start) {
+	auto_start = p_auto_start;
+}
+
 void GPUParticles2D::set_amount(int p_amount) {
 	ERR_FAIL_COND_MSG(p_amount < 1, "Amount of particles cannot be smaller than 1.");
 	amount = p_amount;
@@ -237,6 +241,10 @@ void GPUParticles2D::set_speed_scale(double p_scale) {
 
 bool GPUParticles2D::is_emitting() const {
 	return emitting;
+}
+
+bool GPUParticles2D::get_auto_start() const {
+	return auto_start;
 }
 
 int GPUParticles2D::get_amount() const {
@@ -679,6 +687,9 @@ void GPUParticles2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
+			if (auto_start) {
+				set_emitting(true);
+			}
 			if (sub_emitter != NodePath()) {
 				_attach_sub_emitter();
 			}
@@ -715,6 +726,7 @@ void GPUParticles2D::_notification(int p_what) {
 			if (one_shot) {
 				time += get_process_delta_time();
 				if (time > emission_time) {
+					emitting = false;
 					if (!active) {
 						set_process_internal(false);
 					}
@@ -748,6 +760,7 @@ void GPUParticles2D::_notification(int p_what) {
 
 void GPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emitting", "emitting"), &GPUParticles2D::set_emitting);
+	ClassDB::bind_method(D_METHOD("set_auto_start", "auto_start"), &GPUParticles2D::set_auto_start);
 	ClassDB::bind_method(D_METHOD("set_amount", "amount"), &GPUParticles2D::set_amount);
 	ClassDB::bind_method(D_METHOD("set_lifetime", "secs"), &GPUParticles2D::set_lifetime);
 	ClassDB::bind_method(D_METHOD("set_one_shot", "secs"), &GPUParticles2D::set_one_shot);
@@ -764,6 +777,7 @@ void GPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_base_size", "size"), &GPUParticles2D::set_collision_base_size);
 	ClassDB::bind_method(D_METHOD("set_interp_to_end", "interp"), &GPUParticles2D::set_interp_to_end);
 
+	ClassDB::bind_method(D_METHOD("get_auto_start"), &GPUParticles2D::get_auto_start);
 	ClassDB::bind_method(D_METHOD("is_emitting"), &GPUParticles2D::is_emitting);
 	ClassDB::bind_method(D_METHOD("get_amount"), &GPUParticles2D::get_amount);
 	ClassDB::bind_method(D_METHOD("get_lifetime"), &GPUParticles2D::get_lifetime);
@@ -817,6 +831,8 @@ void GPUParticles2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
 	ADD_PROPERTY_DEFAULT("emitting", true); // Workaround for doctool in headless mode, as dummy rasterizer always returns false.
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_start"), "set_auto_start", "get_auto_start");
+	ADD_PROPERTY_DEFAULT("auto_start", false); // Workaround for doctool in headless mode, as dummy rasterizer always returns false.
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,1000000,1,exp"), "set_amount", "get_amount");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "amount_ratio", PROPERTY_HINT_RANGE, "0,1,0.0001"), "set_amount_ratio", "get_amount_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "sub_emitter", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "GPUParticles2D"), "set_sub_emitter", "get_sub_emitter");

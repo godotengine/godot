@@ -79,6 +79,7 @@ public:
 private:
 	bool emitting = false;
 	bool active = false;
+	bool auto_start = false;
 
 	struct Particle {
 		Transform2D transform;
@@ -197,6 +198,7 @@ protected:
 
 public:
 	void set_emitting(bool p_emitting);
+	void set_auto_start(bool p_auto_start);
 	void set_amount(int p_amount);
 	void set_lifetime(double p_lifetime);
 	void set_one_shot(bool p_one_shot);
@@ -208,6 +210,7 @@ public:
 	void set_speed_scale(double p_scale);
 
 	bool is_emitting() const;
+	bool get_auto_start() const;
 	int get_amount() const;
 	double get_lifetime() const;
 	bool get_one_shot() const;

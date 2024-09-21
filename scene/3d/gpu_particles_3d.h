@@ -61,6 +61,7 @@ private:
 	RID particles;
 
 	bool emitting = false;
+	bool auto_start = false;
 	bool active = false;
 	bool signal_canceled = false;
 	bool one_shot = false;
@@ -111,6 +112,7 @@ public:
 	AABB get_aabb() const override;
 
 	void set_emitting(bool p_emitting);
+	void set_auto_start(bool p_auto_start);
 	void set_amount(int p_amount);
 	void set_lifetime(double p_lifetime);
 	void set_one_shot(bool p_one_shot);
@@ -127,6 +129,7 @@ public:
 	void set_interp_to_end(float p_interp);
 
 	bool is_emitting() const;
+	bool get_auto_start() const;
 	int get_amount() const;
 
 	double get_lifetime() const;
