@@ -1457,6 +1457,24 @@ bool Object::is_connected(const StringName &p_signal, const Callable &p_callable
 	return s->slot_map.has(*p_callable.get_base_comparator());
 }
 
+bool Object::has_connections(const StringName &p_signal) const {
+	const SignalData *s = signal_map.getptr(p_signal);
+	if (!s) {
+		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal);
+		if (signal_is_valid) {
+			return false;
+		}
+
+		if (!script.is_null() && Ref<Script>(script)->has_script_signal(p_signal)) {
+			return false;
+		}
+
+		ERR_FAIL_V_MSG(false, "Nonexistent signal: " + p_signal + ".");
+	}
+
+	return !s->slot_map.is_empty();
+}
+
 void Object::disconnect(const StringName &p_signal, const Callable &p_callable) {
 	_disconnect(p_signal, p_callable);
 }
@@ -1697,6 +1715,7 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("connect", "signal", "callable", "flags"), &Object::connect, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("disconnect", "signal", "callable"), &Object::disconnect);
 	ClassDB::bind_method(D_METHOD("is_connected", "signal", "callable"), &Object::is_connected);
+	ClassDB::bind_method(D_METHOD("has_connections", "signal"), &Object::has_connections);
 
 	ClassDB::bind_method(D_METHOD("set_block_signals", "enable"), &Object::set_block_signals);
 	ClassDB::bind_method(D_METHOD("is_blocking_signals"), &Object::is_blocking_signals);

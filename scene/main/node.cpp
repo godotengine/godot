@@ -4019,4 +4019,9 @@ bool Node::is_connected(const StringName &p_signal, const Callable &p_callable) 
 	return Object::is_connected(p_signal, p_callable);
 }
 
+bool Node::has_connections(const StringName &p_signal) const {
+	ERR_THREAD_GUARD_V(false);
+	return Object::has_connections(p_signal);
+}
+
 #endif
