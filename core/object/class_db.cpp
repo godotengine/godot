@@ -34,6 +34,7 @@
 #include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
 #include "core/os/mutex.h"
+#include "core/variant/struct.h"
 #include "core/version.h"
 
 #define OBJTYPE_RLOCK RWLockRead _rw_lockr_(lock);
@@ -505,6 +506,8 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 			hash = hash_murmur3_one_64(F.hint_string.hash(), hash);
 			hash = hash_murmur3_one_64(F.usage, hash);
 		}
+
+		// TODO: do I need to incorporate the structs into the hash?
 	}
 
 	hash = hash_fmix32(hash);
@@ -1335,6 +1338,67 @@ bool ClassDB::is_enum_bitfield(const StringName &p_class, const StringName &p_na
 	return false;
 }
 
+void ClassDB::bind_struct(const StringName &p_class_name, const StructInfo &p_struct_info) {
+	OBJTYPE_WLOCK;
+
+	ClassInfo *type = classes.getptr(p_class_name);
+
+	ERR_FAIL_NULL(type);
+
+	if (type->struct_map.has(p_struct_info.name)) {
+		ERR_FAIL();
+	}
+
+	String struct_name = p_struct_info.name;
+	if (struct_name.contains(".")) {
+		struct_name = struct_name.get_slicec('.', 1);
+	}
+
+	type->struct_map.insert(struct_name, p_struct_info);
+}
+
+void ClassDB::get_struct_list(const StringName &p_class, List<StructInfo> *r_structs, bool p_no_inheritance) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *type = classes.getptr(p_class);
+
+	while (type) {
+		for (const KeyValue<StringName, StructInfo> &E : type->struct_map) {
+			r_structs->push_back(E.value);
+		}
+
+		if (p_no_inheritance) {
+			break;
+		}
+
+		type = type->inherits_ptr;
+	}
+}
+
+const StructInfo *ClassDB::get_struct_info(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *type = classes.getptr(p_class);
+	while (type) {
+		if (const StructInfo *info = type->struct_map.getptr(p_name)) {
+			return info;
+		}
+		if (p_no_inheritance) {
+			return nullptr;
+		}
+		type = type->inherits_ptr;
+	}
+	return nullptr;
+}
+
+const StructInfo *ClassDB::get_struct_info(const String &p_qualified_name, bool p_no_inheritance) {
+	Vector<String> names = String(p_qualified_name).split("."); // TODO: what about cases other than size == 2?
+	if (names.size() == 2) {
+		return ClassDB::get_struct_info(names[0], names[1]);
+	}
+	return nullptr;
+}
+
 void ClassDB::add_signal(const StringName &p_class, const MethodInfo &p_signal) {
 	OBJTYPE_WLOCK;
 
@@ -1441,6 +1505,15 @@ void ClassDB::add_property_array_count(const StringName &p_class, const String &
 
 void ClassDB::add_property_array(const StringName &p_class, const StringName &p_path, const String &p_array_element_prefix) {
 	OBJTYPE_WLOCK;
+	ClassInfo *type = classes.getptr(p_class);
+	ERR_FAIL_NULL(type);
+
+	type->property_list.push_back(PropertyInfo(Variant::NIL, p_path, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY, p_array_element_prefix));
+}
+
+// TODO: This probably isn't right, I just copied the function above.
+void ClassDB::add_property_struct(const StringName &p_class, const StringName &p_path, const String &p_array_element_prefix) {
+	OBJTYPE_WLOCK; // TODO: I'm not sure what this does but it's in the one above so I figure I need it
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_NULL(type);
 

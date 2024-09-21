@@ -4055,7 +4055,11 @@ String String::format(const Variant &values, const String &placeholder) const {
 
 	if (values.get_type() == Variant::ARRAY) {
 		Array values_arr = values;
-
+		if (const StructInfo *struct_info = values_arr.get_struct_info()) {
+			for (int32_t i = 0; i < struct_info->count; i++) {
+				new_string = new_string.replace(placeholder.replace("_", struct_info->names[i]), values_arr[(int)i]);
+			}
+		}
 		for (int i = 0; i < values_arr.size(); i++) {
 			String i_as_str = String::num_int64(i);
 
