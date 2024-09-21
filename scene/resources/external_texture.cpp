@@ -30,9 +30,6 @@
 
 #include "external_texture.h"
 
-#include "drivers/gles3/storage/texture_storage.h"
-#include "servers/rendering/rendering_server_globals.h"
-
 void ExternalTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &ExternalTexture::set_size);
 	ClassDB::bind_method(D_METHOD("get_external_texture_id"), &ExternalTexture::get_external_texture_id);
