@@ -1041,8 +1041,10 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				bool txt_visible = false;
 				if (step == DRAW_STEP_OUTLINE) {
 					txt_visible = (font_outline_color.a != 0 && outline_size > 0);
+					font_color = font_outline_color * Color(1, 1, 1, font_color.a);
 				} else if (step == DRAW_STEP_SHADOW) {
 					txt_visible = (font_shadow_color.a != 0);
+					font_color = font_shadow_color * Color(1, 1, 1, font_color.a);
 				} else if (step == DRAW_STEP_TEXT) {
 					txt_visible = (font_color.a != 0);
 					bool has_ul = _find_underline(it);
@@ -1245,12 +1247,18 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						} else if (item_fx->type == ITEM_RAINBOW) {
 							ItemRainbow *item_rainbow = static_cast<ItemRainbow *>(item_fx);
 
-							font_color = font_color.from_hsv(item_rainbow->frequency * (item_rainbow->elapsed_time + ((p_ofs.x + off_step.x) / 50)), item_rainbow->saturation, item_rainbow->value, font_color.a);
+							if (step == DRAW_STEP_TEXT) {
+								font_color = font_color.from_hsv(item_rainbow->frequency * (item_rainbow->elapsed_time + ((p_ofs.x + off_step.x) / 50)), item_rainbow->saturation, item_rainbow->value, font_color.a);
+							}
 						} else if (item_fx->type == ITEM_PULSE) {
 							ItemPulse *item_pulse = static_cast<ItemPulse *>(item_fx);
 
 							const float sined_time = (Math::ease(Math::pingpong(item_pulse->elapsed_time, 1.0 / item_pulse->frequency) * item_pulse->frequency, item_pulse->ease));
-							font_color = font_color.lerp(font_color * item_pulse->color, sined_time);
+							if (step == DRAW_STEP_TEXT) {
+								font_color = font_color.lerp(font_color * item_pulse->color, sined_time);
+							} else {
+								font_color.a = Math::lerp(font_color.a, font_color.a * item_pulse->color.a, sined_time);
+							}
 						}
 					}
 
@@ -1269,15 +1277,11 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						Transform2D char_final_xform = char_xform * char_reverse_xform;
 						draw_set_transform_matrix(char_final_xform);
 					} else if (step == DRAW_STEP_SHADOW) {
-						font_color = font_shadow_color * Color(1, 1, 1, font_color.a);
-
 						char_reverse_xform.set_origin(-char_off - p_shadow_ofs);
 						Transform2D char_final_xform = char_xform * char_reverse_xform;
 						char_final_xform.columns[2] += p_shadow_ofs;
 						draw_set_transform_matrix(char_final_xform);
 					} else if (step == DRAW_STEP_OUTLINE) {
-						font_color = font_outline_color * Color(1, 1, 1, font_color.a);
-
 						char_reverse_xform.set_origin(-char_off);
 						Transform2D char_final_xform = char_xform * char_reverse_xform;
 						draw_set_transform_matrix(char_final_xform);
