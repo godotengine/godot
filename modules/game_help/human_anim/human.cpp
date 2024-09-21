@@ -609,7 +609,7 @@ namespace human
         Human* human = memnew(Human);
 
         human->m_Skeleton = apSkeleton;
-        human->m_SkeletonPose = apSkeletonPose->m_X;
+        human->m_SkeletonLocalPose = apSkeletonPose->m_X;
 
         memset(human->m_HumanBoneIndex, -1, sizeof(int32_t) * kLastBone);
 
@@ -798,7 +798,7 @@ namespace human
         apHuman->m_RootX = HumanComputeRootXform(apHuman, apSkeletonPoseGlobal);
         apHuman->m_Scale = apHuman->m_RootX.t.y;
 
-        SkeletonPoseComputeLocal(apHuman->m_Skeleton, apSkeletonPoseGlobal, apHuman->m_SkeletonPose.ptr());
+        SkeletonPoseComputeLocal(apHuman->m_Skeleton, apSkeletonPoseGlobal, apHuman->m_SkeletonLocalPose.ptr());
 
         int32_t i;
 
@@ -2066,7 +2066,7 @@ namespace human
         skeleton::HumanSkeleton const *skeleton = apHuman->m_Skeleton;
 
         // 计算全局骨架姿态，基于 Human 中的局部姿态，存储在 apSkeletonPoseGbl
-		SkeletonPoseComputeGlobal(skeleton, apHuman->m_SkeletonPose.ptr(), apSkeletonPoseGbl);
+		SkeletonPoseComputeGlobal(skeleton, apHuman->m_SkeletonLocalPose.ptr(), apSkeletonPoseGbl);
 
         // 遍历每一个 TDoF（自由度），初始化 apTDoFBase
         for (int tDoFIter = 0; tDoFIter < kLastTDoF; tDoFIter++)
@@ -2209,7 +2209,7 @@ namespace human
         {
             if (apHuman->m_Skeleton->m_Node[nodeIter].m_AxesId == -1)
             {
-                apSkeletonPoseGbl->m_X[nodeIter].q = math::quatMul(apSkeletonPoseGbl->m_X[apHuman->m_Skeleton->m_Node[nodeIter].m_ParentId].q, apHuman->m_SkeletonPose[nodeIter].q);
+                apSkeletonPoseGbl->m_X[nodeIter].q = math::quatMul(apSkeletonPoseGbl->m_X[apHuman->m_Skeleton->m_Node[nodeIter].m_ParentId].q, apHuman->m_SkeletonLocalPose[nodeIter].q);
             }
         }
 
@@ -2341,7 +2341,7 @@ namespace human
         //
         // 转换肌肉空间到基础姿态
         //
-		apHuman->m_SkeletonPose = apSkeletonPose->m_X;
+		apHuman->m_SkeletonLocalPose = apSkeletonPose->m_X;
         if (adjustMissingBones)
             HumanPoseAdjustForMissingBones(apHuman, apHumanPoseOut);
         Human2SkeletonPose(apHuman, apHumanPoseOut, apSkeletonPose);
@@ -2349,7 +2349,7 @@ namespace human
         // 如果有额外的自由度（TDoF），处理这些自由度
         if (apHuman->m_HasTDoF)
         {
-            RetargetToTDoF(apHuman, apHumanPoseOut, apHuman->m_SkeletonPose, apSkeletonPose, apSkeletonPoseWs);
+            RetargetToTDoF(apHuman, apHumanPoseOut, apHuman->m_SkeletonLocalPose, apSkeletonPose, apSkeletonPoseWs);
         }
 
         // 计算全局骨骼姿态
@@ -2378,7 +2378,7 @@ namespace human
             // 处理额外的自由度
             if (apHuman->m_HasTDoF)
             {
-                RetargetToTDoF(apHuman, apHumanPoseOut, apHuman->m_SkeletonPose, apSkeletonPose, apSkeletonPoseWs);
+                RetargetToTDoF(apHuman, apHumanPoseOut, apHuman->m_SkeletonLocalPose, apSkeletonPose, apSkeletonPoseWs);
             }
         }
 
