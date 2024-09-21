@@ -369,6 +369,34 @@ int Array::find(const Variant &p_value, int p_from) const {
 	return ret;
 }
 
+int Array::find_custom(const Callable &p_callable, int p_from) const {
+	int ret = -1;
+
+	if (p_from < 0 || size() == 0) {
+		return ret;
+	}
+
+	const Variant *argptrs[1];
+
+	for (int i = p_from; i < size(); i++) {
+		const Variant &val = _p->array[i];
+		argptrs[0] = &val;
+		Variant res;
+		Callable::CallError ce;
+		p_callable.callp(argptrs, 1, res, ce);
+		if (unlikely(ce.error != Callable::CallError::CALL_OK)) {
+			ERR_FAIL_V_MSG(ret, "Error calling method from 'find_custom': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
+		}
+
+		ERR_FAIL_COND_V_MSG(res.get_type() != Variant::Type::BOOL, ret, "Error on method from 'find_custom': Return type of callable must be boolean.");
+		if (res.operator bool()) {
+			return i;
+		}
+	}
+
+	return ret;
+}
+
 int Array::rfind(const Variant &p_value, int p_from) const {
 	if (_p->array.size() == 0) {
 		return -1;
@@ -387,6 +415,41 @@ int Array::rfind(const Variant &p_value, int p_from) const {
 
 	for (int i = p_from; i >= 0; i--) {
 		if (StringLikeVariantComparator::compare(_p->array[i], value)) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+int Array::rfind_custom(const Callable &p_callable, int p_from) const {
+	if (_p->array.size() == 0) {
+		return -1;
+	}
+
+	if (p_from < 0) {
+		// Relative offset from the end.
+		p_from = _p->array.size() + p_from;
+	}
+	if (p_from < 0 || p_from >= _p->array.size()) {
+		// Limit to array boundaries.
+		p_from = _p->array.size() - 1;
+	}
+
+	const Variant *argptrs[1];
+
+	for (int i = p_from; i >= 0; i--) {
+		const Variant &val = _p->array[i];
+		argptrs[0] = &val;
+		Variant res;
+		Callable::CallError ce;
+		p_callable.callp(argptrs, 1, res, ce);
+		if (unlikely(ce.error != Callable::CallError::CALL_OK)) {
+			ERR_FAIL_V_MSG(-1, "Error calling method from 'rfind_custom': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
+		}
+
+		ERR_FAIL_COND_V_MSG(res.get_type() != Variant::Type::BOOL, -1, "Error on method from 'rfind_custom': Return type of callable must be boolean.");
+		if (res.operator bool()) {
 			return i;
 		}
 	}
@@ -761,7 +824,7 @@ Variant Array::max() const {
 				return Variant(); //not a valid comparison
 			}
 			if (bool(ret)) {
-				//is less
+				//is greater
 				maxval = test;
 			}
 		}

@@ -58,7 +58,7 @@
 			<return type="void" />
 			<param index="0" name="cache_index" type="int" />
 			<description>
-				Removes all font sizes from the cache entry
+				Removes all font sizes from the cache entry.
 			</description>
 		</method>
 		<method name="clear_textures">

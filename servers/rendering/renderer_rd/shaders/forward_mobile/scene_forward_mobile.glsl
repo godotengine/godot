@@ -107,11 +107,11 @@ layout(location = 6) mediump out vec3 binormal_interp;
 #endif
 
 #ifdef MATERIAL_UNIFORMS_USED
-layout(set = MATERIAL_UNIFORM_SET, binding = 0, std140) uniform MaterialUniforms{
-
+/* clang-format off */
+layout(set = MATERIAL_UNIFORM_SET, binding = 0, std140) uniform MaterialUniforms {
 #MATERIAL_UNIFORMS
-
 } material;
+/* clang-format on */
 #endif
 
 #ifdef MODE_DUAL_PARABOLOID
@@ -671,11 +671,11 @@ ivec2 multiview_uv(ivec2 uv) {
 #endif
 
 #ifdef MATERIAL_UNIFORMS_USED
-layout(set = MATERIAL_UNIFORM_SET, binding = 0, std140) uniform MaterialUniforms{
-
+/* clang-format off */
+layout(set = MATERIAL_UNIFORM_SET, binding = 0, std140) uniform MaterialUniforms {
 #MATERIAL_UNIFORMS
-
 } material;
+/* clang-format on */
 #endif
 
 #GLOBALS

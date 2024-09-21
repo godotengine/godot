@@ -1419,6 +1419,11 @@ Variant ClassDB::instantiate(const StringName &p_class) const {
 	}
 }
 
+ClassDB::APIType ClassDB::class_get_api_type(const StringName &p_class) const {
+	::ClassDB::APIType api_type = ::ClassDB::get_api_type(p_class);
+	return (APIType)api_type;
+}
+
 bool ClassDB::class_has_signal(const StringName &p_class, const StringName &p_signal) const {
 	return ::ClassDB::has_signal(p_class, p_signal);
 }
@@ -1615,7 +1620,7 @@ void ClassDB::get_argument_options(const StringName &p_function, int p_idx, List
 				pf == "class_has_method" || pf == "class_get_method_list" ||
 				pf == "class_get_integer_constant_list" || pf == "class_has_integer_constant" || pf == "class_get_integer_constant" ||
 				pf == "class_has_enum" || pf == "class_get_enum_list" || pf == "class_get_enum_constants" || pf == "class_get_integer_constant_enum" ||
-				pf == "is_class_enabled" || pf == "is_class_enum_bitfield");
+				pf == "is_class_enabled" || pf == "is_class_enum_bitfield" || pf == "class_get_api_type");
 	}
 	if (first_argument_is_class || pf == "is_parent_class") {
 		for (const String &E : get_class_list()) {
@@ -1635,6 +1640,8 @@ void ClassDB::_bind_methods() {
 	::ClassDB::bind_method(D_METHOD("is_parent_class", "class", "inherits"), &ClassDB::is_parent_class);
 	::ClassDB::bind_method(D_METHOD("can_instantiate", "class"), &ClassDB::can_instantiate);
 	::ClassDB::bind_method(D_METHOD("instantiate", "class"), &ClassDB::instantiate);
+
+	::ClassDB::bind_method(D_METHOD("class_get_api_type", "class"), &ClassDB::class_get_api_type);
 
 	::ClassDB::bind_method(D_METHOD("class_has_signal", "class", "signal"), &ClassDB::class_has_signal);
 	::ClassDB::bind_method(D_METHOD("class_get_signal", "class", "signal"), &ClassDB::class_get_signal);
@@ -1669,6 +1676,12 @@ void ClassDB::_bind_methods() {
 	::ClassDB::bind_method(D_METHOD("is_class_enum_bitfield", "class", "enum", "no_inheritance"), &ClassDB::is_class_enum_bitfield, DEFVAL(false));
 
 	::ClassDB::bind_method(D_METHOD("is_class_enabled", "class"), &ClassDB::is_class_enabled);
+
+	BIND_ENUM_CONSTANT(API_CORE);
+	BIND_ENUM_CONSTANT(API_EDITOR);
+	BIND_ENUM_CONSTANT(API_EXTENSION);
+	BIND_ENUM_CONSTANT(API_EDITOR_EXTENSION);
+	BIND_ENUM_CONSTANT(API_NONE);
 }
 
 } // namespace special

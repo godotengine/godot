@@ -191,7 +191,17 @@ void Script::reload_from_file() {
 	set_source_code(rel->get_source_code());
 	set_last_modified_time(rel->get_last_modified_time());
 
-	reload();
+	// Only reload the script when there are no compilation errors to prevent printing the error messages twice.
+	if (rel->is_valid()) {
+		if (Engine::get_singleton()->is_editor_hint() && is_tool()) {
+			get_language()->reload_tool_script(this, true);
+		} else {
+			// It's important to set p_keep_state to true in order to manage reloading scripts
+			// that are currently instantiated.
+			reload(true);
+		}
+	}
+
 #else
 	Resource::reload_from_file();
 #endif

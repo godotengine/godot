@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_title_bar.h                                                    */
+/*  translation_domain.h                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,26 +28,38 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_TITLE_BAR_H
-#define EDITOR_TITLE_BAR_H
+#ifndef TRANSLATION_DOMAIN_H
+#define TRANSLATION_DOMAIN_H
 
-#include "scene/gui/box_container.h"
-#include "scene/main/window.h"
+#include "core/object/ref_counted.h"
 
-class EditorTitleBar : public HBoxContainer {
-	GDCLASS(EditorTitleBar, HBoxContainer);
+class Translation;
 
-	Point2i click_pos;
-	bool moving = false;
-	bool can_move = false;
+class TranslationDomain : public RefCounted {
+	GDCLASS(TranslationDomain, RefCounted);
+
+	HashSet<Ref<Translation>> translations;
 
 protected:
-	virtual void gui_input(const Ref<InputEvent> &p_event) override;
-	static void _bind_methods() {}
+	static void _bind_methods();
 
 public:
-	void set_can_move_window(bool p_enabled);
-	bool get_can_move_window() const;
+	// Methods in this section are not intended for scripting.
+	StringName get_message_from_translations(const String &p_locale, const StringName &p_message, const StringName &p_context) const;
+	StringName get_message_from_translations(const String &p_locale, const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const;
+	PackedStringArray get_loaded_locales() const;
+
+public:
+	Ref<Translation> get_translation_object(const String &p_locale) const;
+
+	void add_translation(const Ref<Translation> &p_translation);
+	void remove_translation(const Ref<Translation> &p_translation);
+	void clear();
+
+	StringName translate(const StringName &p_message, const StringName &p_context) const;
+	StringName translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const;
+
+	TranslationDomain();
 };
 
-#endif // EDITOR_TITLE_BAR_H
+#endif // TRANSLATION_DOMAIN_H
