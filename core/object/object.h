@@ -572,7 +572,7 @@ public:
 		CONNECT_PERSIST = 2, // hint for scene to save this connection
 		CONNECT_ONE_SHOT = 4,
 		CONNECT_REFERENCE_COUNTED = 8,
-		CONNECT_INHERITED = 16, // Used in editor builds.
+		CONNECT_INHERITED = 16, // Whether or not the connection is in an instance of a scene.
 	};
 
 	struct Connection {
