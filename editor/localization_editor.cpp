@@ -74,15 +74,20 @@ void LocalizationEditor::add_translation(const String &p_translation) {
 
 void LocalizationEditor::_translation_add(const PackedStringArray &p_paths) {
 	PackedStringArray translations = GLOBAL_GET("internationalization/locale/translations");
-	for (int i = 0; i < p_paths.size(); i++) {
-		if (!translations.has(p_paths[i])) {
+	int count = 0;
+	for (const String &path : p_paths) {
+		if (!translations.has(path)) {
 			// Don't add duplicate translation paths.
-			translations.push_back(p_paths[i]);
+			translations.push_back(path);
+			count += 1;
 		}
+	}
+	if (count == 0) {
+		return;
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(vformat(TTR("Add %d Translations"), p_paths.size()));
+	undo_redo->create_action(vformat(TTRN("Add %d Translation", "Add %d Translations", count), count));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/translations", translations);
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/translations", GLOBAL_GET("internationalization/locale/translations"));
 	undo_redo->add_do_method(this, "update_translations");
@@ -136,15 +141,20 @@ void LocalizationEditor::_translation_res_add(const PackedStringArray &p_paths) 
 		prev = remaps;
 	}
 
-	for (int i = 0; i < p_paths.size(); i++) {
-		if (!remaps.has(p_paths[i])) {
+	int count = 0;
+	for (const String &path : p_paths) {
+		if (!remaps.has(path)) {
 			// Don't overwrite with an empty remap array if an array already exists for the given path.
-			remaps[p_paths[i]] = PackedStringArray();
+			remaps[path] = PackedStringArray();
+			count += 1;
 		}
+	}
+	if (count == 0) {
+		return;
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(vformat(TTR("Translation Resource Remap: Add %d Path(s)"), p_paths.size()));
+	undo_redo->create_action(vformat(TTRN("Translation Resource Remap: Add %d Path", "Translation Resource Remap: Add %d Paths", count), count));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/translation_remaps", remaps);
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/translation_remaps", prev);
 	undo_redo->add_do_method(this, "update_translations");
@@ -176,7 +186,7 @@ void LocalizationEditor::_translation_res_option_add(const PackedStringArray &p_
 	remaps[key] = r;
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(vformat(TTR("Translation Resource Remap: Add %d Remap(s)"), p_paths.size()));
+	undo_redo->create_action(vformat(TTRN("Translation Resource Remap: Add %d Remap", "Translation Resource Remap: Add %d Remaps", p_paths.size()), p_paths.size()));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/translation_remaps", remaps);
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/translation_remaps", GLOBAL_GET("internationalization/locale/translation_remaps"));
 	undo_redo->add_do_method(this, "update_translations");
@@ -326,14 +336,19 @@ void LocalizationEditor::_translation_res_option_delete(Object *p_item, int p_co
 
 void LocalizationEditor::_pot_add(const PackedStringArray &p_paths) {
 	PackedStringArray pot_translations = GLOBAL_GET("internationalization/locale/translations_pot_files");
-	for (int i = 0; i < p_paths.size(); i++) {
-		if (!pot_translations.has(p_paths[i])) {
-			pot_translations.push_back(p_paths[i]);
+	int count = 0;
+	for (const String &path : p_paths) {
+		if (!pot_translations.has(path)) {
+			pot_translations.push_back(path);
+			count += 1;
 		}
+	}
+	if (count == 0) {
+		return;
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(vformat(TTR("Add %d file(s) for POT generation"), p_paths.size()));
+	undo_redo->create_action(vformat(TTRN("Add %d file for POT generation", "Add %d files for POT generation", count), count));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/translations_pot_files", pot_translations);
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/translations_pot_files", GLOBAL_GET("internationalization/locale/translations_pot_files"));
 	undo_redo->add_do_method(this, "update_translations");
