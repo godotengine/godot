@@ -3019,11 +3019,11 @@ void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node) {
 	
 	// make sure child controls of container remember their previous state,
 	// when put back into non Container control node
-	if(!is_current_node_container && is_replacement_node_container) {
+	if (!is_current_node_container && is_replacement_node_container) {
 		TypedArray<Node> children = p_node->get_children();
 
 		for (int node_i = 0; node_i < children.size(); node_i++) {
-			Control *c = Object::cast_to<Control>( children[node_i] );
+			Control *c = Object::cast_to<Control>(children[node_i]);
 			ur->add_undo_method(c, "_edit_set_state", c->_edit_get_state());
 		}
 	}
