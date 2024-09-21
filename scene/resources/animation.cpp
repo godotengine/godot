@@ -4804,9 +4804,9 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 					continue; // This track is exhausted (all keys were added already), don't consider.
 				}
 			}
-
-			uint32_t key_frame = double(track_get_key_time(uncomp_track, time_tracks[i].key_index)) / frame_len;
-
+			double key_time = track_get_key_time(uncomp_track, time_tracks[i].key_index);
+			double result = key_time / frame_len;
+			uint32_t key_frame = Math::fast_ftoi(result);
 			if (time_tracks[i].needs_start_frame && key_frame > base_page_frame) {
 				start_frame = true;
 				best_frame = base_page_frame;
