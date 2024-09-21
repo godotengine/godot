@@ -3016,7 +3016,7 @@ void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node) {
 
 	bool is_current_node_container = Object::cast_to<Container>(p_node);
 	bool is_replacement_node_container = Object::cast_to<Container>(p_by_node);
-	
+
 	// make sure child controls of container remember their previous state,
 	// when put back into non Container control node
 	if (!is_current_node_container && is_replacement_node_container) {
