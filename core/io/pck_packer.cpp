@@ -47,12 +47,12 @@ static int _get_pad(int p_alignment, int p_n) {
 }
 
 void PCKPacker::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("pck_start", "pck_name", "alignment", "key", "encrypt_directory"), &PCKPacker::pck_start, DEFVAL(32), DEFVAL("0000000000000000000000000000000000000000000000000000000000000000"), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("pck_start", "pck_path", "alignment", "key", "encrypt_directory"), &PCKPacker::pck_start, DEFVAL(32), DEFVAL("0000000000000000000000000000000000000000000000000000000000000000"), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("add_file", "pck_path", "source_path", "encrypt"), &PCKPacker::add_file, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("flush", "verbose"), &PCKPacker::flush, DEFVAL(false));
 }
 
-Error PCKPacker::pck_start(const String &p_file, int p_alignment, const String &p_key, bool p_encrypt_directory) {
+Error PCKPacker::pck_start(const String &p_pck_path, int p_alignment, const String &p_key, bool p_encrypt_directory) {
 	ERR_FAIL_COND_V_MSG((p_key.is_empty() || !p_key.is_valid_hex_number(false) || p_key.length() != 64), ERR_CANT_CREATE, "Invalid Encryption Key (must be 64 characters long).");
 	ERR_FAIL_COND_V_MSG(p_alignment <= 0, ERR_CANT_CREATE, "Invalid alignment, must be greater then 0.");
 
@@ -83,8 +83,8 @@ Error PCKPacker::pck_start(const String &p_file, int p_alignment, const String &
 	}
 	enc_dir = p_encrypt_directory;
 
-	file = FileAccess::open(p_file, FileAccess::WRITE);
-	ERR_FAIL_COND_V_MSG(file.is_null(), ERR_CANT_CREATE, "Can't open file to write: " + String(p_file) + ".");
+	file = FileAccess::open(p_pck_path, FileAccess::WRITE);
+	ERR_FAIL_COND_V_MSG(file.is_null(), ERR_CANT_CREATE, "Can't open file to write: " + String(p_pck_path) + ".");
 
 	alignment = p_alignment;
 
@@ -106,7 +106,7 @@ Error PCKPacker::pck_start(const String &p_file, int p_alignment, const String &
 	return OK;
 }
 
-Error PCKPacker::add_file(const String &p_file, const String &p_src, bool p_encrypt) {
+Error PCKPacker::add_file(const String &p_pck_path, const String &p_src, bool p_encrypt) {
 	ERR_FAIL_COND_V_MSG(file.is_null(), ERR_INVALID_PARAMETER, "File must be opened before use.");
 
 	Ref<FileAccess> f = FileAccess::open(p_src, FileAccess::READ);
@@ -117,7 +117,7 @@ Error PCKPacker::add_file(const String &p_file, const String &p_src, bool p_encr
 	File pf;
 	// Simplify path here and on every 'files' access so that paths that have extra '/'
 	// symbols in them still match to the MD5 hash for the saved path.
-	pf.path = p_file.simplify_path();
+	pf.path = p_pck_path.simplify_path();
 	pf.src_path = p_src;
 	pf.ofs = ofs;
 	pf.size = f->get_length();
