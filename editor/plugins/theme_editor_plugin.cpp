@@ -3795,8 +3795,10 @@ bool ThemeEditorPlugin::handles(Object *p_object) const {
 
 void ThemeEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		button->show();
-		EditorNode::get_bottom_panel()->make_item_visible(theme_editor);
+		if (!button->is_visible()) {
+			button->show();
+			EditorNode::get_bottom_panel()->make_item_visible(theme_editor);
+		}
 	} else {
 		if (theme_editor->is_visible_in_tree()) {
 			EditorNode::get_bottom_panel()->hide_bottom_panel();
