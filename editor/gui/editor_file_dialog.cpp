@@ -31,7 +31,6 @@
 #include "editor_file_dialog.h"
 
 #include "core/config/project_settings.h"
-#include "core/io/file_access.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "editor/dependency_editor.h"
@@ -183,6 +182,9 @@ void EditorFileDialog::_update_theme_item_cache() {
 	theme_cache.favorites_down = get_editor_theme_icon(SNAME("MoveDown"));
 	theme_cache.create_folder = get_editor_theme_icon(SNAME("FolderCreate"));
 
+	theme_cache.filter_box = get_editor_theme_icon(SNAME("Search"));
+	theme_cache.file_sort_button = get_editor_theme_icon(SNAME("Sort"));
+
 	theme_cache.folder = get_editor_theme_icon(SNAME("Folder"));
 	theme_cache.folder_icon_color = get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog"));
 
@@ -326,6 +328,10 @@ void EditorFileDialog::shortcut_input(const Ref<InputEvent> &p_event) {
 				dir->select_all();
 				handled = true;
 			}
+			if (ED_IS_SHORTCUT("file_dialog/focus_filter", p_event)) {
+				_focus_filter_box();
+				handled = true;
+			}
 			if (ED_IS_SHORTCUT("file_dialog/move_favorite_up", p_event)) {
 				_favorite_move_up();
 				handled = true;
@@ -368,6 +374,8 @@ void EditorFileDialog::update_dir() {
 		}
 	}
 	dir->set_text(dir_access->get_current_dir(false));
+
+	filter_box->clear();
 
 	// Disable "Open" button only when selecting file(s) mode.
 	get_ok_button()->set_disabled(_is_open_should_be_disabled());
@@ -422,7 +430,13 @@ void EditorFileDialog::_post_popup() {
 		item_list->grab_focus();
 	}
 
-	if (mode == FILE_MODE_OPEN_DIR) {
+	bool is_open_directory_mode = mode == FILE_MODE_OPEN_DIR;
+	PopupMenu *p = file_sort_button->get_popup();
+	p->set_item_disabled(2, is_open_directory_mode);
+	p->set_item_disabled(3, is_open_directory_mode);
+	p->set_item_disabled(4, is_open_directory_mode);
+	p->set_item_disabled(5, is_open_directory_mode);
+	if (is_open_directory_mode) {
 		file_box->set_visible(false);
 	} else {
 		file_box->set_visible(true);
@@ -956,7 +970,7 @@ void EditorFileDialog::update_file_list() {
 
 	dir_access->list_dir_begin();
 
-	List<String> files;
+	List<FileInfo> file_infos;
 	List<String> dirs;
 
 	String item = dir_access->get_next();
@@ -967,27 +981,44 @@ void EditorFileDialog::update_file_list() {
 			continue;
 		}
 
-		if (show_hidden_files) {
-			if (!dir_access->current_is_dir()) {
-				files.push_back(item);
-			} else {
-				dirs.push_back(item);
-			}
-		} else if (!dir_access->current_is_hidden()) {
-			String full_path = cdir == "res://" ? item : dir_access->get_current_dir() + "/" + item;
-			if (dir_access->current_is_dir()) {
-				if (Engine::get_singleton()->is_project_manager_hint() || !EditorFileSystem::_should_skip_directory(full_path)) {
-					dirs.push_back(item);
+		bool matches_search = true;
+		if (search_string.length() > 0) {
+			matches_search = item.find(search_string) != -1;
+		}
+
+		FileInfo file_info;
+		file_info.name = item;
+		file_info.path = cdir.path_join(file_info.name);
+		file_info.type = item.get_extension();
+		file_info.modified_time = FileAccess::get_modified_time(file_info.path);
+
+		if (matches_search) {
+			if (show_hidden_files) {
+				if (!dir_access->current_is_dir()) {
+					file_infos.push_back(file_info);
+				} else {
+					dirs.push_back(file_info.name);
 				}
-			} else {
-				files.push_back(item);
+			} else if (!dir_access->current_is_hidden()) {
+				String full_path = cdir == "res://" ? file_info.name : dir_access->get_current_dir() + "/" + file_info.name;
+				if (dir_access->current_is_dir()) {
+					if (Engine::get_singleton()->is_project_manager_hint() || !EditorFileSystem::_should_skip_directory(full_path)) {
+						dirs.push_back(file_info.name);
+					}
+				} else {
+					file_infos.push_back(file_info);
+				}
 			}
 		}
 		item = dir_access->get_next();
 	}
 
 	dirs.sort_custom<FileNoCaseComparator>();
-	files.sort_custom<FileNoCaseComparator>();
+	bool reverse_directories = file_sort == FileSortOption::FILE_SORT_NAME_REVERSE;
+	if (reverse_directories) {
+		dirs.reverse();
+	}
+	sort_file_info_list(file_infos, file_sort);
 
 	while (!dirs.is_empty()) {
 		const String &dir_name = dirs.front()->get();
@@ -1037,25 +1068,26 @@ void EditorFileDialog::update_file_list() {
 		}
 	}
 
-	while (!files.is_empty()) {
+	while (!file_infos.is_empty()) {
 		bool match = patterns.is_empty();
 
+		FileInfo file_info = file_infos.front()->get();
 		for (const String &E : patterns) {
-			if (files.front()->get().matchn(E)) {
+			if (file_info.name.matchn(E)) {
 				match = true;
 				break;
 			}
 		}
 
 		if (match) {
-			item_list->add_item(files.front()->get());
+			item_list->add_item(file_info.name);
 
 			if (get_icon_func) {
-				Ref<Texture2D> icon = get_icon_func(cdir.path_join(files.front()->get()));
+				Ref<Texture2D> icon = get_icon_func(file_info.path);
 				if (display_mode == DISPLAY_THUMBNAILS) {
 					Ref<Texture2D> thumbnail;
 					if (get_thumbnail_func) {
-						thumbnail = get_thumbnail_func(cdir.path_join(files.front()->get()));
+						thumbnail = get_thumbnail_func(file_info.path);
 					}
 					if (thumbnail.is_null()) {
 						thumbnail = file_thumbnail;
@@ -1069,22 +1101,21 @@ void EditorFileDialog::update_file_list() {
 			}
 
 			Dictionary d;
-			d["name"] = files.front()->get();
+			d["name"] = file_info.name;
 			d["dir"] = false;
-			String fullpath = cdir.path_join(files.front()->get());
-			d["path"] = fullpath;
+			d["path"] = file_info.path;
 			item_list->set_item_metadata(-1, d);
 
 			if (display_mode == DISPLAY_THUMBNAILS && previews_enabled) {
-				EditorResourcePreview::get_singleton()->queue_resource_preview(fullpath, this, "_thumbnail_result", fullpath);
+				EditorResourcePreview::get_singleton()->queue_resource_preview(file_info.path, this, "_thumbnail_result", file_info.path);
 			}
 
-			if (file->get_text() == files.front()->get()) {
+			if (file->get_text() == file_info.name) {
 				item_list->set_current(item_list->get_item_count() - 1);
 			}
 		}
 
-		files.pop_front();
+		file_infos.pop_front();
 	}
 
 	if (favorites->get_current() >= 0) {
@@ -1353,6 +1384,24 @@ void EditorFileDialog::_make_dir() {
 	makedirname->grab_focus();
 }
 
+void EditorFileDialog::_focus_filter_box() {
+	filter_box->grab_focus();
+	filter_box->select_all();
+}
+
+void EditorFileDialog::_filter_changed(const String &p_text) {
+	search_string = p_text;
+	invalidate();
+}
+
+void EditorFileDialog::_file_sort_popup(int p_id) {
+	for (int i = 0; i != static_cast<int>(FileSortOption::FILE_SORT_MAX); i++) {
+		file_sort_button->get_popup()->set_item_checked(i, (i == p_id));
+	}
+	file_sort = static_cast<FileSortOption>(p_id);
+	invalidate();
+}
+
 void EditorFileDialog::_delete_items() {
 	// Collect the selected folders and files to delete and check them in the deletion dependency dialog.
 	Vector<String> folders;
@@ -1443,6 +1492,10 @@ void EditorFileDialog::_update_icons() {
 	favorite->set_icon(theme_cache.favorite);
 	show_hidden->set_icon(theme_cache.toggle_hidden);
 	makedir->set_icon(theme_cache.create_folder);
+
+	filter_box->set_right_icon(theme_cache.filter_box);
+	file_sort_button->set_icon(theme_cache.file_sort_button);
+	filter_box->set_clear_button_enabled(true);
 
 	fav_up->set_icon(theme_cache.favorites_up);
 	fav_down->set_icon(theme_cache.favorites_down);
@@ -2093,6 +2146,7 @@ EditorFileDialog::EditorFileDialog() {
 	// Allow both Cmd + L and Cmd + Shift + G to match Safari's and Finder's shortcuts respectively.
 	ED_SHORTCUT_OVERRIDE_ARRAY("file_dialog/focus_path", "macos",
 			{ int32_t(KeyModifierMask::META | Key::L), int32_t(KeyModifierMask::META | KeyModifierMask::SHIFT | Key::G) });
+	ED_SHORTCUT("file_dialog/focus_filter", TTR("Focus Filter"), KeyModifierMask::CMD_OR_CTRL | Key::F);
 	ED_SHORTCUT("file_dialog/move_favorite_up", TTR("Move Favorite Up"), KeyModifierMask::CMD_OR_CTRL | Key::UP);
 	ED_SHORTCUT("file_dialog/move_favorite_down", TTR("Move Favorite Down"), KeyModifierMask::CMD_OR_CTRL | Key::DOWN);
 
@@ -2256,10 +2310,36 @@ EditorFileDialog::EditorFileDialog() {
 	VBoxContainer *list_vb = memnew(VBoxContainer);
 	list_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
+	HBoxContainer *lower_hb = memnew(HBoxContainer);
+	lower_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+
 	l = memnew(Label(TTR("Directories & Files:")));
 	l->set_theme_type_variation("HeaderSmall");
-	list_vb->add_child(l);
+	lower_hb->add_child(l);
+
+	list_vb->add_child(lower_hb);
 	preview_hb->add_child(list_vb);
+
+	filter_box = memnew(LineEdit);
+	filter_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	filter_box->set_placeholder(TTR("Filter"));
+	filter_box->connect(SceneStringName(text_changed), callable_mp(this, &EditorFileDialog::_filter_changed));
+	lower_hb->add_child(filter_box);
+
+	file_sort_button = memnew(MenuButton);
+	file_sort_button->set_flat(true);
+	file_sort_button->set_tooltip_text(TTR("Sort files"));
+
+	PopupMenu *p = file_sort_button->get_popup();
+	p->connect(SceneStringName(id_pressed), callable_mp(this, &EditorFileDialog::_file_sort_popup));
+	p->add_radio_check_item(TTR("Sort by Name (Ascending)"), static_cast<int>(FileSortOption::FILE_SORT_NAME));
+	p->add_radio_check_item(TTR("Sort by Name (Descending)"), static_cast<int>(FileSortOption::FILE_SORT_NAME_REVERSE));
+	p->add_radio_check_item(TTR("Sort by Type (Ascending)"), static_cast<int>(FileSortOption::FILE_SORT_TYPE));
+	p->add_radio_check_item(TTR("Sort by Type (Descending)"), static_cast<int>(FileSortOption::FILE_SORT_TYPE_REVERSE));
+	p->add_radio_check_item(TTR("Sort by Last Modified"), static_cast<int>(FileSortOption::FILE_SORT_MODIFIED_TIME));
+	p->add_radio_check_item(TTR("Sort by First Modified"), static_cast<int>(FileSortOption::FILE_SORT_MODIFIED_TIME_REVERSE));
+	p->set_item_checked(0, true);
+	lower_hb->add_child(file_sort_button);
 
 	// Item (files and folders) list with context menu.
 
