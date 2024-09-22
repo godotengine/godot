@@ -1096,7 +1096,12 @@ Vector3 KinematicBody::_move_and_slide_internal(const Vector3 &p_linear_velocity
 
 		// We need to check the on_floor_body still exists before accessing.
 		// A valid RID is no guarantee that the object has not been deleted.
-		if (ObjectDB::get_instance(on_floor_body_id)) {
+
+		// We can only perform the ObjectDB lifetime check on Object derived objects.
+		// Note that physics also creates RIDs for non-Object derived objects, these cannot
+		// be lifetime checked through ObjectDB, and therefore there is a still a vulnerability
+		// to dangling RIDs (access after free) in this scenario.
+		if (!on_floor_body_id || ObjectDB::get_instance(on_floor_body_id)) {
 			// This approach makes sure there is less delay between the actual body velocity and the one we saved.
 			bs = PhysicsServer::get_singleton()->body_get_direct_state(on_floor_body_rid);
 		}
