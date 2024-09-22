@@ -100,7 +100,7 @@
 			[b]Note:[/b] For [member one_shot] emitters, due to the particles being computed on the GPU, there may be a short period after receiving the [signal finished] signal during which setting this to [code]true[/code] will not restart the emission cycle.
 			[b]Tip:[/b] If your [member one_shot] emitter needs to immediately restart emitting particles once [signal finished] signal is received, consider calling [method restart] instead of setting [member emitting].
 		</member>
-		<member name="auto_start" type="bool" setter="set_auto_start" getter="get_auto_start" default="false">
+		<member name="autostart" type="bool" setter="set_autostart" getter="get_autostart" default="false">
 			If [code]true[/code], it will start emitting once it is placed in the scene.
 		</member>
 		<member name="explosiveness" type="float" setter="set_explosiveness_ratio" getter="get_explosiveness_ratio" default="0.0">
