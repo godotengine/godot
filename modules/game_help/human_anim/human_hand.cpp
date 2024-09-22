@@ -1,6 +1,6 @@
 
-#include "./skeleton.h"
-#include "./hand.h"
+#include "./human_skeleton.h"
+#include "./human_hand.h"
 #include "./axes.h"
 
 namespace human_anim

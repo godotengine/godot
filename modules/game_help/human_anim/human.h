@@ -6,7 +6,7 @@
 #include "./bitset.h"
 #include "./Simd/vec-trs.h"
 
-#include "./hand.h"
+#include "./human_hand.h"
 #include "scene/3d/skeleton_3d.h"
 
 
@@ -275,10 +275,7 @@ namespace human
 
     typedef human_anim::bitset<kLastMaskIndex> HumanPoseMask;
 
-    bool MaskHasLeftFootGoal(const HumanPoseMask& mask);
-    bool MaskHasRightFootGoal(const HumanPoseMask& mask);
 
-    HumanPoseMask FullBodyMask();
 
     
     const LocalVector<Pair<String,String>>& get_bone_label() {
@@ -411,6 +408,39 @@ namespace human
         return ret;
     }
 
+    struct HumanGoal
+    {
+
+        HumanGoal() : m_WeightT(0.0f), m_WeightR(0.0f), m_HintT(0), m_HintWeightT(0), m_X(math::trsIdentity()) {}
+
+        math::trsX m_X;
+        float m_WeightT;
+        float m_WeightR;
+
+        math::float3 m_HintT;
+        float m_HintWeightT;
+
+    };
+
+    struct HumanPose
+    {
+
+        HumanPose();
+
+        math::trsX      m_RootX;
+        math::float3    m_LookAtPosition;
+        math::float4    m_LookAtWeight;
+
+        HumanGoal       m_GoalArray[kLastGoal];
+        hand::HandPose  m_LeftHandPose;
+        hand::HandPose  m_RightHandPose;
+
+        float           m_DoFArray[kLastDoF];
+        math::float3    m_TDoFArray[kLastTDoF];
+    };
+    struct HumanAnimationKeyFrame{
+        float time;
+    };
     
     struct Human
     {
@@ -418,60 +448,10 @@ namespace human
         Human();
 
         void init(Skeleton3D* apSkeleton);
-        void build_form_skeleton(Skeleton3D* apSkeleton) {
-            
-            const LocalVector<Pair<String,String>>& bone_label = get_bone_label();
-            m_Skeleton.m_ID.resize(kHumanDoFStop);
-            m_Skeleton.m_ID.fill(-1);
-
-            m_Skeleton.m_Node.resize(kHumanDoFStop);
-            for(int i = 0; i < kHumanDoFStop; ++i) {
-                int bone_index = apSkeleton->find_bone(bone_label[i].first);
-                if(bone_index >= 0) {
-                    m_Skeleton.m_Node[i].m_AxesId = i;
-                    m_Skeleton.m_Node[i].m_bone_index = bone_index;
-                    m_Skeleton.m_Node[i].m_ParentId = apSkeleton->get_bone_parent(bone_index);
-                }
-                else {
-                    m_Skeleton.m_Node[i].m_AxesId = -1;
-                    m_Skeleton.m_Node[i].m_bone_index = -1;
-                    m_Skeleton.m_Node[i].m_ParentId = -1;
-                }
-            }
-            // 构建基础姿势
-            m_SkeletonLocalPose.resize(apSkeleton->get_bone_count()) ;
-            for(int i = 0; i < apSkeleton->get_bone_count(); ++i) {
-                m_SkeletonLocalPose[i] = math::trsX::fromTransform(apSkeleton->get_bone_rest(i));                
-            }
-            m_SkeletonLocalPose.resize(kHumanDoFStop);
-            for(int i = 0; i < kHumanDoFStop; ++i) {
-                m_HumanAllBoneIndex[i] = apSkeleton->find_bone(bone_label[i].first);                
-            }
-            for(int i = 0; i < kLastBone; ++i) {
-                m_HumanBoneIndex[i] = apSkeleton->find_bone(bone_label[i].first);
-                if(m_HumanBoneIndex[i] >= 0) {
-                    m_HasTDoF = true;
-                }
-            }
-            m_HasLeftHand = false;
-            m_HasRightHand = false;
-            // 配置手
-            for(int i = 0; i < hand::s_BoneCount; ++i) {
-                m_LeftHand.m_HandBoneIndex[i] = apSkeleton->find_bone(bone_label[kLastBone + i].first);
-                if(m_LeftHand.m_HandBoneIndex[i] >= 0) {
-                    m_HasLeftHand = true;
-                }
-                m_RightHand.m_HandBoneIndex[i] = apSkeleton->find_bone(bone_label[kLastBone + hand::s_BoneCount + i].first);
-                if(m_RightHand.m_HandBoneIndex[i] >= 0) {
-                    m_HasRightHand = true;
-                }
-            }
-
-
-
-
-        }
+        void build_form_skeleton(Skeleton3D* apSkeleton);
         void setup_axes(Skeleton3D* apSkeleton) ;
+
+        
 
         math::trsX              m_RootX;
 
@@ -505,36 +485,6 @@ namespace human
 
     };
 
-    struct HumanGoal
-    {
-
-        HumanGoal() : m_WeightT(0.0f), m_WeightR(0.0f), m_HintT(0), m_HintWeightT(0), m_X(math::trsIdentity()) {}
-
-        math::trsX m_X;
-        float m_WeightT;
-        float m_WeightR;
-
-        math::float3 m_HintT;
-        float m_HintWeightT;
-
-    };
-
-    struct HumanPose
-    {
-
-        HumanPose();
-
-        math::trsX      m_RootX;
-        math::float3    m_LookAtPosition;
-        math::float4    m_LookAtWeight;
-
-        HumanGoal       m_GoalArray[kLastGoal];
-        hand::HandPose  m_LeftHandPose;
-        hand::HandPose  m_RightHandPose;
-
-        float           m_DoFArray[kLastDoF];
-        math::float3    m_TDoFArray[kLastTDoF];
-    };
 
 	struct HumanWeight
 	{
@@ -628,7 +578,6 @@ namespace human
     void HumanPoseClear(HumanPose& pose);
     void HumanPoseClear(HumanPose& pose, HumanPoseMask const &humanPoseMask);
     void HumanPoseCopy(HumanPose &poseDst, HumanPose const &poseSrc, bool doFOnly = false);
-    void HumanPoseCopy(HumanPose &poseDst, HumanPose const &poseSrc, HumanPoseMask const &humanPoseMask);
     void HumanPoseAdd(HumanPose &pose, HumanPose const &poseA, HumanPose const &poseB);
     void HumanPoseSub(HumanPose &pose, HumanPose const &poseA, HumanPose const &poseB);
     void HumanPoseWeight(HumanPose &pose, HumanPose const &poseA, float weight);

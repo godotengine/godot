@@ -1,4 +1,4 @@
-#include "./skeleton.h"
+#include "./human_skeleton.h"
 #include "./axes.h"
 
 namespace human_anim

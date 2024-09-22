@@ -441,10 +441,10 @@ namespace
         human_anim::ValueArrayMask* valuesMask = CreateValueArrayMask(jobData->clipBindings->animationSet->m_DynamicFullValuesConstant, jobData->alloc);
 
         human_anim::skeleton::Ref<SkeletonPose> humanLclPose = NULL;
-        human_anim::skeleton::Ref<SkeletonPose> humanPoseA = NULL;
-        human_anim::skeleton::Ref<SkeletonPose> humanPoseB = NULL;
-        human_anim::skeleton::Ref<SkeletonPose> humanPoseC = NULL;
-        human_anim::skeleton::Ref<SkeletonPose> humanPoseD = NULL;
+        human_anim::skeleton::Ref<SkeletonPose> apSkeletonPoseRef = NULL;
+        human_anim::skeleton::Ref<SkeletonPose> apSkeletonPoseGbl = NULL;
+        human_anim::skeleton::Ref<SkeletonPose> apSkeletonPoseLcl = NULL;
+        human_anim::skeleton::Ref<SkeletonPose> apSkeletonPoseWs = NULL;
 
         human_anim::skeleton::Ref<SkeletonPose> avatarLclPose = human_anim::skeleton::CreateSkeletonPose<math::trsX>(jobData->avatarConstant.m_AvatarSkeleton.Get(), jobData->alloc);
         human_anim::skeleton::Ref<SkeletonPose> avatarGblPose = human_anim::skeleton::CreateSkeletonPose<math::trsX>(jobData->avatarConstant.m_AvatarSkeleton.Get(), jobData->alloc);
@@ -454,14 +454,14 @@ namespace
         if (jobData->isHuman)
         {
             humanLclPose = human_anim::skeleton::CreateSkeletonPose<math::trsX>(jobData->avatarConstant.m_Human->m_Skeleton.Get(), jobData->alloc);
-            humanPoseA = human_anim::skeleton::CreateSkeletonPose<math::trsX>(jobData->avatarConstant.m_Human->m_Skeleton.Get(), jobData->alloc);
-            humanPoseB = human_anim::skeleton::CreateSkeletonPose<math::trsX>(jobData->avatarConstant.m_Human->m_Skeleton.Get(), jobData->alloc);
-            humanPoseC = human_anim::skeleton::CreateSkeletonPose<math::trsX>(jobData->avatarConstant.m_Human->m_Skeleton.Get(), jobData->alloc);
-            humanPoseD = human_anim::skeleton::CreateSkeletonPose<math::trsX>(jobData->avatarConstant.m_Human->m_Skeleton.Get(), jobData->alloc);
+            apSkeletonPoseRef = human_anim::skeleton::CreateSkeletonPose<math::trsX>(jobData->avatarConstant.m_Human->m_Skeleton.Get(), jobData->alloc);
+            apSkeletonPoseGbl = human_anim::skeleton::CreateSkeletonPose<math::trsX>(jobData->avatarConstant.m_Human->m_Skeleton.Get(), jobData->alloc);
+            apSkeletonPoseLcl = human_anim::skeleton::CreateSkeletonPose<math::trsX>(jobData->avatarConstant.m_Human->m_Skeleton.Get(), jobData->alloc);
+            apSkeletonPoseWs = human_anim::skeleton::CreateSkeletonPose<math::trsX>(jobData->avatarConstant.m_Human->m_Skeleton.Get(), jobData->alloc);
 
             if (jobData->avatarConstant.m_Human->m_HasTDoF)
             {
-                human_anim::human::RetargetFromTDoFBase(jobData->avatarConstant.m_Human.Get(), humanPoseA, &jobData->tDoFBaseArray[0]);
+                human_anim::human::RetargetFromTDoFBase(jobData->avatarConstant.m_Human.Get(), apSkeletonPoseRef, &jobData->tDoFBaseArray[0]);
             }
         }
 
@@ -572,20 +572,20 @@ namespace
 
                         humanLclPose->m_X[0] = avatarGblPose->m_X[rootIndex];
 
-                        human_anim::human::RetargetFrom(jobData->avatarConstant.m_Human.Get(), humanLclPose, &pose, humanPoseA, humanPoseB, humanPoseC, humanPoseD, &jobData->tDoFBaseArray[0]);
+                        human_anim::human::RetargetFrom(jobData->avatarConstant.m_Human.Get(), humanLclPose, &pose, apSkeletonPoseRef, apSkeletonPoseGbl, apSkeletonPoseLcl, apSkeletonPoseWs, &jobData->tDoFBaseArray[0]);
 
                         if (jobData->doRetargetingQuality)
                         {
                             human_anim::skeleton::SkeletonPoseComputeGlobal(jobData->avatarConstant.m_AvatarSkeleton.Get(), avatarLclPose, avatarGblPose);
-                            human_anim::skeleton::SkeletonPoseCopy(jobData->avatarConstant.m_AvatarSkeleton.Get(), avatarGblPose, jobData->avatarConstant.m_Human->m_Skeleton.Get(), humanPoseA);
+                            human_anim::skeleton::SkeletonPoseCopy(jobData->avatarConstant.m_AvatarSkeleton.Get(), avatarGblPose, jobData->avatarConstant.m_Human->m_Skeleton.Get(), apSkeletonPoseRef);
 
                             human_anim::human::HumanPose poseOut;
-                            human_anim::human::RetargetTo(jobData->avatarConstant.m_Human.Get(), &pose, 0, math::trsIdentity(), &poseOut, humanLclPose, humanPoseB);
-                            human_anim::skeleton::SkeletonPoseComputeGlobal(jobData->avatarConstant.m_Human->m_Skeleton.Get(), humanLclPose, humanPoseB);
+                            human_anim::human::RetargetTo(jobData->avatarConstant.m_Human.Get(), &pose, 0, math::trsIdentity(), &poseOut, humanLclPose, apSkeletonPoseGbl);
+                            human_anim::skeleton::SkeletonPoseComputeGlobal(jobData->avatarConstant.m_Human->m_Skeleton.Get(), humanLclPose, apSkeletonPoseGbl);
 
                             for (int boneIter = 0; boneIter < positionBoneCount; boneIter++)
                             {
-                                float positionError = RetargetPositionError(*jobData->avatarConstant.m_Human, positionBoneList[boneIter], *humanPoseA, *humanPoseB);
+                                float positionError = RetargetPositionError(*jobData->avatarConstant.m_Human, positionBoneList[boneIter], *apSkeletonPoseRef, *apSkeletonPoseGbl);
 
                                 positionAverageError[boneIter] += positionError;
 
@@ -598,7 +598,7 @@ namespace
 
                             for (int boneIter = 0; boneIter < orientationBoneCount; boneIter++)
                             {
-                                float orientationError = RetargetOrientationError(*jobData->avatarConstant.m_Human, orientationBoneList[boneIter], *humanPoseA, *humanPoseB);
+                                float orientationError = RetargetOrientationError(*jobData->avatarConstant.m_Human, orientationBoneList[boneIter], *apSkeletonPoseRef, *apSkeletonPoseGbl);
 
                                 orientationAverageError[boneIter] += orientationError;
 
@@ -862,10 +862,10 @@ namespace
         if (jobData->isHuman)
         {
             human_anim::skeleton::DestroySkeletonPose(humanLclPose, jobData->alloc);
-            human_anim::skeleton::DestroySkeletonPose(humanPoseA, jobData->alloc);
-            human_anim::skeleton::DestroySkeletonPose(humanPoseB, jobData->alloc);
-            human_anim::skeleton::DestroySkeletonPose(humanPoseC, jobData->alloc);
-            human_anim::skeleton::DestroySkeletonPose(humanPoseD, jobData->alloc);
+            human_anim::skeleton::DestroySkeletonPose(apSkeletonPoseRef, jobData->alloc);
+            human_anim::skeleton::DestroySkeletonPose(apSkeletonPoseGbl, jobData->alloc);
+            human_anim::skeleton::DestroySkeletonPose(apSkeletonPoseLcl, jobData->alloc);
+            human_anim::skeleton::DestroySkeletonPose(apSkeletonPoseWs, jobData->alloc);
         }
 
         DestroyValueArray(valuesDefault, jobData->alloc);

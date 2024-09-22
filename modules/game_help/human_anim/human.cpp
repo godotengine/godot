@@ -1,5 +1,5 @@
 
-#include "./skeleton.h"
+#include "./human_skeleton.h"
 #include "./human.h"
 #include "./axes.h"
 
@@ -476,15 +476,6 @@ namespace human
 
         return muscleName[aBoneIndex];
     }
-    bool MaskHasLeftFootGoal(const HumanPoseMask& mask)
-    {
-        return mask.test(human_anim::human::kMaskGoalStartIndex + human_anim::human::kLeftFootGoal);
-    }
-
-    bool MaskHasRightFootGoal(const HumanPoseMask& mask)
-    {
-        return mask.test(human_anim::human::kMaskGoalStartIndex + human_anim::human::kRightFootGoal);
-    }
 
     int32_t MuscleFromBone(int32_t aBoneIndex, int32_t aDoFIndex)
     {
@@ -531,11 +522,6 @@ namespace human
         }
 
         return humanIndex;
-    }
-
-    HumanPoseMask FullBodyMask()
-    {
-        return HumanPoseMask(~HumanPoseMask::type(0));
     }
 
     math::SetupAxesInfo const& GetAxeInfo(uint32_t index)
@@ -1009,6 +995,59 @@ namespace human
                 skeleton::SetupAxes(&apHuman->m_Skeleton, apSkeletonPoseGlobal, GetAxeInfo(i), skBoneIndex, skAxisBoneId, true, len);
             }
         }
+    }
+    void Human::build_form_skeleton(Skeleton3D* apSkeleton) {
+        
+        const LocalVector<Pair<String,String>>& bone_label = get_bone_label();
+        m_Skeleton.m_ID.resize(kLastBone);
+        m_Skeleton.m_ID.fill(-1);
+
+        m_Skeleton.m_Node.resize(kLastBone);
+        for(int i = 0; i < kLastBone; ++i) {
+            int bone_index = apSkeleton->find_bone(bone_label[i].first);
+            if(bone_index >= 0) {
+                m_Skeleton.m_Node[i].m_AxesId = i;
+                m_Skeleton.m_Node[i].m_bone_index = bone_index;
+                m_Skeleton.m_Node[i].m_ParentId = apSkeleton->get_bone_parent(bone_index);
+            }
+            else {
+                m_Skeleton.m_Node[i].m_AxesId = -1;
+                m_Skeleton.m_Node[i].m_bone_index = -1;
+                m_Skeleton.m_Node[i].m_ParentId = -1;
+            }
+        }
+        // 构建基础姿势
+        m_SkeletonLocalPose.resize(apSkeleton->get_bone_count()) ;
+        for(int i = 0; i < apSkeleton->get_bone_count(); ++i) {
+            m_SkeletonLocalPose[i] = math::trsX::fromTransform(apSkeleton->get_bone_rest(i));                
+        }
+        m_SkeletonLocalPose.resize(kLastBone);
+        for(int i = 0; i < kLastBone; ++i) {
+            m_HumanAllBoneIndex[i] = apSkeleton->find_bone(bone_label[i].first);                
+        }
+        for(int i = 0; i < kLastBone; ++i) {
+            m_HumanBoneIndex[i] = apSkeleton->find_bone(bone_label[i].first);
+            if(m_HumanBoneIndex[i] >= 0) {
+                m_HasTDoF = true;
+            }
+        }
+        m_HasLeftHand = false;
+        m_HasRightHand = false;
+        // 配置手
+        for(int i = 0; i < hand::s_BoneCount; ++i) {
+            m_LeftHand.m_HandBoneIndex[i] = apSkeleton->find_bone(bone_label[kLastBone + i].first);
+            if(m_LeftHand.m_HandBoneIndex[i] >= 0) {
+                m_HasLeftHand = true;
+            }
+            m_RightHand.m_HandBoneIndex[i] = apSkeleton->find_bone(bone_label[kLastBone + hand::s_BoneCount + i].first);
+            if(m_RightHand.m_HandBoneIndex[i] >= 0) {
+                m_HasRightHand = true;
+            }
+        }
+
+
+
+
     }
 
     void Human::setup_axes(Skeleton3D* apSkeleton) {
@@ -1494,91 +1533,6 @@ namespace human
         }
     }
 
-    void HumanPoseCopy(HumanPose &poseDst, HumanPose const &poseSrc, HumanPoseMask const &arHumanPoseMask)
-    {
-        if (arHumanPoseMask == FullBodyMask())
-        {
-            HumanPoseCopy(poseDst, poseSrc);
-        }
-        else
-        {
-            int32_t i;
-            for (i = 0; i < kLastDoF; i++)
-            {
-                if (arHumanPoseMask.test(kMaskDoFStartIndex + i))
-                {
-                    poseDst.m_DoFArray[i] = poseSrc.m_DoFArray[i];
-                }
-                else
-                {
-                    poseDst.m_DoFArray[i] = 0;
-                }
-            }
-
-            if (arHumanPoseMask.test(kMaskLeftHand))
-            {
-                for (i = 0; i < hand::s_DoFCount; i++)
-                {
-                    poseDst.m_LeftHandPose.m_DoFArray[i] = poseSrc.m_LeftHandPose.m_DoFArray[i];
-                }
-            }
-            else
-            {
-                for (i = 0; i < hand::s_DoFCount; i++)
-                {
-                    poseDst.m_LeftHandPose.m_DoFArray[i] = 0;
-                }
-            }
-
-            if (arHumanPoseMask.test(kMaskRightHand))
-            {
-                for (i = 0; i < hand::s_DoFCount; i++)
-                {
-                    poseDst.m_RightHandPose.m_DoFArray[i] = poseSrc.m_RightHandPose.m_DoFArray[i];
-                }
-            }
-            else
-            {
-                for (i = 0; i < hand::s_DoFCount; i++)
-                {
-                    poseDst.m_RightHandPose.m_DoFArray[i] = 0;
-                }
-            }
-
-            for (i = 0; i < kLastGoal; i++)
-            {
-                if (arHumanPoseMask.test(kMaskGoalStartIndex + i))
-                {
-                    poseDst.m_GoalArray[i].m_X = poseSrc.m_GoalArray[i].m_X;
-                }
-                else
-                {
-                    poseDst.m_GoalArray[i].m_X = math::trsIdentity();
-                }
-            }
-
-            if (arHumanPoseMask.test(kMaskRootIndex))
-            {
-                poseDst.m_RootX = poseSrc.m_RootX;
-            }
-            else
-            {
-                poseDst.m_RootX = math::trsIdentity();
-            }
-
-            for (i = 0; i < kLastTDoF; i++)
-            {
-                if (arHumanPoseMask.test(kMaskTDoFStartIndex + i))
-                {
-                    poseDst.m_TDoFArray[i] = poseSrc.m_TDoFArray[i];
-                }
-                else
-                {
-                    poseDst.m_TDoFArray[i] = math::float3(math::ZERO);
-                }
-            }
-        }
-    }
 
     void HumanPoseAdd(HumanPose &arPose, HumanPose const &arPoseA, HumanPose const &arPoseB)
     {

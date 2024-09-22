@@ -214,4 +214,10 @@ namespace human_anim
     public:
         static const bool value = true;
     };
+    template<typename TYPE> class OffsetPtr;
+
+    class RuntimeBaseAllocator 
+    {
+    public:
+    };
 }
