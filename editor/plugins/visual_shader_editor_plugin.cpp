@@ -3600,6 +3600,16 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 			fmaFunc->set_op_type((VisualShaderNodeMultiplyAdd::OpType)(int)p_ops[0]);
 		}
 	}
+
+	// REMAP
+	{
+		VisualShaderNodeRemap *remap_func = Object::cast_to<VisualShaderNodeRemap>(p_node);
+
+		if (remap_func) {
+			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
+			remap_func->set_op_type((VisualShaderNodeRemap::OpType)(int)p_ops[0]);
+		}
+	}
 }
 
 void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, const String &p_resource_path, int p_node_idx) {
@@ -7089,6 +7099,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("Pow", "Scalar/Functions", "VisualShaderNodeFloatOp", TTR("Returns the value of the first parameter raised to the power of the second."), { VisualShaderNodeFloatOp::OP_POW }, VisualShaderNode::PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption("Radians", "Scalar/Functions", "VisualShaderNodeFloatFunc", TTR("Converts a quantity in degrees to radians."), { VisualShaderNodeFloatFunc::FUNC_RADIANS }, VisualShaderNode::PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption("Reciprocal", "Scalar/Functions", "VisualShaderNodeFloatFunc", TTR("1.0 / scalar"), { VisualShaderNodeFloatFunc::FUNC_RECIPROCAL }, VisualShaderNode::PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption("Remap", "Scalar/Functions", "VisualShaderNodeRemap", TTR("Remaps a value from the input range to the output range."), { VisualShaderNodeRemap::OP_TYPE_SCALAR }, VisualShaderNode::PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption("Round", "Scalar/Functions", "VisualShaderNodeFloatFunc", TTR("Finds the nearest integer to the parameter."), { VisualShaderNodeFloatFunc::FUNC_ROUND }, VisualShaderNode::PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption("RoundEven", "Scalar/Functions", "VisualShaderNodeFloatFunc", TTR("Finds the nearest even integer to the parameter."), { VisualShaderNodeFloatFunc::FUNC_ROUNDEVEN }, VisualShaderNode::PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption("Saturate", "Scalar/Functions", "VisualShaderNodeFloatFunc", TTR("Clamps the value between 0.0 and 1.0."), { VisualShaderNodeFloatFunc::FUNC_SATURATE }, VisualShaderNode::PORT_TYPE_SCALAR));
@@ -7206,7 +7217,6 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("DistanceFade", "Utility", "VisualShaderNodeDistanceFade", TTR("The distance fade effect fades out each pixel based on its distance to another object."), {}, VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("ProximityFade", "Utility", "VisualShaderNodeProximityFade", TTR("The proximity fade effect fades out each pixel based on its distance to another object."), {}, VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("RandomRange", "Utility", "VisualShaderNodeRandomRange", TTR("Returns a random value between the minimum and maximum input values."), {}, VisualShaderNode::PORT_TYPE_SCALAR));
-	add_options.push_back(AddOption("Remap", "Utility", "VisualShaderNodeRemap", TTR("Remaps a given input from the input range to the output range."), {}, VisualShaderNode::PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption("RotationByAxis", "Utility", "VisualShaderNodeRotationByAxis", TTR("Builds a rotation matrix from the given axis and angle, multiply the input vector by it and returns both this vector and a matrix."), {}, VisualShaderNode::PORT_TYPE_VECTOR_3D));
 
 	// VECTOR
@@ -7340,6 +7350,12 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("Refract", "Vector/Functions", "VisualShaderNodeVectorRefract", TTR("Returns the vector that points in the direction of refraction."), {}, VisualShaderNode::PORT_TYPE_VECTOR_2D));
 	add_options.push_back(AddOption("Refract", "Vector/Functions", "VisualShaderNodeVectorRefract", TTR("Returns the vector that points in the direction of refraction."), {}, VisualShaderNode::PORT_TYPE_VECTOR_3D));
 	add_options.push_back(AddOption("Refract", "Vector/Functions", "VisualShaderNodeVectorRefract", TTR("Returns the vector that points in the direction of refraction."), {}, VisualShaderNode::PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption("Remap", "Vector/Functions", "VisualShaderNodeRemap", TTR("Remaps a vector from the input range to the output range."), { VisualShaderNodeRemap::OP_TYPE_VECTOR_2D }, VisualShaderNode::PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption("Remap", "Vector/Functions", "VisualShaderNodeRemap", TTR("Remaps a vector from the input range to the output range."), { VisualShaderNodeRemap::OP_TYPE_VECTOR_3D }, VisualShaderNode::PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption("Remap", "Vector/Functions", "VisualShaderNodeRemap", TTR("Remaps a vector from the input range to the output range."), { VisualShaderNodeRemap::OP_TYPE_VECTOR_4D }, VisualShaderNode::PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption("RemapS", "Vector/Functions", "VisualShaderNodeRemap", TTR("Remaps a vector from the input range to the output range. Ranges defined with scalars."), { VisualShaderNodeRemap::OP_TYPE_VECTOR_2D_SCALAR }, VisualShaderNode::PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption("RemapS", "Vector/Functions", "VisualShaderNodeRemap", TTR("Remaps a vector from the input range to the output range. Ranges defined with scalars."), { VisualShaderNodeRemap::OP_TYPE_VECTOR_3D_SCALAR }, VisualShaderNode::PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption("RemapS", "Vector/Functions", "VisualShaderNodeRemap", TTR("Remaps a vector from the input range to the output range. Ranges defined with scalars."), { VisualShaderNodeRemap::OP_TYPE_VECTOR_4D_SCALAR }, VisualShaderNode::PORT_TYPE_VECTOR_4D));
 	add_options.push_back(AddOption("Round", "Vector/Functions", "VisualShaderNodeVectorFunc", TTR("Finds the nearest integer to the parameter."), { VisualShaderNodeVectorFunc::FUNC_ROUND, VisualShaderNodeVectorFunc::OP_TYPE_VECTOR_2D }, VisualShaderNode::PORT_TYPE_VECTOR_2D));
 	add_options.push_back(AddOption("Round", "Vector/Functions", "VisualShaderNodeVectorFunc", TTR("Finds the nearest integer to the parameter."), { VisualShaderNodeVectorFunc::FUNC_ROUND, VisualShaderNodeVectorFunc::OP_TYPE_VECTOR_3D }, VisualShaderNode::PORT_TYPE_VECTOR_3D));
 	add_options.push_back(AddOption("Round", "Vector/Functions", "VisualShaderNodeVectorFunc", TTR("Finds the nearest integer to the parameter."), { VisualShaderNodeVectorFunc::FUNC_ROUND, VisualShaderNodeVectorFunc::OP_TYPE_VECTOR_4D }, VisualShaderNode::PORT_TYPE_VECTOR_4D));
