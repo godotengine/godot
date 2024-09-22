@@ -460,6 +460,7 @@ public:
 	static String get_invalid_node_name_characters(bool p_allow_internal = false);
 	String validate_node_name() const;
 	String validate_ascii_identifier() const;
+	String validate_unicode_identifier() const;
 	String validate_filename() const;
 
 	bool is_valid_ascii_identifier() const;
