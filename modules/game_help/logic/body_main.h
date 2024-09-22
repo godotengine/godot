@@ -91,6 +91,8 @@ public:
         }
 
     }
+
+    
     String get_bone_label(StringName p_bone) {
         static HashMap<String,String> label_map = {
             {"Hips",L"臀部"},
@@ -175,6 +177,8 @@ public:
         }
         return p_bone;
     }
+    
+    
     void clear() {
         
         for(auto E : bone_label) {
@@ -655,7 +659,7 @@ public:
 
             {"LeftEye",Vector3(1,0,0).normalized(),Vector3(0,1,0)},
             {"RightEye",Vector3(1,0,0).normalized(),Vector3(0,1,0)},
-            
+
             {"Jaw",Vector3(0,0,1).normalized(),Vector3(0,1,0)},
 
 

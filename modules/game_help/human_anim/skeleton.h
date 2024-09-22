@@ -5,6 +5,7 @@
 //@TODO: Remove vec-transform.h
 #include "./Simd/vec-transform.h"
 #include "core/templates/local_vector.h"
+#include "scene/3d/skeleton_3d.h"
 
 
 namespace math
@@ -21,6 +22,7 @@ namespace skeleton
     {
 
         Node() : m_ParentId(-1), m_AxesId(-1) {}
+        int32_t m_bone_index;
         int32_t m_ParentId;
         int32_t m_AxesId;
 
@@ -30,6 +32,7 @@ namespace skeleton
     {
 
         HumanSkeleton() : m_Count(0), m_AxesCount(0) {}
+
 
         uint32_t            m_Count;
         LocalVector<Node>     m_Node;

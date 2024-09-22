@@ -476,7 +476,6 @@ namespace human
 
         return muscleName[aBoneIndex];
     }
-
     bool MaskHasLeftFootGoal(const HumanPoseMask& mask)
     {
         return mask.test(human_anim::human::kMaskGoalStartIndex + human_anim::human::kLeftFootGoal);
@@ -602,6 +601,57 @@ namespace human
         {
             m_HumanBoneMass[i] /= mass;
         }
+    }
+    void Human::init(Skeleton3D* apSkeleton) {
+
+
+        static const float HumanBoneDefaultMass[kLastBone] =
+        {
+            12.0f,      // kHips
+            10.0f,      // kLeftUpperLeg
+            10.0f,      // kRightUpperLeg
+            4.0f,       // kLeftLowerLeg
+            4.0f,       // kRightLowerLeg
+            0.8f,       // kLeftFoot
+            0.8f,       // kRightFoot
+            2.5f,       // kSpine
+            12.0f,      // kChest
+            12.0f,      // kUpperChest
+            1.0f,       // kNeck
+            4.0f,       // kHead
+            0.5f,       // kLeftShoulder
+            0.5f,       // kRightShoulder
+            2.0f,       // kLeftUpperArm
+            2.0f,       // kRightUpperArm
+            1.5f,       // kLeftLowerArm
+            1.5f,       // kRightLowerArm
+            0.5f,       // kLeftHand
+            0.5f,       // kRightHand
+            0.2f,       // kLeftToes
+            0.2f,       // kRightToes
+            0.0f,       // LeftEye
+            0.0f,       // RightEye
+            0.0f        // Jaw
+        };
+        
+        float mass = 0;
+        for (int i = 0; i < kLastBone; i++)
+        {
+            m_HumanBoneIndex[i] = -1;
+            m_HumanBoneMass[i] = HumanBoneDefaultMass[i];
+            mass += m_HumanBoneMass[i];
+        }
+
+        for (int i = 0; i < kLastBone; i++)
+        {
+            m_HumanBoneMass[i] /= mass;
+        }
+
+        build_form_skeleton(apSkeleton);
+        
+        setup_axes(apSkeleton);
+        HumanAdjustMass(this);
+
     }
 
     Human* CreateHuman(skeleton::HumanSkeleton *apSkeleton, skeleton::SkeletonPose *apSkeletonPose, RuntimeBaseAllocator& arAlloc)
@@ -961,6 +1011,25 @@ namespace human
         }
     }
 
+    void Human::setup_axes(Skeleton3D* apSkeleton) {
+        skeleton::SkeletonPose apSkeletonPoseGlobal;
+        apSkeletonPoseGlobal.m_Count = apSkeleton->get_bone_count();
+        apSkeletonPoseGlobal.m_X.resize(apSkeleton->get_bone_count());
+
+        for(int32_t i = 0; i < apSkeleton->get_bone_count(); i++) {
+            apSkeletonPoseGlobal.m_X[i] = math::trsX::fromTransform(apSkeleton->get_bone_global_pose(i));
+        }
+        HumanSetupAxes(this,&apSkeletonPoseGlobal);
+
+        if(m_HasLeftHand) {
+            hand::HandSetupAxes(&m_LeftHand, &apSkeletonPoseGlobal, &m_Skeleton, true);
+        }
+
+        if(m_HasRightHand) {
+            hand::HandSetupAxes(&m_RightHand, &apSkeletonPoseGlobal, &m_Skeleton, false);
+        }
+
+    }
     void HumanCopyAxes(Human const *apSrcHuman, Human *apHuman)
     {
         int32_t i;

@@ -759,17 +759,6 @@ namespace skeleton
         }
     }
 
-    static int GetSkeletonNodeDepth(human_anim::skeleton::HumanSkeleton const& skeleton, uint32_t boneIndex)
-    {
-        uint32_t parentIndex = skeleton.m_Node[boneIndex].m_ParentId;
-        int depth = 0;
-        while (parentIndex != 0xffffffff)
-        {
-            depth++;
-            parentIndex = skeleton.m_Node[parentIndex].m_ParentId;
-        }
-        return depth;
-    }
 
     // explicit template instantiations...
 

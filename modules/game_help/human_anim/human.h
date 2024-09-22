@@ -7,6 +7,7 @@
 #include "./Simd/vec-trs.h"
 
 #include "./hand.h"
+#include "scene/3d/skeleton_3d.h"
 
 
 namespace math
@@ -279,20 +280,211 @@ namespace human
 
     HumanPoseMask FullBodyMask();
 
+    
+    const LocalVector<Pair<String,String>>& get_bone_label() {
+        static LocalVector<Pair<String,String>> label_map = {
+            {"Hips",L"臀部"},
+            {"Spine",L"脊柱"},
+            {"Chest",L"颈部"},
+            {"UpperChest",L"上胸部"},
+            {"Neck",L"颈部"},
+            {"Head",L"头部"},
+            {"Jaw",L"下巴"},
+
+            {"LeftShoulder",L"左肩"},
+            {"RightShoulder",L"右肩"},
+
+            {"LeftUpperArm",L"左上臂"},
+            {"RightUpperArm",L"右上臂"},
+
+            {"LeftLowerArm",L"左下臂"},
+            {"RightLowerArm",L"右下臂"},
+
+            {"LeftHand",L"左手"},
+            {"RightHand",L"右手"},
+
+            {"LeftUpperLeg",L"左上腿"},
+            {"RightUpperLeg",L"右上腿"},
+
+            {"LeftLowerLeg",L"左下腿"},
+            {"RightLowerLeg",L"右下腿"},
+
+            {"LeftFoot",L"左脚"},
+            {"RightFoot",L"右脚"},
+
+            {"LeftEye",L"左眼"},
+            {"RightEye",L"右眼"},
+
+            {"LeftToes",L"左足"},
+            {"RightToes",L"右足"},
+
+            {"LeftThumbMetacarpal",L"左拇指"},
+            {"LeftThumbProximal",L"左拇指近端"},
+            {"LeftThumbDistal",L"左拇指远端"},
+
+            {"LeftIndexProximal",L"左食指近端"},
+            {"LeftIndexIntermediate",L"左食指中间"},
+            {"LeftIndexDistal",L"左食指远端"},
+
+            {"LeftMiddleProximal",L"左中指近端"},
+            {"LeftMiddleIntermediate",L"左中指中间"},
+            {"LeftMiddleDistal",L"左中指远端"},
+
+            {"LeftRingProximal",L"左无名指近端"},
+            {"LeftRingIntermediate",L"左无名指中间"},
+            {"LeftRingDistal",L"左无名指远端"},
+
+            {"LeftLittleProximal",L"左小拇指近端"},
+            {"LeftLittleIntermediate",L"左小拇指中间"},
+            {"LeftLittleDistal",L"左小拇指远端"},
+
+
+            {"RightThumbMetacarpal",L"右拇指"},
+            {"RightThumbProximal",L"右拇指近端"},
+            {"RightThumbDistal",L"右拇指远端"},
+
+            {"RightIndexProximal",L"右食指近端"},
+            {"RightIndexIntermediate",L"右食指中间"},
+            {"RightIndexDistal",L"右食指远端"},
+
+            {"RightMiddleProximal",L"右中指近端"},
+            {"RightMiddleIntermediate",L"右中指中间"},
+            {"RightMiddleDistal",L"右中指远端"},
+
+            {"RightRingProximal",L"右无名指近端"},
+            {"RightRingIntermediate",L"右无名指中间"},
+            {"RightRingDistal",L"右无名指远端"},
+
+            {"RightLittleProximal",L"右小拇指近端"},
+            {"RightLittleIntermediate",L"右小拇指中间"},
+            {"RightLittleDistal",L"右小拇指远端"},
+
+        };
+        return label_map;
+    }
+    int GetLeftHandIndexArray(Skeleton3D* const p_skeleton, LocalVector<int> &human_indexArray)
+    {
+        int ret = 0;
+        const LocalVector<Pair<String,String>>& bone_label = get_bone_label();
+        for (int i = kLastBone; i < kLastBone + 15; ++i)
+        {
+            int bone_index = p_skeleton->find_bone(bone_label[i].first);
+            if (bone_index < 0)
+                continue;
+            human_indexArray[i] = bone_index;
+            ret++;
+        }
+
+        return ret;
+    }
+
+    
+    int GetRightHandIndexArray(Skeleton3D* const p_skeleton, LocalVector<int> &human_indexArray)
+    {
+        int ret = 0;
+        const LocalVector<Pair<String,String>>& bone_label = get_bone_label();
+        for (int i = kLastBone + 15; i < kLastBone + 30; ++i)
+        {
+            int bone_index = p_skeleton->find_bone(bone_label[i].first);
+            if (bone_index < 0)
+                continue;
+            human_indexArray[i] = bone_index;
+            ret++;
+        }
+
+        return ret;
+    }
+    
+    int GeBodyIndexArray(Skeleton3D* const p_skeleton, LocalVector<int> &human_indexArray)
+    {
+        int ret = 0;
+        const LocalVector<Pair<String,String>>& bone_label = get_bone_label();
+        for (int i = 0; i < kLastBone; ++i)
+        {
+            int bone_index = p_skeleton->find_bone(bone_label[i].first);
+            if (bone_index < 0)
+                continue;
+            human_indexArray[i] = bone_index;
+            ret++;
+        }
+
+        return ret;
+    }
+
+    
     struct Human
     {
 
         Human();
 
+        void init(Skeleton3D* apSkeleton);
+        void build_form_skeleton(Skeleton3D* apSkeleton) {
+            
+            const LocalVector<Pair<String,String>>& bone_label = get_bone_label();
+            m_Skeleton.m_ID.resize(kHumanDoFStop);
+            m_Skeleton.m_ID.fill(-1);
+
+            m_Skeleton.m_Node.resize(kHumanDoFStop);
+            for(int i = 0; i < kHumanDoFStop; ++i) {
+                int bone_index = apSkeleton->find_bone(bone_label[i].first);
+                if(bone_index >= 0) {
+                    m_Skeleton.m_Node[i].m_AxesId = i;
+                    m_Skeleton.m_Node[i].m_bone_index = bone_index;
+                    m_Skeleton.m_Node[i].m_ParentId = apSkeleton->get_bone_parent(bone_index);
+                }
+                else {
+                    m_Skeleton.m_Node[i].m_AxesId = -1;
+                    m_Skeleton.m_Node[i].m_bone_index = -1;
+                    m_Skeleton.m_Node[i].m_ParentId = -1;
+                }
+            }
+            // 构建基础姿势
+            m_SkeletonLocalPose.resize(apSkeleton->get_bone_count()) ;
+            for(int i = 0; i < apSkeleton->get_bone_count(); ++i) {
+                m_SkeletonLocalPose[i] = math::trsX::fromTransform(apSkeleton->get_bone_rest(i));                
+            }
+            m_SkeletonLocalPose.resize(kHumanDoFStop);
+            for(int i = 0; i < kHumanDoFStop; ++i) {
+                m_HumanAllBoneIndex[i] = apSkeleton->find_bone(bone_label[i].first);                
+            }
+            for(int i = 0; i < kLastBone; ++i) {
+                m_HumanBoneIndex[i] = apSkeleton->find_bone(bone_label[i].first);
+                if(m_HumanBoneIndex[i] >= 0) {
+                    m_HasTDoF = true;
+                }
+            }
+            m_HasLeftHand = false;
+            m_HasRightHand = false;
+            // 配置手
+            for(int i = 0; i < hand::s_BoneCount; ++i) {
+                m_LeftHand.m_HandBoneIndex[i] = apSkeleton->find_bone(bone_label[kLastBone + i].first);
+                if(m_LeftHand.m_HandBoneIndex[i] >= 0) {
+                    m_HasLeftHand = true;
+                }
+                m_RightHand.m_HandBoneIndex[i] = apSkeleton->find_bone(bone_label[kLastBone + hand::s_BoneCount + i].first);
+                if(m_RightHand.m_HandBoneIndex[i] >= 0) {
+                    m_HasRightHand = true;
+                }
+            }
+
+
+
+
+        }
+        void setup_axes(Skeleton3D* apSkeleton) ;
+
         math::trsX              m_RootX;
 
         skeleton::HumanSkeleton   m_Skeleton;
+        // 所有骨骼的局部rest 姿势变换
         LocalVector<math::trsX>   m_SkeletonLocalPose;
+		
         hand::Hand               m_LeftHand;
         hand::Hand               m_RightHand;
 
         int32_t                 m_HumanBoneIndex[kLastBone];
         float                   m_HumanBoneMass[kLastBone];
+        int32_t                 m_HumanAllBoneIndex[kLastBone];
         float                   m_Scale;
 
         float                   m_ArmTwist;
