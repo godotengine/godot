@@ -949,13 +949,17 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
             inherits = class_def.inherits.strip()
             f.write(f'**{translate("Inherits:")}** ')
             first = True
-            while inherits in state.classes:
+            while inherits is not None:
                 if not first:
                     f.write(" **<** ")
                 else:
                     first = False
 
                 f.write(make_type(inherits, state))
+
+                if inherits not in state.classes:
+                    break  # Parent unknown.
+
                 inode = state.classes[inherits].inherits
                 if inode:
                     inherits = inode.strip()
