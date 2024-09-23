@@ -217,6 +217,11 @@ class CodeTextEditor : public VBoxContainer {
 
 	void _toggle_scripts_pressed();
 
+	bool text_editor_hovered = false;
+	void _text_editor_mouse_entered();
+	void _text_editor_mouse_exited();
+	void _text_editor_unhide_cursor();
+
 protected:
 	virtual void _load_theme_settings() {}
 	virtual void _validate_script() {}
@@ -231,6 +236,7 @@ protected:
 
 	bool is_warnings_panel_opened = false;
 	bool is_errors_panel_opened = false;
+	bool hide_cursor_while_typing = false;
 
 public:
 	void trim_trailing_whitespace();
