@@ -1534,35 +1534,32 @@ struct _Volume_BVH {
 	int face_index = 0;
 };
 
-_Volume_BVH *_volume_build_bvh(_Volume_BVH_Element *p_elements, int p_size, int &count) {
-	_Volume_BVH *bvh = memnew(_Volume_BVH);
+_Volume_BVH *_volume_build_bvh(_Volume_BVH_Element *p_elements, int p_size, int &count, PagedAllocator<_Volume_BVH, false> &r_pool) {
+	_Volume_BVH *bvh_ptr = r_pool.alloc();
+	_Volume_BVH bvh = *bvh_ptr;
 
 	if (p_size == 1) {
 		//leaf
-		bvh->aabb = p_elements[0].aabb;
-		bvh->left = nullptr;
-		bvh->right = nullptr;
-		bvh->face_index = p_elements->face_index;
+		bvh.aabb = p_elements[0].aabb;
+		bvh.left = nullptr;
+		bvh.right = nullptr;
+		bvh.face_index = p_elements->face_index;
 		count++;
-		return bvh;
+		*bvh_ptr = bvh;
+		return bvh_ptr;
 	} else {
-		bvh->face_index = -1;
+		bvh.face_index = -1;
 	}
 
-	AABB aabb;
-	for (int i = 0; i < p_size; i++) {
-		if (i == 0) {
-			aabb = p_elements[i].aabb;
-		} else {
-			aabb.merge_with(p_elements[i].aabb);
-		}
+	bvh.aabb = p_elements[0].aabb;
+	for (int i = 1; i < p_size; i++) {
+		bvh.aabb.merge_with(p_elements[i].aabb);
 	}
-	bvh->aabb = aabb;
-	switch (aabb.get_longest_axis_index()) {
+
+	switch (bvh.aabb.get_longest_axis_index()) {
 		case 0: {
 			SortArray<_Volume_BVH_Element, _Volume_BVH_CompareX> sort_x;
 			sort_x.sort(p_elements, p_size);
-
 		} break;
 		case 1: {
 			SortArray<_Volume_BVH_Element, _Volume_BVH_CompareY> sort_y;
@@ -1575,15 +1572,16 @@ _Volume_BVH *_volume_build_bvh(_Volume_BVH_Element *p_elements, int p_size, int 
 	}
 
 	int split = p_size / 2;
-	bvh->left = _volume_build_bvh(p_elements, split, count);
-	bvh->right = _volume_build_bvh(&p_elements[split], p_size - split, count);
+	bvh.left = _volume_build_bvh(p_elements, split, count, r_pool);
+	bvh.right = _volume_build_bvh(&p_elements[split], p_size - split, count, r_pool);
 
-	//printf("branch at %p - %i: %i\n",bvh,count,bvh->face_index);
+	//printf("branch at %p - %i: %i\n",bvh_ptr,count,bvh.face_index);
 	count++;
-	return bvh;
+	*bvh_ptr = bvh;
+	return bvh_ptr;
 }
 
-void GodotConcavePolygonShape3D::_fill_bvh(_Volume_BVH *p_bvh_tree, BVH *p_bvh_array, int &p_idx) {
+void GodotConcavePolygonShape3D::_fill_bvh(_Volume_BVH *p_bvh_tree, BVH *p_bvh_array, int &p_idx, PagedAllocator<_Volume_BVH, false> &r_pool) {
 	int idx = p_idx;
 
 	p_bvh_array[idx].aabb = p_bvh_tree->aabb;
@@ -1592,7 +1590,7 @@ void GodotConcavePolygonShape3D::_fill_bvh(_Volume_BVH *p_bvh_tree, BVH *p_bvh_a
 
 	if (p_bvh_tree->left) {
 		p_bvh_array[idx].left = ++p_idx;
-		_fill_bvh(p_bvh_tree->left, p_bvh_array, p_idx);
+		_fill_bvh(p_bvh_tree->left, p_bvh_array, p_idx, r_pool);
 
 	} else {
 		p_bvh_array[p_idx].left = -1;
@@ -1600,13 +1598,13 @@ void GodotConcavePolygonShape3D::_fill_bvh(_Volume_BVH *p_bvh_tree, BVH *p_bvh_a
 
 	if (p_bvh_tree->right) {
 		p_bvh_array[idx].right = ++p_idx;
-		_fill_bvh(p_bvh_tree->right, p_bvh_array, p_idx);
+		_fill_bvh(p_bvh_tree->right, p_bvh_array, p_idx, r_pool);
 
 	} else {
 		p_bvh_array[p_idx].right = -1;
 	}
 
-	memdelete(p_bvh_tree);
+	r_pool.free(p_bvh_tree);
 }
 
 void GodotConcavePolygonShape3D::_setup(const Vector<Vector3> &p_faces, bool p_backface_collision) {
@@ -1615,15 +1613,16 @@ void GodotConcavePolygonShape3D::_setup(const Vector<Vector3> &p_faces, bool p_b
 		configure(AABB());
 		return;
 	}
-	ERR_FAIL_COND(src_face_count % 3);
+	ERR_FAIL_COND((src_face_count % 3) != 0);
 	src_face_count /= 3;
 
 	const Vector3 *facesr = p_faces.ptr();
 
-	Vector<_Volume_BVH_Element> bvh_array;
+	// Temporary memory for this function, re-used
+	static thread_local LocalVector<_Volume_BVH_Element> bvh_array;
 	bvh_array.resize(src_face_count);
 
-	_Volume_BVH_Element *bvh_arrayw = bvh_array.ptrw();
+	_Volume_BVH_Element *bvh_arrayw = bvh_array.ptr();
 
 	faces.resize(src_face_count);
 	Face *facesw = faces.ptrw();
@@ -1631,8 +1630,6 @@ void GodotConcavePolygonShape3D::_setup(const Vector<Vector3> &p_faces, bool p_b
 	vertices.resize(src_face_count * 3);
 
 	Vector3 *verticesw = vertices.ptrw();
-
-	AABB _aabb;
 
 	for (int i = 0; i < src_face_count; i++) {
 		Face3 face(facesr[i * 3 + 0], facesr[i * 3 + 1], facesr[i * 3 + 2]);
@@ -1643,26 +1640,27 @@ void GodotConcavePolygonShape3D::_setup(const Vector<Vector3> &p_faces, bool p_b
 		facesw[i].indices[0] = i * 3 + 0;
 		facesw[i].indices[1] = i * 3 + 1;
 		facesw[i].indices[2] = i * 3 + 2;
-		facesw[i].normal = face.get_plane().normal;
+		facesw[i].normal = face.get_plane().normal; // Note, this contains a square root, slow part
 		verticesw[i * 3 + 0] = face.vertex[0];
 		verticesw[i * 3 + 1] = face.vertex[1];
 		verticesw[i * 3 + 2] = face.vertex[2];
-		if (i == 0) {
-			_aabb = bvh_arrayw[i].aabb;
-		} else {
-			_aabb.merge_with(bvh_arrayw[i].aabb);
-		}
 	}
 
+	AABB _aabb = bvh_arrayw[0].aabb;
+	for (int i = 1; i < src_face_count; i++) {
+		_aabb.merge_with(bvh_arrayw[i].aabb);
+	}
+
+	static thread_local PagedAllocator<_Volume_BVH> volume_bvh_pool;
 	int count = 0;
-	_Volume_BVH *bvh_tree = _volume_build_bvh(bvh_arrayw, src_face_count, count);
+	_Volume_BVH *bvh_tree = _volume_build_bvh(bvh_arrayw, src_face_count, count, volume_bvh_pool);
 
 	bvh.resize(count + 1);
 
 	BVH *bvh_arrayw2 = bvh.ptrw();
 
 	int idx = 0;
-	_fill_bvh(bvh_tree, bvh_arrayw2, idx);
+	_fill_bvh(bvh_tree, bvh_arrayw2, idx, volume_bvh_pool);
 
 	backface_collision = p_backface_collision;
 
