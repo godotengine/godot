@@ -1090,6 +1090,9 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->set_draw_spaces(EDITOR_GET("text_editor/appearance/whitespace/draw_spaces"));
 	text_editor->add_theme_constant_override("line_spacing", EDITOR_GET("text_editor/appearance/whitespace/line_spacing"));
 
+	// Behavior: General
+	text_editor->set_empty_selection_clipboard_enabled(EDITOR_GET("text_editor/behavior/general/empty_selection_clipboard"));
+
 	// Behavior: Navigation
 	text_editor->set_scroll_past_end_of_file_enabled(EDITOR_GET("text_editor/behavior/navigation/scroll_past_end_of_file"));
 	text_editor->set_smooth_scroll_enabled(EDITOR_GET("text_editor/behavior/navigation/smooth_scrolling"));

@@ -128,7 +128,7 @@ private:
 			h = hash_murmur3_one_32(p_val.layers, h);
 			h = hash_murmur3_one_32(p_val.mipmap, h);
 			h = hash_murmur3_one_32(p_val.mipmaps, h);
-			h = hash_murmur3_one_32(p_val.texture_view.format_override);
+			h = hash_murmur3_one_32(p_val.texture_view.format_override, h);
 			h = hash_murmur3_one_32(p_val.texture_view.swizzle_r, h);
 			h = hash_murmur3_one_32(p_val.texture_view.swizzle_g, h);
 			h = hash_murmur3_one_32(p_val.texture_view.swizzle_b, h);

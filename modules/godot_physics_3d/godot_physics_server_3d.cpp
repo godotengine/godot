@@ -1629,8 +1629,6 @@ void GodotPhysicsServer3D::init() {
 }
 
 void GodotPhysicsServer3D::step(real_t p_step) {
-#ifndef _3D_DISABLED
-
 	if (!active) {
 		return;
 	}
@@ -1646,7 +1644,6 @@ void GodotPhysicsServer3D::step(real_t p_step) {
 		active_objects += E->get_active_objects();
 		collision_pairs += E->get_collision_pairs();
 	}
-#endif
 }
 
 void GodotPhysicsServer3D::sync() {
@@ -1654,8 +1651,6 @@ void GodotPhysicsServer3D::sync() {
 }
 
 void GodotPhysicsServer3D::flush_queries() {
-#ifndef _3D_DISABLED
-
 	if (!active) {
 		return;
 	}
@@ -1703,7 +1698,6 @@ void GodotPhysicsServer3D::flush_queries() {
 		values.push_front("physics_3d");
 		EngineDebugger::profiler_add_frame_data("servers", values);
 	}
-#endif
 }
 
 void GodotPhysicsServer3D::end_sync() {

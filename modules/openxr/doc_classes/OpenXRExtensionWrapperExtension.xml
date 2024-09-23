@@ -178,6 +178,15 @@
 				[param layer] is a pointer to an [code]XrCompositionLayerBaseHeader[/code] struct.
 			</description>
 		</method>
+		<method name="_set_android_surface_swapchain_create_info_and_get_next_pointer" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="property_values" type="Dictionary" />
+			<param index="1" name="next_pointer" type="void*" />
+			<description>
+				Adds additional data structures to Android surface swapchains created by [OpenXRCompositionLayer].
+				[param property_values] contains the values of the properties returned by [method _get_viewport_composition_layer_extension_properties].
+			</description>
+		</method>
 		<method name="_set_hand_joint_locations_and_get_next_pointer" qualifiers="virtual">
 			<return type="int" />
 			<param index="0" name="hand_index" type="int" />
