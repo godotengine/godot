@@ -4626,7 +4626,7 @@ bool String::is_absolute_path() const {
 
 String String::validate_ascii_identifier() const {
 	if (is_empty()) {
-		return "_"; // Empty string is not a valid identifier;
+		return "_"; // Empty string is not a valid identifier.
 	}
 
 	String result;
@@ -4640,6 +4640,29 @@ String String::validate_ascii_identifier() const {
 	char32_t *buffer = result.ptrw();
 	for (int i = 0; i < len; i++) {
 		if (!is_ascii_identifier_char(buffer[i])) {
+			buffer[i] = '_';
+		}
+	}
+
+	return result;
+}
+
+String String::validate_unicode_identifier() const {
+	if (is_empty()) {
+		return "_"; // Empty string is not a valid identifier.
+	}
+
+	String result;
+	if (is_unicode_identifier_start(operator[](0))) {
+		result = *this;
+	} else {
+		result = "_" + *this;
+	}
+
+	int len = result.length();
+	char32_t *buffer = result.ptrw();
+	for (int i = 0; i < len; i++) {
+		if (!is_unicode_identifier_continue(buffer[i])) {
 			buffer[i] = '_';
 		}
 	}
