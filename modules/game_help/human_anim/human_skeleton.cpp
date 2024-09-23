@@ -9,15 +9,9 @@ namespace skeleton
     {
         HumanSkeleton* skeleton = memnew(HumanSkeleton);
 
-        skeleton->m_Count = aNodeCount;
         skeleton->m_Node.resize(aNodeCount);
-        skeleton->m_ID.resize(aNodeCount);
 
-        skeleton->m_AxesCount = aAxesCount;
-        if (skeleton->m_AxesCount)
-        {
-            skeleton->m_AxesArray.resize(aAxesCount);
-        }
+		skeleton->m_AxesArray.resize(aAxesCount);
 
         return skeleton;
     }
@@ -42,8 +36,8 @@ namespace skeleton
     {
         SkeletonPoseT<transformType>* skeletonPose = memnew(SkeletonPoseT<transformType>);
 
-        skeletonPose->m_Count = apSkeleton->m_Count;
-        skeletonPose->m_X.resize(apSkeleton->m_Count);
+        skeletonPose->m_Count = apSkeleton->m_Node.size();
+        skeletonPose->m_X.resize(apSkeleton->m_Node.size());
 
         return skeletonPose;
     }
@@ -87,15 +81,12 @@ namespace skeleton
 
     void SkeletonCopy(HumanSkeleton const* apSrc, HumanSkeleton* apDst)
     {
-        apDst->m_Count = apSrc->m_Count;
-        for (uint32_t nodeIter = 0; nodeIter < apDst->m_Count; nodeIter++)
+        for (uint32_t nodeIter = 0; nodeIter < apDst->m_Node.size(); nodeIter++)
         {
             apDst->m_Node[nodeIter] = apSrc->m_Node[nodeIter];
-            apDst->m_ID[nodeIter] = apSrc->m_ID[nodeIter];
         }
 
-        apDst->m_AxesCount = apSrc->m_AxesCount;
-        for (uint32_t axesIter = 0; axesIter < apDst->m_AxesCount; axesIter++)
+        for (uint32_t axesIter = 0; axesIter < apDst->m_AxesArray.size(); axesIter++)
         {
             apDst->m_AxesArray[axesIter] = apSrc->m_AxesArray[axesIter];
         }
@@ -114,94 +105,14 @@ namespace skeleton
         }
     }
 
-    template<typename transformTypeFrom, typename transformTypeTo>
-    void SkeletonPoseCopy(SkeletonPoseT<transformTypeFrom> const* apFromPose, SkeletonPoseT<transformTypeTo>* apToPose, uint32_t aIndexCount, int32_t const *apIndexArray)
-    {
-        transformTypeFrom const *from = apFromPose->m_X.ptr();
-        transformTypeTo *to = apToPose->m_X.ptr();
-
-        for (uint32_t fromIter = 0; fromIter < aIndexCount; fromIter++)
-        {
-            int32_t toIndex = apIndexArray[fromIter];
-
-            if (toIndex != -1)
-            {
-                math::convert(from[fromIter], to[toIndex]);
-            }
-        }
-    }
-
-    template<typename transformTypeFrom, typename transformTypeTo>
-    void SkeletonPoseCopy(HumanSkeleton const* apFromSkeleton, SkeletonPoseT<transformTypeFrom> const* apFromPose, HumanSkeleton const* apToSkeleton, SkeletonPoseT<transformTypeTo>* apToPose)
-    {
-        uint32_t fromCount = apFromSkeleton->m_Count;
-        uint32_t toCount = apToSkeleton->m_Count;
-
-        uint32_t const* fromID = apFromSkeleton->m_ID.ptr();
-        uint32_t const* toID = apToSkeleton->m_ID.ptr();
-
-        transformTypeFrom const *fromX = apFromPose->m_X.ptr();
-        transformTypeTo *toX = apToPose->m_X.ptr();
-
-        for (uint32_t fromIter = 0; fromIter < fromCount; fromIter++)
-        {
-            for (uint32_t toIter = 0; toIter < toCount; toIter++)
-            {
-                if (fromID[fromIter] == toID[toIter])
-                {
-                    math::convert(fromX[fromIter], toX[toIter]);
-                    break;
-                }
-            }
-        }
-    }
-
-    int32_t SkeletonFindNodeUp(HumanSkeleton const *apSkeleton, int32_t aIndex, uint32_t aID)
-    {
-        if (apSkeleton->m_ID[aIndex] == aID)
-        {
-            return aIndex;
-        }
-        else if (apSkeleton->m_Node[aIndex].m_ParentId != -1)
-        {
-            return SkeletonFindNodeUp(apSkeleton, apSkeleton->m_Node[aIndex].m_ParentId, aID);
-        }
-
-        return -1;
-    }
-
-    int32_t SkeletonFindNode(HumanSkeleton const* apSkeleton, uint32_t aID)
-    {
-        int32_t ret = -1;
-
-        int32_t i;
-        for (i = 0; ret == -1 && i < (int)apSkeleton->m_Count; i++)
-        {
-            if (apSkeleton->m_ID[i] == aID)
-            {
-                ret = i;
-            }
-        }
-
-        return ret;
-    }
-
-    void SkeletonBuildIndexArray(int32_t *indexArray, HumanSkeleton const* apSrcSkeleton, HumanSkeleton const* apDstSkeleton)
-    {
-        for (uint32_t i = 0; i < apSrcSkeleton->m_Count; i++)
-        {
-            indexArray[i] = SkeletonFindNode(apDstSkeleton, apSrcSkeleton->m_ID[i]);
-        }
-    }
-
     void SkeletonBuildReverseIndexArray(int32_t *reverseIndexArray, int32_t const*indexArray, HumanSkeleton const* apSrcSkeleton, HumanSkeleton const* apDstSkeleton)
     {
-        for (uint32_t dstIter = 0; dstIter < apDstSkeleton->m_Count; dstIter++)
+        for (uint32_t dstIter = 0; dstIter < apDstSkeleton->m_Node.size(); dstIter++)
         {
             reverseIndexArray[dstIter] = -1;
         }
 
-        for (uint32_t srcIter = 0; srcIter < apSrcSkeleton->m_Count; srcIter++)
+        for (uint32_t srcIter = 0; srcIter < apSrcSkeleton->m_Node.size(); srcIter++)
         {
             if (indexArray[srcIter] != -1)
             {
@@ -228,14 +139,13 @@ namespace skeleton
     template<typename transformType>
     void SkeletonPoseComputeGlobal(HumanSkeleton const* apSkeleton, SkeletonPoseT<transformType> const* apLocalPose, SkeletonPoseT<transformType>* apGlobalPose)
     {
-        uint32_t nodeCount = apSkeleton->m_Count;
         Node const *node = apSkeleton->m_Node.ptr();
         transformType const *local = apLocalPose->m_X.ptr();
         transformType *global = apGlobalPose->m_X.ptr();
 
         global[0] = local[0];
 
-        for (uint32_t nodeIter = 1; nodeIter < nodeCount; nodeIter++)
+        for (uint32_t nodeIter = 1; nodeIter < apSkeleton->m_Node.size(); nodeIter++)
         {
             global[nodeIter] = math::mul(global[node[nodeIter].m_ParentId], local[nodeIter]);
         }
@@ -270,7 +180,7 @@ namespace skeleton
         apSkeletonPoseGlobal->m_X[0].q = apSkeletonPoseLocal->m_X[0].q;
 
         uint32_t i;
-        for (i = 1; i < apSkeleton->m_Count; i++)
+        for (i = 1; i < apSkeleton->m_Node.size(); i++)
         {
             apSkeletonPoseGlobal->m_X[i].q = math::normalize(math::quatMul(apSkeletonPoseGlobal->m_X[apSkeleton->m_Node[i].m_ParentId].q, apSkeletonPoseLocal->m_X[i].q));
         }
@@ -298,12 +208,11 @@ namespace skeleton
     template<typename transformType>
     void SkeletonPoseComputeLocal(HumanSkeleton const* apSkeleton, SkeletonPoseT<transformType> const* apGlobalPose, SkeletonPoseT<transformType>* apLocalPose)
     {
-        uint32_t nodeCount = apSkeleton->m_Count;
         Node const *node = apSkeleton->m_Node.ptr();
         transformType const *global = apGlobalPose->m_X.ptr();
         transformType *local = apLocalPose->m_X.ptr();
 
-        for (uint32_t nodeIter = 1; nodeIter < nodeCount; nodeIter++)
+        for (uint32_t nodeIter = 1; nodeIter < apSkeleton->m_Node.size(); nodeIter++)
         {
             local[nodeIter] = math::invMul(global[node[nodeIter].m_ParentId], global[nodeIter]);
         }
@@ -337,7 +246,7 @@ namespace skeleton
     void SkeletonPoseComputeLocalQ(HumanSkeleton const* apSkeleton, SkeletonPose const* apSkeletonPoseGlobal, SkeletonPose* apSkeletonPoseLocal)
     {
         uint32_t i;
-        for (i = apSkeleton->m_Count - 1; i > 0; i--)
+        for (i = apSkeleton->m_Node.size() - 1; i > 0; i--)
         {
             apSkeletonPoseLocal->m_X[i].q = math::normalize(math::quatMul(math::quatConj(apSkeletonPoseGlobal->m_X[apSkeleton->m_Node[i].m_ParentId].q), apSkeletonPoseGlobal->m_X[i].q));
         }
@@ -772,11 +681,6 @@ namespace skeleton
     template void SkeletonPoseCopy<math::trsX, math::trsX>(SkeletonPoseT<math::trsX> const* apFromPose, SkeletonPoseT<math::trsX>* apToPose);
     template void SkeletonPoseCopy<math::trsX, math::affineX>(SkeletonPoseT<math::trsX> const* apFromPose, SkeletonPoseT<math::affineX>* apToPose);
 
-    template void SkeletonPoseCopy<math::trsX, math::trsX>(SkeletonPoseT<math::trsX> const* apFromPose, SkeletonPoseT<math::trsX>* apToPose, uint32_t aIndexCount, int32_t const *apIndexArray);
-    template void SkeletonPoseCopy<math::trsX, math::affineX>(SkeletonPoseT<math::trsX> const* apFromPose, SkeletonPoseT<math::affineX>* apToPose, uint32_t aIndexCount, int32_t const *apIndexArray);
-
-    template void SkeletonPoseCopy<math::trsX, math::trsX>(HumanSkeleton const* apFromSkeleton, SkeletonPoseT<math::trsX> const* apFromPose, HumanSkeleton const* apToSkeleton, SkeletonPoseT<math::trsX>* apToPose);
-    template void SkeletonPoseCopy<math::trsX, math::affineX>(HumanSkeleton const* apFromSkeleton, SkeletonPoseT<math::trsX> const* apFromPose, HumanSkeleton const* apToSkeleton, SkeletonPoseT<math::affineX>* apToPose);
 
     template void SkeletonPoseComputeGlobal<math::trsX>(HumanSkeleton const* apSkeleton, SkeletonPoseT<math::trsX> const* apLocalPose, SkeletonPoseT<math::trsX>* apGlobalPose);
     template void SkeletonPoseComputeGlobal<math::affineX>(HumanSkeleton const* apSkeleton, SkeletonPoseT<math::affineX> const* apLocalPose, SkeletonPoseT<math::affineX>* apGlobalPose);

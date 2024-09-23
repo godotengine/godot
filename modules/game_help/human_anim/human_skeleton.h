@@ -6,6 +6,8 @@
 #include "./Simd/vec-transform.h"
 #include "core/templates/local_vector.h"
 #include "scene/3d/skeleton_3d.h"
+#include "./Simd/vec-trs.h"
+#include "./axes.h"
 
 
 namespace math
@@ -26,19 +28,67 @@ namespace skeleton
         int32_t m_ParentId;
         int32_t m_AxesId;
 
+		void load(const Dictionary& aDict) {
+
+            m_bone_index = aDict["bone_index"];
+            m_ParentId = aDict["ParentId"];
+            m_AxesId = aDict["AxesId"];
+		}
+
+        void save(Dictionary& aDict) {
+            aDict["bone_index"] = m_bone_index;
+            aDict["ParentId"] = m_ParentId;
+            aDict["AxesId"] = m_AxesId;
+        }
+
     };
 
     struct HumanSkeleton
     {
 
-        HumanSkeleton() : m_Count(0), m_AxesCount(0) {}
+        HumanSkeleton() {
 
+        }
 
-        uint32_t            m_Count;
+		void load(const Dictionary& aDict) {
+            int node_count = aDict["node_count"];
+            int axes_count = aDict["axes_count"];
+            m_Node.resize(node_count);
+            m_AxesArray.resize(axes_count);
+            Array nodes = aDict["nodes"];
+            Array axes = aDict["axes"];
+            for (int i = 0; i < node_count; i++) {
+                Dictionary node_dict = nodes[i];
+                m_Node[i].load(node_dict);
+            }
+
+            for (int i = 0; i < axes_count; i++) {
+                Dictionary axes_dict = axes[i];
+                m_AxesArray[i].load(axes_dict);
+            }
+        }
+        void save(Dictionary& aDict) {
+
+            aDict["node_count"] = m_Node.size();
+            aDict["axes_count"] = m_AxesArray.size();
+
+            Array nodes;
+            Array axes;
+            for (int i = 0; i < m_Node.size(); i++) {
+                Dictionary node_dict;
+                m_Node[i].save(node_dict);
+                nodes.push_back(node_dict);
+            }
+            for (int i = 0; i < m_AxesArray.size(); i++) {
+                Dictionary axes_dict;
+                m_AxesArray[i].save(axes_dict);
+                axes.push_back(axes_dict);
+            }
+            aDict["nodes"] = nodes;
+            aDict["axes"] = axes;
+        }
+
         LocalVector<Node>     m_Node;
-        LocalVector<uint32_t> m_ID;       // CRC(path)
-
-        uint32_t                m_AxesCount;
         LocalVector<math::Axes>   m_AxesArray;
 
     };
@@ -95,16 +145,8 @@ namespace skeleton
     template<typename transformTypeFrom, typename transformTypeTo>
     void SkeletonPoseCopy(SkeletonPoseT<transformTypeFrom> const* apFromPose, SkeletonPoseT<transformTypeTo>* apToPose);
 
-    template<typename transformTypeFrom, typename transformTypeTo>
-    void SkeletonPoseCopy(SkeletonPoseT<transformTypeFrom> const* apFromPose, SkeletonPoseT<transformTypeTo>* apToPose, uint32_t aIndexCount, int32_t const *apIndexArray);
-
-    template<typename transformTypeFrom, typename transformTypeTo>
-    void SkeletonPoseCopy(HumanSkeleton const* apFromSkeleton, SkeletonPoseT<transformTypeFrom> const* apFromPose, HumanSkeleton const* apToSkeleton, SkeletonPoseT<transformTypeTo>* apToPose);
 
     // Find & Copy pose based on name binding
-    int32_t SkeletonFindNodeUp(HumanSkeleton const *apSkeleton, int32_t aIndex, uint32_t aID);
-    int32_t SkeletonFindNode(HumanSkeleton const *apSkeleton, uint32_t aID);
-    void SkeletonBuildIndexArray(int32_t *indexArray, HumanSkeleton const* apSrcSkeleton, HumanSkeleton const* apDstSkeleton);
     void SkeletonBuildReverseIndexArray(int32_t *reverseIndexArray, int32_t const*indexArray, HumanSkeleton const* apSrcSkeleton, HumanSkeleton const* apDstSkeleton);
 
     // set mask for a skeleton mask array

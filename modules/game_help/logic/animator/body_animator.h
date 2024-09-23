@@ -10,6 +10,7 @@
 #include "../character_ai/body_animator_logic.h"
 #include "../character_ai/animator_condition.h"
 #include "../character_ai/animator_blackboard_set.h"
+#include "../../human_anim/human.h"
 
 #include "character_animation_node.h"
 
@@ -279,6 +280,28 @@ struct CharacterAnimationLogicContext
     float curr_animation_play_time = 0.0f;
     float curr_animation_time_length = 0.0f;
 
+};
+
+class CharacterHumanConfig : public Resource
+{
+    GDCLASS(CharacterHumanConfig, Resource);
+    static void _bind_methods()
+    {
+    }
+
+public:
+
+    void set_human(const Dictionary& p_human) {
+        human.load(p_human);
+    }
+    Dictionary get_human() {
+        Dictionary human_dict;
+        human.save(human_dict);
+        return human_dict;
+    }
+
+    
+    human_anim::human::Human human;
 };
 
 // 动画分层

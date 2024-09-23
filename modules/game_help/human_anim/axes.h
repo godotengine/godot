@@ -4,6 +4,7 @@
 #include "./types.h"
 #include "./Simd/vec-math.h"
 #include "./Simd/vec-quat.h"
+#include "core/variant/dictionary.h"
 
 
 namespace math
@@ -62,6 +63,35 @@ namespace math
             m_Length = other.m_Length;
             m_Type = other.m_Type;
             return *this;
+        }
+        void load(const Dictionary & aDict) {
+            Quaternion q = aDict["preQ"];
+            m_PreQ = float4(q.x, q.y, q.z, q.w);
+
+            q = aDict["postQ"];
+            m_PostQ = float4(q.x, q.y, q.z, q.w);
+
+            Vector3 sgn = aDict["sgn"];
+            m_Sgn = float3(sgn.x, sgn.y, sgn.z);
+
+            Vector3 lim = aDict["limit_min"];
+            m_Limit.m_Min = float3(lim.x, lim.y, lim.z);
+
+            lim = aDict["limit_max"];
+            m_Limit.m_Max = float3(lim.x, lim.y, lim.z);
+
+            m_Length = aDict["length"];
+            m_Type = (AxesType)(int)aDict["type"];
+        }
+
+        void save(Dictionary & aDict) {
+            aDict["preQ"] = Quaternion(m_PreQ.x, m_PreQ.y, m_PreQ.z, m_PreQ.w);
+            aDict["postQ"] = Quaternion(m_PostQ.x, m_PostQ.y, m_PostQ.z, m_PostQ.w) ;
+            aDict["sgn"] = Vector3(m_Sgn.x, m_Sgn.y, m_Sgn.z);
+            aDict["limit_min"] = Vector3(m_Limit.m_Min.x, m_Limit.m_Min.y, m_Limit.m_Min.z);
+            aDict["limit_max"] = Vector3(m_Limit.m_Max.x, m_Limit.m_Max.y, m_Limit.m_Max.z);
+            aDict["length"] = m_Length;
+            aDict["type"] = (int)m_Type;
         }
 
     };

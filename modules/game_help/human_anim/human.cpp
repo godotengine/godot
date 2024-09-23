@@ -778,12 +778,11 @@ namespace human
 	}
 	void SkeletonPoseComputeLocal(skeleton::HumanSkeleton const* apSkeleton, skeleton::SkeletonPoseT<math::trsX> const* apGlobalPose, math::trsX* apLocalPose)
 	{
-		uint32_t nodeCount = apSkeleton->m_Count;
 		skeleton::Node const* node = apSkeleton->m_Node.ptr();
 		math::trsX const* global = apGlobalPose->m_X.ptr();
 		math::trsX* local = apLocalPose;
 
-		for (uint32_t nodeIter = 1; nodeIter < nodeCount; nodeIter++)
+		for (uint32_t nodeIter = 1; nodeIter < apSkeleton->m_Node.size(); nodeIter++)
 		{
 			local[nodeIter] = math::invMul(global[node[nodeIter].m_ParentId], global[nodeIter]);
 		}
@@ -816,14 +815,13 @@ namespace human
 
 	void SkeletonPoseComputeGlobal(skeleton::HumanSkeleton const* apSkeleton, math::trsX const* apLocalPose, skeleton::SkeletonPoseT<math::trsX>* apGlobalPose)
 	{
-		uint32_t nodeCount = apSkeleton->m_Count;
 		skeleton::Node const* node = apSkeleton->m_Node.ptr();
 		math::trsX const* local = apLocalPose;
 		math::trsX* global = apGlobalPose->m_X.ptr();
 
 		global[0] = local[0];
 
-		for (uint32_t nodeIter = 1; nodeIter < nodeCount; nodeIter++)
+		for (uint32_t nodeIter = 1; nodeIter < apSkeleton->m_Node.size(); nodeIter++)
 		{
 			global[nodeIter] = math::mul(global[node[nodeIter].m_ParentId], local[nodeIter]);
 		}
@@ -1000,11 +998,308 @@ namespace human
             }
         }
     }
+
+	const LocalVector<Pair<String, String>>& get_bone_label() {
+		static LocalVector<Pair<String, String>> label_map = {
+			{"Hips",L"臀部"},
+			{"Spine",L"脊柱"},
+			{"Chest",L"颈部"},
+			{"UpperChest",L"上胸部"},
+			{"Neck",L"颈部"},
+			{"Head",L"头部"},
+			{"Jaw",L"下巴"},
+
+			{"LeftShoulder",L"左肩"},
+			{"RightShoulder",L"右肩"},
+
+			{"LeftUpperArm",L"左上臂"},
+			{"RightUpperArm",L"右上臂"},
+
+			{"LeftLowerArm",L"左下臂"},
+			{"RightLowerArm",L"右下臂"},
+
+			{"LeftHand",L"左手"},
+			{"RightHand",L"右手"},
+
+			{"LeftUpperLeg",L"左上腿"},
+			{"RightUpperLeg",L"右上腿"},
+
+			{"LeftLowerLeg",L"左下腿"},
+			{"RightLowerLeg",L"右下腿"},
+
+			{"LeftFoot",L"左脚"},
+			{"RightFoot",L"右脚"},
+
+			{"LeftEye",L"左眼"},
+			{"RightEye",L"右眼"},
+
+			{"LeftToes",L"左足"},
+			{"RightToes",L"右足"},
+
+			{"LeftThumbMetacarpal",L"左拇指"},
+			{"LeftThumbProximal",L"左拇指近端"},
+			{"LeftThumbDistal",L"左拇指远端"},
+
+			{"LeftIndexProximal",L"左食指近端"},
+			{"LeftIndexIntermediate",L"左食指中间"},
+			{"LeftIndexDistal",L"左食指远端"},
+
+			{"LeftMiddleProximal",L"左中指近端"},
+			{"LeftMiddleIntermediate",L"左中指中间"},
+			{"LeftMiddleDistal",L"左中指远端"},
+
+			{"LeftRingProximal",L"左无名指近端"},
+			{"LeftRingIntermediate",L"左无名指中间"},
+			{"LeftRingDistal",L"左无名指远端"},
+
+			{"LeftLittleProximal",L"左小拇指近端"},
+			{"LeftLittleIntermediate",L"左小拇指中间"},
+			{"LeftLittleDistal",L"左小拇指远端"},
+
+
+			{"RightThumbMetacarpal",L"右拇指"},
+			{"RightThumbProximal",L"右拇指近端"},
+			{"RightThumbDistal",L"右拇指远端"},
+
+			{"RightIndexProximal",L"右食指近端"},
+			{"RightIndexIntermediate",L"右食指中间"},
+			{"RightIndexDistal",L"右食指远端"},
+
+			{"RightMiddleProximal",L"右中指近端"},
+			{"RightMiddleIntermediate",L"右中指中间"},
+			{"RightMiddleDistal",L"右中指远端"},
+
+			{"RightRingProximal",L"右无名指近端"},
+			{"RightRingIntermediate",L"右无名指中间"},
+			{"RightRingDistal",L"右无名指远端"},
+
+			{"RightLittleProximal",L"右小拇指近端"},
+			{"RightLittleIntermediate",L"右小拇指中间"},
+			{"RightLittleDistal",L"右小拇指远端"},
+
+		};
+		return label_map;
+	}
+
+
+
+	const HashMap<String, int>& get_bone_to_human_map() {
+		static HashMap<String, int> bone_map = {
+			{"Hips",0},
+
+			{"LeftUpperLeg",1},
+			{"RightUpperLeg",2},
+
+			{"LeftLowerLeg",3},
+			{"RightLowerLeg",4},
+
+			{"LeftFoot",5},
+			{"RightFoot",6},
+
+			{"Spine",7},
+			{"Chest",8},
+			{"UpperChest",9},
+			{"Neck",10},
+			{"Head",11},
+
+			{"LeftShoulder",12},
+			{"RightShoulder",13},
+
+			{"LeftUpperArm",14},
+			{"RightUpperArm",15},
+
+			{"LeftLowerArm",16},
+			{"RightLowerArm",17},
+
+			{"LeftHand",18},
+			{"RightHand",19},
+
+			{"LeftToes",20},
+			{"RightToes",21},
+
+			{"LeftEye",22},
+			{"RightEye",23},
+
+			{"Jaw",24},
+
+			{"LeftThumbMetacarpal",25},
+			{"LeftThumbProximal",26},
+			{"LeftThumbDistal",27},
+
+			{"LeftIndexProximal",28},
+			{"LeftIndexIntermediate",29},
+			{"LeftIndexDistal",30},
+
+			{"LeftMiddleProximal",31},
+			{"LeftMiddleIntermediate",32},
+			{"LeftMiddleDistal",33},
+
+			{"LeftRingProximal",34},
+			{"LeftRingIntermediate",35},
+			{"LeftRingDistal",36},
+
+			{"LeftLittleProximal",37},
+			{"LeftLittleIntermediate",38},
+			{"LeftLittleDistal",39},
+
+
+			{"RightThumbMetacarpal",40},
+			{"RightThumbProximal",41},
+			{"RightThumbDistal",42},
+
+			{"RightIndexProximal",43},
+			{"RightIndexIntermediate",44},
+			{"RightIndexDistal",45},
+
+			{"RightMiddleProximal",46},
+			{"RightMiddleIntermediate",47},
+			{"RightMiddleDistal",48},
+
+			{"RightRingProximal",49},
+			{"RightRingIntermediate",50},
+			{"RightRingDistal",51},
+
+			{"RightLittleProximal",52},
+			{"RightLittleIntermediate",53},
+			{"RightLittleDistal",54},
+
+		};
+		return bone_map;
+	}
+	const HashMap<int, String> get_human_to_bone_map() {
+		static HashMap<int, String> human_map = {
+			{0,"Hips"},
+
+			{1,"LeftUpperLeg"},
+			{2,"RightUpperLeg"},
+
+			{3,"LeftLowerLeg"},
+			{4,"RightLowerLeg"},
+
+			{5,"LeftFoot"},
+			{6,"RightFoot"},
+
+			{7,"Spine"},
+			{8,"Chest"},
+			{9,"UpperChest"},
+			{10,"Neck"},
+			{11,"Head"},
+
+			{12,"LeftShoulder"},
+			{13,"RightShoulder"},
+
+			{14,"LeftUpperArm"},
+			{15,"RightUpperArm"},
+
+			{16,"LeftLowerArm"},
+			{17,"RightLowerArm"},
+
+			{18,"LeftHand"},
+			{19,"RightHand"},
+
+			{20,"LeftToes"},
+			{21,"RightToes"},
+
+			{22,"LeftEye"},
+			{23,"RightEye"},
+
+			{24,"Jaw"},
+
+			{25,"LeftThumbMetacarpal"},
+			{26,"LeftThumbProximal"},
+			{27,"LeftThumbDistal"},
+
+			{28,"LeftIndexProximal"},
+			{29,"LeftIndexIntermediate"},
+			{30,"LeftIndexDistal"},
+
+			{31,"LeftMiddleProximal"},
+			{32,"LeftMiddleIntermediate"},
+			{33,"LeftMiddleDistal"},
+
+			{34,"LeftRingProximal"},
+			{35,"LeftRingIntermediate"},
+			{36,"LeftRingDistal"},
+
+			{37,"LeftLittleProximal"},
+			{38,"LeftLittleIntermediate"},
+			{39,"LeftLittleDistal"},
+
+
+			{40,"RightThumbMetacarpal"},
+			{41,"RightThumbProximal"},
+			{42,"RightThumbDistal"},
+
+			{43,"RightIndexProximal"},
+			{44,"RightIndexIntermediate"},
+			{45,"RightIndexDistal"},
+
+			{46,"RightMiddleProximal"},
+			{47,"RightMiddleIntermediate"},
+			{48,"RightMiddleDistal"},
+
+			{49,"RightRingProximal"},
+			{50,"RightRingIntermediate"},
+			{51,"RightRingDistal"},
+
+			{52,"RightLittleProximal"},
+			{53,"RightLittleIntermediate"},
+			{54,"RightLittleDistal"},
+		};
+		return human_map;
+	}
+
+	int GetLeftHandIndexArray(Skeleton3D* const p_skeleton, LocalVector<int>& human_indexArray)
+	{
+		int ret = 0;
+		const LocalVector<Pair<String, String>>& bone_label = get_bone_label();
+		for (int i = kLastBone; i < kLastBone + 15; ++i)
+		{
+			int bone_index = p_skeleton->find_bone(bone_label[i].first);
+			if (bone_index < 0)
+				continue;
+			human_indexArray[i] = bone_index;
+			ret++;
+		}
+
+		return ret;
+	}
+
+
+	int GetRightHandIndexArray(Skeleton3D* const p_skeleton, LocalVector<int>& human_indexArray)
+	{
+		int ret = 0;
+		const LocalVector<Pair<String, String>>& bone_label = get_bone_label();
+		for (int i = kLastBone + 15; i < kLastBone + 30; ++i)
+		{
+			int bone_index = p_skeleton->find_bone(bone_label[i].first);
+			if (bone_index < 0)
+				continue;
+			human_indexArray[i] = bone_index;
+			ret++;
+		}
+
+		return ret;
+	}
+
+	int GeBodyIndexArray(Skeleton3D* const p_skeleton, LocalVector<int>& human_indexArray)
+	{
+		int ret = 0;
+		const LocalVector<Pair<String, String>>& bone_label = get_bone_label();
+		for (int i = 0; i < kLastBone; ++i)
+		{
+			int bone_index = p_skeleton->find_bone(bone_label[i].first);
+			if (bone_index < 0)
+				continue;
+			human_indexArray[i] = bone_index;
+			ret++;
+		}
+
+		return ret;
+	}
     void Human::build_form_skeleton(Skeleton3D* apSkeleton) {
         
         const LocalVector<Pair<String,String>>& bone_label = get_bone_label();
-        m_Skeleton.m_ID.resize(kLastBone);
-        m_Skeleton.m_ID.fill(-1);
 
         m_Skeleton.m_Node.resize(kLastBone);
         for(int i = 0; i < kLastBone; ++i) {
@@ -1074,14 +1369,17 @@ namespace human
 
     }
 
-    static int get_bone_index(Skeleton3D* skeleton,const Dictionary& p_bone_map, const NodePath& path) {
+    static int get_bone_human_index(Skeleton3D* skeleton,const Dictionary& p_bone_map, const NodePath& path) {
         StringName bone_name = path.get_subname(0);
         const Variant* re_name = p_bone_map.getptr(bone_name);
         if (re_name != nullptr) {
             bone_name = *re_name;
         }
-
-        return skeleton->find_bone(bone_name);
+        const HashMap<String,int>& bone_to_human_map = get_bone_to_human_map();
+        if(bone_to_human_map.has(bone_name)) {
+            return bone_to_human_map[bone_name];
+        }
+        return -1;
 
     }
     
@@ -1094,11 +1392,11 @@ namespace human
         
 
     }
-    void Human::animation_to_dof(Skeleton3D* skeleton, Animation* p_anim, const Dictionary & p_bone_map,List<HumanAnimationKeyFrame*> &p_keyframes,Vector<bool>& bone_mask) {
+    void Human::animation_to_dof(Skeleton3D* skeleton, Animation* p_anim, const Dictionary & p_bone_map,List<HumanAnimationKeyFrame*> &p_keyframes,Vector<uint8_t>& bone_mask) {
 
 
         bone_mask.resize(kLastBone + hand::s_BoneCount * 2);
-        bone_mask.fill(false);
+        bone_mask.fill(0);
 
         skeleton::SkeletonPose humanLclPose;
         humanLclPose.m_Count = m_SkeletonLocalPose.size();
@@ -1118,6 +1416,11 @@ namespace human
         Vector3 loc,scale;
         Quaternion rot;
         int32_t rootIndex = m_RootBonendex;
+        math::float3 tDoFBaseArray[human::kLastTDoF];
+        if (m_HasTDoF)
+        {
+            human::RetargetFromTDoFBase(this, &apSkeletonPoseRef, &tDoFBaseArray[0]);
+        }
 
         Vector<Animation::Track*> tracks = p_anim->get_tracks();
         for(int i = 0; i < key_count; i++) {
@@ -1126,32 +1429,32 @@ namespace human
                 Animation::Track* track = tracks[j];
                 if(track->type == Animation::TYPE_POSITION_3D) {
                     Animation::PositionTrack* track_cache = static_cast<Animation::PositionTrack*>(track);
-                    int bone_index = get_bone_index(skeleton,p_bone_map, track_cache->path);
+                    int bone_index = get_bone_human_index(skeleton,p_bone_map, track_cache->path);
                     if(bone_index < 0) {
                         continue;
                     }
 
-                    bone_mask.write[bone_index] = true;
+                    bone_mask.write[bone_index] = 1;
 					Error err = p_anim->try_position_track_interpolate(j, time, &loc);
                     humanLclPose.m_X[bone_index].t = math::float3(loc.x,loc.y,loc.z);
                 }
                 else if(track->type == Animation::TYPE_ROTATION_3D) {
                     Animation::RotationTrack* track_cache = static_cast<Animation::RotationTrack*>(track);
-                    int bone_index = get_bone_index(skeleton, p_bone_map, track_cache->path);
+                    int bone_index = get_bone_human_index(skeleton, p_bone_map, track_cache->path);
                     if(bone_index < 0) {
                         continue;
                     }
-                    bone_mask.write[bone_index] = true;
+                    bone_mask.write[bone_index] = 1;
                     Error err = p_anim->try_rotation_track_interpolate(j, time, &rot);
                     humanLclPose.m_X[bone_index].q = math::float4(rot.x,rot.y,rot.z,rot.w);
                 }
                 else if(track->type == Animation::TYPE_SCALE_3D) {
                     Animation::ScaleTrack* track_cache = static_cast<Animation::ScaleTrack*>(track);
-                    int bone_index = get_bone_index(skeleton, p_bone_map, track_cache->path);
+                    int bone_index = get_bone_human_index(skeleton, p_bone_map, track_cache->path);
                     if(bone_index < 0) {
                         continue;
                     }
-                    bone_mask.write[bone_index] = true;
+                    bone_mask.write[bone_index] = 1;
                     Error err = p_anim->try_scale_track_interpolate(j, time, &scale);
                     humanLclPose.m_X[bone_index].s = math::float3(scale.x,scale.y,scale.z);
                 }
@@ -1160,11 +1463,6 @@ namespace human
             HumanAnimationKeyFrame* dof = memnew(HumanAnimationKeyFrame);
             dof->time = time;
             // 
-			math::float3 tDoFBaseArray[human::kLastTDoF];
-			if (m_HasTDoF)
-			{
-				human::RetargetFromTDoFBase(this, &apSkeletonPoseRef, &tDoFBaseArray[0]);
-			}
             human::RetargetFrom(this, &humanLclPose, &pose, &apSkeletonPoseRef, &apSkeletonPoseGbl, &apSkeletonPoseLcl, &apSkeletonPoseWs, &tDoFBaseArray[0]);
             // 拷贝dof到keyframe
             memcpy(&dof->dot_array[0], &pose.m_DoFArray[0], sizeof(float) * kLastDoF);
@@ -1178,7 +1476,7 @@ namespace human
     }
 
 
-    void Human::app_dof_to_skeleton(Skeleton3D* apSkeleton, Animation* p_anim, const Dictionary& p_bone_map, HumanAnimationKeyFrame& p_keyframes, Vector<bool>& bone_mask) {
+    void Human::app_dof_to_skeleton(Skeleton3D* apSkeleton, Animation* p_anim, const Dictionary& p_bone_map, HumanAnimationKeyFrame& p_keyframes, Vector<uint8_t>& bone_mask) {
 
         human::HumanPose humanPose;
         human::HumanPose humanPoseOut;
@@ -2391,7 +2689,7 @@ namespace human
 
         // 强制将虚拟骨骼设为默认旋转
         int32_t nodeIter;
-        for (nodeIter = 1; nodeIter < (int)apHuman->m_Skeleton.m_Count; nodeIter++)
+        for (nodeIter = 1; nodeIter < (int)apHuman->m_Skeleton.m_Node.size(); nodeIter++)
         {
             if (apHuman->m_Skeleton.m_Node[nodeIter].m_AxesId == -1)
             {

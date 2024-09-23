@@ -4,6 +4,11 @@
 #include "./vec-quat.h"
 #include "./vec-matrix.h"
 #include "core/math/transform_3d.h"
+#include "core/variant/dictionary.h"
+#include "core/math/vector3.h"
+#include "core/math/quaternion.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
 
 namespace math
 {
@@ -37,6 +42,24 @@ namespace math
             Vector3 s = t.basis.get_scale();
             r.s = float3(s.x, s.y, s.z);
             return r;
+        }
+
+        void load(const Dictionary & aDict) {
+            Vector3 v3 = aDict["t"];
+            t = float3(v3.x, v3.y, v3.z);
+            Quaternion tq = aDict["q"];
+            q = float4(tq.x, tq.y, tq.z, tq.w);
+            v3 = aDict["s"];
+            s = float3(v3.x, v3.y, v3.z);
+        }
+
+        void save(Dictionary & aDict) const {
+            Vector3 v3 = Vector3(t.x,t.y,t.z);
+            aDict["t"] = v3;
+            Quaternion tq = Quaternion(q.x, q.y, q.z, q.w);
+            aDict["q"] = tq;
+            v3 = Vector3(s.x,s.y,s.z);
+            aDict["s"] = v3;
         }
     };
 
