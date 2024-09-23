@@ -50,6 +50,14 @@
 		<member name="application/min_ios_version" type="String" setter="" getter="">
 			Minimum version of iOS required for this application to run in the [code]major.minor.patch[/code] or [code]major.minor[/code] format, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]).
 		</member>
+		<member name="application/provisioning_profile_specifier_debug" type="String" setter="" getter="">
+			Name of the provisioning profile. Sets XCode PROVISIONING_PROFILE_SPECIFIER for debug. [url=https://developer.apple.com/documentation/xcode/build-settings-reference#Provisioning-Profile]Used for manual provisioning[/url].
+			Can be overridden with the environment variable [code]GODOT_IOS_PROFILE_SPECIFIER_DEBUG[/code].
+		</member>
+		<member name="application/provisioning_profile_specifier_release" type="String" setter="" getter="">
+			Name of the provisioning profile. Sets XCode PROVISIONING_PROFILE_SPECIFIER for release. [url=https://developer.apple.com/documentation/xcode/build-settings-reference#Provisioning-Profile]Used for manual provisioning[/url].
+			Can be overridden with the environment variable [code]GODOT_IOS_PROFILE_SPECIFIER_RELEASE[/code].
+		</member>
 		<member name="application/provisioning_profile_uuid_debug" type="String" setter="" getter="">
 			UUID of the provisioning profile. If left empty, Xcode will download or create a provisioning profile automatically. See [url=https://developer.apple.com/help/account/manage-profiles/edit-download-or-delete-profiles]Edit, download, or delete provisioning profiles[/url].
 			Can be overridden with the environment variable [code]GODOT_IOS_PROVISIONING_PROFILE_UUID_DEBUG[/code].
