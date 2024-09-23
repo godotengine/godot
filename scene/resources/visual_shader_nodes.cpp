@@ -8081,17 +8081,28 @@ int VisualShaderNodeRemap::get_input_port_count() const {
 }
 
 VisualShaderNodeRemap::PortType VisualShaderNodeRemap::get_input_port_type(int p_port) const {
-	switch (p_port) {
-		case 0:
-			return PORT_TYPE_SCALAR;
-		case 1:
-			return PORT_TYPE_SCALAR;
-		case 2:
-			return PORT_TYPE_SCALAR;
-		case 3:
-			return PORT_TYPE_SCALAR;
-		case 4:
-			return PORT_TYPE_SCALAR;
+	switch (op_type) {
+		case OP_TYPE_VECTOR_2D:
+			return PORT_TYPE_VECTOR_2D;
+		case OP_TYPE_VECTOR_2D_SCALAR:
+			if (p_port == 0) {
+				return PORT_TYPE_VECTOR_2D;
+			}
+			break;
+		case OP_TYPE_VECTOR_3D:
+			return PORT_TYPE_VECTOR_3D;
+		case OP_TYPE_VECTOR_3D_SCALAR:
+			if (p_port == 0) {
+				return PORT_TYPE_VECTOR_3D;
+			}
+			break;
+		case OP_TYPE_VECTOR_4D:
+			return PORT_TYPE_VECTOR_4D;
+		case OP_TYPE_VECTOR_4D_SCALAR:
+			if (p_port == 0) {
+				return PORT_TYPE_VECTOR_4D;
+			}
+			break;
 		default:
 			break;
 	}
@@ -8123,21 +8134,157 @@ int VisualShaderNodeRemap::get_output_port_count() const {
 }
 
 VisualShaderNodeRemap::PortType VisualShaderNodeRemap::get_output_port_type(int p_port) const {
-	return PORT_TYPE_SCALAR;
+	switch (op_type) {
+		case OP_TYPE_VECTOR_2D:
+		case OP_TYPE_VECTOR_2D_SCALAR:
+			return PORT_TYPE_VECTOR_2D;
+		case OP_TYPE_VECTOR_3D:
+		case OP_TYPE_VECTOR_3D_SCALAR:
+			return PORT_TYPE_VECTOR_3D;
+		case OP_TYPE_VECTOR_4D:
+		case OP_TYPE_VECTOR_4D_SCALAR:
+			return PORT_TYPE_VECTOR_4D;
+		default:
+			return PORT_TYPE_SCALAR;
+	}
 }
 
 String VisualShaderNodeRemap::get_output_port_name(int p_port) const {
 	return "value";
 }
 
+void VisualShaderNodeRemap::set_op_type(OpType p_op_type) {
+	ERR_FAIL_INDEX(int(p_op_type), int(OP_TYPE_MAX));
+	if (op_type == p_op_type) {
+		return;
+	}
+	switch (p_op_type) {
+		case OP_TYPE_SCALAR: {
+			set_input_port_default_value(0, 0.0, get_input_port_default_value(0));
+			set_input_port_default_value(1, 0.0, get_input_port_default_value(1));
+			set_input_port_default_value(2, 1.0, get_input_port_default_value(2));
+			set_input_port_default_value(3, 0.0, get_input_port_default_value(3));
+			set_input_port_default_value(4, 1.0, get_input_port_default_value(4));
+		} break;
+		case OP_TYPE_VECTOR_2D: {
+			set_input_port_default_value(0, Vector2(), get_input_port_default_value(0));
+			set_input_port_default_value(1, Vector2(), get_input_port_default_value(1));
+			set_input_port_default_value(2, Vector2(1.0, 1.0), get_input_port_default_value(2));
+			set_input_port_default_value(3, Vector2(), get_input_port_default_value(3));
+			set_input_port_default_value(4, Vector2(1.0, 1.0), get_input_port_default_value(4));
+		} break;
+		case OP_TYPE_VECTOR_2D_SCALAR: {
+			set_input_port_default_value(0, Vector2(), get_input_port_default_value(0));
+			set_input_port_default_value(1, 0.0, get_input_port_default_value(1));
+			set_input_port_default_value(2, 1.0, get_input_port_default_value(2));
+			set_input_port_default_value(3, 0.0, get_input_port_default_value(3));
+			set_input_port_default_value(4, 1.0, get_input_port_default_value(4));
+		} break;
+		case OP_TYPE_VECTOR_3D: {
+			set_input_port_default_value(0, Vector3(), get_input_port_default_value(0));
+			set_input_port_default_value(1, Vector3(), get_input_port_default_value(1));
+			set_input_port_default_value(2, Vector3(1.0, 1.0, 1.0), get_input_port_default_value(2));
+			set_input_port_default_value(3, Vector3(), get_input_port_default_value(3));
+			set_input_port_default_value(4, Vector3(1.0, 1.0, 1.0), get_input_port_default_value(4));
+		} break;
+		case OP_TYPE_VECTOR_3D_SCALAR: {
+			set_input_port_default_value(0, Vector3(), get_input_port_default_value(0));
+			set_input_port_default_value(1, 0.0, get_input_port_default_value(1));
+			set_input_port_default_value(2, 1.0, get_input_port_default_value(2));
+			set_input_port_default_value(3, 0.0, get_input_port_default_value(3));
+			set_input_port_default_value(4, 1.0, get_input_port_default_value(4));
+		} break;
+		case OP_TYPE_VECTOR_4D: {
+			set_input_port_default_value(0, Quaternion(), get_input_port_default_value(0));
+			set_input_port_default_value(1, Quaternion(), get_input_port_default_value(1));
+			set_input_port_default_value(2, Quaternion(1.0, 1.0, 1.0, 1.0), get_input_port_default_value(2));
+			set_input_port_default_value(3, Quaternion(), get_input_port_default_value(3));
+			set_input_port_default_value(4, Quaternion(1.0, 1.0, 1.0, 1.0), get_input_port_default_value(4));
+		} break;
+		case OP_TYPE_VECTOR_4D_SCALAR: {
+			set_input_port_default_value(0, Quaternion(), get_input_port_default_value(0));
+			set_input_port_default_value(1, 0.0, get_input_port_default_value(1));
+			set_input_port_default_value(2, 1.0, get_input_port_default_value(2));
+			set_input_port_default_value(3, 0.0, get_input_port_default_value(3));
+			set_input_port_default_value(4, 1.0, get_input_port_default_value(4));
+		} break;
+		default:
+			break;
+	}
+	op_type = p_op_type;
+	emit_changed();
+}
+
+VisualShaderNodeRemap::OpType VisualShaderNodeRemap::get_op_type() const {
+	return op_type;
+}
+
 String VisualShaderNodeRemap::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String code;
 	code += "	{\n";
-	code += vformat("		float __input_range = %s - %s;\n", p_input_vars[2], p_input_vars[1]);
-	code += vformat("		float __output_range = %s - %s;\n", p_input_vars[4], p_input_vars[3]);
-	code += vformat("		%s = %s + __output_range * ((%s - %s) / __input_range);\n", p_output_vars[0], p_input_vars[3], p_input_vars[0], p_input_vars[1]);
+	switch (op_type) {
+		case OP_TYPE_SCALAR: {
+			code += vformat("		float __input_range = %s - %s;\n", p_input_vars[2], p_input_vars[1]);
+			code += vformat("		float __output_range = %s - %s;\n", p_input_vars[4], p_input_vars[3]);
+			code += vformat("		%s = %s + __output_range * ((%s - %s) / __input_range);\n", p_output_vars[0], p_input_vars[3], p_input_vars[0], p_input_vars[1]);
+		} break;
+		case OP_TYPE_VECTOR_2D: {
+			code += vformat("		vec2 __input_range = %s - %s;\n", p_input_vars[2], p_input_vars[1]);
+			code += vformat("		vec2 __output_range = %s - %s;\n", p_input_vars[4], p_input_vars[3]);
+			code += vformat("		%s = %s + __output_range * ((%s - %s) / __input_range);\n", p_output_vars[0], p_input_vars[3], p_input_vars[0], p_input_vars[1]);
+		} break;
+		case OP_TYPE_VECTOR_2D_SCALAR: {
+			code += vformat("		vec2 __input_range = vec2(%s - %s);\n", p_input_vars[2], p_input_vars[1]);
+			code += vformat("		vec2 __output_range = vec2(%s - %s);\n", p_input_vars[4], p_input_vars[3]);
+			code += vformat("		%s = vec2(%s) + __output_range * ((%s - vec2(%s)) / __input_range);\n", p_output_vars[0], p_input_vars[3], p_input_vars[0], p_input_vars[1]);
+		} break;
+		case OP_TYPE_VECTOR_3D: {
+			code += vformat("		vec3 __input_range = %s - %s;\n", p_input_vars[2], p_input_vars[1]);
+			code += vformat("		vec3 __output_range = %s - %s;\n", p_input_vars[4], p_input_vars[3]);
+			code += vformat("		%s = %s + __output_range * ((%s - %s) / __input_range);\n", p_output_vars[0], p_input_vars[3], p_input_vars[0], p_input_vars[1]);
+		} break;
+		case OP_TYPE_VECTOR_3D_SCALAR: {
+			code += vformat("		vec3 __input_range = vec3(%s - %s);\n", p_input_vars[2], p_input_vars[1]);
+			code += vformat("		vec3 __output_range = vec3(%s - %s);\n", p_input_vars[4], p_input_vars[3]);
+			code += vformat("		%s = vec3(%s) + __output_range * ((%s - vec3(%s)) / __input_range);\n", p_output_vars[0], p_input_vars[3], p_input_vars[0], p_input_vars[1]);
+		} break;
+		case OP_TYPE_VECTOR_4D: {
+			code += vformat("		vec4 __input_range = %s - %s;\n", p_input_vars[2], p_input_vars[1]);
+			code += vformat("		vec4 __output_range = %s - %s;\n", p_input_vars[4], p_input_vars[3]);
+			code += vformat("		%s = %s + __output_range * ((%s - %s) / __input_range);\n", p_output_vars[0], p_input_vars[3], p_input_vars[0], p_input_vars[1]);
+		} break;
+		case OP_TYPE_VECTOR_4D_SCALAR: {
+			code += vformat("		vec4 __input_range = vec4(%s - %s);\n", p_input_vars[2], p_input_vars[1]);
+			code += vformat("		vec4 __output_range = vec4(%s - %s);\n", p_input_vars[4], p_input_vars[3]);
+			code += vformat("		%s = vec4(%s) + __output_range * ((%s - vec4(%s)) / __input_range);\n", p_output_vars[0], p_input_vars[3], p_input_vars[0], p_input_vars[1]);
+		} break;
+		default:
+			break;
+	}
 	code += "	}\n";
 	return code;
+}
+
+Vector<StringName> VisualShaderNodeRemap::get_editable_properties() const {
+	Vector<StringName> props;
+	props.push_back("op_type");
+	return props;
+}
+
+void VisualShaderNodeRemap::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_op_type", "op_type"), &VisualShaderNodeRemap::set_op_type);
+	ClassDB::bind_method(D_METHOD("get_op_type"), &VisualShaderNodeRemap::get_op_type);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "op_type", PROPERTY_HINT_ENUM, "Scalar,Vector2,Vector2Scalar,Vector3,Vector3Scalar,Vector4,Vector4Scalar"), "set_op_type", "get_op_type");
+
+	BIND_ENUM_CONSTANT(OP_TYPE_SCALAR);
+	BIND_ENUM_CONSTANT(OP_TYPE_VECTOR_2D);
+	BIND_ENUM_CONSTANT(OP_TYPE_VECTOR_2D_SCALAR);
+	BIND_ENUM_CONSTANT(OP_TYPE_VECTOR_3D);
+	BIND_ENUM_CONSTANT(OP_TYPE_VECTOR_3D_SCALAR);
+	BIND_ENUM_CONSTANT(OP_TYPE_VECTOR_4D);
+	BIND_ENUM_CONSTANT(OP_TYPE_VECTOR_4D_SCALAR);
+	BIND_ENUM_CONSTANT(OP_TYPE_MAX);
 }
 
 VisualShaderNodeRemap::VisualShaderNodeRemap() {

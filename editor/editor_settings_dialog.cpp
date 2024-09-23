@@ -33,6 +33,7 @@
 #include "core/input/input_map.h"
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
+#include "editor/editor_inspector.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_property_name_processor.h"
@@ -806,7 +807,6 @@ void EditorSettingsDialog::_focus_current_search_box() {
 
 void EditorSettingsDialog::_advanced_toggled(bool p_button_pressed) {
 	EditorSettings::get_singleton()->set("_editor_settings_advanced_mode", p_button_pressed);
-	inspector->set_restrict_to_basic_settings(!p_button_pressed);
 }
 
 void EditorSettingsDialog::_editor_restart() {
@@ -860,8 +860,8 @@ EditorSettingsDialog::EditorSettingsDialog() {
 
 	inspector = memnew(SectionedInspector);
 	inspector->get_inspector()->set_use_filter(true);
-	inspector->set_restrict_to_basic_settings(!use_advanced);
 	inspector->register_search_box(search_box);
+	inspector->register_advanced_toggle(advanced_switch);
 	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tab_general->add_child(inspector);
 	inspector->get_inspector()->connect("property_edited", callable_mp(this, &EditorSettingsDialog::_settings_property_edited));
