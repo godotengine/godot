@@ -404,7 +404,7 @@ namespace human
             m_Skeleton.save(d_skeleton);
             p_dict["skeleton"] = d_skeleton;
             Array d_skeleton_local_pose;
-            for (int i = 0; i < m_SkeletonLocalPose.size(); ++i) {
+            for (uint32_t i = 0; i < m_SkeletonLocalPose.size(); ++i) {
                 Dictionary d_skeleton_local_pose_i;
                 m_SkeletonLocalPose[i].save(d_skeleton_local_pose_i);
                 d_skeleton_local_pose.push_back(d_skeleton_local_pose_i);

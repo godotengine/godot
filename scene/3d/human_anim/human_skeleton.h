@@ -74,12 +74,12 @@ namespace skeleton
 
             Array nodes;
             Array axes;
-            for (int i = 0; i < m_Node.size(); i++) {
+            for (uint32_t i = 0; i < m_Node.size(); i++) {
                 Dictionary node_dict;
                 m_Node[i].save(node_dict);
                 nodes.push_back(node_dict);
             }
-            for (int i = 0; i < m_AxesArray.size(); i++) {
+            for (uint32_t i = 0; i < m_AxesArray.size(); i++) {
                 Dictionary axes_dict;
                 m_AxesArray[i].save(axes_dict);
                 axes.push_back(axes_dict);

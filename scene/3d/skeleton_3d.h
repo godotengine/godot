@@ -33,11 +33,33 @@
 
 #include "scene/3d/node_3d.h"
 #include "scene/resources/3d/skin.h"
+#include "./human_anim/human.h"
 
 typedef int BoneId;
 
 class Skeleton3D;
 class SkeletonModifier3D;
+class CharacterHumanConfig : public Resource
+{
+    GDCLASS(CharacterHumanConfig, Resource);
+    static void _bind_methods()
+    {
+    }
+
+public:
+
+    void set_human(const Dictionary& p_human) {
+        human.load(p_human);
+    }
+    Dictionary get_human() {
+        Dictionary human_dict;
+        human.save(human_dict);
+        return human_dict;
+    }
+
+    
+    human_anim::human::Human human;
+};
 
 class SkinReference : public RefCounted {
 	GDCLASS(SkinReference, RefCounted)
