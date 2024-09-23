@@ -399,6 +399,21 @@ void InspectorDock::_resource_selected(const Ref<Resource> &p_res, const String 
 	EditorNode::get_singleton()->push_item(r.operator->(), p_property);
 }
 
+void InspectorDock::_files_moved(const String &p_old_file, const String &p_new_file) {
+	// Because only the file name is shown, we care about changes on the file name.
+	if (p_old_file.get_file() == p_new_file.get_file()) {
+		return;
+	}
+
+	ObjectID current_id = EditorNode::get_singleton()->get_editor_selection_history()->get_current();
+	Ref<Resource> res(current_id.is_valid() ? ObjectDB::get_instance(current_id) : nullptr);
+	// We only care about updating the path if the current object is the one being renamed.
+	if (res.is_valid() && p_old_file == res->get_path()) {
+		res->set_path(p_new_file);
+		object_selector->update_path();
+	}
+}
+
 void InspectorDock::_edit_forward() {
 	if (EditorNode::get_singleton()->get_editor_selection_history()->next()) {
 		EditorNode::get_singleton()->edit_current();
@@ -822,6 +837,8 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	inspector->set_use_filter(true);
 
 	inspector->connect("resource_selected", callable_mp(this, &InspectorDock::_resource_selected));
+
+	FileSystemDock::get_singleton()->connect("files_moved", callable_mp(this, &InspectorDock::_files_moved));
 
 	set_process_shortcut_input(true);
 }
