@@ -114,6 +114,7 @@ union TileMapCell {
 class TileMapPattern : public Resource {
 	GDCLASS(TileMapPattern, Resource);
 
+	int pattern_set_index = 0;
 	Size2i size;
 	HashMap<Vector2i, TileMapCell> pattern;
 
@@ -143,6 +144,9 @@ public:
 	bool is_empty() const;
 
 	void clear();
+
+	int get_pattern_set_index() const;
+	void set_pattern_set_index(int p_pattern_set_index);
 };
 
 class TileSet : public Resource {
@@ -203,6 +207,12 @@ private:
 public:
 	// Format of output array [source_id, atlas_coords, alternative]
 	Array compatibility_tilemap_map(int p_tile_id, Vector2i p_coords, bool p_flip_h, bool p_flip_v, bool p_transpose);
+	void _add_pattern_bind_compat_97345(Ref<TileMapPattern> pattern, int index);
+	Ref<TileMapPattern> _get_pattern_bind_compat_97345(int index);
+	void _remove_pattern_bind_compat_97345(int index);
+	int _get_patterns_count_bind_compat_97345();
+	static void _bind_compatibility_methods();
+
 #endif // DISABLE_DEPRECATED
 
 public:
@@ -356,6 +366,14 @@ private:
 	};
 	Vector<NavigationLayer> navigation_layers;
 
+	// Patterns
+	struct PatternSet {
+		String name;
+		Vector<Ref<TileMapPattern>> pattern_set;
+	};
+	Vector<PatternSet> pattern_sets;
+	LocalVector<Ref<TileMapPattern>> patterns; // Kept for backwards compatibility/importing old TileMapPatterns (new patterns added in 4.4 beta). Along with code in set/get/get_property_list().
+
 	// CustomData
 	struct CustomDataLayer {
 		String name;
@@ -369,9 +387,6 @@ private:
 	Vector<int> source_ids;
 	int next_source_id = 0;
 	// ---------------------
-
-	LocalVector<Ref<TileMapPattern>> patterns;
-
 	void _compute_next_source_id();
 	void _source_changed();
 
@@ -471,6 +486,25 @@ public:
 	bool is_valid_terrain_peering_bit_for_mode(TileSet::TerrainMode p_terrain_mode, TileSet::CellNeighbor p_peering_bit) const;
 	bool is_valid_terrain_peering_bit(int p_terrain_set, TileSet::CellNeighbor p_peering_bit) const;
 
+	// Pattern Sets
+
+	Vector<Ref<TileMapPattern>> get_pattern_set(int p_pattern_set_index) const;
+	void set_pattern_set(int p_pattern_set_index, Vector<Ref<TileMapPattern>> p_pattern_set);
+	String get_pattern_set_name(int p_pattern_set_index) const;
+	void set_pattern_set_name(int p_pattern_set_index, String new_name);
+
+	int get_pattern_sets_count() const;
+	void add_pattern_set(int p_index = -1);
+	void remove_pattern_set(int p_index);
+	void move_pattern_set(int p_from_index, int p_to_pos);
+
+	// Patterns (set_pattern and get_pattern is in tile_map.cpp as well).
+	int get_patterns_count(int p_pattern_set_index) const;
+	Ref<TileMapPattern> get_pattern(int p_pattern_set_index, int p_index) const;
+	int add_pattern(Ref<TileMapPattern> p_pattern, int p_pattern_set_index, int p_index = -1);
+	void remove_pattern(int p_pattern_set_index, int p_index);
+	void _move_pattern(int p_from_index, int p_to_pos, int p_pattern_set_index);
+
 	// Navigation
 	int get_navigation_layers_count() const;
 	void add_navigation_layer(int p_index = -1);
@@ -516,12 +550,6 @@ public:
 
 	void cleanup_invalid_tile_proxies();
 	void clear_tile_proxies();
-
-	// Patterns.
-	int add_pattern(Ref<TileMapPattern> p_pattern, int p_index = -1);
-	Ref<TileMapPattern> get_pattern(int p_index);
-	void remove_pattern(int p_index);
-	int get_patterns_count();
 
 	// Terrains.
 	RBSet<TerrainsPattern> get_terrains_pattern_set(int p_terrain_set);
@@ -571,25 +599,25 @@ public:
 	// Not exposed.
 	virtual void set_tile_set(const TileSet *p_tile_set);
 	TileSet *get_tile_set() const;
-	virtual void notify_tile_data_properties_should_change() {}
-	virtual void add_occlusion_layer(int p_index) {}
-	virtual void move_occlusion_layer(int p_from_index, int p_to_pos) {}
-	virtual void remove_occlusion_layer(int p_index) {}
-	virtual void add_physics_layer(int p_index) {}
-	virtual void move_physics_layer(int p_from_index, int p_to_pos) {}
-	virtual void remove_physics_layer(int p_index) {}
-	virtual void add_terrain_set(int p_index) {}
-	virtual void move_terrain_set(int p_from_index, int p_to_pos) {}
-	virtual void remove_terrain_set(int p_index) {}
-	virtual void add_terrain(int p_terrain_set, int p_index) {}
-	virtual void move_terrain(int p_terrain_set, int p_from_index, int p_to_pos) {}
-	virtual void remove_terrain(int p_terrain_set, int p_index) {}
-	virtual void add_navigation_layer(int p_index) {}
-	virtual void move_navigation_layer(int p_from_index, int p_to_pos) {}
-	virtual void remove_navigation_layer(int p_index) {}
-	virtual void add_custom_data_layer(int p_index) {}
-	virtual void move_custom_data_layer(int p_from_index, int p_to_pos) {}
-	virtual void remove_custom_data_layer(int p_index) {}
+	virtual void notify_tile_data_properties_should_change() {};
+	virtual void add_occlusion_layer(int p_index) {};
+	virtual void move_occlusion_layer(int p_from_index, int p_to_pos) {};
+	virtual void remove_occlusion_layer(int p_index) {};
+	virtual void add_physics_layer(int p_index) {};
+	virtual void move_physics_layer(int p_from_index, int p_to_pos) {};
+	virtual void remove_physics_layer(int p_index) {};
+	virtual void add_terrain_set(int p_index) {};
+	virtual void move_terrain_set(int p_from_index, int p_to_pos) {};
+	virtual void remove_terrain_set(int p_index) {};
+	virtual void add_terrain(int p_terrain_set, int p_index) {};
+	virtual void move_terrain(int p_terrain_set, int p_from_index, int p_to_pos) {};
+	virtual void remove_terrain(int p_terrain_set, int p_index) {};
+	virtual void add_navigation_layer(int p_index) {};
+	virtual void move_navigation_layer(int p_from_index, int p_to_pos) {};
+	virtual void remove_navigation_layer(int p_index) {};
+	virtual void add_custom_data_layer(int p_index) {};
+	virtual void move_custom_data_layer(int p_from_index, int p_to_pos) {};
+	virtual void remove_custom_data_layer(int p_index) {};
 	virtual void reset_state() override;
 
 	// Tiles.

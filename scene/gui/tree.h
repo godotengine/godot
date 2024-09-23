@@ -820,6 +820,7 @@ public:
 
 	Size2 get_minimum_size() const override;
 
+	LineEdit *get_line_editor() const;
 	Tree();
 	~Tree();
 };

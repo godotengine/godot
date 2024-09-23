@@ -29,7 +29,7 @@
 /**************************************************************************/
 
 #include "tile_map_layer.h"
-
+#include "core/core_string_names.h"
 #include "core/io/marshalls.h"
 #include "scene/2d/tile_map.h"
 #include "scene/gui/control.h"
@@ -2543,6 +2543,11 @@ Ref<TileMapPattern> TileMapLayer::get_pattern(TypedArray<Vector2i> p_coords_arra
 		min = min.min(p_coords_array[i]);
 	}
 
+	Vector2i max;
+	for (int i = 0; i < p_coords_array.size(); i++) {
+		max = max.max(p_coords_array[i]);
+	}
+
 	Vector<Vector2i> coords_in_pattern_array;
 	coords_in_pattern_array.resize(p_coords_array.size());
 	Vector2i ensure_positive_offset;
@@ -2578,7 +2583,7 @@ Ref<TileMapPattern> TileMapLayer::get_pattern(TypedArray<Vector2i> p_coords_arra
 		Vector2i coords_in_pattern = coords_in_pattern_array[i];
 		output->set_cell(coords_in_pattern + ensure_positive_offset, get_cell_source_id(coords), get_cell_atlas_coords(coords), get_cell_alternative_tile(coords));
 	}
-
+	output->set_size((max + Vector2i(1, 1)) - min);
 	return output;
 }
 

@@ -6,6 +6,7 @@
 	<description>
 		This resource holds a set of cells to help bulk manipulations of [TileMap].
 		A pattern always start at the [code](0,0)[/code] coordinates and cannot have cells with negative coordinates.
+		TileMapPatterns are stored and added to a [TileSet], they are not stored inside of a [TileMapLayer]. Use [method TileMapLayer.get_pattern] to get a pattern from your TileMapLayer in code. Use [method TileSet.get_pattern] to get a stored pattern from a pattern set.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -29,6 +30,12 @@
 			<param index="0" name="coords" type="Vector2i" />
 			<description>
 				Returns the tile source ID of the cell at [param coords].
+			</description>
+		</method>
+		<method name="get_pattern_set_index" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the index of the pattern set this pattern belongs to.
 			</description>
 		</method>
 		<method name="get_size" qualifiers="const">
