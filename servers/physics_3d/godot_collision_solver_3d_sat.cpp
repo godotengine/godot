@@ -98,10 +98,11 @@ static void _generate_contacts_point_point(const Vector3 *p_points_A, int p_poin
 }
 
 static void _generate_contacts_point_edge(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
-#ifdef DEBUG_ENABLED
-	ERR_FAIL_COND(p_point_count_A != 1);
-	ERR_FAIL_COND(p_point_count_B != 2);
-#endif
+	if (p_point_count_A != 2 || p_point_count_B != 2) {
+		// Fallback: use the first two points from each set for backward compatibility.
+		p_point_count_A = MIN(p_point_count_A, 2);
+		p_point_count_B = MIN(p_point_count_B, 2);
+	}
 
 	Vector3 closest_B = Geometry3D::get_closest_point_to_segment_uncapped(*p_points_A, p_points_B);
 	p_callback->call(*p_points_A, closest_B, p_callback->normal);
@@ -130,11 +131,11 @@ static void _generate_contacts_point_circle(const Vector3 *p_points_A, int p_poi
 }
 
 static void _generate_contacts_edge_edge(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
-#ifdef DEBUG_ENABLED
-	ERR_FAIL_COND(p_point_count_A != 2);
-	ERR_FAIL_COND(p_point_count_B != 2); // circle is actually a 4x3 matrix
-#endif
-
+	if (p_point_count_A != 2 || p_point_count_B != 2) {
+		// Fallback: use the first two points from each set for backward compatibility.
+		p_point_count_A = MIN(p_point_count_A, 2);
+		p_point_count_B = MIN(p_point_count_B, 2);
+	}
 	Vector3 rel_A = p_points_A[1] - p_points_A[0];
 	Vector3 rel_B = p_points_B[1] - p_points_B[0];
 
@@ -183,10 +184,11 @@ static void _generate_contacts_edge_edge(const Vector3 *p_points_A, int p_point_
 }
 
 static void _generate_contacts_edge_circle(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
-#ifdef DEBUG_ENABLED
-	ERR_FAIL_COND(p_point_count_A != 2);
-	ERR_FAIL_COND(p_point_count_B != 3);
-#endif
+	if (p_point_count_A != 2 || p_point_count_B > 3) {
+		// Fallback: use the first valid points for compatibility.
+		p_point_count_A = MIN(p_point_count_A, 2);
+		p_point_count_B = MIN(p_point_count_B, 3);
+	}
 
 	const Vector3 &circle_B_pos = p_points_B[0];
 	Vector3 circle_B_line_1 = p_points_B[1] - circle_B_pos;
@@ -942,11 +944,73 @@ static void analytic_sphere_cylinder_collision(real_t p_radius_a, real_t p_radiu
 }
 
 template <bool withMargin>
+static void analytic_sphere_cone_collision(real_t p_radius_a, real_t p_radius_b_base, real_t p_height_b, const Transform3D &p_transform_a, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+	// Transform the sphere's center to the cone's local space.
+	Vector3 center = p_transform_b.affine_inverse().xform(p_transform_a.origin);
+
+	// Calculate the distance from the sphere's center to the cone's axis in the XZ plane.
+	real_t r = Math::sqrt(center.x * center.x + center.z * center.z);
+
+	// Calculate the height ratio to determine the cone's radius at the sphere's Y position.
+	real_t half_height = p_height_b / 2;
+	real_t height_ratio = 1 - ((center.y + half_height) / p_height_b);
+	real_t current_radius = p_radius_b_base * height_ratio;
+
+	// Project the sphere center onto the cone surface.
+	Vector3 nearest = center;
+
+	// Ensure the nearest point lies within the cone's lateral surface.
+	if (r > current_radius) {
+		real_t scale = current_radius / r;
+		nearest.x *= scale;
+		nearest.z *= scale;
+	}
+
+	// Clamp the Y coordinate to the height of the cone.
+	nearest.y = MAX(MIN(nearest.y, half_height), -half_height);
+
+	// Transform the nearest point back to world space.
+	nearest = p_transform_b.xform(nearest);
+
+	// Determine if the nearest point is within the sphere's radius.
+	Vector3 delta = nearest - p_transform_a.origin;
+	real_t distance_squared = delta.length_squared();
+	real_t combined_radius = p_radius_a + p_margin_a + p_margin_b;
+
+	if (distance_squared > combined_radius * combined_radius) {
+		return;
+	}
+
+	p_collector->collided = true;
+
+	if (!p_collector->callback) {
+		return;
+	}
+
+	// Calculate the collision normal and points.
+	real_t distance = Math::sqrt(distance_squared);
+	Vector3 axis = (distance > 0) ? delta / distance : Vector3(0, 1, 0); // Fallback to an arbitrary axis if at the same point.
+
+	Vector3 point_a = p_transform_a.origin + axis * (p_radius_a + p_margin_a);
+	Vector3 point_b = nearest - axis * p_margin_b;
+
+	p_collector->call(point_a, point_b, axis);
+}
+
+template <bool withMargin>
 static void _collision_sphere_cylinder(const GodotShape3D *p_a, const Transform3D &p_transform_a, const GodotShape3D *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const GodotSphereShape3D *sphere_A = static_cast<const GodotSphereShape3D *>(p_a);
 	const GodotCylinderShape3D *cylinder_B = static_cast<const GodotCylinderShape3D *>(p_b);
 
 	analytic_sphere_cylinder_collision<withMargin>(sphere_A->get_radius(), cylinder_B->get_radius(), cylinder_B->get_height(), p_transform_a, p_transform_b, p_collector, p_margin_a, p_margin_b);
+}
+
+template <bool withMargin>
+static void _collision_sphere_cone(const GodotShape3D *p_a, const Transform3D &p_transform_a, const GodotShape3D *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+	const GodotSphereShape3D *sphere_A = static_cast<const GodotSphereShape3D *>(p_a);
+	const GodotConeShape3D *cone_B = static_cast<const GodotConeShape3D *>(p_b);
+
+	analytic_sphere_cone_collision<withMargin>(sphere_A->get_radius(), cone_B->get_radius(), cone_B->get_height(), p_transform_a, p_transform_b, p_collector, p_margin_a, p_margin_b);
 }
 
 template <bool withMargin>
@@ -1378,6 +1442,68 @@ static void _collision_box_cylinder(const GodotShape3D *p_a, const Transform3D &
 }
 
 template <bool withMargin>
+static void _collision_box_cone(const GodotShape3D *p_a, const Transform3D &p_transform_a, const GodotShape3D *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+	const GodotBoxShape3D *box_A = static_cast<const GodotBoxShape3D *>(p_a);
+	const GodotConeShape3D *cone_B = static_cast<const GodotConeShape3D *>(p_b);
+
+	SeparatorAxisTest<GodotBoxShape3D, GodotConeShape3D, withMargin> separator(box_A, p_transform_a, cone_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+
+	if (!separator.test_previous_axis()) {
+		return;
+	}
+
+	// Handle the cone's geometry
+	Vector3 cone_apex = p_transform_b.xform(Vector3(0, cone_B->get_height() / 2.0, 0));
+	Vector3 cone_base_center = p_transform_b.xform(Vector3(0, -cone_B->get_height() / 2.0, 0));
+	real_t cone_radius = cone_B->get_radius();
+	Vector3 cone_axis = (cone_apex - cone_base_center).normalized();
+
+	// 1. Axis from the box's faces
+	for (int i = 0; i < 3; i++) {
+		Vector3 box_axis = p_transform_a.basis.get_column(i).normalized();
+		if (!separator.test_axis(box_axis)) {
+			return;
+		}
+	}
+
+	// 2. Axis along the cone's height (cone's central axis)
+	if (!separator.test_axis(cone_axis)) {
+		return;
+	}
+
+	// 3. Test the cone's side surfaces
+	for (int i = 0; i < 3; i++) {
+		Vector3 e2 = p_transform_b.basis.xform(Vector3(cone_radius, 0, 0)).normalized();
+		Vector3 cone_surface_axis = (cone_apex - cone_base_center).cross(e2).normalized();
+		if (!separator.test_axis(cone_surface_axis)) {
+			return;
+		}
+	}
+
+	if (withMargin) {
+		for (int v = 0; v < 8; v++) {
+			Vector3 corner(
+					(v & 1) ? box_A->get_half_extents().x : -box_A->get_half_extents().x,
+					(v & 2) ? box_A->get_half_extents().y : -box_A->get_half_extents().y,
+					(v & 4) ? box_A->get_half_extents().z : -box_A->get_half_extents().z);
+		}
+
+		// Check the box edges against the cone base edge
+		for (int i = 0; i < 3; i++) {
+			Vector3 box_edge = p_transform_a.basis.get_column(i);
+			Vector3 base_edge = p_transform_b.basis.xform(Vector3(cone_radius, 0, 0)); // Edge on the base circle
+			Vector3 edge_cross_axis = box_edge.cross(base_edge).normalized();
+
+			if (!separator.test_axis(edge_cross_axis)) {
+				return;
+			}
+		}
+	}
+
+	separator.generate_contacts();
+}
+
+template <bool withMargin>
 static void _collision_box_convex_polygon(const GodotShape3D *p_a, const Transform3D &p_transform_a, const GodotShape3D *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const GodotBoxShape3D *box_A = static_cast<const GodotBoxShape3D *>(p_a);
 	const GodotConvexPolygonShape3D *convex_polygon_B = static_cast<const GodotConvexPolygonShape3D *>(p_b);
@@ -1687,6 +1813,35 @@ static void _collision_capsule_cylinder(const GodotShape3D *p_a, const Transform
 }
 
 template <bool withMargin>
+static void _collision_capsule_cone(const GodotShape3D *p_a, const Transform3D &p_transform_a, const GodotShape3D *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+	const GodotCapsuleShape3D *capsule_A = static_cast<const GodotCapsuleShape3D *>(p_a);
+	const GodotConeShape3D *cone_B = static_cast<const GodotConeShape3D *>(p_b);
+
+	// Find the closest points between the axes of the two objects.
+
+	Vector3 capsule_A_closest;
+	Vector3 cone_B_closest;
+	Vector3 capsule_A_axis = p_transform_a.basis.get_column(1) * (capsule_A->get_height() * 0.5 - capsule_A->get_radius());
+	Vector3 cone_B_axis = p_transform_b.basis.get_column(1) * (cone_B->get_height() * 0.5 - cone_B->get_radius());
+
+	Geometry3D::get_closest_points_between_segments(
+			p_transform_a.origin + capsule_A_axis,
+			p_transform_a.origin - capsule_A_axis,
+			p_transform_b.origin + cone_B_axis,
+			p_transform_b.origin - cone_B_axis,
+			capsule_A_closest,
+			cone_B_closest);
+
+	// Perform the collision test between the cone and the nearest sphere on the capsule axis.
+
+	Transform3D sphere_transform(p_transform_a.basis, capsule_A_closest);
+	real_t height_ratio = 1 - ((cone_B_closest.y + cone_B->get_height() / 2) / cone_B->get_height());
+	real_t current_radius = cone_B->get_radius() * height_ratio;
+
+	analytic_sphere_cone_collision<withMargin>(capsule_A->get_radius(), current_radius, cone_B->get_height(), sphere_transform, p_transform_b, p_collector, p_margin_a, p_margin_b);
+}
+
+template <bool withMargin>
 static void _collision_capsule_convex_polygon(const GodotShape3D *p_a, const Transform3D &p_transform_a, const GodotShape3D *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const GodotCapsuleShape3D *capsule_A = static_cast<const GodotCapsuleShape3D *>(p_a);
 	const GodotConvexPolygonShape3D *convex_polygon_B = static_cast<const GodotConvexPolygonShape3D *>(p_b);
@@ -1830,6 +1985,219 @@ static void _collision_capsule_face(const GodotShape3D *p_a, const Transform3D &
 				separator.best_axis = separator.best_axis.bounce(normal);
 			} else {
 				// Just ignore backface collision.
+				return;
+			}
+		}
+	}
+
+	separator.generate_contacts();
+}
+
+template <bool withMargin>
+static void _collision_cone_cone(const GodotShape3D *p_a, const Transform3D &p_transform_a, const GodotShape3D *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+	const GodotConeShape3D *cone_A = static_cast<const GodotConeShape3D *>(p_a);
+	const GodotConeShape3D *cone_B = static_cast<const GodotConeShape3D *>(p_b);
+
+	SeparatorAxisTest<GodotConeShape3D, GodotConeShape3D, withMargin> separator(cone_A, p_transform_a, cone_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+
+	Vector3 cone_A_axis = p_transform_a.basis.get_column(1);
+	Vector3 cone_B_axis = p_transform_b.basis.get_column(1);
+
+	if (!separator.test_previous_axis()) {
+		return;
+	}
+
+	// Test against the base of the cone.
+	Vector3 apex_to_base_A = cone_A_axis.normalized();
+	if (!separator.test_axis(apex_to_base_A)) {
+		return;
+	}
+
+	Vector3 apex_to_base_B = cone_B_axis.normalized();
+	if (!separator.test_axis(apex_to_base_B)) {
+		return;
+	}
+
+	Vector3 cone_diff = p_transform_b.origin - p_transform_a.origin;
+
+	// Test against the lateral surface of cone A.
+	Vector3 axis_A = apex_to_base_A.cross(cone_diff).cross(apex_to_base_A).normalized();
+	if (!separator.test_axis(axis_A)) {
+		return;
+	}
+
+	// Test against the lateral surface of cone B.
+	Vector3 axis_B = apex_to_base_B.cross(cone_diff).cross(apex_to_base_B).normalized();
+	if (!separator.test_axis(axis_B)) {
+		return;
+	}
+
+	// Fallback to a generic algorithm to find the best separating axis if necessary.
+	GodotCollisionSolver3D::CallbackResult callback = SeparatorAxisTest<GodotConeShape3D, GodotConeShape3D, withMargin>::test_contact_points;
+
+	if (!fallback_collision_solver(p_a, p_transform_a, p_b, p_transform_b, callback, &separator, false, p_margin_a, p_margin_b)) {
+		return;
+	}
+
+	separator.generate_contacts();
+}
+
+template <bool withMargin>
+static void _collision_cylinder_cone(const GodotShape3D *p_a, const Transform3D &p_transform_a, const GodotShape3D *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+	const GodotConeShape3D *cone_A = static_cast<const GodotConeShape3D *>(p_a);
+	const GodotCylinderShape3D *cylinder_B = static_cast<const GodotCylinderShape3D *>(p_b);
+
+	// Setup the separator axis test utility
+	SeparatorAxisTest<GodotConeShape3D, GodotCylinderShape3D, withMargin> separator(cone_A, p_transform_a, cylinder_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+
+	Vector3 cone_A_axis = p_transform_a.basis.get_column(1); // Axis of the cone
+	Vector3 cylinder_B_axis = p_transform_b.basis.get_column(1); // Axis of the cylinder
+
+	// Test previously cached axes for possible separation
+	if (!separator.test_previous_axis()) {
+		return;
+	}
+
+	// Test the cone's apex-to-base vector against the cylinder's axis for separation
+	Vector3 cone_apex_to_base = cone_A_axis.normalized();
+	if (!separator.test_axis(cone_apex_to_base)) {
+		return;
+	}
+
+	// Test against the cylinder's end cap axes
+	Vector3 cylinder_axis_normalized = cylinder_B_axis.normalized();
+	if (!separator.test_axis(cylinder_axis_normalized)) {
+		return;
+	}
+
+	// Vector between cone's apex and cylinder's center
+	Vector3 cone_diff = p_transform_b.origin - p_transform_a.origin;
+
+	// Test the lateral surface axis of the cone
+	Vector3 cone_lateral_axis = cone_apex_to_base.cross(cone_diff).cross(cone_apex_to_base).normalized();
+	if (!separator.test_axis(cone_lateral_axis)) {
+		return;
+	}
+
+	// Test the lateral surface axis of the cylinder
+	Vector3 cylinder_lateral_axis = cylinder_axis_normalized.cross(cone_diff).cross(cylinder_axis_normalized).normalized();
+	if (!separator.test_axis(cylinder_lateral_axis)) {
+		return;
+	}
+
+	// Handle the case where the cone's and cylinder's axes are nearly parallel
+	real_t proj = cone_apex_to_base.cross(cylinder_axis_normalized).cross(cylinder_axis_normalized).dot(cone_apex_to_base);
+	if (Math::is_zero_approx(proj)) {
+		// Parallel cone and cylinder, generate contacts directly without further axis testing
+		separator.generate_contacts();
+		return;
+	}
+
+	// Fallback to a more generic solver for complex cases
+	GodotCollisionSolver3D::CallbackResult callback = SeparatorAxisTest<GodotConeShape3D, GodotCylinderShape3D, withMargin>::test_contact_points;
+	if (!fallback_collision_solver(p_a, p_transform_a, p_b, p_transform_b, callback, &separator, false, p_margin_a, p_margin_b)) {
+		return;
+	}
+
+	// Generate contact points after all tests have been performed
+	separator.generate_contacts();
+}
+
+template <bool withMargin>
+static void _collision_convex_polygon_cone(const GodotShape3D *p_a, const Transform3D &p_transform_a, const GodotShape3D *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+	const GodotConeShape3D *cone_A = static_cast<const GodotConeShape3D *>(p_a);
+	const GodotConvexPolygonShape3D *convex_polygon_B = static_cast<const GodotConvexPolygonShape3D *>(p_b);
+
+	SeparatorAxisTest<GodotConeShape3D, GodotConvexPolygonShape3D, withMargin> separator(cone_A, p_transform_a, convex_polygon_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+
+	GodotCollisionSolver3D::CallbackResult callback = SeparatorAxisTest<GodotConeShape3D, GodotConvexPolygonShape3D, withMargin>::test_contact_points;
+
+	// Fallback to a generic algorithm to find the best separating axis.
+	if (!fallback_collision_solver(p_a, p_transform_a, p_b, p_transform_b, callback, &separator, false, p_margin_a, p_margin_b)) {
+		return;
+	}
+
+	separator.generate_contacts();
+}
+
+template <bool withMargin>
+static void _collision_cone_face(const GodotShape3D *p_a, const Transform3D &p_transform_a, const GodotShape3D *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+	const GodotConeShape3D *cone_A = static_cast<const GodotConeShape3D *>(p_a);
+	const GodotFaceShape3D *face_B = static_cast<const GodotFaceShape3D *>(p_b);
+
+	SeparatorAxisTest<GodotConeShape3D, GodotFaceShape3D, withMargin> separator(cone_A, p_transform_a, face_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+
+	if (!separator.test_previous_axis()) {
+		return;
+	}
+
+	Vector3 vertex[3] = {
+		p_transform_b.xform(face_B->vertex[0]),
+		p_transform_b.xform(face_B->vertex[1]),
+		p_transform_b.xform(face_B->vertex[2]),
+	};
+
+	Vector3 normal = (vertex[0] - vertex[2]).cross(vertex[0] - vertex[1]).normalized();
+
+	// Face B normal.
+	if (!separator.test_axis(normal)) {
+		return;
+	}
+
+	Vector3 cone_axis = p_transform_a.basis.get_column(1).normalized();
+	if (cone_axis.dot(normal) < 0.0) {
+		cone_axis *= -1.0;
+	}
+
+	// Cone apex.
+	Vector3 apex = p_transform_a.origin - cone_axis * cone_A->get_height() / 2.0;
+
+	// Test apex against face.
+	Vector3 apex_to_face = p_transform_b.origin - apex;
+	if (!separator.test_axis(apex_to_face.normalized())) {
+		return;
+	}
+
+	// Test the lateral surface of the cone
+	Vector3 cone_base_center = p_transform_a.origin + cone_axis * cone_A->get_height() / 2.0;
+
+	// Radius of the cone's base
+	real_t cone_radius = cone_A->get_radius();
+
+	// Test points around the base of the cone
+	for (int i = 0; i < 3; i++) {
+		// Calculate the point on the edge of the cone's base
+		Vector3 edge_direction = (vertex[i] - cone_base_center).normalized();
+		Vector3 cone_edge = cone_base_center + edge_direction * cone_radius;
+
+		// Calculate the axis perpendicular to the cone surface at this point
+		Vector3 axis = (cone_edge - apex).cross(cone_axis).normalized();
+
+		if (Math::is_zero_approx(axis.length_squared())) {
+			continue;
+		}
+
+		if (!separator.test_axis(axis)) {
+			return;
+		}
+	}
+
+	// Test face vertices against cone.
+	for (int i = 0; i < 3; i++) {
+		Vector3 point_to_apex = apex - vertex[i];
+		Vector3 axis = Plane(cone_axis).project(point_to_apex).normalized();
+
+		if (!separator.test_axis(axis)) {
+			return;
+		}
+	}
+
+	if (!face_B->backface_collision) {
+		if (separator.best_axis.dot(normal) < _BACKFACE_NORMAL_THRESHOLD) {
+			if (face_B->invert_backface_collision) {
+				separator.best_axis = separator.best_axis.bounce(normal);
+			} else {
+				// Ignore backface collision.
 				return;
 			}
 		}
@@ -2302,82 +2670,108 @@ bool sat_calculate_penetration(const GodotShape3D *p_shape_A, const Transform3D 
 	ERR_FAIL_COND_V(type_B == PhysicsServer3D::SHAPE_SEPARATION_RAY, false);
 	ERR_FAIL_COND_V(p_shape_B->is_concave(), false);
 
-	static const CollisionFunc collision_table[6][6] = {
+	static const CollisionFunc collision_table[7][7] = {
 		{ _collision_sphere_sphere<false>,
 				_collision_sphere_box<false>,
 				_collision_sphere_capsule<false>,
 				_collision_sphere_cylinder<false>,
 				_collision_sphere_convex_polygon<false>,
-				_collision_sphere_face<false> },
+				_collision_sphere_face<false>,
+				_collision_sphere_cone<false> },
 		{ nullptr,
 				_collision_box_box<false>,
 				_collision_box_capsule<false>,
 				_collision_box_cylinder<false>,
 				_collision_box_convex_polygon<false>,
-				_collision_box_face<false> },
+				_collision_box_face<false>,
+				_collision_box_cone<false> },
 		{ nullptr,
 				nullptr,
 				_collision_capsule_capsule<false>,
 				_collision_capsule_cylinder<false>,
 				_collision_capsule_convex_polygon<false>,
-				_collision_capsule_face<false> },
+				_collision_capsule_face<false>,
+				_collision_capsule_cone<false> },
 		{ nullptr,
 				nullptr,
 				nullptr,
 				_collision_cylinder_cylinder<false>,
 				_collision_cylinder_convex_polygon<false>,
-				_collision_cylinder_face<false> },
+				_collision_cylinder_face<false>,
+				_collision_cylinder_cone<false> },
 		{ nullptr,
 				nullptr,
 				nullptr,
 				nullptr,
 				_collision_convex_polygon_convex_polygon<false>,
-				_collision_convex_polygon_face<false> },
+				_collision_convex_polygon_face<false>,
+				_collision_convex_polygon_cone<false> },
 		{ nullptr,
 				nullptr,
 				nullptr,
 				nullptr,
 				nullptr,
+				_collision_cone_face<false>,
 				nullptr },
+		{ nullptr,
+				nullptr,
+				nullptr,
+				nullptr,
+				nullptr,
+				nullptr,
+				_collision_cone_cone<false> },
 	};
 
-	static const CollisionFunc collision_table_margin[6][6] = {
+	static const CollisionFunc collision_table_margin[7][7] = {
 		{ _collision_sphere_sphere<true>,
 				_collision_sphere_box<true>,
 				_collision_sphere_capsule<true>,
 				_collision_sphere_cylinder<true>,
 				_collision_sphere_convex_polygon<true>,
-				_collision_sphere_face<true> },
+				_collision_sphere_face<true>,
+				_collision_sphere_cone<true> },
 		{ nullptr,
 				_collision_box_box<true>,
 				_collision_box_capsule<true>,
 				_collision_box_cylinder<true>,
 				_collision_box_convex_polygon<true>,
-				_collision_box_face<true> },
+				_collision_box_face<true>,
+				_collision_box_cone<true> },
 		{ nullptr,
 				nullptr,
 				_collision_capsule_capsule<true>,
 				_collision_capsule_cylinder<true>,
 				_collision_capsule_convex_polygon<true>,
-				_collision_capsule_face<true> },
+				_collision_capsule_face<true>,
+				_collision_capsule_cone<true> },
 		{ nullptr,
 				nullptr,
 				nullptr,
 				_collision_cylinder_cylinder<true>,
 				_collision_cylinder_convex_polygon<true>,
-				_collision_cylinder_face<true> },
+				_collision_cylinder_face<true>,
+				_collision_cylinder_cone<true> },
 		{ nullptr,
 				nullptr,
 				nullptr,
 				nullptr,
 				_collision_convex_polygon_convex_polygon<true>,
-				_collision_convex_polygon_face<true> },
+				_collision_convex_polygon_face<true>,
+				_collision_convex_polygon_cone<true> },
 		{ nullptr,
 				nullptr,
 				nullptr,
 				nullptr,
 				nullptr,
+				_collision_cone_face<true>,
 				nullptr },
+		{ nullptr,
+				nullptr,
+				nullptr,
+				nullptr,
+				nullptr,
+				nullptr,
+				_collision_cone_cone<true> },
 	};
 
 	_CollectorCallback callback;
@@ -2393,6 +2787,12 @@ bool sat_calculate_penetration(const GodotShape3D *p_shape_A, const Transform3D 
 	const Transform3D *transform_B = &p_transform_B;
 	real_t margin_A = p_margin_a;
 	real_t margin_B = p_margin_b;
+
+	//Changing enum value to match collision table (cone enum at the end for compatibility)
+	if (type_A == PhysicsServer3D::SHAPE_CONE)
+		type_A = PhysicsServer3D::SHAPE_HEIGHTMAP;
+	if (type_B == PhysicsServer3D::SHAPE_CONE)
+		type_B = PhysicsServer3D::SHAPE_HEIGHTMAP;
 
 	if (type_A > type_B) {
 		SWAP(A, B);

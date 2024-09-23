@@ -80,6 +80,7 @@ public:
 	FUNCRID(sphere_shape)
 	FUNCRID(box_shape)
 	FUNCRID(capsule_shape)
+	FUNCRID(cone_shape)
 	FUNCRID(cylinder_shape)
 	FUNCRID(convex_polygon_shape)
 	FUNCRID(concave_polygon_shape)

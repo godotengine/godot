@@ -629,6 +629,11 @@
 			<description>
 			</description>
 		</method>
+		<method name="_cone_shape_create" qualifiers="virtual">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="_cone_twist_joint_get_param" qualifiers="virtual const">
 			<return type="float" />
 			<param index="0" name="joint" type="RID" />

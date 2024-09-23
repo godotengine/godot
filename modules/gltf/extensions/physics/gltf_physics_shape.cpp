@@ -37,6 +37,7 @@
 #include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
+#include "scene/resources/3d/cone_shape_3d.h"
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
 #include "scene/resources/3d/cylinder_shape_3d.h"
 #include "scene/resources/3d/importer_mesh.h"
@@ -194,6 +195,11 @@ Ref<GLTFPhysicsShape> GLTFPhysicsShape::from_resource(const Ref<Shape3D> &p_shap
 		Ref<CapsuleShape3D> capsule = p_shape_resource;
 		gltf_shape->set_radius(capsule->get_radius());
 		gltf_shape->set_height(capsule->get_height());
+	} else if (cast_to<const ConeShape3D>(p_shape_resource.ptr())) {
+		gltf_shape->shape_type = "capsule";
+		Ref<ConeShape3D> capsule = p_shape_resource;
+		gltf_shape->set_radius(capsule->get_radius());
+		gltf_shape->set_height(capsule->get_height());
 	} else if (cast_to<const CylinderShape3D>(p_shape_resource.ptr())) {
 		gltf_shape->shape_type = "cylinder";
 		Ref<CylinderShape3D> cylinder = p_shape_resource;
@@ -237,6 +243,12 @@ Ref<Shape3D> GLTFPhysicsShape::to_resource(bool p_cache_shapes) {
 			_shape_cache = box;
 		} else if (shape_type == "capsule") {
 			Ref<CapsuleShape3D> capsule;
+			capsule.instantiate();
+			capsule->set_radius(radius);
+			capsule->set_height(height);
+			_shape_cache = capsule;
+		} else if (shape_type == "cone") {
+			Ref<ConeShape3D> capsule;
 			capsule.instantiate();
 			capsule->set_radius(radius);
 			capsule->set_height(height);

@@ -164,6 +164,126 @@ public:
 		return true;
 	}
 
+	static inline bool segment_intersects_cone(const Vector3 &p_from, const Vector3 &p_to, real_t p_height, real_t p_radius, Vector3 *r_res = nullptr, Vector3 *r_norm = nullptr, int p_cone_axis = 2) {
+		Vector3 rel = (p_to - p_from);
+		real_t rel_l = rel.length();
+		if (rel_l < (real_t)CMP_EPSILON) {
+			return false; // Both points are the same.
+		}
+
+		ERR_FAIL_COND_V(p_cone_axis < 0, false);
+		ERR_FAIL_COND_V(p_cone_axis > 2, false);
+		Vector3 cone_axis;
+		cone_axis[p_cone_axis] = 1.0f;
+
+		// First check if they are parallel.
+		Vector3 normal = (rel / rel_l);
+		Vector3 crs = normal.cross(cone_axis);
+		real_t crs_l = crs.length();
+
+		Vector3 axis_dir;
+
+		if (crs_l < (real_t)CMP_EPSILON) {
+			Vector3 side_axis;
+			side_axis[(p_cone_axis + 1) % 3] = 1.0f; // Any side axis OK.
+			axis_dir = side_axis;
+		} else {
+			axis_dir = crs / crs_l;
+		}
+
+		// Find the distance from the segment to the cone axis
+		real_t dist_to_axis = axis_dir.dot(p_from);
+		real_t max_radius_at_base = p_radius;
+
+		// Since a cone's radius decreases linearly with height, we need to adjust the radius based on the Y (or cone_axis) position.
+		real_t from_height_factor = 1.0 - (p_from[p_cone_axis] + (p_height * 0.5)) / p_height;
+		real_t to_height_factor = 1.0 - (p_to[p_cone_axis] + (p_height * 0.5)) / p_height;
+		real_t radius_from = max_radius_at_base * from_height_factor;
+		real_t radius_to = max_radius_at_base * to_height_factor;
+
+		// If the distance to the axis is greater than the radius at both the start and end points, the segment cannot intersect the cone.
+		if (dist_to_axis >= radius_from && dist_to_axis >= radius_to) {
+			return false; // Too far away.
+		}
+
+		// Convert to 2D using axis direction
+		real_t w2 = radius_from * radius_from - dist_to_axis * dist_to_axis;
+		if (w2 < (real_t)CMP_EPSILON) {
+			return false; // Avoid numerical error.
+		}
+
+		Size2 size(Math::sqrt(w2), p_height * 0.5f);
+
+		Vector3 side_dir = axis_dir.cross(cone_axis).normalized();
+
+		Vector2 from2D(side_dir.dot(p_from), p_from[p_cone_axis]);
+		Vector2 to2D(side_dir.dot(p_to), p_to[p_cone_axis]);
+
+		real_t min = 0, max = 1;
+		int axis = -1;
+
+		for (int i = 0; i < 2; i++) {
+			real_t seg_from = from2D[i];
+			real_t seg_to = to2D[i];
+			real_t box_begin = -size[i];
+			real_t box_end = size[i];
+			real_t cmin, cmax;
+
+			if (seg_from < seg_to) {
+				if (seg_from > box_end || seg_to < box_begin) {
+					return false;
+				}
+				real_t length = seg_to - seg_from;
+				cmin = (seg_from < box_begin) ? ((box_begin - seg_from) / length) : 0;
+				cmax = (seg_to > box_end) ? ((box_end - seg_from) / length) : 1;
+
+			} else {
+				if (seg_to > box_end || seg_from < box_begin) {
+					return false;
+				}
+				real_t length = seg_to - seg_from;
+				cmin = (seg_from > box_end) ? (box_end - seg_from) / length : 0;
+				cmax = (seg_to < box_begin) ? (box_begin - seg_from) / length : 1;
+			}
+
+			if (cmin > min) {
+				min = cmin;
+				axis = i;
+			}
+			if (cmax < max) {
+				max = cmax;
+			}
+			if (max < min) {
+				return false;
+			}
+		}
+
+		// Convert to 3D again.
+		Vector3 result = p_from + (rel * min);
+		Vector3 res_normal = result;
+
+		// Normal is perpendicular to the surface of the cone.
+		if (axis == 0) {
+			res_normal[p_cone_axis] = 0;
+		} else {
+			int axis_side = (p_cone_axis + 1) % 3;
+			res_normal[axis_side] = 0;
+			axis_side = (axis_side + 1) % 3;
+			res_normal[axis_side] = 0;
+		}
+
+		res_normal.normalize();
+
+		if (r_res) {
+			*r_res = result;
+		}
+		if (r_norm) {
+			*r_norm = res_normal;
+		}
+
+		return true;
+	}
+
 	static inline bool segment_intersects_cylinder(const Vector3 &p_from, const Vector3 &p_to, real_t p_height, real_t p_radius, Vector3 *r_res = nullptr, Vector3 *r_norm = nullptr, int p_cylinder_axis = 2) {
 		Vector3 rel = (p_to - p_from);
 		real_t rel_l = rel.length();

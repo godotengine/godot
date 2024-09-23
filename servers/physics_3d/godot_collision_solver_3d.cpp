@@ -44,7 +44,6 @@ bool GodotCollisionSolver3D::solve_static_world_boundary(const GodotShape3D *p_s
 		return false;
 	}
 	Plane p = p_transform_A.xform(world_boundary->get_plane());
-
 	static const int max_supports = 16;
 	Vector3 supports[max_supports];
 	int support_count;

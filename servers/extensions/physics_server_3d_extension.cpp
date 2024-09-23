@@ -141,6 +141,7 @@ void PhysicsServer3DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_concave_polygon_shape_create);
 	GDVIRTUAL_BIND(_heightmap_shape_create);
 	GDVIRTUAL_BIND(_custom_shape_create);
+	GDVIRTUAL_BIND(_cone_shape_create);
 
 	GDVIRTUAL_BIND(_shape_set_data, "shape", "data");
 	GDVIRTUAL_BIND(_shape_set_custom_solver_bias, "shape", "bias");

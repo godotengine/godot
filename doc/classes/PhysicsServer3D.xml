@@ -713,6 +713,11 @@
 			<description>
 			</description>
 		</method>
+		<method name="cone_shape_create">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="cone_twist_joint_get_param" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="joint" type="RID" />
@@ -1608,6 +1613,9 @@
 		</constant>
 		<constant name="SHAPE_CAPSULE" value="4" enum="ShapeType">
 			The [Shape3D] is a [CapsuleShape3D].
+		</constant>
+		<constant name="SHAPE_CONE" value="11" enum="ShapeType">
+			The [Shape3D] is a [ConeShape3D].
 		</constant>
 		<constant name="SHAPE_CYLINDER" value="5" enum="ShapeType">
 			The [Shape3D] is a [CylinderShape3D].

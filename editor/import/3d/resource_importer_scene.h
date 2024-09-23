@@ -37,6 +37,7 @@
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
+#include "scene/resources/3d/cone_shape_3d.h"
 #include "scene/resources/3d/cylinder_shape_3d.h"
 #include "scene/resources/3d/importer_mesh.h"
 #include "scene/resources/3d/skin.h"
@@ -212,6 +213,7 @@ class ResourceImporterScene : public ResourceImporter {
 		SHAPE_TYPE_SPHERE,
 		SHAPE_TYPE_CYLINDER,
 		SHAPE_TYPE_CAPSULE,
+		SHAPE_TYPE_CONE,
 		SHAPE_TYPE_AUTOMATIC,
 	};
 
@@ -328,19 +330,9 @@ public:
 template <typename M>
 Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<ImporterMesh> &p_mesh, const M &p_options, float p_applied_root_scale) {
 	ERR_FAIL_COND_V(p_mesh.is_null(), Vector<Ref<Shape3D>>());
-
-	ShapeType generate_shape_type = SHAPE_TYPE_AUTOMATIC;
+	ShapeType generate_shape_type = SHAPE_TYPE_TRIMESH;
 	if (p_options.has(SNAME("physics/shape_type"))) {
 		generate_shape_type = (ShapeType)p_options[SNAME("physics/shape_type")].operator int();
-	}
-
-	if (generate_shape_type == SHAPE_TYPE_AUTOMATIC) {
-		BodyType body_type = BODY_TYPE_STATIC;
-		if (p_options.has(SNAME("physics/body_type"))) {
-			body_type = (BodyType)p_options[SNAME("physics/body_type")].operator int();
-		}
-
-		generate_shape_type = body_type == BODY_TYPE_DYNAMIC ? SHAPE_TYPE_DECOMPOSE_CONVEX : SHAPE_TYPE_TRIMESH;
 	}
 
 	if (generate_shape_type == SHAPE_TYPE_DECOMPOSE_CONVEX) {
@@ -488,6 +480,23 @@ Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<Impor
 		Vector<Ref<Shape3D>> shapes;
 		shapes.push_back(capsule);
 		return shapes;
+	} else if (generate_shape_type == SHAPE_TYPE_CONE) {
+		Ref<ConeShape3D> capsule;
+		capsule.instantiate();
+		if (p_options.has(SNAME("primitive/height"))) {
+			capsule->set_height(p_options[SNAME("primitive/height")].operator float() * p_applied_root_scale);
+		} else {
+			capsule->set_height(1.0f * p_applied_root_scale);
+		}
+		if (p_options.has(SNAME("primitive/radius"))) {
+			capsule->set_radius(p_options[SNAME("primitive/radius")].operator float() * p_applied_root_scale);
+		} else {
+			capsule->set_radius(1.0f * p_applied_root_scale);
+		}
+
+		Vector<Ref<Shape3D>> shapes;
+		shapes.push_back(capsule);
+		return shapes;
 	}
 	return Vector<Ref<Shape3D>>();
 }
@@ -496,18 +505,9 @@ template <typename M>
 Transform3D ResourceImporterScene::get_collision_shapes_transform(const M &p_options) {
 	Transform3D transform;
 
-	ShapeType generate_shape_type = SHAPE_TYPE_AUTOMATIC;
+	ShapeType generate_shape_type = SHAPE_TYPE_TRIMESH;
 	if (p_options.has(SNAME("physics/shape_type"))) {
 		generate_shape_type = (ShapeType)p_options[SNAME("physics/shape_type")].operator int();
-	}
-
-	if (generate_shape_type == SHAPE_TYPE_AUTOMATIC) {
-		BodyType body_type = BODY_TYPE_STATIC;
-		if (p_options.has(SNAME("physics/body_type"))) {
-			body_type = (BodyType)p_options[SNAME("physics/body_type")].operator int();
-		}
-
-		generate_shape_type = body_type == BODY_TYPE_DYNAMIC ? SHAPE_TYPE_DECOMPOSE_CONVEX : SHAPE_TYPE_TRIMESH;
 	}
 
 	if (generate_shape_type == SHAPE_TYPE_BOX ||

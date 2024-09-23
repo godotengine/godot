@@ -42,6 +42,7 @@
 #include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
+#include "scene/resources/3d/cone_shape_3d.h"
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
 #include "scene/resources/3d/cylinder_shape_3d.h"
 #include "scene/resources/3d/height_map_shape_3d.h"
@@ -505,6 +506,15 @@ void NavMeshGenerator3D::generator_parse_gridmap_node(const Ref<NavigationMesh> 
 						Array arr;
 						arr.resize(RS::ARRAY_MAX);
 						CapsuleMesh::create_mesh_array(arr, radius, height);
+						p_source_geometry_data->add_mesh_array(arr, shapes[i]);
+					} break;
+					case PhysicsServer3D::SHAPE_CONE: {
+						Dictionary dict = data;
+						real_t radius = dict["radius"];
+						real_t height = dict["height"];
+						Array arr;
+						arr.resize(RS::ARRAY_MAX);
+						ConeMesh::create_mesh_array(arr, radius, radius, height);
 						p_source_geometry_data->add_mesh_array(arr, shapes[i]);
 					} break;
 					case PhysicsServer3D::SHAPE_CYLINDER: {
