@@ -281,6 +281,7 @@ void ScrollContainer::_gui_focus_changed(Control *p_control) {
 	if (follow_focus && is_ancestor_of(p_control)) {
 		ensure_control_visible(p_control);
 	}
+	queue_redraw();
 }
 
 void ScrollContainer::ensure_control_visible(Control *p_control) {
@@ -366,6 +367,14 @@ void ScrollContainer::_notification(int p_what) {
 
 		case NOTIFICATION_DRAW: {
 			draw_style_box(theme_cache.panel_style, Rect2(Vector2(), get_size()));
+#ifdef TOOLS_ENABLED
+			if (_draw_focus_border && Engine::get_singleton()->is_editor_hint() && (has_focus() || child_has_focus())) {
+				RID ci = get_canvas_item();
+				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(ci, true);
+				draw_style_box(theme_cache.focus_style, Rect2(Point2(), get_size()));
+				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(ci, false);
+			}
+#endif
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
@@ -623,9 +632,25 @@ void ScrollContainer::_bind_methods() {
 	BIND_ENUM_CONSTANT(SCROLL_MODE_RESERVE);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ScrollContainer, panel_style, "panel");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ScrollContainer, focus_style, "focus");
 
 	GLOBAL_DEF("gui/common/default_scroll_deadzone", 0);
 };
+
+#ifdef TOOLS_ENABLED
+void ScrollContainer::set_draw_focus_border(bool p_draw) {
+	_draw_focus_border = p_draw;
+}
+
+bool ScrollContainer::get_draw_focus_border() {
+	return _draw_focus_border;
+}
+
+bool ScrollContainer::child_has_focus() {
+	const Control *focus_owner = get_viewport() ? get_viewport()->gui_get_focus_owner() : nullptr;
+	return focus_owner && is_ancestor_of(focus_owner);
+}
+#endif
 
 ScrollContainer::ScrollContainer() {
 	h_scroll = memnew(HScrollBar);
