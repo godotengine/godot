@@ -30,6 +30,8 @@
 
 #include "gradient.h"
 
+thread_local Ref<Gradient> Gradient::_interpolation_gradient = Ref<Gradient>(nullptr);
+
 Gradient::Gradient() {
 	//Set initial gradient transition from black to white
 	points.resize(2);
@@ -43,6 +45,8 @@ Gradient::~Gradient() {
 }
 
 void Gradient::_bind_methods() {
+	ClassDB::bind_static_method(SNAME("Gradient"), D_METHOD("interpolate", "from", "to", "weight", "interpolation_color_space", "interpolation_mode"), &Gradient::interpolate, DEFVAL(ColorSpace::GRADIENT_COLOR_SPACE_LINEAR_SRGB), DEFVAL(InterpolationMode::GRADIENT_INTERPOLATE_LINEAR));
+
 	ClassDB::bind_method(D_METHOD("add_point", "offset", "color"), &Gradient::add_point);
 	ClassDB::bind_method(D_METHOD("remove_point", "point"), &Gradient::remove_point);
 
@@ -224,4 +228,15 @@ Color Gradient::get_color(int pos) {
 
 int Gradient::get_point_count() const {
 	return points.size();
+}
+
+Color Gradient::interpolate(const Color &p_from, const Color &p_to, float p_weight, ColorSpace p_interpolation_color_space, InterpolationMode p_interpolation_mode) {
+	if (_interpolation_gradient.is_null()) {
+		_interpolation_gradient.instantiate();
+	}
+	_interpolation_gradient->set_color(0, p_from);
+	_interpolation_gradient->set_color(1, p_to);
+	_interpolation_gradient->set_interpolation_color_space(p_interpolation_color_space);
+	_interpolation_gradient->set_interpolation_mode(p_interpolation_mode);
+	return _interpolation_gradient->get_color_at_offset(p_weight);
 }

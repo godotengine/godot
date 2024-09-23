@@ -307,6 +307,7 @@
 			<param index="1" name="weight" type="float" />
 			<description>
 				Returns the linear interpolation between this color's components and [param to]'s components. The interpolation factor [param weight] should be between 0.0 and 1.0 (inclusive). See also [method @GlobalScope.lerp].
+				[b]Note:[/b] Interpolating [url=https://en.wikipedia.org/wiki/SRGB]sRGB[/url] color space values (i.e. standard computer colors) directly often leads to [url=https://bottosson.github.io/posts/colorwrong/]visually wrong results[/url]. For physically or perceptually accurate blending, see [method Gradient.interpolate].
 				[codeblocks]
 				[gdscript]
 				var red = Color(1.0, 0.0, 0.0)

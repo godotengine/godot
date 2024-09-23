@@ -38,6 +38,24 @@
 				Returns the number of colors in the gradient.
 			</description>
 		</method>
+		<method name="interpolate" qualifiers="static">
+			<return type="Color" />
+			<param index="0" name="from" type="Color" />
+			<param index="1" name="to" type="Color" />
+			<param index="2" name="weight" type="float" />
+			<param index="3" name="interpolation_color_space" type="int" enum="Gradient.ColorSpace" default="1" />
+			<param index="4" name="interpolation_mode" type="int" enum="Gradient.InterpolationMode" default="0" />
+			<description>
+				Returns the interpolated color between [param from] and [param to] specified by [param weight], [param interpolation_color_space], and [param interpolation_mode].
+				[b]Note:[/b] Prefer this method to [method Color.lerp] if you need to interpolate [url=https://en.wikipedia.org/wiki/SRGB]sRGB[/url] colors correctly.
+				[codeblocks]
+				[gdscript]
+				var physically_correct = Gradient.interpolate(Color.GREEN, Color.MAGENTA, 0.5, Gradient.GRADIENT_COLOR_SPACE_LINEAR_SRGB, Gradient.GRADIENT_INTERPOLATE_LINEAR)
+				var perceptually_correct = Gradient.interpolate(Color.GREEN, Color.MAGENTA, 0.5, Gradient.GRADIENT_COLOR_SPACE_OKLAB, Gradient.GRADIENT_INTERPOLATE_LINEAR)
+				[/gdscript]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="remove_point">
 			<return type="void" />
 			<param index="0" name="point" type="int" />

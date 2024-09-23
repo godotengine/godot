@@ -61,6 +61,8 @@ public:
 	};
 
 private:
+	thread_local static Ref<Gradient> _interpolation_gradient;
+
 	Vector<Point> points;
 	bool is_sorted = true;
 	InterpolationMode interpolation_mode = GRADIENT_INTERPOLATE_LINEAR;
@@ -238,6 +240,8 @@ public:
 	}
 
 	int get_point_count() const;
+
+	static Color interpolate(const Color &p_from, const Color &p_to, float p_weight, ColorSpace p_interpolation_color_space = ColorSpace::GRADIENT_COLOR_SPACE_LINEAR_SRGB, InterpolationMode p_interpolation_mode = InterpolationMode::GRADIENT_INTERPOLATE_LINEAR);
 };
 
 VARIANT_ENUM_CAST(Gradient::InterpolationMode);
