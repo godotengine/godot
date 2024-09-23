@@ -37,6 +37,7 @@ class String;
 
 struct [[nodiscard]] Color {
 	union {
+		// NOLINTBEGIN(modernize-use-default-member-init)
 		struct {
 			float r;
 			float g;
@@ -44,6 +45,7 @@ struct [[nodiscard]] Color {
 			float a;
 		};
 		float components[4] = { 0, 0, 0, 1.0 };
+		// NOLINTEND(modernize-use-default-member-init)
 	};
 
 	uint32_t to_rgba32() const;
@@ -234,39 +236,29 @@ struct [[nodiscard]] Color {
 	_FORCE_INLINE_ void set_ok_hsl_s(float p_s) { set_ok_hsl(get_ok_hsl_h(), p_s, get_ok_hsl_l(), a); }
 	_FORCE_INLINE_ void set_ok_hsl_l(float p_l) { set_ok_hsl(get_ok_hsl_h(), get_ok_hsl_s(), p_l, a); }
 
-	_FORCE_INLINE_ Color() {}
+	constexpr Color() :
+			r(0), g(0), b(0), a(1) {}
 
 	/**
 	 * RGBA construct parameters.
 	 * Alpha is not optional as otherwise we can't bind the RGB version for scripting.
 	 */
-	_FORCE_INLINE_ Color(float p_r, float p_g, float p_b, float p_a) {
-		r = p_r;
-		g = p_g;
-		b = p_b;
-		a = p_a;
-	}
+	constexpr Color(float p_r, float p_g, float p_b, float p_a) :
+			r(p_r), g(p_g), b(p_b), a(p_a) {}
 
 	/**
 	 * RGB construct parameters.
 	 */
-	_FORCE_INLINE_ Color(float p_r, float p_g, float p_b) {
-		r = p_r;
-		g = p_g;
-		b = p_b;
-		a = 1.0f;
-	}
+	constexpr Color(float p_r, float p_g, float p_b) :
+			r(p_r), g(p_g), b(p_b), a(1) {}
 
 	/**
 	 * Construct a Color from another Color, but with the specified alpha value.
 	 */
-	_FORCE_INLINE_ Color(const Color &p_c, float p_a) {
-		r = p_c.r;
-		g = p_c.g;
-		b = p_c.b;
-		a = p_a;
-	}
+	constexpr Color(const Color &p_c, float p_a) :
+			r(p_c.r), g(p_c.g), b(p_c.b), a(p_a) {}
 
+	// NOLINTBEGIN(cppcoreguidelines-pro-type-member-init)
 	Color(const String &p_code) {
 		if (html_is_valid(p_code)) {
 			*this = html(p_code);
@@ -279,6 +271,7 @@ struct [[nodiscard]] Color {
 		*this = Color(p_code);
 		a = p_a;
 	}
+	// NOLINTEND(cppcoreguidelines-pro-type-member-init)
 };
 
 bool Color::operator<(const Color &p_color) const {

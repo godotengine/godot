@@ -46,18 +46,19 @@ struct [[nodiscard]] Vector2i {
 	};
 
 	union {
+		// NOLINTBEGIN(modernize-use-default-member-init)
 		struct {
-			union {
-				int32_t x;
-				int32_t width;
-			};
-			union {
-				int32_t y;
-				int32_t height;
-			};
+			int32_t x;
+			int32_t y;
+		};
+
+		struct {
+			int32_t width;
+			int32_t height;
 		};
 
 		int32_t coord[2] = { 0 };
+		// NOLINTEND(modernize-use-default-member-init)
 	};
 
 	_FORCE_INLINE_ int32_t &operator[](int p_axis) {
@@ -142,11 +143,12 @@ struct [[nodiscard]] Vector2i {
 	operator String() const;
 	operator Vector2() const;
 
-	inline Vector2i() {}
-	inline Vector2i(int32_t p_x, int32_t p_y) {
-		x = p_x;
-		y = p_y;
-	}
+	// NOLINTBEGIN(cppcoreguidelines-pro-type-member-init)
+	constexpr Vector2i() :
+			x(0), y(0) {}
+	constexpr Vector2i(int32_t p_x, int32_t p_y) :
+			x(p_x), y(p_y) {}
+	// NOLINTEND(cppcoreguidelines-pro-type-member-init)
 };
 
 // Multiplication operators required to workaround issues with LLVM using implicit conversion.
