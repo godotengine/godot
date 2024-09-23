@@ -89,8 +89,8 @@
 // 3D physics and navigation (3D navigation is needed for 2D).
 #include "navigation_server_3d.h"
 #ifndef _3D_DISABLED
-#include "physics_3d/godot_physics_server_3d.h"
 #include "physics_server_3d.h"
+#include "physics_server_3d_dummy.h"
 #include "physics_server_3d_wrap_mt.h"
 #include "servers/extensions/physics_server_3d_extension.h"
 #include "xr/xr_body_tracker.h"
@@ -106,16 +106,8 @@
 ShaderTypes *shader_types = nullptr;
 
 #ifndef _3D_DISABLED
-static PhysicsServer3D *_createGodotPhysics3DCallback() {
-#ifdef THREADS_ENABLED
-	bool using_threads = GLOBAL_GET("physics/3d/run_on_separate_thread");
-#else
-	bool using_threads = false;
-#endif
-
-	PhysicsServer3D *physics_server_3d = memnew(GodotPhysicsServer3D(using_threads));
-
-	return memnew(PhysicsServer3DWrapMT(physics_server_3d, using_threads));
+static PhysicsServer3D *_create_dummy_physics_server_3d() {
+	return memnew(PhysicsServer3DDummy);
 }
 #endif // _3D_DISABLED
 
@@ -323,8 +315,7 @@ void register_server_types() {
 
 	GLOBAL_DEF(PropertyInfo(Variant::STRING, PhysicsServer3DManager::setting_property_name, PROPERTY_HINT_ENUM, "DEFAULT"), "DEFAULT");
 
-	PhysicsServer3DManager::get_singleton()->register_server("GodotPhysics3D", callable_mp_static(_createGodotPhysics3DCallback));
-	PhysicsServer3DManager::get_singleton()->set_default_server("GodotPhysics3D");
+	PhysicsServer3DManager::get_singleton()->register_server("Dummy", callable_mp_static(_create_dummy_physics_server_3d));
 
 	GDREGISTER_ABSTRACT_CLASS(XRInterface);
 	GDREGISTER_CLASS(XRVRS);

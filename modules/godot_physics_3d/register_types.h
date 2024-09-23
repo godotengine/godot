@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  external_texture.cpp                                                  */
+/*  register_types.h                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,62 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "external_texture.h"
+#ifndef GODOT_PHYSICS_3D_REGISTER_TYPES_H
+#define GODOT_PHYSICS_3D_REGISTER_TYPES_H
 
-void ExternalTexture::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_size", "size"), &ExternalTexture::set_size);
-	ClassDB::bind_method(D_METHOD("get_external_texture_id"), &ExternalTexture::get_external_texture_id);
-	ClassDB::bind_method(D_METHOD("set_external_buffer_id", "external_buffer_id"), &ExternalTexture::set_external_buffer_id);
+#include "modules/register_module_types.h"
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size"), "set_size", "get_size");
-}
+void initialize_godot_physics_3d_module(ModuleInitializationLevel p_level);
+void uninitialize_godot_physics_3d_module(ModuleInitializationLevel p_level);
 
-uint64_t ExternalTexture::get_external_texture_id() const {
-	return RenderingServer::get_singleton()->texture_get_native_handle(texture);
-}
-
-void ExternalTexture::set_size(const Size2 &p_size) {
-	if (p_size.width > 0 && p_size.height > 0 && p_size != size) {
-		size = p_size;
-		RenderingServer::get_singleton()->texture_external_update(texture, size.width, size.height, external_buffer);
-		emit_changed();
-	}
-}
-
-Size2 ExternalTexture::get_size() const {
-	return size;
-}
-
-void ExternalTexture::set_external_buffer_id(uint64_t p_external_buffer) {
-	if (p_external_buffer != external_buffer) {
-		external_buffer = p_external_buffer;
-		RenderingServer::get_singleton()->texture_external_update(texture, size.width, size.height, external_buffer);
-	}
-}
-
-int ExternalTexture::get_width() const {
-	return size.width;
-}
-
-int ExternalTexture::get_height() const {
-	return size.height;
-}
-
-bool ExternalTexture::has_alpha() const {
-	return false;
-}
-
-RID ExternalTexture::get_rid() const {
-	return texture;
-}
-
-ExternalTexture::ExternalTexture() {
-	texture = RenderingServer::get_singleton()->texture_external_create(size.width, size.height);
-}
-
-ExternalTexture::~ExternalTexture() {
-	if (texture.is_valid()) {
-		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RenderingServer::get_singleton()->free(texture);
-	}
-}
+#endif // GODOT_PHYSICS_3D_REGISTER_TYPES_H
