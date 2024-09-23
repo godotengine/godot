@@ -114,6 +114,7 @@ GodotAreaPair2D::~GodotAreaPair2D() {
 		}
 	}
 	body->remove_constraint(this, 0);
+	body->wakeup();
 	area->remove_constraint(this);
 }
 
