@@ -499,6 +499,17 @@ void GodotPhysicsServer3D::body_add_shape(RID p_body, RID p_shape, const Transfo
 	body->add_shape(shape, p_transform, p_disabled);
 }
 
+
+void GodotPhysicsServer3D::body_add_negative_shape(RID p_body, RID p_shape, const Transform3D &p_transform, bool p_disabled) {
+	GodotBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_COND(!body);
+
+	GodotShape3D *shape = shape_owner.get_or_null(p_shape);
+	ERR_FAIL_COND(!shape);
+
+	body->add_negative_shape(shape, p_transform, p_disabled);
+}
+
 void GodotPhysicsServer3D::body_set_shape(RID p_body, int p_shape_idx, RID p_shape) {
 	GodotBody3D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(body);
@@ -509,11 +520,30 @@ void GodotPhysicsServer3D::body_set_shape(RID p_body, int p_shape_idx, RID p_sha
 
 	body->set_shape(p_shape_idx, shape);
 }
+
+void GodotPhysicsServer3D::body_set_negative_shape(RID p_body, int p_shape_idx, RID p_shape) {
+	GodotBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_COND(!body);
+
+	GodotShape3D *shape = shape_owner.get_or_null(p_shape);
+	ERR_FAIL_COND(!shape);
+	ERR_FAIL_COND(!shape->is_configured());
+
+	body->set_negative_shape(p_shape_idx, shape);
+}
+
 void GodotPhysicsServer3D::body_set_shape_transform(RID p_body, int p_shape_idx, const Transform3D &p_transform) {
 	GodotBody3D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(body);
 
 	body->set_shape_transform(p_shape_idx, p_transform);
+}
+
+void GodotPhysicsServer3D::body_set_negative_shape_transform(RID p_body, int p_shape_idx, const Transform3D &p_transform) {
+	GodotBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_negative_shape_transform(p_shape_idx, p_transform);
 }
 
 int GodotPhysicsServer3D::body_get_shape_count(RID p_body) const {
@@ -523,12 +553,29 @@ int GodotPhysicsServer3D::body_get_shape_count(RID p_body) const {
 	return body->get_shape_count();
 }
 
+int GodotPhysicsServer3D::body_get_negative_shape_count(RID p_body) const {
+	GodotBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_COND_V(!body, -1);
+
+	return body->get_negative_shape_count();
+}
+
 RID GodotPhysicsServer3D::body_get_shape(RID p_body, int p_shape_idx) const {
 	GodotBody3D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL_V(body, RID());
 
 	GodotShape3D *shape = body->get_shape(p_shape_idx);
 	ERR_FAIL_NULL_V(shape, RID());
+
+	return shape->get_self();
+}
+
+RID GodotPhysicsServer3D::body_get_negative_shape(RID p_body, int p_shape_idx) const {
+	GodotBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_COND_V(!body, RID());
+
+	GodotShape3D *shape = body->get_negative_shape(p_shape_idx);
+	ERR_FAIL_COND_V(!shape, RID());
 
 	return shape->get_self();
 }
@@ -542,11 +589,27 @@ void GodotPhysicsServer3D::body_set_shape_disabled(RID p_body, int p_shape_idx, 
 	body->set_shape_disabled(p_shape_idx, p_disabled);
 }
 
+void GodotPhysicsServer3D::body_set_negative_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled) {
+	GodotBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_COND(!body);
+	ERR_FAIL_INDEX(p_shape_idx, body->get_shape_count());
+	FLUSH_QUERY_CHECK(body);
+
+	body->set_negative_shape_disabled(p_shape_idx, p_disabled);
+}
+
 Transform3D GodotPhysicsServer3D::body_get_shape_transform(RID p_body, int p_shape_idx) const {
 	GodotBody3D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL_V(body, Transform3D());
 
 	return body->get_shape_transform(p_shape_idx);
+}
+
+Transform3D GodotPhysicsServer3D::body_get_negative_shape_transform(RID p_body, int p_shape_idx) const {
+	GodotBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_COND_V(!body, Transform3D());
+
+	return body->get_negative_shape_transform(p_shape_idx);
 }
 
 void GodotPhysicsServer3D::body_remove_shape(RID p_body, int p_shape_idx) {
@@ -556,12 +619,23 @@ void GodotPhysicsServer3D::body_remove_shape(RID p_body, int p_shape_idx) {
 	body->remove_shape(p_shape_idx);
 }
 
+void GodotPhysicsServer3D::body_remove_negative_shape(RID p_body, int p_shape_idx) {
+	GodotBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->remove_negative_shape(p_shape_idx);
+}
+
 void GodotPhysicsServer3D::body_clear_shapes(RID p_body) {
 	GodotBody3D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(body);
 
 	while (body->get_shape_count()) {
 		body->remove_shape(0);
+	}
+
+	while (body->get_negative_shape_count()) {
+		body->remove_negative_shape(0);
 	}
 }
 
