@@ -19,7 +19,7 @@
 	</methods>
 	<members>
 		<member name="collapsed" type="bool" setter="set_collapsed" getter="is_collapsed" default="false">
-			If [code]true[/code], the area of the first [Control] will be collapsed and the dragger will be disabled.
+			If [code]true[/code], the dragger will be disabled and the children will be sized as if the [member split_offset] was [code]0[/code].
 		</member>
 		<member name="dragger_visibility" type="int" setter="set_dragger_visibility" getter="get_dragger_visibility" enum="SplitContainer.DraggerVisibility" default="0">
 			Determines the dragger's visibility. See [enum DraggerVisibility] for details.
