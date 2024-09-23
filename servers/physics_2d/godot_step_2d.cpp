@@ -153,12 +153,29 @@ void GodotStep2D::step(GodotSpace2D *p_space, real_t p_delta) {
 
 	p_space->set_active_objects(active_count);
 
-	// Update the broadphase to register collision pairs.
+	{ //profile
+		profile_endtime = OS::get_singleton()->get_ticks_usec();
+		p_space->set_elapsed_time(GodotSpace2D::ELAPSED_TIME_INTEGRATE_FORCES, profile_endtime - profile_begtime);
+		profile_begtime = profile_endtime;
+	}
+
+	/* INTEGRATE VELOCITIES */
+
+	// Update transform before checking for collision.
+
+	b = body_list->first();
+	while (b) {
+		const SelfList<GodotBody2D> *n = b->next();
+		b->self()->integrate_velocities(p_delta);
+		b = n; // in case it shuts itself down
+	}
+
+	// Update the broadphase to register/unregister collision pairs.
 	p_space->update();
 
 	{ //profile
 		profile_endtime = OS::get_singleton()->get_ticks_usec();
-		p_space->set_elapsed_time(GodotSpace2D::ELAPSED_TIME_INTEGRATE_FORCES, profile_endtime - profile_begtime);
+		p_space->set_elapsed_time(GodotSpace2D::ELAPSED_TIME_INTEGRATE_VELOCITIES, profile_endtime - profile_begtime);
 		profile_begtime = profile_endtime;
 	}
 
@@ -263,21 +280,6 @@ void GodotStep2D::step(GodotSpace2D *p_space, real_t p_delta) {
 	group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &GodotStep2D::_solve_island, nullptr, island_count, -1, true, SNAME("Physics2DConstraintSolveIslands"));
 	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 
-	{ //profile
-		profile_endtime = OS::get_singleton()->get_ticks_usec();
-		p_space->set_elapsed_time(GodotSpace2D::ELAPSED_TIME_SOLVE_CONSTRAINTS, profile_endtime - profile_begtime);
-		profile_begtime = profile_endtime;
-	}
-
-	/* INTEGRATE VELOCITIES */
-
-	b = body_list->first();
-	while (b) {
-		const SelfList<GodotBody2D> *n = b->next();
-		b->self()->integrate_velocities(p_delta);
-		b = n; // in case it shuts itself down
-	}
-
 	/* SLEEP / WAKE UP ISLANDS */
 
 	for (uint32_t island_index = 0; island_index < body_island_count; ++island_index) {
@@ -286,8 +288,8 @@ void GodotStep2D::step(GodotSpace2D *p_space, real_t p_delta) {
 
 	{ //profile
 		profile_endtime = OS::get_singleton()->get_ticks_usec();
-		p_space->set_elapsed_time(GodotSpace2D::ELAPSED_TIME_INTEGRATE_VELOCITIES, profile_endtime - profile_begtime);
-		//profile_begtime=profile_endtime;
+		p_space->set_elapsed_time(GodotSpace2D::ELAPSED_TIME_SOLVE_CONSTRAINTS, profile_endtime - profile_begtime);
+		// profile_begtime = profile_endtime;
 	}
 
 	all_constraints.clear();
