@@ -161,7 +161,7 @@ namespace Godot.Collections
         /// The <paramref name="array"/> is <see langword="null"/>.
         /// </exception>
         /// <returns>A new Godot Array.</returns>
-        public Array(ReadOnlySpan<GodotObject> array)
+        public Array(ReadOnlySpan<GodotObject?> array)
         {
             if (array == null)
                 throw new ArgumentNullException(nameof(array));

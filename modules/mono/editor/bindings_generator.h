@@ -432,6 +432,11 @@ class BindingsGenerator {
 		String cs_type;
 
 		/**
+		 * Value used when returning a default argument. Usually 'default'.
+		 */
+		String cs_default;
+
+		/**
 		 * Formatting elements:
 		 * %0: input expression of type `in godot_variant`
 		 * %1: [cs_type] of this type
@@ -616,8 +621,10 @@ class BindingsGenerator {
 		TypeInterface() {
 			static String default_cs_variant_to_managed = "VariantUtils.ConvertTo<%1>(%0)";
 			static String default_cs_managed_to_variant = "VariantUtils.CreateFrom<%1>(%0)";
+			static String default_cs_default = "default";
 			cs_variant_to_managed = default_cs_variant_to_managed;
 			cs_managed_to_variant = default_cs_managed_to_variant;
+			cs_default = default_cs_default;
 		}
 	};
 

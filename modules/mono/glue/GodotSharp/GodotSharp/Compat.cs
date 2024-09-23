@@ -7,6 +7,8 @@ using System.ComponentModel;
 
 namespace Godot;
 
+#nullable enable
+
 #pragma warning disable CS1734 // XML comment on 'X' has a paramref tag for 'Y', but there is no parameter by that name.
 // TODO: This is currently disabled because of https://github.com/dotnet/roslyn/issues/52904
 #pragma warning disable IDE0040 // Add accessibility modifiers.
@@ -70,7 +72,7 @@ partial class CodeEdit
 {
     /// <inheritdoc cref="AddCodeCompletionOption(CodeCompletionKind, string, string, Nullable{Color}, Resource, Variant, int)"/>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public void AddCodeCompletionOption(CodeCompletionKind type, string displayText, string insertText, Nullable<Color> textColor, Resource icon, Nullable<Variant> value)
+    public void AddCodeCompletionOption(CodeCompletionKind type, string displayText, string insertText, Nullable<Color> textColor, Resource? icon, Nullable<Variant> value)
     {
         AddCodeCompletionOption(type, displayText, insertText, textColor, icon, value, location: 1024);
     }
@@ -98,7 +100,7 @@ partial class GraphEdit
 
     /// <inheritdoc cref="GetMenuHBox()"/>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public HBoxContainer GetZoomHBox()
+    public HBoxContainer? GetZoomHBox()
     {
         return GetMenuHBox();
     }
@@ -134,7 +136,7 @@ partial class ImporterMesh
 {
     /// <inheritdoc cref="AddSurface(Mesh.PrimitiveType, Godot.Collections.Array, Godot.Collections.Array{Godot.Collections.Array}, Godot.Collections.Dictionary, Material, string, ulong)"/>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public void AddSurface(Mesh.PrimitiveType primitive, Godot.Collections.Array arrays, Godot.Collections.Array<Godot.Collections.Array> blendShapes, Godot.Collections.Dictionary lods, Material material, string name, uint flags)
+    public void AddSurface(Mesh.PrimitiveType primitive, Godot.Collections.Array arrays, Godot.Collections.Array<Godot.Collections.Array>? blendShapes, Godot.Collections.Dictionary? lods, Material? material, string name, uint flags)
     {
         AddSurface(primitive, arrays, blendShapes, lods, material, name, (ulong)flags);
     }
@@ -172,9 +174,9 @@ partial class RenderingDevice
 {
     /// <inheritdoc cref="DrawListBegin(Rid, InitialAction, FinalAction, InitialAction, FinalAction, Color[], float, uint, Nullable{Rect2}, Godot.Collections.Array{Rid})"/>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public long DrawListBegin(Rid framebuffer, InitialAction initialColorAction, FinalAction finalColorAction, InitialAction initialDepthAction, FinalAction finalDepthAction, Color[] clearColorValues, float clearDepth, uint clearStencil, Nullable<Rect2> region, Godot.Collections.Array storageTextures)
+    public long DrawListBegin(Rid framebuffer, InitialAction initialColorAction, FinalAction finalColorAction, InitialAction initialDepthAction, FinalAction finalDepthAction, Color[]? clearColorValues, float clearDepth, uint clearStencil, Nullable<Rect2> region, Godot.Collections.Array? storageTextures)
     {
-        return DrawListBegin(framebuffer, initialColorAction, finalColorAction, initialDepthAction, finalDepthAction, clearColorValues, clearDepth, clearStencil, region, new Godot.Collections.Array<Rid>(storageTextures));
+        return DrawListBegin(framebuffer, initialColorAction, finalColorAction, initialDepthAction, finalDepthAction, clearColorValues, clearDepth, clearStencil, region, new Godot.Collections.Array<Rid>(storageTextures ?? new()));
     }
 }
 
@@ -199,14 +201,14 @@ partial class SurfaceTool
 {
     /// <inheritdoc cref="AddTriangleFan(Vector3[], Vector2[], Color[], Vector2[], Vector3[], Godot.Collections.Array{Plane})"/>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public void AddTriangleFan(Vector3[] vertices, Vector2[] uvs, Color[] colors, Vector2[] uv2S, Vector3[] normals, Godot.Collections.Array tangents)
+    public void AddTriangleFan(Vector3[] vertices, Vector2[]? uvs, Color[]? colors, Vector2[]? uv2S, Vector3[]? normals, Godot.Collections.Array? tangents)
     {
-        AddTriangleFan(vertices, uvs, colors, uv2S, normals, new Godot.Collections.Array<Plane>(tangents));
+        AddTriangleFan(vertices, uvs, colors, uv2S, normals, new Godot.Collections.Array<Plane>(tangents ?? new()));
     }
 
     /// <inheritdoc cref="Commit(ArrayMesh, ulong)"/>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public ArrayMesh Commit(ArrayMesh existing, uint flags)
+    public ArrayMesh? Commit(ArrayMesh existing, uint flags)
     {
         return Commit(existing, (ulong)flags);
     }

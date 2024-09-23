@@ -271,7 +271,7 @@ namespace Godot.NativeInterop
             return CreateFromArray((godot_array)fromGodot.NativeValue);
         }
 
-        public static godot_variant CreateFromSystemArrayOfGodotObject(GodotObject[]? from)
+        public static godot_variant CreateFromSystemArrayOfGodotObject(GodotObject?[]? from)
         {
             if (from == null)
                 return default; // Nil
