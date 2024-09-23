@@ -3,8 +3,6 @@ using System.Runtime.CompilerServices;
 
 namespace Godot.NativeInterop;
 
-#nullable enable
-
 public partial class VariantUtils
 {
     private static Exception UnsupportedType<T>() => new InvalidOperationException(
@@ -12,17 +10,17 @@ public partial class VariantUtils
 
     internal static class GenericConversion<T>
     {
-        public static unsafe godot_variant ToVariant(in T from) =>
+        public static unsafe godot_variant ToVariant(in T? from) =>
             ToVariantCb != null ? ToVariantCb(from) : throw UnsupportedType<T>();
 
-        public static unsafe T FromVariant(in godot_variant variant) =>
+        public static unsafe T? FromVariant(in godot_variant variant) =>
             FromVariantCb != null ? FromVariantCb(variant) : throw UnsupportedType<T>();
 
         // ReSharper disable once StaticMemberInGenericType
-        internal static unsafe delegate*<in T, godot_variant> ToVariantCb;
+        internal static unsafe delegate*<in T?, godot_variant> ToVariantCb;
 
         // ReSharper disable once StaticMemberInGenericType
-        internal static unsafe delegate*<in godot_variant, T> FromVariantCb;
+        internal static unsafe delegate*<in godot_variant, T?> FromVariantCb;
 
         static GenericConversion()
         {
@@ -31,10 +29,10 @@ public partial class VariantUtils
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    public static godot_variant CreateFrom<[MustBeVariant] T>(in T from)
+    public static godot_variant CreateFrom<[MustBeVariant] T>(in T? from)
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static TTo UnsafeAs<TTo>(in T f) => Unsafe.As<T, TTo>(ref Unsafe.AsRef(f));
+        static TTo UnsafeAs<TTo>(in T? f) => Unsafe.As<T, TTo>(ref Unsafe.AsRef(f)!);
 
         // `typeof(T) == typeof(X)` is optimized away. We cannot cache `typeof(T)` in a local variable, as it's not optimized when done like that.
 
@@ -224,7 +222,7 @@ public partial class VariantUtils
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    public static T ConvertTo<[MustBeVariant] T>(in godot_variant variant)
+    public static T? ConvertTo<[MustBeVariant] T>(in godot_variant variant)
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static T UnsafeAsT<TFrom>(TFrom f) => Unsafe.As<TFrom, T>(ref Unsafe.AsRef(f));
@@ -384,7 +382,7 @@ public partial class VariantUtils
         // `typeof(X).IsAssignableFrom(typeof(T))` is optimized away
 
         if (typeof(GodotObject).IsAssignableFrom(typeof(T)))
-            return (T)(object)ConvertToGodotObject(variant);
+            return (T?)(object?)ConvertToGodotObject(variant);
 
         // `typeof(T).IsValueType` is optimized away
         // `typeof(T).IsEnum` is NOT optimized away: https://github.com/dotnet/runtime/issues/67113

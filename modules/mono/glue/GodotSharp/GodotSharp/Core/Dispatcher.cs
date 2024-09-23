@@ -6,7 +6,7 @@ namespace Godot
 {
     public static class Dispatcher
     {
-        internal static GodotTaskScheduler DefaultGodotTaskScheduler;
+        internal static GodotTaskScheduler? DefaultGodotTaskScheduler;
 
         internal static void InitializeDefaultGodotTaskScheduler()
         {
@@ -14,6 +14,6 @@ namespace Godot
             DefaultGodotTaskScheduler = new GodotTaskScheduler();
         }
 
-        public static GodotSynchronizationContext SynchronizationContext => DefaultGodotTaskScheduler.Context;
+        public static GodotSynchronizationContext? SynchronizationContext => DefaultGodotTaskScheduler?.Context;
     }
 }

@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -803,13 +801,13 @@ namespace Godot
 
                 if (typeof(GodotObject[]).IsAssignableFrom(type))
                 {
-                    static GodotObject[] ConvertToSystemArrayOfGodotObject(in godot_array nativeArray, Type type)
+                    static GodotObject?[] ConvertToSystemArrayOfGodotObject(in godot_array nativeArray, Type type)
                     {
                         var array = Collections.Array.CreateTakingOwnershipOfDisposableValue(
                             NativeFuncs.godotsharp_array_new_copy(nativeArray));
 
                         int length = array.Count;
-                        var ret = (GodotObject[])Activator.CreateInstance(type, length)!;
+                        var ret = (GodotObject?[])Activator.CreateInstance(type, length)!;
 
                         for (int i = 0; i < length; i++)
                             ret[i] = array[i].AsGodotObject();

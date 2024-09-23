@@ -14,7 +14,7 @@ partial class EditorUndoRedoManager
 {
     /// <inheritdoc cref="CreateAction(string, UndoRedo.MergeMode, GodotObject, bool)"/>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public void CreateAction(string name, UndoRedo.MergeMode mergeMode, GodotObject customContext)
+    public void CreateAction(string name, UndoRedo.MergeMode mergeMode, GodotObject? customContext)
     {
         CreateAction(name, mergeMode, customContext, backwardUndoOps: false);
     }

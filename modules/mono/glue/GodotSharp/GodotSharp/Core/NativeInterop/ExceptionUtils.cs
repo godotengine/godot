@@ -4,8 +4,6 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-#nullable enable
-
 namespace Godot.NativeInterop
 {
     internal static class ExceptionUtils
@@ -227,7 +225,7 @@ namespace Godot.NativeInterop
         {
             if (variant->Type == Variant.Type.Object)
             {
-                GodotObject obj = VariantUtils.ConvertToGodotObject(*variant);
+                GodotObject? obj = VariantUtils.ConvertToGodotObject(*variant);
                 if (obj == null)
                 {
                     return "null instance";

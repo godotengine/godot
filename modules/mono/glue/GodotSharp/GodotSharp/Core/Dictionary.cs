@@ -6,8 +6,6 @@ using System.Runtime.CompilerServices;
 using Godot.NativeInterop;
 using System.Diagnostics;
 
-#nullable enable
-
 namespace Godot.Collections
 {
     /// <summary>
@@ -490,7 +488,7 @@ namespace Godot.Collections
         IReadOnlyDictionary<TKey, TValue>,
         IGenericGodotDictionary
     {
-        private static godot_variant ToVariantFunc(in Dictionary<TKey, TValue> godotDictionary) =>
+        private static godot_variant ToVariantFunc(in Dictionary<TKey, TValue>? godotDictionary) =>
             VariantUtils.CreateFromDictionary(godotDictionary);
 
         private static Dictionary<TKey, TValue> FromVariantFunc(in godot_variant variant) =>
@@ -645,7 +643,7 @@ namespace Godot.Collections
                         variantKey, out godot_variant value).ToBool())
                 {
                     using (value)
-                        return VariantUtils.ConvertTo<TValue>(value);
+                        return VariantUtils.ConvertTo<TValue>(value)!;
                 }
                 else
                 {
@@ -706,8 +704,8 @@ namespace Godot.Collections
             using (value)
             {
                 return new KeyValuePair<TKey, TValue>(
-                    VariantUtils.ConvertTo<TKey>(key),
-                    VariantUtils.ConvertTo<TValue>(value));
+                    VariantUtils.ConvertTo<TKey>(key)!,
+                    VariantUtils.ConvertTo<TValue>(value)!);
             }
         }
 

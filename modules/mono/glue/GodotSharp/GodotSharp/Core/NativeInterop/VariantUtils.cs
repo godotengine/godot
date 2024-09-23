@@ -7,8 +7,6 @@ using System.Runtime.CompilerServices;
 using Godot.Collections;
 
 
-#nullable enable
-
 namespace Godot.NativeInterop
 {
     public static partial class VariantUtils
@@ -271,7 +269,7 @@ namespace Godot.NativeInterop
             return CreateFromArray((godot_array)fromGodot.NativeValue);
         }
 
-        public static godot_variant CreateFromSystemArrayOfGodotObject(GodotObject[]? from)
+        public static godot_variant CreateFromSystemArrayOfGodotObject(GodotObject?[]? from)
         {
             if (from == null)
                 return default; // Nil
@@ -488,7 +486,7 @@ namespace Godot.NativeInterop
             => p_var.Type == Variant.Type.Object ? p_var.Object : IntPtr.Zero;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static GodotObject ConvertToGodotObject(in godot_variant p_var)
+        public static GodotObject? ConvertToGodotObject(in godot_variant p_var)
             => InteropUtils.UnmanagedGetManaged(ConvertToGodotObjectPtr(p_var));
 
         public static string ConvertToString(in godot_variant p_var)
@@ -648,7 +646,7 @@ namespace Godot.NativeInterop
             return Marshaling.ConvertNativeGodotArrayToSystemArrayOfRid(godotArray);
         }
 
-        public static T[] ConvertToSystemArrayOfGodotObject<T>(in godot_variant p_var)
+        public static T?[] ConvertToSystemArrayOfGodotObject<T>(in godot_variant p_var)
             where T : GodotObject
         {
             using var godotArray = NativeFuncs.godotsharp_variant_as_array(p_var);

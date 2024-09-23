@@ -7,9 +7,9 @@ namespace Godot
 {
     public sealed class GodotSynchronizationContext : SynchronizationContext, IDisposable
     {
-        private readonly BlockingCollection<(SendOrPostCallback Callback, object State)> _queue = new();
+        private readonly BlockingCollection<(SendOrPostCallback Callback, object? State)> _queue = new();
 
-        public override void Send(SendOrPostCallback d, object state)
+        public override void Send(SendOrPostCallback d, object? state)
         {
             // Shortcut if we're already on this context
             // Also necessary to avoid a deadlock, since Send is blocking
@@ -36,7 +36,7 @@ namespace Godot
             source.Task.Wait();
         }
 
-        public override void Post(SendOrPostCallback d, object state)
+        public override void Post(SendOrPostCallback d, object? state)
         {
             _queue.Add((d, state));
         }

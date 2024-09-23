@@ -3,8 +3,6 @@ using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using Godot.NativeInterop;
 
-#nullable enable
-
 namespace Godot
 {
     internal static class DisposablesTracker

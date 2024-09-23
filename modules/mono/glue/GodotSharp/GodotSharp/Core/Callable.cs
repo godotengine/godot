@@ -28,25 +28,25 @@ namespace Godot
     /// </example>
     public readonly partial struct Callable
     {
-        private readonly GodotObject _target;
-        private readonly StringName _method;
-        private readonly Delegate _delegate;
+        private readonly GodotObject? _target;
+        private readonly StringName? _method;
+        private readonly Delegate? _delegate;
         private readonly unsafe delegate* managed<object, NativeVariantPtrArgs, out godot_variant, void> _trampoline;
 
         /// <summary>
         /// Object that contains the method.
         /// </summary>
-        public GodotObject Target => _target;
+        public GodotObject? Target => _target;
 
         /// <summary>
         /// Name of the method that will be called.
         /// </summary>
-        public StringName Method => _method;
+        public StringName? Method => _method;
 
         /// <summary>
         /// Delegate of the method that will be called.
         /// </summary>
-        public Delegate Delegate => _delegate;
+        public Delegate? Delegate => _delegate;
 
         /// <summary>
         /// Trampoline function pointer for dynamically invoking <see cref="Callable.Delegate"/>.
@@ -60,7 +60,7 @@ namespace Godot
         /// </summary>
         /// <param name="target">Object that contains the method.</param>
         /// <param name="method">Name of the method that will be called.</param>
-        public unsafe Callable(GodotObject target, StringName method)
+        public unsafe Callable(GodotObject? target, StringName method)
         {
             _target = target;
             _method = method;
@@ -68,7 +68,7 @@ namespace Godot
             _trampoline = null;
         }
 
-        private unsafe Callable(Delegate @delegate,
+        private unsafe Callable(Delegate? @delegate,
             delegate* managed<object, NativeVariantPtrArgs, out godot_variant, void> trampoline)
         {
             _target = @delegate?.Target as GodotObject;
@@ -197,7 +197,7 @@ namespace Godot
         /// <param name="delegate">Delegate method that will be called.</param>
         /// <param name="trampoline">Trampoline function pointer for invoking the delegate.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe Callable CreateWithUnsafeTrampoline(Delegate @delegate,
+        public static unsafe Callable CreateWithUnsafeTrampoline(Delegate? @delegate,
             delegate* managed<object, NativeVariantPtrArgs, out godot_variant, void> trampoline)
             => new(@delegate, trampoline);
     }

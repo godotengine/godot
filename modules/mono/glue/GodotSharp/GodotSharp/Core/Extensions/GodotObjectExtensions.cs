@@ -2,8 +2,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Godot.NativeInterop;
 
-#nullable enable
-
 namespace Godot
 {
     public partial class GodotObject
@@ -82,7 +80,7 @@ namespace Godot
                 if (weakRef.IsNull)
                     return null;
 
-                return (WeakRef)InteropUtils.UnmanagedGetManaged(weakRef.Reference);
+                return (WeakRef?)InteropUtils.UnmanagedGetManaged(weakRef.Reference);
             }
         }
     }
