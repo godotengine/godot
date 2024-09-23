@@ -7808,11 +7808,12 @@ EditorNode::EditorNode() {
 	// Instantiate and place editor docks.
 
 	memnew(SceneTreeDock(scene_root, editor_selection, editor_data));
+	memnew(FileSystemDock);
 	memnew(InspectorDock(editor_data));
 	memnew(ImportDock);
 	memnew(NodeDock);
 
-	FileSystemDock *filesystem_dock = memnew(FileSystemDock);
+	FileSystemDock *filesystem_dock = FileSystemDock::get_singleton();
 	filesystem_dock->connect("inherit", callable_mp(this, &EditorNode::_inherit_request));
 	filesystem_dock->connect("instantiate", callable_mp(this, &EditorNode::_instantiate_request));
 	filesystem_dock->connect("display_mode_changed", callable_mp(this, &EditorNode::_save_editor_layout));
