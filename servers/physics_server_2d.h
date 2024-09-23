@@ -118,6 +118,7 @@ class PhysicsDirectSpaceState2D : public Object {
 	GDCLASS(PhysicsDirectSpaceState2D, Object);
 
 	Dictionary _intersect_ray(const Ref<PhysicsRayQueryParameters2D> &p_ray_query);
+	TypedArray<Dictionary> _intersect_ray_multiple(const Ref<PhysicsRayQueryParameters2D> &p_ray_query, int p_max_results = 32);
 	TypedArray<Dictionary> _intersect_point(const Ref<PhysicsPointQueryParameters2D> &p_point_query, int p_max_results = 32);
 	TypedArray<Dictionary> _intersect_shape(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results = 32);
 	Vector<real_t> _cast_motion(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query);
@@ -138,6 +139,8 @@ public:
 		bool collide_with_areas = false;
 
 		bool hit_from_inside = false;
+		// used for the old behaviour of intersect_ray which searches all collisions and returns the closest one
+		bool find_closest = false;
 	};
 
 	struct RayResult {
@@ -147,9 +150,11 @@ public:
 		ObjectID collider_id;
 		Object *collider = nullptr;
 		int shape = 0;
+		real_t distance = std::numeric_limits<real_t>::infinity();
 	};
 
 	virtual bool intersect_ray(const RayParameters &p_parameters, RayResult &r_result) = 0;
+	virtual int intersect_ray_multiple(const RayParameters &p_parameters, RayResult *r_result, int p_result_max) = 0;
 
 	struct ShapeResult {
 		RID rid;

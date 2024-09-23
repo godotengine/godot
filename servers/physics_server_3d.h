@@ -31,6 +31,7 @@
 #ifndef PHYSICS_SERVER_3D_H
 #define PHYSICS_SERVER_3D_H
 
+#include <limits>
 #ifndef _3D_DISABLED
 
 #include "core/io/resource.h"
@@ -124,6 +125,7 @@ class PhysicsDirectSpaceState3D : public Object {
 
 private:
 	Dictionary _intersect_ray(const Ref<PhysicsRayQueryParameters3D> &p_ray_query);
+	TypedArray<Dictionary> _intersect_ray_multiple(const Ref<PhysicsRayQueryParameters3D> &p_ray_query, int p_max_results = 32);
 	TypedArray<Dictionary> _intersect_point(const Ref<PhysicsPointQueryParameters3D> &p_point_query, int p_max_results = 32);
 	TypedArray<Dictionary> _intersect_shape(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query, int p_max_results = 32);
 	Vector<real_t> _cast_motion(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query);
@@ -147,6 +149,8 @@ public:
 		bool hit_back_faces = true;
 
 		bool pick_ray = false;
+		// used for the old behaviour of intersect_ray which searches all collisions and returns the closest one
+		bool find_closest = false;
 	};
 
 	struct RayResult {
@@ -157,9 +161,16 @@ public:
 		Object *collider = nullptr;
 		int shape = 0;
 		int face_index = -1;
+		real_t distance = std::numeric_limits<real_t>::infinity();
+	};
+	struct RayResultDistanceComparator {
+		bool operator()(const RayResult &a, const RayResult &b) const {
+			return a.distance < b.distance;
+		}
 	};
 
 	virtual bool intersect_ray(const RayParameters &p_parameters, RayResult &r_result) = 0;
+	virtual int intersect_ray_multiple(const RayParameters &p_parameters, RayResult *r_result, int p_result_max) = 0;
 
 	struct ShapeResult {
 		RID rid;

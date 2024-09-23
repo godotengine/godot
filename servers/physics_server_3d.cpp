@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "core/object/class_db.h"
 #ifndef _3D_DISABLED
 
 #include "physics_server_3d.h"
@@ -373,8 +374,39 @@ Dictionary PhysicsDirectSpaceState3D::_intersect_ray(const Ref<PhysicsRayQueryPa
 	d["collider"] = result.collider;
 	d["shape"] = result.shape;
 	d["rid"] = result.rid;
+	d["distance"] = result.distance;
 
 	return d;
+}
+
+TypedArray<Dictionary> PhysicsDirectSpaceState3D::_intersect_ray_multiple(const Ref<PhysicsRayQueryParameters3D> &p_ray_query, int p_max_results) {
+	ERR_FAIL_COND_V(!p_ray_query.is_valid(), TypedArray<Dictionary>());
+
+	Vector<RayResult> results;
+	results.resize(p_max_results);
+	int rc = intersect_ray_multiple(p_ray_query->get_parameters(), results.ptrw(), results.size());
+
+	if (rc == 0) {
+		return TypedArray<Dictionary>();
+	}
+
+	TypedArray<Dictionary> ret;
+	ret.resize(rc);
+
+	for (int i = 0; i < rc; i++) {
+		Dictionary d;
+		d["position"] = results[i].position;
+		d["normal"] = results[i].normal;
+		d["face_index"] = results[i].face_index;
+		d["collider_id"] = results[i].collider_id;
+		d["collider"] = results[i].collider;
+		d["shape"] = results[i].shape;
+		d["rid"] = results[i].rid;
+		d["distance"] = results[i].distance;
+		ret[i] = d;
+	}
+
+	return ret;
 }
 
 TypedArray<Dictionary> PhysicsDirectSpaceState3D::_intersect_point(const Ref<PhysicsPointQueryParameters3D> &p_point_query, int p_max_results) {
@@ -482,6 +514,7 @@ PhysicsDirectSpaceState3D::PhysicsDirectSpaceState3D() {
 void PhysicsDirectSpaceState3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("intersect_point", "parameters", "max_results"), &PhysicsDirectSpaceState3D::_intersect_point, DEFVAL(32));
 	ClassDB::bind_method(D_METHOD("intersect_ray", "parameters"), &PhysicsDirectSpaceState3D::_intersect_ray);
+	ClassDB::bind_method(D_METHOD("intersect_ray_multiple", "parameters", "max_results"), &PhysicsDirectSpaceState3D::_intersect_ray_multiple, DEFVAL(32));
 	ClassDB::bind_method(D_METHOD("intersect_shape", "parameters", "max_results"), &PhysicsDirectSpaceState3D::_intersect_shape, DEFVAL(32));
 	ClassDB::bind_method(D_METHOD("cast_motion", "parameters"), &PhysicsDirectSpaceState3D::_cast_motion);
 	ClassDB::bind_method(D_METHOD("collide_shape", "parameters", "max_results"), &PhysicsDirectSpaceState3D::_collide_shape, DEFVAL(32));

@@ -128,6 +128,7 @@ protected:
 	bool is_body_excluded_from_query(const RID &p_body) const;
 
 	GDVIRTUAL7R(bool, _intersect_ray, const Vector2 &, const Vector2 &, uint32_t, bool, bool, bool, GDExtensionPtr<PhysicsServer2DExtensionRayResult>)
+	GDVIRTUAL8R(int, _intersect_ray_multiple, const Vector2 &, const Vector2 &, uint32_t, bool, bool, bool, GDExtensionPtr<PhysicsServer2DExtensionRayResult>, int)
 	GDVIRTUAL7R(int, _intersect_point, const Vector2 &, ObjectID, uint32_t, bool, bool, GDExtensionPtr<PhysicsServer2DExtensionShapeResult>, int)
 	GDVIRTUAL9R(int, _intersect_shape, RID, const Transform2D &, const Vector2 &, real_t, uint32_t, bool, bool, GDExtensionPtr<PhysicsServer2DExtensionShapeResult>, int)
 	GDVIRTUAL9R(bool, _cast_motion, RID, const Transform2D &, const Vector2 &, real_t, uint32_t, bool, bool, GDExtensionPtr<real_t>, GDExtensionPtr<real_t>)
@@ -142,9 +143,16 @@ public:
 		exclude = nullptr;
 		return ret;
 	}
+	virtual int intersect_ray_multiple(const RayParameters &p_parameters, RayResult *r_results, int p_result_max) override {
+		exclude = &p_parameters.exclude;
+		int ret = 0;
+		GDVIRTUAL_REQUIRED_CALL(_intersect_ray_multiple, p_parameters.from, p_parameters.to, p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas, p_parameters.hit_from_inside, r_results, p_result_max, ret);
+		exclude = nullptr;
+		return ret;
+	}
 	virtual int intersect_point(const PointParameters &p_parameters, ShapeResult *r_results, int p_result_max) override {
 		exclude = &p_parameters.exclude;
-		int ret = false;
+		int ret = 0;
 		GDVIRTUAL_REQUIRED_CALL(_intersect_point, p_parameters.position, p_parameters.canvas_instance_id, p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas, r_results, p_result_max, ret);
 		exclude = nullptr;
 		return ret;
