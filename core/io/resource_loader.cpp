@@ -112,8 +112,19 @@ String ResourceFormatLoader::get_resource_script_class(const String &p_path) con
 
 ResourceUID::ID ResourceFormatLoader::get_resource_uid(const String &p_path) const {
 	int64_t uid = ResourceUID::INVALID_ID;
-	GDVIRTUAL_CALL(_get_resource_uid, p_path, uid);
+	if (has_custom_uid_support()) {
+		GDVIRTUAL_CALL(_get_resource_uid, p_path, uid);
+	} else {
+		Ref<FileAccess> file = FileAccess::open(p_path + ".uid", FileAccess::READ);
+		if (file.is_valid()) {
+			uid = ResourceUID::get_singleton()->text_to_id(file->get_line());
+		}
+	}
 	return uid;
+}
+
+bool ResourceFormatLoader::has_custom_uid_support() const {
+	return GDVIRTUAL_IS_OVERRIDDEN(_get_resource_uid);
 }
 
 void ResourceFormatLoader::get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const {
@@ -1157,6 +1168,21 @@ ResourceUID::ID ResourceLoader::get_resource_uid(const String &p_path) {
 	}
 
 	return ResourceUID::INVALID_ID;
+}
+
+bool ResourceLoader::has_custom_uid_support(const String &p_path) {
+	String local_path = _validate_local_path(p_path);
+
+	for (int i = 0; i < loader_count; i++) {
+		if (!loader[i]->recognize_path(local_path)) {
+			continue;
+		}
+		if (loader[i]->has_custom_uid_support()) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_remapped) {
