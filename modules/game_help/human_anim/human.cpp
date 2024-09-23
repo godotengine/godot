@@ -590,6 +590,10 @@ namespace human
     }
     void Human::init(Skeleton3D* apSkeleton) {
 
+        Vector<int> root_bones = apSkeleton->get_root_bones();
+        if (root_bones.size() > 0) {
+            m_RootBonendex = root_bones[0];
+        }
 
         static const float HumanBoneDefaultMass[kLastBone] =
         {
@@ -1069,6 +1073,168 @@ namespace human
         }
 
     }
+
+    static int get_bone_index(Skeleton3D* skeleton,const Dictionary& p_bone_map, const NodePath& path) {
+        StringName bone_name = path.get_subname(0);
+        const Variant* re_name = p_bone_map.getptr(bone_name);
+        if (re_name != nullptr) {
+            bone_name = *re_name;
+        }
+
+        return skeleton->find_bone(bone_name);
+
+    }
+    
+    void HumanAnimationKeyFrame::to_animation_track(List<HumanAnimationKeyFrame*> &p_keyframes,Vector<bool>& bone_mask) {
+        bone_mask.resize(kLastBone + hand::s_BoneCount * 2);
+        bone_mask.fill(false);
+        if(p_keyframes.size() == 0) {
+            return ;
+        }
+        
+
+    }
+    void Human::animation_to_dof(Skeleton3D* skeleton, Animation* p_anim, const Dictionary & p_bone_map,List<HumanAnimationKeyFrame*> &p_keyframes,Vector<bool>& bone_mask) {
+
+
+        bone_mask.resize(kLastBone + hand::s_BoneCount * 2);
+        bone_mask.fill(false);
+
+        skeleton::SkeletonPose humanLclPose;
+        humanLclPose.m_Count = m_SkeletonLocalPose.size();
+        humanLclPose.m_X = m_SkeletonLocalPose;
+
+        
+        skeleton::SkeletonPose apSkeletonPoseRef = humanLclPose;
+        skeleton::SkeletonPose apSkeletonPoseGbl = humanLclPose;
+        skeleton::SkeletonPose apSkeletonPoseLcl = humanLclPose;
+        skeleton::SkeletonPose apSkeletonPoseWs = humanLclPose;
+
+        
+        human::HumanPose pose;
+        human::HumanPose poseOut;
+        
+        int key_count = p_anim->get_length() * 100;
+        Vector3 loc,scale;
+        Quaternion rot;
+        int32_t rootIndex = m_RootBonendex;
+
+        Vector<Animation::Track*> tracks = p_anim->get_tracks();
+        for(int i = 0; i < key_count; i++) {
+            double time = double(i) / 100.0;
+            for(int j = 0; j < tracks.size(); j++) {
+                Animation::Track* track = tracks[j];
+                if(track->type == Animation::TYPE_POSITION_3D) {
+                    Animation::PositionTrack* track_cache = static_cast<Animation::PositionTrack*>(track);
+                    int bone_index = get_bone_index(skeleton,p_bone_map, track_cache->path);
+                    if(bone_index < 0) {
+                        continue;
+                    }
+
+                    bone_mask.write[bone_index] = true;
+					Error err = p_anim->try_position_track_interpolate(j, time, &loc);
+                    humanLclPose.m_X[bone_index].t = math::float3(loc.x,loc.y,loc.z);
+                }
+                else if(track->type == Animation::TYPE_ROTATION_3D) {
+                    Animation::RotationTrack* track_cache = static_cast<Animation::RotationTrack*>(track);
+                    int bone_index = get_bone_index(skeleton, p_bone_map, track_cache->path);
+                    if(bone_index < 0) {
+                        continue;
+                    }
+                    bone_mask.write[bone_index] = true;
+                    Error err = p_anim->try_rotation_track_interpolate(j, time, &rot);
+                    humanLclPose.m_X[bone_index].q = math::float4(rot.x,rot.y,rot.z,rot.w);
+                }
+                else if(track->type == Animation::TYPE_SCALE_3D) {
+                    Animation::ScaleTrack* track_cache = static_cast<Animation::ScaleTrack*>(track);
+                    int bone_index = get_bone_index(skeleton, p_bone_map, track_cache->path);
+                    if(bone_index < 0) {
+                        continue;
+                    }
+                    bone_mask.write[bone_index] = true;
+                    Error err = p_anim->try_scale_track_interpolate(j, time, &scale);
+                    humanLclPose.m_X[bone_index].s = math::float3(scale.x,scale.y,scale.z);
+                }
+
+            }
+            HumanAnimationKeyFrame* dof = memnew(HumanAnimationKeyFrame);
+            dof->time = time;
+            // 
+			math::float3 tDoFBaseArray[human::kLastTDoF];
+			if (m_HasTDoF)
+			{
+				human::RetargetFromTDoFBase(this, &apSkeletonPoseRef, &tDoFBaseArray[0]);
+			}
+            human::RetargetFrom(this, &humanLclPose, &pose, &apSkeletonPoseRef, &apSkeletonPoseGbl, &apSkeletonPoseLcl, &apSkeletonPoseWs, &tDoFBaseArray[0]);
+            // 拷贝dof到keyframe
+            memcpy(&dof->dot_array[0], &pose.m_DoFArray[0], sizeof(float) * kLastDoF);
+            memcpy(&dof->dot_array[kLastDoF], &poseOut.m_LeftHandPose.m_DoFArray[0], sizeof(float) * hand::s_DoFCount);
+            memcpy(&dof->dot_array[kLastDoF + hand::s_DoFCount], &poseOut.m_RightHandPose.m_DoFArray[0], sizeof(float) * hand::s_DoFCount);
+            p_keyframes.push_back(dof);
+
+        }
+
+
+    }
+
+
+    void Human::app_dof_to_skeleton(Skeleton3D* apSkeleton, Animation* p_anim, const Dictionary& p_bone_map, HumanAnimationKeyFrame& p_keyframes, Vector<bool>& bone_mask) {
+
+        human::HumanPose humanPose;
+        human::HumanPose humanPoseOut;
+
+        humanPose.m_RootX.t = math::float3(0, 0, 0);
+        humanPose.m_RootX.q = math::float4(0, 0, 0, 1);
+        humanPose.m_RootX.s = math::float3(1, 1, 1);
+
+        
+        int muscleIter = 0;
+        for (; muscleIter < human::kLastDoF; muscleIter++)
+        {
+            humanPose.m_DoFArray[muscleIter] = p_keyframes.dot_array[muscleIter];
+        }
+
+        for (int fingerMuscleIter = 0; fingerMuscleIter < hand::s_DoFCount; fingerMuscleIter++, muscleIter++)
+        {
+            humanPose.m_LeftHandPose.m_DoFArray[fingerMuscleIter] = p_keyframes.dot_array[muscleIter];
+        }
+
+        math::trsX avatarX = math::trsIdentity();
+        for (int fingerMuscleIter = 0; fingerMuscleIter < hand::s_DoFCount; fingerMuscleIter++, muscleIter++)
+        {
+            humanPose.m_RightHandPose.m_DoFArray[fingerMuscleIter] = p_keyframes.dot_array[muscleIter];
+        }
+        
+        skeleton::SkeletonPose apSkeletonPoseLcl,apSkeletonPoseWs;
+        apSkeletonPoseLcl.m_Count = m_SkeletonLocalPose.size();
+        apSkeletonPoseLcl.m_X.resize(apSkeletonPoseLcl.m_Count);
+        apSkeletonPoseWs.m_Count = m_SkeletonLocalPose.size();
+        apSkeletonPoseWs.m_X.resize(apSkeletonPoseWs.m_Count);
+        human::RetargetTo(this, &humanPose, 0, avatarX, &humanPoseOut,& apSkeletonPoseLcl, &apSkeletonPoseWs);
+
+        for(int i = 0; i < kLastBone; i++) {
+            int bone_index = m_HumanBoneIndex[i];
+            if(bone_index < 0) {
+                continue;
+            }
+            apSkeleton->set_bone_pose_rotation(bone_index, Quaternion(apSkeletonPoseLcl.m_X[bone_index].q.x, apSkeletonPoseLcl.m_X[bone_index].q.y, apSkeletonPoseLcl.m_X[bone_index].q.z, apSkeletonPoseLcl.m_X[bone_index].q.w));
+        }
+        for(int i = 0; i < hand::s_BoneCount; i++) {
+            int bone_index = m_LeftHand.m_HandBoneIndex[i];
+            if(bone_index >= 0) {
+                apSkeleton->set_bone_pose_rotation(bone_index, Quaternion(apSkeletonPoseLcl.m_X[bone_index].q.x, apSkeletonPoseLcl.m_X[bone_index].q.y, apSkeletonPoseLcl.m_X[bone_index].q.z, apSkeletonPoseLcl.m_X[bone_index].q.w));
+            }
+
+            bone_index = m_RightHand.m_HandBoneIndex[i];
+            if(bone_index >= 0) {
+                apSkeleton->set_bone_pose_rotation(bone_index, Quaternion(apSkeletonPoseLcl.m_X[bone_index].q.x, apSkeletonPoseLcl.m_X[bone_index].q.y, apSkeletonPoseLcl.m_X[bone_index].q.z, apSkeletonPoseLcl.m_X[bone_index].q.w));                
+            }
+            
+        }
+
+
+    }
+
     void HumanCopyAxes(Human const *apSrcHuman, Human *apHuman)
     {
         int32_t i;
@@ -2418,38 +2584,5 @@ namespace human
         return math::quatWeight(math::quatArcRotate(srcV, dstV), weight);
     }
 
-    float ComputeHierarchicMass(int32_t aBoneIndex, float *apMassArray)
-    {
-        apMassArray[aBoneIndex] = HumanBoneDefaultMass[aBoneIndex];
-
-        for (int childIter = 0; childIter < BoneChildren[aBoneIndex][0]; childIter++)
-        {
-            apMassArray[aBoneIndex] += ComputeHierarchicMass(BoneChildren[aBoneIndex][1 + childIter], apMassArray);
-        }
-
-        return apMassArray[aBoneIndex];
-    }
-
-    float DeltaPoseQuality(HumanPose &arDeltaPose, float aTol)
-    {
-        float massArray[kLastBone];
-        ComputeHierarchicMass(0, massArray);
-
-        float q = 0;
-        float sumW = 0;
-
-        for (int dofIter = 0; dofIter < kLastDoF; dofIter++)
-        {
-            int32_t boneIndex = DoF2Bone[dofIter];
-
-            float v = math::saturate((aTol - math::abs(arDeltaPose.m_DoFArray[dofIter])) / aTol);
-
-            q += v * massArray[boneIndex];
-
-            sumW += massArray[boneIndex];
-        }
-
-        return q / sumW;
-    }
 } // namespace human
 }

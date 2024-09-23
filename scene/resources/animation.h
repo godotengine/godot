@@ -526,7 +526,7 @@ public:
 		virtual ~Track() {}
 	};
 
-private:
+public:
 	struct Key {
 		real_t transition = 1.0;
 		double time = 0.0; // Time in secs.

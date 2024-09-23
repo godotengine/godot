@@ -8,6 +8,7 @@
 
 #include "./human_hand.h"
 #include "scene/3d/skeleton_3d.h"
+#include "scene/resources/animation.h"
 
 
 namespace math
@@ -359,6 +360,175 @@ namespace human
         };
         return label_map;
     }
+
+
+    
+    const HashMap<String,int>& get_bone_to_human_map() {
+        static HashMap<String,int> bone_map = {
+            {"Hips",0},
+
+            {"LeftUpperLeg",1},
+            {"RightUpperLeg",2},
+
+            {"LeftLowerLeg",3},
+            {"RightLowerLeg",4},
+
+            {"LeftFoot",5},
+            {"RightFoot",6},
+
+            {"Spine",7},
+            {"Chest",8},
+            {"UpperChest",9},
+            {"Neck",10},
+            {"Head",11},
+
+            {"LeftShoulder",12},
+            {"RightShoulder",13},
+
+            {"LeftUpperArm",14},
+            {"RightUpperArm",15},
+
+            {"LeftLowerArm",16},
+            {"RightLowerArm",17},
+
+            {"LeftHand",18},
+            {"RightHand",19},
+
+            {"LeftToes",20},
+            {"RightToes",21},
+
+            {"LeftEye",22},
+            {"RightEye",23},
+            
+            {"Jaw",24},
+
+            {"LeftThumbMetacarpal",25},
+            {"LeftThumbProximal",26},
+            {"LeftThumbDistal",27},
+
+            {"LeftIndexProximal",28},
+            {"LeftIndexIntermediate",29},
+            {"LeftIndexDistal",30},
+
+            {"LeftMiddleProximal",31},
+            {"LeftMiddleIntermediate",32},
+            {"LeftMiddleDistal",33},
+
+            {"LeftRingProximal",34},
+            {"LeftRingIntermediate",35},
+            {"LeftRingDistal",36},
+
+            {"LeftLittleProximal",37},
+            {"LeftLittleIntermediate",38},
+            {"LeftLittleDistal",39},
+
+
+            {"RightThumbMetacarpal",40},
+            {"RightThumbProximal",41},
+            {"RightThumbDistal",42},
+
+            {"RightIndexProximal",43},
+            {"RightIndexIntermediate",44},
+            {"RightIndexDistal",45},
+
+            {"RightMiddleProximal",46},
+            {"RightMiddleIntermediate",47},
+            {"RightMiddleDistal",48},
+
+            {"RightRingProximal",49},
+            {"RightRingIntermediate",50},
+            {"RightRingDistal",51},
+
+            {"RightLittleProximal",52},
+            {"RightLittleIntermediate",53},
+            {"RightLittleDistal",54},
+
+        };
+        return bone_map;
+    }
+    const HashMap<int,String> get_human_to_bone_map() {
+        static HashMap<int,String> human_map = {
+            {0,"Hips"},
+
+            {1,"LeftUpperLeg"},
+            {2,"RightUpperLeg"},
+
+            {3,"LeftLowerLeg"},
+            {4,"RightLowerLeg"},
+
+            {5,"LeftFoot"},
+            {6,"RightFoot"},
+
+            {7,"Spine"},
+            {8,"Chest"},
+            {9,"UpperChest"},
+            {10,"Neck"},
+            {11,"Head"},
+
+            {12,"LeftShoulder"},
+            {13,"RightShoulder"},
+
+            {14,"LeftUpperArm"},
+            {15,"RightUpperArm"},
+
+            {16,"LeftLowerArm"},
+            {17,"RightLowerArm"},
+
+            {18,"LeftHand"},
+            {19,"RightHand"},
+
+            {20,"LeftToes"},
+            {21,"RightToes"},
+
+            {22,"LeftEye"},
+            {23,"RightEye"},
+            
+            {24,"Jaw"},
+
+            {25,"LeftThumbMetacarpal"},
+            {26,"LeftThumbProximal"},
+            {27,"LeftThumbDistal"},
+
+            {28,"LeftIndexProximal"},
+            {29,"LeftIndexIntermediate"},
+            {30,"LeftIndexDistal"},
+
+            {31,"LeftMiddleProximal"},
+            {32,"LeftMiddleIntermediate"},
+            {33,"LeftMiddleDistal"},
+
+            {34,"LeftRingProximal"},
+            {35,"LeftRingIntermediate"},
+            {36,"LeftRingDistal"},
+
+            {37,"LeftLittleProximal"},
+            {38,"LeftLittleIntermediate"},
+            {39,"LeftLittleDistal"},
+
+
+            {40,"RightThumbMetacarpal"},
+            {41,"RightThumbProximal"},
+            {42,"RightThumbDistal"},
+
+            {43,"RightIndexProximal"},
+            {44,"RightIndexIntermediate"},
+            {45,"RightIndexDistal"},
+
+            {46,"RightMiddleProximal"},
+            {47,"RightMiddleIntermediate"},
+            {48,"RightMiddleDistal"},
+
+            {49,"RightRingProximal"},
+            {50,"RightRingIntermediate"},
+            {51,"RightRingDistal"},
+
+            {52,"RightLittleProximal"},
+            {53,"RightLittleIntermediate"},
+            {54,"RightLittleDistal"},
+        };
+        return human_map;
+    }
+
     int GetLeftHandIndexArray(Skeleton3D* const p_skeleton, LocalVector<int> &human_indexArray)
     {
         int ret = 0;
@@ -438,9 +608,17 @@ namespace human
         float           m_DoFArray[kLastDoF];
         math::float3    m_TDoFArray[kLastTDoF];
     };
-    struct HumanAnimationKeyFrame{
-        float time;
+    struct HumanAnimationKeyFrame {
+        HumanAnimationKeyFrame() : time(0.0f) {
+            memset(dot_array, 0, sizeof(dot_array));
+        }
+        double time;
+        float dot_array[kLastDoF + hand::s_DoFCount + hand::s_DoFCount];      
+
+        static void to_animation_track(List<HumanAnimationKeyFrame*> &p_keyframes,Vector<bool>& bone_mask) ;
     };
+
+    
     
     struct Human
     {
@@ -450,6 +628,13 @@ namespace human
         void init(Skeleton3D* apSkeleton);
         void build_form_skeleton(Skeleton3D* apSkeleton);
         void setup_axes(Skeleton3D* apSkeleton) ;
+
+        void animation_to_dof(Skeleton3D* skeleton, Animation* p_anim, const Dictionary& p_bone_map, List<HumanAnimationKeyFrame*>& p_keyframes, Vector<bool>& bone_mask);
+
+        void app_dof_to_skeleton(Skeleton3D* apSkeleton,Animation* p_anim, const Dictionary & p_bone_map, HumanAnimationKeyFrame& p_keyframes,Vector<bool>& bone_mask);
+
+        
+
 
         
 
@@ -466,6 +651,7 @@ namespace human
         float                   m_HumanBoneMass[kLastBone];
         int32_t                 m_HumanAllBoneIndex[kLastBone];
         float                   m_Scale;
+        int32_t                 m_RootBonendex = -1;
 
         float                   m_ArmTwist;
         float                   m_ForeArmTwist;
@@ -481,8 +667,6 @@ namespace human
         bool                    m_HasRightHand;
 
         bool                    m_HasTDoF;
-
-
     };
 
 
@@ -543,6 +727,7 @@ namespace human
 	};
 	
     int32_t MuscleFromBone(int32_t boneIndex, int32_t doFIndex);
+    // dof 索引转骨骼索引
     int32_t BoneFromMuscle(int32_t doFIndex);
 
     int32_t BoneFromTDoF(int32_t doFIndex);
@@ -611,12 +796,6 @@ namespace human
         skeleton::SkeletonPose *skeletonPoseWs,
         bool adjustMissingBones = true);
 
-    // skeletonPoseLocal must be set to local pose before calling
-    // skeletonPoseGlobal must be set to global pose before calling
-    // skeletonPoseWorkspace is a temporary buffer
-
-    float           ComputeHierarchicMass(int32_t aBoneIndex, float *apMassArray);
-    float           DeltaPoseQuality(HumanPose &deltaPose, float tolerance = 0.15f);
 
     math::SetupAxesInfo const& GetAxeInfo(uint32_t index);
 }// namespace human
