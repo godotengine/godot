@@ -463,32 +463,120 @@ static float angle_between_two_pnts(const Vector2 center_pnt, const Vector2 prev
 	return Math::atan2(det, dot);
 }
 
-static bool does_pnt_see_star_center(const Vector<Vector2> &pl, const Vector2 &star_center, const Vector2 &pnt) {
-	for (int i = 1; i < pl.size(); ++i) {
-		if (pl[i - 1] != pnt && pl[i] != pnt && intersect(star_center, pnt, pl[i - 1], pl[i]))
-			return false;
+int get_triangle_pnt(const Vector<PackedInt32Array> &graph, const int &ep1_i, const int &ep2_i, Vector<bool> &seen) {
+	Vector<int> points = graph[ep1_i];
+	Vector<bool> pTouched;
+	pTouched.resize_zeroed(graph.size());
+
+	for (int p : points) {
+		pTouched.write[p] = true;
 	}
-	return true;
-}
 
-// Gets the star region for the star_center of the given polyline( pl ) in a clockwise pattern
-static PackedInt64Array get_star_region(const Vector<Vector2> &pl, const Vector2 &star_center) {
-	PackedInt64Array star_region = { 0 };
-
-	for (int i = 1; i < pl.size() - 1; ++i) {
-		float angle = angle_between_two_pnts(star_center, pl[0], pl[i]);
-		if ((Math_PI > angle) && (angle > 0) && does_pnt_see_star_center(pl, star_center, pl[i])) { // If the angle is negative, it will go behind an edge, excluding it from the star region
-			star_region.push_back(i);
+	points = graph[ep2_i];
+	for (int p : points) {
+		if (pTouched[p] && !seen[p]) { // Only return the point if it hasn't already been processed
+			return p;
 		}
 	}
 
-	star_region.push_back(pl.size() - 1);
+	return -1; // None of the triangles available have not been processed
+}
 
-	return star_region;
+void tri_search(const Vector<PackedInt32Array> graph, const Vector<Vector2> &pl, const Vector2 &star_center, Vector<bool> &seen, Vector<int> &pKeep, int ep1_i, int ep2_i, const float special_contraint = -99) {
+	Vector2 ep1 = pl[ep1_i];
+	Vector2 ep2 = pl[ep2_i];
+
+	PackedFloat32Array constraints = { angle_between_two_pnts(star_center, pl[0], ep1), angle_between_two_pnts(star_center, pl[0], ep2) };
+	constraints.sort();
+
+	int point_idx = get_triangle_pnt(graph, ep1_i, ep2_i, seen);
+	if (point_idx == -1) {
+		return;
+	}
+
+	Vector2 point = pl[point_idx];
+
+	seen.write[point_idx] = true;
+	float angle = angle_between_two_pnts(star_center, pl[0], point);
+	if (constraints[0] < angle && angle < constraints[1] && (0 < angle && angle <= special_contraint)) {
+		pKeep.append(point_idx);
+		if (Math::abs(ep1_i - ep2_i) != 1) {
+			tri_search(graph, pl, star_center, seen, pKeep, ep1_i, point_idx, special_contraint);
+			tri_search(graph, pl, star_center, seen, pKeep, point_idx, ep2_i, special_contraint);
+		}
+	}
 }
 
 static bool is_between(const Vector2 &b, const Vector2 &a, const Vector2 &c) {
 	return Math::absf((a.distance_to(b) + b.distance_to(c)) - a.distance_to(c)) < .001;
+}
+
+// Gets the star region for the star_center of the given polyline( pl ) in a clockwise pattern
+static PackedInt32Array get_star_region(Vector<Vector2> &pl, const Vector2 &star_center) {
+	pl.append(star_center);
+	PackedInt32Array triangulation = Geometry2D::triangulate_polygon(pl);
+	if (triangulation.size() == 0) { // Edge case where the polygon would self-intersect when closed
+		pl.remove_at(pl.size() - 1);
+		return PackedInt32Array({ 0 });
+	}
+
+	PackedInt32Array star_region;
+	// Generate a neighbor graph for the triangulation
+	Vector<PackedInt32Array> graph;
+	graph.resize(pl.size());
+	for (int i = 0; i < triangulation.size(); i += 3) {
+		int p1_i = triangulation[i];
+		int p2_i = triangulation[i + 1];
+		int p3_i = triangulation[i + 2];
+
+		graph.write[p1_i].append(p2_i);
+		graph.write[p1_i].append(p3_i);
+
+		graph.write[p2_i].append(p1_i);
+		graph.write[p2_i].append(p3_i);
+
+		graph.write[p3_i].append(p1_i);
+		graph.write[p3_i].append(p2_i);
+	}
+
+	PackedInt32Array star_connections = graph[pl.size() - 1];
+	Vector<bool> seen;
+	seen.resize_zeroed(pl.size());
+	seen.write[pl.size() - 1] = true;
+
+	for (int i = 0; i < star_connections.size(); i += 2) {
+		if (!seen[star_connections[i]]) {
+			seen.write[star_connections[i]] = true;
+			star_region.append(star_connections[i]);
+		}
+
+		if (!seen[star_connections[i + 1]]) {
+			seen.write[star_connections[i + 1]] = true;
+			star_region.append(star_connections[i + 1]);
+		}
+
+		// The angle needs to be positive facing from edge points 1 - 2
+		if (angle_between_two_pnts(star_center, pl[star_connections[i]], pl[star_connections[i + 1]])) {
+			tri_search(graph, pl, star_center, seen, star_region, star_connections[i], star_connections[i + 1], Math_PI);
+		} else {
+			tri_search(graph, pl, star_center, seen, star_region, star_connections[i + 1], star_connections[i], Math_PI);
+		}
+	}
+
+	star_region.sort();
+
+	pl.remove_at(pl.size() - 1); // Remove the add star_center from the list
+
+	if (star_region[star_region.size() - 1] != pl.size() - 1) {
+		star_region.push_back(pl.size() - 1);
+	}
+
+	return star_region;
+}
+
+// Calculates signed distance sign
+bool is_outside_the_line_segment(const Vector2 &pnt, const Vector2 &start, const Vector2 &end) {
+	return !cntrcw(start, pnt, end) || is_between(pnt, start, end);
 }
 
 int fix_polyline_intersection(Vector<Vector2> &simplified_pl, Vector<Vector2> &pl) {
@@ -601,7 +689,7 @@ static void copy_section(Vector<Vector2> &destination, const Vector<Vector2> &so
 	}
 }
 
-static Vector<Vector2> star_shaped_rdp(Vector<Vector2> &v, Vector<Vector2> &orig_v, float optimization) {
+static Vector<Vector2> star_shaped_rdp(Vector<Vector2> &v, float optimization) {
 	if (v.size() < 3) {
 		return v;
 	}
@@ -609,40 +697,55 @@ static Vector<Vector2> star_shaped_rdp(Vector<Vector2> &v, Vector<Vector2> &orig
 	Vector2 v1_vn_intersection = (v[0] + v[v.size() - 1]) / 2.0;
 
 	// 2 - (a) Determine the sequence of vertices Si lying in a star-shaped region.
-	PackedInt64Array star_region = get_star_region(v, v1_vn_intersection);
+	PackedInt32Array star_region = get_star_region(v, v1_vn_intersection);
 
 	// Nothing was found in the search due to a self-intersection. Fix the self-intersection and rescan
-	if (star_region.size() == 2) {
-		int error_idx = fix_polyline_intersection(v, orig_v);
+	if (star_region.size() <= 2 && v.size() != 3) {
+		int error_idx = -1;
+		Vector2 end = v[v.size() - 1];
+		Vector2 start = v[0];
 
-		if (error_idx == -1) { // Error could occur with no self-intersection.
-			return rdp(v, optimization);
-		} else {
-			Vector<Vector2> r1;
-			r1.resize(2);
-			if (error_idx == 0) { // Frontal self-intersection may occur during algorithm operation
-				r1.write[0] = v[0];
-				v.remove_at(0);
-				r1.write[1] = v[0];
+		bool between_flag = false;
+		if (star_region.size() == 1) { // The first point cannot see the last point
+			for (int i = 1; i < v.size() - 1; ++i) {
+				if (cntrcw(start, v[i], end)) {
+					error_idx = i;
+					break;
+				}
+			}
+		} else { // The first and last points are being covered by another edge
+			for (int i = 1; i < v.size() - 1; ++i) {
+				if (is_outside_the_line_segment(v[i], start, end)) {
+					error_idx = i;
+					between_flag = true;
+					break;
+				}
+			}
+		}
 
-				v = star_shaped_rdp(v, orig_v, optimization);
-
-				v.remove_at(0);
-				r1.append_array(v);
-				v = r1;
-
-			} else {
-				r1.write[1] = v[v.size() - 1];
-				v.remove_at(v.size() - 1);
-				r1.write[0] = v[v.size() - 1];
-
-				v = star_shaped_rdp(v, orig_v, optimization);
-
-				r1.remove_at(0);
-				v.append_array(r1);
+		if (error_idx != -1) {
+			// Split at the error
+			Vector<Vector2> left, right;
+			left.resize(error_idx + 1);
+			for (int i = 0; i < error_idx + 1; i++) {
+				left.write[i] = v[i];
+			}
+			right.resize(v.size() - error_idx);
+			for (int i = 0; i < right.size(); i++) {
+				right.write[i] = v[error_idx + i];
 			}
 
-			return v;
+			Vector<Vector2> r1 = star_shaped_rdp(left, optimization);
+			Vector<Vector2> r2 = star_shaped_rdp(right, optimization);
+
+			if (!between_flag) {
+				r1.remove_at(r1.size() - 1);
+			}
+			r2.remove_at(0);
+
+			r1.append_array(r2);
+
+			return r1;
 		}
 	}
 
@@ -654,13 +757,17 @@ static Vector<Vector2> star_shaped_rdp(Vector<Vector2> &v, Vector<Vector2> &orig
 	}
 	star_region_polyline = rdp(star_region_polyline, optimization);
 
+	if (star_region.size() == star_region_polyline.size()) {
+		return rdp(v, optimization);
+	}
+
 	if (star_region_polyline.size() == 2) {
 		for (int i = star_region.size() - 2; i > 0; --i) {
 			v.remove_at(star_region[i]);
 		}
 	}
 	// 2 - (c) Check the distance of vertices out of star_region_polyline.
-	float max_dist = 0.0;
+	bool no_point_larger_than_eps = true; // Skip checking the perpendicular distance when a point is found that is larger than the optimization
 	Vector<Vector2> edge = { star_region_polyline[0], star_region_polyline[1] };
 	int edge_idx = 2; // The index of the next edge
 	int start_idx = 0; // The index of the start of the polyline section
@@ -669,17 +776,19 @@ static Vector<Vector2> star_shaped_rdp(Vector<Vector2> &v, Vector<Vector2> &orig
 	for (int i = 1; i < polyline_size; ++i) {
 		Vector2 pnt = v[i];
 		if (!star_region_polyline.has(pnt)) {
-			float dist = perpendicular_distance(pnt, edge[0], edge[1]);
-			if (max_dist < dist)
-				max_dist = dist;
+			if (no_point_larger_than_eps) {
+				if (perpendicular_distance(pnt, edge[0], edge[1]) > optimization) {
+					no_point_larger_than_eps = false;
+				}
+			}
 		} else {
 			// 2 - (c) If some have a distance greater than the specified tolerance, go to (2a).
-			if (max_dist > optimization) {
+			if (!no_point_larger_than_eps) {
 				Vector<Vector2> new_polyline_section;
 				for (int j = start_idx; j < i + 1; j++)
 					new_polyline_section.push_back(v[j]);
 
-				Vector<Vector2> res = star_shaped_rdp(new_polyline_section, orig_v, optimization);
+				Vector<Vector2> res = star_shaped_rdp(new_polyline_section, optimization);
 				copy_section(v, res, start_idx, i + 1);
 
 				// Update the size and index pointer
@@ -702,7 +811,6 @@ static Vector<Vector2> star_shaped_rdp(Vector<Vector2> &v, Vector<Vector2> &orig
 				edge.write[1] = star_region_polyline[edge_idx];
 				edge_idx += 1;
 				start_idx = i;
-				max_dist = 0;
 			}
 		}
 	}
@@ -725,7 +833,7 @@ static Vector<Vector2> reduce(Vector<Vector2> &points, const Rect2i &rect, float
 	Vector<Vector2> result;
 	if (p_star_rdp) {
 		Vector<Vector2> orig_points(points); // For the self-intersection fix
-		result = star_shaped_rdp(points, orig_points, ep);
+		result = star_shaped_rdp(points, ep);
 		fix_polyline_intersection(result, orig_points);
 	} else {
 		result = rdp(points, epsilon);
