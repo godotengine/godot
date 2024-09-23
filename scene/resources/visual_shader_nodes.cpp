@@ -4903,19 +4903,22 @@ void VisualShaderNodeVectorCompose::set_op_type(OpType p_op_type) {
 		case OP_TYPE_VECTOR_3D: {
 			float p1 = get_input_port_default_value(0);
 			float p2 = get_input_port_default_value(1);
+			float p3 = get_input_port_default_value(2);
 
 			set_input_port_default_value(0, p1);
 			set_input_port_default_value(1, p2);
-			set_input_port_default_value(2, 0.0);
+			set_input_port_default_value(2, p3);
 		} break;
 		case OP_TYPE_VECTOR_4D: {
 			float p1 = get_input_port_default_value(0);
 			float p2 = get_input_port_default_value(1);
+			float p3 = get_input_port_default_value(2);
+			float p4 = get_input_port_default_value(3);
 
 			set_input_port_default_value(0, p1);
 			set_input_port_default_value(1, p2);
-			set_input_port_default_value(2, 0.0);
-			set_input_port_default_value(3, 0.0);
+			set_input_port_default_value(2, p3);
+			set_input_port_default_value(3, p4);
 		} break;
 		default:
 			break;
