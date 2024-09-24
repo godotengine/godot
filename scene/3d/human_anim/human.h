@@ -480,61 +480,6 @@ namespace human
     };
 
 
-	struct HumanWeight
-	{
-		float		m_BodyWeightArray[kLastDoF];				// 55
-		float		rootWeight;									// 1
-		float		goalWeightArray[kLastGoal];					// 4 
-		float		tdofWeightArray[kLastTDoF];					// 21
-
-		HumanWeight()
-		{
-			Reset();
-		}
-		HumanWeight* CopyHumanWeight(HumanWeight const * const src)
-		{
-			if (src == nullptr)
-			{
-				Reset();
-				return this;
-			}
-			int32_t i;
-
-			for (i = 0; i < kLastDoF; i++)
-			{
-				this->m_BodyWeightArray[i] = src->m_BodyWeightArray[i];
-			}
-			for (i = 0; i < kLastTDoF; i++)
-			{
-				this->tdofWeightArray[i] = src->tdofWeightArray[i];
-			}
-			for (i = 0; i < kLastGoal; i++)
-			{
-				this->goalWeightArray[i] = src->goalWeightArray[i];
-			}
-			rootWeight = src->rootWeight;
-			return this;
-		}
-
-		void Reset()
-		{
-			int32_t i;
-			//m_BodyWeightArray = arAlloc.Construct<SkeletonMask>();
-			for (i = 0; i < kLastDoF; i++)
-			{
-				m_BodyWeightArray[i] = 1;
-			}
-			for (i = 0; i < kLastTDoF; i++)
-			{
-				tdofWeightArray[i] = 1;
-			}
-			for (i = 0; i < kLastGoal; i++)
-			{
-				goalWeightArray[i] = 1;
-			}
-			rootWeight = 1;
-		}
-	};
 	
     int32_t MuscleFromBone(int32_t boneIndex, int32_t doFIndex);
     // dof 索引转骨骼索引
@@ -547,8 +492,6 @@ namespace human
     const char* BoneName(uint32_t boneIndex);
     String MuscleName(uint32_t boneIndex);
 
-    Human* CreateHuman(skeleton::HumanSkeleton *skeleton, skeleton::SkeletonPose *skeletonPose, RuntimeBaseAllocator& alloc);
-    void DestroyHuman(Human *human, RuntimeBaseAllocator& alloc);
 
     void HumanAdjustMass(Human *human);
     void HumanSetupAxes(Human *human, skeleton::SkeletonPose const *skeletonPoseGlobal);
@@ -571,10 +514,6 @@ namespace human
     math::float4    HumanGetGoalRotation(Human const *apHuman, skeleton::SkeletonPose const *apSkeletonPose, Goal goalIndex);
 
     void HumanPoseMirror(HumanPose &pose, HumanPose const &poseA);
-
-    void HumanPoseBlendBegin(HumanPose &arPose);
-    void HumanPoseBlendNode(HumanPose &arPose, HumanPose *apNodePose, float aWeight);
-    void HumanPoseBlendEnd(HumanPose &arPose, float &weightSum);
 
     void HumanPoseAdjustForMissingBones(Human const *apHuman, HumanPose *apHumanPose);
 
