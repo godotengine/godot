@@ -518,8 +518,15 @@ protected:
 #endif // DISABLE_DEPRECATED
 
 public:
+
+	void set_human_bone_mask(const Vector<uint8_t>& p_human_bone_mask);
+	Vector<uint8_t> get_human_bone_mask() const;
+
+	void add_track_ins(Track* p_track, int p_at_pos = -1);
 	int add_track(TrackType p_type, int p_at_pos = -1);
 	void remove_track(int p_track);
+
+	Track *get_track(int p_track);
 
 	_FORCE_INLINE_ const Vector<Track *> get_tracks() {
 		return tracks;

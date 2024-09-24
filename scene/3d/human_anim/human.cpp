@@ -1493,7 +1493,7 @@ namespace human
     }
 
 
-    void Human::animation_to_dof( Animation* p_anim, Animation* p_out_anim, const Dictionary & p_bone_map,List<HumanAnimationKeyFrame*> &p_keyframes,Vector<uint8_t>& bone_mask) {
+     Animation* Human::animation_to_dof( Animation* p_anim, const Dictionary & p_bone_map,Vector<uint8_t>& bone_mask) {
 
 
         bone_mask.resize(kLastBone + hand::s_BoneCount * 2);
@@ -1626,15 +1626,35 @@ namespace human
                 human_track_array[k].push_back(human_track[k]);
             }
 
-            // 拷贝dof到keyframe
-            memcpy(&dof->dot_array[0], &pose.m_DoFArray[0], sizeof(float) * kLastDoF);
-            memcpy(&dof->dot_array[kLastDoF], &poseOut.m_LeftHandPose.m_DoFArray[0], sizeof(float) * hand::s_DoFCount);
-            memcpy(&dof->dot_array[kLastDoF + hand::s_DoFCount], &poseOut.m_RightHandPose.m_DoFArray[0], sizeof(float) * hand::s_DoFCount);
-            p_keyframes.push_back(dof);
+            // // 拷贝dof到keyframe
+            // memcpy(&dof->dot_array[0], &pose.m_DoFArray[0], sizeof(float) * kLastDoF);
+            // memcpy(&dof->dot_array[kLastDoF], &poseOut.m_LeftHandPose.m_DoFArray[0], sizeof(float) * hand::s_DoFCount);
+            // memcpy(&dof->dot_array[kLastDoF + hand::s_DoFCount], &poseOut.m_RightHandPose.m_DoFArray[0], sizeof(float) * hand::s_DoFCount);
+            // p_keyframes.push_back(dof);
+        }
+        Animation* out_anim = memnew(Animation);
+		const LocalVector<Pair<String, String>>& bone_label = get_bone_label();
+        out_anim->set_is_human_animation(true);
+
+        for(int k = 0; k < human_bone_count; k++) {
+            if(bone_mask[k] == 0) {
+                continue;
+            }
+            int track_index = out_anim->add_track(Animation::TYPE_POSITION_3D);
+            Animation::PositionTrack* track = static_cast<Animation::PositionTrack*>(out_anim->get_track(track_index));
+            track->path = String("hm.") + bone_label[k].first;
+            track->interpolation = Animation::INTERPOLATION_LINEAR;
+            track->positions = human_track_array[k];
+
         }
 
-		const LocalVector<Pair<String, String>>& bone_label = get_bone_label();
+        // 拷贝轨迹
+        for(auto& it : other_tracks) {
+            out_anim->add_track_ins(it->duplicate());
+        }
+        out_anim->set_human_bone_mask(bone_mask);
 
+        return out_anim;
 
 
     }

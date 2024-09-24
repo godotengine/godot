@@ -348,7 +348,7 @@ namespace human
         void build_form_skeleton(Skeleton3D* apSkeleton);
         void setup_axes(Skeleton3D* apSkeleton) ;
 
-        void animation_to_dof(Animation* p_anim, Animation* p_out_anim, const Dictionary& p_bone_map, List<HumanAnimationKeyFrame*>& p_keyframes, Vector<uint8_t>& bone_mask);
+        Animation* animation_to_dof(Animation* p_anim, const Dictionary& p_bone_map, Vector<uint8_t>& bone_mask);
 
         void app_dof_to_skeleton(Skeleton3D* apSkeleton,Animation* p_anim, const Dictionary & p_bone_map, HumanAnimationKeyFrame& p_keyframes,Vector<uint8_t>& bone_mask);
 

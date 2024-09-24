@@ -862,6 +862,21 @@ void Animation::_get_property_list(List<PropertyInfo> *p_list) const {
 void Animation::reset_state() {
 	clear();
 }
+void Animation::set_human_bone_mask(const Vector<uint8_t>& p_human_bone_mask) {
+	human_bone_mask = p_human_bone_mask;
+}
+Vector<uint8_t> Animation::get_human_bone_mask() const {
+	return human_bone_mask;
+}
+void Animation::add_track_ins(Track* p_track, int p_at_pos ) {
+	if (p_at_pos < 0 || p_at_pos >= tracks.size()) {
+		p_at_pos = tracks.size();
+	}
+	tracks.insert(p_at_pos, p_track);
+}
+Animation::Track *Animation::get_track(int p_track) {
+	return tracks[p_track];
+}
 
 int Animation::add_track(TrackType p_type, int p_at_pos) {
 	if (p_at_pos < 0 || p_at_pos >= tracks.size()) {
@@ -3996,6 +4011,9 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_is_human_animation", "is_human"), &Animation::set_is_human_animation);
 	ClassDB::bind_method(D_METHOD("get_is_human_animation"), &Animation::get_is_human_animation);
 
+	ClassDB::bind_method(D_METHOD("set_human_bone_mask", "human_bone_mask"), &Animation::set_human_bone_mask);
+	ClassDB::bind_method(D_METHOD("get_human_bone_mask"), &Animation::get_human_bone_mask);
+
 	ClassDB::bind_method(D_METHOD("clear"), &Animation::clear);
 	ClassDB::bind_method(D_METHOD("copy_track", "track_idx", "to_animation"), &Animation::copy_track);
 
@@ -4010,6 +4028,7 @@ void Animation::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "step", PROPERTY_HINT_RANGE, "0,4096,0.001,suffix:s"), "set_step", "get_step");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "bone_map", PROPERTY_HINT_RESOURCE_TYPE, "Resource"), "set_bone_map", "get_bone_map");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_human", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_is_human_animation", "get_is_human_animation");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "human_bone_mask", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_human_bone_mask", "get_human_bone_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "capture_included", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "", "is_capture_included");
 
 	BIND_ENUM_CONSTANT(TYPE_VALUE);
