@@ -904,13 +904,16 @@ Vector<float> String::split_floats(const String &p_splitter, bool p_allow_empty)
 	int from = 0;
 	int len = length();
 
+	String buffer = *this;
 	while (true) {
 		int end = find(p_splitter, from);
 		if (end < 0) {
 			end = len;
 		}
 		if (p_allow_empty || (end > from)) {
-			ret.push_back(String::to_double(&c_str()[from]));
+			buffer[end] = 0;
+			ret.push_back(String::to_double(&buffer.c_str()[from]));
+			buffer[end] = _cowdata.get(end);
 		}
 
 		if (end == len) {
@@ -928,6 +931,7 @@ Vector<float> String::split_floats_mk(const Vector<String> &p_splitters, bool p_
 	int from = 0;
 	int len = length();
 
+	String buffer = *this;
 	while (true) {
 		int idx;
 		int end = findmk(p_splitters, from, &idx);
@@ -939,7 +943,9 @@ Vector<float> String::split_floats_mk(const Vector<String> &p_splitters, bool p_
 		}
 
 		if (p_allow_empty || (end > from)) {
-			ret.push_back(String::to_double(&c_str()[from]));
+			buffer[end] = 0;
+			ret.push_back(String::to_double(&buffer.c_str()[from]));
+			buffer[end] = _cowdata.get(end);
 		}
 
 		if (end == len) {

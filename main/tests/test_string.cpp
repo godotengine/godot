@@ -1254,6 +1254,67 @@ bool test_37() {
 	return true;
 }
 
+bool test_38() {
+#define CHECK_ARR_LEN(arr, len)                                                                           \
+	if (arr.size() != len) {                                                                              \
+		OS::get_singleton()->print("\tFAIL: Length of %s should be %d, got %d\n", #arr, len, arr.size()); \
+		return false;                                                                                     \
+	} else {                                                                                              \
+		OS::get_singleton()->print("\tPASS\n");                                                           \
+	}
+#define CHECK_ARR_ELEMENT(arr, i, expect)                                                 \
+	if (ABS(arr[i] - expect) > 0.00001) {                                                 \
+		OS::get_singleton()->print("\tFAIL: %s[%d] %f != %f\n", #arr, i, arr[i], expect); \
+		return false;                                                                     \
+	} else {                                                                              \
+		OS::get_singleton()->print("\tPASS\n");                                           \
+	}
+
+	OS::get_singleton()->print("\n\nTest 38: split_floats\n");
+
+	{
+		const String s = "1.2;2.3 4.5";
+		const float slices[3] = { 1.2, 2.3, 4.5 };
+
+		const Vector<float> d_arr = s.split_floats(";");
+		CHECK_ARR_LEN(d_arr, 2);
+		for (int i = 0; i < 2; i++) {
+			CHECK_ARR_ELEMENT(d_arr, i, slices[i]);
+		}
+
+		Vector<String> keys;
+		keys.push_back(";");
+		keys.push_back(" ");
+		const Vector<float> f_arr = s.split_floats_mk(keys);
+		CHECK_ARR_LEN(f_arr, 3);
+		for (int i = 0; i < 3; i++) {
+			CHECK_ARR_ELEMENT(f_arr, i, slices[i]);
+		}
+	}
+
+	{
+		const String s = " -2.0        5";
+		const float slices[10] = { 0, -2, 0, 0, 0, 0, 0, 0, 0, 5 };
+
+		const Vector<float> d_arr = s.split_floats(" ");
+		CHECK_ARR_LEN(d_arr, 10);
+		for (int i = 0; i < 10; i++) {
+			CHECK_ARR_ELEMENT(d_arr, i, slices[i]);
+		}
+
+		Vector<String> keys;
+		keys.push_back(";");
+		keys.push_back(" ");
+		const Vector<float> f_arr = s.split_floats_mk(keys);
+		CHECK_ARR_LEN(f_arr, 10);
+		for (int i = 0; i < 10; i++) {
+			CHECK_ARR_ELEMENT(f_arr, i, slices[i]);
+		}
+	}
+
+	return true;
+}
+
 typedef bool (*TestFunc)();
 
 TestFunc test_funcs[] = {
@@ -1295,6 +1356,7 @@ TestFunc test_funcs[] = {
 	test_35,
 	test_36,
 	test_37,
+	test_38,
 	nullptr
 
 };
