@@ -1529,6 +1529,12 @@ void SceneTreeDock::_perform_property_drop(Node *p_node, const String &p_propert
 }
 
 void SceneTreeDock::add_root_node(Node *p_node) {
+	String new_name = scene_root->validate_child_name(p_node);
+	if (GLOBAL_GET("editor/naming/node_name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
+		new_name = adjust_name_casing(new_name);
+	}
+	p_node->set_name(new_name);
+
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action_for_history(TTR("New Scene Root"), editor_data->get_current_edited_scene_history_id());
 	undo_redo->add_do_method(EditorNode::get_singleton(), "set_edited_scene", p_node);
