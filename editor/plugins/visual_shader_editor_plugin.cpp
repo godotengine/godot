@@ -6879,8 +6879,10 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	add_options.push_back(AddOption("Grayscale", "Color/Functions", "VisualShaderNodeColorFunc", TTR("Grayscale function."), { VisualShaderNodeColorFunc::FUNC_GRAYSCALE }, VisualShaderNode::PORT_TYPE_VECTOR_3D));
 	add_options.push_back(AddOption("HSV2RGB", "Color/Functions", "VisualShaderNodeColorFunc", TTR("Converts HSV vector to RGB equivalent."), { VisualShaderNodeColorFunc::FUNC_HSV2RGB, VisualShaderNodeVectorFunc::OP_TYPE_VECTOR_3D }, VisualShaderNode::PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption("LinearToSRGB", "Color/Functions", "VisualShaderNodeColorFunc", TTR("Converts color from linear to sRGB color space."), { VisualShaderNodeColorFunc::FUNC_LINEAR_TO_SRGB }, VisualShaderNode::PORT_TYPE_VECTOR_3D));
 	add_options.push_back(AddOption("RGB2HSV", "Color/Functions", "VisualShaderNodeColorFunc", TTR("Converts RGB vector to HSV equivalent."), { VisualShaderNodeColorFunc::FUNC_RGB2HSV, VisualShaderNodeVectorFunc::OP_TYPE_VECTOR_3D }, VisualShaderNode::PORT_TYPE_VECTOR_3D));
 	add_options.push_back(AddOption("Sepia", "Color/Functions", "VisualShaderNodeColorFunc", TTR("Sepia function."), { VisualShaderNodeColorFunc::FUNC_SEPIA }, VisualShaderNode::PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption("SRGBToLinear", "Color/Functions", "VisualShaderNodeColorFunc", TTR("Converts color from sRGB to linear color space."), { VisualShaderNodeColorFunc::FUNC_SRGB_TO_LINEAR }, VisualShaderNode::PORT_TYPE_VECTOR_3D));
 
 	add_options.push_back(AddOption("Burn", "Color/Operators", "VisualShaderNodeColorOp", TTR("Burn operator."), { VisualShaderNodeColorOp::OP_BURN }, VisualShaderNode::PORT_TYPE_VECTOR_3D));
 	add_options.push_back(AddOption("Darken", "Color/Operators", "VisualShaderNodeColorOp", TTR("Darken operator."), { VisualShaderNodeColorOp::OP_DARKEN }, VisualShaderNode::PORT_TYPE_VECTOR_3D));
