@@ -62,6 +62,7 @@ namespace hand
     inline int32_t GetPhalangeIndex(int32_t boneIndex) { return boneIndex % kLastPhalange; }
     inline int32_t GetDoFIndex(int32_t fingerIndex, int32_t phalangeDoFIndex) { return fingerIndex * kLastFingerDoF + phalangeDoFIndex; }
 
+    
     const char* FingerName(uint32_t finger);
     String FingerDoFName(uint32_t finger);
     const char* PhalangeName(uint32_t finger);

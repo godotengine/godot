@@ -340,111 +340,17 @@ namespace human
         Human();
 
         void init(Skeleton3D* apSkeleton);
+
+        void load(const Dictionary& p_dict);        
+        void save(Dictionary& p_dict) ;
+
+
         void build_form_skeleton(Skeleton3D* apSkeleton);
         void setup_axes(Skeleton3D* apSkeleton) ;
 
-        void animation_to_dof(Skeleton3D* skeleton, Animation* p_anim, const Dictionary& p_bone_map, List<HumanAnimationKeyFrame*>& p_keyframes, Vector<uint8_t>& bone_mask);
+        void animation_to_dof(Animation* p_anim, Animation* p_out_anim, const Dictionary& p_bone_map, List<HumanAnimationKeyFrame*>& p_keyframes, Vector<uint8_t>& bone_mask);
 
         void app_dof_to_skeleton(Skeleton3D* apSkeleton,Animation* p_anim, const Dictionary & p_bone_map, HumanAnimationKeyFrame& p_keyframes,Vector<uint8_t>& bone_mask);
-
-        void load(const Dictionary& p_dict) {
-            Dictionary d_root = p_dict["root"];
-            m_RootX.load(d_root);
-
-            Dictionary d_skeleton = p_dict["skeleton"];
-            m_Skeleton.load(d_skeleton);
-
-            Array d_skeleton_local_pose = p_dict["skeleton_local_pose"];
-            m_SkeletonLocalPose.resize(d_skeleton_local_pose.size());
-            for (int i = 0; i < d_skeleton_local_pose.size(); ++i) {
-                Dictionary d_skeleton_local_pose_i = d_skeleton_local_pose[i];
-                m_SkeletonLocalPose[i].load(d_skeleton_local_pose_i);
-            }
-
-            Vector<int32_t> d_human_bone_index = p_dict["human_bone_index"];
-            for (int i = 0; i < d_human_bone_index.size(); ++i) {
-                m_HumanBoneIndex[i] = d_human_bone_index[i];
-            }
-
-            Vector<float> d_human_bone_mass = p_dict["human_bone_mass"];
-            for (int i = 0; i < d_human_bone_mass.size(); ++i) {
-                m_HumanBoneMass[i] = d_human_bone_mass[i];
-            }
-
-            Vector<int32_t> d_human_all_bone_index = p_dict["human_all_bone_index"];
-            for (int i = 0; i < d_human_all_bone_index.size(); ++i) {
-                m_HumanAllBoneIndex[i] = d_human_all_bone_index[i];
-            }
-
-            m_Scale = p_dict["scale"];
-            m_RootBonendex = p_dict["root_bone_index"];
-
-            m_ArmTwist = p_dict["arm_twist"];
-            m_ForeArmTwist = p_dict["forearm_twist"];
-            m_UpperLegTwist = p_dict["upperleg_twist"];
-            m_LegTwist = p_dict["leg_twist"];
-
-            m_ArmStretch = p_dict["arm_stretch"];
-            m_LegStretch = p_dict["leg_stretch"];
-
-            m_FeetSpacing = p_dict["feet_spacing"];
-
-            m_HasLeftHand = p_dict["has_left_hand"];
-            m_HasRightHand = p_dict["has_right_hand"];
-            m_HasTDoF = p_dict["has_tdo_f"];
-
-        }
-
-        void save(Dictionary& p_dict) {
-            Dictionary d_root;
-            m_RootX.save(d_root);
-            p_dict["root"] = d_root;
-            Dictionary d_skeleton;
-            m_Skeleton.save(d_skeleton);
-            p_dict["skeleton"] = d_skeleton;
-            Array d_skeleton_local_pose;
-            for (uint32_t i = 0; i < m_SkeletonLocalPose.size(); ++i) {
-                Dictionary d_skeleton_local_pose_i;
-                m_SkeletonLocalPose[i].save(d_skeleton_local_pose_i);
-                d_skeleton_local_pose.push_back(d_skeleton_local_pose_i);
-            }
-
-            Vector<int32_t> d_human_bone_index;
-            for (int i = 0; i < kLastBone; ++i) {
-                d_human_bone_index.push_back(m_HumanBoneIndex[i]);
-            }
-            p_dict["human_bone_index"] = d_human_bone_index;
-
-            Vector<float> d_human_bone_mass;
-            for (int i = 0; i < kLastBone; ++i) {
-                d_human_bone_mass.push_back(m_HumanBoneMass[i]);
-            }
-            p_dict["human_bone_mass"] = d_human_bone_mass;
-
-            Vector<int32_t> d_human_all_bone_index;
-            for (int i = 0; i < kLastBone; ++i) {
-                d_human_all_bone_index.push_back(m_HumanAllBoneIndex[i]);
-            }
-            p_dict["human_all_bone_index"] = d_human_all_bone_index;
-
-            p_dict["scale"] = m_Scale;
-            p_dict["root_bone_index"] = m_RootBonendex;
-
-            p_dict["arm_twist"] = m_ArmTwist;
-            p_dict["forearm_twist"] = m_ForeArmTwist;
-            p_dict["upperleg_twist"] = m_UpperLegTwist;
-            p_dict["leg_twist"] = m_LegTwist;
-
-            p_dict["arm_stretch"] = m_ArmStretch;
-            p_dict["leg_stretch"] = m_LegStretch;
-
-            p_dict["feet_spacing"] = m_FeetSpacing;
-
-            p_dict["has_left_hand"] = m_HasLeftHand;
-            p_dict["has_right_hand"] = m_HasRightHand;
-            p_dict["has_tdo_f"] = m_HasTDoF;
-        }
-
 
         
 

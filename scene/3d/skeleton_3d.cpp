@@ -447,14 +447,14 @@ Skeleton3D::ModifierCallbackModeProcess Skeleton3D::get_modifier_callback_mode_p
 	return modifier_callback_mode_process;
 }
 
-void Skeleton3D::set_human_config(const Ref<CharacterHumanConfig> &p_human_config) {
+void Skeleton3D::set_human_config(const Ref<HumanSkeletonConfig> &p_human_config) {
 	human_config = p_human_config;
 }
-Ref<CharacterHumanConfig> Skeleton3D::get_human_config() const {
+Ref<HumanSkeletonConfig> Skeleton3D::get_human_config() const {
 	return human_config;
 }
 void Skeleton3D::init_human_config() {
-	human_config = Ref<CharacterHumanConfig>(memnew(CharacterHumanConfig));
+	human_config = Ref<HumanSkeletonConfig>(memnew(HumanSkeletonConfig));
 	human_config->human.init(this);
 }
 void Skeleton3D::_process_changed() {
@@ -1194,7 +1194,7 @@ void Skeleton3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motion_scale", PROPERTY_HINT_RANGE, "0.001,10,0.001,or_greater"), "set_motion_scale", "get_motion_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_rest_only"), "set_show_rest_only", "is_show_rest_only");
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "human_config", PROPERTY_HINT_RESOURCE_TYPE, "HumanBoneConfig"), "set_human_config", "get_human_config");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "human_config", PROPERTY_HINT_RESOURCE_TYPE, "HumanSkeletonConfig"), "set_human_config", "get_human_config");
 
 	ADD_GROUP("Modifier", "modifier_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "modifier_callback_mode_process", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_modifier_callback_mode_process", "get_modifier_callback_mode_process");

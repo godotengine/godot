@@ -56,6 +56,7 @@ public:
 		TYPE_BEZIER, // Bezier curve.
 		TYPE_AUDIO,
 		TYPE_ANIMATION,
+		TYPE_HUMAN_POSE,
 	};
 
 	enum InterpolationType : uint8_t {
@@ -115,6 +116,8 @@ public:
 		bool enabled = true;
 		Track() {}
 		virtual ~Track() {}
+		
+		virtual Track* duplicate() const {return nullptr;}
 	};
 
 public:
@@ -140,6 +143,19 @@ public:
 		Vector<TKey<Vector3>> positions;
 		int32_t compressed_track = -1;
 		PositionTrack() { type = TYPE_POSITION_3D; }
+		virtual Track* duplicate() const override {
+			PositionTrack *nt = memnew(PositionTrack);
+			nt->positions = positions;
+			nt->compressed_track = compressed_track;
+			nt->path = path;
+			nt->type = type;
+			nt->interpolation = interpolation;
+			nt->loop_wrap = loop_wrap;
+			nt->thash = thash;
+			nt->imported = imported;
+			nt->enabled = enabled;
+			return nullptr;
+		}
 	};
 
 	/* ROTATION TRACK */
@@ -148,6 +164,19 @@ public:
 		Vector<TKey<Quaternion>> rotations;
 		int32_t compressed_track = -1;
 		RotationTrack() { type = TYPE_ROTATION_3D; }
+		virtual Track* duplicate() const override {
+			RotationTrack *nt = memnew(RotationTrack);
+			nt->rotations = rotations;
+			nt->compressed_track = compressed_track;
+			nt->path = path;
+			nt->type = type;
+			nt->interpolation = interpolation;
+			nt->loop_wrap = loop_wrap;
+			nt->thash = thash;
+			nt->imported = imported;
+			nt->enabled = enabled;
+			return nullptr;
+		}
 	};
 
 	/* SCALE TRACK */
@@ -156,6 +185,19 @@ public:
 		Vector<TKey<Vector3>> scales;
 		int32_t compressed_track = -1;
 		ScaleTrack() { type = TYPE_SCALE_3D; }
+		virtual Track* duplicate() const override {
+			ScaleTrack *nt = memnew(ScaleTrack);
+			nt->scales = scales;
+			nt->compressed_track = compressed_track;
+			nt->path = path;
+			nt->type = type;
+			nt->interpolation = interpolation;
+			nt->loop_wrap = loop_wrap;
+			nt->thash = thash;
+			nt->imported = imported;
+			nt->enabled = enabled;
+			return nullptr;
+		}
 	};
 
 	/* BLEND SHAPE TRACK */
@@ -164,6 +206,19 @@ public:
 		Vector<TKey<float>> blend_shapes;
 		int32_t compressed_track = -1;
 		BlendShapeTrack() { type = TYPE_BLEND_SHAPE; }
+		virtual Track* duplicate() const override {
+			BlendShapeTrack *nt = memnew(BlendShapeTrack);
+			nt->blend_shapes = blend_shapes;
+			nt->compressed_track = compressed_track;
+			nt->path = path;
+			nt->type = type;
+			nt->interpolation = interpolation;
+			nt->loop_wrap = loop_wrap;
+			nt->thash = thash;
+			nt->imported = imported;
+			nt->enabled = enabled;
+			return nullptr;
+		}
 	};
 
 	/* PROPERTY VALUE TRACK */
@@ -175,6 +230,21 @@ public:
 
 		ValueTrack() {
 			type = TYPE_VALUE;
+		}
+
+		virtual Track* duplicate() const override {
+			ValueTrack *nt = memnew(ValueTrack);
+			nt->values = values;
+			nt->path = path;
+			nt->type = type;
+			nt->interpolation = interpolation;
+			nt->loop_wrap = loop_wrap;
+			nt->thash = thash;
+			nt->imported = imported;
+			nt->update_mode = update_mode;
+			nt->update_on_seek = update_on_seek;
+			nt->enabled = enabled;
+			return nullptr;
 		}
 	};
 
@@ -188,6 +258,18 @@ public:
 	struct MethodTrack : public Track {
 		Vector<MethodKey> methods;
 		MethodTrack() { type = TYPE_METHOD; }
+		virtual Track* duplicate() const override {
+			MethodTrack *nt = memnew(MethodTrack);
+			nt->methods = methods;
+			nt->path = path;
+			nt->type = type;
+			nt->interpolation = interpolation;
+			nt->loop_wrap = loop_wrap;
+			nt->thash = thash;
+			nt->imported = imported;
+			nt->enabled = enabled;
+			return nullptr;
+		}
 	};
 
 	/* BEZIER TRACK */
@@ -206,6 +288,19 @@ public:
 
 		BezierTrack() {
 			type = TYPE_BEZIER;
+		}
+
+		virtual Track* duplicate() const override {
+			BezierTrack *nt = memnew(BezierTrack);
+			nt->values = values;
+			nt->path = path;
+			nt->type = type;
+			nt->interpolation = interpolation;
+			nt->loop_wrap = loop_wrap;
+			nt->thash = thash;
+			nt->imported = imported;
+			nt->enabled = enabled;
+			return nullptr;
 		}
 	};
 
@@ -226,6 +321,20 @@ public:
 		AudioTrack() {
 			type = TYPE_AUDIO;
 		}
+
+		virtual Track* duplicate() const override {
+			AudioTrack *nt = memnew(AudioTrack);
+			nt->values = values;
+			nt->path = path;
+			nt->type = type;
+			nt->interpolation = interpolation;
+			nt->loop_wrap = loop_wrap;
+			nt->thash = thash;
+			nt->imported = imported;
+			nt->use_blend = use_blend;
+			nt->enabled = enabled;
+			return nullptr;
+		}
 	};
 
 	/* ANIMATION TRACK */
@@ -235,6 +344,19 @@ public:
 
 		AnimationTrack() {
 			type = TYPE_ANIMATION;
+		}
+
+		virtual Track* duplicate() const override {
+			AnimationTrack *nt = memnew(AnimationTrack);
+			nt->values = values;
+			nt->path = path;
+			nt->type = type;
+			nt->interpolation = interpolation;
+			nt->loop_wrap = loop_wrap;
+			nt->thash = thash;
+			nt->imported = imported;
+			nt->enabled = enabled;
+			return nullptr;
 		}
 	};
 	Ref<Resource> bone_map;
