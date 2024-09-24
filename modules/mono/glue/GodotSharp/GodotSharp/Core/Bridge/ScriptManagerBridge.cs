@@ -660,15 +660,7 @@ namespace Godot.Bridge
         {
             Type native = GodotObject.InternalGetClassNativeBase(scriptType);
 
-            string typeName = scriptType.Name;
-            if (scriptType.IsGenericType)
-            {
-                var sb = new StringBuilder();
-                AppendTypeName(sb, scriptType);
-                typeName = sb.ToString();
-            }
-
-            godot_string className = Marshaling.ConvertStringToNative(typeName);
+            godot_string className = Marshaling.ConvertStringToNative(ReflectionUtils.ConstructTypeName(scriptType));
 
             bool isTool = scriptType.IsDefined(typeof(ToolAttribute), inherit: false);
 
@@ -701,24 +693,6 @@ namespace Godot.Bridge
             outTypeInfo->IsGenericTypeDefinition = scriptType.IsGenericTypeDefinition.ToGodotBool();
             outTypeInfo->IsConstructedGenericType = scriptType.IsConstructedGenericType.ToGodotBool();
 
-            static void AppendTypeName(StringBuilder sb, Type type)
-            {
-                sb.Append(type.Name);
-                if (type.IsGenericType)
-                {
-                    sb.Append('<');
-                    for (int i = 0; i < type.GenericTypeArguments.Length; i++)
-                    {
-                        Type typeArg = type.GenericTypeArguments[i];
-                        AppendTypeName(sb, typeArg);
-                        if (i != type.GenericTypeArguments.Length - 1)
-                        {
-                            sb.Append(", ");
-                        }
-                    }
-                    sb.Append('>');
-                }
-            }
         }
 
         [UnmanagedCallersOnly]
@@ -1032,7 +1006,7 @@ namespace Godot.Bridge
                         interopProperties[i] = interopProperty;
                     }
 
-                    using godot_string currentClassName = Marshaling.ConvertStringToNative(type.Name);
+                    using godot_string currentClassName = Marshaling.ConvertStringToNative(ReflectionUtils.ConstructTypeName(type));
 
                     addPropInfoFunc(scriptPtr, &currentClassName, interopProperties, length);
 
