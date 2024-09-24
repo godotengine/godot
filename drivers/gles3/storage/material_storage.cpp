@@ -1506,6 +1506,8 @@ MaterialStorage::~MaterialStorage() {
 	memdelete_arr(global_shader_uniforms.buffer_dirty_regions);
 	glDeleteBuffers(1, &global_shader_uniforms.buffer);
 
+	material_update_list.clear();
+
 	singleton = nullptr;
 }
 
