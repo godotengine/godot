@@ -1400,7 +1400,7 @@ String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Cont
 	String tooltip;
 
 	while (p_control) {
-		tooltip = p_control->atr(p_control->get_tooltip(pos));
+		tooltip = p_control->get_tooltip(pos);
 
 		// Temporary solution for PopupMenus.
 		PopupMenu *menu = Object::cast_to<PopupMenu>(this);
@@ -1483,6 +1483,7 @@ void Viewport::_gui_show_tooltip() {
 	}
 
 	base_tooltip->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+	base_tooltip->set_auto_translate_mode(tooltip_owner->get_tooltip_auto_translate_mode());
 
 	panel->set_transient(true);
 	panel->set_flag(Window::FLAG_NO_FOCUS, true);
