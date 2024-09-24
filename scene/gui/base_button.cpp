@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
+#include "scene/gui/label.h"
 #include "scene/main/window.h"
 
 void BaseButton::_unpress_group() {
@@ -390,16 +391,31 @@ void BaseButton::shortcut_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-String BaseButton::get_tooltip(const Point2 &p_pos) const {
-	String tooltip = Control::get_tooltip(p_pos);
-	if (shortcut_in_tooltip && shortcut.is_valid() && shortcut->has_valid_event()) {
-		String text = shortcut->get_name() + " (" + shortcut->get_as_text() + ")";
-		if (!tooltip.is_empty() && shortcut->get_name().nocasecmp_to(tooltip) != 0) {
-			text += "\n" + atr(tooltip);
-		}
-		tooltip = text;
+Control *BaseButton::make_custom_tooltip(const String &p_text) const {
+	Control *control = Control::make_custom_tooltip(p_text);
+	if (control) {
+		return control;
 	}
-	return tooltip;
+	if (!shortcut_in_tooltip || shortcut.is_null() || !shortcut->has_valid_event()) {
+		return nullptr; // Use the default tooltip label.
+	}
+
+	String text = atr(shortcut->get_name()) + " (" + shortcut->get_as_text() + ")";
+	if (!p_text.is_empty() && shortcut->get_name().nocasecmp_to(p_text) != 0) {
+		text += "\n" + atr(p_text);
+	}
+
+	// Make a label similar to the default tooltip label.
+	// Auto translation is disabled because we already did that manually above.
+	//
+	// We can't customize the tooltip text by overriding `get_tooltip()`
+	// because otherwise user-defined `_make_custom_tooltip()` would receive
+	// the translated and annotated text.
+	Label *label = memnew(Label(text));
+	label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	label->set_theme_type_variation(SNAME("TooltipLabel"));
+
+	return label;
 }
 
 void BaseButton::set_button_group(const Ref<ButtonGroup> &p_group) {
