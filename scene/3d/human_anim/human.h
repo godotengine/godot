@@ -7,10 +7,10 @@
 #include "./Simd/vec-trs.h"
 #include "./human_skeleton.h"
 #include "./human_hand.h"
-#include "scene/3d/skeleton_3d.h"
 #include "scene/resources/animation.h"
+#include "core/string/ustring.h"
 
-
+class Skeleton3D;
 namespace math
 {
     struct SetupAxesInfo;
@@ -316,7 +316,6 @@ namespace human
         math::float3    m_LookAtPosition;
         math::float4    m_LookAtWeight;
 
-        HumanGoal       m_GoalArray[kLastGoal];
         hand::HandPose  m_LeftHandPose;
         hand::HandPose  m_RightHandPose;
 
@@ -546,7 +545,7 @@ namespace human
 
     bool RequiredBone(uint32_t boneIndex);
     const char* BoneName(uint32_t boneIndex);
-    const char* MuscleName(uint32_t boneIndex);
+    String MuscleName(uint32_t boneIndex);
 
     Human* CreateHuman(skeleton::HumanSkeleton *skeleton, skeleton::SkeletonPose *skeletonPose, RuntimeBaseAllocator& alloc);
     void DestroyHuman(Human *human, RuntimeBaseAllocator& alloc);
@@ -571,12 +570,6 @@ namespace human
     math::float3    HumanGetGoalPosition(Human const *apHuman, skeleton::SkeletonPose const *apSkeletonPose, Goal goalIndex);
     math::float4    HumanGetGoalRotation(Human const *apHuman, skeleton::SkeletonPose const *apSkeletonPose, Goal goalIndex);
 
-    void HumanPoseClear(HumanPose& pose);
-    void HumanPoseClear(HumanPose& pose, HumanPoseMask const &humanPoseMask);
-    void HumanPoseCopy(HumanPose &poseDst, HumanPose const &poseSrc, bool doFOnly = false);
-    void HumanPoseAdd(HumanPose &pose, HumanPose const &poseA, HumanPose const &poseB);
-    void HumanPoseSub(HumanPose &pose, HumanPose const &poseA, HumanPose const &poseB);
-    void HumanPoseWeight(HumanPose &pose, HumanPose const &poseA, float weight);
     void HumanPoseMirror(HumanPose &pose, HumanPose const &poseA);
 
     void HumanPoseBlendBegin(HumanPose &arPose);

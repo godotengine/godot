@@ -2,6 +2,8 @@
 #include "./human_skeleton.h"
 #include "./human.h"
 #include "./axes.h"
+#include "../skeleton_3d.h"
+#include "core/string/ustring.h"
 
 namespace human_anim
 {
@@ -402,80 +404,81 @@ namespace human
         return boneName[aBoneIndex];
     }
 
-    const char* MuscleName(uint32_t aBoneIndex)
+    String MuscleName(uint32_t aBoneIndex)
     {
-        static const char* muscleName[human::kLastDoF] =
+        static String muscleName[human::kLastDoF] =
         {
-            "Spine Front-Back",
-            "Spine Left-Right",
-            "Spine Twist Left-Right",
+            L"脊柱前后",
+            L"脊柱左右",
+            L"脊柱扭转左右",
 
-            "Chest Front-Back",
-            "Chest Left-Right",
-            "Chest Twist Left-Right",
+            L"胸部前后",
+            L"胸部左右",
+            L"胸部扭转左右",
 
-            "UpperChest Front-Back",
-            "UpperChest Left-Right",
-            "UpperChest Twist Left-Right",
+            "上胸部前后",
+            L"上胸部左右",
+            L"上胸部扭转左右",
 
-            "Neck Nod Down-Up",
-            "Neck Tilt Left-Right",
-            "Neck Turn Left-Right",
+            L"脖子点头上下",
+            L"脖子倾斜左右",
+            L"脖子转动左右",
 
-            "Head Nod Down-Up",
-            "Head Tilt Left-Right",
-            "Head Turn Left-Right",
+            L"头部点头上下",
+            L"头部倾斜左右",
+            L"头部转动左右",
 
-            "Left Eye Down-Up",
-            "Left Eye In-Out",
+            L"左眼上下",
+            L"左眼内外",
             
-            "Right Eye Down-Up",
-            "Right Eye In-Out",
+            L"右眼上下",
+            L"右眼内外",
 
-            "Jaw Close",
-            "Jaw Left-Right",
+            L"下颚闭合",
+            L"下颚左右",
 
-            "Left Upper Leg Front-Back",
-            "Left Upper Leg In-Out",
-            "Left Upper Leg Twist In-Out",
-            "Left Lower Leg Stretch",
-            "Left Lower Leg Twist In-Out",
-            "Left Foot Up-Down",
-            "Left Foot Twist In-Out",
-            "Left Toes Up-Down",
+            L"左大腿前后",
+            L"左大腿内外",
+            L"左大腿扭转内外",
+            L"左小腿拉伸",
+            L"左小腿扭转内外",
+            L"左脚上下",
+            L"左脚扭转内外",
+            L"左脚趾上下",
 
-            "Right Upper Leg Front-Back",
-            "Right Upper Leg In-Out",
-            "Right Upper Leg Twist In-Out",
-            "Right Lower Leg Stretch",
-            "Right Lower Leg Twist In-Out",
-            "Right Foot Up-Down",
-            "Right Foot Twist In-Out",
-            "Right Toes Up-Down",
+            L"右大腿前后",
+            L"右大腿内外",
+            L"右大腿扭转内外",
+            L"右小腿拉伸",
+            L"右小腿扭转内外",
+            L"右脚上下",
+            L"右脚扭转内外",
+            L"右脚趾上下",
 
-            "Left Shoulder Down-Up",
-            "Left Shoulder Front-Back",
-            "Left Arm Down-Up",
-            "Left Arm Front-Back",
-            "Left Arm Twist In-Out",
-            "Left Forearm Stretch",
-            "Left Forearm Twist In-Out",
-            "Left Hand Down-Up",
-            "Left Hand In-Out",
+            L"左肩膀上下",
+            L"左肩膀前后",
+            L"左臂上下",
+            L"左臂前后",
+            L"左臂扭转内外",
+            L"左前臂拉伸",
+            L"左前臂扭转内外",
+            L"左手上下",
+            L"左手内外",
 
-            "Right Shoulder Down-Up",
-            "Right Shoulder Front-Back",
-            "Right Arm Down-Up",
-            "Right Arm Front-Back",
-            "Right Arm Twist In-Out",
-            "Right Forearm Stretch",
-            "Right Forearm Twist In-Out",
-            "Right Hand Down-Up",
-            "Right Hand In-Out"
+            L"右肩膀上下",
+            L"右肩膀前后",
+            L"右臂上下",
+            L"右臂前后",
+            L"右臂扭转内外",
+            L"右前臂拉伸",
+            L"右前臂扭转内外",
+            L"右手上下",
+            L"右手内外"
         };
 
         return muscleName[aBoneIndex];
     }
+
 
     int32_t MuscleFromBone(int32_t aBoneIndex, int32_t aDoFIndex)
     {
@@ -1933,156 +1936,6 @@ namespace human
         return AddAxis(apHuman, index, skeleton::SkeletonGetGlobalRotation(&apHuman->m_Skeleton, apSkeletonPoseLocal, index));
     }
 
-    void HumanPoseClear(HumanPose& arPose)
-    {
-        uint32_t i;
-
-        arPose.m_RootX = math::trsIdentity();
-        arPose.m_LookAtPosition = math::float3(math::ZERO);
-        arPose.m_LookAtWeight = math::float4(math::ZERO);
-
-        for (i = 0; i < kLastGoal; i++)
-        {
-            arPose.m_GoalArray[i].m_X = math::trsIdentity();
-        }
-
-        for (i = 0; i < kLastDoF; i++)
-        {
-            arPose.m_DoFArray[i] = 0;
-        }
-
-        for (i = 0; i < (uint32_t)hand::s_DoFCount; i++)
-        {
-            arPose.m_LeftHandPose.m_DoFArray[i] = 0;
-            arPose.m_RightHandPose.m_DoFArray[i] = 0;
-        }
-
-        for (i = 0; i < kLastTDoF; i++)
-        {
-            arPose.m_TDoFArray[i] = math::float3(math::ZERO);
-        }
-    }
-
-    void HumanPoseCopy(HumanPose &poseDst, HumanPose const &poseSrc, bool aDoFOnly)
-    {
-        uint32_t i;
-
-        if (!aDoFOnly)
-        {
-            poseDst.m_RootX = poseSrc.m_RootX;
-            poseDst.m_LookAtPosition = poseSrc.m_LookAtPosition;
-            poseDst.m_LookAtWeight = poseSrc.m_LookAtWeight;
-
-            for (i = 0; i < kLastGoal; i++)
-            {
-                poseDst.m_GoalArray[i].m_X = poseSrc.m_GoalArray[i].m_X;
-                poseDst.m_GoalArray[i].m_WeightT = poseSrc.m_GoalArray[i].m_WeightT;
-                poseDst.m_GoalArray[i].m_WeightR = poseSrc.m_GoalArray[i].m_WeightR;
-                poseDst.m_GoalArray[i].m_HintT = poseSrc.m_GoalArray[i].m_HintT;
-                poseDst.m_GoalArray[i].m_HintWeightT = poseSrc.m_GoalArray[i].m_HintWeightT;
-            }
-        }
-
-        for (i = 0; i < kLastDoF; i++)
-        {
-            poseDst.m_DoFArray[i] = poseSrc.m_DoFArray[i];
-        }
-
-        hand::HandPoseCopy(&poseSrc.m_LeftHandPose, &poseDst.m_LeftHandPose);
-        hand::HandPoseCopy(&poseSrc.m_RightHandPose, &poseDst.m_RightHandPose);
-
-        for (i = 0; i < kLastTDoF; i++)
-        {
-            poseDst.m_TDoFArray[i] = poseSrc.m_TDoFArray[i];
-        }
-    }
-
-
-    void HumanPoseAdd(HumanPose &arPose, HumanPose const &arPoseA, HumanPose const &arPoseB)
-    {
-        uint32_t i;
-
-        for (i = 0; i < kLastGoal; i++)
-        {
-            arPose.m_GoalArray[i].m_X = math::mul(arPoseA.m_GoalArray[i].m_X, arPoseB.m_GoalArray[i].m_X);
-        }
-
-        for (i = 0; i < kLastDoF; i++)
-        {
-            arPose.m_DoFArray[i] = arPoseA.m_DoFArray[i] + arPoseB.m_DoFArray[i];
-        }
-
-        for (i = 0; i < (uint32_t)hand::s_DoFCount; i++)
-        {
-            arPose.m_LeftHandPose.m_DoFArray[i] = arPoseA.m_LeftHandPose.m_DoFArray[i] + arPoseB.m_LeftHandPose.m_DoFArray[i];
-            arPose.m_RightHandPose.m_DoFArray[i] = arPoseA.m_RightHandPose.m_DoFArray[i] + arPoseB.m_RightHandPose.m_DoFArray[i];
-        }
-
-        arPose.m_RootX = math::mul(arPoseA.m_RootX, arPoseB.m_RootX);
-
-        for (i = 0; i < kLastTDoF; i++)
-        {
-            arPose.m_TDoFArray[i] = arPoseA.m_TDoFArray[i] + arPoseB.m_TDoFArray[i];
-        }
-    }
-
-    void HumanPoseSub(HumanPose &arPose, HumanPose const &arPoseA, HumanPose const &arPoseB)
-    {
-        uint32_t i;
-
-        for (i = 0; i < kLastGoal; i++)
-        {
-            arPose.m_GoalArray[i].m_X = math::trsInvMulNS(arPoseB.m_GoalArray[i].m_X, arPoseA.m_GoalArray[i].m_X);
-        }
-
-        for (i = 0; i < kLastDoF; i++)
-        {
-            arPose.m_DoFArray[i] = arPoseA.m_DoFArray[i] - arPoseB.m_DoFArray[i];
-        }
-
-        for (i = 0; i < (uint32_t)hand::s_DoFCount; i++)
-        {
-            arPose.m_LeftHandPose.m_DoFArray[i] = arPoseA.m_LeftHandPose.m_DoFArray[i] - arPoseB.m_LeftHandPose.m_DoFArray[i];
-            arPose.m_RightHandPose.m_DoFArray[i] = arPoseA.m_RightHandPose.m_DoFArray[i] - arPoseB.m_RightHandPose.m_DoFArray[i];
-        }
-
-        arPose.m_RootX = math::trsInvMulNS(arPoseB.m_RootX, arPoseA.m_RootX);
-
-        for (i = 0; i < kLastTDoF; i++)
-        {
-            arPose.m_TDoFArray[i] = arPoseA.m_TDoFArray[i] - arPoseB.m_TDoFArray[i];
-        }
-    }
-
-    void HumanPoseWeight(HumanPose &arPose, HumanPose const &arPoseA, float aWeight)
-    {
-        uint32_t i;
-
-        math::float1 w(aWeight);
-
-        for (i = 0; i < kLastGoal; i++)
-        {
-            arPose.m_GoalArray[i].m_X = math::trsWeightNS(arPoseA.m_GoalArray[i].m_X, w);
-        }
-
-        for (i = 0; i < kLastDoF; i++)
-        {
-            arPose.m_DoFArray[i] = arPoseA.m_DoFArray[i] * aWeight;
-        }
-
-        for (i = 0; i < (uint32_t)hand::s_DoFCount; i++)
-        {
-            arPose.m_LeftHandPose.m_DoFArray[i] = arPoseA.m_LeftHandPose.m_DoFArray[i] * aWeight;
-            arPose.m_RightHandPose.m_DoFArray[i] = arPoseA.m_RightHandPose.m_DoFArray[i] * aWeight;
-        }
-
-        arPose.m_RootX = math::trsWeightNS(arPoseA.m_RootX, w);
-
-        for (i = 0; i < kLastTDoF; i++)
-        {
-            arPose.m_TDoFArray[i] = arPoseA.m_TDoFArray[i] * w;
-        }
-    }
 
     void HumanPoseMirror(HumanPose &arPose, HumanPose const &arPoseA)
     {
@@ -2112,26 +1965,6 @@ namespace human
             arPose.m_DoFArray[kRightLegDoFStart + i] = dof;
         }
 
-        math::trsX x = arPose.m_GoalArray[kLeftFootGoal].m_X;
-        arPose.m_GoalArray[kLeftFootGoal].m_X = arPose.m_GoalArray[kRightFootGoal].m_X;
-        arPose.m_GoalArray[kRightFootGoal].m_X = x;
-
-        x = arPose.m_GoalArray[kLeftHandGoal].m_X;
-        arPose.m_GoalArray[kLeftHandGoal].m_X = arPose.m_GoalArray[kRightHandGoal].m_X;
-        arPose.m_GoalArray[kRightHandGoal].m_X = x;
-
-        const math::float4 offsetQY = math::float4(0.f, 1.f, 0.f, 0.f);
-        const math::float4 offsetQZ = math::float4(0.f, 0.f, 1.f, 0.f);
-
-        for (i = 0; i < kLastGoal; i++)
-        {
-            arPose.m_GoalArray[i].m_X = math::mirrorX(arPose.m_GoalArray[i].m_X);
-        }
-
-        arPose.m_GoalArray[kLeftFootGoal].m_X.q = math::normalize(math::quatMul(arPose.m_GoalArray[kLeftFootGoal].m_X.q, offsetQY));
-        arPose.m_GoalArray[kRightFootGoal].m_X.q = math::normalize(math::quatMul(arPose.m_GoalArray[kRightFootGoal].m_X.q, offsetQY));
-        arPose.m_GoalArray[kLeftHandGoal].m_X.q = math::normalize(math::quatMul(arPose.m_GoalArray[kLeftHandGoal].m_X.q, offsetQZ));
-        arPose.m_GoalArray[kRightHandGoal].m_X.q = math::normalize(math::quatMul(arPose.m_GoalArray[kRightHandGoal].m_X.q, offsetQZ));
 
         arPose.m_RootX = math::mirrorX(arPose.m_RootX);
 
@@ -2177,12 +2010,6 @@ namespace human
             arPose.m_RightHandPose.m_DoFArray[i] = 0;
         }
 
-        for (i = 0; i < kLastGoal; i++)
-        {
-            arPose.m_GoalArray[i].m_X.t = math::float3(math::ZERO);
-            arPose.m_GoalArray[i].m_X.q = math::float4(math::ZERO);
-            arPose.m_GoalArray[i].m_X.s = math::float3(1.f);
-        }
 
         arPose.m_RootX.t = math::float3(math::ZERO);
         arPose.m_RootX.q = math::float4(math::ZERO);
@@ -2212,12 +2039,6 @@ namespace human
             arPose.m_RightHandPose.m_DoFArray[i] += apNodePose->m_RightHandPose.m_DoFArray[i] * w;
         }
 
-        for (i = 0; i < kLastGoal; i++)
-        {
-            arPose.m_GoalArray[i].m_X.t += apNodePose->m_GoalArray[i].m_X.t * w1;
-            arPose.m_GoalArray[i].m_X.q += math::chgsign(apNodePose->m_GoalArray[i].m_X.q * w1, math::dot(arPose.m_GoalArray[i].m_X.q, apNodePose->m_GoalArray[i].m_X.q));
-        }
-
         arPose.m_RootX.t += apNodePose->m_RootX.t * w1;
         arPose.m_RootX.q += math::chgsign(apNodePose->m_RootX.q * w1, math::dot(arPose.m_RootX.q, apNodePose->m_RootX.q));
 
@@ -2229,14 +2050,8 @@ namespace human
 
     void HumanPoseBlendEnd(HumanPose &arPose, float &weightSum)
     {
-        uint32_t i;
 
         math::float4 q = math::float4(0.f, 0.f, 0.f, math::saturate(1.0f - weightSum));
-
-        for (i = 0; i < kLastGoal; i++)
-        {
-            arPose.m_GoalArray[i].m_X.q = math::normalize(arPose.m_GoalArray[i].m_X.q + q);
-        }
 
         arPose.m_RootX.q = math::normalize(arPose.m_RootX.q + q);
     }
@@ -2250,13 +2065,6 @@ namespace human
             arPose.m_RootX = math::trsIdentity();
         }
 
-        for (i = 0; i < kLastGoal; i++)
-        {
-            if (!arHumanPoseMask.test(kMaskGoalStartIndex + i))
-            {
-                arPose.m_GoalArray[i].m_X = math::trsIdentity();
-            }
-        }
 
         for (i = 0; i < kLastDoF; i++)
         {
@@ -2800,26 +2608,13 @@ namespace human
         const math::float1 scale(apHuman->m_Scale);  // 人体的缩放比例
 
         // 复制基础人体姿态到输出姿态
-        human::HumanPoseCopy(*apHumanPoseOut, *apHumanPoseBase);
+		*apHumanPoseOut = *apHumanPoseBase;
 
         // 调整根骨骼的平移并进行缩放
         apHumanPoseOut->m_RootX.t *= scale;
         // 根据输入变换矩阵对根骨骼进行变换
         apHumanPoseOut->m_RootX = math::mul(arX, apHumanPoseOut->m_RootX);
 
-        // 处理所有的目标（例如手脚的目标位置）
-        int32_t goalIter;
-        for (goalIter = 0; goalIter < kLastGoal; goalIter++)
-        {
-            // 使用输入的人体姿态中的目标姿态或基础姿态
-            apHumanPoseOut->m_GoalArray[goalIter].m_X = apHumanPose ? apHumanPose->m_GoalArray[goalIter].m_X : apHumanPoseBase->m_GoalArray[goalIter].m_X;
-            apHumanPoseOut->m_GoalArray[goalIter].m_X.t *= scale;
-            apHumanPoseOut->m_GoalArray[goalIter].m_X = math::mul(arX, apHumanPoseOut->m_GoalArray[goalIter].m_X);
-
-            // 如果是脚部（goalIter < 2），进行额外的底部调整
-            if (goalIter < 2)
-                apHumanPoseOut->m_GoalArray[goalIter].m_X.t = math::mul(apHumanPoseOut->m_GoalArray[goalIter].m_X, -human::HumanGetFootBottom(apHuman, goalIter == 0));
-        }
 
         //////////////////////////////////////////////////
         //
@@ -2854,7 +2649,7 @@ namespace human
         if (apHumanPose)
         {
             // 复制输入的人体姿态到输出姿态
-            human::HumanPoseCopy(*apHumanPoseOut, *apHumanPose, true);
+            *apHumanPoseOut = *apHumanPose;
             if (adjustMissingBones)
                 HumanPoseAdjustForMissingBones(apHuman, apHumanPoseOut);
             Human2SkeletonPose(apHuman, apHumanPoseOut, apSkeletonPose);

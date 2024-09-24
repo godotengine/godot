@@ -4,6 +4,7 @@
 #include "./memory.h"
 #include "./types.h"
 #include "./Simd/vec-trs.h"
+#include "core/string/ustring.h"
 
 
 
@@ -62,7 +63,7 @@ namespace hand
     inline int32_t GetDoFIndex(int32_t fingerIndex, int32_t phalangeDoFIndex) { return fingerIndex * kLastFingerDoF + phalangeDoFIndex; }
 
     const char* FingerName(uint32_t finger);
-    const char* FingerDoFName(uint32_t finger);
+    String FingerDoFName(uint32_t finger);
     const char* PhalangeName(uint32_t finger);
 
     struct Hand

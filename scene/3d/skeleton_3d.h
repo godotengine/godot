@@ -44,6 +44,10 @@ class CharacterHumanConfig : public Resource
     GDCLASS(CharacterHumanConfig, Resource);
     static void _bind_methods()
     {
+		ClassDB::bind_method(D_METHOD("set_human", "human"), &CharacterHumanConfig::set_human);
+		ClassDB::bind_method(D_METHOD("get_human"), &CharacterHumanConfig::get_human);
+
+		ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "human",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_STORAGE), "set_human", "get_human");
     }
 
 public:
@@ -209,6 +213,7 @@ public:
 	// To process modifiers.
 	ModifierCallbackModeProcess modifier_callback_mode_process = MODIFIER_CALLBACK_MODE_PROCESS_IDLE;
 	LocalVector<ObjectID> modifiers;
+	Ref<CharacterHumanConfig> human_config;
 	bool modifiers_dirty = false;
 	void _find_modifiers();
 	void _process_modifiers();
@@ -319,6 +324,11 @@ public:
 
 	void set_modifier_callback_mode_process(ModifierCallbackModeProcess p_mode);
 	ModifierCallbackModeProcess get_modifier_callback_mode_process() const;
+
+	void set_human_config(const Ref<CharacterHumanConfig> &p_human_config);
+	Ref<CharacterHumanConfig> get_human_config() const;
+
+	void init_human_config();
 
 #ifndef DISABLE_DEPRECATED
 	Transform3D get_bone_global_pose_no_override(int p_bone) const;

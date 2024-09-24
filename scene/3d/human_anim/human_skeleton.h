@@ -5,10 +5,8 @@
 //@TODO: Remove vec-transform.h
 #include "./Simd/vec-transform.h"
 #include "core/templates/local_vector.h"
-#include "scene/3d/skeleton_3d.h"
 #include "./Simd/vec-trs.h"
 #include "./axes.h"
-
 
 namespace math
 {

@@ -29,7 +29,6 @@ namespace math
 
     enum AxesType { kFull, kZYRoll, kRollZY, kEulerXYZ };
 
-    // setup axes utilities
     struct SetupAxesInfo
     {
         float m_PreQ[4];

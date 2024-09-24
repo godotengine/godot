@@ -96,14 +96,14 @@ namespace hand
         return phalangeName[aFinger];
     }
 
-    const char* FingerDoFName(uint32_t aFinger)
+    String FingerDoFName(uint32_t aFinger)
     {
-        const static char* fingerDoFName[kLastFingerDoF] =
+        static String fingerDoFName[kLastFingerDoF] =
         {
-            "1 Stretched",
-            "Spread",
-            "2 Stretched",
-            "3 Stretched"
+        "1 伸展",
+        "张开",
+        "2 伸展",
+        "3 伸展"
         };
         return fingerDoFName[aFinger];
     }
