@@ -48,7 +48,7 @@
 			<param index="0" name="object" type="Object" />
 			<param index="1" name="signal" type="StringName" />
 			<description>
-				Creates a new [Signal] named [param signal] in the specified [param object].
+				Creates a [Signal] object referencing a signal named [param signal] in the specified [param object].
 			</description>
 		</constructor>
 	</constructors>
