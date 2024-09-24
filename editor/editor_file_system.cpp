@@ -1977,6 +1977,10 @@ void EditorFileSystem::_update_file_icon_path(EditorFileSystemDirectory::FileInf
 		}
 	}
 
+	if (icon_path.is_empty() && !file_info->type.is_empty()) {
+		icon_path = EditorNode::get_singleton()->get_class_icon(file_info->type)->get_path();
+	}
+
 	file_info->icon_path = icon_path;
 }
 
@@ -2327,7 +2331,7 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 				_queue_update_scene_groups(file);
 			}
 
-			if (fs->files[cpos]->type == SNAME("Resource")) {
+			if (ClassDB::is_parent_class(fs->files[cpos]->type, SNAME("Resource"))) {
 				files_to_update_icon_path.push_back(fs->files[cpos]);
 			} else if (old_script_class_icon_path != fs->files[cpos]->script_class_icon_path) {
 				update_files_icon_cache = true;
