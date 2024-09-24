@@ -92,7 +92,7 @@ public:
 
     }
 
-    
+
     String get_bone_label(StringName p_bone) {
         static HashMap<String,String> label_map = {
             {"Hips",L"臀部"},
@@ -662,13 +662,8 @@ public:
 
             {"Jaw",Vector3(0,0,1).normalized(),Vector3(0,1,0)},
 
-
-
             {"LeftHand",Vector3(-1,0,0).normalized(),Vector3(0,1,0)},
             {"RightHand",Vector3(1,0,0).normalized(),Vector3(0,1,0)},
-
-
-
 
             {"LeftToes",Vector3(0,1,1).normalized(),Vector3(0,1,0)},
             {"RightToes",Vector3(0,1,1).normalized(),Vector3(0,1,0)},

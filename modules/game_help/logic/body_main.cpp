@@ -729,6 +729,7 @@ Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path
 		bone_map = skeleton->get_human_bone_mapping();
         Vector<String> bone_names = skeleton->get_bone_names();
 		skeleton->set_human_bone_mapping(bone_map);
+        skeleton->init_human_config();
 		skeleton->set_owner(nullptr);
 		reset_owenr(skeleton, skeleton);
 
