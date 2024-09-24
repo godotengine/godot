@@ -648,7 +648,7 @@
 		</signal>
 		<signal name="hidden">
 			<description>
-				Emitted when the [CanvasItem] becomes hidden, either because its own [member visible] property was set to [code]false[/code] or the [member visible] property of one of its [CanvasItem] ancestors was set to [code]false[/code].
+				Emitted when the [CanvasItem] is hidden, i.e. it's no longer visible in the tree (see [method is_visible_in_tree]).
 			</description>
 		</signal>
 		<signal name="item_rect_changed">
@@ -658,7 +658,7 @@
 		</signal>
 		<signal name="visibility_changed">
 			<description>
-				Emitted when the [CanvasItem]'s visibility changes, either because its own [member visible] property changed or because the visility of one of its [CanvasItem] ancestors changed (equivalent to a change in [method is_visible_in_tree]).
+				Emitted when the [CanvasItem]'s visibility changes, either because its own [member visible] property changed or because its visibility in the tree changed (see [method is_visible_in_tree]).
 			</description>
 		</signal>
 	</signals>
