@@ -322,6 +322,7 @@ def generate_scu_files(max_includes_per_scu):
     process_folder(["modules/openxr"], ["register_types"])
     process_folder(["modules/openxr/action_map"])
     process_folder(["modules/openxr/editor"])
+    process_folder(["modules/godot_physics_2d"])
     process_folder(["modules/godot_physics_3d"])
     process_folder(["modules/godot_physics_3d/joints"])
 
@@ -350,7 +351,6 @@ def generate_scu_files(max_includes_per_scu):
     process_folder(["servers/rendering/renderer_rd/effects"])
     process_folder(["servers/rendering/renderer_rd/environment"])
     process_folder(["servers/rendering/renderer_rd/storage_rd"])
-    process_folder(["servers/physics_2d"])
     process_folder(["servers/audio"])
     process_folder(["servers/audio/effects"])
 

@@ -25,8 +25,6 @@ SConscript("navigation/SCsub")
 SConscript("rendering/SCsub")
 SConscript("text/SCsub")
 
-SConscript("physics_2d/SCsub")
-
 if not env["disable_3d"]:
     env.add_source_files(env.servers_sources, "physics_server_3d.cpp")
     env.add_source_files(env.servers_sources, "physics_server_3d_wrap_mt.cpp")
