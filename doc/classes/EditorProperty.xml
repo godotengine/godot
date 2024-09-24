@@ -132,6 +132,13 @@
 				Emitted when a property was deleted. Used internally.
 			</description>
 		</signal>
+		<signal name="property_favorited">
+			<param index="0" name="property" type="StringName" />
+			<param index="1" name="favorited" type="bool" />
+			<description>
+				Emit it if you want to mark a property as favorited, making it appear at the top of the inspector.
+			</description>
+		</signal>
 		<signal name="property_keyed">
 			<param index="0" name="property" type="StringName" />
 			<description>
