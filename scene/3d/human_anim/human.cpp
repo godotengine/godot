@@ -1526,11 +1526,13 @@ namespace human
         // 其他轨道
 		int human_bone_count = kLastBone + hand::s_BoneCount * 2;
         List<Animation::Track*> other_tracks;
-		Vector<TKey<Vector3>> human_track_array[human_bone_count];
-		TKey<Vector3> human_track[human_bone_count];
+		Vector<Animation::TKey<Vector3>> human_track_array[kLastBone + hand::s_BoneCount * 2];
+		Animation::TKey<Vector3> human_track[kLastBone + hand::s_BoneCount * 2];
 
 
+		Vector<Animation::Track*> tracks = p_anim->get_tracks();
 		for (int j = 0; j < tracks.size(); j++) {
+			Animation::Track* track = tracks[j];
 			if (track->type == Animation::TYPE_POSITION_3D) {
 				Animation::PositionTrack* track_cache = static_cast<Animation::PositionTrack*>(track);
 				int bone_index = get_bone_human_index(p_bone_map, track_cache->path);
@@ -1561,7 +1563,6 @@ namespace human
 			}
 		}
 
-        Vector<Animation::Track*> tracks = p_anim->get_tracks();
         for(int i = 0; i < key_count; i++) {
             double time = double(i) / 100.0;
             for(int j = 0; j < tracks.size(); j++) {
