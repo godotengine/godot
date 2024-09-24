@@ -56,7 +56,7 @@ private:
 	void _version_button_pressed();
 	void _item_with_website_selected(int p_id, ItemList *p_il);
 	void _item_list_resized(ItemList *p_il);
-	ScrollContainer *_populate_list(const String &p_name, const List<String> &p_sections, const char *const *const p_src[], int p_single_column_flags = 0, bool p_allow_website = false);
+	ScrollContainer *_populate_list(const String &p_name, const List<String> &p_sections, const char *const *const p_src[], const int *p_anonymous_count, int p_single_column_flags = 0, bool p_allow_website = false);
 
 	LinkButton *version_btn = nullptr;
 	Tree *_tpl_tree = nullptr;
