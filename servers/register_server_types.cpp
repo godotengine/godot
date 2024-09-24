@@ -81,8 +81,8 @@
 
 // 2D physics and navigation.
 #include "navigation_server_2d.h"
-#include "physics_2d/godot_physics_server_2d.h"
 #include "physics_server_2d.h"
+#include "physics_server_2d_dummy.h"
 #include "physics_server_2d_wrap_mt.h"
 #include "servers/extensions/physics_server_2d_extension.h"
 
@@ -111,16 +111,8 @@ static PhysicsServer3D *_create_dummy_physics_server_3d() {
 }
 #endif // _3D_DISABLED
 
-static PhysicsServer2D *_createGodotPhysics2DCallback() {
-#ifdef THREADS_ENABLED
-	bool using_threads = GLOBAL_GET("physics/2d/run_on_separate_thread");
-#else
-	bool using_threads = false;
-#endif
-
-	PhysicsServer2D *physics_server_2d = memnew(GodotPhysicsServer2D(using_threads));
-
-	return memnew(PhysicsServer2DWrapMT(physics_server_2d, using_threads));
+static PhysicsServer2D *_create_dummy_physics_server_2d() {
+	return memnew(PhysicsServer2DDummy);
 }
 
 static bool has_server_feature_callback(const String &p_feature) {
@@ -281,8 +273,7 @@ void register_server_types() {
 
 	GLOBAL_DEF(PropertyInfo(Variant::STRING, PhysicsServer2DManager::setting_property_name, PROPERTY_HINT_ENUM, "DEFAULT"), "DEFAULT");
 
-	PhysicsServer2DManager::get_singleton()->register_server("GodotPhysics2D", callable_mp_static(_createGodotPhysics2DCallback));
-	PhysicsServer2DManager::get_singleton()->set_default_server("GodotPhysics2D");
+	PhysicsServer2DManager::get_singleton()->register_server("Dummy", callable_mp_static(_create_dummy_physics_server_2d));
 
 	GDREGISTER_ABSTRACT_CLASS(NavigationServer2D);
 	GDREGISTER_CLASS(NavigationPathQueryParameters2D);

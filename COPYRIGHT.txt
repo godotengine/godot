@@ -63,6 +63,11 @@ Copyright: 2011, Ole Kniemeyer, MAXON, www.maxon.net
  2007-2014, Juan Linietsky, Ariel Manzur
 License: Expat and Zlib
 
+Files: ./modules/godot_physics_2d/godot_joints_2d.cpp
+Comment: Chipmunk2D Joint Constraints
+Copyright: 2007, Scott Lembcke
+License: Expat
+
 Files: ./modules/godot_physics_3d/gjk_epa.cpp
  ./modules/godot_physics_3d/joints/godot_generic_6dof_joint_3d.cpp
  ./modules/godot_physics_3d/joints/godot_generic_6dof_joint_3d.h
@@ -124,11 +129,6 @@ Comment: Robert Penner's Easing Functions
 Copyright: 2001, Robert Penner
  2014-present, Godot Engine contributors
  2007-2014, Juan Linietsky, Ariel Manzur
-License: Expat
-
-Files: ./servers/physics_2d/godot_joints_2d.cpp
-Comment: Chipmunk2D Joint Constraints
-Copyright: 2007, Scott Lembcke
 License: Expat
 
 Files: ./servers/rendering/renderer_rd/shaders/ss_effects_downsample.glsl
