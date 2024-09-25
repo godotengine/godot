@@ -70,6 +70,7 @@ ignore-words-list = """\
 	numer,
 	ot,
 	outin,
+	parm,
 	requestor,
 	te,
 	textin,

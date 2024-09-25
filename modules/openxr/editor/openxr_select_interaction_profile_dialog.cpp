@@ -66,15 +66,15 @@ void OpenXRSelectInteractionProfileDialog::_on_select_interaction_profile(const 
 void OpenXRSelectInteractionProfileDialog::open(PackedStringArray p_do_not_include) {
 	int available_count = 0;
 
-	// out with the old...
-	while (main_vb->get_child_count() > 0) {
-		memdelete(main_vb->get_child(0));
+	// Out with the old.
+	while (main_vb->get_child_count() > 1) {
+		memdelete(main_vb->get_child(1));
 	}
 
 	selected_interaction_profile = "";
 	ip_buttons.clear();
 
-	// in with the new
+	// In with the new.
 	PackedStringArray interaction_profiles = OpenXRInteractionProfileMetadata::get_singleton()->get_interaction_profile_paths();
 	for (int i = 0; i < interaction_profiles.size(); i++) {
 		const String &path = interaction_profiles[i];
@@ -82,6 +82,7 @@ void OpenXRSelectInteractionProfileDialog::open(PackedStringArray p_do_not_inclu
 			Button *ip_button = memnew(Button);
 			ip_button->set_flat(true);
 			ip_button->set_text(OpenXRInteractionProfileMetadata::get_singleton()->get_profile(path)->display_name);
+			ip_button->set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 			ip_button->connect(SceneStringName(pressed), callable_mp(this, &OpenXRSelectInteractionProfileDialog::_on_select_interaction_profile).bind(path));
 			main_vb->add_child(ip_button);
 
@@ -90,22 +91,15 @@ void OpenXRSelectInteractionProfileDialog::open(PackedStringArray p_do_not_inclu
 		}
 	}
 
-	if (available_count == 0) {
-		// give warning that we have all profiles selected
-
-	} else {
-		// TODO maybe if we only have one, auto select it?
-
-		popup_centered();
-	}
+	all_selected->set_visible(available_count == 0);
+	get_cancel_button()->set_visible(available_count > 0);
+	popup_centered();
 }
 
 void OpenXRSelectInteractionProfileDialog::ok_pressed() {
-	if (selected_interaction_profile == "") {
-		return;
+	if (selected_interaction_profile != "") {
+		emit_signal("interaction_profile_selected", selected_interaction_profile);
 	}
-
-	emit_signal("interaction_profile_selected", selected_interaction_profile);
 
 	hide();
 }
@@ -118,6 +112,10 @@ OpenXRSelectInteractionProfileDialog::OpenXRSelectInteractionProfileDialog() {
 	add_child(scroll);
 
 	main_vb = memnew(VBoxContainer);
-	// main_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	main_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	scroll->add_child(main_vb);
+
+	all_selected = memnew(Label);
+	all_selected->set_text(TTR("All interaction profiles have been added to the action map."));
+	main_vb->add_child(all_selected);
 }
