@@ -101,7 +101,7 @@ public:
 		PlaybackInfo playback_info;
 	};
 
-protected:
+public:
 	/* ---- Data lists ---- */
 	LocalVector<AnimationLibraryData> animation_libraries;
 	HashMap<StringName, AnimationData> animation_set; // HashMap<Library name + Animation name, AnimationData>

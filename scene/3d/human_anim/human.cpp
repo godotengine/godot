@@ -133,56 +133,79 @@ namespace
         kSpine,
         kSpine,
         kSpine,
+
         kChest,
         kChest,
         kChest,
+
         kUpperChest,
         kUpperChest,
         kUpperChest,
+
         kNeck,
         kNeck,
         kNeck,
+
         kHead,
         kHead,
         kHead,
+
         kLeftEye,
         kLeftEye,
+
         kRightEye,
         kRightEye,
+
         kJaw,
         kJaw,
+
         kLeftUpperLeg,
         kLeftUpperLeg,
         kLeftUpperLeg,
+
         kLeftLowerLeg,
         kLeftLowerLeg,
+
         kLeftFoot,
         kLeftFoot,
+
         kLeftToes,
+
         kRightUpperLeg,
         kRightUpperLeg,
         kRightUpperLeg,
+
         kRightLowerLeg,
         kRightLowerLeg,
+
         kRightFoot,
         kRightFoot,
+
         kRightToes,
+
         kLeftShoulder,
         kLeftShoulder,
+
         kLeftUpperArm,
         kLeftUpperArm,
         kLeftUpperArm,
+
         kLeftLowerArm,
         kLeftLowerArm,
+
         kLeftHand,
         kLeftHand,
+
         kRightShoulder,
         kRightShoulder,
+
         kRightUpperArm,
         kRightUpperArm,
         kRightUpperArm,
+
         kRightLowerArm,
         kRightLowerArm,
+
         kRightHand,
         kRightHand
     };
@@ -192,56 +215,79 @@ namespace
         2, // kSpine,
         1, // kSpine,
         0, // kSpine,
+
         2, // kChest,
         1, // kChest,
         0, // kChest,
+
         2, // kUpperChest,
         1, // kUpperChest,
         0, // kUpperChest,
+
         2, // kNeck,
         1, // kNeck,
         0, // kNeck,
+
         2, // kHead,
         1, // kHead,
         0, // kHead,
+
         2, // kLeftEye,
         1, // kLeftEye,
+
         2, // kRightEye,
         1, // kRightEye,
+
         2, // kJaw,
         1, // kJaw,
+
         2, // kLeftUpperLeg,
         1, // kLeftUpperLeg,
         0, // kLeftUpperLeg,
+
         2, // kLeftLowerLeg,
         0, // kLeftLowerLeg,
+
         2, // kLeftFoot,
         1, // kLeftFoot,
+
         2, // kLeftToes,
+
         2, // kRightUpperLeg,
         1, // kRightUpperLeg,
         0, // kRightUpperLeg,
+
         2, // kRightLowerLeg,
         0, // kRightLowerLeg,
+
         2, // kRightFoot,
         1, // kRightFoot,
+
         2, // kRightToes,
+
         2, // kLeftShoulder,
         1, // kLeftShoulder,
+
         2, // kLeftUpperArm,
         1, // kLeftUpperArm,
         0, // kLeftUpperArm,
+
         2, // kLeftLowerArm,
         0, // kLeftLowerArm,
+
         2, // kLeftHand,
         1, // kLeftHand,
+
         2, // kRightShoulder,
         1, // kRightShoulder,
+
         2, // kRightUpperArm,
         1, // kRightUpperArm,
         0, // kRightUpperArm,
+
         2, // kRightLowerArm,
         0, // kRightLowerArm,
+
         2, // kRightHand,
         1, // kRightHand
     };
@@ -370,39 +416,6 @@ namespace human
         return false;
     }
 
-    const char* BoneName(uint32_t aBoneIndex)
-    {
-        static const char* boneName[kLastBone] =
-        {
-            "Hips",
-            "LeftUpperLeg",
-            "RightUpperLeg",
-            "LeftLowerLeg",
-            "RightLowerLeg",
-            "LeftFoot",
-            "RightFoot",
-            "Spine",
-            "Chest",
-            "UpperChest",
-            "Neck",
-            "Head",
-            "LeftShoulder",
-            "RightShoulder",
-            "LeftUpperArm",
-            "RightUpperArm",
-            "LeftLowerArm",
-            "RightLowerArm",
-            "LeftHand",
-            "RightHand",
-            "LeftToes",
-            "RightToes",
-            "LeftEye",
-            "RightEye",
-            "Jaw"
-        };
-
-        return boneName[aBoneIndex];
-    }
 
     String MuscleName(uint32_t aBoneIndex)
     {
@@ -440,38 +453,48 @@ namespace human
             L"左大腿前后",
             L"左大腿内外",
             L"左大腿扭转内外",
+
             L"左小腿拉伸",
             L"左小腿扭转内外",
             L"左脚上下",
+
             L"左脚扭转内外",
             L"左脚趾上下",
 
             L"右大腿前后",
             L"右大腿内外",
             L"右大腿扭转内外",
+
             L"右小腿拉伸",
             L"右小腿扭转内外",
+
             L"右脚上下",
             L"右脚扭转内外",
             L"右脚趾上下",
 
             L"左肩膀上下",
             L"左肩膀前后",
-            L"左臂上下",
+            
+            L"左臂上下", 
             L"左臂前后",
             L"左臂扭转内外",
+
             L"左前臂拉伸",
             L"左前臂扭转内外",
+
             L"左手上下",
             L"左手内外",
 
             L"右肩膀上下",
             L"右肩膀前后",
+
             L"右臂上下",
             L"右臂前后",
             L"右臂扭转内外",
+
             L"右前臂拉伸",
             L"右前臂扭转内外",
+
             L"右手上下",
             L"右手内外"
         };
@@ -1030,7 +1053,6 @@ namespace human
 			{"LeftLittleIntermediate",L"左小拇指中间"},
 			{"LeftLittleDistal",L"左小拇指远端"},
 
-
 			{"RightThumbMetacarpal",L"右拇指"},
 			{"RightThumbProximal",L"右拇指近端"},
 			{"RightThumbDistal",L"右拇指远端"},
@@ -1055,46 +1077,48 @@ namespace human
 		return label_map;
 	}
 
+    
+
 
 
 	const HashMap<String, int>& get_bone_to_human_map() {
 		static HashMap<String, int> bone_map = {
-			{"Hips",0},
+			{"Hips",kHips},
 
-			{"LeftUpperLeg",1},
-			{"RightUpperLeg",2},
+			{"LeftUpperLeg",kLeftUpperLeg},
+			{"RightUpperLeg",kRightUpperLeg},
 
-			{"LeftLowerLeg",3},
-			{"RightLowerLeg",4},
+			{"LeftLowerLeg",kLeftLowerLeg},
+			{"RightLowerLeg",kRightLowerLeg},
 
-			{"LeftFoot",5},
-			{"RightFoot",6},
+			{"LeftFoot",kLeftFoot},
+			{"RightFoot",kRightFoot},
 
-			{"Spine",7},
-			{"Chest",8},
-			{"UpperChest",9},
-			{"Neck",10},
-			{"Head",11},
+			{"Spine",kSpine},
+			{"Chest",kChest},
+			{"UpperChest",kUpperChest},
+			{"Neck",kNeck},
+			{"Head",kHead},
 
-			{"LeftShoulder",12},
-			{"RightShoulder",13},
+			{"LeftShoulder",kLeftShoulder},
+			{"RightShoulder",kRightShoulder},
 
-			{"LeftUpperArm",14},
-			{"RightUpperArm",15},
+			{"LeftUpperArm",kLeftUpperArm},
+			{"RightUpperArm",kRightUpperArm},
 
-			{"LeftLowerArm",16},
-			{"RightLowerArm",17},
+			{"LeftLowerArm",kLeftLowerArm},
+			{"RightLowerArm",kRightLowerArm},
 
-			{"LeftHand",18},
-			{"RightHand",19},
+			{"LeftHand",kLeftHand},
+			{"RightHand",kRightHand},
 
-			{"LeftToes",20},
-			{"RightToes",21},
+			{"LeftToes",kLeftToes},
+			{"RightToes",kRightToes},
 
-			{"LeftEye",22},
-			{"RightEye",23},
+			{"LeftEye",kLeftEye},
+			{"RightEye",kRightEye},
 
-			{"Jaw",24},
+			{"Jaw",kJaw},
 
 			{"LeftThumbMetacarpal",25},
 			{"LeftThumbProximal",26},
@@ -1417,30 +1441,30 @@ namespace human
 
     const static int32_t HandDoF2BoneDoFIndex[hand::s_DoFCount] =
     {
-        0,
+        2,
         1,
-        0,
-        0,
+        1,
+        1,
 
-        0,
+        2,
         1,
-        0,
-        0,
+        1,
+        1,
 
-        0,
+        2,
         1,
-        0,
-        0,
+        1,
+        1,
 
-        0,
+        2,
         1,
-        0,
-        0,
+        1,
+        1,
 
-        0,
+        2,
         1,
-        0,
-        0,
+        1,
+        1,
     };
     void Human::save(Dictionary& p_dict) {
         Dictionary d_root;
@@ -1491,7 +1515,7 @@ namespace human
         p_dict["has_right_hand"] = m_HasRightHand;
         p_dict["has_tdo_f"] = m_HasTDoF;
     }
-
+ 
 
      Animation* Human::animation_to_dof( Animation* p_anim, const Dictionary & p_bone_map,Vector<uint8_t>& bone_mask) {
 
@@ -1524,10 +1548,10 @@ namespace human
         }
 
         // 其他轨道
-		int human_bone_count = kLastBone + hand::s_BoneCount * 2;
+		int human_bone_count = (kLastDoF + hand::s_DoFCount * 2 + 1) / 3;
         List<Animation::Track*> other_tracks;
-		Vector<Animation::TKey<Vector3>> human_track_array[kLastBone + hand::s_BoneCount * 2];
-		Animation::TKey<Vector3> human_track[kLastBone + hand::s_BoneCount * 2];
+		Vector<Animation::TKey<Vector3>> human_track_array[(kLastDoF + hand::s_DoFCount * 2 + 1) / 3];
+		Animation::TKey<Vector3> human_track[(kLastDoF + hand::s_DoFCount * 2 + 1) / 3];
 
 
 		Vector<Animation::Track*> tracks = p_anim->get_tracks();
@@ -1605,32 +1629,43 @@ namespace human
             human::RetargetFrom(this, &humanLclPose, &pose, &apSkeletonPoseRef, &apSkeletonPoseGbl, &apSkeletonPoseLcl, &apSkeletonPoseWs, &tDoFBaseArray[0]);
 
             // 拷贝dof到track
+            int v_index = 0;
+            int human_index = 0;
             for(int k = 0; k < kLastDoF; k++) {
-                int bone_index = BoneFromMuscle(k);
-                human_track[bone_index].time = time;
-                human_track[bone_index].value[DoF2BoneDoFIndex[k]] = dof->dot_array[k];
+                human_track[human_index].time = time;
+                human_track[human_index].value[v_index] = dof->dot_array[k];
+                ++ v_index;
+                if(v_index == 3) {
+                    v_index = 0;
+                    ++ human_index;
+                }
             }
 
             // 拷贝左手dof到track
             for(int k = 0; k < hand::s_DoFCount; k++) {
-                int bone_index = hand::BoneFromMuscle(k) + kLastBone;
-                human_track[bone_index].time = time;
-                human_track[bone_index].value[HandDoF2BoneDoFIndex[k]] = dof->dot_array[kLastDoF + k];
+                human_track[human_index].time = time;
+                human_track[human_index].value[v_index] = dof->dot_array[kLastDoF + k];
 
-                bone_index += hand::s_BoneCount;
-                human_track[bone_index].time = time;
-                human_track[bone_index].value[HandDoF2BoneDoFIndex[k]] = dof->dot_array[kLastDoF + k];
+                ++ v_index;
+                if(v_index == 3) {
+                    v_index = 0;
+                    ++ human_index;
+                }
+            }
+            for(int k = 0; k < hand::s_DoFCount; k++) {
+                human_track[human_index].time = time;
+                human_track[human_index].value[v_index] = dof->dot_array[kLastDoF + k];
+                ++ v_index;
+                if(v_index == 3) {
+                    v_index = 0;
+                    ++ human_index;
+                }
             }
             // 保存轨迹
             for(int k = 0; k < human_bone_count; k++) {
                 human_track_array[k].push_back(human_track[k]);
             }
 
-            // // 拷贝dof到keyframe
-            // memcpy(&dof->dot_array[0], &pose.m_DoFArray[0], sizeof(float) * kLastDoF);
-            // memcpy(&dof->dot_array[kLastDoF], &poseOut.m_LeftHandPose.m_DoFArray[0], sizeof(float) * hand::s_DoFCount);
-            // memcpy(&dof->dot_array[kLastDoF + hand::s_DoFCount], &poseOut.m_RightHandPose.m_DoFArray[0], sizeof(float) * hand::s_DoFCount);
-            // p_keyframes.push_back(dof);
         }
         Animation* out_anim = memnew(Animation);
 		const LocalVector<Pair<String, String>>& bone_label = get_bone_label();
@@ -1642,10 +1677,9 @@ namespace human
             }
             int track_index = out_anim->add_track(Animation::TYPE_POSITION_3D);
             Animation::PositionTrack* track = static_cast<Animation::PositionTrack*>(out_anim->get_track(track_index));
-            track->path = String("hm.") + bone_label[k].first;
+            track->path = String("hm.") + char(33 + k);
             track->interpolation = Animation::INTERPOLATION_LINEAR;
             track->positions = human_track_array[k];
-
         }
 
         // 拷贝轨迹
