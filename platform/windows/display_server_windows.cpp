@@ -3166,6 +3166,12 @@ String DisplayServerWindows::keyboard_get_layout_name(int p_index) const {
 void DisplayServerWindows::process_events() {
 	ERR_FAIL_COND(!Thread::is_main_thread());
 
+#if defined(GLES3_ENABLED)
+	if (gl_manager_native) {
+		gl_manager_native->wait_for_present(get_focused_window());
+	}
+#endif
+
 	if (!drop_events) {
 		joypad->process_joypads();
 	}
@@ -5678,6 +5684,11 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 				windows.erase(id);
 				ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Failed to create an OpenGL window.");
 			}
+			if (id == MAIN_WINDOW_ID && gl_manager_native->is_using_dxgi_swap_chain()) {
+				// When presenting with DXGI the screen FBO is "upside down"
+				// w.r.t. OpenGL.
+				RasterizerGLES3::set_screen_flipped_y(true);
+			}
 			window_set_vsync_mode(p_vsync_mode, id);
 		}
 
@@ -6290,6 +6301,8 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	if (rendering_driver == "opengl3") {
 		gl_manager_native = memnew(GLManagerNative_Windows);
 		tested_drivers.set_flag(DRIVER_ID_COMPAT_OPENGL3);
+
+		gl_manager_native->set_prefer_dxgi_swap_chain(true);
 
 		if (gl_manager_native->initialize() != OK) {
 			memdelete(gl_manager_native);
