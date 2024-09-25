@@ -1995,7 +1995,11 @@ bool GodotHeightMapShape3D::intersect_segment(const Vector3 &p_begin, const Vect
 			Vector3 bounds_from = p_begin / BOUNDS_CHUNK_SIZE;
 			Vector3 bounds_to = p_end / BOUNDS_CHUNK_SIZE;
 			Vector3 bounds_offset = local_origin / BOUNDS_CHUNK_SIZE;
-			return _intersect_grid_segment(_heightmap_chunk_cull_segment, bounds_from, bounds_to, bounds_grid_width, bounds_grid_depth, bounds_offset, r_point, r_normal);
+			// Plus 1 here to width and depth of the chunk because _intersect_grid_segment() is used by cell level as well,
+			// and in _intersect_grid_segment() the loop will exit 1 early because for cell point triangle lookup, it dose x + 1, z + 1 etc for the vertex.
+			int bounds_width = bounds_grid_width + 1;
+			int bounds_depth = bounds_grid_depth + 1;
+			return _intersect_grid_segment(_heightmap_chunk_cull_segment, bounds_from, bounds_to, bounds_width, bounds_depth, bounds_offset, r_point, r_normal);
 		}
 	}
 
