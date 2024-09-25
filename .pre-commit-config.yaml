@@ -161,6 +161,12 @@ repos:
         files: \.(h|hpp|hh|hxx)$
         exclude: ^.*/(thread|platform_config|platform_gl)\.h$
 
+      - id: comment-style
+        name: comment-style
+        language: python
+        entry: python misc/scripts/comment_style.py
+        files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm)$
+
       - id: file-format
         name: file-format
         language: python

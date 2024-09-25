@@ -37,6 +37,7 @@
 
 namespace TestString {
 
+// lala
 int u32scmp(const char32_t *l, const char32_t *r) {
 	for (; *l == *r && *l && *r; l++, r++) {
 		// Continue.
