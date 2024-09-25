@@ -387,8 +387,6 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
 
     ## Compile/link flags
 
-    env["MAXLINELENGTH"] = 8192  # Windows Vista and beyond, so always applicable.
-
     if env["silence_msvc"] and not env.GetOption("clean"):
         from tempfile import mkstemp
 
