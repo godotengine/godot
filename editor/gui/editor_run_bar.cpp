@@ -361,6 +361,10 @@ void EditorRunBar::stop_child_process(OS::ProcessID p_pid) {
 	}
 }
 
+OS::ProcessID EditorRunBar::get_current_process() const {
+	return editor_run.get_current_process();
+}
+
 void EditorRunBar::set_movie_maker_enabled(bool p_enabled) {
 	write_movie_button->set_pressed(p_enabled);
 }

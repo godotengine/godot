@@ -755,7 +755,9 @@ void EditorNode::_notification(int p_what) {
 			}
 
 			// Set a low FPS cap to decrease CPU/GPU usage while the editor is unfocused.
-			OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/unfocused_low_processor_mode_sleep_usec")));
+			if (unfocused_low_processor_usage_mode_enabled) {
+				OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/unfocused_low_processor_mode_sleep_usec")));
+			}
 		} break;
 
 		case NOTIFICATION_WM_ABOUT: {
@@ -6730,6 +6732,10 @@ int EditorNode::execute_and_show_output(const String &p_title, const String &p_p
 		*r_output = eta.output;
 	}
 	return eta.exitcode;
+}
+
+void EditorNode::set_unfocused_low_processor_usage_mode_enabled(bool p_enabled) {
+	unfocused_low_processor_usage_mode_enabled = p_enabled;
 }
 
 EditorNode::EditorNode() {
