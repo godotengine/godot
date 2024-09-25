@@ -578,6 +578,12 @@ void CPUParticles3D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name.begins_with("scale_curve_") && !split_scale) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
+
+	if (p_property.name == "autostart") {
+		if (emitting && !one_shot) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	}
 }
 
 static uint32_t idhash(uint32_t x) {
@@ -1304,10 +1310,17 @@ void CPUParticles3D::_update_render_thread() {
 
 void CPUParticles3D::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_READY: {
+#ifdef TOOLS_ENABLED
+			if (is_part_of_edited_scene()) {
+				break;
+			}
+#endif
 			if (autostart) {
 				set_emitting(true);
 			}
+		} break;
+		case NOTIFICATION_ENTER_TREE: {
 			set_process_internal(emitting);
 
 			// first update before rendering to avoid one frame delay after emitting starts

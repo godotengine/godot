@@ -392,6 +392,11 @@ Ref<Texture2D> GPUParticles2D::get_texture() const {
 }
 
 void GPUParticles2D::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "autostart") {
+		if (emitting && !one_shot) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	}
 }
 
 void GPUParticles2D::emit_particle(const Transform2D &p_transform2d, const Vector2 &p_velocity2d, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {
@@ -556,6 +561,16 @@ void GPUParticles2D::convert_from_particles(Node *p_particles) {
 
 void GPUParticles2D::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_READY: {
+#ifdef TOOLS_ENABLED
+			if (is_part_of_edited_scene()) {
+				break;
+			}
+#endif
+			if (autostart) {
+				set_emitting(true);
+			}
+		} break;
 		case NOTIFICATION_DRAW: {
 			RID texture_rid;
 			Size2 size;
@@ -687,9 +702,6 @@ void GPUParticles2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
-			if (autostart) {
-				set_emitting(true);
-			}
 			if (sub_emitter != NodePath()) {
 				_attach_sub_emitter();
 			}

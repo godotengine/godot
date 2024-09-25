@@ -429,6 +429,12 @@ void GPUParticles3D::_validate_property(PropertyInfo &p_property) const {
 			return;
 		}
 	}
+
+	if (p_property.name == "autostart") {
+		if (emitting && !one_shot) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	}
 }
 
 void GPUParticles3D::emit_particle(const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {
@@ -464,6 +470,16 @@ NodePath GPUParticles3D::get_sub_emitter() const {
 
 void GPUParticles3D::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_READY: {
+#ifdef TOOLS_ENABLED
+			if (is_part_of_edited_scene()) {
+				break;
+			}
+#endif
+			if (autostart) {
+				set_emitting(true);
+			}
+		} break;
 		// Use internal process when emitting and one_shot is on so that when
 		// the shot ends the editor can properly update.
 		case NOTIFICATION_INTERNAL_PROCESS: {
@@ -502,9 +518,6 @@ void GPUParticles3D::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			set_process_internal(false);
 			set_physics_process_internal(false);
-			if (autostart) {
-				set_emitting(true);
-			}
 			if (sub_emitter != NodePath()) {
 				_attach_sub_emitter();
 			}
