@@ -412,6 +412,14 @@ void Engine::set_freeze_time_scale(bool p_frozen) {
 	freeze_time_scale = p_frozen;
 }
 
+void Engine::set_embedded(bool p_enabled) {
+	embedded = p_enabled;
+}
+
+bool Engine::is_embedded() const {
+	return embedded;
+}
+
 Engine::Engine() {
 	singleton = this;
 }

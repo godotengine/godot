@@ -31,14 +31,16 @@
 #include "game_view_plugin.h"
 
 #include "core/debugger/debugger_marshalls.h"
+#include "core/config/project_settings.h"
+#include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/gui/editor_run_bar.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
-#include "scene/gui/separator.h"
 
 void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 	Array setup_data;
@@ -171,6 +173,12 @@ void GameViewDebugger::_bind_methods() {
 
 ///////
 
+GameView *GameView::singleton = nullptr;
+
+GameView *GameView::get_singleton() {
+	return singleton;
+}
+
 void GameView::_sessions_changed() {
 	// The debugger session's `session_started/stopped` signal can be unreliable, so count it manually.
 	active_sessions = 0;
@@ -182,6 +190,59 @@ void GameView::_sessions_changed() {
 	}
 
 	_update_debugger_buttons();
+}
+
+void GameView::_instance_starting(int p_idx, Array p_arguments) {
+	_update_arguments_for_instance(p_idx, p_arguments);
+}
+
+void GameView::_play_pressed() {
+	OS::ProcessID current_process_id = EditorRunBar::get_singleton()->get_current_process();
+	if (current_process_id == 0) {
+		return;
+	}
+
+	screen_index_before_start = EditorNode::get_singleton()->get_editor_main_screen()->get_selected_index();
+
+	if (embedded_button->is_pressed()) {
+		// It's important to disable the low power mode when unfocused because otherwise
+		// the button in the editor are not responsive and if the user moves the mouse quickly,
+		// the mouse clicks are not registered.
+		EditorNode::get_singleton()->set_unfocused_low_processor_usage_mode_enabled(false);
+		_update_embed_window_size();
+		if (auto_focus_button->is_pressed() || EditorNode::get_singleton()->get_editor_main_screen()->get_selected_index() == EditorMainScreen::EDITOR_GAME) {
+			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_GAME);
+			embedded_process->grab_focus();
+		}
+		embedded_process->embed_process(current_process_id);
+		_update_ui();
+	}
+}
+
+void GameView::_stop_pressed() {
+	EditorNode::get_singleton()->set_unfocused_low_processor_usage_mode_enabled(true);
+	embedded_process->reset();
+	_update_ui();
+
+	if (screen_index_before_start >= 0 && EditorNode::get_singleton()->get_editor_main_screen()->get_selected_index() == EditorMainScreen::EDITOR_GAME) {
+		// We go back to the screen where the user was before starting the game.
+		EditorNode::get_singleton()->get_editor_main_screen()->select(screen_index_before_start);
+	}
+
+	screen_index_before_start = -1;
+}
+
+void GameView::_embedding_completed() {
+	_update_ui();
+}
+
+void GameView::_embedding_failed() {
+	state_label->set_text(TTR("Connection impossible to the game process."));
+}
+
+void GameView::_project_settings_changed() {
+	// Update the window size and aspect ratio.
+	_update_embed_window_size();
 }
 
 void GameView::_update_debugger_buttons() {
@@ -227,6 +288,56 @@ void GameView::_select_mode_pressed(int p_option) {
 	}
 
 	debugger->set_select_mode(mode);
+}
+
+void GameView::_embedded_button_pressed() {
+	EditorSettings::get_singleton()->set_project_metadata("game_view", "embedded", embedded_button->is_pressed());
+
+	if (EditorRunBar::get_singleton()->is_playing()) {
+		screen_index_before_start = -1;
+		EditorRunBar::get_singleton()->restart();
+	}
+
+	_update_ui();
+}
+
+void GameView::_auto_focus_button_pressed() {
+	EditorSettings::get_singleton()->set_project_metadata("game_view", "auto_focus", auto_focus_button->is_pressed());
+}
+
+void GameView::_keep_aspect_button_pressed() {
+	EditorSettings::get_singleton()->set_project_metadata("game_view", "keep_aspect", keep_aspect_button->is_pressed());
+	embedded_process->set_keep_aspect(keep_aspect_button->is_pressed());
+}
+
+void GameView::_update_ui() {
+	if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_WINDOW_EMBEDDING)) {
+		state_label->set_text(TTR("Game embedding not available on your OS."));
+	} else if (embedded_process->is_embedding_completed()) {
+		state_label->set_text("");
+	} else if (embedded_process->is_embedding_in_progress()) {
+		state_label->set_text(TTR("Game starting..."));
+	} else if (EditorRunBar::get_singleton()->is_playing()) {
+		state_label->set_text(TTR("Game running not embedded."));
+	} else if (embedded_button->is_pressed()) {
+		state_label->set_text(TTR("Press play to start the game."));
+	} else {
+		state_label->set_text(TTR("Embedding is disabled."));
+	}
+}
+
+void GameView::_update_embed_window_size() {
+	Size2 window_size;
+	window_size.x = GLOBAL_GET("display/window/size/viewport_width");
+	window_size.y = GLOBAL_GET("display/window/size/viewport_height");
+
+	Size2 desired_size;
+	desired_size.x = GLOBAL_GET("display/window/size/window_width_override");
+	desired_size.y = GLOBAL_GET("display/window/size/window_height_override");
+	if (desired_size.x > 0 && desired_size.y > 0) {
+		window_size = desired_size;
+	}
+	embedded_process->set_window_size(window_size);
 }
 
 void GameView::_hide_selection_toggled(bool p_pressed) {
@@ -287,9 +398,41 @@ void GameView::_notification(int p_what) {
 			select_mode_button[RuntimeNodeSelect::SELECT_MODE_LIST]->set_button_icon(get_editor_theme_icon(SNAME("ListSelect")));
 
 			hide_selection->set_button_icon(get_editor_theme_icon(hide_selection->is_pressed() ? SNAME("GuiVisibilityHidden") : SNAME("GuiVisibilityVisible")));
+			embedded_button->set_button_icon(get_editor_theme_icon(SNAME("EmbeddedProcess")));
+			auto_focus_button->set_button_icon(get_editor_theme_icon(SNAME("AutoFocus")));
+			keep_aspect_button->set_button_icon(get_editor_theme_icon(SNAME("KeepAspect")));
+
+			hide_selection->set_button_icon(get_editor_theme_icon(hide_selection->is_pressed() ? SNAME("GuiVisibilityHidden") : SNAME("GuiVisibilityVisible")));
 
 			camera_override_button->set_button_icon(get_editor_theme_icon(SNAME("Camera")));
 			camera_override_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+		} break;
+
+		case NOTIFICATION_READY: {
+			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_WINDOW_EMBEDDING)) {
+				// Embedding available.
+				embedded_button->set_pressed(EditorSettings::get_singleton()->get_project_metadata("game_view", "embedded", true));
+				auto_focus_button->set_pressed(EditorSettings::get_singleton()->get_project_metadata("game_view", "auto_focus", true));
+				keep_aspect_button->set_pressed(EditorSettings::get_singleton()->get_project_metadata("game_view", "keep_aspect", true));
+
+				EditorRunBar::get_singleton()->connect("play_pressed", callable_mp(this, &GameView::_play_pressed));
+				EditorRunBar::get_singleton()->connect("instance_starting", callable_mp(this, &GameView::_instance_starting));
+				EditorRunBar::get_singleton()->connect("stop_pressed", callable_mp(this, &GameView::_stop_pressed));
+
+				// Listen for project settings changes to update the window size and aspect ratio.
+				ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &GameView::_project_settings_changed));
+
+				embedded_process->set_keep_aspect(keep_aspect_button->is_pressed());
+			} else {
+				// Embedding not available.
+				embedding_separator->hide();
+				embedded_button->hide();
+				auto_focus_button->hide();
+				keep_aspect_button->hide();
+				keep_aspect_button->hide();
+			}
+
+			_update_ui();
 		} break;
 	}
 }
@@ -329,7 +472,58 @@ Dictionary GameView::get_state() const {
 	return d;
 }
 
+void GameView::_update_arguments_for_instance(int p_idx, Array p_arguments) {
+	if (p_idx != 0 || !embedded_button->is_pressed() || !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_WINDOW_EMBEDDING)) {
+		return;
+	}
+
+	// Remove duplicates/unwanted parameters.
+	int index = p_arguments.find("--position");
+	if (index >= 0) {
+		// Remove the --position and its value.
+		p_arguments.remove_at(index + 1);
+		p_arguments.remove_at(index);
+	}
+	index = p_arguments.find("--resolution");
+	if (index >= 0) {
+		// Remove the --resolution and its value.
+		p_arguments.remove_at(index + 1);
+		p_arguments.remove_at(index);
+	}
+	index = p_arguments.find("--screen");
+	if (index >= 0) {
+		// Remove the --screen and its value.
+		p_arguments.remove_at(index + 1);
+		p_arguments.remove_at(index);
+	}
+	p_arguments.erase("-f");
+	p_arguments.erase("--fullscreen");
+	p_arguments.erase("-m");
+	p_arguments.erase("--maximized");
+	p_arguments.erase("-t");
+	p_arguments.erase("--always-on-top");
+	p_arguments.erase("--hidden");
+
+	// Add the editor window's native ID so the started game can directly set it as its parent.
+	p_arguments.push_back("--wid");
+	p_arguments.push_back(itos(DisplayServer::get_singleton()->window_get_native_handle(DisplayServer::WINDOW_HANDLE, get_window()->get_window_id())));
+
+	if (!embedded_process->is_visible_in_tree() && !auto_focus_button->is_pressed()) {
+		p_arguments.push_back("--hidden");
+	}
+
+	// Be sure to have the correct window size in the embedded_process control.
+	_update_embed_window_size();
+
+	Rect2i rect = embedded_process->get_screen_embedded_window_rect();
+	p_arguments.push_back("--position");
+	p_arguments.push_back(itos(rect.position.x) + "," + itos(rect.position.y));
+	p_arguments.push_back("--resolution");
+	p_arguments.push_back(itos(rect.size.x) + "x" + itos(rect.size.y));
+}
+
 GameView::GameView(Ref<GameViewDebugger> p_debugger) {
+	singleton = this;
 	debugger = p_debugger;
 
 	// Add some margin to the sides for better aesthetics.
@@ -438,15 +632,56 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger) {
 	menu->set_item_checked(menu->get_item_index(CAMERA_MODE_INGAME), true);
 	menu->add_radio_check_item(TTR("Manipulate From Editors"), CAMERA_MODE_EDITORS);
 
-	_update_debugger_buttons();
+	embedding_separator = memnew(VSeparator);
+	main_menu_hbox->add_child(embedding_separator);
+
+	embedded_button = memnew(Button);
+	main_menu_hbox->add_child(embedded_button);
+	embedded_button->set_toggle_mode(true);
+	embedded_button->set_theme_type_variation("FlatButton");
+	embedded_button->set_tooltip_text(TTR("Embed the game process within the editor."));
+	embedded_button->connect(SceneStringName(pressed), callable_mp(this, &GameView::_embedded_button_pressed));
+
+	auto_focus_button = memnew(Button);
+	main_menu_hbox->add_child(auto_focus_button);
+	auto_focus_button->set_toggle_mode(true);
+	auto_focus_button->set_theme_type_variation("FlatButton");
+	auto_focus_button->set_tooltip_text(TTR("Focus the game view when the project runs."));
+	auto_focus_button->connect(SceneStringName(pressed), callable_mp(this, &GameView::_auto_focus_button_pressed));
+
+	keep_aspect_button = memnew(Button);
+	main_menu_hbox->add_child(keep_aspect_button);
+	keep_aspect_button->set_toggle_mode(true);
+	keep_aspect_button->set_theme_type_variation("FlatButton");
+	keep_aspect_button->set_tooltip_text(TTR("Keep the aspect ratio of the embedded game."));
+	keep_aspect_button->connect(SceneStringName(pressed), callable_mp(this, &GameView::_keep_aspect_button_pressed));
 
 	panel = memnew(Panel);
 	add_child(panel);
 	panel->set_theme_type_variation("GamePanel");
 	panel->set_v_size_flags(SIZE_EXPAND_FILL);
 
+	embedded_process = memnew(EmbeddedProcess);
+	panel->add_child(embedded_process);
+	embedded_process->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+	embedded_process->connect(SNAME("embedding_failed"), callable_mp(this, &GameView::_embedding_failed));
+	embedded_process->connect(SNAME("embedding_completed"), callable_mp(this, &GameView::_embedding_completed));
+
+	state_label = memnew(Label());
+	panel->add_child(state_label);
+	state_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	state_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+	state_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
+	state_label->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+
+	_update_debugger_buttons();
+
 	p_debugger->connect("session_started", callable_mp(this, &GameView::_sessions_changed));
 	p_debugger->connect("session_stopped", callable_mp(this, &GameView::_sessions_changed));
+}
+
+GameView::~GameView() {
+	singleton = nullptr;
 }
 
 ///////

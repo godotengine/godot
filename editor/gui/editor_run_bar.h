@@ -83,6 +83,9 @@ class EditorRunBar : public MarginContainer {
 	void _run_scene(const String &p_scene_path = "");
 	void _run_native(const Ref<EditorExportPreset> &p_preset);
 
+	static void _instance_starting(int p_idx, List<String> &r_arguments);
+	void _instance_starting_internal(int p_index, List<String> &r_arguments);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -93,6 +96,7 @@ public:
 	void play_main_scene(bool p_from_native = false);
 	void play_current_scene(bool p_reload = false);
 	void play_custom_scene(const String &p_custom);
+	void restart();
 
 	void stop_playing();
 	bool is_playing() const;
@@ -102,6 +106,7 @@ public:
 
 	OS::ProcessID has_child_process(OS::ProcessID p_pid) const;
 	void stop_child_process(OS::ProcessID p_pid);
+	OS::ProcessID get_current_process() const;
 
 	void set_movie_maker_enabled(bool p_enabled);
 	bool is_movie_maker_enabled() const;

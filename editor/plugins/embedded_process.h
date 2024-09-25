@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_run.h                                                          */
+/*  embedded_process.h                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,44 +28,61 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_RUN_H
-#define EDITOR_RUN_H
+#ifndef EMBEDDED_PROCESS_H
+#define EMBEDDED_PROCESS_H
 
-#include "core/os/os.h"
-#include "servers/display_server.h"
+#include "scene/gui/control.h"
 
-typedef void (*EditorRunInstanceStarting)(int p_index, List<String> &r_arguments);
+class EmbeddedProcess : public Control {
+	GDCLASS(EmbeddedProcess, Control);
 
-class EditorRun {
+	bool _application_has_focus = true;
+	bool _embedded_process_was_focused = false;
+	OS::ProcessID _focused_process_id = 0;
+	OS::ProcessID _current_process_id = 0;
+	bool _embedding_grab_focus = false;
+	bool _embedding_completed = false;
+	uint64_t _start_embedding_time = 0;
+
+	Window *_window = nullptr;
+	Timer *_timer_embedding = nullptr;
+
+	int _embedding_timeout = 45000;
+
+	bool _keep_aspect = false;
+	Size2i _window_size;
+	Ref<StyleBox> _focus_style_box;
+	Point2i _margin_top_left;
+	Point2i _margin_bottom_right;
+
+	void _try_embed_process();
+	void _update_embedded_process();
+	void _timer_embedding_timeout();
+	void _draw();
+	void _check_mouse_over();
+	void _check_focused_process_id();
+
+protected:
+	static void _bind_methods();
+	void _notification(int p_what);
+
 public:
-	enum Status {
-		STATUS_PLAY,
-		STATUS_PAUSED,
-		STATUS_STOP
-	};
+	void embed_process(OS::ProcessID p_pid);
+	void reset();
 
-	List<OS::ProcessID> pids;
+	void set_embedding_timeout(int p_timeout);
+	int get_embedding_timeout();
+	void set_window_size(Size2i p_window_size);
+	Size2i get_window_size();
+	void set_keep_aspect(bool p_keep_aspect);
+	bool get_keep_aspect();
+	Rect2i get_global_embedded_window_rect();
+	Rect2i get_screen_embedded_window_rect();
+	bool is_embedding_in_progress();
+	bool is_embedding_completed();
 
-private:
-	Status status;
-	String running_scene;
-
-public:
-	static EditorRunInstanceStarting instance_starting_callback;
-
-	Status get_status() const;
-	String get_running_scene() const;
-
-	Error run(const String &p_scene, const String &p_write_movie = "");
-	void run_native_notify() { status = STATUS_PLAY; }
-	void stop();
-
-	void stop_child_process(OS::ProcessID p_pid);
-	bool has_child_process(OS::ProcessID p_pid) const;
-	int get_child_process_count() const { return pids.size(); }
-	OS::ProcessID get_current_process() const;
-
-	EditorRun();
+	EmbeddedProcess();
+	~EmbeddedProcess();
 };
 
-#endif // EDITOR_RUN_H
+#endif // EMBEDDED_PROCESS_H
