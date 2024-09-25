@@ -43,6 +43,12 @@
 void GPUParticles2D::set_emitting(bool p_emitting) {
 	// Do not return even if `p_emitting == emitting` because `emitting` is just an approximation.
 
+	if (p_emitting && !one_shot) {
+		autostart = false;
+		notify_property_list_changed();
+	} else {
+		notify_property_list_changed();
+	}
 	if (p_emitting && one_shot) {
 		if (!active && !emitting) {
 			// Last cycle ended.
@@ -78,6 +84,7 @@ void GPUParticles2D::set_amount(int p_amount) {
 }
 
 void GPUParticles2D::set_lifetime(double p_lifetime) {
+
 	ERR_FAIL_COND_MSG(p_lifetime <= 0, "Particles lifetime must be greater than 0.");
 	lifetime = p_lifetime;
 	RS::get_singleton()->particles_set_lifetime(particles, lifetime);
@@ -85,6 +92,12 @@ void GPUParticles2D::set_lifetime(double p_lifetime) {
 
 void GPUParticles2D::set_one_shot(bool p_enable) {
 	one_shot = p_enable;
+	if (emitting && !one_shot) {
+		autostart = false;
+		notify_property_list_changed();
+	} else {
+		notify_property_list_changed();
+	}
 	RS::get_singleton()->particles_set_one_shot(particles, one_shot);
 
 	if (is_emitting()) {
@@ -394,7 +407,7 @@ Ref<Texture2D> GPUParticles2D::get_texture() const {
 void GPUParticles2D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "autostart") {
 		if (emitting && !one_shot) {
-			p_property.usage = PROPERTY_USAGE_NONE;
+			p_property.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY;
 		}
 	}
 }

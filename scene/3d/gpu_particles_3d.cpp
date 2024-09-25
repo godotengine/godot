@@ -42,6 +42,13 @@ AABB GPUParticles3D::get_aabb() const {
 void GPUParticles3D::set_emitting(bool p_emitting) {
 	// Do not return even if `p_emitting == emitting` because `emitting` is just an approximation.
 
+	if (p_emitting && !one_shot) {
+		autostart = false;
+		notify_property_list_changed();
+	} else {
+		notify_property_list_changed();
+	}
+
 	if (p_emitting && one_shot) {
 		if (!active && !emitting) {
 			// Last cycle ended.
@@ -90,7 +97,15 @@ void GPUParticles3D::set_interp_to_end(float p_interp) {
 }
 
 void GPUParticles3D::set_one_shot(bool p_one_shot) {
+
 	one_shot = p_one_shot;
+
+	if (emitting && !one_shot) {
+		autostart = false;
+		notify_property_list_changed();
+	} else {
+		notify_property_list_changed();
+	}
 	RS::get_singleton()->particles_set_one_shot(particles, one_shot);
 
 	if (is_emitting()) {
@@ -432,7 +447,7 @@ void GPUParticles3D::_validate_property(PropertyInfo &p_property) const {
 
 	if (p_property.name == "autostart") {
 		if (emitting && !one_shot) {
-			p_property.usage = PROPERTY_USAGE_NONE;
+			p_property.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY;
 		}
 	}
 }

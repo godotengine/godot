@@ -47,6 +47,13 @@ void CPUParticles3D::set_emitting(bool p_emitting) {
 		return;
 	}
 
+	if (p_emitting && !one_shot) {
+		autostart = false;
+		notify_property_list_changed();
+	} else {
+		notify_property_list_changed();
+	}
+
 	emitting = p_emitting;
 	if (emitting) {
 		active = true;
@@ -90,6 +97,13 @@ void CPUParticles3D::set_lifetime(double p_lifetime) {
 
 void CPUParticles3D::set_one_shot(bool p_one_shot) {
 	one_shot = p_one_shot;
+
+	if (emitting && !one_shot) {
+		autostart = false;
+		notify_property_list_changed();
+	} else {
+		notify_property_list_changed();
+	}
 }
 
 void CPUParticles3D::set_pre_process_time(double p_time) {
@@ -581,7 +595,7 @@ void CPUParticles3D::_validate_property(PropertyInfo &p_property) const {
 
 	if (p_property.name == "autostart") {
 		if (emitting && !one_shot) {
-			p_property.usage = PROPERTY_USAGE_NONE;
+			p_property.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY;
 		}
 	}
 }
