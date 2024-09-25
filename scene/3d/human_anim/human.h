@@ -357,7 +357,7 @@ namespace human
             return true;
         }
         
-        bool has_dof(const StringName& p_name) {
+        static bool has_dof(const StringName& p_name) {
             String str = p_name.str();
             if(str.size() != 4) {
                 return false;
@@ -416,7 +416,7 @@ namespace human
 
         Animation* animation_to_dof(Animation* p_anim, const Dictionary& p_bone_map, Vector<uint8_t>& bone_mask);
 
-        void app_dof_to_skeleton(Skeleton3D* apSkeleton,Animation* p_anim, const Dictionary & p_bone_map, HumanAnimationKeyFrame& p_keyframes,Vector<uint8_t>& bone_mask);
+        void app_dof_to_skeleton(Skeleton3D* apSkeleton, HumanAnimationKeyFrame& p_keyframes);
 
         
 

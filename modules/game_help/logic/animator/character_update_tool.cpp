@@ -114,6 +114,11 @@ void CharacterAnimationUpdateTool::layer_blend_apply(Ref<CharacterAnimatorLayerC
             }
         }
     }
+    if(is_human) {
+        if(human_config->human) {
+            human_config->human->app_dof_to_skeleton(t_skeleton,human_key_frame);
+        }
+    }
 }
 
 int CharacterAnimationUpdateTool::get_bone_index(const Dictionary& p_bone_map, const NodePath& path) {
@@ -127,6 +132,9 @@ int CharacterAnimationUpdateTool::get_bone_index(const Dictionary& p_bone_map, c
 
 }
 void CharacterAnimationUpdateTool::add_animation_cache(const Dictionary& bone_map,const Ref<Animation>& p_anim) {
+    if(is_human != p_anim->get_is_human_animation()) {
+        return;
+    }
 
     if (animation_cache.has(p_anim->get_instance_id())) {
         return;
@@ -136,6 +144,10 @@ void CharacterAnimationUpdateTool::add_animation_cache(const Dictionary& bone_ma
     for (int i = 0; i < anim->get_track_count(); i++) {
         NodePath path = anim->track_get_path(i);
         Animation::TrackType track_src_type = anim->track_get_type(i);
+
+        if(is_human && track_src_type == Animation::TYPE_POSITION_3D && human_anim::human::HumanAnimationKeyFrame::has_dof(path.get_name(0))) {
+            continue;
+        }
 
         if (track_src_type == Animation::TYPE_POSITION_3D || track_src_type == Animation::TYPE_ROTATION_3D || track_src_type == Animation::TYPE_SCALE_3D)
         {
