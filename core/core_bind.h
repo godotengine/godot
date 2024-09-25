@@ -584,6 +584,9 @@ public:
 	void set_editor_hint(bool p_enabled);
 	bool is_editor_hint() const;
 
+	void set_embedded_in_editor(bool p_enabled);
+	bool is_embedded_in_editor() const;
+
 	// `set_write_movie_path()` is not exposed to the scripting API as changing it at run-time has no effect.
 	String get_write_movie_path() const;
 

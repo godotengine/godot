@@ -1895,6 +1895,9 @@
 		<constant name="FEATURE_NATIVE_DIALOG_FILE_EXTRA" value="26" enum="Feature">
 			The display server supports all features of [constant FEATURE_NATIVE_DIALOG_FILE], with the added functionality of Options and native dialog file access to [code]res://[/code] and [code]user://[/code] paths. See [method file_dialog_show] and [method file_dialog_with_options_show]. [b]Windows, macOS, Linux (X11/Wayland)[/b]
 		</constant>
+		<constant name="FEATURE_WINDOW_EMBEDDING" value="27" enum="Feature">
+			Display server supports embedding a window from another process. [b]Windows, Linux (X11)[/b]
+		</constant>
 		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
 			Makes the mouse cursor visible if it is hidden.
 		</constant>
@@ -2111,7 +2114,6 @@
 			[b]Note:[/b] This flag is implemented only on Windows (11).
 		</constant>
 		<constant name="WINDOW_FLAG_MAX" value="9" enum="WindowFlags">
-			Max value of the [enum WindowFlags].
 		</constant>
 		<constant name="WINDOW_EVENT_MOUSE_ENTER" value="0" enum="WindowEvent">
 			Sent when the mouse pointer enters the window.

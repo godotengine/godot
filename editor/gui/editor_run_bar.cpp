@@ -344,6 +344,10 @@ void EditorRunBar::stop_child_process(OS::ProcessID p_pid) {
 	}
 }
 
+OS::ProcessID EditorRunBar::get_current_process() const {
+	return editor_run.get_current_process();
+}
+
 void EditorRunBar::set_movie_maker_enabled(bool p_enabled) {
 	write_movie_button->set_pressed(p_enabled);
 }
@@ -356,13 +360,38 @@ HBoxContainer *EditorRunBar::get_buttons_container() {
 	return main_hbox;
 }
 
+void EditorRunBar::_instance_starting(int p_idx, List<String> &r_arguments) {
+	singleton->_instance_starting_internal(p_idx, r_arguments);
+}
+
+void EditorRunBar::_instance_starting_internal(int p_index, List<String> &r_arguments) {
+	Array arguments;
+
+	// We need to convert the an Array so it can be passed as parameter in a signal.
+	for (const String &arg : r_arguments) {
+		arguments.push_back(arg);
+	}
+
+	emit_signal(SNAME("instance_starting"), p_index, arguments);
+
+	// Copy back to a List.
+	r_arguments.clear();
+	for (const Variant &arg : arguments) {
+		r_arguments.push_back(arg);
+	}
+}
+
 void EditorRunBar::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("play_pressed"));
+	ADD_SIGNAL(MethodInfo("instance_starting", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::ARRAY, "arguments")));
 	ADD_SIGNAL(MethodInfo("stop_pressed"));
 }
 
 EditorRunBar::EditorRunBar() {
 	singleton = this;
+
+	// Callback from EditorRun to propagate the instance_starting signal.
+	editor_run.instance_starting_callback = _instance_starting;
 
 	main_panel = memnew(PanelContainer);
 	add_child(main_panel);

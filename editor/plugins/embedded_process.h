@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  window_wrapper.h                                                      */
+/*  embedded_process.h                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,84 +28,65 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef WINDOW_WRAPPER_H
-#define WINDOW_WRAPPER_H
+#ifndef EMBEDDED_PROCESS_H
+#define EMBEDDED_PROCESS_H
 
-#include "core/math/rect2.h"
-#include "scene/gui/margin_container.h"
-#include "scene/gui/menu_button.h"
+#include "scene/gui/control.h"
 
-class Window;
-class HBoxContainer;
+class EmbeddedProcess : public Control {
+	GDCLASS(EmbeddedProcess, Control);
 
-class WindowWrapper : public MarginContainer {
-	GDCLASS(WindowWrapper, MarginContainer);
+	bool _application_has_focus = true;
+	bool _embedded_process_was_focused = false;
+	OS::ProcessID _focused_process_id = 0;
+	OS::ProcessID _current_process_id = 0;
+	bool _embedding_grab_focus = false;
+	bool _embedding_completed = false;
+	uint64_t _start_embedding_time = 0;
+	bool _updated_embedded_process_queued = false;
+	bool _last_updated_embedded_process_focused = false;
 
-	Control *wrapped_control = nullptr;
-	MarginContainer *margins = nullptr;
-	Window *window = nullptr;
+	Window *_window = nullptr;
+	Timer *_timer_embedding = nullptr;
 
-	Panel *window_background = nullptr;
+	int _embedding_timeout = 45000;
 
-	Ref<Shortcut> enable_shortcut;
+	bool _keep_aspect = false;
+	Size2i _window_size;
+	Ref<StyleBox> _focus_style_box;
+	Point2i _margin_top_left;
+	Point2i _margin_bottom_right;
 
-	Rect2 _get_default_window_rect() const;
-	Node *_get_wrapped_control_parent() const;
-
-	void _set_window_enabled_with_rect(bool p_visible, const Rect2 p_rect);
-	void _set_window_rect(const Rect2 p_rect);
-	void _window_size_changed();
+	void _try_embed_process();
+	void _queue_update_embedded_process();
+	void _update_embedded_process();
+	void _timer_embedding_timeout();
+	void _draw();
+	void _check_mouse_over();
+	void _check_focused_process_id();
+	bool _is_embedded_process_updatable();
 
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
-	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
-
 public:
-	void set_wrapped_control(Control *p_control, const Ref<Shortcut> &p_enable_shortcut = Ref<Shortcut>());
-	Control *get_wrapped_control() const;
-	Control *release_wrapped_control();
+	void embed_process(OS::ProcessID p_pid);
+	void reset();
 
-	bool is_window_available() const;
+	void set_embedding_timeout(int p_timeout);
+	int get_embedding_timeout();
+	void set_window_size(Size2i p_window_size);
+	Size2i get_window_size();
+	void set_keep_aspect(bool p_keep_aspect);
+	bool get_keep_aspect();
+	Rect2i get_global_embedded_window_rect();
+	Rect2i get_screen_embedded_window_rect();
+	bool is_embedding_in_progress();
+	bool is_embedding_completed();
 
-	bool get_window_enabled() const;
-	void set_window_enabled(bool p_enabled);
-
-	Rect2i get_window_rect() const;
-	int get_window_screen() const;
-
-	void restore_window(const Rect2i &p_rect, int p_screen = -1);
-	void restore_window_from_saved_position(const Rect2 p_window_rect, int p_screen, const Rect2 p_screen_rect);
-	void enable_window_on_screen(int p_screen = -1, bool p_auto_scale = false);
-
-	void set_window_title(const String &p_title);
-	void set_margins_enabled(bool p_enabled);
-	void grab_window_focus();
-
-	WindowWrapper();
+	EmbeddedProcess();
+	~EmbeddedProcess();
 };
 
-class ScreenSelect : public Button {
-	GDCLASS(ScreenSelect, Button);
-
-	Popup *popup = nullptr;
-	HBoxContainer *screen_list = nullptr;
-
-	void _build_advanced_menu();
-
-	void _emit_screen_signal(int p_screen_idx);
-	void _handle_mouse_shortcut(const Ref<InputEvent> &p_event);
-	void _show_popup();
-
-protected:
-	virtual void pressed() override;
-	static void _bind_methods();
-
-	void _notification(int p_what);
-
-public:
-	ScreenSelect();
-};
-
-#endif // WINDOW_WRAPPER_H
+#endif // EMBEDDED_PROCESS_H
