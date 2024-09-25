@@ -517,7 +517,14 @@ public:
     {
         return run_ai;
     }
-	static Ref<CharacterBodyPrefab> build_prefab(const String& mesh_path);
+    void set_editor_is_skeleton_human(bool p_is_human) {
+        is_skeleton_human = p_is_human;
+    }
+
+    bool get_editor_is_skeleton_human() {
+        return is_skeleton_human;
+    }
+	static Ref<CharacterBodyPrefab> build_prefab(const String& mesh_path, bool is_skeleton_human);
     DECL_MEMBER_BUTTON(editor_build_form_mesh_file_path);
 
     // 生成动画资产帮助类
@@ -537,8 +544,19 @@ public:
     {
         return editor_animation_file_path;
     }
+
+    void set_editor_human_config(Ref<HumanSkeletonConfig> p_human_config)
+    {
+        editor_human_config = p_human_config;
+    }
+
+    Ref<HumanSkeletonConfig> get_editor_human_config()
+    {
+        return editor_human_config;
+    }
     Ref<CharacterBoneMap> editor_ref_bone_map;
     String editor_animation_file_path;
+    Ref<HumanSkeletonConfig> editor_human_config;
     DECL_MEMBER_BUTTON(editor_build_animation);
 
     void set_editor_animation_speed(float p_speed) {
@@ -643,6 +661,7 @@ protected:
     Dictionary init_data;
     // 角色的编辑器模型
     String editor_form_mesh_file_path;
+    bool is_skeleton_human = false;
 
 
     bool is_skill_stop = false;

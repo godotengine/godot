@@ -409,13 +409,23 @@ void CharacterBodyMain::_bind_methods()
 
     ClassDB::bind_method(D_METHOD("set_editor_show_mesh", "editor_show_mesh"), &CharacterBodyMain::set_editor_show_mesh);
     ClassDB::bind_method(D_METHOD("get_editor_show_mesh"), &CharacterBodyMain::get_editor_show_mesh);
+    ClassDB::bind_method(D_METHOD("set_editor_is_skeleton_human", "editor_is_skeleton_human"), &CharacterBodyMain::set_editor_is_skeleton_human);
+    ClassDB::bind_method(D_METHOD("get_editor_is_skeleton_human"), &CharacterBodyMain::get_editor_is_skeleton_human);
+    ClassDB::bind_method(D_METHOD("set_editor_human_config", "human_config"), &CharacterBodyMain::set_editor_human_config);
+    ClassDB::bind_method(D_METHOD("get_editor_human_config"), &CharacterBodyMain::get_editor_human_config);
+
+
+
     ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_show_mesh", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_editor_show_mesh", "get_editor_show_mesh");
+    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_is_skeleton_human", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_editor_is_skeleton_human", "get_editor_is_skeleton_human");
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_form_mesh_file_path"), "set_editor_form_mesh_file_path", "get_editor_form_mesh_file_path");
     ADD_MEMBER_BUTTON(editor_build_form_mesh_file_path,L"根据模型初始化",CharacterBodyMain);
 
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "editor_ref_bone_map", PROPERTY_HINT_RESOURCE_TYPE, "CharacterBoneMap", PROPERTY_USAGE_DEFAULT ), "set_editor_ref_bone_map", "get_editor_ref_bone_map");
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_human_config", PROPERTY_HINT_NONE, "HumanSkeletonConfig", PROPERTY_USAGE_EDITOR), "set_editor_human_config", "get_editor_human_config");
     ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_animation_file_path",PROPERTY_HINT_FILE,"tres,*.tres"), "set_editor_animation_file_path", "get_editor_animation_file_path");
+
 
     ADD_MEMBER_BUTTON(editor_build_animation,L"构建动画文件信息",CharacterBodyMain);
 
@@ -671,7 +681,7 @@ void reset_owenr(Node* node, Node* owenr)
 		reset_owenr(c, owenr);
 	}
 }
-Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path)
+Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path,bool is_skeleton_human)
 {
 	if (!FileAccess::exists(mesh_path))
 	{
@@ -698,8 +708,24 @@ Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path
 	{
 		bone_map = skeleton->get_human_bone_mapping();
         Vector<String> bone_names = skeleton->get_bone_names();
+        
+		// 存储骨骼映射
+		Ref<CharacterBoneMap> bone_map_ref;
+		bone_map_ref.instantiate();
+		bone_map_ref->set_name("bone_map");
+		bone_map_ref->set_bone_map(bone_map);
+        bone_map_ref->set_bone_names(bone_names);
+		save_fbx_res("bone_map", p_group, bone_map_ref, bone_map_save_path, true);
+
+
 		skeleton->set_human_bone_mapping(bone_map);
-        skeleton->init_human_config();
+        if(is_skeleton_human)
+        {
+            skeleton->init_human_config();
+            Ref<HumanSkeletonConfig> config = skeleton->get_human_config();
+            config->set_name("human_config");
+		    save_fbx_res("human_config", p_group, config, ske_save_path, true);
+        }
 		skeleton->set_owner(nullptr);
 		reset_owenr(skeleton, skeleton);
 
@@ -710,13 +736,6 @@ Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path
 		packed_scene->set_name("skeleton");
 		save_fbx_res("skeleton", p_group, packed_scene, ske_save_path, false);
 
-		// 存储骨骼映射
-		Ref<CharacterBoneMap> bone_map_ref;
-		bone_map_ref.instantiate();
-		bone_map_ref->set_name("bone_map");
-		bone_map_ref->set_bone_map(bone_map);
-        bone_map_ref->set_bone_names(bone_names);
-		save_fbx_res("bone_map", p_group, bone_map_ref, bone_map_save_path, true);
 	}
 	// 生成预制体
 	Ref<CharacterBodyPrefab> body_prefab;
@@ -746,7 +765,7 @@ Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path
 }
 void CharacterBodyMain::editor_build_form_mesh_file_path()
 {
-	Ref<CharacterBodyPrefab> prefab = build_prefab(editor_form_mesh_file_path);
+	Ref<CharacterBodyPrefab> prefab = build_prefab(editor_form_mesh_file_path,is_skeleton_human);
     // 设置预制体
     set_body_prefab(prefab);
     
