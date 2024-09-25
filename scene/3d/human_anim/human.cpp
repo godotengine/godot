@@ -1508,9 +1508,9 @@ namespace human
     }
  
 
-     Animation* Human::animation_to_dof( Animation* p_anim, const Dictionary & p_bone_map,Vector<uint8_t>& bone_mask) {
+     Animation* Human::animation_to_dof( Animation* p_anim, const Dictionary & p_bone_map) {
 
-
+        Vector<uint8_t> bone_mask;
         bone_mask.resize(kLastBone + hand::s_BoneCount * 2);
         bone_mask.fill(0);
 

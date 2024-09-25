@@ -762,12 +762,22 @@ Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path
         
 		part->set_name(it->key);
 		String save_path;
-		save_fbx_res("meshs", p_group, part, save_path, true);
+        if(is_skeleton_human) {
+		    save_fbx_res("human_meshs", p_group, part, save_path, true);
+        }
+        else {
+		    save_fbx_res("meshs", p_group, part, save_path, true);
+        }
 		body_prefab->parts[save_path] = true;
 	}
 	// 保存预制体
 	body_prefab->skeleton_path = ske_save_path;
-	save_fbx_res("prefab", p_group, body_prefab, bone_map_save_path, true);
+    if(is_skeleton_human) {
+	    save_fbx_res("human_prefab", p_group, body_prefab, bone_map_save_path, true);
+    }
+    else {
+	    save_fbx_res("prefab", p_group, body_prefab, bone_map_save_path, true);        
+    }
 
 
 	p_node->queue_free();
@@ -870,7 +880,12 @@ void CharacterBodyMain::editor_build_animation()
         Ref<Animation> animation = player->get_animation(E);
         if(animation.is_valid())
         {
-            Ref<Animation> new_animation = animation->duplicate();
+            Ref<Animation> new_animation;
+            if(editor_human_config.is_valid()) {
+                new_animation = editor_human_config->human->animation_to_doff(animation,bone_map->get_bone_map());
+            } else {
+                new_animation = animation->duplicate();                
+            }
             new_animation->set_bone_map(bone_map);
             if(skeleton == nullptr)
             {
@@ -897,7 +912,12 @@ void CharacterBodyMain::editor_build_animation()
 				new_animation->set_name(E);
 			}
             String save_path;
-			save_fbx_res("animation", p_group, new_animation, save_path, true);
+            if(editor_human_config.is_valid())  {
+			    save_fbx_res("human_animation", p_group, new_animation, save_path, true);
+            }
+            else {
+			    save_fbx_res("animation", p_group, new_animation, save_path, true);
+            }
             
         }
     }
