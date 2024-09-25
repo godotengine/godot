@@ -612,7 +612,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--position <X>,<Y>", "Request window position.\n");
 	print_help_option("--screen <N>", "Request window screen.\n");
 	print_help_option("--single-window", "Use a single window (no separate subwindows).\n");
-#ifndef _3D_DISABLED
+#ifndef _XR_DISABLED
 	print_help_option("--xr-mode <mode>", "Select XR (Extended Reality) mode [\"default\", \"off\", \"on\"].\n");
 #endif
 
@@ -1722,7 +1722,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			OS::get_singleton()->disable_crash_handler();
 		} else if (arg == "--skip-breakpoints") {
 			skip_breakpoints = true;
-#ifndef _3D_DISABLED
+#ifndef _XR_DISABLED
 		} else if (arg == "--xr-mode") {
 			if (N) {
 				String xr_mode = N->get().to_lower();

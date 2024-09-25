@@ -1,5 +1,5 @@
 def can_build(env, platform):
-    return not env["disable_3d"]
+    return not env["disable_xr"]
 
 
 def configure(env):
