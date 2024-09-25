@@ -728,7 +728,11 @@ void Window::_rect_changed_callback(const Rect2i &p_callback) {
 	if (size == p_callback.size && position == p_callback.position) {
 		return;
 	}
-	position = p_callback.position;
+
+	if (position != p_callback.position) {
+		position = p_callback.position;
+		_propagate_window_notification(this, NOTIFICATION_WM_POSITION_CHANGED);
+	}
 
 	if (size != p_callback.size) {
 		size = p_callback.size;
@@ -1096,14 +1100,17 @@ void Window::_update_window_size() {
 
 		embedder->_sub_window_update(this);
 	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-		if (reset_min_first && wrap_controls) {
-			// Avoid an error if setting max_size to a value between min_size and the previous size_limit.
-			DisplayServer::get_singleton()->window_set_min_size(Size2i(), window_id);
-		}
+		// When main window embedded in the editor, we can't resize the main window.
+		if (window_id != DisplayServer::MAIN_WINDOW_ID || !Engine::get_singleton()->is_embedded_in_editor()) {
+			if (reset_min_first && wrap_controls) {
+				// Avoid an error if setting max_size to a value between min_size and the previous size_limit.
+				DisplayServer::get_singleton()->window_set_min_size(Size2i(), window_id);
+			}
 
-		DisplayServer::get_singleton()->window_set_max_size(max_size_used, window_id);
-		DisplayServer::get_singleton()->window_set_min_size(size_limit, window_id);
-		DisplayServer::get_singleton()->window_set_size(size, window_id);
+			DisplayServer::get_singleton()->window_set_max_size(max_size_used, window_id);
+			DisplayServer::get_singleton()->window_set_min_size(size_limit, window_id);
+			DisplayServer::get_singleton()->window_set_size(size, window_id);
+		}
 	}
 
 	//update the viewport

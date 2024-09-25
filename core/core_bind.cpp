@@ -1908,6 +1908,10 @@ bool Engine::is_editor_hint() const {
 	return ::Engine::get_singleton()->is_editor_hint();
 }
 
+bool Engine::is_embedded_in_editor() const {
+	return ::Engine::get_singleton()->is_embedded_in_editor();
+}
+
 String Engine::get_write_movie_path() const {
 	return ::Engine::get_singleton()->get_write_movie_path();
 }
@@ -1985,6 +1989,7 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_script_language", "index"), &Engine::get_script_language);
 
 	ClassDB::bind_method(D_METHOD("is_editor_hint"), &Engine::is_editor_hint);
+	ClassDB::bind_method(D_METHOD("is_embedded_in_editor"), &Engine::is_embedded_in_editor);
 
 	ClassDB::bind_method(D_METHOD("get_write_movie_path"), &Engine::get_write_movie_path);
 
