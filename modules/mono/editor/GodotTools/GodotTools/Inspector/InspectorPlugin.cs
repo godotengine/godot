@@ -31,9 +31,9 @@ namespace GodotTools.Inspector
 
                 if (string.IsNullOrEmpty(scriptPath))
                 {
-                    // Generic types used empty paths in older versions of Godot
-                    // so we assume your project is out of sync.
-                    AddCustomControl(new InspectorOutOfSyncWarning());
+                    // Types from an external source (PackageReference or ProjectReference)
+                    // uses empty paths, in such case we do not show out of sync warning.
+                    AddCustomControl(new ExternalTypeReminder());
                     break;
                 }
 
