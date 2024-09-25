@@ -1745,8 +1745,8 @@ void main() {
 #ifdef LIGHT_ANISOTROPY_USED
 					binormal, tangent, anisotropy,
 #endif
-#ifdef USE_SOFT_SHADOW
-					directional_lights.data[i].size,
+#ifdef LIGHT_INDEX_USED
+					i,
 #endif
 					diffuse_light,
 					specular_light);
