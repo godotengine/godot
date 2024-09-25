@@ -715,7 +715,12 @@ Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path
 		bone_map_ref->set_name("bone_map");
 		bone_map_ref->set_bone_map(bone_map);
         bone_map_ref->set_bone_names(bone_names);
-		save_fbx_res("bone_map", p_group, bone_map_ref, bone_map_save_path, true);
+        if(is_skeleton_human) {
+		    save_fbx_res("human_bone_map", p_group, bone_map_ref, bone_map_save_path, true);
+        }
+        else {
+		    save_fbx_res("bone_map", p_group, bone_map_ref, bone_map_save_path, true);            
+        }
 
 
 		skeleton->set_human_bone_mapping(bone_map);
@@ -734,7 +739,12 @@ Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path
 		packed_scene.instantiate();
 		packed_scene->pack(skeleton);
 		packed_scene->set_name("skeleton");
-		save_fbx_res("skeleton", p_group, packed_scene, ske_save_path, false);
+        if(is_skeleton_human) {
+		    save_fbx_res("human_skeleton", p_group, packed_scene, ske_save_path, false);
+        }
+        else {
+		    save_fbx_res("skeleton", p_group, packed_scene, ske_save_path, false);
+        }
 
 	}
 	// 生成预制体
