@@ -1024,8 +1024,14 @@ ProjectDialog::ProjectDialog() {
 	add_child(fdialog_install);
 
 	project_name->connect(SceneStringName(text_changed), callable_mp(this, &ProjectDialog::_project_name_changed).unbind(1));
+	project_name->connect(SceneStringName(text_submitted), callable_mp(this, &ProjectDialog::ok_pressed).unbind(1));
+
 	project_path->connect(SceneStringName(text_changed), callable_mp(this, &ProjectDialog::_project_path_changed).unbind(1));
+	project_path->connect(SceneStringName(text_submitted), callable_mp(this, &ProjectDialog::ok_pressed).unbind(1));
+
 	install_path->connect(SceneStringName(text_changed), callable_mp(this, &ProjectDialog::_install_path_changed).unbind(1));
+	install_path->connect(SceneStringName(text_submitted), callable_mp(this, &ProjectDialog::ok_pressed).unbind(1));
+
 	fdialog_install->connect("dir_selected", callable_mp(this, &ProjectDialog::_install_path_selected));
 	fdialog_install->connect("file_selected", callable_mp(this, &ProjectDialog::_install_path_selected));
 
