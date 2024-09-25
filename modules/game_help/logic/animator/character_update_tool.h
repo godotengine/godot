@@ -3,6 +3,7 @@
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/animation/animation_mixer.h"
+#include "scene/3d/human_anim/human.h"
 #include "animation_help.h"
 
 
@@ -113,6 +114,10 @@ protected:
     void process_anim(const AnimationMixer::AnimationInstance& ai);
     void process_human_anim() ;
 protected:
+    Ref<HumanSkeletonConfig> human_config;
+    human_anim::human::HumanAnimationKeyFrame temp_human_key_frame;
+    human_anim::human::HumanAnimationKeyFrame human_key_frame;
+
     HashSet<ObjectID> animation_cache;
     LocalVector<AnimationMixer::AnimationInstance> animation_instances;
     ObjectID skeleton_id;
@@ -126,4 +131,5 @@ protected:
     Vector3 root_motion_position_accumulator = Vector3(0, 0, 0);
     Quaternion root_motion_rotation_accumulator = Quaternion(0, 0, 0, 1);
     Vector3 root_motion_scale_accumulator = Vector3(1, 1, 1);
+    bool is_human = false;
 };

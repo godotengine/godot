@@ -21,6 +21,8 @@ void CharacterAnimationUpdateTool::clear_cache(Skeleton3D* t_skeleton,Node* p_pa
     parent = p_parent;
     animation_instances.clear();
     context.reset();
+    human_config = t_skeleton->get_human_config();
+    is_human = human_config.is_valid();
 }
 void CharacterAnimationUpdateTool::add_animation_instance(AnimationMixer::AnimationInstance& ai) {
     animation_instances.push_back(ai);
@@ -202,7 +204,6 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
     bool seeked = ai.playback_info.seeked;
     Animation::LoopedFlag looped_flag = ai.playback_info.looped_flag;
     bool is_external_seeking = ai.playback_info.is_external_seeking;
-    real_t weight = ai.playback_info.weight;
     const real_t* track_weights_ptr = ai.playback_info.track_weights.ptr();
     int track_weights_count = ai.playback_info.track_weights.size();
     bool backward = signbit(delta); // This flag is used by the root motion calculates or detecting the end of audio stream.
@@ -213,13 +214,24 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
     const Vector<Animation::Track*> tracks = a->get_tracks();
     Animation::Track* const* tracks_ptr = tracks.ptr();
     real_t a_length = a->get_length();
+    if(is_human) {
+        temp_human_key_frame.reset();
+    }
+    double blend = ai.playback_info.weight;
     int count = tracks.size();
     for (int i = 0; i < count; i++) {
         const Animation::Track* animation_track = tracks_ptr[i];
         if (!animation_track->enabled) {
             continue;
         }
-        double blend = weight;
+        bool track_is_human = false;
+        if(is_human) {
+            if(animation_track->type == Animation::TYPE_POSITION_3D) {
+                if(temp_human_key_frame.has_dof(animation_track->path.get_name(0))) {
+                    track_is_human = true;
+                }
+            }
+        }
 
         switch (animation_track->type) {
         case Animation::TYPE_POSITION_3D: {
@@ -228,8 +240,10 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
                 continue;
             }
             AnimationMixer::TrackCacheTransform* t = context.bone_cache[bone_idx];
-            if (t->is_human_bone) {
-                continue;
+            if(!track_is_human) {
+                if (t->is_human_bone) {
+                    continue;
+                }
             }
             if (t->root_motion && calc_root) {
                 double prev_time = time - delta;
@@ -298,12 +312,16 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
                 context.root_motion_cache.loc += (loc[1] - loc[0]) * blend;
                 prev_time = !backward ? 0 : (double)a_length;
             }
-            {
-                Vector3 loc;
-                Error err = a->try_position_track_interpolate(i, time, &loc);
-                if (err != OK) {
-                    continue;
-                }
+            Vector3 loc;
+            Error err = a->try_position_track_interpolate(i, time, &loc);
+            if (err != OK) {
+                continue;
+            }
+            if(track_is_human) {
+                // 设置人形动画的自由度
+                temp_human_key_frame.set_dof(animation_track->path.get_name(0), loc);
+            }
+            else {
                 t->loc = t->loc.lerp(loc, blend);
                 t->loc_used = true;
             }
@@ -493,6 +511,10 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
         } break;
         }
 
+    }
+    if(is_human) {
+        Vector<uint8_t> bone_mask = a->get_human_bone_mask();
+        human_key_frame.blend(temp_human_key_frame, bone_mask, blend);
     }
 }
 

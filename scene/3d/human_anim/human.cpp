@@ -1381,15 +1381,6 @@ namespace human
 
     }
     
-    void HumanAnimationKeyFrame::to_animation_track(List<HumanAnimationKeyFrame*> &p_keyframes,Vector<bool>& bone_mask) {
-        bone_mask.resize(kLastBone + hand::s_BoneCount * 2);
-        bone_mask.fill(false);
-        if(p_keyframes.size() == 0) {
-            return ;
-        }
-        
-
-    }
 
     void Human::load(const Dictionary& p_dict) {
         Dictionary d_root = p_dict["root"];

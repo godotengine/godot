@@ -56,6 +56,13 @@ namespace hand
 
     const int32_t s_BoneCount = kLastFinger * kLastPhalange; //  指頭數量乘以指骨數量 5*3=15
     const int32_t s_DoFCount = kLastFinger * kLastFingerDoF; //  指頭數量乘以指骨DOF 5*4 =20//但只手的手指的全部dof
+	static int s_HandBoneIndex[s_DoFCount] = {
+		0, 0, 1, 2,
+		3, 3, 4, 5,
+		6, 6, 7, 8,
+		9, 9,10, 11,
+		12,12,13,14
+	};
 
     inline int32_t GetBoneIndex(int32_t fingerIndex, int32_t phalangeIndex) { return fingerIndex * kLastPhalange + phalangeIndex; }
     inline int32_t GetFingerIndex(int32_t boneIndex) { return boneIndex / kLastPhalange; }

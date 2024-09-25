@@ -33,10 +33,15 @@
 
 #include "scene/3d/node_3d.h"
 #include "scene/resources/3d/skin.h"
-#include "./human_anim/human.h"
 
 typedef int BoneId;
-
+namespace human_anim
+{
+	namespace human
+	{
+		struct Human;
+	}
+}
 class Skeleton3D;
 class SkeletonModifier3D;
 class HumanSkeletonConfig : public Resource
@@ -52,17 +57,10 @@ class HumanSkeletonConfig : public Resource
 
 public:
 
-    void set_human(const Dictionary& p_human) {
-        human.load(p_human);
-    }
-    Dictionary get_human() {
-        Dictionary human_dict;
-        human.save(human_dict);
-        return human_dict;
-    }
-
-    
-    human_anim::human::Human human;
+    void set_human(const Dictionary& p_human) ;
+    Dictionary get_human() ;
+	~HumanSkeletonConfig() ;    
+    human_anim::human::Human* human = nullptr;
 };
 
 class SkinReference : public RefCounted {

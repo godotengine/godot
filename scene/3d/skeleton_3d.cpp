@@ -37,6 +37,30 @@
 #ifndef DISABLE_DEPRECATED
 #include "scene/3d/physical_bone_simulator_3d.h"
 #endif // _DISABLE_DEPRECATED
+#include "./human_anim/human.h"
+
+
+void HumanSkeletonConfig::set_human(const Dictionary& p_human) {
+	if(human == nullptr) {
+		human = memnew(human_anim::human::Human);
+	}
+	human->load(p_human);
+}
+Dictionary HumanSkeletonConfig::get_human() {
+	Dictionary human_dict;
+	if(human != nullptr) {
+		human->save(human_dict);		
+	}
+	return human_dict;
+}
+
+HumanSkeletonConfig::~HumanSkeletonConfig() {
+	if(human != nullptr) {
+		memdelete(human);
+		human = nullptr;
+	}
+	
+}
 
 void SkinReference::_skin_changed() {
 	if (skeleton_node) {
@@ -455,7 +479,10 @@ Ref<HumanSkeletonConfig> Skeleton3D::get_human_config() const {
 }
 void Skeleton3D::init_human_config() {
 	human_config = Ref<HumanSkeletonConfig>(memnew(HumanSkeletonConfig));
-	human_config->human.init(this);
+	if (human_config->human == nullptr) {
+		human_config->human = memnew(human_anim::human::Human);
+	}
+	human_config->human->init(this);
 }
 void Skeleton3D::_process_changed() {
 	if (modifier_callback_mode_process == MODIFIER_CALLBACK_MODE_PROCESS_IDLE) {

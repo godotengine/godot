@@ -292,6 +292,12 @@ namespace human
 	int GetRightHandIndexArray(Skeleton3D* const p_skeleton, LocalVector<int>& human_indexArray);
     
 	int GeBodyIndexArray(Skeleton3D* const p_skeleton, LocalVector<int>& human_indexArray);
+    int32_t MuscleFromBone(int32_t boneIndex, int32_t doFIndex);
+    // dof 索引转骨骼索引
+    int32_t BoneFromMuscle(int32_t doFIndex);
+
+    int32_t BoneFromTDoF(int32_t doFIndex);
+    int32_t BoneParentIndex(int32_t humanIndex);
 
     struct HumanGoal
     {
@@ -324,12 +330,72 @@ namespace human
     };
     struct HumanAnimationKeyFrame {
         HumanAnimationKeyFrame() : time(0.0f) {
-            memset(dot_array, 0, sizeof(dot_array));
+            reset();
         }
         double time;
-        float dot_array[kLastDoF + hand::s_DoFCount + hand::s_DoFCount];      
+        float dot_array[kLastDoF + hand::s_DoFCount + hand::s_DoFCount + 1];      
 
-        static void to_animation_track(List<HumanAnimationKeyFrame*> &p_keyframes,Vector<bool>& bone_mask) ;
+        void reset() {            
+            memset(dot_array, 0, sizeof(float) * (kLastDoF + hand::s_DoFCount + hand::s_DoFCount + 1));
+        }
+        // 
+        bool set_dof(const StringName& p_name, const Vector3& p_value) {
+            String str = p_name.str();
+            if(str.size() != 4) {
+                return false;
+            }
+
+            int index = str[3] - 33;
+            index *= 3;
+            if(index < 0 || index >= kLastDoF - 2) {
+                return false;
+            }
+            for(int i = 0 ; i < index  ; i++) {
+                dot_array[ index + i] = p_value[i];
+            }
+
+            return true;
+        }
+        
+        bool has_dof(const StringName& p_name) {
+            String str = p_name.str();
+            if(str.size() != 4) {
+                return false;
+            }
+
+            int index = str[3] - 33;
+            index *= 3;
+            if(index < 0 || index >= kLastDoF - 2) {
+                return false;
+            }
+            return true;
+        }
+        // 
+        void blend(HumanAnimationKeyFrame & p_keyframe, Vector<uint8_t>& bone_mask,float p_weight) {
+
+            for(int i = 0;i < kLastDoF ; i++) {
+                int bone_index = BoneFromTDoF(i);
+                if(bone_mask[bone_index]) {
+                    dot_array[i] = math::lerp(dot_array[i], p_keyframe.dot_array[i], p_weight);
+                }
+            }
+
+            for(int i = 0;i < hand::s_DoFCount; i++) {
+                int bone_index = hand::s_HandBoneIndex[i];
+
+                // 左手
+                if(bone_mask[kLastBone + bone_index]) {
+                    dot_array[kLastDoF + i] = math::lerp(dot_array[kLastDoF + i], p_keyframe.dot_array[kLastDoF + i], p_weight);
+                }
+                // 右手
+                if(bone_mask[kLastBone + hand::s_BoneCount + bone_index]) {
+                    dot_array[kLastDoF + hand::s_DoFCount + i] = math::lerp(dot_array[kLastDoF + hand::s_DoFCount + i], p_keyframe.dot_array[kLastDoF + hand::s_DoFCount + i], p_weight);
+                }
+            }
+
+            
+        }
+
     };
 
     
@@ -387,12 +453,6 @@ namespace human
 
 
 	
-    int32_t MuscleFromBone(int32_t boneIndex, int32_t doFIndex);
-    // dof 索引转骨骼索引
-    int32_t BoneFromMuscle(int32_t doFIndex);
-
-    int32_t BoneFromTDoF(int32_t doFIndex);
-    int32_t BoneParentIndex(int32_t humanIndex);
 
     bool RequiredBone(uint32_t boneIndex);
     const char* BoneName(uint32_t boneIndex);
