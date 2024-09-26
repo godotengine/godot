@@ -1963,6 +1963,14 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		p_theme->set_color("movie_writer_icon_pressed", EditorStringName(EditorStyles), Color(0, 0, 0, 0.84));
 		p_theme->set_color("movie_writer_icon_hover", EditorStringName(EditorStyles), Color(1, 1, 1, 0.9));
 		p_theme->set_color("movie_writer_icon_hover_pressed", EditorStringName(EditorStyles), Color(0, 0, 0, 0.84));
+
+		// Profiler autostart indicator panel.
+		Ref<StyleBoxFlat> style_profiler_autostart = style_launch_pad->duplicate();
+		style_profiler_autostart->set_bg_color(Color(1, 0.867, 0.396));
+		p_theme->set_type_variation("ProfilerAutostartIndicator", "Button");
+		p_theme->set_stylebox(CoreStringName(normal), "ProfilerAutostartIndicator", style_profiler_autostart);
+		p_theme->set_stylebox(SceneStringName(pressed), "ProfilerAutostartIndicator", style_profiler_autostart);
+		p_theme->set_stylebox("hover", "ProfilerAutostartIndicator", style_profiler_autostart);
 	}
 
 	// Standard GUI variations.
