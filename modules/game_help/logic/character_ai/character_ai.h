@@ -359,7 +359,9 @@ public:
     }
     void move_right(int check_index)
     {
-        if(check_index < checks.size() - 1)
+		int size = (int)checks.size();
+		size -= 1;
+        if(check_index < size)
         {
             Ref<CharacterAI_CheckBase> check = get_check_by_index(check_index);
             Ref<CharacterAI_CheckBase> check_right = get_check_by_index(check_index + 1);

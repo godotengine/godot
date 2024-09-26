@@ -284,7 +284,7 @@ namespace human
 
     
 	const HashMap<String, int>& get_bone_to_human_map();
-	const HashMap<int, String> get_human_to_bone_map();
+	const HashMap<int, String>& get_human_to_bone_map();
 
 	int GetLeftHandIndexArray(Skeleton3D* const p_skeleton, LocalVector<int>& human_indexArray);
 

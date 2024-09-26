@@ -991,7 +991,7 @@ namespace human
 
             if (skBoneIndex >= 0)
             {
-                skeleton::SetupAxes(&apHuman->m_Skeleton, apSkeletonPoseGlobal, GetAxeInfo(i), skBoneIndex, skAxisBoneId, true, len);
+                skeleton::SetupAxes(&apHuman->m_Skeleton, apSkeletonPoseGlobal, GetAxeInfo(i), i, skAxisBoneId, true, len);
             }
         }
     }
@@ -1018,7 +1018,6 @@ namespace human
 			{"LeftShoulder",L"左肩"},
 			{"RightShoulder",L"右肩"},
 
-
 			{"LeftUpperArm",L"左上臂"},
 			{"RightUpperArm",L"右上臂"},
 
@@ -1028,7 +1027,6 @@ namespace human
 			{"LeftHand",L"左手"},
 			{"RightHand",L"右手"},
 
-
 			{"LeftToes",L"左足"},
 			{"RightToes",L"右足"},
 
@@ -1036,8 +1034,6 @@ namespace human
 			{"RightEye",L"右眼"},
 
 			{"Jaw",L"下巴"},
-
-
 
 			{"LeftThumbMetacarpal",L"左拇指"},
 			{"LeftThumbProximal",L"左拇指近端"},
@@ -1170,7 +1166,7 @@ namespace human
 		};
 		return bone_map;
 	}
-	const HashMap<int, String> get_human_to_bone_map() {
+	const HashMap<int, String>& get_human_to_bone_map() {
 		static HashMap<int, String> human_map = {
 			{kHips,"Hips"},
 
@@ -1302,16 +1298,18 @@ namespace human
 		return ret;
 	}
     void Human::build_form_skeleton(Skeleton3D* apSkeleton) {
-        
-        const LocalVector<Pair<String,String>>& bone_label = get_bone_label();
+        const HashMap<String, int>& human_to_bone_map = get_bone_to_human_map();
+		const LocalVector<Pair<String, String>>& bone_label = get_bone_label();
 
-        m_Skeleton.m_Node.resize(kLastBone);
-        for(int i = 0; i < kLastBone; ++i) {
-            int bone_index = apSkeleton->find_bone(bone_label[i].first);
-            if(bone_index >= 0) {
-                m_Skeleton.m_Node[i].m_AxesId = i;
-                m_Skeleton.m_Node[i].m_bone_index = bone_index;
-                m_Skeleton.m_Node[i].m_ParentId = apSkeleton->get_bone_parent(bone_index);
+        m_Skeleton.m_Node.resize(apSkeleton->get_bone_count());
+		m_Skeleton.m_AxesArray.resize(apSkeleton->get_bone_count());
+        for(int i = 0; i < apSkeleton->get_bone_count(); ++i) {
+			String bone_name = apSkeleton->get_bone_name(i);
+
+            if(human_to_bone_map.has(bone_name)) {
+                m_Skeleton.m_Node[i].m_AxesId = human_to_bone_map[bone_name];
+                m_Skeleton.m_Node[i].m_bone_index = i;
+                m_Skeleton.m_Node[i].m_ParentId = apSkeleton->get_bone_parent(i);
             }
             else {
                 m_Skeleton.m_Node[i].m_AxesId = -1;

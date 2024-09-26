@@ -143,7 +143,9 @@ public:
     }
     virtual void move_down_item(int index)
     {
-        if(index < animation_arrays.size()-1)
+		int size = (int)animation_arrays.size();
+		size -= 1;
+        if(index < size)
         {
             animation_arrays.swap(index, index+1);
         }
@@ -300,7 +302,9 @@ public:
     }
     virtual void move_down_item(int index)
     {
-        if(index < animation_arrays.size()-1)
+		int size = (int)animation_arrays.size();
+		size -= 1;
+        if(index < size)
         {
             animation_arrays.swap(index, index + 1);
 
@@ -379,7 +383,9 @@ public:
     }
     virtual void move_down_item(int index)
     {
-        if(index < animation_arrays.size()-1)
+		int size = (int)animation_arrays.size();
+		size -= 1;
+        if(index < size)
         {
             animation_arrays.swap(index, index + 1);
 

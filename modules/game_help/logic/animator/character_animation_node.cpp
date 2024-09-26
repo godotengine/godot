@@ -109,7 +109,7 @@ void CharacterAnimatorNodeBase::_bind_methods()
 }    
 void CharacterAnimatorNodeBase::_init()
 {
-    for(int i = 0; i < animation_arrays.size(); ++i)
+    for(uint32_t i = 0; i < animation_arrays.size(); ++i)
     {
         Ref<CharacterAnimationItem> item = animation_arrays[i];
         if(item.is_valid())
@@ -191,7 +191,7 @@ void CharacterAnimatorNodeBase::_set_animation_scale_by_length(float p_length)
 float CharacterAnimatorNodeBase::_get_animation_length()
 {
     float length = 0.0f;
-    for(int i = 0; i < animation_arrays.size(); ++i)
+    for(uint32_t i = 0; i < animation_arrays.size(); ++i)
     {
         Ref<CharacterAnimationItem> item = animation_arrays[i];
         if(item.is_valid())
@@ -818,7 +818,7 @@ void CharacterAnimatorLoopLast::process_animation(class CharacterAnimatorLayer *
 float CharacterAnimatorLoopLast::_get_animation_length()
 {
     float length = 0.0f;
-    for(int i = 0; i < animation_arrays.size(); ++i)
+    for(uint32_t i = 0; i < animation_arrays.size(); ++i)
     {
         Ref<CharacterAnimationItem> item = animation_arrays[i];
         if(item.is_valid())
