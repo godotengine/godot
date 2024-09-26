@@ -550,7 +550,7 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 				if (font_size_it && font_size_it->font_size > 0) {
 					font_size = font_size_it->font_size;
 				}
-				l.text_buf->add_string(String::chr(0x200B), font, font_size);
+				l.text_buf->add_string(String::chr(0x200B), font, font_size, String(), it->rid);
 				txt += "\n";
 				l.char_count++;
 				remaining_characters--;
@@ -792,7 +792,6 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 	MutexLock lock(l.text_buf->get_mutex());
 
 	Item *it_from = l.from;
-	Item *it_to = (p_line + 1 < (int)p_frame->lines.size()) ? p_frame->lines[p_line + 1].from : nullptr;
 
 	if (it_from == nullptr) {
 		return 0;
@@ -1032,9 +1031,26 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			float box_start = 0.0;
 			Color last_color = Color(0, 0, 0, 0);
 
+			Item *it = it_from;
+			int span = -1;
 			for (int i = 0; i < gl_size; i++) {
 				bool selected = selection.active && (sel_start != -1) && (glyphs[i].start >= sel_start) && (glyphs[i].end <= sel_end);
-				Item *it = _get_item_at_pos(it_from, it_to, glyphs[i].start);
+				if (glyphs[i].span_index != span) {
+					span = glyphs[i].span_index;
+					if (span >= 0) {
+						if ((glyphs[i].flags & TextServer::GRAPHEME_IS_EMBEDDED_OBJECT) == TextServer::GRAPHEME_IS_EMBEDDED_OBJECT) {
+							Item *new_it = items.get_or_null(TS->shaped_get_span_embedded_object(rid, span));
+							if (new_it) {
+								it = new_it;
+							}
+						} else {
+							Item *new_it = items.get_or_null(TS->shaped_get_span_meta(rid, span));
+							if (new_it) {
+								it = new_it;
+							}
+						}
+					}
+				}
 
 				Color font_color = (step == DRAW_STEP_SHADOW || step == DRAW_STEP_OUTLINE || step == DRAW_STEP_TEXT) ? _find_color(it, p_base_color) : Color();
 				int outline_size = (step == DRAW_STEP_OUTLINE) ? _find_outline_size(it, p_outline_size) : 0;
