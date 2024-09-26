@@ -155,7 +155,6 @@
 #include "scene/resources/visual_shader_nodes.h"
 #include "scene/resources/visual_shader_particle_nodes.h"
 #include "scene/resources/visual_shader_sdf_nodes.h"
-#include "scene/resources/world_2d.h"
 #include "scene/theme/theme_db.h"
 
 // 2D
@@ -226,6 +225,7 @@
 #include "scene/resources/2d/skeleton/skeleton_modification_2d_twoboneik.h"
 #include "scene/resources/2d/skeleton/skeleton_modification_stack_2d.h"
 #include "scene/resources/2d/tile_set.h"
+#include "scene/resources/2d/world_2d.h"
 #include "scene/resources/2d/world_boundary_shape_2d.h"
 
 #ifndef _3D_DISABLED

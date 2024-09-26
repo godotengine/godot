@@ -33,7 +33,7 @@
 #include "core/io/marshalls.h"
 #include "scene/2d/tile_map.h"
 #include "scene/gui/control.h"
-#include "scene/resources/world_2d.h"
+#include "scene/resources/2d/world_2d.h"
 #include "servers/navigation_server_2d.h"
 
 #ifdef DEBUG_ENABLED
