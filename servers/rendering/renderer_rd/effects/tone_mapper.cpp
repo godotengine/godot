@@ -56,6 +56,7 @@ ToneMapper::ToneMapper() {
 
 		tonemap.shader.initialize(tonemap_modes);
 
+#ifndef _XR_DISABLED
 		if (!RendererCompositorRD::get_singleton()->is_xr_enabled()) {
 			tonemap.shader.set_variant_enabled(TONEMAP_MODE_NORMAL_MULTIVIEW, false);
 			tonemap.shader.set_variant_enabled(TONEMAP_MODE_BICUBIC_GLOW_FILTER_MULTIVIEW, false);
@@ -64,6 +65,7 @@ ToneMapper::ToneMapper() {
 			tonemap.shader.set_variant_enabled(TONEMAP_MODE_SUBPASS_MULTIVIEW, false);
 			tonemap.shader.set_variant_enabled(TONEMAP_MODE_SUBPASS_1D_LUT_MULTIVIEW, false);
 		}
+#endif // _XR_DISABLED
 
 		tonemap.shader_version = tonemap.shader.version_create();
 
