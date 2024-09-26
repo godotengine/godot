@@ -85,8 +85,11 @@
 #ifndef _3D_DISABLED
 #include "servers/physics_server_3d.h"
 #include "servers/physics_server_3d_dummy.h"
-#include "servers/xr_server.h"
 #endif // _3D_DISABLED
+
+#ifndef _XR_DISABLED
+#include "servers/xr_server.h"
+#endif // _XR_DISABLED
 
 #ifdef TESTS_ENABLED
 #include "tests/test_main.h"
@@ -168,8 +171,10 @@ static NavigationServer3D *navigation_server_3d = nullptr;
 #ifndef _3D_DISABLED
 static PhysicsServer3DManager *physics_server_3d_manager = nullptr;
 static PhysicsServer3D *physics_server_3d = nullptr;
-static XRServer *xr_server = nullptr;
 #endif // _3D_DISABLED
+#ifndef _XR_DISABLED
+static XRServer *xr_server = nullptr;
+#endif // _XR_DISABLED
 // We error out if setup2() doesn't turn this true
 static bool _start_success = false;
 
@@ -734,9 +739,9 @@ Error Main::test_setup() {
 
 	/** INITIALIZE SERVERS **/
 	register_server_types();
-#ifndef _3D_DISABLED
+#ifndef _XR_DISABLED
 	XRServer::set_xr_mode(XRServer::XRMODE_OFF); // Skip in tests.
-#endif // _3D_DISABLED
+#endif // _XR_DISABLED
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
 	GDExtensionManager::get_singleton()->initialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
 
@@ -1741,7 +1746,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing --xr-mode argument, aborting.\n");
 				goto error;
 			}
-#endif // _3D_DISABLED
+#endif // _XR_DISABLED
 		} else if (arg == "--benchmark") {
 			OS::get_singleton()->set_use_benchmark(true);
 		} else if (arg == "--benchmark-file") {
@@ -2573,7 +2578,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF("display/window/ios/hide_status_bar", true);
 	GLOBAL_DEF("display/window/ios/suppress_ui_gesture", true);
 
-#ifndef _3D_DISABLED
+#ifndef _XR_DISABLED
 	// XR project settings.
 	GLOBAL_DEF_RST_BASIC("xr/openxr/enabled", false);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "xr/openxr/default_action_map", PROPERTY_HINT_FILE, "*.tres"), "res://openxr_action_map.tres");
@@ -2603,7 +2608,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// EDITOR_DEF_RST("xr/openxr/in_editor", false);
 	// GLOBAL_DEF("xr/openxr/in_editor", false);
 #endif // TOOLS_ENABLED
-#endif // _3D_DISABLED
+#endif // _XR_DISABLED
 
 	Engine::get_singleton()->set_frame_delay(frame_delay);
 
@@ -3121,7 +3126,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 		OS::get_singleton()->benchmark_end_measure("Servers", "Audio");
 	}
 
-#ifndef _3D_DISABLED
+#ifndef _XR_DISABLED
 	/* Initialize XR Server */
 
 	{
@@ -3131,7 +3136,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 		OS::get_singleton()->benchmark_end_measure("Servers", "XR");
 	}
-#endif // _3D_DISABLED
+#endif // _XR_DISABLED
 
 	OS::get_singleton()->benchmark_end_measure("Startup", "Servers");
 
@@ -4306,9 +4311,9 @@ bool Main::iteration() {
 	bool exit = false;
 
 	// process all our active interfaces
-#ifndef _3D_DISABLED
+#ifndef _XR_DISABLED
 	XRServer::get_singleton()->_process();
-#endif // _3D_DISABLED
+#endif // _XR_DISABLED
 
 	NavigationServer2D::get_singleton()->sync();
 	NavigationServer3D::get_singleton()->sync();
@@ -4557,13 +4562,13 @@ void Main::cleanup(bool p_force) {
 	//clear global shader variables before scene and other graphics stuff are deinitialized.
 	rendering_server->global_shader_parameters_clear();
 
-#ifndef _3D_DISABLED
+#ifndef _XR_DISABLED
 	if (xr_server) {
 		// Now that we're unregistering properly in plugins we need to keep access to xr_server for a little longer
 		// We do however unset our primary interface
 		xr_server->set_primary_interface(Ref<XRInterface>());
 	}
-#endif // _3D_DISABLED
+#endif // _XR_DISABLED
 
 #ifdef TOOLS_ENABLED
 	GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_EDITOR);
@@ -4593,11 +4598,11 @@ void Main::cleanup(bool p_force) {
 
 	EngineDebugger::deinitialize();
 
-#ifndef _3D_DISABLED
+#ifndef _XR_DISABLED
 	if (xr_server) {
 		memdelete(xr_server);
 	}
-#endif // _3D_DISABLED
+#endif // _XR_DISABLED
 
 	if (audio_server) {
 		audio_server->finish();

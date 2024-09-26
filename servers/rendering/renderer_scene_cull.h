@@ -46,9 +46,9 @@
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering/storage/utilities.h"
 
-#ifndef _3D_DISABLED
+#ifndef _XR_DISABLED
 #include "servers/xr/xr_interface.h"
-#endif // _3D_DISABLED
+#endif // _XR_DISABLED
 
 class RenderingLightCuller;
 

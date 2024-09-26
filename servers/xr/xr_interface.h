@@ -31,6 +31,8 @@
 #ifndef XR_INTERFACE_H
 #define XR_INTERFACE_H
 
+#ifndef _XR_DISABLED // WORKAROUND
+
 #include "core/math/projection.h"
 #include "core/os/thread_safe.h"
 #include "servers/xr_server.h"
@@ -165,5 +167,7 @@ VARIANT_ENUM_CAST(XRInterface::Capabilities);
 VARIANT_ENUM_CAST(XRInterface::TrackingStatus);
 VARIANT_ENUM_CAST(XRInterface::PlayAreaMode);
 VARIANT_ENUM_CAST(XRInterface::EnvironmentBlendMode);
+
+#endif // _XR_DISABLED
 
 #endif // XR_INTERFACE_H

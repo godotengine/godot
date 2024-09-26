@@ -69,7 +69,10 @@ struct BlitToScreen {
 
 class RendererCompositor {
 private:
+#ifndef _XR_DISABLED
 	bool xr_enabled = false;
+#endif // _XR_DISABLED
+
 	static RendererCompositor *singleton;
 
 protected:
@@ -106,7 +109,9 @@ public:
 	virtual double get_total_time() const = 0;
 
 	static bool is_low_end() { return low_end; };
+#ifndef _XR_DISABLED
 	virtual bool is_xr_enabled() const;
+#endif // _XR_DISABLED
 
 	static RendererCompositor *get_singleton() { return singleton; }
 	RendererCompositor();
