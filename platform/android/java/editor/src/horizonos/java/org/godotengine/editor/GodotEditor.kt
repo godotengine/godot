@@ -45,14 +45,14 @@ open class GodotEditor : BaseGodotEditor() {
 
 		internal val XR_RUN_GAME_INFO = EditorWindowInfo(GodotXRGame::class.java, 1667, ":GodotXRGame")
 
-		internal const val USE_SCENE_PERMISSION = "com.oculus.permission.USE_SCENE"
+		internal val USE_SCENE_PERMISSIONS = listOf("com.oculus.permission.USE_SCENE", "horizonos.permission.USE_SCENE")
 	}
 
 	override fun getExcludedPermissions(): MutableSet<String> {
 		val excludedPermissions = super.getExcludedPermissions()
 		// The USE_SCENE permission is requested when the "xr/openxr/enabled" project setting
 		// is enabled.
-		excludedPermissions.add(USE_SCENE_PERMISSION)
+		excludedPermissions.addAll(USE_SCENE_PERMISSIONS)
 		return excludedPermissions
 	}
 
