@@ -485,7 +485,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 
 					float a = randomize(r_noise) * 2.0 * PI;
 					float vogel_index = float(total_ray_count - 1 - (i * shadowing_ray_count + j)); // Start from (total_ray_count - 1) so we check the outer points first.
-					vec2 light_disk_sample = (get_vogel_disk(vogel_index, a, shadowing_ray_count_sqrt)) * soft_shadowing_disk_size * light_data.shadow_blur;
+					vec2 light_disk_sample = get_vogel_disk(vogel_index, a, shadowing_ray_count_sqrt) * soft_shadowing_disk_size * light_data.shadow_blur;
 					vec3 light_disk_to_point = normalize(light_to_point + light_disk_sample.x * light_to_point_tan + light_disk_sample.y * light_to_point_bitan);
 					// Offset the ray origin for AA, offset the light position for soft shadows.
 					if (trace_ray_any_hit(origin - light_disk_to_point * (bake_params.bias + length(disk_sample)), p_position - light_disk_to_point * dist) == RAY_MISS) {

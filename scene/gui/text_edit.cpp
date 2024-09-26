@@ -1265,7 +1265,7 @@ void TextEdit::_notification(int p_what) {
 					}
 
 					if (!clipped && lookup_symbol_word.length() != 0) { // Highlight word
-						if (is_ascii_alphabet_char(lookup_symbol_word[0]) || lookup_symbol_word[0] == '_' || lookup_symbol_word[0] == '.') {
+						if (is_unicode_identifier_start(lookup_symbol_word[0]) || lookup_symbol_word[0] == '.') {
 							Color highlight_underline_color = !editable ? theme_cache.font_readonly_color : theme_cache.font_color;
 							int lookup_symbol_word_col = _get_column_pos_of_word(lookup_symbol_word, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, 0);
 							int lookup_symbol_word_len = lookup_symbol_word.length();
@@ -2958,7 +2958,7 @@ void TextEdit::_close_ime_window() {
 
 void TextEdit::_update_ime_window_position() {
 	DisplayServer::WindowID wid = get_window() ? get_window()->get_window_id() : DisplayServer::INVALID_WINDOW_ID;
-	if (wid == DisplayServer::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME) || !DisplayServer::get_singleton()->window_is_focused(wid)) {
+	if (wid == DisplayServer::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
 		return;
 	}
 	DisplayServer::get_singleton()->window_set_ime_active(true, wid);
@@ -3034,6 +3034,7 @@ Variant TextEdit::get_drag_data(const Point2 &p_point) {
 	if (has_selection() && selection_drag_attempt) {
 		String t = get_selected_text();
 		Label *l = memnew(Label);
+		l->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Don't translate user input.
 		l->set_text(t);
 		set_drag_preview(l);
 		return t;
@@ -3364,6 +3365,14 @@ void TextEdit::set_middle_mouse_paste_enabled(bool p_enabled) {
 
 bool TextEdit::is_middle_mouse_paste_enabled() const {
 	return middle_mouse_paste_enabled;
+}
+
+void TextEdit::set_empty_selection_clipboard_enabled(bool p_enabled) {
+	empty_selection_clipboard_enabled = p_enabled;
+}
+
+bool TextEdit::is_empty_selection_clipboard_enabled() const {
+	return empty_selection_clipboard_enabled;
 }
 
 // Text manipulation
@@ -6568,6 +6577,9 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_middle_mouse_paste_enabled", "enabled"), &TextEdit::set_middle_mouse_paste_enabled);
 	ClassDB::bind_method(D_METHOD("is_middle_mouse_paste_enabled"), &TextEdit::is_middle_mouse_paste_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_empty_selection_clipboard_enabled", "enabled"), &TextEdit::set_empty_selection_clipboard_enabled);
+	ClassDB::bind_method(D_METHOD("is_empty_selection_clipboard_enabled"), &TextEdit::is_empty_selection_clipboard_enabled);
+
 	// Text manipulation
 	ClassDB::bind_method(D_METHOD("clear"), &TextEdit::clear);
 
@@ -6961,6 +6973,7 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_and_drop_selection_enabled"), "set_drag_and_drop_selection_enabled", "is_drag_and_drop_selection_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "virtual_keyboard_enabled"), "set_virtual_keyboard_enabled", "is_virtual_keyboard_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "middle_mouse_paste_enabled"), "set_middle_mouse_paste_enabled", "is_middle_mouse_paste_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "empty_selection_clipboard_enabled"), "set_empty_selection_clipboard_enabled", "is_empty_selection_clipboard_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "wrap_mode", PROPERTY_HINT_ENUM, "None,Boundary"), "set_line_wrapping_mode", "get_line_wrapping_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Arbitrary:1,Word:2,Word (Smart):3"), "set_autowrap_mode", "get_autowrap_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "indent_wrapped_lines"), "set_indent_wrapped_lines", "is_indent_wrapped_lines");
@@ -7215,6 +7228,10 @@ void TextEdit::_cut_internal(int p_caret) {
 		return;
 	}
 
+	if (!empty_selection_clipboard_enabled) {
+		return;
+	}
+
 	// Remove full lines.
 	begin_complex_operation();
 	begin_multicaret_edit();
@@ -7242,6 +7259,10 @@ void TextEdit::_copy_internal(int p_caret) {
 	if (has_selection(p_caret)) {
 		DisplayServer::get_singleton()->clipboard_set(get_selected_text(p_caret));
 		cut_copy_line = "";
+		return;
+	}
+
+	if (!empty_selection_clipboard_enabled) {
 		return;
 	}
 

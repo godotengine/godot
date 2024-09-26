@@ -4779,6 +4779,31 @@ TEST_CASE("[SceneTree][CodeEdit] text manipulation") {
 		CHECK(code_edit->get_caret_column(3) == 0);
 	}
 
+	SUBCASE("[SceneTree][CodeEdit] cut when empty selection clipboard disabled") {
+		DisplayServerMock *DS = (DisplayServerMock *)(DisplayServer::get_singleton());
+		code_edit->set_empty_selection_clipboard_enabled(false);
+		DS->clipboard_set("");
+
+		code_edit->set_text("this is\nsome\n");
+		code_edit->set_caret_line(0);
+		code_edit->set_caret_column(6);
+		MessageQueue::get_singleton()->flush();
+		SIGNAL_DISCARD("text_set");
+		SIGNAL_DISCARD("text_changed");
+		SIGNAL_DISCARD("lines_edited_from");
+		SIGNAL_DISCARD("caret_changed");
+
+		code_edit->cut();
+		MessageQueue::get_singleton()->flush();
+		CHECK(DS->clipboard_get() == "");
+		CHECK(code_edit->get_text() == "this is\nsome\n");
+		CHECK(code_edit->get_caret_line() == 0);
+		CHECK(code_edit->get_caret_column() == 6);
+		SIGNAL_CHECK_FALSE("caret_changed");
+		SIGNAL_CHECK_FALSE("text_changed");
+		SIGNAL_CHECK_FALSE("lines_edited_from");
+	}
+
 	SUBCASE("[SceneTree][CodeEdit] new line") {
 		// Add a new line.
 		code_edit->set_text("test new line");

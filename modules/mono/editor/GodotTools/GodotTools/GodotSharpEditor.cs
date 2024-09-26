@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using GodotTools.Build;
 using GodotTools.Ides;
 using GodotTools.Ides.Rider;
@@ -259,11 +260,12 @@ namespace GodotTools
 
                     var args = new List<string>
                     {
+                        Path.Combine(GodotSharpDirs.DataEditorToolsDir, "GodotTools.OpenVisualStudio.dll"),
                         GodotSharpDirs.ProjectSlnPath,
                         line >= 0 ? $"{scriptPath};{line + 1};{col + 1}" : scriptPath
                     };
 
-                    string command = Path.Combine(GodotSharpDirs.DataEditorToolsDir, "GodotTools.OpenVisualStudio.exe");
+                    string command = DotNetFinder.FindDotNetExe() ?? "dotnet";
 
                     try
                     {
@@ -700,6 +702,23 @@ namespace GodotTools
         private static IntPtr InternalCreateInstance(IntPtr unmanagedCallbacks, int unmanagedCallbacksSize)
         {
             Internal.Initialize(unmanagedCallbacks, unmanagedCallbacksSize);
+
+            var populateConstructorMethod =
+                AppDomain.CurrentDomain
+                    .GetAssemblies()
+                    .First(x => x.GetName().Name == "GodotSharpEditor")
+                    .GetType("Godot.EditorConstructors")?
+                    .GetMethod("AddEditorConstructors",
+                        BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
+
+            if (populateConstructorMethod == null)
+            {
+                throw new MissingMethodException("Godot.EditorConstructors",
+                    "AddEditorConstructors");
+            }
+
+            populateConstructorMethod.Invoke(null, null);
+
             return new GodotSharpEditor().NativeInstance;
         }
     }

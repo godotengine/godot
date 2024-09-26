@@ -89,6 +89,9 @@ protected:
 
 	GDVIRTUAL0RC(RID, _get_rid);
 
+	GDVIRTUAL1C(_set_path_cache, String);
+	GDVIRTUAL0(_reset_state);
+
 public:
 	static Node *(*_get_local_scene_func)(); //used by editor
 	static void (*_update_configuration_warning)(); //used by editor
@@ -144,11 +147,9 @@ public:
 
 	virtual RID get_rid() const; // some resources may offer conversion to RID
 
-#ifdef TOOLS_ENABLED
 	//helps keep IDs same number when loading/saving scenes. -1 clears ID and it Returns -1 when no id stored
 	void set_id_for_path(const String &p_path, const String &p_id);
 	String get_id_for_path(const String &p_path) const;
-#endif
 
 	Resource();
 	~Resource();

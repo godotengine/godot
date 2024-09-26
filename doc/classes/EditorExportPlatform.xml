@@ -42,6 +42,18 @@
 				Creates a PCK archive at [param path] for the specified [param preset].
 			</description>
 		</method>
+		<method name="export_pack_patch">
+			<return type="int" enum="Error" />
+			<param index="0" name="preset" type="EditorExportPreset" />
+			<param index="1" name="debug" type="bool" />
+			<param index="2" name="path" type="String" />
+			<param index="3" name="patches" type="PackedStringArray" default="PackedStringArray()" />
+			<param index="4" name="flags" type="int" enum="EditorExportPlatform.DebugFlags" is_bitfield="true" default="0" />
+			<description>
+				Creates a patch PCK archive at [param path] for the specified [param preset], containing only the files that have changed since the last patch.
+				[b]Note:[/b] [param patches] is an optional override of the set of patches defined in the export preset. When empty the patches defined in the export preset will be used instead.
+			</description>
+		</method>
 		<method name="export_project">
 			<return type="int" enum="Error" />
 			<param index="0" name="preset" type="EditorExportPreset" />
@@ -73,6 +85,18 @@
 			<param index="3" name="flags" type="int" enum="EditorExportPlatform.DebugFlags" is_bitfield="true" default="0" />
 			<description>
 				Create a ZIP archive at [param path] for the specified [param preset].
+			</description>
+		</method>
+		<method name="export_zip_patch">
+			<return type="int" enum="Error" />
+			<param index="0" name="preset" type="EditorExportPreset" />
+			<param index="1" name="debug" type="bool" />
+			<param index="2" name="path" type="String" />
+			<param index="3" name="patches" type="PackedStringArray" default="PackedStringArray()" />
+			<param index="4" name="flags" type="int" enum="EditorExportPlatform.DebugFlags" is_bitfield="true" default="0" />
+			<description>
+				Create a patch ZIP archive at [param path] for the specified [param preset], containing only the files that have changed since the last patch.
+				[b]Note:[/b] [param patches] is an optional override of the set of patches defined in the export preset. When empty the patches defined in the export preset will be used instead.
 			</description>
 		</method>
 		<method name="find_export_template" qualifiers="const">
@@ -151,6 +175,15 @@
 				If [param embed] is [code]true[/code], PCK content is appended to the end of [param path] file and return [Dictionary] additionally include following keys: [code]embedded_start: int[/code] (embedded PCK offset) and [code]embedded_size: int[/code] (embedded PCK size).
 			</description>
 		</method>
+		<method name="save_pack_patch">
+			<return type="Dictionary" />
+			<param index="0" name="preset" type="EditorExportPreset" />
+			<param index="1" name="debug" type="bool" />
+			<param index="2" name="path" type="String" />
+			<description>
+				Saves patch PCK archive and returns [Dictionary] with the following keys: [code]result: Error[/code], [code]so_files: Array[/code] (array of the shared/static objects which contains dictionaries with the following keys: [code]path: String[/code], [code]tags: PackedStringArray[/code], and [code]target_folder: String[/code]).
+			</description>
+		</method>
 		<method name="save_zip">
 			<return type="Dictionary" />
 			<param index="0" name="preset" type="EditorExportPreset" />
@@ -158,6 +191,15 @@
 			<param index="2" name="path" type="String" />
 			<description>
 				Saves ZIP archive and returns [Dictionary] with the following keys: [code]result: Error[/code], [code]so_files: Array[/code] (array of the shared/static objects which contains dictionaries with the following keys: [code]path: String[/code], [code]tags: PackedStringArray[/code], and [code]target_folder: String[/code]).
+			</description>
+		</method>
+		<method name="save_zip_patch">
+			<return type="Dictionary" />
+			<param index="0" name="preset" type="EditorExportPreset" />
+			<param index="1" name="debug" type="bool" />
+			<param index="2" name="path" type="String" />
+			<description>
+				Saves patch ZIP archive and returns [Dictionary] with the following keys: [code]result: Error[/code], [code]so_files: Array[/code] (array of the shared/static objects which contains dictionaries with the following keys: [code]path: String[/code], [code]tags: PackedStringArray[/code], and [code]target_folder: String[/code]).
 			</description>
 		</method>
 		<method name="ssh_push_to_remote" qualifiers="const">

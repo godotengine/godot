@@ -71,6 +71,8 @@ void EditorExportPlatformExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_export_project, "preset", "debug", "path", "flags");
 	GDVIRTUAL_BIND(_export_pack, "preset", "debug", "path", "flags");
 	GDVIRTUAL_BIND(_export_zip, "preset", "debug", "path", "flags");
+	GDVIRTUAL_BIND(_export_pack_patch, "preset", "debug", "path", "patches", "flags");
+	GDVIRTUAL_BIND(_export_zip_patch, "preset", "debug", "path", "patches", "flags");
 
 	GDVIRTUAL_BIND(_get_platform_features);
 
@@ -289,6 +291,44 @@ Error EditorExportPlatformExtension::export_zip(const Ref<EditorExportPreset> &p
 		return ret;
 	}
 	return save_zip(p_preset, p_debug, p_path);
+}
+
+Error EditorExportPlatformExtension::export_pack_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, const Vector<String> &p_patches, BitField<EditorExportPlatform::DebugFlags> p_flags) {
+	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+
+	Error err = _load_patches(p_patches.is_empty() ? p_preset->get_patches() : p_patches);
+	if (err != OK) {
+		return err;
+	}
+
+	Error ret = FAILED;
+	if (GDVIRTUAL_CALL(_export_pack_patch, p_preset, p_debug, p_path, p_patches, p_flags, ret)) {
+		_unload_patches();
+		return ret;
+	}
+
+	err = save_pack_patch(p_preset, p_debug, p_path);
+	_unload_patches();
+	return err;
+}
+
+Error EditorExportPlatformExtension::export_zip_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, const Vector<String> &p_patches, BitField<EditorExportPlatform::DebugFlags> p_flags) {
+	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+
+	Error err = _load_patches(p_patches.is_empty() ? p_preset->get_patches() : p_patches);
+	if (err != OK) {
+		return err;
+	}
+
+	Error ret = FAILED;
+	if (GDVIRTUAL_CALL(_export_zip_patch, p_preset, p_debug, p_path, p_patches, p_flags, ret)) {
+		_unload_patches();
+		return ret;
+	}
+
+	err = save_zip_patch(p_preset, p_debug, p_path);
+	_unload_patches();
+	return err;
 }
 
 void EditorExportPlatformExtension::get_platform_features(List<String> *r_features) const {

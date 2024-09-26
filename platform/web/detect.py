@@ -199,6 +199,11 @@ def configure(env: "SConsEnvironment"):
     cc_version = get_compiler_version(env)
     cc_semver = (cc_version["major"], cc_version["minor"], cc_version["patch"])
 
+    # Minimum emscripten requirements.
+    if cc_semver < (3, 1, 62):
+        print_error("The minimum emscripten version to build Godot is 3.1.62, detected: %s.%s.%s" % cc_semver)
+        sys.exit(255)
+
     env.Prepend(CPPPATH=["#platform/web"])
     env.Append(CPPDEFINES=["WEB_ENABLED", "UNIX_ENABLED"])
 
@@ -210,14 +215,12 @@ def configure(env: "SConsEnvironment"):
         env.Append(LINKFLAGS=["-sOFFSCREEN_FRAMEBUFFER=1"])
         # Disables the use of *glGetProcAddress() which is inefficient.
         # See https://emscripten.org/docs/tools_reference/settings_reference.html#gl-enable-get-proc-address
-        if cc_semver >= (3, 1, 51):
-            env.Append(LINKFLAGS=["-sGL_ENABLE_GET_PROC_ADDRESS=0"])
+        env.Append(LINKFLAGS=["-sGL_ENABLE_GET_PROC_ADDRESS=0"])
 
     if env["javascript_eval"]:
         env.Append(CPPDEFINES=["JAVASCRIPT_EVAL_ENABLED"])
 
-    stack_size_opt = "STACK_SIZE" if cc_semver >= (3, 1, 25) else "TOTAL_STACK"
-    env.Append(LINKFLAGS=["-s%s=%sKB" % (stack_size_opt, env["stack_size"])])
+    env.Append(LINKFLAGS=["-s%s=%sKB" % ("STACK_SIZE", env["stack_size"])])
 
     if env["threads"]:
         # Thread support (via SharedArrayBuffer).
@@ -237,21 +240,13 @@ def configure(env: "SConsEnvironment"):
         env["proxy_to_pthread"] = False
 
     if env["lto"] != "none":
-        # Workaround https://github.com/emscripten-core/emscripten/issues/19781.
-        if cc_semver >= (3, 1, 42) and cc_semver < (3, 1, 46):
-            env.Append(LINKFLAGS=["-Wl,-u,scalbnf"])
         # Workaround https://github.com/emscripten-core/emscripten/issues/16836.
-        if cc_semver >= (3, 1, 47):
-            env.Append(LINKFLAGS=["-Wl,-u,_emscripten_run_callback_on_thread"])
+        env.Append(LINKFLAGS=["-Wl,-u,_emscripten_run_callback_on_thread"])
 
     if env["dlink_enabled"]:
         if env["proxy_to_pthread"]:
             print_warning("GDExtension support requires proxy_to_pthread=no, disabling proxy to pthread.")
             env["proxy_to_pthread"] = False
-
-        if cc_semver < (3, 1, 14):
-            print_error("GDExtension support requires emscripten >= 3.1.14, detected: %s.%s.%s" % cc_semver)
-            sys.exit(255)
 
         env.Append(CCFLAGS=["-sSIDE_MODULE=2"])
         env.Append(LINKFLAGS=["-sSIDE_MODULE=2"])
@@ -259,8 +254,7 @@ def configure(env: "SConsEnvironment"):
         env.Append(LINKFLAGS=["-fvisibility=hidden"])
         env.extra_suffix = ".dlink" + env.extra_suffix
 
-    # WASM_BIGINT is needed since emscripten ≥ 3.1.41
-    needs_wasm_bigint = cc_semver >= (3, 1, 41)
+    env.Append(LINKFLAGS=["-sWASM_BIGINT"])
 
     # Run the main application in a web worker
     if env["proxy_to_pthread"]:
@@ -269,11 +263,6 @@ def configure(env: "SConsEnvironment"):
         env.Append(LINKFLAGS=["-sEXPORTED_RUNTIME_METHODS=['_emscripten_proxy_main']"])
         # https://github.com/emscripten-core/emscripten/issues/18034#issuecomment-1277561925
         env.Append(LINKFLAGS=["-sTEXTDECODER=0"])
-        # BigInt support to pass object pointers between contexts
-        needs_wasm_bigint = True
-
-    if needs_wasm_bigint:
-        env.Append(LINKFLAGS=["-sWASM_BIGINT"])
 
     # Reduce code size by generating less support code (e.g. skip NodeJS support).
     env.Append(LINKFLAGS=["-sENVIRONMENT=web,worker"])

@@ -1443,6 +1443,11 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 					i++;
 				}
 
+				AnimationPlayerEditor *ape = AnimationPlayerEditor::get_singleton();
+				if (ape) {
+					undo_redo->add_do_method(ape, "_animation_update_key_frame");
+					undo_redo->add_undo_method(ape, "_animation_update_key_frame");
+				}
 				undo_redo->commit_action();
 
 			} else if (select_single_attempt != IntPair(-1, -1)) {
@@ -1967,15 +1972,6 @@ void AnimationBezierTrackEdit::delete_selection() {
 void AnimationBezierTrackEdit::_bezier_track_insert_key_at_anim(const Ref<Animation> &p_anim, int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle, const Animation::HandleMode p_handle_mode) {
 	int idx = p_anim->bezier_track_insert_key(p_track, p_time, p_value, p_in_handle, p_out_handle);
 	p_anim->bezier_track_set_key_handle_mode(p_track, idx, p_handle_mode);
-
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Animation Bezier Curve Change Call"));
-	AnimationPlayerEditor *ape = AnimationPlayerEditor::get_singleton();
-	if (ape) {
-		undo_redo->add_do_method(ape, "_animation_update_key_frame");
-		undo_redo->add_undo_method(ape, "_animation_update_key_frame");
-	}
-	undo_redo->commit_action();
 }
 
 void AnimationBezierTrackEdit::_bind_methods() {

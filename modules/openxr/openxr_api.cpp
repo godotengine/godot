@@ -1247,7 +1247,7 @@ bool OpenXRAPI::create_main_swapchains(Size2i p_size) {
 			return false;
 		}
 
-		set_object_name(XR_OBJECT_TYPE_SWAPCHAIN, uint64_t(render_state.main_swapchains[OPENXR_SWAPCHAIN_COLOR].get_swapchain()), "Main depth swapchain");
+		set_object_name(XR_OBJECT_TYPE_SWAPCHAIN, uint64_t(render_state.main_swapchains[OPENXR_SWAPCHAIN_DEPTH].get_swapchain()), "Main depth swapchain");
 	}
 
 	// We create our velocity swapchain if:

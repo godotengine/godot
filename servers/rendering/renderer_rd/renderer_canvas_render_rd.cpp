@@ -2479,6 +2479,7 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 					r_current_batch = _new_batch(r_batch_broken);
 					r_current_batch->command_type = Item::Command::TYPE_NINEPATCH;
 					r_current_batch->command = c;
+					r_current_batch->has_blend = false;
 					r_current_batch->pipeline_variant = PipelineVariant::PIPELINE_VARIANT_NINEPATCH;
 				}
 
@@ -2548,6 +2549,7 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 				r_current_batch = _new_batch(r_batch_broken);
 
 				r_current_batch->command_type = Item::Command::TYPE_POLYGON;
+				r_current_batch->has_blend = false;
 				r_current_batch->command = c;
 
 				TextureState tex_state(polygon->texture, texture_filter, texture_repeat, false, use_linear_colors);
@@ -2585,6 +2587,7 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 				if (primitive->point_count != r_current_batch->primitive_points || r_current_batch->command_type != Item::Command::TYPE_PRIMITIVE) {
 					r_current_batch = _new_batch(r_batch_broken);
 					r_current_batch->command_type = Item::Command::TYPE_PRIMITIVE;
+					r_current_batch->has_blend = false;
 					r_current_batch->command = c;
 					r_current_batch->primitive_points = primitive->point_count;
 
@@ -2646,6 +2649,7 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 				r_current_batch = _new_batch(r_batch_broken);
 				r_current_batch->command = c;
 				r_current_batch->command_type = c->type;
+				r_current_batch->has_blend = false;
 
 				InstanceData *instance_data = nullptr;
 
@@ -2799,6 +2803,7 @@ void RendererCanvasRenderRD::_render_batch(RD::DrawListID p_draw_list, PipelineV
 			RID pipeline = p_pipeline_variants->variants[p_batch->light_mode][p_batch->pipeline_variant].get_render_pipeline(RD::INVALID_ID, p_framebuffer_format);
 			RD::get_singleton()->draw_list_bind_render_pipeline(p_draw_list, pipeline);
 			if (p_batch->has_blend) {
+				DEV_ASSERT(p_batch->pipeline_variant == PIPELINE_VARIANT_QUAD_LCD_BLEND);
 				RD::get_singleton()->draw_list_set_blend_constants(p_draw_list, p_batch->modulate);
 			}
 

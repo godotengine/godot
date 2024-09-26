@@ -161,11 +161,13 @@ void GodotBodyPair3D::validate_contacts() {
 	}
 }
 
-// _test_ccd prevents tunneling by slowing down a high velocity body that is about to collide so that next frame it will be at an appropriate location to collide (i.e. slight overlap)
-// Warning: the way velocity is adjusted down to cause a collision means the momentum will be weaker than it should for a bounce!
-// Process: only proceed if body A's motion is high relative to its size.
-// cast forward along motion vector to see if A is going to enter/pass B's collider next frame, only proceed if it does.
-// adjust the velocity of A down so that it will just slightly intersect the collider instead of blowing right past it.
+// `_test_ccd` prevents tunneling by slowing down a high velocity body that is about to collide so
+// that next frame it will be at an appropriate location to collide (i.e. slight overlap).
+// WARNING: The way velocity is adjusted down to cause a collision means the momentum will be
+// weaker than it should for a bounce!
+// Process: Only proceed if body A's motion is high relative to its size.
+// Cast forward along motion vector to see if A is going to enter/pass B's collider next frame, only proceed if it does.
+// Adjust the velocity of A down so that it will just slightly intersect the collider instead of blowing right past it.
 bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, const Transform3D &p_xform_A, GodotBody3D *p_B, int p_shape_B, const Transform3D &p_xform_B) {
 	GodotShape3D *shape_A_ptr = p_A->get_shape(p_shape_A);
 

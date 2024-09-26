@@ -33,6 +33,7 @@
 
 #include "editor/dependency_editor.h"
 #include "editor/editor_file_system.h"
+#include "editor/file_info.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/script_create_dialog.h"
 #include "scene/gui/box_container.h"
@@ -93,16 +94,6 @@ public:
 		DISPLAY_MODE_HSPLIT,
 	};
 
-	enum FileSortOption {
-		FILE_SORT_NAME = 0,
-		FILE_SORT_NAME_REVERSE,
-		FILE_SORT_TYPE,
-		FILE_SORT_TYPE_REVERSE,
-		FILE_SORT_MODIFIED_TIME,
-		FILE_SORT_MODIFIED_TIME_REVERSE,
-		FILE_SORT_MAX,
-	};
-
 	enum Overwrite {
 		OVERWRITE_UNDECIDED,
 		OVERWRITE_REPLACE,
@@ -146,7 +137,7 @@ private:
 	HashMap<String, Color> folder_colors;
 	Dictionary assigned_folder_colors;
 
-	FileSortOption file_sort = FILE_SORT_NAME;
+	FileSortOption file_sort = FileSortOption::FILE_SORT_NAME;
 
 	VBoxContainer *scanning_vb = nullptr;
 	ProgressBar *scanning_progress = nullptr;
@@ -270,7 +261,6 @@ private:
 	void _toggle_file_display();
 	void _set_file_display(bool p_active);
 	void _fs_changed();
-	void _directory_created(const String &p_path);
 
 	void _select_file(const String &p_path, bool p_select_in_favorites = false);
 	void _tree_activate_file();
@@ -337,25 +327,6 @@ private:
 	void _tree_empty_click(const Vector2 &p_pos, MouseButton p_button);
 	void _tree_empty_selected();
 
-	struct FileInfo {
-		String name;
-		String path;
-		String icon_path;
-		StringName type;
-		Vector<String> sources;
-		bool import_broken = false;
-		uint64_t modified_time = 0;
-
-		bool operator<(const FileInfo &fi) const {
-			return FileNoCaseComparator()(name, fi.name);
-		}
-	};
-
-	struct FileInfoTypeComparator;
-	struct FileInfoModifiedTimeComparator;
-
-	void _sort_file_info_list(List<FileSystemDock::FileInfo> &r_file_list);
-
 	void _search(EditorFileSystemDirectory *p_path, List<FileInfo> *matches, int p_max_items);
 
 	void _set_current_path_line_edit_text(const String &p_path);
@@ -417,6 +388,7 @@ public:
 	ScriptCreateDialog *get_script_create_dialog() const;
 
 	void fix_dependencies(const String &p_for_file);
+	void update_all();
 
 	int get_h_split_offset() const { return split_box_offset_h; }
 	void set_h_split_offset(int p_offset) { split_box_offset_h = p_offset; }

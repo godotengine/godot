@@ -87,7 +87,7 @@
 		<method name="line_poll">
 			<return type="void" />
 			<description>
-				Forces a processing loop of debugger events. The purpose of this method is just processing events every now and then when the script might get too busy, so that bugs like infinite loops can be caught
+				Forces a processing loop of debugger events. The purpose of this method is just processing events every now and then when the script might get too busy, so that bugs like infinite loops can be caught.
 			</description>
 		</method>
 		<method name="profiler_add_frame_data">

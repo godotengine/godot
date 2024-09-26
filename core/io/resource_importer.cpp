@@ -507,7 +507,7 @@ bool ResourceFormatImporter::are_import_settings_valid(const String &p_path) con
 
 	for (int i = 0; i < importers.size(); i++) {
 		if (importers[i]->get_importer_name() == pat.importer) {
-			if (!importers[i]->are_import_settings_valid(p_path)) { //importer thinks this is not valid
+			if (!importers[i]->are_import_settings_valid(p_path, pat.metadata)) { //importer thinks this is not valid
 				return false;
 			}
 		}

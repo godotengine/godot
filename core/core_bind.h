@@ -116,6 +116,8 @@ public:
 	void add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front);
 	void remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver);
 
+	ResourceUID::ID get_resource_id_for_path(const String &p_path, bool p_generate = false);
+
 	ResourceSaver() { singleton = this; }
 };
 
@@ -566,6 +568,9 @@ public:
 
 	// `set_write_movie_path()` is not exposed to the scripting API as changing it at run-time has no effect.
 	String get_write_movie_path() const;
+
+	void set_print_to_stdout(bool p_enabled);
+	bool is_printing_to_stdout() const;
 
 	void set_print_error_messages(bool p_enabled);
 	bool is_printing_error_messages() const;

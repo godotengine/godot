@@ -3997,7 +3997,7 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 	xform.orthonormalize();
 	xform.basis.scale(scale);
 	RenderingServer::get_singleton()->instance_set_transform(rotate_gizmo_instance[3], xform);
-	RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], spatial_editor->is_gizmo_visible() && transform_gizmo_visible && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE));
+	RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], spatial_editor->is_gizmo_visible() && !_edit.instant && transform_gizmo_visible && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE));
 }
 
 void Node3DEditorViewport::set_state(const Dictionary &p_state) {

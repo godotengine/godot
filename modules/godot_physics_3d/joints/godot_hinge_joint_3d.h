@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_cone_twist_joint_3d.h                                           */
+/*  godot_hinge_joint_3d.h                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,16 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GODOT_CONE_TWIST_JOINT_3D_H
-#define GODOT_CONE_TWIST_JOINT_3D_H
+#ifndef GODOT_HINGE_JOINT_3D_H
+#define GODOT_HINGE_JOINT_3D_H
 
 /*
 Adapted to Godot from the Bullet library.
 */
 
+#include "../godot_joint_3d.h"
+#include "godot_jacobian_entry_3d.h"
+
 /*
 Bullet Continuous Collision Detection and Physics Library
-GodotConeTwistJoint3D is Copyright (c) 2007 Starbreeze Studios
+Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the use of this software.
@@ -48,95 +51,66 @@ subject to the following restrictions:
 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
-
-Written by: Marcus Hennix
 */
 
-#include "servers/physics_3d/godot_joint_3d.h"
-#include "servers/physics_3d/joints/godot_jacobian_entry_3d.h"
-
-// GodotConeTwistJoint3D can be used to simulate ragdoll joints (upper arm, leg etc).
-class GodotConeTwistJoint3D : public GodotJoint3D {
-#ifdef IN_PARALLELL_SOLVER
-public:
-#endif
-
+class GodotHingeJoint3D : public GodotJoint3D {
 	union {
 		struct {
 			GodotBody3D *A;
 			GodotBody3D *B;
 		};
 
-		GodotBody3D *_arr[2] = { nullptr, nullptr };
+		GodotBody3D *_arr[2] = {};
 	};
 
-	GodotJacobianEntry3D m_jac[3] = {}; //3 orthogonal linear constraints
+	GodotJacobianEntry3D m_jac[3]; //3 orthogonal linear constraints
+	GodotJacobianEntry3D m_jacAng[3]; //2 orthogonal angular constraints+ 1 for limit/motor
 
-	real_t m_appliedImpulse = 0.0;
-	Transform3D m_rbAFrame;
+	Transform3D m_rbAFrame; // constraint axii. Assumes z is hinge axis.
 	Transform3D m_rbBFrame;
 
-	real_t m_limitSoftness = 0.0;
+	real_t m_motorTargetVelocity = 0.0;
+	real_t m_maxMotorImpulse = 0.0;
+
+	real_t m_limitSoftness = 0.9;
 	real_t m_biasFactor = 0.3;
 	real_t m_relaxationFactor = 1.0;
 
-	real_t m_swingSpan1 = Math_TAU / 8.0;
-	real_t m_swingSpan2 = 0.0;
-	real_t m_twistSpan = 0.0;
+	real_t m_lowerLimit = Math_PI;
+	real_t m_upperLimit = -Math_PI;
 
-	Vector3 m_swingAxis;
-	Vector3 m_twistAxis;
+	real_t m_kHinge = 0.0;
 
-	real_t m_kSwing = 0.0;
-	real_t m_kTwist = 0.0;
+	real_t m_limitSign = 0.0;
+	real_t m_correction = 0.0;
 
-	real_t m_twistLimitSign = 0.0;
-	real_t m_swingCorrection = 0.0;
-	real_t m_twistCorrection = 0.0;
+	real_t m_accLimitImpulse = 0.0;
 
-	real_t m_accSwingLimitImpulse = 0.0;
-	real_t m_accTwistLimitImpulse = 0.0;
+	real_t tau = 0.3;
 
+	bool m_useLimit = false;
 	bool m_angularOnly = false;
-	bool m_solveTwistLimit = false;
-	bool m_solveSwingLimit = false;
+	bool m_enableAngularMotor = false;
+	bool m_solveLimit = false;
+
+	real_t m_appliedImpulse = 0.0;
 
 public:
-	virtual PhysicsServer3D::JointType get_type() const override { return PhysicsServer3D::JOINT_TYPE_CONE_TWIST; }
+	virtual PhysicsServer3D::JointType get_type() const override { return PhysicsServer3D::JOINT_TYPE_HINGE; }
 
 	virtual bool setup(real_t p_step) override;
 	virtual void solve(real_t p_step) override;
 
-	GodotConeTwistJoint3D(GodotBody3D *rbA, GodotBody3D *rbB, const Transform3D &rbAFrame, const Transform3D &rbBFrame);
+	real_t get_hinge_angle();
 
-	void setAngularOnly(bool angularOnly) {
-		m_angularOnly = angularOnly;
-	}
+	void set_param(PhysicsServer3D::HingeJointParam p_param, real_t p_value);
+	real_t get_param(PhysicsServer3D::HingeJointParam p_param) const;
 
-	void setLimit(real_t _swingSpan1, real_t _swingSpan2, real_t _twistSpan, real_t _softness = 0.8f, real_t _biasFactor = 0.3f, real_t _relaxationFactor = 1.0f) {
-		m_swingSpan1 = _swingSpan1;
-		m_swingSpan2 = _swingSpan2;
-		m_twistSpan = _twistSpan;
+	void set_flag(PhysicsServer3D::HingeJointFlag p_flag, bool p_value);
+	bool get_flag(PhysicsServer3D::HingeJointFlag p_flag) const;
 
-		m_limitSoftness = _softness;
-		m_biasFactor = _biasFactor;
-		m_relaxationFactor = _relaxationFactor;
-	}
-
-	inline int getSolveTwistLimit() {
-		return m_solveTwistLimit;
-	}
-
-	inline int getSolveSwingLimit() {
-		return m_solveTwistLimit;
-	}
-
-	inline real_t getTwistLimitSign() {
-		return m_twistLimitSign;
-	}
-
-	void set_param(PhysicsServer3D::ConeTwistJointParam p_param, real_t p_value);
-	real_t get_param(PhysicsServer3D::ConeTwistJointParam p_param) const;
+	GodotHingeJoint3D(GodotBody3D *rbA, GodotBody3D *rbB, const Transform3D &frameA, const Transform3D &frameB);
+	GodotHingeJoint3D(GodotBody3D *rbA, GodotBody3D *rbB, const Vector3 &pivotInA, const Vector3 &pivotInB, const Vector3 &axisInA, const Vector3 &axisInB);
 };
 
-#endif // GODOT_CONE_TWIST_JOINT_3D_H
+#endif // GODOT_HINGE_JOINT_3D_H

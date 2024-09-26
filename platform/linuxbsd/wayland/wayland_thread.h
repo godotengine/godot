@@ -665,7 +665,7 @@ private:
 		.preferred_buffer_transform = _wl_surface_on_preferred_buffer_transform,
 	};
 
-	static constexpr struct wl_callback_listener frame_wl_callback_listener {
+	static constexpr struct wl_callback_listener frame_wl_callback_listener = {
 		.done = _frame_wl_callback_on_done,
 	};
 
@@ -683,7 +683,7 @@ private:
 		.name = _wl_seat_on_name,
 	};
 
-	static constexpr struct wl_callback_listener cursor_frame_callback_listener {
+	static constexpr struct wl_callback_listener cursor_frame_callback_listener = {
 		.done = _cursor_frame_callback_on_done,
 	};
 

@@ -820,7 +820,7 @@ FindReplaceBar::FindReplaceBar() {
 
 /*** CODE EDITOR ****/
 
-static constexpr float ZOOM_FACTOR_PRESETS[7] = { 0.25f, 0.5f, 0.75f, 1.0f, 1.5f, 2.0f, 3.0f };
+static constexpr float ZOOM_FACTOR_PRESETS[8] = { 0.5f, 0.75f, 0.9f, 1.0f, 1.1f, 1.25f, 1.5f, 2.0f };
 
 // This function should be used to handle shortcuts that could otherwise
 // be handled too late if they weren't handled here.
@@ -1089,6 +1089,9 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->set_draw_tabs(EDITOR_GET("text_editor/appearance/whitespace/draw_tabs"));
 	text_editor->set_draw_spaces(EDITOR_GET("text_editor/appearance/whitespace/draw_spaces"));
 	text_editor->add_theme_constant_override("line_spacing", EDITOR_GET("text_editor/appearance/whitespace/line_spacing"));
+
+	// Behavior: General
+	text_editor->set_empty_selection_clipboard_enabled(EDITOR_GET("text_editor/behavior/general/empty_selection_clipboard"));
 
 	// Behavior: Navigation
 	text_editor->set_scroll_past_end_of_file_enabled(EDITOR_GET("text_editor/behavior/navigation/scroll_past_end_of_file"));
@@ -1716,8 +1719,7 @@ void CodeTextEditor::_zoom_to(float p_zoom_factor) {
 }
 
 void CodeTextEditor::set_zoom_factor(float p_zoom_factor) {
-	int preset_count = sizeof(ZOOM_FACTOR_PRESETS) / sizeof(float);
-	zoom_factor = CLAMP(p_zoom_factor, ZOOM_FACTOR_PRESETS[0], ZOOM_FACTOR_PRESETS[preset_count - 1]);
+	zoom_factor = CLAMP(p_zoom_factor, 0.25f, 3.0f);
 	int neutral_font_size = int(EDITOR_GET("interface/editor/code_font_size")) * EDSCALE;
 	int new_font_size = Math::round(zoom_factor * neutral_font_size);
 
@@ -1843,7 +1845,8 @@ CodeTextEditor::CodeTextEditor() {
 	status_bar->add_child(zoom_button);
 	zoom_button->set_flat(true);
 	zoom_button->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
-	zoom_button->set_tooltip_text(TTR("Zoom factor"));
+	zoom_button->set_tooltip_text(
+			TTR("Zoom factor") + "\n" + vformat(TTR("%sMouse wheel, %s/%s: Finetune\n%s: Reset"), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL), ED_GET_SHORTCUT("script_editor/zoom_in")->get_as_text(), ED_GET_SHORTCUT("script_editor/zoom_out")->get_as_text(), ED_GET_SHORTCUT("script_editor/reset_zoom")->get_as_text()));
 	zoom_button->set_text("100 %");
 
 	PopupMenu *zoom_menu = zoom_button->get_popup();

@@ -831,6 +831,9 @@ void CodeEdit::_cut_internal(int p_caret) {
 		delete_selection(p_caret);
 		return;
 	}
+	if (!is_empty_selection_clipboard_enabled()) {
+		return;
+	}
 	if (p_caret == -1) {
 		delete_lines();
 	} else {

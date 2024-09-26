@@ -607,11 +607,19 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 
 	if (rendering_context) {
 		if (rendering_context->initialize() != OK) {
-			ERR_PRINT(vformat("Failed to initialize %s context", rendering_driver));
 			memdelete(rendering_context);
 			rendering_context = nullptr;
-			r_error = ERR_UNAVAILABLE;
-			return;
+			bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
+			if (fallback_to_opengl3 && rendering_driver != "opengl3") {
+				WARN_PRINT("Your device seem not to support Vulkan, switching to OpenGL 3.");
+				rendering_driver = "opengl3";
+				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+			} else {
+				ERR_PRINT(vformat("Failed to initialize %s context", rendering_driver));
+				r_error = ERR_UNAVAILABLE;
+				return;
+			}
 		}
 
 		union {

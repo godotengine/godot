@@ -904,7 +904,7 @@
 		</member>
 		<member name="interface/inspector/delimitate_all_container_and_resources" type="bool" setter="" getter="">
 			If [code]true[/code], add a margin around Array, Dictionary, and Resource Editors that are not already colored.
-			[b]Note:[/b] If [member interface/inspector/nested_color_mode] is set to [b]Containers &amp; Resources[/b] this parameter will have no effect since those editors will already be colored
+			[b]Note:[/b] If [member interface/inspector/nested_color_mode] is set to [b]Containers &amp; Resources[/b] this parameter will have no effect since those editors will already be colored.
 		</member>
 		<member name="interface/inspector/disable_folding" type="bool" setter="" getter="">
 			If [code]true[/code], forces all property groups to be expanded in the Inspector dock and prevents collapsing them.
@@ -1199,6 +1199,9 @@
 		</member>
 		<member name="text_editor/behavior/files/trim_trailing_whitespace_on_save" type="bool" setter="" getter="">
 			If [code]true[/code], trims trailing whitespace when saving a script. Trailing whitespace refers to tab and space characters placed at the end of lines. Since these serve no practical purpose, they can and should be removed to make version control diffs less noisy.
+		</member>
+		<member name="text_editor/behavior/general/empty_selection_clipboard" type="bool" setter="" getter="">
+			If [code]true[/code], copying or cutting without a selection is performed on all lines with a caret. Otherwise, copy and cut require a selection.
 		</member>
 		<member name="text_editor/behavior/indent/auto_indent" type="bool" setter="" getter="">
 			If [code]true[/code], automatically indents code when pressing the [kbd]Enter[/kbd] key based on blocks above the new line.

@@ -35,8 +35,8 @@
 Adapted to Godot from the Bullet library.
 */
 
-#include "servers/physics_3d/godot_joint_3d.h"
-#include "servers/physics_3d/joints/godot_jacobian_entry_3d.h"
+#include "../godot_joint_3d.h"
+#include "godot_jacobian_entry_3d.h"
 
 /*
 Bullet Continuous Collision Detection and Physics Library
