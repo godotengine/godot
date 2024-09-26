@@ -8476,6 +8476,11 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 					return ERR_PARSE_ERROR;
 				}
 			} else {
+				if (b->parent_function->return_type == TYPE_VOID) {
+					_set_error(vformat(RTR("'%s' function cannot return a value."), "void"));
+					return ERR_PARSE_ERROR;
+				}
+
 				_set_tkpos(pos); //rollback, wants expression
 
 #ifdef DEBUG_ENABLED

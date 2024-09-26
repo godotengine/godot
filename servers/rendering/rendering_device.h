@@ -800,7 +800,7 @@ private:
 
 #ifndef DISABLE_DEPRECATED
 public:
-	enum BarrierMask{
+	enum BarrierMask {
 		BARRIER_MASK_VERTEX = 1,
 		BARRIER_MASK_FRAGMENT = 8,
 		BARRIER_MASK_COMPUTE = 2,

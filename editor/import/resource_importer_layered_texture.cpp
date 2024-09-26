@@ -431,22 +431,20 @@ String ResourceImporterLayeredTexture::get_import_settings_string() const {
 	return s;
 }
 
-bool ResourceImporterLayeredTexture::are_import_settings_valid(const String &p_path) const {
+bool ResourceImporterLayeredTexture::are_import_settings_valid(const String &p_path, const Dictionary &p_meta) const {
 	//will become invalid if formats are missing to import
-	Dictionary meta = ResourceFormatImporter::get_singleton()->get_resource_metadata(p_path);
-
-	if (!meta.has("vram_texture")) {
+	if (!p_meta.has("vram_texture")) {
 		return false;
 	}
 
-	bool vram = meta["vram_texture"];
+	bool vram = p_meta["vram_texture"];
 	if (!vram) {
 		return true; //do not care about non vram
 	}
 
 	Vector<String> formats_imported;
-	if (meta.has("imported_formats")) {
-		formats_imported = meta["imported_formats"];
+	if (p_meta.has("imported_formats")) {
+		formats_imported = p_meta["imported_formats"];
 	}
 
 	int index = 0;
