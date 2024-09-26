@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_module_mbedtls_config.h                                         */
+/*  file_info.cpp                                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,37 +28,34 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GODOT_MODULE_MBEDTLS_CONFIG_H
-#define GODOT_MODULE_MBEDTLS_CONFIG_H
+#include "editor/file_info.h"
 
-#include "platform_config.h"
-
-#ifdef GODOT_MBEDTLS_INCLUDE_H
-
-// Allow platforms to customize the mbedTLS configuration.
-#include GODOT_MBEDTLS_INCLUDE_H
-
-#else
-
-// Include default mbedTLS config.
-#include <mbedtls/mbedtls_config.h>
-
-// Disable weak cryptography.
-#undef MBEDTLS_KEY_EXCHANGE_DHE_PSK_ENABLED
-#undef MBEDTLS_KEY_EXCHANGE_DHE_RSA_ENABLED
-#undef MBEDTLS_DES_C
-#undef MBEDTLS_DHM_C
-
-#if !(defined(__linux__) && defined(__aarch64__))
-// ARMv8 hardware AES operations. Detection only possible on linux.
-// May technically be supported on some ARM32 arches but doesn't seem
-// to be in our current Linux SDK's neon-fp-armv8.
-#undef MBEDTLS_AESCE_C
-#endif
-
-// Disable deprecated
-#define MBEDTLS_DEPRECATED_REMOVED
-
-#endif // GODOT_MBEDTLS_INCLUDE_H
-
-#endif // GODOT_MODULE_MBEDTLS_CONFIG_H
+void sort_file_info_list(List<FileInfo> &r_file_list, FileSortOption p_file_sort_option) {
+	// Sort the file list if needed.
+	switch (p_file_sort_option) {
+		case FileSortOption::FILE_SORT_TYPE:
+			r_file_list.sort_custom<FileInfoTypeComparator>();
+			break;
+		case FileSortOption::FILE_SORT_TYPE_REVERSE:
+			r_file_list.sort_custom<FileInfoTypeComparator>();
+			r_file_list.reverse();
+			break;
+		case FileSortOption::FILE_SORT_MODIFIED_TIME:
+			r_file_list.sort_custom<FileInfoModifiedTimeComparator>();
+			break;
+		case FileSortOption::FILE_SORT_MODIFIED_TIME_REVERSE:
+			r_file_list.sort_custom<FileInfoModifiedTimeComparator>();
+			r_file_list.reverse();
+			break;
+		case FileSortOption::FILE_SORT_NAME_REVERSE:
+			r_file_list.sort();
+			r_file_list.reverse();
+			break;
+		case FileSortOption::FILE_SORT_NAME:
+			r_file_list.sort();
+			break;
+		default:
+			ERR_FAIL_MSG("Invalid file sort option.");
+			break;
+	}
+}

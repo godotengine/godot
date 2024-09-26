@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_module_mbedtls_config.h                                         */
+/*  file_info.h                                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,37 +28,47 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GODOT_MODULE_MBEDTLS_CONFIG_H
-#define GODOT_MODULE_MBEDTLS_CONFIG_H
+#ifndef FILE_INFO_H
+#define FILE_INFO_H
 
-#include "platform_config.h"
+#include "core/variant/variant.h"
 
-#ifdef GODOT_MBEDTLS_INCLUDE_H
+enum class FileSortOption {
+	FILE_SORT_NAME = 0,
+	FILE_SORT_NAME_REVERSE = 1,
+	FILE_SORT_TYPE = 2,
+	FILE_SORT_TYPE_REVERSE = 3,
+	FILE_SORT_MODIFIED_TIME = 4,
+	FILE_SORT_MODIFIED_TIME_REVERSE = 5,
+	FILE_SORT_MAX = 6,
+};
 
-// Allow platforms to customize the mbedTLS configuration.
-#include GODOT_MBEDTLS_INCLUDE_H
+struct FileInfo {
+	String name;
+	String path;
+	String icon_path;
+	StringName type;
+	Vector<String> sources;
+	bool import_broken = false;
+	uint64_t modified_time = 0;
 
-#else
+	bool operator<(const FileInfo &p_fi) const {
+		return FileNoCaseComparator()(name, p_fi.name);
+	}
+};
 
-// Include default mbedTLS config.
-#include <mbedtls/mbedtls_config.h>
+struct FileInfoTypeComparator {
+	bool operator()(const FileInfo &p_a, const FileInfo &p_b) const {
+		return FileNoCaseComparator()(p_a.name.get_extension() + p_a.type + p_a.name.get_basename(), p_b.name.get_extension() + p_b.type + p_b.name.get_basename());
+	}
+};
 
-// Disable weak cryptography.
-#undef MBEDTLS_KEY_EXCHANGE_DHE_PSK_ENABLED
-#undef MBEDTLS_KEY_EXCHANGE_DHE_RSA_ENABLED
-#undef MBEDTLS_DES_C
-#undef MBEDTLS_DHM_C
+struct FileInfoModifiedTimeComparator {
+	bool operator()(const FileInfo &p_a, const FileInfo &p_b) const {
+		return p_a.modified_time > p_b.modified_time;
+	}
+};
 
-#if !(defined(__linux__) && defined(__aarch64__))
-// ARMv8 hardware AES operations. Detection only possible on linux.
-// May technically be supported on some ARM32 arches but doesn't seem
-// to be in our current Linux SDK's neon-fp-armv8.
-#undef MBEDTLS_AESCE_C
-#endif
+void sort_file_info_list(List<FileInfo> &r_file_list, FileSortOption p_file_sort_option);
 
-// Disable deprecated
-#define MBEDTLS_DEPRECATED_REMOVED
-
-#endif // GODOT_MBEDTLS_INCLUDE_H
-
-#endif // GODOT_MODULE_MBEDTLS_CONFIG_H
+#endif // FILE_INFO_H
