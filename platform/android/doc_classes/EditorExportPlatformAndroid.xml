@@ -102,6 +102,9 @@
 		<member name="launcher_icons/adaptive_foreground_432x432" type="String" setter="" getter="">
 			Foreground layer of the application adaptive icon file. See [url=https://developer.android.com/develop/ui/views/launch/icon_design_adaptive#design-adaptive-icons]Design adaptive icons[/url].
 		</member>
+		<member name="launcher_icons/adaptive_monochrome_432x432" type="String" setter="" getter="">
+			Monochrome layer of the application adaptive icon file. See [url=https://developer.android.com/develop/ui/views/launch/icon_design_adaptive#design-adaptive-icons]Design adaptive icons[/url].
+		</member>
 		<member name="launcher_icons/main_192x192" type="String" setter="" getter="">
 			Application icon file. If left empty, it will fallback to [member ProjectSettings.application/config/icon].
 		</member>
