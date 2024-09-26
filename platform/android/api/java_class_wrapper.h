@@ -47,7 +47,7 @@ class JavaClass : public RefCounted {
 	GDCLASS(JavaClass, RefCounted);
 
 #ifdef ANDROID_ENABLED
-	enum ArgumentType{
+	enum ArgumentType {
 		ARG_TYPE_VOID,
 		ARG_TYPE_BOOLEAN,
 		ARG_TYPE_BYTE,
