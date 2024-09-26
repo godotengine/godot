@@ -316,25 +316,68 @@
 		<method name="get_string_from_utf8" qualifiers="const">
 			<return type="String" />
 			<description>
-				Converts UTF-8 encoded array to [String]. Slower than [method get_string_from_ascii] but supports UTF-8 encoded data. Use this function if you are unsure about the source of the data. For user input this function should always be preferred. Returns empty string if source array is not valid UTF-8 string. This is the inverse of [method String.to_utf8_buffer].
+				Converts UTF-8 encoded array to [String]. Slower than [method get_string_from_ascii] but supports UTF-8 encoded data. Use this function if you are unsure about the source of the data. For user input, this function should always be preferred. This is the inverse of [method String.to_utf8_buffer].
+				This function preserves unexpected surrogates and replace other invalid characters with U+FFFD. Use [method get_string_parse_error] to check if parsing error occurred.
+			</description>
+		</method>
+		<method name="get_string_from_utf8_strict" qualifiers="const">
+			<return type="String" />
+			<description>
+				Converts UTF-8 encoded array to [String]. Slower than [method get_string_from_ascii] but supports UTF-8 encoded data. Use this function if you are unsure about the source of the data. For user input, this function should always be preferred. Returns empty string if source array is not valid UTF-8 string. This is the inverse of [method String.to_utf8_buffer].
+				This function replace invalid characters (including unexpected surrogates) with U+FFFD. Use [method get_string_parse_error] to check if parsing error occurred.
 			</description>
 		</method>
 		<method name="get_string_from_utf16" qualifiers="const">
 			<return type="String" />
 			<description>
-				Converts UTF-16 encoded array to [String]. If the BOM is missing, system endianness is assumed. Returns empty string if source array is not valid UTF-16 string. This is the inverse of [method String.to_utf16_buffer].
+				Converts UTF-16 encoded array to [String]. If the BOM is missing, system endianness is assumed. This is the inverse of [method String.to_utf16_buffer].
+				This function preserves unexpected surrogates and replace other invalid characters with U+FFFD. Use [method get_string_parse_error] to check if parsing error occurred.
+			</description>
+		</method>
+		<method name="get_string_from_utf16_strict" qualifiers="const">
+			<return type="String" />
+			<description>
+				Converts UTF-16 encoded array to [String]. If the BOM is missing, system endianness is assumed. This is the inverse of [method String.to_utf16_buffer].
+				This function replace invalid characters (including unexpected surrogates) with U+FFFD. Use [method get_string_parse_error] to check if parsing error occurred.
 			</description>
 		</method>
 		<method name="get_string_from_utf32" qualifiers="const">
 			<return type="String" />
 			<description>
-				Converts UTF-32 encoded array to [String]. System endianness is assumed. Returns empty string if source array is not valid UTF-32 string. This is the inverse of [method String.to_utf32_buffer].
+				Converts UTF-32 encoded array to [String]. System endianness is assumed. This is the inverse of [method String.to_utf32_buffer].
+				This function preserves unexpected surrogates and replace other invalid characters with U+FFFD. Use [method get_string_parse_error] to check if parsing error occurred.
+			</description>
+		</method>
+		<method name="get_string_from_utf32_strict" qualifiers="const">
+			<return type="String" />
+			<description>
+				Converts UTF-32 encoded array to [String]. System endianness is assumed. This is the inverse of [method String.to_utf32_buffer].
+				This function replace invalid characters (including unexpected surrogates) with U+FFFD. Use [method get_string_parse_error] to check if parsing error occurred.
 			</description>
 		</method>
 		<method name="get_string_from_wchar" qualifiers="const">
 			<return type="String" />
 			<description>
-				Converts wide character ([code]wchar_t[/code], UTF-16 on Windows, UTF-32 on other platforms) encoded array to [String]. Returns empty string if source array is not valid wide string. This is the inverse of [method String.to_wchar_buffer].
+				Converts wide character ([code]wchar_t[/code], UTF-16 on Windows, UTF-32 on other platforms) encoded array to [String]. This is the inverse of [method String.to_wchar_buffer].
+				This function preserves unexpected surrogates and replace other invalid characters with U+FFFD. Use [method get_string_parse_error] to check if parsing error occurred.
+			</description>
+		</method>
+		<method name="get_string_from_wchar_strict" qualifiers="const">
+			<return type="String" />
+			<description>
+				Converts wide character ([code]wchar_t[/code], UTF-16 on Windows, UTF-32 on other platforms) encoded array to [String]. This is the inverse of [method String.to_wchar_buffer].
+				This function replace invalid characters (including unexpected surrogates) with U+FFFD. Use [method get_string_parse_error] to check if parsing error occurred.
+			</description>
+		</method>
+		<method name="get_string_parse_error" qualifiers="static">
+			<return type="int" />
+			<description>
+				Returns the last error that happened when trying to perform string parsing operations in the current thread.
+				Returns one of the following values:
+				- [constant OK] - No errors.
+				- [constant ERR_PARSE_ERROR_INVALID_SURROGATE] - Unexpected surrogates found (depending on the method, might be replaced with U+FFFD or preserved as is).
+				- [constant ERR_PARSE_ERROR] - Other parsing error, some characters were replaced with U+FFFD.
+				- [constant ERR_INVALID_DATA] - Unrecoverable parsing error.
 			</description>
 		</method>
 		<method name="has" qualifiers="const">
@@ -477,6 +520,29 @@
 				Returns a copy of the data converted to a [PackedInt64Array], where each block of 8 bytes has been converted to a signed 64-bit integer (C++ [code]int64_t[/code], Godot [int]).
 				The size of the input array must be a multiple of 8 (size of 64-bit integer). The size of the new array will be [code]byte_array.size() / 8[/code].
 				If the original data can't be converted to signed 64-bit integers, the resulting data is undefined.
+			</description>
+		</method>
+		<method name="validate_utf8" qualifiers="const">
+			<return type="int" />
+			<description>
+				Validates UTF-8 encoded array. This function stops after first encountered invalid character (excluding unexpected surrogates). See [method get_string_parse_error] for possible return values.
+			</description>
+		</method>
+		<method name="validate_utf16" qualifiers="const">
+			<return type="int" />
+			<description>
+				Validates UTF-16 encoded array. This function stops after first encountered invalid character (excluding unexpected surrogates). See [method get_string_parse_error] for possible return values.
+			</description>
+		</method>
+		<method name="validate_utf32" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="validate_wchar" qualifiers="const">
+			<return type="int" />
+			<description>
+				Validates wide character ([code]wchar_t[/code], UTF-16 on Windows, UTF-32 on other platforms) encoded array. This function stops after first encountered invalid character (excluding unexpected surrogates). See [method get_string_parse_error] for possible return values.
 			</description>
 		</method>
 	</methods>
