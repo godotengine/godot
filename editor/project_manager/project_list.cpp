@@ -138,6 +138,7 @@ void ProjectListItemControl::set_last_edited_info(const String &p_info) {
 
 void ProjectListItemControl::set_project_version(const String &p_info) {
 	project_version->set_text(p_info);
+	project_version->set_visible(!p_info.is_empty());
 }
 
 void ProjectListItemControl::set_unsupported_features(PackedStringArray p_features) {
@@ -192,6 +193,9 @@ void ProjectListItemControl::set_is_missing(bool p_missing) {
 		return;
 	}
 	project_is_missing = p_missing;
+
+	project_unsupported_features->set_visible(!p_missing);
+	last_edited_info->set_visible(!p_missing);
 
 	if (project_is_missing) {
 		project_icon->set_modulate(Color(1, 1, 1, 0.5));
@@ -444,22 +448,22 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 	PackedStringArray project_features = cf->get_value("application", "config/features", PackedStringArray());
 	PackedStringArray unsupported_features = ProjectSettings::get_unsupported_features(project_features);
 
-	String project_version = "?";
+	String project_version;
 	for (int i = 0; i < project_features.size(); i++) {
 		if (ProjectList::project_feature_looks_like_version(project_features[i])) {
 			project_version = project_features[i];
 			break;
 		}
 	}
-
 	if (config_version < ProjectSettings::CONFIG_VERSION) {
 		// Previous versions may not have unsupported features.
 		if (config_version == 4) {
 			unsupported_features.push_back("3.x");
 			project_version = "3.x";
-		} else {
-			unsupported_features.push_back("Unknown version");
 		}
+	}
+	if (project_version.is_empty()) {
+		unsupported_features.push_back(TTR("Unknown version"));
 	}
 
 	uint64_t last_edited = 0;
@@ -758,11 +762,12 @@ void ProjectList::_create_project_item_control(int p_index) {
 	hb->set_project_path(item.path);
 	hb->set_tooltip_text(item.description);
 	hb->set_tags(item.tags, this);
-	hb->set_unsupported_features(item.unsupported_features.duplicate());
 	hb->set_project_version(item.project_version);
-	hb->set_last_edited_info(!item.missing ? Time::get_singleton()->get_datetime_string_from_unix_time(item.last_edited, true) : TTR("Missing Date"));
-
 	hb->set_is_favorite(item.favorite);
+	if (!item.missing) {
+		hb->set_unsupported_features(item.unsupported_features.duplicate());
+		hb->set_last_edited_info(Time::get_singleton()->get_datetime_string_from_unix_time(item.last_edited, true));
+	}
 	hb->set_is_missing(item.missing);
 	hb->set_is_grayed(item.grayed);
 
