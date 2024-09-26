@@ -33,6 +33,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // CameraData
 
+RenderCallbackManager *RenderCallbackManager::singleton = nullptr;
 void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, const Projection p_projection, bool p_is_orthogonal, bool p_vaspect, const Vector2 &p_taa_jitter, float p_taa_frame_count, const uint32_t p_visible_layers) {
 	view_count = 1;
 	is_orthogonal = p_is_orthogonal;

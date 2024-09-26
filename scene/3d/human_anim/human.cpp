@@ -1166,6 +1166,51 @@ namespace human
 		};
 		return bone_map;
 	}
+
+
+
+	const HashMap<String, int>& get_body_bone_to_human_map() {
+		static HashMap<String, int> bone_map = {
+			{"Hips",kHips},
+
+			{"LeftUpperLeg",kLeftUpperLeg},
+			{"RightUpperLeg",kRightUpperLeg},
+
+			{"LeftLowerLeg",kLeftLowerLeg},
+			{"RightLowerLeg",kRightLowerLeg},
+
+			{"LeftFoot",kLeftFoot},
+			{"RightFoot",kRightFoot},
+
+			{"Spine",kSpine},
+			{"Chest",kChest},
+			{"UpperChest",kUpperChest},
+			{"Neck",kNeck},
+			{"Head",kHead},
+
+			{"LeftShoulder",kLeftShoulder},
+			{"RightShoulder",kRightShoulder},
+
+			{"LeftUpperArm",kLeftUpperArm},
+			{"RightUpperArm",kRightUpperArm},
+
+			{"LeftLowerArm",kLeftLowerArm},
+			{"RightLowerArm",kRightLowerArm},
+
+			{"LeftHand",kLeftHand},
+			{"RightHand",kRightHand},
+
+			{"LeftToes",kLeftToes},
+			{"RightToes",kRightToes},
+
+			{"LeftEye",kLeftEye},
+			{"RightEye",kRightEye},
+
+			{"Jaw",kJaw},
+
+		};
+		return bone_map;
+	}
 	const HashMap<int, String>& get_human_to_bone_map() {
 		static HashMap<int, String> human_map = {
 			{kHips,"Hips"},
@@ -1298,7 +1343,7 @@ namespace human
 		return ret;
 	}
     void Human::build_form_skeleton(Skeleton3D* apSkeleton) {
-        const HashMap<String, int>& human_to_bone_map = get_bone_to_human_map();
+        const HashMap<String, int>& human_to_bone_map = get_body_bone_to_human_map();
 		const LocalVector<Pair<String, String>>& bone_label = get_bone_label();
 
         m_Skeleton.m_Node.resize(apSkeleton->get_bone_count());
