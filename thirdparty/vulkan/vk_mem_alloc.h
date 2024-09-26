@@ -126,11 +126,7 @@ See documentation chapter: \ref statistics.
 extern "C" {
 #endif
 
-#ifdef USE_VOLK
-    #include <volk.h>
-#else
-    #include <vulkan/vulkan.h>
-#endif
+#include "drivers/vulkan/godot_vulkan.h"
 
 #if !defined(VMA_VULKAN_VERSION)
     #if defined(VK_VERSION_1_3)

@@ -22,12 +22,10 @@
 ****************************************************************************/
 // NOLINTBEGIN
 #pragma once
+#ifdef __cplusplus
 #include <string>
-#ifdef USE_VOLK
-    #include <volk.h>
-#else
-    #include <vulkan/vulkan.h>
 #endif
+#include "drivers/vulkan/godot_vulkan.h"
 
 static inline bool IsDuplicatePnext(VkStructureType input_value) {
     switch (input_value) {

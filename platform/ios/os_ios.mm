@@ -54,11 +54,7 @@
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 
 #import <QuartzCore/CAMetalLayer.h>
-#ifdef USE_VOLK
-#include <volk.h>
-#else
-#include <vulkan/vulkan.h>
-#endif
+#include "drivers/vulkan/godot_vulkan.h"
 #endif
 
 // Initialization order between compilation units is not guaranteed,

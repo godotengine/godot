@@ -40,11 +40,7 @@
 #include "drivers/vulkan/rendering_device_vulkan.h"
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 
-#ifdef USE_VOLK
-#include <volk.h>
-#else
-#include <vulkan/vulkan.h>
-#endif
+#include "drivers/vulkan/godot_vulkan.h"
 #endif // VULKAN_ENABLED
 
 #if defined(GLES3_ENABLED)
