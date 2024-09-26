@@ -37,11 +37,23 @@
 				Returns the number of [CameraFeed]s registered.
 			</description>
 		</method>
+		<method name="permission_granted">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if camera permission is granted. Always returns [code]true[/code] if no permission is required to access cameras.
+			</description>
+		</method>
 		<method name="remove_feed">
 			<return type="void" />
 			<param index="0" name="feed" type="CameraFeed" />
 			<description>
 				Removes the specified camera [param feed].
+			</description>
+		</method>
+		<method name="request_permission">
+			<return type="void" />
+			<description>
+				Requests camera permission. No-op if permission is already granted or no permission is required to access cameras.
 			</description>
 		</method>
 	</methods>
@@ -56,6 +68,12 @@
 			<param index="0" name="id" type="int" />
 			<description>
 				Emitted when a [CameraFeed] is removed (e.g. a webcam is unplugged).
+			</description>
+		</signal>
+		<signal name="request_permission_result">
+			<param index="0" name="granted" type="bool" />
+			<description>
+				Emitted when a user responds to a camera permission request.
 			</description>
 		</signal>
 	</signals>

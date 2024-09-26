@@ -89,6 +89,10 @@ public:
 		return server;
 	}
 
+	// Camera permission.
+	virtual bool permission_granted() { return true; }
+	virtual void request_permission() {}
+
 	// Right now we identify our feed by it's ID when it's used in the background.
 	// May see if we can change this to purely relying on CameraFeed objects or by name.
 	int get_free_id();

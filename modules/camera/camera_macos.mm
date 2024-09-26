@@ -196,6 +196,7 @@
 
 class CameraFeedMacOS : public CameraFeed {
 private:
+	CameraMacOS *camera_server;
 	AVCaptureDevice *device;
 	MyCaptureSession *capture_session;
 
@@ -203,6 +204,8 @@ public:
 	AVCaptureDevice *get_device() const;
 
 	CameraFeedMacOS();
+
+	void set_camera_server(CameraMacOS *p_camera_server);
 
 	void set_device(AVCaptureDevice *p_device);
 
@@ -215,9 +218,14 @@ AVCaptureDevice *CameraFeedMacOS::get_device() const {
 }
 
 CameraFeedMacOS::CameraFeedMacOS() {
+	camera_server = nullptr;
 	device = nullptr;
 	capture_session = nullptr;
 }
+
+void CameraFeedMacOS::set_camera_server(CameraMacOS *p_camera_server) {
+	camera_server = p_camera_server;
+};
 
 void CameraFeedMacOS::set_device(AVCaptureDevice *p_device) {
 	device = p_device;
@@ -246,6 +254,9 @@ bool CameraFeedMacOS::activate_feed() {
 				// Request permission.
 				[AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo
 										 completionHandler:^(BOOL granted) {
+											 if (camera_server) {
+												 camera_server->emit_signal(SNAME("request_permission_result"), granted);
+											 }
 											 if (granted) {
 												 capture_session = [[MyCaptureSession alloc] initForFeed:this andDevice:device];
 											 }
@@ -342,6 +353,7 @@ void CameraMacOS::update_feeds() {
 		if (!found) {
 			Ref<CameraFeedMacOS> newfeed;
 			newfeed.instantiate();
+			newfeed->set_camera_server(this);
 			newfeed->set_device(device);
 
 			// assume display camera so inverse
@@ -352,6 +364,26 @@ void CameraMacOS::update_feeds() {
 		};
 	};
 }
+
+bool CameraMacOS::permission_granted() {
+	if (@available(macOS 10.14, *)) {
+		AVAuthorizationStatus status = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
+		return status == AVAuthorizationStatusAuthorized;
+	}
+	return true;
+};
+
+void CameraMacOS::request_permission() {
+	if (@available(macOS 10.14, *)) {
+		if (permission_granted()) {
+			return;
+		}
+		[AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo
+								 completionHandler:^(BOOL granted) {
+									 emit_signal(SNAME("request_permission_result"), granted);
+								 }];
+	}
+};
 
 CameraMacOS::CameraMacOS() {
 	// Find available cameras we have at this time

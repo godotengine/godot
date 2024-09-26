@@ -41,6 +41,9 @@ public:
 	CameraMacOS();
 
 	void update_feeds();
+
+	bool permission_granted() override;
+	void request_permission() override;
 };
 
 #endif // CAMERA_MACOS_H
