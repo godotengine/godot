@@ -999,24 +999,6 @@ namespace human
 	const LocalVector<Pair<String, String>>& get_bone_label() {
 		static LocalVector<Pair<String, String>> label_map = {
 			{"Hips",L"臀部"},
-			{"Spine",L"脊柱"},
-			{"Chest",L"颈部"},
-			{"UpperChest",L"上胸部"},
-			{"Neck",L"颈部"},
-			{"Head",L"头部"},
-			{"Jaw",L"下巴"},
-
-			{"LeftShoulder",L"左肩"},
-			{"RightShoulder",L"右肩"},
-
-			{"LeftUpperArm",L"左上臂"},
-			{"RightUpperArm",L"右上臂"},
-
-			{"LeftLowerArm",L"左下臂"},
-			{"RightLowerArm",L"右下臂"},
-
-			{"LeftHand",L"左手"},
-			{"RightHand",L"右手"},
 
 			{"LeftUpperLeg",L"左上腿"},
 			{"RightUpperLeg",L"右上腿"},
@@ -1027,11 +1009,35 @@ namespace human
 			{"LeftFoot",L"左脚"},
 			{"RightFoot",L"右脚"},
 
+			{"Spine",L"脊柱"},
+			{"Chest",L"颈部"},
+			{"UpperChest",L"上胸部"},
+			{"Neck",L"颈部"},
+			{"Head",L"头部"},
+
+			{"LeftShoulder",L"左肩"},
+			{"RightShoulder",L"右肩"},
+
+
+			{"LeftUpperArm",L"左上臂"},
+			{"RightUpperArm",L"右上臂"},
+
+			{"LeftLowerArm",L"左下臂"},
+			{"RightLowerArm",L"右下臂"},
+
+			{"LeftHand",L"左手"},
+			{"RightHand",L"右手"},
+
+            
+			{"LeftToes",L"左足"},
+			{"RightToes",L"右足"},
+
 			{"LeftEye",L"左眼"},
 			{"RightEye",L"右眼"},
 
-			{"LeftToes",L"左足"},
-			{"RightToes",L"右足"},
+			{"Jaw",L"下巴"},
+
+
 
 			{"LeftThumbMetacarpal",L"左拇指"},
 			{"LeftThumbProximal",L"左拇指近端"},
@@ -1325,7 +1331,6 @@ namespace human
         for(int i = 0; i < kLastBone; ++i) {
             m_HumanBoneIndex[i] = apSkeleton->find_bone(bone_label[i].first);
             if(m_HumanBoneIndex[i] >= 0) {
-                m_HasTDoF = true;
             }
         }
         m_HasLeftHand = false;

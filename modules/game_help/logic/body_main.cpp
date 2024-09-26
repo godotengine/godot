@@ -882,7 +882,7 @@ void CharacterBodyMain::editor_build_animation()
         {
             Ref<Animation> new_animation;
             if(editor_human_config.is_valid()) {
-                new_animation = editor_human_config->human->animation_to_doff(animation,bone_map->get_bone_map());
+                new_animation = editor_human_config->human->animation_to_dof(animation.ptr(),bone_map->get_bone_map());
             } else {
                 new_animation = animation->duplicate();                
             }
