@@ -1978,7 +1978,10 @@ void EditorFileSystem::_update_file_icon_path(EditorFileSystemDirectory::FileInf
 	}
 
 	if (icon_path.is_empty() && !file_info->type.is_empty()) {
-		icon_path = EditorNode::get_singleton()->get_class_icon(file_info->type)->get_path();
+		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(file_info->type);
+		if (icon.is_valid()) {
+			icon_path = icon->get_path();
+		}
 	}
 
 	file_info->icon_path = icon_path;
