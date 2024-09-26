@@ -3244,7 +3244,7 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 							DEV_ASSERT(binding_info.res_class == (uint32_t)RES_CLASS_INVALID || binding_info.res_class == (uint32_t)res_class);
 							binding_info.res_class = res_class;
 						} else if (p_dxil_type == DXIL_RES_SAMPLER) {
-							binding_info.has_sampler = (uint32_t) true;
+							binding_info.has_sampler = (uint32_t)true;
 						} else {
 							CRASH_NOW();
 						}
