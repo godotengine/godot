@@ -545,6 +545,13 @@ bool Signal::is_connected(const Callable &p_callable) const {
 	return obj->is_connected(name, p_callable);
 }
 
+bool Signal::has_connections() const {
+	Object *obj = get_object();
+	ERR_FAIL_NULL_V(obj, false);
+
+	return obj->has_connections(name);
+}
+
 Array Signal::get_connections() const {
 	Object *obj = get_object();
 	if (!obj) {

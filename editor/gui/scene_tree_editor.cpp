@@ -1361,6 +1361,7 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 			tf->set_texture(icons[i]);
 			hb->add_child(tf);
 			Label *label = memnew(Label(selected_nodes[i]->get_name()));
+			label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 			hb->add_child(label);
 			vb->add_child(hb);
 			hb->set_modulate(Color(1, 1, 1, opacity_item));

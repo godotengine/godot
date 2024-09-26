@@ -472,7 +472,7 @@ double ScrollBar::get_area_size() const {
 }
 
 double ScrollBar::get_grabber_offset() const {
-	return (get_area_size()) * get_as_ratio();
+	return get_area_size() * get_as_ratio();
 }
 
 Size2 ScrollBar::get_minimum_size() const {

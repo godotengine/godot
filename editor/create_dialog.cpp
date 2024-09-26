@@ -615,6 +615,7 @@ Variant CreateDialog::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 		tb->set_flat(true);
 		tb->set_icon(ti->get_icon(0));
 		tb->set_text(ti->get_text(0));
+		tb->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 		favorites->set_drag_preview(tb);
 
 		return d;

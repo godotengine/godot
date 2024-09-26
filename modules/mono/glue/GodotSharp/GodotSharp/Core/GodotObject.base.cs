@@ -29,6 +29,17 @@ namespace Godot
             }
         }
 
+        internal GodotObject(IntPtr nativePtr) : this(false)
+        {
+            // NativePtr must be non-zero before calling ConstructAndInitialize to avoid invoking the constructor NativeCtor.
+            // We don't want to invoke the constructor, because we already have a constructed instance in nativePtr.
+            NativePtr = nativePtr;
+            unsafe
+            {
+                ConstructAndInitialize(NativeCtor, NativeName, _cachedType, refCounted: false);
+            }
+        }
+
         internal unsafe void ConstructAndInitialize(
             delegate* unmanaged<godot_bool, IntPtr> nativeCtor,
             StringName nativeName,

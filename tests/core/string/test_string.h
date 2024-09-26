@@ -1888,7 +1888,7 @@ TEST_CASE("[String] validate_node_name") {
 	CHECK(name_with_invalid_chars.validate_node_name() == "Name with invalid characters ____removed!");
 }
 
-TEST_CASE("[String] validate_identifier") {
+TEST_CASE("[String] validate_ascii_identifier") {
 	String empty_string;
 	CHECK(empty_string.validate_ascii_identifier() == "_");
 
@@ -1900,6 +1900,20 @@ TEST_CASE("[String] validate_identifier") {
 
 	String name_with_invalid_chars = U"Invalid characters:@*#&世界";
 	CHECK(name_with_invalid_chars.validate_ascii_identifier() == "Invalid_characters_______");
+}
+
+TEST_CASE("[String] validate_unicode_identifier") {
+	String empty_string;
+	CHECK(empty_string.validate_unicode_identifier() == "_");
+
+	String numeric_only = "12345";
+	CHECK(numeric_only.validate_unicode_identifier() == "_12345");
+
+	String name_with_spaces = "Name with spaces";
+	CHECK(name_with_spaces.validate_unicode_identifier() == "Name_with_spaces");
+
+	String name_with_invalid_chars = U"Invalid characters:@*#&世界";
+	CHECK(name_with_invalid_chars.validate_unicode_identifier() == U"Invalid_characters_____世界");
 }
 
 TEST_CASE("[String] Variant indexed get") {

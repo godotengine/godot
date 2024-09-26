@@ -246,6 +246,8 @@ private:
 		bool debug = false;
 		bool pack_only = false;
 		bool android_build_template = false;
+		bool patch = false;
+		Vector<String> patches;
 	} export_defer;
 
 	static EditorNode *singleton;
@@ -660,6 +662,7 @@ private:
 	void _remove_all_not_owned_children(Node *p_node, Node *p_owner);
 
 	void _progress_dialog_visibility_changed();
+	void _load_error_dialog_visibility_changed();
 
 protected:
 	friend class FileSystemDock;
@@ -778,7 +781,7 @@ public:
 
 	void fix_dependencies(const String &p_for_file);
 	int new_scene();
-	Error load_scene(const String &p_scene, bool p_ignore_broken_deps = false, bool p_set_inherited = false, bool p_clear_errors = true, bool p_force_open_imported = false, bool p_silent_change_tab = false);
+	Error load_scene(const String &p_scene, bool p_ignore_broken_deps = false, bool p_set_inherited = false, bool p_force_open_imported = false, bool p_silent_change_tab = false);
 	Error load_resource(const String &p_resource, bool p_ignore_broken_deps = false);
 
 	HashMap<StringName, Variant> get_modified_properties_for_node(Node *p_node, bool p_node_references_only);
@@ -879,7 +882,7 @@ public:
 
 	void _copy_warning(const String &p_str);
 
-	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only, bool p_android_build_template);
+	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only, bool p_android_build_template, bool p_patch, const Vector<String> &p_patches);
 	bool is_project_exporting() const;
 
 	Control *get_gui_base() { return gui_base; }

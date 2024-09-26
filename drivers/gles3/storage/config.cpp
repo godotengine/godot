@@ -88,6 +88,7 @@ Config::Config() {
 		etc2_supported = false;
 		s3tc_supported = true;
 		rgtc_supported = true; //RGTC - core since OpenGL version 3.0
+		srgb_framebuffer_supported = true;
 	} else {
 		float_texture_supported = extensions.has("GL_EXT_color_buffer_float");
 		etc2_supported = true;
@@ -100,6 +101,7 @@ Config::Config() {
 		s3tc_supported = extensions.has("GL_EXT_texture_compression_dxt1") || extensions.has("GL_EXT_texture_compression_s3tc") || extensions.has("WEBGL_compressed_texture_s3tc");
 #endif
 		rgtc_supported = extensions.has("GL_EXT_texture_compression_rgtc") || extensions.has("GL_ARB_texture_compression_rgtc") || extensions.has("EXT_texture_compression_rgtc");
+		srgb_framebuffer_supported = extensions.has("GL_EXT_sRGB_write_control");
 	}
 
 	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &max_vertex_texture_image_units);
@@ -138,6 +140,7 @@ Config::Config() {
 	// These are GLES only
 	rt_msaa_supported = extensions.has("GL_EXT_multisampled_render_to_texture");
 	rt_msaa_multiview_supported = extensions.has("GL_OVR_multiview_multisampled_render_to_texture");
+	external_texture_supported = extensions.has("GL_OES_EGL_image_external_essl3");
 
 	if (multiview_supported) {
 		eglFramebufferTextureMultiviewOVR = (PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC)eglGetProcAddress("glFramebufferTextureMultiviewOVR");
@@ -164,6 +167,13 @@ Config::Config() {
 		eglFramebufferTextureMultisampleMultiviewOVR = (PFNGLFRAMEBUFFERTEXTUREMULTISAMPLEMULTIVIEWOVRPROC)eglGetProcAddress("glFramebufferTextureMultisampleMultiviewOVR");
 		if (eglFramebufferTextureMultisampleMultiviewOVR == nullptr) {
 			rt_msaa_multiview_supported = false;
+		}
+	}
+
+	if (external_texture_supported) {
+		eglEGLImageTargetTexture2DOES = (PFNEGLIMAGETARGETTEXTURE2DOESPROC)eglGetProcAddress("glEGLImageTargetTexture2DOES");
+		if (eglEGLImageTargetTexture2DOES == nullptr) {
+			external_texture_supported = false;
 		}
 	}
 #endif

@@ -324,6 +324,7 @@
 			<param index="0" name="value" type="Variant" />
 			<description>
 				Returns the number of times an element is in the array.
+				To count how many elements in an array satisfy a condition, see [method reduce].
 			</description>
 		</method>
 		<method name="duplicate" qualifiers="const">
@@ -393,6 +394,25 @@
 				Returns the index of the [b]first[/b] occurrence of [param what] in this array, or [code]-1[/code] if there are none. The search's start can be specified with [param from], continuing to the end of the array.
 				[b]Note:[/b] If you just want to know whether the array contains [param what], use [method has] ([code]Contains[/code] in C#). In GDScript, you may also use the [code]in[/code] operator.
 				[b]Note:[/b] For performance reasons, the search is affected by [param what]'s [enum Variant.Type]. For example, [code]7[/code] ([int]) and [code]7.0[/code] ([float]) are not considered equal for this method.
+			</description>
+		</method>
+		<method name="find_custom" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="method" type="Callable" />
+			<param index="1" name="from" type="int" default="0" />
+			<description>
+				Returns the index of the [b]first[/b] element in the array that causes [param method] to return [code]true[/code], or [code]-1[/code] if there are none. The search's start can be specified with [param from], continuing to the end of the array.
+				[param method] is a callable that takes an element of the array, and returns a [bool].
+				[b]Note:[/b] If you just want to know whether the array contains [i]anything[/i] that satisfies [param method], use [method any].
+				[codeblocks]
+				[gdscript]
+				func is_even(number):
+				    return number % 2 == 0
+
+				func _ready():
+				    print([1, 3, 4, 7].find_custom(is_even.bind())) # prints 2
+				[/gdscript]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="front" qualifiers="const">
@@ -618,6 +638,17 @@
 				func is_length_greater(a, b):
 				    return a.length() &gt; b.length()
 				[/codeblock]
+				This method can also be used to count how many elements in an array satisfy a certain condition, similar to [method count]:
+				[codeblock]
+				func is_even(number):
+				    return number % 2 == 0
+
+				func _ready():
+				    var arr = [1, 2, 3, 4, 5]
+				    # Increment count if it's even, else leaves count the same.
+				    var even_count = arr.reduce(func(count, next): return count + 1 if is_even(next) else count, 0)
+				    print(even_count) # Prints 2
+				[/codeblock]
 				See also [method map], [method filter], [method any] and [method all].
 			</description>
 		</method>
@@ -652,6 +683,14 @@
 			<param index="1" name="from" type="int" default="-1" />
 			<description>
 				Returns the index of the [b]last[/b] occurrence of [param what] in this array, or [code]-1[/code] if there are none. The search's start can be specified with [param from], continuing to the beginning of the array. This method is the reverse of [method find].
+			</description>
+		</method>
+		<method name="rfind_custom" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="method" type="Callable" />
+			<param index="1" name="from" type="int" default="-1" />
+			<description>
+				Returns the index of the [b]last[/b] element of the array that causes [param method] to return [code]true[/code], or [code]-1[/code] if there are none. The search's start can be specified with [param from], continuing to the beginning of the array. This method is the reverse of [method find_custom].
 			</description>
 		</method>
 		<method name="shuffle">

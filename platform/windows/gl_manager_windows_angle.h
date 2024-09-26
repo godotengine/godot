@@ -52,8 +52,8 @@ private:
 public:
 	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
 
-	GLManagerANGLE_Windows(){};
-	~GLManagerANGLE_Windows(){};
+	GLManagerANGLE_Windows() {}
+	~GLManagerANGLE_Windows() {}
 };
 
 #endif // WINDOWS_ENABLED && GLES3_ENABLED

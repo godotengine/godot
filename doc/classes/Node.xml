@@ -973,6 +973,13 @@
 				Similar to [method call_thread_safe], but for setting properties.
 			</description>
 		</method>
+		<method name="set_translation_domain_inherited">
+			<return type="void" />
+			<description>
+				Makes this node inherit the translation domain from its parent node. If this node has no parent, the main translation domain will be used.
+				This is the default behavior for all nodes. Calling [method Object.set_translation_domain] disables this behavior.
+			</description>
+		</method>
 		<method name="update_configuration_warnings">
 			<return type="void" />
 			<description>

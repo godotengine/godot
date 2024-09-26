@@ -574,7 +574,7 @@ class TextServerFallback : public TextServerExtension {
 	Mutex ft_mutex;
 
 protected:
-	static void _bind_methods(){};
+	static void _bind_methods() {}
 
 	void full_copy(ShapedTextDataFallback *p_shaped);
 	void invalidate(ShapedTextDataFallback *p_shaped);

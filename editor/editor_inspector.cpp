@@ -893,6 +893,7 @@ Variant EditorProperty::get_drag_data(const Point2 &p_point) {
 
 	Label *drag_label = memnew(Label);
 	drag_label->set_text(property);
+	drag_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Don't translate raw property name.
 	set_drag_preview(drag_label);
 	return dp;
 }

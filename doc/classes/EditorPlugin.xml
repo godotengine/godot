@@ -701,7 +701,7 @@
 			<return type="void" />
 			<param index="0" name="plugin" type="EditorInspectorPlugin" />
 			<description>
-				Removes an inspector plugin registered by [method add_import_plugin]
+				Removes an inspector plugin registered by [method add_inspector_plugin].
 			</description>
 		</method>
 		<method name="remove_node_3d_gizmo_plugin">

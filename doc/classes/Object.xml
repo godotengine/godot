@@ -818,6 +818,20 @@
 				[b]Note:[/b] Due of the implementation, each [Dictionary] is formatted very similarly to the returned values of [method get_method_list].
 			</description>
 		</method>
+		<method name="get_translation_domain" qualifiers="const">
+			<return type="StringName" />
+			<description>
+				Returns the name of the translation domain used by [method tr] and [method tr_n]. See also [TranslationServer].
+			</description>
+		</method>
+		<method name="has_connections" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="signal" type="StringName" />
+			<description>
+				Returns [code]true[/code] if any connection exists on the given [param signal] name.
+				[b]Note:[/b] In C#, [param signal] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]SignalName[/code] class to avoid allocating a new [StringName] on each call.
+			</description>
+		</method>
 		<method name="has_meta" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
@@ -1070,6 +1084,13 @@
 				If a script already exists, its instance is detached, and its property values and state are lost. Built-in property values are still kept.
 			</description>
 		</method>
+		<method name="set_translation_domain">
+			<return type="void" />
+			<param index="0" name="domain" type="StringName" />
+			<description>
+				Sets the name of the translation domain used by [method tr] and [method tr_n]. See also [TranslationServer].
+			</description>
+		</method>
 		<method name="to_string">
 			<return type="String" />
 			<description>
@@ -1121,7 +1142,7 @@
 			Notification received when the object is initialized, before its script is attached. Used internally.
 		</constant>
 		<constant name="NOTIFICATION_PREDELETE" value="1">
-			Notification received when the object is about to be deleted. Can act as the deconstructor of some programming languages.
+			Notification received when the object is about to be deleted. Can be used like destructors in object-oriented programming languages.
 		</constant>
 		<constant name="NOTIFICATION_EXTENSION_RELOADED" value="2">
 			Notification received when the object finishes hot reloading. This notification is only sent for extensions classes and derived.

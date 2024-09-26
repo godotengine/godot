@@ -207,6 +207,10 @@ void EditorFileDialog::_update_theme_item_cache() {
 
 void EditorFileDialog::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_POSTINITIALIZE: {
+			set_translation_domain(SNAME("godot.editor"));
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED:
 		case Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {

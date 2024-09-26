@@ -270,7 +270,6 @@ private:
 	void _toggle_file_display();
 	void _set_file_display(bool p_active);
 	void _fs_changed();
-	void _directory_created(const String &p_path);
 
 	void _select_file(const String &p_path, bool p_select_in_favorites = false);
 	void _tree_activate_file();
@@ -417,6 +416,7 @@ public:
 	ScriptCreateDialog *get_script_create_dialog() const;
 
 	void fix_dependencies(const String &p_for_file);
+	void update_all();
 
 	int get_h_split_offset() const { return split_box_offset_h; }
 	void set_h_split_offset(int p_offset) { split_box_offset_h = p_offset; }
