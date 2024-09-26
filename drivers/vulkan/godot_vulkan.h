@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  rendering_context_driver_vulkan_wayland.cpp                           */
+/*  godot_vulkan.h                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,39 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifdef VULKAN_ENABLED
+#ifndef GODOT_VULKAN_H
+#define GODOT_VULKAN_H
 
-#include "rendering_context_driver_vulkan_wayland.h"
+#ifdef USE_VOLK
+#include <volk.h>
+#else
+#include <stdint.h>
+#define VK_NO_STDINT_H
+#include <vulkan/vulkan.h>
+#endif
 
-#include "drivers/vulkan/godot_vulkan.h"
-
-const char *RenderingContextDriverVulkanWayland::_get_platform_surface_extension() const {
-	return VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME;
-}
-
-RenderingContextDriver::SurfaceID RenderingContextDriverVulkanWayland::surface_create(const void *p_platform_data) {
-	const WindowPlatformData *wpd = (const WindowPlatformData *)(p_platform_data);
-
-	VkWaylandSurfaceCreateInfoKHR create_info = {};
-	create_info.sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
-	create_info.display = wpd->display;
-	create_info.surface = wpd->surface;
-
-	VkSurfaceKHR vk_surface = VK_NULL_HANDLE;
-	VkResult err = vkCreateWaylandSurfaceKHR(instance_get(), &create_info, nullptr, &vk_surface);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, SurfaceID());
-
-	Surface *surface = memnew(Surface);
-	surface->vk_surface = vk_surface;
-	return SurfaceID(surface);
-}
-
-RenderingContextDriverVulkanWayland::RenderingContextDriverVulkanWayland() {
-	// Does nothing.
-}
-
-RenderingContextDriverVulkanWayland::~RenderingContextDriverVulkanWayland() {
-	// Does nothing.
-}
-
-#endif // VULKAN_ENABLED
+#endif // GODOT_VULKAN_H
