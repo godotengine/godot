@@ -49,6 +49,8 @@ class EditorFileSystemDirectory : public Object {
 	String name;
 	uint64_t modified_time;
 	bool verified = false; //used for checking changes
+	bool link = false;
+	String link_path;
 
 	EditorFileSystemDirectory *parent = nullptr;
 	Vector<EditorFileSystemDirectory *> subdirs;
@@ -71,6 +73,8 @@ class EditorFileSystemDirectory : public Object {
 		String script_class_extends;
 		String script_class_icon_path;
 		String icon_path;
+		bool link = false;
+		String link_path;
 	};
 
 	Vector<FileInfo *> files;
@@ -82,11 +86,15 @@ class EditorFileSystemDirectory : public Object {
 public:
 	String get_name();
 	String get_path() const;
+	bool is_link() const;
+	String get_link() const;
 
 	int get_subdir_count() const;
 	EditorFileSystemDirectory *get_subdir(int p_idx);
 	int get_file_count() const;
 	String get_file(int p_idx) const;
+	bool is_file_link(int p_idx) const;
+	String get_file_link(int p_idx) const;
 	String get_file_path(int p_idx) const;
 	StringName get_file_type(int p_idx) const;
 	StringName get_file_resource_script_class(int p_idx) const;
