@@ -276,6 +276,9 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		} else if (tag == "constant") {
 			topic = "class_constant";
 			table = &constant_line;
+		} else if (tag == "builtin") {
+			topic = "class_builtin";
+			table = &builtin_line;
 		} else if (tag == "annotation") {
 			topic = "class_annotation";
 			table = &annotation_line;
@@ -1959,6 +1962,123 @@ void EditorHelp::_update_doc() {
 		}
 	}
 
+	// Builtins
+	if (!cd.builtins.is_empty()) {
+		if (sort_methods) {
+			cd.builtins.sort();
+		}
+
+		class_desc->add_newline();
+		class_desc->add_newline();
+
+		section_line.push_back(Pair<String, int>(TTR("Built-in keywords"), class_desc->get_paragraph_count() - 2));
+		_push_title_font();
+		class_desc->add_text(TTR("Built-in keywords"));
+		_pop_title_font();
+
+		for (const DocData::MethodDoc &builtin : cd.builtins) {
+			class_desc->add_newline();
+			class_desc->add_newline();
+
+			builtin_line[builtin.name] = class_desc->get_paragraph_count() - 2; // Gets overridden if description.
+
+			class_desc->push_indent(1);
+
+			// Builtin header.
+			_push_code_font();
+			_add_bulletpoint();
+
+			class_desc->push_color(theme_cache.headline_color);
+			class_desc->add_text(builtin.name);
+			class_desc->pop(); // color
+
+			if (!builtin.arguments.is_empty()) {
+				class_desc->push_color(theme_cache.symbol_color);
+				class_desc->add_text("(");
+				class_desc->pop(); // color
+
+				for (int j = 0; j < builtin.arguments.size(); j++) {
+					const DocData::ArgumentDoc &argument = builtin.arguments[j];
+
+					class_desc->push_color(theme_cache.text_color);
+
+					if (j > 0) {
+						class_desc->add_text(", ");
+					}
+
+					class_desc->add_text(argument.name);
+					class_desc->add_text(": ");
+					_add_type(argument.type, argument.enumeration, argument.is_bitfield);
+
+					if (!argument.default_value.is_empty()) {
+						class_desc->push_color(theme_cache.symbol_color);
+						class_desc->add_text(" = ");
+						class_desc->pop(); // color
+
+						class_desc->push_color(theme_cache.value_color);
+						class_desc->add_text(_fix_constant(argument.default_value));
+						class_desc->pop(); // color
+					}
+
+					class_desc->pop(); // color
+				}
+
+				if (builtin.qualifiers.contains("vararg")) {
+					class_desc->push_color(theme_cache.text_color);
+					if (!builtin.arguments.is_empty()) {
+						class_desc->add_text(", ");
+					}
+					class_desc->pop(); // color
+
+					class_desc->push_color(theme_cache.symbol_color);
+					class_desc->add_text("...");
+					class_desc->pop(); // color
+				}
+
+				class_desc->push_color(theme_cache.symbol_color);
+				class_desc->add_text(")");
+				class_desc->pop(); // color
+			}
+
+			if (!builtin.qualifiers.is_empty()) {
+				class_desc->push_color(theme_cache.qualifier_color);
+				class_desc->add_text(" ");
+				class_desc->add_text(builtin.qualifiers);
+				class_desc->pop(); // color
+			}
+
+			_pop_code_font();
+
+			class_desc->add_newline();
+
+			// Builtin description.
+			class_desc->push_indent(1);
+			_push_normal_font();
+			class_desc->push_color(theme_cache.comment_color);
+
+			const String descr = HANDLE_DOC(builtin.description);
+			if (!descr.is_empty()) {
+				_add_text(descr);
+			} else {
+				class_desc->add_image(get_editor_theme_icon(SNAME("Error")));
+				class_desc->add_text(" ");
+				class_desc->push_color(theme_cache.comment_color);
+				if (cd.is_script_doc) {
+					class_desc->add_text(TTR("There is currently no description for this built-in keyword."));
+				} else {
+					class_desc->append_text(TTR("There is currently no description for this built-in keyword. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
+				}
+				class_desc->pop(); // color
+			}
+
+			class_desc->pop(); // color
+			_pop_normal_font();
+			class_desc->pop(); // indent
+
+			class_desc->pop(); // indent
+		}
+	}
+
 	// Annotations
 	if (!cd.annotations.is_empty()) {
 		if (sort_methods) {
@@ -2353,6 +2473,10 @@ void EditorHelp::_help_callback(const String &p_topic) {
 		if (constant_line.has(name)) {
 			line = constant_line[name];
 		}
+	} else if (what == "class_builtin") {
+		if (builtin_line.has(name)) {
+			line = builtin_line[name];
+		}
 	} else if (what == "class_annotation") {
 		if (annotation_line.has(name)) {
 			line = annotation_line[name];
@@ -2522,7 +2646,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 			if (tag != "/img") {
 				p_rt->pop();
 			}
-		} else if (tag.begins_with("method ") || tag.begins_with("constructor ") || tag.begins_with("operator ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("annotation ") || tag.begins_with("theme_item ")) {
+		} else if (tag.begins_with("method ") || tag.begins_with("constructor ") || tag.begins_with("operator ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("builtin ") || tag.begins_with("annotation ") || tag.begins_with("theme_item ")) {
 			const int tag_end = tag.find_char(' ');
 			const String link_tag = tag.left(tag_end);
 			const String link_target = tag.substr(tag_end + 1).lstrip(" ");
@@ -2531,7 +2655,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 			RichTextLabel::MetaUnderline underline_mode = RichTextLabel::META_UNDERLINE_ON_HOVER;
 			if (link_tag == "method" || link_tag == "constructor" || link_tag == "operator") {
 				target_color = link_method_color;
-			} else if (link_tag == "member" || link_tag == "signal" || link_tag == "theme_item") {
+			} else if (link_tag == "member" || link_tag == "signal" || link_tag == "theme_item" || link_tag == "builtin") {
 				target_color = link_property_color;
 			} else if (link_tag == "annotation") {
 				target_color = link_annotation_color;
@@ -3652,6 +3776,8 @@ void EditorHelpBit::_meta_clicked(const String &p_select) {
 			topic = "class_signal";
 		} else if (tag == "constant") {
 			topic = "class_constant";
+		} else if (tag == "builtin") {
+			topic = "class_builtin";
 		} else if (tag == "annotation") {
 			topic = "class_annotation";
 		} else if (tag == "theme_item") {

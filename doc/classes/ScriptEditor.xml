@@ -60,6 +60,8 @@
 				class_signal:BaseButton:pressed
 				# Shows help for the CanvasItem property visible.
 				class_property:CanvasItem:visible
+				# Shows help for the GDScript built-in keyword.
+				class_builtin:@GDScript:for
 				# Shows help for the GDScript annotation export.
 				# Annotations should be prefixed with the `@` symbol in the descriptor, as shown here.
 				class_annotation:@GDScript:@export

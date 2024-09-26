@@ -600,6 +600,16 @@ public:
 		}
 	}
 
+	GDVIRTUAL0RC(TypedArray<Dictionary>, _get_public_keywords)
+	virtual void get_public_keywords(List<MethodInfo> *p_keywords) const override {
+		TypedArray<Dictionary> ret;
+		GDVIRTUAL_REQUIRED_CALL(_get_public_keywords, ret);
+		for (const Variant &var : ret) {
+			MethodInfo mi = MethodInfo::from_dict(var);
+			p_keywords->push_back(mi);
+		}
+	}
+
 	GDVIRTUAL0RC(TypedArray<Dictionary>, _get_public_functions)
 	virtual void get_public_functions(List<MethodInfo> *p_functions) const override {
 		TypedArray<Dictionary> ret;

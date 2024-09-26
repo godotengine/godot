@@ -189,6 +189,11 @@
 			<description>
 			</description>
 		</method>
+		<method name="_get_public_keywords" qualifiers="virtual const">
+			<return type="Dictionary[]" />
+			<description>
+			</description>
+		</method>
 		<method name="_get_recognized_extensions" qualifiers="virtual const">
 			<return type="PackedStringArray" />
 			<description>
@@ -391,7 +396,9 @@
 		</constant>
 		<constant name="LOOKUP_RESULT_CLASS_ANNOTATION" value="8" enum="LookupResultType">
 		</constant>
-		<constant name="LOOKUP_RESULT_MAX" value="9" enum="LookupResultType">
+		<constant name="LOOKUP_RESULT_CLASS_BUILTIN" value="9" enum="LookupResultType">
+		</constant>
+		<constant name="LOOKUP_RESULT_MAX" value="10" enum="LookupResultType">
 		</constant>
 		<constant name="LOCATION_LOCAL" value="0" enum="CodeCompletionLocation">
 			The option is local to the location of the code completion query - e.g. a local variable. Subsequent value of location represent options from the outer class, the exact value represent how far they are (in terms of inner classes).
