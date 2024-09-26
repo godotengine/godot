@@ -121,17 +121,10 @@ for user-defined purpose without allocating any real GPU memory.
 See documentation chapter: \ref statistics.
 */
 
+#include "drivers/vulkan/godot_vulkan.h"
 
 #ifdef __cplusplus
 extern "C" {
-#endif
-
-#ifndef VULKAN_H_
-    #ifdef USE_VOLK
-        #include <volk.h>
-    #else
-        #include <vulkan/vulkan.h>
-    #endif
 #endif
 
 // Define this macro to declare maximum supported Vulkan version in format AAABBBCCC,

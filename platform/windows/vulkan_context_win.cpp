@@ -31,11 +31,8 @@
 #if defined(WINDOWS_ENABLED) && defined(VULKAN_ENABLED)
 
 #include "vulkan_context_win.h"
-#ifdef USE_VOLK
-#include <volk.h>
-#else
-#include <vulkan/vulkan.h>
-#endif
+
+#include "drivers/vulkan/godot_vulkan.h"
 
 const char *VulkanContextWindows::_get_platform_surface_extension() const {
 	return VK_KHR_WIN32_SURFACE_EXTENSION_NAME;

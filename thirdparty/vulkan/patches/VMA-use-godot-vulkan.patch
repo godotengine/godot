@@ -1,0 +1,15 @@
+diff --git a/thirdparty/vulkan/vk_mem_alloc.h b/thirdparty/vulkan/vk_mem_alloc.h
+index 6819219b00..0cde2e2172 100644
+--- a/thirdparty/vulkan/vk_mem_alloc.h
++++ b/thirdparty/vulkan/vk_mem_alloc.h
+@@ -121,9 +121,7 @@ for user-defined purpose without allocating any real GPU memory.
+ See documentation chapter: \ref statistics.
+ */
+ 
+-#ifndef VULKAN_H_
+-    #include <vulkan/vulkan.h>
+-#endif
++#include "drivers/vulkan/godot_vulkan.h"
+ 
+ #ifdef __cplusplus
+ extern "C" {
