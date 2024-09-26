@@ -218,10 +218,7 @@ void Sprite2DEditor::_update_mesh_data() {
 				if (node->is_flipped_v()) {
 					vtx.y = rect.size.y - vtx.y;
 				}
-				vtx += node->get_offset();
-				if (node->is_centered()) {
-					vtx -= rect.size / 2.0;
-				}
+				vtx += node->get_pivot();
 
 				computed_vertices.push_back(vtx);
 			}
@@ -266,10 +263,7 @@ void Sprite2DEditor::_update_mesh_data() {
 				}
 				// Don't bake offset to Polygon2D which has offset property.
 				if (selected_menu_item != MENU_OPTION_CONVERT_TO_POLYGON_2D) {
-					vtx += node->get_offset();
-				}
-				if (node->is_centered()) {
-					vtx -= rect.size / 2.0;
+					vtx += node->get_pivot();
 				}
 
 				col.write[i] = vtx;

@@ -33,6 +33,7 @@
 
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/sprite_frames.h"
+#include "scene/resources/texture_pivot_utils.h"
 
 class SpriteBase3D : public GeometryInstance3D {
 	GDCLASS(SpriteBase3D, GeometryInstance3D);
@@ -66,11 +67,12 @@ private:
 	List<SpriteBase3D *> children;
 	List<SpriteBase3D *>::Element *pI = nullptr;
 
-	bool centered = true;
+	Texture2D::Pivot pivot_mode = Texture2D::PIVOT_CENTER;
 	Point2 offset;
 
 	bool hflip = false;
 	bool vflip = false;
+	bool flip_around_pivot = false;
 
 	Color modulate = Color(1, 1, 1, 1);
 	int render_priority = 0;
@@ -118,10 +120,17 @@ protected:
 	uint32_t mesh_surface_format = 0;
 
 	void _queue_redraw();
+	virtual Point2 _get_pivot(const Ref<Texture2D> &p_texture, const Size2 &p_size, const Point2 &p_offset, Texture2D::Pivot p_mode) const;
 
 public:
-	void set_centered(bool p_center);
+#ifndef DISABLE_DEPRECATED
+	void set_centered(bool p_centered);
 	bool is_centered() const;
+#endif
+
+	void set_pivot_mode(Texture2D::Pivot p_pivot);
+	Texture2D::Pivot get_pivot_mode() const;
+	virtual Point2 get_pivot() const;
 
 	void set_offset(const Point2 &p_offset);
 	Point2 get_offset() const;
@@ -131,6 +140,9 @@ public:
 
 	void set_flip_v(bool p_flip);
 	bool is_flipped_v() const;
+
+	void set_flip_around_pivot(bool p_flip);
+	bool is_flipped_around_pivot() const;
 
 	void set_render_priority(int p_priority);
 	int get_render_priority() const;
@@ -193,10 +205,13 @@ class Sprite3D : public SpriteBase3D {
 protected:
 	virtual void _draw() override;
 	static void _bind_methods();
+	virtual Point2 _get_pivot(const Ref<Texture2D> &p_texture, const Size2 &p_size, const Point2 &p_offset, Texture2D::Pivot p_mode) const override;
 
 	void _validate_property(PropertyInfo &p_property) const;
 
 public:
+	virtual Point2 get_pivot() const override;
+
 	void set_texture(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_texture() const;
 
@@ -255,6 +270,8 @@ protected:
 	void _validate_property(PropertyInfo &p_property) const;
 
 public:
+	virtual Point2 get_pivot() const override;
+
 	void set_sprite_frames(const Ref<SpriteFrames> &p_frames);
 	Ref<SpriteFrames> get_sprite_frames() const;
 

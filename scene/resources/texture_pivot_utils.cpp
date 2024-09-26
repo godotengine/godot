@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  atlas_texture.h                                                       */
+/*  texture_pivot_utils.cpp                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,58 +28,53 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ATLAS_TEXTURE_H
-#define ATLAS_TEXTURE_H
+#include "texture_pivot_utils.h"
 
-#include "scene/resources/texture.h"
-
-class AtlasTexture : public Texture2D {
-	GDCLASS(AtlasTexture, Texture2D);
-	RES_BASE_EXTENSION("atlastex");
-
-	Rect2 _get_region_rect() const;
-
-protected:
-	Ref<Texture2D> atlas;
-	Rect2 region;
-	Rect2 margin;
-	Point2 anchor;
-	bool filter_clip = false;
-
-	static void _bind_methods();
-
-public:
-	virtual int get_width() const override;
-	virtual int get_height() const override;
-	virtual RID get_rid() const override;
-
-	virtual bool has_alpha() const override;
-
-	void set_atlas(const Ref<Texture2D> &p_atlas);
-	Ref<Texture2D> get_atlas() const;
-
-	void set_region(const Rect2 &p_region);
-	Rect2 get_region() const;
-
-	void set_margin(const Rect2 &p_margin);
-	Rect2 get_margin() const;
-
-	virtual void set_anchor(const Point2 &p_anchor);
-	virtual Point2 get_anchor() const override;
-
-	void set_filter_clip(const bool p_enable);
-	bool has_filter_clip() const;
-
-	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) const override;
-	virtual void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) const override;
-	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, bool p_clip_uv = true) const override;
-	virtual bool get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const override;
-
-	bool is_pixel_opaque(int p_x, int p_y) const override;
-
-	virtual Ref<Image> get_image() const override;
-
-	AtlasTexture();
-};
-
-#endif // ATLAS_TEXTURE_H
+Point2 TexturePivotUtils::get_pivot(const Ref<Texture2D> &p_texture, const Size2 &p_size, const Point2 &p_offset, Texture2D::Pivot p_mode) {
+	Point2 pivot;
+	switch (p_mode) {
+		case Texture2D::PIVOT_ANCHOR: {
+			pivot = p_texture->get_anchor();
+		} break;
+		// PIVOT_FREE and PIVOT_FREE_RELATIVE do not need to be inverted
+		// so we can immediately return the pivot.
+		case Texture2D::PIVOT_FREE:
+			return p_offset;
+		case Texture2D::PIVOT_FREE_RELATIVE:
+			return p_offset * p_size;
+		// Top left pivot is just 0,0 so no need to do anything here.
+		case Texture2D::PIVOT_TOP_LEFT:
+			break;
+		case Texture2D::PIVOT_CENTER: {
+			pivot = p_size / 2;
+		} break;
+		case Texture2D::PIVOT_TOP_CENTER: {
+			pivot = Point2(p_size.width / 2, 0);
+		} break;
+		case Texture2D::PIVOT_TOP_RIGHT: {
+			pivot = Point2(p_size.width, 0);
+		} break;
+		case Texture2D::PIVOT_CENTER_RIGHT: {
+			pivot = Point2(p_size.width, p_size.height / 2);
+		} break;
+		case Texture2D::PIVOT_BOTTOM_RIGHT: {
+			pivot = p_size;
+		} break;
+		case Texture2D::PIVOT_BOTTOM_CENTER: {
+			pivot = Point2(p_size.width / 2, p_size.height);
+		} break;
+		case Texture2D::PIVOT_BOTTOM_LEFT: {
+			pivot = Point2(0, p_size.height);
+		} break;
+		case Texture2D::PIVOT_CENTER_LEFT: {
+			pivot = Point2(0, p_size.height / 2);
+		} break;
+#ifndef DISABLE_DEPRECATED
+		// Legacy mode is basically centered + offset
+		case Texture2D::PIVOT_LEGACY_CENTER:
+			return p_offset - p_size / 2;
+#endif
+	}
+	// Pivot must be subtracted from position so we invert it here.
+	return pivot * -1;
+}

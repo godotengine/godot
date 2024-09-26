@@ -92,23 +92,42 @@ void Sprite2D::_get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_c
 	r_src_rect.size = frame_size;
 	r_src_rect.position = base_rect.position + frame_offset;
 
-	Point2 dest_offset = offset;
-	if (centered) {
-		dest_offset -= frame_size / 2;
-	}
+	Point2 dest_offset = _get_pivot(frame_size, offset, pivot_mode);
 
 	if (get_viewport() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
 		dest_offset = (dest_offset + Point2(0.5, 0.5)).floor();
 	}
 
-	r_dst_rect = Rect2(dest_offset, frame_size);
-
 	if (hflip) {
-		r_dst_rect.size.x = -r_dst_rect.size.x;
+		frame_size.x = -frame_size.x;
 	}
 	if (vflip) {
-		r_dst_rect.size.y = -r_dst_rect.size.y;
+		frame_size.y = -frame_size.y;
 	}
+
+	r_dst_rect = Rect2(dest_offset, frame_size);
+}
+
+Point2 Sprite2D::_get_pivot(const Size2 &p_size, const Point2 &p_offset, Texture2D::Pivot p_mode) const {
+	Point2 pivot;
+	// When a region is defined for this sprite, the texture's anchor
+	// becomes irrelevant and another mode should be used instead.
+	if (p_mode == Texture2D::PIVOT_ANCHOR && region_enabled) {
+		return pivot;
+	}
+
+	pivot = TexturePivotUtils::get_pivot(texture, p_size, p_offset, p_mode);
+
+	if (flip_around_pivot) {
+		if (hflip) {
+			pivot.x = (p_size.width + pivot.x) * -1;
+		}
+		if (vflip) {
+			pivot.y = (p_size.height + pivot.y) * -1;
+		}
+	}
+
+	return pivot;
 }
 
 void Sprite2D::_notification(int p_what) {
@@ -153,18 +172,56 @@ Ref<Texture2D> Sprite2D::get_texture() const {
 	return texture;
 }
 
-void Sprite2D::set_centered(bool p_center) {
-	if (centered == p_center) {
+#ifndef DISABLE_DEPRECATED
+void Sprite2D::set_centered(bool p_centered) {
+	if (p_centered && pivot_mode == Texture2D::PIVOT_LEGACY_CENTER) {
 		return;
 	}
 
-	centered = p_center;
+	if (!p_centered && pivot_mode == Texture2D::PIVOT_FREE) {
+		return;
+	}
+
+	pivot_mode = p_centered ? Texture2D::PIVOT_LEGACY_CENTER : Texture2D::PIVOT_FREE;
+
 	queue_redraw();
-	item_rect_changed();
+	notify_property_list_changed();
 }
 
 bool Sprite2D::is_centered() const {
-	return centered;
+	return pivot_mode == Texture2D::PIVOT_LEGACY_CENTER;
+}
+#endif
+
+void Sprite2D::set_pivot_mode(Texture2D::Pivot p_mode) {
+	if (pivot_mode == p_mode) {
+		return;
+	}
+
+	pivot_mode = p_mode;
+	queue_redraw();
+	notify_property_list_changed();
+}
+
+Texture2D::Pivot Sprite2D::get_pivot_mode() const {
+	return pivot_mode;
+}
+
+Point2 Sprite2D::get_pivot() const {
+	if (texture.is_null()) {
+		return Point2();
+	}
+
+	Size2 size;
+
+	if (region_enabled) {
+		size = region_rect.size;
+	} else {
+		size = texture->get_size();
+	}
+
+	size = Size2i(size) / Point2(hframes, vframes);
+	return _get_pivot(size, offset, pivot_mode);
 }
 
 void Sprite2D::set_offset(const Point2 &p_offset) {
@@ -205,6 +262,18 @@ void Sprite2D::set_flip_v(bool p_flip) {
 
 bool Sprite2D::is_flipped_v() const {
 	return vflip;
+}
+
+void Sprite2D::set_flip_around_pivot(bool p_flip) {
+	if (flip_around_pivot == p_flip) {
+		return;
+	}
+
+	flip_around_pivot = p_flip;
+	queue_redraw();
+}
+bool Sprite2D::is_flipped_around_pivot() const {
+	return flip_around_pivot;
 }
 
 void Sprite2D::set_region_enabled(bool p_region_enabled) {
@@ -384,7 +453,7 @@ Rect2 Sprite2D::get_rect() const {
 		return Rect2(0, 0, 1, 1);
 	}
 
-	Size2i s;
+	Size2 s;
 
 	if (region_enabled) {
 		s = region_rect.size;
@@ -392,12 +461,9 @@ Rect2 Sprite2D::get_rect() const {
 		s = texture->get_size();
 	}
 
-	s = s / Point2(hframes, vframes);
+	s = Size2i(s) / Point2(hframes, vframes);
 
-	Point2 ofs = offset;
-	if (centered) {
-		ofs -= Size2(s) / 2;
-	}
+	Point2 ofs = _get_pivot(s, offset, pivot_mode);
 
 	if (get_viewport() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
 		ofs = (ofs + Point2(0.5, 0.5)).floor();
@@ -411,6 +477,30 @@ Rect2 Sprite2D::get_rect() const {
 }
 
 void Sprite2D::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "offset") {
+		if (pivot_mode != Texture2D::PIVOT_FREE && pivot_mode != Texture2D::PIVOT_FREE_RELATIVE) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+
+		if (pivot_mode == Texture2D::PIVOT_FREE) {
+			p_property.hint_string = "suffix:px";
+		} else if (pivot_mode == Texture2D::PIVOT_FREE_RELATIVE) {
+			p_property.hint_string = "suffix:* size";
+		}
+	}
+
+#ifndef DISABLE_DEPRECATED
+	// The centered property is supported for compatibility reason but shouldn't be used directly.
+	if (p_property.name == "centered") {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+	// In legacy center mode, the offset field is needed.
+	if (p_property.name == "offset" && pivot_mode == Texture2D::PIVOT_LEGACY_CENTER) {
+		p_property.usage = PROPERTY_USAGE_DEFAULT;
+		p_property.hint_string = "suffix:px";
+	}
+#endif
+
 	if (p_property.name == "frame") {
 		p_property.hint = PROPERTY_HINT_RANGE;
 		p_property.hint_string = "0," + itos(vframes * hframes - 1) + ",1";
@@ -438,8 +528,14 @@ void Sprite2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &Sprite2D::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture"), &Sprite2D::get_texture);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_centered", "centered"), &Sprite2D::set_centered);
 	ClassDB::bind_method(D_METHOD("is_centered"), &Sprite2D::is_centered);
+#endif
+
+	ClassDB::bind_method(D_METHOD("set_pivot_mode", "pivot"), &Sprite2D::set_pivot_mode);
+	ClassDB::bind_method(D_METHOD("get_pivot_mode"), &Sprite2D::get_pivot_mode);
+	ClassDB::bind_method(D_METHOD("get_pivot"), &Sprite2D::get_pivot);
 
 	ClassDB::bind_method(D_METHOD("set_offset", "offset"), &Sprite2D::set_offset);
 	ClassDB::bind_method(D_METHOD("get_offset"), &Sprite2D::get_offset);
@@ -449,6 +545,9 @@ void Sprite2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_flip_v", "flip_v"), &Sprite2D::set_flip_v);
 	ClassDB::bind_method(D_METHOD("is_flipped_v"), &Sprite2D::is_flipped_v);
+
+	ClassDB::bind_method(D_METHOD("set_flip_around_pivot", "flip_around_pivot"), &Sprite2D::set_flip_around_pivot);
+	ClassDB::bind_method(D_METHOD("is_flipped_around_pivot"), &Sprite2D::is_flipped_around_pivot);
 
 	ClassDB::bind_method(D_METHOD("set_region_enabled", "enabled"), &Sprite2D::set_region_enabled);
 	ClassDB::bind_method(D_METHOD("is_region_enabled"), &Sprite2D::is_region_enabled);
@@ -479,11 +578,20 @@ void Sprite2D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("texture_changed"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
-	ADD_GROUP("Offset", "");
+	ADD_GROUP("Pivot", "");
+#ifndef DISABLE_DEPRECATED
+	// The centered property is only defined for compatibility reason.
+	// In that case, when true, it results in a `PIVOT_LEGACY_CENTER` mode,
+	// which shouldn't be supported once the centered property is completely removed.
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "pivot_mode", PROPERTY_HINT_ENUM, "Anchor,Free,Free Relative,Center,Top Left,Top Center,Top Right,Center Right,Bottom Right,Bottom Center,Bottom Left,Center Left,Legacy Center"), "set_pivot_mode", "get_pivot_mode");
+#else
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "pivot_mode", PROPERTY_HINT_ENUM, "Anchor,Free,Free Relative,Center,Top Left,Top Center,Top Right,Center Right,Bottom Right,Bottom Center,Bottom Left,Center Left"), "set_pivot_mode", "get_pivot_mode");
+#endif
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "is_flipped_v");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_around_pivot"), "set_flip_around_pivot", "is_flipped_around_pivot");
 	ADD_GROUP("Animation", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_hframes", "get_hframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_vframes", "get_vframes");

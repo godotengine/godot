@@ -59,6 +59,7 @@ protected:
 
 	GDVIRTUAL0RC(int, _get_width)
 	GDVIRTUAL0RC(int, _get_height)
+	GDVIRTUAL0RC(Point2, _get_anchor)
 	GDVIRTUAL2RC(bool, _is_pixel_opaque, int, int)
 	GDVIRTUAL0RC(bool, _has_alpha)
 
@@ -67,8 +68,28 @@ protected:
 	GDVIRTUAL6C(_draw_rect_region, RID, Rect2, Rect2, Color, bool, bool)
 
 public:
+	enum Pivot {
+		PIVOT_ANCHOR,
+		PIVOT_FREE,
+		PIVOT_FREE_RELATIVE,
+		PIVOT_CENTER,
+		PIVOT_TOP_LEFT,
+		PIVOT_TOP_CENTER,
+		PIVOT_TOP_RIGHT,
+		PIVOT_CENTER_RIGHT,
+		PIVOT_BOTTOM_RIGHT,
+		PIVOT_BOTTOM_CENTER,
+		PIVOT_BOTTOM_LEFT,
+		PIVOT_CENTER_LEFT
+#ifndef DISABLE_DEPRECATED
+		,
+		PIVOT_LEGACY_CENTER
+#endif
+	};
+
 	virtual int get_width() const;
 	virtual int get_height() const;
+	virtual Point2 get_anchor() const;
 	virtual Size2 get_size() const;
 
 	virtual bool is_pixel_opaque(int p_x, int p_y) const;
@@ -143,5 +164,7 @@ public:
 	virtual Vector<Ref<Image>> get_data() const;
 	virtual Ref<Resource> create_placeholder() const;
 };
+
+VARIANT_ENUM_CAST(Texture2D::Pivot);
 
 #endif // TEXTURE_H
