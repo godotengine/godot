@@ -1028,7 +1028,7 @@ namespace human
 			{"LeftHand",L"左手"},
 			{"RightHand",L"右手"},
 
-            
+
 			{"LeftToes",L"左足"},
 			{"RightToes",L"右足"},
 
@@ -1172,42 +1172,42 @@ namespace human
 	}
 	const HashMap<int, String> get_human_to_bone_map() {
 		static HashMap<int, String> human_map = {
-			{0,"Hips"},
+			{kHips,"Hips"},
 
-			{1,"LeftUpperLeg"},
-			{2,"RightUpperLeg"},
+			{kLeftUpperLeg,"LeftUpperLeg"},
+			{kRightUpperLeg,"RightUpperLeg"},
 
-			{3,"LeftLowerLeg"},
-			{4,"RightLowerLeg"},
+			{kLeftLowerLeg,"LeftLowerLeg"},
+			{kRightLowerLeg,"RightLowerLeg"},
 
-			{5,"LeftFoot"},
-			{6,"RightFoot"},
+			{kLeftFoot,"LeftFoot"},
+			{kRightFoot,"RightFoot"},
 
-			{7,"Spine"},
-			{8,"Chest"},
-			{9,"UpperChest"},
-			{10,"Neck"},
-			{11,"Head"},
+			{kSpine,"Spine"},
+			{kChest,"Chest"},
+			{kUpperChest,"UpperChest"},
+			{kNeck,"Neck"},
+			{kHead,"Head"},
 
-			{12,"LeftShoulder"},
-			{13,"RightShoulder"},
+			{kLeftShoulder,"LeftShoulder"},
+			{kRightShoulder,"RightShoulder"},
 
-			{14,"LeftUpperArm"},
-			{15,"RightUpperArm"},
+			{kLeftUpperArm,"LeftUpperArm"},
+			{kRightUpperArm,"RightUpperArm"},
 
-			{16,"LeftLowerArm"},
-			{17,"RightLowerArm"},
+			{kLeftLowerArm,"LeftLowerArm"},
+			{kRightLowerArm,"RightLowerArm"},
 
-			{18,"LeftHand"},
-			{19,"RightHand"},
+			{kLeftHand,"LeftHand"},
+			{kRightHand,"RightHand"},
 
-			{20,"LeftToes"},
-			{21,"RightToes"},
+			{kLeftToes,"LeftToes"},
+			{kRightToes,"RightToes"},
 
-			{22,"LeftEye"},
-			{23,"RightEye"},
+			{kLeftEye,"LeftEye"},
+			{kRightEye,"RightEye"},
 
-			{24,"Jaw"},
+			{kJaw,"Jaw"},
 
 			{25,"LeftThumbMetacarpal"},
 			{26,"LeftThumbProximal"},
