@@ -43,7 +43,7 @@
 class MenuButton;
 
 class GotoLineDialog : public ConfirmationDialog {
-	GDCLASS(GotoLineDialog, ConfirmationDialog);
+	GDCLASS(GotoLineDialog, ConfirmationDialog)
 
 	Label *line_label = nullptr;
 	LineEdit *line = nullptr;
@@ -62,7 +62,7 @@ public:
 class CodeTextEditor;
 
 class FindReplaceBar : public HBoxContainer {
-	GDCLASS(FindReplaceBar, HBoxContainer);
+	GDCLASS(FindReplaceBar, HBoxContainer)
 
 	enum SearchMode {
 		SEARCH_CURRENT,
@@ -157,7 +157,7 @@ public:
 typedef void (*CodeTextEditorCodeCompleteFunc)(void *p_ud, const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_forced);
 
 class CodeTextEditor : public VBoxContainer {
-	GDCLASS(CodeTextEditor, VBoxContainer);
+	GDCLASS(CodeTextEditor, VBoxContainer)
 
 	CodeEdit *text_editor = nullptr;
 	FindReplaceBar *find_replace_bar = nullptr;

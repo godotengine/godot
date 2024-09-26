@@ -38,7 +38,7 @@
 #include "core/object/ref_counted.h"
 
 class CryptoKey : public Resource {
-	GDCLASS(CryptoKey, Resource);
+	GDCLASS(CryptoKey, Resource)
 
 protected:
 	static void _bind_methods();
@@ -54,7 +54,7 @@ public:
 };
 
 class X509Certificate : public Resource {
-	GDCLASS(X509Certificate, Resource);
+	GDCLASS(X509Certificate, Resource)
 
 protected:
 	static void _bind_methods();
@@ -70,7 +70,7 @@ public:
 };
 
 class TLSOptions : public RefCounted {
-	GDCLASS(TLSOptions, RefCounted);
+	GDCLASS(TLSOptions, RefCounted)
 
 private:
 	enum Mode {
@@ -102,7 +102,7 @@ public:
 };
 
 class HMACContext : public RefCounted {
-	GDCLASS(HMACContext, RefCounted);
+	GDCLASS(HMACContext, RefCounted)
 
 protected:
 	static void _bind_methods();
@@ -120,7 +120,7 @@ public:
 };
 
 class Crypto : public RefCounted {
-	GDCLASS(Crypto, RefCounted);
+	GDCLASS(Crypto, RefCounted)
 
 protected:
 	static void _bind_methods();

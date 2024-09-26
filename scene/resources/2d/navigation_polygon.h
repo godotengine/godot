@@ -36,7 +36,7 @@
 #include "servers/navigation/navigation_globals.h"
 
 class NavigationPolygon : public Resource {
-	GDCLASS(NavigationPolygon, Resource);
+	GDCLASS(NavigationPolygon, Resource)
 	RWLock rwlock;
 
 	Vector<Vector2> vertices;

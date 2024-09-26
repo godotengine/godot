@@ -46,7 +46,7 @@ struct CaretInfo;
 #define OT_TAG(m_c1, m_c2, m_c3, m_c4) ((int32_t)((((uint32_t)(m_c1) & 0xff) << 24) | (((uint32_t)(m_c2) & 0xff) << 16) | (((uint32_t)(m_c3) & 0xff) << 8) | ((uint32_t)(m_c4) & 0xff)))
 
 class TextServer : public RefCounted {
-	GDCLASS(TextServer, RefCounted);
+	GDCLASS(TextServer, RefCounted)
 
 public:
 	enum FontAntialiasing {
@@ -543,8 +543,8 @@ public:
 	virtual PackedInt32Array string_get_word_breaks(const String &p_string, const String &p_language = "", int64_t p_chars_per_line = 0) const = 0;
 	virtual PackedInt32Array string_get_character_breaks(const String &p_string, const String &p_language = "") const;
 
-	virtual int64_t is_confusable(const String &p_string, const PackedStringArray &p_dict) const { return -1; };
-	virtual bool spoof_check(const String &p_string) const { return false; };
+	virtual int64_t is_confusable(const String &p_string, const PackedStringArray &p_dict) const { return -1; }
+	virtual bool spoof_check(const String &p_string) const { return false; }
 
 	virtual String strip_diacritics(const String &p_string) const;
 	virtual bool is_valid_identifier(const String &p_string) const;
@@ -598,7 +598,7 @@ struct CaretInfo {
 /*************************************************************************/
 
 class TextServerManager : public Object {
-	GDCLASS(TextServerManager, Object);
+	GDCLASS(TextServerManager, Object)
 
 protected:
 	static void _bind_methods();

@@ -56,7 +56,7 @@ class EditorUndoRedoManager;
 class ScriptCreateDialog;
 
 class EditorPlugin : public Node {
-	GDCLASS(EditorPlugin, Node);
+	GDCLASS(EditorPlugin, Node)
 	friend class EditorData;
 
 	bool input_event_forwarding_always_enabled = false;

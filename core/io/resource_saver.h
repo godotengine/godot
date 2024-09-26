@@ -35,7 +35,7 @@
 #include "core/object/gdvirtual.gen.inc"
 
 class ResourceFormatSaver : public RefCounted {
-	GDCLASS(ResourceFormatSaver, RefCounted);
+	GDCLASS(ResourceFormatSaver, RefCounted)
 
 protected:
 	static void _bind_methods();

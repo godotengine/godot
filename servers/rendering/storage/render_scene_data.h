@@ -37,7 +37,7 @@
 #include "core/object/script_language.h"
 
 class RenderSceneData : public Object {
-	GDCLASS(RenderSceneData, Object);
+	GDCLASS(RenderSceneData, Object)
 
 protected:
 	static void _bind_methods();
@@ -54,7 +54,7 @@ public:
 };
 
 class RenderSceneDataExtension : public RenderSceneData {
-	GDCLASS(RenderSceneDataExtension, RenderSceneData);
+	GDCLASS(RenderSceneDataExtension, RenderSceneData)
 
 protected:
 	static void _bind_methods();

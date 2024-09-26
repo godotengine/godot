@@ -34,7 +34,7 @@
 #include "core/object/ref_counted.h"
 
 class HashingContext : public RefCounted {
-	GDCLASS(HashingContext, RefCounted);
+	GDCLASS(HashingContext, RefCounted)
 
 public:
 	enum HashType {

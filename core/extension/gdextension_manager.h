@@ -34,7 +34,7 @@
 #include "core/extension/gdextension.h"
 
 class GDExtensionManager : public Object {
-	GDCLASS(GDExtensionManager, Object);
+	GDCLASS(GDExtensionManager, Object)
 
 	int32_t level = -1;
 	HashMap<String, Ref<GDExtension>> gdextension_map;

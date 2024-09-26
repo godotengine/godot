@@ -35,7 +35,7 @@
 #include "servers/navigation/navigation_utilities.h"
 
 class NavigationPathQueryParameters2D : public RefCounted {
-	GDCLASS(NavigationPathQueryParameters2D, RefCounted);
+	GDCLASS(NavigationPathQueryParameters2D, RefCounted)
 
 	NavigationUtilities::PathQueryParameters parameters;
 

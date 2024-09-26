@@ -36,7 +36,7 @@
 #include "core/object/ref_counted.h"
 
 class MainLoop : public Object {
-	GDCLASS(MainLoop, Object);
+	GDCLASS(MainLoop, Object)
 
 protected:
 	static void _bind_methods();

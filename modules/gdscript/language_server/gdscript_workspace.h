@@ -39,7 +39,7 @@
 #include "editor/editor_file_system.h"
 
 class GDScriptWorkspace : public RefCounted {
-	GDCLASS(GDScriptWorkspace, RefCounted);
+	GDCLASS(GDScriptWorkspace, RefCounted)
 
 private:
 	void _get_owners(EditorFileSystemDirectory *efsd, String p_path, List<String> &owners);

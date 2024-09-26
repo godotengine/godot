@@ -40,7 +40,7 @@ class TypedArray;
 struct _IP_ResolverPrivate;
 
 class IP : public Object {
-	GDCLASS(IP, Object);
+	GDCLASS(IP, Object)
 
 public:
 	enum ResolverStatus {

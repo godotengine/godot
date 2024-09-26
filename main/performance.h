@@ -41,7 +41,7 @@ template <typename T>
 class TypedArray;
 
 class Performance : public Object {
-	GDCLASS(Performance, Object);
+	GDCLASS(Performance, Object)
 
 	static Performance *singleton;
 	static void _bind_methods();

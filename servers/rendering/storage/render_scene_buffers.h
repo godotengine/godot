@@ -35,7 +35,7 @@
 #include "servers/rendering_server.h"
 
 class RenderSceneBuffersConfiguration : public RefCounted {
-	GDCLASS(RenderSceneBuffersConfiguration, RefCounted);
+	GDCLASS(RenderSceneBuffersConfiguration, RefCounted)
 
 private:
 	RID render_target;
@@ -95,7 +95,7 @@ public:
 };
 
 class RenderSceneBuffers : public RefCounted {
-	GDCLASS(RenderSceneBuffers, RefCounted);
+	GDCLASS(RenderSceneBuffers, RefCounted)
 
 protected:
 	static void _bind_methods();
@@ -113,7 +113,7 @@ public:
 };
 
 class RenderSceneBuffersExtension : public RenderSceneBuffers {
-	GDCLASS(RenderSceneBuffersExtension, RenderSceneBuffers);
+	GDCLASS(RenderSceneBuffersExtension, RenderSceneBuffers)
 
 protected:
 	static void _bind_methods();

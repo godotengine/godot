@@ -35,7 +35,7 @@
 #include "scene/main/node.h"
 
 class SceneState : public RefCounted {
-	GDCLASS(SceneState, RefCounted);
+	GDCLASS(SceneState, RefCounted)
 
 	Vector<StringName> names;
 	Vector<Variant> variants;
@@ -230,8 +230,8 @@ public:
 VARIANT_ENUM_CAST(SceneState::GenEditState)
 
 class PackedScene : public Resource {
-	GDCLASS(PackedScene, Resource);
-	RES_BASE_EXTENSION("scn");
+	GDCLASS(PackedScene, Resource)
+	RES_BASE_EXTENSION("scn")
 
 	Ref<SceneState> state;
 

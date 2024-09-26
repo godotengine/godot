@@ -37,7 +37,7 @@
 #include "core/io/stream_peer.h"
 
 class StreamPeerTCP : public StreamPeer {
-	GDCLASS(StreamPeerTCP, StreamPeer);
+	GDCLASS(StreamPeerTCP, StreamPeer)
 
 public:
 	enum Status {

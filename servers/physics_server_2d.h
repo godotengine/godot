@@ -40,7 +40,7 @@ template <typename T>
 class TypedArray;
 
 class PhysicsDirectBodyState2D : public Object {
-	GDCLASS(PhysicsDirectBodyState2D, Object);
+	GDCLASS(PhysicsDirectBodyState2D, Object)
 
 protected:
 	static void _bind_methods();
@@ -115,7 +115,7 @@ class PhysicsPointQueryParameters2D;
 class PhysicsShapeQueryParameters2D;
 
 class PhysicsDirectSpaceState2D : public Object {
-	GDCLASS(PhysicsDirectSpaceState2D, Object);
+	GDCLASS(PhysicsDirectSpaceState2D, Object)
 
 	Dictionary _intersect_ray(const Ref<PhysicsRayQueryParameters2D> &p_ray_query);
 	TypedArray<Dictionary> _intersect_point(const Ref<PhysicsPointQueryParameters2D> &p_point_query, int p_max_results = 32);
@@ -205,7 +205,7 @@ class PhysicsTestMotionParameters2D;
 class PhysicsTestMotionResult2D;
 
 class PhysicsServer2D : public Object {
-	GDCLASS(PhysicsServer2D, Object);
+	GDCLASS(PhysicsServer2D, Object)
 
 	static PhysicsServer2D *singleton;
 
@@ -614,7 +614,7 @@ public:
 };
 
 class PhysicsRayQueryParameters2D : public RefCounted {
-	GDCLASS(PhysicsRayQueryParameters2D, RefCounted);
+	GDCLASS(PhysicsRayQueryParameters2D, RefCounted)
 
 	PhysicsDirectSpaceState2D::RayParameters parameters;
 
@@ -648,7 +648,7 @@ public:
 };
 
 class PhysicsPointQueryParameters2D : public RefCounted {
-	GDCLASS(PhysicsPointQueryParameters2D, RefCounted);
+	GDCLASS(PhysicsPointQueryParameters2D, RefCounted)
 
 	PhysicsDirectSpaceState2D::PointParameters parameters;
 
@@ -678,7 +678,7 @@ public:
 };
 
 class PhysicsShapeQueryParameters2D : public RefCounted {
-	GDCLASS(PhysicsShapeQueryParameters2D, RefCounted);
+	GDCLASS(PhysicsShapeQueryParameters2D, RefCounted)
 
 	PhysicsDirectSpaceState2D::ShapeParameters parameters;
 
@@ -719,7 +719,7 @@ public:
 };
 
 class PhysicsTestMotionParameters2D : public RefCounted {
-	GDCLASS(PhysicsTestMotionParameters2D, RefCounted);
+	GDCLASS(PhysicsTestMotionParameters2D, RefCounted)
 
 	PhysicsServer2D::MotionParameters parameters;
 
@@ -752,7 +752,7 @@ public:
 };
 
 class PhysicsTestMotionResult2D : public RefCounted {
-	GDCLASS(PhysicsTestMotionResult2D, RefCounted);
+	GDCLASS(PhysicsTestMotionResult2D, RefCounted)
 
 	PhysicsServer2D::MotionResult result;
 
@@ -779,7 +779,7 @@ public:
 };
 
 class PhysicsServer2DManager : public Object {
-	GDCLASS(PhysicsServer2DManager, Object);
+	GDCLASS(PhysicsServer2DManager, Object)
 
 	static PhysicsServer2DManager *singleton;
 

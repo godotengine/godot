@@ -37,7 +37,7 @@
 
 //@ TODO, excellent candidate for THREAD_SAFE MACRO, should go through all these and add THREAD_SAFE where it applies
 class DirAccess : public RefCounted {
-	GDCLASS(DirAccess, RefCounted);
+	GDCLASS(DirAccess, RefCounted)
 
 public:
 	enum AccessType {
@@ -96,8 +96,8 @@ public:
 
 	virtual bool file_exists(String p_file) = 0;
 	virtual bool dir_exists(String p_dir) = 0;
-	virtual bool is_readable(String p_dir) { return true; };
-	virtual bool is_writable(String p_dir) { return true; };
+	virtual bool is_readable(String p_dir) { return true; }
+	virtual bool is_writable(String p_dir) { return true; }
 	static bool exists(const String &p_dir);
 	virtual uint64_t get_space_left() = 0;
 

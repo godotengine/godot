@@ -47,7 +47,7 @@
 #include "modules/modules_enabled.gen.h" // For gdscript, mono.
 
 class FindBar : public HBoxContainer {
-	GDCLASS(FindBar, HBoxContainer);
+	GDCLASS(FindBar, HBoxContainer)
 
 	LineEdit *search_text = nullptr;
 	Button *find_prev = nullptr;
@@ -86,7 +86,7 @@ public:
 };
 
 class EditorHelp : public VBoxContainer {
-	GDCLASS(EditorHelp, VBoxContainer);
+	GDCLASS(EditorHelp, VBoxContainer)
 
 	enum MethodType {
 		METHOD_TYPE_METHOD,
@@ -252,7 +252,7 @@ public:
 };
 
 class EditorHelpBit : public VBoxContainer {
-	GDCLASS(EditorHelpBit, VBoxContainer);
+	GDCLASS(EditorHelpBit, VBoxContainer)
 
 	struct DocType {
 		String type;
@@ -323,7 +323,7 @@ public:
 // Standard tooltips do not allow you to hover over them.
 // This class is intended as a temporary workaround.
 class EditorHelpBitTooltip : public PopupPanel {
-	GDCLASS(EditorHelpBitTooltip, PopupPanel);
+	GDCLASS(EditorHelpBitTooltip, PopupPanel)
 
 	Timer *timer = nullptr;
 	int _pushing_input = 0;

@@ -37,7 +37,7 @@
 class ButtonGroup;
 
 class BaseButton : public Control {
-	GDCLASS(BaseButton, Control);
+	GDCLASS(BaseButton, Control)
 
 public:
 	enum ActionMode {
@@ -149,7 +149,7 @@ VARIANT_ENUM_CAST(BaseButton::DrawMode)
 VARIANT_ENUM_CAST(BaseButton::ActionMode)
 
 class ButtonGroup : public Resource {
-	GDCLASS(ButtonGroup, Resource);
+	GDCLASS(ButtonGroup, Resource)
 	friend class BaseButton;
 	HashSet<BaseButton *> buttons;
 	bool allow_unpress = false;

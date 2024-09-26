@@ -37,7 +37,7 @@
 /*************************************************************************/
 
 class TextLine : public RefCounted {
-	GDCLASS(TextLine, RefCounted);
+	GDCLASS(TextLine, RefCounted)
 
 private:
 	RID rid;

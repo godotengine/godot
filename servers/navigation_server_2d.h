@@ -45,7 +45,7 @@ class NavMeshGenerator2D;
 
 // This server exposes the `NavigationServer3D` features in the 2D world.
 class NavigationServer2D : public Object {
-	GDCLASS(NavigationServer2D, Object);
+	GDCLASS(NavigationServer2D, Object)
 
 	static NavigationServer2D *singleton;
 

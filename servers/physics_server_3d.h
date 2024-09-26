@@ -43,7 +43,7 @@ template <typename T>
 class TypedArray;
 
 class PhysicsDirectBodyState3D : public Object {
-	GDCLASS(PhysicsDirectBodyState3D, Object);
+	GDCLASS(PhysicsDirectBodyState3D, Object)
 
 protected:
 	static void _bind_methods();
@@ -120,7 +120,7 @@ class PhysicsPointQueryParameters3D;
 class PhysicsShapeQueryParameters3D;
 
 class PhysicsDirectSpaceState3D : public Object {
-	GDCLASS(PhysicsDirectSpaceState3D, Object);
+	GDCLASS(PhysicsDirectSpaceState3D, Object)
 
 private:
 	Dictionary _intersect_ray(const Ref<PhysicsRayQueryParameters3D> &p_ray_query);
@@ -231,7 +231,7 @@ class PhysicsTestMotionParameters3D;
 class PhysicsTestMotionResult3D;
 
 class PhysicsServer3D : public Object {
-	GDCLASS(PhysicsServer3D, Object);
+	GDCLASS(PhysicsServer3D, Object)
 
 	static PhysicsServer3D *singleton;
 
@@ -817,7 +817,7 @@ public:
 };
 
 class PhysicsRayQueryParameters3D : public RefCounted {
-	GDCLASS(PhysicsRayQueryParameters3D, RefCounted);
+	GDCLASS(PhysicsRayQueryParameters3D, RefCounted)
 
 	PhysicsDirectSpaceState3D::RayParameters parameters;
 
@@ -854,7 +854,7 @@ public:
 };
 
 class PhysicsPointQueryParameters3D : public RefCounted {
-	GDCLASS(PhysicsPointQueryParameters3D, RefCounted);
+	GDCLASS(PhysicsPointQueryParameters3D, RefCounted)
 
 	PhysicsDirectSpaceState3D::PointParameters parameters;
 
@@ -881,7 +881,7 @@ public:
 };
 
 class PhysicsShapeQueryParameters3D : public RefCounted {
-	GDCLASS(PhysicsShapeQueryParameters3D, RefCounted);
+	GDCLASS(PhysicsShapeQueryParameters3D, RefCounted)
 
 	PhysicsDirectSpaceState3D::ShapeParameters parameters;
 
@@ -922,7 +922,7 @@ public:
 };
 
 class PhysicsTestMotionParameters3D : public RefCounted {
-	GDCLASS(PhysicsTestMotionParameters3D, RefCounted);
+	GDCLASS(PhysicsTestMotionParameters3D, RefCounted)
 
 	PhysicsServer3D::MotionParameters parameters;
 
@@ -958,7 +958,7 @@ public:
 };
 
 class PhysicsTestMotionResult3D : public RefCounted {
-	GDCLASS(PhysicsTestMotionResult3D, RefCounted);
+	GDCLASS(PhysicsTestMotionResult3D, RefCounted)
 
 	PhysicsServer3D::MotionResult result;
 
@@ -987,7 +987,7 @@ public:
 };
 
 class PhysicsServer3DManager : public Object {
-	GDCLASS(PhysicsServer3DManager, Object);
+	GDCLASS(PhysicsServer3DManager, Object)
 
 	static PhysicsServer3DManager *singleton;
 

@@ -1,22 +1,25 @@
----
-Checks: >-
-  -*,
-  cppcoreguidelines-pro-type-member-init,
-  modernize-redundant-void-arg,
-  modernize-use-bool-literals,
-  modernize-use-default-member-init,
-  modernize-use-nullptr,
-  readability-braces-around-statements,
-  readability-redundant-member-init
-WarningsAsErrors: ''
+Checks:
+  - -*
+  - clang-diagnostic-extra-semi*
+  - cppcoreguidelines-pro-type-member-init
+  - modernize-redundant-void-arg
+  - modernize-use-bool-literals
+  - modernize-use-default-member-init
+  - modernize-use-nullptr
+  - readability-braces-around-statements
+  - readability-redundant-member-init
 HeaderFileExtensions: ['', h, hh, hpp, hxx, inc, glsl]
 ImplementationFileExtensions: [c, cc, cpp, cxx, m, mm, java]
 HeaderFilterRegex: (core|doc|drivers|editor|main|modules|platform|scene|servers|tests)/
 FormatStyle: file
+ExtraArgs: # Ensure certain clang warnings are caught regardless of compiler/settings.
+  - -Wextra-semi
+  - -Wno-error=extra-semi
+  - -Wextra-semi-stmt
+  - -Wno-error=extra-semi-stmt
 CheckOptions:
   cppcoreguidelines-pro-type-member-init.IgnoreArrays: true
   cppcoreguidelines-pro-type-member-init.UseAssignment: true
   modernize-use-bool-literals.IgnoreMacros: false
   modernize-use-default-member-init.IgnoreMacros: false
   modernize-use-default-member-init.UseAssignment: true
-...

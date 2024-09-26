@@ -36,7 +36,7 @@
 #include "servers/navigation/navigation_globals.h"
 
 class NavigationMesh : public Resource {
-	GDCLASS(NavigationMesh, Resource);
+	GDCLASS(NavigationMesh, Resource)
 	RWLock rwlock;
 
 	Vector<Vector3> vertices;

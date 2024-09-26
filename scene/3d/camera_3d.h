@@ -38,7 +38,7 @@
 #include "scene/resources/environment.h"
 
 class Camera3D : public Node3D {
-	GDCLASS(Camera3D, Node3D);
+	GDCLASS(Camera3D, Node3D)
 
 public:
 	enum ProjectionType {

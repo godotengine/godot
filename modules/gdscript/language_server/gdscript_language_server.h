@@ -37,7 +37,7 @@
 #include "editor/plugins/editor_plugin.h"
 
 class GDScriptLanguageServer : public EditorPlugin {
-	GDCLASS(GDScriptLanguageServer, EditorPlugin);
+	GDCLASS(GDScriptLanguageServer, EditorPlugin)
 
 	GDScriptLanguageProtocol protocol;
 

@@ -145,23 +145,23 @@ public:
 	static_assert(sizeof(m_name##ID) == sizeof(void *));
 
 	// Id types declared before anything else to prevent cyclic dependencies between the different concerns.
-	DEFINE_ID(Buffer);
-	DEFINE_ID(Texture);
-	DEFINE_ID(Sampler);
-	DEFINE_ID(VertexFormat);
-	DEFINE_ID(CommandQueue);
-	DEFINE_ID(CommandQueueFamily);
-	DEFINE_ID(CommandPool);
-	DEFINE_ID(CommandBuffer);
-	DEFINE_ID(SwapChain);
-	DEFINE_ID(Framebuffer);
-	DEFINE_ID(Shader);
-	DEFINE_ID(UniformSet);
-	DEFINE_ID(Pipeline);
-	DEFINE_ID(RenderPass);
-	DEFINE_ID(QueryPool);
-	DEFINE_ID(Fence);
-	DEFINE_ID(Semaphore);
+	DEFINE_ID(Buffer)
+	DEFINE_ID(Texture)
+	DEFINE_ID(Sampler)
+	DEFINE_ID(VertexFormat)
+	DEFINE_ID(CommandQueue)
+	DEFINE_ID(CommandQueueFamily)
+	DEFINE_ID(CommandPool)
+	DEFINE_ID(CommandBuffer)
+	DEFINE_ID(SwapChain)
+	DEFINE_ID(Framebuffer)
+	DEFINE_ID(Shader)
+	DEFINE_ID(UniformSet)
+	DEFINE_ID(Pipeline)
+	DEFINE_ID(RenderPass)
+	DEFINE_ID(QueryPool)
+	DEFINE_ID(Fence)
+	DEFINE_ID(Semaphore)
 
 public:
 	/*****************/

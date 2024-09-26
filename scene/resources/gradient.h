@@ -36,8 +36,8 @@
 #include "thirdparty/misc/ok_color.h"
 
 class Gradient : public Resource {
-	GDCLASS(Gradient, Resource);
-	OBJ_SAVE_TYPE(Gradient);
+	GDCLASS(Gradient, Resource)
+	OBJ_SAVE_TYPE(Gradient)
 
 public:
 	enum InterpolationMode {

@@ -34,7 +34,7 @@
 #include "scene/gui/container.h"
 
 class MarginContainer : public Container {
-	GDCLASS(MarginContainer, Container);
+	GDCLASS(MarginContainer, Container)
 
 	struct ThemeCache {
 		int margin_left = 0;

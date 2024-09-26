@@ -34,7 +34,7 @@
 #include "scene/main/canvas_item.h"
 
 class Node2D : public CanvasItem {
-	GDCLASS(Node2D, CanvasItem);
+	GDCLASS(Node2D, CanvasItem)
 
 	mutable MTFlag xform_dirty;
 	mutable Point2 position;

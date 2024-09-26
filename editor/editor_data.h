@@ -271,7 +271,7 @@ public:
  * such as the SceneTreeDock or a main screen editor plugin (e.g. CanvasItemEditor).
  */
 class EditorSelection : public Object {
-	GDCLASS(EditorSelection, Object);
+	GDCLASS(EditorSelection, Object)
 
 	// Contains the selected nodes and corresponding metadata.
 	// Metadata objects come from calling _get_editor_data on the editor_plugins, passing the selected node.

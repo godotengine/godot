@@ -206,7 +206,7 @@ public:
 
 	template <typename T>
 	static void register_class(bool p_virtual = false) {
-		GLOBAL_LOCK_FUNCTION;
+		GLOBAL_LOCK_FUNCTION
 		static_assert(std::is_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());

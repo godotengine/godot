@@ -47,7 +47,7 @@
 /// don't expect that a change is immediately propagated.
 
 class NavigationServer3D : public Object {
-	GDCLASS(NavigationServer3D, Object);
+	GDCLASS(NavigationServer3D, Object)
 
 	static NavigationServer3D *singleton;
 

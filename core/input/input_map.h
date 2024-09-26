@@ -40,7 +40,7 @@ template <typename T>
 class TypedArray;
 
 class InputMap : public Object {
-	GDCLASS(InputMap, Object);
+	GDCLASS(InputMap, Object)
 
 public:
 	/**

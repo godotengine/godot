@@ -47,7 +47,7 @@ SAFE_FLAG_TYPE_PUN_GUARANTEES
 SAFE_NUMERIC_TYPE_PUN_GUARANTEES(uint32_t)
 
 class Node : public Object {
-	GDCLASS(Node, Object);
+	GDCLASS(Node, Object)
 
 protected:
 	// During group processing, these are thread-safe.

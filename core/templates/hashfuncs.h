@@ -223,7 +223,7 @@ static _FORCE_INLINE_ uint32_t hash_murmur3_buffer(const void *key, int length, 
 			k1 = hash_rotl32(k1, 15);
 			k1 *= c2;
 			h1 ^= k1;
-	};
+	}
 
 	// Finalize with additional bit mixing.
 	h1 ^= length;

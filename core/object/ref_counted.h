@@ -35,7 +35,7 @@
 #include "core/templates/safe_refcount.h"
 
 class RefCounted : public Object {
-	GDCLASS(RefCounted, Object);
+	GDCLASS(RefCounted, Object)
 	SafeRefCount refcount;
 	SafeRefCount refcount_init;
 
@@ -230,7 +230,7 @@ public:
 };
 
 class WeakRef : public RefCounted {
-	GDCLASS(WeakRef, RefCounted);
+	GDCLASS(WeakRef, RefCounted)
 
 	ObjectID ref;
 

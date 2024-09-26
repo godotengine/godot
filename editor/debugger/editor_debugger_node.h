@@ -46,7 +46,7 @@ class TabContainer;
 class UndoRedo;
 
 class EditorDebuggerNode : public MarginContainer {
-	GDCLASS(EditorDebuggerNode, MarginContainer);
+	GDCLASS(EditorDebuggerNode, MarginContainer)
 
 public:
 	enum CameraOverride {

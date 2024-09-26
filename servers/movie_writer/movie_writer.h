@@ -36,7 +36,7 @@
 #include "servers/audio_server.h"
 
 class MovieWriter : public Object {
-	GDCLASS(MovieWriter, Object);
+	GDCLASS(MovieWriter, Object)
 
 	uint64_t fps = 0;
 	uint64_t mix_rate = 0;

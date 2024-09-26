@@ -56,7 +56,7 @@ typedef Error (*SaveEXRFunc)(const String &p_path, const Ref<Image> &p_img, bool
 typedef Vector<uint8_t> (*SaveEXRBufferFunc)(const Ref<Image> &p_img, bool p_grayscale);
 
 class Image : public Resource {
-	GDCLASS(Image, Resource);
+	GDCLASS(Image, Resource)
 
 public:
 	static SavePNGFunc save_png_func;

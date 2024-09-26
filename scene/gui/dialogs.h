@@ -42,7 +42,7 @@
 class LineEdit;
 
 class AcceptDialog : public Window {
-	GDCLASS(AcceptDialog, Window);
+	GDCLASS(AcceptDialog, Window)
 
 	Window *parent_visible = nullptr;
 
@@ -125,7 +125,7 @@ public:
 };
 
 class ConfirmationDialog : public AcceptDialog {
-	GDCLASS(ConfirmationDialog, AcceptDialog);
+	GDCLASS(ConfirmationDialog, AcceptDialog)
 	Button *cancel = nullptr;
 
 protected:

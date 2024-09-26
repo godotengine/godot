@@ -37,7 +37,7 @@
 #include "core/variant/variant.h"
 
 class JSON : public Resource {
-	GDCLASS(JSON, Resource);
+	GDCLASS(JSON, Resource)
 
 	enum TokenType {
 		TK_CURLY_BRACKET_OPEN,

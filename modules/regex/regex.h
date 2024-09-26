@@ -40,7 +40,7 @@
 #include "core/variant/typed_array.h"
 
 class RegExMatch : public RefCounted {
-	GDCLASS(RegExMatch, RefCounted);
+	GDCLASS(RegExMatch, RefCounted)
 
 	struct Range {
 		int start = 0;
@@ -70,7 +70,7 @@ public:
 };
 
 class RegEx : public RefCounted {
-	GDCLASS(RegEx, RefCounted);
+	GDCLASS(RegEx, RefCounted)
 
 	void *general_ctx = nullptr;
 	void *code = nullptr;
