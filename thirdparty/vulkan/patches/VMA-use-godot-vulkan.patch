@@ -1,17 +1,15 @@
 diff --git a/thirdparty/vulkan/vk_mem_alloc.h b/thirdparty/vulkan/vk_mem_alloc.h
-index 44affc5ca4..d96f2dacc0 100644
+index 1add7278b0..1e03339ecf 100644
 --- a/thirdparty/vulkan/vk_mem_alloc.h
 +++ b/thirdparty/vulkan/vk_mem_alloc.h
-@@ -127,7 +127,11 @@ extern "C" {
+@@ -126,9 +126,7 @@ See documentation chapter: \ref statistics.
+ extern "C" {
  #endif
  
- #ifndef VULKAN_H_
+-#ifndef VULKAN_H_
 -    #include <vulkan/vulkan.h>
-+    #ifdef USE_VOLK
-+        #include <volk.h>
-+    #else
-+        #include <vulkan/vulkan.h>
-+    #endif
- #endif
+-#endif
++#include "drivers/vulkan/godot_vulkan.h"
  
  // Define this macro to declare maximum supported Vulkan version in format AAABBBCCC,
+ // where AAA = major, BBB = minor, CCC = patch.

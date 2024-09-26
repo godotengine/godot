@@ -126,13 +126,7 @@ See documentation chapter: \ref statistics.
 extern "C" {
 #endif
 
-#ifndef VULKAN_H_
-    #ifdef USE_VOLK
-        #include <volk.h>
-    #else
-        #include <vulkan/vulkan.h>
-    #endif
-#endif
+#include "drivers/vulkan/godot_vulkan.h"
 
 // Define this macro to declare maximum supported Vulkan version in format AAABBBCCC,
 // where AAA = major, BBB = minor, CCC = patch.
