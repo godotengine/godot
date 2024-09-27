@@ -431,7 +431,6 @@ namespace human
 
         int32_t                 m_HumanBoneIndex[kLastBone];
         float                   m_HumanBoneMass[kLastBone];
-        int32_t                 m_HumanAllBoneIndex[kLastBone];
         float                   m_Scale;
         int32_t                 m_RootBonendex = -1;
 

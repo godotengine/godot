@@ -200,7 +200,7 @@ static void create_fbx_prefab(const String &p_path,const String& name, const Loc
 {
 	Ref<CharacterBodyPrefab> prefab;
 	prefab->set_name("prefab_" + name);
-	for(int i=0; i<p_paths.size(); i++) {
+	for(uint32_t i=0; i<p_paths.size(); i++) {
 		prefab->parts[p_paths[i]] = true;
 	}
 	prefab->skeleton_path = p_skeleton_path;

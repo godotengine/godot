@@ -545,18 +545,8 @@ public:
         return editor_animation_file_path;
     }
 
-    void set_editor_human_config(Ref<HumanSkeletonConfig> p_human_config)
-    {
-        editor_human_config = p_human_config;
-    }
-
-    Ref<HumanSkeletonConfig> get_editor_human_config()
-    {
-        return editor_human_config;
-    }
     Ref<CharacterBoneMap> editor_ref_bone_map;
     String editor_animation_file_path;
-    Ref<HumanSkeletonConfig> editor_human_config;
     DECL_MEMBER_BUTTON(editor_build_animation);
 
     void set_editor_animation_speed(float p_speed) {

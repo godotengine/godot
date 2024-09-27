@@ -774,7 +774,9 @@ void CharacterAnimatorLoopLast::process_animation(class CharacterAnimatorLayer *
 			playback_info.disable_path = p_playback_info->disable_path;
 			// 循环播放
 			double length = item->animation->get_length();
-            if(p_playback_info->play_index < animation_arrays.size() - 1)
+			int size = animation_arrays.size();
+			size -= 1;
+            if(p_playback_info->play_index < size)
             {
                 if(playback_info.time >= length)
                 {

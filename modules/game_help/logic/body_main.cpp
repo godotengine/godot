@@ -411,13 +411,10 @@ void CharacterBodyMain::_bind_methods()
     ClassDB::bind_method(D_METHOD("get_editor_show_mesh"), &CharacterBodyMain::get_editor_show_mesh);
     ClassDB::bind_method(D_METHOD("set_editor_is_skeleton_human", "editor_is_skeleton_human"), &CharacterBodyMain::set_editor_is_skeleton_human);
     ClassDB::bind_method(D_METHOD("get_editor_is_skeleton_human"), &CharacterBodyMain::get_editor_is_skeleton_human);
-    ClassDB::bind_method(D_METHOD("set_editor_human_config", "human_config"), &CharacterBodyMain::set_editor_human_config);
-    ClassDB::bind_method(D_METHOD("get_editor_human_config"), &CharacterBodyMain::get_editor_human_config);
 
 
 
     ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_show_mesh", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_editor_show_mesh", "get_editor_show_mesh");
-    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_is_skeleton_human", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_editor_is_skeleton_human", "get_editor_is_skeleton_human");
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_form_mesh_file_path"), "set_editor_form_mesh_file_path", "get_editor_form_mesh_file_path");
     ADD_MEMBER_BUTTON(editor_build_form_mesh_file_path,L"根据模型初始化",CharacterBodyMain);
@@ -709,12 +706,25 @@ Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path
 		bone_map = skeleton->get_human_bone_mapping();
         Vector<String> bone_names = skeleton->get_bone_names();
         
+        Ref<HumanSkeletonConfig> config;
+
+		skeleton->set_human_bone_mapping(bone_map);
+        
+        if(is_skeleton_human)
+        {
+            skeleton->init_human_config();
+            config = skeleton->get_human_config();
+            config->set_name("human_config");
+		    save_fbx_res("human_config", p_group, config, ske_save_path, true);
+        }
+
 		// 存储骨骼映射
 		Ref<CharacterBoneMap> bone_map_ref;
 		bone_map_ref.instantiate();
 		bone_map_ref->set_name("bone_map");
 		bone_map_ref->set_bone_map(bone_map);
         bone_map_ref->set_bone_names(bone_names);
+        bone_map_ref->set_human_config(config);
         if(is_skeleton_human) {
 		    save_fbx_res("human_bone_map", p_group, bone_map_ref, bone_map_save_path, true);
         }
@@ -723,14 +733,6 @@ Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path
         }
 
 
-		skeleton->set_human_bone_mapping(bone_map);
-        if(is_skeleton_human)
-        {
-            skeleton->init_human_config();
-            Ref<HumanSkeletonConfig> config = skeleton->get_human_config();
-            config->set_name("human_config");
-		    save_fbx_res("human_config", p_group, config, ske_save_path, true);
-        }
 		skeleton->set_owner(nullptr);
 		reset_owenr(skeleton, skeleton);
 
@@ -881,6 +883,7 @@ void CharacterBodyMain::editor_build_animation()
         if(animation.is_valid())
         {
             Ref<Animation> new_animation;
+			Ref<HumanSkeletonConfig> editor_human_config = bone_map->get_human_config();
             if(editor_human_config.is_valid()) {
                 new_animation = editor_human_config->human->animation_to_dof(animation.ptr(),bone_map->get_bone_map());
             } else {

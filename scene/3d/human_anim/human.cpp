@@ -1369,12 +1369,7 @@ namespace human
         }
         m_SkeletonLocalPose.resize(kLastBone);
         for(int i = 0; i < kLastBone; ++i) {
-            m_HumanAllBoneIndex[i] = apSkeleton->find_bone(bone_label[i].first);                
-        }
-        for(int i = 0; i < kLastBone; ++i) {
             m_HumanBoneIndex[i] = apSkeleton->find_bone(bone_label[i].first);
-            if(m_HumanBoneIndex[i] >= 0) {
-            }
         }
         m_HasLeftHand = false;
         m_HasRightHand = false;
@@ -1454,10 +1449,6 @@ namespace human
             m_HumanBoneMass[i] = d_human_bone_mass[i];
         }
 
-        Vector<int32_t> d_human_all_bone_index = p_dict["human_all_bone_index"];
-        for (int i = 0; i < d_human_all_bone_index.size(); ++i) {
-            m_HumanAllBoneIndex[i] = d_human_all_bone_index[i];
-        }
 
         m_Scale = p_dict["scale"];
         m_RootBonendex = p_dict["root_bone_index"];
@@ -1531,11 +1522,6 @@ namespace human
         }
         p_dict["human_bone_mass"] = d_human_bone_mass;
 
-        Vector<int32_t> d_human_all_bone_index;
-        for (int i = 0; i < kLastBone; ++i) {
-            d_human_all_bone_index.push_back(m_HumanAllBoneIndex[i]);
-        }
-        p_dict["human_all_bone_index"] = d_human_all_bone_index;
 
         p_dict["scale"] = m_Scale;
         p_dict["root_bone_index"] = m_RootBonendex;

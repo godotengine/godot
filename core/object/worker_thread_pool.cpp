@@ -869,7 +869,7 @@ bool TaskJobHandle::is_completed()  {
 	if(dependJob.size() > 0)
 	{
 		depend_mutex.lock();
-		for(int i = 0; i < dependJob.size(); ++i)
+		for(uint32_t i = 0; i < dependJob.size(); ++i)
 		{
 			if(!dependJob[i]->is_completed())
 			{
@@ -889,7 +889,7 @@ void TaskJobHandle::wait_depend_completion()
 	if(dependJob.size() > 0)
 	{
 		depend_mutex.lock();
-		for(int i = 0; i < dependJob.size(); ++i)
+		for(uint32_t i = 0; i < dependJob.size(); ++i)
 		{
 			dependJob[i]->wait_completion();
 		}

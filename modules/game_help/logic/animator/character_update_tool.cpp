@@ -533,7 +533,7 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
 void CharacterAnimationUpdateTool::process_human_anim() {
     skeleton->force_update_all_dirty_bones(false);
     int count = 0;
-    for(int i=0;i<animation_instances.size();++i) {
+    for(uint32_t i=0;i<animation_instances.size();++i) {
         AnimationMixer::AnimationInstance &ai = animation_instances[i];
     }
     if(count > 0) {

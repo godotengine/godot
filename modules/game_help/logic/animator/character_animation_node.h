@@ -19,8 +19,13 @@ class CharacterBoneMap : public Resource
         ClassDB::bind_method(D_METHOD("set_bone_names", "bone_names"), &CharacterBoneMap::set_bone_names);
         ClassDB::bind_method(D_METHOD("get_bone_names"), &CharacterBoneMap::get_bone_names);
 
+        ClassDB::bind_method(D_METHOD("set_human_config", "human_config"), &CharacterBoneMap::set_human_config);
+        ClassDB::bind_method(D_METHOD("get_human_config"), &CharacterBoneMap::get_human_config);
+
         ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "bone_map"), "set_bone_map", "get_bone_map");
         ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "bone_names"), "set_bone_names", "get_bone_names");
+
+        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "human_config", PROPERTY_HINT_RESOURCE_TYPE, "HumanSkeletonConfig"), "set_human_config", "get_human_config");
 
     }
 
@@ -30,9 +35,13 @@ public:
     void set_bone_names(const Vector<String>& p_bone_names) { bone_names = p_bone_names; }
     Vector<String> get_bone_names() { return bone_names; }
 
+    void set_human_config(const Ref<HumanSkeletonConfig>& p_human_config) { human_config = p_human_config; }
+    Ref<HumanSkeletonConfig> get_human_config() { return human_config; }
+
 	Dictionary bone_map;
     // 动画名称列表,用来处理非人形动画的情况这类动画原始文件没有模型,会被识别成节点,需要靠这个动画节点名称重新映射成骨骼
     Vector<String> bone_names;
+    Ref<HumanSkeletonConfig> human_config;
 };
 
 

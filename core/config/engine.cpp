@@ -393,12 +393,12 @@ bool Engine::notify_frame_server_synced() {
 }
 void Engine::add_globale_ticker(GlolaleTicker *p_ticker)
 {
-	for(int i=0;i<global_tickers.size();i++) {
+	for(uint32_t i=0;i<global_tickers.size();i++) {
 		if(global_tickers[i]==p_ticker) {
 			return;
 		}
 	}
-	for(int i=0;i<global_tickers.size();i++) {
+	for(uint32_t i=0;i<global_tickers.size();i++) {
 		if(global_tickers[i]== nullptr) {
 			global_tickers[i]=p_ticker;
 			return;
@@ -409,7 +409,7 @@ void Engine::add_globale_ticker(GlolaleTicker *p_ticker)
 }
 void Engine::remove_globale_ticker(GlolaleTicker *p_ticker)
 {
-	for(int i=0;i<global_tickers.size();i++) {
+	for(uint32_t i=0;i<global_tickers.size();i++) {
 		if(global_tickers[i]==p_ticker) {
 			global_tickers[i]=nullptr;
 			return;
