@@ -135,6 +135,7 @@ public:
 	void set_toggle_mode(bool p_enable);
 	bool is_toggle_mode() const;
 	void set_toggle_pressed(bool p_pressed);
+	bool is_toggle_pressed() const;
 
 	void set_editable(bool p_editable);
 	bool is_editable() const;

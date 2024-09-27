@@ -2390,7 +2390,7 @@ void EditorNode::hide_unused_editors(const Object *p_editing_owner) {
 		// This is to sweep properties that were removed from the inspector.
 		List<ObjectID> to_remove;
 		for (KeyValue<ObjectID, HashSet<EditorPlugin *>> &kv : active_plugins) {
-			const Object *context = ObjectDB::get_instance(kv.key);
+			Object *context = ObjectDB::get_instance(kv.key);
 			if (context) {
 				// In case of self-owning plugins, they are disabled here if they can auto hide.
 				const EditorPlugin *self_owning = Object::cast_to<EditorPlugin>(context);
@@ -2399,7 +2399,7 @@ void EditorNode::hide_unused_editors(const Object *p_editing_owner) {
 				}
 			}
 
-			if (!context) {
+			if (!context || context->call(SNAME("_should_stop_editing"))) {
 				to_remove.push_back(kv.key);
 				for (EditorPlugin *plugin : kv.value) {
 					if (plugin->can_auto_hide()) {
