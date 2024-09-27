@@ -145,9 +145,10 @@ Dictionary GLTFSkin::get_joint_i_to_name() {
 
 void GLTFSkin::set_joint_i_to_name(Dictionary p_joint_i_to_name) {
 	joint_i_to_name = HashMap<int, StringName>();
-	Array keys = p_joint_i_to_name.keys();
-	for (int i = 0; i < keys.size(); i++) {
-		joint_i_to_name[keys[i]] = p_joint_i_to_name[keys[i]];
+	List<Variant> keys;
+	p_joint_i_to_name.get_key_list(&keys);
+	for (const Variant &key : keys) {
+		joint_i_to_name[key] = p_joint_i_to_name[key];
 	}
 }
 
