@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_bottom_panel.h                                                 */
+/*  editor_version_button.cpp                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,56 +28,58 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_BOTTOM_PANEL_H
-#define EDITOR_BOTTOM_PANEL_H
+#include "editor_version_button.h"
 
-#include "scene/gui/panel_container.h"
+#include "core/os/time.h"
+#include "core/version.h"
 
-class Button;
-class ConfigFile;
-class EditorToaster;
-class HBoxContainer;
-class VBoxContainer;
+String _get_version_string(EditorVersionButton::VersionFormat p_format) {
+	String main;
+	switch (p_format) {
+		case EditorVersionButton::FORMAT_BASIC: {
+			return VERSION_FULL_CONFIG;
+		} break;
+		case EditorVersionButton::FORMAT_WITH_BUILD: {
+			main = "v" VERSION_FULL_BUILD;
+		} break;
+		case EditorVersionButton::FORMAT_WITH_NAME_AND_BUILD: {
+			main = VERSION_FULL_NAME;
+		} break;
+		default: {
+			ERR_FAIL_V_MSG(VERSION_FULL_NAME, "Unexpected format: " + itos(p_format));
+		} break;
+	}
 
-class EditorBottomPanel : public PanelContainer {
-	GDCLASS(EditorBottomPanel, PanelContainer);
+	String hash = VERSION_HASH;
+	if (!hash.is_empty()) {
+		hash = vformat(" [%s]", hash.left(9));
+	}
+	return main + hash;
+}
 
-	struct BottomPanelItem {
-		String name;
-		Control *control = nullptr;
-		Button *button = nullptr;
-	};
+void EditorVersionButton::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_POSTINITIALIZE: {
+			// This can't be done in the constructor because theme cache is not ready yet.
+			set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+			set_text(_get_version_string(format));
+		} break;
+	}
+}
 
-	Vector<BottomPanelItem> items;
+void EditorVersionButton::pressed() {
+	DisplayServer::get_singleton()->clipboard_set(_get_version_string(FORMAT_WITH_BUILD));
+}
 
-	VBoxContainer *item_vbox = nullptr;
-	HBoxContainer *bottom_hbox = nullptr;
-	HBoxContainer *button_hbox = nullptr;
-	EditorToaster *editor_toaster = nullptr;
-	Button *expand_button = nullptr;
-	Control *last_opened_control = nullptr;
+EditorVersionButton::EditorVersionButton(VersionFormat p_format) {
+	format = p_format;
+	set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
 
-	void _switch_by_control(bool p_visible, Control *p_control);
-	void _switch_to_item(bool p_visible, int p_idx);
-	void _expand_button_toggled(bool p_pressed);
-
-	bool _button_drag_hover(const Vector2 &, const Variant &, Button *p_button, Control *p_control);
-
-protected:
-	void _notification(int p_what);
-
-public:
-	void save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const;
-	void load_layout_from_config(Ref<ConfigFile> p_config_file, const String &p_section);
-
-	Button *add_item(String p_text, Control *p_item, const Ref<Shortcut> &p_shortcut = nullptr, bool p_at_front = false);
-	void remove_item(Control *p_item);
-	void make_item_visible(Control *p_item, bool p_visible = true);
-	void move_item_to_end(Control *p_item);
-	void hide_bottom_panel();
-	void toggle_last_opened_bottom_panel();
-
-	EditorBottomPanel();
-};
-
-#endif // EDITOR_BOTTOM_PANEL_H
+	String build_date;
+	if (VERSION_TIMESTAMP > 0) {
+		build_date = Time::get_singleton()->get_datetime_string_from_unix_time(VERSION_TIMESTAMP, true) + " UTC";
+	} else {
+		build_date = TTR("(unknown)");
+	}
+	set_tooltip_text(vformat(TTR("Git commit date: %s\nClick to copy the version information."), build_date));
+}
