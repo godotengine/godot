@@ -460,6 +460,14 @@
 				Returns [code]true[/code] if the two dictionaries contain the same keys and values, inner [Dictionary] and [Array] keys and values are compared recursively.
 			</description>
 		</method>
+		<method name="set">
+			<return type="bool" />
+			<param index="0" name="key" type="Variant" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+				Sets the value of the element at the given [param key] to the given [param value]. This is the same as using the [code][][/code] operator ([code]array[index] = value[/code]).
+			</description>
+		</method>
 		<method name="size" qualifiers="const">
 			<return type="int" />
 			<description>
