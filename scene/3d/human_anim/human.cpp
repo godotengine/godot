@@ -1411,6 +1411,8 @@ namespace human
     }
 
     static int get_bone_human_index(const Dictionary& p_bone_map, const NodePath& path) {
+		if (path.get_subname_count() == 1) {
+        // 获取骨骼映射
         StringName bone_name = path.get_subname(0);
         const Variant* re_name = p_bone_map.getptr(bone_name);
         if (re_name != nullptr) {
@@ -1419,6 +1421,7 @@ namespace human
         const HashMap<String,int>& bone_to_human_map = get_bone_to_human_map();
         if(bone_to_human_map.has(bone_name)) {
             return bone_to_human_map[bone_name];
+        }
         }
         return -1;
 

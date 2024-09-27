@@ -417,6 +417,7 @@ void CharacterBodyMain::_bind_methods()
     ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_show_mesh", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_editor_show_mesh", "get_editor_show_mesh");
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_form_mesh_file_path"), "set_editor_form_mesh_file_path", "get_editor_form_mesh_file_path");
+    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_is_skeleton_human"), "set_editor_is_skeleton_human", "get_editor_is_skeleton_human");
     ADD_MEMBER_BUTTON(editor_build_form_mesh_file_path,L"根据模型初始化",CharacterBodyMain);
 
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "editor_ref_bone_map", PROPERTY_HINT_RESOURCE_TYPE, "CharacterBoneMap", PROPERTY_USAGE_DEFAULT ), "set_editor_ref_bone_map", "get_editor_ref_bone_map");
@@ -842,8 +843,12 @@ void CharacterBodyMain::editor_build_animation()
 	Node* p_node = scene->instantiate(PackedScene::GEN_EDIT_STATE_DISABLED);
 	Ref<CharacterBoneMap> bone_map;
     Node* node = p_node->find_child("Skeleton3D");
+	Ref<HumanSkeletonConfig> editor_human_config;
     Skeleton3D* skeleton = Object::cast_to<Skeleton3D>(node);
-	if (skeleton != nullptr)
+	if (editor_ref_bone_map.is_valid()) {
+		editor_human_config = editor_ref_bone_map->get_human_config();
+	}
+	if (editor_human_config.is_null() && skeleton != nullptr)
 	{
 		bone_map.instantiate();
 		bone_map->set_bone_map(skeleton->get_human_bone_mapping());
@@ -883,17 +888,17 @@ void CharacterBodyMain::editor_build_animation()
         if(animation.is_valid())
         {
             Ref<Animation> new_animation;
-			Ref<HumanSkeletonConfig> editor_human_config = bone_map->get_human_config();
-            if(editor_human_config.is_valid()) {
-                new_animation = editor_human_config->human->animation_to_dof(animation.ptr(),bone_map->get_bone_map());
-            } else {
-                new_animation = animation->duplicate();                
-            }
+			new_animation = animation->duplicate();
             new_animation->set_bone_map(bone_map);
             if(skeleton == nullptr)
             {
                 new_animation->remap_node_to_bone_name(bone_map->get_bone_names());
             }
+
+			// 如果存在人形动作配置,转换动画为人形动画
+			if (editor_human_config.is_valid()) {
+				new_animation = editor_human_config->human->animation_to_dof(new_animation.ptr(), bone_map->get_bone_map());
+			}
             new_animation->optimize();
             new_animation->compress();
 			if (p_animations.size() == 1)
