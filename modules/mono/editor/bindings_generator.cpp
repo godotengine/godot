@@ -3227,6 +3227,46 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 		}
 
 		p_output.append(CLOSE_BLOCK_L1);
+
+		// Generate On{EventName} method to raise the event.
+		if (!p_itype.is_singleton) {
+			p_output.append(MEMBER_BEGIN "protected void ");
+			p_output << "On" << p_isignal.proxy_name;
+			if (is_parameterless) {
+				p_output.append("()\n" OPEN_BLOCK_L1 INDENT2);
+				p_output << "EmitSignal(SignalName." << p_isignal.proxy_name << ");\n";
+				p_output.append(CLOSE_BLOCK_L1);
+			} else {
+				p_output.append("(");
+
+				StringBuilder cs_emitsignal_params;
+
+				int idx = 0;
+				for (const ArgumentInterface &iarg : p_isignal.arguments) {
+					const TypeInterface *arg_type = _get_type_or_null(iarg.type);
+					ERR_FAIL_NULL_V_MSG(arg_type, ERR_BUG, "Argument type '" + iarg.type.cname + "' was not found.");
+
+					if (idx != 0) {
+						p_output << ", ";
+						cs_emitsignal_params << ", ";
+					}
+
+					p_output << arg_type->cs_type << " " << iarg.name;
+
+					if (arg_type->is_enum) {
+						cs_emitsignal_params << "(long)";
+					}
+
+					cs_emitsignal_params << iarg.name;
+
+					idx++;
+				}
+
+				p_output.append(")\n" OPEN_BLOCK_L1 INDENT2);
+				p_output << "EmitSignal(SignalName." << p_isignal.proxy_name << ", " << cs_emitsignal_params << ");\n";
+				p_output.append(CLOSE_BLOCK_L1);
+			}
+		}
 	}
 
 	return OK;
