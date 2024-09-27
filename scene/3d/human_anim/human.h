@@ -285,13 +285,7 @@ namespace human
     
 	const HashMap<String, int>& get_bone_to_human_map();
 	const HashMap<int, String>& get_human_to_bone_map();
-
-	int GetLeftHandIndexArray(Skeleton3D* const p_skeleton, LocalVector<int>& human_indexArray);
-
-    
-	int GetRightHandIndexArray(Skeleton3D* const p_skeleton, LocalVector<int>& human_indexArray);
-    
-	int GeBodyIndexArray(Skeleton3D* const p_skeleton, LocalVector<int>& human_indexArray);
+    // 骨骼索引转dof索引
     int32_t MuscleFromBone(int32_t boneIndex, int32_t doFIndex);
     // dof 索引转骨骼索引
     int32_t BoneFromMuscle(int32_t doFIndex);

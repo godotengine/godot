@@ -552,35 +552,38 @@ namespace human
 
     math::SetupAxesInfo const& GetAxeInfo(uint32_t index)
     {
+        // 定义一个静态数组，存储各个骨骼的轴信息
         const static math::SetupAxesInfo setupAxesInfoArray[kLastBone] =
         {
-            {{0, 0, 0, 1}, {-1, 0, 0, 0}, {-40, -40, -40}, {40, 40, 40}, {1, 1, 1, 1}, math::kZYRoll, 0},                      // kHips,
-            {{-0.268f, 0, 0, 1}, {1, 0, 0, 0}, {-60, -60, -90}, {60, 60, 50}, {1, 1, 1, 1}, math::kZYRoll, 0},                 // kLeftUpperLeg,
-            {{-0.268f, 0, 0, 1}, {1, 0, 0, 0}, {-60, -60, -90}, {60, 60, 50}, {-1, -1, 1, 1}, math::kZYRoll, 0},               // kRightUpperLeg,
-            {{0.839f, 0, 0, 1}, {1, 0, 0, 0}, {-90, 0, -80}, {90, 0, 80}, {1, 1, -1, 1}, math::kZYRoll, 0},                    // kLeftLeg,
-            {{0.839f, 0, 0, 1}, {1, 0, 0, 0}, {-90, 0, -80}, {90, 0, 80}, {-1, 1, -1, 1}, math::kZYRoll, 0},                   // kRightLeg,
-            {{0, 0, 0, 1}, {1, 0, 0, 0}, {0, -30, -50}, {0, 30, 50}, {1, 1, 1, 1}, math::kZYRoll, -2},                         // kLeftFoot,
-            {{0, 0, 0, 1}, {1, 0, 0, 0}, {0, -30, -50}, {0, 30, 50}, {1, -1, 1, 1}, math::kZYRoll, -2},                        // kRightFoot,
-            {{0, 0, 0, 1}, {-1, 0, 0, 0}, {-40, -40, -40}, {40, 40, 40}, {1, 1, 1, 1}, math::kZYRoll, 0},                      // kSpine,
-            {{0, 0, 0, 1}, {-1, 0, 0, 0}, {-40, -40, -40}, {40, 40, 40}, {1, 1, 1, 1}, math::kZYRoll, 0},                      // kChest,
-            {{0, 0, 0, 1}, {-1, 0, 0, 0}, {-20, -20, -20}, {20, 20, 20}, {1, 1, 1, 1}, math::kZYRoll, 0},                      // kUpperChest,
-            {{0, 0, 0, 1}, {-1, 0, 0, 0}, {-40, -40, -40}, {40, 40, 40}, {1, 1, 1, 1}, math::kZYRoll, 0},                      // kNeck,
-            {{0, 0, 0, 1}, {-1, 0, 0, 0}, {-40, -40, -40}, {40, 40, 40}, {1, 1, 1, 1}, math::kZYRoll, 2},                      // kHead,
-            {{0, 0, 0, 1}, {0, 0, 1, 0}, {0, -15, -15}, {0, 15, 30}, {1, 1, -1, 1}, math::kZYRoll, 0},                         // kLeftShoulder,
-            {{0, 0, 0, 1}, {0, 0, 1, 0}, {0, -15, -15}, {0, 15, 30}, {1, 1, 1, 1}, math::kZYRoll, 0},                          // kRightShoulder,
-            {{0, 0.268f, 0.364f, 1}, {0, 0, 1, 0}, {-90, -100, -60}, {90, 100, 100}, {1, 1, -1, 1}, math::kZYRoll, 0},         // kLeftArm,
-            {{0, -0.268f, -0.364f, 1}, {0, 0, 1, 0}, {-90, -100, -60}, {90, 100, 100}, {-1, 1, 1, 1}, math::kZYRoll, 0},       // kRightArm,
-            {{0, 0.839f, 0, 1}, {0, 1, 0, 0}, {-90, 0, -80}, {90, 0, 80}, {1, 1, -1, 1}, math::kZYRoll, 0},                    // kLeftForeArm,
-            {{0, -0.839f, 0, 1}, {0, 1, 0, 0}, {-90, 0, -80}, {90, 0, 80}, {-1, 1, 1, 1}, math::kZYRoll, 0},                   // kRightForeArm,
-            {{0, 0, 0, 1}, {0, 0, 1, 0}, {0, -40, -80}, {0, 40, 80}, {1, 1, -1, 1}, math::kZYRoll, 0},                         // kLeftHand,
-            {{0, 0, 0, 1}, {0, 0, 1, 0}, {0, -40, -80}, {0, 40, 80}, {1, 1, 1, 1}, math::kZYRoll, 0},                          // kRightHand,
-            {{0, 0, 0, 1}, {1, 0, 0, 0}, {0, 0, -50}, {0, 0, 50}, {1, 1, 1, 1}, math::kZYRoll, 3},                             // kLeftToes,
-            {{0, 0, 0, 1}, {1, 0, 0, 0}, {0, 0, -50}, {0, 0, 50}, {1, 1, 1, 1}, math::kZYRoll, 3},                             // kRightToes,
-            {{0, 0, 0, 1}, {1, 0, 0, 0}, {0, -20, -10}, {0, 20, 15}, {1, 1, -1, 1}, math::kZYRoll, 3},                         // kLeftEye,
-            {{0, 0, 0, 1}, {1, 0, 0, 0}, {0, -20, -10}, {0, 20, 15}, {1, -1, -1, 1}, math::kZYRoll, 3},                        // kRightEye,
-            {{0.09f, 0, 0, 1}, {1, 0, 0, 0}, {0, -10, -10}, {0, 10, 10}, {1, 1, -1, 1}, math::kZYRoll, 3}                      // kJaw,
+            // 结构体初始化：位置、旋转轴、限制范围、默认缩放、类型、标记
+            {{0, 0, 0, 1}, {-1, 0, 0, 0}, {-40, -40, -40}, {40, 40, 40}, {1, 1, 1, 1}, math::kZYRoll, 0},                      // kHips
+            {{-0.268f, 0, 0, 1}, {1, 0, 0, 0}, {-60, -60, -90}, {60, 60, 50}, {1, 1, 1, 1}, math::kZYRoll, 0},                 // kLeftUpperLeg
+            {{-0.268f, 0, 0, 1}, {1, 0, 0, 0}, {-60, -60, -90}, {60, 60, 50}, {-1, -1, 1, 1}, math::kZYRoll, 0},               // kRightUpperLeg
+            {{0.839f, 0, 0, 1}, {1, 0, 0, 0}, {-90, 0, -80}, {90, 0, 80}, {1, 1, -1, 1}, math::kZYRoll, 0},                    // kLeftLeg
+            {{0.839f, 0, 0, 1}, {1, 0, 0, 0}, {-90, 0, -80}, {90, 0, 80}, {-1, 1, -1, 1}, math::kZYRoll, 0},                   // kRightLeg
+            {{0, 0, 0, 1}, {1, 0, 0, 0}, {0, -30, -50}, {0, 30, 50}, {1, 1, 1, 1}, math::kZYRoll, -2},                         // kLeftFoot
+            {{0, 0, 0, 1}, {1, 0, 0, 0}, {0, -30, -50}, {0, 30, 50}, {1, -1, 1, 1}, math::kZYRoll, -2},                        // kRightFoot
+            {{0, 0, 0, 1}, {-1, 0, 0, 0}, {-40, -40, -40}, {40, 40, 40}, {1, 1, 1, 1}, math::kZYRoll, 0},                      // kSpine
+            {{0, 0, 0, 1}, {-1, 0, 0, 0}, {-40, -40, -40}, {40, 40, 40}, {1, 1, 1, 1}, math::kZYRoll, 0},                      // kChest
+            {{0, 0, 0, 1}, {-1, 0, 0, 0}, {-20, -20, -20}, {20, 20, 20}, {1, 1, 1, 1}, math::kZYRoll, 0},                      // kUpperChest
+            {{0, 0, 0, 1}, {-1, 0, 0, 0}, {-40, -40, -40}, {40, 40, 40}, {1, 1, 1, 1}, math::kZYRoll, 0},                      // kNeck
+            {{0, 0, 0, 1}, {-1, 0, 0, 0}, {-40, -40, -40}, {40, 40, 40}, {1, 1, 1, 1}, math::kZYRoll, 2},                      // kHead
+            {{0, 0, 0, 1}, {0, 0, 1, 0}, {0, -15, -15}, {0, 15, 30}, {1, 1, -1, 1}, math::kZYRoll, 0},                         // kLeftShoulder
+            {{0, 0, 0, 1}, {0, 0, 1, 0}, {0, -15, -15}, {0, 15, 30}, {1, 1, 1, 1}, math::kZYRoll, 0},                          // kRightShoulder
+            {{0, 0.268f, 0.364f, 1}, {0, 0, 1, 0}, {-90, -100, -60}, {90, 100, 100}, {1, 1, -1, 1}, math::kZYRoll, 0},         // kLeftArm
+            {{0, -0.268f, -0.364f, 1}, {0, 0, 1, 0}, {-90, -100, -60}, {90, 100, 100}, {-1, 1, 1, 1}, math::kZYRoll, 0},       // kRightArm
+            {{0, 0.839f, 0, 1}, {0, 1, 0, 0}, {-90, 0, -80}, {90, 0, 80}, {1, 1, -1, 1}, math::kZYRoll, 0},                    // kLeftForeArm
+            {{0, -0.839f, 0, 1}, {0, 1, 0, 0}, {-90, 0, -80}, {90, 0, 80}, {-1, 1, 1, 1}, math::kZYRoll, 0},                   // kRightForeArm
+            {{0, 0, 0, 1}, {0, 0, 1, 0}, {0, -40, -80}, {0, 40, 80}, {1, 1, -1, 1}, math::kZYRoll, 0},                         // kLeftHand
+            {{0, 0, 0, 1}, {0, 0, 1, 0}, {0, -40, -80}, {0, 40, 80}, {1, 1, 1, 1}, math::kZYRoll, 0},                          // kRightHand
+            {{0, 0, 0, 1}, {1, 0, 0, 0}, {0, 0, -50}, {0, 0, 50}, {1, 1, 1, 1}, math::kZYRoll, 3},                             // kLeftToes
+            {{0, 0, 0, 1}, {1, 0, 0, 0}, {0, 0, -50}, {0, 0, 50}, {1, 1, 1, 1}, math::kZYRoll, 3},                             // kRightToes
+            {{0, 0, 0, 1}, {1, 0, 0, 0}, {0, -20, -10}, {0, 20, 15}, {1, 1, -1, 1}, math::kZYRoll, 3},                         // kLeftEye
+            {{0, 0, 0, 1}, {1, 0, 0, 0}, {0, -20, -10}, {0, 20, 15}, {1, -1, -1, 1}, math::kZYRoll, 3},                        // kRightEye
+            {{0.09f, 0, 0, 1}, {1, 0, 0, 0}, {0, -10, -10}, {0, 10, 10}, {1, 1, -1, 1}, math::kZYRoll, 3}                      // kJaw
         };
 
+        // 返回指定索引的轴信息
         return setupAxesInfoArray[index];
     }
 
@@ -1294,54 +1297,6 @@ namespace human
 		return human_map;
 	}
 
-	int GetLeftHandIndexArray(Skeleton3D* const p_skeleton, LocalVector<int>& human_indexArray)
-	{
-		int ret = 0;
-		const LocalVector<Pair<String, String>>& bone_label = get_bone_label();
-		for (int i = kLastBone; i < kLastBone + 15; ++i)
-		{
-			int bone_index = p_skeleton->find_bone(bone_label[i].first);
-			if (bone_index < 0)
-				continue;
-			human_indexArray[i] = bone_index;
-			ret++;
-		}
-
-		return ret;
-	}
-
-
-	int GetRightHandIndexArray(Skeleton3D* const p_skeleton, LocalVector<int>& human_indexArray)
-	{
-		int ret = 0;
-		const LocalVector<Pair<String, String>>& bone_label = get_bone_label();
-		for (int i = kLastBone + 15; i < kLastBone + 30; ++i)
-		{
-			int bone_index = p_skeleton->find_bone(bone_label[i].first);
-			if (bone_index < 0)
-				continue;
-			human_indexArray[i] = bone_index;
-			ret++;
-		}
-
-		return ret;
-	}
-
-	int GeBodyIndexArray(Skeleton3D* const p_skeleton, LocalVector<int>& human_indexArray)
-	{
-		int ret = 0;
-		const LocalVector<Pair<String, String>>& bone_label = get_bone_label();
-		for (int i = 0; i < kLastBone; ++i)
-		{
-			int bone_index = p_skeleton->find_bone(bone_label[i].first);
-			if (bone_index < 0)
-				continue;
-			human_indexArray[i] = bone_index;
-			ret++;
-		}
-
-		return ret;
-	}
     void Human::build_form_skeleton(Skeleton3D* apSkeleton) {
         const HashMap<String, int>& human_to_bone_map = get_body_bone_to_human_map();
 		const LocalVector<Pair<String, String>>& bone_label = get_bone_label();
@@ -1384,10 +1339,6 @@ namespace human
                 m_HasRightHand = true;
             }
         }
-
-
-
-
     }
 
     void Human::setup_axes(Skeleton3D* apSkeleton) {
@@ -1785,13 +1736,17 @@ namespace human
     {
         int32_t i;
 
+        // 遍历所有骨骼
         for (i = 0; i < kLastBone; i++)
         {
-            skeleton::Node const * srcNode = apSrcHuman->m_HumanBoneIndex[i] >= 0 ? &apSrcHuman->m_Skeleton.m_Node[apSrcHuman->m_HumanBoneIndex[i]] : 0;
-            skeleton::Node const * node = apHuman->m_HumanBoneIndex[i] >= 0 ? &apHuman->m_Skeleton.m_Node[apHuman->m_HumanBoneIndex[i]] : 0;
+            // 获取源和目标人类的骨骼节点
+            skeleton::Node const * srcNode = apSrcHuman->m_HumanBoneIndex[i] >= 0 ? &apSrcHuman->m_Skeleton.m_Node[apSrcHuman->m_HumanBoneIndex[i]] : nullptr;
+            skeleton::Node const * node = apHuman->m_HumanBoneIndex[i] >= 0 ? &apHuman->m_Skeleton.m_Node[apHuman->m_HumanBoneIndex[i]] : nullptr;
 
-            if (srcNode != 0 && node != 0 && srcNode->m_AxesId != -1 && node->m_AxesId != -1)
+            // 检查节点是否有效且具有轴信息
+            if (srcNode != nullptr && node != nullptr && srcNode->m_AxesId != -1 && node->m_AxesId != -1)
             {
+                // 复制轴信息
                 apHuman->m_Skeleton.m_AxesArray[node->m_AxesId] = apSrcHuman->m_Skeleton.m_AxesArray[srcNode->m_AxesId];
             }
         }
@@ -1799,8 +1754,10 @@ namespace human
 
     void GetMuscleRange(Human const *apHuman, int32_t aDoFIndex, float &aMin, float &aMax)
     {
+        // 获取与自由度索引对应的轴信息
         math::Axes const& axes = GetAxes(apHuman, DoF2Bone[aDoFIndex]);
 
+        // 根据自由度索引获取限制范围
         switch (DoF2BoneDoFIndex[aDoFIndex])
         {
             case 0: aMin = axes.m_Limit.m_Min.x; aMax = axes.m_Limit.m_Max.x; break;
@@ -1811,13 +1768,17 @@ namespace human
 
     math::float4 AddAxis(Human const *apHuman, int32_t aIndex, math::float4 const &arQ)
     {
+        // 获取当前节点的轴信息
         math::Axes cAxes = apHuman->m_Skeleton.m_AxesArray[apHuman->m_Skeleton.m_Node[aIndex].m_AxesId];
+        // 计算并返回添加轴后的四元数
         return math::normalize(math::quatMul(arQ, cAxes.m_PostQ));
     }
 
     math::float4 RemoveAxis(Human const *apHuman, int32_t aIndex, const math::float4 &arQ)
     {
+        // 获取当前节点的轴信息
         math::Axes cAxes = apHuman->m_Skeleton.m_AxesArray[apHuman->m_Skeleton.m_Node[aIndex].m_AxesId];
+        // 计算并返回去除轴后的四元数
         return math::normalize(math::quatMul(arQ, math::quatConj(cAxes.m_PostQ)));
     }
 
@@ -2091,27 +2052,38 @@ namespace human
 
     math::float4 HumanComputeOrientation(Human const* apHuman, skeleton::SkeletonPose const* apPoseGlobal)
     {
+        // 获取左上腿和右上腿的骨骼索引
         int32_t llIndex = apHuman->m_HumanBoneIndex[kLeftUpperLeg];
         int32_t rlIndex = apHuman->m_HumanBoneIndex[kRightUpperLeg];
 
+        // 获取左上臂和右上臂的骨骼索引
         int32_t laIndex = apHuman->m_HumanBoneIndex[kLeftUpperArm];
         int32_t raIndex = apHuman->m_HumanBoneIndex[kRightUpperArm];
 
+        // 计算腿部中点位置
         math::float3 legMC = math::float1(0.5f) * (apPoseGlobal->m_X[llIndex].t + apPoseGlobal->m_X[rlIndex].t);
+        // 计算手臂中点位置
         math::float3 armMC = math::float1(0.5f) * (apPoseGlobal->m_X[laIndex].t + apPoseGlobal->m_X[raIndex].t);
 
+        // 计算从腿到手臂的方向，归一化以得到“上”向量
         math::float3 upV = math::normalize(armMC - legMC);
 
-        math::float3 legV = apPoseGlobal->m_X[rlIndex].t - apPoseGlobal->m_X[llIndex].t;
-        math::float3 armV = apPoseGlobal->m_X[raIndex].t - apPoseGlobal->m_X[laIndex].t;
+        // 计算左右腿和手臂的方向向量
+        math::float3 legV = apPoseGlobal->m_X[rlIndex].t - apPoseGlobal->m_X[llIndex].t; // 腿的方向向量
+        math::float3 armV = apPoseGlobal->m_X[raIndex].t - apPoseGlobal->m_X[laIndex].t; // 手臂的方向向量
 
+        // 计算右向量，并归一化
         math::float3 rightV = math::normalize(legV + armV);
+        // 计算前向量，使用右向量和上向量的叉积
         math::float3 frontV = math::cross(rightV, upV);
 
+        // 重新计算右向量以确保正交性
         rightV = math::cross(upV, frontV);
 
+        // 返回归一化的四元数表示的方向，结合根骨骼的四元数
         return math::normalize(math::quatMul(math::matrixToQuat(rightV, upV, frontV), math::quatConj(apHuman->m_RootX.q)));
     }
+
 
     math::trsX HumanComputeRootXform(Human const* apHuman, skeleton::SkeletonPose const* apPoseGlobal)
     {
@@ -2186,86 +2158,105 @@ namespace human
     {
         uint32_t i;
 
+        // 镜像身体自由度
         for (i = 0; i < kLastBodyDoF; i++)
         {
-            arPose.m_DoFArray[kBodyDoFStart + i] *= BodyDoFMirror[i];
+            arPose.m_DoFArray[kBodyDoFStart + i] *= BodyDoFMirror[i]; // 应用镜像变换
         }
 
+        // 镜像头部自由度
         for (i = 0; i < kLastHeadDoF; i++)
         {
-            arPose.m_DoFArray[kHeadDoFStart + i] *= HeadDoFMirror[i];
+            arPose.m_DoFArray[kHeadDoFStart + i] *= HeadDoFMirror[i]; // 应用镜像变换
         }
 
+        // 交换左右手臂的自由度
         for (i = 0; i < kLastArmDoF; i++)
         {
-            float dof = arPose.m_DoFArray[kLeftArmDoFStart + i];
-            arPose.m_DoFArray[kLeftArmDoFStart + i] = arPose.m_DoFArray[kRightArmDoFStart + i];
-            arPose.m_DoFArray[kRightArmDoFStart + i] = dof;
+            float dof = arPose.m_DoFArray[kLeftArmDoFStart + i]; // 保存左手臂的自由度
+            arPose.m_DoFArray[kLeftArmDoFStart + i] = arPose.m_DoFArray[kRightArmDoFStart + i]; // 右手臂自由度赋给左手臂
+            arPose.m_DoFArray[kRightArmDoFStart + i] = dof; // 左手臂自由度赋给右手臂
         }
 
+        // 交换左右腿的自由度
         for (i = 0; i < kLastLegDoF; i++)
         {
-            float dof = arPose.m_DoFArray[kLeftLegDoFStart + i];
-            arPose.m_DoFArray[kLeftLegDoFStart + i] = arPose.m_DoFArray[kRightLegDoFStart + i];
-            arPose.m_DoFArray[kRightLegDoFStart + i] = dof;
+            float dof = arPose.m_DoFArray[kLeftLegDoFStart + i]; // 保存左腿的自由度
+            arPose.m_DoFArray[kLeftLegDoFStart + i] = arPose.m_DoFArray[kRightLegDoFStart + i]; // 右腿自由度赋给左腿
+            arPose.m_DoFArray[kRightLegDoFStart + i] = dof; // 左腿自由度赋给右腿
         }
 
-
+        // 镜像根骨骼的方向
         arPose.m_RootX = math::mirrorX(arPose.m_RootX);
 
+        // 交换左右手的自由度
         for (i = 0; i < (uint32_t)hand::s_DoFCount; i++)
         {
-            float leftdof = arPose.m_LeftHandPose.m_DoFArray[i];
-            arPose.m_LeftHandPose.m_DoFArray[i] = arPose.m_RightHandPose.m_DoFArray[i];
-            arPose.m_RightHandPose.m_DoFArray[i] = leftdof;
+            float leftdof = arPose.m_LeftHandPose.m_DoFArray[i]; // 保存左手的自由度
+            arPose.m_LeftHandPose.m_DoFArray[i] = arPose.m_RightHandPose.m_DoFArray[i]; // 右手自由度赋给左手
+            arPose.m_RightHandPose.m_DoFArray[i] = leftdof; // 左手自由度赋给右手
         }
 
+        // 镜像身体的位移自由度
         for (i = 0; i < kLastTDoF; i++)
         {
-            arPose.m_TDoFArray[kBodyTDoFStart + i] = math::mirrorX(arPose.m_TDoFArray[kBodyTDoFStart + i]);
+            arPose.m_TDoFArray[kBodyTDoFStart + i] = math::mirrorX(arPose.m_TDoFArray[kBodyTDoFStart + i]); // 应用镜像变换
         }
 
+        // 交换左右手臂的位移自由度
         for (i = 0; i < kLastArmTDoF; i++)
         {
-            math::float3 tdof = arPose.m_TDoFArray[kLeftArmTDoFStart + i];
-            arPose.m_TDoFArray[kLeftArmTDoFStart + i] = arPose.m_TDoFArray[kRightArmTDoFStart + i];
-            arPose.m_TDoFArray[kRightArmTDoFStart + i] = tdof;
+            math::float3 tdof = arPose.m_TDoFArray[kLeftArmTDoFStart + i]; // 保存左手臂的位移
+            arPose.m_TDoFArray[kLeftArmTDoFStart + i] = arPose.m_TDoFArray[kRightArmTDoFStart + i]; // 右手臂位移赋给左手臂
+            arPose.m_TDoFArray[kRightArmTDoFStart + i] = tdof; // 左手臂位移赋给右手臂
         }
 
+        // 交换左右腿的位移自由度
         for (i = 0; i < kLastLegTDoF; i++)
         {
-            math::float3 tdof = arPose.m_TDoFArray[kLeftLegTDoFStart + i];
-            arPose.m_TDoFArray[kLeftLegTDoFStart + i] = arPose.m_TDoFArray[kRightLegTDoFStart + i];
-            arPose.m_TDoFArray[kRightLegTDoFStart + i] = tdof;
+            math::float3 tdof = arPose.m_TDoFArray[kLeftLegTDoFStart + i]; // 保存左腿的位移
+            arPose.m_TDoFArray[kLeftLegTDoFStart + i] = arPose.m_TDoFArray[kRightLegTDoFStart + i]; // 右腿位移赋给左腿
+            arPose.m_TDoFArray[kRightLegTDoFStart + i] = tdof; // 左腿位移赋给右腿
         }
     }
 
-
     void HumanFixTwist(Human const *apHuman, skeleton::SkeletonPose *apSkeletonPose, skeleton::SkeletonPose *apSkeletonPoseWs, int32_t aPIndex, int32_t aCIndex, const math::float1& aTwist)
     {
-        int32_t pNodeIndex = apHuman->m_HumanBoneIndex[aPIndex];
-        int32_t cNodeIndex = apHuman->m_HumanBoneIndex[aCIndex];
-        int32_t aNodeIndex = apHuman->m_Skeleton.m_Node[pNodeIndex].m_ParentId;
+        // 获取父节点和子节点的索引
+        int32_t pNodeIndex = apHuman->m_HumanBoneIndex[aPIndex]; // 父节点索引
+        int32_t cNodeIndex = apHuman->m_HumanBoneIndex[aCIndex]; // 子节点索引
+        int32_t aNodeIndex = apHuman->m_Skeleton.m_Node[pNodeIndex].m_ParentId; // 祖先节点索引
 
+        // 获取父节点的轴信息
         math::Axes pAxes = apHuman->m_Skeleton.m_AxesArray[apHuman->m_Skeleton.m_Node[pNodeIndex].m_AxesId];
 
+        // 初始化祖先节点的四元数为单位四元数
         apSkeletonPoseWs->m_X[aNodeIndex].q = math::quatIdentity();
+        
+        // 计算全局四元数
         skeleton::SkeletonPoseComputeGlobalQ(&apHuman->m_Skeleton, apSkeletonPose, apSkeletonPoseWs, cNodeIndex, pNodeIndex);
 
-        math::float4 pq = apSkeletonPose->m_X[pNodeIndex].q;
-        math::float4 cqg = apSkeletonPoseWs->m_X[cNodeIndex].q;
+        // 获取父节点和子节点的全局四元数
+        math::float4 pq = apSkeletonPose->m_X[pNodeIndex].q; // 父节点全局四元数
+        math::float4 cqg = apSkeletonPoseWs->m_X[cNodeIndex].q; // 子节点全局四元数
 
+        // 将父节点的四元数转换为轴向坐标
         math::float3 pxyz = math::ToAxes(pAxes, apSkeletonPose->m_X[pNodeIndex].q);
-        pxyz.x *= aTwist;
+        pxyz.x *= aTwist; // 应用扭转变换
 
+        // 将新的轴向坐标转换回四元数
         apSkeletonPose->m_X[pNodeIndex].q = math::FromAxes(pAxes, pxyz);
 
+        // 对齐骨骼
         skeleton::SkeletonAlign(&apHuman->m_Skeleton, pq, apSkeletonPose->m_X[pNodeIndex].q, pNodeIndex);
 
+        // 重新计算子节点的全局四元数
         skeleton::SkeletonPoseComputeGlobalQ(&apHuman->m_Skeleton, apSkeletonPose, apSkeletonPoseWs, cNodeIndex, pNodeIndex);
 
+        // 恢复子节点的全局四元数
         apSkeletonPoseWs->m_X[cNodeIndex].q = cqg;
 
+        // 计算子节点的局部四元数
         skeleton::SkeletonPoseComputeLocalQ(&apHuman->m_Skeleton, apSkeletonPoseWs, apSkeletonPose, cNodeIndex, cNodeIndex);
     }
 

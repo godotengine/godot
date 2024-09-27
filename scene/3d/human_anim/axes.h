@@ -97,23 +97,30 @@ namespace math
 
     static inline float3 doubleAtan(const float3& v)
     {
-        // using std atan since atan approximation is not precise enough for the retargeter
-        // doubleAtan is only used by retargeter at import
+        // 使用标准的 atan 函数，因为近似的 atan 精度不足以满足重定向器的需求
+        // doubleAtan 仅在导入时由重定向器使用
         return float1(2.0f) * float3(std::atan(v.x), std::atan(v.y), std::atan(v.z));
     }
 
     inline float halfTan(const float& a)
     {
-        return tan(clamp(0.5f * chgsign(fmod(abs(a) + math::pi(), 2.0f * math::pi()) - math::pi(), a), -math::pi_over_two() + epsilon_radian(), math::pi_over_two() - epsilon_radian()));
+        // 计算输入值的半切线，限制在[-π/2, π/2]范围内
+        return tan(clamp(0.5f * chgsign(fmod(abs(a) + math::pi(), 2.0f * math::pi()) - math::pi(), a), 
+                        -math::pi_over_two() + epsilon_radian(), 
+                        math::pi_over_two() - epsilon_radian()));
     }
 
     inline float3 halfTan(const float3& a)
     {
-        return tan(clamp(0.5f * chgsign(fmod(abs(a) + math::pi(), 2.0f * math::pi()) - math::pi(), a), -math::pi_over_two() + epsilon_radian(), math::pi_over_two() - epsilon_radian()));
+        // 计算向量的每个分量的半切线，限制在[-π/2, π/2]范围内
+        return tan(clamp(0.5f * chgsign(fmod(abs(a) + math::pi(), 2.0f * math::pi()) - math::pi(), a), 
+                        -math::pi_over_two() + epsilon_radian(), 
+                        math::pi_over_two() - epsilon_radian()));
     }
 
     inline float LimitProject(float min, float max, float v)
     {
+        // 将值v限制在[min, max]范围内，返回适当的比例
         float i = min < 0 ? -v / min : min > 0 ? v : 0;
         float a = max > 0 ? +v / max : max < 0 ? v : 0;
         return v < 0 ? i : a;
@@ -121,6 +128,7 @@ namespace math
 
     inline float LimitUnproject(float min, float max, float v)
     {
+        // 根据最小值和最大值反向限制v，返回适当的值
         float i = min < 0 ? -v * min : min > 0 ? v : 0;
         float a = max > 0 ? +v * max : max < 0 ? v : 0;
         return v < 0 ?  i : a;
@@ -128,6 +136,7 @@ namespace math
 
     inline float3 LimitProject(Limit const& l, float3 const& v)
     {
+        // 对向量v进行限制投影，依据给定的限制条件
         const float3 min = select(select(float3(ZERO), v, l.m_Min > float1(ZERO)), -v / l.m_Min, l.m_Min < float1(ZERO));
         const float3 max = select(select(float3(ZERO), v, l.m_Max < float1(ZERO)), +v / l.m_Max, l.m_Max > float1(ZERO));
         return select(max, min, v < float3(ZERO));
@@ -135,6 +144,7 @@ namespace math
 
     inline float3 LimitUnproject(Limit const& l, float3 const& v)
     {
+        // 对向量v进行限制反投影，依据给定的限制条件
         const float3 min = select(select(float3(ZERO), v, l.m_Min > float1(ZERO)), -v * l.m_Min, l.m_Min < float1(ZERO));
         const float3 max = select(select(float3(ZERO), v, l.m_Max < float1(ZERO)), +v * l.m_Max, l.m_Max > float1(ZERO));
         return select(max, min, v < float3(ZERO));
@@ -142,39 +152,44 @@ namespace math
 
     inline float4 AxesProject(Axes const& a, float4 const& q)
     {
+        // 将四元数q投影到给定的轴上
         return normalize(quatMul(quatConj(a.m_PreQ), quatMul(q, a.m_PostQ)));
     }
 
     inline float4 AxesUnproject(Axes const& a, float4 const& q)
     {
+        // 将四元数q从给定的轴上反投影
         return normalize(quatMul(a.m_PreQ, quatMul(q, quatConj(a.m_PostQ))));
     }
 
     inline float3 ToAxes(Axes const& a, float4 const& q)
     {
+        // 将四元数q转换为轴表示，并限制在轴的范围内
         const float4 qp = AxesProject(a, q);
         float3 xyz;
         switch (a.m_Type)
         {
-            case kEulerXYZ: xyz = LimitProject(a.m_Limit, quatToEuler(qp)); break;
-            case kZYRoll: xyz = LimitProject(a.m_Limit, doubleAtan(chgsign(quat2ZYRoll(qp), a.m_Sgn))); break;
-            case kRollZY: xyz = LimitProject(a.m_Limit, doubleAtan(chgsign(quat2RollZY(qp), a.m_Sgn))); break;
-            default:      xyz = LimitProject(a.m_Limit, doubleAtan(chgsign(quat2Qtan(qp), a.m_Sgn))); break;
+            case kEulerXYZ: xyz = LimitProject(a.m_Limit, quatToEuler(qp)); break; // 欧拉角
+            case kZYRoll:   xyz = LimitProject(a.m_Limit, doubleAtan(chgsign(quat2ZYRoll(qp), a.m_Sgn))); break; // ZY滚动
+            case kRollZY:   xyz = LimitProject(a.m_Limit, doubleAtan(chgsign(quat2RollZY(qp), a.m_Sgn))); break; // 滚动ZY
+            default:        xyz = LimitProject(a.m_Limit, doubleAtan(chgsign(quat2Qtan(qp), a.m_Sgn))); break; // 默认四元数切线
         }
         return xyz;
     }
 
     inline float4 FromAxes(Axes const& a, float3 const& uvw)
     {
+        // 从轴表示uv为四元数q
         float4 q;
         switch (a.m_Type)
         {
-            case kEulerXYZ: q = eulerToQuat(uvw); break;
-            case kZYRoll:   q = ZYRoll2Quat(chgsign(halfTan(LimitUnproject(a.m_Limit, uvw)), a.m_Sgn)); break;
-            case kRollZY:   q = RollZY2Quat(chgsign(halfTan(LimitUnproject(a.m_Limit, uvw)), a.m_Sgn)); break;
-            default:        q = qtan2Quat(chgsign(halfTan(LimitUnproject(a.m_Limit, uvw)), a.m_Sgn)); break;
+            case kEulerXYZ: q = eulerToQuat(uvw); break; // 欧拉角转四元数
+            case kZYRoll:   q = ZYRoll2Quat(chgsign(halfTan(LimitUnproject(a.m_Limit, uvw)), a.m_Sgn)); break; // ZY滚动转四元数
+            case kRollZY:   q = RollZY2Quat(chgsign(halfTan(LimitUnproject(a.m_Limit, uvw)), a.m_Sgn)); break; // 滚动ZY转四元数
+            default:        q = qtan2Quat(chgsign(halfTan(LimitUnproject(a.m_Limit, uvw)), a.m_Sgn)); break; // 默认切线转四元数
         }
 
-        return AxesUnproject(a, q);
-    }
+        return AxesUnproject(a, q); // 从给定的轴上反投影四元数q
+}
+
 }
