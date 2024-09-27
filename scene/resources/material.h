@@ -66,8 +66,8 @@ protected:
 	void _mark_initialized(const Callable &p_add_to_dirty_list, const Callable &p_update_shader);
 	bool _is_initialized() { return init_state == INIT_STATE_READY; }
 
-	GDVIRTUAL0RC(RID, _get_shader_rid)
-	GDVIRTUAL0RC(Shader::Mode, _get_shader_mode)
+	GDVIRTUAL0RC_REQUIRED(RID, _get_shader_rid)
+	GDVIRTUAL0RC_REQUIRED(Shader::Mode, _get_shader_mode)
 	GDVIRTUAL0RC(bool, _can_do_next_pass)
 	GDVIRTUAL0RC(bool, _can_use_render_priority)
 public:

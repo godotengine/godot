@@ -72,7 +72,7 @@ void AudioStreamPlayback::seek(double p_time) {
 
 int AudioStreamPlayback::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
 	int ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_mix, p_buffer, p_rate_scale, p_frames, ret);
+	GDVIRTUAL_CALL(_mix, p_buffer, p_rate_scale, p_frames, ret);
 	return ret;
 }
 
@@ -132,12 +132,12 @@ void AudioStreamPlaybackResampled::begin_resample() {
 
 int AudioStreamPlaybackResampled::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	int ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_mix_resampled, p_buffer, p_frames, ret);
+	GDVIRTUAL_CALL(_mix_resampled, p_buffer, p_frames, ret);
 	return ret;
 }
 float AudioStreamPlaybackResampled::get_stream_sampling_rate() {
 	float ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_get_stream_sampling_rate, ret);
+	GDVIRTUAL_CALL(_get_stream_sampling_rate, ret);
 	return ret;
 }
 
