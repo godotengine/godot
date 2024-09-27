@@ -91,21 +91,22 @@ namespace detail {
 
 static inline char* ImplGetEnv(const char* name) { return getenv(name); }
 
+// clang-format off
 static inline char* ImplGetSecureEnv(const char* name) {
 #ifdef HAVE_SECURE_GETENV
     return secure_getenv(name);
 #elif defined(HAVE___SECURE_GETENV)
     return __secure_getenv(name);
 #else
-// clang-format off
 #pragma message(                                                    \
     "Warning:  Falling back to non-secure getenv for environmental" \
     "lookups!  Consider updating to a different libc.")
-    // clang-format on
 
     return ImplGetEnv(name);
 #endif
 }
+// clang-format on
+
 }  // namespace detail
 
 #endif  // defined(XR_OS_LINUX) || defined(XR_OS_APPLE)
