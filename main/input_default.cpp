@@ -110,9 +110,9 @@ bool InputDefault::is_action_pressed(const StringName &p_action, bool p_exact) c
 	return action_state.has(p_action) && action_state[p_action].pressed && (p_exact ? action_state[p_action].exact : true);
 }
 
-bool InputDefault::is_action_just_pressed(const StringName &p_action, bool p_exact) const {
+bool InputDefault::is_action_just_pressed(const StringName &p_action, bool p_exact, bool p_retire) {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
-	const Map<StringName, Action>::Element *E = action_state.find(p_action);
+	Map<StringName, Action>::Element *E = action_state.find(p_action);
 	if (!E) {
 		return false;
 	}
@@ -121,13 +121,28 @@ bool InputDefault::is_action_just_pressed(const StringName &p_action, bool p_exa
 		return false;
 	}
 
-	// Backward compatibility for legacy behavior, only return true if currently pressed.
-	bool pressed_requirement = legacy_just_pressed_behavior ? E->get().pressed : true;
+	Action &action = E->get();
 
 	if (Engine::get_singleton()->is_in_physics_frame()) {
-		return pressed_requirement && E->get().pressed_physics_frame == Engine::get_singleton()->get_physics_frames();
+		if (!legacy_just_pressed_behavior) {
+			bool pressed = action.pressed_physics_frame == Engine::get_singleton()->get_physics_frames();
+			if (pressed && p_retire) {
+				action.pressed_physics_frame -= 1;
+			}
+			return pressed;
+		} else {
+			return action.pressed && (action.pressed_physics_frame == Engine::get_singleton()->get_physics_frames());
+		}
 	} else {
-		return pressed_requirement && E->get().pressed_idle_frame == Engine::get_singleton()->get_idle_frames();
+		if (!legacy_just_pressed_behavior) {
+			bool pressed = action.pressed_idle_frame == Engine::get_singleton()->get_idle_frames();
+			if (pressed && p_retire) {
+				action.pressed_idle_frame -= 1;
+			}
+			return pressed;
+		} else {
+			return action.pressed && (action.pressed_idle_frame == Engine::get_singleton()->get_idle_frames());
+		}
 	}
 }
 

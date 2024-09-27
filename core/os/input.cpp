@@ -59,7 +59,7 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_mouse_button_pressed", "button"), &Input::is_mouse_button_pressed);
 	ClassDB::bind_method(D_METHOD("is_joy_button_pressed", "device", "button"), &Input::is_joy_button_pressed);
 	ClassDB::bind_method(D_METHOD("is_action_pressed", "action", "exact"), &Input::is_action_pressed, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("is_action_just_pressed", "action", "exact"), &Input::is_action_just_pressed, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("is_action_just_pressed", "action", "exact", "retire"), &Input::is_action_just_pressed, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("is_action_just_released", "action", "exact"), &Input::is_action_just_released, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_action_strength", "action", "exact"), &Input::get_action_strength, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_action_raw_strength", "action", "exact"), &Input::get_action_raw_strength, DEFVAL(false));
