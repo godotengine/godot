@@ -407,13 +407,14 @@
 			<param index="0" name="at_position" type="Vector2" />
 			<param index="1" name="mouse_button_index" type="int" />
 			<description>
-				Triggered when any mouse click is issued within the rect of the list but on empty space.
+				Emitted when any mouse click is issued within the rect of the list but on empty space.
+				[param at_position] is the click position in this control's local coordinate system.
 			</description>
 		</signal>
 		<signal name="item_activated">
 			<param index="0" name="index" type="int" />
 			<description>
-				Triggered when specified list item is activated via double-clicking or by pressing [kbd]Enter[/kbd].
+				Emitted when specified list item is activated via double-clicking or by pressing [kbd]Enter[/kbd].
 			</description>
 		</signal>
 		<signal name="item_clicked">
@@ -421,14 +422,14 @@
 			<param index="1" name="at_position" type="Vector2" />
 			<param index="2" name="mouse_button_index" type="int" />
 			<description>
-				Triggered when specified list item has been clicked with any mouse button.
-				The click position is also provided to allow appropriate popup of context menus at the correct location.
+				Emitted when specified list item has been clicked with any mouse button.
+				[param at_position] is the click position in this control's local coordinate system.
 			</description>
 		</signal>
 		<signal name="item_selected">
 			<param index="0" name="index" type="int" />
 			<description>
-				Triggered when specified item has been selected.
+				Emitted when specified item has been selected. Only applicable in single selection mode.
 				[member allow_reselect] must be enabled to reselect an item.
 			</description>
 		</signal>
@@ -436,7 +437,7 @@
 			<param index="0" name="index" type="int" />
 			<param index="1" name="selected" type="bool" />
 			<description>
-				Triggered when a multiple selection is altered on a list allowing multiple selection.
+				Emitted when a multiple selection is altered on a list allowing multiple selection.
 			</description>
 		</signal>
 	</signals>
