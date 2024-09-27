@@ -154,6 +154,7 @@ public:
 	StringName confirmed;
 
 	StringName text_changed;
+	StringName text_submitted;
 	StringName value_changed;
 };
 
