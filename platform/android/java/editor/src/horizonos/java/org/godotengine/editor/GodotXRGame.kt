@@ -69,7 +69,7 @@ open class GodotXRGame: GodotGame() {
 			val automaticPermissionsRequestEnabled = automaticallyRequestPermissionsSetting.isNullOrEmpty() ||
 				automaticallyRequestPermissionsSetting.toBoolean()
 			if (automaticPermissionsRequestEnabled) {
-				permissionsToEnable.add(USE_SCENE_PERMISSION)
+				permissionsToEnable.addAll(USE_SCENE_PERMISSIONS)
 			}
 		}
 
