@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_bottom_panel.h                                                 */
+/*  editor_version_button.h                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,56 +28,34 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_BOTTOM_PANEL_H
-#define EDITOR_BOTTOM_PANEL_H
+#ifndef EDITOR_VERSION_BUTTON_H
+#define EDITOR_VERSION_BUTTON_H
 
-#include "scene/gui/panel_container.h"
+#include "scene/gui/link_button.h"
 
-class Button;
-class ConfigFile;
-class EditorToaster;
-class HBoxContainer;
-class VBoxContainer;
+class EditorVersionButton : public LinkButton {
+	GDCLASS(EditorVersionButton, LinkButton);
 
-class EditorBottomPanel : public PanelContainer {
-	GDCLASS(EditorBottomPanel, PanelContainer);
-
-	struct BottomPanelItem {
-		String name;
-		Control *control = nullptr;
-		Button *button = nullptr;
+public:
+	enum VersionFormat {
+		// 4.3.2.stable
+		FORMAT_BASIC,
+		// v4.3.2.stable.mono [HASH]
+		FORMAT_WITH_BUILD,
+		// Godot Engine v4.3.2.stable.mono.official [HASH]
+		FORMAT_WITH_NAME_AND_BUILD,
 	};
 
-	Vector<BottomPanelItem> items;
-
-	VBoxContainer *item_vbox = nullptr;
-	HBoxContainer *bottom_hbox = nullptr;
-	HBoxContainer *button_hbox = nullptr;
-	EditorToaster *editor_toaster = nullptr;
-	Button *expand_button = nullptr;
-	Control *last_opened_control = nullptr;
-
-	void _switch_by_control(bool p_visible, Control *p_control);
-	void _switch_to_item(bool p_visible, int p_idx);
-	void _expand_button_toggled(bool p_pressed);
-
-	bool _button_drag_hover(const Vector2 &, const Variant &, Button *p_button, Control *p_control);
+private:
+	VersionFormat format = FORMAT_WITH_NAME_AND_BUILD;
 
 protected:
 	void _notification(int p_what);
 
+	virtual void pressed() override;
+
 public:
-	void save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const;
-	void load_layout_from_config(Ref<ConfigFile> p_config_file, const String &p_section);
-
-	Button *add_item(String p_text, Control *p_item, const Ref<Shortcut> &p_shortcut = nullptr, bool p_at_front = false);
-	void remove_item(Control *p_item);
-	void make_item_visible(Control *p_item, bool p_visible = true);
-	void move_item_to_end(Control *p_item);
-	void hide_bottom_panel();
-	void toggle_last_opened_bottom_panel();
-
-	EditorBottomPanel();
+	EditorVersionButton(VersionFormat p_format);
 };
 
-#endif // EDITOR_BOTTOM_PANEL_H
+#endif // EDITOR_VERSION_BUTTON_H
