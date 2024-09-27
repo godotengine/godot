@@ -93,6 +93,13 @@
 				[b]Note:[/b] [constant @GDScript.NAN] doesn't behave the same as other numbers. Therefore, the results from this method may not be accurate if NaNs are included.
 			</description>
 		</method>
+		<method name="get" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the 32-bit float at the given [param index] in the array. This is the same as using the [code][][/code] operator ([code]array[index][/code]).
+			</description>
+		</method>
 		<method name="has" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="value" type="float" />

@@ -114,9 +114,9 @@ class EditorFileSystemImportFormatSupportQuery : public RefCounted {
 	GDCLASS(EditorFileSystemImportFormatSupportQuery, RefCounted);
 
 protected:
-	GDVIRTUAL0RC(bool, _is_active)
-	GDVIRTUAL0RC(Vector<String>, _get_file_extensions)
-	GDVIRTUAL0RC(bool, _query)
+	GDVIRTUAL0RC_REQUIRED(bool, _is_active)
+	GDVIRTUAL0RC_REQUIRED(Vector<String>, _get_file_extensions)
+	GDVIRTUAL0RC_REQUIRED(bool, _query)
 	static void _bind_methods() {
 		GDVIRTUAL_BIND(_is_active);
 		GDVIRTUAL_BIND(_get_file_extensions);
@@ -126,17 +126,17 @@ protected:
 public:
 	virtual bool is_active() const {
 		bool ret = false;
-		GDVIRTUAL_REQUIRED_CALL(_is_active, ret);
+		GDVIRTUAL_CALL(_is_active, ret);
 		return ret;
 	}
 	virtual Vector<String> get_file_extensions() const {
 		Vector<String> ret;
-		GDVIRTUAL_REQUIRED_CALL(_get_file_extensions, ret);
+		GDVIRTUAL_CALL(_get_file_extensions, ret);
 		return ret;
 	}
 	virtual bool query() {
 		bool ret = false;
-		GDVIRTUAL_REQUIRED_CALL(_query, ret);
+		GDVIRTUAL_CALL(_query, ret);
 		return ret;
 	}
 };
