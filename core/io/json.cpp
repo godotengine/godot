@@ -118,10 +118,10 @@ String JSON::_stringify(const Variant &p_var, const String &p_indent, int p_cur_
 			p_markers.insert(d.id());
 
 			List<Variant> keys;
-			d.get_key_list(&keys);
+			d.get_key_list(&keys, true);
 
 			if (p_sort_keys) {
-				keys.sort_custom<StringLikeVariantOrder>();
+				keys.sort();
 			}
 
 			bool first_key = true;
