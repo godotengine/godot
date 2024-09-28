@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  fuzzy_search.h                                                        */
+/*  test_string.h                                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,40 +28,78 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FUZZY_SEARCH_H
-#define FUZZY_SEARCH_H
+#ifndef TEST_FUZZY_SEARCH_H
+#define TEST_FUZZY_SEARCH_H
 
-#include "core/object/ref_counted.h"
-#include "core/templates/rb_set.h"
-#include "core/variant/array.h"
-#include "core/variant/variant.h"
+#include "core/string/fuzzy_search.h"
+#include "tests/test_macros.h"
+#include <iostream>
+#include <chrono>
 
-class Tree;
+namespace TestFuzzySearch {
 
-class FuzzySearchResult : public RefCounted {
-	GDCLASS(FuzzySearchResult, RefCounted);
+double calculateMean(const Vector<int>& numbers) {
+    double sum = 0.0;
+    for(int num : numbers) {
+        sum += num;
+    }
+    return sum / numbers.size();
+}
 
-protected:
-	static void _bind_methods() {}
+// Function to calculate standard deviation
+double calculateStdDev(const Vector<int>& numbers) {
+    double mean = calculateMean(numbers);
+    double variance = 0.0;
 
-	mutable Vector<int> m_matches_as_substr_sequences_cache;
+    for(int num : numbers) {
+        variance += (num - mean) * (num - mean);
+    }
+    variance /= numbers.size();  // Population standard deviation formula
+    return std::sqrt(variance);
+}
 
-public:
-	String target;
-	int score{};
-	RBSet<int> matches;
+auto bench(String query, String data_set_path, int expected_result_count) {
+	Ref<FileAccess> some_project_dir_tree = FileAccess::open(TestUtils::get_data_path(data_set_path), FileAccess::READ);
+	REQUIRE(!some_project_dir_tree.is_null());
 
-	Vector<int> get_matches() const;
+	auto data = some_project_dir_tree->get_as_utf8_string().split("\n");
+	CHECK(data.size() > 0);
 
-	const Vector<int> &get_matches_as_substr_sequences() const;
-};
 
-class FuzzySearch : public RefCounted {
-	GDCLASS(FuzzySearch, RefCounted);
+	Vector<int> results;
 
-public:
-	static Vector<Ref<FuzzySearchResult>> search_all(const String &p_query_tokens, const PackedStringArray &p_search_data);
-	static void draw_matches(Tree *p_tree);
-};
+	// run twice for a warmp up
+	for(int i = 0; i < 2; i++) {
+		results.clear();
+		
+		for(int j = 0; j < 10; j++) {
+			auto start = std::chrono::high_resolution_clock::now();
 
-#endif // FUZZY_SEARCH_H
+			Ref<FuzzySearch> FuzzySearch{};
+			auto res = FuzzySearch->search_all_lev(query, data);
+
+			CHECK(res.size() == expected_result_count);
+
+			auto end = std::chrono::high_resolution_clock::now();
+
+			auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+
+			results.push_back(duration);
+
+			MESSAGE("run");
+		}
+	}
+
+	std::cout << calculateStdDev(results) << std::endl;
+	std::cout << calculateMean(results) << std::endl;
+}
+
+TEST_CASE("[FuzzySearch] Find Stuff") {
+
+	bench("boss", "project_dir_tree.txt", 28);
+
+}
+
+} // namespace TestString
+
+#endif // TEST_FUZZY_SEARCH_H

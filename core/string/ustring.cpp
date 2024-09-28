@@ -1832,6 +1832,20 @@ String String::num(double p_num, int p_decimals) {
 	return buf;
 }
 
+
+int String::rfind_char(const char32_t &p_char, int p_from) const {
+	return _cowdata.rfind(p_char, p_from);
+}
+
+bool String::is_lowercase() const {
+	for (const char32_t *str = &operator[](0); *str; str++) {
+		if (is_unicode_upper_case(*str)) {
+			return false;
+		}
+	}
+	return true;
+}
+
 String String::num_int64(int64_t p_num, int base, bool capitalize_hex) {
 	bool sign = p_num < 0;
 

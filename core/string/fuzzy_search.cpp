@@ -36,6 +36,9 @@
 
 const int max_results = 100;
 const float cull_factor = 0.5f;
+const int max_misses = 2;
+const int short_query_cutoff = 3;
+const String boundary_chars = "/\\-_.";
 
 Vector<int> FuzzySearchResult::get_matches() const {
 	Vector<int> matches_array;
@@ -75,6 +78,35 @@ const Vector<int> &FuzzySearchResult::get_matches_as_substr_sequences() const {
 	return m_matches_as_substr_sequences_cache;
 }
 
+
+bool is_on_boundary(const String& str, const int index) {
+	if (index == -1 || index == str.size()) {
+		return true;
+	}
+	return boundary_chars.find_char(str[index]) >= 0;
+}
+
+
+void FuzzySearchResult::add_and_score_substring(const int p_start, const int p_length, const int p_query_length) {
+	matched_substring_pairs.append(p_start);
+	matched_substring_pairs.append(p_length);
+	// Score longer substrings higher than short substrings
+	int substring_score = p_length * p_length * p_length;
+	// Score matches deeper in path higher than shallower matches
+	if (p_start > bonus_index) {
+		substring_score *= 2;
+	}
+	// Score matches on a word boundary higher than matches within a word
+	if (is_on_boundary(target, p_start - 1) || is_on_boundary(target, p_start + p_length)) {
+		substring_score += 2;
+	}
+	// Score exact query matches higher than non-compact subsequence matches
+	if (p_length == p_query_length) {
+		substring_score *= 3;
+	}
+	score += substring_score;
+}
+
 PackedStringArray get_query(const String &p_query) {
 	PackedStringArray query_tokens;
 
@@ -95,7 +127,7 @@ PackedStringArray get_query(const String &p_query) {
 	return query_tokens;
 }
 
-Vector<Ref<FuzzySearchResult>> sort_and_filter(const Vector<Ref<FuzzySearchResult>> &p_results) {
+Vector<Ref<FuzzySearchResult>> sort_and_filter_lev(const Vector<Ref<FuzzySearchResult>> &p_results) {
 	Vector<Ref<FuzzySearchResult>> res;
 
 	if (p_results.is_empty()) {
@@ -132,7 +164,54 @@ Vector<Ref<FuzzySearchResult>> sort_and_filter(const Vector<Ref<FuzzySearchResul
 	return res;
 }
 
-Ref<FuzzySearchResult> fuzzy_search(const String &p_query, const String &p_target, int position_offset) {
+Vector<Ref<FuzzySearchResult>> sort_and_filter(const Vector<Ref<FuzzySearchResult>> &p_results) {
+	Vector<Ref<FuzzySearchResult>> res;
+
+	if (p_results.is_empty()) {
+		return res;
+	}
+
+	float avg_score = 0;
+
+	for (const Ref<FuzzySearchResult> &result : p_results) {
+		if (result->score > avg_score) {
+			avg_score += result->score;
+		}
+	}
+
+	avg_score /= p_results.size();
+	float cull_score = avg_score * cull_factor;
+
+	struct FuzzySearchResultComparator {
+		bool operator()(const Ref<FuzzySearchResult> &A, const Ref<FuzzySearchResult> &B) const {
+			// Sort on (score, length, alphanumeric) to ensure consistent ordering
+			if (A->score == B->score) {
+				if (A->target.length() == B->target.length()) {
+					return A->target < B->target;
+				}
+				return A->target.length() < B->target.length();
+			}
+			return A->score > B->score;
+		}
+	};
+
+	// Prune low score entries before even sorting
+	for (Ref<FuzzySearchResult> i : p_results) {
+		if (i->score >= cull_score) {
+			res.push_back(i);
+		}
+	}
+
+	res.sort_custom<FuzzySearchResultComparator>();
+
+	if (res.size() > max_results) {
+		res.resize(max_results);
+	}
+
+	return res;
+}
+
+Ref<FuzzySearchResult> fuzzy_search_lev(const String &p_query, const String &p_target, int position_offset) {
 	if (p_query.is_empty()) {
 		return nullptr;
 	}
@@ -223,6 +302,87 @@ Ref<FuzzySearchResult> fuzzy_search(const String &p_query, const String &p_targe
 	return res;
 }
 
+Ref<FuzzySearchResult> new_search_result(const String &p_target) {
+	Ref<FuzzySearchResult> result;
+	result.instantiate();
+	result->target = p_target;
+	result->score = 0;
+	result->bonus_index = p_target.rfind("/");
+	return result;
+}
+
+Ref<FuzzySearchResult> fuzzy_search(const PackedStringArray &p_query, const String &p_target, bool case_sensitive) {
+	if (p_query.size() == 0) {
+		return nullptr;
+	}
+
+	if (p_target.is_empty()) {
+		return nullptr;
+	}
+
+	String adjusted_target = case_sensitive ? p_target : p_target.to_lower();
+	Ref<FuzzySearchResult> result = new_search_result(p_target);
+	bool any_match = false;
+	int offset = 0;
+	int misses = 0;
+
+	// Special case exact matches on very short queries
+	if (p_query.size() == 1 && p_query[0].length() <= short_query_cutoff) {
+		int index = adjusted_target.rfind(p_query[0]);
+		if (index >= 0) {
+			result->add_and_score_substring(index, p_query[0].length(), p_query[0].length());
+			return result;
+		}
+	}
+
+	for (int i = p_query.size() - 1; i >= 0; i--) {
+		const String &part = p_query[i];
+		int part_len = part.length();
+
+		// Finds the starting offset for the latest instance of subsequence query_part in p_target.
+		for (int j = part_len - 1; j >= 0; j--) {
+			int new_offset = adjusted_target.rfind_char(part[j], offset - 1);
+			if (new_offset < 0 || (new_offset == 0 && j > 0)) {
+				if (++misses > max_misses) {
+					return nullptr;
+				}
+			} else {
+				offset = new_offset;
+				any_match = true;
+			}
+		}
+
+		// Disallow "matching" only on missed characters
+		if (!any_match) {
+			return nullptr;
+		}
+
+		int forward_offset = offset;
+		int run_start = offset;
+		int run_length = 1;
+
+		// Forward-searches the same subsequence from that offset to bias for more compact representation
+		// in cases with multiple subsequences. Inspired by FuzzyMatchV1 in fzf. Additionally, record each
+		// substring in the subsequence for scoring and display.
+		for (int j = 1; j < part_len; j++) {
+			int new_offset = adjusted_target.find_char(part[j], forward_offset + 1);
+			if (new_offset > 0) {
+				forward_offset = new_offset;
+				if (run_start + run_length != forward_offset) {
+					result->add_and_score_substring(run_start, run_length, part_len);
+					run_start = forward_offset;
+					run_length = 1;
+				} else {
+					run_length += 1;
+				}
+			}
+		}
+		result->add_and_score_substring(run_start, run_length, part_len);
+	}
+
+	return result;
+}
+
 // Iterate over every component in the path and use the highest scoring match as the result.
 // Also weights the final component's score massively heaiver considering people tend to search for files, not directories.
 Ref<FuzzySearchResult> fuzzy_search_path_components(const String &p_query_token, const PackedStringArray &p_path_components) {
@@ -233,7 +393,7 @@ Ref<FuzzySearchResult> fuzzy_search_path_components(const String &p_query_token,
 	for (int i = 0; i < p_path_components.size(); i++) {
 		bool end_of_path = i == p_path_components.size() - 1;
 
-		Ref<FuzzySearchResult> res = fuzzy_search(p_query_token, p_path_components[i], offset);
+		Ref<FuzzySearchResult> res = fuzzy_search_lev(p_query_token, p_path_components[i], offset);
 		offset += p_path_components[i].length() + 1;
 
 		if (res.is_null() || res->score == 0) {
@@ -280,7 +440,7 @@ Ref<FuzzySearchResult> fuzzy_search_path(const PackedStringArray &p_query_tokens
 	return result;
 }
 
-Vector<Ref<FuzzySearchResult>> FuzzySearch::search_all(const String &p_query_tokens, const PackedStringArray &p_search_data) {
+Vector<Ref<FuzzySearchResult>> FuzzySearch::search_all_lev(const String &p_query_tokens, const PackedStringArray &p_search_data) {
 	Vector<Ref<FuzzySearchResult>> res;
 
 	// Just spit out the results list if no query is given.
@@ -299,6 +459,37 @@ Vector<Ref<FuzzySearchResult>> FuzzySearch::search_all(const String &p_query_tok
 
 	for (const String &search_line : p_search_data) {
 		Ref<FuzzySearchResult> r = fuzzy_search_path(query_tokens, search_line);
+		if (!r.is_null()) {
+			res.append(r);
+		}
+	}
+
+	return sort_and_filter(res);
+}
+
+
+const PackedStringArray _split_query(const String& p_query) {
+	return p_query.split(" ", false);
+}
+
+
+Vector<Ref<FuzzySearchResult>> FuzzySearch::search_all(const String &p_query, const PackedStringArray &p_targets) {
+	Vector<Ref<FuzzySearchResult>> res;
+
+	// Just spit out the results list if no query is given.
+	if (p_query.is_empty()) {
+		for (int i = 0; (i < max_results) && (i < p_targets.size()); i++) {
+			res.push_back(new_search_result(p_targets[i]));
+		}
+
+		return res;
+	}
+
+	bool case_sensitive = !p_query.is_lowercase();
+	PackedStringArray query_parts = _split_query(p_query);
+
+	for (const String &target : p_targets) {
+		Ref<FuzzySearchResult> r = fuzzy_search(query_parts, target, case_sensitive);
 		if (!r.is_null()) {
 			res.append(r);
 		}
