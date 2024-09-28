@@ -129,6 +129,7 @@ public:
 		}
 
 		Vector<RD::Uniform> get_uniforms(int p_first_index) const;
+		Vector<RID> get_rids() const;
 		bool is_valid() const;
 		bool is_null() const;
 	};
