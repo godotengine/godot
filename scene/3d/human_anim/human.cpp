@@ -1322,7 +1322,6 @@ namespace human
         for(int i = 0; i < apSkeleton->get_bone_count(); ++i) {
             m_SkeletonLocalPose[i] = math::trsX::fromTransform(apSkeleton->get_bone_rest(i));                
         }
-        m_SkeletonLocalPose.resize(kLastBone);
         for(int i = 0; i < kLastBone; ++i) {
             m_HumanBoneIndex[i] = apSkeleton->find_bone(bone_label[i].first);
         }
@@ -1463,6 +1462,7 @@ namespace human
             m_SkeletonLocalPose[i].save(d_skeleton_local_pose_i);
             d_skeleton_local_pose.push_back(d_skeleton_local_pose_i);
         }
+        p_dict["skeleton_local_pose"] = d_skeleton_local_pose;
 
         Vector<int32_t> d_human_bone_index;
         for (int i = 0; i < kLastBone; ++i) {
@@ -1841,13 +1841,20 @@ namespace human
 
     void Human2SkeletonPose(Human const *apHuman, HumanPose const *apHumanPose, skeleton::SkeletonPose *apSkeletonPose, int32_t i)
     {
+        // 检查当前骨骼索引是否有效
         if (apHuman->m_HumanBoneIndex[i] != -1)
         {
+            // 创建掩码，根据骨骼对应的自由度（DoF）是否有效来决定是否选择自由度值
             math::int3 mask = math::int3(-(Bone2DoF[i][2] != -1), -(Bone2DoF[i][1] != -1), -(Bone2DoF[i][0] != -1));
+            
+            // 从人类姿势中选择对应的自由度值，如果对应的DoF无效，则选择零值
             math::float3 xyz = math::select(math::float3(math::ZERO),
-                math::float3(apHumanPose->m_DoFArray[Bone2DoF[i][2]], apHumanPose->m_DoFArray[Bone2DoF[i][1]], apHumanPose->m_DoFArray[Bone2DoF[i][0]]),
+                math::float3(apHumanPose->m_DoFArray[Bone2DoF[i][2]], 
+                            apHumanPose->m_DoFArray[Bone2DoF[i][1]], 
+                            apHumanPose->m_DoFArray[Bone2DoF[i][0]]),
                 mask);
 
+            // 设置骨骼的自由度值
             skeleton::SkeletonSetDoF(&apHuman->m_Skeleton, apSkeletonPose, xyz, apHuman->m_HumanBoneIndex[i]);
         }
     }
