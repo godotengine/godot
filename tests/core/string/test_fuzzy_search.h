@@ -58,8 +58,8 @@ double calculateStdDev(const Vector<int>& numbers) {
     return std::sqrt(variance);
 }
 
-auto bench(String query, String data_set_path, int expected_result_count) {
-	Ref<FileAccess> some_project_dir_tree = FileAccess::open(TestUtils::get_data_path(data_set_path), FileAccess::READ);
+auto bench(String query, String dataset_path, String expected_result, String algorithm) {
+	Ref<FileAccess> some_project_dir_tree = FileAccess::open(TestUtils::get_data_path("fuzzy_search/" + dataset_path), FileAccess::READ);
 	REQUIRE(!some_project_dir_tree.is_null());
 
 	auto data = some_project_dir_tree->get_as_utf8_string().split("\n");
@@ -67,6 +67,7 @@ auto bench(String query, String data_set_path, int expected_result_count) {
 
 
 	Vector<int> results;
+	String top_result;
 
 	// run twice for a warmp up
 	for(int i = 0; i < 2; i++) {
@@ -75,10 +76,15 @@ auto bench(String query, String data_set_path, int expected_result_count) {
 		for(int j = 0; j < 10; j++) {
 			auto start = std::chrono::high_resolution_clock::now();
 
-			Ref<FuzzySearch> FuzzySearch{};
-			auto res = FuzzySearch->search_all_lev(query, data);
+			Ref<FuzzySearch> fuzzySearch{};
 
-			CHECK(res.size() == expected_result_count);
+			Vector<Ref<FuzzySearchResult>> res;
+			if(algorithm == "lev") {
+				res = fuzzySearch->search_all_lev(query, data);
+			}
+			else {
+				res = fuzzySearch->search_all(query, data);
+			}
 
 			auto end = std::chrono::high_resolution_clock::now();
 
@@ -86,18 +92,36 @@ auto bench(String query, String data_set_path, int expected_result_count) {
 
 			results.push_back(duration);
 
-			MESSAGE("run");
+			if(res.size() > 0) {
+				top_result = res[0]->target;
+			}
 		}
 	}
 
-	std::cout << calculateStdDev(results) << std::endl;
-	std::cout << calculateMean(results) << std::endl;
+	MESSAGE(algorithm, ",", query, ",", dataset_path, ",", calculateStdDev(results), ",", calculateMean(results), ",", top_result);
 }
 
 TEST_CASE("[FuzzySearch] Find Stuff") {
+	Ref<FileAccess> tests = FileAccess::open(TestUtils::get_data_path("fuzzy_search/fuzzy_search_tests.txt"), FileAccess::READ);
+	REQUIRE(!tests.is_null());
 
-	bench("boss", "project_dir_tree.txt", 28);
+	while(true) {
+		auto line = tests->get_csv_line();
+		if(line.is_empty()) {
+			break;
+		}
 
+		if(line.size() != 3) {
+			break;
+		}
+
+		auto query = line[0];
+		auto dataset_path = line[1];
+		auto expected_result = line[2];
+
+		bench(query, dataset_path, expected_result, "fzf");
+		bench(query, dataset_path, expected_result, "lev");
+	}
 }
 
 } // namespace TestString
