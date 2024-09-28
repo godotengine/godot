@@ -27,7 +27,9 @@ Update 9, 28, 2024
 	Well, I've been watching videos from all the haters of Godot and listening to a lot of arguments being made againt Godot and in particaul Juan, Godot's lead developer. 
  
 I've come to one of two conclusions about the nature of Godot:
+
 		Juan is a cult leader, and Godot is a literal cult run by someone who literally wants to rule the world and is using "Open Source" as a ruse to do it.
+  
 		Juan is an incompetent leader, who's allowed a toxic enviroment to continue that's incredably hostile to any developer with opinons outside of neo-liberal/marixst-communist thought.
 
 In this sense it really dosen't matter which of these situations is true, because logicly the solutions to both of these problems is the same if we are to continue to use Godot to make our games:
