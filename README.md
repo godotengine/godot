@@ -54,4 +54,6 @@ I'm sure over the course of this jounry I'll end up becoming everything I hate, 
 
 So I guess I'm going to try and make that happen.
 
+For now we should give Juan the banfit of the doubt, assume he's just made bad bussiness decisions, try not to buy into rumors we cannot varify (I make this mistake a lot). However we must also prepare for the worst. I would hate to get into some kinda "Github war" but I also can't imagine allowing a cult to gain so much power and influance and to sit by and do nothing, while just allowing myself to be used in such a way. That's a fate worse then using Unity! So let's hope for the best and plane for the worst. Such is life... 
+
 
