@@ -593,11 +593,6 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 		}
 	}
 
-	if (compress_mode == COMPRESS_BASIS_UNIVERSAL && image->get_format() >= Image::FORMAT_RF) {
-		// Basis universal does not support float formats, fallback.
-		compress_mode = COMPRESS_VRAM_COMPRESSED;
-	}
-
 	bool detect_3d = int(p_options["detect_3d/compress_to"]) > 0;
 	bool detect_roughness = roughness == 0;
 	bool detect_normal = normal == 0;

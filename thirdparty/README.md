@@ -59,12 +59,13 @@ Files extracted from upstream source:
 ## basis_universal
 
 - Upstream: https://github.com/BinomialLLC/basis_universal
-- Version: 1.16.4 (900e40fb5d2502927360fe2f31762bdbb624455f, 2023)
+- Version: 1.50.0 (051ad6d8a64bb95a79e8601c317055fd1782ad3e, 2024)
 - License: Apache 2.0
 
 Files extracted from upstream source:
 
-- `encoder/` and `transcoder/` folders, minus `jpgd.{cpp,h}`
+- `encoder/` and `transcoder/` folders, with the following files removed from `encoder`:
+  `jpgd.{cpp,h}`, `3rdparty/{qoi.h,tinydds.h,tinyexr.cpp,tinyexr.h}`
 - `LICENSE`
 
 Applied upstream PR https://github.com/BinomialLLC/basis_universal/pull/344 to
