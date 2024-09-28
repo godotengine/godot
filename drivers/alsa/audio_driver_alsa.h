@@ -31,8 +31,6 @@
 #ifndef AUDIO_DRIVER_ALSA_H
 #define AUDIO_DRIVER_ALSA_H
 
-#ifdef ALSA_ENABLED
-
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
 #include "core/templates/safe_refcount.h"
@@ -93,7 +91,5 @@ public:
 	AudioDriverALSA() {}
 	~AudioDriverALSA() {}
 };
-
-#endif // ALSA_ENABLED
 
 #endif // AUDIO_DRIVER_ALSA_H

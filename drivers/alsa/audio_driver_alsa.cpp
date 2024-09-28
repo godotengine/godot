@@ -30,8 +30,6 @@
 
 #include "audio_driver_alsa.h"
 
-#ifdef ALSA_ENABLED
-
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 
@@ -345,5 +343,3 @@ void AudioDriverALSA::finish() {
 
 	finish_output_device();
 }
-
-#endif // ALSA_ENABLED

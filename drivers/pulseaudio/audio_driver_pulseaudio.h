@@ -31,8 +31,6 @@
 #ifndef AUDIO_DRIVER_PULSEAUDIO_H
 #define AUDIO_DRIVER_PULSEAUDIO_H
 
-#ifdef PULSEAUDIO_ENABLED
-
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
 #include "core/templates/safe_refcount.h"
@@ -126,7 +124,5 @@ public:
 	AudioDriverPulseAudio();
 	~AudioDriverPulseAudio() {}
 };
-
-#endif // PULSEAUDIO_ENABLED
 
 #endif // AUDIO_DRIVER_PULSEAUDIO_H

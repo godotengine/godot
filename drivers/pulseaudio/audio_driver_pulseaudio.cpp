@@ -30,8 +30,6 @@
 
 #include "audio_driver_pulseaudio.h"
 
-#ifdef PULSEAUDIO_ENABLED
-
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 #include "core/version.h"
@@ -841,5 +839,3 @@ AudioDriverPulseAudio::AudioDriverPulseAudio() {
 	samples_in.clear();
 	samples_out.clear();
 }
-
-#endif // PULSEAUDIO_ENABLED
