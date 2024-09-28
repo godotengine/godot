@@ -11,6 +11,18 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_activate_feed" qualifiers="virtual">
+			<return type="bool" />
+			<description>
+				Called when the camera feed is activated.
+			</description>
+		</method>
+		<method name="_deactivate_feed" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called when the camera feed is deactivated.
+			</description>
+		</method>
 		<method name="get_datatype" qualifiers="const">
 			<return type="int" enum="CameraFeed.FeedDataType" />
 			<description>
