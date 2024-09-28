@@ -1,6 +1,9 @@
-##= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = Just In Time Engine = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-																										A Godot Engine clone made in the hopes it will never be needed...
-																								Probably Open Source, but like I don't know... do you call it GNU/Linux?
+#= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = Just In Time Engine = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+A Godot Engine clone made in the hopes it will never be needed...
+
+Probably Open Source, but like I don't know... do you call it GNU/Linux?
+
 ##= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  
 
 JIT is a fork of Godot made in the odd event that it is ever needed. Not that I really have anything ageinst Godot, I love this engine! It's helping me make my dreams come true man! 
@@ -16,7 +19,7 @@ Politics should not get in the way of clean code!
 -William Torpey Sep 27, 2027...
 
 
-##= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = Intent = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+#= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = Intent = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
 I think what I'll do, going forward is this will just be a personal project for me to get better at game design in general. I'll keep the codebase more or less locked-in at the current version (4.4 beta) and free from any further Code upsteam, and only implament changes by hand, so I can meticulously inspect every code bit that goes into the system and insure "My" engine keeps in line with the clean design phlosphy Godot is known for, in case that ever changes. I'm not a super advanced Dev right now, but I'm old enough to know, sometimes it's just better to do these things youself. Which is why I picked a FOSS engine to begin with!
 
