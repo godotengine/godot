@@ -93,6 +93,8 @@ public:
 		HashMap<StringName, String> custom_samplers;
 		ShaderLanguage::TextureFilter default_filter = ShaderLanguage::TextureFilter::FILTER_NEAREST;
 		ShaderLanguage::TextureRepeat default_repeat = ShaderLanguage::TextureRepeat::REPEAT_DISABLE;
+		/// If this value is not an empty string, it will be used as the name of the array of samplers.
+		String sampler_array_name;
 		int base_texture_binding_index = 0;
 		int texture_layout_set = 0;
 		String base_uniform_string;

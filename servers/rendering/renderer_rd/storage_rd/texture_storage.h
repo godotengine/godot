@@ -122,7 +122,6 @@ private:
 		Size2i size_cache = Size2i(1, 1);
 		bool use_normal_cache = false;
 		bool use_specular_cache = false;
-		bool cleared_cache = true;
 
 		void clear_cache();
 		~CanvasTexture();

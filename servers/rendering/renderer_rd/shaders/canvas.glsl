@@ -28,7 +28,7 @@ layout(location = 11) in vec4 weight_attrib;
 
 layout(location = 4) out flat uint instance_index_interp;
 
-#endif // USE_ATTRIBUTES
+#endif // !USE_ATTRIBUTES
 
 layout(location = 0) out vec2 uv_interp;
 layout(location = 1) out vec4 color_interp;
@@ -322,11 +322,7 @@ vec4 light_compute(
 #ifdef USE_NINEPATCH
 
 float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, float margin_begin, float margin_end, int np_repeat, inout int draw_center) {
-#ifdef USE_ATTRIBUTES
-	const InstanceData draw_data = instances.data[params.base_instance_index];
-#else
 	const InstanceData draw_data = instances.data[instance_index];
-#endif // USE_ATTRIBUTES
 
 	float tex_size = 1.0 / tex_pixel_size;
 
@@ -470,6 +466,11 @@ void main() {
 	const InstanceData draw_data = instances.data[instance_index];
 #endif // USE_ATTRIBUTES
 
+	const uint BATCH_COLOR_INDEX = bitfieldExtract(draw_data.batch_indices, 0, 8);
+	const uint BATCH_NORMAL_INDEX = bitfieldExtract(draw_data.batch_indices, 8, 8);
+	const uint BATCH_SPECULAR_INDEX = bitfieldExtract(draw_data.batch_indices, 16, 8);
+	const uint BATCH_SAMPLER_INDEX = bitfieldExtract(draw_data.batch_indices, 24, 8);
+
 #if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
 
 #ifdef USE_NINEPATCH
@@ -567,7 +568,7 @@ void main() {
 
 	if (specular_shininess_used || (using_light && normal_used && bool(draw_data.flags & FLAGS_DEFAULT_SPECULAR_MAP_USED))) {
 		specular_shininess = texture(sampler2D(specular_texture, texture_sampler), uv);
-		specular_shininess *= unpackUnorm4x8(draw_data.specular_shininess);
+		specular_shininess *= unpackUnorm4x8(texture_data.data[draw_data.texture_data_index].specular_shininess);
 		specular_shininess_used = true;
 	} else {
 		specular_shininess = vec4(1.0);
