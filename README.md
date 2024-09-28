@@ -28,14 +28,18 @@ Update 9, 28, 2024
  
 I've come to one of two conclusions about the nature of Godot:
 
-		Juan is a cult leader, and Godot is a literal cult run by someone who literally wants to 
-  		rule the world and is using "Open Source"as a ruse to do it.
+	Juan is a cult leader, and Godot is a literal cult run by someone who literally wants to 
+  	rule the world and is using "Open Source" as a ruse to do it.
   
-		Juan is an incompetent leader, who's allowed a toxic enviroment to continue that's incredably 
-  		hostile to any developer with opinons outside of neo-liberal/marixst-communist thought.
+	Juan is an incompetent leader, who's allowed a toxic enviroment to continue that's incredably 
+  	hostile to any developer with opinons outside of neo-liberal/marixst-communist thought.
 
 In this sense it really dosen't matter which of these situations is true, because logicly the solutions to both of these problems is the same if we are to continue to use Godot to make our games:
-		Godot needs a community that's not part of the broken inner strucutre of the Godot foundation. One were developers can talk objectivly about the problems they are experincing with Godot and recive feedback and soultion, and working with developers who have no alterniatvie motivations outside of simply making the best game engine out there for whatever kind of games people are going to make.
+
+	Godot needs a community that's not part of the broken inner strucutre of the Godot foundation. 
+ 	One were developers can talk objectivly about the problems they are experincing with Godot and 
+  	recive feedback and soultion, and working with developers who have no alterniatvie motivations 
+   	outside of simply making the best game engine out there for whatever kind of games people are going to make.
 
 As such the future of the JIT-Engine is to do extaclly that. 
 
