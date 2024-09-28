@@ -49,6 +49,6 @@ This is what's needed for myself, if I'm going to continue to use this engine to
 
 I'm sure over the course of this jounry I'll end up becoming everything I hate, as if God himself was mocking me. But for the time being, there is no other choice, and if I'm going to solve the problem of getting from point A. (having a game idea) to point B (Relaseing my game and making a bunch of $$ so I can sip wine and talk about golfing or whatever at country clubs in my old age) this is the soultion that must be done now. 
 
-So I guess I'm going to try and make that happens.
+So I guess I'm going to try and make that happen.
 
 
