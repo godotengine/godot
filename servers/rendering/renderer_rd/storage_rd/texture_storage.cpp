@@ -34,6 +34,7 @@
 #include "../framebuffer_cache_rd.h"
 #include "material_storage.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
+#include "servers/rendering/renderer_rd/shaders/canvas_sdf.glsl.gen.h"
 
 using namespace RendererRD;
 
@@ -525,18 +526,20 @@ TextureStorage::TextureStorage() {
 		sdf_modes.push_back("\n#define MODE_STORE\n");
 		sdf_modes.push_back("\n#define MODE_STORE_SHRINK\n");
 
-		rt_sdf.shader.initialize(sdf_modes);
+		rt_sdf.shader = memnew(CanvasSdfShaderRD);
+		rt_sdf.shader->initialize(sdf_modes);
 
-		rt_sdf.shader_version = rt_sdf.shader.version_create();
+		rt_sdf.shader_version = rt_sdf.shader->version_create();
 
 		for (int i = 0; i < RenderTargetSDF::SHADER_MAX; i++) {
-			rt_sdf.pipelines[i] = RD::get_singleton()->compute_pipeline_create(rt_sdf.shader.version_get_shader(rt_sdf.shader_version, i));
+			rt_sdf.pipelines[i] = RD::get_singleton()->compute_pipeline_create(rt_sdf.shader->version_get_shader(rt_sdf.shader_version, i));
 		}
 	}
 }
 
 TextureStorage::~TextureStorage() {
-	rt_sdf.shader.version_free(rt_sdf.shader_version);
+	rt_sdf.shader->version_free(rt_sdf.shader_version);
+	memdelete(rt_sdf.shader);
 
 	free_decal_data();
 
@@ -3911,12 +3914,12 @@ void TextureStorage::_render_target_allocate_sdf(RenderTarget *rt) {
 			uniforms.push_back(u);
 		}
 
-		rt->sdf_buffer_process_uniform_sets[0] = RD::get_singleton()->uniform_set_create(uniforms, rt_sdf.shader.version_get_shader(rt_sdf.shader_version, 0), 0);
+		rt->sdf_buffer_process_uniform_sets[0] = RD::get_singleton()->uniform_set_create(uniforms, rt_sdf.shader->version_get_shader(rt_sdf.shader_version, 0), 0);
 		RID aux2 = uniforms.write[2].get_id(0);
 		RID aux3 = uniforms.write[3].get_id(0);
 		uniforms.write[2].set_id(0, aux3);
 		uniforms.write[3].set_id(0, aux2);
-		rt->sdf_buffer_process_uniform_sets[1] = RD::get_singleton()->uniform_set_create(uniforms, rt_sdf.shader.version_get_shader(rt_sdf.shader_version, 0), 0);
+		rt->sdf_buffer_process_uniform_sets[1] = RD::get_singleton()->uniform_set_create(uniforms, rt_sdf.shader->version_get_shader(rt_sdf.shader_version, 0), 0);
 	}
 }
 

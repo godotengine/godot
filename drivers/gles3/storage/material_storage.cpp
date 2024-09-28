@@ -39,6 +39,7 @@
 
 #include "drivers/gles3/rasterizer_canvas_gles3.h"
 #include "drivers/gles3/rasterizer_gles3.h"
+#include "drivers/gles3/shaders/scene.glsl.gen.h"
 #include "servers/rendering/storage/variant_converters.h"
 
 using namespace GLES3;
@@ -2978,7 +2979,7 @@ void SceneShaderData::set_code(const String &p_code) {
 	ERR_FAIL_COND_MSG(err != OK, "Shader compilation failed.");
 
 	if (version.is_null()) {
-		version = MaterialStorage::get_singleton()->shaders.scene_shader.version_create();
+		version = MaterialStorage::get_singleton()->shaders.scene_shader->version_create();
 	}
 
 	blend_mode = BlendMode(blend_modei);
@@ -3044,8 +3045,8 @@ void SceneShaderData::set_code(const String &p_code) {
 
 	LocalVector<ShaderGLES3::TextureUniformData> texture_uniform_data = get_texture_uniform_data(gen_code.texture_uniforms);
 
-	MaterialStorage::get_singleton()->shaders.scene_shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX], gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT], gen_code.defines, texture_uniform_data);
-	ERR_FAIL_COND(!MaterialStorage::get_singleton()->shaders.scene_shader.version_is_valid(version));
+	MaterialStorage::get_singleton()->shaders.scene_shader->version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX], gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT], gen_code.defines, texture_uniform_data);
+	ERR_FAIL_COND(!MaterialStorage::get_singleton()->shaders.scene_shader->version_is_valid(version));
 
 	ubo_size = gen_code.uniform_total_size;
 	ubo_offsets = gen_code.uniform_offsets;
@@ -3076,7 +3077,7 @@ bool SceneShaderData::casts_shadows() const {
 }
 
 RS::ShaderNativeSourceCode SceneShaderData::get_native_source_code() const {
-	return MaterialStorage::get_singleton()->shaders.scene_shader.version_get_native_source_code(version);
+	return MaterialStorage::get_singleton()->shaders.scene_shader->version_get_native_source_code(version);
 }
 
 SceneShaderData::SceneShaderData() {
@@ -3086,7 +3087,7 @@ SceneShaderData::SceneShaderData() {
 
 SceneShaderData::~SceneShaderData() {
 	if (version.is_valid()) {
-		MaterialStorage::get_singleton()->shaders.scene_shader.version_free(version);
+		MaterialStorage::get_singleton()->shaders.scene_shader->version_free(version);
 	}
 }
 
