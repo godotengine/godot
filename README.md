@@ -37,10 +37,10 @@ I've come to one of two conclusions about the nature of Godot:
 In this sense it really dosen't matter which of these situations is true, because logicly the solutions to both of these problems is the same if we are to continue to use Godot to make our games:
 
 	Godot needs a community that's not part of the broken inner strucutre of the 
- 	Godot foundation. One were developers can talk objectivly about the problems 
+ 	Godot foundation. One where developers can talk objectivly about the problems 
   	they are experincing with Godot and recive feedback and soultion, and working 
    	with developers who have no alterniatvie motivations outside of simply making 
-    	the best game engine out there for whatever kind of games people are going to make.
+    the best game engine out there for whatever kind of gamess people are going to make.
 
 As such the future of the JIT-Engine is to do extaclly that. 
 
