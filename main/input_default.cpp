@@ -111,6 +111,12 @@ bool InputDefault::is_action_pressed(const StringName &p_action, bool p_exact) c
 }
 
 bool InputDefault::is_action_just_pressed(const StringName &p_action, bool p_exact) const {
+#ifdef TOOLS_ENABLED
+	if (_currently_parsing_input) {
+		WARN_PRINT_ONCE("Prefer InputEvent.is_action_pressed() within input event callbacks to prevent detecting duplicates.");
+	}
+#endif
+
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
 	const Map<StringName, Action>::Element *E = action_state.find(p_action);
 	if (!E) {
@@ -132,6 +138,12 @@ bool InputDefault::is_action_just_pressed(const StringName &p_action, bool p_exa
 }
 
 bool InputDefault::is_action_just_released(const StringName &p_action, bool p_exact) const {
+#ifdef TOOLS_ENABLED
+	if (_currently_parsing_input) {
+		WARN_PRINT_ONCE("Prefer InputEvent.is_action_released() within input event callbacks to prevent detecting duplicates.");
+	}
+#endif
+
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
 	const Map<StringName, Action>::Element *E = action_state.find(p_action);
 	if (!E) {
@@ -326,6 +338,10 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 	// This function does the final delivery of the input event to user land.
 	// Regardless where the event came from originally, this has to happen on the main thread.
 	DEV_ASSERT(Thread::get_caller_id() == Thread::get_main_id());
+
+#ifdef TOOLS_ENABLED
+	InputGuard guard(_currently_parsing_input);
+#endif
 
 	// Notes on mouse-touch emulation:
 	// - Emulated mouse events are parsed, that is, re-routed to this method, so they make the same effects
