@@ -123,6 +123,9 @@ public:
 
 	virtual bool activate_feed();
 	virtual void deactivate_feed();
+
+	GDVIRTUAL0R(bool, _activate_feed)
+	GDVIRTUAL0(_deactivate_feed)
 };
 
 VARIANT_ENUM_CAST(CameraFeed::FeedDataType);
