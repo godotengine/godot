@@ -4284,6 +4284,48 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos) const 
 	return world_pos + world_ray * FALLBACK_DISTANCE;
 }
 
+Vector3 Node3DEditorViewport::_guess_orthagonal_vector(const Vector3 p_vector) {
+	Vector3 ret_vector = Vector3(p_vector.y, -p_vector.x, 0);
+	if (ret_vector.length() == 0) {
+		ret_vector = Vector3(p_vector.z, 0, -p_vector.x);
+		if (ret_vector.length() == 0) {
+			ret_vector = Vector3(0, p_vector.z, -p_vector.y);
+		}
+	}
+	return ret_vector;
+}
+
+Transform3D Node3DEditorViewport::_get_extrapolated_axis_transform(const Transform3D p_transform) {
+	Transform3D xform = p_transform;
+	Basis basis = xform.basis;
+	Vector3 scales = basis.get_scale_abs();
+	real_t mul = 0.0001;
+
+	if (scales.x == 0 && scales.y == 0 && scales.z == 0) {
+		xform.basis = Basis() * mul;
+	} else if (scales.x == 0 && scales.y != 0 && scales.z != 0) {
+		xform.basis.rows[0] = basis.rows[1].cross(basis.rows[2]).normalized() * mul;
+	} else if (scales.x != 0 && scales.y == 0 && scales.z != 0) {
+		xform.basis.rows[1] = basis.rows[0].cross(basis.rows[2]).normalized() * mul;
+	} else if (scales.x != 0 && scales.y != 0 && scales.z == 0) {
+		xform.basis.rows[2] = basis.rows[0].cross(basis.rows[1]).normalized() * mul;
+	} else if (scales.x != 0 && scales.y == 0 && scales.z == 0) {
+		Vector3 guess_axis = _guess_orthagonal_vector(xform.basis.rows[0]);
+		xform.basis.rows[1] = guess_axis * mul;
+		xform.basis.rows[2] = basis.rows[0].cross(guess_axis).normalized() * mul;
+	} else if (scales.x == 0 && scales.y != 0 && scales.z == 0) {
+		Vector3 guess_axis = _guess_orthagonal_vector(xform.basis.rows[1]);
+		xform.basis.rows[0] = guess_axis * mul;
+		xform.basis.rows[2] = basis.rows[1].cross(guess_axis).normalized() * mul;
+	} else if (scales.x == 0 && scales.y == 0 && scales.z != 0) {
+		Vector3 guess_axis = _guess_orthagonal_vector(xform.basis.rows[2]);
+		xform.basis.rows[0] = guess_axis * mul;
+		xform.basis.rows[1] = basis.rows[2].cross(guess_axis).normalized() * mul;
+	}
+
+	return xform;
+}
+
 AABB Node3DEditorViewport::_calculate_spatial_bounds(const Node3D *p_parent, const Node3D *p_top_level_parent) {
 	AABB bounds;
 
@@ -4295,7 +4337,12 @@ AABB Node3DEditorViewport::_calculate_spatial_bounds(const Node3D *p_parent, con
 		return AABB(Vector3(-0.2, -0.2, -0.2), Vector3(0.4, 0.4, 0.4));
 	}
 
-	Transform3D xform_to_top_level_parent_space = p_top_level_parent->get_global_transform().affine_inverse() * p_parent->get_global_transform();
+	Transform3D p_top_level_transform = p_top_level_parent->get_global_transform();
+	if (p_top_level_transform.basis.determinant() == 0) {
+		p_top_level_transform = _get_extrapolated_axis_transform(p_top_level_transform);
+	}
+
+	Transform3D xform_to_top_level_parent_space = p_top_level_transform.affine_inverse() * p_parent->get_global_transform();
 
 	const VisualInstance3D *visual_instance = Object::cast_to<VisualInstance3D>(p_parent);
 	if (visual_instance) {
