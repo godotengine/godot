@@ -178,6 +178,9 @@ void CharacterAnimationUpdateTool::add_animation_cache(const Dictionary& bone_ma
             if (context.blend_shape_cache.has(path)) {
                 continue;
             }
+			if(path.get_name(0).begins_with("hm.")) {
+                continue;
+            }
             Ref<Resource> resource;
             Vector<StringName> leftover_path;
             Node* child = parent->get_node_and_resource(path, resource, leftover_path);
@@ -495,9 +498,6 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
             }
         } break;
         case Animation::TYPE_BLEND_SHAPE: {
-            if (!context.blend_shape_cache.has(animation_track->path)) {
-                continue;
-            }
             AnimationMixer::TrackCacheBlendShape* t = context.blend_shape_cache[animation_track->path];
             float value;
             Error err = a->try_blend_shape_track_interpolate(i, time, &value);
@@ -508,6 +508,9 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
             if(temp_human_key_frame.set_dof(animation_track->path.get_name(0),value)) {
                 continue;
             }
+			if (!context.blend_shape_cache.has(animation_track->path)) {
+				continue;
+			}
             t->value = Math::lerp( (double)t->value, (double)value, blend);
         } break;
         }
