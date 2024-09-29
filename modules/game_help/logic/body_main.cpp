@@ -274,7 +274,7 @@ void CharacterBodyMain::_init_body()
 		if (skeleton_res.begins_with("res://"))
 			scene = ResourceLoader::load(skeleton_res);
 		else
-			scene = ResourceLoader::load(CharacterManager::get_singleton()->get_skeleton_root_path().path_join(skeleton_res));
+			scene = ResourceLoader::load(CharacterManager::get_singleton()->get_skeleton_root_path(body_prefab->get_is_human()).path_join(skeleton_res));
 		if (!scene.is_valid())
 		{
 			ERR_FAIL_MSG("load skeleton failed:" + skeleton_res);

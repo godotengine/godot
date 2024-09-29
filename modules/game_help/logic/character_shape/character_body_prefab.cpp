@@ -18,7 +18,7 @@ TypedArray<CharacterBodyPart> CharacterBodyPrefab::load_part()
 		if (E.key.begins_with("res://"))
 			path = E.key;
 		else
-			path = CharacterManager::get_singleton()->get_mesh_root_path().path_join(E.key);
+			path = CharacterManager::get_singleton()->get_mesh_root_path(is_human).path_join(E.key);
         if(!FileAccess::exists(path))
         {
             continue;
