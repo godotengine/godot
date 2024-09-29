@@ -91,8 +91,27 @@ String GDExtensionLibraryLoader::find_extension_library(const String &p_path, Re
 			}
 
 			if (all_tags_met && tags.size() > best_library_tags.size()) {
-				best_library_path = p_config->get_value("libraries", E);
-				best_library_tags = tags;
+				Variant library_paths = p_config->get_value("libraries", E);
+				if (library_paths.get_type() == Variant::ARRAY) {
+					PackedStringArray paths = library_paths;
+					for (int i = 0; i < paths.size(); i++) {
+						String path = paths[i];
+						if (path.is_relative_path()) {
+							path = p_path.get_base_dir().path_join(path);
+						}
+						if (FileAccess::exists(path)) {
+							best_library_path = path;
+							best_library_tags = tags;
+							break;
+						}
+					}
+				} else if (library_paths.get_type() == Variant::STRING) {
+					best_library_path = library_paths;
+					if (best_library_path.is_relative_path()) {
+						best_library_path = p_path.get_base_dir().path_join(best_library_path);
+					}
+					best_library_tags = tags;
+				}
 			}
 		}
 
@@ -259,6 +278,17 @@ bool GDExtensionLibraryLoader::has_library_changed() const {
 	return false;
 }
 
+bool GDExtensionLibraryLoader::has_fallback() const {
+	return !fallback_extension_path.is_empty();
+}
+
+String GDExtensionLibraryLoader::get_next_fallback() {
+	// Return the current fallback path and clear it for the next call
+	String current_fallback = fallback_extension_path;
+	fallback_extension_path = ""; // Clear the path after it's been used
+	return current_fallback;
+}
+
 Error GDExtensionLibraryLoader::parse_gdextension_file(const String &p_path) {
 	resource_path = p_path;
 
@@ -385,6 +415,15 @@ Error GDExtensionLibraryLoader::parse_gdextension_file(const String &p_path) {
 			class_icon_paths[key] = icon_path;
 		}
 	}
+
+	if (config->has_section_key("configuration", "fallback_extension")) {
+		fallback_extension_path = config->get_value("configuration", "fallback_extension");
+		if (fallback_extension_path.is_relative_path()) {
+			fallback_extension_path = p_path.get_base_dir().path_join(fallback_extension_path);
+		}
+	}
+
+	autoload = config->get_value("configuration", "autoload", true);
 
 	return OK;
 }

@@ -711,6 +711,22 @@ bool GDExtension::is_library_open() const {
 	return loader.is_valid() && loader->is_library_open();
 }
 
+bool GDExtension::is_substituted() {
+	String gdextension_config_path = get_loaded_extension_path();
+	return !gdextension_config_path.is_empty() && gdextension_config_path != get_path();
+}
+
+String GDExtension::get_loaded_extension_path() {
+	if (!is_library_open() || !loader.is_valid()) {
+		return "";
+	}
+
+	Ref<GDExtensionLibraryLoader> library_loader = loader;
+
+	ERR_FAIL_COND_V_MSG(library_loader.is_valid(), "", "Library loader invalidated");
+	return library_loader->resource_path;
+}
+
 GDExtension::InitializationLevel GDExtension::get_minimum_library_initialization_level() const {
 	ERR_FAIL_COND_V(!is_library_open(), INITIALIZATION_LEVEL_CORE);
 	return InitializationLevel(initialization.minimum_initialization_level);
@@ -739,6 +755,8 @@ void GDExtension::deinitialize_library(InitializationLevel p_level) {
 
 void GDExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_library_open"), &GDExtension::is_library_open);
+	ClassDB::bind_method(D_METHOD("get_loaded_extension_path"), &GDExtension::get_loaded_extension_path);
+	ClassDB::bind_method(D_METHOD("is_substituted"), &GDExtension::is_substituted);
 	ClassDB::bind_method(D_METHOD("get_minimum_library_initialization_level"), &GDExtension::get_minimum_library_initialization_level);
 
 	BIND_ENUM_CONSTANT(INITIALIZATION_LEVEL_CORE);

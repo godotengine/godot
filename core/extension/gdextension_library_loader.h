@@ -46,9 +46,11 @@ private:
 
 	void *library = nullptr; // pointer if valid.
 	String library_path;
+	String fallback_extension_path;
 	String entry_symbol;
 
 	bool is_static_library = false;
+	bool autoload = true;
 
 #ifdef TOOLS_ENABLED
 	bool is_reloadable = false;
@@ -77,6 +79,13 @@ public:
 	virtual void close_library() override;
 	virtual bool is_library_open() const override;
 	virtual bool has_library_changed() const override;
+
+	virtual bool has_fallback() const override;
+	virtual String get_next_fallback() override;
+
+	bool requests_autoload() const {
+		return autoload;
+	}
 
 	Error parse_gdextension_file(const String &p_path);
 };
