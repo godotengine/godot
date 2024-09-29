@@ -807,7 +807,20 @@ def get_compiler_version(env):
 
     if env.msvc and not using_clang(env):
         try:
-            args = [env["VSWHERE"], "-latest", "-products", "*", "-requires", "Microsoft.Component.MSBuild", "-utf8"]
+            # FIXME: `-latest` works for most cases, but there are edge-cases where this would
+            # benefit from a more nuanced search.
+            # https://github.com/godotengine/godot/pull/91069#issuecomment-2358956731
+            # https://github.com/godotengine/godot/pull/91069#issuecomment-2380836341
+            args = [
+                env["VSWHERE"],
+                "-latest",
+                "-prerelease",
+                "-products",
+                "*",
+                "-requires",
+                "Microsoft.Component.MSBuild",
+                "-utf8",
+            ]
             version = subprocess.check_output(args, encoding="utf-8").strip()
             for line in version.splitlines():
                 split = line.split(":", 1)
@@ -816,6 +829,8 @@ def get_compiler_version(env):
                     ret["major"] = int(sem_ver[0])
                     ret["minor"] = int(sem_ver[1])
                     ret["patch"] = int(sem_ver[2])
+                # Could potentially add section for determining preview version, but
+                # that can wait until metadata is actually used for something.
                 if split[0] == "catalog_buildVersion":
                     ret["metadata1"] = split[1]
         except (subprocess.CalledProcessError, OSError):
