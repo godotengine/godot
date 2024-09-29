@@ -645,6 +645,32 @@ static void save_fbx_res( const String& group_name,const String& sub_path,const 
 	print_line(L"CharacterBodyMain.save_fbx_res: 存储资源 :" + save_path);
     save_path = sub_path.path_join(p_resource->get_name() + (is_resource ? ".res" :".scn"));
 }
+static void save_fbx_tres( const String& group_name,const String& sub_path,const Ref<Resource>& p_resource,String& save_path, bool is_resource = true)
+{
+	String export_root_path = "res://Assets/public";
+	if (!DirAccess::exists("res://Assets"))
+	{
+		DirAccess::make_dir_absolute("res://Assets");
+	}
+	if (!DirAccess::exists(export_root_path))
+	{
+		DirAccess::make_dir_absolute(export_root_path);
+	}
+	export_root_path  = export_root_path.path_join(group_name);
+	if (!DirAccess::exists(export_root_path))
+	{
+		DirAccess::make_dir_absolute(export_root_path);
+	}
+	export_root_path = export_root_path.path_join(sub_path);
+	if (!DirAccess::exists(export_root_path))
+	{
+		DirAccess::make_dir_absolute(export_root_path);
+	}
+	save_path = export_root_path.path_join(p_resource->get_name() + (is_resource ? ".tres" :".tscn"));
+	ResourceSaver::save(p_resource, save_path);
+	print_line(L"CharacterBodyMain.save_fbx_res: 存储资源 :" + save_path);
+    save_path = sub_path.path_join(p_resource->get_name() + (is_resource ? ".tres" :".tscn"));
+}
 static void get_fbx_meshs(Node *p_node,HashMap<String,MeshInstance3D* > &meshs)
 {
 
@@ -922,6 +948,7 @@ void CharacterBodyMain::editor_build_animation()
             String save_path;
             if(editor_human_config.is_valid())  {
 			    save_fbx_res("human_animation", p_group, new_animation, save_path, true);
+			    save_fbx_tres("human_animation", p_group, new_animation, save_path, true);
             }
             else {
 			    save_fbx_res("animation", p_group, new_animation, save_path, true);

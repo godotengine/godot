@@ -56,7 +56,6 @@ public:
 		TYPE_BEZIER, // Bezier curve.
 		TYPE_AUDIO,
 		TYPE_ANIMATION,
-		TYPE_HUMAN_POSE,
 	};
 
 	enum InterpolationType : uint8_t {
@@ -154,7 +153,7 @@ public:
 			nt->thash = thash;
 			nt->imported = imported;
 			nt->enabled = enabled;
-			return nullptr;
+			return nt;
 		}
 	};
 
@@ -175,7 +174,7 @@ public:
 			nt->thash = thash;
 			nt->imported = imported;
 			nt->enabled = enabled;
-			return nullptr;
+			return nt;
 		}
 	};
 
@@ -196,7 +195,7 @@ public:
 			nt->thash = thash;
 			nt->imported = imported;
 			nt->enabled = enabled;
-			return nullptr;
+			return nt;
 		}
 	};
 
@@ -217,7 +216,7 @@ public:
 			nt->thash = thash;
 			nt->imported = imported;
 			nt->enabled = enabled;
-			return nullptr;
+			return nt;
 		}
 	};
 
@@ -244,7 +243,7 @@ public:
 			nt->update_mode = update_mode;
 			nt->update_on_seek = update_on_seek;
 			nt->enabled = enabled;
-			return nullptr;
+			return nt;
 		}
 	};
 
@@ -268,7 +267,7 @@ public:
 			nt->thash = thash;
 			nt->imported = imported;
 			nt->enabled = enabled;
-			return nullptr;
+			return nt;
 		}
 	};
 
@@ -300,7 +299,7 @@ public:
 			nt->thash = thash;
 			nt->imported = imported;
 			nt->enabled = enabled;
-			return nullptr;
+			return nt;
 		}
 	};
 
@@ -333,7 +332,7 @@ public:
 			nt->imported = imported;
 			nt->use_blend = use_blend;
 			nt->enabled = enabled;
-			return nullptr;
+			return nt;
 		}
 	};
 
@@ -356,7 +355,7 @@ public:
 			nt->thash = thash;
 			nt->imported = imported;
 			nt->enabled = enabled;
-			return nullptr;
+			return nt;
 		}
 	};
 	Ref<Resource> bone_map;

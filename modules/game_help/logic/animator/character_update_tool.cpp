@@ -236,15 +236,6 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
         if (!animation_track->enabled) {
             continue;
         }
-        bool track_is_human = false;
-        if(is_human) {
-            if(animation_track->type == Animation::TYPE_POSITION_3D) {
-                if(temp_human_key_frame.has_dof(animation_track->path.get_name(0))) {
-                    track_is_human = true;
-                }
-            }
-        }
-
         switch (animation_track->type) {
         case Animation::TYPE_POSITION_3D: {
             int bone_idx = get_bone_index(ai.animation_data.bone_map, animation_track->path);
@@ -329,11 +320,7 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
             if (err != OK) {
                 continue;
             }
-            if(track_is_human) {
-                // 设置人形动画的自由度
-                temp_human_key_frame.set_dof(animation_track->path.get_name(0), loc);
-            }
-            else {
+            {
                 t->loc = t->loc.lerp(loc, blend);
                 t->loc_used = true;
             }
@@ -518,6 +505,11 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
             //ERR_CONTINUE(err!=OK); //used for testing, should be removed
             if (err != OK) {
                 continue;
+            }
+            if(is_human) {
+                if(temp_human_key_frame.set_dof(animation_track->path.get_name(0),value)) {
+                    continue;
+                }
             }
             t->value = Math::lerp( (double)t->value, (double)value, blend);
         } break;

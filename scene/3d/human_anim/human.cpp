@@ -1313,8 +1313,8 @@ namespace human
             }
             else {
                 m_Skeleton.m_Node[i].m_AxesId = -1;
-                m_Skeleton.m_Node[i].m_bone_index = -1;
-                m_Skeleton.m_Node[i].m_ParentId = -1;
+                m_Skeleton.m_Node[i].m_bone_index = i;
+                m_Skeleton.m_Node[i].m_ParentId = apSkeleton->get_bone_parent(i);
             }
         }
         // 构建基础姿势
@@ -1514,7 +1514,6 @@ namespace human
 
         
         human::HumanPose pose;
-        human::HumanPose poseOut;
         
         int key_count = p_anim->get_length() * 100;
         Vector3 loc,scale;
@@ -1527,10 +1526,10 @@ namespace human
         }
 
         // 其他轨道
-		int human_bone_count = (kLastDoF + hand::s_DoFCount * 2 + 1) / 3;
+		int human_bone_count = kLastDoF + hand::s_DoFCount * 2 ;
         List<Animation::Track*> other_tracks;
-		Vector<Animation::TKey<Vector3>> human_track_array[(kLastDoF + hand::s_DoFCount * 2 + 1) / 3];
-		Animation::TKey<Vector3> human_track[(kLastDoF + hand::s_DoFCount * 2 + 1) / 3];
+		Vector<Animation::TKey<float>> human_track_array[kLastDoF + hand::s_DoFCount * 2];
+		Animation::TKey<float> human_track[kLastDoF + hand::s_DoFCount * 2 ];
 
 
 		Vector<Animation::Track*> tracks = p_anim->get_tracks();
@@ -1602,43 +1601,28 @@ namespace human
                     humanLclPose.m_X[bone_index].s = math::float3(scale.x,scale.y,scale.z);
                 }
             }
-            HumanAnimationKeyFrame* dof = memnew(HumanAnimationKeyFrame);
-            dof->time = time;
             // 
             human::RetargetFrom(this, &humanLclPose, &pose, &apSkeletonPoseRef, &apSkeletonPoseGbl, &apSkeletonPoseLcl, &apSkeletonPoseWs, &tDoFBaseArray[0]);
 
             // 拷贝dof到track
-            int v_index = 0;
             int human_index = 0;
             for(int k = 0; k < kLastDoF; k++) {
                 human_track[human_index].time = time;
-                human_track[human_index].value[v_index] = dof->dot_array[k];
-                ++ v_index;
-                if(v_index == 3) {
-                    v_index = 0;
-                    ++ human_index;
-                }
+                human_track[human_index].value = pose.m_DoFArray[k];
+                ++ human_index;
             }
 
             // 拷贝左手dof到track
             for(int k = 0; k < hand::s_DoFCount; k++) {
                 human_track[human_index].time = time;
-                human_track[human_index].value[v_index] = dof->dot_array[kLastDoF + k];
+                human_track[human_index].value = pose.m_LeftHandPose.m_DoFArray[k];
 
-                ++ v_index;
-                if(v_index == 3) {
-                    v_index = 0;
-                    ++ human_index;
-                }
+                ++ human_index;
             }
             for(int k = 0; k < hand::s_DoFCount; k++) {
                 human_track[human_index].time = time;
-                human_track[human_index].value[v_index] = dof->dot_array[kLastDoF + k];
-                ++ v_index;
-                if(v_index == 3) {
-                    v_index = 0;
-                    ++ human_index;
-                }
+                human_track[human_index].value = pose.m_RightHandPose.m_DoFArray[k];
+                ++ human_index;
             }
             // 保存轨迹
             for(int k = 0; k < human_bone_count; k++) {
@@ -1650,15 +1634,46 @@ namespace human
 		const LocalVector<Pair<String, String>>& bone_label = get_bone_label();
         out_anim->set_is_human_animation(true);
 
-        for(int k = 0; k < human_bone_count; k++) {
-            if(bone_mask[k] == 0) {
+
+        int human_index = 0;
+        for(int k = 0; k < kLastDoF; k++) {
+            int bone_index = BoneFromMuscle(k);
+            if(bone_mask[bone_index] == 0) {
                 continue;
             }
-            int track_index = out_anim->add_track(Animation::TYPE_POSITION_3D);
-            Animation::PositionTrack* track = static_cast<Animation::PositionTrack*>(out_anim->get_track(track_index));
-            track->path = String("hm.") + char(33 + k);
+            int track_index = out_anim->add_track(Animation::TYPE_BLEND_SHAPE);
+            Animation::BlendShapeTrack* track = static_cast<Animation::BlendShapeTrack*>(out_anim->get_track(track_index));
+            track->path = String("hm.") + String::num_int64(human_index);
             track->interpolation = Animation::INTERPOLATION_LINEAR;
-            track->positions = human_track_array[k];
+            track->blend_shapes = human_track_array[k];
+            ++ human_index;
+        }
+
+        // 拷贝左手dof到track
+        for(int k = 0; k < hand::s_DoFCount; k++) {
+            int bone_index = HandDoF2BoneDoFIndex[k];
+            if(bone_mask[bone_index + kLastBone] == 0) {
+                continue;
+            }
+            int track_index = out_anim->add_track(Animation::TYPE_BLEND_SHAPE);
+            Animation::BlendShapeTrack* track = static_cast<Animation::BlendShapeTrack*>(out_anim->get_track(track_index));
+            track->path = String("hm.") + String::num_int64(human_index);
+            track->interpolation = Animation::INTERPOLATION_LINEAR;
+            track->blend_shapes = human_track_array[k];
+
+            ++ human_index;
+        }
+        for(int k = 0; k < hand::s_DoFCount; k++) {
+            int bone_index = HandDoF2BoneDoFIndex[k];
+            if(bone_mask[bone_index + kLastBone + hand::s_BoneCount] == 0) {
+                continue;
+            }
+            int track_index = out_anim->add_track(Animation::TYPE_BLEND_SHAPE);
+            Animation::BlendShapeTrack* track = static_cast<Animation::BlendShapeTrack*>(out_anim->get_track(track_index));
+            track->path = String("hm.") + String::num_int64(human_index);
+            track->interpolation = Animation::INTERPOLATION_LINEAR;
+            track->blend_shapes = human_track_array[k];
+            ++ human_index;
         }
 
         // 拷贝轨迹

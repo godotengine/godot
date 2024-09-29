@@ -333,21 +333,17 @@ namespace human
             memset(dot_array, 0, sizeof(float) * (kLastDoF + hand::s_DoFCount + hand::s_DoFCount + 1));
         }
         // 
-        bool set_dof(const StringName& p_name, const Vector3& p_value) {
+        bool set_dof(const StringName& p_name, float p_value) {
             String str = p_name.str();
             if(str.size() != 4) {
                 return false;
             }
 
-            int index = str[3] - 33;
-            index *= 3;
-            if(index < 0 || index >= kLastDoF - 2) {
+            int index = str.substr(3).to_int();
+            if(index < 0 || index >= 95) {
                 return false;
             }
-            for(int i = 0 ; i < index  ; i++) {
-                dot_array[ index + i] = p_value[i];
-            }
-
+            dot_array[ index] = p_value;
             return true;
         }
         
