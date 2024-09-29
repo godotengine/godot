@@ -4290,6 +4290,11 @@ RenderForwardClustered::RenderForwardClustered() {
 		defines += "\n#define OCCLUSION_OCT_SIZE " + itos(gi.hddagi_get_occlusion_octahedron_size()) + "\n";
 		defines += "\n#define MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS " + itos(MAX_DIRECTIONAL_LIGHTS) + "\n";
 
+		bool force_vertex_shading = GLOBAL_GET("rendering/shading/overrides/force_vertex_shading");
+		if (force_vertex_shading) {
+			defines += "\n#define USE_VERTEX_LIGHTING\n";
+		}
+
 		{
 			//lightmaps
 			scene_state.max_lightmaps = MAX_LIGHTMAPS;

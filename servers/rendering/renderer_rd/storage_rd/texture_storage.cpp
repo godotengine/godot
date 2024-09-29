@@ -40,25 +40,12 @@ using namespace RendererRD;
 ///////////////////////////////////////////////////////////////////////////
 // TextureStorage::CanvasTexture
 
-void TextureStorage::CanvasTexture::clear_sets() {
-	if (cleared_cache) {
-		return;
-	}
-	for (int i = 1; i < RS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
-		for (int j = 1; j < RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
-			for (int k = 0; k < 2; k++) {
-				if (RD::get_singleton()->uniform_set_is_valid(uniform_sets[i][j][k])) {
-					RD::get_singleton()->free(uniform_sets[i][j][k]);
-					uniform_sets[i][j][k] = RID();
-				}
-			}
-		}
-	}
-	cleared_cache = true;
+void TextureStorage::CanvasTexture::clear_cache() {
+	info_cache[0] = CanvasTextureCache();
+	info_cache[1] = CanvasTextureCache();
 }
 
 TextureStorage::CanvasTexture::~CanvasTexture() {
-	clear_sets();
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -612,8 +599,7 @@ void TextureStorage::canvas_texture_set_channel(RID p_canvas_texture, RS::Canvas
 			ct->specular = p_texture;
 		} break;
 	}
-
-	ct->clear_sets();
+	ct->clear_cache();
 }
 
 void TextureStorage::canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_specular_color, float p_shininess) {
@@ -624,7 +610,6 @@ void TextureStorage::canvas_texture_set_shading_parameters(RID p_canvas_texture,
 	ct->specular_color.g = p_specular_color.g;
 	ct->specular_color.b = p_specular_color.b;
 	ct->specular_color.a = p_shininess;
-	ct->clear_sets();
 }
 
 void TextureStorage::canvas_texture_set_texture_filter(RID p_canvas_texture, RS::CanvasItemTextureFilter p_filter) {
@@ -632,7 +617,6 @@ void TextureStorage::canvas_texture_set_texture_filter(RID p_canvas_texture, RS:
 	ERR_FAIL_NULL(ct);
 
 	ct->texture_filter = p_filter;
-	ct->clear_sets();
 }
 
 void TextureStorage::canvas_texture_set_texture_repeat(RID p_canvas_texture, RS::CanvasItemTextureRepeat p_repeat) {
@@ -640,16 +624,13 @@ void TextureStorage::canvas_texture_set_texture_repeat(RID p_canvas_texture, RS:
 	ERR_FAIL_NULL(ct);
 
 	ct->texture_repeat = p_repeat;
-	ct->clear_sets();
 }
 
-bool TextureStorage::canvas_texture_get_uniform_set(RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, RID p_base_shader, int p_base_set, bool p_use_srgb, RID &r_uniform_set, Size2i &r_size, Color &r_specular_shininess, bool &r_use_normal, bool &r_use_specular, bool p_texture_is_data) {
+TextureStorage::CanvasTextureInfo TextureStorage::canvas_texture_get_info(RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, bool p_use_srgb, bool p_texture_is_data) {
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 
 	CanvasTexture *ct = nullptr;
 	Texture *t = get_texture(p_texture);
-
-	// TODO once we have our texture storage split off we'll look into moving this code into canvas_texture
 
 	if (t) {
 		//regular texture
@@ -667,93 +648,71 @@ bool TextureStorage::canvas_texture_get_uniform_set(RID p_texture, RS::CanvasIte
 	}
 
 	if (!ct) {
-		return false; //invalid texture RID
+		return CanvasTextureInfo(); //invalid texture RID
 	}
 
 	RS::CanvasItemTextureFilter filter = ct->texture_filter != RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT ? ct->texture_filter : p_base_filter;
-	ERR_FAIL_COND_V(filter == RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, false);
+	ERR_FAIL_COND_V(filter == RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, CanvasTextureInfo());
 
 	RS::CanvasItemTextureRepeat repeat = ct->texture_repeat != RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT ? ct->texture_repeat : p_base_repeat;
-	ERR_FAIL_COND_V(repeat == RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT, false);
+	ERR_FAIL_COND_V(repeat == RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT, CanvasTextureInfo());
 
-	RID uniform_set = ct->uniform_sets[filter][repeat][int(p_use_srgb)];
-	if (!RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
-		//create and update
-		Vector<RD::Uniform> uniforms;
+	CanvasTextureCache &ctc = ct->info_cache[int(p_use_srgb)];
+	if (!RD::get_singleton()->texture_is_valid(ctc.diffuse) ||
+			!RD::get_singleton()->texture_is_valid(ctc.normal) ||
+			!RD::get_singleton()->texture_is_valid(ctc.specular)) {
 		{ //diffuse
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			u.binding = 0;
-
 			t = get_texture(ct->diffuse);
 			if (!t) {
-				u.append_id(texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE));
+				ctc.diffuse = texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE);
 				ct->size_cache = Size2i(1, 1);
 			} else {
-				u.append_id(t->rd_texture_srgb.is_valid() && p_use_srgb && !p_texture_is_data ? t->rd_texture_srgb : t->rd_texture);
+				ctc.diffuse = t->rd_texture_srgb.is_valid() && p_use_srgb && !p_texture_is_data ? t->rd_texture_srgb : t->rd_texture;
 				ct->size_cache = Size2i(t->width_2d, t->height_2d);
 				if (t->render_target) {
 					t->render_target->was_used = true;
 				}
 			}
-			uniforms.push_back(u);
 		}
 		{ //normal
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			u.binding = 1;
-
 			t = get_texture(ct->normal_map);
 			if (!t) {
-				u.append_id(texture_rd_get_default(DEFAULT_RD_TEXTURE_NORMAL));
+				ctc.normal = texture_rd_get_default(DEFAULT_RD_TEXTURE_NORMAL);
 				ct->use_normal_cache = false;
 			} else {
-				u.append_id(t->rd_texture);
+				ctc.normal = t->rd_texture;
 				ct->use_normal_cache = true;
 				if (t->render_target) {
 					t->render_target->was_used = true;
 				}
 			}
-			uniforms.push_back(u);
 		}
 		{ //specular
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			u.binding = 2;
-
 			t = get_texture(ct->specular);
 			if (!t) {
-				u.append_id(texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE));
+				ctc.specular = texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE);
 				ct->use_specular_cache = false;
 			} else {
-				u.append_id(t->rd_texture);
+				ctc.specular = t->rd_texture;
 				ct->use_specular_cache = true;
 				if (t->render_target) {
 					t->render_target->was_used = true;
 				}
 			}
-			uniforms.push_back(u);
 		}
-		{ //sampler
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
-			u.binding = 3;
-			u.append_id(material_storage->sampler_rd_get_default(filter, repeat));
-			uniforms.push_back(u);
-		}
-
-		uniform_set = RD::get_singleton()->uniform_set_create(uniforms, p_base_shader, p_base_set);
-		ct->uniform_sets[filter][repeat][int(p_use_srgb)] = uniform_set;
-		ct->cleared_cache = false;
 	}
 
-	r_uniform_set = uniform_set;
-	r_size = ct->size_cache;
-	r_specular_shininess = ct->specular_color;
-	r_use_normal = ct->use_normal_cache;
-	r_use_specular = ct->use_specular_cache;
+	CanvasTextureInfo res;
+	res.diffuse = ctc.diffuse;
+	res.normal = ctc.normal;
+	res.specular = ctc.specular;
+	res.sampler = material_storage->sampler_rd_get_default(filter, repeat);
+	res.size = ct->size_cache;
+	res.specular_color = ct->specular_color;
+	res.use_normal = ct->use_normal_cache;
+	res.use_specular = ct->use_specular_cache;
 
-	return true;
+	return res;
 }
 
 /* Texture API */

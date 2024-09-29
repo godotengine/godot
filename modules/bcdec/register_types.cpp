@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  image_decompress_squish.h                                             */
+/*  register_types.cpp                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,11 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef IMAGE_DECOMPRESS_SQUISH_H
-#define IMAGE_DECOMPRESS_SQUISH_H
+#include "register_types.h"
 
-#include "core/io/image.h"
+#include "image_decompress_bcdec.h"
 
-void image_decompress_squish(Image *p_image);
+void initialize_bcdec_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
 
-#endif // IMAGE_DECOMPRESS_SQUISH_H
+	Image::_image_decompress_bc = image_decompress_bcdec;
+	Image::_image_decompress_bptc = image_decompress_bcdec;
+}
+
+void uninitialize_bcdec_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+}

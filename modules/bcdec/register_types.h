@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  register_types.h                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,20 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#ifndef BCDEC_REGISTER_TYPES_H
+#define BCDEC_REGISTER_TYPES_H
 
-#include "image_decompress_squish.h"
+#include "modules/register_module_types.h"
 
-void initialize_squish_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
+void initialize_bcdec_module(ModuleInitializationLevel p_level);
+void uninitialize_bcdec_module(ModuleInitializationLevel p_level);
 
-	Image::_image_decompress_bc = image_decompress_squish;
-}
-
-void uninitialize_squish_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-}
+#endif // BCDEC_REGISTER_TYPES_H
