@@ -153,7 +153,7 @@ thread_local SafeBinaryMutex<GDScriptCache::BINARY_MUTEX_TAG>::TLSData SafeBinar
 SafeBinaryMutex<GDScriptCache::BINARY_MUTEX_TAG> GDScriptCache::mutex;
 
 void GDScriptCache::move_script(const String &p_from, const String &p_to) {
-	if (singleton == nullptr || p_from == p_to) {
+	if (singleton == nullptr || p_from == p_to || p_from.is_empty()) {
 		return;
 	}
 
@@ -163,14 +163,23 @@ void GDScriptCache::move_script(const String &p_from, const String &p_to) {
 		return;
 	}
 
+	if (singleton->dependencies.has(p_from)) {
+		singleton->dependencies[p_to] = singleton->dependencies[p_from];
+	}
+	singleton->dependencies.erase(p_from);
+
+	for (KeyValue<String, HashSet<String>> &E : singleton->dependencies) {
+		E.value.erase(p_from);
+	}
+
 	remove_parser(p_from);
 
-	if (singleton->shallow_gdscript_cache.has(p_from) && !p_from.is_empty()) {
+	if (singleton->shallow_gdscript_cache.has(p_from)) {
 		singleton->shallow_gdscript_cache[p_to] = singleton->shallow_gdscript_cache[p_from];
 	}
 	singleton->shallow_gdscript_cache.erase(p_from);
 
-	if (singleton->full_gdscript_cache.has(p_from) && !p_from.is_empty()) {
+	if (singleton->full_gdscript_cache.has(p_from)) {
 		singleton->full_gdscript_cache[p_to] = singleton->full_gdscript_cache[p_from];
 	}
 	singleton->full_gdscript_cache.erase(p_from);
