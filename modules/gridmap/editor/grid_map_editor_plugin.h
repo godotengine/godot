@@ -80,6 +80,7 @@ class GridMapEditor : public VBoxContainer {
 	VBoxContainer *settings_vbc = nullptr;
 	SpinBox *settings_pick_distance = nullptr;
 	Label *spin_box_label = nullptr;
+	Button *paint_tool_button = nullptr;
 
 	struct SetItem {
 		Vector3i position;
@@ -195,6 +196,7 @@ class GridMapEditor : public VBoxContainer {
 	void _set_display_mode(int p_mode);
 	void _item_selected_cbk(int idx);
 	void _update_cursor_transform();
+	void _hide_cursor_instance();
 	void _update_cursor_instance();
 	void _update_theme();
 
@@ -217,6 +219,13 @@ class GridMapEditor : public VBoxContainer {
 
 	void _delete_selection();
 	void _fill_selection();
+
+	void _select_paint_tool();
+	bool _is_paint_tool_selected() const;
+	void _add_paint_tool();
+	void _remove_paint_tool();
+	void _paint_tool_button_toggled(bool p_toggled_on);
+	bool _cancel_actions();
 
 	bool do_input_action(Camera3D *p_camera, const Point2 &p_point, bool p_click);
 

@@ -101,6 +101,9 @@ void GridMapEditor::_menu_option(int p_option) {
 
 		} break;
 		case MENU_OPTION_CURSOR_ROTATE_Y: {
+			if (!_is_paint_tool_selected())
+				break;
+
 			Basis r;
 			if (input_action == INPUT_PASTE) {
 				r = node->get_basis_with_orthogonal_index(paste_indicator.orientation);
@@ -116,6 +119,9 @@ void GridMapEditor::_menu_option(int p_option) {
 			_update_cursor_transform();
 		} break;
 		case MENU_OPTION_CURSOR_ROTATE_X: {
+			if (!_is_paint_tool_selected())
+				break;
+
 			Basis r;
 			if (input_action == INPUT_PASTE) {
 				r = node->get_basis_with_orthogonal_index(paste_indicator.orientation);
@@ -131,6 +137,9 @@ void GridMapEditor::_menu_option(int p_option) {
 			_update_cursor_transform();
 		} break;
 		case MENU_OPTION_CURSOR_ROTATE_Z: {
+			if (!_is_paint_tool_selected())
+				break;
+
 			Basis r;
 			if (input_action == INPUT_PASTE) {
 				r = node->get_basis_with_orthogonal_index(paste_indicator.orientation);
@@ -146,6 +155,9 @@ void GridMapEditor::_menu_option(int p_option) {
 			_update_cursor_transform();
 		} break;
 		case MENU_OPTION_CURSOR_BACK_ROTATE_Y: {
+			if (!_is_paint_tool_selected())
+				break;
+
 			Basis r;
 			if (input_action == INPUT_PASTE) {
 				r = node->get_basis_with_orthogonal_index(paste_indicator.orientation);
@@ -161,6 +173,9 @@ void GridMapEditor::_menu_option(int p_option) {
 			_update_cursor_transform();
 		} break;
 		case MENU_OPTION_CURSOR_BACK_ROTATE_X: {
+			if (!_is_paint_tool_selected())
+				break;
+
 			Basis r;
 			if (input_action == INPUT_PASTE) {
 				r = node->get_basis_with_orthogonal_index(paste_indicator.orientation);
@@ -176,6 +191,9 @@ void GridMapEditor::_menu_option(int p_option) {
 			_update_cursor_transform();
 		} break;
 		case MENU_OPTION_CURSOR_BACK_ROTATE_Z: {
+			if (!_is_paint_tool_selected())
+				break;
+
 			Basis r;
 			if (input_action == INPUT_PASTE) {
 				r = node->get_basis_with_orthogonal_index(paste_indicator.orientation);
@@ -191,6 +209,9 @@ void GridMapEditor::_menu_option(int p_option) {
 			_update_cursor_transform();
 		} break;
 		case MENU_OPTION_CURSOR_CLEAR_ROTATION: {
+			if (!_is_paint_tool_selected())
+				break;
+
 			if (input_action == INPUT_PASTE) {
 				paste_indicator.orientation = 0;
 				_update_paste_indicator();
@@ -343,12 +364,65 @@ void GridMapEditor::_set_selection(bool p_active, const Vector3 &p_begin, const 
 	options->get_popup()->set_item_disabled(options->get_popup()->get_item_index(MENU_OPTION_SELECTION_FILL), !selection.active);
 }
 
+void GridMapEditor::_add_paint_tool() {
+	Node3DEditor::get_singleton()->add_tool(paint_tool_button);
+
+	paint_tool_button->connect("toggled", callable_mp(this, &GridMapEditor::_paint_tool_button_toggled));
+
+	if (selected_palette >= 0) {
+		_select_paint_tool();
+	}
+}
+
+void GridMapEditor::_remove_paint_tool() {
+	Node3DEditor::get_singleton()->remove_tool(paint_tool_button);
+
+	paint_tool_button->disconnect("toggled", callable_mp(this, &GridMapEditor::_paint_tool_button_toggled));
+}
+
+bool GridMapEditor::_cancel_actions() {
+	if (input_action == INPUT_PASTE) {
+		_clear_clipboard_data();
+		input_action = INPUT_NONE;
+		_update_paste_indicator();
+		return true;
+	} else if (selection.active) {
+		_set_selection(false);
+		return true;
+	} else if (selected_palette >= 0 || mesh_library_palette->is_anything_selected()) {
+		selected_palette = -1;
+		mesh_library_palette->deselect_all();
+		update_palette();
+		_update_cursor_instance();
+		return true;
+	}
+
+	return false;
+}
+
+void GridMapEditor::_paint_tool_button_toggled(bool p_toggled_on) {
+	if (!_is_paint_tool_selected()) {
+		_cancel_actions();
+	}
+}
+
+void GridMapEditor::_select_paint_tool() {
+	paint_tool_button->set_pressed(true);
+}
+
+bool GridMapEditor::_is_paint_tool_selected() const {
+	return Node3DEditor::get_singleton()->is_tool_selected(paint_tool_button);
+}
+
 bool GridMapEditor::do_input_action(Camera3D *p_camera, const Point2 &p_point, bool p_click) {
 	if (!spatial_editor) {
 		return false;
 	}
 
 	if (selected_palette < 0 && input_action != INPUT_PICK && input_action != INPUT_SELECT && input_action != INPUT_PASTE) {
+		return false;
+	}
+	if (!_is_paint_tool_selected()) {
 		return false;
 	}
 	if (mesh_library.is_null()) {
@@ -653,6 +727,12 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 				} else {
 					input_action = INPUT_PAINT;
 					set_items.clear();
+					if (selection.active) {
+						_set_selection(false);
+						if (selected_palette < 0) {
+							return EditorPlugin::AFTER_GUI_INPUT_STOP;
+						}
+					}
 				}
 			} else if (mb->get_button_index() == MouseButton::RIGHT) {
 				if (input_action == INPUT_PASTE) {
@@ -735,22 +815,8 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 
 	if (k.is_valid()) {
 		if (k->is_pressed()) {
-			if (k->get_keycode() == Key::ESCAPE) {
-				if (input_action == INPUT_PASTE) {
-					_clear_clipboard_data();
-					input_action = INPUT_NONE;
-					_update_paste_indicator();
-					return EditorPlugin::AFTER_GUI_INPUT_STOP;
-				} else if (selection.active) {
-					_set_selection(false);
-					return EditorPlugin::AFTER_GUI_INPUT_STOP;
-				} else {
-					selected_palette = -1;
-					mesh_library_palette->deselect_all();
-					update_palette();
-					_update_cursor_instance();
-					return EditorPlugin::AFTER_GUI_INPUT_STOP;
-				}
+			if (k->get_keycode() == Key::ESCAPE && _cancel_actions()) {
+				return EditorPlugin::AFTER_GUI_INPUT_STOP;
 			}
 
 			// Consume input to avoid conflicts with other plugins.
@@ -1058,6 +1124,7 @@ void GridMapEditor::_draw_grids(const Vector3 &cell_size) {
 }
 
 void GridMapEditor::_update_theme() {
+	paint_tool_button->set_icon(get_editor_theme_icon(SNAME("Paint")));
 	options->set_icon(get_theme_icon(SNAME("GridMap"), EditorStringName(EditorIcons)));
 	search_box->set_right_icon(get_theme_icon(SNAME("Search"), EditorStringName(EditorIcons)));
 	mode_thumbnail->set_icon(get_theme_icon(SNAME("FileThumbnail"), EditorStringName(EditorIcons)));
@@ -1158,6 +1225,8 @@ void GridMapEditor::_update_cursor_instance() {
 void GridMapEditor::_item_selected_cbk(int idx) {
 	selected_palette = mesh_library_palette->get_item_metadata(idx);
 
+	_select_paint_tool();
+
 	_update_cursor_instance();
 }
 
@@ -1209,6 +1278,13 @@ GridMapEditor::GridMapEditor() {
 	spatial_editor_hb->set_h_size_flags(SIZE_EXPAND_FILL);
 	spatial_editor_hb->set_alignment(BoxContainer::ALIGNMENT_END);
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(spatial_editor_hb);
+
+	paint_tool_button = memnew(Button);
+	paint_tool_button->set_theme_type_variation("FlatButton");
+	paint_tool_button->set_tooltip_text(TTR("LMB: Place selected mesh on the grid.") + "\n" + TTR("RMB: Remove the mesh at position clicked.") + "\n" + TTR("Shift+Drag: Creates a selection box."));
+	spatial_editor_hb->add_child(paint_tool_button);
+
+	spatial_editor_hb->add_child(memnew(VSeparator));
 
 	spin_box_label = memnew(Label);
 	spin_box_label->set_text(TTR("Floor:"));
@@ -1521,10 +1597,17 @@ bool GridMapEditorPlugin::handles(Object *p_object) const {
 
 void GridMapEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
+		grid_map_editor->_add_paint_tool();
+
+		if (grid_map_editor->selected_palette >= 0) {
+			grid_map_editor->_select_paint_tool();
+		}
+
 		grid_map_editor->show();
 		grid_map_editor->spatial_editor_hb->show();
 		grid_map_editor->set_process(true);
 	} else {
+		grid_map_editor->_remove_paint_tool();
 		grid_map_editor->spatial_editor_hb->hide();
 		grid_map_editor->hide();
 		grid_map_editor->set_process(false);

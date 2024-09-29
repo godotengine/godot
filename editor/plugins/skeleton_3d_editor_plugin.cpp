@@ -1412,7 +1412,7 @@ EditorPlugin::AfterGUIInput Skeleton3DEditorPlugin::forward_3d_gui_input(Camera3
 	if (se && se->is_edit_mode()) {
 		const Ref<InputEventMouseButton> mb = p_event;
 		if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
-			if (ne->get_tool_mode() != Node3DEditor::TOOL_MODE_SELECT) {
+			if (!ne->is_select_tool_selected()) {
 				if (!ne->is_gizmo_visible()) {
 					return EditorPlugin::AFTER_GUI_INPUT_STOP;
 				}
@@ -1522,7 +1522,7 @@ int Skeleton3DGizmoPlugin::subgizmos_intersect_ray(const EditorNode3DGizmo *p_gi
 		return -1;
 	}
 
-	if (Node3DEditor::get_singleton()->get_tool_mode() != Node3DEditor::TOOL_MODE_SELECT) {
+	if (!Node3DEditor::get_singleton()->is_select_tool_selected()) {
 		return -1;
 	}
 
@@ -1598,19 +1598,19 @@ void Skeleton3DGizmoPlugin::commit_subgizmos(const EditorNode3DGizmo *p_gizmo, c
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Set Bone Transform"));
-	if (ne->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || ne->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE) {
+	if (ne->is_select_tool_selected() || ne->is_move_tool_selected()) {
 		for (int i = 0; i < p_ids.size(); i++) {
 			ur->add_do_method(skeleton, "set_bone_pose_position", p_ids[i], skeleton->get_bone_pose_position(p_ids[i]));
 			ur->add_undo_method(skeleton, "set_bone_pose_position", p_ids[i], se->get_bone_original_position());
 		}
 	}
-	if (ne->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || ne->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE) {
+	if (ne->is_select_tool_selected() || ne->is_rotate_tool_selected()) {
 		for (int i = 0; i < p_ids.size(); i++) {
 			ur->add_do_method(skeleton, "set_bone_pose_rotation", p_ids[i], skeleton->get_bone_pose_rotation(p_ids[i]));
 			ur->add_undo_method(skeleton, "set_bone_pose_rotation", p_ids[i], se->get_bone_original_rotation());
 		}
 	}
-	if (ne->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE) {
+	if (ne->is_scale_tool_selected()) {
 		for (int i = 0; i < p_ids.size(); i++) {
 			// If the axis is swapped by scaling, the rotation can be changed.
 			ur->add_do_method(skeleton, "set_bone_pose_rotation", p_ids[i], skeleton->get_bone_pose_rotation(p_ids[i]));
