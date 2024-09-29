@@ -153,7 +153,7 @@ private:
 	HashSet<SkinReference *> skin_bindings;
 	void _skin_changed();
 
-	Vector<Bone> bones;
+	LocalVector<Bone> bones;
 	bool process_order_dirty = false;
 
 	Vector<int> parentless_bones;
