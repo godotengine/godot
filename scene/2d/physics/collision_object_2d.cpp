@@ -444,21 +444,35 @@ int CollisionObject2D::shape_owner_get_shape_count(uint32_t p_owner) const {
 
 Ref<Shape2D> CollisionObject2D::shape_owner_get_shape(uint32_t p_owner, int p_shape) const {
 	ERR_FAIL_COND_V(!shapes.has(p_owner), Ref<Shape2D>());
-	ERR_FAIL_INDEX_V(p_shape, shapes[p_owner].shapes.size(), Ref<Shape2D>());
+	ERR_FAIL_INDEX_V(p_shape, total_subshapes, Ref<Shape2D>());
 
-	return shapes[p_owner].shapes[p_shape].shape;
+	for (const ShapeData::Shape &E : shapes[p_owner].shapes) {
+		if (E.index == p_shape) {
+			return E.shape;
+		}
+	}
+
+	ERR_FAIL_V_MSG(Ref<Shape2D>(), "Can't find shape with index " + itos(p_shape) + ".");
 }
 
 int CollisionObject2D::shape_owner_get_shape_index(uint32_t p_owner, int p_shape) const {
 	ERR_FAIL_COND_V(!shapes.has(p_owner), -1);
-	ERR_FAIL_INDEX_V(p_shape, shapes[p_owner].shapes.size(), -1);
+	ERR_FAIL_INDEX_V(p_shape, total_subshapes, -1);
 
-	return shapes[p_owner].shapes[p_shape].index;
+	const ShapeData &sd = shapes[p_owner];
+
+	for (int i = 0; i < sd.shapes.size(); i++) {
+		if (sd.shapes[i].index == p_shape) {
+			return i;
+		}
+	}
+
+	ERR_FAIL_V_MSG(-1, "Can't find shape with index " + itos(p_shape) + ".");
 }
 
 void CollisionObject2D::shape_owner_remove_shape(uint32_t p_owner, int p_shape) {
 	ERR_FAIL_COND(!shapes.has(p_owner));
-	ERR_FAIL_INDEX(p_shape, shapes[p_owner].shapes.size());
+	ERR_FAIL_INDEX(p_shape, total_subshapes);
 
 	int index_to_remove = shapes[p_owner].shapes[p_shape].index;
 	if (area) {
