@@ -927,9 +927,14 @@ void CharacterBodyMain::editor_build_animation()
 			}
             new_animation->optimize();
             new_animation->compress();
+			String group = p_group;
 			if (p_animations.size() == 1)
 			{
 				Vector<String> names = p_group.split("@");
+				if (names.size() == 2)
+				{
+					group = names[0];
+				}
 				String name;
 				if (names.size() > 0)
 				{
@@ -947,11 +952,10 @@ void CharacterBodyMain::editor_build_animation()
 			}
             String save_path;
             if(editor_human_config.is_valid())  {
-			    save_fbx_res("human_animation", p_group, new_animation, save_path, true);
-			    save_fbx_tres("human_animation", p_group, new_animation, save_path, true);
+			    save_fbx_res("human_animation", group, new_animation, save_path, true);
             }
             else {
-			    save_fbx_res("animation", p_group, new_animation, save_path, true);
+			    save_fbx_res("animation", group, new_animation, save_path, true);
             }
             
         }

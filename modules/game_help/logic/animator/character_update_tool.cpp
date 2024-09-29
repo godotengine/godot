@@ -243,11 +243,10 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
                 continue;
             }
             AnimationMixer::TrackCacheTransform* t = context.bone_cache[bone_idx];
-            if(!track_is_human) {
-                if (t->is_human_bone) {
-                    continue;
-                }
-            }
+            
+            if (t->is_human_bone) {
+                continue;
+            }            
             if (t->root_motion && calc_root) {
                 double prev_time = time - delta;
                 if (!backward) {
@@ -506,10 +505,8 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
             if (err != OK) {
                 continue;
             }
-            if(is_human) {
-                if(temp_human_key_frame.set_dof(animation_track->path.get_name(0),value)) {
-                    continue;
-                }
+            if(temp_human_key_frame.set_dof(animation_track->path.get_name(0),value)) {
+                continue;
             }
             t->value = Math::lerp( (double)t->value, (double)value, blend);
         } break;
