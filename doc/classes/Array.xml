@@ -422,6 +422,13 @@
 				[b]Note:[/b] Unlike with the [code][][/code] operator ([code]array[0][/code]), an error is generated without stopping project execution.
 			</description>
 		</method>
+		<method name="get" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the element at the given [param index] in the array. This is the same as using the [code][][/code] operator ([code]array[index][/code]).
+			</description>
+		</method>
 		<method name="get_typed_builtin" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -691,6 +698,14 @@
 			<param index="1" name="from" type="int" default="-1" />
 			<description>
 				Returns the index of the [b]last[/b] element of the array that causes [param method] to return [code]true[/code], or [code]-1[/code] if there are none. The search's start can be specified with [param from], continuing to the beginning of the array. This method is the reverse of [method find_custom].
+			</description>
+		</method>
+		<method name="set">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+				Sets the value of the element at the given [param index] to the given [param value]. This will not change the size of the array, it only changes the value at an index already in the array. This is the same as using the [code][][/code] operator ([code]array[index] = value[/code]).
 			</description>
 		</method>
 		<method name="shuffle">

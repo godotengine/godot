@@ -6,11 +6,11 @@
 	<description>
 		[LineEdit] provides an input field for editing a single line of text.
 		- When the [LineEdit] control is focused using the keyboard arrow keys, it will only gain focus and not enter edit mode.
-		- To enter edit mode, click on the control with the mouse or press the "ui_text_submit" action (default: [kbd]Enter[/kbd] or [kbd]Kp Enter[/kbd]).
-		- To exit edit mode, press "ui_text_submit" or "ui_cancel" (default: [kbd]Escape[/kbd]) actions.
+		- To enter edit mode, click on the control with the mouse or press the [code]ui_text_submit[/code] action (by default [kbd]Enter[/kbd] or [kbd]Kp Enter[/kbd]).
+		- To exit edit mode, press [code]ui_text_submit[/code] or [code]ui_cancel[/code] (by default [kbd]Escape[/kbd]) actions.
 		- Check [method is_editing] and [signal editing_toggled] for more information.
 		[b]Important:[/b]
-		- Focusing the [LineEdit] with "ui_focus_next" (default: [kbd]Tab[/kbd]) or "ui_focus_prev" (default: [kbd]Shift + Tab[/kbd]) or [method Control.grab_focus] still enters edit mode (for compatibility).
+		- Focusing the [LineEdit] with [code]ui_focus_next[/code] (by default [kbd]Tab[/kbd]) or [code]ui_focus_prev[/code] (by default [kbd]Shift + Tab[/kbd]) or [method Control.grab_focus] still enters edit mode (for compatibility).
 		[LineEdit] features many built-in shortcuts that are always available ([kbd]Ctrl[/kbd] here maps to [kbd]Cmd[/kbd] on macOS):
 		- [kbd]Ctrl + C[/kbd]: Copy
 		- [kbd]Ctrl + X[/kbd]: Cut
@@ -365,7 +365,7 @@
 		<signal name="text_submitted">
 			<param index="0" name="new_text" type="String" />
 			<description>
-				Emitted when the user presses [constant KEY_ENTER] on the [LineEdit].
+				Emitted when the user presses the [code]ui_text_submit[/code] action (by default: [kbd]Enter[/kbd] or [kbd]Kp Enter[/kbd]) while the [LineEdit] has focus.
 			</description>
 		</signal>
 	</signals>

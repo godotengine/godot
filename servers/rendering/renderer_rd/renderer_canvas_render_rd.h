@@ -45,8 +45,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		BASE_UNIFORM_SET = 0,
 		MATERIAL_UNIFORM_SET = 1,
 		TRANSFORMS_UNIFORM_SET = 2,
-		CANVAS_TEXTURE_UNIFORM_SET = 3,
-		INSTANCE_DATA_UNIFORM_SET = 4,
+		BATCH_UNIFORM_SET = 3,
 	};
 
 	const int SAMPLERS_BINDING_FIRST_INDEX = 10;
@@ -423,24 +422,25 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		}
 	};
 
+	struct TextureInfo {
+		TextureState state;
+		uint32_t specular_shininess = 0;
+		uint32_t flags = 0;
+		Vector2 texpixel_size;
+
+		RID diffuse;
+		RID normal;
+		RID specular;
+		RID sampler;
+	};
+
 	struct Batch {
 		// Position in the UBO measured in bytes
 		uint32_t start = 0;
 		uint32_t instance_count = 0;
 		uint32_t instance_buffer_index = 0;
 
-		TextureState tex_state;
-		RID tex_uniform_set;
-
-		// The following tex_ prefixed fields are used to cache the texture data for the current batch.
-		// These values are applied to new InstanceData for the batch
-
-		// The cached specular shininess derived from the current texture.
-		uint32_t tex_specular_shininess = 0;
-		// The cached texture flags, such as FLAGS_DEFAULT_SPECULAR_MAP_USED and FLAGS_DEFAULT_NORMAL_MAP_USED
-		uint32_t tex_flags = 0;
-		// The cached texture pixel size.
-		Vector2 tex_texpixel_size;
+		TextureInfo tex_info;
 
 		Color modulate = Color(1.0, 1.0, 1.0, 1.0);
 
@@ -462,14 +462,6 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 			uint32_t mesh_instance_count;
 		};
 		bool has_blend = false;
-
-		void set_tex_state(TextureState &p_tex_state) {
-			tex_state = p_tex_state;
-			tex_uniform_set = RID();
-			tex_texpixel_size = Size2();
-			tex_specular_shininess = 0;
-			tex_flags = 0;
-		}
 	};
 
 	struct DataBuffer {
@@ -509,7 +501,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		uint32_t max_instances_per_buffer = 16384;
 		uint32_t max_instance_buffer_size = 16384 * sizeof(InstanceData);
 
-		RID current_tex_uniform_set;
+		RID current_batch_uniform_set;
 
 		LightUniform *light_uniforms = nullptr;
 
@@ -531,6 +523,8 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	} state;
 
 	Item *items[MAX_RENDER_ITEMS];
+
+	TextureInfo default_texture_info;
 
 	bool using_directional_lights = false;
 	RID default_canvas_texture;
@@ -561,8 +555,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	void _render_batch_items(RenderTarget p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool &r_sdf_used, bool p_to_backbuffer = false, RenderingMethod::RenderInfo *r_render_info = nullptr);
 	void _record_item_commands(const Item *p_item, RenderTarget p_render_target, const Transform2D &p_base_transform, Item *&r_current_clip, Light *p_lights, uint32_t &r_index, bool &r_batch_broken, bool &r_sdf_used, Batch *&r_current_batch);
 	void _render_batch(RD::DrawListID p_draw_list, PipelineVariants *p_pipeline_variants, RenderingDevice::FramebufferFormatID p_framebuffer_format, Light *p_lights, Batch const *p_batch, RenderingMethod::RenderInfo *r_render_info = nullptr);
-	void _prepare_batch_texture(Batch *p_current_batch, RID p_texture) const;
-	void _bind_canvas_texture(RD::DrawListID p_draw_list, RID p_uniform_set);
+	void _prepare_batch_texture_info(Batch *p_current_batch, RID p_texture) const;
 	[[nodiscard]] Batch *_new_batch(bool &r_batch_broken);
 	void _add_to_batch(uint32_t &r_index, bool &r_batch_broken, Batch *&r_current_batch);
 	void _allocate_instance_buffer();

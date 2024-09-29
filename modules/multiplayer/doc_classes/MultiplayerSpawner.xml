@@ -63,13 +63,13 @@
 		<signal name="despawned">
 			<param index="0" name="node" type="Node" />
 			<description>
-				Emitted when a spawnable scene or custom spawn was despawned by the multiplayer authority. Only called on puppets.
+				Emitted when a spawnable scene or custom spawn was despawned by the multiplayer authority. Only called on remote peers.
 			</description>
 		</signal>
 		<signal name="spawned">
 			<param index="0" name="node" type="Node" />
 			<description>
-				Emitted when a spawnable scene or custom spawn was spawned by the multiplayer authority. Only called on puppets.
+				Emitted when a spawnable scene or custom spawn was spawned by the multiplayer authority. Only called on remote peers.
 			</description>
 		</signal>
 	</signals>
