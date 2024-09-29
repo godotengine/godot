@@ -801,6 +801,7 @@ Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path
 	}
 	// 保存预制体
 	body_prefab->skeleton_path = ske_save_path;
+    body_prefab->set_is_human(is_skeleton_human);
     if(is_skeleton_human) {
 	    save_fbx_res("human_prefab", p_group, body_prefab, bone_map_save_path, true);
     }
