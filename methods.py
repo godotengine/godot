@@ -807,7 +807,7 @@ def get_compiler_version(env):
 
     if env.msvc and not using_clang(env):
         try:
-            args = [env["VSWHERE"], "-latest", "-products", "*", "-requires", "Microsoft.Component.MSBuild"]
+            args = [env["VSWHERE"], "-latest", "-products", "*", "-requires", "Microsoft.Component.MSBuild", "-utf8"]
             version = subprocess.check_output(args, encoding="utf-8").strip()
             for line in version.splitlines():
                 split = line.split(":", 1)
