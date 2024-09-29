@@ -118,7 +118,7 @@
 		<signal name="peer_connected">
 			<param index="0" name="id" type="int" />
 			<description>
-				Emitted when this MultiplayerAPI's [member multiplayer_peer] connects with a new peer. ID is the peer ID of the new peer. Clients get notified when other clients connect to the same server. Upon connecting to a server, a client also receives this signal for the server (with ID being 1).
+				Emitted when this MultiplayerAPI's [member multiplayer_peer] connects with a new peer. ID is the peer ID of the new peer. All peers get notified when a client connects to the same server. Upon connecting to a server, a client receives this signal multiple times, once for the server (with ID being 1), and once for each other client.
 			</description>
 		</signal>
 		<signal name="peer_disconnected">
