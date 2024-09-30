@@ -11,7 +11,7 @@
     "format": "npm run lint -- --fix"
   },
   "devDependencies": {
-    "@eslint/js": "^9.3.0",
+    "@eslint/js": "^9.10.0",
     "@html-eslint/eslint-plugin": "^0.24.1",
     "@html-eslint/parser": "^0.24.1",
     "@stylistic/eslint-plugin": "^2.6.5",
