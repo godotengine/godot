@@ -572,10 +572,6 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		} else {
 			update_code_completion = (allow_unicode_handling && k->get_unicode() >= 32);
 		}
-
-		if (!update_code_completion) {
-			cancel_code_completion();
-		}
 	}
 
 	/* MISC */
