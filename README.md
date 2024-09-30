@@ -6,7 +6,7 @@
   </a>
 </p>
 
-## No political affiliation, only focused on game development
+## No political affiliation, only focused on game development ~~(and cat)~~
 
 ## No SB, No DEI, No Political Correctness
 
