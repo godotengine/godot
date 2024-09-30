@@ -31,9 +31,11 @@
 #ifndef DEBUG_ADAPTER_PROTOCOL_H
 #define DEBUG_ADAPTER_PROTOCOL_H
 
+#include "core/debugger/debugger_marshalls.h"
 #include "core/io/stream_peer_tcp.h"
 #include "core/io/tcp_server.h"
 
+#include "core/object/object_id.h"
 #include "debug_adapter_parser.h"
 #include "debug_adapter_types.h"
 #include "scene/debugger/scene_debugger.h"
@@ -103,9 +105,11 @@ private:
 	int parse_variant(const Variant &p_var);
 	void parse_object(SceneDebuggerObject &p_obj);
 	const Variant parse_object_variable(const SceneDebuggerObject::SceneDebuggerProperty &p_property);
+	void parse_evaluation(DebuggerMarshalls::ScriptStackVariable &p_var);
 
 	ObjectID search_object_id(DAPVarID p_var_id);
 	bool request_remote_object(const ObjectID &p_object_id);
+	bool request_remote_evaluate(const String &p_eval, int p_stack_frame);
 
 	bool _initialized = false;
 	bool _processing_breakpoint = false;
@@ -128,6 +132,9 @@ private:
 
 	HashMap<ObjectID, DAPVarID> object_list;
 	HashSet<ObjectID> object_pending_set;
+
+	HashMap<String, DAP::Variable> eval_list;
+	HashSet<String> eval_pending_list;
 
 public:
 	friend class DebugAdapterServer;
