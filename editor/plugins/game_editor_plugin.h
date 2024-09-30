@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_debugger_tree.h                                                */
+/*  game_editor_plugin.h                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,59 +28,91 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_DEBUGGER_TREE_H
-#define EDITOR_DEBUGGER_TREE_H
+#ifndef GAME_EDITOR_PLUGIN_H
+#define GAME_EDITOR_PLUGIN_H
 
-#include "scene/gui/tree.h"
+#include "editor/plugins/editor_debugger_plugin.h"
+#include "editor/plugins/editor_plugin.h"
+#include "scene/debugger/scene_debugger.h"
+#include "scene/gui/box_container.h"
 
-class SceneDebuggerTree;
-class EditorFileDialog;
+class GameEditorDebugger : public EditorDebuggerPlugin {
+	GDCLASS(GameEditorDebugger, EditorDebuggerPlugin);
 
-class EditorDebuggerTree : public Tree {
-	GDCLASS(EditorDebuggerTree, Tree);
+	Vector<Ref<EditorDebuggerSession>> sessions;
 
-private:
-	enum ItemMenu {
-		ITEM_MENU_SAVE_REMOTE_NODE,
-		ITEM_MENU_COPY_NODE_PATH,
-		ITEM_MENU_EXPAND_COLLAPSE,
-	};
+	int node_type = RuntimeNodeSelect::NODE_TYPE_2D;
+	int select_mode = RuntimeNodeSelect::SELECT_MODE_SINGLE;
 
-	ObjectID inspected_object_id;
-	int debugger_id = 0;
-	bool updating_scene_tree = false;
-	bool selection_uncollapse_all = false;
-	HashSet<ObjectID> unfold_cache;
-	PopupMenu *item_menu = nullptr;
-	EditorFileDialog *file_dialog = nullptr;
-	String last_filter;
-
-	String _get_path(TreeItem *p_item);
-	void _scene_tree_folded(Object *p_obj);
-	void _scene_tree_selected();
-	void _scene_tree_rmb_selected(const Vector2 &p_position, MouseButton p_button);
-	void _item_menu_id_pressed(int p_option);
-	void _file_selected(const String &p_file);
+	void _session_started(Ref<EditorDebuggerSession> p_session);
+	void _session_stopped();
 
 protected:
 	static void _bind_methods();
+
+public:
+	void set_suspend(bool p_enabled);
+	void next_frame();
+
+	void set_node_type(int p_type);
+	void set_select_mode(int p_mode);
+
+	virtual void setup_session(int p_session_id) override;
+
+	GameEditorDebugger() {}
+};
+
+class GameEditor : public VBoxContainer {
+	GDCLASS(GameEditor, VBoxContainer);
+
+private:
+	Ref<GameEditorDebugger> debugger;
+
+	int active_sessions = 0;
+
+	Button *suspend_button = nullptr;
+	Button *next_frame_button = nullptr;
+
+	Button *node_type_button[RuntimeNodeSelect::NODE_TYPE_MAX];
+	Button *select_mode_button[RuntimeNodeSelect::SELECT_MODE_MAX];
+
+	Panel *panel = nullptr;
+
+	void _sessions_changed();
+
+	void _update_debugger_buttons();
+
+	void _suspend_button_toggled(bool p_pressed);
+
+	void _node_type_pressed(int p_option);
+	void _select_mode_pressed(int p_option);
+
+protected:
 	void _notification(int p_what);
 
 public:
-	enum Button {
-		BUTTON_SUBSCENE = 0,
-		BUTTON_VISIBILITY = 1,
-	};
-
-	virtual Variant get_drag_data(const Point2 &p_point) override;
-
-	void update_icon_max_width();
-	String get_selected_path();
-	ObjectID get_selected_object();
-	int get_current_debugger(); // Would love to have one tree for every debugger.
-	void update_scene_tree(const SceneDebuggerTree *p_tree, int p_debugger);
-	void select_node(ObjectID p_id);
-	EditorDebuggerTree();
+	GameEditor(Ref<GameEditorDebugger> p_debugger);
 };
 
-#endif // EDITOR_DEBUGGER_TREE_H
+class GameEditorPlugin : public EditorPlugin {
+	GDCLASS(GameEditorPlugin, EditorPlugin);
+
+	GameEditor *game_editor = nullptr;
+
+	Ref<GameEditorDebugger> debugger;
+
+protected:
+	void _notification(int p_what);
+
+public:
+	virtual String get_name() const override { return "Game"; }
+	bool has_main_screen() const override { return true; }
+	virtual void edit(Object *p_object) override {}
+	virtual bool handles(Object *p_object) const override { return false; }
+	virtual void make_visible(bool p_visible) override;
+
+	GameEditorPlugin();
+	~GameEditorPlugin();
+};
+
+#endif // GAME_EDITOR_PLUGIN_H

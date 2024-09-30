@@ -34,6 +34,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/scene_tree_dock.h"
+#include "editor_debugger_node.h"
 #include "scene/debugger/scene_debugger.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/packed_scene.h"
@@ -185,7 +186,17 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 		// Select previously selected node.
 		if (debugger_id == p_debugger) { // Can use remote id.
 			if (node.id == inspected_object_id) {
+				if (selection_uncollapse_all) {
+					selection_uncollapse_all = false;
+
+					// Temporarily set to `false`, to allow caching the unfolds.
+					updating_scene_tree = false;
+					item->uncollapse_tree();
+					updating_scene_tree = true;
+				}
+
 				item->select(0);
+
 				if (filter_changed) {
 					scroll_item = item;
 				}
@@ -258,12 +269,22 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 			}
 		}
 	}
-	debugger_id = p_debugger; // Needed by hook, could be avoided if every debugger had its own tree
+	debugger_id = p_debugger; // Needed by hook, could be avoided if every debugger had its own tree.
 	if (scroll_item) {
 		callable_mp((Tree *)this, &Tree::scroll_to_item).call_deferred(scroll_item, false);
 	}
 	last_filter = filter;
 	updating_scene_tree = false;
+}
+
+void EditorDebuggerTree::select_node(ObjectID p_id) {
+	// Manually select, as the tree control may be out-of-date for some reason (e.g. not shown yet).
+	selection_uncollapse_all = true;
+	inspected_object_id = uint64_t(p_id);
+	emit_signal(SNAME("object_selected"), inspected_object_id, debugger_id);
+
+	// Request a tree refresh.
+	EditorDebuggerNode::get_singleton()->request_remote_tree();
 }
 
 Variant EditorDebuggerTree::get_drag_data(const Point2 &p_point) {

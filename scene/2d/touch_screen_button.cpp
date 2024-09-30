@@ -30,6 +30,7 @@
 
 #include "touch_screen_button.h"
 
+#include "scene/main/node.h"
 #include "scene/main/window.h"
 
 void TouchScreenButton::set_texture_normal(const Ref<Texture2D> &p_texture) {
@@ -185,6 +186,7 @@ void TouchScreenButton::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_SUSPENDED:
 		case NOTIFICATION_PAUSED: {
 			if (is_pressed()) {
 				_release();

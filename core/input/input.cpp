@@ -87,6 +87,12 @@ Input *Input::get_singleton() {
 
 void Input::set_mouse_mode(MouseMode p_mode) {
 	ERR_FAIL_INDEX((int)p_mode, 5);
+
+	if (suspended) {
+		suspended_mouse_mode = p_mode;
+		return;
+	}
+
 	set_mouse_mode_func(p_mode);
 }
 
@@ -1660,6 +1666,21 @@ int Input::get_unused_joy_id() {
 		}
 	}
 	return -1;
+}
+
+void Input::set_suspend(bool p_enabled) {
+	if (p_enabled == suspended) {
+		return;
+	}
+
+	suspended = p_enabled;
+
+	if (p_enabled) {
+		suspended_mouse_mode = get_mouse_mode_func();
+		set_mouse_mode_func(MOUSE_MODE_VISIBLE);
+	} else {
+		set_mouse_mode_func(suspended_mouse_mode);
+	}
 }
 
 Input::Input() {
