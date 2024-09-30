@@ -6,6 +6,10 @@
   </a>
 </p>
 
+## No political affiliation, only focused on game development
+
+## Pursuing the simplest happiness and natural beauty
+
 ## 2D and 3D cross-platform game engine
 
 **[Godot Engine](https://godotengine.org) is a feature-packed, cross-platform
