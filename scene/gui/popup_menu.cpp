@@ -99,6 +99,10 @@ RID PopupMenu::bind_global_menu() {
 		} else {
 			system_menus[system_menu_id] = this;
 			system_menu = nmenu->get_system_menu(system_menu_id);
+			nmenu->set_system_menu_name(system_menu_id, get_name());
+			if (nmenu->get_system_menu_no_default_items(system_menu_id)) {
+				nmenu->set_system_menu_hidden(system_menu_id, false);
+			}
 			global_menu = system_menu;
 		}
 	} else {
@@ -154,6 +158,12 @@ void PopupMenu::unbind_global_menu() {
 
 	if (global_menu == system_menu && system_menus[system_menu_id] == this) {
 		system_menus.erase(system_menu_id);
+		NativeMenu *nmenu = NativeMenu::get_singleton();
+
+		nmenu->set_system_menu_name(system_menu_id, String());
+		if (nmenu->get_system_menu_no_default_items(system_menu_id)) {
+			nmenu->set_system_menu_hidden(system_menu_id, true);
+		}
 	}
 
 	for (int i = 0; i < items.size(); i++) {
