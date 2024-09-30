@@ -109,6 +109,12 @@
 				Returns export option value or value of environment variable if it is set.
 			</description>
 		</method>
+		<method name="get_patches" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns the list of packs on which to base a patch export on.
+			</description>
+		</method>
 		<method name="get_preset_name" qualifiers="const">
 			<return type="String" />
 			<description>

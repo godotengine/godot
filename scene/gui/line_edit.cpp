@@ -921,6 +921,7 @@ Variant LineEdit::get_drag_data(const Point2 &p_point) {
 		String t = get_selected_text();
 		Label *l = memnew(Label);
 		l->set_text(t);
+		l->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Don't translate user input.
 		set_drag_preview(l);
 		return t;
 	}
@@ -2763,6 +2764,8 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("select", "from", "to"), &LineEdit::select, DEFVAL(0), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("select_all"), &LineEdit::select_all);
 	ClassDB::bind_method(D_METHOD("deselect"), &LineEdit::deselect);
+	ClassDB::bind_method(D_METHOD("has_undo"), &LineEdit::has_undo);
+	ClassDB::bind_method(D_METHOD("has_redo"), &LineEdit::has_redo);
 	ClassDB::bind_method(D_METHOD("has_selection"), &LineEdit::has_selection);
 	ClassDB::bind_method(D_METHOD("get_selected_text"), &LineEdit::get_selected_text);
 	ClassDB::bind_method(D_METHOD("get_selection_from_column"), &LineEdit::get_selection_from_column);

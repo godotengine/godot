@@ -204,7 +204,7 @@ public:
 		static Int128 mul(uint64_t a, uint64_t b);
 
 		Int128 operator-() const {
-			return Int128((uint64_t) - (int64_t)low, ~high + (low == 0));
+			return Int128(uint64_t(-int64_t(low)), ~high + (low == 0));
 		}
 
 		Int128 operator+(const Int128 &b) const {

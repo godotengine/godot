@@ -34,13 +34,14 @@
 # Volodymyr Mikhav <mihaw.wolodymyr@gmail.com>, 2023.
 # Bogdan <Bgdn.Weblate@users.noreply.hosted.weblate.org>, 2024.
 # Veni Vid <venivid28@gmail.com>, 2024.
+# Oleksandr <galaxynarium@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-06-18 08:12+0000\n"
-"Last-Translator: Veni Vid <venivid28@gmail.com>\n"
+"PO-Revision-Date: 2024-09-07 20:09+0000\n"
+"Last-Translator: Oleksandr <galaxynarium@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/uk/>\n"
 "Language: uk\n"
@@ -49,7 +50,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.6-dev\n"
+"X-Generator: Weblate 5.8-dev\n"
 
 msgid "Application"
 msgstr "Застосунок"
@@ -207,15 +208,6 @@ msgstr "Категорія сесії"
 msgid "Mix With Others"
 msgstr "Поєднати із іншими"
 
-msgid "Editor"
-msgstr "Редактор"
-
-msgid "Script"
-msgstr "Скрипт"
-
-msgid "Search in File Extensions"
-msgstr "Пошук у розширеннях файлів"
-
 msgid "Subwindows"
 msgstr "Підвікна"
 
@@ -239,6 +231,9 @@ msgstr "Аспект"
 
 msgid "Scale"
 msgstr "Масштаб"
+
+msgid "Scale Mode"
+msgstr "Режим масштабування"
 
 msgid "Debug"
 msgstr "Діагностика"
@@ -309,6 +304,9 @@ msgstr "Таймери"
 msgid "Incremental Search Max Interval Msec"
 msgstr "Максимальний інтервал інкрементального пошуку, мсек"
 
+msgid "Tooltip Delay (sec)"
+msgstr "Затримка підказки (секунд)"
+
 msgid "Common"
 msgstr "Загальні"
 
@@ -342,14 +340,23 @@ msgstr "Максимальний розмір (Мб)"
 msgid "Texture Upload Region Size Px"
 msgstr "Розмір області завантаження текстури Px"
 
+msgid "Pipeline Cache"
+msgstr "Кеш конвеєра"
+
 msgid "Enable"
 msgstr "Увімкнути"
+
+msgid "Save Chunk Size (MB)"
+msgstr "Зберегти розмір блоку (MB)"
 
 msgid "Vulkan"
 msgstr "Vulkan"
 
 msgid "Max Descriptors per Pool"
 msgstr "Макс. кількість дескрипторів на пул"
+
+msgid "D3D12"
+msgstr "D3D12"
 
 msgid "Textures"
 msgstr "Текстури"
@@ -371,6 +378,9 @@ msgstr "Використовувати адаптивний"
 
 msgid "Low Processor Usage Mode"
 msgstr "Режим низького використання процесора"
+
+msgid "Delta Smoothing"
+msgstr "Дельта-згладжування"
 
 msgid "Print Error Messages"
 msgstr "Виводити повідомлення про помилки"
@@ -767,6 +777,9 @@ msgstr "Перемкнути режим"
 
 msgid "Interface"
 msgstr "Інтерфейс"
+
+msgid "Editor"
+msgstr "Редактор"
 
 msgid "Editor Language"
 msgstr "Мова редактора"
@@ -2127,6 +2140,9 @@ msgstr "Шлях до закритого ключа SSH"
 msgid "Main Run Args"
 msgstr "Аргументи основного запуску"
 
+msgid "Script"
+msgstr "Скрипт"
+
 msgid "Templates Search Path"
 msgstr "Шлях пошуку шаблонів"
 
@@ -2261,6 +2277,9 @@ msgstr "Фокус"
 
 msgid "Android"
 msgstr "Android"
+
+msgid "Search in File Extensions"
+msgstr "Пошук у розширеннях файлів"
 
 msgid "Mouse Cursor"
 msgstr "Курсор миші"

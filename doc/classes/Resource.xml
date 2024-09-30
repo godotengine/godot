@@ -20,6 +20,19 @@
 				Override this method to return a custom [RID] when [method get_rid] is called.
 			</description>
 		</method>
+		<method name="_reset_state" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				For resources that use a variable number of properties, either via [method Object._validate_property] or [method Object._get_property_list], this method should be implemented to correctly clear the resource's state.
+			</description>
+		</method>
+		<method name="_set_path_cache" qualifiers="virtual const">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Sets the resource's path to [param path] without involving the resource cache.
+			</description>
+		</method>
 		<method name="_setup_local_to_scene" qualifiers="virtual">
 			<return type="void" />
 			<description>
@@ -68,6 +81,14 @@
 				Generates a unique identifier for a resource to be contained inside a [PackedScene], based on the current date, time, and a random value. The returned string is only composed of letters ([code]a[/code] to [code]y[/code]) and numbers ([code]0[/code] to [code]8[/code]). See also [member resource_scene_unique_id].
 			</description>
 		</method>
+		<method name="get_id_for_path" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns the unique identifier for the resource with the given [param path] from the resource cache. If the resource is not loaded and cached, an empty string is returned.
+				[b]Note:[/b] This method is only implemented when running in an editor context. At runtime, it returns an empty string.
+			</description>
+		</method>
 		<method name="get_local_scene" qualifiers="const">
 			<return type="Node" />
 			<description>
@@ -78,6 +99,34 @@
 			<return type="RID" />
 			<description>
 				Returns the [RID] of this resource (or an empty RID). Many resources (such as [Texture2D], [Mesh], and so on) are high-level abstractions of resources stored in a specialized server ([DisplayServer], [RenderingServer], etc.), so this function will return the original [RID].
+			</description>
+		</method>
+		<method name="is_built_in" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the resource is built-in (from the engine) or [code]false[/code] if it is user-defined.
+			</description>
+		</method>
+		<method name="reset_state">
+			<return type="void" />
+			<description>
+				For resources that use a variable number of properties, either via [method Object._validate_property] or [method Object._get_property_list], override [method _reset_state] to correctly clear the resource's state.
+			</description>
+		</method>
+		<method name="set_id_for_path">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="id" type="String" />
+			<description>
+				Sets the unique identifier to [param id] for the resource with the given [param path] in the resource cache. If the unique identifier is empty, the cache entry using [param path] is removed if it exists.
+				[b]Note:[/b] This method is only implemented when running in an editor context.
+			</description>
+		</method>
+		<method name="set_path_cache">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Sets the resource's path to [param path] without involving the resource cache.
 			</description>
 		</method>
 		<method name="setup_local_to_scene" deprecated="This method should only be called internally.">

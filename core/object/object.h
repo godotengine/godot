@@ -87,6 +87,7 @@ enum PropertyHint {
 	PROPERTY_HINT_PASSWORD,
 	PROPERTY_HINT_LAYERS_AVOIDANCE,
 	PROPERTY_HINT_DICTIONARY_TYPE,
+	PROPERTY_HINT_TOOL_BUTTON,
 	PROPERTY_HINT_MAX,
 };
 
@@ -215,6 +216,7 @@ enum MethodFlags {
 	METHOD_FLAG_VARARG = 16,
 	METHOD_FLAG_STATIC = 32,
 	METHOD_FLAG_OBJECT_CORE = 64,
+	METHOD_FLAG_VIRTUAL_REQUIRED = 128,
 	METHOD_FLAGS_DEFAULT = METHOD_FLAG_NORMAL,
 };
 
@@ -368,11 +370,8 @@ struct ObjectGDExtension {
 #endif
 };
 
-#define GDVIRTUAL_CALL(m_name, ...) _gdvirtual_##m_name##_call<false>(__VA_ARGS__)
-#define GDVIRTUAL_CALL_PTR(m_obj, m_name, ...) m_obj->_gdvirtual_##m_name##_call<false>(__VA_ARGS__)
-
-#define GDVIRTUAL_REQUIRED_CALL(m_name, ...) _gdvirtual_##m_name##_call<true>(__VA_ARGS__)
-#define GDVIRTUAL_REQUIRED_CALL_PTR(m_obj, m_name, ...) m_obj->_gdvirtual_##m_name##_call<true>(__VA_ARGS__)
+#define GDVIRTUAL_CALL(m_name, ...) _gdvirtual_##m_name##_call(__VA_ARGS__)
+#define GDVIRTUAL_CALL_PTR(m_obj, m_name, ...) m_obj->_gdvirtual_##m_name##_call(__VA_ARGS__)
 
 #ifdef DEBUG_METHODS_ENABLED
 #define GDVIRTUAL_BIND(m_name, ...) ::ClassDB::add_virtual_method(get_class_static(), _gdvirtual_##m_name##_get_method_info(), true, sarray(__VA_ARGS__));
@@ -665,6 +664,8 @@ private:
 	Object(bool p_reference);
 
 protected:
+	StringName _translation_domain;
+
 	_FORCE_INLINE_ bool _instance_binding_reference(bool p_reference) {
 		bool can_die = true;
 		if (_instance_bindings) {
@@ -930,6 +931,7 @@ public:
 	MTVIRTUAL Error connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags = 0);
 	MTVIRTUAL void disconnect(const StringName &p_signal, const Callable &p_callable);
 	MTVIRTUAL bool is_connected(const StringName &p_signal, const Callable &p_callable) const;
+	MTVIRTUAL bool has_connections(const StringName &p_signal) const;
 
 	template <typename... VarArgs>
 	void call_deferred(const StringName &p_name, VarArgs... p_args) {
@@ -953,6 +955,9 @@ public:
 
 	_FORCE_INLINE_ void set_message_translation(bool p_enable) { _can_translate = p_enable; }
 	_FORCE_INLINE_ bool can_translate_messages() const { return _can_translate; }
+
+	virtual StringName get_translation_domain() const;
+	virtual void set_translation_domain(const StringName &p_domain);
 
 #ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;

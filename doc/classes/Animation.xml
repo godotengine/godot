@@ -293,6 +293,15 @@
 				Returns the arguments values to be called on a method track for a given key in a given track.
 			</description>
 		</method>
+		<method name="optimize">
+			<return type="void" />
+			<param index="0" name="allowed_velocity_err" type="float" default="0.01" />
+			<param index="1" name="allowed_angular_err" type="float" default="0.01" />
+			<param index="2" name="precision" type="int" default="3" />
+			<description>
+				Optimize the animation and all its tracks in-place. This will preserve only as many keys as are necessary to keep the animation within the specified bounds.
+			</description>
+		</method>
 		<method name="position_track_insert_key">
 			<return type="int" />
 			<param index="0" name="track_idx" type="int" />

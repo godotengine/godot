@@ -44,14 +44,17 @@
 #ifdef DEBUG_ENABLED
 
 struct _ObjectDebugLock {
-	Object *obj;
+	ObjectID obj_id;
 
 	_ObjectDebugLock(Object *p_obj) {
-		obj = p_obj;
-		obj->_lock_index.ref();
+		obj_id = p_obj->get_instance_id();
+		p_obj->_lock_index.ref();
 	}
 	~_ObjectDebugLock() {
-		obj->_lock_index.unref();
+		Object *obj_ptr = ObjectDB::get_instance(obj_id);
+		if (likely(obj_ptr)) {
+			obj_ptr->_lock_index.unref();
+		}
 	}
 };
 
@@ -1454,6 +1457,24 @@ bool Object::is_connected(const StringName &p_signal, const Callable &p_callable
 	return s->slot_map.has(*p_callable.get_base_comparator());
 }
 
+bool Object::has_connections(const StringName &p_signal) const {
+	const SignalData *s = signal_map.getptr(p_signal);
+	if (!s) {
+		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal);
+		if (signal_is_valid) {
+			return false;
+		}
+
+		if (!script.is_null() && Ref<Script>(script)->has_script_signal(p_signal)) {
+			return false;
+		}
+
+		ERR_FAIL_V_MSG(false, "Nonexistent signal: " + p_signal + ".");
+	}
+
+	return !s->slot_map.is_empty();
+}
+
 void Object::disconnect(const StringName &p_signal, const Callable &p_callable) {
 	_disconnect(p_signal, p_callable);
 }
@@ -1524,21 +1545,21 @@ void Object::initialize_class() {
 	initialized = true;
 }
 
+StringName Object::get_translation_domain() const {
+	return _translation_domain;
+}
+
+void Object::set_translation_domain(const StringName &p_domain) {
+	_translation_domain = p_domain;
+}
+
 String Object::tr(const StringName &p_message, const StringName &p_context) const {
 	if (!_can_translate || !TranslationServer::get_singleton()) {
 		return p_message;
 	}
 
-	if (Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) {
-		String tr_msg = TranslationServer::get_singleton()->extractable_translate(p_message, p_context);
-		if (!tr_msg.is_empty() && tr_msg != p_message) {
-			return tr_msg;
-		}
-
-		return TranslationServer::get_singleton()->tool_translate(p_message, p_context);
-	}
-
-	return TranslationServer::get_singleton()->translate(p_message, p_context);
+	const Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain(get_translation_domain());
+	return domain->translate(p_message, p_context);
 }
 
 String Object::tr_n(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
@@ -1550,16 +1571,8 @@ String Object::tr_n(const StringName &p_message, const StringName &p_message_plu
 		return p_message_plural;
 	}
 
-	if (Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) {
-		String tr_msg = TranslationServer::get_singleton()->extractable_translate_plural(p_message, p_message_plural, p_n, p_context);
-		if (!tr_msg.is_empty() && tr_msg != p_message && tr_msg != p_message_plural) {
-			return tr_msg;
-		}
-
-		return TranslationServer::get_singleton()->tool_translate_plural(p_message, p_message_plural, p_n, p_context);
-	}
-
-	return TranslationServer::get_singleton()->translate_plural(p_message, p_message_plural, p_n, p_context);
+	const Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain(get_translation_domain());
+	return domain->translate_plural(p_message, p_message_plural, p_n, p_context);
 }
 
 void Object::_clear_internal_resource_paths(const Variant &p_var) {
@@ -1702,6 +1715,7 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("connect", "signal", "callable", "flags"), &Object::connect, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("disconnect", "signal", "callable"), &Object::disconnect);
 	ClassDB::bind_method(D_METHOD("is_connected", "signal", "callable"), &Object::is_connected);
+	ClassDB::bind_method(D_METHOD("has_connections", "signal"), &Object::has_connections);
 
 	ClassDB::bind_method(D_METHOD("set_block_signals", "enable"), &Object::set_block_signals);
 	ClassDB::bind_method(D_METHOD("is_blocking_signals"), &Object::is_blocking_signals);
@@ -1711,6 +1725,8 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("can_translate_messages"), &Object::can_translate_messages);
 	ClassDB::bind_method(D_METHOD("tr", "message", "context"), &Object::tr, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("tr_n", "message", "plural_message", "n", "context"), &Object::tr_n, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("get_translation_domain"), &Object::get_translation_domain);
+	ClassDB::bind_method(D_METHOD("set_translation_domain", "domain"), &Object::set_translation_domain);
 
 	ClassDB::bind_method(D_METHOD("is_queued_for_deletion"), &Object::is_queued_for_deletion);
 	ClassDB::bind_method(D_METHOD("cancel_free"), &Object::cancel_free);

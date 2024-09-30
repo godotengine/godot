@@ -414,7 +414,6 @@ static Vector<real_t> _xform_to_array(const Transform3D p_transform) {
 
 Error GLTFDocument::_serialize_nodes(Ref<GLTFState> p_state) {
 	Array nodes;
-	const int scene_node_count = p_state->scene_nodes.size();
 	for (int i = 0; i < p_state->nodes.size(); i++) {
 		Dictionary node;
 		Ref<GLTFNode> gltf_node = p_state->nodes[i];
@@ -465,7 +464,7 @@ Error GLTFDocument::_serialize_nodes(Ref<GLTFState> p_state) {
 		}
 
 		Node *scene_node = nullptr;
-		if (i < scene_node_count) {
+		if (i < (int)p_state->scene_nodes.size()) {
 			scene_node = p_state->scene_nodes[i];
 		}
 		for (Ref<GLTFDocumentExtension> ext : document_extensions) {
@@ -5258,6 +5257,7 @@ void GLTFDocument::_convert_scene_node(Ref<GLTFState> p_state, Node *p_current, 
 	gltf_node.instantiate();
 	gltf_node->set_original_name(p_current->get_name());
 	gltf_node->set_name(_gen_unique_name(p_state, p_current->get_name()));
+	gltf_node->merge_meta_from(p_current);
 	if (cast_to<Node3D>(p_current)) {
 		Node3D *spatial = cast_to<Node3D>(p_current);
 		_convert_spatial(p_state, spatial, gltf_node);
@@ -5303,14 +5303,18 @@ void GLTFDocument::_convert_scene_node(Ref<GLTFState> p_state, Node *p_current, 
 		ERR_CONTINUE(ext.is_null());
 		ext->convert_scene_node(p_state, gltf_node, p_current);
 	}
-	GLTFNodeIndex current_node_i = p_state->nodes.size();
-	GLTFNodeIndex gltf_root = p_gltf_root;
-	if (gltf_root == -1) {
-		gltf_root = current_node_i;
-		p_state->root_nodes.push_back(gltf_root);
+	GLTFNodeIndex current_node_i;
+	if (gltf_node->get_parent() == -1) {
+		current_node_i = p_state->append_gltf_node(gltf_node, p_current, p_gltf_parent);
+	} else if (gltf_node->get_parent() < -1) {
+		return;
+	} else {
+		current_node_i = p_state->nodes.size() - 1;
+		while (gltf_node != p_state->nodes[current_node_i]) {
+			current_node_i--;
+		}
 	}
-	gltf_node->merge_meta_from(p_current);
-	_create_gltf_node(p_state, p_current, current_node_i, p_gltf_parent, gltf_root, gltf_node);
+	const GLTFNodeIndex gltf_root = (p_gltf_root == -1) ? current_node_i : p_gltf_root;
 	for (int node_i = 0; node_i < p_current->get_child_count(); node_i++) {
 		_convert_scene_node(p_state, p_current->get_child(node_i), current_node_i, gltf_root);
 	}
@@ -5370,18 +5374,6 @@ void GLTFDocument::_convert_csg_shape_to_gltf(CSGShape3D *p_current, GLTFNodeInd
 	p_gltf_node->set_name(_gen_unique_name(p_state, csg->get_name()));
 }
 #endif // MODULE_CSG_ENABLED
-
-void GLTFDocument::_create_gltf_node(Ref<GLTFState> p_state, Node *p_scene_parent, GLTFNodeIndex p_current_node_i,
-		GLTFNodeIndex p_parent_node_index, GLTFNodeIndex p_root_gltf_node, Ref<GLTFNode> p_gltf_node) {
-	p_state->scene_nodes.insert(p_current_node_i, p_scene_parent);
-	p_state->nodes.push_back(p_gltf_node);
-	ERR_FAIL_COND(p_current_node_i == p_parent_node_index);
-	p_state->nodes.write[p_current_node_i]->parent = p_parent_node_index;
-	if (p_parent_node_index == -1) {
-		return;
-	}
-	p_state->nodes.write[p_parent_node_index]->children.push_back(p_current_node_i);
-}
 
 void GLTFDocument::_convert_animation_player_to_gltf(AnimationPlayer *p_animation_player, Ref<GLTFState> p_state, GLTFNodeIndex p_gltf_current, GLTFNodeIndex p_gltf_root_index, Ref<GLTFNode> p_gltf_node, Node *p_scene_parent) {
 	ERR_FAIL_NULL(p_animation_player);
@@ -5542,6 +5534,10 @@ void GLTFDocument::_convert_skeleton_to_gltf(Skeleton3D *p_skeleton3d, Ref<GLTFS
 		joint_node->set_name(_gen_unique_name(p_state, skeleton->get_bone_name(bone_i)));
 		joint_node->transform = skeleton->get_bone_pose(bone_i);
 		joint_node->joint = true;
+
+		if (p_skeleton3d->has_bone_meta(bone_i, "extras")) {
+			joint_node->set_meta("extras", p_skeleton3d->get_bone_meta(bone_i, "extras"));
+		}
 		GLTFNodeIndex current_node_i = p_state->nodes.size();
 		p_state->scene_nodes.insert(current_node_i, skeleton);
 		p_state->nodes.push_back(joint_node);
@@ -7209,6 +7205,12 @@ Node *GLTFDocument::_generate_scene_node_tree(Ref<GLTFState> p_state) {
 	ERR_FAIL_COND_V_MSG(err != OK, nullptr, "glTF: Failed to create skeletons.");
 	err = _create_skins(p_state);
 	ERR_FAIL_COND_V_MSG(err != OK, nullptr, "glTF: Failed to create skins.");
+	// Run pre-generate for each extension, in case an extension needs to do something before generating the scene.
+	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
+		ERR_CONTINUE(ext.is_null());
+		err = ext->import_pre_generate(p_state);
+		ERR_CONTINUE(err != OK);
+	}
 	// Generate the node tree.
 	Node *single_root;
 	if (p_state->extensions_used.has("GODOT_single_root")) {
@@ -7443,6 +7445,12 @@ Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint
 		state->extensions_used.append("GODOT_single_root");
 	}
 	_convert_scene_node(state, p_node, -1, -1);
+	// Run post-convert for each extension, in case an extension needs to do something after converting the scene.
+	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
+		ERR_CONTINUE(ext.is_null());
+		Error err = ext->export_post_convert(p_state, p_node);
+		ERR_CONTINUE(err != OK);
+	}
 	return OK;
 }
 

@@ -34,6 +34,45 @@
 				Returns the position of camera on the device.
 			</description>
 		</method>
+		<method name="set_format">
+			<return type="bool" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="parameters" type="Dictionary" />
+			<description>
+				Sets the feed format parameters for the given index in the [member formats] array. Returns [code]true[/code] on success. By default YUYV encoded stream is transformed to FEED_RGB. YUYV encoded stream output format can be changed with [param parameters].output value:
+				[code]separate[/code] will result in FEED_YCBCR_SEP
+				[code]grayscale[/code] will result in desaturated FEED_RGB
+				[code]copy[/code] will result in FEED_YCBCR
+			</description>
+		</method>
+		<method name="set_name">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Sets the camera's name.
+			</description>
+		</method>
+		<method name="set_position">
+			<return type="void" />
+			<param index="0" name="position" type="int" enum="CameraFeed.FeedPosition" />
+			<description>
+				Sets the position of this camera.
+			</description>
+		</method>
+		<method name="set_rgb_image">
+			<return type="void" />
+			<param index="0" name="rgb_image" type="Image" />
+			<description>
+				Sets RGB image for this feed.
+			</description>
+		</method>
+		<method name="set_ycbcr_image">
+			<return type="void" />
+			<param index="0" name="ycbcr_image" type="Image" />
+			<description>
+				Sets YCbCr image for this feed.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="feed_is_active" type="bool" setter="set_active" getter="is_active" default="false">
@@ -42,7 +81,22 @@
 		<member name="feed_transform" type="Transform2D" setter="set_transform" getter="get_transform" default="Transform2D(1, 0, 0, -1, 0, 1)">
 			The transform applied to the camera's image.
 		</member>
+		<member name="formats" type="Array" setter="" getter="get_formats" default="[]">
+			Formats supported by the feed. Each entry is a [Dictionary] describing format parameters.
+		</member>
 	</members>
+	<signals>
+		<signal name="format_changed">
+			<description>
+				Emitted when the format has changed.
+			</description>
+		</signal>
+		<signal name="frame_changed">
+			<description>
+				Emitted when a new frame is available.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 		<constant name="FEED_NOIMAGE" value="0" enum="FeedDataType">
 			No image set for the feed.

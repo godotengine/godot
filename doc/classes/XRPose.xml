@@ -29,11 +29,11 @@
 			The linear velocity of this pose.
 		</member>
 		<member name="name" type="StringName" setter="set_name" getter="get_name" default="&amp;&quot;&quot;">
-			The name of this pose. Pose names are often driven by an action map setup by the user. Godot does suggest a number of pose names that it expects [XRInterface]s to implement:
-			- [code]root[/code] defines a root location, often used for tracked objects that do not have further nodes.
-			- [code]aim[/code] defines the tip of a controller with the orientation pointing outwards, for example: add your raycasts to this.
-			- [code]grip[/code] defines the location where the user grips the controller
-			- [code]skeleton[/code] defines the root location a hand mesh should be placed when using hand tracking and the animated skeleton supplied by the XR runtime.
+			The name of this pose. Usually, this name is derived from an action map set up by the user. Godot also suggests some pose names that [XRInterface] objects are expected to implement:
+			- [code]root[/code] is the root location, often used for tracked objects that do not have further nodes.
+			- [code]aim[/code] is the tip of a controller with its orientation pointing outwards, often used for raycasts.
+			- [code]grip[/code] is the location where the user grips the controller.
+			- [code]skeleton[/code] is the root location for a hand mesh, when using hand tracking and an animated skeleton is supplied by the XR runtime.
 		</member>
 		<member name="tracking_confidence" type="int" setter="set_tracking_confidence" getter="get_tracking_confidence" enum="XRPose.TrackingConfidence" default="0">
 			The tracking confidence for this pose, provides insight on how accurate the spatial positioning of this record is.

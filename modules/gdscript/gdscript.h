@@ -334,7 +334,7 @@ public:
 	virtual void get_constants(HashMap<StringName, Variant> *p_constants) override;
 	virtual void get_members(HashSet<StringName> *p_members) override;
 
-	virtual const Variant get_rpc_config() const override;
+	virtual Variant get_rpc_config() const override;
 
 	void unload_static() const;
 

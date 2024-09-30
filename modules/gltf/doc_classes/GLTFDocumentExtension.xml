@@ -18,7 +18,7 @@
 			<param index="1" name="gltf_node" type="GLTFNode" />
 			<param index="2" name="scene_node" type="Node" />
 			<description>
-				Part of the export process. This method is run after [method _export_preflight] and before [method _export_preserialize].
+				Part of the export process. This method is run after [method _export_preflight] and before [method _export_post_convert].
 				Runs when converting the data from a Godot scene node. This method can be used to process the Godot scene node data into a format that can be used by [method _export_node].
 			</description>
 		</method>
@@ -41,6 +41,15 @@
 				This method can be used to modify the final JSON of the generated glTF file.
 			</description>
 		</method>
+		<method name="_export_post_convert" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="GLTFState" />
+			<param index="1" name="root" type="Node" />
+			<description>
+				Part of the export process. This method is run after [method _convert_scene_node] and before [method _export_preserialize].
+				This method can be used to modify the converted node data structures before serialization with any additional data from the scene tree.
+			</description>
+		</method>
 		<method name="_export_preflight" qualifiers="virtual">
 			<return type="int" enum="Error" />
 			<param index="0" name="state" type="GLTFState" />
@@ -54,7 +63,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="state" type="GLTFState" />
 			<description>
-				Part of the export process. This method is run after [method _convert_scene_node] and before [method _get_saveable_image_formats].
+				Part of the export process. This method is run after [method _export_post_convert] and before [method _get_saveable_image_formats].
 				This method can be used to alter the state before performing serialization. It runs every time when generating a buffer with [method GLTFDocument.generate_buffer] or writing to the file system with [method GLTFDocument.write_to_filesystem].
 			</description>
 		</method>
@@ -64,7 +73,7 @@
 			<param index="1" name="gltf_node" type="GLTFNode" />
 			<param index="2" name="scene_parent" type="Node" />
 			<description>
-				Part of the import process. This method is run after [method _import_post_parse] and before [method _import_node].
+				Part of the import process. This method is run after [method _import_pre_generate] and before [method _import_node].
 				Runs when generating a Godot scene node from a GLTFNode. The returned node will be added to the scene tree. Multiple nodes can be generated in this step if they are added as a child of the returned node.
 				[b]Note:[/b] The [param scene_parent] parameter may be null if this is the single root node.
 			</description>
@@ -113,8 +122,16 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="state" type="GLTFState" />
 			<description>
-				Part of the import process. This method is run after [method _parse_node_extensions] and before [method _generate_scene_node].
-				This method can be used to modify any of the data imported so far after parsing, before generating the nodes and then running the final per-node import step.
+				Part of the import process. This method is run after [method _parse_node_extensions] and before [method _import_pre_generate].
+				This method can be used to modify any of the data imported so far after parsing each node, but before generating the scene or any of its nodes.
+			</description>
+		</method>
+		<method name="_import_pre_generate" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="GLTFState" />
+			<description>
+				Part of the import process. This method is run after [method _import_post_parse] and before [method _generate_scene_node].
+				This method can be used to modify or read from any of the processed data structures, before generating the nodes and then running the final per-node import step.
 			</description>
 		</method>
 		<method name="_import_preflight" qualifiers="virtual">

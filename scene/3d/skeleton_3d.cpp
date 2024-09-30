@@ -103,6 +103,8 @@ bool Skeleton3D::_set(const StringName &p_path, const Variant &p_value) {
 		set_bone_pose_rotation(which, p_value);
 	} else if (what == "scale") {
 		set_bone_pose_scale(which, p_value);
+	} else if (what == "bone_meta") {
+		set_bone_meta(which, path.get_slicec('/', 3), p_value);
 #ifndef DISABLE_DEPRECATED
 	} else if (what == "pose" || what == "bound_children") {
 		// Kept for compatibility from 3.x to 4.x.
@@ -170,6 +172,8 @@ bool Skeleton3D::_get(const StringName &p_path, Variant &r_ret) const {
 		r_ret = get_bone_pose_rotation(which);
 	} else if (what == "scale") {
 		r_ret = get_bone_pose_scale(which);
+	} else if (what == "bone_meta") {
+		r_ret = get_bone_meta(which, path.get_slicec('/', 3));
 	} else {
 		return false;
 	}
@@ -187,6 +191,11 @@ void Skeleton3D::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::VECTOR3, prep + PNAME("position"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::QUATERNION, prep + PNAME("rotation"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::VECTOR3, prep + PNAME("scale"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+
+		for (const KeyValue<StringName, Variant> &K : bones[i].metadata) {
+			PropertyInfo pi = PropertyInfo(bones[i].metadata[K.key].get_type(), prep + PNAME("bone_meta/") + K.key, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR);
+			p_list->push_back(pi);
+		}
 	}
 
 	for (PropertyInfo &E : *p_list) {
@@ -529,6 +538,57 @@ void Skeleton3D::set_bone_name(int p_bone, const String &p_name) {
 	name_to_bone_index.insert(p_name, p_bone);
 
 	version++;
+}
+
+Variant Skeleton3D::get_bone_meta(int p_bone, const StringName &p_key) const {
+	const int bone_size = bones.size();
+	ERR_FAIL_INDEX_V(p_bone, bone_size, Variant());
+
+	if (!bones[p_bone].metadata.has(p_key)) {
+		return Variant();
+	}
+	return bones[p_bone].metadata[p_key];
+}
+
+TypedArray<StringName> Skeleton3D::_get_bone_meta_list_bind(int p_bone) const {
+	const int bone_size = bones.size();
+	ERR_FAIL_INDEX_V(p_bone, bone_size, TypedArray<StringName>());
+
+	TypedArray<StringName> _metaret;
+	for (const KeyValue<StringName, Variant> &K : bones[p_bone].metadata) {
+		_metaret.push_back(K.key);
+	}
+	return _metaret;
+}
+
+void Skeleton3D::get_bone_meta_list(int p_bone, List<StringName> *p_list) const {
+	const int bone_size = bones.size();
+	ERR_FAIL_INDEX(p_bone, bone_size);
+
+	for (const KeyValue<StringName, Variant> &K : bones[p_bone].metadata) {
+		p_list->push_back(K.key);
+	}
+}
+
+bool Skeleton3D::has_bone_meta(int p_bone, const StringName &p_key) const {
+	const int bone_size = bones.size();
+	ERR_FAIL_INDEX_V(p_bone, bone_size, false);
+
+	return bones[p_bone].metadata.has(p_key);
+}
+
+void Skeleton3D::set_bone_meta(int p_bone, const StringName &p_key, const Variant &p_value) {
+	const int bone_size = bones.size();
+	ERR_FAIL_INDEX(p_bone, bone_size);
+
+	if (p_value.get_type() == Variant::NIL) {
+		if (bones.write[p_bone].metadata.has(p_key)) {
+			bones.write[p_bone].metadata.erase(p_key);
+		}
+		return;
+	}
+
+	bones.write[p_bone].metadata.insert(p_key, p_value, false);
 }
 
 bool Skeleton3D::is_bone_parent_of(int p_bone, int p_parent_bone_id) const {
@@ -1013,6 +1073,11 @@ void Skeleton3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("find_bone", "name"), &Skeleton3D::find_bone);
 	ClassDB::bind_method(D_METHOD("get_bone_name", "bone_idx"), &Skeleton3D::get_bone_name);
 	ClassDB::bind_method(D_METHOD("set_bone_name", "bone_idx", "name"), &Skeleton3D::set_bone_name);
+
+	ClassDB::bind_method(D_METHOD("get_bone_meta", "bone_idx", "key"), &Skeleton3D::get_bone_meta);
+	ClassDB::bind_method(D_METHOD("get_bone_meta_list", "bone_idx"), &Skeleton3D::_get_bone_meta_list_bind);
+	ClassDB::bind_method(D_METHOD("has_bone_meta", "bone_idx", "key"), &Skeleton3D::has_bone_meta);
+	ClassDB::bind_method(D_METHOD("set_bone_meta", "bone_idx", "key", "value"), &Skeleton3D::set_bone_meta);
 
 	ClassDB::bind_method(D_METHOD("get_concatenated_bone_names"), &Skeleton3D::get_concatenated_bone_names);
 

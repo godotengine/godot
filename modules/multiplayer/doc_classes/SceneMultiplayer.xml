@@ -68,7 +68,7 @@
 			The callback to execute when when receiving authentication data sent via [method send_auth]. If the [Callable] is empty (default), peers will be automatically accepted as soon as they connect.
 		</member>
 		<member name="auth_timeout" type="float" setter="set_auth_timeout" getter="get_auth_timeout" default="3.0">
-			If set to a value greater than [code]0.0[/code], the maximum amount of time peers can stay in the authenticating state, after which the authentication will automatically fail. See the [signal peer_authenticating] and [signal peer_authentication_failed] signals.
+			If set to a value greater than [code]0.0[/code], the maximum duration in seconds peers can stay in the authenticating state, after which the authentication will automatically fail. See the [signal peer_authenticating] and [signal peer_authentication_failed] signals.
 		</member>
 		<member name="max_delta_packet_size" type="int" setter="set_max_delta_packet_size" getter="get_max_delta_packet_size" default="65535">
 			Maximum size of each delta packet. Higher values increase the chance of receiving full updates in a single frame, but also the chance of causing networking congestion (higher latency, disconnections). See [MultiplayerSynchronizer].
