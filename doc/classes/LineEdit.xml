@@ -4,7 +4,14 @@
 		An input field for single-line text.
 	</brief_description>
 	<description>
-		[LineEdit] provides an input field for editing a single line of text. It features many built-in shortcuts that are always available ([kbd]Ctrl[/kbd] here maps to [kbd]Cmd[/kbd] on macOS):
+		[LineEdit] provides an input field for editing a single line of text.
+		- When the [LineEdit] control is focused using the keyboard arrow keys, it will only gain focus and not enter edit mode.
+		- To enter edit mode, click on the control with the mouse or press the [code]ui_text_submit[/code] action (by default [kbd]Enter[/kbd] or [kbd]Kp Enter[/kbd]).
+		- To exit edit mode, press [code]ui_text_submit[/code] or [code]ui_cancel[/code] (by default [kbd]Escape[/kbd]) actions.
+		- Check [method is_editing] and [signal editing_toggled] for more information.
+		[b]Important:[/b]
+		- Focusing the [LineEdit] with [code]ui_focus_next[/code] (by default [kbd]Tab[/kbd]) or [code]ui_focus_prev[/code] (by default [kbd]Shift + Tab[/kbd]) or [method Control.grab_focus] still enters edit mode (for compatibility).
+		[LineEdit] features many built-in shortcuts that are always available ([kbd]Ctrl[/kbd] here maps to [kbd]Cmd[/kbd] on macOS):
 		- [kbd]Ctrl + C[/kbd]: Copy
 		- [kbd]Ctrl + X[/kbd]: Cut
 		- [kbd]Ctrl + V[/kbd] or [kbd]Ctrl + Y[/kbd]: Paste/"yank"
@@ -30,6 +37,18 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="apply_ime">
+			<return type="void" />
+			<description>
+				Applies text from the [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url] (IME) and closes the IME if it is open.
+			</description>
+		</method>
+		<method name="cancel_ime">
+			<return type="void" />
+			<description>
+				Closes the [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url] (IME) if it is open. Any text in the IME will be lost.
+			</description>
+		</method>
 		<method name="clear">
 			<return type="void" />
 			<description>
@@ -126,10 +145,28 @@
 				Returns the selection end column.
 			</description>
 		</method>
+		<method name="has_ime_text" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the user has text in the [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url] (IME).
+			</description>
+		</method>
+		<method name="has_redo" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if a "redo" action is available.
+			</description>
+		</method>
 		<method name="has_selection" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the user has selected text.
+			</description>
+		</method>
+		<method name="has_undo" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if an "undo" action is available.
 			</description>
 		</method>
 		<method name="insert_text_at_caret">
@@ -137,6 +174,12 @@
 			<param index="0" name="text" type="String" />
 			<description>
 				Inserts [param text] at the caret. If the resulting value is longer than [member max_length], nothing happens.
+			</description>
+		</method>
+		<method name="is_editing" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns whether the [LineEdit] is being edited.
 			</description>
 		</method>
 		<method name="is_menu_visible" qualifiers="const">
@@ -301,6 +344,12 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="editing_toggled">
+			<param index="0" name="toggled_on" type="bool" />
+			<description>
+				Emitted when the [LineEdit] switches in or out of edit mode.
+			</description>
+		</signal>
 		<signal name="text_change_rejected">
 			<param index="0" name="rejected_substring" type="String" />
 			<description>
@@ -316,7 +365,7 @@
 		<signal name="text_submitted">
 			<param index="0" name="new_text" type="String" />
 			<description>
-				Emitted when the user presses [constant KEY_ENTER] on the [LineEdit].
+				Emitted when the user presses the [code]ui_text_submit[/code] action (by default: [kbd]Enter[/kbd] or [kbd]Kp Enter[/kbd]) while the [LineEdit] has focus.
 			</description>
 		</signal>
 	</signals>

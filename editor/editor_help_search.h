@@ -198,7 +198,7 @@ class EditorHelpSearch::Runner : public RefCounted {
 	TreeItem *_create_class_hierarchy(const ClassMatch &p_match);
 	TreeItem *_create_class_hierarchy(const DocData::ClassDoc *p_class_doc, const String &p_matching_keyword, bool p_gray);
 	TreeItem *_create_class_item(TreeItem *p_parent, const DocData::ClassDoc *p_doc, bool p_gray, const String &p_matching_keyword);
-	TreeItem *_create_category_item(TreeItem *p_parent, const String &p_class, const StringName &p_icon, const String &p_metatype, const String &p_type);
+	TreeItem *_create_category_item(TreeItem *p_parent, const String &p_class, const StringName &p_icon, const String &p_text, const String &p_metatype);
 	TreeItem *_create_method_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const MemberMatch<DocData::MethodDoc> &p_match);
 	TreeItem *_create_constructor_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const MemberMatch<DocData::MethodDoc> &p_match);
 	TreeItem *_create_operator_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const MemberMatch<DocData::MethodDoc> &p_match);

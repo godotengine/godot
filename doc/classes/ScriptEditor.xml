@@ -99,6 +99,14 @@
 				[b]Note:[/b] The [EditorSyntaxHighlighter] will still be applied to scripts that are already opened.
 			</description>
 		</method>
+		<method name="update_docs_from_script">
+			<return type="void" />
+			<param index="0" name="script" type="Script" />
+			<description>
+				Updates the documentation for the given [param script] if the script's documentation is currently open.
+				[b]Note:[/b] This should be called whenever the script is changed to keep the open documentation state up to date.
+			</description>
+		</method>
 	</methods>
 	<signals>
 		<signal name="editor_script_changed">

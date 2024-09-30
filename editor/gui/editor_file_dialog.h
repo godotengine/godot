@@ -32,13 +32,15 @@
 #define EDITOR_FILE_DIALOG_H
 
 #include "core/io/dir_access.h"
+#include "editor/file_info.h"
 #include "scene/gui/dialogs.h"
 #include "scene/property_list_helper.h"
 
-class GridContainer;
 class DependencyRemoveDialog;
+class GridContainer;
 class HSplitContainer;
 class ItemList;
+class MenuButton;
 class OptionButton;
 class PopupMenu;
 class TextureRect;
@@ -127,6 +129,11 @@ private:
 	Button *favorite = nullptr;
 	Button *show_hidden = nullptr;
 
+	String search_string;
+	LineEdit *filter_box = nullptr;
+	FileSortOption file_sort = FileSortOption::FILE_SORT_NAME;
+	MenuButton *file_sort_button = nullptr;
+
 	Button *fav_up = nullptr;
 	Button *fav_down = nullptr;
 
@@ -164,6 +171,9 @@ private:
 		Ref<Texture2D> create_folder;
 		Ref<Texture2D> favorites_up;
 		Ref<Texture2D> favorites_down;
+
+		Ref<Texture2D> filter_box;
+		Ref<Texture2D> file_sort_button;
 
 		Ref<Texture2D> folder;
 		Color folder_icon_color;
@@ -226,6 +236,10 @@ private:
 	void _filter_selected(int);
 	void _make_dir();
 	void _make_dir_confirm();
+
+	void _focus_filter_box();
+	void _filter_changed(const String &p_text);
+	void _file_sort_popup(int p_id);
 
 	void _delete_items();
 	void _delete_files_global();

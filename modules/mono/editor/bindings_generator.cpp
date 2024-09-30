@@ -77,6 +77,10 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 #define BINDINGS_GLOBAL_SCOPE_CLASS "GD"
 #define BINDINGS_NATIVE_NAME_FIELD "NativeName"
 
+#define BINDINGS_CLASS_CONSTRUCTOR "Constructors"
+#define BINDINGS_CLASS_CONSTRUCTOR_EDITOR "EditorConstructors"
+#define BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY "BuiltInMethodConstructors"
+
 #define CS_PARAM_MEMORYOWN "memoryOwn"
 #define CS_PARAM_METHODBIND "method"
 #define CS_PARAM_INSTANCE "ptr"
@@ -1452,7 +1456,7 @@ Error BindingsGenerator::_populate_method_icalls_table(const TypeInterface &p_it
 		}
 
 		const TypeInterface *return_type = _get_type_or_null(imethod.return_type);
-		ERR_FAIL_NULL_V(return_type, ERR_BUG); // Return type not found
+		ERR_FAIL_NULL_V_MSG(return_type, ERR_BUG, "Return type '" + imethod.return_type.cname + "' was not found.");
 
 		String im_unique_sig = get_ret_unique_sig(return_type) + ",CallMethodBind";
 
@@ -1463,7 +1467,7 @@ Error BindingsGenerator::_populate_method_icalls_table(const TypeInterface &p_it
 		// Get arguments information
 		for (const ArgumentInterface &iarg : imethod.arguments) {
 			const TypeInterface *arg_type = _get_type_or_null(iarg.type);
-			ERR_FAIL_NULL_V(arg_type, ERR_BUG); // Argument type not found
+			ERR_FAIL_NULL_V_MSG(arg_type, ERR_BUG, "Argument type '" + iarg.type.cname + "' was not found.");
 
 			im_unique_sig += ",";
 			im_unique_sig += get_arg_unique_sig(*arg_type);
@@ -1737,6 +1741,69 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 		compile_items.push_back(output_file);
 	}
 
+	// Generate source file for built-in type constructor dictionary.
+
+	{
+		StringBuilder cs_built_in_ctors_content;
+
+		cs_built_in_ctors_content.append("namespace " BINDINGS_NAMESPACE ";\n\n");
+		cs_built_in_ctors_content.append("using System;\n"
+										 "using System.Collections.Generic;\n"
+										 "\n");
+		cs_built_in_ctors_content.append("internal static class " BINDINGS_CLASS_CONSTRUCTOR "\n{");
+
+		cs_built_in_ctors_content.append(MEMBER_BEGIN "internal static readonly Dictionary<string, Func<IntPtr, GodotObject>> " BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY ";\n");
+
+		cs_built_in_ctors_content.append(MEMBER_BEGIN "public static GodotObject Invoke(string nativeTypeNameStr, IntPtr nativeObjectPtr)\n");
+		cs_built_in_ctors_content.append(INDENT1 OPEN_BLOCK);
+		cs_built_in_ctors_content.append(INDENT2 "if (!" BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY ".TryGetValue(nativeTypeNameStr, out var constructor))\n");
+		cs_built_in_ctors_content.append(INDENT3 "throw new InvalidOperationException(\"Wrapper class not found for type: \" + nativeTypeNameStr);\n");
+		cs_built_in_ctors_content.append(INDENT2 "return constructor(nativeObjectPtr);\n");
+		cs_built_in_ctors_content.append(INDENT1 CLOSE_BLOCK);
+
+		cs_built_in_ctors_content.append(MEMBER_BEGIN "static " BINDINGS_CLASS_CONSTRUCTOR "()\n");
+		cs_built_in_ctors_content.append(INDENT1 OPEN_BLOCK);
+		cs_built_in_ctors_content.append(INDENT2 BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY " = new();\n");
+
+		for (const KeyValue<StringName, TypeInterface> &E : obj_types) {
+			const TypeInterface &itype = E.value;
+
+			if (itype.api_type != ClassDB::API_CORE || itype.is_singleton_instance) {
+				continue;
+			}
+
+			if (itype.is_deprecated) {
+				cs_built_in_ctors_content.append("#pragma warning disable CS0618\n");
+			}
+
+			cs_built_in_ctors_content.append(INDENT2 BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY ".Add(\"");
+			cs_built_in_ctors_content.append(itype.name);
+			cs_built_in_ctors_content.append("\", " CS_PARAM_INSTANCE " => new ");
+			cs_built_in_ctors_content.append(itype.proxy_name);
+			if (itype.is_singleton && !itype.is_compat_singleton) {
+				cs_built_in_ctors_content.append("Instance");
+			}
+			cs_built_in_ctors_content.append("(" CS_PARAM_INSTANCE "));\n");
+
+			if (itype.is_deprecated) {
+				cs_built_in_ctors_content.append("#pragma warning restore CS0618\n");
+			}
+		}
+
+		cs_built_in_ctors_content.append(INDENT1 CLOSE_BLOCK);
+
+		cs_built_in_ctors_content.append(CLOSE_BLOCK);
+
+		String constructors_file = path::join(base_gen_dir, BINDINGS_CLASS_CONSTRUCTOR ".cs");
+		Error err = _save_file(constructors_file, cs_built_in_ctors_content);
+
+		if (err != OK) {
+			return err;
+		}
+
+		compile_items.push_back(constructors_file);
+	}
+
 	// Generate native calls
 
 	StringBuilder cs_icalls_content;
@@ -1842,6 +1909,57 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 		}
 
 		compile_items.push_back(output_file);
+	}
+
+	// Generate source file for editor type constructor dictionary.
+
+	{
+		StringBuilder cs_built_in_ctors_content;
+
+		cs_built_in_ctors_content.append("namespace " BINDINGS_NAMESPACE ";\n\n");
+		cs_built_in_ctors_content.append("internal static class " BINDINGS_CLASS_CONSTRUCTOR_EDITOR "\n{");
+
+		cs_built_in_ctors_content.append(MEMBER_BEGIN "private static void AddEditorConstructors()\n");
+		cs_built_in_ctors_content.append(INDENT1 OPEN_BLOCK);
+		cs_built_in_ctors_content.append(INDENT2 "var builtInMethodConstructors = " BINDINGS_CLASS_CONSTRUCTOR "." BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY ";\n");
+
+		for (const KeyValue<StringName, TypeInterface> &E : obj_types) {
+			const TypeInterface &itype = E.value;
+
+			if (itype.api_type != ClassDB::API_EDITOR || itype.is_singleton_instance) {
+				continue;
+			}
+
+			if (itype.is_deprecated) {
+				cs_built_in_ctors_content.append("#pragma warning disable CS0618\n");
+			}
+
+			cs_built_in_ctors_content.append(INDENT2 "builtInMethodConstructors.Add(\"");
+			cs_built_in_ctors_content.append(itype.name);
+			cs_built_in_ctors_content.append("\", " CS_PARAM_INSTANCE " => new ");
+			cs_built_in_ctors_content.append(itype.proxy_name);
+			if (itype.is_singleton && !itype.is_compat_singleton) {
+				cs_built_in_ctors_content.append("Instance");
+			}
+			cs_built_in_ctors_content.append("(" CS_PARAM_INSTANCE "));\n");
+
+			if (itype.is_deprecated) {
+				cs_built_in_ctors_content.append("#pragma warning restore CS0618\n");
+			}
+		}
+
+		cs_built_in_ctors_content.append(INDENT1 CLOSE_BLOCK);
+
+		cs_built_in_ctors_content.append(CLOSE_BLOCK);
+
+		String constructors_file = path::join(base_gen_dir, BINDINGS_CLASS_CONSTRUCTOR_EDITOR ".cs");
+		Error err = _save_file(constructors_file, cs_built_in_ctors_content);
+
+		if (err != OK) {
+			return err;
+		}
+
+		compile_items.push_back(constructors_file);
 	}
 
 	// Generate native calls
@@ -2210,6 +2328,15 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 					   << CLOSE_BLOCK_L2 CLOSE_BLOCK_L1;
 			}
 
+			output << MEMBER_BEGIN "internal " << itype.proxy_name << "(IntPtr " CS_PARAM_INSTANCE ") : this("
+				   << (itype.memory_own ? "true" : "false") << ")\n" OPEN_BLOCK_L1
+				   << INDENT2 "NativePtr = " CS_PARAM_INSTANCE ";\n"
+				   << INDENT2 "unsafe\n" INDENT2 OPEN_BLOCK
+				   << INDENT3 "ConstructAndInitialize(null, "
+				   << BINDINGS_NATIVE_NAME_FIELD ", CachedType, refCounted: "
+				   << (itype.is_ref_counted ? "true" : "false") << ");\n"
+				   << CLOSE_BLOCK_L2 CLOSE_BLOCK_L1;
+
 			// Add.. em.. trick constructor. Sort of.
 			output.append(MEMBER_BEGIN "internal ");
 			output.append(itype.proxy_name);
@@ -2313,7 +2440,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				const ArgumentInterface &iarg = *itr;
 
 				const TypeInterface *arg_type = _get_type_or_null(iarg.type);
-				ERR_FAIL_NULL_V(arg_type, ERR_BUG); // Argument type not found
+				ERR_FAIL_NULL_V_MSG(arg_type, ERR_BUG, "Argument type '" + iarg.type.cname + "' was not found.");
 
 				if (i != 0) {
 					output << ", ";
@@ -2333,7 +2460,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 			if (imethod.return_type.cname != name_cache.type_void) {
 				const TypeInterface *return_type = _get_type_or_null(imethod.return_type);
-				ERR_FAIL_NULL_V(return_type, ERR_BUG); // Return type not found
+				ERR_FAIL_NULL_V_MSG(return_type, ERR_BUG, "Return type '" + imethod.return_type.cname + "' was not found.");
 
 				output << INDENT3 "ret = "
 					   << sformat(return_type->cs_managed_to_variant, "callRet", return_type->cs_type, return_type->name)
@@ -2552,7 +2679,7 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 	const TypeReference &proptype_name = getter ? getter->return_type : setter->arguments.back()->get().type;
 
 	const TypeInterface *prop_itype = _get_type_or_singleton_or_null(proptype_name);
-	ERR_FAIL_NULL_V(prop_itype, ERR_BUG); // Property type not found
+	ERR_FAIL_NULL_V_MSG(prop_itype, ERR_BUG, "Property type '" + proptype_name.cname + "' was not found.");
 
 	ERR_FAIL_COND_V_MSG(prop_itype->is_singleton, ERR_BUG,
 			"Property type is a singleton: '" + p_itype.name + "." + String(p_iprop.cname) + "'.");
@@ -2651,7 +2778,7 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 
 Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterface &p_itype, const BindingsGenerator::MethodInterface &p_imethod, int &p_method_bind_count, StringBuilder &p_output) {
 	const TypeInterface *return_type = _get_type_or_singleton_or_null(p_imethod.return_type);
-	ERR_FAIL_NULL_V(return_type, ERR_BUG); // Return type not found
+	ERR_FAIL_NULL_V_MSG(return_type, ERR_BUG, "Return type '" + p_imethod.return_type.cname + "' was not found.");
 
 	ERR_FAIL_COND_V_MSG(return_type->is_singleton, ERR_BUG,
 			"Method return type is a singleton: '" + p_itype.name + "." + p_imethod.name + "'.");
@@ -2690,7 +2817,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 	const ArgumentInterface &first = p_imethod.arguments.front()->get();
 	for (const ArgumentInterface &iarg : p_imethod.arguments) {
 		const TypeInterface *arg_type = _get_type_or_singleton_or_null(iarg.type);
-		ERR_FAIL_NULL_V(arg_type, ERR_BUG); // Argument type not found
+		ERR_FAIL_NULL_V_MSG(arg_type, ERR_BUG, "Argument type '" + iarg.type.cname + "' was not found.");
 
 		ERR_FAIL_COND_V_MSG(arg_type->is_singleton, ERR_BUG,
 				"Argument type is a singleton: '" + iarg.name + "' of method '" + p_itype.name + "." + p_imethod.name + "'.");
@@ -2934,17 +3061,12 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterface &p_itype, const BindingsGenerator::SignalInterface &p_isignal, StringBuilder &p_output) {
 	String arguments_sig;
-	String delegate_type_params;
-
-	if (!p_isignal.arguments.is_empty()) {
-		delegate_type_params += "<";
-	}
 
 	// Retrieve information from the arguments
 	const ArgumentInterface &first = p_isignal.arguments.front()->get();
 	for (const ArgumentInterface &iarg : p_isignal.arguments) {
 		const TypeInterface *arg_type = _get_type_or_singleton_or_null(iarg.type);
-		ERR_FAIL_NULL_V(arg_type, ERR_BUG); // Argument type not found
+		ERR_FAIL_NULL_V_MSG(arg_type, ERR_BUG, "Argument type '" + iarg.type.cname + "' was not found.");
 
 		ERR_FAIL_COND_V_MSG(arg_type->is_singleton, ERR_BUG,
 				"Argument type is a singleton: '" + iarg.name + "' of signal '" + p_itype.name + "." + p_isignal.name + "'.");
@@ -2959,18 +3081,13 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 
 		if (&iarg != &first) {
 			arguments_sig += ", ";
-			delegate_type_params += ", ";
 		}
 
-		arguments_sig += arg_type->cs_type;
+		String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
+
+		arguments_sig += arg_cs_type;
 		arguments_sig += " ";
 		arguments_sig += iarg.name;
-
-		delegate_type_params += arg_type->cs_type;
-	}
-
-	if (!p_isignal.arguments.is_empty()) {
-		delegate_type_params += ">";
 	}
 
 	// Generate signal
@@ -3013,14 +3130,20 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 			int idx = 0;
 			for (const ArgumentInterface &iarg : p_isignal.arguments) {
 				const TypeInterface *arg_type = _get_type_or_null(iarg.type);
-				ERR_FAIL_NULL_V(arg_type, ERR_BUG); // Argument type not found
+				ERR_FAIL_NULL_V_MSG(arg_type, ERR_BUG, "Argument type '" + iarg.type.cname + "' was not found.");
 
 				if (idx != 0) {
 					p_output << ", ";
 				}
 
-				p_output << sformat(arg_type->cs_variant_to_managed,
-						"args[" + itos(idx) + "]", arg_type->cs_type, arg_type->name);
+				if (arg_type->cname == name_cache.type_Array_generic || arg_type->cname == name_cache.type_Dictionary_generic) {
+					String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
+
+					p_output << "new " << arg_cs_type << "(" << sformat(arg_type->cs_variant_to_managed, "args[" + itos(idx) + "]", arg_type->cs_type, arg_type->name) << ")";
+				} else {
+					p_output << sformat(arg_type->cs_variant_to_managed,
+							"args[" + itos(idx) + "]", arg_type->cs_type, arg_type->name);
+				}
 
 				idx++;
 			}
@@ -3104,6 +3227,46 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 		}
 
 		p_output.append(CLOSE_BLOCK_L1);
+
+		// Generate On{EventName} method to raise the event.
+		if (!p_itype.is_singleton) {
+			p_output.append(MEMBER_BEGIN "protected void ");
+			p_output << "On" << p_isignal.proxy_name;
+			if (is_parameterless) {
+				p_output.append("()\n" OPEN_BLOCK_L1 INDENT2);
+				p_output << "EmitSignal(SignalName." << p_isignal.proxy_name << ");\n";
+				p_output.append(CLOSE_BLOCK_L1);
+			} else {
+				p_output.append("(");
+
+				StringBuilder cs_emitsignal_params;
+
+				int idx = 0;
+				for (const ArgumentInterface &iarg : p_isignal.arguments) {
+					const TypeInterface *arg_type = _get_type_or_null(iarg.type);
+					ERR_FAIL_NULL_V_MSG(arg_type, ERR_BUG, "Argument type '" + iarg.type.cname + "' was not found.");
+
+					if (idx != 0) {
+						p_output << ", ";
+						cs_emitsignal_params << ", ";
+					}
+
+					p_output << arg_type->cs_type << " " << iarg.name;
+
+					if (arg_type->is_enum) {
+						cs_emitsignal_params << "(long)";
+					}
+
+					cs_emitsignal_params << iarg.name;
+
+					idx++;
+				}
+
+				p_output.append(")\n" OPEN_BLOCK_L1 INDENT2);
+				p_output << "EmitSignal(SignalName." << p_isignal.proxy_name << ", " << cs_emitsignal_params << ");\n";
+				p_output.append(CLOSE_BLOCK_L1);
+			}
+		}
 	}
 
 	return OK;
@@ -3113,7 +3276,7 @@ Error BindingsGenerator::_generate_cs_native_calls(const InternalCall &p_icall, 
 	bool ret_void = p_icall.return_type.cname == name_cache.type_void;
 
 	const TypeInterface *return_type = _get_type_or_null(p_icall.return_type);
-	ERR_FAIL_NULL_V(return_type, ERR_BUG); // Return type not found
+	ERR_FAIL_NULL_V_MSG(return_type, ERR_BUG, "Return type '" + p_icall.return_type.cname + "' was not found.");
 
 	StringBuilder c_func_sig;
 	StringBuilder c_in_statements;
@@ -3129,7 +3292,7 @@ Error BindingsGenerator::_generate_cs_native_calls(const InternalCall &p_icall, 
 	int i = 0;
 	for (const TypeReference &arg_type_ref : p_icall.argument_types) {
 		const TypeInterface *arg_type = _get_type_or_null(arg_type_ref);
-		ERR_FAIL_NULL_V(arg_type, ERR_BUG); // Return type not found
+		ERR_FAIL_NULL_V_MSG(arg_type, ERR_BUG, "Argument type '" + arg_type_ref.cname + "' was not found.");
 
 		String c_param_name = "arg" + itos(i + 1);
 
@@ -3389,7 +3552,7 @@ const String BindingsGenerator::_get_generic_type_parameters(const TypeInterface
 	String params = "<";
 	for (const TypeReference &param_type : p_generic_type_parameters) {
 		const TypeInterface *param_itype = _get_type_or_singleton_or_null(param_type);
-		ERR_FAIL_NULL_V(param_itype, ""); // Parameter type not found
+		ERR_FAIL_NULL_V_MSG(param_itype, "", "Parameter type '" + param_type.cname + "' was not found.");
 
 		ERR_FAIL_COND_V_MSG(param_itype->is_singleton, "",
 				"Generic type parameter is a singleton: '" + param_itype->name + "'.");
@@ -3448,6 +3611,12 @@ StringName BindingsGenerator::_get_int_type_name_from_meta(GodotTypeInfo::Metada
 		case GodotTypeInfo::METADATA_INT_IS_UINT64:
 			return "ulong";
 			break;
+		case GodotTypeInfo::METADATA_INT_IS_CHAR16:
+			return "char";
+			break;
+		case GodotTypeInfo::METADATA_INT_IS_CHAR32:
+			// To prevent breaking compatibility, C# bindings need to keep using `long`.
+			return "long";
 		default:
 			// Assume INT64
 			return "long";

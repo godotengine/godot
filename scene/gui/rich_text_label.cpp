@@ -333,6 +333,8 @@ void RichTextLabel::_update_line_font(ItemFrame *p_frame, int p_line, const Ref<
 				font_size = font_size_it->font_size;
 			}
 			TS->shaped_set_span_update_font(t, i, font->get_rids(), font_size, font->get_opentype_features());
+		} else {
+			TS->shaped_set_span_update_font(t, i, p_base_font->get_rids(), p_base_font_size, p_base_font->get_opentype_features());
 		}
 	}
 
@@ -5429,6 +5431,7 @@ Variant RichTextLabel::get_drag_data(const Point2 &p_point) {
 		String t = get_selected_text();
 		Label *l = memnew(Label);
 		l->set_text(t);
+		l->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Text is already translated.
 		set_drag_preview(l);
 		return t;
 	}

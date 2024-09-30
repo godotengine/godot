@@ -220,15 +220,6 @@ msgstr "セッションカテゴリー:"
 msgid "Mix With Others"
 msgstr "バックグラウンド音声とミックス"
 
-msgid "Editor"
-msgstr "エディター"
-
-msgid "Script"
-msgstr "スクリプト"
-
-msgid "Search in File Extensions"
-msgstr "ファイル拡張子で検索"
-
 msgid "Subwindows"
 msgstr "サブウィンドウ"
 
@@ -831,6 +822,9 @@ msgstr "モード切り替え"
 
 msgid "Interface"
 msgstr "インターフェース"
+
+msgid "Editor"
+msgstr "エディター"
 
 msgid "Editor Language"
 msgstr "エディターの言語"
@@ -2389,6 +2383,9 @@ msgstr "SSH 秘密鍵パス"
 msgid "Main Run Args"
 msgstr "メイン実行引数"
 
+msgid "Script"
+msgstr "スクリプト"
+
 msgid "Naming"
 msgstr "命名規則"
 
@@ -2586,6 +2583,9 @@ msgstr "Android"
 
 msgid "Text Driver"
 msgstr "テキストドライバー"
+
+msgid "Search in File Extensions"
+msgstr "ファイル拡張子で検索"
 
 msgid "Mouse Cursor"
 msgstr "マウスカーソル"

@@ -381,7 +381,7 @@ public:
 		ctls[cid] = p_name;
 	}
 
-	virtual ~FileDialogEventHandler(){};
+	virtual ~FileDialogEventHandler() {}
 };
 
 #if defined(__GNUC__) && !defined(__clang__)
@@ -3962,9 +3962,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		}
 	}
 
-	// WARNING: we get called with events before the window is registered in our collection
+	// WARNING: We get called with events before the window is registered in our collection
 	// specifically, even the call to CreateWindowEx already calls here while still on the stack,
-	// so there is no way to store the window handle in our collection before we get here
+	// so there is no way to store the window handle in our collection before we get here.
 	if (!window_created) {
 		// don't let code below operate on incompletely initialized window objects or missing window_id
 		return _handle_early_window_message(hWnd, uMsg, wParam, lParam);
@@ -6177,6 +6177,17 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 				}
 			}
 #endif
+			bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
+			if (failed && fallback_to_opengl3 && rendering_driver != "opengl3") {
+				memdelete(rendering_context);
+				rendering_context = nullptr;
+				tested_drivers.set_flag(DRIVER_ID_COMPAT_OPENGL3);
+				WARN_PRINT("Your video card drivers seem not to support Direct3D 12 or Vulkan, switching to OpenGL 3.");
+				rendering_driver = "opengl3";
+				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+				failed = false;
+			}
 			if (failed) {
 				memdelete(rendering_context);
 				rendering_context = nullptr;

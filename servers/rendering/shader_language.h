@@ -91,6 +91,7 @@ public:
 		TK_TYPE_USAMPLER3D,
 		TK_TYPE_SAMPLERCUBE,
 		TK_TYPE_SAMPLERCUBEARRAY,
+		TK_TYPE_SAMPLEREXT,
 		TK_INTERPOLATION_FLAT,
 		TK_INTERPOLATION_SMOOTH,
 		TK_CONST,
@@ -235,6 +236,7 @@ public:
 		TYPE_USAMPLER3D,
 		TYPE_SAMPLERCUBE,
 		TYPE_SAMPLERCUBEARRAY,
+		TYPE_SAMPLEREXT,
 		TYPE_STRUCT,
 		TYPE_MAX
 	};
@@ -543,6 +545,9 @@ public:
 		bool single_statement = false;
 		bool use_comma_between_statements = false;
 		bool use_op_eval = true;
+
+		DataType expected_type = TYPE_VOID;
+		HashSet<int> constants;
 
 		BlockNode() :
 				Node(NODE_TYPE_BLOCK) {}

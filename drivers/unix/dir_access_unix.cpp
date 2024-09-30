@@ -419,6 +419,9 @@ Error DirAccessUnix::remove(String p_path) {
 	}
 
 	p_path = fix_path(p_path);
+	if (p_path.ends_with("/")) {
+		p_path = p_path.left(-1);
+	}
 
 	struct stat flags = {};
 	if ((stat(p_path.utf8().get_data(), &flags) != 0)) {
@@ -438,6 +441,9 @@ bool DirAccessUnix::is_link(String p_file) {
 	}
 
 	p_file = fix_path(p_file);
+	if (p_file.ends_with("/")) {
+		p_file = p_file.left(-1);
+	}
 
 	struct stat flags = {};
 	if ((lstat(p_file.utf8().get_data(), &flags) != 0)) {
@@ -453,6 +459,9 @@ String DirAccessUnix::read_link(String p_file) {
 	}
 
 	p_file = fix_path(p_file);
+	if (p_file.ends_with("/")) {
+		p_file = p_file.left(-1);
+	}
 
 	char buf[256];
 	memset(buf, 0, 256);

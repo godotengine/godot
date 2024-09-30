@@ -270,15 +270,6 @@ msgstr "Oturum Kategorisi"
 msgid "Mix With Others"
 msgstr "Diğerleri ile Karıştır"
 
-msgid "Editor"
-msgstr "Düzenleyici"
-
-msgid "Script"
-msgstr "Betik"
-
-msgid "Search in File Extensions"
-msgstr "Dosya Uzantılarında Ara"
-
 msgid "Subwindows"
 msgstr "Altpencereler"
 
@@ -929,6 +920,9 @@ msgstr "Kip Değiştir"
 
 msgid "Interface"
 msgstr "Arayüz"
+
+msgid "Editor"
+msgstr "Düzenleyici"
 
 msgid "Editor Language"
 msgstr "Düzenleyici Dili"
@@ -2818,6 +2812,9 @@ msgstr "SSH Özel Anahtar Yolu"
 msgid "Main Run Args"
 msgstr "Oynatma Ana Girdi Değişkenleri"
 
+msgid "Script"
+msgstr "Betik"
+
 msgid "Templates Search Path"
 msgstr "Şablon Arama Yolu"
 
@@ -3072,6 +3069,9 @@ msgstr "Döner Giriş Kaydırma Ekseni"
 
 msgid "Text Driver"
 msgstr "Metin Sürücüsü"
+
+msgid "Search in File Extensions"
+msgstr "Dosya Uzantılarında Ara"
 
 msgid "Mouse Cursor"
 msgstr "Fare İmleci"

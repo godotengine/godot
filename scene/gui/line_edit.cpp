@@ -45,6 +45,111 @@
 #include "editor/editor_settings.h"
 #endif
 
+void LineEdit::_edit() {
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	if (!has_focus()) {
+		grab_focus();
+	}
+
+	if (!editable || editing) {
+		return;
+	}
+
+	editing = true;
+	_validate_caret_can_draw();
+
+	show_virtual_keyboard();
+	queue_redraw();
+	emit_signal(SNAME("editing_toggled"), true);
+}
+
+void LineEdit::_unedit() {
+	if (!editing) {
+		return;
+	}
+
+	editing = false;
+	_validate_caret_can_draw();
+
+	apply_ime();
+	set_caret_column(caret_column); // Update scroll_offset.
+
+	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
+		DisplayServer::get_singleton()->virtual_keyboard_hide();
+	}
+
+	if (deselect_on_focus_loss_enabled && !selection.drag_attempt) {
+		deselect();
+	}
+
+	emit_signal(SNAME("editing_toggled"), false);
+}
+
+bool LineEdit::is_editing() const {
+	return editing;
+}
+
+void LineEdit::_close_ime_window() {
+	DisplayServer::WindowID wid = get_window() ? get_window()->get_window_id() : DisplayServer::INVALID_WINDOW_ID;
+	if (wid == DisplayServer::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
+		return;
+	}
+	DisplayServer::get_singleton()->window_set_ime_position(Point2(), wid);
+	DisplayServer::get_singleton()->window_set_ime_active(false, wid);
+}
+
+void LineEdit::_update_ime_window_position() {
+	DisplayServer::WindowID wid = get_window() ? get_window()->get_window_id() : DisplayServer::INVALID_WINDOW_ID;
+	if (wid == DisplayServer::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
+		return;
+	}
+	DisplayServer::get_singleton()->window_set_ime_active(true, wid);
+	Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + theme_cache.font->get_height(theme_cache.font_size)) / 2) + get_global_position();
+	if (get_window()->get_embedder()) {
+		pos += get_viewport()->get_popup_base_transform().get_origin();
+	}
+	// The window will move to the updated position the next time the IME is updated, not immediately.
+	DisplayServer::get_singleton()->window_set_ime_position(pos, wid);
+}
+
+bool LineEdit::has_ime_text() const {
+	return !ime_text.is_empty();
+}
+
+void LineEdit::cancel_ime() {
+	if (!has_ime_text()) {
+		return;
+	}
+	ime_text = String();
+	ime_selection = Vector2i();
+	alt_start = false;
+	alt_start_no_hold = false;
+	_close_ime_window();
+	_shape();
+}
+
+void LineEdit::apply_ime() {
+	if (!has_ime_text()) {
+		return;
+	}
+
+	// Force apply the current IME text.
+	if (alt_start || alt_start_no_hold) {
+		cancel_ime();
+		if ((alt_code > 0x31 && alt_code < 0xd800) || (alt_code > 0xdfff && alt_code <= 0x10ffff)) {
+			char32_t ucodestr[2] = { (char32_t)alt_code, 0 };
+			insert_text_at_caret(ucodestr);
+		}
+	} else {
+		String insert_ime_text = ime_text;
+		cancel_ime();
+		insert_text_at_caret(insert_ime_text);
+	}
+}
+
 void LineEdit::_swap_current_input_direction() {
 	if (input_direction == TEXT_DIRECTION_LTR) {
 		input_direction = TEXT_DIRECTION_RTL;
@@ -52,7 +157,6 @@ void LineEdit::_swap_current_input_direction() {
 		input_direction = TEXT_DIRECTION_LTR;
 	}
 	set_caret_column(get_caret_column());
-	queue_redraw();
 }
 
 void LineEdit::_move_caret_left(bool p_select, bool p_move_by_word) {
@@ -240,6 +344,11 @@ void LineEdit::_delete(bool p_word, bool p_all_to_right) {
 }
 
 void LineEdit::unhandled_key_input(const Ref<InputEvent> &p_event) {
+	// Return to prevent editing if just focused.
+	if (!editing) {
+		return;
+	}
+
 	Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid()) {
@@ -266,25 +375,40 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> b = p_event;
 
 	if (b.is_valid()) {
-		if (ime_text.length() != 0) {
-			// Ignore mouse clicks in IME input mode.
-			return;
-		}
-		if (b->is_pressed() && b->get_button_index() == MouseButton::RIGHT && context_menu_enabled) {
-			_update_context_menu();
-			menu->set_position(get_screen_position() + get_local_mouse_position());
-			menu->reset_size();
-			menu->popup();
-			grab_focus();
+		if (b->is_pressed() && b->get_button_index() == MouseButton::RIGHT) {
+			apply_ime();
+
+			if (editable && !selection.enabled) {
+				set_caret_at_pixel_pos(b->get_position().x);
+			}
+
+			if (context_menu_enabled) {
+				_update_context_menu();
+				menu->set_position(get_screen_position() + get_local_mouse_position());
+				menu->reset_size();
+				menu->popup();
+			}
+
+			if (editable && !editing) {
+				_edit();
+			}
+
 			accept_event();
 			return;
 		}
 
-		if (is_middle_mouse_paste_enabled() && b->is_pressed() && b->get_button_index() == MouseButton::MIDDLE && is_editable() && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
+		if (editable && is_middle_mouse_paste_enabled() && b->is_pressed() && b->get_button_index() == MouseButton::MIDDLE && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
+			apply_ime();
+
 			String paste_buffer = DisplayServer::get_singleton()->clipboard_get_primary().strip_escapes();
 
 			deselect();
 			set_caret_at_pixel_pos(b->get_position().x);
+
+			if (!editing) {
+				_edit();
+			}
+
 			if (!paste_buffer.is_empty()) {
 				insert_text_at_caret(paste_buffer);
 
@@ -295,7 +419,6 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 					text_changed_dirty = true;
 				}
 			}
-			grab_focus();
 			accept_event();
 			return;
 		}
@@ -304,10 +427,15 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
-		_reset_caret_blink_timer();
+		if (editing) {
+			_reset_caret_blink_timer();
+		}
+
 		if (b->is_pressed()) {
+			apply_ime();
+
 			accept_event(); // Don't pass event further when clicked on text field.
-			if (!text.is_empty() && is_editable() && _is_over_clear_button(b->get_position())) {
+			if (editable && !text.is_empty() && _is_over_clear_button(b->get_position())) {
 				clear_button_status.press_attempt = true;
 				clear_button_status.pressing_inside = true;
 				queue_redraw();
@@ -330,7 +458,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 					const int triple_click_tolerance = 5;
 					const bool is_triple_click = !b->is_double_click() && (OS::get_singleton()->get_ticks_msec() - last_dblclk) < triple_click_timeout && b->get_position().distance_to(last_dblclk_pos) < triple_click_tolerance;
 
-					if (is_triple_click && text.length()) {
+					if (is_triple_click && !text.is_empty()) {
 						// Triple-click select all.
 						selection.enabled = true;
 						selection.begin = 0;
@@ -377,13 +505,17 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 
+			if (editable && !editing) {
+				_edit();
+				return;
+			}
 			queue_redraw();
 
 		} else {
 			if (selection.enabled && !pass && b->get_button_index() == MouseButton::LEFT && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
 				DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
 			}
-			if (!text.is_empty() && is_editable() && clear_button_enabled) {
+			if (editable && !text.is_empty() && clear_button_enabled) {
 				bool press_attempt = clear_button_status.press_attempt;
 				clear_button_status.press_attempt = false;
 				if (press_attempt && clear_button_status.pressing_inside && _is_over_clear_button(b->get_position())) {
@@ -416,7 +548,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> m = p_event;
 
 	if (m.is_valid()) {
-		if (!text.is_empty() && is_editable() && clear_button_enabled) {
+		if (editable && !text.is_empty() && clear_button_enabled) {
 			bool last_press_inside = clear_button_status.pressing_inside;
 			clear_button_status.pressing_inside = clear_button_status.press_attempt && _is_over_clear_button(m->get_position());
 			if (last_press_inside != clear_button_status.pressing_inside) {
@@ -462,221 +594,305 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventKey> k = p_event;
 
-	if (k.is_valid()) {
-		if (!k->is_pressed()) {
-			if (alt_start && k->get_keycode() == Key::ALT) {
-				alt_start = false;
-				if ((alt_code > 0x31 && alt_code < 0xd800) || (alt_code > 0xdfff && alt_code <= 0x10ffff)) {
-					char32_t ucodestr[2] = { (char32_t)alt_code, 0 };
-					insert_text_at_caret(ucodestr);
-				}
-				accept_event();
-				return;
-			}
-			return;
-		}
+	if (k.is_null()) {
+		return;
+	}
 
-		// Alt + Unicode input:
-		if (k->is_alt_pressed()) {
-			if (!alt_start) {
-				if (k->get_keycode() == Key::KP_ADD) {
-					alt_start = true;
-					alt_code = 0;
-					accept_event();
-					return;
-				}
-			} else {
-				if (k->get_keycode() >= Key::KEY_0 && k->get_keycode() <= Key::KEY_9) {
-					alt_code = alt_code << 4;
-					alt_code += (uint32_t)(k->get_keycode() - Key::KEY_0);
-				}
-				if (k->get_keycode() >= Key::KP_0 && k->get_keycode() <= Key::KP_9) {
-					alt_code = alt_code << 4;
-					alt_code += (uint32_t)(k->get_keycode() - Key::KP_0);
-				}
-				if (k->get_keycode() >= Key::A && k->get_keycode() <= Key::F) {
-					alt_code = alt_code << 4;
-					alt_code += (uint32_t)(k->get_keycode() - Key::A) + 10;
-				}
-				accept_event();
-				return;
-			}
-		}
+	if (editable && !editing && k->is_action_pressed("ui_text_submit", false)) {
+		_edit();
+		return;
+	}
 
-		if (context_menu_enabled) {
-			if (k->is_action("ui_menu", true)) {
-				_update_context_menu();
-				Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + theme_cache.font->get_height(theme_cache.font_size)) / 2);
-				menu->set_position(get_screen_position() + pos);
-				menu->reset_size();
-				menu->popup();
-				menu->grab_focus();
+	if (!editing) {
+		return;
+	}
 
-				accept_event();
-				return;
-			}
-		}
-
-		// Default is ENTER and KP_ENTER. Cannot use ui_accept as default includes SPACE.
-		if (k->is_action("ui_text_submit", false)) {
-			emit_signal(SNAME("text_submitted"), text);
-			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
-				DisplayServer::get_singleton()->virtual_keyboard_hide();
-			}
-			accept_event();
-			return;
-		}
-
-		if (k->is_action("ui_cancel")) {
-			callable_mp((Control *)this, &Control::release_focus).call_deferred();
-			accept_event();
-			return;
-		}
-
-		if (is_shortcut_keys_enabled()) {
-			if (k->is_action("ui_copy", true)) {
-				copy_text();
-				accept_event();
-				return;
-			}
-
-			if (k->is_action("ui_text_select_all", true)) {
-				select();
-				accept_event();
-				return;
-			}
-
-			// Cut / Paste
-			if (k->is_action("ui_cut", true)) {
-				cut_text();
-				accept_event();
-				return;
-			}
-
-			if (k->is_action("ui_paste", true)) {
-				paste_text();
-				accept_event();
-				return;
-			}
-
-			// Undo / Redo
-			if (k->is_action("ui_undo", true)) {
-				undo();
-				accept_event();
-				return;
-			}
-
-			if (k->is_action("ui_redo", true)) {
-				redo();
-				accept_event();
-				return;
-			}
-		}
-
-		// BACKSPACE
-		if (k->is_action("ui_text_backspace_all_to_left", true)) {
-			_backspace(false, true);
-			accept_event();
-			return;
-		}
-		if (k->is_action("ui_text_backspace_word", true)) {
-			_backspace(true);
-			accept_event();
-			return;
-		}
-		if (k->is_action("ui_text_backspace", true)) {
-			_backspace();
-			accept_event();
-			return;
-		}
-
-		// DELETE
-		if (k->is_action("ui_text_delete_all_to_right", true)) {
-			_delete(false, true);
-			accept_event();
-			return;
-		}
-		if (k->is_action("ui_text_delete_word", true)) {
-			_delete(true);
-			accept_event();
-			return;
-		}
-		if (k->is_action("ui_text_delete", true)) {
-			_delete();
-			accept_event();
-			return;
-		}
-
-		// Cursor Movement
-
-		k = k->duplicate();
-		bool shift_pressed = k->is_shift_pressed();
-		// Remove shift or else actions will not match. Use above variable for selection.
-		k->set_shift_pressed(false);
-
-		if (k->is_action("ui_text_caret_word_left", true)) {
-			_move_caret_left(shift_pressed, true);
-			accept_event();
-			return;
-		}
-		if (k->is_action("ui_text_caret_left", true)) {
-			_move_caret_left(shift_pressed);
-			accept_event();
-			return;
-		}
-		if (k->is_action("ui_text_caret_word_right", true)) {
-			_move_caret_right(shift_pressed, true);
-			accept_event();
-			return;
-		}
-		if (k->is_action("ui_text_caret_right", true)) {
-			_move_caret_right(shift_pressed, false);
-			accept_event();
-			return;
-		}
-
-		// Up = Home, Down = End
-		if (k->is_action("ui_text_caret_up", true) || k->is_action("ui_text_caret_line_start", true) || k->is_action("ui_text_caret_page_up", true)) {
-			_move_caret_start(shift_pressed);
-			accept_event();
-			return;
-		}
-		if (k->is_action("ui_text_caret_down", true) || k->is_action("ui_text_caret_line_end", true) || k->is_action("ui_text_caret_page_down", true)) {
-			_move_caret_end(shift_pressed);
-			accept_event();
-			return;
-		}
-
-		// Misc
-		if (k->is_action("ui_swap_input_direction", true)) {
-			_swap_current_input_direction();
-			accept_event();
-			return;
-		}
-
-		_reset_caret_blink_timer();
-
-		// Allow unicode handling if:
-		// * No Modifiers are pressed (except shift)
-		bool allow_unicode_handling = !(k->is_ctrl_pressed() || k->is_alt_pressed() || k->is_meta_pressed());
-
-		if (allow_unicode_handling && editable && k->get_unicode() >= 32) {
-			// Handle Unicode if no modifiers are active.
+	// Start Unicode input (hold).
+	if (k->is_alt_pressed() && k->get_keycode() == Key::KP_ADD && !alt_start && !alt_start_no_hold) {
+		if (selection.enabled) {
 			selection_delete();
-			char32_t ucodestr[2] = { (char32_t)k->get_unicode(), 0 };
-			int prev_len = text.length();
+		}
+		alt_start = true;
+		alt_code = 0;
+		ime_text = "u";
+		ime_selection = Vector2i(0, -1);
+		_shape();
+		queue_redraw();
+		accept_event();
+		return;
+	}
+
+	// Start Unicode input (press).
+	if (k->is_action("ui_unicode_start", true) && !alt_start && !alt_start_no_hold) {
+		if (selection.enabled) {
+			selection_delete();
+		}
+		alt_start_no_hold = true;
+		alt_code = 0;
+		ime_text = "u";
+		ime_selection = Vector2i(0, -1);
+		_shape();
+		queue_redraw();
+		accept_event();
+		return;
+	}
+
+	// Update Unicode input.
+	if (k->is_pressed() && ((k->is_alt_pressed() && alt_start) || alt_start_no_hold)) {
+		if (k->get_keycode() >= Key::KEY_0 && k->get_keycode() <= Key::KEY_9) {
+			alt_code = alt_code << 4;
+			alt_code += (uint32_t)(k->get_keycode() - Key::KEY_0);
+		} else if (k->get_keycode() >= Key::KP_0 && k->get_keycode() <= Key::KP_9) {
+			alt_code = alt_code << 4;
+			alt_code += (uint32_t)(k->get_keycode() - Key::KP_0);
+		} else if (k->get_keycode() >= Key::A && k->get_keycode() <= Key::F) {
+			alt_code = alt_code << 4;
+			alt_code += (uint32_t)(k->get_keycode() - Key::A) + 10;
+		} else if ((Key)k->get_unicode() >= Key::KEY_0 && (Key)k->get_unicode() <= Key::KEY_9) {
+			alt_code = alt_code << 4;
+			alt_code += (uint32_t)((Key)k->get_unicode() - Key::KEY_0);
+		} else if ((Key)k->get_unicode() >= Key::A && (Key)k->get_unicode() <= Key::F) {
+			alt_code = alt_code << 4;
+			alt_code += (uint32_t)((Key)k->get_unicode() - Key::A) + 10;
+		} else if (k->get_physical_keycode() >= Key::KEY_0 && k->get_physical_keycode() <= Key::KEY_9) {
+			alt_code = alt_code << 4;
+			alt_code += (uint32_t)(k->get_physical_keycode() - Key::KEY_0);
+		}
+		if (k->get_keycode() == Key::BACKSPACE) {
+			alt_code = alt_code >> 4;
+		}
+		if (alt_code > 0x10ffff) {
+			alt_code = 0x10ffff;
+		}
+		if (alt_code > 0) {
+			ime_text = vformat("u%s", String::num_int64(alt_code, 16, true));
+		} else {
+			ime_text = "u";
+		}
+		ime_selection = Vector2i(0, -1);
+		_shape();
+		queue_redraw();
+		accept_event();
+		return;
+	}
+
+	// Submit Unicode input.
+	if ((!k->is_pressed() && alt_start && k->get_keycode() == Key::ALT) || (alt_start_no_hold && (k->is_action("ui_text_submit", true) || k->is_action("ui_accept", true)))) {
+		alt_start = false;
+		alt_start_no_hold = false;
+		if ((alt_code > 0x31 && alt_code < 0xd800) || (alt_code > 0xdfff && alt_code <= 0x10ffff)) {
+			ime_text = String();
+			ime_selection = Vector2i();
+			char32_t ucodestr[2] = { (char32_t)alt_code, 0 };
 			insert_text_at_caret(ucodestr);
-			if (text.length() != prev_len) {
-				if (!text_changed_dirty) {
-					if (is_inside_tree()) {
-						callable_mp(this, &LineEdit::_text_changed).call_deferred();
-					}
-					text_changed_dirty = true;
-				}
-			}
+		} else {
+			ime_text = String();
+			ime_selection = Vector2i();
+			_shape();
+		}
+		queue_redraw();
+		accept_event();
+		return;
+	}
+
+	// Cancel Unicode input.
+	if (alt_start_no_hold && k->is_action("ui_cancel", true)) {
+		alt_start = false;
+		alt_start_no_hold = false;
+		ime_text = String();
+		ime_selection = Vector2i();
+		_shape();
+		queue_redraw();
+		accept_event();
+		return;
+	}
+
+	if (!k->is_pressed()) {
+		return;
+	}
+
+	// Open context menu.
+	if (context_menu_enabled) {
+		if (k->is_action("ui_menu", true)) {
+			_update_context_menu();
+			Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + theme_cache.font->get_height(theme_cache.font_size)) / 2);
+			menu->set_position(get_screen_position() + pos);
+			menu->reset_size();
+			menu->popup();
+			menu->grab_focus();
+
 			accept_event();
 			return;
 		}
+	}
+
+	// Default is ENTER and KP_ENTER. Cannot use ui_accept as default includes SPACE.
+	if (k->is_action_pressed("ui_text_submit")) {
+		emit_signal(SNAME("text_submitted"), text);
+		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
+			DisplayServer::get_singleton()->virtual_keyboard_hide();
+		}
+
+		if (editing) {
+			_unedit();
+		}
+
+		accept_event();
+		return;
+	}
+
+	if (k->is_action("ui_cancel")) {
+		if (editing) {
+			_unedit();
+		}
+
+		accept_event();
+		return;
+	}
+
+	if (is_shortcut_keys_enabled()) {
+		if (k->is_action("ui_copy", true)) {
+			copy_text();
+			accept_event();
+			return;
+		}
+
+		if (k->is_action("ui_text_select_all", true)) {
+			select();
+			accept_event();
+			return;
+		}
+
+		// Cut / Paste
+		if (k->is_action("ui_cut", true)) {
+			cut_text();
+			accept_event();
+			return;
+		}
+
+		if (k->is_action("ui_paste", true)) {
+			paste_text();
+			accept_event();
+			return;
+		}
+
+		// Undo / Redo
+		if (k->is_action("ui_undo", true)) {
+			undo();
+			accept_event();
+			return;
+		}
+
+		if (k->is_action("ui_redo", true)) {
+			redo();
+			accept_event();
+			return;
+		}
+	}
+
+	// BACKSPACE
+	if (k->is_action("ui_text_backspace_all_to_left", true)) {
+		_backspace(false, true);
+		accept_event();
+		return;
+	}
+	if (k->is_action("ui_text_backspace_word", true)) {
+		_backspace(true);
+		accept_event();
+		return;
+	}
+	if (k->is_action("ui_text_backspace", true)) {
+		_backspace();
+		accept_event();
+		return;
+	}
+
+	// DELETE
+	if (k->is_action("ui_text_delete_all_to_right", true)) {
+		_delete(false, true);
+		accept_event();
+		return;
+	}
+	if (k->is_action("ui_text_delete_word", true)) {
+		_delete(true);
+		accept_event();
+		return;
+	}
+	if (k->is_action("ui_text_delete", true)) {
+		_delete();
+		accept_event();
+		return;
+	}
+
+	// Cursor Movement
+
+	k = k->duplicate();
+	bool shift_pressed = k->is_shift_pressed();
+	// Remove shift or else actions will not match. Use above variable for selection.
+	k->set_shift_pressed(false);
+
+	if (k->is_action("ui_text_caret_word_left", true)) {
+		_move_caret_left(shift_pressed, true);
+		accept_event();
+		return;
+	}
+	if (k->is_action("ui_text_caret_left", true)) {
+		_move_caret_left(shift_pressed);
+		accept_event();
+		return;
+	}
+	if (k->is_action("ui_text_caret_word_right", true)) {
+		_move_caret_right(shift_pressed, true);
+		accept_event();
+		return;
+	}
+	if (k->is_action("ui_text_caret_right", true)) {
+		_move_caret_right(shift_pressed, false);
+		accept_event();
+		return;
+	}
+
+	// Up = Home, Down = End
+	if (k->is_action("ui_text_caret_up", true) || k->is_action("ui_text_caret_line_start", true) || k->is_action("ui_text_caret_page_up", true)) {
+		_move_caret_start(shift_pressed);
+		accept_event();
+		return;
+	}
+	if (k->is_action("ui_text_caret_down", true) || k->is_action("ui_text_caret_line_end", true) || k->is_action("ui_text_caret_page_down", true)) {
+		_move_caret_end(shift_pressed);
+		accept_event();
+		return;
+	}
+
+	// Misc
+	if (k->is_action("ui_swap_input_direction", true)) {
+		_swap_current_input_direction();
+		accept_event();
+		return;
+	}
+
+	_reset_caret_blink_timer();
+
+	// Allow unicode handling if:
+	// * No Modifiers are pressed (except shift)
+	bool allow_unicode_handling = !(k->is_ctrl_pressed() || k->is_alt_pressed() || k->is_meta_pressed());
+
+	if (allow_unicode_handling && editable && k->get_unicode() >= 32) {
+		// Handle Unicode if no modifiers are active.
+		selection_delete();
+		char32_t ucodestr[2] = { (char32_t)k->get_unicode(), 0 };
+		int prev_len = text.length();
+		insert_text_at_caret(ucodestr);
+		if (text.length() != prev_len) {
+			if (!text_changed_dirty) {
+				if (is_inside_tree()) {
+					callable_mp(this, &LineEdit::_text_changed).call_deferred();
+				}
+				text_changed_dirty = true;
+			}
+		}
+		accept_event();
+		return;
 	}
 }
 
@@ -705,6 +921,7 @@ Variant LineEdit::get_drag_data(const Point2 &p_point) {
 		String t = get_selected_text();
 		Label *l = memnew(Label);
 		l->set_text(t);
+		l->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Don't translate user input.
 		set_drag_preview(l);
 		return t;
 	}
@@ -725,6 +942,8 @@ void LineEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 	Control::drop_data(p_point, p_data);
 
 	if (p_data.is_string() && is_editable()) {
+		apply_ime();
+
 		set_caret_at_pixel_pos(p_point.x);
 		int caret_column_tmp = caret_column;
 		bool is_inside_sel = selection.enabled && caret_column >= selection.begin && caret_column <= selection.end;
@@ -1107,22 +1326,12 @@ void LineEdit::_notification(int p_what) {
 				}
 			}
 
-			if (has_focus()) {
-				DisplayServer::WindowID wid = get_window() ? get_window()->get_window_id() : DisplayServer::INVALID_WINDOW_ID;
-				if (wid != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
-					DisplayServer::get_singleton()->window_set_ime_active(true, wid);
-					Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + theme_cache.font->get_height(theme_cache.font_size)) / 2) + get_global_position();
-					if (get_window()->get_embedder()) {
-						pos += get_viewport()->get_popup_base_transform().get_origin();
-					}
-					DisplayServer::get_singleton()->window_set_ime_position(pos, wid);
-				}
+			if (editing) {
+				_update_ime_window_position();
 			}
 		} break;
 
 		case NOTIFICATION_FOCUS_ENTER: {
-			_validate_caret_can_draw();
-
 			if (select_all_on_focus) {
 				if (Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT)) {
 					// Select all when the mouse button is up.
@@ -1132,43 +1341,20 @@ void LineEdit::_notification(int p_what) {
 				}
 			}
 
-			DisplayServer::WindowID wid = get_window() ? get_window()->get_window_id() : DisplayServer::INVALID_WINDOW_ID;
-			if (wid != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
-				DisplayServer::get_singleton()->window_set_ime_active(true, wid);
-				Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + theme_cache.font->get_height(theme_cache.font_size)) / 2) + get_global_position();
-				if (get_window()->get_embedder()) {
-					pos += get_viewport()->get_popup_base_transform().get_origin();
-				}
-				DisplayServer::get_singleton()->window_set_ime_position(pos, wid);
+			// Only allow editing if the LineEdit is not focused with arrow keys.
+			if (!(Input::get_singleton()->is_action_pressed("ui_up") || Input::get_singleton()->is_action_pressed("ui_down") || Input::get_singleton()->is_action_pressed("ui_left") || Input::get_singleton()->is_action_pressed("ui_right"))) {
+				_edit();
 			}
-
-			show_virtual_keyboard();
 		} break;
 
 		case NOTIFICATION_FOCUS_EXIT: {
-			_validate_caret_can_draw();
-
-			DisplayServer::WindowID wid = get_window() ? get_window()->get_window_id() : DisplayServer::INVALID_WINDOW_ID;
-			if (wid != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
-				DisplayServer::get_singleton()->window_set_ime_position(Point2(), wid);
-				DisplayServer::get_singleton()->window_set_ime_active(false, wid);
-			}
-			ime_text = "";
-			ime_selection = Point2();
-			_shape();
-			set_caret_column(caret_column); // Update scroll_offset.
-
-			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
-				DisplayServer::get_singleton()->virtual_keyboard_hide();
-			}
-
-			if (deselect_on_focus_loss_enabled && !selection.drag_attempt) {
-				deselect();
+			if (editing) {
+				_unedit();
 			}
 		} break;
 
 		case MainLoop::NOTIFICATION_OS_IME_UPDATE: {
-			if (has_focus()) {
+			if (editing) {
 				ime_text = DisplayServer::get_singleton()->ime_get_text();
 				ime_selection = DisplayServer::get_singleton()->ime_get_selection();
 
@@ -1178,8 +1364,6 @@ void LineEdit::_notification(int p_what) {
 
 				_shape();
 				set_caret_column(caret_column); // Update scroll_offset.
-
-				queue_redraw();
 			}
 		} break;
 
@@ -1419,7 +1603,7 @@ Vector2 LineEdit::get_caret_pixel_pos() {
 	Vector2 ret;
 	CaretInfo caret;
 	// Get position of the start of caret.
-	if (ime_text.length() != 0 && ime_selection.x != 0) {
+	if (!ime_text.is_empty() && ime_selection.x != 0) {
 		caret = TS->shaped_text_get_carets(text_rid, caret_column + ime_selection.x);
 	} else {
 		caret = TS->shaped_text_get_carets(text_rid, caret_column);
@@ -1432,7 +1616,7 @@ Vector2 LineEdit::get_caret_pixel_pos() {
 	}
 
 	// Get position of the end of caret.
-	if (ime_text.length() != 0) {
+	if (!ime_text.is_empty()) {
 		if (ime_selection.y != 0) {
 			caret = TS->shaped_text_get_carets(text_rid, caret_column + ime_selection.x + ime_selection.y);
 		} else {
@@ -1525,11 +1709,11 @@ void LineEdit::_validate_caret_can_draw() {
 		draw_caret = true;
 		caret_blink_timer = 0.0;
 	}
-	caret_can_draw = editable && (window_has_focus || (menu && menu->has_focus())) && (has_focus() || caret_force_displayed);
+	caret_can_draw = editing && (window_has_focus || (menu && menu->has_focus())) && (has_focus() || caret_force_displayed);
 }
 
 void LineEdit::delete_char() {
-	if ((text.length() <= 0) || (caret_column == 0)) {
+	if (text.is_empty() || caret_column == 0) {
 		return;
 	}
 
@@ -1661,12 +1845,14 @@ void LineEdit::clear() {
 	_text_changed();
 
 	// This should reset virtual keyboard state if needed.
-	if (has_focus()) {
+	if (editing) {
 		show_virtual_keyboard();
 	}
 }
 
 void LineEdit::show_virtual_keyboard() {
+	_update_ime_window_position();
+
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
 		if (selection.enabled) {
 			DisplayServer::get_singleton()->virtual_keyboard_show(text, get_global_rect(), DisplayServer::VirtualKeyboardType(virtual_keyboard_type), max_length, selection.begin, selection.end);
@@ -1834,7 +2020,8 @@ Size2 LineEdit::get_minimum_size() const {
 	Size2 min_size;
 
 	// Minimum size of text.
-	float em_space_size = font->get_char_size('M', font_size).x;
+	// W is wider than M in most fonts, Using M may result in hiding the last digit when using float values in SpinBox, ie. ColorPicker RAW values.
+	float em_space_size = font->get_char_size('W', font_size).x;
 	min_size.width = theme_cache.minimum_character_width * em_space_size;
 
 	if (expand_to_text_length) {
@@ -1932,7 +2119,8 @@ void LineEdit::select_all() {
 		return;
 	}
 
-	if (!text.length()) {
+	if (text.is_empty()) {
+		set_caret_column(0);
 		return;
 	}
 
@@ -1948,6 +2136,10 @@ void LineEdit::set_editable(bool p_editable) {
 	}
 
 	editable = p_editable;
+
+	if (!editable && editing) {
+		_unedit();
+	}
 	_validate_caret_can_draw();
 
 	update_minimum_size();
@@ -2328,6 +2520,7 @@ void LineEdit::_emit_text_change() {
 	emit_signal(SceneStringName(text_changed), text);
 	text_changed_dirty = false;
 }
+
 PackedStringArray LineEdit::get_configuration_warnings() const {
 	PackedStringArray warnings = Control::get_configuration_warnings();
 	if (secret_character.length() > 1) {
@@ -2347,13 +2540,13 @@ void LineEdit::_shape() {
 	TS->shaped_text_clear(text_rid);
 
 	String t;
-	if (text.length() == 0 && ime_text.length() == 0) {
+	if (text.is_empty() && ime_text.is_empty()) {
 		t = placeholder_translated;
 	} else if (pass) {
-		String s = (secret_character.length() > 0) ? secret_character.left(1) : U"•";
+		String s = secret_character.is_empty() ? U"•" : secret_character.left(1);
 		t = s.repeat(text.length() + ime_text.length());
 	} else {
-		if (ime_text.length() > 0) {
+		if (!ime_text.is_empty()) {
 			t = text.substr(0, caret_column) + ime_text + text.substr(caret_column, text.length());
 		} else {
 			t = text;
@@ -2559,13 +2752,20 @@ void LineEdit::_validate_property(PropertyInfo &p_property) const {
 }
 
 void LineEdit::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("has_ime_text"), &LineEdit::has_ime_text);
+	ClassDB::bind_method(D_METHOD("cancel_ime"), &LineEdit::cancel_ime);
+	ClassDB::bind_method(D_METHOD("apply_ime"), &LineEdit::apply_ime);
+
 	ClassDB::bind_method(D_METHOD("set_horizontal_alignment", "alignment"), &LineEdit::set_horizontal_alignment);
 	ClassDB::bind_method(D_METHOD("get_horizontal_alignment"), &LineEdit::get_horizontal_alignment);
 
+	ClassDB::bind_method(D_METHOD("is_editing"), &LineEdit::is_editing);
 	ClassDB::bind_method(D_METHOD("clear"), &LineEdit::clear);
 	ClassDB::bind_method(D_METHOD("select", "from", "to"), &LineEdit::select, DEFVAL(0), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("select_all"), &LineEdit::select_all);
 	ClassDB::bind_method(D_METHOD("deselect"), &LineEdit::deselect);
+	ClassDB::bind_method(D_METHOD("has_undo"), &LineEdit::has_undo);
+	ClassDB::bind_method(D_METHOD("has_redo"), &LineEdit::has_redo);
 	ClassDB::bind_method(D_METHOD("has_selection"), &LineEdit::has_selection);
 	ClassDB::bind_method(D_METHOD("get_selected_text"), &LineEdit::get_selected_text);
 	ClassDB::bind_method(D_METHOD("get_selection_from_column"), &LineEdit::get_selection_from_column);
@@ -2642,6 +2842,7 @@ void LineEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("text_changed", PropertyInfo(Variant::STRING, "new_text")));
 	ADD_SIGNAL(MethodInfo("text_change_rejected", PropertyInfo(Variant::STRING, "rejected_substring")));
 	ADD_SIGNAL(MethodInfo("text_submitted", PropertyInfo(Variant::STRING, "new_text")));
+	ADD_SIGNAL(MethodInfo("editing_toggled", PropertyInfo(Variant::BOOL, "toggled_on")));
 
 	BIND_ENUM_CONSTANT(MENU_CUT);
 	BIND_ENUM_CONSTANT(MENU_COPY);

@@ -34,6 +34,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/check_box.h"
 
 void EditorNetworkProfiler::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("enable_profiling", PropertyInfo(Variant::BOOL, "enable")));
@@ -170,15 +171,46 @@ void EditorNetworkProfiler::add_node_data(const NodeInfo &p_info) {
 }
 
 void EditorNetworkProfiler::_activate_pressed() {
+	_update_button_text();
+
 	if (activate->is_pressed()) {
 		refresh_timer->start();
+	} else {
+		refresh_timer->stop();
+	}
+
+	emit_signal(SNAME("enable_profiling"), activate->is_pressed());
+}
+
+void EditorNetworkProfiler::_update_button_text() {
+	if (activate->is_pressed()) {
 		activate->set_icon(theme_cache.stop_icon);
 		activate->set_text(TTR("Stop"));
 	} else {
-		refresh_timer->stop();
 		activate->set_icon(theme_cache.play_icon);
 		activate->set_text(TTR("Start"));
 	}
+}
+
+void EditorNetworkProfiler::started() {
+	_clear_pressed();
+	activate->set_disabled(false);
+
+	if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_network_profiler", false)) {
+		set_profiling(true);
+		refresh_timer->start();
+	}
+}
+
+void EditorNetworkProfiler::stopped() {
+	activate->set_disabled(true);
+	set_profiling(false);
+	refresh_timer->stop();
+}
+
+void EditorNetworkProfiler::set_profiling(bool p_pressed) {
+	activate->set_pressed(p_pressed);
+	_update_button_text();
 	emit_signal(SNAME("enable_profiling"), activate->is_pressed());
 }
 
@@ -190,6 +222,11 @@ void EditorNetworkProfiler::_clear_pressed() {
 	set_bandwidth(0, 0);
 	refresh_rpc_data();
 	refresh_replication_data();
+	clear_button->set_disabled(true);
+}
+
+void EditorNetworkProfiler::_autostart_toggled(bool p_toggled_on) {
+	EditorSettings::get_singleton()->set_project_metadata("debug_options", "autostart_network_profiler", p_toggled_on);
 }
 
 void EditorNetworkProfiler::_replication_button_clicked(TreeItem *p_item, int p_column, int p_idx, MouseButton p_button) {
@@ -203,6 +240,9 @@ void EditorNetworkProfiler::_replication_button_clicked(TreeItem *p_item, int p_
 }
 
 void EditorNetworkProfiler::add_rpc_frame_data(const RPCNodeInfo &p_frame) {
+	if (clear_button->is_disabled()) {
+		clear_button->set_disabled(false);
+	}
 	dirty = true;
 	if (!rpc_data.has(p_frame.node)) {
 		rpc_data.insert(p_frame.node, p_frame);
@@ -219,6 +259,9 @@ void EditorNetworkProfiler::add_rpc_frame_data(const RPCNodeInfo &p_frame) {
 }
 
 void EditorNetworkProfiler::add_sync_frame_data(const SyncInfo &p_frame) {
+	if (clear_button->is_disabled()) {
+		clear_button->set_disabled(false);
+	}
 	dirty = true;
 	if (!sync_data.has(p_frame.synchronizer)) {
 		sync_data[p_frame.synchronizer] = p_frame;
@@ -260,13 +303,21 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	activate = memnew(Button);
 	activate->set_toggle_mode(true);
 	activate->set_text(TTR("Start"));
+	activate->set_disabled(true);
 	activate->connect(SceneStringName(pressed), callable_mp(this, &EditorNetworkProfiler::_activate_pressed));
 	hb->add_child(activate);
 
 	clear_button = memnew(Button);
 	clear_button->set_text(TTR("Clear"));
+	clear_button->set_disabled(true);
 	clear_button->connect(SceneStringName(pressed), callable_mp(this, &EditorNetworkProfiler::_clear_pressed));
 	hb->add_child(clear_button);
+
+	CheckBox *autostart_checkbox = memnew(CheckBox);
+	autostart_checkbox->set_text(TTR("Autostart"));
+	autostart_checkbox->set_pressed(EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_network_profiler", false));
+	autostart_checkbox->connect(SceneStringName(toggled), callable_mp(this, &EditorNetworkProfiler::_autostart_toggled));
+	hb->add_child(autostart_checkbox);
 
 	hb->add_spacer();
 

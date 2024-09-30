@@ -121,15 +121,17 @@ public:
 
 	GDVIRTUAL1R(bool, _on_event_polled, GDExtensionConstPtr<void>);
 
-	virtual void *set_viewport_composition_layer_and_get_next_pointer(const XrCompositionLayerBaseHeader *p_layer, Dictionary p_property_values, void *p_next_pointer) override;
+	virtual void *set_viewport_composition_layer_and_get_next_pointer(const XrCompositionLayerBaseHeader *p_layer, const Dictionary &p_property_values, void *p_next_pointer) override;
 	virtual void on_viewport_composition_layer_destroyed(const XrCompositionLayerBaseHeader *p_layer) override;
 	virtual void get_viewport_composition_layer_extension_properties(List<PropertyInfo> *p_property_list) override;
 	virtual Dictionary get_viewport_composition_layer_extension_property_defaults() override;
+	virtual void *set_android_surface_swapchain_create_info_and_get_next_pointer(const Dictionary &p_property_values, void *p_next_pointer) override;
 
 	GDVIRTUAL3R(uint64_t, _set_viewport_composition_layer_and_get_next_pointer, GDExtensionConstPtr<void>, Dictionary, GDExtensionPtr<void>);
 	GDVIRTUAL1(_on_viewport_composition_layer_destroyed, GDExtensionConstPtr<void>);
 	GDVIRTUAL0R(TypedArray<Dictionary>, _get_viewport_composition_layer_extension_properties);
 	GDVIRTUAL0R(Dictionary, _get_viewport_composition_layer_extension_property_defaults);
+	GDVIRTUAL2R(uint64_t, _set_android_surface_swapchain_create_info_and_get_next_pointer, Dictionary, GDExtensionPtr<void>);
 
 	Ref<OpenXRAPIExtension> get_openxr_api();
 

@@ -191,7 +191,6 @@ void EditorDirDialog::_make_dir_confirm(const String &p_path) {
 	}
 
 	new_dir_path = p_path + "/";
-	EditorFileSystem::get_singleton()->scan_changes(); // We created a dir, so rescan changes.
 }
 
 void EditorDirDialog::_bind_methods() {
@@ -216,8 +215,9 @@ EditorDirDialog::EditorDirDialog() {
 	makedir->connect(SceneStringName(pressed), callable_mp(this, &EditorDirDialog::_make_dir));
 
 	tree = memnew(Tree);
-	vb->add_child(tree);
+	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	vb->add_child(tree);
 	tree->connect("item_activated", callable_mp(this, &EditorDirDialog::_item_activated));
 	tree->connect("item_collapsed", callable_mp(this, &EditorDirDialog::_item_collapsed), CONNECT_DEFERRED);
 

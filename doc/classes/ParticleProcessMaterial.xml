@@ -90,6 +90,7 @@
 	<members>
 		<member name="alpha_curve" type="Texture2D" setter="set_alpha_curve" getter="get_alpha_curve">
 			The alpha value of each particle's color will be multiplied by this [CurveTexture] over its lifetime.
+			[b]Note:[/b] [member alpha_curve] multiplies the particle mesh's vertex colors. To have a visible effect on a [BaseMaterial3D], [member BaseMaterial3D.vertex_color_use_as_albedo] [i]must[/i] be [code]true[/code]. For a [ShaderMaterial], [code]ALBEDO *= COLOR.rgb;[/code] must be inserted in the shader's [code]fragment()[/code] function. Otherwise, [member alpha_curve] will have no visible effect.
 		</member>
 		<member name="angle_curve" type="Texture2D" setter="set_param_texture" getter="get_param_texture">
 			Each particle's rotation will be animated along this [CurveTexture].
@@ -193,7 +194,7 @@
 		</member>
 		<member name="emission_curve" type="Texture2D" setter="set_emission_curve" getter="get_emission_curve">
 			Each particle's color will be multiplied by this [CurveTexture] over its lifetime.
-			[b]Note:[/b] This property won't have a visible effect unless the render material is marked as unshaded.
+			[b]Note:[/b] [member emission_curve] multiplies the particle mesh's vertex colors. To have a visible effect on a [BaseMaterial3D], [member BaseMaterial3D.vertex_color_use_as_albedo] [i]must[/i] be [code]true[/code]. For a [ShaderMaterial], [code]ALBEDO *= COLOR.rgb;[/code] must be inserted in the shader's [code]fragment()[/code] function. Otherwise, [member emission_curve] will have no visible effect.
 		</member>
 		<member name="emission_normal_texture" type="Texture2D" setter="set_emission_normal_texture" getter="get_emission_normal_texture">
 			Particle velocity and rotation will be set by sampling this texture at the same point as the [member emission_point_texture]. Used only in [constant EMISSION_SHAPE_DIRECTED_POINTS]. Can be created automatically from mesh or node by selecting "Create Emission Points from Mesh/Node" under the "Particles" tool in the toolbar.

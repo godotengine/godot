@@ -143,6 +143,9 @@ void MDCommandBuffer::bind_pipeline(RDD::PipelineID p_pipeline) {
 			if (render.pipeline != nullptr && render.pipeline->depth_stencil != rp->depth_stencil) {
 				render.dirty.set_flag(RenderState::DIRTY_DEPTH);
 			}
+			if (rp->raster_state.blend.enabled) {
+				render.dirty.set_flag(RenderState::DIRTY_BLEND);
+			}
 			render.pipeline = rp;
 		}
 	} else if (p->type == MDPipelineType::Compute) {
@@ -301,6 +304,7 @@ void MDCommandBuffer::render_clear_attachments(VectorView<RDD::AttachmentClear> 
 	render.mark_viewport_dirty();
 	render.mark_scissors_dirty();
 	render.mark_vertex_dirty();
+	render.mark_blend_dirty();
 }
 
 void MDCommandBuffer::_render_set_dirty_state() {
@@ -560,10 +564,10 @@ void MDCommandBuffer::_render_clear_render_area() {
 		}
 	}
 	uint32_t ds_index = subpass.depth_stencil_reference.attachment;
-	MDAttachment const &attachment = pass.attachments[ds_index];
-	bool shouldClearDepth = (ds_index != RDD::AttachmentReference::UNUSED && attachment.shouldClear(subpass, false));
-	bool shouldClearStencil = (ds_index != RDD::AttachmentReference::UNUSED && attachment.shouldClear(subpass, true));
+	bool shouldClearDepth = (ds_index != RDD::AttachmentReference::UNUSED && pass.attachments[ds_index].shouldClear(subpass, false));
+	bool shouldClearStencil = (ds_index != RDD::AttachmentReference::UNUSED && pass.attachments[ds_index].shouldClear(subpass, true));
 	if (shouldClearDepth || shouldClearStencil) {
+		MDAttachment const &attachment = pass.attachments[ds_index];
 		BitField<RDD::TextureAspectBits> bits;
 		if (shouldClearDepth && attachment.type & MDAttachmentType::Depth) {
 			bits.set_flag(RDD::TEXTURE_ASPECT_DEPTH_BIT);
@@ -1208,7 +1212,7 @@ vertex VaryingsPos vertClear(AttributesPos attributes [[stage_in]], constant Cle
     return varyings;
 }
 )",
-								  ClearAttKey::DEPTH_INDEX];
+				ClearAttKey::DEPTH_INDEX];
 
 		return new_func(msl, @"vertClear", nil);
 	}

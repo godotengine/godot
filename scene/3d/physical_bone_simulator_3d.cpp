@@ -73,8 +73,13 @@ void PhysicalBoneSimulator3D::_pose_updated() {
 	}
 	ERR_FAIL_COND(skeleton->get_bone_count() != bones.size());
 	for (int i = 0; i < skeleton->get_bone_count(); i++) {
-		bones.write[i].global_pose = skeleton->get_bone_global_pose(i);
+		_bone_pose_updated(skeleton, i);
 	}
+}
+
+void PhysicalBoneSimulator3D::_bone_pose_updated(Skeleton3D *p_skeleton, int p_bone_id) {
+	ERR_FAIL_INDEX(p_bone_id, bones.size());
+	bones.write[p_bone_id].global_pose = p_skeleton->get_bone_global_pose(p_bone_id);
 }
 
 void PhysicalBoneSimulator3D::_set_active(bool p_active) {
@@ -363,6 +368,7 @@ void PhysicalBoneSimulator3D::_process_modification() {
 			continue;
 		}
 		if (bones[i].physical_bone->is_simulating_physics() == false) {
+			_bone_pose_updated(skeleton, i);
 			bones[i].physical_bone->reset_to_rest_position();
 		} else if (simulating) {
 			skeleton->set_bone_global_pose(i, bones[i].global_pose);

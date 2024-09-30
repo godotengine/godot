@@ -392,7 +392,6 @@ typedef struct {
 	GDExtensionClassGetVirtualCallData get_virtual_call_data_func;
 	// Used to call virtual functions when `get_virtual_call_data_func` is not null.
 	GDExtensionClassCallVirtualWithData call_virtual_with_data_func;
-	GDExtensionClassGetRID get_rid_func;
 	void *class_userdata; // Per-class user data, later accessible in instance bindings.
 } GDExtensionClassCreationInfo4;
 
@@ -421,7 +420,9 @@ typedef enum {
 	GDEXTENSION_METHOD_ARGUMENT_METADATA_INT_IS_UINT32,
 	GDEXTENSION_METHOD_ARGUMENT_METADATA_INT_IS_UINT64,
 	GDEXTENSION_METHOD_ARGUMENT_METADATA_REAL_IS_FLOAT,
-	GDEXTENSION_METHOD_ARGUMENT_METADATA_REAL_IS_DOUBLE
+	GDEXTENSION_METHOD_ARGUMENT_METADATA_REAL_IS_DOUBLE,
+	GDEXTENSION_METHOD_ARGUMENT_METADATA_INT_IS_CHAR16,
+	GDEXTENSION_METHOD_ARGUMENT_METADATA_INT_IS_CHAR32,
 } GDExtensionClassMethodArgumentMetadata;
 
 typedef void (*GDExtensionClassMethodCall)(void *method_userdata, GDExtensionClassInstancePtr p_instance, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_argument_count, GDExtensionVariantPtr r_return, GDExtensionCallError *r_error);

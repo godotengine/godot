@@ -192,8 +192,14 @@ private:
 				}
 			}
 			if (!has_data) {
-				// 3. Extract the data to a temporary location to load from there.
-				Ref<DirAccess> da = DirAccess::create_for_path(packed_path);
+				// 3. Extract the data to a temporary location to load from there, delete old data if it exists but is not up-to-date.
+				Ref<DirAccess> da;
+				if (DirAccess::exists(data_dir_root)) {
+					da = DirAccess::open(data_dir_root);
+					ERR_FAIL_COND(da.is_null());
+					ERR_FAIL_COND(da->erase_contents_recursive() != OK);
+				}
+				da = DirAccess::create_for_path(packed_path);
 				ERR_FAIL_COND(da.is_null());
 				ERR_FAIL_COND(da->copy_dir(packed_path, data_dir_root) != OK);
 			}

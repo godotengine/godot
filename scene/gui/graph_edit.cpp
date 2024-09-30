@@ -1646,24 +1646,34 @@ void GraphEdit::_draw_grid() {
 			Color transparent_grid_minor = theme_cache.grid_minor;
 			transparent_grid_minor.a *= CLAMP(1.0 * (zoom - 0.4), 0, 1);
 
-			for (int i = from_pos.x; i < from_pos.x + len.x; i++) {
-				for (int j = from_pos.y; j < from_pos.y + len.y; j++) {
-					Color color = transparent_grid_minor;
+			// Minor dots.
+			if (transparent_grid_minor.a != 0) {
+				for (int i = from_pos.x; i < from_pos.x + len.x; i++) {
+					for (int j = from_pos.y; j < from_pos.y + len.y; j++) {
+						if (ABS(i) % GRID_MINOR_STEPS_PER_MAJOR_DOT == 0 && ABS(j) % GRID_MINOR_STEPS_PER_MAJOR_DOT == 0) {
+							continue;
+						}
 
-					if (ABS(i) % GRID_MINOR_STEPS_PER_MAJOR_DOT == 0 && ABS(j) % GRID_MINOR_STEPS_PER_MAJOR_DOT == 0) {
-						color = theme_cache.grid_major;
+						float base_offset_x = i * snapping_distance * zoom - offset.x * zoom;
+						float base_offset_y = j * snapping_distance * zoom - offset.y * zoom;
+
+						draw_rect(Rect2(base_offset_x - 1, base_offset_y - 1, 3, 3), transparent_grid_minor);
 					}
-
-					if (color.a == 0) {
-						continue;
-					}
-
-					float base_offset_x = i * snapping_distance * zoom - offset.x * zoom;
-					float base_offset_y = j * snapping_distance * zoom - offset.y * zoom;
-
-					draw_rect(Rect2(base_offset_x - 1, base_offset_y - 1, 3, 3), color);
 				}
 			}
+
+			// Major dots.
+			if (theme_cache.grid_major.a != 0) {
+				for (int i = from_pos.x - from_pos.x % GRID_MINOR_STEPS_PER_MAJOR_DOT; i < from_pos.x + len.x; i += GRID_MINOR_STEPS_PER_MAJOR_DOT) {
+					for (int j = from_pos.y - from_pos.y % GRID_MINOR_STEPS_PER_MAJOR_DOT; j < from_pos.y + len.y; j += GRID_MINOR_STEPS_PER_MAJOR_DOT) {
+						float base_offset_x = i * snapping_distance * zoom - offset.x * zoom;
+						float base_offset_y = j * snapping_distance * zoom - offset.y * zoom;
+
+						draw_rect(Rect2(base_offset_x - 1, base_offset_y - 1, 3, 3), theme_cache.grid_major);
+					}
+				}
+			}
+
 		} break;
 	}
 }
@@ -1988,6 +1998,9 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 			accept_event();
 		} else if (p_ev->is_action("ui_copy", true)) {
 			emit_signal(SNAME("copy_nodes_request"));
+			accept_event();
+		} else if (p_ev->is_action("ui_cut", true)) {
+			emit_signal(SNAME("cut_nodes_request"));
 			accept_event();
 		} else if (p_ev->is_action("ui_paste", true)) {
 			emit_signal(SNAME("paste_nodes_request"));
@@ -2725,6 +2738,7 @@ void GraphEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("connection_drag_ended"));
 
 	ADD_SIGNAL(MethodInfo("copy_nodes_request"));
+	ADD_SIGNAL(MethodInfo("cut_nodes_request"));
 	ADD_SIGNAL(MethodInfo("paste_nodes_request"));
 	ADD_SIGNAL(MethodInfo("duplicate_nodes_request"));
 	ADD_SIGNAL(MethodInfo("delete_nodes_request", PropertyInfo(Variant::ARRAY, "nodes", PROPERTY_HINT_ARRAY_TYPE, "StringName")));

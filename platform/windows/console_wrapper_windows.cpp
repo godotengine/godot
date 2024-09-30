@@ -65,7 +65,9 @@ int main(int argc, char *argv[]) {
 
 	// Enable virtual terminal sequences processing.
 	HANDLE stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
-	DWORD out_mode = ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+	DWORD out_mode = 0;
+	GetConsoleMode(stdout_handle, &out_mode);
+	out_mode |= ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
 	SetConsoleMode(stdout_handle, out_mode);
 
 	// Find main executable name and check if it exist.

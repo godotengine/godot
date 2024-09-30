@@ -866,12 +866,10 @@ static void _scale_cubic(const uint8_t *__restrict p_src, uint8_t *__restrict p_
 
 template <int CC, typename T>
 static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height) {
-	enum {
-		FRAC_BITS = 8,
-		FRAC_LEN = (1 << FRAC_BITS),
-		FRAC_HALF = (FRAC_LEN >> 1),
-		FRAC_MASK = FRAC_LEN - 1
-	};
+	constexpr uint32_t FRAC_BITS = 8;
+	constexpr uint32_t FRAC_LEN = (1 << FRAC_BITS);
+	constexpr uint32_t FRAC_HALF = (FRAC_LEN >> 1);
+	constexpr uint32_t FRAC_MASK = FRAC_LEN - 1;
 
 	for (uint32_t i = 0; i < p_dst_height; i++) {
 		// Add 0.5 in order to interpolate based on pixel center
@@ -2751,6 +2749,19 @@ Error Image::compress_from_channels(CompressMode p_mode, UsedChannels p_channels
 
 			} break;
 
+			case COMPRESS_S3TC: {
+				// BC3 is unsupported currently.
+				if ((p_channels == USED_CHANNELS_RGB || p_channels == USED_CHANNELS_L) && _image_compress_bc_rd_func) {
+					Error result = _image_compress_bc_rd_func(this, p_channels);
+
+					// If the image was compressed successfully, we return here. If not, we fall back to the default compression scheme.
+					if (result == OK) {
+						return OK;
+					}
+				}
+
+			} break;
+
 			default: {
 			}
 		}
@@ -3138,6 +3149,7 @@ void (*Image::_image_compress_etc1_func)(Image *) = nullptr;
 void (*Image::_image_compress_etc2_func)(Image *, Image::UsedChannels) = nullptr;
 void (*Image::_image_compress_astc_func)(Image *, Image::ASTCFormat) = nullptr;
 Error (*Image::_image_compress_bptc_rd_func)(Image *, Image::UsedChannels) = nullptr;
+Error (*Image::_image_compress_bc_rd_func)(Image *, Image::UsedChannels) = nullptr;
 void (*Image::_image_decompress_bc)(Image *) = nullptr;
 void (*Image::_image_decompress_bptc)(Image *) = nullptr;
 void (*Image::_image_decompress_etc1)(Image *) = nullptr;

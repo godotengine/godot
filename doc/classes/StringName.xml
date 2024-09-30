@@ -9,7 +9,7 @@
 		See also [NodePath], which is a similar concept specifically designed to store pre-parsed scene tree paths.
 		All of [String]'s methods are available in this class too. They convert the [StringName] into a string, and they also return a string. This is highly inefficient and should only be used if the string is desired.
 		[b]Note:[/b] In C#, an explicit conversion to [code]System.String[/code] is required to use the methods listed on this page. Use the [code]ToString()[/code] method to cast a [StringName] to a string, and then use the equivalent methods in [code]System.String[/code] or [code]StringExtensions[/code].
-		[b]Note:[/b] In a boolean context, a [StringName] will evaluate to [code]false[/code] if it is empty ([code]StringName("")[/code]). Otherwise, a [StringName] will always evaluate to [code]true[/code]. The [code]not[/code] operator cannot be used. Instead, [method is_empty] should be used to check for empty [StringName]s.
+		[b]Note:[/b] In a boolean context, a [StringName] will evaluate to [code]false[/code] if it is empty ([code]StringName("")[/code]). Otherwise, a [StringName] will always evaluate to [code]true[/code].
 	</description>
 	<tutorials>
 	</tutorials>

@@ -279,6 +279,11 @@ bool AnimationTrackKeyEdit::_set(const StringName &p_name, const Variant &p_valu
 				undo_redo->add_undo_method(animation.ptr(), "bezier_track_set_key_value", track, key, prev);
 				undo_redo->add_do_method(this, "_update_obj", animation);
 				undo_redo->add_undo_method(this, "_update_obj", animation);
+				AnimationPlayerEditor *ape = AnimationPlayerEditor::get_singleton();
+				if (ape) {
+					undo_redo->add_do_method(ape, "_animation_update_key_frame");
+					undo_redo->add_undo_method(ape, "_animation_update_key_frame");
+				}
 				undo_redo->commit_action();
 
 				setting = false;
@@ -295,6 +300,11 @@ bool AnimationTrackKeyEdit::_set(const StringName &p_name, const Variant &p_valu
 				undo_redo->add_undo_method(animation.ptr(), "bezier_track_set_key_in_handle", track, key, prev);
 				undo_redo->add_do_method(this, "_update_obj", animation);
 				undo_redo->add_undo_method(this, "_update_obj", animation);
+				AnimationPlayerEditor *ape = AnimationPlayerEditor::get_singleton();
+				if (ape) {
+					undo_redo->add_do_method(ape, "_animation_update_key_frame");
+					undo_redo->add_undo_method(ape, "_animation_update_key_frame");
+				}
 				undo_redo->commit_action();
 
 				setting = false;
@@ -311,6 +321,11 @@ bool AnimationTrackKeyEdit::_set(const StringName &p_name, const Variant &p_valu
 				undo_redo->add_undo_method(animation.ptr(), "bezier_track_set_key_out_handle", track, key, prev);
 				undo_redo->add_do_method(this, "_update_obj", animation);
 				undo_redo->add_undo_method(this, "_update_obj", animation);
+				AnimationPlayerEditor *ape = AnimationPlayerEditor::get_singleton();
+				if (ape) {
+					undo_redo->add_do_method(ape, "_animation_update_key_frame");
+					undo_redo->add_undo_method(ape, "_animation_update_key_frame");
+				}
 				undo_redo->commit_action();
 
 				setting = false;
@@ -331,6 +346,11 @@ bool AnimationTrackKeyEdit::_set(const StringName &p_name, const Variant &p_valu
 				undo_redo->add_undo_method(animation.ptr(), "bezier_track_set_key_in_handle", track, key, prev_in_handle);
 				undo_redo->add_undo_method(animation.ptr(), "bezier_track_set_key_out_handle", track, key, prev_out_handle);
 				undo_redo->add_undo_method(this, "_update_obj", animation);
+				AnimationPlayerEditor *ape = AnimationPlayerEditor::get_singleton();
+				if (ape) {
+					undo_redo->add_do_method(ape, "_animation_update_key_frame");
+					undo_redo->add_undo_method(ape, "_animation_update_key_frame");
+				}
 				undo_redo->commit_action();
 
 				setting = false;
@@ -3221,6 +3241,7 @@ Variant AnimationTrackEdit::get_drag_data(const Point2 &p_point) {
 	tb->set_flat(true);
 	tb->set_text(path_cache);
 	tb->set_icon(icon_cache);
+	tb->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tb->add_theme_constant_override("icon_max_width", get_theme_constant("class_icon_size", EditorStringName(Editor)));
 	set_drag_preview(tb);
 
@@ -4345,6 +4366,25 @@ PropertyInfo AnimationTrackEditor::_find_hint_for_track(int p_idx, NodePath &r_b
 		property_info_base = property_info_base.get_named(leftover_path[i], valid);
 	}
 
+	// Hack for the fact that bezier tracks leftover paths can reference
+	// the individual components for types like vectors.
+	if (property_info_base.is_null()) {
+		if (res.is_valid()) {
+			property_info_base = res;
+		} else if (node) {
+			property_info_base = node;
+		}
+
+		if (leftover_path.size()) {
+			leftover_path.remove_at(leftover_path.size() - 1);
+		}
+
+		for (int i = 0; i < leftover_path.size() - 1; i++) {
+			bool valid;
+			property_info_base = property_info_base.get_named(leftover_path[i], valid);
+		}
+	}
+
 	if (property_info_base.is_null()) {
 		WARN_PRINT(vformat("Could not determine track hint for '%s:%s' because its base property is null.",
 				String(path.get_concatenated_names()), String(path.get_concatenated_subnames())));
@@ -4472,7 +4512,11 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 
 		} break;
 		case Animation::TYPE_BEZIER: {
-			int existing = animation->track_find_key(p_id.track_idx, time, Animation::FIND_MODE_APPROX);
+			int existing = -1;
+			if (p_id.track_idx < animation->get_track_count()) {
+				existing = animation->track_find_key(p_id.track_idx, time, Animation::FIND_MODE_APPROX);
+			}
+
 			if (existing != -1) {
 				Array arr = animation->track_get_key_value(p_id.track_idx, existing);
 				arr[0] = p_id.value;
@@ -5662,9 +5706,11 @@ void AnimationTrackEditor::_box_selection_draw() {
 }
 
 void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
-	if (panner->gui_input(p_event)) {
-		scroll->accept_event();
-		return;
+	if (!box_selecting) {
+		if (panner->gui_input(p_event)) {
+			scroll->accept_event();
+			return;
+		}
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
@@ -5715,6 +5761,8 @@ void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
 		Vector2 from = box_selecting_from;
 		Vector2 to = scroll->get_global_transform().xform(mm->get_position());
 
+		box_selecting_to = to;
+
 		if (from.x > to.x) {
 			SWAP(from.x, to.x);
 		}
@@ -5724,11 +5772,7 @@ void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
 		}
 
 		Rect2 rect(from, to - from);
-		Rect2 scroll_rect = Rect2(scroll->get_global_position(), scroll->get_size());
-		rect = scroll_rect.intersection(rect);
-		box_selection->set_position(rect.position);
-		box_selection->set_size(rect.size);
-
+		box_selection->set_rect(Rect2(from - scroll->get_global_position(), rect.get_size()));
 		box_select_rect = rect;
 	}
 }
@@ -5745,6 +5789,39 @@ void AnimationTrackEditor::_toggle_bezier_edit() {
 			}
 		}
 	}
+}
+
+void AnimationTrackEditor::_scroll_changed(const Vector2 &p_val) {
+	if (box_selecting) {
+		const Vector2 scroll_difference = p_val - prev_scroll_position;
+
+		Vector2 from = box_selecting_from - scroll_difference;
+		Vector2 to = box_selecting_to;
+
+		box_selecting_from = from;
+
+		if (from.x > to.x) {
+			SWAP(from.x, to.x);
+		}
+
+		if (from.y > to.y) {
+			SWAP(from.y, to.y);
+		}
+
+		Rect2 rect(from, to - from);
+		box_selection->set_rect(Rect2(from - scroll->get_global_position(), rect.get_size()));
+		box_select_rect = rect;
+	}
+
+	prev_scroll_position = p_val;
+}
+
+void AnimationTrackEditor::_v_scroll_changed(float p_val) {
+	_scroll_changed(Vector2(prev_scroll_position.x, p_val));
+}
+
+void AnimationTrackEditor::_h_scroll_changed(float p_val) {
+	_scroll_changed(Vector2(p_val, prev_scroll_position.y));
 }
 
 void AnimationTrackEditor::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event) {
@@ -5767,7 +5844,7 @@ void AnimationTrackEditor::_zoom_callback(float p_zoom_factor, Vector2 p_origin,
 
 void AnimationTrackEditor::_cancel_bezier_edit() {
 	bezier_edit->hide();
-	scroll->show();
+	box_selection_container->show();
 	bezier_edit_icon->set_pressed(false);
 	auto_fit->show();
 	auto_fit_bezier->hide();
@@ -5777,7 +5854,7 @@ void AnimationTrackEditor::_bezier_edit(int p_for_track) {
 	_clear_selection(); // Bezier probably wants to use a separate selection mode.
 	bezier_edit->set_root(root);
 	bezier_edit->set_animation_and_track(animation, p_for_track, read_only);
-	scroll->hide();
+	box_selection_container->hide();
 	bezier_edit->show();
 	auto_fit->hide();
 	auto_fit_bezier->show();
@@ -7194,24 +7271,6 @@ void AnimationTrackEditor::_pick_track_select_recursive(TreeItem *p_item, const 
 	}
 }
 
-void AnimationTrackEditor::_pick_track_filter_input(const Ref<InputEvent> &p_ie) {
-	Ref<InputEventKey> k = p_ie;
-
-	if (k.is_valid()) {
-		switch (k->get_keycode()) {
-			case Key::UP:
-			case Key::DOWN:
-			case Key::PAGEUP:
-			case Key::PAGEDOWN: {
-				pick_track->get_scene_tree()->get_scene_tree()->gui_input(k);
-				pick_track->get_filter_line_edit()->accept_event();
-			} break;
-			default:
-				break;
-		}
-	}
-}
-
 AnimationTrackEditor::AnimationTrackEditor() {
 	main_panel = memnew(PanelContainer);
 	main_panel->set_focus_mode(FOCUS_ALL); // Allow panel to have focus so that shortcuts work as expected.
@@ -7247,15 +7306,24 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	panner->set_scroll_zoom_factor(AnimationTimelineEdit::SCROLL_ZOOM_FACTOR_IN);
 	panner->set_callbacks(callable_mp(this, &AnimationTrackEditor::_pan_callback), callable_mp(this, &AnimationTrackEditor::_zoom_callback));
 
+	box_selection_container = memnew(Control);
+	box_selection_container->set_v_size_flags(SIZE_EXPAND_FILL);
+	box_selection_container->set_clip_contents(true);
+	timeline_vbox->add_child(box_selection_container);
+
 	scroll = memnew(ScrollContainer);
-	timeline_vbox->add_child(scroll);
-	scroll->set_v_size_flags(SIZE_EXPAND_FILL);
+	box_selection_container->add_child(scroll);
+	scroll->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+
 	VScrollBar *sb = scroll->get_v_scroll_bar();
 	scroll->remove_child(sb);
 	timeline_scroll->add_child(sb); // Move here so timeline and tracks are always aligned.
 	scroll->set_focus_mode(FOCUS_CLICK);
 	scroll->connect(SceneStringName(gui_input), callable_mp(this, &AnimationTrackEditor::_scroll_input));
 	scroll->connect(SceneStringName(focus_exited), callable_mp(panner.ptr(), &ViewPanner::release_pan_key));
+
+	scroll->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTrackEditor::_v_scroll_changed));
+	scroll->get_h_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTrackEditor::_h_scroll_changed));
 
 	bezier_edit = memnew(AnimationBezierTrackEdit);
 	timeline_vbox->add_child(bezier_edit);
@@ -7437,11 +7505,9 @@ AnimationTrackEditor::AnimationTrackEditor() {
 
 	pick_track = memnew(SceneTreeDialog);
 	add_child(pick_track);
-	pick_track->register_text_enter(pick_track->get_filter_line_edit());
 	pick_track->set_title(TTR("Pick a node to animate:"));
 	pick_track->connect("selected", callable_mp(this, &AnimationTrackEditor::_new_track_node_selected));
 	pick_track->get_filter_line_edit()->connect(SceneStringName(text_changed), callable_mp(this, &AnimationTrackEditor::_pick_track_filter_text_changed));
-	pick_track->get_filter_line_edit()->connect(SceneStringName(gui_input), callable_mp(this, &AnimationTrackEditor::_pick_track_filter_input));
 
 	prop_selector = memnew(PropertySelector);
 	add_child(prop_selector);
@@ -7470,8 +7536,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	ichb->add_child(insert_confirm_reset);
 
 	box_selection = memnew(Control);
-	add_child(box_selection);
-	box_selection->set_as_top_level(true);
+	box_selection_container->add_child(box_selection);
 	box_selection->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	box_selection->hide();
 	box_selection->connect(SceneStringName(draw), callable_mp(this, &AnimationTrackEditor::_box_selection_draw));

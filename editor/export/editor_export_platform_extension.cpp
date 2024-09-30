@@ -71,6 +71,8 @@ void EditorExportPlatformExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_export_project, "preset", "debug", "path", "flags");
 	GDVIRTUAL_BIND(_export_pack, "preset", "debug", "path", "flags");
 	GDVIRTUAL_BIND(_export_zip, "preset", "debug", "path", "flags");
+	GDVIRTUAL_BIND(_export_pack_patch, "preset", "debug", "path", "patches", "flags");
+	GDVIRTUAL_BIND(_export_zip_patch, "preset", "debug", "path", "patches", "flags");
 
 	GDVIRTUAL_BIND(_get_platform_features);
 
@@ -79,7 +81,7 @@ void EditorExportPlatformExtension::_bind_methods() {
 
 void EditorExportPlatformExtension::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
 	Vector<String> ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_preset_features, p_preset, ret) && r_features) {
+	if (GDVIRTUAL_CALL(_get_preset_features, p_preset, ret) && r_features) {
 		for (const String &E : ret) {
 			r_features->push_back(E);
 		}
@@ -142,19 +144,19 @@ String EditorExportPlatformExtension::get_export_option_warning(const EditorExpo
 
 String EditorExportPlatformExtension::get_os_name() const {
 	String ret;
-	GDVIRTUAL_REQUIRED_CALL(_get_os_name, ret);
+	GDVIRTUAL_CALL(_get_os_name, ret);
 	return ret;
 }
 
 String EditorExportPlatformExtension::get_name() const {
 	String ret;
-	GDVIRTUAL_REQUIRED_CALL(_get_name, ret);
+	GDVIRTUAL_CALL(_get_name, ret);
 	return ret;
 }
 
 Ref<Texture2D> EditorExportPlatformExtension::get_logo() const {
 	Ref<Texture2D> ret;
-	GDVIRTUAL_REQUIRED_CALL(_get_logo, ret);
+	GDVIRTUAL_CALL(_get_logo, ret);
 	return ret;
 }
 
@@ -236,7 +238,7 @@ bool EditorExportPlatformExtension::has_valid_export_configuration(const Ref<Edi
 	bool ret = false;
 	config_error = r_error;
 	config_missing_templates = r_missing_templates;
-	if (GDVIRTUAL_REQUIRED_CALL(_has_valid_export_configuration, p_preset, p_debug, ret)) {
+	if (GDVIRTUAL_CALL(_has_valid_export_configuration, p_preset, p_debug, ret)) {
 		r_error = config_error;
 		r_missing_templates = config_missing_templates;
 	}
@@ -246,7 +248,7 @@ bool EditorExportPlatformExtension::has_valid_export_configuration(const Ref<Edi
 bool EditorExportPlatformExtension::has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const {
 	bool ret = false;
 	config_error = r_error;
-	if (GDVIRTUAL_REQUIRED_CALL(_has_valid_project_configuration, p_preset, ret)) {
+	if (GDVIRTUAL_CALL(_has_valid_project_configuration, p_preset, ret)) {
 		r_error = config_error;
 	}
 	return ret;
@@ -255,7 +257,7 @@ bool EditorExportPlatformExtension::has_valid_project_configuration(const Ref<Ed
 List<String> EditorExportPlatformExtension::get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
 	List<String> ret_list;
 	Vector<String> ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_binary_extensions, p_preset, ret)) {
+	if (GDVIRTUAL_CALL(_get_binary_extensions, p_preset, ret)) {
 		for (const String &E : ret) {
 			ret_list.push_back(E);
 		}
@@ -267,7 +269,7 @@ Error EditorExportPlatformExtension::export_project(const Ref<EditorExportPreset
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
 	Error ret = FAILED;
-	GDVIRTUAL_REQUIRED_CALL(_export_project, p_preset, p_debug, p_path, p_flags, ret);
+	GDVIRTUAL_CALL(_export_project, p_preset, p_debug, p_path, p_flags, ret);
 	return ret;
 }
 
@@ -291,9 +293,47 @@ Error EditorExportPlatformExtension::export_zip(const Ref<EditorExportPreset> &p
 	return save_zip(p_preset, p_debug, p_path);
 }
 
+Error EditorExportPlatformExtension::export_pack_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, const Vector<String> &p_patches, BitField<EditorExportPlatform::DebugFlags> p_flags) {
+	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+
+	Error err = _load_patches(p_patches.is_empty() ? p_preset->get_patches() : p_patches);
+	if (err != OK) {
+		return err;
+	}
+
+	Error ret = FAILED;
+	if (GDVIRTUAL_CALL(_export_pack_patch, p_preset, p_debug, p_path, p_patches, p_flags, ret)) {
+		_unload_patches();
+		return ret;
+	}
+
+	err = save_pack_patch(p_preset, p_debug, p_path);
+	_unload_patches();
+	return err;
+}
+
+Error EditorExportPlatformExtension::export_zip_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, const Vector<String> &p_patches, BitField<EditorExportPlatform::DebugFlags> p_flags) {
+	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+
+	Error err = _load_patches(p_patches.is_empty() ? p_preset->get_patches() : p_patches);
+	if (err != OK) {
+		return err;
+	}
+
+	Error ret = FAILED;
+	if (GDVIRTUAL_CALL(_export_zip_patch, p_preset, p_debug, p_path, p_patches, p_flags, ret)) {
+		_unload_patches();
+		return ret;
+	}
+
+	err = save_zip_patch(p_preset, p_debug, p_path);
+	_unload_patches();
+	return err;
+}
+
 void EditorExportPlatformExtension::get_platform_features(List<String> *r_features) const {
 	Vector<String> ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_platform_features, ret) && r_features) {
+	if (GDVIRTUAL_CALL(_get_platform_features, ret) && r_features) {
 		for (const String &E : ret) {
 			r_features->push_back(E);
 		}

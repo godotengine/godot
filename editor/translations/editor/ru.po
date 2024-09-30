@@ -198,13 +198,15 @@
 # Tim Zh <tim3@mail.ru>, 2024.
 # Lev73 <asusgamens@gmail.com>, 2024.
 # LLIax <aultero@gmail.com>, 2024.
+# Dmitry <prostoikanal99@gmail.com>, 2024.
+# fingerionam <hurdanukka@gufum.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-08-08 16:09+0000\n"
-"Last-Translator: Olesya_Gerasimenko <gammaray@basealt.ru>\n"
+"PO-Revision-Date: 2024-09-08 19:09+0000\n"
+"Last-Translator: fingerionam <hurdanukka@gufum.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -213,7 +215,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.7-dev\n"
+"X-Generator: Weblate 5.8-dev\n"
 
 msgid "Main Thread"
 msgstr "Главный поток"
@@ -2182,7 +2184,7 @@ msgid "Gold Members"
 msgstr "Участники золотого уровня"
 
 msgid "Donors"
-msgstr "Доноры"
+msgstr "Cпонсоры"
 
 msgid "License"
 msgstr "Лицензия"
@@ -3952,6 +3954,24 @@ msgid ""
 msgstr ""
 "Невозможно записать в файл «%s»; файл используется, заблокирован или "
 "отсутствуют разрешения."
+
+msgid "Preparing scenes for reload"
+msgstr "Подготовка сцен к перезагрузке"
+
+msgid "Analyzing scene %s"
+msgstr "Анализ сцены %s"
+
+msgid "Preparation done."
+msgstr "Подготовка завершена."
+
+msgid "Scenes reloading"
+msgstr "Перезагрузка сцен"
+
+msgid "Reloading..."
+msgstr "Перезагрузка..."
+
+msgid "Reloading done."
+msgstr "Перезагрузка завершена."
 
 msgid ""
 "Changing the renderer requires restarting the editor.\n"
@@ -9898,14 +9918,14 @@ msgstr "Удалить выходной элемент управления из
 msgid "Remove In-Control from Curve"
 msgstr "Удалить входной элемент управления из кривой"
 
-msgid "Split Curve"
-msgstr "Разделить кривую"
-
 msgid "Move Point in Curve"
 msgstr "Переместить точку в кривой"
 
 msgid "Add Point to Curve"
 msgstr "Добавить точку к кривой"
+
+msgid "Split Curve"
+msgstr "Разделить кривую"
 
 msgid "Move In-Control in Curve"
 msgstr "Переместить входной элемент управления в кривой"
@@ -12094,7 +12114,7 @@ msgid "Physics"
 msgstr "Физика"
 
 msgid "Physics Layer %d"
-msgstr "Слой физики %"
+msgstr "Физический слой %d"
 
 msgid "No physics layers"
 msgstr "Нет слоёв физики"
@@ -17504,6 +17524,18 @@ msgstr ""
 "установите её."
 
 msgid ""
+"The TileMap node is deprecated as it is superseded by the use of multiple "
+"TileMapLayer nodes.\n"
+"To convert a TileMap to a set of TileMapLayer nodes, open the TileMap bottom "
+"panel with this node selected, click the toolbox icon in the top-right corner "
+"and choose \"Extract TileMap layers as individual TileMapLayer nodes\"."
+msgstr ""
+"Узел TileMap устарел и заменён использованием нескольких узлов TileMapLayer.\n"
+"Чтобы преобразовать TileMap в несколько TileMapLayer, откройте нижнюю панель "
+"TileMap, выбрав этот узел, щёлкните значок инструментов в правом верхнем углу "
+"и выберите «Извлечь слои как отдельные узлы TileMapLayer»."
+
+msgid ""
 "A Y-sorted layer has the same Z-index value as a not Y-sorted layer.\n"
 "This may lead to unwanted behaviors, as a layer that is not Y-sorted will be "
 "Y-sorted as a whole with tiles from Y-sorted layers."
@@ -17947,13 +17979,6 @@ msgid ""
 msgstr ""
 "Свойство «Удалённый путь» должно указывать на действительный узел Node3D или "
 "на действительный производный от Node3D узел."
-
-msgid ""
-"Skeleton3D node not set! SkeletonModifier3D must be child of Skeleton3D or "
-"set a path to an external skeleton."
-msgstr ""
-"Узел Skeleton3D не задан! SkeletonModifier3D должен быть дочерним элементом "
-"Skeleton3D, либо следует указать путь к внешнему скелету."
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "Это тело будет игнорироваться, пока вы не установите сетку."

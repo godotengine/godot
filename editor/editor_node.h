@@ -42,27 +42,17 @@ typedef void (*EditorPluginInitializeCallback)();
 typedef bool (*EditorBuildCallback)();
 
 class AcceptDialog;
-class CenterContainer;
-class CheckBox;
 class ColorPicker;
 class ConfirmationDialog;
 class Control;
 class FileDialog;
-class HBoxContainer;
-class HSplitContainer;
-class LinkButton;
 class MenuBar;
 class MenuButton;
-class Node2D;
 class OptionButton;
 class Panel;
 class PanelContainer;
-class PopupPanel;
 class RichTextLabel;
 class SubViewport;
-class TabBar;
-class TabContainer;
-class TextureRect;
 class TextureProgressBar;
 class Tree;
 class VBoxContainer;
@@ -83,44 +73,33 @@ class EditorCommandPalette;
 class EditorDockManager;
 class EditorExport;
 class EditorExportPreset;
-class EditorExtensionManager;
 class EditorFeatureProfileManager;
 class EditorFileDialog;
 class EditorFolding;
-class EditorInspector;
 class EditorLayoutsDialog;
 class EditorLog;
+class EditorMainScreen;
 class EditorNativeShaderSourceVisualizer;
 class EditorPluginList;
 class EditorQuickOpen;
-class EditorPropertyResource;
 class EditorResourcePreview;
 class EditorResourceConversionPlugin;
 class EditorRunBar;
-class EditorRunNative;
 class EditorSceneTabs;
 class EditorSelectionHistory;
 class EditorSettingsDialog;
 class EditorTitleBar;
-class EditorToaster;
-class EditorUndoRedoManager;
 class ExportTemplateManager;
 class FBXImporterManager;
 class FileSystemDock;
 class HistoryDock;
-class ImportDock;
-class NodeDock;
 class OrphanResourcesDialog;
-class PluginConfigDialog;
 class ProgressDialog;
 class ProjectExportDialog;
 class ProjectSettingsEditor;
-class RunSettingsDialog;
 class SceneImportSettingsDialog;
-class ScriptCreateDialog;
 class SurfaceUpgradeTool;
 class SurfaceUpgradeDialog;
-class WindowWrapper;
 
 struct EditorProgress {
 	String task;
@@ -135,13 +114,6 @@ class EditorNode : public Node {
 	GDCLASS(EditorNode, Node);
 
 public:
-	enum EditorTable {
-		EDITOR_2D = 0,
-		EDITOR_3D,
-		EDITOR_SCRIPT,
-		EDITOR_ASSETLIB
-	};
-
 	enum SceneNameCasing {
 		SCENE_NAME_CASING_AUTO,
 		SCENE_NAME_CASING_PASCAL_CASE,
@@ -274,6 +246,8 @@ private:
 		bool debug = false;
 		bool pack_only = false;
 		bool android_build_template = false;
+		bool patch = false;
+		Vector<String> patches;
 	} export_defer;
 
 	static EditorNode *singleton;
@@ -286,7 +260,6 @@ private:
 	EditorExport *editor_export = nullptr;
 	EditorLog *log = nullptr;
 	EditorNativeShaderSourceVisualizer *native_shader_source_visualizer = nullptr;
-	EditorPlugin *editor_plugin_screen = nullptr;
 	EditorPluginList *editor_plugins_force_input_forwarding = nullptr;
 	EditorPluginList *editor_plugins_force_over = nullptr;
 	EditorPluginList *editor_plugins_over = nullptr;
@@ -308,7 +281,6 @@ private:
 	HashMap<ObjectID, HashSet<EditorPlugin *>> active_plugins;
 	bool is_main_screen_editing = false;
 
-	PanelContainer *scene_root_parent = nullptr;
 	Control *gui_base = nullptr;
 	VBoxContainer *main_vbox = nullptr;
 	OptionButton *renderer = nullptr;
@@ -349,7 +321,6 @@ private:
 	Control *right_menu_spacer = nullptr;
 	EditorTitleBar *title_bar = nullptr;
 	EditorRunBar *project_run_bar = nullptr;
-	VBoxContainer *main_screen_vbox = nullptr;
 	MenuBar *main_menu = nullptr;
 	PopupMenu *apple_menu = nullptr;
 	PopupMenu *file_menu = nullptr;
@@ -369,6 +340,7 @@ private:
 
 	RichTextLabel *load_errors = nullptr;
 	AcceptDialog *load_error_dialog = nullptr;
+	bool load_errors_queued_to_display = false;
 
 	RichTextLabel *execute_outputs = nullptr;
 	AcceptDialog *execute_output_dialog = nullptr;
@@ -423,9 +395,7 @@ private:
 	String current_path;
 	MenuButton *update_spinner = nullptr;
 
-	HBoxContainer *main_editor_button_hb = nullptr;
-	Vector<Button *> main_editor_buttons;
-	Vector<EditorPlugin *> editor_table;
+	EditorMainScreen *editor_main_screen = nullptr;
 
 	AudioStreamPreviewGenerator *audio_preview_gen = nullptr;
 	ProgressDialog *progress_dialog = nullptr;
@@ -575,8 +545,6 @@ private:
 	void _sources_changed(bool p_exist);
 
 	void _node_renamed();
-	void _editor_select_next();
-	void _editor_select_prev();
 	void _save_editor_states(const String &p_file, int p_idx = -1);
 	void _load_editor_plugin_states_from_config(const Ref<ConfigFile> &p_config_file);
 	void _update_title();
@@ -649,8 +617,6 @@ private:
 	Dictionary _get_main_scene_state();
 	void _set_main_scene_state(Dictionary p_state, Node *p_for_scene);
 
-	int _get_current_main_editor();
-
 	void _save_editor_layout();
 	void _load_editor_layout();
 
@@ -688,13 +654,15 @@ private:
 	void _pick_main_scene_custom_action(const String &p_custom_action_name);
 
 	void _immediate_dialog_confirmed();
-	void _select_default_main_screen_plugin();
 
 	void _begin_first_scan();
 
 	void _notify_nodes_scene_reimported(Node *p_node, Array p_reimported_nodes);
 
 	void _remove_all_not_owned_children(Node *p_node, Node *p_owner);
+
+	void _progress_dialog_visibility_changed();
+	void _load_error_dialog_visibility_changed();
 
 protected:
 	friend class FileSystemDock;
@@ -706,9 +674,6 @@ public:
 	// Public for use with callable_mp.
 	void init_plugins();
 	void _on_plugin_ready(Object *p_script, const String &p_activate_name);
-
-	void editor_select(int p_which);
-	void set_visible_editor(EditorTable p_table) { editor_select(p_table); }
 
 	bool call_build();
 
@@ -724,6 +689,7 @@ public:
 	static EditorTitleBar *get_title_bar() { return singleton->title_bar; }
 	static VSplitContainer *get_top_split() { return singleton->top_split; }
 	static EditorBottomPanel *get_bottom_panel() { return singleton->bottom_panel; }
+	static EditorMainScreen *get_editor_main_screen() { return singleton->editor_main_screen; }
 
 	static String adjust_scene_name_casing(const String &p_root_name);
 	static String adjust_script_name_casing(const String &p_file_name, ScriptLanguage::ScriptNameCasing p_auto_casing);
@@ -755,7 +721,6 @@ public:
 
 	static void cleanup();
 
-	EditorPlugin *get_editor_plugin_screen() { return editor_plugin_screen; }
 	EditorPluginList *get_editor_plugins_force_input_forwarding() { return editor_plugins_force_input_forwarding; }
 	EditorPluginList *get_editor_plugins_force_over() { return editor_plugins_force_over; }
 	EditorPluginList *get_editor_plugins_over() { return editor_plugins_over; }
@@ -769,6 +734,7 @@ public:
 
 	void new_inherited_scene() { _menu_option_confirm(FILE_NEW_INHERITED_SCENE, false); }
 
+	void update_distraction_free_mode();
 	void set_distraction_free_mode(bool p_enter);
 	bool is_distraction_free_mode_enabled() const;
 
@@ -791,8 +757,13 @@ public:
 	void push_node_item(Node *p_node);
 	void hide_unused_editors(const Object *p_editing_owner = nullptr);
 
-	void select_editor_by_name(const String &p_name);
-
+	void replace_resources_in_object(
+			Object *p_object,
+			const Vector<Ref<Resource>> &p_source_resources,
+			const Vector<Ref<Resource>> &p_target_resource);
+	void replace_resources_in_scenes(
+			const Vector<Ref<Resource>> &p_source_resources,
+			const Vector<Ref<Resource>> &p_target_resource);
 	void open_request(const String &p_path);
 	void edit_foreign_resource(Ref<Resource> p_resource);
 
@@ -802,7 +773,6 @@ public:
 
 	bool is_changing_scene() const;
 
-	VBoxContainer *get_main_screen_control();
 	SubViewport *get_scene_root() { return scene_root; } // Root of the scene being edited.
 
 	void set_edited_scene(Node *p_scene);
@@ -811,7 +781,7 @@ public:
 
 	void fix_dependencies(const String &p_for_file);
 	int new_scene();
-	Error load_scene(const String &p_scene, bool p_ignore_broken_deps = false, bool p_set_inherited = false, bool p_clear_errors = true, bool p_force_open_imported = false, bool p_silent_change_tab = false);
+	Error load_scene(const String &p_scene, bool p_ignore_broken_deps = false, bool p_set_inherited = false, bool p_force_open_imported = false, bool p_silent_change_tab = false);
 	Error load_resource(const String &p_resource, bool p_ignore_broken_deps = false);
 
 	HashMap<StringName, Variant> get_modified_properties_for_node(Node *p_node, bool p_node_references_only);
@@ -912,7 +882,7 @@ public:
 
 	void _copy_warning(const String &p_str);
 
-	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only, bool p_android_build_template);
+	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only, bool p_android_build_template, bool p_patch, const Vector<String> &p_patches);
 	bool is_project_exporting() const;
 
 	Control *get_gui_base() { return gui_base; }
@@ -974,7 +944,8 @@ public:
 
 	void add_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin);
 	void remove_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin);
-	Vector<Ref<EditorResourceConversionPlugin>> find_resource_conversion_plugin(const Ref<Resource> &p_for_resource);
+	Vector<Ref<EditorResourceConversionPlugin>> find_resource_conversion_plugin_for_resource(const Ref<Resource> &p_for_resource);
+	Vector<Ref<EditorResourceConversionPlugin>> find_resource_conversion_plugin_for_type_name(const String &p_type);
 
 	bool ensure_main_scene(bool p_from_native);
 };

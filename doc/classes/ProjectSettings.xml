@@ -314,11 +314,11 @@
 		</member>
 		<member name="application/run/disable_stderr" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], disables printing to standard error. If [code]true[/code], this also hides error and warning messages printed by [method @GlobalScope.push_error] and [method @GlobalScope.push_warning]. See also [member application/run/disable_stdout].
-			Changes to this setting will only be applied upon restarting the application.
+			Changes to this setting will only be applied upon restarting the application. To control this at runtime, use [member Engine.print_error_messages].
 		</member>
 		<member name="application/run/disable_stdout" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], disables printing to standard output. This is equivalent to starting the editor or project with the [code]--quiet[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url]. See also [member application/run/disable_stderr].
-			Changes to this setting will only be applied upon restarting the application.
+			Changes to this setting will only be applied upon restarting the application. To control this at runtime, use [member Engine.print_to_stdout].
 		</member>
 		<member name="application/run/enable_alt_space_menu" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], allows the [kbd]Alt + Space[/kbd] keys to display the window menu. This menu allows the user to perform various window management operations such as moving, resizing, or minimizing the window.
@@ -1386,6 +1386,10 @@
 			Default [InputEventAction] to undo the most recent action.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
+		<member name="input/ui_unicode_start" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to start Unicode character hexadecimal code input in a text field.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
 		<member name="input/ui_up" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to move up in the UI.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
@@ -2211,6 +2215,7 @@
 		<member name="physics/2d/physics_engine" type="String" setter="" getter="" default="&quot;DEFAULT&quot;">
 			Sets which physics engine to use for 2D physics.
 			"DEFAULT" and "GodotPhysics2D" are the same, as there is currently no alternative 2D physics server implemented.
+			"Dummy" is a 2D physics server that does nothing and returns only dummy values, effectively disabling all 2D physics functionality.
 		</member>
 		<member name="physics/2d/run_on_separate_thread" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the 2D physics server runs on a separate thread, making better use of multi-core CPUs. If [code]false[/code], the 2D physics server runs on the main thread. Running the physics server on a separate thread can increase performance, but restricts API access to only physics process.
@@ -2289,6 +2294,7 @@
 		<member name="physics/3d/physics_engine" type="String" setter="" getter="" default="&quot;DEFAULT&quot;">
 			Sets which physics engine to use for 3D physics.
 			"DEFAULT" and "GodotPhysics3D" are the same, as there is currently no alternative 3D physics server implemented.
+			"Dummy" is a 3D physics server that does nothing and returns only dummy values, effectively disabling all 3D physics functionality.
 		</member>
 		<member name="physics/3d/run_on_separate_thread" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the 3D physics server runs on a separate thread, making better use of multi-core CPUs. If [code]false[/code], the 3D physics server runs on the main thread. Running the physics server on a separate thread can increase performance, but restricts API access to only physics process.
@@ -2340,6 +2346,9 @@
 			The number of fixed iterations per second. This controls how often physics simulation and [method Node._physics_process] methods are run. See also [member application/run/max_fps].
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_ticks_per_second] instead.
 			[b]Note:[/b] Only [member physics/common/max_physics_steps_per_frame] physics ticks may be simulated per rendered frame at most. If more physics ticks have to be simulated per rendered frame to keep up with rendering, the project will appear to slow down (even if [code]delta[/code] is used consistently in physics calculations). Therefore, it is recommended to also increase [member physics/common/max_physics_steps_per_frame] if increasing [member physics/common/physics_ticks_per_second] significantly above its default value.
+		</member>
+		<member name="rendering/2d/batching/item_buffer_size" type="int" setter="" getter="" default="16384">
+			Maximum number of canvas item commands that can be batched into a single draw call.
 		</member>
 		<member name="rendering/2d/sdf/oversize" type="int" setter="" getter="" default="1">
 			Controls how much of the original viewport size should be covered by the 2D signed distance field. This SDF can be sampled in [CanvasItem] shaders and is used for [GPUParticles2D] collision. Higher values allow portions of occluders located outside the viewport to still be taken into account in the generated signed distance field, at the cost of performance. If you notice particles falling through [LightOccluder2D]s as the occluders leave the viewport, increase this setting.
@@ -2788,6 +2797,10 @@
 			If [code]true[/code], the forward renderer will fall back to Direct3D 12 if Vulkan is not supported.
 			[b]Note:[/b] This setting is implemented only on Windows.
 		</member>
+		<member name="rendering/rendering_device/fallback_to_opengl3" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the forward renderer will fall back to OpenGL 3 if both Direct3D 12, Metal and Vulkan are not supported.
+			[b]Note:[/b] This setting is implemented only on Windows, Android, macOS, iOS, and Linux/X11.
+		</member>
 		<member name="rendering/rendering_device/fallback_to_vulkan" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the forward renderer will fall back to Vulkan if Direct3D 12 is not supported.
 			[b]Note:[/b] This setting is implemented only on Windows.
@@ -2850,11 +2863,6 @@
 		</member>
 		<member name="rendering/shading/overrides/force_vertex_shading" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], forces vertex shading for all rendering. This can increase performance a lot, but also reduces quality immensely. Can be used to optimize performance on low-end mobile devices.
-			[b]Note:[/b] This setting currently has no effect, as vertex shading is not implemented yet.
-		</member>
-		<member name="rendering/shading/overrides/force_vertex_shading.mobile" type="bool" setter="" getter="" default="true">
-			Lower-end override for [member rendering/shading/overrides/force_vertex_shading] on mobile devices, due to performance concerns or driver support.
-			[b]Note:[/b] This setting currently has no effect, as vertex shading is not implemented yet.
 		</member>
 		<member name="rendering/textures/canvas_textures/default_texture_filter" type="int" setter="" getter="" default="1">
 			The default texture filtering mode to use on [CanvasItem]s.
@@ -2887,10 +2895,13 @@
 		<member name="rendering/textures/lossless_compression/force_png" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import lossless textures using the PNG format. Otherwise, it will default to using WebP.
 		</member>
+		<member name="rendering/textures/vram_compression/cache_gpu_compressor" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the GPU texture compressor will cache the local RenderingDevice and its resources (shaders and pipelines), allowing for faster subsequent imports at a memory cost.
+		</member>
 		<member name="rendering/textures/vram_compression/compress_with_gpu" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], the texture importer will utilize the GPU for compressing textures, which makes large textures import significantly faster.
+			If [code]true[/code], the texture importer will utilize the GPU for compressing textures, improving the import time of large images.
 			[b]Note:[/b] This setting requires either Vulkan or D3D12 available as a rendering backend.
-			[b]Note:[/b] Currently this only affects BC6H compression, which is used on Desktop and Console for HDR images.
+			[b]Note:[/b] Currently this only affects BC1 and BC6H compression, which are used on Desktop and Console for fully opaque and HDR images respectively.
 		</member>
 		<member name="rendering/textures/vram_compression/import_etc2_astc" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the Ericsson Texture Compression 2 algorithm for lower quality textures and normal maps and Adaptable Scalable Texture Compression algorithm for high quality textures (in 4×4 block size).
@@ -2946,9 +2957,6 @@
 		</member>
 		<member name="xr/openxr/enabled" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], Godot will setup and initialize OpenXR on startup.
-		</member>
-		<member name="xr/openxr/enabled.editor" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], Godot will setup and initialize OpenXR on editor startup.
 		</member>
 		<member name="xr/openxr/environment_blend_mode" type="int" setter="" getter="" default="&quot;0&quot;">
 			Specify how OpenXR should blend in the environment. This is specific to certain AR and passthrough devices where camera images are blended in by the XR compositor.

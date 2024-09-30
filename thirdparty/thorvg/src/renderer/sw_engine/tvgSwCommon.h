@@ -367,7 +367,7 @@ static inline uint32_t opBlendSrcOver(uint32_t s, TVG_UNUSED uint32_t d, TVG_UNU
 }
 
 //TODO: BlendMethod could remove the alpha parameter.
-static inline uint32_t opBlendDifference(uint32_t s, uint32_t d, uint8_t a)
+static inline uint32_t opBlendDifference(uint32_t s, uint32_t d, TVG_UNUSED uint8_t a)
 {
     //if (s > d) => s - d
     //else => d - s
@@ -404,18 +404,13 @@ static inline uint32_t opBlendScreen(uint32_t s, uint32_t d, TVG_UNUSED uint8_t 
     return JOIN(255, c1, c2, c3);
 }
 
-static inline uint32_t opBlendDirectMultiply(uint32_t s, uint32_t d, uint8_t a)
+static inline uint32_t opBlendMultiply(uint32_t s, uint32_t d, TVG_UNUSED uint8_t a)
 {
     // s * d
     auto c1 = MULTIPLY(C1(s), C1(d));
     auto c2 = MULTIPLY(C2(s), C2(d));
     auto c3 = MULTIPLY(C3(s), C3(d));
     return JOIN(255, c1, c2, c3);
-}
-
-static inline uint32_t opBlendMultiply(uint32_t s, uint32_t d, uint8_t a)
-{
-    return opBlendDirectMultiply(s, d, a) + ALPHA_BLEND(d, IA(s));
 }
 
 static inline uint32_t opBlendOverlay(uint32_t s, uint32_t d, TVG_UNUSED uint8_t a)
@@ -570,7 +565,7 @@ bool rasterShape(SwSurface* surface, SwShape* shape, uint8_t r, uint8_t g, uint8
 bool rasterImage(SwSurface* surface, SwImage* image, const Matrix& transform, const SwBBox& bbox, uint8_t opacity);
 bool rasterStroke(SwSurface* surface, SwShape* shape, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 bool rasterGradientStroke(SwSurface* surface, SwShape* shape, const Fill* fdata, uint8_t opacity);
-bool rasterClear(SwSurface* surface, uint32_t x, uint32_t y, uint32_t w, uint32_t h);
+bool rasterClear(SwSurface* surface, uint32_t x, uint32_t y, uint32_t w, uint32_t h, pixel_t val = 0);
 void rasterPixel32(uint32_t *dst, uint32_t val, uint32_t offset, int32_t len);
 void rasterGrayscale8(uint8_t *dst, uint8_t val, uint32_t offset, int32_t len);
 void rasterUnpremultiply(Surface* surface);

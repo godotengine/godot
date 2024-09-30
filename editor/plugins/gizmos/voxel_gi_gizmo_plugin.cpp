@@ -41,7 +41,7 @@
 VoxelGIGizmoPlugin::VoxelGIGizmoPlugin() {
 	helper.instantiate();
 
-	Color gizmo_color = EDITOR_DEF_RST("editors/3d_gizmos/gizmo_colors/voxel_gi", Color(0.5, 1, 0.6));
+	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/voxel_gi");
 
 	create_material("voxel_gi_material", gizmo_color);
 

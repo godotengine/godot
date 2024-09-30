@@ -162,6 +162,11 @@ void StringName::unref() {
 	_data = nullptr;
 }
 
+uint32_t StringName::get_empty_hash() {
+	static uint32_t empty_hash = String::hash("");
+	return empty_hash;
+}
+
 bool StringName::operator==(const String &p_name) const {
 	if (_data) {
 		return _data->operator==(p_name);

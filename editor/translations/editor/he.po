@@ -37,13 +37,14 @@
 # RoastedPear <RoastedPear@outlook.com>, 2023.
 # EladNLG <e1lad8955@gmail.com>, 2024.
 # Ofir Tzriker <ofirc36@gmail.com>, 2024.
+# yoval keshet <keshetyoval@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-06-23 14:09+0000\n"
-"Last-Translator: Kfir Pshititsky <Kfir4321@gmail.com>\n"
+"PO-Revision-Date: 2024-08-28 12:59+0000\n"
+"Last-Translator: yoval keshet <keshetyoval@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/godot/"
 "he/>\n"
 "Language: he\n"
@@ -52,7 +53,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n == 1) ? 0 : ((n == 2) ? 1 : ((n > 10 && n "
 "% 10 == 0) ? 2 : 3));\n"
-"X-Generator: Weblate 5.6-rc\n"
+"X-Generator: Weblate 5.7.1-dev\n"
 
 msgid "Main Thread"
 msgstr "תהליכון ראשי"
@@ -282,6 +283,9 @@ msgstr "סינון לפי שם"
 msgid "Clear All"
 msgstr "ניקוי הכל"
 
+msgid "Clear all search filters."
+msgstr "מחק סינוני חיפוש."
+
 msgid "Add New Action"
 msgstr "הוספת פעולה חדשה"
 
@@ -353,6 +357,9 @@ msgstr "שינוי לולאת אנימציה"
 
 msgid "Property Track..."
 msgstr "רצועת מאפיין..."
+
+msgid "Bezier Curve Track..."
+msgstr "רצועת עקום בזייה..."
 
 msgid "Animation length (frames)"
 msgstr "משך ההנפשה (פריימים)"
@@ -1960,6 +1967,9 @@ msgstr ""
 msgid "Spins when the editor window redraws."
 msgstr "מסתובב כאשר חלון העורך מצויר מחדש."
 
+msgid "Imported resources can't be saved."
+msgstr "לא ניתן לשמור משאבים מובאים."
+
 msgid "OK"
 msgstr "אישור"
 
@@ -1971,6 +1981,9 @@ msgstr ""
 
 msgid "Save Resource As..."
 msgstr "שמירת המשאב בתור…"
+
+msgid "Error while loading file '%s'."
+msgstr "שגיאה במהלך טעינת קובץ '%s':"
 
 msgid "Saving Scene"
 msgstr "שומר סצנה"
@@ -2383,6 +2396,9 @@ msgstr "הוסף זוג מפתח/ערך"
 
 msgid "Localizable String (size %d)"
 msgstr "מחרוזת ניתנת לתרגום (גודל %d)"
+
+msgid "Load..."
+msgstr "טעינה..."
 
 msgid "Make Unique"
 msgstr "הפוך לייחודי"
@@ -3411,8 +3427,20 @@ msgstr "צעד סיבוב:"
 msgid "Scale Step:"
 msgstr "צעד קנה מידה:"
 
+msgid "units"
+msgstr "יחידות"
+
 msgid "Paste Pose"
 msgstr "הדבק תנוחה"
+
+msgid "Zoom to 3.125%"
+msgstr "זום ל3.125%"
+
+msgid "Zoom to 6.25%"
+msgstr "זום ל6.25%"
+
+msgid "Zoom to 12.5%"
+msgstr "זום ל12.5%"
 
 msgid "Select Mode"
 msgstr "בחירת מצב"
@@ -3498,6 +3526,12 @@ msgstr "יצירת תמונות lightmap נכשלה, ודא/י שהנתיב ני
 msgid "Bake Lightmaps"
 msgstr "אפיית Lightmaps"
 
+msgid "X-Axis"
+msgstr "ציר ה-X"
+
+msgid "Z-Axis"
+msgstr "ציר ה-Z"
+
 msgid "Random Rotation:"
 msgstr "סיבוב אקראי:"
 
@@ -3512,6 +3546,12 @@ msgstr "עריכת מצולע"
 
 msgid "Edit Poly (Remove Point)"
 msgstr "עריכת מצולע (הסרת נקודה)"
+
+msgid "Transform Aborted."
+msgstr "שינוי צורה הופסק."
+
+msgid "Objects: %d\n"
+msgstr "אובייקטים: %d\n"
 
 msgid "Top View."
 msgstr "מבט על."
@@ -4452,3 +4492,6 @@ msgstr "פונקציית השוואה לא חוקית לסוג זה."
 
 msgid "Constants cannot be modified."
 msgstr "אי אפשר לשנות קבועים."
+
+msgid "The local variable '%s' is declared but never used."
+msgstr "המשתנה המקומי '%s' הוגדר אך לא משומש."

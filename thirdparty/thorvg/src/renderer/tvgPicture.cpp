@@ -73,7 +73,7 @@ bool Picture::Impl::needComposition(uint8_t opacity)
 bool Picture::Impl::render(RenderMethod* renderer)
 {
     bool ret = false;
-    renderer->blend(picture->blend(), true);
+    renderer->blend(picture->blend());
 
     if (surface) return renderer->renderImage(rd);
     else if (paint) {

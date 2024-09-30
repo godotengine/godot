@@ -315,6 +315,7 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	{ TK_TYPE_USAMPLER3D, "usampler3D", KCF_SAMPLER_DATATYPE, {}, {} },
 	{ TK_TYPE_SAMPLERCUBE, "samplerCube", KCF_SAMPLER_DATATYPE, {}, {} },
 	{ TK_TYPE_SAMPLERCUBEARRAY, "samplerCubeArray", KCF_SAMPLER_DATATYPE, {}, {} },
+	{ TK_TYPE_SAMPLEREXT, "samplerExternalOES", KCF_SAMPLER_DATATYPE, {}, {} },
 
 	// interpolation qualifiers
 
@@ -1027,7 +1028,8 @@ bool ShaderLanguage::is_token_datatype(TokenType p_type) {
 			p_type == TK_TYPE_ISAMPLER3D ||
 			p_type == TK_TYPE_USAMPLER3D ||
 			p_type == TK_TYPE_SAMPLERCUBE ||
-			p_type == TK_TYPE_SAMPLERCUBEARRAY);
+			p_type == TK_TYPE_SAMPLERCUBEARRAY ||
+			p_type == TK_TYPE_SAMPLEREXT);
 }
 
 ShaderLanguage::DataType ShaderLanguage::get_token_datatype(TokenType p_type) {
@@ -1162,6 +1164,8 @@ String ShaderLanguage::get_datatype_name(DataType p_type) {
 			return "samplerCube";
 		case TYPE_SAMPLERCUBEARRAY:
 			return "samplerCubeArray";
+		case TYPE_SAMPLEREXT:
+			return "samplerExternalOES";
 		case TYPE_STRUCT:
 			return "struct";
 		case TYPE_MAX:
@@ -3169,6 +3173,8 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "texture", TYPE_VEC4, { TYPE_SAMPLERCUBE, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "bias" }, TAG_GLOBAL, false },
 	{ "texture", TYPE_VEC4, { TYPE_SAMPLERCUBEARRAY, TYPE_VEC4, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, false },
 	{ "texture", TYPE_VEC4, { TYPE_SAMPLERCUBEARRAY, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "bias" }, TAG_GLOBAL, false },
+	{ "texture", TYPE_VEC4, { TYPE_SAMPLEREXT, TYPE_VEC2, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, false },
+	{ "texture", TYPE_VEC4, { TYPE_SAMPLEREXT, TYPE_VEC2, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "bias" }, TAG_GLOBAL, false },
 
 	// textureProj
 
@@ -4482,7 +4488,8 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<Scalar> &p_value,
 			case ShaderLanguage::TYPE_USAMPLER2D:
 			case ShaderLanguage::TYPE_USAMPLER3D:
 			case ShaderLanguage::TYPE_SAMPLERCUBE:
-			case ShaderLanguage::TYPE_SAMPLERCUBEARRAY: {
+			case ShaderLanguage::TYPE_SAMPLERCUBEARRAY:
+			case ShaderLanguage::TYPE_SAMPLEREXT: {
 				// Texture types, likely not relevant here.
 				break;
 			}
@@ -4707,6 +4714,17 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 				pi.hint_string = "Texture3D";
 			}
 		} break;
+		case ShaderLanguage::TYPE_SAMPLEREXT: {
+			if (p_uniform.array_size > 0) {
+				pi.type = Variant::ARRAY;
+				pi.hint = PROPERTY_HINT_ARRAY_TYPE;
+				pi.hint_string = MAKE_RESOURCE_TYPE_HINT("ExternalTexture");
+			} else {
+				pi.type = Variant::OBJECT;
+				pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
+				pi.hint_string = "ExternalTexture";
+			}
+		} break;
 		case ShaderLanguage::TYPE_STRUCT: {
 			// FIXME: Implement this.
 		} break;
@@ -4779,6 +4797,8 @@ uint32_t ShaderLanguage::get_datatype_size(ShaderLanguage::DataType p_type) {
 		case TYPE_SAMPLERCUBE:
 			return 16;
 		case TYPE_SAMPLERCUBEARRAY:
+			return 16;
+		case TYPE_SAMPLEREXT:
 			return 16;
 		case TYPE_STRUCT:
 			return 0;
@@ -4921,6 +4941,7 @@ ShaderLanguage::DataType ShaderLanguage::get_scalar_type(DataType p_type) {
 		TYPE_UINT,
 		TYPE_FLOAT,
 		TYPE_FLOAT,
+		TYPE_FLOAT,
 		TYPE_VOID,
 	};
 
@@ -4951,6 +4972,7 @@ int ShaderLanguage::get_cardinality(DataType p_type) {
 		4,
 		9,
 		16,
+		1,
 		1,
 		1,
 		1,
@@ -8071,12 +8093,10 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			if (!n) {
 				return ERR_PARSE_ERROR;
 			}
-			{
-				const ShaderLanguage::DataType switch_type = n->get_datatype();
-				if (switch_type != TYPE_INT && switch_type != TYPE_UINT) {
-					_set_error(RTR("Expected an integer expression."));
-					return ERR_PARSE_ERROR;
-				}
+			const ShaderLanguage::DataType data_type = n->get_datatype();
+			if (data_type != TYPE_INT && data_type != TYPE_UINT) {
+				_set_error(RTR("Expected an integer or unsigned integer expression."));
+				return ERR_PARSE_ERROR;
 			}
 			tk = _get_token();
 			if (tk.type != TK_PARENTHESIS_CLOSE) {
@@ -8091,11 +8111,22 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			BlockNode *switch_block = alloc_node<BlockNode>();
 			switch_block->block_type = BlockNode::BLOCK_TYPE_SWITCH;
 			switch_block->parent_block = p_block;
+			switch_block->expected_type = data_type;
 			cf->expressions.push_back(n);
 			cf->blocks.push_back(switch_block);
 			p_block->statements.push_back(cf);
 
-			int prev_type = TK_CF_CASE;
+			pos = _get_tkpos();
+			tk = _get_token();
+			TokenType prev_type;
+			if (tk.type == TK_CF_CASE || tk.type == TK_CF_DEFAULT) {
+				prev_type = tk.type;
+				_set_tkpos(pos);
+			} else {
+				_set_expected_error("case", "default");
+				return ERR_PARSE_ERROR;
+			}
+
 			while (true) { // Go-through multiple cases.
 
 				if (_parse_block(switch_block, p_function_info, true, true, false) != OK) {
@@ -8117,43 +8148,6 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 					_set_tkpos(pos);
 					continue;
 				} else {
-					HashSet<int> constants;
-					for (ShaderLanguage::Node *statement : switch_block->statements) { // Checks for duplicates.
-						ControlFlowNode *flow = static_cast<ControlFlowNode *>(statement);
-						if (flow) {
-							if (flow->flow_op == FLOW_OP_CASE) {
-								if (flow->expressions[0]->type == Node::NODE_TYPE_CONSTANT) {
-									ConstantNode *cn = static_cast<ConstantNode *>(flow->expressions[0]);
-									if (!cn || cn->values.is_empty()) {
-										return ERR_PARSE_ERROR;
-									}
-									if (constants.has(cn->values[0].sint)) {
-										_set_error(vformat(RTR("Duplicated case label: %d."), cn->values[0].sint));
-										return ERR_PARSE_ERROR;
-									}
-									constants.insert(cn->values[0].sint);
-								} else if (flow->expressions[0]->type == Node::NODE_TYPE_VARIABLE) {
-									VariableNode *vn = static_cast<VariableNode *>(flow->expressions[0]);
-									if (!vn) {
-										return ERR_PARSE_ERROR;
-									}
-									Vector<Scalar> v = { Scalar() };
-									_find_identifier(p_block, false, p_function_info, vn->name, nullptr, nullptr, nullptr, nullptr, nullptr, &v);
-									if (constants.has(v[0].sint)) {
-										_set_error(vformat(RTR("Duplicated case label: %d."), v[0].sint));
-										return ERR_PARSE_ERROR;
-									}
-									constants.insert(v[0].sint);
-								}
-							} else if (flow->flow_op == FLOW_OP_DEFAULT) {
-								continue;
-							} else {
-								return ERR_PARSE_ERROR;
-							}
-						} else {
-							return ERR_PARSE_ERROR;
-						}
-					}
 					break;
 				}
 			}
@@ -8184,36 +8178,77 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 
 			if (!tk.is_integer_constant()) {
 				bool correct_constant_expression = false;
-				DataType data_type;
 
 				if (tk.type == TK_IDENTIFIER) {
+					DataType data_type;
 					bool is_const;
+
 					_find_identifier(p_block, false, p_function_info, tk.text, &data_type, nullptr, &is_const);
-					if (is_const) {
-						if (data_type == TYPE_INT) {
-							correct_constant_expression = true;
-						}
+					if (is_const && data_type == p_block->expected_type) {
+						correct_constant_expression = true;
 					}
 				}
+
 				if (!correct_constant_expression) {
-					_set_error(RTR("Expected an integer constant."));
+					if (p_block->expected_type == TYPE_UINT) {
+						_set_error(RTR("Expected an unsigned integer constant."));
+					} else {
+						_set_error(RTR("Expected an integer constant."));
+					}
 					return ERR_PARSE_ERROR;
 				}
 
 				VariableNode *vn = alloc_node<VariableNode>();
 				vn->name = tk.text;
+				{
+					Vector<Scalar> v;
+					DataType data_type;
+
+					_find_identifier(p_block, false, p_function_info, vn->name, &data_type, nullptr, nullptr, nullptr, nullptr, &v);
+					if (data_type == TYPE_INT) {
+						if (p_block->constants.has(v[0].sint)) {
+							_set_error(vformat(RTR("Duplicated case label: %d."), v[0].sint));
+							return ERR_PARSE_ERROR;
+						}
+						p_block->constants.insert(v[0].sint);
+					} else {
+						if (p_block->constants.has(v[0].uint)) {
+							_set_error(vformat(RTR("Duplicated case label: %d."), v[0].uint));
+							return ERR_PARSE_ERROR;
+						}
+						p_block->constants.insert(v[0].uint);
+					}
+				}
 				n = vn;
 			} else {
-				Scalar v;
-				if (tk.type == TK_UINT_CONSTANT) {
-					v.uint = (uint32_t)tk.constant;
-				} else {
-					v.sint = (int)tk.constant * sign;
-				}
-
 				ConstantNode *cn = alloc_node<ConstantNode>();
+				Scalar v;
+				if (p_block->expected_type == TYPE_UINT) {
+					if (tk.type != TK_UINT_CONSTANT) {
+						_set_error(RTR("Expected an unsigned integer constant."));
+						return ERR_PARSE_ERROR;
+					}
+					v.uint = (uint32_t)tk.constant;
+					if (p_block->constants.has(v.uint)) {
+						_set_error(vformat(RTR("Duplicated case label: %d."), v.uint));
+						return ERR_PARSE_ERROR;
+					}
+					p_block->constants.insert(v.uint);
+					cn->datatype = TYPE_UINT;
+				} else {
+					if (tk.type != TK_INT_CONSTANT) {
+						_set_error(RTR("Expected an integer constant."));
+						return ERR_PARSE_ERROR;
+					}
+					v.sint = (int32_t)tk.constant * sign;
+					if (p_block->constants.has(v.sint)) {
+						_set_error(vformat(RTR("Duplicated case label: %d."), v.sint));
+						return ERR_PARSE_ERROR;
+					}
+					p_block->constants.insert(v.sint);
+					cn->datatype = TYPE_INT;
+				}
 				cn->values.push_back(v);
-				cn->datatype = (tk.type == TK_UINT_CONSTANT ? TYPE_UINT : TYPE_INT);
 				n = cn;
 			}
 
@@ -8441,6 +8476,11 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 					return ERR_PARSE_ERROR;
 				}
 			} else {
+				if (b->parent_function->return_type == TYPE_VOID) {
+					_set_error(vformat(RTR("'%s' function cannot return a value."), "void"));
+					return ERR_PARSE_ERROR;
+				}
+
 				_set_tkpos(pos); //rollback, wants expression
 
 #ifdef DEBUG_ENABLED

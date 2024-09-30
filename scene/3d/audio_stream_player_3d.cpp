@@ -401,10 +401,19 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 			if (area && area->is_using_reverb_bus() && area->get_reverb_uniformity() > 0) {
 				total_max = MAX(total_max, listener_area_pos.length());
 			}
-			if (total_max > max_distance) {
+			if (dist > total_max || total_max > max_distance) {
+				if (!was_further_than_max_distance_last_frame) {
+					HashMap<StringName, Vector<AudioFrame>> bus_volumes;
+					for (Ref<AudioStreamPlayback> &playback : internal->stream_playbacks) {
+						// So the player gets muted and mostly stops mixing when out of range.
+						AudioServer::get_singleton()->set_playback_bus_volumes_linear(playback, bus_volumes);
+					}
+					was_further_than_max_distance_last_frame = true; // Cache so we don't set the volume over and over.
+				}
 				continue; //can't hear this sound in this listener
 			}
 		}
+		was_further_than_max_distance_last_frame = false;
 
 		float multiplier = Math::db_to_linear(_get_attenuation_db(dist));
 		if (max_distance > 0) {

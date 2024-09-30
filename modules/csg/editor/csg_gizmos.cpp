@@ -173,7 +173,7 @@ CSGShapeEditor::CSGShapeEditor() {
 CSGShape3DGizmoPlugin::CSGShape3DGizmoPlugin() {
 	helper.instantiate();
 
-	Color gizmo_color = EDITOR_DEF_RST("editors/3d_gizmos/gizmo_colors/csg", Color(0.0, 0.4, 1, 0.15));
+	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/csg");
 	create_material("shape_union_material", gizmo_color);
 	create_material("shape_union_solid_material", gizmo_color);
 	gizmo_color.invert();
@@ -541,7 +541,7 @@ EditorPluginCSG::EditorPluginCSG() {
 	Node3DEditor::get_singleton()->add_gizmo_plugin(gizmo_plugin);
 
 	csg_shape_editor = memnew(CSGShapeEditor);
-	EditorNode::get_singleton()->get_main_screen_control()->add_child(csg_shape_editor);
+	EditorNode::get_singleton()->get_gui_base()->add_child(csg_shape_editor);
 }
 
 #endif // TOOLS_ENABLED

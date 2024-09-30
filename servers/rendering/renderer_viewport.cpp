@@ -41,14 +41,31 @@
 static Transform2D _canvas_get_transform(RendererViewport::Viewport *p_viewport, RendererCanvasCull::Canvas *p_canvas, RendererViewport::Viewport::CanvasData *p_canvas_data, const Vector2 &p_vp_size) {
 	Transform2D xf = p_viewport->global_transform;
 
+	Vector2 pixel_snap_offset;
+	if (p_viewport->snap_2d_transforms_to_pixel) {
+		// We use `floor(p + 0.5)` to snap canvas items, but `ceil(p - 0.5)`
+		// to snap viewport transform because the viewport transform is inverse
+		// to the camera transform. Also, if the viewport size is not divisible
+		// by 2, the center point is offset by 0.5 px and we need to add 0.5
+		// before rounding to cancel it out.
+		pixel_snap_offset.x = (p_viewport->size.width % 2) ? 0.0 : -0.5;
+		pixel_snap_offset.y = (p_viewport->size.height % 2) ? 0.0 : -0.5;
+	}
+
 	float scale = 1.0;
 	if (p_viewport->canvas_map.has(p_canvas->parent)) {
 		Transform2D c_xform = p_viewport->canvas_map[p_canvas->parent].transform;
+		if (p_viewport->snap_2d_transforms_to_pixel) {
+			c_xform.columns[2] = (c_xform.columns[2] * p_canvas->parent_scale + pixel_snap_offset).ceil() / p_canvas->parent_scale;
+		}
 		xf = xf * c_xform;
 		scale = p_canvas->parent_scale;
 	}
 
 	Transform2D c_xform = p_canvas_data->transform;
+	if (p_viewport->snap_2d_transforms_to_pixel) {
+		c_xform.columns[2] = (c_xform.columns[2] + pixel_snap_offset).ceil();
+	}
 	xf = xf * c_xform;
 
 	if (scale != 1.0 && !RSG::canvas->disable_scale) {
@@ -818,8 +835,9 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 					blit.dst_rect.size = vp->size;
 				}
 
-				if (!blit_to_screen_list.has(vp->viewport_to_screen)) {
-					blit_to_screen_list[vp->viewport_to_screen] = Vector<BlitToScreen>();
+				Vector<BlitToScreen> *blits = blit_to_screen_list.getptr(vp->viewport_to_screen);
+				if (blits == nullptr) {
+					blits = &blit_to_screen_list.insert(vp->viewport_to_screen, Vector<BlitToScreen>())->value;
 				}
 
 				if (OS::get_singleton()->get_current_rendering_driver_name().begins_with("opengl3")) {
@@ -828,7 +846,7 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 					RSG::rasterizer->blit_render_targets_to_screen(vp->viewport_to_screen, blit_to_screen_vec.ptr(), 1);
 					RSG::rasterizer->gl_end_frame(p_swap_buffers);
 				} else {
-					blit_to_screen_list[vp->viewport_to_screen].push_back(blit);
+					blits->push_back(blit);
 				}
 			}
 		}
