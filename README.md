@@ -1,4 +1,4 @@
-# Godot Engine
+# Oodly Doodly Engine
 
 <p align="center">
   <a href="https://godotengine.org">
@@ -8,7 +8,7 @@
 
 ## 2D and 3D cross-platform game engine
 
-**[Godot Engine](https://godotengine.org) is a feature-packed, cross-platform
+**[Oodly Doodly Engine](https://x.com/oodlyengine) is a feature-packed, cross-platform
 game engine to create 2D and 3D games from a unified interface.** It provides a
 comprehensive set of [common tools](https://godotengine.org/features), so that
 users can focus on making games without having to reinvent the wheel. Games can
@@ -18,11 +18,11 @@ Web-based platforms and [consoles](https://docs.godotengine.org/en/latest/tutori
 
 ## Free, open source and community-driven
 
-Godot is completely free and open source under the very permissive [MIT license](https://godotengine.org/license).
+Oodly Doodly is completely free and open source under the very permissive [MIT license](https://github.com/CCIGAMES/Oodly-doodly-engine?tab=License-1-ov-file).
 No strings attached, no royalties, nothing. The users' games are theirs, down
 to the last line of engine code. Godot's development is fully independent and
 community-driven, empowering users to help shape their engine to match their
-expectations. It is supported by the [Godot Foundation](https://godot.foundation/)
+expectations. It is supported by the 
 not-for-profit.
 
 Before being open sourced in [February 2014](https://github.com/godotengine/godot/commit/0b806ee0fc9097fa7bda7ac0109191c9c5e0a1ac),
@@ -47,7 +47,7 @@ for compilation instructions for every supported platform.
 
 ## Community and contributing
 
-Godot is not only an engine but an ever-growing community of users and engine
+Oodly Doodly is not only an engine but an ever-growing community of users and engine
 developers. The main community channels are listed [on the homepage](https://godotengine.org/community).
 
 The best way to get in touch with the core engine developers is to join the
