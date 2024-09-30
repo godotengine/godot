@@ -32,7 +32,6 @@
 
 #include "core/math/projection.h"
 #include "core/math/transform_interpolator.h"
-#include "scene/main/node.h"
 #include "scene/main/viewport.h"
 #include "servers/rendering/rendering_server_constants.h"
 
@@ -235,7 +234,6 @@ void Camera3D::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_SUSPENDED:
 		case NOTIFICATION_PAUSED: {
 			if (is_physics_interpolated_and_enabled() && is_inside_tree() && is_visible_in_tree()) {
 				_physics_interpolation_ensure_transform_calculated(true);

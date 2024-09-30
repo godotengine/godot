@@ -31,7 +31,6 @@
 #include "gpu_particles_2d.h"
 
 #include "scene/2d/cpu_particles_2d.h"
-#include "scene/main/node.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/curve_texture.h"
 #include "scene/resources/gradient_texture.h"
@@ -697,8 +696,6 @@ void GPUParticles2D::_notification(int p_what) {
 			RS::get_singleton()->particles_set_subemitter(particles, RID());
 		} break;
 
-		case NOTIFICATION_SUSPENDED:
-		case NOTIFICATION_UNSUSPENDED:
 		case NOTIFICATION_PAUSED:
 		case NOTIFICATION_UNPAUSED: {
 			if (is_inside_tree()) {

@@ -104,9 +104,6 @@ private:
 	int64_t mouse_window = 0;
 	bool legacy_just_pressed_behavior = false;
 
-	bool suspended = false;
-	MouseMode suspended_mouse_mode = MOUSE_MODE_VISIBLE;
-
 	struct ActionState {
 		uint64_t pressed_physics_frame = UINT64_MAX;
 		uint64_t pressed_process_frame = UINT64_MAX;
@@ -382,8 +379,6 @@ public:
 	void release_pressed_events();
 
 	void set_event_dispatch_function(EventDispatchFunc p_function);
-
-	void set_suspend(bool p_enabled);
 
 	Input();
 	~Input();
