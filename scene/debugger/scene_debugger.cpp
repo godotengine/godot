@@ -35,21 +35,6 @@
 #include "core/io/marshalls.h"
 #include "core/object/script_language.h"
 #include "core/templates/local_vector.h"
-#include "scene/2d/physics/collision_object_2d.h"
-#include "scene/2d/physics/collision_polygon_2d.h"
-#include "scene/2d/physics/collision_shape_2d.h"
-#include "scene/gui/popup_menu.h"
-#ifndef _3D_DISABLED
-#include "core/math/transform_3d.h"
-#include "scene/3d/camera_3d.h"
-#include "scene/3d/label_3d.h"
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/physics/collision_object_3d.h"
-#include "scene/3d/physics/collision_shape_3d.h"
-#include "scene/3d/sprite_3d.h"
-#include "scene/resources/surface_tool.h"
-#endif
-#include "scene/main/canvas_layer.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
@@ -58,11 +43,8 @@ SceneDebugger *SceneDebugger::singleton = nullptr;
 
 SceneDebugger::SceneDebugger() {
 	singleton = this;
-
 #ifdef DEBUG_ENABLED
 	LiveEditor::singleton = memnew(LiveEditor);
-	RuntimeNodeSelect::singleton = memnew(RuntimeNodeSelect);
-
 	EngineDebugger::register_message_capture("scene", EngineDebugger::Capture(nullptr, SceneDebugger::parse_message));
 #endif
 }
@@ -74,13 +56,7 @@ SceneDebugger::~SceneDebugger() {
 		memdelete(LiveEditor::singleton);
 		LiveEditor::singleton = nullptr;
 	}
-
-	if (RuntimeNodeSelect::singleton) {
-		memdelete(RuntimeNodeSelect::singleton);
-		RuntimeNodeSelect::singleton = nullptr;
-	}
 #endif
-
 	singleton = nullptr;
 }
 
@@ -102,13 +78,8 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 	if (!scene_tree) {
 		return ERR_UNCONFIGURED;
 	}
-
 	LiveEditor *live_editor = LiveEditor::get_singleton();
 	if (!live_editor) {
-		return ERR_UNCONFIGURED;
-	}
-	RuntimeNodeSelect *runtime_node_select = RuntimeNodeSelect::get_singleton();
-	if (!runtime_node_select) {
 		return ERR_UNCONFIGURED;
 	}
 
@@ -127,15 +98,6 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 		ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 		ObjectID id = p_args[0];
 		_send_object_id(id);
-
-	} else if (p_msg == "suspend_changed") {
-		ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
-		bool suspended = p_args[0];
-		scene_tree->set_suspend(suspended);
-		runtime_node_select->_selection_set_visible(suspended);
-
-	} else if (p_msg == "next_frame") {
-		_next_frame();
 
 	} else if (p_msg == "override_camera_2D:set") { // Camera
 		ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
@@ -169,117 +131,91 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 	} else if (p_msg == "set_object_property") {
 		ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
 		_set_object_property(p_args[0], p_args[1], p_args[2]);
-		runtime_node_select->_update_selection();
 
-	} else if (p_msg.begins_with("live_")) { /// Live Edit
-		if (p_msg == "live_set_root") {
-			ERR_FAIL_COND_V(p_args.size() < 2, ERR_INVALID_DATA);
-			live_editor->_root_func(p_args[0], p_args[1]);
+	} else if (!p_msg.begins_with("live_")) { // Live edits below.
+		return ERR_SKIP;
+	} else if (p_msg == "live_set_root") {
+		ERR_FAIL_COND_V(p_args.size() < 2, ERR_INVALID_DATA);
+		live_editor->_root_func(p_args[0], p_args[1]);
 
-		} else if (p_msg == "live_node_path") {
-			ERR_FAIL_COND_V(p_args.size() < 2, ERR_INVALID_DATA);
-			live_editor->_node_path_func(p_args[0], p_args[1]);
+	} else if (p_msg == "live_node_path") {
+		ERR_FAIL_COND_V(p_args.size() < 2, ERR_INVALID_DATA);
+		live_editor->_node_path_func(p_args[0], p_args[1]);
 
-		} else if (p_msg == "live_res_path") {
-			ERR_FAIL_COND_V(p_args.size() < 2, ERR_INVALID_DATA);
-			live_editor->_res_path_func(p_args[0], p_args[1]);
+	} else if (p_msg == "live_res_path") {
+		ERR_FAIL_COND_V(p_args.size() < 2, ERR_INVALID_DATA);
+		live_editor->_res_path_func(p_args[0], p_args[1]);
 
-		} else if (p_msg == "live_node_prop_res") {
-			ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
-			live_editor->_node_set_res_func(p_args[0], p_args[1], p_args[2]);
+	} else if (p_msg == "live_node_prop_res") {
+		ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
+		live_editor->_node_set_res_func(p_args[0], p_args[1], p_args[2]);
 
-		} else if (p_msg == "live_node_prop") {
-			ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
-			live_editor->_node_set_func(p_args[0], p_args[1], p_args[2]);
+	} else if (p_msg == "live_node_prop") {
+		ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
+		live_editor->_node_set_func(p_args[0], p_args[1], p_args[2]);
 
-		} else if (p_msg == "live_res_prop_res") {
-			ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
-			live_editor->_res_set_res_func(p_args[0], p_args[1], p_args[2]);
+	} else if (p_msg == "live_res_prop_res") {
+		ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
+		live_editor->_res_set_res_func(p_args[0], p_args[1], p_args[2]);
 
-		} else if (p_msg == "live_res_prop") {
-			ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
-			live_editor->_res_set_func(p_args[0], p_args[1], p_args[2]);
+	} else if (p_msg == "live_res_prop") {
+		ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
+		live_editor->_res_set_func(p_args[0], p_args[1], p_args[2]);
 
-		} else if (p_msg == "live_node_call") {
-			ERR_FAIL_COND_V(p_args.size() < 2, ERR_INVALID_DATA);
-			LocalVector<Variant> args;
-			LocalVector<Variant *> argptrs;
-			args.resize(p_args.size() - 2);
-			argptrs.resize(args.size());
-			for (uint32_t i = 0; i < args.size(); i++) {
-				args[i] = p_args[i + 2];
-				argptrs[i] = &args[i];
-			}
-			live_editor->_node_call_func(p_args[0], p_args[1], argptrs.size() ? (const Variant **)argptrs.ptr() : nullptr, argptrs.size());
-
-		} else if (p_msg == "live_res_call") {
-			ERR_FAIL_COND_V(p_args.size() < 2, ERR_INVALID_DATA);
-			LocalVector<Variant> args;
-			LocalVector<Variant *> argptrs;
-			args.resize(p_args.size() - 2);
-			argptrs.resize(args.size());
-			for (uint32_t i = 0; i < args.size(); i++) {
-				args[i] = p_args[i + 2];
-				argptrs[i] = &args[i];
-			}
-			live_editor->_res_call_func(p_args[0], p_args[1], argptrs.size() ? (const Variant **)argptrs.ptr() : nullptr, argptrs.size());
-
-		} else if (p_msg == "live_create_node") {
-			ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
-			live_editor->_create_node_func(p_args[0], p_args[1], p_args[2]);
-
-		} else if (p_msg == "live_instantiate_node") {
-			ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
-			live_editor->_instance_node_func(p_args[0], p_args[1], p_args[2]);
-
-		} else if (p_msg == "live_remove_node") {
-			ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
-			live_editor->_remove_node_func(p_args[0]);
-			runtime_node_select->_update_selection();
-
-		} else if (p_msg == "live_remove_and_keep_node") {
-			ERR_FAIL_COND_V(p_args.size() < 2, ERR_INVALID_DATA);
-			live_editor->_remove_and_keep_node_func(p_args[0], p_args[1]);
-			runtime_node_select->_update_selection();
-
-		} else if (p_msg == "live_restore_node") {
-			ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
-			live_editor->_restore_node_func(p_args[0], p_args[1], p_args[2]);
-
-		} else if (p_msg == "live_duplicate_node") {
-			ERR_FAIL_COND_V(p_args.size() < 2, ERR_INVALID_DATA);
-			live_editor->_duplicate_node_func(p_args[0], p_args[1]);
-
-		} else if (p_msg == "live_reparent_node") {
-			ERR_FAIL_COND_V(p_args.size() < 4, ERR_INVALID_DATA);
-			live_editor->_reparent_node_func(p_args[0], p_args[1], p_args[2], p_args[3]);
-
-		} else {
-			return ERR_SKIP;
+	} else if (p_msg == "live_node_call") {
+		ERR_FAIL_COND_V(p_args.size() < 2, ERR_INVALID_DATA);
+		LocalVector<Variant> args;
+		LocalVector<Variant *> argptrs;
+		args.resize(p_args.size() - 2);
+		argptrs.resize(args.size());
+		for (uint32_t i = 0; i < args.size(); i++) {
+			args[i] = p_args[i + 2];
+			argptrs[i] = &args[i];
 		}
+		live_editor->_node_call_func(p_args[0], p_args[1], argptrs.size() ? (const Variant **)argptrs.ptr() : nullptr, argptrs.size());
 
-	} else if (p_msg.begins_with("runtime_node_select_")) { /// Runtime Node Selection
-		if (p_msg == "runtime_node_select_setup") {
-			runtime_node_select->_setup();
-
-		} else if (p_msg == "runtime_node_select_set_type") {
-			ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
-			RuntimeNodeSelect::NodeType type = (RuntimeNodeSelect::NodeType)(int)p_args[0];
-			runtime_node_select->_node_set_type(type);
-
-		} else if (p_msg == "runtime_node_select_set_mode") {
-			ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
-			RuntimeNodeSelect::SelectMode mode = (RuntimeNodeSelect::SelectMode)(int)p_args[0];
-			runtime_node_select->_select_set_mode(mode);
-
-		} else {
-			return ERR_SKIP;
+	} else if (p_msg == "live_res_call") {
+		ERR_FAIL_COND_V(p_args.size() < 2, ERR_INVALID_DATA);
+		LocalVector<Variant> args;
+		LocalVector<Variant *> argptrs;
+		args.resize(p_args.size() - 2);
+		argptrs.resize(args.size());
+		for (uint32_t i = 0; i < args.size(); i++) {
+			args[i] = p_args[i + 2];
+			argptrs[i] = &args[i];
 		}
+		live_editor->_res_call_func(p_args[0], p_args[1], argptrs.size() ? (const Variant **)argptrs.ptr() : nullptr, argptrs.size());
 
+	} else if (p_msg == "live_create_node") {
+		ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
+		live_editor->_create_node_func(p_args[0], p_args[1], p_args[2]);
+
+	} else if (p_msg == "live_instantiate_node") {
+		ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
+		live_editor->_instance_node_func(p_args[0], p_args[1], p_args[2]);
+
+	} else if (p_msg == "live_remove_node") {
+		ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
+		live_editor->_remove_node_func(p_args[0]);
+
+	} else if (p_msg == "live_remove_and_keep_node") {
+		ERR_FAIL_COND_V(p_args.size() < 2, ERR_INVALID_DATA);
+		live_editor->_remove_and_keep_node_func(p_args[0], p_args[1]);
+
+	} else if (p_msg == "live_restore_node") {
+		ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
+		live_editor->_restore_node_func(p_args[0], p_args[1], p_args[2]);
+
+	} else if (p_msg == "live_duplicate_node") {
+		ERR_FAIL_COND_V(p_args.size() < 2, ERR_INVALID_DATA);
+		live_editor->_duplicate_node_func(p_args[0], p_args[1]);
+
+	} else if (p_msg == "live_reparent_node") {
+		ERR_FAIL_COND_V(p_args.size() < 4, ERR_INVALID_DATA);
+		live_editor->_reparent_node_func(p_args[0], p_args[1], p_args[2], p_args[3]);
 	} else {
 		r_captured = false;
 	}
-
 	return OK;
 }
 
@@ -324,9 +260,6 @@ void SceneDebugger::_send_object_id(ObjectID p_id, int p_max_size) {
 		return;
 	}
 
-	Node *node = Object::cast_to<Node>(ObjectDB::get_instance(p_id));
-	RuntimeNodeSelect::get_singleton()->_select_node(node);
-
 	Array arr;
 	obj.serialize(arr);
 	EngineDebugger::get_singleton()->send_message("scene:inspect_object", arr);
@@ -345,16 +278,6 @@ void SceneDebugger::_set_object_property(ObjectID p_id, const String &p_property
 	}
 
 	obj->set(prop_name, p_value);
-}
-
-void SceneDebugger::_next_frame() {
-	SceneTree *scene_tree = SceneTree::get_singleton();
-	if (!scene_tree->is_suspended()) {
-		return;
-	}
-
-	scene_tree->set_suspend(false);
-	RenderingServer::get_singleton()->connect("frame_post_draw", callable_mp(scene_tree, &SceneTree::set_suspend).bind(true), Object::CONNECT_ONE_SHOT);
 }
 
 void SceneDebugger::add_to_cache(const String &p_filename, Node *p_node) {
@@ -1152,500 +1075,4 @@ void LiveEditor::_reparent_node_func(const NodePath &p_at, const NodePath &p_new
 	}
 }
 
-/// RuntimeNodeSelect
-RuntimeNodeSelect *RuntimeNodeSelect::singleton = nullptr;
-RuntimeNodeSelect *RuntimeNodeSelect::get_singleton() {
-	return singleton;
-}
-
-RuntimeNodeSelect::~RuntimeNodeSelect() {
-	if (selection_list) {
-		memdelete(selection_list);
-	}
-
-	if (sbox_2d_canvas.is_valid()) {
-		RS::get_singleton()->free(sbox_2d_canvas);
-		RS::get_singleton()->free(sbox_2d_ci);
-	}
-
-#ifndef _3D_DISABLED
-	if (sbox_3d_instance.is_valid()) {
-		RS::get_singleton()->free(sbox_3d_instance);
-		RS::get_singleton()->free(sbox_3d_instance_ofs);
-		RS::get_singleton()->free(sbox_3d_instance_xray);
-		RS::get_singleton()->free(sbox_3d_instance_xray_ofs);
-	}
-#endif // _3D_DISABLED
-}
-
-void RuntimeNodeSelect::_setup() {
-	Window *root = SceneTree::get_singleton()->get_root();
-	if (root->is_connected("window_input", callable_mp(this, &RuntimeNodeSelect::_root_window_input))) {
-		return;
-	}
-	root->connect("window_input", callable_mp(this, &RuntimeNodeSelect::_root_window_input));
-	root->connect("size_changed", callable_mp(this, &RuntimeNodeSelect::_update_selection), CONNECT_DEFERRED);
-
-	selection_list = memnew(PopupMenu);
-	selection_list->connect("index_pressed", callable_mp(this, &RuntimeNodeSelect::_items_popup_index_pressed).bind(selection_list));
-	selection_list->connect("popup_hide", callable_mp(Object::cast_to<Node>(root), &Node::remove_child).bind(selection_list));
-
-	/// 2D Selection Box Generation
-
-	sbox_2d_canvas = RS::get_singleton()->canvas_create();
-	sbox_2d_ci = RS::get_singleton()->canvas_item_create();
-	RS::get_singleton()->viewport_attach_canvas(root->get_viewport_rid(), sbox_2d_canvas);
-	RS::get_singleton()->viewport_set_canvas_stacking(root->get_viewport_rid(), sbox_2d_canvas, SELECTION_2D_LAYER, 0);
-	RS::get_singleton()->canvas_item_set_parent(sbox_2d_ci, sbox_2d_canvas);
-
-#ifndef _3D_DISABLED
-	/// 3D Selection Box Generation
-	// Copied from the Node3DEditor implementation.
-
-	// Use two AABBs to create the illusion of a slightly thicker line.
-	AABB aabb(Vector3(), Vector3(1, 1, 1));
-
-	// Create a x-ray (visible through solid surfaces) and standard version of the selection box.
-	// Both will be drawn at the same position, but with different opacity.
-	// This lets the user see where the selection is while still having a sense of depth.
-	Ref<SurfaceTool> st = memnew(SurfaceTool);
-	Ref<SurfaceTool> st_xray = memnew(SurfaceTool);
-
-	st->begin(Mesh::PRIMITIVE_LINES);
-	st_xray->begin(Mesh::PRIMITIVE_LINES);
-	for (int i = 0; i < 12; i++) {
-		Vector3 a, b;
-		aabb.get_edge(i, a, b);
-
-		st->add_vertex(a);
-		st->add_vertex(b);
-		st_xray->add_vertex(a);
-		st_xray->add_vertex(b);
-	}
-
-	Ref<StandardMaterial3D> mat = memnew(StandardMaterial3D);
-	mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
-	mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
-	// In the original Node3DEditor, this value would be fetched from the "editors/3d/selection_box_color" editor property,
-	// but since this is not accessible from here, we will just use the default value.
-	const Color selection_color_3d = Color(1, 0.5, 0);
-	mat->set_albedo(selection_color_3d);
-	mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
-	st->set_material(mat);
-	sbox_3d_mesh = st->commit();
-
-	Ref<StandardMaterial3D> mat_xray = memnew(StandardMaterial3D);
-	mat_xray->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
-	mat_xray->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
-	mat_xray->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
-	mat_xray->set_albedo(selection_color_3d * Color(1, 1, 1, 0.15));
-	mat_xray->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
-	st_xray->set_material(mat_xray);
-	sbox_3d_mesh_xray = st_xray->commit();
-#endif // _3D_DISABLED
-}
-
-void RuntimeNodeSelect::_node_set_type(NodeType p_type) {
-	node_select_type = p_type;
-}
-
-void RuntimeNodeSelect::_select_set_mode(SelectMode p_mode) {
-	node_select_mode = p_mode;
-}
-
-void RuntimeNodeSelect::_root_window_input(const Ref<InputEvent> &p_event) {
-	if (!SceneTree::get_singleton()->is_suspended() || selection_list->is_visible()) {
-		return;
-	}
-
-	Ref<InputEventMouseButton> b = p_event;
-	if (!b.is_valid() || !b->is_pressed()) {
-		return;
-	}
-
-	bool list_shortcut = node_select_mode == SELECT_MODE_SINGLE && b->get_button_index() == MouseButton::RIGHT && b->is_alt_pressed();
-	if (!list_shortcut && b->get_button_index() != MouseButton::LEFT) {
-		return;
-	}
-
-	Window *root = SceneTree::get_singleton()->get_root();
-	Point2 pos = (root->get_screen_transform() * root->get_canvas_transform()).affine_inverse().xform(b->get_position());
-
-	Vector<SelectResult> items;
-	if (node_select_type == NODE_TYPE_2D) {
-		for (int i = 0; i < root->get_child_count(); i++) {
-			_find_canvas_items_at_pos(pos, root->get_child(i), items);
-		}
-
-		// Remove possible duplicates.
-		for (int i = 0; i < items.size(); i++) {
-			Node *item = items[i].item;
-			for (int j = 0; j < i; j++) {
-				if (items[j].item == item) {
-					items.remove_at(i);
-					i--;
-
-					break;
-				}
-			}
-		}
-	} else if (node_select_type == NODE_TYPE_3D) {
-#ifndef _3D_DISABLED
-		_find_3d_items_at_pos(pos, items);
-#endif
-	}
-
-	if (items.is_empty()) {
-		return;
-	}
-
-	items.sort();
-
-	if ((!list_shortcut && node_select_mode == SELECT_MODE_SINGLE) || items.size() == 1) {
-		Array message;
-		message.append(items[0].item->get_instance_id());
-		EngineDebugger::get_singleton()->send_message("remote_node_clicked", message);
-	} else if (list_shortcut || node_select_mode == SELECT_MODE_LIST) {
-		if (!selection_list->is_inside_tree()) {
-			root->add_child(selection_list);
-		}
-
-		selection_list->clear();
-		for (SelectResult &I : items) {
-			selection_list->add_item(I.item->get_name());
-			selection_list->set_item_metadata(-1, I.item);
-		}
-
-		selection_list->set_position(selection_list->is_embedded() ? pos : pos + root->get_position());
-		selection_list->reset_size();
-		selection_list->popup();
-		// FIXME: Ugly hack that stops the popup from hiding when the button is released.
-		selection_list->call_deferred(SNAME("set_position"), selection_list->get_position() + Point2(1, 0));
-	}
-}
-
-void RuntimeNodeSelect::_items_popup_index_pressed(int p_index, PopupMenu *p_popup) {
-	Array message;
-	message.append(Object::cast_to<Node>(p_popup->get_item_metadata(p_index))->get_instance_id());
-	EngineDebugger::get_singleton()->send_message("remote_node_clicked", message);
-}
-
-void RuntimeNodeSelect::_select_node(Node *p_node) {
-	if (p_node == selected) {
-		return;
-	}
-
-	_clear_selection();
-
-	CanvasItem *ci = Object::cast_to<CanvasItem>(p_node);
-	if (ci) {
-		selected = p_node;
-	} else {
-#ifndef _3D_DISABLED
-		Node3D *node_3d = Object::cast_to<Node3D>(p_node);
-		if (node_3d) {
-			selected = p_node;
-
-			sbox_3d_instance = RS::get_singleton()->instance_create2(sbox_3d_mesh->get_rid(), node_3d->get_world_3d()->get_scenario());
-			sbox_3d_instance_ofs = RS::get_singleton()->instance_create2(sbox_3d_mesh->get_rid(), node_3d->get_world_3d()->get_scenario());
-			RS::get_singleton()->instance_geometry_set_cast_shadows_setting(sbox_3d_instance, RS::SHADOW_CASTING_SETTING_OFF);
-			RS::get_singleton()->instance_geometry_set_cast_shadows_setting(sbox_3d_instance_ofs, RS::SHADOW_CASTING_SETTING_OFF);
-			RS::get_singleton()->instance_set_layer_mask(sbox_3d_instance, 1 << SELECTION_3D_LAYER);
-			RS::get_singleton()->instance_set_layer_mask(sbox_3d_instance_ofs, 1 << SELECTION_3D_LAYER);
-			RS::get_singleton()->instance_geometry_set_flag(sbox_3d_instance, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-			RS::get_singleton()->instance_geometry_set_flag(sbox_3d_instance, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
-			RS::get_singleton()->instance_geometry_set_flag(sbox_3d_instance_ofs, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-			RS::get_singleton()->instance_geometry_set_flag(sbox_3d_instance_ofs, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
-
-			sbox_3d_instance_xray = RS::get_singleton()->instance_create2(sbox_3d_mesh_xray->get_rid(), node_3d->get_world_3d()->get_scenario());
-			sbox_3d_instance_xray_ofs = RS::get_singleton()->instance_create2(sbox_3d_mesh_xray->get_rid(), node_3d->get_world_3d()->get_scenario());
-			RS::get_singleton()->instance_geometry_set_cast_shadows_setting(sbox_3d_instance_xray, RS::SHADOW_CASTING_SETTING_OFF);
-			RS::get_singleton()->instance_geometry_set_cast_shadows_setting(sbox_3d_instance_xray_ofs, RS::SHADOW_CASTING_SETTING_OFF);
-			RS::get_singleton()->instance_set_layer_mask(sbox_3d_instance_xray, 1 << SELECTION_3D_LAYER);
-			RS::get_singleton()->instance_set_layer_mask(sbox_3d_instance_xray_ofs, 1 << SELECTION_3D_LAYER);
-			RS::get_singleton()->instance_geometry_set_flag(sbox_3d_instance_xray, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-			RS::get_singleton()->instance_geometry_set_flag(sbox_3d_instance_xray, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
-			RS::get_singleton()->instance_geometry_set_flag(sbox_3d_instance_xray_ofs, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-			RS::get_singleton()->instance_geometry_set_flag(sbox_3d_instance_xray_ofs, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
-		}
-#endif // _3D_DISABLED
-	}
-
-	if (selected) {
-		_update_selection();
-	}
-}
-
-void RuntimeNodeSelect::_update_selection() {
-	if (!selected || !selected->is_inside_tree()) {
-		_clear_selection();
-		return;
-	}
-
-	CanvasItem *ci = Object::cast_to<CanvasItem>(selected);
-	if (ci) {
-		RS::get_singleton()->canvas_item_clear(sbox_2d_ci);
-
-		Transform2D xform = ci->get_global_transform_with_canvas();
-
-		// Fallback.
-		Rect2 rect = Rect2(Vector2(), Vector2(10, 10));
-
-		if (ci->_edit_use_rect()) {
-			rect = ci->_edit_get_rect();
-		} else {
-			CollisionShape2D *collision_shape = Object::cast_to<CollisionShape2D>(ci);
-			if (collision_shape) {
-				Ref<Shape2D> shape = collision_shape->get_shape();
-				if (shape.is_valid()) {
-					rect = shape->get_rect();
-				}
-			}
-		}
-
-		const Vector2 endpoints[4] = {
-			xform.xform(rect.position),
-			xform.xform(rect.position + Vector2(rect.size.x, 0)),
-			xform.xform(rect.position + rect.size),
-			xform.xform(rect.position + Vector2(0, rect.size.y))
-		};
-
-		const Color selection_color_2d = Color(1, 0.6, 0.4, 0.7);
-		for (int i = 0; i < 4; i++) {
-			RS::get_singleton()->canvas_item_add_line(sbox_2d_ci, endpoints[i], endpoints[(i + 1) % 4], selection_color_2d, Math::round(2.f));
-		}
-	} else {
-#ifndef _3D_DISABLED
-		Node3D *node_3d = Object::cast_to<Node3D>(selected);
-
-		// Fallback.
-		AABB bounds(Vector3(-0.5, -0.5, -0.5), Vector3(1, 1, 1));
-
-		VisualInstance3D *visual_instance = Object::cast_to<VisualInstance3D>(node_3d);
-		if (visual_instance) {
-			bounds = visual_instance->get_aabb();
-		} else {
-			CollisionShape3D *collision_shape = Object::cast_to<CollisionShape3D>(node_3d);
-			if (collision_shape) {
-				Ref<Shape3D> shape = collision_shape->get_shape();
-				if (shape.is_valid()) {
-					bounds = shape->get_debug_mesh()->get_aabb();
-				}
-			}
-		}
-
-		Transform3D xform_to_top_level_parent_space = node_3d->get_global_transform().affine_inverse() * node_3d->get_global_transform();
-		bounds = xform_to_top_level_parent_space.xform(bounds);
-
-		Transform3D t = node_3d->get_global_transform();
-		Transform3D t_offset = t;
-
-		// Apply AABB scaling before item's global transform.
-		{
-			const Vector3 offset(0.005, 0.005, 0.005);
-			Basis aabb_s;
-			aabb_s.scale(bounds.size + offset);
-			t.translate_local(bounds.position - offset / 2);
-			t.basis = t.basis * aabb_s;
-		}
-		{
-			const Vector3 offset(0.01, 0.01, 0.01);
-			Basis aabb_s;
-			aabb_s.scale(bounds.size + offset);
-			t_offset.translate_local(bounds.position - offset / 2);
-			t_offset.basis = t_offset.basis * aabb_s;
-		}
-
-		RS::get_singleton()->instance_set_transform(sbox_3d_instance, t);
-		RS::get_singleton()->instance_set_transform(sbox_3d_instance_ofs, t_offset);
-		RS::get_singleton()->instance_set_transform(sbox_3d_instance_xray, t);
-		RS::get_singleton()->instance_set_transform(sbox_3d_instance_xray_ofs, t_offset);
-#endif // _3D_DISABLED
-	}
-}
-
-void RuntimeNodeSelect::_clear_selection() {
-	selected = nullptr;
-
-	if (sbox_2d_canvas.is_valid()) {
-		RS::get_singleton()->canvas_item_clear(sbox_2d_ci);
-	}
-
-#ifndef _3D_DISABLED
-	if (sbox_3d_instance.is_valid()) {
-		RS::get_singleton()->free(sbox_3d_instance);
-		RS::get_singleton()->free(sbox_3d_instance_ofs);
-		RS::get_singleton()->free(sbox_3d_instance_xray);
-		RS::get_singleton()->free(sbox_3d_instance_xray_ofs);
-	}
-#endif // _3D_DISABLED
-}
-
-void RuntimeNodeSelect::_selection_set_visible(bool p_visible) {
-	RS::get_singleton()->canvas_item_set_visible(sbox_2d_ci, p_visible);
-
-#ifndef _3D_DISABLED
-	Camera3D *camera = SceneTree::get_singleton()->get_root()->get_viewport()->get_camera_3d();
-	if (camera) {
-		uint32_t layers = camera->get_cull_mask();
-		layers &= ~(1 << SELECTION_3D_LAYER);
-		if (p_visible) {
-			layers |= (1 << SELECTION_3D_LAYER);
-		}
-		camera->set_cull_mask(layers);
-	}
-#endif // _3D_DISABLED
-
-	if (p_visible) {
-		_update_selection();
-	}
-}
-
-// Copied and trimmed from the CanvasItemEditor implementation.
-void RuntimeNodeSelect::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<SelectResult> &r_items, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform) {
-	if (!p_node || Object::cast_to<Viewport>(p_node)) {
-		return;
-	}
-
-	// In the original CanvasItemEditor, this value would be fetched from the "editors/polygon_editor/point_grab_radius" editor property,
-	// but since this is not accessible from here, we will just use the default value.
-	const real_t grab_distance = 8;
-	CanvasItem *ci = Object::cast_to<CanvasItem>(p_node);
-
-	for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
-		if (ci) {
-			if (!ci->is_set_as_top_level()) {
-				_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, p_parent_xform * ci->get_transform(), p_canvas_xform);
-			} else {
-				_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, ci->get_transform(), p_canvas_xform);
-			}
-		} else {
-			CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node);
-			_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, Transform2D(), cl ? cl->get_transform() : p_canvas_xform);
-		}
-	}
-
-	if (ci && ci->is_visible_in_tree()) {
-		Transform2D xform = p_canvas_xform;
-		if (!ci->is_set_as_top_level()) {
-			xform *= p_parent_xform;
-		}
-
-		xform = (xform * ci->get_transform()).affine_inverse();
-		const real_t local_grab_distance = xform.basis_xform(Vector2(grab_distance, 0)).length();
-		if (ci->_edit_is_selected_on_click(xform.xform(p_pos), local_grab_distance)) {
-			SelectResult res;
-			res.item = ci;
-			res.order = ci->get_z_index();
-			r_items.push_back(res);
-
-			// If it's a shape, get the collision object it's from.
-			// FIXME: If the collision object has multiple shapes, only the topmost will be above it in the list.
-			if (Object::cast_to<CollisionShape2D>(ci) || Object::cast_to<CollisionPolygon2D>(ci)) {
-				CollisionObject2D *collision_object = Object::cast_to<CollisionObject2D>(ci->get_parent());
-				if (collision_object) {
-					SelectResult res_col;
-					res_col.item = ci->get_parent();
-					res_col.order = collision_object->get_z_index();
-					r_items.push_back(res_col);
-				}
-			}
-		}
-	}
-}
-
-#ifndef _3D_DISABLED
-void RuntimeNodeSelect::_find_3d_items_at_pos(const Point2 &p_pos, Vector<SelectResult> &r_items) {
-	SceneTree *scene_tree = SceneTree::get_singleton();
-	Camera3D *camera = scene_tree->get_root()->get_viewport()->get_camera_3d();
-	if (!camera) {
-		return;
-	}
-
-	Vector3 ray = camera->project_ray_normal(p_pos);
-	Vector3 pos = camera->project_ray_origin(p_pos);
-	Vector3 to = pos + ray * camera->get_far();
-
-	// Start with physical objects.
-	PhysicsDirectSpaceState3D *ss = scene_tree->get_root()->get_world_3d()->get_direct_space_state();
-	PhysicsDirectSpaceState3D::RayResult result;
-	HashSet<RID> excluded;
-	PhysicsDirectSpaceState3D::RayParameters ray_params;
-	ray_params.from = pos;
-	ray_params.to = to;
-	ray_params.collide_with_areas = true;
-	while (true) {
-		ray_params.exclude = excluded;
-		if (ss->intersect_ray(ray_params, result)) {
-			SelectResult res;
-			res.item = Object::cast_to<Node>(result.collider);
-			res.order = -pos.distance_to(Object::cast_to<Node3D>(res.item)->get_global_transform().xform(result.position));
-
-			// Fetch collision shapes.
-			CollisionObject3D *collision = Object::cast_to<CollisionObject3D>(result.collider);
-			if (collision) {
-				List<uint32_t> owners;
-				collision->get_shape_owners(&owners);
-				for (const uint32_t &I : owners) {
-					SelectResult res_shape;
-					res_shape.item = Object::cast_to<Node>(collision->shape_owner_get_owner(I));
-					res_shape.order = res.order;
-					r_items.push_back(res_shape);
-				}
-			}
-
-			r_items.push_back(res);
-
-			excluded.insert(result.rid);
-		} else {
-			break;
-		}
-	}
-
-	// Then go for the meshes.
-	Vector<ObjectID> items = RS::get_singleton()->instances_cull_ray(pos, to, scene_tree->get_root()->get_world_3d()->get_scenario());
-	for (int i = 0; i < items.size(); i++) {
-		Object *obj = ObjectDB::get_instance(items[i]);
-		GeometryInstance3D *geo_instance = nullptr;
-		Ref<TriangleMesh> mesh_collision;
-
-		MeshInstance3D *mesh_instance = Object::cast_to<MeshInstance3D>(obj);
-		if (mesh_instance) {
-			if (mesh_instance->get_mesh().is_valid()) {
-				geo_instance = mesh_instance;
-				mesh_collision = mesh_instance->get_mesh()->generate_triangle_mesh();
-			}
-		} else {
-			Label3D *label = Object::cast_to<Label3D>(obj);
-			if (label) {
-				geo_instance = label;
-				mesh_collision = label->generate_triangle_mesh();
-			} else {
-				Sprite3D *sprite = Object::cast_to<Sprite3D>(obj);
-				if (sprite) {
-					geo_instance = sprite;
-					mesh_collision = sprite->generate_triangle_mesh();
-				}
-			}
-		}
-
-		if (mesh_collision.is_valid()) {
-			Transform3D gt = geo_instance->get_global_transform();
-			Transform3D ai = gt.affine_inverse();
-			Vector3 point, normal;
-			if (mesh_collision->intersect_ray(ai.xform(pos), ai.basis.xform(ray).normalized(), point, normal)) {
-				SelectResult res;
-				res.item = Object::cast_to<Node>(obj);
-				res.order = -pos.distance_to(gt.xform(point));
-				r_items.push_back(res);
-
-				continue;
-			}
-		}
-
-		items.remove_at(i);
-		i--;
-	}
-}
-#endif // _3D_DISABLED
 #endif

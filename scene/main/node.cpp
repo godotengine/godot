@@ -184,7 +184,6 @@ void Node::_notification(int p_notification) {
 			}
 		} break;
 
-		case NOTIFICATION_SUSPENDED:
 		case NOTIFICATION_PAUSED: {
 			if (is_physics_interpolated_and_enabled() && is_inside_tree()) {
 				reset_physics_interpolation();
@@ -696,16 +695,6 @@ void Node::_propagate_pause_notification(bool p_enable) {
 	data.blocked--;
 }
 
-void Node::_propagate_suspend_notification(bool p_enable) {
-	notification(p_enable ? NOTIFICATION_SUSPENDED : NOTIFICATION_UNSUSPENDED);
-
-	data.blocked++;
-	for (KeyValue<StringName, Node *> &K : data.children) {
-		K.value->_propagate_suspend_notification(p_enable);
-	}
-	data.blocked--;
-}
-
 Node::ProcessMode Node::get_process_mode() const {
 	return data.process_mode;
 }
@@ -861,7 +850,7 @@ bool Node::can_process_notification(int p_what) const {
 
 bool Node::can_process() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
-	return !get_tree()->is_suspended() && _can_process(get_tree()->is_paused());
+	return _can_process(get_tree()->is_paused());
 }
 
 bool Node::_can_process(bool p_paused) const {

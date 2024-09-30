@@ -31,7 +31,6 @@
 #include "navigation_agent_3d.h"
 
 #include "scene/3d/navigation_link_3d.h"
-#include "scene/main/node.h"
 #include "servers/navigation_server_3d.h"
 
 void NavigationAgent3D::_bind_methods() {
@@ -273,19 +272,11 @@ void NavigationAgent3D::_notification(int p_what) {
 #endif // DEBUG_ENABLED
 		} break;
 
-		case NOTIFICATION_SUSPENDED:
 		case NOTIFICATION_PAUSED: {
 			if (agent_parent) {
 				NavigationServer3D::get_singleton()->agent_set_paused(get_rid(), !agent_parent->can_process());
 			}
 		} break;
-
-		case NOTIFICATION_UNSUSPENDED: {
-			if (get_tree()->is_paused()) {
-				break;
-			}
-			[[fallthrough]];
-		}
 
 		case NOTIFICATION_UNPAUSED: {
 			if (agent_parent) {
