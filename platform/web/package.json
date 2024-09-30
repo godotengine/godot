@@ -14,7 +14,7 @@
     "@eslint/js": "^9.10.0",
     "@html-eslint/eslint-plugin": "^0.24.1",
     "@html-eslint/parser": "^0.24.1",
-    "@stylistic/eslint-plugin": "^2.6.5",
+    "@stylistic/eslint-plugin": "^2.7.2",
     "eslint": "^9.3.0",
     "eslint-plugin-html": "^8.1.1",
     "espree": "^10.0.1",
