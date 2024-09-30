@@ -76,6 +76,7 @@
 - (void)setWindowID:(DisplayServer::WindowID)wid;
 - (void)updateLayerDelegate;
 - (void)cancelComposition;
+- (void)processUIEvent:(const StringName &)name;
 
 @end
 

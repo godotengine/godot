@@ -401,6 +401,14 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
+		<method name="get_system_menu_no_default_items" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="menu_id" type="int" enum="NativeMenu.SystemMenus" />
+			<description>
+				Returns [code]true[/code] if system menu has no default items.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
 		<method name="has_feature" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="feature" type="int" enum="NativeMenu.Feature" />
@@ -720,6 +728,25 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
+		<method name="set_system_menu_hidden">
+			<return type="void" />
+			<param index="0" name="menu_id" type="int" enum="NativeMenu.SystemMenus" />
+			<param index="1" name="hidden" type="bool" />
+			<description>
+				Hides/shows the system menu. Only system menus with no default items can be hidden. When it is hidden, an item does not appear in a menu and its action cannot be invoked.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="set_system_menu_name">
+			<return type="void" />
+			<param index="0" name="menu_id" type="int" enum="NativeMenu.SystemMenus" />
+			<param index="1" name="string" type="String" />
+			<description>
+				Sets system menu name. If set to empty string, default menu name is restored.
+				[b]Note:[/b] On macOS, only [constant FILE_MENU_ID] can be renamed.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
 	</methods>
 	<constants>
 		<constant name="FEATURE_GLOBAL_MENU" value="0" enum="Feature">
@@ -754,6 +781,12 @@
 		</constant>
 		<constant name="DOCK_MENU_ID" value="5" enum="SystemMenus">
 			Dock icon right-click menu ID (on macOS this menu include standard application control items and a list of open windows).
+		</constant>
+		<constant name="EDIT_MENU_ID" value="6" enum="SystemMenus">
+			"Edit" menu ID (on macOS this menu includes "Cut", "Copy", and "Paste" items).
+		</constant>
+		<constant name="FILE_MENU_ID" value="7" enum="SystemMenus">
+			"File" menu ID (on macOS this menu is empty and is hidden by default, this menu is shown before "Edit" menu).
 		</constant>
 	</constants>
 </class>

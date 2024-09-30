@@ -33,6 +33,7 @@
 #include "display_server_macos.h"
 #include "key_mapping_macos.h"
 
+#include "core/input/input_map.h"
 #include "main/main.h"
 
 @implementation GodotContentLayerDelegate
@@ -335,6 +336,65 @@
 	}
 
 	return NO;
+}
+
+// MARK: Edit menu actions
+
+- (void)processUIEvent:(const StringName &)name {
+	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	if (!ds || !ds->has_window(window_id)) {
+		return;
+	}
+	const List<Ref<InputEvent>> *events = InputMap::get_singleton()->action_get_events(name);
+	if (!events) {
+		return;
+	}
+	const List<Ref<InputEvent>>::Element *first_event = events->front();
+	if (!first_event) {
+		return;
+	}
+
+	const Ref<InputEventKey> event = first_event->get();
+	if (event.is_null()) {
+		return;
+	}
+
+	DisplayServerMacOS::KeyEvent ke;
+	ke.window_id = window_id;
+	ke.macos_state = 0;
+	if (event->is_ctrl_pressed()) {
+		ke.macos_state |= NSEventModifierFlagControl;
+	}
+	if (event->is_shift_pressed()) {
+		ke.macos_state |= NSEventModifierFlagShift;
+	}
+	if (event->is_alt_pressed()) {
+		ke.macos_state |= NSEventModifierFlagOption;
+	}
+	if (event->is_meta_pressed()) {
+		ke.macos_state |= NSEventModifierFlagCommand;
+	}
+	ke.pressed = true;
+	ke.echo = false;
+	ke.raw = false;
+	ke.keycode = event->get_keycode();
+	ke.physical_keycode = event->get_physical_keycode();
+	ke.key_label = event->get_key_label();
+	ke.unicode = event->get_unicode();
+
+	ds->push_to_key_event_buffer(ke);
+}
+
+- (void)copy:(id)sender {
+	[self processUIEvent:"ui_copy"];
+}
+
+- (void)cut:(id)sender {
+	[self processUIEvent:"ui_cut"];
+}
+
+- (void)paste:(id)sender {
+	[self processUIEvent:"ui_paste"];
 }
 
 // MARK: Focus

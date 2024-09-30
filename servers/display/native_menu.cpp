@@ -41,6 +41,10 @@ void NativeMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_system_menu", "menu_id"), &NativeMenu::get_system_menu);
 	ClassDB::bind_method(D_METHOD("get_system_menu_name", "menu_id"), &NativeMenu::get_system_menu_name);
 
+	ClassDB::bind_method(D_METHOD("get_system_menu_no_default_items", "menu_id"), &NativeMenu::get_system_menu_no_default_items);
+	ClassDB::bind_method(D_METHOD("set_system_menu_name", "menu_id", "string"), &NativeMenu::set_system_menu_name);
+	ClassDB::bind_method(D_METHOD("set_system_menu_hidden", "menu_id", "hidden"), &NativeMenu::set_system_menu_hidden);
+
 	ClassDB::bind_method(D_METHOD("create_menu"), &NativeMenu::create_menu);
 	ClassDB::bind_method(D_METHOD("has_menu", "rid"), &NativeMenu::has_menu);
 	ClassDB::bind_method(D_METHOD("free_menu", "rid"), &NativeMenu::free_menu);
@@ -125,6 +129,8 @@ void NativeMenu::_bind_methods() {
 	BIND_ENUM_CONSTANT(WINDOW_MENU_ID);
 	BIND_ENUM_CONSTANT(HELP_MENU_ID);
 	BIND_ENUM_CONSTANT(DOCK_MENU_ID);
+	BIND_ENUM_CONSTANT(EDIT_MENU_ID);
+	BIND_ENUM_CONSTANT(FILE_MENU_ID);
 }
 
 bool NativeMenu::has_feature(Feature p_feature) const {
@@ -152,9 +158,25 @@ String NativeMenu::get_system_menu_name(SystemMenus p_menu_id) const {
 			return "Help menu";
 		case DOCK_MENU_ID:
 			return "Dock menu";
+		case EDIT_MENU_ID:
+			return "Edit menu";
+		case FILE_MENU_ID:
+			return "File menu";
 		default:
 			return "Invalid";
 	}
+}
+
+bool NativeMenu::get_system_menu_no_default_items(SystemMenus p_menu_id) const {
+	return false;
+}
+
+void NativeMenu::set_system_menu_name(SystemMenus p_menu_id, const String &p_string) {
+	WARN_PRINT("Global menus are not supported on this platform.");
+}
+
+void NativeMenu::set_system_menu_hidden(SystemMenus p_menu_id, bool p_hidden) {
+	WARN_PRINT("Global menus are not supported on this platform.");
 }
 
 RID NativeMenu::create_menu() {

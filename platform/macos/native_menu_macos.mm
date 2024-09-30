@@ -36,7 +36,7 @@
 
 #include "scene/resources/image_texture.h"
 
-void NativeMenuMacOS::_register_system_menus(NSMenu *p_main_menu, NSMenu *p_application_menu, NSMenu *p_window_menu, NSMenu *p_help_menu, NSMenu *p_dock_menu) {
+void NativeMenuMacOS::_register_system_menus(NSMenu *p_main_menu, NSMenu *p_application_menu, NSMenu *p_window_menu, NSMenu *p_help_menu, NSMenu *p_dock_menu, NSMenu *p_edit_menu, NSMenu *p_file_menu, NSMenuItem *p_file_menu_item) {
 	{
 		MenuData *md = memnew(MenuData);
 		md->menu = p_main_menu;
@@ -44,6 +44,24 @@ void NativeMenuMacOS::_register_system_menus(NSMenu *p_main_menu, NSMenu *p_appl
 		main_menu = menus.make_rid(md);
 		main_menu_ns = p_main_menu;
 		menu_lookup[md->menu] = main_menu;
+	}
+	{
+		MenuData *md = memnew(MenuData);
+		md->menu = p_file_menu;
+		md->is_system = true;
+		file_menu = menus.make_rid(md);
+		file_menu_ns = p_file_menu;
+		menu_lookup[md->menu] = file_menu;
+
+		file_menu_item = p_file_menu_item;
+	}
+	{
+		MenuData *md = memnew(MenuData);
+		md->menu = p_edit_menu;
+		md->is_system = true;
+		edit_menu = menus.make_rid(md);
+		edit_menu_ns = p_edit_menu;
+		menu_lookup[md->menu] = edit_menu;
 	}
 	{
 		MenuData *md = memnew(MenuData);
@@ -160,10 +178,10 @@ bool NativeMenuMacOS::_is_menu_opened(NSMenu *p_menu) const {
 }
 
 int NativeMenuMacOS::_get_system_menu_start(const NSMenu *p_menu) const {
-	if (p_menu == [NSApp mainMenu]) { // Skip Apple menu.
-		return 1;
+	if (p_menu == [NSApp mainMenu]) { // Skip Apple, File and Edit menu.
+		return 3;
 	}
-	if (p_menu == application_menu_ns || p_menu == window_menu_ns || p_menu == help_menu_ns) {
+	if (p_menu == application_menu_ns || p_menu == window_menu_ns || p_menu == help_menu_ns || p_menu == edit_menu_ns || p_menu == file_menu_ns) {
 		int count = [p_menu numberOfItems];
 		for (int i = 0; i < count; i++) {
 			NSMenuItem *menu_item = [p_menu itemAtIndex:i];
@@ -176,10 +194,10 @@ int NativeMenuMacOS::_get_system_menu_start(const NSMenu *p_menu) const {
 }
 
 int NativeMenuMacOS::_get_system_menu_count(const NSMenu *p_menu) const {
-	if (p_menu == [NSApp mainMenu]) { // Skip Apple, Window and Help menu.
-		return [p_menu numberOfItems] - 3;
+	if (p_menu == [NSApp mainMenu]) { // Skip Apple, File, Edit, Window and Help menu.
+		return [p_menu numberOfItems] - 5;
 	}
-	if (p_menu == application_menu_ns || p_menu == window_menu_ns || p_menu == help_menu_ns) {
+	if (p_menu == application_menu_ns || p_menu == window_menu_ns || p_menu == help_menu_ns || p_menu == edit_menu_ns || p_menu == file_menu_ns) {
 		int start = 0;
 		int count = [p_menu numberOfItems];
 		for (int i = 0; i < count; i++) {
@@ -215,6 +233,8 @@ bool NativeMenuMacOS::has_system_menu(SystemMenus p_menu_id) const {
 		case WINDOW_MENU_ID:
 		case HELP_MENU_ID:
 		case DOCK_MENU_ID:
+		case EDIT_MENU_ID:
+		case FILE_MENU_ID:
 			return true;
 		default:
 			return false;
@@ -233,8 +253,34 @@ RID NativeMenuMacOS::get_system_menu(SystemMenus p_menu_id) const {
 			return help_menu;
 		case DOCK_MENU_ID:
 			return dock_menu;
+		case EDIT_MENU_ID:
+			return edit_menu;
+		case FILE_MENU_ID:
+			return file_menu;
 		default:
 			return RID();
+	}
+}
+
+bool NativeMenuMacOS::get_system_menu_no_default_items(SystemMenus p_menu_id) const {
+	return p_menu_id == FILE_MENU_ID;
+}
+
+void NativeMenuMacOS::set_system_menu_name(SystemMenus p_menu_id, const String &p_string) {
+	if (p_menu_id == FILE_MENU_ID) {
+		if (p_string.is_empty()) {
+			[file_menu_item setTitle:NSLocalizedString(@"File", nil)];
+			[file_menu_ns setTitle:NSLocalizedString(@"File", nil)];
+		} else {
+			[file_menu_item setTitle:[NSString stringWithUTF8String:p_string.utf8().get_data()]];
+			[file_menu_ns setTitle:[NSString stringWithUTF8String:p_string.utf8().get_data()]];
+		}
+	}
+}
+
+void NativeMenuMacOS::set_system_menu_hidden(SystemMenus p_menu_id, bool p_hidden) {
+	if (p_menu_id == FILE_MENU_ID) {
+		file_menu_item.hidden = p_hidden;
 	}
 }
 
@@ -1291,7 +1337,7 @@ void NativeMenuMacOS::clear(const RID &p_rid) {
 	ERR_FAIL_NULL(md);
 	ERR_FAIL_COND_MSG(_is_menu_opened(md->menu), "Can't remove open menu!");
 
-	if (p_rid == application_menu || p_rid == window_menu || p_rid == help_menu) {
+	if (p_rid == application_menu || p_rid == window_menu || p_rid == help_menu || p_rid == edit_menu || p_rid == file_menu) {
 		int start = _get_system_menu_start(md->menu);
 		int count = _get_system_menu_count(md->menu);
 		for (int i = start + count - 1; i >= start; i--) {
@@ -1302,11 +1348,23 @@ void NativeMenuMacOS::clear(const RID &p_rid) {
 	}
 
 	if (p_rid == main_menu) {
-		// Restore Apple, Window and Help menu.
+		// Restore Apple, File, Edit, Window and Help menu.
 		MenuData *md_app = menus.get_or_null(application_menu);
 		if (md_app) {
 			NSMenuItem *menu_item = [md->menu addItemWithTitle:@"" action:nil keyEquivalent:@""];
 			[md->menu setSubmenu:md_app->menu forItem:menu_item];
+		}
+		MenuData *md_file = menus.get_or_null(file_menu);
+		if (md_file) {
+			NSMenuItem *menu_item = [md->menu addItemWithTitle:@"File" action:nil keyEquivalent:@""];
+			menu_item.hidden = YES;
+			[md->menu setSubmenu:md_file->menu forItem:menu_item];
+			file_menu_item = menu_item;
+		}
+		MenuData *md_edit = menus.get_or_null(edit_menu);
+		if (md_edit) {
+			NSMenuItem *menu_item = [md->menu addItemWithTitle:@"Edit" action:nil keyEquivalent:@""];
+			[md->menu setSubmenu:md_edit->menu forItem:menu_item];
 		}
 		MenuData *md_win = menus.get_or_null(window_menu);
 		if (md_win) {
@@ -1343,6 +1401,28 @@ NativeMenuMacOS::~NativeMenuMacOS() {
 			menu_lookup.erase(md->menu);
 			md->menu = nullptr;
 			application_menu_ns = nullptr;
+			memdelete(md);
+		}
+	}
+	if (file_menu.is_valid()) {
+		MenuData *md = menus.get_or_null(file_menu);
+		if (md) {
+			clear(file_menu);
+			menus.free(file_menu);
+			menu_lookup.erase(md->menu);
+			md->menu = nullptr;
+			file_menu_ns = nullptr;
+			memdelete(md);
+		}
+	}
+	if (edit_menu.is_valid()) {
+		MenuData *md = menus.get_or_null(edit_menu);
+		if (md) {
+			clear(edit_menu);
+			menus.free(edit_menu);
+			menu_lookup.erase(md->menu);
+			md->menu = nullptr;
+			edit_menu_ns = nullptr;
 			memdelete(md);
 		}
 	}

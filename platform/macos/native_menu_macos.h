@@ -58,12 +58,18 @@ class NativeMenuMacOS : public NativeMenu {
 	NSMenu *window_menu_ns = nullptr;
 	NSMenu *help_menu_ns = nullptr;
 	NSMenu *dock_menu_ns = nullptr;
+	NSMenu *edit_menu_ns = nullptr;
+	NSMenu *file_menu_ns = nullptr;
+
+	NSMenuItem *file_menu_item = nullptr;
 
 	RID main_menu;
 	RID application_menu;
 	RID window_menu;
 	RID help_menu;
 	RID dock_menu;
+	RID edit_menu;
+	RID file_menu;
 
 	int _get_system_menu_start(const NSMenu *p_menu) const;
 	int _get_system_menu_count(const NSMenu *p_menu) const;
@@ -71,7 +77,7 @@ class NativeMenuMacOS : public NativeMenu {
 	NSMenuItem *_menu_add_item(NSMenu *p_menu, const String &p_label, Key p_accel, int p_index, int *r_out);
 
 public:
-	void _register_system_menus(NSMenu *p_main_menu, NSMenu *p_application_menu, NSMenu *p_window_menu, NSMenu *p_help_menu, NSMenu *p_dock_menu);
+	void _register_system_menus(NSMenu *p_main_menu, NSMenu *p_application_menu, NSMenu *p_window_menu, NSMenu *p_help_menu, NSMenu *p_dock_menu, NSMenu *p_edit_menu, NSMenu *p_file_menu, NSMenuItem *p_file_menu_item);
 	NSMenu *_get_dock_menu();
 
 	void _menu_need_update(NSMenu *p_menu);
@@ -83,6 +89,10 @@ public:
 
 	virtual bool has_system_menu(SystemMenus p_menu_id) const override;
 	virtual RID get_system_menu(SystemMenus p_menu_id) const override;
+
+	virtual bool get_system_menu_no_default_items(SystemMenus p_menu_id) const override;
+	virtual void set_system_menu_name(SystemMenus p_menu_id, const String &p_string) override;
+	virtual void set_system_menu_hidden(SystemMenus p_menu_id, bool p_hidden) override;
 
 	virtual RID create_menu() override;
 	virtual bool has_menu(const RID &p_rid) const override;

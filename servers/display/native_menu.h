@@ -66,6 +66,8 @@ public:
 		WINDOW_MENU_ID,
 		HELP_MENU_ID,
 		DOCK_MENU_ID,
+		EDIT_MENU_ID,
+		FILE_MENU_ID,
 	};
 
 	virtual bool has_feature(Feature p_feature) const;
@@ -73,6 +75,10 @@ public:
 	virtual bool has_system_menu(SystemMenus p_menu_id) const;
 	virtual RID get_system_menu(SystemMenus p_menu_id) const;
 	virtual String get_system_menu_name(SystemMenus p_menu_id) const;
+
+	virtual bool get_system_menu_no_default_items(SystemMenus p_menu_id) const;
+	virtual void set_system_menu_name(SystemMenus p_menu_id, const String &p_string);
+	virtual void set_system_menu_hidden(SystemMenus p_menu_id, bool p_hidden);
 
 	virtual RID create_menu();
 	virtual bool has_menu(const RID &p_rid) const;
