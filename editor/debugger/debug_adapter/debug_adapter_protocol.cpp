@@ -799,6 +799,22 @@ void DebugAdapterProtocol::parse_object(SceneDebuggerObject &p_obj) {
 	variable_list.insert(object_list[object_id], properties);
 }
 
+void DebugAdapterProtocol::parse_evaluation(DebuggerMarshalls::ScriptStackVariable &p_var) {
+	// If the eval is not on the pending list, we weren't expecting it. Ignore it.
+	String eval = p_var.name;
+	if (!eval_pending_list.erase(eval)) {
+		return;
+	}
+
+	DAP::Variable variable;
+	variable.name = p_var.name;
+	variable.value = p_var.value;
+	variable.type = Variant::get_type_name(p_var.value.get_type());
+	variable.variablesReference = parse_variant(p_var.value);
+
+	eval_list.insert(variable.name, variable);
+}
+
 const Variant DebugAdapterProtocol::parse_object_variable(const SceneDebuggerObject::SceneDebuggerProperty &p_property) {
 	const PropertyInfo &info = p_property.first;
 	const Variant &value = p_property.second;
@@ -829,6 +845,18 @@ bool DebugAdapterProtocol::request_remote_object(const ObjectID &p_object_id) {
 
 	EditorDebuggerNode::get_singleton()->get_default_debugger()->request_remote_object(p_object_id);
 	object_pending_set.insert(p_object_id);
+
+	return true;
+}
+
+bool DebugAdapterProtocol::request_remote_evaluate(const String &p_eval, int p_stack_frame) {
+	// If the eval is already on the pending list, we don't need to request it again
+	if (eval_pending_list.has(p_eval)) {
+		return false;
+	}
+
+	EditorDebuggerNode::get_singleton()->get_default_debugger()->request_remote_evaluate(p_eval, p_stack_frame);
+	eval_pending_list.insert(p_eval);
 
 	return true;
 }
@@ -1148,6 +1176,12 @@ void DebugAdapterProtocol::on_debug_data(const String &p_msg, const Array &p_dat
 		remote_obj.deserialize(p_data);
 
 		parse_object(remote_obj);
+	} else if (p_msg == "evaluation_return") {
+		// An evaluation was requested from the debuggee; parse it.
+		DebuggerMarshalls::ScriptStackVariable remote_evaluation;
+		remote_evaluation.deserialize(p_data);
+
+		parse_evaluation(remote_evaluation);
 	}
 
 	notify_custom_data(p_msg, p_data);
