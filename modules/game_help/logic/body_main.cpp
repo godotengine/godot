@@ -325,7 +325,7 @@ void CharacterBodyMain::_init_body()
         if(animator.is_valid()) {
             animator->set_body(this);
         }
-		update_bone_visble();
+		//update_bone_visble();
 		notify_property_list_changed();
 	}
 
@@ -641,7 +641,8 @@ static void save_fbx_res( const String& group_name,const String& sub_path,const 
 		DirAccess::make_dir_absolute(export_root_path);
 	}
 	save_path = export_root_path.path_join(p_resource->get_name() + (is_resource ? ".res" :".scn"));
-	ResourceSaver::save(p_resource, save_path);
+	ResourceSaver::save(p_resource, save_path, ResourceSaver::FLAG_CHANGE_PATH);
+	p_resource->set_path(save_path);
 	print_line(L"CharacterBodyMain.save_fbx_res: 存储资源 :" + save_path);
     save_path = sub_path.path_join(p_resource->get_name() + (is_resource ? ".res" :".scn"));
 }
@@ -667,7 +668,7 @@ static void save_fbx_tres( const String& group_name,const String& sub_path,const
 		DirAccess::make_dir_absolute(export_root_path);
 	}
 	save_path = export_root_path.path_join(p_resource->get_name() + (is_resource ? ".tres" :".tscn"));
-	ResourceSaver::save(p_resource, save_path);
+	ResourceSaver::save(p_resource, save_path, ResourceSaver::FLAG_CHANGE_PATH);
 	print_line(L"CharacterBodyMain.save_fbx_res: 存储资源 :" + save_path);
     save_path = sub_path.path_join(p_resource->get_name() + (is_resource ? ".tres" :".tscn"));
 }

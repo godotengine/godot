@@ -958,7 +958,9 @@ void RendererSceneCull::instance_set_transform(RID p_instance, const Transform3D
 
 		for (int i = 0; i < 4; i++) {
 			const Vector3 &v = i < 3 ? p_transform.basis.rows[i] : p_transform.origin;
-			ERR_FAIL_COND(!v.is_finite());
+			if (!v.is_finite()) {
+				ERR_FAIL_COND(!v.is_finite());
+			}
 		}
 
 #endif

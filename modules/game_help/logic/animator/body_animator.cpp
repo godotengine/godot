@@ -254,10 +254,6 @@ void CharacterAnimatorLayerConfigInstance::editor_play_select_animation()
 
 void CharacterAnimatorLayerConfigInstance::set_body(class CharacterBodyMain* p_body)
 {
-	if (p_body == m_Body)
-	{
-		return;
-	}
 	m_Body = p_body;
 	if (layer)
 	{

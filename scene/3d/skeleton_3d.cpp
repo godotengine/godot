@@ -132,7 +132,7 @@ bool Skeleton3D::_set(const StringName &p_path, const Variant &p_value) {
 	} else if (what == "bone_meta") {
 		set_bone_meta(which, path.get_slicec('/', 3), p_value);
 #ifndef DISABLE_DEPRECATED
-	}else if (what == "pose" || what == "bound_children") {
+	} else if (what == "pose" || what == "bound_children") {
 		// Kept for compatibility from 3.x to 4.x.
 		WARN_DEPRECATED_MSG("Skeleton uses old pose format, which is deprecated (and loads slower). Consider re-importing or re-saving the scene." +
 				(is_inside_tree() ? vformat(" Path: \"%s\"", get_path()) : String()));

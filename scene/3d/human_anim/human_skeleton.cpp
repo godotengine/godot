@@ -36,7 +36,6 @@ namespace skeleton
     {
         SkeletonPoseT<transformType>* skeletonPose = memnew(SkeletonPoseT<transformType>);
 
-        skeletonPose->m_Count = apSkeleton->m_Node.size();
         skeletonPose->m_X.resize(apSkeleton->m_Node.size());
 
         return skeletonPose;
@@ -95,7 +94,7 @@ namespace skeleton
     template<typename transformTypeFrom, typename transformTypeTo>
     void SkeletonPoseCopy(SkeletonPoseT<transformTypeFrom> const* apFromPose, SkeletonPoseT<transformTypeTo>* apToPose)
     {
-        uint32_t nodeCount = std::min(apFromPose->m_Count, apToPose->m_Count);
+        uint32_t nodeCount = std::min(apFromPose->m_X.size(), apToPose->m_X.size());
         transformTypeFrom const *from = apFromPose->m_X.ptr();
         transformTypeTo *to = apToPose->m_X.ptr();
 
@@ -411,13 +410,13 @@ namespace skeleton
                             math::int3(-(axesIndex != -1)));
     }
 
-    void SkeletonSetDoF(HumanSkeleton const* apSkeleton, SkeletonPose * apSkeletonPose, math::float3 const& aDoF, int32_t aIndex)
+    void SkeletonSetDoF(HumanSkeleton const* apSkeleton, SkeletonPose * apSkeletonPoseLs, math::float3 const& aDoF, int32_t aIndex)
     {
         // 获取当前节点的轴索引
         const int32_t axesIndex = apSkeleton->m_Node[aIndex].m_AxesId;
 
         // 根据轴索引设置对应的自由度
-        apSkeletonPose->m_X[aIndex].q = math::select(math::qtan2Quat(aDoF), 
+		apSkeletonPoseLs->m_X[aIndex].q = math::select(math::qtan2Quat(aDoF),
                                                     math::FromAxes(apSkeleton->m_AxesArray[axesIndex], aDoF), 
                                                     math::int4(-(axesIndex != -1)));
     }

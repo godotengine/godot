@@ -95,9 +95,9 @@ namespace skeleton
     struct SkeletonPoseT
     {
 
-        SkeletonPoseT() : m_Count(0) {}
+        SkeletonPoseT() {}
 
-        uint32_t                    m_Count;
+        //uint32_t                    m_Count;
         LocalVector<transformType>    m_X;
 
     };

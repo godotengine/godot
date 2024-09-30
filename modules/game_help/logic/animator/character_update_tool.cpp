@@ -22,7 +22,10 @@ void CharacterAnimationUpdateTool::clear_cache(Skeleton3D* t_skeleton,Node* p_pa
     animation_instances.clear();
     context.reset();
     human_config = t_skeleton->get_human_config();
-    is_human = human_config.is_valid();
+    if(human_config.is_valid()) {
+        is_human = true;
+        memcpy(human_key_frame.dot_array, &human_config->human->m_RestDof, sizeof(float) * 95); 
+    }
 }
 void CharacterAnimationUpdateTool::add_animation_instance(AnimationMixer::AnimationInstance& ai) {
     animation_instances.push_back(ai);

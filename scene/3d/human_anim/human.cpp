@@ -555,32 +555,32 @@ namespace human
         // 定义一个静态数组，存储各个骨骼的轴信息
         const static math::SetupAxesInfo setupAxesInfoArray[kLastBone] =
         {
-            // 结构体初始化：位置、旋转轴、限制范围、默认缩放、类型、标记
-            {{0, 0, 0, 1}, {-1, 0, 0, 0}, {-40, -40, -40}, {40, 40, 40}, {1, 1, 1, 1}, math::kZYRoll, 0},                      // kHips
-            {{-0.268f, 0, 0, 1}, {1, 0, 0, 0}, {-60, -60, -90}, {60, 60, 50}, {1, 1, 1, 1}, math::kZYRoll, 0},                 // kLeftUpperLeg
-            {{-0.268f, 0, 0, 1}, {1, 0, 0, 0}, {-60, -60, -90}, {60, 60, 50}, {-1, -1, 1, 1}, math::kZYRoll, 0},               // kRightUpperLeg
-            {{0.839f, 0, 0, 1}, {1, 0, 0, 0}, {-90, 0, -80}, {90, 0, 80}, {1, 1, -1, 1}, math::kZYRoll, 0},                    // kLeftLeg
-            {{0.839f, 0, 0, 1}, {1, 0, 0, 0}, {-90, 0, -80}, {90, 0, 80}, {-1, 1, -1, 1}, math::kZYRoll, 0},                   // kRightLeg
-            {{0, 0, 0, 1}, {1, 0, 0, 0}, {0, -30, -50}, {0, 30, 50}, {1, 1, 1, 1}, math::kZYRoll, -2},                         // kLeftFoot
-            {{0, 0, 0, 1}, {1, 0, 0, 0}, {0, -30, -50}, {0, 30, 50}, {1, -1, 1, 1}, math::kZYRoll, -2},                        // kRightFoot
-            {{0, 0, 0, 1}, {-1, 0, 0, 0}, {-40, -40, -40}, {40, 40, 40}, {1, 1, 1, 1}, math::kZYRoll, 0},                      // kSpine
-            {{0, 0, 0, 1}, {-1, 0, 0, 0}, {-40, -40, -40}, {40, 40, 40}, {1, 1, 1, 1}, math::kZYRoll, 0},                      // kChest
-            {{0, 0, 0, 1}, {-1, 0, 0, 0}, {-20, -20, -20}, {20, 20, 20}, {1, 1, 1, 1}, math::kZYRoll, 0},                      // kUpperChest
-            {{0, 0, 0, 1}, {-1, 0, 0, 0}, {-40, -40, -40}, {40, 40, 40}, {1, 1, 1, 1}, math::kZYRoll, 0},                      // kNeck
-            {{0, 0, 0, 1}, {-1, 0, 0, 0}, {-40, -40, -40}, {40, 40, 40}, {1, 1, 1, 1}, math::kZYRoll, 2},                      // kHead
-            {{0, 0, 0, 1}, {0, 0, 1, 0}, {0, -15, -15}, {0, 15, 30}, {1, 1, -1, 1}, math::kZYRoll, 0},                         // kLeftShoulder
-            {{0, 0, 0, 1}, {0, 0, 1, 0}, {0, -15, -15}, {0, 15, 30}, {1, 1, 1, 1}, math::kZYRoll, 0},                          // kRightShoulder
-            {{0, 0.268f, 0.364f, 1}, {0, 0, 1, 0}, {-90, -100, -60}, {90, 100, 100}, {1, 1, -1, 1}, math::kZYRoll, 0},         // kLeftArm
+            // m_PreQ、         m_MainAxis、        m_Min、				 m_Max、      m_Sgn、      m_Type,        m_ForceAxis
+            {{0, 0, 0, 1},      {-1, 0, 0, 0},      {-40, -40, -40}, {40, 40, 40}, {1, 1, 1, 1}, math::kZYRoll, 0},                      // kHips
+            {{-0.268f, 0, 0, 1}, {1, 0, 0, 0},      {-60, -60, -90}, {60, 60, 50}, {1, 1, 1, 1}, math::kZYRoll, 0},                 // kLeftUpperLeg
+            {{-0.268f, 0, 0, 1}, {1, 0, 0, 0},      {-60, -60, -90}, {60, 60, 50}, {-1, -1, 1, 1}, math::kZYRoll, 0},               // kRightUpperLeg
+            {{0.839f, 0, 0, 1}, {1, 0, 0, 0},       {-90, 0, -80}, {90, 0, 80}, {1, 1, -1, 1}, math::kZYRoll, 0},                    // kLeftLeg
+            {{0.839f, 0, 0, 1}, {1, 0, 0, 0},       {-90, 0, -80}, {90, 0, 80}, {-1, 1, -1, 1}, math::kZYRoll, 0},                   // kRightLeg
+            {{0, 0, 0, 1},     {1, 0, 0, 0},        {0, -30, -50}, {0, 30, 50}, {1, 1, 1, 1}, math::kZYRoll, -2},                         // kLeftFoot
+            {{0, 0, 0, 1},     {1, 0, 0, 0},        {0, -30, -50}, {0, 30, 50}, {1, -1, 1, 1}, math::kZYRoll, -2},                        // kRightFoot
+            {{0, 0, 0, 1},     {-1, 0, 0, 0},       {-40, -40, -40}, {40, 40, 40}, {1, 1, 1, 1}, math::kZYRoll, 0},                      // kSpine
+            {{0, 0, 0, 1},     {-1, 0, 0, 0},       {-40, -40, -40}, {40, 40, 40}, {1, 1, 1, 1}, math::kZYRoll, 0},                      // kChest
+            {{0, 0, 0, 1},     {-1, 0, 0, 0},       {-20, -20, -20}, {20, 20, 20}, {1, 1, 1, 1}, math::kZYRoll, 0},                      // kUpperChest
+            {{0, 0, 0, 1},     {-1, 0, 0, 0},       {-40, -40, -40}, {40, 40, 40}, {1, 1, 1, 1}, math::kZYRoll, 0},                      // kNeck
+            {{0, 0, 0, 1},     {-1, 0, 0, 0},       {-40, -40, -40}, {40, 40, 40}, {1, 1, 1, 1}, math::kZYRoll, 2},                      // kHead
+            {{0, 0, 0, 1},     {0, 0, 1, 0},        {0, -15, -15}, {0, 15, 30}, {1, 1, -1, 1}, math::kZYRoll, 0},                         // kLeftShoulder
+            {{0, 0, 0, 1},     {0, 0, 1, 0},        {0, -15, -15}, {0, 15, 30}, {1, 1, 1, 1}, math::kZYRoll, 0},                          // kRightShoulder
+            {{0, 0.268f, 0.364f, 1}, {0, 0, 1, 0},  {-90, -100, -60}, {90, 100, 100}, {1, 1, -1, 1}, math::kZYRoll, 0},         // kLeftArm
             {{0, -0.268f, -0.364f, 1}, {0, 0, 1, 0}, {-90, -100, -60}, {90, 100, 100}, {-1, 1, 1, 1}, math::kZYRoll, 0},       // kRightArm
-            {{0, 0.839f, 0, 1}, {0, 1, 0, 0}, {-90, 0, -80}, {90, 0, 80}, {1, 1, -1, 1}, math::kZYRoll, 0},                    // kLeftForeArm
-            {{0, -0.839f, 0, 1}, {0, 1, 0, 0}, {-90, 0, -80}, {90, 0, 80}, {-1, 1, 1, 1}, math::kZYRoll, 0},                   // kRightForeArm
-            {{0, 0, 0, 1}, {0, 0, 1, 0}, {0, -40, -80}, {0, 40, 80}, {1, 1, -1, 1}, math::kZYRoll, 0},                         // kLeftHand
-            {{0, 0, 0, 1}, {0, 0, 1, 0}, {0, -40, -80}, {0, 40, 80}, {1, 1, 1, 1}, math::kZYRoll, 0},                          // kRightHand
-            {{0, 0, 0, 1}, {1, 0, 0, 0}, {0, 0, -50}, {0, 0, 50}, {1, 1, 1, 1}, math::kZYRoll, 3},                             // kLeftToes
-            {{0, 0, 0, 1}, {1, 0, 0, 0}, {0, 0, -50}, {0, 0, 50}, {1, 1, 1, 1}, math::kZYRoll, 3},                             // kRightToes
-            {{0, 0, 0, 1}, {1, 0, 0, 0}, {0, -20, -10}, {0, 20, 15}, {1, 1, -1, 1}, math::kZYRoll, 3},                         // kLeftEye
-            {{0, 0, 0, 1}, {1, 0, 0, 0}, {0, -20, -10}, {0, 20, 15}, {1, -1, -1, 1}, math::kZYRoll, 3},                        // kRightEye
-            {{0.09f, 0, 0, 1}, {1, 0, 0, 0}, {0, -10, -10}, {0, 10, 10}, {1, 1, -1, 1}, math::kZYRoll, 3}                      // kJaw
+            {{0, 0.839f, 0, 1}, {0, 1, 0, 0},       {-90, 0, -80}, {90, 0, 80}, {1, 1, -1, 1}, math::kZYRoll, 0},                    // kLeftForeArm
+            {{0, -0.839f, 0, 1}, {0, 1, 0, 0},      {-90, 0, -80}, {90, 0, 80}, {-1, 1, 1, 1}, math::kZYRoll, 0},                   // kRightForeArm
+            {{0, 0, 0, 1},     {0, 0, 1, 0},        {0, -40, -80}, {0, 40, 80}, {1, 1, -1, 1}, math::kZYRoll, 0},                         // kLeftHand
+            {{0, 0, 0, 1},     {0, 0, 1, 0},        {0, -40, -80}, {0, 40, 80}, {1, 1, 1, 1}, math::kZYRoll, 0},                          // kRightHand
+            {{0, 0, 0, 1},     {1, 0, 0, 0},        {0, 0, -50}, {0, 0, 50}, {1, 1, 1, 1}, math::kZYRoll, 3},                             // kLeftToes
+            {{0, 0, 0, 1},     {1, 0, 0, 0},        {0, 0, -50}, {0, 0, 50}, {1, 1, 1, 1}, math::kZYRoll, 3},                             // kRightToes
+            {{0, 0, 0, 1},     {1, 0, 0, 0},        {0, -20, -10}, {0, 20, 15}, {1, 1, -1, 1}, math::kZYRoll, 3},                         // kLeftEye
+            {{0, 0, 0, 1},     {1, 0, 0, 0},        {0, -20, -10}, {0, 20, 15}, {1, -1, -1, 1}, math::kZYRoll, 3},                        // kRightEye
+            {{0.09f, 0, 0, 1}, {1, 0, 0, 0},        {0, -10, -10}, {0, 10, 10}, {1, 1, -1, 1}, math::kZYRoll, 3}                      // kJaw
         };
 
         // 返回指定索引的轴信息
@@ -670,6 +670,38 @@ namespace human
         
         setup_axes(apSkeleton);
         HumanAdjustMass(this);
+
+
+		human::HumanPose pose;
+
+		skeleton::SkeletonPose humanLclPose;
+		humanLclPose.m_X = m_SkeletonLocalPose;
+
+
+		skeleton::SkeletonPose apSkeletonPoseRef = humanLclPose;
+		skeleton::SkeletonPose apSkeletonPoseGbl = humanLclPose;
+		skeleton::SkeletonPose apSkeletonPoseLcl = humanLclPose;
+		skeleton::SkeletonPose apSkeletonPoseWs = humanLclPose;
+
+		human::RetargetFrom(this, &humanLclPose, &pose, &apSkeletonPoseRef, &apSkeletonPoseGbl, &apSkeletonPoseLcl, &apSkeletonPoseWs, nullptr);
+
+		// 拷贝dof到track
+		int human_index = 0;
+		for (int k = 0; k < kLastDoF; k++) {
+			m_RestDof[human_index] = pose.m_DoFArray[k];
+			++human_index;
+		}
+
+		// 拷贝左手dof到track
+		for (int k = 0; k < hand::s_DoFCount; k++) {
+			m_RestDof[human_index] = pose.m_LeftHandPose.m_DoFArray[k];
+
+			++human_index;
+		}
+		for (int k = 0; k < hand::s_DoFCount; k++) {
+			m_RestDof[human_index] = pose.m_RightHandPose.m_DoFArray[k];
+			++human_index;
+		}
 
     }
 
@@ -1211,6 +1243,48 @@ namespace human
 
 			{"Jaw",kJaw},
 
+
+            {"LeftThumbMetacarpal",0},
+            {"LeftThumbProximal",1},
+            {"LeftThumbDistal",2},
+
+            {"LeftIndexProximal",3},
+            {"LeftIndexIntermediate",4},
+            {"LeftIndexDistal",5}, 
+
+            {"LeftMiddleProximal",6},
+            {"LeftMiddleIntermediate",7},
+            {"LeftMiddleDistal",8},
+
+            {"LeftRingProximal",9},
+            {"LeftRingIntermediate",10},
+            {"LeftRingDistal",11},
+
+            {"LeftLittleProximal",12},
+            {"LeftLittleIntermediate",13},
+            {"LeftLittleDistal",14},
+
+
+            {"RightThumbMetacarpal",0},    
+            {"RightThumbProximal",1},
+            {"RightThumbDistal",2},
+
+            {"RightIndexProximal",3},
+            {"RightIndexIntermediate",4},
+            {"RightIndexDistal",5},
+
+            {"RightMiddleProximal",6},
+            {"RightMiddleIntermediate",7},
+            {"RightMiddleDistal",8},
+
+            {"RightRingProximal",9},
+            {"RightRingIntermediate",10},
+            {"RightRingDistal",11},
+
+            {"RightLittleProximal",12},
+            {"RightLittleIntermediate",13},
+            {"RightLittleDistal",14},   
+
 		};
 		return bone_map;
 	}
@@ -1338,11 +1412,13 @@ namespace human
                 m_HasRightHand = true;
             }
         }
+
+
+
     }
 
     void Human::setup_axes(Skeleton3D* apSkeleton) {
         skeleton::SkeletonPose apSkeletonPoseGlobal;
-        apSkeletonPoseGlobal.m_Count = apSkeleton->get_bone_count();
         apSkeletonPoseGlobal.m_X.resize(apSkeleton->get_bone_count());
 
         for(int32_t i = 0; i < apSkeleton->get_bone_count(); i++) {
@@ -1402,6 +1478,11 @@ namespace human
             m_HumanBoneMass[i] = d_human_bone_mass[i];
         }
 
+        
+		Vector<float> rest_dot = p_dict["rest_dot"];
+        for (int i = 0; i < rest_dot.size(); ++i) {
+            m_RestDof[i] = rest_dot[i];
+        }
 
         m_Scale = p_dict["scale"];
         m_RootBonendex = p_dict["root_bone_index"];
@@ -1476,6 +1557,12 @@ namespace human
         }
         p_dict["human_bone_mass"] = d_human_bone_mass;
 
+		Vector<float> rest_dot;
+        for (int i = 0; i < kLastDoF + hand::s_DoFCount + hand::s_DoFCount; ++i) {
+            rest_dot.push_back(m_RestDof[i]);
+        }
+        p_dict["rest_dot"] = rest_dot;
+
 
         p_dict["scale"] = m_Scale;
         p_dict["root_bone_index"] = m_RootBonendex;
@@ -1503,7 +1590,6 @@ namespace human
         bone_mask.fill(0);
 
         skeleton::SkeletonPose humanLclPose;
-        humanLclPose.m_Count = m_SkeletonLocalPose.size();
         humanLclPose.m_X = m_SkeletonLocalPose;
 
         
@@ -1717,10 +1803,8 @@ namespace human
         }
         
         skeleton::SkeletonPose apSkeletonPoseLcl,apSkeletonPoseWs;
-        apSkeletonPoseLcl.m_Count = m_SkeletonLocalPose.size();
-        apSkeletonPoseLcl.m_X.resize(apSkeletonPoseLcl.m_Count);
-        apSkeletonPoseWs.m_Count = m_SkeletonLocalPose.size();
-        apSkeletonPoseWs.m_X.resize(apSkeletonPoseWs.m_Count);
+        apSkeletonPoseLcl.m_X = m_SkeletonLocalPose;
+        apSkeletonPoseWs.m_X = m_SkeletonLocalPose;
         human::RetargetTo(this, &humanPose, 0, avatarX, &humanPoseOut,& apSkeletonPoseLcl, &apSkeletonPoseWs);
 
         for(int i = 0; i < kLastBone; i++) {
@@ -1728,17 +1812,20 @@ namespace human
             if(bone_index < 0) {
                 continue;
             }
-            apSkeleton->set_bone_pose_rotation(bone_index, Quaternion(apSkeletonPoseLcl.m_X[bone_index].q.x, apSkeletonPoseLcl.m_X[bone_index].q.y, apSkeletonPoseLcl.m_X[bone_index].q.z, apSkeletonPoseLcl.m_X[bone_index].q.w));
+			math::float4& q = apSkeletonPoseLcl.m_X[bone_index].q;
+            apSkeleton->set_bone_pose_rotation(bone_index, Quaternion(q.x, q.y, q.z, q.w));
         }
         for(int i = 0; i < hand::s_BoneCount; i++) {
             int bone_index = m_LeftHand.m_HandBoneIndex[i];
             if(bone_index >= 0) {
-                apSkeleton->set_bone_pose_rotation(bone_index, Quaternion(apSkeletonPoseLcl.m_X[bone_index].q.x, apSkeletonPoseLcl.m_X[bone_index].q.y, apSkeletonPoseLcl.m_X[bone_index].q.z, apSkeletonPoseLcl.m_X[bone_index].q.w));
+				math::float4& q = apSkeletonPoseLcl.m_X[bone_index].q;
+				apSkeleton->set_bone_pose_rotation(bone_index, Quaternion(q.x, q.y, q.z, q.w));
             }
 
             bone_index = m_RightHand.m_HandBoneIndex[i];
             if(bone_index >= 0) {
-                apSkeleton->set_bone_pose_rotation(bone_index, Quaternion(apSkeletonPoseLcl.m_X[bone_index].q.x, apSkeletonPoseLcl.m_X[bone_index].q.y, apSkeletonPoseLcl.m_X[bone_index].q.z, apSkeletonPoseLcl.m_X[bone_index].q.w));                
+				math::float4& q = apSkeletonPoseLcl.m_X[bone_index].q;
+				apSkeleton->set_bone_pose_rotation(bone_index, Quaternion(q.x, q.y, q.z, q.w));
             }
             
         }
@@ -1854,7 +1941,7 @@ namespace human
         }
     }
 
-    void Human2SkeletonPose(Human const *apHuman, HumanPose const *apHumanPose, skeleton::SkeletonPose *apSkeletonPose, int32_t i)
+    void Human2SkeletonPose(Human const *apHuman, HumanPose const *apHumanPose, skeleton::SkeletonPose * apSkeletonPoseLs, int32_t i)
     {
         // 检查当前骨骼索引是否有效
         if (apHuman->m_HumanBoneIndex[i] != -1)
@@ -1870,7 +1957,7 @@ namespace human
                 mask);
 
             // 设置骨骼的自由度值
-            skeleton::SkeletonSetDoF(&apHuman->m_Skeleton, apSkeletonPose, xyz, apHuman->m_HumanBoneIndex[i]);
+            skeleton::SkeletonSetDoF(&apHuman->m_Skeleton, apSkeletonPoseLs, xyz, apHuman->m_HumanBoneIndex[i]);
         }
     }
 
@@ -2643,15 +2730,12 @@ namespace human
         skeleton::SkeletonPose *apSkeletonPoseWs,
         math::float3 const *tDoFBase)
     {
-        // 获取 hips 骨骼的索引
-        const int32_t hipsIndex = apHuman->m_HumanBoneIndex[human::kHips];
-        const math::float1 scale(apHuman->m_Scale);
+		const int32_t hipsIndex = apHuman->m_HumanBoneIndex[human::kHips];
+		const math::float1 scale(apHuman->m_Scale);
 
-        // 计算全局骨骼姿态
-        skeleton::SkeletonPoseComputeGlobal(&apHuman->m_Skeleton, apSkeletonPose, apSkeletonPoseRef);
-        // 拷贝骨骼姿态
-        skeleton::SkeletonPoseCopy(apSkeletonPoseRef, apSkeletonPoseGbl);
-        skeleton::SkeletonPoseCopy(apSkeletonPose, apSkeletonPoseLcl);
+		skeleton::SkeletonPoseComputeGlobal(&apHuman->m_Skeleton, apSkeletonPose, apSkeletonPoseRef);
+		skeleton::SkeletonPoseCopy(apSkeletonPoseRef, apSkeletonPoseGbl);
+		skeleton::SkeletonPoseCopy(apSkeletonPose, apSkeletonPoseLcl);
 
         // 强制将虚拟骨骼设为默认旋转
         int32_t nodeIter;
@@ -2667,88 +2751,118 @@ namespace human
         skeleton::SkeletonPoseComputeLocalQ(&apHuman->m_Skeleton, apSkeletonPoseGbl, apSkeletonPoseLcl);
 
         // 如果有额外的自由度（DoF），处理自由度调整
-        if (apHuman->m_HasTDoF && tDoFBase)
-        {
-            // 将 hips 骨骼的姿态设置为参考姿态
+		if (apHuman->m_HasTDoF && tDoFBase)
+		{ 
+                       // 将 hips 骨骼的姿态设置为参考姿态	
             apSkeletonPoseLcl->m_X[0] = math::trsIdentity();
-            apSkeletonPoseLcl->m_X[hipsIndex] = apSkeletonPoseRef->m_X[hipsIndex];
+			apSkeletonPoseLcl->m_X[hipsIndex] = apSkeletonPoseRef->m_X[hipsIndex];
 
-            // 处理腿部、躯干和手臂的自由度调整
-            RetargetFromTDoF(kLeftLegTDoFStart + kUpperLegTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
-            RetargetFromTDoF(kRightLegTDoFStart + kUpperLegTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
-            RetargetFromTDoF(kBodyTDoFStart + kSpineTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
-            RetargetFromTDoF(kBodyTDoFStart + kChestTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
-            RetargetFromTDoF(kBodyTDoFStart + kUpperChestTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
-            RetargetFromTDoF(kLeftArmTDoFStart + kShoulderTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
-            RetargetFromTDoF(kRightArmTDoFStart + kShoulderTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
-        }
+			RetargetFromTDoF(kLeftLegTDoFStart + kUpperLegTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
+			RetargetFromTDoF(kRightLegTDoFStart + kUpperLegTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
+
+			RetargetFromTDoF(kBodyTDoFStart + kSpineTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
+			RetargetFromTDoF(kBodyTDoFStart + kChestTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
+			RetargetFromTDoF(kBodyTDoFStart + kUpperChestTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
+
+			RetargetFromTDoF(kLeftArmTDoFStart + kShoulderTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
+			RetargetFromTDoF(kRightArmTDoFStart + kShoulderTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
+		}
 
         // 对齐肩膀
-        if (apHuman->m_HumanBoneIndex[kLeftShoulder] != -1)
-            HumanAlignSkeletonPose(apHuman, apSkeletonPoseRef, apHumanPose, apSkeletonPoseGbl, apSkeletonPoseLcl, kLeftShoulder, kLeftShoulder);
-        if (apHuman->m_HumanBoneIndex[kRightShoulder] != -1)
-            HumanAlignSkeletonPose(apHuman, apSkeletonPoseRef, apHumanPose, apSkeletonPoseGbl, apSkeletonPoseLcl, kRightShoulder, kRightShoulder);
+		if (apHuman->m_HumanBoneIndex[kLeftShoulder] != -1)
+			HumanAlignSkeletonPose(apHuman, apSkeletonPoseRef, apHumanPose, apSkeletonPoseGbl, apSkeletonPoseLcl, kLeftShoulder, kLeftShoulder);
+
+		if (apHuman->m_HumanBoneIndex[kRightShoulder] != -1)
+			HumanAlignSkeletonPose(apHuman, apSkeletonPoseRef, apHumanPose, apSkeletonPoseGbl, apSkeletonPoseLcl, kRightShoulder, kRightShoulder);
 
         // 继续处理自由度
         if (apHuman->m_HasTDoF && tDoFBase)
-        {
-            RetargetFromTDoF(kLeftArmTDoFStart + kUpperArmTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
-            RetargetFromTDoF(kRightArmTDoFStart + kUpperArmTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
-        }
+		{
+			RetargetFromTDoF(kLeftArmTDoFStart + kUpperArmTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
+			RetargetFromTDoF(kRightArmTDoFStart + kUpperArmTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
+		}
 
-        // 对齐四肢（上肢、下肢）
-        HumanAlignSkeletonPose(apHuman, apSkeletonPoseRef, apHumanPose, apSkeletonPoseGbl, apSkeletonPoseLcl, kLeftUpperArm, apHuman->m_HumanBoneIndex[kLeftShoulder] != -1 ? kLeftShoulder : kLeftUpperArm);
-        HumanAlignSkeletonPose(apHuman, apSkeletonPoseRef, apHumanPose, apSkeletonPoseGbl, apSkeletonPoseLcl, kRightUpperArm, apHuman->m_HumanBoneIndex[kRightShoulder] != -1 ? kRightShoulder : kRightUpperArm);
-        HumanAlignSkeletonPose(apHuman, apSkeletonPoseRef, apHumanPose, apSkeletonPoseGbl, apSkeletonPoseLcl, kLeftUpperLeg, kLeftUpperLeg);
-        HumanAlignSkeletonPose(apHuman, apSkeletonPoseRef, apHumanPose, apSkeletonPoseGbl, apSkeletonPoseLcl, kRightUpperLeg, kRightUpperLeg);
-
+		// align upper limbs
+		HumanAlignSkeletonPose(apHuman, apSkeletonPoseRef, apHumanPose, apSkeletonPoseGbl, apSkeletonPoseLcl, kLeftUpperArm, apHuman->m_HumanBoneIndex[kLeftShoulder] != -1 ? kLeftShoulder : kLeftUpperArm);
+		HumanAlignSkeletonPose(apHuman, apSkeletonPoseRef, apHumanPose, apSkeletonPoseGbl, apSkeletonPoseLcl, kRightUpperArm, apHuman->m_HumanBoneIndex[kRightShoulder] != -1 ? kRightShoulder : kRightUpperArm);
+		HumanAlignSkeletonPose(apHuman, apSkeletonPoseRef, apHumanPose, apSkeletonPoseGbl, apSkeletonPoseLcl, kLeftUpperLeg, kLeftUpperLeg);
+		HumanAlignSkeletonPose(apHuman, apSkeletonPoseRef, apHumanPose, apSkeletonPoseGbl, apSkeletonPoseLcl, kRightUpperLeg, kRightUpperLeg);
         // 处理下肢、上臂自由度
         if (apHuman->m_HasTDoF && tDoFBase)
-        {
-            RetargetFromTDoF(kLeftLegTDoFStart + kLowerLegTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
-            RetargetFromTDoF(kRightLegTDoFStart + kLowerLegTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
-            RetargetFromTDoF(kLeftArmTDoFStart + kLowerArmTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
-            RetargetFromTDoF(kRightArmTDoFStart + kLowerArmTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
-        }
+		{
+			RetargetFromTDoF(kLeftLegTDoFStart + kLowerLegTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
+			RetargetFromTDoF(kRightLegTDoFStart + kLowerLegTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
+			RetargetFromTDoF(kLeftArmTDoFStart + kLowerArmTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
+			RetargetFromTDoF(kRightArmTDoFStart + kLowerArmTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
+		}
 
         // 对齐并修正下肢
-        HumanAlignSkeletonPose(apHuman, apSkeletonPoseRef, apHumanPose, apSkeletonPoseGbl, apSkeletonPoseLcl, kLeftLowerArm, kLeftUpperArm);
-        HumanAlignSkeletonPose(apHuman, apSkeletonPoseRef, apHumanPose, apSkeletonPoseGbl, apSkeletonPoseLcl, kRightLowerArm, kRightUpperArm);
-        HumanAlignSkeletonPose(apHuman, apSkeletonPoseRef, apHumanPose, apSkeletonPoseGbl, apSkeletonPoseLcl, kLeftLowerLeg, kLeftUpperLeg);
-        HumanAlignSkeletonPose(apHuman, apSkeletonPoseRef, apHumanPose, apSkeletonPoseGbl, apSkeletonPoseLcl, kRightLowerLeg, kRightUpperLeg);
-
+		HumanAlignSkeletonPose(apHuman, apSkeletonPoseRef, apHumanPose, apSkeletonPoseGbl, apSkeletonPoseLcl, kLeftLowerArm, kLeftUpperArm);
+		HumanAlignSkeletonPose(apHuman, apSkeletonPoseRef, apHumanPose, apSkeletonPoseGbl, apSkeletonPoseLcl, kRightLowerArm, kRightUpperArm);
+		HumanAlignSkeletonPose(apHuman, apSkeletonPoseRef, apHumanPose, apSkeletonPoseGbl, apSkeletonPoseLcl, kLeftLowerLeg, kLeftUpperLeg);
+		HumanAlignSkeletonPose(apHuman, apSkeletonPoseRef, apHumanPose, apSkeletonPoseGbl, apSkeletonPoseLcl, kRightLowerLeg, kRightUpperLeg);
         // 修正自由度的中间部分
-        HumanFixMidDoF(apHuman, apSkeletonPoseLcl, apSkeletonPoseWs, kLeftUpperArm, kLeftLowerArm);
-        HumanFixMidDoF(apHuman, apSkeletonPoseLcl, apSkeletonPoseWs, kRightUpperArm, kRightLowerArm);
-        HumanFixMidDoF(apHuman, apSkeletonPoseLcl, apSkeletonPoseWs, kLeftUpperLeg, kLeftLowerLeg);
-        HumanFixMidDoF(apHuman, apSkeletonPoseLcl, apSkeletonPoseWs, kRightUpperLeg, kRightLowerLeg);
-
+		HumanFixMidDoF(apHuman, apSkeletonPoseLcl, apSkeletonPoseWs, kLeftUpperArm, kLeftLowerArm);
+		HumanFixMidDoF(apHuman, apSkeletonPoseLcl, apSkeletonPoseWs, kRightUpperArm, kRightLowerArm);
+		HumanFixMidDoF(apHuman, apSkeletonPoseLcl, apSkeletonPoseWs, kLeftUpperLeg, kLeftLowerLeg);
+		HumanFixMidDoF(apHuman, apSkeletonPoseLcl, apSkeletonPoseWs, kRightUpperLeg, kRightLowerLeg);
         // 强制将 human pose 反映到 skeleton 中
-        Skeleton2HumanPose(apHuman, apSkeletonPoseLcl, apHumanPose);
-        Human2SkeletonPose(apHuman, apHumanPose, apSkeletonPoseLcl);
+		// this forces back human pose into skeleton
+		Skeleton2HumanPose(apHuman, apSkeletonPoseLcl, apHumanPose);
+		Human2SkeletonPose(apHuman, apHumanPose, apSkeletonPoseLcl);
+       // 处理额外的自由度
+		if (apHuman->m_HasTDoF && tDoFBase)
+		{
+			RetargetFromTDoF(kLeftLegTDoFStart + kFootTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
+			RetargetFromTDoF(kRightLegTDoFStart + kFootTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
+			RetargetFromTDoF(kLeftArmTDoFStart + kHandTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
+			RetargetFromTDoF(kRightArmTDoFStart + kHandTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
+		}
 
-        // 处理额外的自由度
-        if (apHuman->m_HasTDoF && tDoFBase)
-        {
-            RetargetFromTDoF(kLeftLegTDoFStart + kFootTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
-            RetargetFromTDoF(kRightLegTDoFStart + kFootTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
-        }
+		skeleton::SkeletonPoseComputeGlobal(&apHuman->m_Skeleton, apSkeletonPoseLcl, apSkeletonPoseGbl);
 
-        // 修正旋转
-        if (apHuman->m_HasTDoF && tDoFBase)
-        {
-            RetargetFromTDoF(kLeftArmTDoFStart + kHandTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
-            RetargetFromTDoF(kRightArmTDoFStart + kHandTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
-        }
+		Human2LimbAlign(apHuman, apSkeletonPoseRef, apSkeletonPoseGbl, apSkeletonPoseLcl, kLeftFoot, kLeftUpperLeg);
+		Human2LimbAlign(apHuman, apSkeletonPoseRef, apSkeletonPoseGbl, apSkeletonPoseLcl, kRightFoot, kRightUpperLeg);
+		Human2LimbAlign(apHuman, apSkeletonPoseRef, apSkeletonPoseGbl, apSkeletonPoseLcl, kLeftHand, kLeftUpperArm);
+		Human2LimbAlign(apHuman, apSkeletonPoseRef, apSkeletonPoseGbl, apSkeletonPoseLcl, kRightHand, kRightUpperArm);
 
-        // 对齐并修正手和脚
-        HumanAlignSkeletonPose(apHuman, apSkeletonPoseRef, apHumanPose, apSkeletonPoseGbl, apSkeletonPoseLcl, kLeftHand, kLeftLowerArm);
-        HumanAlignSkeletonPose(apHuman, apSkeletonPoseRef, apHumanPose, apSkeletonPoseGbl, apSkeletonPoseLcl, kRightHand, kRightLowerArm);
-        HumanAlignSkeletonPose(apHuman, apSkeletonPoseRef, apHumanPose, apSkeletonPoseGbl, apSkeletonPoseLcl, kLeftFoot, kLeftLowerLeg);
-        HumanAlignSkeletonPose(apHuman, apSkeletonPoseRef, apHumanPose, apSkeletonPoseGbl, apSkeletonPoseLcl, kRightFoot, kRightLowerLeg);
+		// fix end points
+		HumanFixEndPointsSkeletonPose(apHuman, apSkeletonPoseRef, apHumanPose, apSkeletonPoseGbl, apSkeletonPoseLcl, apSkeletonPoseWs, kLeftHand);
+		HumanFixEndPointsSkeletonPose(apHuman, apSkeletonPoseRef, apHumanPose, apSkeletonPoseGbl, apSkeletonPoseLcl, apSkeletonPoseWs, kRightHand);
+		HumanFixEndPointsSkeletonPose(apHuman, apSkeletonPoseRef, apHumanPose, apSkeletonPoseGbl, apSkeletonPoseLcl, apSkeletonPoseWs, kLeftFoot);
+		HumanFixEndPointsSkeletonPose(apHuman, apSkeletonPoseRef, apHumanPose, apSkeletonPoseGbl, apSkeletonPoseLcl, apSkeletonPoseWs, kRightFoot);
+		HumanFixEndPointsSkeletonPose(apHuman, apSkeletonPoseRef, apHumanPose, apSkeletonPoseGbl, apSkeletonPoseLcl, apSkeletonPoseWs, kHead);
 
-        // 更新骨骼姿态
-        skeleton::SkeletonPoseCopy(apSkeletonPoseLcl, apSkeletonPoseWs);
+		HumanFixEndDoF(apHuman, apSkeletonPoseLcl, apSkeletonPoseWs, kLeftLowerArm, kLeftHand);
+		HumanFixEndDoF(apHuman, apSkeletonPoseLcl, apSkeletonPoseWs, kRightLowerArm, kRightHand);
+		HumanFixEndDoF(apHuman, apSkeletonPoseLcl, apSkeletonPoseWs, kLeftLowerLeg, kLeftFoot);
+		HumanFixEndDoF(apHuman, apSkeletonPoseLcl, apSkeletonPoseWs, kRightLowerLeg, kRightFoot);
+
+		if (apHuman->m_HasTDoF && tDoFBase)
+		{
+			RetargetFromTDoF(kHeadTDoFStart + kNeckTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
+			RetargetFromTDoF(kHeadTDoFStart + kHeadTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
+
+			RetargetFromTDoF(kLeftLegTDoFStart + kToesTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
+			RetargetFromTDoF(kRightLegTDoFStart + kToesTDoF, apHuman, apSkeletonPoseRef, &tDoFBase[0], apHumanPose, apSkeletonPoseLcl, apSkeletonPoseGbl);
+		}
+
+		Skeleton2HumanPose(apHuman, apSkeletonPoseLcl, apHumanPose);
+		apHuman->m_SkeletonLocalPose = apSkeletonPoseLcl->m_X;
+		Human2SkeletonPose(apHuman, apHumanPose, apSkeletonPoseLcl);
+
+		if (apHuman->m_HasTDoF)
+		{
+			RetargetToTDoF(apHuman, apHumanPose, apHuman->m_SkeletonLocalPose, apSkeletonPoseLcl, apSkeletonPoseWs);
+		}
+
+		skeleton::SkeletonPoseComputeGlobal(&apHuman->m_Skeleton, apSkeletonPoseLcl, apSkeletonPoseGbl);
+
+		apHumanPose->m_RootX = HumanComputeRootXform(apHuman, apSkeletonPoseGbl);
+		apHumanPose->m_RootX = math::invMul(apSkeletonPoseGbl->m_X[hipsIndex], apHumanPose->m_RootX);
+		apHumanPose->m_RootX = math::mul(apSkeletonPoseRef->m_X[hipsIndex], apHumanPose->m_RootX);
+		apHumanPose->m_RootX.s = math::float3(1.f);
+
     }
 
 
@@ -2757,7 +2871,7 @@ namespace human
         HumanPose const *apHumanPose,         // 输入的人体姿态（可选）
         const math::trsX &arX,                // 变换矩阵（平移、旋转和缩放）
         HumanPose *apHumanPoseOut,            // 输出的人体姿态
-        skeleton::SkeletonPose *apSkeletonPose, // 输出的骨架姿态（局部坐标）
+        skeleton::SkeletonPose *apSkeletonPoseLs, // 输出的骨架姿态（局部坐标）
         skeleton::SkeletonPose *apSkeletonPoseWs, // 输出的骨架姿态（全局坐标）
         bool adjustMissingBones)              // 是否调整缺失的骨骼
     {
@@ -2778,27 +2892,26 @@ namespace human
         //
         // 转换肌肉空间到基础姿态
         //
-		apHuman->m_SkeletonLocalPose = apSkeletonPose->m_X;
         if (adjustMissingBones)
             HumanPoseAdjustForMissingBones(apHuman, apHumanPoseOut);
-        Human2SkeletonPose(apHuman, apHumanPoseOut, apSkeletonPose);
+        Human2SkeletonPose(apHuman, apHumanPoseOut, apSkeletonPoseLs);
 
         // 如果有额外的自由度（TDoF），处理这些自由度
         if (apHuman->m_HasTDoF)
         {
-            RetargetToTDoF(apHuman, apHumanPoseOut, apHuman->m_SkeletonLocalPose, apSkeletonPose, apSkeletonPoseWs);
+            RetargetToTDoF(apHuman, apHumanPoseOut, apHuman->m_SkeletonLocalPose, apSkeletonPoseLs, apSkeletonPoseWs);
         }
 
         // 计算全局骨骼姿态
-        skeleton::SkeletonPoseComputeGlobal(&apHuman->m_Skeleton, apSkeletonPose, apSkeletonPoseWs);
+        skeleton::SkeletonPoseComputeGlobal(&apHuman->m_Skeleton, apSkeletonPoseLs, apSkeletonPoseWs);
 
         ///////////////////////////////////////////////////////
         //
         // 调整 hips 的局部姿态
         //
         math::trsX rootX = HumanComputeRootXform(apHuman, apSkeletonPoseWs);
-        apSkeletonPose->m_X[hipsIndex] = math::trsInvMulNS(rootX, apSkeletonPoseWs->m_X[hipsIndex]);
-        apSkeletonPose->m_X[hipsIndex].s = apSkeletonPoseWs->m_X[hipsIndex].s;
+		apSkeletonPoseLs->m_X[hipsIndex] = math::trsInvMulNS(rootX, apSkeletonPoseWs->m_X[hipsIndex]);
+		apSkeletonPoseLs->m_X[hipsIndex].s = apSkeletonPoseWs->m_X[hipsIndex].s;
 
         ////////////////////////////////////////////////////////
         //
@@ -2810,12 +2923,12 @@ namespace human
             *apHumanPoseOut = *apHumanPose;
             if (adjustMissingBones)
                 HumanPoseAdjustForMissingBones(apHuman, apHumanPoseOut);
-            Human2SkeletonPose(apHuman, apHumanPoseOut, apSkeletonPose);
+            Human2SkeletonPose(apHuman, apHumanPoseOut, apSkeletonPoseLs);
 
             // 处理额外的自由度
             if (apHuman->m_HasTDoF)
             {
-                RetargetToTDoF(apHuman, apHumanPoseOut, apHuman->m_SkeletonLocalPose, apSkeletonPose, apSkeletonPoseWs);
+                RetargetToTDoF(apHuman, apHumanPoseOut, apHuman->m_SkeletonLocalPose, apSkeletonPoseLs, apSkeletonPoseWs);
             }
         }
 
@@ -2823,7 +2936,7 @@ namespace human
         //
         // 设置根骨骼的姿态
         //
-        apSkeletonPose->m_X[rootIndex] = apHumanPoseOut->m_RootX;
+		apSkeletonPoseLs->m_X[rootIndex] = apHumanPoseOut->m_RootX;
     }
 
     math::float4 GetLookAtDeltaQ(math::float3 const &pivot, math::float3 const &eyesT, math::float4 const &eyesQ, math::float3 const &eyesDir, math::float3 const &target, math::float1 const &weight)

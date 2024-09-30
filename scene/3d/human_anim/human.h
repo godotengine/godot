@@ -327,10 +327,10 @@ namespace human
             reset();
         }
         double time;
-        float dot_array[kLastDoF + hand::s_DoFCount + hand::s_DoFCount + 1];      
+        float dot_array[kLastDoF + hand::s_DoFCount + hand::s_DoFCount ];      
 
         void reset() {            
-            memset(dot_array, 0, sizeof(float) * (kLastDoF + hand::s_DoFCount + hand::s_DoFCount + 1));
+            memset(dot_array, 0, sizeof(float) * (kLastDoF + hand::s_DoFCount + hand::s_DoFCount ));
         }
         // 
         bool set_dof(const StringName& p_name, float p_value) {
@@ -421,6 +421,7 @@ namespace human
 
         int32_t                 m_HumanBoneIndex[kLastBone];
         float                   m_HumanBoneMass[kLastBone];
+        float                   m_RestDof[kLastDoF + hand::s_DoFCount + hand::s_DoFCount];
         float                   m_Scale;
         int32_t                 m_RootBonendex = -1;
 
