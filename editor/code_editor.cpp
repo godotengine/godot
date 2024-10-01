@@ -1330,6 +1330,8 @@ void CodeTextEditor::goto_line(int p_line, int p_column) {
 	text_editor->unfold_line(CLAMP(p_line, 0, text_editor->get_line_count() - 1));
 	text_editor->set_caret_line(p_line, false);
 	text_editor->set_caret_column(p_column, false);
+	text_editor->set_code_hint("");
+	text_editor->cancel_code_completion();
 	// Defer in case the CodeEdit was just created and needs to be resized.
 	callable_mp((TextEdit *)text_editor, &TextEdit::adjust_viewport_to_caret).call_deferred(0);
 }
@@ -1338,6 +1340,8 @@ void CodeTextEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
 	text_editor->remove_secondary_carets();
 	text_editor->unfold_line(CLAMP(p_line, 0, text_editor->get_line_count() - 1));
 	text_editor->select(p_line, p_begin, p_line, p_end);
+	text_editor->set_code_hint("");
+	text_editor->cancel_code_completion();
 	callable_mp((TextEdit *)text_editor, &TextEdit::adjust_viewport_to_caret).call_deferred(0);
 }
 
@@ -1347,6 +1351,8 @@ void CodeTextEditor::goto_line_centered(int p_line, int p_column) {
 	text_editor->unfold_line(CLAMP(p_line, 0, text_editor->get_line_count() - 1));
 	text_editor->set_caret_line(p_line, false);
 	text_editor->set_caret_column(p_column, false);
+	text_editor->set_code_hint("");
+	text_editor->cancel_code_completion();
 	callable_mp((TextEdit *)text_editor, &TextEdit::center_viewport_to_caret).call_deferred(0);
 }
 
