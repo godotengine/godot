@@ -388,7 +388,7 @@ Files extracted from upstream source:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 8.5.0 (30485ee8c3d43c553afb9d78b9924cb71c8d2f19, 2024)
+- Version: 10.0.1 (a1d9bfe62818ef0fa9cf63b6e6d51436b1c93cbc, 2024)
 - License: MIT
 
 Files extracted from upstream source:
