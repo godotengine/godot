@@ -187,6 +187,13 @@
 				Adds elements from [code]dictionary[/code] to this [Dictionary]. By default, duplicate keys will not be copied over, unless [code]overwrite[/code] is [code]true[/code].
 			</description>
 		</method>
+		<method name="set">
+			<argument index="0" name="key" type="Variant" />
+			<argument index="1" name="value" type="Variant" />
+			<description>
+				Sets the value of the element at the given [code]key[/code] to the given [code]value[/code]. This is the same as using the [code][][/code] operator ([code]array[index] = value[/code]).
+			</description>
+		</method>
 		<method name="size">
 			<return type="int" />
 			<description>
